@@ -9,9 +9,23 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@auth/mongodb-adapter": "^3.11.1",
+    "@tailwindcss/typography": "^0.5.19",
+    "csv-parse": "^5.6.0",
+    "confetti-js": "^0.0.18",
+    "framer-motion": "^12.34.0",
+    "mongodb": "^6.21.0",
+    "mongoose": "^9.2.1",
     "next": "16.1.6",
+    "next-auth": "^5.0.0-beta.30",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.71.1",
+    "react-markdown": "^10.1.0",
+    "react-markdown-editor-lite": "^1.4.2",
+    "rehype-pretty-code": "^0.14.1",
+    "remark-gfm": "^4.0.1",
+    "shiki": "^3.22.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
