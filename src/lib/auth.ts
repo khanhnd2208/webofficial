@@ -22,13 +22,16 @@ const nextAuth = NextAuth({
 			]
 			: [],
 	callbacks: {
-		async jwt({ token, user, profile }) {
-			const emailRaw = token.email ?? user?.email ?? (profile as { email?: unknown } | null)?.email;
-			const email = typeof emailRaw === 'string' ? emailRaw.toLowerCase() : undefined;
-
-			if (email) {
-				token.role = adminEmail && email === adminEmail ? 'admin' : 'student';
-			} else if (!token.role) {
+		async jwt({ token, user }) {
+			// On first sign-in, read role from database
+			if (user) {
+				const userRole = (user as { role?: string }).role;
+				token.role = (userRole === 'admin' || userRole === 'teacher' || userRole === 'student')
+					? userRole
+					: 'student';
+			}
+			// On subsequent requests, keep role from token
+			else if (!token.role) {
 				token.role = 'student';
 			}
 
