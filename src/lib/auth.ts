@@ -18,11 +18,9 @@ const nextAuth = NextAuth({
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
-					// Disable OAuth checks (state + pkce) — required workaround
-					// for Nginx reverse proxy (HTTPS→HTTP) which drops/corrupts
-					// auth cookies. OAuth security is still maintained via
-					// server-side code exchange with Google.
-					checks: ['none'],
+					// Use nonce check only - works better with Nginx reverse proxy
+					// than state/pkce which rely on cookies that get dropped
+					checks: ['nonce'],
 					authorization: {
 						params: {
 							prompt: 'consent',
