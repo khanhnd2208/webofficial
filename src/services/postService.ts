@@ -110,6 +110,7 @@ async function getAllPostsRaw(params: {
 	const [total, items] = await Promise.all([
 		Post.countDocuments(filter),
 		Post.find(filter)
+			.select({ content: 0 })
 			.sort({ createdAt: -1 })
 			.skip((page - 1) * limit)
 			.limit(limit)
@@ -155,6 +156,7 @@ async function getRelatedPostsRaw(params: {
 	if (params.excludeSlug) filter.slug = { $ne: params.excludeSlug };
 
 	const items = (await Post.find(filter)
+		.select({ content: 0 })
 		.sort({ createdAt: -1 })
 		.limit(Math.min(10, Math.max(1, params.limit)))
 		.lean()) as unknown as PostLean[];
@@ -164,13 +166,19 @@ async function getRelatedPostsRaw(params: {
 
 async function ensureUniqueSlug(base: string): Promise<string> {
 	const cleanedBase = base || 'post';
-	let candidate = cleanedBase;
 
-	for (let i = 0; i < 50; i += 1) {
-		const exists = await Post.exists({ slug: candidate });
-		if (!exists) return candidate;
-		candidate = `${cleanedBase}-${i + 2}`;
-	}
+	// Generate all candidate slugs up front
+	const candidates = [cleanedBase, ...Array.from({ length: 49 }, (_, i) => `${cleanedBase}-${i + 2}`)];
+
+	// Single query to find which slugs already exist
+	const existing = await Post.find(
+		{ slug: { $in: candidates } },
+		{ slug: 1 }
+	).lean();
+	const taken = new Set(existing.map((d) => (d as unknown as { slug: string }).slug));
+
+	const available = candidates.find((c) => !taken.has(c));
+	if (available) return available;
 
 	// Fallback (extremely unlikely): append timestamp.
 	return `${cleanedBase}-${Date.now()}`;
@@ -178,13 +186,17 @@ async function ensureUniqueSlug(base: string): Promise<string> {
 
 async function ensureUniqueSlugForUpdate(base: string, excludeId: string): Promise<string> {
 	const cleanedBase = base || 'post';
-	let candidate = cleanedBase;
 
-	for (let i = 0; i < 50; i += 1) {
-		const exists = await Post.exists({ slug: candidate, _id: { $ne: excludeId } });
-		if (!exists) return candidate;
-		candidate = `${cleanedBase}-${i + 2}`;
-	}
+	const candidates = [cleanedBase, ...Array.from({ length: 49 }, (_, i) => `${cleanedBase}-${i + 2}`)];
+
+	const existing = await Post.find(
+		{ slug: { $in: candidates }, _id: { $ne: excludeId } },
+		{ slug: 1 }
+	).lean();
+	const taken = new Set(existing.map((d) => (d as unknown as { slug: string }).slug));
+
+	const available = candidates.find((c) => !taken.has(c));
+	if (available) return available;
 
 	return `${cleanedBase}-${Date.now()}`;
 }
@@ -287,6 +299,7 @@ export async function getAdminPosts(
 	const [total, items] = await Promise.all([
 		Post.countDocuments(filter),
 		Post.find(filter)
+			.select({ content: 0 })
 			.sort(sortObj)
 			.skip((page - 1) * limit)
 			.limit(limit)
@@ -369,6 +382,7 @@ async function getLatestPostsRaw(limit: number): Promise<PostListItemDTO[]> {
 	await dbConnect();
 
 	const items = (await Post.find({ isPublished: true })
+		.select({ content: 0 })
 		.sort({ createdAt: -1 })
 		.limit(lim)
 		.lean()) as unknown as PostLean[];
@@ -437,18 +451,24 @@ export interface AdminDashboardStats {
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
 	await dbConnect();
 
-	const [totalPosts, published, drafts, viewsAgg, reactionsAgg, categoriesAgg] = await Promise.all([
-		Post.countDocuments(),
-		Post.countDocuments({ isPublished: true }),
-		Post.countDocuments({ isPublished: false }),
-		Post.aggregate([{ $group: { _id: null, total: { $sum: '$views' } } }]),
+	// Consolidate into 2 aggregations instead of 6 separate queries
+	const [statsAgg, categoriesAgg] = await Promise.all([
 		Post.aggregate([
 			{
 				$group: {
 					_id: null,
-					total: {
+					totalPosts: { $sum: 1 },
+					published: { $sum: { $cond: ['$isPublished', 1, 0] } },
+					drafts: { $sum: { $cond: ['$isPublished', 0, 1] } },
+					totalViews: { $sum: { $ifNull: ['$views', 0] } },
+					totalReactions: {
 						$sum: {
-							$add: ['$reactions.like', '$reactions.love', '$reactions.fire', '$reactions.clap'],
+							$add: [
+								{ $ifNull: ['$reactions.like', 0] },
+								{ $ifNull: ['$reactions.love', 0] },
+								{ $ifNull: ['$reactions.fire', 0] },
+								{ $ifNull: ['$reactions.clap', 0] },
+							],
 						},
 					},
 				},
@@ -460,12 +480,14 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
 		]),
 	]);
 
+	const s = statsAgg[0] ?? { totalPosts: 0, published: 0, drafts: 0, totalViews: 0, totalReactions: 0 };
+
 	return {
-		totalPosts,
-		published,
-		drafts,
-		totalViews: viewsAgg[0]?.total ?? 0,
-		totalReactions: reactionsAgg[0]?.total ?? 0,
+		totalPosts: s.totalPosts,
+		published: s.published,
+		drafts: s.drafts,
+		totalViews: s.totalViews,
+		totalReactions: s.totalReactions,
 		categories: (categoriesAgg as { _id: string; count: number }[]).map((c) => ({
 			name: c._id || 'Uncategorized',
 			count: c.count,

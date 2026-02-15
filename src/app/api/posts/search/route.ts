@@ -14,22 +14,13 @@ export async function GET(request: NextRequest) {
 
 		await dbConnect();
 
-		// Text search using regex (for MongoDB without Atlas Search)
-		const regex = new RegExp(
-			q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-			'i'
-		);
-
-		const items = await Post.find({
-			isPublished: true,
-			$or: [
-				{ title: { $regex: regex } },
-				{ summary: { $regex: regex } },
-				{ tags: { $regex: regex } },
-			],
-		})
+		// Use MongoDB text index for fast search (indexes on title, summary, tags)
+		const items = await Post.find(
+			{ isPublished: true, $text: { $search: q } },
+			{ score: { $meta: 'textScore' } }
+		)
 			.select('title slug summary tags')
-			.sort({ createdAt: -1 })
+			.sort({ score: { $meta: 'textScore' } })
 			.limit(10)
 			.lean();
 

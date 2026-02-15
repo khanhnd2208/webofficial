@@ -39,7 +39,7 @@ export async function listGrades(params: { studentId?: string } = {}): Promise<G
 		filter.studentId = new mongoose.Types.ObjectId(params.studentId);
 	}
 
-	const grades = (await Grade.find(filter).sort({ createdAt: -1 }).lean()) as unknown as GradeLean[];
+	const grades = (await Grade.find(filter).sort({ createdAt: -1 }).limit(200).lean()) as unknown as GradeLean[];
 	return grades.map(toGradeDTO);
 }
 

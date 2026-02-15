@@ -90,23 +90,27 @@ export async function toggleCommentLike(
 ): Promise<{ likes: number; likedByMe: boolean }> {
 	await dbConnect();
 
-	const comment = await Comment.findById(commentId);
-	if (!comment) throw new Error('Comment not found');
+	// Check if user already liked — single atomic read
+	const existing = await Comment.findOne(
+		{ _id: commentId, likedBy: userId },
+		{ _id: 1 }
+	).lean();
 
-	const likedBy = comment.likedBy ?? [];
-	const alreadyLiked = likedBy.includes(userId);
+	const alreadyLiked = Boolean(existing);
 
-	if (alreadyLiked) {
-		comment.likedBy = likedBy.filter((id) => id !== userId);
-		comment.likes = Math.max(0, (comment.likes ?? 0) - 1);
-	} else {
-		comment.likedBy.push(userId);
-		comment.likes = (comment.likes ?? 0) + 1;
-	}
+	// Atomic update — no race conditions even with concurrent requests
+	const updated = await Comment.findByIdAndUpdate(
+		commentId,
+		alreadyLiked
+			? { $pull: { likedBy: userId }, $inc: { likes: -1 } }
+			: { $addToSet: { likedBy: userId }, $inc: { likes: 1 } },
+		{ returnDocument: 'after', select: 'likes' }
+	).lean();
 
-	await comment.save();
+	if (!updated) throw new Error('Comment not found');
 
-	return { likes: comment.likes, likedByMe: !alreadyLiked };
+	const likes = Math.max(0, (updated as unknown as { likes?: number }).likes ?? 0);
+	return { likes, likedByMe: !alreadyLiked };
 }
 
 export async function deleteComment(commentId: string, userId: string): Promise<void> {

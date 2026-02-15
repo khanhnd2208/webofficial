@@ -50,6 +50,7 @@ export async function getUserWordStats(userId: string): Promise<WordStatsDTO[]> 
 
 	const docs = await WordStats.find({ userId: new mongoose.Types.ObjectId(userId) })
 		.sort({ lastPracticed: -1 })
+		.limit(500)
 		.lean();
 
 	return docs.map((doc) => {

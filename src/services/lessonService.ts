@@ -199,8 +199,29 @@ export async function deleteLesson(params: { id: string }): Promise<{ id: string
 	if (!mongoose.isValidObjectId(id)) throw new Error('Invalid lesson id');
 	const lessonId = new mongoose.Types.ObjectId(id);
 
-	const deleted = await Lesson.findByIdAndDelete(lessonId);
-	if (!deleted) throw new Error('Lesson not found');
+	// Get lesson to find its vocabulary collection before deleting
+	const lesson = await Lesson.findById(lessonId).select({ vocabCollectionId: 1 }).lean();
+	if (!lesson) throw new Error('Lesson not found');
+
+	// Delete the lesson
+	await Lesson.findByIdAndDelete(lessonId);
+
+	// Clean up orphaned vocabulary data
+	const vocabCollectionId = (lesson as unknown as { vocabCollectionId?: mongoose.Types.ObjectId }).vocabCollectionId;
+	if (vocabCollectionId && mongoose.isValidObjectId(String(vocabCollectionId))) {
+		const collOid = new mongoose.Types.ObjectId(String(vocabCollectionId));
+		// Check if any other lesson references this collection
+		const otherLessonCount = await Lesson.countDocuments({ vocabCollectionId: collOid });
+		if (otherLessonCount === 0) {
+			// No other lessons use this collection — safe to delete items + collection
+			const { default: VocabularyItem } = await import('@/models/VocabularyItem');
+			const { default: VocabularyCollection } = await import('@/models/VocabularyCollection');
+			await Promise.all([
+				VocabularyItem.deleteMany({ collectionId: collOid }),
+				VocabularyCollection.findByIdAndDelete(collOid),
+			]);
+		}
+	}
 
 	return { id };
 }

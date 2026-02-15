@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
 		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 		const sets = await listMyVocabSetsWithTerms(user.id);
 
-		// Flatten terms with set info
-		const allTerms = sets.flatMap((set) =>
+		// Flatten terms with set info, cap at 2000 to prevent memory bloat
+		let allTerms = sets.flatMap((set) =>
 			set.terms.map((term) => ({
 				...term,
 				setId: set.id,
@@ -19,12 +19,18 @@ export async function GET(request: NextRequest) {
 			}))
 		);
 
+		const totalTerms = allTerms.length;
+		if (allTerms.length > 2000) {
+			allTerms = allTerms.slice(0, 2000);
+		}
+
 		return NextResponse.json({
 			ok: true,
 			data: {
 				terms: allTerms,
-				totalTerms: allTerms.length,
+				totalTerms,
 				totalSets: sets.length,
+				truncated: totalTerms > 2000,
 			},
 		});
 	} catch (error) {

@@ -49,7 +49,9 @@ export async function listMyVocabSets(ownerId: string): Promise<VocabSetListItem
 	await dbConnect();
 	if (!mongoose.isValidObjectId(ownerId)) return [];
 	const items = (await VocabSet.find({ ownerId: new mongoose.Types.ObjectId(ownerId) })
+		.select({ terms: 0 })
 		.sort({ updatedAt: -1 })
+		.limit(200)
 		.lean()) as unknown as LeanDoc[];
 	return items.map(toListItem);
 }
@@ -60,6 +62,7 @@ export async function listMyVocabSetsWithTerms(ownerId: string): Promise<VocabSe
 	if (!mongoose.isValidObjectId(ownerId)) return [];
 	const items = (await VocabSet.find({ ownerId: new mongoose.Types.ObjectId(ownerId) })
 		.sort({ updatedAt: -1 })
+		.limit(100)
 		.lean()) as unknown as LeanDoc[];
 	return items.map(toDTO);
 }
@@ -143,7 +146,9 @@ export async function deleteVocabSet(id: string): Promise<boolean> {
 export async function listPublicSets(): Promise<VocabSetListItemDTO[]> {
 	await dbConnect();
 	const items = (await VocabSet.find({ isPublic: true })
+		.select({ terms: 0 })
 		.sort({ updatedAt: -1 })
+		.limit(200)
 		.lean()) as unknown as LeanDoc[];
 	return items.map(toListItem);
 }
@@ -164,7 +169,13 @@ export async function cloneVocabSet(params: {
 	ownerName: string;
 }): Promise<VocabSetDTO | null> {
 	await dbConnect();
-	const source = await getPublicSetById(params.sourceId);
+	if (!mongoose.isValidObjectId(params.sourceId)) return null;
+
+	// Single read — get the source directly
+	const source = (await VocabSet.findOne({
+		_id: new mongoose.Types.ObjectId(params.sourceId),
+		isPublic: true,
+	}).lean()) as unknown as LeanDoc | null;
 	if (!source) return null;
 
 	const doc = await VocabSet.create({
@@ -172,14 +183,14 @@ export async function cloneVocabSet(params: {
 		description: source.description,
 		ownerId: new mongoose.Types.ObjectId(params.ownerId),
 		ownerName: params.ownerName,
-		terms: source.terms.map((t) => ({
+		terms: (source.terms ?? []).map((t) => ({
 			word: t.word,
 			definition: t.definition,
 			partOfSpeech: t.partOfSpeech,
 			example: t.example,
 		})),
-		termCount: source.termCount,
-		isPublic: false, // clones are always private
+		termCount: source.termCount ?? source.terms?.length ?? 0,
+		isPublic: false,
 	});
 	return toDTO(doc.toObject() as unknown as LeanDoc);
 }

@@ -37,48 +37,69 @@ export async function recordLogin(userId: string): Promise<StreakDTO> {
 	const today = todayStr();
 	const yesterday = yesterdayStr();
 
-	let doc = await LoginStreak.findOne({ userId: oid });
+	// Try to create a brand-new streak doc (first-ever login)
+	const doc = await LoginStreak.findOneAndUpdate(
+		{ userId: oid },
+		{
+			$setOnInsert: {
+				loginDays: [today],
+				currentStreak: 1,
+				longestStreak: 1,
+				lastLoginDate: today,
+			},
+		},
+		{ upsert: true, returnDocument: 'after' }
+	);
 
 	if (!doc) {
-		// First-ever login — use findOneAndUpdate with upsert to avoid race conditions
-		doc = await LoginStreak.findOneAndUpdate(
-			{ userId: oid },
-			{
-				$setOnInsert: {
-					loginDays: [today],
-					currentStreak: 1,
-					longestStreak: 1,
-					lastLoginDate: today,
-				},
+		return { currentStreak: 1, longestStreak: 1, lastLoginDate: today, recentDays: [today] };
+	}
+
+	// Already logged in today — no-op
+	if (doc.lastLoginDate === today) {
+		return {
+			currentStreak: doc.currentStreak,
+			longestStreak: doc.longestStreak,
+			lastLoginDate: doc.lastLoginDate,
+			recentDays: doc.loginDays.slice(-30),
+		};
+	}
+
+	// New day — atomic update to prevent race conditions from multiple tabs
+	const isConsecutive = doc.lastLoginDate === yesterday;
+	const newStreak = isConsecutive ? doc.currentStreak + 1 : 1;
+	const newLongest = Math.max(doc.longestStreak, newStreak);
+
+	const updated = await LoginStreak.findOneAndUpdate(
+		{ userId: oid, lastLoginDate: { $ne: today } },
+		{
+			$push: { loginDays: { $each: [today], $slice: -90 } },
+			$set: {
+				currentStreak: newStreak,
+				longestStreak: newLongest,
+				lastLoginDate: today,
 			},
-			{ upsert: true, returnDocument: 'after' }
-		);
-		if (!doc) {
-			return { currentStreak: 1, longestStreak: 1, lastLoginDate: today, recentDays: [today] };
-		}
-	} else if (doc.lastLoginDate === today) {
-		// Already logged in today — no-op
-	} else {
-		// New day
-		const isConsecutive = doc.lastLoginDate === yesterday;
-		const newStreak = isConsecutive ? doc.currentStreak + 1 : 1;
-		const newLongest = Math.max(doc.longestStreak, newStreak);
+		},
+		{ returnDocument: 'after' }
+	);
 
-		// Keep only the most recent 90 days to limit document size
-		const updatedDays = [...doc.loginDays, today].slice(-90);
-
-		doc.loginDays = updatedDays;
-		doc.currentStreak = newStreak;
-		doc.longestStreak = newLongest;
-		doc.lastLoginDate = today;
-		await doc.save();
+	if (!updated) {
+		// Another request already updated today — re-read
+		const fresh = await LoginStreak.findOne({ userId: oid });
+		if (!fresh) return { currentStreak: 0, longestStreak: 0, lastLoginDate: '', recentDays: [] };
+		return {
+			currentStreak: fresh.currentStreak,
+			longestStreak: fresh.longestStreak,
+			lastLoginDate: fresh.lastLoginDate,
+			recentDays: fresh.loginDays.slice(-30),
+		};
 	}
 
 	return {
-		currentStreak: doc.currentStreak,
-		longestStreak: doc.longestStreak,
-		lastLoginDate: doc.lastLoginDate,
-		recentDays: doc.loginDays.slice(-30),
+		currentStreak: updated.currentStreak,
+		longestStreak: updated.longestStreak,
+		lastLoginDate: updated.lastLoginDate,
+		recentDays: updated.loginDays.slice(-30),
 	};
 }
 
