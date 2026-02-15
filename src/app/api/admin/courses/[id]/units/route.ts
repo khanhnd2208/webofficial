@@ -1,13 +1,8 @@
-import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { isAdmin } from '@/lib/apiAuth';
 import { attachUnitToCourse, detachUnitFromCourse, listCourseUnits } from '@/services/courseUnitService';
 import { createUnit } from '@/services/unitService';
-
-async function isAdmin(request: NextRequest): Promise<boolean> {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-	return Boolean(token && (token as { role?: unknown }).role === 'admin');
-}
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {

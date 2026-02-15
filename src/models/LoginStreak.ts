@@ -17,7 +17,14 @@ export interface ILoginStreak {
 const LoginStreakSchema = new Schema<ILoginStreak>(
 	{
 		userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
-		loginDays: { type: [String], default: [] },
+		loginDays: {
+			type: [String],
+			default: [],
+			validate: {
+				validator: (v: string[]) => v.length <= 90,
+				message: 'loginDays cannot exceed 90 entries',
+			},
+		},
 		currentStreak: { type: Number, default: 0, min: 0 },
 		longestStreak: { type: Number, default: 0, min: 0 },
 		lastLoginDate: { type: String, default: '' },

@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
 				{ title: { $regex: regex } },
 				{ summary: { $regex: regex } },
 				{ tags: { $regex: regex } },
-				{ content: { $regex: regex } },
 			],
 		})
 			.select('title slug summary tags')

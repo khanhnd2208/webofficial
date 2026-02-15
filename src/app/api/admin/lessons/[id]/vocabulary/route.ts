@@ -1,8 +1,8 @@
-import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { parse } from 'csv-parse/sync';
 
+import { isAdmin } from '@/lib/apiAuth';
 import {
 	clearLessonVocabulary,
 	deleteLessonVocabularyItem,
@@ -10,11 +10,6 @@ import {
 	upsertLessonVocabularyItem,
 	upsertLessonVocabularyItems,
 } from '@/services/lessonVocabularyService';
-
-async function isAdmin(request: NextRequest): Promise<boolean> {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-	return Boolean(token && (token as { role?: unknown }).role === 'admin');
-}
 
 function normalizeHeaderKey(value: string): string {
 	return String(value ?? '')

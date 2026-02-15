@@ -24,7 +24,15 @@ export default async function dbConnect(): Promise<typeof mongoose> {
 
 	if (!cached.promise) {
 		cached.promise = mongoose
-			.connect(MONGODB_URI_DEFINED, { bufferCommands: false })
+			.connect(MONGODB_URI_DEFINED, {
+				bufferCommands: false,
+				// Limit connection pool to avoid overwhelming free-tier clusters.
+				maxPoolSize: 10,
+				// Fail fast if the server is unreachable.
+				serverSelectionTimeoutMS: 5000,
+				// Close idle sockets after 30 s to avoid stale connections.
+				socketTimeoutMS: 30000,
+			})
 			.then((m) => m);
 	}
 

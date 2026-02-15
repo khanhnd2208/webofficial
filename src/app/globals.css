@@ -294,27 +294,47 @@ body {
 	color: var(--foreground);
 }
 
-/* Lowlight token colors (one-dark inspired) */
+/* Lowlight syntax highlighting — shared between editor & article view */
 .tiptap-content .hljs-comment,
-.tiptap-content .hljs-quote { color: #7f848e; font-style: italic; }
+.tiptap-content .hljs-quote,
+.prose .hljs-comment,
+.prose .hljs-quote { color: #7f848e; font-style: italic; }
 .tiptap-content .hljs-keyword,
-.tiptap-content .hljs-selector-tag { color: #c678dd; }
+.tiptap-content .hljs-selector-tag,
+.prose .hljs-keyword,
+.prose .hljs-selector-tag { color: #c678dd; }
 .tiptap-content .hljs-string,
 .tiptap-content .hljs-template-variable,
-.tiptap-content .hljs-addition { color: #98c379; }
+.tiptap-content .hljs-addition,
+.prose .hljs-string,
+.prose .hljs-template-variable,
+.prose .hljs-addition { color: #98c379; }
 .tiptap-content .hljs-number,
-.tiptap-content .hljs-literal { color: #d19a66; }
+.tiptap-content .hljs-literal,
+.prose .hljs-number,
+.prose .hljs-literal { color: #d19a66; }
 .tiptap-content .hljs-built_in,
-.tiptap-content .hljs-type { color: #e5c07b; }
+.tiptap-content .hljs-type,
+.prose .hljs-built_in,
+.prose .hljs-type { color: #e5c07b; }
 .tiptap-content .hljs-attr,
-.tiptap-content .hljs-variable { color: #e06c75; }
+.tiptap-content .hljs-variable,
+.prose .hljs-attr,
+.prose .hljs-variable { color: #e06c75; }
 .tiptap-content .hljs-title,
-.tiptap-content .hljs-section { color: #61afef; }
+.tiptap-content .hljs-section,
+.prose .hljs-title,
+.prose .hljs-section { color: #61afef; }
 .tiptap-content .hljs-name,
-.tiptap-content .hljs-tag { color: #e06c75; }
+.tiptap-content .hljs-tag,
+.prose .hljs-name,
+.prose .hljs-tag { color: #e06c75; }
 .tiptap-content .hljs-selector-class,
-.tiptap-content .hljs-selector-id { color: #61afef; }
-.tiptap-content .hljs-meta { color: #56b6c2; }
+.tiptap-content .hljs-selector-id,
+.prose .hljs-selector-class,
+.prose .hljs-selector-id { color: #61afef; }
+.tiptap-content .hljs-meta,
+.prose .hljs-meta { color: #56b6c2; }
 
 /* Tables in editor */
 .tiptap-content table {
@@ -517,28 +537,6 @@ body {
 	font-size: inherit;
 	color: var(--foreground);
 }
-
-/* Lowlight syntax highlighting in article view */
-.prose .hljs-comment,
-.prose .hljs-quote { color: #7f848e; font-style: italic; }
-.prose .hljs-keyword,
-.prose .hljs-selector-tag { color: #c678dd; }
-.prose .hljs-string,
-.prose .hljs-template-variable,
-.prose .hljs-addition { color: #98c379; }
-.prose .hljs-number,
-.prose .hljs-literal { color: #d19a66; }
-.prose .hljs-built_in,
-.prose .hljs-type { color: #e5c07b; }
-.prose .hljs-attr,
-.prose .hljs-variable { color: #e06c75; }
-.prose .hljs-title,
-.prose .hljs-section { color: #61afef; }
-.prose .hljs-name,
-.prose .hljs-tag { color: #e06c75; }
-.prose .hljs-selector-class,
-.prose .hljs-selector-id { color: #61afef; }
-.prose .hljs-meta { color: #56b6c2; }
 
 /* YouTube embeds in article view */
 .prose div[data-youtube-video] iframe {

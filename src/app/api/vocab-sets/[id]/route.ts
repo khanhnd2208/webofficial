@@ -1,18 +1,7 @@
-import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { getApiUser } from '@/lib/apiAuth';
 import { getVocabSetById, updateVocabSet, deleteVocabSet } from '@/services/vocabSetService';
-
-async function getUser(request: NextRequest) {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-	if (!token?.email) return null;
-	return {
-		id: String(token.sub),
-		email: token.email,
-		name: String(token.name ?? ''),
-		role: String(token.role ?? 'student'),
-	};
-}
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -31,7 +20,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 /** PUT /api/vocab-sets/:id */
 export async function PUT(request: NextRequest, { params }: Params) {
 	try {
-		const user = await getUser(request);
+		const user = await getApiUser(request);
 		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
 		const { id } = await params;
@@ -61,7 +50,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 /** DELETE /api/vocab-sets/:id */
 export async function DELETE(request: NextRequest, { params }: Params) {
 	try {
-		const user = await getUser(request);
+		const user = await getApiUser(request);
 		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
 		const { id } = await params;

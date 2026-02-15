@@ -50,6 +50,11 @@ const PostSchema = new Schema<IPost>(
 	{ timestamps: true }
 );
 
+// Compound indexes for common query patterns
+PostSchema.index({ isPublished: 1, createdAt: -1 });
+PostSchema.index({ isPublished: 1, tags: 1 });
+PostSchema.index({ title: 'text', summary: 'text', tags: 'text' });
+
 PostSchema.pre('validate', function preValidate(this: HydratedDocument<IPost>) {
 	// Auto-generate slug from title if missing.
 	if (!this.slug && this.title) {

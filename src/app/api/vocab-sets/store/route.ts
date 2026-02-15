@@ -1,18 +1,7 @@
-import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { getApiUser } from '@/lib/apiAuth';
 import { listPublicSets, cloneVocabSet, getPublicSetById } from '@/services/vocabSetService';
-
-async function getUser(request: NextRequest) {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-	if (!token?.email) return null;
-	return {
-		id: String(token.sub),
-		email: token.email,
-		name: String(token.name ?? ''),
-		role: String(token.role ?? 'student'),
-	};
-}
 
 /** GET /api/vocab-sets/store — list all public sets */
 export async function GET() {
@@ -30,7 +19,7 @@ export async function GET() {
 /** POST /api/vocab-sets/store — clone a public set */
 export async function POST(request: NextRequest) {
 	try {
-		const user = await getUser(request);
+		const user = await getApiUser(request);
 		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
 		const body = await request.json();

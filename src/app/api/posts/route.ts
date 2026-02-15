@@ -1,13 +1,8 @@
-import { getToken } from 'next-auth/jwt';
 import { revalidatePath } from 'next/cache';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { isAdmin } from '@/lib/apiAuth';
 import { createPost, getAllPosts } from '@/services/postService';
-
-async function isAdmin(request: NextRequest): Promise<boolean> {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-	return Boolean(token && (token as { role?: unknown }).role === 'admin');
-}
 
 export async function GET(request: NextRequest) {
 	try {
@@ -69,10 +64,8 @@ export async function POST(request: NextRequest) {
 			isPublished: Boolean(isPublished),
 		});
 
-		// Make published content visible immediately.
-		revalidatePath('/');
-		revalidatePath('/blog');
-		revalidatePath(`/blog/${created.slug}`);
+		// Invalidate all post-related caches
+		revalidatePath('/', 'layout');
 
 		return NextResponse.json({ ok: true, data: created }, { status: 201 });
 	} catch (error) {

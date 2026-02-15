@@ -1,20 +1,14 @@
-import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { getApiUser } from '@/lib/apiAuth';
 import { recordLogin, getStreak } from '@/services/streakService';
-
-async function getUser(request: NextRequest) {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-	if (!token?.sub) return null;
-	return { id: String(token.sub) };
-}
 
 /**
  * POST /api/streak — record a login for today
  */
 export async function POST(request: NextRequest) {
 	try {
-		const user = await getUser(request);
+		const user = await getApiUser(request);
 		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
 		const data = await recordLogin(user.id);
@@ -32,7 +26,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
 	try {
-		const user = await getUser(request);
+		const user = await getApiUser(request);
 		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
 		const data = await getStreak(user.id);

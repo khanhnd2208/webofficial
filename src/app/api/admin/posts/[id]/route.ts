@@ -1,13 +1,8 @@
-import { getToken } from 'next-auth/jwt';
 import { revalidatePath } from 'next/cache';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { isAdmin } from '@/lib/apiAuth';
 import { deletePostById, getAdminPostById, updatePostById } from '@/services/postService';
-
-async function isAdmin(request: NextRequest): Promise<boolean> {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-	return Boolean(token && (token as { role?: unknown }).role === 'admin');
-}
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -39,9 +34,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 		const updated = await updatePostById(id, body as Record<string, unknown>);
 
-		revalidatePath('/');
-		revalidatePath('/blog');
-		revalidatePath(`/blog/${updated.slug}`);
+		revalidatePath('/', 'layout');
 		return NextResponse.json({ ok: true, data: updated });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';
@@ -58,8 +51,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 		const { id } = await params;
 		await deletePostById(id);
 
-		revalidatePath('/');
-		revalidatePath('/blog');
+		revalidatePath('/', 'layout');
 		return NextResponse.json({ ok: true, data: { id } });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';

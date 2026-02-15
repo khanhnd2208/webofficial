@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 interface ReactionBarProps {
 	slug: string;
@@ -22,11 +22,6 @@ const REACTIONS = [
 export default function ReactionBar({ slug, initialReactions }: ReactionBarProps) {
 	const [reactions, setReactions] = useState(initialReactions);
 	const [animating, setAnimating] = useState<string | null>(null);
-
-	// Track views
-	useEffect(() => {
-		void fetch(`/api/posts/${slug}/views`, { method: 'POST' }).catch(() => {});
-	}, [slug]);
 
 	const react = useCallback(
 		async (type: 'like' | 'love' | 'fire' | 'clap') => {

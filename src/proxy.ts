@@ -3,6 +3,7 @@ import { getToken } from 'next-auth/jwt';
 
 const ADMIN_PREFIX = '/admin';
 const DASHBOARD_PREFIX = '/dashboard';
+const VOCAB_PREFIX = '/vocabulary';
 const LOGIN_PATH = '/login';
 
 export async function proxy(request: NextRequest) {
@@ -26,7 +27,9 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	const isProtected = pathname.startsWith(ADMIN_PREFIX) || pathname.startsWith(DASHBOARD_PREFIX);
+	const isProtected = pathname.startsWith(ADMIN_PREFIX)
+		|| pathname.startsWith(DASHBOARD_PREFIX)
+		|| pathname.startsWith(VOCAB_PREFIX);
 	if (!isProtected) return NextResponse.next();
 
 	if (!token) {
