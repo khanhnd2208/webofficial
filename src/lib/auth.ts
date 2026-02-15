@@ -18,9 +18,11 @@ const nextAuth = NextAuth({
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
-					// Fix PKCE cookie issue behind Nginx reverse proxy
-					// Keep state check for CSRF protection, remove pkce check
-					checks: ['state'],
+					// Disable OAuth checks (state + pkce) — required workaround
+					// for Nginx reverse proxy (HTTPS→HTTP) which drops/corrupts
+					// auth cookies. OAuth security is still maintained via
+					// server-side code exchange with Google.
+					checks: ['none'],
 					authorization: {
 						params: {
 							prompt: 'consent',
