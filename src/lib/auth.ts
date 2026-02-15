@@ -4,7 +4,6 @@ import { MongoDBAdapter } from '@auth/mongodb-adapter';
 
 import { mongoClientPromise } from '@/lib/mongodbClient';
 
-const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
@@ -12,6 +11,7 @@ const nextAuth = NextAuth({
 	secret: process.env.NEXTAUTH_SECRET,
 	adapter: MongoDBAdapter(mongoClientPromise),
 	session: { strategy: 'jwt' },
+	trustHost: true, // CRITICAL: Required for production behind reverse proxy
 	providers:
 		googleClientId && googleClientSecret
 			? [
