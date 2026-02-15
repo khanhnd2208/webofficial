@@ -186,7 +186,7 @@ export async function updateLesson(params: {
 				...(vocabCollectionObjectId === undefined ? {} : { vocabCollectionId: vocabCollectionObjectId }),
 			},
 		},
-		{ new: true, runValidators: true }
+		{ returnDocument: 'after', runValidators: true }
 	).lean()) as unknown as LessonLean | null;
 
 	if (!updated) throw new Error('Lesson not found');

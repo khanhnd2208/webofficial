@@ -161,17 +161,17 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 
 	return (
 		<div className="space-y-3">
-			{status === 'error' ? <p className="text-xs text-red-600">{error}</p> : null}
+			{status === 'error' ? <p className="text-xs text-error">{error}</p> : null}
 
-			<details className="rounded-lg border border-foreground/10 p-3">
+			<details className="rounded-lg border border-border p-3">
 				<summary className="cursor-pointer select-none text-sm font-medium">+ Tạo unit mới</summary>
-				<p className="mt-1 text-xs text-foreground/60">Thêm unit vào course này để tổ chức bài giảng.</p>
+				<p className="mt-1 text-xs text-muted">Thêm unit vào course này để tổ chức bài giảng.</p>
 				<div className="mt-3 grid gap-2">
 					<input
 						value={newName}
 						onChange={(e) => setNewName(e.target.value)}
 						placeholder="Tên unit (e.g. Unit 1, Chương 1, ...)"
-						className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+						className="w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 						onKeyDown={(e) => {
 							if (e.key === 'Enter') void onCreateAndAttach();
 						}}
@@ -186,15 +186,15 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 					</button>
 				</div>
 			</details>
-			<div className="rounded-lg border border-foreground/10">
-				<div className="flex items-center justify-between gap-2 border-b border-foreground/10 px-3 py-2">
+			<div className="rounded-lg border border-border">
+				<div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
 					<div className="text-sm font-medium">Units trong course</div>
-					<p className="text-xs text-foreground/60">Click unit → xem/thêm bài giảng</p>
+					<p className="text-xs text-muted">Click unit → xem/thêm bài giảng</p>
 				</div>
 				{orderedUnits.length === 0 ? (
-					<p className="px-3 py-3 text-sm text-foreground/70">Chưa có unit nào.</p>
+					<p className="px-3 py-3 text-sm text-foreground-secondary">Chưa có unit nào.</p>
 				) : (
-					<div className="divide-y divide-foreground/10">
+					<div className="divide-y divide-border">
 						{orderedUnits.map((u, index) => {
 							const isExpanded = expandedUnitId === u.id;
 							const lessons = lessonsByUnitId.get(u.id) ?? [];
@@ -210,7 +210,7 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 											<div className="flex items-center gap-2">
 												<span className="text-sm">{isExpanded ? '▼' : '▶'}</span>
 												<span className="truncate text-sm font-medium">{u.name}</span>
-												<span className="text-xs text-foreground/60">
+												<span className="text-xs text-muted">
 													({lessons.length} lessons, {vocabTotal} vocab)
 												</span>
 											</div>
@@ -218,7 +218,7 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 										<div className="flex flex-wrap items-center gap-3 text-xs">
 											<button
 												type="button"
-												className="rounded-md border border-foreground/15 px-2 py-1 disabled:opacity-60"
+												className="rounded-md border border-border-hover px-2 py-1 disabled:opacity-60"
 												onClick={() => void onMove(index, -1)}
 												disabled={status === 'saving' || index === 0}
 												title="Move up"
@@ -227,7 +227,7 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 											</button>
 											<button
 												type="button"
-												className="rounded-md border border-foreground/15 px-2 py-1 disabled:opacity-60"
+												className="rounded-md border border-border-hover px-2 py-1 disabled:opacity-60"
 												onClick={() => void onMove(index, 1)}
 												disabled={status === 'saving' || index === orderedUnits.length - 1}
 												title="Move down"
@@ -236,7 +236,7 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 											</button>
 											<button
 												type="button"
-												className="underline underline-offset-4 text-foreground/70"
+												className="underline underline-offset-4 text-foreground-secondary"
 												onClick={() => void onRename(u)}
 												disabled={status === 'saving'}
 											>
@@ -244,7 +244,7 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 											</button>
 											<button
 												type="button"
-												className="underline underline-offset-4 text-foreground/70"
+												className="underline underline-offset-4 text-foreground-secondary"
 												onClick={() => void onDetach(u)}
 												disabled={status === 'saving'}
 											>
@@ -252,7 +252,7 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 											</button>
 											<button
 												type="button"
-												className="underline underline-offset-4 text-red-600"
+												className="underline underline-offset-4 text-error"
 												onClick={() => void onDelete(u)}
 												disabled={status === 'saving'}
 											>
@@ -262,53 +262,53 @@ export default function UnitManager({ courseId, courseUnits, selectedUnitId, les
 									</div>
 
 									{isExpanded ? (
-										<div className="mt-3 ml-6 space-y-3 border-l-2 border-foreground/10 pl-4">
+										<div className="mt-3 ml-6 space-y-3 border-l-2 border-border pl-4">
 											<div className="flex items-center justify-between gap-2">
-												<div className="text-xs font-medium text-foreground/70">Bài giảng ({lessons.length})</div>
+												<div className="text-xs font-medium text-foreground-secondary">Bài giảng ({lessons.length})</div>
 												<Link
-													className="rounded-md border border-foreground/15 bg-background px-3 py-1.5 text-xs font-medium hover:bg-foreground/5"
+													className="rounded-md border border-border-hover bg-background px-3 py-1.5 text-xs font-medium hover:bg-surface-hover"
 													href={`/admin/lessons/create?courseId=${encodeURIComponent(courseId)}&unitId=${encodeURIComponent(u.id)}`}
 												>
 													+ Thêm bài giảng
 												</Link>
 											</div>
 											{lessons.length === 0 ? (
-												<p className="rounded-md border border-dashed border-foreground/20 p-3 text-center text-xs text-foreground/60">
+												<p className="rounded-md border border-dashed border-border-hover p-3 text-center text-xs text-muted">
 													Chưa có bài giảng. Click &quot;+ Thêm bài giảng&quot; để tạo.
 												</p>
 											) : (
 												<div className="space-y-2">
 													{lessons.map((l) => (
-														<div key={l.id} className="rounded-md border border-foreground/10 bg-background px-3 py-2.5 hover:bg-foreground/5">
+														<div key={l.id} className="rounded-md border border-border bg-background px-3 py-2.5 hover:bg-surface-hover">
 															<div className="flex flex-wrap items-start justify-between gap-3">
 																<div className="min-w-0 flex-1">
 																	<div className="truncate text-sm font-medium">{l.title}</div>
-																	<div className="mt-1 flex items-center gap-3 text-xs text-foreground/60">
+																	<div className="mt-1 flex items-center gap-3 text-xs text-muted">
 																		<span>Vocab: {l.vocabularyCount}</span>
 																	</div>
 																</div>
 																<div className="flex flex-wrap items-center gap-2">
 																	<Link 
-																		className="rounded-md border border-foreground/15 px-2.5 py-1 text-xs hover:bg-foreground/5"
+																		className="rounded-md border border-border-hover px-2.5 py-1 text-xs hover:bg-surface-hover"
 																		href={`/admin/lessons/${l.id}/edit`}
 																		title="Sửa nội dung markdown"
 																	>
-																		✏️ Sửa
+																		<svg className="inline h-3 w-3 mr-0.5" viewBox="0 0 24 24" fill="none"><path d="M16.862 3.487a2.1 2.1 0 013.02 0l.631.631a2.1 2.1 0 010 3.02L9.07 18.58l-4.59 1.15 1.15-4.59L16.862 3.487z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg> Sửa
 																	</Link>
 																	<Link 
-																		className="rounded-md border border-foreground/15 px-2.5 py-1 text-xs hover:bg-foreground/5"
+																		className="rounded-md border border-border-hover px-2.5 py-1 text-xs hover:bg-surface-hover"
 																		href={`/admin/lessons/${l.id}/vocabulary`}
 																		title="Quản lý từ vựng"
 																	>
-																		📚 Vocab
+																		<svg className="inline h-3 w-3 mr-0.5" viewBox="0 0 24 24" fill="none"><path d="M4 5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" stroke="currentColor" strokeWidth="1.5" /><path d="M9 13h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg> Vocab
 																	</Link>
 																	<Link 
-																		className="rounded-md border border-foreground/15 px-2.5 py-1 text-xs text-foreground/60 hover:bg-foreground/5"
+																		className="rounded-md border border-border-hover px-2.5 py-1 text-xs text-muted hover:bg-surface-hover"
 																		href={`/courses/lessons/${l.id}`}
 																		target="_blank"
 																		title="Xem student view"
 																	>
-																		👁️
+																		<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" strokeWidth="1.5" /><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" /></svg>
 																	</Link>
 																</div>
 															</div>

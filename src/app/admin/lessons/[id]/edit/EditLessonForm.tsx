@@ -113,19 +113,19 @@ export default function EditLessonForm({ lesson }: Props) {
 				</nav>
 			</header>
 
-			{state.status === 'error' ? <p className="mt-4 text-sm text-red-600">Lỗi: {state.message}</p> : null}
-			{state.status === 'saved' ? <p className="mt-4 text-sm text-foreground/70">Đã lưu.</p> : null}
+			{state.status === 'error' ? <p className="mt-4 text-sm text-error">Lỗi: {state.message}</p> : null}
+			{state.status === 'saved' ? <p className="mt-4 text-sm text-foreground-secondary">Đã lưu.</p> : null}
 
 			<section className="mt-8 space-y-4">
 				<label className="block">
 					<div className="text-sm font-medium">Unit</div>
-					{unitsState.status === 'loading' ? <p className="mt-2 text-sm text-foreground/70">Đang tải units…</p> : null}
-					{unitsState.status === 'error' ? <p className="mt-2 text-sm text-red-600">Lỗi: {unitsState.message}</p> : null}
+					{unitsState.status === 'loading' ? <p className="mt-2 text-sm text-foreground-secondary">Đang tải units…</p> : null}
+					{unitsState.status === 'error' ? <p className="mt-2 text-sm text-error">Lỗi: {unitsState.message}</p> : null}
 					{unitsState.status === 'loaded' ? (
 						<select
 							value={unitId}
 							onChange={(e) => setUnitId(e.target.value)}
-							className="mt-2 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+							className="mt-2 w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 						>
 							{units.map((u) => (
 								<option key={u.id} value={u.id}>
@@ -141,7 +141,7 @@ export default function EditLessonForm({ lesson }: Props) {
 					<input
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
-						className="mt-2 w-full rounded-md border border-foreground/15 px-3 py-2 text-sm"
+						className="mt-2 w-full rounded-md border border-border-hover px-3 py-2 text-sm"
 					/>
 				</label>
 
@@ -151,7 +151,7 @@ export default function EditLessonForm({ lesson }: Props) {
 						value={content}
 						onChange={(e) => setContent(e.target.value)}
 						rows={14}
-						className="mt-2 w-full rounded-md border border-foreground/15 px-3 py-2 font-mono text-sm"
+						className="mt-2 w-full rounded-md border border-border-hover px-3 py-2 font-mono text-sm"
 					/>
 				</label>
 			</section>

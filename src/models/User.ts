@@ -1,6 +1,6 @@
 import mongoose, { Schema, type Model } from 'mongoose';
 
-export type UserRole = 'student' | 'teacher' | 'admin';
+import type { UserRole } from '@/types/user';
 
 export interface IUser {
 	name: string;

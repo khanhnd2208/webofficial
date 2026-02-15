@@ -282,16 +282,55 @@ Mở: `http://localhost:3000`
 - Hardening cho production:
   - Rotate secrets, set OAuth consent screen chuẩn, và cấu hình domain/redirect cho môi trường deploy.
   - Xem xét rate-limit cho `/api/uploads` và các endpoints admin.
-- Code highlighting “đúng chuẩn” nhưng ổn định (cần pipeline async hoặc pre-render).
-- Dọn warning:
-  - workspace root inferred do nhiều lockfile
-  - middleware convention deprecated (Next 16 khuyên dùng proxy)
-- `npm audit` (nếu cần harden deps cho production).
 - Upload hiện lưu vào `public/uploads` (đơn giản cho local); production nên chuyển sang S3/R2.
 
 ---
 
-## 8) File thay đổi quan trọng (quick index)
+## 8) Phase 15G — Session G (15/02/2026)
+
+### 8.1 Dashboard Redesign + Login Streak
+- Tạo `LoginStreak` model, `streakService`, `/api/streak` endpoint
+- Tạo `StreakFire` component với 6 SVG fire tiers tiến hóa theo streak + CSS animations
+- Dashboard rewrite hoàn toàn: Hero, Stats+Streak, Quick Actions, Progress, Recent Sets, Heatmap, Account
+
+### 8.2 Icon Overhaul
+- Thay tất cả emoji across 10+ files bằng custom gradient SVG icons
+
+### 8.3 Blog Editor → Tiptap WYSIWYG
+- Thay `react-markdown-editor-lite` bằng **Tiptap v3.19.0** full WYSIWYG
+- Extensions: StarterKit, Image, Link, Placeholder, Underline, TextAlign, Highlight, CodeBlockLowlight, TextStyle, Color, Youtube, Table, Superscript, Subscript
+- Fix Tiptap v3 imports (BubbleMenu removed, TextStyle/Table named imports)
+- Fix SSR hydration error (`immediatelyRender: false`)
+- Fix blog editor ↔ published mismatch (thêm `tiptap-content` class)
+- Thêm nút justify/right alignment
+- CSS cho empty paragraph preservation, text alignment support
+
+### 8.4 Package Audit & Cleanup
+- Xóa: `react-hook-form`, `confetti-js`, `rehype-pretty-code`, `shiki`
+- Update: `react 19.2.4`, `csv-parse 6.1.0`, `@types/node 25.x`
+- Downgrade ESLint 10→9 (incompatible với `eslint-config-next`)
+
+### 8.5 Mongoose Deprecation Fix
+- `{ new: true }` → `{ returnDocument: 'after' }` across 8+ files (Mongoose 9.x)
+
+### 8.6 Comprehensive Code Audit
+- **ESLint: 0 errors, 0 warnings** (toàn bộ `src/`)
+- **TypeScript: 0 errors** (`tsc --noEmit`)
+- **Build: 0 errors** (`next build`)
+- Fixes:
+  - Xóa unused `title` state từ 4 vocabulary practice pages
+  - Convert `ResultIcon` component-in-render → JSX variable (MCQ + fill-blank)
+  - Move `handleNext`/`handleCheck`/`startGame` trước declaration để fix use-before-declaration
+  - Move `statsReportedRef` access từ render body → `useEffect` (4 pages)
+  - Xóa unused `allTerms` prop từ 4 `CompletionScreen` components
+  - Fix `initialUnitId` missing useEffect dependency (admin/lessons/create)
+  - Xóa unused `_courseId` param (LessonNavigation)
+  - Convert `startGame` function → `useCallback` (matching page)
+  - ESLint-disable cho 3 legitimate SSR patterns (Navbar/ShareBar/ThemeToggle)
+
+---
+
+## 9) File thay đổi quan trọng (quick index)
 
 - Blog public: `src/app/blog/page.tsx`, `src/app/blog/[slug]/page.tsx`
 - Admin: `src/app/admin/posts/page.tsx`, `src/app/admin/posts/create/page.tsx`, `src/app/admin/posts/[id]/edit/*`

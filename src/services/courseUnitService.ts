@@ -132,7 +132,7 @@ export async function attachUnitToCourse(params: {
 	const updated = (await CourseUnit.findOneAndUpdate(
 		{ courseId: courseObjectId, unitId: unitObjectId },
 		{ $set: { order: resolvedOrder ?? 0 }, $setOnInsert: { courseId: courseObjectId, unitId: unitObjectId } },
-		{ upsert: true, new: true, runValidators: true }
+		{ upsert: true, returnDocument: 'after', runValidators: true }
 	).lean()) as unknown as CourseUnitLean | null;
 
 	if (!updated) throw new Error('Attach unit failed');

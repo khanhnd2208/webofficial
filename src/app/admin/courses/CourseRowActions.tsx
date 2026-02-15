@@ -82,7 +82,7 @@ export default function CourseRowActions({ course }: Props) {
 				type="button"
 				onClick={() => void onEdit()}
 				disabled={status === 'renaming' || status === 'deleting'}
-				className="rounded-md border border-foreground/15 px-3 py-1 text-xs disabled:opacity-60"
+				className="rounded-md border border-border-hover px-3 py-1 text-xs disabled:opacity-60"
 			>
 				{status === 'renaming' ? 'Đang lưu…' : 'Sửa'}
 			</button>
@@ -90,11 +90,11 @@ export default function CourseRowActions({ course }: Props) {
 				type="button"
 				onClick={() => void onDelete()}
 				disabled={status === 'deleting' || status === 'renaming'}
-				className="rounded-md border border-foreground/15 px-3 py-1 text-xs disabled:opacity-60"
+				className="rounded-md border border-border-hover px-3 py-1 text-xs disabled:opacity-60"
 			>
 				{status === 'deleting' ? 'Đang xoá…' : 'Xoá'}
 			</button>
-			{status === 'error' ? <span className="text-xs text-red-600">{error}</span> : null}
+			{status === 'error' ? <span className="text-xs text-error">{error}</span> : null}
 		</div>
 	);
 }

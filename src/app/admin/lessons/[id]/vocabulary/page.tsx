@@ -215,7 +215,7 @@ export default function AdminLessonVocabularyPage() {
 			<header className="flex flex-wrap items-baseline justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight">Lesson Vocabulary</h1>
-					<p className="mt-2 text-sm text-foreground/70">Thêm từ vựng bằng CSV hoặc nhập thủ công.</p>
+					<p className="mt-2 text-sm text-foreground-secondary">Thêm từ vựng bằng CSV hoặc nhập thủ công.</p>
 				</div>
 				<nav className="flex flex-wrap items-center gap-3">
 					<Link className="text-sm underline underline-offset-4" href="/admin/lessons">
@@ -229,15 +229,15 @@ export default function AdminLessonVocabularyPage() {
 				</nav>
 			</header>
 
-			{!lessonId ? <p className="mt-6 text-sm text-red-600">Missing lessonId</p> : null}
+			{!lessonId ? <p className="mt-6 text-sm text-error">Missing lessonId</p> : null}
 
-			<details className="mt-8 rounded-lg border border-foreground/10 p-4" open>
+			<details className="mt-8 rounded-lg border border-border p-4" open>
 				<summary className="cursor-pointer select-none text-sm font-medium">CSV import</summary>
-				<p className="mt-2 text-xs text-foreground/60">
+				<p className="mt-2 text-xs text-muted">
 					Cột bắt buộc: <span className="font-mono">word, meaningVi, meaningEn</span> (POS tuỳ chọn)
 				</p>
 				<div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-					<div className="text-xs text-foreground/60">Sample</div>
+					<div className="text-xs text-muted">Sample</div>
 					<a
 						href={sampleCsvHref}
 						download="vocab-sample.csv"
@@ -246,7 +246,7 @@ export default function AdminLessonVocabularyPage() {
 						Download sample CSV
 					</a>
 				</div>
-				<pre className="mt-3 overflow-x-auto rounded-md border border-foreground/10 bg-foreground/5 p-3 text-xs">{sampleCsv}</pre>
+				<pre className="mt-3 overflow-x-auto rounded-md border border-border bg-surface-hover p-3 text-xs">{sampleCsv}</pre>
 
 				<div className="mt-4 flex flex-wrap items-center gap-3">
 					<input
@@ -255,7 +255,7 @@ export default function AdminLessonVocabularyPage() {
 						onChange={(e) => setFile(e.target.files?.[0] ?? null)}
 						className="text-sm"
 					/>
-					{file ? <span className="text-xs text-foreground/60">{file.name}</span> : null}
+					{file ? <span className="text-xs text-muted">{file.name}</span> : null}
 					<label className="flex items-center gap-2 text-sm">
 						<input
 							type="checkbox"
@@ -276,7 +276,7 @@ export default function AdminLessonVocabularyPage() {
 						type="button"
 						onClick={() => void onClear()}
 						disabled={!lessonId || uploadState.status === 'uploading'}
-						className="rounded-md border border-foreground/15 px-4 py-2 text-sm disabled:opacity-60"
+						className="rounded-md border border-border-hover px-4 py-2 text-sm disabled:opacity-60"
 					>
 						Clear
 					</button>
@@ -284,9 +284,9 @@ export default function AdminLessonVocabularyPage() {
 
 				{uploadState.status === 'error' ? (
 					<div className="mt-3">
-						<p className="text-sm text-red-600">Lỗi: {uploadState.message}</p>
+						<p className="text-sm text-error">Lỗi: {uploadState.message}</p>
 						{uploadState.details.length > 0 ? (
-							<ul className="mt-2 list-disc pl-5 text-xs text-red-600">
+							<ul className="mt-2 list-disc pl-5 text-xs text-error">
 								{uploadState.details.slice(0, 8).map((d) => (
 									<li key={d}>{d}</li>
 								))}
@@ -295,13 +295,13 @@ export default function AdminLessonVocabularyPage() {
 					</div>
 				) : null}
 				{uploadState.status === 'uploaded' ? (
-					<div className="mt-3 text-sm text-foreground/70">
+					<div className="mt-3 text-sm text-foreground-secondary">
 						<div>
 							Đã upsert {uploadState.upserted}/{uploadState.total} từ hợp lệ (từ {uploadState.records} dòng; bỏ qua {uploadState.invalidRows}{' '}
 							dòng lỗi).
 						</div>
 						{uploadState.invalidSamples.length > 0 ? (
-							<ul className="mt-2 list-disc pl-5 text-xs text-foreground/60">
+							<ul className="mt-2 list-disc pl-5 text-xs text-muted">
 								{uploadState.invalidSamples.slice(0, 8).map((d) => (
 									<li key={d}>{d}</li>
 								))}
@@ -310,13 +310,13 @@ export default function AdminLessonVocabularyPage() {
 					</div>
 				) : null}
 				{uploadState.status === 'cleared' ? (
-					<p className="mt-3 text-sm text-foreground/70">Đã xóa {uploadState.deleted} từ.</p>
+					<p className="mt-3 text-sm text-foreground-secondary">Đã xóa {uploadState.deleted} từ.</p>
 				) : null}
 			</details>
 
-			<details className="mt-6 rounded-lg border border-foreground/10 p-4" open>
+			<details className="mt-6 rounded-lg border border-border p-4" open>
 				<summary className="cursor-pointer select-none text-sm font-medium">Manual entry</summary>
-				<p className="mt-2 text-xs text-foreground/60">
+				<p className="mt-2 text-xs text-muted">
 					Nhập <span className="font-mono">word</span> + nghĩa VI/EN. Nếu word đã tồn tại thì sẽ được update.
 				</p>
 
@@ -329,7 +329,7 @@ export default function AdminLessonVocabularyPage() {
 								setManual((p) => ({ ...p, word: e.target.value }));
 								if (manualState.status !== 'idle') setManualState({ status: 'idle' });
 							}}
-							className="mt-1 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+							className="mt-1 w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 							placeholder="hello"
 							required
 						/>
@@ -343,7 +343,7 @@ export default function AdminLessonVocabularyPage() {
 								setManual((p) => ({ ...p, partOfSpeech: e.target.value }));
 								if (manualState.status !== 'idle') setManualState({ status: 'idle' });
 							}}
-							className="mt-1 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+							className="mt-1 w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 							placeholder="interjection"
 						/>
 					</label>
@@ -356,7 +356,7 @@ export default function AdminLessonVocabularyPage() {
 								setManual((p) => ({ ...p, meaningVi: e.target.value }));
 								if (manualState.status !== 'idle') setManualState({ status: 'idle' });
 							}}
-							className="mt-1 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+							className="mt-1 w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 							placeholder="xin chào"
 							required
 						/>
@@ -370,7 +370,7 @@ export default function AdminLessonVocabularyPage() {
 								setManual((p) => ({ ...p, meaningEn: e.target.value }));
 								if (manualState.status !== 'idle') setManualState({ status: 'idle' });
 							}}
-							className="mt-1 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+							className="mt-1 w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 							placeholder="hello"
 							required
 						/>
@@ -387,9 +387,9 @@ export default function AdminLessonVocabularyPage() {
 						{manualState.status === 'saving' ? 'Đang lưu…' : 'Save word'}
 					</button>
 					{manualState.status === 'saved' ? (
-						<p className="text-sm text-foreground/70">OK. Total: {manualState.total}</p>
+						<p className="text-sm text-foreground-secondary">OK. Total: {manualState.total}</p>
 					) : null}
-					{manualState.status === 'error' ? <p className="text-sm text-red-600">Lỗi: {manualState.message}</p> : null}
+					{manualState.status === 'error' ? <p className="text-sm text-error">Lỗi: {manualState.message}</p> : null}
 				</div>
 			</details>
 
@@ -400,21 +400,21 @@ export default function AdminLessonVocabularyPage() {
 						type="button"
 						onClick={() => void loadItems()}
 						disabled={!lessonId || loadState.status === 'loading'}
-						className="text-xs underline underline-offset-4 text-foreground/70 disabled:opacity-60"
+						className="text-xs underline underline-offset-4 text-foreground-secondary disabled:opacity-60"
 					>
 						Refresh
 					</button>
 				</div>
-				{loadState.status === 'loading' ? <p className="mt-3 text-sm text-foreground/70">Đang tải…</p> : null}
-				{loadState.status === 'error' ? <p className="mt-3 text-sm text-red-600">Lỗi: {loadState.message}</p> : null}
+				{loadState.status === 'loading' ? <p className="mt-3 text-sm text-foreground-secondary">Đang tải…</p> : null}
+				{loadState.status === 'error' ? <p className="mt-3 text-sm text-error">Lỗi: {loadState.message}</p> : null}
 
 				{loadState.status === 'loaded' ? (
 					items.length === 0 ? (
-						<p className="mt-3 text-sm text-foreground/70">Chưa có từ vựng.</p>
+						<p className="mt-3 text-sm text-foreground-secondary">Chưa có từ vựng.</p>
 					) : (
-						<div className="mt-4 overflow-x-auto rounded-lg border border-foreground/10">
+						<div className="mt-4 overflow-x-auto rounded-lg border border-border">
 							<table className="min-w-full text-left text-sm">
-								<thead className="bg-foreground/5">
+								<thead className="bg-surface-hover">
 									<tr>
 										<th className="px-3 py-2 font-medium">Word</th>
 										<th className="px-3 py-2 font-medium">POS</th>
@@ -425,16 +425,16 @@ export default function AdminLessonVocabularyPage() {
 								</thead>
 								<tbody>
 									{items.map((v) => (
-										<tr key={v.id} className="border-t border-foreground/10">
+										<tr key={v.id} className="border-t border-border">
 											<td className="px-3 py-2 font-medium">{v.word}</td>
-											<td className="px-3 py-2 text-xs text-foreground/70">{v.partOfSpeech || '—'}</td>
+											<td className="px-3 py-2 text-xs text-foreground-secondary">{v.partOfSpeech || '—'}</td>
 											<td className="px-3 py-2">{v.meaningVi}</td>
-											<td className="px-3 py-2 text-foreground/70">{v.meaningEn}</td>
+											<td className="px-3 py-2 text-foreground-secondary">{v.meaningEn}</td>
 											<td className="px-3 py-2 text-right">
 												<button
 													type="button"
 													onClick={() => void onDeleteWord(v.word)}
-													className="text-xs underline underline-offset-4 text-foreground/70"
+													className="text-xs underline underline-offset-4 text-foreground-secondary"
 												>
 													Delete
 												</button>

@@ -57,7 +57,7 @@ export async function renameUnit(params: { id: string; name: string }): Promise<
 	if (!name) throw new Error('Missing unit name');
 	const update: Record<string, unknown> = { name };
 
-	const updated = (await Unit.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: update }, { new: true, runValidators: true }).lean()) as unknown as UnitLean | null;
+	const updated = (await Unit.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: update }, { returnDocument: 'after', runValidators: true }).lean()) as unknown as UnitLean | null;
 	if (!updated) throw new Error('Unit not found');
 	return toUnitDTO(updated);
 }

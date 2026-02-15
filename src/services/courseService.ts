@@ -50,7 +50,7 @@ export async function createCourse(input: { name: string; description?: string }
 	const updated = (await Course.findOneAndUpdate(
 		{ name: normalized },
 		{ $setOnInsert: { name: normalized, description } },
-		{ upsert: true, new: true, runValidators: true }
+		{ upsert: true, returnDocument: 'after', runValidators: true }
 	).lean()) as unknown as CourseLean | null;
 
 	if (!updated) throw new Error('Create course failed');
@@ -138,7 +138,7 @@ export async function renameCourse(params: { id: string; name: string; descripti
 	const updated = (await Course.findByIdAndUpdate(
 		new mongoose.Types.ObjectId(id),
 		{ $set: update },
-		{ new: true, runValidators: true }
+		{ returnDocument: 'after', runValidators: true }
 	).lean()) as unknown as CourseLean | null;
 	if (!updated) throw new Error('Course not found');
 	return toCourseDTO(updated);

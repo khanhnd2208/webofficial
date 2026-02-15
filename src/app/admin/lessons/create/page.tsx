@@ -78,7 +78,7 @@ export default function AdminCreateLessonPage() {
 		return () => {
 			cancelled = true;
 		};
-	}, [cleanedCourseId]);
+	}, [cleanedCourseId, initialUnitId]);
 
 	const units = useMemo(() => (unitsState.status === 'loaded' ? unitsState.items : []), [unitsState]);
 
@@ -140,13 +140,13 @@ export default function AdminCreateLessonPage() {
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight">Create lesson</h1>
-					<p className="mt-2 text-sm text-foreground/70">Chọn unit → soạn nội dung → lưu. Từ vựng quản lý riêng (CSV hoặc nhập thủ công).</p>
+					<p className="mt-2 text-sm text-foreground-secondary">Chọn unit → soạn nội dung → lưu. Từ vựng quản lý riêng (CSV hoặc nhập thủ công).</p>
 					{cleanedCourseId ? (
-						<p className="mt-1 text-xs text-foreground/60">
+						<p className="mt-1 text-xs text-muted">
 							Course context: <span className="font-mono">{cleanedCourseId}</span> (chỉ hiển thị unit thuộc course này).
 						</p>
 					) : (
-						<p className="mt-1 text-xs text-foreground/60">
+						<p className="mt-1 text-xs text-muted">
 							Mở trang này từ Learning để chọn course → unit.
 						</p>
 					)}
@@ -170,11 +170,11 @@ export default function AdminCreateLessonPage() {
 			</header>
 
 			{saveState.status === 'error' ? (
-				<p className="mt-4 text-sm text-red-600">Lỗi: {saveState.message}</p>
+				<p className="mt-4 text-sm text-error">Lỗi: {saveState.message}</p>
 			) : null}
 
 			{saveState.status === 'saved' ? (
-				<div className="mt-4 rounded-lg border border-foreground/10 p-4 text-sm">
+				<div className="mt-4 rounded-lg border border-border bg-surface p-4 text-sm">
 					<div className="font-medium">Đã lưu bài học.</div>
 					<div className="mt-2 flex flex-wrap gap-4">
 						<Link className="underline underline-offset-4" href={`/courses/lessons/${saveState.lessonId}`}>
@@ -192,16 +192,16 @@ export default function AdminCreateLessonPage() {
 							</Link>
 						) : null}
 					</div>
-					<div className="mt-2 text-xs text-foreground/60">
+					<div className="mt-2 text-xs text-muted">
 						Lesson ID: <span className="font-mono">{saveState.lessonId}</span>
 					</div>
 				</div>
 			) : null}
 
 			{!cleanedCourseId ? (
-				<section className="mt-8 rounded-lg border border-foreground/10 p-4">
+				<section className="mt-8 rounded-lg border border-border bg-surface p-4">
 					<div className="text-sm font-medium">Thiếu course context</div>
-					<p className="mt-2 text-sm text-foreground/70">Để tạo lesson đúng cấu trúc Course → Unit → Lesson, hãy tạo lesson từ trang Learning.</p>
+					<p className="mt-2 text-sm text-foreground-secondary">Để tạo lesson đúng cấu trúc Course → Unit → Lesson, hãy tạo lesson từ trang Learning.</p>
 					<div className="mt-3">
 						<Link className="text-sm underline underline-offset-4" href="/admin/learning">
 							→ Đi tới Learning
@@ -212,11 +212,11 @@ export default function AdminCreateLessonPage() {
 				<section className="mt-8 grid gap-4">
 				<label className="block">
 					<div className="text-sm font-medium">Unit</div>
-					{unitsState.status === 'loading' ? <p className="mt-2 text-sm text-foreground/70">Đang tải units…</p> : null}
-					{unitsState.status === 'error' ? <p className="mt-2 text-sm text-red-600">Lỗi: {unitsState.message}</p> : null}
+					{unitsState.status === 'loading' ? <p className="mt-2 text-sm text-foreground-secondary">Đang tải units…</p> : null}
+					{unitsState.status === 'error' ? <p className="mt-2 text-sm text-error">Lỗi: {unitsState.message}</p> : null}
 					{unitsState.status === 'loaded' ? (
 						units.length === 0 ? (
-							<p className="mt-2 text-sm text-foreground/70">
+							<p className="mt-2 text-sm text-foreground-secondary">
 								Chưa có unit trong course này. Hãy tạo unit trong trang{' '}
 								<Link className="underline underline-offset-4" href={String(courseId ?? '').trim() ? `/admin/learning?courseId=${encodeURIComponent(String(courseId).trim())}` : '/admin/learning'}>
 									Learning
@@ -227,7 +227,7 @@ export default function AdminCreateLessonPage() {
 						<select
 							value={unitId}
 							onChange={(e) => setUnitId(e.target.value)}
-							className="mt-2 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+							className="mt-2 w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 						>
 							{units.map((u) => (
 								<option key={u.id} value={u.id}>
@@ -244,7 +244,7 @@ export default function AdminCreateLessonPage() {
 					<input
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
-						className="mt-2 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+						className="mt-2 w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 						placeholder='Unit 1: Tại sân bay'
 						required
 					/>
@@ -253,7 +253,7 @@ export default function AdminCreateLessonPage() {
 			)}
 
 			<section className="mt-6">
-				<div className="rounded-lg border border-foreground/10">
+				<div className="rounded-lg border border-border">
 					<MdEditor
 						value={content}
 						onChange={({ text }: { text: string }) => setContent(text)}
@@ -278,10 +278,10 @@ export default function AdminCreateLessonPage() {
 						canView={{ menu: true, md: true, html: true, both: true, fullScreen: true, hideMenu: true }}
 					/>
 				</div>
-				<p className="mt-2 text-xs text-foreground/60">Preview nội dung Markdown phía trên.</p>
+				<p className="mt-2 text-xs text-muted">Preview nội dung Markdown phía trên.</p>
 			</section>
 
-			<footer className="mt-10 rounded-lg border border-foreground/10 p-4 text-sm text-foreground/70">
+			<footer className="mt-10 rounded-lg border border-border bg-surface p-4 text-sm text-foreground-secondary">
 				<div className="font-medium text-foreground">Preview</div>
 				<div className="mt-1">Title: {title || '—'}</div>
 			</footer>

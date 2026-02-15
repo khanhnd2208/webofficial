@@ -42,19 +42,19 @@ export default function AdminPostActions({ id, slug, title, isPublished }: Props
 		<div className="flex flex-wrap items-center gap-2">
 			<Link
 				href={`/admin/posts/${id}/edit`}
-				className="rounded-md border border-foreground/15 px-3 py-1 text-xs"
+				className="rounded-md border border-border-hover px-3 py-1 text-xs"
 			>
 				Sửa
 			</Link>
 			{isPublished ? (
 				<Link
 					href={`/blog/${slug}`}
-					className="rounded-md border border-foreground/15 px-3 py-1 text-xs"
+					className="rounded-md border border-border-hover px-3 py-1 text-xs"
 				>
 					Xem
 				</Link>
 			) : (
-				<span className="rounded-md border border-foreground/10 px-3 py-1 text-xs text-foreground/50">
+				<span className="rounded-md border border-border px-3 py-1 text-xs text-muted">
 					Chưa publish
 				</span>
 			)}
@@ -62,11 +62,11 @@ export default function AdminPostActions({ id, slug, title, isPublished }: Props
 				type="button"
 				onClick={onDelete}
 				disabled={status === 'deleting'}
-				className="rounded-md border border-foreground/15 px-3 py-1 text-xs disabled:opacity-60"
+				className="rounded-md border border-border-hover px-3 py-1 text-xs disabled:opacity-60"
 			>
 				{status === 'deleting' ? 'Đang xoá…' : 'Xoá'}
 			</button>
-			{status === 'error' ? <span className="text-xs text-red-600">{error}</span> : null}
+			{status === 'error' ? <span className="text-xs text-error">{error}</span> : null}
 		</div>
 	);
 }

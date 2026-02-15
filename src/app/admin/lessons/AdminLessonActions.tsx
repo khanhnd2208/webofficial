@@ -40,18 +40,18 @@ export default function AdminLessonActions({ lessonId, lessonTitle }: Props) {
 
 	return (
 		<div className="flex flex-wrap items-center gap-2">
-			<Link className="rounded-md border border-foreground/15 px-3 py-1 text-xs" href={`/admin/lessons/${lessonId}/edit`}>
+			<Link className="rounded-md border border-border-hover px-3 py-1 text-xs" href={`/admin/lessons/${lessonId}/edit`}>
 				Sửa lesson
 			</Link>
 			<button
 				type="button"
 				onClick={() => void onDelete()}
 				disabled={status === 'deleting'}
-				className="rounded-md border border-foreground/15 px-3 py-1 text-xs disabled:opacity-60"
+				className="rounded-md border border-border-hover px-3 py-1 text-xs disabled:opacity-60"
 			>
 				{status === 'deleting' ? 'Đang xoá…' : 'Xoá lesson'}
 			</button>
-			{status === 'error' ? <span className="text-xs text-red-600">{error}</span> : null}
+			{status === 'error' ? <span className="text-xs text-error">{error}</span> : null}
 		</div>
 	);
 }

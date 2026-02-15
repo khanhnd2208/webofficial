@@ -59,7 +59,7 @@ export default async function AdminLearningPage({
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h2 className="text-xl font-semibold tracking-tight">Learning</h2>
-					<p className="mt-2 text-sm text-foreground/70">Course → Units → Lessons → Vocabulary</p>
+					<p className="mt-2 text-sm text-foreground-secondary">Course → Units → Lessons → Vocabulary</p>
 				</div>
 				<nav className="flex flex-wrap items-center gap-3">
 					<Link className="text-sm underline underline-offset-4" href="/admin">
@@ -69,17 +69,17 @@ export default async function AdminLearningPage({
 			</header>
 
 			<section className="mt-6 grid gap-4 lg:grid-cols-[320px_1fr]">
-				<aside className="rounded-xl border border-foreground/10 p-4">
+				<aside className="rounded-xl border border-border p-4">
 					<div className="flex items-center justify-between gap-2">
 						<div className="text-sm font-medium">Courses</div>
-						<span className="text-xs text-foreground/60">Tạo course mới tại đây.</span>
+						<span className="text-xs text-muted">Tạo course mới tại đây.</span>
 					</div>
 					<div className="mt-3">
 						<CreateCourseInline />
 					</div>
 
 					{courses.length === 0 ? (
-						<p className="mt-4 text-sm text-foreground/70">Chưa có course nào.</p>
+						<p className="mt-4 text-sm text-foreground-secondary">Chưa có course nào.</p>
 					) : (
 						<nav className="mt-4 space-y-1">
 							{courses.map((c) => {
@@ -88,14 +88,14 @@ export default async function AdminLearningPage({
 									<div key={c.id} className="rounded-lg">
 										<Link
 											className={`block rounded-lg border px-3 py-2 transition-colors ${
-												active ? 'border-foreground/25 bg-foreground/5' : 'border-foreground/10 hover:bg-foreground/5'
+												active ? 'border-border-strong bg-surface-hover' : 'border-border hover:bg-surface-hover'
 											}`}
 											href={`/admin/learning${buildQuery({ courseId: c.id })}`}
 										>
 											<div className="truncate text-sm font-medium">{c.name}</div>
-											<div className="mt-1 text-xs text-foreground/60">
+											<div className="mt-1 text-xs text-muted">
 												Lessons: <span className="font-mono">{c.lessonCount}</span>
-												<span className="mx-2 text-foreground/30">•</span>
+												<span className="mx-2 text-muted">•</span>
 												Vocab: <span className="font-mono">{c.vocabularyCount}</span>
 											</div>
 										</Link>
@@ -106,11 +106,11 @@ export default async function AdminLearningPage({
 					)}
 				</aside>
 
-				<section className="rounded-xl border border-foreground/10 p-4">
+				<section className="rounded-xl border border-border p-4">
 					{!selectedCourse ? (
 						<div>
 							<div className="text-sm font-medium">Chưa chọn course</div>
-							<p className="mt-2 text-sm text-foreground/70">Tạo course trước để quản lý lessons theo cây thư mục.</p>
+							<p className="mt-2 text-sm text-foreground-secondary">Tạo course trước để quản lý lessons theo cây thư mục.</p>
 						</div>
 					) : (
 						<>
@@ -119,11 +119,11 @@ export default async function AdminLearningPage({
 									<div className="text-sm font-medium">Selected course</div>
 									<h3 className="mt-1 text-lg font-semibold tracking-tight">{selectedCourse.name}</h3>
 									{selectedCourse.description ? (
-										<p className="mt-1 text-xs text-foreground/60">{selectedCourse.description}</p>
+										<p className="mt-1 text-xs text-muted">{selectedCourse.description}</p>
 									) : null}
-									<div className="mt-2 text-xs text-foreground/60">
+									<div className="mt-2 text-xs text-muted">
 										Lessons: <span className="font-mono">{selectedCourse.lessonCount}</span>
-										<span className="mx-2 text-foreground/30">•</span>
+										<span className="mx-2 text-muted">•</span>
 										Vocab: <span className="font-mono">{selectedCourse.vocabularyCount}</span>
 									</div>
 								</div>

@@ -1,12 +1,13 @@
 import Link from 'next/link';
 
+import BlogSearch from '@/components/BlogSearch';
 import { getAllPosts, getAllTags } from '@/services/postService';
 
 export const revalidate = 60;
 
 export const metadata = {
-	title: 'Blog | Website thầy giáo NDK',
-	description: 'Bài viết chia sẻ kiến thức.',
+	title: 'Blog | NDK',
+	description: 'Bài viết chia sẻ kiến thức, tài liệu học tập và góc nhìn cá nhân.',
 };
 
 function buildQuery(params: { tag?: string; page?: number }) {
@@ -17,6 +18,11 @@ function buildQuery(params: { tag?: string; page?: number }) {
 	return q ? `?${q}` : '';
 }
 
+function formatNumber(n: number): string {
+	if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+	return String(n);
+}
+
 export default async function BlogPage({
 	searchParams,
 }: {
@@ -25,122 +31,220 @@ export default async function BlogPage({
 	const sp = searchParams ? await searchParams : undefined;
 	const tag = sp?.tag?.trim() || undefined;
 	const page = Math.max(1, Number(sp?.page ?? '1') || 1);
-	const limit = 9;
+	const limit = 12;
 
 	const [result, tags] = await Promise.all([getAllPosts(page, limit, tag), getAllTags()]);
 
-	return (
-		<main className="min-h-screen bg-neutral-50">
-			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-				<header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-					<div>
-						<h1 className="text-xl font-bold tracking-tight text-neutral-900 sm:text-2xl">Blog</h1>
-						<p className="mt-0.5 text-sm text-neutral-700">Bài viết đã publish.</p>
-					</div>
-					<Link 
-						className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-700 hover:text-neutral-900:text-neutral-50" 
-						href="/"
-					>
-						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-						</svg>
-						Về trang chủ
-					</Link>
-				</header>
+	// First post as featured (only on page 1 with no tag filter)
+	const featured = !tag && page === 1 && result.items.length > 0 ? result.items[0] : null;
+	const gridItems = featured ? result.items.slice(1) : result.items;
 
-				<section className="mt-6">
-					<div className="flex flex-wrap gap-2">
-						<Link
-							className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${!tag ? 'bg-primary-600 text-white shadow-sm' : 'border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100:bg-neutral-700'}`}
-							href={`/blog${buildQuery({ page: 1 })}`}
-						>
-							Tất cả
-						</Link>
-						{tags.map((t) => (
+	return (
+		<main className="min-h-screen">
+			{/* Header */}
+			<section className="border-b border-border">
+				<div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+					<div className="flex flex-wrap items-end justify-between gap-6">
+						<div>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Tất cả bài viết</p>
+							<h1 className="mt-3 text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+								Blog
+							</h1>
+							<p className="mt-3 max-w-lg text-sm leading-relaxed text-foreground-secondary">
+								Tổng hợp bài viết chia sẻ kiến thức, tài liệu học tập và góc nhìn cá nhân.
+							</p>
+						</div>
+						<BlogSearch />
+					</div>
+				</div>
+			</section>
+
+			{/* Tags */}
+			{tags.length > 0 ? (
+				<section className="border-b border-border">
+					<div className="mx-auto max-w-6xl px-6 py-4">
+						<div className="flex flex-wrap gap-2">
 							<Link
-								key={t}
-								className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${tag === t ? 'bg-primary-600 text-white shadow-sm' : 'border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100:bg-neutral-700'}`}
-								href={`/blog${buildQuery({ tag: t, page: 1 })}`}
+								className={`rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${!tag ? 'bg-foreground text-background' : 'text-muted hover:text-foreground'}`}
+								href={`/blog${buildQuery({ page: 1 })}`}
 							>
-								{t}
+								Tất cả
 							</Link>
-						))}
+							{tags.map((t) => (
+								<Link
+									key={t}
+									className={`rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${tag === t ? 'bg-foreground text-background' : 'text-muted hover:text-foreground'}`}
+									href={`/blog${buildQuery({ tag: t, page: 1 })}`}
+								>
+									{t}
+								</Link>
+							))}
+						</div>
 					</div>
 				</section>
+			) : null}
 
-				<section className="mt-6">
+			{/* Posts */}
+			<section>
+				<div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
 					{result.items.length === 0 ? (
-						<div className="rounded-xl border-2 border-dashed border-neutral-300 bg-white p-10 text-center">
-							<svg className="mx-auto h-10 w-10 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-							</svg>
-							<p className="mt-3 text-sm text-neutral-700">Không có bài viết nào.</p>
-							<Link
-								className="mt-4 inline-flex rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-primary-700:bg-primary-600"
-								href="/admin/posts/create"
-							>
-								Tạo bài đầu tiên
-							</Link>
+						<div className="py-20 text-center">
+							<p className="text-lg font-bold text-foreground">Không tìm thấy bài viết</p>
+							<p className="mt-2 text-sm text-muted">
+								{tag ? `Không có bài viết nào với tag "${tag}".` : 'Chưa có bài viết nào.'}
+							</p>
+							{tag ? (
+								<Link href="/blog" className="mt-4 inline-block text-sm font-bold text-accent underline underline-offset-4">
+									Xem tất cả bài viết
+								</Link>
+							) : null}
 						</div>
 					) : (
-						<div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
-							{result.items.map((p) => (
-								<article key={p.id} className="group overflow-hidden rounded-xl border border-neutral-200 bg-white transition-all hover:shadow-md">
-									<Link href={`/blog/${p.slug}`} className="block">
-										{p.thumbnailUrl ? (
-											<div className="aspect-video w-full overflow-hidden bg-neutral-100">
-												<img
-													src={p.thumbnailUrl}
-													alt={p.title}
-													className="h-full w-full object-cover transition-transform group-hover:scale-105"
-													loading="lazy"
-												/>
-											</div>
-										) : null}
-										<div className="p-4">
-											<h2 className="text-base font-semibold leading-snug text-neutral-900 group-hover:text-primary-600:text-primary-400">{p.title}</h2>
-											<p className="mt-1.5 line-clamp-2 text-sm text-neutral-700">{p.summary}</p>
-											{p.tags.length > 0 ? (
-												<div className="mt-3 flex flex-wrap gap-1.5">
-													{p.tags.slice(0, 2).map((tag) => (
-														<span key={tag} className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
-															{tag}
-														</span>
-													))}
+						<>
+							{/* Featured post — large hero card */}
+							{featured ? (
+								<article className="group mb-12">
+									<Link href={`/blog/${featured.slug}`} className="block">
+										<div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
+											{featured.thumbnailUrl ? (
+												<div className="aspect-3/2 overflow-hidden rounded-2xl bg-surface-hover">
+													<img
+														src={featured.thumbnailUrl}
+														alt={featured.title}
+														className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+														loading="lazy"
+													/>
 												</div>
+											) : (
+												<div className="flex aspect-3/2 items-center justify-center rounded-2xl bg-surface-hover">
+													<span className="font-serif text-5xl italic text-border-strong">NDK</span>
+												</div>
+											)}
+										<div className="flex flex-col justify-center">
+											{featured.category && featured.category !== 'Uncategorized' ? (
+												<span className="text-[10px] font-bold uppercase tracking-widest text-accent">
+													{featured.category}
+												</span>
+											) : featured.tags[0] ? (
+												<span className="text-[10px] font-bold uppercase tracking-widest text-accent">
+													{featured.tags[0]}
+												</span>
 											) : null}
+												<h2 className="mt-2 text-2xl font-black uppercase leading-tight tracking-tight text-foreground transition-colors group-hover:text-accent sm:text-3xl">
+													{featured.title}
+												</h2>
+												<p className="mt-3 line-clamp-3 text-sm leading-relaxed text-foreground-secondary">
+													{featured.summary}
+												</p>
+												<div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted">
+													<time>
+														{new Date(featured.publishedAt ?? featured.createdAt).toLocaleDateString('vi-VN', {
+															year: 'numeric',
+															month: 'short',
+															day: 'numeric',
+														})}
+													</time>
+													<span>·</span>
+													<span>{Math.max(1, Math.round(featured.wordCount / 200))} phút đọc</span>
+													{featured.views > 0 ? (
+														<>
+															<span>·</span>
+															<span>{formatNumber(featured.views)} views</span>
+														</>
+													) : null}
+												</div>
+											</div>
 										</div>
 									</Link>
 								</article>
-							))}
-						</div>
-					)}
-				</section>
+							) : null}
 
-				<footer className="mt-8 flex items-center justify-between border-t border-neutral-200 pt-4">
-					<Link
-						className={`inline-flex items-center gap-1.5 text-sm font-medium ${result.page <= 1 ? 'pointer-events-none opacity-40' : 'text-neutral-700 hover:text-neutral-900:text-neutral-50'}`}
-						href={`/blog${buildQuery({ tag, page: Math.max(1, result.page - 1) })}`}
-					>
-						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-						</svg>
-						Trang trước
-					</Link>
-					<div className="text-sm text-neutral-700">
-						Trang {result.page} / {result.totalPages}
-					</div>
-					<Link
-						className={`inline-flex items-center gap-1.5 text-sm font-medium ${result.page >= result.totalPages ? 'pointer-events-none opacity-40' : 'text-neutral-700 hover:text-neutral-900:text-neutral-50'}`}
-						href={`/blog${buildQuery({ tag, page: Math.min(result.totalPages, result.page + 1) })}`}
-					>
-						Trang sau
-						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-						</svg>
-					</Link>
-				</footer>
-			</div>
+							{/* Grid cards */}
+							<div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+								{gridItems.map((p) => (
+									<article key={p.id} className="group">
+										<Link href={`/blog/${p.slug}`} className="block">
+											{p.thumbnailUrl ? (
+												<div className="aspect-4/3 overflow-hidden rounded-xl bg-surface-hover">
+													<img
+														src={p.thumbnailUrl}
+														alt={p.title}
+														className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+														loading="lazy"
+													/>
+												</div>
+											) : (
+												<div className="flex aspect-4/3 items-center justify-center rounded-xl bg-surface-hover">
+													<span className="font-serif text-3xl italic text-border-strong">NDK</span>
+												</div>
+											)}
+										<div className="mt-4">
+											{p.category && p.category !== 'Uncategorized' ? (
+												<span className="text-[10px] font-bold uppercase tracking-widest text-accent">
+													{p.category}
+												</span>
+											) : p.tags[0] ? (
+												<span className="text-[10px] font-bold uppercase tracking-widest text-accent">
+													{p.tags[0]}
+												</span>
+											) : null}
+												<h2 className="mt-1 text-sm font-bold uppercase leading-snug tracking-tight text-foreground transition-colors group-hover:text-accent sm:text-base">
+													{p.title}
+												</h2>
+												<p className="mt-2 line-clamp-2 text-sm leading-relaxed text-foreground-secondary">
+													{p.summary}
+												</p>
+												<div className="mt-3 flex items-center gap-2 text-xs text-muted">
+													<time>
+														{new Date(p.publishedAt ?? p.createdAt).toLocaleDateString('vi-VN', {
+															year: 'numeric',
+															month: 'short',
+															day: 'numeric',
+														})}
+													</time>
+													<span>·</span>
+													<span>{Math.max(1, Math.round(p.wordCount / 200))} phút</span>
+													{p.views > 0 ? (
+														<>
+															<span>·</span>
+															<span>{formatNumber(p.views)} views</span>
+														</>
+													) : null}
+												</div>
+											</div>
+										</Link>
+									</article>
+								))}
+							</div>
+						</>
+					)}
+
+					{/* Pagination */}
+					{result.totalPages > 1 ? (
+						<div className="mt-12 flex items-center justify-between border-t border-border pt-6">
+							<Link
+								className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
+									result.page <= 1 ? 'pointer-events-none opacity-30' : 'text-muted hover:text-foreground'
+								}`}
+								href={`/blog${buildQuery({ tag, page: Math.max(1, result.page - 1) })}`}
+							>
+								← Trước
+							</Link>
+							<span className="text-xs font-bold text-muted">
+								{result.page} / {result.totalPages}
+							</span>
+							<Link
+								className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
+									result.page >= result.totalPages ? 'pointer-events-none opacity-30' : 'text-muted hover:text-foreground'
+								}`}
+								href={`/blog${buildQuery({ tag, page: Math.min(result.totalPages, result.page + 1) })}`}
+							>
+								Sau →
+							</Link>
+						</div>
+					) : null}
+				</div>
+			</section>
 		</main>
 	);
 }

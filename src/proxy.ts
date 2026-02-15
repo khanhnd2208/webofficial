@@ -8,6 +8,11 @@ const LOGIN_PATH = '/login';
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
+	// Skip all API routes and auth routes
+	if (pathname.startsWith('/api/')) {
+		return NextResponse.next();
+	}
+
 	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
 	// Optional: already logged in -> don't go back to /login

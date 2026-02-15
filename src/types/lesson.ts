@@ -19,3 +19,10 @@ export type AdminLessonListItemDTO = {
 	updatedAt: string;
 };
 
+export type SavedLessonDTO = {
+	lessonId: string;
+	title: string;
+	newCount: number;
+	totalCount: number;
+};
+

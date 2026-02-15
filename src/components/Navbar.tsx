@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import ThemeToggle from './ThemeToggle';
 
@@ -13,49 +15,115 @@ function initialsFromName(name: string | null | undefined) {
 	return `${first}${last}`.toUpperCase();
 }
 
+const NAV_LINKS = [
+	{ href: '/blog', label: 'Blog' },
+];
+
+const AUTH_NAV_LINKS = [
+	{ href: '/vocabulary', label: 'Từ vựng' },
+	{ href: '/dashboard', label: 'Dashboard' },
+];
+
 export default function Navbar() {
 	const { data } = useSession();
 	const user = data?.user;
+	const pathname = usePathname();
+	const [menuOpen, setMenuOpen] = useState(false);
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	// Close dropdown on route change
+	// eslint-disable-next-line react-hooks/set-state-in-effect
+	useEffect(() => { setMenuOpen(false); }, [pathname]);
+
+	// Close dropdown on click outside
+	useEffect(() => {
+		if (!menuOpen) return;
+		function handleClick(e: MouseEvent) {
+			if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+				setMenuOpen(false);
+			}
+		}
+		function handleKey(e: KeyboardEvent) {
+			if (e.key === 'Escape') setMenuOpen(false);
+		}
+		document.addEventListener('mousedown', handleClick);
+		document.addEventListener('keydown', handleKey);
+		return () => {
+			document.removeEventListener('mousedown', handleClick);
+			document.removeEventListener('keydown', handleKey);
+		};
+	}, [menuOpen]);
+
+	const toggleMenu = useCallback(() => setMenuOpen((v) => !v), []);
 
 	return (
-		<header className="sticky top-0 z-50 border-b border-neutral-200/80 bg-white/80 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/80">
-			<div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+		<header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+			<div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
 				{/* Logo */}
-				<Link 
-					href="/" 
-					className="flex items-center gap-2 text-lg font-semibold tracking-tight text-neutral-900 transition-colors hover:text-primary-600 dark:text-white dark:hover:text-primary-400"
+				<Link
+					href="/"
+					className="flex items-center gap-2"
 				>
-					<svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-					</svg>
-					<span className="hidden sm:inline">NDK Learning</span>
+					<div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
+						<span className="text-xs font-black text-background">N</span>
+					</div>
+					<span className="text-sm font-bold uppercase tracking-widest text-foreground">NDK</span>
 				</Link>
 
 				{/* Navigation */}
 				<nav className="flex items-center gap-1">
-					<Link 
-						className="rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 transition-all hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white" 
-						href="/courses"
-					>
-						Khóa học
-					</Link>
-					<Link 
-						className="rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 transition-all hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white" 
-						href="/blog"
-					>
-						Blog
-					</Link>
+					{NAV_LINKS.map(({ href, label }) => {
+						const active = pathname === href || pathname.startsWith(href + '/');
+						return (
+							<Link
+								key={href}
+								className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${
+									active
+										? 'text-foreground'
+										: 'text-muted hover:text-foreground'
+								}`}
+								href={href}
+							>
+								{label}
+							</Link>
+						);
+					})}
+
+					{user
+						? AUTH_NAV_LINKS.map(({ href, label }) => {
+								const active = pathname === href || pathname.startsWith(href + '/');
+								return (
+									<Link
+										key={href}
+										className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${
+											active
+												? 'text-foreground'
+												: 'text-muted hover:text-foreground'
+										}`}
+										href={href}
+									>
+										{label}
+									</Link>
+								);
+						  })
+						: null}
 
 					{/* Theme Toggle */}
 					<div className="ml-2 hidden sm:block">
 						<ThemeToggle />
 					</div>
 
-					{/* User Menu */}
+					{/* User Menu — click-outside-close dropdown */}
 					{user ? (
-						<details className="group relative ml-2">
-							<summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-1.5 transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 [&::-webkit-details-marker]:hidden">
-								<div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white shadow-sm">
+						<div className="relative ml-2" ref={menuRef}>
+							<button
+								type="button"
+								onClick={toggleMenu}
+								className="flex cursor-pointer items-center gap-1.5 rounded-full px-1.5 py-1 transition-all hover:bg-surface-hover"
+								aria-expanded={menuOpen}
+								aria-haspopup="true"
+							>
+								<div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-foreground text-background">
 									{user.image ? (
 										<img
 											src={user.image}
@@ -64,62 +132,57 @@ export default function Navbar() {
 											referrerPolicy="no-referrer"
 										/>
 									) : (
-										<span className="text-xs font-semibold">{initialsFromName(user.name)}</span>
+										<span className="text-[10px] font-black">{initialsFromName(user.name)}</span>
 									)}
 								</div>
-								<svg className="h-4 w-4 text-neutral-500 transition-transform group-open:rotate-180 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+								<svg className={`h-3 w-3 text-muted transition-transform ${menuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
 								</svg>
-							</summary>
+							</button>
 
-							<div className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-neutral-200 bg-white p-1.5 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
-								<div className="px-3 py-2">
-									<div className="text-sm font-medium text-neutral-900 dark:text-white">{user.name ?? 'User'}</div>
-									<div className="text-xs text-neutral-500 dark:text-neutral-400">{user.email}</div>
-								</div>
-								<div className="my-1.5 h-px bg-neutral-200 dark:bg-neutral-800" />
-								<Link
-									className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
-									href="/dashboard"
-								>
-									<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-									</svg>
-									Dashboard
-								</Link>
+							{menuOpen ? (
+								<div className="absolute right-0 mt-2 w-52 origin-top-right animate-in fade-in slide-in-from-top-1 rounded-xl border border-border bg-surface-elevated p-1.5 shadow-lg">
+									<div className="px-3 py-2">
+										<div className="text-sm font-bold text-foreground">{user.name ?? 'User'}</div>
+										<div className="text-xs text-muted">{user.email}</div>
+									</div>
+									<div className="my-1 h-px bg-border" />
 
-								{user.role === 'admin' ? (
-									<Link
-										className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
-										href="/admin"
+									{user.role === 'admin' ? (
+										<>
+											<Link
+												className="flex items-center rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
+												href="/admin"
+												onClick={() => setMenuOpen(false)}
+											>
+												Admin
+											</Link>
+											<div className="my-1 h-px bg-border" />
+										</>
+									) : null}
+
+									<button
+										type="button"
+										onClick={() => {
+											setMenuOpen(false);
+											signOut({ callbackUrl: '/' });
+										}}
+										className="flex w-full items-center rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-error transition-colors hover:bg-error-subtle"
 									>
-										<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-										</svg>
-										Admin Portal
-									</Link>
-								) : null}
-
-								<div className="my-1.5 h-px bg-neutral-200 dark:bg-neutral-800" />
-								<button
-									type="button"
-									onClick={() => signOut({ callbackUrl: '/' })}
-									className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/50"
-								>
-									<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-									</svg>
-									Đăng xuất
-								</button>
-							</div>
-						</details>
+										Đăng xuất
+									</button>
+								</div>
+							) : null}
+						</div>
 					) : (
-						<Link 
-							className="ml-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600" 
+						<Link
+							className="ml-3 inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-background transition-all hover:bg-transparent hover:text-foreground"
 							href="/login"
 						>
-							Đăng nhập
+							Menu
+							<svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+							</svg>
 						</Link>
 					)}
 				</nav>

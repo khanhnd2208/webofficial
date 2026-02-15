@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
 			slug,
 			summary,
 			content,
+			contentFormat,
+			category,
 			tags,
 			thumbnailUrl,
 			isPublished,
@@ -48,6 +50,8 @@ export async function POST(request: NextRequest) {
 			slug?: unknown;
 			summary?: unknown;
 			content?: unknown;
+			contentFormat?: unknown;
+			category?: unknown;
 			tags?: unknown;
 			thumbnailUrl?: unknown;
 			isPublished?: unknown;
@@ -58,6 +62,8 @@ export async function POST(request: NextRequest) {
 			slug: slug == null ? undefined : String(slug),
 			summary: String(summary ?? ''),
 			content: String(content ?? ''),
+			contentFormat: contentFormat === 'markdown' ? 'markdown' : 'html',
+			category: category == null ? undefined : String(category),
 			tags: Array.isArray(tags) ? tags.map((t) => String(t)) : [],
 			thumbnailUrl: thumbnailUrl == null ? undefined : String(thumbnailUrl),
 			isPublished: Boolean(isPublished),

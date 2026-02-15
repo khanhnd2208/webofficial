@@ -1,124 +1,301 @@
 import Link from 'next/link';
 
 import AdminPostActions from './AdminPostActions';
+import PostFilters from './PostFilters';
 
-import { getAdminPosts } from '@/services/postService';
+import { getAdminDashboardStats, getAdminPosts, getAllCategoriesAdmin, getAllTagsAdmin } from '@/services/postService';
 
 export const dynamic = 'force-dynamic';
-
-function buildQuery(params: { page?: number; published?: 'all' | 'true' | 'false' }) {
-	const sp = new URLSearchParams();
-	if (params.published && params.published !== 'all') sp.set('published', params.published);
-	if (params.page && params.page > 1) sp.set('page', String(params.page));
-	const q = sp.toString();
-	return q ? `?${q}` : '';
-}
 
 export default async function AdminPostsPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ page?: string; published?: string }>;
+	searchParams?: Promise<{
+		page?: string;
+		published?: string;
+		tag?: string;
+		category?: string;
+		search?: string;
+		sort?: string;
+		dateFrom?: string;
+		dateTo?: string;
+	}>;
 }) {
 	const sp = searchParams ? await searchParams : undefined;
 	const page = Math.max(1, Number(sp?.page ?? '1') || 1);
 	const published = (sp?.published ?? 'all') as 'all' | 'true' | 'false';
+	const tag = sp?.tag || undefined;
+	const category = sp?.category || undefined;
+	const search = sp?.search || undefined;
+	const sort = sp?.sort || undefined;
+	const dateFrom = sp?.dateFrom || undefined;
+	const dateTo = sp?.dateTo || undefined;
 	const limit = 20;
 
-	const result = await getAdminPosts(page, limit, published);
+	const [result, stats, allTags, allCategories] = await Promise.all([
+		getAdminPosts(page, limit, published, { tag, category, search, sort, dateFrom, dateTo }),
+		getAdminDashboardStats(),
+		getAllTagsAdmin(),
+		getAllCategoriesAdmin(),
+	]);
+
+	const hasActiveFilters = !!(tag || (category && category !== 'all') || search || dateFrom || dateTo);
 
 	return (
-		<main className="mx-auto max-w-5xl bg-white px-6 py-10">
+		<main className="mx-auto max-w-7xl px-6 py-8">
+			{/* Header */}
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold tracking-tight">Admin • Posts</h1>
-					<p className="mt-2 text-sm text-foreground/70">Danh sách bài viết (draft + published).</p>
+					<h1 className="text-2xl font-bold tracking-tight">Blog Manager</h1>
+					<p className="mt-1 text-sm text-foreground-secondary">
+						Quản lý toàn bộ nội dung blog — tạo, sửa, xuất bản, phân tích.
+					</p>
 				</div>
-				<nav className="flex flex-wrap items-center gap-3">
-					<Link className="text-sm underline underline-offset-4" href="/">
-						Trang chủ
-					</Link>
-					<Link className="text-sm underline underline-offset-4" href="/blog">
-						Blog
+				<div className="flex items-center gap-3">
+					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/blog" target="_blank">
+						Xem Blog ↗
 					</Link>
 					<Link
-						className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
+						className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
 						href="/admin/posts/create"
 					>
-						+ Tạo bài
+						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+						</svg>
+						Viết bài mới
 					</Link>
-				</nav>
+				</div>
 			</header>
 
-			<section className="mt-6 flex flex-wrap gap-2">
-				<Link
-					className={`rounded-full border px-3 py-1 text-xs ${published === 'all' ? 'bg-foreground text-background' : 'border-foreground/15'}`}
-					href={`/admin/posts${buildQuery({ page: 1, published: 'all' })}`}
-				>
-					Tất cả
-				</Link>
-				<Link
-					className={`rounded-full border px-3 py-1 text-xs ${published === 'true' ? 'bg-foreground text-background' : 'border-foreground/15'}`}
-					href={`/admin/posts${buildQuery({ page: 1, published: 'true' })}`}
-				>
-					Published
-				</Link>
-				<Link
-					className={`rounded-full border px-3 py-1 text-xs ${published === 'false' ? 'bg-foreground text-background' : 'border-foreground/15'}`}
-					href={`/admin/posts${buildQuery({ page: 1, published: 'false' })}`}
-				>
-					Draft
-				</Link>
+			{/* Dashboard Stats */}
+			<section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+				<div className="rounded-xl border border-border bg-surface p-4">
+					<p className="text-xs font-medium uppercase tracking-wider text-muted">Tổng bài</p>
+					<p className="mt-1 text-2xl font-bold">{stats.totalPosts}</p>
+				</div>
+				<div className="rounded-xl border border-border bg-surface p-4">
+					<p className="text-xs font-medium uppercase tracking-wider text-success">Đã xuất bản</p>
+					<p className="mt-1 text-2xl font-bold text-success">{stats.published}</p>
+				</div>
+				<div className="rounded-xl border border-border bg-surface p-4">
+					<p className="text-xs font-medium uppercase tracking-wider text-warning">Bản nháp</p>
+					<p className="mt-1 text-2xl font-bold text-warning">{stats.drafts}</p>
+				</div>
+				<div className="rounded-xl border border-border bg-surface p-4">
+					<p className="text-xs font-medium uppercase tracking-wider text-muted">Lượt xem</p>
+					<p className="mt-1 text-2xl font-bold">{stats.totalViews.toLocaleString()}</p>
+				</div>
+				<div className="rounded-xl border border-border bg-surface p-4">
+					<p className="text-xs font-medium uppercase tracking-wider text-muted">Reactions</p>
+					<p className="mt-1 text-2xl font-bold">{stats.totalReactions.toLocaleString()}</p>
+				</div>
 			</section>
 
-			<section className="mt-6">
+			{/* Filters */}
+			<PostFilters
+				currentPublished={published}
+				currentTag={tag}
+				currentCategory={category}
+				currentSearch={search}
+				currentSort={sort}
+				currentDateFrom={dateFrom}
+				currentDateTo={dateTo}
+				allTags={allTags}
+				allCategories={allCategories}
+			/>
+
+			{/* Active filters indicator */}
+			{hasActiveFilters ? (
+				<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+					<span>Đang lọc:</span>
+					{search && <span className="rounded-full bg-accent-subtle px-2 py-0.5 text-accent">Tìm: &quot;{search}&quot;</span>}
+					{tag && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Tag: {tag}</span>}
+					{category && category !== 'all' && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Chủ đề: {category}</span>}
+					{dateFrom && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Từ: {dateFrom}</span>}
+					{dateTo && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Đến: {dateTo}</span>}
+					<Link href="/admin/posts" className="ml-1 font-medium text-accent underline underline-offset-2 hover:text-accent-hover">
+						Xoá bộ lọc
+					</Link>
+				</div>
+			) : null}
+
+			{/* Results count */}
+			<div className="mt-4 text-xs text-muted">
+				Hiển thị {result.items.length} / {result.total} bài viết
+			</div>
+
+			{/* Post List Table */}
+			<section className="mt-4">
 				{result.items.length === 0 ? (
-					<p className="text-sm text-foreground/70">Chưa có bài viết nào.</p>
+					<div className="rounded-xl border border-border bg-surface p-12 text-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-secondary">
+							<svg className="h-6 w-6 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9.75m3 0h3m-9-3H15m-9 0h9m-9 3h3" />
+							</svg>
+						</div>
+						<p className="font-medium text-foreground">Không tìm thấy bài viết</p>
+						<p className="mt-1 text-sm text-muted">
+							{hasActiveFilters ? 'Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm.' : 'Bắt đầu viết bài đầu tiên!'}
+						</p>
+						{hasActiveFilters ? (
+							<Link href="/admin/posts" className="mt-3 inline-block text-sm font-medium text-accent underline underline-offset-4">
+								Xoá bộ lọc
+							</Link>
+						) : (
+							<Link href="/admin/posts/create" className="mt-3 inline-block text-sm font-medium text-accent underline underline-offset-4">
+								Tạo bài viết
+							</Link>
+						)}
+					</div>
 				) : (
-					<div className="space-y-3">
-						{result.items.map((p) => (
-							<article key={p.id} className="rounded-lg border border-foreground/10 p-4">
-								<div className="flex flex-wrap items-start justify-between gap-3">
-									<div className="min-w-0">
-										<div className="flex flex-wrap items-center gap-2">
-											<h2 className="font-serif text-base font-semibold leading-snug">{p.title}</h2>
-											<span
-												className={`rounded-full border px-2 py-0.5 text-[11px] ${p.isPublished ? 'border-foreground/20' : 'border-foreground/10 text-foreground/60'}`}
-											>
-												{p.isPublished ? 'Published' : 'Draft'}
-											</span>
-										</div>
-										<p className="mt-1 text-sm text-foreground/70">{p.summary}</p>
-										<div className="mt-2 text-xs text-foreground/60">
-											<span>Slug: {p.slug}</span>
-											<span className="mx-2 text-foreground/30">•</span>
-											<span>Cập nhật: {new Date(p.updatedAt).toLocaleString('vi-VN')}</span>
-										</div>
-									</div>
-									<AdminPostActions id={p.id} slug={p.slug} title={p.title} isPublished={p.isPublished} />
-								</div>
-							</article>
-						))}
+					<div className="overflow-hidden rounded-xl border border-border">
+						<table className="w-full text-left text-sm">
+							<thead>
+								<tr className="border-b border-border bg-surface-secondary/50">
+									<th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted">Bài viết</th>
+									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted md:table-cell">Chủ đề</th>
+									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted lg:table-cell">Thống kê</th>
+									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted sm:table-cell">Ngày</th>
+									<th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted">Thao tác</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-border">
+								{result.items.map((p) => {
+									const readingTime = Math.max(1, Math.round((p.wordCount || 0) / 200));
+									const totalReactions =
+										(p.reactions?.like || 0) + (p.reactions?.love || 0) + (p.reactions?.fire || 0) + (p.reactions?.clap || 0);
+									return (
+										<tr key={p.id} className="transition-colors hover:bg-surface-hover/30">
+											{/* Title + tags + status */}
+											<td className="max-w-xs px-4 py-3">
+												<div className="flex items-start gap-2">
+													<Link href={`/admin/posts/${p.id}/edit`} className="group min-w-0 flex-1">
+														<div className="flex items-center gap-2">
+															<span className="truncate font-medium text-foreground group-hover:text-accent">{p.title}</span>
+															<span
+																className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+																	p.isPublished
+																		? 'bg-success-subtle text-success'
+																		: 'bg-warning-subtle text-warning'
+																}`}
+															>
+																{p.isPublished ? 'Live' : 'Draft'}
+															</span>
+														</div>
+														<p className="mt-0.5 line-clamp-1 text-xs text-muted">{p.summary}</p>
+													</Link>
+												</div>
+												{p.tags.length > 0 && (
+													<div className="mt-1.5 flex flex-wrap gap-1">
+														{p.tags.slice(0, 4).map((t) => (
+															<span key={t} className="rounded bg-surface-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
+																{t}
+															</span>
+														))}
+														{p.tags.length > 4 && (
+															<span className="text-[10px] text-muted">+{p.tags.length - 4}</span>
+														)}
+													</div>
+												)}
+											</td>
+
+											{/* Category */}
+											<td className="hidden px-4 py-3 md:table-cell">
+												<span className="rounded-full border border-border px-2 py-0.5 text-xs text-foreground-secondary">
+													{p.category}
+												</span>
+											</td>
+
+											{/* Stats */}
+											<td className="hidden px-4 py-3 lg:table-cell">
+												<div className="flex items-center gap-3 text-xs text-muted">
+													<span title="Lượt xem" className="inline-flex items-center gap-0.5"><svg className="h-3 w-3" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" strokeWidth="1.5" /><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" stroke="currentColor" strokeWidth="1.5" /></svg> {(p.views || 0).toLocaleString()}</span>
+													{totalReactions > 0 && <span title="Reactions" className="inline-flex items-center gap-0.5"><svg className="h-3 w-3" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg> {totalReactions}</span>}
+													<span title="Thời gian đọc" className="inline-flex items-center gap-0.5"><svg className="h-3 w-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" /><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> {readingTime}p</span>
+												</div>
+											</td>
+
+											{/* Date */}
+											<td className="hidden px-4 py-3 sm:table-cell">
+												<div className="text-xs text-muted">
+													<div>{new Date(p.updatedAt).toLocaleDateString('vi-VN')}</div>
+													{p.publishedAt && (
+														<div className="text-[10px] text-success">
+															Xuất bản: {new Date(p.publishedAt).toLocaleDateString('vi-VN')}
+														</div>
+													)}
+												</div>
+											</td>
+
+											{/* Actions */}
+											<td className="px-4 py-3">
+												<div className="flex justify-end">
+													<AdminPostActions id={p.id} slug={p.slug} title={p.title} isPublished={p.isPublished} />
+												</div>
+											</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</table>
 					</div>
 				)}
 			</section>
 
-			<footer className="mt-10 flex items-center justify-between">
-				<Link
-					className={`text-sm underline underline-offset-4 ${result.page <= 1 ? 'pointer-events-none opacity-40' : ''}`}
-					href={`/admin/posts${buildQuery({ published, page: Math.max(1, result.page - 1) })}`}
-				>
-					Trang trước
-				</Link>
-				<div className="text-sm text-foreground/70">
-					Trang {result.page} / {result.totalPages}
-				</div>
-				<Link
-					className={`text-sm underline underline-offset-4 ${result.page >= result.totalPages ? 'pointer-events-none opacity-40' : ''}`}
-					href={`/admin/posts${buildQuery({ published, page: Math.min(result.totalPages, result.page + 1) })}`}
-				>
-					Trang sau
-				</Link>
-			</footer>
+			{/* Pagination */}
+			{result.totalPages > 1 && (
+				<footer className="mt-6 flex items-center justify-between">
+					<PaginationLink
+						label="← Trước"
+						disabled={result.page <= 1}
+						href={buildAdminUrl({ published, tag, category, search, sort, dateFrom, dateTo, page: result.page - 1 })}
+					/>
+					<div className="text-xs text-muted">
+						Trang {result.page} / {result.totalPages}
+					</div>
+					<PaginationLink
+						label="Sau →"
+						disabled={result.page >= result.totalPages}
+						href={buildAdminUrl({ published, tag, category, search, sort, dateFrom, dateTo, page: result.page + 1 })}
+					/>
+				</footer>
+			)}
 		</main>
 	);
+}
+
+function PaginationLink({ label, disabled, href }: { label: string; disabled: boolean; href: string }) {
+	return (
+		<Link
+			className={`rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors ${
+				disabled ? 'pointer-events-none opacity-30' : 'hover:bg-surface-hover'
+			}`}
+			href={href}
+		>
+			{label}
+		</Link>
+	);
+}
+
+function buildAdminUrl(params: {
+	published?: string;
+	tag?: string;
+	category?: string;
+	search?: string;
+	sort?: string;
+	dateFrom?: string;
+	dateTo?: string;
+	page?: number;
+}) {
+	const sp = new URLSearchParams();
+	if (params.published && params.published !== 'all') sp.set('published', params.published);
+	if (params.tag) sp.set('tag', params.tag);
+	if (params.category && params.category !== 'all') sp.set('category', params.category);
+	if (params.search) sp.set('search', params.search);
+	if (params.sort && params.sort !== 'updated') sp.set('sort', params.sort);
+	if (params.dateFrom) sp.set('dateFrom', params.dateFrom);
+	if (params.dateTo) sp.set('dateTo', params.dateTo);
+	if (params.page && params.page > 1) sp.set('page', String(params.page));
+	const q = sp.toString();
+	return `/admin/posts${q ? `?${q}` : ''}`;
 }

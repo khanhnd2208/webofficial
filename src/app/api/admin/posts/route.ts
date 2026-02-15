@@ -19,7 +19,16 @@ export async function GET(request: NextRequest) {
 		const limit = Number(url.searchParams.get('limit') ?? '20');
 		const published = (url.searchParams.get('published') ?? 'all') as 'all' | 'true' | 'false';
 
-		const result = await getAdminPosts(page, limit, published);
+		const opts = {
+			tag: url.searchParams.get('tag') ?? undefined,
+			category: url.searchParams.get('category') ?? undefined,
+			search: url.searchParams.get('search') ?? undefined,
+			sort: url.searchParams.get('sort') ?? undefined,
+			dateFrom: url.searchParams.get('dateFrom') ?? undefined,
+			dateTo: url.searchParams.get('dateTo') ?? undefined,
+		};
+
+		const result = await getAdminPosts(page, limit, published, opts);
 		return NextResponse.json({ ok: true, data: result });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';

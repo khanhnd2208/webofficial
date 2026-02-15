@@ -1,161 +1,488 @@
 import Link from 'next/link';
 
 import { auth } from '@/lib/auth';
-import { listCoursesWithStats } from '@/services/courseService';
+import { listMyVocabSets } from '@/services/vocabSetService';
+import { getUserWordStats } from '@/services/wordStatsService';
+import { getStreak } from '@/services/streakService';
+import StreakFire from '@/components/StreakFire';
+
+export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
 	const session = await auth();
 	const user = session?.user;
-	const courses = await listCoursesWithStats();
-	const totalLessons = courses.reduce((sum, c) => sum + c.lessonCount, 0);
-	const totalVocab = courses.reduce((sum, c) => sum + c.vocabularyCount, 0);
+	const userId = user?.id ?? '';
+
+	const [mySets, wordStats, streakData] = await Promise.all([
+		userId ? listMyVocabSets(userId) : Promise.resolve([]),
+		userId ? getUserWordStats(userId) : Promise.resolve([]),
+		userId ? getStreak(userId) : Promise.resolve({ currentStreak: 0, longestStreak: 0, lastLoginDate: '', recentDays: [] as string[] }),
+	]);
+
+	const totalTerms = mySets.reduce((sum, s) => sum + s.termCount, 0);
+	const totalPracticed = wordStats.length;
+	const avgAccuracy = totalPracticed > 0
+		? Math.round(wordStats.reduce((sum, w) => sum + w.accuracy, 0) / totalPracticed)
+		: 0;
+	const totalAttempts = wordStats.reduce((sum, w) => sum + w.totalAttempts, 0);
+
+	// Mastered = accuracy >= 80% and at least 3 attempts
+	const masteredCount = wordStats.filter((w) => w.accuracy >= 80 && w.totalAttempts >= 3).length;
 
 	return (
-		<main className="min-h-screen bg-neutral-50">
-			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-				<header>
-					<h1 className="text-xl font-bold tracking-tight text-neutral-900 sm:text-2xl">
-						Xin chào{user?.name ? `, ${user.name.split(' ')[0]}` : ''}!
-					</h1>
-					<p className="mt-0.5 text-sm text-neutral-700">Chào mừng bạn đến với nền tảng học tập</p>
-				</header>
+		<main className="min-h-screen pb-16">
+			{/* ─── Hero Header ─── */}
+			<section className="border-b border-border">
+				<div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+					<div className="flex items-start justify-between gap-6">
+						<div className="min-w-0 flex-1">
+							<p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
+								Dashboard
+							</p>
+							<h1 className="mt-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+								Xin chào{user?.name ? `, ${user.name.split(' ')[0]}` : ''}
+							</h1>
+							<p className="mt-1.5 text-sm text-foreground-secondary">
+								Tổng quan tiến trình học tập của bạn.
+							</p>
+						</div>
+						<div className="shrink-0">
+							{user?.image ? (
+								<img
+									src={user.image}
+									alt={user.name ?? 'Avatar'}
+									className="h-14 w-14 rounded-full ring-2 ring-border"
+									referrerPolicy="no-referrer"
+								/>
+							) : (
+								<div className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-lg font-black text-background">
+									{(user?.name ?? 'U')[0]}
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			</section>
 
-				{/* Quick Stats */}
-				<section className="mt-6 grid gap-3 sm:grid-cols-3">
-					<div className="rounded-xl border border-neutral-200 bg-white p-4">
-						<div className="text-2xl font-bold text-primary-600">{courses.length}</div>
-						<div className="mt-0.5 text-sm text-neutral-600">Khóa học</div>
-					</div>
-					<div className="rounded-xl border border-neutral-200 bg-white p-4">
-						<div className="text-2xl font-bold text-primary-600">{totalLessons}</div>
-						<div className="mt-0.5 text-sm text-neutral-600">Bài học</div>
-					</div>
-					<div className="rounded-xl border border-neutral-200 bg-white p-4">
-						<div className="text-2xl font-bold text-primary-600">{totalVocab}</div>
-						<div className="mt-0.5 text-sm text-neutral-600">Từ vựng</div>
-					</div>
-				</section>
+			{/* ─── Stats Overview + Streak ─── */}
+			<section className="border-b border-border">
+				<div className="mx-auto max-w-6xl px-6">
+					<div className="grid grid-cols-2 lg:grid-cols-5">
+						{/* Streak — prominent left card */}
+						<div className="col-span-2 flex items-center justify-center border-b border-border py-8 lg:col-span-1 lg:border-b-0 lg:border-r lg:py-10">
+							<StreakFire />
+						</div>
 
-				{/* Quick Actions */}
-				<section className="mt-8">
-					<h2 className="text-lg font-semibold text-neutral-900">Bắt đầu học</h2>
-					<div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-						<Link
-							href="/courses"
-							className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:shadow-md"
-						>
-							<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50">
-								<svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-								</svg>
-							</div>
-							<div className="flex-1">
-								<div className="font-semibold text-neutral-900 group-hover:text-primary-600:text-primary-400">Khóa học của tôi</div>
-								<div className="mt-0.5 text-xs text-neutral-700">Xem tất cả khóa học và bài học</div>
-							</div>
-						</Link>
-						
-						<Link
-							href="/dashboard/vocabulary"
-							className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:shadow-md"
-						>
-							<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50">
-								<svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-								</svg>
-							</div>
-							<div className="flex-1">
-								<div className="font-semibold text-neutral-900 group-hover:text-primary-600:text-primary-400">Từ vựng</div>
-								<div className="mt-0.5 text-xs text-neutral-700">Luyện tập từ vựng đã lưu</div>
-							</div>
-						</Link>
-						
-						<Link
-							href="/blog"
-							className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:shadow-md"
-						>
-							<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50">
-								<svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-								</svg>
-							</div>
-							<div className="flex-1">
-								<div className="font-semibold text-neutral-900 group-hover:text-primary-600:text-primary-400">Blog</div>
-								<div className="mt-0.5 text-xs text-neutral-700">Đọc bài viết và tài liệu</div>
-							</div>
-						</Link>
-					</div>
-				</section>
-
-				{/* User Info */}
-				{user ? (
-					<section className="mt-8">
-						<h2 className="text-lg font-semibold text-neutral-900">Thông tin tài khoản</h2>
-						<div className="mt-3 rounded-xl border border-neutral-200 bg-white p-4">
-							<div className="flex items-center gap-3">
-								{user.image ? (
-									<img
-										src={user.image}
-										alt={user.name ?? 'Avatar'}
-										className="h-12 w-12 rounded-full border-2 border-neutral-200"
-										referrerPolicy="no-referrer"
-									/>
-								) : (
-									<div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-neutral-200 bg-primary-50 text-lg font-bold text-primary-600">
-										{(user.name ?? 'U')[0]}
+						{/* Stat numbers */}
+						<div className="col-span-2 grid grid-cols-2 lg:col-span-4 lg:grid-cols-4">
+							{[
+								{
+									value: mySets.length,
+									label: 'Bộ từ vựng',
+									icon: (
+										<svg className="inline-block h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none">
+											<defs><linearGradient id="stat-books" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="var(--accent)" /><stop offset="100%" stopColor="var(--rose)" /></linearGradient></defs>
+											<path d="M4 19V5a2 2 0 012-2h8l6 6v10a2 2 0 01-2 2H6a2 2 0 01-2-2z" fill="url(#stat-books)" opacity="0.2" stroke="url(#stat-books)" strokeWidth="1.5" />
+											<path d="M14 3v6h6" stroke="url(#stat-books)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+											<path d="M8 13h8M8 17h5" stroke="url(#stat-books)" strokeWidth="1.5" strokeLinecap="round" />
+										</svg>
+									),
+								},
+								{
+									value: totalTerms,
+									label: 'Tổng từ vựng',
+									icon: (
+										<svg className="inline-block h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none">
+											<defs><linearGradient id="stat-terms" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="var(--indigo)" /><stop offset="100%" stopColor="var(--purple)" /></linearGradient></defs>
+											<rect x="3" y="3" width="18" height="18" rx="3" fill="url(#stat-terms)" opacity="0.15" stroke="url(#stat-terms)" strokeWidth="1.5" />
+											<path d="M7 8h4M7 12h10M7 16h7" stroke="url(#stat-terms)" strokeWidth="1.5" strokeLinecap="round" />
+											<circle cx="17" cy="8" r="2" fill="url(#stat-terms)" opacity="0.5" />
+										</svg>
+									),
+								},
+								{
+									value: totalPracticed,
+									label: 'Đã luyện tập',
+									icon: (
+										<svg className="inline-block h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none">
+											<defs><linearGradient id="stat-target" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="var(--teal)" /><stop offset="100%" stopColor="var(--success)" /></linearGradient></defs>
+											<circle cx="12" cy="12" r="10" fill="url(#stat-target)" opacity="0.12" stroke="url(#stat-target)" strokeWidth="1.5" />
+											<circle cx="12" cy="12" r="6" fill="none" stroke="url(#stat-target)" strokeWidth="1.5" />
+											<circle cx="12" cy="12" r="2.5" fill="url(#stat-target)" />
+										</svg>
+									),
+								},
+								{
+									value: `${avgAccuracy}%`,
+									label: 'Chính xác TB',
+									icon: (
+										<svg className="inline-block h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none">
+											<defs><linearGradient id="stat-chart" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stopColor="var(--accent)" /><stop offset="100%" stopColor="var(--warning)" /></linearGradient></defs>
+											<rect x="3" y="14" width="4" height="7" rx="1" fill="url(#stat-chart)" opacity="0.4" />
+											<rect x="10" y="9" width="4" height="12" rx="1" fill="url(#stat-chart)" opacity="0.6" />
+											<rect x="17" y="3" width="4" height="18" rx="1" fill="url(#stat-chart)" opacity="0.85" />
+											<path d="M5 13L12 7l7 3" stroke="url(#stat-chart)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+										</svg>
+									),
+								},
+							].map((stat, i) => (
+								<div
+									key={stat.label}
+									className={`flex flex-col justify-center px-5 py-6 sm:px-6 ${i > 0 ? 'border-l border-border' : ''} ${i >= 2 ? 'border-t border-border lg:border-t-0' : ''}`}
+								>
+									<div className="text-lg font-black tabular-nums tracking-tight text-foreground sm:text-2xl">
+										{stat.value}
 									</div>
-								)}
-								<div>
-									<div className="font-semibold text-neutral-900">{user.name ?? 'Người dùng'}</div>
-									<div className="text-sm text-neutral-700">{user.email ?? '—'}</div>
-									<div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700">
-										{user.role === 'admin' ? (
-											<>
-												<svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-													<path fillRule="evenodd" d="M9.504 1.132a1 1 0 01.992 0l1.75 1a1 1 0 11-.992 1.736L10 3.152l-1.254.716a1 1 0 11-.992-1.736l1.75-1zM5.618 4.504a1 1 0 01-.372 1.364L5.016 6l.23.132a1 1 0 11-.992 1.736L4 7.723V8a1 1 0 01-2 0V6a.996.996 0 01.52-.878l1.734-.99a1 1 0 011.364.372zm8.764 0a1 1 0 011.364-.372l1.733.99A1.002 1.002 0 0118 6v2a1 1 0 11-2 0v-.277l-.254.145a1 1 0 11-.992-1.736l.23-.132-.23-.132a1 1 0 01-.372-1.364zm-7 4a1 1 0 011.364-.372L10 8.848l1.254-.716a1 1 0 11.992 1.736L11 10.58V12a1 1 0 11-2 0v-1.42l-1.246-.712a1 1 0 01-.372-1.364zM3 11a1 1 0 011 1v1.42l1.246.712a1 1 0 11-.992 1.736l-1.75-1A1 1 0 012 14v-2a1 1 0 011-1zm14 0a1 1 0 011 1v2a1 1 0 01-.504.868l-1.75 1a1 1 0 11-.992-1.736L16 13.42V12a1 1 0 011-1zm-9.618 5.504a1 1 0 011.364-.372l.254.145V16a1 1 0 112 0v.277l.254-.145a1 1 0 11.992 1.736l-1.735.992a.995.995 0 01-1.022 0l-1.735-.992a1 1 0 01-.372-1.364z" clipRule="evenodd" />
-												</svg>
-												Admin
-											</>
-										) : (
-											<>
-												<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-													<path d="M12 14l9-5-9-5-9 5 9 5z" />
-													<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-													<path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-												</svg>
-												Học viên
-											</>
-										)}
+									<div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+										{stat.icon} {stat.label}
 									</div>
 								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<div className="mx-auto max-w-6xl px-6 pt-10">
+				{/* ─── Section: Truy cập nhanh ─── */}
+				<section>
+					<div className="flex items-center gap-3">
+						<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
+							Truy cập nhanh
+						</h2>
+						<div className="h-px flex-1 bg-border" />
+					</div>
+
+					<div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+						{[
+							{
+								href: '/vocabulary',
+								title: 'Từ vựng của tôi',
+								desc: 'Quản lý & ôn tập bộ từ vựng',
+								color: 'text-accent',
+								bg: 'bg-accent-subtle',
+								icon: (
+									<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+										<path d="M4 5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" fill="currentColor" opacity="0.15" />
+										<path d="M4 5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M9 13h6M9 16h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+									</svg>
+								),
+							},
+							{
+								href: '/vocabulary/create',
+								title: 'Tạo bộ từ mới',
+								desc: 'Thêm bộ từ vựng mới để học',
+								color: 'text-success',
+								bg: 'bg-success-subtle',
+								icon: (
+									<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+										<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.12" />
+										<circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M12 7v10M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+									</svg>
+								),
+							},
+							{
+								href: '/vocabulary/database',
+								title: 'Kho từ vựng',
+								desc: 'Tra cứu & phân tích tất cả từ',
+								color: 'text-indigo',
+								bg: 'bg-indigo-subtle',
+								icon: (
+									<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+										<ellipse cx="12" cy="6" rx="8" ry="3" fill="currentColor" opacity="0.2" />
+										<ellipse cx="12" cy="6" rx="8" ry="3" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" stroke="currentColor" strokeWidth="1.5" />
+										<ellipse cx="12" cy="12" rx="8" ry="3" fill="currentColor" opacity="0.08" />
+									</svg>
+								),
+							},
+							{
+								href: '/vocabulary/store',
+								title: 'Cửa hàng từ vựng',
+								desc: 'Tải bộ từ có sẵn từ cộng đồng',
+								color: 'text-rose',
+								bg: 'bg-rose-subtle',
+								icon: (
+									<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+										<path d="M3 9l1.5-5h15L21 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+										<path d="M3 9h18v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M9 9c0 1.66.9 3 2 3h2c1.1 0 2-1.34 2-3" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M10 15h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+									</svg>
+								),
+							},
+							{
+								href: '/blog',
+								title: 'Blog & Tài liệu',
+								desc: 'Đọc bài viết và tài liệu học',
+								color: 'text-purple',
+								bg: 'bg-purple-subtle',
+								icon: (
+									<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+										<path d="M4 4h7a1 1 0 011 1v14a1 1 0 01-1 1H4V4z" fill="currentColor" opacity="0.15" />
+										<path d="M12 4h7v16h-7V4z" fill="currentColor" opacity="0.08" />
+										<path d="M12 4H5a1 1 0 00-1 1v14a1 1 0 001 1h7m0-16h7a1 1 0 011 1v14a1 1 0 01-1 1h-7m0-16v16" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M7 8h3M7 11h3M14 8h3M14 11h3M14 14h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+									</svg>
+								),
+							},
+							{
+								href: '/dashboard/vocabulary',
+								title: 'Tiến trình ôn tập',
+								desc: 'Xem lịch sử luyện tập chi tiết',
+								color: 'text-teal',
+								bg: 'bg-teal-subtle',
+								icon: (
+									<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+										<path d="M3 20V10l4-3v13H3z" fill="currentColor" opacity="0.15" />
+										<path d="M9 20V7l4-4v17H9z" fill="currentColor" opacity="0.25" />
+										<path d="M15 20V8l4-2v14h-4z" fill="currentColor" opacity="0.35" />
+										<rect x="3" y="10" width="4" height="10" rx="0.5" stroke="currentColor" strokeWidth="1.5" />
+										<rect x="9" y="6" width="4" height="14" rx="0.5" stroke="currentColor" strokeWidth="1.5" />
+										<rect x="15" y="3" width="4" height="17" rx="0.5" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M5 9l5-3.5 5 2L21 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 2" />
+									</svg>
+								),
+							},
+						].map((item) => (
+							<Link
+								key={item.href}
+								href={item.href}
+								className="group flex items-center gap-4 border border-border p-4 transition-all hover:border-border-hover hover:bg-surface-hover active:scale-[0.99]"
+							>
+								<div className={`flex h-10 w-10 shrink-0 items-center justify-center ${item.bg} ${item.color} transition-colors`}>
+									{item.icon}
+								</div>
+								<div className="min-w-0">
+									<div className={`text-sm font-bold ${item.color}`}>{item.title}</div>
+									<div className="mt-0.5 text-[11px] text-muted">{item.desc}</div>
+								</div>
+							</Link>
+						))}
+					</div>
+				</section>
+
+				{/* ─── Section: Tiến trình học tập ─── */}
+				{totalPracticed > 0 && (
+					<section className="mt-12">
+						<div className="flex items-center gap-3">
+							<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
+								Tiến trình học tập
+							</h2>
+							<div className="h-px flex-1 bg-border" />
+						</div>
+
+						<div className="mt-5 grid gap-3 sm:grid-cols-3">
+							{/* Mastered */}
+							<div className="border border-border p-5">
+								<div className="flex items-center gap-2 text-success">
+									<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+										<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.5" />
+										<path d="M8 12.5l2.5 3L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+									</svg>
+									<span className="text-[10px] font-bold uppercase tracking-widest">Đã thành thạo</span>
+								</div>
+								<div className="mt-3 text-2xl font-black tabular-nums text-foreground">{masteredCount}</div>
+								<div className="text-[11px] text-muted">trong tổng {totalPracticed} từ đã học</div>
+								{totalPracticed > 0 && (
+									<div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-hover">
+										<div
+											className="h-full rounded-full bg-success transition-all duration-500"
+											style={{ width: `${Math.round((masteredCount / totalPracticed) * 100)}%` }}
+										/>
+									</div>
+								)}
+							</div>
+
+							{/* Total Attempts */}
+							<div className="border border-border p-5">
+								<div className="flex items-center gap-2 text-indigo">
+									<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+										<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+										<path d="M22 12A10 10 0 0012 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 3" />
+										<path d="M17 8l5-1-1 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+									</svg>
+									<span className="text-[10px] font-bold uppercase tracking-widest">Tổng lượt luyện</span>
+								</div>
+								<div className="mt-3 text-2xl font-black tabular-nums text-foreground">{totalAttempts}</div>
+								<div className="text-[11px] text-muted">lượt luyện tập</div>
+							</div>
+
+							{/* Accuracy */}
+							<div className="border border-border p-5">
+								<div className="flex items-center gap-2 text-accent">
+									<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+										<path d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5 6.6 18.3l1.5-6-4.6-4 6.1-.5L12 2z" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+									</svg>
+									<span className="text-[10px] font-bold uppercase tracking-widest">Độ chính xác</span>
+								</div>
+								<div className="mt-3 text-2xl font-black tabular-nums text-foreground">{avgAccuracy}%</div>
+								<div className="text-[11px] text-muted">trung bình tất cả từ</div>
+								{avgAccuracy > 0 && (
+									<div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-hover">
+										<div
+											className="h-full rounded-full bg-accent transition-all duration-500"
+											style={{ width: `${avgAccuracy}%` }}
+										/>
+									</div>
+								)}
 							</div>
 						</div>
 					</section>
-				) : null}
+				)}
 
-				{/* Admin Link */}
-				{user?.role === 'admin' ? (
-					<section className="mt-6">
-						<Link
-							href="/admin"
-							className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 transition-all hover:border-amber-300 hover:shadow-md"
-						>
-							<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
-								<svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-									<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-								</svg>
-							</div>
-							<div className="flex-1">
-								<div className="font-semibold text-amber-900">Quản trị hệ thống</div>
-								<div className="mt-0.5 text-xs text-amber-700">Truy cập Admin Portal để quản lý nội dung</div>
-							</div>
-							<svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-							</svg>
-						</Link>
+				{/* ─── Section: Bộ từ gần đây ─── */}
+				{mySets.length > 0 && (
+					<section className="mt-12">
+						<div className="flex items-center gap-3">
+							<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
+								Bộ từ gần đây
+							</h2>
+							<div className="h-px flex-1 bg-border" />
+							<Link href="/vocabulary" className="text-[10px] font-bold uppercase tracking-widest text-muted transition-colors hover:text-foreground">
+								Tất cả →
+							</Link>
+						</div>
+
+						<div className="mt-5 divide-y divide-border border border-border">
+							{mySets.slice(0, 5).map((set) => (
+								<Link
+									key={set.id}
+									href={`/vocabulary/${set.id}`}
+									className="group flex items-center justify-between gap-4 p-4 transition-colors hover:bg-surface-hover"
+								>
+									<div className="min-w-0 flex-1">
+										<div className="text-sm font-bold text-foreground transition-colors group-hover:text-accent">
+											{set.title}
+										</div>
+										<div className="mt-0.5 text-[11px] text-muted">{set.termCount} từ</div>
+									</div>
+									<div className="flex shrink-0 items-center gap-3">
+										<time className="text-[11px] tabular-nums text-muted" suppressHydrationWarning>
+											{new Date(set.updatedAt).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' })}
+										</time>
+										<svg className="h-4 w-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+											<path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+										</svg>
+									</div>
+								</Link>
+							))}
+						</div>
 					</section>
-				) : null}
+				)}
+
+				{/* ─── Section: Chuỗi đăng nhập (chi tiết) ─── */}
+				{streakData.recentDays.length > 0 && (
+					<section className="mt-12">
+						<div className="flex items-center gap-3">
+							<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
+								Lịch sử đăng nhập
+							</h2>
+							<div className="h-px flex-1 bg-border" />
+						</div>
+
+						<div className="mt-5 border border-border p-5">
+							<div className="flex items-center justify-between">
+								<div>
+									<div className="text-sm font-bold text-foreground">
+										Chuỗi hiện tại: <span className="text-accent">{streakData.currentStreak} ngày</span>
+									</div>
+									<div className="mt-0.5 text-[11px] text-muted">
+										Kỷ lục: {streakData.longestStreak} ngày
+									</div>
+								</div>
+							</div>
+
+							{/* Mini heatmap — last 30 days */}
+							<div className="mt-4 flex flex-wrap gap-1">
+								{Array.from({ length: 30 }, (_, i) => {
+									const d = new Date();
+									d.setUTCDate(d.getUTCDate() - (29 - i));
+									const dateStr = d.toISOString().slice(0, 10);
+									const active = streakData.recentDays.includes(dateStr);
+									const isToday = i === 29;
+									return (
+										<div
+											key={dateStr}
+											title={dateStr}
+											className={`h-3.5 w-3.5 rounded-sm transition-colors ${
+												active
+													? isToday
+														? 'bg-accent ring-1 ring-accent/50'
+														: 'bg-accent/70'
+													: 'bg-surface-hover'
+											}`}
+										/>
+									);
+								})}
+							</div>
+							<div className="mt-2 flex items-center justify-between text-[10px] text-muted">
+								<span>30 ngày trước</span>
+								<span>Hôm nay</span>
+							</div>
+						</div>
+					</section>
+				)}
+
+				{/* ─── Section: Tài khoản ─── */}
+				{user && (
+					<section className="mt-12">
+						<div className="flex items-center gap-3">
+							<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
+								Tài khoản
+							</h2>
+							<div className="h-px flex-1 bg-border" />
+						</div>
+
+						<div className="mt-5 border border-border">
+							<div className="flex items-center justify-between p-5">
+								<div className="flex items-center gap-4">
+									{user.image ? (
+										<img
+											src={user.image}
+											alt={user.name ?? 'Avatar'}
+											className="h-10 w-10 rounded-full"
+											referrerPolicy="no-referrer"
+										/>
+									) : (
+										<div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-sm font-black text-background">
+											{(user.name ?? 'U')[0]}
+										</div>
+									)}
+									<div>
+										<div className="text-sm font-bold text-foreground">{user.name ?? 'Người dùng'}</div>
+										<div className="mt-0.5 text-[11px] text-muted">{user.email ?? '—'}</div>
+									</div>
+								</div>
+								<span className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+									{user.role === 'admin' ? 'Admin' : 'Học viên'}
+								</span>
+							</div>
+
+							{/* Admin link */}
+							{user.role === 'admin' && (
+								<Link
+									href="/admin"
+									className="flex items-center justify-between border-t border-border p-5 transition-colors hover:bg-surface-hover"
+								>
+									<div className="flex items-center gap-3">
+										<svg className="h-4 w-4 text-muted" viewBox="0 0 24 24" fill="none">
+											<circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="1.5" />
+											<path d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12m11.32 11.32l2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12m11.32-11.32l2.12-2.12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+										</svg>
+										<span className="text-sm font-bold text-foreground">Quản trị hệ thống</span>
+									</div>
+									<svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+									</svg>
+								</Link>
+							)}
+						</div>
+					</section>
+				)}
 			</div>
 		</main>
 	);

@@ -9,6 +9,7 @@ import type {
 	GetAllPostsResult,
 	PostDetailDTO,
 	PostListItemDTO,
+	PostReactions,
 } from '@/types/post';
 import { slugify } from '@/utils/slugify';
 
@@ -17,13 +18,36 @@ type PostLean = {
 	title: string;
 	slug: string;
 	content: string;
+	contentFormat?: 'markdown' | 'html';
 	summary: string;
+	category?: string;
 	tags: string[];
 	thumbnailUrl?: string;
 	isPublished: boolean;
+	wordCount?: number;
+	views?: number;
+	publishedAt?: Date;
+	reactions?: {
+		like?: number;
+		love?: number;
+		fire?: number;
+		clap?: number;
+	};
 	createdAt?: Date;
 	updatedAt?: Date;
 };
+
+const DEFAULT_REACTIONS: PostReactions = { like: 0, love: 0, fire: 0, clap: 0 };
+
+function toReactions(r?: PostLean['reactions']): PostReactions {
+	if (!r) return { ...DEFAULT_REACTIONS };
+	return {
+		like: r.like ?? 0,
+		love: r.love ?? 0,
+		fire: r.fire ?? 0,
+		clap: r.clap ?? 0,
+	};
+}
 
 function toListItemDTO(doc: PostLean): PostListItemDTO {
 	const createdAt = doc.createdAt ? new Date(doc.createdAt) : new Date(0);
@@ -32,8 +56,13 @@ function toListItemDTO(doc: PostLean): PostListItemDTO {
 		title: doc.title,
 		slug: doc.slug,
 		summary: doc.summary,
+		category: doc.category || 'Uncategorized',
 		tags: Array.isArray(doc.tags) ? doc.tags : [],
 		thumbnailUrl: doc.thumbnailUrl ?? undefined,
+		wordCount: doc.wordCount ?? 0,
+		views: doc.views ?? 0,
+		reactions: toReactions(doc.reactions),
+		publishedAt: doc.publishedAt ? new Date(doc.publishedAt).toISOString() : undefined,
 		createdAt: createdAt.toISOString(),
 	};
 }
@@ -42,6 +71,7 @@ function toDetailDTO(doc: PostLean): PostDetailDTO {
 	return {
 		...toListItemDTO(doc),
 		content: doc.content,
+		contentFormat: doc.contentFormat ?? 'markdown',
 	};
 }
 
@@ -59,6 +89,7 @@ function toAdminDetailDTO(doc: PostLean): AdminPostDetailDTO {
 	return {
 		...toAdminListItemDTO(doc),
 		content: doc.content,
+		contentFormat: doc.contentFormat ?? 'markdown',
 	};
 }
 
@@ -162,6 +193,8 @@ export async function createPost(input: {
 	title: string;
 	summary: string;
 	content: string;
+	contentFormat?: 'markdown' | 'html';
+	category?: string;
 	tags?: string[];
 	thumbnailUrl?: string;
 	isPublished?: boolean;
@@ -188,6 +221,8 @@ export async function createPost(input: {
 		slug,
 		summary,
 		content,
+		contentFormat: input.contentFormat ?? 'html',
+		category: input.category ? String(input.category).trim() : 'Uncategorized',
 		tags,
 		thumbnailUrl: input.thumbnailUrl ? String(input.thumbnailUrl).trim() : undefined,
 		isPublished: Boolean(input.isPublished),
@@ -199,7 +234,15 @@ export async function createPost(input: {
 export async function getAdminPosts(
 	pageInput: number,
 	limitInput: number,
-	published: 'all' | 'true' | 'false' = 'all'
+	published: 'all' | 'true' | 'false' = 'all',
+	opts?: {
+		tag?: string;
+		category?: string;
+		search?: string;
+		sort?: string;
+		dateFrom?: string;
+		dateTo?: string;
+	}
 ): Promise<GetAdminPostsResult> {
 	const page = Math.max(1, Math.floor(pageInput));
 	const limit = Math.min(50, Math.max(1, Math.floor(limitInput)));
@@ -210,10 +253,41 @@ export async function getAdminPosts(
 	if (published === 'true') filter.isPublished = true;
 	if (published === 'false') filter.isPublished = false;
 
+	if (opts?.tag) filter.tags = opts.tag;
+	if (opts?.category && opts.category !== 'all') filter.category = opts.category;
+	if (opts?.search) {
+		const escaped = opts.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		filter.$or = [
+			{ title: { $regex: escaped, $options: 'i' } },
+			{ summary: { $regex: escaped, $options: 'i' } },
+			{ tags: { $regex: escaped, $options: 'i' } },
+		];
+	}
+	if (opts?.dateFrom || opts?.dateTo) {
+		const dateFilter: Record<string, Date> = {};
+		if (opts.dateFrom) dateFilter.$gte = new Date(opts.dateFrom);
+		if (opts.dateTo) {
+			const to = new Date(opts.dateTo);
+			to.setHours(23, 59, 59, 999);
+			dateFilter.$lte = to;
+		}
+		filter.createdAt = dateFilter;
+	}
+
+	// Sort
+	let sortObj: Record<string, 1 | -1> = { updatedAt: -1 };
+	switch (opts?.sort) {
+		case 'oldest': sortObj = { createdAt: 1 }; break;
+		case 'title': sortObj = { title: 1 }; break;
+		case 'views': sortObj = { views: -1 }; break;
+		case 'created': sortObj = { createdAt: -1 }; break;
+		default: break; // updatedAt desc
+	}
+
 	const [total, items] = await Promise.all([
 		Post.countDocuments(filter),
 		Post.find(filter)
-			.sort({ updatedAt: -1 })
+			.sort(sortObj)
 			.skip((page - 1) * limit)
 			.limit(limit)
 			.lean(),
@@ -254,6 +328,11 @@ export async function updatePostById(
 	if ('title' in input) update.title = String(input.title ?? '').trim();
 	if ('summary' in input) update.summary = String(input.summary ?? '').trim();
 	if ('content' in input) update.content = String(input.content ?? '').trim();
+	if ('contentFormat' in input) {
+		const fmt = String(input.contentFormat ?? 'html');
+		update.contentFormat = fmt === 'markdown' ? 'markdown' : 'html';
+	}
+	if ('category' in input) update.category = String(input.category ?? 'Uncategorized').trim();
 	if ('tags' in input) {
 		const tags = Array.isArray(input.tags) ? input.tags.map((t) => String(t).trim()) : [];
 		update.tags = Array.from(new Set(tags.filter(Boolean))).slice(0, 20);
@@ -269,7 +348,7 @@ export async function updatePostById(
 	}
 
 	const updated = (await Post.findByIdAndUpdate(cleanedId, update, {
-		new: true,
+		returnDocument: 'after',
 		runValidators: true,
 	}).lean()) as unknown as PostLean | null;
 
@@ -329,3 +408,67 @@ export const getRelatedPosts = unstable_cache(
 	['posts:related'],
 	{ revalidate: 60 }
 );
+
+/* ──────────────────────────────────────────────────────
+   Admin-only helpers (not cached — always fresh)
+   ────────────────────────────────────────────────────── */
+
+export async function getAllCategoriesAdmin(): Promise<string[]> {
+	await dbConnect();
+	const cats = (await Post.distinct('category')) as unknown as string[];
+	return cats.filter(Boolean).map((c) => String(c)).sort((a, b) => a.localeCompare(b));
+}
+
+export async function getAllTagsAdmin(): Promise<string[]> {
+	await dbConnect();
+	const tags = (await Post.distinct('tags')) as unknown as string[];
+	return tags.filter(Boolean).map((t) => String(t)).sort((a, b) => a.localeCompare(b));
+}
+
+export interface AdminDashboardStats {
+	totalPosts: number;
+	published: number;
+	drafts: number;
+	totalViews: number;
+	totalReactions: number;
+	categories: { name: string; count: number }[];
+}
+
+export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
+	await dbConnect();
+
+	const [totalPosts, published, drafts, viewsAgg, reactionsAgg, categoriesAgg] = await Promise.all([
+		Post.countDocuments(),
+		Post.countDocuments({ isPublished: true }),
+		Post.countDocuments({ isPublished: false }),
+		Post.aggregate([{ $group: { _id: null, total: { $sum: '$views' } } }]),
+		Post.aggregate([
+			{
+				$group: {
+					_id: null,
+					total: {
+						$sum: {
+							$add: ['$reactions.like', '$reactions.love', '$reactions.fire', '$reactions.clap'],
+						},
+					},
+				},
+			},
+		]),
+		Post.aggregate([
+			{ $group: { _id: '$category', count: { $sum: 1 } } },
+			{ $sort: { count: -1 } },
+		]),
+	]);
+
+	return {
+		totalPosts,
+		published,
+		drafts,
+		totalViews: viewsAgg[0]?.total ?? 0,
+		totalReactions: reactionsAgg[0]?.total ?? 0,
+		categories: (categoriesAgg as { _id: string; count: number }[]).map((c) => ({
+			name: c._id || 'Uncategorized',
+			count: c.count,
+		})),
+	};
+}

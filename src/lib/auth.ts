@@ -36,6 +36,7 @@ const nextAuth = NextAuth({
 		},
 		async session({ session, token }) {
 			if (session.user) {
+				(session.user as unknown as Record<string, unknown>).id = token.sub;
 				session.user.role = (token.role as 'admin' | 'student' | undefined) ?? 'student';
 			}
 			return session;

@@ -39,14 +39,14 @@ export default function CreateCourseInline() {
 	}
 
 	return (
-		<div className="rounded-lg border border-foreground/10 p-3">
-			<div className="text-xs font-medium text-foreground/70">Tạo course</div>
+		<div className="rounded-lg border border-border p-3">
+			<div className="text-xs font-medium text-foreground-secondary">Tạo course</div>
 			<div className="mt-2 grid gap-2">
 				<input
 					value={name}
 					onChange={(e) => setName(e.target.value)}
 					placeholder="Course name"
-					className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+					className="w-full rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') void onCreate();
 					}}
@@ -56,7 +56,7 @@ export default function CreateCourseInline() {
 					onChange={(e) => setDescription(e.target.value)}
 					placeholder="Mô tả ngắn (tuỳ chọn)"
 					rows={2}
-					className="w-full resize-none rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm"
+					className="w-full resize-none rounded-md border border-border-hover bg-background px-3 py-2 text-sm"
 				/>
 				<button
 					type="button"
@@ -67,7 +67,7 @@ export default function CreateCourseInline() {
 					{status === 'creating' ? 'Đang tạo…' : 'Tạo course'}
 				</button>
 			</div>
-			{status === 'error' ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
+			{status === 'error' ? <p className="mt-2 text-xs text-error">{error}</p> : null}
 		</div>
 	);
 }

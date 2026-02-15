@@ -57,10 +57,10 @@ export default function SignInWithGoogleButton({ callbackUrl }: { callbackUrl: s
 			type="button"
 			disabled={disabled}
 			onClick={() => signIn('google', { callbackUrl })}
-			className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-foreground/15 bg-background px-4 py-2.5 text-sm font-medium hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-60"
+			className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border-2 border-foreground bg-foreground px-5 py-3 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			<GoogleIcon className="h-5 w-5" />
-			<span>{loading ? 'Đang kiểm tra cấu hình...' : 'Sign in with Google'}</span>
+			<span>{loading ? 'Đang tải...' : 'Tiếp tục với Google'}</span>
 		</button>
 	);
 }
