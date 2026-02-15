@@ -14,7 +14,10 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+	// Detect HTTPS to find the correct session cookie name:
+	// HTTPS uses '__Secure-authjs.session-token', HTTP uses 'authjs.session-token'
+	const secureCookie = request.nextUrl.protocol === 'https:';
+	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie });
 
 	// Optional: already logged in -> don't go back to /login
 	if (pathname === LOGIN_PATH) {

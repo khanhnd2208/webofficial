@@ -23,7 +23,7 @@ const nextAuth = NextAuth({
 			]
 			: [],
 	callbacks: {
-		async jwt({ token, user, trigger }) {
+		async jwt({ token, user }) {
 			// On first sign-in or user update, sync role from database
 			if (user) {
 				const userRole = (user as { role?: string }).role;

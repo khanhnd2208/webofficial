@@ -16,7 +16,11 @@ export interface ApiUser {
  * replaces the duplicated `getUser()` helpers scattered across route files.
  */
 export async function getApiUser(request: NextRequest): Promise<ApiUser | null> {
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+	// Detect HTTPS to find the correct cookie:
+	// HTTPS → '__Secure-authjs.session-token', HTTP → 'authjs.session-token'
+	const secureCookie = request.headers.get('x-forwarded-proto') === 'https'
+		|| request.url.startsWith('https:');
+	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie });
 	if (!token?.sub) return null;
 
 	return {

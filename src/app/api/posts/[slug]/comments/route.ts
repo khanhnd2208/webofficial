@@ -1,6 +1,11 @@
 import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 
+/** Detect HTTPS for correct session cookie name */
+function isSecure(req: NextRequest): boolean {
+	return req.headers.get('x-forwarded-proto') === 'https' || req.url.startsWith('https:');
+}
+
 import dbConnect from '@/lib/dbConnect';
 import Post from '@/models/Post';
 import { createComment, getCommentsByPostId, toggleCommentLike } from '@/services/commentService';
@@ -13,7 +18,7 @@ export async function GET(
 		const { slug } = await params;
 
 		// Get current user ID if logged in (for likedByMe)
-		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: isSecure(request) });
 		const currentUserId = token?.sub ?? undefined;
 
 		await dbConnect();
@@ -41,7 +46,7 @@ export async function POST(
 	{ params }: { params: Promise<{ slug: string }> }
 ) {
 	try {
-		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: isSecure(request) });
 		if (!token || !token.sub) {
 			return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 		}
@@ -83,7 +88,7 @@ export async function PATCH(
 	request: NextRequest,
 ) {
 	try {
-		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: isSecure(request) });
 		if (!token || !token.sub) {
 			return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 		}
