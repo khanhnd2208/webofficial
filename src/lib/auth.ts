@@ -18,6 +18,16 @@ const nextAuth = NextAuth({
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
+					// Fix PKCE cookie issue behind Nginx reverse proxy
+					// Keep state check for CSRF protection, remove pkce check
+					checks: ['state'],
+					authorization: {
+						params: {
+							prompt: 'consent',
+							access_type: 'offline',
+							response_type: 'code',
+						},
+					},
 				}),
 			]
 			: [],
