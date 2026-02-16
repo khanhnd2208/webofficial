@@ -14,10 +14,9 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	// secureCookie=true: cookies use __Secure- prefix to match auth.ts useSecureCookies.
-	// NEXTAUTH_URL=https://... makes Auth.js use secure cookies automatically.
-	// getToken must use the same cookie name prefix.
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: true });
+	// secureCookie=false: must match auth.ts useSecureCookies:false
+	// Cookies use plain names (no __Secure- prefix) for Nginx reverse proxy compatibility
+	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: false });
 
 	// Optional: already logged in -> don't go back to /login
 	if (pathname === LOGIN_PATH) {

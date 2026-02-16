@@ -13,11 +13,16 @@ const nextAuth = NextAuth({
 	adapter: MongoDBAdapter(mongoClientPromise),
 	session: { strategy: 'jwt' },
 	trustHost: true,
-	// Cookie security is determined automatically by Auth.js:
-	// reqWithEnvURL() rewrites req.url using NEXTAUTH_URL (https://toiladuykhanh.com),
-	// so init() sees url.protocol === "https:" → useSecureCookies defaults to true.
-	// This means cookies get __Secure- prefix + Secure flag, which is correct
-	// because Nginx serves HTTPS to browsers (Set-Cookie goes over HTTPS).
+	// Force useSecureCookies=false for Nginx HTTPS→HTTP reverse proxy.
+	// Although NEXTAUTH_URL=https://... makes reqWithEnvURL rewrite the URL to https,
+	// which would auto-detect useSecureCookies=true, this causes issues:
+	// - Cookies get __Secure- prefix + Secure flag
+	// - The Set-Cookie goes through HTTP (Next.js→Nginx) before HTTPS (Nginx→Browser)
+	// - Some browsers (especially Chrome) may reject Secure cookies set on HTTP responses
+	// With useSecureCookies=false, cookies use plain names (no prefix), SameSite=Lax,
+	// and work reliably across all browsers. Security is still maintained because
+	// Nginx handles HTTPS encryption between browser and server.
+	useSecureCookies: false,
 	providers:
 		googleClientId && googleClientSecret
 			? [
