@@ -8,62 +8,29 @@ import { mongoClientPromise } from '@/lib/mongodbClient';
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-// Cookie security: production (HTTPS) uses '__Secure-' prefix
-// This MUST be consistent across auth.ts, proxy.ts, and apiAuth.ts
-export const useSecureCookies = process.env.NODE_ENV === 'production';
-const cookiePrefix = useSecureCookies ? '__Secure-' : '';
-
 const nextAuth = NextAuth({
 	secret: process.env.NEXTAUTH_SECRET,
 	adapter: MongoDBAdapter(mongoClientPromise),
 	session: { strategy: 'jwt' },
-	trustHost: true, // Required for production behind reverse proxy (Nginx)
+	trustHost: true,
+	// CRITICAL: Force useSecureCookies=false for Nginx HTTPS→HTTP reverse proxy.
+	// Behind Nginx, the Next.js app receives HTTP requests (localhost:4000),
+	// so Auth.js internal url.protocol = "http:".
+	// If secure=true, cookies get __Secure- prefix which requires Secure flag,
+	// but the Set-Cookie response goes through HTTP internally, causing
+	// browsers to reject or mishandle the cookie on the round-trip.
+	// Since Nginx handles HTTPS termination, the cookie is still sent over
+	// HTTPS between browser↔Nginx. This is safe.
+	useSecureCookies: false,
 	providers:
 		googleClientId && googleClientSecret
 			? [
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
-					// Use 'state' check — PKCE cookie gets lost through Nginx HTTPS→HTTP proxy
-					checks: ['state'],
-					authorization: {
-						params: {
-							prompt: 'consent',
-							access_type: 'offline',
-							response_type: 'code',
-						},
-					},
 				}),
 			]
 			: [],
-	// Explicit cookie config to ensure cookies work correctly
-	// behind Nginx reverse proxy (HTTPS → HTTP localhost)
-	cookies: {
-		sessionToken: {
-			name: `${cookiePrefix}authjs.session-token`,
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
-		},
-		callbackUrl: {
-			name: `${cookiePrefix}authjs.callback-url`,
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
-		},
-		csrfToken: {
-			name: `${cookiePrefix}authjs.csrf-token`,
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
-		},
-		state: {
-			name: `${cookiePrefix}authjs.state`,
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
-		},
-		nonce: {
-			name: `${cookiePrefix}authjs.nonce`,
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
-		},
-		pkceCodeVerifier: {
-			name: `${cookiePrefix}authjs.pkce.code_verifier`,
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies, maxAge: 900 },
-		},
-	},
 	callbacks: {
 		async jwt({ token, user }) {
 			// On first sign-in or user update, sync role from database

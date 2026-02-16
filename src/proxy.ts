@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { useSecureCookies } from '@/lib/auth';
 
 const ADMIN_PREFIX = '/admin';
 const DASHBOARD_PREFIX = '/dashboard';
@@ -15,8 +14,9 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	// secureCookie must match auth.ts cookie config (production=true, dev=false)
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: useSecureCookies });
+	// secureCookie=false: must match auth.ts useSecureCookies:false
+	// Behind Nginx HTTPS→HTTP proxy, cookies use non-prefixed names (no __Secure-)
+	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: false });
 
 	// Optional: already logged in -> don't go back to /login
 	if (pathname === LOGIN_PATH) {
