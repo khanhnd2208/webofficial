@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { useSecureCookies } from '@/lib/auth';
 
 const ADMIN_PREFIX = '/admin';
 const DASHBOARD_PREFIX = '/dashboard';
@@ -14,10 +15,8 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	// Detect HTTPS to find the correct session cookie name:
-	// HTTPS uses '__Secure-authjs.session-token', HTTP uses 'authjs.session-token'
-	const secureCookie = request.nextUrl.protocol === 'https:';
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie });
+	// secureCookie must match auth.ts cookie config (production=true, dev=false)
+	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: useSecureCookies });
 
 	// Optional: already logged in -> don't go back to /login
 	if (pathname === LOGIN_PATH) {

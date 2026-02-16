@@ -1,11 +1,5 @@
-import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
-
-/** Detect HTTPS for correct session cookie name */
-function isSecure(req: NextRequest): boolean {
-	return req.headers.get('x-forwarded-proto') === 'https' || req.url.startsWith('https:');
-}
-
+import { getApiUser } from '@/lib/apiAuth';
 import dbConnect from '@/lib/dbConnect';
 import Post from '@/models/Post';
 import { createComment, getCommentsByPostId, toggleCommentLike } from '@/services/commentService';
@@ -18,8 +12,8 @@ export async function GET(
 		const { slug } = await params;
 
 		// Get current user ID if logged in (for likedByMe)
-		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: isSecure(request) });
-		const currentUserId = token?.sub ?? undefined;
+		const user = await getApiUser(request);
+		const currentUserId = user?.id ?? undefined;
 
 		await dbConnect();
 		const post = await Post.findOne({ slug: slug.trim().toLowerCase(), isPublished: true })
@@ -46,8 +40,8 @@ export async function POST(
 	{ params }: { params: Promise<{ slug: string }> }
 ) {
 	try {
-		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: isSecure(request) });
-		if (!token || !token.sub) {
+		const user = await getApiUser(request);
+		if (!user) {
 			return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 		}
 
@@ -70,9 +64,9 @@ export async function POST(
 
 		const comment = await createComment({
 			postId: String(post._id),
-			userId: token.sub,
-			userName: (token.name as string) ?? 'Anonymous',
-			userImage: (token.picture as string) ?? undefined,
+			userId: user.id,
+			userName: user.name || 'Anonymous',
+			userImage: undefined,
 			content: String(content ?? ''),
 		});
 
@@ -88,8 +82,8 @@ export async function PATCH(
 	request: NextRequest,
 ) {
 	try {
-		const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: isSecure(request) });
-		if (!token || !token.sub) {
+		const user = await getApiUser(request);
+		if (!user) {
 			return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 		}
 
@@ -103,7 +97,7 @@ export async function PATCH(
 			return NextResponse.json({ ok: false, error: 'commentId is required' }, { status: 400 });
 		}
 
-		const result = await toggleCommentLike(commentId, token.sub);
+		const result = await toggleCommentLike(commentId, user.id);
 		return NextResponse.json({ ok: true, data: result });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';

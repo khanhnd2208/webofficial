@@ -1,5 +1,6 @@
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
+import { useSecureCookies } from '@/lib/auth';
 
 export interface ApiUser {
 	id: string;
@@ -16,11 +17,8 @@ export interface ApiUser {
  * replaces the duplicated `getUser()` helpers scattered across route files.
  */
 export async function getApiUser(request: NextRequest): Promise<ApiUser | null> {
-	// Detect HTTPS to find the correct cookie:
-	// HTTPS → '__Secure-authjs.session-token', HTTP → 'authjs.session-token'
-	const secureCookie = request.headers.get('x-forwarded-proto') === 'https'
-		|| request.url.startsWith('https:');
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie });
+	// secureCookie must match auth.ts cookie config (production=true, dev=false)
+	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: useSecureCookies });
 	if (!token?.sub) return null;
 
 	return {

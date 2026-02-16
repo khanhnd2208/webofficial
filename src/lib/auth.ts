@@ -8,6 +8,11 @@ import { mongoClientPromise } from '@/lib/mongodbClient';
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
+// Cookie security: production (HTTPS) uses '__Secure-' prefix
+// This MUST be consistent across auth.ts, proxy.ts, and apiAuth.ts
+export const useSecureCookies = process.env.NODE_ENV === 'production';
+const cookiePrefix = useSecureCookies ? '__Secure-' : '';
+
 const nextAuth = NextAuth({
 	secret: process.env.NEXTAUTH_SECRET,
 	adapter: MongoDBAdapter(mongoClientPromise),
@@ -19,9 +24,46 @@ const nextAuth = NextAuth({
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
+					// Use 'state' check — PKCE cookie gets lost through Nginx HTTPS→HTTP proxy
+					checks: ['state'],
+					authorization: {
+						params: {
+							prompt: 'consent',
+							access_type: 'offline',
+							response_type: 'code',
+						},
+					},
 				}),
 			]
 			: [],
+	// Explicit cookie config to ensure cookies work correctly
+	// behind Nginx reverse proxy (HTTPS → HTTP localhost)
+	cookies: {
+		sessionToken: {
+			name: `${cookiePrefix}authjs.session-token`,
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+		},
+		callbackUrl: {
+			name: `${cookiePrefix}authjs.callback-url`,
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+		},
+		csrfToken: {
+			name: `${cookiePrefix}authjs.csrf-token`,
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+		},
+		state: {
+			name: `${cookiePrefix}authjs.state`,
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+		},
+		nonce: {
+			name: `${cookiePrefix}authjs.nonce`,
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+		},
+		pkceCodeVerifier: {
+			name: `${cookiePrefix}authjs.pkce.code_verifier`,
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies, maxAge: 900 },
+		},
+	},
 	callbacks: {
 		async jwt({ token, user }) {
 			// On first sign-in or user update, sync role from database
