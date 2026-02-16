@@ -16,9 +16,9 @@ export interface ApiUser {
  * replaces the duplicated `getUser()` helpers scattered across route files.
  */
 export async function getApiUser(request: NextRequest): Promise<ApiUser | null> {
-	// secureCookie=false: must match auth.ts useSecureCookies:false
-	// Cookies use plain names (no __Secure- prefix) for Nginx reverse proxy compatibility
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: false });
+	// secureCookie=true: must match auth.ts useSecureCookies:true
+	// Cookies use __Secure- prefix (e.g. __Secure-authjs.session-token)
+	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: true });
 	if (!token?.sub) return null;
 
 	return {
