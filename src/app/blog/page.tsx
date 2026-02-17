@@ -43,11 +43,11 @@ export default async function BlogPage({
 		<main className="min-h-screen">
 			{/* Header */}
 			<section className="border-b border-border">
-				<div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
-					<div className="flex flex-wrap items-end justify-between gap-6">
+				<div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-20">
+					<div className="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
 						<div>
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">Tất cả bài viết</p>
-							<h1 className="mt-3 text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+							<h1 className="mt-3 text-2xl font-black uppercase tracking-tight text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
 								Blog
 							</h1>
 							<p className="mt-3 max-w-lg text-sm leading-relaxed text-foreground-secondary">
@@ -62,7 +62,7 @@ export default async function BlogPage({
 			{/* Tags */}
 			{tags.length > 0 ? (
 				<section className="border-b border-border">
-					<div className="mx-auto max-w-6xl px-6 py-4">
+					<div className="mx-auto max-w-6xl px-4 py-3 sm:px-6 sm:py-4">
 						<div className="flex flex-wrap gap-2">
 							<Link
 								className={`rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${!tag ? 'bg-foreground text-background' : 'text-muted hover:text-foreground'}`}
@@ -86,7 +86,7 @@ export default async function BlogPage({
 
 			{/* Posts */}
 			<section>
-				<div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+				<div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-14">
 					{result.items.length === 0 ? (
 						<div className="py-20 text-center">
 							<p className="text-lg font-bold text-foreground">Không tìm thấy bài viết</p>

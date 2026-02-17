@@ -15,11 +15,11 @@ export default async function Home() {
 		<main className="min-h-screen">
 			{/* ═══ HERO — Bold editorial intro ═══ */}
 			<section className="border-b border-border">
-				<div className="mx-auto max-w-6xl px-6 py-16 sm:py-20 lg:py-24">
+				<div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16 lg:py-24">
 					<div className="grid items-end gap-10 lg:grid-cols-[1fr_auto]">
 						<div>
 							<p className="text-sm tracking-widest uppercase text-muted">Blog & Sharing</p>
-							<h1 className="mt-4 text-4xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-5xl lg:text-7xl">
+							<h1 className="mt-4 text-3xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-7xl">
 								Chia sẻ
 								<br />
 								<span className="font-serif italic font-bold normal-case">&amp; Kiến thức</span>
@@ -63,7 +63,7 @@ export default async function Home() {
 			{/* ═══ TOPICS — Service-style category bar ═══ */}
 			{tags.length > 0 ? (
 				<section className="border-b border-border">
-					<div className="mx-auto max-w-6xl px-6">
+					<div className="mx-auto max-w-6xl px-4 sm:px-6">
 						<div className="grid grid-cols-2 sm:grid-cols-4">
 							{tags.slice(0, 4).map((t, i) => (
 								<Link
@@ -85,7 +85,7 @@ export default async function Home() {
 			{/* ═══ FEATURED POST — Large editorial block ═══ */}
 			{featured ? (
 				<section className="border-b border-border">
-					<div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+					<div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-20">
 						<div className="flex items-end justify-between">
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">Bài viết nổi bật</p>
 							<Link href="/blog" className="text-xs font-bold uppercase tracking-widest text-muted transition-colors hover:text-foreground">
@@ -151,9 +151,9 @@ export default async function Home() {
 			{/* ═══ RECENT POSTS — Grid ═══ */}
 			{rest.length > 0 ? (
 				<section className="border-b border-border">
-					<div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+					<div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-20">
 						<h2 className="text-xs font-bold uppercase tracking-widest text-muted">Gần đây</h2>
-						<div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+						<div className="mt-6 grid gap-6 sm:mt-8 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
 							{rest.map((post) => (
 								<article key={post.id} className="group">
 									<Link href={`/blog/${post.slug}`} className="block">
@@ -201,7 +201,7 @@ export default async function Home() {
 
 			{/* ═══ ABOUT — Bold statement section ═══ */}
 			<section className="border-b border-border">
-				<div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+				<div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-20">
 					<div className="grid gap-10 lg:grid-cols-[2fr_3fr]">
 						<div>
 							<h2 className="text-2xl font-black uppercase leading-tight tracking-tight text-foreground sm:text-3xl lg:text-4xl">
@@ -218,10 +218,10 @@ export default async function Home() {
 								cho cộng đồng.
 							</p>
 							<Link
-								href="/login"
+								href="/blog"
 								className="mt-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground transition-colors hover:text-accent"
 							>
-								Bắt đầu học tập
+								Khám phá bài viết
 								<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
 									<path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 								</svg>
@@ -234,7 +234,7 @@ export default async function Home() {
 			{/* ═══ MORE POSTS (if any) ═══ */}
 			{more.length > 0 ? (
 				<section className="border-b border-border">
-					<div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+					<div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-20">
 						<h2 className="text-xs font-bold uppercase tracking-widest text-muted">Đọc thêm</h2>
 						<div className="mt-8 divide-y divide-border">
 							{more.map((post) => (
@@ -262,25 +262,19 @@ export default async function Home() {
 
 			{/* ═══ FOOTER CTA ═══ */}
 			<section>
-				<div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+				<div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
 					<div className="flex flex-col items-center text-center">
 						<p className="text-xs font-bold uppercase tracking-widest text-muted">Khám phá</p>
 						<h2 className="mt-4 text-2xl font-black uppercase tracking-tight text-foreground sm:text-3xl">
-							Bắt đầu hành trình
+							Bắt đầu khám phá
 						</h2>
 						<p className="mt-3 max-w-md text-sm text-foreground-secondary">
-							Đăng nhập để truy cập bộ từ vựng, bài viết và các công cụ luyện tập.
+							Đọc blog, khám phá kiến thức và cùng học hỏi mỗi ngày.
 						</p>
 						<div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
 							<Link
-								href="/login"
-								className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground"
-							>
-								Đăng nhập
-							</Link>
-							<Link
 								href="/blog"
-								className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:border-foreground"
+								className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground"
 							>
 								Đọc Blog
 							</Link>

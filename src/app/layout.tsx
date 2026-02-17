@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
-import { Geist_Mono, Inter, Merriweather } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import { Inter, Merriweather } from 'next/font/google';
 
 import Navbar from '@/components/Navbar';
 import Providers from '@/components/Providers';
@@ -13,13 +13,19 @@ const inter = Inter({
 const merriweather = Merriweather({
   variable: '--font-merriweather',
   subsets: ['latin', 'vietnamese'],
-  weight: ['300', '400', '700', '900'],
+  weight: ['400', '700', '900'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f0ece4' },
+    { media: '(prefers-color-scheme: dark)', color: '#121110' },
+  ],
+};
 
 export const metadata: Metadata = {
   title: 'Website thầy giáo NDK',
@@ -33,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" suppressHydrationWarning>
-      <body className={`${inter.variable} ${merriweather.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${inter.variable} ${merriweather.variable} antialiased`}>
 			<Providers>
 				<Navbar />
 				{children}

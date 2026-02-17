@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import CodeBlock from '@/components/CodeBlock';
-import CommentSection from '@/components/CommentSection';
+import ReactionBar from '@/components/ReactionBar';
 import ShareBar from '@/components/ShareBar';
 import ViewTracker from '@/components/ViewTracker';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -138,7 +138,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 			</div>
 
 			{/* Article header */}
-			<header className="mx-auto max-w-3xl px-6 pt-12 sm:pt-16 lg:max-w-4xl">
+			<header className="mx-auto max-w-3xl px-4 pt-8 sm:px-6 sm:pt-16 lg:max-w-4xl">
 				{/* Category + Tags */}
 				<div className="flex flex-wrap items-center gap-3">
 					{post.category && post.category !== 'Uncategorized' ? (
@@ -157,7 +157,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 					))}
 				</div>
 
-				<h1 className="mt-4 text-3xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+				<h1 className="mt-4 text-2xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
 					{post.title}
 				</h1>
 
@@ -165,7 +165,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 					{post.summary}
 				</p>
 
-				<div className="mt-6 flex items-center gap-3 text-sm text-muted">
+				<div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-muted sm:gap-3">
 					<div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-xs font-black text-background">
 						N
 					</div>
@@ -193,7 +193,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 
 			{/* Thumbnail */}
 			{post.thumbnailUrl ? (
-				<div className="mx-auto mt-10 max-w-3xl px-6 lg:max-w-4xl">
+				<div className="mx-auto mt-8 max-w-3xl px-4 sm:mt-10 sm:px-6 lg:max-w-4xl">
 					<img
 						src={post.thumbnailUrl}
 						alt={post.title}
@@ -204,8 +204,8 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 			) : null}
 
 			{/* Article body with optional TOC sidebar */}
-			<div className="mx-auto mt-10 max-w-3xl px-6 lg:max-w-4xl">
-				<div className="relative lg:grid lg:grid-cols-[1fr_200px] lg:gap-10">
+			<div className="mx-auto mt-8 max-w-3xl px-4 sm:mt-10 sm:px-6 lg:max-w-4xl">
+				<div className="relative lg:grid lg:grid-cols-[1fr_220px] lg:gap-8">
 					{post.contentFormat === 'html' ? (
 						/* ═══ HTML content (new Tiptap posts) ═══ */
 						<article
@@ -297,7 +297,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 
 			{/* Tags footer */}
 			{post.tags.length > 0 ? (
-				<div className="mx-auto mt-10 max-w-3xl border-t border-border px-6 pt-6 lg:max-w-4xl">
+				<div className="mx-auto mt-8 max-w-3xl border-t border-border px-4 pt-6 sm:mt-10 sm:px-6 lg:max-w-4xl">
 					<div className="flex flex-wrap gap-2">
 						{post.tags.map((t) => (
 							<Link
@@ -313,18 +313,19 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 			) : null}
 
 			{/* Share */}
-			<div className="mx-auto mt-8 max-w-3xl px-6 lg:max-w-4xl">
+			<div className="mx-auto mt-8 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
 				<ShareBar url={articleUrl} title={post.title} />
 			</div>
 
-			{/* Comments */}
-			<div className="mx-auto mt-12 max-w-3xl border-t border-border px-6 pt-10 lg:max-w-4xl">
-				<CommentSection slug={post.slug} />
+			{/* Reactions — anonymous, no login required */}
+			<div className="mx-auto mt-6 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
+				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Bài viết này hữu ích?</p>
+				<ReactionBar slug={post.slug} initialReactions={post.reactions} />
 			</div>
 
 			{/* Related posts */}
 			{related.length > 0 ? (
-				<section className="mx-auto mt-14 max-w-6xl border-t border-border px-6 pt-12 pb-16">
+				<section className="mx-auto mt-10 max-w-6xl border-t border-border px-4 pt-10 pb-12 sm:mt-14 sm:px-6 sm:pb-16">
 					<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
 						Bài viết liên quan
 					</h2>

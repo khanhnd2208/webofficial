@@ -1,64 +1,67 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 
 const ADMIN_PREFIX = '/admin';
-const DASHBOARD_PREFIX = '/dashboard';
-const VOCAB_PREFIX = '/vocabulary';
-const LOGIN_PATH = '/login';
 
+/**
+ * Admin access is protected by ADMIN_SECRET token (env variable).
+ * 
+ * To access admin:
+ *   1. Visit /admin?token=YOUR_ADMIN_SECRET  (sets cookie automatically)
+ *   2. Or set cookie 'admin_token' = YOUR_ADMIN_SECRET manually
+ * 
+ * No OAuth/login required — simple, secure, works behind any proxy.
+ */
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
-	// Skip all API routes and auth routes
+	// Skip all API routes
 	if (pathname.startsWith('/api/')) {
 		return NextResponse.next();
 	}
 
-	// secureCookie=true: must match auth.ts useSecureCookies:true
-	// Cookies use __Secure- prefix (e.g. __Secure-authjs.session-token)
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: true });
-
-	// Optional: already logged in -> don't go back to /login
-	if (pathname === LOGIN_PATH) {
-		if (token) {
-			const url = request.nextUrl.clone();
-			url.pathname = DASHBOARD_PREFIX;
-			url.search = '';
-			return NextResponse.redirect(url);
-		}
+	// Only protect /admin routes
+	if (!pathname.startsWith(ADMIN_PREFIX)) {
 		return NextResponse.next();
 	}
 
-	const isProtected = pathname.startsWith(ADMIN_PREFIX)
-		|| pathname.startsWith(DASHBOARD_PREFIX)
-		|| pathname.startsWith(VOCAB_PREFIX);
-	if (!isProtected) return NextResponse.next();
-
-	if (!token) {
-		const url = request.nextUrl.clone();
-		url.pathname = LOGIN_PATH;
-		url.searchParams.set('from', pathname);
-		return NextResponse.redirect(url);
+	const adminSecret = process.env.ADMIN_SECRET;
+	if (!adminSecret) {
+		// No ADMIN_SECRET configured — block all admin access
+		return new NextResponse('Admin access not configured', { status: 403 });
 	}
 
-	if (pathname.startsWith(ADMIN_PREFIX)) {
-		const role = (token as { role?: unknown }).role;
-		if (role !== 'admin') {
-			const url = request.nextUrl.clone();
-			url.pathname = DASHBOARD_PREFIX;
-			url.search = '';
-			return NextResponse.redirect(url);
-		}
+	// Check for token in query param (first-time access / bookmark)
+	const queryToken = request.nextUrl.searchParams.get('token');
+	if (queryToken === adminSecret) {
+		// Valid token in URL — set cookie and redirect to clean URL
+		const cleanUrl = request.nextUrl.clone();
+		cleanUrl.searchParams.delete('token');
+		const response = NextResponse.redirect(cleanUrl);
+		response.cookies.set('admin_token', adminSecret, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax',
+			path: '/admin',
+			maxAge: 60 * 60 * 24 * 30, // 30 days
+		});
+		return response;
 	}
 
-	return NextResponse.next();
+	// Check for token in cookie (subsequent visits)
+	const cookieToken = request.cookies.get('admin_token')?.value;
+	if (cookieToken === adminSecret) {
+		return NextResponse.next();
+	}
+
+	// Not authenticated — show 403
+	return new NextResponse(
+		'<html><body style="font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#121110;color:#f0ece4"><div style="text-align:center"><h1 style="font-size:2rem;margin:0">403</h1><p style="opacity:0.6;margin-top:0.5rem">Admin access requires authentication token.</p></div></body></html>',
+		{ status: 403, headers: { 'Content-Type': 'text/html' } }
+	);
 }
 
 export const config = {
 	matcher: [
 		'/admin/:path*',
-		'/dashboard/:path*',
-		'/vocabulary/:path*',
-		'/login',
 	],
 };
