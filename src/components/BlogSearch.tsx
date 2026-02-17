@@ -9,6 +9,7 @@ interface SearchResult {
 	slug: string;
 	summary: string;
 	tags: string[];
+	chapterNumber?: number;
 }
 
 export default function BlogSearch() {
@@ -150,7 +151,12 @@ export default function BlogSearch() {
 									onClick={() => goToPost(r.slug)}
 									className="flex w-full flex-col gap-0.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-surface-hover"
 								>
-									<span className="text-sm font-bold text-foreground">{r.title}</span>
+									<div className="flex items-center gap-2">
+										{r.chapterNumber ? (
+											<span className="font-mono text-[10px] font-bold text-accent">Ch.{r.chapterNumber}</span>
+										) : null}
+										<span className="text-sm font-bold text-foreground">{r.title}</span>
+									</div>
 									<span className="line-clamp-1 text-xs text-muted">{r.summary}</span>
 									{r.tags.length > 0 ? (
 										<div className="mt-0.5 flex gap-1">

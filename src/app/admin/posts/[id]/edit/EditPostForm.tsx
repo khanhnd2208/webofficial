@@ -21,6 +21,7 @@ type AdminPost = {
 	category: string;
 	tags: string[];
 	thumbnailUrl?: string;
+	chapterNumber?: number;
 	isPublished: boolean;
 };
 
@@ -66,6 +67,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 	const [tags, setTags] = useState<string[]>(initial.tags);
 	const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 	const [thumbnailUrl, setThumbnailUrl] = useState(initial.thumbnailUrl ?? '');
+	const [chapterNumber, setChapterNumber] = useState(initial.chapterNumber != null ? String(initial.chapterNumber) : '');
 	const [isPublished, setIsPublished] = useState(Boolean(initial.isPublished));
 	const [content, setContent] = useState(initial.content);
 	const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
@@ -93,9 +95,10 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			category !== (initial.category || 'Uncategorized') ||
 			JSON.stringify(tags) !== JSON.stringify(initial.tags) ||
 			thumbnailUrl !== (initial.thumbnailUrl ?? '') ||
+			chapterNumber !== (initial.chapterNumber != null ? String(initial.chapterNumber) : '') ||
 			isPublished !== Boolean(initial.isPublished)
 		);
-	}, [title, content, summary, category, tags, thumbnailUrl, isPublished, saveState.status, initial]);
+	}, [title, content, summary, category, tags, thumbnailUrl, chapterNumber, isPublished, saveState.status, initial]);
 
 	useEffect(() => {
 		if (!isDirty) return;
@@ -139,7 +142,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, category, tags, thumbnailUrl, isPublished, initial.id]);
+	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPublished, initial.id]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -284,6 +287,19 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 							<option key={c} value={c}>{c}</option>
 						))}
 					</select>
+				</label>
+
+				<label className="block">
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chapter Number</div>
+					<input
+						type="number"
+						min="1"
+						value={chapterNumber}
+						onChange={(e) => setChapterNumber(e.target.value)}
+						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+						placeholder="VD: 1, 2, 3..."
+					/>
+					<p className="mt-1 text-[11px] text-muted">Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…</p>
 				</label>
 
 				<div className="block">

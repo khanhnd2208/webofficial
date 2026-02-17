@@ -26,6 +26,7 @@ interface DraftData {
 	category: string;
 	tags: string[];
 	thumbnailUrl: string;
+	chapterNumber: string;
 	isPublished: boolean;
 	content: string;
 	savedAt: number;
@@ -67,6 +68,7 @@ export default function CreatePostPage() {
 	const [tags, setTags] = useState<string[]>([]);
 	const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 	const [thumbnailUrl, setThumbnailUrl] = useState('');
+	const [chapterNumber, setChapterNumber] = useState('');
 	const [isPublished, setIsPublished] = useState(false);
 	const [content, setContent] = useState('');
 	const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
@@ -95,6 +97,7 @@ export default function CreatePostPage() {
 			setCategory(draft.category || 'Uncategorized');
 			setTags(draft.tags || []);
 			setThumbnailUrl(draft.thumbnailUrl || '');
+			setChapterNumber(draft.chapterNumber || '');
 			setIsPublished(draft.isPublished || false);
 			setContent(draft.content || '');
 			if (draft.slug) setSlugManuallyEdited(true);
@@ -110,7 +113,7 @@ export default function CreatePostPage() {
 		const timer = setTimeout(() => {
 			if (!title.trim() && plainText.length < 20) return;
 			const draft: DraftData = {
-				title, slug, summary, category, tags, thumbnailUrl, isPublished, content,
+				title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPublished, content,
 				savedAt: Date.now(),
 			};
 			try {
@@ -120,7 +123,7 @@ export default function CreatePostPage() {
 			}
 		}, 5000);
 		return () => clearTimeout(timer);
-	}, [title, slug, summary, category, tags, thumbnailUrl, isPublished, content, plainText, saveState.status]);
+	}, [title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPublished, content, plainText, saveState.status]);
 
 	// ─── Unsaved changes warning ───
 	const hasContent = title.trim().length > 0 || plainText.length > 10;
@@ -175,7 +178,7 @@ export default function CreatePostPage() {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, category, tags, thumbnailUrl, isPublished]);
+	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPublished]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -223,6 +226,7 @@ export default function CreatePostPage() {
 		setCategory('Uncategorized');
 		setTags([]);
 		setThumbnailUrl('');
+		setChapterNumber('');
 		setIsPublished(false);
 		setContent('');
 		setSaveState({ status: 'idle' });
@@ -338,6 +342,19 @@ export default function CreatePostPage() {
 							<option key={c} value={c}>{c}</option>
 						))}
 					</select>
+				</label>
+
+				<label className="block">
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chapter Number</div>
+					<input
+						type="number"
+						min="1"
+						value={chapterNumber}
+						onChange={(e) => setChapterNumber(e.target.value)}
+						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+						placeholder="VD: 1, 2, 3..."
+					/>
+					<p className="mt-1 text-[11px] text-muted">Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…</p>
 				</label>
 
 				<div className="block">

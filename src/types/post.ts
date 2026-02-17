@@ -13,6 +13,7 @@ export interface PostListItemDTO {
 	category: string;
 	tags: string[];
 	thumbnailUrl?: string;
+	chapterNumber?: number;
 	wordCount: number;
 	views: number;
 	reactions: PostReactions;

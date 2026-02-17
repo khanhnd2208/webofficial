@@ -129,35 +129,43 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 			<div className="border-b border-border">
 				<div className="mx-auto max-w-6xl px-6 py-3">
 					<Link
-						href="/blog"
+						href="/"
 						className="text-xs font-bold uppercase tracking-widest text-muted transition-colors hover:text-foreground"
 					>
-						← Blog
+						← Trang chủ
 					</Link>
 				</div>
 			</div>
 
 			{/* Article header */}
 			<header className="mx-auto max-w-3xl px-4 pt-8 sm:px-6 sm:pt-16 lg:max-w-4xl">
-				{/* Category + Tags */}
-				<div className="flex flex-wrap items-center gap-3">
-					{post.category && post.category !== 'Uncategorized' ? (
-						<span className="rounded-full bg-accent/10 px-3 py-0.5 text-xs font-bold uppercase tracking-widest text-accent">
-							{post.category}
+				{/* Chapter + Category + Tags */}
+				<div className="flex flex-wrap items-center gap-2">
+					{post.chapterNumber ? (
+						<span className="font-mono text-xs font-bold uppercase tracking-widest text-accent">
+							Chapter {post.chapterNumber}
 						</span>
+					) : null}
+					{post.category && post.category !== 'Uncategorized' ? (
+						<>
+							{post.chapterNumber ? <span className="text-border-strong">·</span> : null}
+							<span className="text-xs font-bold uppercase tracking-widest text-foreground-secondary">
+								{post.category}
+							</span>
+						</>
 					) : null}
 					{post.tags.map((t) => (
 						<Link
 							key={t}
 							href={`/blog?tag=${encodeURIComponent(t)}`}
-							className="text-xs font-bold uppercase tracking-widest text-muted transition-colors hover:text-accent"
+							className="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted transition-colors hover:border-accent hover:text-accent"
 						>
 							{t}
 						</Link>
 					))}
 				</div>
 
-				<h1 className="mt-4 text-2xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
+				<h1 className="mt-4 text-2xl font-black leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
 					{post.title}
 				</h1>
 

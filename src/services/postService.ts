@@ -23,6 +23,7 @@ type PostLean = {
 	category?: string;
 	tags: string[];
 	thumbnailUrl?: string;
+	chapterNumber?: number;
 	isPublished: boolean;
 	wordCount?: number;
 	views?: number;
@@ -59,6 +60,7 @@ function toListItemDTO(doc: PostLean): PostListItemDTO {
 		category: doc.category || 'Uncategorized',
 		tags: Array.isArray(doc.tags) ? doc.tags : [],
 		thumbnailUrl: doc.thumbnailUrl ?? undefined,
+		chapterNumber: doc.chapterNumber ?? undefined,
 		wordCount: doc.wordCount ?? 0,
 		views: doc.views ?? 0,
 		reactions: toReactions(doc.reactions),
@@ -111,7 +113,7 @@ async function getAllPostsRaw(params: {
 		Post.countDocuments(filter),
 		Post.find(filter)
 			.select({ content: 0 })
-			.sort({ createdAt: -1 })
+			.sort({ chapterNumber: 1, createdAt: -1 })
 			.skip((page - 1) * limit)
 			.limit(limit)
 			.lean(),
@@ -209,6 +211,7 @@ export async function createPost(input: {
 	category?: string;
 	tags?: string[];
 	thumbnailUrl?: string;
+	chapterNumber?: number;
 	isPublished?: boolean;
 	slug?: string;
 }): Promise<PostDetailDTO> {
@@ -237,6 +240,7 @@ export async function createPost(input: {
 		category: input.category ? String(input.category).trim() : 'Uncategorized',
 		tags,
 		thumbnailUrl: input.thumbnailUrl ? String(input.thumbnailUrl).trim() : undefined,
+		chapterNumber: input.chapterNumber != null ? Number(input.chapterNumber) : undefined,
 		isPublished: Boolean(input.isPublished),
 	});
 
@@ -354,6 +358,10 @@ export async function updatePostById(
 		const v = input.thumbnailUrl;
 		update.thumbnailUrl = v == null || String(v).trim() === '' ? undefined : String(v).trim();
 	}
+	if ('chapterNumber' in input) {
+		const cn = input.chapterNumber;
+		update.chapterNumber = cn == null || cn === '' ? undefined : Number(cn);
+	}
 	if ('isPublished' in input) update.isPublished = Boolean(input.isPublished);
 	if ('slug' in input) {
 		const slugBase = slugify(String(input.slug ?? ''));
@@ -383,7 +391,7 @@ async function getLatestPostsRaw(limit: number): Promise<PostListItemDTO[]> {
 
 	const items = (await Post.find({ isPublished: true })
 		.select({ content: 0 })
-		.sort({ createdAt: -1 })
+		.sort({ chapterNumber: 1, createdAt: -1 })
 		.limit(lim)
 		.lean()) as unknown as PostLean[];
 

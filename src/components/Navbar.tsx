@@ -6,7 +6,7 @@ import { useState } from 'react';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
-	{ href: '/blog', label: 'Blog' },
+	{ href: '/blog', label: 'Chapters' },
 ];
 
 export default function Navbar() {

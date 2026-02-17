@@ -9,6 +9,7 @@ export interface IPost {
 	category: string;
 	tags: string[];
 	thumbnailUrl?: string;
+	chapterNumber?: number;
 	isPublished: boolean;
 	publishedAt?: Date;
 	wordCount: number;
@@ -36,6 +37,7 @@ const PostSchema = new Schema<IPost>(
 		category: { type: String, default: 'Uncategorized', index: true, trim: true },
 		tags: { type: [String], default: [], index: true },
 		thumbnailUrl: { type: String },
+		chapterNumber: { type: Number, sparse: true, unique: true, index: true },
 		isPublished: { type: Boolean, default: false, index: true },
 		publishedAt: { type: Date },
 		wordCount: { type: Number, default: 0 },
@@ -52,6 +54,7 @@ const PostSchema = new Schema<IPost>(
 
 // Compound indexes for common query patterns
 PostSchema.index({ isPublished: 1, createdAt: -1 });
+PostSchema.index({ isPublished: 1, chapterNumber: 1 });
 PostSchema.index({ isPublished: 1, tags: 1 });
 PostSchema.index({ title: 'text', summary: 'text', tags: 'text' });
 
