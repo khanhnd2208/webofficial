@@ -14,12 +14,7 @@ const ADMIN_PREFIX = '/admin';
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
-	// Skip all API routes
-	if (pathname.startsWith('/api/')) {
-		return NextResponse.next();
-	}
-
-	// Only protect /admin routes
+	// Only protect /admin page routes (not /api)
 	if (!pathname.startsWith(ADMIN_PREFIX)) {
 		return NextResponse.next();
 	}
@@ -39,9 +34,9 @@ export async function proxy(request: NextRequest) {
 		const response = NextResponse.redirect(cleanUrl);
 		response.cookies.set('admin_token', adminSecret, {
 			httpOnly: true,
-			secure: true,
+			secure: request.nextUrl.protocol === 'https:',
 			sameSite: 'lax',
-			path: '/admin',
+			path: '/',       // Must be '/' so cookie is sent to /api/* routes too
 			maxAge: 60 * 60 * 24 * 30, // 30 days
 		});
 		return response;
@@ -61,7 +56,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-	matcher: [
-		'/admin/:path*',
-	],
+	matcher: ['/admin/:path*'],
 };
