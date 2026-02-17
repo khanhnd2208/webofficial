@@ -17,12 +17,12 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
 	const { slug } = await params;
 	const post = await getPostBySlug(slug);
-	if (!post) return { title: 'Bài viết | NDK' };
+	if (!post) return { title: 'Bài viết | HANOICAM' };
 
 	const url = `${process.env.NEXT_PUBLIC_URL ?? 'https://ndk.dev'}/blog/${post.slug}`;
 
 	return {
-		title: `${post.title} | NDK`,
+		title: `${post.title} | HANOICAM`,
 		description: post.summary,
 		openGraph: {
 			title: post.title,
@@ -175,10 +175,10 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 
 				<div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-muted sm:gap-3">
 					<div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-xs font-black text-background">
-						N
+						H
 					</div>
 					<div className="flex items-center gap-2">
-						<span className="text-xs font-bold uppercase tracking-wider text-foreground-secondary">NDK</span>
+						<span className="text-xs font-bold uppercase tracking-wider text-foreground-secondary">HANOICAM</span>
 						<span>·</span>
 						<time>{dateText}</time>
 						<span>·</span>
@@ -378,7 +378,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 						description: post.summary,
 						...(post.thumbnailUrl ? { image: post.thumbnailUrl } : {}),
 						datePublished: post.publishedAt ?? post.createdAt,
-						author: { '@type': 'Person', name: 'NDK' },
+						author: { '@type': 'Person', name: 'HANOICAM' },
 						wordCount: post.wordCount,
 						keywords: post.tags.join(', '),
 					}),

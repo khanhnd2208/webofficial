@@ -22,6 +22,8 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 				category: post.category,
 				tags: post.tags,
 				thumbnailUrl: post.thumbnailUrl,
+				chapterNumber: post.chapterNumber,
+				isPinned: post.isPinned,
 				isPublished: post.isPublished,
 			}}
 		/>

@@ -22,6 +22,7 @@ type AdminPost = {
 	tags: string[];
 	thumbnailUrl?: string;
 	chapterNumber?: number;
+	isPinned?: boolean;
 	isPublished: boolean;
 };
 
@@ -68,6 +69,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 	const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 	const [thumbnailUrl, setThumbnailUrl] = useState(initial.thumbnailUrl ?? '');
 	const [chapterNumber, setChapterNumber] = useState(initial.chapterNumber != null ? String(initial.chapterNumber) : '');
+	const [isPinned, setIsPinned] = useState(Boolean(initial.isPinned));
 	const [isPublished, setIsPublished] = useState(Boolean(initial.isPublished));
 	const [content, setContent] = useState(initial.content);
 	const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
@@ -96,9 +98,10 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			JSON.stringify(tags) !== JSON.stringify(initial.tags) ||
 			thumbnailUrl !== (initial.thumbnailUrl ?? '') ||
 			chapterNumber !== (initial.chapterNumber != null ? String(initial.chapterNumber) : '') ||
+			isPinned !== Boolean(initial.isPinned) ||
 			isPublished !== Boolean(initial.isPublished)
 		);
-	}, [title, content, summary, category, tags, thumbnailUrl, chapterNumber, isPublished, saveState.status, initial]);
+	}, [title, content, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, saveState.status, initial]);
 
 	useEffect(() => {
 		if (!isDirty) return;
@@ -122,6 +125,8 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 					title, slug, summary, content, category, tags,
 					contentFormat: 'html',
 					thumbnailUrl: thumbnailUrl || undefined,
+					chapterNumber: chapterNumber ? Number(chapterNumber) : undefined,
+					isPinned,
 					isPublished,
 				}),
 			});
@@ -142,7 +147,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPublished, initial.id]);
+	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, initial.id]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -311,20 +316,34 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 
 				<ThumbnailUpload value={thumbnailUrl} onChange={setThumbnailUrl} />
 
-				<label className="flex items-center gap-2.5 md:col-span-2">
-					<input
-						type="checkbox"
-						checked={isPublished}
-						onChange={(e) => setIsPublished(e.target.checked)}
-						className="h-4 w-4 rounded border-border accent-accent"
-					/>
-					<span className="text-sm font-medium">Xuất bản</span>
-					{isPublished ? (
-						<span className="rounded-full bg-success-subtle px-2 py-0.5 text-[10px] font-bold text-success">LIVE</span>
-					) : (
-						<span className="rounded-full bg-warning-subtle px-2 py-0.5 text-[10px] font-bold text-warning">DRAFT</span>
-					)}
-				</label>
+				<div className="flex flex-wrap items-center gap-x-6 gap-y-3 md:col-span-2">
+					<label className="flex items-center gap-2.5">
+						<input
+							type="checkbox"
+							checked={isPublished}
+							onChange={(e) => setIsPublished(e.target.checked)}
+							className="h-4 w-4 rounded border-border accent-accent"
+						/>
+						<span className="text-sm font-medium">Xuất bản</span>
+						{isPublished ? (
+							<span className="rounded-full bg-success-subtle px-2 py-0.5 text-[10px] font-bold text-success">LIVE</span>
+						) : (
+							<span className="rounded-full bg-warning-subtle px-2 py-0.5 text-[10px] font-bold text-warning">DRAFT</span>
+						)}
+					</label>
+					<label className="flex items-center gap-2.5">
+						<input
+							type="checkbox"
+							checked={isPinned}
+							onChange={(e) => setIsPinned(e.target.checked)}
+							className="h-4 w-4 rounded border-border accent-accent"
+						/>
+						<span className="text-sm font-medium">📌 Ghim</span>
+						{isPinned ? (
+							<span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">PINNED</span>
+						) : null}
+					</label>
+				</div>
 			</section>
 
 			<section className="mt-6">

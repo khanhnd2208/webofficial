@@ -28,8 +28,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Website thầy giáo NDK',
-  description: 'Website cá nhân & blog chia sẻ kiến thức của thầy giáo NDK.',
+  title: 'HANOICAM',
+  description: 'HANOICAM — by NDK.',
 };
 
 export default function RootLayout({

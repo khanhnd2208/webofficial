@@ -24,6 +24,7 @@ type PostLean = {
 	tags: string[];
 	thumbnailUrl?: string;
 	chapterNumber?: number;
+	isPinned?: boolean;
 	isPublished: boolean;
 	wordCount?: number;
 	views?: number;
@@ -61,6 +62,7 @@ function toListItemDTO(doc: PostLean): PostListItemDTO {
 		tags: Array.isArray(doc.tags) ? doc.tags : [],
 		thumbnailUrl: doc.thumbnailUrl ?? undefined,
 		chapterNumber: doc.chapterNumber ?? undefined,
+		isPinned: Boolean(doc.isPinned),
 		wordCount: doc.wordCount ?? 0,
 		views: doc.views ?? 0,
 		reactions: toReactions(doc.reactions),
@@ -212,6 +214,7 @@ export async function createPost(input: {
 	tags?: string[];
 	thumbnailUrl?: string;
 	chapterNumber?: number;
+	isPinned?: boolean;
 	isPublished?: boolean;
 	slug?: string;
 }): Promise<PostDetailDTO> {
@@ -241,6 +244,7 @@ export async function createPost(input: {
 		tags,
 		thumbnailUrl: input.thumbnailUrl ? String(input.thumbnailUrl).trim() : undefined,
 		chapterNumber: input.chapterNumber != null ? Number(input.chapterNumber) : undefined,
+		isPinned: Boolean(input.isPinned),
 		isPublished: Boolean(input.isPublished),
 	});
 
@@ -362,6 +366,7 @@ export async function updatePostById(
 		const cn = input.chapterNumber;
 		update.chapterNumber = cn == null || cn === '' ? undefined : Number(cn);
 	}
+	if ('isPinned' in input) update.isPinned = Boolean(input.isPinned);
 	if ('isPublished' in input) update.isPublished = Boolean(input.isPublished);
 	if ('slug' in input) {
 		const slugBase = slugify(String(input.slug ?? ''));

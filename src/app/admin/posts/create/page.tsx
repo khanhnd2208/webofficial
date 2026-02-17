@@ -27,6 +27,7 @@ interface DraftData {
 	tags: string[];
 	thumbnailUrl: string;
 	chapterNumber: string;
+	isPinned: boolean;
 	isPublished: boolean;
 	content: string;
 	savedAt: number;
@@ -69,6 +70,7 @@ export default function CreatePostPage() {
 	const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 	const [thumbnailUrl, setThumbnailUrl] = useState('');
 	const [chapterNumber, setChapterNumber] = useState('');
+	const [isPinned, setIsPinned] = useState(false);
 	const [isPublished, setIsPublished] = useState(false);
 	const [content, setContent] = useState('');
 	const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
@@ -98,6 +100,7 @@ export default function CreatePostPage() {
 			setTags(draft.tags || []);
 			setThumbnailUrl(draft.thumbnailUrl || '');
 			setChapterNumber(draft.chapterNumber || '');
+			setIsPinned(draft.isPinned || false);
 			setIsPublished(draft.isPublished || false);
 			setContent(draft.content || '');
 			if (draft.slug) setSlugManuallyEdited(true);
@@ -113,7 +116,7 @@ export default function CreatePostPage() {
 		const timer = setTimeout(() => {
 			if (!title.trim() && plainText.length < 20) return;
 			const draft: DraftData = {
-				title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPublished, content,
+				title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content,
 				savedAt: Date.now(),
 			};
 			try {
@@ -123,7 +126,7 @@ export default function CreatePostPage() {
 			}
 		}, 5000);
 		return () => clearTimeout(timer);
-	}, [title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPublished, content, plainText, saveState.status]);
+	}, [title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content, plainText, saveState.status]);
 
 	// ─── Unsaved changes warning ───
 	const hasContent = title.trim().length > 0 || plainText.length > 10;
@@ -149,6 +152,8 @@ export default function CreatePostPage() {
 					title, slug, summary, content, category, tags,
 					contentFormat: 'html',
 					thumbnailUrl: thumbnailUrl || undefined,
+					chapterNumber: chapterNumber ? Number(chapterNumber) : undefined,
+					isPinned,
 					isPublished,
 				}),
 			});
@@ -178,7 +183,7 @@ export default function CreatePostPage() {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPublished]);
+	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -227,6 +232,7 @@ export default function CreatePostPage() {
 		setTags([]);
 		setThumbnailUrl('');
 		setChapterNumber('');
+		setIsPinned(false);
 		setIsPublished(false);
 		setContent('');
 		setSaveState({ status: 'idle' });
@@ -366,16 +372,28 @@ export default function CreatePostPage() {
 
 				<ThumbnailUpload value={thumbnailUrl} onChange={setThumbnailUrl} />
 
-				<label className="flex items-center gap-2.5 md:col-span-2">
-					<input
-						type="checkbox"
-						checked={isPublished}
-						onChange={(e) => setIsPublished(e.target.checked)}
-						className="h-4 w-4 rounded border-border accent-accent"
-					/>
-					<span className="text-sm font-medium">Xuất bản ngay</span>
-					<span className="text-xs text-muted">(Nếu không chọn, bài sẽ ở trạng thái nháp)</span>
-				</label>
+				<div className="flex flex-wrap items-center gap-x-6 gap-y-3 md:col-span-2">
+					<label className="flex items-center gap-2.5">
+						<input
+							type="checkbox"
+							checked={isPublished}
+							onChange={(e) => setIsPublished(e.target.checked)}
+							className="h-4 w-4 rounded border-border accent-accent"
+						/>
+						<span className="text-sm font-medium">Xuất bản ngay</span>
+						<span className="text-xs text-muted">(Nếu không chọn, bài sẽ ở trạng thái nháp)</span>
+					</label>
+					<label className="flex items-center gap-2.5">
+						<input
+							type="checkbox"
+							checked={isPinned}
+							onChange={(e) => setIsPinned(e.target.checked)}
+							className="h-4 w-4 rounded border-border accent-accent"
+						/>
+						<span className="text-sm font-medium">📌 Ghim</span>
+						<span className="text-xs text-muted">(Hiển thị nổi bật trên trang chủ)</span>
+					</label>
+				</div>
 			</section>
 
 			<section className="mt-6">

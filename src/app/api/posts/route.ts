@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
 			tags,
 			thumbnailUrl,
 			chapterNumber,
+			isPinned,
 			isPublished,
 		} = body as {
 			title?: unknown;
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
 			tags?: unknown;
 			thumbnailUrl?: unknown;
 			chapterNumber?: unknown;
+			isPinned?: unknown;
 			isPublished?: unknown;
 		};
 
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
 			tags: Array.isArray(tags) ? tags.map((t) => String(t)) : [],
 			thumbnailUrl: thumbnailUrl == null ? undefined : String(thumbnailUrl),
 			chapterNumber: chapterNumber == null ? undefined : Number(chapterNumber),
+			isPinned: Boolean(isPinned),
 			isPublished: Boolean(isPublished),
 		});
 

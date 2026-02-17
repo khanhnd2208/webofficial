@@ -172,6 +172,9 @@ export default async function AdminPostsPage({
 													<Link href={`/admin/posts/${p.id}/edit`} className="group min-w-0 flex-1">
 														<div className="flex items-center gap-2">
 															<span className="truncate font-medium text-foreground group-hover:text-accent">{p.title}</span>
+															{p.isPinned ? (
+																<span className="inline-flex shrink-0 rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold text-accent">📌</span>
+															) : null}
 															<span
 																className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase ${
 																	p.isPublished

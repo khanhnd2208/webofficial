@@ -10,6 +10,7 @@ export interface IPost {
 	tags: string[];
 	thumbnailUrl?: string;
 	chapterNumber?: number;
+	isPinned: boolean;
 	isPublished: boolean;
 	publishedAt?: Date;
 	wordCount: number;
@@ -38,6 +39,7 @@ const PostSchema = new Schema<IPost>(
 		tags: { type: [String], default: [], index: true },
 		thumbnailUrl: { type: String },
 		chapterNumber: { type: Number, sparse: true, unique: true, index: true },
+		isPinned: { type: Boolean, default: false, index: true },
 		isPublished: { type: Boolean, default: false, index: true },
 		publishedAt: { type: Date },
 		wordCount: { type: Number, default: 0 },

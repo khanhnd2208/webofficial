@@ -6,8 +6,8 @@ import { getAllPosts, getAllTags } from '@/services/postService';
 export const revalidate = 60;
 
 export const metadata = {
-	title: 'Tất cả Chapters | NDK',
-	description: 'Danh sách tất cả chapters — tự truyện NDK.',
+	title: 'Tất cả Chapters | HANOICAM',
+	description: 'Danh sách tất cả chapters — HANOICAM.',
 };
 
 function buildQuery(params: { tag?: string; page?: number }) {

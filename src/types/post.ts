@@ -14,6 +14,7 @@ export interface PostListItemDTO {
 	tags: string[];
 	thumbnailUrl?: string;
 	chapterNumber?: number;
+	isPinned: boolean;
 	wordCount: number;
 	views: number;
 	reactions: PostReactions;

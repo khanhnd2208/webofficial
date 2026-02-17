@@ -21,7 +21,7 @@ export default function Navbar() {
 					<div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
 						<span className="text-xs font-black text-background">N</span>
 					</div>
-					<span className="text-sm font-bold uppercase tracking-widest text-foreground">NDK</span>
+					<span className="text-sm font-bold uppercase tracking-widest text-foreground">HANOICAM</span>
 				</Link>
 
 				{/* Desktop Navigation */}
