@@ -7,6 +7,7 @@ import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
 	{ href: '/blog', label: 'Chapters' },
+	{ href: '/feedback', label: 'Phản hồi' },
 ];
 
 export default function Navbar() {

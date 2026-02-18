@@ -157,6 +157,9 @@ export default function ThumbnailUpload({ value, onChange }: ThumbnailUploadProp
 							<p className="mt-1 text-xs text-muted">
 								PNG, JPG, WebP — tối đa 10MB · Hỗ trợ cắt &amp; chỉnh sửa
 							</p>
+							<p className="mt-1 font-mono text-[10px] text-muted/60">
+								Kích thước đề xuất: 1200 × 600 px (tỉ lệ 2:1)
+							</p>
 						</>
 					)}
 				</div>

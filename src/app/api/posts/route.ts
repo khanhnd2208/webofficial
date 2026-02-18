@@ -10,8 +10,10 @@ export async function GET(request: NextRequest) {
 		const page = Number(url.searchParams.get('page') ?? '1');
 		const limit = Number(url.searchParams.get('limit') ?? '9');
 		const tag = url.searchParams.get('tag') ?? undefined;
+		const category = url.searchParams.get('category') ?? undefined;
+		const sort = url.searchParams.get('sort') ?? undefined;
 
-		const result = await getAllPosts(page, limit, tag);
+		const result = await getAllPosts(page, limit, tag, category, sort);
 		return NextResponse.json({ ok: true, data: result });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';

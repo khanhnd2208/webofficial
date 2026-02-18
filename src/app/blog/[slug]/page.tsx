@@ -199,18 +199,6 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 				</div>
 			</header>
 
-			{/* Thumbnail */}
-			{post.thumbnailUrl ? (
-				<div className="mx-auto mt-8 max-w-3xl px-4 sm:mt-10 sm:px-6 lg:max-w-4xl">
-					<img
-						src={post.thumbnailUrl}
-						alt={post.title}
-						className="aspect-2/1 w-full rounded-2xl object-cover"
-						loading="lazy"
-					/>
-				</div>
-			) : null}
-
 			{/* Article body with optional TOC sidebar */}
 			<div className="mx-auto mt-8 max-w-3xl px-4 sm:mt-10 sm:px-6 lg:max-w-4xl">
 				<div className="relative lg:grid lg:grid-cols-[1fr_220px] lg:gap-8">
@@ -329,6 +317,27 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 			<div className="mx-auto mt-6 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
 				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Bài viết này hữu ích?</p>
 				<ReactionBar slug={post.slug} initialReactions={post.reactions} />
+			</div>
+
+			{/* Feedback CTA */}
+			<div className="mx-auto mt-8 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
+				<Link
+					href="/feedback"
+					className="group flex items-center gap-3 rounded-xl border border-border bg-surface-hover/30 px-5 py-4 transition-colors hover:border-accent/50 hover:bg-accent-subtle/30"
+				>
+					<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+						<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+							<path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+						</svg>
+					</div>
+					<div className="min-w-0 flex-1">
+						<p className="text-sm font-bold text-foreground group-hover:text-accent">Gửi phản hồi</p>
+						<p className="text-xs text-muted">Góp ý, liên hệ, hoặc đặt câu hỏi cho tác giả.</p>
+					</div>
+					<svg className="h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+						<path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+					</svg>
+				</Link>
 			</div>
 
 			{/* Related posts */}

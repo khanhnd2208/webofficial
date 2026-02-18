@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import BlogSearch from '@/components/BlogSearch';
-import { getAllPosts, getAllTags } from '@/services/postService';
+import BlogFilterBar from '@/components/BlogFilterBar';
+import { getAllPosts, getAllTags, getAllCategories } from '@/services/postService';
 
 export const revalidate = 60;
 
@@ -10,9 +12,11 @@ export const metadata = {
 	description: 'Danh sách tất cả chapters — HANOICAM.',
 };
 
-function buildQuery(params: { tag?: string; page?: number }) {
+function buildQuery(params: { tag?: string; category?: string; sort?: string; page?: number }) {
 	const sp = new URLSearchParams();
 	if (params.tag) sp.set('tag', params.tag);
+	if (params.category) sp.set('category', params.category);
+	if (params.sort) sp.set('sort', params.sort);
 	if (params.page && params.page > 1) sp.set('page', String(params.page));
 	const q = sp.toString();
 	return q ? `?${q}` : '';
@@ -34,14 +38,20 @@ function formatDate(dateStr: string): string {
 export default async function BlogPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ tag?: string; page?: string }>;
+	searchParams?: Promise<{ tag?: string; category?: string; sort?: string; page?: string }>;
 }) {
 	const sp = searchParams ? await searchParams : undefined;
 	const tag = sp?.tag?.trim() || undefined;
+	const category = sp?.category?.trim() || undefined;
+	const sort = sp?.sort?.trim() || undefined;
 	const page = Math.max(1, Number(sp?.page ?? '1') || 1);
 	const limit = 20;
 
-	const [result, tags] = await Promise.all([getAllPosts(page, limit, tag), getAllTags()]);
+	const [result, tags, categories] = await Promise.all([
+		getAllPosts(page, limit, tag, category, sort),
+		getAllTags(),
+		getAllCategories(),
+	]);
 
 	return (
 		<main className="min-h-screen">
@@ -54,10 +64,10 @@ export default async function BlogPage({
 								← Trang chủ
 							</Link>
 							<h1 className="mt-3 font-serif text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-								{tag ? `#${tag}` : 'Tất cả Chapters'}
+								{tag ? `#${tag}` : category ? category : 'Tất cả Chapters'}
 							</h1>
 							<p className="mt-2 font-mono text-xs text-muted">
-								{result.total} chapters {tag ? `với tag "${tag}"` : ''}
+								{result.total} chapters {tag ? `với tag "${tag}"` : category ? `trong "${category}"` : ''}
 							</p>
 						</div>
 						<BlogSearch />
@@ -65,30 +75,17 @@ export default async function BlogPage({
 				</div>
 			</section>
 
-			{/* Tags */}
-			{tags.length > 0 ? (
-				<section className="border-b border-border">
-					<div className="mx-auto max-w-5xl overflow-x-auto px-4 py-3 sm:px-6">
-						<div className="flex gap-2">
-							<Link
-								className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold transition-colors ${!tag ? 'bg-foreground text-background' : 'border border-border text-muted hover:border-foreground hover:text-foreground'}`}
-								href="/blog"
-							>
-								Tất cả
-							</Link>
-							{tags.map((t) => (
-								<Link
-									key={t}
-									className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold transition-colors ${tag === t ? 'bg-foreground text-background' : 'border border-border text-muted hover:border-foreground hover:text-foreground'}`}
-									href={`/blog${buildQuery({ tag: t, page: 1 })}`}
-								>
-									{t}
-								</Link>
-							))}
-						</div>
-					</div>
-				</section>
-			) : null}
+			{/* Smart Filter Bar */}
+			<Suspense fallback={null}>
+				<BlogFilterBar
+					allTags={tags}
+					allCategories={categories}
+					currentTag={tag}
+					currentCategory={category}
+					currentSort={sort}
+					total={result.total}
+				/>
+			</Suspense>
 
 			{/* Posts — Grid layout */}
 			<section>
@@ -185,7 +182,7 @@ export default async function BlogPage({
 								className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
 									result.page <= 1 ? 'pointer-events-none opacity-30' : 'text-muted hover:text-foreground'
 								}`}
-								href={`/blog${buildQuery({ tag, page: Math.max(1, result.page - 1) })}`}
+								href={`/blog${buildQuery({ tag, category, sort, page: Math.max(1, result.page - 1) })}`}
 							>
 								← Trước
 							</Link>
@@ -196,7 +193,7 @@ export default async function BlogPage({
 								className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
 									result.page >= result.totalPages ? 'pointer-events-none opacity-30' : 'text-muted hover:text-foreground'
 								}`}
-								href={`/blog${buildQuery({ tag, page: Math.min(result.totalPages, result.page + 1) })}`}
+								href={`/blog${buildQuery({ tag, category, sort, page: Math.min(result.totalPages, result.page + 1) })}`}
 							>
 								Sau →
 							</Link>

@@ -101,21 +101,36 @@ async function getAllPostsRaw(params: {
 	page: number;
 	limit: number;
 	tag?: string;
+	category?: string;
+	sort?: string;
 }): Promise<GetAllPostsResult> {
 	const page = Math.max(1, Math.floor(params.page));
 	const limit = Math.min(50, Math.max(1, Math.floor(params.limit)));
 	const tag = params.tag?.trim();
+	const category = params.category?.trim();
 
 	await dbConnect();
 
 	const filter: Record<string, unknown> = { isPublished: true };
 	if (tag) filter.tags = tag;
+	if (category && category !== 'all') filter.category = category;
+
+	// Sort options for public pages
+	let sortObj: Record<string, 1 | -1> = { chapterNumber: 1, createdAt: -1 };
+	switch (params.sort) {
+		case 'chapter-asc': sortObj = { chapterNumber: 1, createdAt: -1 }; break;
+		case 'chapter-desc': sortObj = { chapterNumber: -1, createdAt: -1 }; break;
+		case 'newest': sortObj = { createdAt: -1 }; break;
+		case 'oldest': sortObj = { createdAt: 1 }; break;
+		case 'views': sortObj = { views: -1 }; break;
+		default: break;
+	}
 
 	const [total, items] = await Promise.all([
 		Post.countDocuments(filter),
 		Post.find(filter)
 			.select({ content: 0 })
-			.sort({ chapterNumber: 1, createdAt: -1 })
+			.sort(sortObj)
 			.skip((page - 1) * limit)
 			.limit(limit)
 			.lean(),
@@ -130,6 +145,12 @@ async function getAllPostsRaw(params: {
 		total,
 		totalPages,
 	};
+}
+
+async function getAllCategoriesPublicRaw(): Promise<string[]> {
+	await dbConnect();
+	const cats = (await Post.distinct('category', { isPublished: true })) as unknown as string[];
+	return cats.filter((c) => c && c !== 'Uncategorized').map((c) => String(c)).sort((a, b) => a.localeCompare(b));
 }
 
 async function getPostBySlugRaw(slug: string): Promise<PostDetailDTO | null> {
@@ -410,8 +431,15 @@ async function getAllTagsRaw(): Promise<string[]> {
 }
 
 export const getAllPosts = unstable_cache(
-	async (page: number, limit: number, tag?: string) => getAllPostsRaw({ page, limit, tag }),
+	async (page: number, limit: number, tag?: string, category?: string, sort?: string) =>
+		getAllPostsRaw({ page, limit, tag, category, sort }),
 	['posts:list'],
+	{ revalidate: 60 }
+);
+
+export const getAllCategories = unstable_cache(
+	async () => getAllCategoriesPublicRaw(),
+	['posts:categories'],
 	{ revalidate: 60 }
 );
 

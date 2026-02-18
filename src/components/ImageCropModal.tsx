@@ -133,6 +133,21 @@ export default function ImageCropModal({
 
 				{/* Crop area */}
 				<div className="flex-1 overflow-auto p-4">
+					{/* Dimensions info */}
+					{completedCrop && imgRef.current ? (
+						<div className="mb-3 flex items-center gap-3 rounded-lg bg-surface-secondary px-3 py-2 text-xs text-muted">
+							<span>📐 Kích thước xuất:</span>
+							<span className="font-mono font-bold text-foreground">
+								{Math.floor(completedCrop.width * (imgRef.current.naturalWidth / imgRef.current.width))}
+								{' × '}
+								{Math.floor(completedCrop.height * (imgRef.current.naturalHeight / imgRef.current.height))}
+								{' px'}
+							</span>
+							<span className="text-muted/60">·</span>
+							<span>Tỉ lệ: {(completedCrop.width / completedCrop.height).toFixed(2)} : 1</span>
+						</div>
+					) : null}
+
 					<div className="flex justify-center rounded-xl bg-black/20 p-2">
 						<ReactCrop
 							crop={crop}
