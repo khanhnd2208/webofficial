@@ -15,34 +15,44 @@ function formatNumber(n: number): string {
 	return String(n);
 }
 
+function formatDate(dateStr: string): string {
+	return new Date(dateStr).toLocaleDateString('vi-VN', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
+}
+
 export default async function Home() {
 	const [result, tags] = await Promise.all([getAllPosts(1, 100), getAllTags()]);
 	const posts = result.items;
 
-	// Pinned posts highlighted at top; rest in normal list
 	const pinnedPosts = posts.filter((p) => p.isPinned);
 	const otherPosts = posts.filter((p) => !p.isPinned);
 
 	return (
 		<main className="min-h-screen">
-			{/* ═══ HERO — HANOICAM header ═══ */}
+			{/* ═══ HERO ═══ */}
 			<section className="border-b border-border">
-				<div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
-					<h1 className="text-3xl font-black leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+				<div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-20">
+					<h1 className="font-serif text-4xl font-black leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
 						HANOICAM
 					</h1>
-					<div className="mt-6 flex items-center gap-4">
+					<p className="mt-4 max-w-lg text-base leading-relaxed text-foreground-secondary sm:text-lg">
+						Ghi chép, suy tư, và những câu chuyện cá nhân.
+					</p>
+					<div className="mt-8 flex items-center gap-4">
 						<span className="font-mono text-xs text-muted">{posts.length} chapters</span>
-						<span className="text-muted">·</span>
+						<span className="text-border-strong">·</span>
 						<BlogSearch />
 					</div>
 				</div>
 			</section>
 
-			{/* ═══ TAGS — Filter bar ═══ */}
+			{/* ═══ TAGS ═══ */}
 			{tags.length > 0 ? (
 				<section className="border-b border-border">
-					<div className="mx-auto max-w-3xl overflow-x-auto px-4 py-3 sm:px-6">
+					<div className="mx-auto max-w-5xl overflow-x-auto px-4 py-3 sm:px-6">
 						<div className="flex gap-2">
 							{tags.map((t) => (
 								<Link
@@ -58,176 +68,143 @@ export default async function Home() {
 				</section>
 			) : null}
 
-			{/* ═══ PINNED — Highlighted posts ═══ */}
+			{/* ═══ FEATURED — Pinned posts, large visual cards ═══ */}
 			{pinnedPosts.length > 0 ? (
-				<section className="border-b border-border bg-surface-hover/30">
-					<div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-						{pinnedPosts.length === 1 ? (
-							/* Single pinned post — full-width highlight */
-							<Link href={`/blog/${pinnedPosts[0].slug}`} className="group block">
-								<div className="flex items-start gap-4">
-									<div className="shrink-0 pt-0.5">
-										<div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent text-xs font-black text-accent sm:h-12 sm:w-12 sm:text-sm">
-											{pinnedPosts[0].chapterNumber ?? '📌'}
+				<section className="border-b border-border">
+					<div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+						<div className={pinnedPosts.length === 1 ? '' : 'grid gap-6 sm:grid-cols-2'}>
+							{pinnedPosts.map((post, i) => (
+								<Link
+									key={post.id}
+									href={`/blog/${post.slug}`}
+									className={`group relative block overflow-hidden rounded-2xl transition-shadow hover:shadow-lg ${
+										pinnedPosts.length === 1 ? '' : ''
+									}`}
+								>
+									{/* Thumbnail or gradient placeholder */}
+									{post.thumbnailUrl ? (
+										<div className={`overflow-hidden ${pinnedPosts.length === 1 ? 'aspect-21/9' : 'aspect-16/10'}`}>
+											<img
+												src={post.thumbnailUrl}
+												alt={post.title}
+												className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+												loading={i === 0 ? 'eager' : 'lazy'}
+											/>
 										</div>
-									</div>
-									<div className="min-w-0 flex-1">
+									) : (
+										<div className={`bg-linear-to-br from-surface-secondary to-surface-active ${pinnedPosts.length === 1 ? 'aspect-21/9' : 'aspect-16/10'}`} />
+									)}
+									{/* Overlay gradient */}
+									<div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+									{/* Content over image */}
+									<div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
 										<div className="flex items-center gap-2">
-											{pinnedPosts[0].chapterNumber ? (
-												<span className="font-mono text-xs font-bold uppercase tracking-widest text-accent">
-													Chapter {pinnedPosts[0].chapterNumber}
+											{post.chapterNumber ? (
+												<span className="font-mono text-[11px] font-bold uppercase tracking-widest text-white/70">
+													Chapter {post.chapterNumber}
 												</span>
 											) : null}
-											<span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
-												📌 Ghim
-											</span>
 										</div>
-										<h2 className="mt-1.5 text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-accent sm:text-2xl">
-											{pinnedPosts[0].title}
+										<h2 className={`mt-1.5 font-bold leading-tight text-white ${
+											pinnedPosts.length === 1
+												? 'text-xl sm:text-2xl md:text-3xl'
+												: 'text-lg sm:text-xl'
+										}`}>
+											{post.title}
 										</h2>
-										<p className="mt-2 line-clamp-2 text-sm leading-relaxed text-foreground-secondary">
-											{pinnedPosts[0].summary}
-										</p>
-										<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
-											<time>
-												{new Date(pinnedPosts[0].publishedAt ?? pinnedPosts[0].createdAt).toLocaleDateString('vi-VN', {
-													year: 'numeric',
-													month: 'short',
-													day: 'numeric',
-												})}
-											</time>
-											{pinnedPosts[0].views > 0 ? (
+										{post.summary ? (
+											<p className={`mt-2 line-clamp-2 leading-relaxed text-white/75 ${
+												pinnedPosts.length === 1 ? 'text-sm sm:text-base' : 'text-sm'
+											}`}>
+												{post.summary}
+											</p>
+										) : null}
+										<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/50">
+											<time>{formatDate(post.publishedAt ?? post.createdAt)}</time>
+											{post.views > 0 ? (
 												<>
 													<span>·</span>
-													<span>{formatNumber(pinnedPosts[0].views)} views</span>
+													<span>{formatNumber(post.views)} views</span>
 												</>
 											) : null}
-											{pinnedPosts[0].tags.length > 0 ? (
+											{post.tags.length > 0 ? (
 												<>
 													<span>·</span>
-													{pinnedPosts[0].tags.slice(0, 3).map((t) => (
-														<span key={t} className="text-foreground-secondary">{t}</span>
+													{post.tags.slice(0, 2).map((t) => (
+														<span key={t} className="text-white/60">{t}</span>
 													))}
 												</>
 											) : null}
 										</div>
 									</div>
-								</div>
-							</Link>
-						) : (
-							/* Multiple pinned posts — grid */
-							<div className="space-y-1">
-								<p className="mb-4 font-mono text-xs font-bold uppercase tracking-widest text-accent">📌 Ghim</p>
-								<div className="grid gap-4 sm:grid-cols-2">
-									{pinnedPosts.map((post) => (
-										<Link
-											key={post.id}
-											href={`/blog/${post.slug}`}
-											className="group rounded-xl border-2 border-accent/20 bg-background p-5 transition-colors hover:border-accent"
-										>
-											<div className="flex items-center gap-2">
-												{post.chapterNumber ? (
-													<span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-accent text-xs font-bold text-accent">
-														{post.chapterNumber}
-													</span>
-												) : null}
-												{post.chapterNumber ? (
-													<span className="font-mono text-[11px] font-bold uppercase tracking-widest text-accent">
-														Chapter {post.chapterNumber}
-													</span>
-												) : null}
-											</div>
-											<h2 className="mt-2.5 text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent sm:text-lg">
-												{post.title}
-											</h2>
-											<p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground-secondary">
-												{post.summary}
-											</p>
-											<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
-												<time>
-													{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('vi-VN', {
-														year: 'numeric',
-														month: 'short',
-														day: 'numeric',
-													})}
-												</time>
-												{post.views > 0 ? (
-													<>
-														<span>·</span>
-														<span>{formatNumber(post.views)} views</span>
-													</>
-												) : null}
-											</div>
-										</Link>
-									))}
-								</div>
-							</div>
-						)}
+								</Link>
+							))}
+						</div>
 					</div>
 				</section>
 			) : null}
 
-			{/* ═══ ALL CHAPTERS — Chronological list ═══ */}
+			{/* ═══ ALL CHAPTERS — Card grid ═══ */}
 			{otherPosts.length > 0 ? (
 				<section>
-					<div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
-						<div className="divide-y divide-border">
+					<div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+						<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
+							Tất cả chapters
+						</h2>
+						<div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 							{otherPosts.map((post) => (
-								<article key={post.id}>
-									<Link href={`/blog/${post.slug}`} className="group flex gap-4 py-5 sm:py-6">
-										{/* Chapter number */}
-										<div className="shrink-0 pt-0.5">
-											{post.chapterNumber ? (
-												<div className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-xs font-bold text-muted transition-colors group-hover:border-accent group-hover:text-accent sm:h-10 sm:w-10">
-													{post.chapterNumber}
-												</div>
-											) : (
-												<div className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-xs text-muted sm:h-10 sm:w-10">
-													—
-												</div>
-											)}
-										</div>
+								<article key={post.id} className="group">
+									<Link href={`/blog/${post.slug}`} className="block">
+										{/* Thumbnail */}
+										{post.thumbnailUrl ? (
+											<div className="aspect-16/10 overflow-hidden rounded-xl bg-surface-hover">
+												<img
+													src={post.thumbnailUrl}
+													alt={post.title}
+													className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+													loading="lazy"
+												/>
+											</div>
+										) : (
+											<div className="flex aspect-16/10 items-center justify-center rounded-xl bg-surface-secondary">
+												{post.chapterNumber ? (
+													<span className="font-serif text-3xl font-black text-border-strong">
+														{post.chapterNumber}
+													</span>
+												) : (
+													<span className="text-2xl text-border-strong">—</span>
+												)}
+											</div>
+										)}
 
-										{/* Content */}
-										<div className="min-w-0 flex-1">
+										{/* Text content */}
+										<div className="mt-3.5">
 											<div className="flex items-center gap-2">
 												{post.chapterNumber ? (
-													<span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted group-hover:text-accent">
-														Chapter {post.chapterNumber}
+													<span className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted group-hover:text-accent">
+														Ch. {post.chapterNumber}
 													</span>
 												) : null}
 												{post.category && post.category !== 'Uncategorized' ? (
-													<span className="text-[11px] font-bold uppercase tracking-widest text-foreground-secondary">
+													<span className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
 														{post.category}
 													</span>
 												) : null}
 											</div>
-											<h2 className="mt-1 text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent sm:text-lg">
+											<h3 className="mt-1 text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent">
 												{post.title}
-											</h2>
-											<p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground-secondary">
-												{post.summary}
-											</p>
-											<div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
-												<time>
-													{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('vi-VN', {
-														year: 'numeric',
-														month: 'short',
-														day: 'numeric',
-													})}
-												</time>
+											</h3>
+											{post.summary ? (
+												<p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground-secondary">
+													{post.summary}
+												</p>
+											) : null}
+											<div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+												<time>{formatDate(post.publishedAt ?? post.createdAt)}</time>
 												{post.views > 0 ? (
 													<>
 														<span>·</span>
 														<span>{formatNumber(post.views)} views</span>
-													</>
-												) : null}
-												{post.tags.length > 0 ? (
-													<>
-														<span>·</span>
-														{post.tags.slice(0, 2).map((t) => (
-															<span key={t} className="text-foreground-secondary">{t}</span>
-														))}
 													</>
 												) : null}
 											</div>
@@ -240,9 +217,9 @@ export default async function Home() {
 				</section>
 			) : posts.length === 0 ? (
 				<section>
-					<div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
-						<p className="text-lg font-bold text-foreground">Chưa có chapter nào</p>
-						<p className="mt-2 text-sm text-muted">Nội dung sẽ sớm được cập nhật.</p>
+					<div className="mx-auto max-w-5xl px-4 py-24 text-center sm:px-6">
+						<p className="font-serif text-2xl font-bold text-foreground">Chưa có chapter nào</p>
+						<p className="mt-3 text-sm text-muted">Nội dung sẽ sớm được cập nhật.</p>
 					</div>
 				</section>
 			) : null}

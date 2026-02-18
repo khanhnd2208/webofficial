@@ -17,11 +17,11 @@ export default function Navbar() {
 		<header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
 			<div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
 				{/* Logo */}
-				<Link href="/" className="flex items-center gap-2">
+				<Link href="/" className="flex items-center gap-2.5">
 					<div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
-						<span className="text-xs font-black text-background">N</span>
+						<span className="text-xs font-black text-background">H</span>
 					</div>
-					<span className="text-sm font-bold uppercase tracking-widest text-foreground">HANOICAM</span>
+					<span className="text-sm font-bold uppercase tracking-[0.2em] text-foreground">HANOICAM</span>
 				</Link>
 
 				{/* Desktop Navigation */}

@@ -327,13 +327,13 @@ export default function CreatePostPage() {
 				</label>
 
 				<label className="block md:col-span-2">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Tóm tắt</div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Tóm tắt <span className="text-muted/60 normal-case tracking-normal">(tuỳ chọn)</span></div>
 					<textarea
 						value={summary}
 						onChange={(e) => setSummary(e.target.value)}
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
 						rows={2}
-						placeholder="Mô tả ngắn cho SEO và trang danh sách"
+						placeholder="Mô tả ngắn cho SEO (không bắt buộc)"
 					/>
 				</label>
 

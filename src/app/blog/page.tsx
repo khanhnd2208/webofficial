@@ -23,6 +23,14 @@ function formatNumber(n: number): string {
 	return String(n);
 }
 
+function formatDate(dateStr: string): string {
+	return new Date(dateStr).toLocaleDateString('vi-VN', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
+}
+
 export default async function BlogPage({
 	searchParams,
 }: {
@@ -39,17 +47,17 @@ export default async function BlogPage({
 		<main className="min-h-screen">
 			{/* Header */}
 			<section className="border-b border-border">
-				<div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+				<div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
 					<div className="flex flex-wrap items-end justify-between gap-4">
 						<div>
 							<Link href="/" className="text-xs font-bold uppercase tracking-widest text-muted transition-colors hover:text-foreground">
 								← Trang chủ
 							</Link>
-							<h1 className="mt-3 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+							<h1 className="mt-3 font-serif text-2xl font-black tracking-tight text-foreground sm:text-3xl">
 								{tag ? `#${tag}` : 'Tất cả Chapters'}
 							</h1>
 							<p className="mt-2 font-mono text-xs text-muted">
-								{result.total} bài viết {tag ? `với tag "${tag}"` : ''}
+								{result.total} chapters {tag ? `với tag "${tag}"` : ''}
 							</p>
 						</div>
 						<BlogSearch />
@@ -60,7 +68,7 @@ export default async function BlogPage({
 			{/* Tags */}
 			{tags.length > 0 ? (
 				<section className="border-b border-border">
-					<div className="mx-auto max-w-3xl overflow-x-auto px-4 py-3 sm:px-6">
+					<div className="mx-auto max-w-5xl overflow-x-auto px-4 py-3 sm:px-6">
 						<div className="flex gap-2">
 							<Link
 								className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold transition-colors ${!tag ? 'bg-foreground text-background' : 'border border-border text-muted hover:border-foreground hover:text-foreground'}`}
@@ -82,67 +90,72 @@ export default async function BlogPage({
 				</section>
 			) : null}
 
-			{/* Posts */}
+			{/* Posts — Grid layout */}
 			<section>
-				<div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
+				<div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
 					{result.items.length === 0 ? (
-						<div className="py-20 text-center">
-							<p className="text-lg font-bold text-foreground">Không tìm thấy bài viết</p>
-							<p className="mt-2 text-sm text-muted">
+						<div className="py-24 text-center">
+							<p className="font-serif text-xl font-bold text-foreground">Không tìm thấy bài viết</p>
+							<p className="mt-3 text-sm text-muted">
 								{tag ? `Không có bài viết nào với tag "${tag}".` : 'Chưa có bài viết nào.'}
 							</p>
 							{tag ? (
-								<Link href="/blog" className="mt-4 inline-block text-sm font-bold text-accent underline underline-offset-4">
+								<Link href="/blog" className="mt-5 inline-block text-sm font-bold text-accent underline underline-offset-4">
 									Xem tất cả
 								</Link>
 							) : null}
 						</div>
 					) : (
-						<div className="divide-y divide-border">
+						<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 							{result.items.map((post) => (
-								<article key={post.id}>
-									<Link href={`/blog/${post.slug}`} className="group flex gap-4 py-5 sm:py-6">
-										{/* Chapter number */}
-										<div className="shrink-0 pt-0.5">
-											{post.chapterNumber ? (
-												<div className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-xs font-bold text-muted transition-colors group-hover:border-accent group-hover:text-accent sm:h-10 sm:w-10">
-													{post.chapterNumber}
-												</div>
-											) : (
-												<div className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-xs text-muted sm:h-10 sm:w-10">
-													—
-												</div>
-											)}
-										</div>
+								<article key={post.id} className="group">
+									<Link href={`/blog/${post.slug}`} className="block">
+										{/* Thumbnail */}
+										{post.thumbnailUrl ? (
+											<div className="aspect-16/10 overflow-hidden rounded-xl bg-surface-hover">
+												<img
+													src={post.thumbnailUrl}
+													alt={post.title}
+													className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+													loading="lazy"
+												/>
+											</div>
+										) : (
+											<div className="flex aspect-16/10 items-center justify-center rounded-xl bg-surface-secondary">
+												{post.chapterNumber ? (
+													<span className="font-serif text-3xl font-black text-border-strong">
+														{post.chapterNumber}
+													</span>
+												) : (
+													<span className="text-2xl text-border-strong">—</span>
+												)}
+											</div>
+										)}
 
-										{/* Content */}
-										<div className="min-w-0 flex-1">
+										{/* Text */}
+										<div className="mt-3.5">
 											<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
 												{post.chapterNumber ? (
-													<span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted group-hover:text-accent">
-														Chapter {post.chapterNumber}
+													<span className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted group-hover:text-accent">
+														Ch. {post.chapterNumber}
 													</span>
 												) : null}
 												{post.category && post.category !== 'Uncategorized' ? (
-													<span className="text-[11px] font-bold uppercase tracking-widest text-foreground-secondary">
+													<span className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
 														{post.category}
 													</span>
 												) : null}
 											</div>
-											<h2 className="mt-1 text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent sm:text-lg">
+											<h2 className="mt-1 text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent">
 												{post.title}
 											</h2>
-											<p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground-secondary">
-												{post.summary}
-											</p>
-											<div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
-												<time>
-													{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('vi-VN', {
-														year: 'numeric',
-														month: 'short',
-														day: 'numeric',
-													})}
-												</time>
+											{post.summary ? (
+												<p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground-secondary">
+													{post.summary}
+												</p>
+											) : null}
+											<div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+												<time>{formatDate(post.publishedAt ?? post.createdAt)}</time>
 												{post.views > 0 ? (
 													<>
 														<span>·</span>
@@ -167,7 +180,7 @@ export default async function BlogPage({
 
 					{/* Pagination */}
 					{result.totalPages > 1 ? (
-						<div className="mt-8 flex items-center justify-between border-t border-border pt-6">
+						<div className="mt-12 flex items-center justify-between border-t border-border pt-6">
 							<Link
 								className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
 									result.page <= 1 ? 'pointer-events-none opacity-30' : 'text-muted hover:text-foreground'

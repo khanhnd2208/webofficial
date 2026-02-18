@@ -165,7 +165,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 					))}
 				</div>
 
-				<h1 className="mt-4 text-2xl font-black leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
+				<h1 className="mt-4 font-serif text-2xl font-black leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
 					{post.title}
 				</h1>
 
