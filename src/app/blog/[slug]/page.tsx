@@ -5,6 +5,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import CodeBlock from '@/components/CodeBlock';
+import BilingualArticle from '@/components/BilingualArticle';
+import ThumbnailPreview from '@/components/ThumbnailPreview';
 import ReactionBar from '@/components/ReactionBar';
 import ShareBar from '@/components/ShareBar';
 import ViewTracker from '@/components/ViewTracker';
@@ -204,9 +206,11 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 				<div className="relative lg:grid lg:grid-cols-[1fr_220px] lg:gap-8">
 					{post.contentFormat === 'html' ? (
 						/* ═══ HTML content (new Tiptap posts) ═══ */
-						<article
+						<BilingualArticle
+							contentVi={addHeadingIds(post.content)}
+							contentEn={post.contentEn ? addHeadingIds(post.contentEn) : ''}
+							contentFormat="html"
 							className="tiptap-content prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-[1.8] prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-blockquote:border-l-accent prose-blockquote:text-foreground-secondary prose-strong:text-foreground prose-code:text-accent max-w-none"
-							dangerouslySetInnerHTML={{ __html: addHeadingIds(post.content) }}
 						/>
 					) : (
 						/* ═══ Markdown content (legacy posts) ═══ */
@@ -349,17 +353,19 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 					<div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 						{related.map((p) => (
 							<article key={p.id} className="group">
-								<Link href={`/blog/${p.slug}`} className="block">
-									{p.thumbnailUrl ? (
-										<div className="aspect-4/3 overflow-hidden rounded-xl bg-surface-hover">
+							<Link href={`/blog/${p.slug}`} className="block">
+								{p.thumbnailUrl ? (
+									<ThumbnailPreview src={p.thumbnailUrl} alt={p.title}>
+										<div className="aspect-2/1 overflow-hidden rounded-xl bg-surface-hover">
 											<img
 												src={p.thumbnailUrl}
 												alt={p.title}
-												className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+												className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.04]"
 												loading="lazy"
 											/>
 										</div>
-									) : null}
+									</ThumbnailPreview>
+								) : null}
 									<h3 className="mt-3 text-sm font-bold uppercase tracking-tight text-foreground transition-colors group-hover:text-accent">
 										{p.title}
 									</h3>

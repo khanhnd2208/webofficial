@@ -4,6 +4,7 @@ export interface IPost {
 	title: string;
 	slug: string;
 	content: string;
+	contentEn: string;
 	contentFormat: 'markdown' | 'html';
 	summary: string;
 	category: string;
@@ -33,6 +34,7 @@ const PostSchema = new Schema<IPost>(
 		title: { type: String, required: true, trim: true },
 		slug: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
 		content: { type: String, required: true },
+		contentEn: { type: String, default: '' },
 		contentFormat: { type: String, enum: ['markdown', 'html'], default: 'markdown' },
 		summary: { type: String, required: true, trim: true },
 		category: { type: String, default: 'Uncategorized', index: true, trim: true },

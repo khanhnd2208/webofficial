@@ -24,6 +24,7 @@ export interface PostListItemDTO {
 
 export interface PostDetailDTO extends PostListItemDTO {
 	content: string;
+	contentEn: string;
 	contentFormat: 'markdown' | 'html';
 }
 
@@ -42,6 +43,7 @@ export interface AdminPostListItemDTO extends PostListItemDTO {
 
 export interface AdminPostDetailDTO extends AdminPostListItemDTO {
 	content: string;
+	contentEn: string;
 	contentFormat: 'markdown' | 'html';
 }
 

@@ -18,6 +18,7 @@ type PostLean = {
 	title: string;
 	slug: string;
 	content: string;
+	contentEn?: string;
 	contentFormat?: 'markdown' | 'html';
 	summary: string;
 	category?: string;
@@ -75,6 +76,7 @@ function toDetailDTO(doc: PostLean): PostDetailDTO {
 	return {
 		...toListItemDTO(doc),
 		content: doc.content,
+		contentEn: doc.contentEn ?? '',
 		contentFormat: doc.contentFormat ?? 'markdown',
 	};
 }
@@ -93,6 +95,7 @@ function toAdminDetailDTO(doc: PostLean): AdminPostDetailDTO {
 	return {
 		...toAdminListItemDTO(doc),
 		content: doc.content,
+		contentEn: doc.contentEn ?? '',
 		contentFormat: doc.contentFormat ?? 'markdown',
 	};
 }
@@ -230,6 +233,7 @@ export async function createPost(input: {
 	title: string;
 	summary: string;
 	content: string;
+	contentEn?: string;
 	contentFormat?: 'markdown' | 'html';
 	category?: string;
 	tags?: string[];
@@ -260,6 +264,7 @@ export async function createPost(input: {
 		slug,
 		summary,
 		content,
+		contentEn: input.contentEn ? String(input.contentEn).trim() : '',
 		contentFormat: input.contentFormat ?? 'html',
 		category: input.category ? String(input.category).trim() : 'Uncategorized',
 		tags,
@@ -370,6 +375,7 @@ export async function updatePostById(
 	if ('title' in input) update.title = String(input.title ?? '').trim();
 	if ('summary' in input) update.summary = String(input.summary ?? '').trim();
 	if ('content' in input) update.content = String(input.content ?? '').trim();
+	if ('contentEn' in input) update.contentEn = String(input.contentEn ?? '').trim();
 	if ('contentFormat' in input) {
 		const fmt = String(input.contentFormat ?? 'html');
 		update.contentFormat = fmt === 'markdown' ? 'markdown' : 'html';

@@ -10,8 +10,6 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
-import { TextStyle } from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
 import Youtube from '@tiptap/extension-youtube';
 import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
@@ -123,8 +121,6 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 			Underline,
 			Superscript,
 			Subscript,
-			TextStyle,
-			Color,
 			Highlight.configure({ multicolor: true }),
 			TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] }),
 			Link.configure({
@@ -325,11 +321,6 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 				</Btn>
 
 				<Sep />
-
-				{/* Highlight */}
-				<Btn onClick={() => editor.chain().focus().toggleHighlight({ color: '#ffffba' }).run()} active={editor.isActive('highlight')} title="Highlight">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 19h18L12 2z" fill="#ffffba" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><rect x="3" y="20" width="18" height="2" rx="1" fill="currentColor" /></svg>
-				</Btn>
 
 				{/* Spacer */}
 				<div className="flex-1" />

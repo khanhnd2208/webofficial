@@ -1,15 +1,13 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import TagInput from '@/components/TagInput';
 import ThumbnailUpload from '@/components/ThumbnailUpload';
+import DualLanguageEditor from '@/components/DualLanguageEditor';
 import { POST_CATEGORIES } from '@/constants/post';
 import { slugify } from '@/utils/slugify';
-
-const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: false });
 
 type AdminPost = {
 	id: string;
@@ -17,6 +15,7 @@ type AdminPost = {
 	slug: string;
 	summary: string;
 	content: string;
+	contentEn?: string;
 	contentFormat?: 'markdown' | 'html';
 	category: string;
 	tags: string[];
@@ -72,6 +71,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 	const [isPinned, setIsPinned] = useState(Boolean(initial.isPinned));
 	const [isPublished, setIsPublished] = useState(Boolean(initial.isPublished));
 	const [content, setContent] = useState(initial.content);
+	const [contentEn, setContentEn] = useState(initial.contentEn ?? '');
 	const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
 
 	// For legacy markdown posts, the content is stored as markdown.
@@ -93,6 +93,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 		return (
 			title !== initial.title ||
 			content !== initial.content ||
+			contentEn !== (initial.contentEn ?? '') ||
 			summary !== initial.summary ||
 			category !== (initial.category || 'Uncategorized') ||
 			JSON.stringify(tags) !== JSON.stringify(initial.tags) ||
@@ -101,7 +102,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			isPinned !== Boolean(initial.isPinned) ||
 			isPublished !== Boolean(initial.isPublished)
 		);
-	}, [title, content, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, saveState.status, initial]);
+	}, [title, content, contentEn, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, saveState.status, initial]);
 
 	useEffect(() => {
 		if (!isDirty) return;
@@ -122,7 +123,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					title, slug, summary, content, category, tags,
+					title, slug, summary, content, contentEn, category, tags,
 					contentFormat: 'html',
 					thumbnailUrl: thumbnailUrl || undefined,
 					chapterNumber: chapterNumber ? Number(chapterNumber) : undefined,
@@ -147,7 +148,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, initial.id]);
+	}, [title, slug, summary, content, contentEn, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, initial.id]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -347,11 +348,14 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			</section>
 
 			<section className="mt-6">
-				<TiptapEditor
-					content={content}
-					onChange={setContent}
+				<DualLanguageEditor
+					contentVi={content}
+					contentEn={contentEn}
+					onChangeVi={setContent}
+					onChangeEn={setContentEn}
 					onImageUpload={uploadImage}
-					placeholder="Nội dung bài viết..."
+					placeholderVi="Nội dung tiếng Việt..."
+					placeholderEn="English content..."
 				/>
 				<div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
 					<span>{wordCount.toLocaleString()} từ</span>

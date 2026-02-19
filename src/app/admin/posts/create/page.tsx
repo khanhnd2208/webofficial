@@ -1,15 +1,13 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import TagInput from '@/components/TagInput';
 import ThumbnailUpload from '@/components/ThumbnailUpload';
+import DualLanguageEditor from '@/components/DualLanguageEditor';
 import { POST_CATEGORIES } from '@/constants/post';
 import { slugify } from '@/utils/slugify';
-
-const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: false });
 
 const DRAFT_KEY = 'blog-draft-create-v2';
 
@@ -30,6 +28,7 @@ interface DraftData {
 	isPinned: boolean;
 	isPublished: boolean;
 	content: string;
+	contentEn: string;
 	savedAt: number;
 }
 
@@ -73,6 +72,7 @@ export default function CreatePostPage() {
 	const [isPinned, setIsPinned] = useState(false);
 	const [isPublished, setIsPublished] = useState(false);
 	const [content, setContent] = useState('');
+	const [contentEn, setContentEn] = useState('');
 	const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
 	const [draftRestored, setDraftRestored] = useState(false);
 
@@ -100,10 +100,11 @@ export default function CreatePostPage() {
 			setTags(draft.tags || []);
 			setThumbnailUrl(draft.thumbnailUrl || '');
 			setChapterNumber(draft.chapterNumber || '');
-			setIsPinned(draft.isPinned || false);
-			setIsPublished(draft.isPublished || false);
-			setContent(draft.content || '');
-			if (draft.slug) setSlugManuallyEdited(true);
+		setIsPinned(draft.isPinned || false);
+		setIsPublished(draft.isPublished || false);
+		setContent(draft.content || '');
+		setContentEn(draft.contentEn || '');
+		if (draft.slug) setSlugManuallyEdited(true);
 			setDraftRestored(true);
 		} catch {
 			/* ignore */
@@ -116,7 +117,7 @@ export default function CreatePostPage() {
 		const timer = setTimeout(() => {
 			if (!title.trim() && plainText.length < 20) return;
 			const draft: DraftData = {
-				title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content,
+				title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content, contentEn,
 				savedAt: Date.now(),
 			};
 			try {
@@ -149,7 +150,7 @@ export default function CreatePostPage() {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					title, slug, summary, content, category, tags,
+					title, slug, summary, content, contentEn, category, tags,
 					contentFormat: 'html',
 					thumbnailUrl: thumbnailUrl || undefined,
 					chapterNumber: chapterNumber ? Number(chapterNumber) : undefined,
@@ -183,7 +184,7 @@ export default function CreatePostPage() {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished]);
+	}, [title, slug, summary, content, contentEn, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -235,6 +236,7 @@ export default function CreatePostPage() {
 		setIsPinned(false);
 		setIsPublished(false);
 		setContent('');
+		setContentEn('');
 		setSaveState({ status: 'idle' });
 		setDraftRestored(false);
 	}
@@ -397,11 +399,14 @@ export default function CreatePostPage() {
 			</section>
 
 			<section className="mt-6">
-				<TiptapEditor
-					content={content}
-					onChange={setContent}
+				<DualLanguageEditor
+					contentVi={content}
+					contentEn={contentEn}
+					onChangeVi={setContent}
+					onChangeEn={setContentEn}
 					onImageUpload={uploadImage}
-					placeholder="Bắt đầu viết bài..."
+					placeholderVi="Bắt đầu viết bài tiếng Việt..."
+					placeholderEn="Start writing in English..."
 				/>
 				<div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
 					<span>{wordCount.toLocaleString()} từ</span>

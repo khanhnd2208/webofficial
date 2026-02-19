@@ -237,6 +237,37 @@ body {
 	outline: none;
 }
 
+/* ── Force readable text in dark mode ──
+   The Color extension can set inline color:#000 or dark colors
+   that become invisible on dark backgrounds. Override those. */
+.dark .tiptap-content [style*="color: rgb(0"],
+.dark .tiptap-content [style*="color: #000"],
+.dark .tiptap-content [style*="color:#000"],
+.dark .tiptap-content [style*="color: black"],
+.dark .tiptap-content [style*="color:black"] {
+	color: var(--foreground) !important;
+}
+
+/* Also fix for article/prose views where saved HTML has inline color */
+.dark .prose [style*="color: rgb(0"],
+.dark .prose [style*="color: #000"],
+.dark .prose [style*="color:#000"],
+.dark .prose [style*="color: black"],
+.dark .prose [style*="color:black"] {
+	color: var(--foreground) !important;
+}
+
+/* Ensure all inline color styles in dark mode are inverted for very dark colors */
+.dark .tiptap-content [style*="color:"],
+.dark .tiptap-content [style*="color: "] {
+	--tw-text-opacity: 1;
+}
+
+.dark .prose [style*="color:"],
+.dark .prose [style*="color: "] {
+	--tw-text-opacity: 1;
+}
+
 /* ── Empty paragraph preservation ──
    Tiptap outputs <p></p> for blank lines (Enter key).
    Prose/browsers collapse these. This keeps the spacing. */

@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 
 import BlogSearch from '@/components/BlogSearch';
 import BlogFilterBar from '@/components/BlogFilterBar';
+import ThumbnailPreview from '@/components/ThumbnailPreview';
 import { getAllPosts, getAllTags, getAllCategories } from '@/services/postService';
 
 export const revalidate = 60;
@@ -109,16 +110,18 @@ export default async function BlogPage({
 									<Link href={`/blog/${post.slug}`} className="block">
 										{/* Thumbnail */}
 										{post.thumbnailUrl ? (
-											<div className="aspect-16/10 overflow-hidden rounded-xl bg-surface-hover">
-												<img
-													src={post.thumbnailUrl}
-													alt={post.title}
-													className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-													loading="lazy"
-												/>
-											</div>
+											<ThumbnailPreview src={post.thumbnailUrl} alt={post.title}>
+												<div className="aspect-2/1 overflow-hidden rounded-xl bg-surface-hover">
+													<img
+														src={post.thumbnailUrl}
+														alt={post.title}
+														className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.04]"
+														loading="lazy"
+													/>
+												</div>
+											</ThumbnailPreview>
 										) : (
-											<div className="flex aspect-16/10 items-center justify-center rounded-xl bg-surface-secondary">
+											<div className="flex aspect-2/1 items-center justify-center rounded-xl bg-surface-secondary">
 												{post.chapterNumber ? (
 													<span className="font-serif text-3xl font-black text-border-strong">
 														{post.chapterNumber}
