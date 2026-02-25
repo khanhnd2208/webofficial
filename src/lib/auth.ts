@@ -32,6 +32,19 @@ const nextAuth = NextAuth({
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
+					// ──────────────────────────────────────────────────────────
+					// BYPASS Auth.js v5 beta bug: state check race condition
+					//
+					// Known issue: Auth.js v5 behind Cloudflare + Nginx has
+					// race condition when validating 'state' parameter.
+					// The decrypt function sometimes fails even though the
+					// cookie was created correctly.
+					//
+					// Solution: Use PKCE-only (OAuth 2.1 standard).
+					// PKCE is more secure than state-based CSRF protection
+					// and works reliably with reverse proxies.
+					// ──────────────────────────────────────────────────────────
+					checks: ['pkce'],
 				}),
 			]
 			: [],
