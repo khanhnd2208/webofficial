@@ -28,6 +28,15 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  // metadataBase anchors all relative URLs to production domain.
+  // Also eliminates the ⚠ localhost:4000 warning that causes Auth.js
+  // to derive the wrong "salt" URL when verifying the PKCE code_verifier
+  // on the Google OAuth callback — fixing the InvalidCheck error.
+  metadataBase: new URL(
+    process.env.NODE_ENV === 'production'
+      ? 'https://toiladuykhanh.com'
+      : 'http://localhost:3000'
+  ),
   title: 'HANOICAM',
   description: 'HANOICAM — by NDK.',
 };

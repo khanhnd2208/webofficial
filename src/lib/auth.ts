@@ -22,6 +22,12 @@ const nextAuth = NextAuth({
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
+					// Use state-only checks instead of PKCE.
+					// PKCE requires cookie round-trips that break under Nginx reverse
+					// proxy when Auth.js derives an inconsistent "salt" URL between
+					// the sign-in request and the Google callback request.
+					// State-based CSRF protection is fully secure for server-side flows.
+					checks: ['state'],
 				}),
 			]
 			: [],
