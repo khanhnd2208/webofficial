@@ -57,23 +57,25 @@ export default function DualLanguageEditor({
 				</div>
 			</div>
 
-			{/* Editors */}
-			<div>
-				{activeTab === 'vi' ? (
-					<TiptapEditor
-						content={contentVi}
-						onChange={onChangeVi}
-						onImageUpload={onImageUpload}
-						placeholder={placeholderVi}
-					/>
-				) : (
-					<TiptapEditor
-						content={contentEn}
-						onChange={onChangeEn}
-						onImageUpload={onImageUpload}
-						placeholder={placeholderEn}
-					/>
-				)}
+			{/* Editors — both always mounted, inactive is hidden via CSS.
+			    This prevents destroy/recreate cycles that lose content. */}
+			<div className={activeTab === 'vi' ? '' : 'hidden'}>
+				<TiptapEditor
+					key="editor-vi"
+					content={contentVi}
+					onChange={onChangeVi}
+					onImageUpload={onImageUpload}
+					placeholder={placeholderVi}
+				/>
+			</div>
+			<div className={activeTab === 'en' ? '' : 'hidden'}>
+				<TiptapEditor
+					key="editor-en"
+					content={contentEn}
+					onChange={onChangeEn}
+					onImageUpload={onImageUpload}
+					placeholder={placeholderEn}
+				/>
 			</div>
 		</div>
 	);

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useState, useRef, useEffect } from 'react';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
@@ -12,7 +13,23 @@ const NAV_LINKS = [
 
 export default function Navbar() {
 	const pathname = usePathname();
+	const { data: session, status } = useSession();
 	const [mobileOpen, setMobileOpen] = useState(false);
+	const [userMenuOpen, setUserMenuOpen] = useState(false);
+	const userMenuRef = useRef<HTMLDivElement>(null);
+
+	// Close user dropdown when clicking outside
+	useEffect(() => {
+		function handleClickOutside(e: MouseEvent) {
+			if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+				setUserMenuOpen(false);
+			}
+		}
+		if (userMenuOpen) {
+			document.addEventListener('mousedown', handleClickOutside);
+			return () => document.removeEventListener('mousedown', handleClickOutside);
+		}
+	}, [userMenuOpen]);
 
 	return (
 		<header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
@@ -50,6 +67,86 @@ export default function Navbar() {
 					{/* Theme Toggle */}
 					<div className="ml-1">
 						<ThemeToggle />
+					</div>
+
+					{/* Auth: Login button or User avatar */}
+					<div className="ml-1">
+						{status === 'loading' ? (
+							<div className="h-8 w-8 animate-pulse rounded-full bg-surface-hover" />
+						) : session?.user ? (
+							<div ref={userMenuRef} className="relative">
+								<button
+									type="button"
+									onClick={() => setUserMenuOpen((v) => !v)}
+									className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-shadow hover:ring-accent focus:outline-none focus:ring-accent"
+									aria-label="Menu người dùng"
+								>
+									{session.user.image ? (
+										<img
+											src={session.user.image}
+											alt={session.user.name ?? 'Avatar'}
+											className="h-full w-full object-cover"
+											referrerPolicy="no-referrer"
+										/>
+									) : (
+										<div className="flex h-full w-full items-center justify-center bg-foreground text-xs font-black text-background">
+											{(session.user.name ?? 'U')[0].toUpperCase()}
+										</div>
+									)}
+								</button>
+
+								{/* Dropdown menu */}
+								{userMenuOpen && (
+									<div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+										<div className="border-b border-border px-4 py-3">
+											<p className="truncate text-sm font-bold text-foreground">{session.user.name}</p>
+											<p className="truncate text-xs text-muted">{session.user.email}</p>
+										</div>
+										<div className="py-1">
+											<Link
+												href="/dashboard"
+												onClick={() => setUserMenuOpen(false)}
+												className="block px-4 py-2 text-sm text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
+											>
+												Dashboard
+											</Link>
+											<Link
+												href="/vocabulary"
+												onClick={() => setUserMenuOpen(false)}
+												className="block px-4 py-2 text-sm text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
+											>
+												Từ vựng
+											</Link>
+											{session.user.role === 'admin' && (
+												<Link
+													href="/admin"
+													onClick={() => setUserMenuOpen(false)}
+													className="block px-4 py-2 text-sm text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
+												>
+													Quản trị
+												</Link>
+											)}
+										</div>
+										<div className="border-t border-border py-1">
+											<button
+												type="button"
+												onClick={() => { setUserMenuOpen(false); signOut({ callbackUrl: '/' }); }}
+												className="block w-full px-4 py-2 text-left text-sm text-error transition-colors hover:bg-surface-hover"
+											>
+												Đăng xuất
+											</button>
+										</div>
+									</div>
+								)}
+							</div>
+						) : (
+							<Link
+								href="/login"
+								className="rounded-full border border-foreground px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground transition-colors hover:bg-foreground hover:text-background"
+							>
+								Đăng nhập
+							</Link>
+						)}
 					</div>
 
 					{/* Mobile hamburger */}
@@ -90,6 +187,34 @@ export default function Navbar() {
 							</Link>
 						);
 					})}
+
+					{/* Mobile auth links */}
+					{session?.user ? (
+						<>
+							<Link
+								href="/dashboard"
+								onClick={() => setMobileOpen(false)}
+								className="block py-2 text-sm font-bold uppercase tracking-widest text-muted hover:text-foreground"
+							>
+								Dashboard
+							</Link>
+							<button
+								type="button"
+								onClick={() => { setMobileOpen(false); signOut({ callbackUrl: '/' }); }}
+								className="block py-2 text-sm font-bold uppercase tracking-widest text-error"
+							>
+								Đăng xuất
+							</button>
+						</>
+					) : (
+						<Link
+							href="/login"
+							onClick={() => setMobileOpen(false)}
+							className="block py-2 text-sm font-bold uppercase tracking-widest text-muted hover:text-foreground"
+						>
+							Đăng nhập
+						</Link>
+					)}
 				</div>
 			) : null}
 		</header>

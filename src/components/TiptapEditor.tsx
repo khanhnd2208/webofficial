@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -167,7 +167,10 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 			},
 		},
 		onUpdate: ({ editor: e }) => {
+			isInternalUpdate.current = true;
 			onChange(e.getHTML());
+			// Reset the flag after React finishes processing
+			queueMicrotask(() => { isInternalUpdate.current = false; });
 		},
 	});
 
@@ -183,6 +186,18 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 			setIsUploading(false);
 		}
 	}, [editor, onImageUpload]);
+
+	// Sync external content changes (e.g. draft load) into the editor.
+	// Only update if the editor content is truly different from the prop.
+	const isInternalUpdate = useRef(false);
+	useEffect(() => {
+		if (!editor || isInternalUpdate.current) return;
+		const currentHtml = editor.getHTML();
+		// Only set content if it actually differs (avoids cursor-reset loops)
+		if (content !== currentHtml) {
+			editor.commands.setContent(content, false);
+		}
+	}, [editor, content]);
 
 	const openFileDialog = useCallback(() => {
 		fileInputRef.current?.click();
