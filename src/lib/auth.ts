@@ -16,18 +16,81 @@ const nextAuth = NextAuth({
 	// Auth.js reads X-Forwarded-Proto: https from Nginx and automatically
 	// uses __Secure- cookie prefix and Secure flag — do not fight it.
 	trustHost: true,
+	// ────────────────────────────────────────────────────────────────────────
+	// HARDCODED COOKIE NAMES — Fixes "split personality" bug in Auth.js v5 beta.
+	//
+	// Problem: Auth.js v5 behind Nginx reverse proxy has inconsistent behavior:
+	//   • When WRITING cookies: sees AUTH_URL=https://... → adds __Secure- prefix
+	//   • When READING cookies: receives HTTP from Nginx → looks for plain names
+	//   Result: Write "__Secure-authjs.state", read "authjs.state" → not found
+	//
+	// Solution: Explicitly define every cookie with plain names + secure:true flag.
+	// This ensures symmetric write/read behavior while keeping Chrome happy.
+	// ────────────────────────────────────────────────────────────────────────
+	cookies: {
+		sessionToken: {
+			name: 'authjs.session-token',
+			options: {
+				httpOnly: true,
+				sameSite: 'lax',
+				path: '/',
+				secure: true,
+			},
+		},
+		callbackUrl: {
+			name: 'authjs.callback-url',
+			options: {
+				httpOnly: true,
+				sameSite: 'lax',
+				path: '/',
+				secure: true,
+			},
+		},
+		csrfToken: {
+			name: 'authjs.csrf-token',
+			options: {
+				httpOnly: true,
+				sameSite: 'lax',
+				path: '/',
+				secure: true,
+			},
+		},
+		pkceCodeVerifier: {
+			name: 'authjs.pkce.code_verifier',
+			options: {
+				httpOnly: true,
+				sameSite: 'lax',
+				path: '/',
+				secure: true,
+				maxAge: 60 * 15, // 15 minutes
+			},
+		},
+		state: {
+			name: 'authjs.state',
+			options: {
+				httpOnly: true,
+				sameSite: 'lax',
+				path: '/',
+				secure: true,
+				maxAge: 60 * 15, // 15 minutes
+			},
+		},
+		nonce: {
+			name: 'authjs.nonce',
+			options: {
+				httpOnly: true,
+				sameSite: 'lax',
+				path: '/',
+				secure: true,
+			},
+		},
+	},
 	providers:
 		googleClientId && googleClientSecret
 			? [
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
-					// Use state-only checks instead of PKCE.
-					// PKCE requires cookie round-trips that break under Nginx reverse
-					// proxy when Auth.js derives an inconsistent "salt" URL between
-					// the sign-in request and the Google callback request.
-					// State-based CSRF protection is fully secure for server-side flows.
-					checks: ['state'],
 				}),
 			]
 			: [],
