@@ -8,83 +8,24 @@ import { mongoClientPromise } from '@/lib/mongodbClient';
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
+// ────────────────────────────────────────────────────────────────────────
+// Auth.js v5 with Nginx reverse proxy — Let it manage cookies natively.
+//
+// Previous attempts to hardcode cookie names caused salt mismatch:
+//   - Auth.js uses the cookie NAME as part of the encryption salt
+//   - Hardcoding to 'authjs.state' but internal code expects '__Secure-authjs.state'
+//   - Result: encrypt with one salt, decrypt with another → parse failure
+//
+// Now that metadataBase is fixed and Nginx headers are correct,
+// Auth.js correctly detects HTTPS and uses __Secure- prefix consistently.
+// No manual intervention needed — trust the framework.
+// ────────────────────────────────────────────────────────────────────────
+
 const nextAuth = NextAuth({
 	secret: process.env.AUTH_SECRET,
 	adapter: MongoDBAdapter(mongoClientPromise),
 	session: { strategy: 'jwt' },
-	// trustHost: true is critical when running behind Nginx reverse proxy.
-	// Auth.js reads X-Forwarded-Proto: https from Nginx and automatically
-	// uses __Secure- cookie prefix and Secure flag — do not fight it.
 	trustHost: true,
-	// ────────────────────────────────────────────────────────────────────────
-	// HARDCODED COOKIE NAMES — Fixes "split personality" bug in Auth.js v5 beta.
-	//
-	// Problem: Auth.js v5 behind Nginx reverse proxy has inconsistent behavior:
-	//   • When WRITING cookies: sees AUTH_URL=https://... → adds __Secure- prefix
-	//   • When READING cookies: receives HTTP from Nginx → looks for plain names
-	//   Result: Write "__Secure-authjs.state", read "authjs.state" → not found
-	//
-	// Solution: Explicitly define every cookie with plain names + secure:true flag.
-	// This ensures symmetric write/read behavior while keeping Chrome happy.
-	// ────────────────────────────────────────────────────────────────────────
-	cookies: {
-		sessionToken: {
-			name: 'authjs.session-token',
-			options: {
-				httpOnly: true,
-				sameSite: 'lax',
-				path: '/',
-				secure: true,
-			},
-		},
-		callbackUrl: {
-			name: 'authjs.callback-url',
-			options: {
-				httpOnly: true,
-				sameSite: 'lax',
-				path: '/',
-				secure: true,
-			},
-		},
-		csrfToken: {
-			name: 'authjs.csrf-token',
-			options: {
-				httpOnly: true,
-				sameSite: 'lax',
-				path: '/',
-				secure: true,
-			},
-		},
-		pkceCodeVerifier: {
-			name: 'authjs.pkce.code_verifier',
-			options: {
-				httpOnly: true,
-				sameSite: 'lax',
-				path: '/',
-				secure: true,
-				maxAge: 60 * 15, // 15 minutes
-			},
-		},
-		state: {
-			name: 'authjs.state',
-			options: {
-				httpOnly: true,
-				sameSite: 'lax',
-				path: '/',
-				secure: true,
-				maxAge: 60 * 15, // 15 minutes
-			},
-		},
-		nonce: {
-			name: 'authjs.nonce',
-			options: {
-				httpOnly: true,
-				sameSite: 'lax',
-				path: '/',
-				secure: true,
-			},
-		},
-	},
 	providers:
 		googleClientId && googleClientSecret
 			? [
