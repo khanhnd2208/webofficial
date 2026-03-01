@@ -2,8 +2,8 @@ import mongoose, { type InferSchemaType } from 'mongoose';
 
 const VocabularyCollectionSchema = new mongoose.Schema(
 	{
-		name: { type: String, required: true, default: '', trim: true },
-		itemCount: { type: Number, required: true, default: 0, min: 0 },
+		name: { type: String, default: '', trim: true },
+		itemCount: { type: Number, default: 0, min: 0 },
 	},
 	{ timestamps: true }
 );

@@ -12,7 +12,8 @@ type UnitLean = {
 	updatedAt?: Date;
 };
 
-function toUnitDTO(doc: UnitLean): UnitDTO {
+/** Shared DTO mapper — also used by courseUnitService */
+export function toUnitDTO(doc: UnitLean): UnitDTO {
 	const createdAt = doc.createdAt ? new Date(doc.createdAt) : new Date(0);
 	const updatedAt = doc.updatedAt ? new Date(doc.updatedAt) : createdAt;
 	return {

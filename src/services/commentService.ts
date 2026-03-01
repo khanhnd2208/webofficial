@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 import dbConnect from '@/lib/dbConnect';
 import Comment from '@/models/Comment';
-import Notification from '@/models/Notification';
+import { createNotification } from '@/services/notificationService';
 import type { CommentDTO } from '@/types/comment';
 
 // ─── Internal lean type ────────────────────────────────────────────────────────
@@ -123,7 +123,7 @@ export async function createComment(input: {
 	const dto = toDTO(created.toObject() as unknown as CommentLean, input.userId);
 
 	// Admin notification: new comment to moderate
-	await Notification.create({
+	await createNotification({
 		recipientId: 'admin',
 		type: 'comment_pending',
 		message: `${input.userName} bình luận trong "${input.postTitle ?? input.postSlug}"`,
@@ -135,7 +135,7 @@ export async function createComment(input: {
 	if (input.parentId) {
 		const parent = await Comment.findById(input.parentId).select('userId userName').lean() as unknown as { userId: string; userName: string } | null;
 		if (parent && parent.userId !== input.userId) {
-			await Notification.create({
+			await createNotification({
 				recipientId: parent.userId,
 				type: 'comment_replied',
 				message: `${input.userName} đã trả lời bình luận của bạn trong "${input.postTitle ?? input.postSlug}"`,
@@ -161,7 +161,7 @@ export async function approveComment(commentId: string): Promise<CommentDTO> {
 
 	if (!updated) throw new Error('Comment not found');
 
-	await Notification.create({
+	await createNotification({
 		recipientId: updated.userId,
 		type: 'comment_approved',
 		message: `Bình luận của bạn đã được duyệt trong "${updated.postTitle ?? updated.postSlug}"`,

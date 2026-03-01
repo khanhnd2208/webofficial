@@ -1,5 +1,7 @@
 import mongoose, { Schema, type HydratedDocument, type Model } from 'mongoose';
 
+import { slugify } from '@/utils/slugify';
+
 export interface IPost {
 	title: string;
 	slug: string;
@@ -32,7 +34,7 @@ export { POST_CATEGORIES, type PostCategory } from '@/constants/post';
 const PostSchema = new Schema<IPost>(
 	{
 		title: { type: String, required: true, trim: true },
-		slug: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
+		slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
 		content: { type: String, required: true },
 		contentEn: { type: String, default: '' },
 		contentFormat: { type: String, enum: ['markdown', 'html'], default: 'markdown' },
@@ -63,16 +65,9 @@ PostSchema.index({ isPublished: 1, tags: 1 });
 PostSchema.index({ title: 'text', summary: 'text', tags: 'text' });
 
 PostSchema.pre('validate', function preValidate(this: HydratedDocument<IPost>) {
-	// Auto-generate slug from title if missing.
+	// Auto-generate slug from title if missing — reuse shared slugify util
 	if (!this.slug && this.title) {
-		this.slug = String(this.title)
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.toLowerCase()
-			.trim()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-			.replace(/-{2,}/g, '-');
+		this.slug = slugify(this.title);
 	}
 	// Auto-calculate word count
 	if (this.content) {

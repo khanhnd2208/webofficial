@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
 				skip_empty_lines: true,
 				trim: true,
 				relaxColumnCount: true,
+				bom: true, // tự động bỏ UTF-8 BOM để tiếng Việt không bị lỗi font
 			}) as Record<string, string>[];
 
 			const terms = records

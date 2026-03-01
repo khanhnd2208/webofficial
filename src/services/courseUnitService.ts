@@ -6,6 +6,7 @@ import Lesson from '@/models/Lesson';
 import Unit from '@/models/Unit';
 import type { CourseUnitListItemDTO } from '@/types/courseUnit';
 import type { UnitDTO } from '@/types/unit';
+import { toUnitDTO } from '@/services/unitService';
 
 type CourseUnitLean = {
 	_id: mongoose.Types.ObjectId;
@@ -22,17 +23,6 @@ type UnitLean = {
 	createdAt?: Date;
 	updatedAt?: Date;
 };
-
-function toUnitDTO(doc: UnitLean): UnitDTO {
-	const createdAt = doc.createdAt ? new Date(doc.createdAt) : new Date(0);
-	const updatedAt = doc.updatedAt ? new Date(doc.updatedAt) : createdAt;
-	return {
-		id: String(doc._id),
-		name: doc.name,
-		createdAt: createdAt.toISOString(),
-		updatedAt: updatedAt.toISOString(),
-	};
-}
 
 function toCourseUnitListItemDTO(doc: CourseUnitLean, unit: UnitDTO): CourseUnitListItemDTO {
 	const createdAt = doc.createdAt ? new Date(doc.createdAt) : new Date(0);

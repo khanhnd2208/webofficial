@@ -81,7 +81,8 @@ export default function AdminLessonVocabularyPage() {
 		return 'word,partOfSpeech,meaningVi,meaningEn\nhello,interjection,xin chào,hello\n';
 	}, []);
 	const sampleCsvHref = useMemo(() => {
-		return `data:text/csv;charset=utf-8,${encodeURIComponent(sampleCsv)}`;
+		// Thêm UTF-8 BOM (\uFEFF) để Excel/Numbers đọc đúng tiếng Việt có dấu
+		return `data:text/csv;charset=utf-8,${encodeURIComponent('\uFEFF' + sampleCsv)}`;
 	}, [sampleCsv]);
 
 	async function onManualSave() {

@@ -192,40 +192,23 @@ async function getRelatedPostsRaw(params: {
 	return items.map(toListItemDTO);
 }
 
-async function ensureUniqueSlug(base: string): Promise<string> {
+/**
+ * Find a unique slug by appending -2, -3, … if needed.
+ * @param base      The base slug (will be cleaned to 'post' if empty)
+ * @param excludeId Optional post ID to exclude (used during updates)
+ */
+async function ensureUniqueSlug(base: string, excludeId?: string): Promise<string> {
 	const cleanedBase = base || 'post';
-
-	// Generate all candidate slugs up front
 	const candidates = [cleanedBase, ...Array.from({ length: 49 }, (_, i) => `${cleanedBase}-${i + 2}`)];
 
-	// Single query to find which slugs already exist
-	const existing = await Post.find(
-		{ slug: { $in: candidates } },
-		{ slug: 1 }
-	).lean();
+	const filter: Record<string, unknown> = { slug: { $in: candidates } };
+	if (excludeId) filter._id = { $ne: excludeId };
+
+	const existing = await Post.find(filter, { slug: 1 }).lean();
 	const taken = new Set(existing.map((d) => (d as unknown as { slug: string }).slug));
 
 	const available = candidates.find((c) => !taken.has(c));
 	if (available) return available;
-
-	// Fallback (extremely unlikely): append timestamp.
-	return `${cleanedBase}-${Date.now()}`;
-}
-
-async function ensureUniqueSlugForUpdate(base: string, excludeId: string): Promise<string> {
-	const cleanedBase = base || 'post';
-
-	const candidates = [cleanedBase, ...Array.from({ length: 49 }, (_, i) => `${cleanedBase}-${i + 2}`)];
-
-	const existing = await Post.find(
-		{ slug: { $in: candidates }, _id: { $ne: excludeId } },
-		{ slug: 1 }
-	).lean();
-	const taken = new Set(existing.map((d) => (d as unknown as { slug: string }).slug));
-
-	const available = candidates.find((c) => !taken.has(c));
-	if (available) return available;
-
 	return `${cleanedBase}-${Date.now()}`;
 }
 
@@ -397,7 +380,7 @@ export async function updatePostById(
 	if ('isPublished' in input) update.isPublished = Boolean(input.isPublished);
 	if ('slug' in input) {
 		const slugBase = slugify(String(input.slug ?? ''));
-		if (slugBase) update.slug = await ensureUniqueSlugForUpdate(slugBase, cleanedId);
+		if (slugBase) update.slug = await ensureUniqueSlug(slugBase, cleanedId);
 	}
 
 	const updated = (await Post.findByIdAndUpdate(cleanedId, update, {

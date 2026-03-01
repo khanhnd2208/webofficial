@@ -2,14 +2,9 @@ import mongoose from 'mongoose';
 
 import dbConnect from '@/lib/dbConnect';
 import LoginStreak from '@/models/LoginStreak';
+import type { StreakDTO } from '@/types/streak';
 
-export interface StreakDTO {
-	currentStreak: number;
-	longestStreak: number;
-	lastLoginDate: string;
-	/** Recent login days (last 30) for heatmap / display */
-	recentDays: string[];
-}
+export type { StreakDTO };
 
 /** Get today's date string in YYYY-MM-DD (UTC) */
 function todayStr(): string {

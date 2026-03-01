@@ -209,14 +209,41 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 	}
 
 	// ── CSV Import ──
+	// Parse một dòng CSV có hỗ trợ quoted fields (xử lý dấu phẩy trong nội dung)
+	function parseCsvLine(line: string): string[] {
+		const result: string[] = [];
+		let current = '';
+		let inQuotes = false;
+		for (let i = 0; i < line.length; i++) {
+			const ch = line[i];
+			if (ch === '"') {
+				if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+				else { inQuotes = !inQuotes; }
+			} else if (ch === ',' && !inQuotes) {
+				result.push(current.trim());
+				current = '';
+			} else {
+				current += ch;
+			}
+		}
+		result.push(current.trim());
+		return result;
+	}
+
 	async function handleCsvAppend(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		const text = await file.text();
-		const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+		const buffer = await file.arrayBuffer();
+		// Giải mã UTF-8 và tự động bỏ BOM nếu có
+		const decoder = new TextDecoder('utf-8');
+		let text = decoder.decode(buffer);
+		// Bỏ UTF-8 BOM (\uFEFF) nếu có
+		if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+		const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 		if (lines.length < 2) return;
 
-		const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+		const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
 		const wordIdx = headers.findIndex(h => ['word', 'term'].includes(h));
 		const defIdx = headers.findIndex(h => ['definition', 'meaning', 'meaningvi'].includes(h));
 		const posIdx = headers.findIndex(h => ['partofspeech', 'pos', 'part_of_speech'].includes(h));
@@ -229,7 +256,7 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 
 		const newTerms: Term[] = [];
 		for (let i = 1; i < lines.length; i++) {
-			const cols = lines[i].split(',').map(c => c.trim());
+			const cols = parseCsvLine(lines[i]);
 			const word = cols[wordIdx] ?? '';
 			const definition = cols[defIdx] ?? '';
 			if (!word || !definition) continue;

@@ -1,6 +1,6 @@
 import dbConnect from '@/lib/dbConnect';
 import FeedbackMessage, { type IFeedbackMessage, type IFeedbackReply } from '@/models/FeedbackMessage';
-import Notification from '@/models/Notification';
+import { createNotification } from '@/services/notificationService';
 import type { FeedbackMessageDTO, FeedbackReplyDTO } from '@/types/feedbackMessage';
 
 // ─── Lean type ────────────────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ export async function createFeedbackMessage(data: {
 
 	// Admin notification
 	const sourceHint = data.sourceUrl ? ` (từ ${data.sourceUrl})` : '';
-	await Notification.create({
+	await createNotification({
 		recipientId: 'admin',
 		type: 'feedback_new',
 		message: `${data.userName} gửi phản hồi mới: "${data.subject}"${sourceHint}`,
@@ -133,7 +133,7 @@ export async function addReplyToMessage(
 
 	if (reply.role === 'admin') {
 		// Notify the user that admin replied
-		await Notification.create({
+		await createNotification({
 			recipientId: doc.userId,
 			type: 'feedback_replied',
 			message: `Giảng viên đã trả lời phản hồi "${doc.subject}" của bạn`,
@@ -142,7 +142,7 @@ export async function addReplyToMessage(
 		});
 	} else {
 		// User replied — notify admin
-		await Notification.create({
+		await createNotification({
 			recipientId: 'admin',
 			type: 'feedback_new',
 			message: `${reply.authorName} đã trả lời tiếp trong "${doc.subject}"`,

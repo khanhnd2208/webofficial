@@ -1,15 +1,8 @@
 import dbConnect from '@/lib/dbConnect';
 import Notification, { type NotificationType } from '@/models/Notification';
+import type { NotificationDTO } from '@/types/notification';
 
-export interface NotificationDTO {
-	id: string;
-	type: NotificationType;
-	message: string;
-	href: string;
-	meta: Record<string, string>;
-	read: boolean;
-	createdAt: string;
-}
+export type { NotificationDTO };
 
 type NotifLean = {
 	_id: unknown;

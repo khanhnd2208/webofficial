@@ -9,8 +9,8 @@ export interface ICourse {
 
 const CourseSchema = new Schema<ICourse>(
 	{
-		name: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
-		description: { type: String, required: true, default: '', trim: true },
+		name: { type: String, required: true, unique: true, lowercase: true, trim: true },
+		description: { type: String, default: '', trim: true },
 	},
 	{ timestamps: true }
 );

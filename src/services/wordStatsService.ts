@@ -4,6 +4,19 @@ import dbConnect from '@/lib/dbConnect';
 import WordStats from '@/models/WordStats';
 import type { PracticeResultDTO, WordStatsDTO } from '@/types/wordStats';
 
+/** Shared DTO mapper for word stats documents */
+function toWordStatsDTO(doc: { word: string; correctCount: number; wrongCount: number; lastPracticed: Date }): WordStatsDTO {
+	const total = doc.correctCount + doc.wrongCount;
+	return {
+		word: doc.word,
+		correctCount: doc.correctCount,
+		wrongCount: doc.wrongCount,
+		totalAttempts: total,
+		accuracy: total > 0 ? Math.round((doc.correctCount / total) * 100) : 0,
+		lastPracticed: new Date(doc.lastPracticed).toISOString(),
+	};
+}
+
 /**
  * Record practice results for multiple words in one batch.
  * Uses bulkWrite with upsert for efficiency.
@@ -53,17 +66,7 @@ export async function getUserWordStats(userId: string): Promise<WordStatsDTO[]> 
 		.limit(500)
 		.lean();
 
-	return docs.map((doc) => {
-		const total = doc.correctCount + doc.wrongCount;
-		return {
-			word: doc.word,
-			correctCount: doc.correctCount,
-			wrongCount: doc.wrongCount,
-			totalAttempts: total,
-			accuracy: total > 0 ? Math.round((doc.correctCount / total) * 100) : 0,
-			lastPracticed: new Date(doc.lastPracticed).toISOString(),
-		};
-	});
+	return docs.map(toWordStatsDTO);
 }
 
 /**
@@ -85,15 +88,7 @@ export async function getWordStatsForWords(
 
 	const map = new Map<string, WordStatsDTO>();
 	docs.forEach((doc) => {
-		const total = doc.correctCount + doc.wrongCount;
-		map.set(doc.word, {
-			word: doc.word,
-			correctCount: doc.correctCount,
-			wrongCount: doc.wrongCount,
-			totalAttempts: total,
-			accuracy: total > 0 ? Math.round((doc.correctCount / total) * 100) : 0,
-			lastPracticed: new Date(doc.lastPracticed).toISOString(),
-		});
+		map.set(doc.word, toWordStatsDTO(doc));
 	});
 	return map;
 }
