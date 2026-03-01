@@ -248,3 +248,11 @@ export async function getPendingComments(): Promise<CommentDTO[]> {
 	return docs.map((c) => toDTO(c));
 }
 
+export async function getAllComments(): Promise<CommentDTO[]> {
+	await dbConnect();
+	const docs = (await Comment.find({})
+		.sort({ createdAt: -1 })
+		.lean()) as unknown as CommentLean[];
+	return docs.map((c) => toDTO(c));
+}
+

@@ -29,9 +29,16 @@ export async function PATCH(request: NextRequest) {
 		}
 
 		const body = (await request.json()) as unknown;
+		// Accept either 'notificationId' (from Navbar) or 'id' for backwards compat
 		const notificationId =
-			typeof body === 'object' && body !== null && typeof (body as { id?: unknown }).id === 'string'
-				? (body as { id: string }).id
+			typeof body === 'object' && body !== null
+				? (
+					typeof (body as { notificationId?: unknown }).notificationId === 'string'
+						? (body as { notificationId: string }).notificationId
+						: typeof (body as { id?: unknown }).id === 'string'
+							? (body as { id: string }).id
+							: undefined
+				  )
 				: undefined;
 
 		const recipientId = (user as { role?: string }).role === 'admin' ? 'admin' : user.id;

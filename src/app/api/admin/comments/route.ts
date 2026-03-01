@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getApiUser } from '@/lib/apiAuth';
-import { approveComment, hideComment, adminDeleteComment, getPendingComments } from '@/services/commentService';
+import { approveComment, hideComment, adminDeleteComment, getPendingComments, getAllComments } from '@/services/commentService';
 
-/** GET /api/admin/comments — list all pending comments */
+/** GET /api/admin/comments — list comments; ?status=all returns all, otherwise returns pending only */
 export async function GET(request: NextRequest) {
 	try {
 		const user = await getApiUser(request);
@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
 		}
 
-		const comments = await getPendingComments();
+		const url = new URL(request.url);
+		const showAll = url.searchParams.get('status') === 'all';
+		const comments = showAll ? await getAllComments() : await getPendingComments();
 		return NextResponse.json({ ok: true, data: { items: comments } });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';

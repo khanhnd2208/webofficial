@@ -41,6 +41,18 @@ export async function PATCH(
 		}
 
 		// Reply action — any authenticated participant
+		// Non-admins can only reply to their own threads
+		if (!admin) {
+			const FeedbackMessage = (await import('@/models/FeedbackMessage')).default;
+			const msgCheck = await FeedbackMessage.findById(id).select('userId').lean() as { userId?: string } | null;
+			if (!msgCheck) {
+				return NextResponse.json({ ok: false, error: 'Không tìm thấy tin nhắn' }, { status: 404 });
+			}
+			if (msgCheck.userId !== user.id) {
+				return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+			}
+		}
+
 		if (typeof reply !== 'string' || !reply.trim()) {
 			return NextResponse.json({ ok: false, error: 'Nội dung trả lời không được để trống' }, { status: 400 });
 		}

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ ok: false, error: 'Invalid body' }, { status: 400 });
 		}
 
-		const { subject, content } = body as { subject?: unknown; content?: unknown };
+		const { subject, content, sourceUrl } = body as { subject?: unknown; content?: unknown; sourceUrl?: unknown };
 
 		if (typeof subject !== 'string' || !subject.trim()) {
 			return NextResponse.json({ ok: false, error: 'Tiêu đề không được để trống' }, { status: 400 });
@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
 			userEmail: user.email,
 			subject: subject.trim(),
 			content: content.trim(),
+			sourceUrl: typeof sourceUrl === 'string' && sourceUrl.trim() ? sourceUrl.trim() : undefined,
 		});
 
 		return NextResponse.json({ ok: true, data: msg }, { status: 201 });

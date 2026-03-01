@@ -26,11 +26,11 @@ function timeAgo(iso: string): string {
 	const diff = Date.now() - new Date(iso).getTime();
 	const mins = Math.floor(diff / 60000);
 	if (mins < 1) return 'vừa xong';
-	if (mins < 60) return `${mins} phút`;
+	if (mins < 60) return `${mins} phút trước`;
 	const hours = Math.floor(mins / 60);
-	if (hours < 24) return `${hours} giờ`;
+	if (hours < 24) return `${hours} giờ trước`;
 	const days = Math.floor(hours / 24);
-	if (days < 7) return `${days} ngày`;
+	if (days < 7) return `${days} ngày trước`;
 	return formatDate(iso);
 }
 
@@ -229,9 +229,9 @@ function CommentCard({
 					{/* Header */}
 					<div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
 						<span className="text-sm font-bold text-foreground">{comment.userName}</span>
-						<time className="text-xs text-muted" title={formatDate(comment.createdAt)}>
-							{timeAgo(comment.createdAt)} trước
-						</time>
+					<time className="text-xs text-muted" title={formatDate(comment.createdAt)}>
+						{timeAgo(comment.createdAt)}
+					</time>
 						{/* Status badges */}
 						{isPending && (
 							<span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
