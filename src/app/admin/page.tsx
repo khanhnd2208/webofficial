@@ -92,6 +92,27 @@ export default async function AdminHomePage() {
 				</a>
 			)}
 
+			{/* Pending comments notification banner */}
+			{stats.comments.pending > 0 && (
+				<a
+					href="/admin/posts/comments"
+					className="group flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 transition-colors hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/30 dark:hover:bg-amber-950/50"
+				>
+					<span className="relative flex h-2.5 w-2.5 shrink-0">
+						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+						<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+					</span>
+					<p className="flex-1 text-sm font-semibold text-amber-700 dark:text-amber-400">
+						{stats.comments.pending === 1
+							? '1 bình luận đang chờ duyệt'
+							: `${stats.comments.pending} bình luận đang chờ duyệt`}
+					</p>
+					<span className="text-xs font-bold text-amber-600 underline underline-offset-2 group-hover:no-underline dark:text-amber-400">
+						Duyệt ngay →
+					</span>
+				</a>
+			)}
+
 			{/* Header */}
 			<div>
 				<p className="text-xs font-bold uppercase tracking-widest text-muted">Quản trị</p>
@@ -110,6 +131,12 @@ export default async function AdminHomePage() {
 						value={stats.messages.pending}
 						sub={`${stats.messages.total} tổng`}
 						accent={stats.messages.pending > 0}
+					/>
+					<Stat
+						label="Bình luận chờ"
+						value={stats.comments.pending}
+						sub="chờ duyệt"
+						accent={stats.comments.pending > 0}
 					/>
 					<Stat label="Học viên" value={stats.users.total} sub="đã đăng ký" />
 				</div>
@@ -149,6 +176,16 @@ export default async function AdminHomePage() {
 							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
 								<path d="M2 4.5C2 3.67 2.67 3 3.5 3h13c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-13C2.67 15 2 14.33 2 13.5v-9z" stroke="currentColor" strokeWidth="1.4" />
 								<path d="M2 4.5l8 5.25L18 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+							</svg>
+						}
+					/>
+					<QuickAction
+						href="/admin/posts/comments"
+						label={`Bình luận${stats.comments.pending > 0 ? ` (${stats.comments.pending} chờ)` : ''}`}
+						description="Duyệt hoặc ẩn bình luận từ người dùng."
+						icon={
+							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
+								<path d="M10 2C5.03 2 1 5.36 1 9.5c0 2.06.9 3.93 2.36 5.3-.18.9-.65 1.84-1.36 2.5 1.35-.07 2.76-.55 3.85-1.33C7.16 16.63 8.54 17 10 17c4.97 0 9-3.36 9-7.5S14.97 2 10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
 							</svg>
 						}
 					/>

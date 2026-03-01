@@ -7,6 +7,7 @@ export interface ApiUser {
 	email: string;
 	name: string;
 	role: string;
+	image?: string;
 }
 
 /**
@@ -25,6 +26,7 @@ export async function getApiUser(_request: NextRequest): Promise<ApiUser | null>
 		email: session.user.email,
 		name: session.user.name ?? '',
 		role: (session.user as { role?: string }).role ?? 'student',
+		image: session.user.image ?? undefined,
 	};
 }
 

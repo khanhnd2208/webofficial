@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import FeedbackMessages from '@/components/FeedbackMessages';
 
@@ -27,7 +28,9 @@ export default function FeedbackPublicPage() {
 
 			{/* Messaging section */}
 			<div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14 lg:max-w-4xl">
-				<FeedbackMessages />
+				<Suspense fallback={<div className="animate-pulse py-8 text-center text-sm text-muted">Đang tải…</div>}>
+					<FeedbackMessages />
+				</Suspense>
 			</div>
 		</main>
 	);

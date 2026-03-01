@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 
 import CodeBlock from '@/components/CodeBlock';
 import BilingualArticle from '@/components/BilingualArticle';
+import CommentSection from '@/components/CommentSection';
 import ThumbnailPreview from '@/components/ThumbnailPreview';
 import ReactionBar from '@/components/ReactionBar';
 import ShareBar from '@/components/ShareBar';
@@ -326,7 +327,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 			{/* Feedback CTA */}
 			<div className="mx-auto mt-8 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
 				<Link
-					href="/feedback"
+					href={`/feedback?ref=${encodeURIComponent(articleUrl)}`}
 					className="group flex items-center gap-3 rounded-xl border border-border bg-surface-hover/30 px-5 py-4 transition-colors hover:border-accent/50 hover:bg-accent-subtle/30"
 				>
 					<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
@@ -342,6 +343,11 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 						<path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
 					</svg>
 				</Link>
+			</div>
+
+			{/* Comments */}
+			<div className="mx-auto mt-10 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
+				<CommentSection slug={post.slug} postTitle={post.title} />
 			</div>
 
 			{/* Related posts */}

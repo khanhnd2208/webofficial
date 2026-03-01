@@ -41,6 +41,16 @@ const NAV = [
 		group: 'Cộng đồng',
 		items: [
 			{
+				href: '/admin/posts/comments',
+				label: 'Bình luận',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<path d="M10 2C5.03 2 1 5.36 1 9.5c0 2.06.9 3.93 2.36 5.3-.18.9-.65 1.84-1.36 2.5 1.35-.07 2.76-.55 3.85-1.33C7.16 16.63 8.54 17 10 17c4.97 0 9-3.36 9-7.5S14.97 2 10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+					</svg>
+				),
+				badge: 'comments',
+			},
+			{
 				href: '/admin/feedback/messages',
 				label: 'Hộp thư phản hồi',
 				icon: (
@@ -49,7 +59,7 @@ const NAV = [
 						<path d="M2 4.5l8 5.25L18 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
 					</svg>
 				),
-				badge: 'pending',
+				badge: 'messages',
 			},
 		],
 	},
@@ -57,9 +67,10 @@ const NAV = [
 
 interface AdminSidebarProps {
 	pendingCount?: number;
+	pendingCommentCount?: number;
 }
 
-export default function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
+export default function AdminSidebar({ pendingCount = 0, pendingCommentCount = 0 }: AdminSidebarProps) {
 	const pathname = usePathname();
 	const { data: session } = useSession();
 	const [collapsed, setCollapsed] = useState(false);
@@ -139,7 +150,13 @@ export default function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
 							</p>
 						)}
 						<div className="space-y-0.5">
-							{items.map((item) => (
+						{items.map((item) => {
+							const badgeVal = 'badge' in item
+								? item.badge === 'messages' && pendingCount > 0 ? pendingCount
+								: item.badge === 'comments' && pendingCommentCount > 0 ? pendingCommentCount
+								: undefined
+								: undefined;
+							return (
 								<NavItem
 									key={item.href}
 									href={item.href}
@@ -147,9 +164,10 @@ export default function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
 									collapsed={collapsed}
 									active={isActive(item.href)}
 									icon={item.icon}
-									badge={'badge' in item && item.badge === 'pending' && pendingCount > 0 ? pendingCount : undefined}
+									badge={badgeVal}
 								/>
-							))}
+							);
+						})}
 						</div>
 					</div>
 				))}

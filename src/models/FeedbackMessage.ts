@@ -2,6 +2,14 @@ import mongoose, { Schema, type Model } from 'mongoose';
 
 import type { FeedbackMessageStatus } from '@/types/feedbackMessage';
 
+export interface IFeedbackReply {
+	role: 'user' | 'admin';
+	authorId: string;
+	authorName: string;
+	content: string;
+	createdAt: Date;
+}
+
 export interface IFeedbackMessage {
 	userId: string;
 	userName: string;
@@ -9,12 +17,28 @@ export interface IFeedbackMessage {
 	userImage?: string;
 	subject: string;
 	content: string;
+	// Legacy single-reply fields — kept for migration compatibility
 	adminReply?: string;
 	adminRepliedAt?: Date;
+	// Full conversation thread (includes all back-and-forth replies)
+	replies: IFeedbackReply[];
 	status: FeedbackMessageStatus;
+	// Source page URL (auto-attached when sent from an article's feedback button)
+	sourceUrl?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
 }
+
+const FeedbackReplySchema = new Schema<IFeedbackReply>(
+	{
+		role: { type: String, enum: ['user', 'admin'], required: true },
+		authorId: { type: String, required: true },
+		authorName: { type: String, required: true, trim: true },
+		content: { type: String, required: true, trim: true, maxlength: 5000 },
+		createdAt: { type: Date, default: () => new Date() },
+	},
+	{ _id: true }
+);
 
 const FeedbackMessageSchema = new Schema<IFeedbackMessage>(
 	{
@@ -26,6 +50,7 @@ const FeedbackMessageSchema = new Schema<IFeedbackMessage>(
 		content: { type: String, required: true, trim: true, maxlength: 5000 },
 		adminReply: { type: String, trim: true, maxlength: 5000 },
 		adminRepliedAt: { type: Date },
+		replies: { type: [FeedbackReplySchema], default: [] },
 		status: {
 			type: String,
 			enum: ['pending', 'replied', 'closed'],
@@ -33,11 +58,11 @@ const FeedbackMessageSchema = new Schema<IFeedbackMessage>(
 			required: true,
 			index: true,
 		},
+		sourceUrl: { type: String, trim: true },
 	},
 	{ timestamps: true }
 );
 
-// Compound index for listing user's messages
 FeedbackMessageSchema.index({ userId: 1, createdAt: -1 });
 
 const FeedbackMessage =

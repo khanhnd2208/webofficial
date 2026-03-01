@@ -2,7 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getApiUser } from '@/lib/apiAuth';
 import dbConnect from '@/lib/dbConnect';
 import Post from '@/models/Post';
-import { createComment, getCommentsByPostId, toggleCommentLike } from '@/services/commentService';
+import { createComment, getCommentsByPostId, toggleCommentLike, deleteComment } from '@/services/commentService';
+
+type PostLean = { _id: unknown; title?: string };
 
 export async function GET(
 	request: NextRequest,
@@ -10,24 +12,18 @@ export async function GET(
 ) {
 	try {
 		const { slug } = await params;
-
-		// Get current user ID if logged in (for likedByMe)
 		const user = await getApiUser(request);
-		const currentUserId = user?.id ?? undefined;
+		const isAdmin = (user as { role?: string } | null)?.role === 'admin';
 
 		await dbConnect();
 		const post = await Post.findOne({ slug: slug.trim().toLowerCase(), isPublished: true })
-			.select('_id')
-			.lean();
+			.select('_id title')
+			.lean() as PostLean | null;
 		if (!post) {
 			return NextResponse.json({ ok: false, error: 'Post not found' }, { status: 404 });
 		}
 
-		const url = new URL(request.url);
-		const page = Number(url.searchParams.get('page') ?? '1');
-		const limit = Number(url.searchParams.get('limit') ?? '50');
-
-		const result = await getCommentsByPostId(String(post._id), page, limit, currentUserId);
+		const result = await getCommentsByPostId(String(post._id), user?.id, isAdmin);
 		return NextResponse.json({ ok: true, data: result });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';
@@ -49,8 +45,8 @@ export async function POST(
 
 		await dbConnect();
 		const post = await Post.findOne({ slug: slug.trim().toLowerCase(), isPublished: true })
-			.select('_id')
-			.lean();
+			.select('_id title')
+			.lean() as PostLean | null;
 		if (!post) {
 			return NextResponse.json({ ok: false, error: 'Post not found' }, { status: 404 });
 		}
@@ -60,13 +56,16 @@ export async function POST(
 			return NextResponse.json({ ok: false, error: 'Invalid body' }, { status: 400 });
 		}
 
-		const { content } = body as { content?: unknown };
+		const { content, parentId } = body as { content?: unknown; parentId?: unknown };
 
 		const comment = await createComment({
 			postId: String(post._id),
+			postSlug: slug.trim().toLowerCase(),
+			postTitle: typeof post.title === 'string' ? post.title : undefined,
+			parentId: typeof parentId === 'string' ? parentId : null,
 			userId: user.id,
-			userName: user.name || 'Anonymous',
-			userImage: undefined,
+			userName: user.name || 'Người dùng',
+			userImage: user.image ?? undefined,
 			content: String(content ?? ''),
 		});
 
@@ -77,10 +76,8 @@ export async function POST(
 	}
 }
 
-/** PATCH /api/posts/:slug/comments — toggle like on a comment */
-export async function PATCH(
-	request: NextRequest,
-) {
+/** PATCH — toggle like OR user self-delete */
+export async function PATCH(request: NextRequest) {
 	try {
 		const user = await getApiUser(request);
 		if (!user) {
@@ -92,11 +89,17 @@ export async function PATCH(
 			return NextResponse.json({ ok: false, error: 'Invalid body' }, { status: 400 });
 		}
 
-		const { commentId } = body as { commentId?: string };
+		const { action, commentId } = body as { action?: string; commentId?: string };
 		if (!commentId) {
 			return NextResponse.json({ ok: false, error: 'commentId is required' }, { status: 400 });
 		}
 
+		if (action === 'delete') {
+			await deleteComment(commentId, user.id);
+			return NextResponse.json({ ok: true });
+		}
+
+		// Default: toggle like
 		const result = await toggleCommentLike(commentId, user.id);
 		return NextResponse.json({ ok: true, data: result });
 	} catch (error) {
@@ -104,3 +107,4 @@ export async function PATCH(
 		return NextResponse.json({ ok: false, error: message }, { status: 400 });
 	}
 }
+

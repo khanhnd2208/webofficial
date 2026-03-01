@@ -7,6 +7,7 @@ import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 import { getAdminDashboardStats } from '@/services/postService';
 import { getMessageCounts } from '@/services/feedbackMessageService';
+import { getPendingCommentCount } from '@/services/commentService';
 
 export interface AdminOverviewStats {
 	posts: {
@@ -22,6 +23,9 @@ export interface AdminOverviewStats {
 		replied: number;
 		closed: number;
 	};
+	comments: {
+		pending: number;
+	};
 	users: {
 		total: number;
 		students: number;
@@ -31,9 +35,10 @@ export interface AdminOverviewStats {
 export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 	await dbConnect();
 
-	const [postStats, msgCounts, userCounts] = await Promise.all([
+	const [postStats, msgCounts, commentPending, userCounts] = await Promise.all([
 		getAdminDashboardStats(),
 		getMessageCounts(),
+		getPendingCommentCount(),
 		Promise.all([
 			User.countDocuments(),
 			User.countDocuments({ role: 'student' }),
@@ -49,6 +54,9 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 			totalReactions: postStats.totalReactions,
 		},
 		messages: msgCounts,
+		comments: {
+			pending: commentPending,
+		},
 		users: {
 			total: userCounts[0],
 			students: userCounts[1],
