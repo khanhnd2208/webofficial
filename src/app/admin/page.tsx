@@ -70,7 +70,28 @@ export default async function AdminHomePage() {
 
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
-		<div className="space-y-10">
+		<div className="space-y-8">
+			{/* Pending messages notification banner */}
+			{stats.messages.pending > 0 && (
+				<a
+					href="/admin/feedback/messages"
+					className="group flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 transition-colors hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/30 dark:hover:bg-red-950/50"
+				>
+					<span className="relative flex h-2.5 w-2.5 shrink-0">
+						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+						<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+					</span>
+					<p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-400">
+						{stats.messages.pending === 1
+							? '1 tin nhắn phản hồi chưa được đọc'
+							: `${stats.messages.pending} tin nhắn phản hồi chưa được đọc`}
+					</p>
+					<span className="text-xs font-bold text-red-600 underline underline-offset-2 group-hover:no-underline dark:text-red-400">
+						Xem ngay →
+					</span>
+				</a>
+			)}
+
 			{/* Header */}
 			<div>
 				<p className="text-xs font-bold uppercase tracking-widest text-muted">Quản trị</p>

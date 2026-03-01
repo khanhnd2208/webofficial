@@ -243,11 +243,20 @@ function NavItem({
 					: 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
 			} ${collapsed ? 'justify-center' : ''}`}
 		>
-			{icon}
+			{/* Icon with pulsing dot when collapsed and has unread badge */}
+			<span className="relative shrink-0">
+				{icon}
+				{badge !== undefined && badge > 0 && collapsed && (
+					<span className="absolute -right-1 -top-1 flex h-2 w-2">
+						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+						<span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+					</span>
+				)}
+			</span>
 			{!collapsed && <span className="truncate">{label}</span>}
-			{badge !== undefined && badge > 0 && (
+			{badge !== undefined && badge > 0 && !collapsed && (
 				<span
-					className={`ml-auto flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+					className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-black ${
 						active ? 'bg-background text-foreground' : 'bg-red-500 text-white'
 					}`}
 				>

@@ -1,15 +1,22 @@
-import { auth } from '@/lib/auth';
+import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
+
+import { authConfig } from '@/lib/auth.config';
+
+// Edge-safe: use authConfig only (no MongoDBAdapter, no Node.js crypto).
+const { auth } = NextAuth(authConfig);
 
 /**
  * Middleware — protects /admin routes.
  *
  * Admin access requires:
- *   1. Authenticated via Google OAuth (Auth.js session)
- *   2. User role === 'admin' in database
+ *   1. Authenticated via Google OAuth (Auth.js JWT session)
+ *   2. User role === 'admin' in JWT token (written at sign-in)
  *
  * Non-admin users see a 403 page.
  * Unauthenticated users are redirected to /login.
+ *
+ * Runs in Edge runtime — NO Node.js modules allowed here.
  */
 export default auth((req) => {
 	const { pathname } = req.nextUrl;

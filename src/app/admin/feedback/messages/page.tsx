@@ -202,10 +202,16 @@ export default function AdminFeedbackMessagesPage() {
 										setReplyText(msg.adminReply ?? '');
 										setReplyError('');
 									}}
-									className={`flex w-full items-start gap-4 px-4 py-4 text-left transition-colors hover:bg-surface-hover/50 ${
-										msg.status === 'pending' ? 'bg-yellow-50/50 dark:bg-yellow-900/5' : ''
+									className={`relative flex w-full items-start gap-4 px-4 py-4 text-left transition-colors hover:bg-surface-hover/50 ${
+										msg.status === 'pending'
+											? 'bg-amber-50/60 dark:bg-amber-950/20'
+											: ''
 									}`}
 								>
+									{/* Unread indicator */}
+									{msg.status === 'pending' && (
+										<span className="absolute left-0 top-0 h-full w-1 rounded-r-sm bg-red-400" />
+									)}
 									{/* Avatar */}
 									{msg.userImage ? (
 										<img
@@ -226,7 +232,7 @@ export default function AdminFeedbackMessagesPage() {
 											<span className="text-xs text-muted">{msg.userEmail}</span>
 											{statusBadge(msg.status)}
 										</div>
-										<p className="mt-0.5 text-sm font-medium text-foreground">{msg.subject}</p>
+										<p className={`mt-0.5 text-sm text-foreground ${msg.status === 'pending' ? 'font-bold' : 'font-medium'}`}>{msg.subject}</p>
 										<p className="mt-0.5 truncate text-xs text-muted">{msg.content}</p>
 									</div>
 
