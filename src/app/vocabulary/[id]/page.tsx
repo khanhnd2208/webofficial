@@ -27,9 +27,11 @@ export default async function VocabSetDetailPage({
 		{
 			href: `/vocabulary/${id}/flashcards`,
 			title: 'Flashcards',
-			desc: 'Lật thẻ để ghi nhớ từ vựng',
-			color: 'text-accent',
-			hoverBg: 'group-hover:bg-accent',
+			desc: 'Lật thẻ · ghi nhớ qua hình ảnh',
+			badge: 'Bắt đầu',
+			accent: 'from-accent/20 to-accent/5 border-accent/30 hover:border-accent',
+			iconBg: 'bg-accent text-white',
+			textColor: 'text-accent',
 			icon: (
 				<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
 					<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
@@ -39,9 +41,11 @@ export default async function VocabSetDetailPage({
 		{
 			href: `/vocabulary/${id}/mcq`,
 			title: 'Trắc nghiệm',
-			desc: 'Chọn đáp án đúng',
-			color: 'text-success',
-			hoverBg: 'group-hover:bg-success',
+			desc: 'Chọn đáp án đúng · 4 lựa chọn',
+			badge: 'Luyện tập',
+			accent: 'from-success/20 to-success/5 border-success/30 hover:border-success',
+			iconBg: 'bg-success text-white',
+			textColor: 'text-success',
 			icon: (
 				<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
 					<path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -51,9 +55,11 @@ export default async function VocabSetDetailPage({
 		{
 			href: `/vocabulary/${id}/fill-blank`,
 			title: 'Điền từ',
-			desc: 'Gõ từ vựng theo gợi ý nghĩa',
-			color: 'text-indigo',
-			hoverBg: 'group-hover:bg-indigo',
+			desc: 'Gõ đúng từ · rèn phản xạ',
+			badge: 'Thử thách',
+			accent: 'from-indigo/20 to-indigo/5 border-indigo/30 hover:border-indigo',
+			iconBg: 'bg-indigo text-white',
+			textColor: 'text-indigo',
 			icon: (
 				<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
 					<path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -63,9 +69,11 @@ export default async function VocabSetDetailPage({
 		{
 			href: `/vocabulary/${id}/matching`,
 			title: 'Nối từ',
-			desc: 'Ghép từ với nghĩa tương ứng',
-			color: 'text-purple',
-			hoverBg: 'group-hover:bg-purple',
+			desc: 'Ghép cặp từ · nghĩa tương ứng',
+			badge: 'Tốc độ',
+			accent: 'from-purple/20 to-purple/5 border-purple/30 hover:border-purple',
+			iconBg: 'bg-purple text-white',
+			textColor: 'text-purple',
 			icon: (
 				<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
 					<path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
@@ -118,22 +126,46 @@ export default async function VocabSetDetailPage({
 
 			{/* Practice modes */}
 			{set.termCount >= 2 ? (
-				<section className="border-b border-border">
+				<section className="border-b border-border bg-gradient-to-b from-surface to-transparent">
 					<div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
-						<h2 className="text-xs font-bold uppercase tracking-widest text-muted">Luyện tập</h2>
-						<div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+						<div className="flex items-center gap-3 mb-2">
+							<span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white">
+								<svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+									<path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+								</svg>
+							</span>
+							<h2 className="text-sm font-black uppercase tracking-widest text-foreground">Bắt đầu luyện tập</h2>
+						</div>
+						<p className="mb-8 text-xs text-muted pl-8">Chọn chế độ phù hợp · mỗi chế độ ghi nhớ theo cách khác nhau</p>
+						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 							{practiceCards.map((card) => (
 								<Link
 									key={card.href}
 									href={card.href}
-									className="group flex items-center gap-4 border border-border p-5 transition-all hover:bg-surface-hover"
+									className={`group relative flex flex-col gap-4 border bg-gradient-to-br p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${card.accent}`}
 								>
-									<div className={`flex h-12 w-12 shrink-0 items-center justify-center bg-surface-hover transition-colors ${card.hoverBg} group-hover:text-white ${card.color}`}>
+									{/* Badge top-right */}
+									<span className={`absolute right-3 top-3 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${card.iconBg}`}>
+										{card.badge}
+									</span>
+
+									{/* Icon */}
+									<div className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.iconBg} shadow-sm`}>
 										{card.icon}
 									</div>
+
+									{/* Content */}
 									<div>
-										<div className={`text-sm font-bold uppercase tracking-wider ${card.color}`}>{card.title}</div>
-										<div className="mt-0.5 text-xs text-muted">{card.desc}</div>
+										<div className={`text-base font-black uppercase tracking-wider ${card.textColor}`}>{card.title}</div>
+										<div className="mt-1 text-xs text-muted">{card.desc}</div>
+									</div>
+
+									{/* Arrow */}
+									<div className={`flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest ${card.textColor} transition-transform group-hover:translate-x-0.5`}>
+										Vào học
+										<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+											<path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+										</svg>
 									</div>
 								</Link>
 							))}

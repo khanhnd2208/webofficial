@@ -153,6 +153,18 @@ export async function listPublicSets(): Promise<VocabSetListItemDTO[]> {
 	return items.map(toListItem);
 }
 
+/** List ALL sets owned by admin (both public and private) — for admin management */
+export async function listAdminOwnedSets(adminId: string): Promise<VocabSetListItemDTO[]> {
+	await dbConnect();
+	if (!mongoose.isValidObjectId(adminId)) return [];
+	const items = (await VocabSet.find({ ownerId: new mongoose.Types.ObjectId(adminId) })
+		.select({ terms: 0 })
+		.sort({ updatedAt: -1 })
+		.limit(500)
+		.lean()) as unknown as LeanDoc[];
+	return items.map(toListItem);
+}
+
 /** Get a public set by ID (with terms, for preview / clone) */
 export async function getPublicSetById(id: string): Promise<VocabSetDTO | null> {
 	await dbConnect();

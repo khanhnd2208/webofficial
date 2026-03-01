@@ -23,15 +23,15 @@ const NAV = [
 		],
 	},
 	{
-		group: 'Học tập',
+		group: 'Từ vựng',
 		items: [
 			{
-				href: '/admin/learning',
-				label: 'Khoá học & Bài học',
+				href: '/admin/vocabulary',
+				label: 'Cửa hàng từ vựng',
 				icon: (
 					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
-						<path d="M10 2L2 6l8 4 8-4-8-4z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-						<path d="M2 10l8 4 8-4M2 14l8 4 8-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+						<path d="M3 4.5A1.5 1.5 0 014.5 3h11A1.5 1.5 0 0117 4.5v11a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
+						<path d="M6.5 7h7M6.5 10h7M6.5 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
 					</svg>
 				),
 			},

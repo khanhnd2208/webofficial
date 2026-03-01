@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 		const body = await request.json();
 
 		// Create from JSON
-		const { title, description, terms } = body;
+		const { title, description, visibility, terms } = body;
 		if (!title?.trim()) return NextResponse.json({ ok: false, error: 'Title is required' }, { status: 400 });
 		if (!Array.isArray(terms) || terms.length === 0) {
 			return NextResponse.json({ ok: false, error: 'At least one term is required' }, { status: 400 });
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 		const set = await createVocabSet({
 			title: title.trim(),
 			description: description ?? '',
-			visibility: 'private',
+			visibility: user.role === 'admin' ? (visibility ?? 'private') : 'private',
 			terms: terms.map((t: Record<string, string>) => ({
 				word: String(t.word ?? '').trim(),
 				definition: String(t.definition ?? '').trim(),

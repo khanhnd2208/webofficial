@@ -230,7 +230,7 @@ export default async function DashboardPage() {
 								),
 							},
 							{
-								href: '/dashboard/vocabulary',
+								href: '/vocabulary',
 								title: 'Tiến trình ôn tập',
 								desc: 'Xem lịch sử luyện tập chi tiết',
 								color: 'text-teal',
