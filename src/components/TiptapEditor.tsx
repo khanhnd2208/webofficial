@@ -374,7 +374,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 				<textarea
 					value={sourceHtml}
 					onChange={(e) => setSourceHtml(e.target.value)}
-					className="min-h-[480px] w-full bg-surface p-6 font-mono text-sm text-foreground outline-none"
+					className="min-h-120 w-full bg-surface p-6 font-mono text-sm text-foreground outline-none"
 					spellCheck={false}
 				/>
 			) : (

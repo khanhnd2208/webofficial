@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { isAdmin } from '@/lib/apiAuth';
+
 export const runtime = 'nodejs';
 
 function safeExt(contentType: string): string {
@@ -16,6 +18,12 @@ function safeExt(contentType: string): string {
 
 export async function POST(request: NextRequest) {
 	try {
+		// Only admins can upload images (used by blog editor, course thumbnails, etc.)
+		const admin = await isAdmin(request);
+		if (!admin) {
+			return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+		}
+
 		const form = await request.formData();
 		const file = form.get('file');
 		if (!(file instanceof File)) {

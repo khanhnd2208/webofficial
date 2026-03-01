@@ -1,11 +1,31 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
+import { getApiUser, isAdmin } from '@/lib/apiAuth';
 import { createGrade, listGrades } from '@/services/gradeService';
 
-export async function GET(request: Request) {
+/**
+ * GET /api/grades?studentId=...
+ *
+ * - Admin: can query any studentId
+ * - Logged-in student: can only view their own grades
+ * - Unauthenticated: 401
+ */
+export async function GET(request: NextRequest) {
 	try {
+		const user = await getApiUser(request);
+		if (!user) {
+			return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+		}
+
 		const url = new URL(request.url);
-		const studentId = url.searchParams.get('studentId') ?? undefined;
+		let studentId = url.searchParams.get('studentId') ?? undefined;
+
+		// Non-admin users can only view their own grades
+		const admin = await isAdmin(request);
+		if (!admin) {
+			studentId = user.id;
+		}
+
 		const grades = await listGrades({ studentId });
 		return NextResponse.json({ ok: true, data: grades });
 	} catch (error) {
@@ -14,8 +34,16 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function POST(request: Request) {
+/**
+ * POST /api/grades — Admin only
+ */
+export async function POST(request: NextRequest) {
 	try {
+		const admin = await isAdmin(request);
+		if (!admin) {
+			return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+		}
+
 		const body = (await request.json()) as unknown;
 		if (!body || typeof body !== 'object') {
 			return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 });
