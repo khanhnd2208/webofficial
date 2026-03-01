@@ -42,7 +42,7 @@ export default async function AdminPostsPage({
 	const hasActiveFilters = !!(tag || (category && category !== 'all') || search || dateFrom || dateTo);
 
 	return (
-		<main className="mx-auto max-w-7xl px-6 py-8">
+		<main className="mx-auto max-w-6xl px-6 py-8">
 			{/* Header */}
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>

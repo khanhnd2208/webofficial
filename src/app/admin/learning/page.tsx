@@ -55,7 +55,7 @@ export default async function AdminLearningPage({
 	const selectedUnitId = requestedUnit?.id || (courseUnits[0]?.unit.id ?? '');
 
 	return (
-		<main>
+		<main className="mx-auto max-w-6xl px-6 py-8">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h2 className="text-xl font-semibold tracking-tight">Learning</h2>

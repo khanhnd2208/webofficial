@@ -111,24 +111,31 @@ export default function FeedbackMessages() {
 	// Not logged in
 	if (!session?.user) {
 		return (
-			<div className="mt-10 border-t border-border pt-10">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-muted">Gửi phản hồi</h2>
-				<p className="mt-4 text-sm text-muted">
-					<Link href="/login" className="font-bold text-accent underline underline-offset-2">
-						Đăng nhập
-					</Link>{' '}
-					để gửi phản hồi trực tiếp đến admin.
-				</p>
+			<div className="rounded-xl border border-border bg-surface p-8 text-center">
+				<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-surface-hover">
+					<svg viewBox="0 0 20 20" fill="none" className="h-6 w-6 text-muted">
+						<path d="M2 4.5C2 3.67 2.67 3 3.5 3h13c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-13C2.67 15 2 14.33 2 13.5v-9z" stroke="currentColor" strokeWidth="1.4" />
+						<path d="M2 4.5l8 5.25L18 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+					</svg>
+				</div>
+				<p className="mt-4 text-sm font-bold text-foreground">Đăng nhập để gửi phản hồi</p>
+				<p className="mt-1.5 text-sm text-muted">Cần tài khoản để gửi tin nhắn và theo dõi trả lời.</p>
+				<Link
+					href="/login"
+					className="mt-5 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-background transition-all hover:opacity-80"
+				>
+					Đăng nhập với Google
+				</Link>
 			</div>
 		);
 	}
 
 	return (
-		<div className="mt-10 border-t border-border pt-10">
-			<h2 className="text-xs font-bold uppercase tracking-widest text-muted">Gửi phản hồi</h2>
-
-			{/* Feedback form */}
-			<form onSubmit={(e) => void handleSubmit(e)} className="mt-6 space-y-4">
+		<div className="space-y-10">
+			{/* Form */}
+			<div>
+				<p className="text-xs font-bold uppercase tracking-widest text-muted">Gửi tin nhắn mới</p>
+			<form onSubmit={(e) => void handleSubmit(e)} className="mt-4 space-y-4">
 				<div>
 					<label htmlFor="fb-subject" className="block text-xs font-bold uppercase tracking-wider text-muted">
 						Tiêu đề
@@ -170,12 +177,13 @@ export default function FeedbackMessages() {
 					{success && <p className="text-xs text-green-600 dark:text-green-400">{success}</p>}
 				</div>
 			</form>
+			</div>
 
 			{/* Message history */}
-			<div className="mt-10">
-				<h3 className="text-xs font-bold uppercase tracking-widest text-muted">
+			<div>
+				<p className="text-xs font-bold uppercase tracking-widest text-muted">
 					Lịch sử phản hồi {messages.length > 0 ? `(${messages.length})` : ''}
-				</h3>
+				</p>
 
 				{loading ? (
 					<div className="mt-4 flex items-center gap-2 text-sm text-muted">
@@ -192,7 +200,7 @@ export default function FeedbackMessages() {
 						{messages.map((msg) => (
 							<div
 								key={msg.id}
-								className="border border-border p-4 transition-colors hover:bg-surface-hover/30"
+								className="rounded-xl border border-border p-5 transition-colors hover:border-border-hover"
 							>
 								{/* Header */}
 								<div className="flex items-start justify-between gap-2">
@@ -210,8 +218,8 @@ export default function FeedbackMessages() {
 
 								{/* Admin reply */}
 								{msg.adminReply && (
-									<div className="mt-4 border-l-2 border-accent pl-4">
-										<p className="text-xs font-bold text-accent">Phản hồi từ Admin</p>
+									<div className="mt-4 rounded-lg border-l-2 border-accent bg-accent-subtle px-4 py-3">
+										<p className="text-xs font-bold text-accent">Phản hồi từ giảng viên</p>
 										{msg.adminRepliedAt && (
 											<time className="mt-0.5 block text-xs text-muted">
 												{formatDate(msg.adminRepliedAt)}
