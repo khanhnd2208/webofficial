@@ -1,7 +1,7 @@
 'use client';
 
-import { getProviders, signIn } from 'next-auth/react';
-import { useEffect, useMemo, useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useState } from 'react';
 
 function GoogleIcon({ className }: { className?: string }) {
 	return (
@@ -32,35 +32,27 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 export default function SignInWithGoogleButton({ callbackUrl }: { callbackUrl: string }) {
-	const [providers, setProviders] = useState<Awaited<ReturnType<typeof getProviders>> | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 
-	useEffect(() => {
-		let cancelled = false;
-		getProviders()
-			.then((p) => {
-				if (!cancelled) setProviders(p);
-			})
-			.finally(() => {
-				if (!cancelled) setLoading(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	const googleProvider = useMemo(() => providers?.google, [providers]);
-	const disabled = loading || !googleProvider;
+	const handleSignIn = async () => {
+		setLoading(true);
+		try {
+			await signIn('google', { callbackUrl });
+		} catch {
+			// signIn redirects on success, so errors here are genuine failures
+			setLoading(false);
+		}
+	};
 
 	return (
 		<button
 			type="button"
-			disabled={disabled}
-			onClick={() => signIn('google', { callbackUrl })}
+			disabled={loading}
+			onClick={handleSignIn}
 			className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border-2 border-foreground bg-foreground px-5 py-3 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			<GoogleIcon className="h-5 w-5" />
-			<span>{loading ? 'Đang tải...' : 'Tiếp tục với Google'}</span>
+			<span>{loading ? 'Đang chuyển hướng...' : 'Tiếp tục với Google'}</span>
 		</button>
 	);
 }

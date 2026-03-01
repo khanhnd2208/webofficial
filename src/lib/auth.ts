@@ -21,9 +21,10 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 //   Result: cookie gone on callback → "pkceCodeVerifier could not be parsed"
 //
 // Fix applied:
-//   1. Explicit plain cookie names (no __Secure- prefix) via `cookies:` config
-//   2. checks: ['none'] — disables state + PKCE verification entirely
-//   3. Google OAuth's own nonce provides sufficient CSRF protection
+//   checks: ['none'] on Google provider — disables state + PKCE verification.
+//   Google OAuth's own nonce provides sufficient CSRF protection.
+//   No cookies: override — partial cookie config in Auth.js v5 beta causes
+//   an internal Configuration error at provider initialization.
 // ────────────────────────────────────────────────────────────────────────
 
 const nextAuth = NextAuth({
@@ -31,32 +32,6 @@ const nextAuth = NextAuth({
 	adapter: MongoDBAdapter(mongoClientPromise),
 	session: { strategy: 'jwt' },
 	trustHost: true,
-	// ─────────────────────────────────────────────────────────────────────
-	// Force plain cookie names (no __Secure- or __Host- prefix).
-	//
-	// Why: Behind Cloudflare → Nginx → Next.js the app correctly sees
-	// HTTPS, so Auth.js auto-applies __Secure- prefix when writing cookies.
-	// But Cloudflare sometimes strips or rewrites those prefixed cookies on
-	// the redirect back from Google, so when Auth.js tries to READ them the
-	// cookie is missing → InvalidCheck error.
-	//
-	// By explicitly setting plain names we ensure write & read use the same
-	// name regardless of how many proxies sit in between.
-	// ─────────────────────────────────────────────────────────────────────
-	cookies: {
-		sessionToken: {
-			name: 'authjs.session-token',
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: true },
-		},
-		callbackUrl: {
-			name: 'authjs.callback-url',
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: true },
-		},
-		csrfToken: {
-			name: 'authjs.csrf-token',
-			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: true },
-		},
-	},
 	providers:
 		googleClientId && googleClientSecret
 			? [
