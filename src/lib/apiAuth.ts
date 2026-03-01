@@ -29,27 +29,13 @@ export async function getApiUser(_request: NextRequest): Promise<ApiUser | null>
 }
 
 /**
- * Check if a request carries a valid admin token OR the user is an admin.
+ * Check if the current user is an admin (Auth.js session only).
  *
- * Admin auth can be done via:
- *   1. ADMIN_SECRET token (cookie or header) — for direct admin access
- *   2. Auth.js session with role='admin' — for logged-in admin users
+ * No more token-based auth — admin is determined solely by the
+ * user's role in the database (set during account creation or
+ * manually via MongoDB).
  */
-export async function isAdmin(request: NextRequest): Promise<boolean> {
-	const adminSecret = process.env.ADMIN_SECRET;
-	if (adminSecret) {
-		// Check cookie first (set by middleware on first visit with ?token=...)
-		const cookieToken = request.cookies.get('admin_token')?.value;
-		if (cookieToken === adminSecret) return true;
-
-		// Check header (for API clients / curl)
-		const headerToken = request.headers.get('x-admin-token');
-		if (headerToken === adminSecret) return true;
-	}
-
-	// Also check if logged-in user has admin role
-	const user = await getApiUser(request);
-	if (user?.role === 'admin') return true;
-
-	return false;
+export async function isAdmin(_request: NextRequest): Promise<boolean> {
+	const user = await getApiUser(_request);
+	return user?.role === 'admin';
 }

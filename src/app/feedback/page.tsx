@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 import { getFeedbackPage } from '@/services/feedbackService';
+import FeedbackMessages from '@/components/FeedbackMessages';
 
 export const revalidate = 60;
 
@@ -50,6 +51,9 @@ export default async function FeedbackPublicPage() {
 					className="tiptap-content prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-[1.8] prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-blockquote:border-l-accent prose-blockquote:text-foreground-secondary prose-strong:text-foreground prose-code:text-accent max-w-none"
 					dangerouslySetInnerHTML={{ __html: page.content }}
 				/>
+
+				{/* Feedback messaging section */}
+				<FeedbackMessages />
 			</div>
 		</main>
 	);

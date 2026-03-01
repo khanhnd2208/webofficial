@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 import type { CommentDTO } from '@/types/comment';
 
@@ -18,6 +19,7 @@ export default function CommentSection({ slug }: CommentSectionProps) {
 	const [posting, setPosting] = useState(false);
 	const [error, setError] = useState('');
 	const [likingIds, setLikingIds] = useState<Set<string>>(new Set());
+	const [showLikeHint, setShowLikeHint] = useState(false);
 
 	const fetchComments = useCallback(async () => {
 		try {
@@ -71,7 +73,12 @@ export default function CommentSection({ slug }: CommentSectionProps) {
 	}
 
 	async function handleLike(commentId: string) {
-		if (!session?.user || likingIds.has(commentId)) return;
+		if (!session?.user) {
+			setShowLikeHint(true);
+			setTimeout(() => setShowLikeHint(false), 3000);
+			return;
+		}
+		if (likingIds.has(commentId)) return;
 
 		setLikingIds((prev) => new Set(prev).add(commentId));
 
@@ -188,13 +195,15 @@ export default function CommentSection({ slug }: CommentSectionProps) {
 					{error ? <p className="mt-2 text-xs text-error">{error}</p> : null}
 				</form>
 			) : (
-				<p className="mt-6 text-sm text-muted">
-					Hãy{' '}
-					<a href="/login" className="font-bold text-accent underline underline-offset-2">
-						đăng nhập
-					</a>{' '}
-					để bình luận.
-				</p>
+				<div className="mt-6">
+					<p className="text-sm text-muted">
+						Hãy{' '}
+						<Link href="/login" className="font-bold text-accent underline underline-offset-2">
+							đăng nhập
+						</Link>{' '}
+						để bình luận.
+					</p>
+				</div>
 			)}
 
 			{/* Comments list — sorted by most liked */}
@@ -237,7 +246,7 @@ export default function CommentSection({ slug }: CommentSectionProps) {
 								<div className="mt-2">
 									<button
 										onClick={() => void handleLike(c.id)}
-										disabled={!session?.user || likingIds.has(c.id)}
+										disabled={likingIds.has(c.id)}
 										className={`group inline-flex items-center gap-1.5 text-xs transition-colors ${
 											c.likedByMe
 												? 'font-bold text-accent'
@@ -268,6 +277,15 @@ export default function CommentSection({ slug }: CommentSectionProps) {
 					))
 				)}
 			</div>
+
+			{showLikeHint && (
+				<p className="mt-2 text-xs text-muted animate-in fade-in">
+					<Link href="/login" className="font-bold text-accent underline underline-offset-2">
+						Đăng nhập
+					</Link>{' '}
+					để thích bình luận.
+				</p>
+			)}
 		</section>
 	);
 }
