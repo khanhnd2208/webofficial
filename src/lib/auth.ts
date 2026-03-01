@@ -14,24 +14,41 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 // Architecture: Browser → Cloudflare CDN → Nginx (port 443) → Next.js (port 4000)
 //
 // Root cause of Chrome failures (Safari was fine):
-//   Auth.js detects HTTPS and uses __Secure- cookie prefix automatically.
-//   Cloudflare strips/rewrites __Secure- prefixed cookies during the OAuth
-//   redirect round-trip (browser → Google → back to our domain).
-//   Chrome enforces SameSite/Secure cookie rules strictly; Safari is lenient.
-//   Result: cookie gone on callback → "pkceCodeVerifier could not be parsed"
+//   Auth.js detects HTTPS → sets useSecureCookies=true → uses __Host- and
+//   __Secure- cookie prefixes. Cloudflare strips these prefixed cookies
+//   during the OAuth redirect round-trip. Chrome enforces strict cookie
+//   rules; Safari is lenient. Result: cookie gone → MissingCSRF /
+//   pkceCodeVerifier could not be parsed → error=Configuration.
 //
-// Fix applied:
-//   checks: ['none'] on Google provider — disables state + PKCE verification.
-//   Google OAuth's own nonce provides sufficient CSRF protection.
-//   No cookies: override — partial cookie config in Auth.js v5 beta causes
-//   an internal Configuration error at provider initialization.
+// Fix: Override ALL 6 cookie names with plain names (no __Host-/__Secure-
+//   prefix). Secure=true is kept so cookies still require HTTPS transport.
+//   checks: ['none'] disables PKCE/state verification (redundant with
+//   Google's own nonce-based CSRF protection).
 // ────────────────────────────────────────────────────────────────────────
+
+const secureCookieOptions = {
+	httpOnly: true,
+	sameSite: 'lax' as const,
+	path: '/',
+	secure: true,
+};
 
 const nextAuth = NextAuth({
 	secret: process.env.AUTH_SECRET,
 	adapter: MongoDBAdapter(mongoClientPromise),
 	session: { strategy: 'jwt' },
 	trustHost: true,
+	// Override every cookie to strip __Host- / __Secure- prefixes.
+	// Cloudflare strips cookies with these security prefixes during the
+	// OAuth redirect loop, breaking Chrome (Safari ignores the missing cookie).
+	cookies: {
+		sessionToken: { name: 'authjs.session-token', options: secureCookieOptions },
+		callbackUrl: { name: 'authjs.callback-url', options: secureCookieOptions },
+		csrfToken: { name: 'authjs.csrf-token', options: secureCookieOptions },
+		pkceCodeVerifier: { name: 'authjs.pkce.code_verifier', options: secureCookieOptions },
+		state: { name: 'authjs.state', options: secureCookieOptions },
+		nonce: { name: 'authjs.nonce', options: secureCookieOptions },
+	},
 	providers:
 		googleClientId && googleClientSecret
 			? [
