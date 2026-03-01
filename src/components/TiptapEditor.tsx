@@ -195,7 +195,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 		const currentHtml = editor.getHTML();
 		// Only set content if it actually differs (avoids cursor-reset loops)
 		if (content !== currentHtml) {
-			editor.commands.setContent(content, false);
+			editor.commands.setContent(content, false, { preserveWhitespace: 'full' });
 		}
 	}, [editor, content]);
 
