@@ -195,7 +195,8 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 		const currentHtml = editor.getHTML();
 		// Only set content if it actually differs (avoids cursor-reset loops)
 		if (content !== currentHtml) {
-			editor.commands.setContent(content, false, { preserveWhitespace: 'full' });
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(editor.commands.setContent as (...args: any[]) => void)(content, false);
 		}
 	}, [editor, content]);
 
