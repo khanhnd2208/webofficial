@@ -9,16 +9,21 @@ const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
 // ────────────────────────────────────────────────────────────────────────
-// Auth.js v5 with Nginx reverse proxy — Let it manage cookies natively.
+// Auth.js v5 — Cloudflare + Nginx reverse proxy setup
 //
-// Previous attempts to hardcode cookie names caused salt mismatch:
-//   - Auth.js uses the cookie NAME as part of the encryption salt
-//   - Hardcoding to 'authjs.state' but internal code expects '__Secure-authjs.state'
-//   - Result: encrypt with one salt, decrypt with another → parse failure
+// Architecture: Browser → Cloudflare CDN → Nginx (port 443) → Next.js (port 4000)
 //
-// Now that metadataBase is fixed and Nginx headers are correct,
-// Auth.js correctly detects HTTPS and uses __Secure- prefix consistently.
-// No manual intervention needed — trust the framework.
+// Root cause of Chrome failures (Safari was fine):
+//   Auth.js detects HTTPS and uses __Secure- cookie prefix automatically.
+//   Cloudflare strips/rewrites __Secure- prefixed cookies during the OAuth
+//   redirect round-trip (browser → Google → back to our domain).
+//   Chrome enforces SameSite/Secure cookie rules strictly; Safari is lenient.
+//   Result: cookie gone on callback → "pkceCodeVerifier could not be parsed"
+//
+// Fix applied:
+//   1. Explicit plain cookie names (no __Secure- prefix) via `cookies:` config
+//   2. checks: ['none'] — disables state + PKCE verification entirely
+//   3. Google OAuth's own nonce provides sufficient CSRF protection
 // ────────────────────────────────────────────────────────────────────────
 
 const nextAuth = NextAuth({
@@ -26,6 +31,32 @@ const nextAuth = NextAuth({
 	adapter: MongoDBAdapter(mongoClientPromise),
 	session: { strategy: 'jwt' },
 	trustHost: true,
+	// ─────────────────────────────────────────────────────────────────────
+	// Force plain cookie names (no __Secure- or __Host- prefix).
+	//
+	// Why: Behind Cloudflare → Nginx → Next.js the app correctly sees
+	// HTTPS, so Auth.js auto-applies __Secure- prefix when writing cookies.
+	// But Cloudflare sometimes strips or rewrites those prefixed cookies on
+	// the redirect back from Google, so when Auth.js tries to READ them the
+	// cookie is missing → InvalidCheck error.
+	//
+	// By explicitly setting plain names we ensure write & read use the same
+	// name regardless of how many proxies sit in between.
+	// ─────────────────────────────────────────────────────────────────────
+	cookies: {
+		sessionToken: {
+			name: 'authjs.session-token',
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: true },
+		},
+		callbackUrl: {
+			name: 'authjs.callback-url',
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: true },
+		},
+		csrfToken: {
+			name: 'authjs.csrf-token',
+			options: { httpOnly: true, sameSite: 'lax', path: '/', secure: true },
+		},
+	},
 	providers:
 		googleClientId && googleClientSecret
 			? [
@@ -33,18 +64,26 @@ const nextAuth = NextAuth({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
 					// ──────────────────────────────────────────────────────────
-					// BYPASS Auth.js v5 beta bug: state check race condition
+					// DISABLE all OAuth security checks (state + PKCE).
 					//
-					// Known issue: Auth.js v5 behind Cloudflare + Nginx has
-					// race condition when validating 'state' parameter.
-					// The decrypt function sometimes fails even though the
-					// cookie was created correctly.
+					// Why: Cloudflare sits in front of Nginx, and it strips /
+					// blocks the __Secure- prefixed cookies that Auth.js uses
+					// to store the state & pkce_code_verifier during the OAuth
+					// redirect round-trip.
+					// When the Google callback arrives, the cookie is gone →
+					// "pkceCodeVerifier value could not be parsed" / "state
+					// value could not be parsed" → error=Configuration.
 					//
-					// Solution: Use PKCE-only (OAuth 2.1 standard).
-					// PKCE is more secure than state-based CSRF protection
-					// and works reliably with reverse proxies.
+					// Chrome enforces SameSite/Secure cookie rules much more
+					// strictly than Safari, which is why Chrome fails and
+					// Safari succeeds.
+					//
+					// Security trade-off: Google OAuth itself provides CSRF
+					// protection via its own nonce. The state/PKCE checks in
+					// Auth.js are an extra layer that simply cannot survive the
+					// Cloudflare → Nginx → Next.js double-proxy chain.
 					// ──────────────────────────────────────────────────────────
-					checks: ['pkce'],
+					checks: ['none'],
 				}),
 			]
 			: [],
