@@ -6,6 +6,8 @@ import Link from 'next/link';
 
 const STORAGE_KEY = 'admin_lucky_card_state';
 const CARD_BACK_IMG = '/uploads/lucky-card-back.jpg';
+const CARD_FRONT_IMG = '/uploads/lucky-card-front.png';
+const PAGE_BG_IMG = '/uploads/lucky-card-bg.jpg';
 
 interface CardData {
   id: string;
@@ -428,26 +430,29 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
           {/* FRONT FACE */}
           <div
             className="relative w-full overflow-hidden rounded-2xl"
-            style={{ backfaceVisibility: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212,168,48,0.2)' }}
+            style={{ backfaceVisibility: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 50px rgba(212,168,48,0.25)' }}
           >
             <div className="relative aspect-[3/4] w-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={CARD_BACK_IMG} alt="Lucky Card" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
+              <img src={CARD_FRONT_IMG} alt="Lucky Card Front" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
+              {/* Shimmer sweep */}
               <motion.div
                 className="pointer-events-none absolute inset-0 rounded-2xl"
-                style={{ background: 'linear-gradient(105deg, transparent 38%, rgba(255,230,120,0.14) 50%, transparent 62%)' }}
+                style={{ background: 'linear-gradient(115deg, transparent 35%, rgba(255,240,160,0.18) 50%, transparent 65%)' }}
                 animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 3, ease: 'easeInOut' }}
+                transition={{ duration: 4, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
               />
+              {/* Card number badge */}
               <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                 <span
                   className="rounded-full px-3 py-0.5 text-[10px] font-semibold tracking-[0.25em] uppercase"
-                  style={{ background: 'rgba(26,16,8,0.55)', color: 'rgba(212,168,48,0.85)', backdropFilter: 'blur(4px)', border: '1px solid rgba(212,168,48,0.25)', fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+                  style={{ background: 'rgba(20,12,4,0.5)', color: 'rgba(212,168,48,0.9)', backdropFilter: 'blur(6px)', border: '1px solid rgba(212,168,48,0.3)', fontFamily: 'var(--font-cinzel), Georgia, serif' }}
                 >
                   {index + 1}
                 </span>
               </div>
-              <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.4) 100%)' }} />
+              {/* Edge darkening vignette */}
+              <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%)' }} />
             </div>
           </div>
 
@@ -879,7 +884,8 @@ export default function LuckyCardPage() {
 
   if (!loaded) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'radial-gradient(ellipse at center, #1a1208 0%, #0d0a05 100%)' }}>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundImage: `url(${PAGE_BG_IMG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="absolute inset-0" style={{ background: 'rgba(4,3,10,0.6)' }} />
         <motion.div
           className="rounded-full"
           style={{ width: 48, height: 48, border: '2px solid transparent', borderTopColor: '#c8973a', borderRightColor: '#d4a830' }}
@@ -894,8 +900,15 @@ export default function LuckyCardPage() {
     <div
       ref={fullscreenRef}
       className={`min-h-screen relative ${isFullscreen ? 'overflow-y-auto' : ''}`}
-      style={{ background: 'radial-gradient(ellipse at 30% 20%, #1e1408 0%, #120d04 40%, #0a0704 100%)' }}
+      style={{
+        backgroundImage: `url(${PAGE_BG_IMG})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
     >
+      {/* Deep overlay to keep dark cosmic mood and text readable */}
+      <div className="pointer-events-none fixed inset-0" style={{ background: 'rgba(4,3,10,0.55)' }} />
       {/* Ambient particles */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         {[...Array(10)].map((_, i) => (
