@@ -63,6 +63,20 @@ const NAV = [
 			},
 		],
 	},
+	{
+		group: 'Công cụ',
+		items: [
+			{
+				href: '/admin/tools',
+				label: 'Magical Tools',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+					</svg>
+				),
+			},
+		],
+	},
 ] as const;
 
 interface AdminSidebarProps {

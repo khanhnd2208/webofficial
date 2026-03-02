@@ -224,6 +224,16 @@ export default async function AdminHomePage() {
 							</svg>
 						}
 					/>
+					<QuickAction
+						href="/admin/tools"
+						label="Magical Tools ✨"
+						description="Lucky Card, bốc thăm may mắn và nhiều tool thú vị."
+						icon={
+							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
+								<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+							</svg>
+						}
+					/>
 				</div>
 			</section>
 		</div>
