@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Merriweather } from 'next/font/google';
+import { Inter, Merriweather, Cinzel, Cormorant_Garamond } from 'next/font/google';
 
 import Navbar from '@/components/Navbar';
 import Providers from '@/components/Providers';
@@ -14,6 +14,23 @@ const merriweather = Merriweather({
   variable: '--font-merriweather',
   subsets: ['latin', 'vietnamese'],
   weight: ['400', '700', '900'],
+  display: 'swap',
+});
+
+// Mystical / arcane heading font — elegant small-caps, used in Lucky Card tool
+const cinzel = Cinzel({
+  variable: '--font-cinzel',
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '900'],
+  display: 'swap',
+});
+
+// Elegant serif for revealed card content — richer than Georgia
+const cormorantGaramond = Cormorant_Garamond({
+  variable: '--font-cormorant',
+  subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
   display: 'swap',
 });
 
@@ -48,7 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" suppressHydrationWarning>
-      <body className={`${inter.variable} ${merriweather.variable} antialiased`}>
+      <body className={`${inter.variable} ${merriweather.variable} ${cinzel.variable} ${cormorantGaramond.variable} antialiased`}>
 			<Providers>
 				<Navbar />
 				{children}
