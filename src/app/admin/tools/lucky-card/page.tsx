@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
-const STORAGE_KEY = 'admin_lucky_card_state';
-const CARD_BACK_IMG = '/uploads/lucky-card-back.jpg';
-const CARD_FRONT_IMG = '/uploads/lucky-card-front.png';
-const PAGE_BG_IMG = '/uploads/lucky-card-bg.jpg';
+const STORAGE_KEY = "admin_lucky_card_state";
+const CARD_BACK_IMG = "/uploads/lucky-card-back.jpg"; // NDK ornate card — shown face-down (mặt úp)
+const CARD_FRONT_IMG = "/uploads/lucky-card-front.png"; // Parchment — background when content revealed (mặt lật)
+const PAGE_BG_IMG = "/uploads/lucky-card-bg.jpg"; // Cosmic nebula background
 
 interface CardData {
   id: string;
@@ -20,6 +20,15 @@ interface LuckyCardState {
   title: string;
   createdAt: string;
 }
+
+/* ─── Shared font stacks ──────────────────────────────────
+   Inter → Vietnamese-safe UI font (loaded in layout.tsx with vietnamese subset)
+   Cormorant Garamond → Vietnamese-safe serif for card content
+   Cinzel → Latin-only decorative, used ONLY for non-Vietnamese labels like "Lucky Card"
+*/
+const FONT_UI = 'var(--font-inter), system-ui, sans-serif';
+const FONT_CARD = 'var(--font-cormorant), "Cormorant Garamond", Georgia, serif';
+const FONT_DISPLAY = 'var(--font-cinzel), serif'; // Only for pure Latin text
 
 // ─── SVG Icon set — no emojis in UI chrome ───────────────
 const Icons = {
@@ -124,10 +133,10 @@ class SoundEngine {
 
   private getCtx(): AudioContext | null {
     if (this.muted) return null;
-    if (!this.ctx || this.ctx.state === 'closed') {
+    if (!this.ctx || this.ctx.state === "closed") {
       this.ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     }
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state === "suspended") this.ctx.resume();
     return this.ctx;
   }
 
@@ -145,7 +154,7 @@ class SoundEngine {
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
       const bandpass = ctx.createBiquadFilter();
-      bandpass.type = 'bandpass';
+      bandpass.type = "bandpass";
       bandpass.frequency.setValueAtTime(2000, now);
       bandpass.frequency.exponentialRampToValueAtTime(400, now + 0.25);
       bandpass.Q.value = 1.5;
@@ -166,7 +175,7 @@ class SoundEngine {
       const frequencies = [523.25, 659.25, 783.99, 1046.5];
       frequencies.forEach((freq, i) => {
         const osc = ctx.createOscillator();
-        osc.type = 'sine';
+        osc.type = "sine";
         osc.frequency.setValueAtTime(freq, now);
         const gain = ctx.createGain();
         const t = now + i * 0.08;
@@ -178,7 +187,7 @@ class SoundEngine {
         osc.stop(t + 0.9);
       });
       const shimmer = ctx.createOscillator();
-      shimmer.type = 'sine';
+      shimmer.type = "sine";
       shimmer.frequency.setValueAtTime(2093, now + 0.25);
       shimmer.frequency.exponentialRampToValueAtTime(4186, now + 0.6);
       const shimGain = ctx.createGain();
@@ -197,7 +206,7 @@ class SoundEngine {
       if (!ctx) return;
       const now = ctx.currentTime;
       const osc = ctx.createOscillator();
-      osc.type = 'sine';
+      osc.type = "sine";
       osc.frequency.setValueAtTime(120, now);
       osc.frequency.exponentialRampToValueAtTime(40, now + 0.25);
       const gain = ctx.createGain();
@@ -216,7 +225,7 @@ class SoundEngine {
   }
 }
 
-const soundEngine = typeof window !== 'undefined' ? new SoundEngine() : null;
+const soundEngine = typeof window !== "undefined" ? new SoundEngine() : null;
 
 // ─── Per-card flip celebration effects ───────────────────
 
@@ -229,13 +238,13 @@ function CardFlipSparkles({ count = 20 }: { count?: number }) {
         const size = 3 + (i * 7) % 6;
         const duration = 0.55 + (i * 0.04) % 0.35;
         const delay = (i * 0.012) % 0.12;
-        const colors = ['#FFD700', '#FFA500', '#FF6B35', '#c8973a', '#f0d080', '#e8c878', '#d4a830', '#fff8e0'];
+        const colors = ["#FFD700", "#FFA500", "#FF6B35", "#c8973a", "#f0d080", "#e8c878", "#d4a830", "#fff8e0"];
         const color = colors[i % colors.length];
         return (
           <motion.div
             key={i}
             className="absolute rounded-full"
-            style={{ width: size, height: size, left: '50%', top: '50%', backgroundColor: color, boxShadow: `0 0 ${size * 3}px ${color}` }}
+            style={{ width: size, height: size, left: "50%", top: "50%", backgroundColor: color, boxShadow: `0 0 ${size * 3}px ${color}` }}
             initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
             animate={{
               x: Math.cos((angle * Math.PI) / 180) * distance,
@@ -243,7 +252,7 @@ function CardFlipSparkles({ count = 20 }: { count?: number }) {
               scale: [0, 1.8, 0],
               opacity: [1, 1, 0],
             }}
-            transition={{ duration, delay, ease: 'easeOut' }}
+            transition={{ duration, delay, ease: "easeOut" }}
           />
         );
       })}
@@ -259,14 +268,14 @@ function CardFlipRays() {
           key={i}
           className="absolute"
           style={{
-            left: '50%', top: '50%', width: 2, height: 0,
-            background: 'linear-gradient(to bottom, rgba(212,168,48,0.8), rgba(240,208,128,0.3), transparent)',
-            transformOrigin: 'top center',
+            left: "50%", top: "50%", width: 2, height: 0,
+            background: "linear-gradient(to bottom, rgba(212,168,48,0.8), rgba(240,208,128,0.3), transparent)",
+            transformOrigin: "top center",
             transform: `rotate(${(360 / 12) * i}deg)`,
           }}
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: [0, 120, 0], opacity: [0, 0.7, 0] }}
-          transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
+          transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
         />
       ))}
     </div>
@@ -284,7 +293,7 @@ function CardFlipRingPulse() {
             border: `${2 - i * 0.5}px solid rgba(212,168,48,${0.7 - i * 0.2})`,
             boxShadow: `0 0 12px rgba(212,168,48,${0.3 - i * 0.1})`,
           }}
-          initial={{ width: '80%', height: '80%', opacity: 1 }}
+          initial={{ width: "80%", height: "80%", opacity: 1 }}
           animate={{ width: `${140 + i * 40}%`, height: `${140 + i * 40}%`, opacity: 0 }}
           transition={{ duration: 0.65 + i * 0.15, delay: 0.15 + i * 0.08, ease: [0.2, 0.8, 0.4, 1] }}
         />
@@ -297,21 +306,20 @@ function CardFlipFlash() {
   return (
     <motion.div
       className="pointer-events-none absolute inset-0 rounded-2xl"
-      style={{ background: 'radial-gradient(ellipse at center, rgba(255,230,100,0.8) 0%, rgba(212,168,48,0.3) 50%, transparent 80%)', zIndex: 20 }}
+      style={{ background: "radial-gradient(ellipse at center, rgba(255,230,100,0.8) 0%, rgba(212,168,48,0.3) 50%, transparent 80%)", zIndex: 20 }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     />
   );
 }
 
-// Geometric gold bursts — no emoji, pure SVG shapes
 function CardFlipGeoBurst() {
   const shapes = [
-    { path: 'M8,0 L10,6 L16,6 L11,10 L13,16 L8,12 L3,16 L5,10 L0,6 L6,6 Z', size: 12 },  // star
-    { path: 'M6,0 L8,4 L12,4 L9,7 L10,12 L6,9 L2,12 L3,7 L0,4 L4,4 Z', size: 10 },
-    { path: 'M5,0 L6,4 L10,5 L6,6 L5,10 L4,6 L0,5 L4,4 Z', size: 9 },
-    { path: 'M4,0 L5,3 L8,4 L5,5 L4,8 L3,5 L0,4 L3,3 Z', size: 8 },
+    { path: "M8,0 L10,6 L16,6 L11,10 L13,16 L8,12 L3,16 L5,10 L0,6 L6,6 Z", size: 12 },
+    { path: "M6,0 L8,4 L12,4 L9,7 L10,12 L6,9 L2,12 L3,7 L0,4 L4,4 Z", size: 10 },
+    { path: "M5,0 L6,4 L10,5 L6,6 L5,10 L4,6 L0,5 L4,4 Z", size: 9 },
+    { path: "M4,0 L5,3 L8,4 L5,5 L4,8 L3,5 L0,4 L3,3 Z", size: 8 },
   ];
 
   return (
@@ -320,13 +328,13 @@ function CardFlipGeoBurst() {
         const angle = (360 / 10) * i + (i * 13) % 22;
         const distance = 75 + (i * 17) % 55;
         const shape = shapes[i % shapes.length];
-        const colors = ['#FFD700', '#f0d080', '#c8973a', '#d4a830', '#fff8e0', '#FFA500'];
+        const colors = ["#FFD700", "#f0d080", "#c8973a", "#d4a830", "#fff8e0", "#FFA500"];
         const color = colors[i % colors.length];
         return (
           <motion.div
             key={i}
             className="absolute"
-            style={{ left: '50%', top: '50%' }}
+            style={{ left: "50%", top: "50%" }}
             initial={{ x: 0, y: 0, scale: 0, opacity: 1, rotate: 0 }}
             animate={{
               x: Math.cos((angle * Math.PI) / 180) * distance,
@@ -335,7 +343,7 @@ function CardFlipGeoBurst() {
               opacity: [1, 0.9, 0],
               rotate: (i * 53) % 360,
             }}
-            transition={{ duration: 0.7, ease: 'easeOut', delay: 0.18 + (i * 0.018) }}
+            transition={{ duration: 0.7, ease: "easeOut", delay: 0.18 + (i * 0.018) }}
           >
             <svg width={shape.size} height={shape.size} viewBox={`0 0 ${shape.size + 4} ${shape.size + 4}`}>
               <path d={shape.path} fill={color} filter="drop-shadow(0 0 3px rgba(212,168,48,0.8))" />
@@ -353,16 +361,16 @@ function getAdaptiveFontStyle(content: string): {
   lineHeight: string;
   fontWeight: number;
   letterSpacing?: string;
-  fontStyle?: string;
 } {
   const len = content.length;
-  if (len <= 8)  return { fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', lineHeight: '1.2', fontWeight: 700, letterSpacing: '0.03em' };
-  if (len <= 20) return { fontSize: 'clamp(1.4rem, 4vw, 2rem)',   lineHeight: '1.25', fontWeight: 600 };
-  if (len <= 40) return { fontSize: 'clamp(1.1rem, 3.2vw, 1.5rem)', lineHeight: '1.35', fontWeight: 600 };
-  if (len <= 80) return { fontSize: 'clamp(0.95rem, 2.5vw, 1.2rem)', lineHeight: '1.45', fontWeight: 500 };
-  if (len <= 150) return { fontSize: 'clamp(0.8rem, 2vw, 1rem)',  lineHeight: '1.5',  fontWeight: 500 };
-  return { fontSize: 'clamp(0.7rem, 1.5vw, 0.875rem)', lineHeight: '1.55', fontWeight: 400 };
+  if (len <= 8)  return { fontSize: "clamp(1.8rem, 5vw, 2.6rem)", lineHeight: "1.2", fontWeight: 700, letterSpacing: "0.03em" };
+  if (len <= 20) return { fontSize: "clamp(1.4rem, 4vw, 2rem)",   lineHeight: "1.25", fontWeight: 600 };
+  if (len <= 40) return { fontSize: "clamp(1.1rem, 3.2vw, 1.5rem)", lineHeight: "1.35", fontWeight: 600 };
+  if (len <= 80) return { fontSize: "clamp(0.95rem, 2.5vw, 1.2rem)", lineHeight: "1.45", fontWeight: 500 };
+  if (len <= 150) return { fontSize: "clamp(0.8rem, 2vw, 1rem)",  lineHeight: "1.5",  fontWeight: 500 };
+  return { fontSize: "clamp(0.7rem, 1.5vw, 0.875rem)", lineHeight: "1.55", fontWeight: 400 };
 }
+
 
 // ─── Lucky Card Item ─────────────────────────────────────
 function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number; onFlip: (id: string) => void }) {
@@ -395,7 +403,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
       className="relative"
       initial={{ opacity: 0, y: 30, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: index * 0.06, duration: 0.4, ease: 'easeOut' }}
+      transition={{ delay: index * 0.06, duration: 0.4, ease: "easeOut" }}
     >
       <AnimatePresence>
         {showCeremony && (
@@ -412,98 +420,95 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
       {justFlipped && (
         <motion.div
           className="absolute -inset-4 rounded-3xl blur-2xl"
-          style={{ background: 'radial-gradient(ellipse, #d4a830 0%, #c8973a 40%, transparent 70%)' }}
+          style={{ background: "radial-gradient(ellipse, #d4a830 0%, #c8973a 40%, transparent 70%)" }}
           initial={{ opacity: 0.85 }}
           animate={{ opacity: [0.85, 0.4, 0] }}
-          transition={{ duration: 1.6, ease: 'easeOut' }}
+          transition={{ duration: 1.6, ease: "easeOut" }}
         />
       )}
 
-      <div onClick={handleFlip} className={`relative select-none ${card.flipped ? 'cursor-default' : 'cursor-pointer'}`} style={{ perspective: '1400px' }}>
+      {/* Persistent card edge glow */}
+      <div
+        className="absolute -inset-[2px] rounded-2xl pointer-events-none"
+        style={{
+          background: card.flipped
+            ? "linear-gradient(145deg, rgba(212,168,48,0.5), rgba(168,120,32,0.2), rgba(212,168,48,0.4))"
+            : "linear-gradient(145deg, rgba(212,168,48,0.35), rgba(168,120,32,0.15), rgba(212,168,48,0.3))",
+          boxShadow: card.flipped
+            ? "0 0 20px rgba(212,168,48,0.35), 0 0 50px rgba(212,168,48,0.15), inset 0 0 20px rgba(212,168,48,0.1)"
+            : "0 0 15px rgba(212,168,48,0.25), 0 0 40px rgba(212,168,48,0.1)",
+        }}
+      />
+      {/* Animated breathing glow */}
+      <motion.div
+        className="absolute -inset-[3px] rounded-2xl pointer-events-none"
+        style={{
+          boxShadow: "0 0 25px rgba(212,168,48,0.3), 0 0 60px rgba(212,168,48,0.12)",
+        }}
+        animate={{ opacity: [0.4, 0.8, 0.4] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      <div onClick={handleFlip} className={`relative select-none ${card.flipped ? "cursor-default" : "cursor-pointer"}`} style={{ perspective: "1400px" }}>
         <motion.div
           className="relative w-full"
-          style={{ transformStyle: 'preserve-3d' }}
+          style={{ transformStyle: "preserve-3d" }}
           animate={{ rotateY: card.flipped ? 180 : 0 }}
           transition={{ duration: 0.75, ease: [0.23, 1, 0.32, 1] }}
           whileHover={!card.flipped ? { rotateY: 12, scale: 1.03 } : {}}
         >
-          {/* FRONT FACE */}
+          {/* ═══ FACE-DOWN (mặt úp) — NDK ornate card image ═══ */}
           <div
             className="relative w-full overflow-hidden rounded-2xl"
-            style={{ backfaceVisibility: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 50px rgba(212,168,48,0.25)' }}
+            style={{ backfaceVisibility: "hidden", boxShadow: "0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(212,168,48,0.2)" }}
           >
             <div className="relative aspect-[3/4] w-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={CARD_FRONT_IMG} alt="Lucky Card Front" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
+              <img src={CARD_BACK_IMG} alt="Lucky Card" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
               {/* Shimmer sweep */}
               <motion.div
                 className="pointer-events-none absolute inset-0 rounded-2xl"
-                style={{ background: 'linear-gradient(115deg, transparent 35%, rgba(255,240,160,0.18) 50%, transparent 65%)' }}
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 4, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
+                style={{ background: "linear-gradient(115deg, transparent 35%, rgba(255,240,160,0.16) 50%, transparent 65%)" }}
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ duration: 4, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
               />
               {/* Card number badge */}
               <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                 <span
-                  className="rounded-full px-3 py-0.5 text-[10px] font-semibold tracking-[0.25em] uppercase"
-                  style={{ background: 'rgba(20,12,4,0.5)', color: 'rgba(212,168,48,0.9)', backdropFilter: 'blur(6px)', border: '1px solid rgba(212,168,48,0.3)', fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+                  className="rounded-full px-3 py-0.5 text-[10px] font-bold tracking-[0.25em]"
+                  style={{ background: "rgba(20,12,4,0.65)", color: "#f0d080", backdropFilter: "blur(6px)", border: "1px solid rgba(212,168,48,0.35)", fontFamily: FONT_UI }}
                 >
                   {index + 1}
                 </span>
               </div>
               {/* Edge darkening vignette */}
-              <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%)' }} />
+              <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%)" }} />
             </div>
           </div>
 
-          {/* BACK FACE */}
+          {/* ═══ FACE-UP (mặt lật) — Parchment bg with text content ═══ */}
           <div
             className="absolute inset-0 overflow-hidden rounded-2xl"
-            style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(212,168,48,0.15)' }}
+            style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", boxShadow: "0 20px 50px rgba(0,0,0,0.6), 0 0 35px rgba(212,168,48,0.2)" }}
           >
-            <div
-              className="relative flex aspect-[3/4] w-full flex-col items-center justify-center"
-              style={{ background: 'linear-gradient(145deg, #fdf8ee 0%, #f8ecd0 25%, #f0deb5 55%, #e8d09a 100%)', boxShadow: 'inset 0 0 60px rgba(139,90,20,0.1)' }}
-            >
-              {/* Borders */}
-              <div className="absolute inset-[6px] rounded-xl" style={{ border: '1.5px solid rgba(180,140,40,0.5)' }} />
-              <div className="absolute inset-[13px] rounded-lg" style={{ border: '0.5px solid rgba(180,140,40,0.2)' }} />
+            <div className="relative flex aspect-[3/4] w-full flex-col items-center justify-center">
+              {/* Parchment background image */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={CARD_FRONT_IMG} alt="" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
 
-              {/* Corner ornaments */}
-              {[{ pos: 'top-[6px] left-[6px]', rot: 0 }, { pos: 'top-[6px] right-[6px]', rot: 90 }, { pos: 'bottom-[6px] left-[6px]', rot: 270 }, { pos: 'bottom-[6px] right-[6px]', rot: 180 }].map((corner, i) => (
-                <div key={i} className={`absolute ${corner.pos}`}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" style={{ transform: `rotate(${corner.rot}deg)` }}>
-                    <path d="M8,0 L10,5.5 L16,8 L10,10.5 L8,16 L5.5,10.5 L0,8 L5.5,5.5 Z" fill="#b48c28" opacity="0.45" />
-                  </svg>
-                </div>
-              ))}
-
-              {/* Ornament lines */}
-              <div className="absolute top-[28px] left-[20px] right-[20px] flex items-center">
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #c8973a60, transparent)' }} />
-                <svg width="12" height="7" viewBox="0 0 12 7" className="mx-1">
-                  <path d="M0,3.5 Q3,0 6,3.5 Q9,7 12,3.5" fill="none" stroke="#c8973a" strokeWidth="0.7" opacity="0.45" />
-                </svg>
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #c8973a60, transparent)' }} />
-              </div>
-              <div className="absolute bottom-[28px] left-[20px] right-[20px] flex items-center">
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #c8973a60, transparent)' }} />
-                <svg width="12" height="7" viewBox="0 0 12 7" className="mx-1">
-                  <path d="M0,3.5 Q3,7 6,3.5 Q9,0 12,3.5" fill="none" stroke="#c8973a" strokeWidth="0.7" opacity="0.45" />
-                </svg>
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #c8973a60, transparent)' }} />
-              </div>
+              {/* Warm overlay to blend parchment with gold tones */}
+              <div className="absolute inset-0 rounded-2xl" style={{ background: "linear-gradient(145deg, rgba(253,248,238,0.35) 0%, rgba(248,236,208,0.3) 40%, rgba(240,222,181,0.25) 100%)" }} />
 
               {/* Gold seal — top right */}
               <motion.div
-                className="absolute top-[14px] right-[14px]"
+                className="absolute top-[14px] right-[14px] z-20"
                 initial={{ scale: 0, rotate: -20 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.45, type: 'spring', stiffness: 280, damping: 16 }}
+                transition={{ delay: 0.45, type: "spring", stiffness: 280, damping: 16 }}
               >
                 <div
                   className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'linear-gradient(135deg, #d4a830, #a87820)', boxShadow: '0 2px 10px rgba(168,120,32,0.4)' }}
+                  style={{ background: "linear-gradient(135deg, #d4a830, #a87820)", boxShadow: "0 2px 12px rgba(168,120,32,0.5)" }}
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12">
                     <path d="M6,0 L7.5,4.5 L12,6 L7.5,7.5 L6,12 L4.5,7.5 L0,6 L4.5,4.5 Z" fill="rgba(255,248,220,0.9)" />
@@ -512,19 +517,19 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
               </motion.div>
 
               {/* Card number — bottom */}
-              <div className="absolute bottom-[14px] left-0 right-0 text-center">
+              <div className="absolute bottom-[14px] left-0 right-0 text-center z-20">
                 <span
-                  className="text-[9px] tracking-[0.3em] uppercase"
-                  style={{ color: '#a87820', fontFamily: 'var(--font-cinzel), Georgia, serif', opacity: 0.7 }}
+                  className="text-[10px] tracking-[0.3em] font-bold uppercase"
+                  style={{ color: "#7a5c1e", fontFamily: FONT_UI, textShadow: "0 1px 3px rgba(255,255,255,0.5)" }}
                 >
                   {index + 1}
                 </span>
               </div>
 
-              {/* MAIN CONTENT — Cormorant Garamond + adaptive size */}
+              {/* MAIN CONTENT — Cormorant Garamond (Vietnamese safe) + adaptive size */}
               <motion.div
                 className="relative z-10 flex items-center justify-center px-5 sm:px-7"
-                style={{ maxWidth: '90%', maxHeight: '62%' }}
+                style={{ maxWidth: "90%", maxHeight: "65%" }}
                 initial={{ opacity: 0, y: 14, scale: 0.92 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: 0.35, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
@@ -532,24 +537,21 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
                 <p
                   className="text-center whitespace-pre-wrap break-words"
                   style={{
-                    color: '#2a1606',
-                    fontFamily: 'var(--font-cormorant), "Cormorant Garamond", Georgia, serif',
-                    textShadow: '0 1px 2px rgba(255,255,255,0.45)',
+                    color: "#1a0e04",
+                    fontFamily: FONT_CARD,
+                    textShadow: "0 1px 3px rgba(255,255,255,0.6)",
                     fontSize: fontStyle.fontSize,
                     lineHeight: fontStyle.lineHeight,
                     fontWeight: fontStyle.fontWeight,
-                    letterSpacing: fontStyle.letterSpacing ?? '0.01em',
+                    letterSpacing: fontStyle.letterSpacing ?? "0.01em",
                   }}
                 >
                   {card.content}
                 </p>
               </motion.div>
 
-              {/* Parchment texture */}
-              <div
-                className="pointer-events-none absolute inset-0 rounded-2xl opacity-[0.025]"
-                style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }}
-              />
+              {/* Soft vignette on parchment edges */}
+              <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: "radial-gradient(ellipse at center, transparent 45%, rgba(100,70,20,0.15) 100%)" }} />
             </div>
           </div>
         </motion.div>
@@ -561,7 +563,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
 // ─── File parsing utilities ──────────────────────────────
 
 function parseCSVContent(text: string): string[] {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const results: string[] = [];
   for (const line of lines) {
     if (results.length === 0 && /^(content|nội dung|card|thẻ|stt|no|#)/i.test(line)) continue;
@@ -572,9 +574,9 @@ function parseCSVContent(text: string): string[] {
 }
 
 async function parseExcelFile(file: File): Promise<string[]> {
-  const XLSX = await import('xlsx');
+  const XLSX = await import("xlsx");
   const buffer = await file.arrayBuffer();
-  const wb = XLSX.read(buffer, { type: 'array' });
+  const wb = XLSX.read(buffer, { type: "array" });
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows: string[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
   const results: string[] = [];
@@ -582,29 +584,28 @@ async function parseExcelFile(file: File): Promise<string[]> {
     const row = rows[i];
     if (!row || row.length === 0) continue;
     if (i === 0 && /^(content|nội dung|card|thẻ|stt|no|#)/i.test(String(row[0]))) continue;
-    const val = row.find((cell) => cell != null && String(cell).trim() !== '');
+    const val = row.find((cell) => cell != null && String(cell).trim() !== "");
     if (val) results.push(String(val).trim());
   }
   return results;
 }
 
 // ─── Setup Modal ─────────────────────────────────────────
-
 function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: string) => void; onClose: () => void }) {
-  const [title, setTitle] = useState('Lucky Card');
-  const [mode, setMode] = useState<'manual' | 'upload'>('upload');
-  const [manualCount, setManualCount] = useState(6);
-  const [manualCards, setManualCards] = useState<string[]>(Array(6).fill(''));
+  const [mode, setMode] = useState<"upload" | "manual">("upload");
+  const [manualCount, setManualCount] = useState(5);
+  const [manualCards, setManualCards] = useState<string[]>(Array(5).fill(""));
+  const [title, setTitle] = useState("Lucky Card");
   const [uploadedCards, setUploadedCards] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleManualCountChange = (count: number) => {
-    const clamped = Math.max(1, Math.min(50, count));
+    const clamped = Math.min(50, Math.max(1, count));
     setManualCount(clamped);
     setManualCards((prev) => {
-      if (clamped > prev.length) return [...prev, ...Array(clamped - prev.length).fill('')];
+      if (clamped > prev.length) return [...prev, ...Array(clamped - prev.length).fill("")];
       return prev.slice(0, clamped);
     });
   };
@@ -613,30 +614,26 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    setError('');
+    setError("");
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase();
       let contents: string[];
-      if (ext === 'csv' || ext === 'txt') {
-        contents = parseCSVContent(await file.text());
-      } else if (ext === 'xlsx' || ext === 'xls') {
+      if (file.name.match(/\.xlsx?$/i)) {
         contents = await parseExcelFile(file);
       } else {
-        throw new Error('Chỉ hỗ trợ file .csv, .txt, .xlsx, .xls');
+        const text = await file.text();
+        contents = parseCSVContent(text);
       }
-      if (contents.length === 0) throw new Error('Không tìm thấy nội dung trong file');
+      if (contents.length === 0) { setError("Không tìm thấy nội dung trong file"); return; }
       setUploadedCards(contents);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi đọc file');
-    } finally {
-      setUploading(false);
-    }
+    } catch { setError("Lỗi đọc file. Vui lòng thử lại."); }
+    finally { setUploading(false); }
   };
 
   const handleSubmit = () => {
-    const cards = mode === 'upload' ? uploadedCards : manualCards.filter((c) => c.trim());
-    if (cards.length === 0) { setError('Vui lòng nhập nội dung cho ít nhất 1 thẻ'); return; }
-    onSetup(cards, title);
+    setError("");
+    const cards = mode === "upload" ? uploadedCards : manualCards.filter((c) => c.trim());
+    if (cards.length === 0) { setError("Vui lòng nhập nội dung cho ít nhất 1 thẻ"); return; }
+    onSetup(cards, title.trim() || "Lucky Card");
   };
 
   return (
@@ -646,14 +643,14 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
     >
       <motion.div
         className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[#c8973a]/25 p-6 shadow-2xl"
-        style={{ background: 'linear-gradient(150deg, #1c1509 0%, #201608 50%, #1a1208 100%)', boxShadow: '0 0 60px rgba(200,151,58,0.12), 0 25px 60px rgba(0,0,0,0.7)' }}
+        style={{ background: "linear-gradient(150deg, #1c1509 0%, #201608 50%, #1a1208 100%)", boxShadow: "0 0 60px rgba(200,151,58,0.12), 0 25px 60px rgba(0,0,0,0.7)" }}
         initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
       >
-        {/* Close button — minimal X */}
+        {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-lg transition-all hover:bg-white/10"
-          style={{ color: '#a89060' }}
+          style={{ color: "#c8a060" }}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
             <line x1="1" y1="1" x2="12" y2="12" />
@@ -664,78 +661,77 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1.5">
-            {/* Card icon — SVG */}
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: 'rgba(200,151,58,0.12)', border: '1px solid rgba(200,151,58,0.2)' }}>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "rgba(200,151,58,0.12)", border: "1px solid rgba(200,151,58,0.2)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c8973a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="3" width="20" height="18" rx="3" />
                 <line x1="12" y1="8" x2="12" y2="16" />
                 <line x1="8" y1="12" x2="16" y2="12" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold tracking-wide" style={{ color: '#f0d080', fontFamily: 'var(--font-cinzel), Georgia, serif' }}>Thiết lập Lucky Card</h2>
+            <h2 className="text-lg font-semibold tracking-wide" style={{ color: "#f5e0a0", fontFamily: FONT_DISPLAY }}>Lucky Card</h2>
           </div>
-          <p className="text-sm ml-12" style={{ color: '#7a6840' }}>Mỗi thẻ ẩn một nội dung bí mật</p>
+          <p className="text-sm ml-12" style={{ color: "#b8a060", fontFamily: FONT_UI }}>Mỗi thẻ ẩn một nội dung bí mật</p>
         </div>
 
         {/* Title input */}
         <div className="mb-5">
-          <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: '#7a6840' }}>Tiêu đề</label>
+          <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: "#b8a060", fontFamily: FONT_UI }}>Tiêu đề</label>
           <input
             type="text" value={title} onChange={(e) => setTitle(e.target.value)}
             placeholder="VD: Bốc thăm may mắn..."
             className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(200,151,58,0.2)', color: '#f0d080', fontFamily: 'var(--font-cormorant), Georgia, serif' }}
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(200,151,58,0.25)", color: "#f5e0a0", fontFamily: FONT_UI }}
           />
         </div>
 
         {/* Mode tabs */}
         <div className="mb-5">
-          <div className="flex gap-1 rounded-xl p-1" style={{ background: 'rgba(0,0,0,0.25)' }}>
-            {(['upload', 'manual'] as const).map((m) => (
+          <div className="flex gap-1 rounded-xl p-1" style={{ background: "rgba(0,0,0,0.25)" }}>
+            {(["upload", "manual"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold tracking-wide transition-all"
                 style={mode === m
-                  ? { background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208' }
-                  : { color: '#7a6840' }
+                  ? { background: "linear-gradient(135deg, #c8973a, #a87820)", color: "#1a1208", fontFamily: FONT_UI }
+                  : { color: "#b8a060", fontFamily: FONT_UI }
                 }
               >
-                {m === 'upload' ? <><Icons.Upload /> Upload File</> : <><Icons.Pencil /> Nhập tay</>}
+                {m === "upload" ? <><Icons.Upload /> Upload File</> : <><Icons.Pencil /> Nhập tay</>}
               </button>
             ))}
           </div>
         </div>
 
-        {mode === 'upload' && (
+        {mode === "upload" && (
           <div className="space-y-4">
             <div
               onClick={() => fileInputRef.current?.click()}
               className="cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all hover:border-[#c8973a]/50"
-              style={{ borderColor: 'rgba(200,151,58,0.25)' }}
+              style={{ borderColor: "rgba(200,151,58,0.3)" }}
             >
               <input ref={fileInputRef} type="file" accept=".csv,.txt,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
-              <div className="flex justify-center mb-3" style={{ color: uploading ? '#c8973a' : uploadedCards.length > 0 ? '#6aad7c' : '#7a6840' }}>
+              <div className="flex justify-center mb-3" style={{ color: uploading ? "#c8973a" : uploadedCards.length > 0 ? "#6aad7c" : "#b8a060" }}>
                 {uploading
-                  ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}><Icons.Spinner /></motion.div>
+                  ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Icons.Spinner /></motion.div>
                   : uploadedCards.length > 0
                     ? <Icons.Check />
                     : <Icons.File />
                 }
               </div>
-              <p className="text-sm font-medium" style={{ color: '#d4b070', fontFamily: 'var(--font-cinzel), Georgia, serif' }}>
-                {uploading ? 'Đang đọc file...' : uploadedCards.length > 0 ? `${uploadedCards.length} thẻ đã tải` : 'Chọn file'}
+              <p className="text-sm font-medium" style={{ color: "#f0d080", fontFamily: FONT_UI }}>
+                {uploading ? "Đang đọc file..." : uploadedCards.length > 0 ? `${uploadedCards.length} thẻ đã tải` : "Chọn file"}
               </p>
-              <p className="mt-1 text-[10px]" style={{ color: '#5a4a28' }}>.csv · .txt · .xlsx · .xls</p>
+              <p className="mt-1 text-[10px]" style={{ color: "#907848" }}>.csv · .txt · .xlsx · .xls</p>
             </div>
             {uploadedCards.length > 0 && (
-              <div className="rounded-xl p-4" style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(200,151,58,0.15)' }}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: '#7a6840' }}>Xem trước — {uploadedCards.length} thẻ</p>
+              <div className="rounded-xl p-4" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(200,151,58,0.15)" }}>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "#b8a060", fontFamily: FONT_UI }}>Xem trước — {uploadedCards.length} thẻ</p>
                 <div className="max-h-40 overflow-y-auto space-y-1">
                   {uploadedCards.map((c, i) => (
-                    <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <span className="text-[9px] font-bold w-5 shrink-0 tracking-widest" style={{ color: '#c8973a', fontFamily: 'var(--font-cinzel), serif' }}>{i + 1}</span>
-                      <span className="truncate text-xs" style={{ color: '#d4b070' }}>{c}</span>
+                    <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: "rgba(255,255,255,0.03)" }}>
+                      <span className="text-[9px] font-bold w-5 shrink-0 tracking-widest" style={{ color: "#d4a830", fontFamily: FONT_UI }}>{i + 1}</span>
+                      <span className="truncate text-xs" style={{ color: "#e8c878" }}>{c}</span>
                     </div>
                   ))}
                 </div>
@@ -744,27 +740,27 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
           </div>
         )}
 
-        {mode === 'manual' && (
+        {mode === "manual" && (
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: '#7a6840' }}>Số lượng thẻ</label>
+              <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: "#b8a060", fontFamily: FONT_UI }}>Số lượng thẻ</label>
               <input
                 type="number" min={1} max={50} value={manualCount}
                 onChange={(e) => handleManualCountChange(parseInt(e.target.value) || 1)}
                 className="w-20 rounded-xl px-3 py-2 text-sm focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(200,151,58,0.2)', color: '#f0d080' }}
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(200,151,58,0.25)", color: "#f5e0a0" }}
               />
             </div>
             <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
               {manualCards.map((val, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="text-[9px] font-bold w-7 shrink-0 tracking-widest" style={{ color: '#c8973a', fontFamily: 'var(--font-cinzel), serif' }}>{i + 1}</span>
+                  <span className="text-[9px] font-bold w-7 shrink-0 tracking-widest" style={{ color: "#d4a830", fontFamily: FONT_UI }}>{i + 1}</span>
                   <input
                     type="text" value={val}
                     onChange={(e) => { const next = [...manualCards]; next[i] = e.target.value; setManualCards(next); }}
                     placeholder={`Thẻ ${i + 1}...`}
                     className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,151,58,0.15)', color: '#f0d080' }}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,151,58,0.18)", color: "#f5e0a0", fontFamily: FONT_UI }}
                   />
                 </div>
               ))}
@@ -773,7 +769,7 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
         )}
 
         {error && (
-          <div className="mt-4 rounded-lg px-4 py-2.5 text-sm" style={{ background: 'rgba(220,50,50,0.08)', border: '1px solid rgba(220,50,50,0.25)', color: '#ff8080' }}>
+          <div className="mt-4 rounded-lg px-4 py-2.5 text-sm" style={{ background: "rgba(220,50,50,0.08)", border: "1px solid rgba(220,50,50,0.25)", color: "#ff8080", fontFamily: FONT_UI }}>
             {error}
           </div>
         )}
@@ -782,14 +778,14 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
           <button
             onClick={onClose}
             className="flex-1 rounded-xl py-2.5 text-xs font-semibold tracking-widest uppercase transition-all hover:bg-white/5"
-            style={{ border: '1px solid rgba(200,151,58,0.2)', color: '#7a6840', fontFamily: 'var(--font-cinzel), serif' }}
+            style={{ border: "1px solid rgba(200,151,58,0.2)", color: "#b8a060", fontFamily: FONT_UI }}
           >
             Huỷ
           </button>
           <button
             onClick={handleSubmit}
             className="flex-1 rounded-xl py-2.5 text-xs font-bold tracking-widest uppercase transition-all hover:brightness-110"
-            style={{ background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208', boxShadow: '0 4px 20px rgba(200,151,58,0.25)', fontFamily: 'var(--font-cinzel), serif' }}
+            style={{ background: "linear-gradient(135deg, #c8973a, #a87820)", color: "#1a1208", boxShadow: "0 4px 20px rgba(200,151,58,0.25)", fontFamily: FONT_UI }}
           >
             Tạo bộ thẻ
           </button>
@@ -799,57 +795,68 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
   );
 }
 
-// ─── Main Page Component ─────────────────────────────────
 
 export default function LuckyCardPage() {
   const [state, setState] = useState<LuckyCardState | null>(null);
-  const [showSetup, setShowSetup] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const fullscreenRef = useRef<HTMLDivElement>(null);
 
+  // Load state from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as LuckyCardState;
-        if (parsed.cards?.length > 0) setState(parsed);
+        if (parsed && Array.isArray(parsed.cards) && parsed.cards.length > 0) {
+          setState(parsed);
+        }
       }
     } catch { /* ignore */ }
     setLoaded(true);
   }, []);
 
+  // Save state
   useEffect(() => {
     if (!loaded) return;
     if (state) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     else localStorage.removeItem(STORAGE_KEY);
   }, [state, loaded]);
 
-  useEffect(() => {
-    const handleFSChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', handleFSChange);
-    return () => document.removeEventListener('fullscreenchange', handleFSChange);
-  }, []);
-
+  // Sync sound engine mute
   useEffect(() => {
     if (soundEngine) soundEngine.muted = !soundEnabled;
   }, [soundEnabled]);
 
-  const handleSetup = useCallback((contents: string[], title: string) => {
-    const cards: CardData[] = contents.map((content, i) => ({ id: `card_${Date.now()}_${i}`, content, flipped: false }));
-    setState({ cards, title, createdAt: new Date().toISOString() });
+  // Fullscreen change listener
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
+  const handleSetup = useCallback((cards: string[], title: string) => {
+    const newState: LuckyCardState = {
+      cards: cards.map((content, i) => ({
+        id: `card-${Date.now()}-${i}`,
+        content,
+        flipped: false,
+      })),
+      title,
+      createdAt: new Date().toISOString(),
+    };
+    setState(newState);
     setShowSetup(false);
   }, []);
 
   const handleFlip = useCallback((id: string) => {
     setState((prev) => {
       if (!prev) return prev;
-      return { ...prev, cards: prev.cards.map((c) => (c.id === id ? { ...c, flipped: true } : c)) };
+      return { ...prev, cards: prev.cards.map((c) => c.id === id ? { ...c, flipped: true } : c) };
     });
   }, []);
-
-  const handleReset = useCallback(() => { setState(null); }, []);
 
   const handleShuffle = useCallback(() => {
     setState((prev) => {
@@ -866,17 +873,34 @@ export default function LuckyCardPage() {
   const handleFlipAll = useCallback(() => {
     setState((prev) => {
       if (!prev) return prev;
-      if (prev.cards.every((c) => c.flipped)) return prev;
-      soundEngine?.playRevealChime();
-      return { ...prev, cards: prev.cards.map((c) => ({ ...c, flipped: true })) };
+      const unflipped = prev.cards.filter((c) => !c.flipped);
+      if (unflipped.length === 0) return prev;
+      const updated = [...prev.cards];
+      let delay = 0;
+      for (const card of unflipped) {
+        const idx = updated.findIndex((c) => c.id === card.id);
+        if (idx !== -1) {
+          setTimeout(() => {
+            soundEngine?.playCardFlipCeremony();
+            setState((s) => s ? { ...s, cards: s.cards.map((c) => c.id === card.id ? { ...c, flipped: true } : c) } : s);
+          }, delay);
+          delay += 250;
+        }
+      }
+      return prev;
     });
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setState(null);
+    localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
     try {
       if (!document.fullscreenElement) await fullscreenRef.current?.requestFullscreen();
       else await document.exitFullscreen();
-    } catch { console.warn('Fullscreen not supported'); }
+    } catch { console.warn("Fullscreen not supported"); }
   }, []);
 
   const flippedCount = state?.cards.filter((c) => c.flipped).length ?? 0;
@@ -884,13 +908,16 @@ export default function LuckyCardPage() {
 
   if (!loaded) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundImage: `url(${PAGE_BG_IMG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="absolute inset-0" style={{ background: 'rgba(4,3,10,0.6)' }} />
+      <div
+        className="fixed inset-0 flex items-center justify-center"
+        style={{ backgroundImage: `url(${PAGE_BG_IMG})`, backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0" style={{ background: "rgba(4,3,10,0.6)" }} />
         <motion.div
-          className="rounded-full"
-          style={{ width: 48, height: 48, border: '2px solid transparent', borderTopColor: '#c8973a', borderRightColor: '#d4a830' }}
+          className="rounded-full relative z-10"
+          style={{ width: 48, height: 48, border: "2px solid transparent", borderTopColor: "#c8973a", borderRightColor: "#d4a830" }}
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
         />
       </div>
     );
@@ -899,16 +926,17 @@ export default function LuckyCardPage() {
   return (
     <div
       ref={fullscreenRef}
-      className={`min-h-screen relative ${isFullscreen ? 'overflow-y-auto' : ''}`}
+      className={`min-h-screen relative ${isFullscreen ? "overflow-y-auto" : ""}`}
       style={{
         backgroundImage: `url(${PAGE_BG_IMG})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
       }}
     >
-      {/* Deep overlay to keep dark cosmic mood and text readable */}
-      <div className="pointer-events-none fixed inset-0" style={{ background: 'rgba(4,3,10,0.55)' }} />
+      {/* Deep overlay to keep cosmic mood & text readable */}
+      <div className="pointer-events-none fixed inset-0" style={{ background: "rgba(4,3,10,0.5)" }} />
+
       {/* Ambient particles */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         {[...Array(10)].map((_, i) => (
@@ -920,54 +948,53 @@ export default function LuckyCardPage() {
               height: 1 + (i * 7) % 3,
               left: `${(i * 9.3 + 5) % 100}%`,
               top: `${(i * 13.7 + 10) % 100}%`,
-              background: ['#c8973a', '#d4a830', '#e8c878'][i % 3],
-              boxShadow: `0 0 5px ${['#c8973a', '#d4a830', '#e8c878'][i % 3]}`,
+              background: ["#c8973a", "#d4a830", "#e8c878"][i % 3],
+              boxShadow: `0 0 5px ${["#c8973a", "#d4a830", "#e8c878"][i % 3]}`,
             }}
             animate={{ y: [0, -25, 0], opacity: [0.15, 0.6, 0.15], scale: [1, 1.4, 1] }}
-            transition={{ duration: 3 + (i * 1.3) % 4, repeat: Infinity, delay: (i * 0.7) % 4, ease: 'easeInOut' }}
+            transition={{ duration: 3 + (i * 1.3) % 4, repeat: Infinity, delay: (i * 0.7) % 4, ease: "easeInOut" }}
           />
         ))}
       </div>
 
       {/* Vignette */}
-      <div className="pointer-events-none fixed inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%)' }} />
+      <div className="pointer-events-none fixed inset-0" style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%)" }} />
 
-      <div className={`relative z-10 mx-auto max-w-6xl px-4 sm:px-6 ${isFullscreen ? 'py-4' : 'py-8'}`}>
-        <div className={isFullscreen ? 'mb-4' : 'mb-8'}>
+      <div className={`relative z-10 mx-auto max-w-6xl px-4 sm:px-6 ${isFullscreen ? "py-4" : "py-8"}`}>
+        <div className={isFullscreen ? "mb-4" : "mb-8"}>
 
           {/* Breadcrumb */}
           {!isFullscreen && (
-            <div className="flex items-center gap-2 text-xs mb-4" style={{ color: '#5a4a28' }}>
-              <Link href="/admin/tools" className="transition-colors hover:text-[#a89060]" style={{ fontFamily: 'var(--font-cinzel), serif', letterSpacing: '0.08em' }}>Magical Tools</Link>
+            <div className="flex items-center gap-2 text-xs mb-4" style={{ color: "#b8a060" }}>
+              <Link href="/admin/tools" className="transition-colors hover:text-[#e8c878]" style={{ fontFamily: FONT_UI, letterSpacing: "0.04em" }}>Magical Tools</Link>
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <span style={{ color: '#c8973a', fontFamily: 'var(--font-cinzel), serif', letterSpacing: '0.08em' }}>Lucky Card</span>
+              <span style={{ color: "#e8c878", fontFamily: FONT_UI, letterSpacing: "0.04em" }}>Lucky Card</span>
             </div>
           )}
 
           <div className="flex flex-wrap items-start justify-between gap-4">
             {/* Title block */}
             <div className="flex items-center gap-3">
-              {/* Animated card glyph — pure SVG */}
               <motion.div
                 className="flex h-11 w-11 items-center justify-center rounded-2xl"
-                style={{ background: 'linear-gradient(135deg, rgba(200,151,58,0.15), rgba(200,151,58,0.05))', border: '1px solid rgba(200,151,58,0.2)' }}
+                style={{ background: "linear-gradient(135deg, rgba(200,151,58,0.18), rgba(200,151,58,0.06))", border: "1px solid rgba(200,151,58,0.25)" }}
                 animate={{ rotate: [0, 4, -4, 0] }}
                 transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c8973a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a830" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="3" width="20" height="18" rx="3" />
                   <path d="M12 8v8M8 12h8" />
                 </svg>
               </motion.div>
               <div>
                 <h1
-                  className={`font-semibold tracking-wide ${isFullscreen ? 'text-lg' : 'text-xl'}`}
-                  style={{ color: '#e8c878', fontFamily: 'var(--font-cinzel), Georgia, serif', letterSpacing: '0.06em' }}
+                  className={`font-semibold tracking-wide ${isFullscreen ? "text-lg" : "text-xl"}`}
+                  style={{ color: "#f5e0a0", fontFamily: FONT_UI, letterSpacing: "0.04em" }}
                 >
-                  {state?.title || 'Lucky Card'}
+                  {state?.title || "Lucky Card"}
                 </h1>
-                <p className="text-xs mt-0.5" style={{ color: '#5a4a28', fontFamily: 'var(--font-inter), sans-serif' }}>
-                  {state ? `${flippedCount} / ${totalCount} thẻ đã lật` : 'Tạo bộ thẻ để bắt đầu'}
+                <p className="text-xs mt-0.5" style={{ color: "#b8a060", fontFamily: FONT_UI }}>
+                  {state ? `${flippedCount} / ${totalCount} thẻ đã lật` : "Tạo bộ thẻ để bắt đầu"}
                 </p>
               </div>
             </div>
@@ -976,65 +1003,59 @@ export default function LuckyCardPage() {
             <div className="flex flex-wrap items-center gap-1.5">
               {state && (
                 <>
-                  {/* Sound toggle */}
                   <button
                     onClick={() => setSoundEnabled((p) => !p)}
                     className="flex items-center justify-center rounded-xl transition-all hover:bg-white/10"
                     style={{
                       width: 36, height: 36,
-                      border: '1px solid rgba(200,151,58,0.25)',
-                      color: soundEnabled ? '#c8973a' : '#5a4a28',
-                      background: 'rgba(200,151,58,0.06)',
+                      border: "1px solid rgba(200,151,58,0.3)",
+                      color: soundEnabled ? "#d4a830" : "#8a7040",
+                      background: "rgba(200,151,58,0.08)",
                     }}
-                    title={soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
+                    title={soundEnabled ? "Tắt âm thanh" : "Bật âm thanh"}
                   >
                     {soundEnabled ? <Icons.SoundOn /> : <Icons.SoundOff />}
                   </button>
 
-                  {/* Fullscreen toggle */}
                   <button
                     onClick={toggleFullscreen}
                     className="flex items-center justify-center rounded-xl transition-all hover:bg-white/10"
                     style={{
                       width: 36, height: 36,
-                      border: '1px solid rgba(200,151,58,0.25)',
-                      color: '#c8973a',
-                      background: 'rgba(200,151,58,0.06)',
+                      border: "1px solid rgba(200,151,58,0.3)",
+                      color: "#d4a830",
+                      background: "rgba(200,151,58,0.08)",
                     }}
-                    title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+                    title={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
                   >
                     {isFullscreen ? <Icons.Compress /> : <Icons.Expand />}
                   </button>
 
-                  {/* Divider */}
-                  <div className="w-px h-6 mx-0.5" style={{ background: 'rgba(200,151,58,0.15)' }} />
+                  <div className="w-px h-6 mx-0.5" style={{ background: "rgba(200,151,58,0.2)" }} />
 
-                  {/* Shuffle */}
                   <button
                     onClick={handleShuffle}
                     className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all hover:bg-white/10"
-                    style={{ border: '1px solid rgba(200,151,58,0.25)', color: '#c8973a', background: 'rgba(200,151,58,0.06)', fontFamily: 'var(--font-cinzel), serif' }}
+                    style={{ border: "1px solid rgba(200,151,58,0.3)", color: "#d4a830", background: "rgba(200,151,58,0.08)", fontFamily: FONT_UI }}
                   >
                     <Icons.Shuffle />
                     <span className="hidden sm:inline">Xáo</span>
                   </button>
 
-                  {/* Flip all */}
                   <button
                     onClick={handleFlipAll}
                     disabled={flippedCount === totalCount}
                     className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
-                    style={{ border: '1px solid rgba(200,151,58,0.25)', color: '#c8973a', background: 'rgba(200,151,58,0.06)', fontFamily: 'var(--font-cinzel), serif' }}
+                    style={{ border: "1px solid rgba(200,151,58,0.3)", color: "#d4a830", background: "rgba(200,151,58,0.08)", fontFamily: FONT_UI }}
                   >
                     <Icons.FlipAll />
                     <span className="hidden sm:inline">Lật tất cả</span>
                   </button>
 
-                  {/* Reset */}
                   <button
                     onClick={handleReset}
                     className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all hover:bg-white/10"
-                    style={{ border: '1px solid rgba(160,60,60,0.3)', color: '#c07070', background: 'rgba(160,60,60,0.06)', fontFamily: 'var(--font-cinzel), serif' }}
+                    style={{ border: "1px solid rgba(160,60,60,0.35)", color: "#e08080", background: "rgba(160,60,60,0.08)", fontFamily: FONT_UI }}
                   >
                     <Icons.Trash />
                     <span className="hidden sm:inline">Reset</span>
@@ -1045,7 +1066,7 @@ export default function LuckyCardPage() {
                 <button
                   onClick={() => setShowSetup(true)}
                   className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-all hover:brightness-110 hover:-translate-y-0.5"
-                  style={{ background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208', boxShadow: '0 4px 20px rgba(200,151,58,0.3)', fontFamily: 'var(--font-cinzel), serif' }}
+                  style={{ background: "linear-gradient(135deg, #c8973a, #a87820)", color: "#1a1208", boxShadow: "0 4px 20px rgba(200,151,58,0.3)", fontFamily: FONT_UI }}
                 >
                   <Icons.Plus />
                   Tạo bộ thẻ
@@ -1056,33 +1077,32 @@ export default function LuckyCardPage() {
 
           {/* Progress bar */}
           {state && (
-            <div className="mt-5 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,151,58,0.1)' }}>
+            <div className="mt-5 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(200,151,58,0.1)" }}>
               <motion.div
                 className="h-full rounded-full"
-                style={{ background: 'linear-gradient(90deg, #6b4010, #c8973a, #f0c040)' }}
+                style={{ background: "linear-gradient(90deg, #6b4010, #c8973a, #f0c040)" }}
                 initial={{ width: 0 }}
                 animate={{ width: `${totalCount > 0 ? (flippedCount / totalCount) * 100 : 0}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
               />
             </div>
           )}
 
-          {/* Completion banner — no emoji, gold glyph */}
+          {/* Completion banner */}
           <AnimatePresence>
             {state && flippedCount === totalCount && totalCount > 0 && (
               <motion.div
                 className="mt-3 flex items-center justify-center gap-3 rounded-xl py-2.5 px-4"
-                style={{ background: 'rgba(212,168,48,0.06)', border: '1px solid rgba(212,168,48,0.18)' }}
+                style={{ background: "rgba(212,168,48,0.08)", border: "1px solid rgba(212,168,48,0.22)" }}
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35 }}
               >
-                {/* Gold diamond ornament */}
                 <svg width="14" height="14" viewBox="0 0 14 14">
                   <path d="M7,0 L9,5 L14,7 L9,9 L7,14 L5,9 L0,7 L5,5 Z" fill="#d4a830" opacity="0.8" />
                 </svg>
-                <span className="text-xs font-semibold tracking-[0.15em] uppercase" style={{ color: '#d4b060', fontFamily: 'var(--font-cinzel), serif' }}>
+                <span className="text-xs font-semibold tracking-[0.12em] uppercase" style={{ color: "#f0d080", fontFamily: FONT_UI }}>
                   Tất cả lá bài đã được lật
                 </span>
                 <svg width="14" height="14" viewBox="0 0 14 14">
@@ -1099,7 +1119,7 @@ export default function LuckyCardPage() {
             className="grid gap-5 sm:gap-6 lg:gap-8"
             style={{
               gridTemplateColumns: `repeat(auto-fill, minmax(${
-                totalCount <= 3 ? '280px' : totalCount <= 6 ? '240px' : totalCount <= 12 ? '210px' : '180px'
+                totalCount <= 3 ? "280px" : totalCount <= 6 ? "240px" : totalCount <= 12 ? "210px" : "180px"
               }, 1fr))`,
             }}
             layout
@@ -1116,11 +1136,10 @@ export default function LuckyCardPage() {
             className="flex flex-col items-center justify-center py-24"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           >
-            {/* Floating card SVG icon */}
             <div className="relative mb-10">
               <motion.div
                 className="absolute -inset-10 rounded-full opacity-15"
-                style={{ background: 'radial-gradient(circle, #c8973a, transparent 70%)' }}
+                style={{ background: "radial-gradient(circle, #c8973a, transparent 70%)" }}
                 animate={{ scale: [1, 1.2, 1], opacity: [0.12, 0.22, 0.12] }}
                 transition={{ duration: 3.5, repeat: Infinity }}
               />
@@ -1128,54 +1147,52 @@ export default function LuckyCardPage() {
                 className="relative z-10 flex items-center justify-center rounded-3xl"
                 style={{
                   width: 90, height: 90,
-                  background: 'linear-gradient(135deg, rgba(200,151,58,0.12), rgba(200,151,58,0.04))',
-                  border: '1px solid rgba(200,151,58,0.2)',
+                  background: "linear-gradient(135deg, rgba(200,151,58,0.14), rgba(200,151,58,0.05))",
+                  border: "1px solid rgba(200,151,58,0.25)",
                 }}
                 animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c8973a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.75">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d4a830" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8">
                   <rect x="2" y="3" width="20" height="18" rx="3" />
                   <path d="M12 8v8M8 12h8" />
                 </svg>
               </motion.div>
-              {/* Orbiting sparkle dots */}
               {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
                   className="absolute rounded-full"
-                  style={{ width: 5, height: 5, background: '#d4a830', boxShadow: '0 0 6px #d4a830', top: '50%', left: '50%' }}
+                  style={{ width: 5, height: 5, background: "#d4a830", boxShadow: "0 0 6px #d4a830", top: "50%", left: "50%" }}
                   animate={{
                     x: Math.cos((i * 120 * Math.PI) / 180) * 52,
                     y: Math.sin((i * 120 * Math.PI) / 180) * 52,
                     opacity: [0.2, 0.8, 0.2],
                   }}
-                  transition={{ duration: 2.5 + i * 0.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.6 }}
+                  transition={{ duration: 2.5 + i * 0.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 }}
                 />
               ))}
             </div>
 
             <h2
               className="text-xl font-semibold mb-2 tracking-wide"
-              style={{ color: '#e8c878', fontFamily: 'var(--font-cinzel), Georgia, serif', letterSpacing: '0.08em' }}
+              style={{ color: "#f5e0a0", fontFamily: FONT_DISPLAY, letterSpacing: "0.08em" }}
             >
-              Chưa có bộ thẻ nào
+              Lucky Card
             </h2>
-            <p className="text-sm mb-10 text-center max-w-xs leading-relaxed" style={{ color: '#5a4a28' }}>
+            <p className="text-sm mb-10 text-center max-w-xs leading-relaxed" style={{ color: "#b8a060", fontFamily: FONT_UI }}>
               Tạo bộ thẻ bằng cách nhập nội dung thủ công hoặc upload file Excel / CSV
             </p>
 
-            {/* Ornate divider */}
             <div className="flex items-center gap-3 mb-8 w-36">
-              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(200,151,58,0.3))' }} />
+              <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(200,151,58,0.35))" }} />
               <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4,0 L5,3 L8,4 L5,5 L4,8 L3,5 L0,4 L3,3 Z" fill="#c8973a" opacity="0.6" /></svg>
-              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, rgba(200,151,58,0.3), transparent)' }} />
+              <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(200,151,58,0.35), transparent)" }} />
             </div>
 
             <button
               onClick={() => setShowSetup(true)}
               className="flex items-center gap-2 rounded-xl px-7 py-3 text-[11px] font-bold tracking-[0.15em] uppercase transition-all hover:brightness-110 hover:-translate-y-1"
-              style={{ background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208', boxShadow: '0 6px 30px rgba(200,151,58,0.35)', fontFamily: 'var(--font-cinzel), serif' }}
+              style={{ background: "linear-gradient(135deg, #c8973a, #a87820)", color: "#1a1208", boxShadow: "0 6px 30px rgba(200,151,58,0.35)", fontFamily: FONT_UI }}
             >
               <Icons.Plus />
               Tạo bộ thẻ mới
