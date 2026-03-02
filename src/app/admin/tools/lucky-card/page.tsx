@@ -723,6 +723,18 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
                 {uploading ? "Đang đọc file..." : uploadedCards.length > 0 ? `${uploadedCards.length} thẻ đã tải` : "Chọn file"}
               </p>
               <p className="mt-1 text-[10px]" style={{ color: "#907848" }}>.csv · .txt · .xlsx · .xls</p>
+              <p className="mt-2 text-[10px]" style={{ color: "#907848" }}>
+                Chưa có file?{" "}
+                <a
+                  href="/sample-lucky-card.csv"
+                  download
+                  onClick={(e) => e.stopPropagation()}
+                  className="underline underline-offset-2 transition-colors hover:text-[#d4a830]"
+                  style={{ color: "#c8973a", fontFamily: FONT_UI }}
+                >
+                  Tải file mẫu
+                </a>
+              </p>
             </div>
             {uploadedCards.length > 0 && (
               <div className="rounded-xl p-4" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(200,151,58,0.15)" }}>
