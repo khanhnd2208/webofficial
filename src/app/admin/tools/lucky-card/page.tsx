@@ -70,7 +70,7 @@ function StarBurst() {
             }}
             transition={{ duration: 0.6, ease: 'easeOut', delay: Math.random() * 0.1 }}
           >
-            {['\u2B50', '\u2728', '\uD83D\uDCAB', '\uD83C\uDF1F', '\u26A1', '\uD83C\uDF89'][i]}
+            {['⭐', '✨', '💫', '🌟', '⚡', '🎉'][i]}
           </motion.div>
         );
       })}
@@ -142,7 +142,7 @@ function LuckyCardItem({
             className="relative w-full overflow-hidden rounded-2xl"
             style={{
               backfaceVisibility: 'hidden',
-              boxShadow: '0 25px 60px rgba(0,0,0,0.55), 0 0 35px rgba(212,168,48,0.18)',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212,168,48,0.2)',
             }}
           >
             <div className="relative aspect-[3/4] w-full">
@@ -185,7 +185,7 @@ function LuckyCardItem({
             style={{
               backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.35)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
             }}
           >
             <div
@@ -253,7 +253,7 @@ function parseCSVContent(text: string): string[] {
     .filter(Boolean);
   const results: string[] = [];
   for (const line of lines) {
-    if (results.length === 0 && /^(content|n\u1ED9i dung|card|th\u1EBB|stt|no|#)/i.test(line)) continue;
+    if (results.length === 0 && /^(content|nội dung|card|thẻ|stt|no|#)/i.test(line)) continue;
     const match = line.match(/^"([^"]*)"/) || line.match(/^([^,\t]*)/);
     if (match && match[1].trim()) results.push(match[1].trim());
   }
@@ -270,7 +270,7 @@ async function parseExcelFile(file: File): Promise<string[]> {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row || row.length === 0) continue;
-    if (i === 0 && /^(content|n\u1ED9i dung|card|th\u1EBB|stt|no|#)/i.test(String(row[0]))) continue;
+    if (i === 0 && /^(content|nội dung|card|thẻ|stt|no|#)/i.test(String(row[0]))) continue;
     const val = row.find((cell) => cell != null && String(cell).trim() !== '');
     if (val) results.push(String(val).trim());
   }
@@ -309,12 +309,12 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
       } else if (ext === 'xlsx' || ext === 'xls') {
         contents = await parseExcelFile(file);
       } else {
-        throw new Error('Ch\u1EC9 h\u1ED7 tr\u1EE3 file .csv, .txt, .xlsx, .xls');
+        throw new Error('Chỉ hỗ trợ file .csv, .txt, .xlsx, .xls');
       }
-      if (contents.length === 0) throw new Error('Kh\u00F4ng t\u00ECm th\u1EA5y n\u1ED9i dung trong file');
+      if (contents.length === 0) throw new Error('Không tìm thấy nội dung trong file');
       setUploadedCards(contents);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'L\u1ED7i khi \u0111\u1ECDc file');
+      setError(err instanceof Error ? err.message : 'Lỗi khi đọc file');
     } finally {
       setUploading(false);
     }
@@ -322,58 +322,59 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
 
   const handleSubmit = () => {
     const cards = mode === 'upload' ? uploadedCards : manualCards.filter((c) => c.trim());
-    if (cards.length === 0) { setError('Vui l\u00F2ng nh\u1EADp n\u1ED9i dung cho \u00EDt nh\u1EA5t 1 th\u1EBB'); return; }
+    if (cards.length === 0) { setError('Vui lòng nhập nội dung cho ít nhất 1 thẻ'); return; }
     onSetup(cards, title);
   };
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
       <motion.div
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-surface-elevated p-6 shadow-2xl"
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[#c8973a]/30 p-6 shadow-2xl"
+        style={{ background: 'linear-gradient(135deg, #1a1208 0%, #221609 50%, #1a1208 100%)', boxShadow: '0 0 60px rgba(200,151,58,0.15), 0 25px 60px rgba(0,0,0,0.7)' }}
         initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground transition-colors">✕</button>
+        <button onClick={onClose} className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full transition-colors" style={{ color: '#c8973a', background: 'rgba(200,151,58,0.1)', border: '1px solid rgba(200,151,58,0.2)' }}>✕</button>
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-2xl">🃏</span>
-            <h2 className="text-xl font-black text-foreground">Thi\u1EBFt l\u1EADp Lucky Card</h2>
+            <span className="text-2xl">��</span>
+            <h2 className="text-xl font-black" style={{ color: '#f0d080', fontFamily: 'Georgia, serif' }}>Thiết lập Lucky Card</h2>
           </div>
-          <p className="text-sm text-muted">T\u1EA1o b\u1ED9 th\u1EBB may m\u1EAFn — m\u1ED7i th\u1EBB \u1EA9n m\u1ED9t n\u1ED9i dung b\u00ED m\u1EADt!</p>
+          <p className="text-sm" style={{ color: '#a89060' }}>Tạo bộ thẻ may mắn — mỗi thẻ ẩn một nội dung bí mật!</p>
         </div>
         <div className="mb-5">
-          <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-1.5">Ti\u00EAu \u0111\u1EC1</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="VD: B\u1ED1c th\u0103m may m\u1EAFn..." className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none transition-colors" />
+          <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: '#a89060' }}>Tiêu đề</label>
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="VD: Bốc thăm may mắn..." className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,151,58,0.25)', color: '#f0d080' }} />
         </div>
         <div className="mb-5">
-          <div className="flex gap-1 rounded-xl bg-surface p-1">
+          <div className="flex gap-1 rounded-xl p-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
             {(['upload', 'manual'] as const).map((m) => (
-              <button key={m} onClick={() => setMode(m)} className={`flex-1 rounded-lg py-2 text-sm font-bold transition-all ${mode === m ? 'bg-foreground text-background shadow-sm' : 'text-muted hover:text-foreground'}`}>
-                {m === 'upload' ? '📁 Upload File' : '✏️ Nh\u1EADp tay'}
+              <button key={m} onClick={() => setMode(m)} className="flex-1 rounded-lg py-2 text-sm font-bold transition-all" style={mode === m ? { background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208' } : { color: '#a89060' }}>
+                {m === 'upload' ? '📁 Upload File' : '✏️ Nhập tay'}
               </button>
             ))}
           </div>
         </div>
         {mode === 'upload' && (
           <div className="space-y-4">
-            <div onClick={() => fileInputRef.current?.click()} className="group cursor-pointer rounded-xl border-2 border-dashed border-border p-8 text-center transition-colors hover:border-accent hover:bg-accent-subtle/30">
+            <div onClick={() => fileInputRef.current?.click()} className="group cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors" style={{ borderColor: 'rgba(200,151,58,0.3)' }}>
               <input ref={fileInputRef} type="file" accept=".csv,.txt,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
               <div className="text-3xl mb-2">{uploading ? '⏳' : uploadedCards.length > 0 ? '✅' : '📄'}</div>
-              <p className="text-sm font-bold text-foreground">
-                {uploading ? '\u0110ang \u0111\u1ECDc file...' : uploadedCards.length > 0 ? `\u0110\u00E3 t\u1EA3i ${uploadedCards.length} th\u1EBB` : 'Click \u0111\u1EC3 ch\u1ECDn file'}
+              <p className="text-sm font-bold" style={{ color: '#f0d080' }}>
+                {uploading ? 'Đang đọc file...' : uploadedCards.length > 0 ? `Đã tải ${uploadedCards.length} thẻ` : 'Click để chọn file'}
               </p>
-              <p className="mt-1 text-xs text-muted">H\u1ED7 tr\u1EE3: .csv, .txt, .xlsx, .xls — M\u1ED7i d\u00F2ng/\u00F4 = 1 th\u1EBB</p>
+              <p className="mt-1 text-xs" style={{ color: '#a89060' }}>Hỗ trợ: .csv, .txt, .xlsx, .xls — Mỗi dòng/ô = 1 thẻ</p>
             </div>
             {uploadedCards.length > 0 && (
-              <div className="rounded-xl border border-border bg-surface p-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted mb-2">Xem tr\u01B0\u1EDBc ({uploadedCards.length} th\u1EBB)</p>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(200,151,58,0.2)' }}>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#a89060' }}>Xem trước ({uploadedCards.length} thẻ)</p>
                 <div className="max-h-40 overflow-y-auto space-y-1">
                   {uploadedCards.map((c, i) => (
-                    <div key={i} className="flex items-center gap-2 rounded-lg bg-surface-hover px-3 py-1.5 text-sm">
-                      <span className="text-xs font-bold text-muted w-6">#{i + 1}</span>
-                      <span className="text-foreground truncate">{c}</span>
+                    <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <span className="text-xs font-bold w-6" style={{ color: '#c8973a' }}>#{i + 1}</span>
+                      <span className="truncate" style={{ color: '#e8c878' }}>{c}</span>
                     </div>
                   ))}
                 </div>
@@ -384,23 +385,23 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
         {mode === 'manual' && (
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-1.5">S\u1ED1 l\u01B0\u1EE3ng th\u1EBB</label>
-              <input type="number" min={1} max={50} value={manualCount} onChange={(e) => handleManualCountChange(parseInt(e.target.value) || 1)} className="w-24 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none transition-colors" />
+              <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: '#a89060' }}>Số lượng thẻ</label>
+              <input type="number" min={1} max={50} value={manualCount} onChange={(e) => handleManualCountChange(parseInt(e.target.value) || 1)} className="w-24 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,151,58,0.25)', color: '#f0d080' }} />
             </div>
             <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
               {manualCards.map((val, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-muted w-8 shrink-0">#{i + 1}</span>
-                  <input type="text" value={val} onChange={(e) => { const next = [...manualCards]; next[i] = e.target.value; setManualCards(next); }} placeholder={`N\u1ED9i dung th\u1EBB ${i + 1}...`} className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted/40 focus:border-accent focus:outline-none transition-colors" />
+                  <span className="text-xs font-bold w-8 shrink-0" style={{ color: '#c8973a' }}>#{i + 1}</span>
+                  <input type="text" value={val} onChange={(e) => { const next = [...manualCards]; next[i] = e.target.value; setManualCards(next); }} placeholder={`Nội dung thẻ ${i + 1}...`} className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(200,151,58,0.2)', color: '#f0d080' }} />
                 </div>
               ))}
             </div>
           </div>
         )}
-        {error && <div className="mt-4 rounded-lg bg-red-50 border border-red-200/60 px-4 py-2.5 text-sm text-red-600 font-medium dark:bg-red-950/30 dark:border-red-900/40 dark:text-red-400">{error}</div>}
+        {error && <div className="mt-4 rounded-lg px-4 py-2.5 text-sm font-medium" style={{ background: 'rgba(220,50,50,0.1)', border: '1px solid rgba(220,50,50,0.3)', color: '#ff8080' }}>{error}</div>}
         <div className="mt-6 flex gap-3">
-          <button onClick={onClose} className="flex-1 rounded-xl border border-border bg-surface py-2.5 text-sm font-bold text-muted hover:text-foreground hover:bg-surface-hover transition-colors">Hu\u1EF7</button>
-          <button onClick={handleSubmit} className="flex-1 rounded-xl bg-foreground py-2.5 text-sm font-black text-background hover:bg-foreground/90 transition-colors">🎴 T\u1EA1o b\u1ED9 th\u1EBB</button>
+          <button onClick={onClose} className="flex-1 rounded-xl py-2.5 text-sm font-bold transition-colors" style={{ border: '1px solid rgba(200,151,58,0.25)', color: '#a89060', background: 'transparent' }}>Huỷ</button>
+          <button onClick={handleSubmit} className="flex-1 rounded-xl py-2.5 text-sm font-black transition-colors" style={{ background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208', boxShadow: '0 4px 20px rgba(200,151,58,0.3)' }}>🎴 Tạo bộ thẻ</button>
         </div>
       </motion.div>
     </motion.div>
@@ -418,7 +419,7 @@ function CelebrationOverlay({ onDone }: { onDone: () => void }) {
     x: Math.random() * 100,
     delay: Math.random() * 0.5,
     duration: 1.5 + Math.random() * 1.5,
-    emoji: ['\uD83C\uDF89', '\uD83C\uDF8A', '\u2728', '\u2B50', '\uD83C\uDF1F', '\uD83D\uDCAB', '\uD83C\uDF86', '\uD83C\uDF87', '\uD83E\uDD73'][i % 9],
+    emoji: ['🎉', '🎊', '✨', '⭐', '🌟', '💫', '🎆', '🎇', '🥳'][i % 9],
     size: 16 + Math.random() * 20,
   }));
 
@@ -437,10 +438,10 @@ function CelebrationOverlay({ onDone }: { onDone: () => void }) {
         initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
         transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
       >
-        <div className="rounded-2xl bg-surface-elevated/95 backdrop-blur-md border border-border px-8 py-5 text-center shadow-2xl">
+        <div className="rounded-2xl px-8 py-5 text-center shadow-2xl" style={{ background: 'linear-gradient(135deg, #1a1208, #221609)', border: '1px solid rgba(200,151,58,0.4)', boxShadow: '0 0 60px rgba(200,151,58,0.2)' }}>
           <div className="text-4xl mb-2">🎉</div>
-          <p className="text-lg font-black text-foreground">T\u1EA5t c\u1EA3 th\u1EBB \u0111\u00E3 \u0111\u01B0\u1EE3c l\u1EADt!</p>
-          <p className="text-sm text-muted mt-1">Ch\u00FAc m\u1EEBng!</p>
+          <p className="text-lg font-black" style={{ color: '#f0d080', fontFamily: 'Georgia, serif' }}>Tất cả thẻ đã được lật!</p>
+          <p className="text-sm mt-1" style={{ color: '#a89060' }}>Chúc mừng!</p>
         </div>
       </motion.div>
     </motion.div>
@@ -514,90 +515,161 @@ export default function LuckyCardPage() {
 
   if (!loaded) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'radial-gradient(ellipse at center, #1a1208 0%, #0d0a05 100%)' }}>
         <motion.div className="text-4xl" animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>🃏</motion.div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-sm text-muted mb-3">
-          <Link href="/admin/tools" className="hover:text-foreground transition-colors">Magical Tools</Link>
-          <span>/</span>
-          <span className="text-foreground font-medium">Lucky Card</span>
-        </div>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <motion.span className="text-3xl" animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}>🃏</motion.span>
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-foreground">{state?.title || 'Lucky Card'}</h1>
-              <p className="text-sm text-muted">{state ? `${flippedCount}/${totalCount} th\u1EBB \u0111\u00E3 l\u1EADt` : 'T\u1EA1o b\u1ED9 th\u1EBB may m\u1EAFn \u0111\u1EC3 b\u1EAFt \u0111\u1EA7u!'}</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {state && (
-              <>
-                <button onClick={handleShuffle} className="flex items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-bold text-foreground hover:bg-surface-hover transition-colors">🔀 X\u00E1o tr\u1ED9n</button>
-                <button onClick={handleFlipAll} disabled={flippedCount === totalCount} className="flex items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-bold text-foreground hover:bg-surface-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed">🔄 L\u1EADt t\u1EA5t c\u1EA3</button>
-                <button onClick={handleReset} className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-100 transition-colors dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-950/50">🗑️ Reset</button>
-              </>
-            )}
-            {!state && (
-              <button onClick={() => setShowSetup(true)} className="flex items-center gap-1.5 rounded-xl bg-foreground px-5 py-2.5 text-sm font-black text-background hover:bg-foreground/90 transition-colors">✨ T\u1EA1o b\u1ED9 th\u1EBB m\u1EDBi</button>
-            )}
-          </div>
-        </div>
-        {state && (
-          <div className="mt-4 h-2 rounded-full bg-surface overflow-hidden border border-border">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: 'linear-gradient(90deg, #d4a830, #c8973a, #e8714f)' }}
-              initial={{ width: 0 }}
-              animate={{ width: `${totalCount > 0 ? (flippedCount / totalCount) * 100 : 0}%` }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-            />
-          </div>
-        )}
+    <div
+      className="min-h-screen relative"
+      style={{
+        background: 'radial-gradient(ellipse at 30% 20%, #1e1408 0%, #120d04 40%, #0a0704 100%)',
+      }}
+    >
+      {/* Floating ambient particles */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        {[...Array(12)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              width: 2 + Math.random() * 3,
+              height: 2 + Math.random() * 3,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              background: ['#c8973a', '#d4a830', '#e8c878', '#fff8e0'][i % 4],
+              boxShadow: `0 0 6px ${['#c8973a', '#d4a830', '#e8c878'][i % 3]}`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.2, 0.8, 0.2],
+              scale: [1, 1.5, 1],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 4,
+              repeat: Infinity,
+              delay: Math.random() * 4,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
       </div>
 
-      {state && state.cards.length > 0 && (
-        <motion.div
-          className="grid gap-5 sm:gap-6 lg:gap-8"
-          style={{
-            gridTemplateColumns: `repeat(auto-fill, minmax(${
-              totalCount <= 3 ? '280px' : totalCount <= 6 ? '240px' : totalCount <= 12 ? '210px' : '180px'
-            }, 1fr))`,
-          }}
-          layout
-        >
-          {state.cards.map((card, i) => (
-            <LuckyCardItem key={card.id} card={card} index={i} onFlip={handleFlip} />
-          ))}
-        </motion.div>
-      )}
+      {/* Vignette overlay */}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)' }}
+      />
 
-      {!state && (
-        <motion.div className="flex flex-col items-center justify-center py-20" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="relative mb-6">
-            <motion.div
-              className="text-7xl"
-              animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              🃏
-            </motion.div>
-            <motion.div className="absolute -top-2 -right-3 text-2xl" animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>✨</motion.div>
+      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 text-sm mb-3">
+            <Link href="/admin/tools" className="transition-colors" style={{ color: '#a89060' }}>Magical Tools</Link>
+            <span style={{ color: '#6b5030' }}>/</span>
+            <span style={{ color: '#c8973a' }}>Lucky Card</span>
           </div>
-          <h2 className="text-xl font-black text-foreground mb-2">Ch\u01B0a c\u00F3 b\u1ED9 th\u1EBB n\u00E0o</h2>
-          <p className="text-sm text-muted mb-6 text-center max-w-sm">T\u1EA1o b\u1ED9 th\u1EBB may m\u1EAFn b\u1EB1ng c\u00E1ch nh\u1EADp n\u1ED9i dung th\u1EE7 c\u00F4ng ho\u1EB7c upload file Excel/CSV</p>
-          <button onClick={() => setShowSetup(true)} className="flex items-center gap-2 rounded-xl bg-foreground px-6 py-3 text-sm font-black text-background hover:bg-foreground/90 transition-all hover:-translate-y-0.5 hover:shadow-lg">
-            <span className="text-lg">✨</span>
-            T\u1EA1o b\u1ED9 th\u1EBB m\u1EDBi
-          </button>
-        </motion.div>
-      )}
+
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <motion.span className="text-3xl" animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}>🃏</motion.span>
+              <div>
+                <h1 className="text-2xl font-black tracking-tight" style={{ color: '#f0d080', fontFamily: 'Georgia, serif' }}>{state?.title || 'Lucky Card'}</h1>
+                <p className="text-sm" style={{ color: '#a89060' }}>{state ? `${flippedCount}/${totalCount} thẻ đã lật` : 'Tạo bộ thẻ may mắn để bắt đầu!'}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {state && (
+                <>
+                  <button onClick={handleShuffle} className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-colors" style={{ border: '1px solid rgba(200,151,58,0.3)', color: '#c8973a', background: 'rgba(200,151,58,0.08)' }}>🔀 Xáo trộn</button>
+                  <button onClick={handleFlipAll} disabled={flippedCount === totalCount} className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed" style={{ border: '1px solid rgba(200,151,58,0.3)', color: '#c8973a', background: 'rgba(200,151,58,0.08)' }}>�� Lật tất cả</button>
+                  <button onClick={handleReset} className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-colors" style={{ border: '1px solid rgba(180,60,60,0.4)', color: '#e07070', background: 'rgba(180,60,60,0.1)' }}>🗑️ Reset</button>
+                </>
+              )}
+              {!state && (
+                <button onClick={() => setShowSetup(true)} className="flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-black transition-all hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208', boxShadow: '0 4px 20px rgba(200,151,58,0.35)' }}>✨ Tạo bộ thẻ mới</button>
+              )}
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          {state && (
+            <div className="mt-4 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,151,58,0.15)' }}>
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: 'linear-gradient(90deg, #8b5e1a, #c8973a, #f0c040)' }}
+                initial={{ width: 0 }}
+                animate={{ width: `${totalCount > 0 ? (flippedCount / totalCount) * 100 : 0}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Card Grid */}
+        {state && state.cards.length > 0 && (
+          <motion.div
+            className="grid gap-5 sm:gap-6 lg:gap-8"
+            style={{
+              gridTemplateColumns: `repeat(auto-fill, minmax(${
+                totalCount <= 3 ? '280px' : totalCount <= 6 ? '240px' : totalCount <= 12 ? '210px' : '180px'
+              }, 1fr))`,
+            }}
+            layout
+          >
+            {state.cards.map((card, i) => (
+              <LuckyCardItem key={card.id} card={card} index={i} onFlip={handleFlip} />
+            ))}
+          </motion.div>
+        )}
+
+        {/* Empty state */}
+        {!state && (
+          <motion.div className="flex flex-col items-center justify-center py-24" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            {/* Decorative ring */}
+            <div className="relative mb-8">
+              <motion.div
+                className="absolute -inset-8 rounded-full opacity-20"
+                style={{ background: 'radial-gradient(circle, #c8973a, transparent 70%)' }}
+                animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              <motion.div
+                className="text-8xl relative z-10"
+                animate={{ y: [0, -12, 0], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                🃏
+              </motion.div>
+              <motion.div className="absolute -top-2 -right-2 text-2xl" animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }} transition={{ duration: 2, repeat: Infinity }}>✨</motion.div>
+            </div>
+
+            <h2 className="text-2xl font-black mb-3" style={{ color: '#f0d080', fontFamily: 'Georgia, serif' }}>Chưa có bộ thẻ nào</h2>
+            <p className="text-sm mb-8 text-center max-w-sm leading-relaxed" style={{ color: '#a89060' }}>
+              Tạo bộ thẻ may mắn bằng cách nhập nội dung thủ công hoặc upload file Excel/CSV
+            </p>
+
+            {/* Ornate divider */}
+            <div className="flex items-center gap-3 mb-8 w-48">
+              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #c8973a40)' }} />
+              <span style={{ color: '#c8973a', fontSize: 10 }}>✦</span>
+              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, #c8973a40, transparent)' }} />
+            </div>
+
+            <button
+              onClick={() => setShowSetup(true)}
+              className="flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-black transition-all hover:-translate-y-1"
+              style={{ background: 'linear-gradient(135deg, #c8973a, #a87820)', color: '#1a1208', boxShadow: '0 6px 30px rgba(200,151,58,0.4), 0 0 0 1px rgba(200,151,58,0.2)' }}
+            >
+              <span className="text-lg">✨</span>
+              Tạo bộ thẻ mới
+            </button>
+          </motion.div>
+        )}
+      </div>
 
       <AnimatePresence>{showSetup && <SetupModal onSetup={handleSetup} onClose={() => setShowSetup(false)} />}</AnimatePresence>
       <AnimatePresence>{showCelebration && <CelebrationOverlay onDone={() => setShowCelebration(false)} />}</AnimatePresence>
