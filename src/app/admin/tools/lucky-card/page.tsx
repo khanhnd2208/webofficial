@@ -408,43 +408,366 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
   );
 }
 
-function CelebrationOverlay({ onDone }: { onDone: () => void }) {
+// ─── Canvas Confetti (physics-based, no library needed) ──
+function ConfettiCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   useEffect(() => {
-    const timer = setTimeout(onDone, 3000);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const COLORS = [
+      '#FFD700', '#FFA500', '#FF6B35', '#FF1493',
+      '#00CED1', '#7B68EE', '#32CD32', '#FF4500',
+      '#f0d080', '#c8973a', '#ffffff', '#e8c878',
+    ];
+
+    type Particle = {
+      x: number; y: number;
+      vx: number; vy: number;
+      color: string;
+      width: number; height: number;
+      angle: number; spin: number;
+      opacity: number; fade: number;
+      shape: 'rect' | 'circle' | 'star';
+    };
+
+    const particles: Particle[] = [];
+
+    // Burst from center
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    for (let i = 0; i < 220; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 4 + Math.random() * 18;
+      particles.push({
+        x: cx + (Math.random() - 0.5) * 60,
+        y: cy + (Math.random() - 0.5) * 60,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 6,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        width: 6 + Math.random() * 10,
+        height: 3 + Math.random() * 5,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.3,
+        opacity: 1,
+        fade: 0.006 + Math.random() * 0.008,
+        shape: (['rect', 'circle', 'star'] as const)[Math.floor(Math.random() * 3)],
+      });
+    }
+
+    // Side cannons (left + right edges)
+    for (let i = 0; i < 80; i++) {
+      const fromLeft = i < 40;
+      const angle = fromLeft
+        ? -Math.PI / 6 + Math.random() * (Math.PI / 3)
+        : Math.PI - Math.PI / 6 + Math.random() * (Math.PI / 3) - Math.PI;
+      const speed = 10 + Math.random() * 14;
+      particles.push({
+        x: fromLeft ? 0 : canvas.width,
+        y: canvas.height * (0.3 + Math.random() * 0.4),
+        vx: Math.cos(fromLeft ? angle : Math.PI + angle) * speed,
+        vy: Math.sin(angle) * speed - 8,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        width: 7 + Math.random() * 9,
+        height: 3 + Math.random() * 4,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.25,
+        opacity: 1,
+        fade: 0.005 + Math.random() * 0.006,
+        shape: (['rect', 'circle'] as const)[Math.floor(Math.random() * 2)],
+      });
+    }
+
+    let animId: number;
+    const gravity = 0.45;
+    const drag = 0.98;
+
+    function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const a1 = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const a2 = ((i * 4 + 2) * Math.PI) / 5 - Math.PI / 2;
+        if (i === 0) ctx.moveTo(x + r * Math.cos(a1), y + r * Math.sin(a1));
+        else ctx.lineTo(x + r * Math.cos(a1), y + r * Math.sin(a1));
+        ctx.lineTo(x + (r / 2) * Math.cos(a2), y + (r / 2) * Math.sin(a2));
+      }
+      ctx.closePath();
+    }
+
+    function tick() {
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+      let alive = false;
+      for (const p of particles) {
+        if (p.opacity <= 0) continue;
+        alive = true;
+        p.vy += gravity;
+        p.vx *= drag;
+        p.vy *= drag;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.angle += p.spin;
+        p.opacity -= p.fade;
+
+        ctx!.save();
+        ctx!.globalAlpha = Math.max(0, p.opacity);
+        ctx!.translate(p.x, p.y);
+        ctx!.rotate(p.angle);
+        ctx!.fillStyle = p.color;
+        ctx!.shadowColor = p.color;
+        ctx!.shadowBlur = 4;
+
+        if (p.shape === 'rect') {
+          ctx!.fillRect(-p.width / 2, -p.height / 2, p.width, p.height);
+        } else if (p.shape === 'circle') {
+          ctx!.beginPath();
+          ctx!.arc(0, 0, p.width / 2, 0, Math.PI * 2);
+          ctx!.fill();
+        } else {
+          drawStar(ctx!, 0, 0, p.width / 2);
+          ctx!.fill();
+        }
+        ctx!.restore();
+      }
+      if (alive) animId = requestAnimationFrame(tick);
+    }
+
+    tick();
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-[55]"
+      style={{ width: '100vw', height: '100vh' }}
+    />
+  );
+}
+
+// ─── Shockwave rings ────────────────────────────────────
+function ShockwaveRings() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[54] flex items-center justify-center">
+      {[0, 1, 2, 3].map((i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full"
+          style={{ border: `${3 - i * 0.5}px solid rgba(212,168,48,${0.9 - i * 0.18})` }}
+          initial={{ width: 0, height: 0, opacity: 1 }}
+          animate={{ width: 900 + i * 160, height: 900 + i * 160, opacity: 0 }}
+          transition={{ duration: 1.1 + i * 0.2, delay: i * 0.12, ease: [0.2, 0.8, 0.4, 1] }}
+        />
+      ))}
+      {/* Inner golden burst */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(255,220,80,0.55) 0%, rgba(212,168,48,0.15) 50%, transparent 75%)' }}
+        initial={{ width: 0, height: 0, opacity: 1 }}
+        animate={{ width: 600, height: 600, opacity: 0 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+      />
+    </div>
+  );
+}
+
+// ─── Screen flash ───────────────────────────────────────
+function ScreenFlash() {
+  return (
+    <motion.div
+      className="pointer-events-none fixed inset-0 z-[53]"
+      style={{ background: 'radial-gradient(ellipse at center, rgba(255,230,100,0.7) 0%, rgba(212,168,48,0.3) 40%, transparent 75%)' }}
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ duration: 0.55, ease: 'easeOut' }}
+    />
+  );
+}
+
+// ─── Flying golden stars from edges ─────────────────────
+function GoldenStarsBurst() {
+  const stars = Array.from({ length: 30 }, (_, i) => {
+    const side = i % 4;
+    const startX = side === 0 ? '-5vw' : side === 1 ? '105vw' : `${10 + Math.random() * 80}vw`;
+    const startY = side === 2 ? '-5vh' : side === 3 ? '105vh' : `${10 + Math.random() * 80}vh`;
+    return {
+      id: i,
+      startX,
+      startY,
+      endX: `${20 + Math.random() * 60}vw`,
+      endY: `${20 + Math.random() * 60}vh`,
+      delay: Math.random() * 0.4,
+      size: 16 + Math.random() * 20,
+      emoji: ['⭐', '🌟', '✨', '💫', '🔥', '👑'][i % 6],
+    };
+  });
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[56] overflow-hidden">
+      {stars.map((s) => (
+        <motion.div
+          key={s.id}
+          className="absolute"
+          style={{ left: s.startX, top: s.startY, fontSize: s.size }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{
+            opacity: [0, 1, 1, 0],
+            scale: [0, 1.4, 1.2, 0],
+            left: s.endX,
+            top: s.endY,
+          }}
+          transition={{ duration: 0.9 + Math.random() * 0.5, delay: s.delay, ease: 'easeOut' }}
+        >
+          {s.emoji}
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main celebration card ───────────────────────────────
+function CelebrationCard({ onDone }: { onDone: () => void }) {
+  return (
+    <motion.div
+      className="pointer-events-auto fixed inset-0 z-[60] flex items-center justify-center cursor-pointer"
+      onClick={onDone}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Backdrop */}
+      <motion.div
+        className="absolute inset-0"
+        style={{ background: 'rgba(5,3,1,0.65)', backdropFilter: 'blur(2px)' }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
+      />
+
+      <motion.div
+        className="relative z-10 text-center px-10 py-10 rounded-3xl"
+        style={{
+          background: 'linear-gradient(145deg, #1e1408 0%, #2a1c0a 50%, #1e1408 100%)',
+          border: '1px solid rgba(212,168,48,0.5)',
+          boxShadow: '0 0 80px rgba(212,168,48,0.3), 0 0 160px rgba(212,168,48,0.1), 0 30px 60px rgba(0,0,0,0.7)',
+          minWidth: 340,
+        }}
+        initial={{ scale: 0.3, y: 60, opacity: 0, rotateX: 30 }}
+        animate={{ scale: 1, y: 0, opacity: 1, rotateX: 0 }}
+        transition={{ delay: 0.15, type: 'spring', stiffness: 220, damping: 18 }}
+      >
+        {/* Decorative corner lines */}
+        {[
+          'top-3 left-3 border-t-2 border-l-2',
+          'top-3 right-3 border-t-2 border-r-2',
+          'bottom-3 left-3 border-b-2 border-l-2',
+          'bottom-3 right-3 border-b-2 border-r-2',
+        ].map((cls, i) => (
+          <div key={i} className={`absolute w-5 h-5 rounded-sm ${cls}`} style={{ borderColor: 'rgba(212,168,48,0.5)' }} />
+        ))}
+
+        {/* Crown icon */}
+        <motion.div
+          className="text-6xl mb-3"
+          initial={{ y: -40, opacity: 0, scale: 0 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 14 }}
+        >
+          👑
+        </motion.div>
+
+        {/* Main title — letter-by-letter reveal */}
+        <div className="overflow-hidden mb-2">
+          <motion.h2
+            className="font-black text-3xl leading-tight"
+            style={{ color: '#f0d080', fontFamily: 'Georgia, serif', textShadow: '0 0 30px rgba(240,208,128,0.6)' }}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+          >
+            Hoàn thành!
+          </motion.h2>
+        </div>
+
+        {/* Sub text */}
+        <motion.p
+          className="text-base mb-6"
+          style={{ color: '#a89060' }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55, duration: 0.4 }}
+        >
+          Tất cả lá bài đã được lật ✦
+        </motion.p>
+
+        {/* Animated gold divider */}
+        <motion.div
+          className="h-px mx-auto mb-5"
+          style={{ background: 'linear-gradient(90deg, transparent, #c8973a, #f0d080, #c8973a, transparent)' }}
+          initial={{ width: 0 }}
+          animate={{ width: '80%' }}
+          transition={{ delay: 0.6, duration: 0.6, ease: 'easeOut' }}
+        />
+
+        {/* Score / stats */}
+        <motion.div
+          className="flex items-center justify-center gap-6 mb-6"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
+        >
+          {[['🃏', 'Lá bài', ''], ['✨', 'May mắn', ''], ['🔮', 'Bí ẩn', '']].map(([icon, label], i) => (
+            <div key={i} className="text-center">
+              <div className="text-2xl mb-0.5">{icon}</div>
+              <div className="text-xs font-bold tracking-widest uppercase" style={{ color: '#a89060' }}>{label}</div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Dismiss hint */}
+        <motion.p
+          className="text-xs tracking-widest uppercase"
+          style={{ color: 'rgba(168,144,96,0.5)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.5, 0] }}
+          transition={{ delay: 1.2, duration: 2, repeat: Infinity }}
+        >
+          Nhấn để đóng
+        </motion.p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Celebration orchestrator ────────────────────────────
+function CelebrationOverlay({ onDone }: { onDone: () => void }) {
+  const [phase, setPhase] = useState<'burst' | 'card' | 'done'>('burst');
+
+  useEffect(() => {
+    // After 5.5s auto-dismiss if user hasn't clicked
+    const timer = setTimeout(onDone, 5500);
     return () => clearTimeout(timer);
   }, [onDone]);
 
-  const confettiPieces = Array.from({ length: 40 }).map((_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 0.5,
-    duration: 1.5 + Math.random() * 1.5,
-    emoji: ['🎉', '🎊', '✨', '⭐', '🌟', '💫', '🎆', '🎇', '🥳'][i % 9],
-    size: 16 + Math.random() * 20,
-  }));
+  useEffect(() => {
+    // Show card after burst animations settle
+    const t = setTimeout(() => setPhase('card'), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <motion.div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      {confettiPieces.map((p) => (
-        <motion.div key={p.id} className="absolute" style={{ left: `${p.x}%`, top: -30, fontSize: p.size }}
-          initial={{ y: -50, rotate: 0, opacity: 1 }}
-          animate={{ y: typeof window !== 'undefined' ? window.innerHeight + 50 : 800, rotate: Math.random() * 720 - 360, opacity: [1, 1, 0] }}
-          transition={{ duration: p.duration, delay: p.delay, ease: 'easeIn' }}
-        >
-          {p.emoji}
-        </motion.div>
-      ))}
-      <motion.div className="absolute inset-0 flex items-center justify-center"
-        initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
-        transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-      >
-        <div className="rounded-2xl px-8 py-5 text-center shadow-2xl" style={{ background: 'linear-gradient(135deg, #1a1208, #221609)', border: '1px solid rgba(200,151,58,0.4)', boxShadow: '0 0 60px rgba(200,151,58,0.2)' }}>
-          <div className="text-4xl mb-2">🎉</div>
-          <p className="text-lg font-black" style={{ color: '#f0d080', fontFamily: 'Georgia, serif' }}>Tất cả thẻ đã được lật!</p>
-          <p className="text-sm mt-1" style={{ color: '#a89060' }}>Chúc mừng!</p>
-        </div>
-      </motion.div>
-    </motion.div>
+    <>
+      <ScreenFlash />
+      <ShockwaveRings />
+      <ConfettiCanvas />
+      <GoldenStarsBurst />
+      {phase !== 'burst' && <CelebrationCard onDone={onDone} />}
+    </>
   );
 }
 
