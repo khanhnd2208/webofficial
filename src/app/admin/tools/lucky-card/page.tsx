@@ -96,6 +96,198 @@ function StarBurst() {
 	);
 }
 
+// ─── Ornate Card Face SVG (NDK filigree design) ─────────
+function OrnateCardFace({ index }: { index: number }) {
+	return (
+		<svg
+			viewBox="0 0 300 420"
+			xmlns="http://www.w3.org/2000/svg"
+			className="absolute inset-0 w-full h-full"
+			preserveAspectRatio="xMidYMid slice"
+		>
+			<defs>
+				<radialGradient id={`bg-grad-${index}`} cx="50%" cy="50%" r="60%">
+					<stop offset="0%" stopColor="#3d2c1a" />
+					<stop offset="60%" stopColor="#2a1d0e" />
+					<stop offset="100%" stopColor="#1a1008" />
+				</radialGradient>
+				<radialGradient id={`gold-shine-${index}`} cx="50%" cy="30%" r="70%">
+					<stop offset="0%" stopColor="#f5d87a" stopOpacity="0.9" />
+					<stop offset="50%" stopColor="#c8973a" stopOpacity="0.7" />
+					<stop offset="100%" stopColor="#7a5320" stopOpacity="0.5" />
+				</radialGradient>
+				<filter id={`glow-${index}`}>
+					<feGaussianBlur stdDeviation="1.5" result="blur" />
+					<feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+				</filter>
+				<clipPath id={`card-clip-${index}`}>
+					<rect x="0" y="0" width="300" height="420" rx="16" ry="16" />
+				</clipPath>
+			</defs>
+
+			{/* Base background */}
+			<rect x="0" y="0" width="300" height="420" rx="16" fill={`url(#bg-grad-${index})`} />
+
+			{/* Aged paper texture overlay */}
+			<rect x="0" y="0" width="300" height="420" rx="16" fill="#8b6914" opacity="0.08" />
+
+			{/* Outer gold border */}
+			<rect x="6" y="6" width="288" height="408" rx="13" fill="none" stroke="url(#gold-shine-${index})" strokeWidth="2.5" opacity="0.9" />
+			<rect x="10" y="10" width="280" height="400" rx="10" fill="none" stroke="#c8973a" strokeWidth="1" opacity="0.5" />
+
+			{/* ── Corner filigree ornaments ── */}
+			{/* Top-left corner */}
+			<g transform="translate(18, 18)" opacity="0.85" filter={`url(#glow-${index})`}>
+				<path d="M0,30 Q0,0 30,0" fill="none" stroke="#d4a830" strokeWidth="2" />
+				<path d="M0,22 Q0,8 12,8" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<path d="M8,0 Q8,12 0,12" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<circle cx="0" cy="0" r="3.5" fill="#d4a830" />
+				<path d="M5,5 Q14,2 14,14 Q2,14 5,5 Z" fill="#d4a830" opacity="0.6" />
+				<path d="M0,15 C5,15 8,10 15,8 C10,12 12,18 6,20 Z" fill="none" stroke="#d4a830" strokeWidth="1" opacity="0.7" />
+				<circle cx="16" cy="5" r="1.5" fill="#f0c040" opacity="0.8" />
+				<circle cx="5" cy="16" r="1.5" fill="#f0c040" opacity="0.8" />
+			</g>
+			{/* Top-right corner */}
+			<g transform="translate(282, 18) scale(-1,1)" opacity="0.85" filter={`url(#glow-${index})`}>
+				<path d="M0,30 Q0,0 30,0" fill="none" stroke="#d4a830" strokeWidth="2" />
+				<path d="M0,22 Q0,8 12,8" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<path d="M8,0 Q8,12 0,12" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<circle cx="0" cy="0" r="3.5" fill="#d4a830" />
+				<path d="M5,5 Q14,2 14,14 Q2,14 5,5 Z" fill="#d4a830" opacity="0.6" />
+				<path d="M0,15 C5,15 8,10 15,8 C10,12 12,18 6,20 Z" fill="none" stroke="#d4a830" strokeWidth="1" opacity="0.7" />
+				<circle cx="16" cy="5" r="1.5" fill="#f0c040" opacity="0.8" />
+				<circle cx="5" cy="16" r="1.5" fill="#f0c040" opacity="0.8" />
+			</g>
+			{/* Bottom-left corner */}
+			<g transform="translate(18, 402) scale(1,-1)" opacity="0.85" filter={`url(#glow-${index})`}>
+				<path d="M0,30 Q0,0 30,0" fill="none" stroke="#d4a830" strokeWidth="2" />
+				<path d="M0,22 Q0,8 12,8" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<path d="M8,0 Q8,12 0,12" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<circle cx="0" cy="0" r="3.5" fill="#d4a830" />
+				<path d="M5,5 Q14,2 14,14 Q2,14 5,5 Z" fill="#d4a830" opacity="0.6" />
+				<circle cx="16" cy="5" r="1.5" fill="#f0c040" opacity="0.8" />
+				<circle cx="5" cy="16" r="1.5" fill="#f0c040" opacity="0.8" />
+			</g>
+			{/* Bottom-right corner */}
+			<g transform="translate(282, 402) scale(-1,-1)" opacity="0.85" filter={`url(#glow-${index})`}>
+				<path d="M0,30 Q0,0 30,0" fill="none" stroke="#d4a830" strokeWidth="2" />
+				<path d="M0,22 Q0,8 12,8" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<path d="M8,0 Q8,12 0,12" fill="none" stroke="#d4a830" strokeWidth="1.5" />
+				<circle cx="0" cy="0" r="3.5" fill="#d4a830" />
+				<path d="M5,5 Q14,2 14,14 Q2,14 5,5 Z" fill="#d4a830" opacity="0.6" />
+				<circle cx="16" cy="5" r="1.5" fill="#f0c040" opacity="0.8" />
+				<circle cx="5" cy="16" r="1.5" fill="#f0c040" opacity="0.8" />
+			</g>
+
+			{/* ── Top center pin/jewel ── */}
+			<circle cx="150" cy="14" r="5" fill="#d4a830" filter={`url(#glow-${index})`} />
+			<circle cx="150" cy="14" r="3" fill="#f5d060" />
+			{/* Bottom center pin */}
+			<circle cx="150" cy="406" r="5" fill="#d4a830" filter={`url(#glow-${index})`} />
+			<circle cx="150" cy="406" r="3" fill="#f5d060" />
+
+			{/* ── Side filigree vines — left ── */}
+			<g opacity="0.6" stroke="#c8973a" strokeWidth="1.2" fill="none">
+				<path d="M22,80 C30,90 20,105 28,115 C36,125 22,140 30,150 C38,160 24,175 32,185 C40,195 26,210 34,220" />
+				<path d="M22,80 C14,90 18,100 14,110" />
+				<circle cx="22" cy="80" r="2" fill="#c8973a" />
+				<circle cx="30" cy="115" r="1.5" fill="#c8973a" />
+				<circle cx="22" cy="150" r="1.5" fill="#c8973a" />
+				<circle cx="30" cy="185" r="1.5" fill="#c8973a" />
+				<path d="M28,115 C20,120 15,118 14,125 C13,132 20,130 18,138" />
+				<path d="M30,150 C22,155 17,153 16,160 C15,167 22,165 20,173" />
+			</g>
+			{/* Side filigree vines — right (mirror) */}
+			<g opacity="0.6" stroke="#c8973a" strokeWidth="1.2" fill="none" transform="translate(300,0) scale(-1,1)">
+				<path d="M22,80 C30,90 20,105 28,115 C36,125 22,140 30,150 C38,160 24,175 32,185 C40,195 26,210 34,220" />
+				<path d="M22,80 C14,90 18,100 14,110" />
+				<circle cx="22" cy="80" r="2" fill="#c8973a" />
+				<circle cx="30" cy="115" r="1.5" fill="#c8973a" />
+				<circle cx="22" cy="150" r="1.5" fill="#c8973a" />
+				<circle cx="30" cy="185" r="1.5" fill="#c8973a" />
+				<path d="M28,115 C20,120 15,118 14,125 C13,132 20,130 18,138" />
+				<path d="M30,150 C22,155 17,153 16,160 C15,167 22,165 20,173" />
+			</g>
+
+			{/* ── Inner border frame ── */}
+			<rect x="32" y="32" width="236" height="356" rx="8" fill="none" stroke="#c8973a" strokeWidth="1" opacity="0.4" strokeDasharray="4 3" />
+
+			{/* ── Top decorative arch ── */}
+			<g opacity="0.75" filter={`url(#glow-${index})`}>
+				<path d="M90,55 Q150,35 210,55" fill="none" stroke="#d4a830" strokeWidth="1.8" />
+				<path d="M100,62 Q150,45 200,62" fill="none" stroke="#c8973a" strokeWidth="1" opacity="0.6" />
+				<circle cx="90" cy="55" r="2.5" fill="#d4a830" />
+				<circle cx="210" cy="55" r="2.5" fill="#d4a830" />
+				<circle cx="150" cy="37" r="3" fill="#f0c040" />
+				{/* Small stars along arch */}
+				{[110, 130, 150, 170, 190].map((x, i) => (
+					<path key={i} d={`M${x},${52 - Math.sin(((x-90)/120)*Math.PI)*12} l1.5,3 l3,0 l-2.5,2 l1,3 l-3,-2 l-3,2 l1,-3 l-2.5,-2 l3,0 Z`} fill="#d4a830" opacity="0.7" />
+				))}
+			</g>
+			{/* Bottom decorative arch (mirror) */}
+			<g opacity="0.75" filter={`url(#glow-${index})`} transform="translate(0,420) scale(1,-1)">
+				<path d="M90,55 Q150,35 210,55" fill="none" stroke="#d4a830" strokeWidth="1.8" />
+				<path d="M100,62 Q150,45 200,62" fill="none" stroke="#c8973a" strokeWidth="1" opacity="0.6" />
+				<circle cx="90" cy="55" r="2.5" fill="#d4a830" />
+				<circle cx="210" cy="55" r="2.5" fill="#d4a830" />
+				<circle cx="150" cy="37" r="3" fill="#f0c040" />
+			</g>
+
+			{/* ── Center medallion background ── */}
+			<circle cx="150" cy="195" r="72" fill="#1a1008" opacity="0.7" />
+			<circle cx="150" cy="195" r="70" fill="none" stroke="#d4a830" strokeWidth="2" opacity="0.8" />
+			<circle cx="150" cy="195" r="64" fill="none" stroke="#c8973a" strokeWidth="1" opacity="0.5" />
+
+			{/* ── Face silhouette (NDK cartoon style) ── */}
+			{/* Head shape */}
+			<ellipse cx="150" cy="188" rx="34" ry="38" fill="#e8d5b0" />
+			{/* Hair */}
+			<path d="M116,175 Q118,150 150,148 Q182,150 184,175 Q175,162 150,160 Q125,162 116,175 Z" fill="#6b4226" />
+			<path d="M116,175 C114,168 115,160 120,155 Q135,148 150,148 Q165,148 180,155 C185,160 186,168 184,175 C178,163 165,158 150,158 C135,158 122,163 116,175 Z" fill="#7a4e2d" />
+			{/* Crack texture on face */}
+			<path d="M138,175 Q140,180 137,185 Q139,190 136,195" fill="none" stroke="#c4a882" strokeWidth="0.8" opacity="0.6" />
+			<path d="M155,170 Q158,175 156,182" fill="none" stroke="#c4a882" strokeWidth="0.8" opacity="0.5" />
+			{/* Eyes — closed/squinting */}
+			<path d="M133,183 Q138,180 143,183" fill="none" stroke="#3d2010" strokeWidth="2.2" strokeLinecap="round" />
+			<path d="M157,183 Q162,180 167,183" fill="none" stroke="#3d2010" strokeWidth="2.2" strokeLinecap="round" />
+			{/* Eyebrows — bold */}
+			<path d="M130,177 Q137,174 144,176" fill="none" stroke="#3d2010" strokeWidth="2.5" strokeLinecap="round" />
+			<path d="M156,176 Q163,174 170,177" fill="none" stroke="#3d2010" strokeWidth="2.5" strokeLinecap="round" />
+			{/* Glasses frames */}
+			<rect x="128" y="179" width="17" height="10" rx="5" fill="none" stroke="#2a1a0a" strokeWidth="2" />
+			<rect x="154" y="179" width="17" height="10" rx="5" fill="none" stroke="#2a1a0a" strokeWidth="2" />
+			<path d="M145,184 L154,184" stroke="#2a1a0a" strokeWidth="1.8" />
+			<path d="M124,183 L128,183" stroke="#2a1a0a" strokeWidth="1.5" />
+			<path d="M171,183 L175,183" stroke="#2a1a0a" strokeWidth="1.5" />
+			{/* Nose */}
+			<path d="M148,190 Q150,196 152,190" fill="none" stroke="#a08060" strokeWidth="1.2" />
+			{/* Mouth — slight smirk */}
+			<path d="M140,202 Q150,207 160,202" fill="none" stroke="#7a4030" strokeWidth="1.8" strokeLinecap="round" />
+			<path d="M140,202 Q141,205 144,204" fill="none" stroke="#7a4030" strokeWidth="1" />
+			{/* Ear */}
+			<ellipse cx="116" cy="192" rx="5" ry="7" fill="#d8c4a0" />
+			<ellipse cx="184" cy="192" rx="5" ry="7" fill="#d8c4a0" />
+
+			{/* ── NDK text badge ── */}
+			<rect x="136" y="215" width="40" height="16" rx="4" fill="#3d2010" />
+			<text x="156" y="227" textAnchor="middle" fill="#d4a830" fontSize="10" fontWeight="bold" fontFamily="serif" letterSpacing="1">NDK</text>
+
+			{/* ── Diamond star ornaments (4 corners of inner area) ── */}
+			{[
+				[55, 90], [245, 90], [55, 320], [245, 320]
+			].map(([x, y], i) => (
+				<g key={i} transform={`translate(${x},${y})`} opacity="0.7">
+					<path d="M0,-8 L2.5,-2.5 L8,0 L2.5,2.5 L0,8 L-2.5,2.5 L-8,0 L-2.5,-2.5 Z" fill="#d4a830" filter={`url(#glow-${index})`} />
+					<circle cx="0" cy="0" r="2" fill="#f5e060" />
+				</g>
+			))}
+
+			{/* ── Shimmer sweep (animated via CSS) ── */}
+			<rect x="0" y="0" width="300" height="420" rx="16" fill="url(#shimmer)" opacity="0" className="card-shimmer" />
+		</svg>
+	);
+}
+
 // ─── Single Card Component ──────────────────────────────
 function LuckyCardItem({
 	card,
@@ -118,17 +310,6 @@ function LuckyCardItem({
 		setTimeout(() => setJustFlipped(false), 1200);
 	};
 
-	// Card pattern colors
-	const patterns = [
-		{ bg: 'from-violet-600 via-purple-600 to-indigo-700', glow: 'shadow-purple-500/30' },
-		{ bg: 'from-rose-600 via-pink-600 to-fuchsia-700', glow: 'shadow-rose-500/30' },
-		{ bg: 'from-amber-500 via-orange-500 to-red-600', glow: 'shadow-amber-500/30' },
-		{ bg: 'from-emerald-500 via-teal-500 to-cyan-600', glow: 'shadow-emerald-500/30' },
-		{ bg: 'from-blue-500 via-indigo-500 to-violet-600', glow: 'shadow-blue-500/30' },
-		{ bg: 'from-pink-500 via-rose-500 to-orange-500', glow: 'shadow-pink-500/30' },
-	];
-	const pattern = patterns[index % patterns.length];
-
 	return (
 		<motion.div
 			className="relative"
@@ -149,123 +330,164 @@ function LuckyCardItem({
 			{/* Glow ring on flip */}
 			{justFlipped && (
 				<motion.div
-					className={`absolute -inset-2 rounded-3xl bg-gradient-to-r ${pattern.bg} blur-xl`}
-					initial={{ opacity: 0.6 }}
+					className="absolute -inset-3 rounded-3xl blur-2xl"
+					style={{ background: 'radial-gradient(ellipse, #d4a830 0%, #c8973a 40%, transparent 70%)' }}
+					initial={{ opacity: 0.7 }}
 					animate={{ opacity: 0 }}
-					transition={{ duration: 1.2 }}
+					transition={{ duration: 1.4 }}
 				/>
 			)}
 
 			<div
 				onClick={handleFlip}
-				className={`relative cursor-pointer select-none ${card.flipped ? '' : 'active:scale-95'}`}
-				style={{ perspective: '1200px' }}
+				className={`relative select-none ${card.flipped ? 'cursor-default' : 'cursor-pointer'}`}
+				style={{ perspective: '1400px' }}
 			>
 				<motion.div
 					className="relative w-full"
 					style={{ transformStyle: 'preserve-3d' }}
 					animate={{ rotateY: card.flipped ? 180 : 0 }}
 					transition={{
-						duration: 0.7,
-						ease: [0.23, 1, 0.32, 1], // custom spring-like ease
+						duration: 0.75,
+						ease: [0.23, 1, 0.32, 1],
 					}}
+					whileHover={!card.flipped ? { rotateY: 12, scale: 1.03 } : {}}
 				>
-					{/* ── FRONT FACE (Face down / Mystery) ── */}
+					{/* ── FRONT FACE (Face down — ornate NDK card) ── */}
 					<div
-						className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${pattern.bg} p-1 shadow-xl ${pattern.glow} transition-shadow hover:shadow-2xl`}
-						style={{ backfaceVisibility: 'hidden' }}
+						className="relative w-full overflow-hidden rounded-2xl shadow-2xl"
+						style={{
+							backfaceVisibility: 'hidden',
+							boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(212,168,48,0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+						}}
 					>
-						<div className="relative flex aspect-[3/4] w-full flex-col items-center justify-center rounded-xl bg-black/20 backdrop-blur-sm">
-							{/* Decorative pattern */}
-							<div className="absolute inset-4 rounded-lg border border-white/20" />
-							<div className="absolute inset-6 rounded-md border border-white/10" />
-							
-							{/* Center symbol */}
+						<div className="relative aspect-[3/4] w-full">
+							<OrnateCardFace index={index} />
+
+							{/* Shimmer sweep animation */}
 							<motion.div
-								className="relative z-10 text-5xl sm:text-6xl"
-								animate={{
-									rotate: [0, 5, -5, 0],
-									scale: [1, 1.05, 1],
+								className="pointer-events-none absolute inset-0 rounded-2xl"
+								style={{
+									background: 'linear-gradient(105deg, transparent 40%, rgba(255,220,100,0.12) 50%, transparent 60%)',
 								}}
+								animate={{ x: ['-100%', '200%'] }}
 								transition={{
 									duration: 3,
 									repeat: Infinity,
+									repeatDelay: 2.5,
 									ease: 'easeInOut',
-								}}
-							>
-								🃏
-							</motion.div>
-							
-							{/* Shimmer effect */}
-							<motion.div
-								className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-								animate={{ x: ['-200%', '200%'] }}
-								transition={{
-									duration: 2.5,
-									repeat: Infinity,
-									ease: 'easeInOut',
-									repeatDelay: 1,
 								}}
 							/>
 
-							{/* Card number */}
-							<div className="absolute bottom-3 left-0 right-0 text-center">
-								<span className="text-xs font-bold text-white/50 tracking-widest uppercase">
-									Card #{index + 1}
+							{/* Card number subtle overlay */}
+							<div className="absolute bottom-4 left-0 right-0 text-center">
+								<span
+									className="text-[10px] font-bold tracking-[0.2em] uppercase"
+									style={{ color: 'rgba(212,168,48,0.5)' }}
+								>
+									#{index + 1}
 								</span>
 							</div>
-
-							{/* Corner decorations */}
-							<div className="absolute top-3 left-3 text-white/30 text-lg">✦</div>
-							<div className="absolute top-3 right-3 text-white/30 text-lg">✦</div>
-							<div className="absolute bottom-8 left-3 text-white/30 text-lg">✦</div>
-							<div className="absolute bottom-8 right-3 text-white/30 text-lg">✦</div>
-
-							{/* Tap hint */}
-							<motion.p
-								className="absolute bottom-12 text-[10px] font-bold uppercase tracking-widest text-white/40"
-								animate={{ opacity: [0.3, 0.7, 0.3] }}
-								transition={{ duration: 2, repeat: Infinity }}
-							>
-								Tap to reveal
-							</motion.p>
 						</div>
 					</div>
 
-					{/* ── BACK FACE (Content revealed) ── */}
+					{/* ── BACK FACE (Content revealed — premium design) ── */}
 					<div
-						className="absolute inset-0 overflow-hidden rounded-2xl border-2 border-border bg-surface-elevated shadow-xl"
-						style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+						className="absolute inset-0 overflow-hidden rounded-2xl shadow-2xl"
+						style={{
+							backfaceVisibility: 'hidden',
+							transform: 'rotateY(180deg)',
+						}}
 					>
-						<div className="flex aspect-[3/4] w-full flex-col items-center justify-center p-5">
-							{/* Top decoration */}
-							<div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-accent to-transparent opacity-60" />
+						{/* Rich parchment background */}
+						<div
+							className="relative flex aspect-[3/4] w-full flex-col items-center justify-center"
+							style={{
+								background: 'linear-gradient(145deg, #fdf6e3 0%, #f5e9c8 35%, #edddb0 70%, #e5d09a 100%)',
+								boxShadow: 'inset 0 0 40px rgba(139,90,20,0.15)',
+							}}
+						>
+							{/* Gold border */}
+							<div
+								className="absolute inset-2 rounded-xl"
+								style={{
+									border: '2px solid',
+									borderColor: 'rgba(212,168,48,0.7)',
+									boxShadow: 'inset 0 0 15px rgba(212,168,48,0.1)',
+								}}
+							/>
+							<div
+								className="absolute inset-4 rounded-lg"
+								style={{ border: '1px solid rgba(196,151,58,0.35)' }}
+							/>
 
-							{/* Revealed badge */}
+							{/* Corner diamond ornaments */}
+							{[
+								'top-4 left-4',
+								'top-4 right-4',
+								'bottom-4 left-4',
+								'bottom-4 right-4',
+							].map((pos, i) => (
+								<div key={i} className={`absolute ${pos}`}>
+									<svg width="14" height="14" viewBox="0 0 14 14">
+										<path d="M7,0 L9,5 L14,7 L9,9 L7,14 L5,9 L0,7 L5,5 Z" fill="#c8973a" opacity="0.7" />
+									</svg>
+								</div>
+							))}
+
+							{/* Top decorative line */}
+							<div
+								className="absolute top-8 left-8 right-8 h-px"
+								style={{ background: 'linear-gradient(90deg, transparent, #c8973a, transparent)' }}
+							/>
+							<div
+								className="absolute bottom-8 left-8 right-8 h-px"
+								style={{ background: 'linear-gradient(90deg, transparent, #c8973a, transparent)' }}
+							/>
+
+							{/* Revealed stamp */}
 							<motion.div
-								className="absolute top-3 right-3"
-								initial={{ scale: 0 }}
-								animate={{ scale: 1 }}
-								transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
+								className="absolute top-6 right-6"
+								initial={{ scale: 0, rotate: -20 }}
+								animate={{ scale: 1, rotate: 0 }}
+								transition={{ delay: 0.45, type: 'spring', stiffness: 280, damping: 16 }}
 							>
-								<span className="text-lg">🎉</span>
+								<div
+									className="flex h-8 w-8 items-center justify-center rounded-full text-sm"
+									style={{
+										background: 'linear-gradient(135deg, #d4a830, #a87820)',
+										boxShadow: '0 2px 8px rgba(168,120,32,0.4)',
+									}}
+								>
+									✦
+								</div>
 							</motion.div>
 
-							{/* Content */}
+							{/* Main content */}
 							<motion.div
-								className="text-center"
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								transition={{ delay: 0.3, duration: 0.4 }}
+								className="relative z-10 px-8 text-center"
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: 0.32, duration: 0.45 }}
 							>
-								<p className="text-base sm:text-lg font-bold text-foreground leading-relaxed whitespace-pre-wrap break-words">
+								<p
+									className="text-lg font-bold leading-relaxed whitespace-pre-wrap break-words"
+									style={{
+										color: '#3d2010',
+										fontFamily: 'Georgia, serif',
+										textShadow: '0 1px 2px rgba(255,255,255,0.5)',
+									}}
+								>
 									{card.content}
 								</p>
 							</motion.div>
 
-							{/* Card number at bottom */}
-							<div className="absolute bottom-3 left-0 right-0 text-center">
-								<span className="text-[10px] font-bold text-muted/50 tracking-widest uppercase">
+							{/* Card number */}
+							<div className="absolute bottom-5 left-0 right-0 text-center">
+								<span
+									className="text-[10px] tracking-[0.2em] uppercase"
+									style={{ color: '#a87820', fontFamily: 'Georgia, serif' }}
+								>
 									#{index + 1}
 								</span>
 							</div>
@@ -818,10 +1040,10 @@ export default function LuckyCardPage() {
 			{/* Card Grid */}
 			{state && state.cards.length > 0 && (
 				<motion.div
-					className="grid gap-4 sm:gap-5 lg:gap-6"
+					className="grid gap-5 sm:gap-6 lg:gap-8"
 					style={{
 						gridTemplateColumns: `repeat(auto-fill, minmax(${
-							totalCount <= 4 ? '200px' : totalCount <= 9 ? '180px' : '160px'
+							totalCount <= 3 ? '280px' : totalCount <= 6 ? '240px' : totalCount <= 12 ? '210px' : '180px'
 						}, 1fr))`,
 					}}
 					layout
