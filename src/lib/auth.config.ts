@@ -14,11 +14,14 @@ import Google from 'next-auth/providers/google';
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
+// Detect local dev: secure cookies break on http://localhost
+const isLocalDev = process.env.AUTH_URL?.startsWith('http://');
+
 const secureCookieOptions = {
 	httpOnly: true,
 	sameSite: 'lax' as const,
 	path: '/',
-	secure: true,
+	secure: !isLocalDev,
 };
 
 export const authConfig: NextAuthConfig = {
@@ -46,7 +49,8 @@ export const authConfig: NextAuthConfig = {
 			]
 			: [],
 	callbacks: {
-		// Middleware only needs jwt callback to propagate role into token
+		// Edge-safe jwt: propagate role from user object into token.
+		// The full server-side auth.ts overrides this to also fetch from DB.
 		async jwt({ token, user }) {
 			if (user) {
 				const userRole = (user as { role?: string }).role;

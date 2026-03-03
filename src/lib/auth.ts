@@ -8,57 +8,73 @@ import { authConfig } from '@/lib/auth.config';
 // ────────────────────────────────────────────────────────────────────────
 // Auth.js v5 — Full server-side auth (Node.js runtime only).
 //
-// Extends authConfig (edge-safe) with the MongoDB adapter and createUser
-// event. This file must NEVER be imported by middleware.ts — only by
-// API routes and server components.
+// Extends authConfig (edge-safe) with the MongoDB adapter.
+// Overrides the jwt callback to fetch role from database on sign-in.
+//
+// IMPORTANT: callbacks are merged manually to preserve the session
+// callback from authConfig. A naive spread `{ ...authConfig, callbacks }`
+// would replace the entire callbacks object.
 //
 // middleware.ts uses auth.config.ts directly (no MongoDB, edge-safe).
 // ────────────────────────────────────────────────────────────────────────
+
+/** Emails that always get admin role on first sign-up */
+const ADMIN_EMAILS = [
+	'khanhnd2208@gmail.com',
+	process.env.ADMIN_EMAIL,
+].filter(Boolean) as string[];
 
 const nextAuth = NextAuth({
 	...authConfig,
 	adapter: MongoDBAdapter(mongoClientPromise),
 	callbacks: {
-		// Server-side jwt callback — fetch role from MongoDB if not in token
-		async jwt({ token, user, account }) {
-			// On first login (user exists), set initial role
+		// Preserve session callback from authConfig
+		...authConfig.callbacks,
+
+		// Server-side jwt: on sign-in, always fetch the real role from MongoDB.
+		// On subsequent token refreshes (no `user`), keep the role already in token.
+		async jwt({ token, user, trigger }) {
 			if (user) {
-				const adminEmails = [
-					'khanhnd2208@gmail.com',
-					process.env.ADMIN_EMAIL,
-				].filter(Boolean);
-				token.role = user.email && adminEmails.includes(user.email) ? 'admin' : 'student';
-			}
-			// On subsequent logins, refresh role from database
-			else if (account) {
+				// Sign-in: user is present. Fetch role from database for accuracy.
 				try {
 					const client = await mongoClientPromise;
 					const db = client.db();
-					const dbUser = await db.collection('users').findOne({ _id: new ObjectId(token.sub!) });
-					if (dbUser?.role) {
-						token.role = dbUser.role;
-					}
+					const dbUser = await db.collection('users').findOne(
+						{ _id: new ObjectId(user.id!) },
+						{ projection: { role: 1 } }
+					);
+					token.role = dbUser?.role ?? 'student';
 				} catch {
-					// Fallback to token role if db lookup fails
+					// DB unreachable — fallback to admin-email check
+					token.role = user.email && ADMIN_EMAILS.includes(user.email) ? 'admin' : 'student';
+				}
+			} else if (trigger === 'update') {
+				// Session update triggered (e.g. after role change) — re-fetch from DB
+				try {
+					const client = await mongoClientPromise;
+					const db = client.db();
+					const dbUser = await db.collection('users').findOne(
+						{ _id: new ObjectId(token.sub!) },
+						{ projection: { role: 1 } }
+					);
+					if (dbUser?.role) token.role = dbUser.role;
+				} catch {
+					// keep existing token.role
 				}
 			}
+			// On normal refresh (neither user nor trigger=update), token.role persists as-is.
+			if (!token.role) token.role = 'student';
 			return token;
 		},
 	},
 	events: {
 		async createUser({ user }) {
+			// New user created via OAuth — set role in database
 			const client = await mongoClientPromise;
 			const db = client.db();
-			
-			// Set admin role for predefined admin emails (local testing + production admins)
-			const adminEmails = [
-				'khanhnd2208@gmail.com',
-				process.env.ADMIN_EMAIL,
-			].filter(Boolean);
-			const role = user.email && adminEmails.includes(user.email) ? 'admin' : 'student';
-			
+			const role = user.email && ADMIN_EMAILS.includes(user.email) ? 'admin' : 'student';
 			await db.collection('users').updateOne(
-				{ _id: new ObjectId(user.id) },
+				{ _id: new ObjectId(user.id!) },
 				{ $set: { role } }
 			);
 		},
