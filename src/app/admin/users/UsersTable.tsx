@@ -288,8 +288,8 @@ function UserRow({
 					disabled={roleChanging}
 					className={`rounded-full border px-2.5 py-1 text-xs font-semibold cursor-pointer focus:outline-none disabled:opacity-60 ${ROLE_COLORS[user.role]}`}
 				>
-					{(['student', 'teacher', 'admin'] as UserRole[]).map((r) => (
-						<option key={r} value={r}>{ROLE_LABELS[r]}</option>
+					{(['student', 'admin'] as UserRole[]).map((r) => (
+						<option key={r} value={r}>{r === 'admin' ? 'Admin' : 'Người dùng'}</option>
 					))}
 				</select>
 			</td>
@@ -309,7 +309,7 @@ function UserRow({
 			</td>
 			{/* Joined */}
 			<td className="px-4 py-3 text-right text-xs text-muted hidden lg:table-cell whitespace-nowrap">
-				{formatDistanceToNow(user.createdAt)}
+				{user.createdAt ? formatDistanceToNow(user.createdAt) : '—'}
 			</td>
 			{/* Detail arrow */}
 			<td className="px-3 py-3 text-right">

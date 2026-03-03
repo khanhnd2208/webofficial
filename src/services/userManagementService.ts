@@ -1,6 +1,9 @@
 /**
  * User Management Service
  * Provides paginated user list + per-user activity aggregation for admin UI.
+ *
+ * NOTE: Users created by MongoDBAdapter may not have createdAt/updatedAt fields.
+ * We fall back to the ObjectId's embedded timestamp when those fields are absent.
  */
 
 import mongoose from 'mongoose';
@@ -11,6 +14,28 @@ import VocabSet from '@/models/VocabSet';
 import LoginStreak from '@/models/LoginStreak';
 import type { UserRole } from '@/types/user';
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Safely convert a value to ISO string.
+ * Falls back to the ObjectId's embedded timestamp if the date is missing.
+ * Returns null if neither is valid.
+ */
+function toISO(value: unknown, fallbackOid?: mongoose.Types.ObjectId): string | null {
+	if (value) {
+		const d = new Date(value as Date);
+		if (!isNaN(d.getTime())) return d.toISOString();
+	}
+	if (fallbackOid) {
+		try {
+			return fallbackOid.getTimestamp().toISOString();
+		} catch {
+			// ignore
+		}
+	}
+	return null;
+}
+
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 
 export interface UserListItem {
@@ -19,13 +44,13 @@ export interface UserListItem {
 	email: string;
 	role: UserRole;
 	image?: string;
-	createdAt: string;
+	createdAt: string | null;  // null when MongoDBAdapter user has no timestamp field
 	// activity counts
 	commentCount: number;
 	vocabSetCount: number;
 	currentStreak: number;
 	longestStreak: number;
-	lastActive: string | null; // ISO string of most recent action
+	lastActive: string | null;
 }
 
 export interface UserListResult {
@@ -59,14 +84,14 @@ export interface UserDetail {
 	email: string;
 	role: UserRole;
 	image?: string;
-	createdAt: string;
-	updatedAt: string;
+	createdAt: string | null;
+	updatedAt: string | null;
 	// totals
 	commentCount: number;
 	vocabSetCount: number;
 	currentStreak: number;
 	longestStreak: number;
-	loginDaysLast30: number; // how many days logged in over past 30 days
+	loginDaysLast30: number;
 	lastLoginDate: string | null;
 	// recent activity
 	recentComments: RecentComment[];
@@ -146,19 +171,18 @@ export async function getAdminUserList({
 
 	const users: UserListItem[] = rawUsers.map((u) => {
 		const uid = (u._id as mongoose.Types.ObjectId).toString();
+		const oid = u._id as mongoose.Types.ObjectId;
 		const streak = streakMap.get(uid);
 		const lastActive = streak?.updatedAt
-			? new Date(streak.updatedAt).toISOString()
-			: u.updatedAt
-			? new Date(u.updatedAt as Date).toISOString()
-			: null;
+			? toISO(streak.updatedAt)
+			: toISO(u.updatedAt, oid);
 		return {
 			id: uid,
 			name: u.name,
 			email: u.email,
 			role: u.role as UserRole,
 			image: u.image,
-			createdAt: new Date(u.createdAt as Date).toISOString(),
+			createdAt: toISO(u.createdAt, oid),
 			commentCount: commentMap.get(uid) ?? 0,
 			vocabSetCount: vocabMap.get(uid) ?? 0,
 			currentStreak: streak?.currentStreak ?? 0,
@@ -222,28 +246,28 @@ export async function getAdminUserDetail(userId: string): Promise<UserDetail | n
 		email: user.email,
 		role: user.role as UserRole,
 		image: user.image,
-		createdAt: new Date(user.createdAt as Date).toISOString(),
-		updatedAt: new Date(user.updatedAt as Date).toISOString(),
+		createdAt: toISO(user.createdAt, oid),
+		updatedAt: toISO(user.updatedAt, oid),
 		commentCount,
 		vocabSetCount,
 		currentStreak: streak?.currentStreak ?? 0,
 		longestStreak: streak?.longestStreak ?? 0,
 		loginDaysLast30,
-		lastLoginDate: streak?.lastLoginDate ?? null,
+		lastLoginDate: streak?.lastLoginDate ? toISO(streak.lastLoginDate) : null,
 		recentComments: recentComments.map((c) => ({
 			id: (c._id as mongoose.Types.ObjectId).toString(),
 			postTitle: c.postTitle ?? c.postSlug,
 			postSlug: c.postSlug,
 			content: c.content.slice(0, 120),
 			status: c.status,
-			createdAt: new Date(c.createdAt as Date).toISOString(),
+			createdAt: toISO(c.createdAt, c._id as mongoose.Types.ObjectId) ?? new Date(0).toISOString(),
 		})),
 		recentVocabSets: recentVocabSets.map((v) => ({
 			id: (v._id as mongoose.Types.ObjectId).toString(),
 			title: v.title,
 			termCount: v.termCount,
 			isPublic: v.isPublic,
-			createdAt: new Date(v.createdAt as Date).toISOString(),
+			createdAt: toISO(v.createdAt, v._id as mongoose.Types.ObjectId) ?? new Date(0).toISOString(),
 		})),
 	};
 }

@@ -96,14 +96,14 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 									disabled={roleChanging}
 									className={`rounded-full border px-3 py-1 text-xs font-semibold cursor-pointer focus:outline-none disabled:opacity-60 ${ROLE_COLORS[currentRole]}`}
 								>
-									{(['student', 'teacher', 'admin'] as UserRole[]).map((r) => (
+									{(['student', 'admin'] as UserRole[]).map((r) => (
 										<option key={r} value={r}>
-											{r === 'admin' ? 'Admin' : r === 'teacher' ? 'Teacher' : 'Student'}
+											{r === 'admin' ? 'Admin' : 'Người dùng'}
 										</option>
 									))}
 								</select>
 								<span className="text-xs text-muted">
-									Đăng ký {formatDistanceToNow(userSummary.createdAt)}
+									{userSummary.createdAt ? `Đăng ký ${formatDistanceToNow(userSummary.createdAt)}` : 'Người dùng cũ'}
 								</span>
 							</div>
 						</div>
@@ -133,8 +133,8 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 							{/* Key dates */}
 							<div className="rounded-xl border border-border bg-surface p-4 space-y-2">
 								<p className="text-xs font-bold uppercase tracking-widest text-muted mb-3">Thông tin tài khoản</p>
-								<Row label="Ngày đăng ký" value={formatDateTime(detail.createdAt)} />
-								<Row label="Cập nhật lần cuối" value={formatDateTime(detail.updatedAt)} />
+							<Row label="Ngày đăng ký" value={detail.createdAt ? formatDateTime(detail.createdAt) : '—'} />
+							<Row label="Cập nhật lần cuối" value={detail.updatedAt ? formatDateTime(detail.updatedAt) : '—'} />
 								<Row
 									label="Lần đăng nhập cuối"
 									value={detail.lastLoginDate ? formatDate(detail.lastLoginDate) : '—'}

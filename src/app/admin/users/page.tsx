@@ -44,7 +44,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 				</div>
 				{/* Role badges */}
 				<div className="flex gap-2 text-xs flex-wrap">
-					{(['all', 'student', 'teacher', 'admin'] as const).map((r) => (
+					{(['all', 'student', 'admin'] as const).map((r) => (
 						<a
 							key={r}
 							href={`/admin/users?role=${r}&search=${search}&sortBy=${sortBy}&sortDir=${sortDir}`}
@@ -54,7 +54,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 									: 'border-border text-muted hover:border-border-hover hover:text-foreground'
 							}`}
 						>
-							{r === 'all' ? 'Tất cả' : r === 'student' ? 'Student' : r === 'teacher' ? 'Teacher' : 'Admin'}
+							{r === 'all' ? 'Tất cả' : r === 'student' ? 'Người dùng' : 'Admin'}
 						</a>
 					))}
 				</div>
