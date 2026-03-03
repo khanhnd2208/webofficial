@@ -1,6 +1,6 @@
 # 🏗️ Architecture Documentation — My Teaching Platform
 
-> **Last Updated:** 2026-03-02
+> **Last Updated:** 2026-03-03
 > **Stack:** Next.js 16 (App Router) · TypeScript · MongoDB/Mongoose · NextAuth v5 · Tailwind CSS v4 · TipTap Editor
 > **Domain:** [toiladuykhanh.com](https://toiladuykhanh.com)
 
@@ -113,6 +113,9 @@ API Route → Service → Model → MongoDB → DTO (lean)
 - Services call `dbConnect()` before any DB operation
 - All queries use `.lean()` for performance
 - DTOs convert `ObjectId` → `string` and strip internal fields
+- Ownership checks enforced at both API route and service level (defense-in-depth)
+- ObjectId validation via `mongoose.isValidObjectId()` before DB queries
+- Unbounded queries capped with `.limit()` to prevent memory issues
 
 ### 3.2 Authentication & Authorization
 - **Middleware:** Protects `/admin/*` (edge-compatible, uses `auth.config.ts`)
@@ -123,6 +126,13 @@ API Route → Service → Model → MongoDB → DTO (lean)
 - Public blog listing: `unstable_cache` with 60s revalidation
 - Admin mutations bust cache via `revalidateTag('posts')`
 - No caching on authenticated data
+
+### 3.4 Data Integrity
+- Model-level validators: array size caps (comments/likedBy, feedback/replies, vocab/terms, wordStats/history)
+- Enum validation on Post.category matching `POST_CATEGORIES` constant
+- Email format validation on User model
+- TTL index on Notifications (auto-delete after 90 days)
+- Cascade delete: deleting a Post also deletes its Comments
 
 ---
 
@@ -191,3 +201,28 @@ VocabSet
 cd /var/www/webofficial
 git pull origin main && npm ci && npm run build && pm2 restart nextjs-app --update-env
 ```
+
+---
+
+## 7. Typography & Font Architecture
+
+| Font | CSS Variable | Subsets | Usage |
+|------|-------------|---------|-------|
+| **Inter** | `--font-inter` | latin, **vietnamese** | Body text, UI (default `font-sans`) |
+| **Merriweather** | `--font-merriweather` | latin, **vietnamese** | Blog content, serif text (`font-serif`) |
+| **Cinzel** | `--font-cinzel` | latin only | Lucky Card headings, decorative Latin text |
+| **Cormorant Garamond** | `--font-cormorant` | latin, **vietnamese** | Lucky Card content |
+| **System Monospace** | — | — | Code, numbers (`font-mono`): SF Mono → Monaco → Consolas |
+
+**Key principle:** Vietnamese text always uses Inter or Merriweather (both with `vietnamese` subset). Cinzel is used **only** for Latin headings (e.g., "LUCKY CARD").
+
+---
+
+## 8. Admin Tools
+
+| Tool | Route | Description |
+|------|-------|-------------|
+| **Lucky Card** | `/admin/tools/lucky-card` | Gamified card flip with CSV import, fullscreen, sound effects |
+| **Blog CMS** | `/admin/posts/*` | WYSIWYG bilingual editor (TipTap), comment moderation |
+| **Vocab Manager** | `/admin/vocabulary` | CSV import, public store management |
+| **Feedback** | `/admin/feedback/messages` | Threaded user-admin conversation |

@@ -27,11 +27,12 @@ export interface INotification {
 	meta?: Record<string, string>;
 	read: boolean;
 	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 const NotificationSchema = new Schema<INotification>(
 	{
-		recipientId: { type: String, required: true, index: true },
+		recipientId: { type: String, required: true },
 		type: {
 			type: String,
 			enum: [
@@ -46,13 +47,15 @@ const NotificationSchema = new Schema<INotification>(
 		message: { type: String, required: true, trim: true },
 		href: { type: String, required: true, trim: true },
 		meta: { type: Schema.Types.Mixed, default: {} },
-		read: { type: Boolean, default: false, index: true },
+		read: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 );
 
 // Fast query: unread count for a recipient
 NotificationSchema.index({ recipientId: 1, read: 1, createdAt: -1 });
+// Auto-delete notifications older than 90 days
+NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 const Notification: Model<INotification> =
 	(mongoose.models.Notification as Model<INotification>) ||

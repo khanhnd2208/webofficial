@@ -35,6 +35,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 		const body = await request.json();
 		const updated = await updateVocabSet({
 			id,
+			ownerId: existing.ownerId,
 			title: body.title,
 			description: body.description,
 			terms: body.terms,
@@ -61,7 +62,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 			return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
 		}
 
-		await deleteVocabSet(id);
+		await deleteVocabSet(id, existing.ownerId);
 		return NextResponse.json({ ok: true });
 	} catch (error) {
 		return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Unknown error' }, { status: 400 });

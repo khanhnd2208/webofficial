@@ -106,6 +106,7 @@ export async function createVocabSet(params: {
 
 export async function updateVocabSet(params: {
 	id: string;
+	ownerId: string;
 	title?: string;
 	description?: string;
 	terms?: VocabTermDTO[];
@@ -113,6 +114,7 @@ export async function updateVocabSet(params: {
 }): Promise<VocabSetDTO | null> {
 	await dbConnect();
 	if (!mongoose.isValidObjectId(params.id)) return null;
+	if (!mongoose.isValidObjectId(params.ownerId)) return null;
 
 	const update: Record<string, unknown> = {};
 	if (params.title !== undefined) update.title = params.title.trim();
@@ -128,15 +130,22 @@ export async function updateVocabSet(params: {
 		update.termCount = params.terms.length;
 	}
 
-	const doc = (await VocabSet.findByIdAndUpdate(params.id, { $set: update }, { returnDocument: 'after' }).lean()) as unknown as LeanDoc | null;
+	const doc = (await VocabSet.findOneAndUpdate(
+		{ _id: new mongoose.Types.ObjectId(params.id), ownerId: new mongoose.Types.ObjectId(params.ownerId) },
+		{ $set: update },
+		{ returnDocument: 'after' },
+	).lean()) as unknown as LeanDoc | null;
 	if (!doc) return null;
 	return toDTO(doc);
 }
 
-export async function deleteVocabSet(id: string): Promise<boolean> {
+export async function deleteVocabSet(id: string, ownerId: string): Promise<boolean> {
 	await dbConnect();
-	if (!mongoose.isValidObjectId(id)) return false;
-	const result = await VocabSet.deleteOne({ _id: new mongoose.Types.ObjectId(id) });
+	if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(ownerId)) return false;
+	const result = await VocabSet.deleteOne({
+		_id: new mongoose.Types.ObjectId(id),
+		ownerId: new mongoose.Types.ObjectId(ownerId),
+	});
 	return (result.deletedCount ?? 0) > 0;
 }
 

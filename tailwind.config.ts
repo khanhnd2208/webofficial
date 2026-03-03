@@ -40,7 +40,7 @@ export default {
 				// These are kept as fallback stacks
 				sans: ['var(--font-inter)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
 				serif: ['var(--font-merriweather)', 'Georgia', 'serif'],
-				mono: ['var(--font-geist-mono)', 'SF Mono', 'Monaco', 'Consolas', 'monospace'],
+				mono: ['SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
 			},
 			typography: ({ theme }: { theme: (path: string) => string }) => ({
 				DEFAULT: {

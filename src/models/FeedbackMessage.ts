@@ -42,7 +42,7 @@ const FeedbackReplySchema = new Schema<IFeedbackReply>(
 
 const FeedbackMessageSchema = new Schema<IFeedbackMessage>(
 	{
-		userId: { type: String, required: true, index: true },
+		userId: { type: String, required: true },
 		userName: { type: String, required: true, trim: true },
 		userEmail: { type: String, required: true, trim: true, lowercase: true },
 		userImage: { type: String },
@@ -50,13 +50,19 @@ const FeedbackMessageSchema = new Schema<IFeedbackMessage>(
 		content: { type: String, required: true, trim: true, maxlength: 5000 },
 		adminReply: { type: String, trim: true, maxlength: 5000 },
 		adminRepliedAt: { type: Date },
-		replies: { type: [FeedbackReplySchema], default: [] },
+		replies: {
+			type: [FeedbackReplySchema],
+			default: [],
+			validate: {
+				validator: (v: unknown[]) => v.length <= 200,
+				message: 'Replies cannot exceed 200 entries',
+			},
+		},
 		status: {
 			type: String,
 			enum: ['pending', 'replied', 'closed'],
 			default: 'pending',
 			required: true,
-			index: true,
 		},
 		sourceUrl: { type: String, trim: true },
 	},
@@ -64,6 +70,7 @@ const FeedbackMessageSchema = new Schema<IFeedbackMessage>(
 );
 
 FeedbackMessageSchema.index({ userId: 1, createdAt: -1 });
+FeedbackMessageSchema.index({ status: 1, createdAt: -1 });
 
 const FeedbackMessage =
 	(mongoose.models.FeedbackMessage as Model<IFeedbackMessage>) ||

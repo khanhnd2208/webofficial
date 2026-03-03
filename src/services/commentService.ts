@@ -55,6 +55,7 @@ export async function getCommentsByPostId(
 	isAdmin = false
 ): Promise<{ items: CommentDTO[]; total: number; pendingCount: number }> {
 	await dbConnect();
+	if (!mongoose.isValidObjectId(postId)) return { items: [], total: 0, pendingCount: 0 };
 
 	const oid = new mongoose.Types.ObjectId(postId);
 	const all = (await Comment.find({ postId: oid })
@@ -104,6 +105,9 @@ export async function createComment(input: {
 }): Promise<CommentDTO> {
 	await dbConnect();
 
+	if (!mongoose.isValidObjectId(input.postId)) throw new Error('Invalid post ID');
+	if (input.parentId && !mongoose.isValidObjectId(input.parentId)) throw new Error('Invalid parent comment ID');
+
 	const content = String(input.content ?? '').trim();
 	if (!content) throw new Error('Comment cannot be empty');
 	if (content.length > 2000) throw new Error('Comment too long (max 2000 characters)');
@@ -152,6 +156,7 @@ export async function createComment(input: {
 
 export async function approveComment(commentId: string): Promise<CommentDTO> {
 	await dbConnect();
+	if (!mongoose.isValidObjectId(commentId)) throw new Error('Invalid comment ID');
 
 	const updated = await Comment.findByIdAndUpdate(
 		commentId,
@@ -174,6 +179,7 @@ export async function approveComment(commentId: string): Promise<CommentDTO> {
 
 export async function hideComment(commentId: string): Promise<CommentDTO> {
 	await dbConnect();
+	if (!mongoose.isValidObjectId(commentId)) throw new Error('Invalid comment ID');
 	const updated = await Comment.findByIdAndUpdate(
 		commentId,
 		{ status: 'hidden' },
@@ -185,6 +191,7 @@ export async function hideComment(commentId: string): Promise<CommentDTO> {
 
 export async function adminDeleteComment(commentId: string): Promise<void> {
 	await dbConnect();
+	if (!mongoose.isValidObjectId(commentId)) throw new Error('Invalid comment ID');
 	await Promise.all([
 		Comment.findByIdAndDelete(commentId),
 		Comment.deleteMany({ parentId: new mongoose.Types.ObjectId(commentId) }),
@@ -195,6 +202,7 @@ export async function adminDeleteComment(commentId: string): Promise<void> {
 
 export async function deleteComment(commentId: string, userId: string): Promise<void> {
 	await dbConnect();
+	if (!mongoose.isValidObjectId(commentId)) throw new Error('Invalid comment ID');
 	const comment = await Comment.findById(commentId);
 	if (!comment) throw new Error('Comment not found');
 	if (comment.userId !== userId) throw new Error('Unauthorized');
@@ -211,6 +219,7 @@ export async function toggleCommentLike(
 	userId: string
 ): Promise<{ likes: number; likedByMe: boolean }> {
 	await dbConnect();
+	if (!mongoose.isValidObjectId(commentId)) throw new Error('Invalid comment ID');
 
 	const existing = await Comment.findOne({ _id: commentId, likedBy: userId }, { _id: 1 }).lean();
 	const alreadyLiked = Boolean(existing);
@@ -244,6 +253,7 @@ export async function getPendingComments(): Promise<CommentDTO[]> {
 	await dbConnect();
 	const docs = (await Comment.find({ status: 'pending' })
 		.sort({ createdAt: 1 })
+		.limit(200)
 		.lean()) as unknown as CommentLean[];
 	return docs.map((c) => toDTO(c));
 }
@@ -252,6 +262,7 @@ export async function getAllComments(): Promise<CommentDTO[]> {
 	await dbConnect();
 	const docs = (await Comment.find({})
 		.sort({ createdAt: -1 })
+		.limit(500)
 		.lean()) as unknown as CommentLean[];
 	return docs.map((c) => toDTO(c));
 }

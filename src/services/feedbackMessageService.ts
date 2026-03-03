@@ -90,6 +90,7 @@ export async function getAllMessages(): Promise<FeedbackMessageDTO[]> {
 	await dbConnect();
 	const docs = await FeedbackMessage.find()
 		.sort({ status: 1, createdAt: -1 })
+		.limit(500)
 		.lean() as unknown as FeedbackLean[];
 	return docs.map(toDTO);
 }
@@ -117,8 +118,13 @@ export async function addReplyToMessage(
 
 	const statusUpdate = reply.role === 'admin' ? { status: 'replied' as const } : {};
 
-	const doc = await FeedbackMessage.findByIdAndUpdate(
-		messageId,
+	// Build filter: admin can reply to any message; users can only reply to their own
+	const filter = reply.role === 'admin'
+		? { _id: messageId }
+		: { _id: messageId, userId: reply.authorId };
+
+	const doc = await FeedbackMessage.findOneAndUpdate(
+		filter,
 		{
 			$push: { replies: newReply },
 			// Legacy fields: update if admin is replying for the first time

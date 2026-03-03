@@ -33,7 +33,14 @@ const WordStatsSchema = new Schema<IWordStats>(
 		correctCount: { type: Number, default: 0, min: 0 },
 		wrongCount: { type: Number, default: 0, min: 0 },
 		lastPracticed: { type: Date, default: Date.now },
-		history: { type: [PracticeEntrySchema], default: [] },
+		history: {
+			type: [PracticeEntrySchema],
+			default: [],
+			validate: {
+				validator: (v: unknown[]) => v.length <= 500,
+				message: 'Practice history cannot exceed 500 entries',
+			},
+		},
 	},
 	{ timestamps: true }
 );

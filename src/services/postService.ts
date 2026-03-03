@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache';
 
 import dbConnect from '@/lib/dbConnect';
+import Comment from '@/models/Comment';
 import Post from '@/models/Post';
 import type {
 	AdminPostDetailDTO,
@@ -377,7 +378,16 @@ export async function updatePostById(
 		update.chapterNumber = cn == null || cn === '' ? undefined : Number(cn);
 	}
 	if ('isPinned' in input) update.isPinned = Boolean(input.isPinned);
-	if ('isPublished' in input) update.isPublished = Boolean(input.isPublished);
+	if ('isPublished' in input) {
+		update.isPublished = Boolean(input.isPublished);
+		// Auto-set publishedAt when first published (pre-validate hook is skipped by findByIdAndUpdate)
+		if (update.isPublished) {
+			const existing = (await Post.findById(cleanedId).select('publishedAt isPublished').lean()) as unknown as { publishedAt?: Date; isPublished?: boolean } | null;
+			if (existing && !existing.publishedAt) {
+				update.publishedAt = new Date();
+			}
+		}
+	}
 	if ('slug' in input) {
 		const slugBase = slugify(String(input.slug ?? ''));
 		if (slugBase) update.slug = await ensureUniqueSlug(slugBase, cleanedId);
@@ -397,7 +407,11 @@ export async function deletePostById(id: string): Promise<void> {
 	if (!cleaned) throw new Error('Missing id');
 
 	await dbConnect();
-	await Post.findByIdAndDelete(cleaned);
+	// Cascade: delete the post and all its comments
+	await Promise.all([
+		Post.findByIdAndDelete(cleaned),
+		Comment.deleteMany({ postId: cleaned }),
+	]);
 }
 
 async function getLatestPostsRaw(limit: number): Promise<PostListItemDTO[]> {

@@ -33,9 +33,16 @@ const VocabSetSchema = new Schema<IVocabSet>(
 	{
 		title: { type: String, required: true, trim: true },
 		description: { type: String, trim: true, default: '' },
-		ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+		ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 		ownerName: { type: String, required: true, trim: true },
-		terms: { type: [VocabTermSchema], default: [] },
+		terms: {
+			type: [VocabTermSchema],
+			default: [],
+			validate: {
+				validator: (v: unknown[]) => v.length <= 2000,
+				message: 'A vocabulary set cannot exceed 2000 terms',
+			},
+		},
 		termCount: { type: Number, default: 0, min: 0 },
 		isPublic: { type: Boolean, default: false },
 	},

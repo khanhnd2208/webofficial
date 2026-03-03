@@ -166,7 +166,7 @@
 	--color-rose-subtle: var(--rose-subtle);
 	--font-sans: var(--font-inter);
 	--font-serif: var(--font-merriweather);
-	--font-mono: var(--font-geist-mono);
+	--font-mono: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 /* ═══════════════════════════════════════════════════════

@@ -32,7 +32,14 @@ const CommentSchema = new Schema<IComment>(
 		userImage: { type: String },
 		content: { type: String, required: true, trim: true, maxlength: 2000 },
 		likes: { type: Number, default: 0 },
-		likedBy: { type: [String], default: [] },
+		likedBy: {
+			type: [String],
+			default: [],
+			validate: {
+				validator: (v: string[]) => v.length <= 10000,
+				message: 'likedBy cannot exceed 10,000 entries',
+			},
+		},
 		status: {
 			type: String,
 			enum: ['pending', 'approved', 'hidden'],
