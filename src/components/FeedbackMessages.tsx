@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 
 import type { FeedbackMessageDTO } from '@/types/feedbackMessage';
 
@@ -21,6 +21,7 @@ function formatDate(iso: string) {
 export default function FeedbackMessages() {
 	const { data: session } = useSession();
 	const searchParams = useSearchParams();
+	const pathname = usePathname();
 	const [messages, setMessages] = useState<FeedbackMessageDTO[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [subject, setSubject] = useState('');
@@ -153,7 +154,7 @@ export default function FeedbackMessages() {
 				<p className="mt-4 text-sm font-bold text-foreground">Đăng nhập để gửi phản hồi</p>
 				<p className="mt-1.5 text-sm text-muted">Cần tài khoản để gửi tin nhắn và theo dõi trả lời.</p>
 				<Link
-					href={`/login?callbackUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '/feedback')}`}
+					href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
 					className="mt-5 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-background transition-all hover:opacity-80"
 				>
 					Đăng nhập với Google
