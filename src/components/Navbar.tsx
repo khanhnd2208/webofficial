@@ -9,6 +9,7 @@ import ThemeToggle from './ThemeToggle';
 const NAV_LINKS = [
 	{ href: '/blog', label: 'Hanoicam Story' },
 	{ href: '/vocabulary', label: 'Học tiếng Anh' },
+	{ href: '/games', label: 'Game Hanoicam' },
 	{ href: '/feedback', label: 'Phản hồi' },
 ];
 
