@@ -41,6 +41,18 @@ const NAV = [
 		group: 'Cộng đồng',
 		items: [
 			{
+				href: '/admin/users',
+				label: 'Người dùng',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
+						<path d="M2 17c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+						<path d="M14 5c1.105 0 2 .895 2 2s-.895 2-2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+						<path d="M16 14.5c1.333.5 2 1.5 2 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+					</svg>
+				),
+			},
+			{
 				href: '/admin/posts/comments',
 				label: 'Bình luận',
 				icon: (
