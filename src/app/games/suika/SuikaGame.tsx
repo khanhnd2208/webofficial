@@ -10,37 +10,44 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 // ─── Tuning constants ─────────────────────────────────────────────────────────
 const WIDTH = 400;
 const HEIGHT = 600;
-const GRAVITY = 0.25;            // gentle gravity — fruit floats down naturally
-const SUB_STEPS = 8;             // physics precision
-const SOLVER_ITERS = 6;          // constraint solve passes per sub-step
-const WALL_LEFT = 0;
-const WALL_RIGHT = WIDTH;
-const FLOOR_Y = HEIGHT - 8;      // bottom boundary
+const GRAVITY = 0.45;            // real Suika-weight gravity
+const SUB_STEPS = 10;            // high precision for stable stacking
+const SOLVER_ITERS = 8;          // more passes = tighter stacking
+const WALL_LEFT = 18;            // wall thickness — container walls
+const WALL_RIGHT = WIDTH - 18;
+const FLOOR_Y = HEIGHT - 14;     // floor
 const GAMEOVER_Y = 90;           // danger line Y
-const DAMPING = 0.998;           // global velocity damping per sub-step (very subtle)
-const FLOOR_FRICTION = 0.88;     // horizontal friction on floor
-const WALL_RESTITUTION = 0.15;   // bounce off walls (very low — walls absorb)
-const FLOOR_RESTITUTION = 0.12;  // bounce off floor (heavy — fruit settles fast)
-const BALL_RESTITUTION = 0.08;   // bounce between fruits (almost none — they settle together)
-const SLEEP_VEL = 0.35;          // if total velocity below this → sleep
-const SLEEP_FRAMES = 8;          // must be slow for this many frames to sleep
-const ANGULAR_DAMPING = 0.92;    // rotation slows naturally
-const DROP_COOLDOWN_MS = 280;    // ms between drops (prevents spam)
-const GRACE_FRAMES = 90;         // frames before a fruit can trigger game-over
+const DAMPING = 0.999;           // minimal air damping
+const FLOOR_FRICTION = 0.72;     // floor slows horizontal motion
+const WALL_RESTITUTION = 0.18;   // walls absorb impact
+const FLOOR_RESTITUTION = 0.15;  // floor absorbs — fruits don't bounce much
+const BALL_RESTITUTION = 0.10;   // slight bounce between fruits
+const SLEEP_VEL = 0.4;           // sleep threshold
+const SLEEP_FRAMES = 10;         // frames before sleeping
+const ANGULAR_DAMPING = 0.88;    // rotation damps quickly
+const DROP_COOLDOWN_MS = 320;    // ms cooldown between drops
+const GRACE_FRAMES = 100;        // frames before a fruit can trigger game-over
+
+// Container visual style
+const BG_TOP = '#FFF8E7';        // warm cream — like real Suika
+const BG_BOT = '#FFE4B5';        // moccasin warm bottom
+const WALL_COLOR = '#C8860A';    // wooden wall color
+const FLOOR_COLOR = '#C8860A';
 
 // ─── Fruit Data (11 levels — merge to evolve) ────────────────────────────────
+// color = solid fill like real Suika Game, emoji drawn on top
 const FRUIT_DATA = [
-	{ emoji: '🍒', radius: 16, points: 10,  mass: 1.0, label: 'Anh đào' },
-	{ emoji: '🍓', radius: 20, points: 20,  mass: 1.4, label: 'Dâu tây' },
-	{ emoji: '🍇', radius: 25, points: 30,  mass: 1.9, label: 'Nho' },
-	{ emoji: '🍊', radius: 30, points: 40,  mass: 2.5, label: 'Cam' },
-	{ emoji: '🍋', radius: 34, points: 50,  mass: 3.2, label: 'Chanh' },
-	{ emoji: '🍎', radius: 38, points: 60,  mass: 4.0, label: 'Táo' },
-	{ emoji: '🍐', radius: 43, points: 70,  mass: 5.0, label: 'Lê' },
-	{ emoji: '🍑', radius: 48, points: 80,  mass: 6.2, label: 'Đào' },
-	{ emoji: '🍍', radius: 52, points: 90,  mass: 7.5, label: 'Dứa' },
-	{ emoji: '🍉', radius: 58, points: 100, mass: 9.0, label: 'Dưa hấu' },
-	{ emoji: '🐉', radius: 64, points: 500, mass: 12,  label: 'Rồng Thăng Long' },
+	{ emoji: '🍒', radius: 16, points: 10,  mass: 1.0, color: '#E8192C', stroke: '#C01020', label: 'Anh đào' },
+	{ emoji: '🍓', radius: 21, points: 20,  mass: 1.5, color: '#FF3355', stroke: '#CC1133', label: 'Dâu tây' },
+	{ emoji: '🍇', radius: 26, points: 30,  mass: 2.0, color: '#8B2FC9', stroke: '#6B1FA9', label: 'Nho' },
+	{ emoji: '🍊', radius: 31, points: 40,  mass: 2.8, color: '#FF7700', stroke: '#DD5500', label: 'Cam' },
+	{ emoji: '🍋', radius: 36, points: 50,  mass: 3.5, color: '#FFD700', stroke: '#CCB000', label: 'Chanh' },
+	{ emoji: '🍎', radius: 41, points: 60,  mass: 4.5, color: '#DD1111', stroke: '#AA0000', label: 'Táo' },
+	{ emoji: '🍐', radius: 46, points: 70,  mass: 5.5, color: '#77BB33', stroke: '#558811', label: 'Lê' },
+	{ emoji: '🍑', radius: 51, points: 80,  mass: 7.0, color: '#FF8866', stroke: '#DD6644', label: 'Đào' },
+	{ emoji: '🍍', radius: 56, points: 90,  mass: 8.5, color: '#DDAA00', stroke: '#BB8800', label: 'Dứa' },
+	{ emoji: '🍉', radius: 62, points: 100, mass: 10,  color: '#33BB44', stroke: '#229933', label: 'Dưa hấu' },
+	{ emoji: '🐉', radius: 68, points: 500, mass: 13,  color: '#FF4400', stroke: '#CC2200', label: 'Rồng Thăng Long' },
 ] as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -56,6 +63,8 @@ interface Fruit {
 	level: number;
 	mass: number;
 	emoji: string;
+	color: string;
+	stroke: string;
 	sleeping: boolean;
 	sleepCounter: number;
 	merged: boolean;
@@ -87,6 +96,8 @@ function makeFruit(x: number, y: number, level: number): Fruit {
 		level,
 		mass: d.mass,
 		emoji: d.emoji,
+		color: d.color,
+		stroke: d.stroke,
 		sleeping: false,
 		sleepCounter: 0,
 		merged: false,
@@ -411,103 +422,150 @@ export default function DragonGame() {
 		ctx.save();
 		ctx.translate(sx, sy);
 
-		// Background
+		// ── Background (warm cream like real Suika) ─────────────────────────
 		const bg = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-		bg.addColorStop(0, '#0a1628');
-		bg.addColorStop(0.5, '#112240');
-		bg.addColorStop(1, '#1a3355');
+		bg.addColorStop(0, BG_TOP);
+		bg.addColorStop(1, BG_BOT);
 		ctx.fillStyle = bg;
-		ctx.fillRect(-4, -4, WIDTH + 8, HEIGHT + 8);
+		ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-		// Subtle grid pattern for depth
-		ctx.strokeStyle = 'rgba(255,255,255,0.015)';
-		ctx.lineWidth = 1;
-		for (let gy = 100; gy < HEIGHT; gy += 40) {
-			ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(WIDTH, gy); ctx.stroke();
-		}
-
-		// Dragon flash
+		// ── Dragon golden flash ──────────────────────────────────────────────
 		if (flashVal.current > 0) {
-			ctx.fillStyle = `rgba(255,200,0,${(flashVal.current / 100) * 0.15})`;
-			ctx.fillRect(-4, -4, WIDTH + 8, HEIGHT + 8);
+			ctx.fillStyle = `rgba(255,200,0,${(flashVal.current / 100) * 0.25})`;
+			ctx.fillRect(0, 0, WIDTH, HEIGHT);
 		}
 
-		// ── Aim indicator (dashed line + ghost fruit) ────────────────────────
+		// ── Container walls (left, right, floor) ────────────────────────────
+		// Left wall
+		ctx.fillStyle = WALL_COLOR;
+		ctx.fillRect(0, GAMEOVER_Y, WALL_LEFT, HEIGHT);
+		// Right wall
+		ctx.fillRect(WALL_RIGHT, GAMEOVER_Y, WIDTH - WALL_RIGHT, HEIGHT);
+		// Floor
+		ctx.fillStyle = FLOOR_COLOR;
+		ctx.fillRect(0, FLOOR_Y, WIDTH, HEIGHT - FLOOR_Y);
+		// Wall top caps
+		ctx.fillStyle = '#A06008';
+		ctx.fillRect(0, GAMEOVER_Y - 4, WALL_LEFT, 8);
+		ctx.fillRect(WALL_RIGHT, GAMEOVER_Y - 4, WIDTH - WALL_RIGHT, 8);
+
+		// ── Aim indicator ────────────────────────────────────────────────────
 		if (canDrop.current && !isOver.current) {
 			const r = FRUIT_DATA[nextLvl.current].radius;
 			const ax = aimX.current;
 			// Dashed guide line
-			ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-			ctx.lineWidth = 1;
-			ctx.setLineDash([4, 8]);
+			ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+			ctx.lineWidth = 1.5;
+			ctx.setLineDash([5, 7]);
 			ctx.beginPath();
-			ctx.moveTo(ax, GAMEOVER_Y + r);
-			ctx.lineTo(ax, FLOOR_Y);
+			ctx.moveTo(ax, GAMEOVER_Y);
+			ctx.lineTo(ax, FLOOR_Y - 2);
 			ctx.stroke();
 			ctx.setLineDash([]);
 
-			// Ghost fruit at aim position
-			ctx.globalAlpha = 0.35;
-			ctx.font = `${r * 1.8}px Arial`;
+			// Ghost fruit circle + emoji at aim top
+			const fd = FRUIT_DATA[nextLvl.current];
+			ctx.globalAlpha = 0.45;
+			// circle
+			ctx.beginPath();
+			ctx.arc(ax, GAMEOVER_Y + r + 2, r, 0, Math.PI * 2);
+			ctx.fillStyle = fd.color;
+			ctx.fill();
+			ctx.strokeStyle = fd.stroke;
+			ctx.lineWidth = 2.5;
+			ctx.stroke();
+			// emoji
+			ctx.globalAlpha = 0.8;
+			ctx.font = `bold ${r * 1.3}px Arial`;
 			ctx.textAlign = 'center';
 			ctx.textBaseline = 'middle';
-			ctx.fillText(FRUIT_DATA[nextLvl.current].emoji, ax, GAMEOVER_Y + r + 8);
+			ctx.shadowBlur = 0;
+			ctx.fillStyle = '#fff';
+			ctx.fillText(fd.emoji, ax, GAMEOVER_Y + r + 2);
 			ctx.globalAlpha = 1;
 		}
 
 		// ── Danger line ──────────────────────────────────────────────────────
-		// Pulsing red glow when fruits are close to the line
 		let nearDanger = false;
 		for (const f of fs) {
-			if (f.age > 30 && f.y - f.radius < GAMEOVER_Y + 40) { nearDanger = true; break; }
+			if (f.age > 30 && f.y - f.radius < GAMEOVER_Y + 50) { nearDanger = true; break; }
 		}
-		const dangerAlpha = nearDanger ? 0.7 + Math.sin(Date.now() / 150) * 0.3 : 0.4;
-		ctx.strokeStyle = `rgba(255,60,60,${dangerAlpha})`;
+		const dangerAlpha = nearDanger ? 0.85 + Math.sin(Date.now() / 120) * 0.15 : 0.5;
+		ctx.strokeStyle = `rgba(220,30,30,${dangerAlpha})`;
 		ctx.lineWidth = 2;
-		ctx.setLineDash([6, 4]);
+		ctx.setLineDash([7, 5]);
 		ctx.beginPath();
-		ctx.moveTo(0, GAMEOVER_Y);
-		ctx.lineTo(WIDTH, GAMEOVER_Y);
+		ctx.moveTo(WALL_LEFT, GAMEOVER_Y);
+		ctx.lineTo(WALL_RIGHT, GAMEOVER_Y);
 		ctx.stroke();
 		ctx.setLineDash([]);
 		if (nearDanger) {
-			// Danger zone fill
-			const dg = ctx.createLinearGradient(0, 0, 0, GAMEOVER_Y);
-			dg.addColorStop(0, 'rgba(255,0,0,0.08)');
+			const dg = ctx.createLinearGradient(0, 0, 0, GAMEOVER_Y + 30);
+			dg.addColorStop(0, 'rgba(255,0,0,0.12)');
 			dg.addColorStop(1, 'rgba(255,0,0,0)');
 			ctx.fillStyle = dg;
-			ctx.fillRect(0, 0, WIDTH, GAMEOVER_Y);
+			ctx.fillRect(WALL_LEFT, 0, WALL_RIGHT - WALL_LEFT, GAMEOVER_Y + 30);
 		}
-		ctx.fillStyle = `rgba(255,60,60,${dangerAlpha * 0.6})`;
-		ctx.font = 'bold 8px Arial';
+		ctx.fillStyle = `rgba(200,20,20,${dangerAlpha})`;
+		ctx.font = 'bold 9px Arial';
 		ctx.textAlign = 'right';
 		ctx.textBaseline = 'bottom';
-		ctx.fillText('NGUY HIỂM', WIDTH - 6, GAMEOVER_Y - 3);
+		ctx.fillText('⚠ NGUY HIỂM', WALL_RIGHT - 4, GAMEOVER_Y - 3);
 
-		// ── Draw fruits ──────────────────────────────────────────────────────
+		// ── Draw fruits — solid circle + emoji on top ────────────────────────
+		ctx.shadowBlur = 0;
 		for (const f of fs) {
 			if (f.merged) continue;
 			ctx.save();
 			ctx.translate(f.x, f.y);
 			ctx.rotate(f.angle);
 
-			// Shadow underneath
-			ctx.fillStyle = 'rgba(0,0,0,0.15)';
+			const r = f.radius;
+
+			// Drop shadow
+			ctx.shadowColor = 'rgba(0,0,0,0.25)';
+			ctx.shadowBlur = 6;
+			ctx.shadowOffsetX = 2;
+			ctx.shadowOffsetY = 3;
+
+			// Solid filled circle
 			ctx.beginPath();
-			ctx.ellipse(2, f.radius * 0.6, f.radius * 0.7, f.radius * 0.18, 0, 0, Math.PI * 2);
+			ctx.arc(0, 0, r, 0, Math.PI * 2);
+			ctx.fillStyle = f.color;
 			ctx.fill();
 
-			// Emoji
-			ctx.font = `${f.radius * 1.85}px Arial`;
-			ctx.textAlign = 'center';
-			ctx.textBaseline = 'middle';
+			// Outline
+			ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+			ctx.strokeStyle = f.stroke;
+			ctx.lineWidth = 2.5;
+			ctx.stroke();
+
+			// Inner highlight (top-left gloss)
+			const hl = ctx.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.05, -r * 0.1, -r * 0.2, r * 0.75);
+			hl.addColorStop(0, 'rgba(255,255,255,0.55)');
+			hl.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+			hl.addColorStop(1, 'rgba(0,0,0,0)');
+			ctx.beginPath();
+			ctx.arc(0, 0, r, 0, Math.PI * 2);
+			ctx.fillStyle = hl;
+			ctx.fill();
+
+			// Emoji on top — bright, no alpha fade
 			if (f.level === 10) {
 				ctx.shadowColor = '#ffcc00';
-				ctx.shadowBlur = 18 + Math.sin(Date.now() / 200) * 8;
+				ctx.shadowBlur = 16 + Math.sin(Date.now() / 200) * 6;
 			}
-			ctx.fillText(f.emoji, 0, 0);
+			const fontSize = r * (r < 25 ? 1.1 : 1.0);
+			ctx.font = `${fontSize}px Arial`;
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.globalAlpha = 1;
+			ctx.fillText(f.emoji, 0, 1);
+
 			ctx.restore();
 		}
+
+		ctx.shadowBlur = 0;
 
 		// ── Particles ────────────────────────────────────────────────────────
 		for (const p of particles.current) {
@@ -521,15 +579,18 @@ export default function DragonGame() {
 			ctx.restore();
 		}
 
-		// ── Floating texts ───────────────────────────────────────────────────
+		// ── Floating score texts ─────────────────────────────────────────────
 		for (const t of floatingTexts.current) {
 			const a = t.life / t.maxLife;
 			ctx.save();
 			ctx.globalAlpha = a;
 			ctx.fillStyle = t.color;
-			ctx.font = `bold ${12 + (1 - a) * 4}px Arial`;
+			ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+			ctx.lineWidth = 3;
+			ctx.font = `bold ${14 + (1 - a) * 4}px Arial`;
 			ctx.textAlign = 'center';
 			ctx.textBaseline = 'middle';
+			ctx.strokeText(t.text, t.x, t.y);
 			ctx.fillText(t.text, t.x, t.y);
 			ctx.restore();
 		}
@@ -669,7 +730,7 @@ export default function DragonGame() {
 					ref={canvasRef}
 					width={WIDTH}
 					height={HEIGHT}
-					className="w-full max-w-100 rounded-2xl border-2 border-yellow-400/50 shadow-[0_0_30px_rgba(255,204,0,0.15)] cursor-crosshair touch-none"
+					className="w-full max-w-100 rounded-2xl border-4 border-[#C8860A] shadow-[0_8px_32px_rgba(200,134,10,0.35)] cursor-crosshair touch-none"
 					onClick={handleClick}
 					onTouchStart={handleTouch}
 					onPointerMove={handlePointerMove}
@@ -729,14 +790,14 @@ export default function DragonGame() {
 					{FRUIT_DATA.map((f, i) => (
 						<div
 							key={i}
-							className={`flex flex-col items-center gap-0.5 rounded-lg border px-1.5 py-1 ${
-								i === 10
-									? 'border-yellow-400/70 bg-yellow-400/10'
-									: 'border-border bg-surface'
+							title={f.label}
+							className={`flex flex-col items-center gap-0.5 rounded-full border-2 px-1.5 py-1 ${
+								i === 10 ? 'ring-2 ring-yellow-400 ring-offset-1' : ''
 							}`}
+							style={{ borderColor: f.stroke, backgroundColor: f.color + '22' }}
 						>
 							<span className="text-base leading-none">{f.emoji}</span>
-							<span className="text-[8px] text-muted font-semibold">{f.points}</span>
+							<span className="text-[8px] font-bold" style={{ color: f.stroke }}>{f.points}</span>
 						</div>
 					))}
 				</div>
