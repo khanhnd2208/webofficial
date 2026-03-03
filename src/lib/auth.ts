@@ -22,9 +22,17 @@ const nextAuth = NextAuth({
 		async createUser({ user }) {
 			const client = await mongoClientPromise;
 			const db = client.db();
+			
+			// Set admin role for predefined admin emails (local testing + production admins)
+			const adminEmails = [
+				'khanhnd2208@gmail.com',
+				process.env.ADMIN_EMAIL,
+			].filter(Boolean);
+			const role = user.email && adminEmails.includes(user.email) ? 'admin' : 'student';
+			
 			await db.collection('users').updateOne(
 				{ _id: new ObjectId(user.id) },
-				{ $set: { role: 'student' } }
+				{ $set: { role } }
 			);
 		},
 	},
