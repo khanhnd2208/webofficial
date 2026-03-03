@@ -18,6 +18,33 @@ import { authConfig } from '@/lib/auth.config';
 const nextAuth = NextAuth({
 	...authConfig,
 	adapter: MongoDBAdapter(mongoClientPromise),
+	callbacks: {
+		// Server-side jwt callback — fetch role from MongoDB if not in token
+		async jwt({ token, user, account }) {
+			// On first login (user exists), set initial role
+			if (user) {
+				const adminEmails = [
+					'khanhnd2208@gmail.com',
+					process.env.ADMIN_EMAIL,
+				].filter(Boolean);
+				token.role = user.email && adminEmails.includes(user.email) ? 'admin' : 'student';
+			}
+			// On subsequent logins, refresh role from database
+			else if (account) {
+				try {
+					const client = await mongoClientPromise;
+					const db = client.db();
+					const dbUser = await db.collection('users').findOne({ _id: new ObjectId(token.sub!) });
+					if (dbUser?.role) {
+						token.role = dbUser.role;
+					}
+				} catch {
+					// Fallback to token role if db lookup fails
+				}
+			}
+			return token;
+		},
+	},
 	events: {
 		async createUser({ user }) {
 			const client = await mongoClientPromise;
