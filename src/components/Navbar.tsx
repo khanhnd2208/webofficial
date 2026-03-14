@@ -272,6 +272,13 @@ export default function Navbar() {
 												Dashboard
 											</Link>
 											<Link
+												href="/profile"
+												onClick={() => setUserMenuOpen(false)}
+												className="block px-4 py-2 text-sm text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
+											>
+												Hồ sơ
+											</Link>
+											<Link
 												href="/vocabulary"
 												onClick={() => setUserMenuOpen(false)}
 												className="block px-4 py-2 text-sm text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
@@ -361,6 +368,13 @@ export default function Navbar() {
 								className="block py-2 text-sm font-bold uppercase tracking-widest text-muted hover:text-foreground"
 							>
 								Dashboard
+							</Link>
+							<Link
+								href="/profile"
+								onClick={() => setMobileOpen(false)}
+								className="block py-2 text-sm font-bold uppercase tracking-widest text-muted hover:text-foreground"
+							>
+								Hồ sơ
 							</Link>
 							<button
 								type="button"

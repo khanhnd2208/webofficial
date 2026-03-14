@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 
 import { mongoClientPromise } from '@/lib/mongodbClient';
 import { authConfig } from '@/lib/auth.config';
+import { ensureUserProfile } from '@/services/userProfileService';
 
 // ────────────────────────────────────────────────────────────────────────
 // Auth.js v5 — Full server-side auth (Node.js runtime only).
@@ -48,6 +49,19 @@ const nextAuth = NextAuth({
 					// DB unreachable — fallback to admin-email check
 					token.role = user.email && ADMIN_EMAILS.includes(user.email) ? 'admin' : 'student';
 				}
+
+				if (user.id && user.email) {
+					try {
+						await ensureUserProfile({
+							userId: user.id,
+							email: user.email,
+							name: user.name ?? '',
+							image: user.image ?? undefined,
+						});
+					} catch {
+						// Do not block sign-in when profile sync fails.
+					}
+				}
 			} else if (trigger === 'update') {
 				// Session update triggered (e.g. after role change) — re-fetch from DB
 				try {
@@ -77,6 +91,15 @@ const nextAuth = NextAuth({
 				{ _id: new ObjectId(user.id!) },
 				{ $set: { role } }
 			);
+
+			if (user.id && user.email) {
+				await ensureUserProfile({
+					userId: user.id,
+					email: user.email,
+					name: user.name ?? '',
+					image: user.image ?? undefined,
+				});
+			}
 		},
 	},
 });
