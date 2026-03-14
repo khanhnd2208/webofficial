@@ -57,14 +57,14 @@ export async function ensureUserProfile(identity: ProfileIdentity): Promise<User
 
 	const safeName = identity.name?.trim() || identity.email.split('@')[0] || 'Người dùng';
 
+	// $setOnInsert: fields only written on NEW document creation (no overlap with $set)
+	// $set: fields always synced from Google on every login (email, name, image)
+	// The two operators MUST NOT share any field keys — MongoDB throws ConflictingUpdateOperators otherwise.
 	const profile = await UserProfile.findOneAndUpdate(
 		{ userId: identity.userId },
 		{
 			$setOnInsert: {
 				userId: identity.userId,
-				email: identity.email,
-				name: safeName,
-				image: identity.image,
 				dateOfBirth: null,
 				university: '',
 				major: '',
@@ -73,10 +73,10 @@ export async function ensureUserProfile(identity: ProfileIdentity): Promise<User
 			$set: {
 				email: identity.email,
 				name: safeName,
-				image: identity.image,
+				image: identity.image ?? null,
 			},
 		},
-		{ new: true, upsert: true }
+		{ returnDocument: 'after', upsert: true }
 	).lean<ProfileLean>();
 
 	if (!profile) throw new Error('Không thể tạo hồ sơ người dùng.');
@@ -102,18 +102,19 @@ export async function updateMyProfile(identity: ProfileIdentity, input: UpdateUs
 		{
 			$setOnInsert: {
 				userId: identity.userId,
-				email: identity.email,
-				name: identity.name?.trim() || identity.email.split('@')[0] || 'Người dùng',
-				image: identity.image,
+				dateOfBirth: null,
+				university: '',
+				major: '',
+				bio: '',
 			},
 			$set: {
 				email: identity.email,
 				name: identity.name?.trim() || identity.email.split('@')[0] || 'Người dùng',
-				image: identity.image,
+				image: identity.image ?? null,
 				...profileUpdate,
 			},
 		},
-		{ new: true, upsert: true }
+		{ returnDocument: 'after', upsert: true }
 	).lean<ProfileLean>();
 
 	if (!profile) throw new Error('Không thể cập nhật hồ sơ người dùng.');
