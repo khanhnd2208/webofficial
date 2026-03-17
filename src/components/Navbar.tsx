@@ -7,7 +7,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
-	{ href: '/blog', label: 'Hanoicam Story' },
+	{ href: '/blog', label: 'Hanoicamm Story' },
 	{ href: '/vocabulary', label: 'Học tiếng Anh' },
 	{ href: '/feedback', label: 'Phản hồi' },
 ];
