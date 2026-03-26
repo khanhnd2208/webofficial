@@ -1,25 +1,26 @@
-/* GET /api/personality-test — Get test config + user history */
-/* POST /api/personality-test — Submit a completed test (demographics + responses) */
+/* GET /api/personality-test — Get test config (+ user history if logged in) */
+/* POST /api/personality-test — Submit a completed test (no login required) */
 
 import { type NextRequest } from 'next/server';
 
-import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withAuth, withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
 import {
 	getPersonalityTestConfig,
 	getUserTestHistory,
 	submitPersonalityTest,
 } from '@/services/personalityTestService';
+import { getApiUser } from '@/lib/apiAuth';
 import type { RawResponse, DemographicData } from '@/types/personalityTest';
 
 /**
  * GET /api/personality-test
- * Returns test configuration (questions) and user's history.
- * Requires authentication.
+ * Returns test configuration (questions) and user's history if logged in.
  */
-export const GET = withAuth(async (_request: NextRequest, user) => {
+export const GET = withErrorHandling(async (request: NextRequest) => {
+	const user = await getApiUser(request);
 	const [config, history] = await Promise.all([
 		getPersonalityTestConfig(),
-		getUserTestHistory(user.id),
+		user?.id ? getUserTestHistory(user.id) : Promise.resolve([]),
 	]);
 
 	return apiSuccess({ config, history });
@@ -28,9 +29,11 @@ export const GET = withAuth(async (_request: NextRequest, user) => {
 /**
  * POST /api/personality-test
  * Submit a completed personality test for scoring.
+ * NO LOGIN REQUIRED — anonymous users can take the test.
  * Body: { demographics: DemographicData, responses: RawResponse[], durationSeconds?: number }
  */
-export const POST = withAuth(async (request: NextRequest, user) => {
+export const POST = withErrorHandling(async (request: NextRequest) => {
+	const user = await getApiUser(request);
 	const body = await request.json();
 
 	const { demographics, responses, durationSeconds } = body as {
@@ -70,9 +73,13 @@ export const POST = withAuth(async (request: NextRequest, user) => {
 		return apiError(`Expected 57 responses (30 BFI + 27 SD3), got ${responses.length}`, 400);
 	}
 
+	// For anonymous users, use a deterministic anonymous ID based on name
+	const userId = user?.id ?? `anon-${Date.now()}`;
+	const userName = user?.name ?? demographics.fullName ?? 'Anonymous';
+
 	const session = await submitPersonalityTest(
-		user.id,
-		user.name ?? demographics.fullName ?? 'Anonymous',
+		userId,
+		userName,
 		demographics,
 		responses,
 		typeof durationSeconds === 'number' ? durationSeconds : 0

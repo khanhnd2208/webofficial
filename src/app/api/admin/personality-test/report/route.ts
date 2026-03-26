@@ -50,33 +50,38 @@ const SD3_SORTED = [...SD3_QUESTIONS].sort((a, b) => a.formOrder - b.formOrder);
 type ReportRowRaw = Awaited<ReturnType<typeof findAllSessionsForReport>>[number];
 
 // ─── Google Form column header generators ─────────────────────────────────────
-// These headers match exactly what appears in the user's Google Form spreadsheet.
+// Headers match the exact Google Form column format:
+//   BFI: "{formOrder}. {short text}"     e.g.  "1. Tends to be quiet."
+//   SD3: "{formOrder}. {text}"           e.g.  "1. It's not wise to tell your secrets."
 
 function bfiGFHeader(q: typeof BFI2S_QUESTIONS[0]): string {
 	if (q.isAttentionCheck) {
-		return `BFI [${q.formOrder}] — [ATTENTION CHECK] ${q.textVi}`;
+		return `${q.formOrder}. [ATTENTION CHECK] ${q.textVi}`;
 	}
 	const shortText = q.text.replace(/^I am someone who /i, '').replace(/^\./,'');
-	return `BFI [${q.formOrder}] — ${shortText}`;
+	// Capitalize first letter
+	const capitalized = shortText.charAt(0).toUpperCase() + shortText.slice(1);
+	return `${q.formOrder}. ${capitalized}`;
 }
 
 function sd3GFHeader(q: typeof SD3_QUESTIONS[0]): string {
 	if (q.isAttentionCheck) {
-		return `SD3 [${q.formOrder}] — [ATTENTION CHECK] ${q.textVi}`;
+		return `${q.formOrder}. [ATTENTION CHECK] ${q.textVi}`;
 	}
-	return `SD3 [${q.formOrder}] — ${q.text}`;
+	return `${q.formOrder}. ${q.text}`;
 }
 
 // ─── Demographic column definitions ───────────────────────────────────────────
+// Headers match the exact Google Form column names per user spec.
 
 const DEMO_COLS = [
-	{ key: 'no',                      label: 'No.' },
 	{ key: 'created_at',              label: 'Dấu thời gian' },
 	{ key: 'full_name',               label: 'Họ và Tên/Full Name' },
 	{ key: 'university',              label: 'Trường' },
-	{ key: 'student_year',            label: 'Năm học' },
-	{ key: 'cumulative_gpa',          label: 'GPA Tích lũy' },
-	{ key: 'self_rated_intelligence', label: 'Tự đánh giá IQ (1-10)' },
+	{ key: 'student_year',            label: 'Bạn là sinh viên năm mấy của Trường?' },
+	{ key: 'cumulative_gpa',          label: 'GPA tích luỹ đến thời điểm hiện tại của bạn' },
+	{ key: 'self_rated_intelligence', label: 'How would you rate your level of general intelligence compared to the general population on a scale of 1-10?' },
+	{ key: 'no',                      label: 'No.' },
 	{ key: 'status',                  label: 'Trạng thái' },
 	{ key: 'duration_seconds',        label: 'Thời gian làm (giây)' },
 	{ key: 'is_valid',                label: 'Hợp lệ?' },

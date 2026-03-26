@@ -4,9 +4,9 @@
    PersonalityTestClient — Client-side orchestrator
    
    Manages the test flow:
-   1. Fetch config & history from API
-   2. Render the test wizard
-   3. Submit responses and redirect to results
+   1. Render the test wizard
+   2. Submit responses and redirect to results
+   3. No login required — anonymous users can take the test
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useState, useCallback } from 'react';
@@ -15,6 +15,8 @@ import { useRouter } from 'next/navigation';
 import PersonalityTestWizard from '@/components/personality-test/PersonalityTestWizard';
 import PersonalityTestHistory from '@/components/personality-test/PersonalityTestHistory';
 import type { TestConfigDTO, PersonalityTestHistoryDTO, RawResponse, DemographicData } from '@/types/personalityTest';
+
+const STORAGE_KEY = 'personality-test-progress';
 
 interface Props {
 	config: TestConfigDTO;
@@ -46,10 +48,13 @@ export default function PersonalityTestClient({ config, history }: Props) {
 					return;
 				}
 
+				// Clear saved progress on successful submission
+				try { localStorage.removeItem(STORAGE_KEY); } catch {}
+
 				// Redirect to results page
 				router.push(`/personality-test/results/${json.data.id}`);
 			} catch {
-				setError('Lỗi kết nối. Vui lòng thử lại.');
+				setError('Lỗi kết nối. Câu trả lời đã được lưu tự động — bạn có thể gửi lại khi có mạng.');
 				setIsSubmitting(false);
 			}
 		},
@@ -72,8 +77,8 @@ export default function PersonalityTestClient({ config, history }: Props) {
 				isSubmitting={isSubmitting}
 			/>
 
-			{/* Test History */}
-			<PersonalityTestHistory history={history} />
+			{/* Test History (only shows if user is logged in and has history) */}
+			{history.length > 0 && <PersonalityTestHistory history={history} />}
 		</div>
 	);
 }

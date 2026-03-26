@@ -13,7 +13,8 @@
 
 import { type NextRequest } from 'next/server';
 
-import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
+import { getApiUser } from '@/lib/apiAuth';
 import { getTestSession, calculatePercentilesForGroups } from '@/services/personalityTestService';
 import {
 	REFERENCE_GROUPS,
@@ -27,19 +28,20 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 /**
  * GET /api/personality-test/:id/percentiles?oceanGroup=...&darkTriadGroup=...
- * 
- * Returns normative percentiles for the given test session,
- * calculated against the specified (or default) reference groups.
+ * No login required — returns normative percentiles for any session.
  */
-export const GET = withAuth(async (request: NextRequest, user, context?) => {
+export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 	const { id } = await (context as RouteContext).params;
 
 	if (!id || typeof id !== 'string') {
 		return apiError('Session ID is required', 400);
 	}
 
-	const isAdmin = user.role === 'admin';
-	const session = await getTestSession(id, user.id, isAdmin);
+	const user = await getApiUser(request);
+	const isAdmin = user?.role === 'admin';
+	const allowAll = !user || isAdmin;
+
+	const session = await getTestSession(id, user?.id ?? '__anonymous__', allowAll);
 
 	if (!session) {
 		return apiError('Test session not found', 404);

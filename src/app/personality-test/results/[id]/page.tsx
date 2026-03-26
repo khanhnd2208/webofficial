@@ -8,7 +8,7 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 import type { Metadata } from 'next';
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
 import { getTestSession } from '@/services/personalityTestService';
@@ -26,14 +26,16 @@ interface PageProps {
 }
 
 export default async function PersonalityTestResultsPage({ params }: PageProps) {
+	// Auth is optional — anonymous users can view their results via direct link
 	const session = await auth();
-	if (!session?.user) redirect('/login');
+	const user = session?.user;
 
 	const { id } = await params;
-	const user = session.user;
-	const isAdmin = (user as { role?: string }).role === 'admin';
+	const userId = user ? (user as { id: string }).id : '__anonymous__';
+	const isAdmin = (user as { role?: string })?.role === 'admin';
 
-	const testSession = await getTestSession(id, user.id, isAdmin);
+	// For anonymous users, allow access to any session (they have the direct link)
+	const testSession = await getTestSession(id, userId, !user || isAdmin);
 
 	if (!testSession) {
 		notFound();

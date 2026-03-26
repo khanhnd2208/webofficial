@@ -23,6 +23,68 @@ import type {
 } from '@/types/personalityTest';
 import { DOMAIN_LABELS_VI } from '@/lib/personalityScoring';
 
+// ─── Trait Interpretation Data ─────────────────────────────────────────────────
+// Rich domain-specific insights for each score level
+
+const TRAIT_INSIGHTS: Record<PersonalityDomain, { icon: string; high: string; medium: string; low: string; tip: string }> = {
+	extraversion: {
+		icon: '🗣️',
+		high: 'Bạn tràn đầy năng lượng xã hội — thích giao tiếp, dẫn dắt nhóm, và tìm cảm hứng từ người khác. Môi trường làm việc năng động, nhiều tương tác sẽ giúp bạn phát huy tốt nhất.',
+		medium: 'Bạn linh hoạt giữa giao tiếp và không gian riêng. Bạn có thể dẫn dắt khi cần nhưng cũng thoải mái làm việc độc lập.',
+		low: 'Bạn hướng nội — cần thời gian riêng để nạp năng lượng và suy nghĩ sâu. Bạn thường lắng nghe trước khi nói và thích các cuộc trò chuyện nhỏ, có ý nghĩa.',
+		tip: '💡 Nghề phù hợp: E cao → Sales, quản lý, PR. E thấp → Nghiên cứu, lập trình, viết.',
+	},
+	agreeableness: {
+		icon: '🤝',
+		high: 'Bạn rất tử tế, sẵn lòng giúp đỡ và tin tưởng người khác. Điều này giúp xây dựng mối quan hệ tốt nhưng hãy cẩn thận đừng bỏ quên nhu cầu bản thân.',
+		medium: 'Bạn cân bằng giữa đồng cảm và giữ vững lập trường — một sự kết hợp lành mạnh cho nhiều hoàn cảnh.',
+		low: 'Bạn thiên về phân tích lý trí hơn cảm xúc. Bạn có thể đưa ra quyết định khó khăn mà không bị ảnh hưởng quá nhiều bởi áp lực xã hội.',
+		tip: '💡 A cao → Chăm sóc khách hàng, HR, giảng dạy. A thấp → Luật sư, kinh doanh đàm phán.',
+	},
+	conscientiousness: {
+		icon: '📋',
+		high: 'Bạn kỷ luật, có tổ chức và đáng tin cậy. Bạn lập kế hoạch trước và theo dõi tiến độ chặt chẽ — một yếu tố dự báo mạnh cho thành công học thuật và nghề nghiệp.',
+		medium: 'Bạn có thể có kỷ luật khi cần nhưng cũng linh hoạt để thích ứng với thay đổi — một sự cân bằng tốt.',
+		low: 'Bạn ưu tiên sự linh hoạt và tự phát hơn kế hoạch cứng nhắc. Hãy cẩn thận với deadline — sử dụng công cụ nhắc nhở có thể giúp ích rất nhiều.',
+		tip: '💡 C là chỉ số dự báo GPA và hiệu suất công việc mạnh nhất trong Big Five.',
+	},
+	negativeEmotionality: {
+		icon: '🌊',
+		high: 'Bạn nhạy cảm với stress và có xu hướng trải nghiệm cảm xúc tiêu cực mạnh hơn. Điều này không phải yếu điểm — nó cho thấy bạn cảm nhận sâu sắc, nhưng nên phát triển kỹ năng quản lý stress.',
+		medium: 'Bạn có sự ổn định cảm xúc ở mức bình thường — có lo lắng lúc cần nhưng phục hồi nhanh.',
+		low: 'Bạn rất ổn định về cảm xúc, ít bị stress tác động. Đây là lợi thế lớn cho các vị trí lãnh đạo và môi trường áp lực cao.',
+		tip: '💡 N cao → Hãy đầu tư vào mindfulness, tập thể dục, và thiết lập ranh giới lành mạnh.',
+	},
+	openMindedness: {
+		icon: '🎨',
+		high: 'Bạn tò mò, sáng tạo và thích khám phá ý tưởng mới. Bạn thường suy nghĩ trừu tượng và đánh giá cao nghệ thuật, triết học, và đổi mới.',
+		medium: 'Bạn cân bằng giữa sáng tạo và thực tế — sẵn sàng thử cái mới nhưng cũng biết giữ những gì hiệu quả.',
+		low: 'Bạn thiên về thực tế, ưu tiên những gì đã được chứng minh. Bạn ổn định và đáng tin cậy, thích các quy trình rõ ràng.',
+		tip: '💡 O cao → Thiết kế, R&D, startup, nghệ thuật. O thấp → Kế toán, vận hành, quản lý chất lượng.',
+	},
+	machiavellianism: {
+		icon: '♟️',
+		high: 'Bạn có tư duy chiến lược cao — hiểu rõ động lực của người khác và biết cách vận dụng tình huống. Trong kinh doanh, đây có thể là lợi thế, nhưng hãy cẩn thận về ranh giới đạo đức.',
+		medium: 'Bạn có nhận thức xã hội tốt nhưng không quá tính toán — một sự kết hợp cân bằng.',
+		low: 'Bạn trực tính và chân thành, ít khi suy nghĩ chiến lược về mối quan hệ. Điều này tạo sự tin tưởng nhưng đôi khi có thể bị lợi dụng.',
+		tip: '💡 M vừa phải = "Trí tuệ xã hội" — biết đọc tình huống nhưng vẫn giữ đạo đức.',
+	},
+	narcissism: {
+		icon: '👑',
+		high: 'Bạn tự tin cao và muốn được công nhận. Điều này có thể tốt cho lãnh đạo và trình bày, nhưng hãy đảm bảo cũng lắng nghe và ghi nhận đóng góp của người khác.',
+		medium: 'Bạn tự tin ở mức lành mạnh — tin vào khả năng bản thân nhưng không cần phải luôn là trung tâm.',
+		low: 'Bạn khiêm tốn và ít cần sự chú ý. Đây là phẩm chất tốt cho làm việc nhóm nhưng đừng đánh giá thấp bản thân.',
+		tip: '💡 Narcissism "lành mạnh" (vừa phải) liên quan đến sự tự tin và resilience cao hơn.',
+	},
+	psychopathy: {
+		icon: '⚡',
+		high: 'Bạn có xu hướng tìm kiếm cảm giác mạnh và ít bị ảnh hưởng bởi sợ hãi. Trong công việc, hãy chuyển hướng năng lượng này vào những thử thách mang tính xây dựng.',
+		medium: 'Bạn có sự bình tĩnh tốt trong tình huống căng thẳng, nhưng vẫn quan tâm đến hậu quả hành động.',
+		low: 'Bạn đồng cảm cao và luôn cân nhắc ảnh hưởng của hành động lên người khác. Đây là nền tảng tốt cho mối quan hệ bền vững.',
+		tip: '💡 P thấp → mạnh về empathy và teamwork. P cao → mạnh về ra quyết định dưới áp lực.',
+	},
+};
+
 // ─── Percentile Result type (mirroring the API response) ──────────────────────
 
 interface PercentileResult {
@@ -80,20 +142,24 @@ function TraitBar({
 	colorClass,
 	delay = 0,
 	normative,
+	showInsight = false,
 }: {
 	trait: TraitScore;
 	colorClass: string;
 	delay?: number;
 	normative?: PercentileResult;
+	showInsight?: boolean;
 }) {
 	const percent = ((trait.score - 1) / 4) * 100; // Normalize 1-5 to 0-100%
 	const viLabel = DOMAIN_LABELS_VI[trait.domain] ?? trait.label;
 	const displayPercentile = normative?.percentile ?? trait.percentile;
+	const insight = TRAIT_INSIGHTS[trait.domain];
 
 	return (
 		<div className="space-y-1.5">
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
+					{insight && <span className="text-sm">{insight.icon}</span>}
 					<span className="text-sm font-bold text-foreground">{viLabel}</span>
 					<span className="text-xs text-muted">({trait.label})</span>
 				</div>
@@ -134,6 +200,20 @@ function TraitBar({
 					<span>•</span>
 					<span>{normative.interpretationVi}</span>
 				</div>
+			)}
+			{/* Insight text */}
+			{showInsight && insight && (
+				<motion.div
+					initial={{ opacity: 0, height: 0 }}
+					animate={{ opacity: 1, height: 'auto' }}
+					transition={{ duration: 0.3, delay: delay + 0.5 }}
+					className="mt-1 rounded-lg bg-background-secondary/60 px-3 py-2"
+				>
+					<p className="text-[11px] leading-relaxed text-foreground-secondary">
+						{trait.level === 'high' ? insight.high : trait.level === 'low' ? insight.low : insight.medium}
+					</p>
+					<p className="mt-1 text-[10px] text-muted">{insight.tip}</p>
+				</motion.div>
 			)}
 		</div>
 	);
@@ -361,6 +441,104 @@ function PercentileBadge({ percentile }: { percentile: number }) {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
+interface CrossTraitInsight {
+	icon: string;
+	title: string;
+	description: string;
+}
+
+type OceanResult = NonNullable<PersonalityTestSessionDTO['result']>['ocean'];
+type DarkTriadResult = NonNullable<PersonalityTestSessionDTO['result']>['darkTriad'];
+
+function generateCrossTraitInsights(
+	ocean: NonNullable<OceanResult>,
+	dark: NonNullable<DarkTriadResult>,
+): CrossTraitInsight[] {
+	const insights: CrossTraitInsight[] = [];
+
+	// Leadership profile
+	if (ocean.extraversion.level === 'high' && ocean.conscientiousness.level !== 'low') {
+		insights.push({
+			icon: '🏆',
+			title: 'Tiềm năng lãnh đạo',
+			description: 'Sự kết hợp giữa hướng ngoại cao và kỷ luật tốt cho thấy bạn có tiềm năng dẫn dắt đội nhóm hiệu quả. Bạn vừa có năng lượng giao tiếp, vừa có khả năng tổ chức.',
+		});
+	}
+
+	// Creative entrepreneur
+	if (ocean.openMindedness.level === 'high' && dark.narcissism.level !== 'low') {
+		insights.push({
+			icon: '🚀',
+			title: 'Nhà sáng tạo tự tin',
+			description: 'Sự cởi mở cao kết hợp với tự tin cho thấy bạn có thể đổi mới VÀ thuyết phục người khác theo ý tưởng của mình — đặc điểm quan trọng cho khởi nghiệp.',
+		});
+	}
+
+	// Strategic empathizer
+	if (ocean.agreeableness.level === 'high' && dark.machiavellianism.level !== 'low') {
+		insights.push({
+			icon: '🎯',
+			title: 'Nhà ngoại giao chiến lược',
+			description: 'Bạn vừa có trái tim nồng ấm, vừa hiểu cách "chơi game" xã hội. Đây là sự kết hợp tuyệt vời cho đàm phán, HR, và quản lý xung đột.',
+		});
+	}
+
+	// Stress risk
+	if (ocean.negativeEmotionality.level === 'high' && ocean.conscientiousness.level === 'high') {
+		insights.push({
+			icon: '⚡',
+			title: 'Nguy cơ cầu toàn quá mức',
+			description: 'Kỷ luật cao + nhạy cảm cảm xúc có thể dẫn đến perfectionism. Bạn đặt tiêu chuẩn rất cao cho bản thân — hãy nhớ rằng "đủ tốt" đôi khi là tốt nhất.',
+		});
+	}
+
+	// Calm under pressure
+	if (ocean.negativeEmotionality.level === 'low' && dark.psychopathy.level === 'low') {
+		insights.push({
+			icon: '🧘',
+			title: 'Bình tĩnh & đồng cảm',
+			description: 'Bạn vừa ổn định cảm xúc, vừa quan tâm đến người khác — nền tảng lý tưởng cho tâm lý trị liệu, coaching, hoặc quản lý khủng hoảng.',
+		});
+	}
+
+	// Lone wolf
+	if (ocean.extraversion.level === 'low' && ocean.openMindedness.level === 'high') {
+		insights.push({
+			icon: '🐺',
+			title: 'Nhà tư duy độc lập',
+			description: 'Hướng nội kết hợp với cởi mở cao tạo nên hồ sơ của những nhà tư duy sâu sắc — nhà nghiên cứu, nhà văn, triết gia, hoặc kỹ sư giải quyết vấn đề phức tạp.',
+		});
+	}
+
+	// Social butterfly with edge
+	if (ocean.extraversion.level === 'high' && ocean.agreeableness.level === 'low') {
+		insights.push({
+			icon: '🦅',
+			title: 'Giao tiếp có chọn lọc',
+			description: 'Bạn thích giao tiếp nhưng không ngại thách thức ý kiến người khác — phù hợp cho debating, luật sư, hoặc chuyên gia tư vấn.',
+		});
+	}
+
+	// Dark triad balance
+	const darkAvg = (dark.machiavellianism.score + dark.narcissism.score + dark.psychopathy.score) / 3;
+	if (darkAvg < 2.5) {
+		insights.push({
+			icon: '✨',
+			title: 'Hồ sơ "Ánh sáng" chiếm ưu thế',
+			description: 'Dark Triad tổng thể của bạn ở mức thấp — bạn là người đáng tin cậy, chân thành. Đây là nền tảng vững chắc cho các mối quan hệ lâu dài.',
+		});
+	} else if (darkAvg > 3.5) {
+		insights.push({
+			icon: '⚔️',
+			title: 'Bản năng cạnh tranh mạnh',
+			description: 'Dark Triad cao phản ánh bản năng sinh tồn và cạnh tranh. Hãy chuyển hướng năng lượng này vào mục tiêu tích cực — kinh doanh, thể thao, hoặc sáng tạo.',
+		});
+	}
+
+	// Limit to top 4 most relevant
+	return insights.slice(0, 4);
+}
+
 export default function PersonalityResultsDashboard({ session }: Props) {
 	const result = session.result;
 
@@ -448,6 +626,39 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 			{/* ── Archetype ── */}
 			{archetype && <ArchetypeCard archetype={archetype} />}
 
+			{/* ── Cross-Trait Insights ── */}
+			{ocean && darkTriad && (
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.4, delay: 0.25 }}
+					className="rounded-2xl border border-accent/20 bg-surface p-5 sm:p-6"
+				>
+					<div className="flex items-center gap-3 mb-4">
+						<span className="text-2xl">🔍</span>
+						<div>
+							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">
+								Phân tích kết hợp đặc điểm
+							</h3>
+							<p className="text-xs text-muted">Cross-Trait Insights — Nhìn toàn diện hơn</p>
+						</div>
+					</div>
+					<div className="grid gap-3 sm:grid-cols-2">
+						{generateCrossTraitInsights(ocean, darkTriad).map((insight, i) => (
+							<div key={i} className="rounded-xl border border-border bg-background-secondary/50 p-3">
+								<div className="flex items-start gap-2">
+									<span className="text-base mt-0.5">{insight.icon}</span>
+									<div>
+										<p className="text-xs font-bold text-foreground">{insight.title}</p>
+										<p className="mt-1 text-[11px] leading-relaxed text-muted">{insight.description}</p>
+									</div>
+								</div>
+							</div>
+						))}
+					</div>
+				</motion.div>
+			)}
+
 			{/* ── Scores Grid ── */}
 			<div className="grid gap-6 lg:grid-cols-2">
 				{/* OCEAN — The Light */}
@@ -476,6 +687,7 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 								colorClass="bg-linear-to-r from-indigo to-purple"
 								delay={0.3 + i * 0.1}
 								normative={normativeMap[trait.domain]}
+								showInsight
 							/>
 						))}
 					</div>
@@ -507,6 +719,7 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 								colorClass="bg-linear-to-r from-rose to-red-500"
 								delay={0.4 + i * 0.1}
 								normative={normativeMap[trait.domain]}
+								showInsight
 							/>
 						))}
 					</div>

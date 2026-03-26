@@ -23,6 +23,7 @@ import type { QuestionConfig, RawResponse, TestConfigDTO, DemographicData } from
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const QUESTIONS_PER_PAGE = 5;
+const STORAGE_KEY = 'personality-test-progress';
 
 const LIKERT_OPTIONS = [
 	{ value: 1, label: 'Rất không đồng ý', labelEn: 'Strongly Disagree' },
@@ -68,6 +69,49 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 	const [demoErrors, setDemoErrors] = useState<Partial<Record<keyof DemographicData, string>>>({});
 	const startTimeRef = useRef<number>(Date.now());
 	const topRef = useRef<HTMLDivElement>(null);
+	const [restored, setRestored] = useState(false);
+
+	// Saved progress data (loaded once, applied when user clicks "resume")
+	const savedProgressRef = useRef<{ phase: TestPhase; currentPage: number; startTime: number } | null>(null);
+
+	// ── Restore from localStorage on mount ──
+	useEffect(() => {
+		try {
+			const saved = localStorage.getItem(STORAGE_KEY);
+			if (saved) {
+				const data = JSON.parse(saved);
+				if (data.answers && Object.keys(data.answers).length > 0) {
+					setAnswers(data.answers);
+					// Save the navigation state for "resume" button
+					savedProgressRef.current = {
+						phase: data.phase || 'demographics',
+						currentPage: data.currentPage || 0,
+						startTime: data.startTime || Date.now(),
+					};
+				}
+				if (data.demographics) {
+					setDemographics(data.demographics);
+				}
+				// Don't auto-navigate — stay on intro so user can choose to resume or restart
+			}
+		} catch {}
+		setRestored(true);
+	}, []);
+
+	// ── Persist to localStorage on every meaningful change ──
+	useEffect(() => {
+		if (!restored) return;
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify({
+				answers,
+				demographics,
+				phase,
+				currentPage,
+				startTime: startTimeRef.current,
+				savedAt: Date.now(),
+			}));
+		} catch {}
+	}, [answers, demographics, phase, currentPage, restored]);
 
 	// Elapsed timer
 	const [elapsed, setElapsed] = useState(0);
@@ -286,6 +330,53 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 							>
 								Bắt đầu bài đánh giá →
 							</button>
+
+							{/* Resume button if saved progress exists */}
+							{restored && Object.keys(answers).length > 0 && (
+								<div className="mt-3 rounded-xl border border-accent/30 bg-accent-subtle/30 p-4 text-center">
+									<p className="text-xs text-muted mb-2">
+										💾 Bạn có bài test chưa hoàn thành ({Object.keys(answers).length}/57 câu)
+									</p>
+									<div className="flex gap-2 justify-center">
+										<button
+											onClick={() => {
+												const sp = savedProgressRef.current;
+												if (sp) {
+													setPhase(sp.phase);
+													setCurrentPage(sp.currentPage);
+													startTimeRef.current = sp.startTime;
+												} else {
+													setPhase('demographics');
+													startTimeRef.current = Date.now();
+												}
+											}}
+											className="rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-foreground transition-colors hover:bg-accent-hover"
+										>
+											Tiếp tục bài đang làm →
+										</button>
+										<button
+											onClick={() => {
+												setAnswers({});
+												setDemographics({
+													fullName: '',
+													university: '',
+													studentYear: 1,
+													cumulativeGpa: 0,
+													selfRatedIntelligence: 5,
+												});
+												setPhase('demographics');
+												setCurrentPage(0);
+												startTimeRef.current = Date.now();
+												savedProgressRef.current = null;
+												try { localStorage.removeItem(STORAGE_KEY); } catch {}
+											}}
+											className="rounded-lg border border-border px-4 py-2 text-xs font-bold text-muted transition-colors hover:text-foreground hover:bg-surface-hover"
+										>
+											Làm mới từ đầu
+										</button>
+									</div>
+								</div>
+							)}
 						</div>
 					</motion.div>
 				)}

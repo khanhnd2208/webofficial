@@ -8,7 +8,6 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
 import {
@@ -26,13 +25,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PersonalityTestPage() {
+	// Auth is optional — anonymous users can take the test
 	const session = await auth();
-	if (!session?.user) redirect('/login');
+	const user = session?.user;
 
-	const user = session.user;
 	const [config, history] = await Promise.all([
 		getPersonalityTestConfig(),
-		getUserTestHistory(user.id),
+		user?.id ? getUserTestHistory((user as { id: string }).id) : Promise.resolve([]),
 	]);
 
 	return (
