@@ -157,13 +157,31 @@ export default function PersonalityTestReportPage() {
 		setExporting(true);
 		try {
 			const res = await fetch('/api/admin/personality-test/report?format=xlsx&limit=2000');
-			if (!res.ok) throw new Error('Export failed');
+			if (!res.ok) {
+				// Try to extract the real server error message
+				let errMsg = `HTTP ${res.status}`;
+				try {
+					const ct = res.headers.get('content-type') ?? '';
+					if (ct.includes('application/json')) {
+						const json = await res.json() as { ok: boolean; error?: string };
+						errMsg = json.error ?? errMsg;
+					} else {
+						errMsg = await res.text();
+					}
+				} catch {
+					// ignore parse error, use status code
+				}
+				throw new Error(`Export failed: ${errMsg}`);
+			}
 			const blob = await res.blob();
+			if (blob.size === 0) throw new Error('Export failed: server returned empty file');
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
 			a.download = `personality-test-${new Date().toISOString().split('T')[0]}.xlsx`;
+			document.body.appendChild(a);
 			a.click();
+			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 		} catch (e: unknown) {
 			alert(e instanceof Error ? e.message : 'Export failed');
