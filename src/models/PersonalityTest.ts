@@ -185,6 +185,43 @@ export async function findAllSessionsForReport(
 	return rows;
 }
 
+/**
+ * Fetch all raw responses for a list of session IDs.
+ * Returns a map: sessionId → { testType_itemNumber → value }
+ * Used for the detailed Excel export.
+ */
+export async function findResponsesForSessions(
+	sessionIds: string[]
+): Promise<Map<string, Map<string, number>>> {
+	if (sessionIds.length === 0) return new Map();
+
+	const placeholders = sessionIds.map((_, i) => `$${i + 1}`).join(', ');
+	const { rows } = await pgPool.query<{
+		session_id: string;
+		test_type: string;
+		item_number: number;
+		form_order: number;
+		value: number;
+	}>(
+		`SELECT session_id, test_type, item_number, form_order, value
+		 FROM personality_test_responses
+		 WHERE session_id IN (${placeholders})
+		 ORDER BY session_id, test_type, form_order`,
+		sessionIds
+	);
+
+	const result = new Map<string, Map<string, number>>();
+	for (const row of rows) {
+		if (!result.has(row.session_id)) {
+			result.set(row.session_id, new Map());
+		}
+		// Key: "BFI2S_fo1" or "SD3_fo3" (by formOrder for predictable column ordering)
+		const key = `${row.test_type}_fo${row.form_order}`;
+		result.get(row.session_id)!.set(key, row.value);
+	}
+	return result;
+}
+
 export async function countSessionsByStatus(): Promise<
 	Array<{ status: string; count: number }>
 > {
