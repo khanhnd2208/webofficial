@@ -2,17 +2,17 @@
 
 /* ════════════════════════════════════════════════════════════════════════
    PersonalityResultsDashboard — Visual results display
-   
-   Design philosophy:
-   - High contrast between "Light" (OCEAN) and "Dark" (SD3) sections
-   - Professional, enterprise-grade look
-   - Responsive radar-style bar visualizations
-   - Archetype card with narrative
-   - Normative percentile comparison with reference group selector
+
+   Design:
+   - SVG radar/spider chart for OCEAN and Dark Triad
+   - 5-tier level system: very_low / low / moderate / high / very_high
+   - Expandable per-trait insight cards (what, career, tip, academic)
+   - Cross-trait insights with action steps
+   - Collapsible limitations & research context section
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 import type {
@@ -23,69 +23,212 @@ import type {
 } from '@/types/personalityTest';
 import { DOMAIN_LABELS_VI } from '@/lib/personalityScoring';
 
-// ─── Trait Interpretation Data ─────────────────────────────────────────────────
-// Rich domain-specific insights for each score level
+// ─── 5-tier helpers ────────────────────────────────────────────────────────────
 
-const TRAIT_INSIGHTS: Record<PersonalityDomain, { icon: string; high: string; medium: string; low: string; tip: string }> = {
+type FiveTier = 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+
+function getZTier(zScore: number | undefined): FiveTier {
+	if (zScore === undefined) return 'moderate';
+	if (zScore >= 1.5) return 'very_high';
+	if (zScore >= 0.5) return 'high';
+	if (zScore >= -0.5) return 'moderate';
+	if (zScore >= -1.5) return 'low';
+	return 'very_low';
+}
+
+function getLevelLabel(tier: FiveTier): string {
+	return { very_low: 'Rất thấp', low: 'Thấp', moderate: 'Trung bình', high: 'Cao', very_high: 'Rất cao' }[tier];
+}
+
+function getLevelBadgeClass(tier: FiveTier): string {
+	return {
+		very_high: 'bg-error-subtle text-error',
+		high: 'bg-rose-subtle text-rose',
+		moderate: 'bg-warning-subtle text-warning',
+		low: 'bg-teal-subtle text-teal',
+		very_low: 'bg-indigo-subtle text-indigo',
+	}[tier];
+}
+
+// ─── Trait Insight Data ────────────────────────────────────────────────────────
+
+interface TraitInsight {
+	icon: string;
+	what: string;
+	very_high: string;
+	high: string;
+	moderate: string;
+	low: string;
+	very_low: string;
+	career: string;
+	tip: string;
+	academic: string;
+}
+
+const TRAIT_INSIGHTS: Record<PersonalityDomain, TraitInsight> = {
 	extraversion: {
 		icon: '🗣️',
-		high: 'Bạn tràn đầy năng lượng xã hội — thích giao tiếp, dẫn dắt nhóm, và tìm cảm hứng từ người khác. Môi trường làm việc năng động, nhiều tương tác sẽ giúp bạn phát huy tốt nhất.',
-		medium: 'Bạn linh hoạt giữa giao tiếp và không gian riêng. Bạn có thể dẫn dắt khi cần nhưng cũng thoải mái làm việc độc lập.',
-		low: 'Bạn hướng nội — cần thời gian riêng để nạp năng lượng và suy nghĩ sâu. Bạn thường lắng nghe trước khi nói và thích các cuộc trò chuyện nhỏ, có ý nghĩa.',
-		tip: '💡 Nghề phù hợp: E cao → Sales, quản lý, PR. E thấp → Nghiên cứu, lập trình, viết.',
+		what: 'Extraversion phản ánh xu hướng tìm kiếm sự kích thích từ thế giới bên ngoài — mức năng lượng xã hội, tính quyết đoán, và cảm xúc tích cực.',
+		very_high: 'Bạn cực kỳ hướng ngoại — luôn tràn đầy năng lượng trong đám đông, chủ động dẫn dắt và khởi xướng. Hãy đảm bảo bạn cũng biết lắng nghe chứ không chỉ nói.',
+		high: 'Bạn thích giao tiếp và làm việc nhóm, dễ dàng kết nối với người khác. Môi trường năng động phù hợp với bạn.',
+		moderate: 'Bạn linh hoạt — thoải mái cả khi giao tiếp lẫn khi làm việc độc lập. Bạn điều chỉnh theo tình huống.',
+		low: 'Bạn hướng nội — cần thời gian riêng để nạp năng lượng. Bạn thường lắng nghe sâu và suy nghĩ trước khi nói.',
+		very_low: 'Bạn rất hướng nội và ưu tiên sự yên tĩnh. Tương tác xã hội có thể khá mệt mỏi — hãy biết giới hạn của mình.',
+		career: 'E cao → Sales, quản lý, PR, diễn thuyết. E thấp → Nghiên cứu, lập trình, phân tích, viết.',
+		tip: 'Hướng ngoại cao không có nghĩa là tốt hơn — cần phù hợp với bối cảnh công việc và cuộc sống.',
+		academic: 'Soto & John (2017) cho thấy Extraversion dự báo sự thỏa mãn trong công việc nhóm và vai trò lãnh đạo.',
 	},
 	agreeableness: {
 		icon: '🤝',
-		high: 'Bạn rất tử tế, sẵn lòng giúp đỡ và tin tưởng người khác. Điều này giúp xây dựng mối quan hệ tốt nhưng hãy cẩn thận đừng bỏ quên nhu cầu bản thân.',
-		medium: 'Bạn cân bằng giữa đồng cảm và giữ vững lập trường — một sự kết hợp lành mạnh cho nhiều hoàn cảnh.',
-		low: 'Bạn thiên về phân tích lý trí hơn cảm xúc. Bạn có thể đưa ra quyết định khó khăn mà không bị ảnh hưởng quá nhiều bởi áp lực xã hội.',
-		tip: '💡 A cao → Chăm sóc khách hàng, HR, giảng dạy. A thấp → Luật sư, kinh doanh đàm phán.',
+		what: 'Agreeableness phản ánh xu hướng hành xử hòa hợp, từ bi và tin tưởng người khác — đây là thước đo của sự hợp tác xã hội.',
+		very_high: 'Bạn cực kỳ tốt bụng, luôn đặt người khác lên hàng đầu. Hãy cẩn thận: bạn có thể bị lợi dụng hoặc kiệt sức vì quên mất nhu cầu bản thân.',
+		high: 'Bạn rất hợp tác, đồng cảm và sẵn sàng giúp đỡ. Đây là nền tảng tốt cho các mối quan hệ bền vững.',
+		moderate: 'Bạn cân bằng giữa đồng cảm và lý trí — biết giúp đỡ nhưng cũng giữ vững lập trường khi cần.',
+		low: 'Bạn thiên về phân tích logic hơn cảm xúc. Bạn đưa ra quyết định khó mà không bị ảnh hưởng bởi áp lực xã hội.',
+		very_low: 'Bạn rất độc lập và ít quan tâm đến sự đồng thuận xã hội. Điều này giúp bạn quyết đoán nhưng có thể gây xung đột.',
+		career: 'A cao → Chăm sóc, HR, giảng dạy, y tế. A thấp → Luật, đàm phán, kinh doanh cạnh tranh.',
+		tip: 'A cao + Machiavellian thấp = rất đáng tin cậy. Chú ý đặt ranh giới cá nhân lành mạnh.',
+		academic: 'Agreeableness dự báo ít xung đột và nhiều mối quan hệ xã hội chất lượng hơn (DeYoung et al., 2010).',
 	},
 	conscientiousness: {
 		icon: '📋',
-		high: 'Bạn kỷ luật, có tổ chức và đáng tin cậy. Bạn lập kế hoạch trước và theo dõi tiến độ chặt chẽ — một yếu tố dự báo mạnh cho thành công học thuật và nghề nghiệp.',
-		medium: 'Bạn có thể có kỷ luật khi cần nhưng cũng linh hoạt để thích ứng với thay đổi — một sự cân bằng tốt.',
-		low: 'Bạn ưu tiên sự linh hoạt và tự phát hơn kế hoạch cứng nhắc. Hãy cẩn thận với deadline — sử dụng công cụ nhắc nhở có thể giúp ích rất nhiều.',
-		tip: '💡 C là chỉ số dự báo GPA và hiệu suất công việc mạnh nhất trong Big Five.',
+		what: 'Conscientiousness phản ánh mức độ có tổ chức, kỷ luật và hướng đến mục tiêu — thước đo tốt nhất về hiệu suất công việc và học tập trong Big Five.',
+		very_high: 'Bạn cực kỳ có kỷ luật và tổ chức. Rủi ro: perfectionism quá mức có thể dẫn đến stress. Hãy học cách chấp nhận "đủ tốt".',
+		high: 'Bạn đáng tin cậy, có kế hoạch và theo dõi tiến độ chặt chẽ. Đây là yếu tố dự báo mạnh cho thành công.',
+		moderate: 'Bạn có thể có kỷ luật khi cần nhưng cũng linh hoạt thích nghi — một sự cân bằng tốt.',
+		low: 'Bạn ưu tiên sự linh hoạt và tự phát hơn kế hoạch cứng nhắc. Công cụ nhắc nhở và danh sách việc cần làm sẽ giúp bạn.',
+		very_low: 'Bạn thường ứng phó theo tình huống hơn lập kế hoạch. Đây là thách thức lớn cho deadline và mục tiêu dài hạn.',
+		career: 'C là chỉ số dự báo hiệu suất mạnh nhất trong hầu hết mọi ngành nghề. C cao đặc biệt quan trọng trong tài chính, y tế, kỹ thuật.',
+		tip: 'Conscientiousness có thể được cải thiện qua thói quen và hệ thống — nó ít "bẩm sinh" nhất trong Big Five.',
+		academic: 'C là chỉ số dự báo GPA mạnh nhất trong Big Five, vượt qua cả IQ trong nhiều nghiên cứu (Noftle & Robins, 2007).',
 	},
 	negativeEmotionality: {
 		icon: '🌊',
-		high: 'Bạn nhạy cảm với stress và có xu hướng trải nghiệm cảm xúc tiêu cực mạnh hơn. Điều này không phải yếu điểm — nó cho thấy bạn cảm nhận sâu sắc, nhưng nên phát triển kỹ năng quản lý stress.',
-		medium: 'Bạn có sự ổn định cảm xúc ở mức bình thường — có lo lắng lúc cần nhưng phục hồi nhanh.',
-		low: 'Bạn rất ổn định về cảm xúc, ít bị stress tác động. Đây là lợi thế lớn cho các vị trí lãnh đạo và môi trường áp lực cao.',
-		tip: '💡 N cao → Hãy đầu tư vào mindfulness, tập thể dục, và thiết lập ranh giới lành mạnh.',
+		what: 'Negative Emotionality (Neuroticism) phản ánh xu hướng trải nghiệm cảm xúc tiêu cực như lo lắng, buồn bã, tức giận — đây là chỉ số nhạy cảm với stress.',
+		very_high: 'Bạn rất nhạy cảm với stress và trải nghiệm cảm xúc tiêu cực mạnh. Kỹ năng quản lý cảm xúc và tìm kiếm hỗ trợ là rất quan trọng.',
+		high: 'Bạn có xu hướng lo lắng và bị ảnh hưởng bởi stress. Mindfulness và tập thể dục thường xuyên sẽ giúp ích đáng kể.',
+		moderate: 'Bạn có sự ổn định cảm xúc ở mức bình thường — lo lắng khi cần nhưng phục hồi khá nhanh.',
+		low: 'Bạn khá ổn định về cảm xúc và ít bị stress tác động. Đây là lợi thế lớn cho môi trường áp lực cao.',
+		very_low: 'Bạn rất bình tĩnh dù trong tình huống căng thẳng. Điều này rất có giá trị cho lãnh đạo và quản lý khủng hoảng.',
+		career: 'N thấp → Phù hợp cho lãnh đạo, phẫu thuật, phi công, chiến lược. N cao → Nghề cần cảm nhận sâu như nghệ thuật, tư vấn.',
+		tip: 'N cao ≠ yếu đuối. Nó cho thấy bạn cảm nhận sâu sắc. Thiền định, tập thể dục và nhật ký cảm xúc có hiệu quả rõ ràng.',
+		academic: 'N cao liên quan đến học thuật tốt trong các lĩnh vực sáng tạo nhưng là rào cản trong môi trường thi cử áp lực (Zeidner, 1998).',
 	},
 	openMindedness: {
 		icon: '🎨',
-		high: 'Bạn tò mò, sáng tạo và thích khám phá ý tưởng mới. Bạn thường suy nghĩ trừu tượng và đánh giá cao nghệ thuật, triết học, và đổi mới.',
-		medium: 'Bạn cân bằng giữa sáng tạo và thực tế — sẵn sàng thử cái mới nhưng cũng biết giữ những gì hiệu quả.',
-		low: 'Bạn thiên về thực tế, ưu tiên những gì đã được chứng minh. Bạn ổn định và đáng tin cậy, thích các quy trình rõ ràng.',
-		tip: '💡 O cao → Thiết kế, R&D, startup, nghệ thuật. O thấp → Kế toán, vận hành, quản lý chất lượng.',
+		what: 'Open-Mindedness (Openness to Experience) phản ánh sự tò mò trí tuệ, cởi mở với ý tưởng mới, và khả năng suy nghĩ trừu tượng và sáng tạo.',
+		very_high: 'Bạn cực kỳ tò mò và sáng tạo — luôn tìm kiếm ý tưởng mới, thích thách thức quy ước. Chú ý tính thực tiễn trong triển khai ý tưởng.',
+		high: 'Bạn thích khám phá, suy nghĩ trừu tượng và đánh giá cao nghệ thuật và đổi mới. Bạn là người học hỏi suốt đời.',
+		moderate: 'Bạn cân bằng giữa sáng tạo và thực tế — sẵn sàng thử cái mới nhưng cũng biết giữ những gì hiệu quả.',
+		low: 'Bạn thiên về thực tế và thích những gì đã được chứng minh. Bạn ổn định và đáng tin cậy, thích quy trình rõ ràng.',
+		very_low: 'Bạn rất truyền thống và ưu tiên tính nhất quán cao. Bạn có thể gặp khó khăn trong môi trường thay đổi nhanh.',
+		career: 'O cao → Thiết kế, R&D, startup, nghệ thuật, triết học. O thấp → Kế toán, vận hành, kỹ thuật, hành chính.',
+		tip: 'O cao liên quan đến thành công trong học thuật và sáng tạo. Tuy nhiên, cần kết hợp C để biến ý tưởng thành hiện thực.',
+		academic: 'O là chỉ số dự báo mạnh nhất cho thành tích học thuật sau Conscientiousness, đặc biệt trong nghệ thuật và nhân văn (Chamorro-Premuzic, 2006).',
 	},
 	machiavellianism: {
 		icon: '♟️',
-		high: 'Bạn có tư duy chiến lược cao — hiểu rõ động lực của người khác và biết cách vận dụng tình huống. Trong kinh doanh, đây có thể là lợi thế, nhưng hãy cẩn thận về ranh giới đạo đức.',
-		medium: 'Bạn có nhận thức xã hội tốt nhưng không quá tính toán — một sự kết hợp cân bằng.',
-		low: 'Bạn trực tính và chân thành, ít khi suy nghĩ chiến lược về mối quan hệ. Điều này tạo sự tin tưởng nhưng đôi khi có thể bị lợi dụng.',
-		tip: '💡 M vừa phải = "Trí tuệ xã hội" — biết đọc tình huống nhưng vẫn giữ đạo đức.',
+		what: 'Machiavellianism đo lường xu hướng tư duy chiến lược về mối quan hệ, ưu tiên lợi ích cá nhân và sẵn sàng thao túng người khác để đạt mục tiêu.',
+		very_high: 'Bạn rất chiến lược trong các mối quan hệ — luôn tính toán kết quả và vận dụng tình huống. Hãy cẩn thận về ranh giới đạo đức và hậu quả lâu dài.',
+		high: 'Bạn có tư duy chiến lược rõ ràng và hiểu động lực của người khác. Điều này có thể là lợi thế trong kinh doanh nếu dùng đúng cách.',
+		moderate: 'Bạn có nhận thức xã hội tốt nhưng không quá tính toán — một "trí tuệ xã hội" lành mạnh.',
+		low: 'Bạn trực tính và chân thành, ít suy nghĩ chiến lược về mối quan hệ. Điều này tạo niềm tin nhưng đôi khi có thể bị lợi dụng.',
+		very_low: 'Bạn rất thành thật và trực tiếp — gần như không sử dụng chiến thuật xã hội. Hãy học cách nhận biết khi người khác không có cùng quan điểm.',
+		career: 'M vừa phải có giá trị trong đàm phán, chính trị, kinh doanh. M cao cần được kiểm soát bằng đạo đức nghề nghiệp.',
+		tip: 'Ranh giới giữa "trí tuệ xã hội" và "thao túng" nằm ở ý định và tác động lên người khác.',
+		academic: 'Machiavellianism thuộc Dark Triad (Paulhus & Williams, 2002). M vừa phải liên quan đến thành công nghề nghiệp ngắn hạn nhưng kém quan hệ dài hạn.',
 	},
 	narcissism: {
 		icon: '👑',
-		high: 'Bạn tự tin cao và muốn được công nhận. Điều này có thể tốt cho lãnh đạo và trình bày, nhưng hãy đảm bảo cũng lắng nghe và ghi nhận đóng góp của người khác.',
-		medium: 'Bạn tự tin ở mức lành mạnh — tin vào khả năng bản thân nhưng không cần phải luôn là trung tâm.',
-		low: 'Bạn khiêm tốn và ít cần sự chú ý. Đây là phẩm chất tốt cho làm việc nhóm nhưng đừng đánh giá thấp bản thân.',
-		tip: '💡 Narcissism "lành mạnh" (vừa phải) liên quan đến sự tự tin và resilience cao hơn.',
+		what: 'Narcissism đo lường mức độ tự tin, nhu cầu được công nhận, và cảm giác đặc biệt. Phân biệt với NPD lâm sàng — đây là thang đo đặc điểm trong dân số bình thường.',
+		very_high: 'Bạn rất tự tin và muốn được công nhận mạnh mẽ. Hãy đảm bảo bạn lắng nghe và ghi nhận đóng góp người khác — đây là điểm mù phổ biến nhất.',
+		high: 'Bạn tự tin và muốn được công nhận — lợi thế lớn cho trình bày, dẫn dắt và thuyết phục. Kiểm soát xu hướng cạnh tranh không lành mạnh.',
+		moderate: 'Bạn tự tin ở mức lành mạnh — tin vào khả năng bản thân nhưng không cần phải luôn là trung tâm. Mức lý tưởng cho nhiều hoàn cảnh.',
+		low: 'Bạn khiêm tốn và ít cần sự chú ý. Tốt cho teamwork nhưng hãy đảm bảo bạn tự vận động cho bản thân khi cần.',
+		very_low: 'Bạn rất khiêm tốn và hiếm khi tìm kiếm sự công nhận. Điều này có thể khiến bạn bị bỏ qua trong môi trường cạnh tranh.',
+		career: 'N vừa phải → CEO, diễn thuyết, chính trị, nghệ thuật biểu diễn. N quá cao có thể gây khó khăn trong teamwork.',
+		tip: '"Healthy narcissism" (vừa phải) liên quan đến resilience và leadership. Phân biệt với NPD (rối loạn nhân cách) là quan trọng.',
+		academic: 'Narcissism vừa phải liên quan đến sự tự tin học thuật và khả năng thuyết trình tốt hơn (Raskin & Terry, 1988).',
 	},
 	psychopathy: {
 		icon: '⚡',
-		high: 'Bạn có xu hướng tìm kiếm cảm giác mạnh và ít bị ảnh hưởng bởi sợ hãi. Trong công việc, hãy chuyển hướng năng lượng này vào những thử thách mang tính xây dựng.',
-		medium: 'Bạn có sự bình tĩnh tốt trong tình huống căng thẳng, nhưng vẫn quan tâm đến hậu quả hành động.',
-		low: 'Bạn đồng cảm cao và luôn cân nhắc ảnh hưởng của hành động lên người khác. Đây là nền tảng tốt cho mối quan hệ bền vững.',
-		tip: '💡 P thấp → mạnh về empathy và teamwork. P cao → mạnh về ra quyết định dưới áp lực.',
+		what: 'Psychopathy đo lường mức độ thiếu đồng cảm, hành vi liều lĩnh và tìm kiếm cảm giác mạnh. Phân biệt với rối loạn tâm thần lâm sàng — đây là đặc điểm trong dân số bình thường.',
+		very_high: 'Bạn có xu hướng tìm kiếm cảm giác mạnh mẽ và ít bị ảnh hưởng bởi hậu quả. Hãy chủ động phát triển đồng cảm và tìm kiếm thử thách xây dựng.',
+		high: 'Bạn liều lĩnh và ít bị kiềm chế bởi sợ hãi — có thể là lợi thế trong môi trường rủi ro cao. Cần chú ý đến ảnh hưởng lên người xung quanh.',
+		moderate: 'Bạn có sự bình tĩnh tốt trong tình huống căng thẳng nhưng vẫn quan tâm đến hậu quả và người khác.',
+		low: 'Bạn đồng cảm cao và luôn cân nhắc ảnh hưởng của hành động. Đây là nền tảng tốt cho quan hệ bền vững và nghề nghiệp chăm sóc.',
+		very_low: 'Bạn rất đồng cảm và cẩn thận — có thể gặp khó trong việc ra quyết định khó khăn mà không bị ảnh hưởng cảm xúc.',
+		career: 'P thấp → Y tế, giảng dạy, tư vấn, xã hội học. P vừa phải có giá trị trong phẫu thuật khẩn, quân sự, cứu hộ.',
+		tip: 'P thấp là lý tưởng cho đa số mối quan hệ cá nhân. P vừa phải giúp ra quyết định dưới áp lực không bị cảm xúc chi phối.',
+		academic: 'Psychopathy thấp dự báo mối quan hệ chất lượng cao và ít hành vi rủi ro trong học thuật (Jones & Paulhus, 2014).',
 	},
 };
 
-// ─── Percentile Result type (mirroring the API response) ──────────────────────
+// ─── SVG Radar Chart ─────────────────────────────────────────────────────────
+
+interface RadarChartProps {
+	traits: { label: string; score: number; maxScore?: number }[];
+	colorFill: string;
+	colorStroke: string;
+	size?: number;
+}
+
+function RadarChart({ traits, colorFill, colorStroke, size = 200 }: RadarChartProps) {
+	const n = traits.length;
+	if (n < 3) return null;
+	const cx = size / 2;
+	const cy = size / 2;
+	const r = size * 0.38;
+	const labelR = size * 0.49;
+
+	const angles = traits.map((_, i) => (i / n) * 2 * Math.PI - Math.PI / 2);
+	const toPoint = (angle: number, radius: number) => ({
+		x: cx + radius * Math.cos(angle),
+		y: cy + radius * Math.sin(angle),
+	});
+	const webLevels = [0.33, 0.66, 1.0];
+
+	const scorePoints = traits.map((t, i) => {
+		const norm = Math.max(0, Math.min(1, (t.score - 1) / ((t.maxScore ?? 5) - 1)));
+		return toPoint(angles[i], norm * r);
+	});
+
+	const scorePath =
+		scorePoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+
+	return (
+		<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
+			{webLevels.map((lvl) => {
+				const pts = angles.map((a) => toPoint(a, lvl * r));
+				const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+				return <path key={lvl} d={d} fill="none" stroke="currentColor" strokeWidth="0.5"
+					className="text-border opacity-60" strokeDasharray={lvl < 1 ? '2,2' : undefined} />;
+			})}
+			{angles.map((a, i) => {
+				const end = toPoint(a, r);
+				return <line key={i} x1={cx} y1={cy} x2={end.x.toFixed(1)} y2={end.y.toFixed(1)}
+					stroke="currentColor" strokeWidth="0.5" className="text-border opacity-50" />;
+			})}
+			<path d={scorePath} fill={colorFill} stroke={colorStroke} strokeWidth="2" strokeLinejoin="round" />
+			{scorePoints.map((p, i) => (
+				<circle key={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="3" fill={colorStroke} />
+			))}
+			{traits.map((t, i) => {
+				const lp = toPoint(angles[i], labelR);
+				const anchor = lp.x < cx - 5 ? 'end' : lp.x > cx + 5 ? 'start' : 'middle';
+				return (
+					<text key={i} x={lp.x.toFixed(1)} y={lp.y.toFixed(1)}
+						textAnchor={anchor} dominantBaseline="middle"
+						fontSize="11" fill="currentColor" className="text-muted font-semibold">
+						{t.label}
+					</text>
+				);
+			})}
+		</svg>
+	);
+}
+
+// ─── Percentile Result type ────────────────────────────────────────────────────
 
 interface PercentileResult {
 	domain: PersonalityDomain;
@@ -129,92 +272,105 @@ interface PercentilesApiResponse {
 	};
 }
 
-// ─── Props ─────────────────────────────────────────────────────────────────────
-
-interface Props {
-	session: PersonalityTestSessionDTO;
-}
-
-// ─── Trait Bar Component ───────────────────────────────────────────────────────
+// ─── TraitBar with expandable insight ─────────────────────────────────────────
 
 function TraitBar({
 	trait,
 	colorClass,
 	delay = 0,
 	normative,
-	showInsight = false,
 }: {
 	trait: TraitScore;
 	colorClass: string;
 	delay?: number;
 	normative?: PercentileResult;
-	showInsight?: boolean;
 }) {
-	const percent = ((trait.score - 1) / 4) * 100; // Normalize 1-5 to 0-100%
+	const [expanded, setExpanded] = useState(false);
+	const percent = ((trait.score - 1) / 4) * 100;
 	const viLabel = DOMAIN_LABELS_VI[trait.domain] ?? trait.label;
-	const displayPercentile = normative?.percentile ?? trait.percentile;
 	const insight = TRAIT_INSIGHTS[trait.domain];
+	const tier: FiveTier = normative
+		? getZTier(normative.zScore)
+		: trait.level === 'high' ? 'high' : trait.level === 'low' ? 'low' : 'moderate';
+	const tierText = getLevelLabel(tier);
+	const badgeClass = getLevelBadgeClass(tier);
+	const meanPercent = normative ? ((normative.mean - 1) / 4) * 100 : null;
 
 	return (
-		<div className="space-y-1.5">
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					{insight && <span className="text-sm">{insight.icon}</span>}
-					<span className="text-sm font-bold text-foreground">{viLabel}</span>
-					<span className="text-xs text-muted">({trait.label})</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<span className="text-sm font-black tabular-nums text-foreground">
-						{trait.score.toFixed(2)}
-					</span>
-					<span
-						className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-							trait.level === 'high'
-								? 'bg-error-subtle text-error'
-								: trait.level === 'low'
-									? 'bg-indigo-subtle text-indigo'
-									: 'bg-warning-subtle text-warning'
-						}`}
-					>
-						{trait.level === 'high' ? 'Cao' : trait.level === 'low' ? 'Thấp' : 'TB'}
-					</span>
-					{displayPercentile !== null && displayPercentile !== undefined && (
-						<span className="text-[10px] text-muted tabular-nums" title={normative ? `Z = ${normative.zScore}, ${normative.interpretationVi}` : undefined}>
-							P{displayPercentile}
+		<div className="rounded-xl border border-border/40 bg-background-secondary/30 p-3">
+			<button className="w-full text-left" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
+				<div className="flex items-center justify-between mb-2">
+					<div className="flex items-center gap-2">
+						{insight && <span className="text-sm">{insight.icon}</span>}
+						<span className="text-sm font-bold text-foreground">{viLabel}</span>
+						<span className="text-[10px] text-muted">({trait.label})</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<span className="text-sm font-black tabular-nums text-foreground">{trait.score.toFixed(2)}</span>
+						<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${badgeClass}`}>
+							{tierText}
 						</span>
+						{normative && (
+							<span className="text-[10px] text-muted tabular-nums" title={`Z = ${normative.zScore.toFixed(2)}`}>
+								P{normative.percentile}
+							</span>
+						)}
+						<span className="text-muted text-xs">{expanded ? '▲' : '▼'}</span>
+					</div>
+				</div>
+				<div className="relative h-3 overflow-visible rounded-full bg-background-secondary">
+					<motion.div
+						className={`h-full rounded-full ${colorClass}`}
+						initial={{ width: 0 }}
+						animate={{ width: `${Math.max(percent, 2)}%` }}
+						transition={{ duration: 0.8, delay, ease: 'easeOut' }}
+					/>
+					{meanPercent !== null && (
+						<div
+							className="absolute top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground/40 rounded-full"
+							style={{ left: `${meanPercent}%` }}
+							title={`Nhóm tham chiếu TB: ${normative?.mean.toFixed(2)}`}
+						/>
 					)}
 				</div>
-			</div>
-			<div className="h-3 overflow-hidden rounded-full bg-background-secondary">
-				<motion.div
-					className={`h-full rounded-full ${colorClass}`}
-					initial={{ width: 0 }}
-					animate={{ width: `${Math.max(percent, 2)}%` }}
-					transition={{ duration: 0.8, delay, ease: 'easeOut' }}
-				/>
-			</div>
-			{/* Normative comparison mini-bar */}
-			{normative && (
-				<div className="flex items-center gap-2 text-[10px] text-muted">
-					<span>Nhóm tham chiếu: M={normative.mean.toFixed(2)}</span>
-					<span>•</span>
-					<span>{normative.interpretationVi}</span>
-				</div>
-			)}
-			{/* Insight text */}
-			{showInsight && insight && (
-				<motion.div
-					initial={{ opacity: 0, height: 0 }}
-					animate={{ opacity: 1, height: 'auto' }}
-					transition={{ duration: 0.3, delay: delay + 0.5 }}
-					className="mt-1 rounded-lg bg-background-secondary/60 px-3 py-2"
-				>
-					<p className="text-[11px] leading-relaxed text-foreground-secondary">
-						{trait.level === 'high' ? insight.high : trait.level === 'low' ? insight.low : insight.medium}
-					</p>
-					<p className="mt-1 text-[10px] text-muted">{insight.tip}</p>
-				</motion.div>
-			)}
+				{normative && (
+					<div className="mt-1 flex items-center gap-2 text-[10px] text-muted">
+						<span>TB nhóm: {normative.mean.toFixed(2)}</span>
+						<span>•</span>
+						<span>{normative.interpretationVi}</span>
+					</div>
+				)}
+			</button>
+			<AnimatePresence>
+				{expanded && insight && (
+					<motion.div
+						initial={{ opacity: 0, height: 0 }}
+						animate={{ opacity: 1, height: 'auto' }}
+						exit={{ opacity: 0, height: 0 }}
+						transition={{ duration: 0.25 }}
+						className="overflow-hidden"
+					>
+						<div className="mt-3 space-y-2 border-t border-border/30 pt-3">
+							<p className="text-[11px] text-muted leading-relaxed">{insight.what}</p>
+							<div className="rounded-lg bg-surface/60 px-3 py-2">
+								<p className="text-[11px] font-semibold text-foreground mb-1">Điều này có nghĩa gì với bạn ({tierText}):</p>
+								<p className="text-[11px] leading-relaxed text-foreground-secondary">{insight[tier]}</p>
+							</div>
+							<div className="grid grid-cols-2 gap-2">
+								<div className="rounded-lg bg-indigo-subtle/40 px-2.5 py-2">
+									<p className="text-[10px] font-bold text-indigo mb-1">💼 Phù hợp nghề nghiệp</p>
+									<p className="text-[10px] leading-relaxed text-muted">{insight.career}</p>
+								</div>
+								<div className="rounded-lg bg-success-subtle/40 px-2.5 py-2">
+									<p className="text-[10px] font-bold text-success mb-1">📚 Bối cảnh học thuật</p>
+									<p className="text-[10px] leading-relaxed text-muted">{insight.academic}</p>
+								</div>
+							</div>
+							<p className="text-[10px] text-amber-600 dark:text-amber-400 bg-warning-subtle/40 px-2.5 py-1.5 rounded-lg">💡 {insight.tip}</p>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }
@@ -238,9 +394,7 @@ function ArchetypeCard({ archetype }: { archetype: ArchetypeProfile }) {
 			transition={{ duration: 0.5, delay: 0.2 }}
 			className={`relative overflow-hidden rounded-2xl border bg-linear-to-br ${themeColors[archetype.colorTheme]} p-6 sm:p-8`}
 		>
-			{/* Background glow */}
 			<div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/5 blur-3xl" />
-
 			<div className="relative">
 				<div className="flex items-center gap-4">
 					<span className="text-4xl">{archetype.icon}</span>
@@ -251,16 +405,13 @@ function ArchetypeCard({ archetype }: { archetype: ArchetypeProfile }) {
 						<p className="text-sm italic text-muted">{archetype.tagline}</p>
 					</div>
 				</div>
-
 				<p className="mt-5 text-sm leading-relaxed text-foreground-secondary">
 					{archetype.narrative}
 				</p>
-
 				<div className="mt-6 grid gap-4 sm:grid-cols-2">
-					{/* Strengths */}
 					<div className="rounded-xl border border-success/20 bg-success-subtle/50 p-4">
 						<h4 className="flex items-center gap-2 text-sm font-bold text-success">
-							<span>💪</span> Điểm mạnh (Constructive)
+							<span>💪</span> Điểm mạnh
 						</h4>
 						<ul className="mt-3 space-y-2">
 							{archetype.strengths.map((s, i) => (
@@ -271,11 +422,9 @@ function ArchetypeCard({ archetype }: { archetype: ArchetypeProfile }) {
 							))}
 						</ul>
 					</div>
-
-					{/* Blindspots */}
 					<div className="rounded-xl border border-error/20 bg-error-subtle/50 p-4">
 						<h4 className="flex items-center gap-2 text-sm font-bold text-error">
-							<span>⚠️</span> Điểm mù (Destructive Risks)
+							<span>⚠️</span> Điểm mù
 						</h4>
 						<ul className="mt-3 space-y-2">
 							{archetype.blindspots.map((b, i) => (
@@ -297,19 +446,20 @@ function ArchetypeCard({ archetype }: { archetype: ArchetypeProfile }) {
 function InvalidResultCard({ reason }: { reason?: string }) {
 	return (
 		<div className="rounded-2xl border border-error/30 bg-error-subtle p-8 text-center">
-			<div className="text-4xl">🚫</div>
-			<h3 className="mt-4 text-xl font-black text-foreground">Kết quả không hợp lệ</h3>
+			<div className="text-4xl">😔</div>
+			<h3 className="mt-4 text-xl font-black text-foreground">Chưa thể phân tích kết quả</h3>
 			<p className="mt-2 text-sm text-muted leading-relaxed max-w-md mx-auto">
-				Bài test không thể được phân tích do không vượt qua kiểm tra sự chú ý.
+				Bài làm chưa đạt yêu cầu kiểm tra sự tập trung. Điều này có thể xảy ra nếu bạn
+				làm vội hoặc không đọc kĩ câu hỏi — hãy thử lại khi có thời gian tập trung nhé!
 				{reason && (
-					<span className="mt-2 block text-xs text-error">{reason}</span>
+					<span className="mt-2 block text-xs text-error">Chi tiết: {reason}</span>
 				)}
 			</p>
 			<Link
 				href="/personality-test"
 				className="mt-5 inline-block rounded-xl bg-accent px-6 py-3 text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-hover"
 			>
-				Làm lại bài test
+				Thử lại bài đánh giá →
 			</Link>
 		</div>
 	);
@@ -439,110 +589,97 @@ function PercentileBadge({ percentile }: { percentile: number }) {
 	);
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
+// ─── Cross-trait insights ─────────────────────────────────────────────────────
 
-interface CrossTraitInsight {
-	icon: string;
-	title: string;
-	description: string;
-}
-
+interface CrossTraitInsight { icon: string; title: string; description: string; action: string; }
 type OceanResult = NonNullable<PersonalityTestSessionDTO['result']>['ocean'];
 type DarkTriadResult = NonNullable<PersonalityTestSessionDTO['result']>['darkTriad'];
 
-function generateCrossTraitInsights(
-	ocean: NonNullable<OceanResult>,
-	dark: NonNullable<DarkTriadResult>,
-): CrossTraitInsight[] {
-	const insights: CrossTraitInsight[] = [];
-
-	// Leadership profile
-	if (ocean.extraversion.level === 'high' && ocean.conscientiousness.level !== 'low') {
-		insights.push({
-			icon: '🏆',
-			title: 'Tiềm năng lãnh đạo',
-			description: 'Sự kết hợp giữa hướng ngoại cao và kỷ luật tốt cho thấy bạn có tiềm năng dẫn dắt đội nhóm hiệu quả. Bạn vừa có năng lượng giao tiếp, vừa có khả năng tổ chức.',
-		});
-	}
-
-	// Creative entrepreneur
-	if (ocean.openMindedness.level === 'high' && dark.narcissism.level !== 'low') {
-		insights.push({
-			icon: '🚀',
-			title: 'Nhà sáng tạo tự tin',
-			description: 'Sự cởi mở cao kết hợp với tự tin cho thấy bạn có thể đổi mới VÀ thuyết phục người khác theo ý tưởng của mình — đặc điểm quan trọng cho khởi nghiệp.',
-		});
-	}
-
-	// Strategic empathizer
-	if (ocean.agreeableness.level === 'high' && dark.machiavellianism.level !== 'low') {
-		insights.push({
-			icon: '🎯',
-			title: 'Nhà ngoại giao chiến lược',
-			description: 'Bạn vừa có trái tim nồng ấm, vừa hiểu cách "chơi game" xã hội. Đây là sự kết hợp tuyệt vời cho đàm phán, HR, và quản lý xung đột.',
-		});
-	}
-
-	// Stress risk
-	if (ocean.negativeEmotionality.level === 'high' && ocean.conscientiousness.level === 'high') {
-		insights.push({
-			icon: '⚡',
-			title: 'Nguy cơ cầu toàn quá mức',
-			description: 'Kỷ luật cao + nhạy cảm cảm xúc có thể dẫn đến perfectionism. Bạn đặt tiêu chuẩn rất cao cho bản thân — hãy nhớ rằng "đủ tốt" đôi khi là tốt nhất.',
-		});
-	}
-
-	// Calm under pressure
-	if (ocean.negativeEmotionality.level === 'low' && dark.psychopathy.level === 'low') {
-		insights.push({
-			icon: '🧘',
-			title: 'Bình tĩnh & đồng cảm',
-			description: 'Bạn vừa ổn định cảm xúc, vừa quan tâm đến người khác — nền tảng lý tưởng cho tâm lý trị liệu, coaching, hoặc quản lý khủng hoảng.',
-		});
-	}
-
-	// Lone wolf
-	if (ocean.extraversion.level === 'low' && ocean.openMindedness.level === 'high') {
-		insights.push({
-			icon: '🐺',
-			title: 'Nhà tư duy độc lập',
-			description: 'Hướng nội kết hợp với cởi mở cao tạo nên hồ sơ của những nhà tư duy sâu sắc — nhà nghiên cứu, nhà văn, triết gia, hoặc kỹ sư giải quyết vấn đề phức tạp.',
-		});
-	}
-
-	// Social butterfly with edge
-	if (ocean.extraversion.level === 'high' && ocean.agreeableness.level === 'low') {
-		insights.push({
-			icon: '🦅',
-			title: 'Giao tiếp có chọn lọc',
-			description: 'Bạn thích giao tiếp nhưng không ngại thách thức ý kiến người khác — phù hợp cho debating, luật sư, hoặc chuyên gia tư vấn.',
-		});
-	}
-
-	// Dark triad balance
+function generateCrossTraitInsights(ocean: NonNullable<OceanResult>, dark: NonNullable<DarkTriadResult>): CrossTraitInsight[] {
+	const ins: CrossTraitInsight[] = [];
+	if (ocean.extraversion.level === 'high' && ocean.conscientiousness.level !== 'low')
+		ins.push({ icon: '🏆', title: 'Tiềm năng lãnh đạo', description: 'Hướng ngoại cao + kỷ luật tốt = hồ sơ lãnh đạo hiệu quả. Bạn vừa có năng lượng giao tiếp, vừa có khả năng tổ chức.', action: 'Tìm kiếm vai trò trưởng nhóm, dẫn dắt một dự án nhỏ trong semester tới.' });
+	if (ocean.openMindedness.level === 'high' && dark.narcissism.level !== 'low')
+		ins.push({ icon: '🚀', title: 'Nhà sáng tạo tự tin', description: 'Cởi mở cao + tự tin = đổi mới VÀ thuyết phục người khác — đặc điểm quan trọng cho khởi nghiệp.', action: 'Viết ra 3 ý tưởng sáng tạo và chia sẻ với người khác để lấy phản hồi.' });
+	if (ocean.negativeEmotionality.level === 'high' && ocean.conscientiousness.level === 'high')
+		ins.push({ icon: '⚡', title: 'Nguy cơ cầu toàn quá mức', description: 'Kỷ luật cao + nhạy cảm cảm xúc → perfectionism. Bạn đặt tiêu chuẩn rất cao, đôi khi không cần thiết.', action: 'Thực hành kỹ thuật "done is better than perfect" — đặt deadline và dừng lại khi đến.' });
+	if (ocean.negativeEmotionality.level === 'low' && dark.psychopathy.level === 'low')
+		ins.push({ icon: '🧘', title: 'Bình tĩnh & Đồng cảm', description: 'Ổn định cảm xúc + đồng cảm cao = lý tưởng cho tư vấn, coaching, hoặc quản lý khủng hoảng.', action: 'Xem xét vai trò mentor hoặc peer support trong trường.' });
+	if (ocean.extraversion.level === 'low' && ocean.openMindedness.level === 'high')
+		ins.push({ icon: '🐺', title: 'Nhà tư duy độc lập', description: 'Hướng nội + cởi mở cao = nhà nghiên cứu, nhà văn, kỹ sư giải quyết vấn đề phức tạp.', action: 'Đặt thời gian "deep work" 2-3 giờ mỗi ngày không bị gián đoạn.' });
+	if (ocean.agreeableness.level === 'high' && dark.machiavellianism.level !== 'low')
+		ins.push({ icon: '🎯', title: 'Nhà ngoại giao chiến lược', description: 'Trái tim nồng ấm + hiểu động lực xã hội = phù hợp cho đàm phán, HR, và quản lý xung đột.', action: 'Đọc về "principled negotiation" (Fisher & Ury, Getting to Yes).' });
 	const darkAvg = (dark.machiavellianism.score + dark.narcissism.score + dark.psychopathy.score) / 3;
-	if (darkAvg < 2.5) {
-		insights.push({
-			icon: '✨',
-			title: 'Hồ sơ "Ánh sáng" chiếm ưu thế',
-			description: 'Dark Triad tổng thể của bạn ở mức thấp — bạn là người đáng tin cậy, chân thành. Đây là nền tảng vững chắc cho các mối quan hệ lâu dài.',
-		});
-	} else if (darkAvg > 3.5) {
-		insights.push({
-			icon: '⚔️',
-			title: 'Bản năng cạnh tranh mạnh',
-			description: 'Dark Triad cao phản ánh bản năng sinh tồn và cạnh tranh. Hãy chuyển hướng năng lượng này vào mục tiêu tích cực — kinh doanh, thể thao, hoặc sáng tạo.',
-		});
-	}
-
-	// Limit to top 4 most relevant
-	return insights.slice(0, 4);
+	if (darkAvg < 2.5)
+		ins.push({ icon: '✨', title: 'Ánh sáng chiếm ưu thế', description: 'Dark Triad tổng thể thấp — bạn là người đáng tin cậy, chân thành. Nền tảng tốt cho mối quan hệ lâu dài.', action: 'Phát huy lòng tin này bằng cách xây dựng mạng lưới quan hệ chân thực.' });
+	else if (darkAvg > 3.5)
+		ins.push({ icon: '⚔️', title: 'Bản năng cạnh tranh mạnh', description: 'Dark Triad cao phản ánh bản năng sinh tồn. Hãy chuyển hướng năng lượng vào mục tiêu tích cực.', action: 'Chọn môi trường cạnh tranh lành mạnh: thể thao, kinh doanh, sáng tạo.' });
+	return ins.slice(0, 4);
 }
+
+// ─── Limitations Section ──────────────────────────────────────────────────────
+
+function LimitationsSection() {
+	const [open, setOpen] = useState(false);
+	return (
+		<div className="rounded-xl border border-border bg-background-secondary/50">
+			<button
+				className="flex w-full items-center justify-between px-4 py-3 text-left"
+				onClick={() => setOpen((v) => !v)}
+			>
+				<span className="text-xs font-bold text-muted uppercase tracking-wider">📌 Giới hạn & Bối cảnh nghiên cứu</span>
+				<span className="text-muted text-xs">{open ? '▲' : '▼'}</span>
+			</button>
+			<AnimatePresence>
+				{open && (
+					<motion.div
+						initial={{ opacity: 0, height: 0 }}
+						animate={{ opacity: 1, height: 'auto' }}
+						exit={{ opacity: 0, height: 0 }}
+						className="overflow-hidden"
+					>
+						<div className="px-4 pb-4 space-y-3">
+							<div className="grid gap-2 sm:grid-cols-2">
+								{[
+									{ icon: '🔬', title: 'Tự báo cáo', text: 'Kết quả dựa trên tự đánh giá — có thể bị ảnh hưởng bởi social desirability bias và trạng thái tâm lý hiện tại.' },
+									{ icon: '📏', title: 'Không phải chẩn đoán lâm sàng', text: 'BFI-2-S và SD3 là thang đo nghiên cứu, KHÔNG thay thế đánh giá tâm lý chuyên nghiệp hoặc chẩn đoán DSM.' },
+									{ icon: '🌍', title: 'Bối cảnh văn hóa', text: 'Dữ liệu chuẩn hóa (normative) chủ yếu từ mẫu phương Tây. Có thể có sự khác biệt văn hóa trong cách diễn giải.' },
+									{ icon: '⏰', title: 'Tính ổn định theo thời gian', text: 'Tính cách tương đối ổn định ở người trưởng thành nhưng có thể thay đổi theo sự kiện cuộc sống lớn. Test lại sau 6-12 tháng để theo dõi.' },
+									{ icon: '🎯', title: 'Ngữ cảnh phụ thuộc', text: 'Không có profile nào là "tốt nhất" — giá trị của mỗi đặc điểm phụ thuộc vào ngữ cảnh công việc, môi trường và mục tiêu cá nhân.' },
+									{ icon: '📊', title: 'Kích thước hiệu ứng', text: 'Tương quan giữa đặc điểm tính cách và kết quả cuộc sống thường ở mức r=0.2-0.4 — có ý nghĩa thống kê nhưng không quyết định hoàn toàn.' },
+								].map((item) => (
+									<div key={item.title} className="rounded-lg bg-surface/60 px-3 py-2">
+										<p className="text-[10px] font-bold text-foreground">{item.icon} {item.title}</p>
+										<p className="mt-0.5 text-[10px] leading-relaxed text-muted">{item.text}</p>
+									</div>
+								))}
+							</div>
+							<div className="rounded-lg bg-background-secondary px-3 py-2">
+								<p className="text-[10px] font-bold text-foreground mb-1">📚 Tài liệu tham khảo</p>
+								<ul className="space-y-0.5 text-[10px] text-muted">
+									<li>• Soto, C. J., & John, O. P. (2017). The next Big Five Inventory (BFI-2). <em>Journal of Personality and Social Psychology, 113</em>(1), 117–143.</li>
+									<li>• Jones, D. N., & Paulhus, D. L. (2014). Introducing the Short Dark Triad (SD3). <em>Assessment, 21</em>(1), 28–41.</li>
+									<li>• Paulhus, D. L., & Williams, K. M. (2002). The Dark Triad of personality. <em>Journal of Research in Personality, 36</em>, 556–563.</li>
+									<li>• Noftle, E. E., & Robins, R. W. (2007). Personality predictors of academic outcomes. <em>Journal of Personality and Social Psychology, 93</em>(1), 116–130.</li>
+								</ul>
+							</div>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</div>
+	);
+}
+
+// ─── Props ─────────────────────────────────────────────────────────────────────
+
+interface Props { session: PersonalityTestSessionDTO; }
+
+// ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function PersonalityResultsDashboard({ session }: Props) {
 	const result = session.result;
 
-	// ── Normative percentile state ──
 	const [normativeData, setNormativeData] = useState<PercentilesApiResponse | null>(null);
 	const [oceanGroup, setOceanGroup] = useState('bfi2-internet');
 	const [darkTriadGroup, setDarkTriadGroup] = useState('sd3-community');
@@ -598,59 +735,73 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 
 	return (
 		<div className="space-y-6">
-			{/* ── Header ── */}
-			<motion.div
-				initial={{ opacity: 0, y: -10 }}
-				animate={{ opacity: 1, y: 0 }}
-				className="text-center"
-			>
-				<p className="text-xs font-bold uppercase tracking-widest text-muted">
-					Kết quả phân tích tính cách
+			{/* Header */}
+			<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+				<p className="text-xs font-bold uppercase tracking-widest text-accent">Kết quả của bạn đã sẵn sàng ✨</p>
+				<h2 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">Hồ sơ tính cách toàn diện</h2>
+				<p className="mt-2 text-sm text-muted max-w-md mx-auto">
+					Dưới đây là bức tranh đầy đủ về tính cách của bạn — dựa trên hai mô hình tâm lý học được nghiên cứu rộng rãi.
 				</p>
-				<h2 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-					Dual Personality Profile
-				</h2>
 				{session.completedAt && (
 					<p className="mt-2 text-xs text-muted">
-						{new Date(session.completedAt).toLocaleDateString('vi-VN', {
-							year: 'numeric',
-							month: 'long',
-							day: 'numeric',
-							hour: '2-digit',
-							minute: '2-digit',
-						})}
+						{new Date(session.completedAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
 					</p>
 				)}
 			</motion.div>
 
-			{/* ── Archetype ── */}
+			{/* Archetype */}
 			{archetype && <ArchetypeCard archetype={archetype} />}
 
-			{/* ── Cross-Trait Insights ── */}
+			{/* Radar Charts */}
+			<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+				className="grid gap-6 sm:grid-cols-2">
+				<div className="rounded-2xl border border-indigo/20 bg-surface p-5 flex flex-col items-center">
+					<p className="text-xs font-black uppercase tracking-wider text-indigo mb-1">🌟 5 nét tính cách lớn (OCEAN)</p>
+					<p className="text-[10px] text-muted mb-4">BFI-2-S • Soto &amp; John, 2017</p>
+					<RadarChart
+						traits={oceanTraits.map(t => ({ label: (DOMAIN_LABELS_VI[t.domain] ?? t.label).split('/')[0], score: t.score }))}
+						colorFill="rgba(99,102,241,0.2)"
+						colorStroke="rgb(99,102,241)"
+						size={220}
+					/>
+				</div>
+				<div className="rounded-2xl border border-rose/20 bg-surface p-5 flex flex-col items-center">
+					<p className="text-xs font-black uppercase tracking-wider text-rose mb-1">🌑 Bản năng xã hội (Dark Triad)</p>
+					<p className="text-[10px] text-muted mb-4">SD3 • Jones &amp; Paulhus, 2014</p>
+					<RadarChart
+						traits={darkTraits.map(t => ({ label: (DOMAIN_LABELS_VI[t.domain] ?? t.label).split('/')[0], score: t.score }))}
+						colorFill="rgba(244,63,94,0.2)"
+						colorStroke="rgb(244,63,94)"
+						size={220}
+					/>
+					<div className="mt-4 rounded-lg bg-background-secondary p-2.5 w-full">
+						<p className="text-[10px] leading-relaxed text-muted text-center">
+							⚠️ Dark Triad cao không tự động có nghĩa xấu — mức vừa phải phản ánh trí tuệ chiến lược và khả năng lãnh đạo.
+						</p>
+					</div>
+				</div>
+			</motion.div>
+
+			{/* Cross-Trait Insights */}
 			{ocean && darkTriad && (
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.4, delay: 0.25 }}
-					className="rounded-2xl border border-accent/20 bg-surface p-5 sm:p-6"
-				>
+				<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+					className="rounded-2xl border border-accent/20 bg-surface p-5 sm:p-6">
 					<div className="flex items-center gap-3 mb-4">
 						<span className="text-2xl">🔍</span>
 						<div>
-							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">
-								Phân tích kết hợp đặc điểm
-							</h3>
-							<p className="text-xs text-muted">Cross-Trait Insights — Nhìn toàn diện hơn</p>
+							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">Điểm độc đáo của bạn</h3>
+							<p className="text-xs text-muted">Những nhận định này xuất hiện khi kết hợp nhiều đặc điểm của bạn với nhau</p>
 						</div>
 					</div>
 					<div className="grid gap-3 sm:grid-cols-2">
-						{generateCrossTraitInsights(ocean, darkTriad).map((insight, i) => (
+						{generateCrossTraitInsights(ocean, darkTriad).map((ins, i) => (
 							<div key={i} className="rounded-xl border border-border bg-background-secondary/50 p-3">
 								<div className="flex items-start gap-2">
-									<span className="text-base mt-0.5">{insight.icon}</span>
+									<span className="text-base mt-0.5">{ins.icon}</span>
 									<div>
-										<p className="text-xs font-bold text-foreground">{insight.title}</p>
-										<p className="mt-1 text-[11px] leading-relaxed text-muted">{insight.description}</p>
+										<p className="text-xs font-bold text-foreground">{ins.title}</p>
+										<p className="mt-1 text-[11px] leading-relaxed text-muted">{ins.description}</p>
+										<p className="mt-1.5 text-[10px] text-accent font-semibold">→ {ins.action}</p>
 									</div>
 								</div>
 							</div>
@@ -659,166 +810,97 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 				</motion.div>
 			)}
 
-			{/* ── Scores Grid ── */}
+			{/* Trait Detail Bars */}
 			<div className="grid gap-6 lg:grid-cols-2">
-				{/* OCEAN — The Light */}
-				<motion.div
-					initial={{ opacity: 0, x: -20 }}
-					animate={{ opacity: 1, x: 0 }}
-					transition={{ duration: 0.4, delay: 0.3 }}
-					className="rounded-2xl border border-indigo/20 bg-surface p-5 sm:p-6"
-				>
-					<div className="flex items-center gap-3 mb-5">
-						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-subtle text-xl">
-							🌟
-						</div>
+				<motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}
+					className="rounded-2xl border border-indigo/20 bg-surface p-5 sm:p-6">
+					<div className="flex items-center gap-3 mb-4">
+						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-subtle text-xl">🌟</div>
 						<div>
-							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">
-								The Light — OCEAN
-							</h3>
-							<p className="text-xs text-muted">BFI-2-S (Big Five Inventory)</p>
+							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">5 nét tính cách lớn</h3>
+							<p className="text-[10px] text-muted">👆 Nhấn vào từng mục để xem phân tích riêng cho bạn</p>
 						</div>
 					</div>
-					<div className="space-y-4">
+					<div className="space-y-3">
 						{oceanTraits.map((trait, i) => (
-							<TraitBar
-								key={trait.domain}
-								trait={trait}
+							<TraitBar key={trait.domain} trait={trait}
 								colorClass="bg-linear-to-r from-indigo to-purple"
-								delay={0.3 + i * 0.1}
+								delay={0.35 + i * 0.1}
 								normative={normativeMap[trait.domain]}
-								showInsight
 							/>
 						))}
 					</div>
 				</motion.div>
-
-				{/* Dark Triad — The Dark */}
-				<motion.div
-					initial={{ opacity: 0, x: 20 }}
-					animate={{ opacity: 1, x: 0 }}
-					transition={{ duration: 0.4, delay: 0.4 }}
-					className="rounded-2xl border border-rose/20 bg-surface p-5 sm:p-6"
-				>
-					<div className="flex items-center gap-3 mb-5">
-						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-subtle text-xl">
-							🌑
-						</div>
+				<motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}
+					className="rounded-2xl border border-rose/20 bg-surface p-5 sm:p-6">
+					<div className="flex items-center gap-3 mb-4">
+						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-subtle text-xl">🌑</div>
 						<div>
-							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">
-								The Dark — Triad
-							</h3>
-							<p className="text-xs text-muted">SD3 (Short Dark Triad)</p>
+							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">Bản năng xã hội</h3>
+							<p className="text-[10px] text-muted">👆 Nhấn vào từng mục để xem phân tích riêng cho bạn</p>
 						</div>
 					</div>
-					<div className="space-y-4">
+					<div className="space-y-3">
 						{darkTraits.map((trait, i) => (
-							<TraitBar
-								key={trait.domain}
-								trait={trait}
+							<TraitBar key={trait.domain} trait={trait}
 								colorClass="bg-linear-to-r from-rose to-red-500"
 								delay={0.4 + i * 0.1}
 								normative={normativeMap[trait.domain]}
-								showInsight
 							/>
 						))}
-					</div>
-
-					{/* Contextual warning */}
-					<div className="mt-5 rounded-lg bg-background-secondary p-3">
-						<p className="text-[10px] leading-relaxed text-muted">
-							⚠️ Dark Triad scores cao không tự động có nghĩa xấu trong bối cảnh nghề nghiệp.
-							Một mức Machiavellianism vừa phải có thể phản ánh trí tuệ chiến lược, không phải ý đồ xấu.
-						</p>
 					</div>
 				</motion.div>
 			</div>
 
-			{/* ── Normative Percentile Comparison Section ── */}
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.4, delay: 0.5 }}
-				className="rounded-2xl border border-accent/20 bg-surface overflow-hidden"
-			>
+			{/* Normative Percentile Comparison */}
+			<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+				className="rounded-2xl border border-accent/20 bg-surface overflow-hidden">
 				<div className="p-5 sm:p-6">
 					<div className="flex items-center gap-3 mb-1">
 						<span className="text-2xl">📊</span>
 						<div>
-							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">
-								So sánh Percentile — Normative Comparison
-							</h3>
-							<p className="text-xs text-muted mt-0.5">
-								Vị trí của bạn so với nhóm tham chiếu nghiên cứu
-							</p>
+							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">Bạn ở đâu so với mọi người?</h3>
+							<p className="text-xs text-muted mt-0.5">So sánh với nhóm tham chiếu nghiên cứu quốc tế</p>
 						</div>
 					</div>
-
-					{/* Reference group selectors */}
 					<div className="mt-4 grid gap-4 sm:grid-cols-2">
 						{oceanGroupOptions.length > 0 && (
-							<ReferenceGroupSelector
-								label="Nhóm tham chiếu OCEAN (Big Five)"
-								options={oceanGroupOptions}
-								value={oceanGroup}
-								onChange={setOceanGroup}
-								detail={normativeData?.referenceGroupDetails?.ocean}
-							/>
+							<ReferenceGroupSelector label="Nhóm OCEAN" options={oceanGroupOptions} value={oceanGroup} onChange={setOceanGroup} detail={normativeData?.referenceGroupDetails?.ocean} />
 						)}
 						{darkTriadGroupOptions.length > 0 && (
-							<ReferenceGroupSelector
-								label="Nhóm tham chiếu Dark Triad"
-								options={darkTriadGroupOptions}
-								value={darkTriadGroup}
-								onChange={setDarkTriadGroup}
-								detail={normativeData?.referenceGroupDetails?.darkTriad}
-							/>
+							<ReferenceGroupSelector label="Nhóm Dark Triad" options={darkTriadGroupOptions} value={darkTriadGroup} onChange={setDarkTriadGroup} detail={normativeData?.referenceGroupDetails?.darkTriad} />
 						)}
 					</div>
-
-					{/* Loading state */}
 					{isLoadingPercentiles && (
 						<div className="mt-4 flex items-center justify-center py-6 text-sm text-muted">
-							<div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent mr-2" />
-							Đang tính toán percentile...
+							<div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent mr-2" />Đang tính toán percentile...
 						</div>
 					)}
-
-					{/* OCEAN percentile table */}
 					{!isLoadingPercentiles && normativeData && (
 						<div className="mt-5 space-y-5">
 							<div>
-								<h4 className="text-xs font-bold uppercase tracking-wider text-indigo mb-2">
-									🌟 OCEAN — Big Five
-								</h4>
-								<PercentileComparisonTable
-									traits={oceanTraits}
-									normativeMap={normativeMap}
-								/>
+								<h4 className="text-xs font-bold uppercase tracking-wider text-indigo mb-2">🌟 5 nét tính cách lớn</h4>
+								<PercentileComparisonTable traits={oceanTraits} normativeMap={normativeMap} />
 							</div>
-
 							<div>
-								<h4 className="text-xs font-bold uppercase tracking-wider text-rose mb-2">
-									🌑 Dark Triad
-								</h4>
-								<PercentileComparisonTable
-									traits={darkTraits}
-									normativeMap={normativeMap}
-								/>
+								<h4 className="text-xs font-bold uppercase tracking-wider text-rose mb-2">🌑 Bản năng xã hội</h4>
+								<PercentileComparisonTable traits={darkTraits} normativeMap={normativeMap} />
 							</div>
-
-							{/* Interpretation guide */}
+							<div className="rounded-lg bg-background-secondary p-4">
+								<h4 className="text-xs font-bold text-foreground mb-2">🎯 Hệ thống 5 mức (dựa trên Z-score)</h4>
+								<div className="flex flex-wrap gap-2">
+									{(['very_high', 'high', 'moderate', 'low', 'very_low'] as FiveTier[]).map((t) => (
+										<span key={t} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold ${getLevelBadgeClass(t)}`}>
+											{getLevelLabel(t)} {t === 'very_high' ? '(Z≥1.5)' : t === 'high' ? '(Z≥0.5)' : t === 'moderate' ? '(-0.5≤Z<0.5)' : t === 'low' ? '(Z≥-1.5)' : '(Z<-1.5)'}
+										</span>
+									))}
+								</div>
+							</div>
 							<div className="rounded-lg bg-background-secondary p-4">
 								<h4 className="text-xs font-bold text-foreground mb-2">📖 Hướng dẫn đọc kết quả</h4>
 								<div className="grid gap-2 sm:grid-cols-2 text-[10px] text-muted leading-relaxed">
-									<div>
-										<p><strong>Percentile (P)</strong> cho biết % người trong nhóm tham chiếu có điểm thấp hơn bạn.</p>
-										<p className="mt-1">Ví dụ: P72 nghĩa là bạn cao hơn 72% người trong nhóm.</p>
-									</div>
-									<div>
-										<p><strong>Z-score</strong> cho biết bạn cách trung bình nhóm bao nhiêu độ lệch chuẩn.</p>
-										<p className="mt-1">Z = 0 → đúng trung bình; Z &gt; 1 → cao hơn phần lớn; Z &lt; -1 → thấp hơn phần lớn.</p>
-									</div>
+									<div><p><strong>Percentile (P)</strong> cho biết % người trong nhóm tham chiếu có điểm thấp hơn bạn.</p><p className="mt-1">P72 = bạn cao hơn 72% người trong nhóm.</p></div>
+									<div><p><strong>Z-score</strong> cho biết bạn cách trung bình nhóm bao nhiêu độ lệch chuẩn.</p><p className="mt-1">Z=0 → đúng trung bình; Z&gt;1 → cao hơn phần lớn.</p></div>
 								</div>
 							</div>
 						</div>
@@ -826,79 +908,43 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 				</div>
 			</motion.div>
 
-			{/* ── Score Summary Table ── */}
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.4, delay: 0.6 }}
-				className="rounded-2xl border border-border bg-surface overflow-hidden"
-			>
+			{/* Score Summary Table */}
+			<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+				className="rounded-2xl border border-border bg-surface overflow-hidden">
 				<div className="p-5 sm:p-6">
-					<h3 className="text-sm font-black text-foreground uppercase tracking-wider">
-						📊 Bảng điểm chi tiết
-					</h3>
+					<h3 className="text-sm font-black text-foreground uppercase tracking-wider">📋 Bảng điểm chi tiết</h3>
 				</div>
 				<div className="overflow-x-auto">
 					<table className="w-full text-sm">
 						<thead>
 							<tr className="border-t border-border bg-background-secondary/50">
-								<th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted">
-									Đặc điểm
-								</th>
-								<th className="px-5 py-3 text-center text-xs font-bold uppercase tracking-wider text-muted">
-									Loại
-								</th>
-								<th className="px-5 py-3 text-center text-xs font-bold uppercase tracking-wider text-muted">
-									Điểm
-								</th>
-								<th className="px-5 py-3 text-center text-xs font-bold uppercase tracking-wider text-muted">
-									Mức
-								</th>
-								<th className="px-5 py-3 text-center text-xs font-bold uppercase tracking-wider text-muted">
-									Percentile
-								</th>
+								{['Đặc điểm', 'Loại', 'Điểm', 'Z', 'Mức', 'Percentile'].map((h) => (
+									<th key={h} className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted">{h}</th>
+								))}
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-border">
 							{[...oceanTraits, ...darkTraits].map((trait) => {
 								const isOcean = ['extraversion', 'agreeableness', 'conscientiousness', 'negativeEmotionality', 'openMindedness'].includes(trait.domain);
-								const viLabel = DOMAIN_LABELS_VI[trait.domain] ?? trait.label;
+								const norm = normativeMap[trait.domain];
+								const tier: FiveTier = norm ? getZTier(norm.zScore) : (trait.level === 'high' ? 'high' : trait.level === 'low' ? 'low' : 'moderate');
 								return (
 									<tr key={trait.domain} className="transition-colors hover:bg-surface-hover/50">
-										<td className="px-5 py-3 font-medium text-foreground">
-											{viLabel}
+										<td className="px-4 py-3 font-medium text-foreground">
+											{DOMAIN_LABELS_VI[trait.domain] ?? trait.label}
 											<span className="ml-1 text-xs text-muted">({trait.label})</span>
 										</td>
-										<td className="px-5 py-3 text-center">
-											<span
-												className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
-													isOcean
-														? 'bg-indigo-subtle text-indigo'
-														: 'bg-rose-subtle text-rose'
-												}`}
-											>
+										<td className="px-4 py-3">
+											<span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${isOcean ? 'bg-indigo-subtle text-indigo' : 'bg-rose-subtle text-rose'}`}>
 												{isOcean ? 'OCEAN' : 'Dark'}
 											</span>
 										</td>
-										<td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
-											{trait.score.toFixed(2)}
+										<td className="px-4 py-3 font-bold tabular-nums">{trait.score.toFixed(2)}</td>
+										<td className="px-4 py-3 tabular-nums text-muted">{norm ? `${norm.zScore > 0 ? '+' : ''}${norm.zScore.toFixed(2)}` : '—'}</td>
+										<td className="px-4 py-3">
+											<span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${getLevelBadgeClass(tier)}`}>{getLevelLabel(tier)}</span>
 										</td>
-										<td className="px-5 py-3 text-center">
-											<span
-												className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
-													trait.level === 'high'
-														? 'bg-error-subtle text-error'
-														: trait.level === 'low'
-															? 'bg-teal-subtle text-teal'
-															: 'bg-warning-subtle text-warning'
-												}`}
-											>
-												{trait.level === 'high' ? 'Cao' : trait.level === 'low' ? 'Thấp' : 'TB'}
-											</span>
-										</td>
-										<td className="px-5 py-3 text-center text-xs tabular-nums text-muted">
-											{trait.percentile !== null ? `${trait.percentile}%` : '—'}
-										</td>
+										<td className="px-4 py-3 text-xs tabular-nums text-muted">{norm ? `P${norm.percentile}` : (trait.percentile !== null ? `P${trait.percentile}` : '—')}</td>
 									</tr>
 								);
 							})}
@@ -907,34 +953,19 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 				</div>
 			</motion.div>
 
-			{/* ── Actions ── */}
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				transition={{ delay: 0.8 }}
-				className="flex flex-col gap-3 sm:flex-row sm:justify-center"
-			>
-				<Link
-					href="/personality-test"
-					className="rounded-xl border border-border bg-surface px-6 py-3 text-center text-sm font-bold text-foreground transition-colors hover:bg-surface-hover"
-				>
-					← Về trang test
+			{/* Actions */}
+			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+				className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+				<Link href="/personality-test" className="rounded-xl border border-border bg-surface px-6 py-3 text-center text-sm font-bold text-foreground transition-colors hover:bg-surface-hover">
+					← Quay lại
 				</Link>
-				<Link
-					href="/personality-test"
-					className="rounded-xl bg-accent px-6 py-3 text-center text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-hover"
-				>
-					Làm bài test mới
+				<Link href="/personality-test" className="rounded-xl bg-accent px-6 py-3 text-center text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-hover">
+					Làm lại bài đánh giá 🔁
 				</Link>
 			</motion.div>
 
-			{/* ── Disclaimer ── */}
-			<div className="rounded-xl bg-background-secondary p-4 text-center">
-				<p className="text-[10px] leading-relaxed text-muted">
-					📌 Kết quả này dựa trên hai thang đo tâm lý học được nghiên cứu học thuật (BFI-2-S: Soto & John, 2017; SD3: Jones & Paulhus, 2014).
-					Đây là công cụ tự đánh giá, không phải chẩn đoán lâm sàng. Kết quả nên được xem xét trong bối cảnh phát triển cá nhân và nghề nghiệp.
-				</p>
-			</div>
+			{/* Limitations */}
+			<LimitationsSection />
 		</div>
 	);
 }

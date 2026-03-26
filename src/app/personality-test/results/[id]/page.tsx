@@ -47,14 +47,19 @@ export default async function PersonalityTestResultsPage({ params }: PageProps) 
 			<section className="border-b border-border">
 				<div className="mx-auto max-w-4xl px-6 py-10 sm:py-14">
 					<div className="flex items-center gap-3">
-						<span className="text-3xl">📊</span>
+						<span className="text-3xl">🌟</span>
 						<div>
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">
-								Kết quả phân tích
+								Hồ sơ tính cách của bạn
 							</p>
 							<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
 								{testSession.result?.archetype?.name ?? 'Personality Profile'}
 							</h1>
+							{testSession.result?.archetype?.tagline && (
+								<p className="mt-1 text-sm italic text-muted">
+									{testSession.result.archetype.tagline}
+								</p>
+							)}
 						</div>
 					</div>
 				</div>

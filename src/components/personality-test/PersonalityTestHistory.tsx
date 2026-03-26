@@ -24,10 +24,10 @@ export default function PersonalityTestHistory({ history }: Props) {
 			className="rounded-2xl border border-border bg-surface p-5 sm:p-6"
 		>
 			<h3 className="text-sm font-black uppercase tracking-wider text-foreground">
-				📜 Lịch sử bài test
+				📜 Bài làm trước đây
 			</h3>
 			<p className="mt-1 text-xs text-muted">
-				{history.length} lần làm bài
+				Bạn đã làm {history.length} lần — nhấn vào để xem lại
 			</p>
 
 			<div className="mt-4 space-y-2">
