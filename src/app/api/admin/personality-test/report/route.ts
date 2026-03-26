@@ -32,6 +32,13 @@ import * as XLSX from 'xlsx';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
 import { findAllSessionsForReport, findResponsesForSessions } from '@/models/PersonalityTest';
 import { BFI2S_QUESTIONS, SD3_QUESTIONS, getEffectiveScore } from '@/lib/personalityScoring';
+import {
+	calculateAllPercentiles,
+	getDefaultReferenceGroupIds,
+	REFERENCE_GROUPS,
+	type PercentileResult,
+} from '@/lib/normativeData';
+import type { PersonalityDomain } from '@/types/personalityTest';
 
 // ─── Question arrays sorted by formOrder (= Google Form column order) ─────────
 
@@ -93,6 +100,31 @@ function formatDemoCell(r: ReportRowRaw, key: string, idx: number): unknown {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Map DB snake_case domain keys to camelCase PersonalityDomain keys */
+const DB_TO_DOMAIN: Record<string, PersonalityDomain> = {
+	extraversion:          'extraversion',
+	agreeableness:         'agreeableness',
+	conscientiousness:     'conscientiousness',
+	negative_emotionality: 'negativeEmotionality',
+	open_mindedness:       'openMindedness',
+	machiavellianism:      'machiavellianism',
+	narcissism:            'narcissism',
+	psychopathy:           'psychopathy',
+};
+
+/** Calculate normative percentiles for a report row */
+function getRowPercentiles(r: ReportRowRaw): Record<string, PercentileResult> {
+	const defaults = getDefaultReferenceGroupIds();
+	const scores: Partial<Record<PersonalityDomain, number>> = {};
+	for (const [dbKey, domain] of Object.entries(DB_TO_DOMAIN)) {
+		const val = r[dbKey as keyof ReportRowRaw];
+		if (val != null && !isNaN(Number(val)) && Number(val) > 0) {
+			scores[domain] = Number(val);
+		}
+	}
+	return calculateAllPercentiles(scores, defaults.ocean, defaults.darkTriad);
+}
 
 function autoFitColumns(ws: XLSX.WorkSheet, data: Record<string, unknown>[]): void {
 	if (data.length === 0) return;
@@ -181,14 +213,30 @@ async function handleGet(req: NextRequest) {
 		// BFI domain averages
 		row['── BFI OCEAN ──'] = '';
 		for (const d of [
-{ dbKey: 'extraversion'          as keyof ReportRowRaw, label: 'E Extraversion' },
-{ dbKey: 'agreeableness'         as keyof ReportRowRaw, label: 'A Agreeableness' },
-{ dbKey: 'conscientiousness'     as keyof ReportRowRaw, label: 'C Conscientiousness' },
-{ dbKey: 'negative_emotionality' as keyof ReportRowRaw, label: 'N Negative Emotionality' },
-{ dbKey: 'open_mindedness'       as keyof ReportRowRaw, label: 'O Open-Mindedness' },
+{ dbKey: 'extraversion'          as keyof ReportRowRaw, label: 'E Extraversion', domain: 'extraversion' },
+{ dbKey: 'agreeableness'         as keyof ReportRowRaw, label: 'A Agreeableness', domain: 'agreeableness' },
+{ dbKey: 'conscientiousness'     as keyof ReportRowRaw, label: 'C Conscientiousness', domain: 'conscientiousness' },
+{ dbKey: 'negative_emotionality' as keyof ReportRowRaw, label: 'N Negative Emotionality', domain: 'negativeEmotionality' },
+{ dbKey: 'open_mindedness'       as keyof ReportRowRaw, label: 'O Open-Mindedness', domain: 'openMindedness' },
 ]) {
 			const v = r[d.dbKey];
 			row[d.label] = (v !== null && v !== undefined) ? Number(Number(v).toFixed(3)) : '';
+		}
+
+		// BFI normative percentiles
+		const pctData = getRowPercentiles(r);
+		row['── BFI PERCENTILES ──'] = '';
+		for (const d of [
+{ domain: 'extraversion',         label: 'E Pct' },
+{ domain: 'agreeableness',        label: 'A Pct' },
+{ domain: 'conscientiousness',    label: 'C Pct' },
+{ domain: 'negativeEmotionality', label: 'N Pct' },
+{ domain: 'openMindedness',       label: 'O Pct' },
+]) {
+			const p = pctData[d.domain];
+			row[`${d.label} (Percentile)`] = p ? p.percentile : '';
+			row[`${d.label} (z-score)`] = p ? p.zScore : '';
+			row[`${d.label} (Mức)`] = p ? p.interpretationVi : '';
 		}
 
 		// SD3 scored items
@@ -211,6 +259,19 @@ async function handleGet(req: NextRequest) {
 ]) {
 			const v = r[d.dbKey];
 			row[d.label] = (v !== null && v !== undefined) ? Number(Number(v).toFixed(3)) : '';
+		}
+
+		// SD3 normative percentiles
+		row['── SD3 PERCENTILES ──'] = '';
+		for (const d of [
+{ domain: 'machiavellianism', label: 'M Pct' },
+{ domain: 'narcissism',       label: 'Narc Pct' },
+{ domain: 'psychopathy',      label: 'P Pct' },
+]) {
+			const p = pctData[d.domain];
+			row[`${d.label} (Percentile)`] = p ? p.percentile : '';
+			row[`${d.label} (z-score)`] = p ? p.zScore : '';
+			row[`${d.label} (Mức)`] = p ? p.interpretationVi : '';
 		}
 
 		row['Archetype'] = r.archetype_name ?? '';
@@ -279,6 +340,69 @@ async function handleGet(req: NextRequest) {
 		{ 'Thống kê': 'P — Psychopathy',           'Giá trị': avg('psychopathy'),            'Ghi chú': sd('psychopathy')            ?? 'N/A' },
 		{ 'Thống kê': '', 'Giá trị': '', 'Ghi chú': '' },
 
+		{ 'Thống kê': '═══ SO SÁNH NORMATIVE (Nhóm tham chiếu) ═══', 'Giá trị': '', 'Ghi chú': '' },
+		...(() => {
+			const defaults = getDefaultReferenceGroupIds();
+			const oceanGroup = REFERENCE_GROUPS.find(g => g.id === defaults.ocean);
+			const darkGroup = REFERENCE_GROUPS.find(g => g.id === defaults.darkTriad);
+			const rows: Record<string, unknown>[] = [];
+
+			if (oceanGroup) {
+				rows.push({ 'Thống kê': `BFI-2 nhóm tham chiếu`, 'Giá trị': oceanGroup.label, 'Ghi chú': oceanGroup.source });
+				for (const [domain, label] of [
+					['extraversion', 'E — Extraversion'],
+					['agreeableness', 'A — Agreeableness'],
+					['conscientiousness', 'C — Conscientiousness'],
+					['negativeEmotionality', 'N — Negative Emotionality'],
+					['openMindedness', 'O — Open-Mindedness'],
+				] as const) {
+					const n = oceanGroup.norms[domain];
+					if (n) {
+						rows.push({
+							'Thống kê': `  ${label} (norm)`,
+							'Giá trị': `M=${n.mean.toFixed(4)}, SD=${n.sd.toFixed(4)}`,
+							'Ghi chú': `N=${n.n}`,
+						});
+					}
+				}
+			}
+
+			rows.push({ 'Thống kê': '', 'Giá trị': '', 'Ghi chú': '' });
+
+			if (darkGroup) {
+				rows.push({ 'Thống kê': `SD3 nhóm tham chiếu`, 'Giá trị': darkGroup.label, 'Ghi chú': darkGroup.source });
+				for (const [domain, label] of [
+					['machiavellianism', 'M — Machiavellianism'],
+					['narcissism', 'Narc — Narcissism'],
+					['psychopathy', 'P — Psychopathy'],
+				] as const) {
+					const n = darkGroup.norms[domain];
+					if (n) {
+						rows.push({
+							'Thống kê': `  ${label} (norm)`,
+							'Giá trị': `M=${n.mean.toFixed(4)}, SD=${n.sd.toFixed(4)}`,
+							'Ghi chú': `N=${n.n}`,
+						});
+					}
+				}
+			}
+
+			rows.push({ 'Thống kê': '', 'Giá trị': '', 'Ghi chú': '' });
+			rows.push({
+				'Thống kê': 'Phương pháp percentile',
+				'Giá trị': 'Z-score → Φ(z) → Percentile',
+				'Ghi chú': 'Φ = Standard Normal CDF (Abramowitz & Stegun approx.)',
+			});
+			rows.push({
+				'Thống kê': 'Giải thích percentile',
+				'Giá trị': '≤10 Rất thấp | ≤25 Thấp | ≤40 Dưới TB | ≤60 TB | ≤75 Trên TB | ≤90 Cao | >90 Rất cao',
+				'Ghi chú': 'Clamped 1–99',
+			});
+
+			return rows;
+		})(),
+		{ 'Thống kê': '', 'Giá trị': '', 'Ghi chú': '' },
+
 		{ 'Thống kê': '═══ SCORING FORMULAS ═══', 'Giá trị': '', 'Ghi chú': '' },
 		{ 'Thống kê': 'Likert scale',        'Giá trị': '1–5', 'Ghi chú': '1=Strongly Disagree … 5=Strongly Agree' },
 		{ 'Thống kê': 'Reverse scoring',     'Giá trị': 'scored = 6 − raw', 'Ghi chú': 'Applied to items marked R in Scoring Key sheet' },
@@ -315,7 +439,7 @@ async function handleGet(req: NextRequest) {
 	XLSX.utils.book_append_sheet(wb, ws3, '3. Scoring Key');
 
 	const ws4 = XLSX.utils.json_to_sheet(summarySheet);
-	ws4['!cols'] = [{ wch: 38 }, { wch: 35 }, { wch: 48 }];
+	ws4['!cols'] = [{ wch: 42 }, { wch: 50 }, { wch: 55 }];
 	XLSX.utils.book_append_sheet(wb, ws4, '4. Tóm tắt');
 
 	// xlsx write returns a Buffer; convert to ArrayBuffer for the standard Response body

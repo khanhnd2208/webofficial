@@ -32,6 +32,14 @@ interface ReportRow {
 	machiavellianism: number | null;
 	narcissism: number | null;
 	psychopathy: number | null;
+	extraversion_pct: number | null;
+	agreeableness_pct: number | null;
+	conscientiousness_pct: number | null;
+	negative_emotionality_pct: number | null;
+	open_mindedness_pct: number | null;
+	machiavellianism_pct: number | null;
+	narcissism_pct: number | null;
+	psychopathy_pct: number | null;
 	archetype_name: string | null;
 }
 
@@ -48,17 +56,17 @@ const fmtDuration = (secs: number | null) => {
 };
 
 const OCEAN_DOMAINS = [
-	{ key: 'extraversion',          short: 'E', label: 'Hướng ngoại' },
-	{ key: 'agreeableness',         short: 'A', label: 'Dễ chịu' },
-	{ key: 'conscientiousness',     short: 'C', label: 'Tận tâm' },
-	{ key: 'negative_emotionality', short: 'N', label: 'Cảm xúc(-)' },
-	{ key: 'open_mindedness',       short: 'O', label: 'Cởi mở' },
+	{ key: 'extraversion',          short: 'E', label: 'Hướng ngoại',  pctKey: 'extraversion_pct' },
+	{ key: 'agreeableness',         short: 'A', label: 'Dễ chịu',     pctKey: 'agreeableness_pct' },
+	{ key: 'conscientiousness',     short: 'C', label: 'Tận tâm',     pctKey: 'conscientiousness_pct' },
+	{ key: 'negative_emotionality', short: 'N', label: 'Cảm xúc(-)',  pctKey: 'negative_emotionality_pct' },
+	{ key: 'open_mindedness',       short: 'O', label: 'Cởi mở',      pctKey: 'open_mindedness_pct' },
 ] as const;
 
 const DARK_DOMAINS = [
-	{ key: 'machiavellianism', short: 'M', label: 'Mưu lược' },
-	{ key: 'narcissism',       short: 'N', label: 'Tự ái' },
-	{ key: 'psychopathy',      short: 'P', label: 'Phản XH' },
+	{ key: 'machiavellianism', short: 'M', label: 'Mưu lược',  pctKey: 'machiavellianism_pct' },
+	{ key: 'narcissism',       short: 'N', label: 'Tự ái',      pctKey: 'narcissism_pct' },
+	{ key: 'psychopathy',      short: 'P', label: 'Phản XH',    pctKey: 'psychopathy_pct' },
 ] as const;
 
 type SortKey = keyof ReportRow;
@@ -74,6 +82,22 @@ function ScoreCell({ value }: { value: number | null }) {
 	return <span className={color}>{value.toFixed(2)}</span>;
 }
 
+function PercentileCell({ value }: { value: number | null }) {
+	if (value == null) return <span className="text-muted">—</span>;
+	const pct = Math.round(value);
+	const color =
+		pct >= 75 ? 'bg-success-subtle text-success' :
+		pct >= 60 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+		pct >= 40 ? 'text-foreground' :
+		pct >= 25 ? 'bg-warning-subtle text-warning' :
+		'bg-error-subtle text-error';
+	return (
+		<span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${color}`}>
+			P{pct}
+		</span>
+	);
+}
+
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function PersonalityTestReportPage() {
@@ -85,7 +109,7 @@ export default function PersonalityTestReportPage() {
 	const [sortKey, setSortKey] = useState<SortKey>('created_at');
 	const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 	const [exporting, setExporting] = useState(false);
-	const [tab, setTab] = useState<'ocean' | 'dark' | 'demo'>('demo');
+	const [tab, setTab] = useState<'ocean' | 'dark' | 'demo' | 'pct'>('demo');
 
 	// Load data
 	useEffect(() => {
@@ -306,6 +330,7 @@ export default function PersonalityTestReportPage() {
 					{ key: 'demo', label: '👤 Thông tin' },
 					{ key: 'ocean', label: '🌟 OCEAN' },
 					{ key: 'dark', label: '🌑 Dark Triad' },
+					{ key: 'pct', label: '📊 Percentile' },
 				] as const).map((t) => (
 					<button
 						key={t.key}
@@ -348,6 +373,18 @@ export default function PersonalityTestReportPage() {
 							{tab === 'dark' && DARK_DOMAINS.map((d) => (
 								<Th key={d.key} label={d.short} k={d.key as SortKey} />
 							))}
+
+							{tab === 'pct' && (
+								<>
+									{OCEAN_DOMAINS.map((d) => (
+										<Th key={d.pctKey} label={`${d.short}%`} k={d.pctKey as SortKey} />
+									))}
+									<th className="px-1 py-2.5 text-xs text-muted">│</th>
+									{DARK_DOMAINS.map((d) => (
+										<Th key={d.pctKey} label={`${d.short}%`} k={d.pctKey as SortKey} />
+									))}
+								</>
+							)}
 
 							<Th label="Status" k="status" />
 						</tr>
@@ -400,6 +437,22 @@ export default function PersonalityTestReportPage() {
 									</td>
 								))}
 
+								{tab === 'pct' && (
+									<>
+										{OCEAN_DOMAINS.map((d) => (
+											<td key={d.pctKey} className="px-3 py-2.5 text-center">
+												<PercentileCell value={r[d.pctKey as keyof ReportRow] as number | null} />
+											</td>
+										))}
+										<td className="px-1 py-2.5 text-xs text-muted text-center">│</td>
+										{DARK_DOMAINS.map((d) => (
+											<td key={d.pctKey} className="px-3 py-2.5 text-center">
+												<PercentileCell value={r[d.pctKey as keyof ReportRow] as number | null} />
+											</td>
+										))}
+									</>
+								)}
+
 								<td className="px-3 py-2.5">
 									<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
 										r.status === 'completed'
@@ -429,6 +482,11 @@ export default function PersonalityTestReportPage() {
 				Hiển thị {filtered.length}/{rows.length} bản ghi · Điểm từ 1.00–5.00 ·{' '}
 				<span className="text-success font-bold">Xanh ≥ 3.8</span> ·{' '}
 				<span className="text-error font-bold">Đỏ ≤ 2.2</span>
+				{tab === 'pct' && (
+					<>
+						{' '}· Percentile so với nhóm tham chiếu (BFI-2: N=3,071 · SD3: N=998)
+					</>
+				)}
 			</p>
 		</div>
 	);

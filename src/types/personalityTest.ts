@@ -84,7 +84,7 @@ export interface TraitScore {
 	score: number;
 	/** Human-readable label */
 	label: string;
-	/** Percentile rank against all valid sessions (0-100). Null if not yet calculated. */
+	/** Percentile rank against normative reference group (1-99). Null if not yet calculated. */
 	percentile: number | null;
 	/** 'low' | 'moderate' | 'high' based on score thresholds */
 	level: 'low' | 'moderate' | 'high';

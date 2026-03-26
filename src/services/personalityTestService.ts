@@ -24,6 +24,12 @@ import {
 } from '@/lib/personalityScoring';
 
 import {
+	calculateAllPercentiles as calculateNormativePercentiles,
+	getDefaultReferenceGroupIds,
+	type PercentileResult,
+} from '@/lib/normativeData';
+
+import {
 	findSessionById,
 	findResultBySessionId,
 	findResponsesBySessionId,
@@ -31,7 +37,6 @@ import {
 	createSession,
 	insertResult,
 	updatePercentiles,
-	calculatePercentileForDomain,
 	countSessionsByStatus,
 	getArchetypeDistribution,
 	getAverageScores,
@@ -282,7 +287,8 @@ export async function submitPersonalityTest(
 }
 
 /**
- * Calculate percentile ranks for a session's scores against all valid sessions.
+ * Calculate normative percentile ranks for a session's scores.
+ * Uses published reference group norms (BFI-2 & SD3) instead of DB-rank.
  */
 async function calculateAndUpdatePercentiles(
 	sessionId: string,
@@ -290,24 +296,46 @@ async function calculateAndUpdatePercentiles(
 ): Promise<Record<string, number> | null> {
 	if (!scoringResult.ocean || !scoringResult.darkTriad) return null;
 
-	const domains = [
-		{ key: 'extraversion', score: scoringResult.ocean.extraversion.score },
-		{ key: 'agreeableness', score: scoringResult.ocean.agreeableness.score },
-		{ key: 'conscientiousness', score: scoringResult.ocean.conscientiousness.score },
-		{ key: 'negativeEmotionality', score: scoringResult.ocean.negativeEmotionality.score },
-		{ key: 'openMindedness', score: scoringResult.ocean.openMindedness.score },
-		{ key: 'machiavellianism', score: scoringResult.darkTriad.machiavellianism.score },
-		{ key: 'narcissism', score: scoringResult.darkTriad.narcissism.score },
-		{ key: 'psychopathy', score: scoringResult.darkTriad.psychopathy.score },
-	];
+	// Build a scores map for the normative calculator
+	const scores: Partial<Record<string, number>> = {
+		extraversion: scoringResult.ocean.extraversion.score,
+		agreeableness: scoringResult.ocean.agreeableness.score,
+		conscientiousness: scoringResult.ocean.conscientiousness.score,
+		negativeEmotionality: scoringResult.ocean.negativeEmotionality.score,
+		openMindedness: scoringResult.ocean.openMindedness.score,
+		machiavellianism: scoringResult.darkTriad.machiavellianism.score,
+		narcissism: scoringResult.darkTriad.narcissism.score,
+		psychopathy: scoringResult.darkTriad.psychopathy.score,
+	};
 
+	// Calculate normative percentiles using default reference groups
+	const defaults = getDefaultReferenceGroupIds();
+	const normativeResults = calculateNormativePercentiles(
+		scores as Partial<Record<import('@/types/personalityTest').PersonalityDomain, number>>,
+		defaults.ocean,
+		defaults.darkTriad
+	);
+
+	// Extract just the percentile numbers for DB storage
 	const percentiles: Record<string, number> = {};
-	for (const d of domains) {
-		percentiles[d.key] = await calculatePercentileForDomain(d.key, d.score);
+	for (const [domain, result] of Object.entries(normativeResults)) {
+		percentiles[domain] = result.percentile;
 	}
 
 	await updatePercentiles(sessionId, percentiles);
 	return percentiles;
+}
+
+/**
+ * Calculate percentiles for arbitrary reference groups (on-demand).
+ * Used when the user selects different reference groups in the UI.
+ */
+export function calculatePercentilesForGroups(
+	scores: Partial<Record<import('@/types/personalityTest').PersonalityDomain, number>>,
+	oceanGroupId?: string,
+	darkTriadGroupId?: string
+): Record<string, PercentileResult> {
+	return calculateNormativePercentiles(scores, oceanGroupId, darkTriadGroupId);
 }
 
 // ─── Admin Queries ─────────────────────────────────────────────────────────────

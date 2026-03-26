@@ -8,8 +8,10 @@
    - Professional, enterprise-grade look
    - Responsive radar-style bar visualizations
    - Archetype card with narrative
+   - Normative percentile comparison with reference group selector
    ════════════════════════════════════════════════════════════════════════ */
 
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -17,8 +19,53 @@ import type {
 	PersonalityTestSessionDTO,
 	TraitScore,
 	ArchetypeProfile,
+	PersonalityDomain,
 } from '@/types/personalityTest';
 import { DOMAIN_LABELS_VI } from '@/lib/personalityScoring';
+
+// ─── Percentile Result type (mirroring the API response) ──────────────────────
+
+interface PercentileResult {
+	domain: PersonalityDomain;
+	score: number;
+	referenceGroupId: string;
+	referenceGroupLabel: string;
+	referenceGroupLabelVi: string;
+	mean: number;
+	sd: number;
+	zScore: number;
+	percentile: number;
+	interpretation: string;
+	interpretationVi: string;
+}
+
+interface ReferenceGroupOption {
+	id: string;
+	label: string;
+	labelVi: string;
+	type: 'ocean' | 'darkTriad';
+	n: number;
+}
+
+interface ReferenceGroupDetail {
+	id: string;
+	label: string;
+	labelVi: string;
+	description: string;
+	descriptionVi: string;
+	source: string;
+}
+
+interface PercentilesApiResponse {
+	sessionId: string;
+	percentiles: Record<string, PercentileResult>;
+	selectedGroups: { ocean: string; darkTriad: string };
+	availableGroups: ReferenceGroupOption[];
+	referenceGroupDetails: {
+		ocean: ReferenceGroupDetail;
+		darkTriad: ReferenceGroupDetail;
+	};
+}
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -32,13 +79,16 @@ function TraitBar({
 	trait,
 	colorClass,
 	delay = 0,
+	normative,
 }: {
 	trait: TraitScore;
 	colorClass: string;
 	delay?: number;
+	normative?: PercentileResult;
 }) {
 	const percent = ((trait.score - 1) / 4) * 100; // Normalize 1-5 to 0-100%
 	const viLabel = DOMAIN_LABELS_VI[trait.domain] ?? trait.label;
+	const displayPercentile = normative?.percentile ?? trait.percentile;
 
 	return (
 		<div className="space-y-1.5">
@@ -62,9 +112,9 @@ function TraitBar({
 					>
 						{trait.level === 'high' ? 'Cao' : trait.level === 'low' ? 'Thấp' : 'TB'}
 					</span>
-					{trait.percentile !== null && (
-						<span className="text-[10px] text-muted tabular-nums">
-							P{trait.percentile}
+					{displayPercentile !== null && displayPercentile !== undefined && (
+						<span className="text-[10px] text-muted tabular-nums" title={normative ? `Z = ${normative.zScore}, ${normative.interpretationVi}` : undefined}>
+							P{displayPercentile}
 						</span>
 					)}
 				</div>
@@ -77,6 +127,14 @@ function TraitBar({
 					transition={{ duration: 0.8, delay, ease: 'easeOut' }}
 				/>
 			</div>
+			{/* Normative comparison mini-bar */}
+			{normative && (
+				<div className="flex items-center gap-2 text-[10px] text-muted">
+					<span>Nhóm tham chiếu: M={normative.mean.toFixed(2)}</span>
+					<span>•</span>
+					<span>{normative.interpretationVi}</span>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -177,10 +235,164 @@ function InvalidResultCard({ reason }: { reason?: string }) {
 	);
 }
 
+// ─── Reference Group Selector ──────────────────────────────────────────────────
+
+function ReferenceGroupSelector({
+	label,
+	options,
+	value,
+	onChange,
+	detail,
+}: {
+	label: string;
+	options: ReferenceGroupOption[];
+	value: string;
+	onChange: (id: string) => void;
+	detail?: ReferenceGroupDetail;
+}) {
+	return (
+		<div className="space-y-1.5">
+			<label className="text-xs font-bold uppercase tracking-wider text-muted">
+				{label}
+			</label>
+			<select
+				className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground transition-colors hover:border-accent focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+			>
+				{options.map((opt) => (
+					<option key={opt.id} value={opt.id}>
+						{opt.labelVi} (N={opt.n.toLocaleString()})
+					</option>
+				))}
+			</select>
+			{detail && (
+				<p className="text-[10px] text-muted leading-relaxed">
+					📖 {detail.source}
+				</p>
+			)}
+		</div>
+	);
+}
+
+// ─── Percentile Comparison Table ──────────────────────────────────────────────
+
+function PercentileComparisonTable({
+	traits,
+	normativeMap,
+}: {
+	traits: TraitScore[];
+	normativeMap: Record<string, PercentileResult>;
+}) {
+	return (
+		<div className="overflow-x-auto">
+			<table className="w-full text-sm">
+				<thead>
+					<tr className="border-b border-border bg-background-secondary/50">
+						<th className="px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-muted">
+							Đặc điểm
+						</th>
+						<th className="px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+							Điểm của bạn
+						</th>
+						<th className="px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+							TB nhóm
+						</th>
+						<th className="px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+							Z-score
+						</th>
+						<th className="px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+							Percentile
+						</th>
+						<th className="px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+							Mức so sánh
+						</th>
+					</tr>
+				</thead>
+				<tbody className="divide-y divide-border">
+					{traits.map((trait) => {
+						const norm = normativeMap[trait.domain];
+						if (!norm) return null;
+						const viLabel = DOMAIN_LABELS_VI[trait.domain] ?? trait.label;
+						return (
+							<tr key={trait.domain} className="transition-colors hover:bg-surface-hover/50">
+								<td className="px-4 py-2.5 font-medium text-foreground">
+									{viLabel}
+								</td>
+								<td className="px-4 py-2.5 text-center font-bold tabular-nums text-foreground">
+									{trait.score.toFixed(2)}
+								</td>
+								<td className="px-4 py-2.5 text-center tabular-nums text-muted">
+									{norm.mean.toFixed(2)} ± {norm.sd.toFixed(2)}
+								</td>
+								<td className="px-4 py-2.5 text-center tabular-nums text-muted">
+									<span className={norm.zScore > 0 ? 'text-success' : norm.zScore < -0.5 ? 'text-error' : ''}>
+										{norm.zScore > 0 ? '+' : ''}{norm.zScore.toFixed(2)}
+									</span>
+								</td>
+								<td className="px-4 py-2.5 text-center">
+									<PercentileBadge percentile={norm.percentile} />
+								</td>
+								<td className="px-4 py-2.5 text-center text-xs text-muted">
+									{norm.interpretationVi}
+								</td>
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
+		</div>
+	);
+}
+
+function PercentileBadge({ percentile }: { percentile: number }) {
+	let colorClass = 'bg-background-secondary text-muted';
+	if (percentile >= 75) colorClass = 'bg-success-subtle text-success';
+	else if (percentile >= 60) colorClass = 'bg-teal-subtle text-teal';
+	else if (percentile <= 25) colorClass = 'bg-error-subtle text-error';
+	else if (percentile <= 40) colorClass = 'bg-warning-subtle text-warning';
+
+	return (
+		<span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums ${colorClass}`}>
+			P{percentile}
+		</span>
+	);
+}
+
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function PersonalityResultsDashboard({ session }: Props) {
 	const result = session.result;
+
+	// ── Normative percentile state ──
+	const [normativeData, setNormativeData] = useState<PercentilesApiResponse | null>(null);
+	const [oceanGroup, setOceanGroup] = useState('bfi2-internet');
+	const [darkTriadGroup, setDarkTriadGroup] = useState('sd3-community');
+	const [isLoadingPercentiles, setIsLoadingPercentiles] = useState(false);
+
+	const fetchPercentiles = useCallback(async (oGroup: string, dtGroup: string) => {
+		setIsLoadingPercentiles(true);
+		try {
+			const res = await fetch(
+				`/api/personality-test/${session.id}/percentiles?oceanGroup=${oGroup}&darkTriadGroup=${dtGroup}`
+			);
+			if (res.ok) {
+				const json = await res.json();
+				setNormativeData(json.data);
+			}
+		} catch {
+			// Silently fail — percentile comparison is non-critical
+		} finally {
+			setIsLoadingPercentiles(false);
+		}
+	}, [session.id]);
+
+	// Fetch percentiles on mount and when reference groups change
+	useEffect(() => {
+		if (result?.isValid) {
+			fetchPercentiles(oceanGroup, darkTriadGroup);
+		}
+	}, [result?.isValid, oceanGroup, darkTriadGroup, fetchPercentiles]);
 
 	if (!result || !result.isValid) {
 		return <InvalidResultCard reason={result?.invalidReason} />;
@@ -201,6 +413,10 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 	const darkTraits: TraitScore[] = darkTriad
 		? [darkTriad.machiavellianism, darkTriad.narcissism, darkTriad.psychopathy]
 		: [];
+
+	const normativeMap = normativeData?.percentiles ?? {};
+	const oceanGroupOptions = normativeData?.availableGroups?.filter(g => g.type === 'ocean') ?? [];
+	const darkTriadGroupOptions = normativeData?.availableGroups?.filter(g => g.type === 'darkTriad') ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -259,6 +475,7 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 								trait={trait}
 								colorClass="bg-linear-to-r from-indigo to-purple"
 								delay={0.3 + i * 0.1}
+								normative={normativeMap[trait.domain]}
 							/>
 						))}
 					</div>
@@ -289,6 +506,7 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 								trait={trait}
 								colorClass="bg-linear-to-r from-rose to-red-500"
 								delay={0.4 + i * 0.1}
+								normative={normativeMap[trait.domain]}
 							/>
 						))}
 					</div>
@@ -302,6 +520,98 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 					</div>
 				</motion.div>
 			</div>
+
+			{/* ── Normative Percentile Comparison Section ── */}
+			<motion.div
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.4, delay: 0.5 }}
+				className="rounded-2xl border border-accent/20 bg-surface overflow-hidden"
+			>
+				<div className="p-5 sm:p-6">
+					<div className="flex items-center gap-3 mb-1">
+						<span className="text-2xl">📊</span>
+						<div>
+							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">
+								So sánh Percentile — Normative Comparison
+							</h3>
+							<p className="text-xs text-muted mt-0.5">
+								Vị trí của bạn so với nhóm tham chiếu nghiên cứu
+							</p>
+						</div>
+					</div>
+
+					{/* Reference group selectors */}
+					<div className="mt-4 grid gap-4 sm:grid-cols-2">
+						{oceanGroupOptions.length > 0 && (
+							<ReferenceGroupSelector
+								label="Nhóm tham chiếu OCEAN (Big Five)"
+								options={oceanGroupOptions}
+								value={oceanGroup}
+								onChange={setOceanGroup}
+								detail={normativeData?.referenceGroupDetails?.ocean}
+							/>
+						)}
+						{darkTriadGroupOptions.length > 0 && (
+							<ReferenceGroupSelector
+								label="Nhóm tham chiếu Dark Triad"
+								options={darkTriadGroupOptions}
+								value={darkTriadGroup}
+								onChange={setDarkTriadGroup}
+								detail={normativeData?.referenceGroupDetails?.darkTriad}
+							/>
+						)}
+					</div>
+
+					{/* Loading state */}
+					{isLoadingPercentiles && (
+						<div className="mt-4 flex items-center justify-center py-6 text-sm text-muted">
+							<div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent mr-2" />
+							Đang tính toán percentile...
+						</div>
+					)}
+
+					{/* OCEAN percentile table */}
+					{!isLoadingPercentiles && normativeData && (
+						<div className="mt-5 space-y-5">
+							<div>
+								<h4 className="text-xs font-bold uppercase tracking-wider text-indigo mb-2">
+									🌟 OCEAN — Big Five
+								</h4>
+								<PercentileComparisonTable
+									traits={oceanTraits}
+									normativeMap={normativeMap}
+								/>
+							</div>
+
+							<div>
+								<h4 className="text-xs font-bold uppercase tracking-wider text-rose mb-2">
+									🌑 Dark Triad
+								</h4>
+								<PercentileComparisonTable
+									traits={darkTraits}
+									normativeMap={normativeMap}
+								/>
+							</div>
+
+							{/* Interpretation guide */}
+							<div className="rounded-lg bg-background-secondary p-4">
+								<h4 className="text-xs font-bold text-foreground mb-2">📖 Hướng dẫn đọc kết quả</h4>
+								<div className="grid gap-2 sm:grid-cols-2 text-[10px] text-muted leading-relaxed">
+									<div>
+										<p><strong>Percentile (P)</strong> cho biết % người trong nhóm tham chiếu có điểm thấp hơn bạn.</p>
+										<p className="mt-1">Ví dụ: P72 nghĩa là bạn cao hơn 72% người trong nhóm.</p>
+									</div>
+									<div>
+										<p><strong>Z-score</strong> cho biết bạn cách trung bình nhóm bao nhiêu độ lệch chuẩn.</p>
+										<p className="mt-1">Z = 0 → đúng trung bình; Z &gt; 1 → cao hơn phần lớn; Z &lt; -1 → thấp hơn phần lớn.</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+			</motion.div>
 
 			{/* ── Score Summary Table ── */}
 			<motion.div
