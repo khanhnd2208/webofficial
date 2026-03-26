@@ -262,9 +262,58 @@ MongoDB's document model works well for flexible content (blog posts, vocab sets
 
 ---
 
-## Phase 3 Refactoring — Summary Changelog
+## Phase 5 — Excel Export Fix, Automated Tests (2026-03-26)
 
-**Date:** 2026-03-19  
+**Scope:** Personality Test module — production hardening pass.
+
+### Problems Fixed
+
+| # | Problem | Root Cause | Fix |
+|---|---------|------------|-----|
+| 1 | Excel export showed generic "Export failed" | Client only checked `res.ok`, never read JSON error body | Improved `handleExport` to parse JSON error body and show real server message |
+| 2 | `NextResponse(Buffer)` TypeScript error | Node.js `Buffer` not assignable to `BodyInit` in strict types | Convert via `.buffer.slice()` to `ArrayBuffer`, cast to `BodyInit` |
+| 3 | Excel column headers didn't match Google Form | Using internal verbose labels with formOrder prefix | Rewrote `bfiGFHeader()` / `sd3GFHeader()` to produce clean `BFI [N] — text` format |
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `src/app/admin/personality-test/page.tsx` | `handleExport`: reveal real error, `document.body.appendChild(a)` fix, empty blob guard |
+| `src/app/api/admin/personality-test/report/route.ts` | Full rewrite: clean column headers, correct ArrayBuffer type, `autoFitColumns`, `computeStats` helper, error logging |
+| `src/lib/__tests__/personalityScoring.test.ts` | **New** — 37 automated tests for scoring engine |
+| `vitest.config.ts` | **New** — Vitest config with `@/` path alias |
+| `package.json` | Added `test`, `test:watch`, `test:coverage` scripts |
+
+### Test Coverage (37 tests — all PASS)
+
+| Suite | Tests |
+|-------|-------|
+| Question Configuration | 11 |
+| `getEffectiveScore` | 2 |
+| `validateAttentionChecks` | 4 |
+| `scorePersonalityTest` | 11 |
+| Domain Composition | 6 |
+| Score Level Thresholds | 3 |
+
+### Key Findings from Tests
+
+- **BFI-2-S Open-Mindedness: 5 scored items** (attention check at fo25 borrows from O domain position — by design, excluded from scoring)
+- **SD3 Narcissism: 8 scored items** (attention check at fo17 borrows from N domain position — by design, excluded from scoring)
+- **SD3 Machiavellianism: 0 reversed items** ✓ (all 9 items non-reversed, as per Jones & Paulhus 2014)
+- **SD3 Narcissism reversed**: N11R (fo5) + N15R (fo20) ✓
+- **SD3 Psychopathy reversed**: P20R (fo6) + P25R (fo21) ✓
+
+### Run Tests
+
+```bash
+npm test              # run once
+npm run test:watch    # watch mode
+npm run test:coverage # with coverage report
+```
+
+---
+
+```  
 **Scope:** Codebase-wide standardization after system assessment scored 6.3/10.
 
 ### Files Created
