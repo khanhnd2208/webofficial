@@ -1,14 +1,30 @@
 // ────────────────────────────────────────────────────────────────
 // PM2 Ecosystem Config — toiladuykhanh.com
 //
-// Usage:
-//   pm2 start ecosystem.config.js      # Start / reload
-//   pm2 restart nextjs-app             # Restart
-//   pm2 stop nextjs-app                # Stop
-//   pm2 logs nextjs-app                # View logs
+// Usage (on VPS):
+//   pm2 start ecosystem.config.js      # First start
+//   deploy-webofficial                 # Standard deploy (git pull + build + restart)
 //
-// After changes: pm2 restart nextjs-app --update-env
+// Secrets: kept ONLY in /var/www/webofficial/.env.local (not committed)
+// This file is safe to commit — no secrets hardcoded here.
 // ────────────────────────────────────────────────────────────────
+const fs   = require('fs');
+const path = require('path');
+
+// Parse .env.local into an object (supports KEY=VALUE and KEY="VALUE")
+function loadEnvLocal(filePath) {
+  if (!fs.existsSync(filePath)) return {};
+  return fs.readFileSync(filePath, 'utf8')
+    .split('\n')
+    .reduce((acc, line) => {
+      const match = line.match(/^\s*([^#\s][^=]*?)\s*=\s*"?([^"\n]*)"?\s*$/);
+      if (match) acc[match[1].trim()] = match[2].trim();
+      return acc;
+    }, {});
+}
+
+const envLocal = loadEnvLocal(path.join(__dirname, '.env.local'));
+
 module.exports = {
   apps: [
     {
@@ -17,7 +33,6 @@ module.exports = {
       cwd: '/var/www/webofficial',
 
       // ── Start command ─────────────────────────────────────────
-      // Equivalent to: cd /var/www/webofficial && npm start
       script: 'npm',
       args: 'start',
 
@@ -35,11 +50,12 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
 
       // ── Environment ───────────────────────────────────────────
-      // Other env vars (AUTH_SECRET, MONGODB_URI, etc.) are loaded
-      // from /var/www/webofficial/.env.local by Next.js automatically.
+      // Merges .env.local (loaded above) with fixed production values.
+      // NODE_ENV and PORT override anything in .env.local.
       env: {
+        ...envLocal,
         NODE_ENV: 'production',
-        PORT: 4000,
+        PORT: '4000',
       },
     },
   ],
