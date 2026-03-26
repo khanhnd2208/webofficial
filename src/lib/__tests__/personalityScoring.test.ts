@@ -116,30 +116,17 @@ describe('Question Configuration', () => {
 	});
 
 	it('BFI-2-S reversed items — correct academic item numbers', () => {
-		// Per Soto & John (2017): reversed items are 1R,2R,3R,5R,8R,9R,10R,11R,12R,16R,17R,18R,19R,20R,21,22R,26,27,28R,30R
-		// The app should mark these correctly
+		// Per Soto & John (2017) official scoring key:
+		//   E: 1R, 21R, 26R       A: 7R, 17R, 27R       C: 3R, 8R, 28R
+		//   N: 14R, 19R, 24R      O: 10R, 20R, 30R
+		// Total: 15 reversed items (3 per domain)
 		const reversedItems = BFI2S_QUESTIONS
 			.filter(q => q.isReversed && !q.isAttentionCheck)
 			.map(q => q.itemNumber)
 			.sort((a, b) => a - b);
-		// Expected reversed per Google Form item mapping:
-		expect(reversedItems.length).toBeGreaterThan(0);
-		// Specific known reversed items (matched to Google Form columns):
-		expect(reversedItems).toContain(16); // fo1  — "Tends to be quiet" R (E)
-		expect(reversedItems).toContain(8);  // fo3  — "Tends to be disorganized" R (C)
-		// fo5 = item5 "Is fascinated by art..." is NON-reversed (positive O)
-		expect(reversedItems).toContain(12); // fo7  — "Is sometimes rude" R (A)
-		expect(reversedItems).toContain(28); // fo8  — "Has difficulty getting started" R (C)
-		expect(reversedItems).toContain(20); // fo10 — "Has little interest in abstract ideas" R (O)
-		expect(reversedItems).toContain(19); // fo14 — "Is emotionally stable" R (N)
-		expect(reversedItems).toContain(22); // fo17 — "Can be cold and uncaring" R (A)
-		expect(reversedItems).toContain(9);  // fo19 — "Is relaxed, handles stress" R (N)
-		expect(reversedItems).toContain(10); // fo20 — "Has few artistic interests" R (O)
-		expect(reversedItems).toContain(11); // fo21 — "Prefers to have others take charge" R (E)
-		expect(reversedItems).toContain(24); // fo24 — "Feels secure, comfortable with self" R (N)
-		expect(reversedItems).toContain(2);  // fo28 — "Tends to find fault with others" R (A)
-		expect(reversedItems).toContain(18); // fo29 — "Can be somewhat careless" R (C)
-		expect(reversedItems).toContain(30); // fo31 — "Has little creativity" R (O)
+		expect(reversedItems).toHaveLength(15);
+		// Verify every reversed item matches the official scoring key
+		expect(reversedItems).toEqual([1, 3, 7, 8, 10, 14, 17, 19, 20, 21, 24, 26, 27, 28, 30]);
 	});
 
 	it('SD3 reversed items — Narcissism N11R, N17R, N8R and Psychopathy P20R and P25R', () => {
@@ -290,8 +277,8 @@ describe('scorePersonalityTest', () => {
 		// For reversed items: raw=1 → scored=5 (6-1=5)
 		// Domain avg = mix of 1s and 5s depending on how many reversed
 
-		// BFI Extraversion items: item16R(fo1), item1(fo6), item21(fo11), item6(fo16), item26(fo21), item11R(fo26)
-		// Reversed: 16R, 11R (2 reversed, 4 non-reversed)
+		// BFI Extraversion items: 1R(fo1), 6(fo6), 11(fo11), 16(fo16), 21R(fo21), 26R(fo27)
+		// Reversed: 1R, 21R, 26R (3 reversed, 3 non-reversed)
 		// With all raw=1: reversed → scored 5; non-reversed → scored 1
 		// avg = (5+1+1+1+5+1) / 6 = 14/6 ≈ 2.33... wait, let me check which Extraversion items are reversed
 		const eReversed = BFI_E_ITEMS.filter(q => q.isReversed);

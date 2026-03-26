@@ -98,6 +98,16 @@ const NAV = [
 					</svg>
 				),
 			},
+			{
+				href: '/admin/personality-test/verify',
+				label: 'Scoring Verify',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<path d="M10 2l1.5 3.5L15 7l-3 3 1 4-3-2-3 2 1-4-3-3 3.5-1.5L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+						<path d="M7 14l-2 4h10l-2-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
+				),
+			},
 		],
 	},
 ] as const;
