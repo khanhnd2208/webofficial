@@ -344,3 +344,26 @@ npm run test:coverage # with coverage report
 - **~800+ lines removed** (boilerplate auth checks and try/catch blocks)
 - **0 TypeScript errors** after refactoring
 - **`npx next build` passed** — all 27 API routes and all pages compiled successfully
+
+---
+
+## ADR-010 — Personality Test Results: Bilingual i18n Module + Modular Dashboard
+
+**Date:** Phase 9  
+**Status:** Active
+
+**Decision:** Extract all UI strings into a dedicated `i18n.ts` module with full EN/VI support, and refactor the monolithic 1181-line `PersonalityResultsDashboard.tsx` into a modular component architecture with 13+ sub-components.
+
+**Context:** The original results dashboard was a single monolithic Vietnamese-only file. User requirements demanded: (1) English as default language with toggle, (2) professional-grade percentile visualization, (3) prominent expand signals, (4) production readiness for student users. The monolithic structure made all of these changes risky without modularization.
+
+**Rationale:**
+- **i18n module** (`i18n.ts`): TypeScript interface-driven, compile-time safety for all keys. Vietnamese translations use natural language with English terminology annotations (e.g., "Hướng ngoại (Extraversion)") for academic accuracy.
+- **Trait insights module** (`traitInsights.ts`): Separated from component to enable independent content updates without touching UI code.
+- **Component decomposition**: Each visual section (RadarChart, PercentileGauge, TraitCard, ArchetypeCard, etc.) is a standalone function component with typed props — enables independent testing and reuse.
+- **Reference group IDs**: Hardcoded to match `normativeData.ts` REFERENCE_GROUPS (`"bfi2-internet"`, `"sd3-community"`) to prevent API 400 errors.
+
+**Consequences:**
+- Adding a new language requires only adding a new `UI_XX` object in `i18n.ts` and corresponding entries in `traitInsights.ts`.
+- Trait insight content can be updated by non-developers editing `traitInsights.ts`.
+- Attention check failures now correctly show computed scores with a warning banner (educational value preserved).
+- The floating language toggle (`LangToggle`) is positioned at `fixed right-4 top-20 z-50` — may need adjustment if navbar height changes.

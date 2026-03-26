@@ -77,7 +77,6 @@ function sd3GFHeader(q: typeof SD3_QUESTIONS[0]): string {
 
 const FORM_DEMO_COLS = [
 	{ key: 'created_at',              label: 'Dấu thời gian' },
-	{ key: 'full_name',               label: 'Họ và Tên/Full Name' },
 	{ key: 'university',              label: 'Trường' },
 	{ key: 'student_year',            label: 'Bạn là sinh viên năm mấy của Trường?' },
 	{ key: 'cumulative_gpa',          label: 'GPA tích luỹ đến thời điểm hiện tại của bạn' },

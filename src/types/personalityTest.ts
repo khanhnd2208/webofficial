@@ -30,15 +30,13 @@ export type SessionStatus = 'in_progress' | 'completed' | 'invalid';
 // ─── Demographic / Survey Fields ───────────────────────────────────────────────
 
 export interface DemographicData {
-	/** Full name (Họ và Tên) */
-	fullName: string;
 	/** University / institution (Trường Đại học) */
 	university: string;
 	/** Student year 1-5+ (Sinh viên năm mấy) */
 	studentYear: number;
 	/** Cumulative GPA on a 4.0 scale (Điểm GPA tích lũy) */
 	cumulativeGpa: number;
-	/** Self-rated intelligence 1-10 (Bạn tự đánh giá trí thông minh) */
+	/** Self-rated intelligence 1-9 (Bạn tự đánh giá trí thông minh) */
 	selfRatedIntelligence: number;
 	/** Gender: 'male' | 'female' | 'other' — used for gender-specific SD3 norms */
 	gender: 'male' | 'female' | 'other';

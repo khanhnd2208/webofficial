@@ -257,7 +257,7 @@ export async function createSession(params: {
 			[
 				params.userId,
 				params.userName,
-				params.demographics.fullName || null,
+				null,
 				params.demographics.gender || null,
 				params.demographics.university || null,
 				params.demographics.studentYear || null,

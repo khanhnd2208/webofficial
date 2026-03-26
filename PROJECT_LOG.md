@@ -330,6 +330,116 @@ Mở: `http://localhost:3000`
 
 ---
 
+## 10) Personality Test — Results Dashboard UI/UX Overhaul
+
+**Date**: Phase 9  
+**Scope**: Complete rewrite of `PersonalityResultsDashboard.tsx` with modular architecture, bilingual support, and professional UX.
+
+### Changes Made
+
+#### New Files Created:
+- **`src/components/personality-test/i18n.ts`** — Full bilingual UI string system (EN/VI)
+  - `Lang` type (`"en"` | `"vi"`)
+  - `DOMAIN_EN` / `DOMAIN_VI` — domain label maps for all 8 traits
+  - `TIER_EN` / `TIER_VI` — 5-tier label maps
+  - `UiStrings` interface (~70+ keys), `UI_EN` / `UI_VI` implementations
+  - Helper functions: `getStrings(lang)`, `getDomainLabel(domain, lang)`, `getTierLabel(tier, lang)`
+
+- **`src/components/personality-test/traitInsights.ts`** — Bilingual trait insight content
+  - `TraitInsightContent` interface (icon, what, 5 tier interpretations, career, academic, obLesson, tip, derailment?)
+  - `getTraitInsight(domain, lang)` — 8 domains × 2 languages = 16 insight objects
+
+#### Rewritten:
+- **`src/components/personality-test/PersonalityResultsDashboard.tsx`** (1181→1559 lines)
+  - **Architecture**: Monolithic → modular with 13+ sub-components
+  - **Language**: Vietnamese-only → English default with floating 🇻🇳/🇬🇧 toggle button
+  - **Percentile UX**: Dim text → animated gradient bar with P-number inside, Z-score badge with color-coded tier
+  - **Expand signals**: Invisible → pulsing "✨ Tap to explore" button with animated chevron
+  - **Tier system**: 5-tier z-score classification with emoji + color-coded badges (ring, badge, emoji per tier)
+  - **Attention check handling**: Fixed logic — attention failures with computed scores now show results + warning banner instead of just InvalidResultCard
+
+#### Bug Fixes:
+- **Critical**: Default reference group IDs were `"soto_2017_internet"` / `"jones_2014_mturk"` (nonexistent) → corrected to `"bfi2-internet"` / `"sd3-community"` (matching `normativeData.ts` REFERENCE_GROUPS)
+- **Attention warning logic**: `isValid === true && invalidReason?.includes("attention")` (never true) → `isValid === false && hasComputedScores && !!invalidReason` (correct)
+
+#### Component Inventory:
+| Component | Purpose |
+|-----------|---------|
+| `getZTier()` | Map z-score → 5-tier level |
+| `TIER_COLORS` | Color/emoji config per tier |
+| `LangToggle` | Fixed floating EN/VI toggle (top-right) |
+| `RadarChart` | SVG spider chart (OCEAN only) |
+| `PercentileGauge` | Animated gradient bar + P-number + Z-badge + mean marker |
+| `TraitCard` | Expandable card with tier badge, score bar, insights |
+| `ArchetypeCard` | Gradient hero card with strengths/blindspots |
+| `InvalidResultCard` | Error state with retake CTA |
+| `RefGroupSelector` | Radio-style reference group picker |
+| `generateCrossTraitInsights()` | Score-based pattern detection (8 patterns) |
+| `LimitationsSection` | Collapsible scientific limitations |
+| `ResultsInterstitial` | Mandatory gate with checkbox |
+| `ScoreTable` | Full data table (all 8 traits) |
+
+### Verification:
+- TypeScript: 0 errors (`npx tsc --noEmit`)
+- Tests: 109/109 passing (`npx vitest run`)
+- Build: Successful (`npx next build`)
+
+---
+
+## 11) Personality Test — Modularization (Phase 10)
+
+**Scope**: Split all 4 largest files into clean module directories for maintainability.
+
+### Files split:
+
+| Original file | Lines | Split into | Files |
+|---------------|-------|-----------|-------|
+| `personalityScoring.ts` | 760 | `src/lib/personality/` | 8 files |
+| `normativeData.ts` | 581 | `src/lib/normative/` | 4 files |
+| `PersonalityResultsDashboard.tsx` | 1,559 | `src/components/personality-test/dashboard/` | 10 files |
+| `PersonalityTestWizard.tsx` | 873 | `src/components/personality-test/wizard/` | 10 files |
+
+- Barrel re-export files maintain backward compatibility
+- All original imports continue to work unchanged
+- Documentation: `docs/PERSONALITY_TEST_ARCHITECTURE.md`
+
+### Verification:
+- TypeScript: 0 errors
+- Tests: 109/109 passing
+
+---
+
+## 12) Personality Test — Final Deep Audit (Phase 11)
+
+**Scope**: Production-readiness audit — every file, every import, every edge case.
+
+### Issues found & fixed:
+
+1. **CRITICAL — Broken Percentile Comparison Section**
+   - **File**: `PersonalityResultsDashboard.tsx` lines 420-434
+   - **Problem**: The percentile comparison section rendered domain labels but had only a comment placeholder where PercentileGauge bars should render. `PercentileGauge` was trapped as a private function inside `TraitCard.tsx`.
+   - **Fix**: Extracted `PercentileGauge` into standalone `dashboard/PercentileGauge.tsx`, exported from barrel, imported by both `TraitCard.tsx` and `PersonalityResultsDashboard.tsx`.
+
+2. **MINOR — Wizard indentation**
+   - **File**: `PersonalityTestWizard.tsx` lines 88-95
+   - **Problem**: `localStorage.setItem` JSON object properties had broken (flush-left) indentation from heredoc creation.
+   - **Fix**: Corrected indentation to match surrounding code.
+
+### Files modified:
+- `src/components/personality-test/dashboard/PercentileGauge.tsx` ← NEW (100 lines)
+- `src/components/personality-test/dashboard/TraitCard.tsx` — imports from PercentileGauge instead of internal copy
+- `src/components/personality-test/dashboard/index.ts` — added PercentileGauge export
+- `src/components/personality-test/PersonalityResultsDashboard.tsx` — uses PercentileGauge in comparison section
+- `src/components/personality-test/PersonalityTestWizard.tsx` — indentation fix
+- `docs/PERSONALITY_TEST_ARCHITECTURE.md` — updated module map
+
+### Verification:
+- TypeScript: 0 errors (`npx tsc --noEmit`)
+- Tests: 109/109 passing (`npx vitest run`)
+- All import/export chains verified consistent across 51+ files
+
+---
+
 ## 9) File thay đổi quan trọng (quick index)
 
 - Blog public: `src/app/blog/page.tsx`, `src/app/blog/[slug]/page.tsx`

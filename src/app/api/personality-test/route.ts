@@ -46,9 +46,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 	if (!demographics || typeof demographics !== 'object') {
 		return apiError('Missing demographic data', 400);
 	}
-	if (!demographics.fullName?.trim()) {
-		return apiError('Full name is required', 400);
-	}
 
 	// ── Validate responses ──
 	if (!Array.isArray(responses) || responses.length === 0) {
@@ -76,7 +73,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
 	// For anonymous users, use a deterministic anonymous ID based on name
 	const userId = user?.id ?? `anon-${Date.now()}`;
-	const userName = user?.name ?? demographics.fullName ?? 'Anonymous';
+	const userName = user?.name ?? 'Anonymous';
 
 	const session = await submitPersonalityTest(
 		userId,

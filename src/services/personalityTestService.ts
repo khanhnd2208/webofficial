@@ -130,16 +130,13 @@ function sessionToDTO(
 		userId: session.user_id,
 		userName: session.user_name,
 		status: session.status,
-		demographics: session.full_name
-			? {
-					fullName: session.full_name ?? '',
-					gender: (session.gender as 'male' | 'female' | 'other') || 'other',
-					university: session.university ?? '',
-					studentYear: session.student_year ?? 0,
-					cumulativeGpa: session.cumulative_gpa ?? 0,
-					selfRatedIntelligence: session.self_rated_intelligence ?? 0,
-				}
-			: null,
+		demographics: {
+			gender: (session.gender as 'male' | 'female' | 'other') || 'other',
+			university: session.university ?? '',
+			studentYear: session.student_year ?? 0,
+			cumulativeGpa: session.cumulative_gpa ?? 0,
+			selfRatedIntelligence: session.self_rated_intelligence ?? 0,
+		},
 		bfiResponseCount: bfiCount,
 		sd3ResponseCount: sd3Count,
 		result: result ? buildScoringResultFromRow(result) : null,
