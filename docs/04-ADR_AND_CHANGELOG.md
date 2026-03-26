@@ -153,6 +153,115 @@ Before Phase 3, approximately half the model files used `||` and half used `??`.
 
 ---
 
+## ADR-008 — PostgreSQL for Personality Test Module (Hybrid DB Strategy)
+
+**Date:** 2026-03-26  
+**Status:** Active
+
+**Decision:** The Personality Test module uses **PostgreSQL** for all data storage (sessions, responses, results), while every other feature continues using MongoDB/Mongoose.
+
+**Context:** The Personality Test module handles structured survey data with:
+- Fixed schema (57 questions, 5 demographic fields, denormalized scores)
+- Percentile calculations requiring cross-session aggregation (`PERCENT_RANK()`)
+- ACID transactions (session + 57 response rows inserted atomically)
+- Relational integrity (sessions → responses → results via foreign keys)
+
+MongoDB's document model works well for flexible content (blog posts, vocab sets), but relational survey data benefits from SQL's strengths: aggregation functions, `ON CONFLICT` upserts, window functions, and referential integrity constraints.
+
+**Rationale:**
+1. **Structured data** — personality test responses have a fixed, predictable schema. SQL tables with proper types (`SMALLINT`, `NUMERIC(4,2)`, `JSONB`) are more efficient than schemaless documents.
+2. **Aggregation** — percentile calculation uses `PERCENT_RANK() OVER (ORDER BY score)` which is native SQL. Doing this in MongoDB requires `$setWindowFields` (available but less ergonomic).
+3. **Transactions** — inserting a session + 57 responses atomically is a natural fit for SQL transactions. MongoDB transactions require replica sets.
+4. **PostgreSQL already available** — the VPS already runs PostgreSQL 16 for another project (`chijuly_erp`).
+
+**Implementation:**
+- `src/lib/pgPool.ts` — Singleton connection pool (reads `DATABASE_URL` or `PG_*` env vars)
+- `src/lib/pgMigrate.ts` — Standalone migration script (run via `npx tsx`)
+- `src/models/PersonalityTest.ts` — Data access layer (replaces Mongoose model)
+- 3 tables: `personality_test_sessions`, `personality_test_responses`, `personality_test_results`
+- VPS database: `khanhwebsite` on `localhost:5432`, user `khanhwebsite`
+
+**Consequences:**
+- Two database connections to maintain (MongoDB pool + PG pool)
+- `pg` + `@types/pg` added to dependencies
+- `.env.local` requires `DATABASE_URL` for PostgreSQL
+- Migration must be run manually: `DATABASE_URL=... npx tsx src/lib/pgMigrate.ts`
+- No ORM — raw SQL via `pgPool.query()` for maximum control and transparency
+
+---
+
+## ADR-009 — Demographic Data Collection in Personality Test
+
+**Date:** 2026-03-26  
+**Status:** Active
+
+**Decision:** Collect 5 demographic fields (full name, university, student year, cumulative GPA, self-rated intelligence) before personality test questions, stored alongside test session data.
+
+**Context:** The personality test serves a dual purpose: (1) a fun personality assessment tool for users, and (2) an academic research survey. The demographic fields align with a Google Forms-based survey instrument used in organizational behavior research.
+
+**Rationale:** Collecting demographics enables:
+1. Cross-tabulation of personality scores by university, year, GPA — research value.
+2. Correlation analysis between self-rated intelligence and actual personality traits.
+3. The tool functions as both a standalone personality test AND a structured survey.
+
+**Implementation:**
+- `DemographicData` interface in `types/personalityTest.ts`
+- Dedicated "demographics" phase in `PersonalityTestWizard.tsx` (between intro and BFI questions)
+- Stored in `personality_test_sessions` table columns (not a separate table — one-to-one with session)
+- Validation: fullName required, GPA 0-4.0, intelligence 1-10, studentYear 1-5
+
+**Consequences:** Users must fill demographics before starting the test. All fields except fullName could potentially be made optional in the future without schema changes (columns already allow NULL).
+
+---
+
+## Phase 4 — Personality Test Module + PostgreSQL Migration
+
+**Date:** 2026-03-26  
+**Scope:** New feature module + database migration
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `src/lib/pgPool.ts` | PostgreSQL connection pool singleton |
+| `src/lib/pgMigrate.ts` | Migration script — creates 3 tables + trigger |
+| `src/lib/personalityScoring.ts` | BFI-2-S + SD3 scoring engine (57 questions, attention checks, archetypes) |
+| `src/models/PersonalityTest.ts` | PostgreSQL data access layer (queries, transactions) |
+| `src/services/personalityTestService.ts` | Business logic + DTO conversion |
+| `src/types/personalityTest.ts` | All TypeScript types (DemographicData, QuestionConfig, DTOs, etc.) |
+| `src/app/api/personality-test/route.ts` | GET (config+history) + POST (submit with demographics) |
+| `src/app/api/personality-test/[id]/route.ts` | GET specific test session result |
+| `src/app/personality-test/page.tsx` | Server component — test page |
+| `src/app/personality-test/results/[id]/page.tsx` | Server component — results page |
+| `src/components/personality-test/PersonalityTestWizard.tsx` | Multi-phase test UI (demographics → BFI → SD3 → review) |
+| `src/components/personality-test/PersonalityTestClient.tsx` | Client orchestrator |
+| `src/components/personality-test/PersonalityResultsDashboard.tsx` | Results visualization |
+| `src/components/personality-test/PersonalityTestHistory.tsx` | Past test sessions list |
+
+### Dependencies Added
+
+| Package | Purpose |
+|---------|---------|
+| `pg` | PostgreSQL client library |
+| `@types/pg` | TypeScript types for pg |
+
+### Database (PostgreSQL)
+
+| Table | Purpose |
+|-------|---------|
+| `personality_test_sessions` | Session metadata + demographics (uuid PK, user\_id, 5 demographic columns) |
+| `personality_test_responses` | Individual answers (session\_id FK, test\_type, item\_number, value, form\_order) |
+| `personality_test_results` | Denormalized scores, percentiles, archetype JSONB (session\_id FK UNIQUE) |
+
+### VPS Deployment
+
+- PostgreSQL database `khanhwebsite` created with user `khanhwebsite`
+- `DATABASE_URL` added to `/var/www/webofficial/.env.local`
+- Migration run successfully — 3 tables + trigger created
+- App built and restarted via PM2
+
+---
+
 ## Phase 3 Refactoring — Summary Changelog
 
 **Date:** 2026-03-19  
