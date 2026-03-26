@@ -17,6 +17,13 @@ const TOOLS = [
 		emoji: '🧠',
 		gradient: 'from-indigo-500 via-purple-500 to-rose-500',
 	},
+	{
+		href: '/admin/personality-test',
+		label: 'Personality Report',
+		description: 'Báo cáo tổng hợp kết quả bài test tính cách — xem, lọc và xuất Excel toàn bộ dữ liệu.',
+		emoji: '📊',
+		gradient: 'from-teal-500 via-cyan-500 to-blue-500',
+	},
 ];
 
 export default function ToolsPage() {
@@ -49,7 +56,7 @@ export default function ToolsPage() {
 						>
 							{/* Gradient glow on hover */}
 							<div
-								className={`absolute inset-0 bg-gradient-to-br ${tool.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.04]`}
+								className={`absolute inset-0 bg-linear-to-br ${tool.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.04]`}
 							/>
 							<div className="relative">
 								<div className="text-4xl mb-3">{tool.emoji}</div>
@@ -66,7 +73,7 @@ export default function ToolsPage() {
 					))}
 
 					{/* Coming soon placeholder */}
-					<div className="flex items-center justify-center rounded-2xl border border-dashed border-border p-6 min-h-[180px]">
+					<div className="flex items-center justify-center rounded-2xl border border-dashed border-border p-6 min-h-45">
 						<div className="text-center">
 							<span className="text-2xl opacity-40">🔮</span>
 							<p className="mt-2 text-xs font-bold text-muted/60">Sắp ra mắt...</p>

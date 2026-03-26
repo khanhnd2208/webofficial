@@ -87,6 +87,17 @@ const NAV = [
 					</svg>
 				),
 			},
+			{
+				href: '/admin/personality-test',
+				label: 'Personality Report',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<rect x="3" y="3" width="14" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+						<path d="M6 13.5l2.5-3 2 2 2.5-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+						<circle cx="14.5" cy="5.5" r="1.5" fill="currentColor" />
+					</svg>
+				),
+			},
 		],
 	},
 ] as const;

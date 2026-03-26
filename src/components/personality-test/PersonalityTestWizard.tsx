@@ -25,11 +25,11 @@ import type { QuestionConfig, RawResponse, TestConfigDTO, DemographicData } from
 const QUESTIONS_PER_PAGE = 5;
 
 const LIKERT_OPTIONS = [
-	{ value: 1, label: 'Rất không đồng ý', labelEn: 'Strongly Disagree', shortLabel: '1' },
-	{ value: 2, label: 'Không đồng ý', labelEn: 'Disagree', shortLabel: '2' },
-	{ value: 3, label: 'Trung lập', labelEn: 'Neutral', shortLabel: '3' },
-	{ value: 4, label: 'Đồng ý', labelEn: 'Agree', shortLabel: '4' },
-	{ value: 5, label: 'Rất đồng ý', labelEn: 'Strongly Agree', shortLabel: '5' },
+	{ value: 1, label: 'Rất không đồng ý', labelEn: 'Strongly Disagree' },
+	{ value: 2, label: 'Không đồng ý',     labelEn: 'Disagree' },
+	{ value: 3, label: 'Trung lập',         labelEn: 'Neutral' },
+	{ value: 4, label: 'Đồng ý',            labelEn: 'Agree' },
+	{ value: 5, label: 'Rất đồng ý',        labelEn: 'Strongly Agree' },
 ];
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -471,40 +471,50 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 											: 'border-border bg-surface'
 									}`}
 								>
-									{/* Question header */}
+										{/* Question header */}
 									<div className="flex items-start gap-3">
 										<span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-background-secondary text-xs font-bold text-muted">
 											{globalIndex}
 										</span>
 										<div className="flex-1">
-											<p className="text-sm font-semibold leading-relaxed text-foreground">
-												{q.textVi}
-											</p>
-											<p className="mt-1 text-xs italic text-muted leading-relaxed">
+											{/* English — primary label, bold */}
+											<p className="text-sm font-bold leading-snug text-foreground">
 												{q.text}
+											</p>
+											{/* Vietnamese — secondary, italic, dimmer */}
+											<p className="mt-1.5 text-[12px] italic leading-relaxed text-muted">
+												{q.textVi}
 											</p>
 										</div>
 									</div>
 
 									{/* Likert scale */}
-									<div className="mt-4 flex flex-wrap gap-2 sm:gap-3">
-										{LIKERT_OPTIONS.map((opt) => (
-											<button
-												key={opt.value}
-												onClick={() => handleAnswer(q.testType, q.itemNumber, opt.value)}
-												className={`group relative flex-1 min-w-14 rounded-lg border px-2 py-2.5 text-center transition-all duration-150 ${
-													selected === opt.value
-														? 'border-accent bg-accent text-accent-foreground shadow-md scale-[1.02]'
-														: 'border-border bg-background text-muted hover:border-border-hover hover:bg-surface-hover'
-												}`}
-											>
-												<span className="block text-sm font-bold">{opt.value}</span>
-												<span className="mt-0.5 hidden text-[10px] leading-tight opacity-70 sm:block">
-													{opt.label}
-												</span>
-											</button>
-										))}
-									</div>
+								<div className="mt-4 flex gap-1.5 sm:gap-2">
+									{LIKERT_OPTIONS.map((opt) => (
+										<button
+											key={opt.value}
+											onClick={() => handleAnswer(q.testType, q.itemNumber, opt.value)}
+											title={`${opt.labelEn} / ${opt.label}`}
+											className={`group flex flex-1 flex-col items-center gap-0.5 rounded-xl border-2 px-1 py-2.5 text-center transition-all duration-150 ${
+												selected === opt.value
+													? 'border-accent bg-accent text-white dark:text-[#121110] shadow-md scale-[1.04] font-black'
+													: 'border-border bg-surface text-foreground-secondary hover:border-accent/60 hover:bg-accent-subtle hover:text-foreground'
+											}`}
+										>
+											<span className="text-base font-black leading-none tabular-nums">{opt.value}</span>
+											<span className={`hidden text-[9px] font-bold uppercase tracking-wide leading-tight sm:block ${
+												selected === opt.value ? 'opacity-90' : 'opacity-60'
+											}`}>
+												{opt.labelEn.split(' ').map((w, i) => <span key={i} className="block">{w}</span>)}
+											</span>
+										</button>
+									))}
+								</div>
+								{/* Scale labels row for small screens */}
+								<div className="mt-1 flex justify-between px-0.5 sm:hidden">
+									<span className="text-[10px] text-muted">Rất không đồng ý</span>
+									<span className="text-[10px] text-muted">Rất đồng ý</span>
+								</div>
 								</div>
 							);
 						})}

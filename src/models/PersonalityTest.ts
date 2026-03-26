@@ -119,6 +119,72 @@ export async function findSessionsByUserId(
 	return rows;
 }
 
+// ─── Report Row Type ────────────────────────────────────────────────────────────
+
+export interface ReportRow {
+	// Session / demographics
+	id: string;
+	user_id: string;
+	user_name: string;
+	full_name: string | null;
+	university: string | null;
+	student_year: number | null;
+	cumulative_gpa: number | null;
+	self_rated_intelligence: number | null;
+	status: string;
+	duration_seconds: number | null;
+	completed_at: Date | null;
+	created_at: Date;
+	// Results
+	is_valid: boolean | null;
+	extraversion: number | null;
+	agreeableness: number | null;
+	conscientiousness: number | null;
+	negative_emotionality: number | null;
+	open_mindedness: number | null;
+	machiavellianism: number | null;
+	narcissism: number | null;
+	psychopathy: number | null;
+	extraversion_pct: number | null;
+	agreeableness_pct: number | null;
+	conscientiousness_pct: number | null;
+	negative_emotionality_pct: number | null;
+	open_mindedness_pct: number | null;
+	machiavellianism_pct: number | null;
+	narcissism_pct: number | null;
+	psychopathy_pct: number | null;
+	archetype_name: string | null;
+}
+
+/**
+ * Fetch all completed sessions with joined results — for admin report.
+ * Returns rows sorted by created_at DESC with an optional limit.
+ */
+export async function findAllSessionsForReport(
+	limit = 500
+): Promise<ReportRow[]> {
+	const { rows } = await pgPool.query<ReportRow>(
+		`SELECT
+			s.id, s.user_id, s.user_name,
+			s.full_name, s.university, s.student_year, s.cumulative_gpa, s.self_rated_intelligence,
+			s.status, s.duration_seconds, s.completed_at, s.created_at,
+			r.is_valid,
+			r.extraversion, r.agreeableness, r.conscientiousness,
+			r.negative_emotionality, r.open_mindedness,
+			r.machiavellianism, r.narcissism, r.psychopathy,
+			r.extraversion_pct, r.agreeableness_pct, r.conscientiousness_pct,
+			r.negative_emotionality_pct, r.open_mindedness_pct,
+			r.machiavellianism_pct, r.narcissism_pct, r.psychopathy_pct,
+			r.archetype->>'name' AS archetype_name
+		 FROM personality_test_sessions s
+		 LEFT JOIN personality_test_results r ON r.session_id = s.id
+		 ORDER BY s.created_at DESC
+		 LIMIT $1`,
+		[limit]
+	);
+	return rows;
+}
+
 export async function countSessionsByStatus(): Promise<
 	Array<{ status: string; count: number }>
 > {
