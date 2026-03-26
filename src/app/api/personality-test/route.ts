@@ -47,7 +47,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 		return apiError('Missing demographic data', 400);
 	}
 	if (!demographics.fullName?.trim()) {
-		return apiError('Họ và Tên is required', 400);
+		return apiError('Full name is required', 400);
 	}
 
 	// ── Validate responses ──
@@ -68,9 +68,10 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 		}
 	}
 
-	// Expected: 30 BFI + 27 SD3 = 57
-	if (responses.length !== 57) {
-		return apiError(`Expected 57 responses (30 BFI + 27 SD3), got ${responses.length}`, 400);
+	// Expected: 31 BFI (30 scored + 1 attention) + 28 SD3 (27 scored + 1 attention) = 59
+	const EXPECTED_TOTAL = 59;
+	if (responses.length !== EXPECTED_TOTAL) {
+		return apiError(`Expected ${EXPECTED_TOTAL} responses (31 BFI + 28 SD3, including attention checks), got ${responses.length}`, 400);
 	}
 
 	// For anonymous users, use a deterministic anonymous ID based on name

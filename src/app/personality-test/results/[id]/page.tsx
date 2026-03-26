@@ -17,8 +17,8 @@ import PersonalityResultsDashboard from '@/components/personality-test/Personali
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-	title: 'Kết quả Personality Test | HANOICAM',
-	description: 'Xem kết quả phân tích tính cách — OCEAN và Dark Triad.',
+	title: 'Personality Test Results | HANOICAM',
+	description: 'View your personality analysis results — OCEAN and Dark Triad.',
 };
 
 interface PageProps {
@@ -50,7 +50,7 @@ export default async function PersonalityTestResultsPage({ params }: PageProps) 
 						<span className="text-3xl">🌟</span>
 						<div>
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">
-								Hồ sơ tính cách của bạn
+								Your Personality Profile
 							</p>
 							<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
 								{testSession.result?.archetype?.name ?? 'Personality Profile'}

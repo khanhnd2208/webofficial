@@ -252,12 +252,16 @@ describe('scorePersonalityTest', () => {
 		expect(result.isValid).toBe(false);
 	});
 
-	it('returns invalid if attention check fails', () => {
+	it('returns invalid with scores if attention check fails (scores still computed for educational purposes)', () => {
 		const responses = buildAllResponses(3);
 		// Wrong attention check answers (3 is default which is wrong for both)
 		const result = scorePersonalityTest(responses);
 		expect(result.isValid).toBe(false);
 		expect(result.invalidReason).toContain('attention');
+		// Scores are still computed even when attention checks fail
+		expect(result.ocean).not.toBeNull();
+		expect(result.darkTriad).not.toBeNull();
+		expect(result.archetype).not.toBeNull();
 	});
 
 	it('returns valid result with correct attention checks', () => {

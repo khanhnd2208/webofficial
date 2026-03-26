@@ -233,7 +233,7 @@ export const SD3_QUESTIONS: QuestionConfig[] = [
 	// formOrder 24 → N15R "I am an average person" — RESTORED REVERSE ITEM
 	{ itemNumber: 15, formOrder: 24, testType: 'SD3', domain: 'narcissism',       text: 'I am an average person.',                                                          textVi: 'Tôi là một người bình thường.',                                            isReversed: true,  isAttentionCheck: false },
 	// formOrder 25 → P26 "I enjoy having sex with people I hardly know"
-	{ itemNumber: 26, formOrder: 25, testType: 'SD3', domain: 'psychopathy',      text: 'I enjoy having sex with people I hardly know.',                                    textVi: 'Tôi thích mạo hiểm và trải nghiệm mới mẻ với người lạ.',                 isReversed: false, isAttentionCheck: false },
+	{ itemNumber: 26, formOrder: 25, testType: 'SD3', domain: 'psychopathy',      text: 'I enjoy having sex with people I hardly know.',                                    textVi: 'I enjoy having sex with people I hardly know.',                                    isReversed: false, isAttentionCheck: false },
 	// formOrder 26 → M9 "Most people can be manipulated"
 	{ itemNumber: 9,  formOrder: 26, testType: 'SD3', domain: 'machiavellianism', text: 'Most people can be manipulated.',                                                  textVi: 'Hầu hết mọi người đều có thể bị thao túng.',                             isReversed: false, isAttentionCheck: false },
 	// formOrder 27 → N18 "I insist on getting the respect I deserve"
@@ -398,9 +398,14 @@ function buildTraitScore(
 
 /**
  * Main scoring function: validates, scores, and generates archetype.
+ * 
+ * IMPORTANT: Always computes scores regardless of attention check results.
+ * If attention checks fail, isValid=false but ocean/darkTriad/archetype are
+ * still populated so users can see results for educational purposes.
+ * All data is saved to DB regardless of validity.
  */
 export function scorePersonalityTest(responses: RawResponse[]): ScoringResult {
-	// ── Validation ──
+	// ── Validation: count check ──
 	// BFI: 30 real items + 1 attention check = 31 total
 	// SD3: 27 real items + 1 attention check = 28 total → grand total 59
 	const totalExpected = BFI2S_QUESTIONS.length + SD3_QUESTIONS.length;
@@ -427,19 +432,10 @@ export function scorePersonalityTest(responses: RawResponse[]): ScoringResult {
 		}
 	}
 
-	// ── Attention Checks ──
+	// ── Attention Checks — record result but don't block scoring ──
 	const attentionResult = validateAttentionChecks(responses);
-	if (!attentionResult.valid) {
-		return {
-			isValid: false,
-			invalidReason: attentionResult.reason,
-			ocean: null,
-			darkTriad: null,
-			archetype: null,
-		};
-	}
 
-	// ── Calculate OCEAN Scores ──
+	// ── Calculate OCEAN Scores (always, regardless of attention check) ──
 	const oceanDomains: OceanDomain[] = [
 		'extraversion',
 		'agreeableness',
@@ -452,7 +448,7 @@ export function scorePersonalityTest(responses: RawResponse[]): ScoringResult {
 		oceanScores[domain] = buildTraitScore(domain, BFI2S_QUESTIONS, responses);
 	}
 
-	// ── Calculate Dark Triad Scores ──
+	// ── Calculate Dark Triad Scores (always, regardless of attention check) ──
 	const darkDomains: DarkTriadDomain[] = [
 		'machiavellianism',
 		'narcissism',
@@ -463,11 +459,12 @@ export function scorePersonalityTest(responses: RawResponse[]): ScoringResult {
 		darkTriadScores[domain] = buildTraitScore(domain, SD3_QUESTIONS, responses);
 	}
 
-	// ── Generate Archetype ──
+	// ── Generate Archetype (always) ──
 	const archetype = generateArchetype(oceanScores, darkTriadScores);
 
 	return {
-		isValid: true,
+		isValid: attentionResult.valid,
+		invalidReason: attentionResult.valid ? undefined : attentionResult.reason,
 		ocean: oceanScores,
 		darkTriad: darkTriadScores,
 		archetype,

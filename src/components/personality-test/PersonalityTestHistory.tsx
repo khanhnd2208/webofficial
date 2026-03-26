@@ -24,10 +24,10 @@ export default function PersonalityTestHistory({ history }: Props) {
 			className="rounded-2xl border border-border bg-surface p-5 sm:p-6"
 		>
 			<h3 className="text-sm font-black uppercase tracking-wider text-foreground">
-				📜 Bài làm trước đây
+				📜 Previous Sessions
 			</h3>
 			<p className="mt-1 text-xs text-muted">
-				Bạn đã làm {history.length} lần — nhấn vào để xem lại
+				You've taken this {history.length} time{history.length > 1 ? 's' : ''} — click to review
 			</p>
 
 			<div className="mt-4 space-y-2">
@@ -43,7 +43,7 @@ export default function PersonalityTestHistory({ history }: Props) {
 							</span>
 							<div>
 								<p className="text-sm font-bold text-foreground">
-									{item.archetype ?? (item.status === 'invalid' ? 'Không hợp lệ' : 'Đang làm')}
+										{item.archetype ?? (item.status === 'invalid' ? 'Invalid' : 'In progress')}
 								</p>
 								<p className="text-xs text-muted">
 									{item.completedAt

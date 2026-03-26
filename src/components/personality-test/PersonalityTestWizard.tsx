@@ -26,11 +26,11 @@ const QUESTIONS_PER_PAGE = 5;
 const STORAGE_KEY = 'personality-test-progress';
 
 const LIKERT_OPTIONS = [
-	{ value: 1, label: 'Rất không đồng ý', labelEn: 'Strongly Disagree' },
-	{ value: 2, label: 'Không đồng ý',     labelEn: 'Disagree' },
-	{ value: 3, label: 'Trung lập',         labelEn: 'Neutral' },
-	{ value: 4, label: 'Đồng ý',            labelEn: 'Agree' },
-	{ value: 5, label: 'Rất đồng ý',        labelEn: 'Strongly Agree' },
+	{ value: 1, label: 'Strongly Disagree', labelVi: 'Rất không đồng ý' },
+	{ value: 2, label: 'Disagree',          labelVi: 'Không đồng ý' },
+	{ value: 3, label: 'Neutral',           labelVi: 'Trung lập' },
+	{ value: 4, label: 'Agree',             labelVi: 'Đồng ý' },
+	{ value: 5, label: 'Strongly Agree',    labelVi: 'Rất đồng ý' },
 ];
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -46,11 +46,11 @@ type TestPhase = 'intro' | 'demographics' | 'bfi' | 'transition' | 'sd3' | 'revi
 // ─── Student Year Options ──────────────────────────────────────────────────────
 
 const STUDENT_YEAR_OPTIONS = [
-	{ value: 1, label: 'Năm 1' },
-	{ value: 2, label: 'Năm 2' },
-	{ value: 3, label: 'Năm 3' },
-	{ value: 4, label: 'Năm 4' },
-	{ value: 5, label: 'Năm 5+' },
+	{ value: 1, label: 'Year 1' },
+	{ value: 2, label: 'Year 2' },
+	{ value: 3, label: 'Year 3' },
+	{ value: 4, label: 'Year 4' },
+	{ value: 5, label: 'Year 5+' },
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -206,14 +206,14 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 	// ── Demographics Validation ──
 	const validateDemographics = (): boolean => {
 		const errors: Partial<Record<keyof DemographicData, string>> = {};
-		if (!demographics.fullName.trim()) errors.fullName = 'Vui lòng nhập Họ và Tên';
-		if (!demographics.university.trim()) errors.university = 'Vui lòng nhập Trường Đại học';
+		if (!demographics.fullName.trim()) errors.fullName = 'Please enter your full name';
+		if (!demographics.university.trim()) errors.university = 'Please enter your university';
 		if (demographics.studentYear < 1 || demographics.studentYear > 5)
-			errors.studentYear = 'Vui lòng chọn năm học';
+			errors.studentYear = 'Please select a student year';
 		if (demographics.cumulativeGpa < 0 || demographics.cumulativeGpa > 4)
-			errors.cumulativeGpa = 'GPA phải từ 0.0 đến 4.0';
+			errors.cumulativeGpa = 'GPA must be between 0.0 and 4.0';
 		if (demographics.selfRatedIntelligence < 1 || demographics.selfRatedIntelligence > 10)
-			errors.selfRatedIntelligence = 'Vui lòng chọn từ 1 đến 10';
+			errors.selfRatedIntelligence = 'Please select a value from 1 to 10';
 		setDemoErrors(errors);
 		return Object.keys(errors).length === 0;
 	};
@@ -237,11 +237,11 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 				<div className="sticky top-0 z-10 mb-6 rounded-2xl border border-border bg-surface/95 p-4 backdrop-blur-md">
 					<div className="flex items-center justify-between text-sm">
 						<span className="font-bold text-foreground">
-							{phase === 'demographics' && '👤 Một chút về bạn'}
-							{phase === 'bfi' && '🌟 Phần 1: Tính cách lớn'}
-							{phase === 'sd3' && '🌑 Phần 2: Bản năng xã hội'}
-							{phase === 'transition' && '🎉 Tuyệt vời!'}
-							{phase === 'review' && '🎊 Gần xong rồi!'}
+						{phase === 'demographics' && '👤 About You'}
+						{phase === 'bfi' && '🌟 Part 1: Big Five Personality'}
+						{phase === 'sd3' && '🌑 Part 2: Dark Triad'}
+						{phase === 'transition' && '🎉 Great job!'}
+						{phase === 'review' && '🎊 Almost done!'}
 						</span>
 						<div className="flex items-center gap-3">
 							<span className="text-xs text-muted tabular-nums">⏱ {formatTime(elapsed)}</span>
@@ -276,42 +276,42 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								<div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-subtle text-3xl">
 									🪞
 								</div>
-								<h2 className="mt-5 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-									Khám phá bản thân bạn
-								</h2>
-								<p className="mt-3 text-sm leading-relaxed text-muted max-w-lg mx-auto">
-									Bài đánh giá này giúp bạn hiểu rõ hơn về tính cách của mình — điểm mạnh, điểm cần lưu ý, và
-									những gợi ý hữu ích cho hành trình phát triển bản thân và nghề nghiệp.
-								</p>
+							<h2 className="mt-5 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+								Discover Your Personality
+							</h2>
+							<p className="mt-3 text-sm leading-relaxed text-muted max-w-lg mx-auto">
+								This assessment helps you understand your personality — your strengths, areas to watch,
+								and actionable insights for personal and career development.
+							</p>
 							</div>
 
 							<div className="mt-8 grid gap-4 sm:grid-cols-2">
 								<div className="rounded-xl border border-indigo/20 bg-indigo-subtle/30 p-5">
 									<div className="flex items-center gap-3">
 										<span className="text-2xl">🌟</span>
-										<div>
-											<h3 className="font-bold text-foreground">Phần 1 — Tính cách lớn</h3>
-											<p className="text-xs text-muted">30 câu • BFI-2-S (Big Five)</p>
-										</div>
+									<div>
+										<h3 className="font-bold text-foreground">Part 1 — Big Five Personality</h3>
+										<p className="text-xs text-muted">31 items • BFI-2-S (Big Five)</p>
 									</div>
-									<p className="mt-3 text-xs leading-relaxed text-muted">
-										Khám phá 5 nét tính cách nền tảng: Hướng ngoại, Dễ chịu, Tận tâm,
-										Độ nhạy cảm, và Sẵn sàng trải nghiệm.
-									</p>
+								</div>
+								<p className="mt-3 text-xs leading-relaxed text-muted">
+									Explore 5 core traits: Extraversion, Agreeableness, Conscientiousness,
+									Negative Emotionality, and Open-Mindedness.
+								</p>
 								</div>
 
 								<div className="rounded-xl border border-rose/20 bg-rose-subtle/30 p-5">
 									<div className="flex items-center gap-3">
 										<span className="text-2xl">🌑</span>
-										<div>
-											<h3 className="font-bold text-foreground">Phần 2 — Bản năng xã hội</h3>
-											<p className="text-xs text-muted">27 câu • SD3 (Short Dark Triad)</p>
-										</div>
+									<div>
+										<h3 className="font-bold text-foreground">Part 2 — Dark Triad</h3>
+										<p className="text-xs text-muted">28 items • SD3 (Short Dark Triad)</p>
 									</div>
-									<p className="mt-3 text-xs leading-relaxed text-muted">
-										Tìm hiểu 3 khía cạnh mà ít ai nhìn thấy: Tư duy chiến lược, Sự tự tin, và
-										Khả năng chấp nhận rủi ro.
-									</p>
+								</div>
+								<p className="mt-3 text-xs leading-relaxed text-muted">
+									Discover 3 hidden dimensions: Strategic thinking (Machiavellianism),
+									Self-confidence (Narcissism), and Risk tolerance (Psychopathy).
+								</p>
 								</div>
 							</div>
 
@@ -319,11 +319,11 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								<div className="flex items-start gap-2.5">
 									<span className="text-base mt-0.5">💡</span>
 									<div className="text-xs leading-relaxed text-foreground-secondary">
-										<p className="font-bold text-foreground">Trước khi bắt đầu:</p>
+										<p className="font-bold text-foreground">Before you begin:</p>
 										<ul className="mt-1.5 space-y-1 text-muted">
-											<li>• <strong>{config.totalQuestions} câu</strong>, mất khoảng 10-15 phút</li>
-											<li>• Không có câu trả lời đúng hay sai — hãy chọn theo cảm nhận thật của bạn</li>
-											<li>• Hãy đọc kĩ mỗi câu — có một vài câu kiểm tra sự tập trung 😉</li>
+											<li>• <strong>{config.totalQuestions} items</strong>, takes about 10–15 minutes</li>
+											<li>• There are no right or wrong answers — just pick what feels true for you</li>
+											<li>• Read each item carefully — there are a few focus-check items 😉</li>
 										</ul>
 									</div>
 								</div>
@@ -336,14 +336,14 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								}}
 								className="mt-6 w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-accent-foreground transition-all hover:bg-accent-hover hover:scale-[1.01] active:scale-[0.99]"
 							>
-								Bắt đầu khám phá 🚀
+								Start the Assessment 🚀
 							</button>
 
 							{/* Resume button if saved progress exists */}
 							{restored && Object.keys(answers).length > 0 && (
 								<div className="mt-3 rounded-xl border border-accent/30 bg-accent-subtle/30 p-4 text-center">
 									<p className="text-xs text-muted mb-2">
-										👋 Chào bạn quay lại! Bạn đã trả lời {Object.keys(answers).length}/{config.totalQuestions} câu
+										👋 Welcome back! You answered {Object.keys(answers).length}/{config.totalQuestions} items
 									</p>
 									<div className="flex gap-2 justify-center">
 										<button
@@ -360,7 +360,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 											}}
 											className="rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-foreground transition-colors hover:bg-accent-hover"
 										>
-											Tiếp tục bài đang làm →
+											Continue where I left off →
 										</button>
 										<button
 											onClick={() => {
@@ -381,7 +381,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 											}}
 											className="rounded-lg border border-border px-4 py-2 text-xs font-bold text-muted transition-colors hover:text-foreground hover:bg-surface-hover"
 										>
-											Làm mới từ đầu
+											Start fresh
 										</button>
 									</div>
 								</div>
@@ -404,20 +404,20 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								<div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-subtle text-2xl">
 									👤
 								</div>
-								<h2 className="mt-4 text-xl font-black tracking-tight text-foreground sm:text-2xl">
-									Một chút về bạn
-								</h2>
-								<p className="mt-2 text-sm text-muted max-w-md mx-auto">
-									Thông tin này giúp so sánh kết quả của bạn với nhóm cùng bối cảnh
-									và phục vụ mục đích nghiên cứu học thuật.
-								</p>
+							<h2 className="mt-4 text-xl font-black tracking-tight text-foreground sm:text-2xl">
+								About You
+							</h2>
+							<p className="mt-2 text-sm text-muted max-w-md mx-auto">
+								This information helps compare your results with similar reference groups
+								and serves academic research purposes.
+							</p>
 							</div>
 
 							<div className="space-y-5 max-w-md mx-auto">
 								{/* Full Name */}
 								<div>
 									<label className="block text-sm font-bold text-foreground mb-1.5">
-										Họ và Tên <span className="text-error">*</span>
+										Full Name <span className="text-error">*</span>
 									</label>
 									<input
 										type="text"
@@ -434,10 +434,10 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								{/* Gender */}
 								<div>
 									<label className="block text-sm font-bold text-foreground mb-1.5">
-										Giới tính <span className="text-error">*</span>
+										Gender <span className="text-error">*</span>
 									</label>
 									<div className="flex gap-2">
-										{([{ value: 'male' as const, label: '👨 Nam' }, { value: 'female' as const, label: '👩 Nữ' }, { value: 'other' as const, label: '🧑 Khác' }]).map((opt) => (
+										{([{ value: 'male' as const, label: '👨 Male' }, { value: 'female' as const, label: '👩 Female' }, { value: 'other' as const, label: '🧑 Other' }]).map((opt) => (
 											<button
 												key={opt.value}
 												type="button"
@@ -457,7 +457,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								{/* University */}
 								<div>
 									<label className="block text-sm font-bold text-foreground mb-1.5">
-										Trường Đại học <span className="text-error">*</span>
+										University <span className="text-error">*</span>
 									</label>
 									<input
 										type="text"
@@ -474,7 +474,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								{/* Student Year */}
 								<div>
 									<label className="block text-sm font-bold text-foreground mb-1.5">
-										Sinh viên năm mấy? <span className="text-error">*</span>
+										Student Year <span className="text-error">*</span>
 									</label>
 									<div className="flex gap-2">
 										{STUDENT_YEAR_OPTIONS.map((opt) => (
@@ -500,7 +500,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								{/* Cumulative GPA */}
 								<div>
 									<label className="block text-sm font-bold text-foreground mb-1.5">
-										Điểm GPA tích lũy (thang 4.0) <span className="text-error">*</span>
+										Cumulative GPA (4.0 scale) <span className="text-error">*</span>
 									</label>
 									<input
 										type="number"
@@ -525,11 +525,11 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								{/* Self-Rated Intelligence */}
 								<div>
 										<label className="block text-sm font-bold text-foreground mb-1">
-											Bạn cảm thấy mình thông minh ở mức nào? <span className="text-error">*</span>
+											How smart do you think you are? <span className="text-error">*</span>
 										</label>
-										<p className="text-[11px] text-muted mb-1.5">Không có đáp án đúng sai — hãy chọn theo cảm nhận thật của bạn</p>
+										<p className="text-[11px] text-muted mb-1.5">No right or wrong answer — just pick what feels true for you</p>
 									<div className="flex items-center gap-3">
-										<span className="text-xs text-muted whitespace-nowrap">Thấp 1</span>
+										<span className="text-xs text-muted whitespace-nowrap">Low 1</span>
 										<input
 											type="range"
 											min={1}
@@ -544,7 +544,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 											}
 											className="flex-1 accent-accent"
 										/>
-										<span className="text-xs text-muted whitespace-nowrap">10 Cao</span>
+										<span className="text-xs text-muted whitespace-nowrap">10 High</span>
 									</div>
 									<div className="mt-1 text-center">
 										<span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-accent-foreground">
@@ -561,7 +561,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								onClick={handleDemographicsNext}
 								className="mt-8 w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-accent-foreground transition-all hover:bg-accent-hover hover:scale-[1.01] active:scale-[0.99]"
 							>
-								Xong rồi — Bắt đầu trả lời nào! 🎯
+								Done — Let's start! 🎯
 							</button>
 						</div>
 					</motion.div>
@@ -595,30 +595,28 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 											: 'border-border bg-surface'
 									}`}
 								>
-										{/* Question header */}
-									<div className="flex items-start gap-3">
-										<span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-background-secondary text-xs font-bold text-muted">
-											{globalIndex}
-										</span>
-										<div className="flex-1">
-											{/* Vietnamese — primary label for Vietnamese students */}
-											<p className="text-sm font-bold leading-snug text-foreground">
-												{q.textVi}
-											</p>
-											{/* English — secondary reference */}
-											<p className="mt-1 text-[11px] leading-relaxed text-muted">
-												{q.text}
-											</p>
-										</div>
+									{/* Question header */}
+								<div className="flex items-start gap-3">
+									<span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-background-secondary text-xs font-bold text-muted">
+										{globalIndex}
+									</span>
+									<div className="flex-1">
+										{/* English — primary */}
+										<p className="text-sm font-bold leading-snug text-foreground">
+											{q.text}
+										</p>
+										{/* Vietnamese — secondary reference */}
+										<p className="mt-1 text-[11px] leading-relaxed text-muted">
+											{q.textVi}
+										</p>
 									</div>
-
-									{/* Likert scale */}
+								</div>									{/* Likert scale */}
 								<div className="mt-4 flex gap-1.5 sm:gap-2">
 									{LIKERT_OPTIONS.map((opt) => (
 										<button
 											key={opt.value}
 											onClick={() => handleAnswer(q.testType, q.itemNumber, opt.value)}
-											title={`${opt.label} (${opt.labelEn})`}
+											title={`${opt.label} (${opt.labelVi})`}
 											className={`group flex flex-1 flex-col items-center gap-0.5 rounded-xl border-2 px-1 py-2.5 text-center transition-all duration-150 ${
 												selected === opt.value
 													? 'border-accent bg-accent text-white dark:text-[#121110] shadow-md scale-[1.04] font-black'
@@ -645,11 +643,11 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								disabled={currentPage === 0}
 								className="rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed"
 							>
-								← Trước
+								← Back
 							</button>
 
 							<span className="text-xs text-muted tabular-nums">
-								Trang {currentPage + 1} / {totalPages}
+								Page {currentPage + 1} / {totalPages}
 							</span>
 
 							<button
@@ -659,9 +657,9 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 							>
 								{currentPage === totalPages - 1
 									? phase === 'bfi'
-										? 'Sang phần 2 →'
-										: 'Xem lại →'
-									: 'Tiếp →'}
+										? 'Go to Part 2 →'
+										: 'Review →'
+									: 'Next →'}
 							</button>
 						</div>
 					</motion.div>
@@ -686,29 +684,29 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								🎉
 							</motion.div>
 							<h3 className="mt-5 text-xl font-black text-foreground">
-								Tuyệt vời! Phần 1 hoàn thành
+								Awesome! Part 1 Complete
 							</h3>
 							<p className="mt-1 text-sm font-semibold text-success">
-								✅ {totalBfiAnswered}/30 câu — đã xong phần Tính cách lớn (OCEAN)
+								✅ {totalBfiAnswered}/{config.bfiQuestions.length} items — Big Five (OCEAN) done
 							</p>
 						</div>
 
 						<div className="mt-6 rounded-xl border border-rose/20 bg-rose-subtle/30 p-5">
 							<div className="flex items-center gap-3">
 								<span className="text-2xl">🌑</span>
-								<div>
-									<h4 className="font-bold text-foreground">Tiếp theo: Bản năng xã hội</h4>
-									<p className="text-xs text-muted">27 câu • SD3 (Short Dark Triad)</p>
+									<div>
+										<h4 className="font-bold text-foreground">Up next: Dark Triad</h4>
+										<p className="text-xs text-muted">28 items • SD3 (Short Dark Triad)</p>
+									</div>
 								</div>
-							</div>
-							<p className="mt-3 text-xs leading-relaxed text-muted">
-								Phần này tìm hiểu về tư duy chiến lược, sự tự tin, và khả năng chấp nhận rủi ro.
-								Không có câu trả lời đúng sai — hãy tiếp tục trả lời theo cảm nhận thật nhé!
-							</p>
+								<p className="mt-3 text-xs leading-relaxed text-muted">
+									This part explores strategic thinking, self-confidence, and risk tolerance.
+									No right or wrong answers — just keep going with your honest reactions!
+								</p>
 						</div>
 
 						<div className="mt-4 text-center">
-							<p className="text-xs text-muted mb-4">Còn {config.sd3Questions.length} câu nữa — khoảng 5 phút thôi 💪</p>
+							<p className="text-xs text-muted mb-4">{config.sd3Questions.length} more items — about 5 minutes 💪</p>
 							<button
 								onClick={() => {
 									setPhase('sd3');
@@ -716,7 +714,7 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								}}
 								className="rounded-xl bg-accent px-8 py-3.5 text-sm font-bold text-accent-foreground transition-all hover:bg-accent-hover hover:scale-[1.01] active:scale-[0.99]"
 							>
-								Sẵn sàng — Tiếp tục nào! →
+								Ready — Let's go! →
 							</button>
 						</div>
 					</motion.div>
@@ -741,27 +739,27 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 								>
 									🎊
 								</motion.div>
-								<h3 className="mt-4 text-lg font-black text-foreground">Bạn đã hoàn thành tất cả!</h3>
+								<h3 className="mt-4 text-lg font-black text-foreground">You answered everything!</h3>
 								<p className="mt-1 text-sm text-muted">
-									Cảm ơn bạn đã dành thời gian. Hãy kiểm tra lại trước khi gửi nhé.
+									Thank you for your time. Please review before submitting.
 								</p>
 							</div>
 
 							<div className="mt-5 grid gap-3 sm:grid-cols-2">
 								<div className="rounded-xl border border-indigo/20 bg-indigo-subtle/30 p-4">
 									<div className="flex items-center justify-between">
-										<span className="text-sm font-bold text-foreground">🌟 Tính cách lớn</span>
-										<span className={`text-xs font-bold ${totalBfiAnswered === 30 ? 'text-success' : 'text-error'}`}>
-											{totalBfiAnswered}/30 ✅
+										<span className="text-sm font-bold text-foreground">🌟 Big Five</span>
+										<span className={`text-xs font-bold ${totalBfiAnswered === config.bfiQuestions.length ? 'text-success' : 'text-error'}`}>
+											{totalBfiAnswered}/{config.bfiQuestions.length} ✅
 										</span>
 									</div>
 									<p className="mt-1 text-[10px] text-muted">BFI-2-S — Big Five Inventory</p>
 								</div>
 								<div className="rounded-xl border border-rose/20 bg-rose-subtle/30 p-4">
 									<div className="flex items-center justify-between">
-										<span className="text-sm font-bold text-foreground">🌑 Bản năng xã hội</span>
-										<span className={`text-xs font-bold ${totalSd3Answered === 27 ? 'text-success' : 'text-error'}`}>
-											{totalSd3Answered}/27 ✅
+										<span className="text-sm font-bold text-foreground">🌑 Dark Triad</span>
+										<span className={`text-xs font-bold ${totalSd3Answered === config.sd3Questions.length ? 'text-success' : 'text-error'}`}>
+											{totalSd3Answered}/{config.sd3Questions.length} ✅
 										</span>
 									</div>
 									<p className="mt-1 text-[10px] text-muted">SD3 — Short Dark Triad</p>
@@ -771,12 +769,12 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 							<div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted">
 								<span>⏱ {formatTime(elapsed)}</span>
 								<span>•</span>
-								<span>{totalAnswered}/{config.totalQuestions} câu</span>
+									<span>{totalAnswered}/{config.totalQuestions} items</span>
 							</div>
 
 							{!allComplete && (
 								<div className="rounded-lg bg-warning-subtle p-3 text-center">
-									<p className="text-xs font-bold text-warning">⚠ Bạn chưa trả lời hết — hãy quay lại kiểm tra nhé</p>
+									<p className="text-xs font-bold text-warning">⚠ You haven't answered all items — please go back and check</p>
 								</div>
 							)}
 
@@ -786,9 +784,9 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 										setPhase('bfi');
 										setCurrentPage(0);
 									}}
-									className="flex-1 rounded-xl border border-border bg-background py-3 text-sm font-bold text-foreground transition-colors hover:bg-surface-hover"
-								>
-									← Xem lại câu hỏi
+										className="flex-1 rounded-xl border border-border bg-background py-3 text-sm font-bold text-foreground transition-colors hover:bg-surface-hover"
+									>
+										← Review questions
 								</button>
 								<button
 									onClick={handleSubmit}
@@ -801,10 +799,10 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 												<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
 												<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
 											</svg>
-											Đang phân tích tính cách của bạn...
-										</span>
-									) : (
-										'Xem kết quả của tôi 🚀'
+												Analyzing your personality...
+											</span>
+										) : (
+											'See my results 🚀'
 									)}
 								</button>
 							</div>

@@ -69,17 +69,10 @@ function traitScoreFromResult(
 }
 
 function buildScoringResultFromRow(row: ResultRow): ScoringResult {
-	if (!row.is_valid) {
-		return {
-			isValid: false,
-			invalidReason: row.invalid_reason ?? undefined,
-			ocean: null,
-			darkTriad: null,
-			archetype: null,
-		};
-	}
+	// Build scores if they exist (scores are now computed even for invalid sessions)
+	const hasScores = row.extraversion != null || row.agreeableness != null;
 
-	const ocean: OceanScores = {
+	const ocean: OceanScores | null = hasScores ? {
 		extraversion: traitScoreFromResult(
 			'extraversion', 'Extraversion',
 			row.extraversion, row.extraversion_pct
@@ -100,9 +93,9 @@ function buildScoringResultFromRow(row: ResultRow): ScoringResult {
 			'openMindedness', 'Open-Mindedness',
 			row.open_mindedness, row.open_mindedness_pct
 		),
-	};
+	} : null;
 
-	const darkTriad: DarkTriadScores = {
+	const darkTriad: DarkTriadScores | null = hasScores ? {
 		machiavellianism: traitScoreFromResult(
 			'machiavellianism', 'Machiavellianism',
 			row.machiavellianism, row.machiavellianism_pct
@@ -115,10 +108,11 @@ function buildScoringResultFromRow(row: ResultRow): ScoringResult {
 			'psychopathy', 'Psychopathy',
 			row.psychopathy, row.psychopathy_pct
 		),
-	};
+	} : null;
 
 	return {
-		isValid: true,
+		isValid: row.is_valid,
+		invalidReason: row.invalid_reason ?? undefined,
 		ocean,
 		darkTriad,
 		archetype: row.archetype ?? null,
@@ -259,8 +253,9 @@ export async function submitPersonalityTest(
 	// 3. Insert scoring result
 	await insertResult({ sessionId, result: scoringResult });
 
-	// 4. Calculate and update percentiles if valid
-	if (scoringResult.isValid && scoringResult.ocean && scoringResult.darkTriad) {
+	// 4. Calculate and update percentiles if scores are available
+	// (scores are computed even for attention-check-failed sessions)
+	if (scoringResult.ocean && scoringResult.darkTriad) {
 		const percentiles = await calculateAndUpdatePercentiles(
 			sessionId,
 			scoringResult,

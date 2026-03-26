@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
 	title: 'Personality Test — Dual Assessment | HANOICAM',
 	description:
-		'Đánh giá tính cách kép: BFI-2-S (OCEAN) và Short Dark Triad (SD3). Khám phá điểm mạnh và điểm mù của bạn trong bối cảnh nghề nghiệp.',
+		'Dual personality assessment: BFI-2-S (OCEAN) and Short Dark Triad (SD3). Discover your strengths and blind spots in a career context.',
 };
 
 export default async function PersonalityTestPage() {
@@ -43,16 +43,16 @@ export default async function PersonalityTestPage() {
 						<span className="text-3xl">🪞</span>
 						<div>
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">
-								Hành vi Tổ chức — Organizational Behavior
+								Organizational Behavior
 							</p>
 							<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-								Bài đánh giá tính cách
+								Personality Assessment
 							</h1>
 						</div>
 					</div>
 					<p className="mt-3 text-sm text-muted leading-relaxed max-w-xl">
-						Khám phá điểm mạnh, điểm mù và phong cách làm việc của bạn thông qua hai mô hình
-						tâm lý học nổi tiếng — Big Five (BFI-2-S) và Dark Triad (SD3).
+						Discover your strengths, blind spots, and working style through two
+						widely-researched psychology models — Big Five (BFI-2-S) and Dark Triad (SD3).
 					</p>
 				</div>
 			</section>

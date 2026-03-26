@@ -43,7 +43,7 @@ export default function PersonalityTestClient({ config, history }: Props) {
 				const json = await res.json();
 
 				if (!json.ok) {
-					setError(json.error || 'Đã xảy ra lỗi khi gửi bài test');
+					setError(json.error || 'An error occurred while submitting the test');
 					setIsSubmitting(false);
 					return;
 				}
@@ -54,7 +54,7 @@ export default function PersonalityTestClient({ config, history }: Props) {
 				// Redirect to results page
 				router.push(`/personality-test/results/${json.data.id}`);
 			} catch {
-				setError('Lỗi kết nối. Câu trả lời đã được lưu tự động — bạn có thể gửi lại khi có mạng.');
+				setError('Connection error. Your answers are auto-saved — you can try again when online.');
 				setIsSubmitting(false);
 			}
 		},

@@ -447,19 +447,19 @@ function InvalidResultCard({ reason }: { reason?: string }) {
 	return (
 		<div className="rounded-2xl border border-error/30 bg-error-subtle p-8 text-center">
 			<div className="text-4xl">😔</div>
-			<h3 className="mt-4 text-xl font-black text-foreground">Chưa thể phân tích kết quả</h3>
+			<h3 className="mt-4 text-xl font-black text-foreground">Unable to Analyze Results</h3>
 			<p className="mt-2 text-sm text-muted leading-relaxed max-w-md mx-auto">
-				Bài làm chưa đạt yêu cầu kiểm tra sự tập trung. Điều này có thể xảy ra nếu bạn
-				làm vội hoặc không đọc kĩ câu hỏi — hãy thử lại khi có thời gian tập trung nhé!
+				The submission did not pass the attention check. This can happen if you
+				rushed through or didn't read the items carefully — please try again when you have time to focus.
 				{reason && (
-					<span className="mt-2 block text-xs text-error">Chi tiết: {reason}</span>
+					<span className="mt-2 block text-xs text-error">Detail: {reason}</span>
 				)}
 			</p>
 			<Link
 				href="/personality-test"
 				className="mt-5 inline-block rounded-xl bg-accent px-6 py-3 text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-hover"
 			>
-				Thử lại bài đánh giá →
+				Retake the assessment →
 			</Link>
 		</div>
 	);
@@ -704,12 +704,13 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 
 	// Fetch percentiles on mount and when reference groups change
 	useEffect(() => {
-		if (result?.isValid) {
+		if (result?.ocean && result?.darkTriad) {
 			fetchPercentiles(oceanGroup, darkTriadGroup);
 		}
-	}, [result?.isValid, oceanGroup, darkTriadGroup, fetchPercentiles]);
+	}, [result?.ocean, result?.darkTriad, oceanGroup, darkTriadGroup, fetchPercentiles]);
 
-	if (!result || !result.isValid) {
+	// If no result or no computed scores at all, show invalid card
+	if (!result || (!result.ocean && !result.darkTriad)) {
 		return <InvalidResultCard reason={result?.invalidReason} />;
 	}
 
@@ -735,12 +736,42 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 
 	return (
 		<div className="space-y-6">
+			{/* Attention Check Warning Banner */}
+			{!result.isValid && (
+				<motion.div
+					initial={{ opacity: 0, y: -10 }}
+					animate={{ opacity: 1, y: 0 }}
+					className="rounded-2xl border-2 border-warning/40 bg-warning-subtle p-5"
+				>
+					<div className="flex items-start gap-3">
+						<span className="text-2xl shrink-0">⚠️</span>
+						<div>
+							<h3 className="font-black text-foreground">Attention Check Not Passed</h3>
+							<p className="mt-1 text-sm text-muted leading-relaxed">
+								One or more attention-check items were answered incorrectly. Your results are shown below
+								for <strong>educational purposes only</strong> and may not accurately reflect your personality profile.
+								Consider retaking the test when you have time to focus.
+							</p>
+							{result.invalidReason && (
+								<p className="mt-2 text-xs text-warning font-mono">Detail: {result.invalidReason}</p>
+							)}
+							<Link
+								href="/personality-test"
+								className="mt-3 inline-block rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-foreground transition-colors hover:bg-accent-hover"
+							>
+								Retake the test →
+							</Link>
+						</div>
+					</div>
+				</motion.div>
+			)}
+
 			{/* Header */}
 			<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-				<p className="text-xs font-bold uppercase tracking-widest text-accent">Kết quả của bạn đã sẵn sàng ✨</p>
-				<h2 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">Hồ sơ tính cách toàn diện</h2>
+				<p className="text-xs font-bold uppercase tracking-widest text-accent">Your results are ready ✨</p>
+				<h2 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">Comprehensive Personality Profile</h2>
 				<p className="mt-2 text-sm text-muted max-w-md mx-auto">
-					Dưới đây là bức tranh đầy đủ về tính cách của bạn — dựa trên hai mô hình tâm lý học được nghiên cứu rộng rãi.
+					Below is the full picture of your personality — based on two widely-researched psychological models.
 				</p>
 				{session.completedAt && (
 					<p className="mt-2 text-xs text-muted">
