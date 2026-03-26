@@ -122,23 +122,24 @@ describe('Question Configuration', () => {
 			.filter(q => q.isReversed && !q.isAttentionCheck)
 			.map(q => q.itemNumber)
 			.sort((a, b) => a - b);
-		// Expected reversed per Soto & John BFI-2-S scoring key:
-		// Items 1R,2R,3R(wait... check actual) — let's just verify count
+		// Expected reversed per Google Form item mapping:
 		expect(reversedItems.length).toBeGreaterThan(0);
-		// Specific known reversed items from the scoring key
-		expect(reversedItems).toContain(16); // fo1 — "tends to be quiet" R
-		expect(reversedItems).toContain(8);  // fo3 — "tends to be disorganized" R
-		expect(reversedItems).toContain(5);  // fo5 — "few artistic interests" R
-		expect(reversedItems).toContain(12); // fo7 — "sometimes rude" R
-		expect(reversedItems).toContain(9);  // fo9 — "relaxed, handles stress" R
-		expect(reversedItems).toContain(2);  // fo12 — "tends to find fault" R
-		expect(reversedItems).toContain(19); // fo19 — "emotionally stable" R
-		expect(reversedItems).toContain(20); // fo20 — "little interest in abstract" R
-		expect(reversedItems).toContain(22); // fo22 — "cold and uncaring" R
-		expect(reversedItems).toContain(28); // fo23 — "easily distracted" R
-		expect(reversedItems).toContain(11); // fo26 — "less active than others" R
-		expect(reversedItems).toContain(18); // fo28 — "somewhat careless" R
-		expect(reversedItems).toContain(30); // fo30 — "prefers routine work" R
+		// Specific known reversed items (matched to Google Form columns):
+		expect(reversedItems).toContain(16); // fo1  — "Tends to be quiet" R (E)
+		expect(reversedItems).toContain(8);  // fo3  — "Tends to be disorganized" R (C)
+		// fo5 = item5 "Is fascinated by art..." is NON-reversed (positive O)
+		expect(reversedItems).toContain(12); // fo7  — "Is sometimes rude" R (A)
+		expect(reversedItems).toContain(28); // fo8  — "Has difficulty getting started" R (C)
+		expect(reversedItems).toContain(20); // fo10 — "Has little interest in abstract ideas" R (O)
+		expect(reversedItems).toContain(19); // fo14 — "Is emotionally stable" R (N)
+		expect(reversedItems).toContain(22); // fo17 — "Can be cold and uncaring" R (A)
+		expect(reversedItems).toContain(9);  // fo19 — "Is relaxed, handles stress" R (N)
+		expect(reversedItems).toContain(10); // fo20 — "Has few artistic interests" R (O)
+		expect(reversedItems).toContain(11); // fo21 — "Prefers to have others take charge" R (E)
+		expect(reversedItems).toContain(24); // fo24 — "Feels secure, comfortable with self" R (N)
+		expect(reversedItems).toContain(2);  // fo28 — "Tends to find fault with others" R (A)
+		expect(reversedItems).toContain(18); // fo29 — "Can be somewhat careless" R (C)
+		expect(reversedItems).toContain(30); // fo31 — "Has little creativity" R (O)
 	});
 
 	it('SD3 reversed items — Narcissism N11R, N17R, N8R and Psychopathy P20R and P25R', () => {

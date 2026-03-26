@@ -56,17 +56,17 @@ type ReportRowRaw = Awaited<ReturnType<typeof findAllSessionsForReport>>[number]
 
 function bfiGFHeader(q: typeof BFI2S_QUESTIONS[0]): string {
 	if (q.isAttentionCheck) {
-		return `${q.formOrder}. [ATTENTION CHECK] ${q.textVi}`;
+		// Attention check header matches Google Form exactly
+		return q.textVi; // e.g. "Hãy chọn số 1 ở câu này/Please choose number 1 for this question"
 	}
-	const shortText = q.text.replace(/^I am someone who /i, '').replace(/^\./,'');
-	// Capitalize first letter
-	const capitalized = shortText.charAt(0).toUpperCase() + shortText.slice(1);
-	return `${q.formOrder}. ${capitalized}`;
+	// Text is already in adjective-phrase form (no "I am someone who" prefix)
+	return `${q.formOrder}.  ${q.text}`;
 }
 
 function sd3GFHeader(q: typeof SD3_QUESTIONS[0]): string {
 	if (q.isAttentionCheck) {
-		return `${q.formOrder}. [ATTENTION CHECK] ${q.textVi}`;
+		// Attention check header matches Google Form exactly
+		return q.text; // "Choose number 2 if you are still here with us"
 	}
 	return `${q.formOrder}. ${q.text}`;
 }
@@ -78,11 +78,11 @@ function sd3GFHeader(q: typeof SD3_QUESTIONS[0]): string {
 const FORM_DEMO_COLS = [
 	{ key: 'created_at',              label: 'Dấu thời gian' },
 	{ key: 'full_name',               label: 'Họ và Tên/Full Name' },
-	{ key: 'gender',                  label: 'Giới tính' },
 	{ key: 'university',              label: 'Trường' },
 	{ key: 'student_year',            label: 'Bạn là sinh viên năm mấy của Trường?' },
 	{ key: 'cumulative_gpa',          label: 'GPA tích luỹ đến thời điểm hiện tại của bạn' },
-	{ key: 'self_rated_intelligence', label: '"How would you rate your level of general intelligence compared to that of the average student?\n\nCircle a number on the following scale: "' },
+	{ key: 'self_rated_intelligence', label: '"How would you rate your level of general intelligence compared to that of the average student?\nCircle a number on the following scale: "' },
+	{ key: 'gender',                  label: 'Giới tính/Gender' },
 ] as const;
 
 // All columns including admin metadata (for Sheet 2 and beyond)
