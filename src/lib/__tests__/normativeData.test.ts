@@ -126,7 +126,8 @@ describe('calculateZScore', () => {
 	});
 
 	it('should handle fractional results', () => {
-		const z = calculateZScore(3.2165, 3.2165, 0.72822);
+		// Using BFI-2-S E norms: M=3.22, SD=0.80 (Soto & John 2017, Table 1)
+		const z = calculateZScore(3.22, 3.22, 0.80);
 		expect(z).toBeCloseTo(0, 5);
 	});
 });
@@ -187,9 +188,9 @@ describe('calculatePercentile', () => {
 // ─── 4. calculateDomainPercentile ───────────────────────────────────────────────
 
 describe('calculateDomainPercentile', () => {
-	it('should return correct result for extraversion with BFI-2 Internet norms', () => {
-		// BFI-2 E: M=3.2165, SD=0.72822
-		const result = calculateDomainPercentile('extraversion', 3.2165, 'bfi2-internet');
+	it('should return correct result for extraversion with BFI-2-S Internet norms', () => {
+		// BFI-2-S E: M=3.22, SD=0.80 (Soto & John 2017, Table 1)
+		const result = calculateDomainPercentile('extraversion', 3.22, 'bfi2-internet');
 		expect(result).not.toBeNull();
 		expect(result!.domain).toBe('extraversion');
 		expect(result!.percentile).toBe(50);
@@ -207,7 +208,8 @@ describe('calculateDomainPercentile', () => {
 	});
 
 	it('should return correct result for low agreeableness', () => {
-		// Score 2.0 with M=3.8175, SD=0.63391 → z ≈ -2.87
+		// BFI-2-S A: M=3.82, SD=0.72 (Soto & John 2017, Table 1)
+		// Score 2.0 → z ≈ -2.53 → pct=1 (Very Low)
 		const result = calculateDomainPercentile('agreeableness', 2.0, 'bfi2-internet');
 		expect(result).not.toBeNull();
 		expect(result!.percentile).toBeLessThan(5);
@@ -251,25 +253,25 @@ describe('calculateDomainPercentile', () => {
 	});
 
 	it('should include mean and SD from the reference group in the result', () => {
+		// BFI-2-S C: M=3.89, SD=0.84 (Soto & John 2017, Table 1)
 		const result = calculateDomainPercentile('conscientiousness', 4.0, 'bfi2-internet');
 		expect(result).not.toBeNull();
-		expect(result!.mean).toBeCloseTo(3.8857, 3);
-		expect(result!.sd).toBeCloseTo(0.72289, 3);
+		expect(result!.mean).toBeCloseTo(3.89, 2);
+		expect(result!.sd).toBeCloseTo(0.84, 2);
 	});
 
 	it('should populate interpretation labels for all percentile bands', () => {
-		// E: M=3.2165, SD=0.72822
-		// Carefully chosen scores to land in each percentile band
+		// BFI-2-S E: M=3.22, SD=0.80 (Soto & John 2017, Table 1)
+		// Verified percentiles: score→z→pct→band
 		const testCases = [
-			{ score: 1.5, expectedEn: 'Very Low' },    // z≈-2.36 → P≈1  → ≤10
-			{ score: 2.5, expectedEn: 'Low' },          // z≈-0.98 → P≈16 → ≤25
-			{ score: 2.95, expectedEn: 'Below Average' }, // z≈-0.37 → P≈36 → ≤40
-			{ score: 3.2, expectedEn: 'Average' },       // z≈-0.02 → P≈49 → ≤60
-			{ score: 3.65, expectedEn: 'Above Average' }, // z≈+0.60 → P≈72 → ≤75
-			{ score: 4.0, expectedEn: 'High' },          // z≈+1.08 → P≈86 → ≤90
-			{ score: 4.8, expectedEn: 'Very High' },     // z≈+2.17 → P≈98 → >90
+			{ score: 1.5,  expectedEn: 'Very Low' },      // z=-2.15 → pct=2  → ≤10
+			{ score: 2.5,  expectedEn: 'Low' },            // z=-0.90 → pct=18 → ≤25
+			{ score: 2.95, expectedEn: 'Below Average' },  // z=-0.34 → pct=37 → ≤40
+			{ score: 3.2,  expectedEn: 'Average' },        // z=-0.02 → pct=49 → ≤60
+			{ score: 3.65, expectedEn: 'Above Average' },  // z=+0.54 → pct=70 → ≤75
+			{ score: 4.0,  expectedEn: 'High' },           // z=+0.98 → pct=84 → ≤90
+			{ score: 4.8,  expectedEn: 'Very High' },      // z=+1.97 → pct=98 → >90
 		];
-		// Test against E: M=3.2165, SD=0.72822
 		for (const tc of testCases) {
 			const result = calculateDomainPercentile('extraversion', tc.score, 'bfi2-internet');
 			expect(result).not.toBeNull();
@@ -362,7 +364,7 @@ describe('Reference Group Lookups', () => {
 		it('should find bfi2-internet group', () => {
 			const group = getReferenceGroupById('bfi2-internet');
 			expect(group).toBeDefined();
-			expect(group!.label).toContain('BFI-2');
+			expect(group!.label).toContain('BFI-2-S'); // short form
 			expect(group!.domains).toContain('extraversion');
 		});
 
@@ -451,7 +453,7 @@ describe('Data Integrity', () => {
 		}
 	});
 
-	it('BFI-2 norms should have reasonable values (scale 1-5)', () => {
+	it('BFI-2-S norms should have reasonable values (scale 1-5)', () => {
 		const group = getReferenceGroupById('bfi2-internet')!;
 		for (const domain of group.domains) {
 			const norm = group.norms[domain]!;
@@ -501,15 +503,15 @@ describe('Data Integrity', () => {
 // ─── 8. Known-Value Integration Tests ───────────────────────────────────────────
 
 describe('Known-Value Integration Tests', () => {
-	it('should calculate correct percentile for BFI-2 E at exact mean', () => {
-		// E: M=3.2165, SD=0.72822 → score=3.2165 → z=0 → P50
-		const result = calculateDomainPercentile('extraversion', 3.2165, 'bfi2-internet');
+	it('should calculate correct percentile for BFI-2-S E at exact mean', () => {
+		// BFI-2-S E: M=3.22, SD=0.80 (Soto & John 2017, Table 1) → score=3.22 → z=0 → P50
+		const result = calculateDomainPercentile('extraversion', 3.22, 'bfi2-internet');
 		expect(result!.percentile).toBe(50);
 	});
 
-	it('should calculate correct percentile for BFI-2 N at 1 SD above mean', () => {
-		// N: M=2.7155, SD=0.89516 → score=3.6107 → z≈1 → P≈84
-		const result = calculateDomainPercentile('negativeEmotionality', 2.7155 + 0.89516, 'bfi2-internet');
+	it('should calculate correct percentile for BFI-2-S N at 1 SD above mean', () => {
+		// BFI-2-S N: M=2.72, SD=0.97 (Soto & John 2017, Table 1) → score=3.69 → z=1 → P84
+		const result = calculateDomainPercentile('negativeEmotionality', 2.72 + 0.97, 'bfi2-internet');
 		expect(result!.percentile).toBe(84);
 	});
 
@@ -524,13 +526,79 @@ describe('Known-Value Integration Tests', () => {
 		expect(male).not.toBeNull();
 		expect(female).not.toBeNull();
 
-		// At least one gender-specific result should differ from pooled
-		const pooledPct = community!.percentile;
-		const malePct = male!.percentile;
-		const femalePct = female!.percentile;
-		const allSame = pooledPct === malePct && pooledPct === femalePct;
-		// This might be true if the score happens to be near the mean, but generally they should differ
-		// Use a softer assertion: means should be different
+		// Gender-specific means must differ (Study 3: male M=3.12, female M=2.91)
+		expect(male!.mean).toBeCloseTo(3.12, 2);
+		expect(female!.mean).toBeCloseTo(2.91, 2);
 		expect(community!.mean).not.toBe(male!.mean);
+	});
+
+	// ── SD3 pooled norms (computed from Jones & Paulhus 2014 Table 3 data) ──
+	it('SD3 community pooled Machiavellianism should match weighted calculation', () => {
+		// Pooled from 6 groups (Study 1-3, M+F) using weighted mean/variance formula
+		// Study data: S1M(259,3.40,0.55) S1F(230,3.27,0.56) S2M(151,3.19,0.57)
+		//             S2F(128,3.03,0.53) S3M(97,3.12,0.67)  S3F(133,2.91,0.53)
+		// Expected pooled: M≈3.1983, SD≈0.5866, N=998
+		const result = calculateDomainPercentile('machiavellianism', 3.1983, 'sd3-community');
+		expect(result).not.toBeNull();
+		expect(result!.percentile).toBe(50); // at pooled mean → 50th
+		expect(result!.mean).toBeCloseTo(3.1983, 2);
+		expect(result!.sd).toBeCloseTo(0.5866, 2);
+	});
+
+	it('SD3 community pooled Narcissism should match weighted calculation', () => {
+		// Expected pooled: M≈2.8285, SD≈0.5275, N=998
+		const result = calculateDomainPercentile('narcissism', 2.8285, 'sd3-community');
+		expect(result).not.toBeNull();
+		expect(result!.percentile).toBe(50);
+		expect(result!.mean).toBeCloseTo(2.8285, 2);
+		expect(result!.sd).toBeCloseTo(0.5275, 2);
+	});
+
+	it('SD3 community pooled Psychopathy should match weighted calculation', () => {
+		// Expected pooled: M≈2.1609, SD≈0.6174, N=998
+		const result = calculateDomainPercentile('psychopathy', 2.1609, 'sd3-community');
+		expect(result).not.toBeNull();
+		expect(result!.percentile).toBe(50);
+		expect(result!.mean).toBeCloseTo(2.1609, 2);
+		expect(result!.sd).toBeCloseTo(0.6174, 2);
+	});
+
+	// ── BFI-2-S norms from Soto & John (2017) Table 1 ──
+	it('BFI-2-S norms should match Soto & John 2017 Table 1 values exactly', () => {
+		// Internet sample N=3,071 — short form (6 items/domain) norms
+		const expected: Record<string, { mean: number; sd: number }> = {
+			extraversion:         { mean: 3.22, sd: 0.80 },
+			agreeableness:        { mean: 3.82, sd: 0.72 },
+			conscientiousness:    { mean: 3.89, sd: 0.84 },
+			negativeEmotionality: { mean: 2.72, sd: 0.97 },
+			openMindedness:       { mean: 3.65, sd: 0.77 },
+		};
+		const group = getReferenceGroupById('bfi2-internet')!;
+		for (const [domain, { mean, sd }] of Object.entries(expected)) {
+			const norm = group.norms[domain as keyof typeof group.norms]!;
+			expect(norm.mean).toBeCloseTo(mean, 2);
+			expect(norm.sd).toBeCloseTo(sd, 2);
+			expect(norm.n).toBe(3071);
+		}
+	});
+
+	it('score at BFI-2-S mean+1SD should always give 84th percentile', () => {
+		// This validates both the CDF and the norm values together
+		const domainNorms: Record<string, [number, number]> = {
+			extraversion: [3.22, 0.80],
+			agreeableness: [3.82, 0.72],
+			conscientiousness: [3.89, 0.84],
+			negativeEmotionality: [2.72, 0.97],
+			openMindedness: [3.65, 0.77],
+		};
+		for (const [domain, [mean, sd]] of Object.entries(domainNorms)) {
+			const result = calculateDomainPercentile(
+				domain as Parameters<typeof calculateDomainPercentile>[0],
+				mean + sd,
+				'bfi2-internet'
+			);
+			expect(result).not.toBeNull();
+			expect(result!.percentile).toBe(84); // Φ(1) = 84.13% → rounds to 84
+		}
 	});
 });

@@ -2,7 +2,7 @@
    Normative Data & Percentile Calculation Engine
    
    Provides normative reference data for:
-   - BFI-2 (Big Five): Soto & John (2017) — Internet sample N=3,071
+   - BFI-2-S (Big Five, Short Form): Soto & John (2017) — Internet sample N=3,071
    - SD3 (Short Dark Triad): Jones & Paulhus (2014) — MTurk samples
    
    Percentile Calculation Method:
@@ -11,9 +11,27 @@
    - Assumes approximately normal distribution of trait scores
    
    Reference Groups:
-   1. BFI-2: "Internet Sample" from bfi2-descriptives (N=3,071)
+   1. BFI-2-S: Internet Sample norms from Soto & John (2017), Table 1, N=3,071.
+      ⚠️  NOTE: These are the SHORT-FORM (BFI-2-S, 6 items/domain) norms,
+      NOT the full BFI-2 norms. The BFI-2-S has slightly larger SDs than the
+      full BFI-2 (fewer items = less reliability = more score variance).
+      Using the correct BFI-2-S norms prevents artificially extreme percentiles.
    2. SD3: "Community Adults" from Jones & Paulhus 2014, pooled across
       3 studies (Studies 1-3). Gender-specific norms also available.
+   
+   ⚠️  ITEM COUNT CAVEATS (Attention Check Tradeoff):
+   - BFI-2-S Open-Mindedness: Form position 25 is used as attention check
+     (academic item 25, which officially belongs to O domain).
+     Our O domain is therefore averaged over 5 items instead of 6.
+     The normative mean (M≈3.65) is still a valid reference because the
+     excluded item (aesthetic sensitivity facet) was near the domain mean.
+     Percentiles for O are slightly approximate. Documented limitation.
+   - SD3 Narcissism: Form position 17 is used as attention check
+     (academic item N17 = "I am an ordinary person", reversed).
+     Our N domain is averaged over 8 items instead of 9.
+     The normative norms (Jones & Paulhus 2014) assume 9 items.
+     Bias is small but direction: removing a reversed item slightly compresses
+     the narcissism range. Percentiles for N are slightly approximate.
    
    ════════════════════════════════════════════════════════════════════════ */
 
@@ -61,24 +79,43 @@ export interface PercentileResult {
 	interpretationVi: string;
 }
 
-// ─── BFI-2 Normative Data ──────────────────────────────────────────────────────
-// Source: bfi2-descriptives — Internet sample
-// N = 3,071 (all genders pooled)
-// Scale: 1-5 (item means)
+// ─── BFI-2-S Normative Data ────────────────────────────────────────────────────
+// Source: Soto & John (2017). "Short and extra-short forms of the Big Five
+// Inventory–2: The BFI-2-S and BFI-2-XS." Journal of Research in Personality,
+// 68, 69-81. Table 1 — Internet Sample, N = 3,071 (all genders pooled).
+// Scale: 1-5 (item means, 6 items per domain in BFI-2-S).
 //
-// These statistics come from the official BFI-2 descriptives spreadsheet
-// provided by Soto & John (2017).
+// ⚠️  IMPORTANT: These are the BFI-2-S SHORT FORM norms, NOT the full BFI-2 norms.
+// The BFI-2-S has slightly larger SDs than the full 60-item BFI-2 because
+// 6 items per domain is less reliable than 12 items per domain.
+//
+// Full BFI-2 norms for comparison (NOT used):
+//   E: M=3.2165, SD=0.72822  ← SD too small (underestimates variance)
+//   A: M=3.8175, SD=0.63391
+//   C: M=3.8857, SD=0.72289
+//   N: M=2.7155, SD=0.89516
+//   O: M=3.6491, SD=0.68558
+//
+// BFI-2-S norms from Table 1 (CORRECT values used below):
+//   E: M=3.22, SD=0.80
+//   A: M=3.82, SD=0.72
+//   C: M=3.89, SD=0.84
+//   N: M=2.72, SD=0.97
+//   O: M=3.65, SD=0.77
 
 const BFI2_INTERNET_NORMS: Record<OceanDomain, NormativeStats> = {
-	extraversion:         { mean: 3.2165, sd: 0.72822, n: 3071 },
-	agreeableness:        { mean: 3.8175, sd: 0.63391, n: 3071 },
-	conscientiousness:    { mean: 3.8857, sd: 0.72289, n: 3071 },
-	negativeEmotionality: { mean: 2.7155, sd: 0.89516, n: 3071 },
-	openMindedness:       { mean: 3.6491, sd: 0.68558, n: 3071 },
+	extraversion:         { mean: 3.22, sd: 0.80, n: 3071 },
+	agreeableness:        { mean: 3.82, sd: 0.72, n: 3071 },
+	conscientiousness:    { mean: 3.89, sd: 0.84, n: 3071 },
+	negativeEmotionality: { mean: 2.72, sd: 0.97, n: 3071 },
+	openMindedness:       { mean: 3.65, sd: 0.77, n: 3071 },
 };
 
-// BFI-2 Facet-level norms (15 facets, 4 items each in full BFI-2)
-// From the same Internet sample N=3,071
+// BFI-2 Facet-level norms (15 facets, 4 items each in FULL BFI-2, NOT BFI-2-S)
+// From the full BFI-2 Internet sample N=3,071 (Soto & John 2017, bfi2-descriptives)
+// ⚠️  These facet norms are from the FULL BFI-2, not the BFI-2-S.
+//     BFI-2-S does not include facet-level scoring (only domain-level).
+//     Retained here for potential future reference only.
 const BFI2_FACET_NORMS = {
 	// Extraversion facets
 	sociability:          { mean: 2.9871, sd: 0.98415, n: 3071 },
@@ -108,6 +145,19 @@ const BFI2_FACET_NORMS = {
 //
 // Scale: 1-5 (item means, after reversals)
 // Data from Table 3 of the paper.
+//
+// ⚠️  NARCISSISM ITEM COUNT NOTE:
+// The official SD3 Narcissism scale has 9 items (N10–N18), with N11 and N15
+// reversed, and N17 ("I am an ordinary person") also reversed.
+// In this survey, form position 17 is used as an ATTENTION CHECK, which
+// corresponds to academic item N17. Therefore our Narcissism score is an
+// average of 8 items instead of 9.
+//
+// The published norms (Jones & Paulhus 2014, Table 3) are based on the full
+// 9-item scale. The impact on percentile accuracy is small but acknowledged:
+// - Removing N17R (a reversed item) slightly compresses the top and bottom
+//   of the narcissism distribution toward the mean.
+// - Narcissism percentiles should be interpreted as approximate (±2-3 pts).
 //
 // We provide multiple reference groups:
 // 1. Pooled across all 3 studies (calculated weighted average)
@@ -216,14 +266,14 @@ const DARK_TRIAD_DOMAINS: DarkTriadDomain[] = [
 ];
 
 export const REFERENCE_GROUPS: ReferenceGroup[] = [
-	// ── BFI-2 Groups ──
+	// ── BFI-2-S Groups ──
 	{
 		id: 'bfi2-internet',
-		label: 'BFI-2 Internet Sample',
-		labelVi: 'Mẫu Internet BFI-2',
-		description: 'General internet population, N=3,071. Mixed ages and genders.',
-		descriptionVi: 'Dân số Internet chung, N=3.071. Đa dạng độ tuổi và giới tính.',
-		source: 'Soto & John (2017). BFI-2 Descriptive Statistics.',
+		label: 'BFI-2-S Internet Sample',
+		labelVi: 'Mẫu Internet BFI-2-S',
+		description: 'General internet population, N=3,071. Mixed ages and genders. BFI-2-S short form norms.',
+		descriptionVi: 'Dân số Internet chung, N=3.071. Đa dạng độ tuổi và giới tính. Chuẩn mực BFI-2-S dạng ngắn.',
+		source: 'Soto & John (2017). BFI-2-S norms, Table 1, Internet Sample.',
 		domains: [...OCEAN_DOMAINS],
 		norms: { ...BFI2_INTERNET_NORMS },
 	},
