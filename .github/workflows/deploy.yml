@@ -38,7 +38,7 @@ jobs:
             git reset --hard origin/main
 
             echo "📦 [2/4] Install dependencies..."
-            npm ci --production=false
+            npm install --include=dev
 
             echo "🏗️  [3/4] Build Next.js (with live MongoDB)..."
             npm run build
