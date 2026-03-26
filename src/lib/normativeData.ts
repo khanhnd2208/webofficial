@@ -28,12 +28,13 @@
    - Z ≥ -1.5 → Thấp     (Low)
    - Z <  -1.5 → Rất thấp (Very Low)
    
-   ⚠️  ITEM COUNT CAVEATS (Attention Check Tradeoff):
-   - BFI-2-S Open-Mindedness: Form position 25 is used as attention check.
-     Our O domain is therefore averaged over 5 items instead of 6.
-     Percentiles for O are slightly approximate. Documented limitation.
-   - SD3 Narcissism item count is now RESTORED to 9 items (items N10-N18)
-     by separating the attention check from the real item N17R.
+   ⚠️  ITEM COUNT NOTES:
+   - BFI-2-S Open-Mindedness: 6 scored items (academic items 5R, 10, 15, 20R, 25, 30R).
+     Form position 25 is an attention check with synthetic itemNumber 99 (excluded from scoring).
+     Academic item 25 was RESTORED at formOrder 26. O norms match published BFI-2-S norms.
+   - SD3 Narcissism: 9 scored items (N10-N18) as published.
+     Form position 17 is an attention check with synthetic itemNumber 98 (excluded from scoring).
+     Academic item N17R was RESTORED at formOrder 18.
    
    ════════════════════════════════════════════════════════════════════════ */
 
@@ -150,16 +151,12 @@ const BFI2_FACET_NORMS = {
 //
 // ⚠️  NARCISSISM ITEM COUNT NOTE:
 // The official SD3 Narcissism scale has 9 items (N10–N18), with N11 and N15
-// reversed, and N17 ("I am an ordinary person") also reversed.
-// In this survey, form position 17 is used as an ATTENTION CHECK, which
-// corresponds to academic item N17. Therefore our Narcissism score is an
-// average of 8 items instead of 9.
-//
-// The published norms (Jones & Paulhus 2014, Table 3) are based on the full
-// 9-item scale. The impact on percentile accuracy is small but acknowledged:
-// - Removing N17R (a reversed item) slightly compresses the top and bottom
-//   of the narcissism distribution toward the mean.
-// - Narcissism percentiles should be interpreted as approximate (±2-3 pts).
+// reversed, and N17R ("I feel embarrassed if someone compliments me") also reversed.
+// Our survey now correctly scores ALL 9 items:
+// - Form position 17 uses synthetic itemNumber 98 as an attention check (excluded).
+// - Academic item N17R (itemNumber 17, "I feel embarrassed...") is at formOrder 18.
+// - Academic item N15R (itemNumber 15, "I am an average person") is at formOrder 24.
+// Narcissism percentiles use the full published 9-item norms — no approximation needed.
 //
 // We provide multiple reference groups:
 // 1. Pooled across all 3 studies (calculated weighted average)

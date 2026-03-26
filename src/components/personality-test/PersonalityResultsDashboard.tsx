@@ -100,7 +100,7 @@ const TRAIT_INSIGHTS: Record<PersonalityDomain, TraitInsight> = {
 		high: 'Bạn đáng tin cậy, có kế hoạch rõ ràng và follow-through tốt. Meta-analysis của Barrick & Mount (1991) xác nhận C là predictor mạnh nhất cho job performance across tất cả ngành nghề, với r=.22-.23. Đây là nền tảng "career insurance" của bạn.',
 		moderate: 'Bạn cân bằng giữa kỷ luật và linh hoạt. Trong startup hoặc môi trường agile, đây có thể là mức optimal vì bạn đủ organized để deliver nhưng đủ flexible để pivot khi cần.',
 		low: 'Bạn ưu tiên flexibility và spontaneity. ⚠️ Thực tế phũ phàng: Trong thị trường lao động VN hiện tại, C thấp là red flag lớn nhất mà employer nhìn thấy — trễ deadline, không follow-up, quên reply email. Tin tốt: C là trait CÓ THỂ cải thiện được nhiều nhất qua hệ thống và thói quen (Roberts et al., 2006).',
-		very_low: 'Bạn gần như hoạt động theo impulse và ít có hệ thống. ⚠️ Cảnh báo nghiêm túc cho sinh viên năm 3: đây là thách thức sống còn khi đi làm. Hãy BẮT ĐẦU NGAY: (1) dùng calendar blocking, (2) to-do list hàng ngày, (3) rule "touch it once" cho email. Không có hệ thống, bạn sẽ dựa vào ý chí — và ý chí luôn thua thói quen.',
+		very_low: 'Bạn gần như hoạt động theo impulse và ít có hệ thống. ⚠️ Cảnh báo nghiêm túc cho sinh viên năm 3: đây là thách thức sống còn khi đi làm. Hãy BẮT ĐẦU NGAY: (1) dùng calendar blocking, (2) to-do list hàng ngày, (3) rule "touch it once" cho email. Không có hệ thống, bạn sẽ dựa vào ý chí — và ý chí luôn thua thói quen. 💡 TIN CỰC TỐT: C là trait DỄ THAY ĐỔI NHẤT trong Big Five, đặc biệt ở độ tuổi 20-30. Nghiên cứu về Neuroplasticity cho thấy não bộ bạn đang ở giai đoạn "mềm dẻo" nhất để hình thành thói quen mới. Chỉ cần tập 1 thói quen nhỏ (ví dụ: viết to-do list mỗi sáng) trong 21 ngày liên tục, bạn đang literally rewiring não bộ. Điểm C có thể thay đổi — đây không phải số phận.',
 		career: 'C cao → Tài chính, Y tế, Kỹ thuật, Project Management, Quality Assurance — bất kỳ vai trò nào cần precision. C thấp → Creative roles CÓ hệ thống hỗ trợ (creative director có assistant), Freelance VỚI ĐIỀU KIỆN tự xây routine.',
 		tip: 'Với sinh viên năm 3: Bất kể C score của bạn, hãy xây 1 system ngay bây giờ: Inbox Zero cho email, Weekly Review cho mục tiêu, và Time Blocking cho lịch. Dùng tool (Notion, Todoist, Google Calendar) thay vì dựa vào trí nhớ. C thấp + good system > C cao + no system.',
 		academic: 'Barrick & Mount (1991): C là predictor duy nhất valid cho job performance across mọi occupation types. Noftle & Robins (2007): C dự báo GPA mạnh hơn SAT scores (r=.28 vs r=.25). Roberts et al. (2006): C tăng tự nhiên từ 20-40 tuổi ("maturity principle").',
@@ -109,7 +109,7 @@ const TRAIT_INSIGHTS: Record<PersonalityDomain, TraitInsight> = {
 	negativeEmotionality: {
 		icon: '🌊',
 		what: 'Negative Emotionality (Neuroticism) gồm 3 facet: Anxiety (lo lắng, bất an), Depression (buồn bã, bi quan), và Emotional Volatility (biến động cảm xúc, dễ nổi nóng). Đây KHÔNG phải "bệnh" — mà là continuum cho thấy hệ thống cảnh báo nguy hiểm (threat detection system) của bạn nhạy đến mức nào.',
-		very_high: 'Hệ thống cảnh báo của bạn ở mức rất nhạy — bạn detect threats nhanh hơn người khác nhưng cũng false alarm nhiều hơn. ⚠️ Derailment risk nghiêm trọng: N rất cao + stress của năm cuối/đi thực tập có thể tạo "anxiety spiral" — lo lắng về việc lo lắng. Nghiên cứu: N cao là predictor mạnh nhất cho burnout (Swider & Zimmerman, 2010). Bạn CẦN có coping strategies: mindfulness, exercise, và social support TRƯỚC khi khủng hoảng xảy ra.',
+		very_high: 'Hệ thống cảnh báo của bạn ở mức rất nhạy — bạn detect threats nhanh hơn người khác nhưng cũng false alarm nhiều hơn. ⚠️ Rủi ro cần lưu ý: N rất cao + stress năm cuối/đi thực tập có thể tạo "anxiety spiral". Nghiên cứu: N cao là predictor mạnh nhất cho burnout (Swider & Zimmerman, 2010). Bạn CẦN coping strategies TRƯỚC khi khủng hoảng xảy ra. 💡 TIN TỐT: Khả năng lường trước rủi ro của bạn xuất sắc hơn 90% mọi người. Nếu học được cách quản lý stress (mindfulness, exercise, social support), bạn sẽ là người quản trị rủi ro và kiểm soát chất lượng tuyệt vời nhất trong tổ chức — vì bạn nhìn thấy vấn đề trước khi nó xảy ra.',
 		high: 'Bạn nhạy cảm với stress và trải nghiệm cảm xúc tiêu cực mạnh hơn trung bình. Mặt tích cực: N cao liên quan đến creative achievement (Feist, 1998) — sự nhạy cảm giúp bạn thấy nuances mà người khác bỏ qua. Mặt tiêu cực: trong deadline crunch, bạn dễ "catastrophize" (phóng đại hậu quả).',
 		moderate: 'Bạn có sự ổn định cảm xúc ở mức bình thường — lo lắng khi cần nhưng recovery nhanh. Đây là mức chức năng tốt cho hầu hết environments.',
 		low: 'Bạn khá "cool under pressure" — stress ít ảnh hưởng đến performance của bạn. Đây là lợi thế rất lớn cho vai trò high-stakes: phỏng vấn, thuyết trình, đàm phán. Nhưng hãy cẩn thận: N thấp đôi khi đi kèm complacency — bạn có thể không nhận ra khi tình huống thực sự nguy hiểm.',
@@ -157,12 +157,12 @@ const TRAIT_INSIGHTS: Record<PersonalityDomain, TraitInsight> = {
 		career: 'N vừa phải → CEO, Entrepreneurship, Sales, Politics, Performing Arts, Public Relations — roles cần "stage presence". N cao → Rủi ro ở mọi roles cần teamwork dài hạn. N thấp → Research, Backend Engineering, Finance Analysis — roles được đánh giá bằng output, không phải visibility.',
 		tip: 'Cho sinh viên năm 3: N cao — trước khi nói "ý tưởng của tôi", hãy hỏi "team nghĩ sao?". Tập viết "we" thay vì "I" trong email. N thấp — tập nói "Tôi đã làm..." thay vì "Team đã làm..." khi CHÍNH BẠN là người chủ lực. Bạn không cần humble brag, bạn cần accurate attribution.',
 		academic: 'Grijalva et al. (2015): Narcissism có curvilinear relationship với leadership effectiveness — tăng đến 1 điểm rồi GIẢM. Campbell et al. (2011): "Narcissistic leaders" tạo short-term gains nhưng long-term organizational damage. Sedikides et al. (2004): moderate narcissism → psychological well-being.',
-		derailment: '🚨 Derailment cụ thể: "Credit stealing" — nhận công của người khác — là derailment #1 của N cao. Trong đồ án nhóm, nếu bạn present ý tưởng của member khác như của mình, group chat sẽ trở thành bằng chứng. Trong tổ chức thật, Glassdoor reviews và LinkedIn network sẽ expose bạn.',
+		derailment: '🚨 Derailment cụ thể: "Credit Appropriation" — xu hướng VÔ THỨC phóng đại đóng góp của bản thân và thu nhỏ công sức người khác — là derailment #1 của N cao. Bạn có thể thực sự tin rằng "không có mình thì dự án hỏng", nhưng team lại thấy câu chuyện rất khác. Trong đồ án nhóm, khi bạn present ý tưởng chung như thể là insight cá nhân, group chat trở thành bằng chứng. Trong tổ chức thật, Glassdoor reviews và LinkedIn network sẽ reveal sự thật. Cách phòng ngừa: sau mỗi project, hãy tự hỏi "Ai ngoài mình đã đóng góp cho kết quả này?" và chủ động ghi nhận họ.',
 		obLesson: 'OB concept: Leader-Member Exchange (LMX) Theory — N cao tạo "in-group" (người ngưỡng mộ) và "out-group" (người không đồng ý). Kết quả: team polarized, talent bỏ đi, chỉ còn yes-men. Đây là pattern của nhiều startup founder bị board lật đổ.',
 	},
 	psychopathy: {
 		icon: '⚡',
-		what: 'Subclinical Psychopathy đo lường 3 khía cạnh: Callousness (thiếu đồng cảm, cold-hearted), Impulsivity (bốc đồng, hành động không suy nghĩ), và Thrill-seeking (tìm kiếm cảm giác mạnh). QUAN TRỌNG: Đây KHÔNG phải "kẻ giết người" — subclinical psychopathy là một đặc điểm tính cách trên phổ bình thường. Ở mức thấp-vừa, nó liên quan đến fearless dominance và stress immunity.',
+		what: 'Subclinical Psychopathy (Thái nhân cách dưới lâm sàng) đo lường 3 khía cạnh: Callousness (thiếu đồng cảm), Impulsivity (bốc đồng), và Thrill-seeking (tìm kiếm cảm giác mạnh). QUAN TRỌNG: Đây là đặc điểm tính cách trên phổ BÌNH THƯỜNG, KHÔNG phải rối loạn nhân cách chống đối xã hội (ASPD). Mọi người đều có mức độ khác nhau — ở mức thấp-vừa, nó liên quan đến fearless dominance và stress immunity.',
 		very_high: 'Bạn có xu hướng rất mạnh về impulsivity, thrill-seeking, và callousness. ⚠️ DERAILMENT RISK CỰC KỲ NGHIÊM TRỌNG: Đây là Dark Triad trait nguy hiểm nhất cho career. Nghiên cứu Boddy (2011): "Corporate Psychopaths" — P rất cao trong leadership gây ra bullying, fraud, và organizational destruction. Ví dụ thực tế cho SV: Bạn có thể nói lời tàn nhẫn trong conflict mà không cảm thấy hối hận, phá vỡ cam kết vì bored, hoặc chấp nhận rủi ro extreme mà team không đồng ý.',
 		high: 'Bạn liều lĩnh, ít bị ảnh hưởng bởi sợ hãi, và có "cool head" dưới áp lực. Mặt sáng: "Fearless Dominance" (Lilienfeld et al., 2012) — bình tĩnh trong khủng hoảng, decisive, không bị paralysis by analysis. Mặt tối: bạn có thể hurt người khác mà không fully register impact. Trong đồ án nhóm, lời nói "thẳng" của bạn có thể làm member khóc và bạn không hiểu tại sao.',
 		moderate: 'Bạn bình tĩnh trong tình huống căng thẳng và có can đảm đưa quyết định khó. Nhưng vẫn care about consequences và people. Đây là mức functional tốt cho leadership — "tough but fair".',
@@ -459,6 +459,13 @@ function ArchetypeCard({ archetype }: { archetype: ArchetypeProfile }) {
 							))}
 						</ul>
 					</div>
+				</div>
+				<div className="mt-5 rounded-lg border border-accent/20 bg-accent/5 px-4 py-3">
+					<p className="text-[11px] text-muted leading-relaxed">
+						💡 <strong>Lưu ý quan trọng:</strong> Profile này phản ánh <em>xu hướng nổi trội nhất</em> trong dữ liệu của bạn, không phải toàn bộ con người bạn.
+						Con người phức tạp hơn bất kỳ nhãn dán nào — tùy bối cảnh (học tập, gia đình, công việc), các mảnh ghép tính cách khác sẽ lên tiếng.
+						Hãy dùng archetype này như <em>điểm khởi đầu cho sự tự nhận thức</em>, không phải lời tuyên án.
+					</p>
 				</div>
 			</div>
 		</motion.div>
@@ -795,9 +802,9 @@ function ResultsInterstitial({ onConfirm }: { onConfirm: () => void }) {
 				<div className="rounded-xl bg-error-subtle/30 border border-error/20 px-4 py-3">
 					<p className="text-xs font-bold text-error">🚨 Đặc biệt quan trọng với Dark Triad</p>
 					<p className="mt-1 text-[11px] leading-relaxed text-muted">
-						Dark Triad (Machiavellianism, Narcissism, Psychopathy) là <strong>đặc điểm tính cách bình thường</strong> trên phổ liên tục, KHÔNG phải nhãn "tốt/xấu".
+						Dark Triad (Mưu lược, Ái kỷ, Thái nhân cách) là <strong>đặc điểm tính cách bình thường</strong> trên phổ liên tục, KHÔNG phải nhãn "tốt/xấu" hay chẩn đoán bệnh lý.
 						Mức cao không tự động nghĩa là tiêu cực — ở mức vừa phải, chúng liên quan đến tự tin, chiến lược, và bình tĩnh dưới áp lực.
-						Kết quả được đưa ra để giúp bạn <strong>tự nhận thức</strong>, không phải để phán xét.
+						Kết quả được đưa ra để giúp bạn <strong>tự nhận thức và phát triển</strong>, không phải để phán xét hay gán nhãn.
 					</p>
 				</div>
 			</div>
@@ -994,7 +1001,7 @@ export default function PersonalityResultsDashboard({ session }: Props) {
 						<span className="text-2xl">🔍</span>
 						<div>
 							<h3 className="text-sm font-black text-foreground uppercase tracking-wider">Điểm độc đáo của bạn</h3>
-							<p className="text-xs text-muted">Những nhận định này xuất hiện khi kết hợp nhiều đặc điểm của bạn với nhau</p>
+							<p className="text-xs text-muted">Kết hợp nhiều đặc điểm để tạo ra những nhận định riêng cho bạn. <em>Lưu ý: con người phức tạp hơn 2 traits cộng lại — đây là xu hướng, không phải kết luận.</em></p>
 						</div>
 					</div>
 					<div className="grid gap-3 sm:grid-cols-2">

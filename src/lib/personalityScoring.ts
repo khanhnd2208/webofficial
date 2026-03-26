@@ -263,7 +263,7 @@ export const DOMAIN_LABELS_VI: Record<PersonalityDomain, string> = {
 	openMindedness: 'Cởi mở',
 	machiavellianism: 'Mưu lược',
 	narcissism: 'Ái kỷ',
-	psychopathy: 'Phản xã hội',
+	psychopathy: 'Thái nhân cách',
 };
 
 // ─── Likert Scale Labels ────────────────────────────────────────────────────────
@@ -491,7 +491,7 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
 	// ── 1. The Strategic Executor ──
 	{
 		name: 'The Strategic Executor',
-		tagline: 'Discipline meets dark pragmatism',
+		tagline: 'Discipline meets strategic awareness',
 		icon: '♟️',
 		colorTheme: 'amber',
 		match: (o, d) => {
@@ -512,9 +512,10 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
 			'Prone to information hoarding as a power lever',
 			'Risk of becoming the person who "always has an agenda"',
 			'Can erode trust over time due to perceived inauthenticity',
+			'The "Brilliant Jerk" trap: organizations ultimately remove people who deliver results but destroy team culture — no matter how talented they are',
 		],
 		narrative:
-			'You combine the disciplined work ethic of high Conscientiousness with the strategic calculus of Machiavellianism. In organizations, you are the person who gets things done — efficiently, precisely, and with full awareness of the political landscape. Your danger zone? When your pragmatism crosses into manipulation, you risk becoming the leader people respect but never truly trust.',
+			'You combine the disciplined work ethic of high Conscientiousness with the strategic calculus of Machiavellianism. In organizations, you are the person who gets things done — efficiently, precisely, and with full awareness of the political landscape. Your danger zone? When your pragmatism crosses into manipulation, you risk becoming the leader people respect but never truly trust. Research consistently shows: long-term career success depends more on trust than on tactics.',
 	},
 
 	// ── 2. The Charismatic Disruptor ──
@@ -548,8 +549,8 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
 
 	// ── 3. The Cold Architect ──
 	{
-		name: 'The Cold Architect',
-		tagline: 'Ruthless intellect behind a composed facade',
+		name: 'The Detached Analyst',
+		tagline: 'Calm intellect, high cost of disconnection',
 		icon: '🏛️',
 		colorTheme: 'indigo',
 		match: (o, d) => {
@@ -561,19 +562,20 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
 			return score >= 5 ? score : 0;
 		},
 		strengths: [
-			'Unshakable under crisis — emotionally detached decision-making',
+			'Calm under crisis — can make clear-headed decisions when others panic',
 			'Sees systemic patterns others miss due to analytical open-mindedness',
 			'Capable of making hard, unpopular decisions without emotional paralysis',
-			'Excellent at restructuring, turnarounds, and "necessary destruction"',
+			'Valuable in restructuring, turnarounds, and crisis leadership',
 		],
 		blindspots: [
-			'Emotional detachment can become pathological indifference to human cost',
-			'May view people purely as "resources" to be optimized or discarded',
-			'Risk of creating toxic work environments disguised as "high performance"',
-			'Long-term isolation as colleagues learn to keep their distance',
+			'Emotional detachment can drift into indifference to human cost — without you noticing',
+			'May unconsciously view people as "resources" to be optimized, eroding team trust',
+			'Risk of creating toxic environments disguised as "high performance" culture',
+			'Long-term isolation as colleagues learn to keep their distance — this is the highest career cost of this profile',
+			'Organizations ultimately remove people who deliver results but destroy team culture (the "Brilliant Jerk" effect)',
 		],
 		narrative:
-			'Your combination of Open-Mindedness, emotional stability (low Negative Emotionality), and elevated Psychopathy creates a profile of intellectual fearlessness. You can design complex systems and make tough calls others cannot. The dark side? Your emotional detachment, while an asset in crisis, can become a liability when sustained relationships and empathy are required.',
+			'Your combination of Open-Mindedness, emotional stability (low Negative Emotionality), and elevated subclinical Psychopathy creates a profile of intellectual fearlessness. You can design complex systems and make tough calls others cannot. However — and this is critical — your emotional detachment, while an asset in crisis, becomes a serious liability in sustained relationships. The research is clear: the long-term cost of low empathy in leadership is isolation, talent flight, and eventual organizational pushback.',
 	},
 
 	// ── 4. The Empathic Strategist ──
