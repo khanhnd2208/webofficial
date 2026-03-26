@@ -262,7 +262,7 @@ export const DOMAIN_LABELS_VI: Record<PersonalityDomain, string> = {
 	negativeEmotionality: 'Cảm xúc tiêu cực',
 	openMindedness: 'Cởi mở',
 	machiavellianism: 'Mưu lược',
-	narcissism: 'Tự ái',
+	narcissism: 'Ái kỷ',
 	psychopathy: 'Phản xã hội',
 };
 
