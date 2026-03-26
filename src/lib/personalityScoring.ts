@@ -35,7 +35,9 @@ const LIKERT_MIN = 1;
 const LIKERT_MAX = 5;
 const REVERSE_CONSTANT = 6; // Reversed score = 6 - raw score
 
-/** Trait level thresholds (on 1-5 scale) */
+// Trait level is now computed from z-score in normativeData.ts (5-tier system).
+// A preliminary 3-tier is still used at scoring time (before percentile calculation)
+// and is overridden once z-scores are available in the results dashboard.
 const LEVEL_LOW_THRESHOLD = 2.5;
 const LEVEL_HIGH_THRESHOLD = 3.5;
 
@@ -71,12 +73,13 @@ const LEVEL_HIGH_THRESHOLD = 3.5;
 //   Form 22 → Item 22R (Agreeableness)    "Can be cold and uncaring"
 //   Form 23 → Item 28R (Conscientiousness) "Easily distracted"
 //   Form 24 → Item 24  (Neg. Emot.)       "Moody, mood swings"
-//   Form 25 = ATTENTION CHECK — "Hãy chọn số 1" (expected: 1)
-//   Form 26 → Item 11R (Extraversion)     "Less active than other people"
-//   Form 27 → Item 27  (Agreeableness)    "Respectful"
-//   Form 28 → Item 18R (Conscientiousness) "Can be careless"
-//   Form 29 → Item 29  (Neg. Emot.)       "Can be tense"
-//   Form 30 → Item 30R (Open-Mindedness)  "Prefers routine work"
+//   Form 25 = ATTENTION CHECK — "Hãy chọn số 1" (expected: 1) — stored as col 31 in Excel; excluded from scoring
+//   Form 26 → Item 25  (Open-Mindedness)  "Is complex, a deep thinker" ← RESTORED (was missing)
+//   Form 27 → Item 11R (Extraversion)     "Less active than other people"
+//   Form 28 → Item 27  (Agreeableness)    "Respectful"
+//   Form 29 → Item 18R (Conscientiousness) "Can be careless"
+//   Form 30 → Item 29  (Neg. Emot.)       "Can be tense"
+//   Form 31 → Item 30R (Open-Mindedness)  "Prefers routine work"
 
 export const BFI2S_QUESTIONS: QuestionConfig[] = [
 	// formOrder 1 → academic item 16R Extraversion
@@ -127,18 +130,21 @@ export const BFI2S_QUESTIONS: QuestionConfig[] = [
 	{ itemNumber: 28, formOrder: 23, testType: 'BFI2S', domain: 'conscientiousness',    text: 'I am someone who is easily distracted.',                             textVi: 'Tôi là người dễ bị phân tâm.',                                 isReversed: true,  isAttentionCheck: false },
 	// formOrder 24 → academic item 24 Negative Emotionality
 	{ itemNumber: 24, formOrder: 24, testType: 'BFI2S', domain: 'negativeEmotionality', text: 'I am someone who is moody, has up and down mood swings.',            textVi: 'Tôi là người hay thay đổi tâm trạng.',                         isReversed: false, isAttentionCheck: false },
-	// formOrder 25 = ATTENTION CHECK — "Hãy chọn số 1"
-	{ itemNumber: 25, formOrder: 25, testType: 'BFI2S', domain: 'openMindedness',       text: 'Please select number 1. (Hãy chọn số 1)',                            textVi: 'Hãy chọn số 1.',                                               isReversed: false, isAttentionCheck: true, attentionCheckExpected: 1 },
-	// formOrder 26 → academic item 11R Extraversion
-	{ itemNumber: 11, formOrder: 26, testType: 'BFI2S', domain: 'extraversion',         text: 'I am someone who is less active than other people.',                 textVi: 'Tôi là người ít năng động hơn những người khác.',              isReversed: true,  isAttentionCheck: false },
-	// formOrder 27 → academic item 27 Agreeableness
-	{ itemNumber: 27, formOrder: 27, testType: 'BFI2S', domain: 'agreeableness',        text: 'I am someone who is respectful, treats others with respect.',        textVi: 'Tôi là người tôn trọng, đối xử tôn trọng với người khác.',     isReversed: false, isAttentionCheck: false },
-	// formOrder 28 → academic item 18R Conscientiousness
-	{ itemNumber: 18, formOrder: 28, testType: 'BFI2S', domain: 'conscientiousness',    text: 'I am someone who can be somewhat careless.',                         textVi: 'Tôi là người đôi khi hơi bất cẩn.',                            isReversed: true,  isAttentionCheck: false },
-	// formOrder 29 → academic item 29 Negative Emotionality
-	{ itemNumber: 29, formOrder: 29, testType: 'BFI2S', domain: 'negativeEmotionality', text: 'I am someone who can be tense.',                                     textVi: 'Tôi là người có thể bị căng thẳng.',                           isReversed: false, isAttentionCheck: false },
-	// formOrder 30 → academic item 30R Open-Mindedness
-	{ itemNumber: 30, formOrder: 30, testType: 'BFI2S', domain: 'openMindedness',       text: 'I am someone who prefers work that is routine and simple.',          textVi: 'Tôi là người thích công việc đơn giản, lặp đi lặp lại.',       isReversed: true,  isAttentionCheck: false },
+	// formOrder 25 = ATTENTION CHECK — "Hãy chọn số 1" — interleaved in middle of BFI block
+	// Stored in Excel as column 31 (separate); NOT included in Open-Mindedness scoring
+	{ itemNumber: 99, formOrder: 25, testType: 'BFI2S', domain: 'openMindedness',       text: 'Please select number 1 for this question. / Hãy chọn số 1 ở câu này.',  textVi: 'Hãy chọn số 1 ở câu này/Please choose number 1 for this question', isReversed: false, isAttentionCheck: true, attentionCheckExpected: 1 },
+	// formOrder 26 → academic item 25 Open-Mindedness — RESTORED (was wrongly used as attention check)
+	{ itemNumber: 25, formOrder: 26, testType: 'BFI2S', domain: 'openMindedness',       text: 'I am someone who is complex, a deep thinker.',                       textVi: 'Tôi là người phức tạp, suy nghĩ sâu.',                         isReversed: false, isAttentionCheck: false },
+	// formOrder 27 → academic item 11R Extraversion
+	{ itemNumber: 11, formOrder: 27, testType: 'BFI2S', domain: 'extraversion',         text: 'I am someone who is less active than other people.',                 textVi: 'Tôi là người ít năng động hơn những người khác.',              isReversed: true,  isAttentionCheck: false },
+	// formOrder 28 → academic item 27 Agreeableness
+	{ itemNumber: 27, formOrder: 28, testType: 'BFI2S', domain: 'agreeableness',        text: 'I am someone who is respectful, treats others with respect.',        textVi: 'Tôi là người tôn trọng, đối xử tôn trọng với người khác.',     isReversed: false, isAttentionCheck: false },
+	// formOrder 29 → academic item 18R Conscientiousness
+	{ itemNumber: 18, formOrder: 29, testType: 'BFI2S', domain: 'conscientiousness',    text: 'I am someone who can be somewhat careless.',                         textVi: 'Tôi là người đôi khi hơi bất cẩn.',                            isReversed: true,  isAttentionCheck: false },
+	// formOrder 30 → academic item 29 Negative Emotionality
+	{ itemNumber: 29, formOrder: 30, testType: 'BFI2S', domain: 'negativeEmotionality', text: 'I am someone who can be tense.',                                     textVi: 'Tôi là người có thể bị căng thẳng.',                           isReversed: false, isAttentionCheck: false },
+	// formOrder 31 → academic item 30R Open-Mindedness
+	{ itemNumber: 30, formOrder: 31, testType: 'BFI2S', domain: 'openMindedness',       text: 'I am someone who prefers work that is routine and simple.',          textVi: 'Tôi là người thích công việc đơn giản, lặp đi lặp lại.',       isReversed: true,  isAttentionCheck: false },
 ];
 
 // ─── SD3 Question Configuration (27 items) ─────────────────────────────────────
@@ -164,17 +170,18 @@ export const BFI2S_QUESTIONS: QuestionConfig[] = [
 //   Form 14 → N14 "I like to get acquainted with important people"
 //   Form 15 → P23 "I can be mean to others"
 //   Form 16 → M6  "Wait for the right time to get back at people"
-//   Form 17 = ATTENTION CHECK — "Choose number 2" (expected: 2)
-//   Form 18 → P24 "People who mess with me always regret it"
-//   Form 19 → M7  "Hide things to preserve your reputation"
-//   Form 20 → N15R "I feel embarrassed if someone compliments me"
-//   Form 21 → P25R "I have never gotten into trouble with the law"
-//   Form 22 → M8  "Make sure plans benefit yourself"
-//   Form 23 → N16 "I have been compared to famous people"
-//   Form 24 → P26 "I enjoy having sex with people I hardly know"
-//   Form 25 → M9  "Most people can be manipulated"
-//   Form 26 → N18 "I insist on getting the respect I deserve"
-//   Form 27 → P27 "I'll say anything to get what I want"
+//   Form 17 = ATTENTION CHECK — "Choose number 2" (expected: 2) — stored as col 28 in Excel; excluded from scoring
+//   Form 18 → N17R "I feel embarrassed if someone compliments me"  (academic N17R)
+//   Form 19 → P24  "People who mess with me always regret it"
+//   Form 20 → M7   "Hide things to preserve your reputation"
+//   Form 21 → N16  "I have been compared to famous people"  ← matches Google Form column order
+//   Form 22 → P25R "I have never gotten into trouble with the law"
+//   Form 23 → M8   "Make sure plans benefit yourself"
+//   Form 24 → N15R "I am an average person" ← RESTORED REVERSE ITEM
+//   Form 25 → P26  "I enjoy having sex with people I hardly know"
+//   Form 26 → M9   "Most people can be manipulated"
+//   Form 27 → N18  "I insist on getting the respect I deserve"
+//   Form 28 → P27  "I'll say anything to get what I want"
 
 export const SD3_QUESTIONS: QuestionConfig[] = [
 	// formOrder 1 → M1
@@ -209,28 +216,30 @@ export const SD3_QUESTIONS: QuestionConfig[] = [
 	{ itemNumber: 23, formOrder: 15, testType: 'SD3', domain: 'psychopathy',      text: "It's true that I can be mean to others.",                                      textVi: 'Đúng là tôi có thể ác ý với người khác.',                                 isReversed: false, isAttentionCheck: false },
 	// formOrder 16 → M6
 	{ itemNumber: 6,  formOrder: 16, testType: 'SD3', domain: 'machiavellianism', text: 'You should wait for the right time to get back at people.',                   textVi: 'Bạn nên chờ đúng thời điểm để trả đũa người khác.',                     isReversed: false, isAttentionCheck: false },
-	// formOrder 17 = ATTENTION CHECK — "Choose number 2"
-	{ itemNumber: 17, formOrder: 17, testType: 'SD3', domain: 'narcissism',       text: 'This is an attention check. Please select "Disagree" (number 2).',           textVi: 'Đây là câu kiểm tra sự chú ý. Hãy chọn số 2 (Không đồng ý).',           isReversed: false, isAttentionCheck: true, attentionCheckExpected: 2 },
-	// formOrder 18 → P24
-	{ itemNumber: 24, formOrder: 18, testType: 'SD3', domain: 'psychopathy',      text: "People who mess with me always regret it.",                                    textVi: 'Người chọc giận tôi luôn phải hối hận.',                                  isReversed: false, isAttentionCheck: false },
-	// formOrder 19 → M7
-	{ itemNumber: 7,  formOrder: 19, testType: 'SD3', domain: 'machiavellianism', text: 'There are things you should hide from other people to preserve your reputation.', textVi: 'Có những thứ bạn nên giấu người khác để giữ gìn danh tiếng.',          isReversed: false, isAttentionCheck: false },
-	// formOrder 20 → N15R
-	{ itemNumber: 15, formOrder: 20, testType: 'SD3', domain: 'narcissism',       text: 'I feel embarrassed if someone compliments me.',                                textVi: 'Tôi cảm thấy ngại khi ai đó khen ngợi mình.',                            isReversed: true,  isAttentionCheck: false },
-	// formOrder 21 → P25R
-	{ itemNumber: 25, formOrder: 21, testType: 'SD3', domain: 'psychopathy',      text: 'I have never gotten into trouble with the law.',                               textVi: 'Tôi chưa bao giờ gặp rắc rối với pháp luật.',                             isReversed: true,  isAttentionCheck: false },
-	// formOrder 22 → M8
-	{ itemNumber: 8,  formOrder: 22, testType: 'SD3', domain: 'machiavellianism', text: 'Make sure your plans benefit yourself, not others.',                          textVi: 'Đảm bảo kế hoạch có lợi cho bản thân, không phải người khác.',           isReversed: false, isAttentionCheck: false },
-	// formOrder 23 → N16
-	{ itemNumber: 16, formOrder: 23, testType: 'SD3', domain: 'narcissism',       text: 'I have been compared to famous people.',                                       textVi: 'Tôi từng được so sánh với những người nổi tiếng.',                        isReversed: false, isAttentionCheck: false },
-	// formOrder 24 → P26
-	{ itemNumber: 26, formOrder: 24, testType: 'SD3', domain: 'psychopathy',      text: 'I enjoy having sex with people I hardly know.',                                textVi: 'Tôi thích mạo hiểm và trải nghiệm mới mẻ với người lạ.',                 isReversed: false, isAttentionCheck: false },
-	// formOrder 25 → M9
-	{ itemNumber: 9,  formOrder: 25, testType: 'SD3', domain: 'machiavellianism', text: 'Most people can be manipulated.',                                             textVi: 'Hầu hết mọi người đều có thể bị thao túng.',                             isReversed: false, isAttentionCheck: false },
-	// formOrder 26 → N18
-	{ itemNumber: 18, formOrder: 26, testType: 'SD3', domain: 'narcissism',       text: 'I insist on getting the respect I deserve.',                                   textVi: 'Tôi đòi hỏi được nhận sự tôn trọng mà tôi xứng đáng.',                  isReversed: false, isAttentionCheck: false },
-	// formOrder 27 → P27
-	{ itemNumber: 27, formOrder: 27, testType: 'SD3', domain: 'psychopathy',      text: "I'll say anything to get what I want.",                                        textVi: 'Tôi sẵn sàng nói bất cứ điều gì để đạt được điều mình muốn.',             isReversed: false, isAttentionCheck: false },
+	// formOrder 17 = ATTENTION CHECK — "Choose number 2" — stored as col 28 in Excel; NOT in any domain score
+	{ itemNumber: 98, formOrder: 17, testType: 'SD3', domain: 'narcissism',       text: 'Choose number 2 if you are still here with us.',                                   textVi: 'Đây là câu kiểm tra sự chú ý. Hãy chọn số 2 (Không đồng ý).',           isReversed: false, isAttentionCheck: true, attentionCheckExpected: 2 },
+	// formOrder 18 → N17R (N8 in narc subscale) "I feel embarrassed if someone compliments me" — itemNumber 17 = N8 = 9th narc item (10..18)
+	{ itemNumber: 17, formOrder: 18, testType: 'SD3', domain: 'narcissism',       text: 'I feel embarrassed if someone compliments me.',                                    textVi: 'Tôi cảm thấy ngại khi ai đó khen ngợi mình.',                            isReversed: true,  isAttentionCheck: false },
+	// formOrder 19 → P24 (P6 in psych subscale) "People who mess with me always regret it"
+	{ itemNumber: 24, formOrder: 19, testType: 'SD3', domain: 'psychopathy',      text: 'People who mess with me always regret it.',                                        textVi: 'Người chọc giận tôi luôn phải hối hận.',                                  isReversed: false, isAttentionCheck: false },
+	// formOrder 20 → M7 "There are things you should hide from other people to preserve your reputation"
+	{ itemNumber: 7,  formOrder: 20, testType: 'SD3', domain: 'machiavellianism', text: 'There are things you should hide from other people to preserve your reputation.',  textVi: 'Có những thứ bạn nên giấu người khác để giữ gìn danh tiếng.',            isReversed: false, isAttentionCheck: false },
+	// formOrder 21 → N16 "I have been compared to famous people"
+	{ itemNumber: 16, formOrder: 21, testType: 'SD3', domain: 'narcissism',       text: 'I have been compared to famous people.',                                           textVi: 'Tôi từng được so sánh với những người nổi tiếng.',                        isReversed: false, isAttentionCheck: false },
+	// formOrder 22 → P25R "I have never gotten into trouble with the law"
+	{ itemNumber: 25, formOrder: 22, testType: 'SD3', domain: 'psychopathy',      text: 'I have never gotten into trouble with the law.',                                   textVi: 'Tôi chưa bao giờ gặp rắc rối với pháp luật.',                             isReversed: true,  isAttentionCheck: false },
+	// formOrder 23 → M8 "Make sure your plans benefit yourself, not others"
+	{ itemNumber: 8,  formOrder: 23, testType: 'SD3', domain: 'machiavellianism', text: 'Make sure your plans benefit yourself, not others.',                               textVi: 'Đảm bảo kế hoạch có lợi cho bản thân, không phải người khác.',           isReversed: false, isAttentionCheck: false },
+	// formOrder 24 → N15R "I am an average person" — RESTORED REVERSE ITEM
+	{ itemNumber: 15, formOrder: 24, testType: 'SD3', domain: 'narcissism',       text: 'I am an average person.',                                                          textVi: 'Tôi là một người bình thường.',                                            isReversed: true,  isAttentionCheck: false },
+	// formOrder 25 → P26 "I enjoy having sex with people I hardly know"
+	{ itemNumber: 26, formOrder: 25, testType: 'SD3', domain: 'psychopathy',      text: 'I enjoy having sex with people I hardly know.',                                    textVi: 'Tôi thích mạo hiểm và trải nghiệm mới mẻ với người lạ.',                 isReversed: false, isAttentionCheck: false },
+	// formOrder 26 → M9 "Most people can be manipulated"
+	{ itemNumber: 9,  formOrder: 26, testType: 'SD3', domain: 'machiavellianism', text: 'Most people can be manipulated.',                                                  textVi: 'Hầu hết mọi người đều có thể bị thao túng.',                             isReversed: false, isAttentionCheck: false },
+	// formOrder 27 → N18 "I insist on getting the respect I deserve"
+	{ itemNumber: 18, formOrder: 27, testType: 'SD3', domain: 'narcissism',       text: 'I insist on getting the respect I deserve.',                                       textVi: 'Tôi đòi hỏi được nhận sự tôn trọng mà tôi xứng đáng.',                  isReversed: false, isAttentionCheck: false },
+	// formOrder 28 → P27 "I'll say anything to get what I want"
+	{ itemNumber: 27, formOrder: 28, testType: 'SD3', domain: 'psychopathy',      text: "I'll say anything to get what I want.",                                             textVi: 'Tôi sẵn sàng nói bất cứ điều gì để đạt được điều mình muốn.',             isReversed: false, isAttentionCheck: false },
 ];
 
 // ─── Human-readable Labels ──────────────────────────────────────────────────────
@@ -358,9 +367,12 @@ function calculateDomainScore(
 }
 
 /**
- * Determine the level label for a score.
+ * Determine a preliminary level label for a raw score (1-5 scale).
+ * This is a coarse 3-tier estimate used immediately after scoring,
+ * before z-score calculation. The results dashboard overrides this
+ * with the 5-tier z-score system once percentiles are computed.
  */
-function getLevel(score: number): 'low' | 'moderate' | 'high' {
+function getLevel(score: number): 'very_low' | 'low' | 'moderate' | 'high' | 'very_high' {
 	if (score < LEVEL_LOW_THRESHOLD) return 'low';
 	if (score > LEVEL_HIGH_THRESHOLD) return 'high';
 	return 'moderate';
@@ -389,6 +401,8 @@ function buildTraitScore(
  */
 export function scorePersonalityTest(responses: RawResponse[]): ScoringResult {
 	// ── Validation ──
+	// BFI: 30 real items + 1 attention check = 31 total
+	// SD3: 27 real items + 1 attention check = 28 total → grand total 59
 	const totalExpected = BFI2S_QUESTIONS.length + SD3_QUESTIONS.length;
 	if (responses.length !== totalExpected) {
 		return {

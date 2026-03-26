@@ -16,22 +16,24 @@
       NOT the full BFI-2 norms. The BFI-2-S has slightly larger SDs than the
       full BFI-2 (fewer items = less reliability = more score variance).
       Using the correct BFI-2-S norms prevents artificially extreme percentiles.
-   2. SD3: "Community Adults" from Jones & Paulhus 2014, pooled across
-      3 studies (Studies 1-3). Gender-specific norms also available.
+   2. SD3: Gender-specific norms from Jones & Paulhus (2014) Study 1 (N=489).
+      PRIMARY norms: Male (N=259) and Female (N=230) from Study 1.
+      'Other' gender uses average of male + female norms.
+      Pooled community norms (Studies 1-3) also retained for reference.
+   
+   Level Assignment (5-tier z-score system):
+   - Z ≥  1.5 → Rất cao  (Very High)
+   - Z ≥  0.5 → Cao      (High)
+   - Z ≥ -0.5 → Trung bình (Moderate)
+   - Z ≥ -1.5 → Thấp     (Low)
+   - Z <  -1.5 → Rất thấp (Very Low)
    
    ⚠️  ITEM COUNT CAVEATS (Attention Check Tradeoff):
-   - BFI-2-S Open-Mindedness: Form position 25 is used as attention check
-     (academic item 25, which officially belongs to O domain).
+   - BFI-2-S Open-Mindedness: Form position 25 is used as attention check.
      Our O domain is therefore averaged over 5 items instead of 6.
-     The normative mean (M≈3.65) is still a valid reference because the
-     excluded item (aesthetic sensitivity facet) was near the domain mean.
      Percentiles for O are slightly approximate. Documented limitation.
-   - SD3 Narcissism: Form position 17 is used as attention check
-     (academic item N17 = "I am an ordinary person", reversed).
-     Our N domain is averaged over 8 items instead of 9.
-     The normative norms (Jones & Paulhus 2014) assume 9 items.
-     Bias is small but direction: removing a reversed item slightly compresses
-     the narcissism range. Percentiles for N are slightly approximate.
+   - SD3 Narcissism item count is now RESTORED to 9 items (items N10-N18)
+     by separating the attention check from the real item N17R.
    
    ════════════════════════════════════════════════════════════════════════ */
 
@@ -254,6 +256,39 @@ const SD3_STUDY3_FEMALE: Record<DarkTriadDomain, NormativeStats> = {
 	psychopathy:      { mean: SD3_STUDY3.female.psych.m, sd: SD3_STUDY3.female.psych.sd, n: SD3_STUDY3.female.n },
 };
 
+// SD3 Study 1 — Male only (PRIMARY male norms, N=259)
+const SD3_STUDY1_MALE: Record<DarkTriadDomain, NormativeStats> = {
+	machiavellianism: { mean: SD3_STUDY1.male.mach.m, sd: SD3_STUDY1.male.mach.sd, n: SD3_STUDY1.male.n },
+	narcissism:       { mean: SD3_STUDY1.male.narc.m, sd: SD3_STUDY1.male.narc.sd, n: SD3_STUDY1.male.n },
+	psychopathy:      { mean: SD3_STUDY1.male.psych.m, sd: SD3_STUDY1.male.psych.sd, n: SD3_STUDY1.male.n },
+};
+
+// SD3 Study 1 — Female only (PRIMARY female norms, N=230)
+const SD3_STUDY1_FEMALE: Record<DarkTriadDomain, NormativeStats> = {
+	machiavellianism: { mean: SD3_STUDY1.female.mach.m, sd: SD3_STUDY1.female.mach.sd, n: SD3_STUDY1.female.n },
+	narcissism:       { mean: SD3_STUDY1.female.narc.m, sd: SD3_STUDY1.female.narc.sd, n: SD3_STUDY1.female.n },
+	psychopathy:      { mean: SD3_STUDY1.female.psych.m, sd: SD3_STUDY1.female.psych.sd, n: SD3_STUDY1.female.n },
+};
+
+// SD3 Study 1 — "Other" gender: average of male + female norms
+const SD3_STUDY1_OTHER: Record<DarkTriadDomain, NormativeStats> = {
+	machiavellianism: {
+		mean: (SD3_STUDY1.male.mach.m + SD3_STUDY1.female.mach.m) / 2,
+		sd:   (SD3_STUDY1.male.mach.sd + SD3_STUDY1.female.mach.sd) / 2,
+		n:    SD3_STUDY1.male.n + SD3_STUDY1.female.n,
+	},
+	narcissism: {
+		mean: (SD3_STUDY1.male.narc.m + SD3_STUDY1.female.narc.m) / 2,
+		sd:   (SD3_STUDY1.male.narc.sd + SD3_STUDY1.female.narc.sd) / 2,
+		n:    SD3_STUDY1.male.n + SD3_STUDY1.female.n,
+	},
+	psychopathy: {
+		mean: (SD3_STUDY1.male.psych.m + SD3_STUDY1.female.psych.m) / 2,
+		sd:   (SD3_STUDY1.male.psych.sd + SD3_STUDY1.female.psych.sd) / 2,
+		n:    SD3_STUDY1.male.n + SD3_STUDY1.female.n,
+	},
+};
+
 // ─── Reference Groups ──────────────────────────────────────────────────────────
 
 const OCEAN_DOMAINS: OceanDomain[] = [
@@ -319,6 +354,37 @@ export const REFERENCE_GROUPS: ReferenceGroup[] = [
 		domains: [...DARK_TRIAD_DOMAINS],
 		norms: { ...SD3_STUDY3_FEMALE },
 	},
+	// ── SD3 Study 1 Gender-Specific Groups (PRIMARY norms for gender-aware scoring) ──
+	{
+		id: 'sd3-study1-male',
+		label: 'SD3 Study 1 — Male (Primary Norms)',
+		labelVi: 'Nam giới — Nghiên cứu 1 (chuẩn mực chính)',
+		description: 'Male community adults from Study 1 (N=259). Jones & Paulhus 2014. PRIMARY norms for male respondents.',
+		descriptionVi: 'Nam giới trưởng thành từ Nghiên cứu 1 (N=259). Chuẩn mực chính cho người trả lời là nam.',
+		source: 'Jones & Paulhus (2014), Study 1 — Males, N=259.',
+		domains: [...DARK_TRIAD_DOMAINS],
+		norms: { ...SD3_STUDY1_MALE },
+	},
+	{
+		id: 'sd3-study1-female',
+		label: 'SD3 Study 1 — Female (Primary Norms)',
+		labelVi: 'Nữ giới — Nghiên cứu 1 (chuẩn mực chính)',
+		description: 'Female community adults from Study 1 (N=230). Jones & Paulhus 2014. PRIMARY norms for female respondents.',
+		descriptionVi: 'Nữ giới trưởng thành từ Nghiên cứu 1 (N=230). Chuẩn mực chính cho người trả lời là nữ.',
+		source: 'Jones & Paulhus (2014), Study 1 — Females, N=230.',
+		domains: [...DARK_TRIAD_DOMAINS],
+		norms: { ...SD3_STUDY1_FEMALE },
+	},
+	{
+		id: 'sd3-study1-other',
+		label: 'SD3 Study 1 — Other Gender (Averaged Norms)',
+		labelVi: 'Giới tính khác — Nghiên cứu 1 (chuẩn mực trung bình)',
+		description: 'Average of male and female Study 1 norms. Used for respondents identifying as "other" gender.',
+		descriptionVi: 'Trung bình chuẩn mực nam và nữ từ Nghiên cứu 1. Dùng cho người chọn giới tính "Khác".',
+		source: 'Jones & Paulhus (2014), Study 1 — averaged across genders.',
+		domains: [...DARK_TRIAD_DOMAINS],
+		norms: { ...SD3_STUDY1_OTHER },
+	},
 ];
 
 /**
@@ -337,12 +403,36 @@ export function getReferenceGroupById(id: string): ReferenceGroup | undefined {
 
 /**
  * Get the default reference group IDs for OCEAN and Dark Triad.
+ * When gender is provided, uses gender-specific Study 1 norms for SD3.
+ * @param gender - 'male' | 'female' | 'other' | undefined (falls back to pooled community)
  */
-export function getDefaultReferenceGroupIds(): { ocean: string; darkTriad: string } {
+export function getDefaultReferenceGroupIds(gender?: 'male' | 'female' | 'other'): { ocean: string; darkTriad: string } {
+	let darkTriad = 'sd3-community';
+	if (gender === 'male')   darkTriad = 'sd3-study1-male';
+	if (gender === 'female') darkTriad = 'sd3-study1-female';
+	if (gender === 'other')  darkTriad = 'sd3-study1-other';
 	return {
 		ocean: 'bfi2-internet',
-		darkTriad: 'sd3-community',
+		darkTriad,
 	};
+}
+
+/**
+ * Map a z-score to a 5-tier level label.
+ * - Z ≥  1.5 → 'very_high' (Rất cao)
+ * - Z ≥  0.5 → 'high'      (Cao)
+ * - Z ≥ -0.5 → 'moderate'  (Trung bình)
+ * - Z ≥ -1.5 → 'low'       (Thấp)
+ * - Z <  -1.5 → 'very_low' (Rất thấp)
+ */
+export function getLevelFromZScore(
+	z: number
+): 'very_low' | 'low' | 'moderate' | 'high' | 'very_high' {
+	if (z >= 1.5)  return 'very_high';
+	if (z >= 0.5)  return 'high';
+	if (z >= -0.5) return 'moderate';
+	if (z >= -1.5) return 'low';
+	return 'very_low';
 }
 
 // ─── Standard Normal CDF (Φ) ───────────────────────────────────────────────────
@@ -395,16 +485,15 @@ export function calculatePercentile(score: number, mean: number, sd: number): nu
 }
 
 /**
- * Get a human-readable interpretation of a percentile.
+ * Get a human-readable interpretation label from a z-score (5-tier system).
+ * Matches the TraitScore.level 5-tier system.
  */
-function getPercentileInterpretation(percentile: number): { en: string; vi: string } {
-	if (percentile <= 10) return { en: 'Very Low', vi: 'Rất thấp' };
-	if (percentile <= 25) return { en: 'Low', vi: 'Thấp' };
-	if (percentile <= 40) return { en: 'Below Average', vi: 'Dưới trung bình' };
-	if (percentile <= 60) return { en: 'Average', vi: 'Trung bình' };
-	if (percentile <= 75) return { en: 'Above Average', vi: 'Trên trung bình' };
-	if (percentile <= 90) return { en: 'High', vi: 'Cao' };
-	return { en: 'Very High', vi: 'Rất cao' };
+function getPercentileInterpretation(z: number): { en: string; vi: string } {
+	if (z >= 1.5)  return { en: 'Very High', vi: 'Rất cao' };
+	if (z >= 0.5)  return { en: 'High',      vi: 'Cao' };
+	if (z >= -0.5) return { en: 'Moderate',  vi: 'Trung bình' };
+	if (z >= -1.5) return { en: 'Low',       vi: 'Thấp' };
+	return               { en: 'Very Low',  vi: 'Rất thấp' };
 }
 
 /**
@@ -423,7 +512,7 @@ export function calculateDomainPercentile(
 
 	const z = calculateZScore(score, norms.mean, norms.sd);
 	const percentile = calculatePercentile(score, norms.mean, norms.sd);
-	const interp = getPercentileInterpretation(percentile);
+	const interp = getPercentileInterpretation(z);
 
 	return {
 		domain,
@@ -443,13 +532,15 @@ export function calculateDomainPercentile(
 /**
  * Calculate percentiles for ALL domains against default reference groups.
  * Returns a map of domain → PercentileResult.
+ * @param gender - When provided, selects gender-specific Study 1 norms for SD3 traits.
  */
 export function calculateAllPercentiles(
 	scores: Partial<Record<PersonalityDomain, number>>,
 	oceanGroupId?: string,
-	darkTriadGroupId?: string
+	darkTriadGroupId?: string,
+	gender?: 'male' | 'female' | 'other'
 ): Record<string, PercentileResult> {
-	const defaults = getDefaultReferenceGroupIds();
+	const defaults = getDefaultReferenceGroupIds(gender);
 	const oceanRef = oceanGroupId || defaults.ocean;
 	const darkRef = darkTriadGroupId || defaults.darkTriad;
 

@@ -262,15 +262,13 @@ describe('calculateDomainPercentile', () => {
 
 	it('should populate interpretation labels for all percentile bands', () => {
 		// BFI-2-S E: M=3.22, SD=0.80 (Soto & John 2017, Table 1)
-		// Verified percentiles: score→z→pct→band
+		// 5-tier z-score system: z≥1.5=Very High, z≥0.5=High, z≥-0.5=Moderate, z≥-1.5=Low, else Very Low
 		const testCases = [
-			{ score: 1.5,  expectedEn: 'Very Low' },      // z=-2.15 → pct=2  → ≤10
-			{ score: 2.5,  expectedEn: 'Low' },            // z=-0.90 → pct=18 → ≤25
-			{ score: 2.95, expectedEn: 'Below Average' },  // z=-0.34 → pct=37 → ≤40
-			{ score: 3.2,  expectedEn: 'Average' },        // z=-0.02 → pct=49 → ≤60
-			{ score: 3.65, expectedEn: 'Above Average' },  // z=+0.54 → pct=70 → ≤75
-			{ score: 4.0,  expectedEn: 'High' },           // z=+0.98 → pct=84 → ≤90
-			{ score: 4.8,  expectedEn: 'Very High' },      // z=+1.97 → pct=98 → >90
+			{ score: 1.5,  expectedEn: 'Very Low' },   // z=-2.15 → very_low
+			{ score: 2.5,  expectedEn: 'Low' },        // z=-0.90 → low
+			{ score: 3.2,  expectedEn: 'Moderate' },   // z=-0.03 → moderate
+			{ score: 3.65, expectedEn: 'High' },       // z=+0.54 → high
+			{ score: 4.8,  expectedEn: 'Very High' },  // z=+1.97 → very_high
 		];
 		for (const tc of testCases) {
 			const result = calculateDomainPercentile('extraversion', tc.score, 'bfi2-internet');

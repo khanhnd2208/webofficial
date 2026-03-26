@@ -22,6 +22,7 @@ export interface SessionRow {
 	user_id: string;
 	user_name: string;
 	full_name: string | null;
+	gender: string | null;
 	university: string | null;
 	student_year: number | null;
 	cumulative_gpa: number | null;
@@ -127,6 +128,7 @@ export interface ReportRow {
 	user_id: string;
 	user_name: string;
 	full_name: string | null;
+	gender: string | null;
 	university: string | null;
 	student_year: number | null;
 	cumulative_gpa: number | null;
@@ -166,7 +168,7 @@ export async function findAllSessionsForReport(
 	const { rows } = await pgPool.query<ReportRow>(
 		`SELECT
 			s.id, s.user_id, s.user_name,
-			s.full_name, s.university, s.student_year, s.cumulative_gpa, s.self_rated_intelligence,
+			s.full_name, s.gender, s.university, s.student_year, s.cumulative_gpa, s.self_rated_intelligence,
 			s.status, s.duration_seconds, s.completed_at, s.created_at,
 			r.is_valid,
 			r.extraversion, r.agreeableness, r.conscientiousness,
@@ -248,14 +250,15 @@ export async function createSession(params: {
 		// 1. Insert session
 		const sessionResult = await client.query<{ id: string }>(
 			`INSERT INTO personality_test_sessions
-				(user_id, user_name, full_name, university, student_year, cumulative_gpa,
+				(user_id, user_name, full_name, gender, university, student_year, cumulative_gpa,
 				 self_rated_intelligence, status, duration_seconds, completed_at)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 			 RETURNING id`,
 			[
 				params.userId,
 				params.userName,
 				params.demographics.fullName || null,
+				params.demographics.gender || null,
 				params.demographics.university || null,
 				params.demographics.studentYear || null,
 				params.demographics.cumulativeGpa || null,

@@ -26,6 +26,7 @@ import {
 import {
 	calculateAllPercentiles as calculateNormativePercentiles,
 	getDefaultReferenceGroupIds,
+	getLevelFromZScore,
 	type PercentileResult,
 } from '@/lib/normativeData';
 
@@ -50,10 +51,14 @@ function traitScoreFromResult(
 	domain: string,
 	label: string,
 	score: number | null,
-	percentile: number | null
+	percentile: number | null,
+	zScore?: number | null
 ): TraitScore {
 	const s = Number(score) || 0;
-	const level = s < 2.5 ? 'low' : s > 3.5 ? 'high' : 'moderate';
+	// Use z-score based 5-tier system if z-score available, else fall back to 3-tier score-based
+	const level = zScore != null
+		? getLevelFromZScore(zScore)
+		: s < 2.5 ? 'low' : s > 3.5 ? 'high' : 'moderate';
 	return {
 		domain: domain as TraitScore['domain'],
 		score: s,
@@ -134,6 +139,7 @@ function sessionToDTO(
 		demographics: session.full_name
 			? {
 					fullName: session.full_name ?? '',
+					gender: (session.gender as 'male' | 'female' | 'other') || 'other',
 					university: session.university ?? '',
 					studentYear: session.student_year ?? 0,
 					cumulativeGpa: session.cumulative_gpa ?? 0,
@@ -257,7 +263,8 @@ export async function submitPersonalityTest(
 	if (scoringResult.isValid && scoringResult.ocean && scoringResult.darkTriad) {
 		const percentiles = await calculateAndUpdatePercentiles(
 			sessionId,
-			scoringResult
+			scoringResult,
+			demographics.gender
 		);
 		// Update the result with percentile data for the DTO
 		if (percentiles && scoringResult.ocean && scoringResult.darkTriad) {
@@ -289,10 +296,12 @@ export async function submitPersonalityTest(
 /**
  * Calculate normative percentile ranks for a session's scores.
  * Uses published reference group norms (BFI-2 & SD3) instead of DB-rank.
+ * Applies gender-specific Study 1 norms for SD3 when gender is provided.
  */
 async function calculateAndUpdatePercentiles(
 	sessionId: string,
-	scoringResult: ScoringResult
+	scoringResult: ScoringResult,
+	gender?: 'male' | 'female' | 'other'
 ): Promise<Record<string, number> | null> {
 	if (!scoringResult.ocean || !scoringResult.darkTriad) return null;
 
@@ -308,12 +317,13 @@ async function calculateAndUpdatePercentiles(
 		psychopathy: scoringResult.darkTriad.psychopathy.score,
 	};
 
-	// Calculate normative percentiles using default reference groups
-	const defaults = getDefaultReferenceGroupIds();
+	// Calculate normative percentiles using gender-specific reference groups
+	const defaults = getDefaultReferenceGroupIds(gender);
 	const normativeResults = calculateNormativePercentiles(
 		scores as Partial<Record<import('@/types/personalityTest').PersonalityDomain, number>>,
 		defaults.ocean,
-		defaults.darkTriad
+		defaults.darkTriad,
+		gender
 	);
 
 	// Extract just the percentile numbers for DB storage
@@ -333,9 +343,10 @@ async function calculateAndUpdatePercentiles(
 export function calculatePercentilesForGroups(
 	scores: Partial<Record<import('@/types/personalityTest').PersonalityDomain, number>>,
 	oceanGroupId?: string,
-	darkTriadGroupId?: string
+	darkTriadGroupId?: string,
+	gender?: 'male' | 'female' | 'other'
 ): Record<string, PercentileResult> {
-	return calculateNormativePercentiles(scores, oceanGroupId, darkTriadGroupId);
+	return calculateNormativePercentiles(scores, oceanGroupId, darkTriadGroupId, gender);
 }
 
 // ─── Admin Queries ─────────────────────────────────────────────────────────────

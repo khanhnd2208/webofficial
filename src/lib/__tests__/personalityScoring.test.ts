@@ -63,39 +63,39 @@ const SD3_P_ITEMS  = SD3_QUESTIONS.filter(q => q.domain === 'psychopathy'      &
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('Question Configuration', () => {
-	it('BFI-2-S has exactly 30 items', () => {
-		expect(BFI2S_QUESTIONS).toHaveLength(30);
+	it('BFI-2-S has exactly 31 items (30 real + 1 attention check)', () => {
+		expect(BFI2S_QUESTIONS).toHaveLength(31);
 	});
 
-	it('SD3 has exactly 27 items', () => {
-		expect(SD3_QUESTIONS).toHaveLength(27);
+	it('SD3 has exactly 28 items (27 real + 1 attention check)', () => {
+		expect(SD3_QUESTIONS).toHaveLength(28);
 	});
 
-	it('BFI-2-S formOrder values are unique and span 1-30', () => {
+	it('BFI-2-S formOrder values are unique and span 1-31', () => {
 		const orders = BFI2S_QUESTIONS.map(q => q.formOrder).sort((a, b) => a - b);
-		expect(orders).toEqual([...Array(30)].map((_, i) => i + 1));
+		expect(orders).toEqual([...Array(31)].map((_, i) => i + 1));
 	});
 
-	it('SD3 formOrder values are unique and span 1-27', () => {
+	it('SD3 formOrder values are unique and span 1-28', () => {
 		const orders = SD3_QUESTIONS.map(q => q.formOrder).sort((a, b) => a - b);
-		expect(orders).toEqual([...Array(27)].map((_, i) => i + 1));
+		expect(orders).toEqual([...Array(28)].map((_, i) => i + 1));
 	});
 
 	it('BFI-2-S scored items per domain (attention check at fo25 is in openMindedness domain but excluded)', () => {
 		// E, A, C, N each have 6 scored items.
-		// O has 5 scored items because fo25 is the attention check (domain=openMindedness, excluded).
+		// O has 6 scored items — fo25 is the attention check (excluded), fo26 is item 25 restored.
 		expect(BFI_E_ITEMS).toHaveLength(6);
 		expect(BFI_A_ITEMS).toHaveLength(6);
 		expect(BFI_C_ITEMS).toHaveLength(6);
 		expect(BFI_N_ITEMS).toHaveLength(6);
-		expect(BFI_O_ITEMS).toHaveLength(5); // fo25 ATTN borrows from O domain position
+		expect(BFI_O_ITEMS).toHaveLength(6); // fo25 ATTN excluded; fo26 item 25 RESTORED
 	});
 
 	it('SD3 scored items per domain (attention check at fo17 is in narcissism domain but excluded)', () => {
 		// M and P each have 9 scored items.
-		// N has 8 scored items because fo17 is the attention check (domain=narcissism, excluded).
+		// N has 9 scored items — fo17 is the attention check (excluded), fo24 item N8R restored.
 		expect(SD3_M_ITEMS).toHaveLength(9);
-		expect(SD3_N_ITEMS).toHaveLength(8); // fo17 ATTN borrows from N domain position
+		expect(SD3_N_ITEMS).toHaveLength(9); // fo17 ATTN excluded; fo24 N8R ("I am an average person") RESTORED
 		expect(SD3_P_ITEMS).toHaveLength(9);
 	});
 
@@ -104,6 +104,7 @@ describe('Question Configuration', () => {
 		expect(attn).toBeDefined();
 		expect(attn!.formOrder).toBe(25);
 		expect(attn!.attentionCheckExpected).toBe(1);
+		expect(attn!.itemNumber).toBe(99); // dummy item number
 	});
 
 	it('SD3 attention check is at formOrder 17 and expects value 2', () => {
@@ -111,6 +112,7 @@ describe('Question Configuration', () => {
 		expect(attn).toBeDefined();
 		expect(attn!.formOrder).toBe(17);
 		expect(attn!.attentionCheckExpected).toBe(2);
+		expect(attn!.itemNumber).toBe(98); // dummy item number
 	});
 
 	it('BFI-2-S reversed items — correct academic item numbers', () => {
@@ -139,16 +141,17 @@ describe('Question Configuration', () => {
 		expect(reversedItems).toContain(30); // fo30 — "prefers routine work" R
 	});
 
-	it('SD3 reversed items — Narcissism N11R and N15R, Psychopathy P20R and P25R', () => {
+	it('SD3 reversed items — Narcissism N11R, N17R, N8R and Psychopathy P20R and P25R', () => {
 		const reversedSD3 = SD3_QUESTIONS
 			.filter(q => q.isReversed && !q.isAttentionCheck)
 			.map(q => ({ domain: q.domain, item: q.itemNumber }));
 
-		// Narcissism: N11R (fo5: "I hate being center of attention") and N15R (fo20: "I feel embarrassed if complimented")
+		// Narcissism: N11R (fo5), N17R (fo18 "I feel embarrassed"), N8R (fo24 "I am an average person")
 		expect(reversedSD3).toContainEqual({ domain: 'narcissism', item: 11 });
-		expect(reversedSD3).toContainEqual({ domain: 'narcissism', item: 15 });
+		expect(reversedSD3).toContainEqual({ domain: 'narcissism', item: 17 }); // N17R "I feel embarrassed"
+		expect(reversedSD3).toContainEqual({ domain: 'narcissism', item: 15 }); // N8R "I am an average person"
 
-		// Psychopathy: P20R (fo6: "I avoid dangerous situations") and P25R (fo21: "I never got in trouble with law")
+		// Psychopathy: P20R (fo6: "I avoid dangerous situations") and P25R (fo22: "I never got in trouble with law")
 		expect(reversedSD3).toContainEqual({ domain: 'psychopathy', item: 20 });
 		expect(reversedSD3).toContainEqual({ domain: 'psychopathy', item: 25 });
 
@@ -190,20 +193,20 @@ describe('getEffectiveScore', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('validateAttentionChecks', () => {
-	it('passes when BFI item25=1 and SD3 item17=2', () => {
+	it('passes when BFI item99=1 and SD3 item98=2', () => {
 		const responses = buildAllResponses(3);
-		// Correct attention check values
+		// Correct attention check values (dummy item numbers 99 and 98)
 		const withCorrectAttn = withOverrides(responses, [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 		expect(validateAttentionChecks(withCorrectAttn)).toEqual({ valid: true });
 	});
 
 	it('fails when BFI attention check is wrong', () => {
 		const responses = withOverrides(buildAllResponses(3), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 3 }, // wrong! should be 1
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 3 }, // wrong! should be 1
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 		const result = validateAttentionChecks(responses);
 		expect(result.valid).toBe(false);
@@ -212,8 +215,8 @@ describe('validateAttentionChecks', () => {
 
 	it('fails when SD3 attention check is wrong', () => {
 		const responses = withOverrides(buildAllResponses(3), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 5 }, // wrong! should be 2
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 5 }, // wrong! should be 2
 		]);
 		const result = validateAttentionChecks(responses);
 		expect(result.valid).toBe(false);
@@ -224,7 +227,7 @@ describe('validateAttentionChecks', () => {
 		// Remove BFI attention check from responses
 		const allResponses = buildAllResponses(3);
 		const withMissing = allResponses.filter(
-			r => !(r.testType === 'BFI2S' && r.itemNumber === 25)
+			r => !(r.testType === 'BFI2S' && r.itemNumber === 99)
 		);
 		const result = validateAttentionChecks(withMissing);
 		expect(result.valid).toBe(false);
@@ -259,8 +262,8 @@ describe('scorePersonalityTest', () => {
 
 	it('returns valid result with correct attention checks', () => {
 		const responses = withOverrides(buildAllResponses(3), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 		const result = scorePersonalityTest(responses);
 		expect(result.isValid).toBe(true);
@@ -272,8 +275,8 @@ describe('scorePersonalityTest', () => {
 	it('all-1 responses (correct attention checks) → low trait scores, reversed items score high', () => {
 		// All responses = 1, correct attention checks
 		const responses = withOverrides(buildAllResponses(1), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 }, // BFI attention check = 1 ✓
-			{ testType: 'SD3',   itemNumber: 17, value: 2 }, // SD3 attention check = 2 (override from 1)
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 }, // BFI attention check = 1 ✓
+			{ testType: 'SD3',   itemNumber: 98, value: 2 }, // SD3 attention check = 2 (override from 1)
 		]);
 		const result = scorePersonalityTest(responses);
 		expect(result.isValid).toBe(true);
@@ -295,8 +298,8 @@ describe('scorePersonalityTest', () => {
 	it('all-5 responses (correct attention checks, SD3 attn wrong=5→fix) → high non-reversed, low reversed', () => {
 		// All responses = 5, fix attention checks
 		const responses = withOverrides(buildAllResponses(5), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 }, // BFI attention check override
-			{ testType: 'SD3',   itemNumber: 17, value: 2 }, // SD3 attention check override
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 }, // BFI attention check override
+			{ testType: 'SD3',   itemNumber: 98, value: 2 }, // SD3 attention check override
 		]);
 		const result = scorePersonalityTest(responses);
 		expect(result.isValid).toBe(true);
@@ -312,8 +315,8 @@ describe('scorePersonalityTest', () => {
 
 	it('produces Extraversion "high" when all E items = 5 (non-reversed) or 1 (reversed)', () => {
 		const responses = withOverrides(buildAllResponses(3), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 
 		// Set all Extraversion items for max Extraversion score
@@ -335,8 +338,8 @@ describe('scorePersonalityTest', () => {
 		// N11R (fo5): "I hate being the center of attention" — reversed
 		// High raw value → after reversal → low narcissism contribution
 		const responses = withOverrides(buildAllResponses(3), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 
 		// Set N11R to 5 (strongly agree "hate being center of attention")
@@ -350,6 +353,15 @@ describe('scorePersonalityTest', () => {
 		// Verify the scoring engine actually reverses this item
 		const n11q = SD3_QUESTIONS.find(q => q.itemNumber === 11);
 		expect(n11q?.isReversed).toBe(true);
+	});
+
+	it('SD3 Narcissism N8R ("I am an average person") restored at fo24, isReversed=true', () => {
+		// Verify the restored N8R item exists and is correctly configured at fo24
+		const n8r = SD3_QUESTIONS.find(q => q.formOrder === 24 && q.domain === 'narcissism');
+		expect(n8r).toBeDefined();
+		expect(n8r!.isReversed).toBe(true);
+		expect(n8r!.isAttentionCheck).toBe(false);
+		expect(n8r!.text).toContain('average');
 	});
 
 	it('SD3 Psychopathy P20R scoring: raw=5 → scored=1 (reversed)', () => {
@@ -367,8 +379,8 @@ describe('scorePersonalityTest', () => {
 
 	it('result includes archetype with name and narrative', () => {
 		const responses = withOverrides(buildAllResponses(3), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 		const result = scorePersonalityTest(responses);
 		expect(result.isValid).toBe(true);
@@ -383,32 +395,46 @@ describe('scorePersonalityTest', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('Domain Composition', () => {
-	it('BFI-2-S: Extraversion items are fo1,fo6,fo11,fo16,fo21,fo26', () => {
+	it('BFI-2-S: Extraversion items are fo1,fo6,fo11,fo16,fo21,fo27', () => {
+		// fo25=attention check, fo26=item25(O restored), so 6th E item (itemNumber 11) is at fo27
 		const eFormOrders = BFI_E_ITEMS.map(q => q.formOrder).sort((a, b) => a - b);
-		expect(eFormOrders).toEqual([1, 6, 11, 16, 21, 26]);
+		expect(eFormOrders).toEqual([1, 6, 11, 16, 21, 27]);
 	});
 
-	it('BFI-2-S: Agreeableness items are fo2,fo7,fo12,fo17,fo22,fo27', () => {
+	it('BFI-2-S: Agreeableness items are fo2,fo7,fo12,fo17,fo22,fo28', () => {
+		// fo25=attention check, fo26=item25(O restored), so 6th A item (itemNumber 27) is at fo28
 		const aFormOrders = BFI_A_ITEMS.map(q => q.formOrder).sort((a, b) => a - b);
-		expect(aFormOrders).toEqual([2, 7, 12, 17, 22, 27]);
+		expect(aFormOrders).toEqual([2, 7, 12, 17, 22, 28]);
 	});
 
-	it('BFI-2-S: Conscientiousness items are fo3,fo8,fo13,fo18,fo23,fo28', () => {
+	it('BFI-2-S: Conscientiousness items are fo3,fo8,fo13,fo18,fo23,fo29', () => {
+		// fo25=attention check, fo26=item25(O restored), so 6th C item (itemNumber 18) is at fo29
 		const cFormOrders = BFI_C_ITEMS.map(q => q.formOrder).sort((a, b) => a - b);
-		expect(cFormOrders).toEqual([3, 8, 13, 18, 23, 28]);
+		expect(cFormOrders).toEqual([3, 8, 13, 18, 23, 29]);
 	});
 
-	it('BFI-2-S: Negative Emotionality items are fo4,fo9,fo14,fo19,fo24,fo29', () => {
+	it('BFI-2-S: Negative Emotionality items are fo4,fo9,fo14,fo19,fo24,fo30', () => {
+		// fo25=attention check, fo26=item25(O restored), so 6th N item (itemNumber 29) is at fo30
 		const nFormOrders = BFI_N_ITEMS.map(q => q.formOrder).sort((a, b) => a - b);
-		expect(nFormOrders).toEqual([4, 9, 14, 19, 24, 29]);
+		expect(nFormOrders).toEqual([4, 9, 14, 19, 24, 30]);
 	});
 
-	it('BFI-2-S: Open-Mindedness scored items are fo5,fo10,fo15,fo20,fo30 (fo25 is ATTN, excluded)', () => {
+	it('BFI-2-S: Open-Mindedness scored items are fo5,fo10,fo15,fo20,fo26,fo31 (fo25 is ATTN, excluded)', () => {
 		const oFormOrders = BFI_O_ITEMS.map(q => q.formOrder).sort((a, b) => a - b);
-		// 5 scored items: fo5, fo10, fo15, fo20, fo30
+		// 6 scored items: fo5, fo10, fo15, fo20, fo26, fo31
 		// fo25 is the attention check (isAttentionCheck=true) — excluded from scoring.
-		expect(oFormOrders).toEqual([5, 10, 15, 20, 30]);
+		// fo26 is item 25 "Is complex, a deep thinker" — RESTORED.
+		// fo31 is item 30 "prefers routine" (the 6th O item, shifted after fo26 insertion).
+		expect(oFormOrders).toEqual([5, 10, 15, 20, 26, 31]);
 		expect(oFormOrders).not.toContain(25);
+	});
+
+	it('BFI-2-S item 25 ("Is complex, a deep thinker") is at fo26, not reversed', () => {
+		const item25 = BFI2S_QUESTIONS.find(q => q.itemNumber === 25 && !q.isAttentionCheck);
+		expect(item25).toBeDefined();
+		expect(item25!.formOrder).toBe(26);
+		expect(item25!.isReversed).toBe(false);
+		expect(item25!.domain).toBe('openMindedness');
 	});
 
 	it('SD3: items are in M-N-P interleaved pattern (fo1=M, fo2=N, fo3=P, fo4=M...)', () => {
@@ -432,16 +458,16 @@ describe('Domain Composition', () => {
 
 describe('Trait Level Thresholds', () => {
 	const responses = withOverrides(buildAllResponses(3), [
-		{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-		{ testType: 'SD3',   itemNumber: 17, value: 2 },
+		{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+		{ testType: 'SD3',   itemNumber: 98, value: 2 },
 	]);
 
 	it('score ≤ 2.5 → level low', () => {
 		// All responses = 1, but attention checks corrected
 		// For non-reversed Mach items (none reversed): scored = 1 → avg = 1 → low
 		const lowResponses = withOverrides(buildAllResponses(1), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 		const result = scorePersonalityTest(lowResponses);
 		// Mach has no reversed items, raw=1 → scored=1 → avg=1 → low
@@ -452,8 +478,8 @@ describe('Trait Level Thresholds', () => {
 	it('score ≥ 3.5 → level high', () => {
 		// All responses = 5 (for non-reversed Mach items = 5)
 		const highResponses = withOverrides(buildAllResponses(5), [
-			{ testType: 'BFI2S', itemNumber: 25, value: 1 },
-			{ testType: 'SD3',   itemNumber: 17, value: 2 },
+			{ testType: 'BFI2S', itemNumber: 99, value: 1 },
+			{ testType: 'SD3',   itemNumber: 98, value: 2 },
 		]);
 		const result = scorePersonalityTest(highResponses);
 		// Mach: all 9 items non-reversed, raw=5 → scored=5 → avg=5 → high

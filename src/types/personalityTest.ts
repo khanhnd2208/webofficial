@@ -40,6 +40,8 @@ export interface DemographicData {
 	cumulativeGpa: number;
 	/** Self-rated intelligence 1-10 (Bạn tự đánh giá trí thông minh) */
 	selfRatedIntelligence: number;
+	/** Gender: 'male' | 'female' | 'other' — used for gender-specific SD3 norms */
+	gender: 'male' | 'female' | 'other';
 }
 
 // ─── Question Configuration ────────────────────────────────────────────────────
@@ -86,8 +88,8 @@ export interface TraitScore {
 	label: string;
 	/** Percentile rank against normative reference group (1-99). Null if not yet calculated. */
 	percentile: number | null;
-	/** 'low' | 'moderate' | 'high' based on score thresholds */
-	level: 'low' | 'moderate' | 'high';
+	/** 5-tier z-score classification: very_low | low | moderate | high | very_high */
+	level: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
 }
 
 export interface OceanScores {

@@ -72,21 +72,28 @@ function sd3GFHeader(q: typeof SD3_QUESTIONS[0]): string {
 }
 
 // ─── Demographic column definitions ───────────────────────────────────────────
-// Headers match the exact Google Form column names per user spec.
+// FORM_DEMO_COLS: columns that appear in the Google Form (Sheet 1 — exact headers)
+// META_COLS: admin metadata appended to other sheets
 
-const DEMO_COLS = [
+const FORM_DEMO_COLS = [
 	{ key: 'created_at',              label: 'Dấu thời gian' },
 	{ key: 'full_name',               label: 'Họ và Tên/Full Name' },
+	{ key: 'gender',                  label: 'Giới tính' },
 	{ key: 'university',              label: 'Trường' },
 	{ key: 'student_year',            label: 'Bạn là sinh viên năm mấy của Trường?' },
 	{ key: 'cumulative_gpa',          label: 'GPA tích luỹ đến thời điểm hiện tại của bạn' },
-	{ key: 'self_rated_intelligence', label: 'How would you rate your level of general intelligence compared to the general population on a scale of 1-10?' },
-	{ key: 'no',                      label: 'No.' },
-	{ key: 'status',                  label: 'Trạng thái' },
-	{ key: 'duration_seconds',        label: 'Thời gian làm (giây)' },
-	{ key: 'is_valid',                label: 'Hợp lệ?' },
-	{ key: 'user_name',               label: 'Tài khoản' },
-	{ key: 'id',                      label: 'Session ID' },
+	{ key: 'self_rated_intelligence', label: '"How would you rate your level of general intelligence compared to that of the average student?\n\nCircle a number on the following scale: "' },
+] as const;
+
+// All columns including admin metadata (for Sheet 2 and beyond)
+const DEMO_COLS = [
+	...FORM_DEMO_COLS,
+	{ key: 'no',              label: 'No.' },
+	{ key: 'status',          label: 'Trạng thái' },
+	{ key: 'duration_seconds', label: 'Thời gian làm (giây)' },
+	{ key: 'is_valid',        label: 'Hợp lệ?' },
+	{ key: 'user_name',       label: 'Tài khoản' },
+	{ key: 'id',              label: 'Session ID' },
 ] as const;
 
 function formatDemoCell(r: ReportRowRaw, key: string, idx: number): unknown {
@@ -94,6 +101,10 @@ function formatDemoCell(r: ReportRowRaw, key: string, idx: number): unknown {
 		case 'no':         return idx + 1;
 		case 'created_at': return r.created_at ? new Date(r.created_at).toLocaleString('vi-VN') : '';
 		case 'is_valid':   return r.is_valid === true ? 'Có' : r.is_valid === false ? 'Không' : '';
+		case 'gender': {
+			const gMap: Record<string, string> = { male: 'Nam', female: 'Nữ', other: 'Khác' };
+			return gMap[r.gender ?? ''] ?? (r.gender ?? '');
+		}
 		case 'status': {
 			const map: Record<string, string> = {
 				completed: 'Hoàn thành', invalid: 'Không hợp lệ', in_progress: 'Đang làm',
@@ -118,9 +129,10 @@ const DB_TO_DOMAIN: Record<string, PersonalityDomain> = {
 	psychopathy:           'psychopathy',
 };
 
-/** Calculate normative percentiles for a report row */
+/** Calculate normative percentiles for a report row, using gender-specific SD3 Study 1 norms */
 function getRowPercentiles(r: ReportRowRaw): Record<string, PercentileResult> {
-	const defaults = getDefaultReferenceGroupIds();
+	const gender = (r.gender as 'male' | 'female' | 'other' | null) ?? undefined;
+	const defaults = getDefaultReferenceGroupIds(gender);
 	const scores: Partial<Record<PersonalityDomain, number>> = {};
 	for (const [dbKey, domain] of Object.entries(DB_TO_DOMAIN)) {
 		const val = r[dbKey as keyof ReportRowRaw];
@@ -128,7 +140,7 @@ function getRowPercentiles(r: ReportRowRaw): Record<string, PercentileResult> {
 			scores[domain] = Number(val);
 		}
 	}
-	return calculateAllPercentiles(scores, defaults.ocean, defaults.darkTriad);
+	return calculateAllPercentiles(scores, defaults.ocean, defaults.darkTriad, gender);
 }
 
 function autoFitColumns(ws: XLSX.WorkSheet, data: Record<string, unknown>[]): void {
@@ -187,13 +199,21 @@ async function handleGet(req: NextRequest) {
 	// ═══════════════════════════════════════════════════════════════════
 	// SHEET 1: Raw Responses — demographics + BFI Q1-Q30 + SD3 Q1-Q27
 	// Column headers exactly match Google Form column names.
+	// Attention checks appear in their natural form-order position.
 	// ═══════════════════════════════════════════════════════════════════
 	const rawSheet = rows.map((r, idx) => {
 		const row: Record<string, unknown> = {};
 		const resp = responseMap.get(r.id) ?? new Map<string, number>();
-		for (const col of DEMO_COLS) row[col.label] = formatDemoCell(r, col.key, idx);
-		for (const q of BFI_SORTED) row[bfiGFHeader(q)] = resp.get(`BFI2S_fo${q.formOrder}`) ?? '';
-		for (const q of SD3_SORTED) row[sd3GFHeader(q)] = resp.get(`SD3_fo${q.formOrder}`) ?? '';
+		// Demographics: only Google Form columns (no admin metadata) in exact form order
+		for (const col of FORM_DEMO_COLS) row[col.label] = formatDemoCell(r, col.key, idx);
+		// BFI: all items in formOrder (attention check stays at its natural fo25 position)
+		for (const q of BFI_SORTED) {
+			row[bfiGFHeader(q)] = resp.get(`BFI2S_fo${q.formOrder}`) ?? '';
+		}
+		// SD3: all items in formOrder (attention check stays at its natural fo17 position)
+		for (const q of SD3_SORTED) {
+			row[sd3GFHeader(q)] = resp.get(`SD3_fo${q.formOrder}`) ?? '';
+		}
 		return row;
 	});
 
@@ -399,9 +419,9 @@ async function handleGet(req: NextRequest) {
 				'Ghi chú': 'Φ = Standard Normal CDF (Abramowitz & Stegun approx.)',
 			});
 			rows.push({
-				'Thống kê': 'Giải thích percentile',
-				'Giá trị': '≤10 Rất thấp | ≤25 Thấp | ≤40 Dưới TB | ≤60 TB | ≤75 Trên TB | ≤90 Cao | >90 Rất cao',
-				'Ghi chú': 'Clamped 1–99',
+				'Thống kê': 'Giải thích mức (5-tier)',
+				'Giá trị': 'z≥1.5 Rất cao | z≥0.5 Cao | z≥-0.5 Trung bình | z≥-1.5 Thấp | z<-1.5 Rất thấp',
+				'Ghi chú': 'Dựa trên z-score, không phải percentile trực tiếp',
 			});
 
 			return rows;
