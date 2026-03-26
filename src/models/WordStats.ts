@@ -50,7 +50,7 @@ WordStatsSchema.index({ userId: 1, word: 1 }, { unique: true });
 WordStatsSchema.index({ userId: 1, lastPracticed: -1 });
 
 const WordStats =
-	(mongoose.models.WordStats as Model<IWordStats>) ||
+	(mongoose.models.WordStats as Model<IWordStats>) ??
 	mongoose.model<IWordStats>('WordStats', WordStatsSchema);
 
 export default WordStats;

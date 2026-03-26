@@ -1,86 +1,41 @@
 import { revalidatePath } from 'next/cache';
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
-import { isAdmin } from '@/lib/apiAuth';
+import { withAdmin, withErrorHandling, apiSuccess } from '@/lib/apiUtils';
 import { createPost, getAllPosts } from '@/services/postService';
 
-export async function GET(request: NextRequest) {
-	try {
-		const url = new URL(request.url);
-		const page = Number(url.searchParams.get('page') ?? '1');
-		const limit = Number(url.searchParams.get('limit') ?? '9');
-		const tag = url.searchParams.get('tag') ?? undefined;
-		const category = url.searchParams.get('category') ?? undefined;
-		const sort = url.searchParams.get('sort') ?? undefined;
+export const GET = withErrorHandling(async (request: NextRequest) => {
+	const url = new URL(request.url);
+	const page = Number(url.searchParams.get('page') ?? '1');
+	const limit = Number(url.searchParams.get('limit') ?? '9');
+	const tag = url.searchParams.get('tag') ?? undefined;
+	const category = url.searchParams.get('category') ?? undefined;
+	const sort = url.searchParams.get('sort') ?? undefined;
 
-		const result = await getAllPosts(page, limit, tag, category, sort);
-		return NextResponse.json({ ok: true, data: result });
-	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Unknown error';
-		return NextResponse.json({ ok: false, error: message }, { status: 400 });
-	}
-}
+	const result = await getAllPosts(page, limit, tag, category, sort);
+	return apiSuccess(result);
+});
 
-export async function POST(request: NextRequest) {
-	try {
-		if (!(await isAdmin(request))) {
-			return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
-		}
+export const POST = withAdmin(async (request: NextRequest) => {
+	const body = (await request.json()) as Record<string, unknown>;
 
-		const body = (await request.json()) as unknown;
-		if (!body || typeof body !== 'object') {
-			return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 });
-		}
+	const created = await createPost({
+		title: String(body.title ?? ''),
+		slug: body.slug == null ? undefined : String(body.slug),
+		summary: String(body.summary ?? ''),
+		content: String(body.content ?? ''),
+		contentEn: body.contentEn == null ? '' : String(body.contentEn),
+		contentFormat: body.contentFormat === 'markdown' ? 'markdown' : 'html',
+		category: body.category == null ? undefined : String(body.category),
+		tags: Array.isArray(body.tags) ? body.tags.map((t) => String(t)) : [],
+		thumbnailUrl: body.thumbnailUrl == null ? undefined : String(body.thumbnailUrl),
+		chapterNumber: body.chapterNumber == null ? undefined : Number(body.chapterNumber),
+		isPinned: Boolean(body.isPinned),
+		isPublished: Boolean(body.isPublished),
+	});
 
-		const {
-			title,
-			slug,
-			summary,
-			content,
-			contentEn,
-			contentFormat,
-			category,
-			tags,
-			thumbnailUrl,
-			chapterNumber,
-			isPinned,
-			isPublished,
-		} = body as {
-			title?: unknown;
-			slug?: unknown;
-			summary?: unknown;
-			content?: unknown;
-			contentEn?: unknown;
-			contentFormat?: unknown;
-			category?: unknown;
-			tags?: unknown;
-			thumbnailUrl?: unknown;
-			chapterNumber?: unknown;
-			isPinned?: unknown;
-			isPublished?: unknown;
-		};
+	// Invalidate all post-related caches
+	revalidatePath('/', 'layout');
 
-		const created = await createPost({
-			title: String(title ?? ''),
-			slug: slug == null ? undefined : String(slug),
-			summary: String(summary ?? ''),
-			content: String(content ?? ''),
-			contentEn: contentEn == null ? '' : String(contentEn),
-			contentFormat: contentFormat === 'markdown' ? 'markdown' : 'html',
-			category: category == null ? undefined : String(category),
-			tags: Array.isArray(tags) ? tags.map((t) => String(t)) : [],
-			thumbnailUrl: thumbnailUrl == null ? undefined : String(thumbnailUrl),
-			chapterNumber: chapterNumber == null ? undefined : Number(chapterNumber),
-			isPinned: Boolean(isPinned),
-			isPublished: Boolean(isPublished),
-		});
-
-		// Invalidate all post-related caches
-		revalidatePath('/', 'layout');
-
-		return NextResponse.json({ ok: true, data: created }, { status: 201 });
-	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Unknown error';
-		return NextResponse.json({ ok: false, error: message }, { status: 400 });
-	}
-}
+	return apiSuccess(created, 201);
+});

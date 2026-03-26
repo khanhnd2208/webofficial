@@ -28,7 +28,7 @@ const UserProfileSchema = new Schema<IUserProfile>(
 );
 
 const UserProfile =
-	(mongoose.models.UserProfile as Model<IUserProfile>) ||
+	(mongoose.models.UserProfile as Model<IUserProfile>) ??
 	mongoose.model<IUserProfile>('UserProfile', UserProfileSchema);
 
 export default UserProfile;

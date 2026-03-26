@@ -33,7 +33,7 @@ const LoginStreakSchema = new Schema<ILoginStreak>(
 );
 
 const LoginStreak =
-	(mongoose.models.LoginStreak as Model<ILoginStreak>) ||
+	(mongoose.models.LoginStreak as Model<ILoginStreak>) ??
 	mongoose.model<ILoginStreak>('LoginStreak', LoginStreakSchema);
 
 export default LoginStreak;

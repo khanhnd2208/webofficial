@@ -33,3 +33,18 @@ export function formatDistanceToNow(date: Date | string | number): string {
 	if (days < 365) return `${Math.floor(days / 30)} tháng trước`;
 	return `${Math.floor(days / 365)} năm trước`;
 }
+
+/** Alias for formatDistanceToNow — used by Navbar, comments, etc. */
+export const timeAgo = formatDistanceToNow;
+
+/**
+ * Short Vietnamese locale date (e.g. "19 thg 3, 2026").
+ * Used by homepage, blog listing pages.
+ */
+export function formatDateShort(dateStr: string): string {
+	return new Date(dateStr).toLocaleDateString('vi-VN', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
+}

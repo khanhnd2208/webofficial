@@ -1,48 +1,23 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
-import { getApiUser } from '@/lib/apiAuth';
+import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
 import { recordPracticeResults, getUserWordStats } from '@/services/wordStatsService';
 
-/**
- * POST /api/vocab-stats — record practice results for words
- * Body: { results: [{ word, correct, mode }] }
- */
-export async function POST(request: NextRequest) {
-	try {
-		const user = await getApiUser(request);
-		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+/** POST /api/vocab-stats — record practice results for words */
+export const POST = withAuth(async (request: NextRequest, user) => {
+	const body = await request.json();
+	const results = body.results;
 
-		const body = await request.json();
-		const results = body.results;
-
-		if (!Array.isArray(results) || results.length === 0) {
-			return NextResponse.json({ ok: false, error: 'results array is required' }, { status: 400 });
-		}
-
-		await recordPracticeResults(user.id, results);
-		return NextResponse.json({ ok: true });
-	} catch (error) {
-		return NextResponse.json(
-			{ ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
-			{ status: 400 }
-		);
+	if (!Array.isArray(results) || results.length === 0) {
+		return apiError('results array is required', 400);
 	}
-}
 
-/**
- * GET /api/vocab-stats — get all word stats for the current user
- */
-export async function GET(request: NextRequest) {
-	try {
-		const user = await getApiUser(request);
-		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+	await recordPracticeResults(user.id, results);
+	return apiSuccess(null);
+});
 
-		const stats = await getUserWordStats(user.id);
-		return NextResponse.json({ ok: true, data: stats });
-	} catch (error) {
-		return NextResponse.json(
-			{ ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
-			{ status: 400 }
-		);
-	}
-}
+/** GET /api/vocab-stats — get all word stats for the current user */
+export const GET = withAuth(async (_request: NextRequest, user) => {
+	const stats = await getUserWordStats(user.id);
+	return apiSuccess(stats);
+});

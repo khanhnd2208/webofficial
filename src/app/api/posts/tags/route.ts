@@ -1,13 +1,7 @@
-import { NextResponse } from 'next/server';
-
+import { withErrorHandling, apiSuccess } from '@/lib/apiUtils';
 import { getAllTags } from '@/services/postService';
 
-export async function GET() {
-	try {
-		const tags = await getAllTags();
-		return NextResponse.json({ ok: true, data: tags });
-	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Unknown error';
-		return NextResponse.json({ ok: false, error: message }, { status: 400 });
-	}
-}
+export const GET = withErrorHandling(async () => {
+	const tags = await getAllTags();
+	return apiSuccess(tags);
+});

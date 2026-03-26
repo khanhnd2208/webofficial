@@ -79,6 +79,7 @@ PostSchema.pre('validate', function preValidate(this: HydratedDocument<IPost>) {
 	}
 });
 
-const Post = (mongoose.models.Post as Model<IPost>) || mongoose.model<IPost>('Post', PostSchema);
+const Post =
+	(mongoose.models.Post as Model<IPost>) ?? mongoose.model<IPost>('Post', PostSchema);
 
 export default Post;

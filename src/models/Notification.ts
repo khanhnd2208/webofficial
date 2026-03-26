@@ -58,7 +58,7 @@ NotificationSchema.index({ recipientId: 1, read: 1, createdAt: -1 });
 NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 const Notification: Model<INotification> =
-	(mongoose.models.Notification as Model<INotification>) ||
+	(mongoose.models.Notification as Model<INotification>) ??
 	mongoose.model<INotification>('Notification', NotificationSchema);
 
 export default Notification;

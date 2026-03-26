@@ -5,12 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import ThemeToggle from './ThemeToggle';
-
-const NAV_LINKS = [
-	{ href: '/blog', label: 'Hanoicam Story' },
-	{ href: '/vocabulary', label: 'Học tiếng Anh' },
-	{ href: '/feedback', label: 'Phản hồi' },
-];
+import { NAV_LINKS } from '@/config/navigation';
+import { timeAgo } from '@/utils/formatDate';
 
 interface NotificationItem {
 	id: string;
@@ -19,17 +15,6 @@ interface NotificationItem {
 	href: string;
 	read: boolean;
 	createdAt: string;
-}
-
-function timeAgo(iso: string): string {
-	const diff = Date.now() - new Date(iso).getTime();
-	const mins = Math.floor(diff / 60000);
-	if (mins < 1) return 'vừa xong';
-	if (mins < 60) return `${mins} phút trước`;
-	const hours = Math.floor(mins / 60);
-	if (hours < 24) return `${hours} giờ trước`;
-	const days = Math.floor(hours / 24);
-	return `${days} ngày trước`;
 }
 
 function NotifIcon({ type }: { type: string }) {

@@ -1,16 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { NextRequest } from 'next/server';
+import { withAdmin, apiSuccess } from '@/lib/apiUtils';
 import { getAdminUserList } from '@/services/userManagementService';
 import type { UserRole } from '@/types/user';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
-	const session = await auth();
-	if (session?.user?.role !== 'admin') {
-		return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-	}
-
+export const GET = withAdmin(async (req: NextRequest) => {
 	const { searchParams } = req.nextUrl;
 	const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
 	const pageSize = Math.min(50, Math.max(5, parseInt(searchParams.get('pageSize') ?? '20', 10)));
@@ -20,5 +15,5 @@ export async function GET(req: NextRequest) {
 	const sortDir = (searchParams.get('sortDir') ?? 'desc') as 'asc' | 'desc';
 
 	const result = await getAdminUserList({ page, pageSize, search, role, sortBy, sortDir });
-	return NextResponse.json(result);
-}
+	return apiSuccess(result);
+});

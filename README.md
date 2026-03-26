@@ -1,154 +1,169 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HANOICAM — Teaching Platform
 
-## Getting Started
-
-> **PROJECT VISION & REQUIREMENTS**
->
-> Before contributing, please read the **[Project Brief (Mô tả dự án)](./PROJECT_BRIEF.md)** to understand the Product Owner's vision, user personas, and core business logic.
+> Personal bilingual blog and English-learning platform by NDK.  
+> Live: **[toiladuykhanh.com](https://toiladuykhanh.com)**
 
 ---
 
-## Run (Local)
+## Documentation
 
-First, install deps and run the development server (note: the parent folder name contains a trailing space, so keep the quotes):
+| Document | Description |
+|----------|-------------|
+| [docs/01-BUSINESS_CONTEXT.md](./docs/01-BUSINESS_CONTEXT.md) | Product vision, user personas, core business flows |
+| [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md) | System design, directory structure, infrastructure decisions |
+| [docs/03-CODING_STANDARDS.md](./docs/03-CODING_STANDARDS.md) | API patterns, type safety rules, naming conventions — **read before contributing** |
+| [docs/04-ADR_AND_CHANGELOG.md](./docs/04-ADR_AND_CHANGELOG.md) | Architecture Decision Records and refactoring history |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 16.1.6 (App Router) + React 19 |
+| **Language** | TypeScript 5 |
+| **Database** | MongoDB Atlas via Mongoose 9 + native MongoClient |
+| **Auth** | Auth.js v5 (NextAuth beta) — Google OAuth, JWT sessions |
+| **Styling** | TailwindCSS v4 + `@tailwindcss/typography` |
+| **Rich Text** | TipTap v3 (15+ extensions) |
+| **Build** | Turbopack (dev) / Webpack (prod) |
+| **Runtime** | Node.js (server) + Edge (middleware) |
+
+---
+
+## Local Setup
+
+### 1. Prerequisites
+
+- Node.js ≥ 20
+- A MongoDB Atlas connection string
+- A Google OAuth app (Client ID + Secret)
+
+### 2. Install & Run
 
 ```bash
-cd "/Users/duykhanh/Documents/Website /my-teaching-platform"
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env.local` in the project root:
 
-## Environment Variables
+```bash
+# MongoDB
+MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/<dbname>
 
-Create a local `.env.local` (see `.env.example`):
+# Auth.js v5
+AUTH_SECRET=<generate with: openssl rand -base64 32>
+AUTH_URL=http://localhost:3000
 
-- `MONGODB_URI` (required for DB features)
-- `NEXTAUTH_URL`, `NEXTAUTH_SECRET` (Auth.js / NextAuth)
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (Google OAuth)
-- `ADMIN_EMAIL` (the Google email that should be granted `admin` role)
+# Google OAuth  (create at console.cloud.google.com)
+GOOGLE_CLIENT_ID=<your-client-id>
+GOOGLE_CLIENT_SECRET=<your-client-secret>
 
-Generate a secret with:
+# Admin access — the Google account email that receives the 'admin' role on first sign-in
+ADMIN_EMAIL=your@email.com
+```
+
+Generate `AUTH_SECRET`:
 
 ```bash
 openssl rand -base64 32
 ```
 
-## MVP (Phase 1) – Test Checklist
+---
 
-### 1) Public navigation
+## Available Scripts
 
-- Home: `http://localhost:3000/`
-- Blog list: `http://localhost:3000/blog`
-- Blog detail: `http://localhost:3000/blog/<slug>`
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Development server with Turbopack hot-reload |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | ESLint check |
 
-### 2) Admin navigation (Writer Studio + Manage Posts)
+---
 
-1) Go to `http://localhost:3000/login` and sign in with Google.
-2) Use the email configured in `ADMIN_EMAIL` to gain admin access.
+## API Overview
 
-- Admin posts list: `http://localhost:3000/admin/posts`
-	- Buttons: **Trang chủ**, **Blog**, **+ Tạo bài**
-	- Actions per post: **Sửa**, **Xem** (only when published), **Xoá**
-- Create post: `http://localhost:3000/admin/posts/create`
-	- Fill: Title, (auto) Slug, Summary, Tags, Thumbnail URL (optional), Publish checkbox, Content (Markdown)
-	- Click **Lưu** → shows a link to the created `/blog/<slug>`
-- Edit post: `http://localhost:3000/admin/posts/<id>/edit`
-	- Change fields + click **Lưu thay đổi**
-	- Toggle **Publish** to show/hide in public blog
+All API responses use a consistent envelope:
 
-### 3) Verify Phase 1 features
-
-- Draft vs Published
-	- If **Draft**: should NOT appear on `/blog` and `/` latest posts.
-	- If **Published**: should appear on `/blog`, `/`, and can open `/blog/<slug>`.
-- Markdown rendering
-	- Supports tables/task-lists via GFM.
-		- Code blocks have a **Copy** button.
-- Related posts
-	- On `/blog/<slug>`, a **Bài viết liên quan** section shows posts sharing tags (when available).
-
-## API (for testing)
-
-Public:
-
-- `GET /api/posts?page=1&limit=9&tag=...`
-- `GET /api/posts/<slug>`
-- `POST /api/posts` (admin only)
-
-Admin (admin only):
-
-- `GET /api/admin/posts?page=1&limit=20&published=all|true|false`
-- `GET /api/admin/posts/<id>`
-- `PATCH /api/admin/posts/<id>`
-- `DELETE /api/admin/posts/<id>`
-
-## Folder Structure
-
-This project follows a **Layered Architecture** adapted for Next.js App Router to ensure scalability and maintainability.
-
-```txt
-src/
-├── app/ # Presentation Layer (App Router)
-│   ├── api/ # API Routes (Controller Layer)
-│   ├── login/ # Login page
-│   ├── layout.tsx # Root layout
-│   └── page.tsx          # Home page
-├── components/           # Reusable UI Components
-├── lib/                  # Infrastructure & Configuration (e.g. MongoDB connection)
-├── models/               # Data Access Layer (Mongoose Schemas)
-│   ├── User.ts
-│   └── Grade.ts
-├── services/             # Business Logic Layer (Decoupled from API)
-├── types/                # TypeScript Definitions
-├── utils/                # Shared Utilities (Pure functions)
-└── middleware.ts         # Edge Middleware (Auth guards)
+```json
+{ "ok": true,  "data": <payload> }
+{ "ok": false, "error": "<message>" }
 ```
 
-## Middleware (Route Guard)
+### Public Endpoints
 
-`src/middleware.ts` protects `/dashboard/*` and `/admin/*` routes:
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/posts` | List published posts (pagination, tag/category filter) |
+| `GET` | `/api/posts/[slug]` | Get single post by slug |
+| `GET` | `/api/posts/search?q=` | Full-text search (≥2 chars) |
+| `GET` | `/api/posts/tags` | All tags in use |
+| `GET` | `/api/posts/categories` | Predefined + used categories |
+| `POST` | `/api/posts/[slug]/reactions` | Increment a reaction (no auth) |
+| `GET` | `/api/posts/[slug]/comments` | Get approved comments |
+| `GET` | `/api/vocab-sets/store` | List public vocabulary sets |
 
-- Not logged in: redirect to `/login?from=...`
-- Logged in but not admin and visiting `/admin/*`: redirect to `/dashboard`
-- (Optional) Logged in but visiting `/login`: redirect to `/dashboard`
+### Authenticated Endpoints
 
-## MongoDB (Mongoose)
+| Method | Route | Description |
+|--------|-------|-------------|
+| `POST` | `/api/posts/[slug]/comments` | Submit a comment |
+| `PATCH` | `/api/posts/[slug]/comments` | Toggle like / delete own comment |
+| `GET/POST` | `/api/vocab-sets` | List / create vocabulary sets |
+| `GET/PUT/DELETE` | `/api/vocab-sets/[id]` | Get / edit / delete a set |
+| `POST` | `/api/vocab-sets/store` | Clone a public set |
+| `GET` | `/api/vocab-sets/all-terms` | Aggregate all terms across user's sets |
+| `GET/POST` | `/api/vocab-stats` | Get / record practice results |
+| `GET/POST` | `/api/streak` | Get / record login streak |
+| `GET/PATCH` | `/api/profile` | Get / update user profile |
+| `GET/PATCH` | `/api/notifications` | Get / mark notifications as read |
+| `GET/POST` | `/api/feedback/messages` | Get / submit feedback threads |
+| `PATCH` | `/api/feedback/messages/[id]/reply` | Reply to or close a thread |
 
-- Connection helper: `src/lib/dbConnect.ts`
-- Models: `src/models/User.ts`, `src/models/Grade.ts`
+### Admin-Only Endpoints
 
-## Example API
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/admin/posts` | List all posts (including drafts) |
+| `GET/PATCH/DELETE` | `/api/admin/posts/[id]` | Get / update / delete post |
+| `GET` | `/api/admin/users` | List users with pagination/search |
+| `GET` | `/api/admin/users/[id]` | Get user detail |
+| `PATCH` | `/api/admin/users/[id]/role` | Change user role |
+| `GET` | `/api/admin/vocab-sets` | List admin's own sets |
+| `POST` | `/api/uploads` | Upload image (stored in `/public/uploads/`) |
 
-Route handler: `src/app/api/grades/route.ts`
+---
 
-- `GET /api/grades?studentId=<mongodbObjectId>`
-- `POST /api/grades`
+## Admin Access
 
-Example:
+1. Go to `/login` and sign in with the Google account matching `ADMIN_EMAIL`.
+2. The `admin` role is assigned automatically on first sign-in.
+3. Navigate to `/admin` for the full Writer Studio.
 
-```bash
-curl -X POST http://localhost:3000/api/grades \
-	-H 'Content-Type: application/json' \
-	-d '{"studentId":"<mongodbObjectId>","course":"Math","score":95,"note":"Midterm"}'
-```
+Role can also be changed manually via MongoDB or via `/admin/users` in the UI.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Route Guards
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`src/middleware.ts` protects `/admin/*` routes at the Edge:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Condition | Outcome |
+|-----------|---------|
+| Not signed in | Redirect to `/login?from=<path>` |
+| Signed in, role ≠ `admin` | 403 inline HTML response |
+| Signed in, role = `admin` | Pass through |
 
-## Deploy on Vercel
+API routes enforce auth independently via `withAuth` / `withAdmin` wrappers — middleware and API-layer guards are both required (defense in depth).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Production Deployment
+
+See [`PRODUCTION_SETUP.md`](./PRODUCTION_SETUP.md) for the full deployment guide (PM2, Nginx, SSL).

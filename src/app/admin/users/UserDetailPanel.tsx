@@ -35,7 +35,7 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 		setDetail(null);
 		fetch(`/api/admin/users/${userId}`)
 			.then((r) => r.json())
-			.then((d) => { setDetail(d); setLoading(false); })
+			.then((json) => { if (json.ok) setDetail(json.data); setLoading(false); })
 			.catch(() => setLoading(false));
 	}, [userId]);
 

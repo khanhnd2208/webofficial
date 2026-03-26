@@ -1,55 +1,38 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
-import { getApiUser } from '@/lib/apiAuth';
+import { withAuth, withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
 import { listPublicSets, cloneVocabSet, getPublicSetById } from '@/services/vocabSetService';
 
 /** GET /api/vocab-sets/store — list all public sets */
-export async function GET() {
-	try {
-		const items = await listPublicSets();
-		return NextResponse.json({ ok: true, data: { items, total: items.length } });
-	} catch (error) {
-		return NextResponse.json(
-			{ ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
-			{ status: 400 }
-		);
-	}
-}
+export const GET = withErrorHandling(async () => {
+	const items = await listPublicSets();
+	return apiSuccess({ items, total: items.length });
+});
 
 /** POST /api/vocab-sets/store — clone a public set */
-export async function POST(request: NextRequest) {
-	try {
-		const user = await getApiUser(request);
-		if (!user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+export const POST = withAuth(async (request: NextRequest, user) => {
+	const body = await request.json();
+	const { sourceId } = body;
 
-		const body = await request.json();
-		const { sourceId } = body;
-
-		if (!sourceId) {
-			return NextResponse.json({ ok: false, error: 'sourceId is required' }, { status: 400 });
-		}
-
-		// Verify the source set exists and is public
-		const source = await getPublicSetById(sourceId);
-		if (!source) {
-			return NextResponse.json({ ok: false, error: 'Public set not found' }, { status: 404 });
-		}
-
-		const cloned = await cloneVocabSet({
-			sourceId,
-			ownerId: user.id,
-			ownerName: user.name,
-		});
-
-		if (!cloned) {
-			return NextResponse.json({ ok: false, error: 'Clone failed' }, { status: 400 });
-		}
-
-		return NextResponse.json({ ok: true, data: cloned }, { status: 201 });
-	} catch (error) {
-		return NextResponse.json(
-			{ ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
-			{ status: 400 }
-		);
+	if (!sourceId) {
+		return apiError('sourceId is required', 400);
 	}
-}
+
+	// Verify the source set exists and is public
+	const source = await getPublicSetById(sourceId);
+	if (!source) {
+		return apiError('Public set not found', 404);
+	}
+
+	const cloned = await cloneVocabSet({
+		sourceId,
+		ownerId: user.id,
+		ownerName: user.name,
+	});
+
+	if (!cloned) {
+		return apiError('Clone failed', 400);
+	}
+
+	return apiSuccess(cloned, 201);
+});

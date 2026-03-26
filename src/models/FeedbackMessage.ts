@@ -73,7 +73,7 @@ FeedbackMessageSchema.index({ userId: 1, createdAt: -1 });
 FeedbackMessageSchema.index({ status: 1, createdAt: -1 });
 
 const FeedbackMessage =
-	(mongoose.models.FeedbackMessage as Model<IFeedbackMessage>) ||
+	(mongoose.models.FeedbackMessage as Model<IFeedbackMessage>) ??
 	mongoose.model<IFeedbackMessage>('FeedbackMessage', FeedbackMessageSchema);
 
 export default FeedbackMessage;

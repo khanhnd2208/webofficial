@@ -10,6 +10,13 @@ const TOOLS = [
 		emoji: '🃏',
 		gradient: 'from-amber-500 via-orange-500 to-rose-500',
 	},
+	{
+		href: '/personality-test',
+		label: 'Personality Test',
+		description: 'Bài đánh giá tính cách kép — BFI-2-S (OCEAN) + Dark Triad (SD3). Phân tích sâu cho phát triển nghề nghiệp.',
+		emoji: '🧠',
+		gradient: 'from-indigo-500 via-purple-500 to-rose-500',
+	},
 ];
 
 export default function ToolsPage() {

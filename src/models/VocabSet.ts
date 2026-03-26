@@ -57,5 +57,6 @@ VocabSetSchema.pre('save', function () {
 	this.termCount = this.terms.length;
 });
 
-const VocabSet = (mongoose.models.VocabSet as Model<IVocabSet>) || mongoose.model<IVocabSet>('VocabSet', VocabSetSchema);
+const VocabSet =
+	(mongoose.models.VocabSet as Model<IVocabSet>) ?? mongoose.model<IVocabSet>('VocabSet', VocabSetSchema);
 export default VocabSet;

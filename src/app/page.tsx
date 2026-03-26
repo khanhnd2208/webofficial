@@ -3,6 +3,8 @@ import Link from 'next/link';
 import BlogSearch from '@/components/BlogSearch';
 import ThumbnailPreview from '@/components/ThumbnailPreview';
 import { getAllPosts, getAllTags } from '@/services/postService';
+import { formatDateShort } from '@/utils/formatDate';
+import { formatNumber } from '@/utils/formatNumber';
 
 export const revalidate = 60;
 
@@ -10,19 +12,6 @@ export const metadata = {
 	title: 'HANOICAM',
 	description: 'HANOICAM — by NDK.',
 };
-
-function formatNumber(n: number): string {
-	if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
-	return String(n);
-}
-
-function formatDate(dateStr: string): string {
-	return new Date(dateStr).toLocaleDateString('vi-VN', {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric',
-	});
-}
 
 export default async function Home() {
 	const [result, tags] = await Promise.all([getAllPosts(1, 100), getAllTags()]);
@@ -121,7 +110,7 @@ export default async function Home() {
 											</p>
 										) : null}
 										<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/50">
-											<time>{formatDate(post.publishedAt ?? post.createdAt)}</time>
+											<time>{formatDateShort(post.publishedAt ?? post.createdAt)}</time>
 											{post.views > 0 ? (
 												<>
 													<span>·</span>
@@ -203,7 +192,7 @@ export default async function Home() {
 												</p>
 											) : null}
 											<div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-muted">
-												<time>{formatDate(post.publishedAt ?? post.createdAt)}</time>
+												<time>{formatDateShort(post.publishedAt ?? post.createdAt)}</time>
 												{post.views > 0 ? (
 													<>
 														<span>·</span>
