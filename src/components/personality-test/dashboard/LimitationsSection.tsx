@@ -28,19 +28,22 @@ export function LimitationsSection({ lang }: { lang: Lang }) {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
+    <div className="rounded-2xl border border-border bg-surface overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between text-left"
+        className="flex w-full items-center justify-between px-5 sm:px-7 py-5 text-left hover:bg-background-secondary/30 transition-colors"
       >
-        <h2 className="text-lg font-bold text-foreground">
-          {t.limitationsTitle}
-        </h2>
+        <div className="flex items-center gap-3">
+          <span className="text-lg">📚</span>
+          <h2 className="text-base sm:text-lg font-extrabold text-foreground tracking-tight">
+            {t.limitationsTitle}
+          </h2>
+        </div>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
-          className="text-muted"
+          className="text-muted text-sm"
         >
-          &#9660;
+          ▼
         </motion.span>
       </button>
 
@@ -52,40 +55,42 @@ export function LimitationsSection({ lang }: { lang: Lang }) {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {limits.map((lim, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl bg-background-secondary p-4 border border-border"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">{lim.icon}</span>
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {lim.title}
-                    </h3>
-                  </div>
-                  <p className="text-xs text-muted leading-relaxed">
-                    {lim.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* References */}
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                {t.referencesTitle}
-              </h3>
-              <ul className="space-y-1.5">
-                {references.map((ref, i) => (
-                  <li
+            <div className="px-5 sm:px-7 pb-6">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+                {limits.map((lim, i) => (
+                  <div
                     key={i}
-                    className="text-xs text-muted leading-relaxed pl-4 relative before:absolute before:left-0 before:top-2 before:h-1 before:w-1 before:rounded-full before:bg-accent"
+                    className="rounded-xl bg-background-secondary/50 p-4 border border-border/50"
                   >
-                    {ref}
-                  </li>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-base">{lim.icon}</span>
+                      <h3 className="text-xs font-bold text-foreground">
+                        {lim.title}
+                      </h3>
+                    </div>
+                    <p className="text-[11px] text-muted leading-relaxed">
+                      {lim.text}
+                    </p>
+                  </div>
                 ))}
-              </ul>
+              </div>
+
+              {/* References */}
+              <div className="border-t border-border/50 pt-5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted mb-3">
+                  {t.referencesTitle}
+                </h3>
+                <ul className="space-y-1.5">
+                  {references.map((ref, i) => (
+                    <li
+                      key={i}
+                      className="text-[11px] text-muted/80 leading-relaxed pl-4 relative before:absolute before:left-0 before:top-2 before:h-1 before:w-1 before:rounded-full before:bg-accent/60"
+                    >
+                      {ref}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </motion.div>
         )}

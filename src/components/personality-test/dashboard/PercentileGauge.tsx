@@ -1,16 +1,14 @@
 "use client";
 
 /* ════════════════════════════════════════════════════════════════════════
-   PercentileGauge — Animated percentile bar with z-score badge + tooltips
+   PercentileGauge v2 — Professional gauge bar with clean stat badges
 
-   Used in:
-   - TraitCard (inline within each expanded trait)
-   - PersonalityResultsDashboard percentile comparison section (standalone)
-
-   Props:
-   - domain: the personality domain (for future conditional styling)
-   - normResult: percentile data from the API (undefined = loading state)
-   - lang: 'en' | 'vi'
+   Redesign:
+   - Taller bar (h-9) with gradient + inner rounded track
+   - Floating P-label that slides with the bar end
+   - Mean marker with tooltip label
+   - Cleaner stat badges: compact mono pills, no excessive borders
+   - Group info collapsed into a subtle footer line
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useState } from "react";
@@ -20,19 +18,26 @@ import { type Lang, getStrings } from "../i18n";
 import { getZTier, TIER_COLORS } from "./types";
 import type { NormativeResult } from "./types";
 
-/* ── Inline stat badge with click/hover tooltip ──────────────────────────── */
-function StatBadge({
+/* ── Compact stat pill with tooltip ──────────────────────────────────── */
+function StatPill({
   label,
   value,
   tooltip,
-  colorClass,
+  variant,
 }: {
   label: string;
   value: string;
   tooltip: string;
-  colorClass: string;
+  variant: "percentile" | "zscore" | "neutral";
 }) {
   const [open, setOpen] = useState(false);
+
+  const variantClass =
+    variant === "percentile"
+      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-800"
+      : variant === "zscore"
+        ? "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300 ring-1 ring-violet-200 dark:ring-violet-800"
+        : "bg-background-secondary text-muted ring-1 ring-border";
 
   return (
     <div className="relative inline-flex">
@@ -41,29 +46,28 @@ function StatBadge({
         onClick={() => setOpen((v) => !v)}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border-2 px-2.5 py-1 font-mono text-sm font-black shadow-sm transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${colorClass}`}
+        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs font-semibold transition-all hover:scale-[1.03] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${variantClass}`}
         aria-label={`${label}: ${value}. ${tooltip}`}
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70">
+        <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">
           {label}
         </span>
-        <span className="text-sm font-black">{value}</span>
-        <span className="text-[9px] opacity-50">ⓘ</span>
+        <span className="text-sm font-extrabold">{value}</span>
       </button>
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 6, scale: 0.95 }}
+            initial={{ opacity: 0, y: 4, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute bottom-full left-0 z-50 mb-2 w-64 rounded-xl border border-border bg-surface p-3 shadow-xl shadow-black/10"
+            exit={{ opacity: 0, y: 4, scale: 0.96 }}
+            transition={{ duration: 0.12 }}
+            className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-border bg-surface p-3 shadow-xl shadow-black/8"
             role="tooltip"
           >
             <p className="text-xs leading-relaxed text-foreground">
               {tooltip}
             </p>
-            <div className="absolute -bottom-1 left-3 h-2 w-2 rotate-45 border-b border-r border-border bg-surface" />
+            <div className="absolute -bottom-1 left-4 h-2 w-2 rotate-45 border-b border-r border-border bg-surface" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -84,7 +88,7 @@ export function PercentileGauge({
 
   if (!normResult) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted">
+      <div className="flex items-center gap-2 text-sm text-muted py-2">
         <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         {t.loadingPercentile}
       </div>
@@ -95,16 +99,15 @@ export function PercentileGauge({
   const z = normResult.zScore;
   const tier = getZTier(z);
   const tc = TIER_COLORS[tier];
-  const meanPct = 50;
 
-  const barColor =
+  const barGradient =
     pct >= 75
-      ? "from-teal-400 to-teal-500"
+      ? "from-emerald-400 to-teal-500"
       : pct >= 50
-        ? "from-sky-400 to-sky-600"
+        ? "from-sky-400 to-indigo-500"
         : pct >= 25
-          ? "from-amber-400 to-amber-600"
-          : "from-rose-400 to-rose-600";
+          ? "from-amber-400 to-orange-500"
+          : "from-rose-400 to-red-500";
 
   const groupLabel =
     lang === "vi"
@@ -113,91 +116,73 @@ export function PercentileGauge({
 
   const zDisplay = `${z >= 0 ? "+" : ""}${z.toFixed(2)}`;
 
-  // Build tooltip texts
   const pctTooltip =
     lang === "vi"
-      ? `Percentile ${pct} nghĩa là bạn đạt điểm cao hơn ${pct}% người trong nhóm tham chiếu (${groupLabel}, n≈${normResult.sd ? Math.round(normResult.mean * 100) / 100 : "?"}).`
-      : `Percentile ${pct} means you scored higher than ${pct}% of people in the reference group (${groupLabel}).`;
+      ? `Percentile ${pct}: bạn đạt điểm cao hơn ${pct}% người trong nhóm tham chiếu (${groupLabel}).`
+      : `Percentile ${pct}: you scored higher than ${pct}% of people in the reference group (${groupLabel}).`;
 
   const zTooltip =
     lang === "vi"
-      ? `Z-score ${zDisplay}: điểm của bạn cách trung bình nhóm ${Math.abs(z).toFixed(2)} độ lệch chuẩn về phía ${z >= 0 ? "cao hơn" : "thấp hơn"}. Trung bình nhóm = ${normResult.mean.toFixed(2)}, SD = ${normResult.sd.toFixed(2)}. |Z| < 0.5 = trung bình; |Z| > 1.5 = rất cao/thấp.`
-      : `Z-score ${zDisplay}: your score is ${Math.abs(z).toFixed(2)} standard deviations ${z >= 0 ? "above" : "below"} the group mean. Group mean = ${normResult.mean.toFixed(2)}, SD = ${normResult.sd.toFixed(2)}. |Z| < 0.5 = average; |Z| > 1.5 = very high/low.`;
-
-  // Z-badge color: accent the badge based on tier
-  const zBadgeColor =
-    tier === "very_high"
-      ? "border-rose-400 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-200"
-      : tier === "high"
-        ? "border-amber-400 bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200"
-        : tier === "moderate"
-          ? "border-sky-400 bg-sky-50 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200"
-          : tier === "low"
-            ? "border-stone-400 bg-stone-50 text-stone-700 dark:bg-stone-900/60 dark:text-stone-200"
-            : "border-slate-400 bg-slate-50 text-slate-700 dark:bg-slate-900/60 dark:text-slate-200";
-
-  const pctBadgeColor =
-    pct >= 75
-      ? "border-teal-400 bg-teal-50 text-teal-800 dark:bg-teal-950/60 dark:text-teal-200"
-      : pct >= 50
-        ? "border-sky-400 bg-sky-50 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200"
-        : pct >= 25
-          ? "border-amber-400 bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200"
-          : "border-rose-400 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-200";
+      ? `Z-score ${zDisplay}: điểm của bạn cách trung bình nhóm ${Math.abs(z).toFixed(2)} độ lệch chuẩn về phía ${z >= 0 ? "cao hơn" : "thấp hơn"}. μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}.`
+      : `Z-score ${zDisplay}: your score is ${Math.abs(z).toFixed(2)} SD ${z >= 0 ? "above" : "below"} the group mean. μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}.`;
 
   return (
-    <div className="space-y-2.5">
-      {/* Animated bar */}
-      <div className="relative h-8 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+    <div className="space-y-2">
+      {/* ── Gauge bar ─────────────────────────────────────────────── */}
+      <div className="relative h-7 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800/80">
+        {/* Gradient fill */}
         <motion.div
-          className={`absolute inset-y-0 left-0 rounded-full bg-linear-to-r ${barColor}`}
+          className={`absolute inset-y-0 left-0 rounded-full bg-linear-to-r ${barGradient}`}
           initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          animate={{ width: `${Math.max(pct, 2)}%` }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
         />
-        {/* Percentile label inside bar */}
-        <div
-          className="absolute inset-y-0 flex items-center font-black text-white text-sm drop-shadow"
-          style={{ left: `${Math.max(pct - 9, 1)}%` }}
+        {/* P-label floating at bar end */}
+        <motion.div
+          className="absolute inset-y-0 flex items-center"
+          initial={{ left: "0%" }}
+          animate={{ left: `${Math.max(pct - 1, 1)}%` }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
         >
-          P{pct}
-        </div>
-        {/* Mean marker at 50th */}
+          <span className="text-[11px] font-extrabold text-white drop-shadow-sm pl-1">
+            {pct > 8 ? `P${pct}` : ""}
+          </span>
+        </motion.div>
+        {/* Small P label on the right when bar is too short */}
+        {pct <= 8 && (
+          <span className="absolute right-2 inset-y-0 flex items-center text-[11px] font-bold text-muted">
+            P{pct}
+          </span>
+        )}
+        {/* Mean marker at 50% */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-gray-800 dark:bg-gray-200 opacity-60"
-          style={{ left: `${meanPct}%` }}
-          title={lang === "vi" ? "Trung bình nhóm (P50)" : "Group mean (P50)"}
+          className="absolute top-0 h-full w-0.5 bg-foreground/25"
+          style={{ left: "50%" }}
+          title={lang === "vi" ? "P50 — trung bình" : "P50 — median"}
         />
       </div>
 
-      {/* Highlighted stat badges + reference info */}
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Percentile badge — clickable with tooltip */}
-        <StatBadge
-          label={lang === "vi" ? "Percentile" : "Percentile"}
-          value={`P${pct}`}
+      {/* ── Stat pills row ────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <StatPill
+          label="P"
+          value={String(pct)}
           tooltip={pctTooltip}
-          colorClass={pctBadgeColor}
+          variant="percentile"
         />
-
-        {/* Z-score badge — clickable with tooltip */}
-        <StatBadge
+        <StatPill
           label="Z"
           value={zDisplay}
           tooltip={zTooltip}
-          colorClass={zBadgeColor}
+          variant="zscore"
         />
-
-        {/* Tier badge */}
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${tc.badge}`}
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${tc.badge}`}
         >
           {tc.emoji} {tier.replace("_", " ")}
         </span>
-
-        {/* Reference group info */}
-        <span className="text-[11px] text-muted italic opacity-70">
-          {lang === "vi" ? "Ref:" : "Ref:"} {groupLabel} · μ={normResult.mean.toFixed(2)} σ={normResult.sd.toFixed(2)}
+        <span className="ml-auto text-[10px] text-muted hidden sm:inline">
+          {groupLabel} · μ={normResult.mean.toFixed(2)}
         </span>
       </div>
     </div>

@@ -59,7 +59,7 @@ function LangToggle({
   return (
     <button
       onClick={() => setLang(lang === "en" ? "vi" : "en")}
-      className="fixed right-4 top-20 z-50 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+      className="fixed right-4 top-20 z-50 flex items-center gap-1.5 rounded-full bg-surface-elevated border border-border px-4 py-2 text-sm font-semibold text-foreground shadow-lg backdrop-blur-sm transition-all hover:scale-105 hover:shadow-xl active:scale-95"
       aria-label="Toggle language"
     >
       {t.langToggle}
@@ -90,6 +90,32 @@ function InvalidResultCard({ lang }: { lang: Lang }) {
   );
 }
 
+// ── Reusable section heading with icon + decorative bar ────────────────────────
+
+function SectionHeading({
+  title,
+  subtitle,
+  icon,
+}: {
+  title: string;
+  subtitle?: string;
+  icon: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 mb-5">
+      <span className="text-xl mt-0.5 shrink-0">{icon}</span>
+      <div>
+        <h2 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight leading-tight">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-sm text-muted mt-0.5">{subtitle}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function RefGroupSelector({
   groups,
   selected,
@@ -116,12 +142,15 @@ function RefGroupSelector({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {/* Section label */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-foreground">{label}</span>
-        <span className="text-[11px] text-muted italic">{t.groupSelectorHint}</span>
+        <div className="h-4 w-1 rounded-full bg-accent" />
+        <span className="text-sm font-bold text-foreground tracking-tight">{label}</span>
       </div>
-      <div className="flex flex-wrap gap-2">
+
+      {/* Segmented control track */}
+      <div className="flex flex-wrap gap-2 rounded-xl bg-background-secondary/60 p-1.5">
         {groups.map((g) => {
           const isActive = g.id === selected;
           const displayLabel = lang === "vi" ? g.labelVi : g.label;
@@ -132,46 +161,65 @@ function RefGroupSelector({
                 onClick={() => onChange(g.id)}
                 onMouseEnter={() => setHoveredId(g.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                className={`rounded-xl px-3 py-2 text-xs font-medium transition-all border-2 ${
+                className={`relative flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 ${
                   isActive
-                    ? isLocal
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 shadow-sm"
-                      : "border-accent bg-accent/10 text-accent dark:bg-accent/20 shadow-sm"
-                    : "border-transparent bg-background-secondary text-muted hover:bg-accent/10 hover:border-accent/30"
+                    ? "bg-surface-elevated text-foreground shadow-md ring-1 ring-border"
+                    : "text-muted hover:text-foreground hover:bg-surface/60"
                 }`}
               >
-                <span className="flex items-center gap-1.5">
-                  {isLocal && <span className="text-[10px]">🏫</span>}
-                  {!isLocal && <span className="text-[10px]">🌍</span>}
-                  <span>{displayLabel}</span>
+                {/* Active indicator line */}
+                {isActive && (
+                  <motion.div
+                    layoutId="ref-group-indicator"
+                    className={`absolute bottom-0 left-3 right-3 h-0.5 rounded-full ${
+                      isLocal ? "bg-emerald-500" : "bg-accent"
+                    }`}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="text-sm">{isLocal ? "🏫" : "🌍"}</span>
+                <span className="truncate max-w-45">{displayLabel}</span>
+                <span className={`ml-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
+                  isActive
+                    ? "bg-accent/10 text-accent"
+                    : "bg-background-secondary text-muted"
+                }`}>
+                  n={g.n.toLocaleString()}
                 </span>
               </button>
-              {/* Hover tooltip card */}
-              {hoveredId === g.id && (
-                <div className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-border bg-surface p-3 shadow-xl shadow-black/10 text-xs">
+
+              {/* Tooltip on hover */}
+              {hoveredId === g.id && !isActive && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 z-50 mb-2 w-56 rounded-xl border border-border bg-surface-elevated p-3 shadow-xl text-xs"
+                >
                   <p className="font-semibold text-foreground mb-1">{displayLabel}</p>
-                  <p className="text-muted leading-relaxed">
+                  <p className="text-muted">
                     n={g.n.toLocaleString()}
-                    {isLocal && ` · ${lang === 'vi' ? 'Cập nhật trực tiếp' : 'Live-updated'}`}
+                    {isLocal && ` · ${lang === "vi" ? "Cập nhật trực tiếp" : "Live-updated"}`}
                   </p>
-                  <div className="absolute -bottom-1 left-4 h-2 w-2 rotate-45 border-b border-r border-border bg-surface" />
-                </div>
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 border-b border-r border-border bg-surface-elevated" />
+                </motion.div>
               )}
             </div>
           );
         })}
       </div>
-      {/* Show selected group details */}
+
+      {/* Selected group detail panel */}
       {referenceGroupDetails && (
-        <div className="mt-1 rounded-lg bg-background-secondary/50 px-3 py-2 text-[11px] text-muted space-y-0.5">
-          <p>
-            <span className="font-semibold">{t.groupDescription}:</span>{" "}
-            {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
-          </p>
-          <p>
-            <span className="font-semibold">{t.groupSource}:</span>{" "}
-            {referenceGroupDetails.source}
-          </p>
+        <div className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-surface/50 px-3.5 py-2.5 text-[11px] text-muted">
+          <span className="text-base mt-0.5 shrink-0">📋</span>
+          <div className="space-y-0.5 min-w-0">
+            <p className="leading-relaxed">
+              {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
+            </p>
+            <p className="opacity-60">
+              {t.groupSource}: {referenceGroupDetails.source}
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -187,23 +235,28 @@ function NormDisclaimer({ lang }: { lang: Lang }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-xl border border-amber-300/60 dark:border-amber-700/60 bg-amber-50/70 dark:bg-amber-950/20 p-4">
+    <div className="rounded-xl border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/50 dark:bg-amber-950/15 px-4 py-3">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-start gap-2 text-left"
+        className="flex w-full items-center gap-2.5 text-left group"
       >
-        <span className="text-sm font-semibold text-amber-700 dark:text-amber-300 leading-relaxed flex-1">
+        <span className="text-lg shrink-0">ℹ️</span>
+        <span className="text-xs font-medium text-amber-700 dark:text-amber-300 leading-relaxed flex-1">
           {t.normDisclaimer}
         </span>
-        <span className={`text-amber-600 dark:text-amber-400 transition-transform text-xs mt-0.5 ${expanded ? 'rotate-180' : ''}`}>
+        <span className={`text-amber-500 dark:text-amber-400 transition-transform duration-200 text-[10px] shrink-0 ${expanded ? "rotate-180" : ""}`}>
           ▼
         </span>
       </button>
       {expanded && (
-        <p className="mt-2 text-xs text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
+        <motion.p
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mt-2.5 pl-8 text-[11px] text-amber-600/80 dark:text-amber-300/70 leading-relaxed"
+        >
           {t.normDisclaimerDetail}
-        </p>
+        </motion.p>
       )}
     </div>
   );
@@ -358,202 +411,265 @@ export default function PersonalityResultsDashboard({
     <div className="min-h-screen bg-background">
       <LangToggle lang={lang} setLang={setLang} />
 
-      <div className="mx-auto max-w-4xl px-4 py-8 space-y-10">
-        {/* Header */}
-        <motion.div
-          className="text-center space-y-2"
-          initial={{ opacity: 0, y: -10 }}
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12">
+        {/* ══════════ HEADER ══════════════════════════════════════════════ */}
+        <motion.header
+          className="text-center space-y-3"
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
             {t.comprehensiveProfile}
           </h1>
-          <p className="text-muted max-w-xl mx-auto">{t.profileSubtitle}</p>
+          <p className="text-muted max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
+            {t.profileSubtitle}
+          </p>
           {session.completedAt && (
-            <p className="text-xs text-muted">
+            <p className="text-xs text-muted/70 tabular-nums">
               {new Date(session.completedAt).toLocaleDateString(
                 lang === "vi" ? "vi-VN" : "en-US",
                 { year: "numeric", month: "long", day: "numeric" }
               )}
             </p>
           )}
-        </motion.div>
+        </motion.header>
 
-        {/* Attention warning */}
+        {/* ══════════ ATTENTION WARNING ════════════════════════════════════ */}
         {showAttentionWarning && (
           <motion.div
-            className="rounded-2xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-5"
+            className="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-900/15 p-5 sm:p-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <h2 className="font-semibold text-amber-700 dark:text-amber-300 mb-1">
-              {t.attentionWarningTitle}
-            </h2>
-            <p className="text-sm text-amber-600 dark:text-amber-400">
-              {t.attentionWarningText}
-            </p>
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0 mt-0.5">⚠️</span>
+              <div>
+                <h2 className="font-bold text-amber-700 dark:text-amber-300 mb-1">
+                  {t.attentionWarningTitle}
+                </h2>
+                <p className="text-sm text-amber-600 dark:text-amber-400 leading-relaxed">
+                  {t.attentionWarningText}
+                </p>
+              </div>
+            </div>
           </motion.div>
         )}
 
-        {/* Archetype */}
+        {/* ══════════ ARCHETYPE — Hero card ════════════════════════════════ */}
         {archetype && (
           <section>
-            <h2 className="text-lg font-bold text-foreground mb-4">
-              {t.yourArchetype}
-            </h2>
+            <SectionHeading title={t.yourArchetype} icon="🎭" />
             <ArchetypeCard archetype={archetype} lang={lang} />
           </section>
         )}
 
-        {/* Radar Chart */}
+        {/* ══════════ RADAR CHART ═════════════════════════════════════════ */}
         {oceanTraits.length > 0 && (
-          <section className="rounded-2xl border border-border bg-surface p-5">
-            <RadarChart traits={oceanTraits} lang={lang} />
+          <section>
+            <SectionHeading
+              title={t.oceanTitle}
+              subtitle={t.oceanSubtitle}
+              icon="🧬"
+            />
+            <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
+              <RadarChart traits={oceanTraits} lang={lang} />
+            </div>
           </section>
         )}
 
-        {/* OCEAN Traits */}
+        {/* ══════════ OCEAN TRAIT CARDS ════════════════════════════════════ */}
         {oceanTraits.length > 0 && (
           <section>
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-foreground">
-                {t.oceanTitle}
-              </h2>
-              <p className="text-sm text-muted">{t.oceanSubtitle}</p>
-              <p className="text-xs text-accent mt-1 animate-pulse">
-                &#10024; {t.tapToExplore}
+            <div className="mb-2">
+              <p className="text-xs text-accent font-medium animate-pulse">
+                ✨ {t.tapToExplore}
               </p>
             </div>
-            <div className="grid gap-4">
-              {oceanTraits.map((trait) => (
-                <TraitCard
+            <div className="grid gap-4 sm:gap-5">
+              {oceanTraits.map((trait, i) => (
+                <motion.div
                   key={trait.domain}
-                  trait={trait}
-                  normResult={percentiles[trait.domain]}
-                  lang={lang}
-                  isDarkTriad={false}
-                />
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06, duration: 0.4 }}
+                >
+                  <TraitCard
+                    trait={trait}
+                    normResult={percentiles[trait.domain]}
+                    lang={lang}
+                    isDarkTriad={false}
+                  />
+                </motion.div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Dark Triad Traits */}
+        {/* ══════════ DARK TRIAD TRAIT CARDS ═══════════════════════════════ */}
         {dtTraits.length > 0 && (
           <section>
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-foreground">
-                {t.darkTriadTitle}
-              </h2>
-              <p className="text-sm text-muted">{t.darkTriadSubtitle}</p>
-              <p className="text-xs text-muted mt-1 italic">
-                {t.darkTriadNote}
-              </p>
-            </div>
-            <div className="grid gap-4">
-              {dtTraits.map((trait) => (
-                <TraitCard
+            <SectionHeading
+              title={t.darkTriadTitle}
+              subtitle={t.darkTriadSubtitle}
+              icon="🌑"
+            />
+            <p className="text-xs text-muted italic mb-4 -mt-2 pl-7">
+              {t.darkTriadNote}
+            </p>
+            <div className="grid gap-4 sm:gap-5">
+              {dtTraits.map((trait, i) => (
+                <motion.div
                   key={trait.domain}
-                  trait={trait}
-                  normResult={percentiles[trait.domain]}
-                  lang={lang}
-                  isDarkTriad={true}
-                />
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06, duration: 0.4 }}
+                >
+                  <TraitCard
+                    trait={trait}
+                    normResult={percentiles[trait.domain]}
+                    lang={lang}
+                    isDarkTriad={true}
+                  />
+                </motion.div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Percentile comparison — always shown when there are scores */}
+        {/* ══════════ PERCENTILE COMPARISON PANEL ═════════════════════════ */}
         {allTraits.length > 0 && (
-          <section className="rounded-2xl border border-border bg-surface p-5 space-y-5">
-            <div>
-              <h2 className="text-lg font-bold text-foreground">
-                {t.percentileTitle}
-              </h2>
-              <p className="text-sm text-muted">{t.percentileSubtitle}</p>
+          <section className="rounded-2xl border border-border bg-surface overflow-hidden">
+            {/* Panel header */}
+            <div className="border-b border-border bg-background-secondary/40 px-5 sm:px-7 py-5">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="text-xl">📊</span>
+                <h2 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight">
+                  {t.percentileTitle}
+                </h2>
+              </div>
+              <p className="text-sm text-muted pl-9">{t.percentileSubtitle}</p>
             </div>
 
-            {/* Norm disclaimer */}
-            <NormDisclaimer lang={lang} />
+            <div className="px-5 sm:px-7 py-6 space-y-6">
+              {/* Norm disclaimer */}
+              <NormDisclaimer lang={lang} />
 
-            {/* Reference group selectors — only after data loaded */}
-            {(oceanGroups.length > 0 || dtGroups.length > 0) && (
-              <div className="space-y-4">
-                {oceanGroups.length > 0 && (
-                  <RefGroupSelector
-                    groups={oceanGroups}
-                    selected={oceanGroup}
-                    onChange={handleOceanGroupChange}
-                    label={t.oceanRefGroup}
-                    lang={lang}
-                    referenceGroupDetails={percentileData?.referenceGroupDetails?.ocean}
-                  />
-                )}
-                {dtGroups.length > 0 && (
-                  <RefGroupSelector
-                    groups={dtGroups}
-                    selected={darkTriadGroup}
-                    onChange={handleDarkTriadGroupChange}
-                    label={t.darkTriadRefGroup}
-                    lang={lang}
-                    referenceGroupDetails={percentileData?.referenceGroupDetails?.darkTriad}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Loading spinner */}
-            {percentileLoading && (
-              <div className="flex items-center gap-2 text-sm text-muted">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-                {t.loadingPercentile}
-              </div>
-            )}
-
-            {/* Percentile bars — show for all traits, passing undefined when still loading */}
-            {!percentileLoading && (
-              <div className="space-y-4">
-                {allTraits.map((trait) => (
-                  <div key={trait.domain}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-foreground">
-                        {getDomainLabel(trait.domain, lang)}
-                      </span>
-                    </div>
-                    <PercentileGauge
-                      domain={trait.domain}
-                      normResult={percentiles[trait.domain]}
+              {/* Reference group selectors */}
+              {(oceanGroups.length > 0 || dtGroups.length > 0) && (
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {oceanGroups.length > 0 && (
+                    <RefGroupSelector
+                      groups={oceanGroups}
+                      selected={oceanGroup}
+                      onChange={handleOceanGroupChange}
+                      label={t.oceanRefGroup}
                       lang={lang}
+                      referenceGroupDetails={percentileData?.referenceGroupDetails?.ocean}
                     />
-                  </div>
-                ))}
-              </div>
-            )}
+                  )}
+                  {dtGroups.length > 0 && (
+                    <RefGroupSelector
+                      groups={dtGroups}
+                      selected={darkTriadGroup}
+                      onChange={handleDarkTriadGroupChange}
+                      label={t.darkTriadRefGroup}
+                      lang={lang}
+                      referenceGroupDetails={percentileData?.referenceGroupDetails?.darkTriad}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Divider */}
+              <div className="border-t border-border/50" />
+
+              {/* Loading spinner */}
+              {percentileLoading && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted py-4">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                  {t.loadingPercentile}
+                </div>
+              )}
+
+              {/* Percentile gauges — grouped by type */}
+              {!percentileLoading && (
+                <div className="space-y-6">
+                  {/* OCEAN gauges */}
+                  {oceanTraits.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted">
+                        OCEAN
+                      </h3>
+                      {oceanTraits.map((trait) => (
+                        <div key={trait.domain}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-sm font-semibold text-foreground">
+                              {getDomainLabel(trait.domain, lang)}
+                            </span>
+                            <span className="text-xs font-mono text-muted">
+                              {trait.score.toFixed(2)}
+                            </span>
+                          </div>
+                          <PercentileGauge
+                            domain={trait.domain}
+                            normResult={percentiles[trait.domain]}
+                            lang={lang}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Dark Triad gauges */}
+                  {dtTraits.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted">
+                        Dark Triad
+                      </h3>
+                      {dtTraits.map((trait) => (
+                        <div key={trait.domain}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-sm font-semibold text-foreground">
+                              {getDomainLabel(trait.domain, lang)}
+                            </span>
+                            <span className="text-xs font-mono text-muted">
+                              {trait.score.toFixed(2)}
+                            </span>
+                          </div>
+                          <PercentileGauge
+                            domain={trait.domain}
+                            normResult={percentiles[trait.domain]}
+                            lang={lang}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </section>
         )}
 
-        {/* Cross-trait insights */}
+        {/* ══════════ CROSS-TRAIT INSIGHTS ════════════════════════════════ */}
         {crossInsights.length > 0 && (
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-lg font-bold text-foreground">
-                {t.crossTraitTitle}
-              </h2>
-              <p className="text-sm text-muted">{t.crossTraitSubtitle}</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <section>
+            <SectionHeading
+              title={t.crossTraitTitle}
+              subtitle={t.crossTraitSubtitle}
+              icon="🔗"
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
               {crossInsights.map((ci, i) => (
                 <motion.div
                   key={i}
-                  className="rounded-2xl border border-border bg-surface p-5 shadow-sm"
-                  initial={{ opacity: 0, y: 10 }}
+                  className="rounded-2xl border border-border bg-surface p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: i * 0.08 }}
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xl">{ci.emoji}</span>
-                    <h3 className="text-sm font-semibold text-foreground">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <span className="text-2xl">{ci.emoji}</span>
+                    <h3 className="text-sm font-bold text-foreground leading-snug">
                       {ci.title}
                     </h3>
                   </div>
@@ -566,12 +682,13 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* Score Table */}
+        {/* ══════════ SCORE TABLE ═════════════════════════════════════════ */}
         {allTraits.length > 0 && (
           <section>
-            <h2 className="text-lg font-bold text-foreground mb-4">
-              {t.scoreTableTitle}
-            </h2>
+            <SectionHeading
+              title={t.scoreTableTitle}
+              icon="📋"
+            />
             <ScoreTable
               traits={allTraits}
               percentiles={percentiles}
@@ -580,20 +697,20 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* Limitations */}
+        {/* ══════════ LIMITATIONS ═════════════════════════════════════════ */}
         <LimitationsSection lang={lang} />
 
-        {/* Actions */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-4 pb-8">
+        {/* ══════════ ACTION BUTTONS ══════════════════════════════════════ */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 pb-10">
           <Link
             href="/personality-test"
-            className="rounded-full border border-border px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-background-secondary transition"
+            className="w-full sm:w-auto text-center rounded-xl border border-border px-8 py-3 text-sm font-semibold text-foreground hover:bg-background-secondary transition-colors"
           >
             {t.goBack}
           </Link>
           <Link
             href="/personality-test"
-            className="rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-white shadow hover:shadow-md transition"
+            className="w-full sm:w-auto text-center rounded-xl bg-accent px-8 py-3 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 transition-all"
           >
             {t.retakeTest}
           </Link>
