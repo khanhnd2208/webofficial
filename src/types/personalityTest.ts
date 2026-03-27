@@ -129,6 +129,17 @@ export interface ArchetypeProfile {
 	narrative: string;
 	/** Primary color theme for UI */
 	colorTheme: 'amber' | 'indigo' | 'rose' | 'teal' | 'purple' | 'emerald';
+	// ─── Vietnamese translations (optional for backward compat) ─────────
+	/** Vietnamese name */
+	nameVi?: string;
+	/** Vietnamese tagline */
+	taglineVi?: string;
+	/** Vietnamese strengths */
+	strengthsVi?: string[];
+	/** Vietnamese blind spots */
+	blindspotsVi?: string[];
+	/** Vietnamese narrative */
+	narrativeVi?: string;
 }
 
 // ─── DTOs (API / Client) ──────────────────────────────────────────────────────

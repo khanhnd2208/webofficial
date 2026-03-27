@@ -34,13 +34,17 @@ export function ArchetypeCard({
       <div className="flex items-center gap-3 mb-4">
         <span className="text-4xl">{archetype.icon}</span>
         <div>
-          <h2 className="text-xl font-bold">{archetype.name}</h2>
-          <p className="text-sm opacity-90">{archetype.tagline}</p>
+          <h2 className="text-xl font-bold">
+            {lang === 'vi' && archetype.nameVi ? archetype.nameVi : archetype.name}
+          </h2>
+          <p className="text-sm opacity-90">
+            {lang === 'vi' && archetype.taglineVi ? archetype.taglineVi : archetype.tagline}
+          </p>
         </div>
       </div>
 
       <p className="text-sm leading-relaxed opacity-90 mb-5">
-        {archetype.narrative}
+        {lang === 'vi' && archetype.narrativeVi ? archetype.narrativeVi : archetype.narrative}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -48,7 +52,7 @@ export function ArchetypeCard({
         <div className="rounded-xl bg-white/15 backdrop-blur-sm p-4">
           <h3 className="font-semibold mb-2">{t.strengths}</h3>
           <ul className="space-y-1">
-            {archetype.strengths.map((s, i) => (
+            {(lang === 'vi' && archetype.strengthsVi ? archetype.strengthsVi : archetype.strengths).map((s, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
                 <span className="mt-0.5 text-green-200">&#10003;</span>
                 <span>{s}</span>
@@ -61,7 +65,7 @@ export function ArchetypeCard({
         <div className="rounded-xl bg-white/15 backdrop-blur-sm p-4">
           <h3 className="font-semibold mb-2">{t.blindSpots}</h3>
           <ul className="space-y-1">
-            {archetype.blindspots.map((b, i) => (
+            {(lang === 'vi' && archetype.blindspotsVi ? archetype.blindspotsVi : archetype.blindspots).map((b, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
                 <span className="mt-0.5 text-rose-200">&#9888;</span>
                 <span>{b}</span>
