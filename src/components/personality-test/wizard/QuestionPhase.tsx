@@ -4,10 +4,57 @@
    QuestionPhase — Paginated Likert-scale questions (BFI or SD3)
    ════════════════════════════════════════════════════════════════════════ */
 
-import { motion } from 'framer-motion';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { QuestionPhaseProps } from './types';
 import { QUESTIONS_PER_PAGE, LIKERT_OPTIONS } from './constants';
 import { getKey } from './helpers';
+
+/* ── Info-tooltip component (click to toggle on mobile, hover on desktop) ── */
+function InfoTooltip({ text }: { text: string }) {
+	const [open, setOpen] = useState(false);
+	const ref = useRef<HTMLDivElement>(null);
+
+	const close = useCallback(() => setOpen(false), []);
+
+	useEffect(() => {
+		if (!open) return;
+		function handleClick(e: MouseEvent) {
+			if (ref.current && !ref.current.contains(e.target as Node)) close();
+		}
+		document.addEventListener('mousedown', handleClick);
+		return () => document.removeEventListener('mousedown', handleClick);
+	}, [open, close]);
+
+	return (
+		<div ref={ref} className="relative inline-flex">
+			<button
+				type="button"
+				aria-label="Xem giải thích"
+				onClick={() => setOpen((v) => !v)}
+				className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-accent/40 bg-accent/10 text-[9px] font-black leading-none text-accent transition-all hover:bg-accent/20 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+			>
+				i
+			</button>
+			<AnimatePresence>
+				{open && (
+					<motion.div
+						initial={{ opacity: 0, y: 4, scale: 0.96 }}
+						animate={{ opacity: 1, y: 0, scale: 1 }}
+						exit={{ opacity: 0, y: 4, scale: 0.96 }}
+						transition={{ duration: 0.15 }}
+						className="absolute left-0 top-full z-50 mt-1.5 w-72 sm:w-80 rounded-xl border border-accent/20 bg-surface p-3 shadow-lg shadow-accent/5"
+					>
+						<p className="text-[11px] leading-relaxed text-foreground-secondary">
+							{text}
+						</p>
+						<div className="absolute -top-1 left-2 h-2 w-2 rotate-45 border-l border-t border-accent/20 bg-surface" />
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</div>
+	);
+}
 
 export default function QuestionPhase({
 	config,
@@ -70,9 +117,10 @@ export default function QuestionPhase({
 								<p className="text-sm font-bold leading-snug text-foreground">
 									{q.text}
 								</p>
-								{/* Vietnamese — secondary reference */}
-								<p className="mt-1 text-[11px] leading-relaxed text-muted">
-									{q.textVi}
+								{/* Vietnamese — secondary reference + info tooltip */}
+								<p className="mt-1 flex items-start gap-0 text-[11px] leading-relaxed text-muted">
+									<span className="flex-1">{q.textVi}</span>
+									{q.explanationVi && <InfoTooltip text={q.explanationVi} />}
 								</p>
 							</div>
 						</div>

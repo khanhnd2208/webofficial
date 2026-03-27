@@ -110,18 +110,58 @@ export default function PersonalityTestReportPage() {
 	const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 	const [exporting, setExporting] = useState(false);
 	const [tab, setTab] = useState<'ocean' | 'dark' | 'demo' | 'pct'>('demo');
+	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+	const [deleting, setDeleting] = useState(false);
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
 	// Load data
-	useEffect(() => {
+	const fetchData = useCallback(() => {
+		setLoading(true);
+		setError(null);
 		fetch('/api/admin/personality-test/report?limit=2000')
 			.then((r) => r.json())
 			.then((json) => {
 				if (!json.ok) throw new Error(json.error);
 				setRows(json.data.rows);
+				setSelectedIds(new Set()); // clear selection on refresh
 			})
 			.catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
 			.finally(() => setLoading(false));
 	}, []);
+
+	useEffect(() => { fetchData(); }, [fetchData]);
+
+	// Selection helpers
+	const toggleSelect = useCallback((id: string) => {
+		setSelectedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	}, []);
+
+	// Bulk delete handler
+	const handleDelete = useCallback(async () => {
+		const ids = Array.from(selectedIds);
+		if (ids.length === 0) return;
+		setDeleting(true);
+		try {
+			const res = await fetch('/api/admin/personality-test/report', {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ ids }),
+			});
+			const json = await res.json();
+			if (!json.ok) throw new Error(json.error ?? 'Delete failed');
+			setShowDeleteConfirm(false);
+			fetchData(); // refresh list
+		} catch (e: unknown) {
+			alert(e instanceof Error ? e.message : 'Xóa thất bại');
+		} finally {
+			setDeleting(false);
+		}
+	}, [selectedIds, fetchData]);
 
 	// Sort handler
 	const handleSort = useCallback((key: SortKey) => {
@@ -153,6 +193,26 @@ export default function PersonalityTestReportPage() {
 			return sortDir === 'asc' ? cmp : -cmp;
 		});
 	}, [rows, filterStatus, search, sortKey, sortDir]);
+
+	// Select all filtered rows
+	const toggleSelectAll = useCallback(() => {
+		setSelectedIds((prev) => {
+			const filteredIds = filtered.map((r) => r.id);
+			const allSelected = filteredIds.length > 0 && filteredIds.every((id) => prev.has(id));
+			if (allSelected) {
+				const next = new Set(prev);
+				filteredIds.forEach((id) => next.delete(id));
+				return next;
+			} else {
+				const next = new Set(prev);
+				filteredIds.forEach((id) => next.add(id));
+				return next;
+			}
+		});
+	}, [filtered]);
+
+	// Derived: are all filtered rows selected?
+	const allFilteredSelected = filtered.length > 0 && filtered.every((r) => selectedIds.has(r.id));
 
 	// Summary stats
 	const stats = useMemo(() => {
@@ -259,6 +319,60 @@ export default function PersonalityTestReportPage() {
 						{stats.total} bài làm · {stats.valid} hợp lệ · {stats.invalid} không hợp lệ
 					</p>
 				</div>
+				<div className="flex items-center gap-2">
+					{/* Delete button — only visible when items selected */}
+					{selectedIds.size > 0 && (
+						<div className="relative">
+							<button
+								onClick={() => setShowDeleteConfirm(true)}
+								disabled={deleting}
+								className="flex items-center gap-2 rounded-xl bg-error px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								{deleting ? (
+									<>
+										<svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+										</svg>
+										Đang xóa...
+									</>
+								) : (
+									<>🗑️ Xóa ({selectedIds.size})</>
+								)}
+							</button>
+
+							{/* Confirmation popover */}
+							{showDeleteConfirm && (
+								<div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-error/30 bg-surface p-5 shadow-xl">
+									<p className="text-sm font-bold text-foreground">
+										⚠️ Xác nhận xóa
+									</p>
+									<p className="mt-2 text-xs text-muted">
+										Bạn sắp xóa <strong className="text-error">{selectedIds.size}</strong> bài test
+										khỏi database. Hành động này <strong>không thể hoàn tác</strong>.
+									</p>
+									<p className="mt-1 text-xs text-muted">
+										Dữ liệu bị xóa: session, kết quả tính điểm, và tất cả câu trả lời.
+									</p>
+									<div className="mt-4 flex items-center gap-2">
+										<button
+											onClick={handleDelete}
+											disabled={deleting}
+											className="flex-1 rounded-lg bg-error px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
+										>
+											{deleting ? 'Đang xóa...' : `Xóa ${selectedIds.size} bài test`}
+										</button>
+										<button
+											onClick={() => setShowDeleteConfirm(false)}
+											className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-hover"
+										>
+											Hủy
+										</button>
+									</div>
+								</div>
+							)}
+						</div>
+					)}
 				<button
 					onClick={handleExport}
 					disabled={exporting}
@@ -276,6 +390,7 @@ export default function PersonalityTestReportPage() {
 						<>📊 Xuất Excel</>
 					)}
 				</button>
+			</div>
 			</div>
 
 			{/* ── Summary Cards ── */}
@@ -322,6 +437,14 @@ export default function PersonalityTestReportPage() {
 					))}
 				</div>
 				<span className="text-xs text-muted">{filtered.length} kết quả</span>
+				{selectedIds.size > 0 && (
+					<button
+						onClick={() => setSelectedIds(new Set())}
+						className="text-xs text-accent hover:underline"
+					>
+						✕ Bỏ chọn {selectedIds.size}
+					</button>
+				)}
 			</div>
 
 			{/* ── Tab selector ── */}
@@ -351,6 +474,15 @@ export default function PersonalityTestReportPage() {
 				<table className="min-w-full text-sm">
 					<thead className="border-b border-border bg-background-secondary">
 						<tr>
+							<th className="w-10 px-3 py-2.5 text-center">
+								<input
+									type="checkbox"
+									checked={allFilteredSelected}
+									onChange={toggleSelectAll}
+									className="h-4 w-4 cursor-pointer rounded border-border accent-accent"
+									title={allFilteredSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+								/>
+							</th>
 							<th className="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-muted">#</th>
 							<Th label="Ngày" k="created_at" />
 							<Th label="Họ tên" k="full_name" />
@@ -391,7 +523,15 @@ export default function PersonalityTestReportPage() {
 					</thead>
 					<tbody className="divide-y divide-border">
 						{filtered.map((r, idx) => (
-							<tr key={r.id} className="group hover:bg-surface-hover transition-colors">
+							<tr key={r.id} className={`group transition-colors ${selectedIds.has(r.id) ? 'bg-accent/5' : 'hover:bg-surface-hover'}`}>
+								<td className="w-10 px-3 py-2.5 text-center">
+									<input
+										type="checkbox"
+										checked={selectedIds.has(r.id)}
+										onChange={() => toggleSelect(r.id)}
+										className="h-4 w-4 cursor-pointer rounded border-border accent-accent"
+									/>
+								</td>
 								<td className="px-3 py-2.5 text-xs text-muted tabular-nums">
 									{idx + 1}
 								</td>
@@ -468,7 +608,7 @@ export default function PersonalityTestReportPage() {
 						))}
 						{filtered.length === 0 && (
 							<tr>
-								<td colSpan={20} className="py-12 text-center text-sm text-muted">
+								<td colSpan={21} className="py-12 text-center text-sm text-muted">
 									Không có dữ liệu phù hợp
 								</td>
 							</tr>

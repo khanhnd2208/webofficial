@@ -47,7 +47,9 @@ export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 		return apiError('Test session not found', 404);
 	}
 
-	if (!session.result?.isValid || !session.result.ocean || !session.result.darkTriad) {
+	// Allow percentile lookup if scores exist — even for attention-check failures.
+	// isValid=false + scores present = "scored but flagged" sessions should still see percentiles.
+	if (!session.result?.ocean || !session.result?.darkTriad) {
 		return apiError('Test session has no valid results', 400);
 	}
 

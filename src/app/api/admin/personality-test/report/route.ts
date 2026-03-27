@@ -29,8 +29,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 
-import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { findAllSessionsForReport, findResponsesForSessions } from '@/models/PersonalityTest';
+import { withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
+import { findAllSessionsForReport, findResponsesForSessions, deleteSessionsByIds } from '@/models/PersonalityTest';
 import { BFI2S_QUESTIONS, SD3_QUESTIONS, getEffectiveScore } from '@/lib/personalityScoring';
 import {
 	calculateAllPercentiles,
@@ -485,3 +485,25 @@ headers: {
 }
 
 export const GET = withAdmin(handleGet);
+
+// ─── DELETE — Bulk-delete sessions ────────────────────────────────────────────
+
+async function handleDelete(req: NextRequest) {
+	const body = await req.json() as { ids?: string[] };
+	const ids = body?.ids;
+
+	if (!Array.isArray(ids) || ids.length === 0) {
+		return apiError('Thiếu danh sách session IDs', 400);
+	}
+
+	// Validate every ID looks like a UUID to prevent injection
+	const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+	if (!ids.every((id) => UUID_RE.test(id))) {
+		return apiError('Session ID không hợp lệ', 400);
+	}
+
+	const deleted = await deleteSessionsByIds(ids);
+	return apiSuccess({ deleted });
+}
+
+export const DELETE = withAdmin(handleDelete);

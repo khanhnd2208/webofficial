@@ -233,6 +233,52 @@ export async function countSessionsByStatus(): Promise<
 	return rows.map((r) => ({ status: r.status, count: Number(r.count) }));
 }
 
+// ─── Deletions ─────────────────────────────────────────────────────────────────
+
+/**
+ * Bulk-delete sessions and all related data (results + responses).
+ * Uses a transaction to ensure atomicity.
+ * Deletes in FK-safe order: responses → results → sessions.
+ *
+ * @returns The number of sessions actually deleted.
+ */
+export async function deleteSessionsByIds(ids: string[]): Promise<number> {
+	if (ids.length === 0) return 0;
+
+	const client = await pgPool.connect();
+	try {
+		await client.query('BEGIN');
+
+		const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+
+		// 1. Delete responses (child of sessions)
+		await client.query(
+			`DELETE FROM personality_test_responses WHERE session_id IN (${placeholders})`,
+			ids
+		);
+
+		// 2. Delete results (child of sessions)
+		await client.query(
+			`DELETE FROM personality_test_results WHERE session_id IN (${placeholders})`,
+			ids
+		);
+
+		// 3. Delete sessions (parent)
+		const { rowCount } = await client.query(
+			`DELETE FROM personality_test_sessions WHERE id IN (${placeholders})`,
+			ids
+		);
+
+		await client.query('COMMIT');
+		return rowCount ?? 0;
+	} catch (err) {
+		await client.query('ROLLBACK');
+		throw err;
+	} finally {
+		client.release();
+	}
+}
+
 // ─── Mutations ─────────────────────────────────────────────────────────────────
 
 export async function createSession(params: {

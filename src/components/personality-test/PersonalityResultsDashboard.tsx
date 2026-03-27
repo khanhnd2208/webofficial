@@ -177,12 +177,15 @@ export default function PersonalityResultsDashboard({
     [session.id]
   );
 
+  // Fetch percentiles whenever the gate is passed AND we have scores to compare.
+  // Note: isValid=false + scores present = attention-check failure. Still fetch.
+  const hasScores = ocean !== null || darkTriad !== null;
   useEffect(() => {
-    if (isValid && gatePass) {
+    if (gatePass && hasScores) {
       fetchPercentiles(oceanGroup, darkTriadGroup);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gatePass, isValid]);
+  }, [gatePass]);
 
   const handleOceanGroupChange = (id: string) => {
     setOceanGroup(id);
@@ -379,8 +382,8 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* Percentile comparison */}
-        {(oceanGroups.length > 0 || dtGroups.length > 0) && (
+        {/* Percentile comparison — always shown when there are scores */}
+        {allTraits.length > 0 && (
           <section className="rounded-2xl border border-border bg-surface p-5 space-y-5">
             <div>
               <h2 className="text-lg font-bold text-foreground">
@@ -389,27 +392,31 @@ export default function PersonalityResultsDashboard({
               <p className="text-sm text-muted">{t.percentileSubtitle}</p>
             </div>
 
-            <div className="space-y-4">
-              {oceanGroups.length > 0 && (
-                <RefGroupSelector
-                  groups={oceanGroups}
-                  selected={oceanGroup}
-                  onChange={handleOceanGroupChange}
-                  label={t.oceanRefGroup}
-                  lang={lang}
-                />
-              )}
-              {dtGroups.length > 0 && (
-                <RefGroupSelector
-                  groups={dtGroups}
-                  selected={darkTriadGroup}
-                  onChange={handleDarkTriadGroupChange}
-                  label={t.darkTriadRefGroup}
-                  lang={lang}
-                />
-              )}
-            </div>
+            {/* Reference group selectors — only after data loaded */}
+            {(oceanGroups.length > 0 || dtGroups.length > 0) && (
+              <div className="space-y-4">
+                {oceanGroups.length > 0 && (
+                  <RefGroupSelector
+                    groups={oceanGroups}
+                    selected={oceanGroup}
+                    onChange={handleOceanGroupChange}
+                    label={t.oceanRefGroup}
+                    lang={lang}
+                  />
+                )}
+                {dtGroups.length > 0 && (
+                  <RefGroupSelector
+                    groups={dtGroups}
+                    selected={darkTriadGroup}
+                    onChange={handleDarkTriadGroupChange}
+                    label={t.darkTriadRefGroup}
+                    lang={lang}
+                  />
+                )}
+              </div>
+            )}
 
+            {/* Loading spinner */}
             {percentileLoading && (
               <div className="flex items-center gap-2 text-sm text-muted">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
@@ -417,8 +424,8 @@ export default function PersonalityResultsDashboard({
               </div>
             )}
 
-            {/* Percentile bars for all traits */}
-            {!percentileLoading && Object.keys(percentiles).length > 0 && (
+            {/* Percentile bars — show for all traits, passing undefined when still loading */}
+            {!percentileLoading && (
               <div className="space-y-4">
                 {allTraits.map((trait) => (
                   <div key={trait.domain}>

@@ -57,6 +57,8 @@ export interface QuestionConfig {
 	text: string;
 	/** Vietnamese translation of the question */
 	textVi: string;
+	/** Detailed academic explanation in Vietnamese — shown via info tooltip */
+	explanationVi?: string;
 	/** Whether this item requires reverse scoring (Actual = 6 - Raw) */
 	isReversed: boolean;
 	/** Whether this is an attention check item */
