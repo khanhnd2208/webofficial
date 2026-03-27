@@ -71,7 +71,7 @@ function InvalidResultCard({ lang }: { lang: Lang }) {
   const t = getStrings(lang);
   return (
     <motion.div
-      className="max-w-xl mx-auto rounded-2xl border border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/20 p-8 text-center shadow-lg"
+      className="max-w-xl mx-auto rounded-xl border border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/20 p-8 text-center shadow-lg"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -391,7 +391,7 @@ export default function PersonalityResultsDashboard({
     <div className="min-h-screen bg-background">
       <LangToggle lang={lang} setLang={setLang} />
 
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
         {/* ══════════ HEADER ══════════════════════════════════════════════ */}
         <motion.header
           className="text-center space-y-3"
@@ -417,7 +417,7 @@ export default function PersonalityResultsDashboard({
         {/* ══════════ ATTENTION WARNING ════════════════════════════════════ */}
         {showAttentionWarning && (
           <motion.div
-            className="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-900/15 p-5 sm:p-6"
+            className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-900/15 p-5 sm:p-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
@@ -438,7 +438,7 @@ export default function PersonalityResultsDashboard({
         {/* ══════════ ARCHETYPE — Hero card ════════════════════════════════ */}
         {archetype && (
           <section>
-            <SectionHeading title={t.yourArchetype} icon="🎭" />
+            <SectionHeading title={t.yourArchetype} />
             <ArchetypeCard archetype={archetype} lang={lang} />
           </section>
         )}
@@ -446,7 +446,10 @@ export default function PersonalityResultsDashboard({
         {/* ═════════ RADAR CHART ═══════════════════════════════════════ */}
         {oceanTraits.length > 0 && (
           <section>
-            <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
+            <div className="rounded-xl border border-border bg-surface p-5 sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-4 text-center">
+                {t.oceanTitle}
+              </p>
               <RadarChart traits={oceanTraits} lang={lang} />
             </div>
           </section>
@@ -505,7 +508,7 @@ export default function PersonalityResultsDashboard({
 
         {/* ═════════ PERCENTILE COMPARISON PANEL ══════════════════════ */}
         {allTraits.length > 0 && (
-          <section className="rounded-2xl border border-border bg-surface overflow-hidden">
+          <section className="rounded-xl border border-border bg-surface overflow-hidden">
             {/* Panel header */}
             <div className="border-b border-border bg-background-secondary/40 px-5 sm:px-7 py-4">
               <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
@@ -620,24 +623,23 @@ export default function PersonalityResultsDashboard({
             <SectionHeading
               title={t.crossTraitTitle}
               subtitle={t.crossTraitSubtitle}
-              icon="🔗"
             />
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               {crossInsights.map((ci, i) => (
                 <motion.div
                   key={i}
-                  className="rounded-2xl border border-border bg-surface p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
+                  className="rounded-xl border border-border bg-surface p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
                 >
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span className="text-2xl">{ci.emoji}</span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">{ci.emoji}</span>
                     <h3 className="text-sm font-bold text-foreground leading-snug">
                       {ci.title}
                     </h3>
                   </div>
-                  <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
+                  <p className="text-xs text-muted leading-relaxed whitespace-pre-line">
                     {ci.description}
                   </p>
                 </motion.div>
@@ -651,7 +653,6 @@ export default function PersonalityResultsDashboard({
           <section>
             <SectionHeading
               title={t.scoreTableTitle}
-              icon="📋"
             />
             <ScoreTable
               traits={allTraits}

@@ -1,14 +1,15 @@
 "use client";
 
 /* ════════════════════════════════════════════════════════════════════════
-   PercentileGauge v3 — Clean, high-contrast, analytics-grade
+   PercentileGauge v4 — Polished, readable, insight-rich
 
-   Design principles:
-   - Track uses design-token colors (not raw Tailwind gray)
-   - P-label displayed OUTSIDE bar for guaranteed readability
-   - Single clean stat row: just the numbers, no clutter
-   - Mean marker as a simple tick with label
-   - Quartile color coding: semantic & accessible
+   Design:
+   - Thicker bar (h-3) so color is visible at a glance
+   - Gradient fill with a white inner sheen (glass effect)
+   - P-value label docked right of bar (never inside)
+   - Smart insight label: "above avg" / "below avg" / "top X%"
+   - Z + tier chips: minimal, hover-to-learn
+   - Group label as a subtle footnote
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useState } from "react";
@@ -18,53 +19,57 @@ import { type Lang, getStrings } from "../i18n";
 import { getZTier, TIER_COLORS } from "./types";
 import type { NormativeResult } from "./types";
 
-/* ── Stat chip with tooltip ───────────────────────────────────────────── */
-function StatChip({
-  label,
-  value,
+/* ── Hoverable chip ───────────────────────────────────────────────────── */
+function Chip({
+  children,
   tooltip,
-  colorClass,
+  className,
 }: {
-  label: string;
-  value: string;
+  children: React.ReactNode;
   tooltip: string;
-  colorClass: string;
+  className: string;
 }) {
-  const [open, setOpen] = useState(false);
-
+  const [show, setShow] = useState(false);
   return (
-    <div className="relative inline-flex">
-      <button
-        type="button"
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
-        className={`inline-flex items-baseline gap-1 rounded-md px-2.5 py-1 font-mono text-xs font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${colorClass}`}
-        aria-label={`${label}: ${value}. ${tooltip}`}
+    <span
+      className="relative inline-flex"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span
+        className={className}
+        role="button"
+        tabIndex={0}
+        onFocus={() => setShow(true)}
+        onBlur={() => setShow(false)}
+        aria-label={tooltip}
       >
-        <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">
-          {label}
-        </span>
-        <span className="text-sm font-extrabold tabular-nums">{value}</span>
-      </button>
+        {children}
+      </span>
       <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 4, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.97 }}
-            transition={{ duration: 0.1 }}
-            className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-border bg-surface-elevated p-3 shadow-xl"
-            role="tooltip"
+        {show && (
+          <motion.span
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            className="absolute bottom-full left-0 z-50 mb-2 w-64 rounded-lg border border-border bg-surface-elevated p-2.5 shadow-lg text-xs text-foreground leading-relaxed"
           >
-            <p className="text-xs leading-relaxed text-foreground">{tooltip}</p>
-            <div className="absolute -bottom-1 left-4 h-2 w-2 rotate-45 border-b border-r border-border bg-surface-elevated" />
-          </motion.div>
+            {tooltip}
+            <span className="absolute -bottom-1 left-3 h-2 w-2 rotate-45 border-b border-r border-border bg-surface-elevated" />
+          </motion.span>
         )}
       </AnimatePresence>
-    </div>
+    </span>
   );
+}
+
+/* ── Quick insight label ──────────────────────────────────────────────── */
+function insightLabel(pct: number, lang: Lang): string {
+  if (pct >= 90) return lang === "vi" ? "Top 10%" : "Top 10%";
+  if (pct >= 75) return lang === "vi" ? "Trên trung bình" : "Above average";
+  if (pct >= 50) return lang === "vi" ? "Khá" : "Above median";
+  if (pct >= 25) return lang === "vi" ? "Dưới trung bình" : "Below average";
+  return lang === "vi" ? "Thấp" : "Low range";
 }
 
 export function PercentileGauge({
@@ -80,9 +85,9 @@ export function PercentileGauge({
 
   if (!normResult) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted py-1.5">
-        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-        <span className="text-xs">{t.loadingPercentile}</span>
+      <div className="flex items-center gap-2 text-xs text-muted py-1">
+        <div className="h-3 w-3 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+        {t.loadingPercentile}
       </div>
     );
   }
@@ -92,7 +97,6 @@ export function PercentileGauge({
   const tier = getZTier(z);
   const tc = TIER_COLORS[tier];
 
-  /* Quartile bar color — semantically accessible */
   const barColor =
     pct >= 75
       ? "bg-emerald-500 dark:bg-emerald-400"
@@ -102,84 +106,80 @@ export function PercentileGauge({
           ? "bg-amber-500 dark:bg-amber-400"
           : "bg-rose-500 dark:bg-rose-400";
 
-  /* Chip color mirrors bar, stays on design-token surfaces */
-  const pctChipColor =
+  const pctColor =
     pct >= 75
-      ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200"
+      ? "text-emerald-700 dark:text-emerald-300"
       : pct >= 50
-        ? "bg-sky-50 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200"
+        ? "text-sky-700 dark:text-sky-300"
         : pct >= 25
-          ? "bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200"
-          : "bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-200";
-
-  const zChipColor = "bg-background-secondary text-foreground-secondary dark:bg-surface-secondary dark:text-foreground-secondary";
+          ? "text-amber-700 dark:text-amber-300"
+          : "text-rose-700 dark:text-rose-300";
 
   const groupLabel =
     lang === "vi" ? normResult.referenceGroupLabelVi : normResult.referenceGroupLabel;
 
   const zDisplay = `${z >= 0 ? "+" : ""}${z.toFixed(2)}`;
 
-  const pctTooltip =
+  const pctTip =
     lang === "vi"
-      ? `Bạn đạt điểm cao hơn ${pct}% người trong nhóm "${groupLabel}". Tính theo thang bách phân vị.`
-      : `You scored higher than ${pct}% of people in "${groupLabel}". Measured on the percentile scale.`;
+      ? `Bạn đạt điểm cao hơn ${pct}% người trong nhóm "${groupLabel}".`
+      : `You scored higher than ${pct}% of people in "${groupLabel}".`;
 
-  const zTooltip =
+  const zTip =
     lang === "vi"
-      ? `Z-score ${zDisplay}: cách trung bình ${Math.abs(z).toFixed(2)} độ lệch chuẩn về phía ${z >= 0 ? "cao hơn" : "thấp hơn"}. μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}.`
-      : `Z = ${zDisplay}: your score is ${Math.abs(z).toFixed(2)} SD ${z >= 0 ? "above" : "below"} the group mean (μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}).`;
+      ? `Z = ${zDisplay}: cách trung bình ${Math.abs(z).toFixed(2)} SD (μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}).`
+      : `Z = ${zDisplay}: ${Math.abs(z).toFixed(2)} SD ${z >= 0 ? "above" : "below"} mean (μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}).`;
 
   return (
-    <div className="space-y-2">
-      {/* ── Track + bar ───────────────────────────────────────────── */}
-      <div className="flex items-center gap-3">
-        {/* Bar */}
-        <div className="relative flex-1 h-2 rounded-full bg-border/60">
-          {/* Filled portion */}
+    <div className="space-y-1.5">
+      {/* ── Bar row ───────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2.5">
+        {/* Track */}
+        <div className="relative flex-1 h-2.5 rounded-full bg-border/50 overflow-hidden">
           <motion.div
             className={`absolute inset-y-0 left-0 rounded-full ${barColor}`}
             initial={{ width: 0 }}
-            animate={{ width: `${Math.max(pct, 1)}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            animate={{ width: `${Math.max(pct, 1.5)}%` }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
           />
-          {/* Median tick */}
+          {/* Glass sheen */}
+          <div className="absolute inset-0 rounded-full bg-linear-to-b from-white/20 to-transparent pointer-events-none" />
+          {/* Median marker */}
           <div
-            className="absolute top-1/2 -translate-y-1/2 h-3 w-px bg-foreground/30"
+            className="absolute top-0 h-full w-px bg-foreground/20"
             style={{ left: "50%" }}
-            aria-hidden="true"
           />
         </div>
-        {/* P-value label — always outside bar, always readable */}
-        <span className={`w-10 shrink-0 text-right text-xs font-bold tabular-nums ${
-          pct >= 75 ? "text-emerald-700 dark:text-emerald-300"
-          : pct >= 50 ? "text-sky-700 dark:text-sky-300"
-          : pct >= 25 ? "text-amber-700 dark:text-amber-300"
-          : "text-rose-700 dark:text-rose-300"
-        }`}>
+        {/* Score */}
+        <span className={`w-10 shrink-0 text-right text-sm font-bold tabular-nums ${pctColor}`}>
           P{pct}
         </span>
       </div>
 
-      {/* ── Stat row ──────────────────────────────────────────────── */}
+      {/* ── Stat chips row ────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-1.5">
-        <StatChip
-          label={lang === "vi" ? "Bậc" : "Pct"}
-          value={String(pct)}
-          tooltip={pctTooltip}
-          colorClass={pctChipColor}
-        />
-        <StatChip
-          label="Z"
-          value={zDisplay}
-          tooltip={zTooltip}
-          colorClass={zChipColor}
-        />
-        <span
-          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold ${tc.badge}`}
+        {/* Insight label */}
+        <span className={`text-[11px] font-semibold ${pctColor}`}>
+          {insightLabel(pct, lang)}
+        </span>
+
+        <span className="text-border">·</span>
+
+        {/* Z chip */}
+        <Chip
+          tooltip={zTip}
+          className="inline-flex items-baseline gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-mono font-bold bg-background-secondary text-muted cursor-help"
         >
+          <span className="opacity-50">Z</span> {zDisplay}
+        </Chip>
+
+        {/* Tier chip */}
+        <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${tc.badge}`}>
           {tc.emoji} {tier.replace("_", " ")}
         </span>
-        <span className="ml-auto text-[10px] text-muted hidden sm:inline truncate max-w-48">
+
+        {/* Group label (desktop only) */}
+        <span className="ml-auto text-[10px] text-muted/70 hidden sm:inline truncate max-w-44">
           {groupLabel}
         </span>
       </div>

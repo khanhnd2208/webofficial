@@ -4,17 +4,48 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { type Lang, getStrings } from "../i18n";
 
+/* ── Tiny inline SVG icon for the section header ─────────────────────── */
+function BookIcon() {
+  return (
+    <svg
+      className="h-4 w-4 text-muted"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M10.75 16.82A7.462 7.462 0 0115 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0018 15.06V4.94a.75.75 0 00-.546-.722A9.006 9.006 0 0015 4a8.963 8.963 0 00-4.25 1.065v11.757zM9.25 4.75A8.963 8.963 0 005 4c-.85 0-1.673.118-2.454.34A.75.75 0 002 5.06v10.12a.75.75 0 00.954.721A7.506 7.506 0 015 15.5c1.579 0 3.042.487 4.25 1.32V4.75z" />
+    </svg>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg
+      className="h-4 w-4 text-muted"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 export function LimitationsSection({ lang }: { lang: Lang }) {
   const [open, setOpen] = useState(false);
   const t = getStrings(lang);
 
   const limits = [
-    { title: t.limitSelfReport, text: t.limitSelfReportText, icon: "\u{1F4DD}" },
-    { title: t.limitNotClinical, text: t.limitNotClinicalText, icon: "\u{1FA7A}" },
-    { title: t.limitCulture, text: t.limitCultureText, icon: "\u{1F30F}" },
-    { title: t.limitChange, text: t.limitChangeText, icon: "\u{1F331}" },
-    { title: t.limitContext, text: t.limitContextText, icon: "\u{1F3AF}" },
-    { title: t.limitEffect, text: t.limitEffectText, icon: "\u{1F4CA}" },
+    { title: t.limitSelfReport, text: t.limitSelfReportText },
+    { title: t.limitNotClinical, text: t.limitNotClinicalText },
+    { title: t.limitCulture, text: t.limitCultureText },
+    { title: t.limitChange, text: t.limitChangeText },
+    { title: t.limitContext, text: t.limitContextText },
+    { title: t.limitEffect, text: t.limitEffectText },
   ];
 
   const references = [
@@ -28,22 +59,19 @@ export function LimitationsSection({ lang }: { lang: Lang }) {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+    <div className="rounded-xl border border-border bg-surface overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-5 sm:px-7 py-5 text-left hover:bg-background-secondary/30 transition-colors"
+        className="flex w-full items-center justify-between px-5 sm:px-7 py-4 text-left hover:bg-background-secondary/30 transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <span className="text-lg">📚</span>
-          <h2 className="text-base sm:text-lg font-extrabold text-foreground tracking-tight">
+        <div className="flex items-center gap-2.5">
+          <BookIcon />
+          <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">
             {t.limitationsTitle}
           </h2>
         </div>
-        <motion.span
-          animate={{ rotate: open ? 180 : 0 }}
-          className="text-muted text-sm"
-        >
-          ▼
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronIcon />
         </motion.span>
       </button>
 
@@ -60,15 +88,15 @@ export function LimitationsSection({ lang }: { lang: Lang }) {
                 {limits.map((lim, i) => (
                   <div
                     key={i}
-                    className="rounded-xl bg-background-secondary/50 p-4 border border-border/50"
+                    className="rounded-lg bg-background-secondary/50 p-4 border border-border/40"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-base">{lim.icon}</span>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-accent/60 shrink-0" />
                       <h3 className="text-xs font-bold text-foreground">
                         {lim.title}
                       </h3>
                     </div>
-                    <p className="text-[11px] text-muted leading-relaxed">
+                    <p className="text-[11px] text-muted leading-relaxed pl-3.5">
                       {lim.text}
                     </p>
                   </div>
@@ -80,16 +108,19 @@ export function LimitationsSection({ lang }: { lang: Lang }) {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted mb-3">
                   {t.referencesTitle}
                 </h3>
-                <ul className="space-y-1.5">
+                <ol className="space-y-1.5 list-none">
                   {references.map((ref, i) => (
                     <li
                       key={i}
-                      className="text-[11px] text-muted/80 leading-relaxed pl-4 relative before:absolute before:left-0 before:top-2 before:h-1 before:w-1 before:rounded-full before:bg-accent/60"
+                      className="text-[11px] text-muted/80 leading-relaxed pl-5 relative"
                     >
+                      <span className="absolute left-0 top-0 text-[10px] font-mono text-muted/50 tabular-nums">
+                        [{i + 1}]
+                      </span>
                       {ref}
                     </li>
                   ))}
-                </ul>
+                </ol>
               </div>
             </div>
           </motion.div>

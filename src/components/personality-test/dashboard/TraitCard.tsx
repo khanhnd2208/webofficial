@@ -15,7 +15,15 @@ import { getZTier, TIER_COLORS } from "./types";
 import type { NormativeResult } from "./types";
 import { PercentileGauge } from "./PercentileGauge";
 
-// ─── TraitCard ─────────────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════════════════════════
+   TraitCard v4 — Clean, insightful, world-class
+
+   - Score bar now is a readable h-2 with rounded track
+   - Header: icon + name + score/5 + tier badge, all on one line
+   - Percentile gauge sits cleanly under the bar
+   - Expanded content: bordered insight sections with clear hierarchy
+   - No redundant visual noise
+   ════════════════════════════════════════════════════════════════════════ */
 
 export function TraitCard({
   trait,
@@ -39,187 +47,141 @@ export function TraitCard({
   const domainLabel = getDomainLabel(trait.domain, lang);
   const tierInterpretation = insight[tier];
 
-  const scoreBarWidth = ((trait.score / 5) * 100).toFixed(1);
+  const pct = ((trait.score / 5) * 100).toFixed(1);
 
-  // Left accent border color based on tier
-  const accentBorder =
-    tier === "very_high"
-      ? "border-l-rose-400"
-      : tier === "high"
-        ? "border-l-amber-400"
-        : tier === "moderate"
-          ? "border-l-sky-400"
-          : tier === "low"
-            ? "border-l-stone-400"
-            : "border-l-slate-400";
+  const barColor = isDarkTriad
+    ? "bg-violet-500 dark:bg-violet-400"
+    : "bg-indigo-500 dark:bg-indigo-400";
 
   return (
     <motion.div
       layout
-      className={`rounded-2xl border border-border bg-surface shadow-sm hover:shadow-md transition-shadow border-l-4 ${accentBorder} overflow-hidden`}
-      initial={{ opacity: 0, y: 20 }}
+      className="rounded-xl border border-border bg-surface overflow-hidden transition-shadow hover:shadow-md"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.35 }}
     >
-      {/* Header */}
-      <div
-        className="flex cursor-pointer items-start justify-between gap-3 p-5"
+      {/* ── Header (clickable) ─────────────────────────────────── */}
+      <button
+        className="flex w-full cursor-pointer items-center gap-3 p-4 sm:p-5 text-left"
         onClick={() => setExpanded(!expanded)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") setExpanded(!expanded);
-        }}
+        aria-expanded={expanded}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="text-2xl shrink-0">{insight.icon}</span>
-          <div className="min-w-0">
-            <h3 className="font-bold text-foreground text-base leading-tight truncate">
+        <span className="text-2xl shrink-0">{insight.icon}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-foreground text-[15px] leading-tight truncate">
               {domainLabel}
             </h3>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-xs font-mono text-muted tabular-nums">
-                {trait.score.toFixed(2)}<span className="opacity-50">/5</span>
-              </span>
-              <span
-                className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${tc.badge}`}
-              >
-                {tc.emoji} {tierLabel}
-              </span>
-            </div>
+            <span className={`shrink-0 inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${tc.badge}`}>
+              {tc.emoji} {tierLabel}
+            </span>
           </div>
+          <span className="text-xs font-mono text-muted tabular-nums mt-0.5 block">
+            {trait.score.toFixed(2)}<span className="opacity-40"> / 5</span>
+          </span>
         </div>
-        <motion.span
-          animate={{ rotate: expanded ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          className="text-muted text-sm shrink-0 mt-2"
+        <svg
+          className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
         >
-          ▼
-        </motion.span>
-      </div>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-      {/* Score bar */}
-      <div className="mx-5 mb-3 h-1.5 w-auto overflow-hidden rounded-full bg-border/40">
-        <motion.div
-          className={`h-full rounded-full ${
-            isDarkTriad
-              ? "bg-violet-500 dark:bg-violet-400"
-              : "bg-indigo-500 dark:bg-indigo-400"
-          }`}
-          initial={{ width: 0 }}
-          animate={{ width: `${scoreBarWidth}%` }}
-          transition={{ duration: 0.7 }}
-        />
-      </div>
-
-      {/* Normative info — inside card but before expansion */}
-      {normResult && (
-        <div className="mx-5 mb-4">
-          <PercentileGauge
-            domain={trait.domain}
-            normResult={normResult}
-            lang={lang}
+      {/* ── Score bar ──────────────────────────────────────────── */}
+      <div className="px-4 sm:px-5 pb-2">
+        <div className="h-1.5 rounded-full bg-border/40 overflow-hidden">
+          <motion.div
+            className={`h-full rounded-full ${barColor}`}
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.6 }}
           />
         </div>
+      </div>
+
+      {/* ── Percentile gauge ───────────────────────────────────── */}
+      {normResult && (
+        <div className="px-4 sm:px-5 pb-3">
+          <PercentileGauge domain={trait.domain} normResult={normResult} lang={lang} />
+        </div>
       )}
 
-      {/* Expand prompt */}
+      {/* ── Expand hint ────────────────────────────────────────── */}
       {!expanded && (
-        <button
-          onClick={() => setExpanded(true)}
-          className="mx-5 mb-4 flex items-center gap-1.5 text-xs text-muted hover:text-accent font-medium transition-colors"
-        >
-          <span className="text-[10px]">▶</span>
-          {t.tapToExplore}
-        </button>
+        <div className="px-4 sm:px-5 pb-3">
+          <span className="text-[11px] text-muted">
+            {t.tapToExplore}
+          </span>
+        </div>
       )}
 
-      {/* Expanded content */}
+      {/* ── Expanded insights ──────────────────────────────────── */}
       <AnimatePresence>
         {expanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="mx-5 mb-5 space-y-4 border-t border-border pt-4">
+            <div className="px-4 sm:px-5 pb-5 space-y-3 border-t border-border/60 pt-4">
               {/* What is this trait */}
-              <div>
-                <h4 className="text-sm font-bold text-foreground mb-1">
-                  {t.whatThisMeans}
-                </h4>
-                <p className="text-sm text-muted leading-relaxed">
-                  {insight.what}
-                </p>
+              <InsightBlock
+                title={t.whatThisMeans}
+                text={insight.what}
+              />
+
+              {/* Tier interpretation — highlighted */}
+              <div className={`rounded-lg p-3.5 ${tc.badge}`}>
+                <p className="text-xs font-bold mb-1">{tc.emoji} {tierLabel}</p>
+                <p className="text-xs leading-relaxed">{tierInterpretation}</p>
               </div>
 
-              {/* Tier interpretation */}
-              <div className={`rounded-xl p-4 ${tc.badge}`}>
-                <h4 className="text-sm font-bold mb-1">
-                  {tc.emoji} {tierLabel}
-                </h4>
-                <p className="text-sm leading-relaxed">{tierInterpretation}</p>
-              </div>
-
-              {/* Derailment warning for dark triad */}
+              {/* Derailment warning */}
               {isDarkTriad && insight.derailment && tier === "very_high" && (
-                <div className="rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-4">
-                  <h4 className="text-sm font-bold text-rose-700 dark:text-rose-300 mb-1">
+                <div className="rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-3.5">
+                  <p className="text-xs font-bold text-rose-700 dark:text-rose-300 mb-1">
                     {t.derailmentRisk}
-                  </h4>
-                  <p className="text-sm text-rose-600 dark:text-rose-400 leading-relaxed">
+                  </p>
+                  <p className="text-xs text-rose-600 dark:text-rose-400 leading-relaxed">
                     {insight.derailment}
                   </p>
                 </div>
               )}
 
-              {/* Career fit */}
-              <div>
-                <h4 className="text-sm font-bold text-foreground mb-1">
-                  {t.careerFit}
-                </h4>
-                <p className="text-sm text-muted leading-relaxed">
-                  {insight.career}
-                </p>
-              </div>
-
-              {/* Academic context */}
-              <div>
-                <h4 className="text-sm font-bold text-foreground mb-1">
-                  {t.academicContext}
-                </h4>
-                <p className="text-sm text-muted leading-relaxed">
-                  {insight.academic}
-                </p>
+              {/* Career + Academic in a 2-col grid on sm+ */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <InsightBlock title={t.careerFit} text={insight.career} />
+                <InsightBlock title={t.academicContext} text={insight.academic} />
               </div>
 
               {/* OB Lesson */}
               {insight.obLesson && (
-                <div>
-                  <h4 className="text-sm font-bold text-foreground mb-1">
-                    {t.obLesson}
-                  </h4>
-                  <p className="text-sm text-muted leading-relaxed">
-                    {insight.obLesson}
-                  </p>
-                </div>
+                <InsightBlock title={t.obLesson} text={insight.obLesson} />
               )}
 
-              {/* Student action tip */}
-              <div className="rounded-xl bg-accent/8 border border-accent/15 p-4">
-                <h4 className="text-sm font-bold text-accent mb-1">
-                  {t.studentAction}
-                </h4>
-                <p className="text-sm text-foreground leading-relaxed">
-                  {insight.tip}
-                </p>
+              {/* Action tip — accent highlight */}
+              <div className="rounded-lg bg-accent/6 border border-accent/12 p-3.5">
+                <p className="text-xs font-bold text-accent mb-1">{t.studentAction}</p>
+                <p className="text-xs text-foreground leading-relaxed">{insight.tip}</p>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+/* ── Reusable mini insight block ──────────────────────────────────────── */
+function InsightBlock({ title, text }: { title: string; text: string }) {
+  return (
+    <div>
+      <p className="text-xs font-bold text-foreground mb-0.5">{title}</p>
+      <p className="text-xs text-muted leading-relaxed">{text}</p>
+    </div>
   );
 }
