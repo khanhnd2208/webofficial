@@ -47,7 +47,7 @@ export function PercentileGauge({
 
   const barColor =
     pct >= 75
-      ? "from-emerald-400 to-emerald-600"
+      ? "from-teal-400 to-teal-500"
       : pct >= 50
         ? "from-sky-400 to-sky-600"
         : pct >= 25

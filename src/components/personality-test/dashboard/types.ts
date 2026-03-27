@@ -82,14 +82,14 @@ export const TIER_COLORS: Record<
     emoji: "\u2696\uFE0F",
   },
   low: {
-    badge: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
-    ring: "ring-teal-400/40",
+    badge: "bg-stone-100 text-stone-600 dark:bg-stone-800/40 dark:text-stone-300",
+    ring: "ring-stone-400/30",
     emoji: "\u2B07\uFE0F",
   },
   very_low: {
     badge:
-      "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
-    ring: "ring-indigo-400/40",
+      "bg-slate-100 text-slate-600 dark:bg-slate-800/40 dark:text-slate-300",
+    ring: "ring-slate-400/30",
     emoji: "\u2744\uFE0F",
   },
 };

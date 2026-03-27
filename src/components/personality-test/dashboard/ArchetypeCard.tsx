@@ -14,12 +14,12 @@ export function ArchetypeCard({
   const t = getStrings(lang);
 
   const gradients: Record<string, string> = {
-    amber: "from-amber-500 to-orange-500",
-    indigo: "from-indigo-500 to-purple-500",
-    rose: "from-rose-500 to-pink-500",
-    teal: "from-teal-500 to-emerald-500",
-    purple: "from-purple-500 to-violet-500",
-    emerald: "from-emerald-500 to-green-500",
+    amber: "from-amber-400 to-orange-400",
+    indigo: "from-indigo-400 to-blue-500",
+    rose: "from-rose-400 to-rose-500",
+    teal: "from-teal-400 to-cyan-500",
+    purple: "from-violet-400 to-indigo-500",
+    emerald: "from-teal-500 to-emerald-400",
   };
 
   const gradient = gradients[archetype.colorTheme] || gradients.indigo;
