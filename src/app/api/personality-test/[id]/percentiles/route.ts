@@ -64,8 +64,35 @@ export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 	// Parse reference group preferences from query params
 	const { searchParams } = new URL(request.url);
 	const defaults = getDefaultReferenceGroupIds();
-	const oceanGroupId = searchParams.get('oceanGroup') || defaults.ocean;
-	const darkTriadGroupId = searchParams.get('darkTriadGroup') || defaults.darkTriad;
+
+	// Track whether the caller explicitly picked a group (vs relying on auto-default).
+	const oceanParamExplicit = searchParams.has('oceanGroup');
+	const dtParamExplicit = searchParams.has('darkTriadGroup');
+	const oceanGroupIdRaw = searchParams.get('oceanGroup') || defaults.ocean;
+	const darkTriadGroupIdRaw = searchParams.get('darkTriadGroup') || defaults.darkTriad;
+
+	// ── Auto-default to local norms when n ≥ 100 ───────────────────────────
+	// Always fetch local stats upfront so we can decide the default AND build
+	// the available-groups list in one DB round-trip.
+	const MIN_LOCAL_N = 100; // threshold for auto-default AND for showing in selector
+
+	let localStats: Record<string, { mean: number; sd: number; n: number }> = {};
+	try {
+		localStats = await getLocalNormativeStats();
+	} catch { /* ignore — local norms optional */ }
+
+	const localOceanN = localStats['extraversion']?.n ?? 0;
+	const localDtN = localStats['machiavellianism']?.n ?? 0;
+
+	// If the caller didn't explicitly specify a group, auto-select local when eligible.
+	let oceanGroupId = oceanGroupIdRaw;
+	let darkTriadGroupId = darkTriadGroupIdRaw;
+	if (!oceanParamExplicit && localOceanN >= MIN_LOCAL_N) {
+		oceanGroupId = LOCAL_OCEAN_GROUP_ID;
+	}
+	if (!dtParamExplicit && localDtN >= MIN_LOCAL_N) {
+		darkTriadGroupId = LOCAL_DARKTRIAD_GROUP_ID;
+	}
 
 	// ── Handle local norms ──────────────────────────────────────────────────
 	const needsLocal =
@@ -77,7 +104,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 	const dynamicGroups: Record<string, ReferenceGroup> = {};
 
 	if (needsLocal) {
-		const localStats = await getLocalNormativeStats();
+		// localStats already fetched above — reuse it, no extra DB round-trip
 		if (oceanGroupId === LOCAL_OCEAN_GROUP_ID) {
 			localOceanGroup = buildLocalReferenceGroup('ocean', localStats);
 			dynamicGroups[LOCAL_OCEAN_GROUP_ID] = localOceanGroup;
@@ -115,30 +142,9 @@ export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 	);
 
 	// ── Build available groups list (include local options) ──────────────
+	// localOceanN / localDtN already computed from localStats above.
+	// Show local norms in selector whenever n >= MIN_LOCAL_N (same threshold).
 	const staticOptions = getReferenceGroupOptions();
-
-	// Fetch local stats to include local norms in the selector (with real n)
-	// If we already fetched for the computation above, reuse; otherwise fetch now
-	let localStatsForSelector: Record<string, { mean: number; sd: number; n: number }> | null = null;
-	if (!needsLocal) {
-		try {
-			localStatsForSelector = await getLocalNormativeStats();
-		} catch { /* ignore — local norms optional */ }
-	}
-
-	// Add local groups to available groups list
-	const localOceanN = localOceanGroup
-		? Object.values(localOceanGroup.norms)[0]?.n ?? 0
-		: localStatsForSelector
-			? (localStatsForSelector['extraversion']?.n ?? 0)
-			: 0;
-	const localDtN = localDtGroup
-		? Object.values(localDtGroup.norms)[0]?.n ?? 0
-		: localStatsForSelector
-			? (localStatsForSelector['machiavellianism']?.n ?? 0)
-			: 0;
-
-	const MIN_LOCAL_N = 10; // require at least 10 valid sessions for local norms
 
 	const availableGroups = [
 		...staticOptions,
