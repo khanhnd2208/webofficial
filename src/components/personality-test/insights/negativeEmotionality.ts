@@ -82,13 +82,27 @@ require noticing and responding to nuance — art and creative work, counselling
 UX research, writing, and quality assurance. Those in the middle can do well
 across a wide range of professional environments.`,
 
-	tip: `If you scored high, build your stress management infrastructure before you
-need it: identify the three people you can call when you are overwhelmed,
-establish a consistent sleep schedule (disrupted sleep dramatically amplifies
-negative emotionality), and notice what physical activity most reliably
-restores your equilibrium. If you scored low, build the habit of deliberately
-checking in with colleagues: "How are you holding up?" — and mean it, and
-wait for the real answer.`,
+	tip: `If you scored high: build your stress management toolkit BEFORE exam season,
+not during it. Here are three concrete things to set up this week:
+
+1. "Panic contacts": Identify 2-3 people you can text or call when anxiety
+spirals. Not to fix the problem — just to say it out loud. Often, saying
+"I'm freaking out about the presentation tomorrow" to a friend breaks the
+spiral just enough to think clearly again.
+
+2. A physical reset: Find one physical activity that reliably calms you —
+a 20-minute walk, a gym session, even stretching. Schedule it DAILY during
+high-stress periods. Your nervous system needs a physical off-switch, and
+thinking harder won't provide one.
+
+3. The "2am test": When you're catastrophising ("I'll fail this exam and
+ruin my GPA and never get a good job"), ask yourself: "Will this specific
+thing matter in 2 years?" If no, it's your alarm system over-firing, not
+reality.
+
+If you scored low: build one check-in habit — when a teammate or friend
+seems stressed, ask "How are you holding up?" and wait for the real answer.
+Your calm is a gift to others, but only if they feel you actually notice.`,
 
 	academic: `Swider & Zimmerman (2010) found in a meta-analysis that Negative Emotionality
 is the strongest Big Five predictor of burnout (r = .44). Feist (1998)
@@ -177,12 +191,28 @@ Nếu bạn có điểm cao, sự nhạy cảm của bạn thường là tài s�
 trò đòi hỏi chú ý và phản hồi với sắc thái — nghệ thuật và công việc sáng
 tạo, tư vấn tâm lý, UX research, viết lách và đảm bảo chất lượng.`,
 
-	tip: `Nếu bạn có điểm cao, hãy xây dựng cơ sở hạ tầng quản lý căng thẳng trước
-khi cần: xác định ba người bạn có thể gọi khi bị quá tải, thiết lập lịch
-ngủ nhất quán (giấc ngủ bị gián đoạn khuếch đại đáng kể cảm xúc tiêu cực),
-và chú ý hoạt động thể chất nào khôi phục cân bằng của bạn đáng tin cậy
-nhất. Nếu bạn có điểm thấp, hãy xây dựng thói quen chủ động hỏi thăm đồng
-nghiệp: "Bạn đang ổn không?" — và chờ đợi câu trả lời thực sự.`,
+	tip: `Nếu bạn có điểm cao: hãy xây dựng bộ công cụ quản lý stress TRƯỚC mùa
+thi, không phải trong mùa thi. Ba việc cụ thể cần làm tuần này:
+
+1. "Liên hệ khẩn cấp": Xác định 2-3 người bạn có thể nhắn tin hoặc gọi
+khi lo lắng xoắn ốc. Không phải để giải quyết vấn đề — chỉ để nói ra.
+Thường chỉ cần nói "Mình đang hoảng về bài thuyết trình ngày mai" với
+bạn bè là đủ phá vữ vòng xoáy để nghĩ rõ hơn.
+
+2. "Nút reset vật lý": Tìm một hoạt động thể chất giúp bạn bình tĩnh đáng
+tin cậy — đi bộ 20 phút, tập gym, hoặc giãn cơ. Lên lịch MỖI NGÀY trong
+giai đoạn cao điểm. Hệ thần kinh cần công tắc vật lý, và nghĩ nhiều hơn
+không cung cấp được.
+
+3. Bài kiểm tra "2 giờ sáng": Khi bạn đang thảm hoạ hóa ("Mình sẽ trượt
+môn này, hư GPA, không bao giờ xin được việc tốt"), hãy hỏi: "Việc này có
+quan trọng sau 2 năm không?" Nếu không, đó là hệ thống cảnh báo bắn
+quá nhạy, không phải thực tế.
+
+Nếu bạn có điểm thấp: hãy tập một thói quen hỏi thăm — khi đồng đội hoặc
+bạn bè có vẻ stress, hỏi "Bạn đang ổn không?" và chờ câu trả lời thực sự.
+Sự bình tĩnh của bạn là món quà cho người khác, nhưng chỉ khi họ cảm nhận
+bạn thực sự nhận ra.`,
 
 	academic: `Swider & Zimmerman (2010) phát hiện trong meta-analysis rằng Negative
 Emotionality là predictor Big Five mạnh nhất của tình trạng kiệt sức

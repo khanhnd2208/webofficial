@@ -78,12 +78,27 @@ for what your personality does not provide naturally. A personal assistant,
 a strong project management tool, or an accountability partner can make the
 difference.`,
 
-	tip: `Regardless of where you scored, build one organisational system this week
-and practise it for 21 days before evaluating it. Three high-impact options:
-Inbox Zero (process every email to a decision — action, delegate, defer, or
-delete); a Daily Priority List (three must-do items written the night before);
-or Calendar Blocking (schedule specific work into specific time slots). Tools
-don't replace habits, but they give habits somewhere to live.`,
+	tip: `Regardless of your score, pick ONE organisational system this week and
+commit to it for 21 days before judging whether it works.
+
+Three options that actually work for students:
+
+1. The "Big 3" List: Every evening before bed, write down the three most
+important things you need to accomplish tomorrow. Not ten. Three. Put them
+on a sticky note on your laptop. Do them before you check social media.
+
+2. Calendar Blocking: Open Google Calendar and block 2-hour chunks for
+your most important work. Treat them like classes — you wouldn't skip a
+class, so don't skip your study block. Turn off notifications during
+those blocks.
+
+3. The "Touch It Once" Rule for Messages: When you open an email or
+message that needs a response, respond immediately OR set a specific
+calendar reminder for when you will. Never read it and think "I'll deal
+with this later" — that's how things get forgotten.
+
+Tools don't replace habits, but they give habits somewhere to live. Start
+with one. Build from there.`,
 
 	academic: `Barrick & Mount (1991), in a meta-analysis spanning multiple occupational
 groups, confirmed Conscientiousness as the only Big Five trait that predicts
@@ -171,13 +186,25 @@ Nếu bạn có điểm thấp, bạn vẫn có thể làm việc xuất sắc t
 sáng tạo và kinh doanh, nhưng bạn sẽ cần các hệ thống bên ngoài để bù đắp
 cho những gì tính cách của bạn không cung cấp tự nhiên.`,
 
-	tip: `Bất kể bạn có điểm như thế nào, hãy xây dựng một hệ thống tổ chức trong
-tuần này và thực hành trong 21 ngày trước khi đánh giá. Ba lựa chọn có
-tác động cao: Inbox Zero (xử lý mọi email đến quyết định — hành động, uỷ
-quyền, trì hoãn, hoặc xóa); Danh sách Ưu tiên Hàng ngày (ba nhiệm vụ bắt
-buộc được viết vào tối hôm trước); hoặc Calendar Blocking (lên lịch công
-việc cụ thể vào các khung giờ cụ thể). Công cụ không thay thế thói quen,
-nhưng chúng cho thói quen một nơi để sống.`,
+	tip: `Bất kể điểm số của bạn, hãy chọn MỘT hệ thống tổ chức tuần này và cam
+kết thực hành 21 ngày trước khi đánh giá.
+
+Ba lựa chọn thực sự hiệu quả cho sinh viên:
+
+1. Danh sách "3 Việc Lớn": Mỗi tối trước khi ngủ, viết 3 việc quan trọng
+nhất cần làm ngày mai. Không phải mười. BA. Dán giấy nhớ lên laptop. Làm
+xong rồi mới check mạng xã hội.
+
+2. Calendar Blocking: Mở Google Calendar và block các khối 2 tiếng cho
+công việc quan trọng. Coi chúng như giờ học — bạn không bỏ học, vậy đừng
+bỏ khối học của mình. Tắt thông báo trong các khối này.
+
+3. Quy tắc "Chạm Một Lần" cho tin nhắn: Khi mở email hoặc tin nhắn cần
+trả lời, trả lời ngay HOẶC đặt lịch nhắc cụ thể khi nào sẽ trả lời. Đừng
+bao giờ đọc xong nghĩ "để sau" — đó là cách mọi thứ bị quên.
+
+Công cụ không thay thế thói quen, nhưng chúng cho thói quen một nơi để
+sống. Bắt đầu với một. Xây dựng từ đó.`,
 
 	academic: `Barrick & Mount (1991), trong meta-analysis trên nhiều nhóm nghề nghiệp,
 xác nhận Tận tâm là trait Big Five duy nhất dự báo hiệu suất công việc một

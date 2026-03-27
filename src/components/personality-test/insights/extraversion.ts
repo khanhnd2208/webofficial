@@ -70,12 +70,22 @@ alternate between independent work and collaboration — consulting, product
 management, and business analysis are common examples.`,
 
 	tip: `Before your next job interview, regardless of where you fall on this scale,
-remember: interviewers are not measuring your Extraversion score — they are
-measuring how clearly and confidently you communicate value. Introverts: use
-the STAR structure (Situation → Task → Action → Result) to give answers that
-are complete without being rambling. Extraverts: practice pausing for two
-full seconds after each answer before adding more — it signals confidence,
-not hesitation.`,
+remember: interviewers are not measuring your Extraversion — they are
+measuring how clearly you communicate your value.
+
+If you're introverted: prepare 3-4 STAR stories in advance (Situation →
+Task → Action → Result). For example: "In my OB group project [Situation],
+I was responsible for the data analysis [Task], so I built a comparison
+framework in Excel and identified three key patterns [Action], which
+became the core argument of our A-grade presentation [Result]." Having
+these ready means you won't freeze under pressure — the words are already
+there.
+
+If you're extraverted: your biggest risk is talking past the answer.
+Practise the "answer, then stop" technique: give your response, pause for
+two full seconds, and resist the urge to fill the silence with more words.
+That two-second pause signals confidence, not hesitation. Interviewers
+notice, and it dramatically improves how your answers land.`,
 
 	academic: `Soto & John (2017) found that Extraversion reliably predicts satisfaction in
 collaborative work and the likelihood of emerging as a leader in leaderless
@@ -155,11 +165,21 @@ làm việc độc lập và cộng tác — consulting, product management, và
 analysis là những ví dụ phổ biến.`,
 
 	tip: `Trước buổi phỏng vấn tiếp theo, dù bạn ở đâu trên thang này, hãy nhớ:
-nhà tuyển dụng không đo điểm Extraversion của bạn — họ đo mức độ bạn truyền
-đạt giá trị rõ ràng và tự tin đến đâu. Người hướng nội: dùng cấu trúc STAR
-(Tình huống → Nhiệm vụ → Hành động → Kết quả) để câu trả lời đầy đủ mà không
-lan man. Người hướng ngoại: tập dừng lại hai giây sau mỗi câu trả lời trước
-khi nói thêm — đây là tín hiệu tự tin, không phải do dự.`,
+nhà tuyển dụng không đo điểm Extraversion — họ đo mức độ bạn truyền đạt giá
+trị rõ ràng đến đâu.
+
+Nếu bạn hướng nội: chuẩn bị sẵn 3-4 câu chuyện theo cấu trúc STAR (Tình
+huống → Nhiệm vụ → Hành động → Kết quả). Ví dụ: "Trong dự án nhóm môn OB
+[Tình huống], mình phụ trách phân tích dữ liệu [Nhiệm vụ], nên mình xây
+khung so sánh trong Excel và tìm ra 3 xu hướng chính [Hành động], trở thành
+lập luận cốt lõi của bài thuyết trình đạt điểm A [Kết quả]." Chuẩn bị sẵn
+nghĩa là bạn không bị đơ dưới áp lực — lời đã sẵn sàng.
+
+Nếu bạn hướng ngoại: rủi ro lớn nhất là nói quá nhiều. Hãy tập kỹ thuật
+"trả lời rồi dừng": nói xong, dừng 2 giây, và chống lại cám dỗ lấp đầy
+sự im lặng. 2 giây im lặng đó truyền tải sự tự tin, không phải sự do dự.
+Nhà tuyển dụng sẽ nhận ra, và chất lượng câu trả lời của bạn được cải
+thiện đáng kể.`,
 
 	academic: `Soto & John (2017) cho thấy Extraversion dự báo đáng tin cậy sự hài lòng
 trong công việc nhóm và khả năng nổi lên thành lãnh đạo trong nhóm không có

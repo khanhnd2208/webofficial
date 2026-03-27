@@ -86,13 +86,20 @@ thrive in roles evaluated on output quality rather than personal visibility
 specialist roles. Very high Narcissism carries significant risk in any role
 requiring sustained, equal-partnership teamwork over time.`,
 
-	tip: `If you scored high on Narcissism, build one specific habit: after every
-team project, write down three people whose contributions were essential,
-and then tell them specifically — by name, privately or publicly — what they
-did and why it mattered. This is not a performance; it is the practice that
-actually calibrates the internal model. If you scored low, practise saying
-"I" instead of "we" when the work was genuinely yours. Accurate attribution
-in both directions is the goal.`,
+	tip: `If you scored high: after every group project, before you talk about your
+own contribution, write down three specific things other people did. For
+example: "Lan built the entire slide deck from scratch at 2am" or "Minh
+found the key research article that changed our argument." Then say those
+things out loud to the team or in the group chat — by name, specifically.
+This isn't about being humble for the sake of it; it is the practice that
+recalibrates how you see shared work, because high-Narcissism brains
+genuinely under-register others' contributions without meaning to.
+
+If you scored low: practise saying "I did X" instead of "we did X" when
+the work was genuinely yours. When your lecturer asks who led the analysis,
+don't deflect with "oh, the whole team helped." If you did 80% of it, say
+so clearly. Accurate attribution goes both directions — giving credit where
+due AND taking credit where earned.`,
 
 	academic: `Grijalva and colleagues (2015), in a meta-analysis of 57 independent samples,
 found a curvilinear (inverted-U) relationship between Narcissism and leadership
@@ -189,11 +196,20 @@ thông phát sóng. Nếu bạn có điểm thấp, bạn có xu hướng phát 
 vai trò được đánh giá dựa trên chất lượng đầu ra thay vì khả năng hiển thị
 cá nhân.`,
 
-	tip: `Nếu bạn có điểm cao, hãy xây dựng một thói quen cụ thể: sau mỗi dự án
-nhóm, hãy viết tên ba người có đóng góp thiết yếu, rồi nói với họ cụ thể —
-theo tên, riêng tư hay công khai — họ đã làm gì và tại sao nó quan trọng.
-Nếu bạn có điểm thấp, hãy thực hành nói "Tôi" thay vì "chúng tôi" khi công
-việc thực sự là của bạn.`,
+	tip: `Nếu bạn có điểm cao: sau mỗi dự án nhóm, TRƯỚC KHI nói về đóng góp của
+mình, hãy viết ra 3 việc cụ thể mà người khác đã làm. Ví dụ: "Lan làm toàn
+bộ slide từ đầu lúc 2 giờ sáng" hoặc "Minh tìm được bài nghiên cứu quan
+trọng thay đổi hướng lập luận của nhóm." Rồi nói những điều đó ra — trong
+nhóm chat hoặc trước lớp — gọi tên cụ thể. Đây không phải khiêm tốn cho có;
+đây là bài tập giúp não bạn hiệu chỉnh cách nhìn nhận đóng góp chung, vì
+não của người có Narcissism cao thực sự ít ghi nhận đóng góp của người khác
+mà không hề cố ý.
+
+Nếu bạn có điểm thấp: hãy tập nói "Tôi đã làm X" thay vì "nhóm mình đã
+làm X" khi công việc thực sự là của bạn. Khi giảng viên hỏi ai phân tích dữ
+liệu, đừng nói "cả nhóm cùng làm" nếu bạn làm 80%. Nói rõ. Ghi nhận đúng
+phải đi cả hai chiều — cho credit khi người khác xứng đáng VÀ nhận credit
+khi bạn xứng đáng.`,
 
 	academic: `Grijalva và cộng sự (2015), trong meta-analysis trên 57 mẫu độc lập, phát
 hiện mối quan hệ curvilinear (chữ U ngược) giữa Narcissism và hiệu quả lãnh

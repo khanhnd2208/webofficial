@@ -80,12 +80,23 @@ turnaround management. Those in the middle tend to thrive in roles that
 need both — product management, business development, and general
 management are common examples.`,
 
-	tip: `If you scored high on Agreeableness, practice this one response before
-your next negotiation or request: "That sounds interesting — let me think
-about it and come back to you." This buys you time to decide deliberately
-rather than agreeing in the moment. If you scored low, try a specific
-experiment in your next team meeting: spend the first ten minutes only
-asking questions. Notice what you learn that you would have missed.`,
+	tip: `If you scored high: before your next negotiation — whether it's dividing
+group project work, asking a lecturer for a deadline extension, or
+negotiating an internship offer — practise this one sentence: "That sounds
+interesting — let me think about it and come back to you." This buys you
+time to decide deliberately instead of saying yes in the moment because
+the other person's expectation feels uncomfortable to resist.
+
+Real scenario: your group wants you to do the entire write-up because
+"you're so good at writing." Instead of agreeing immediately, say: "I
+appreciate the confidence, but let me think about how we can split this
+fairly so everyone contributes." Then propose a concrete division.
+
+If you scored low: try this in your next team meeting — spend the first
+ten minutes ONLY asking questions. Don't share your opinion yet. Just ask:
+"What do you think?" "Why do you see it that way?" "What are we missing?"
+Notice what you learn that you would have missed if you'd led with your
+own view. The information you gain is almost always worth the patience.`,
 
 	academic: `Judge and colleagues (2012) found that high Agreeableness is associated with
 approximately USD 7,000 less in annual salary on average — a pattern that
@@ -184,12 +195,21 @@ Người ở giữa thường phát huy tốt trong các vai trò cần cả hai
 management, business development, và general management là những ví dụ
 thường gặp.`,
 
-	tip: `Nếu bạn có điểm Dễ chịu cao, hãy tập phản hồi này trước cuộc đàm phán
-hoặc yêu cầu tiếp theo: "Nghe có vẻ thú vị — để tôi suy nghĩ thêm và phản
-hồi bạn." Điều này cho bạn thời gian để quyết định có chủ đích thay vì đồng
-ý ngay lúc đó. Nếu bạn có điểm thấp, hãy thử một thí nghiệm cụ thể trong
-cuộc họp nhóm tiếp theo: dành mười phút đầu tiên chỉ đặt câu hỏi. Hãy để ý
-xem bạn học được gì mà bạn đã bỏ lỡ.`,
+	tip: `Nếu bạn có điểm cao: trước lần đàm phán tiếp theo — dù là chia việc trong
+dự án nhóm, xin thầy gia hạn deadline, hay thương lượng offer thực tập — hãy
+tập một câu này: "Nghe có vẻ thú vị — để mình suy nghĩ rồi phản hồi
+bạn." Câu này mua cho bạn thời gian để quyết định có chủ đích thay vì
+đồng ý ngay vì cảm thấy khó từ chối.
+
+Tình huống thực tế: nhóm muốn bạn viết toàn bộ báo cáo vì "bạn viết giỏi
+mà." Thay vì đồng ý ngay, hãy nói: "Cảm ơn mọi người tin tưởng, nhưng để
+mình nghĩ cách chia đều để ai cũng đóng góp." Rồi đề xuất phân công cụ thể.
+
+Nếu bạn có điểm thấp: hãy thử trong cuộc họp nhóm tiếp theo — dành 10
+phút đầu tiên CHỈ ĐẶT CÂU HỎI. Chưa chia sẻ ý kiến. Chỉ hỏi: "Bạn nghĩ
+sao?" "Tại sao bạn thấy vậy?" "Mình đang bỏ lữ gì không?" Hãy để ý
+bạn học được gì mà bạn đã bỏ lữ nếu bắt đầu bằng ý kiến của mình. Thông
+tin thu được gần như luôn đáng giá sự kiên nhẫn.`,
 
 	academic: `Judge và cộng sự (2012) phát hiện Agreeableness cao gắn liền với mức lương
 thấp hơn khoảng 7.000 USD mỗi năm tính trung bình — một xu hướng đặc biệt

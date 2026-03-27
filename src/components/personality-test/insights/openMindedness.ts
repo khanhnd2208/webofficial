@@ -79,13 +79,22 @@ If you scored low, you often bring particular value in roles that reward
 precision and reliable execution within established frameworks — accounting,
 compliance, operations management, quality engineering, and process design.`,
 
-	tip: `If you scored high, practise "commitment before curiosity" — choose one
-project or skill, commit to it for at least 90 days, and resist the pull
-of new directions until that period is up. Track your completion rate on
-the last five things you started. If you scored low, pick one AI tool
-relevant to your field and spend 30 minutes exploring it this week. Not
-because it will necessarily change your practice — but because knowing what
-the tools can and can't do is now part of professional literacy.`,
+	tip: `If you scored high: your biggest risk is starting many things and finishing
+few. Try the "90-Day Lock-In": pick ONE skill or project — learning Python,
+writing a research paper, building a portfolio — and commit to working on
+it at least 3 times per week for 90 days. When a new shiny idea appears
+(and it will), write it in a "Later" list and go back to your current
+commitment. After 90 days, review both. You'll be surprised how many
+"urgent" new ideas lost their appeal, while the thing you stuck with
+actually produced results.
+
+If you scored low: give yourself a "30-Minute Exploration" once a week.
+Pick one AI tool relevant to your field — ChatGPT, Copilot, Midjourney,
+NotebookLM, whatever your classmates are talking about — and spend 30
+minutes just playing with it. No pressure to master it. No commitment to
+use it. Just exposure. The goal isn't to become someone you're not; it's
+to make sure you know what's available, because that knowledge is now part
+of basic professional literacy in almost every field.`,
 
 	academic: `McCrae (1987) demonstrated that Open-Mindedness is the strongest Big Five
 predictor of divergent thinking — the ability to generate multiple different
@@ -173,11 +182,21 @@ và công việc học thuật hoặc chính sách. Nếu bạn có điểm th�
 mang lại giá trị đặc biệt trong các vai trò thưởng cho độ chính xác và thực
 thi đáng tin cậy trong các khuôn khổ đã được thiết lập.`,
 
-	tip: `Nếu bạn có điểm cao, hãy thực hành "cam kết trước sự tò mò" — chọn một dự
-án hoặc kỹ năng, cam kết với nó ít nhất 90 ngày, và chống lại sức kéo của
-các hướng mới cho đến khi hết thời gian đó. Nếu bạn có điểm thấp, hãy chọn
-một công cụ AI liên quan đến lĩnh vực của bạn và dành 30 phút khám phá nó
-trong tuần này.`,
+	tip: `Nếu bạn có điểm cao: rủi ro lớn nhất là bắt đầu nhiều thứ mà hoàn thành
+ít. Hãy thử "Cam kết 90 Ngày": chọn MỘT kỹ năng hoặc dự án — học Python,
+viết bài nghiên cứu, xây portfolio — và cam kết làm ít nhất 3 lần/tuần
+trong 90 ngày. Khi ý tưởng mới hấp dẫn xuất hiện (và chắc chắn sẽ có),
+viết vào danh sách "Để Sau" rồi quay lại cam kết hiện tại. Sau 90 ngày,
+xem lại cả hai. Bạn sẽ ngạc nhiên khi nhiều ý tưởng "khẩn cấp" đã mất
+sức hấp dẫn, trong khi thứ bạn kiên trì thực sự đạt kết quả.
+
+Nếu bạn có điểm thấp: dành cho mình "30 Phút Khám Phá" mỗi tuần. Chọn
+một công cụ AI liên quan đến lĩnh vực của bạn — ChatGPT, Copilot,
+Midjourney, NotebookLM, bất cứ gì bạn bè đang nói — và dành 30 phút
+chơi với nó. Không áp lực phải thành thạo. Không cam kết phải dùng.
+Chỉ tiếp xúc. Mục tiêu không phải trở thành người khác; mà là đảm bảo
+bạn biết những gì có sẵn, vì kiến thức đó giờ là một phần của trình độ
+chuyên môn cơ bản trong hầu hết mọi ngành.`,
 
 	academic: `McCrae (1987) chứng minh Open-Mindedness là predictor Big Five mạnh nhất
 của tư duy phân kỳ. Chamorro-Premuzic & Furnham (2006) phát hiện

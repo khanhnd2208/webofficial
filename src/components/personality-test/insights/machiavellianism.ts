@@ -33,19 +33,24 @@ is disproportionate to the gains. In Vietnamese professional networks, which
 are dense and relationship-driven, a reputation for manipulation spreads fast
 and is very hard to recover from.`,
 
-	high: `You have strong strategic awareness and can navigate complex social and
-political terrain effectively. Ferris and colleagues (2005) define Political
-Skill as the ability to accurately read social situations and use that
-reading to influence others in ways that appear authentic. At this level,
-that capacity is genuinely valuable — it helps you build coalitions, manage
-stakeholders, and advance work that would otherwise stall.
+	high: `You have strong strategic awareness — you can read the unspoken dynamics
+in a room, understand who influences whom, and navigate complex social
+terrain effectively. Ferris and colleagues (2005) define this as Political
+Skill: the ability to accurately read social situations and use that reading
+to influence others in ways that are effective AND authentic.
 
-The line between Political Skill and manipulation lives in two questions:
-Are you willing to be honest if someone asks you directly? And are you
-willing to accept the consequences if your approach becomes visible? If the
-answer to both is yes, you are operating in the realm of strategy. If no,
-you have crossed into manipulation — and the costs accumulate invisibly
-until they don't.`,
+At this level, the capacity is genuinely valuable — you can build coalitions,
+manage stakeholders, and advance important work that would otherwise stall in
+bureaucracy. A concrete example: knowing that your project proposal needs
+support from Department B before the committee meeting, so you schedule a
+coffee with their lead to understand their concerns first — that is strategic
+awareness well used.
+
+The critical question to keep asking yourself: "Am I willing to be fully
+honest if someone asks me directly what I'm doing?" If yes, you are in the
+realm of healthy strategy. If the thought makes you uncomfortable, that
+discomfort is a signal that you may have crossed into manipulation — and
+the costs of that crossing accumulate quietly until they become very loud.`,
 
 	moderate: `You have good social awareness — you understand that organisations have
 political dynamics, you can read those dynamics, and you can operate
@@ -89,11 +94,22 @@ leadership. Very high M is genuinely risky in any sustained professional role,
 because the short-term advantages it offers are consistently outweighed by
 the long-term trust deficits it accumulates.`,
 
-	tip: `Here is a practical test for whether a specific tactic crosses the line from
-strategy into manipulation: If this action became fully visible to everyone
-involved, would I be comfortable explaining my reasoning? If the answer is
-yes, the tactic is strategy. If the answer produces discomfort, that
-discomfort is information worth listening to.`,
+	tip: `Here's how to tell "strategy" from "manipulation" — use the "Daylight Test":
+Imagine everyone involved could see exactly what you're doing. Would you be
+comfortable explaining your reasoning?
+
+Concrete example: You know that Professor A values students who ask questions
+in class, so you always prepare questions before the lecture → This is
+STRATEGY. You understand the system, you're playing by the rules, and you
+have nothing to hide. If someone asks "How do you always have such good
+questions?", you'd comfortably say: "I prepare them beforehand."
+
+But if you deliberately tell the professor negative things about another
+group's presentation to make your group look better — even if the
+information is "technically true" — that is MANIPULATION. The simple test:
+if that other group heard exactly what you said, would you feel ashamed?
+If yes, stop. That discomfort is your moral compass working, and it's
+worth listening to.`,
 
 	academic: `Paulhus & Williams (2002) placed Machiavellianism alongside Narcissism and
 Psychopathy as components of the Dark Triad — three traits that share a core
@@ -152,16 +168,22 @@ phương pháp của bạn trở nên rõ ràng, thiệt hại về danh tiếng
 xứng với lợi ích. Trong mạng lưới chuyên nghiệp Việt Nam, dày đặc và
 theo định hướng quan hệ, danh tiếng thao túng lan nhanh.`,
 
-	high: `Bạn có nhận thức chiến lược mạnh và có thể điều hướng hiệu quả trong địa
-hình xã hội và chính trị phức tạp. Ở mức độ này, năng lực đó thực sự có giá
-trị — nó giúp bạn xây dựng liên minh, quản lý các bên liên quan, và thúc
-đẩy công việc mà nếu không sẽ bị đình trệ.
+	high: `Bạn có nhận thức chiến lược mạnh — bạn đọc được các động lực ngầm trong
+phòng, hiểu ai ảnh hưởng ai, và điều hướng hiệu quả trong địa hình xã hội
+phức tạp. Ferris và cộng sự (2005) gọi đây là Kỹ năng Chính trị: khả năng
+đọc chính xác tình huống xã hội và dùng sự hiểu biết đó để ảnh hưởng người
+khác theo cách vừa hiệu quả VÀ chân thật.
 
-Ranh giới giữa Kỹ năng Chính trị và thao túng nằm ở hai câu hỏi: Bạn có
-sẵn lòng thành thật nếu ai đó hỏi bạn trực tiếp không? Và bạn có sẵn lòng
-chấp nhận hậu quả nếu cách tiếp cận của bạn trở nên rõ ràng không? Nếu câu
-trả lời là có, bạn đang hoạt động trong lĩnh vực chiến lược. Nếu không, bạn
-đã vượt qua thao túng.`,
+Ở mức độ này, năng lực này thực sự có giá trị — bạn biết cách xây dựng liên
+minh, quản lý các bên liên quan, và thúc đẩy công việc thoát khỏi bộ máy
+hành chính. Ví dụ cụ thể: bạn biết đề xuất dự án cần sự ủng hộ của Phòng B
+trước cuộc họp ban, nên bạn chủ động hẹn cà phê với trưởng phòng để hiểu
+mối quan tâm của họ trước — đó là nhận thức chiến lược được sử dụng tốt.
+
+Câu hỏi then chốt cần tự hỏi thường xuyên: "Nếu ai đó hỏi tôi đang làm gì,
+tôi có sẵn lòng thành thật 100% không?" Nếu có, bạn đang trong vùng chiến
+lược lành mạnh. Nếu ý nghĩ đó khiến bạn không thoải mái, đó là tín hiệu
+bạn có thể đã vượt ranh giới sang thao túng.`,
 
 	moderate: `Bạn có nhận thức xã hội tốt — bạn hiểu rằng tổ chức có các động lực chính
 trị, bạn có thể đọc những động lực đó, và bạn có thể hoạt động hiệu quả
@@ -195,12 +217,21 @@ consulting, ngoại giao, quan hệ chính phủ. Nếu bạn có điểm thấp
 lại giá trị đặc biệt trong các vai trò hoạt động bằng niềm tin — chăm sóc
 sức khỏe, giảng dạy, công tác xã hội, lãnh đạo phi lợi nhuận.`,
 
-	tip: `Đây là bài kiểm tra thực tế để xác định liệu một chiến thuật cụ thể có
-vượt qua ranh giới từ chiến lược sang thao túng hay không: Nếu hành động
-này trở nên hoàn toàn rõ ràng với tất cả những người liên quan, tôi có
-thoải mái giải thích lý luận của mình không? Nếu câu trả lời là có, chiến
-thuật là chiến lược. Nếu câu trả lời tạo ra sự khó chịu, sự khó chịu đó
-là thông tin đáng lắng nghe.`,
+	tip: `Hãy dùng bài kiểm tra "Ánh sáng ban ngày" để phân biệt chiến lược và
+thao túng: Tưởng tượng MỌI NGƯỜI liên quan đều nhìn thấy chính xác những
+gì bạn đang làm. Bạn có thoải mái giải thích lý do không?
+
+Ví dụ cụ thể cho sinh viên: Bạn biết thầy A thích sinh viên chủ động hỏi
+bài, nên bạn luôn chuẩn bị câu hỏi trước giờ học → Đây là CHIẾN LƯỢC. Bạn
+hiểu hệ thống, bạn chơi theo luật, và bạn không cần giấu điều gì. Nếu ai
+hỏi "Sao bạn luôn có câu hỏi hay vậy?", bạn thoải mái trả lời: "Mình
+chuẩn bị trước."
+
+Nhưng nếu bạn cố tình nói xấu bài thuyết trình của nhóm khác với giảng viên
+để nhóm mình trông tốt hơn — dù thông tin "về mặt kỹ thuật" là đúng — đó là
+THAO TÚNG. Kiểm tra: nếu nhóm kia nghe được lời bạn nói, bạn có xấu hổ
+không? Nếu có, đó là la bàn đạo đức của bạn đang hoạt động — hãy lắng nghe
+nó.`,
 
 	academic: `Paulhus & Williams (2002) đặt Machiavellianism cùng Narcissism và Psychopathy
 là các thành phần của Dark Triad — ba trait chia sẻ lõi định hướng xã hội

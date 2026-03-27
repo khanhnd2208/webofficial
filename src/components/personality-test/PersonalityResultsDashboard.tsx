@@ -452,18 +452,18 @@ export default function PersonalityResultsDashboard({
               {crossInsights.map((ci, i) => (
                 <motion.div
                   key={i}
-                  className="rounded-2xl border border-border bg-surface p-4 shadow-sm"
+                  className="rounded-2xl border border-border bg-surface p-5 shadow-sm"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <span className="text-xl">{ci.emoji}</span>
                     <h3 className="text-sm font-semibold text-foreground">
                       {ci.title}
                     </h3>
                   </div>
-                  <p className="text-xs text-muted leading-relaxed">
+                  <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
                     {ci.description}
                   </p>
                 </motion.div>

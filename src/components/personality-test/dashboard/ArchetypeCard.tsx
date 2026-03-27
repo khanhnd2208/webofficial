@@ -14,12 +14,12 @@ export function ArchetypeCard({
   const t = getStrings(lang);
 
   const gradients: Record<string, string> = {
-    amber: "from-amber-400 to-orange-400",
-    indigo: "from-indigo-400 to-blue-500",
-    rose: "from-rose-400 to-rose-500",
-    teal: "from-teal-400 to-cyan-500",
-    purple: "from-violet-400 to-indigo-500",
-    emerald: "from-teal-500 to-emerald-400",
+    amber: "from-amber-700 to-orange-600",
+    indigo: "from-indigo-700 to-blue-600",
+    rose: "from-rose-700 to-rose-600",
+    teal: "from-teal-700 to-cyan-600",
+    purple: "from-violet-700 to-indigo-600",
+    emerald: "from-teal-700 to-emerald-600",
   };
 
   const gradient = gradients[archetype.colorTheme] || gradients.indigo;
@@ -49,12 +49,12 @@ export function ArchetypeCard({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Strengths */}
-        <div className="rounded-xl bg-white/15 backdrop-blur-sm p-4">
+        <div className="rounded-xl bg-white/20 backdrop-blur-sm p-4">
           <h3 className="font-semibold mb-2">{t.strengths}</h3>
           <ul className="space-y-1">
             {(lang === 'vi' && archetype.strengthsVi ? archetype.strengthsVi : archetype.strengths).map((s, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="mt-0.5 text-green-200">&#10003;</span>
+                <span className="mt-0.5 text-emerald-200">&#10003;</span>
                 <span>{s}</span>
               </li>
             ))}
@@ -62,12 +62,12 @@ export function ArchetypeCard({
         </div>
 
         {/* Blind spots */}
-        <div className="rounded-xl bg-white/15 backdrop-blur-sm p-4">
+        <div className="rounded-xl bg-white/20 backdrop-blur-sm p-4">
           <h3 className="font-semibold mb-2">{t.blindSpots}</h3>
           <ul className="space-y-1">
             {(lang === 'vi' && archetype.blindspotsVi ? archetype.blindspotsVi : archetype.blindspots).map((b, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="mt-0.5 text-rose-200">&#9888;</span>
+                <span className="mt-0.5 text-amber-200">&#9888;</span>
                 <span>{b}</span>
               </li>
             ))}

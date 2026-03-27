@@ -66,30 +66,30 @@ export const TIER_COLORS: Record<
   { badge: string; ring: string; emoji: string }
 > = {
   very_high: {
-    badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
-    ring: "ring-rose-400/40",
+    badge: "bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200",
+    ring: "ring-rose-300/40 dark:ring-rose-700/40",
     emoji: "\u{1F525}",
   },
   high: {
     badge:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    ring: "ring-amber-400/40",
+      "bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200",
+    ring: "ring-amber-300/40 dark:ring-amber-700/40",
     emoji: "\u2B06\uFE0F",
   },
   moderate: {
-    badge: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300",
-    ring: "ring-sky-400/40",
+    badge: "bg-sky-50 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200",
+    ring: "ring-sky-300/40 dark:ring-sky-700/40",
     emoji: "\u2696\uFE0F",
   },
   low: {
-    badge: "bg-stone-100 text-stone-600 dark:bg-stone-800/40 dark:text-stone-300",
-    ring: "ring-stone-400/30",
+    badge: "bg-stone-50 text-stone-700 dark:bg-stone-900/50 dark:text-stone-200",
+    ring: "ring-stone-300/30 dark:ring-stone-700/30",
     emoji: "\u2B07\uFE0F",
   },
   very_low: {
     badge:
-      "bg-slate-100 text-slate-600 dark:bg-slate-800/40 dark:text-slate-300",
-    ring: "ring-slate-400/30",
+      "bg-slate-50 text-slate-700 dark:bg-slate-900/50 dark:text-slate-200",
+    ring: "ring-slate-300/30 dark:ring-slate-700/30",
     emoji: "\u2744\uFE0F",
   },
 };

@@ -98,13 +98,21 @@ significant risk in any sustained professional role — impulsivity and
 callousness in combination create a pattern that damages both relationships
 and outcomes.`,
 
-	tip: `If you scored high, build one specific pause practice: before responding in
-any conflict or high-stakes interpersonal situation, take ten seconds. Ask
-yourself: "Would I be comfortable if this exact response were witnessed by
-someone whose opinion I respect?" If the answer is no, rephrase. If you
-scored low, practise distinguishing empathy — the capacity to understand and
-care about someone's experience — from over-accommodation — the tendency to
-let that care override your judgment about what is actually right and helpful.`,
+	tip: `If you scored high: build a 10-second pause habit for tense moments. Before
+you reply to that sarcastic group chat message, before you respond to a
+teammate who missed their deadline, before you say what you're thinking in
+a heated meeting — stop. Count to ten. Then ask: "If my lecturer / my
+future boss were watching this exact moment, would I say it the same way?"
+If no, rephrase. This is not about being fake; it is about giving your
+deliberate brain time to override your impulsive brain, which fires faster
+but often lands harder than you intend.
+
+If you scored low: practise separating "I understand your feelings" from
+"I will do what you want." For example, when a friend asks you to cover
+their shift and you can't, you might say: "I can see you're stressed, and
+I wish I could help, but I have my own deadline tonight." That is empathy
+WITHOUT over-accommodation. Caring about someone's situation does not mean
+you must sacrifice your own needs every time.`,
 
 	academic: `Boddy (2011) documented the "Corporate Psychopath" pattern in organisational
 settings, finding significantly higher rates of counterproductive behaviour,
@@ -209,14 +217,21 @@ hướng làm tốt trong các vai trò áp lực cao đòi hỏi hành động 
 bình tĩnh — quản lý khủng hoảng, y học, giao dịch. Psychopathy cao mang rủi
 ro đáng kể trong bất kỳ vai trò chuyên nghiệp bền vững nào.`,
 
-	tip: `Nếu bạn có điểm cao, hãy xây dựng một thực hành dừng lại cụ thể: trước khi
-phản hồi trong bất kỳ xung đột hay tình huống quan hệ quan trọng nào, hãy
-dừng mười giây. Hỏi bản thân: "Tôi có thoải mái nếu phản hồi chính xác này
-được chứng kiến bởi người mà tôi tôn trọng ý kiến của họ không?" Nếu câu
-trả lời là không, hãy diễn đạt lại. Nếu bạn có điểm thấp, hãy thực hành
-phân biệt đồng cảm — hiểu và quan tâm đến trải nghiệm của ai đó — với phục
-vụ quá mức — xu hướng để sự quan tâm đó ghi đè phán đoán của bạn về điều
-gì thực sự đúng và hữu ích.`,
+	tip: `Nếu bạn có điểm cao: hãy tập thói quen DỪNG 10 GIÂY trước khi phản hồi
+trong các tình huống căng thẳng. Trước khi reply tin nhắn mỉa mai trong
+nhóm chat, trước khi nói thẳng với teammate trễ deadline, trước khi buột
+miệng trong cuộc họp nóng — dừng lại. Đếm đến mười. Rồi hỏi: "Nếu giảng
+viên / sếp tương lai đang xem khoảnh khắc này, mình có nói y như vậy
+không?" Nếu không, diễn đạt lại. Đây không phải giả tạo — đây là cho não
+lý trí thời gian bắt kịp não xung động, vì não xung động bắn nhanh hơn
+nhưng thường gây tổn thương nặng hơn bạn nhận ra.
+
+Nếu bạn có điểm thấp: hãy tập tách biệt "Mình hiểu cảm xúc của bạn" với
+"Mình sẽ làm theo ý bạn." Ví dụ: khi bạn bè nhờ đổi ca trực nhưng bạn
+không thể, hãy nói: "Mình thấy bạn đang stress, và mình muốn giúp, nhưng
+tối nay mình cũng có deadline riêng." Đó là đồng cảm KHÔNG phải phục vụ
+quá mức. Quan tâm đến tình huống của ai đó không có nghĩa bạn phải hy sinh
+nhu cầu của mình mỗi lần.`,
 
 	academic: `Boddy (2011) ghi nhận mô hình "Corporate Psychopath" trong các bối cảnh tổ
 chức, phát hiện tỷ lệ cao hơn đáng kể về hành vi phản tác dụng, bắt nạt và
