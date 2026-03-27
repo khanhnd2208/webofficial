@@ -86,9 +86,11 @@ export function RadarChart({
           return (
             <text
               key={`tick-${level}`}
-              x={x + 8}
-              y={y - 4}
-              className="fill-current text-[9px] opacity-25"
+              x={x + 6}
+              y={y - 3}
+              fill="currentColor"
+              fillOpacity={0.3}
+              fontSize={9}
               textAnchor="start"
             >
               {level}
@@ -153,12 +155,15 @@ export function RadarChart({
               {/* Score near dot */}
               <motion.text
                 x={x}
-                y={y - 12}
+                y={y - 11}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-current text-[10px] font-bold opacity-50"
+                fill="currentColor"
+                fillOpacity={0.55}
+                fontSize={9.5}
+                fontWeight={700}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 0.5 }}
+                animate={{ opacity: 0.55 }}
                 transition={{ delay: 0.6 + i * 0.08 }}
               >
                 {t.score.toFixed(1)}
@@ -169,7 +174,10 @@ export function RadarChart({
                 y={lp.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-current text-[10px] font-semibold opacity-65"
+                fill="currentColor"
+                fillOpacity={0.7}
+                fontSize={10}
+                fontWeight={600}
               >
                 {shortLabel}
               </text>

@@ -77,12 +77,12 @@ export function TraitCard({
             <h3 className="font-bold text-foreground text-base leading-tight truncate">
               {domainLabel}
             </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm font-mono text-muted tabular-nums">
-                {trait.score.toFixed(2)}/5
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs font-mono text-muted tabular-nums">
+                {trait.score.toFixed(2)}<span className="opacity-50">/5</span>
               </span>
               <span
-                className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold ${tc.badge}`}
+                className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${tc.badge}`}
               >
                 {tc.emoji} {tierLabel}
               </span>
@@ -99,16 +99,16 @@ export function TraitCard({
       </div>
 
       {/* Score bar */}
-      <div className="mx-5 mb-4 h-1.5 w-auto overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+      <div className="mx-5 mb-3 h-1.5 w-auto overflow-hidden rounded-full bg-border/40">
         <motion.div
           className={`h-full rounded-full ${
             isDarkTriad
-              ? "bg-linear-to-r from-violet-400 to-purple-500"
-              : "bg-linear-to-r from-indigo-400 to-blue-500"
+              ? "bg-violet-500 dark:bg-violet-400"
+              : "bg-indigo-500 dark:bg-indigo-400"
           }`}
           initial={{ width: 0 }}
           animate={{ width: `${scoreBarWidth}%` }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.7 }}
         />
       </div>
 
@@ -127,9 +127,10 @@ export function TraitCard({
       {!expanded && (
         <button
           onClick={() => setExpanded(true)}
-          className="mx-5 mb-4 flex items-center gap-1.5 text-xs text-accent font-medium hover:underline"
+          className="mx-5 mb-4 flex items-center gap-1.5 text-xs text-muted hover:text-accent font-medium transition-colors"
         >
-          ✨ {t.tapToExplore}
+          <span className="text-[10px]">▶</span>
+          {t.tapToExplore}
         </button>
       )}
 

@@ -32,7 +32,7 @@ function TooltipCell({
           onClick={() => setOpen((v) => !v)}
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
-          className={`inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-0.5 font-mono text-sm font-bold transition-all hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${highlight}`}
+          className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 font-mono text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${highlight}`}
           aria-label={tooltip}
         >
           {children}
@@ -72,23 +72,23 @@ export function ScoreTable({
     <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-sm">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b-2 border-border bg-background-secondary/60">
-            <th className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-muted">
+          <tr className="border-b border-border bg-background-secondary/60">
+            <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted">
               {t.thTrait}
             </th>
-            <th className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-muted hidden sm:table-cell">
+            <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-muted hidden sm:table-cell">
               {t.thType}
             </th>
-            <th className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+            <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-muted">
               {t.thScore}
             </th>
-            <th className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+            <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-muted">
               {t.thZ}
             </th>
-            <th className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+            <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-muted">
               {t.thLevel}
             </th>
-            <th className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-muted">
+            <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-muted">
               {t.thPercentile}
             </th>
           </tr>

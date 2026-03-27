@@ -90,7 +90,7 @@ function InvalidResultCard({ lang }: { lang: Lang }) {
   );
 }
 
-// ── Reusable section heading with icon + decorative bar ────────────────────────
+// ── Clean typographic section heading ──────────────────────────────────────────
 
 function SectionHeading({
   title,
@@ -99,19 +99,19 @@ function SectionHeading({
 }: {
   title: string;
   subtitle?: string;
-  icon: string;
+  icon?: string;
 }) {
   return (
-    <div className="flex items-start gap-3 mb-5">
-      <span className="text-xl mt-0.5 shrink-0">{icon}</span>
-      <div>
-        <h2 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight leading-tight">
-          {title}
+    <div className="mb-5">
+      <div className="flex items-center gap-2 mb-0.5">
+        <div className="h-4 w-0.5 rounded-full bg-accent" aria-hidden="true" />
+        <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-tight">
+          {icon && <span className="mr-1.5">{icon}</span>}{title}
         </h2>
-        {subtitle && (
-          <p className="text-sm text-muted mt-0.5">{subtitle}</p>
-        )}
       </div>
+      {subtitle && (
+        <p className="ml-3 text-sm text-muted">{subtitle}</p>
+      )}
     </div>
   );
 }
@@ -139,88 +139,54 @@ function RefGroupSelector({
   };
 }) {
   const t = getStrings(lang);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
-    <div className="space-y-3">
-      {/* Section label */}
-      <div className="flex items-center gap-2">
-        <div className="h-4 w-1 rounded-full bg-accent" />
-        <span className="text-sm font-bold text-foreground tracking-tight">{label}</span>
-      </div>
+    <div className="space-y-2.5">
+      {/* Label */}
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
 
-      {/* Segmented control track */}
-      <div className="flex flex-wrap gap-2 rounded-xl bg-background-secondary/60 p-1.5">
+      {/* Pill tabs */}
+      <div className="flex flex-wrap gap-1.5">
         {groups.map((g) => {
           const isActive = g.id === selected;
           const displayLabel = lang === "vi" ? g.labelVi : g.label;
           const isLocal = g.isLocal === true;
           return (
-            <div key={g.id} className="relative">
-              <button
-                onClick={() => onChange(g.id)}
-                onMouseEnter={() => setHoveredId(g.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                className={`relative flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 ${
-                  isActive
-                    ? "bg-surface-elevated text-foreground shadow-md ring-1 ring-border"
-                    : "text-muted hover:text-foreground hover:bg-surface/60"
-                }`}
-              >
-                {/* Active indicator line */}
-                {isActive && (
-                  <motion.div
-                    layoutId="ref-group-indicator"
-                    className={`absolute bottom-0 left-3 right-3 h-0.5 rounded-full ${
-                      isLocal ? "bg-emerald-500" : "bg-accent"
-                    }`}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="text-sm">{isLocal ? "🏫" : "🌍"}</span>
-                <span className="truncate max-w-45">{displayLabel}</span>
-                <span className={`ml-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
-                  isActive
-                    ? "bg-accent/10 text-accent"
-                    : "bg-background-secondary text-muted"
-                }`}>
-                  n={g.n.toLocaleString()}
-                </span>
-              </button>
-
-              {/* Tooltip on hover */}
-              {hoveredId === g.id && !isActive && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 z-50 mb-2 w-56 rounded-xl border border-border bg-surface-elevated p-3 shadow-xl text-xs"
-                >
-                  <p className="font-semibold text-foreground mb-1">{displayLabel}</p>
-                  <p className="text-muted">
-                    n={g.n.toLocaleString()}
-                    {isLocal && ` · ${lang === "vi" ? "Cập nhật trực tiếp" : "Live-updated"}`}
-                  </p>
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 border-b border-r border-border bg-surface-elevated" />
-                </motion.div>
+            <button
+              key={g.id}
+              onClick={() => onChange(g.id)}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
+                isActive
+                  ? isLocal
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200"
+                    : "border-accent/40 bg-accent/8 text-accent"
+                  : "border-border bg-surface text-muted hover:border-border-hover hover:text-foreground"
+              }`}
+              aria-pressed={isActive}
+            >
+              {isLocal && (
+                <span
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"
+                  aria-label="Local norms"
+                />
               )}
-            </div>
+              <span className="truncate max-w-36">{displayLabel}</span>
+              <span className={`tabular-nums text-[10px] ${
+                isActive ? "opacity-70" : "opacity-40"
+              }`}>
+                {g.n >= 1000 ? `${(g.n / 1000).toFixed(g.n % 1000 < 100 ? 1 : 0)}k` : g.n}
+              </span>
+            </button>
           );
         })}
       </div>
 
-      {/* Selected group detail panel */}
+      {/* Selected group detail */}
       {referenceGroupDetails && (
-        <div className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-surface/50 px-3.5 py-2.5 text-[11px] text-muted">
-          <span className="text-base mt-0.5 shrink-0">📋</span>
-          <div className="space-y-0.5 min-w-0">
-            <p className="leading-relaxed">
-              {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
-            </p>
-            <p className="opacity-60">
-              {t.groupSource}: {referenceGroupDetails.source}
-            </p>
-          </div>
-        </div>
+        <p className="text-[11px] text-muted leading-relaxed pl-1 border-l-2 border-border/60">
+          {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
+          <span className="opacity-50"> — {referenceGroupDetails.source}</span>
+        </p>
       )}
     </div>
   );
@@ -235,25 +201,39 @@ function NormDisclaimer({ lang }: { lang: Lang }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-xl border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/50 dark:bg-amber-950/15 px-4 py-3">
+    <div className="rounded-lg border border-border bg-background-secondary/50 px-4 py-3">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center gap-2.5 text-left group"
       >
-        <span className="text-lg shrink-0">ℹ️</span>
-        <span className="text-xs font-medium text-amber-700 dark:text-amber-300 leading-relaxed flex-1">
+        <svg
+          className="h-4 w-4 shrink-0 text-muted"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span className="flex-1 text-xs text-muted leading-relaxed">
           {t.normDisclaimer}
         </span>
-        <span className={`text-amber-500 dark:text-amber-400 transition-transform duration-200 text-[10px] shrink-0 ${expanded ? "rotate-180" : ""}`}>
-          ▼
-        </span>
+        <svg
+          className={`h-3.5 w-3.5 shrink-0 text-muted transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
       {expanded && (
         <motion.p
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="mt-2.5 pl-8 text-[11px] text-amber-600/80 dark:text-amber-300/70 leading-relaxed"
+          className="mt-2 pl-6 text-[11px] text-muted leading-relaxed"
         >
           {t.normDisclaimerDetail}
         </motion.p>
@@ -463,29 +443,20 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* ══════════ RADAR CHART ═════════════════════════════════════════ */}
+        {/* ═════════ RADAR CHART ═══════════════════════════════════════ */}
         {oceanTraits.length > 0 && (
           <section>
-            <SectionHeading
-              title={t.oceanTitle}
-              subtitle={t.oceanSubtitle}
-              icon="🧬"
-            />
             <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
               <RadarChart traits={oceanTraits} lang={lang} />
             </div>
           </section>
         )}
 
-        {/* ══════════ OCEAN TRAIT CARDS ════════════════════════════════════ */}
+        {/* ═════════ OCEAN TRAIT CARDS ════════════════════════════════════ */}
         {oceanTraits.length > 0 && (
           <section>
-            <div className="mb-2">
-              <p className="text-xs text-accent font-medium animate-pulse">
-                ✨ {t.tapToExplore}
-              </p>
-            </div>
-            <div className="grid gap-4 sm:gap-5">
+            <SectionHeading title={t.oceanTitle} subtitle={t.oceanSubtitle} />
+            <div className="grid gap-3 sm:gap-4">
               {oceanTraits.map((trait, i) => (
                 <motion.div
                   key={trait.domain}
@@ -505,18 +476,14 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* ══════════ DARK TRIAD TRAIT CARDS ═══════════════════════════════ */}
+        {/* ═════════ DARK TRIAD TRAIT CARDS ════════════════════════════════ */}
         {dtTraits.length > 0 && (
           <section>
             <SectionHeading
               title={t.darkTriadTitle}
               subtitle={t.darkTriadSubtitle}
-              icon="🌑"
             />
-            <p className="text-xs text-muted italic mb-4 -mt-2 pl-7">
-              {t.darkTriadNote}
-            </p>
-            <div className="grid gap-4 sm:gap-5">
+            <div className="grid gap-3 sm:gap-4">
               {dtTraits.map((trait, i) => (
                 <motion.div
                   key={trait.domain}
@@ -536,18 +503,15 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* ══════════ PERCENTILE COMPARISON PANEL ═════════════════════════ */}
+        {/* ═════════ PERCENTILE COMPARISON PANEL ══════════════════════ */}
         {allTraits.length > 0 && (
           <section className="rounded-2xl border border-border bg-surface overflow-hidden">
             {/* Panel header */}
-            <div className="border-b border-border bg-background-secondary/40 px-5 sm:px-7 py-5">
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-xl">📊</span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight">
-                  {t.percentileTitle}
-                </h2>
-              </div>
-              <p className="text-sm text-muted pl-9">{t.percentileSubtitle}</p>
+            <div className="border-b border-border bg-background-secondary/40 px-5 sm:px-7 py-4">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                {t.percentileTitle}
+              </h2>
+              <p className="mt-0.5 text-xs text-muted">{t.percentileSubtitle}</p>
             </div>
 
             <div className="px-5 sm:px-7 py-6 space-y-6">
