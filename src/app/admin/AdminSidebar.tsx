@@ -108,6 +108,17 @@ const NAV = [
 					</svg>
 				),
 			},
+			{
+				href: '/admin/personality-test/content',
+				label: 'Result Content',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<path d="M5 3h10a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.4" />
+						<path d="M7 7h6M7 10h6M7 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+						<path d="M13 12l1.5 1.5L16 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
+				),
+			},
 		],
 	},
 ] as const;
