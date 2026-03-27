@@ -463,6 +463,64 @@ export async function getAverageScores(): Promise<Record<string, number>> {
 }
 
 /**
+ * Compute local normative statistics (mean, stddev, n) for ALL 8 trait
+ * domains from valid sessions stored in the database.
+ *
+ * Returns a Record<camelCase-domain, { mean, sd, n }> that can be fed
+ * directly into the percentile engine as a dynamic ReferenceGroup.
+ *
+ * Uses STDDEV_SAMP (Bessel-corrected, n-1) which is the correct
+ * estimator when the DB rows are a *sample* — not the whole population.
+ * Falls back to 0.5 for sd when < 2 rows to avoid division-by-zero.
+ */
+export async function getLocalNormativeStats(): Promise<
+	Record<string, { mean: number; sd: number; n: number }>
+> {
+	const cols = [
+		{ camel: 'extraversion', sql: 'extraversion' },
+		{ camel: 'agreeableness', sql: 'agreeableness' },
+		{ camel: 'conscientiousness', sql: 'conscientiousness' },
+		{ camel: 'negativeEmotionality', sql: 'negative_emotionality' },
+		{ camel: 'openMindedness', sql: 'open_mindedness' },
+		{ camel: 'machiavellianism', sql: 'machiavellianism' },
+		{ camel: 'narcissism', sql: 'narcissism' },
+		{ camel: 'psychopathy', sql: 'psychopathy' },
+	];
+
+	// Build a single query that computes AVG, STDDEV_SAMP, COUNT for every column
+	const selects = cols.map(
+		(c) =>
+			`ROUND(AVG(${c.sql})::numeric, 4)          AS "${c.camel}_mean",
+			 ROUND(STDDEV_SAMP(${c.sql})::numeric, 4)  AS "${c.camel}_sd",
+			 COUNT(${c.sql})::int                       AS "${c.camel}_n"`
+	);
+
+	const { rows } = await pgPool.query<Record<string, string>>(
+		`SELECT ${selects.join(',\n')}
+		 FROM personality_test_results
+		 WHERE is_valid = true`
+	);
+
+	const row = rows[0];
+	if (!row) return {};
+
+	const result: Record<string, { mean: number; sd: number; n: number }> = {};
+	for (const c of cols) {
+		const mean = Number(row[`${c.camel}_mean`]);
+		const sd = Number(row[`${c.camel}_sd`]);
+		const n = Number(row[`${c.camel}_n`]);
+		if (!isNaN(mean) && n > 0) {
+			result[c.camel] = {
+				mean,
+				sd: isNaN(sd) || sd === 0 ? 0.5 : sd, // fallback for n<2
+				n,
+			};
+		}
+	}
+	return result;
+}
+
+/**
  * Calculate percentile rank for a given domain score.
  * Uses: (count of scores below this score / total valid sessions) * 100
  */

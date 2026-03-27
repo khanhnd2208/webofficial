@@ -18,7 +18,10 @@
 export type { NormativeStats, ReferenceGroup, PercentileResult } from './normative';
 
 // Data
-export { REFERENCE_GROUPS, BFI2_FACET_NORMS } from './normative';
+export {
+	REFERENCE_GROUPS, BFI2_FACET_NORMS,
+	LOCAL_OCEAN_GROUP_ID, LOCAL_DARKTRIAD_GROUP_ID, buildLocalReferenceGroup,
+} from './normative';
 
 // Functions
 export {
@@ -30,6 +33,7 @@ export {
 	calculateZScore,
 	calculatePercentile,
 	calculateDomainPercentile,
+	calculateDomainPercentileFromGroup,
 	calculateAllPercentiles,
 	getReferenceGroupOptions,
 } from './normative';

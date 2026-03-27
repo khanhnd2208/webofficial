@@ -144,7 +144,18 @@ export function calculateDomainPercentile(
 ): PercentileResult | null {
 	const group = getReferenceGroupById(referenceGroupId);
 	if (!group) return null;
+	return calculateDomainPercentileFromGroup(domain, score, group);
+}
 
+/**
+ * Calculate percentile for a single domain against a provided ReferenceGroup object.
+ * This supports both static (published) and dynamic (local DB) reference groups.
+ */
+export function calculateDomainPercentileFromGroup(
+	domain: PersonalityDomain,
+	score: number,
+	group: ReferenceGroup
+): PercentileResult | null {
 	const norms = group.norms[domain];
 	if (!norms) return null;
 
@@ -170,13 +181,20 @@ export function calculateDomainPercentile(
 /**
  * Calculate percentiles for ALL domains against default reference groups.
  * Returns a map of domain → PercentileResult.
+ *
+ * Supports both static (published) and dynamic (local DB) reference groups.
+ * Pass dynamicGroups to inject ReferenceGroup objects that aren't in the
+ * static REFERENCE_GROUPS array (e.g. local norms built from DB).
+ *
  * @param gender - When provided, selects gender-specific Study 1 norms for SD3 traits.
+ * @param dynamicGroups - Optional map of groupId → ReferenceGroup for local/dynamic groups.
  */
 export function calculateAllPercentiles(
 	scores: Partial<Record<PersonalityDomain, number>>,
 	oceanGroupId?: string,
 	darkTriadGroupId?: string,
-	gender?: 'male' | 'female' | 'other'
+	gender?: 'male' | 'female' | 'other',
+	dynamicGroups?: Record<string, ReferenceGroup>
 ): Record<string, PercentileResult> {
 	const defaults = getDefaultReferenceGroupIds(gender);
 	const oceanRef = oceanGroupId || defaults.ocean;
@@ -188,7 +206,13 @@ export function calculateAllPercentiles(
 		if (score == null) continue;
 		const isOcean = OCEAN_DOMAINS.includes(domain as OceanDomain);
 		const groupId = isOcean ? oceanRef : darkRef;
-		const result = calculateDomainPercentile(domain as PersonalityDomain, score, groupId);
+
+		// Check dynamic groups first, then fall back to static lookup
+		const dynGroup = dynamicGroups?.[groupId];
+		const result = dynGroup
+			? calculateDomainPercentileFromGroup(domain as PersonalityDomain, score, dynGroup)
+			: calculateDomainPercentile(domain as PersonalityDomain, score, groupId);
+
 		if (result) {
 			results[domain] = result;
 		}

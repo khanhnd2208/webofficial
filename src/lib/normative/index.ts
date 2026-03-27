@@ -14,7 +14,10 @@
 export type { NormativeStats, ReferenceGroup, PercentileResult } from './types';
 
 // ── Data ───────────────────────────────────────────────────────────────────────
-export { REFERENCE_GROUPS, BFI2_FACET_NORMS, OCEAN_DOMAINS, DARK_TRIAD_DOMAINS } from './norms';
+export {
+	REFERENCE_GROUPS, BFI2_FACET_NORMS, OCEAN_DOMAINS, DARK_TRIAD_DOMAINS,
+	LOCAL_OCEAN_GROUP_ID, LOCAL_DARKTRIAD_GROUP_ID, buildLocalReferenceGroup,
+} from './norms';
 
 // ── Percentile Engine ──────────────────────────────────────────────────────────
 export {
@@ -31,6 +34,7 @@ export {
 
 	// Composite
 	calculateDomainPercentile,
+	calculateDomainPercentileFromGroup,
 	calculateAllPercentiles,
 
 	// UI helpers

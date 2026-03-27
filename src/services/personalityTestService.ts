@@ -331,14 +331,16 @@ async function calculateAndUpdatePercentiles(
 /**
  * Calculate percentiles for arbitrary reference groups (on-demand).
  * Used when the user selects different reference groups in the UI.
+ * Supports dynamic groups (e.g. local norms from DB) via the dynamicGroups param.
  */
 export function calculatePercentilesForGroups(
 	scores: Partial<Record<import('@/types/personalityTest').PersonalityDomain, number>>,
 	oceanGroupId?: string,
 	darkTriadGroupId?: string,
-	gender?: 'male' | 'female' | 'other'
+	gender?: 'male' | 'female' | 'other',
+	dynamicGroups?: Record<string, import('@/lib/normative').ReferenceGroup>
 ): Record<string, PercentileResult> {
-	return calculateNormativePercentiles(scores, oceanGroupId, darkTriadGroupId, gender);
+	return calculateNormativePercentiles(scores, oceanGroupId, darkTriadGroupId, gender, dynamicGroups);
 }
 
 // ─── Admin Queries ─────────────────────────────────────────────────────────────

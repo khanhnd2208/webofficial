@@ -7,6 +7,9 @@
      oceanGroup       Reference group ID for BFI-2 (default: bfi2-internet)
      darkTriadGroup   Reference group ID for SD3 (default: sd3-community)
    
+   Supports local norms: pass oceanGroup=local-ocean or darkTriadGroup=local-darktriad
+   to compare against the platform's own student database.
+   
    Returns:
      { percentiles: Record<domain, PercentileResult>, referenceGroups: [...] }
    ════════════════════════════════════════════════════════════════════════ */
@@ -21,8 +24,13 @@ import {
 	getReferenceGroupById,
 	getDefaultReferenceGroupIds,
 	getReferenceGroupOptions,
+	LOCAL_OCEAN_GROUP_ID,
+	LOCAL_DARKTRIAD_GROUP_ID,
+	buildLocalReferenceGroup,
 } from '@/lib/normativeData';
+import { getLocalNormativeStats } from '@/models/PersonalityTest';
 import type { PersonalityDomain } from '@/types/personalityTest';
+import type { ReferenceGroup } from '@/lib/normative';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -59,11 +67,32 @@ export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 	const oceanGroupId = searchParams.get('oceanGroup') || defaults.ocean;
 	const darkTriadGroupId = searchParams.get('darkTriadGroup') || defaults.darkTriad;
 
-	// Validate reference group IDs
-	if (!getReferenceGroupById(oceanGroupId)) {
+	// ── Handle local norms ──────────────────────────────────────────────────
+	const needsLocal =
+		oceanGroupId === LOCAL_OCEAN_GROUP_ID ||
+		darkTriadGroupId === LOCAL_DARKTRIAD_GROUP_ID;
+
+	let localOceanGroup: ReferenceGroup | undefined;
+	let localDtGroup: ReferenceGroup | undefined;
+	const dynamicGroups: Record<string, ReferenceGroup> = {};
+
+	if (needsLocal) {
+		const localStats = await getLocalNormativeStats();
+		if (oceanGroupId === LOCAL_OCEAN_GROUP_ID) {
+			localOceanGroup = buildLocalReferenceGroup('ocean', localStats);
+			dynamicGroups[LOCAL_OCEAN_GROUP_ID] = localOceanGroup;
+		}
+		if (darkTriadGroupId === LOCAL_DARKTRIAD_GROUP_ID) {
+			localDtGroup = buildLocalReferenceGroup('darkTriad', localStats);
+			dynamicGroups[LOCAL_DARKTRIAD_GROUP_ID] = localDtGroup;
+		}
+	}
+
+	// Validate non-local reference group IDs
+	if (oceanGroupId !== LOCAL_OCEAN_GROUP_ID && !getReferenceGroupById(oceanGroupId)) {
 		return apiError(`Invalid OCEAN reference group: ${oceanGroupId}`, 400);
 	}
-	if (!getReferenceGroupById(darkTriadGroupId)) {
+	if (darkTriadGroupId !== LOCAL_DARKTRIAD_GROUP_ID && !getReferenceGroupById(darkTriadGroupId)) {
 		return apiError(`Invalid Dark Triad reference group: ${darkTriadGroupId}`, 400);
 	}
 
@@ -80,8 +109,62 @@ export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 		psychopathy: darkTriad.psychopathy.score,
 	};
 
-	// Calculate percentiles
-	const percentiles = calculatePercentilesForGroups(scores, oceanGroupId, darkTriadGroupId);
+	// Calculate percentiles (with dynamic groups for local norms)
+	const percentiles = calculatePercentilesForGroups(
+		scores, oceanGroupId, darkTriadGroupId, undefined, dynamicGroups
+	);
+
+	// ── Build available groups list (include local options) ──────────────
+	const staticOptions = getReferenceGroupOptions();
+
+	// Fetch local stats to include local norms in the selector (with real n)
+	// If we already fetched for the computation above, reuse; otherwise fetch now
+	let localStatsForSelector: Record<string, { mean: number; sd: number; n: number }> | null = null;
+	if (!needsLocal) {
+		try {
+			localStatsForSelector = await getLocalNormativeStats();
+		} catch { /* ignore — local norms optional */ }
+	}
+
+	// Add local groups to available groups list
+	const localOceanN = localOceanGroup
+		? Object.values(localOceanGroup.norms)[0]?.n ?? 0
+		: localStatsForSelector
+			? (localStatsForSelector['extraversion']?.n ?? 0)
+			: 0;
+	const localDtN = localDtGroup
+		? Object.values(localDtGroup.norms)[0]?.n ?? 0
+		: localStatsForSelector
+			? (localStatsForSelector['machiavellianism']?.n ?? 0)
+			: 0;
+
+	const MIN_LOCAL_N = 10; // require at least 10 valid sessions for local norms
+
+	const availableGroups = [
+		...staticOptions,
+		...(localOceanN >= MIN_LOCAL_N ? [{
+			id: LOCAL_OCEAN_GROUP_ID,
+			label: `Local Student Norms (n=${localOceanN})`,
+			labelVi: `Chuẩn sinh viên tại đây (n=${localOceanN})`,
+			type: 'ocean' as const,
+			n: localOceanN,
+			isLocal: true,
+		}] : []),
+		...(localDtN >= MIN_LOCAL_N ? [{
+			id: LOCAL_DARKTRIAD_GROUP_ID,
+			label: `Local Student Norms (n=${localDtN})`,
+			labelVi: `Chuẩn sinh viên tại đây (n=${localDtN})`,
+			type: 'darkTriad' as const,
+			n: localDtN,
+			isLocal: true,
+		}] : []),
+	];
+
+	// ── Reference group details ─────────────────────────────────────────
+	const oceanDetail = localOceanGroup
+		?? REFERENCE_GROUPS.find(g => g.id === oceanGroupId);
+	const dtDetail = localDtGroup
+		?? REFERENCE_GROUPS.find(g => g.id === darkTriadGroupId);
 
 	// Return percentiles + available reference groups for UI dropdowns
 	return apiSuccess({
@@ -91,10 +174,10 @@ export const GET = withErrorHandling(async (request: NextRequest, context?) => {
 			ocean: oceanGroupId,
 			darkTriad: darkTriadGroupId,
 		},
-		availableGroups: getReferenceGroupOptions(),
+		availableGroups,
 		referenceGroupDetails: {
-			ocean: REFERENCE_GROUPS.find(g => g.id === oceanGroupId),
-			darkTriad: REFERENCE_GROUPS.find(g => g.id === darkTriadGroupId),
+			ocean: oceanDetail,
+			darkTriad: dtDetail,
 		},
 	});
 });

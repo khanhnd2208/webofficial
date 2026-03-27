@@ -140,6 +140,18 @@ export interface UiStrings {
 	limitEffect: string;
 	limitEffectText: string;
 	referencesTitle: string;
+	/* Norm disclaimer & local norms */
+	normDisclaimer: string;
+	normDisclaimerDetail: string;
+	normDisclaimerCollapse: string;
+	localNormsLabel: string;
+	localNormsDescription: string;
+	localNormsBadge: string;
+	internationalNormsBadge: string;
+	groupSelectorHint: string;
+	groupSource: string;
+	groupDescription: string;
+	minLocalN: string;
 }
 
 export const UI_EN: UiStrings = {
@@ -219,6 +231,18 @@ export const UI_EN: UiStrings = {
 	limitEffect: 'Effect Size',
 	limitEffectText: 'Correlations between traits and outcomes are typically r=0.2-0.4. Personality explains ~10-15% variance — other factors (skill, opportunity, effort) matter equally.',
 	referencesTitle: 'Key References',
+	/* Norm disclaimer & local norms */
+	normDisclaimer: '⚠️ Important: These percentiles use Western reference norms',
+	normDisclaimerDetail: 'The default reference groups come from US/Canadian adult samples (Soto & John 2017; Jones & Paulhus 2014). Cultural differences in self-reporting style and values mean Vietnamese students often score higher on Agreeableness, Conscientiousness, and Narcissism compared to these Western norms — this is a sample mismatch, not a personality issue. For a more relevant comparison, select "Local Student Norms" below to compare against other students on this platform.',
+	normDisclaimerCollapse: 'Show details',
+	localNormsLabel: 'Local Student Norms',
+	localNormsDescription: 'Compare against students who completed this test on this platform. Updated live from the database.',
+	localNormsBadge: '🏫 Local',
+	internationalNormsBadge: '🌍 International',
+	groupSelectorHint: 'Click a group to change your comparison baseline. Hover for details.',
+	groupSource: 'Source',
+	groupDescription: 'Description',
+	minLocalN: 'Local norms require at least 10 valid responses to be available.',
 };
 
 export const UI_VI: UiStrings = {
@@ -298,6 +322,18 @@ export const UI_VI: UiStrings = {
 	limitEffect: 'Kích thước Hiệu ứng (Effect Size)',
 	limitEffectText: 'Tương quan giữa trait và outcomes thường r=0.2-0.4. Personality giải thích ~10-15% variance — yếu tố khác (skill, opportunity, effort) quan trọng không kém.',
 	referencesTitle: 'Tài liệu Tham khảo chính',
+	/* Norm disclaimer & local norms */
+	normDisclaimer: '⚠️ Lưu ý: Percentile đang dùng chuẩn mực phương Tây',
+	normDisclaimerDetail: 'Nhóm tham chiếu mặc định đến từ người trưởng thành Mỹ/Canada (Soto & John 2017; Jones & Paulhus 2014). Do khác biệt văn hóa trong cách tự đánh giá và hệ giá trị, sinh viên Việt Nam thường có điểm Dễ chịu (Agreeableness), Tận tâm (Conscientiousness) và Ái kỷ (Narcissism) cao hơn so với chuẩn phương Tây — đây là sự không khớp mẫu, không phải vấn đề tính cách. Để so sánh phù hợp hơn, hãy chọn "Chuẩn sinh viên tại đây" bên dưới để so với các bạn cùng làm bài trên nền tảng này.',
+	normDisclaimerCollapse: 'Xem chi tiết',
+	localNormsLabel: 'Chuẩn sinh viên tại đây',
+	localNormsDescription: 'So sánh với các sinh viên đã làm bài trên nền tảng này. Cập nhật trực tiếp từ cơ sở dữ liệu.',
+	localNormsBadge: '🏫 Tại đây',
+	internationalNormsBadge: '🌍 Quốc tế',
+	groupSelectorHint: 'Nhấn vào nhóm để thay đổi cơ sở so sánh. Di chuột để xem mô tả.',
+	groupSource: 'Nguồn',
+	groupDescription: 'Mô tả',
+	minLocalN: 'Chuẩn mực tại đây cần ít nhất 10 bài hợp lệ mới khả dụng.',
 };
 
 export function getStrings(lang: Lang): UiStrings {

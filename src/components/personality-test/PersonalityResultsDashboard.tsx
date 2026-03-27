@@ -96,35 +96,115 @@ function RefGroupSelector({
   onChange,
   label,
   lang,
+  referenceGroupDetails,
 }: {
-  groups: { id: string; label: string; labelVi: string; n: number }[];
+  groups: { id: string; label: string; labelVi: string; n: number; isLocal?: boolean }[];
   selected: string;
   onChange: (id: string) => void;
   label: string;
   lang: Lang;
+  referenceGroupDetails?: {
+    id: string;
+    label: string;
+    labelVi: string;
+    description: string;
+    descriptionVi: string;
+    source: string;
+  };
 }) {
+  const t = getStrings(lang);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
   return (
     <div className="space-y-2">
-      <span className="text-sm font-semibold text-foreground">{label}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-semibold text-foreground">{label}</span>
+        <span className="text-[11px] text-muted italic">{t.groupSelectorHint}</span>
+      </div>
       <div className="flex flex-wrap gap-2">
         {groups.map((g) => {
           const isActive = g.id === selected;
           const displayLabel = lang === "vi" ? g.labelVi : g.label;
+          const isLocal = g.isLocal === true;
           return (
-            <button
-              key={g.id}
-              onClick={() => onChange(g.id)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                isActive
-                  ? "bg-accent text-white shadow-sm"
-                  : "bg-background-secondary text-muted hover:bg-accent/20"
-              }`}
-            >
-              {displayLabel} (n={g.n})
-            </button>
+            <div key={g.id} className="relative">
+              <button
+                onClick={() => onChange(g.id)}
+                onMouseEnter={() => setHoveredId(g.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                className={`rounded-xl px-3 py-2 text-xs font-medium transition-all border-2 ${
+                  isActive
+                    ? isLocal
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 shadow-sm"
+                      : "border-accent bg-accent/10 text-accent dark:bg-accent/20 shadow-sm"
+                    : "border-transparent bg-background-secondary text-muted hover:bg-accent/10 hover:border-accent/30"
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  {isLocal && <span className="text-[10px]">🏫</span>}
+                  {!isLocal && <span className="text-[10px]">🌍</span>}
+                  <span>{displayLabel}</span>
+                </span>
+              </button>
+              {/* Hover tooltip card */}
+              {hoveredId === g.id && (
+                <div className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-border bg-surface p-3 shadow-xl shadow-black/10 text-xs">
+                  <p className="font-semibold text-foreground mb-1">{displayLabel}</p>
+                  <p className="text-muted leading-relaxed">
+                    n={g.n.toLocaleString()}
+                    {isLocal && ` · ${lang === 'vi' ? 'Cập nhật trực tiếp' : 'Live-updated'}`}
+                  </p>
+                  <div className="absolute -bottom-1 left-4 h-2 w-2 rotate-45 border-b border-r border-border bg-surface" />
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
+      {/* Show selected group details */}
+      {referenceGroupDetails && (
+        <div className="mt-1 rounded-lg bg-background-secondary/50 px-3 py-2 text-[11px] text-muted space-y-0.5">
+          <p>
+            <span className="font-semibold">{t.groupDescription}:</span>{" "}
+            {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
+          </p>
+          <p>
+            <span className="font-semibold">{t.groupSource}:</span>{" "}
+            {referenceGroupDetails.source}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NORM DISCLAIMER BANNER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function NormDisclaimer({ lang }: { lang: Lang }) {
+  const t = getStrings(lang);
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-amber-300/60 dark:border-amber-700/60 bg-amber-50/70 dark:bg-amber-950/20 p-4">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-start gap-2 text-left"
+      >
+        <span className="text-sm font-semibold text-amber-700 dark:text-amber-300 leading-relaxed flex-1">
+          {t.normDisclaimer}
+        </span>
+        <span className={`text-amber-600 dark:text-amber-400 transition-transform text-xs mt-0.5 ${expanded ? 'rotate-180' : ''}`}>
+          ▼
+        </span>
+      </button>
+      {expanded && (
+        <p className="mt-2 text-xs text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
+          {t.normDisclaimerDetail}
+        </p>
+      )}
     </div>
   );
 }
@@ -394,6 +474,9 @@ export default function PersonalityResultsDashboard({
               <p className="text-sm text-muted">{t.percentileSubtitle}</p>
             </div>
 
+            {/* Norm disclaimer */}
+            <NormDisclaimer lang={lang} />
+
             {/* Reference group selectors — only after data loaded */}
             {(oceanGroups.length > 0 || dtGroups.length > 0) && (
               <div className="space-y-4">
@@ -404,6 +487,7 @@ export default function PersonalityResultsDashboard({
                     onChange={handleOceanGroupChange}
                     label={t.oceanRefGroup}
                     lang={lang}
+                    referenceGroupDetails={percentileData?.referenceGroupDetails?.ocean}
                   />
                 )}
                 {dtGroups.length > 0 && (
@@ -413,6 +497,7 @@ export default function PersonalityResultsDashboard({
                     onChange={handleDarkTriadGroupChange}
                     label={t.darkTriadRefGroup}
                     lang={lang}
+                    referenceGroupDetails={percentileData?.referenceGroupDetails?.darkTriad}
                   />
                 )}
               </div>

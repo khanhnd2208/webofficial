@@ -229,6 +229,47 @@ export const DARK_TRIAD_DOMAINS: DarkTriadDomain[] = [
 	'machiavellianism', 'narcissism', 'psychopathy',
 ];
 
+// ─── Local Norms Constants ─────────────────────────────────────────────────────
+
+export const LOCAL_OCEAN_GROUP_ID = 'local-ocean';
+export const LOCAL_DARKTRIAD_GROUP_ID = 'local-darktriad';
+
+/**
+ * Build a dynamic ReferenceGroup from local DB statistics.
+ * Called at runtime when the user selects the "local norms" option.
+ */
+export function buildLocalReferenceGroup(
+	type: 'ocean' | 'darkTriad',
+	stats: Record<string, NormativeStats>,
+): ReferenceGroup {
+	const isOcean = type === 'ocean';
+	const domains = isOcean ? [...OCEAN_DOMAINS] : [...DARK_TRIAD_DOMAINS];
+	const norms: Partial<Record<string, NormativeStats>> = {};
+	for (const d of domains) {
+		if (stats[d]) norms[d] = stats[d];
+	}
+	const n = Object.values(norms)[0]?.n ?? 0;
+
+	return {
+		id: isOcean ? LOCAL_OCEAN_GROUP_ID : LOCAL_DARKTRIAD_GROUP_ID,
+		label: isOcean
+			? `Local Student Norms (BFI-2-S, n=${n})`
+			: `Local Student Norms (SD3, n=${n})`,
+		labelVi: isOcean
+			? `Chuẩn sinh viên tại đây (BFI-2-S, n=${n})`
+			: `Chuẩn sinh viên tại đây (SD3, n=${n})`,
+		description: isOcean
+			? `Your university students who completed this platform's BFI-2-S. N=${n}. Updated live.`
+			: `Your university students who completed this platform's SD3. N=${n}. Updated live.`,
+		descriptionVi: isOcean
+			? `Sinh viên tại trường bạn đã hoàn thành BFI-2-S trên nền tảng này. N=${n}. Cập nhật trực tiếp.`
+			: `Sinh viên tại trường bạn đã hoàn thành SD3 trên nền tảng này. N=${n}. Cập nhật trực tiếp.`,
+		source: 'Local database — live aggregate from valid sessions on this platform.',
+		domains: domains as import('@/types/personalityTest').PersonalityDomain[],
+		norms: norms as Partial<Record<import('@/types/personalityTest').PersonalityDomain, NormativeStats>>,
+	};
+}
+
 // ─── Reference Groups ──────────────────────────────────────────────────────────
 
 export const REFERENCE_GROUPS: ReferenceGroup[] = [

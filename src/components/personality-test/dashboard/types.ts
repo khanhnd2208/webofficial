@@ -29,6 +29,8 @@ export interface PercentilesApiResponse {
     labelVi: string;
     type: "ocean" | "darkTriad";
     n: number;
+    /** True when this group is built from the platform's own student database */
+    isLocal?: boolean;
   }[];
   referenceGroupDetails: {
     ocean: {
