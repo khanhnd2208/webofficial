@@ -125,16 +125,7 @@ export default function QuestionPhase({
 							</div>
 						</div>
 
-						{/* Attention-check note — shown only for the 2 concentration-check items */}
-						{q.isAttentionCheck && (
-							<div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-400/40 bg-amber-50 px-3 py-2.5 dark:border-amber-400/30 dark:bg-amber-900/20">
-								<span className="mt-px shrink-0 text-base leading-none">🎯</span>
-								<p className="text-[11px] font-semibold leading-relaxed text-amber-800 dark:text-amber-300">
-									<span className="font-black">Câu kiểm tra sự tập trung.</span>{' '}
-									Vui lòng chọn đúng số được yêu cầu trong câu hỏi này — đây không phải câu hỏi về tính cách, chỉ để xác nhận bạn đang đọc kỹ.
-								</p>
-							</div>
-						)}
+						{/* Attention-check items intentionally NOT highlighted — blending in helps filter inattentive respondents */}
 
 						{/* Likert scale */}
 						<div className="mt-4 flex gap-1.5 sm:gap-2">

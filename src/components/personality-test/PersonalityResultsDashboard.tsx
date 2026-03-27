@@ -161,11 +161,13 @@ export default function PersonalityResultsDashboard({
         const url = `/api/personality-test/${session.id}/percentiles?oceanGroup=${encodeURIComponent(oGroup)}&darkTriadGroup=${encodeURIComponent(dtGroup)}`;
         const res = await fetch(url);
         if (res.ok) {
-          const data: PercentilesApiResponse = await res.json();
-          setPercentileData(data);
-          if (data.selectedGroups) {
-            setOceanGroup(data.selectedGroups.ocean);
-            setDarkTriadGroup(data.selectedGroups.darkTriad);
+          const json = await res.json();
+          // API wraps in { ok: true, data: {...} } — unwrap the envelope
+          const payload: PercentilesApiResponse = json.data ?? json;
+          setPercentileData(payload);
+          if (payload.selectedGroups) {
+            setOceanGroup(payload.selectedGroups.ocean);
+            setDarkTriadGroup(payload.selectedGroups.darkTriad);
           }
         }
       } catch {
