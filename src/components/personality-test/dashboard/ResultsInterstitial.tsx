@@ -124,26 +124,45 @@ export function ResultsInterstitial({
       </div>
 
       {/* Confirmation */}
-      <div className="rounded-2xl border border-border bg-surface p-6 space-y-4">
-        <label className="flex items-start gap-3 cursor-pointer">
+      <div className="rounded-2xl border-2 border-accent/40 bg-accent-subtle dark:bg-accent-subtle p-6 space-y-5 shadow-md">
+        {/* Section heading */}
+        <div className="text-center space-y-1">
+          <h2 className="text-lg font-bold text-foreground">
+            {t.confirmTitle}
+          </h2>
+          <p className="text-sm text-muted">
+            {t.confirmInstruction}
+          </p>
+        </div>
+
+        {/* Checkbox — larger, more visible */}
+        <label className="flex items-start gap-4 cursor-pointer rounded-xl border-2 border-border bg-surface p-4 transition hover:border-accent/60">
           <input
             type="checkbox"
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
-            className="mt-1 h-5 w-5 rounded border-border text-accent focus:ring-accent"
+            className="mt-0.5 h-6 w-6 shrink-0 rounded border-border text-accent focus:ring-accent cursor-pointer"
           />
           <span className="text-sm text-foreground leading-relaxed">
             {t.confirmLabel}
           </span>
         </label>
 
+        {/* Arrow pointing down to button when not confirmed */}
+        {!confirmed && (
+          <p className="text-center text-sm text-muted animate-pulse">
+            ⬆️ {lang === 'vi' ? 'Tick vào ô trên để mở khoá nút bên dưới' : 'Tick the checkbox above to unlock the button below'}
+          </p>
+        )}
+
+        {/* Button — large and unmistakable */}
         <button
           onClick={onConfirm}
           disabled={!confirmed}
-          className={`w-full rounded-full py-3 font-semibold text-white shadow transition ${
+          className={`w-full rounded-xl py-4 text-lg font-bold shadow-lg transition-all ${
             confirmed
-              ? "bg-accent hover:bg-accent/90 cursor-pointer"
-              : "bg-gray-300 dark:bg-gray-700 cursor-not-allowed"
+              ? "bg-accent hover:bg-accent-hover text-white cursor-pointer scale-100 hover:scale-[1.02] active:scale-[0.98]"
+              : "bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
           }`}
         >
           {confirmed ? t.viewResults : t.pleaseConfirm}

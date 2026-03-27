@@ -111,6 +111,8 @@ export interface UiStrings {
 	limitationsGateTitle: string;
 	darkTriadWarning: string;
 	darkTriadWarningText: string;
+	confirmTitle: string;
+	confirmInstruction: string;
 	confirmLabel: string;
 	viewResults: string;
 	pleaseConfirm: string;
@@ -191,9 +193,11 @@ export const UI_EN: UiStrings = {
 	limitationsGateTitle: 'Limitations & Context',
 	darkTriadWarning: 'Especially important for Dark Triad',
 	darkTriadWarningText: 'Dark Triad (Machiavellianism, Narcissism, Psychopathy) are normal personality traits on a continuum, NOT a "good/bad" label or clinical diagnosis. High scores are not automatically negative — at moderate levels, they relate to confidence, strategy, and composure under pressure. Results are provided to help you develop self-awareness, not to judge or label.',
+	confirmTitle: '✅ Final Step: Confirm to View Results',
+	confirmInstruction: 'Please read the information above carefully, then tick the checkbox below to unlock your results.',
 	confirmLabel: 'I have read and understand that this is an educational tool, not a psychological diagnosis. Results are for reference and depend on many factors. I will use them for self-awareness and personal growth, not for labeling.',
-	viewResults: 'View My Results →',
-	pleaseConfirm: '☝️ Please confirm to continue',
+	viewResults: '🎯 View My Results',
+	pleaseConfirm: '☝️ Tick the checkbox above first, then this button will unlock',
 	lowerThanYou: 'scored lower than you',
 	avgOfGroup: 'group average',
 	yourScore: 'your score',
@@ -268,9 +272,11 @@ export const UI_VI: UiStrings = {
 	limitationsGateTitle: 'Giới hạn & Bối cảnh',
 	darkTriadWarning: 'Đặc biệt quan trọng với Dark Triad',
 	darkTriadWarningText: 'Dark Triad (Mưu lược, Ái kỷ, Thái nhân cách) là đặc điểm tính cách bình thường trên phổ liên tục, KHÔNG phải nhãn "tốt/xấu" hay chẩn đoán bệnh lý. Mức cao không tự động nghĩa là tiêu cực — ở mức vừa phải, chúng liên quan đến tự tin, chiến lược, và bình tĩnh dưới áp lực. Kết quả được đưa ra để giúp bạn tự nhận thức và phát triển, không phải để phán xét hay gán nhãn.',
+	confirmTitle: '✅ Bước cuối: Xác nhận để Xem Kết quả',
+	confirmInstruction: 'Hãy đọc kỹ các thông tin phía trên, sau đó tick vào ô bên dưới để mở khoá kết quả của bạn.',
 	confirmLabel: 'Tôi đã đọc và hiểu rằng đây là công cụ giáo dục, không phải chẩn đoán tâm lý. Kết quả mang tính tham khảo và phụ thuộc vào nhiều yếu tố. Tôi sẽ sử dụng kết quả để tự nhận thức và phát triển bản thân, không phải để gán nhãn.',
-	viewResults: 'Xem kết quả của tôi →',
-	pleaseConfirm: '☝️ Vui lòng xác nhận để tiếp tục',
+	viewResults: '🎯 Xem Kết quả của tôi',
+	pleaseConfirm: '☝️ Hãy tick vào ô phía trên trước, sau đó nút này sẽ mở khoá',
 	lowerThanYou: 'có điểm thấp hơn bạn',
 	avgOfGroup: 'trung bình nhóm',
 	yourScore: 'điểm của bạn',
