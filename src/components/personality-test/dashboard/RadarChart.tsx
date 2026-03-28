@@ -5,13 +5,13 @@ import type { TraitScore } from "@/types/personalityTest";
 import { type Lang, getDomainLabel } from "../i18n";
 
 /* ════════════════════════════════════════════════════════════════════════
-   RadarChart v4 — World-class spider chart
+   RadarChart v5 — Labels fully visible, no clipping
 
-   - Soft concentric fills for visual depth (like Tableau/PowerBI)
-   - Solid grid lines (no dashes) with subtle alternating ring bg
-   - Score values displayed boldly near each data point
-   - Full domain labels with smart text-anchor based on angle
-   - Radial gradient fill on data polygon
+   Key fixes over v4:
+   - Wider viewBox (560×480) with generous horizontal padding for labels
+   - Separate label layout: long labels split into two tspan lines
+   - Label position pushed further out (maxR + 32) with per-angle offsets
+   - Short label threshold — single line if ≤ 18 chars
    ════════════════════════════════════════════════════════════════════════ */
 
 function polar(cx: number, cy: number, angle: number, r: number) {
@@ -28,6 +28,23 @@ function ringPoly(cx: number, cy: number, r: number, n: number, step: number) {
   }).join(" ");
 }
 
+/** Split a long label string into at most two lines for SVG tspan rendering */
+function splitLabel(label: string): [string, string | null] {
+  if (label.length <= 18) return [label, null];
+  // Try to split at a space or parenthesis near the middle
+  const mid = Math.floor(label.length / 2);
+  let splitAt = -1;
+  for (let d = 0; d <= 12; d++) {
+    if (label[mid - d] === " " || label[mid - d] === "(") { splitAt = mid - d; break; }
+    if (label[mid + d] === " " || label[mid + d] === "(") { splitAt = mid + d; break; }
+  }
+  if (splitAt <= 0) return [label.slice(0, mid + 1) + "-", label.slice(mid + 1)];
+  const ch = label[splitAt];
+  // Keep the paren on the second line
+  if (ch === "(") return [label.slice(0, splitAt).trim(), label.slice(splitAt).trim()];
+  return [label.slice(0, splitAt).trim(), label.slice(splitAt + 1).trim()];
+}
+
 export function RadarChart({
   traits,
   lang,
@@ -35,10 +52,13 @@ export function RadarChart({
   traits: TraitScore[];
   lang: Lang;
 }) {
-  const size = 420;
-  const cx = size / 2;
-  const cy = size / 2;
-  const maxR = size / 2 - 60;
+  // Wider viewBox so horizontal labels never clip
+  const W = 560;
+  const H = 460;
+  const cx = W / 2;
+  const cy = H / 2;
+  // Smaller chart radius relative to the wider canvas = more room for labels
+  const maxR = 148;
   const levels = 5;
   const n = traits.length;
   const step = (2 * Math.PI) / n;
@@ -59,8 +79,8 @@ export function RadarChart({
   return (
     <div className="flex flex-col items-center">
       <svg
-        viewBox={`0 0 ${size} ${size}`}
-        className="w-full max-w-xs sm:max-w-sm"
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full max-w-sm sm:max-w-md"
         role="img"
         aria-label="OCEAN personality radar chart"
       >
@@ -75,7 +95,7 @@ export function RadarChart({
           </filter>
         </defs>
 
-        {/* Alternating ring bg for depth */}
+        {/* Alternating ring backgrounds for depth */}
         {rings.map(({ r, level }, idx) => {
           if (level % 2 === 0) {
             const inner = idx > 0 ? rings[idx - 1].r : 0;
@@ -91,7 +111,7 @@ export function RadarChart({
           return null;
         })}
 
-        {/* Grid rings — solid */}
+        {/* Grid rings */}
         {rings.map(({ r, level }) => (
           <polygon
             key={`grid-${level}`}
@@ -146,11 +166,23 @@ export function RadarChart({
         {/* Dots + scores + labels */}
         {traits.map((t, i) => {
           const dp = dataPoints[i];
-          const lp = polar(cx, cy, i * step, maxR + 26);
+          // Push label further out than before — 32px past the outer ring
+          const labelR = maxR + 32;
+          const lp = polar(cx, cy, i * step, labelR);
           const label = getDomainLabel(t.domain, lang);
           const angle = i * step - Math.PI / 2;
           const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+
+          // text-anchor based on horizontal position
           const anchor = Math.abs(cos) < 0.15 ? "middle" : cos > 0 ? "start" : "end";
+
+          // Split long labels across two tspan lines
+          const [line1, line2] = splitLabel(label);
+          // Vertical nudge: push top label up, bottom down for two-liners
+          const hasTwo = line2 !== null;
+          const yOff1 = hasTwo ? -7 : 0;
+          const yOff2 = 8;
 
           return (
             <g key={t.domain}>
@@ -164,21 +196,27 @@ export function RadarChart({
               />
               {/* Score near dot */}
               <motion.text
-                x={dp.x} y={dp.y - 10}
-                textAnchor="middle" dominantBaseline="auto"
+                x={dp.x + (cos > 0.15 ? 10 : cos < -0.15 ? -10 : 0)}
+                y={dp.y + (sin > 0.15 ? 12 : -10)}
+                textAnchor={anchor} dominantBaseline="auto"
                 fill="rgb(99,102,241)" fillOpacity={0.9}
                 fontSize={10} fontWeight={800}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 + i * 0.06 }}
               >{t.score.toFixed(1)}</motion.text>
-              {/* Domain label — full, no truncation */}
+              {/* Domain label — split into tspans if long */}
               <text
-                x={lp.x} y={lp.y}
-                textAnchor={anchor} dominantBaseline="middle"
-                fill="currentColor" fillOpacity={0.65}
-                fontSize={10.5} fontWeight={600}
-              >{label}</text>
+                x={lp.x}
+                y={lp.y}
+                textAnchor={anchor}
+                dominantBaseline="middle"
+                fill="currentColor" fillOpacity={0.7}
+                fontSize={11} fontWeight={600}
+              >
+                <tspan x={lp.x} dy={yOff1}>{line1}</tspan>
+                {hasTwo && <tspan x={lp.x} dy={yOff2}>{line2}</tspan>}
+              </text>
             </g>
           );
         })}
