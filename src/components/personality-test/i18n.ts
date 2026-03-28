@@ -152,6 +152,16 @@ export interface UiStrings {
 	groupSource: string;
 	groupDescription: string;
 	minLocalN: string;
+	/* Improved ref group selector */
+	compareWith: string;
+	oceanCompareLabel: string;
+	dtCompareLabel: string;
+	refGroupLocalDesc: string;
+	refGroupExternalDesc: string;
+	nParticipants: string;
+	/* Archetype extra */
+	archetypeTraitBasis: string;
+	yourScoresSummary: string;
 }
 
 export const UI_EN: UiStrings = {
@@ -243,6 +253,14 @@ export const UI_EN: UiStrings = {
 	groupSource: 'Source',
 	groupDescription: 'Description',
 	minLocalN: 'Local norms require at least 10 valid responses to be available.',
+	compareWith: 'Compare with',
+	oceanCompareLabel: 'Big Five comparison group',
+	dtCompareLabel: 'Dark Triad comparison group',
+	refGroupLocalDesc: 'Other students on this platform',
+	refGroupExternalDesc: 'Research sample',
+	nParticipants: 'participants',
+	archetypeTraitBasis: 'Based on your trait combination',
+	yourScoresSummary: 'Your Scores at a Glance',
 };
 
 export const UI_VI: UiStrings = {
@@ -334,6 +352,14 @@ export const UI_VI: UiStrings = {
 	groupSource: 'Nguồn',
 	groupDescription: 'Mô tả',
 	minLocalN: 'Chuẩn mực tại đây cần ít nhất 10 bài hợp lệ mới khả dụng.',
+	compareWith: 'So sánh với',
+	oceanCompareLabel: 'Nhóm so sánh Big Five',
+	dtCompareLabel: 'Nhóm so sánh Dark Triad',
+	refGroupLocalDesc: 'Các bạn cùng làm bài trên nền tảng này',
+	refGroupExternalDesc: 'Mẫu nghiên cứu',
+	nParticipants: 'người tham gia',
+	archetypeTraitBasis: 'Dựa trên sự kết hợp các đặc điểm của bạn',
+	yourScoresSummary: 'Tổng quan Điểm số của bạn',
 };
 
 export function getStrings(lang: Lang): UiStrings {

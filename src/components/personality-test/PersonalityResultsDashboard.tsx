@@ -29,13 +29,15 @@ import type {
   TraitScore,
 } from "@/types/personalityTest";
 
-import { type Lang, getStrings, getDomainLabel } from "./i18n";
+import { type Lang, type FiveTier, getStrings, getDomainLabel } from "./i18n";
 
 import {
   type NormativeResult,
   type PercentilesApiResponse,
   OCEAN_DOMAINS,
   DARK_TRIAD_DOMAINS,
+  getZTier,
+  TIER_COLORS,
   RadarChart,
   TraitCard,
   PercentileGauge,
@@ -140,42 +142,76 @@ function RefGroupSelector({
 }) {
   const t = getStrings(lang);
 
-  return (
-    <div className="space-y-2.5">
-      {/* Label */}
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
+  /* Build a human-friendly description for each group */
+  function friendlyLabel(g: { id: string; label: string; labelVi: string; n: number; isLocal?: boolean }): string {
+    if (g.isLocal) {
+      return lang === "vi" ? t.refGroupLocalDesc : t.refGroupLocalDesc;
+    }
+    // Use the raw label but make it friendlier
+    const rawLabel = lang === "vi" ? g.labelVi : g.label;
+    return rawLabel;
+  }
 
-      {/* Pill tabs */}
-      <div className="flex flex-wrap gap-1.5">
+  return (
+    <div className="space-y-2">
+      {/* Section label */}
+      <p className="text-xs font-semibold text-muted">
+        {label}
+      </p>
+
+      {/* Radio-style group options */}
+      <div className="space-y-1.5">
         {groups.map((g) => {
           const isActive = g.id === selected;
-          const displayLabel = lang === "vi" ? g.labelVi : g.label;
           const isLocal = g.isLocal === true;
+          const desc = friendlyLabel(g);
+
           return (
             <button
               key={g.id}
               onClick={() => onChange(g.id)}
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
+              className={`flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left transition-all duration-150 ${
                 isActive
                   ? isLocal
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200"
-                    : "border-accent/40 bg-accent/8 text-accent"
-                  : "border-border bg-surface text-muted hover:border-border-hover hover:text-foreground"
+                    ? "border-emerald-300 bg-emerald-50/80 dark:border-emerald-700 dark:bg-emerald-950/40"
+                    : "border-accent/40 bg-accent/5"
+                  : "border-border/60 bg-transparent hover:border-border hover:bg-background-secondary/30"
               }`}
               aria-pressed={isActive}
             >
-              {isLocal && (
-                <span
-                  className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"
-                  aria-label="Local norms"
-                />
-              )}
-              <span className="truncate max-w-36">{displayLabel}</span>
-              <span className={`tabular-nums text-[10px] ${
-                isActive ? "opacity-70" : "opacity-40"
+              {/* Radio dot */}
+              <span className={`shrink-0 h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center ${
+                isActive
+                  ? isLocal
+                    ? "border-emerald-500"
+                    : "border-accent"
+                  : "border-muted/40"
               }`}>
-                {g.n >= 1000 ? `${(g.n / 1000).toFixed(g.n % 1000 < 100 ? 1 : 0)}k` : g.n}
+                {isActive && (
+                  <span className={`h-1.5 w-1.5 rounded-full ${
+                    isLocal ? "bg-emerald-500" : "bg-accent"
+                  }`} />
+                )}
               </span>
+
+              {/* Label + count */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold truncate ${
+                    isActive ? "text-foreground" : "text-muted"
+                  }`}>
+                    {desc}
+                  </span>
+                  {isLocal && (
+                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300">
+                      LIVE
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[10px] tabular-nums ${isActive ? "text-muted" : "text-muted/50"}`}>
+                  N = {g.n.toLocaleString()} {t.nParticipants}
+                </span>
+              </div>
             </button>
           );
         })}
@@ -183,7 +219,7 @@ function RefGroupSelector({
 
       {/* Selected group detail */}
       {referenceGroupDetails && (
-        <p className="text-[11px] text-muted leading-relaxed pl-1 border-l-2 border-border/60">
+        <p className="text-[11px] text-muted leading-relaxed pl-1 border-l-2 border-border/60 mt-1">
           {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
           <span className="opacity-50"> — {referenceGroupDetails.source}</span>
         </p>
@@ -435,11 +471,42 @@ export default function PersonalityResultsDashboard({
           </motion.div>
         )}
 
-        {/* ══════════ ARCHETYPE — Hero card ════════════════════════════════ */}
+        {/* ══════════ ARCHETYPE — Hero card + trait summary ═════════════ */}
         {archetype && (
-          <section>
+          <section className="space-y-4">
             <SectionHeading title={t.yourArchetype} />
             <ArchetypeCard archetype={archetype} lang={lang} />
+
+            {/* Quick trait summary so user sees the score basis for the archetype */}
+            {allTraits.length > 0 && (
+              <div className="rounded-xl border border-border bg-surface p-4 sm:p-5">
+                <p className="text-xs font-semibold text-muted mb-3">
+                  {t.archetypeTraitBasis}
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  {allTraits.map((trait) => {
+                    const norm = percentiles[trait.domain];
+                    const tier: FiveTier = norm
+                      ? getZTier(norm.zScore)
+                      : (trait.level as FiveTier);
+                    const tc = TIER_COLORS[tier];
+                    return (
+                      <div key={trait.domain} className="flex items-center gap-2">
+                        <span className={`shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold ${tc.badge}`}>
+                          {tc.emoji}
+                        </span>
+                        <span className="text-xs text-foreground truncate">
+                          {getDomainLabel(trait.domain, lang)}
+                        </span>
+                        <span className="text-[10px] font-mono text-muted tabular-nums ml-auto shrink-0">
+                          {trait.score.toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
         )}
 
@@ -517,19 +584,19 @@ export default function PersonalityResultsDashboard({
               <p className="mt-0.5 text-xs text-muted">{t.percentileSubtitle}</p>
             </div>
 
-            <div className="px-5 sm:px-7 py-6 space-y-6">
+            <div className="px-5 sm:px-7 py-6 space-y-5">
               {/* Norm disclaimer */}
               <NormDisclaimer lang={lang} />
 
-              {/* Reference group selectors */}
+              {/* Reference group selectors — stacked on mobile, side by side on desktop */}
               {(oceanGroups.length > 0 || dtGroups.length > 0) && (
-                <div className="grid gap-6 sm:grid-cols-2">
+                <div className="grid gap-5 sm:grid-cols-2">
                   {oceanGroups.length > 0 && (
                     <RefGroupSelector
                       groups={oceanGroups}
                       selected={oceanGroup}
                       onChange={handleOceanGroupChange}
-                      label={t.oceanRefGroup}
+                      label={t.oceanCompareLabel}
                       lang={lang}
                       referenceGroupDetails={percentileData?.referenceGroupDetails?.ocean}
                     />
@@ -539,16 +606,13 @@ export default function PersonalityResultsDashboard({
                       groups={dtGroups}
                       selected={darkTriadGroup}
                       onChange={handleDarkTriadGroupChange}
-                      label={t.darkTriadRefGroup}
+                      label={t.dtCompareLabel}
                       lang={lang}
                       referenceGroupDetails={percentileData?.referenceGroupDetails?.darkTriad}
                     />
                   )}
                 </div>
               )}
-
-              {/* Divider */}
-              <div className="border-t border-border/50" />
 
               {/* Loading spinner */}
               {percentileLoading && (
@@ -558,22 +622,26 @@ export default function PersonalityResultsDashboard({
                 </div>
               )}
 
-              {/* Percentile gauges — grouped by type */}
+              {/* Quick visual: All percentile bars in one place for easy scan */}
               {!percentileLoading && (
-                <div className="space-y-6">
+                <div className="space-y-5">
+                  <div className="border-t border-border/50 pt-5" />
+
+                  <p className="text-xs font-semibold text-muted">{t.yourScoresSummary}</p>
+
                   {/* OCEAN gauges */}
                   {oceanTraits.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted">
+                    <div className="space-y-3">
+                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted/70">
                         OCEAN
                       </h3>
                       {oceanTraits.map((trait) => (
                         <div key={trait.domain}>
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <span className="text-sm font-semibold text-foreground">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold text-foreground">
                               {getDomainLabel(trait.domain, lang)}
                             </span>
-                            <span className="text-xs font-mono text-muted">
+                            <span className="text-[10px] font-mono text-muted tabular-nums">
                               {trait.score.toFixed(2)}
                             </span>
                           </div>
@@ -586,19 +654,20 @@ export default function PersonalityResultsDashboard({
                       ))}
                     </div>
                   )}
+
                   {/* Dark Triad gauges */}
                   {dtTraits.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted">
+                    <div className="space-y-3">
+                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted/70">
                         Dark Triad
                       </h3>
                       {dtTraits.map((trait) => (
                         <div key={trait.domain}>
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <span className="text-sm font-semibold text-foreground">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold text-foreground">
                               {getDomainLabel(trait.domain, lang)}
                             </span>
-                            <span className="text-xs font-mono text-muted">
+                            <span className="text-[10px] font-mono text-muted tabular-nums">
                               {trait.score.toFixed(2)}
                             </span>
                           </div>

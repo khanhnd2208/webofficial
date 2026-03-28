@@ -16,13 +16,14 @@ import type { NormativeResult } from "./types";
 import { PercentileGauge } from "./PercentileGauge";
 
 /* ════════════════════════════════════════════════════════════════════════
-   TraitCard v4 — Clean, insightful, world-class
+   TraitCard v5 — Single bar, clean hierarchy
 
-   - Score bar now is a readable h-2 with rounded track
-   - Header: icon + name + score/5 + tier badge, all on one line
-   - Percentile gauge sits cleanly under the bar
-   - Expanded content: bordered insight sections with clear hierarchy
-   - No redundant visual noise
+   Key design decisions:
+   - ONE bar only: the PercentileGauge (percentile rank)
+   - Raw score shown as mono text next to trait name
+   - No separate "score bar" — avoids the confusing 2-bar problem
+   - Header: icon + name + raw score + tier badge
+   - Expanded content: bordered insight sections
    ════════════════════════════════════════════════════════════════════════ */
 
 export function TraitCard({
@@ -47,12 +48,6 @@ export function TraitCard({
   const domainLabel = getDomainLabel(trait.domain, lang);
   const tierInterpretation = insight[tier];
 
-  const pct = ((trait.score / 5) * 100).toFixed(1);
-
-  const barColor = isDarkTriad
-    ? "bg-violet-500 dark:bg-violet-400"
-    : "bg-indigo-500 dark:bg-indigo-400";
-
   return (
     <motion.div
       layout
@@ -67,9 +62,9 @@ export function TraitCard({
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
       >
-        <span className="text-2xl shrink-0">{insight.icon}</span>
+        <span className="text-2xl shrink-0" aria-hidden="true">{insight.icon}</span>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-bold text-foreground text-[15px] leading-tight truncate">
               {domainLabel}
             </h3>
@@ -89,24 +84,10 @@ export function TraitCard({
         </svg>
       </button>
 
-      {/* ── Score bar ──────────────────────────────────────────── */}
-      <div className="px-4 sm:px-5 pb-2">
-        <div className="h-1.5 rounded-full bg-border/40 overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${barColor}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.6 }}
-          />
-        </div>
+      {/* ── Percentile gauge (single bar) ──────────────────────── */}
+      <div className="px-4 sm:px-5 pb-3">
+        <PercentileGauge domain={trait.domain} normResult={normResult} lang={lang} />
       </div>
-
-      {/* ── Percentile gauge ───────────────────────────────────── */}
-      {normResult && (
-        <div className="px-4 sm:px-5 pb-3">
-          <PercentileGauge domain={trait.domain} normResult={normResult} lang={lang} />
-        </div>
-      )}
 
       {/* ── Expand hint ────────────────────────────────────────── */}
       {!expanded && (

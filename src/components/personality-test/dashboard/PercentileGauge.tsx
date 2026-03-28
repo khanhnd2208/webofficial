@@ -1,15 +1,15 @@
 "use client";
 
 /* ════════════════════════════════════════════════════════════════════════
-   PercentileGauge v4 — Polished, readable, insight-rich
+   PercentileGauge v5 — Single professional percentile bar
 
-   Design:
-   - Thicker bar (h-3) so color is visible at a glance
-   - Gradient fill with a white inner sheen (glass effect)
-   - P-value label docked right of bar (never inside)
-   - Smart insight label: "above avg" / "below avg" / "top X%"
-   - Z + tier chips: minimal, hover-to-learn
-   - Group label as a subtle footnote
+   Standard statistical visualization:
+   - One horizontal bar: 0 → 100 percentile scale
+   - Filled portion = your percentile rank
+   - Median marker at 50%
+   - Mean marker (μ) of reference group shown as a tick
+   - Insight label: "Top 10%", "Above average", etc.
+   - Z + tier chips below for experts
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useState } from "react";
@@ -130,34 +130,66 @@ export function PercentileGauge({
       ? `Z = ${zDisplay}: cách trung bình ${Math.abs(z).toFixed(2)} SD (μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}).`
       : `Z = ${zDisplay}: ${Math.abs(z).toFixed(2)} SD ${z >= 0 ? "above" : "below"} mean (μ=${normResult.mean.toFixed(2)}, σ=${normResult.sd.toFixed(2)}).`;
 
+  /* Mean position on the percentile bar (approximate: convert mean to a 0-100 position).
+     For a true percentile of the mean you'd need the CDF, but the mean IS the 50th
+     percentile of its own distribution, so we mark it at 50%. */
+  const meanPctPosition = 50;
+
   return (
     <div className="space-y-1.5">
-      {/* ── Bar row ───────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2.5">
-        {/* Track */}
-        <div className="relative flex-1 h-2.5 rounded-full bg-border/50 overflow-hidden">
-          <motion.div
-            className={`absolute inset-y-0 left-0 rounded-full ${barColor}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.max(pct, 1.5)}%` }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-          />
-          {/* Glass sheen */}
-          <div className="absolute inset-0 rounded-full bg-linear-to-b from-white/20 to-transparent pointer-events-none" />
-          {/* Median marker */}
-          <div
-            className="absolute top-0 h-full w-px bg-foreground/20"
-            style={{ left: "50%" }}
-          />
-        </div>
-        {/* Score */}
-        <span className={`w-10 shrink-0 text-right text-sm font-bold tabular-nums ${pctColor}`}>
-          P{pct}
-        </span>
+      {/* ── Percentile scale labels ────────────────────────────── */}
+      <div className="flex items-center justify-between text-[9px] text-muted/50 tabular-nums px-px">
+        <span>0</span>
+        <span>25</span>
+        <span>50</span>
+        <span>75</span>
+        <span>100</span>
       </div>
 
-      {/* ── Stat chips row ────────────────────────────────────────── */}
+      {/* ── Bar ───────────────────────────────────────────────── */}
+      <div className="relative h-3 rounded-full bg-border/40 overflow-hidden">
+        {/* Filled portion */}
+        <motion.div
+          className={`absolute inset-y-0 left-0 rounded-full ${barColor}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.max(pct, 2)}%` }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+        />
+        {/* Glass sheen */}
+        <div className="absolute inset-0 rounded-full bg-linear-to-b from-white/25 to-transparent pointer-events-none" />
+        {/* Quartile tick marks */}
+        {[25, 50, 75].map((tick) => (
+          <div
+            key={tick}
+            className={`absolute top-0 h-full ${tick === 50 ? "w-0.5 bg-foreground/25" : "w-px bg-foreground/10"}`}
+            style={{ left: `${tick}%` }}
+          />
+        ))}
+        {/* Mean marker (μ) — small triangle below */}
+        <div
+          className="absolute bottom-0 w-0 h-0"
+          style={{
+            left: `${meanPctPosition}%`,
+            borderLeft: "3px solid transparent",
+            borderRight: "3px solid transparent",
+            borderBottom: "4px solid var(--foreground)",
+            opacity: 0.3,
+            transform: "translateX(-3px)",
+          }}
+          title={`μ = ${normResult.mean.toFixed(2)}`}
+        />
+      </div>
+
+      {/* ── Stat row ──────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-1.5">
+        {/* Percentile value — prominent */}
+        <Chip
+          tooltip={pctTip}
+          className={`inline-flex items-baseline gap-0.5 rounded-md px-2 py-0.5 text-xs font-bold cursor-help ${pctColor} bg-background-secondary`}
+        >
+          <span className="text-[10px] opacity-60">P</span>{pct}
+        </Chip>
+
         {/* Insight label */}
         <span className={`text-[11px] font-semibold ${pctColor}`}>
           {insightLabel(pct, lang)}
@@ -170,7 +202,7 @@ export function PercentileGauge({
           tooltip={zTip}
           className="inline-flex items-baseline gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-mono font-bold bg-background-secondary text-muted cursor-help"
         >
-          <span className="opacity-50">Z</span> {zDisplay}
+          <span className="opacity-50">z</span> {zDisplay}
         </Chip>
 
         {/* Tier chip */}
