@@ -93,12 +93,22 @@ const DEMO_COLS = [
 	{ key: 'is_valid',        label: 'Hợp lệ?' },
 	{ key: 'user_name',       label: 'Tài khoản' },
 	{ key: 'id',              label: 'Session ID' },
+	{ key: 'device_fingerprint', label: 'Device Fingerprint' },
+	{ key: 'device_submissions', label: 'Cùng thiết bị (lần)' },
+	{ key: 'ip_address',      label: 'IP Address' },
+	{ key: 'reliability_flag', label: 'Chất lượng' },
+	{ key: 'longstring_max',  label: 'Longstring Max' },
+	{ key: 'irv',             label: 'IRV (SD responses)' },
+	{ key: 'person_total_r',  label: 'Person-Total r' },
+	{ key: 'avg_item_time',   label: 'Thời gian/câu (s)' },
 ] as const;
 
 function formatDemoCell(r: ReportRowRaw, key: string, idx: number): unknown {
 	switch (key) {
 		case 'no':         return idx + 1;
-		case 'created_at': return r.created_at ? new Date(r.created_at).toLocaleString('vi-VN') : '';
+		case 'created_at': return r.created_at
+			? new Date(r.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+			: '';
 		case 'is_valid':   return r.is_valid === true ? 'Có' : r.is_valid === false ? 'Không' : '';
 		case 'gender': {
 			const gMap: Record<string, string> = { male: 'Nam', female: 'Nữ', other: 'Khác' };
@@ -109,6 +119,23 @@ function formatDemoCell(r: ReportRowRaw, key: string, idx: number): unknown {
 				completed: 'Hoàn thành', invalid: 'Không hợp lệ', in_progress: 'Đang làm',
 			};
 			return map[r.status] ?? r.status;
+		}
+		case 'reliability_flag': {
+			const flagMap: Record<string, string> = {
+				ok: '✓ OK', suspect: '⚠ Nghi ngờ', careless: '✗ Bất cẩn',
+			};
+			const flag = (r as unknown as Record<string, unknown>)['reliability_flag'];
+			return typeof flag === 'string' ? (flagMap[flag] ?? flag) : '';
+		}
+		case 'device_fingerprint': {
+			const fp = (r as unknown as Record<string, unknown>)['device_fingerprint'];
+			return typeof fp === 'string' ? fp.slice(0, 12) : '';
+		}
+		case 'irv':
+		case 'person_total_r':
+		case 'avg_item_time': {
+			const v = (r as unknown as Record<string, unknown>)[key];
+			return v != null ? Number(Number(v).toFixed(3)) : '';
 		}
 		default: return (r as unknown as Record<string, unknown>)[key] ?? '';
 	}

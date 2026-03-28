@@ -86,6 +86,23 @@ CREATE TABLE IF NOT EXISTS personality_test_results (
   archetype       JSONB
 );
 
+-- ─── Device fingerprint for tracking same-device submissions ────────────────
+ALTER TABLE personality_test_sessions
+  ADD COLUMN IF NOT EXISTS device_fingerprint TEXT,
+  ADD COLUMN IF NOT EXISTS ip_address TEXT,
+  ADD COLUMN IF NOT EXISTS user_agent TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_pts_device_fp ON personality_test_sessions(device_fingerprint)
+  WHERE device_fingerprint IS NOT NULL;
+
+-- ─── Response reliability / quality metrics ─────────────────────────────────
+ALTER TABLE personality_test_results
+  ADD COLUMN IF NOT EXISTS longstring_max   SMALLINT,       -- Max consecutive identical answers
+  ADD COLUMN IF NOT EXISTS irv              NUMERIC(5,3),   -- Intra-individual Response Variability (SD of all responses)
+  ADD COLUMN IF NOT EXISTS person_total_r   NUMERIC(5,3),   -- Person-total correlation (Pearson r vs sample mean pattern)
+  ADD COLUMN IF NOT EXISTS avg_item_time    NUMERIC(6,2),   -- Average seconds per item (duration / n_items)
+  ADD COLUMN IF NOT EXISTS reliability_flag TEXT;            -- 'ok' | 'suspect' | 'careless' summary
+
 -- ─── updated_at trigger ─────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

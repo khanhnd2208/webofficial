@@ -9,11 +9,12 @@
    3. No login required — anonymous users can take the test
    ════════════════════════════════════════════════════════════════════════ */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import PersonalityTestWizard from '@/components/personality-test/PersonalityTestWizard';
 import PersonalityTestHistory from '@/components/personality-test/PersonalityTestHistory';
+import { generateDeviceFingerprint } from '@/utils/deviceFingerprint';
 import type { TestConfigDTO, PersonalityTestHistoryDTO, RawResponse, DemographicData } from '@/types/personalityTest';
 
 const STORAGE_KEY = 'personality-test-progress';
@@ -27,6 +28,14 @@ export default function PersonalityTestClient({ config, history }: Props) {
 	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const fingerprintRef = useRef<string | null>(null);
+
+	// Pre-compute device fingerprint on mount (non-blocking)
+	useEffect(() => {
+		generateDeviceFingerprint()
+			.then(fp => { fingerprintRef.current = fp; })
+			.catch(() => { /* fingerprint is best-effort */ });
+	}, []);
 
 	const handleSubmit = useCallback(
 		async (demographics: DemographicData, responses: RawResponse[], durationSeconds: number) => {
@@ -37,7 +46,12 @@ export default function PersonalityTestClient({ config, history }: Props) {
 				const res = await fetch('/api/personality-test', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ demographics, responses, durationSeconds }),
+					body: JSON.stringify({
+						demographics,
+						responses,
+						durationSeconds,
+						deviceFingerprint: fingerprintRef.current,
+					}),
 				});
 
 				const json = await res.json();

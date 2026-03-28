@@ -29,6 +29,9 @@ export interface SessionRow {
 	self_rated_intelligence: number | null;
 	status: SessionStatus;
 	duration_seconds: number | null;
+	device_fingerprint: string | null;
+	ip_address: string | null;
+	user_agent: string | null;
 	completed_at: Date | null;
 	created_at: Date;
 	updated_at: Date;
@@ -55,6 +58,11 @@ export interface ResultRow {
 	narcissism_pct: number | null;
 	psychopathy_pct: number | null;
 	archetype: ArchetypeProfile | null;
+	longstring_max: number | null;
+	irv: number | null;
+	person_total_r: number | null;
+	avg_item_time: number | null;
+	reliability_flag: string | null;
 }
 
 export interface ResponseRow {
@@ -135,6 +143,8 @@ export interface ReportRow {
 	self_rated_intelligence: number | null;
 	status: string;
 	duration_seconds: number | null;
+	device_fingerprint: string | null;
+	ip_address: string | null;
 	completed_at: Date | null;
 	created_at: Date;
 	// Results
@@ -156,6 +166,14 @@ export interface ReportRow {
 	narcissism_pct: number | null;
 	psychopathy_pct: number | null;
 	archetype_name: string | null;
+	// Reliability metrics
+	longstring_max: number | null;
+	irv: number | null;
+	person_total_r: number | null;
+	avg_item_time: number | null;
+	reliability_flag: string | null;
+	// Device duplicate count
+	device_submissions: number | null;
 }
 
 /**
@@ -169,7 +187,8 @@ export async function findAllSessionsForReport(
 		`SELECT
 			s.id, s.user_id, s.user_name,
 			s.full_name, s.gender, s.university, s.student_year, s.cumulative_gpa, s.self_rated_intelligence,
-			s.status, s.duration_seconds, s.completed_at, s.created_at,
+			s.status, s.duration_seconds, s.device_fingerprint, s.ip_address,
+			s.completed_at, s.created_at,
 			r.is_valid,
 			r.extraversion, r.agreeableness, r.conscientiousness,
 			r.negative_emotionality, r.open_mindedness,
@@ -177,7 +196,15 @@ export async function findAllSessionsForReport(
 			r.extraversion_pct, r.agreeableness_pct, r.conscientiousness_pct,
 			r.negative_emotionality_pct, r.open_mindedness_pct,
 			r.machiavellianism_pct, r.narcissism_pct, r.psychopathy_pct,
-			r.archetype->>'name' AS archetype_name
+			r.archetype->>'name' AS archetype_name,
+			r.longstring_max, r.irv, r.person_total_r, r.avg_item_time, r.reliability_flag,
+			-- Count how many sessions share the same device fingerprint
+			CASE
+				WHEN s.device_fingerprint IS NOT NULL
+				THEN (SELECT COUNT(*)::int FROM personality_test_sessions s2
+				      WHERE s2.device_fingerprint = s.device_fingerprint)
+				ELSE NULL
+			END AS device_submissions
 		 FROM personality_test_sessions s
 		 LEFT JOIN personality_test_results r ON r.session_id = s.id
 		 ORDER BY s.created_at DESC
@@ -288,6 +315,9 @@ export async function createSession(params: {
 	responses: RawResponse[];
 	durationSeconds: number;
 	status: SessionStatus;
+	deviceFingerprint?: string;
+	ipAddress?: string;
+	userAgent?: string;
 }): Promise<string> {
 	const client = await pgPool.connect();
 	try {
@@ -297,8 +327,8 @@ export async function createSession(params: {
 		const sessionResult = await client.query<{ id: string }>(
 			`INSERT INTO personality_test_sessions
 				(user_id, user_name, full_name, gender, university, student_year, cumulative_gpa,
-				 self_rated_intelligence, status, duration_seconds, completed_at)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+				 self_rated_intelligence, status, duration_seconds, device_fingerprint, ip_address, user_agent, completed_at)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 			 RETURNING id`,
 			[
 				params.userId,
@@ -311,6 +341,9 @@ export async function createSession(params: {
 				params.demographics.selfRatedIntelligence || null,
 				params.status,
 				params.durationSeconds,
+				params.deviceFingerprint || null,
+				params.ipAddress || null,
+				params.userAgent || null,
 				params.status === 'completed' || params.status === 'invalid'
 					? new Date()
 					: null,
@@ -419,6 +452,62 @@ export async function updatePercentiles(
 			percentiles.psychopathy ?? null,
 		]
 	);
+}
+
+/**
+ * Update response reliability / quality metrics for a session.
+ */
+export async function updateReliabilityMetrics(
+	sessionId: string,
+	metrics: {
+		longstringMax: number;
+		irv: number;
+		personTotalR: number | null;
+		avgItemTime: number;
+		reliabilityFlag: string;
+	}
+): Promise<void> {
+	await pgPool.query(
+		`UPDATE personality_test_results SET
+			longstring_max = $2,
+			irv = $3,
+			person_total_r = $4,
+			avg_item_time = $5,
+			reliability_flag = $6
+		 WHERE session_id = $1`,
+		[
+			sessionId,
+			metrics.longstringMax,
+			metrics.irv,
+			metrics.personTotalR,
+			metrics.avgItemTime,
+			metrics.reliabilityFlag,
+		]
+	);
+}
+
+/**
+ * Get the mean response pattern (by form_order) from all valid sessions.
+ * Used for computing person-total correlation.
+ * Returns a map: `testType_foN` → mean value
+ */
+export async function getMeanResponsePattern(): Promise<Map<string, number>> {
+	const { rows } = await pgPool.query<{ key: string; avg_value: string }>(
+		`SELECT
+			test_type || '_fo' || form_order AS key,
+			AVG(value)::numeric(5,3) AS avg_value
+		 FROM personality_test_responses resp
+		 JOIN personality_test_sessions s ON s.id = resp.session_id
+		 JOIN personality_test_results r ON r.session_id = s.id
+		 WHERE r.is_valid = true
+		 GROUP BY test_type, form_order
+		 ORDER BY test_type, form_order`
+	);
+	const map = new Map<string, number>();
+	for (const r of rows) {
+		map.set(r.key, Number(r.avg_value));
+	}
+	return map;
 }
 
 export async function getArchetypeDistribution(): Promise<

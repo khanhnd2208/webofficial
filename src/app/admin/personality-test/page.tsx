@@ -21,6 +21,8 @@ interface ReportRow {
 	self_rated_intelligence: number | null;
 	status: string;
 	duration_seconds: number | null;
+	device_fingerprint: string | null;
+	ip_address: string | null;
 	completed_at: string | null;
 	created_at: string;
 	is_valid: boolean | null;
@@ -41,12 +43,38 @@ interface ReportRow {
 	narcissism_pct: number | null;
 	psychopathy_pct: number | null;
 	archetype_name: string | null;
+	// Reliability metrics
+	longstring_max: number | null;
+	irv: number | null;
+	person_total_r: number | null;
+	avg_item_time: number | null;
+	reliability_flag: string | null;
+	device_submissions: number | null;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 const fmt = (v: number | null) =>
 	v != null ? v.toFixed(2) : '—';
+
+/** Format date to Vietnam timezone (UTC+7) */
+const fmtVN = (dateStr: string | null) => {
+	if (!dateStr) return '—';
+	try {
+		return new Date(dateStr).toLocaleString('vi-VN', {
+			timeZone: 'Asia/Ho_Chi_Minh',
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+			hour12: false,
+		});
+	} catch {
+		return new Date(dateStr).toLocaleDateString('vi-VN');
+	}
+};
 
 const fmtDuration = (secs: number | null) => {
 	if (!secs) return '—';
@@ -109,7 +137,7 @@ export default function PersonalityTestReportPage() {
 	const [sortKey, setSortKey] = useState<SortKey>('created_at');
 	const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 	const [exporting, setExporting] = useState(false);
-	const [tab, setTab] = useState<'ocean' | 'dark' | 'demo' | 'pct'>('demo');
+	const [tab, setTab] = useState<'ocean' | 'dark' | 'demo' | 'pct' | 'quality'>('demo');
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [deleting, setDeleting] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -454,6 +482,7 @@ export default function PersonalityTestReportPage() {
 					{ key: 'ocean', label: '🌟 OCEAN' },
 					{ key: 'dark', label: '🌑 Dark Triad' },
 					{ key: 'pct', label: '📊 Percentile' },
+					{ key: 'quality', label: '🔍 Chất lượng' },
 				] as const).map((t) => (
 					<button
 						key={t.key}
@@ -518,6 +547,21 @@ export default function PersonalityTestReportPage() {
 								</>
 							)}
 
+							{tab === 'quality' && (
+								<>
+									<Th label="Longstring" k="longstring_max" />
+									<Th label="IRV" k="irv" />
+									<Th label="Person-r" k="person_total_r" />
+									<Th label="s/item" k="avg_item_time" />
+									<Th label="Thời gian" k="duration_seconds" />
+									<Th label="Đáng tin" k="reliability_flag" />
+									<Th label="Thiết bị" k="device_submissions" />
+									<th className="whitespace-nowrap px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-muted">
+										Fingerprint
+									</th>
+								</>
+							)}
+
 							<Th label="Status" k="status" />
 						</tr>
 					</thead>
@@ -535,8 +579,8 @@ export default function PersonalityTestReportPage() {
 								<td className="px-3 py-2.5 text-xs text-muted tabular-nums">
 									{idx + 1}
 								</td>
-								<td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted tabular-nums">
-									{new Date(r.created_at).toLocaleDateString('vi-VN')}
+								<td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted tabular-nums" title={fmtVN(r.created_at)}>
+									{fmtVN(r.created_at)}
 								</td>
 								<td className="px-3 py-2.5 font-medium text-foreground max-w-40 truncate">
 									{r.full_name ?? r.user_name}
@@ -593,6 +637,93 @@ export default function PersonalityTestReportPage() {
 									</>
 								)}
 
+								{tab === 'quality' && (
+									<>
+										{/* Longstring */}
+										<td className="px-3 py-2.5 text-center text-xs tabular-nums">
+											{r.longstring_max != null ? (
+												<span className={
+													r.longstring_max >= 14 ? 'text-error font-bold' :
+													r.longstring_max >= 8 ? 'text-warning font-bold' :
+													'text-foreground'
+												}>
+													{r.longstring_max}
+												</span>
+											) : '—'}
+										</td>
+										{/* IRV */}
+										<td className="px-3 py-2.5 text-center text-xs tabular-nums">
+											{r.irv != null ? (
+												<span className={
+													Number(r.irv) < 0.3 ? 'text-error font-bold' :
+													Number(r.irv) < 0.5 ? 'text-warning font-bold' :
+													'text-foreground'
+												}>
+													{Number(r.irv).toFixed(2)}
+												</span>
+											) : '—'}
+										</td>
+										{/* Person-total r */}
+										<td className="px-3 py-2.5 text-center text-xs tabular-nums">
+											{r.person_total_r != null ? (
+												<span className={
+													Number(r.person_total_r) < -0.2 ? 'text-error font-bold' :
+													Number(r.person_total_r) < 0.0 ? 'text-warning font-bold' :
+													'text-foreground'
+												}>
+													{Number(r.person_total_r).toFixed(2)}
+												</span>
+											) : '—'}
+										</td>
+										{/* Avg seconds per item */}
+										<td className="px-3 py-2.5 text-center text-xs tabular-nums">
+											{r.avg_item_time != null ? (
+												<span className={
+													Number(r.avg_item_time) < 1.0 ? 'text-error font-bold' :
+													Number(r.avg_item_time) < 2.0 ? 'text-warning font-bold' :
+													'text-foreground'
+												}>
+													{Number(r.avg_item_time).toFixed(1)}s
+												</span>
+											) : '—'}
+										</td>
+										{/* Duration */}
+										<td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted">
+											{fmtDuration(r.duration_seconds)}
+										</td>
+										{/* Reliability flag */}
+										<td className="px-3 py-2.5">
+											{r.reliability_flag ? (
+												<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+													r.reliability_flag === 'ok'
+														? 'bg-success-subtle text-success'
+														: r.reliability_flag === 'suspect'
+														? 'bg-warning-subtle text-warning'
+														: 'bg-error-subtle text-error'
+												}`}>
+													{r.reliability_flag === 'ok' ? '✓ OK' :
+													 r.reliability_flag === 'suspect' ? '⚠ Nghi ngờ' :
+													 '✗ Bất cẩn'}
+												</span>
+											) : <span className="text-muted text-xs">—</span>}
+										</td>
+										{/* Device submissions */}
+										<td className="px-3 py-2.5 text-center text-xs">
+											{r.device_submissions != null && r.device_submissions > 1 ? (
+												<span className="inline-flex items-center gap-1 rounded-full bg-warning-subtle px-2 py-0.5 text-[10px] font-bold text-warning">
+													🔄 {r.device_submissions}×
+												</span>
+											) : r.device_fingerprint ? (
+												<span className="text-muted">1×</span>
+											) : '—'}
+										</td>
+										{/* Fingerprint short hash */}
+										<td className="px-3 py-2.5 text-xs text-muted font-mono max-w-24 truncate" title={r.device_fingerprint ?? ''}>
+											{r.device_fingerprint ? r.device_fingerprint.slice(0, 8) + '…' : '—'}
+										</td>
+									</>
+								)}
+
 								<td className="px-3 py-2.5">
 									<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
 										r.status === 'completed'
@@ -619,12 +750,30 @@ export default function PersonalityTestReportPage() {
 
 			{/* ── Footer note ── */}
 			<p className="text-center text-xs text-muted">
-				Hiển thị {filtered.length}/{rows.length} bản ghi · Điểm từ 1.00–5.00 ·{' '}
-				<span className="text-success font-bold">Xanh ≥ 3.8</span> ·{' '}
-				<span className="text-error font-bold">Đỏ ≤ 2.2</span>
-				{tab === 'pct' && (
+				Hiển thị {filtered.length}/{rows.length} bản ghi ·{' '}
+				Timestamps: UTC+7 (Asia/Ho_Chi_Minh) ·{' '}
+				{tab === 'ocean' || tab === 'dark' ? (
 					<>
-						{' '}· Percentile so với nhóm tham chiếu (BFI-2: N=3,071 · SD3: N=998)
+						Điểm từ 1.00–5.00 ·{' '}
+						<span className="text-success font-bold">Xanh ≥ 3.8</span> ·{' '}
+						<span className="text-error font-bold">Đỏ ≤ 2.2</span>
+					</>
+				) : tab === 'pct' ? (
+					<>
+						Percentile so với nhóm tham chiếu (BFI-2: N=3,071 · SD3: N=998)
+					</>
+				) : tab === 'quality' ? (
+					<>
+						Longstring ≥8: <span className="text-warning font-bold">nghi ngờ</span> · ≥14: <span className="text-error font-bold">bất cẩn</span> ·{' '}
+						IRV &lt;0.5: nghi ngờ · Person-r &lt;0: nghi ngờ ·{' '}
+						Thời gian/câu &lt;2s: nghi ngờ ·{' '}
+						🔄 = cùng thiết bị
+					</>
+				) : (
+					<>
+						Điểm từ 1.00–5.00 ·{' '}
+						<span className="text-success font-bold">Xanh ≥ 3.8</span> ·{' '}
+						<span className="text-error font-bold">Đỏ ≤ 2.2</span>
 					</>
 				)}
 			</p>

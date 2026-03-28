@@ -36,10 +36,11 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 	const user = await getApiUser(request);
 	const body = await request.json();
 
-	const { demographics, responses, durationSeconds } = body as {
+	const { demographics, responses, durationSeconds, deviceFingerprint } = body as {
 		demographics?: DemographicData;
 		responses?: RawResponse[];
 		durationSeconds?: number;
+		deviceFingerprint?: string;
 	};
 
 	// ── Validate demographics ──
@@ -75,12 +76,23 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 	const userId = user?.id ?? `anon-${Date.now()}`;
 	const userName = user?.name ?? 'Anonymous';
 
+	// Extract device metadata from request headers
+	const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+		|| request.headers.get('x-real-ip')
+		|| null;
+	const userAgent = request.headers.get('user-agent') || null;
+
 	const session = await submitPersonalityTest(
 		userId,
 		userName,
 		demographics,
 		responses,
-		typeof durationSeconds === 'number' ? durationSeconds : 0
+		typeof durationSeconds === 'number' ? durationSeconds : 0,
+		{
+			deviceFingerprint: typeof deviceFingerprint === 'string' ? deviceFingerprint : undefined,
+			ipAddress: ipAddress ?? undefined,
+			userAgent: userAgent ?? undefined,
+		}
 	);
 
 	return apiSuccess(session, 201);

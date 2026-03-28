@@ -38,12 +38,18 @@ import {
 	createSession,
 	insertResult,
 	updatePercentiles,
+	updateReliabilityMetrics,
+	getMeanResponsePattern,
 	countSessionsByStatus,
 	getArchetypeDistribution,
 	getAverageScores,
 	type SessionRow,
 	type ResultRow,
 } from '@/models/PersonalityTest';
+
+import {
+	computeReliabilityMetrics,
+} from '@/lib/responseReliability';
 
 // ─── DTO Converters ────────────────────────────────────────────────────────────
 
@@ -224,13 +230,19 @@ export async function getTestSession(
  * 2. Scores the responses
  * 3. Inserts the result
  * 4. Calculates percentiles
+ * 5. Computes response reliability metrics
  */
 export async function submitPersonalityTest(
 	userId: string,
 	userName: string,
 	demographics: DemographicData,
 	responses: RawResponse[],
-	durationSeconds: number
+	durationSeconds: number,
+	deviceMetadata?: {
+		deviceFingerprint?: string;
+		ipAddress?: string;
+		userAgent?: string;
+	}
 ): Promise<PersonalityTestSessionDTO> {
 	// 1. Score the test
 	const scoringResult = scorePersonalityTest(responses);
@@ -245,6 +257,9 @@ export async function submitPersonalityTest(
 		responses,
 		durationSeconds,
 		status,
+		deviceFingerprint: deviceMetadata?.deviceFingerprint,
+		ipAddress: deviceMetadata?.ipAddress,
+		userAgent: deviceMetadata?.userAgent,
 	});
 
 	// 3. Insert scoring result
@@ -273,7 +288,48 @@ export async function submitPersonalityTest(
 		}
 	}
 
-	// 5. Build and return DTO
+	// 5. Compute and store response reliability metrics
+	try {
+		// Build response values in form_order (same order as questions appear)
+		const allQuestions = [
+			...getTestConfig().bfiQuestions.sort((a, b) => a.formOrder - b.formOrder),
+			...getTestConfig().sd3Questions.sort((a, b) => a.formOrder - b.formOrder),
+		];
+		const responseMap = new Map<string, number>();
+		for (const r of responses) {
+			responseMap.set(`${r.testType}_${r.itemNumber}`, r.value);
+		}
+		const orderedValues = allQuestions.map(q =>
+			responseMap.get(`${q.testType}_${q.itemNumber}`) ?? 3
+		);
+
+		// Get mean response pattern from valid sessions for person-total r
+		let meanPattern: number[] | undefined;
+		try {
+			const meanMap = await getMeanResponsePattern();
+			if (meanMap.size > 0) {
+				meanPattern = allQuestions.map(q =>
+					meanMap.get(`${q.testType}_fo${q.formOrder}`) ?? 3
+				);
+			}
+		} catch {
+			// Mean pattern not available (no prior valid sessions), skip person-total r
+		}
+
+		const metrics = computeReliabilityMetrics(orderedValues, durationSeconds, meanPattern);
+		await updateReliabilityMetrics(sessionId, {
+			longstringMax: metrics.longstringMax,
+			irv: metrics.irv,
+			personTotalR: metrics.personTotalR,
+			avgItemTime: metrics.avgItemTime,
+			reliabilityFlag: metrics.reliabilityFlag,
+		});
+	} catch (err) {
+		// Non-critical — don't fail the submission if reliability computation fails
+		console.error('[RELIABILITY] Failed to compute reliability metrics:', err);
+	}
+
+	// 6. Build and return DTO
 	const session = await findSessionById(sessionId);
 	if (!session) throw new Error('Session not found after creation');
 
