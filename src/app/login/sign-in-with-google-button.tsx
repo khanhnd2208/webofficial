@@ -37,7 +37,7 @@ export default function SignInWithGoogleButton({ callbackUrl }: { callbackUrl: s
 	const handleSignIn = async () => {
 		setLoading(true);
 		try {
-			await signIn('google', { callbackUrl });
+			await signIn('google', { callbackUrl }, { prompt: 'select_account' });
 		} catch {
 			// signIn redirects on success, so errors here are genuine failures
 			setLoading(false);

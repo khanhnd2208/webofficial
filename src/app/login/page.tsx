@@ -45,17 +45,39 @@ const FEATURES = [
 	},
 ];
 
+/** Map Auth.js error codes → user-friendly Vietnamese messages */
+const ERROR_MESSAGES: Record<string, string> = {
+	OAuthAccountNotLinked:
+		'Email này đã được liên kết với một tài khoản khác. Vui lòng đăng nhập đúng tài khoản Google ban đầu hoặc thử lại.',
+	OAuthCallbackError: 'Đã xảy ra lỗi khi xác thực với Google. Vui lòng thử lại.',
+	OAuthSignin: 'Không thể kết nối đến Google. Vui lòng thử lại sau.',
+	SessionRequired: 'Vui lòng đăng nhập để tiếp tục.',
+	Default: 'Đã xảy ra lỗi đăng nhập. Vui lòng thử lại.',
+};
+
 export default async function LoginPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ from?: string }>;
+	searchParams?: Promise<{ from?: string; error?: string; callbackUrl?: string }>;
 }) {
 	const sp = await searchParams;
-	const from = sp?.from ?? '/dashboard';
+	const from = sp?.callbackUrl ?? sp?.from ?? '/dashboard';
+	const errorCode = sp?.error;
+	const errorMessage = errorCode
+		? ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.Default
+		: null;
 
 	return (
 		<main className="flex min-h-[80vh] flex-col items-center justify-center px-6 py-16">
 			<div className="w-full max-w-sm">
+				{/* Error banner */}
+				{errorMessage && (
+					<div className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-sm text-red-700 dark:border-red-700/50 dark:bg-red-900/20 dark:text-red-300">
+						<p className="font-semibold">⚠️ Lỗi đăng nhập</p>
+						<p className="mt-1">{errorMessage}</p>
+					</div>
+				)}
+
 				{/* Logo */}
 				<div className="text-center">
 					<Link href="/" className="inline-flex items-center gap-2">

@@ -18,6 +18,12 @@ const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 // Detect local dev: secure cookies break on http://localhost
 const isLocalDev = process.env.AUTH_URL?.startsWith('http://');
 
+/** Custom page paths for Auth.js */
+const pages = {
+	signIn: '/login',
+	error: '/login',
+};
+
 const secureCookieOptions = {
 	httpOnly: true,
 	sameSite: 'lax' as const,
@@ -32,6 +38,7 @@ const sessionTokenCookieOptions = {
 
 export const authConfig: NextAuthConfig = {
 	secret: process.env.AUTH_SECRET,
+	pages,
 	session: {
 		strategy: 'jwt',
 		maxAge: SESSION_MAX_AGE_SECONDS,
@@ -58,6 +65,7 @@ export const authConfig: NextAuthConfig = {
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
 					checks: ['none'],
+					allowDangerousEmailAccountLinking: true,
 				}),
 			]
 			: [],
