@@ -21,7 +21,7 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
 import type {
@@ -92,140 +92,49 @@ function InvalidResultCard({ lang }: { lang: Lang }) {
   );
 }
 
-// ── Clean typographic section heading ──────────────────────────────────────────
+// ── Large Section Title — numbered, prominent, with description ───────────────
 
-function SectionHeading({
-  title,
-  subtitle,
+function SectionTitle({
+  number,
   icon,
-}: {
-  title: string;
-  subtitle?: string;
-  icon?: string;
-}) {
-  return (
-    <div className="mb-5">
-      <div className="flex items-center gap-2 mb-0.5">
-        <div className="h-4 w-0.5 rounded-full bg-accent" aria-hidden="true" />
-        <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-tight">
-          {icon && <span className="mr-1.5">{icon}</span>}{title}
-        </h2>
-      </div>
-      {subtitle && (
-        <p className="ml-3 text-sm text-muted">{subtitle}</p>
-      )}
-    </div>
-  );
-}
-
-// ── Section Toggle for Table of Contents ──────────────────────────────────────
-
-interface SectionConfig {
-  id: string;
-  icon: string;
-  label: string;
-  labelVi: string;
-  defaultOn: boolean;
-}
-
-function SectionToC({
-  sections,
-  visibility,
-  onToggle,
+  title,
+  titleVi,
+  description,
+  descriptionVi,
   lang,
 }: {
-  sections: SectionConfig[];
-  visibility: Record<string, boolean>;
-  onToggle: (id: string) => void;
+  number: number;
+  icon: string;
+  title: string;
+  titleVi: string;
+  description: string;
+  descriptionVi: string;
   lang: Lang;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
-
   return (
     <motion.div
-      className="rounded-xl border border-border bg-surface overflow-hidden shadow-sm"
+      className="relative pt-8 pb-2"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
     >
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="flex w-full items-center justify-between px-5 py-3.5 text-left hover:bg-background-secondary/30 transition-colors"
-      >
-        <div className="flex items-center gap-2.5">
-          <span className="text-base">📋</span>
-          <div>
-            <h2 className="text-sm font-bold text-foreground">
-              {lang === "vi" ? "Mục lục Kết quả" : "Results Navigation"}
-            </h2>
-            <p className="text-[10px] text-muted">
-              {lang === "vi"
-                ? "Bật/tắt để hiện hoặc ẩn từng phần"
-                : "Toggle sections on/off to show or hide"}
-            </p>
-          </div>
+      {/* Divider line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-border" />
+      <div className="flex items-start gap-3 sm:gap-4">
+        {/* Number badge */}
+        <span className="shrink-0 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-accent/10 text-accent text-sm sm:text-base font-black tabular-nums">
+          {number}
+        </span>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight leading-tight flex items-center gap-2 flex-wrap">
+            <span>{icon}</span>
+            <span>{lang === "vi" ? titleVi : title}</span>
+          </h2>
+          <p className="mt-1 text-sm text-muted leading-relaxed max-w-2xl">
+            {lang === "vi" ? descriptionVi : description}
+          </p>
         </div>
-        <motion.svg
-          animate={{ rotate: collapsed ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          className="h-4 w-4 text-muted shrink-0"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fillRule="evenodd"
-            d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
-            clipRule="evenodd"
-          />
-        </motion.svg>
-      </button>
-
-      <AnimatePresence>
-        {!collapsed && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 pb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {sections.map((sec) => {
-                const isOn = visibility[sec.id] ?? sec.defaultOn;
-                return (
-                  <button
-                    key={sec.id}
-                    onClick={() => onToggle(sec.id)}
-                    className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 ${
-                      isOn
-                        ? "border-accent/40 bg-accent/5 shadow-sm"
-                        : "border-border/60 bg-background-secondary/20 opacity-60"
-                    }`}
-                  >
-                    {/* Toggle dot */}
-                    <span
-                      className={`shrink-0 h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        isOn ? "border-accent bg-accent" : "border-muted/40 bg-transparent"
-                      }`}
-                    >
-                      {isOn && (
-                        <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
-                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </span>
-
-                    <span className="text-base shrink-0">{sec.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <span className={`text-xs font-semibold block truncate ${isOn ? "text-foreground" : "text-muted"}`}>
-                        {lang === "vi" ? sec.labelVi : sec.label}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
@@ -254,74 +163,102 @@ function RefGroupSelector({
 }) {
   const t = getStrings(lang);
 
-  /* Build a human-friendly description for each group */
-  function friendlyLabel(g: { id: string; label: string; labelVi: string; n: number; isLocal?: boolean }): string {
+  /* Build plain-language friendly labels */
+  function friendlyLabel(g: { id: string; label: string; labelVi: string; n: number; isLocal?: boolean }): { main: string; sub: string } {
     if (g.isLocal) {
-      return lang === "vi" ? t.refGroupLocalDesc : t.refGroupLocalDesc;
+      return {
+        main: lang === "vi" ? "🏫 Các bạn cùng làm bài" : "🏫 Students on this platform",
+        sub: lang === "vi"
+          ? "So sánh với sinh viên đã làm bài trên nền tảng này — gần gũi và phù hợp nhất với bạn"
+          : "Compare with students who took this test here — the most relevant group for you",
+      };
     }
-    // Use the raw label but make it friendlier
     const rawLabel = lang === "vi" ? g.labelVi : g.label;
-    return rawLabel;
+    return {
+      main: `🌍 ${rawLabel}`,
+      sub: lang === "vi"
+        ? "Mẫu nghiên cứu quốc tế từ các bài báo khoa học"
+        : "International research sample from published studies",
+    };
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Section label */}
-      <p className="text-xs font-semibold text-muted">
-        {label}
-      </p>
+      <div>
+        <p className="text-xs font-bold text-foreground">
+          {label}
+        </p>
+        <p className="text-[10px] text-muted mt-0.5">
+          {lang === "vi"
+            ? "Chọn nhóm bạn muốn so sánh — nhấn để thay đổi"
+            : "Pick who you want to compare with — tap to change"}
+        </p>
+      </div>
 
-      {/* Radio-style group options */}
-      <div className="space-y-1.5">
+      {/* Card-style group options */}
+      <div className="space-y-2">
         {groups.map((g) => {
           const isActive = g.id === selected;
           const isLocal = g.isLocal === true;
-          const desc = friendlyLabel(g);
+          const labels = friendlyLabel(g);
 
           return (
             <button
               key={g.id}
               onClick={() => onChange(g.id)}
-              className={`flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left transition-all duration-150 ${
+              className={`flex w-full items-start gap-3.5 rounded-xl border-2 px-4 py-3.5 text-left transition-all duration-200 ${
                 isActive
                   ? isLocal
-                    ? "border-emerald-300 bg-emerald-50/80 dark:border-emerald-700 dark:bg-emerald-950/40"
-                    : "border-accent/40 bg-accent/5"
-                  : "border-border/60 bg-transparent hover:border-border hover:bg-background-secondary/30"
+                    ? "border-emerald-400 bg-emerald-50/80 dark:border-emerald-600 dark:bg-emerald-950/30 shadow-sm shadow-emerald-200/40 dark:shadow-emerald-900/30"
+                    : "border-accent bg-accent/5 shadow-sm shadow-accent/10"
+                  : "border-border/50 bg-transparent hover:border-border hover:bg-background-secondary/30"
               }`}
               aria-pressed={isActive}
             >
-              {/* Radio dot */}
-              <span className={`shrink-0 h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center ${
+              {/* Radio circle */}
+              <span className={`shrink-0 mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
                 isActive
                   ? isLocal
-                    ? "border-emerald-500"
-                    : "border-accent"
-                  : "border-muted/40"
+                    ? "border-emerald-500 bg-emerald-500"
+                    : "border-accent bg-accent"
+                  : "border-muted/30 bg-transparent"
               }`}>
                 {isActive && (
-                  <span className={`h-1.5 w-1.5 rounded-full ${
-                    isLocal ? "bg-emerald-500" : "bg-accent"
-                  }`} />
+                  <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 )}
               </span>
 
-              {/* Label + count */}
+              {/* Label + description + count */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-semibold truncate ${
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-sm font-bold ${
                     isActive ? "text-foreground" : "text-muted"
                   }`}>
-                    {desc}
+                    {labels.main}
                   </span>
                   {isLocal && (
-                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300">
-                      LIVE
+                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
+                      ● Live
+                    </span>
+                  )}
+                  {isLocal && (
+                    <span className="shrink-0 text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 rounded-full px-2 py-0.5">
+                      {lang === "vi" ? "⭐ Khuyên dùng" : "⭐ Recommended"}
                     </span>
                   )}
                 </div>
-                <span className={`text-[10px] tabular-nums ${isActive ? "text-muted" : "text-muted/50"}`}>
-                  N = {g.n.toLocaleString()} {t.nParticipants}
+                <p className={`text-[11px] leading-relaxed mt-0.5 ${
+                  isActive ? "text-muted" : "text-muted/60"
+                }`}>
+                  {labels.sub}
+                </p>
+                <span className={`text-[10px] tabular-nums mt-1 inline-block ${
+                  isActive ? "text-muted" : "text-muted/40"
+                }`}>
+                  {g.n.toLocaleString()} {t.nParticipants}
                 </span>
               </div>
             </button>
@@ -331,10 +268,15 @@ function RefGroupSelector({
 
       {/* Selected group detail */}
       {referenceGroupDetails && (
-        <p className="text-[11px] text-muted leading-relaxed pl-1 border-l-2 border-border/60 mt-1">
-          {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
-          <span className="opacity-50"> — {referenceGroupDetails.source}</span>
-        </p>
+        <div className="rounded-lg bg-background-secondary/40 border border-border/40 px-3.5 py-2.5">
+          <p className="text-[11px] text-muted leading-relaxed">
+            <span className="font-bold">{lang === "vi" ? "ℹ️ Về nhóm này:" : "ℹ️ About this group:"}</span>{" "}
+            {lang === "vi" ? referenceGroupDetails.descriptionVi : referenceGroupDetails.description}
+          </p>
+          <p className="text-[10px] text-muted/50 mt-1">
+            {lang === "vi" ? "Nguồn" : "Source"}: {referenceGroupDetails.source}
+          </p>
+        </div>
       )}
     </div>
   );
@@ -345,30 +287,23 @@ function RefGroupSelector({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function NormDisclaimer({ lang }: { lang: Lang }) {
-  const t = getStrings(lang);
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-lg border border-border bg-background-secondary/50 px-4 py-3">
+    <div className="rounded-xl border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/50 dark:bg-amber-900/10 px-4 py-3.5">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center gap-2.5 text-left group"
       >
-        <svg
-          className="h-4 w-4 shrink-0 text-muted"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span className="flex-1 text-xs text-muted leading-relaxed">
-          {t.normDisclaimer}
+        <span className="text-base shrink-0">💡</span>
+        <span className="flex-1 text-xs text-amber-800 dark:text-amber-200 leading-relaxed font-medium">
+          {lang === "vi"
+            ? "Lưu ý: Các con số percentile phụ thuộc vào nhóm bạn chọn để so sánh. Để kết quả phù hợp nhất, hãy chọn nhóm gần gũi với bạn (ví dụ: sinh viên cùng nền tảng)."
+            : "Note: Percentile numbers depend on which group you compare against. For the most meaningful results, choose the group closest to you (e.g. students on this platform)."}
         </span>
         <svg
-          className={`h-3.5 w-3.5 shrink-0 text-muted transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -378,13 +313,22 @@ function NormDisclaimer({ lang }: { lang: Lang }) {
         </svg>
       </button>
       {expanded && (
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="mt-2 pl-6 text-[11px] text-muted leading-relaxed"
+          className="mt-2.5 pl-8 space-y-2"
         >
-          {t.normDisclaimerDetail}
-        </motion.p>
+          <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
+            {lang === "vi"
+              ? "Nhóm tham chiếu mặc định đến từ người trưởng thành Mỹ/Canada. Do khác biệt văn hóa, sinh viên Việt Nam thường có điểm Dễ chịu và Tận tâm cao hơn so với chuẩn phương Tây — đây là do khác biệt văn hóa, không phải vấn đề tính cách."
+              : "Default reference groups come from US/Canadian adults. Due to cultural differences in values and self-reporting style, Vietnamese students often score higher on Agreeableness and Conscientiousness compared to Western norms — this is a cultural difference, not a personality issue."}
+          </p>
+          <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 leading-relaxed font-semibold">
+            {lang === "vi"
+              ? "→ Để so sánh chính xác hơn, hãy chọn 'Các bạn cùng làm bài' (🏫) bên dưới!"
+              : "→ For a more accurate comparison, select 'Students on this platform' (🏫) below!"}
+          </p>
+        </motion.div>
       )}
     </div>
   );
@@ -407,27 +351,7 @@ export default function PersonalityResultsDashboard({
   const [oceanGroup, setOceanGroup] = useState("bfi2-internet");
   const [darkTriadGroup, setDarkTriadGroup] = useState("sd3-community");
 
-  // ── Section visibility toggles ──
-  const SECTION_CONFIG: SectionConfig[] = [
-    { id: "archetype", icon: "🎭", label: "Your Archetype", labelVi: "Nguyên mẫu của bạn", defaultOn: true },
-    { id: "radar", icon: "🕸️", label: "Radar Chart", labelVi: "Biểu đồ Radar", defaultOn: true },
-    { id: "ocean", icon: "🌟", label: "Big Five (OCEAN)", labelVi: "5 Nét tính cách lớn", defaultOn: true },
-    { id: "darkTriad", icon: "🌑", label: "Dark Triad", labelVi: "Bộ ba Bóng tối", defaultOn: true },
-    { id: "percentile", icon: "📊", label: "Percentile Comparison", labelVi: "So sánh Percentile", defaultOn: true },
-    { id: "crossTrait", icon: "🔗", label: "Cross-Trait Insights", labelVi: "Phân tích Tổng hợp", defaultOn: true },
-    { id: "scoreTable", icon: "📋", label: "Score Table", labelVi: "Bảng điểm Chi tiết", defaultOn: true },
-    { id: "limitations", icon: "📖", label: "Limitations & References", labelVi: "Giới hạn & Tài liệu", defaultOn: true },
-  ];
 
-  const [sectionVisibility, setSectionVisibility] = useState<Record<string, boolean>>(() => {
-    const defaults: Record<string, boolean> = {};
-    SECTION_CONFIG.forEach(s => { defaults[s.id] = s.defaultOn; });
-    return defaults;
-  });
-
-  const toggleSection = useCallback((id: string) => {
-    setSectionVisibility(prev => ({ ...prev, [id]: !prev[id] }));
-  }, []);
 
   const result = session.result;
   const ocean = result?.ocean ?? null;
@@ -584,23 +508,7 @@ export default function PersonalityResultsDashboard({
           )}
         </motion.header>
 
-        {/* ══════════ SECTION NAVIGATION (Toggle On/Off) ══════════════ */}
-        <SectionToC
-          sections={SECTION_CONFIG.filter(s => {
-            // Only show sections that actually have data
-            if (s.id === "archetype" && !archetype) return false;
-            if (s.id === "radar" && oceanTraits.length === 0) return false;
-            if (s.id === "ocean" && oceanTraits.length === 0) return false;
-            if (s.id === "darkTriad" && dtTraits.length === 0) return false;
-            if (s.id === "percentile" && allTraits.length === 0) return false;
-            if (s.id === "crossTrait" && crossInsights.length === 0) return false;
-            if (s.id === "scoreTable" && allTraits.length === 0) return false;
-            return true;
-          })}
-          visibility={sectionVisibility}
-          onToggle={toggleSection}
-          lang={lang}
-        />
+
 
         {/* ══════════ ATTENTION WARNING ════════════════════════════════════ */}
         {showAttentionWarning && (
@@ -623,10 +531,18 @@ export default function PersonalityResultsDashboard({
           </motion.div>
         )}
 
-        {/* ══════════ ARCHETYPE — Hero card + trait summary ═════════════ */}
-        {archetype && sectionVisibility.archetype && (
+        {/* ══════════ 1. ARCHETYPE — Hero card + trait summary ════════ */}
+        {archetype && (
           <section className="space-y-4">
-            <SectionHeading title={t.yourArchetype} />
+            <SectionTitle
+              number={1}
+              icon="🎭"
+              title="Your Personality Archetype"
+              titleVi="Nguyên mẫu Tính cách của bạn"
+              description="Based on the unique combination of all your trait scores, we've matched you to a personality archetype — a recognizable pattern that captures your dominant tendencies. Think of it as a starting point for self-understanding, not a final label."
+              descriptionVi="Dựa trên sự kết hợp độc đáo của tất cả các nét tính cách, chúng tôi đã tìm ra một nguyên mẫu phù hợp với bạn — một mô hình dễ nhận biết thể hiện xu hướng nổi trội nhất. Hãy xem đây là điểm khởi đầu để hiểu bản thân, không phải nhãn dán cuối cùng."
+              lang={lang}
+            />
             <ArchetypeCard archetype={archetype} lang={lang} />
 
             {/* Quick trait summary so user sees the score basis for the archetype */}
@@ -663,7 +579,7 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ══════════ KEY HIGHLIGHTS ═══════════════════════════════════ */}
-        {allTraits.length > 0 && sectionVisibility.archetype && (
+        {allTraits.length > 0 && (
           <motion.section
             className="rounded-xl border-2 border-accent/30 bg-linear-to-br from-accent/5 via-surface to-accent/5 p-5 sm:p-6 shadow-sm"
             initial={{ opacity: 0, y: 12 }}
@@ -755,22 +671,48 @@ export default function PersonalityResultsDashboard({
           </motion.section>
         )}
 
-        {/* ═════════ RADAR CHART ═══════════════════════════════════════ */}
-        {oceanTraits.length > 0 && sectionVisibility.radar && (
+        {/* ═════════ 2. RADAR CHART ══════════════════════════════════ */}
+        {oceanTraits.length > 0 && (
           <section>
+            <SectionTitle
+              number={2}
+              icon="🕸️"
+              title="Personality Radar"
+              titleVi="Bản đồ Tính cách (Radar)"
+              description="A visual overview of your Big Five personality traits. The further a point extends from the center, the higher you scored on that trait. This gives you a quick snapshot of your overall personality shape at a glance."
+              descriptionVi="Tổng quan trực quan về 5 nét tính cách lớn. Điểm càng xa tâm thì bạn càng có xu hướng mạnh ở nét đó. Biểu đồ này giúp bạn nhìn nhanh 'hình dạng tính cách' tổng thể của mình."
+              lang={lang}
+            />
             <div className="rounded-xl border border-border bg-surface p-5 sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-4 text-center">
-                {t.oceanTitle}
-              </p>
               <RadarChart traits={oceanTraits} lang={lang} />
             </div>
           </section>
         )}
 
-        {/* ═════════ OCEAN TRAIT CARDS ════════════════════════════════════ */}
-        {oceanTraits.length > 0 && sectionVisibility.ocean && (
+        {/* ═════════ 3. OCEAN TRAIT CARDS ═════════════════════════════ */}
+        {oceanTraits.length > 0 && (
           <section>
-            <SectionHeading title={t.oceanTitle} subtitle={t.oceanSubtitle} />
+            <SectionTitle
+              number={3}
+              icon="🌟"
+              title="The Big Five Personality Traits (OCEAN)"
+              titleVi="5 Nét Tính cách Lớn (OCEAN)"
+              description="The Big Five model is the most widely validated personality framework in psychology. It measures five core dimensions that shape how you think, feel, and interact with others. Each trait exists on a spectrum — there are no 'good' or 'bad' scores."
+              descriptionVi="Mô hình Big Five (Năm Lớn) là khung tính cách được nghiên cứu và kiểm chứng rộng rãi nhất trong tâm lý học. Mô hình đo lường 5 chiều cốt lõi định hình cách bạn suy nghĩ, cảm nhận và tương tác với người khác. Mỗi nét tính cách nằm trên một phổ — không có điểm nào là 'tốt' hay 'xấu'."
+              lang={lang}
+            />
+            <p className="text-xs text-muted/70 italic mb-1">{t.oceanSubtitle}</p>
+
+            {/* Click hint */}
+            <div className="flex items-center gap-2 mb-4 rounded-lg bg-accent/5 border border-accent/15 px-3.5 py-2.5">
+              <span className="text-accent text-base">👆</span>
+              <p className="text-xs text-accent font-semibold">
+                {lang === "vi"
+                  ? "Nhấn vào từng nét tính cách bên dưới để xem phân tích chi tiết riêng cho bạn — bao gồm ý nghĩa, nghề nghiệp phù hợp, và lời khuyên cụ thể!"
+                  : "Tap each trait card below to reveal your personalized analysis — including what it means, career fit, and specific action advice!"}
+              </p>
+            </div>
+
             <div className="grid gap-3 sm:gap-4">
               {oceanTraits.map((trait, i) => (
                 <motion.div
@@ -791,13 +733,30 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* ═════════ DARK TRIAD TRAIT CARDS ════════════════════════════════ */}
-        {dtTraits.length > 0 && sectionVisibility.darkTriad && (
+        {/* ═════════ 4. DARK TRIAD TRAIT CARDS ═════════════════════════ */}
+        {dtTraits.length > 0 && (
           <section>
-            <SectionHeading
-              title={t.darkTriadTitle}
-              subtitle={t.darkTriadSubtitle}
+            <SectionTitle
+              number={4}
+              icon="🌑"
+              title="Social Instincts — The Dark Triad"
+              titleVi="Bản năng Xã hội — Bộ ba Bóng tối (Dark Triad)"
+              description="Despite the dramatic name, the Dark Triad measures normal personality tendencies everyone has to some degree — strategic thinking (Machiavellianism), self-confidence (Narcissism), and risk tolerance (Psychopathy). These are NOT clinical diagnoses. Moderate levels often relate to leadership potential and career success."
+              descriptionVi="Dù tên gọi có vẻ 'đáng sợ', Dark Triad đo các xu hướng tính cách bình thường mà ai cũng có ở mức nào đó — tư duy chiến lược (Mưu lược), sự tự tin (Ái kỷ), và khả năng chấp nhận rủi ro (Thái nhân cách). Đây KHÔNG phải chẩn đoán bệnh lý. Mức vừa phải thường liên quan đến tiềm năng lãnh đạo và thành công sự nghiệp."
+              lang={lang}
             />
+            <p className="text-xs text-muted/70 italic mb-1">{t.darkTriadSubtitle}</p>
+
+            {/* Click hint */}
+            <div className="flex items-center gap-2 mb-4 rounded-lg bg-purple-50/60 dark:bg-purple-900/10 border border-purple-200/40 dark:border-purple-800/30 px-3.5 py-2.5">
+              <span className="text-purple-500 text-base">👆</span>
+              <p className="text-xs text-purple-700 dark:text-purple-300 font-semibold">
+                {lang === "vi"
+                  ? "Nhấn vào từng đặc điểm để xem chi tiết — ý nghĩa thực sự, cách nó ảnh hưởng đến công việc, và cách phát huy ưu điểm của bạn!"
+                  : "Tap each trait to see the full story — what it really means, how it affects your work, and how to leverage your strengths!"}
+              </p>
+            </div>
+
             <div className="grid gap-3 sm:gap-4">
               {dtTraits.map((trait, i) => (
                 <motion.div
@@ -818,24 +777,41 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* ═════════ PERCENTILE COMPARISON PANEL ══════════════════════ */}
-        {allTraits.length > 0 && sectionVisibility.percentile && (
-          <section className="rounded-xl border border-border bg-surface overflow-hidden">
-            {/* Panel header */}
-            <div className="border-b border-border bg-background-secondary/40 px-5 sm:px-7 py-4">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                {t.percentileTitle}
-              </h2>
-              <p className="mt-0.5 text-xs text-muted">{t.percentileSubtitle}</p>
-            </div>
+        {/* ═════════ 5. PERCENTILE COMPARISON PANEL ═══════════════════ */}
+        {allTraits.length > 0 && (
+          <section>
+            <SectionTitle
+              number={5}
+              icon="📊"
+              title="How Do You Compare?"
+              titleVi="Bạn ở đâu so với Mọi người?"
+              description="This section shows where your scores fall compared to other people — like finding your position on a bell curve. A percentile of 75 means you scored higher than 75% of people in the comparison group. You can switch between different comparison groups below."
+              descriptionVi="Phần này cho thấy điểm của bạn nằm ở đâu so với người khác — giống như tìm vị trí của bạn trên đường cong phân phối chuẩn. Percentile 75 có nghĩa bạn đạt điểm cao hơn 75% người trong nhóm so sánh. Bạn có thể chuyển đổi giữa các nhóm so sánh bên dưới."
+              lang={lang}
+            />
+          <div className="rounded-xl border border-border bg-surface overflow-hidden">
 
             <div className="px-5 sm:px-7 py-6 space-y-5">
               {/* Norm disclaimer */}
               <NormDisclaimer lang={lang} />
 
-              {/* Reference group selectors — stacked on mobile, side by side on desktop */}
+              {/* Reference group selectors — with user-friendly header */}
               {(oceanGroups.length > 0 || dtGroups.length > 0) && (
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🎯</span>
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground">
+                        {lang === "vi" ? "Chọn nhóm so sánh" : "Choose your comparison group"}
+                      </h3>
+                      <p className="text-[11px] text-muted leading-relaxed">
+                        {lang === "vi"
+                          ? "Kết quả percentile thay đổi tùy theo nhóm bạn so sánh. Hãy thử chuyển đổi giữa các nhóm để xem sự khác biệt!"
+                          : "Percentile results change depending on who you compare against. Try switching between groups to see the difference!"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid gap-5 sm:grid-cols-2">
                   {oceanGroups.length > 0 && (
                     <RefGroupSelector
                       groups={oceanGroups}
@@ -856,6 +832,7 @@ export default function PersonalityResultsDashboard({
                       referenceGroupDetails={percentileData?.referenceGroupDetails?.darkTriad}
                     />
                   )}
+                  </div>
                 </div>
               )}
 
@@ -928,15 +905,21 @@ export default function PersonalityResultsDashboard({
                 </div>
               )}
             </div>
+          </div>
           </section>
         )}
 
-        {/* ══════════ CROSS-TRAIT INSIGHTS ════════════════════════════════ */}
-        {crossInsights.length > 0 && sectionVisibility.crossTrait && (
+        {/* ══════════ 6. CROSS-TRAIT INSIGHTS ═════════════════════════ */}
+        {crossInsights.length > 0 && (
           <section>
-            <SectionHeading
-              title={t.crossTraitTitle}
-              subtitle={t.crossTraitSubtitle}
+            <SectionTitle
+              number={6}
+              icon="🔗"
+              title="Your Unique Profile Insights"
+              titleVi="Điểm Độc đáo chỉ riêng Bạn"
+              description="The most powerful insights come from how your traits combine. This section analyses how your specific trait pairs interact to create unique tendencies — strengths that emerge only from your particular combination, and potential blind spots to be aware of."
+              descriptionVi="Những nhận định giá trị nhất đến từ cách các nét tính cách của bạn kết hợp với nhau. Phần này phân tích cách các cặp nét tính cách của bạn tương tác, tạo ra những xu hướng riêng biệt — những thế mạnh chỉ xuất hiện từ sự kết hợp đặc trưng của bạn, và những điểm mù cần lưu ý."
+              lang={lang}
             />
             <div className="grid gap-3 sm:grid-cols-2">
               {crossInsights.map((ci, i) => (
@@ -962,11 +945,17 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* ══════════ SCORE TABLE ═════════════════════════════════════════ */}
-        {allTraits.length > 0 && sectionVisibility.scoreTable && (
+        {/* ══════════ 7. SCORE TABLE ══════════════════════════════════ */}
+        {allTraits.length > 0 && (
           <section>
-            <SectionHeading
-              title={t.scoreTableTitle}
+            <SectionTitle
+              number={7}
+              icon="📋"
+              title="Detailed Score Table"
+              titleVi="Bảng điểm Chi tiết"
+              description="A compact summary of all your numerical scores in one place. Hover or tap on any value to see what it means. Z-scores show how many standard deviations you are from the group average, and Percentile shows what percentage of people scored lower than you."
+              descriptionVi="Bảng tóm tắt tất cả điểm số của bạn ở một nơi. Di chuột hoặc nhấn vào bất kỳ giá trị nào để xem giải thích. Z-score cho biết bạn cách trung bình nhóm bao nhiêu độ lệch chuẩn, và Percentile cho biết bao nhiêu phần trăm người có điểm thấp hơn bạn."
+              lang={lang}
             />
             <ScoreTable
               traits={allTraits}
@@ -976,10 +965,19 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
-        {/* ══════════ LIMITATIONS ═════════════════════════════════════════ */}
-        {sectionVisibility.limitations && (
+        {/* ══════════ 8. LIMITATIONS ═════════════════════════════════ */}
+        <section>
+          <SectionTitle
+            number={8}
+            icon="📖"
+            title="Limitations & Research Context"
+            titleVi="Giới hạn & Bối cảnh Nghiên cứu"
+            description="No personality test is perfect. Understanding the limitations helps you interpret your results wisely. This section covers important caveats about self-report bias, cultural context, and what these scores can and cannot tell you."
+            descriptionVi="Không có bài trắc nghiệm tính cách nào là hoàn hảo. Hiểu các giới hạn giúp bạn diễn giải kết quả một cách khôn ngoan. Phần này đề cập đến những lưu ý quan trọng về thiên lệch tự đánh giá, bối cảnh văn hóa, và những gì điểm số có thể và không thể nói cho bạn."
+            lang={lang}
+          />
           <LimitationsSection lang={lang} />
-        )}
+        </section>
 
         {/* ══════════ ACTION BUTTONS ══════════════════════════════════════ */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 pb-10">

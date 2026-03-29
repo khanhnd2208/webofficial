@@ -58,7 +58,9 @@ export function TraitCard({
     >
       {/* ── Header (clickable) ─────────────────────────────────── */}
       <button
-        className="flex w-full cursor-pointer items-center gap-3 p-4 sm:p-5 text-left"
+        className={`flex w-full cursor-pointer items-center gap-3 p-4 sm:p-5 text-left transition-colors ${
+          expanded ? "bg-accent/3" : "hover:bg-background-secondary/40"
+        }`}
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
       >
@@ -76,12 +78,27 @@ export function TraitCard({
             {trait.score.toFixed(2)}<span className="opacity-40"> / 5</span>
           </span>
         </div>
-        <svg
-          className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        {/* Expand/collapse indicator */}
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <motion.div
+            animate={{ rotate: expanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className={`flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors ${
+              expanded
+                ? "border-accent bg-accent text-white"
+                : "border-accent/40 bg-accent/10 text-accent"
+            }`}
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </motion.div>
+          {!expanded && (
+            <span className="text-[8px] font-bold text-accent/70 leading-none">
+              {lang === "vi" ? "xem" : "view"}
+            </span>
+          )}
+        </div>
       </button>
 
       {/* ── Percentile gauge (single bar) ──────────────────────── */}
@@ -92,9 +109,20 @@ export function TraitCard({
       {/* ── Expand hint ────────────────────────────────────────── */}
       {!expanded && (
         <div className="px-4 sm:px-5 pb-3">
-          <span className="text-[11px] text-muted">
-            {t.tapToExplore}
-          </span>
+          <div className="flex items-center gap-1.5 text-accent/80">
+            <motion.svg
+              className="h-3 w-3 shrink-0"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              animate={{ y: [0, 2, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clipRule="evenodd" />
+            </motion.svg>
+            <span className="text-[11px] font-semibold">
+              {lang === "vi" ? "Nhấn để xem phân tích chi tiết →" : "Tap to see your detailed analysis →"}
+            </span>
+          </div>
         </div>
       )}
 
