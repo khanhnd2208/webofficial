@@ -30,10 +30,11 @@ export default function TransitionPhase({
 					🎉
 				</motion.div>
 				<h3 className="mt-5 text-xl font-black text-foreground">
-					Awesome! Part 1 Complete
+					Tuyệt vời! Phần 1 Hoàn thành
 				</h3>
+				<p className="mt-0.5 text-xs text-muted italic">Awesome! Part 1 Complete</p>
 				<p className="mt-1 text-sm font-semibold text-success">
-					✅ {totalBfiAnswered}/{config.bfiQuestions.length} items — Big Five (OCEAN) done
+					✅ {totalBfiAnswered}/{config.bfiQuestions.length} câu — Big Five (OCEAN) hoàn tất
 				</p>
 			</div>
 
@@ -41,23 +42,28 @@ export default function TransitionPhase({
 				<div className="flex items-center gap-3">
 					<span className="text-2xl">🌑</span>
 					<div>
-						<h4 className="font-bold text-foreground">Up next: Dark Triad</h4>
-						<p className="text-xs text-muted">28 items • SD3 (Short Dark Triad)</p>
+						<h4 className="font-bold text-foreground">Tiếp theo: Bộ ba Bóng tối</h4>
+						<p className="text-[10px] text-muted italic">Up next: Dark Triad</p>
+						<p className="text-xs text-muted">28 câu • SD3 (Short Dark Triad)</p>
 					</div>
 				</div>
 				<p className="mt-3 text-xs leading-relaxed text-muted">
+					Phần này khám phá tư duy chiến lược, sự tự tin, và khả năng chấp nhận rủi ro.
+					Không có đúng sai — hãy tiếp tục với phản ứng thật của bạn!
+				</p>
+				<p className="mt-1 text-[10px] leading-relaxed text-muted/70 italic">
 					This part explores strategic thinking, self-confidence, and risk tolerance.
 					No right or wrong answers — just keep going with your honest reactions!
 				</p>
 			</div>
 
 			<div className="mt-4 text-center">
-				<p className="text-xs text-muted mb-4">{config.sd3Questions.length} more items — about 5 minutes 💪</p>
+				<p className="text-xs text-muted mb-4">Còn {config.sd3Questions.length} câu nữa — khoảng 5 phút 💪</p>
 				<button
 					onClick={onContinue}
 					className="rounded-xl bg-accent px-8 py-3.5 text-sm font-bold text-accent-foreground transition-all hover:bg-accent-hover hover:scale-[1.01] active:scale-[0.99]"
 				>
-					Ready — Let&apos;s go! →
+					Sẵn sàng — Bắt đầu! →
 				</button>
 			</div>
 		</motion.div>

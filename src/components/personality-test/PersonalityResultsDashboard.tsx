@@ -21,7 +21,7 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 import type {
@@ -115,6 +115,118 @@ function SectionHeading({
         <p className="ml-3 text-sm text-muted">{subtitle}</p>
       )}
     </div>
+  );
+}
+
+// ── Section Toggle for Table of Contents ──────────────────────────────────────
+
+interface SectionConfig {
+  id: string;
+  icon: string;
+  label: string;
+  labelVi: string;
+  defaultOn: boolean;
+}
+
+function SectionToC({
+  sections,
+  visibility,
+  onToggle,
+  lang,
+}: {
+  sections: SectionConfig[];
+  visibility: Record<string, boolean>;
+  onToggle: (id: string) => void;
+  lang: Lang;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <motion.div
+      className="rounded-xl border border-border bg-surface overflow-hidden shadow-sm"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex w-full items-center justify-between px-5 py-3.5 text-left hover:bg-background-secondary/30 transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <span className="text-base">📋</span>
+          <div>
+            <h2 className="text-sm font-bold text-foreground">
+              {lang === "vi" ? "Mục lục Kết quả" : "Results Navigation"}
+            </h2>
+            <p className="text-[10px] text-muted">
+              {lang === "vi"
+                ? "Bật/tắt để hiện hoặc ẩn từng phần"
+                : "Toggle sections on/off to show or hide"}
+            </p>
+          </div>
+        </div>
+        <motion.svg
+          animate={{ rotate: collapsed ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="h-4 w-4 text-muted shrink-0"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+            clipRule="evenodd"
+          />
+        </motion.svg>
+      </button>
+
+      <AnimatePresence>
+        {!collapsed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {sections.map((sec) => {
+                const isOn = visibility[sec.id] ?? sec.defaultOn;
+                return (
+                  <button
+                    key={sec.id}
+                    onClick={() => onToggle(sec.id)}
+                    className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 ${
+                      isOn
+                        ? "border-accent/40 bg-accent/5 shadow-sm"
+                        : "border-border/60 bg-background-secondary/20 opacity-60"
+                    }`}
+                  >
+                    {/* Toggle dot */}
+                    <span
+                      className={`shrink-0 h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        isOn ? "border-accent bg-accent" : "border-muted/40 bg-transparent"
+                      }`}
+                    >
+                      {isOn && (
+                        <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </span>
+
+                    <span className="text-base shrink-0">{sec.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className={`text-xs font-semibold block truncate ${isOn ? "text-foreground" : "text-muted"}`}>
+                        {lang === "vi" ? sec.labelVi : sec.label}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -295,6 +407,28 @@ export default function PersonalityResultsDashboard({
   const [oceanGroup, setOceanGroup] = useState("bfi2-internet");
   const [darkTriadGroup, setDarkTriadGroup] = useState("sd3-community");
 
+  // ── Section visibility toggles ──
+  const SECTION_CONFIG: SectionConfig[] = [
+    { id: "archetype", icon: "🎭", label: "Your Archetype", labelVi: "Nguyên mẫu của bạn", defaultOn: true },
+    { id: "radar", icon: "🕸️", label: "Radar Chart", labelVi: "Biểu đồ Radar", defaultOn: true },
+    { id: "ocean", icon: "🌟", label: "Big Five (OCEAN)", labelVi: "5 Nét tính cách lớn", defaultOn: true },
+    { id: "darkTriad", icon: "🌑", label: "Dark Triad", labelVi: "Bộ ba Bóng tối", defaultOn: true },
+    { id: "percentile", icon: "📊", label: "Percentile Comparison", labelVi: "So sánh Percentile", defaultOn: true },
+    { id: "crossTrait", icon: "🔗", label: "Cross-Trait Insights", labelVi: "Phân tích Tổng hợp", defaultOn: true },
+    { id: "scoreTable", icon: "📋", label: "Score Table", labelVi: "Bảng điểm Chi tiết", defaultOn: true },
+    { id: "limitations", icon: "📖", label: "Limitations & References", labelVi: "Giới hạn & Tài liệu", defaultOn: true },
+  ];
+
+  const [sectionVisibility, setSectionVisibility] = useState<Record<string, boolean>>(() => {
+    const defaults: Record<string, boolean> = {};
+    SECTION_CONFIG.forEach(s => { defaults[s.id] = s.defaultOn; });
+    return defaults;
+  });
+
+  const toggleSection = useCallback((id: string) => {
+    setSectionVisibility(prev => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
   const result = session.result;
   const ocean = result?.ocean ?? null;
   const darkTriad = result?.darkTriad ?? null;
@@ -450,6 +584,24 @@ export default function PersonalityResultsDashboard({
           )}
         </motion.header>
 
+        {/* ══════════ SECTION NAVIGATION (Toggle On/Off) ══════════════ */}
+        <SectionToC
+          sections={SECTION_CONFIG.filter(s => {
+            // Only show sections that actually have data
+            if (s.id === "archetype" && !archetype) return false;
+            if (s.id === "radar" && oceanTraits.length === 0) return false;
+            if (s.id === "ocean" && oceanTraits.length === 0) return false;
+            if (s.id === "darkTriad" && dtTraits.length === 0) return false;
+            if (s.id === "percentile" && allTraits.length === 0) return false;
+            if (s.id === "crossTrait" && crossInsights.length === 0) return false;
+            if (s.id === "scoreTable" && allTraits.length === 0) return false;
+            return true;
+          })}
+          visibility={sectionVisibility}
+          onToggle={toggleSection}
+          lang={lang}
+        />
+
         {/* ══════════ ATTENTION WARNING ════════════════════════════════════ */}
         {showAttentionWarning && (
           <motion.div
@@ -472,7 +624,7 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ══════════ ARCHETYPE — Hero card + trait summary ═════════════ */}
-        {archetype && (
+        {archetype && sectionVisibility.archetype && (
           <section className="space-y-4">
             <SectionHeading title={t.yourArchetype} />
             <ArchetypeCard archetype={archetype} lang={lang} />
@@ -510,8 +662,101 @@ export default function PersonalityResultsDashboard({
           </section>
         )}
 
+        {/* ══════════ KEY HIGHLIGHTS ═══════════════════════════════════ */}
+        {allTraits.length > 0 && sectionVisibility.archetype && (
+          <motion.section
+            className="rounded-xl border-2 border-accent/30 bg-linear-to-br from-accent/5 via-surface to-accent/5 p-5 sm:p-6 shadow-sm"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">⭐</span>
+              <h2 className="text-sm sm:text-base font-bold text-foreground">
+                {lang === "vi" ? "Điểm nổi bật" : "Key Highlights"}
+              </h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Highest trait */}
+              {(() => {
+                const highest = [...allTraits].sort((a, b) => b.score - a.score)[0];
+                if (!highest) return null;
+                const tier: FiveTier = percentiles[highest.domain]
+                  ? getZTier(percentiles[highest.domain].zScore)
+                  : (highest.level as FiveTier);
+                const tc = TIER_COLORS[tier];
+                return (
+                  <div className={`rounded-lg border-2 border-emerald-300/60 dark:border-emerald-700/60 bg-emerald-50/50 dark:bg-emerald-900/10 p-3.5`}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">
+                      🏆 {lang === "vi" ? "Nét nổi bật nhất" : "Strongest Trait"}
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {getDomainLabel(highest.domain, lang)}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold ${tc.badge}`}>
+                        {tc.emoji} {highest.score.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+              {/* Lowest trait */}
+              {(() => {
+                const lowest = [...allTraits].sort((a, b) => a.score - b.score)[0];
+                if (!lowest) return null;
+                const tier: FiveTier = percentiles[lowest.domain]
+                  ? getZTier(percentiles[lowest.domain].zScore)
+                  : (lowest.level as FiveTier);
+                const tc = TIER_COLORS[tier];
+                return (
+                  <div className={`rounded-lg border-2 border-sky-300/60 dark:border-sky-700/60 bg-sky-50/50 dark:bg-sky-900/10 p-3.5`}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">
+                      📌 {lang === "vi" ? "Nét thấp nhất" : "Area to Watch"}
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {getDomainLabel(lowest.domain, lang)}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold ${tc.badge}`}>
+                        {tc.emoji} {lowest.score.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+              {/* Notable Dark Triad */}
+              {(() => {
+                const highestDT = dtTraits.length > 0
+                  ? [...dtTraits].sort((a, b) => b.score - a.score)[0]
+                  : null;
+                if (!highestDT) return null;
+                const tier: FiveTier = percentiles[highestDT.domain]
+                  ? getZTier(percentiles[highestDT.domain].zScore)
+                  : (highestDT.level as FiveTier);
+                const tc = TIER_COLORS[tier];
+                return (
+                  <div className={`rounded-lg border-2 border-purple-300/60 dark:border-purple-700/60 bg-purple-50/50 dark:bg-purple-900/10 p-3.5`}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-1">
+                      🌑 {lang === "vi" ? "Dark Triad nổi bật" : "Notable Dark Triad"}
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {getDomainLabel(highestDT.domain, lang)}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold ${tc.badge}`}>
+                        {tc.emoji} {highestDT.score.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </motion.section>
+        )}
+
         {/* ═════════ RADAR CHART ═══════════════════════════════════════ */}
-        {oceanTraits.length > 0 && (
+        {oceanTraits.length > 0 && sectionVisibility.radar && (
           <section>
             <div className="rounded-xl border border-border bg-surface p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-4 text-center">
@@ -523,7 +768,7 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ═════════ OCEAN TRAIT CARDS ════════════════════════════════════ */}
-        {oceanTraits.length > 0 && (
+        {oceanTraits.length > 0 && sectionVisibility.ocean && (
           <section>
             <SectionHeading title={t.oceanTitle} subtitle={t.oceanSubtitle} />
             <div className="grid gap-3 sm:gap-4">
@@ -547,7 +792,7 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ═════════ DARK TRIAD TRAIT CARDS ════════════════════════════════ */}
-        {dtTraits.length > 0 && (
+        {dtTraits.length > 0 && sectionVisibility.darkTriad && (
           <section>
             <SectionHeading
               title={t.darkTriadTitle}
@@ -574,7 +819,7 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ═════════ PERCENTILE COMPARISON PANEL ══════════════════════ */}
-        {allTraits.length > 0 && (
+        {allTraits.length > 0 && sectionVisibility.percentile && (
           <section className="rounded-xl border border-border bg-surface overflow-hidden">
             {/* Panel header */}
             <div className="border-b border-border bg-background-secondary/40 px-5 sm:px-7 py-4">
@@ -687,7 +932,7 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ══════════ CROSS-TRAIT INSIGHTS ════════════════════════════════ */}
-        {crossInsights.length > 0 && (
+        {crossInsights.length > 0 && sectionVisibility.crossTrait && (
           <section>
             <SectionHeading
               title={t.crossTraitTitle}
@@ -718,7 +963,7 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ══════════ SCORE TABLE ═════════════════════════════════════════ */}
-        {allTraits.length > 0 && (
+        {allTraits.length > 0 && sectionVisibility.scoreTable && (
           <section>
             <SectionHeading
               title={t.scoreTableTitle}
@@ -732,7 +977,9 @@ export default function PersonalityResultsDashboard({
         )}
 
         {/* ══════════ LIMITATIONS ═════════════════════════════════════════ */}
-        <LimitationsSection lang={lang} />
+        {sectionVisibility.limitations && (
+          <LimitationsSection lang={lang} />
+        )}
 
         {/* ══════════ ACTION BUTTONS ══════════════════════════════════════ */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 pb-10">

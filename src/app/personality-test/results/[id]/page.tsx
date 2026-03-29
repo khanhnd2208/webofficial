@@ -50,10 +50,10 @@ export default async function PersonalityTestResultsPage({ params }: PageProps) 
 						<span className="text-3xl">🌟</span>
 						<div>
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">
-								Your Personality Profile
+								Hồ sơ Tính cách của bạn <span className="font-normal normal-case italic">(Your Personality Profile)</span>
 							</p>
 							<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-								{testSession.result?.archetype?.name ?? 'Personality Profile'}
+								{testSession.result?.archetype?.name ?? 'Hồ sơ Tính cách'}
 							</h1>
 							{testSession.result?.archetype?.tagline && (
 								<p className="mt-1 text-sm italic text-muted">

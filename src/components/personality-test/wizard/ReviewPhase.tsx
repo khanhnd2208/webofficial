@@ -37,9 +37,10 @@ export default function ReviewPhase({
 					>
 						🎊
 					</motion.div>
-					<h3 className="mt-4 text-lg font-black text-foreground">You answered everything!</h3>
+					<h3 className="mt-4 text-lg font-black text-foreground">Bạn đã trả lời tất cả!</h3>
+					<p className="mt-0.5 text-xs text-muted italic">You answered everything!</p>
 					<p className="mt-1 text-sm text-muted">
-						Thank you for your time. Please review before submitting.
+						Cảm ơn bạn. Vui lòng xem lại trước khi gửi.
 					</p>
 				</div>
 
@@ -72,7 +73,7 @@ export default function ReviewPhase({
 
 				{!allComplete && (
 					<div className="rounded-lg bg-warning-subtle p-3 text-center">
-						<p className="text-xs font-bold text-warning">⚠ You haven&apos;t answered all items — please go back and check</p>
+						<p className="text-xs font-bold text-warning">⚠ Bạn chưa trả lời hết câu hỏi — vui lòng quay lại kiểm tra</p>
 					</div>
 				)}
 
@@ -81,7 +82,7 @@ export default function ReviewPhase({
 						onClick={onReview}
 						className="flex-1 rounded-xl border border-border bg-background py-3 text-sm font-bold text-foreground transition-colors hover:bg-surface-hover"
 					>
-						← Review questions
+						← Xem lại câu hỏi
 					</button>
 					<button
 						onClick={onSubmit}
@@ -94,10 +95,10 @@ export default function ReviewPhase({
 									<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
 									<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
 								</svg>
-								Analyzing your personality...
+								Đang phân tích tính cách của bạn...
 							</span>
 						) : (
-							'See my results 🚀'
+							'Xem kết quả của tôi 🚀'
 						)}
 					</button>
 				</div>

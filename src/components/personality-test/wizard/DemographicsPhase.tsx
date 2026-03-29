@@ -33,13 +33,13 @@ export default function DemographicsPhase({
 
 	const validateDemographics = (): boolean => {
 		const errors: Partial<Record<keyof DemographicData, string>> = {};
-		if (!demographics.university.trim()) errors.university = 'Please enter your university';
+		if (!demographics.university.trim()) errors.university = 'Vui lòng nhập trường của bạn (Please enter your university)';
 		if (demographics.studentYear < 1 || demographics.studentYear > 5)
-			errors.studentYear = 'Please select a student year';
+			errors.studentYear = 'Vui lòng chọn năm học (Please select a student year)';
 		if (demographics.cumulativeGpa < 0 || demographics.cumulativeGpa > 4)
-			errors.cumulativeGpa = 'GPA must be between 0.0 and 4.0';
+			errors.cumulativeGpa = 'GPA phải từ 0.0 đến 4.0 (GPA must be between 0.0 and 4.0)';
 		if (demographics.selfRatedIntelligence < 1 || demographics.selfRatedIntelligence > 9)
-			errors.selfRatedIntelligence = 'Please select a value from 1 to 9';
+			errors.selfRatedIntelligence = 'Vui lòng chọn giá trị từ 1 đến 9 (Please select a value from 1 to 9)';
 		setDemoErrors(errors);
 		return Object.keys(errors).length === 0;
 	};
@@ -64,9 +64,14 @@ export default function DemographicsPhase({
 						👤
 					</div>
 					<h2 className="mt-4 text-xl font-black tracking-tight text-foreground sm:text-2xl">
-						About You
+						Thông tin về Bạn
 					</h2>
+					<p className="mt-0.5 text-xs text-muted italic">About You</p>
 					<p className="mt-2 text-sm text-muted max-w-md mx-auto">
+						Thông tin này giúp so sánh kết quả của bạn với nhóm tham chiếu phù hợp
+						và phục vụ mục đích nghiên cứu học thuật.
+					</p>
+					<p className="mt-1 text-xs text-muted/70 italic max-w-md mx-auto">
 						This information helps compare your results with similar reference groups
 						and serves academic research purposes.
 					</p>
@@ -76,13 +81,13 @@ export default function DemographicsPhase({
 					{/* Gender */}
 					<div>
 						<label className="block text-sm font-bold text-foreground mb-1.5">
-							Gender <span className="text-error">*</span>
+							Giới tính <span className="text-muted text-xs font-normal italic">(Gender)</span> <span className="text-error">*</span>
 						</label>
 						<div className="flex gap-2">
 							{([
-								{ value: 'male' as const, label: '👨 Male' },
-								{ value: 'female' as const, label: '👩 Female' },
-								{ value: 'other' as const, label: '🧑 Other' },
+								{ value: 'male' as const, label: '👨 Nam (Male)' },
+								{ value: 'female' as const, label: '👩 Nữ (Female)' },
+								{ value: 'other' as const, label: '🧑 Khác (Other)' },
 							]).map((opt) => (
 								<button
 									key={opt.value}
@@ -103,7 +108,7 @@ export default function DemographicsPhase({
 					{/* University */}
 					<div>
 						<label className="block text-sm font-bold text-foreground mb-2">
-							Trường <span className="text-error">*</span>
+							Trường <span className="text-muted text-xs font-normal italic">(University)</span> <span className="text-error">*</span>
 						</label>
 						<div className="space-y-3">
 							{UNIVERSITY_OPTIONS.map((opt) => (
@@ -131,7 +136,7 @@ export default function DemographicsPhase({
 										type="text"
 										value={demographics.university}
 										onChange={(e) => setDemographics((d) => ({ ...d, university: e.target.value }))}
-										placeholder="Other university"
+										placeholder="Tên trường khác (Other university)"
 										className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
 									/>
 								</div>
@@ -145,7 +150,7 @@ export default function DemographicsPhase({
 					{/* Student Year */}
 					<div>
 						<label className="block text-sm font-bold text-foreground mb-1.5">
-							Bạn là sinh viên năm mấy của Trường? <span className="text-error">*</span>
+							Bạn là sinh viên năm mấy của Trường? <span className="text-muted text-xs font-normal italic">(What year are you?)</span> <span className="text-error">*</span>
 						</label>
 						<div className="space-y-3">
 							{STUDENT_YEAR_OPTIONS.map((opt) => (
@@ -179,7 +184,7 @@ export default function DemographicsPhase({
 												setDemographics((d) => ({ ...d, studentYear: parsed }));
 											}
 										}}
-										placeholder="Other"
+										placeholder="Khác (Other)"
 										className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
 									/>
 								</div>
@@ -193,7 +198,7 @@ export default function DemographicsPhase({
 					{/* Cumulative GPA */}
 					<div>
 						<label className="block text-sm font-bold text-foreground mb-1.5">
-							GPA tích luỹ đến thời điểm hiện tại của bạn <span className="text-error">*</span>
+							GPA tích luỹ đến thời điểm hiện tại của bạn <span className="text-muted text-xs font-normal italic">(Cumulative GPA)</span> <span className="text-error">*</span>
 						</label>
 						<div className="space-y-3">
 							{GPA_OPTIONS.map((opt) => (
@@ -217,9 +222,12 @@ export default function DemographicsPhase({
 					{/* Self-Rated Intelligence */}
 					<div>
 						<label className="block text-sm font-bold text-foreground mb-1.5">
-							How would you rate your level of general intelligence compared to that of the average student? <span className="text-error">*</span>
+							Bạn tự đánh giá mức độ thông minh chung của mình so với sinh viên trung bình như thế nào? <span className="text-error">*</span>
 						</label>
-						<p className="text-[11px] text-muted mb-3">Circle a number on the following scale:</p>
+						<p className="text-[10px] text-muted/70 italic mb-1">
+							How would you rate your level of general intelligence compared to that of the average student?
+						</p>
+						<p className="text-[11px] text-muted mb-3">Chọn một số trên thang dưới đây: <span className="italic text-muted/70">(Circle a number on the following scale)</span></p>
 						<div className="space-y-2 rounded-2xl border border-border bg-background p-4">
 							{INTELLIGENCE_OPTIONS.map((opt) => (
 								<label key={opt.value} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-muted/40">
@@ -233,7 +241,8 @@ export default function DemographicsPhase({
 									<div className="flex flex-1 items-center justify-between gap-3">
 										<span className="w-4 text-sm font-bold text-foreground">{opt.label}</span>
 										<span className="flex-1 border-b border-dotted border-border/70" />
-										<span className="text-xs text-muted text-right">{opt.subtitle}</span>
+										<span className="text-xs text-muted text-right">{opt.subtitleVi}</span>
+										<span className="text-[10px] text-muted/60 text-right italic">({opt.subtitle})</span>
 									</div>
 								</label>
 							))}
@@ -248,7 +257,7 @@ export default function DemographicsPhase({
 					onClick={handleNext}
 					className="mt-8 w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-accent-foreground transition-all hover:bg-accent-hover hover:scale-[1.01] active:scale-[0.99]"
 				>
-					Done — Let&apos;s start! 🎯
+					Xong — Bắt đầu thôi! 🎯
 				</button>
 			</div>
 		</motion.div>

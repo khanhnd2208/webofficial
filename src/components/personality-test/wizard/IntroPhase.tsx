@@ -30,9 +30,14 @@ export default function IntroPhase({
 						🪞
 					</div>
 					<h2 className="mt-5 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-						Discover Your Personality
+						Khám phá Tính cách của bạn
 					</h2>
+					<p className="mt-1 text-xs text-muted italic">Discover Your Personality</p>
 					<p className="mt-3 text-sm leading-relaxed text-muted max-w-lg mx-auto">
+						Bài đánh giá này giúp bạn hiểu rõ tính cách — điểm mạnh, điểm cần lưu ý,
+						và những gợi ý thiết thực cho phát triển bản thân và sự nghiệp.
+					</p>
+					<p className="mt-1 text-xs text-muted/70 max-w-lg mx-auto italic">
 						This assessment helps you understand your personality — your strengths, areas to watch,
 						and actionable insights for personal and career development.
 					</p>
@@ -43,11 +48,16 @@ export default function IntroPhase({
 						<div className="flex items-center gap-3">
 							<span className="text-2xl">🌟</span>
 							<div>
-								<h3 className="font-bold text-foreground">Part 1 — Big Five Personality</h3>
-								<p className="text-xs text-muted">31 items • BFI-2-S (Big Five)</p>
+								<h3 className="font-bold text-foreground">Phần 1 — 5 Nét tính cách lớn</h3>
+								<p className="text-[10px] text-muted italic">Part 1 — Big Five Personality</p>
+								<p className="text-xs text-muted">31 câu • BFI-2-S (Big Five)</p>
 							</div>
 						</div>
 						<p className="mt-3 text-xs leading-relaxed text-muted">
+							Khám phá 5 nét tính cách cốt lõi: Hướng ngoại, Dễ chịu, Tận tâm,
+							Cảm xúc tiêu cực, và Cởi mở.
+						</p>
+						<p className="mt-1 text-[10px] leading-relaxed text-muted/70 italic">
 							Explore 5 core traits: Extraversion, Agreeableness, Conscientiousness,
 							Negative Emotionality, and Open-Mindedness.
 						</p>
@@ -57,11 +67,16 @@ export default function IntroPhase({
 						<div className="flex items-center gap-3">
 							<span className="text-2xl">🌑</span>
 							<div>
-								<h3 className="font-bold text-foreground">Part 2 — Dark Triad</h3>
-								<p className="text-xs text-muted">28 items • SD3 (Short Dark Triad)</p>
+								<h3 className="font-bold text-foreground">Phần 2 — Bộ ba Bóng tối</h3>
+								<p className="text-[10px] text-muted italic">Part 2 — Dark Triad</p>
+								<p className="text-xs text-muted">28 câu • SD3 (Short Dark Triad)</p>
 							</div>
 						</div>
 						<p className="mt-3 text-xs leading-relaxed text-muted">
+							Khám phá 3 chiều ẩn: Tư duy chiến lược (Mưu lược), Sự tự tin (Ái kỷ),
+							và Chấp nhận rủi ro (Thái nhân cách).
+						</p>
+						<p className="mt-1 text-[10px] leading-relaxed text-muted/70 italic">
 							Discover 3 hidden dimensions: Strategic thinking (Machiavellianism),
 							Self-confidence (Narcissism), and Risk tolerance (Psychopathy).
 						</p>
@@ -72,11 +87,11 @@ export default function IntroPhase({
 					<div className="flex items-start gap-2.5">
 						<span className="text-base mt-0.5">💡</span>
 						<div className="text-xs leading-relaxed text-foreground-secondary">
-							<p className="font-bold text-foreground">Before you begin:</p>
+							<p className="font-bold text-foreground">Trước khi bắt đầu: <span className="font-normal text-muted italic text-[10px]">(Before you begin)</span></p>
 							<ul className="mt-1.5 space-y-1 text-muted">
-								<li>• <strong>{config.totalQuestions} items</strong>, takes about 10–15 minutes</li>
-								<li>• There are no right or wrong answers — just pick what feels true for you</li>
-								<li>• Read each item carefully — there are a few focus-check items 😉</li>
+								<li>• <strong>{config.totalQuestions} câu hỏi</strong>, mất khoảng 10–15 phút</li>
+								<li>• Không có câu trả lời đúng hay sai — chỉ chọn điều bạn cảm thấy đúng nhất</li>
+								<li>• Đọc kỹ từng câu — có một vài câu kiểm tra sự tập trung 😉</li>
 							</ul>
 						</div>
 					</div>
@@ -86,27 +101,27 @@ export default function IntroPhase({
 					onClick={onStart}
 					className="mt-6 w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-accent-foreground transition-all hover:bg-accent-hover hover:scale-[1.01] active:scale-[0.99]"
 				>
-					Start the Assessment 🚀
+					Bắt đầu Đánh giá 🚀
 				</button>
 
 				{/* Resume button if saved progress exists */}
 				{restored && Object.keys(answers).length > 0 && (
 					<div className="mt-3 rounded-xl border border-accent/30 bg-accent-subtle/30 p-4 text-center">
 						<p className="text-xs text-muted mb-2">
-							👋 Welcome back! You answered {Object.keys(answers).length}/{config.totalQuestions} items
+							👋 Chào mừng bạn trở lại! Bạn đã trả lời {Object.keys(answers).length}/{config.totalQuestions} câu
 						</p>
 						<div className="flex gap-2 justify-center">
 							<button
 								onClick={onResume}
 								className="rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-foreground transition-colors hover:bg-accent-hover"
 							>
-								Continue where I left off →
+								Tiếp tục từ lần trước →
 							</button>
 							<button
 								onClick={onRestart}
 								className="rounded-lg border border-border px-4 py-2 text-xs font-bold text-muted transition-colors hover:text-foreground hover:bg-surface-hover"
 							>
-								Start fresh
+								Làm lại từ đầu
 							</button>
 						</div>
 					</div>

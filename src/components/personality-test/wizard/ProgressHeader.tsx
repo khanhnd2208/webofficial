@@ -17,11 +17,11 @@ interface Props {
 
 const PHASE_LABELS: Record<TestPhase, string> = {
 	intro: '',
-	demographics: '👤 About You',
-	bfi: '🌟 Part 1: Big Five Personality',
-	sd3: '🌑 Part 2: Dark Triad',
-	transition: '🎉 Great job!',
-	review: '🎊 Almost done!',
+	demographics: '👤 Thông tin về Bạn',
+	bfi: '🌟 Phần 1: 5 Nét tính cách lớn',
+	sd3: '🌑 Phần 2: Bộ ba Bóng tối',
+	transition: '🎉 Làm tốt lắm!',
+	review: '🎊 Sắp xong rồi!',
 };
 
 export default function ProgressHeader({ phase, elapsed, totalAnswered, totalQuestions }: Props) {

@@ -43,14 +43,19 @@ export default async function PersonalityTestPage() {
 						<span className="text-3xl">🪞</span>
 						<div>
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">
-								Organizational Behavior
+								Hành vi Tổ chức <span className="font-normal italic">(Organizational Behavior)</span>
 							</p>
 							<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-								Personality Assessment
+								Đánh giá Tính cách
 							</h1>
+							<p className="text-xs text-muted italic">Personality Assessment</p>
 						</div>
 					</div>
 					<p className="mt-3 text-sm text-muted leading-relaxed max-w-xl">
+						Khám phá điểm mạnh, điểm mù, và phong cách làm việc của bạn thông qua hai
+						mô hình tâm lý học được nghiên cứu rộng rãi — Big Five (BFI-2-S) và Dark Triad (SD3).
+					</p>
+					<p className="mt-1 text-xs text-muted/70 italic max-w-xl">
 						Discover your strengths, blind spots, and working style through two
 						widely-researched psychology models — Big Five (BFI-2-S) and Dark Triad (SD3).
 					</p>

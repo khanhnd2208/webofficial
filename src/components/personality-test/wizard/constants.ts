@@ -17,35 +17,35 @@ export const LIKERT_OPTIONS = [
 
 export const UNIVERSITY_OPTIONS = [
 	{ value: 'hanoi', label: 'Trường Đại học Hà Nội', text: 'Trường Đại học Hà Nội' },
-	{ value: 'other', label: 'Other', text: '' },
+	{ value: 'other', label: 'Khác (Other)', text: '' },
 ] as const;
 
 export const STUDENT_YEAR_OPTIONS = [
-	{ value: 1, label: 'Năm 1' },
-	{ value: 2, label: 'Năm 2' },
-	{ value: 3, label: 'Năm 3' },
-	{ value: 4, label: 'Năm 4' },
-	{ value: 5, label: 'Other' },
+	{ value: 1, label: 'Năm 1 (Freshman)' },
+	{ value: 2, label: 'Năm 2 (Sophomore)' },
+	{ value: 3, label: 'Năm 3 (Junior)' },
+	{ value: 4, label: 'Năm 4 (Senior)' },
+	{ value: 5, label: 'Khác (Other)' },
 ] as const;
 
 export const GPA_OPTIONS = [
-	{ value: 3.8, label: '3.60 - 4.00' },
-	{ value: 3.4, label: '3.20 - 3.59' },
-	{ value: 2.85, label: '2.50 - 3.19' },
-	{ value: 2.37, label: '2.25 - 2.49' },
-	{ value: 2.12, label: '2.00 - 2.24' },
+	{ value: 3.8, label: '3.60 - 4.00 (Xuất sắc / Excellent)' },
+	{ value: 3.4, label: '3.20 - 3.59 (Giỏi / Very Good)' },
+	{ value: 2.85, label: '2.50 - 3.19 (Khá / Good)' },
+	{ value: 2.37, label: '2.25 - 2.49 (Trung bình khá / Fair)' },
+	{ value: 2.12, label: '2.00 - 2.24 (Trung bình / Average)' },
 ] as const;
 
 export const INTELLIGENCE_OPTIONS = [
-	{ value: 1, label: '1', subtitle: 'Extremely unintelligent' },
-	{ value: 2, label: '2', subtitle: 'Very unintelligent' },
-	{ value: 3, label: '3', subtitle: 'Moderately unintelligent' },
-	{ value: 4, label: '4', subtitle: 'Somewhat unintelligent' },
-	{ value: 5, label: '5', subtitle: 'Average' },
-	{ value: 6, label: '6', subtitle: 'Somewhat intelligent' },
-	{ value: 7, label: '7', subtitle: 'Moderately intelligent' },
-	{ value: 8, label: '8', subtitle: 'Very intelligent' },
-	{ value: 9, label: '9', subtitle: 'Extremely intelligent' },
+	{ value: 1, label: '1', subtitle: 'Extremely unintelligent', subtitleVi: 'Cực kỳ kém thông minh' },
+	{ value: 2, label: '2', subtitle: 'Very unintelligent', subtitleVi: 'Rất kém thông minh' },
+	{ value: 3, label: '3', subtitle: 'Moderately unintelligent', subtitleVi: 'Khá kém thông minh' },
+	{ value: 4, label: '4', subtitle: 'Somewhat unintelligent', subtitleVi: 'Hơi kém thông minh' },
+	{ value: 5, label: '5', subtitle: 'Average', subtitleVi: 'Trung bình' },
+	{ value: 6, label: '6', subtitle: 'Somewhat intelligent', subtitleVi: 'Hơi thông minh' },
+	{ value: 7, label: '7', subtitle: 'Moderately intelligent', subtitleVi: 'Khá thông minh' },
+	{ value: 8, label: '8', subtitle: 'Very intelligent', subtitleVi: 'Rất thông minh' },
+	{ value: 9, label: '9', subtitle: 'Extremely intelligent', subtitleVi: 'Cực kỳ thông minh' },
 ] as const;
 
 // ─── Default Demographic Values ───────────────────────────────────────────────

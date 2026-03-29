@@ -26,26 +26,31 @@ function InfoTooltip({ text }: { text: string }) {
 		return () => document.removeEventListener('mousedown', handleClick);
 	}, [open, close]);
 
-	return (
+		return (
 		<div ref={ref} className="relative inline-flex">
 			<button
 				type="button"
 				aria-label="Xem giải thích"
 				onClick={() => setOpen((v) => !v)}
-				className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-accent/40 bg-accent/10 text-[9px] font-black leading-none text-accent transition-all hover:bg-accent/20 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+				className={`ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full border-2 text-[10px] font-black leading-none transition-all hover:scale-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+					open
+						? 'border-accent bg-accent text-white shadow-md shadow-accent/30'
+						: 'border-accent/60 bg-accent/20 text-accent animate-pulse hover:animate-none hover:bg-accent/30 hover:border-accent'
+				}`}
 			>
 				i
 			</button>
 			<AnimatePresence>
 				{open && (
-					<motion.div
-						initial={{ opacity: 0, y: 4, scale: 0.96 }}
-						animate={{ opacity: 1, y: 0, scale: 1 }}
-						exit={{ opacity: 0, y: 4, scale: 0.96 }}
-						transition={{ duration: 0.15 }}
-						className="absolute left-0 top-full z-50 mt-1.5 w-72 sm:w-80 rounded-xl border border-accent/20 bg-surface p-3 shadow-lg shadow-accent/5"
-					>
-						<p className="text-[11px] leading-relaxed text-foreground-secondary">
+						<motion.div
+							initial={{ opacity: 0, y: 4, scale: 0.96 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							exit={{ opacity: 0, y: 4, scale: 0.96 }}
+							transition={{ duration: 0.15 }}
+							className="absolute left-0 top-full z-50 mt-1.5 w-72 sm:w-80 rounded-xl border border-accent/20 bg-surface p-3 shadow-lg shadow-accent/5"
+						>
+							<p className="text-[10px] font-bold text-accent mb-1">💡 Giải thích (Explanation)</p>
+							<p className="text-[11px] leading-relaxed text-foreground-secondary">
 							{text}
 						</p>
 						<div className="absolute -top-1 left-2 h-2 w-2 rotate-45 border-l border-t border-accent/20 bg-surface" />
@@ -144,6 +149,11 @@ export default function QuestionPhase({
 									<span className={`text-[8px] sm:text-[9px] font-bold leading-tight mt-0.5 ${
 										selected === opt.value ? 'opacity-90' : 'opacity-50'
 									}`}>
+										{opt.labelVi.split(' ').map((w, i) => <span key={i} className="block">{w}</span>)}
+									</span>
+									<span className={`text-[6px] sm:text-[7px] leading-tight mt-0.5 italic ${
+										selected === opt.value ? 'opacity-70' : 'opacity-30'
+									}`}>
 										{opt.label.split(' ').map((w, i) => <span key={i} className="block">{w}</span>)}
 									</span>
 								</button>
@@ -160,11 +170,11 @@ export default function QuestionPhase({
 					disabled={currentPage === 0}
 					className="rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed"
 				>
-					← Back
+					← Quay lại
 				</button>
 
 				<span className="text-xs text-muted tabular-nums">
-					Page {currentPage + 1} / {totalPages}
+					Trang {currentPage + 1} / {totalPages}
 				</span>
 
 				<button
@@ -174,9 +184,9 @@ export default function QuestionPhase({
 				>
 					{currentPage === totalPages - 1
 						? phase === 'bfi'
-							? 'Go to Part 2 →'
-							: 'Review →'
-						: 'Next →'}
+							? 'Sang Phần 2 →'
+							: 'Xem lại →'
+						: 'Tiếp theo →'}
 				</button>
 			</div>
 		</motion.div>
