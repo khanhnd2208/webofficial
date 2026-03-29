@@ -67,10 +67,13 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 				const data = JSON.parse(saved);
 				if (data.answers && Object.keys(data.answers).length > 0) {
 					setAnswers(data.answers);
+					// Restore elapsed time accurately (don't count offline time)
+					const savedElapsed = typeof data.elapsedSeconds === 'number' ? data.elapsedSeconds : 0;
 					savedProgressRef.current = {
 						phase: data.phase || 'demographics',
 						currentPage: data.currentPage || 0,
-						startTime: data.startTime || Date.now(),
+						// Set startTime so Date.now() - startTime = savedElapsed
+						startTime: Date.now() - savedElapsed * 1000,
 					};
 				}
 				if (data.demographics) {
@@ -85,12 +88,13 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 	useEffect(() => {
 		if (!restored) return;
 		try {
+			const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
 			localStorage.setItem(STORAGE_KEY, JSON.stringify({
 				answers,
 				demographics,
 				phase,
 				currentPage,
-				startTime: startTimeRef.current,
+				elapsedSeconds,
 				savedAt: Date.now(),
 			}));
 		} catch {}
@@ -200,9 +204,12 @@ export default function PersonalityTestWizard({ config, onSubmit, isSubmitting }
 	}, []);
 
 	const handleReviewBack = useCallback(() => {
-		setPhase('bfi');
-		setCurrentPage(0);
-	}, []);
+		// Go back to the last page of SD3 (the most recent section), not BFI page 0
+		const sd3Pages = Math.ceil(config.sd3Questions.length / 5);
+		setPhase('sd3');
+		setCurrentPage(sd3Pages - 1);
+		scrollToTop();
+	}, [config.sd3Questions.length, scrollToTop]);
 
 	// ── Render ──
 	return (
