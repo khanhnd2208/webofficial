@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 
 import PersonalityTestWizard from '@/components/personality-test/PersonalityTestWizard';
 import PersonalityTestHistory from '@/components/personality-test/PersonalityTestHistory';
+import AprilFoolsPopup from '@/components/personality-test/AprilFoolsPopup';
 import { generateDeviceFingerprint } from '@/utils/deviceFingerprint';
 import type { TestConfigDTO, PersonalityTestHistoryDTO, RawResponse, DemographicData } from '@/types/personalityTest';
 
@@ -77,6 +78,9 @@ export default function PersonalityTestClient({ config, history }: Props) {
 
 	return (
 		<div className="space-y-8">
+			{/* April Fools' Day Popup — only renders on 1/4 */}
+			<AprilFoolsPopup />
+
 			{/* Error Banner */}
 			{error && (
 				<div className="rounded-xl border border-error/30 bg-error-subtle p-4 text-center">
