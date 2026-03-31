@@ -151,20 +151,19 @@ async function getScoreDistributions() {
 	const result: Record<string, Array<{ bucket: string; count: number }>> = {};
 
 	for (const trait of traits) {
-		const { rows } = await pgPool.query<{ bucket: string; count: string }>(`
+		const { rows } = await pgPool.query<{ bucket_low: string; count: string }>(`
 			SELECT
-				CONCAT(
-					FLOOR(${trait} * 2) / 2,
-					'–',
-					FLOOR(${trait} * 2) / 2 + 0.5
-				) AS bucket,
+				(FLOOR(${trait} * 2) / 2)::numeric(3,1) AS bucket_low,
 				COUNT(*)::int AS count
 			FROM personality_test_results
 			WHERE is_valid = true AND ${trait} IS NOT NULL
 			GROUP BY FLOOR(${trait} * 2)
 			ORDER BY FLOOR(${trait} * 2)
 		`);
-		result[trait] = rows.map((r) => ({ bucket: r.bucket, count: Number(r.count) }));
+		result[trait] = rows.map((r) => {
+			const low = Number(r.bucket_low);
+			return { bucket: `${low.toFixed(1)}–${(low + 0.5).toFixed(1)}`, count: Number(r.count) };
+		});
 	}
 
 	return result;
