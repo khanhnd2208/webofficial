@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 
 type TermWithSet = {
-	word: string;
+	id: string;
+	term: string;
 	definition: string;
 	partOfSpeech: string;
 	example: string;
@@ -13,7 +14,7 @@ type TermWithSet = {
 };
 
 type WordStat = {
-	word: string;
+	wordId: string;
 	correctCount: number;
 	wrongCount: number;
 	totalAttempts: number;
@@ -56,12 +57,12 @@ export default function WordDatabasePage() {
 				const statsJson = await statsRes.json();
 
 				if (!termsJson.ok) { setError(termsJson.error); setLoading(false); return; }
-				setAllTerms(termsJson.data.terms);
+				setAllTerms(termsJson.data.words);
 				setTotalSets(termsJson.data.totalSets);
 
 				if (statsJson.ok && Array.isArray(statsJson.data)) {
 					const map = new Map<string, WordStat>();
-					statsJson.data.forEach((s: WordStat) => map.set(s.word, s));
+					statsJson.data.forEach((s: WordStat) => map.set(s.wordId, s));
 					setStatsMap(map);
 				}
 			} catch {
@@ -96,7 +97,7 @@ export default function WordDatabasePage() {
 			const q = search.toLowerCase();
 			result = result.filter(
 				(t) =>
-					t.word.toLowerCase().includes(q) ||
+					t.term.toLowerCase().includes(q) ||
 					t.definition.toLowerCase().includes(q) ||
 					t.example.toLowerCase().includes(q)
 			);
@@ -114,23 +115,23 @@ export default function WordDatabasePage() {
 
 		// Sort
 		if (sortBy === 'alpha') {
-			result = [...result].sort((a, b) => a.word.localeCompare(b.word));
+			result = [...result].sort((a, b) => a.term.localeCompare(b.term));
 		} else if (sortBy === 'alpha-desc') {
-			result = [...result].sort((a, b) => b.word.localeCompare(a.word));
+			result = [...result].sort((a, b) => b.term.localeCompare(a.term));
 		} else if (sortBy === 'set') {
 			result = [...result].sort((a, b) => a.setTitle.localeCompare(b.setTitle));
 		} else if (sortBy === 'hardest') {
 			result = [...result].sort((a, b) => {
-				const sa = statsMap.get(a.word.toLowerCase().trim());
-				const sb = statsMap.get(b.word.toLowerCase().trim());
-				const accA = sa ? sa.accuracy : 101; // unplayed = end
+				const sa = statsMap.get(a.id);
+				const sb = statsMap.get(b.id);
+				const accA = sa ? sa.accuracy : 101;
 				const accB = sb ? sb.accuracy : 101;
-				return accA - accB; // lowest accuracy first
+				return accA - accB;
 			});
 		} else if (sortBy === 'most-practiced') {
 			result = [...result].sort((a, b) => {
-				const sa = statsMap.get(a.word.toLowerCase().trim());
-				const sb = statsMap.get(b.word.toLowerCase().trim());
+				const sa = statsMap.get(a.id);
+				const sb = statsMap.get(b.id);
 				return (sb?.totalAttempts ?? 0) - (sa?.totalAttempts ?? 0);
 			});
 		}
@@ -314,7 +315,7 @@ export default function WordDatabasePage() {
 						<div className="divide-y divide-border border border-border">
 							{filtered.map((term, idx) => (
 								<div
-									key={`${term.setId}-${term.word}-${idx}`}
+											key={`${term.setId}-${term.id}-${idx}`}
 									className="group flex items-start gap-3 p-4 transition-colors hover:bg-surface-hover sm:gap-4 sm:p-5"
 								>
 									{/* Index number */}
@@ -327,7 +328,7 @@ export default function WordDatabasePage() {
 										<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 											{/* Word */}
 											<span className="text-sm font-black uppercase tracking-tight text-foreground">
-												{term.word}
+												{term.term}
 											</span>
 
 											{/* Part of speech badge */}
@@ -347,7 +348,7 @@ export default function WordDatabasePage() {
 
 											{/* Difficulty badge from stats */}
 											{(() => {
-												const stat = statsMap.get(term.word.toLowerCase().trim());
+												const stat = statsMap.get(term.id);
 												if (!stat || stat.totalAttempts === 0) return null;
 												const acc = stat.accuracy;
 												const label = acc >= 80 ? 'Tốt' : acc >= 50 ? 'Khá' : 'Khó';
@@ -371,7 +372,7 @@ export default function WordDatabasePage() {
 
 									{/* Speak button */}
 									<button
-										onClick={() => speak(term.word)}
+											onClick={() => speak(term.term)}
 										className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full text-muted opacity-0 transition-all hover:bg-accent hover:text-accent-foreground group-hover:opacity-100"
 									>
 										<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

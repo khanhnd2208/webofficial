@@ -101,7 +101,7 @@ export default async function VocabSetDetailPage({
 						<p className="mt-2 max-w-lg text-sm text-foreground-secondary">{set.description}</p>
 					) : null}
 					<div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted">
-						<span>{set.termCount} từ</span>
+						<span>{set.wordCount} từ</span>
 						<span>·</span>
 						<time>
 							{new Date(set.updatedAt).toLocaleDateString('vi-VN', {
@@ -125,7 +125,7 @@ export default async function VocabSetDetailPage({
 			</section>
 
 			{/* Practice modes */}
-			{set.termCount >= 2 ? (
+			{set.wordCount >= 2 ? (
 				<section className="border-b border-border bg-gradient-to-b from-surface to-transparent">
 					<div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
 						<div className="flex items-center gap-3 mb-2">
@@ -184,25 +184,25 @@ export default async function VocabSetDetailPage({
 			<section>
 				<div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
 					<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
-						Danh sách từ ({set.termCount})
+						Danh sách từ ({set.wordCount})
 					</h2>
 					<div className="mt-6 divide-y divide-border border border-border">
-						{set.terms.map((term, idx) => (
-							<div key={idx} className="flex items-start gap-4 p-4 sm:p-5">
-								<span className="shrink-0 pt-0.5 text-xs font-bold text-muted">{idx + 1}</span>
-								<div className="min-w-0 flex-1">
-									<div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
-										<span className="text-sm font-bold text-foreground">{term.word}</span>
-										{term.partOfSpeech ? (
-											<span className="text-xs italic text-muted">({term.partOfSpeech})</span>
-										) : null}
-									</div>
-									<p className="mt-1 text-sm text-foreground-secondary">{term.definition}</p>
-									{term.example ? (
-										<p className="mt-1 text-xs italic text-muted">{term.example}</p>
+					{set.words.map((word, idx) => (
+						<div key={word.id} className="flex items-start gap-4 p-4 sm:p-5">
+							<span className="shrink-0 pt-0.5 text-xs font-bold text-muted">{idx + 1}</span>
+							<div className="min-w-0 flex-1">
+								<div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
+									<span className="text-sm font-bold text-foreground">{word.term}</span>
+									{word.partOfSpeech ? (
+										<span className="text-xs italic text-muted">({word.partOfSpeech})</span>
 									) : null}
 								</div>
+								<p className="mt-1 text-sm text-foreground-secondary">{word.definition}</p>
+								{word.example ? (
+									<p className="mt-1 text-xs italic text-muted">{word.example}</p>
+								) : null}
 							</div>
+						</div>
 						))}
 					</div>
 				</div>

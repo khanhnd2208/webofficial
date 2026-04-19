@@ -121,8 +121,10 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 			const d = json.data;
 			setTitle(d.title);
 			setDescription(d.description);
-			setIsPublic(d.isPublic ?? false);
-			setTerms(d.terms.length > 0 ? d.terms : [{ word: '', definition: '', partOfSpeech: '', example: '' }]);
+			setIsPublic(!d.isArchived);
+			setTerms(d.words && d.words.length > 0
+				? d.words.map((w: { term: string; definition: string; partOfSpeech: string; example: string }) => ({ word: w.term, definition: w.definition, partOfSpeech: w.partOfSpeech, example: w.example }))
+				: [{ word: '', definition: '', partOfSpeech: '', example: '' }]);
 			setLoading(false);
 		});
 		fetch('/api/auth/session').then(r => r.json()).then(s => {
@@ -291,7 +293,7 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 			const res = await fetch(`/api/vocab-sets/${id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: title.trim(), description: description.trim(), terms: validTerms, isPublic }),
+				body: JSON.stringify({ title: title.trim(), description: description.trim(), words: validTerms.map(t => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example })) }),
 			});
 			const json = await res.json();
 			if (!json.ok) throw new Error(json.error);

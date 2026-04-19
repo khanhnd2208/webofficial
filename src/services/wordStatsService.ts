@@ -1,94 +1,104 @@
-import mongoose from 'mongoose';
+/* ════════════════════════════════════════════════════════════════════════
+   wordStatsService.ts — Word Learning Progress (Prisma / PostgreSQL)
+   ════════════════════════════════════════════════════════════════════════ */
+import { prisma } from '@/lib/prisma';
+import type { PracticeResultDTO, WordStatsDTO } from '@/types/vocab';
 
-import dbConnect from '@/lib/dbConnect';
-import WordStats from '@/models/WordStats';
-import type { PracticeResultDTO, WordStatsDTO } from '@/types/wordStats';
-
-/** Shared DTO mapper for word stats documents */
-function toWordStatsDTO(doc: { word: string; correctCount: number; wrongCount: number; lastPracticed: Date }): WordStatsDTO {
-	const total = doc.correctCount + doc.wrongCount;
-	return {
-		word: doc.word,
-		correctCount: doc.correctCount,
-		wrongCount: doc.wrongCount,
-		totalAttempts: total,
-		accuracy: total > 0 ? Math.round((doc.correctCount / total) * 100) : 0,
-		lastPracticed: new Date(doc.lastPracticed).toISOString(),
-	};
+// ─── Mapper ───────────────────────────────────────────────────────────────────
+function toWordStatsDTO(
+stat: {
+id: string;
+wordId: string;
+correctCount: number;
+wrongCount: number;
+streak: number;
+isMemorized: boolean;
+lastReviewed: Date;
+word: { term: string };
+},
+): WordStatsDTO {
+const total = stat.correctCount + stat.wrongCount;
+return {
+wordId: stat.wordId,
+term: stat.word.term,
+correctCount: stat.correctCount,
+wrongCount: stat.wrongCount,
+totalAttempts: total,
+accuracy: total > 0 ? Math.round((stat.correctCount / total) * 100) : 0,
+streak: stat.streak,
+isMemorized: stat.isMemorized,
+lastReviewed: stat.lastReviewed.toISOString(),
+};
 }
 
 /**
- * Record practice results for multiple words in one batch.
- * Uses bulkWrite with upsert for efficiency.
+ * Record practice results for a batch of words.
+ * Uses upsert: creates a new stat record or updates existing.
+ * Streak: increments on correct answer, resets to 0 on wrong.
+ * isMemorized: true when streak >= 5.
  */
 export async function recordPracticeResults(
-	userId: string,
-	results: PracticeResultDTO[]
+userId: string,
+results: PracticeResultDTO[],
 ): Promise<void> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(userId) || results.length === 0) return;
+await prisma.$transaction(
+results.map((r) =>
+prisma.userWordStat.upsert({
+where: { userId_wordId: { userId, wordId: r.wordId } },
+create: {
+userId,
+wordId: r.wordId,
+correctCount: r.correct ? 1 : 0,
+wrongCount: r.correct ? 0 : 1,
+streak: r.correct ? 1 : 0,
+isMemorized: false,
+lastReviewed: new Date(),
+},
+update: {
+correctCount: r.correct ? { increment: 1 } : undefined,
+wrongCount: r.correct ? undefined : { increment: 1 },
+streak: r.correct ? { increment: 1 } : 0,
+isMemorized: r.correct ? undefined : false,
+lastReviewed: new Date(),
+},
+}),
+),
+);
 
-	const oid = new mongoose.Types.ObjectId(userId);
-	const now = new Date();
-
-	const ops = results.map((r) => ({
-		updateOne: {
-			filter: { userId: oid, word: r.word.toLowerCase().trim() },
-			update: {
-				$inc: {
-					correctCount: r.correct ? 1 : 0,
-					wrongCount: r.correct ? 0 : 1,
-				},
-				$set: { lastPracticed: now },
-				$push: {
-					history: {
-						$each: [{ mode: r.mode, correct: r.correct, timestamp: now }],
-						$slice: -50, // keep last 50 entries per word
-					},
-				},
-			},
-			upsert: true,
-		},
-	}));
-
-	await WordStats.bulkWrite(ops);
+// Mark words as memorized where streak >= 5 (separate pass to read updated streaks)
+await prisma.userWordStat.updateMany({
+where: {
+userId,
+wordId: { in: results.map((r) => r.wordId) },
+streak: { gte: 5 },
+},
+data: { isMemorized: true },
+});
 }
 
 /**
- * Get stats for all words of a specific user.
+ * Get all word stats for a user (sorted by lastReviewed desc).
  */
 export async function getUserWordStats(userId: string): Promise<WordStatsDTO[]> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(userId)) return [];
-
-	const docs = await WordStats.find({ userId: new mongoose.Types.ObjectId(userId) })
-		.sort({ lastPracticed: -1 })
-		.limit(500)
-		.lean();
-
-	return docs.map(toWordStatsDTO);
+const stats = await prisma.userWordStat.findMany({
+where: { userId },
+include: { word: { select: { term: true } } },
+orderBy: { lastReviewed: 'desc' },
+take: 500,
+});
+return stats.map(toWordStatsDTO);
 }
 
 /**
- * Get stats for a specific list of words (for a vocab set detail view).
+ * Get stats for specific word IDs for a user (returns a Map for O(1) lookup).
  */
-export async function getWordStatsForWords(
-	userId: string,
-	words: string[]
+export async function getWordStatsForIds(
+userId: string,
+wordIds: string[],
 ): Promise<Map<string, WordStatsDTO>> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(userId) || words.length === 0)
-		return new Map();
-
-	const normalised = words.map((w) => w.toLowerCase().trim());
-	const docs = await WordStats.find({
-		userId: new mongoose.Types.ObjectId(userId),
-		word: { $in: normalised },
-	}).lean();
-
-	const map = new Map<string, WordStatsDTO>();
-	docs.forEach((doc) => {
-		map.set(doc.word, toWordStatsDTO(doc));
-	});
-	return map;
+const stats = await prisma.userWordStat.findMany({
+where: { userId, wordId: { in: wordIds } },
+include: { word: { select: { term: true } } },
+});
+return new Map(stats.map((s) => [s.wordId, toWordStatsDTO(s)]));
 }

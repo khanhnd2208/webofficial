@@ -59,7 +59,7 @@ export default function CreateVocabSetPage() {
 				const res = await fetch('/api/vocab-sets', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ title: title.trim(), description: description.trim(), visibility: 'private', terms: validTerms }),
+					body: JSON.stringify({ title: title.trim(), description: description.trim(), visibility: 'private', words: validTerms.map(t => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example })) }),
 				});
 				const json = await res.json();
 				if (!json.ok) throw new Error(json.error);

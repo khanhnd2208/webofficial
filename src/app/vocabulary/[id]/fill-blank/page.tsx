@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { word: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
+type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
+type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -107,7 +107,7 @@ function burstConfetti(container: HTMLElement) {
 	}
 }
 
-function reportStats(results: { word: string; correct: boolean; mode: string }[]) {
+function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
 	if (results.length === 0) return;
 	fetch('/api/vocab-stats', {
 		method: 'POST',
@@ -118,10 +118,10 @@ function reportStats(results: { word: string; correct: boolean; mode: string }[]
 
 export default function FillBlankPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
-	const [allTerms, setAllTerms] = useState<Term[] | null>(null);
+	const [allWords, setAllWords] = useState<Word[] | null>(null);
 	const [error, setError] = useState('');
 
-	const [questions, setQuestions] = useState<Term[]>([]);
+	const [questions, setQuestions] = useState<Word[]>([]);
 	const [qIndex, setQIndex] = useState(0);
 	const [letters, setLetters] = useState<string[]>([]);
 	const [revealed, setRevealed] = useState(false);
@@ -131,7 +131,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	const [wrong, setWrong] = useState(0);
 	const [finished, setFinished] = useState(false);
 	const [animKey, setAnimKey] = useState(0);
-	const [practiceResults, setPracticeResults] = useState<{ word: string; correct: boolean; mode: string }[]>([]);
+	const [practiceResults, setPracticeResults] = useState<{ wordId: string; correct: boolean; mode: string }[]>([]);
 	const [wordStats, setWordStats] = useState<Map<string, WordStat>>(new Map());
 
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -144,24 +144,24 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 			const res = await fetch(`/api/vocab-sets/${paramId}`);
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
-			const terms = json.data.terms as Term[];
-			setAllTerms(terms);
-			const q = shuffle(terms);
+			const words = json.data.words as Word[];
+			setAllWords(words);
+			const q = shuffle(words);
 			setQuestions(q);
 			resetForQuestion(q[0]);
 			// Fetch word stats silently
 			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
 				if (j.ok && Array.isArray(j.data)) {
 					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.word, s));
+					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
 					setWordStats(m);
 				}
 			}).catch(() => {});
 		});
 	}, [params]);
 
-	function resetForQuestion(term: Term) {
-		const len = term.word.length;
+	function resetForQuestion(word: Word) {
+		const len = word.term.length;
 		setLetters(Array(len).fill(''));
 		setRevealed(false);
 		setIsCorrect(null);
@@ -172,7 +172,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 
 	const question = questions[qIndex] ?? null;
 	const total = questions.length;
-	const wordLen = question?.word.length ?? 0;
+	const wordLen = question?.term.length ?? 0;
 
 	/* ── Dynamic sizing for letter inputs ── */
 	const letterSize = useMemo(() => {
@@ -205,17 +205,17 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	const handleCheck = useCallback(() => {
 		if (!question || revealed) return;
 		const answer = letters.join('');
-		const correct = question.word.toUpperCase();
-		if (answer.length < correct.length) return; // not all filled
+		const expected = question.term.toUpperCase();
+		if (answer.length < expected.length) return; // not all filled
 
-		const wasCorrect = answer === correct;
-		setPracticeResults((prev) => [...prev, { word: question.word, correct: wasCorrect, mode: 'fill-blank' }]);
+		const wasCorrect = answer === expected;
+		setPracticeResults((prev) => [...prev, { wordId: question.id, correct: wasCorrect, mode: 'fill-blank' }]);
 
 		if (wasCorrect) {
 			setIsCorrect(true);
 			setCorrect((v) => v + 1);
 			playCorrect();
-			speak(question.word);
+			speak(question.term);
 		} else {
 			setIsCorrect(false);
 			setWrong((v) => v + 1);
@@ -253,7 +253,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 
 	const handleHint = useCallback(() => {
 		if (!question || revealed) return;
-		const word = question.word.toUpperCase();
+		const word = question.term.toUpperCase();
 		// Find first empty or wrong letter
 		for (let i = 0; i < word.length; i++) {
 			if (letters[i] !== word[i]) {
@@ -308,7 +308,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		);
 	}
 
-	if (allTerms === null) {
+	if (allWords === null) {
 		return (
 			<main className="min-h-screen flex items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
@@ -329,7 +329,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 					onRestart={() => {
 						statsReportedRef.current = false;
 						setPracticeResults([]);
-						const q = shuffle(allTerms);
+						const q = shuffle(allWords);
 						setQuestions(q);
 						setQIndex(0);
 						setCorrect(0);
@@ -385,7 +385,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 								Điền từ vựng
 							</span>
 							{(() => {
-								const stat = question ? wordStats.get(question.word.toLowerCase().trim()) : null;
+								const stat = question ? wordStats.get(question.id) : null;
 								if (!stat || stat.totalAttempts === 0) return null;
 								const color = stat.accuracy >= 80 ? 'text-success' : stat.accuracy >= 50 ? 'text-warning' : 'text-error';
 								const bg = stat.accuracy >= 80 ? 'bg-success' : stat.accuracy >= 50 ? 'bg-warning' : 'bg-error';
@@ -408,7 +408,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 
 						{question.example && (
 							<p className="mt-3 text-sm italic text-muted-foreground">
-								&ldquo;{question.example.replace(new RegExp(question.word, 'gi'), '_____')}&rdquo;
+								&ldquo;{question.example.replace(new RegExp(question.term, 'gi'), '_____')}&rdquo;
 							</p>
 						)}
 					</div>
@@ -419,7 +419,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 						<div className="flex justify-center overflow-x-auto pb-2">
 							<div className={`flex flex-nowrap ${letterSize.gap}`}>
 								{letters.map((letter, idx) => {
-									const correctChar = question.word[idx]?.toUpperCase() ?? '';
+									const correctChar = question.term[idx]?.toUpperCase() ?? '';
 									const isLetterCorrect = revealed && letter === correctChar;
 									const isLetterWrong = revealed && letter !== correctChar;
 									const isHinted = letter === correctChar && !revealed;
@@ -505,13 +505,13 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 										<>
 											<span className="text-lg">✗</span>
 											<span className="text-sm font-bold text-error">
-												Đáp án: <span className="font-black">{question.word}</span>
+												Đáp án: <span className="font-black">{question.term}</span>
 											</span>
 										</>
 									)}
 								</div>
 								<button
-									onClick={() => speak(question.word)}
+										onClick={() => speak(question.term)}
 									className="mt-2 inline-flex items-center gap-1 text-xs text-muted hover:text-foreground transition-colors"
 								>
 									<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

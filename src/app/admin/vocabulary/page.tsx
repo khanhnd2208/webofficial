@@ -7,9 +7,9 @@ type StoreSet = {
 	title: string;
 	description: string;
 	ownerName: string;
-	termCount: number;
+	wordCount: number;
 	updatedAt: string;
-	isPublic: boolean;
+	isArchived: boolean;
 };
 
 type Term = { word: string; definition: string; partOfSpeech: string; example: string };
@@ -104,12 +104,12 @@ export default function AdminVocabularyPage() {
 			const res = await fetch(`/api/vocab-sets/${set.id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ isPublic: !set.isPublic }),
+				body: JSON.stringify({ isArchived: !set.isArchived }),
 			});
 			const json = await res.json();
 			if (json.ok) {
-				setSets((prev) => prev.map((s) => s.id === set.id ? { ...s, isPublic: !s.isPublic } : s));
-				showToast(!set.isPublic ? 'Đã công khai bộ từ' : 'Đã ẩn bộ từ khỏi cửa hàng', 'success');
+				setSets((prev) => prev.map((s) => s.id === set.id ? { ...s, isArchived: !s.isArchived } : s));
+				showToast(!set.isArchived ? 'Đã ẩn bộ từ khỏi cửa hàng' : 'Đã công khai bộ từ', 'success');
 			} else {
 				showToast(json.error ?? 'Có lỗi xảy ra', 'error');
 			}
@@ -179,8 +179,8 @@ export default function AdminVocabularyPage() {
 		setManualTerms((prev) => prev.map((t, i) => i === idx ? { ...t, [field]: val } : t));
 	}
 
-	const publicSets = sets.filter((s) => s.isPublic);
-	const privateSets = sets.filter((s) => !s.isPublic);
+	const publicSets = sets.filter((s) => !s.isArchived);
+	const privateSets = sets.filter((s) => s.isArchived);
 
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
@@ -473,16 +473,16 @@ function SetRow({
 	return (
 		<div className="flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-surface-hover">
 			{/* Status dot */}
-			<div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${set.isPublic ? 'bg-success' : 'bg-muted'}`} />
+			<div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${!set.isArchived ? 'bg-success' : 'bg-muted'}`} />
 
 			{/* Info */}
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2">
 					<span className="text-sm font-bold text-foreground truncate">{set.title}</span>
 					<span className="shrink-0 rounded-full bg-surface-hover px-2 py-0.5 text-[10px] font-bold tabular-nums text-muted">
-						{set.termCount} từ
+						{set.wordCount} từ
 					</span>
-					{set.isPublic && (
+					{!set.isArchived && (
 						<span className="shrink-0 rounded-full bg-success-subtle px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success">
 							Public
 						</span>
@@ -502,16 +502,16 @@ function SetRow({
 				<button
 					onClick={onToggle}
 					disabled={toggling}
-					title={set.isPublic ? 'Ẩn khỏi cửa hàng' : 'Công khai lên cửa hàng'}
+					title={set.isArchived ? 'Công khai lên cửa hàng' : 'Ẩn khỏi cửa hàng'}
 					className={`flex items-center gap-1.5 border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${
-						set.isPublic
-							? 'border-border text-muted hover:border-foreground hover:text-foreground'
-							: 'border-success text-success hover:bg-success hover:text-white'
+						set.isArchived
+							? 'border-success text-success hover:bg-success hover:text-white'
+							: 'border-border text-muted hover:border-foreground hover:text-foreground'
 					}`}
 				>
 					{toggling ? (
 						<span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
-					) : set.isPublic ? (
+					) : set.isArchived ? (
 						<svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
 						</svg>
@@ -521,7 +521,7 @@ function SetRow({
 							<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 						</svg>
 					)}
-					{set.isPublic ? 'Ẩn' : 'Công khai'}
+					{set.isArchived ? 'Công khai' : 'Ẩn'}
 				</button>
 
 				{/* Delete */}

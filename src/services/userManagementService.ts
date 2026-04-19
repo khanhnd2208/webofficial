@@ -10,8 +10,8 @@ import mongoose from 'mongoose';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 import Comment from '@/models/Comment';
-import VocabSet from '@/models/VocabSet';
 import LoginStreak from '@/models/LoginStreak';
+import { prisma } from '@/lib/prisma';
 import type { UserRole } from '@/types/user';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -153,11 +153,12 @@ export async function getAdminUserList({
 			{ $match: { userId: { $in: userIdStrings } } },
 			{ $group: { _id: '$userId', count: { $sum: 1 } } },
 		]),
-		// VocabSet counts grouped by ownerId (ObjectId)
-		VocabSet.aggregate<{ _id: mongoose.Types.ObjectId; count: number }>([
-			{ $match: { ownerId: { $in: userIds } } },
-			{ $group: { _id: '$ownerId', count: { $sum: 1 } } },
-		]),
+		// VocabSet counts via Prisma (ownerId stored as text = ObjectId string)
+		prisma.vocabSet.groupBy({
+			by: ['ownerId'],
+			where: { ownerId: { in: userIdStrings } },
+			_count: { id: true },
+		}),
 		// Streak info
 		LoginStreak.find({ userId: { $in: userIds } })
 			.select('userId currentStreak longestStreak lastLoginDate updatedAt')
@@ -166,7 +167,7 @@ export async function getAdminUserList({
 
 	// Index for fast lookup
 	const commentMap = new Map(commentCounts.map((c) => [c._id, c.count]));
-	const vocabMap = new Map(vocabCounts.map((v) => [v._id.toString(), v.count]));
+	const vocabMap = new Map(vocabCounts.map((v) => [v.ownerId, v._count.id]));
 	const streakMap = new Map(streaks.map((s) => [s.userId.toString(), s]));
 
 	const users: UserListItem[] = rawUsers.map((u) => {
@@ -221,18 +222,25 @@ export async function getAdminUserDetail(userId: string): Promise<UserDetail | n
 		recentVocabSets,
 	] = await Promise.all([
 		Comment.countDocuments({ userId }),
-		VocabSet.countDocuments({ ownerId: oid }),
+		prisma.vocabSet.count({ where: { ownerId: userId } }),
 		LoginStreak.findOne({ userId: oid }).lean(),
 		Comment.find({ userId })
 			.sort({ createdAt: -1 })
 			.limit(5)
 			.select('postTitle postSlug content status createdAt')
 			.lean(),
-		VocabSet.find({ ownerId: oid })
-			.sort({ createdAt: -1 })
-			.limit(5)
-			.select('title termCount isPublic createdAt')
-			.lean(),
+		prisma.vocabSet.findMany({
+			where: { ownerId: userId },
+			orderBy: { createdAt: 'desc' },
+			take: 5,
+			select: {
+				id: true,
+				title: true,
+				isArchived: true,
+				createdAt: true,
+				_count: { select: { words: { where: { isDeleted: false } } } },
+			},
+		}),
 	]);
 
 	// Count how many unique days user logged in over past 30 days
@@ -263,11 +271,11 @@ export async function getAdminUserDetail(userId: string): Promise<UserDetail | n
 			createdAt: toISO(c.createdAt, c._id as mongoose.Types.ObjectId) ?? new Date(0).toISOString(),
 		})),
 		recentVocabSets: recentVocabSets.map((v) => ({
-			id: (v._id as mongoose.Types.ObjectId).toString(),
+			id: v.id,
 			title: v.title,
-			termCount: v.termCount,
-			isPublic: v.isPublic,
-			createdAt: toISO(v.createdAt, v._id as mongoose.Types.ObjectId) ?? new Date(0).toISOString(),
+			termCount: v._count.words,
+			isPublic: !v.isArchived,
+			createdAt: v.createdAt.toISOString(),
 		})),
 	};
 }

@@ -1,52 +1,46 @@
-import { type NextRequest } from 'next/server';
+/* ════════════════════════════════════════════════════════════════════════
+   GET    /api/vocab-sets/:id  — get set by ID (public)
+   PUT    /api/vocab-sets/:id  — admin update (metadata + words)
+   DELETE /api/vocab-sets/:id  — soft-delete from user library OR archive (admin)
+   ════════════════════════════════════════════════════════════════════════ */
+import { withAuth, withAdmin, withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
+import {
+	getVocabSetById,
+	adminUpdateSet,
+	softDeleteFromLibrary,
+	archiveVocabSet,
+} from '@/services/vocabSetService';
+import type { UpdateVocabSetInput } from '@/types/vocab';
 
-import { withAuth, withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
-import { getVocabSetById, updateVocabSet, deleteVocabSet } from '@/services/vocabSetService';
+type Ctx = { params: Promise<{ id: string }> };
 
-type Params = { params: Promise<{ id: string }> };
-
-/** GET /api/vocab-sets/:id */
-export const GET = withErrorHandling(async (_request: NextRequest, context) => {
-	const { id } = await context!.params;
+export const GET = withErrorHandling(async (_req, ctx) => {
+	const { id } = await ctx!.params;
 	const set = await getVocabSetById(id);
 	if (!set) return apiError('Not found', 404);
-	return apiSuccess(set);
+	return apiSuccess({ set });
 });
 
-/** PUT /api/vocab-sets/:id */
-export const PUT = withAuth(async (request: NextRequest, user, context) => {
-	const { id } = await context!.params;
-	const existing = await getVocabSetById(id);
-	if (!existing) return apiError('Not found', 404);
-
-	// Only owner or admin can edit
-	if (existing.ownerId !== user.id && user.role !== 'admin') {
-		return apiError('Forbidden', 403);
-	}
-
-	const body = await request.json();
-	const updated = await updateVocabSet({
-		id,
-		ownerId: existing.ownerId,
-		title: body.title,
-		description: body.description,
-		terms: body.terms,
-		isPublic: user.role === 'admin' ? body.isPublic : undefined,
-	});
-	if (!updated) return apiError('Update failed', 400);
-	return apiSuccess(updated);
+export const PUT = withAdmin(async (request, _user, ctx) => {
+	const { id } = await ctx!.params;
+	const body = await request.json() as UpdateVocabSetInput;
+	const set = await adminUpdateSet(id, body);
+	if (!set) return apiError('Not found', 404);
+	return apiSuccess({ set });
 });
 
-/** DELETE /api/vocab-sets/:id */
-export const DELETE = withAuth(async (request: NextRequest, user, context) => {
-	const { id } = await context!.params;
-	const existing = await getVocabSetById(id);
-	if (!existing) return apiError('Not found', 404);
+export const DELETE = withAuth(async (request, user, ctx) => {
+	const { id } = await ctx!.params;
+	const url = new URL(request.url);
+	const action = url.searchParams.get('action');
 
-	if (existing.ownerId !== user.id && user.role !== 'admin') {
-		return apiError('Forbidden', 403);
+	// Admin archiving from store
+	if (action === 'archive' && user.role === 'admin') {
+		await archiveVocabSet(id);
+		return apiSuccess({ archived: true });
 	}
 
-	await deleteVocabSet(id, existing.ownerId);
-	return apiSuccess(null);
+	// User soft-deleting from their library
+	await softDeleteFromLibrary(user.id, id);
+	return apiSuccess({ deleted: true });
 });

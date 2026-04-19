@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { word: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
+type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
+type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
-type Card = { id: string; text: string; termWord: string; type: 'word' | 'definition' };
+type Card = { id: string; text: string; wordId: string; type: 'word' | 'definition' };
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -137,7 +137,7 @@ function sparkleMatch(el1: HTMLElement, el2: HTMLElement) {
 	});
 }
 
-function reportStats(results: { word: string; correct: boolean; mode: string }[]) {
+function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
 	if (results.length === 0) return;
 	fetch('/api/vocab-stats', {
 		method: 'POST',
@@ -148,7 +148,7 @@ function reportStats(results: { word: string; correct: boolean; mode: string }[]
 
 export default function MatchingPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
-	const [allTerms, setAllTerms] = useState<Term[] | null>(null);
+	const [allWords, setAllWords] = useState<Word[] | null>(null);
 	const [error, setError] = useState('');
 
 	const [cards, setCards] = useState<Card[]>([]);
@@ -160,25 +160,25 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 	const [startTime, setStartTime] = useState(0);
 	const [elapsed, setElapsed] = useState(0);
 	const [gameReady, setGameReady] = useState(false);
-	const [practiceResults, setPracticeResults] = useState<{ word: string; correct: boolean; mode: string }[]>([]);
+	const [practiceResults, setPracticeResults] = useState<{ wordId: string; correct: boolean; mode: string }[]>([]);
 	const [wordStats, setWordStats] = useState<Map<string, WordStat>>(new Map());
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 	const statsReportedRef = useRef(false);
 
-	const startGame = useCallback((terms: Term[]) => {
-		const subset = shuffle(terms).slice(0, 8);
+	const startGame = useCallback((words: Word[]) => {
+		const subset = shuffle(words).slice(0, 8);
 		const wordCards: Card[] = subset.map((t, i) => ({
 			id: `w-${i}`,
-			text: t.word,
-			termWord: t.word,
+			text: t.term,
+			wordId: t.id,
 			type: 'word',
 		}));
 		const defCards: Card[] = subset.map((t, i) => ({
 			id: `d-${i}`,
 			text: t.definition,
-			termWord: t.word,
+			wordId: t.id,
 			type: 'definition',
 		}));
 		setCards(shuffle([...wordCards, ...defCards]));
@@ -198,14 +198,14 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 			const res = await fetch(`/api/vocab-sets/${paramId}`);
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
-			const t = json.data.terms as Term[];
-			setAllTerms(t);
+			const t = json.data.words as Word[];
+			setAllWords(t);
 			startGame(t);
 			// Fetch word stats silently
 			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
 				if (j.ok && Array.isArray(j.data)) {
 					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.word, s));
+					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
 					setWordStats(m);
 				}
 			}).catch(() => {});
@@ -241,10 +241,10 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 
 		setMoves((v) => v + 1);
 
-		if (first.termWord === card.termWord && first.type !== card.type) {
+		if (first.wordId === card.wordId && first.type !== card.type) {
 			// Match!
 			playMatch();
-			setPracticeResults((prev) => [...prev, { word: first.termWord, correct: true, mode: 'matching' }]);
+			setPracticeResults((prev) => [...prev, { wordId: first.wordId, correct: true, mode: 'matching' }]);
 
 			// Sparkle effect
 			const el1 = cardRefs.current.get(first.id);
@@ -268,7 +268,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 			// Record wrong for both words involved
 			setPracticeResults((prev) => [
 				...prev,
-				{ word: first.termWord, correct: false, mode: 'matching' },
+				{ wordId: first.wordId, correct: false, mode: 'matching' },
 			]);
 			setWrongPair([first.id, card.id]);
 			setTimeout(() => {
@@ -295,7 +295,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 		);
 	}
 
-	if (allTerms === null) {
+	if (allWords === null) {
 		return (
 			<main className="min-h-screen flex items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
@@ -316,7 +316,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 					onRestart={() => {
 						statsReportedRef.current = false;
 						setPracticeResults([]);
-						startGame(allTerms);
+						startGame(allWords);
 					}}
 				/>
 			</main>
@@ -427,9 +427,9 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 										{card.type === 'word' ? 'Từ' : 'Nghĩa'}
 									</span>
 									{/* Word stats dot */}
-									{card.type === 'word' && (() => {
-										const stat = wordStats.get(card.termWord.toLowerCase().trim());
-										if (!stat || stat.totalAttempts === 0) return null;
+							{card.type === 'word' && (() => {
+								const stat = wordStats.get(card.wordId);
+								if (!stat || stat.totalAttempts === 0) return null;
 										const bg = stat.accuracy >= 80 ? 'bg-success' : stat.accuracy >= 50 ? 'bg-warning' : 'bg-error';
 										return <span className={`ml-auto h-2 w-2 rounded-full ${bg}`} title={`${stat.accuracy}%`} />;
 									})()}

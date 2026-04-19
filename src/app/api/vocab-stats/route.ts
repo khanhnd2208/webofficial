@@ -1,23 +1,21 @@
-import { type NextRequest } from 'next/server';
-
+/* ════════════════════════════════════════════════════════════════════════
+   POST /api/vocab-stats  — record practice results
+   GET  /api/vocab-stats  — get all word stats for current user
+   ════════════════════════════════════════════════════════════════════════ */
 import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
 import { recordPracticeResults, getUserWordStats } from '@/services/wordStatsService';
+import type { PracticeResultDTO } from '@/types/vocab';
 
-/** POST /api/vocab-stats — record practice results for words */
-export const POST = withAuth(async (request: NextRequest, user) => {
-	const body = await request.json();
-	const results = body.results;
-
-	if (!Array.isArray(results) || results.length === 0) {
+export const POST = withAuth(async (request, user) => {
+	const body = await request.json() as { results?: PracticeResultDTO[] };
+	if (!Array.isArray(body.results) || body.results.length === 0) {
 		return apiError('results array is required', 400);
 	}
-
-	await recordPracticeResults(user.id, results);
-	return apiSuccess(null);
+	await recordPracticeResults(user.id, body.results);
+	return apiSuccess({ recorded: body.results.length });
 });
 
-/** GET /api/vocab-stats — get all word stats for the current user */
-export const GET = withAuth(async (_request: NextRequest, user) => {
+export const GET = withAuth(async (_req, user) => {
 	const stats = await getUserWordStats(user.id);
-	return apiSuccess(stats);
+	return apiSuccess({ stats, total: stats.length });
 });

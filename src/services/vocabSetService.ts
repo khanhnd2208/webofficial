@@ -1,217 +1,345 @@
-import mongoose from 'mongoose';
+/* ════════════════════════════════════════════════════════════════════════
+   vocabSetService.ts — Vocabulary Set Business Logic (Prisma / PostgreSQL)
+   
+   Key design decisions:
+   • Admin owns VocabSet + Word records (source of truth)
+   • Users hold UserVocabSet entries (library pointers, not copies)
+   • Word.isDeleted  — soft-delete words; FK Restrict preserves UserWordStat
+   • UserVocabSet.status — soft_deleted | active; restored on re-download
+   • No cascadeUpdateClones needed — users read Words directly from source
+   ════════════════════════════════════════════════════════════════════════ */
+import { prisma } from '@/lib/prisma';
+import type {
+	VocabSetDTO,
+	VocabSetListItemDTO,
+	UserLibrarySetDTO,
+	StoreSetDTO,
+	StoreListResult,
+	CreateVocabSetInput,
+	UpdateVocabSetInput,
+	WordDTO,
+} from '@/types/vocab';
+import type { VocabSet, Word } from '@prisma/client';
 
-import dbConnect from '@/lib/dbConnect';
-import VocabSet, { type IVocabSet } from '@/models/VocabSet';
-import type { VocabSetDTO, VocabSetListItemDTO, VocabTermDTO } from '@/types/vocabSet';
-
-/* ────────────── helpers ────────────── */
-
-type LeanDoc = IVocabSet & { _id: mongoose.Types.ObjectId };
-
-function toDTO(doc: LeanDoc): VocabSetDTO {
-	return {
-		id: String(doc._id),
-		title: doc.title,
-		description: doc.description ?? '',
-		ownerId: String(doc.ownerId),
-		ownerName: doc.ownerName,
-		terms: (doc.terms ?? []).map((t) => ({
-			word: t.word,
-			definition: t.definition,
-			partOfSpeech: t.partOfSpeech ?? '',
-			example: t.example ?? '',
-		})),
-		termCount: doc.termCount ?? doc.terms?.length ?? 0,
-		isPublic: doc.isPublic ?? false,
-		createdAt: new Date(doc.createdAt).toISOString(),
-		updatedAt: new Date(doc.updatedAt).toISOString(),
-	};
-}
-
-function toListItem(doc: LeanDoc): VocabSetListItemDTO {
-	return {
-		id: String(doc._id),
-		title: doc.title,
-		description: doc.description ?? '',
-		ownerName: doc.ownerName,
-		ownerId: String(doc.ownerId),
-		termCount: doc.termCount ?? doc.terms?.length ?? 0,
-		isPublic: doc.isPublic ?? false,
-		createdAt: new Date(doc.createdAt).toISOString(),
-		updatedAt: new Date(doc.updatedAt).toISOString(),
-	};
-}
-
-/* ────────────── queries ────────────── */
-
-/** List sets owned by a specific user */
-export async function listMyVocabSets(ownerId: string): Promise<VocabSetListItemDTO[]> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(ownerId)) return [];
-	const items = (await VocabSet.find({ ownerId: new mongoose.Types.ObjectId(ownerId) })
-		.select({ terms: 0 })
-		.sort({ updatedAt: -1 })
-		.limit(200)
-		.lean()) as unknown as LeanDoc[];
-	return items.map(toListItem);
-}
-
-/** List sets with full terms included */
-export async function listMyVocabSetsWithTerms(ownerId: string): Promise<VocabSetDTO[]> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(ownerId)) return [];
-	const items = (await VocabSet.find({ ownerId: new mongoose.Types.ObjectId(ownerId) })
-		.sort({ updatedAt: -1 })
-		.limit(100)
-		.lean()) as unknown as LeanDoc[];
-	return items.map(toDTO);
-}
-
-/** Get a single set by ID */
-export async function getVocabSetById(id: string): Promise<VocabSetDTO | null> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(id)) return null;
-	const doc = (await VocabSet.findById(id).lean()) as unknown as LeanDoc | null;
-	if (!doc) return null;
-	return toDTO(doc);
-}
-
-/* ────────────── mutations ────────────── */
-
-export async function createVocabSet(params: {
-	title: string;
-	description?: string;
-	visibility?: string;
-	terms: VocabTermDTO[];
-	ownerId: string;
-	ownerName: string;
-}): Promise<VocabSetDTO> {
-	await dbConnect();
-	const doc = await VocabSet.create({
-		title: params.title.trim(),
-		description: (params.description ?? '').trim(),
-		ownerId: new mongoose.Types.ObjectId(params.ownerId),
-		ownerName: params.ownerName,
-		terms: params.terms.map((t) => ({
-			word: t.word.trim(),
-			definition: t.definition.trim(),
-			partOfSpeech: (t.partOfSpeech ?? '').trim(),
-			example: (t.example ?? '').trim(),
-		})),
-		termCount: params.terms.length,
-		isPublic: params.visibility === 'public',
-	});
-	return toDTO(doc.toObject() as unknown as LeanDoc);
-}
-
-export async function updateVocabSet(params: {
-	id: string;
-	ownerId: string;
-	title?: string;
-	description?: string;
-	terms?: VocabTermDTO[];
-	isPublic?: boolean;
-}): Promise<VocabSetDTO | null> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(params.id)) return null;
-	if (!mongoose.isValidObjectId(params.ownerId)) return null;
-
-	const update: Record<string, unknown> = {};
-	if (params.title !== undefined) update.title = params.title.trim();
-	if (params.description !== undefined) update.description = params.description.trim();
-	if (params.isPublic !== undefined) update.isPublic = params.isPublic;
-	if (params.terms !== undefined) {
-		update.terms = params.terms.map((t) => ({
-			word: t.word.trim(),
-			definition: t.definition.trim(),
-			partOfSpeech: (t.partOfSpeech ?? '').trim(),
-			example: (t.example ?? '').trim(),
-		}));
-		update.termCount = params.terms.length;
+// ─── Errors ───────────────────────────────────────────────────────────────────
+export class AlreadyOwnedError extends Error {
+	constructor() {
+		super('ALREADY_OWNED');
 	}
-
-	const doc = (await VocabSet.findOneAndUpdate(
-		{ _id: new mongoose.Types.ObjectId(params.id), ownerId: new mongoose.Types.ObjectId(params.ownerId) },
-		{ $set: update },
-		{ returnDocument: 'after' },
-	).lean()) as unknown as LeanDoc | null;
-	if (!doc) return null;
-	return toDTO(doc);
 }
 
-export async function deleteVocabSet(id: string, ownerId: string): Promise<boolean> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(ownerId)) return false;
-	const result = await VocabSet.deleteOne({
-		_id: new mongoose.Types.ObjectId(id),
-		ownerId: new mongoose.Types.ObjectId(ownerId),
+// ─── Mappers ──────────────────────────────────────────────────────────────────
+function wordToDTO(w: Word): WordDTO {
+	return {
+		id: w.id,
+		term: w.term,
+		definition: w.definition,
+		partOfSpeech: w.partOfSpeech,
+		example: w.example,
+	};
+}
+
+function setToDTO(
+set: VocabSet & { words: Word[] },
+): VocabSetDTO {
+	const activeWords = set.words.filter((w) => !w.isDeleted);
+	return {
+		id: set.id,
+		title: set.title,
+		description: set.description,
+		ownerId: set.ownerId,
+		ownerName: set.ownerName,
+		words: activeWords.map(wordToDTO),
+		wordCount: activeWords.length,
+		isArchived: set.isArchived,
+		createdAt: set.createdAt.toISOString(),
+		updatedAt: set.updatedAt.toISOString(),
+	};
+}
+
+function setToListItem(
+set: VocabSet & { _count: { words: number } },
+): VocabSetListItemDTO {
+	return {
+		id: set.id,
+		title: set.title,
+		description: set.description,
+		ownerId: set.ownerId,
+		ownerName: set.ownerName,
+		wordCount: set._count.words,
+		isArchived: set.isArchived,
+		createdAt: set.createdAt.toISOString(),
+		updatedAt: set.updatedAt.toISOString(),
+	};
+}
+
+// ─── User Library ─────────────────────────────────────────────────────────────
+
+/**
+ * Get user's active library — includes all non-deleted words.
+ */
+export async function getUserLibrary(userId: string): Promise<UserLibrarySetDTO[]> {
+const entries = await prisma.userVocabSet.findMany({
+where: { userId, status: 'active' },
+include: {
+vocabSet: {
+include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+},
+},
+orderBy: { addedAt: 'desc' },
+});
+
+return entries.map((entry) => ({
+...setToDTO(entry.vocabSet),
+libraryEntryId: entry.id,
+status: entry.status as 'active',
+addedAt: entry.addedAt.toISOString(),
+}));
+}
+
+/**
+ * Soft-delete a set from user's library.
+ * Progress (UserWordStat) is fully preserved.
+ */
+export async function softDeleteFromLibrary(
+userId: string,
+vocabSetId: string,
+): Promise<void> {
+	const entry = await prisma.userVocabSet.findUnique({
+where: { userId_vocabSetId: { userId, vocabSetId } },
+});
+	if (!entry || entry.status === 'soft_deleted') return; // idempotent
+
+	await prisma.userVocabSet.update({
+where: { userId_vocabSetId: { userId, vocabSetId } },
+data: { status: 'soft_deleted', deletedAt: new Date() },
 	});
-	return (result.deletedCount ?? 0) > 0;
 }
 
-/* ────────────── store / public sets ────────────── */
+/**
+ * Add a VocabSet to user's library.
+ * - If a soft_deleted entry exists → restore to active (preserves all UserWordStat)
+ * - If active entry exists → throw AlreadyOwnedError
+ * - Otherwise → create new entry
+ */
+export async function addToLibrary(
+userId: string,
+vocabSetId: string,
+): Promise<void> {
+const existing = await prisma.userVocabSet.findUnique({
+where: { userId_vocabSetId: { userId, vocabSetId } },
+});
 
-/** List all public sets (for the store) */
-export async function listPublicSets(): Promise<VocabSetListItemDTO[]> {
-	await dbConnect();
-	const items = (await VocabSet.find({ isPublic: true })
-		.select({ terms: 0 })
-		.sort({ updatedAt: -1 })
-		.limit(200)
-		.lean()) as unknown as LeanDoc[];
-	return items.map(toListItem);
+if (existing) {
+if (existing.status === 'active') throw new AlreadyOwnedError();
+// Restore soft-deleted entry
+await prisma.userVocabSet.update({
+where: { userId_vocabSetId: { userId, vocabSetId } },
+data: { status: 'active', deletedAt: null },
+});
+return;
 }
 
-/** List ALL sets owned by admin (both public and private) — for admin management */
+// New entry
+await prisma.userVocabSet.create({
+data: { userId, vocabSetId },
+});
+}
+
+// ─── Store (public listing) ────────────────────────────────────────────────────
+
+/**
+ * Paginated public store listing (isArchived: false only).
+ * Includes alreadyOwned flag for the requesting user.
+ */
+export async function getStore(
+userId: string | null,
+page = 1,
+limit = 20,
+): Promise<StoreListResult> {
+const skip = (page - 1) * limit;
+
+const [sets, total] = await prisma.$transaction([
+prisma.vocabSet.findMany({
+where: { isArchived: false },
+orderBy: { updatedAt: 'desc' },
+skip,
+take: limit,
+include: { _count: { select: { words: { where: { isDeleted: false } } } } },
+}),
+prisma.vocabSet.count({ where: { isArchived: false } }),
+]);
+
+// Fetch ownership status for the current user in one query
+let ownedIds = new Set<string>();
+if (userId) {
+const owned = await prisma.userVocabSet.findMany({
+where: { userId, vocabSetId: { in: sets.map((s) => s.id) }, status: 'active' },
+select: { vocabSetId: true },
+});
+ownedIds = new Set(owned.map((o) => o.vocabSetId));
+}
+
+const items: StoreSetDTO[] = sets.map((set) => ({
+...setToListItem(set),
+alreadyOwned: ownedIds.has(set.id),
+}));
+
+return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+}
+
+/**
+ * Get a single VocabSet with all active words (public access).
+ */
+export async function getVocabSetById(id: string): Promise<VocabSetDTO | null> {
+const set = await prisma.vocabSet.findUnique({
+where: { id },
+include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+});
+if (!set) return null;
+return setToDTO(set);
+}
+
+// ─── Admin mutations ──────────────────────────────────────────────────────────
+
+/**
+ * Create a new VocabSet with its words in one atomic transaction.
+ * If word creation fails, the VocabSet is also rolled back (no orphan data).
+ */
+export async function createVocabSet(
+ownerId: string,
+ownerName: string,
+input: CreateVocabSetInput,
+): Promise<VocabSetDTO> {
+const set = await prisma.$transaction(async (tx) => {
+const created = await tx.vocabSet.create({
+data: {
+title: input.title.trim(),
+description: input.description?.trim() ?? '',
+ownerId,
+ownerName,
+words: {
+create: input.words.map((w) => ({
+term: w.term.trim(),
+definition: w.definition.trim(),
+partOfSpeech: w.partOfSpeech?.trim() ?? '',
+example: w.example?.trim() ?? '',
+})),
+},
+},
+include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+});
+return created;
+});
+
+return setToDTO(set);
+}
+
+/**
+ * Update VocabSet metadata and/or words in one atomic transaction.
+ * - Upsert words (create new, update existing by id)
+ * - Soft-delete words via deleteWordIds (sets isDeleted=true, preserves UserWordStat)
+ */
+export async function adminUpdateSet(
+setId: string,
+input: UpdateVocabSetInput,
+): Promise<VocabSetDTO | null> {
+const set = await prisma.$transaction(async (tx) => {
+// 1. Update set metadata
+if (input.title !== undefined || input.description !== undefined || input.isArchived !== undefined) {
+await tx.vocabSet.update({
+where: { id: setId },
+data: {
+...(input.title && { title: input.title.trim() }),
+...(input.description !== undefined && { description: input.description.trim() }),
+...(input.isArchived !== undefined && { isArchived: input.isArchived }),
+},
+});
+}
+
+// 2. Soft-delete specified words (NEVER hard-delete — protects UserWordStat)
+if (input.deleteWordIds?.length) {
+await tx.word.updateMany({
+where: { id: { in: input.deleteWordIds }, vocabSetId: setId },
+data: { isDeleted: true },
+});
+}
+
+// 3. Upsert words
+if (input.words?.length) {
+for (const w of input.words) {
+if (w.id) {
+// Update existing
+await tx.word.update({
+where: { id: w.id },
+data: {
+term: w.term.trim(),
+definition: w.definition.trim(),
+partOfSpeech: w.partOfSpeech?.trim() ?? '',
+example: w.example?.trim() ?? '',
+isDeleted: false, // re-activate if it was soft-deleted
+},
+});
+} else {
+// Create new
+await tx.word.create({
+data: {
+vocabSetId: setId,
+term: w.term.trim(),
+definition: w.definition.trim(),
+partOfSpeech: w.partOfSpeech?.trim() ?? '',
+example: w.example?.trim() ?? '',
+},
+});
+}
+}
+}
+
+return tx.vocabSet.findUnique({
+where: { id: setId },
+include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+});
+});
+
+if (!set) return null;
+return setToDTO(set);
+}
+
+/**
+ * Archive a VocabSet from the store (isArchived = true).
+ * Users who already have it keep access; no sync stops needed
+ * since users read directly from the source Words table.
+ * NEVER deletes UserVocabSet entries.
+ */
+export async function archiveVocabSet(setId: string): Promise<void> {
+await prisma.vocabSet.update({
+where: { id: setId },
+data: { isArchived: true },
+});
+}
+
+/**
+ * Soft-delete a single word. Preserves all UserWordStat records.
+ * This is the ONLY way to remove a word — hard delete is forbidden.
+ */
+export async function adminSoftDeleteWord(wordId: string, setId: string): Promise<void> {
+await prisma.word.update({
+where: { id: wordId, vocabSetId: setId },
+data: { isDeleted: true },
+});
+}
+
+/**
+ * Get all sets owned by an admin (for admin panel).
+ */
 export async function listAdminOwnedSets(adminId: string): Promise<VocabSetListItemDTO[]> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(adminId)) return [];
-	const items = (await VocabSet.find({ ownerId: new mongoose.Types.ObjectId(adminId) })
-		.select({ terms: 0 })
-		.sort({ updatedAt: -1 })
-		.limit(500)
-		.lean()) as unknown as LeanDoc[];
-	return items.map(toListItem);
+const sets = await prisma.vocabSet.findMany({
+where: { ownerId: adminId },
+orderBy: { updatedAt: 'desc' },
+include: { _count: { select: { words: { where: { isDeleted: false } } } } },
+});
+return sets.map(setToListItem);
 }
 
-/** Get a public set by ID (with terms, for preview / clone) */
-export async function getPublicSetById(id: string): Promise<VocabSetDTO | null> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(id)) return null;
-	const doc = (await VocabSet.findOne({ _id: new mongoose.Types.ObjectId(id), isPublic: true }).lean()) as unknown as LeanDoc | null;
-	if (!doc) return null;
-	return toDTO(doc);
-}
-
-/** Clone a public set into a user's own collection */
-export async function cloneVocabSet(params: {
-	sourceId: string;
-	ownerId: string;
-	ownerName: string;
-}): Promise<VocabSetDTO | null> {
-	await dbConnect();
-	if (!mongoose.isValidObjectId(params.sourceId)) return null;
-
-	// Single read — get the source directly
-	const source = (await VocabSet.findOne({
-		_id: new mongoose.Types.ObjectId(params.sourceId),
-		isPublic: true,
-	}).lean()) as unknown as LeanDoc | null;
-	if (!source) return null;
-
-	const doc = await VocabSet.create({
-		title: source.title,
-		description: source.description,
-		ownerId: new mongoose.Types.ObjectId(params.ownerId),
-		ownerName: params.ownerName,
-		terms: (source.terms ?? []).map((t) => ({
-			word: t.word,
-			definition: t.definition,
-			partOfSpeech: t.partOfSpeech,
-			example: t.example,
-		})),
-		termCount: source.termCount ?? source.terms?.length ?? 0,
-		isPublic: false,
-	});
-	return toDTO(doc.toObject() as unknown as LeanDoc);
-}
+/** Alias kept for callers that haven't been updated yet. Returns active library entries only. */
+export const listMyVocabSets = getUserLibrary;

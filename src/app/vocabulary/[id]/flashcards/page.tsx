@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { word: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
+type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
+type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -78,7 +78,7 @@ function burstConfetti(container: HTMLElement) {
 	}
 }
 
-function reportStats(results: { word: string; correct: boolean; mode: string }[]) {
+function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
 	if (results.length === 0) return;
 	fetch('/api/vocab-stats', {
 		method: 'POST',
@@ -89,12 +89,12 @@ function reportStats(results: { word: string; correct: boolean; mode: string }[]
 
 export default function FlashcardsPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
-	const [allTerms, setAllTerms] = useState<Term[] | null>(null);
+	const [allWords, setAllWords] = useState<Word[] | null>(null);
 	const [error, setError] = useState('');
 
-	const [remaining, setRemaining] = useState<Term[]>([]);
-	const [mastered, setMastered] = useState<Term[]>([]);
-	const [stillLearning, setStillLearning] = useState<Term[]>([]);
+	const [remaining, setRemaining] = useState<Word[]>([]);
+	const [mastered, setMastered] = useState<Word[]>([]);
+	const [stillLearning, setStillLearning] = useState<Word[]>([]);
 	const [index, setIndex] = useState(0);
 	const [flipped, setFlipped] = useState(false);
 	const [swipeState, setSwipeState] = useState<'idle' | 'swiping-left' | 'swiping-right' | 'exit-left' | 'exit-right'>('idle');
@@ -114,14 +114,14 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 			const res = await fetch(`/api/vocab-sets/${paramId}`);
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
-			const terms = json.data.terms as Term[];
-			setAllTerms(terms);
-			setRemaining(shuffle(terms));
+			const words = json.data.words as Word[];
+			setAllWords(words);
+			setRemaining(shuffle(words));
 			// Fetch word stats silently
 			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
 				if (j.ok && Array.isArray(j.data)) {
 					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.word, s));
+					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
 					setWordStats(m);
 				}
 			}).catch(() => {});
@@ -129,12 +129,12 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	}, [params]);
 
 	const card = remaining[index] ?? null;
-	const total = allTerms?.length ?? 0;
+	const total = allWords?.length ?? 0;
 
 	/* ── Card actions ── */
 	const flip = useCallback(() => {
 		setFlipped((v) => !v);
-		if (!flipped && card) speak(card.word);
+		if (!flipped && card) speak(card.term);
 	}, [flipped, card]);
 
 	const advanceCard = useCallback((dir: 'left' | 'right') => {
@@ -212,15 +212,15 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 
 	// Report stats once when all cards done
 	useEffect(() => {
-		if (remaining.length === 0 && !statsReportedRef.current && allTerms) {
+		if (remaining.length === 0 && !statsReportedRef.current && allWords) {
 			statsReportedRef.current = true;
 			const results = [
-				...mastered.map((t) => ({ word: t.word, correct: true, mode: 'flashcards' })),
-				...stillLearning.map((t) => ({ word: t.word, correct: false, mode: 'flashcards' })),
+				...mastered.map((w) => ({ wordId: w.id, correct: true, mode: 'flashcards' })),
+				...stillLearning.map((w) => ({ wordId: w.id, correct: false, mode: 'flashcards' })),
 			];
 			reportStats(results);
 		}
-	}, [remaining.length, allTerms, mastered, stillLearning]);
+	}, [remaining.length, allWords, mastered, stillLearning]);
 
 	/* ── Loading / Error ── */
 	if (error) {
@@ -231,7 +231,7 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 		);
 	}
 
-	if (allTerms === null) {
+	if (allWords === null) {
 		return (
 			<main className="min-h-screen flex items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
@@ -247,15 +247,15 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 					total={total}
 					id={id}
 					containerRef={containerRef}
-					onRestart={() => {
-						statsReportedRef.current = false;
-						setRemaining(shuffle(allTerms));
-						setMastered([]);
-						setStillLearning([]);
-						setIndex(0);
-						setFlipped(false);
-						setAnimKey(0);
-					}}
+						onRestart={() => {
+							statsReportedRef.current = false;
+							setRemaining(shuffle(allWords));
+							setMastered([]);
+							setStillLearning([]);
+							setIndex(0);
+							setFlipped(false);
+							setAnimKey(0);
+						}}
 				/>
 			</main>
 		);
@@ -374,16 +374,16 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 									boxShadow: '0 8px 32px -4px rgba(0,0,0,0.08), 0 4px 12px -2px rgba(0,0,0,0.04)',
 								}}
 							>
-								<span className="text-center text-2xl font-black tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-									{card?.word}
-								</span>
+									<span className="text-center text-2xl font-black tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+										{card?.term}
+									</span>
 								{card?.partOfSpeech ? (
 									<span className="mt-3 rounded-full bg-surface-hover px-3 py-1 text-xs font-medium italic text-muted">
 										{card.partOfSpeech}
 									</span>
 								) : null}
 								{(() => {
-									const stat = card ? wordStats.get(card.word.toLowerCase().trim()) : null;
+									const stat = card ? wordStats.get(card.id) : null;
 									if (!stat || stat.totalAttempts === 0) return null;
 									const color = stat.accuracy >= 80 ? 'text-success' : stat.accuracy >= 50 ? 'text-warning' : 'text-error';
 									const label = stat.accuracy >= 80 ? 'Tốt' : stat.accuracy >= 50 ? 'Khá' : 'Khó';
@@ -395,7 +395,7 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 									);
 								})()}
 								<button
-									onClick={(e) => { e.stopPropagation(); if (card) speak(card.word); }}
+									onClick={(e) => { e.stopPropagation(); if (card) speak(card.term); }}
 									className="mt-5 flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover text-muted transition-all hover:bg-accent hover:text-accent-foreground hover:scale-110 active:scale-95"
 								>
 									<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

@@ -1,0 +1,101 @@
+// ════════════════════════════════════════════════════════════════════════
+// Prisma Schema — Vocabulary Module
+// Part of the Hybrid DB strategy: MongoDB handles auth/blog/users,
+// PostgreSQL (this schema) handles vocabulary with relational integrity.
+//
+// userId fields are TEXT referencing MongoDB User._id (string ObjectId).
+// ════════════════════════════════════════════════════════════════════════
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── VocabSet ─────────────────────────────────────────────────────────────────
+// Canonical vocabulary set created and owned by an admin.
+// ownerId references MongoDB User._id as a plain string.
+model VocabSet {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  ownerId     String   // MongoDB User._id
+  ownerName   String
+  isArchived  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  words          Word[]
+  userVocabSets  UserVocabSet[]
+
+  @@index([ownerId])
+  @@index([isArchived, updatedAt(sort: Desc)])
+}
+
+// ─── Word ─────────────────────────────────────────────────────────────────────
+// Individual vocabulary term belonging to a VocabSet.
+// NEVER hard-delete; use isDeleted = true to hide from UI while preserving
+// UserWordStat progress history.
+model Word {
+  id          String   @id @default(cuid())
+  vocabSetId  String
+  term        String
+  definition  String
+  partOfSpeech String  @default("")
+  example     String   @default("")
+  isDeleted   Boolean  @default(false)  // soft-delete — keeps UserWordStat intact
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vocabSet      VocabSet       @relation(fields: [vocabSetId], references: [id], onDelete: Restrict)
+  userWordStats UserWordStat[]
+
+  @@index([vocabSetId, isDeleted])
+}
+
+// ─── UserVocabSet ─────────────────────────────────────────────────────────────
+// Junction table: a user's library entry for a VocabSet.
+// status='active'       → visible in user's library
+// status='soft_deleted' → hidden from UI, data intact; restored on re-download
+model UserVocabSet {
+  id         String            @id @default(cuid())
+  userId     String            // MongoDB User._id
+  vocabSetId String
+  status     UserVocabSetStatus @default(active)
+  addedAt    DateTime          @default(now())
+  deletedAt  DateTime?
+
+  vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, vocabSetId])
+  @@index([userId, status])
+}
+
+// ─── UserWordStat ─────────────────────────────────────────────────────────────
+// Per-user learning progress for each Word.
+// wordId FK uses Restrict — Word must never be hard-deleted.
+model UserWordStat {
+  id           String   @id @default(cuid())
+  userId       String   // MongoDB User._id
+  wordId       String
+  correctCount Int      @default(0)
+  wrongCount   Int      @default(0)
+  streak       Int      @default(0)
+  lastReviewed DateTime @default(now())
+  isMemorized  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  word Word @relation(fields: [wordId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, wordId])
+  @@index([userId, lastReviewed(sort: Desc)])
+}
+
+enum UserVocabSetStatus {
+  active
+  soft_deleted
+}

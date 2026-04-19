@@ -1,85 +1,50 @@
-import { type NextRequest } from 'next/server';
+/* ════════════════════════════════════════════════════════════════════════
+   GET  /api/vocab-sets  — user's active library
+   POST /api/vocab-sets  — create new VocabSet (admin, JSON or CSV)
+   ════════════════════════════════════════════════════════════════════════ */
 import { parse } from 'csv-parse/sync';
+import { withAuth, withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
+import { createVocabSet, getUserLibrary } from '@/services/vocabSetService';
+import type { CreateWordInput } from '@/types/vocab';
 
-import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
-import { createVocabSet, listMyVocabSets } from '@/services/vocabSetService';
-
-/** GET /api/vocab-sets — list user's own sets */
-export const GET = withAuth(async (_request: NextRequest, user) => {
-	const items = await listMyVocabSets(user.id);
+export const GET = withAuth(async (_req, user) => {
+	const items = await getUserLibrary(user.id);
 	return apiSuccess({ items, total: items.length });
 });
 
-/** POST /api/vocab-sets — create a new set or clone */
-export const POST = withAuth(async (request: NextRequest, user) => {
+export const POST = withAdmin(async (request, user) => {
 	const contentType = request.headers.get('content-type') ?? '';
 
-	// Handle CSV upload
+	let title = '';
+	let description = '';
+	let words: CreateWordInput[] = [];
+
 	if (contentType.includes('multipart/form-data')) {
 		const formData = await request.formData();
+		title = String(formData.get('title') ?? '').trim();
+		description = String(formData.get('description') ?? '').trim();
 		const file = formData.get('file') as File | null;
-		const title = String(formData.get('title') ?? '').trim();
-		const description = String(formData.get('description') ?? '').trim();
-		const visibility = String(formData.get('visibility') ?? 'private') as 'public' | 'private';
-
-		if (!file || !title) {
-			return apiError('Title and file are required', 400);
-		}
-
-		const csvText = await file.text();
-		const records = parse(csvText, {
-			columns: true,
-			skip_empty_lines: true,
-			trim: true,
-			relaxColumnCount: true,
-			bom: true, // tự động bỏ UTF-8 BOM để tiếng Việt không bị lỗi font
-		}) as Record<string, string>[];
-
-		const terms = records
-			.map((r) => ({
-				word: (r.word ?? r.Word ?? r.term ?? r.Term ?? '').trim(),
-				definition: (r.definition ?? r.Definition ?? r.meaning ?? r.Meaning ?? r.meaningVi ?? '').trim(),
-				partOfSpeech: (r.partOfSpeech ?? r.pos ?? r.POS ?? r.part_of_speech ?? '').trim(),
-				example: (r.example ?? r.Example ?? r.sentence ?? '').trim(),
-			}))
-			.filter((t) => t.word && t.definition);
-
-		if (terms.length === 0) {
-			return apiError('No valid terms found in CSV. Columns: word, definition (required)', 400);
-		}
-
-		const set = await createVocabSet({
-			title,
-			description,
-			visibility: user.role === 'admin' ? visibility : 'private',
-			terms,
-			ownerId: user.id,
-			ownerName: user.name,
-		});
-		return apiSuccess(set, 201);
+		if (!file) return apiError('CSV file is required', 400);
+		const text = await file.text();
+		const rows = parse(text, { columns: true, skip_empty_lines: true, trim: true }) as Record<string, string>[];
+		words = rows.map((r) => ({
+term: r.word ?? r.term ?? '',
+definition: r.definition ?? '',
+partOfSpeech: r.partOfSpeech ?? r.part_of_speech ?? '',
+example: r.example ?? '',
+})).filter((w) => w.term && w.definition);
+	} else {
+		const body = await request.json() as { title?: string; description?: string; words?: CreateWordInput[] };
+		title = body.title?.trim() ?? '';
+		description = body.description?.trim() ?? '';
+		words = body.words ?? [];
 	}
 
-	// Handle JSON body
-	const body = await request.json();
+	if (!title) return apiError('title is required', 400);
+	if (!words.length) return apiError('At least one word is required', 400);
+	if (words.length > 2000) return apiError('Cannot exceed 2000 words per set', 400);
 
-	const { title, description, visibility, terms } = body;
-	if (!title?.trim()) return apiError('Title is required', 400);
-	if (!Array.isArray(terms) || terms.length === 0) {
-		return apiError('At least one term is required', 400);
-	}
-
-	const set = await createVocabSet({
-		title: title.trim(),
-		description: description ?? '',
-		visibility: user.role === 'admin' ? (visibility ?? 'private') : 'private',
-		terms: terms.map((t: Record<string, string>) => ({
-			word: String(t.word ?? '').trim(),
-			definition: String(t.definition ?? '').trim(),
-			partOfSpeech: String(t.partOfSpeech ?? '').trim(),
-			example: String(t.example ?? '').trim(),
-		})),
-		ownerId: user.id,
-		ownerName: user.name,
-	});
-	return apiSuccess(set, 201);
+	const ownerName = user.name ?? user.email ?? 'Admin';
+	const set = await createVocabSet(user.id, ownerName, { title, description, words });
+	return apiSuccess({ set }, 201);
 });

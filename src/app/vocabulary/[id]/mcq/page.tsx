@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { word: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
+type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
+type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -148,28 +148,28 @@ function burstSmallParticles(button: HTMLElement) {
 }
 
 type Question = {
-	term: Term;
+	word: Word;
 	options: string[];
 	correctIndex: number;
 	mode: 'word-to-def' | 'def-to-word';
 };
 
-function generateQuestions(terms: Term[]): Question[] {
-	const shuffled = shuffle(terms);
-	return shuffled.map((term) => {
+function generateQuestions(words: Word[]): Question[] {
+	const shuffled = shuffle(words);
+	return shuffled.map((word) => {
 		const mode: Question['mode'] = Math.random() > 0.5 ? 'word-to-def' : 'def-to-word';
-		const correctAnswer = mode === 'word-to-def' ? term.definition : term.word;
-		const pool = terms
-			.filter((t) => t.word !== term.word)
-			.map((t) => (mode === 'word-to-def' ? t.definition : t.word));
+		const correctAnswer = mode === 'word-to-def' ? word.definition : word.term;
+		const pool = words
+			.filter((t) => t.term !== word.term)
+			.map((t) => (mode === 'word-to-def' ? t.definition : t.term));
 		const distractors = shuffle(pool).slice(0, 3);
 		const options = shuffle([correctAnswer, ...distractors]);
 		const correctIndex = options.indexOf(correctAnswer);
-		return { term, options, correctIndex, mode };
+		return { word, options, correctIndex, mode };
 	});
 }
 
-function reportStats(results: { word: string; correct: boolean; mode: string }[]) {
+function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
 	if (results.length === 0) return;
 	fetch('/api/vocab-stats', {
 		method: 'POST',
@@ -180,7 +180,7 @@ function reportStats(results: { word: string; correct: boolean; mode: string }[]
 
 export default function MCQPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
-	const [allTerms, setAllTerms] = useState<Term[] | null>(null);
+	const [allWords, setAllWords] = useState<Word[] | null>(null);
 	const [error, setError] = useState('');
 
 	const [questions, setQuestions] = useState<Question[]>([]);
@@ -194,7 +194,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 	const [finished, setFinished] = useState(false);
 	const [questionAnim, setQuestionAnim] = useState<'enter' | 'exit' | 'idle'>('idle');
 	const [shakeWrong, setShakeWrong] = useState(false);
-	const [practiceResults, setPracticeResults] = useState<{ word: string; correct: boolean; mode: string }[]>([]);
+	const [practiceResults, setPracticeResults] = useState<{ wordId: string; correct: boolean; mode: string }[]>([]);
 	const [wordStats, setWordStats] = useState<Map<string, WordStat>>(new Map());
 
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -208,16 +208,16 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 			const res = await fetch(`/api/vocab-sets/${paramId}`);
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
-			const terms = json.data.terms as Term[];
-			setAllTerms(terms);
-			const q = generateQuestions(terms);
+			const words = json.data.words as Word[];
+			setAllWords(words);
+			const q = generateQuestions(words);
 			setQuestions(q);
 			setQuestionAnim('enter');
 			// Fetch word stats silently
 			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
 				if (j.ok && Array.isArray(j.data)) {
 					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.word, s));
+					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
 					setWordStats(m);
 				}
 			}).catch(() => {});
@@ -254,7 +254,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 		setAnswered(true);
 
 		const isCorrect = optIdx === question.correctIndex;
-		setPracticeResults((prev) => [...prev, { word: question.term.word, correct: isCorrect, mode: 'mcq' }]);
+		setPracticeResults((prev) => [...prev, { wordId: question.word.id, correct: isCorrect, mode: 'mcq' }]);
 
 		if (isCorrect) {
 			playCorrect();
@@ -268,7 +268,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 			const btn = optionRefs.current[optIdx];
 			if (btn) burstSmallParticles(btn);
 			// Speak the word
-			speak(question.term.word);
+			speak(question.word.term);
 		} else {
 			playWrong();
 			setWrong((v) => v + 1);
@@ -329,7 +329,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 		);
 	}
 
-	if (allTerms === null) {
+	if (allWords === null) {
 		return (
 			<main className="min-h-screen flex items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
@@ -351,7 +351,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 					onRestart={() => {
 						statsReportedRef.current = false;
 						setPracticeResults([]);
-						const q = generateQuestions(allTerms);
+						const q = generateQuestions(allWords);
 						setQuestions(q);
 						setQIndex(0);
 						setSelected(null);
@@ -426,7 +426,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 							{question.mode === 'word-to-def' ? 'Chọn nghĩa đúng' : 'Chọn từ đúng'}
 						</span>
 						{(() => {
-							const stat = wordStats.get(question.term.word.toLowerCase().trim());
+							const stat = wordStats.get(question.word.id);
 							if (!stat || stat.totalAttempts === 0) return null;
 							const color = stat.accuracy >= 80 ? 'text-success' : stat.accuracy >= 50 ? 'text-warning' : 'text-error';
 							const bg = stat.accuracy >= 80 ? 'bg-success' : stat.accuracy >= 50 ? 'bg-warning' : 'bg-error';
@@ -441,12 +441,12 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 
 					{/* Question prompt */}
 					<div className="flex items-start gap-4">
-						<h2 className="text-xl font-black tracking-tight text-foreground sm:text-2xl lg:text-3xl">
-							{question.mode === 'word-to-def' ? question.term.word : question.term.definition}
-						</h2>
+					<h2 className="text-xl font-black tracking-tight text-foreground sm:text-2xl lg:text-3xl">
+						{question.mode === 'word-to-def' ? question.word.term : question.word.definition}
+					</h2>
 						{question.mode === 'word-to-def' && (
-							<button
-								onClick={() => speak(question.term.word)}
+						<button
+							onClick={() => speak(question.word.term)}
 								className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-hover text-muted transition-all hover:bg-accent hover:text-accent-foreground hover:scale-110 active:scale-95"
 							>
 								<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -456,11 +456,9 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 						)}
 					</div>
 
-					{question.term.partOfSpeech && question.mode === 'word-to-def' && (
-						<p className="mt-1.5 text-sm italic text-muted">({question.term.partOfSpeech})</p>
-					)}
-
-					{/* Options */}
+				{question.word.partOfSpeech && question.mode === 'word-to-def' && (
+					<p className="mt-1.5 text-sm italic text-muted">({question.word.partOfSpeech})</p>
+				)}					{/* Options */}
 					<div className={`mt-8 space-y-3 ${shakeWrong ? '' : ''}`}>
 						{question.options.map((opt, idx) => {
 							const isCorrectOption = idx === question.correctIndex;
@@ -555,14 +553,14 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 							className="mt-6"
 							style={{ animation: 'fadeSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both' }}
 						>
-							{question.term.example && (
-								<div className="rounded-xl border border-border bg-surface p-4">
-									<p className="text-xs font-bold uppercase tracking-widest text-muted">Ví dụ</p>
-									<p className="mt-1.5 text-sm italic leading-relaxed text-foreground-secondary">
-										&ldquo;{question.term.example}&rdquo;
-									</p>
-								</div>
-							)}
+						{question.word.example && (
+							<div className="rounded-xl border border-border bg-surface p-4">
+								<p className="text-xs font-bold uppercase tracking-widest text-muted">Ví dụ</p>
+								<p className="mt-1.5 text-sm italic leading-relaxed text-foreground-secondary">
+									&ldquo;{question.word.example}&rdquo;
+								</p>
+							</div>
+						)}
 							<div className="mt-5 flex items-center justify-between">
 								<p className="text-[10px] font-bold uppercase tracking-widest text-muted/50">
 									Enter hoặc Space để tiếp tục

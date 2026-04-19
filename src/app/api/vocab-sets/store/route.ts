@@ -1,38 +1,35 @@
-import { type NextRequest } from 'next/server';
-
+/* ════════════════════════════════════════════════════════════════════════
+   GET  /api/vocab-sets/store        — paginated public store
+   POST /api/vocab-sets/store        — add set to user's library
+   ════════════════════════════════════════════════════════════════════════ */
 import { withAuth, withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
-import { listPublicSets, cloneVocabSet, getPublicSetById } from '@/services/vocabSetService';
+import { getStore, addToLibrary, AlreadyOwnedError } from '@/services/vocabSetService';
+import { auth } from '@/lib/auth';
 
-/** GET /api/vocab-sets/store — list all public sets */
-export const GET = withErrorHandling(async () => {
-	const items = await listPublicSets();
-	return apiSuccess({ items, total: items.length });
+export const GET = withErrorHandling(async (request) => {
+	const session = await auth();
+	const userId = session?.user?.id ?? null;
+
+	const url = new URL(request.url);
+	const page = Math.max(1, Number(url.searchParams.get('page') ?? 1));
+	const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') ?? 20)));
+
+	const result = await getStore(userId, page, limit);
+	return apiSuccess(result);
 });
 
-/** POST /api/vocab-sets/store — clone a public set */
-export const POST = withAuth(async (request: NextRequest, user) => {
-	const body = await request.json();
-	const { sourceId } = body;
+export const POST = withAuth(async (request, user) => {
+	const body = await request.json() as { vocabSetId?: string };
+	const { vocabSetId } = body;
+	if (!vocabSetId) return apiError('vocabSetId is required', 400);
 
-	if (!sourceId) {
-		return apiError('sourceId is required', 400);
+	try {
+		await addToLibrary(user.id, vocabSetId);
+		return apiSuccess({ added: true }, 201);
+	} catch (err) {
+		if (err instanceof AlreadyOwnedError) {
+			return apiError('Bạn đã sở hữu bộ từ này', 409);
+		}
+		throw err;
 	}
-
-	// Verify the source set exists and is public
-	const source = await getPublicSetById(sourceId);
-	if (!source) {
-		return apiError('Public set not found', 404);
-	}
-
-	const cloned = await cloneVocabSet({
-		sourceId,
-		ownerId: user.id,
-		ownerName: user.name,
-	});
-
-	if (!cloned) {
-		return apiError('Clone failed', 400);
-	}
-
-	return apiSuccess(cloned, 201);
 });

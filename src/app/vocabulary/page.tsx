@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
-import { listMyVocabSets } from '@/services/vocabSetService';
+import { getUserLibrary } from '@/services/vocabSetService';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ export default async function VocabularyPage() {
 	if (!session?.user) redirect('/login');
 
 	const user = session.user;
-	const sets = await listMyVocabSets(user.id);
+	const sets = await getUserLibrary(user.id);
 
 	return (
 		<main className="min-h-screen">
@@ -140,7 +140,7 @@ export default async function VocabularyPage() {
 											{set.title}
 										</h3>
 										<span className="shrink-0 rounded-full bg-surface-hover px-2.5 py-0.5 text-xs font-bold text-muted group-hover:bg-background">
-											{set.termCount} từ
+											{set.wordCount} từ
 										</span>
 									</div>
 									{set.description ? (

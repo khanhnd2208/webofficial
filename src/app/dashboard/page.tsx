@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { auth } from '@/lib/auth';
-import { listMyVocabSets } from '@/services/vocabSetService';
+import { getUserLibrary } from '@/services/vocabSetService';
 import { getUserWordStats } from '@/services/wordStatsService';
 import { getStreak } from '@/services/streakService';
 import StreakFire from '@/components/StreakFire';
@@ -14,12 +14,12 @@ export default async function DashboardPage() {
 	const userId = user?.id ?? '';
 
 	const [mySets, wordStats, streakData] = await Promise.all([
-		userId ? listMyVocabSets(userId) : Promise.resolve([]),
+			userId ? getUserLibrary(userId) : Promise.resolve([]),
 		userId ? getUserWordStats(userId) : Promise.resolve([]),
 		userId ? getStreak(userId) : Promise.resolve({ currentStreak: 0, longestStreak: 0, lastLoginDate: '', recentDays: [] as string[] }),
 	]);
 
-	const totalTerms = mySets.reduce((sum, s) => sum + s.termCount, 0);
+	const totalTerms = mySets.reduce((sum, s) => sum + s.wordCount, 0);
 	const totalPracticed = wordStats.length;
 	const avgAccuracy = totalPracticed > 0
 		? Math.round(wordStats.reduce((sum, w) => sum + w.accuracy, 0) / totalPracticed)
@@ -358,7 +358,7 @@ export default async function DashboardPage() {
 										<div className="text-sm font-bold text-foreground transition-colors group-hover:text-accent">
 											{set.title}
 										</div>
-										<div className="mt-0.5 text-[11px] text-muted">{set.termCount} từ</div>
+										<div className="mt-0.5 text-[11px] text-muted">{set.wordCount} từ</div>
 									</div>
 									<div className="flex shrink-0 items-center gap-3">
 										<time className="text-[11px] tabular-nums text-muted" suppressHydrationWarning>

@@ -8,7 +8,7 @@ type StoreSet = {
 	title: string;
 	description: string;
 	ownerName: string;
-	termCount: number;
+	wordCount: number;
 	updatedAt: string;
 };
 
@@ -142,7 +142,7 @@ export default function StorePage() {
 						<div className="h-8 w-px bg-border" />
 						<div>
 							<div className="text-xl font-black tracking-tight text-teal sm:text-2xl">
-								{items.reduce((s, i) => s + i.termCount, 0)}
+								{items.reduce((s, i) => s + i.wordCount, 0)}
 							</div>
 							<div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">Tổng từ vựng</div>
 						</div>
@@ -224,7 +224,7 @@ export default function StorePage() {
 												Cửa hàng
 											</span>
 											<span className="text-[10px] font-bold text-muted">
-												{set.termCount} từ
+												{set.wordCount} từ
 											</span>
 										</div>
 
