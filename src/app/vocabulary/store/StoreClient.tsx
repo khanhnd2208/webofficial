@@ -21,6 +21,22 @@ type StoreSet = {
 type Term = { word: string; definition: string; partOfSpeech: string; example: string; ndkExplanation: string; hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] };
 const EMPTY_TERM: Term = { word: '', definition: '', partOfSpeech: '', example: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [] };
 
+type EditableWord = {
+	id?: string;
+	term: string;
+	definition: string;
+	partOfSpeech: string;
+	example: string;
+	ndkExplanation: string;
+	hintsHard: string[];
+	hintsMedium: string[];
+	hintsEasy: string[];
+	_isNew?: boolean;
+	_deleted?: boolean;
+	_expanded?: boolean;
+};
+const EMPTY_EDIT_WORD: EditableWord = { term: '', definition: '', partOfSpeech: '', example: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [], _isNew: true, _deleted: false, _expanded: true };
+
 interface Props {
 	isAdmin: boolean;
 }
@@ -249,7 +265,7 @@ function AdminStoreView() {
 	const [confirmDelete, setConfirmDelete] = useState<StoreSet | null>(null);
 	const [togglingId, setTogglingId] = useState<string | null>(null);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
-	const [editingSet, setEditingSet] = useState<StoreSet | null>(null);
+	const [editingSetId, setEditingSetId] = useState<string | null>(null);
 
 	// Create form state
 	const [showCreate, setShowCreate] = useState(false);
@@ -545,7 +561,7 @@ function AdminStoreView() {
 									set={set}
 									onToggle={handleToggleVisibility}
 									onDelete={(s) => setConfirmDelete(s)}
-									onEdit={(s) => setEditingSet(s)}
+									onEdit={(s) => setEditingSetId(s.id)}
 									isToggling={togglingId === set.id}
 									isDeleting={deletingId === set.id}
 								/>
@@ -562,7 +578,7 @@ function AdminStoreView() {
 									set={set}
 									onToggle={handleToggleVisibility}
 									onDelete={(s) => setConfirmDelete(s)}
-									onEdit={(s) => setEditingSet(s)}
+									onEdit={(s) => setEditingSetId(s.id)}
 									isToggling={togglingId === set.id}
 									isDeleting={deletingId === set.id}
 								/>
@@ -572,12 +588,12 @@ function AdminStoreView() {
 				</div>
 			)}
 
-			{/* Edit modal */}
-			{editingSet && (
-				<AdminEditModal
-					set={editingSet}
-					onClose={() => setEditingSet(null)}
-					onSaved={() => { setEditingSet(null); void fetchSets(); showToast('Đã cập nhật bộ từ', 'success'); }}
+			{/* Full-screen set editor */}
+			{editingSetId && (
+				<AdminSetEditor
+					setId={editingSetId}
+					onClose={() => setEditingSetId(null)}
+					onSaved={() => { setEditingSetId(null); void fetchSets(); showToast('Đã cập nhật bộ từ', 'success'); }}
 				/>
 			)}
 		</div>
@@ -652,68 +668,364 @@ function AdminSetRow({ set, onToggle, onDelete, onEdit, isToggling, isDeleting }
 	);
 }
 
-/* ── Admin Edit Modal ── */
-function AdminEditModal({ set, onClose, onSaved }: { set: StoreSet; onClose: () => void; onSaved: () => void }) {
-	const [title, setTitle] = useState(set.title);
-	const [desc, setDesc] = useState(set.description);
+/* ══════════════════════════════════════════════════════════════════
+   Admin Set Editor — full-screen word-level CRUD
+══════════════════════════════════════════════════════════════════ */
+function AdminSetEditor({ setId, onClose, onSaved }: { setId: string; onClose: () => void; onSaved: () => void }) {
+	const [title, setTitle] = useState('');
+	const [desc, setDesc] = useState('');
+	const [words, setWords] = useState<EditableWord[]>([]);
+	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState('');
+
+	useEffect(() => {
+		async function load() {
+			try {
+				const res = await fetch(`/api/vocab-sets/${setId}`);
+				const json = await res.json();
+				if (!json.ok) throw new Error(json.error);
+				const s = json.data.set;
+				setTitle(s.title);
+				setDesc(s.description ?? '');
+				setWords((s.words ?? []).map((w: { id: string; term: string; definition: string; partOfSpeech?: string; example?: string; ndkExplanation?: string | null; hintsHard?: string[]; hintsMedium?: string[]; hintsEasy?: string[] }) => ({
+					id: w.id,
+					term: w.term,
+					definition: w.definition,
+					partOfSpeech: w.partOfSpeech ?? '',
+					example: w.example ?? '',
+					ndkExplanation: w.ndkExplanation ?? '',
+					hintsHard: w.hintsHard ?? [],
+					hintsMedium: w.hintsMedium ?? [],
+					hintsEasy: w.hintsEasy ?? [],
+					_isNew: false,
+					_deleted: false,
+					_expanded: false,
+				})));
+			} catch (e) {
+				setError(e instanceof Error ? e.message : 'Không tải được bộ từ');
+			} finally {
+				setLoading(false);
+			}
+		}
+		void load();
+	}, [setId]);
+
+	function updateWord(idx: number, field: keyof EditableWord, val: unknown) {
+		setWords((prev) => prev.map((w, i) => i === idx ? { ...w, [field]: val } : w));
+	}
+
+	function addWord() {
+		setWords((prev) => [...prev, { ...EMPTY_EDIT_WORD }]);
+	}
+
+	function toggleExpand(idx: number) {
+		setWords((prev) => prev.map((w, i) => i === idx ? { ...w, _expanded: !w._expanded } : w));
+	}
+
+	function toggleDelete(idx: number) {
+		setWords((prev) => prev.map((w, i) => i === idx ? { ...w, _deleted: !w._deleted, _expanded: false } : w));
+	}
 
 	async function handleSave(e: React.FormEvent) {
 		e.preventDefault();
 		if (!title.trim()) { setError('Tiêu đề không được để trống'); return; }
+		const validNew = words.filter((w) => !w._deleted && w._isNew && (!w.term.trim() || !w.definition.trim()));
+		if (validNew.length > 0) { setError('Mỗi từ mới phải có từ và định nghĩa'); return; }
 		setSaving(true);
 		setError('');
 		try {
-			const res = await fetch(`/api/vocab-sets/${set.id}`, {
+			const deleteWordIds = words.filter((w) => w._deleted && w.id).map((w) => w.id!);
+			const upsertWords = words
+				.filter((w) => !w._deleted)
+				.map((w) => ({
+					...(w.id ? { id: w.id } : {}),
+					term: w.term.trim(),
+					definition: w.definition.trim(),
+					partOfSpeech: w.partOfSpeech.trim(),
+					example: w.example.trim(),
+					ndkExplanation: w.ndkExplanation.trim() || null,
+					hintsHard: w.hintsHard,
+					hintsMedium: w.hintsMedium,
+					hintsEasy: w.hintsEasy,
+				}));
+			const res = await fetch(`/api/vocab-sets/${setId}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: title.trim(), description: desc.trim() }),
+				body: JSON.stringify({ title: title.trim(), description: desc.trim(), words: upsertWords, deleteWordIds }),
 			});
 			const json = await res.json();
-			if (!json.ok) throw new Error(json.error ?? 'Lỗi cập nhật');
+			if (!json.ok) throw new Error(json.error ?? 'Lỗi lưu');
 			onSaved();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+		} catch (e) {
+			setError(e instanceof Error ? e.message : 'Có lỗi xảy ra');
 		} finally {
 			setSaving(false);
 		}
 	}
 
+	const activeWords = words.filter((w) => !w._deleted);
+	const willDeleteCount = words.filter((w) => w._deleted && w.id).length;
+
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-			<div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-			<div className="relative w-full max-w-lg border border-border bg-surface p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-				<h3 className="text-sm font-bold uppercase tracking-wider text-foreground">Chỉnh sửa bộ từ</h3>
-				<p className="mt-1 text-xs text-muted">Chỉnh sửa tiêu đề và mô tả. Để chỉnh sửa từ vựng, vào trang chi tiết bộ từ.</p>
-				<form onSubmit={handleSave} className="mt-4 space-y-4">
-					<div>
-						<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Tiêu đề</label>
-						<input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-							className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:border-foreground" required />
-					</div>
-					<div>
-						<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Mô tả</label>
-						<textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={3}
-							className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:border-foreground resize-none" />
-					</div>
-					{error && <p className="text-xs text-error">{error}</p>}
-					<div className="flex justify-end gap-3">
-						<button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground transition-colors">Hủy</button>
-						<button type="submit" disabled={saving}
-							className="border-2 border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground disabled:opacity-50">
-							{saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+		<div className="fixed inset-0 z-50 flex flex-col bg-background" style={{ overflowY: 'hidden' }}>
+			{/* Top toolbar */}
+			<div className="flex shrink-0 items-center gap-4 border-b border-border bg-surface px-6 py-4">
+				<button
+					type="button"
+					onClick={onClose}
+					className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground transition-colors"
+				>
+					<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+						<path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+					</svg>
+					Quay lại
+				</button>
+				<div className="flex-1">
+					<p className="text-xs font-bold uppercase tracking-widest text-muted">Admin · Chỉnh sửa bộ từ</p>
+					{!loading && <p className="text-sm font-bold text-foreground">{title}</p>}
+				</div>
+				{!loading && (
+					<div className="flex items-center gap-3">
+						<span className="text-xs text-muted">{activeWords.length} từ{willDeleteCount > 0 && <span className="ml-1 text-error">· xóa {willDeleteCount}</span>}</span>
+						<button
+							type="button"
+							onClick={(e) => handleSave(e as unknown as React.FormEvent)}
+							disabled={saving}
+							className="inline-flex items-center gap-2 border-2 border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground disabled:opacity-50"
+						>
+							{saving ? (
+								<><div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />Đang lưu...</>
+							) : (
+								<><svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>Lưu tất cả</>
+							)}
 						</button>
 					</div>
-				</form>
-				<Link href={`/vocabulary/${set.id}/edit`}
-					className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors">
-					<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-					</svg>
-					Chỉnh sửa từ vựng chi tiết →
-				</Link>
+				)}
 			</div>
+
+			{/* Scrollable content */}
+			<div className="flex-1 overflow-y-auto px-6 py-8">
+				<div className="mx-auto max-w-4xl">
+					{loading ? (
+						<div className="flex h-64 items-center justify-center">
+							<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground" />
+						</div>
+					) : (
+						<form onSubmit={handleSave} className="space-y-8">
+							{/* Metadata */}
+							<div className="grid gap-4 sm:grid-cols-2 border border-border bg-surface p-5">
+								<div>
+									<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Tiêu đề <span className="text-error">*</span></label>
+									<input
+										type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+										className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:border-foreground"
+										required
+									/>
+								</div>
+								<div>
+									<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Mô tả</label>
+									<input
+										type="text" value={desc} onChange={(e) => setDesc(e.target.value)}
+										className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:border-foreground"
+									/>
+								</div>
+							</div>
+
+							{/* Word list */}
+							<div>
+								<div className="mb-3 flex items-center justify-between">
+									<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+										{activeWords.length} từ vựng
+										{willDeleteCount > 0 && <span className="ml-2 text-error">· {willDeleteCount} sẽ bị xóa</span>}
+									</p>
+									<button
+										type="button"
+										onClick={() => setWords((prev) => prev.map((w) => ({ ...w, _expanded: true })))}
+										className="text-[10px] font-bold uppercase tracking-wider text-muted hover:text-foreground transition-colors"
+									>
+										Mở rộng tất cả
+									</button>
+								</div>
+								<div className="space-y-2">
+									{words.map((w, i) => (
+										<WordEditorCard
+											key={i}
+											word={w}
+											index={i}
+											onUpdate={(field, val) => updateWord(i, field, val)}
+											onToggleExpand={() => toggleExpand(i)}
+											onToggleDelete={() => toggleDelete(i)}
+										/>
+									))}
+								</div>
+								<button
+									type="button"
+									onClick={addWord}
+									className="mt-4 flex w-full items-center justify-center gap-2 border-2 border-dashed border-border py-4 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:border-foreground hover:text-foreground"
+								>
+									<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+									</svg>
+									Thêm từ mới
+								</button>
+							</div>
+
+							{error && (
+								<div className="border border-error bg-error-subtle px-4 py-3 text-sm text-error">{error}</div>
+							)}
+						</form>
+					)}
+				</div>
+			</div>
+		</div>
+	);
+}
+
+/* ── Word Editor Card ── */
+function WordEditorCard({ word, index, onUpdate, onToggleExpand, onToggleDelete }: {
+	word: EditableWord;
+	index: number;
+	onUpdate: (field: keyof EditableWord, val: unknown) => void;
+	onToggleExpand: () => void;
+	onToggleDelete: () => void;
+}) {
+	const hasGuessWho = word.hintsHard.length + word.hintsMedium.length + word.hintsEasy.length > 0 || !!word.ndkExplanation;
+
+	if (word._deleted) {
+		return (
+			<div className="flex items-center gap-3 border border-error/30 bg-error-subtle px-4 py-3">
+				<p className="flex-1 text-sm text-error line-through">{word.term || '(từ mới)'} — {word.definition}</p>
+				<button
+					type="button"
+					onClick={onToggleDelete}
+					className="shrink-0 text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground transition-colors"
+				>
+					Hoàn tác
+				</button>
+			</div>
+		);
+	}
+
+	return (
+		<div className={`border ${word._isNew ? 'border-accent' : 'border-border'} bg-background`}>
+			{/* Collapsed row */}
+			<div className="flex items-center gap-3 px-4 py-3">
+				<span className="w-6 shrink-0 text-[10px] font-bold tabular-nums text-muted">{index + 1}</span>
+				<div className="min-w-0 flex-1">
+					<div className="flex items-baseline gap-3">
+						<span className="truncate text-sm font-bold text-foreground">{word.term || <span className="italic text-muted">chưa nhập</span>}</span>
+						<span className="shrink-0 text-xs text-muted">—</span>
+						<span className="truncate text-sm text-foreground-secondary">{word.definition || <span className="italic text-muted">chưa nhập</span>}</span>
+					</div>
+					{(word.partOfSpeech || word.example) && (
+						<p className="mt-0.5 truncate text-[11px] text-muted">
+							{word.partOfSpeech && <span className="mr-2 font-bold">{word.partOfSpeech}</span>}
+							{word.example}
+						</p>
+					)}
+				</div>
+				<div className="flex shrink-0 items-center gap-1">
+					{word._isNew && (
+						<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent">Mới</span>
+					)}
+					{hasGuessWho && (
+						<span className="rounded-full bg-surface-hover px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted">GW</span>
+					)}
+					<button
+						type="button"
+						onClick={onToggleExpand}
+						className="flex h-7 w-7 items-center justify-center text-muted hover:text-foreground transition-colors"
+						title={word._expanded ? 'Thu gọn' : 'Chỉnh sửa'}
+					>
+						<svg
+							className={`h-4 w-4 transition-transform ${word._expanded ? 'rotate-180' : ''}`}
+							fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+						>
+							<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+						</svg>
+					</button>
+					<button
+						type="button"
+						onClick={onToggleDelete}
+						className="flex h-7 w-7 items-center justify-center text-muted hover:text-error transition-colors"
+						title="Xóa từ này"
+					>
+						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+						</svg>
+					</button>
+				</div>
+			</div>
+			{/* Expanded edit form */}
+			{word._expanded && (
+				<div className="border-t border-border bg-surface p-4 space-y-4">
+					{/* Core fields */}
+					<div className="grid gap-3 sm:grid-cols-2">
+						<div>
+							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Từ <span className="text-error">*</span></label>
+							<input
+								type="text" value={word.term}
+								onChange={(e) => onUpdate('term', e.target.value)}
+								placeholder="Từ vựng"
+								className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+							/>
+						</div>
+						<div>
+							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Định nghĩa <span className="text-error">*</span></label>
+							<input
+								type="text" value={word.definition}
+								onChange={(e) => onUpdate('definition', e.target.value)}
+								placeholder="Nghĩa / định nghĩa"
+								className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+							/>
+						</div>
+						<div>
+							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Từ loại</label>
+							<input
+								type="text" value={word.partOfSpeech}
+								onChange={(e) => onUpdate('partOfSpeech', e.target.value)}
+								placeholder="n, v, adj..."
+								className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+							/>
+						</div>
+						<div>
+							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Ví dụ</label>
+							<input
+								type="text" value={word.example}
+								onChange={(e) => onUpdate('example', e.target.value)}
+								placeholder="Câu ví dụ"
+								className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+							/>
+						</div>
+					</div>
+					{/* Guess Who section */}
+					<div className="border-t border-border pt-3 space-y-3">
+						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Guess Who (tùy chọn)</p>
+						<textarea
+							value={word.ndkExplanation}
+							onChange={(e) => onUpdate('ndkExplanation', e.target.value)}
+							placeholder="Giải thích NDK — mô tả từ mà không dùng chính từ đó"
+							rows={2}
+							className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground resize-none"
+						/>
+						<div className="grid gap-3 sm:grid-cols-3">
+							<div>
+								<p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-error">Gợi ý Khó</p>
+								<TagInput tags={word.hintsHard} onChange={(v) => onUpdate('hintsHard', v)} placeholder="Nhập gợi ý, Enter để thêm" />
+							</div>
+							<div>
+								<p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-warning">Gợi ý Trung bình</p>
+								<TagInput tags={word.hintsMedium} onChange={(v) => onUpdate('hintsMedium', v)} placeholder="Nhập gợi ý, Enter để thêm" />
+							</div>
+							<div>
+								<p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-success">Gợi ý Dễ</p>
+								<TagInput tags={word.hintsEasy} onChange={(v) => onUpdate('hintsEasy', v)} placeholder="Nhập gợi ý, Enter để thêm" />
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
