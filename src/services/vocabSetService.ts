@@ -4,9 +4,9 @@
    Key design decisions:
    • Admin owns VocabSet + Word records (source of truth)
    • Users hold UserVocabSet entries (library pointers, not copies)
-   • Word.isDeleted  — soft-delete words; FK Restrict preserves UserWordStat
+   • Word.isDeleted  — soft-delete words to hide from UI without losing data
    • UserVocabSet.status — soft_deleted | active; restored on re-download
-   • No cascadeUpdateClones needed — users read Words directly from source
+   • Users always read Words directly from the admin's source VocabSet
    ════════════════════════════════════════════════════════════════════════ */
 import { prisma } from '@/lib/prisma';
 import type {
@@ -99,7 +99,7 @@ addedAt: entry.addedAt.toISOString(),
 
 /**
  * Soft-delete a set from user's library.
- * Progress (UserWordStat) is fully preserved.
+ * Entry is hidden from UI but can be restored via re-download.
  */
 export async function softDeleteFromLibrary(
 userId: string,
@@ -118,7 +118,7 @@ data: { status: 'soft_deleted', deletedAt: new Date() },
 
 /**
  * Add a VocabSet to user's library.
- * - If a soft_deleted entry exists → restore to active (preserves all UserWordStat)
+ * - If a soft_deleted entry exists → restore to active
  * - If active entry exists → throw AlreadyOwnedError
  * - Otherwise → create new entry
  */
@@ -238,7 +238,7 @@ return setToDTO(set);
 /**
  * Update VocabSet metadata and/or words in one atomic transaction.
  * - Upsert words (create new, update existing by id)
- * - Soft-delete words via deleteWordIds (sets isDeleted=true, preserves UserWordStat)
+ * - Soft-delete words via deleteWordIds (sets isDeleted=true)
  */
 export async function adminUpdateSet(
 setId: string,
@@ -257,7 +257,7 @@ data: {
 });
 }
 
-// 2. Soft-delete specified words (NEVER hard-delete — protects UserWordStat)
+		// 2. Soft-delete specified words
 if (input.deleteWordIds?.length) {
 await tx.word.updateMany({
 where: { id: { in: input.deleteWordIds }, vocabSetId: setId },
@@ -307,9 +307,7 @@ return setToDTO(set);
 
 /**
  * Archive a VocabSet from the store (isArchived = true).
- * Users who already have it keep access; no sync stops needed
- * since users read directly from the source Words table.
- * NEVER deletes UserVocabSet entries.
+ * Users who already have it keep access.
  */
 export async function archiveVocabSet(setId: string): Promise<void> {
 await prisma.vocabSet.update({
@@ -319,8 +317,7 @@ data: { isArchived: true },
 }
 
 /**
- * Soft-delete a single word. Preserves all UserWordStat records.
- * This is the ONLY way to remove a word — hard delete is forbidden.
+ * Soft-delete a single word (sets isDeleted=true).
  */
 export async function adminSoftDeleteWord(wordId: string, setId: string): Promise<void> {
 await prisma.word.update({

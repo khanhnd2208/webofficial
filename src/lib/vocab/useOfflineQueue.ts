@@ -13,8 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type OfflineAction =
 	| { type: 'SOFT_DELETE'; vocabSetId: string }
-	| { type: 'ADD_TO_LIBRARY'; vocabSetId: string }
-	| { type: 'RECORD_STATS'; results: unknown[] };
+	| { type: 'ADD_TO_LIBRARY'; vocabSetId: string };
 
 const STORAGE_KEY = 'vocab_offline_queue';
 const MAX_RETRIES = 5;
@@ -31,13 +30,6 @@ async function executeAction(action: OfflineAction): Promise<void> {
 		});
 		// 409 = already owned — not an error worth retrying
 		if (!res.ok && res.status !== 409) throw new Error(`ADD_TO_LIBRARY failed: ${res.status}`);
-	} else if (action.type === 'RECORD_STATS') {
-		const res = await fetch('/api/vocab-stats', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ results: action.results }),
-		});
-		if (!res.ok) throw new Error(`RECORD_STATS failed: ${res.status}`);
 	}
 }
 

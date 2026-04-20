@@ -3,11 +3,11 @@
    
    Tests all critical business logic paths:
    - Soft delete / restore / already-owned
-   - Admin soft-delete word (isDeleted=true, UserWordStat intact)
+   - Admin soft-delete word (isDeleted=true)
    - Archive set (UserVocabSet unchanged)
    - Transaction rollback on error
    ════════════════════════════════════════════════════════════════════════ */
-import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
@@ -22,7 +22,6 @@ import {
 	adminSoftDeleteWord,
 	AlreadyOwnedError,
 } from '@/services/vocabSetService';
-import { recordPracticeResults, getUserWordStats } from '@/services/wordStatsService';
 
 // ─── Test database ─────────────────────────────────────────────────────────────
 // Uses a real Prisma client against the test DB (same DB, isolated by cleanup).
@@ -57,7 +56,6 @@ async function seedSet(overrides: Partial<{ isArchived: boolean }> = {}) {
 }
 
 async function cleanup() {
-	await testPrisma.userWordStat.deleteMany({ where: { userId: { in: [USER_ID, USER2_ID] } } });
 	await testPrisma.userVocabSet.deleteMany({ where: { userId: { in: [USER_ID, USER2_ID] } } });
 	await testPrisma.word.deleteMany({ where: { vocabSet: { ownerId: ADMIN_ID } } });
 	await testPrisma.vocabSet.deleteMany({ where: { ownerId: ADMIN_ID } });
@@ -91,20 +89,6 @@ describe('softDeleteFromLibrary', () => {
 		await expect(softDeleteFromLibrary(USER_ID, set.id)).resolves.not.toThrow();
 	});
 
-	it('preserves UserWordStat after soft delete', async () => {
-		const set = await seedSet();
-		await addToLibrary(USER_ID, set.id);
-		// Record some practice stats
-		const word = set.words[0];
-		await recordPracticeResults(USER_ID, [{ wordId: word.id, correct: true, mode: 'flashcards' }]);
-
-		// Soft delete the set
-		await softDeleteFromLibrary(USER_ID, set.id);
-
-		// Stat must still exist
-		const stats = await getUserWordStats(USER_ID);
-		expect(stats.some((s) => s.wordId === word.id)).toBe(true);
-	});
 });
 
 describe('addToLibrary (restore)', () => {
@@ -130,22 +114,6 @@ describe('addToLibrary (restore)', () => {
 		await expect(addToLibrary(USER_ID, set.id)).rejects.toThrow(AlreadyOwnedError);
 	});
 
-	it('preserves UserWordStat progress after restore', async () => {
-		const set = await seedSet();
-		await addToLibrary(USER_ID, set.id);
-		const word = set.words[0];
-		await recordPracticeResults(USER_ID, [
-			{ wordId: word.id, correct: true, mode: 'mcq' },
-			{ wordId: word.id, correct: true, mode: 'mcq' },
-		]);
-
-		await softDeleteFromLibrary(USER_ID, set.id);
-		await addToLibrary(USER_ID, set.id);
-
-		const stats = await getUserWordStats(USER_ID);
-		const stat = stats.find((s) => s.wordId === word.id);
-		expect(stat?.correctCount).toBe(2);
-	});
 });
 
 // ─── Archive ──────────────────────────────────────────────────────────────────
@@ -187,20 +155,6 @@ const word = set.words[0];
 await adminSoftDeleteWord(word.id, set.id);
 const updated = await testPrisma.word.findUnique({ where: { id: word.id } });
 expect(updated?.isDeleted).toBe(true);
-});
-
-it('does NOT delete UserWordStat for that word', async () => {
-const set = await seedSet();
-const word = set.words[0];
-await recordPracticeResults(USER_ID, [{ wordId: word.id, correct: true, mode: 'fill-blank' }]);
-
-await adminSoftDeleteWord(word.id, set.id);
-
-const stat = await testPrisma.userWordStat.findUnique({
-where: { userId_wordId: { userId: USER_ID, wordId: word.id } },
-});
-expect(stat).not.toBeNull();
-expect(stat?.correctCount).toBe(1);
 });
 
 it('hides deleted word from getVocabSetById response', async () => {

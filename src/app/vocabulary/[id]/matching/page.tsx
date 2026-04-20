@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
 type Card = { id: string; text: string; wordId: string; type: 'word' | 'definition' };
 
@@ -137,15 +136,6 @@ function sparkleMatch(el1: HTMLElement, el2: HTMLElement) {
 	});
 }
 
-function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
-	if (results.length === 0) return;
-	fetch('/api/vocab-stats', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ results }),
-	}).catch(() => {/* silent */});
-}
-
 export default function MatchingPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
 	const [allWords, setAllWords] = useState<Word[] | null>(null);
@@ -160,12 +150,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 	const [startTime, setStartTime] = useState(0);
 	const [elapsed, setElapsed] = useState(0);
 	const [gameReady, setGameReady] = useState(false);
-	const [practiceResults, setPracticeResults] = useState<{ wordId: string; correct: boolean; mode: string }[]>([]);
-	const [wordStats, setWordStats] = useState<Map<string, WordStat>>(new Map());
-
 	const containerRef = useRef<HTMLDivElement>(null);
 	const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-	const statsReportedRef = useRef(false);
 
 	const startGame = useCallback((words: Word[]) => {
 		const subset = shuffle(words).slice(0, 8);
@@ -201,14 +187,6 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 			const t = json.data.words as Word[];
 			setAllWords(t);
 			startGame(t);
-			// Fetch word stats silently
-			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
-				if (j.ok && Array.isArray(j.data)) {
-					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
-					setWordStats(m);
-				}
-			}).catch(() => {});
 		});
 	}, [params, startGame]);
 
@@ -244,7 +222,6 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 		if (first.wordId === card.wordId && first.type !== card.type) {
 			// Match!
 			playMatch();
-			setPracticeResults((prev) => [...prev, { wordId: first.wordId, correct: true, mode: 'matching' }]);
 
 			// Sparkle effect
 			const el1 = cardRefs.current.get(first.id);
@@ -265,11 +242,6 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 		} else {
 			// Wrong
 			playWrong();
-			// Record wrong for both words involved
-			setPracticeResults((prev) => [
-				...prev,
-				{ wordId: first.wordId, correct: false, mode: 'matching' },
-			]);
 			setWrongPair([first.id, card.id]);
 			setTimeout(() => {
 				setWrongPair(null);
@@ -277,14 +249,6 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 			}, 600);
 		}
 	}, [selectedId, cards, matched, wrongPair]);
-
-	// Report stats once when finished
-	useEffect(() => {
-		if (finished && !statsReportedRef.current) {
-			statsReportedRef.current = true;
-			reportStats(practiceResults);
-		}
-	}, [finished, practiceResults]);
 
 	/* ── Loading / Error ── */
 	if (error) {
@@ -314,8 +278,6 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 					id={id}
 					containerRef={containerRef}
 					onRestart={() => {
-						statsReportedRef.current = false;
-						setPracticeResults([]);
 						startGame(allWords);
 					}}
 				/>
@@ -426,13 +388,6 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 									}`}>
 										{card.type === 'word' ? 'Từ' : 'Nghĩa'}
 									</span>
-									{/* Word stats dot */}
-							{card.type === 'word' && (() => {
-								const stat = wordStats.get(card.wordId);
-								if (!stat || stat.totalAttempts === 0) return null;
-										const bg = stat.accuracy >= 80 ? 'bg-success' : stat.accuracy >= 50 ? 'bg-warning' : 'bg-error';
-										return <span className={`ml-auto h-2 w-2 rounded-full ${bg}`} title={`${stat.accuracy}%`} />;
-									})()}
 								</div>
 
 								{/* Card text */}

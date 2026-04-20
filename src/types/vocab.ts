@@ -66,26 +66,6 @@ export interface UserLibrarySetDTO extends VocabSetDTO {
 	addedAt: string;
 }
 
-// ─── Practice Result (input from client) ─────────────────────────────────────
-export interface PracticeResultDTO {
-	wordId: string;
-	correct: boolean;
-	mode: PracticeMode;
-}
-
-// ─── Word Stats ───────────────────────────────────────────────────────────────
-export interface WordStatsDTO {
-	wordId: string;
-	term: string;
-	correctCount: number;
-	wrongCount: number;
-	totalAttempts: number;
-	accuracy: number; // 0-100
-	streak: number;
-	isMemorized: boolean;
-	lastReviewed: string;
-}
-
 // ─── Create / Update inputs ───────────────────────────────────────────────────
 export interface CreateWordInput {
 	term: string;

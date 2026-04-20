@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -169,15 +168,6 @@ function generateQuestions(words: Word[]): Question[] {
 	});
 }
 
-function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
-	if (results.length === 0) return;
-	fetch('/api/vocab-stats', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ results }),
-	}).catch(() => {/* silent */});
-}
-
 export default function MCQPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
 	const [allWords, setAllWords] = useState<Word[] | null>(null);
@@ -194,13 +184,9 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 	const [finished, setFinished] = useState(false);
 	const [questionAnim, setQuestionAnim] = useState<'enter' | 'exit' | 'idle'>('idle');
 	const [shakeWrong, setShakeWrong] = useState(false);
-	const [practiceResults, setPracticeResults] = useState<{ wordId: string; correct: boolean; mode: string }[]>([]);
-	const [wordStats, setWordStats] = useState<Map<string, WordStat>>(new Map());
-
 	const containerRef = useRef<HTMLDivElement>(null);
 	const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 	const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const statsReportedRef = useRef(false);
 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
@@ -213,14 +199,6 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 			const q = generateQuestions(words);
 			setQuestions(q);
 			setQuestionAnim('enter');
-			// Fetch word stats silently
-			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
-				if (j.ok && Array.isArray(j.data)) {
-					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
-					setWordStats(m);
-				}
-			}).catch(() => {});
 		});
 	}, [params]);
 
@@ -254,7 +232,6 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 		setAnswered(true);
 
 		const isCorrect = optIdx === question.correctIndex;
-		setPracticeResults((prev) => [...prev, { wordId: question.word.id, correct: isCorrect, mode: 'mcq' }]);
 
 		if (isCorrect) {
 			playCorrect();
@@ -312,14 +289,6 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 		};
 	}, []);
 
-	// Report stats once when finished
-	useEffect(() => {
-		if (finished && !statsReportedRef.current) {
-			statsReportedRef.current = true;
-			reportStats(practiceResults);
-		}
-	}, [finished, practiceResults]);
-
 	/* ── Loading / Error ── */
 	if (error) {
 		return (
@@ -349,9 +318,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 					id={id}
 					containerRef={containerRef}
 					onRestart={() => {
-						statsReportedRef.current = false;
-						setPracticeResults([]);
-						const q = generateQuestions(allWords);
+							const q = generateQuestions(allWords);
 						setQuestions(q);
 						setQIndex(0);
 						setSelected(null);
@@ -420,23 +387,11 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 						animation: questionAnim === 'enter' ? 'questionSlideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined,
 					}}
 				>
-					{/* Question type badge + word stats */}
+					{/* Question type badge */}
 					<div className="mb-3 flex items-center gap-2">
 						<span className="rounded-full bg-surface-hover px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-muted">
 							{question.mode === 'word-to-def' ? 'Chọn nghĩa đúng' : 'Chọn từ đúng'}
 						</span>
-						{(() => {
-							const stat = wordStats.get(question.word.id);
-							if (!stat || stat.totalAttempts === 0) return null;
-							const color = stat.accuracy >= 80 ? 'text-success' : stat.accuracy >= 50 ? 'text-warning' : 'text-error';
-							const bg = stat.accuracy >= 80 ? 'bg-success' : stat.accuracy >= 50 ? 'bg-warning' : 'bg-error';
-							return (
-								<span className={`flex items-center gap-1 rounded-full bg-surface-hover px-2.5 py-1 text-[10px] font-bold ${color}`} title={`${stat.correctCount} đúng / ${stat.wrongCount} sai`}>
-									<span className={`inline-block h-1.5 w-1.5 rounded-full ${bg}`} />
-									{stat.accuracy}%
-								</span>
-							);
-						})()}
 					</div>
 
 					{/* Question prompt */}

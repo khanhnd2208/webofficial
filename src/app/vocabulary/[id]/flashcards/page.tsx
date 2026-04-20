@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -78,15 +77,6 @@ function burstConfetti(container: HTMLElement) {
 	}
 }
 
-function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
-	if (results.length === 0) return;
-	fetch('/api/vocab-stats', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ results }),
-	}).catch(() => {/* silent */});
-}
-
 export default function FlashcardsPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
 	const [allWords, setAllWords] = useState<Word[] | null>(null);
@@ -100,13 +90,10 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	const [swipeState, setSwipeState] = useState<'idle' | 'swiping-left' | 'swiping-right' | 'exit-left' | 'exit-right'>('idle');
 	const [dragX, setDragX] = useState(0);
 	const [animKey, setAnimKey] = useState(0); // triggers entrance animation
-	const [wordStats, setWordStats] = useState<Map<string, WordStat>>(new Map());
-
 	const containerRef = useRef<HTMLDivElement>(null);
 	const cardRef = useRef<HTMLDivElement>(null);
 	const startXRef = useRef(0);
 	const isDraggingRef = useRef(false);
-	const statsReportedRef = useRef(false);
 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
@@ -117,14 +104,6 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 			const words = json.data.words as Word[];
 			setAllWords(words);
 			setRemaining(shuffle(words));
-			// Fetch word stats silently
-			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
-				if (j.ok && Array.isArray(j.data)) {
-					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
-					setWordStats(m);
-				}
-			}).catch(() => {});
 		});
 	}, [params]);
 
@@ -210,18 +189,6 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 		return () => window.removeEventListener('keydown', onKey);
 	}, [flip, markMastered, markStillLearning, undo]);
 
-	// Report stats once when all cards done
-	useEffect(() => {
-		if (remaining.length === 0 && !statsReportedRef.current && allWords) {
-			statsReportedRef.current = true;
-			const results = [
-				...mastered.map((w) => ({ wordId: w.id, correct: true, mode: 'flashcards' })),
-				...stillLearning.map((w) => ({ wordId: w.id, correct: false, mode: 'flashcards' })),
-			];
-			reportStats(results);
-		}
-	}, [remaining.length, allWords, mastered, stillLearning]);
-
 	/* ── Loading / Error ── */
 	if (error) {
 		return (
@@ -248,7 +215,6 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 					id={id}
 					containerRef={containerRef}
 						onRestart={() => {
-							statsReportedRef.current = false;
 							setRemaining(shuffle(allWords));
 							setMastered([]);
 							setStillLearning([]);
@@ -382,18 +348,6 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 										{card.partOfSpeech}
 									</span>
 								) : null}
-								{(() => {
-									const stat = card ? wordStats.get(card.id) : null;
-									if (!stat || stat.totalAttempts === 0) return null;
-									const color = stat.accuracy >= 80 ? 'text-success' : stat.accuracy >= 50 ? 'text-warning' : 'text-error';
-									const label = stat.accuracy >= 80 ? 'Tốt' : stat.accuracy >= 50 ? 'Khá' : 'Khó';
-									return (
-										<span className={`mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${color}`} title={`${stat.accuracy}% — ${stat.correctCount} đúng / ${stat.wrongCount} sai`}>
-											<span className={`inline-block h-1.5 w-1.5 rounded-full ${stat.accuracy >= 80 ? 'bg-success' : stat.accuracy >= 50 ? 'bg-warning' : 'bg-error'}`} />
-											{label} · {stat.accuracy}%
-										</span>
-									);
-								})()}
 								<button
 									onClick={(e) => { e.stopPropagation(); if (card) speak(card.term); }}
 									className="mt-5 flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover text-muted transition-all hover:bg-accent hover:text-accent-foreground hover:scale-110 active:scale-95"

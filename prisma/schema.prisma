@@ -37,21 +37,19 @@ model VocabSet {
 
 // ─── Word ─────────────────────────────────────────────────────────────────────
 // Individual vocabulary term belonging to a VocabSet.
-// NEVER hard-delete; use isDeleted = true to hide from UI while preserving
-// UserWordStat progress history.
+// Soft-delete via isDeleted=true to hide from UI without losing data.
 model Word {
-  id          String   @id @default(cuid())
-  vocabSetId  String
-  term        String
-  definition  String
-  partOfSpeech String  @default("")
-  example     String   @default("")
-  isDeleted   Boolean  @default(false)  // soft-delete — keeps UserWordStat intact
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  vocabSetId   String
+  term         String
+  definition   String
+  partOfSpeech String   @default("")
+  example      String   @default("")
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  vocabSet      VocabSet       @relation(fields: [vocabSetId], references: [id], onDelete: Restrict)
-  userWordStats UserWordStat[]
+  vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
 
   @@index([vocabSetId, isDeleted])
 }
@@ -59,7 +57,7 @@ model Word {
 // ─── UserVocabSet ─────────────────────────────────────────────────────────────
 // Junction table: a user's library entry for a VocabSet.
 // status='active'       → visible in user's library
-// status='soft_deleted' → hidden from UI, data intact; restored on re-download
+// status='soft_deleted' → hidden from UI, can be restored on re-download
 model UserVocabSet {
   id         String            @id @default(cuid())
   userId     String            // MongoDB User._id
@@ -68,31 +66,10 @@ model UserVocabSet {
   addedAt    DateTime          @default(now())
   deletedAt  DateTime?
 
-  vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Restrict)
+  vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
 
   @@unique([userId, vocabSetId])
   @@index([userId, status])
-}
-
-// ─── UserWordStat ─────────────────────────────────────────────────────────────
-// Per-user learning progress for each Word.
-// wordId FK uses Restrict — Word must never be hard-deleted.
-model UserWordStat {
-  id           String   @id @default(cuid())
-  userId       String   // MongoDB User._id
-  wordId       String
-  correctCount Int      @default(0)
-  wrongCount   Int      @default(0)
-  streak       Int      @default(0)
-  lastReviewed DateTime @default(now())
-  isMemorized  Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  word Word @relation(fields: [wordId], references: [id], onDelete: Restrict)
-
-  @@unique([userId, wordId])
-  @@index([userId, lastReviewed(sort: Desc)])
 }
 
 enum UserVocabSetStatus {

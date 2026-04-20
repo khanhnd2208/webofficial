@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
-type WordStat = { wordId: string; correctCount: number; wrongCount: number; totalAttempts: number; accuracy: number };
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -107,15 +106,6 @@ function burstConfetti(container: HTMLElement) {
 	}
 }
 
-function reportStats(results: { wordId: string; correct: boolean; mode: string }[]) {
-	if (results.length === 0) return;
-	fetch('/api/vocab-stats', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ results }),
-	}).catch(() => {/* silent */});
-}
-
 export default function FillBlankPage({ params }: { params: Promise<{ id: string }> }) {
 	const [id, setId] = useState('');
 	const [allWords, setAllWords] = useState<Word[] | null>(null);
@@ -131,12 +121,8 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	const [wrong, setWrong] = useState(0);
 	const [finished, setFinished] = useState(false);
 	const [animKey, setAnimKey] = useState(0);
-	const [practiceResults, setPracticeResults] = useState<{ wordId: string; correct: boolean; mode: string }[]>([]);
-	const [wordStats, setWordStats] = useState<Map<string, WordStat>>(new Map());
-
 	const containerRef = useRef<HTMLDivElement>(null);
 	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-	const statsReportedRef = useRef(false);
 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
@@ -149,14 +135,6 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 			const q = shuffle(words);
 			setQuestions(q);
 			resetForQuestion(q[0]);
-			// Fetch word stats silently
-			fetch('/api/vocab-stats').then(r => r.json()).then(j => {
-				if (j.ok && Array.isArray(j.data)) {
-					const m = new Map<string, WordStat>();
-					j.data.forEach((s: WordStat) => m.set(s.wordId, s));
-					setWordStats(m);
-				}
-			}).catch(() => {});
 		});
 	}, [params]);
 
@@ -209,7 +187,6 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		if (answer.length < expected.length) return; // not all filled
 
 		const wasCorrect = answer === expected;
-		setPracticeResults((prev) => [...prev, { wordId: question.id, correct: wasCorrect, mode: 'fill-blank' }]);
 
 		if (wasCorrect) {
 			setIsCorrect(true);
@@ -291,14 +268,6 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		}
 	}, [letters, question, revealed, wordLen, handleCheck]);
 
-	// Report stats once when finished
-	useEffect(() => {
-		if (finished && !statsReportedRef.current) {
-			statsReportedRef.current = true;
-			reportStats(practiceResults);
-		}
-	}, [finished, practiceResults]);
-
 	/* ── Loading / Error ── */
 	if (error) {
 		return (
@@ -327,9 +296,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 					id={id}
 					containerRef={containerRef}
 					onRestart={() => {
-						statsReportedRef.current = false;
-						setPracticeResults([]);
-						const q = shuffle(allWords);
+							const q = shuffle(allWords);
 						setQuestions(q);
 						setQIndex(0);
 						setCorrect(0);
@@ -384,18 +351,6 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 							<span className="inline-block rounded-full bg-indigo-subtle px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-indigo">
 								Điền từ vựng
 							</span>
-							{(() => {
-								const stat = question ? wordStats.get(question.id) : null;
-								if (!stat || stat.totalAttempts === 0) return null;
-								const color = stat.accuracy >= 80 ? 'text-success' : stat.accuracy >= 50 ? 'text-warning' : 'text-error';
-								const bg = stat.accuracy >= 80 ? 'bg-success' : stat.accuracy >= 50 ? 'bg-warning' : 'bg-error';
-								return (
-									<span className={`flex items-center gap-1 rounded-full bg-surface-hover px-2.5 py-1 text-[10px] font-bold ${color}`} title={`${stat.correctCount} đúng / ${stat.wrongCount} sai`}>
-										<span className={`inline-block h-1.5 w-1.5 rounded-full ${bg}`} />
-										{stat.accuracy}%
-									</span>
-								);
-							})()}
 						</div>
 
 						<h2 className="mt-5 text-xl font-bold leading-relaxed text-foreground sm:text-2xl">

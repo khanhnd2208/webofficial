@@ -2,7 +2,6 @@ import Link from 'next/link';
 
 import { auth } from '@/lib/auth';
 import { getUserLibrary } from '@/services/vocabSetService';
-import { getUserWordStats } from '@/services/wordStatsService';
 import { getStreak } from '@/services/streakService';
 import StreakFire from '@/components/StreakFire';
 
@@ -13,21 +12,12 @@ export default async function DashboardPage() {
 	const user = session?.user;
 	const userId = user?.id ?? '';
 
-	const [mySets, wordStats, streakData] = await Promise.all([
+	const [mySets, streakData] = await Promise.all([
 			userId ? getUserLibrary(userId) : Promise.resolve([]),
-		userId ? getUserWordStats(userId) : Promise.resolve([]),
 		userId ? getStreak(userId) : Promise.resolve({ currentStreak: 0, longestStreak: 0, lastLoginDate: '', recentDays: [] as string[] }),
 	]);
 
-	const totalTerms = mySets.reduce((sum, s) => sum + s.wordCount, 0);
-	const totalPracticed = wordStats.length;
-	const avgAccuracy = totalPracticed > 0
-		? Math.round(wordStats.reduce((sum, w) => sum + w.accuracy, 0) / totalPracticed)
-		: 0;
-	const totalAttempts = wordStats.reduce((sum, w) => sum + w.totalAttempts, 0);
-
-	// Mastered = accuracy >= 80% and at least 3 attempts
-	const masteredCount = wordStats.filter((w) => w.accuracy >= 80 && w.totalAttempts >= 3).length;
+	const totalTerms = mySets.reduce((sum: number, s: { wordCount: number }) => sum + s.wordCount, 0);
 
 	return (
 		<main className="min-h-screen pb-16">
@@ -73,8 +63,8 @@ export default async function DashboardPage() {
 							<StreakFire />
 						</div>
 
-						{/* Stat numbers */}
-						<div className="col-span-2 grid grid-cols-2 lg:col-span-4 lg:grid-cols-4">
+					{/* Stat numbers */}
+					<div className="col-span-2 grid grid-cols-2 lg:col-span-4 lg:grid-cols-2">
 							{[
 								{
 									value: mySets.length,
@@ -97,31 +87,6 @@ export default async function DashboardPage() {
 											<rect x="3" y="3" width="18" height="18" rx="3" fill="url(#stat-terms)" opacity="0.15" stroke="url(#stat-terms)" strokeWidth="1.5" />
 											<path d="M7 8h4M7 12h10M7 16h7" stroke="url(#stat-terms)" strokeWidth="1.5" strokeLinecap="round" />
 											<circle cx="17" cy="8" r="2" fill="url(#stat-terms)" opacity="0.5" />
-										</svg>
-									),
-								},
-								{
-									value: totalPracticed,
-									label: 'Đã luyện tập',
-									icon: (
-										<svg className="inline-block h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none">
-											<defs><linearGradient id="stat-target" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="var(--teal)" /><stop offset="100%" stopColor="var(--success)" /></linearGradient></defs>
-											<circle cx="12" cy="12" r="10" fill="url(#stat-target)" opacity="0.12" stroke="url(#stat-target)" strokeWidth="1.5" />
-											<circle cx="12" cy="12" r="6" fill="none" stroke="url(#stat-target)" strokeWidth="1.5" />
-											<circle cx="12" cy="12" r="2.5" fill="url(#stat-target)" />
-										</svg>
-									),
-								},
-								{
-									value: `${avgAccuracy}%`,
-									label: 'Chính xác TB',
-									icon: (
-										<svg className="inline-block h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none">
-											<defs><linearGradient id="stat-chart" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stopColor="var(--accent)" /><stop offset="100%" stopColor="var(--warning)" /></linearGradient></defs>
-											<rect x="3" y="14" width="4" height="7" rx="1" fill="url(#stat-chart)" opacity="0.4" />
-											<rect x="10" y="9" width="4" height="12" rx="1" fill="url(#stat-chart)" opacity="0.6" />
-											<rect x="17" y="3" width="4" height="18" rx="1" fill="url(#stat-chart)" opacity="0.85" />
-											<path d="M5 13L12 7l7 3" stroke="url(#stat-chart)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
 										</svg>
 									),
 								},
@@ -264,75 +229,6 @@ export default async function DashboardPage() {
 						))}
 					</div>
 				</section>
-
-				{/* ─── Section: Tiến trình học tập ─── */}
-				{totalPracticed > 0 && (
-					<section className="mt-12">
-						<div className="flex items-center gap-3">
-							<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
-								Tiến trình học tập
-							</h2>
-							<div className="h-px flex-1 bg-border" />
-						</div>
-
-						<div className="mt-5 grid gap-3 sm:grid-cols-3">
-							{/* Mastered */}
-							<div className="border border-border p-5">
-								<div className="flex items-center gap-2 text-success">
-									<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-										<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.5" />
-										<path d="M8 12.5l2.5 3L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-									</svg>
-									<span className="text-[10px] font-bold uppercase tracking-widest">Đã thành thạo</span>
-								</div>
-								<div className="mt-3 text-2xl font-black tabular-nums text-foreground">{masteredCount}</div>
-								<div className="text-[11px] text-muted">trong tổng {totalPracticed} từ đã học</div>
-								{totalPracticed > 0 && (
-									<div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-hover">
-										<div
-											className="h-full rounded-full bg-success transition-all duration-500"
-											style={{ width: `${Math.round((masteredCount / totalPracticed) * 100)}%` }}
-										/>
-									</div>
-								)}
-							</div>
-
-							{/* Total Attempts */}
-							<div className="border border-border p-5">
-								<div className="flex items-center gap-2 text-indigo">
-									<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-										<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-										<path d="M22 12A10 10 0 0012 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 3" />
-										<path d="M17 8l5-1-1 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-									</svg>
-									<span className="text-[10px] font-bold uppercase tracking-widest">Tổng lượt luyện</span>
-								</div>
-								<div className="mt-3 text-2xl font-black tabular-nums text-foreground">{totalAttempts}</div>
-								<div className="text-[11px] text-muted">lượt luyện tập</div>
-							</div>
-
-							{/* Accuracy */}
-							<div className="border border-border p-5">
-								<div className="flex items-center gap-2 text-accent">
-									<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-										<path d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5 6.6 18.3l1.5-6-4.6-4 6.1-.5L12 2z" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-									</svg>
-									<span className="text-[10px] font-bold uppercase tracking-widest">Độ chính xác</span>
-								</div>
-								<div className="mt-3 text-2xl font-black tabular-nums text-foreground">{avgAccuracy}%</div>
-								<div className="text-[11px] text-muted">trung bình tất cả từ</div>
-								{avgAccuracy > 0 && (
-									<div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-hover">
-										<div
-											className="h-full rounded-full bg-accent transition-all duration-500"
-											style={{ width: `${avgAccuracy}%` }}
-										/>
-									</div>
-								)}
-							</div>
-						</div>
-					</section>
-				)}
 
 				{/* ─── Section: Bộ từ gần đây ─── */}
 				{mySets.length > 0 && (
