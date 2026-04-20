@@ -1,20 +1,17 @@
 /* ════════════════════════════════════════════════════════════════════════
    useGuessWhoSession.ts — Session state for "Guess Who I Am" game
-   
-   Rules:
-   • Only words with (hintsHard + hintsMedium + hintsEasy).length > 0
-   • Each word: pick ONE random hint from the full pool (fixed for session)
-   • 9 hearts per word; lose 1 per wrong guess
-   • Scoring via look-up table: SCORE_MAP[trial - 1]
-   • Game over at trial 10 (after 9 wrong) → score = 0
-   • NO database writes — session state only
+
+   Rules (v2 — timestamp scoring):
+   • Only words with at least 1 hint (hard | medium | easy)
+   • Each word: show ONE random hint (fixed for this session)
+   • Unlimited guesses per word; wrong guess → penaltyMs += 5 000
+   • Session score = max(0, 10 000 − effectiveElapsed × 100)
+     where effectiveElapsed = (sessionEnd − sessionStart + penaltyMs) / 1 000
+   • Hearts/lives system REMOVED
    ════════════════════════════════════════════════════════════════════════ */
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-
-export const SCORE_MAP = [1000, 900, 800, 600, 500, 400, 200, 100, 50] as const;
-export const MAX_HEARTS = 9;
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 export interface GuessWhoWord {
   id: string;
@@ -28,31 +25,23 @@ export interface GuessWhoWord {
 export type WordResult = {
   wordId: string;
   term: string;
-  score: number;
-  trialUsed: number; // 0 = game over (failed)
+  wrongGuesses: number;
 };
 
-export type GameStatus = 'playing' | 'word_failed' | 'session_complete';
+export type GameStatus = 'playing' | 'word_done' | 'session_complete';
 
 export interface GuessWhoSessionState {
-  /** Words eligible for the game (have at least 1 hint) */
   eligibleWords: GuessWhoWord[];
-  /** Index into eligibleWords for the current word */
   wordIndex: number;
   currentWord: GuessWhoWord | null;
-  /** The single randomly-selected hint shown for the entire current word */
   currentHint: string;
-  /** 1-based trial counter (increments on wrong guess) */
-  trial: number;
-  /** Hearts remaining (starts at 9, decreases on wrong guess) */
-  hearts: number;
   gameStatus: GameStatus;
-  /** Session accumulated score */
-  totalScore: number;
   wordResults: WordResult[];
-  /** Handle a user guess attempt */
-  submitGuess: (guess: string) => 'correct' | 'wrong' | 'game_over';
-  /** Advance to the next word (called after word_failed or correct) */
+  wrongGuessesThisWord: number;
+  sessionStartTime: number;
+  penaltyMs: number;
+  sessionEndTime: number;
+  submitGuess: (guess: string) => 'correct' | 'wrong';
   nextWord: () => void;
 }
 
@@ -82,12 +71,14 @@ export function useGuessWhoSession(words: GuessWhoWord[]): GuessWhoSessionState 
     [words.map((w) => w.id).join(',')]
   );
 
+  const sessionStartTimeRef = useRef<number>(Date.now());
+
   const [wordIndex, setWordIndex] = useState(0);
-  const [trial, setTrial] = useState(1);
-  const [hearts, setHearts] = useState(MAX_HEARTS);
   const [gameStatus, setGameStatus] = useState<GameStatus>('playing');
-  const [totalScore, setTotalScore] = useState(0);
   const [wordResults, setWordResults] = useState<WordResult[]>([]);
+  const [wrongGuessesThisWord, setWrongGuessesThisWord] = useState(0);
+  const [penaltyMs, setPenaltyMs] = useState(0);
+  const [sessionEndTime, setSessionEndTime] = useState(0);
   const [currentHint, setCurrentHint] = useState<string>(() => {
     const w = eligibleWords[0];
     return w ? pickRandomHint(w) : '';
@@ -95,51 +86,36 @@ export function useGuessWhoSession(words: GuessWhoWord[]): GuessWhoSessionState 
 
   const currentWord = eligibleWords[wordIndex] ?? null;
 
-  const submitGuess = useCallback((guess: string): 'correct' | 'wrong' | 'game_over' => {
+  const submitGuess = useCallback((guess: string): 'correct' | 'wrong' => {
     if (!currentWord || gameStatus !== 'playing') return 'wrong';
 
     const isCorrect = guess.trim().toLowerCase() === currentWord.term.toLowerCase();
 
     if (isCorrect) {
-      const score = SCORE_MAP[trial - 1] ?? 0;
-      setTotalScore((prev) => prev + score);
       setWordResults((prev) => [
         ...prev,
-        { wordId: currentWord.id, term: currentWord.term, score, trialUsed: trial },
+        { wordId: currentWord.id, term: currentWord.term, wrongGuesses: wrongGuessesThisWord },
       ]);
-      setGameStatus('word_failed'); // reuse state to pause before nextWord
+      setGameStatus('word_done');
       return 'correct';
     }
 
-    // Wrong guess
-    const newHearts = hearts - 1;
-    const newTrial = trial + 1;
-    setHearts(newHearts);
-    setTrial(newTrial);
-
-    if (newHearts <= 0) {
-      // Game over for this word
-      setWordResults((prev) => [
-        ...prev,
-        { wordId: currentWord.id, term: currentWord.term, score: 0, trialUsed: 0 },
-      ]);
-      setGameStatus('word_failed');
-      return 'game_over';
-    }
-
+    // Wrong guess: +5s penalty
+    setPenaltyMs((prev) => prev + 5_000);
+    setWrongGuessesThisWord((prev) => prev + 1);
     return 'wrong';
-  }, [currentWord, gameStatus, hearts, trial]);
+  }, [currentWord, gameStatus, wrongGuessesThisWord]);
 
   const nextWord = useCallback(() => {
     const nextIndex = wordIndex + 1;
     if (nextIndex >= eligibleWords.length) {
+      setSessionEndTime(Date.now());
       setGameStatus('session_complete');
       return;
     }
     const nextWordObj = eligibleWords[nextIndex];
     setWordIndex(nextIndex);
-    setTrial(1);
-    setHearts(MAX_HEARTS);
+    setWrongGuessesThisWord(0);
     setCurrentHint(pickRandomHint(nextWordObj));
     setGameStatus('playing');
   }, [wordIndex, eligibleWords]);
@@ -149,11 +125,12 @@ export function useGuessWhoSession(words: GuessWhoWord[]): GuessWhoSessionState 
     wordIndex,
     currentWord,
     currentHint,
-    trial,
-    hearts,
     gameStatus,
-    totalScore,
     wordResults,
+    wrongGuessesThisWord,
+    sessionStartTime: sessionStartTimeRef.current,
+    penaltyMs,
+    sessionEndTime,
     submitGuess,
     nextWord,
   };

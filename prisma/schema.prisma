@@ -30,6 +30,7 @@ model VocabSet {
 
   words          Word[]
   userVocabSets  UserVocabSet[]
+  gameScores     GameScore[]
 
   @@index([ownerId])
   @@index([isArchived, updatedAt(sort: Desc)])
@@ -78,7 +79,36 @@ model UserVocabSet {
   @@index([userId, status])
 }
 
+// ─── GameScore ────────────────────────────────────────────────────────────────
+// Stores each user's personal best score per mode per vocab set.
+// Only updated when new score > existing best.
+// Score scale: MCQ/FILL_BLANK → 0–3000 (avg per question)
+//              MATCHING/GUESS_WHO → 0–10000 (session total)
+model GameScore {
+  id         String   @id @default(cuid())
+  userId     String   // MongoDB User._id
+  userName   String
+  vocabSetId String
+  mode       GameMode
+  score      Float    // personal best
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vocabSetId, mode])
+  @@index([vocabSetId, mode, score(sort: Desc)])
+}
+
 enum UserVocabSetStatus {
   active
   soft_deleted
+}
+
+enum GameMode {
+  MCQ
+  FILL_BLANK
+  MATCHING
+  GUESS_WHO
 }

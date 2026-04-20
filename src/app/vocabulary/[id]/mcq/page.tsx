@@ -152,6 +152,21 @@ type Question = {
 	correctIndex: number;
 	mode: 'word-to-def' | 'def-to-word';
 };
+type QuestionRecord = { startTime: number; endTime: number; correct: boolean };
+
+const QUESTION_TIME = 30; // seconds per question
+
+async function submitScore(vocabSetId: string, records: QuestionRecord[]) {
+	try {
+		const res = await fetch(`/api/vocab-sets/${vocabSetId}/score`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ mode: 'MCQ', questions: records }),
+		});
+		const json = await res.json();
+		return json.ok ? json.data : null;
+	} catch { return null; }
+}
 
 function generateQuestions(words: Word[]): Question[] {
 	const shuffled = shuffle(words);
@@ -184,9 +199,30 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 	const [finished, setFinished] = useState(false);
 	const [questionAnim, setQuestionAnim] = useState<'enter' | 'exit' | 'idle'>('idle');
 	const [shakeWrong, setShakeWrong] = useState(false);
+	const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 	const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	// Anti-cheat: wall-clock timestamp for current question
+	const questionStartTimeRef = useRef<number>(Date.now());
+	// Accumulated per-question timing data
+	const questionRecordsRef = useRef<QuestionRecord[]>([]);
+
+	const clearAllTimers = useCallback(() => {
+		if (autoAdvanceRef.current) { clearTimeout(autoAdvanceRef.current); autoAdvanceRef.current = null; }
+		if (timerIntervalRef.current) { clearInterval(timerIntervalRef.current); timerIntervalRef.current = null; }
+	}, []);
+
+	const startQuestionTimer = useCallback(() => {
+		clearAllTimers();
+		questionStartTimeRef.current = Date.now();
+		setTimeLeft(QUESTION_TIME);
+		timerIntervalRef.current = setInterval(() => {
+			const elapsed = (Date.now() - questionStartTimeRef.current) / 1000;
+			setTimeLeft(Math.max(0, Math.ceil(QUESTION_TIME - elapsed)));
+		}, 200);
+	}, [clearAllTimers]);
 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
@@ -202,10 +238,37 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 		});
 	}, [params]);
 
+	// Start/reset timer when question index changes (or questions load)
+	useEffect(() => {
+		if (questions.length > 0 && !finished) {
+			startQuestionTimer();
+		}
+		return clearAllTimers;
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [qIndex, questions.length]);
+
+	// Auto-timeout: when timer reaches 0, treat as wrong
+	useEffect(() => {
+		if (answered || !question || finished || timeLeft > 0) return;
+		const endTime = Date.now();
+		clearAllTimers();
+		questionRecordsRef.current.push({ startTime: questionStartTimeRef.current, endTime, correct: false });
+		setAnswered(true);
+		setSelected(null);
+		setWrong((v) => v + 1);
+		setStreak(0);
+		playWrong();
+		setShakeWrong(true);
+		setTimeout(() => setShakeWrong(false), 500);
+		autoAdvanceRef.current = setTimeout(() => handleNext(), 2500);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [timeLeft, answered, finished]);
+
 	const question = questions[qIndex] ?? null;
 	const total = questions.length;
 
 	const handleNext = useCallback(() => {
+		clearAllTimers();
 		if (autoAdvanceRef.current) {
 			clearTimeout(autoAdvanceRef.current);
 			autoAdvanceRef.current = null;
@@ -228,10 +291,13 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 
 	const handleSelect = useCallback((optIdx: number) => {
 		if (answered || !question) return;
+		const endTime = Date.now();
+		clearAllTimers();
 		setSelected(optIdx);
 		setAnswered(true);
 
 		const isCorrect = optIdx === question.correctIndex;
+		questionRecordsRef.current.push({ startTime: questionStartTimeRef.current, endTime, correct: isCorrect });
 
 		if (isCorrect) {
 			playCorrect();
@@ -282,12 +348,8 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 		return () => window.removeEventListener('keydown', onKey);
 	}, [question, answered, handleSelect, handleNext]);
 
-	// Cleanup timer on unmount
-	useEffect(() => {
-		return () => {
-			if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
-		};
-	}, []);
+	// Cleanup all timers on unmount
+	useEffect(() => () => clearAllTimers(), [clearAllTimers]);
 
 	/* ── Loading / Error ── */
 	if (error) {
@@ -317,8 +379,9 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 					total={total}
 					id={id}
 					containerRef={containerRef}
+					questionRecords={questionRecordsRef.current}
 					onRestart={() => {
-							const q = generateQuestions(allWords);
+						const q = generateQuestions(allWords);
 						setQuestions(q);
 						setQIndex(0);
 						setSelected(null);
@@ -329,6 +392,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 						setBestStreak(0);
 						setFinished(false);
 						setQuestionAnim('enter');
+						questionRecordsRef.current = [];
 					}}
 				/>
 			</main>
@@ -387,14 +451,28 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 						animation: questionAnim === 'enter' ? 'questionSlideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined,
 					}}
 				>
-					{/* Question type badge */}
-					<div className="mb-3 flex items-center gap-2">
-						<span className="rounded-full bg-surface-hover px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-muted">
-							{question.mode === 'word-to-def' ? 'Chọn nghĩa đúng' : 'Chọn từ đúng'}
-						</span>
-					</div>
-
-					{/* Question prompt */}
+				{/* Question type badge + timer */}
+				<div className="mb-3 flex items-center justify-between gap-2">
+					<span className="rounded-full bg-surface-hover px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+						{question.mode === 'word-to-def' ? 'Chọn nghĩa đúng' : 'Chọn từ đúng'}
+					</span>
+					{!answered && (() => {
+						const frac = timeLeft / QUESTION_TIME;
+						const color = frac > 0.5 ? '#4a8c5c' : frac > 0.25 ? '#c48a1a' : '#c44b28';
+						return (
+							<div className="flex items-center gap-1.5">
+								<svg className="h-8 w-8 -rotate-90" viewBox="0 0 36 36">
+									<circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="3" className="text-surface-hover" />
+									<circle cx="18" cy="18" r="15" fill="none" strokeWidth="3" stroke={color}
+										strokeDasharray={`${frac * 94.25} 94.25`}
+										style={{ transition: 'stroke-dasharray 0.2s linear, stroke 0.3s' }}
+										strokeLinecap="round" />
+								</svg>
+								<span className="w-5 text-center text-sm font-black tabular-nums" style={{ color }}>{timeLeft}</span>
+							</div>
+						);
+					})()}
+				</div>					{/* Question prompt */}
 					<div className="flex items-start gap-4">
 					<h2 className="text-xl font-black tracking-tight text-foreground sm:text-2xl lg:text-3xl">
 						{question.mode === 'word-to-def' ? question.word.term : question.word.definition}
@@ -592,6 +670,7 @@ function CompletionScreen({
 	total,
 	id,
 	containerRef,
+	questionRecords,
 	onRestart,
 }: {
 	correct: number;
@@ -600,11 +679,24 @@ function CompletionScreen({
 	total: number;
 	id: string;
 	containerRef: React.RefObject<HTMLDivElement | null>;
+	questionRecords: QuestionRecord[];
 	onRestart: () => void;
 }) {
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
 	const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+	// Average score per question (0–3000)
+	const avgScore = questionRecords.length > 0
+		? Math.round(
+				questionRecords.reduce((sum, r) => {
+					if (!r.correct) return sum;
+					const elapsed = (r.endTime - r.startTime) / 1000;
+					return sum + Math.max(0, 3000 - elapsed * 100);
+				}, 0) / questionRecords.length
+			)
+		: 0;
+	const [scoreResult, setScoreResult] = useState<{ score: number; isNewBest: boolean; previousBest: number | null } | null>(null);
+	const submittedRef = useRef(false);
 
 	useEffect(() => {
 		const t = setTimeout(() => setShow(true), 100);
@@ -618,6 +710,24 @@ function CompletionScreen({
 			if (score >= 50) burstConfetti(containerRef.current);
 		}
 	}, [show, containerRef, score]);
+
+	// Submit score once on mount
+	useEffect(() => {
+		if (submittedRef.current || questionRecords.length === 0) return;
+		submittedRef.current = true;
+		(async () => {
+			try {
+				const res = await fetch(`/api/vocab-sets/${id}/score`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ mode: 'MCQ', questions: questionRecords }),
+				});
+				const json = await res.json();
+				if (json.ok) setScoreResult({ score: json.data.score, isNewBest: json.data.isNewBest, previousBest: json.data.previousBest });
+			} catch { /* silent — leaderboard update is non-critical */ }
+		})();
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	const resultIcon = score >= 90 ? (
 		<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="trophy-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ffcc00" /><stop offset="100%" stopColor="#ff8800" /></linearGradient></defs><path d="M6 2h12v4a6 6 0 01-12 0V2z" fill="url(#trophy-g)" /><path d="M6 4H3a1 1 0 00-1 1v1a4 4 0 004 4" stroke="#ffcc00" strokeWidth="1.5" /><path d="M18 4h3a1 1 0 011 1v1a4 4 0 01-4 4" stroke="#ffcc00" strokeWidth="1.5" /><rect x="9" y="12" width="6" height="3" rx="1" fill="url(#trophy-g)" opacity="0.6" /><rect x="7" y="15" width="10" height="2" rx="1" fill="url(#trophy-g)" opacity="0.8" /></svg>
@@ -688,6 +798,23 @@ function CompletionScreen({
 							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Streak</p>
 						</div>
 					</div>
+
+					{/* Average score */}
+					<div className="mx-auto mt-4 flex max-w-xs items-center justify-center gap-2 rounded-xl border border-border bg-surface p-3">
+						<span className="text-xs font-bold uppercase tracking-widest text-muted">Điểm TB / câu</span>
+						<span className="ml-auto text-xl font-black text-foreground">{avgScore}</span>
+						<span className="text-xs text-muted">/ 3000</span>
+					</div>
+
+					{/* Leaderboard feedback */}
+					{scoreResult && (
+						<div className={`mx-auto mt-3 max-w-xs rounded-xl border px-4 py-2.5 text-sm ${scoreResult.isNewBest ? 'border-success/40 bg-success-subtle text-success' : 'border-border bg-surface text-muted'}`}>
+							{scoreResult.isNewBest
+								? <><span className="font-bold">🎉 Kỷ lục mới!</span> {Math.round(scoreResult.score)} điểm</>
+								: <>Kỷ lục của bạn: <span className="font-bold">{Math.round(scoreResult.previousBest ?? 0)}</span> điểm</>
+							}
+						</div>
+					)}
 
 					<div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
 						<button

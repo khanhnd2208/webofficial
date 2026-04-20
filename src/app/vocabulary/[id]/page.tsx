@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
 import { getVocabSetById } from '@/services/vocabSetService';
+import LeaderboardPanel from '@/components/vocab/LeaderboardPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,7 +79,7 @@ export default async function VocabSetDetailPage({
 				{
 					href: `/vocabulary/${id}/guess-who`,
 					title: 'Guess Who I Am',
-					desc: 'Đoán từ qua gợi ý · 9 mạng',
+					desc: 'Đoán từ qua gợi ý · tính điểm thời gian',
 					badge: '🎮 Mới',
 					accent: 'from-violet-500/20 to-violet-500/5 border-violet-500/30 hover:border-violet-500',
 					iconBg: 'bg-violet-600 text-white',

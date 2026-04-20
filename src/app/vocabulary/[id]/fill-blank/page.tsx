@@ -4,6 +4,21 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
+type WordRecord = { startTime: number; endTime: number; penaltyMs: number; correct: boolean };
+
+const WORD_TIME = 30; // seconds per word
+
+async function submitScore(vocabSetId: string, records: WordRecord[]) {
+	try {
+		const res = await fetch(`/api/vocab-sets/${vocabSetId}/score`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ mode: 'FILL_BLANK', words: records }),
+		});
+		const json = await res.json();
+		return json.ok ? json.data : null;
+	} catch { return null; }
+}
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -116,13 +131,19 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	const [letters, setLetters] = useState<string[]>([]);
 	const [revealed, setRevealed] = useState(false);
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-	const [hintCount, setHintCount] = useState(0);
+	const [hintUsed, setHintUsed] = useState(false);  // max 1 per word
 	const [correct, setCorrect] = useState(0);
 	const [wrong, setWrong] = useState(0);
+	const [timeLeft, setTimeLeft] = useState(WORD_TIME);
 	const [finished, setFinished] = useState(false);
 	const [animKey, setAnimKey] = useState(0);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	// Anti-cheat timestamps
+	const wordStartTimeRef = useRef<number>(Date.now());
+	const wordPenaltyMsRef = useRef<number>(0); // accumulated penalty for current word
+	const wordRecordsRef = useRef<WordRecord[]>([]);
 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
@@ -143,10 +164,23 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		setLetters(Array(len).fill(''));
 		setRevealed(false);
 		setIsCorrect(null);
-		setHintCount(0);
+		setHintUsed(false);
 		setAnimKey((k) => k + 1);
+		// Reset timer refs
+		if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+		wordStartTimeRef.current = Date.now();
+		wordPenaltyMsRef.current = 0;
+		setTimeLeft(WORD_TIME);
+		// Start cosmetic countdown
+		timerRef.current = setInterval(() => {
+			const elapsed = (Date.now() - wordStartTimeRef.current + wordPenaltyMsRef.current) / 1000;
+			setTimeLeft(Math.max(0, Math.ceil(WORD_TIME - elapsed)));
+		}, 200);
 		setTimeout(() => inputRefs.current[0]?.focus(), 100);
 	}
+
+	// Cleanup timer on unmount
+	useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
 
 	const question = questions[qIndex] ?? null;
 	const total = questions.length;
@@ -184,21 +218,41 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		if (!question || revealed) return;
 		const answer = letters.join('');
 		const expected = question.term.toUpperCase();
-		if (answer.length < expected.length) return; // not all filled
+		if (answer.length < expected.length) return;
 
 		const wasCorrect = answer === expected;
 
 		if (wasCorrect) {
+			const endTime = Date.now();
+			wordRecordsRef.current.push({
+				startTime: wordStartTimeRef.current, endTime,
+				penaltyMs: wordPenaltyMsRef.current, correct: true,
+			});
 			setIsCorrect(true);
 			setCorrect((v) => v + 1);
 			playCorrect();
 			speak(question.term);
+			setRevealed(true);
+			if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
 		} else {
-			setIsCorrect(false);
-			setWrong((v) => v + 1);
+			// Wrong answer: -10s penalty
+			wordPenaltyMsRef.current += 10_000;
+			const effectiveElapsed = (Date.now() - wordStartTimeRef.current + wordPenaltyMsRef.current) / 1000;
 			playWrong();
+			if (effectiveElapsed >= WORD_TIME) {
+				// Time exhausted → reveal answer
+				const endTime = Date.now();
+				wordRecordsRef.current.push({
+					startTime: wordStartTimeRef.current, endTime,
+					penaltyMs: wordPenaltyMsRef.current, correct: false,
+				});
+				setIsCorrect(false);
+				setWrong((v) => v + 1);
+				setRevealed(true);
+				if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+			}
+			// If still time left, just play wrong and keep going (don't reveal)
 		}
-		setRevealed(true);
 	}, [question, letters, revealed]);
 
 	const handleKeyDown = useCallback((idx: number, e: React.KeyboardEvent) => {
@@ -229,26 +283,27 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	}, [revealed, letters, wordLen, handleCheck]);
 
 	const handleHint = useCallback(() => {
-		if (!question || revealed) return;
+		if (!question || revealed || hintUsed) return;
+		setHintUsed(true);
+		// Penalty: -10s
+		wordPenaltyMsRef.current += 10_000;
+
 		const word = question.term.toUpperCase();
-		// Find first empty or wrong letter
-		for (let i = 0; i < word.length; i++) {
-			if (letters[i] !== word[i]) {
-				setLetters((prev) => {
-					const next = [...prev];
-					next[i] = word[i];
-					return next;
-				});
-				setHintCount((v) => v + 1);
-				// Focus next empty
-				setTimeout(() => {
-					const nextEmpty = inputRefs.current.findIndex((el, j) => j > i && el && !letters[j] && word[j] !== letters[j]);
-					if (nextEmpty >= 0) inputRefs.current[nextEmpty]?.focus();
-				}, 50);
-				return;
-			}
-		}
-	}, [question, revealed, letters]);
+		setLetters((prev) => {
+			const next = [...prev];
+			// If word.length <= 3: show only first letter
+			// If word.length > 3: show first AND last letter
+			next[0] = word[0];
+			if (word.length > 3) next[word.length - 1] = word[word.length - 1];
+			return next;
+		});
+		// Focus first unfilled input
+		setTimeout(() => {
+			const firstEmpty = inputRefs.current.findIndex((el, i) => el && !letters[i]);
+			if (firstEmpty >= 0) inputRefs.current[firstEmpty]?.focus();
+			else inputRefs.current[1]?.focus();
+		}, 50);
+	}, [question, revealed, hintUsed, letters]);
 
 	const handleNext = useCallback(() => {
 		if (qIndex + 1 >= total) {
@@ -267,6 +322,22 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 			handleCheck();
 		}
 	}, [letters, question, revealed, wordLen, handleCheck]);
+
+	// Auto-timeout: when effective time reaches 0, reveal answer (score=0)
+	useEffect(() => {
+		if (revealed || !question || finished || timeLeft > 0) return;
+		const endTime = Date.now();
+		wordRecordsRef.current.push({
+			startTime: wordStartTimeRef.current, endTime,
+			penaltyMs: wordPenaltyMsRef.current, correct: false,
+		});
+		setIsCorrect(false);
+		setWrong((v) => v + 1);
+		setRevealed(true);
+		playWrong();
+		if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [timeLeft, revealed, finished]);
 
 	/* ── Loading / Error ── */
 	if (error) {
@@ -294,9 +365,11 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 					wrong={wrong}
 					total={total}
 					id={id}
+					wordRecords={wordRecordsRef.current}
 					containerRef={containerRef}
 					onRestart={() => {
-							const q = shuffle(allWords);
+						wordRecordsRef.current = [];
+						const q = shuffle(allWords);
 						setQuestions(q);
 						setQIndex(0);
 						setCorrect(0);
@@ -351,6 +424,22 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 							<span className="inline-block rounded-full bg-indigo-subtle px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-indigo">
 								Điền từ vựng
 							</span>
+							{!revealed && (() => {
+								const frac = timeLeft / WORD_TIME;
+								const color = frac > 0.5 ? '#5b7fb5' : frac > 0.25 ? '#c48a1a' : '#c44b28';
+								return (
+									<div className="flex items-center gap-1.5">
+										<svg className="h-8 w-8 -rotate-90" viewBox="0 0 36 36">
+											<circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="3" className="text-surface-hover" />
+											<circle cx="18" cy="18" r="15" fill="none" strokeWidth="3" stroke={color}
+												strokeDasharray={`${frac * 94.25} 94.25`}
+												style={{ transition: 'stroke-dasharray 0.2s linear, stroke 0.3s' }}
+												strokeLinecap="round" />
+										</svg>
+										<span className="w-5 text-center text-sm font-black tabular-nums" style={{ color }}>{timeLeft}</span>
+									</div>
+								);
+							})()}
 						</div>
 
 						<h2 className="mt-5 text-xl font-bold leading-relaxed text-foreground sm:text-2xl">
@@ -424,12 +513,17 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 						<div className="mt-8 flex items-center justify-center gap-3">
 							<button
 								onClick={handleHint}
-								className="inline-flex items-center gap-1.5 rounded-full border-2 border-warning/40 px-4 py-2 text-xs font-bold uppercase tracking-wider text-warning transition-all hover:border-warning hover:bg-warning-subtle active:scale-95"
+								disabled={hintUsed}
+								className={`inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${
+									hintUsed
+										? 'border-warning/20 text-warning/40 opacity-40 cursor-not-allowed'
+										: 'border-warning/40 text-warning hover:border-warning hover:bg-warning-subtle'
+								}`}
 							>
 								<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 									<path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
 								</svg>
-								Gợi ý {hintCount > 0 ? `(${hintCount})` : ''}
+								{hintUsed ? 'Đã dùng gợi ý' : 'Gợi ý (−10s)'}
 							</button>
 							<button
 								onClick={handleCheck}
@@ -523,6 +617,7 @@ function CompletionScreen({
 	wrong,
 	total,
 	id,
+	wordRecords,
 	containerRef,
 	onRestart,
 }: {
@@ -530,12 +625,27 @@ function CompletionScreen({
 	wrong: number;
 	total: number;
 	id: string;
+	wordRecords: WordRecord[];
 	containerRef: React.RefObject<HTMLDivElement | null>;
 	onRestart: () => void;
 }) {
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
+	const [avgScore, setAvgScore] = useState<number | null>(null);
+	const [scoreResult, setScoreResult] = useState<{ isNewBest: boolean; previousBest: number } | null>(null);
+	const scoreSubmittedRef = useRef(false);
 	const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+	useEffect(() => {
+		if (scoreSubmittedRef.current || wordRecords.length === 0) return;
+		scoreSubmittedRef.current = true;
+		submitScore(id, wordRecords).then((data) => {
+			if (data) {
+				setAvgScore(Math.round(data.score));
+				setScoreResult({ isNewBest: data.isNewBest, previousBest: Math.round(data.previousBest ?? 0) });
+			}
+		});
+	}, [id, wordRecords]);
 
 	useEffect(() => {
 		const t = setTimeout(() => setShow(true), 100);
@@ -614,6 +724,22 @@ function CompletionScreen({
 							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Sai</p>
 						</div>
 					</div>
+
+					{/* Score from API */}
+					{avgScore !== null && (
+						<div className="mx-auto mt-4 max-w-xs rounded-xl border border-border bg-surface px-4 py-3 text-center"
+							style={{ animation: 'fadeUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both' }}>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Điểm trung bình</p>
+							<p className="mt-1 text-3xl font-black tabular-nums text-foreground">{avgScore.toLocaleString()}</p>
+							{scoreResult && (
+								<p className={`mt-1 text-xs font-bold ${scoreResult.isNewBest ? 'text-success' : 'text-muted'}`}>
+									{scoreResult.isNewBest
+										? `🏆 Kỷ lục mới! (Trước: ${scoreResult.previousBest.toLocaleString()})`
+										: `Kỷ lục: ${scoreResult.previousBest.toLocaleString()}`}
+								</p>
+							)}
+						</div>
+					)}
 
 					{/* Actions */}
 					<div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

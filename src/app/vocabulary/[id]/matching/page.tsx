@@ -152,6 +152,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 	const [gameReady, setGameReady] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+	const wrongPairsRef = useRef(0);
+	const sessionStartTimeRef = useRef(0);
 
 	const startGame = useCallback((words: Word[]) => {
 		const subset = shuffle(words).slice(0, 8);
@@ -176,6 +178,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 		setStartTime(Date.now());
 		setElapsed(0);
 		setGameReady(true);
+		wrongPairsRef.current = 0;
+		sessionStartTimeRef.current = Date.now();
 	}, []);
 
 	useEffect(() => {
@@ -242,6 +246,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 		} else {
 			// Wrong
 			playWrong();
+			wrongPairsRef.current += 1;
 			setWrongPair([first.id, card.id]);
 			setTimeout(() => {
 				setWrongPair(null);
@@ -276,6 +281,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 					elapsed={elapsed}
 					pairsCount={cards.length / 2}
 					id={id}
+					sessionStartTime={sessionStartTimeRef.current}
+					wrongPairs={wrongPairsRef.current}
 					containerRef={containerRef}
 					onRestart={() => {
 						startGame(allWords);
@@ -471,6 +478,8 @@ function CompletionScreen({
 	elapsed,
 	pairsCount,
 	id,
+	sessionStartTime,
+	wrongPairs,
 	containerRef,
 	onRestart,
 }: {
@@ -478,15 +487,34 @@ function CompletionScreen({
 	elapsed: number;
 	pairsCount: number;
 	id: string;
+	sessionStartTime: number;
+	wrongPairs: number;
 	containerRef: React.RefObject<HTMLDivElement | null>;
 	onRestart: () => void;
 }) {
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
+	const [scoreData, setScoreData] = useState<{ score: number; isNewBest: boolean; previousBest: number } | null>(null);
+	const scoreSubmittedRef = useRef(false);
 
 	// Rating based on moves efficiency
 	const efficiency = pairsCount > 0 ? pairsCount / moves : 0;
 	const stars = efficiency >= 0.8 ? 3 : efficiency >= 0.5 ? 2 : 1;
+
+	useEffect(() => {
+		if (scoreSubmittedRef.current || sessionStartTime === 0) return;
+		scoreSubmittedRef.current = true;
+		const sessionEndTime = Date.now();
+		const penaltyMs = wrongPairs * 5000;
+		fetch(`/api/vocab-sets/${id}/score`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ mode: 'MATCHING', sessionStartTime, sessionEndTime, penaltyMs }),
+		}).then((r) => r.json()).then((json) => {
+			if (json.ok) setScoreData({ score: Math.round(json.data.score), isNewBest: json.data.isNewBest, previousBest: Math.round(json.data.previousBest ?? 0) });
+		}).catch(() => {});
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	useEffect(() => {
 		const t = setTimeout(() => setShow(true), 100);
@@ -561,6 +589,19 @@ function CompletionScreen({
 							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Cặp</p>
 						</div>
 					</div>
+
+					{/* Score */}
+					{scoreData && (
+						<div className="mx-auto mt-4 max-w-xs rounded-xl border border-border bg-surface px-4 py-3 text-center">
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Điểm số</p>
+							<p className="mt-1 text-3xl font-black tabular-nums text-foreground">{scoreData.score.toLocaleString()}</p>
+							<p className={`mt-1 text-xs font-bold ${scoreData.isNewBest ? 'text-success' : 'text-muted'}`}>
+								{scoreData.isNewBest
+									? `🏆 Kỷ lục mới! (Trước: ${scoreData.previousBest.toLocaleString()})`
+									: `Kỷ lục: ${scoreData.previousBest.toLocaleString()}`}
+							</p>
+						</div>
+					)}
 
 					<div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
 						<button
