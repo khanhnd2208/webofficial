@@ -194,7 +194,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 			const res = await fetch(`/api/vocab-sets/${paramId}`);
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
-			const words = json.data.words as Word[];
+			const words = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(words);
 			const q = generateQuestions(words);
 			setQuestions(q);

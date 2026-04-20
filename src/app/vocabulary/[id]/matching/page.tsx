@@ -184,7 +184,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 			const res = await fetch(`/api/vocab-sets/${paramId}`);
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
-			const t = json.data.words as Word[];
+			const t = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(t);
 			startGame(t);
 		});

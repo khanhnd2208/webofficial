@@ -97,7 +97,7 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 			const res = await fetch(`/api/vocab-sets/${paramId}`);
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
-			const words = json.data.words as Word[];
+			const words = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(words);
 			setRemaining(shuffle(words));
 		});
