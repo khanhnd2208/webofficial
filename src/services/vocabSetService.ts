@@ -345,9 +345,8 @@ data: { isDeleted: true },
 /**
  * Get all sets owned by an admin (for admin panel).
  */
-export async function listAdminOwnedSets(adminId: string): Promise<VocabSetListItemDTO[]> {
+export async function listAdminOwnedSets(_adminId?: string): Promise<VocabSetListItemDTO[]> {
 const sets = await prisma.vocabSet.findMany({
-where: { ownerId: adminId },
 orderBy: { updatedAt: 'desc' },
 include: { _count: { select: { words: { where: { isDeleted: false } } } } },
 });
