@@ -1,10 +1,10 @@
 /* ════════════════════════════════════════════════════════════════════════
    GET  /api/vocab-sets  — user's active library
-   POST /api/vocab-sets  — create new VocabSet (admin, JSON or CSV)
+   POST /api/vocab-sets  — create new VocabSet (admin, JSON or CSV/XLSX)
    ════════════════════════════════════════════════════════════════════════ */
-import { parse } from 'csv-parse/sync';
 import { withAuth, withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
 import { createVocabSet, getUserLibrary } from '@/services/vocabSetService';
+import { parseVocabFile } from '@/lib/vocab/parseVocabFile';
 import type { CreateWordInput } from '@/types/vocab';
 
 export const GET = withAuth(async (_req, user) => {
@@ -24,23 +24,23 @@ export const POST = withAdmin(async (request, user) => {
 		title = String(formData.get('title') ?? '').trim();
 		description = String(formData.get('description') ?? '').trim();
 		const file = formData.get('file') as File | null;
-		if (!file) return apiError('CSV file is required', 400);
-		const text = await file.text();
-		const rows = parse(text, { columns: true, skip_empty_lines: true, trim: true }) as Record<string, string>[];
-		words = rows.map((r) => {
-			const parseHints = (val: string | undefined): string[] =>
-				val ? val.split('||').map((s) => s.trim()).filter(Boolean) : [];
-			return {
-				term: r.word ?? r.term ?? '',
-				definition: r.definition ?? '',
-				partOfSpeech: r.partOfSpeech ?? r.part_of_speech ?? '',
-				example: r.example ?? '',
-				ndkExplanation: r.ndk_explanation ?? null,
-				hintsHard: parseHints(r.hints_hard),
-				hintsMedium: parseHints(r.hints_medium),
-				hintsEasy: parseHints(r.hints_easy),
-			};
-		}).filter((w) => w.term && w.definition);
+		if (!file) return apiError('File is required (CSV or XLSX)', 400);
+
+		const { words: parsed, errors } = await parseVocabFile(file);
+
+		if (errors.length > 0) {
+			const details = errors
+				.slice(0, 10)
+				.map((e) => `Dòng ${e.row}: thiếu ${e.missing.join(', ')}`)
+				.join(' | ');
+			const suffix = errors.length > 10 ? ` … và ${errors.length - 10} dòng khác` : '';
+			return apiError(
+				`${errors.length} dòng thiếu trường bắt buộc (word/term, definition, ndk_explanation). ${details}${suffix}`,
+				422,
+			);
+		}
+
+		words = parsed;
 	} else {
 		const body = await request.json() as { title?: string; description?: string; words?: CreateWordInput[] };
 		title = body.title?.trim() ?? '';

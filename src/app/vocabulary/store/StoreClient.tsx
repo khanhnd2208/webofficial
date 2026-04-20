@@ -447,21 +447,34 @@ function AdminStoreView() {
 									className={`border-2 px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
 										uploadMethod === m ? 'border-foreground bg-foreground text-background' : 'border-border text-muted hover:border-foreground hover:text-foreground'
 									}`}>
-									{m === 'csv' ? 'Upload CSV' : 'Nhập tay'}
+									{m === 'csv' ? 'Upload CSV / Excel' : 'Nhập tay'}
 								</button>
 							))}
 						</div>
 					</div>
 					{uploadMethod === 'csv' ? (
 						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">File CSV <span className="text-error">*</span></label>
+							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">File CSV / Excel <span className="text-error">*</span></label>
 							<div className="flex items-center gap-3">
-								<input ref={fileRef} type="file" accept=".csv"
+								<input ref={fileRef} type="file" accept=".csv,.xlsx,.xls"
 									onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
 									className="block text-sm text-foreground file:mr-3 file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-wider file:text-foreground hover:file:bg-surface-hover" />
 								{csvFile && <span className="text-xs text-muted">{csvFile.name}</span>}
 							</div>
-							<p className="mt-1.5 text-[11px] text-muted">Cột: <code>word/term, definition, partOfSpeech (tuỳ chọn), example (tuỳ chọn)</code></p>
+							<div className="mt-1.5 flex flex-wrap items-start gap-x-4 gap-y-1">
+								<p className="text-[11px] text-muted">
+									Bắt buộc: <code className="text-foreground">word/term, definition, ndk_explanation</code>
+									{' · '}
+									Tuỳ chọn: <code>partOfSpeech, example, hints_hard, hints_medium, hints_easy</code>
+								</p>
+								<a
+									href="/api/vocab-sets/sample"
+									download="sample-vocab.xlsx"
+									className="shrink-0 text-[11px] font-bold underline underline-offset-2 text-foreground-secondary hover:text-foreground transition-colors"
+								>
+									↓ Tải file mẫu (.xlsx)
+								</a>
+							</div>
 						</div>
 					) : (
 						<div>
