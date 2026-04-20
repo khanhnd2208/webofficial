@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
+import FlashcardPrism from '@/components/vocab/FlashcardPrism';
+import type { FlashcardWord } from '@/components/vocab/FlashcardPrism';
 
-type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
+type Word = FlashcardWord;
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -86,14 +88,8 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	const [mastered, setMastered] = useState<Word[]>([]);
 	const [stillLearning, setStillLearning] = useState<Word[]>([]);
 	const [index, setIndex] = useState(0);
-	const [flipped, setFlipped] = useState(false);
-	const [swipeState, setSwipeState] = useState<'idle' | 'swiping-left' | 'swiping-right' | 'exit-left' | 'exit-right'>('idle');
-	const [dragX, setDragX] = useState(0);
-	const [animKey, setAnimKey] = useState(0); // triggers entrance animation
+	const [animKey, setAnimKey] = useState(0);
 	const containerRef = useRef<HTMLDivElement>(null);
-	const cardRef = useRef<HTMLDivElement>(null);
-	const startXRef = useRef(0);
-	const isDraggingRef = useRef(false);
 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
@@ -111,15 +107,9 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	const total = allWords?.length ?? 0;
 
 	/* ── Card actions ── */
-	const flip = useCallback(() => {
-		setFlipped((v) => !v);
-		if (!flipped && card) speak(card.term);
-	}, [flipped, card]);
 
 	const advanceCard = useCallback((dir: 'left' | 'right') => {
 		if (!card) return;
-		setSwipeState(dir === 'right' ? 'exit-right' : 'exit-left');
-
 		setTimeout(() => {
 			if (dir === 'right') {
 				setMastered((prev) => [...prev, card]);
@@ -129,11 +119,8 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 				setStillLearning((prev) => [...prev, card]);
 				setIndex((prev) => (prev + 1) % remaining.length);
 			}
-			setFlipped(false);
-			setSwipeState('idle');
-			setDragX(0);
 			setAnimKey((k) => k + 1);
-		}, 350);
+		}, 50);
 	}, [card, index, remaining.length]);
 
 	const markMastered = useCallback(() => advanceCard('right'), [advanceCard]);
@@ -147,47 +134,18 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 		setAnimKey((k) => k + 1);
 	}, [mastered]);
 
-	/* ── Touch / Mouse drag ── */
-	const onPointerDown = useCallback((e: React.PointerEvent) => {
-		if (swipeState !== 'idle') return;
-		startXRef.current = e.clientX;
-		isDraggingRef.current = true;
-		setSwipeState('swiping-left');
-		(e.target as HTMLElement).setPointerCapture(e.pointerId);
-	}, [swipeState]);
-
-	const onPointerMove = useCallback((e: React.PointerEvent) => {
-		if (!isDraggingRef.current) return;
-		const dx = e.clientX - startXRef.current;
-		setDragX(dx);
-		setSwipeState(dx > 0 ? 'swiping-right' : 'swiping-left');
-	}, []);
-
-	const onPointerUp = useCallback(() => {
-		if (!isDraggingRef.current) return;
-		isDraggingRef.current = false;
-		const threshold = 100;
-		if (dragX > threshold) {
-			advanceCard('right');
-		} else if (dragX < -threshold) {
-			advanceCard('left');
-		} else {
-			setSwipeState('idle');
-			setDragX(0);
-		}
-	}, [dragX, advanceCard]);
+	/* ── Touch / Mouse drag ── (handled by FlashcardPrism now) */
 
 	/* ── Keyboard ── */
 	useEffect(() => {
 		function onKey(e: KeyboardEvent) {
-			if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
-			else if (e.key === 'ArrowRight' || e.key === 'l') markMastered();
+			if (e.key === 'ArrowRight' || e.key === 'l') markMastered();
 			else if (e.key === 'ArrowLeft' || e.key === 'h') markStillLearning();
 			else if ((e.metaKey || e.ctrlKey) && e.key === 'z') undo();
 		}
 		window.addEventListener('keydown', onKey);
 		return () => window.removeEventListener('keydown', onKey);
-	}, [flip, markMastered, markStillLearning, undo]);
+	}, [markMastered, markStillLearning, undo]);
 
 	/* ── Loading / Error ── */
 	if (error) {
@@ -219,7 +177,6 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 							setMastered([]);
 							setStillLearning([]);
 							setIndex(0);
-							setFlipped(false);
 							setAnimKey(0);
 						}}
 				/>
@@ -228,18 +185,6 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	}
 
 	const progress = total > 0 ? (mastered.length / total) * 100 : 0;
-
-	// Calculate card transform based on drag
-	const rotation = dragX * 0.08;
-	const opacity = 1 - Math.abs(dragX) / 500;
-	const isExiting = swipeState === 'exit-left' || swipeState === 'exit-right';
-	const exitX = swipeState === 'exit-right' ? 800 : swipeState === 'exit-left' ? -800 : 0;
-	const exitRotation = swipeState === 'exit-right' ? 20 : swipeState === 'exit-left' ? -20 : 0;
-
-	// Swipe direction indicators
-	const showMastered = dragX > 40;
-	const showLearning = dragX < -40;
-	const indicatorOpacity = Math.min(Math.abs(dragX) / 120, 1);
 
 	return (
 		<main ref={containerRef} className="min-h-screen select-none">
@@ -279,108 +224,14 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 					</span>
 				</div>
 
-				{/* Card with perspective */}
-				<div className="relative" style={{ perspective: '1200px' }}>
-					{/* Swipe indicators */}
-					{showMastered && (
-						<div
-							className="absolute -right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-success px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-lg"
-							style={{ opacity: indicatorOpacity, transform: `translateY(-50%) scale(${0.8 + indicatorOpacity * 0.2})` }}
-						>
-							✓ Đã thuộc
-						</div>
-					)}
-					{showLearning && (
-						<div
-							className="absolute -left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-error px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-lg"
-							style={{ opacity: indicatorOpacity, transform: `translateY(-50%) scale(${0.8 + indicatorOpacity * 0.2})` }}
-						>
-							✗ Chưa thuộc
-						</div>
-					)}
-
-					{/* The Card */}
-					<div
-						key={animKey}
-						ref={cardRef}
-						onPointerDown={onPointerDown}
-						onPointerMove={onPointerMove}
-						onPointerUp={onPointerUp}
-						onClick={() => { if (Math.abs(dragX) < 5 && !isDraggingRef.current) flip(); }}
-						className="relative cursor-pointer touch-none"
-						style={{
-							transformStyle: 'preserve-3d',
-							transform: isExiting
-								? `translateX(${exitX}px) rotate(${exitRotation}deg) scale(0.9)`
-								: swipeState.startsWith('swiping')
-									? `translateX(${dragX}px) rotate(${rotation}deg)`
-									: 'translateX(0) rotate(0)',
-							opacity: isExiting ? 0 : opacity,
-							transition: isExiting
-								? 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-								: swipeState === 'idle'
-									? 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
-									: 'none',
-							animation: swipeState === 'idle' && !isExiting ? 'cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined,
-						}}
-					>
-						{/* Inner flip container */}
-						<div
-							style={{
-								transformStyle: 'preserve-3d',
-								transform: flipped ? 'rotateY(180deg)' : 'rotateY(0)',
-								transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-							}}
-						>
-							{/* Front */}
-							<div
-								className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-border bg-surface p-8 sm:min-h-80"
-								style={{
-									backfaceVisibility: 'hidden',
-									boxShadow: '0 8px 32px -4px rgba(0,0,0,0.08), 0 4px 12px -2px rgba(0,0,0,0.04)',
-								}}
-							>
-									<span className="text-center text-2xl font-black tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-										{card?.term}
-									</span>
-								{card?.partOfSpeech ? (
-									<span className="mt-3 rounded-full bg-surface-hover px-3 py-1 text-xs font-medium italic text-muted">
-										{card.partOfSpeech}
-									</span>
-								) : null}
-								<button
-									onClick={(e) => { e.stopPropagation(); if (card) speak(card.term); }}
-									className="mt-5 flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover text-muted transition-all hover:bg-accent hover:text-accent-foreground hover:scale-110 active:scale-95"
-								>
-									<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-3.14a.75.75 0 011.28.53v12.72a.75.75 0 01-1.28.53l-4.72-3.14H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-									</svg>
-								</button>
-								<p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-muted/50">
-									Nhấn để lật
-								</p>
-							</div>
-							{/* Back */}
-							<div
-								className="absolute inset-0 flex min-h-72 flex-col items-center justify-center rounded-2xl border border-border bg-surface p-8 sm:min-h-80"
-								style={{
-									backfaceVisibility: 'hidden',
-									transform: 'rotateY(180deg)',
-									boxShadow: '0 8px 32px -4px rgba(0,0,0,0.08), 0 4px 12px -2px rgba(0,0,0,0.04)',
-								}}
-							>
-								<span className="text-center text-xl font-bold leading-relaxed text-foreground sm:text-2xl">
-									{card?.definition}
-								</span>
-								{card?.example ? (
-									<p className="mt-5 max-w-sm text-center text-sm italic leading-relaxed text-muted">
-										&ldquo;{card.example}&rdquo;
-									</p>
-								) : null}
-							</div>
-						</div>
-					</div>
-				</div>
+				{/* Prism card */}
+				<FlashcardPrism
+					word={card!}
+					animKey={animKey}
+					onSwipeLeft={markStillLearning}
+					onSwipeRight={markMastered}
+					onSpeak={(text) => speak(text)}
+				/>
 
 				{/* Controls */}
 				<div className="mt-8 flex items-center justify-center gap-4">
@@ -391,15 +242,6 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 					>
 						<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
-					</button>
-					<button
-						onClick={flip}
-						className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-border text-foreground transition-all hover:border-foreground hover:scale-105 active:scale-95"
-						title="Lật thẻ"
-					>
-						<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
 						</svg>
 					</button>
 					<button
@@ -414,17 +256,9 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 				</div>
 
 				<p className="mt-5 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
-					Vuốt hoặc · ← Chưa thuộc · → Đã thuộc · Space Lật · ⌘Z Hoàn tác
+					Tap để xoay · ← Chưa thuộc · → Đã thuộc · ⌘Z Hoàn tác
 				</p>
 			</div>
-
-			{/* Entrance animation keyframes */}
-			<style>{`
-				@keyframes cardEntrance {
-					0% { transform: translateY(30px) scale(0.95); opacity: 0; }
-					100% { transform: translateY(0) scale(1); opacity: 1; }
-				}
-			`}</style>
 		</main>
 	);
 }

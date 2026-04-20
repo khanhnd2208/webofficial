@@ -27,12 +27,20 @@ export const POST = withAdmin(async (request, user) => {
 		if (!file) return apiError('CSV file is required', 400);
 		const text = await file.text();
 		const rows = parse(text, { columns: true, skip_empty_lines: true, trim: true }) as Record<string, string>[];
-		words = rows.map((r) => ({
-term: r.word ?? r.term ?? '',
-definition: r.definition ?? '',
-partOfSpeech: r.partOfSpeech ?? r.part_of_speech ?? '',
-example: r.example ?? '',
-})).filter((w) => w.term && w.definition);
+		words = rows.map((r) => {
+			const parseHints = (val: string | undefined): string[] =>
+				val ? val.split('||').map((s) => s.trim()).filter(Boolean) : [];
+			return {
+				term: r.word ?? r.term ?? '',
+				definition: r.definition ?? '',
+				partOfSpeech: r.partOfSpeech ?? r.part_of_speech ?? '',
+				example: r.example ?? '',
+				ndkExplanation: r.ndk_explanation ?? null,
+				hintsHard: parseHints(r.hints_hard),
+				hintsMedium: parseHints(r.hints_medium),
+				hintsEasy: parseHints(r.hints_easy),
+			};
+		}).filter((w) => w.term && w.definition);
 	} else {
 		const body = await request.json() as { title?: string; description?: string; words?: CreateWordInput[] };
 		title = body.title?.trim() ?? '';

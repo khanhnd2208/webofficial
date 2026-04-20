@@ -80,6 +80,24 @@ export default async function VocabSetDetailPage({
 				</svg>
 			),
 		},
+		...(set.words.some((w) => (w.hintsHard.length + w.hintsMedium.length + w.hintsEasy.length) > 0)
+			? [
+				{
+					href: `/vocabulary/${id}/guess-who`,
+					title: 'Guess Who I Am',
+					desc: 'Đoán từ qua gợi ý · 9 mạng',
+					badge: '🎮 Mới',
+					accent: 'from-violet-500/20 to-violet-500/5 border-violet-500/30 hover:border-violet-500',
+					iconBg: 'bg-violet-600 text-white',
+					textColor: 'text-violet-600 dark:text-violet-400',
+					icon: (
+						<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+							<path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+						</svg>
+					),
+				},
+			]
+			: []),
 	];
 
 	return (

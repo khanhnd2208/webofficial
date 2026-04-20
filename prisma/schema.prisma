@@ -39,15 +39,21 @@ model VocabSet {
 // Individual vocabulary term belonging to a VocabSet.
 // Soft-delete via isDeleted=true to hide from UI without losing data.
 model Word {
-  id           String   @id @default(cuid())
-  vocabSetId   String
-  term         String
-  definition   String
-  partOfSpeech String   @default("")
-  example      String   @default("")
-  isDeleted    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(cuid())
+  vocabSetId     String
+  term           String
+  definition     String
+  partOfSpeech   String   @default("")
+  example        String   @default("")
+  isDeleted      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // ── v2: NDK's Explanation & Guess Who hints ──────────────────────────────
+  ndkExplanation String?    // Teacher's personal explanation (nullable)
+  hintsHard      String[]   // Hard hints (few, cryptic) for Guess Who game
+  hintsMedium    String[]   // Medium hints for Guess Who game
+  hintsEasy      String[]   // Easy hints for Guess Who game
 
   vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
 

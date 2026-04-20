@@ -36,6 +36,10 @@ function wordToDTO(w: Word): WordDTO {
 		definition: w.definition,
 		partOfSpeech: w.partOfSpeech,
 		example: w.example,
+		ndkExplanation: w.ndkExplanation,
+		hintsHard: w.hintsHard,
+		hintsMedium: w.hintsMedium,
+		hintsEasy: w.hintsEasy,
 	};
 }
 
@@ -224,6 +228,10 @@ term: w.term.trim(),
 definition: w.definition.trim(),
 partOfSpeech: w.partOfSpeech?.trim() ?? '',
 example: w.example?.trim() ?? '',
+ndkExplanation: w.ndkExplanation ?? null,
+hintsHard: w.hintsHard ?? [],
+hintsMedium: w.hintsMedium ?? [],
+hintsEasy: w.hintsEasy ?? [],
 })),
 },
 },
@@ -277,6 +285,10 @@ term: w.term.trim(),
 definition: w.definition.trim(),
 partOfSpeech: w.partOfSpeech?.trim() ?? '',
 example: w.example?.trim() ?? '',
+ndkExplanation: w.ndkExplanation ?? null,
+hintsHard: w.hintsHard ?? [],
+hintsMedium: w.hintsMedium ?? [],
+hintsEasy: w.hintsEasy ?? [],
 isDeleted: false, // re-activate if it was soft-deleted
 },
 });
@@ -289,6 +301,10 @@ term: w.term.trim(),
 definition: w.definition.trim(),
 partOfSpeech: w.partOfSpeech?.trim() ?? '',
 example: w.example?.trim() ?? '',
+ndkExplanation: w.ndkExplanation ?? null,
+hintsHard: w.hintsHard ?? [],
+hintsMedium: w.hintsMedium ?? [],
+hintsEasy: w.hintsEasy ?? [],
 },
 });
 }

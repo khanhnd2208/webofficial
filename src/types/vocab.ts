@@ -6,7 +6,7 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 // ─── Practice Modes ───────────────────────────────────────────────────────────
-export type PracticeMode = 'flashcards' | 'mcq' | 'fill-blank' | 'matching';
+export type PracticeMode = 'flashcards' | 'mcq' | 'fill-blank' | 'matching' | 'guess-who';
 
 // ─── Word ─────────────────────────────────────────────────────────────────────
 export interface WordDTO {
@@ -15,6 +15,11 @@ export interface WordDTO {
 	definition: string;
 	partOfSpeech: string;
 	example: string;
+	// v2: NDK's Explanation & Guess Who hints
+	ndkExplanation: string | null;
+	hintsHard: string[];
+	hintsMedium: string[];
+	hintsEasy: string[];
 }
 
 // ─── VocabSet ─────────────────────────────────────────────────────────────────
@@ -72,6 +77,11 @@ export interface CreateWordInput {
 	definition: string;
 	partOfSpeech?: string;
 	example?: string;
+	// v2: NDK's Explanation & Guess Who hints
+	ndkExplanation?: string | null;
+	hintsHard?: string[];
+	hintsMedium?: string[];
+	hintsEasy?: string[];
 }
 
 export interface CreateVocabSetInput {

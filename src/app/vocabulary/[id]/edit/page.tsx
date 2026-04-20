@@ -3,8 +3,23 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import TagInput from '@/components/TagInput';
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
+type Term = {
+	word: string;
+	definition: string;
+	partOfSpeech: string;
+	example: string;
+	ndkExplanation: string;
+	hintsHard: string[];
+	hintsMedium: string[];
+	hintsEasy: string[];
+};
+
+const EMPTY_TERM: Term = {
+	word: '', definition: '', partOfSpeech: '', example: '',
+	ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [],
+};
 
 /* ── Modal Component ── */
 function ConfirmModal({
@@ -122,9 +137,18 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 			setTitle(d.title);
 			setDescription(d.description);
 			setIsPublic(!d.isArchived);
-			setTerms(d.words && d.words.length > 0
-				? d.words.map((w: { term: string; definition: string; partOfSpeech: string; example: string }) => ({ word: w.term, definition: w.definition, partOfSpeech: w.partOfSpeech, example: w.example }))
-				: [{ word: '', definition: '', partOfSpeech: '', example: '' }]);
+				setTerms(d.words && d.words.length > 0
+					? d.words.map((w: { term: string; definition: string; partOfSpeech: string; example: string; ndkExplanation?: string | null; hintsHard?: string[]; hintsMedium?: string[]; hintsEasy?: string[] }) => ({
+						word: w.term,
+						definition: w.definition,
+						partOfSpeech: w.partOfSpeech,
+						example: w.example,
+						ndkExplanation: w.ndkExplanation ?? '',
+						hintsHard: w.hintsHard ?? [],
+						hintsMedium: w.hintsMedium ?? [],
+						hintsEasy: w.hintsEasy ?? [],
+					}))
+					: [{ ...EMPTY_TERM }]);
 			setLoading(false);
 		});
 		fetch('/api/auth/session').then(r => r.json()).then(s => {
@@ -148,12 +172,12 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 	}, [terms, searchQuery]);
 
 	// ── Term Operations ──
-	function updateTerm(idx: number, field: keyof Term, value: string) {
+	function updateTerm(idx: number, field: keyof Term, value: string | string[]) {
 		setTerms(prev => prev.map((t, i) => (i === idx ? { ...t, [field]: value } : t)));
 	}
 
 	function addTerm() {
-		setTerms(prev => [...prev, { word: '', definition: '', partOfSpeech: '', example: '' }]);
+		setTerms(prev => [...prev, { ...EMPTY_TERM }]);
 		setSearchQuery('');
 		setToast({ message: 'Đã thêm từ mới', type: 'info' });
 	}
@@ -251,10 +275,18 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 		const posIdx = headers.findIndex(h => ['partofspeech', 'pos', 'part_of_speech'].includes(h));
 		const exIdx = headers.findIndex(h => ['example', 'sentence'].includes(h));
 
+		const ndkIdx = headers.findIndex(h => ['ndk_explanation', 'ndkexplanation'].includes(h));
+		const hHardIdx = headers.findIndex(h => ['hints_hard', 'hintshard'].includes(h));
+		const hMedIdx = headers.findIndex(h => ['hints_medium', 'hintsmedium'].includes(h));
+		const hEasyIdx = headers.findIndex(h => ['hints_easy', 'hintseasy'].includes(h));
+
 		if (wordIdx === -1 || defIdx === -1) {
 			setToast({ message: 'CSV cần có cột word và definition', type: 'error' });
 			return;
 		}
+
+		const parseHints = (val: string | undefined): string[] =>
+			val ? val.split('||').map((s) => s.trim()).filter(Boolean) : [];
 
 		const newTerms: Term[] = [];
 		for (let i = 1; i < lines.length; i++) {
@@ -267,6 +299,10 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 				definition,
 				partOfSpeech: posIdx >= 0 ? (cols[posIdx] ?? '') : '',
 				example: exIdx >= 0 ? (cols[exIdx] ?? '') : '',
+				ndkExplanation: ndkIdx >= 0 ? (cols[ndkIdx] ?? '') : '',
+				hintsHard: parseHints(hHardIdx >= 0 ? cols[hHardIdx] : undefined),
+				hintsMedium: parseHints(hMedIdx >= 0 ? cols[hMedIdx] : undefined),
+				hintsEasy: parseHints(hEasyIdx >= 0 ? cols[hEasyIdx] : undefined),
 			});
 		}
 
@@ -293,7 +329,16 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 			const res = await fetch(`/api/vocab-sets/${id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: title.trim(), description: description.trim(), words: validTerms.map(t => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example })) }),
+				body: JSON.stringify({ title: title.trim(), description: description.trim(), words: validTerms.map(t => ({
+				term: t.word,
+				definition: t.definition,
+				partOfSpeech: t.partOfSpeech,
+				example: t.example,
+				ndkExplanation: t.ndkExplanation || null,
+				hintsHard: t.hintsHard,
+				hintsMedium: t.hintsMedium,
+				hintsEasy: t.hintsEasy,
+			})) }),
 			});
 			const json = await res.json();
 			if (!json.ok) throw new Error(json.error);
@@ -569,6 +614,47 @@ export default function EditVocabSetPage({ params }: { params: Promise<{ id: str
 											<input type="text" value={term.partOfSpeech} onChange={e => updateTerm(idx, 'partOfSpeech', e.target.value)} placeholder="Loại từ (n, v, adj…)" className="w-full border-b border-border bg-transparent px-0 py-2 text-xs text-foreground-secondary placeholder:text-muted focus:border-accent focus:outline-none transition-colors" />
 											<input type="text" value={term.example} onChange={e => updateTerm(idx, 'example', e.target.value)} placeholder="Ví dụ" className="w-full border-b border-border bg-transparent px-0 py-2 text-xs italic text-foreground-secondary placeholder:text-muted focus:border-accent focus:outline-none transition-colors" />
 										</div>
+
+										{/* NDK's Explanation */}
+										<div className="mt-3">
+											<label className="block text-[10px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">
+												📝 NDK&apos;s Explanation
+											</label>
+											<textarea
+												value={term.ndkExplanation}
+												onChange={e => updateTerm(idx, 'ndkExplanation', e.target.value)}
+												placeholder="Lời thầy giải thích (tuỳ chọn)…"
+												rows={2}
+												className="w-full resize-none border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-foreground placeholder:text-muted focus:border-amber-500 focus:outline-none transition-colors rounded"
+											/>
+										</div>
+
+										{/* Guess Who Hints */}
+										<details className="mt-3 group">
+											<summary className="cursor-pointer select-none text-[10px] font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400 list-none flex items-center gap-1">
+												<svg className="h-3 w-3 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+												🎮 Guess Who — Gợi ý
+												{(term.hintsHard.length + term.hintsMedium.length + term.hintsEasy.length) > 0 && (
+													<span className="ml-1 rounded-full bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 text-[9px] font-bold text-purple-600 dark:text-purple-300">
+														{term.hintsHard.length + term.hintsMedium.length + term.hintsEasy.length} gợi ý
+													</span>
+												)}
+											</summary>
+											<div className="mt-2 space-y-3 pl-4 border-l-2 border-purple-200 dark:border-purple-800">
+												<div>
+													<label className="block text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1">🔴 Khó (Hard)</label>
+													<TagInput tags={term.hintsHard} onChange={val => updateTerm(idx, 'hintsHard', val)} placeholder="Gợi ý khó — Enter để thêm" />
+												</div>
+												<div>
+													<label className="block text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1">🟡 Trung bình (Medium)</label>
+													<TagInput tags={term.hintsMedium} onChange={val => updateTerm(idx, 'hintsMedium', val)} placeholder="Gợi ý vừa — Enter để thêm" />
+												</div>
+												<div>
+													<label className="block text-[10px] font-bold uppercase tracking-widest text-green-500 mb-1">🟢 Dễ (Easy)</label>
+													<TagInput tags={term.hintsEasy} onChange={val => updateTerm(idx, 'hintsEasy', val)} placeholder="Gợi ý dễ — Enter để thêm" />
+												</div>
+											</div>
+										</details>
 									</div>
 								);
 							})

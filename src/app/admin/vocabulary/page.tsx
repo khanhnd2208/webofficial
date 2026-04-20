@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import TagInput from '@/components/TagInput';
 
 type StoreSet = {
 	id: string;
@@ -12,7 +13,21 @@ type StoreSet = {
 	isArchived: boolean;
 };
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
+type Term = {
+	word: string;
+	definition: string;
+	partOfSpeech: string;
+	example: string;
+	ndkExplanation: string;
+	hintsHard: string[];
+	hintsMedium: string[];
+	hintsEasy: string[];
+};
+
+const EMPTY_TERM: Term = {
+	word: '', definition: '', partOfSpeech: '', example: '',
+	ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [],
+};
 
 /* ── Toast ─────────────────────────────────────────────────────── */
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
@@ -77,8 +92,8 @@ export default function AdminVocabularyPage() {
 	const [uploadMethod, setUploadMethod] = useState<'csv' | 'manual'>('csv');
 	const [csvFile, setCsvFile] = useState<File | null>(null);
 	const [manualTerms, setManualTerms] = useState<Term[]>([
-		{ word: '', definition: '', partOfSpeech: '', example: '' },
-		{ word: '', definition: '', partOfSpeech: '', example: '' },
+		{ ...EMPTY_TERM },
+		{ ...EMPTY_TERM },
 	]);
 	const [uploading, setUploading] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
@@ -156,7 +171,21 @@ export default function AdminVocabularyPage() {
 				const res = await fetch('/api/vocab-sets', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ title: uploadTitle.trim(), description: uploadDesc.trim(), visibility: 'public', terms: validTerms }),
+				body: JSON.stringify({
+						title: uploadTitle.trim(),
+						description: uploadDesc.trim(),
+						visibility: 'public',
+						words: validTerms.map(t => ({
+							term: t.word,
+							definition: t.definition,
+							partOfSpeech: t.partOfSpeech,
+							example: t.example,
+							ndkExplanation: t.ndkExplanation || null,
+							hintsHard: t.hintsHard,
+							hintsMedium: t.hintsMedium,
+							hintsEasy: t.hintsEasy,
+						})),
+					}),
 				});
 				const json = await res.json();
 				if (!json.ok) throw new Error(json.error);
@@ -165,7 +194,7 @@ export default function AdminVocabularyPage() {
 			// Reset form
 			setShowUpload(false);
 			setUploadTitle(''); setUploadDesc(''); setCsvFile(null);
-			setManualTerms([{ word: '', definition: '', partOfSpeech: '', example: '' }, { word: '', definition: '', partOfSpeech: '', example: '' }]);
+			setManualTerms([{ ...EMPTY_TERM }, { ...EMPTY_TERM }]);
 			if (fileRef.current) fileRef.current.value = '';
 			await fetchSets();
 		} catch (err) {
@@ -175,7 +204,7 @@ export default function AdminVocabularyPage() {
 		}
 	}
 
-	function updateTerm(idx: number, field: keyof Term, val: string) {
+	function updateTerm(idx: number, field: keyof Term, val: string | string[]) {
 		setManualTerms((prev) => prev.map((t, i) => i === idx ? { ...t, [field]: val } : t));
 	}
 
@@ -352,7 +381,7 @@ export default function AdminVocabularyPage() {
 							</div>
 							<button
 								type="button"
-								onClick={() => setManualTerms((prev) => [...prev, { word: '', definition: '', partOfSpeech: '', example: '' }])}
+								onClick={() => setManualTerms((prev) => [...prev, { ...EMPTY_TERM }])}
 								className="mt-2 text-xs font-bold uppercase tracking-wider text-accent hover:underline"
 							>
 								+ Thêm từ
