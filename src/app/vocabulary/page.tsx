@@ -25,7 +25,7 @@ export default async function VocabularyPage() {
 								Bộ từ vựng của tôi
 							</h1>
 							<p className="mt-2 text-sm text-foreground-secondary">
-								{sets.length} bộ · Tạo bộ từ vựng và luyện tập với Flashcard, MCQ, Điền từ và Nối từ.
+								{sets.length} bộ · Luyện tập với Flashcard, MCQ, Điền từ và Nối từ.
 							</p>
 						</div>
 						<div className="flex items-center gap-3">
