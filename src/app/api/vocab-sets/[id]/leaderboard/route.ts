@@ -5,7 +5,8 @@
    ════════════════════════════════════════════════════════════════════════ */
 import { withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
 import { prisma } from '@/lib/prisma';
-import type { GameMode } from '@prisma/client';
+
+type GameMode = 'MCQ' | 'FILL_BLANK' | 'MATCHING' | 'GUESS_WHO';
 
 type Ctx = { params: Promise<{ id: string }> };
 

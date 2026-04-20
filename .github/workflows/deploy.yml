@@ -37,6 +37,9 @@ jobs:
             echo "📦 [2/4] Install dependencies..."
             npm install --include=dev
 
+            echo "🔧 [2.5/4] Generate Prisma client..."
+            npx prisma generate
+
             echo "🏗️  [3/4] Build Next.js (with live MongoDB)..."
             npm run build
 
