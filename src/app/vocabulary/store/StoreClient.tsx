@@ -314,11 +314,11 @@ function AdminStoreView() {
 		finally { setTogglingId(null); }
 	}
 
-	/* ── Delete ── */
+	/* ── Delete (archive) ── */
 	async function handleDelete(id: string) {
 		setDeletingId(id);
 		try {
-			const res = await fetch(`/api/vocab-sets/${id}`, { method: 'DELETE' });
+			const res = await fetch(`/api/vocab-sets/${id}?action=archive`, { method: 'DELETE' });
 			const json = await res.json();
 			if (json.ok) {
 				setSets((prev) => prev.filter((s) => s.id !== id));

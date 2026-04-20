@@ -299,15 +299,15 @@ export default function WordDatabasePage() {
 						<div className="border-2 border-dashed border-border p-12 text-center">
 							<p className="text-sm text-muted">
 								{allTerms.length === 0
-									? 'Chưa có từ vựng nào. Hãy tạo bộ từ đầu tiên!'
+									? 'Chưa có từ vựng nào. Hãy đến cửa hàng để tải bộ từ!'
 									: 'Không tìm thấy từ vựng phù hợp với bộ lọc.'}
 							</p>
 							{allTerms.length === 0 && (
 								<Link
-									href="/vocabulary/create"
+									href="/vocabulary/store"
 									className="mt-4 inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground"
 								>
-									Tạo bộ từ
+									Đến cửa hàng từ vựng
 								</Link>
 							)}
 						</div>

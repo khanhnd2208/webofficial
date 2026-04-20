@@ -135,9 +135,9 @@ export default async function DashboardPage() {
 								),
 							},
 							{
-								href: '/vocabulary/create',
-								title: 'Tạo bộ từ mới',
-								desc: 'Thêm bộ từ vựng mới để học',
+								href: '/vocabulary/store',
+								title: 'Cửa hàng từ vựng',
+								desc: 'Tải bộ từ do admin tuyển chọn',
 								color: 'text-success',
 								bg: 'bg-success-subtle',
 								icon: (

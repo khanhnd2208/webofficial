@@ -394,13 +394,13 @@ export default function GuessWhoPage({ params }: { params: Promise<{ id: string 
             Chưa có gợi ý nào
           </h2>
           <p className="max-w-sm text-sm text-foreground-secondary">
-            Bộ từ này chưa có gợi ý Guess Who. Hãy thêm gợi ý vào các từ trong trang chỉnh sửa.
+            Bộ từ này chưa có gợi ý Guess Who. Admin cần thêm gợi ý trong tab Quản lí cửa hàng.
           </p>
           <Link
-            href={`/vocabulary/${id}/edit`}
+            href="/vocabulary/store"
             className="mt-2 inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background hover:bg-transparent hover:text-foreground transition-all"
           >
-            Chỉnh sửa bộ từ
+            Đến cửa hàng từ vựng
           </Link>
         </div>
       ) : (
