@@ -16,13 +16,6 @@ export default async function VocabSetDetailPage({
 	if (!set) notFound();
 	if (!session?.user) redirect('/login');
 
-	const user = session.user;
-	const isOwner = user.id === set.ownerId;
-	const isAdmin = user.role === 'admin';
-
-	// Only owner or admin can view
-	if (!isOwner && !isAdmin) notFound();
-
 	const practiceCards = [
 		{
 			href: `/vocabulary/${id}/flashcards`,
@@ -130,15 +123,7 @@ export default async function VocabSetDetailPage({
 						</time>
 					</div>
 
-					{/* Actions */}
-					<div className="mt-6 flex items-center gap-3">
-						<Link
-							href={`/vocabulary/${id}/edit`}
-							className="inline-flex items-center gap-2 border-2 border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-foreground transition-all hover:border-foreground"
-						>
-							Chỉnh sửa
-						</Link>
-					</div>
+
 				</div>
 			</section>
 

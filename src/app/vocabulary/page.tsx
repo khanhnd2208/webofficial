@@ -47,15 +47,7 @@ export default async function VocabularyPage() {
 								</svg>
 								Kho từ
 							</Link>
-							<Link
-								href="/vocabulary/create"
-								className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground"
-							>
-								<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-								</svg>
-								Tạo mới
-							</Link>
+	
 						</div>
 					</div>
 				</div>
@@ -106,25 +98,15 @@ export default async function VocabularyPage() {
 							</div>
 							<p className="mt-5 text-sm font-medium text-foreground">Bạn chưa có bộ từ vựng nào</p>
 							<p className="mt-1 text-xs text-muted">
-								Tạo bộ từ đầu tiên bằng cách nhập thủ công hoặc upload file CSV.
+								Đến cửa hàng và tải về bộ từ vựng do admin tuyển chọn.
 							</p>
 							<div className="mt-6 flex items-center justify-center gap-3">
 								<Link
-									href="/vocabulary/create"
-									className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground"
+									href="/vocabulary/store"
+									className="inline-flex items-center gap-2 rounded-full border-2 border-rose bg-rose px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-transparent hover:text-rose"
 								>
-									Tạo bộ từ đầu tiên
+									Đến cửa hàng từ vựng
 								</Link>
-								<a
-									href="/sample-vocab.csv"
-									download
-									className="inline-flex items-center gap-2 rounded-full border-2 border-border px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:border-foreground"
-								>
-									<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-									</svg>
-									Tải CSV mẫu
-								</a>
 							</div>
 						</div>
 					) : (
