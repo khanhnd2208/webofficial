@@ -3,8 +3,10 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useRef } from 'react';
+import TagInput from '@/components/TagInput';
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
+type Term = { word: string; definition: string; partOfSpeech: string; example: string; ndkExplanation: string; hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] };
+const EMPTY_TERM: Term = { word: '', definition: '', partOfSpeech: '', example: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [] };
 
 export default function CreateVocabSetPage() {
 	const router = useRouter();
@@ -12,21 +14,18 @@ export default function CreateVocabSetPage() {
 
 	const [title, setTitle] = useState('');
 	const [description, setDescription] = useState('');
-	const [terms, setTerms] = useState<Term[]>([
-		{ word: '', definition: '', partOfSpeech: '', example: '' },
-		{ word: '', definition: '', partOfSpeech: '', example: '' },
-	]);
+	const [terms, setTerms] = useState<Term[]>([{ ...EMPTY_TERM }, { ...EMPTY_TERM }]);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState('');
 	const [csvMode, setCsvMode] = useState(false);
 	const [csvFile, setCsvFile] = useState<File | null>(null);
 
-	function updateTerm(idx: number, field: keyof Term, value: string) {
+	function updateTerm(idx: number, field: keyof Term, value: string | string[]) {
 		setTerms((prev) => prev.map((t, i) => (i === idx ? { ...t, [field]: value } : t)));
 	}
 
 	function addTerm() {
-		setTerms((prev) => [...prev, { word: '', definition: '', partOfSpeech: '', example: '' }]);
+		setTerms((prev) => [...prev, { ...EMPTY_TERM }]);
 	}
 
 	function removeTerm(idx: number) {
@@ -59,7 +58,7 @@ export default function CreateVocabSetPage() {
 				const res = await fetch('/api/vocab-sets', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ title: title.trim(), description: description.trim(), visibility: 'private', words: validTerms.map(t => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example })) }),
+					body: JSON.stringify({ title: title.trim(), description: description.trim(), visibility: 'private', words: validTerms.map(t => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example, ndkExplanation: t.ndkExplanation || null, hintsHard: t.hintsHard, hintsMedium: t.hintsMedium, hintsEasy: t.hintsEasy })) }),
 				});
 				const json = await res.json();
 				if (!json.ok) throw new Error(json.error);
@@ -224,6 +223,31 @@ export default function CreateVocabSetPage() {
 											placeholder="Ví dụ"
 											className="w-full border-b border-border bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
 										/>
+									</div>
+									{/* NDK & Hints for Guess Who */}
+									<div className="mt-3 space-y-3 border-t border-border pt-3">
+										<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Guess Who (tùy chọn)</p>
+										<textarea
+											value={term.ndkExplanation}
+											onChange={(e) => updateTerm(idx, 'ndkExplanation', e.target.value)}
+											placeholder="Giải thích NDK (không dùng từ đang học)"
+											rows={2}
+											className="w-full border border-border bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none resize-none"
+										/>
+										<div className="grid gap-2 sm:grid-cols-3">
+											<div>
+												<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-error">Khó</p>
+												<TagInput tags={term.hintsHard} onChange={(v) => updateTerm(idx, 'hintsHard', v)} placeholder="Gợi ý khó..." />
+											</div>
+											<div>
+												<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-warning">Trung bình</p>
+												<TagInput tags={term.hintsMedium} onChange={(v) => updateTerm(idx, 'hintsMedium', v)} placeholder="Gợi ý trung bình..." />
+											</div>
+											<div>
+												<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-success">Dễ</p>
+												<TagInput tags={term.hintsEasy} onChange={(v) => updateTerm(idx, 'hintsEasy', v)} placeholder="Gợi ý dễ..." />
+											</div>
+										</div>
 									</div>
 								</div>
 							))}

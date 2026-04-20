@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import TagInput from '@/components/TagInput';
 
 /* ══════════════════════════════════════════════════════════════════
    Types
@@ -17,7 +18,8 @@ type StoreSet = {
 	alreadyOwned?: boolean;
 };
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string };
+type Term = { word: string; definition: string; partOfSpeech: string; example: string; ndkExplanation: string; hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] };
+const EMPTY_TERM: Term = { word: '', definition: '', partOfSpeech: '', example: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [] };
 
 interface Props {
 	isAdmin: boolean;
@@ -256,8 +258,8 @@ function AdminStoreView() {
 	const [uploadMethod, setUploadMethod] = useState<'csv' | 'manual'>('csv');
 	const [csvFile, setCsvFile] = useState<File | null>(null);
 	const [manualTerms, setManualTerms] = useState<Term[]>([
-		{ word: '', definition: '', partOfSpeech: '', example: '' },
-		{ word: '', definition: '', partOfSpeech: '', example: '' },
+		{ ...EMPTY_TERM },
+		{ ...EMPTY_TERM },
 	]);
 	const [uploading, setUploading] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
@@ -335,7 +337,7 @@ function AdminStoreView() {
 					body: JSON.stringify({
 						title: uploadTitle.trim(),
 						description: uploadDesc.trim(),
-						words: validTerms.map((t) => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example })),
+						words: validTerms.map((t) => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example, ndkExplanation: t.ndkExplanation || null, hintsHard: t.hintsHard, hintsMedium: t.hintsMedium, hintsEasy: t.hintsEasy })),
 					}),
 				});
 				const json = await res.json();
@@ -344,7 +346,7 @@ function AdminStoreView() {
 			showToast(`Đã tạo "${uploadTitle}" thành công!`, 'success');
 			setShowCreate(false);
 			setUploadTitle(''); setUploadDesc(''); setCsvFile(null);
-			setManualTerms([{ word: '', definition: '', partOfSpeech: '', example: '' }, { word: '', definition: '', partOfSpeech: '', example: '' }]);
+			setManualTerms([{ ...EMPTY_TERM }, { ...EMPTY_TERM }]);
 			if (fileRef.current) fileRef.current.value = '';
 			await fetchSets();
 		} catch (err) {
@@ -354,7 +356,7 @@ function AdminStoreView() {
 		}
 	}
 
-	function updateTerm(idx: number, field: keyof Term, val: string) {
+	function updateTerm(idx: number, field: keyof Term, val: string | string[]) {
 		setManualTerms((prev) => prev.map((t, i) => i === idx ? { ...t, [field]: val } : t));
 	}
 
@@ -450,31 +452,54 @@ function AdminStoreView() {
 							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-2">Danh sách từ</label>
 							<div className="space-y-2">
 								{manualTerms.map((t, i) => (
-									<div key={i} className="grid gap-2 sm:grid-cols-4">
-										<input type="text" placeholder={`Từ ${i + 1}`} value={t.word}
-											onChange={(e) => updateTerm(i, 'word', e.target.value)}
-											className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
-										<input type="text" placeholder="Định nghĩa" value={t.definition}
-											onChange={(e) => updateTerm(i, 'definition', e.target.value)}
-											className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
-										<input type="text" placeholder="Từ loại (tuỳ chọn)" value={t.partOfSpeech}
-											onChange={(e) => updateTerm(i, 'partOfSpeech', e.target.value)}
-											className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
-										<div className="flex gap-2">
-											<input type="text" placeholder="Ví dụ (tuỳ chọn)" value={t.example}
-												onChange={(e) => updateTerm(i, 'example', e.target.value)}
-												className="flex-1 border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
-											{manualTerms.length > 2 && (
-												<button type="button" onClick={() => setManualTerms((prev) => prev.filter((_, j) => j !== i))}
-													className="flex h-10 w-10 shrink-0 items-center justify-center border border-border text-muted hover:border-error hover:text-error transition-colors">
-													<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-												</button>
-											)}
+									<div key={i} className="border border-border bg-background p-3 space-y-2">
+										<div className="grid gap-2 sm:grid-cols-4">
+											<input type="text" placeholder={`Từ ${i + 1}`} value={t.word}
+												onChange={(e) => updateTerm(i, 'word', e.target.value)}
+												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
+											<input type="text" placeholder="Định nghĩa" value={t.definition}
+												onChange={(e) => updateTerm(i, 'definition', e.target.value)}
+												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
+											<input type="text" placeholder="Từ loại (tuỳ chọn)" value={t.partOfSpeech}
+												onChange={(e) => updateTerm(i, 'partOfSpeech', e.target.value)}
+												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
+											<div className="flex gap-2">
+												<input type="text" placeholder="Ví dụ (tuỳ chọn)" value={t.example}
+													onChange={(e) => updateTerm(i, 'example', e.target.value)}
+													className="flex-1 border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
+												{manualTerms.length > 2 && (
+													<button type="button" onClick={() => setManualTerms((prev) => prev.filter((_, j) => j !== i))}
+														className="flex h-10 w-10 shrink-0 items-center justify-center border border-border text-muted hover:border-error hover:text-error transition-colors">
+														<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+													</button>
+												)}
+											</div>
+										</div>
+										{/* NDK & Hints (Guess Who) */}
+										<div className="border-t border-border pt-2 space-y-2">
+											<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Guess Who (tùy chọn)</p>
+											<textarea value={t.ndkExplanation} onChange={(e) => updateTerm(i, 'ndkExplanation', e.target.value)}
+												placeholder="Giải thích NDK (không dùng từ đang học)" rows={2}
+												className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground resize-none" />
+											<div className="grid gap-2 sm:grid-cols-3">
+												<div>
+													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-error">Khó</p>
+													<TagInput tags={t.hintsHard} onChange={(v) => updateTerm(i, 'hintsHard', v)} placeholder="Gợi ý khó..." />
+												</div>
+												<div>
+													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-warning">Trung bình</p>
+													<TagInput tags={t.hintsMedium} onChange={(v) => updateTerm(i, 'hintsMedium', v)} placeholder="Gợi ý trung bình..." />
+												</div>
+												<div>
+													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-success">Dễ</p>
+													<TagInput tags={t.hintsEasy} onChange={(v) => updateTerm(i, 'hintsEasy', v)} placeholder="Gợi ý dễ..." />
+												</div>
+											</div>
 										</div>
 									</div>
 								))}
 							</div>
-							<button type="button" onClick={() => setManualTerms((prev) => [...prev, { word: '', definition: '', partOfSpeech: '', example: '' }])}
+							<button type="button" onClick={() => setManualTerms((prev) => [...prev, { ...EMPTY_TERM }])}
 								className="mt-3 border border-dashed border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted hover:border-foreground hover:text-foreground transition-colors">
 								+ Thêm từ
 							</button>

@@ -353,29 +353,56 @@ export default function AdminVocabularyPage() {
 							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-2">Từ vựng</label>
 							<div className="space-y-2">
 								{manualTerms.map((t, i) => (
-									<div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2">
-										<input
-											value={t.word}
-											onChange={(e) => updateTerm(i, 'word', e.target.value)}
-											placeholder={`Từ ${i + 1}`}
-											className="border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
-										/>
-										<input
-											value={t.definition}
-											onChange={(e) => updateTerm(i, 'definition', e.target.value)}
-											placeholder="Nghĩa / định nghĩa"
-											className="border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
-										/>
-										<button
-											type="button"
-											onClick={() => setManualTerms((prev) => prev.filter((_, j) => j !== i))}
-											className="flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-error"
-											disabled={manualTerms.length <= 1}
-										>
-											<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-												<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-											</svg>
-										</button>
+									<div key={i} className="border border-border bg-background p-3 space-y-2">
+										<div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+											<input
+												value={t.word}
+												onChange={(e) => updateTerm(i, 'word', e.target.value)}
+												placeholder={`Từ ${i + 1}`}
+												className="border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+											/>
+											<input
+												value={t.definition}
+												onChange={(e) => updateTerm(i, 'definition', e.target.value)}
+												placeholder="Nghĩa / định nghĩa"
+												className="border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+											/>
+											<button
+												type="button"
+												onClick={() => setManualTerms((prev) => prev.filter((_, j) => j !== i))}
+												className="flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-error"
+												disabled={manualTerms.length <= 1}
+											>
+												<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+													<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+												</svg>
+											</button>
+										</div>
+										{/* NDK & Hints (Guess Who) */}
+										<div className="border-t border-border pt-2 space-y-2">
+											<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Guess Who (tùy chọn)</p>
+											<textarea
+												value={t.ndkExplanation}
+												onChange={(e) => updateTerm(i, 'ndkExplanation', e.target.value)}
+												placeholder="Giải thích NDK (không dùng từ đang học)"
+												rows={2}
+												className="w-full border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground resize-none"
+											/>
+											<div className="grid gap-2 sm:grid-cols-3">
+												<div>
+													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-error">Khó</p>
+													<TagInput tags={t.hintsHard} onChange={(v) => updateTerm(i, 'hintsHard', v)} placeholder="Gợi ý khó..." />
+												</div>
+												<div>
+													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-warning">Trung bình</p>
+													<TagInput tags={t.hintsMedium} onChange={(v) => updateTerm(i, 'hintsMedium', v)} placeholder="Gợi ý trung bình..." />
+												</div>
+												<div>
+													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-success">Dễ</p>
+													<TagInput tags={t.hintsEasy} onChange={(v) => updateTerm(i, 'hintsEasy', v)} placeholder="Gợi ý dễ..." />
+												</div>
+											</div>
+										</div>
 									</div>
 								))}
 							</div>
