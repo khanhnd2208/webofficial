@@ -86,7 +86,7 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 
 	const [remaining, setRemaining] = useState<Word[]>([]);
 	const [mastered, setMastered] = useState<Word[]>([]);
-	const [stillLearning, setStillLearning] = useState<Word[]>([]);
+	const [_stillLearning, setStillLearning] = useState<Word[]>([]);
 	const [index, setIndex] = useState(0);
 	const [animKey, setAnimKey] = useState(0);
 	const containerRef = useRef<HTMLDivElement>(null);

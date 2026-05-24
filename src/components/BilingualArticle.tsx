@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface BilingualArticleProps {
 	contentVi: string;
@@ -21,6 +22,16 @@ export default function BilingualArticle({
 	const hasEn = Boolean(contentEn && contentEn.replace(/<[^>]*>/g, '').trim().length > 0);
 
 	const activeContent = lang === 'en' && hasEn ? contentEn : contentVi;
+
+	// Sanitize HTML to prevent XSS — allow the full set of tags Tiptap produces
+	const safeHtml = useMemo(
+		() => DOMPurify.sanitize(activeContent, {
+			USE_PROFILES: { html: true },
+			// Strip event handlers and dangerous attributes, keep everything else
+			FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+		}),
+		[activeContent],
+	);
 
 	return (
 		<div>
@@ -52,7 +63,7 @@ export default function BilingualArticle({
 			{/* Article content */}
 			<article
 				className={className}
-				dangerouslySetInnerHTML={{ __html: activeContent }}
+				dangerouslySetInnerHTML={{ __html: safeHtml }}
 			/>
 		</div>
 	);

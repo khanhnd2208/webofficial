@@ -127,7 +127,7 @@ export default function CreatePostPage() {
 			}
 		}, 5000);
 		return () => clearTimeout(timer);
-	}, [title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content, plainText, saveState.status]);
+	}, [title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content, contentEn, plainText, saveState.status]);
 
 	// ─── Unsaved changes warning ───
 	const hasContent = title.trim().length > 0 || plainText.length > 10;

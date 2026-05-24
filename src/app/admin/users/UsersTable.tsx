@@ -21,11 +21,16 @@ const ROLE_COLORS: Record<UserRole, string> = {
 	student: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
 };
 
-const ROLE_LABELS: Record<UserRole, string> = {
+const _ROLE_LABELS: Record<UserRole, string> = {
 	admin: 'Admin',
 	teacher: 'Teacher',
 	student: 'Student',
 };
+
+function SortIcon({ field, currentSortBy, currentSortDir }: { field: string; currentSortBy: string; currentSortDir: string }) {
+	if (currentSortBy !== field) return <span className="text-muted opacity-40">↕</span>;
+	return <span className="text-foreground">{currentSortDir === 'desc' ? '↓' : '↑'}</span>;
+}
 
 export default function UsersTable({
 	result,
@@ -64,11 +69,6 @@ export default function UsersTable({
 	function toggleSort(field: 'createdAt' | 'name' | 'email') {
 		const newDir = currentSortBy === field && currentSortDir === 'desc' ? 'asc' : 'desc';
 		navigate({ sortBy: field, sortDir: newDir });
-	}
-
-	function SortIcon({ field }: { field: string }) {
-		if (currentSortBy !== field) return <span className="text-muted opacity-40">↕</span>;
-		return <span className="text-foreground">{currentSortDir === 'desc' ? '↓' : '↑'}</span>;
 	}
 
 	const handleRoleChange = useCallback(async (userId: string, newRole: UserRole) => {
@@ -124,18 +124,15 @@ export default function UsersTable({
 										onClick={() => toggleSort('name')}
 										className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-widest text-muted hover:text-foreground"
 									>
-										Người dùng <SortIcon field="name" />
+										Người dùng <SortIcon field="name" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
 									</button>
 								</th>
-								<th className="px-4 py-3 text-left">
-									<span className="font-bold text-xs uppercase tracking-widest text-muted">Role</span>
-								</th>
-								<th className="px-4 py-3 text-right hidden sm:table-cell">
-									<span className="font-bold text-xs uppercase tracking-widest text-muted">Bình luận</span>
-								</th>
-								<th className="px-4 py-3 text-right hidden sm:table-cell">
-									<span className="font-bold text-xs uppercase tracking-widest text-muted">Từ vựng</span>
-								</th>
+							<th className="px-4 py-3 text-left">
+								<span className="font-bold text-xs uppercase tracking-widest text-muted">Role</span>
+							</th>
+							<th className="px-4 py-3 text-right hidden sm:table-cell">
+								<span className="font-bold text-xs uppercase tracking-widest text-muted">Từ vựng</span>
+							</th>
 								<th className="px-4 py-3 text-right hidden md:table-cell">
 									<span className="font-bold text-xs uppercase tracking-widest text-muted">🔥 Streak</span>
 								</th>
@@ -144,7 +141,7 @@ export default function UsersTable({
 										onClick={() => toggleSort('createdAt')}
 										className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-widest text-muted hover:text-foreground ml-auto"
 									>
-										Ngày đăng ký <SortIcon field="createdAt" />
+										Ngày đăng ký <SortIcon field="createdAt" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
 									</button>
 								</th>
 								<th className="px-4 py-3" />
@@ -292,10 +289,6 @@ function UserRow({
 						<option key={r} value={r}>{r === 'admin' ? 'Admin' : 'Người dùng'}</option>
 					))}
 				</select>
-			</td>
-			{/* Comments */}
-			<td className="px-4 py-3 text-right hidden sm:table-cell">
-				<span className="text-foreground font-medium tabular-nums">{user.commentCount}</span>
 			</td>
 			{/* Vocab sets */}
 			<td className="px-4 py-3 text-right hidden sm:table-cell">

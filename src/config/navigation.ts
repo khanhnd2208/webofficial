@@ -11,13 +11,11 @@ export interface NavLink {
 
 export const NAV_LINKS: NavLink[] = [
 	{ href: '/blog', label: 'Hanoicam Story' },
-	{ href: '/vocabulary', label: 'Học tiếng Anh' },
-	{ href: '/personality-test', label: 'Personality Test' },
-	{ href: '/feedback', label: 'Phản hồi' },
+	{ href: '/vocabulary', label: 'Học Tiếng Anh' },
 ];
 
 export const USER_MENU_LINKS: NavLink[] = [
 	{ href: '/dashboard', label: 'Dashboard' },
 	{ href: '/profile', label: 'Hồ sơ' },
-	{ href: '/vocabulary', label: 'Từ vựng' },
+	{ href: '/vocabulary', label: 'Học Tiếng Anh' },
 ];

@@ -54,19 +54,19 @@ export function useOfflineQueue() {
 	const [isOnline, setIsOnline] = useState(
 		typeof navigator !== 'undefined' ? navigator.onLine : true,
 	);
-	const [queueLength, setQueueLength] = useState(0);
+	// Lazy initializer reads localStorage once on mount — avoids setState-in-effect
+	const [queueLength, setQueueLength] = useState(() =>
+		typeof window !== 'undefined' ? loadQueue().length : 0,
+	);
 	const retryRef = useRef(0);
 	const flushingRef = useRef(false);
-
-	const refreshCount = useCallback(() => {
-		setQueueLength(loadQueue().length);
-	}, []);
+	const flushRef = useRef<() => Promise<void>>(async () => {});
 
 	const flush = useCallback(async () => {
 		if (flushingRef.current || !navigator.onLine) return;
 		flushingRef.current = true;
 
-		let queue = loadQueue();
+		const queue = loadQueue();
 		const failed: OfflineAction[] = [];
 
 		for (const action of queue) {
@@ -85,11 +85,16 @@ export function useOfflineQueue() {
 		if (failed.length > 0 && retryRef.current < MAX_RETRIES) {
 			const delay = Math.min(1000 * 2 ** retryRef.current, 30_000);
 			retryRef.current++;
-			setTimeout(flush, delay);
+			setTimeout(() => flushRef.current(), delay);
 		} else {
 			retryRef.current = 0;
 		}
 	}, []);
+
+	// Keep flushRef pointing to latest flush (must be in effect, not render)
+	useEffect(() => {
+		flushRef.current = flush;
+	});
 
 	const enqueue = useCallback(
 		(action: OfflineAction) => {
@@ -113,8 +118,6 @@ export function useOfflineQueue() {
 	);
 
 	useEffect(() => {
-		refreshCount();
-
 		const handleOnline = () => {
 			setIsOnline(true);
 			retryRef.current = 0;
@@ -128,7 +131,7 @@ export function useOfflineQueue() {
 			window.removeEventListener('online', handleOnline);
 			window.removeEventListener('offline', handleOffline);
 		};
-	}, [flush, refreshCount]);
+	}, [flush]);
 
 	return { enqueue, isOnline, queueLength, flush };
 }

@@ -64,8 +64,6 @@ export const authConfig: NextAuthConfig = {
 				Google({
 					clientId: googleClientId,
 					clientSecret: googleClientSecret,
-					checks: ['none'],
-					allowDangerousEmailAccountLinking: true,
 				}),
 			]
 			: [],

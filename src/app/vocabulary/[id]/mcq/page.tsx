@@ -156,7 +156,7 @@ type QuestionRecord = { startTime: number; endTime: number; correct: boolean };
 
 const QUESTION_TIME = 30; // seconds per question
 
-async function submitScore(vocabSetId: string, records: QuestionRecord[]) {
+async function _submitScore(vocabSetId: string, records: QuestionRecord[]) {
 	try {
 		const res = await fetch(`/api/vocab-sets/${vocabSetId}/score`, {
 			method: 'POST',
@@ -287,7 +287,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 			setAnswered(false);
 			setQuestionAnim('enter');
 		}, 300);
-	}, [qIndex, total]);
+	}, [clearAllTimers, qIndex, total]);
 
 	const handleSelect = useCallback((optIdx: number) => {
 		if (answered || !question) return;
@@ -324,7 +324,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 		autoAdvanceRef.current = setTimeout(() => {
 			handleNext();
 		}, isCorrect ? 1500 : 2500);
-	}, [answered, question, handleNext]);
+	}, [answered, clearAllTimers, question, handleNext]);
 
 	// Keyboard shortcuts (1-4 to select, Enter/Space to advance)
 	useEffect(() => {

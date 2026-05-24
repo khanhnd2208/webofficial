@@ -390,6 +390,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
 
   useEffect(() => {
     if (card.flipped && !prevFlipped.current && !justFlipped) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowCeremony(true);
       setTimeout(() => setShowCeremony(false), 1200);
     }
@@ -463,7 +464,6 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
             style={{ backfaceVisibility: "hidden", boxShadow: "0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(212,168,48,0.2)" }}
           >
             <div className="relative aspect-[3/4] w-full">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={CARD_BACK_IMG} alt="Lucky Card" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
               {/* Shimmer sweep */}
               <motion.div
@@ -493,7 +493,6 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
           >
             <div className="relative flex aspect-[3/4] w-full flex-col items-center justify-center">
               {/* Parchment background image */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={CARD_FRONT_IMG} alt="" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
 
               {/* Warm overlay to blend parchment with gold tones */}
@@ -823,6 +822,7 @@ export default function LuckyCardPage() {
       if (saved) {
         const parsed = JSON.parse(saved) as LuckyCardState;
         if (parsed && Array.isArray(parsed.cards) && parsed.cards.length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setState(parsed);
         }
       }

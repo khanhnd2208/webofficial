@@ -1,12 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
-import CodeBlock from '@/components/CodeBlock';
 import BilingualArticle from '@/components/BilingualArticle';
-import CommentSection from '@/components/CommentSection';
+import BilingualMarkdownArticle from '@/components/BilingualMarkdownArticle';
 import ThumbnailPreview from '@/components/ThumbnailPreview';
 import ReactionBar from '@/components/ReactionBar';
 import ShareBar from '@/components/ShareBar';
@@ -61,7 +58,7 @@ function extractHeadingsFromMarkdown(markdown: string): { id: string; text: stri
 	let match;
 	while ((match = regex.exec(markdown)) !== null) {
 		const level = match[1].length;
-		const text = match[2].replace(/[`*_~\[\]]/g, '').trim();
+		const text = match[2].replace(/[`*_~[\]]/g, '').trim();
 		const id = text
 			.toLowerCase()
 			.normalize('NFD')
@@ -102,7 +99,6 @@ function addHeadingIds(html: string): string {
 			.replace(/[\u0300-\u036f]/g, '')
 			.replace(/[^a-z0-9]+/g, '-')
 			.replace(/^-+|-+$/g, '');
-		// Preserve existing attributes, but add/override id
 		if (attrs.includes('id=')) return `<h${level}${attrs}>${inner}</h${level}>`;
 		return `<h${level} id="${id}"${attrs}>${inner}</h${level}>`;
 	});
@@ -206,7 +202,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 			<div className="mx-auto mt-8 max-w-3xl px-4 sm:mt-10 sm:px-6 lg:max-w-4xl">
 				<div className="relative lg:grid lg:grid-cols-[1fr_220px] lg:gap-8">
 					{post.contentFormat === 'html' ? (
-						/* ═══ HTML content (new Tiptap posts) ═══ */
+						/* ═══ HTML content (Tiptap posts) ═══ */
 						<BilingualArticle
 							contentVi={addHeadingIds(post.content)}
 							contentEn={post.contentEn ? addHeadingIds(post.contentEn) : ''}
@@ -214,77 +210,12 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 							className="tiptap-content prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-[1.8] prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-blockquote:border-l-accent prose-blockquote:text-foreground-secondary prose-strong:text-foreground prose-code:text-accent max-w-none"
 						/>
 					) : (
-						/* ═══ Markdown content (legacy posts) ═══ */
-						<article className="prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-tight prose-p:leading-[1.8] prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-blockquote:border-l-accent prose-blockquote:text-foreground-secondary prose-strong:text-foreground prose-code:text-accent max-w-none">
-							<ReactMarkdown
-								remarkPlugins={[remarkGfm]}
-								components={{
-									img: (props) => {
-										const src = typeof props.src === 'string' ? props.src.trim() : '';
-										if (!src) return null;
-										return (
-											<img
-												{...props}
-												src={src}
-												alt={props.alt ?? ''}
-												className="rounded-xl"
-												loading="lazy"
-											/>
-										);
-									},
-									pre: (props) => <CodeBlock {...props} />,
-									a: ({ children, href, ...props }) => {
-										// Convert YouTube/Vimeo links to embeds
-										const ytMatch = href?.match(
-											/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/
-										);
-										if (ytMatch) {
-											return (
-												<div className="not-prose my-6 aspect-video overflow-hidden border border-border">
-													<iframe
-														src={`https://www.youtube.com/embed/${ytMatch[1]}`}
-														className="h-full w-full"
-														allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-														allowFullScreen
-														loading="lazy"
-														title="YouTube video"
-													/>
-												</div>
-											);
-										}
-										// External links open in new tab
-										const isExternal = href?.startsWith('http') && !href?.includes(process.env.NEXT_PUBLIC_URL ?? '');
-										return (
-											<a
-												href={href}
-												{...props}
-												{...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-											>
-												{children}
-												{isExternal ? <span className="ml-0.5 text-[0.7em] opacity-50">↗</span> : null}
-											</a>
-										);
-									},
-									h1: ({ children, ...props }) => {
-										const text = String(children ?? '').replace(/[`*_~\[\]]/g, '').trim();
-										const id = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-										return <h1 id={id} {...props}>{children}</h1>;
-									},
-									h2: ({ children, ...props }) => {
-										const text = String(children ?? '').replace(/[`*_~\[\]]/g, '').trim();
-										const id = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-										return <h2 id={id} {...props}>{children}</h2>;
-									},
-									h3: ({ children, ...props }) => {
-										const text = String(children ?? '').replace(/[`*_~\[\]]/g, '').trim();
-										const id = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-										return <h3 id={id} {...props}>{children}</h3>;
-									},
-								}}
-							>
-								{post.content}
-							</ReactMarkdown>
-						</article>
+						/* ═══ Markdown content — bilingual toggle supported ═══ */
+						<BilingualMarkdownArticle
+							contentVi={post.content}
+							contentEn={post.contentEn ?? ''}
+							className="prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-tight prose-p:leading-[1.8] prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-blockquote:border-l-accent prose-blockquote:text-foreground-secondary prose-strong:text-foreground prose-code:text-accent max-w-none"
+						/>
 					)}
 
 					{/* Table of Contents — sticky sidebar on desktop */}
@@ -324,32 +255,6 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 				<ReactionBar slug={post.slug} initialReactions={post.reactions} />
 			</div>
 
-			{/* Feedback CTA */}
-			<div className="mx-auto mt-8 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
-				<Link
-					href={`/feedback?ref=${encodeURIComponent(articleUrl)}`}
-					className="group flex items-center gap-3 rounded-xl border border-border bg-surface-hover/30 px-5 py-4 transition-colors hover:border-accent/50 hover:bg-accent-subtle/30"
-				>
-					<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-						<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-						</svg>
-					</div>
-					<div className="min-w-0 flex-1">
-						<p className="text-sm font-bold text-foreground group-hover:text-accent">Gửi phản hồi</p>
-						<p className="text-xs text-muted">Góp ý, liên hệ, hoặc đặt câu hỏi cho tác giả.</p>
-					</div>
-					<svg className="h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-					</svg>
-				</Link>
-			</div>
-
-			{/* Comments */}
-			<div className="mx-auto mt-10 max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
-				<CommentSection slug={post.slug} postTitle={post.title} />
-			</div>
-
 			{/* Related posts */}
 			{related.length > 0 ? (
 				<section className="mx-auto mt-10 max-w-6xl border-t border-border px-4 pt-10 pb-12 sm:mt-14 sm:px-6 sm:pb-16">
@@ -359,19 +264,19 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 					<div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 						{related.map((p) => (
 							<article key={p.id} className="group">
-							<Link href={`/blog/${p.slug}`} className="block">
-								{p.thumbnailUrl ? (
-									<ThumbnailPreview src={p.thumbnailUrl} alt={p.title}>
-										<div className="aspect-2/1 overflow-hidden rounded-xl bg-surface-hover">
-											<img
-												src={p.thumbnailUrl}
-												alt={p.title}
-												className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.04]"
-												loading="lazy"
-											/>
-										</div>
-									</ThumbnailPreview>
-								) : null}
+								<Link href={`/blog/${p.slug}`} className="block">
+									{p.thumbnailUrl ? (
+										<ThumbnailPreview src={p.thumbnailUrl} alt={p.title}>
+											<div className="aspect-2/1 overflow-hidden rounded-xl bg-surface-hover">
+												<img
+													src={p.thumbnailUrl}
+													alt={p.title}
+													className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.04]"
+													loading="lazy"
+												/>
+											</div>
+										</ThumbnailPreview>
+									) : null}
 									<h3 className="mt-3 text-sm font-bold uppercase tracking-tight text-foreground transition-colors group-hover:text-accent">
 										{p.title}
 									</h3>
@@ -384,6 +289,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 					</div>
 				</section>
 			) : null}
+
 			{/* Scroll to top + View tracker */}
 			<ScrollToTop />
 			<ViewTracker slug={post.slug} />

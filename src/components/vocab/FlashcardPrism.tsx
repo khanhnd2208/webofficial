@@ -48,6 +48,7 @@ export default function FlashcardPrism({
 
   // Reset to face 0 when word changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFaceIndex(0);
   }, [word.id]);
 

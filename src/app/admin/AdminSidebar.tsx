@@ -20,14 +20,23 @@ const NAV = [
 					</svg>
 				),
 			},
+			{
+				href: '/admin/tools',
+				label: 'Công cụ',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+					</svg>
+				),
+			},
 		],
 	},
 	{
-		group: 'Từ vựng',
+		group: 'Học Tiếng Anh',
 		items: [
 			{
 				href: '/admin/vocabulary',
-				label: 'Cửa hàng từ vựng',
+				label: 'Bộ từ vựng',
 				icon: (
 					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
 						<path d="M3 4.5A1.5 1.5 0 014.5 3h11A1.5 1.5 0 0117 4.5v11a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
@@ -38,11 +47,11 @@ const NAV = [
 		],
 	},
 	{
-		group: 'Cộng đồng',
+		group: 'Người dùng',
 		items: [
 			{
 				href: '/admin/users',
-				label: 'Người dùng',
+				label: 'Quản lý tài khoản',
 				icon: (
 					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
 						<circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
@@ -52,83 +61,11 @@ const NAV = [
 					</svg>
 				),
 			},
-			{
-				href: '/admin/posts/comments',
-				label: 'Bình luận',
-				icon: (
-					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
-						<path d="M10 2C5.03 2 1 5.36 1 9.5c0 2.06.9 3.93 2.36 5.3-.18.9-.65 1.84-1.36 2.5 1.35-.07 2.76-.55 3.85-1.33C7.16 16.63 8.54 17 10 17c4.97 0 9-3.36 9-7.5S14.97 2 10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-					</svg>
-				),
-				badge: 'comments',
-			},
-			{
-				href: '/admin/feedback/messages',
-				label: 'Hộp thư phản hồi',
-				icon: (
-					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
-						<path d="M2 4.5C2 3.67 2.67 3 3.5 3h13c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-13C2.67 15 2 14.33 2 13.5v-9z" stroke="currentColor" strokeWidth="1.4" />
-						<path d="M2 4.5l8 5.25L18 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-					</svg>
-				),
-				badge: 'messages',
-			},
-		],
-	},
-	{
-		group: 'Công cụ',
-		items: [
-			{
-				href: '/admin/tools',
-				label: 'Magical Tools',
-				icon: (
-					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
-						<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-					</svg>
-				),
-			},
-			{
-				href: '/admin/personality-test',
-				label: 'Personality Report',
-				icon: (
-					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
-						<rect x="3" y="3" width="14" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-						<path d="M6 13.5l2.5-3 2 2 2.5-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-						<circle cx="14.5" cy="5.5" r="1.5" fill="currentColor" />
-					</svg>
-				),
-			},
-			{
-				href: '/admin/personality-test/verify',
-				label: 'Scoring Verify',
-				icon: (
-					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
-						<path d="M10 2l1.5 3.5L15 7l-3 3 1 4-3-2-3 2 1-4-3-3 3.5-1.5L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-						<path d="M7 14l-2 4h10l-2-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-					</svg>
-				),
-			},
-			{
-				href: '/admin/personality-test/content',
-				label: 'Result Content',
-				icon: (
-					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
-						<path d="M5 3h10a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.4" />
-						<path d="M7 7h6M7 10h6M7 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-						<path d="M13 12l1.5 1.5L16 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-					</svg>
-				),
-			},
 		],
 	},
 ] as const;
 
-interface AdminSidebarProps {
-	pendingCount?: number;
-	pendingCommentCount?: number;
-}
-
-export default function AdminSidebar({ pendingCount = 0, pendingCommentCount = 0 }: AdminSidebarProps) {
+export default function AdminSidebar() {
 	const pathname = usePathname();
 	const { data: session } = useSession();
 	const [collapsed, setCollapsed] = useState(false);
@@ -208,13 +145,7 @@ export default function AdminSidebar({ pendingCount = 0, pendingCommentCount = 0
 							</p>
 						)}
 						<div className="space-y-0.5">
-						{items.map((item) => {
-							const badgeVal = 'badge' in item
-								? item.badge === 'messages' && pendingCount > 0 ? pendingCount
-								: item.badge === 'comments' && pendingCommentCount > 0 ? pendingCommentCount
-								: undefined
-								: undefined;
-							return (
+							{items.map((item) => (
 								<NavItem
 									key={item.href}
 									href={item.href}
@@ -222,10 +153,8 @@ export default function AdminSidebar({ pendingCount = 0, pendingCommentCount = 0
 									collapsed={collapsed}
 									active={isActive(item.href)}
 									icon={item.icon}
-									badge={badgeVal}
 								/>
-							);
-						})}
+							))}
 						</div>
 					</div>
 				))}
@@ -300,14 +229,12 @@ function NavItem({
 	icon,
 	collapsed,
 	active,
-	badge,
 }: {
 	href: string;
 	label: string;
 	icon: React.ReactNode;
 	collapsed: boolean;
 	active: boolean;
-	badge?: number;
 }) {
 	return (
 		<Link
@@ -319,26 +246,8 @@ function NavItem({
 					: 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
 			} ${collapsed ? 'justify-center' : ''}`}
 		>
-			{/* Icon with pulsing dot when collapsed and has unread badge */}
-			<span className="relative shrink-0">
-				{icon}
-				{badge !== undefined && badge > 0 && collapsed && (
-					<span className="absolute -right-1 -top-1 flex h-2 w-2">
-						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-						<span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-					</span>
-				)}
-			</span>
+			<span className="relative shrink-0">{icon}</span>
 			{!collapsed && <span className="truncate">{label}</span>}
-			{badge !== undefined && badge > 0 && !collapsed && (
-				<span
-					className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-black ${
-						active ? 'bg-background text-foreground' : 'bg-red-500 text-white'
-					}`}
-				>
-					{badge > 99 ? '99+' : badge}
-				</span>
-			)}
 		</Link>
 	);
 }

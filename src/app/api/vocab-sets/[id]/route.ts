@@ -12,7 +12,7 @@ import {
 } from '@/services/vocabSetService';
 import type { UpdateVocabSetInput } from '@/types/vocab';
 
-type Ctx = { params: Promise<{ id: string }> };
+type _Ctx = { params: Promise<{ id: string }> };
 
 export const GET = withErrorHandling(async (_req, ctx) => {
 	const { id } = await ctx!.params;

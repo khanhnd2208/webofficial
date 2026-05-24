@@ -12,12 +12,10 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import {
-	getUserLibrary,
 	softDeleteFromLibrary,
 	addToLibrary,
 	getStore,
 	createVocabSet,
-	adminUpdateSet,
 	archiveVocabSet,
 	adminSoftDeleteWord,
 	AlreadyOwnedError,

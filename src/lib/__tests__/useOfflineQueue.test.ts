@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════════
    useOfflineQueue.test.ts
    ════════════════════════════════════════════════════════════════════════ */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // Mock localStorage
 const localStorageMock = (() => {

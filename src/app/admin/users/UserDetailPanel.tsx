@@ -11,11 +11,6 @@ const ROLE_COLORS: Record<UserRole, string> = {
 	teacher: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/40',
 	student: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
 };
-const STATUS_COLORS: Record<string, string> = {
-	approved: 'text-green-600 dark:text-green-400',
-	pending: 'text-yellow-600 dark:text-yellow-400',
-	hidden: 'text-muted',
-};
 
 interface Props {
 	userId: string;
@@ -31,6 +26,7 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 	const [currentRole, setCurrentRole] = useState<UserRole>(userSummary.role);
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setLoading(true);
 		setDetail(null);
 		fetch(`/api/admin/users/${userId}`)
@@ -118,8 +114,7 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 					) : detail ? (
 						<>
 							{/* Stats grid */}
-							<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-								<StatCard label="Bình luận" value={detail.commentCount} icon="💬" />
+							<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 								<StatCard label="Bộ từ vựng" value={detail.vocabSetCount} icon="📚" />
 								<StatCard
 									label="Streak hiện tại"
@@ -141,31 +136,6 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 								/>
 								<Row label="Streak dài nhất" value={detail.longestStreak > 0 ? `${detail.longestStreak} ngày` : '—'} />
 							</div>
-
-							{/* Recent comments */}
-							{detail.recentComments.length > 0 && (
-								<Section title="Bình luận gần đây">
-									{detail.recentComments.map((c) => (
-										<div key={c.id} className="rounded-lg border border-border bg-surface p-3 space-y-1">
-											<div className="flex items-center justify-between gap-2">
-												<a
-													href={`/blog/${c.postSlug}`}
-													target="_blank"
-													rel="noreferrer"
-													className="text-xs font-semibold text-foreground hover:underline truncate"
-												>
-													📝 {c.postTitle}
-												</a>
-												<span className={`text-[10px] font-bold shrink-0 ${STATUS_COLORS[c.status] ?? 'text-muted'}`}>
-													{c.status}
-												</span>
-											</div>
-											<p className="text-sm text-muted line-clamp-2">{c.content}</p>
-											<p className="text-[10px] text-muted/60">{formatDistanceToNow(c.createdAt)}</p>
-										</div>
-									))}
-								</Section>
-							)}
 
 							{/* Recent vocab sets */}
 							{detail.recentVocabSets.length > 0 && (
@@ -189,7 +159,7 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 							)}
 
 							{/* Empty state */}
-							{detail.commentCount === 0 && detail.vocabSetCount === 0 && (
+							{detail.vocabSetCount === 0 && (
 								<div className="rounded-xl border border-dashed border-border p-8 text-center text-muted text-sm">
 									Người dùng chưa có hoạt động nào
 								</div>

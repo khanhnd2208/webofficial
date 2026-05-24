@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface BlogFilterBarProps {
@@ -40,7 +40,6 @@ export default function BlogFilterBar({
 	total,
 }: BlogFilterBarProps) {
 	const router = useRouter();
-	const searchParams = useSearchParams();
 	const [showFilters, setShowFilters] = useState(
 		!!(currentTag || currentCategory || currentSort),
 	);

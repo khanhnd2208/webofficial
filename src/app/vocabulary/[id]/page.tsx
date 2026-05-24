@@ -3,7 +3,6 @@ import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
 import { getVocabSetById } from '@/services/vocabSetService';
-import LeaderboardPanel from '@/components/vocab/LeaderboardPanel';
 
 export const dynamic = 'force-dynamic';
 

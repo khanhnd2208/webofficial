@@ -70,173 +70,96 @@ export default async function AdminHomePage() {
 
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
-		<div className="space-y-8">
-			{/* Pending messages notification banner */}
-			{stats.messages.pending > 0 && (
-				<a
-					href="/admin/feedback/messages"
-					className="group flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 transition-colors hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/30 dark:hover:bg-red-950/50"
-				>
-					<span className="relative flex h-2.5 w-2.5 shrink-0">
-						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-						<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-					</span>
-					<p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-400">
-						{stats.messages.pending === 1
-							? '1 tin nhắn phản hồi chưa được đọc'
-							: `${stats.messages.pending} tin nhắn phản hồi chưa được đọc`}
-					</p>
-					<span className="text-xs font-bold text-red-600 underline underline-offset-2 group-hover:no-underline dark:text-red-400">
-						Xem ngay →
-					</span>
-				</a>
-			)}
+			<div className="space-y-8">
+				{/* Header */}
+				<div>
+					<p className="text-xs font-bold uppercase tracking-widest text-muted">Quản trị</p>
+					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Tổng quan</h1>
+				</div>
 
-			{/* Pending comments notification banner */}
-			{stats.comments.pending > 0 && (
-				<a
-					href="/admin/posts/comments"
-					className="group flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 transition-colors hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/30 dark:hover:bg-amber-950/50"
-				>
-					<span className="relative flex h-2.5 w-2.5 shrink-0">
-						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-						<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
-					</span>
-					<p className="flex-1 text-sm font-semibold text-amber-700 dark:text-amber-400">
-						{stats.comments.pending === 1
-							? '1 bình luận đang chờ duyệt'
-							: `${stats.comments.pending} bình luận đang chờ duyệt`}
-					</p>
-					<span className="text-xs font-bold text-amber-600 underline underline-offset-2 group-hover:no-underline dark:text-amber-400">
-						Duyệt ngay →
-					</span>
-				</a>
-			)}
+				{/* Stats grid */}
+				<section>
+					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Số liệu</p>
+					<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+						<Stat label="Bài đã đăng" value={stats.posts.published} />
+						<Stat label="Bản nháp" value={stats.posts.drafts} />
+						<Stat label="Tổng lượt xem" value={stats.posts.totalViews.toLocaleString('vi-VN')} />
+						<Stat label="Học viên" value={stats.users.total} sub="đã đăng ký" />
+					</div>
+				</section>
 
-			{/* Header */}
-			<div>
-				<p className="text-xs font-bold uppercase tracking-widest text-muted">Quản trị</p>
-				<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Tổng quan</h1>
+				{/* Quick actions */}
+				<section>
+					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Thao tác nhanh</p>
+					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+						<QuickAction
+							href="/admin/posts/create"
+							label="Viết bài mới"
+							description="Soạn và xuất bản bài viết blog."
+							primary
+							icon={
+								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-background">
+									<path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+								</svg>
+							}
+						/>
+						<QuickAction
+							href="/admin/posts"
+							label="Quản lý bài viết"
+							description="Xem, sửa, publish, xoá bài."
+							icon={
+								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
+									<path d="M4 4.5A1.5 1.5 0 015.5 3h9A1.5 1.5 0 0116 4.5v11a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 014 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
+									<path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+								</svg>
+							}
+						/>
+						<QuickAction
+							href="/admin/vocabulary"
+							label="Bộ từ vựng"
+							description="Quản lý bộ từ vựng công khai cho học viên."
+							icon={
+								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
+									<path d="M3 4.5A1.5 1.5 0 014.5 3h11A1.5 1.5 0 0117 4.5v11a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
+									<path d="M6.5 7h7M6.5 10h7M6.5 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+								</svg>
+							}
+						/>
+						<QuickAction
+							href="/admin/users"
+							label="Quản lý tài khoản"
+							description="Xem và quản lý người dùng đã đăng ký."
+							icon={
+								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
+									<circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
+									<path d="M2 17c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+								</svg>
+							}
+						/>
+						<QuickAction
+							href="/admin/tools"
+							label="Công cụ ✨"
+							description="Lucky Card, bốc thăm may mắn và nhiều tool thú vị."
+							icon={
+								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
+									<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+								</svg>
+							}
+						/>
+						<QuickAction
+							href="/blog"
+							label="Xem Blog công khai"
+							description="Mở trang blog như người dùng thấy."
+							icon={
+								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
+									<path d="M11 3H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+									<path d="M15 2l3 3-7 7H8v-3l7-7z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+								</svg>
+							}
+						/>
+					</div>
+				</section>
 			</div>
-
-			{/* Stats grid */}
-			<section>
-				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Số liệu</p>
-				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-					<Stat label="Bài đã đăng" value={stats.posts.published} />
-					<Stat label="Bản nháp" value={stats.posts.drafts} />
-					<Stat label="Tổng lượt xem" value={stats.posts.totalViews.toLocaleString('vi-VN')} />
-					<Stat
-						label="Tin nhắn mới"
-						value={stats.messages.pending}
-						sub={`${stats.messages.total} tổng`}
-						accent={stats.messages.pending > 0}
-					/>
-					<Stat
-						label="Bình luận chờ"
-						value={stats.comments.pending}
-						sub="chờ duyệt"
-						accent={stats.comments.pending > 0}
-					/>
-					<Stat label="Học viên" value={stats.users.total} sub="đã đăng ký" />
-				</div>
-			</section>
-
-			{/* Quick actions */}
-			<section>
-				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Thao tác nhanh</p>
-				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-					<QuickAction
-						href="/admin/posts/create"
-						label="Viết bài mới"
-						description="Soạn và xuất bản bài viết blog."
-						primary
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-background">
-								<path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-							</svg>
-						}
-					/>
-					<QuickAction
-						href="/admin/posts"
-						label="Quản lý bài viết"
-						description="Xem, sửa, publish, xoá bài."
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-								<path d="M4 4.5A1.5 1.5 0 015.5 3h9A1.5 1.5 0 0116 4.5v11a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 014 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
-								<path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-							</svg>
-						}
-					/>
-					<QuickAction
-						href="/admin/feedback/messages"
-						label={`Hộp thư${stats.messages.pending > 0 ? ` (${stats.messages.pending} mới)` : ''}`}
-						description="Đọc và trả lời phản hồi từ học viên."
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-								<path d="M2 4.5C2 3.67 2.67 3 3.5 3h13c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-13C2.67 15 2 14.33 2 13.5v-9z" stroke="currentColor" strokeWidth="1.4" />
-								<path d="M2 4.5l8 5.25L18 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-							</svg>
-						}
-					/>
-					<QuickAction
-						href="/admin/posts/comments"
-						label={`Bình luận${stats.comments.pending > 0 ? ` (${stats.comments.pending} chờ)` : ''}`}
-						description="Duyệt hoặc ẩn bình luận từ người dùng."
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-								<path d="M10 2C5.03 2 1 5.36 1 9.5c0 2.06.9 3.93 2.36 5.3-.18.9-.65 1.84-1.36 2.5 1.35-.07 2.76-.55 3.85-1.33C7.16 16.63 8.54 17 10 17c4.97 0 9-3.36 9-7.5S14.97 2 10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-							</svg>
-						}
-					/>
-					<QuickAction
-						href="/admin/vocabulary"
-						label="Cửa hàng từ vựng"
-						description="Quản lý bộ từ vựng công khai cho học viên."
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-								<path d="M3 4.5A1.5 1.5 0 014.5 3h11A1.5 1.5 0 0117 4.5v11a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
-								<path d="M6.5 7h7M6.5 10h7M6.5 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-							</svg>
-						}
-					/>
-					<QuickAction
-						href="/blog"
-						label="Xem Blog công khai"
-						description="Mở trang blog như người dùng thấy."
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-								<path d="M11 3H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-								<path d="M15 2l3 3-7 7H8v-3l7-7z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-							</svg>
-						}
-					/>
-					<QuickAction
-						href="/dashboard"
-						label="Dashboard học viên"
-						description="Xem giao diện dashboard như user."
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-								<rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-								<rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-								<rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-								<rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-							</svg>
-						}
-					/>
-					<QuickAction
-						href="/admin/tools"
-						label="Magical Tools ✨"
-						description="Lucky Card, bốc thăm may mắn và nhiều tool thú vị."
-						icon={
-							<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-								<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-							</svg>
-						}
-					/>
-				</div>
-			</section>
-		</div>
 		</div>
 	);
 }

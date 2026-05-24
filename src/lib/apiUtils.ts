@@ -40,12 +40,33 @@ export function apiError(message: string, status = 400): NextResponse {
 }
 
 /**
- * Extract a human-readable message from an unknown error.
+ * Known application error — safe to expose message to clients.
+ * Throw this from handlers for expected error cases (validation, not found, etc.).
+ *
+ * Example:
+ *   throw new AppError('Email already taken', 409);
  */
-function getErrorMessage(error: unknown): string {
-	if (error instanceof Error) return error.message;
-	if (typeof error === 'string') return error;
-	return 'Unknown error';
+export class AppError extends Error {
+	constructor(
+		message: string,
+		public readonly status: number = 400,
+	) {
+		super(message);
+		this.name = 'AppError';
+	}
+}
+
+/**
+ * Maps a caught error to the appropriate API response.
+ * - AppError → use its message + status (safe, expected)
+ * - Unknown error → log server-side, return generic 500 (never leak internals)
+ */
+function handleCaughtError(error: unknown): NextResponse {
+	if (error instanceof AppError) {
+		return apiError(error.message, error.status);
+	}
+	console.error('[API Error]', error);
+	return apiError('Internal server error', 500);
 }
 
 // ─── Auth Wrapper Types ────────────────────────────────────────────────────────
@@ -92,7 +113,7 @@ export function withAuth(handler: AuthenticatedHandler) {
 			}
 			return await handler(request, user, context);
 		} catch (error) {
-			return apiError(getErrorMessage(error));
+			return handleCaughtError(error);
 		}
 	};
 }
@@ -116,7 +137,7 @@ export function withAdmin(handler: AuthenticatedHandler) {
 			}
 			return await handler(request, user, context);
 		} catch (error) {
-			return apiError(getErrorMessage(error));
+			return handleCaughtError(error);
 		}
 	};
 }
@@ -131,7 +152,7 @@ export function withErrorHandling(handler: PublicHandler) {
 		try {
 			return await handler(request, context);
 		} catch (error) {
-			return apiError(getErrorMessage(error));
+			return handleCaughtError(error);
 		}
 	};
 }

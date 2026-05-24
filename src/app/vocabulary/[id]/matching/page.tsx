@@ -274,6 +274,11 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 
 	/* ── Completion screen ── */
 	if (finished) {
+		// Capture ref values before render to avoid react-hooks/refs rule
+		// eslint-disable-next-line react-hooks/refs
+		const sessionStartTime = sessionStartTimeRef.current;
+		// eslint-disable-next-line react-hooks/refs
+		const wrongPairsSnap = wrongPairsRef.current;
 		return (
 			<main ref={containerRef} className="min-h-screen">
 				<CompletionScreen
@@ -281,8 +286,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 					elapsed={elapsed}
 					pairsCount={cards.length / 2}
 					id={id}
-					sessionStartTime={sessionStartTimeRef.current}
-					wrongPairs={wrongPairsRef.current}
+					sessionStartTime={sessionStartTime}
+					wrongPairs={wrongPairsSnap}
 					containerRef={containerRef}
 					onRestart={() => {
 						startGame(allWords);

@@ -1,73 +1,43 @@
-/* ════════════════════════════════════════════════════════════════════════
-   /personality-test — Main personality test page
-   
-   Server Component that:
-   1. Checks auth (redirects to /login if not signed in)
-   2. Fetches test config and user history from service
-   3. Renders the client-side test wizard
-   ════════════════════════════════════════════════════════════════════════ */
-
 import type { Metadata } from 'next';
-
-import { auth } from '@/lib/auth';
-import {
-	getPersonalityTestConfig,
-	getUserTestHistory,
-} from '@/services/personalityTestService';
-import PersonalityTestClient from '@/components/personality-test/PersonalityTestClient';
-
-export const dynamic = 'force-dynamic';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
-	title: 'Personality Test — Dual Assessment | HANOICAM',
-	description:
-		'Dual personality assessment: BFI-2-S (OCEAN) and Short Dark Triad (SD3). Discover your strengths and blind spots in a career context.',
+	title: 'Personality Test | HANOICAM',
+	description: 'Tính năng này tạm thời không khả dụng.',
 };
 
-export default async function PersonalityTestPage() {
-	// Auth is optional — anonymous users can take the test
-	const session = await auth();
-	const user = session?.user;
-
-	const [config, history] = await Promise.all([
-		getPersonalityTestConfig(),
-		user?.id ? getUserTestHistory((user as { id: string }).id) : Promise.resolve([]),
-	]);
-
+export default function PersonalityTestUnavailablePage() {
 	return (
-		<main className="min-h-screen">
-			{/* Hero Header */}
-			<section className="border-b border-border">
-				<div className="mx-auto max-w-3xl px-6 py-10 sm:py-14">
-					<div className="flex items-center gap-3">
-						<span className="text-3xl">🪞</span>
-						<div>
-							<p className="text-xs font-bold uppercase tracking-widest text-muted">
-								Hành vi Tổ chức <span className="font-normal italic">(Organizational Behavior)</span>
-							</p>
-							<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-								Đánh giá Tính cách
-							</h1>
-							<p className="text-xs text-muted italic">Personality Assessment</p>
-						</div>
-					</div>
-					<p className="mt-3 text-sm text-muted leading-relaxed max-w-xl">
-						Khám phá điểm mạnh, điểm mù, và phong cách làm việc của bạn thông qua hai
-						mô hình tâm lý học được nghiên cứu rộng rãi — Big Five (BFI-2-S) và Dark Triad (SD3).
-					</p>
-					<p className="mt-1 text-xs text-muted/70 italic max-w-xl">
-						Discover your strengths, blind spots, and working style through two
-						widely-researched psychology models — Big Five (BFI-2-S) and Dark Triad (SD3).
-					</p>
-				</div>
-			</section>
+		<main className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+			<div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-surface-hover">
+				<svg
+					className="h-8 w-8 text-muted"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={1.5}
+				>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+					/>
+				</svg>
+			</div>
 
-			{/* Content */}
-			<section>
-				<div className="mx-auto max-w-3xl px-6 py-8 sm:py-12">
-					<PersonalityTestClient config={config} history={history} />
-				</div>
-			</section>
+			<h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
+				Tạm thời không khả dụng
+			</h1>
+			<p className="mt-3 max-w-sm text-base text-foreground-secondary">
+				Tính năng Personality Test hiện không khả dụng. Sẽ quay lại vào một ngày không xa.
+			</p>
+
+			<Link
+				href="/"
+				className="mt-8 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-background transition-all hover:scale-105 active:scale-95"
+			>
+				← Về trang chủ
+			</Link>
 		</main>
 	);
 }

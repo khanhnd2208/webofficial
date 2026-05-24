@@ -1,7 +1,6 @@
 import { unstable_cache } from 'next/cache';
 
 import dbConnect from '@/lib/dbConnect';
-import Comment from '@/models/Comment';
 import Post from '@/models/Post';
 import type {
 	AdminPostDetailDTO,
@@ -407,11 +406,7 @@ export async function deletePostById(id: string): Promise<void> {
 	if (!cleaned) throw new Error('Missing id');
 
 	await dbConnect();
-	// Cascade: delete the post and all its comments
-	await Promise.all([
-		Post.findByIdAndDelete(cleaned),
-		Comment.deleteMany({ postId: cleaned }),
-	]);
+	await Post.findByIdAndDelete(cleaned);
 }
 
 async function getLatestPostsRaw(limit: number): Promise<PostListItemDTO[]> {

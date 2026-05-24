@@ -8,6 +8,12 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "@next/next/no-img-element": "off",
+      // Allow _ prefix to indicate intentionally unused vars/args
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+      }],
     },
   },
   // Override default ignores of eslint-config-next.
@@ -17,6 +23,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // CommonJS PM2 config — require() is intentional
+    "ecosystem.config.js",
   ]),
 ]);
 
