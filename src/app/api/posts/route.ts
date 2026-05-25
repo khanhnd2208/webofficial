@@ -25,7 +25,6 @@ export const POST = withAdmin(async (request: NextRequest) => {
 		summary: String(body.summary ?? ''),
 		content: String(body.content ?? ''),
 		contentEn: body.contentEn == null ? '' : String(body.contentEn),
-		contentFormat: body.contentFormat === 'markdown' ? 'markdown' : 'html',
 		category: body.category == null ? undefined : String(body.category),
 		tags: Array.isArray(body.tags) ? body.tags.map((t) => String(t)) : [],
 		thumbnailUrl: body.thumbnailUrl == null ? undefined : String(body.thumbnailUrl),

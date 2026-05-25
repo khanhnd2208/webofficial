@@ -77,7 +77,7 @@ function toDetailDTO(doc: PostLean): PostDetailDTO {
 		...toListItemDTO(doc),
 		content: doc.content,
 		contentEn: doc.contentEn ?? '',
-		contentFormat: doc.contentFormat ?? 'markdown',
+		contentFormat: doc.contentFormat ?? 'html',
 	};
 }
 
@@ -96,7 +96,7 @@ function toAdminDetailDTO(doc: PostLean): AdminPostDetailDTO {
 		...toAdminListItemDTO(doc),
 		content: doc.content,
 		contentEn: doc.contentEn ?? '',
-		contentFormat: doc.contentFormat ?? 'markdown',
+		contentFormat: doc.contentFormat ?? 'html',
 	};
 }
 
@@ -217,7 +217,6 @@ export async function createPost(input: {
 	summary: string;
 	content: string;
 	contentEn?: string;
-	contentFormat?: 'markdown' | 'html';
 	category?: string;
 	tags?: string[];
 	thumbnailUrl?: string;
@@ -248,7 +247,7 @@ export async function createPost(input: {
 		summary,
 		content,
 		contentEn: input.contentEn ? String(input.contentEn).trim() : '',
-		contentFormat: input.contentFormat ?? 'html',
+		contentFormat: 'html',
 		category: input.category ? String(input.category).trim() : 'Uncategorized',
 		tags,
 		thumbnailUrl: input.thumbnailUrl ? String(input.thumbnailUrl).trim() : undefined,
@@ -359,10 +358,8 @@ export async function updatePostById(
 	if ('summary' in input) update.summary = String(input.summary ?? '').trim();
 	if ('content' in input) update.content = String(input.content ?? '').trim();
 	if ('contentEn' in input) update.contentEn = String(input.contentEn ?? '').trim();
-	if ('contentFormat' in input) {
-		const fmt = String(input.contentFormat ?? 'html');
-		update.contentFormat = fmt === 'markdown' ? 'markdown' : 'html';
-	}
+	// contentFormat is always 'html' — Tiptap editor only produces HTML
+	if ('contentFormat' in input) update.contentFormat = 'html';
 	if ('category' in input) update.category = String(input.category ?? 'Uncategorized').trim();
 	if ('tags' in input) {
 		const tags = Array.isArray(input.tags) ? input.tags.map((t) => String(t).trim()) : [];
