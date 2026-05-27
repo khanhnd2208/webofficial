@@ -21,6 +21,18 @@ const NAV = [
 				),
 			},
 			{
+				href: '/admin/puzzles',
+				label: 'ThinkGrid',
+				icon: (
+					<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+						<rect x="3" y="3" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.4" />
+						<rect x="12" y="3" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.4" />
+						<rect x="3" y="12" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.4" />
+						<rect x="12" y="12" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.4" />
+					</svg>
+				),
+			},
+			{
 				href: '/admin/tools',
 				label: 'Công cụ',
 				icon: (

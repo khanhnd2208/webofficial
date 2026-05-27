@@ -112,3 +112,109 @@ enum GameMode {
   MATCHING
   GUESS_WHO
 }
+
+// ─── Daily Logic Puzzle Module ────────────────────────────────────────────────
+// userId fields reference MongoDB User._id as plain string (same as GameScore).
+
+model DailyPuzzle {
+  id           String            @id @default(cuid())
+  dateKey      String            @unique // YYYY-MM-DD in Asia/Ho_Chi_Minh
+  title        String
+  size         Int
+  layoutJson   Json
+  solutionJson Json
+  difficulty   PuzzleDifficulty  @default(MEDIUM)
+  puzzleKind   PuzzleKind        @default(DAILY)
+  status       PuzzleStatus      @default(DRAFT)
+  validatorVersion   String?
+  validatedAt        DateTime?
+  layoutHash         String?
+  solutionHash       String?
+  validationStatus   PuzzleValidationStatus @default(PENDING)
+  createdBy    String            @default("system")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  attempts     PuzzleAttempt[]
+  leaderboard  PuzzleLeaderboardEntry[]
+
+  @@index([status, dateKey(sort: Desc)])
+}
+
+model PuzzleAttempt {
+  id               String              @id @default(cuid())
+  puzzleId         String
+  userId           String
+  userName         String
+  startedAt        DateTime
+  submittedAt      DateTime?
+  durationMs       Int?
+  mistakes                 Int                 @default(0)
+  status                   PuzzleAttemptStatus @default(IN_PROGRESS)
+  clientEventsJson         Json?
+  progressJson             Json?
+  notesJson                Json?
+  eligibleForLeaderboard   Boolean             @default(true)
+
+  puzzle DailyPuzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, puzzleId])
+  @@index([puzzleId, status])
+}
+
+model PuzzleLeaderboardEntry {
+  id          String   @id @default(cuid())
+  puzzleId    String
+  userId      String
+  userName    String
+  durationMs  Int
+  mistakes    Int
+  rankScore   Int
+  submittedAt DateTime @default(now())
+
+  puzzle DailyPuzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, puzzleId])
+  @@index([puzzleId, rankScore(sort: Asc)])
+}
+
+model PuzzleUserStats {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  currentStreak      Int      @default(0)
+  longestStreak      Int      @default(0)
+  lastSolvedDateKey  String?
+  totalSolved        Int      @default(0)
+  updatedAt          DateTime @updatedAt
+}
+
+enum PuzzleDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum PuzzleStatus {
+  DRAFT
+  VALIDATED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PuzzleKind {
+  DAILY
+  TUTORIAL
+}
+
+enum PuzzleValidationStatus {
+  PENDING
+  VALID
+  INVALID
+}
+
+enum PuzzleAttemptStatus {
+  IN_PROGRESS
+  SOLVED
+  FAILED
+  ABANDONED
+}

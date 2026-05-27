@@ -11,6 +11,12 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:seed": "npx tsx prisma/seed.ts",
+    "db:seed:puzzle": "npx tsx prisma/puzzle-seed-future.ts",
+    "db:seed:puzzle:dev": "PUZZLE_SEED_MODE=dev npx tsx prisma/puzzle-seed.ts",
+    "db:seed:puzzle:staging": "PUZZLE_SEED_MODE=staging npx tsx prisma/puzzle-seed.ts",
+    "db:seed:puzzle:future": "npx tsx prisma/puzzle-seed-future.ts",
+    "db:puzzle:check": "npx tsx prisma/puzzle-db-check.ts",
+    "db:puzzle:reset": "npx tsx prisma/puzzle-reset.ts",
     "db:migrate": "npx prisma migrate dev",
     "db:migrate:deploy": "npx prisma migrate deploy",
     "db:studio": "npx prisma studio"

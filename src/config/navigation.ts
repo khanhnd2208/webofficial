@@ -12,6 +12,7 @@ export interface NavLink {
 export const NAV_LINKS: NavLink[] = [
 	{ href: '/blog', label: 'Hanoicam Story' },
 	{ href: '/vocabulary', label: 'Học Tiếng Anh' },
+	{ href: '/puzzle', label: 'ThinkGrid' },
 ];
 
 export const USER_MENU_LINKS: NavLink[] = [
