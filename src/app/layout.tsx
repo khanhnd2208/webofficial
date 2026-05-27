@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Merriweather, Cinzel, Cormorant_Garamond } from 'next/font/google';
 
-import { auth } from '@/lib/auth';
 import Navbar from '@/components/Navbar';
 import Providers from '@/components/Providers';
 import './globals.css';
@@ -59,16 +58,15 @@ export const metadata: Metadata = {
   description: 'HANOICAM — by NDK.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
   return (
     <html lang="vi" suppressHydrationWarning>
       <body className={`${inter.variable} ${merriweather.variable} ${cinzel.variable} ${cormorantGaramond.variable} antialiased`}>
-			<Providers session={session}>
+			<Providers>
 				<Navbar />
 				{children}
 			</Providers>

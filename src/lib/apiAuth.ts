@@ -21,14 +21,8 @@ export async function getApiUser(_request: NextRequest): Promise<ApiUser | null>
 	const session = await auth();
 	if (!session?.user?.email) return null;
 
-	const id = (session.user as { id?: string }).id?.trim();
-	if (!id) {
-		console.error('[getApiUser] Session missing user id (token.sub). Re-login may be required.');
-		return null;
-	}
-
 	return {
-		id,
+		id: (session.user as { id?: string }).id ?? '',
 		email: session.user.email,
 		name: session.user.name ?? '',
 		role: (session.user as { role?: string }).role ?? 'student',

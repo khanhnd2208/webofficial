@@ -11,13 +11,6 @@ const TOOLS = [
 		gradient: 'from-amber-500 via-orange-500 to-rose-500',
 	},
 	{
-		href: '/admin/tools/countdown',
-		label: 'Countdown Timer',
-		description: 'Đồng hồ đếm ngược cho lớp học — cài thời gian, cảnh báo sắp hết giờ, phóng to toàn màn hình.',
-		emoji: '⏱',
-		gradient: 'from-blue-500 via-cyan-500 to-teal-500',
-	},
-	{
 		href: '/personality-test',
 		label: 'Personality Test',
 		description: 'Bài đánh giá tính cách kép — BFI-2-S (OCEAN) + Dark Triad (SD3). Phân tích sâu cho phát triển nghề nghiệp.',

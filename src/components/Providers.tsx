@@ -1,18 +1,11 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import type { Session } from 'next-auth';
 import { ThemeProvider } from './ThemeProvider';
 
-export default function Providers({
-	children,
-	session,
-}: {
-	children: React.ReactNode;
-	session: Session | null;
-}) {
+export default function Providers({ children }: { children: React.ReactNode }) {
 	return (
-		<SessionProvider session={session} refetchOnWindowFocus={false}>
+		<SessionProvider>
 			<ThemeProvider>
 				{children}
 			</ThemeProvider>
