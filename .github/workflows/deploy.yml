@@ -24,26 +24,27 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+          port: 2222
           command_timeout: 15m
           script: |
             set -e
 
-            echo "📂 [1/4] Pull latest code from GitHub..."
+            echo "📂 [1/5] Pull latest code from GitHub..."
             cd /var/www/webofficial
             git fetch origin main
             git reset --hard origin/main
 
-            echo "📦 [2/4] Install dependencies..."
+            echo "📦 [2/5] Install dependencies..."
             npm install --include=dev
 
-            echo "🔧 [2.5/4] Generate Prisma client..."
+            echo "🔧 [3/5] Prisma generate + migrate..."
             npx prisma generate
+            npx prisma migrate deploy
 
-            echo "🏗️  [3/4] Build Next.js (with live MongoDB)..."
+            echo "🏗️  [4/5] Build Next.js..."
             npm run build
 
-            echo "♻️  [4/4] Reload app (zero-downtime)..."
+            echo "♻️  [5/5] Reload app (zero-downtime)..."
             pm2 reload nextjs-app --update-env
 
             echo "✅ Deploy hoàn tất!"
