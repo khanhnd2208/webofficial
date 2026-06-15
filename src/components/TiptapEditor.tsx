@@ -101,9 +101,11 @@ interface TiptapEditorProps {
 	onChange: (html: string) => void;
 	onImageUpload?: (file: File) => Promise<string>;
 	placeholder?: string;
+	/** Optional CSS font-family string; applied to the editor content area */
+	fontFamily?: string;
 }
 
-export default function TiptapEditor({ content, onChange, onImageUpload, placeholder = 'Bắt đầu viết bài...' }: TiptapEditorProps) {
+export default function TiptapEditor({ content, onChange, onImageUpload, placeholder = 'Bắt đầu viết bài...', fontFamily }: TiptapEditorProps) {
 	const [showLinkDialog, setShowLinkDialog] = useState(false);
 	const [showSourceView, setShowSourceView] = useState(false);
 	const [sourceHtml, setSourceHtml] = useState('');
@@ -146,6 +148,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 		editorProps: {
 			attributes: {
 				class: 'tiptap-content prose prose-lg dark:prose-invert max-w-none outline-none min-h-[480px] px-6 py-5',
+				...(fontFamily ? { style: `font-family: ${fontFamily}` } : {}),
 			},
 			handleDrop: (view, event) => {
 				const files = event.dataTransfer?.files;
@@ -189,6 +192,20 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 
 	// Sync external content changes (e.g. draft load) into the editor.
 	// Only update if the editor content is truly different from the prop.
+	// Sync fontFamily changes into the editor's editorProps
+	useEffect(() => {
+		if (!editor) return;
+		editor.setOptions({
+			editorProps: {
+				attributes: {
+					class: 'tiptap-content prose prose-lg dark:prose-invert max-w-none outline-none min-h-[480px] px-6 py-5',
+					...(fontFamily ? { style: `font-family: ${fontFamily}` } : {}),
+				},
+			},
+		});
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [fontFamily, editor]);
+
 	const isInternalUpdate = useRef(false);
 	useEffect(() => {
 		if (!editor || isInternalUpdate.current) return;

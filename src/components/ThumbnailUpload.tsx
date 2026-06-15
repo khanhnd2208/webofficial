@@ -8,12 +8,13 @@ const ImageCropModal = dynamic(() => import('./ImageCropModal'), { ssr: false })
 interface ThumbnailUploadProps {
 	value: string;
 	onChange: (url: string) => void;
+	uploadEndpoint?: string;
 }
 
-async function uploadFileToServer(file: File): Promise<string> {
+async function uploadFileToServer(file: File, endpoint = '/api/uploads'): Promise<string> {
 	const fd = new FormData();
 	fd.append('file', file);
-	const res = await fetch('/api/uploads', { method: 'POST', body: fd });
+	const res = await fetch(endpoint, { method: 'POST', body: fd });
 	const json = (await res.json()) as unknown;
 	const ok = typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true;
 	if (!res.ok || !ok) {
@@ -32,7 +33,11 @@ async function uploadFileToServer(file: File): Promise<string> {
 	return url;
 }
 
-export default function ThumbnailUpload({ value, onChange }: ThumbnailUploadProps) {
+export default function ThumbnailUpload({
+	value,
+	onChange,
+	uploadEndpoint = '/api/uploads',
+}: ThumbnailUploadProps) {
 	const [uploading, setUploading] = useState(false);
 	const [dragActive, setDragActive] = useState(false);
 	const [error, setError] = useState('');
@@ -59,7 +64,7 @@ export default function ThumbnailUpload({ value, onChange }: ThumbnailUploadProp
 			setUploading(true);
 			setError('');
 			try {
-				const url = await uploadFileToServer(croppedFile);
+				const url = await uploadFileToServer(croppedFile, uploadEndpoint);
 				onChange(url);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : 'Upload thất bại');
@@ -67,7 +72,7 @@ export default function ThumbnailUpload({ value, onChange }: ThumbnailUploadProp
 				setUploading(false);
 			}
 		},
-		[onChange],
+		[onChange, uploadEndpoint],
 	);
 
 	function onDrop(e: React.DragEvent) {
