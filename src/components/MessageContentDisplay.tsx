@@ -1,24 +1,12 @@
 'use client';
 
-import { getDisplayFontFamily, MESSAGE_MUSIC_TRACKS } from '@/constants/message';
+import { getDisplayFontFamily } from '@/constants/message';
+import { getMusicTrackLabel } from '@/lib/musicUrl';
 import MessageMusicPlayer from '@/components/MessageMusicPlayer';
 import type { PublicMessageDTO } from '@/types/message';
 
 interface MessageContentDisplayProps {
 	message: PublicMessageDTO;
-}
-
-function getMusicLabel(trackId?: string): string {
-	if (!trackId) return 'Nhạc nền';
-	const preset = MESSAGE_MUSIC_TRACKS.find((t) => t.id === trackId || t.url === trackId);
-	if (preset) return preset.label;
-	const parts = trackId.split('/');
-	const name = parts[parts.length - 1] ?? '';
-	try {
-		return decodeURIComponent(name).replace(/\.[^.]+$/, '');
-	} catch {
-		return name.replace(/\.[^.]+$/, '').replace(/-/g, ' ');
-	}
 }
 
 export default function MessageContentDisplay({ message }: MessageContentDisplayProps) {
@@ -116,7 +104,7 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 			{hasMusic && (
 				<MessageMusicPlayer
 					trackId={message.musicTrack}
-					trackLabel={getMusicLabel(message.musicTrack)}
+					trackLabel={getMusicTrackLabel(message.musicTrack)}
 				/>
 			)}
 		</div>

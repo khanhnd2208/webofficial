@@ -4,6 +4,7 @@ import path from 'node:path';
 import dbConnect from '@/lib/dbConnect';
 import { AppError } from '@/lib/apiUtils';
 import { MESSAGE_MUSIC_TRACKS } from '@/constants/message';
+import { musicFilenameToUrl } from '@/lib/musicUrl';
 import MessageMusic from '@/models/MessageMusic';
 import type { MusicTrackDTO } from '@/types/messageMusic';
 
@@ -18,10 +19,11 @@ async function listGlobalTracksFromDisk(): Promise<MusicTrackDTO[]> {
 			.filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.mp3'))
 			.map((e) => {
 				const filename = e.name;
-				const url = `/music/${encodeURIComponent(filename)}`;
+				const url = musicFilenameToUrl(filename);
+				const preset = MESSAGE_MUSIC_TRACKS.find((t) => t.url === url);
 				return {
 					id: `global:${filename}`,
-					label: filename.replace(/\.mp3$/i, '').normalize('NFC'),
+					label: preset?.label ?? filename.replace(/\.mp3$/i, '').normalize('NFC'),
 					url,
 					source: 'global' as const,
 				};

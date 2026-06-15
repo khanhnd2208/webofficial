@@ -20,6 +20,7 @@ export const MESSAGE_MUSIC_TRACKS: MessageMusicTrack[] = [
 	{ id: 'lofi-rain', label: 'Lofi Rain', url: '/music/lofi-rain.mp3' },
 	{ id: 'piano-gentle', label: 'Piano nhẹ nhàng', url: '/music/piano-gentle.mp3' },
 	{ id: 'cafe-ambient', label: 'Cafe Ambient', url: '/music/cafe-ambient.mp3' },
+	{ id: 'gac-lai-au-lo', label: 'Gác Lại Âu Lo', url: '/music/gac-lai-au-lo.mp3' },
 ];
 
 export const MESSAGE_DISPLAY_FONTS: MessageDisplayFont[] = [
@@ -82,13 +83,8 @@ export const MESSAGE_DISPLAY_FONTS: MessageDisplayFont[] = [
 
 export const DEFAULT_DISPLAY_FONT = 'be-vietnam-pro';
 
-/** Resolve musicTrack value (legacy id or URL) to playable URL */
-export function resolveMusicUrl(track?: string): string | undefined {
-	if (!track) return undefined;
-	if (track.startsWith('/')) return track;
-	const preset = MESSAGE_MUSIC_TRACKS.find((t) => t.id === track);
-	return preset?.url ?? track;
-}
+// Re-export from lib for backward compatibility
+export { resolveMusicUrl } from '@/lib/musicUrl';
 
 export function getDisplayFontById(id: string | undefined): MessageDisplayFont {
 	const fallback = MESSAGE_DISPLAY_FONTS[0];
