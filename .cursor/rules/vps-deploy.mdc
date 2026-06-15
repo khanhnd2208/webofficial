@@ -1,0 +1,50 @@
+---
+description: Deploy teaching platform to VPS via SSH (no GitHub Actions)
+alwaysApply: false
+---
+
+# VPS Deploy (webofficial)
+
+## Connection
+
+- **SSH alias:** `webofficial-vps` (in `~/.ssh/config`)
+- **Host:** `217.217.253.161`, user `root`, port `22`
+- **App path:** `/var/www/webofficial`
+- **PM2 process:** `nextjs-app` (port 4000, Nginx → HTTPS)
+- **Auth:** SSH key only — never commit or store VPS password in the repo
+
+## Deploy command
+
+From project root:
+
+```bash
+chmod +x scripts/deploy-vps.sh
+./scripts/deploy-vps.sh          # full deploy
+./scripts/deploy-vps.sh --check  # verify SSH only
+```
+
+Or: `npm run deploy:vps`
+
+## What the script does
+
+1. `rsync` source to VPS (excludes `node_modules`, `.next`, `.git`, `.env*`, user uploads)
+2. Remote: `npm install`, `prisma generate`, `prisma migrate deploy`, `npm run build`
+3. `pm2 reload nextjs-app --update-env`
+
+## One-time SSH setup
+
+If key auth fails:
+
+```bash
+VPS_PASSWORD='...' ./scripts/setup-vps-ssh.sh
+```
+
+## Do NOT
+
+- Put VPS password in any tracked file
+- Use `rsync --delete` (would risk VPS-only uploads)
+- Overwrite `/var/www/webofficial/.env.local` on VPS
+
+## After deploy
+
+Hard refresh browser. Check: `ssh webofficial-vps 'pm2 logs nextjs-app --lines 30'`
