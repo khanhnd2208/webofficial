@@ -294,7 +294,7 @@ export default function CreatePostPage() {
 					<Link className="font-medium underline underline-offset-2" href="/admin/posts">
 						Về danh sách
 					</Link>
-					<Link className="font-medium underline underline-offset-2" href={`/blog/${saveState.slug}`} target="_blank">
+					<Link className="font-medium underline underline-offset-2" href={`/bai-viet/${saveState.slug}`} target="_blank">
 						Xem bài viết ↗
 					</Link>
 					<button onClick={clearDraft} className="ml-auto text-xs font-medium underline underline-offset-2">

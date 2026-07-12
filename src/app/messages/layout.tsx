@@ -43,7 +43,10 @@ export default async function MessagesLayout({
 }) {
 	const session = await auth();
 	if (!session?.user) {
-		redirect('/login?from=/messages');
+		redirect('/dang-nhap?from=/messages');
+	}
+	if (session.user.role !== 'admin') {
+		redirect('/');
 	}
 
 	const vars = [

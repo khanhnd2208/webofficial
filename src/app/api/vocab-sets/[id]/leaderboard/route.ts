@@ -1,9 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════════
-   GET /api/vocab-sets/[id]/leaderboard
-   Returns top-10 scores per game mode for a vocab set.
-   Public (no auth required) so it can be rendered server-side.
+   GET /api/vocab-sets/[id]/leaderboard — admin-only after tool isolation
    ════════════════════════════════════════════════════════════════════════ */
-import { withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
 import { prisma } from '@/lib/prisma';
 
 type GameMode = 'MCQ' | 'FILL_BLANK' | 'MATCHING' | 'GUESS_WHO';
@@ -13,7 +11,7 @@ type Ctx = { params: Promise<{ id: string }> };
 const MODES: GameMode[] = ['MCQ', 'FILL_BLANK', 'MATCHING', 'GUESS_WHO'];
 const TOP_N = 10;
 
-export const GET = withErrorHandling(async (_req, ctx) => {
+export const GET = withAdmin(async (_req, _user, ctx) => {
   const { id: vocabSetId } = await (ctx as Ctx).params;
 
   const set = await prisma.vocabSet.findUnique({ where: { id: vocabSetId }, select: { id: true } });

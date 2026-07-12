@@ -15,8 +15,8 @@ interface BlogFilterBarProps {
 
 const SORT_OPTIONS = [
 	{ value: '', label: 'Mặc định' },
-	{ value: 'chapter-asc', label: 'Chapter ↑' },
-	{ value: 'chapter-desc', label: 'Chapter ↓' },
+	{ value: 'chapter-asc', label: 'Chương ↑' },
+	{ value: 'chapter-desc', label: 'Chương ↓' },
 	{ value: 'newest', label: 'Mới nhất' },
 	{ value: 'oldest', label: 'Cũ nhất' },
 	{ value: 'views', label: 'Xem nhiều' },
@@ -28,7 +28,7 @@ function buildQuery(params: Record<string, string | undefined>) {
 		if (val && val !== '') sp.set(key, val);
 	}
 	const q = sp.toString();
-	return `/blog${q ? `?${q}` : ''}`;
+	return `/bai-viet${q ? `?${q}` : ''}`;
 }
 
 export default function BlogFilterBar({
@@ -40,266 +40,292 @@ export default function BlogFilterBar({
 	total,
 }: BlogFilterBarProps) {
 	const router = useRouter();
-	const [showFilters, setShowFilters] = useState(
-		!!(currentTag || currentCategory || currentSort),
-	);
+	const [sheetOpen, setSheetOpen] = useState(false);
+	const [draftTag, setDraftTag] = useState(currentTag ?? '');
+	const [draftCategory, setDraftCategory] = useState(currentCategory ?? '');
+	const [draftSort, setDraftSort] = useState(currentSort ?? '');
 	const [tagSearch, setTagSearch] = useState('');
-	const [showTagDropdown, setShowTagDropdown] = useState(false);
 	const [catSearch, setCatSearch] = useState('');
-	const [showCatDropdown, setShowCatDropdown] = useState(false);
-	const tagRef = useRef<HTMLDivElement>(null);
-	const catRef = useRef<HTMLDivElement>(null);
+	const sheetRef = useRef<HTMLDivElement>(null);
 
 	const hasActiveFilters = !!(currentTag || currentCategory || currentSort);
 
-	// Close dropdowns on outside click
+	const openSheet = () => {
+		setDraftTag(currentTag ?? '');
+		setDraftCategory(currentCategory ?? '');
+		setDraftSort(currentSort ?? '');
+		setTagSearch('');
+		setCatSearch('');
+		setSheetOpen(true);
+	};
+
 	useEffect(() => {
-		function handleClick(e: MouseEvent) {
-			if (tagRef.current && !tagRef.current.contains(e.target as Node)) setShowTagDropdown(false);
-			if (catRef.current && !catRef.current.contains(e.target as Node)) setShowCatDropdown(false);
+		if (!sheetOpen) return;
+		function onKey(e: KeyboardEvent) {
+			if (e.key === 'Escape') setSheetOpen(false);
 		}
-		document.addEventListener('mousedown', handleClick);
-		return () => document.removeEventListener('mousedown', handleClick);
-	}, []);
-
-	const filteredTags = tagSearch
-		? allTags.filter((t) => t.toLowerCase().includes(tagSearch.toLowerCase()))
-		: allTags;
-
-	const filteredCats = catSearch
-		? allCategories.filter((c) => c.toLowerCase().includes(catSearch.toLowerCase()))
-		: allCategories;
+		document.addEventListener('keydown', onKey);
+		const prev = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.removeEventListener('keydown', onKey);
+			document.body.style.overflow = prev;
+		};
+	}, [sheetOpen]);
 
 	const navigate = useCallback(
 		(overrides: Record<string, string | undefined>) => {
-			const params: Record<string, string | undefined> = {
-				tag: currentTag,
-				category: currentCategory,
-				sort: currentSort,
-				page: undefined, // Reset page on filter change
-				...overrides,
-			};
-			router.push(buildQuery(params));
+			router.push(
+				buildQuery({
+					tag: currentTag,
+					category: currentCategory,
+					sort: currentSort,
+					page: undefined,
+					...overrides,
+				}),
+			);
 		},
 		[currentTag, currentCategory, currentSort, router],
 	);
 
+	const applyDraft = () => {
+		router.push(
+			buildQuery({
+				tag: draftTag || undefined,
+				category: draftCategory || undefined,
+				sort: draftSort || undefined,
+			}),
+		);
+		setSheetOpen(false);
+	};
+
+	const clearAll = () => {
+		setDraftTag('');
+		setDraftCategory('');
+		setDraftSort('');
+		router.push('/bai-viet');
+		setSheetOpen(false);
+	};
+
+	const filteredTags = tagSearch
+		? allTags.filter((t) => t.toLowerCase().includes(tagSearch.toLowerCase()))
+		: allTags;
+	const filteredCats = catSearch
+		? allCategories.filter((c) => c.toLowerCase().includes(catSearch.toLowerCase()))
+		: allCategories;
+
 	return (
-		<section className="border-b border-border">
-			<div className="mx-auto max-w-5xl px-4 py-3 sm:px-6">
-				{/* Main filter row */}
-				<div className="flex flex-wrap items-center gap-2">
-					{/* Filter toggle button */}
+		<>
+			{/* Desktop sticky filter */}
+			<section className="sticky top-[57px] z-30 hidden border-b border-hairline bg-canvas/95 backdrop-blur-md lg:block">
+				<div className="shell py-3">
+					<div className="flex flex-wrap items-center gap-2">
+						<select
+							value={currentCategory ?? ''}
+							onChange={(e) => navigate({ category: e.target.value || undefined })}
+							className="rounded-[10px] border border-hairline bg-paper px-3 py-2 text-xs text-ink"
+							aria-label="Chủ đề"
+						>
+							<option value="">Tất cả chủ đề</option>
+							{allCategories.map((c) => (
+								<option key={c} value={c}>
+									{c}
+								</option>
+							))}
+						</select>
+
+						<select
+							value={currentTag ?? ''}
+							onChange={(e) => navigate({ tag: e.target.value || undefined })}
+							className="rounded-[10px] border border-hairline bg-paper px-3 py-2 text-xs text-ink"
+							aria-label="Tag"
+						>
+							<option value="">Tất cả tag</option>
+							{allTags.map((t) => (
+								<option key={t} value={t}>
+									#{t}
+								</option>
+							))}
+						</select>
+
+						<div className="flex items-center gap-1">
+							{SORT_OPTIONS.map((opt) => {
+								const isActive = (currentSort ?? '') === opt.value;
+								return (
+									<button
+										key={opt.value}
+										type="button"
+										onClick={() => navigate({ sort: opt.value || undefined })}
+										className={`rounded-[10px] px-2.5 py-1.5 text-[11px] font-medium transition-colors duration-200 ${
+											isActive
+												? 'bg-ink text-paper'
+												: 'text-ink-secondary hover:bg-surface-hover hover:text-ink'
+										}`}
+									>
+										{opt.label}
+									</button>
+								);
+							})}
+						</div>
+
+						{hasActiveFilters ? (
+							<Link
+								href="/bai-viet"
+								className="text-[11px] font-medium text-ink-secondary underline underline-offset-2 hover:text-ink"
+							>
+								Xóa lọc
+							</Link>
+						) : null}
+
+						<span className="ml-auto font-mono text-[10px] text-ink-secondary" aria-live="polite">
+							{total} kết quả
+						</span>
+					</div>
+				</div>
+			</section>
+
+			{/* Mobile filter trigger */}
+			<section className="border-b border-hairline lg:hidden">
+				<div className="shell flex items-center justify-between gap-3 py-3">
 					<button
-						onClick={() => setShowFilters((v) => !v)}
-						className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
-							showFilters || hasActiveFilters
-								? 'bg-accent text-accent-foreground'
-								: 'border border-border text-muted hover:border-foreground hover:text-foreground'
+						type="button"
+						onClick={openSheet}
+						className={`inline-flex min-h-11 items-center gap-2 rounded-[10px] px-4 text-xs font-semibold ${
+							hasActiveFilters ? 'bg-vermilion text-paper' : 'border border-hairline text-ink'
 						}`}
 					>
-						<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-						</svg>
 						Bộ lọc
 						{hasActiveFilters ? (
-							<span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent-foreground/20 text-[10px]">
+							<span className="font-mono text-[10px]">
 								{[currentTag, currentCategory, currentSort].filter(Boolean).length}
 							</span>
 						) : null}
 					</button>
+					<span className="font-mono text-[10px] text-ink-secondary" aria-live="polite">
+						{total} kết quả
+					</span>
+				</div>
+			</section>
 
-					{/* Sort chips (always visible) */}
-					<div className="flex items-center gap-1">
-						{SORT_OPTIONS.map((opt) => {
-							const isActive = (currentSort ?? '') === opt.value;
-							return (
+			{/* Mobile filter sheet */}
+			{sheetOpen ? (
+				<div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Bộ lọc">
+					<button
+						type="button"
+						className="absolute inset-0 bg-ink/40"
+						aria-label="Đóng"
+						onClick={() => setSheetOpen(false)}
+					/>
+					<div
+						ref={sheetRef}
+						className="absolute inset-x-0 bottom-0 max-h-[85svh] overflow-y-auto rounded-t-[18px] border-t border-hairline bg-paper p-6"
+					>
+						<div className="mx-auto mb-4 h-1 w-10 rounded-full bg-hairline" aria-hidden />
+						<p className="font-display text-xl font-medium text-ink">Bộ lọc</p>
+
+						<label className="mt-6 block text-xs font-semibold uppercase tracking-widest text-ink-secondary">
+							Chủ đề
+						</label>
+						<input
+							value={catSearch}
+							onChange={(e) => setCatSearch(e.target.value)}
+							placeholder="Tìm chủ đề…"
+							className="mt-2 w-full rounded-[10px] border border-hairline bg-canvas px-3 py-2.5 text-sm outline-none focus:border-ink"
+						/>
+						<div className="mt-2 flex max-h-32 flex-wrap gap-2 overflow-y-auto">
+							<button
+								type="button"
+								onClick={() => setDraftCategory('')}
+								className={`rounded-[10px] px-3 py-1.5 text-xs ${
+									!draftCategory ? 'bg-ink text-paper' : 'border border-hairline text-ink-secondary'
+								}`}
+							>
+								Tất cả
+							</button>
+							{filteredCats.map((c) => (
+								<button
+									key={c}
+									type="button"
+									onClick={() => setDraftCategory(c)}
+									className={`rounded-[10px] px-3 py-1.5 text-xs ${
+										draftCategory === c ? 'bg-ink text-paper' : 'border border-hairline text-ink-secondary'
+									}`}
+								>
+									{c}
+								</button>
+							))}
+						</div>
+
+						<label className="mt-6 block text-xs font-semibold uppercase tracking-widest text-ink-secondary">
+							Tag
+						</label>
+						<input
+							value={tagSearch}
+							onChange={(e) => setTagSearch(e.target.value)}
+							placeholder="Tìm tag…"
+							className="mt-2 w-full rounded-[10px] border border-hairline bg-canvas px-3 py-2.5 text-sm outline-none focus:border-ink"
+						/>
+						<div className="mt-2 flex max-h-32 flex-wrap gap-2 overflow-y-auto">
+							<button
+								type="button"
+								onClick={() => setDraftTag('')}
+								className={`rounded-[10px] px-3 py-1.5 text-xs ${
+									!draftTag ? 'bg-ink text-paper' : 'border border-hairline text-ink-secondary'
+								}`}
+							>
+								Tất cả
+							</button>
+							{filteredTags.map((t) => (
+								<button
+									key={t}
+									type="button"
+									onClick={() => setDraftTag(t)}
+									className={`rounded-[10px] px-3 py-1.5 text-xs ${
+										draftTag === t ? 'bg-ink text-paper' : 'border border-hairline text-ink-secondary'
+									}`}
+								>
+									#{t}
+								</button>
+							))}
+						</div>
+
+						<label className="mt-6 block text-xs font-semibold uppercase tracking-widest text-ink-secondary">
+							Sắp xếp
+						</label>
+						<div className="mt-2 flex flex-wrap gap-2">
+							{SORT_OPTIONS.map((opt) => (
 								<button
 									key={opt.value}
-									onClick={() => navigate({ sort: opt.value || undefined })}
-									className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
-										isActive
-											? 'bg-foreground text-background'
-											: 'text-muted hover:bg-surface-hover hover:text-foreground'
+									type="button"
+									onClick={() => setDraftSort(opt.value)}
+									className={`rounded-[10px] px-3 py-1.5 text-xs ${
+										draftSort === opt.value ? 'bg-ink text-paper' : 'border border-hairline text-ink-secondary'
 									}`}
 								>
 									{opt.label}
 								</button>
-							);
-						})}
-					</div>
-
-					{/* Active filter pills */}
-					{currentTag ? (
-						<span className="inline-flex items-center gap-1 rounded-full bg-accent-subtle px-2.5 py-1 text-[11px] font-bold text-accent">
-							Tag: {currentTag}
-							<button
-								onClick={() => navigate({ tag: undefined })}
-								className="ml-0.5 text-accent/60 hover:text-accent"
-							>
-								✕
-							</button>
-						</span>
-					) : null}
-					{currentCategory ? (
-						<span className="inline-flex items-center gap-1 rounded-full bg-surface-secondary px-2.5 py-1 text-[11px] font-bold text-foreground-secondary">
-							{currentCategory}
-							<button
-								onClick={() => navigate({ category: undefined })}
-								className="ml-0.5 text-muted hover:text-foreground"
-							>
-								✕
-							</button>
-						</span>
-					) : null}
-
-					{hasActiveFilters ? (
-						<Link
-							href="/blog"
-							className="text-[11px] font-medium text-muted underline underline-offset-2 hover:text-foreground"
-						>
-							Xoá tất cả
-						</Link>
-					) : null}
-
-					{/* Result count */}
-					<span className="ml-auto font-mono text-[10px] text-muted">{total} kết quả</span>
-				</div>
-
-				{/* Expanded filter panel */}
-				{showFilters ? (
-					<div className="mt-3 flex flex-wrap items-start gap-4 border-t border-border pt-3">
-						{/* Tag filter with search */}
-						<div className="relative" ref={tagRef}>
-							<button
-								onClick={() => {
-									setShowTagDropdown((v) => !v);
-									setShowCatDropdown(false);
-								}}
-								className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground-secondary transition-colors hover:border-foreground"
-							>
-								<svg className="h-3.5 w-3.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-								</svg>
-								{currentTag ? `#${currentTag}` : 'Chọn tag'}
-								<svg className="h-3 w-3 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-								</svg>
-							</button>
-							{showTagDropdown && allTags.length > 0 ? (
-								<div className="absolute left-0 top-full z-40 mt-1 w-56 rounded-xl border border-border bg-surface-elevated shadow-lg">
-									<div className="border-b border-border p-2">
-										<input
-											value={tagSearch}
-											onChange={(e) => setTagSearch(e.target.value)}
-											placeholder="Tìm tag…"
-											className="w-full rounded-md bg-surface-hover px-2.5 py-1.5 text-xs outline-none placeholder:text-muted"
-											autoFocus
-										/>
-									</div>
-									<div className="max-h-48 overflow-y-auto p-1">
-										{currentTag ? (
-											<button
-												onClick={() => {
-													navigate({ tag: undefined });
-													setShowTagDropdown(false);
-												}}
-												className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-muted hover:bg-surface-hover"
-											>
-												Bỏ chọn tag
-											</button>
-										) : null}
-										{filteredTags.map((t) => (
-											<button
-												key={t}
-												onClick={() => {
-													navigate({ tag: t });
-													setShowTagDropdown(false);
-													setTagSearch('');
-												}}
-												className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-colors hover:bg-surface-hover ${
-													currentTag === t ? 'font-bold text-accent' : 'text-foreground-secondary'
-												}`}
-											>
-												<span className="text-muted">#</span>
-												{t}
-											</button>
-										))}
-										{filteredTags.length === 0 ? (
-											<p className="px-3 py-2 text-xs text-muted">Không tìm thấy.</p>
-										) : null}
-									</div>
-								</div>
-							) : null}
+							))}
 						</div>
 
-						{/* Category filter with search */}
-						{allCategories.length > 0 ? (
-							<div className="relative" ref={catRef}>
-								<button
-									onClick={() => {
-										setShowCatDropdown((v) => !v);
-										setShowTagDropdown(false);
-									}}
-									className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground-secondary transition-colors hover:border-foreground"
-								>
-									<svg className="h-3.5 w-3.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-									</svg>
-									{currentCategory ?? 'Chủ đề'}
-									<svg className="h-3 w-3 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-									</svg>
-								</button>
-								{showCatDropdown ? (
-									<div className="absolute left-0 top-full z-40 mt-1 w-56 rounded-xl border border-border bg-surface-elevated shadow-lg">
-										<div className="border-b border-border p-2">
-											<input
-												value={catSearch}
-												onChange={(e) => setCatSearch(e.target.value)}
-												placeholder="Tìm chủ đề…"
-												className="w-full rounded-md bg-surface-hover px-2.5 py-1.5 text-xs outline-none placeholder:text-muted"
-												autoFocus
-											/>
-										</div>
-										<div className="max-h-48 overflow-y-auto p-1">
-											{currentCategory ? (
-												<button
-													onClick={() => {
-														navigate({ category: undefined });
-														setShowCatDropdown(false);
-													}}
-													className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-muted hover:bg-surface-hover"
-												>
-													Bỏ chọn chủ đề
-												</button>
-											) : null}
-											{filteredCats.map((c) => (
-												<button
-													key={c}
-													onClick={() => {
-														navigate({ category: c });
-														setShowCatDropdown(false);
-														setCatSearch('');
-													}}
-													className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-colors hover:bg-surface-hover ${
-														currentCategory === c ? 'font-bold text-accent' : 'text-foreground-secondary'
-													}`}
-												>
-													{c}
-												</button>
-											))}
-											{filteredCats.length === 0 ? (
-												<p className="px-3 py-2 text-xs text-muted">Không tìm thấy.</p>
-											) : null}
-										</div>
-									</div>
-								) : null}
-							</div>
-						) : null}
+						<div className="mt-8 flex gap-3 pb-[env(safe-area-inset-bottom)]">
+							<button
+								type="button"
+								onClick={clearAll}
+								className="min-h-11 flex-1 rounded-[10px] border border-hairline text-xs font-semibold uppercase tracking-wider text-ink"
+							>
+								Xóa lọc
+							</button>
+							<button
+								type="button"
+								onClick={applyDraft}
+								className="min-h-11 flex-1 rounded-[10px] bg-ink text-xs font-semibold uppercase tracking-wider text-paper"
+							>
+								Áp dụng
+							</button>
+						</div>
 					</div>
-				) : null}
-			</div>
-		</section>
+				</div>
+			) : null}
+		</>
 	);
 }

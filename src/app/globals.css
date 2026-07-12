@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ═══════════════════════════════════════════════════════
    Design System — Semantic Design Tokens
@@ -10,44 +12,46 @@
    ═══════════════════════════════════════════════════════ */
 
 :root {
-	/* Page backgrounds — warm cream/beige tones */
-	--background: #f0ece4;
-	--background-secondary: #e8e3da;
-	
-	/* Surface = cards, panels, modals */
-	--surface: #f5f1ea;
-	--surface-secondary: #eae5dc;
-	--surface-elevated: #ffffff;
-	--surface-hover: #e8e3da;
-	--surface-active: #ddd7cc;
-	
-	/* Text hierarchy — high contrast black */
-	--foreground: #1a1a1a;
-	--foreground-secondary: #3d3d3d;
-	--muted: #7a7568;
-	--muted-foreground: #5c574d;
-	
-	/* Borders */
-	--border: #d4cfc5;
-	--border-hover: #c2bcb0;
-	--border-strong: #9e9889;
-	
-	/* Accent / Primary — warm editorial */
-	--accent: #c44b28;
-	--accent-hover: #a83d1f;
-	--accent-subtle: #fdf2ee;
-	--accent-muted: #f9e5dd;
-	--accent-foreground: #ffffff;
-	
-	/* Semantic states */
-	--success: #4a8c5c;
-	--success-subtle: #edf5ef;
-	--warning: #c48a1a;
-	--warning-subtle: #fdf6e8;
-	--error: #c44b28;
-	--error-subtle: #fdf2ee;
-	
-	/* Extended palette — colorful yet minimal */
+	--header-height: 73px;
+
+	/* Absolute Cinema — Quiet Cinematic Atelier (Light) */
+	--canvas: #f2eee6;
+	--paper: #faf7f0;
+	--ink: #191815;
+	--ink-secondary: #625d54;
+	--hairline: #d8d0c3;
+	--vermilion: #a9442a;
+	--sage: #879281;
+	--sunlight: #f0c895;
+
+	/* Semantic aliases (existing class names keep working) */
+	--background: var(--canvas);
+	--background-secondary: #ebe6dc;
+	--surface: var(--paper);
+	--surface-secondary: #f3efe6;
+	--surface-elevated: #fffcf7;
+	--surface-hover: #ebe6dc;
+	--surface-active: #e3ddd2;
+	--foreground: var(--ink);
+	--foreground-secondary: #3d3933;
+	--muted: var(--ink-secondary);
+	--muted-foreground: #4f4a43;
+	--border: var(--hairline);
+	--border-hover: #c9c0b1;
+	--border-strong: #9e9588;
+	--accent: var(--vermilion);
+	--accent-hover: #8f3822;
+	--accent-subtle: #f7ebe6;
+	--accent-muted: #f0ddd5;
+	--accent-foreground: #fffcf7;
+
+	--success: #5a7a62;
+	--success-subtle: #edf3ef;
+	--warning: #b8892e;
+	--warning-subtle: #faf3e6;
+	--error: var(--vermilion);
+	--error-subtle: #f7ebe6;
+
 	--indigo: #5b7fb5;
 	--indigo-subtle: #edf1f8;
 	--purple: #8b6fb0;
@@ -56,59 +60,68 @@
 	--teal-subtle: #edf7f5;
 	--rose: #c46478;
 	--rose-subtle: #fdf0f3;
-	
-	/* Shadows - warm and subtle */
-	--shadow-sm: 0 1px 2px 0 rgb(26 26 26 / 0.04);
-	--shadow-md: 0 4px 6px -1px rgb(26 26 26 / 0.06), 0 2px 4px -2px rgb(26 26 26 / 0.04);
-	--shadow-lg: 0 10px 15px -3px rgb(26 26 26 / 0.07), 0 4px 6px -4px rgb(26 26 26 / 0.04);
-	
-	/* Border Radius */
-	--radius-sm: 8px;
-	--radius-md: 12px;
-	--radius-lg: 16px;
-	--radius-xl: 20px;
+
+	--shadow-sm: 0 1px 2px 0 rgb(25 24 21 / 0.04);
+	--shadow-md: 0 4px 6px -1px rgb(25 24 21 / 0.06), 0 2px 4px -2px rgb(25 24 21 / 0.04);
+	--shadow-lg: 0 10px 15px -3px rgb(25 24 21 / 0.07), 0 4px 6px -4px rgb(25 24 21 / 0.04);
+
+	/* Three radius tiers only */
+	--radius-sm: 10px;
+	--radius-md: 18px;
+	--radius-lg: 28px;
+	--radius-xl: 28px;
 	--radius-full: 9999px;
+
+	/* Layout */
+	--shell-max: 1440px;
+	--gutter: 24px;
+	--section-space: 5.5rem;
+	--measure: 68ch;
+}
+
+@media (min-width: 640px) {
+	:root {
+		--header-height: 77px;
+	}
 }
 
 .dark {
-	/* Page backgrounds — deep warm dark */
-	--background: #121110;
-	--background-secondary: #1a1917;
-	
-	/* Surface = cards, panels, modals */
-	--surface: #1e1d1a;
-	--surface-secondary: #242320;
-	--surface-elevated: #2a2926;
-	--surface-hover: #2a2926;
-	--surface-active: #353330;
-	
-	/* Text hierarchy */
-	--foreground: #f0ece4;
-	--foreground-secondary: #c8c3b8;
-	--muted: #8c877b;
-	--muted-foreground: #9e9889;
-	
-	/* Borders */
-	--border: #2e2d2a;
-	--border-hover: #3d3c38;
-	--border-strong: #504e49;
-	
-	/* Accent / Primary */
-	--accent: #e8714f;
-	--accent-hover: #f0906f;
+	--canvas: #11100e;
+	--paper: #1a1815;
+	--ink: #f2ece1;
+	--ink-secondary: #b7afa2;
+	--hairline: #35312b;
+	--vermilion: #e27757;
+	--sage: #a8b49f;
+	--sunlight: #7b4f2e;
+
+	--background: var(--canvas);
+	--background-secondary: #161410;
+	--surface: var(--paper);
+	--surface-secondary: #221f1b;
+	--surface-elevated: #26231f;
+	--surface-hover: #26231f;
+	--surface-active: #302c27;
+	--foreground: var(--ink);
+	--foreground-secondary: #d4cdc2;
+	--muted: var(--ink-secondary);
+	--muted-foreground: #c4bcaf;
+	--border: var(--hairline);
+	--border-hover: #464139;
+	--border-strong: #5c564c;
+	--accent: var(--vermilion);
+	--accent-hover: #eba07f;
 	--accent-subtle: #2a1c16;
 	--accent-muted: #2a1c16;
-	--accent-foreground: #121110;
-	
-	/* Semantic states */
+	--accent-foreground: #11100e;
+
 	--success: #6aad7c;
 	--success-subtle: #1a2a1e;
 	--warning: #d4a03a;
 	--warning-subtle: #2a2210;
-	--error: #e8714f;
+	--error: var(--vermilion);
 	--error-subtle: #2a1c16;
-	
-	/* Extended palette — colorful yet minimal */
+
 	--indigo: #7a9fd4;
 	--indigo-subtle: #1a2030;
 	--purple: #a78fca;
@@ -117,11 +130,24 @@
 	--teal-subtle: #1a2a26;
 	--rose: #d48494;
 	--rose-subtle: #2a1a1e;
-	
-	/* Shadows in dark mode */
+
 	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
 	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
 	--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+@media (min-width: 768px) {
+	:root {
+		--gutter: 32px;
+		--section-space: 7.5rem;
+	}
+}
+
+@media (min-width: 1024px) {
+	:root {
+		--gutter: 64px;
+		--section-space: 9rem;
+	}
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -131,6 +157,14 @@
    to work as first-class Tailwind classes.
    ═══════════════════════════════════════════════════════ */
 @theme inline {
+	--color-canvas: var(--canvas);
+	--color-paper: var(--paper);
+	--color-ink: var(--ink);
+	--color-ink-secondary: var(--ink-secondary);
+	--color-vermilion: var(--vermilion);
+	--color-sage: var(--sage);
+	--color-sunlight: var(--sunlight);
+	--color-hairline: var(--hairline);
 	--color-background: var(--background);
 	--color-background-secondary: var(--background-secondary);
 	--color-surface: var(--surface);
@@ -166,7 +200,11 @@
 	--color-rose-subtle: var(--rose-subtle);
 	--font-sans: var(--font-inter);
 	--font-serif: var(--font-merriweather);
+	--font-display: var(--font-cormorant);
 	--font-mono: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+	--radius-sm: 10px;
+	--radius-md: 18px;
+	--radius-lg: 28px;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -182,8 +220,111 @@ body {
 	color: var(--foreground);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	/* Use Inter (loaded with vietnamese subset in layout.tsx) — fallback to system sans */
 	font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Static paper grain — nearly invisible alone */
+body::before {
+	content: '';
+	pointer-events: none;
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	opacity: 0.02;
+	mix-blend-mode: multiply;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.dark body::before {
+	opacity: 0.018;
+	mix-blend-mode: soft-light;
+}
+
+.font-display {
+	font-family: var(--font-cormorant), Georgia, 'Times New Roman', serif;
+}
+
+.shell {
+	margin-inline: auto;
+	width: 100%;
+	max-width: var(--shell-max);
+	padding-inline: var(--gutter);
+}
+
+.type-wordmark {
+	/* Fit full “HANOICAM” on one line from 320px — never clip the M */
+	font-size: clamp(2.6rem, 11.2vw + 0.35rem, 12rem);
+	line-height: 0.92;
+	letter-spacing: -0.03em;
+	white-space: nowrap;
+	max-width: 100%;
+	overflow: visible;
+}
+
+@media (min-width: 480px) {
+	.type-wordmark {
+		font-size: clamp(3.25rem, 10vw + 0.5rem, 12rem);
+		letter-spacing: -0.025em;
+	}
+}
+
+@media (min-width: 1024px) {
+	.type-wordmark {
+		font-size: clamp(5rem, 9vw, 12rem);
+		letter-spacing: -0.02em;
+	}
+}
+
+.type-page-title {
+	font-size: clamp(2.25rem, 6vw + 0.5rem, 7rem);
+	line-height: 0.95;
+	letter-spacing: -0.02em;
+}
+
+.type-section {
+	font-size: clamp(1.75rem, 3.5vw + 0.5rem, 4.25rem);
+	line-height: 1.05;
+	letter-spacing: -0.015em;
+}
+
+.prose-article {
+	font-family: var(--font-merriweather), Georgia, serif;
+	font-size: clamp(1.1875rem, 0.4vw + 1.1rem, 1.3125rem);
+	line-height: 1.8;
+	max-width: var(--measure);
+}
+
+/* Vermilion thought-line — signature motif */
+.thought-line {
+	height: 1.5px;
+	background: var(--vermilion);
+	transform-origin: left center;
+}
+
+.skip-link {
+	position: absolute;
+	left: var(--gutter);
+	top: -100px;
+	z-index: 100;
+	border-radius: var(--radius-sm);
+	background: var(--ink);
+	color: var(--paper);
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.skip-link:focus {
+	top: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-flame,
+	.animate-flame-inner,
+	.animate-flame-core,
+	.animate-sparkle {
+		animation: none !important;
+	}
 }
 
 /* Focus styles - accessible and elegant */

@@ -1,28 +1,24 @@
 import Link from 'next/link';
 
+import { routes } from '@/config/routes';
+
 export const dynamic = 'force-dynamic';
 
 const TOOLS = [
 	{
-		href: '/admin/tools/lucky-card',
+		href: routes.admin.vocabulary,
+		label: 'Vocabulary',
+		description: 'Quản lý bộ từ vựng — chỉ dành cho admin.',
+	},
+	{
+		href: routes.admin.luckyCard,
 		label: 'Lucky Card',
-		description: 'Tạo bộ thẻ may mắn — lật thẻ để xem nội dung bí ẩn bên trong!',
-		emoji: '🃏',
-		gradient: 'from-amber-500 via-orange-500 to-rose-500',
+		description: 'Tạo bộ thẻ may mắn — lật thẻ để xem nội dung bí ẩn.',
 	},
 	{
-		href: '/personality-test',
-		label: 'Personality Test',
-		description: 'Bài đánh giá tính cách kép — BFI-2-S (OCEAN) + Dark Triad (SD3). Phân tích sâu cho phát triển nghề nghiệp.',
-		emoji: '🧠',
-		gradient: 'from-indigo-500 via-purple-500 to-rose-500',
-	},
-	{
-		href: '/admin/personality-test',
-		label: 'Personality Report',
-		description: 'Báo cáo tổng hợp kết quả bài test tính cách — xem, lọc và xuất Excel toàn bộ dữ liệu.',
-		emoji: '📊',
-		gradient: 'from-teal-500 via-cyan-500 to-blue-500',
+		href: routes.admin.messages,
+		label: 'Lời nhắn',
+		description: 'Tạo và quản lý lời nhắn; người nhận mở qua /m/[slug].',
 	},
 ];
 
@@ -30,23 +26,14 @@ export default function ToolsPage() {
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
 			<div className="space-y-8">
-				{/* Header */}
 				<div>
-					<div className="flex items-center gap-3">
-						<span className="text-3xl">✨</span>
-						<div>
-							<p className="text-xs font-bold uppercase tracking-widest text-muted">Admin Tools</p>
-							<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
-								Magical Tools
-							</h1>
-						</div>
-					</div>
+					<p className="text-xs font-bold uppercase tracking-widest text-muted">Admin</p>
+					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Công cụ</h1>
 					<p className="mt-3 text-sm text-muted leading-relaxed max-w-xl">
-						Bộ sưu tập công cụ thú vị dành riêng cho admin — gamification, tạo tương tác, và nhiều hơn nữa.
+						Công cụ mặc định chỉ dành cho admin. Chỉ đầu ra được thiết kế riêng mới công khai.
 					</p>
 				</div>
 
-				{/* Tools Grid */}
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{TOOLS.map((tool) => (
 						<Link
@@ -54,12 +41,7 @@ export default function ToolsPage() {
 							href={tool.href}
 							className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border-hover"
 						>
-							{/* Gradient glow on hover */}
-							<div
-								className={`absolute inset-0 bg-linear-to-br ${tool.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.04]`}
-							/>
 							<div className="relative">
-								<div className="text-4xl mb-3">{tool.emoji}</div>
 								<h3 className="text-lg font-black text-foreground">{tool.label}</h3>
 								<p className="mt-1.5 text-sm text-muted leading-relaxed">{tool.description}</p>
 								<div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-accent">
@@ -71,14 +53,6 @@ export default function ToolsPage() {
 							</div>
 						</Link>
 					))}
-
-					{/* Coming soon placeholder */}
-					<div className="flex items-center justify-center rounded-2xl border border-dashed border-border p-6 min-h-45">
-						<div className="text-center">
-							<span className="text-2xl opacity-40">🔮</span>
-							<p className="mt-2 text-xs font-bold text-muted/60">Sắp ra mắt...</p>
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>

@@ -52,7 +52,7 @@ export default async function AdminPostsPage({
 					</p>
 				</div>
 				<div className="flex items-center gap-3">
-					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/blog" target="_blank">
+					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/bai-viet" target="_blank">
 						Xem Blog ↗
 					</Link>
 					<Link

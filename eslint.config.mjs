@@ -14,6 +14,21 @@ const eslintConfig = defineConfig([
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_",
       }],
+      // LazyMotion strict requires `m`, not `motion`
+      "no-restricted-imports": ["error", {
+        paths: [{
+          name: "framer-motion",
+          importNames: ["motion"],
+          message: "Use `m` from framer-motion inside LazyMotion strict (see MotionProvider).",
+        }],
+      }],
+    },
+  },
+  {
+    // Archived research code is not under LazyMotion site shell
+    files: ["src/_archived/**"],
+    rules: {
+      "no-restricted-imports": "off",
     },
   },
   // Override default ignores of eslint-config-next.

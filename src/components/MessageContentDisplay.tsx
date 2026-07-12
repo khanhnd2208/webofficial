@@ -34,7 +34,7 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 					<>
 						{/* Cover image — full-width with gradient fade */}
 						<div className="relative h-56 w-full overflow-hidden sm:h-72">
-							{/* eslint-disable-next-line @next/next/no-img-element */}
+							{ }
 							<img
 								src={message.coverImageUrl}
 								alt=""
@@ -94,7 +94,7 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 					<div
 						className="tiptap-content prose prose-base dark:prose-invert mx-auto max-w-prose rounded-2xl border border-border/50 bg-surface/80 px-5 py-6 shadow-sm backdrop-blur-sm sm:px-8 sm:py-8"
 						style={{ fontFamily }}
-						// eslint-disable-next-line react/no-danger
+						 
 						dangerouslySetInnerHTML={{ __html: message.content }}
 					/>
 				</div>

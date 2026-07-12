@@ -3,7 +3,7 @@ import { withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
 import { setUserRole } from '@/services/userManagementService';
 import type { UserRole } from '@/types/user';
 
-const VALID_ROLES: UserRole[] = ['student', 'teacher', 'admin'];
+const VALID_ROLES: UserRole[] = ['student', 'admin'];
 
 export const PATCH = withAdmin(async (
 	req: NextRequest,

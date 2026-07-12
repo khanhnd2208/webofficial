@@ -33,7 +33,8 @@ async function executeAction(action: OfflineAction): Promise<void> {
 	}
 }
 
-function loadQueue(): OfflineAction[] {
+/** @internal Exported for unit tests */
+export function loadQueue(): OfflineAction[] {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		return raw ? (JSON.parse(raw) as OfflineAction[]) : [];
@@ -42,7 +43,8 @@ function loadQueue(): OfflineAction[] {
 	}
 }
 
-function saveQueue(queue: OfflineAction[]): void {
+/** @internal Exported for unit tests */
+export function saveQueue(queue: OfflineAction[]): void {
 	try {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
 	} catch {

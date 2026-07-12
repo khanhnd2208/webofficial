@@ -1,11 +1,11 @@
 import { type NextRequest } from 'next/server';
 
-import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
 import { uploadMusicTrack } from '@/services/messageMusicService';
 
 export const runtime = 'nodejs';
 
-export const POST = withAuth(async (request: NextRequest, user) => {
+export const POST = withAdmin(async (request: NextRequest, user) => {
 	const form = await request.formData();
 	const file = form.get('file');
 	const label = form.get('label');

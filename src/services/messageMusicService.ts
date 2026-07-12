@@ -2,7 +2,7 @@ import { readdir, mkdir, writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
 
 import dbConnect from '@/lib/dbConnect';
-import { AppError } from '@/lib/apiUtils';
+import { AppError } from '@/lib/appError';
 import { MESSAGE_MUSIC_TRACKS } from '@/constants/message';
 import { musicFilenameToUrl } from '@/lib/musicUrl';
 import MessageMusic from '@/models/MessageMusic';

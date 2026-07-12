@@ -16,7 +16,7 @@ function formatDate(iso: string): string {
 
 export default async function MessagesPage() {
 	const session = await auth();
-	if (!session?.user) redirect('/login?from=/messages');
+	if (!session?.user) redirect('/dang-nhap?from=/messages');
 
 	const messages = await getMessagesByUser(session.user.id);
 
@@ -71,7 +71,7 @@ export default async function MessagesPage() {
 							>
 								<div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-secondary">
 									{msg.coverImageUrl ? (
-										// eslint-disable-next-line @next/next/no-img-element
+										 
 										<img
 											src={msg.coverImageUrl}
 											alt=""

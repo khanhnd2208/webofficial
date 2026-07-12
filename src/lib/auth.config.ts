@@ -20,8 +20,8 @@ const isLocalDev = process.env.AUTH_URL?.startsWith('http://');
 
 /** Custom page paths for Auth.js */
 const pages = {
-	signIn: '/login',
-	error: '/login',
+	signIn: '/dang-nhap',
+	error: '/dang-nhap',
 };
 
 const secureCookieOptions = {
@@ -73,10 +73,9 @@ export const authConfig: NextAuthConfig = {
 		async jwt({ token, user }) {
 			if (user) {
 				const userRole = (user as { role?: string }).role;
-				token.role = (userRole === 'admin' || userRole === 'teacher' || userRole === 'student')
-					? userRole
-					: 'student';
-			} else if (!token.role) {
+				// 'teacher' was a legacy role; normalize to 'student'.
+				token.role = userRole === 'admin' ? 'admin' : 'student';
+			} else if (!token.role || token.role === 'teacher') {
 				token.role = 'student';
 			}
 			return token;
@@ -84,7 +83,7 @@ export const authConfig: NextAuthConfig = {
 		async session({ session, token }) {
 			if (session.user) {
 				(session.user as unknown as Record<string, unknown>).id = token.sub;
-				session.user.role = (token.role as 'admin' | 'teacher' | 'student' | undefined) ?? 'student';
+				session.user.role = (token.role === 'admin' ? 'admin' : 'student') as 'admin' | 'student';
 			}
 			return session;
 		},

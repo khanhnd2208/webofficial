@@ -1,6 +1,6 @@
-# HANOICAM — Teaching Platform
+# HANOICAM — Personal Publishing & Teaching Platform
 
-> Personal bilingual blog and English-learning platform by NDK.  
+> Personal perspectives, teaching materials, and owner-managed tools by NDK.  
 > Live: **[toiladuykhanh.com](https://toiladuykhanh.com)**
 
 ---
@@ -9,6 +9,7 @@
 
 | Document | Description |
 |----------|-------------|
+| [docs/00-PRODUCT_DIRECTION.md](./docs/00-PRODUCT_DIRECTION.md) | Product boundaries, audiences, and access policy |
 | [docs/01-BUSINESS_CONTEXT.md](./docs/01-BUSINESS_CONTEXT.md) | Product vision, user personas, core business flows |
 | [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md) | System design, directory structure, infrastructure decisions |
 | [docs/03-CODING_STANDARDS.md](./docs/03-CODING_STANDARDS.md) | API patterns, type safety rules, naming conventions — **read before contributing** |
@@ -84,6 +85,23 @@ openssl rand -base64 32
 | `npm run build` | Production build |
 | `npm run start` | Serve production build |
 | `npm run lint` | ESLint check |
+| `npm run typecheck` | TypeScript check (`tsc --noEmit`) |
+| `npm run test` | Run all Vitest projects once |
+| `npm run test:unit` | Unit tests only (fast, no DB) |
+| `npm run test:integration` | Service + API integration tests |
+| `npm run test:component` | React hook/component tests (jsdom) |
+| `npm run test:coverage` | All tests with coverage report |
+| `npm run test:e2e` | Playwright end-to-end smoke tests |
+| `npm run test:db:setup` | Create and migrate local test Postgres DB |
+| `npm run check` | Full quality gate: typecheck + lint + test + build |
+
+### Testing prerequisites
+
+- **Unit / component tests:** no external services required.
+- **Integration tests:** `DATABASE_URL` in `.env.local` (PostgreSQL). MongoDB uses in-memory server automatically.
+- **E2E tests:** app built and served (Playwright starts it in CI).
+
+See [docs/03-CODING_STANDARDS.md](./docs/03-CODING_STANDARDS.md) §10 for harness conventions.
 
 ---
 

@@ -380,3 +380,50 @@ import { formatDateShort } from '@/utils/formatDate';
 - **File size guideline:** Any component exceeding ~200 lines should be considered for extraction into sub-components.
 - **Props typing:** Always define a named `interface Props` (or inline type) for component props — never use implicit `any` or untyped objects.
 - **No business logic in components:** Fetch data in Server Components via services, or in Client Components via `fetch('/api/...')`. No direct Mongoose queries from component files.
+
+---
+
+## 10. Testing Standards
+
+### 10.1 Test Projects (Vitest)
+
+| Project | Environment | File pattern | Purpose |
+|---------|-------------|--------------|---------|
+| `unit` | `node` | `*.unit.test.ts`, `src/lib/__tests__/**` | Pure logic, scoring, utils |
+| `integration` | `node` + MongoDB Memory Server + Postgres | `*.integration.test.ts`, `src/services/__tests__/**` | Services, API route contracts |
+| `component` | `jsdom` | `*.test.tsx` | React hooks and UI |
+
+Run commands:
+
+```bash
+npm run test:unit          # fast — no database
+npm run test:integration   # requires DATABASE_URL in .env.local
+npm run test:component     # jsdom + Testing Library
+npm run test:all           # all projects
+npm run test:coverage      # with v8 coverage report
+npm run test:e2e           # Playwright smoke tests (requires running app in CI)
+npm run test:db:setup      # create + migrate local test Postgres DB
+npm run check              # typecheck + lint + test:all + build
+```
+
+### 10.2 Harness (`src/test/`)
+
+| Path | Role |
+|------|------|
+| `src/test/setup.ts` | Global Vitest setup |
+| `src/test/setup.integration.ts` | MongoDB Memory Server + env loading |
+| `src/test/setup.component.ts` | jsdom + `@testing-library/jest-dom` |
+| `src/test/helpers/db.mongo.ts` | In-memory MongoDB lifecycle |
+| `src/test/helpers/db.postgres.ts` | Prisma test client + cleanup |
+| `src/test/helpers/apiRoute.ts` | Invoke App Router handlers in tests |
+| `src/test/factories/user.ts` | `ApiUser` / session fixtures |
+| `src/test/fixtures/` | CSV, personality response builders |
+
+### 10.3 Conventions
+
+- Co-locate unit tests: `scoreCalculator.unit.test.ts` next to `scoreCalculator.ts`.
+- Service integration tests: `src/services/__tests__/<name>.integration.test.ts`.
+- API contract tests: `src/app/api/<route>/__tests__/route.integration.test.ts`.
+- Throw `AppError` from `@/lib/appError` in services — **not** from `@/lib/apiUtils` (avoids pulling auth into service imports).
+- Integration tests must clean up data in `beforeEach` using harness helpers.
+- CI runs on every push/PR via `.github/workflows/ci.yml`. Deploy waits for CI success.

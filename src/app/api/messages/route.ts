@@ -1,15 +1,15 @@
 import { type NextRequest } from 'next/server';
 
-import { withAuth, apiSuccess } from '@/lib/apiUtils';
+import { withAdmin, apiSuccess } from '@/lib/apiUtils';
 import { createMessage, getMessagesByUser } from '@/services/messageService';
 import type { CreateMessageInput } from '@/types/message';
 
-export const GET = withAuth(async (_request: NextRequest, user) => {
+export const GET = withAdmin(async (_request: NextRequest, user) => {
 	const messages = await getMessagesByUser(user.id);
 	return apiSuccess(messages);
 });
 
-export const POST = withAuth(async (request: NextRequest, user) => {
+export const POST = withAdmin(async (request: NextRequest, user) => {
 	const body = (await request.json()) as Record<string, unknown>;
 
 	const input: CreateMessageInput = {

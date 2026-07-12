@@ -3,7 +3,7 @@ import { type NextRequest } from 'next/server';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +16,7 @@ function safeExt(contentType: string): string {
 	return 'bin';
 }
 
-export const POST = withAuth(async (request: NextRequest) => {
+export const POST = withAdmin(async (request: NextRequest) => {
 	const form = await request.formData();
 	const file = form.get('file');
 	if (!(file instanceof File)) {

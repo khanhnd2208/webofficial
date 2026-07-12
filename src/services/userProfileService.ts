@@ -102,10 +102,6 @@ export async function updateMyProfile(identity: ProfileIdentity, input: UpdateUs
 		{
 			$setOnInsert: {
 				userId: identity.userId,
-				dateOfBirth: null,
-				university: '',
-				major: '',
-				bio: '',
 			},
 			$set: {
 				email: identity.email,

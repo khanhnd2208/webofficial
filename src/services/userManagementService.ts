@@ -12,6 +12,7 @@ import User from '@/models/User';
 import LoginStreak from '@/models/LoginStreak';
 import { prisma } from '@/lib/prisma';
 import type { UserRole } from '@/types/user';
+// Note: LoginStreak is retained for lastLoginDate in UserDetail and streak data in UserListItem.
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -58,12 +59,15 @@ export interface UserListResult {
 	totalPages: number;
 }
 
-export interface RecentVocabSet {
+export interface EnrollmentSummary {
 	id: string;
-	title: string;
-	termCount: number;
-	isPublic: boolean;
-	createdAt: string;
+	courseId: string;
+	courseTitle: string;
+	courseSlug: string;
+	status: string;
+	enrolledAt: string;
+	completedLessons: number;
+	totalLessons: number;
 }
 
 export interface UserDetail {
@@ -74,12 +78,8 @@ export interface UserDetail {
 	image?: string;
 	createdAt: string | null;
 	updatedAt: string | null;
-	vocabSetCount: number;
-	currentStreak: number;
-	longestStreak: number;
-	loginDaysLast30: number;
 	lastLoginDate: string | null;
-	recentVocabSets: RecentVocabSet[];
+	enrollments: EnrollmentSummary[];
 }
 
 // ─── User List ────────────────────────────────────────────────────────────────
@@ -149,11 +149,13 @@ export async function getAdminUserList({
 		const lastActive = streak?.updatedAt
 			? toISO(streak.updatedAt)
 			: toISO(u.updatedAt, oid);
+		const rawRole = u.role as string;
 		return {
 			id: uid,
 			name: u.name,
 			email: u.email,
-			role: u.role as UserRole,
+			// Normalize legacy 'teacher' → 'student'.
+			role: (rawRole === 'admin' ? 'admin' : 'student') as UserRole,
 			image: u.image,
 			createdAt: toISO(u.createdAt, oid),
 			vocabSetCount: vocabMap.get(uid) ?? 0,
@@ -181,51 +183,75 @@ export async function getAdminUserDetail(userId: string): Promise<UserDetail | n
 	const user = await User.findById(oid).lean();
 	if (!user) return null;
 
-	const thirtyDaysAgo = new Date();
-	thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-	const thirtyDaysStr = thirtyDaysAgo.toISOString().slice(0, 10);
+	const streak = await LoginStreak.findOne({ userId: oid }).select('lastLoginDate').lean();
 
-	const [vocabSetCount, streak, recentVocabSets] = await Promise.all([
-		prisma.vocabSet.count({ where: { ownerId: userId } }),
-		LoginStreak.findOne({ userId: oid }).lean(),
-		prisma.vocabSet.findMany({
-			where: { ownerId: userId },
-			orderBy: { createdAt: 'desc' },
-			take: 5,
-			select: {
-				id: true,
-				title: true,
-				isArchived: true,
-				createdAt: true,
-				_count: { select: { words: { where: { isDeleted: false } } } },
+	// Fetch enrollments with course info and lesson counts.
+	const enrollmentRows = await prisma.enrollment.findMany({
+		where: { userId },
+		include: {
+			course: {
+				select: {
+					id: true,
+					title: true,
+					slug: true,
+					modules: {
+						select: {
+							lessons: { select: { id: true } },
+						},
+					},
+				},
 			},
-		}),
-	]);
+		},
+		orderBy: { enrolledAt: 'desc' },
+	});
 
-	const loginDaysLast30 = streak
-		? streak.loginDays.filter((d: string) => d >= thirtyDaysStr).length
-		: 0;
+	// Count completed lessons per course for this user in one query.
+	const courseIds = enrollmentRows.map((e) => e.courseId);
+	const progressRows = courseIds.length > 0
+		? await prisma.lessonProgress.findMany({
+			where: {
+				userId,
+				lesson: { module: { courseId: { in: courseIds } } },
+			},
+			select: {
+				lessonId: true,
+				lesson: { select: { module: { select: { courseId: true } } } },
+			},
+		})
+		: [];
 
+	// Build a map: courseId → completed lesson count.
+	const completedByCourse = new Map<string, number>();
+	for (const row of progressRows) {
+		const cid = row.lesson.module.courseId;
+		completedByCourse.set(cid, (completedByCourse.get(cid) ?? 0) + 1);
+	}
+
+	const enrollments: EnrollmentSummary[] = enrollmentRows.map((e) => {
+		const totalLessons = e.course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
+		return {
+			id: e.id,
+			courseId: e.courseId,
+			courseTitle: e.course.title,
+			courseSlug: e.course.slug,
+			status: e.status,
+			enrolledAt: e.enrolledAt.toISOString(),
+			completedLessons: completedByCourse.get(e.courseId) ?? 0,
+			totalLessons,
+		};
+	});
+
+	const rawRole = user.role as string;
 	return {
 		id: userId,
 		name: user.name,
 		email: user.email,
-		role: user.role as UserRole,
+		role: (rawRole === 'admin' ? 'admin' : 'student') as UserRole,
 		image: user.image,
 		createdAt: toISO(user.createdAt, oid),
 		updatedAt: toISO(user.updatedAt, oid),
-		vocabSetCount,
-		currentStreak: streak?.currentStreak ?? 0,
-		longestStreak: streak?.longestStreak ?? 0,
-		loginDaysLast30,
 		lastLoginDate: streak?.lastLoginDate ? toISO(streak.lastLoginDate) : null,
-		recentVocabSets: recentVocabSets.map((v) => ({
-			id: v.id,
-			title: v.title,
-			termCount: v._count.words,
-			isPublic: !v.isArchived,
-			createdAt: v.createdAt.toISOString(),
-		})),
+		enrollments,
 	};
 }
 

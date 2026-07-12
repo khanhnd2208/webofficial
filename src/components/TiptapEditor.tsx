@@ -43,7 +43,9 @@ function Btn({
 			onMouseDown={(e) => { e.preventDefault(); onClick(); }}
 			disabled={disabled}
 			title={title}
-			className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
+			aria-label={title}
+			aria-pressed={active}
+			className={`flex h-10 w-10 items-center justify-center rounded transition-colors sm:h-7 sm:w-7 ${
 				active ? 'bg-accent/15 text-accent' : 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
 			} ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
 		>
@@ -59,7 +61,17 @@ function Sep() {
 /* ═════════════════════════════════════════════
    Link Dialog
    ═════════════════════════════════════════════ */
-function LinkDialog({ onSubmit, onClose, initialUrl }: { onSubmit: (url: string) => void; onClose: () => void; initialUrl?: string }) {
+function LinkDialog({
+	onSubmit,
+	onClose,
+	initialUrl,
+	placeholder = 'https://example.com',
+}: {
+	onSubmit: (url: string) => void;
+	onClose: () => void;
+	initialUrl?: string;
+	placeholder?: string;
+}) {
 	const [url, setUrl] = useState(initialUrl ?? '');
 	return (
 		<div className="flex items-center gap-2 rounded-lg border border-border bg-surface-elevated p-2 shadow-lg">
@@ -67,7 +79,7 @@ function LinkDialog({ onSubmit, onClose, initialUrl }: { onSubmit: (url: string)
 				type="url"
 				value={url}
 				onChange={(e) => setUrl(e.target.value)}
-				placeholder="https://example.com"
+				placeholder={placeholder}
 				className="w-56 rounded border border-border bg-surface px-2.5 py-1.5 text-sm outline-none focus:border-accent"
 				autoFocus
 				onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmit(url); } if (e.key === 'Escape') onClose(); }}
@@ -107,6 +119,7 @@ interface TiptapEditorProps {
 
 export default function TiptapEditor({ content, onChange, onImageUpload, placeholder = 'Bắt đầu viết bài...', fontFamily }: TiptapEditorProps) {
 	const [showLinkDialog, setShowLinkDialog] = useState(false);
+	const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
 	const [showSourceView, setShowSourceView] = useState(false);
 	const [sourceHtml, setSourceHtml] = useState('');
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -203,7 +216,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 				},
 			},
 		});
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+	 
 	}, [fontFamily, editor]);
 
 	const isInternalUpdate = useRef(false);
@@ -232,12 +245,13 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 		editor.chain().focus().extendMarkRange('link').setLink({ href }).run();
 	}, [editor]);
 
-	const addYoutube = useCallback(() => {
-		if (!editor) return;
-		const url = window.prompt('YouTube URL:');
-		if (url) {
-			editor.commands.setYoutubeVideo({ src: url });
+	const addYoutube = useCallback((url: string) => {
+		if (!editor || !url.trim()) {
+			setShowYoutubeDialog(false);
+			return;
 		}
+		editor.commands.setYoutubeVideo({ src: url.trim() });
+		setShowYoutubeDialog(false);
 	}, [editor]);
 
 	const addTable = useCallback(() => {
@@ -337,7 +351,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 						<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" opacity=".4" /><path d="M21 15l-5-5L5 21" /></svg>
 					)}
 				</Btn>
-				<Btn onClick={addYoutube} title="Chèn YouTube">
+				<Btn onClick={() => setShowYoutubeDialog((v) => !v)} title="Chèn YouTube">
 					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z" /></svg>
 				</Btn>
 				<Btn onClick={addTable} title="Chèn bảng">
@@ -383,6 +397,16 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 						initialUrl={editor.getAttributes('link').href as string | undefined}
 						onSubmit={handleLinkSubmit}
 						onClose={() => setShowLinkDialog(false)}
+					/>
+				</div>
+			)}
+
+			{showYoutubeDialog && (
+				<div className="border-b border-border bg-surface-secondary/50 px-3 py-2">
+					<LinkDialog
+						placeholder="https://www.youtube.com/watch?v=..."
+						onSubmit={addYoutube}
+						onClose={() => setShowYoutubeDialog(false)}
 					/>
 				</div>
 			)}

@@ -156,7 +156,7 @@ Before Phase 3, approximately half the model files used `||` and half used `??`.
 ## ADR-008 — PostgreSQL for Personality Test Module (Hybrid DB Strategy)
 
 **Date:** 2026-03-26  
-**Status:** Active
+**Status:** Archived (2026-07-12; implementation removed from active routes/build, data preserved)
 
 **Decision:** The Personality Test module uses **PostgreSQL** for all data storage (sessions, responses, results), while every other feature continues using MongoDB/Mongoose.
 
@@ -193,7 +193,7 @@ MongoDB's document model works well for flexible content (blog posts, vocab sets
 ## ADR-009 — Demographic Data Collection in Personality Test
 
 **Date:** 2026-03-26  
-**Status:** Active
+**Status:** Archived (2026-07-12; research feature inactive, data preserved)
 
 **Decision:** Collect 5 demographic fields (full name, university, student year, cumulative GPA, self-rated intelligence) before personality test questions, stored alongside test session data.
 
@@ -367,3 +367,40 @@ npm run test:coverage # with coverage report
 - Trait insight content can be updated by non-developers editing `traitInsights.ts`.
 - Attention check failures now correctly show computed scores with a warning banner (educational value preserved).
 - The floating language toggle (`LangToggle`) is positioned at `fixed right-4 top-20 z-50` — may need adjustment if navbar height changes.
+
+---
+
+## ADR-011 — HANOICAM Product Restructure (Three Domains)
+
+**Date:** 2026-07-12  
+**Status:** Active (phased)
+
+**Decision:** Split the product into Personal brand / Teaching / Tools, with Vietnamese public URLs, admin-only tools, and a dedicated PostgreSQL teaching domain (Course → Module → Lesson + Enrollment + Progress).
+
+**Context:** The site mixed blog, vocabulary learning, admin tools, and future teaching into one learner dashboard and public nav. Personality Test research remains archived.
+
+**Rationale:** Clear audience boundaries reduce accidental public exposure of tools, preserve SEO via `/blog` → `/bai-viet` redirects, and let teaching grow without overloading Posts or VocabSet.
+
+**Consequences:**
+- Route map: `src/config/routes.ts`, `docs/01-ROUTE_MAP.md`
+- Public nav: Trang chủ · Bài viết · Giảng dạy (no Tools/Vocabulary)
+- Teaching data lives in Prisma models; MongoDB kept for auth/posts/profile/messages/streak in this phase
+- Tool isolation and R2 media follow in later phases
+
+---
+
+## Changelog — UI/UX completion sprint (2026-07-12)
+
+**Phase 0–3 foundation (in progress toward launch):**
+- Tailwind v4 CSS-first: `@plugin "@tailwindcss/typography"`, `@custom-variant dark`, removed unused `tailwind.config.ts`
+- No SSR `opacity:0` gate on route entrance; SectionReveal keeps opacity at 1
+- LazyMotion: Lucky Card + FlashcardPrism use `m`; ESLint blocks `motion` imports outside `_archived`
+- Vocabulary Database no longer calls removed `/api/vocab-stats`
+- Root `loading` / `error` / `global-error` / `not-found` (+ admin boundaries) in Vietnamese
+- `src/config/site.ts` for SITE_ORIGIN, metadata, siteProfile
+- UI primitives: Button, IconButton, FormField, Skeleton, StatePanel, Dialog/Sheet/Toast
+- Admin mobile drawer shell; Navbar brand/login/body-lock fixes; `--header-height`
+- Lesson editor route `/admin/courses/[id]/lessons/[lessonId]`; publish validation + field errors
+- Message unlock: single OTP input with paste/autofill + live region
+- Media/Settings hidden from admin nav until real
+

@@ -198,7 +198,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						+ Viết mới
 					</Link>
 					{isPublished ? (
-						<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href={`/blog/${slug}`} target="_blank">
+						<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href={`/bai-viet/${slug}`} target="_blank">
 							Xem public ↗
 						</Link>
 					) : null}

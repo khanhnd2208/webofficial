@@ -17,14 +17,7 @@ interface Props {
 
 const ROLE_COLORS: Record<UserRole, string> = {
 	admin: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/40',
-	teacher: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/40',
 	student: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
-};
-
-const _ROLE_LABELS: Record<UserRole, string> = {
-	admin: 'Admin',
-	teacher: 'Teacher',
-	student: 'Student',
 };
 
 function SortIcon({ field, currentSortBy, currentSortDir }: { field: string; currentSortBy: string; currentSortDir: string }) {

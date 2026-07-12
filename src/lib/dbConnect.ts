@@ -5,13 +5,13 @@ type MongooseCache = {
 	promise: Promise<typeof mongoose> | null;
 };
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-	throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+function getMongoUri(): string {
+	const uri = process.env.MONGODB_URI;
+	if (!uri) {
+		throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+	}
+	return uri;
 }
-
-const MONGODB_URI_DEFINED: string = MONGODB_URI;
 
 declare global {
 	var mongoose: MongooseCache | undefined;
@@ -23,8 +23,9 @@ export default async function dbConnect(): Promise<typeof mongoose> {
 	if (cached.conn) return cached.conn;
 
 	if (!cached.promise) {
+		const uri = getMongoUri();
 		cached.promise = mongoose
-			.connect(MONGODB_URI_DEFINED, {
+			.connect(uri, {
 				bufferCommands: false,
 				// Limit connection pool to avoid overwhelming free-tier clusters.
 				maxPoolSize: 10,

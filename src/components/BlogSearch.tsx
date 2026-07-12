@@ -84,7 +84,7 @@ export default function BlogSearch() {
 		setOpen(false);
 		setQuery('');
 		setResults([]);
-		router.push(`/blog/${slug}`);
+		router.push(`/bai-viet/${slug}`);
 	}
 
 	return (

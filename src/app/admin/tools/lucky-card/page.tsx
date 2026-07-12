@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 const STORAGE_KEY = "admin_lucky_card_state";
@@ -241,7 +241,7 @@ function CardFlipSparkles({ count = 20 }: { count?: number }) {
         const colors = ["#FFD700", "#FFA500", "#FF6B35", "#c8973a", "#f0d080", "#e8c878", "#d4a830", "#fff8e0"];
         const color = colors[i % colors.length];
         return (
-          <motion.div
+          <m.div
             key={i}
             className="absolute rounded-full"
             style={{ width: size, height: size, left: "50%", top: "50%", backgroundColor: color, boxShadow: `0 0 ${size * 3}px ${color}` }}
@@ -264,7 +264,7 @@ function CardFlipRays() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-visible" style={{ zIndex: 25 }}>
       {Array.from({ length: 12 }).map((_, i) => (
-        <motion.div
+        <m.div
           key={i}
           className="absolute"
           style={{
@@ -286,7 +286,7 @@ function CardFlipRingPulse() {
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-visible" style={{ zIndex: 22 }}>
       {[0, 1, 2].map((i) => (
-        <motion.div
+        <m.div
           key={i}
           className="absolute rounded-2xl"
           style={{
@@ -304,7 +304,7 @@ function CardFlipRingPulse() {
 
 function CardFlipFlash() {
   return (
-    <motion.div
+    <m.div
       className="pointer-events-none absolute inset-0 rounded-2xl"
       style={{ background: "radial-gradient(ellipse at center, rgba(255,230,100,0.8) 0%, rgba(212,168,48,0.3) 50%, transparent 80%)", zIndex: 20 }}
       initial={{ opacity: 1 }}
@@ -331,7 +331,7 @@ function CardFlipGeoBurst() {
         const colors = ["#FFD700", "#f0d080", "#c8973a", "#d4a830", "#fff8e0", "#FFA500"];
         const color = colors[i % colors.length];
         return (
-          <motion.div
+          <m.div
             key={i}
             className="absolute"
             style={{ left: "50%", top: "50%" }}
@@ -348,7 +348,7 @@ function CardFlipGeoBurst() {
             <svg width={shape.size} height={shape.size} viewBox={`0 0 ${shape.size + 4} ${shape.size + 4}`}>
               <path d={shape.path} fill={color} filter="drop-shadow(0 0 3px rgba(212,168,48,0.8))" />
             </svg>
-          </motion.div>
+          </m.div>
         );
       })}
     </div>
@@ -400,7 +400,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
   const fontStyle = useMemo(() => getAdaptiveFontStyle(card.content), [card.content]);
 
   return (
-    <motion.div
+    <m.div
       className="relative"
       initial={{ opacity: 0, y: 30, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -419,7 +419,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
       </AnimatePresence>
 
       {justFlipped && (
-        <motion.div
+        <m.div
           className="absolute -inset-4 rounded-3xl blur-2xl"
           style={{ background: "radial-gradient(ellipse, #d4a830 0%, #c8973a 40%, transparent 70%)" }}
           initial={{ opacity: 0.85 }}
@@ -441,7 +441,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
         }}
       />
       {/* Animated breathing glow */}
-      <motion.div
+      <m.div
         className="absolute -inset-[3px] rounded-2xl pointer-events-none"
         style={{
           boxShadow: "0 0 25px rgba(212,168,48,0.3), 0 0 60px rgba(212,168,48,0.12)",
@@ -450,8 +450,15 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <div onClick={handleFlip} className={`relative select-none ${card.flipped ? "cursor-default" : "cursor-pointer"}`} style={{ perspective: "1400px" }}>
-        <motion.div
+      <button
+        type="button"
+        onClick={handleFlip}
+        disabled={card.flipped}
+        aria-label={card.flipped ? `Thẻ đã mở: ${card.content.slice(0, 40)}` : `Lật thẻ ${card.id}`}
+        className={`relative block w-full select-none text-left ${card.flipped ? "cursor-default" : "cursor-pointer"}`}
+        style={{ perspective: "1400px" }}
+      >
+        <m.div
           className="relative w-full"
           style={{ transformStyle: "preserve-3d" }}
           animate={{ rotateY: card.flipped ? 180 : 0 }}
@@ -466,7 +473,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
             <div className="relative aspect-[3/4] w-full">
               <img src={CARD_BACK_IMG} alt="Lucky Card" className="absolute inset-0 h-full w-full object-cover rounded-2xl select-none pointer-events-none" draggable={false} />
               {/* Shimmer sweep */}
-              <motion.div
+              <m.div
                 className="pointer-events-none absolute inset-0 rounded-2xl"
                 style={{ background: "linear-gradient(115deg, transparent 35%, rgba(255,240,160,0.16) 50%, transparent 65%)" }}
                 animate={{ x: ["-100%", "200%"] }}
@@ -499,7 +506,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
               <div className="absolute inset-0 rounded-2xl" style={{ background: "linear-gradient(145deg, rgba(253,248,238,0.35) 0%, rgba(248,236,208,0.3) 40%, rgba(240,222,181,0.25) 100%)" }} />
 
               {/* Gold seal — top right */}
-              <motion.div
+              <m.div
                 className="absolute top-[14px] right-[14px] z-20"
                 initial={{ scale: 0, rotate: -20 }}
                 animate={{ scale: 1, rotate: 0 }}
@@ -513,7 +520,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
                     <path d="M6,0 L7.5,4.5 L12,6 L7.5,7.5 L6,12 L4.5,7.5 L0,6 L4.5,4.5 Z" fill="rgba(255,248,220,0.9)" />
                   </svg>
                 </div>
-              </motion.div>
+              </m.div>
 
               {/* Card number — bottom */}
               <div className="absolute bottom-[14px] left-0 right-0 text-center z-20">
@@ -526,7 +533,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
               </div>
 
               {/* MAIN CONTENT — Cormorant Garamond (Vietnamese safe) + adaptive size */}
-              <motion.div
+              <m.div
                 className="relative z-10 flex items-center justify-center px-5 sm:px-7"
                 style={{ maxWidth: "90%", maxHeight: "65%" }}
                 initial={{ opacity: 0, y: 14, scale: 0.92 }}
@@ -547,15 +554,15 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
                 >
                   {card.content}
                 </p>
-              </motion.div>
+              </m.div>
 
               {/* Soft vignette on parchment edges */}
               <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: "radial-gradient(ellipse at center, transparent 45%, rgba(100,70,20,0.15) 100%)" }} />
             </div>
           </div>
-        </motion.div>
-      </div>
-    </motion.div>
+        </m.div>
+      </button>
+    </m.div>
   );
 }
 
@@ -636,11 +643,11 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
   };
 
   return (
-    <motion.div
+    <m.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
-      <motion.div
+      <m.div
         className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[#c8973a]/25 p-6 shadow-2xl"
         style={{ background: "linear-gradient(150deg, #1c1509 0%, #201608 50%, #1a1208 100%)", boxShadow: "0 0 60px rgba(200,151,58,0.12), 0 25px 60px rgba(0,0,0,0.7)" }}
         initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
@@ -712,7 +719,7 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
               <input ref={fileInputRef} type="file" accept=".csv,.txt,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
               <div className="flex justify-center mb-3" style={{ color: uploading ? "#c8973a" : uploadedCards.length > 0 ? "#6aad7c" : "#b8a060" }}>
                 {uploading
-                  ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Icons.Spinner /></motion.div>
+                  ? <m.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Icons.Spinner /></m.div>
                   : uploadedCards.length > 0
                     ? <Icons.Check />
                     : <Icons.File />
@@ -801,8 +808,8 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
             Tạo bộ thẻ
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }
 
@@ -925,7 +932,7 @@ export default function LuckyCardPage() {
         style={{ backgroundImage: `url(${PAGE_BG_IMG})`, backgroundSize: "cover", backgroundPosition: "center" }}
       >
         <div className="absolute inset-0" style={{ background: "rgba(4,3,10,0.6)" }} />
-        <motion.div
+        <m.div
           className="rounded-full relative z-10"
           style={{ width: 48, height: 48, border: "2px solid transparent", borderTopColor: "#c8973a", borderRightColor: "#d4a830" }}
           animate={{ rotate: 360 }}
@@ -952,7 +959,7 @@ export default function LuckyCardPage() {
       {/* Ambient particles */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         {[...Array(10)].map((_, i) => (
-          <motion.div
+          <m.div
             key={i}
             className="absolute rounded-full"
             style={{
@@ -987,7 +994,7 @@ export default function LuckyCardPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             {/* Title block */}
             <div className="flex items-center gap-3">
-              <motion.div
+              <m.div
                 className="flex h-11 w-11 items-center justify-center rounded-2xl"
                 style={{ background: "linear-gradient(135deg, rgba(200,151,58,0.18), rgba(200,151,58,0.06))", border: "1px solid rgba(200,151,58,0.25)" }}
                 animate={{ rotate: [0, 4, -4, 0] }}
@@ -997,7 +1004,7 @@ export default function LuckyCardPage() {
                   <rect x="2" y="3" width="20" height="18" rx="3" />
                   <path d="M12 8v8M8 12h8" />
                 </svg>
-              </motion.div>
+              </m.div>
               <div>
                 <h1
                   className={`font-semibold tracking-wide ${isFullscreen ? "text-lg" : "text-xl"}`}
@@ -1090,7 +1097,7 @@ export default function LuckyCardPage() {
           {/* Progress bar */}
           {state && (
             <div className="mt-5 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(200,151,58,0.1)" }}>
-              <motion.div
+              <m.div
                 className="h-full rounded-full"
                 style={{ background: "linear-gradient(90deg, #6b4010, #c8973a, #f0c040)" }}
                 initial={{ width: 0 }}
@@ -1103,7 +1110,7 @@ export default function LuckyCardPage() {
           {/* Completion banner */}
           <AnimatePresence>
             {state && flippedCount === totalCount && totalCount > 0 && (
-              <motion.div
+              <m.div
                 className="mt-3 flex items-center justify-center gap-3 rounded-xl py-2.5 px-4"
                 style={{ background: "rgba(212,168,48,0.08)", border: "1px solid rgba(212,168,48,0.22)" }}
                 initial={{ opacity: 0, y: -8 }}
@@ -1120,14 +1127,14 @@ export default function LuckyCardPage() {
                 <svg width="14" height="14" viewBox="0 0 14 14">
                   <path d="M7,0 L9,5 L14,7 L9,9 L7,14 L5,9 L0,7 L5,5 Z" fill="#d4a830" opacity="0.8" />
                 </svg>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
 
         {/* Card Grid */}
         {state && state.cards.length > 0 && (
-          <motion.div
+          <m.div
             className="grid gap-5 sm:gap-6 lg:gap-8"
             style={{
               gridTemplateColumns: `repeat(auto-fill, minmax(${
@@ -1139,23 +1146,23 @@ export default function LuckyCardPage() {
             {state.cards.map((card, i) => (
               <LuckyCardItem key={card.id} card={card} index={i} onFlip={handleFlip} />
             ))}
-          </motion.div>
+          </m.div>
         )}
 
         {/* Empty state */}
         {!state && (
-          <motion.div
+          <m.div
             className="flex flex-col items-center justify-center py-24"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           >
             <div className="relative mb-10">
-              <motion.div
+              <m.div
                 className="absolute -inset-10 rounded-full opacity-15"
                 style={{ background: "radial-gradient(circle, #c8973a, transparent 70%)" }}
                 animate={{ scale: [1, 1.2, 1], opacity: [0.12, 0.22, 0.12] }}
                 transition={{ duration: 3.5, repeat: Infinity }}
               />
-              <motion.div
+              <m.div
                 className="relative z-10 flex items-center justify-center rounded-3xl"
                 style={{
                   width: 90, height: 90,
@@ -1169,9 +1176,9 @@ export default function LuckyCardPage() {
                   <rect x="2" y="3" width="20" height="18" rx="3" />
                   <path d="M12 8v8M8 12h8" />
                 </svg>
-              </motion.div>
+              </m.div>
               {[0, 1, 2].map((i) => (
-                <motion.div
+                <m.div
                   key={i}
                   className="absolute rounded-full"
                   style={{ width: 5, height: 5, background: "#d4a830", boxShadow: "0 0 6px #d4a830", top: "50%", left: "50%" }}
@@ -1209,7 +1216,7 @@ export default function LuckyCardPage() {
               <Icons.Plus />
               Tạo bộ thẻ mới
             </button>
-          </motion.div>
+          </m.div>
         )}
       </div>
 

@@ -1,10 +1,10 @@
 import { type NextRequest } from 'next/server';
 
-import { withAuth, apiSuccess } from '@/lib/apiUtils';
+import { withAdmin, apiSuccess } from '@/lib/apiUtils';
 import { getUserLibrary } from '@/services/vocabSetService';
 
 /** GET /api/vocab-sets/all-terms — aggregate all words across all user's active sets */
-export const GET = withAuth(async (_request: NextRequest, user) => {
+export const GET = withAdmin(async (_request: NextRequest, user) => {
 	const sets = await getUserLibrary(user.id);
 
 	// Only include active sets

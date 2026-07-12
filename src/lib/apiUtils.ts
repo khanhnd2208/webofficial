@@ -19,6 +19,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { AppError } from '@/lib/appError';
 import { getApiUser, type ApiUser } from '@/lib/apiAuth';
 
 // ─── Response Helpers ──────────────────────────────────────────────────────────
@@ -33,28 +34,25 @@ export function apiSuccess<T>(data: T, status = 200): NextResponse {
 
 /**
  * Standard error response.
- * All API routes MUST use this format: `{ ok: false, error: string }`
+ * All API routes MUST use this format: `{ ok: false, error: string, code?, fields? }`
  */
-export function apiError(message: string, status = 400): NextResponse {
-	return NextResponse.json({ ok: false, error: message }, { status });
+export function apiError(
+	message: string,
+	status = 400,
+	extra?: { code?: string; fields?: Record<string, string> },
+): NextResponse {
+	return NextResponse.json(
+		{
+			ok: false,
+			error: message,
+			...(extra?.code ? { code: extra.code } : {}),
+			...(extra?.fields ? { fields: extra.fields } : {}),
+		},
+		{ status },
+	);
 }
 
-/**
- * Known application error — safe to expose message to clients.
- * Throw this from handlers for expected error cases (validation, not found, etc.).
- *
- * Example:
- *   throw new AppError('Email already taken', 409);
- */
-export class AppError extends Error {
-	constructor(
-		message: string,
-		public readonly status: number = 400,
-	) {
-		super(message);
-		this.name = 'AppError';
-	}
-}
+export { AppError } from '@/lib/appError';
 
 /**
  * Maps a caught error to the appropriate API response.
@@ -63,7 +61,10 @@ export class AppError extends Error {
  */
 function handleCaughtError(error: unknown): NextResponse {
 	if (error instanceof AppError) {
-		return apiError(error.message, error.status);
+		return apiError(error.message, error.status, {
+			code: error.code,
+			fields: error.fields,
+		});
 	}
 	console.error('[API Error]', error);
 	return apiError('Internal server error', 500);

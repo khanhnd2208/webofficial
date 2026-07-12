@@ -4,11 +4,10 @@ import { useEffect, useState } from 'react';
 import type { UserDetail } from '@/services/userManagementService';
 import type { UserListItem } from '@/services/userManagementService';
 import type { UserRole } from '@/types/user';
-import { formatDate, formatDateTime, formatDistanceToNow } from '@/utils/formatDate';
+import { formatDateTime, formatDistanceToNow } from '@/utils/formatDate';
 
 const ROLE_COLORS: Record<UserRole, string> = {
 	admin: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/40',
-	teacher: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/40',
 	student: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
 };
 
@@ -31,7 +30,10 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 		setDetail(null);
 		fetch(`/api/admin/users/${userId}`)
 			.then((r) => r.json())
-			.then((json) => { if (json.ok) setDetail(json.data); setLoading(false); })
+			.then((json) => {
+				if (json.ok) setDetail(json.data as UserDetail);
+				setLoading(false);
+			})
 			.catch(() => setLoading(false));
 	}, [userId]);
 
@@ -43,13 +45,13 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 		setRoleChanging(false);
 	}
 
+	const activeEnrollments = detail?.enrollments.filter((e) => e.status === 'ACTIVE') ?? [];
+	const revokedEnrollments = detail?.enrollments.filter((e) => e.status !== 'ACTIVE') ?? [];
+
 	return (
 		<>
 			{/* Backdrop */}
-			<div
-				className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
-				onClick={onClose}
-			/>
+			<div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={onClose} />
 
 			{/* Slide-in panel */}
 			<div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-background border-l border-border shadow-2xl overflow-y-auto flex flex-col">
@@ -99,7 +101,9 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 									))}
 								</select>
 								<span className="text-xs text-muted">
-									{userSummary.createdAt ? `Đăng ký ${formatDistanceToNow(userSummary.createdAt)}` : 'Người dùng cũ'}
+									{userSummary.createdAt
+										? `Đăng ký ${formatDistanceToNow(userSummary.createdAt)}`
+										: 'Người dùng cũ'}
 								</span>
 							</div>
 						</div>
@@ -107,51 +111,103 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 
 					{loading ? (
 						<div className="space-y-3">
-							{[1,2,3,4].map(i => (
+							{[1, 2, 3, 4].map((i) => (
 								<div key={i} className="h-16 rounded-xl bg-surface-hover animate-pulse" />
 							))}
 						</div>
 					) : detail ? (
 						<>
-							{/* Stats grid */}
-							<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-								<StatCard label="Bộ từ vựng" value={detail.vocabSetCount} icon="📚" />
-								<StatCard
-									label="Streak hiện tại"
-									value={detail.currentStreak > 0 ? `🔥 ${detail.currentStreak}` : '—'}
-									icon=""
-									accent={detail.currentStreak > 0}
-								/>
-								<StatCard label="Đăng nhập/30 ngày" value={detail.loginDaysLast30} icon="📅" />
-							</div>
-
-							{/* Key dates */}
+							{/* Account info */}
 							<div className="rounded-xl border border-border bg-surface p-4 space-y-2">
-								<p className="text-xs font-bold uppercase tracking-widest text-muted mb-3">Thông tin tài khoản</p>
-							<Row label="Ngày đăng ký" value={detail.createdAt ? formatDateTime(detail.createdAt) : '—'} />
-							<Row label="Cập nhật lần cuối" value={detail.updatedAt ? formatDateTime(detail.updatedAt) : '—'} />
+								<p className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
+									Thông tin tài khoản
+								</p>
+								<Row
+									label="Ngày đăng ký"
+									value={detail.createdAt ? formatDateTime(detail.createdAt) : '—'}
+								/>
+								<Row
+									label="Cập nhật lần cuối"
+									value={detail.updatedAt ? formatDateTime(detail.updatedAt) : '—'}
+								/>
 								<Row
 									label="Lần đăng nhập cuối"
-									value={detail.lastLoginDate ? formatDate(detail.lastLoginDate) : '—'}
+									value={detail.lastLoginDate ? formatDateTime(detail.lastLoginDate) : '—'}
 								/>
-								<Row label="Streak dài nhất" value={detail.longestStreak > 0 ? `${detail.longestStreak} ngày` : '—'} />
 							</div>
 
-							{/* Recent vocab sets */}
-							{detail.recentVocabSets.length > 0 && (
-								<Section title="Bộ từ vựng gần đây">
-									{detail.recentVocabSets.map((v) => (
-										<div key={v.id} className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5">
-											<div className="min-w-0">
-												<p className="text-sm font-semibold text-foreground truncate">{v.title}</p>
-												<p className="text-xs text-muted">{v.termCount} từ · {formatDistanceToNow(v.createdAt)}</p>
+							{/* Enrollment stats bar */}
+							<div className="grid grid-cols-3 gap-3">
+								<StatCard
+									label="Đang học"
+									value={activeEnrollments.length}
+									accent={activeEnrollments.length > 0}
+								/>
+								<StatCard
+									label="Tổng khóa"
+									value={detail.enrollments.length}
+								/>
+								<StatCard
+									label="Đã hủy"
+									value={revokedEnrollments.length}
+								/>
+							</div>
+
+							{/* Active enrollments */}
+							{activeEnrollments.length > 0 && (
+								<Section title="Khóa học đang ghi danh">
+									{activeEnrollments.map((e) => {
+										const pct =
+											e.totalLessons > 0
+												? Math.round((e.completedLessons / e.totalLessons) * 100)
+												: 0;
+										return (
+											<div
+												key={e.id}
+												className="rounded-lg border border-border bg-surface p-3 space-y-2"
+											>
+												<div className="flex items-start justify-between gap-2">
+													<p className="text-sm font-semibold text-foreground truncate">
+														{e.courseTitle}
+													</p>
+													<span className="shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5 border bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40">
+														Active
+													</span>
+												</div>
+												<div>
+													<div className="flex items-baseline justify-between text-xs text-muted mb-1">
+														<span>
+															{e.completedLessons}/{e.totalLessons} bài
+														</span>
+														<span className="font-mono">{pct}%</span>
+													</div>
+													<div className="h-1 overflow-hidden rounded-full bg-surface-hover">
+														<div
+															className="h-full bg-accent transition-[width] duration-500"
+															style={{ width: `${pct}%` }}
+														/>
+													</div>
+												</div>
+												<p className="text-[10px] text-muted">
+													Ghi danh {formatDistanceToNow(e.enrolledAt)}
+												</p>
 											</div>
-											<span className={`shrink-0 ml-3 text-[10px] font-bold rounded-full px-2 py-0.5 border ${
-												v.isPublic
-													? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40'
-													: 'bg-surface-hover text-muted border-border'
-											}`}>
-												{v.isPublic ? 'Công khai' : 'Riêng tư'}
+										);
+									})}
+								</Section>
+							)}
+
+							{/* Revoked enrollments */}
+							{revokedEnrollments.length > 0 && (
+								<Section title="Ghi danh đã hủy">
+									{revokedEnrollments.map((e) => (
+										<div
+											key={e.id}
+											className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5"
+										>
+											<p className="text-sm text-foreground truncate">{e.courseTitle}</p>
+											<span className="shrink-0 ml-3 text-[10px] font-bold rounded-full px-2 py-0.5 border bg-surface-hover text-muted border-border">
+												Đã hủy
 											</span>
 										</div>
 									))}
@@ -159,9 +215,9 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 							)}
 
 							{/* Empty state */}
-							{detail.vocabSetCount === 0 && (
+							{detail.enrollments.length === 0 && (
 								<div className="rounded-xl border border-dashed border-border p-8 text-center text-muted text-sm">
-									Người dùng chưa có hoạt động nào
+									Người dùng chưa được ghi danh khóa học nào
 								</div>
 							)}
 						</>
@@ -176,11 +232,18 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 	);
 }
 
-function StatCard({ label, value, icon, accent }: { label: string; value: string | number; icon: string; accent?: boolean }) {
+function StatCard({
+	label,
+	value,
+	accent,
+}: {
+	label: string;
+	value: number;
+	accent?: boolean;
+}) {
 	return (
 		<div className="rounded-xl border border-border bg-surface p-3 text-center">
-			{icon && <p className="text-lg">{icon}</p>}
-			<p className={`text-xl font-black mt-0.5 tabular-nums ${accent ? 'text-orange-500' : 'text-foreground'}`}>
+			<p className={`text-xl font-black tabular-nums ${accent ? 'text-accent' : 'text-foreground'}`}>
 				{value}
 			</p>
 			<p className="text-[10px] text-muted mt-0.5 font-semibold">{label}</p>

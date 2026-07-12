@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server';
 
-import { withAuth, apiSuccess } from '@/lib/apiUtils';
+import { withAdmin, apiSuccess } from '@/lib/apiUtils';
 import {
 	deleteMessage,
 	getMessageBySlugForOwner,
@@ -8,13 +8,13 @@ import {
 } from '@/services/messageService';
 import type { UpdateMessageInput } from '@/types/message';
 
-export const GET = withAuth(async (_request: NextRequest, user, context) => {
+export const GET = withAdmin(async (_request: NextRequest, user, context) => {
 	const { slug } = await context!.params;
 	const message = await getMessageBySlugForOwner(String(slug), user.id);
 	return apiSuccess(message);
 });
 
-export const PUT = withAuth(async (request: NextRequest, user, context) => {
+export const PUT = withAdmin(async (request: NextRequest, user, context) => {
 	const { slug } = await context!.params;
 	const body = (await request.json()) as Record<string, unknown>;
 
@@ -44,7 +44,7 @@ export const PUT = withAuth(async (request: NextRequest, user, context) => {
 	return apiSuccess(updated);
 });
 
-export const DELETE = withAuth(async (_request: NextRequest, user, context) => {
+export const DELETE = withAdmin(async (_request: NextRequest, user, context) => {
 	const { slug } = await context!.params;
 	await deleteMessage(String(slug), user.id);
 	return apiSuccess({ deleted: true });

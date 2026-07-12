@@ -84,7 +84,7 @@ export default async function AdminHomePage() {
 						<Stat label="Bài đã đăng" value={stats.posts.published} />
 						<Stat label="Bản nháp" value={stats.posts.drafts} />
 						<Stat label="Tổng lượt xem" value={stats.posts.totalViews.toLocaleString('vi-VN')} />
-						<Stat label="Học viên" value={stats.users.total} sub="đã đăng ký" />
+						<Stat label="Học viên" value={stats.users.activeEnrollments} sub="ghi danh đang hoạt động" />
 					</div>
 				</section>
 
@@ -95,7 +95,7 @@ export default async function AdminHomePage() {
 						<QuickAction
 							href="/admin/posts/create"
 							label="Viết bài mới"
-							description="Soạn và xuất bản bài viết blog."
+							description="Soạn và xuất bản bài viết."
 							primary
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-background">
@@ -115,20 +115,19 @@ export default async function AdminHomePage() {
 							}
 						/>
 						<QuickAction
-							href="/admin/vocabulary"
-							label="Bộ từ vựng"
-							description="Quản lý bộ từ vựng công khai cho học viên."
+							href="/admin/courses"
+							label="Khóa học"
+							description="Quản lý khóa học, chương và bài học."
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
-									<path d="M3 4.5A1.5 1.5 0 014.5 3h11A1.5 1.5 0 0117 4.5v11a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
-									<path d="M6.5 7h7M6.5 10h7M6.5 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+									<path d="M3 6.5L10 3l7 3.5v7L10 17l-7-3.5v-7z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
 								</svg>
 							}
 						/>
 						<QuickAction
 							href="/admin/users"
-							label="Quản lý tài khoản"
-							description="Xem và quản lý người dùng đã đăng ký."
+							label="Người dùng"
+							description="Xem và quản lý tài khoản đã đăng ký."
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
 									<circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
@@ -138,8 +137,8 @@ export default async function AdminHomePage() {
 						/>
 						<QuickAction
 							href="/admin/tools"
-							label="Công cụ ✨"
-							description="Lucky Card, bốc thăm may mắn và nhiều tool thú vị."
+							label="Công cụ"
+							description="Vocabulary, Lucky Card và Lời nhắn."
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
 									<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
@@ -147,9 +146,9 @@ export default async function AdminHomePage() {
 							}
 						/>
 						<QuickAction
-							href="/blog"
-							label="Xem Blog công khai"
-							description="Mở trang blog như người dùng thấy."
+							href="/bai-viet"
+							label="Xem bài viết công khai"
+							description="Mở danh sách bài viết như khách thấy."
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
 									<path d="M11 3H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />

@@ -48,7 +48,7 @@ export default function AdminPostActions({ id, slug, title, isPublished }: Props
 			</Link>
 			{isPublished ? (
 				<Link
-					href={`/blog/${slug}`}
+					href={`/bai-viet/${slug}`}
 					className="rounded-md border border-border-hover px-3 py-1 text-xs"
 				>
 					Xem

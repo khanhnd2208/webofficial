@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { customAlphabet } from 'nanoid';
 
 import dbConnect from '@/lib/dbConnect';
-import { AppError } from '@/lib/apiUtils';
+import { AppError } from '@/lib/appError';
 import { DEFAULT_DISPLAY_FONT } from '@/constants/message';
 import Message from '@/models/Message';
 import type {

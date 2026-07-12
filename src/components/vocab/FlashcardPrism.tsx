@@ -13,7 +13,7 @@
    • Safari/iOS: -webkit-backface-visibility hardened
    ════════════════════════════════════════════════════════════════════════ */
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 export interface FlashcardWord {
@@ -102,7 +102,7 @@ export default function FlashcardPrism({
 
   return (
     <div ref={containerRef} className="relative w-full" style={{ perspective: '900px' }}>
-      <motion.div
+      <m.div
         key={animKey}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
@@ -111,7 +111,7 @@ export default function FlashcardPrism({
         onTap={rotatePrism}
         className="relative cursor-pointer touch-none select-none"
         style={{ minHeight: '320px' }}
-        initial={{ y: 24, opacity: 0, scale: 0.96 }}
+        initial={{ y: 24, opacity: 1, scale: 0.96 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ type: 'spring', stiffness: 340, damping: 28 }}
       >
@@ -205,7 +205,7 @@ export default function FlashcardPrism({
             <FaceLabel index={2} current={faceIndex} />
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Face indicator dots */}
       <div className="mt-4 flex items-center justify-center gap-2">

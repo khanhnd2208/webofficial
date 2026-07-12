@@ -2,12 +2,12 @@
    GET  /api/vocab-sets  — user's active library
    POST /api/vocab-sets  — create new VocabSet (admin, JSON or CSV/XLSX)
    ════════════════════════════════════════════════════════════════════════ */
-import { withAuth, withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
 import { createVocabSet, getUserLibrary } from '@/services/vocabSetService';
 import { parseVocabFile } from '@/lib/vocab/parseVocabFile';
 import type { CreateWordInput } from '@/types/vocab';
 
-export const GET = withAuth(async (_req, user) => {
+export const GET = withAdmin(async (_req, user) => {
 	const items = await getUserLibrary(user.id);
 	return apiSuccess({ items, total: items.length });
 });

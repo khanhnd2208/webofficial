@@ -3,8 +3,7 @@
  * Aggregates cross-model stats for the admin overview page.
  */
 
-import dbConnect from '@/lib/dbConnect';
-import User from '@/models/User';
+import { prisma } from '@/lib/prisma';
 import { getAdminDashboardStats } from '@/services/postService';
 
 export interface AdminOverviewStats {
@@ -16,20 +15,19 @@ export interface AdminOverviewStats {
 		totalReactions: number;
 	};
 	users: {
-		total: number;
-		students: number;
+		/** Count of distinct users with at least one ACTIVE enrollment. */
+		activeEnrollments: number;
 	};
 }
 
 export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
-	await dbConnect();
-
-	const [postStats, userCounts] = await Promise.all([
+	const [postStats, activeEnrollmentCount] = await Promise.all([
 		getAdminDashboardStats(),
-		Promise.all([
-			User.countDocuments(),
-			User.countDocuments({ role: 'student' }),
-		]),
+		// Count distinct users with at least one ACTIVE enrollment (no N+1, single Prisma query).
+		prisma.enrollment.groupBy({
+			by: ['userId'],
+			where: { status: 'ACTIVE' },
+		}).then((rows) => rows.length),
 	]);
 
 	return {
@@ -41,8 +39,7 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 			totalReactions: postStats.totalReactions,
 		},
 		users: {
-			total: userCounts[0],
-			students: userCounts[1],
+			activeEnrollments: activeEnrollmentCount,
 		},
 	};
 }

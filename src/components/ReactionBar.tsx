@@ -93,7 +93,7 @@ export default function ReactionBar({ slug, initialReactions }: ReactionBarProps
 			</div>
 			{showLoginHint && (
 				<p className="mt-2 text-xs text-muted animate-in fade-in">
-					<Link href="/login" className="font-bold text-accent underline underline-offset-2">
+					<Link href="/dang-nhap" className="font-bold text-accent underline underline-offset-2">
 						Đăng nhập
 					</Link>{' '}
 					để thả reaction.
