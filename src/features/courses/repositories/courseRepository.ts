@@ -2,7 +2,15 @@ import type { Course, CourseModule, Lesson, PublishStatus } from '@prisma/client
 
 import { prisma } from '@/lib/prisma';
 
-import type { CourseDetail, CourseListItem, LessonDTO, ModuleDTO, PublicCourseTeaser } from '../types';
+import type {
+	CourseDetail,
+	CourseListItem,
+	LessonDTO,
+	ModuleDTO,
+	PublicCourseIntro,
+	PublicCourseTeaser,
+} from '../types';
+import { isPublicCatalogCourse } from '../visibility';
 
 function toIso(d: Date | null | undefined): string | null {
 	return d ? d.toISOString() : null;
@@ -46,6 +54,12 @@ export function mapCourseDetail(
 		description: course.description,
 		thumbnailUrl: course.thumbnailUrl,
 		status: course.status,
+		visibility: course.visibility,
+		audience: course.audience,
+		learningOutcomes: course.learningOutcomes,
+		format: course.format,
+		durationText: course.durationText,
+		prerequisites: course.prerequisites,
 		publishedAt: toIso(course.publishedAt),
 		createdAt: course.createdAt.toISOString(),
 		updatedAt: course.updatedAt.toISOString(),
@@ -55,9 +69,46 @@ export function mapCourseDetail(
 	};
 }
 
+export function mapPublicCourseIntro(
+	course: Course & { modules: (CourseModule & { lessons: Lesson[] })[] },
+): PublicCourseIntro {
+	return {
+		id: course.id,
+		slug: course.slug,
+		title: course.title,
+		summary: course.summary,
+		description: course.description,
+		thumbnailUrl: course.thumbnailUrl,
+		publishedAt: toIso(course.publishedAt),
+		audience: course.audience,
+		learningOutcomes: course.learningOutcomes,
+		format: course.format,
+		durationText: course.durationText,
+		prerequisites: course.prerequisites,
+		modules: [...course.modules]
+			.sort((a, b) => a.position - b.position)
+			.map((mod) => ({
+				id: mod.id,
+				title: mod.title,
+				description: mod.description,
+				position: mod.position,
+				lessons: [...mod.lessons]
+					.filter((l) => l.status === 'PUBLISHED')
+					.sort((a, b) => a.position - b.position)
+					.map((lesson) => ({
+						id: lesson.id,
+						slug: lesson.slug,
+						title: lesson.title,
+						position: lesson.position,
+					})),
+			}))
+			.filter((mod) => mod.lessons.length > 0),
+	};
+}
+
 export async function listPublicCourseTeasers(): Promise<PublicCourseTeaser[]> {
 	const courses = await prisma.course.findMany({
-		where: { status: 'PUBLISHED' },
+		where: { status: 'PUBLISHED', visibility: 'CATALOG' },
 		orderBy: [{ publishedAt: 'desc' }, { updatedAt: 'desc' }],
 		select: {
 			id: true,
@@ -76,6 +127,12 @@ export async function listPublicCourseTeasers(): Promise<PublicCourseTeaser[]> {
 		thumbnailUrl: c.thumbnailUrl,
 		publishedAt: toIso(c.publishedAt),
 	}));
+}
+
+export async function findPublicCourseBySlug(slug: string) {
+	const course = await findCourseBySlug(slug);
+	if (!course || !isPublicCatalogCourse(course)) return null;
+	return course;
 }
 
 export async function listCourses(): Promise<CourseListItem[]> {
@@ -103,6 +160,7 @@ export async function listCourses(): Promise<CourseListItem[]> {
 		summary: c.summary,
 		thumbnailUrl: c.thumbnailUrl,
 		status: c.status,
+		visibility: c.visibility,
 		publishedAt: toIso(c.publishedAt),
 		updatedAt: c.updatedAt.toISOString(),
 		moduleCount: c._count.modules,
@@ -154,6 +212,12 @@ export async function updateCourse(
 		description?: string;
 		thumbnailUrl?: string | null;
 		status?: PublishStatus;
+		visibility?: Course['visibility'];
+		audience?: string;
+		learningOutcomes?: string;
+		format?: string;
+		durationText?: string;
+		prerequisites?: string;
 		publishedAt?: Date | null;
 	},
 ) {

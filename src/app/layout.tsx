@@ -6,7 +6,14 @@ import Providers from '@/components/Providers';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import MainContent from '@/components/MainContent';
 import SkipLink from '@/components/SkipLink';
-import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from '@/config/site';
+import AnalyticsScript from '@/components/AnalyticsScript';
+import {
+	SITE_CREATOR,
+	SITE_DESCRIPTION,
+	SITE_NAME,
+	SITE_ORIGIN,
+	absoluteUrl,
+} from '@/config/site';
 import './globals.css';
 
 const inter = Inter({
@@ -53,10 +60,13 @@ export const metadata: Metadata = {
 		template: `%s | ${SITE_NAME}`,
 	},
 	description: SITE_DESCRIPTION,
+	authors: [{ name: SITE_CREATOR, url: absoluteUrl('/') }],
+	creator: SITE_CREATOR,
 	openGraph: {
 		siteName: SITE_NAME,
 		locale: 'vi_VN',
 		type: 'website',
+		url: SITE_ORIGIN,
 	},
 };
 
@@ -75,6 +85,7 @@ export default function RootLayout({
 					<Navbar />
 					<MainContent>{children}</MainContent>
 					<ConditionalFooter />
+					<AnalyticsScript />
 				</Providers>
 			</body>
 		</html>

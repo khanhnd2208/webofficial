@@ -123,26 +123,39 @@ enum PublishStatus {
   ARCHIVED
 }
 
+enum CourseVisibility {
+  PRIVATE
+  CATALOG
+}
+
 enum EnrollmentStatus {
   ACTIVE
   REVOKED
 }
 
 model Course {
-  id           String        @id @default(cuid())
-  slug         String        @unique
+  id           String           @id @default(cuid())
+  slug         String           @unique
   title        String
-  summary      String        @default("")
-  description  String        @default("") @db.Text
+  summary      String           @default("")
+  description  String           @default("") @db.Text
   thumbnailUrl String?
-  status       PublishStatus @default(DRAFT)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  status       PublishStatus    @default(DRAFT)
+  /// Existing courses default PRIVATE — only PUBLISHED + CATALOG appear publicly.
+  visibility   CourseVisibility @default(PRIVATE)
+  audience     String           @default("")
+  learningOutcomes String       @default("") @db.Text
+  format       String           @default("")
+  durationText String           @default("")
+  prerequisites String          @default("") @db.Text
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   publishedAt  DateTime?
 
   modules     CourseModule[]
   enrollments Enrollment[]
 
+  @@index([status, visibility, updatedAt(sort: Desc)])
   @@index([status, updatedAt(sort: Desc)])
 }
 

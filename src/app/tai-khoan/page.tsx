@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
 	title: 'Tài khoản',
-	description: 'Hồ sơ học viên HANOICAM.',
+	description: 'Hồ sơ tài khoản Duy Khánh.',
 };
 
 export default async function ProfilePage() {

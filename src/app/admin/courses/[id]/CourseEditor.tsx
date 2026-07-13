@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { routes } from '@/config/routes';
-import type { CourseDetail, LessonDTO, PublishStatus } from '@/features/courses/types';
+import type { CourseDetail, CourseVisibility, LessonDTO, PublishStatus } from '@/features/courses/types';
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
 	const res = await fetch(url, {
@@ -48,6 +48,12 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 	const [description, setDescription] = useState(initial.description);
 	const [thumbnailUrl, setThumbnailUrl] = useState(initial.thumbnailUrl ?? '');
 	const [status, setStatus] = useState<PublishStatus>(initial.status);
+	const [visibility, setVisibility] = useState<CourseVisibility>(initial.visibility);
+	const [audience, setAudience] = useState(initial.audience);
+	const [learningOutcomes, setLearningOutcomes] = useState(initial.learningOutcomes);
+	const [format, setFormat] = useState(initial.format);
+	const [durationText, setDurationText] = useState(initial.durationText);
+	const [prerequisites, setPrerequisites] = useState(initial.prerequisites);
 	const [moduleTitle, setModuleTitle] = useState('');
 	const [lessonTitles, setLessonTitles] = useState<Record<string, string>>({});
 	const [message, setMessage] = useState<string | null>(null);
@@ -79,6 +85,12 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 					description,
 					thumbnailUrl: thumbnailUrl.trim() || null,
 					status,
+					visibility,
+					audience,
+					learningOutcomes,
+					format,
+					durationText,
+					prerequisites,
 				}),
 			});
 			setCourse(updated);
@@ -275,6 +287,66 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 						<option value="PUBLISHED">Đã xuất bản</option>
 						<option value="ARCHIVED">Lưu trữ</option>
 					</select>
+				</label>
+				<label className="block max-w-xs">
+					<span className="text-xs text-muted">Hiển thị công khai</span>
+					<select
+						value={visibility}
+						onChange={(e) => setVisibility(e.target.value as CourseVisibility)}
+						className="mt-1 min-h-11 w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm"
+					>
+						<option value="PRIVATE">Riêng tư (chỉ học viên ghi danh)</option>
+						<option value="CATALOG">Danh mục (hiện trên trang công khai)</option>
+					</select>
+					<p className="mt-1 text-[11px] text-muted">
+						Chỉ khóa PUBLISHED + CATALOG mới xuất hiện trong danh mục công khai.
+					</p>
+				</label>
+				<label className="block">
+					<span className="text-xs text-muted">Đối tượng</span>
+					<input
+						value={audience}
+						onChange={(e) => setAudience(e.target.value)}
+						className="mt-1 min-h-11 w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm"
+						placeholder="Ví dụ: Sinh viên năm 3–4, PM junior…"
+					/>
+				</label>
+				<label className="block">
+					<span className="text-xs text-muted">Kết quả học tập</span>
+					<textarea
+						value={learningOutcomes}
+						onChange={(e) => setLearningOutcomes(e.target.value)}
+						rows={4}
+						className="mt-1 w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm"
+						placeholder="Mỗi dòng một kết quả mong đợi"
+					/>
+				</label>
+				<label className="block">
+					<span className="text-xs text-muted">Hình thức</span>
+					<input
+						value={format}
+						onChange={(e) => setFormat(e.target.value)}
+						className="mt-1 min-h-11 w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm"
+						placeholder="Ví dụ: Video + bài đọc + bài tập"
+					/>
+				</label>
+				<label className="block max-w-xs">
+					<span className="text-xs text-muted">Thời lượng (mô tả)</span>
+					<input
+						value={durationText}
+						onChange={(e) => setDurationText(e.target.value)}
+						className="mt-1 min-h-11 w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm"
+						placeholder="Ví dụ: ~6 tuần, 2–3 giờ/tuần"
+					/>
+				</label>
+				<label className="block">
+					<span className="text-xs text-muted">Điều kiện tiên quyết</span>
+					<textarea
+						value={prerequisites}
+						onChange={(e) => setPrerequisites(e.target.value)}
+						rows={3}
+						className="mt-1 w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm"
+					/>
 				</label>
 				<Button type="button" disabled={busy} onClick={() => void saveCourse()}>
 					Lưu khóa học

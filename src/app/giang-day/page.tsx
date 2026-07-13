@@ -8,7 +8,7 @@ import { auth } from '@/lib/auth';
 
 export const metadata = {
 	title: 'Giảng dạy',
-	description: 'Học có lộ trình. Tiến bộ có dấu vết. — HANOICAM.',
+	description: 'Học có lộ trình. Tiến bộ có dấu vết. — Duy Khánh.',
 };
 
 export const revalidate = 60;

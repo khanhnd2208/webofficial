@@ -7,6 +7,7 @@ import TagInput from '@/components/TagInput';
 import ThumbnailUpload from '@/components/ThumbnailUpload';
 import DualLanguageEditor from '@/components/DualLanguageEditor';
 import { POST_CATEGORIES } from '@/constants/post';
+import { JOURNAL_COLLECTIONS, JOURNAL_CONTENT_TYPES, JOURNAL_PILLARS } from '@/content/journal';
 import { slugify } from '@/utils/slugify';
 
 type AdminPost = {
@@ -19,6 +20,10 @@ type AdminPost = {
 	contentFormat?: 'markdown' | 'html';
 	category: string;
 	tags: string[];
+	pillarSlug?: string;
+	contentType?: string;
+	collectionSlugs?: string[];
+	isFeatured?: boolean;
 	thumbnailUrl?: string;
 	chapterNumber?: number;
 	isPinned?: boolean;
@@ -65,6 +70,10 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 	const [summary, setSummary] = useState(initial.summary);
 	const [category, setCategory] = useState(initial.category || 'Uncategorized');
 	const [tags, setTags] = useState<string[]>(initial.tags);
+	const [pillarSlug, setPillarSlug] = useState(initial.pillarSlug ?? '');
+	const [contentType, setContentType] = useState(initial.contentType ?? '');
+	const [collectionSlugs, setCollectionSlugs] = useState<string[]>(initial.collectionSlugs ?? []);
+	const [isFeatured, setIsFeatured] = useState(Boolean(initial.isFeatured));
 	const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 	const [thumbnailUrl, setThumbnailUrl] = useState(initial.thumbnailUrl ?? '');
 	const [chapterNumber, setChapterNumber] = useState(initial.chapterNumber != null ? String(initial.chapterNumber) : '');
@@ -124,6 +133,10 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					title, slug, summary, content, contentEn, category, tags,
+					pillarSlug: pillarSlug || undefined,
+					contentType: contentType || undefined,
+					collectionSlugs,
+					isFeatured,
 					contentFormat: 'html',
 					thumbnailUrl: thumbnailUrl || undefined,
 					chapterNumber: chapterNumber ? Number(chapterNumber) : undefined,
@@ -148,7 +161,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, contentEn, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, initial.id]);
+	}, [title, slug, summary, content, contentEn, category, tags, pillarSlug, contentType, collectionSlugs, isFeatured, thumbnailUrl, chapterNumber, isPinned, isPublished, initial.id]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -283,7 +296,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 				</label>
 
 				<label className="block">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chủ đề</div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chủ đề (legacy)</div>
 					<select
 						value={category}
 						onChange={(e) => setCategory(e.target.value)}
@@ -294,6 +307,57 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						))}
 					</select>
 				</label>
+
+				<label className="block">
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Pillar</div>
+					<select
+						value={pillarSlug}
+						onChange={(e) => setPillarSlug(e.target.value)}
+						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+					>
+						<option value="">— Chưa gán —</option>
+						{JOURNAL_PILLARS.map((p) => (
+							<option key={p.slug} value={p.slug}>{p.label}</option>
+						))}
+					</select>
+				</label>
+
+				<label className="block">
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Content type</div>
+					<select
+						value={contentType}
+						onChange={(e) => setContentType(e.target.value)}
+						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+					>
+						<option value="">— Chưa gán —</option>
+						{JOURNAL_CONTENT_TYPES.map((t) => (
+							<option key={t.slug} value={t.slug}>{t.label}</option>
+						))}
+					</select>
+				</label>
+
+				<div className="block md:col-span-2">
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Collections</div>
+					<div className="mt-2 flex flex-wrap gap-3">
+						{JOURNAL_COLLECTIONS.map((c) => {
+							const checked = collectionSlugs.includes(c.slug);
+							return (
+								<label key={c.slug} className="inline-flex items-center gap-2 text-sm">
+									<input
+										type="checkbox"
+										checked={checked}
+										onChange={() => {
+											setCollectionSlugs((prev) =>
+												checked ? prev.filter((s) => s !== c.slug) : [...prev, c.slug],
+											);
+										}}
+									/>
+									{c.title}
+								</label>
+							);
+						})}
+					</div>
+				</div>
 
 				<label className="block">
 					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chapter Number</div>
@@ -343,6 +407,15 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						{isPinned ? (
 							<span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">PINNED</span>
 						) : null}
+					</label>
+					<label className="flex items-center gap-2.5">
+						<input
+							type="checkbox"
+							checked={isFeatured}
+							onChange={(e) => setIsFeatured(e.target.checked)}
+							className="h-4 w-4 rounded border-border accent-accent"
+						/>
+						<span className="text-sm font-medium">Editor’s choice</span>
 					</label>
 				</div>
 			</section>

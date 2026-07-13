@@ -1,49 +1,42 @@
-# Route Map — HANOICAM
+# Route Map — Duy Khánh
 
-Single source of truth in code: `src/config/routes.ts`, `src/config/navigation.ts`.
+Single source of truth in code: `src/config/routes.ts`, `src/config/navigation.ts`, `src/config/site.ts`, `src/content/*`.
 
-## Public
+Navigation and footer render **only** links with `status: 'published'`.
 
-| Path | Purpose |
-|------|---------|
-| `/` | Personal brand landing |
-| `/bai-viet` | Post list |
-| `/bai-viet/[slug]` | Post detail |
-| `/giang-day` | Teaching intro |
-| `/gioi-thieu` | About / contact |
-| `/dang-nhap` | Sign in |
-| `/m/[slug]` | Public message recipient view |
+## Brand hierarchy
 
-## Learner
+| Brand | Role |
+|-------|------|
+| **Duy Khánh** | Master brand / site wordmark |
+| **HANOICAM** | Editorial journal brand |
+| **NDK** | Personal mark / signature |
 
-| Path | Purpose |
-|------|---------|
-| `/hoc` | Learner dashboard |
-| `/hoc/khoa-hoc/[slug]` | Course overview (Phase 3) |
-| `/hoc/khoa-hoc/[slug]/bai/[lessonSlug]` | Lesson + progress (Phase 3) |
-| `/tai-khoan` | User profile |
+## Public marketing (current)
+
+| Path | Purpose | Status |
+|------|---------|--------|
+| `/` | Brand homepage + hero illustration | Published |
+| `/gioi-thieu` | About (standalone) | Published |
+| `/lien-he` | Inquiry form | Published (prod form needs Resend env) |
+| `/dong-hanh` | Service hub | Published |
+| `/dong-hanh/[slug]` | Mentoring, business, training, AI | Published |
+| `/case-study` | Case list | Published (empty until permission) |
+| `/chinh-sach/[slug]` | Privacy, terms, cancellation, AI | Published (legal review pending) |
+| `/goc-cua-khanh` | Lab hub + categories + resources | Published |
+| `/bai-viet` | HANOICAM Journal | Published |
+
+## Learning (still gated)
+
+`/hoc/*` and `/giang-day` still redirect home until a PUBLISHED+CATALOG course passes E2E gate. Prisma `Course.visibility` defaults to `PRIVATE`.
 
 ## Admin
 
 | Path | Purpose |
 |------|---------|
-| `/admin` | Overview |
-| `/admin/posts`, `/admin/posts/create` | Posts |
-| `/admin/courses`, `/admin/enrollments` | Teaching (Phase 2+) |
-| `/admin/tools/*` | Vocabulary, Lucky Card, Messages |
-| `/admin/users`, `/admin/media`, `/admin/settings` | System |
+| `/admin/inquiries` | Inquiry list / detail / status / retry email / delete |
 
-## Permanent redirects
+## Redirects
 
-| From | To |
-|------|----|
-| `/blog`, `/blog/*` | `/bai-viet`, `/bai-viet/*` |
-| `/login` | `/dang-nhap` |
-| `/dashboard` | `/hoc` |
-| `/profile` | `/tai-khoan` |
-| `/admin/vocabulary` | `/admin/tools/vocabulary` |
-
-Public navigation: Trang chủ · Bài viết · Giảng dạy · Đăng nhập/Tài khoản.  
-Tools, Vocabulary, and Admin are never in the public header.
-
-Vocabulary pages under `/vocabulary/*` and related APIs are **admin-only** (tool isolation).
+Unchanged permanent: `/blog` → `/bai-viet`, `/login` → `/dang-nhap`, `/profile` → `/tai-khoan`.  
+Temporary: `/hoc`, `/giang-day`, `/dashboard` → `/`.

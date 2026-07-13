@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const publishStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']);
 
+export const courseVisibilitySchema = z.enum(['PRIVATE', 'CATALOG']);
+
 export const createCourseSchema = z.object({
 	title: z.string().trim().min(1, 'Tiêu đề bắt buộc').max(200),
 	slug: z.string().trim().min(1).max(120).optional(),
@@ -17,6 +19,12 @@ export const updateCourseSchema = z.object({
 	description: z.string().max(50_000).optional(),
 	thumbnailUrl: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
 	status: publishStatusSchema.optional(),
+	visibility: courseVisibilitySchema.optional(),
+	audience: z.string().trim().max(500).optional(),
+	learningOutcomes: z.string().max(10_000).optional(),
+	format: z.string().trim().max(500).optional(),
+	durationText: z.string().trim().max(200).optional(),
+	prerequisites: z.string().max(5_000).optional(),
 });
 
 export const createModuleSchema = z.object({

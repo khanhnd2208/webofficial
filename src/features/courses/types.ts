@@ -1,6 +1,6 @@
-import type { EnrollmentStatus, PublishStatus } from '@prisma/client';
+import type { CourseVisibility, EnrollmentStatus, PublishStatus } from '@prisma/client';
 
-export type { EnrollmentStatus, PublishStatus };
+export type { CourseVisibility, EnrollmentStatus, PublishStatus };
 
 /** Safe public teaser — no lesson content, no enrollment data. */
 export interface PublicCourseTeaser {
@@ -19,6 +19,7 @@ export interface CourseListItem {
 	summary: string;
 	thumbnailUrl: string | null;
 	status: PublishStatus;
+	visibility: CourseVisibility;
 	publishedAt: string | null;
 	updatedAt: string;
 	moduleCount: number;
@@ -55,10 +56,55 @@ export interface CourseDetail {
 	description: string;
 	thumbnailUrl: string | null;
 	status: PublishStatus;
+	visibility: CourseVisibility;
+	audience: string;
+	learningOutcomes: string;
+	format: string;
+	durationText: string;
+	prerequisites: string;
 	publishedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
 	modules: ModuleDTO[];
+}
+
+export interface PublicLessonOutline {
+	id: string;
+	slug: string;
+	title: string;
+	position: number;
+}
+
+export interface PublicModuleOutline {
+	id: string;
+	title: string;
+	description: string;
+	position: number;
+	lessons: PublicLessonOutline[];
+}
+
+/** Public course intro — outline titles only, no lesson content. */
+export interface PublicCourseIntro {
+	id: string;
+	slug: string;
+	title: string;
+	summary: string;
+	description: string;
+	thumbnailUrl: string | null;
+	publishedAt: string | null;
+	audience: string;
+	learningOutcomes: string;
+	format: string;
+	durationText: string;
+	prerequisites: string;
+	modules: PublicModuleOutline[];
+}
+
+export interface LessonAttachmentSummary {
+	id: string;
+	fileName: string;
+	mimeType: string;
+	size: number;
 }
 
 export interface EnrollmentDTO {

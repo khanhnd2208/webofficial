@@ -4,14 +4,21 @@ import { Suspense } from 'react';
 import BlogSearch from '@/components/BlogSearch';
 import BlogFilterBar from '@/components/BlogFilterBar';
 import EditorialMedia from '@/components/motion/EditorialMedia';
-import { getAllPosts, getAllTags, getAllCategories } from '@/services/postService';
+import {
+	getAllPosts,
+	getAllTags,
+	getAllCategories,
+	isJournalTaxonomyComplete,
+} from '@/services/postService';
+import { getPublishedCollections, JOURNAL_PILLARS } from '@/content/journal';
 import { routes } from '@/config/routes';
+import { EDITORIAL_NAME } from '@/config/site';
 
 export const revalidate = 60;
 
 export const metadata = {
-	title: 'Bài viết',
-	description: 'Thư viện bài viết của HANOICAM — quét theo chủ đề.',
+	title: `${EDITORIAL_NAME} Journal`,
+	description: `${EDITORIAL_NAME} Journal — thư viện bài viết chọn lọc, quét theo chủ đề.`,
 };
 
 function buildQuery(params: { tag?: string; category?: string; sort?: string; page?: number }) {
@@ -46,20 +53,27 @@ function displayTopic(category?: string | null): string | null {
 export default async function BlogPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ tag?: string; category?: string; sort?: string; page?: string }>;
+	searchParams?: Promise<{ tag?: string; category?: string; sort?: string; page?: string; pillar?: string }>;
 }) {
 	const sp = searchParams ? await searchParams : undefined;
 	const tag = sp?.tag?.trim() || undefined;
 	const category = sp?.category?.trim() || undefined;
 	const sort = sp?.sort?.trim() || undefined;
+	const pillar = sp?.pillar?.trim() || undefined;
 	const page = Math.max(1, Number(sp?.page ?? '1') || 1);
 	const limit = 12;
 
-	const [result, tags, categories] = await Promise.all([
-		getAllPosts(page, limit, tag, category, sort),
+	const taxonomyReady = await isJournalTaxonomyComplete();
+	const pillarFilter = taxonomyReady ? pillar : undefined;
+
+	const [result, tags, categories, featured] = await Promise.all([
+		getAllPosts(page, limit, tag, category, sort, { pillarSlug: pillarFilter }),
 		getAllTags(),
 		getAllCategories(),
+		getAllPosts(1, 3, undefined, undefined, 'newest', { featuredOnly: true }),
 	]);
+
+	const collections = getPublishedCollections();
 
 	return (
 		<main className="min-h-screen">
@@ -67,17 +81,79 @@ export default async function BlogPage({
 				<div className="shell py-8 sm:py-10">
 					<div className="flex flex-wrap items-end justify-between gap-4">
 						<div>
-							<h1 className="font-display type-page-title font-medium text-ink">Bài viết</h1>
+							<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">
+								{EDITORIAL_NAME} Journal
+							</p>
+							<h1 className="mt-2 font-display type-page-title font-medium text-ink">Bài viết</h1>
 							<p className="mt-2 font-mono text-xs text-ink-secondary" aria-live="polite">
 								{result.total} bài
 								{tag ? ` · #${tag}` : ''}
 								{category ? ` · ${category}` : ''}
+								{pillarFilter ? ` · ${pillarFilter}` : ''}
 							</p>
 						</div>
 						<BlogSearch />
 					</div>
 				</div>
 			</section>
+
+			{featured.items.length > 0 ? (
+				<section className="border-b border-hairline">
+					<div className="shell py-8">
+						<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
+							Editor’s choice
+						</p>
+						<ul className="mt-4 divide-y divide-hairline border-y border-hairline">
+							{featured.items.map((post) => (
+								<li key={post.slug}>
+									<Link href={routes.post(post.slug)} className="block py-4 hover:text-vermilion">
+										<span className="font-display text-lg font-medium text-ink">{post.title}</span>
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+				</section>
+			) : null}
+
+			{collections.length > 0 ? (
+				<section className="border-b border-hairline">
+					<div className="shell py-8">
+						<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
+							Collection nổi bật
+						</p>
+						<ul className="mt-4 grid gap-4 sm:grid-cols-2">
+							{collections.map((c) => (
+								<li key={c.slug} className="border-t border-hairline pt-4">
+									<Link href={routes.postCollection(c.slug)} className="hover:text-vermilion">
+										<span className="font-display text-lg font-medium text-ink">{c.title}</span>
+										<span className="mt-1 block text-sm text-ink-secondary">{c.summary}</span>
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+				</section>
+			) : null}
+
+			{taxonomyReady ? (
+				<section className="border-b border-hairline">
+					<div className="shell flex flex-wrap gap-3 py-6">
+						<span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">Pillar</span>
+						{JOURNAL_PILLARS.map((p) => (
+							<Link
+								key={p.slug}
+								href={`${routes.posts}?pillar=${p.slug}`}
+								className={`text-xs font-semibold uppercase tracking-wider ${
+									pillarFilter === p.slug ? 'text-vermilion' : 'text-ink-secondary hover:text-ink'
+								}`}
+							>
+								{p.label}
+							</Link>
+						))}
+					</div>
+				</section>
+			) : null}
 
 			<Suspense fallback={null}>
 				<BlogFilterBar

@@ -14,6 +14,12 @@ import LessonChapterRail from './LessonChapterRail';
 
 export const dynamic = 'force-dynamic';
 
+function formatFileSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default async function LearnerLessonPage({
 	params,
 }: {
@@ -35,10 +41,10 @@ export default async function LearnerLessonPage({
 					<h1 className="font-display text-2xl font-medium text-ink">Không có quyền truy cập</h1>
 					<p className="mt-3 text-sm text-ink-secondary">Bạn chưa được ghi danh vào khóa học này.</p>
 					<Link
-						href={routes.learn}
+						href={routes.accountLearning}
 						className="mt-6 inline-flex text-xs font-semibold uppercase tracking-widest text-vermilion hover:underline"
 					>
-						← Về khu học tập
+						← Về khu học của tôi
 					</Link>
 				</main>
 			);
@@ -99,6 +105,30 @@ export default async function LearnerLessonPage({
 							/>
 						) : !lesson.videoUrl ? (
 							<p className="text-sm text-ink-secondary">Bài học chưa có nội dung.</p>
+						) : null}
+
+						{lesson.attachments.length > 0 ? (
+							<section className="mt-10 border-t border-hairline pt-8">
+								<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">
+									Tệp đính kèm
+								</p>
+								<ul className="mt-4 space-y-2">
+									{lesson.attachments.map((attachment) => (
+										<li key={attachment.id}>
+											<a
+												href={`/api/learning/lessons/${lesson.id}/attachments/${attachment.id}`}
+												className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-vermilion hover:underline"
+											>
+												<span aria-hidden>↓</span>
+												<span>{attachment.fileName}</span>
+												<span className="text-xs font-normal text-ink-secondary">
+													({formatFileSize(attachment.size)})
+												</span>
+											</a>
+										</li>
+									))}
+								</ul>
+							</section>
 						) : null}
 
 						<div className="mt-12 hidden border-t border-hairline pt-8 lg:block">

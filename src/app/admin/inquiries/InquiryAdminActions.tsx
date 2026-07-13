@@ -1,0 +1,163 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+
+import { INQUIRY_STATUSES, type InquiryStatus } from '@/features/inquiries/constants';
+import { routes } from '@/config/routes';
+
+type Props = {
+	inquiryId: string;
+	currentStatus?: InquiryStatus;
+	emailStatus?: string;
+};
+
+export default function InquiryAdminActions({ inquiryId, currentStatus, emailStatus }: Props) {
+	const router = useRouter();
+	const [status, setStatus] = useState<InquiryStatus>(currentStatus ?? 'NEW');
+	const [note, setNote] = useState('');
+	const [internalNotes, setInternalNotes] = useState('');
+	const [error, setError] = useState<string | null>(null);
+	const [pending, startTransition] = useTransition();
+
+	if (!inquiryId) return null;
+
+	async function patch(body: Record<string, unknown>) {
+		setError(null);
+		const res = await fetch(`/api/admin/inquiries/${inquiryId}`, {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		});
+		const json = await res.json();
+		if (!res.ok || !json.ok) {
+			throw new Error(json.error || 'Cập nhật thất bại');
+		}
+		router.refresh();
+	}
+
+	function onSaveStatus() {
+		startTransition(async () => {
+			try {
+				await patch({ status, statusNote: note || undefined });
+				setNote('');
+			} catch (e) {
+				setError(e instanceof Error ? e.message : 'Lỗi');
+			}
+		});
+	}
+
+	function onSaveNotes() {
+		startTransition(async () => {
+			try {
+				await patch({ internalNotes });
+			} catch (e) {
+				setError(e instanceof Error ? e.message : 'Lỗi');
+			}
+		});
+	}
+
+	function onRetryEmail() {
+		startTransition(async () => {
+			try {
+				await patch({ retryNotification: true });
+			} catch (e) {
+				setError(e instanceof Error ? e.message : 'Lỗi');
+			}
+		});
+	}
+
+	function onDelete() {
+		if (!window.confirm('Xóa vĩnh viễn inquiry này? Không hoàn tác được.')) return;
+		startTransition(async () => {
+			try {
+				const res = await fetch(`/api/admin/inquiries/${inquiryId}`, { method: 'DELETE' });
+				const json = await res.json();
+				if (!res.ok || !json.ok) throw new Error(json.error || 'Xóa thất bại');
+				router.push(routes.admin.inquiries);
+				router.refresh();
+			} catch (e) {
+				setError(e instanceof Error ? e.message : 'Lỗi');
+			}
+		});
+	}
+
+	return (
+		<div className="space-y-6 rounded-xl border border-border bg-surface p-4">
+			{error ? (
+				<p role="alert" className="text-sm text-error">
+					{error}
+				</p>
+			) : null}
+
+			<div>
+				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Status</label>
+				<div className="mt-2 flex flex-wrap gap-2">
+					<select
+						value={status}
+						onChange={(e) => setStatus(e.target.value as InquiryStatus)}
+						className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+					>
+						{INQUIRY_STATUSES.map((s) => (
+							<option key={s} value={s}>
+								{s}
+							</option>
+						))}
+					</select>
+					<input
+						value={note}
+						onChange={(e) => setNote(e.target.value)}
+						placeholder="Ghi chú lịch sử (tuỳ chọn)"
+						className="min-w-[180px] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+					/>
+					<button
+						type="button"
+						disabled={pending}
+						onClick={onSaveStatus}
+						className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-60"
+					>
+						Cập nhật status
+					</button>
+				</div>
+			</div>
+
+			<div>
+				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Internal notes</label>
+				<textarea
+					value={internalNotes}
+					onChange={(e) => setInternalNotes(e.target.value)}
+					rows={4}
+					className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+					placeholder="Ghi chú nội bộ…"
+				/>
+				<button
+					type="button"
+					disabled={pending}
+					onClick={onSaveNotes}
+					className="mt-2 rounded-lg border border-border px-3 py-2 text-sm font-semibold disabled:opacity-60"
+				>
+					Lưu ghi chú
+				</button>
+			</div>
+
+			<div className="flex flex-wrap gap-3 border-t border-border pt-4">
+				<button
+					type="button"
+					disabled={pending || emailStatus === 'sent'}
+					onClick={onRetryEmail}
+					className="rounded-lg border border-border px-3 py-2 text-sm font-semibold disabled:opacity-60"
+				>
+					Gửi lại email thông báo
+				</button>
+				<button
+					type="button"
+					disabled={pending}
+					onClick={onDelete}
+					className="rounded-lg border border-error/40 px-3 py-2 text-sm font-semibold text-error disabled:opacity-60"
+				>
+					Xóa vĩnh viễn
+				</button>
+			</div>
+		</div>
+	);
+}

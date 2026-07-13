@@ -55,6 +55,7 @@ export interface LearnerLessonDetail {
 	contentHtml: string;
 	videoUrl: string | null;
 	completed: boolean;
+	attachments: { id: string; fileName: string; mimeType: string; size: number }[];
 	course: { id: string; slug: string; title: string };
 	module: { id: string; title: string };
 	moduleLessons: { slug: string; title: string; position: number; completed: boolean; href: string }[];
@@ -193,6 +194,12 @@ export async function getLearnerLesson(
 	const prev = index > 0 ? lessons[index - 1] : null;
 	const next = index < lessons.length - 1 ? lessons[index + 1] : null;
 
+	const attachments = await prisma.lessonAttachment.findMany({
+		where: { lessonId: lesson.id },
+		select: { id: true, fileName: true, mimeType: true, size: true },
+		orderBy: { createdAt: 'asc' },
+	});
+
 	return {
 		id: lesson.id,
 		slug: lesson.slug,
@@ -200,6 +207,7 @@ export async function getLearnerLesson(
 		contentHtml: lesson.contentHtml,
 		videoUrl: lesson.videoUrl,
 		completed: completedSet.has(lesson.id),
+		attachments,
 		course: { id: course.id, slug: course.slug, title: course.title },
 		module: { id: lesson.moduleId, title: lesson.moduleTitle },
 		moduleLessons: moduleSiblings.map((l) => ({

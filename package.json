@@ -78,6 +78,7 @@
     "react-markdown-editor-lite": "^1.4.2",
     "react-qr-code": "^2.2.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.17.2",
     "server-only": "^0.0.1",
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"

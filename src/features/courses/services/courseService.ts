@@ -10,7 +10,7 @@ import type {
 	UpdateModuleInput,
 } from '../schemas';
 import * as repo from '../repositories/courseRepository';
-import type { CourseDetail, CourseListItem, LessonDTO, ModuleDTO } from '../types';
+import type { CourseDetail, CourseListItem, LessonDTO, ModuleDTO, PublicCourseIntro } from '../types';
 
 function normalizeOptionalUrl(value: string | null | undefined): string | null {
 	if (value === undefined) return null;
@@ -46,6 +46,12 @@ export async function listAdminCourses(): Promise<CourseListItem[]> {
 
 export async function listPublicCourseTeasers() {
 	return repo.listPublicCourseTeasers();
+}
+
+export async function getPublicCourseBySlug(slug: string): Promise<PublicCourseIntro> {
+	const course = await repo.findPublicCourseBySlug(slug);
+	if (!course) throw new AppError('Không tìm thấy khóa học', 404);
+	return repo.mapPublicCourseIntro(course);
 }
 
 export async function getAdminCourse(id: string): Promise<CourseDetail> {
@@ -86,6 +92,12 @@ export async function updateAdminCourse(id: string, input: UpdateCourseInput): P
 	if (input.summary !== undefined) data.summary = input.summary.trim();
 	if (input.description !== undefined) data.description = input.description;
 	if (input.thumbnailUrl !== undefined) data.thumbnailUrl = normalizeOptionalUrl(input.thumbnailUrl);
+	if (input.visibility !== undefined) data.visibility = input.visibility;
+	if (input.audience !== undefined) data.audience = input.audience.trim();
+	if (input.learningOutcomes !== undefined) data.learningOutcomes = input.learningOutcomes;
+	if (input.format !== undefined) data.format = input.format.trim();
+	if (input.durationText !== undefined) data.durationText = input.durationText.trim();
+	if (input.prerequisites !== undefined) data.prerequisites = input.prerequisites;
 	if (input.slug !== undefined) {
 		data.slug = await uniqueCourseSlug(input.slug, id);
 	}

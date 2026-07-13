@@ -389,6 +389,26 @@ npm run test:coverage # with coverage report
 
 ---
 
+## ADR-012 — Master Brand Duy Khánh (HANOICAM Editorial)
+
+**Date:** 2026-07-13  
+**Status:** Active (phased)
+
+**Decision:** Elevate **Duy Khánh** to the site-wide master brand. Keep **HANOICAM** as the editorial/journal brand only. Keep **NDK** as a personal mark. Public navigation and footer are driven by a publish-gated IA map (`draft` | `published`) so unfinished service/lab/contact routes never appear as dead links.
+
+**Context:** The previous three-domain IA still presented HANOICAM as the whole website. The restructure program positions the site as a Personal Knowledge & Advisory Studio with four tracks (Đồng hành, Học, Journal, Góc của Khánh) under one personal brand.
+
+**Rationale:** Visitors should understand who helps whom and how before they meet the journal. Separating editorial identity from the master brand avoids SEO and brand confusion when services and learning open. Publication gates prevent empty marketplace-style navigation.
+
+**Consequences:**
+- `SITE_NAME = 'Duy Khánh'`, `EDITORIAL_NAME = 'HANOICAM'` in `src/config/site.ts`
+- Desktop/mobile/footer chrome consume `src/config/navigation.ts` helpers; contact CTA is separate from nav links and login
+- Shared marketing primitives live under `src/components/marketing/`
+- Homepage/About/services/inquiries ship in later phase branches; Phase 1 does not invent placeholder content
+- Supersedes ADR-011 navigation labeling; ADR-011 teaching/tools data boundaries remain
+
+---
+
 ## Changelog — UI/UX completion sprint (2026-07-12)
 
 **Phase 0–3 foundation (in progress toward launch):**

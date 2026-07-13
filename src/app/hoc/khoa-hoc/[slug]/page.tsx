@@ -1,57 +1,29 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
+import PublicCourseIntroView from '@/components/learning/PublicCourseIntroView';
 import { routes } from '@/config/routes';
+import * as courseRepo from '@/features/courses/repositories/courseRepository';
+import { isPublicCatalogCourse } from '@/features/courses';
+import { enrollmentService } from '@/features/enrollments';
 import * as learningService from '@/features/progress/services/learningService';
 import type { LearnerCourseDetail } from '@/features/progress/services/learningService';
-import { AppError } from '@/lib/appError';
 import { auth } from '@/lib/auth';
 
 import CourseSpine from './CourseSpine';
 
 export const dynamic = 'force-dynamic';
 
-export default async function LearnerCoursePage({
-	params,
-}: {
-	params: Promise<{ slug: string }>;
-}) {
-	const session = await auth();
-	const { slug } = await params;
-	if (!session?.user?.id) {
-		redirect(`${routes.login}?from=${routes.course(slug)}`);
-	}
-
-	let course: LearnerCourseDetail;
-	try {
-		course = await learningService.getLearnerCourse(session.user.id, slug);
-	} catch (error) {
-		if (error instanceof AppError && error.status === 403) {
-			return (
-				<main className="shell py-16 text-center">
-					<h1 className="font-display text-2xl font-medium text-ink">Không có quyền truy cập</h1>
-					<p className="mt-3 text-sm text-ink-secondary">Bạn chưa được ghi danh vào khóa học này.</p>
-					<Link
-						href={routes.learn}
-						className="mt-6 inline-flex text-xs font-semibold uppercase tracking-widest text-vermilion hover:underline"
-					>
-						← Về khu học tập
-					</Link>
-				</main>
-			);
-		}
-		redirect(routes.learn);
-	}
-
+function EnrolledCourseView({ course }: { course: LearnerCourseDetail }) {
 	return (
 		<main className="min-h-screen pb-28">
 			<section className="border-b border-hairline">
 				<div className="shell py-10 sm:py-12">
 					<Link
-						href={routes.learn}
+						href={routes.accountLearning}
 						className="text-xs font-semibold uppercase tracking-widest text-ink-secondary hover:text-ink"
 					>
-						← Học tập
+						← Khu học của tôi
 					</Link>
 					<h1 className="mt-4 font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl lg:text-5xl">
 						{course.title}
@@ -107,7 +79,6 @@ export default async function LearnerCoursePage({
 				<CourseSpine courseSlug={course.slug} modules={course.modules} nextLessonSlug={course.nextLesson?.slug} />
 			</div>
 
-			{/* Mobile sticky next CTA */}
 			{course.nextLesson ? (
 				<div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 p-3 backdrop-blur-md sm:hidden">
 					<Link
@@ -120,4 +91,54 @@ export default async function LearnerCoursePage({
 			) : null}
 		</main>
 	);
+}
+
+function ForbiddenView() {
+	return (
+		<main className="shell py-16 text-center">
+			<h1 className="font-display text-2xl font-medium text-ink">Không có quyền truy cập</h1>
+			<p className="mt-3 text-sm text-ink-secondary">Khóa học này không công khai và bạn chưa được ghi danh.</p>
+			<div className="mt-6 flex flex-wrap justify-center gap-4">
+				<Link
+					href={routes.learnPrograms}
+					className="text-xs font-semibold uppercase tracking-widest text-vermilion hover:underline"
+				>
+					Xem chương trình công khai
+				</Link>
+				<Link
+					href={routes.learn}
+					className="text-xs font-semibold uppercase tracking-widest text-ink-secondary hover:text-ink"
+				>
+					← Về trang Học
+				</Link>
+			</div>
+		</main>
+	);
+}
+
+export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
+	const session = await auth();
+	const { slug } = await params;
+
+	const course = await courseRepo.findCourseBySlug(slug);
+	if (!course) notFound();
+
+	if (session?.user?.id && course.status === 'PUBLISHED') {
+		const enrolled = await enrollmentService.hasActiveEnrollment(course.id, session.user.id);
+		if (enrolled) {
+			const learnerCourse = await learningService.getLearnerCourse(session.user.id, slug);
+			return <EnrolledCourseView course={learnerCourse} />;
+		}
+	}
+
+	if (isPublicCatalogCourse(course)) {
+		const intro = courseRepo.mapPublicCourseIntro(course);
+		return <PublicCourseIntroView intro={intro} isLoggedIn={!!session?.user} />;
+	}
+
+	if (course.status !== 'PUBLISHED') {
+		notFound();
+	}
+
+	return <ForbiddenView />;
 }

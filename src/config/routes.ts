@@ -6,21 +6,56 @@
  */
 
 export const routes = {
-	// ─── Public ───────────────────────────────────────────────────────────────
+	// ─── Public marketing ─────────────────────────────────────────────────────
 	home: '/',
+	about: '/gioi-thieu',
+	/** Temporary about anchor until Phase 2 ships a standalone about page. */
+	aboutAnchor: '/#gioi-thieu',
+	contact: '/lien-he',
+
+	// ─── Đồng hành (services) ─────────────────────────────────────────────────
+	accompany: '/dong-hanh',
+	mentoring: '/dong-hanh/mentoring',
+	businessAdvisory: '/dong-hanh/co-van-doanh-nghiep',
+	trainingWorkshop: '/dong-hanh/dao-tao-workshop',
+	aiApplied: '/dong-hanh/ai-ung-dung',
+
+	// ─── Journal (HANOICAM) ───────────────────────────────────────────────────
 	posts: '/bai-viet',
 	post: (slug: string) => `/bai-viet/${slug}` as const,
-	teaching: '/giang-day',
-	about: '/gioi-thieu',
+	postPillar: (slug: string) => `/bai-viet/chu-de/${slug}` as const,
+	postCollection: (slug: string) => `/bai-viet/bo-suu-tap/${slug}` as const,
+
+	// ─── Góc của Khánh ────────────────────────────────────────────────────────
+	lab: '/goc-cua-khanh',
+	labBoardgame: '/goc-cua-khanh/boardgame',
+	labTools: '/goc-cua-khanh/cong-cu',
+	labResources: '/goc-cua-khanh/tai-nguyen',
+	labExperiments: '/goc-cua-khanh/thu-nghiem',
+
+	// ─── Trust ────────────────────────────────────────────────────────────────
+	caseStudies: '/case-study',
+	caseStudy: (slug: string) => `/case-study/${slug}` as const,
+	policyPrivacy: '/chinh-sach/bao-mat',
+	policyTerms: '/chinh-sach/dieu-khoan',
+	policyCancellation: '/chinh-sach/huy-doi-lich',
+	policyAi: '/chinh-sach/ai',
+
+	// ─── Auth & account ───────────────────────────────────────────────────────
 	login: '/dang-nhap',
+	account: '/tai-khoan',
+	accountLearning: '/tai-khoan/hoc',
 	messagePublic: (slug: string) => `/m/${slug}` as const,
 
-	// ─── Learner ──────────────────────────────────────────────────────────────
+	// ─── Learning ─────────────────────────────────────────────────────────────
 	learn: '/hoc',
+	learnPrograms: '/hoc/chuong-trinh',
 	course: (slug: string) => `/hoc/khoa-hoc/${slug}` as const,
 	lesson: (courseSlug: string, lessonSlug: string) =>
 		`/hoc/khoa-hoc/${courseSlug}/bai/${lessonSlug}` as const,
-	account: '/tai-khoan',
+
+	/** @deprecated Prefer routes.learn; kept for temporary redirects. */
+	teaching: '/giang-day',
 
 	// ─── Admin ────────────────────────────────────────────────────────────────
 	admin: {
@@ -30,8 +65,10 @@ export const routes = {
 		postEdit: (id: string) => `/admin/posts/${id}/edit` as const,
 		courses: '/admin/courses',
 		courseEdit: (courseId: string) => `/admin/courses/${courseId}` as const,
-		lessonEdit: (courseId: string, lessonId: string) => `/admin/courses/${courseId}/lessons/${lessonId}` as const,
+		lessonEdit: (courseId: string, lessonId: string) =>
+			`/admin/courses/${courseId}/lessons/${lessonId}` as const,
 		enrollments: '/admin/enrollments',
+		inquiries: '/admin/inquiries',
 		tools: '/admin/tools',
 		vocabulary: '/admin/tools/vocabulary',
 		luckyCard: '/admin/tools/lucky-card',
@@ -58,4 +95,8 @@ export type PublicRoute =
 	| typeof routes.posts
 	| typeof routes.teaching
 	| typeof routes.about
-	| typeof routes.login;
+	| typeof routes.login
+	| typeof routes.contact
+	| typeof routes.accompany
+	| typeof routes.learn
+	| typeof routes.lab;

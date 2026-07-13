@@ -3,10 +3,11 @@ import Link from 'next/link';
 
 import SignInWithGoogleButton from './sign-in-with-google-button';
 import { routes } from '@/config/routes';
+import { SITE_NAME } from '@/config/site';
 
 export const metadata: Metadata = {
 	title: 'Đăng nhập',
-	description: 'Đăng nhập HANOICAM bằng Google để mở tài khoản của bạn.',
+	description: `Đăng nhập ${SITE_NAME} bằng Google để mở tài khoản của bạn.`,
 	robots: { index: false, follow: false },
 };
 
@@ -29,9 +30,8 @@ function destinationLabel(from: string): string | null {
 
 function normalizeCallbackUrl(value?: string): string {
 	if (!value || value.startsWith('http')) return routes.home;
-	if (value.startsWith('/hoc') || value.startsWith('/giang-day') || value.startsWith('/dashboard')) {
-		return routes.home;
-	}
+	if (value.startsWith('/dashboard')) return routes.accountLearning;
+	if (value.startsWith('/giang-day')) return routes.learn;
 	return value;
 }
 
@@ -50,7 +50,7 @@ export default async function LoginPage({
 		<main className="min-h-[calc(100svh-3.5rem)]">
 			<div className="grid min-h-[calc(100svh-3.5rem)] lg:grid-cols-2">
 				<aside className="relative hidden overflow-hidden border-r border-hairline bg-paper lg:flex lg:flex-col lg:justify-between lg:p-14 xl:p-20">
-					<p className="font-display text-lg tracking-[0.2em] text-ink">HANOICAM</p>
+					<p className="font-display text-lg tracking-[0.12em] text-ink">{SITE_NAME}</p>
 					<div>
 						<p className="font-display text-4xl font-medium leading-snug text-ink xl:text-5xl">
 							Viết để hiểu sâu.
@@ -64,7 +64,7 @@ export default async function LoginPage({
 
 				<div className="flex flex-col justify-start px-6 pb-10 pt-6 sm:px-10 sm:pt-10 lg:justify-center lg:px-16 lg:py-12">
 					<div className="mx-auto w-full max-w-sm">
-						<p className="font-display text-base tracking-[0.18em] text-ink lg:hidden">HANOICAM</p>
+						<p className="font-display text-base tracking-[0.12em] text-ink lg:hidden">{SITE_NAME}</p>
 
 						{errorMessage ? (
 							<div

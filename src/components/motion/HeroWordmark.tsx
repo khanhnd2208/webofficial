@@ -3,6 +3,8 @@
 import { m, useMotionValueEvent, useTransform, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
 
+import { SITE_NAME } from '@/config/site';
+
 import { useMotionTier } from './MotionProvider';
 import { duration, ease, heroTimeline } from './tokens';
 
@@ -50,7 +52,7 @@ export default function HeroWordmark({ scrollProgress }: HeroWordmarkProps) {
 	}, [tier]);
 
 	if (tier !== 'full' || !allowsReveal) {
-		return <h1 className="font-display type-wordmark font-semibold text-ink">HANOICAM</h1>;
+		return <h1 className="font-display type-wordmark font-semibold text-ink">{SITE_NAME}</h1>;
 	}
 
 	return (
@@ -65,7 +67,7 @@ export default function HeroWordmark({ scrollProgress }: HeroWordmarkProps) {
 				delay: heroTimeline.wordmark,
 			}}
 		>
-			HANOICAM
+			{SITE_NAME}
 		</m.h1>
 	);
 }

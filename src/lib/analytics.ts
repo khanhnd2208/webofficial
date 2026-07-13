@@ -1,0 +1,53 @@
+/**
+ * Umami analytics helper — no-op when env is missing.
+ * Never send PII, inquiry text, or personal learning data.
+ */
+
+export const ANALYTICS_EVENTS = [
+	'service_view',
+	'service_cta_click',
+	'contact_form_start',
+	'contact_form_submit',
+	'resource_open',
+	'resource_download',
+	'article_complete',
+	'case_study_view',
+	'course_interest',
+	'login_start',
+] as const;
+
+export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
+
+export type AnalyticsPayload = {
+	slug?: string;
+	type?: string;
+	sourcePage?: string;
+};
+
+declare global {
+	interface Window {
+		umami?: {
+			track: (event: string, data?: Record<string, string>) => void;
+		};
+	}
+}
+
+export function isAnalyticsEvent(value: string): value is AnalyticsEvent {
+	return (ANALYTICS_EVENTS as readonly string[]).includes(value);
+}
+
+export function trackEvent(event: AnalyticsEvent, payload: AnalyticsPayload = {}): void {
+	if (typeof window === 'undefined') return;
+	if (!isAnalyticsEvent(event)) return;
+
+	const data: Record<string, string> = {};
+	if (payload.slug) data.slug = payload.slug;
+	if (payload.type) data.type = payload.type;
+	if (payload.sourcePage) data.sourcePage = payload.sourcePage;
+
+	try {
+		window.umami?.track(event, Object.keys(data).length ? data : undefined);
+	} catch {
+		// analytics must never break UX
+	}
+}

@@ -42,11 +42,9 @@ const nextConfig: NextConfig = {
       { source: '/login', destination: '/dang-nhap', permanent: true },
       { source: '/profile', destination: '/tai-khoan', permanent: true },
 
-      // Teaching / learning temporarily closed — temporary redirects (easy to reopen)
-      { source: '/giang-day', destination: '/', permanent: false },
-      { source: '/hoc', destination: '/', permanent: false },
-      { source: '/hoc/:path*', destination: '/', permanent: false },
-      { source: '/dashboard', destination: '/', permanent: false },
+      // Teaching / learning redirects
+      { source: '/giang-day', destination: '/hoc', permanent: true },
+      { source: '/dashboard', destination: '/tai-khoan/hoc', permanent: true },
 
       // Admin vocabulary alias
       { source: '/admin/vocabulary', destination: '/admin/tools/vocabulary', permanent: true },

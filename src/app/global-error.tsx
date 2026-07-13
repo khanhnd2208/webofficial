@@ -44,7 +44,7 @@ export default function GlobalError({
 						<p className="mt-6 text-[11px] text-[#625d54]">Mã: {error.digest}</p>
 					) : null}
 					<p className="sr-only">
-						<Link href="/">HANOICAM</Link>
+						<Link href="/">Duy Khánh</Link>
 					</p>
 				</main>
 			</body>

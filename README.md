@@ -1,6 +1,6 @@
-# HANOICAM — Personal Publishing & Teaching Platform
+# Duy Khánh — Personal Knowledge & Advisory Studio
 
-> Personal perspectives, teaching materials, and owner-managed tools by NDK.  
+> Giảng viên · Mentor · Cố vấn. Đồng hành, học có lộ trình, và HANOICAM Journal.  
 > Live: **[toiladuykhanh.com](https://toiladuykhanh.com)**
 
 ---
@@ -11,6 +11,7 @@
 |----------|-------------|
 | [docs/00-PRODUCT_DIRECTION.md](./docs/00-PRODUCT_DIRECTION.md) | Product boundaries, audiences, and access policy |
 | [docs/01-BUSINESS_CONTEXT.md](./docs/01-BUSINESS_CONTEXT.md) | Product vision, user personas, core business flows |
+| [docs/01-ROUTE_MAP.md](./docs/01-ROUTE_MAP.md) | Public/learner/admin routes and publish gates |
 | [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md) | System design, directory structure, infrastructure decisions |
 | [docs/03-CODING_STANDARDS.md](./docs/03-CODING_STANDARDS.md) | API patterns, type safety rules, naming conventions — **read before contributing** |
 | [docs/04-ADR_AND_CHANGELOG.md](./docs/04-ADR_AND_CHANGELOG.md) | Architecture Decision Records and refactoring history |

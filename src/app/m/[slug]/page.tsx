@@ -5,7 +5,7 @@ import PublicMessageView from './PublicMessageView';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-	title: 'Lời nhắn | HANOICAM',
+	title: 'Lời nhắn | Duy Khánh',
 	robots: { index: false, follow: false },
 };
 

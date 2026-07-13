@@ -25,7 +25,7 @@ export function AdminComingSoon({
 			<h1 className="mt-4 text-2xl font-black tracking-tight text-foreground">{title}</h1>
 			<p className="mt-3 text-sm leading-relaxed text-muted">{description}</p>
 			<p className="mt-6 rounded-xl border border-dashed border-border px-4 py-3 text-xs text-muted">
-				Đang chuẩn bị trong giai đoạn tiếp theo của tái cấu trúc HANOICAM.
+				Đang chuẩn bị trong giai đoạn tiếp theo của tái cấu trúc Duy Khánh.
 			</p>
 		</div>
 	);

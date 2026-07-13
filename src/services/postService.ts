@@ -23,6 +23,10 @@ type PostLean = {
 	summary: string;
 	category?: string;
 	tags: string[];
+	pillarSlug?: string;
+	contentType?: string;
+	collectionSlugs?: string[];
+	isFeatured?: boolean;
 	thumbnailUrl?: string;
 	chapterNumber?: number;
 	isPinned?: boolean;
@@ -61,6 +65,10 @@ function toListItemDTO(doc: PostLean): PostListItemDTO {
 		summary: doc.summary,
 		category: doc.category || 'Uncategorized',
 		tags: Array.isArray(doc.tags) ? doc.tags : [],
+		pillarSlug: doc.pillarSlug || undefined,
+		contentType: doc.contentType || undefined,
+		collectionSlugs: Array.isArray(doc.collectionSlugs) ? doc.collectionSlugs : [],
+		isFeatured: Boolean(doc.isFeatured),
 		thumbnailUrl: doc.thumbnailUrl ?? undefined,
 		chapterNumber: doc.chapterNumber ?? undefined,
 		isPinned: Boolean(doc.isPinned),
@@ -105,18 +113,26 @@ async function getAllPostsRaw(params: {
 	limit: number;
 	tag?: string;
 	category?: string;
+	pillarSlug?: string;
+	collectionSlug?: string;
+	featuredOnly?: boolean;
 	sort?: string;
 }): Promise<GetAllPostsResult> {
 	const page = Math.max(1, Math.floor(params.page));
 	const limit = Math.min(50, Math.max(1, Math.floor(params.limit)));
 	const tag = params.tag?.trim();
 	const category = params.category?.trim();
+	const pillarSlug = params.pillarSlug?.trim();
+	const collectionSlug = params.collectionSlug?.trim();
 
 	await dbConnect();
 
 	const filter: Record<string, unknown> = { isPublished: true };
 	if (tag) filter.tags = tag;
 	if (category && category !== 'all') filter.category = category;
+	if (pillarSlug) filter.pillarSlug = pillarSlug;
+	if (collectionSlug) filter.collectionSlugs = collectionSlug;
+	if (params.featuredOnly) filter.isFeatured = true;
 
 	// Sort options for public pages
 	let sortObj: Record<string, 1 | -1> = { chapterNumber: 1, createdAt: -1 };
@@ -374,6 +390,21 @@ export async function updatePostById(
 		update.chapterNumber = cn == null || cn === '' ? undefined : Number(cn);
 	}
 	if ('isPinned' in input) update.isPinned = Boolean(input.isPinned);
+	if ('isFeatured' in input) update.isFeatured = Boolean(input.isFeatured);
+	if ('pillarSlug' in input) {
+		const v = String(input.pillarSlug ?? '').trim();
+		update.pillarSlug = v || undefined;
+	}
+	if ('contentType' in input) {
+		const v = String(input.contentType ?? '').trim();
+		update.contentType = v || undefined;
+	}
+	if ('collectionSlugs' in input) {
+		const raw = Array.isArray(input.collectionSlugs)
+			? input.collectionSlugs.map((t) => String(t).trim())
+			: [];
+		update.collectionSlugs = Array.from(new Set(raw.filter(Boolean))).slice(0, 20);
+	}
 	if ('isPublished' in input) {
 		update.isPublished = Boolean(input.isPublished);
 		// Auto-set publishedAt when first published (pre-validate hook is skipped by findByIdAndUpdate)
@@ -426,11 +457,53 @@ async function getAllTagsRaw(): Promise<string[]> {
 }
 
 export const getAllPosts = unstable_cache(
-	async (page: number, limit: number, tag?: string, category?: string, sort?: string) =>
-		getAllPostsRaw({ page, limit, tag, category, sort }),
+	async (
+		page: number,
+		limit: number,
+		tag?: string,
+		category?: string,
+		sort?: string,
+		opts?: { pillarSlug?: string; collectionSlug?: string; featuredOnly?: boolean },
+	) =>
+		getAllPostsRaw({
+			page,
+			limit,
+			tag,
+			category,
+			sort,
+			pillarSlug: opts?.pillarSlug,
+			collectionSlug: opts?.collectionSlug,
+			featuredOnly: opts?.featuredOnly,
+		}),
 	['posts:list'],
 	{ revalidate: 60 }
 );
+
+export async function countPublishedPostsMissingTaxonomy(): Promise<{
+	totalPublished: number;
+	missingPillar: number;
+	missingContentType: number;
+}> {
+	await dbConnect();
+	const [totalPublished, missingPillar, missingContentType] = await Promise.all([
+		Post.countDocuments({ isPublished: true }),
+		Post.countDocuments({
+			isPublished: true,
+			$or: [{ pillarSlug: { $exists: false } }, { pillarSlug: null }, { pillarSlug: '' }],
+		}),
+		Post.countDocuments({
+			isPublished: true,
+			$or: [{ contentType: { $exists: false } }, { contentType: null }, { contentType: '' }],
+		}),
+	]);
+	return { totalPublished, missingPillar, missingContentType };
+}
+
+/** True when every published post has pillar + contentType — gate for switching public filters. */
+export async function isJournalTaxonomyComplete(): Promise<boolean> {
+	const stats = await countPublishedPostsMissingTaxonomy();
+	return stats.totalPublished > 0 && stats.missingPillar === 0 && stats.missingContentType === 0;
+}
 
 export const getAllCategories = unstable_cache(
 	async () => getAllCategoriesPublicRaw(),

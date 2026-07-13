@@ -12,6 +12,10 @@ export interface PostListItemDTO {
 	summary: string;
 	category: string;
 	tags: string[];
+	pillarSlug?: string;
+	contentType?: string;
+	collectionSlugs?: string[];
+	isFeatured?: boolean;
 	thumbnailUrl?: string;
 	chapterNumber?: number;
 	isPinned: boolean;

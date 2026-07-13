@@ -11,6 +11,11 @@ export interface IPost {
 	summary: string;
 	category: string;
 	tags: string[];
+	/** Journal taxonomy (additive — legacy category still works). */
+	pillarSlug?: string;
+	contentType?: string;
+	collectionSlugs?: string[];
+	isFeatured?: boolean;
 	thumbnailUrl?: string;
 	chapterNumber?: number;
 	isPinned: boolean;
@@ -41,6 +46,10 @@ const PostSchema = new Schema<IPost>(
 		summary: { type: String, required: true, trim: true },
 		category: { type: String, default: 'Uncategorized', trim: true, enum: ['Uncategorized', 'Tech & Programming', 'English Learning', 'Tutorial', 'Life & Thoughts', 'Review', 'Tips & Tricks'] },
 		tags: { type: [String], default: [], index: true },
+		pillarSlug: { type: String, trim: true, index: true },
+		contentType: { type: String, trim: true, index: true },
+		collectionSlugs: { type: [String], default: [], index: true },
+		isFeatured: { type: Boolean, default: false, index: true },
 		thumbnailUrl: { type: String },
 		chapterNumber: { type: Number, sparse: true, unique: true, index: true },
 		isPinned: { type: Boolean, default: false },

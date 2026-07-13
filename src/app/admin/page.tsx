@@ -85,6 +85,15 @@ export default async function AdminHomePage() {
 						<Stat label="Bản nháp" value={stats.posts.drafts} />
 						<Stat label="Tổng lượt xem" value={stats.posts.totalViews.toLocaleString('vi-VN')} />
 						<Stat label="Học viên" value={stats.users.activeEnrollments} sub="ghi danh đang hoạt động" />
+						<Stat label="Inquiry mới" value={stats.inquiries.newCount} accent />
+						<Stat label="Qualified" value={stats.inquiries.qualifiedCount} />
+						<Stat
+							label="Inquiry theo loại"
+							value={Object.keys(stats.inquiries.byType).length}
+							sub={Object.entries(stats.inquiries.byType)
+								.map(([k, v]) => `${k}:${v}`)
+								.join(' · ') || 'chưa có'}
+						/>
 					</div>
 				</section>
 
