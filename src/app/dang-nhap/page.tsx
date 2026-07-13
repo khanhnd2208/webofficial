@@ -22,10 +22,17 @@ const ERROR_MESSAGES: Record<string, string> = {
 function destinationLabel(from: string): string | null {
 	if (!from || from === '/' || from.startsWith('http')) return null;
 	if (from.startsWith('/admin')) return 'khu quản trị';
-	if (from.startsWith('/hoc')) return 'khu học tập';
 	if (from.startsWith('/bai-viet')) return 'bài viết';
 	if (from.startsWith('/tai-khoan')) return 'tài khoản';
 	return 'trang bạn vừa mở';
+}
+
+function normalizeCallbackUrl(value?: string): string {
+	if (!value || value.startsWith('http')) return routes.home;
+	if (value.startsWith('/hoc') || value.startsWith('/giang-day') || value.startsWith('/dashboard')) {
+		return routes.home;
+	}
+	return value;
 }
 
 export default async function LoginPage({
@@ -34,7 +41,7 @@ export default async function LoginPage({
 	searchParams?: Promise<{ from?: string; error?: string; callbackUrl?: string }>;
 }) {
 	const sp = await searchParams;
-	const from = sp?.callbackUrl ?? sp?.from ?? routes.home;
+	const from = normalizeCallbackUrl(sp?.callbackUrl ?? sp?.from);
 	const errorCode = sp?.error;
 	const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.Default) : null;
 	const backLabel = destinationLabel(from);

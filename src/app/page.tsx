@@ -19,7 +19,7 @@ export default function Home() {
 			<section className="border-b border-hairline">
 				<div className="shell grid gap-10 py-12 sm:py-16 lg:grid-cols-12 lg:items-end lg:gap-12 lg:py-20">
 					<div className="lg:col-span-4">
-						<p className="font-display text-[clamp(3.5rem,8vw,5rem)] font-medium leading-none tracking-tight text-ink/20">
+						<p className="font-display text-6xl font-medium leading-none text-ink/20 sm:text-7xl">
 							{siteProfile.personalMark}
 						</p>
 					</div>

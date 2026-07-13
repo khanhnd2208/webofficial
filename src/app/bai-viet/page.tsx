@@ -53,7 +53,7 @@ export default async function BlogPage({
 	const category = sp?.category?.trim() || undefined;
 	const sort = sp?.sort?.trim() || undefined;
 	const page = Math.max(1, Number(sp?.page ?? '1') || 1);
-	const limit = 20;
+	const limit = 12;
 
 	const [result, tags, categories] = await Promise.all([
 		getAllPosts(page, limit, tag, category, sort),

@@ -32,6 +32,12 @@ test.describe('Public pages smoke', () => {
 		await expect(page.locator('body')).toContainText(/Google|Đăng nhập/i);
 	});
 
+	test('login does not send users back to closed learning area', async ({ page }) => {
+		await page.goto('/dang-nhap?callbackUrl=%2Fhoc%2Fkhoa-hoc%2Fexample');
+		await expect(page.locator('body')).not.toContainText('khu học tập');
+		await expect(page.getByRole('link', { name: '← Về trang chủ' })).toBeVisible();
+	});
+
 	test('legacy login redirects', async ({ page }) => {
 		await page.goto('/login');
 		await expect(page).toHaveURL(/\/dang-nhap/);
