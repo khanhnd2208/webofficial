@@ -11,7 +11,7 @@ export const revalidate = 60;
 
 export const metadata = {
 	title: 'Bài viết',
-	description: 'Journal — bài viết chọn lọc của HANOICAM.',
+	description: 'Thư viện bài viết của HANOICAM — quét theo chủ đề.',
 };
 
 function buildQuery(params: { tag?: string; category?: string; sort?: string; page?: number }) {
@@ -32,10 +32,15 @@ function formatDate(dateStr: string): string {
 	});
 }
 
-function estimateRead(summary: string | null, wordCount?: number): string | null {
+function estimateRead(summary: string | null, wordCount?: number): string {
 	if (wordCount && wordCount > 0) return `${Math.max(1, Math.round(wordCount / 200))} phút đọc`;
-	if (!summary) return null;
+	if (!summary) return '1 phút đọc';
 	return `${Math.max(1, Math.round(summary.split(/\s+/).length / 40))} phút đọc`;
+}
+
+function displayTopic(category?: string | null): string | null {
+	if (!category || category === 'Uncategorized') return null;
+	return category;
 }
 
 export default async function BlogPage({
@@ -56,21 +61,17 @@ export default async function BlogPage({
 		getAllCategories(),
 	]);
 
-	const [lead, ...rest] = result.items;
-	const filtered = !!(tag || category || sort);
-
 	return (
 		<main className="min-h-screen">
 			<section className="border-b border-hairline">
-				<div className="shell py-8 sm:py-12 lg:py-14">
-					<div className="flex flex-wrap items-end justify-between gap-6">
+				<div className="shell py-8 sm:py-10">
+					<div className="flex flex-wrap items-end justify-between gap-4">
 						<div>
-							<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">Bài viết</p>
-							<h1 className="mt-2 font-display type-page-title font-medium text-ink">
-								{tag ? `#${tag}` : category ? category : 'Bài viết'}
-							</h1>
+							<h1 className="font-display type-page-title font-medium text-ink">Bài viết</h1>
 							<p className="mt-2 font-mono text-xs text-ink-secondary" aria-live="polite">
-								{result.total} bài {tag ? `· tag “${tag}”` : category ? `· ${category}` : ''}
+								{result.total} bài
+								{tag ? ` · #${tag}` : ''}
+								{category ? ` · ${category}` : ''}
 							</p>
 						</div>
 						<BlogSearch />
@@ -90,14 +91,16 @@ export default async function BlogPage({
 			</Suspense>
 
 			<section>
-				<div className="shell py-8 sm:py-12">
+				<div className="shell py-8 sm:py-10">
 					{result.items.length === 0 ? (
-						<div className="py-20 text-center">
-							<p className="font-display text-3xl font-medium text-ink">Không tìm thấy bài viết</p>
+						<div className="py-16 text-center">
+							<p className="font-display text-2xl font-medium text-ink sm:text-3xl">Không tìm thấy bài viết</p>
 							<p className="mt-3 text-sm text-ink-secondary">
-								{tag ? `Không có bài viết nào với tag “${tag}”.` : 'Chưa có bài viết nào.'}
+								{tag || category
+									? 'Thử đổi chủ đề, tag hoặc xóa bộ lọc.'
+									: 'Chưa có bài viết nào.'}
 							</p>
-							{(tag || category) && (
+							{(tag || category || sort) && (
 								<Link
 									href={routes.posts}
 									className="mt-6 inline-block text-sm font-semibold text-vermilion underline underline-offset-4"
@@ -107,100 +110,53 @@ export default async function BlogPage({
 							)}
 						</div>
 					) : (
-						<div className="space-y-0 transition-opacity duration-[350ms]">
-							{page === 1 && lead && !filtered ? (
-								<article className="border-b border-hairline pb-12">
-									<Link href={routes.post(lead.slug)} className="group grid gap-8 lg:grid-cols-12 lg:gap-12">
-										<div className="lg:col-span-7">
-											<EditorialMedia
-												src={lead.thumbnailUrl}
-												alt=""
-												title={lead.title}
-												kicker={lead.category}
-												index={lead.chapterNumber ?? '01'}
-												aspectRatio="16 / 10"
-												priority
-											/>
-										</div>
-										<div className="flex flex-col justify-center lg:col-span-5">
-											{lead.category && lead.category !== 'Uncategorized' ? (
-												<p className="font-mono text-[10px] uppercase tracking-[0.2em] text-vermilion">
-													{lead.category}
-												</p>
-											) : null}
-											<h2 className="mt-3 font-display text-3xl font-medium leading-tight text-ink transition-colors group-hover:text-vermilion sm:text-4xl lg:text-5xl">
-												{lead.title}
-											</h2>
-											{lead.summary ? (
-												<p className="mt-4 line-clamp-3 text-base leading-relaxed text-ink-secondary">
-													{lead.summary}
-												</p>
-											) : null}
-											<p className="mt-6 font-mono text-[11px] text-ink-secondary">
-												<time>{formatDate(lead.publishedAt ?? lead.createdAt)}</time>
-												{estimateRead(lead.summary, lead.wordCount)
-													? ` · ${estimateRead(lead.summary, lead.wordCount)}`
-													: ''}
-											</p>
-										</div>
-									</Link>
-								</article>
-							) : null}
-
-							<div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-12">
-								{(page === 1 && !filtered ? rest : result.items).map((post, i) => {
-									const wide = i % 5 === 0;
-									return (
-										<article
-											key={post.id}
-											className={`group ${wide ? 'sm:col-span-2 lg:col-span-7' : 'lg:col-span-5'}`}
+						<div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2">
+							{result.items.map((post, i) => {
+								const topic = displayTopic(post.category);
+								const readTime = estimateRead(post.summary, post.wordCount);
+								return (
+									<article key={post.id} className="group">
+										<Link
+											href={routes.post(post.slug)}
+											className="block rounded-[var(--radius-media)] outline-offset-4 transition-opacity duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vermilion"
 										>
-											<Link href={routes.post(post.slug)} className="block">
-												<EditorialMedia
-													src={post.thumbnailUrl}
-													alt=""
-													title={post.title}
-													kicker={post.category}
-													index={post.chapterNumber ?? i + 2}
-													aspectRatio={wide ? '16 / 10' : '4 / 5'}
-												/>
-												<div className="mt-4">
-													{(post.category && post.category !== 'Uncategorized') || post.chapterNumber ? (
-														<p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-															{post.chapterNumber ? `Chương ${post.chapterNumber}` : null}
-															{post.chapterNumber &&
-															post.category &&
-															post.category !== 'Uncategorized'
-																? ' · '
-																: null}
-															{post.category && post.category !== 'Uncategorized' ? post.category : null}
-														</p>
-													) : null}
-													<h2 className="mt-1.5 font-display text-xl font-medium leading-snug text-ink transition-colors group-hover:text-vermilion sm:text-2xl">
-														{post.title}
-													</h2>
-													{post.summary ? (
-														<p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-secondary">
-															{post.summary}
-														</p>
-													) : null}
-													<p className="mt-3 font-mono text-[11px] text-ink-secondary">
-														<time>{formatDate(post.publishedAt ?? post.createdAt)}</time>
-														{estimateRead(post.summary, post.wordCount)
-															? ` · ${estimateRead(post.summary, post.wordCount)}`
-															: ''}
-													</p>
-												</div>
-											</Link>
-										</article>
-									);
-								})}
-							</div>
+											<EditorialMedia
+												src={post.thumbnailUrl}
+												alt=""
+												title={post.title}
+												kicker={post.category}
+												index={post.chapterNumber ?? i + 1}
+												aspectRatio="16 / 10"
+												priority={i < 2}
+											/>
+											<div className="mt-3.5">
+												<p className="flex flex-wrap items-center gap-x-2 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+													{topic ? <span className="text-vermilion">{topic}</span> : null}
+													{topic ? <span aria-hidden>·</span> : null}
+													<time dateTime={post.publishedAt ?? post.createdAt}>
+														{formatDate(post.publishedAt ?? post.createdAt)}
+													</time>
+												</p>
+												<h2 className="mt-1.5 line-clamp-2 font-display text-xl font-medium leading-snug text-ink transition-colors duration-200 group-hover:text-vermilion sm:text-[1.35rem]">
+													{post.title}
+												</h2>
+												<p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink-secondary">
+													{post.summary?.trim() || 'Mở bài để đọc toàn văn.'}
+												</p>
+												<p className="mt-3 font-mono text-[11px] text-ink-secondary">
+													{readTime}
+													{post.chapterNumber != null ? ` · Chương ${post.chapterNumber}` : ''}
+												</p>
+											</div>
+										</Link>
+									</article>
+								);
+							})}
 						</div>
 					)}
 
 					{result.totalPages > 1 ? (
-						<div className="mt-14 flex items-center justify-between border-t border-hairline pt-6">
+						<div className="mt-12 flex items-center justify-between border-t border-hairline pt-6">
 							<Link
 								className={`inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-wider ${
 									result.page <= 1 ? 'pointer-events-none opacity-30' : 'text-ink-secondary hover:text-ink'

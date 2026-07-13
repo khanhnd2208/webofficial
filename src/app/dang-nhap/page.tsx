@@ -6,7 +6,7 @@ import { routes } from '@/config/routes';
 
 export const metadata: Metadata = {
 	title: 'Đăng nhập',
-	description: 'Đăng nhập HANOICAM bằng Google để mở khu học tập và theo dõi tiến độ.',
+	description: 'Đăng nhập HANOICAM bằng Google để mở tài khoản của bạn.',
 	robots: { index: false, follow: false },
 };
 
@@ -34,7 +34,7 @@ export default async function LoginPage({
 	searchParams?: Promise<{ from?: string; error?: string; callbackUrl?: string }>;
 }) {
 	const sp = await searchParams;
-	const from = sp?.callbackUrl ?? sp?.from ?? '/hoc';
+	const from = sp?.callbackUrl ?? sp?.from ?? routes.home;
 	const errorCode = sp?.error;
 	const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.Default) : null;
 	const backLabel = destinationLabel(from);
@@ -47,17 +47,14 @@ export default async function LoginPage({
 					<div>
 						<p className="font-display text-4xl font-medium leading-snug text-ink xl:text-5xl">
 							Viết để hiểu sâu.
-							<br />
-							Dạy để cùng tiến xa.
 						</p>
 						<p className="mt-6 max-w-sm text-base leading-relaxed text-ink-secondary">
-							Đăng nhập để mở khu học tập — lộ trình, tiến độ, và bài học tiếp theo của bạn.
+							Đăng nhập để mở tài khoản của bạn. Khu học tập công khai đang tạm đóng.
 						</p>
 					</div>
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">Quiet Atelier</p>
+					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">Boutique library</p>
 				</aside>
 
-				{/* Mobile: brand + CTA above the fold — no feature grid */}
 				<div className="flex flex-col justify-start px-6 pb-10 pt-6 sm:px-10 sm:pt-10 lg:justify-center lg:px-16 lg:py-12">
 					<div className="mx-auto w-full max-w-sm">
 						<p className="font-display text-base tracking-[0.18em] text-ink lg:hidden">HANOICAM</p>
@@ -75,9 +72,9 @@ export default async function LoginPage({
 							</div>
 						) : null}
 
-						<h1 className="mt-5 font-display text-3xl font-medium text-ink sm:mt-8">Đã được mời?</h1>
+						<h1 className="mt-5 font-display text-3xl font-medium text-ink sm:mt-8">Đăng nhập</h1>
 						<p className="mt-2 text-sm text-ink-secondary">
-							Tiếp tục với Google để vào khu học tập.
+							Tiếp tục với Google để mở tài khoản.
 							{backLabel ? (
 								<>
 									{' '}

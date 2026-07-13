@@ -45,7 +45,7 @@ export default function EditorialMedia({
 	title,
 	kicker,
 	index,
-	aspectRatio = '4 / 5',
+	aspectRatio = '16 / 10',
 	className,
 	priority = false,
 	children,
@@ -71,9 +71,9 @@ export default function EditorialMedia({
 				src={src}
 				alt={alt}
 				width={1200}
-				height={1500}
+				height={750}
 				className="h-full w-full object-cover"
-				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 800px"
+				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 560px"
 				priority={priority}
 			/>
 		) : (
@@ -81,7 +81,7 @@ export default function EditorialMedia({
 				src={src}
 				alt={alt}
 				width={1200}
-				height={1500}
+				height={750}
 				className="h-full w-full object-cover"
 				loading={priority ? 'eager' : 'lazy'}
 				fetchPriority={priority ? 'high' : 'auto'}
@@ -91,7 +91,10 @@ export default function EditorialMedia({
 
 	if (!allowsReveal) {
 		return (
-			<div className={`overflow-hidden rounded-[18px] bg-paper ${className ?? ''}`} style={{ aspectRatio }}>
+			<div
+				className={`overflow-hidden rounded-[var(--radius-media)] bg-paper ${className ?? ''}`}
+				style={{ aspectRatio }}
+			>
 				{media}
 			</div>
 		);
@@ -99,11 +102,11 @@ export default function EditorialMedia({
 
 	return (
 		<m.div
-			className={`overflow-hidden rounded-[18px] bg-paper ${className ?? ''}`}
+			className={`overflow-hidden rounded-[var(--radius-media)] bg-paper ${className ?? ''}`}
 			style={{ aspectRatio }}
-			initial={reduced ? false : { opacity: 0.88, scale: 1.04 }}
-			whileInView={{ opacity: 1, scale: 1 }}
-			viewport={{ once: true, margin: '-8% 0px' }}
+			initial={reduced ? false : { opacity: 0.92, y: 6 }}
+			whileInView={{ opacity: 1, y: 0 }}
+			viewport={{ once: true, margin: '-6% 0px' }}
 			transition={{
 				duration: reduced ? duration.reducedCrossfade : duration.image,
 				ease: ease.reveal,

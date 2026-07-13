@@ -169,10 +169,6 @@ function NavBody({
 						>
 							Trang chủ ↗
 						</a>
-						<span className="text-border">·</span>
-						<a href={routes.learn} className="text-[11px] text-muted transition-colors hover:text-foreground">
-							Học tập
-						</a>
 					</div>
 				)}
 

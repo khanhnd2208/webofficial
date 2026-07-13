@@ -15,7 +15,7 @@ export default function EditorialCover({
 	title,
 	kicker,
 	index,
-	aspectRatio = '4 / 5',
+	aspectRatio = '16 / 10',
 	className,
 	tone = 'paper',
 }: EditorialCoverProps) {
@@ -30,7 +30,7 @@ export default function EditorialCover({
 
 	return (
 		<div
-			className={`flex flex-col justify-between overflow-hidden rounded-[18px] border p-6 sm:p-8 ${
+			className={`flex flex-col justify-between overflow-hidden rounded-[var(--radius-media)] border p-5 sm:p-6 ${
 				espresso
 					? 'border-[#35312B] bg-[#1A1815] text-[#F2ECE1]'
 					: 'border-hairline bg-paper text-ink'
@@ -49,7 +49,7 @@ export default function EditorialCover({
 			<div>
 				{index != null ? (
 					<span
-						className={`block font-display text-5xl font-medium leading-none sm:text-6xl ${
+						className={`block font-display text-4xl font-medium leading-none sm:text-5xl ${
 							espresso ? 'text-[#F2ECE1]/20' : 'text-ink/20'
 						}`}
 					>
@@ -57,7 +57,7 @@ export default function EditorialCover({
 					</span>
 				) : (
 					<span
-						className={`block font-display text-4xl font-medium leading-none ${
+						className={`block font-display text-3xl font-medium leading-none ${
 							espresso ? 'text-[#F2ECE1]/20' : 'text-ink/20'
 						}`}
 					>
@@ -65,7 +65,7 @@ export default function EditorialCover({
 					</span>
 				)}
 				<p
-					className={`mt-3 line-clamp-3 font-display text-lg font-medium leading-snug sm:text-xl ${
+					className={`mt-2 line-clamp-2 font-display text-base font-medium leading-snug sm:text-lg ${
 						espresso ? 'text-[#F2ECE1]/55' : 'text-ink/55'
 					}`}
 				>

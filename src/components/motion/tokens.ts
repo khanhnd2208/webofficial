@@ -1,6 +1,5 @@
 /**
- * Absolute Cinema — Quiet Cinematic Editorial
- * Shared motion physics. One physics across the site.
+ * Boutique library motion — light fade/translate only (150–250ms).
  */
 
 export type MotionTier = 'full' | 'lite' | 'reduced';
@@ -13,47 +12,47 @@ export const ease = {
 } as const;
 
 export const duration = {
-	hover: 0.18,
-	ui: 0.3,
-	section: 0.6,
-	textMask: 0.8,
-	image: 0.9,
-	page: 0.28,
-	hero: 1.15,
-	seal: 0.7,
+	hover: 0.15,
+	ui: 0.2,
+	section: 0.22,
+	textMask: 0.22,
+	image: 0.25,
+	page: 0.2,
+	hero: 0.25,
+	seal: 0.22,
 	reducedCrossfade: 0.12,
 } as const;
 
 export const distance = {
-	hover: 3,
-	ui: 8,
-	section: 14,
-	parallax: 32,
+	hover: 2,
+	ui: 6,
+	section: 8,
+	parallax: 0,
 	parallaxLite: 0,
 } as const;
 
 export const spring = {
-	stiffness: 120,
-	damping: 24,
-	mass: 0.8,
+	stiffness: 140,
+	damping: 28,
+	mass: 0.7,
 } as const;
 
 export const stagger = {
-	default: 0.05,
-	tight: 0.045,
-	loose: 0.06,
+	default: 0.04,
+	tight: 0.03,
+	loose: 0.05,
 } as const;
 
-/** Hero choreography — total ≤ 1.2s; delays kept short so first frame stays readable */
+/** Compact hero — no scroll morph choreography */
 export const heroTimeline = {
 	canvas: 0,
 	wordmark: 0,
-	wordmarkEnd: 0.72,
-	manifesto: 0.08,
-	manifestoEnd: 0.75,
-	image: 0.12,
-	imageEnd: 0.95,
-	cta: 0.16,
-	ctaEnd: 0.85,
-	scrollCue: 0.9,
+	wordmarkEnd: 0.2,
+	manifesto: 0.04,
+	manifestoEnd: 0.22,
+	image: 0.06,
+	imageEnd: 0.25,
+	cta: 0.08,
+	ctaEnd: 0.25,
+	scrollCue: 0.2,
 } as const;

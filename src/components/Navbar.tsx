@@ -16,26 +16,14 @@ export default function Navbar() {
 	const { data: session, status } = useSession();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [userMenuOpen, setUserMenuOpen] = useState(false);
-	const [homeWordmarkOwned, setHomeWordmarkOwned] = useState(false);
 	const userMenuRef = useRef<HTMLDivElement>(null);
 	const mobilePanelRef = useRef<HTMLDivElement>(null);
 	const menuButtonRef = useRef<HTMLButtonElement>(null);
 	const menuId = useId();
 	const reduce = useReducedMotion();
-	const isHome = pathname === routes.home;
 	const isAdmin = pathname.startsWith('/admin');
 	const isPublicMessage = pathname.startsWith('/m/');
 	const isLessonFocus = pathname.includes('/bai/');
-	const wordmarkOwned = !isHome || homeWordmarkOwned || !!reduce;
-
-	useEffect(() => {
-		function onMorph(e: Event) {
-			const detail = (e as CustomEvent<{ owned: boolean }>).detail;
-			setHomeWordmarkOwned(detail?.owned ?? true);
-		}
-		window.addEventListener('hanoicam:wordmark-morph', onMorph);
-		return () => window.removeEventListener('hanoicam:wordmark-morph', onMorph);
-	}, []);
 
 	useEffect(() => {
 		function handleClickOutside(e: MouseEvent) {
@@ -49,32 +37,62 @@ export default function Navbar() {
 
 	const closeMobile = useCallback(() => {
 		setMobileOpen(false);
-		menuButtonRef.current?.focus();
+		queueMicrotask(() => menuButtonRef.current?.focus());
 	}, []);
 
 	useEffect(() => {
 		if (!mobileOpen) return;
+
+		const panel = mobilePanelRef.current;
+		const focusable = panel?.querySelectorAll<HTMLElement>(
+			'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+		);
+		focusable?.[0]?.focus();
+
 		function onKey(e: KeyboardEvent) {
-			if (e.key === 'Escape') closeMobile();
+			if (e.key === 'Escape') {
+				closeMobile();
+				return;
+			}
+			if (e.key !== 'Tab' || !panel) return;
+			const nodes = panel.querySelectorAll<HTMLElement>(
+				'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+			);
+			if (nodes.length === 0) return;
+			const first = nodes[0];
+			const last = nodes[nodes.length - 1];
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
 		}
+
 		function onResize() {
 			if (window.matchMedia('(min-width: 640px)').matches) {
 				setMobileOpen(false);
 			}
 		}
+
 		function onOrientation() {
 			setMobileOpen(false);
 		}
+
 		document.addEventListener('keydown', onKey);
 		window.addEventListener('resize', onResize);
 		window.addEventListener('orientationchange', onOrientation);
-		const prev = document.body.style.overflow;
+		const prevOverflow = document.body.style.overflow;
+		const prevTouch = document.body.style.touchAction;
 		document.body.style.overflow = 'hidden';
+		document.body.style.touchAction = 'none';
 		return () => {
 			document.removeEventListener('keydown', onKey);
 			window.removeEventListener('resize', onResize);
 			window.removeEventListener('orientationchange', onOrientation);
-			document.body.style.overflow = prev;
+			document.body.style.overflow = prevOverflow;
+			document.body.style.touchAction = prevTouch;
 		};
 	}, [mobileOpen, closeMobile]);
 
@@ -85,32 +103,22 @@ export default function Navbar() {
 
 	if (isAdmin || isPublicMessage) return null;
 
-	const showBrand = wordmarkOwned;
-
-	const brandHidden = isHome && !showBrand;
-
 	return (
 		<header
-			className={`sticky top-0 z-50 border-b transition-[background,border-color] duration-300 ${
+			className={`sticky top-0 z-50 border-b transition-[background,border-color] duration-200 ${
 				isLessonFocus
 					? 'border-transparent bg-canvas/95 backdrop-blur-md'
-					: 'border-hairline/60 bg-canvas/90 backdrop-blur-xl'
+					: 'border-hairline/60 bg-canvas/95 backdrop-blur-xl'
 			}`}
-			style={{ minHeight: 'var(--header-height)' }}
+			style={{ height: 'var(--header-height)' }}
 		>
-			<div className="shell flex items-center justify-between py-3.5 sm:py-4">
+			<div className="shell flex h-full items-center justify-between">
 				<Link
 					href={routes.home}
-					tabIndex={brandHidden ? -1 : undefined}
-					aria-hidden={brandHidden || undefined}
 					aria-label="HANOICAM — trang chủ"
-					className={`flex items-center gap-2.5 transition-[visibility,opacity] duration-300 ${
-						brandHidden
-							? 'invisible pointer-events-none opacity-0 max-lg:visible max-lg:pointer-events-auto max-lg:opacity-100'
-							: 'visible opacity-100'
-					}`}
+					className="flex items-center gap-2.5"
 				>
-					<span className="font-display text-base font-semibold tracking-[0.1em] text-ink sm:text-lg sm:tracking-[0.12em] md:text-xl">
+					<span className="font-display text-base font-semibold tracking-[0.1em] text-ink sm:text-lg sm:tracking-[0.12em]">
 						HANOICAM
 					</span>
 				</Link>
@@ -222,7 +230,7 @@ export default function Navbar() {
 						) : (
 							<Link
 								href={routes.login}
-								className="hidden min-[400px]:inline-flex min-h-11 items-center rounded-[10px] bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-wider text-paper transition duration-200 hover:bg-ink/90 sm:inline-flex"
+								className="hidden min-[400px]:inline-flex min-h-10 items-center rounded-[10px] bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-wider text-paper transition duration-200 hover:bg-ink/90 sm:inline-flex"
 							>
 								Đăng nhập
 							</Link>
@@ -232,7 +240,7 @@ export default function Navbar() {
 					<button
 						ref={menuButtonRef}
 						type="button"
-						className="ml-1 flex h-11 w-11 items-center justify-center rounded-[10px] transition-colors duration-200 hover:bg-surface-hover sm:hidden"
+						className="ml-1 flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors duration-200 hover:bg-surface-hover sm:hidden"
 						onClick={() => setMobileOpen((v) => !v)}
 						aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
 						aria-expanded={mobileOpen}
@@ -251,79 +259,102 @@ export default function Navbar() {
 				</nav>
 			</div>
 
-			{/* Mobile chapter curtain */}
+			{/* Mobile panel — solid, below header, scrollable, no bleed-through */}
 			<AnimatePresence>
 				{mobileOpen ? (
-					<m.div
-						id={menuId}
-						ref={mobilePanelRef}
-						role="dialog"
-						aria-modal="true"
-						aria-label="Menu điều hướng"
-						initial={reduce ? false : { y: '-8%', opacity: 0 }}
-						animate={{ y: 0, opacity: 1 }}
-						exit={{ y: '-4%', opacity: 0 }}
-						transition={{ duration: duration.ui, ease: ease.reveal }}
-						className="fixed inset-0 z-40 bg-canvas sm:hidden"
-						style={{ top: 'var(--header-height)' }}
-					>
-						<div className="shell flex h-full flex-col py-8">
-							<p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-secondary">Mục lục</p>
-							<nav className="mt-6 flex flex-col gap-1">
-								{PUBLIC_NAV_LINKS.map(({ href, label }, i) => {
-									const active = isActive(href);
-									return (
-										<Link
-											key={href}
-											href={href}
-											onClick={closeMobile}
-											className={`group flex items-baseline gap-4 border-b border-hairline py-5 ${
-												active ? 'text-ink' : 'text-ink-secondary'
-											}`}
-										>
-											<span className="font-mono text-xs text-vermilion">
-												{String(i + 1).padStart(2, '0')}
-											</span>
-											<span className="font-display text-3xl font-medium tracking-tight">{label}</span>
-											{active ? <span className="ml-auto h-px w-8 bg-vermilion" aria-hidden /> : null}
-										</Link>
-									);
-								})}
-								{session?.user ? (
-									<>
-										{USER_MENU_LINKS.map(({ href, label }) => (
+					<>
+						<m.button
+							type="button"
+							aria-label="Đóng menu"
+							initial={reduce ? false : { opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							transition={{ duration: duration.ui }}
+							className="fixed inset-x-0 bottom-0 z-40 bg-ink/25 sm:hidden"
+							style={{ top: 'var(--header-height)' }}
+							onClick={closeMobile}
+						/>
+						<m.div
+							id={menuId}
+							ref={mobilePanelRef}
+							role="dialog"
+							aria-modal="true"
+							aria-label="Menu điều hướng"
+							initial={reduce ? false : { opacity: 0, y: -8 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -6 }}
+							transition={{ duration: duration.ui, ease: ease.reveal }}
+							className="fixed inset-x-0 z-40 flex flex-col bg-canvas sm:hidden"
+							style={{
+								top: 'var(--header-height)',
+								height: 'calc(100dvh - var(--header-height))',
+								paddingBottom: 'env(safe-area-inset-bottom)',
+							}}
+						>
+							<div className="shell flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain py-5">
+								<p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-secondary">Menu</p>
+								<nav className="mt-4 flex flex-col">
+									{PUBLIC_NAV_LINKS.map(({ href, label }) => {
+										const active = isActive(href);
+										return (
 											<Link
 												key={href}
 												href={href}
 												onClick={closeMobile}
-												className="border-b border-hairline py-4 text-sm font-semibold uppercase tracking-widest text-ink-secondary"
+												className={`flex items-center justify-between border-b border-hairline py-3.5 ${
+													active ? 'text-ink' : 'text-ink-secondary'
+												}`}
 											>
-												{label}
+												<span className="font-display text-2xl font-medium tracking-tight">{label}</span>
+												{active ? <span className="h-px w-6 bg-vermilion" aria-hidden /> : null}
 											</Link>
-										))}
-										<button
-											type="button"
-											onClick={() => {
-												closeMobile();
-												void signOut({ callbackUrl: routes.home });
-											}}
-											className="py-4 text-left text-sm font-semibold uppercase tracking-widest text-vermilion"
+										);
+									})}
+									{session?.user ? (
+										<>
+											{USER_MENU_LINKS.map(({ href, label }) => (
+												<Link
+													key={href}
+													href={href}
+													onClick={closeMobile}
+													className="border-b border-hairline py-3 text-sm font-semibold uppercase tracking-widest text-ink-secondary"
+												>
+													{label}
+												</Link>
+											))}
+											{session.user.role === 'admin' ? (
+												<Link
+													href={routes.admin.home}
+													onClick={closeMobile}
+													className="border-b border-hairline py-3 text-sm font-semibold uppercase tracking-widest text-ink-secondary"
+												>
+													Quản trị
+												</Link>
+											) : null}
+											<button
+												type="button"
+												onClick={() => {
+													closeMobile();
+													void signOut({ callbackUrl: routes.home });
+												}}
+												className="py-3 text-left text-sm font-semibold uppercase tracking-widest text-vermilion"
+											>
+												Đăng xuất
+											</button>
+										</>
+									) : (
+										<Link
+											href={routes.login}
+											onClick={closeMobile}
+											className="mt-5 inline-flex min-h-11 items-center justify-center rounded-[10px] bg-ink px-5 text-xs font-semibold uppercase tracking-wider text-paper"
 										>
-											Đăng xuất
-										</button>
-									</>
-								) : (
-									<Link
-										href={routes.login}
-										onClick={closeMobile}
-										className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[10px] bg-ink px-5 text-xs font-semibold uppercase tracking-wider text-paper"
-									>
-										Đăng nhập
-									</Link>
-								)}
-							</nav>
-						</div>
-					</m.div>
+											Đăng nhập
+										</Link>
+									)}
+								</nav>
+							</div>
+						</m.div>
+					</>
 				) : null}
 			</AnimatePresence>
 		</header>

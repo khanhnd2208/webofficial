@@ -40,8 +40,13 @@ const nextConfig: NextConfig = {
 
       // Auth & account renames
       { source: '/login', destination: '/dang-nhap', permanent: true },
-      { source: '/dashboard', destination: '/hoc', permanent: true },
       { source: '/profile', destination: '/tai-khoan', permanent: true },
+
+      // Teaching / learning temporarily closed — temporary redirects (easy to reopen)
+      { source: '/giang-day', destination: '/', permanent: false },
+      { source: '/hoc', destination: '/', permanent: false },
+      { source: '/hoc/:path*', destination: '/', permanent: false },
+      { source: '/dashboard', destination: '/', permanent: false },
 
       // Admin vocabulary alias
       { source: '/admin/vocabulary', destination: '/admin/tools/vocabulary', permanent: true },

@@ -13,7 +13,7 @@ export const SITE_ORIGIN =
 		: 'http://localhost:3000');
 
 export const SITE_DESCRIPTION =
-	'HANOICAM — viết để hiểu sâu, dạy để cùng tiến xa.';
+	'HANOICAM — thư viện cá nhân của NDK. Viết để hiểu sâu.';
 
 export function absoluteUrl(path = '/'): string {
 	const normalized = path.startsWith('/') ? path : `/${path}`;
@@ -25,6 +25,8 @@ export function absoluteUrl(path = '/'): string {
  * Do not invent contact or identity — only ship owner-approved values.
  */
 export type SiteProfile = {
+	/** Personal mark shown beside the site brand */
+	personalMark: string;
 	publicName: string;
 	role?: string;
 	specialties?: string[];
@@ -39,10 +41,10 @@ export type SiteProfile = {
 };
 
 export const siteProfile: SiteProfile = {
+	personalMark: 'NDK',
 	publicName: SITE_NAME,
-	role: 'Viết và giảng dạy',
-	shortBio: 'Viết để hiểu sâu. Dạy để cùng tiến xa.',
-	teachingThemes: ['Tư duy học tập', 'Kỹ năng học thuật', 'Phát triển bản thân'],
-	audiences: ['Học viên được mời tham gia khóa học'],
+	role: 'Thư viện cá nhân',
+	shortBio:
+		'HANOICAM là thư viện cá nhân của NDK — nơi tập hợp bài viết chọn lọc về chuyên môn, trải nghiệm và góc nhìn. Đọc chậm, quét theo chủ đề, không cần đăng nhập.',
 	// contactEmail / socialLinks / portraitSrc: leave empty until owner provides
 };

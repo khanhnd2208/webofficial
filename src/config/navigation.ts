@@ -1,7 +1,7 @@
 /**
  * Navigation configuration — single source of truth for nav links.
  *
- * Public header must not expose Tools, Vocabulary, or Admin dashboard.
+ * Public header: Trang chủ, Bài viết only (teaching/learning temporarily closed).
  */
 
 import { routes } from './routes';
@@ -26,14 +26,10 @@ export interface AdminNavGroup {
 export const PUBLIC_NAV_LINKS: NavLink[] = [
 	{ href: routes.home, label: 'Trang chủ' },
 	{ href: routes.posts, label: 'Bài viết' },
-	{ href: routes.teaching, label: 'Giảng dạy' },
 ];
 
-/** Authenticated user menu (non-admin tools hidden) */
-export const USER_MENU_LINKS: NavLink[] = [
-	{ href: routes.learn, label: 'Học tập' },
-	{ href: routes.account, label: 'Tài khoản' },
-];
+/** Authenticated user menu (learner area temporarily closed) */
+export const USER_MENU_LINKS: NavLink[] = [{ href: routes.account, label: 'Tài khoản' }];
 
 /** Admin sidebar — grouped information architecture */
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
