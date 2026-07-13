@@ -1,9 +1,10 @@
 /**
  * Site identity & public URL — single source for metadata and share links.
- * Brand copy that needs owner approval lives in siteProfile (optional fields stay empty).
+ * Owner-specific contact details remain optional until explicitly approved.
  */
 
-export const SITE_NAME = 'HANOICAM';
+export const SITE_NAME = 'Duy Khánh';
+export const EDITORIAL_NAME = 'HANOICAM Journal';
 
 /** Canonical production origin. Override with NEXT_PUBLIC_SITE_URL when needed. */
 export const SITE_ORIGIN =
@@ -13,7 +14,7 @@ export const SITE_ORIGIN =
 		: 'http://localhost:3000');
 
 export const SITE_DESCRIPTION =
-	'HANOICAM — thư viện cá nhân của NDK. Viết để hiểu sâu.';
+	'Duy Khánh — giảng viên, mentor và cố vấn về quản trị, con người, marketing và AI ứng dụng.';
 
 export function absoluteUrl(path = '/'): string {
 	const normalized = path.startsWith('/') ? path : `/${path}`;
@@ -41,10 +42,16 @@ export type SiteProfile = {
 };
 
 export const siteProfile: SiteProfile = {
-	personalMark: 'NDK',
+	personalMark: 'DK',
 	publicName: SITE_NAME,
-	role: 'Thư viện cá nhân',
+	role: 'Giảng viên · Mentor · Cố vấn quản trị & AI ứng dụng',
+	specialties: ['Quản trị và con người', 'Marketing và phát triển doanh nghiệp', 'AI ứng dụng'],
 	shortBio:
-		'HANOICAM là thư viện cá nhân của NDK — nơi tập hợp bài viết chọn lọc về chuyên môn, trải nghiệm và góc nhìn. Đọc chậm, quét theo chủ đề, không cần đăng nhập.',
+		'Tôi giúp người trẻ và những tổ chức đang phát triển hiểu rõ vấn đề, xây tư duy có hệ thống và biến kiến thức thành hành động thực tế.',
+	longBio:
+		'Tôi làm việc ở giao điểm của giảng dạy, mentoring và tư vấn. Mục tiêu không phải là đưa ra thật nhiều lời khuyên, mà là giúp mỗi người hoặc tổ chức nhìn đúng vấn đề, hiểu các lựa chọn và xây được bước đi phù hợp với bối cảnh của mình.',
+	teachingThemes: ['Management', 'Human Resource Management', 'Marketing', 'Communication', 'AI for Work'],
+	audiences: ['Người trẻ đang phát triển sự nghiệp', 'Nhà quản lý mới', 'Founder và doanh nghiệp trẻ', 'Đội ngũ muốn ứng dụng AI'],
+	learnerOutcomes: ['Hiểu đúng vấn đề', 'Tư duy có hệ thống', 'Hành động rõ ràng', 'Tự chủ sau quá trình đồng hành'],
 	// contactEmail / socialLinks / portraitSrc: leave empty until owner provides
 };
