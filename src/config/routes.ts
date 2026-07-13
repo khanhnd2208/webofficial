@@ -6,13 +6,21 @@
  */
 
 export const routes = {
-	// ─── Public ───────────────────────────────────────────────────────────────
+	// ─── Public brand ──────────────────────────────────────────────────────────
 	home: '/',
+	services: '/dong-hanh',
+	mentoring: '/dong-hanh/mentoring',
+	businessAdvisory: '/dong-hanh/co-van-doanh-nghiep',
+	training: '/dong-hanh/dao-tao-workshop',
+	aiAdvisory: '/dong-hanh/ai-ung-dung',
+	teaching: '/giang-day',
+	lab: '/goc-cua-khanh',
+	about: '/gioi-thieu',
+	contact: '/lien-he',
+
+	// ─── Editorial ─────────────────────────────────────────────────────────────
 	posts: '/bai-viet',
 	post: (slug: string) => `/bai-viet/${slug}` as const,
-	teaching: '/giang-day',
-	about: '/gioi-thieu',
-	login: '/dang-nhap',
 	messagePublic: (slug: string) => `/m/${slug}` as const,
 
 	// ─── Learner ──────────────────────────────────────────────────────────────
@@ -21,6 +29,7 @@ export const routes = {
 	lesson: (courseSlug: string, lessonSlug: string) =>
 		`/hoc/khoa-hoc/${courseSlug}/bai/${lessonSlug}` as const,
 	account: '/tai-khoan',
+	login: '/dang-nhap',
 
 	// ─── Admin ────────────────────────────────────────────────────────────────
 	admin: {
@@ -55,7 +64,14 @@ export const legacyRoutes = {
 
 export type PublicRoute =
 	| typeof routes.home
-	| typeof routes.posts
+	| typeof routes.services
+	| typeof routes.mentoring
+	| typeof routes.businessAdvisory
+	| typeof routes.training
+	| typeof routes.aiAdvisory
 	| typeof routes.teaching
+	| typeof routes.lab
 	| typeof routes.about
+	| typeof routes.contact
+	| typeof routes.posts
 	| typeof routes.login;
