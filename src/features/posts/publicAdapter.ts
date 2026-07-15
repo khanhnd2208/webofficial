@@ -1,5 +1,21 @@
 import type { PostListItemDTO } from '@/types/post';
 
+const PUBLIC_CATEGORY_LABELS: Record<string, string> = {
+	'Life & Thoughts': 'Ghi chép về cuộc sống',
+	'Tech & Programming': 'Công nghệ và lập trình',
+	'English Learning': 'Học tiếng Anh',
+	'Tips & Tricks': 'Gợi ý thực hành',
+	Tutorial: 'Hướng dẫn',
+	Review: 'Cảm nhận và đánh giá',
+	Uncategorized: 'Ghi chép khác',
+};
+
+export function displayCategoryLabel(category?: string | null): string | null {
+	const value = category?.trim();
+	if (!value || value === 'Uncategorized') return null;
+	return PUBLIC_CATEGORY_LABELS[value] ?? value;
+}
+
 /** Public writing card shape — adapter over Mongo post DTOs. */
 export type PublicPostCard = {
 	id: string;

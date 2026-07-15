@@ -61,9 +61,9 @@ describe('publication gates', () => {
 		expect(links.some((l) => l.href === routes.accompany)).toBe(false);
 	});
 
-	it('publishes Kết nối contact CTA', () => {
+	it('publishes a quiet message link', () => {
 		expect(CONTACT_CTA.status).toBe('published');
-		expect(CONTACT_CTA.label).toBe('Kết nối');
+		expect(CONTACT_CTA.label).toBe('Gửi lời nhắn');
 		expect(getPublishedContactCta()?.href).toBe(routes.contact);
 	});
 

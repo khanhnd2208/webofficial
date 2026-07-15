@@ -53,13 +53,13 @@ export default async function LoginPage({
 					<p className="font-display text-lg tracking-[0.12em] text-ink">{SITE_NAME}</p>
 					<div>
 						<p className="font-display text-4xl font-medium leading-snug text-ink xl:text-5xl">
-							Viết để hiểu sâu.
+							Khu học tập
 						</p>
 						<p className="mt-6 max-w-sm text-base leading-relaxed text-ink-secondary">
-							Đăng nhập để mở tài khoản của bạn. Khu học tập công khai đang tạm đóng.
+							Dành cho học viên đã được ghi danh vào lớp hoặc chương trình của Khánh.
 						</p>
 					</div>
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">Boutique library</p>
+					<p className="text-sm text-ink-secondary">Duy Khánh · Giảng viên</p>
 				</aside>
 
 				<div className="flex flex-col justify-start px-6 pb-10 pt-6 sm:px-10 sm:pt-10 lg:justify-center lg:px-16 lg:py-12">

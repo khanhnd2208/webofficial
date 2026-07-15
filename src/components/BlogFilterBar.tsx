@@ -14,7 +14,7 @@ interface BlogFilterBarProps {
 }
 
 const SORT_OPTIONS = [
-	{ value: '', label: 'Mặc định' },
+	{ value: '', label: 'Sắp xếp ban đầu' },
 	{ value: 'chapter-asc', label: 'Chương ↑' },
 	{ value: 'chapter-desc', label: 'Chương ↓' },
 	{ value: 'newest', label: 'Mới nhất' },
@@ -226,7 +226,7 @@ export default function BlogFilterBar({
 									className="absolute right-0 top-full z-40 mt-2 w-72 rounded-[12px] border border-hairline bg-paper p-4 shadow-lg"
 								>
 									<label className="block text-[10px] font-semibold uppercase tracking-widest text-ink-secondary">
-										Tag
+										Thẻ
 									</label>
 									<select
 										value={currentTag ?? ''}
@@ -234,9 +234,9 @@ export default function BlogFilterBar({
 											navigate({ tag: e.target.value || undefined });
 										}}
 										className="mt-2 w-full rounded-[10px] border border-hairline bg-canvas px-3 py-2 text-xs text-ink"
-										aria-label="Tag"
+										aria-label="Thẻ"
 									>
-										<option value="">Tất cả tag</option>
+										<option value="">Tất cả thẻ</option>
 										{allTags.map((t) => (
 											<option key={t} value={t}>
 												#{t}
@@ -346,12 +346,12 @@ export default function BlogFilterBar({
 						</div>
 
 						<label className="mt-6 block text-xs font-semibold uppercase tracking-widest text-ink-secondary">
-							Tag
+							Thẻ
 						</label>
 						<input
 							value={tagSearch}
 							onChange={(e) => setTagSearch(e.target.value)}
-							placeholder="Tìm tag…"
+							placeholder="Tìm thẻ…"
 							className="mt-2 w-full rounded-[10px] border border-hairline bg-canvas px-3 py-2.5 text-sm outline-none focus:border-ink"
 						/>
 						<div className="mt-2 flex max-h-32 flex-wrap gap-2 overflow-y-auto">

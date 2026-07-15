@@ -8,11 +8,11 @@ import type { Service } from './types';
 export const services: Service[] = [
 	{
 		slug: 'giang-day-workshop',
-		title: 'Giảng dạy & workshop',
+		title: 'Giảng dạy và workshop',
 		shortTitle: 'Giảng dạy',
 		anchorId: 'giang-day-workshop',
 		summary:
-			'Thiết kế và dẫn dắt buổi học, workshop và không gian học tập cho tổ chức — gắn mục tiêu học với hành vi cần thay đổi.',
+			'Dạy về quản trị, con người, giao tiếp và chiến lược, kết hợp lý thuyết với những tình huống thực tế.',
 		audience: [
 			'Doanh nghiệp cần đào tạo nội bộ theo chủ đề cụ thể',
 			'Đội ngũ quản lý cấp trung',
@@ -21,7 +21,7 @@ export const services: Service[] = [
 		problems: [
 			'Đào tạo mang tính “slide nhiều, nhớ ít”',
 			'Chưa gắn mục tiêu học với việc đội ngũ cần làm khác đi',
-			'Cần format linh hoạt: nửa ngày, một ngày, hoặc chuỗi ngắn',
+			'Cần hình thức linh hoạt: nửa ngày, một ngày hoặc chuỗi ngắn',
 		],
 		notFor: [
 			'Khóa học đại trà bán vé công khai (marketplace)',
@@ -75,7 +75,7 @@ export const services: Service[] = [
 		shortTitle: 'Thiết kế học',
 		anchorId: 'thiet-ke-chuong-trinh',
 		summary:
-			'Cùng xây lộ trình học, cấu trúc module và trải nghiệm học tập — từ mục tiêu đến hoạt động, đánh giá và tài liệu đồng hành.',
+			'Cùng trường học hoặc tổ chức xây dựng mục tiêu, lộ trình, hoạt động và cách đánh giá cho một chương trình học.',
 		audience: [
 			'Tổ chức cần thiết kế lại chương trình đào tạo nội bộ',
 			'Đội ngũ L&D / học thuật muốn khung học rõ ràng hơn',
@@ -134,14 +134,14 @@ export const services: Service[] = [
 	},
 	{
 		slug: 'tu-van-phat-trien',
-		title: 'Tư vấn phát triển con người & tổ chức',
-		shortTitle: 'Tư vấn phát triển',
+		title: 'Trao đổi và tư vấn',
+		shortTitle: 'Trao đổi và tư vấn',
 		anchorId: 'tu-van-phat-trien',
 		summary:
-			'Đồng hành làm rõ hướng đi, ưu tiên và cách hành động — cho cá nhân đang chuyển mình, và cho đội ngũ cần thống nhất bài toán trước khi mở rộng.',
+			'Góp ý cho cá nhân hoặc đội ngũ đang cần nhìn rõ hơn một quyết định về học tập, công việc hoặc cách làm việc cùng nhau.',
 		audience: [
-			'Sinh viên, young professional và first-time manager',
-			'Founder / đồng sáng lập giai đoạn sớm',
+			'Sinh viên, người mới đi làm và người lần đầu đảm nhận vai trò quản lý',
+			'Người sáng lập hoặc đồng sáng lập ở giai đoạn đầu',
 			'Đội ngũ đang kẹt giữa quá nhiều sáng kiến',
 		],
 		problems: [
@@ -198,13 +198,13 @@ export const services: Service[] = [
 				id: 'mentoring',
 				title: 'Mentoring cá nhân',
 				summary:
-					'Làm rõ hướng đi nghề nghiệp, quyết định và cách hành động — cho sinh viên, young professional và first-time manager.',
+				'Trao đổi về hướng đi nghề nghiệp và những quyết định trong học tập, công việc — cho sinh viên, người mới đi làm và người lần đầu đảm nhận vai trò quản lý.',
 			},
 			{
 				id: 'business',
-				title: 'Cố vấn doanh nghiệp',
+				title: 'Tư vấn cho tổ chức',
 				summary:
-					'Giúp founder và đội ngũ trẻ làm rõ bài toán kinh doanh, ưu tiên và cách vận hành trước khi mở rộng.',
+					'Góp ý cho người sáng lập và đội ngũ trẻ về những ưu tiên trong công việc và cách phối hợp với nhau.',
 			},
 		],
 		pricingNote: UNIFIED_PRICING_NOTE,

@@ -3,7 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-import { INQUIRY_STATUSES, type InquiryStatus } from '@/features/inquiries/constants';
+import {
+	INQUIRY_STATUSES,
+	INQUIRY_STATUS_LABELS,
+	type InquiryStatus,
+} from '@/features/inquiries/constants';
 import { routes } from '@/config/routes';
 
 type Props = {
@@ -68,7 +72,7 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, emailSta
 	}
 
 	function onDelete() {
-		if (!window.confirm('Xóa vĩnh viễn inquiry này? Không hoàn tác được.')) return;
+		if (!window.confirm('Xóa vĩnh viễn yêu cầu liên hệ này? Không hoàn tác được.')) return;
 		startTransition(async () => {
 			try {
 				const res = await fetch(`/api/admin/inquiries/${inquiryId}`, { method: 'DELETE' });
@@ -91,7 +95,7 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, emailSta
 			) : null}
 
 			<div>
-				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Status</label>
+				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Trạng thái</label>
 				<div className="mt-2 flex flex-wrap gap-2">
 					<select
 						value={status}
@@ -100,7 +104,7 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, emailSta
 					>
 						{INQUIRY_STATUSES.map((s) => (
 							<option key={s} value={s}>
-								{s}
+								{INQUIRY_STATUS_LABELS[s]}
 							</option>
 						))}
 					</select>
@@ -116,13 +120,13 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, emailSta
 						onClick={onSaveStatus}
 						className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-60"
 					>
-						Cập nhật status
+						Cập nhật trạng thái
 					</button>
 				</div>
 			</div>
 
 			<div>
-				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Internal notes</label>
+				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Ghi chú nội bộ</label>
 				<textarea
 					value={internalNotes}
 					onChange={(e) => setInternalNotes(e.target.value)}

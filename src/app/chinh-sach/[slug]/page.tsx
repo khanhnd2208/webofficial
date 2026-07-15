@@ -32,13 +32,10 @@ export default async function PolicyPage({ params }: PageProps) {
 		<main className="min-h-screen">
 			<section className="border-b border-hairline">
 				<div className="shell py-14 sm:py-16">
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">Chính sách</p>
+					<p className="text-sm font-medium text-ink-secondary">Chính sách</p>
 					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{policy.title}</h1>
 					<p className="mt-4 max-w-2xl text-base text-ink-secondary">{policy.summary}</p>
-					<p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						Cập nhật {policy.updatedAt}
-						{policy.legalReview === 'pending' ? ' · Đang chờ rà soát pháp lý' : ''}
-					</p>
+					<p className="mt-3 text-xs text-ink-secondary">Cập nhật {policy.updatedAt}</p>
 				</div>
 			</section>
 			<section>
@@ -55,7 +52,7 @@ export default async function PolicyPage({ params }: PageProps) {
 					))}
 					<p className="text-sm text-ink-secondary">
 						<Link href={routes.contact} className="text-vermilion underline">
-							Liên hệ
+							Gửi lời nhắn
 						</Link>{' '}
 						nếu bạn cần xem hoặc xóa dữ liệu cá nhân.
 					</p>

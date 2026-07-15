@@ -15,7 +15,7 @@ export const EDITORIAL_NAME = 'HANOICAM';
 /** Personal mark / signature — not a product brand. */
 export const PERSONAL_MARK = 'NDK';
 
-export const SITE_EYEBROW = 'Educator · Explorer';
+export const SITE_EYEBROW = 'Duy Khánh · Giảng viên';
 
 /** Canonical production origin. Override with NEXT_PUBLIC_SITE_URL when needed. */
 export const SITE_ORIGIN =
@@ -23,7 +23,7 @@ export const SITE_ORIGIN =
 	(process.env.NODE_ENV === 'production' ? 'https://toiladuykhanh.com' : 'http://localhost:3000');
 
 export const SITE_DESCRIPTION =
-	'Duy Khánh là một giảng viên và người thiết kế trải nghiệm học tập, theo đuổi cách giáo dục thực chất, giàu trải nghiệm và hướng tới sự phát triển con người.';
+	'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.';
 
 export const SITE_CREATOR = SITE_NAME;
 
@@ -57,7 +57,7 @@ export const siteProfile: SiteProfile = {
 	publicName: SITE_NAME,
 	role: SITE_EYEBROW,
 	shortBio:
-		'Tôi giảng dạy, viết và thiết kế những trải nghiệm giúp người học không chỉ hiểu thêm về thế giới, mà còn hiểu sâu hơn về chính mình.',
+		'Tôi giảng dạy, thiết kế chương trình học và viết về con người, công việc cùng những điều mình đang học.',
 	portraitSrc: '/brand/learning-as-becoming-mobile.jpg',
 	// contactEmail / socialLinks: leave empty until owner provides
 };

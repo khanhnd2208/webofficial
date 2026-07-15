@@ -13,10 +13,10 @@ export type JournalPillarSlug = (typeof JOURNAL_PILLARS)[number]['slug'];
 export const JOURNAL_CONTENT_TYPES = [
 	{ slug: 'essay', label: 'Tiểu luận' },
 	{ slug: 'guide', label: 'Hướng dẫn' },
-	{ slug: 'framework', label: 'Framework' },
-	{ slug: 'case-analysis', label: 'Phân tích case' },
-	{ slug: 'field-note', label: 'Field note' },
-	{ slug: 'review', label: 'Review' },
+	{ slug: 'framework', label: 'Khung thực hành' },
+	{ slug: 'case-analysis', label: 'Phân tích tình huống' },
+	{ slug: 'field-note', label: 'Ghi chép thực địa' },
+	{ slug: 'review', label: 'Cảm nhận và đánh giá' },
 	{ slug: 'reflection', label: 'Suy ngẫm' },
 ] as const;
 
@@ -27,13 +27,13 @@ export const JOURNAL_COLLECTIONS = [
 	{
 		slug: 'hieu-dung-ket-noi',
 		title: 'Hiểu đúng → Kết nối',
-		summary: 'Bài viết nền tảng về cách làm rõ bài toán trước khi hành động.',
+		summary: 'Những bài viết về cách hiểu rõ vấn đề trước khi hành động.',
 		status: 'published' as const,
 	},
 	{
 		slug: 'hoc-co-dau-vet',
 		title: 'Học có dấu vết',
-		summary: 'Thiết kế học tập và mentoring để lại quyết định và hành động.',
+		summary: 'Những ghi chép về cách việc học đi vào quyết định và hành động.',
 		status: 'published' as const,
 	},
 ] as const;

@@ -11,7 +11,7 @@ import {
 	isJournalTaxonomyComplete,
 } from '@/services/postService';
 import { getPublishedCollections, JOURNAL_PILLARS } from '@/content/journal';
-import { getActivePublicCategories } from '@/features/posts/publicAdapter';
+import { displayCategoryLabel, getActivePublicCategories } from '@/features/posts/publicAdapter';
 import { routes } from '@/config/routes';
 import { EDITORIAL_NAME } from '@/config/site';
 
@@ -46,11 +46,6 @@ function estimateRead(summary: string | null, wordCount?: number): string {
 	return `${Math.max(1, Math.round(summary.split(/\s+/).length / 40))} phút đọc`;
 }
 
-function displayTopic(category?: string | null): string | null {
-	if (!category || category === 'Uncategorized') return null;
-	return category;
-}
-
 export default async function BlogPage({
 	searchParams,
 }: {
@@ -75,20 +70,28 @@ export default async function BlogPage({
 		getAllPosts(1, 200),
 	]);
 
-	const collections = getPublishedCollections();
+	const collections = getPublishedCollections().filter((collection) =>
+		postsForCategoryGate.items.some((post) => post.collectionSlugs?.includes(collection.slug)),
+	);
 	const activeCategorySet = new Set(getActivePublicCategories(postsForCategoryGate.items, 2));
 	const activeCategories = categories.filter((c) => activeCategorySet.has(c));
+	const hasDiscoveryChoices =
+		postsForCategoryGate.total >= 6 || tags.length > 0 || activeCategories.length > 1;
 
 	return (
 		<main className="min-h-screen">
 			<section className="border-b border-hairline">
-				<div className="shell py-8 sm:py-10">
+				<div className="shell py-10 sm:py-12">
 					<div className="flex flex-wrap items-end justify-between gap-4">
 						<div>
-							<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
+							<p className="text-sm font-medium text-accent">
 								{EDITORIAL_NAME}
 							</p>
 							<h1 className="mt-2 font-display type-page-title font-medium text-ink">Bài viết</h1>
+							<p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
+								HANOICAM là tên tôi đặt cho góc tản văn và ghi chép cá nhân — nơi tôi viết về con người,
+								công việc và những điều gặp trên đường.
+							</p>
 							<p className="mt-2 font-mono text-xs text-ink-secondary" aria-live="polite">
 								{result.total} bài
 								{tag ? ` · #${tag}` : ''}
@@ -96,16 +99,16 @@ export default async function BlogPage({
 								{pillarFilter ? ` · ${pillarFilter}` : ''}
 							</p>
 						</div>
-						<BlogSearch />
+						{postsForCategoryGate.total >= 6 ? <BlogSearch /> : null}
 					</div>
 				</div>
 			</section>
 
-			{featured.items.length > 0 ? (
+			{postsForCategoryGate.total >= 4 && featured.items.length > 0 ? (
 				<section className="border-b border-hairline">
 					<div className="shell py-8">
 						<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
-							Editor’s choice
+							Bài Khánh chọn
 						</p>
 						<ul className="mt-4 divide-y divide-hairline border-y border-hairline">
 							{featured.items.map((post) => (
@@ -124,7 +127,7 @@ export default async function BlogPage({
 				<section className="border-b border-hairline">
 					<div className="shell py-8">
 						<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
-							Collection nổi bật
+							Loạt bài
 						</p>
 						<ul className="mt-4 grid gap-4 sm:grid-cols-2">
 							{collections.map((c) => (
@@ -140,10 +143,10 @@ export default async function BlogPage({
 				</section>
 			) : null}
 
-			{taxonomyReady ? (
+			{taxonomyReady && hasDiscoveryChoices ? (
 				<section className="border-b border-hairline">
 					<div className="shell flex flex-wrap gap-3 py-6">
-						<span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">Pillar</span>
+						<span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">Chủ đề</span>
 						{JOURNAL_PILLARS.map((p) => (
 							<Link
 								key={p.slug}
@@ -159,16 +162,18 @@ export default async function BlogPage({
 				</section>
 			) : null}
 
-			<Suspense fallback={null}>
-				<BlogFilterBar
-					allTags={tags}
-					allCategories={activeCategories}
-					currentTag={tag}
-					currentCategory={category}
-					currentSort={sort}
-					total={result.total}
-				/>
-			</Suspense>
+			{hasDiscoveryChoices || tag || category || sort ? (
+				<Suspense fallback={null}>
+					<BlogFilterBar
+						allTags={tags}
+						allCategories={activeCategories}
+						currentTag={tag}
+						currentCategory={category}
+						currentSort={sort}
+						total={result.total}
+					/>
+				</Suspense>
+			) : null}
 
 			<section>
 				<div className="shell py-8 sm:py-10">
@@ -192,7 +197,7 @@ export default async function BlogPage({
 					) : (
 						<div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2">
 							{result.items.map((post, i) => {
-								const topic = displayTopic(post.category);
+								const topic = displayCategoryLabel(post.category);
 								const readTime = estimateRead(post.summary, post.wordCount);
 								return (
 									<article key={post.id} className="group">

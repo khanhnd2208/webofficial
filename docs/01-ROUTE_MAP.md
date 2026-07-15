@@ -1,4 +1,4 @@
-# Route Map — The Explorer Teacher
+# Bản đồ đường dẫn — Duy Khánh
 
 Single source of truth: `src/config/routes.ts`, `src/config/navigation.ts`, `src/config/site.ts`, `src/content/*`.
 
@@ -9,7 +9,7 @@ Navigation and footer render **only** links with `status: 'published'`.
 | Brand | Role |
 |-------|------|
 | **Duy Khánh** | Master brand / site wordmark |
-| **The Explorer Teacher** | Positioning line |
+| **Không chỉ học để biết. Học để trở thành.** | Tuyên ngôn giáo dục |
 | **HANOICAM** | Editorial journal brand |
 | **NDK** | Personal mark / signature |
 
@@ -17,13 +17,13 @@ Navigation and footer render **only** links with `status: 'published'`.
 
 | Path | Purpose | Status |
 |------|---------|--------|
-| `/` | Homepage journey | Published |
-| `/gioi-thieu` | Tôi & Dịch vụ (3 services + process) | Published |
-| `/bai-viet` | Writing / journal | Published |
-| `/phat-trien-ban-than` | Podcast / growth | Draft until real episode |
-| `/lien-he` | Kết nối (inquiry) | Published (prod needs Resend) |
+| `/` | Trang chủ | Published |
+| `/gioi-thieu` | Giới thiệu con người, công việc và cách nghĩ về dạy học | Published |
+| `/bai-viet` | Bài viết và ghi chép | Published |
+| `/phat-trien-ban-than` | Podcast | Draft until real episode |
+| `/lien-he` | Gửi lời nhắn | Published (prod needs Resend) |
 | `/chinh-sach/[slug]` | Policies | Published |
-| `/archive` | Retired public surfaces | Published + **noindex** |
+| `/archive` | Lưu trữ nội dung và công cụ cũ | Published + **noindex** |
 
 ## Redirects (retired marketing)
 

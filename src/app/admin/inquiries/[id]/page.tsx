@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import InquiryAdminActions from '../InquiryAdminActions';
 import { getInquiry } from '@/services/inquiryService';
 import { routes } from '@/config/routes';
+import { INQUIRY_STATUS_LABELS, INQUIRY_TYPE_LABELS } from '@/features/inquiries/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,13 +21,13 @@ export default async function AdminInquiryDetailPage({
 		<main className="mx-auto max-w-4xl px-6 py-8">
 			<p className="text-sm text-muted">
 				<Link href={routes.admin.inquiries} className="underline">
-					← Inquiry
+					← Yêu cầu liên hệ
 				</Link>
 			</p>
 			<header className="mt-4">
 				<h1 className="text-2xl font-bold tracking-tight">{inquiry.name}</h1>
 				<p className="mt-1 text-sm text-foreground-secondary">
-					{inquiry.email} · {inquiry.inquiryType} · {inquiry.status}
+					{inquiry.email} · {INQUIRY_TYPE_LABELS[inquiry.inquiryType]} · {INQUIRY_STATUS_LABELS[inquiry.status]}
 				</p>
 			</header>
 
@@ -58,7 +59,7 @@ export default async function AdminInquiryDetailPage({
 							<dd className="mt-1">{inquiry.organization || '—'}</dd>
 						</div>
 						<div>
-							<dt className="text-xs uppercase text-muted">Format</dt>
+							<dt className="text-xs uppercase text-muted">Hình thức</dt>
 							<dd className="mt-1">{inquiry.preferredFormat || '—'}</dd>
 						</div>
 						<div>
@@ -66,11 +67,11 @@ export default async function AdminInquiryDetailPage({
 							<dd className="mt-1">{inquiry.timeframe || '—'}</dd>
 						</div>
 						<div>
-							<dt className="text-xs uppercase text-muted">Source page</dt>
+							<dt className="text-xs uppercase text-muted">Trang nguồn</dt>
 							<dd className="mt-1 break-all">{inquiry.sourcePage || '—'}</dd>
 						</div>
 						<div>
-							<dt className="text-xs uppercase text-muted">Email status</dt>
+							<dt className="text-xs uppercase text-muted">Trạng thái email</dt>
 							<dd className="mt-1">
 								{inquiry.emailStatus}
 								{inquiry.emailError ? ` — ${inquiry.emailError}` : ''}
@@ -78,11 +79,11 @@ export default async function AdminInquiryDetailPage({
 						</div>
 					</dl>
 					<div className="rounded-xl border border-border p-4">
-						<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Status history</h2>
+						<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Lịch sử trạng thái</h2>
 						<ul className="mt-3 space-y-2 text-sm">
 							{inquiry.statusHistory.map((h, idx) => (
 								<li key={`${h.status}-${idx}`}>
-									{h.status} · {new Date(h.at).toLocaleString('vi-VN')}
+									{INQUIRY_STATUS_LABELS[h.status]} · {new Date(h.at).toLocaleString('vi-VN')}
 									{h.note ? ` — ${h.note}` : ''}
 								</li>
 							))}

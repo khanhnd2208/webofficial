@@ -94,8 +94,8 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 /** Contact CTA — separate from nav links so it never competes with login. */
 export const CONTACT_CTA: ContactCta = {
 	href: routes.contact,
-	label: 'Kết nối',
-	shortLabel: 'Kết nối',
+	label: 'Gửi lời nhắn',
+	shortLabel: 'Lời nhắn',
 	status: 'published',
 };
 
@@ -112,15 +112,15 @@ export const FOOTER_GROUPS: FooterGroup[] = [
 				label: 'Podcast',
 				status: hasPublishedPodcastEpisodes() ? 'published' : 'draft',
 			},
-			{ href: routes.contact, label: 'Kết nối', status: 'published' },
+			{ href: routes.contact, label: 'Gửi lời nhắn', status: 'published' },
 		],
 	},
 	{
 		id: 'utility',
-		title: 'Tiện ích',
+		title: 'Thông tin',
 		links: [
-			{ href: routes.archive, label: 'Archive', status: 'published' },
-			{ href: routes.login, label: 'Đăng nhập', status: 'published' },
+			{ href: routes.archive, label: 'Lưu trữ', status: 'published' },
+			{ href: routes.login, label: 'Khu học tập', status: 'published' },
 			{ href: routes.policyPrivacy, label: 'Bảo mật', status: 'published' },
 			{ href: routes.policyTerms, label: 'Điều khoản', status: 'published' },
 			{ href: routes.policyCancellation, label: 'Hủy & đổi lịch', status: 'published' },
@@ -197,7 +197,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 	{
 		group: 'Hệ thống',
 		items: [
-			{ href: routes.admin.inquiries, label: 'Inquiry' },
+			{ href: routes.admin.inquiries, label: 'Yêu cầu liên hệ' },
 			{ href: routes.admin.users, label: 'Người dùng' },
 		],
 	},

@@ -6,7 +6,6 @@ import HomeManifesto from '@/components/home/HomeManifesto';
 import HomeWriting from '@/components/home/HomeWriting';
 import homeStyles from '@/components/home/home.module.css';
 import { StructuredData } from '@/components/marketing';
-import { getHomeHeroArticleHref } from '@/content/home';
 import { getHomePodcastEpisode } from '@/content/podcast';
 import { SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
 import { getLatestPosts } from '@/services/postService';
@@ -14,14 +13,14 @@ import { getLatestPosts } from '@/services/postService';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-	title: { absolute: 'Duy Khánh — Giáo dục, trải nghiệm học tập và phát triển con người' },
+	title: { absolute: 'Duy Khánh — Giảng viên và những ghi chép về việc học' },
 	description:
-		'Duy Khánh là một giảng viên và người thiết kế trải nghiệm học tập, theo đuổi cách giáo dục thực chất, giàu trải nghiệm và hướng tới sự phát triển con người.',
+		'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.',
 	alternates: { canonical: absoluteUrl('/') },
 	openGraph: {
-		title: 'Duy Khánh — Giáo dục, trải nghiệm học tập và phát triển con người',
+		title: 'Duy Khánh — Giảng viên và những ghi chép về việc học',
 		description:
-			'Duy Khánh là một giảng viên và người thiết kế trải nghiệm học tập, theo đuổi cách giáo dục thực chất, giàu trải nghiệm và hướng tới sự phát triển con người.',
+			'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.',
 		url: absoluteUrl('/'),
 		siteName: SITE_NAME,
 		locale: 'vi_VN',
@@ -37,26 +36,25 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: 'Duy Khánh — Giáo dục, trải nghiệm học tập và phát triển con người',
+		title: 'Duy Khánh — Giảng viên và những ghi chép về việc học',
 		description:
-			'Duy Khánh là một giảng viên và người thiết kế trải nghiệm học tập, theo đuổi cách giáo dục thực chất, giàu trải nghiệm và hướng tới sự phát triển con người.',
+			'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.',
 		images: [absoluteUrl('/brand/learning-as-becoming-og.jpg')],
 	},
 };
 
 export default async function Home() {
-	const posts = await getLatestPosts(6);
-	const heroArticleHref = getHomeHeroArticleHref(posts);
+	const posts = await getLatestPosts(3);
 	const podcast = getHomePodcastEpisode();
 	const homepageDescription =
-		'Duy Khánh là một giảng viên và người thiết kế trải nghiệm học tập, theo đuổi cách giáo dục thực chất, giàu trải nghiệm và hướng tới sự phát triển con người.';
+		'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.';
 
 	const personLd = {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
 		name: SITE_NAME,
 		url: SITE_ORIGIN,
-		jobTitle: 'Educator',
+		jobTitle: 'Giảng viên',
 		description: homepageDescription,
 	};
 
@@ -72,9 +70,9 @@ export default async function Home() {
 	return (
 		<main className={`${homeStyles.home} min-h-screen`}>
 			<StructuredData data={[personLd, websiteLd]} />
-			<HomeHero articleHref={heroArticleHref} />
+			<HomeHero />
 			<HomeManifesto />
-			<HomeWriting podcast={podcast} />
+			<HomeWriting posts={posts} podcast={podcast} />
 			<HomeClosingCta />
 		</main>
 	);

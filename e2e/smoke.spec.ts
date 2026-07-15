@@ -32,14 +32,11 @@ test.describe('Public pages smoke', () => {
 			page.getByRole('heading', { name: /Không chỉ học để biết\. Học để trở thành\./i }),
 		).toBeVisible();
 		await expect(
-			page.getByRole('link', { name: /Khám phá cách tôi nhìn về giáo dục/i }).first(),
+			page.getByRole('link', { name: /Đọc những ghi chép mới/i }).first(),
 		).toBeVisible();
-		await expect(page.getByRole('img', { name: /hành trình học để trở thành/i })).toBeAttached();
-		await expect(
-			page.getByText(
-				'Emotion leads us to bad decisions, great lessons—and always, somehow, back to love.',
-			),
-		).toBeVisible();
+		await expect(page.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i })).toBeAttached();
+		await expect(page.getByText(/Emotion leads us/i)).toHaveCount(0);
+		await expect(page.getByRole('heading', { name: 'Những điều tôi đang viết' })).toBeVisible();
 		await expect(
 			page.getByRole('heading', { name: 'Những cách chúng ta có thể học cùng nhau' }),
 		).toHaveCount(0);
@@ -60,15 +57,11 @@ test.describe('Public pages smoke', () => {
 			page.getByRole('heading', { name: /Không chỉ học để biết\. Học để trở thành\./i }),
 		).toBeVisible();
 		await expect(
-			page.getByRole('heading', { name: /việc học nên kết thúc ở một tấm bằng/i }),
+			page.getByRole('heading', { name: /Một bài học tốt cần đi được vào đời sống/i }),
 		).toBeVisible();
+		await expect(page.getByText(/Emotion leads us/i)).toHaveCount(0);
 		await expect(
-			page.getByText(
-				'Emotion leads us to bad decisions, great lessons—and always, somehow, back to love.',
-			),
-		).toBeVisible();
-		await expect(
-			page.getByRole('heading', { name: 'Bạn đang muốn trở thành người như thế nào?' }),
+			page.getByRole('heading', { name: /Nếu những điều tôi viết khiến bạn nghĩ thêm/i }),
 		).toBeVisible();
 		await context.close();
 	});
@@ -76,7 +69,7 @@ test.describe('Public pages smoke', () => {
 	test('loads only one art-directed hero asset on mobile', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/');
-		await page.getByRole('img', { name: /hành trình học để trở thành/i }).waitFor();
+		await page.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i }).waitFor();
 
 		const heroAssets = await page.evaluate(() =>
 			performance
@@ -90,7 +83,7 @@ test.describe('Public pages smoke', () => {
 	test('homepage typography remains compact at critical viewport widths', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 
-		await page.setViewportSize({ width: 320, height: 568 });
+		await page.setViewportSize({ width: 375, height: 667 });
 		await page.goto('/');
 		await page.evaluate(async () => {
 			await document.fonts.ready;
@@ -100,24 +93,24 @@ test.describe('Public pages smoke', () => {
 			level: 1,
 			name: /Không chỉ học để biết\. Học để trở thành\./i,
 		});
-		const eyebrow = page.getByText('DUY KHÁNH · EDUCATOR · EXPLORER', { exact: true });
+		const eyebrow = page.getByText('Duy Khánh · Giảng viên', { exact: true });
 		const closingTitle = page.getByRole('heading', {
 			level: 2,
-			name: 'Bạn đang muốn trở thành người như thế nào?',
+			name: /Nếu những điều tôi viết khiến bạn nghĩ thêm/i,
 		});
 
 		expect(await renderedLineCount(heroTitle)).toBeLessThanOrEqual(3);
 		expect(await renderedLineCount(eyebrow)).toBe(1);
-		expect(await renderedLineCount(closingTitle)).toBe(3);
+		expect(await renderedLineCount(closingTitle)).toBeLessThanOrEqual(5);
 		const artworkTop = await page
-			.getByRole('img', { name: /hành trình học để trở thành/i })
+			.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i })
 			.evaluate((element) => element.getBoundingClientRect().top);
-		expect(artworkTop).toBeLessThan(568);
+		expect(artworkTop).toBeLessThan(667);
 
-		for (const width of [1200, 1440, 1920]) {
-			await page.setViewportSize({ width, height: width === 1920 ? 1080 : 900 });
+		for (const width of [768, 1440]) {
+			await page.setViewportSize({ width, height: 900 });
 			expect(await renderedLineCount(heroTitle)).toBe(2);
-			expect(await renderedLineCount(closingTitle)).toBe(2);
+			expect(await renderedLineCount(closingTitle)).toBeLessThanOrEqual(width === 768 ? 4 : 3);
 			const hasOverflow = await page.evaluate(
 				() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
 			);
@@ -125,11 +118,11 @@ test.describe('Public pages smoke', () => {
 		}
 	});
 
-	test('about page shows services journey', async ({ page }) => {
+	test('about page introduces the person before three concise work areas', async ({ page }) => {
 		await page.goto('/gioi-thieu');
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 		await expect(
-			page.getByRole('heading', { name: /Tôi dạy để cùng người khác nhìn thế giới rộng hơn/i }),
+			page.getByRole('heading', { name: /Tôi là Duy Khánh, một giảng viên/i }),
 		).toBeVisible();
 		await expect(page.locator('#dich-vu')).toBeVisible();
 		await expect(page.locator('#giang-day-workshop')).toBeVisible();
@@ -154,7 +147,7 @@ test.describe('Public pages smoke', () => {
 
 	test('archive is noindex', async ({ page }) => {
 		await page.goto('/archive');
-		await expect(page.getByRole('heading', { name: 'Archive' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Lưu trữ' })).toBeVisible();
 		const robots = await page.locator('meta[name="robots"]').getAttribute('content');
 		expect(robots ?? '').toMatch(/noindex/i);
 	});
@@ -162,7 +155,7 @@ test.describe('Public pages smoke', () => {
 	test('contact page loads with public inquiry options', async ({ page }) => {
 		await page.goto('/lien-he');
 		await expect(
-			page.getByRole('heading', { name: /Trao đổi|Kết nối|Liên hệ/i }).first(),
+			page.getByRole('heading', { name: /Gửi Khánh một lời nhắn/i }).first(),
 		).toBeVisible();
 		const typeSelect = page.locator('#inquiryType');
 		if (await typeSelect.count()) {
@@ -231,7 +224,7 @@ test.describe('Navigation', () => {
 		await expect(nav.getByRole('link', { name: 'Trải nghiệm học tập' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Bài viết' })).toBeVisible();
 		await expect(nav.getByRole('link', { name: 'Podcast' })).toHaveCount(0);
-		await expect(nav.getByRole('link', { name: 'Kết nối' })).toBeVisible();
+		await expect(nav.getByRole('link', { name: 'Gửi lời nhắn' })).toBeVisible();
 		await expect(nav.getByRole('link', { name: 'Đồng hành' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Học', exact: true })).toHaveCount(0);
 	});
@@ -242,26 +235,28 @@ test.describe('Navigation', () => {
 		await page.getByRole('button', { name: 'Mở menu' }).click();
 		const dialog = page.getByRole('dialog', { name: 'Menu điều hướng' });
 		await expect(dialog).toBeVisible();
-		await expect(dialog.getByRole('link', { name: 'Đăng nhập' })).toBeVisible();
+		await expect(dialog.getByRole('link', { name: 'Gửi lời nhắn' })).toBeVisible();
+		await expect(dialog.getByRole('link', { name: 'Đăng nhập' })).toHaveCount(0);
 		await page.keyboard.press('Escape');
 		await expect(page.getByRole('dialog', { name: 'Menu điều hướng' })).toHaveCount(0);
 	});
 
-	test('hero anchor reaches the real manifesto section', async ({ page }) => {
+	test('hero paths lead to writing and the personal introduction', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await page.goto('/');
-		await page.getByRole('link', { name: /Khám phá cách tôi nhìn về giáo dục/i }).click();
-		await expect(page).toHaveURL(/#manifesto$/);
-		await expect(page.locator('#manifesto')).toBeInViewport();
+		await expect(page.getByRole('link', { name: /Đọc những ghi chép mới/i }).first()).toHaveAttribute('href', '/bai-viet');
+		await page.getByRole('link', { name: /Tìm hiểu thêm về Khánh/i }).click();
+		await expect(page).toHaveURL(/\/gioi-thieu$/);
 	});
 
 	test('footer stays compact with utility links', async ({ page }) => {
 		await page.goto('/');
 		const footer = page.locator('footer');
 		await expect(footer.getByText('Duy Khánh').first()).toBeVisible();
-		await expect(footer.getByRole('link', { name: 'Kết nối' })).toBeVisible();
+		await expect(footer.getByRole('link', { name: 'Gửi lời nhắn' })).toBeVisible();
 		await expect(footer.getByRole('link', { name: 'Bảo mật' })).toBeVisible();
-		await expect(footer.getByRole('link', { name: 'Archive' })).toBeVisible();
+		await expect(footer.getByRole('link', { name: 'Lưu trữ' })).toBeVisible();
+		await expect(footer.getByRole('link', { name: 'Khu học tập' })).toBeVisible();
 	});
 });
 

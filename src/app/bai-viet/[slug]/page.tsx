@@ -16,6 +16,7 @@ import ReadingProgress from '@/components/motion/ReadingProgress';
 import { absoluteUrl, EDITORIAL_NAME, SITE_NAME } from '@/config/site';
 import { getPostBySlug, getRelatedPosts } from '@/services/postService';
 import { routes } from '@/config/routes';
+import { displayCategoryLabel } from '@/features/posts/publicAdapter';
 
 export const revalidate = 60;
 
@@ -219,28 +220,6 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 				<ReactionBar slug={post.slug} initialReactions={post.reactions} />
 			</div>
 
-			{/* Contextual next step — not a hard sell on every article */}
-			{(post.pillarSlug === 'management-people' ||
-				post.pillarSlug === 'business-marketing' ||
-				post.tags.some((t) => /mentor|quản trị|founder|ai/i.test(t))) && (
-				<section className="border-y border-hairline">
-					<div className="shell max-w-3xl py-10 lg:max-w-4xl">
-						<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
-							Bước tiếp theo
-						</p>
-						<p className="mt-3 max-w-xl text-base text-ink-secondary">
-							Nếu bài viết chạm đúng bài toán đang gặp, bạn có thể trao đổi ngắn về phạm vi đồng hành phù hợp.
-						</p>
-						<Link
-							href={`${routes.contact}?type=unsure&sourcePage=${encodeURIComponent(routes.post(post.slug))}`}
-							className="mt-5 inline-flex text-xs font-semibold uppercase tracking-wider text-vermilion hover:underline"
-						>
-							Trao đổi cùng Khánh →
-						</Link>
-					</div>
-				</section>
-			)}
-
 			{/* Closing scene — dark */}
 			{related.length > 0 ? (
 				<section className="mt-4 bg-[#161410] py-14 text-[#F2ECE1] sm:py-20 dark:bg-[#0c0b09]">
@@ -265,7 +244,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 										) : (
 											<EditorialCover
 												title={p.title}
-												kicker={p.category}
+												kicker={displayCategoryLabel(p.category) ?? undefined}
 												index={p.chapterNumber}
 												aspectRatio="16 / 10"
 												tone="espresso"

@@ -5,6 +5,7 @@ import { m } from 'framer-motion';
 
 import { useMotionTier } from '@/components/motion/MotionProvider';
 import { duration, ease, stagger } from '@/components/motion/tokens';
+import { displayCategoryLabel } from '@/features/posts/publicAdapter';
 
 type ArticleHeaderProps = {
 	chapterNumber?: string | number | null;
@@ -27,6 +28,7 @@ export default function ArticleHeader({
 }: ArticleHeaderProps) {
 	const { allowsReveal, reduced } = useMotionTier();
 	const animate = allowsReveal && !reduced;
+	const categoryLabel = displayCategoryLabel(category);
 
 	const beat = (delay: number) =>
 		animate
@@ -46,11 +48,11 @@ export default function ArticleHeader({
 							Chương {chapterNumber}
 						</span>
 					) : null}
-					{category && category !== 'Uncategorized' ? (
+					{categoryLabel ? (
 						<>
 							{chapterNumber ? <span className="text-hairline">·</span> : null}
 							<span className="text-xs font-semibold uppercase tracking-widest text-ink-secondary">
-								{category}
+								{categoryLabel}
 							</span>
 						</>
 					) : null}

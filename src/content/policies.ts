@@ -17,16 +17,16 @@ export const policies: PolicyPage[] = [
 				heading: 'Dữ liệu chúng tôi xử lý',
 				body: [
 					'Tài khoản Google (tên, email, ảnh đại diện) khi bạn đăng nhập.',
-					'Nội dung inquiry khi bạn gửi form liên hệ: tên, email, ngữ cảnh nhu cầu.',
-					'Dữ liệu kỹ thuật tối thiểu để vận hành (phiên đăng nhập, bảo vệ chống spam).',
-					'Không lưu địa chỉ IP thô trong inquiry; rate limit dùng mã hóa một chiều.',
+					'Nội dung bạn gửi qua biểu mẫu liên hệ: tên, email, chủ đề và lời nhắn.',
+					'Dữ liệu kỹ thuật tối thiểu để vận hành, duy trì phiên đăng nhập và chống thư rác.',
+					'Không lưu địa chỉ IP thô trong yêu cầu liên hệ; cơ chế giới hạn tần suất dùng mã hóa một chiều.',
 				],
 			},
 			{
 				heading: 'Mục đích sử dụng',
 				body: [
-					'Cung cấp bài viết, tài khoản và dịch vụ đồng hành đã yêu cầu.',
-					'Phản hồi inquiry và cải thiện phạm vi dịch vụ.',
+					'Cung cấp bài viết, tài khoản học tập và những hỗ trợ bạn đã yêu cầu.',
+					'Đọc, phản hồi lời nhắn và cải thiện cách website hoạt động.',
 					'Bảo vệ hệ thống khỏi lạm dụng.',
 				],
 			},
@@ -40,8 +40,8 @@ export const policies: PolicyPage[] = [
 			{
 				heading: 'Yêu cầu xem hoặc xóa dữ liệu',
 				body: [
-					'Bạn có thể yêu cầu xem hoặc xóa dữ liệu inquiry / tài khoản qua email công khai trên trang Liên hệ hoặc hồ sơ đã đăng nhập.',
-					'Inquiry CLOSED không còn mục đích sử dụng có thể bị xóa sau 12 tháng.',
+					'Bạn có thể yêu cầu xem hoặc xóa dữ liệu liên hệ hay tài khoản qua trang Gửi lời nhắn hoặc hồ sơ đã đăng nhập.',
+					'Yêu cầu liên hệ đã đóng và không còn mục đích sử dụng có thể bị xóa sau 12 tháng.',
 				],
 			},
 		],
@@ -49,7 +49,7 @@ export const policies: PolicyPage[] = [
 	{
 		slug: 'dieu-khoan',
 		title: 'Điều khoản chung',
-		summary: 'Điều kiện sử dụng website và phạm vi dịch vụ đồng hành / học tập.',
+		summary: 'Điều kiện sử dụng website, nội dung và khu học tập.',
 		updatedAt: '2026-07-13',
 		status: 'published',
 		legalReview: 'pending',
@@ -58,21 +58,21 @@ export const policies: PolicyPage[] = [
 				heading: 'Phạm vi',
 				body: [
 					'Website cung cấp nội dung biên tập, thông tin dịch vụ và (khi mở) chương trình học.',
-					'Nội dung mang tính thông tin và đồng hành nghề nghiệp — không phải tư vấn pháp lý, y tế hay tài chính.',
+					'Nội dung mang tính chia sẻ và hỗ trợ học tập, nghề nghiệp — không phải tư vấn pháp lý, y tế hay tài chính.',
 				],
 			},
 			{
 				heading: 'Tài khoản & ghi danh',
 				body: [
-					'Đăng nhập bằng Google. Một số khu vực chỉ dành cho người được ghi danh hoặc admin.',
-					'Ghi danh khóa học do admin thực hiện; không có tự đăng ký thanh toán trên website.',
+					'Đăng nhập bằng Google. Một số khu vực chỉ dành cho người được ghi danh hoặc quản trị viên.',
+					'Việc ghi danh khóa học do quản trị viên thực hiện; website không có chức năng tự đăng ký và thanh toán.',
 				],
 			},
 			{
 				heading: 'Sở hữu nội dung',
 				body: [
 					'Bài viết và tài nguyên thuộc chủ sở hữu website trừ khi ghi chú khác.',
-					'Không sao chép hàng loạt để phân phối thương mại khi chưa có phép.',
+					'Không sao chép hàng loạt để phân phối thương mại khi chưa có sự đồng ý.',
 				],
 			},
 		],
@@ -80,7 +80,7 @@ export const policies: PolicyPage[] = [
 	{
 		slug: 'huy-doi-lich',
 		title: 'Hủy và đổi lịch',
-		summary: 'Cách xử lý khi cần hủy hoặc dời buổi mentoring / cố vấn / workshop đã chốt.',
+		summary: 'Cách xử lý khi cần hủy hoặc dời một buổi trao đổi, tư vấn hoặc workshop đã xác nhận.',
 		updatedAt: '2026-07-13',
 		status: 'published',
 		legalReview: 'pending',
@@ -96,7 +96,7 @@ export const policies: PolicyPage[] = [
 				heading: 'Đổi lịch',
 				body: [
 					'Ưu tiên dời sang khung giờ trống trong vòng 7–14 ngày tùy loại hình.',
-					'Đổi lịch nhiều lần có thể dẫn tới dừng đồng hành để tôn trọng thời gian hai bên.',
+					'Việc đổi lịch nhiều lần có thể khiến công việc phải dừng lại để tôn trọng thời gian của hai bên.',
 				],
 			},
 			{
@@ -110,7 +110,7 @@ export const policies: PolicyPage[] = [
 	{
 		slug: 'ai',
 		title: 'Nguyên tắc dùng AI',
-		summary: 'Ranh giới khi dùng AI trong công việc đồng hành, học tập và vận hành website.',
+		summary: 'Cách AI được sử dụng trong giảng dạy, tư vấn và vận hành website.',
 		updatedAt: '2026-07-13',
 		status: 'published',
 		legalReview: 'pending',
@@ -123,17 +123,17 @@ export const policies: PolicyPage[] = [
 				],
 			},
 			{
-				heading: 'Trong mentoring & cố vấn',
+				heading: 'Trong trao đổi và tư vấn',
 				body: [
 					'Ghi chú buổi làm việc được giữ tối thiểu và có mục đích.',
-					'Không dùng nội dung inquiry làm dữ liệu huấn luyện công khai.',
+					'Không dùng lời nhắn liên hệ làm dữ liệu huấn luyện công khai.',
 				],
 			},
 			{
-				heading: 'Ẩn danh & case study',
+				heading: 'Ẩn danh và tình huống thực tế',
 				body: [
-					'Case / testimonial chỉ công bố khi có permission hoặc chế độ ẩn danh đã thỏa thuận.',
-					'Bạn có thể yêu cầu rút permission sau khi liên hệ.',
+					'Tình huống thực tế hoặc phản hồi chỉ được công bố khi có sự đồng ý, hoặc khi hai bên đã thống nhất cách ẩn danh.',
+					'Bạn có thể yêu cầu rút lại sự đồng ý bằng cách gửi lời nhắn cho Khánh.',
 				],
 			},
 		],

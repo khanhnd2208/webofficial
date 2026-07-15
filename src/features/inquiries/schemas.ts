@@ -55,7 +55,8 @@ export const createInquirySchema = z.object({
 	sourcePage: z.string().trim().max(500).optional(),
 	sourceCourseSlug: z.string().trim().max(120).optional(),
 	campaignParams: campaignParamsSchema,
-	agreedScope: z.literal(true, { message: 'Bạn cần xác nhận phạm vi dịch vụ' }),
+	/** Kept for compatibility with the former long qualification form. */
+	agreedScope: z.boolean().optional().default(false),
 	agreedPrivacy: z.literal(true, { message: 'Bạn cần đồng ý chính sách bảo mật' }),
 	/** Honeypot — must be empty; validated in route before persistence. */
 	website: z.string().optional(),

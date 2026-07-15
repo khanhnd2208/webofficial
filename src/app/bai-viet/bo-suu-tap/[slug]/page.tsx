@@ -49,7 +49,7 @@ export default async function CollectionPage({ params }: PageProps) {
 			<section>
 				<div className="shell py-12">
 					{result.items.length === 0 ? (
-						<p className="text-sm text-ink-secondary">Chưa có bài trong collection này.</p>
+						<p className="text-sm text-ink-secondary">Chưa có bài trong loạt bài này.</p>
 					) : (
 						<ul className="divide-y divide-hairline border-y border-hairline">
 							{result.items.map((post) => (

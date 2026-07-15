@@ -5,14 +5,10 @@ import { homePageContent } from '@/content/home';
 
 import styles from './home.module.css';
 
-type HomeHeroProps = {
-	articleHref: string;
-};
-
 const heroImageAlt =
-	'Duy Khánh đứng trước bình minh và một con đường dài — minh họa cho hành trình học để trở thành';
+	'Minh họa Duy Khánh trên hành trình học hỏi và giảng dạy';
 
-export default function HomeHero({ articleHref }: HomeHeroProps) {
+export default function HomeHero() {
 	const { hero } = homePageContent;
 	preload('/brand/learning-as-becoming-mobile-480.webp', {
 		as: 'image',
@@ -23,13 +19,13 @@ export default function HomeHero({ articleHref }: HomeHeroProps) {
 	preload('/brand/learning-as-becoming-mobile.avif', {
 		as: 'image',
 		type: 'image/avif',
-		media: '(min-width: 480px) and (max-width: 899px)',
+		media: '(min-width: 480px) and (max-width: 767px)',
 		fetchPriority: 'high',
 	});
 	preload('/brand/learning-as-becoming-tablet.avif', {
 		as: 'image',
 		type: 'image/avif',
-		media: '(min-width: 900px) and (max-width: 1023px)',
+		media: '(min-width: 768px) and (max-width: 1023px)',
 		fetchPriority: 'high',
 	});
 	preload('/brand/learning-as-becoming-desktop.avif', {
@@ -64,10 +60,9 @@ export default function HomeHero({ articleHref }: HomeHeroProps) {
 								</span>
 							</Link>
 							<Link
-								href={articleHref}
+								href="/gioi-thieu"
 								className={styles.textLink}
-								data-umami-event="home_featured_article_click"
-								data-umami-event-slug={hero.preferredArticleSlug}
+								data-umami-event="home_about_click"
 								data-umami-event-source-page="/hero"
 							>
 								<span>{hero.articleCtaLabel}</span>
@@ -97,32 +92,32 @@ export default function HomeHero({ articleHref }: HomeHeroProps) {
 							srcSet="/brand/learning-as-becoming-desktop.jpg"
 						/>
 						<source
-							media="(min-width: 900px) and (max-width: 1023px)"
+							media="(min-width: 768px) and (max-width: 1023px)"
 							type="image/avif"
 							srcSet="/brand/learning-as-becoming-tablet.avif"
 						/>
 						<source
-							media="(min-width: 900px) and (max-width: 1023px)"
+							media="(min-width: 768px) and (max-width: 1023px)"
 							type="image/webp"
 							srcSet="/brand/learning-as-becoming-tablet.webp"
 						/>
 						<source
-							media="(min-width: 900px) and (max-width: 1023px)"
+							media="(min-width: 768px) and (max-width: 1023px)"
 							type="image/jpeg"
 							srcSet="/brand/learning-as-becoming-tablet.jpg"
 						/>
 						<source
-							media="(min-width: 480px) and (max-width: 899px)"
+							media="(min-width: 480px) and (max-width: 767px)"
 							type="image/avif"
 							srcSet="/brand/learning-as-becoming-mobile.avif"
 						/>
 						<source
-							media="(min-width: 480px) and (max-width: 899px)"
+							media="(min-width: 480px) and (max-width: 767px)"
 							type="image/webp"
 							srcSet="/brand/learning-as-becoming-mobile.webp"
 						/>
 						<source
-							media="(min-width: 480px) and (max-width: 899px)"
+							media="(min-width: 480px) and (max-width: 767px)"
 							type="image/jpeg"
 							srcSet="/brand/learning-as-becoming-mobile.jpg"
 						/>

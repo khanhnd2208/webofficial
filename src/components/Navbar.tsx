@@ -153,7 +153,7 @@ export default function Navbar() {
 									key={href}
 									href={href}
 									aria-current={active ? 'page' : undefined}
-									className={`relative inline-flex min-h-11 items-center rounded-[4px] px-3 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-colors duration-[200ms] ${
+									className={`relative inline-flex min-h-11 items-center rounded-[4px] px-3 py-2 text-sm font-medium transition-colors duration-[200ms] ${
 										active ? 'text-ink' : 'text-ink-secondary hover:text-ink'
 									}`}
 								>
@@ -173,7 +173,7 @@ export default function Navbar() {
 						<Link
 							href={contactCta.href}
 							aria-current={pathname === routes.contact ? 'page' : undefined}
-							className="ml-1 hidden min-h-11 items-center rounded-[4px] bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-wider text-paper transition duration-[200ms] hover:bg-accent sm:inline-flex"
+							className="ml-2 hidden min-h-11 items-center border-l border-hairline px-4 py-2 text-sm font-medium text-accent transition-colors hover:text-ink sm:inline-flex"
 						>
 							<span className="lg:hidden">{contactCta.shortLabel}</span>
 							<span className="hidden lg:inline">{contactCta.label}</span>
@@ -181,9 +181,7 @@ export default function Navbar() {
 					) : null}
 
 					<div className="ml-1">
-						{status === 'loading' ? (
-							<div className="h-9 w-9 animate-pulse rounded-full bg-surface-hover" />
-						) : session?.user ? (
+						{status !== 'loading' && session?.user ? (
 							<div ref={userMenuRef} className="relative">
 								<button
 									type="button"
@@ -258,14 +256,7 @@ export default function Navbar() {
 									) : null}
 								</AnimatePresence>
 							</div>
-						) : (
-							<Link
-								href={routes.login}
-								className="hidden min-h-11 items-center rounded-[4px] px-2 py-2 text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:text-ink min-[400px]:inline-flex"
-							>
-								Đăng nhập
-							</Link>
-						)}
+						) : null}
 					</div>
 
 					<button
@@ -338,7 +329,7 @@ export default function Navbar() {
 							}}
 						>
 							<div className="shell flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain py-5">
-								<p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-secondary">
+								<p className="text-sm text-ink-secondary">
 									Menu
 								</p>
 								<nav className="mt-4 flex flex-col">
@@ -368,21 +359,12 @@ export default function Navbar() {
 										href={contactCta.href}
 										onClick={closeMobile}
 										aria-current={pathname === routes.contact ? 'page' : undefined}
-										className="mt-8 inline-flex min-h-12 items-center justify-center rounded-[4px] bg-ink px-5 text-xs font-semibold uppercase tracking-wider text-paper"
+									className="mt-8 inline-flex min-h-12 items-center justify-center border-y border-hairline px-5 text-sm font-medium text-accent"
 									>
 										{contactCta.label}
 									</Link>
 								) : null}
 
-								{!session?.user ? (
-									<Link
-										href={routes.login}
-										onClick={closeMobile}
-										className="mt-3 inline-flex min-h-12 items-center justify-center rounded-[4px] border border-hairline px-5 text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:border-ink hover:text-ink"
-									>
-										Đăng nhập
-									</Link>
-								) : null}
 							</div>
 						</m.div>
 					</>

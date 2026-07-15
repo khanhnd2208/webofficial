@@ -30,6 +30,17 @@ describe('createInquirySchema', () => {
 		expect(data.inquiryType).toBe('mentoring');
 	});
 
+	it('accepts the new minimal public payload and defaults the legacy scope flag', () => {
+		const data = parseSchema(createInquirySchema, {
+			name: 'Nguyễn Văn A',
+			email: 'a@example.com',
+			inquiryType: 'unsure',
+			context: 'Tôi muốn gửi Khánh một lời nhắn.',
+			agreedPrivacy: true,
+		});
+		expect(data.agreedScope).toBe(false);
+	});
+
 	it('accepts new public inquiry types and legacy values', () => {
 		for (const inquiryType of [
 			'training',

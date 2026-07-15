@@ -2,19 +2,8 @@ import 'server-only';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl, SITE_NAME } from '@/config/site';
-import type { IInquiry, InquiryType } from '@/models/Inquiry';
-
-const INQUIRY_TYPE_LABELS: Record<InquiryType, string> = {
-	training: 'Giảng dạy & workshop',
-	'learning-design': 'Thiết kế chương trình học',
-	'people-organization': 'Tư vấn phát triển con người & tổ chức',
-	unsure: 'Chưa chắc',
-	other: 'Khác',
-	mentoring: 'Mentoring cá nhân',
-	business: 'Cố vấn doanh nghiệp',
-	ai: 'AI ứng dụng',
-	course: 'Khóa học',
-};
+import { INQUIRY_TYPE_LABELS } from '@/features/inquiries/constants';
+import type { IInquiry } from '@/models/Inquiry';
 
 export interface InquiryEmailConfig {
 	apiKey: string;
@@ -106,11 +95,11 @@ export async function sendInquiryEmails(
 			apiKey: config.apiKey,
 			from: config.fromEmail,
 			to: [inquiry.email],
-			subject: `${SITE_NAME} — Đã nhận yêu cầu liên hệ`,
+			subject: `${SITE_NAME} — Đã nhận lời nhắn`,
 			html: `
 				<p>Xin chào ${escapeHtml(inquiry.name)},</p>
-				<p>Cảm ơn bạn đã gửi yêu cầu <strong>${escapeHtml(typeLabel)}</strong>. Khánh đã nhận được và sẽ phản hồi qua email trong thời gian sớm nhất có thể.</p>
-				<p>Bạn không cần gửi lại nội dung chi tiết — chúng tôi đã lưu an toàn trên hệ thống.</p>
+				<p>Cảm ơn bạn đã viết về chủ đề <strong>${escapeHtml(typeLabel)}</strong>. Khánh đã nhận được lời nhắn và sẽ phản hồi qua email sớm nhất có thể.</p>
+				<p>Bạn không cần gửi lại nội dung này.</p>
 				<p>Trân trọng,<br/>${escapeHtml(SITE_NAME)}</p>
 			`.trim(),
 		});
@@ -119,7 +108,7 @@ export async function sendInquiryEmails(
 			apiKey: config.apiKey,
 			from: config.fromEmail,
 			to: [config.notifyEmail],
-			subject: `[Inquiry] ${typeLabel} — ${inquiry.name}`,
+			subject: `[Lời nhắn] ${typeLabel} — ${inquiry.name}`,
 			html: `
 				<h2>Yêu cầu liên hệ mới</h2>
 				<ul>
@@ -128,7 +117,7 @@ export async function sendInquiryEmails(
 					<li><strong>Email:</strong> ${escapeHtml(inquiry.email)}</li>
 				</ul>
 				<p><strong>Tóm tắt:</strong> ${summary}</p>
-				<p><a href="${adminInquiryUrl(id)}">Xem trong admin</a></p>
+				<p><a href="${adminInquiryUrl(id)}">Xem trong khu quản trị</a></p>
 			`.trim(),
 		});
 

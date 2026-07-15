@@ -3,10 +3,11 @@ import { describe, expect, it } from 'vitest';
 
 import HomeHero from './HomeHero';
 import HomeWriting from './HomeWriting';
+import type { PostListItemDTO } from '@/types/post';
 
 describe('Learning as Becoming homepage components', () => {
 	it('renders one H1, accessible art and both hero paths without client hydration', () => {
-		render(<HomeHero articleHref="/bai-viet/loi-ngo" />);
+		render(<HomeHero />);
 
 		expect(
 			screen.getByRole('heading', {
@@ -14,26 +15,26 @@ describe('Learning as Becoming homepage components', () => {
 				name: 'Không chỉ học để biết. Học để trở thành.',
 			}),
 		).toBeInTheDocument();
-		expect(screen.getByRole('img', { name: /hành trình học để trở thành/i })).toBeInTheDocument();
+		expect(screen.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i })).toBeInTheDocument();
 		expect(
-			screen.getByRole('link', { name: /Khám phá cách tôi nhìn về giáo dục/i }),
-		).toHaveAttribute('href', '#manifesto');
-		expect(screen.getByRole('link', { name: /Bắt đầu từ một bài viết/i })).toHaveAttribute(
-			'href',
-			'/bai-viet/loi-ngo',
-		);
+			screen.getByRole('link', { name: /Đọc những ghi chép mới/i }),
+		).toHaveAttribute('href', '/bai-viet');
+		expect(screen.getByRole('link', { name: /Tìm hiểu thêm về Khánh/i })).toHaveAttribute('href', '/gioi-thieu');
 	});
 
-	it('keeps the personal interlude while the editorial listing is removed', () => {
-		const { container } = render(<HomeWriting podcast={null} />);
+	it('shows the latest writing and removes the unrelated emotional interlude', () => {
+		const post = {
+			id: '1',
+			title: 'LỜI NGỎ',
+			slug: 'loi-ngo',
+			summary: 'Một lời mở đầu.',
+			publishedAt: '2026-02-15T00:00:00.000Z',
+			createdAt: '2026-02-15T00:00:00.000Z',
+		} as PostListItemDTO;
+		render(<HomeWriting posts={[post]} podcast={null} />);
 
-		expect(container.querySelectorAll('article')).toHaveLength(0);
-		expect(
-			screen.getByText(
-				'Emotion leads us to bad decisions, great lessons—and always, somehow, back to love.',
-			),
-		).toBeInTheDocument();
-		expect(screen.queryByText('LỜI NGỎ')).not.toBeInTheDocument();
+		expect(screen.getByRole('link', { name: /LỜI NGỎ/i })).toHaveAttribute('href', '/bai-viet/loi-ngo');
+		expect(screen.queryByText(/Emotion leads us/i)).not.toBeInTheDocument();
 		expect(screen.queryByText(/^Podcast$/i)).not.toBeInTheDocument();
 	});
 });

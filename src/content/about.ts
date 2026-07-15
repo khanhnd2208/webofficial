@@ -1,59 +1,48 @@
-import { SITE_EYEBROW, PERSONAL_MARK } from '@/config/site';
+import { PERSONAL_MARK } from '@/config/site';
 import { routes } from '@/config/routes';
 
 export const aboutContent = {
-	title: `Tôi & Dịch vụ`,
-	eyebrow: SITE_EYEBROW,
-	heroHeadline: 'Tôi dạy để cùng người khác nhìn thế giới rộng hơn.',
+	title: 'Giới thiệu',
+	eyebrow: 'Đôi nét về Khánh',
+	heroHeadline: 'Tôi là Duy Khánh, một giảng viên.',
 	intro:
-		'Tôi là giảng viên, người thiết kế trải nghiệm học tập, và một người luôn tò mò về con người, tổ chức và thế giới quanh mình.',
+		'Tôi dành phần lớn thời gian cho lớp học, việc thiết kế chương trình và những câu hỏi về cách con người học, làm việc và trưởng thành.',
 	journey: [
 		{
-			title: 'Giảng dạy',
-			body: 'Dẫn dắt không gian học nơi người học được nhìn rõ bài toán, thử phương pháp, và mang theo cách nghĩ mới.',
+			anchorId: 'giang-day-workshop',
+			title: 'Giảng dạy và workshop',
+			body: 'Tôi dạy về quản trị, con người, giao tiếp và chiến lược, kết hợp lý thuyết với những tình huống người học có thể gặp trong công việc và đời sống.',
 		},
 		{
-			title: 'Thiết kế trải nghiệm học',
-			body: 'Chuyển mục tiêu thành lộ trình, hoạt động và dấu vết học tập — để học không dừng ở cảm giác “đã nghe”.',
+			anchorId: 'thiet-ke-chuong-trinh',
+			title: 'Thiết kế chương trình học',
+			body: 'Tôi cùng trường học hoặc tổ chức xây dựng mục tiêu, lộ trình, hoạt động và cách đánh giá cho một chương trình học.',
 		},
 		{
-			title: 'Khám phá & đồng hành',
-			body: 'Cùng cá nhân và tổ chức làm rõ hướng đi, rồi chọn bước tiếp theo khả thi trong bối cảnh thật.',
+			anchorId: 'tu-van-phat-trien',
+			title: 'Trao đổi và tư vấn',
+			body: 'Tôi góp ý cho cá nhân hoặc đội ngũ đang cần nhìn rõ hơn một quyết định về học tập, công việc hoặc cách làm việc cùng nhau.',
 		},
 	],
 	roles: [
 		{
-			title: 'Educator',
-			body: 'Giảng dạy và facilitation — tạo không gian học có mục tiêu, hoạt động và phản hồi.',
+			title: 'Giảng viên',
+			body: 'Giảng dạy và dẫn dắt những không gian học có mục tiêu, hoạt động và phản hồi.',
 		},
 		{
-			title: 'Learning Designer',
-			body: 'Thiết kế chương trình, module và trải nghiệm học gắn với hành vi cần thay đổi.',
+			title: 'Người thiết kế chương trình học',
+			body: 'Thiết kế chương trình, bài học và hoạt động gắn với điều người học cần thực hành.',
 		},
 		{
-			title: 'Explorer',
+			title: 'Người luôn tò mò',
 			body: 'Giữ sự tò mò về con người, tổ chức và thế giới — rồi viết, thử và chia sẻ những gì đã kiểm chứng.',
 		},
 	],
 	philosophy: [
-		'Hiểu đúng bài toán trước khi tối ưu công cụ.',
-		'Học phải để lại dấu vết: quyết định, hành động, phản hồi.',
-		'AI là năng lực xuyên suốt — hữu ích khi có quy trình và ranh giới rõ.',
-		'Không hứa kết quả ngoài tầm kiểm soát.',
-	],
-	process: [
-		{
-			title: 'Làm rõ',
-			description: 'Nghe bối cảnh, ràng buộc và kết quả mong muốn — trước khi đề xuất phạm vi.',
-		},
-		{
-			title: 'Thiết kế',
-			description: 'Chọn hình thức phù hợp: workshop, chương trình học, hoặc tư vấn phát triển.',
-		},
-		{
-			title: 'Đồng hành',
-			description: 'Triển khai có nhịp phản hồi; dừng đúng lúc khi mục tiêu đã đủ rõ.',
-		},
+		'Tôi thường bắt đầu bằng việc hiểu người học thực sự cần gì.',
+		'Tôi muốn mỗi buổi học để lại một điều có thể áp dụng.',
+		'Tôi sử dụng AI như một công cụ hỗ trợ, nhưng không để nó thay thế suy nghĩ và trách nhiệm của con người.',
+		'Tôi chỉ nhận những công việc mà mình thực sự có thể đóng góp.',
 	],
 	/** Only owner-verified milestones. Empty = section hidden. */
 	milestones: [] as { id: string; label: string; detail: string }[],
@@ -62,10 +51,10 @@ export const aboutContent = {
 		'Không làm hộ công việc hay cam kết việc làm.',
 		'Không mở chatbot / marketplace trong giai đoạn này.',
 	],
-	outsideWork: `Ngoài công việc, ${PERSONAL_MARK} giữ nhịp đọc – viết – thử nghiệm học cụ và trò chơi học tập.`,
+	outsideWork: `Ngoài lớp học, ${PERSONAL_MARK} giữ thói quen đọc, viết và thử làm những học cụ nhỏ. HANOICAM là góc tản văn nơi tôi kể lại những điều nhìn thấy về con người, công việc và cuộc sống.`,
 	ctas: [
-		{ href: routes.contact, label: 'Kết nối' },
 		{ href: routes.posts, label: 'Đọc bài viết' },
+		{ href: routes.contact, label: 'Gửi Khánh một lời nhắn' },
 	],
 } as const;
 
@@ -73,27 +62,27 @@ export const homeContent = {
 	heroHeadline: 'Tôi dạy để cùng người khác nhìn thế giới rộng hơn.',
 	heroSupporting:
 		'Tôi là một giảng viên, người thiết kế trải nghiệm học tập và một người luôn tò mò về con người, tổ chức và thế giới quanh mình.',
-	heroPrimaryCta: { href: '/#hanh-trinh', label: 'Khám phá hành trình' },
-	heroSecondaryCta: { href: routes.aboutServices, label: 'Xem tôi có thể đồng hành thế nào' },
+	heroPrimaryCta: { href: routes.posts, label: 'Đọc những ghi chép mới' },
+	heroSecondaryCta: { href: routes.aboutServices, label: 'Xem những công việc tôi đang làm' },
 	manifesto: [
 		'Tôi tin học tập tốt nhất xảy ra khi người học được nhìn thế giới rộng hơn — không chỉ nhận thêm thông tin.',
 		'Mỗi buổi học, mỗi chương trình, mỗi cuộc trò chuyện đều là một hành trình nhỏ: làm rõ, thử, và mang theo cách nghĩ mới.',
 		'AI có thể hỗ trợ, nhưng không thay thế sự hiểu biết về con người và tổ chức.',
 	],
 	closingCta: {
-		quote: 'Một cuộc trò chuyện tốt đôi khi là điểm bắt đầu của một hành trình mới.',
+		quote: 'Nếu những điều tôi viết khiến bạn nghĩ thêm về một câu hỏi của riêng mình, chúng ta có thể bắt đầu từ đó.',
 		href: routes.contact,
-		label: 'Kết nối',
+		label: 'Gửi Khánh một lời nhắn',
 	},
 } as const;
 
 export const archiveContent = {
-	title: 'Archive',
+	title: 'Lưu trữ',
 	intro:
-		'Các bề mặt công khai cũ được giữ lại để tham chiếu. Nội dung tại đây không còn nằm trong hành trình marketing chính.',
+		'Các nội dung và công cụ cũ được lưu tại đây để người đọc tiện tham khảo.',
 	links: [
-		{ href: '/goc-cua-khanh', label: 'Góc của Khánh (lab)', note: 'Tài nguyên & thử nghiệm' },
-		{ href: '/hoc', label: 'Học (catalog công khai cũ)', note: 'Khu học viên vẫn dùng /tai-khoan/hoc' },
-		{ href: '/case-study', label: 'Case study', note: 'Chuyển về dấu mốc trên Tôi & Dịch vụ khi có dữ liệu xác minh' },
+		{ href: '/goc-cua-khanh', label: 'Góc của Khánh', note: 'Tài nguyên và những thử nghiệm nhỏ' },
+		{ href: '/hoc', label: 'Khu học cũ', note: 'Học viên tiếp tục học trong Khu học tập' },
+		{ href: '/case-study', label: 'Dấu mốc cũ', note: 'Được chuyển về trang Giới thiệu khi có thông tin xác minh' },
 	],
 } as const;

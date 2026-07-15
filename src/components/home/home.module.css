@@ -1147,3 +1147,256 @@
 		font-size: 1.75rem;
 	}
 }
+
+/* Personal editorial refresh — quieter hierarchy, fewer campaign-like surfaces. */
+.hero {
+	min-height: auto;
+}
+
+.heroInner {
+	min-height: auto;
+	padding-top: calc(var(--header-height) + clamp(4rem, 8vw, 7rem));
+	padding-bottom: clamp(4.5rem, 8vw, 7rem);
+}
+
+.heroCopy {
+	grid-column: 1 / 8;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	padding: 0;
+}
+
+.heroArtwork {
+	grid-column: 8 / 13;
+	height: clamp(380px, 52vw, 570px);
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	opacity: 0.82;
+}
+
+.heroArtwork img {
+	object-fit: cover;
+	object-position: left center;
+}
+
+.eyebrow {
+	font-size: 0.78rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: none;
+}
+
+.heroTitle {
+	font-size: clamp(3.4rem, 5.4vw, 5.5rem);
+	line-height: 0.98;
+}
+
+.heroDescription {
+	max-width: 640px;
+}
+
+.heroActions .primaryButton {
+	border: 1px solid var(--hairline);
+	background: transparent;
+	color: var(--ink);
+}
+
+.heroActions .primaryButton:hover {
+	border-color: var(--accent);
+	background: transparent;
+	color: var(--accent);
+}
+
+.manifestoLead {
+	grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+	gap: clamp(2.5rem, 6vw, 6rem);
+}
+
+.manifestoCopy {
+	padding-top: 0.5rem;
+}
+
+.editorialList {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: clamp(1.5rem, 3vw, 3rem);
+	margin-top: clamp(3rem, 6vw, 5rem);
+}
+
+.editorialRow {
+	display: block;
+	padding-block: 1.5rem 0;
+}
+
+.editorialRow:last-child {
+	border-bottom: 0;
+}
+
+.editorialRow h3 {
+	font-size: clamp(1.6rem, 2.2vw, 2rem);
+}
+
+.editorialRow > p:last-child {
+	margin-top: 0.8rem;
+	font-size: 1rem;
+}
+
+.writing {
+	background: var(--canvas);
+}
+
+.writingList {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: clamp(1.5rem, 3vw, 3rem);
+	margin: clamp(3rem, 6vw, 4.5rem) 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+
+.writingCard {
+	display: flex;
+	min-height: 100%;
+	flex-direction: column;
+	border-top: 1px solid var(--hairline);
+	padding-top: 1.5rem;
+	color: inherit;
+}
+
+.writingCard time {
+	font-size: 0.75rem;
+	color: var(--ink-secondary);
+}
+
+.writingCard h3 {
+	margin-top: 0.8rem;
+	font-family: var(--font-cormorant), Georgia, serif;
+	font-size: clamp(1.75rem, 2.4vw, 2.2rem);
+	font-weight: 500;
+	line-height: 1.1;
+}
+
+.writingCard > p {
+	margin-top: 0.8rem;
+	font-size: 0.95rem;
+	line-height: 1.65;
+	color: var(--ink-secondary);
+}
+
+.writingCard > span {
+	margin-top: auto;
+	padding-top: 1.25rem;
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--accent);
+}
+
+.writingCard:hover h3 {
+	color: var(--accent);
+}
+
+.writingEmpty {
+	margin-block: 2.5rem;
+	color: var(--ink-secondary);
+}
+
+.closing {
+	min-height: auto;
+}
+
+.closingInner {
+	max-width: 1100px;
+}
+
+.closingInner h2 {
+	max-width: 1000px;
+	margin-top: 0;
+	font-size: clamp(2.5rem, 4.5vw, 4rem);
+	line-height: 1.08;
+}
+
+.closingActions {
+	gap: 1rem 2rem;
+}
+
+@media (max-width: 899px) {
+	.heroInner {
+		display: flex;
+		align-items: stretch;
+		padding-top: calc(var(--header-height) + 3rem);
+	}
+
+	.heroCopy {
+		display: block;
+		order: 1;
+	}
+
+	.heroHeadingPanel,
+	.heroBodyPanel {
+		width: 100%;
+		border: 0;
+		background: transparent;
+		box-shadow: none;
+		padding: 0;
+	}
+
+	.heroBodyPanel {
+		margin-top: 0;
+	}
+
+	.heroArtwork {
+		order: 2;
+		width: min(100%, 640px);
+		aspect-ratio: 4 / 3;
+		margin-top: 2.5rem;
+		align-self: flex-start;
+	}
+
+	.mobileCycle {
+		display: none;
+	}
+}
+
+@media (max-width: 767px) {
+	.heroTitle {
+		font-size: clamp(2.25rem, 10vw, 2.75rem);
+	}
+
+	.manifestoLead {
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
+	}
+
+	.manifestoCopy {
+		padding-top: 0;
+	}
+
+	.editorialList,
+	.writingList {
+		grid-template-columns: 1fr;
+	}
+
+	.editorialRow {
+		display: block;
+		padding-block: 1.4rem;
+	}
+
+	.editorialRow h3,
+	.editorialRow > p:last-child {
+		grid-column: auto;
+	}
+
+	.writingCard {
+		padding-bottom: 0.75rem;
+	}
+
+	.closing {
+		min-height: auto;
+	}
+
+	.closingInner h2 {
+		font-size: clamp(2.35rem, 9vw, 3.2rem);
+	}
+}

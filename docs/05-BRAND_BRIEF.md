@@ -1,39 +1,40 @@
 # Brand Brief — Duy Khánh
 
 **Status:** Owner-approved structure · contact/social fields optional until provided  
-**Last updated:** 2026-07-13
+**Last updated:** 2026-07-16
 
 ## Master brand
 
 | Element | Value |
 |---------|--------|
 | Display name | **Duy Khánh** |
-| Eyebrow | Giảng viên · Mentor · Cố vấn |
+| Eyebrow | Duy Khánh · Giảng viên |
 | Editorial brand | **HANOICAM** (Journal only) |
 | Personal mark | **NDK** (signature, not product brand) |
 
 ## Positioning
 
-Personal Knowledge & Advisory Studio — đồng hành với cá nhân và tổ chức làm rõ hướng đi, học có phương pháp, và viết để hiểu sâu.
+Website cá nhân của một giảng viên — nơi Duy Khánh giới thiệu công việc giảng dạy, chia sẻ những điều đang học và lưu lại suy nghĩ về con người, công việc, cuộc sống.
 
-## Brand promise
+## Lời giới thiệu cốt lõi
 
-Làm rõ bài toán trước khi tối ưu công cụ. Không hứa kết quả ngoài tầm kiểm soát. Không dùng bằng chứng giả.
+Không chỉ học để biết. Học để trở thành. Kiến thức cần gặp thực tế, trải nghiệm cần được nhìn lại và việc học cần tạo ra thay đổi.
 
 ## Tone
 
 Trầm, rõ ràng, biên tập — canvas giấy / ink / vermilion. Không marketplace, không bảng giá công khai, không “AI glow”.
 
-## Conversion tracks
+## Hành trình đọc
 
-1. **Cá nhân** — mentoring / học / Journal → `/lien-he?type=mentoring` hoặc Journal  
-2. **Tổ chức** — cố vấn / đào tạo / AI → `/lien-he?type=business|training|ai`
+1. **Làm quen** — Trang chủ → Giới thiệu
+2. **Ở lại đọc** — Trang chủ / Giới thiệu → Bài viết
+3. **Gửi lời nhắn khi cần** — mọi trang → `/lien-he`
 
 ## Bio pack
 
 | Length | Copy |
 |--------|------|
-| ~50 | Duy Khánh — giảng viên, mentor và cố vấn cho cá nhân và đội ngũ trẻ. |
+| ~50 | Duy Khánh — giảng viên, người thiết kế chương trình học và người viết. |
 | ~150 | `siteProfile.shortBio` trong `src/config/site.ts` |
 | Dài | `aboutContent` trong `src/content/about.ts` |
 

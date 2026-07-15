@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	getActivePublicCategories,
+	displayCategoryLabel,
 	readingTimeFromWordCount,
 	selectHomeArticles,
 	toPublicPostCard,
@@ -58,5 +59,11 @@ describe('publicAdapter', () => {
 	it('only returns categories with enough posts', () => {
 		expect(getActivePublicCategories([{ category: 'X' }], 2)).toEqual([]);
 		expect(getActivePublicCategories([{ category: 'X' }, { category: 'X' }], 2)).toEqual(['X']);
+	});
+
+	it('shows legacy English categories with natural Vietnamese labels', () => {
+		expect(displayCategoryLabel('Life & Thoughts')).toBe('Ghi chép về cuộc sống');
+		expect(displayCategoryLabel('Uncategorized')).toBeNull();
+		expect(displayCategoryLabel('Giáo dục')).toBe('Giáo dục');
 	});
 });

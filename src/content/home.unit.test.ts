@@ -4,12 +4,11 @@ import { getHomeHeroArticleHref, getHomeSelectedWork, homePageContent } from './
 import { getHomePodcastEpisode } from './podcast';
 
 describe('Learning as Becoming homepage content', () => {
-	it('keeps one central message and four real learning destinations', () => {
+	it('keeps one central message and a concrete teaching identity', () => {
 		expect(homePageContent.hero.headline).toEqual(['Không chỉ học để biết.', 'Học để trở thành.']);
-		expect(homePageContent.experiences.items).toHaveLength(4);
-		expect(
-			homePageContent.experiences.items.every((item) => item.href.startsWith('/gioi-thieu#')),
-		).toBe(true);
+		expect(homePageContent.hero.eyebrow).toBe('Duy Khánh · Giảng viên');
+		expect(homePageContent.manifesto.paragraphs).toHaveLength(1);
+		expect(homePageContent.principles).toHaveLength(3);
 	});
 
 	it('publishes only the two verified homepage projects', () => {
@@ -32,10 +31,11 @@ describe('Learning as Becoming homepage content', () => {
 		expect(getHomeHeroArticleHref([])).toBe('/bai-viet');
 	});
 
-	it('uses a non-urgent, source-tagged closing invitation', () => {
-		expect(homePageContent.closing.primaryCta.href).toBe(
+	it('ends with writing first and a source-tagged message invitation', () => {
+		expect(homePageContent.closing.primaryCta.href).toBe('/bai-viet');
+		expect(homePageContent.closing.secondaryCta.href).toBe(
 			'/lien-he?sourcePage=%2F&ref=home-closing',
 		);
-		expect(homePageContent.closing.primaryCta.label).toBe('Bắt đầu một cuộc trò chuyện');
+		expect(homePageContent.closing.secondaryCta.label).toBe('Gửi Khánh một lời nhắn');
 	});
 });

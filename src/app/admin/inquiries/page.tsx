@@ -1,7 +1,14 @@
 import Link from 'next/link';
 
 import { listInquiries } from '@/services/inquiryService';
-import { INQUIRY_STATUSES, INQUIRY_TYPES, type InquiryStatus, type InquiryType } from '@/features/inquiries/constants';
+import {
+	INQUIRY_STATUSES,
+	INQUIRY_STATUS_LABELS,
+	INQUIRY_TYPES,
+	INQUIRY_TYPE_LABELS,
+	type InquiryStatus,
+	type InquiryType,
+} from '@/features/inquiries/constants';
 import { routes } from '@/config/routes';
 
 export const dynamic = 'force-dynamic';
@@ -33,13 +40,13 @@ export default async function AdminInquiriesPage({
 		<main className="mx-auto max-w-6xl px-6 py-8">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Inquiry</h1>
+					<h1 className="text-2xl font-bold tracking-tight">Yêu cầu liên hệ</h1>
 					<p className="mt-1 text-sm text-foreground-secondary">
-						Lead từ form liên hệ — không ghi nội dung nhạy cảm ra log.
+						Lời nhắn từ biểu mẫu công khai — không ghi nội dung nhạy cảm vào nhật ký hệ thống.
 					</p>
 				</div>
 				<p className="text-sm text-muted">
-					Trang này: {result.items.length} · NEW trên trang: {newCount} · Tổng: {result.total}
+					Trang này: {result.items.length} · Mới: {newCount} · Tổng: {result.total}
 				</p>
 			</header>
 
@@ -55,10 +62,10 @@ export default async function AdminInquiriesPage({
 					defaultValue={status ?? ''}
 					className="rounded-lg border border-border bg-surface px-3 py-2 text-sm"
 				>
-					<option value="">Mọi status</option>
+					<option value="">Mọi trạng thái</option>
 					{INQUIRY_STATUSES.map((s) => (
 						<option key={s} value={s}>
-							{s}
+							{INQUIRY_STATUS_LABELS[s]}
 						</option>
 					))}
 				</select>
@@ -67,10 +74,10 @@ export default async function AdminInquiriesPage({
 					defaultValue={inquiryType ?? ''}
 					className="rounded-lg border border-border bg-surface px-3 py-2 text-sm"
 				>
-					<option value="">Mọi loại</option>
+					<option value="">Mọi chủ đề</option>
 					{INQUIRY_TYPES.map((t) => (
 						<option key={t} value={t}>
-							{t}
+							{INQUIRY_TYPE_LABELS[t]}
 						</option>
 					))}
 				</select>
@@ -97,7 +104,7 @@ export default async function AdminInquiriesPage({
 						{result.items.length === 0 ? (
 							<tr>
 								<td colSpan={5} className="px-4 py-8 text-center text-muted">
-									Chưa có inquiry.
+									Chưa có lời nhắn nào.
 								</td>
 							</tr>
 						) : (
@@ -112,8 +119,8 @@ export default async function AdminInquiriesPage({
 										</Link>
 										<p className="text-xs text-muted">{item.email}</p>
 									</td>
-									<td className="px-4 py-3">{item.inquiryType}</td>
-									<td className="px-4 py-3">{item.status}</td>
+									<td className="px-4 py-3">{INQUIRY_TYPE_LABELS[item.inquiryType]}</td>
+									<td className="px-4 py-3">{INQUIRY_STATUS_LABELS[item.status]}</td>
 									<td className="px-4 py-3">{item.emailStatus}</td>
 									<td className="px-4 py-3 text-xs text-muted">
 										{item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : '—'}

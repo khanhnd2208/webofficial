@@ -69,29 +69,27 @@ export type HomePageContent = {
 
 export const homePageContent: HomePageContent = {
 	hero: {
-		eyebrow: 'DUY KHÁNH · EDUCATOR · EXPLORER',
+		eyebrow: 'Duy Khánh · Giảng viên',
 		headline: ['Không chỉ học để biết.', 'Học để trở thành.'],
 		description:
-			'Tôi là Duy Khánh — một người làm giáo dục tin rằng kiến thức chỉ thực sự có ý nghĩa khi được trải nghiệm, phản tư và chuyển hóa thành năng lực sống.',
+			'Tôi là Duy Khánh, một giảng viên thích biến những kiến thức tưởng như xa xôi thành điều người học có thể hiểu, thử và sử dụng trong đời sống.',
 		primaryCta: {
-			label: 'Khám phá cách tôi nhìn về giáo dục',
-			href: routes.homeManifesto,
+			label: 'Đọc những ghi chép mới',
+			href: routes.posts,
 		},
-		articleCtaLabel: 'Bắt đầu từ một bài viết',
+		articleCtaLabel: 'Tìm hiểu thêm về Khánh',
 		preferredArticleSlug: 'loi-ngo',
 		becomingQuote: 'Learning is not only about knowing. It is about becoming.',
 		learningCycle: 'Learn. Experience. Reflect. Become.',
-		caption: 'A lecturer passionate about making education an art.',
+		caption: 'Một giảng viên luôn tò mò về việc con người học và trưởng thành.',
 	},
 	manifesto: {
-		eyebrow: 'TÔI TIN GÌ VỀ GIÁO DỤC',
-		title: 'Tôi không tin rằng việc học nên kết thúc ở một tấm bằng.',
+		eyebrow: 'Tôi nghĩ về việc học',
+		title: 'Một bài học tốt cần đi được vào đời sống.',
 		paragraphs: [
-			'Tôi tin rằng giáo dục tốt không chỉ truyền đạt kiến thức. Nó tạo ra những trải nghiệm đủ thật để người học phải suy nghĩ, thử nghiệm, mắc lỗi và tự xây dựng hiểu biết của riêng mình.',
-			'Một bài học có ý nghĩa không chỉ giúp chúng ta trả lời đúng một câu hỏi. Nó thay đổi cách chúng ta nhìn nhận vấn đề, cách chúng ta đưa ra quyết định và cách chúng ta hiểu về chính mình.',
-			'Vì vậy, điều tôi muốn tạo ra không chỉ là những lớp học. Đó là những không gian nơi kiến thức, trải nghiệm và sự phản tư gặp nhau — để việc học thực sự trở thành một phần của quá trình phát triển con người.',
+			'Tôi tin rằng kiến thức chỉ có ý nghĩa khi giúp chúng ta hiểu vấn đề rõ hơn và sống tốt hơn trong thực tế. Vì vậy, trong lớp học, tôi luôn cố gắng để người học có cơ hội đặt câu hỏi, thử một cách làm và tự nhìn lại điều mình vừa trải qua.',
 		],
-		quote: ['Giáo dục không chỉ là truyền đạt kiến thức.', 'Đó là thiết kế cho sự chuyển hóa.'],
+		quote: ['Giáo dục không chỉ truyền đạt kiến thức.', 'Một bài học tốt giúp người học nghĩ và hành động khác đi.'],
 	},
 	principles: [
 		{
@@ -159,33 +157,28 @@ export const homePageContent: HomePageContent = {
 			'Tôi thích đưa ý tưởng ra khỏi trang giấy. Đôi khi chúng trở thành một bài học, một chương trình, một công cụ hoặc một hệ thống giúp con người học tập và làm việc tốt hơn.',
 	},
 	writing: {
-		eyebrow: 'HANOICAM',
-		title: 'Những điều đáng để ở lại suy nghĩ lâu hơn',
+		eyebrow: 'Ghi chép mới',
+		title: 'Những điều tôi đang viết',
 		description:
-			'HANOICAM — những ghi chép về con người, việc học và những điều nhìn thấy trên đường.',
-		archiveLabel: 'Đọc những ghi chép mới nhất',
+			'Những ghi chép về việc học, con người, công việc và những điều tôi gặp trên đường.',
+		archiveLabel: 'Xem tất cả bài viết',
 	},
 	writingInterlude: {
 		quote: 'Emotion leads us to bad decisions, great lessons—and always, somehow, back to love.',
 		body: 'Tôi quan tâm đến những điều con người không thể giải thích hoàn toàn bằng logic: những lựa chọn sai, những bài học đến muộn, các mối quan hệ, sự trưởng thành và cách chúng ta tìm đường trở về với chính mình.',
 	},
 	closing: {
-		quote: [
-			'Bạn không cần biết toàn bộ con đường.',
-			'Có lẽ bạn chỉ cần bắt đầu bằng một câu hỏi thật.',
-		],
-		title: 'Bạn đang muốn trở thành người như thế nào?',
-		paragraphs: [
-			'Có thể bạn đang tìm một cách học khác, một hướng đi rõ hơn, một trải nghiệm đủ sâu hoặc một người có thể cùng bạn nhìn lại vấn đề từ một góc độ mới.',
-			'Chúng ta có thể bắt đầu bằng một cuộc trò chuyện.',
-		],
+		quote: ['', ''],
+		title:
+			'Nếu những điều tôi viết khiến bạn nghĩ thêm về một câu hỏi của riêng mình, chúng ta có thể bắt đầu từ đó.',
+		paragraphs: [],
 		primaryCta: {
-			label: 'Bắt đầu một cuộc trò chuyện',
-			href: `${routes.contact}?sourcePage=%2F&ref=home-closing`,
+			label: 'Đọc những ghi chép mới',
+			href: routes.posts,
 		},
 		secondaryCta: {
-			label: 'Tiếp tục khám phá các ghi chép',
-			href: routes.posts,
+			label: 'Gửi Khánh một lời nhắn',
+			href: `${routes.contact}?sourcePage=%2F&ref=home-closing`,
 		},
 	},
 };

@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	if (!label) return { title: 'Không tìm thấy', robots: { index: false } };
 	return {
 		title: `${label} · ${EDITORIAL_NAME}`,
-		description: `Pillar ${label} trên ${EDITORIAL_NAME} Journal.`,
+		description: `Các bài viết thuộc chủ đề ${label} trong góc viết ${EDITORIAL_NAME}.`,
 		alternates: { canonical: absoluteUrl(routes.postPillar(slug)) },
 	};
 }
@@ -41,14 +41,14 @@ export default async function PillarPage({ params }: PageProps) {
 						</Link>
 					</p>
 					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{label}</h1>
-					<p className="mt-3 text-sm text-ink-secondary">{result.total} bài trong pillar này</p>
+					<p className="mt-3 text-sm text-ink-secondary">{result.total} bài trong chủ đề này</p>
 				</div>
 			</section>
 			<section>
 				<div className="shell py-12">
 					{result.items.length === 0 ? (
 						<p className="text-sm text-ink-secondary">
-							Chưa có bài gắn pillar này. Gán taxonomy trong admin editor sau khi chạy dry-run mapping.
+							Chưa có bài viết nào trong chủ đề này.
 						</p>
 					) : (
 						<ul className="divide-y divide-hairline border-y border-hairline">

@@ -53,7 +53,7 @@ export default function SiteFooter() {
 					>
 						{groups.map((group) => (
 							<div key={group.id}>
-								<p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary">
+								<p className="text-sm font-medium text-ink">
 									{group.title}
 								</p>
 								<ul className="mt-3 space-y-2">
@@ -61,7 +61,7 @@ export default function SiteFooter() {
 										<li key={`${group.id}-${link.href}`}>
 											<Link
 												href={link.href}
-												className="text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:text-ink"
+												className="text-sm text-ink-secondary transition-colors hover:text-ink"
 											>
 												{link.label}
 											</Link>

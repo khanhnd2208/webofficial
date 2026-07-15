@@ -1,56 +1,38 @@
 'use client';
 
-import { useMemo, useState, useTransition, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 import { routes } from '@/config/routes';
 import {
+	INQUIRY_TYPES,
 	PUBLIC_INQUIRY_TYPE_OPTIONS,
 	type InquiryType,
-	INQUIRY_TYPES,
 } from '@/features/inquiries/constants';
 import { trackEvent } from '@/lib/analytics';
 
 function normalizeInquiryType(raw: string | null): InquiryType {
 	if (!raw) return 'unsure';
-	if ((INQUIRY_TYPES as readonly string[]).includes(raw)) {
-		const legacyMap: Partial<Record<InquiryType, InquiryType>> = {
-			mentoring: 'people-organization',
-			business: 'people-organization',
-			ai: 'unsure',
-			course: 'other',
-		};
-		const typed = raw as InquiryType;
-		const mapped = legacyMap[typed];
-		if (mapped) return mapped;
-		if (PUBLIC_INQUIRY_TYPE_OPTIONS.some((o) => o.value === typed)) return typed;
-		return typed;
-	}
-	return 'unsure';
-}
+	if (!(INQUIRY_TYPES as readonly string[]).includes(raw)) return 'unsure';
 
-const TYPE_OPTIONS = [...PUBLIC_INQUIRY_TYPE_OPTIONS];
+	const legacyMap: Partial<Record<InquiryType, InquiryType>> = {
+		mentoring: 'people-organization',
+		business: 'people-organization',
+		ai: 'other',
+		course: 'other',
+	};
+	const typed = raw as InquiryType;
+	return legacyMap[typed] ?? typed;
+}
 
 type FormState = {
 	name: string;
 	email: string;
 	inquiryType: InquiryType;
-	roleOrStage: string;
-	organization: string;
-	orgSize: string;
-	industry: string;
 	context: string;
-	problem: string;
-	consequence: string;
-	tried: string;
-	desiredOutcome: string;
-	preferredFormat: string;
 	timeframe: string;
-	budgetOptional: string;
-	urgency: string;
 	sourceCourseSlug: string;
-	agreedScope: boolean;
 	agreedPrivacy: boolean;
 	website: string;
 };
@@ -60,21 +42,9 @@ function emptyForm(type: InquiryType, courseSlug: string): FormState {
 		name: '',
 		email: '',
 		inquiryType: type,
-		roleOrStage: '',
-		organization: '',
-		orgSize: '',
-		industry: '',
 		context: '',
-		problem: '',
-		consequence: '',
-		tried: '',
-		desiredOutcome: '',
-		preferredFormat: '',
 		timeframe: '',
-		budgetOptional: '',
-		urgency: '',
 		sourceCourseSlug: courseSlug,
-		agreedScope: false,
 		agreedPrivacy: false,
 		website: '',
 	};
@@ -89,7 +59,9 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 	const searchParams = useSearchParams();
 	const initialType = normalizeInquiryType(searchParams.get('type'));
 	const courseSlug = searchParams.get('course') || searchParams.get('sourceCourseSlug') || '';
-	const sourcePage = searchParams.get('sourcePage') || (typeof window !== 'undefined' ? window.location.pathname : routes.contact);
+	const sourcePage =
+		searchParams.get('sourcePage') ||
+		(typeof window !== 'undefined' ? window.location.pathname : routes.contact);
 
 	const [form, setForm] = useState<FormState>(() => emptyForm(initialType, courseSlug));
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -98,85 +70,61 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 	const [pending, startTransition] = useTransition();
 
 	useEffect(() => {
-		trackEvent('contact_form_start', { type: form.inquiryType, sourcePage: routes.contact });
-		// intentionally once on mount
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	const type = form.inquiryType;
-
-	const showOrgFields = type === 'people-organization' || type === 'business';
-	const showRoleStage =
-		type === 'people-organization' ||
-		type === 'mentoring' ||
-		type === 'business' ||
-		type === 'training' ||
-		type === 'learning-design' ||
-		type === 'ai';
-	const showCourse = type === 'course';
+		trackEvent('contact_form_start', { type: initialType, sourcePage: routes.contact });
+	}, [initialType]);
 
 	const campaignParams = useMemo(() => {
 		const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref'] as const;
-		const out: Record<string, string> = {};
+		const values: Record<string, string> = {};
 		for (const key of keys) {
-			const v = searchParams.get(key);
-			if (v) out[key] = v;
+			const value = searchParams.get(key);
+			if (value) values[key] = value;
 		}
-		return Object.keys(out).length ? out : undefined;
+		return Object.keys(values).length > 0 ? values : undefined;
 	}, [searchParams]);
 
 	function update<K extends keyof FormState>(key: K, value: FormState[K]) {
-		setForm((prev) => ({ ...prev, [key]: value }));
+		setForm((current) => ({ ...current, [key]: value }));
 	}
 
-	function onSubmit(e: React.FormEvent) {
-		e.preventDefault();
+	function onSubmit(event: React.FormEvent) {
+		event.preventDefault();
 		if (!formEnabled || pending) return;
+
 		setFieldErrors({});
 		setErrorSummary(null);
 
 		startTransition(async () => {
 			try {
-				trackEvent('contact_form_submit', {
-					type: form.inquiryType,
-					sourcePage: typeof sourcePage === 'string' ? sourcePage : routes.contact,
-				});
-				const res = await fetch('/api/inquiries', {
+				trackEvent('contact_form_submit', { type: form.inquiryType, sourcePage });
+				const response = await fetch('/api/inquiries', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
-						...form,
-						sourcePage,
-						campaignParams,
-						organization: form.organization || undefined,
-						orgSize: form.orgSize || undefined,
-						industry: form.industry || undefined,
-						problem: form.problem || undefined,
-						consequence: form.consequence || undefined,
-						tried: form.tried || undefined,
-						desiredOutcome: form.desiredOutcome || undefined,
-						preferredFormat: form.preferredFormat || undefined,
+						name: form.name,
+						email: form.email,
+						inquiryType: form.inquiryType,
+						context: form.context,
 						timeframe: form.timeframe || undefined,
-						budgetOptional: form.budgetOptional || undefined,
-						urgency: form.urgency || undefined,
-						roleOrStage: form.roleOrStage || undefined,
+						sourcePage,
 						sourceCourseSlug: form.sourceCourseSlug || undefined,
-						agreedScope: form.agreedScope || undefined,
-						agreedPrivacy: form.agreedPrivacy || undefined,
+						campaignParams,
+						agreedPrivacy: form.agreedPrivacy,
+						website: form.website,
 					}),
 				});
-				const json = (await res.json()) as {
+				const json = (await response.json()) as {
 					ok: boolean;
 					error?: string;
 					fields?: Record<string, string>;
-					data?: { accepted?: boolean };
 				};
 
-				if (!res.ok || !json.ok) {
-					setErrorSummary(json.error || 'Không gửi được. Vui lòng thử lại.');
+				if (!response.ok || !json.ok) {
+					setErrorSummary(json.error || 'Chưa gửi được lời nhắn. Vui lòng thử lại.');
 					if (json.fields) setFieldErrors(json.fields);
 					return;
 				}
+
 				setSuccess(true);
 			} catch {
 				setErrorSummary('Không kết nối được máy chủ. Vui lòng thử lại.');
@@ -186,13 +134,12 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 
 	if (success) {
 		return (
-			<div className="rounded-[4px] border border-hairline bg-paper px-6 py-8" role="status">
-				<p className="font-display text-2xl font-medium text-ink">Đã nhận được lời nhắn</p>
+			<div className="border-t border-hairline py-8" role="status">
+				<p className="font-display text-2xl font-medium text-ink">Khánh đã nhận được lời nhắn</p>
 				<p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-					Cảm ơn bạn. Khánh sẽ phản hồi qua email khi đã xem xét phạm vi phù hợp. Bạn không cần gửi lại trừ khi
-					có bổ sung quan trọng.
+					Cảm ơn bạn đã viết. Tôi sẽ đọc và phản hồi qua email sớm nhất có thể.
 				</p>
-				<Link href={routes.home} className="mt-6 inline-flex text-xs font-semibold uppercase tracking-wider text-vermilion">
+				<Link href={routes.home} className="mt-6 inline-flex text-sm font-medium text-accent hover:underline">
 					← Về trang chủ
 				</Link>
 			</div>
@@ -201,25 +148,27 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 
 	if (!formEnabled) {
 		return (
-			<div className="rounded-[4px] border border-hairline px-6 py-8">
-				<p className="font-display text-xl font-medium text-ink">Form đang tạm đóng</p>
+			<div className="border-t border-hairline py-8">
+				<p className="font-display text-xl font-medium text-ink">Kênh nhắn tin đang tạm đóng</p>
 				<p className="mt-3 text-sm text-ink-secondary">
-					{disabledReason ||
-						'Kênh liên hệ sẽ mở khi email thông báo và chính sách bảo mật đã được cấu hình.'}
+					{disabledReason || 'Khánh sẽ mở lại kênh liên hệ sau khi hoàn tất cấu hình.'}
 				</p>
 			</div>
 		);
 	}
 
+	const inputClass =
+		'mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm text-ink outline-none transition-colors focus:border-accent';
+	const labelClass = 'text-sm font-medium text-ink';
+
 	return (
-		<form onSubmit={onSubmit} className="space-y-6" noValidate>
+		<form onSubmit={onSubmit} className="space-y-7" noValidate>
 			{errorSummary ? (
 				<div role="alert" className="border border-vermilion/40 bg-accent-subtle px-4 py-3 text-sm text-ink">
 					{errorSummary}
 				</div>
 			) : null}
 
-			{/* Honeypot */}
 			<div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden>
 				<label>
 					Website
@@ -227,283 +176,105 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 						tabIndex={-1}
 						autoComplete="off"
 						value={form.website}
-						onChange={(e) => update('website', e.target.value)}
+						onChange={(event) => update('website', event.target.value)}
 					/>
 				</label>
-			</div>
-
-			<div>
-				<label htmlFor="inquiryType" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-					Loại nhu cầu
-				</label>
-				<select
-					id="inquiryType"
-					className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm text-ink"
-					value={form.inquiryType}
-					onChange={(e) => update('inquiryType', e.target.value as InquiryType)}
-				>
-					{TYPE_OPTIONS.map((opt) => (
-						<option key={opt.value} value={opt.value}>
-							{opt.label}
-						</option>
-					))}
-				</select>
 			</div>
 
 			<div className="grid gap-6 sm:grid-cols-2">
 				<div>
-					<label htmlFor="name" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						Họ tên
-					</label>
+					<label htmlFor="name" className={labelClass}>Họ tên</label>
 					<input
 						id="name"
 						required
-						className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
+						autoComplete="name"
+						className={inputClass}
 						value={form.name}
-						onChange={(e) => update('name', e.target.value)}
+						onChange={(event) => update('name', event.target.value)}
 						aria-invalid={Boolean(fieldErrors.name)}
 					/>
+					{fieldErrors.name ? <p className="mt-1 text-xs text-error">{fieldErrors.name}</p> : null}
 				</div>
 				<div>
-					<label htmlFor="email" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						Email
-					</label>
+					<label htmlFor="email" className={labelClass}>Email</label>
 					<input
 						id="email"
 						type="email"
 						required
-						className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
+						autoComplete="email"
+						className={inputClass}
 						value={form.email}
-						onChange={(e) => update('email', e.target.value)}
+						onChange={(event) => update('email', event.target.value)}
 						aria-invalid={Boolean(fieldErrors.email)}
 					/>
+					{fieldErrors.email ? <p className="mt-1 text-xs text-error">{fieldErrors.email}</p> : null}
 				</div>
 			</div>
 
-			{showRoleStage && (
-				<div>
-					<label htmlFor="roleOrStage" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						{type === 'people-organization' || type === 'mentoring'
-							? 'Giai đoạn nghề nghiệp hiện tại'
-							: 'Vai trò của bạn'}
-					</label>
-					<input
-						id="roleOrStage"
-						className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-						value={form.roleOrStage}
-						onChange={(e) => update('roleOrStage', e.target.value)}
-					/>
-				</div>
-			)}
-
-			{showOrgFields ? (
-				<div className="grid gap-6 sm:grid-cols-3">
-					<div className="sm:col-span-1">
-						<label htmlFor="organization" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-							Tổ chức
-						</label>
-						<input
-							id="organization"
-							className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-							value={form.organization}
-							onChange={(e) => update('organization', e.target.value)}
-						/>
-					</div>
-					<div>
-						<label htmlFor="orgSize" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-							Quy mô
-						</label>
-						<input
-							id="orgSize"
-							className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-							value={form.orgSize}
-							onChange={(e) => update('orgSize', e.target.value)}
-							placeholder="vd. 5–20 người"
-						/>
-					</div>
-					<div>
-						<label htmlFor="industry" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-							Ngành
-						</label>
-						<input
-							id="industry"
-							className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-							value={form.industry}
-							onChange={(e) => update('industry', e.target.value)}
-						/>
-					</div>
-				</div>
-			) : null}
-
-			{showCourse ? (
-				<div>
-					<label htmlFor="sourceCourseSlug" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						Khóa học quan tâm (slug)
-					</label>
-					<input
-						id="sourceCourseSlug"
-						className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-						value={form.sourceCourseSlug}
-						onChange={(e) => update('sourceCourseSlug', e.target.value)}
-					/>
-				</div>
-			) : null}
+			<div>
+				<label htmlFor="inquiryType" className={labelClass}>Chủ đề bạn muốn trao đổi</label>
+				<select
+					id="inquiryType"
+					className={inputClass}
+					value={form.inquiryType}
+					onChange={(event) => update('inquiryType', event.target.value as InquiryType)}
+				>
+					{PUBLIC_INQUIRY_TYPE_OPTIONS.map((option) => (
+						<option key={option.value} value={option.value}>{option.label}</option>
+					))}
+				</select>
+			</div>
 
 			<div>
-				<label htmlFor="context" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-					Bối cảnh
-				</label>
+				<label htmlFor="context" className={labelClass}>Đôi nét về điều bạn muốn chia sẻ</label>
+				<p className="mt-1 text-sm text-ink-secondary">Một vài dòng là đủ để Khánh hiểu câu chuyện của bạn.</p>
 				<textarea
 					id="context"
 					required
-					rows={4}
-					className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
+					rows={6}
+					className={inputClass}
 					value={form.context}
-					onChange={(e) => update('context', e.target.value)}
+					onChange={(event) => update('context', event.target.value)}
 					aria-invalid={Boolean(fieldErrors.context)}
 				/>
+				{fieldErrors.context ? <p className="mt-1 text-xs text-error">{fieldErrors.context}</p> : null}
 			</div>
 
 			<div>
-				<label htmlFor="problem" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-					Vấn đề đang gặp
-				</label>
-				<textarea
-					id="problem"
-					rows={3}
-					className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-					value={form.problem}
-					onChange={(e) => update('problem', e.target.value)}
+				<label htmlFor="timeframe" className={labelClass}>Thời gian phù hợp, nếu cần</label>
+				<input
+					id="timeframe"
+					className={inputClass}
+					value={form.timeframe}
+					onChange={(event) => update('timeframe', event.target.value)}
+					placeholder="Ví dụ: trong tháng này, hoặc chưa vội"
 				/>
 			</div>
 
-			{showOrgFields ? (
-				<>
-					<div>
-						<label htmlFor="consequence" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-							Hệ quả nếu không xử lý
-						</label>
-						<textarea
-							id="consequence"
-							rows={2}
-							className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-							value={form.consequence}
-							onChange={(e) => update('consequence', e.target.value)}
-						/>
-					</div>
-					<div>
-						<label htmlFor="tried" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-							Những việc đã thử
-						</label>
-						<textarea
-							id="tried"
-							rows={2}
-							className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-							value={form.tried}
-							onChange={(e) => update('tried', e.target.value)}
-						/>
-					</div>
-					<div>
-						<label htmlFor="budgetOptional" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-							Ngân sách (tùy chọn)
-						</label>
-						<input
-							id="budgetOptional"
-							className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-							value={form.budgetOptional}
-							onChange={(e) => update('budgetOptional', e.target.value)}
-						/>
-					</div>
-					<div>
-						<label htmlFor="urgency" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-							Mức độ khẩn cấp
-						</label>
-						<input
-							id="urgency"
-							className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-							value={form.urgency}
-							onChange={(e) => update('urgency', e.target.value)}
-							placeholder="vd. trong 2 tuần"
-						/>
-					</div>
-				</>
-			) : null}
-
-			<div>
-				<label htmlFor="desiredOutcome" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-					Kết quả mong muốn
-				</label>
-				<textarea
-					id="desiredOutcome"
-					rows={2}
-					className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-					value={form.desiredOutcome}
-					onChange={(e) => update('desiredOutcome', e.target.value)}
+			<label className="flex items-start gap-3 border-t border-hairline pt-6 text-sm leading-relaxed text-ink-secondary">
+				<input
+					type="checkbox"
+					required
+					className="mt-1"
+					checked={form.agreedPrivacy}
+					onChange={(event) => update('agreedPrivacy', event.target.checked)}
+					aria-invalid={Boolean(fieldErrors.agreedPrivacy)}
 				/>
-			</div>
-
-			<div className="grid gap-6 sm:grid-cols-2">
-				<div>
-					<label htmlFor="preferredFormat" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						Format phù hợp
-					</label>
-					<input
-						id="preferredFormat"
-						className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-						value={form.preferredFormat}
-						onChange={(e) => update('preferredFormat', e.target.value)}
-						placeholder="Online / trực tiếp / linh hoạt"
-					/>
-				</div>
-				<div>
-					<label htmlFor="timeframe" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						Thời gian phù hợp
-					</label>
-					<input
-						id="timeframe"
-						className="mt-2 w-full rounded-[4px] border border-hairline bg-canvas px-3 py-3 text-sm"
-						value={form.timeframe}
-						onChange={(e) => update('timeframe', e.target.value)}
-					/>
-				</div>
-			</div>
-
-			<div className="space-y-3 border-t border-hairline pt-6">
-				<label className="flex items-start gap-3 text-sm text-ink-secondary">
-					<input
-						type="checkbox"
-						className="mt-1"
-						checked={form.agreedScope}
-						onChange={(e) => update('agreedScope', e.target.checked)}
-					/>
-					<span>
-						Tôi hiểu phạm vi dịch vụ (không trị liệu, pháp lý, tài chính; chi phí chỉ đề xuất sau khi làm rõ nhu
-						cầu).
-					</span>
-				</label>
-				<label className="flex items-start gap-3 text-sm text-ink-secondary">
-					<input
-						type="checkbox"
-						className="mt-1"
-						checked={form.agreedPrivacy}
-						onChange={(e) => update('agreedPrivacy', e.target.checked)}
-					/>
-					<span>
-						Tôi đồng ý với{' '}
-						<Link href={routes.policyPrivacy} className="text-vermilion underline">
-							chính sách bảo mật
-						</Link>
-						.
-					</span>
-				</label>
-			</div>
+				<span>
+					Tôi đồng ý với{' '}
+					<Link href={routes.policyPrivacy} className="text-accent underline underline-offset-2">
+						chính sách bảo mật
+					</Link>
+					.
+				</span>
+			</label>
 
 			<button
 				type="submit"
 				disabled={pending}
-				className="inline-flex min-h-11 items-center rounded-[4px] bg-ink px-5 text-xs font-semibold uppercase tracking-wider text-paper disabled:opacity-60"
+				className="inline-flex min-h-11 items-center border-y border-hairline px-5 text-sm font-semibold text-accent transition-colors hover:border-accent disabled:opacity-60"
 			>
-				{pending ? 'Đang gửi…' : 'Gửi trao đổi'}
+				{pending ? 'Đang gửi…' : 'Gửi lời nhắn'}
 			</button>
 		</form>
 	);

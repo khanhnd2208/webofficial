@@ -7,8 +7,8 @@ import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 
 export const metadata: Metadata = {
-	title: 'Kết nối',
-	description: 'Kết nối với Duy Khánh về giảng dạy, thiết kế học tập, hoặc tư vấn phát triển.',
+	title: 'Gửi lời nhắn',
+	description: 'Gửi Duy Khánh một lời nhắn về lớp học, chương trình đào tạo hoặc một điều bạn muốn trao đổi.',
 	alternates: { canonical: absoluteUrl(routes.contact) },
 };
 
@@ -25,18 +25,18 @@ export default function ContactPage() {
 	const disabledReason = !privacyOk
 		? 'Chính sách bảo mật chưa sẵn sàng.'
 		: !emailOk && process.env.NODE_ENV === 'production'
-			? 'Email nhận thông báo inquiry chưa được cấu hình trên máy chủ (INQUIRY_NOTIFY_EMAIL + RESEND_API_KEY).'
+			? 'Kênh nhận lời nhắn chưa được cấu hình đầy đủ trên máy chủ.'
 			: undefined;
 
 	return (
 		<main className="min-h-screen">
 			<section className="border-b border-hairline">
 				<div className="shell py-14 sm:py-16">
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">Kết nối</p>
-					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Kết nối với Khánh</h1>
+					<p className="text-sm font-medium text-accent">Lời nhắn</p>
+					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Gửi Khánh một lời nhắn</h1>
 					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
-						Chọn loại nhu cầu và mô tả ngắn bối cảnh. Chi phí chỉ được đề xuất sau khi làm rõ đầu ra và phạm vi —
-						không báo giá tức thì trên form.
+						Nếu bạn muốn trao đổi về một lớp học, chương trình đào tạo hoặc một vấn đề mà tôi có thể hỗ trợ,
+						hãy để lại vài dòng bên dưới. Tôi sẽ đọc và phản hồi qua email.
 					</p>
 				</div>
 			</section>

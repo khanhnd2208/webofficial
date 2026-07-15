@@ -1,6 +1,6 @@
-# Duy Khánh — Personal Knowledge & Advisory Studio
+# Duy Khánh — Website cá nhân của một giảng viên
 
-> Giảng viên · Mentor · Cố vấn. Đồng hành, học có lộ trình, và HANOICAM Journal.  
+> Giảng dạy, thiết kế chương trình học và những ghi chép về con người, công việc, cuộc sống.
 > Live: **[toiladuykhanh.com](https://toiladuykhanh.com)**
 
 ---

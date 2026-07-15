@@ -21,7 +21,7 @@ export default function ArchivePage() {
 		<main className="min-h-screen">
 			<section className="section-space border-b border-hairline">
 				<div className="shell max-w-2xl">
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">Tiện ích</p>
+					<p className="text-sm font-medium text-accent">Tham khảo</p>
 					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{archiveContent.title}</h1>
 					<p className="mt-5 text-base leading-relaxed text-ink-secondary">{archiveContent.intro}</p>
 				</div>
@@ -29,16 +29,16 @@ export default function ArchivePage() {
 
 			<section className="section-space border-b border-hairline">
 				<div className="shell">
-					<h2 className="font-display text-xl font-medium text-ink">Bề mặt đã chuyển hướng</h2>
+					<h2 className="font-display text-2xl font-medium text-ink">Những mục đã được sắp xếp lại</h2>
 					<ul className="mt-6 space-y-4">
 						<li className="border-t border-hairline pt-4 text-sm text-ink-secondary">
-							<span className="font-semibold text-ink">Đồng hành / dịch vụ cũ</span> →{' '}
+							<span className="font-semibold text-ink">Thông tin công việc</span> →{' '}
 							<Link href={routes.aboutServices} className="text-accent hover:underline">
-								Tôi & Dịch vụ
+								Giới thiệu
 							</Link>
 						</li>
 						<li className="border-t border-hairline pt-4 text-sm text-ink-secondary">
-							<span className="font-semibold text-ink">Case study</span> →{' '}
+							<span className="font-semibold text-ink">Những dấu mốc</span> →{' '}
 							<Link href={routes.aboutMilestones} className="text-accent hover:underline">
 								Dấu mốc
 							</Link>
@@ -56,9 +56,9 @@ export default function ArchivePage() {
 			{resources.length > 0 ? (
 				<section className="section-space">
 					<div className="shell">
-						<h2 className="font-display text-xl font-medium text-ink">Tài nguyên lab (noindex)</h2>
+						<h2 className="font-display text-2xl font-medium text-ink">Tài nguyên và công cụ</h2>
 						<p className="mt-2 max-w-2xl text-sm text-ink-secondary">
-							Các mục dưới đây vẫn mở được trực tiếp; hub Góc của Khánh đã chuyển về Archive.
+							Một số học cụ và thử nghiệm cũ vẫn được giữ lại để bạn có thể tham khảo.
 						</p>
 						<ul className="mt-8 space-y-4">
 							{resources.map((r) => (
@@ -79,7 +79,7 @@ export default function ArchivePage() {
 				<section className="section-space">
 					<div className="shell max-w-2xl">
 						<p className="text-sm text-ink-secondary">
-							Chưa có tài nguyên lab công khai. Khi có, chúng sẽ xuất hiện tại đây với noindex.
+							Chưa có tài nguyên nào trong mục lưu trữ.
 						</p>
 					</div>
 				</section>
