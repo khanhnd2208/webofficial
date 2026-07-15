@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 	title: 'Góc của Khánh',
 	description: 'Creative lab — boardgame, công cụ, template và thử nghiệm công khai có status/access rõ.',
 	alternates: { canonical: absoluteUrl(routes.lab) },
+	robots: { index: false, follow: false },
 };
 
 const GROUPS = [

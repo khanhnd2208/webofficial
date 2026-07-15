@@ -1,6 +1,6 @@
-# Route Map — Duy Khánh
+# Route Map — The Explorer Teacher
 
-Single source of truth in code: `src/config/routes.ts`, `src/config/navigation.ts`, `src/config/site.ts`, `src/content/*`.
+Single source of truth: `src/config/routes.ts`, `src/config/navigation.ts`, `src/config/site.ts`, `src/content/*`.
 
 Navigation and footer render **only** links with `status: 'published'`.
 
@@ -9,34 +9,39 @@ Navigation and footer render **only** links with `status: 'published'`.
 | Brand | Role |
 |-------|------|
 | **Duy Khánh** | Master brand / site wordmark |
+| **The Explorer Teacher** | Positioning line |
 | **HANOICAM** | Editorial journal brand |
 | **NDK** | Personal mark / signature |
 
-## Public marketing (current)
+## Public marketing
 
 | Path | Purpose | Status |
 |------|---------|--------|
-| `/` | Brand homepage + hero illustration | Published |
-| `/gioi-thieu` | About (standalone) | Published |
-| `/lien-he` | Inquiry form | Published (prod form needs Resend env) |
-| `/dong-hanh` | Service hub | Published |
-| `/dong-hanh/[slug]` | Mentoring, business, training, AI | Published |
-| `/case-study` | Case list | Published (empty until permission) |
-| `/chinh-sach/[slug]` | Privacy, terms, cancellation, AI | Published (legal review pending) |
-| `/goc-cua-khanh` | Lab hub + categories + resources | Published |
-| `/bai-viet` | HANOICAM Journal | Published |
+| `/` | Homepage journey | Published |
+| `/gioi-thieu` | Tôi & Dịch vụ (3 services + process) | Published |
+| `/bai-viet` | Writing / journal | Published |
+| `/phat-trien-ban-than` | Podcast / growth | Draft until real episode |
+| `/lien-he` | Kết nối (inquiry) | Published (prod needs Resend) |
+| `/chinh-sach/[slug]` | Policies | Published |
+| `/archive` | Retired public surfaces | Published + **noindex** |
 
-## Learning (still gated)
+## Redirects (retired marketing)
 
-`/hoc/*` and `/giang-day` still redirect home until a PUBLISHED+CATALOG course passes E2E gate. Prisma `Course.visibility` defaults to `PRIVATE`.
+| From | To |
+|------|----|
+| `/dong-hanh`, `/dong-hanh/ai-ung-dung` | `/gioi-thieu?section=dich-vu` |
+| Mentoring / business advisory | `/gioi-thieu?section=tu-van-phat-trien` |
+| Training workshop / `/giang-day` | `/gioi-thieu?section=giang-day-workshop` |
+| `/case-study` | `/gioi-thieu?section=dau-moc` |
+| `/goc-cua-khanh`, `/hoc`, `/hoc/chuong-trinh` | `/archive` |
 
-## Admin
+Lab resource detail URLs remain reachable (noindex). Learner routes `/hoc/khoa-hoc/*` and `/tai-khoan/hoc` are unchanged.
+
+## Learning & system
 
 | Path | Purpose |
 |------|---------|
-| `/admin/inquiries` | Inquiry list / detail / status / retry email / delete |
-
-## Redirects
-
-Unchanged permanent: `/blog` → `/bai-viet`, `/login` → `/dang-nhap`, `/profile` → `/tai-khoan`.  
-Temporary: `/hoc`, `/giang-day`, `/dashboard` → `/`.
+| `/tai-khoan/hoc` | Learner hub |
+| `/hoc/khoa-hoc/[slug]` | Course (enrolled / public intro) |
+| `/m/[slug]` | Public message recipient |
+| `/admin/*` | Admin (not in marketing chrome) |

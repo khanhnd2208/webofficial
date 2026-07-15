@@ -1,146 +1,155 @@
-'use client';
-
 import Link from 'next/link';
-import { m, useScroll } from 'framer-motion';
-import { useRef } from 'react';
+import { preload } from 'react-dom';
 
-import AmbientLight from '@/components/motion/AmbientLight';
-import HeroWordmark from '@/components/motion/HeroWordmark';
-import { useMotionTier } from '@/components/motion/MotionProvider';
-import { duration, ease, heroTimeline } from '@/components/motion/tokens';
+import { homePageContent } from '@/content/home';
+
+import styles from './home.module.css';
 
 type HomeHeroProps = {
-	roleLabel?: string;
-	primaryCta: { href: string; label: string };
-	secondaryCta: { href: string; label: string };
-	featuredImage?: { src: string; alt: string } | null;
+	articleHref: string;
 };
 
-export default function HomeHero({ roleLabel, primaryCta, secondaryCta, featuredImage }: HomeHeroProps) {
-	const { allowsReveal, allowsAmbient, reduced } = useMotionTier();
-	const sectionRef = useRef<HTMLElement>(null);
+const heroImageAlt =
+	'Duy Khánh đứng trước bình minh và một con đường dài — minh họa cho hành trình học để trở thành';
 
-	// Containing block = hero section — avoids Framer scroll-offset warnings
-	const { scrollYProgress } = useScroll({
-		target: sectionRef,
-		offset: ['start start', 'end start'],
+export default function HomeHero({ articleHref }: HomeHeroProps) {
+	const { hero } = homePageContent;
+	preload('/brand/learning-as-becoming-mobile-480.webp', {
+		as: 'image',
+		type: 'image/webp',
+		media: '(max-width: 479px)',
+		fetchPriority: 'high',
+	});
+	preload('/brand/learning-as-becoming-mobile.avif', {
+		as: 'image',
+		type: 'image/avif',
+		media: '(min-width: 480px) and (max-width: 899px)',
+		fetchPriority: 'high',
+	});
+	preload('/brand/learning-as-becoming-tablet.avif', {
+		as: 'image',
+		type: 'image/avif',
+		media: '(min-width: 900px) and (max-width: 1023px)',
+		fetchPriority: 'high',
+	});
+	preload('/brand/learning-as-becoming-desktop.avif', {
+		as: 'image',
+		type: 'image/avif',
+		media: '(min-width: 1024px)',
+		fetchPriority: 'high',
 	});
 
 	return (
-		<section
-			ref={sectionRef}
-			className="relative h-[min(88svh,820px)] max-h-[920px] overflow-hidden border-b border-hairline max-md:h-[min(84svh,720px)] lg:h-[min(92svh,920px)]"
-		>
-			{allowsAmbient ? <AmbientLight /> : null}
-
-			<div className="shell relative flex h-full flex-col justify-center gap-8 py-8 sm:py-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-8 lg:py-12">
-				<div className="lg:col-span-7">
-					<HeroWordmark scrollProgress={scrollYProgress} />
-
-					{roleLabel ? (
-						<m.p
-							initial={allowsReveal && !reduced ? { opacity: 0 } : false}
-							animate={{ opacity: 1 }}
-							transition={{
-								duration: reduced ? duration.reducedCrossfade : duration.section,
-								ease: ease.reveal,
-								delay: allowsReveal ? heroTimeline.wordmark + 0.05 : 0,
-							}}
-							className="mt-3 font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary"
-						>
-							{roleLabel}
-						</m.p>
-					) : null}
-
-					{/* Manifesto — visible immediately; optional soft enhance */}
-					<m.div
-						initial={allowsReveal && !reduced ? { opacity: 0.85, y: 8 } : false}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{
-							duration: reduced ? duration.reducedCrossfade : duration.section,
-							ease: ease.reveal,
-							delay: allowsReveal ? heroTimeline.manifesto : 0,
-						}}
-						className="mt-5 max-w-xl sm:mt-7"
-					>
-						<p className="font-display text-[1.35rem] font-medium leading-snug text-ink sm:text-3xl lg:text-[2.15rem]">
-							Viết để hiểu sâu.
-							<br />
-							Dạy để cùng tiến xa.
-						</p>
-						<p className="mt-3 max-w-md text-[0.95rem] leading-relaxed text-ink-secondary sm:mt-5 sm:text-lg">
-							Góc nhìn chọn lọc về viết và học — cùng khóa học được thiết kế riêng cho học viên được mời.
-						</p>
-					</m.div>
-
-					<m.div
-						initial={allowsReveal && !reduced ? { opacity: 0.85, y: 6 } : false}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{
-							duration: reduced ? duration.reducedCrossfade : duration.section,
-							ease: ease.reveal,
-							delay: allowsReveal ? heroTimeline.cta : 0,
-						}}
-						className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8"
-					>
-						<Link
-							href={primaryCta.href}
-							className="inline-flex min-h-11 items-center rounded-[10px] bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-200 hover:bg-ink/90"
-						>
-							{primaryCta.label}
-						</Link>
-						<Link
-							href={secondaryCta.href}
-							className="inline-flex min-h-11 items-center rounded-[10px] border border-hairline px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition duration-200 hover:border-ink"
-						>
-							{secondaryCta.label}
-						</Link>
-					</m.div>
-				</div>
-
-				{featuredImage ? (
-					<m.div
-						className="relative hidden lg:col-span-5 lg:block"
-						initial={allowsReveal ? { opacity: 0.9, scale: 1.02 } : false}
-						animate={{ opacity: 1, scale: 1 }}
-						transition={{
-							duration: allowsReveal ? duration.image : duration.reducedCrossfade,
-							ease: ease.reveal,
-							delay: allowsReveal ? heroTimeline.image : 0,
-						}}
-					>
-						<div className="overflow-hidden rounded-[18px] bg-paper">
-							<img
-								src={featuredImage.src}
-								alt={featuredImage.alt}
-								width={800}
-								height={1000}
-								className="aspect-[4/5] w-full object-cover"
-								fetchPriority="high"
-								decoding="async"
-							/>
-						</div>
-					</m.div>
-				) : (
-					<div className="hidden lg:col-span-5 lg:block" aria-hidden>
-						<div className="rounded-[18px] border border-hairline bg-paper/60 p-10">
-							<p className="font-display text-4xl font-medium leading-tight text-ink/40">
-								Bài viết
-								<br />&amp; Giảng dạy
-							</p>
+		<section className={styles.hero} aria-labelledby="home-hero-title">
+			<div className={`shell ${styles.heroInner}`}>
+				<div className={styles.heroCopy}>
+					<div className={styles.heroHeadingPanel}>
+						<p className={`${styles.eyebrow} ${styles.heroEyebrow}`}>{hero.eyebrow}</p>
+						<h1 id="home-hero-title" className={styles.heroTitle}>
+							<span>{hero.headline[0]}</span> <span>{hero.headline[1]}</span>
+						</h1>
+					</div>
+					<div className={styles.heroBodyPanel}>
+						<p className={styles.heroDescription}>{hero.description}</p>
+						<div className={styles.heroActions}>
+							<Link
+								href={hero.primaryCta.href}
+								className={styles.primaryButton}
+								data-umami-event="home_hero_manifesto_click"
+								data-umami-event-source-page="/"
+							>
+								<span>{hero.primaryCta.label}</span>
+								<span className={styles.arrow} aria-hidden>
+									→
+								</span>
+							</Link>
+							<Link
+								href={articleHref}
+								className={styles.textLink}
+								data-umami-event="home_featured_article_click"
+								data-umami-event-slug={hero.preferredArticleSlug}
+								data-umami-event-source-page="/hero"
+							>
+								<span>{hero.articleCtaLabel}</span>
+								<span className={styles.arrow} aria-hidden>
+									→
+								</span>
+							</Link>
 						</div>
 					</div>
-				)}
-			</div>
+				</div>
 
-			{allowsReveal ? (
-				<p
-					aria-hidden
-					className="absolute bottom-4 left-1/2 hidden -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-secondary/60 sm:block"
-				>
-					Cuộn
-				</p>
-			) : null}
+				<div className={styles.heroArtwork}>
+					<picture>
+						<source
+							media="(min-width: 1024px)"
+							type="image/avif"
+							srcSet="/brand/learning-as-becoming-desktop.avif"
+						/>
+						<source
+							media="(min-width: 1024px)"
+							type="image/webp"
+							srcSet="/brand/learning-as-becoming-desktop.webp"
+						/>
+						<source
+							media="(min-width: 1024px)"
+							type="image/jpeg"
+							srcSet="/brand/learning-as-becoming-desktop.jpg"
+						/>
+						<source
+							media="(min-width: 900px) and (max-width: 1023px)"
+							type="image/avif"
+							srcSet="/brand/learning-as-becoming-tablet.avif"
+						/>
+						<source
+							media="(min-width: 900px) and (max-width: 1023px)"
+							type="image/webp"
+							srcSet="/brand/learning-as-becoming-tablet.webp"
+						/>
+						<source
+							media="(min-width: 900px) and (max-width: 1023px)"
+							type="image/jpeg"
+							srcSet="/brand/learning-as-becoming-tablet.jpg"
+						/>
+						<source
+							media="(min-width: 480px) and (max-width: 899px)"
+							type="image/avif"
+							srcSet="/brand/learning-as-becoming-mobile.avif"
+						/>
+						<source
+							media="(min-width: 480px) and (max-width: 899px)"
+							type="image/webp"
+							srcSet="/brand/learning-as-becoming-mobile.webp"
+						/>
+						<source
+							media="(min-width: 480px) and (max-width: 899px)"
+							type="image/jpeg"
+							srcSet="/brand/learning-as-becoming-mobile.jpg"
+						/>
+						<source
+							media="(max-width: 479px)"
+							type="image/webp"
+							srcSet="/brand/learning-as-becoming-mobile-480.webp"
+						/>
+						<source
+							media="(max-width: 479px)"
+							type="image/avif"
+							srcSet="/brand/learning-as-becoming-mobile-480.avif"
+						/>
+						<img
+							src="/brand/learning-as-becoming-mobile-480.jpg"
+							alt={heroImageAlt}
+							width={480}
+							height={600}
+							loading="eager"
+							fetchPriority="high"
+							decoding="sync"
+						/>
+					</picture>
+				</div>
+
+				<p className={styles.mobileCycle}>{hero.learningCycle}</p>
+			</div>
 		</section>
 	);
 }

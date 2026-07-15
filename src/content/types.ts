@@ -12,15 +12,31 @@ export type ServiceFormat = {
 	description: string;
 };
 
+export type ServiceContext = {
+	id: string;
+	title: string;
+	summary: string;
+};
+
 export type FAQItem = {
 	question: string;
 	answer: string;
 };
 
+export type ServiceInquiryType =
+	| 'training'
+	| 'learning-design'
+	| 'people-organization'
+	| 'mentoring'
+	| 'business'
+	| 'ai';
+
 export type Service = {
 	slug: string;
 	title: string;
 	shortTitle: string;
+	/** In-page anchor on /gioi-thieu */
+	anchorId: string;
 	summary: string;
 	audience: string[];
 	problems: string[];
@@ -29,11 +45,13 @@ export type Service = {
 	deliverables: string[];
 	process: ProcessStep[];
 	formats: ServiceFormat[];
+	/** Optional nested contexts (e.g. mentoring vs business advisory). */
+	contexts: ServiceContext[];
 	pricingNote: string;
 	faq: FAQItem[];
 	relatedCaseSlugs: string[];
 	relatedArticleSlugs: string[];
-	inquiryType: 'mentoring' | 'business' | 'training' | 'ai';
+	inquiryType: ServiceInquiryType;
 	status: PublishState;
 };
 
@@ -94,4 +112,12 @@ export type PolicyPage = {
 	status: PublishState;
 	legalReview: 'pending' | 'approved';
 	updatedAt: string;
+};
+
+/** Verified milestones only — empty until owner confirms. */
+export type Milestone = {
+	id: string;
+	label: string;
+	detail: string;
+	verified: boolean;
 };

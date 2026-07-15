@@ -6,23 +6,24 @@
 /** Master brand shown in chrome, metadata, and primary marketing. */
 export const SITE_NAME = 'Duy Khánh';
 
-/** Editorial brand for the journal (HANOICAM Journal). Not the site-wide wordmark. */
+/** Public positioning line — the central idea of the personal education space. */
+export const SITE_POSITIONING = 'Learning as Becoming';
+
+/** Editorial brand for the journal. Not the site-wide wordmark. */
 export const EDITORIAL_NAME = 'HANOICAM';
 
 /** Personal mark / signature — not a product brand. */
 export const PERSONAL_MARK = 'NDK';
 
-export const SITE_EYEBROW = 'Giảng viên · Mentor · Cố vấn';
+export const SITE_EYEBROW = 'Educator · Explorer';
 
 /** Canonical production origin. Override with NEXT_PUBLIC_SITE_URL when needed. */
 export const SITE_ORIGIN =
 	process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
-	(process.env.NODE_ENV === 'production'
-		? 'https://toiladuykhanh.com'
-		: 'http://localhost:3000');
+	(process.env.NODE_ENV === 'production' ? 'https://toiladuykhanh.com' : 'http://localhost:3000');
 
 export const SITE_DESCRIPTION =
-	'Duy Khánh — giảng viên, mentor và cố vấn. Đồng hành cùng cá nhân và tổ chức làm rõ hướng đi, học có lộ trình, và viết để hiểu sâu.';
+	'Duy Khánh là một giảng viên và người thiết kế trải nghiệm học tập, theo đuổi cách giáo dục thực chất, giàu trải nghiệm và hướng tới sự phát triển con người.';
 
 export const SITE_CREATOR = SITE_NAME;
 
@@ -56,15 +57,16 @@ export const siteProfile: SiteProfile = {
 	publicName: SITE_NAME,
 	role: SITE_EYEBROW,
 	shortBio:
-		'Duy Khánh đồng hành cùng sinh viên, young professional và đội ngũ doanh nghiệp trẻ — làm rõ hướng đi, học có lộ trình, và viết để hiểu sâu.',
-	portraitSrc: '/brand/hero-journey.jpg',
+		'Tôi giảng dạy, viết và thiết kế những trải nghiệm giúp người học không chỉ hiểu thêm về thế giới, mà còn hiểu sâu hơn về chính mình.',
+	portraitSrc: '/brand/learning-as-becoming-mobile.jpg',
 	// contactEmail / socialLinks: leave empty until owner provides
 };
 
 /** Brand hierarchy constants for docs and UI copy. */
 export const brandHierarchy = {
 	master: SITE_NAME,
+	positioning: SITE_POSITIONING,
 	editorial: EDITORIAL_NAME,
 	personalMark: PERSONAL_MARK,
-	tracks: ['Đồng hành cùng Khánh', 'Học cùng Khánh', 'HANOICAM Journal', 'Góc của Khánh'] as const,
+	tracks: ['Trải nghiệm học tập', 'Bài viết', 'Podcast'] as const,
 } as const;

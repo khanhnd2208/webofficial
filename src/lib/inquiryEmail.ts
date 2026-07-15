@@ -5,13 +5,15 @@ import { absoluteUrl, SITE_NAME } from '@/config/site';
 import type { IInquiry, InquiryType } from '@/models/Inquiry';
 
 const INQUIRY_TYPE_LABELS: Record<InquiryType, string> = {
+	training: 'Giảng dạy & workshop',
+	'learning-design': 'Thiết kế chương trình học',
+	'people-organization': 'Tư vấn phát triển con người & tổ chức',
+	unsure: 'Chưa chắc',
+	other: 'Khác',
 	mentoring: 'Mentoring cá nhân',
 	business: 'Cố vấn doanh nghiệp',
-	training: 'Đào tạo / Workshop',
 	ai: 'AI ứng dụng',
 	course: 'Khóa học',
-	other: 'Khác',
-	unsure: 'Chưa chắc',
 };
 
 export interface InquiryEmailConfig {

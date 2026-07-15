@@ -7,3 +7,4 @@ export { ProofStrip } from './ProofStrip';
 export { TestimonialBlock } from './TestimonialBlock';
 export { CaseCard } from './CaseCard';
 export { StructuredData } from './StructuredData';
+export { default as SectionScroll } from './SectionScroll';

@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 		title: resource.title,
 		description: resource.summary,
 		alternates: { canonical: absoluteUrl(`${routes.lab}/${category}/${slug}`) },
+		robots: { index: false, follow: false },
 	};
 }
 

@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 	title: 'Chương trình học',
 	description: 'Danh mục khóa học công khai — xem mô tả và cấu trúc trước khi ghi danh.',
 	alternates: { canonical: absoluteUrl(routes.learnPrograms) },
+	robots: { index: false, follow: false },
 };
 
 export const revalidate = 60;

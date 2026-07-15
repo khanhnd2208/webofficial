@@ -10,5 +10,7 @@ export { default as ReadingProgress } from './ReadingProgress';
 export { default as RouteEntrance } from './RouteEntrance';
 export { default as CompletionSeal } from './CompletionSeal';
 export { default as HeroWordmark } from './HeroWordmark';
+export { default as JourneyLine } from './JourneyLine';
+export { default as HorizonReveal } from './HorizonReveal';
 export * from './tokens';
 export * from './variants';

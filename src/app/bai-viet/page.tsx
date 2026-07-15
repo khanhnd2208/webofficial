@@ -11,14 +11,15 @@ import {
 	isJournalTaxonomyComplete,
 } from '@/services/postService';
 import { getPublishedCollections, JOURNAL_PILLARS } from '@/content/journal';
+import { getActivePublicCategories } from '@/features/posts/publicAdapter';
 import { routes } from '@/config/routes';
 import { EDITORIAL_NAME } from '@/config/site';
 
 export const revalidate = 60;
 
 export const metadata = {
-	title: `${EDITORIAL_NAME} Journal`,
-	description: `${EDITORIAL_NAME} Journal — thư viện bài viết chọn lọc, quét theo chủ đề.`,
+	title: 'Bài viết',
+	description: 'Thư viện bài viết chọn lọc — quét theo chủ đề và bộ sưu tập.',
 };
 
 function buildQuery(params: { tag?: string; category?: string; sort?: string; page?: number }) {
@@ -66,14 +67,17 @@ export default async function BlogPage({
 	const taxonomyReady = await isJournalTaxonomyComplete();
 	const pillarFilter = taxonomyReady ? pillar : undefined;
 
-	const [result, tags, categories, featured] = await Promise.all([
+	const [result, tags, categories, featured, postsForCategoryGate] = await Promise.all([
 		getAllPosts(page, limit, tag, category, sort, { pillarSlug: pillarFilter }),
 		getAllTags(),
 		getAllCategories(),
 		getAllPosts(1, 3, undefined, undefined, 'newest', { featuredOnly: true }),
+		getAllPosts(1, 200),
 	]);
 
 	const collections = getPublishedCollections();
+	const activeCategorySet = new Set(getActivePublicCategories(postsForCategoryGate.items, 2));
+	const activeCategories = categories.filter((c) => activeCategorySet.has(c));
 
 	return (
 		<main className="min-h-screen">
@@ -81,8 +85,8 @@ export default async function BlogPage({
 				<div className="shell py-8 sm:py-10">
 					<div className="flex flex-wrap items-end justify-between gap-4">
 						<div>
-							<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">
-								{EDITORIAL_NAME} Journal
+							<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
+								{EDITORIAL_NAME}
 							</p>
 							<h1 className="mt-2 font-display type-page-title font-medium text-ink">Bài viết</h1>
 							<p className="mt-2 font-mono text-xs text-ink-secondary" aria-live="polite">
@@ -158,7 +162,7 @@ export default async function BlogPage({
 			<Suspense fallback={null}>
 				<BlogFilterBar
 					allTags={tags}
-					allCategories={categories}
+					allCategories={activeCategories}
 					currentTag={tag}
 					currentCategory={category}
 					currentSort={sort}

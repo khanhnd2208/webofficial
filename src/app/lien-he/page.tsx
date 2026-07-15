@@ -7,8 +7,8 @@ import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 
 export const metadata: Metadata = {
-	title: 'Liên hệ',
-	description: 'Trao đổi cùng Khánh về mentoring, cố vấn, đào tạo hoặc AI ứng dụng.',
+	title: 'Kết nối',
+	description: 'Kết nối với Duy Khánh về giảng dạy, thiết kế học tập, hoặc tư vấn phát triển.',
 	alternates: { canonical: absoluteUrl(routes.contact) },
 };
 
@@ -32,8 +32,8 @@ export default function ContactPage() {
 		<main className="min-h-screen">
 			<section className="border-b border-hairline">
 				<div className="shell py-14 sm:py-16">
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Liên hệ</p>
-					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Trao đổi cùng Khánh</h1>
+					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">Kết nối</p>
+					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Kết nối với Khánh</h1>
 					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
 						Chọn loại nhu cầu và mô tả ngắn bối cảnh. Chi phí chỉ được đề xuất sau khi làm rõ đầu ra và phạm vi —
 						không báo giá tức thì trên form.

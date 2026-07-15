@@ -30,6 +30,23 @@ describe('createInquirySchema', () => {
 		expect(data.inquiryType).toBe('mentoring');
 	});
 
+	it('accepts new public inquiry types and legacy values', () => {
+		for (const inquiryType of [
+			'training',
+			'learning-design',
+			'people-organization',
+			'unsure',
+			'other',
+			'mentoring',
+			'business',
+			'ai',
+			'course',
+		] as const) {
+			const data = parseSchema(createInquirySchema, { ...validPayload, inquiryType });
+			expect(data.inquiryType).toBe(inquiryType);
+		}
+	});
+
 	it('rejects missing context', () => {
 		expect(() =>
 			parseSchema(createInquirySchema, { ...validPayload, context: '  ' }),

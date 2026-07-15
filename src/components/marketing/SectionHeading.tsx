@@ -23,7 +23,7 @@ export function SectionHeading({
 	return (
 		<header className={`max-w-2xl ${alignment}`}>
 			{eyebrow ? (
-				<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">{eyebrow}</p>
+				<p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-secondary">{eyebrow}</p>
 			) : null}
 			<h2 className={`font-display type-section font-medium text-ink ${eyebrow ? 'mt-3' : ''}`}>
 				{title}

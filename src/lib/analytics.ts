@@ -14,6 +14,11 @@ export const ANALYTICS_EVENTS = [
 	'case_study_view',
 	'course_interest',
 	'login_start',
+	'home_hero_manifesto_click',
+	'home_featured_article_click',
+	'home_learning_experience_click',
+	'home_project_click',
+	'home_closing_connect_click',
 ] as const;
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];

@@ -6,7 +6,8 @@
  * map so later phases can flip status without inventing new link lists.
  */
 
-import { EDITORIAL_NAME } from './site';
+import { hasPublishedPodcastEpisodes } from '@/content/podcast';
+import { SITE_NAME } from './site';
 import { routes } from './routes';
 
 export type PublishState = 'draft' | 'published';
@@ -27,8 +28,6 @@ export interface PublicNavItem {
 	desktop: boolean;
 	/** Show in mobile primary list */
 	mobile: boolean;
-	/** Mobile “Khám phá” group (Journal + Lab) */
-	mobileExplore?: boolean;
 }
 
 export interface ContactCta {
@@ -62,50 +61,31 @@ export interface AdminNavGroup {
 }
 
 /**
- * Full public IA. Flip `status` to `published` only when the route has real
- * content and passes the publication gate.
+ * Primary public IA — logo handles Home; the header exposes real destinations.
+ * Growth / podcast publishes only when a real episode exists.
  */
 export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 	{
-		id: 'accompany',
-		href: routes.accompany,
-		label: 'Đồng hành',
-		status: 'published',
-		desktop: true,
-		mobile: true,
-	},
-	{
-		id: 'learn',
-		href: routes.learn,
-		label: 'Học',
-		status: 'draft',
-		desktop: true,
-		mobile: true,
-	},
-	{
-		id: 'journal',
-		href: routes.posts,
-		label: EDITORIAL_NAME,
-		shortLabel: EDITORIAL_NAME,
-		status: 'published',
-		desktop: true,
-		mobile: true,
-		mobileExplore: true,
-	},
-	{
-		id: 'lab',
-		href: routes.lab,
-		label: 'Góc của Khánh',
-		status: 'published',
-		desktop: true,
-		mobile: true,
-		mobileExplore: true,
-	},
-	{
 		id: 'about',
 		href: routes.about,
-		label: 'Về Khánh',
+		label: 'Giới thiệu',
 		status: 'published',
+		desktop: true,
+		mobile: true,
+	},
+	{
+		id: 'writing',
+		href: routes.posts,
+		label: 'Bài viết',
+		status: 'published',
+		desktop: true,
+		mobile: true,
+	},
+	{
+		id: 'growth',
+		href: routes.growth,
+		label: 'Podcast',
+		status: hasPublishedPodcastEpisodes() ? 'published' : 'draft',
 		desktop: true,
 		mobile: true,
 	},
@@ -114,46 +94,32 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 /** Contact CTA — separate from nav links so it never competes with login. */
 export const CONTACT_CTA: ContactCta = {
 	href: routes.contact,
-	label: 'Trao đổi cùng Khánh',
-	shortLabel: 'Trao đổi',
+	label: 'Kết nối',
+	shortLabel: 'Kết nối',
 	status: 'published',
 };
 
 export const FOOTER_GROUPS: FooterGroup[] = [
 	{
 		id: 'brand',
-		title: 'Duy Khánh',
+		title: SITE_NAME,
 		links: [
 			{ href: routes.home, label: 'Trang chủ', status: 'published' },
-			{ href: routes.about, label: 'Về Khánh', status: 'published' },
-			{ href: routes.contact, label: 'Liên hệ', status: 'published' },
+			{ href: routes.about, label: 'Giới thiệu', status: 'published' },
+			{ href: routes.posts, label: 'Bài viết', status: 'published' },
+			{
+				href: routes.growth,
+				label: 'Podcast',
+				status: hasPublishedPodcastEpisodes() ? 'published' : 'draft',
+			},
+			{ href: routes.contact, label: 'Kết nối', status: 'published' },
 		],
 	},
 	{
-		id: 'accompany',
-		title: 'Đồng hành',
+		id: 'utility',
+		title: 'Tiện ích',
 		links: [
-			{ href: routes.accompany, label: 'Tổng quan', status: 'published' },
-			{ href: routes.mentoring, label: 'Mentoring', status: 'published' },
-			{ href: routes.businessAdvisory, label: 'Cố vấn doanh nghiệp', status: 'published' },
-			{ href: routes.trainingWorkshop, label: 'Đào tạo & workshop', status: 'published' },
-			{ href: routes.aiApplied, label: 'AI ứng dụng', status: 'published' },
-		],
-	},
-	{
-		id: 'explore',
-		title: 'Khám phá',
-		links: [
-			{ href: routes.posts, label: `${EDITORIAL_NAME} Journal`, status: 'published' },
-			{ href: routes.lab, label: 'Góc của Khánh', status: 'published' },
-			{ href: routes.caseStudies, label: 'Case study', status: 'published' },
-			{ href: routes.learn, label: 'Học cùng Khánh', status: 'draft' },
-		],
-	},
-	{
-		id: 'system',
-		title: 'Hệ thống',
-		links: [
+			{ href: routes.archive, label: 'Archive', status: 'published' },
 			{ href: routes.login, label: 'Đăng nhập', status: 'published' },
 			{ href: routes.policyPrivacy, label: 'Bảo mật', status: 'published' },
 			{ href: routes.policyTerms, label: 'Điều khoản', status: 'published' },
@@ -174,15 +140,14 @@ export function getDesktopNavLinks(): NavLink[] {
 }
 
 export function getMobileNavLinks(): NavLink[] {
-	return PUBLIC_NAV_ITEMS.filter(
-		(item) => item.mobile && !item.mobileExplore && isPublished(item.status),
-	).map(({ href, label }) => ({ href, label }));
+	return PUBLIC_NAV_ITEMS.filter((item) => item.mobile && isPublished(item.status)).map(
+		({ href, label }) => ({ href, label }),
+	);
 }
 
+/** @deprecated Explore group removed — primary mobile list covers all four items. */
 export function getMobileExploreLinks(): NavLink[] {
-	return PUBLIC_NAV_ITEMS.filter(
-		(item) => item.mobileExplore && isPublished(item.status),
-	).map(({ href, label }) => ({ href, label }));
+	return [];
 }
 
 export function getPublishedContactCta(): ContactCta | null {
@@ -234,7 +199,6 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 		items: [
 			{ href: routes.admin.inquiries, label: 'Inquiry' },
 			{ href: routes.admin.users, label: 'Người dùng' },
-			// Media & Settings hidden until real functionality ships
 		],
 	},
 ];

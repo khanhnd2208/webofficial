@@ -9,6 +9,7 @@ import { auth } from '@/lib/auth';
 export const metadata: Metadata = {
 	title: 'Học cùng Khánh',
 	description: 'Không gian học có lộ trình — chương trình, journal và trao đổi trực tiếp.',
+	robots: { index: false, follow: false },
 };
 
 export default async function LearnHubPage() {

@@ -5,18 +5,32 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 import { routes } from '@/config/routes';
-import type { InquiryType } from '@/features/inquiries/constants';
+import {
+	PUBLIC_INQUIRY_TYPE_OPTIONS,
+	type InquiryType,
+	INQUIRY_TYPES,
+} from '@/features/inquiries/constants';
 import { trackEvent } from '@/lib/analytics';
 
-const TYPE_OPTIONS: { value: InquiryType; label: string }[] = [
-	{ value: 'mentoring', label: 'Mentoring cá nhân' },
-	{ value: 'business', label: 'Cố vấn doanh nghiệp' },
-	{ value: 'training', label: 'Đào tạo / workshop' },
-	{ value: 'ai', label: 'AI ứng dụng' },
-	{ value: 'course', label: 'Quan tâm khóa học' },
-	{ value: 'unsure', label: 'Chưa chắc — cần định hướng' },
-	{ value: 'other', label: 'Khác' },
-];
+function normalizeInquiryType(raw: string | null): InquiryType {
+	if (!raw) return 'unsure';
+	if ((INQUIRY_TYPES as readonly string[]).includes(raw)) {
+		const legacyMap: Partial<Record<InquiryType, InquiryType>> = {
+			mentoring: 'people-organization',
+			business: 'people-organization',
+			ai: 'unsure',
+			course: 'other',
+		};
+		const typed = raw as InquiryType;
+		const mapped = legacyMap[typed];
+		if (mapped) return mapped;
+		if (PUBLIC_INQUIRY_TYPE_OPTIONS.some((o) => o.value === typed)) return typed;
+		return typed;
+	}
+	return 'unsure';
+}
+
+const TYPE_OPTIONS = [...PUBLIC_INQUIRY_TYPE_OPTIONS];
 
 type FormState = {
 	name: string;
@@ -73,16 +87,11 @@ type ContactFormProps = {
 
 export default function ContactForm({ formEnabled, disabledReason }: ContactFormProps) {
 	const searchParams = useSearchParams();
-	const initialType = (searchParams.get('type') as InquiryType) || 'unsure';
+	const initialType = normalizeInquiryType(searchParams.get('type'));
 	const courseSlug = searchParams.get('course') || searchParams.get('sourceCourseSlug') || '';
 	const sourcePage = searchParams.get('sourcePage') || (typeof window !== 'undefined' ? window.location.pathname : routes.contact);
 
-	const [form, setForm] = useState<FormState>(() =>
-		emptyForm(
-			TYPE_OPTIONS.some((o) => o.value === initialType) ? initialType : 'unsure',
-			courseSlug,
-		),
-	);
+	const [form, setForm] = useState<FormState>(() => emptyForm(initialType, courseSlug));
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 	const [errorSummary, setErrorSummary] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
@@ -96,9 +105,14 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 
 	const type = form.inquiryType;
 
-	const showBusiness = type === 'business';
-	const showMentoring = type === 'mentoring';
-	const showTrainingOrAi = type === 'training' || type === 'ai';
+	const showOrgFields = type === 'people-organization' || type === 'business';
+	const showRoleStage =
+		type === 'people-organization' ||
+		type === 'mentoring' ||
+		type === 'business' ||
+		type === 'training' ||
+		type === 'learning-design' ||
+		type === 'ai';
 	const showCourse = type === 'course';
 
 	const campaignParams = useMemo(() => {
@@ -266,10 +280,12 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 				</div>
 			</div>
 
-			{(showMentoring || showBusiness || showTrainingOrAi) && (
+			{showRoleStage && (
 				<div>
 					<label htmlFor="roleOrStage" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
-						{showMentoring ? 'Giai đoạn nghề nghiệp hiện tại' : 'Vai trò của bạn'}
+						{type === 'people-organization' || type === 'mentoring'
+							? 'Giai đoạn nghề nghiệp hiện tại'
+							: 'Vai trò của bạn'}
 					</label>
 					<input
 						id="roleOrStage"
@@ -280,7 +296,7 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 				</div>
 			)}
 
-			{showBusiness ? (
+			{showOrgFields ? (
 				<div className="grid gap-6 sm:grid-cols-3">
 					<div className="sm:col-span-1">
 						<label htmlFor="organization" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
@@ -361,7 +377,7 @@ export default function ContactForm({ formEnabled, disabledReason }: ContactForm
 				/>
 			</div>
 
-			{showBusiness ? (
+			{showOrgFields ? (
 				<>
 					<div>
 						<label htmlFor="consequence" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">

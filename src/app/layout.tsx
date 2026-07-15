@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Merriweather, Cinzel, Cormorant_Garamond } from 'next/font/google';
+import { Inter, Cormorant_Garamond } from 'next/font/google';
 
 import Navbar from '@/components/Navbar';
 import Providers from '@/components/Providers';
@@ -7,13 +7,7 @@ import ConditionalFooter from '@/components/ConditionalFooter';
 import MainContent from '@/components/MainContent';
 import SkipLink from '@/components/SkipLink';
 import AnalyticsScript from '@/components/AnalyticsScript';
-import {
-	SITE_CREATOR,
-	SITE_DESCRIPTION,
-	SITE_NAME,
-	SITE_ORIGIN,
-	absoluteUrl,
-} from '@/config/site';
+import { SITE_CREATOR, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
 import './globals.css';
 
 const inter = Inter({
@@ -21,24 +15,10 @@ const inter = Inter({
 	subsets: ['latin', 'vietnamese'],
 });
 
-const merriweather = Merriweather({
-	variable: '--font-merriweather',
-	subsets: ['latin', 'vietnamese'],
-	weight: ['400', '700', '900'],
-	display: 'swap',
-});
-
-const cinzel = Cinzel({
-	variable: '--font-cinzel',
-	subsets: ['latin'],
-	weight: ['400', '600', '700', '900'],
-	display: 'swap',
-});
-
 const cormorantGaramond = Cormorant_Garamond({
 	variable: '--font-cormorant',
 	subsets: ['latin', 'vietnamese'],
-	weight: ['400', '500', '600', '700'],
+	weight: 'variable',
 	style: ['normal', 'italic'],
 	display: 'swap',
 });
@@ -47,10 +27,7 @@ export const viewport: Viewport = {
 	width: 'device-width',
 	initialScale: 1,
 	maximumScale: 5,
-	themeColor: [
-		{ media: '(prefers-color-scheme: light)', color: '#F2EEE6' },
-		{ media: '(prefers-color-scheme: dark)', color: '#11100E' },
-	],
+	themeColor: '#F7F5F0',
 };
 
 export const metadata: Metadata = {
@@ -76,10 +53,8 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="vi" suppressHydrationWarning>
-			<body
-				className={`${inter.variable} ${merriweather.variable} ${cinzel.variable} ${cormorantGaramond.variable} antialiased`}
-			>
+		<html lang="vi" className="light" suppressHydrationWarning>
+			<body className={`${inter.variable} ${cormorantGaramond.variable} antialiased`}>
 				<Providers>
 					<SkipLink />
 					<Navbar />

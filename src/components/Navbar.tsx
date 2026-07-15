@@ -6,10 +6,8 @@ import { useSession, signOut } from 'next-auth/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-import ThemeToggle from './ThemeToggle';
 import {
 	getDesktopNavLinks,
-	getMobileExploreLinks,
 	getMobileNavLinks,
 	getPublishedContactCta,
 	USER_MENU_LINKS,
@@ -23,6 +21,7 @@ export default function Navbar() {
 	const { data: session, status } = useSession();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [userMenuOpen, setUserMenuOpen] = useState(false);
+	const [scrolled, setScrolled] = useState(false);
 	const userMenuRef = useRef<HTMLDivElement>(null);
 	const mobilePanelRef = useRef<HTMLDivElement>(null);
 	const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -31,11 +30,20 @@ export default function Navbar() {
 	const isAdmin = pathname.startsWith('/admin');
 	const isPublicMessage = pathname.startsWith('/m/');
 	const isLessonFocus = pathname.includes('/bai/');
+	const isHome = pathname === routes.home;
 
 	const desktopLinks = getDesktopNavLinks();
 	const mobileLinks = getMobileNavLinks();
-	const exploreLinks = getMobileExploreLinks();
 	const contactCta = getPublishedContactCta();
+
+	useEffect(() => {
+		function onScroll() {
+			setScrolled(window.scrollY > 12);
+		}
+		onScroll();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => window.removeEventListener('scroll', onScroll);
+	}, []);
 
 	useEffect(() => {
 		function handleClickOutside(e: MouseEvent) {
@@ -83,18 +91,13 @@ export default function Navbar() {
 		}
 
 		function onResize() {
-			if (window.matchMedia('(min-width: 640px)').matches) {
+			if (window.matchMedia('(min-width: 1024px)').matches) {
 				setMobileOpen(false);
 			}
 		}
 
-		function onOrientation() {
-			setMobileOpen(false);
-		}
-
 		document.addEventListener('keydown', onKey);
 		window.addEventListener('resize', onResize);
-		window.addEventListener('orientationchange', onOrientation);
 		const prevOverflow = document.body.style.overflow;
 		const prevTouch = document.body.style.touchAction;
 		document.body.style.overflow = 'hidden';
@@ -102,27 +105,30 @@ export default function Navbar() {
 		return () => {
 			document.removeEventListener('keydown', onKey);
 			window.removeEventListener('resize', onResize);
-			window.removeEventListener('orientationchange', onOrientation);
 			document.body.style.overflow = prevOverflow;
 			document.body.style.touchAction = prevTouch;
 		};
 	}, [mobileOpen, closeMobile]);
 
 	function isActive(href: string) {
+		if (href.includes('#')) return false;
 		if (href === routes.home) return pathname === routes.home;
-		if (href.startsWith('/#')) return pathname === routes.home;
 		const pathOnly = href.split('#')[0] || href;
 		return pathname === pathOnly || pathname.startsWith(`${pathOnly}/`);
 	}
 
 	if (isAdmin || isPublicMessage) return null;
 
+	const transparent = isHome && !scrolled && !mobileOpen && !isLessonFocus;
+
 	return (
 		<header
-			className={`sticky top-0 z-50 border-b transition-[background,border-color] duration-200 ${
-				isLessonFocus
-					? 'border-transparent bg-canvas/95 backdrop-blur-md'
-					: 'border-hairline/60 bg-canvas/95 backdrop-blur-xl'
+			className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-[220ms] ${
+				transparent
+					? 'border-b border-transparent bg-transparent'
+					: isLessonFocus
+						? 'border-b border-transparent bg-paper/94 backdrop-blur-md'
+						: 'border-b border-hairline bg-paper/94 backdrop-blur-md'
 			}`}
 			style={{ height: 'var(--header-height)' }}
 		>
@@ -130,7 +136,8 @@ export default function Navbar() {
 				<Link
 					href={routes.home}
 					aria-label={`${SITE_NAME} — trang chủ`}
-					className="flex shrink-0 items-center gap-2.5"
+					aria-current={isHome ? 'page' : undefined}
+					className="flex min-h-11 shrink-0 items-center gap-2.5 rounded-[4px] px-1"
 				>
 					<span className="font-display text-base font-semibold tracking-[0.06em] text-ink sm:text-lg sm:tracking-[0.08em]">
 						{SITE_NAME}
@@ -145,7 +152,8 @@ export default function Navbar() {
 								<Link
 									key={href}
 									href={href}
-									className={`relative px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors duration-200 ${
+									aria-current={active ? 'page' : undefined}
+									className={`relative inline-flex min-h-11 items-center rounded-[4px] px-3 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-colors duration-[200ms] ${
 										active ? 'text-ink' : 'text-ink-secondary hover:text-ink'
 									}`}
 								>
@@ -153,7 +161,7 @@ export default function Navbar() {
 									{active ? (
 										<span
 											aria-hidden
-											className="absolute inset-x-3 -bottom-0.5 h-[1.5px] bg-vermilion"
+											className="absolute inset-x-3 -bottom-0.5 h-[1.5px] bg-accent"
 										/>
 									) : null}
 								</Link>
@@ -164,16 +172,13 @@ export default function Navbar() {
 					{contactCta ? (
 						<Link
 							href={contactCta.href}
-							className="ml-1 hidden min-h-10 items-center rounded-[4px] bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-wider text-paper transition duration-200 hover:bg-ink/90 sm:inline-flex"
+							aria-current={pathname === routes.contact ? 'page' : undefined}
+							className="ml-1 hidden min-h-11 items-center rounded-[4px] bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-wider text-paper transition duration-[200ms] hover:bg-accent sm:inline-flex"
 						>
 							<span className="lg:hidden">{contactCta.shortLabel}</span>
 							<span className="hidden lg:inline">{contactCta.label}</span>
 						</Link>
 					) : null}
-
-					<div className="ml-1">
-						<ThemeToggle />
-					</div>
 
 					<div className="ml-1">
 						{status === 'loading' ? (
@@ -183,7 +188,7 @@ export default function Navbar() {
 								<button
 									type="button"
 									onClick={() => setUserMenuOpen((v) => !v)}
-									className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-1 ring-hairline transition duration-200 hover:ring-vermilion focus-visible:outline-none"
+									className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-1 ring-hairline transition duration-[200ms] hover:ring-accent focus-visible:outline-none"
 									aria-label="Menu người dùng"
 									aria-expanded={userMenuOpen}
 								>
@@ -211,7 +216,9 @@ export default function Navbar() {
 											className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-[4px] border border-hairline bg-paper shadow-lg"
 										>
 											<div className="border-b border-hairline px-4 py-3">
-												<p className="truncate text-sm font-semibold text-ink">{session.user.name}</p>
+												<p className="truncate text-sm font-semibold text-ink">
+													{session.user.name}
+												</p>
 												<p className="truncate text-xs text-ink-secondary">{session.user.email}</p>
 											</div>
 											<div className="py-1">
@@ -220,7 +227,7 @@ export default function Navbar() {
 														key={href}
 														href={href}
 														onClick={() => setUserMenuOpen(false)}
-														className="block px-4 py-2.5 text-sm text-ink-secondary transition-colors duration-200 hover:bg-surface-hover hover:text-ink"
+														className="block px-4 py-2.5 text-sm text-ink-secondary transition-colors duration-[200ms] hover:bg-surface-hover hover:text-ink"
 													>
 														{label}
 													</Link>
@@ -229,7 +236,7 @@ export default function Navbar() {
 													<Link
 														href={routes.admin.home}
 														onClick={() => setUserMenuOpen(false)}
-														className="block px-4 py-2.5 text-sm text-ink-secondary transition-colors duration-200 hover:bg-surface-hover hover:text-ink"
+														className="block px-4 py-2.5 text-sm text-ink-secondary transition-colors duration-[200ms] hover:bg-surface-hover hover:text-ink"
 													>
 														Quản trị
 													</Link>
@@ -242,7 +249,7 @@ export default function Navbar() {
 														setUserMenuOpen(false);
 														void signOut({ callbackUrl: routes.home });
 													}}
-													className="block w-full px-4 py-2.5 text-left text-sm text-vermilion transition-colors duration-200 hover:bg-surface-hover"
+													className="block w-full px-4 py-2.5 text-left text-sm text-accent transition-colors duration-[200ms] hover:bg-surface-hover"
 												>
 													Đăng xuất
 												</button>
@@ -254,7 +261,7 @@ export default function Navbar() {
 						) : (
 							<Link
 								href={routes.login}
-								className="hidden min-h-10 items-center px-2 py-2 text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:text-ink min-[400px]:inline-flex"
+								className="hidden min-h-11 items-center rounded-[4px] px-2 py-2 text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:text-ink min-[400px]:inline-flex"
 							>
 								Đăng nhập
 							</Link>
@@ -264,19 +271,35 @@ export default function Navbar() {
 					<button
 						ref={menuButtonRef}
 						type="button"
-						className="ml-1 flex h-10 w-10 items-center justify-center rounded-[4px] transition-colors duration-200 hover:bg-surface-hover lg:hidden"
+						className="ml-1 flex h-10 w-10 items-center justify-center rounded-[4px] transition-colors duration-[200ms] hover:bg-surface-hover lg:hidden"
 						onClick={() => setMobileOpen((v) => !v)}
 						aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
 						aria-expanded={mobileOpen}
 						aria-controls={menuId}
 					>
 						{mobileOpen ? (
-							<svg className="h-5 w-5 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<svg
+								className="h-5 w-5 text-ink"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
 							</svg>
 						) : (
-							<svg className="h-5 w-5 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+							<svg
+								className="h-5 w-5 text-ink"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+								/>
 							</svg>
 						)}
 					</button>
@@ -293,7 +316,7 @@ export default function Navbar() {
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
 							transition={{ duration: duration.ui }}
-							className="fixed inset-x-0 bottom-0 z-40 bg-ink/25 lg:hidden"
+							className="fixed inset-x-0 bottom-0 z-40 bg-ink/30 lg:hidden"
 							style={{ top: 'var(--header-height)' }}
 							onClick={closeMobile}
 						/>
@@ -307,7 +330,7 @@ export default function Navbar() {
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -6 }}
 							transition={{ duration: duration.ui, ease: ease.reveal }}
-							className="fixed inset-x-0 z-40 flex flex-col bg-canvas lg:hidden"
+							className="fixed inset-x-0 z-40 flex flex-col bg-paper lg:hidden"
 							style={{
 								top: 'var(--header-height)',
 								height: 'calc(100dvh - var(--header-height))',
@@ -315,7 +338,9 @@ export default function Navbar() {
 							}}
 						>
 							<div className="shell flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain py-5">
-								<p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-secondary">Menu</p>
+								<p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-secondary">
+									Menu
+								</p>
 								<nav className="mt-4 flex flex-col">
 									{mobileLinks.map(({ href, label }) => {
 										const active = isActive(href);
@@ -324,114 +349,40 @@ export default function Navbar() {
 												key={href}
 												href={href}
 												onClick={closeMobile}
-												className={`flex items-center justify-between border-b border-hairline py-3.5 ${
+												aria-current={active ? 'page' : undefined}
+												className={`flex min-h-14 items-center justify-between border-b border-hairline py-3.5 ${
 													active ? 'text-ink' : 'text-ink-secondary'
 												}`}
 											>
-												<span className="font-display text-2xl font-medium tracking-tight">{label}</span>
-												{active ? <span className="h-px w-6 bg-vermilion" aria-hidden /> : null}
+												<span className="font-display text-2xl font-medium tracking-tight">
+													{label}
+												</span>
+												{active ? <span className="h-px w-6 bg-accent" aria-hidden /> : null}
 											</Link>
 										);
 									})}
-
-									{exploreLinks.length > 0 ? (
-										<div className="border-b border-hairline py-3.5">
-											<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
-												Khám phá
-											</p>
-											<ul className="mt-3 space-y-2">
-												{exploreLinks.map(({ href, label }) => (
-													<li key={href}>
-														<Link
-															href={href}
-															onClick={closeMobile}
-															className={`font-display text-xl font-medium tracking-tight ${
-																isActive(href) ? 'text-ink' : 'text-ink-secondary'
-															}`}
-														>
-															{label}
-														</Link>
-													</li>
-												))}
-											</ul>
-										</div>
-									) : null}
-
-									{mobileLinks.length === 0 && exploreLinks.length === 0
-										? desktopLinks.map(({ href, label }) => {
-												const active = isActive(href);
-												return (
-													<Link
-														key={href}
-														href={href}
-														onClick={closeMobile}
-														className={`flex items-center justify-between border-b border-hairline py-3.5 ${
-															active ? 'text-ink' : 'text-ink-secondary'
-														}`}
-													>
-														<span className="font-display text-2xl font-medium tracking-tight">
-															{label}
-														</span>
-														{active ? (
-															<span className="h-px w-6 bg-vermilion" aria-hidden />
-														) : null}
-													</Link>
-												);
-											})
-										: null}
-
-									{contactCta ? (
-										<Link
-											href={contactCta.href}
-											onClick={closeMobile}
-											className="mt-5 inline-flex min-h-11 items-center justify-center rounded-[4px] bg-ink px-5 text-xs font-semibold uppercase tracking-wider text-paper"
-										>
-											{contactCta.shortLabel}
-										</Link>
-									) : null}
-
-									{session?.user ? (
-										<>
-											{USER_MENU_LINKS.map(({ href, label }) => (
-												<Link
-													key={href}
-													href={href}
-													onClick={closeMobile}
-													className="border-b border-hairline py-3 text-sm font-semibold uppercase tracking-widest text-ink-secondary"
-												>
-													{label}
-												</Link>
-											))}
-											{session.user.role === 'admin' ? (
-												<Link
-													href={routes.admin.home}
-													onClick={closeMobile}
-													className="border-b border-hairline py-3 text-sm font-semibold uppercase tracking-widest text-ink-secondary"
-												>
-													Quản trị
-												</Link>
-											) : null}
-											<button
-												type="button"
-												onClick={() => {
-													closeMobile();
-													void signOut({ callbackUrl: routes.home });
-												}}
-												className="py-3 text-left text-sm font-semibold uppercase tracking-widest text-vermilion"
-											>
-												Đăng xuất
-											</button>
-										</>
-									) : (
-										<Link
-											href={routes.login}
-											onClick={closeMobile}
-											className="mt-4 py-3 text-sm font-semibold uppercase tracking-widest text-ink-secondary"
-										>
-											Đăng nhập
-										</Link>
-									)}
 								</nav>
+
+								{contactCta ? (
+									<Link
+										href={contactCta.href}
+										onClick={closeMobile}
+										aria-current={pathname === routes.contact ? 'page' : undefined}
+										className="mt-8 inline-flex min-h-12 items-center justify-center rounded-[4px] bg-ink px-5 text-xs font-semibold uppercase tracking-wider text-paper"
+									>
+										{contactCta.label}
+									</Link>
+								) : null}
+
+								{!session?.user ? (
+									<Link
+										href={routes.login}
+										onClick={closeMobile}
+										className="mt-3 inline-flex min-h-12 items-center justify-center rounded-[4px] border border-hairline px-5 text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:border-ink hover:text-ink"
+									>
+										Đăng nhập
+									</Link>
+								) : null}
 							</div>
 						</m.div>
 					</>

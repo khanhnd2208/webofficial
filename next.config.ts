@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { PUBLIC_REDIRECTS } from "./src/config/routes";
+
 const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
@@ -42,12 +44,14 @@ const nextConfig: NextConfig = {
       { source: '/login', destination: '/dang-nhap', permanent: true },
       { source: '/profile', destination: '/tai-khoan', permanent: true },
 
-      // Teaching / learning redirects
-      { source: '/giang-day', destination: '/hoc', permanent: true },
+      // Learning account alias
       { source: '/dashboard', destination: '/tai-khoan/hoc', permanent: true },
 
       // Admin vocabulary alias
       { source: '/admin/vocabulary', destination: '/admin/tools/vocabulary', permanent: true },
+
+      // Explorer Teacher — retired marketing URLs
+      ...PUBLIC_REDIRECTS,
     ];
   },
 };

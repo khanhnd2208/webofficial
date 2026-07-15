@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 		title: meta.title,
 		description: meta.description,
 		alternates: { canonical: absoluteUrl(`${routes.lab}/${category}`) },
+		robots: { index: false, follow: false },
 	};
 }
 
