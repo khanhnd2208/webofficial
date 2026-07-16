@@ -25,7 +25,7 @@ export default function HomePodcast({ episode }: { episode: PodcastEpisode }) {
 					/>
 				</div>
 				<div className={styles.podcastBody}>
-					<p className={styles.podcastKicker}>THE LATEST CONVERSATION</p>
+					<p className={styles.podcastKicker}>Cuộc trò chuyện mới nhất</p>
 					<h3 id="latest-podcast-title">{episode.title}</h3>
 					<p>{episode.description}</p>
 					<AudioPlayer
@@ -34,7 +34,7 @@ export default function HomePodcast({ episode }: { episode: PodcastEpisode }) {
 						durationLabel={episode.duration}
 					/>
 					<Link href={routes.growthEpisode(episode.slug)} className={styles.textLink}>
-						<span>Nghe và đọc transcript</span>
+						<span>Nghe và đọc bản chép lời</span>
 						<span className={styles.arrow} aria-hidden>
 							→
 						</span>

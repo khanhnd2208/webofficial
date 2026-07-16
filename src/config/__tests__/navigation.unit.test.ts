@@ -24,9 +24,9 @@ import { PUBLIC_INQUIRY_TYPE_OPTIONS } from '@/features/inquiries/constants';
 import type { PostListItemDTO } from '@/types/post';
 
 describe('brand identity', () => {
-	it('uses Duy Khánh as master brand with Learning as Becoming positioning', () => {
+	it('uses Duy Khánh as the master brand with a clear Vietnamese positioning', () => {
 		expect(SITE_NAME).toBe('Duy Khánh');
-		expect(SITE_POSITIONING).toBe('Learning as Becoming');
+		expect(SITE_POSITIONING).toBe('Việc học thay đổi cách ta nhìn và cách ta làm.');
 		expect(EDITORIAL_NAME).toBe('HANOICAM');
 		expect(PERSONAL_MARK).toBe('NDK');
 		expect(brandHierarchy.master).toBe(SITE_NAME);
@@ -104,6 +104,7 @@ describe('content gates', () => {
 	it('exposes additive public inquiry options', () => {
 		expect(PUBLIC_INQUIRY_TYPE_OPTIONS.map((o) => o.value)).toEqual([
 			'training',
+			'course',
 			'learning-design',
 			'people-organization',
 			'unsure',

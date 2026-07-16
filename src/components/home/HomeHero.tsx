@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { preload } from 'react-dom';
 
+import { routes } from '@/config/routes';
 import { homePageContent } from '@/content/home';
 
 import styles from './home.module.css';
 
-const heroImageAlt =
-	'Minh họa Duy Khánh trên hành trình học hỏi và giảng dạy';
+const heroImageAlt = 'Minh họa Duy Khánh trên hành trình học hỏi và giảng dạy';
 
 export default function HomeHero() {
 	const { hero } = homePageContent;
@@ -51,7 +51,7 @@ export default function HomeHero() {
 							<Link
 								href={hero.primaryCta.href}
 								className={styles.primaryButton}
-								data-umami-event="home_hero_manifesto_click"
+								data-umami-event="home_about_click"
 								data-umami-event-source-page="/"
 							>
 								<span>{hero.primaryCta.label}</span>
@@ -60,9 +60,9 @@ export default function HomeHero() {
 								</span>
 							</Link>
 							<Link
-								href="/gioi-thieu"
+								href={routes.posts}
 								className={styles.textLink}
-								data-umami-event="home_about_click"
+								data-umami-event="home_hero_writing_click"
 								data-umami-event-source-page="/hero"
 							>
 								<span>{hero.articleCtaLabel}</span>

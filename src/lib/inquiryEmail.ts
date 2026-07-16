@@ -2,13 +2,32 @@ import 'server-only';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl, SITE_NAME } from '@/config/site';
-import { INQUIRY_TYPE_LABELS } from '@/features/inquiries/constants';
+import { INQUIRY_TYPE_LABELS, type InquiryEmailStatus } from '@/features/inquiries/constants';
 import type { IInquiry } from '@/models/Inquiry';
+
+export const INQUIRY_EMAIL_TIMEOUT_MS = 10_000;
 
 export interface InquiryEmailConfig {
 	apiKey: string;
 	fromEmail: string;
 	notifyEmail: string;
+}
+
+export interface InquiryEmailDeliveryResult {
+	status: InquiryEmailStatus;
+	error?: string;
+}
+
+export interface SendInquiryEmailsResult {
+	adminEmailStatus: InquiryEmailStatus;
+	adminEmailError?: string;
+	senderEmailStatus: InquiryEmailStatus;
+	senderEmailError?: string;
+	/** Legacy compatibility alias: always mirrors the admin notification. */
+	emailStatus: InquiryEmailStatus;
+	emailError?: string;
+	/** Kept for callers that previously checked a single aggregate result. */
+	ok: boolean;
 }
 
 export function getInquiryEmailConfig(): InquiryEmailConfig | null {
@@ -39,10 +58,25 @@ function adminInquiryUrl(id: string): string {
 	return absoluteUrl(`${routes.admin.inquiries}/${id}`);
 }
 
+/** Store only a short, printable diagnostic; never persist an API response body or key. */
+export function sanitizeInquiryEmailError(error: unknown): string {
+	let message = error instanceof Error ? error.message : 'Không thể gửi email';
+	const apiKey = process.env.RESEND_API_KEY?.trim();
+	if (apiKey) message = message.replaceAll(apiKey, '[redacted]');
+	message = message
+		.replace(/\bre_[A-Za-z0-9_-]{8,}\b/g, '[redacted]')
+		.replace(/[\u0000-\u001F\u007F]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+	if (!message) return 'Không thể gửi email';
+	return message.slice(0, 300);
+}
+
 async function sendResendEmail(input: {
 	apiKey: string;
 	from: string;
 	to: string[];
+	replyTo?: string;
 	subject: string;
 	html: string;
 }): Promise<void> {
@@ -55,41 +89,37 @@ async function sendResendEmail(input: {
 		body: JSON.stringify({
 			from: input.from,
 			to: input.to,
+			...(input.replyTo ? { reply_to: input.replyTo } : {}),
 			subject: input.subject,
 			html: input.html,
 		}),
+		signal: AbortSignal.timeout(INQUIRY_EMAIL_TIMEOUT_MS),
 	});
 
 	if (!res.ok) {
-		const body = await res.text().catch(() => '');
-		throw new Error(body || `Resend API error (${res.status})`);
+		// Deliberately do not persist or surface Resend's response body: it may
+		// contain request details. Status is sufficient for operational triage.
+		throw new Error(`Resend API error (${res.status})`);
 	}
 }
 
-export type SendInquiryEmailsResult =
-	| { ok: true; emailStatus: 'sent' }
-	| { ok: false; emailStatus: 'pending' | 'failed'; emailError: string };
+function pendingConfigurationResult(): InquiryEmailDeliveryResult {
+	return { status: 'pending', error: 'Email delivery not configured' };
+}
 
-/**
- * Sends customer confirmation (no sensitive body) and owner notification.
- * Skips when Resend env is incomplete — inquiry is still saved.
- */
-export async function sendInquiryEmails(
+function failedDelivery(error: unknown, logLabel: string): InquiryEmailDeliveryResult {
+	const message = sanitizeInquiryEmailError(error);
+	console.error(`[inquiryEmail:${logLabel}]`, message);
+	return { status: 'failed', error: message };
+}
+
+export async function sendInquirySenderConfirmation(
 	inquiry: IInquiry & { _id: unknown },
-): Promise<SendInquiryEmailsResult> {
-	const config = getInquiryEmailConfig();
-	if (!config) {
-		return {
-			ok: false,
-			emailStatus: 'pending',
-			emailError: 'Email delivery not configured',
-		};
-	}
+	config = getInquiryEmailConfig(),
+): Promise<InquiryEmailDeliveryResult> {
+	if (!config) return pendingConfigurationResult();
 
-	const id = String(inquiry._id);
 	const typeLabel = INQUIRY_TYPE_LABELS[inquiry.inquiryType];
-	const summary = escapeHtml(buildSummary(inquiry));
-
 	try {
 		await sendResendEmail({
 			apiKey: config.apiKey,
@@ -103,11 +133,27 @@ export async function sendInquiryEmails(
 				<p>Trân trọng,<br/>${escapeHtml(SITE_NAME)}</p>
 			`.trim(),
 		});
+		return { status: 'sent' };
+	} catch (error) {
+		return failedDelivery(error, 'sender');
+	}
+}
 
+export async function sendInquiryAdminNotification(
+	inquiry: IInquiry & { _id: unknown },
+	config = getInquiryEmailConfig(),
+): Promise<InquiryEmailDeliveryResult> {
+	if (!config) return pendingConfigurationResult();
+
+	const id = String(inquiry._id);
+	const typeLabel = INQUIRY_TYPE_LABELS[inquiry.inquiryType];
+	const summary = escapeHtml(buildSummary(inquiry));
+	try {
 		await sendResendEmail({
 			apiKey: config.apiKey,
 			from: config.fromEmail,
 			to: [config.notifyEmail],
+			replyTo: inquiry.email,
 			subject: `[Lời nhắn] ${typeLabel} — ${inquiry.name}`,
 			html: `
 				<h2>Yêu cầu liên hệ mới</h2>
@@ -120,13 +166,31 @@ export async function sendInquiryEmails(
 				<p><a href="${adminInquiryUrl(id)}">Xem trong khu quản trị</a></p>
 			`.trim(),
 		});
-
-		return { ok: true, emailStatus: 'sent' };
+		return { status: 'sent' };
 	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Email send failed';
-		console.error('[inquiryEmail]', message);
-		return { ok: false, emailStatus: 'failed', emailError: message };
+		return failedDelivery(error, 'admin');
 	}
+}
+
+/** Sends both deliveries independently so one failure never suppresses the other. */
+export async function sendInquiryEmails(
+	inquiry: IInquiry & { _id: unknown },
+): Promise<SendInquiryEmailsResult> {
+	const config = getInquiryEmailConfig();
+	const [admin, sender] = await Promise.all([
+		sendInquiryAdminNotification(inquiry, config),
+		sendInquirySenderConfirmation(inquiry, config),
+	]);
+
+	return {
+		adminEmailStatus: admin.status,
+		adminEmailError: admin.error,
+		senderEmailStatus: sender.status,
+		senderEmailError: sender.error,
+		emailStatus: admin.status,
+		emailError: admin.error,
+		ok: admin.status === 'sent' && sender.status === 'sent',
+	};
 }
 
 export { buildSummary, INQUIRY_TYPE_LABELS };

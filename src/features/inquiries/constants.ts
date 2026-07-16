@@ -7,11 +7,11 @@ export const INQUIRY_TYPES = [
 	'people-organization',
 	'unsure',
 	'other',
+	'course',
 	/** Legacy — still accepted by API/admin, not primary public options */
 	'mentoring',
 	'business',
 	'ai',
-	'course',
 ] as const;
 
 export type InquiryType = (typeof INQUIRY_TYPES)[number];
@@ -34,6 +34,7 @@ export const PUBLIC_INQUIRY_TYPE_OPTIONS: ReadonlyArray<{
 	label: string;
 }> = [
 	{ value: 'training', label: 'Giảng dạy hoặc workshop' },
+	{ value: 'course', label: 'Khóa học hoặc ghi danh' },
 	{ value: 'learning-design', label: 'Thiết kế chương trình học' },
 	{ value: 'people-organization', label: 'Trao đổi và tư vấn' },
 	{ value: 'unsure', label: 'Chưa chắc — muốn hỏi Khánh' },
@@ -65,3 +66,9 @@ export const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
 };
 
 export type InquiryEmailStatus = 'pending' | 'sent' | 'failed';
+
+export const INQUIRY_EMAIL_STATUS_LABELS: Record<InquiryEmailStatus, string> = {
+	pending: 'Đang chờ',
+	sent: 'Đã gửi',
+	failed: 'Gửi thất bại',
+};

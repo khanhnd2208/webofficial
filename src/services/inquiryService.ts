@@ -1,6 +1,9 @@
 import dbConnect from '@/lib/dbConnect';
 import { AppError } from '@/lib/appError';
-import { sendInquiryEmails } from '@/lib/inquiryEmail';
+import {
+	sendInquiryAdminNotification,
+	sendInquiryEmails,
+} from '@/lib/inquiryEmail';
 import type { CreateInquiryInput, ListInquiriesQuery, UpdateInquiryInput } from '@/features/inquiries/schemas';
 import Inquiry, {
 	type IInquiry,
@@ -14,10 +17,17 @@ type InquiryLean = IInquiry & {
 	updatedAt?: Date;
 };
 
+export interface InquirySubmitter {
+	submitterType: 'account' | 'guest';
+	submittedByUserId?: string;
+}
+
 export interface InquiryDTO {
 	id: string;
 	name: string;
 	email: string;
+	submittedByUserId?: string;
+	submitterType?: 'account' | 'guest';
 	inquiryType: IInquiry['inquiryType'];
 	roleOrStage?: string;
 	organization?: string;
@@ -40,6 +50,10 @@ export interface InquiryDTO {
 	status: InquiryStatus;
 	internalNotes?: string;
 	statusHistory: { status: InquiryStatus; at: string; note?: string }[];
+	adminEmailStatus: InquiryEmailStatus;
+	adminEmailError?: string;
+	senderEmailStatus: InquiryEmailStatus;
+	senderEmailError?: string;
 	emailStatus: InquiryEmailStatus;
 	emailError?: string;
 	createdAt: string;
@@ -50,9 +64,11 @@ export interface InquiryListItemDTO {
 	id: string;
 	name: string;
 	email: string;
+	submitterType?: 'account' | 'guest';
 	inquiryType: IInquiry['inquiryType'];
 	context: string;
 	status: InquiryStatus;
+	adminEmailStatus: InquiryEmailStatus;
 	emailStatus: InquiryEmailStatus;
 	sourcePage?: string;
 	createdAt: string;
@@ -77,13 +93,31 @@ function mapCampaignParams(raw?: Map<string, string> | Record<string, string>): 
 	return Object.keys(raw).length > 0 ? raw : undefined;
 }
 
+function resolveEmailDelivery(doc: InquiryLean) {
+	const legacyStatus = doc.emailStatus ?? 'pending';
+	const legacyError = doc.emailError;
+	return {
+		adminEmailStatus: doc.adminEmailStatus ?? legacyStatus,
+		adminEmailError: doc.adminEmailError ?? legacyError,
+		// The legacy aggregate cannot prove that a sender confirmation was sent;
+		// keep it pending until the dedicated field exists.
+		senderEmailStatus: doc.senderEmailStatus ?? 'pending',
+		senderEmailError: doc.senderEmailError,
+		emailStatus: doc.emailStatus ?? doc.adminEmailStatus ?? 'pending',
+		emailError: doc.emailError ?? doc.adminEmailError,
+	};
+}
+
 function toDTO(doc: InquiryLean): InquiryDTO {
 	const createdAt = doc.createdAt ? new Date(doc.createdAt) : new Date(0);
 	const updatedAt = doc.updatedAt ? new Date(doc.updatedAt) : createdAt;
+	const delivery = resolveEmailDelivery(doc);
 	return {
 		id: String(doc._id),
 		name: doc.name,
 		email: doc.email,
+		submittedByUserId: doc.submittedByUserId,
+		submitterType: doc.submitterType,
 		inquiryType: doc.inquiryType,
 		roleOrStage: doc.roleOrStage,
 		organization: doc.organization,
@@ -110,8 +144,12 @@ function toDTO(doc: InquiryLean): InquiryDTO {
 			at: new Date(entry.at).toISOString(),
 			note: entry.note,
 		})),
-		emailStatus: doc.emailStatus,
-		emailError: doc.emailError,
+		adminEmailStatus: delivery.adminEmailStatus,
+		adminEmailError: delivery.adminEmailError,
+		senderEmailStatus: delivery.senderEmailStatus,
+		senderEmailError: delivery.senderEmailError,
+		emailStatus: delivery.emailStatus,
+		emailError: delivery.emailError,
 		createdAt: createdAt.toISOString(),
 		updatedAt: updatedAt.toISOString(),
 	};
@@ -120,14 +158,17 @@ function toDTO(doc: InquiryLean): InquiryDTO {
 function toListItemDTO(doc: InquiryLean): InquiryListItemDTO {
 	const createdAt = doc.createdAt ? new Date(doc.createdAt) : new Date(0);
 	const updatedAt = doc.updatedAt ? new Date(doc.updatedAt) : createdAt;
+	const delivery = resolveEmailDelivery(doc);
 	return {
 		id: String(doc._id),
 		name: doc.name,
 		email: doc.email,
+		submitterType: doc.submitterType,
 		inquiryType: doc.inquiryType,
 		context: doc.context,
 		status: doc.status,
-		emailStatus: doc.emailStatus,
+		adminEmailStatus: delivery.adminEmailStatus,
+		emailStatus: delivery.emailStatus,
 		sourcePage: doc.sourcePage,
 		createdAt: createdAt.toISOString(),
 		updatedAt: updatedAt.toISOString(),
@@ -138,19 +179,41 @@ async function applyEmailResult(
 	id: string,
 	result: Awaited<ReturnType<typeof sendInquiryEmails>>,
 ): Promise<void> {
+	const set: Record<string, unknown> = {
+		adminEmailStatus: result.adminEmailStatus,
+		senderEmailStatus: result.senderEmailStatus,
+		emailStatus: result.adminEmailStatus,
+	};
+	const unset: Record<string, 1> = {};
+
+	if (result.adminEmailError) {
+		set.adminEmailError = result.adminEmailError;
+		set.emailError = result.adminEmailError;
+	} else {
+		unset.adminEmailError = 1;
+		unset.emailError = 1;
+	}
+	if (result.senderEmailError) set.senderEmailError = result.senderEmailError;
+	else unset.senderEmailError = 1;
+
 	await Inquiry.findByIdAndUpdate(id, {
-		emailStatus: result.emailStatus,
-		emailError: result.ok ? undefined : result.emailError,
+		$set: set,
+		...(Object.keys(unset).length > 0 ? { $unset: unset } : {}),
 	});
 }
 
-export async function createInquiry(input: CreateInquiryInput): Promise<InquiryDTO> {
+export async function createInquiry(
+	input: CreateInquiryInput,
+	submitter: InquirySubmitter = { submitterType: 'guest' },
+): Promise<InquiryDTO> {
 	await dbConnect();
 
 	const now = new Date();
 	const created = await Inquiry.create({
 		name: input.name,
 		email: input.email,
+		submittedByUserId: submitter.submittedByUserId,
+		submitterType: submitter.submitterType,
 		inquiryType: input.inquiryType,
 		roleOrStage: input.roleOrStage,
 		organization: input.organization,
@@ -172,6 +235,8 @@ export async function createInquiry(input: CreateInquiryInput): Promise<InquiryD
 		agreedPrivacy: input.agreedPrivacy,
 		status: 'NEW',
 		statusHistory: [{ status: 'NEW', at: now }],
+		adminEmailStatus: 'pending',
+		senderEmailStatus: 'pending',
 		emailStatus: 'pending',
 	});
 
@@ -306,8 +371,23 @@ export async function retryNotification(id: string): Promise<InquiryDTO> {
 	const existing = (await Inquiry.findById(cleaned).lean()) as InquiryLean | null;
 	if (!existing) throw new AppError('Not found', 404);
 
-	const emailResult = await sendInquiryEmails(existing);
-	await applyEmailResult(cleaned, emailResult);
+	const adminResult = await sendInquiryAdminNotification(existing);
+	const set: Record<string, unknown> = {
+		adminEmailStatus: adminResult.status,
+		emailStatus: adminResult.status,
+	};
+	const unset: Record<string, 1> = {};
+	if (adminResult.error) {
+		set.adminEmailError = adminResult.error;
+		set.emailError = adminResult.error;
+	} else {
+		unset.adminEmailError = 1;
+		unset.emailError = 1;
+	}
+	await Inquiry.findByIdAndUpdate(cleaned, {
+		$set: set,
+		...(Object.keys(unset).length > 0 ? { $unset: unset } : {}),
+	});
 
 	const refreshed = (await Inquiry.findById(cleaned).lean()) as InquiryLean | null;
 	if (!refreshed) throw new AppError('Not found', 404);

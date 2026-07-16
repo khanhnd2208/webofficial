@@ -57,6 +57,7 @@ export default defineConfig({
 				test: {
 					name: 'integration',
 					environment: 'node',
+					fileParallelism: false,
 					include: [
 						'src/**/*.integration.test.ts',
 						'src/services/__tests__/**/*.test.ts',

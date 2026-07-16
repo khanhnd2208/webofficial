@@ -35,7 +35,7 @@ export default async function CaseStudyDetailPage({ params }: PageProps) {
 				<div className="shell py-14 sm:py-16">
 					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">
 						<Link href={routes.caseStudies} className="hover:text-ink">
-							Case study
+							Câu chuyện hợp tác
 						</Link>
 					</p>
 					<p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
@@ -63,7 +63,7 @@ export default async function CaseStudyDetailPage({ params }: PageProps) {
 						</ul>
 					</div>
 					<div>
-						<SectionHeading title="Deliverables" />
+						<SectionHeading title="Những gì đã bàn giao" />
 						<ul className="mt-4 space-y-2 text-sm text-ink-secondary">
 							{item.deliverables.map((d) => (
 								<li key={d}>· {d}</li>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import ContactLink from '@/components/contact/ContactLink';
 import { MarketingCta, SectionHeading } from '@/components/marketing';
 import { routes } from '@/config/routes';
 import { EDITORIAL_NAME } from '@/config/site';
@@ -8,7 +9,7 @@ import { auth } from '@/lib/auth';
 
 export const metadata: Metadata = {
 	title: 'Học cùng Khánh',
-	description: 'Không gian học có lộ trình — chương trình, journal và trao đổi trực tiếp.',
+	description: 'Không gian học có lộ trình — gồm chương trình học, bài viết và trao đổi trực tiếp.',
 	robots: { index: false, follow: false },
 };
 
@@ -22,7 +23,8 @@ export default async function LearnHubPage() {
 					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Học</p>
 					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Học cùng Khánh</h1>
 					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
-						Học có lộ trình, tiến bộ có dấu vết. Chọn chương trình phù hợp, đọc journal, hoặc trao đổi trực tiếp.
+						Học theo một lộ trình rõ ràng và biết mình đang tiến bộ ở đâu. Bạn có thể chọn một
+						chương trình phù hợp, đọc các bài viết hoặc trao đổi trực tiếp với tôi.
 					</p>
 					{session?.user ? (
 						<div className="mt-8">
@@ -66,34 +68,36 @@ export default async function LearnHubPage() {
 							>
 								<span>
 									<span className="font-display text-2xl font-medium text-ink group-hover:text-vermilion">
-										{EDITORIAL_NAME} Journal
+										Góc viết {EDITORIAL_NAME}
 									</span>
 									<span className="mt-2 block max-w-xl text-sm text-ink-secondary">
 										Bài viết, góc nhìn và tài liệu đọc thêm — không thay thế lộ trình khóa học.
 									</span>
 								</span>
 								<span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-vermilion">
-									Đọc journal →
+									Đọc bài viết →
 								</span>
 							</Link>
 						</li>
 						<li>
-							<Link
+							<ContactLink
 								href={routes.contact}
+								contactContext={{ inquiryType: 'course', sourcePage: routes.learn }}
 								className="group flex flex-col gap-2 py-6 sm:flex-row sm:items-baseline sm:justify-between"
 							>
 								<span>
 									<span className="font-display text-2xl font-medium text-ink group-hover:text-vermilion">
-										Trao đổi / ghi danh
+										Trao đổi và đăng ký
 									</span>
 									<span className="mt-2 block max-w-xl text-sm text-ink-secondary">
-										Quan tâm khóa học hoặc cần định hướng — gửi inquiry, không báo giá tức thì.
+										Nếu bạn quan tâm một khóa học hoặc chưa biết nên bắt đầu từ đâu, hãy gửi tôi vài
+										dòng để tôi hiểu nhu cầu trước khi phản hồi.
 									</span>
 								</span>
 								<span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-vermilion">
-									Liên hệ →
+									Gửi lời nhắn →
 								</span>
-							</Link>
+							</ContactLink>
 						</li>
 					</ul>
 					<div className="mt-10">

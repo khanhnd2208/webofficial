@@ -36,7 +36,7 @@ export default function ShareBar({ url, title }: ShareBarProps) {
 
 	return (
 		<div className="flex items-center gap-2">
-			{/* Copy link */}
+			{/* Sao chép liên kết */}
 			<button
 				onClick={() => void copyLink()}
 				className={`inline-flex items-center gap-1.5 border px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${
@@ -44,21 +44,21 @@ export default function ShareBar({ url, title }: ShareBarProps) {
 						? 'border-success bg-success-subtle text-success'
 						: 'border-border text-muted hover:border-foreground hover:text-foreground'
 				}`}
-				title="Copy link"
+				title="Sao chép liên kết"
 			>
 				{copied ? (
 					<>
 						<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 						</svg>
-						Copied!
+						Đã sao chép
 					</>
 				) : (
 					<>
 						<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
 						</svg>
-						Link
+						Sao chép liên kết
 					</>
 				)}
 			</button>

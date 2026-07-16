@@ -14,6 +14,7 @@ import {
 } from '@/config/navigation';
 import { routes } from '@/config/routes';
 import { SITE_NAME } from '@/config/site';
+import ContactLink from '@/components/contact/ContactLink';
 import { duration, ease } from '@/components/motion/tokens';
 
 export default function Navbar() {
@@ -170,14 +171,15 @@ export default function Navbar() {
 					</div>
 
 					{contactCta ? (
-						<Link
+						<ContactLink
 							href={contactCta.href}
+							contactContext={{ sourcePage: pathname }}
 							aria-current={pathname === routes.contact ? 'page' : undefined}
 							className="ml-2 hidden min-h-11 items-center border-l border-hairline px-4 py-2 text-sm font-medium text-accent transition-colors hover:text-ink sm:inline-flex"
 						>
 							<span className="lg:hidden">{contactCta.shortLabel}</span>
 							<span className="hidden lg:inline">{contactCta.label}</span>
-						</Link>
+						</ContactLink>
 					) : null}
 
 					<div className="ml-1">
@@ -355,14 +357,15 @@ export default function Navbar() {
 								</nav>
 
 								{contactCta ? (
-									<Link
+									<ContactLink
 										href={contactCta.href}
-										onClick={closeMobile}
+										contactContext={{ sourcePage: pathname }}
+										onClick={() => setMobileOpen(false)}
 										aria-current={pathname === routes.contact ? 'page' : undefined}
-									className="mt-8 inline-flex min-h-12 items-center justify-center border-y border-hairline px-5 text-sm font-medium text-accent"
+										className="mt-8 inline-flex min-h-12 items-center justify-center border-y border-hairline px-5 text-sm font-medium text-accent"
 									>
 										{contactCta.label}
-									</Link>
+									</ContactLink>
 								) : null}
 
 							</div>

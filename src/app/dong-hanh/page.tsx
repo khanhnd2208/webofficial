@@ -7,9 +7,9 @@ import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 
 export const metadata: Metadata = {
-	title: 'Đồng hành cùng Khánh',
+	title: 'Cùng làm việc với tôi',
 	description:
-		'Tổng quan mentoring, cố vấn doanh nghiệp, đào tạo/workshop và AI ứng dụng — chọn theo nhu cầu, không theo bảng giá.',
+		'Các hình thức đồng hành dành cho cá nhân và tổ chức: giảng dạy, thiết kế chương trình học và tư vấn phát triển.',
 	alternates: { canonical: absoluteUrl(routes.accompany) },
 };
 
@@ -20,10 +20,15 @@ export default function AccompanyHubPage() {
 		<main className="min-h-screen">
 			<section className="border-b border-hairline">
 				<div className="shell py-14 sm:py-16">
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Đồng hành</p>
-					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Đồng hành cùng Khánh</h1>
+					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">
+						Đồng hành
+					</p>
+					<h1 className="mt-3 font-display type-page-title font-medium text-ink">
+						Cùng làm việc với tôi
+					</h1>
 					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
-						Router theo nhu cầu — cá nhân hoặc tổ chức. Chi phí chỉ được đề xuất sau khi làm rõ đầu ra và phạm vi.
+						Mỗi nhu cầu cần một cách đồng hành khác nhau. Tôi chỉ đề xuất phạm vi và chi phí sau khi
+						đã hiểu rõ bối cảnh, mục tiêu và điều bạn thực sự cần.
 					</p>
 				</div>
 			</section>
@@ -42,7 +47,9 @@ export default function AccompanyHubPage() {
 										<span className="font-display text-2xl font-medium text-ink group-hover:text-vermilion">
 											{service.title}
 										</span>
-										<span className="mt-2 block max-w-xl text-sm text-ink-secondary">{service.summary}</span>
+										<span className="mt-2 block max-w-xl text-sm text-ink-secondary">
+											{service.summary}
+										</span>
 									</span>
 									<span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-vermilion">
 										Xem chi tiết →
@@ -52,7 +59,9 @@ export default function AccompanyHubPage() {
 						))}
 					</ul>
 					<div className="mt-10">
-						<MarketingCta href={`${routes.contact}?type=unsure`}>Chưa chắc — trao đổi với Khánh</MarketingCta>
+						<MarketingCta href={`${routes.contact}?type=unsure`}>
+							Chưa chắc? Hãy gửi tôi vài dòng
+						</MarketingCta>
 					</div>
 				</div>
 			</section>

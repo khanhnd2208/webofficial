@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import ContactLink from '@/components/contact/ContactLink';
 import { homePageContent } from '@/content/home';
 
 import styles from './home.module.css';
@@ -17,21 +18,23 @@ export default function HomeClosingCta() {
 					))}
 				</div>
 				<div className={styles.closingActions}>
-					<Link
+					<ContactLink
 						href={closing.primaryCta.href}
-						className={styles.textLink}
-						data-umami-event="home_closing_writing_click"
+						contactContext={{ sourcePage: '/', campaignParams: { ref: 'home-closing' } }}
+						className={styles.primaryButton}
+						data-umami-event="home_closing_message_click"
 						data-umami-event-source-page="/"
 					>
 						<span>{closing.primaryCta.label}</span>
 						<span className={styles.arrow} aria-hidden>
 							→
 						</span>
-					</Link>
+					</ContactLink>
 					<Link
 						href={closing.secondaryCta.href}
 						className={styles.textLink}
-						data-umami-event="home_closing_message_click"
+						data-umami-event="home_closing_writing_click"
+						data-umami-event-source-page="/"
 					>
 						<span>{closing.secondaryCta.label}</span>
 						<span className={styles.arrow} aria-hidden>

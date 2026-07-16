@@ -25,6 +25,14 @@ function formatDate(value: string): string {
 export default function HomeWriting({ posts, podcast }: Props) {
 	const { writing } = homePageContent;
 	const latest = posts.slice(0, 3);
+	const listClassName = [
+		styles.writingList,
+		latest.length === 1
+			? styles.writingListSingle
+			: latest.length === 2
+				? styles.writingListDouble
+				: styles.writingListTriple,
+	].join(' ');
 
 	return (
 		<section className={`${styles.section} ${styles.writing}`} aria-labelledby="home-writing-title">
@@ -37,7 +45,7 @@ export default function HomeWriting({ posts, podcast }: Props) {
 				/>
 
 				{latest.length > 0 ? (
-					<ul className={styles.writingList}>
+					<ul className={listClassName}>
 						{latest.map((post) => (
 							<li key={post.id}>
 								<Link href={routes.post(post.slug)} className={styles.writingCard}>
@@ -45,7 +53,7 @@ export default function HomeWriting({ posts, podcast }: Props) {
 										{formatDate(post.publishedAt ?? post.createdAt)}
 									</time>
 									<h3>{post.title}</h3>
-									<p>{post.summary?.trim() || 'Mở bài để đọc ghi chép này.'}</p>
+									{post.summary?.trim() ? <p>{post.summary.trim()}</p> : null}
 									<span>Đọc bài viết →</span>
 								</Link>
 							</li>

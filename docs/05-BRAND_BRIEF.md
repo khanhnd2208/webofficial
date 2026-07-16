@@ -18,11 +18,11 @@ Website cá nhân của một giảng viên — nơi Duy Khánh giới thiệu c
 
 ## Lời giới thiệu cốt lõi
 
-Không chỉ học để biết. Học để trở thành. Kiến thức cần gặp thực tế, trải nghiệm cần được nhìn lại và việc học cần tạo ra thay đổi.
+Việc học không dừng ở điều ta biết. Nó thay đổi cách ta nhìn và cách ta làm. Một buổi học có giá trị khi người học hiểu rõ vấn đề, được thử, được nhìn lại và biết mình sẽ làm gì tiếp theo.
 
 ## Tone
 
-Trầm, rõ ràng, biên tập — canvas giấy / ink / vermilion. Không marketplace, không bảng giá công khai, không “AI glow”.
+Trầm, rõ ràng, có chiều sâu — canvas giấy / ink / vermilion. Ưu tiên các động từ cụ thể: hiểu, thử, nhìn lại, vận dụng. Không marketplace, không bảng giá công khai, không “AI glow”.
 
 ## Hành trình đọc
 

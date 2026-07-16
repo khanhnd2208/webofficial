@@ -7,7 +7,7 @@
 export const SITE_NAME = 'Duy Khánh';
 
 /** Public positioning line — the central idea of the personal education space. */
-export const SITE_POSITIONING = 'Learning as Becoming';
+export const SITE_POSITIONING = 'Việc học thay đổi cách ta nhìn và cách ta làm.';
 
 /** Editorial brand for the journal. Not the site-wide wordmark. */
 export const EDITORIAL_NAME = 'HANOICAM';
@@ -23,7 +23,7 @@ export const SITE_ORIGIN =
 	(process.env.NODE_ENV === 'production' ? 'https://toiladuykhanh.com' : 'http://localhost:3000');
 
 export const SITE_DESCRIPTION =
-	'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.';
+	'Duy Khánh giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.';
 
 export const SITE_CREATOR = SITE_NAME;
 
@@ -57,7 +57,7 @@ export const siteProfile: SiteProfile = {
 	publicName: SITE_NAME,
 	role: SITE_EYEBROW,
 	shortBio:
-		'Tôi giảng dạy, thiết kế chương trình học và viết về con người, công việc cùng những điều mình đang học.',
+		'Tôi giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.',
 	portraitSrc: '/brand/learning-as-becoming-mobile.jpg',
 	// contactEmail / socialLinks: leave empty until owner provides
 };

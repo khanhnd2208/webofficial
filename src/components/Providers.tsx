@@ -2,14 +2,27 @@
 
 import { SessionProvider } from 'next-auth/react';
 
+import {
+	ContactDialogProvider,
+	type ContactFormAvailability,
+} from '@/components/contact/ContactDialogProvider';
 import MotionProvider from '@/components/motion/MotionProvider';
 import { ThemeProvider } from './ThemeProvider';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+type ProvidersProps = {
+	children: React.ReactNode;
+	inquiryAvailability: ContactFormAvailability;
+};
+
+export default function Providers({ children, inquiryAvailability }: ProvidersProps) {
 	return (
 		<SessionProvider>
 			<ThemeProvider>
-				<MotionProvider>{children}</MotionProvider>
+				<MotionProvider>
+					<ContactDialogProvider availability={inquiryAvailability}>
+						{children}
+					</ContactDialogProvider>
+				</MotionProvider>
 			</ThemeProvider>
 		</SessionProvider>
 	);

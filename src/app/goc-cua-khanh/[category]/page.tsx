@@ -49,14 +49,17 @@ export default async function LabCategoryPage({ params }: PageProps) {
 			<section>
 				<div className="shell py-12">
 					{items.length === 0 ? (
-						<p className="text-sm text-ink-secondary">Chưa có mục published trong nhóm này.</p>
+						<p className="text-sm text-ink-secondary">Chưa có nội dung công khai trong nhóm này.</p>
 					) : (
 						<ul className="space-y-8">
 							{items.map((resource) => (
 								<li key={resource.slug} className="border-t border-hairline pt-5">
 									<ResourceBadge productStatus={resource.productStatus} access={resource.access} />
 									<h2 className="mt-3 font-display text-xl font-medium text-ink">
-										<Link href={`${routes.lab}/${category}/${resource.slug}`} className="hover:text-vermilion">
+										<Link
+											href={`${routes.lab}/${category}/${resource.slug}`}
+											className="hover:text-vermilion"
+										>
 											{resource.title}
 										</Link>
 									</h2>

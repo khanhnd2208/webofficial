@@ -151,7 +151,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 				<section className="border-t border-hairline pt-10">
 					<p className="font-display text-2xl font-medium text-ink">Muốn tham gia khóa này?</p>
 					<p className="mt-2 max-w-xl text-sm text-ink-secondary">
-						Gửi inquiry — Khánh sẽ phản hồi sau khi làm rõ nhu cầu và phạm vi, không báo giá tức thì.
+						Gửi vài dòng về điều bạn muốn học. Khánh sẽ phản hồi sau khi hiểu rõ nhu cầu và cách đồng hành phù hợp.
 					</p>
 					<div className="mt-6">
 						<MarketingCta href={interestHref}>Gửi yêu cầu quan tâm</MarketingCta>

@@ -15,10 +15,10 @@ interface ReactionBarProps {
 }
 
 const REACTIONS = [
-	{ key: 'like' as const, emoji: '👍', label: 'Like' },
-	{ key: 'love' as const, emoji: '❤️', label: 'Love' },
-	{ key: 'fire' as const, emoji: '🔥', label: 'Fire' },
-	{ key: 'clap' as const, emoji: '👏', label: 'Clap' },
+	{ key: 'like' as const, emoji: '👍', label: 'Hữu ích' },
+	{ key: 'love' as const, emoji: '❤️', label: 'Yêu thích' },
+	{ key: 'fire' as const, emoji: '🔥', label: 'Truyền cảm hứng' },
+	{ key: 'clap' as const, emoji: '👏', label: 'Tán thưởng' },
 ];
 
 export default function ReactionBar({ slug, initialReactions }: ReactionBarProps) {
@@ -75,7 +75,8 @@ export default function ReactionBar({ slug, initialReactions }: ReactionBarProps
 						className={`group inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm transition-all hover:border-border-hover hover:bg-surface-hover active:scale-95 ${
 							animating === key ? 'scale-110' : ''
 						}`}
-						title={session?.user ? label : 'Đăng nhập để react'}
+						title={session?.user ? label : 'Đăng nhập để bày tỏ cảm xúc'}
+						aria-label={session?.user ? label : `Đăng nhập để chọn ${label.toLowerCase()}`}
 					>
 						<span
 							className={`transition-transform ${animating === key ? 'animate-bounce' : 'group-hover:scale-125'}`}
@@ -88,7 +89,7 @@ export default function ReactionBar({ slug, initialReactions }: ReactionBarProps
 					</button>
 				))}
 				{total > 0 ? (
-					<span className="ml-2 text-xs text-muted">{total} reactions</span>
+					<span className="ml-2 text-xs text-muted">{total} lượt bày tỏ</span>
 				) : null}
 			</div>
 			{showLoginHint && (
@@ -96,7 +97,7 @@ export default function ReactionBar({ slug, initialReactions }: ReactionBarProps
 					<Link href="/dang-nhap" className="font-bold text-accent underline underline-offset-2">
 						Đăng nhập
 					</Link>{' '}
-					để thả reaction.
+					để bày tỏ cảm xúc.
 				</p>
 			)}
 		</div>

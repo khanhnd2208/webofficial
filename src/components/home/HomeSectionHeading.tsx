@@ -1,4 +1,4 @@
-import styles from './home.module.css';
+import { SectionHeading } from '@/components/marketing';
 
 type HomeSectionHeadingProps = {
 	eyebrow: string;
@@ -14,12 +14,12 @@ export default function HomeSectionHeading({
 	id,
 }: HomeSectionHeadingProps) {
 	return (
-		<header className={styles.sectionHeading}>
-			<p className={styles.eyebrow}>{eyebrow}</p>
-			<h2 id={id} className={styles.sectionTitle}>
-				{title}
-			</h2>
-			{description ? <p className={styles.sectionDescription}>{description}</p> : null}
-		</header>
+		<SectionHeading
+			id={id}
+			eyebrow={eyebrow}
+			title={title}
+			description={description}
+			variant="major"
+		/>
 	);
 }

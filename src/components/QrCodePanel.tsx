@@ -71,7 +71,7 @@ export default function QrCodePanel({ url, title = 'message-qr' }: QrCodePanelPr
 					onClick={() => void copyLink()}
 					className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-hover"
 				>
-					Copy link
+					Sao chép liên kết
 				</button>
 				<button
 					type="button"

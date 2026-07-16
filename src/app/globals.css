@@ -21,6 +21,7 @@
 	--ink: #1c1c1a;
 	--ink-secondary: #65645f;
 	--hairline: #d9d5cc;
+	--section-tint: #eee8df;
 	--bronze: #8a5e3c;
 	--vermilion: #8a5e3c;
 	--sage: #879281;
@@ -78,8 +79,8 @@
 	/* Layout — boutique frame ~1180px */
 	--shell-max: 1320px;
 	--gutter: 20px;
-	/* ~64px mobile */
-	--section-space: 4rem;
+	/* 48px mobile */
+	--section-space: 3rem;
 	/* Article measure 680–780px */
 	--measure: 42rem;
 }
@@ -96,6 +97,7 @@
 	--ink: #f2ece1;
 	--ink-secondary: #b7afa2;
 	--hairline: #35312b;
+	--section-tint: #211e19;
 	--vermilion: #e27757;
 	--sage: #a8b49f;
 	--sunlight: #7b4f2e;
@@ -144,16 +146,16 @@
 @media (min-width: 768px) {
 	:root {
 		--gutter: 28px;
-		/* ~80px mid */
-		--section-space: 5rem;
+		/* 64px mid */
+		--section-space: 4rem;
 	}
 }
 
 @media (min-width: 1024px) {
 	:root {
 		--gutter: 40px;
-		/* ~96px desktop */
-		--section-space: 6rem;
+		/* 72px desktop */
+		--section-space: 4.5rem;
 	}
 }
 
@@ -173,6 +175,7 @@
 	--color-sage: var(--sage);
 	--color-sunlight: var(--sunlight);
 	--color-hairline: var(--hairline);
+	--color-section-tint: var(--section-tint);
 	--color-background: var(--background);
 	--color-background-secondary: var(--background-secondary);
 	--color-surface: var(--surface);
@@ -264,11 +267,13 @@ body::before {
 	font-family: var(--font-cormorant), Georgia, 'Times New Roman', serif;
 }
 
-.shell {
-	margin-inline: auto;
-	width: 100%;
-	max-width: var(--shell-max);
-	padding-inline: var(--gutter);
+@layer components {
+	.shell {
+		margin-inline: auto;
+		width: 100%;
+		max-width: var(--shell-max);
+		padding-inline: var(--gutter);
+	}
 }
 
 .section-space {
@@ -276,7 +281,7 @@ body::before {
 }
 
 .section-space-sm {
-	padding-block: calc(var(--section-space) * 0.65);
+	padding-block: clamp(1.5rem, 3.5vw, 2.5rem);
 }
 
 .type-wordmark {
@@ -290,15 +295,15 @@ body::before {
 }
 
 .type-page-title {
-	font-size: 2.25rem;
+	font-size: clamp(2.5rem, 4vw, 3.5rem);
 	line-height: 1.05;
-	letter-spacing: 0;
+	letter-spacing: -0.02em;
 }
 
 .type-section {
-	font-size: 1.75rem;
-	line-height: 1.15;
-	letter-spacing: 0;
+	font-size: clamp(1.9rem, 2.8vw, 2.5rem);
+	line-height: 1.1;
+	letter-spacing: -0.015em;
 }
 
 .prose-article {
@@ -318,14 +323,6 @@ body::before {
 		font-size: 3rem;
 	}
 
-	.type-page-title {
-		font-size: 3rem;
-	}
-
-	.type-section {
-		font-size: 2.125rem;
-	}
-
 	.prose-article {
 		font-size: 1.1875rem;
 	}
@@ -334,10 +331,6 @@ body::before {
 @media (min-width: 1024px) {
 	.type-wordmark {
 		font-size: 3.625rem;
-	}
-
-	.type-page-title {
-		font-size: 3.5rem;
 	}
 }
 

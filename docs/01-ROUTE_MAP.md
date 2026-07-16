@@ -9,7 +9,7 @@ Navigation and footer render **only** links with `status: 'published'`.
 | Brand | Role |
 |-------|------|
 | **Duy Khánh** | Master brand / site wordmark |
-| **Không chỉ học để biết. Học để trở thành.** | Tuyên ngôn giáo dục |
+| **Việc học thay đổi cách ta nhìn và cách ta làm.** | Quan niệm giáo dục |
 | **HANOICAM** | Editorial journal brand |
 | **NDK** | Personal mark / signature |
 

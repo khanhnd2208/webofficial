@@ -9,13 +9,13 @@ import { absoluteUrl } from '@/config/site';
 
 export const metadata: Metadata = {
 	title: 'Góc của Khánh',
-	description: 'Creative lab — boardgame, công cụ, template và thử nghiệm công khai có status/access rõ.',
+	description: 'Những trò chơi, công cụ, tài nguyên và bản thử nghiệm được Khánh chia sẻ để tham khảo.',
 	alternates: { canonical: absoluteUrl(routes.lab) },
 	robots: { index: false, follow: false },
 };
 
 const GROUPS = [
-	{ id: 'boardgame', title: 'Boardgame', href: routes.labBoardgame, type: 'boardgame' as const },
+	{ id: 'boardgame', title: 'Trò chơi học tập', href: routes.labBoardgame, type: 'boardgame' as const },
 	{ id: 'tool', title: 'Công cụ', href: routes.labTools, type: 'tool' as const },
 	{ id: 'template', title: 'Tài nguyên', href: routes.labResources, types: ['template', 'guide'] as const },
 	{ id: 'experiment', title: 'Thử nghiệm', href: routes.labExperiments, type: 'experiment' as const },
@@ -28,10 +28,10 @@ export default function LabHubPage() {
 		<main className="min-h-screen">
 			<section className="border-b border-hairline">
 				<div className="shell py-14 sm:py-16">
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Lab</p>
+					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Thử nghiệm</p>
 					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Góc của Khánh</h1>
 					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
-						Không gian thử nghiệm và tài nguyên. Prototype khác bản ổn định — luôn đọc status trước khi dùng.
+						Nơi lưu những trò chơi, công cụ và tài nguyên đang được thử nghiệm. Mỗi mục đều ghi rõ mức độ hoàn thiện trước khi bạn sử dụng.
 					</p>
 				</div>
 			</section>
@@ -56,7 +56,7 @@ export default function LabHubPage() {
 				<div className="shell py-14 sm:py-16">
 					<SectionHeading title="Đang mở" />
 					{resources.length === 0 ? (
-						<p className="mt-6 text-sm text-ink-secondary">Chưa có tài nguyên published.</p>
+						<p className="mt-6 text-sm text-ink-secondary">Chưa có tài nguyên nào được chia sẻ.</p>
 					) : (
 						<ul className="mt-8 grid gap-8 sm:grid-cols-2">
 							{resources.map((resource) => (

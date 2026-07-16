@@ -70,49 +70,50 @@ export type HomePageContent = {
 export const homePageContent: HomePageContent = {
 	hero: {
 		eyebrow: 'Duy Khánh · Giảng viên',
-		headline: ['Không chỉ học để biết.', 'Học để trở thành.'],
+		headline: ['Việc học không dừng ở điều ta biết.', 'Nó thay đổi cách ta nhìn và cách ta làm.'],
 		description:
-			'Tôi là Duy Khánh, một giảng viên thích biến những kiến thức tưởng như xa xôi thành điều người học có thể hiểu, thử và sử dụng trong đời sống.',
+			'Tôi là Duy Khánh, một giảng viên. Trong lớp học, tôi giúp người học hiểu rõ vấn đề, thử một cách làm và mang điều vừa học vào công việc lẫn đời sống.',
 		primaryCta: {
-			label: 'Đọc những ghi chép mới',
-			href: routes.posts,
+			label: 'Tìm hiểu về Khánh',
+			href: routes.about,
 		},
-		articleCtaLabel: 'Tìm hiểu thêm về Khánh',
+		articleCtaLabel: 'Đọc bài viết mới',
 		preferredArticleSlug: 'loi-ngo',
-		becomingQuote: 'Learning is not only about knowing. It is about becoming.',
-		learningCycle: 'Learn. Experience. Reflect. Become.',
+		becomingQuote: 'Việc học thay đổi cách ta nhìn và cách ta làm.',
+		learningCycle: 'Hiểu · Thử · Nhìn lại · Vận dụng',
 		caption: 'Một giảng viên luôn tò mò về việc con người học và trưởng thành.',
 	},
 	manifesto: {
-		eyebrow: 'Tôi nghĩ về việc học',
-		title: 'Một bài học tốt cần đi được vào đời sống.',
+		eyebrow: 'Quan niệm giảng dạy',
+		title: 'Một buổi học có giá trị khi người học biết mình sẽ làm gì tiếp theo.',
 		paragraphs: [
-			'Tôi tin rằng kiến thức chỉ có ý nghĩa khi giúp chúng ta hiểu vấn đề rõ hơn và sống tốt hơn trong thực tế. Vì vậy, trong lớp học, tôi luôn cố gắng để người học có cơ hội đặt câu hỏi, thử một cách làm và tự nhìn lại điều mình vừa trải qua.',
+			'Tôi thiết kế mỗi buổi học như một hành trình ngắn: bắt đầu từ một tình huống có thật, cùng người học thử cách giải quyết, rồi khép lại bằng một điều họ có thể mang đi và vận dụng.',
 		],
-		quote: ['Giáo dục không chỉ truyền đạt kiến thức.', 'Một bài học tốt giúp người học nghĩ và hành động khác đi.'],
+		quote: ['Hiểu để thấy rõ vấn đề.', 'Thử để tìm ra bước đi phù hợp.'],
 	},
 	principles: [
 		{
 			id: 'reality',
-			title: 'Kiến thức phải gặp được thực tế',
+			title: 'Bắt đầu từ tình huống thật',
 			description:
-				'Lý thuyết bắt đầu có ý nghĩa khi người học nhìn thấy nó trong công việc, các mối quan hệ và những quyết định của chính mình.',
+				'Mỗi chủ đề được đặt vào một câu hỏi, quyết định hoặc tình huống mà người học có thể gặp trong công việc và đời sống.',
 		},
 		{
 			id: 'reflection',
-			title: 'Trải nghiệm cần được phản tư',
-			description: 'Chúng ta học khi biết dừng lại, đặt câu hỏi và hiểu điều gì thực sự đã xảy ra.',
+			title: 'Học bằng cách thử',
+			description:
+				'Người học được phân tích, lựa chọn và thử một cách làm trước khi cùng nhau nhìn lại điều hiệu quả và điều cần thay đổi.',
 		},
 		{
 			id: 'change',
-			title: 'Việc học phải tạo ra thay đổi',
+			title: 'Khép lại bằng một bước tiếp theo',
 			description:
-				'Giá trị của bài học nằm cả ở năng lực, nhận thức và cách hành động được hình thành sau đó.',
+				'Mỗi buổi học kết thúc bằng một việc cụ thể để người học có thể tiếp tục suy nghĩ, thực hành hoặc vận dụng ngay sau lớp.',
 		},
 	],
 	experiences: {
-		eyebrow: 'LEARNING WITH DUY KHÁNH',
-		title: 'Những cách chúng ta có thể học cùng nhau',
+		eyebrow: 'Học cùng tôi',
+		title: 'Những cách bạn có thể học cùng tôi',
 		introduction:
 			'Mỗi người bước vào việc học với một câu hỏi khác nhau. Vì vậy, tôi không muốn tạo ra những sản phẩm chỉ để truyền tải thêm nội dung. Tôi muốn thiết kế những trải nghiệm gắn với vấn đề thực tế mà người học đang cố gắng hiểu và giải quyết.',
 		items: [
@@ -128,9 +129,9 @@ export const homePageContent: HomePageContent = {
 				id: 'beyond-class',
 				title: 'Ngoài lớp học',
 				description:
-					'Workshop và learning series dành cho những người muốn phát triển năng lực thực tế, thay vì chỉ hoàn thành thêm một khóa học.',
+					'Các chuyên đề và chuỗi học tập dành cho những người muốn phát triển năng lực thực tế, thay vì chỉ hoàn thành thêm một khóa học.',
 				href: routes.aboutTeaching,
-				cta: 'Tìm hiểu workshop và learning series',
+				cta: 'Tìm hiểu các chương trình thực hành',
 			},
 			{
 				id: 'development-conversations',
@@ -138,47 +139,46 @@ export const homePageContent: HomePageContent = {
 				description:
 					'Không phải nơi để nhận câu trả lời có sẵn, mà là không gian để nhìn rõ hơn điều bạn đang trải qua, đặt ra những câu hỏi tốt hơn và xây dựng hướng đi của riêng mình.',
 				href: routes.aboutAdvisory,
-				cta: 'Tìm hiểu cách chúng ta có thể trò chuyện',
+				cta: 'Tìm hiểu cách tôi đồng hành',
 			},
 			{
 				id: 'educational-collaboration',
 				title: 'Cùng xây dựng một trải nghiệm học tập',
 				description:
-					'Hợp tác với trường học, tổ chức và những người làm giáo dục để phát triển chương trình, case study, workshop và những hệ thống giúp việc học trở nên thực chất hơn.',
+					'Hợp tác với trường học, tổ chức và những người làm giáo dục để phát triển chương trình, tình huống học tập, chuyên đề và những hệ thống giúp việc học trở nên thực chất hơn.',
 				href: routes.aboutLearningDesign,
 				cta: 'Trao đổi về một ý tưởng',
 			},
 		],
 	},
 	selectedWork: {
-		eyebrow: 'IDEAS IN PRACTICE',
+		eyebrow: 'Ý tưởng trong thực tế',
 		title: 'Những điều tôi đang xây dựng',
 		introduction:
 			'Tôi thích đưa ý tưởng ra khỏi trang giấy. Đôi khi chúng trở thành một bài học, một chương trình, một công cụ hoặc một hệ thống giúp con người học tập và làm việc tốt hơn.',
 	},
 	writing: {
-		eyebrow: 'Ghi chép mới',
-		title: 'Những điều tôi đang viết',
+		eyebrow: 'Bài viết',
+		title: 'Những ghi chép mới',
 		description:
-			'Những ghi chép về việc học, con người, công việc và những điều tôi gặp trên đường.',
+			'Từ lớp học, công việc và những quan sát đời thường — những điều tôi muốn nghĩ kỹ hơn, rồi viết lại cho rõ.',
 		archiveLabel: 'Xem tất cả bài viết',
 	},
 	writingInterlude: {
-		quote: 'Emotion leads us to bad decisions, great lessons—and always, somehow, back to love.',
-		body: 'Tôi quan tâm đến những điều con người không thể giải thích hoàn toàn bằng logic: những lựa chọn sai, những bài học đến muộn, các mối quan hệ, sự trưởng thành và cách chúng ta tìm đường trở về với chính mình.',
+		quote: 'Có những điều chỉ trở nên rõ ràng khi ta dành thời gian nhìn lại.',
+		body: 'Tôi quan tâm đến những điều con người không thể giải thích hoàn toàn bằng logic: những lựa chọn sai, những bài học đến muộn, các mối quan hệ, sự trưởng thành và cách mỗi người tìm đường trở về với chính mình.',
 	},
 	closing: {
 		quote: ['', ''],
-		title:
-			'Nếu những điều tôi viết khiến bạn nghĩ thêm về một câu hỏi của riêng mình, chúng ta có thể bắt đầu từ đó.',
+		title: 'Có một câu hỏi bạn muốn nhìn cho rõ hơn? Hãy gửi tôi vài dòng.',
 		paragraphs: [],
 		primaryCta: {
-			label: 'Đọc những ghi chép mới',
-			href: routes.posts,
+			label: 'Gửi lời nhắn',
+			href: `${routes.contact}?sourcePage=%2F&ref=home-closing`,
 		},
 		secondaryCta: {
-			label: 'Gửi Khánh một lời nhắn',
-			href: `${routes.contact}?sourcePage=%2F&ref=home-closing`,
+			label: 'Đọc thêm bài viết',
+			href: routes.posts,
 		},
 	},
 };
@@ -204,14 +204,14 @@ const HOME_RESOURCE_CONFIG: ReadonlyArray<{
 }> = [
 	{
 		slug: 'classroom-decision-game',
-		description: 'Một prototype giúp các nhóm luyện ra quyết định dựa trên tiêu chí.',
-		labels: ['Learning Game', 'Decision Making', 'Prototype'],
+		description: 'Một bản thử nghiệm giúp các nhóm luyện cách ra quyết định dựa trên tiêu chí.',
+		labels: ['Trò chơi học tập', 'Ra quyết định', 'Bản thử nghiệm'],
 	},
 	{
 		slug: 'learning-outcome-canvas',
 		description:
-			'Một template một trang để xác định mục tiêu học và những dấu hiệu cho thấy việc học thực sự đã hoàn thành.',
-		labels: ['Learning Design', 'Outcomes', 'Beta'],
+			'Một mẫu một trang để xác định mục tiêu học và những dấu hiệu cho thấy việc học thực sự đã hoàn thành.',
+		labels: ['Thiết kế học tập', 'Mục tiêu đầu ra', 'Đang hoàn thiện'],
 	},
 ];
 

@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import BlogSearch from '@/components/BlogSearch';
 import BlogFilterBar from '@/components/BlogFilterBar';
 import EditorialMedia from '@/components/motion/EditorialMedia';
+import { SectionHeading } from '@/components/marketing';
 import {
 	getAllPosts,
 	getAllTags,
@@ -19,7 +20,8 @@ export const revalidate = 60;
 
 export const metadata = {
 	title: 'Bài viết',
-	description: 'Thư viện bài viết chọn lọc — quét theo chủ đề và bộ sưu tập.',
+	description:
+		'HANOICAM là góc viết của Duy Khánh về con người, công việc và những điều đang học từ đời sống.',
 };
 
 function buildQuery(params: { tag?: string; category?: string; sort?: string; page?: number }) {
@@ -49,7 +51,13 @@ function estimateRead(summary: string | null, wordCount?: number): string {
 export default async function BlogPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ tag?: string; category?: string; sort?: string; page?: string; pillar?: string }>;
+	searchParams?: Promise<{
+		tag?: string;
+		category?: string;
+		sort?: string;
+		page?: string;
+		pillar?: string;
+	}>;
 }) {
 	const sp = searchParams ? await searchParams : undefined;
 	const tag = sp?.tag?.trim() || undefined;
@@ -77,20 +85,21 @@ export default async function BlogPage({
 	const activeCategories = categories.filter((c) => activeCategorySet.has(c));
 	const hasDiscoveryChoices =
 		postsForCategoryGate.total >= 6 || tags.length > 0 || activeCategories.length > 1;
+	const isSingleResult = result.items.length === 1;
 
 	return (
 		<main className="min-h-screen">
-			<section className="border-b border-hairline">
-				<div className="shell py-10 sm:py-12">
+			<section className="border-b border-hairline bg-section-tint">
+				<div className="shell py-14 sm:py-16 lg:py-20">
 					<div className="flex flex-wrap items-end justify-between gap-4">
 						<div>
-							<p className="text-sm font-medium text-accent">
+							<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
 								{EDITORIAL_NAME}
 							</p>
 							<h1 className="mt-2 font-display type-page-title font-medium text-ink">Bài viết</h1>
 							<p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
-								HANOICAM là tên tôi đặt cho góc tản văn và ghi chép cá nhân — nơi tôi viết về con người,
-								công việc và những điều gặp trên đường.
+								HANOICAM là góc viết của tôi về con người, công việc và những điều tôi đang học từ
+								đời sống.
 							</p>
 							<p className="mt-2 font-mono text-xs text-ink-secondary" aria-live="polite">
 								{result.total} bài
@@ -107,9 +116,7 @@ export default async function BlogPage({
 			{postsForCategoryGate.total >= 4 && featured.items.length > 0 ? (
 				<section className="border-b border-hairline">
 					<div className="shell py-8">
-						<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
-							Bài Khánh chọn
-						</p>
+						<SectionHeading title="Bài tôi chọn" variant="compact" />
 						<ul className="mt-4 divide-y divide-hairline border-y border-hairline">
 							{featured.items.map((post) => (
 								<li key={post.slug}>
@@ -124,11 +131,9 @@ export default async function BlogPage({
 			) : null}
 
 			{collections.length > 0 ? (
-				<section className="border-b border-hairline">
+				<section className="border-b border-hairline bg-paper">
 					<div className="shell py-8">
-						<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
-							Loạt bài
-						</p>
+						<SectionHeading title="Loạt bài" variant="compact" />
 						<ul className="mt-4 grid gap-4 sm:grid-cols-2">
 							{collections.map((c) => (
 								<li key={c.slug} className="border-t border-hairline pt-4">
@@ -145,19 +150,23 @@ export default async function BlogPage({
 
 			{taxonomyReady && hasDiscoveryChoices ? (
 				<section className="border-b border-hairline">
-					<div className="shell flex flex-wrap gap-3 py-6">
-						<span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">Chủ đề</span>
-						{JOURNAL_PILLARS.map((p) => (
-							<Link
-								key={p.slug}
-								href={`${routes.posts}?pillar=${p.slug}`}
-								className={`text-xs font-semibold uppercase tracking-wider ${
-									pillarFilter === p.slug ? 'text-vermilion' : 'text-ink-secondary hover:text-ink'
-								}`}
-							>
-								{p.label}
-							</Link>
-						))}
+					<div className="shell py-8">
+						<SectionHeading title="Chủ đề" variant="compact" />
+						<div className="mt-4 flex flex-wrap gap-3">
+							{JOURNAL_PILLARS.map((p) => (
+								<Link
+									key={p.slug}
+									href={`${routes.posts}?pillar=${p.slug}`}
+									className={`text-xs font-semibold uppercase tracking-wider ${
+										pillarFilter === p.slug
+											? 'text-vermilion'
+											: 'text-ink-secondary hover:text-ink'
+									}`}
+								>
+									{p.label}
+								</Link>
+							))}
+						</div>
 					</div>
 				</section>
 			) : null}
@@ -179,11 +188,11 @@ export default async function BlogPage({
 				<div className="shell py-8 sm:py-10">
 					{result.items.length === 0 ? (
 						<div className="py-16 text-center">
-							<p className="font-display text-2xl font-medium text-ink sm:text-3xl">Không tìm thấy bài viết</p>
+							<p className="font-display text-2xl font-medium text-ink sm:text-3xl">
+								Không tìm thấy bài viết
+							</p>
 							<p className="mt-3 text-sm text-ink-secondary">
-								{tag || category
-									? 'Thử đổi chủ đề, tag hoặc xóa bộ lọc.'
-									: 'Chưa có bài viết nào.'}
+								{tag || category ? 'Thử đổi chủ đề, thẻ hoặc xóa bộ lọc.' : 'Chưa có bài viết nào.'}
 							</p>
 							{(tag || category || sort) && (
 								<Link
@@ -195,7 +204,9 @@ export default async function BlogPage({
 							)}
 						</div>
 					) : (
-						<div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2">
+						<div
+							className={`grid grid-cols-1 gap-x-8 gap-y-10 ${isSingleResult ? '' : 'md:grid-cols-2'}`}
+						>
 							{result.items.map((post, i) => {
 								const topic = displayCategoryLabel(post.category);
 								const readTime = estimateRead(post.summary, post.wordCount);
@@ -203,7 +214,11 @@ export default async function BlogPage({
 									<article key={post.id} className="group">
 										<Link
 											href={routes.post(post.slug)}
-											className="block rounded-[var(--radius-media)] outline-offset-4 transition-opacity duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vermilion"
+											className={`block rounded-[var(--radius-media)] outline-offset-4 transition-opacity duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vermilion ${
+												isSingleResult
+													? 'md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] md:items-center md:gap-10'
+													: ''
+											}`}
 										>
 											<EditorialMedia
 												src={post.thumbnailUrl}
@@ -214,7 +229,7 @@ export default async function BlogPage({
 												aspectRatio="16 / 10"
 												priority={i < 2}
 											/>
-											<div className="mt-3.5">
+											<div className={isSingleResult ? 'mt-4 md:mt-0' : 'mt-3.5'}>
 												<p className="flex flex-wrap items-center gap-x-2 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
 													{topic ? <span className="text-vermilion">{topic}</span> : null}
 													{topic ? <span aria-hidden>·</span> : null}
@@ -225,9 +240,11 @@ export default async function BlogPage({
 												<h2 className="mt-1.5 line-clamp-2 font-display text-xl font-medium leading-snug text-ink transition-colors duration-200 group-hover:text-vermilion sm:text-[1.35rem]">
 													{post.title}
 												</h2>
-												<p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink-secondary">
-													{post.summary?.trim() || 'Mở bài để đọc toàn văn.'}
-												</p>
+												{post.summary?.trim() ? (
+													<p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink-secondary">
+														{post.summary.trim()}
+													</p>
+												) : null}
 												<p className="mt-3 font-mono text-[11px] text-ink-secondary">
 													{readTime}
 													{post.chapterNumber != null ? ` · Chương ${post.chapterNumber}` : ''}
@@ -244,7 +261,9 @@ export default async function BlogPage({
 						<div className="mt-12 flex items-center justify-between border-t border-hairline pt-6">
 							<Link
 								className={`inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-wider ${
-									result.page <= 1 ? 'pointer-events-none opacity-30' : 'text-ink-secondary hover:text-ink'
+									result.page <= 1
+										? 'pointer-events-none opacity-30'
+										: 'text-ink-secondary hover:text-ink'
 								}`}
 								href={`/bai-viet${buildQuery({ tag, category, sort, page: Math.max(1, result.page - 1) })}`}
 							>

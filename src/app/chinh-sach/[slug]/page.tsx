@@ -1,12 +1,20 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getPolicyBySlug, getPublishedPolicies } from '@/content/policies';
+import ContactLink from '@/components/contact/ContactLink';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 
 type PageProps = { params: Promise<{ slug: string }> };
+
+function formatPolicyDate(value: string): string {
+	return new Date(`${value}T00:00:00+07:00`).toLocaleDateString('vi-VN', {
+		day: 'numeric',
+		month: 'long',
+		year: 'numeric',
+	});
+}
 
 export function generateStaticParams() {
 	return getPublishedPolicies().map((p) => ({ slug: p.slug }));
@@ -35,7 +43,7 @@ export default async function PolicyPage({ params }: PageProps) {
 					<p className="text-sm font-medium text-ink-secondary">Chính sách</p>
 					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{policy.title}</h1>
 					<p className="mt-4 max-w-2xl text-base text-ink-secondary">{policy.summary}</p>
-					<p className="mt-3 text-xs text-ink-secondary">Cập nhật {policy.updatedAt}</p>
+					<p className="mt-3 text-xs text-ink-secondary">Cập nhật ngày {formatPolicyDate(policy.updatedAt)}</p>
 				</div>
 			</section>
 			<section>
@@ -51,9 +59,13 @@ export default async function PolicyPage({ params }: PageProps) {
 						</article>
 					))}
 					<p className="text-sm text-ink-secondary">
-						<Link href={routes.contact} className="text-vermilion underline">
+						<ContactLink
+							href={routes.contact}
+							contactContext={{ sourcePage: `/chinh-sach/${policy.slug}` }}
+							className="text-vermilion underline"
+						>
 							Gửi lời nhắn
-						</Link>{' '}
+						</ContactLink>{' '}
 						nếu bạn cần xem hoặc xóa dữ liệu cá nhân.
 					</p>
 				</div>

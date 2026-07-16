@@ -50,11 +50,16 @@ export default async function GrowthEpisodePage({ params }: Props) {
 							<div className="mt-6">
 								<AudioPlayer audioUrl={ep.audioUrl} title={ep.title} durationLabel={ep.duration} />
 							</div>
-							{ep.transcript ? (
-								<div className="prose-article mt-10 whitespace-pre-wrap text-ink-secondary">
+						{ep.transcript ? (
+							<section className="mt-10" aria-labelledby="transcript-title">
+								<h2 id="transcript-title" className="font-display text-2xl font-medium text-ink">
+									Bản chép lời
+								</h2>
+								<div className="prose-article mt-5 whitespace-pre-wrap text-ink-secondary">
 									{ep.transcript}
 								</div>
-							) : null}
+							</section>
+						) : null}
 						</div>
 					</div>
 				</div>

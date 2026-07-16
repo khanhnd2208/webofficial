@@ -8,6 +8,7 @@ import MainContent from '@/components/MainContent';
 import SkipLink from '@/components/SkipLink';
 import AnalyticsScript from '@/components/AnalyticsScript';
 import { SITE_CREATOR, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
+import { getInquiryAvailability } from '@/lib/inquiryAvailability';
 import './globals.css';
 
 const inter = Inter({
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE_ORIGIN),
 	title: {
-		default: SITE_NAME,
+		default: 'Duy Khánh — Giảng viên, người thiết kế chương trình học và người viết',
 		template: `%s | ${SITE_NAME}`,
 	},
 	description: SITE_DESCRIPTION,
@@ -52,10 +53,12 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const inquiryAvailability = getInquiryAvailability();
+
 	return (
 		<html lang="vi" className="light" suppressHydrationWarning>
 			<body className={`${inter.variable} ${cormorantGaramond.variable} antialiased`}>
-				<Providers>
+				<Providers inquiryAvailability={inquiryAvailability}>
 					<SkipLink />
 					<Navbar />
 					<MainContent>{children}</MainContent>

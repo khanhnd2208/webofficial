@@ -9,15 +9,16 @@ export const policies: PolicyPage[] = [
 		slug: 'bao-mat',
 		title: 'Chính sách bảo mật',
 		summary: 'Cách website thu thập, dùng và bảo vệ dữ liệu khi bạn đọc bài, đăng nhập hoặc gửi liên hệ.',
-		updatedAt: '2026-07-13',
+		updatedAt: '2026-07-16',
 		status: 'published',
 		legalReview: 'pending',
 		sections: [
 			{
-				heading: 'Dữ liệu chúng tôi xử lý',
+				heading: 'Dữ liệu website xử lý',
 				body: [
 					'Tài khoản Google (tên, email, ảnh đại diện) khi bạn đăng nhập.',
 					'Nội dung bạn gửi qua biểu mẫu liên hệ: tên, email, chủ đề và lời nhắn.',
+					'Khi bạn đã đăng nhập, email tài khoản được dùng làm địa chỉ nhận phản hồi và được ghi nhận cùng lời nhắn.',
 					'Dữ liệu kỹ thuật tối thiểu để vận hành, duy trì phiên đăng nhập và chống thư rác.',
 					'Không lưu địa chỉ IP thô trong yêu cầu liên hệ; cơ chế giới hạn tần suất dùng mã hóa một chiều.',
 				],
@@ -28,6 +29,12 @@ export const policies: PolicyPage[] = [
 					'Cung cấp bài viết, tài khoản học tập và những hỗ trợ bạn đã yêu cầu.',
 					'Đọc, phản hồi lời nhắn và cải thiện cách website hoạt động.',
 					'Bảo vệ hệ thống khỏi lạm dụng.',
+				],
+			},
+			{
+				heading: 'Đơn vị hỗ trợ gửi email',
+				body: [
+					'Website sử dụng Resend để chuyển email xác nhận và thông báo lời nhắn. Chỉ những thông tin cần thiết cho việc gửi và trả lời email được chuyển qua dịch vụ này.',
 				],
 			},
 			{

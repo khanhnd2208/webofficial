@@ -39,10 +39,12 @@ export default async function CollectionPage({ params }: PageProps) {
 				<div className="shell py-14 sm:py-16">
 					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">
 						<Link href={routes.posts} className="hover:text-ink">
-							{EDITORIAL_NAME} Journal
+							Góc viết {EDITORIAL_NAME}
 						</Link>
 					</p>
-					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{collection.title}</h1>
+					<h1 className="mt-3 font-display type-page-title font-medium text-ink">
+						{collection.title}
+					</h1>
 					<p className="mt-4 max-w-2xl text-base text-ink-secondary">{collection.summary}</p>
 				</div>
 			</section>
@@ -56,7 +58,9 @@ export default async function CollectionPage({ params }: PageProps) {
 								<li key={post.slug}>
 									<Link href={routes.post(post.slug)} className="block py-5 hover:text-vermilion">
 										<span className="font-display text-xl font-medium text-ink">{post.title}</span>
-										<span className="mt-1 block text-sm text-ink-secondary">{post.summary}</span>
+										{post.summary ? (
+											<span className="mt-1 block text-sm text-ink-secondary">{post.summary}</span>
+										) : null}
 									</Link>
 								</li>
 							))}

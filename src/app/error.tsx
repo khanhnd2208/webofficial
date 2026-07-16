@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 
+import ContactLink from '@/components/contact/ContactLink';
 import { routes } from '@/config/routes';
 
 export default function Error({
@@ -24,7 +25,7 @@ export default function Error({
 					Không tải được trang này
 				</h1>
 				<p className="mt-3 text-sm leading-relaxed text-foreground-secondary">
-					Vui lòng thử lại. Nếu lỗi vẫn tiếp diễn, hãy quay về trang chủ hoặc liên hệ khi bạn có thông tin liên hệ công khai.
+					Vui lòng thử lại. Nếu lỗi vẫn tiếp diễn, bạn có thể quay về trang chủ hoặc gửi Khánh một lời nhắn.
 				</p>
 				<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
 					<button
@@ -34,10 +35,14 @@ export default function Error({
 					>
 						Thử lại
 					</button>
-					<Link
-						href={routes.home}
+					<ContactLink
+						href={routes.contact}
+						contactContext={{ campaignParams: { ref: 'error-page' } }}
 						className="inline-flex min-h-11 items-center justify-center rounded-full border border-border-strong px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-hover"
 					>
+						Gửi lời nhắn
+					</ContactLink>
+					<Link href={routes.home} className="text-sm font-semibold text-foreground-secondary hover:text-foreground">
 						Về trang chủ
 					</Link>
 				</div>

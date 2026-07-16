@@ -4,9 +4,9 @@ type ResourceBadgeProps = {
 };
 
 const statusLabel: Record<ResourceBadgeProps['productStatus'], string> = {
-	concept: 'Concept',
-	prototype: 'Prototype',
-	beta: 'Beta',
+	concept: 'Ý tưởng',
+	prototype: 'Bản thử nghiệm',
+	beta: 'Đang hoàn thiện',
 	stable: 'Ổn định',
 	archived: 'Đã lưu trữ',
 };

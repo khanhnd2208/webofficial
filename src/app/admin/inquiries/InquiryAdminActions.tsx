@@ -13,10 +13,10 @@ import { routes } from '@/config/routes';
 type Props = {
 	inquiryId: string;
 	currentStatus?: InquiryStatus;
-	emailStatus?: string;
+	adminEmailStatus?: string;
 };
 
-export default function InquiryAdminActions({ inquiryId, currentStatus, emailStatus }: Props) {
+export default function InquiryAdminActions({ inquiryId, currentStatus, adminEmailStatus }: Props) {
 	const router = useRouter();
 	const [status, setStatus] = useState<InquiryStatus>(currentStatus ?? 'NEW');
 	const [note, setNote] = useState('');
@@ -147,11 +147,11 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, emailSta
 			<div className="flex flex-wrap gap-3 border-t border-border pt-4">
 				<button
 					type="button"
-					disabled={pending || emailStatus === 'sent'}
+					disabled={pending || adminEmailStatus === 'sent'}
 					onClick={onRetryEmail}
 					className="rounded-lg border border-border px-3 py-2 text-sm font-semibold disabled:opacity-60"
 				>
-					Gửi lại email thông báo
+					Gửi lại thông báo cho admin
 				</button>
 				<button
 					type="button"

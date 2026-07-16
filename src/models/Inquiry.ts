@@ -25,6 +25,8 @@ export interface IInquiryStatusHistoryEntry {
 export interface IInquiry {
 	name: string;
 	email: string;
+	submittedByUserId?: string;
+	submitterType?: 'account' | 'guest';
 	inquiryType: InquiryType;
 	roleOrStage?: string;
 	organization?: string;
@@ -47,7 +49,13 @@ export interface IInquiry {
 	status: InquiryStatus;
 	internalNotes?: string;
 	statusHistory: IInquiryStatusHistoryEntry[];
+	adminEmailStatus?: InquiryEmailStatus;
+	adminEmailError?: string;
+	senderEmailStatus?: InquiryEmailStatus;
+	senderEmailError?: string;
+	/** Legacy compatibility alias for the admin notification status. */
 	emailStatus: InquiryEmailStatus;
+	/** Legacy compatibility alias for the admin notification error. */
 	emailError?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
@@ -66,6 +74,8 @@ const InquirySchema = new Schema<IInquiry>(
 	{
 		name: { type: String, required: true, trim: true, index: true },
 		email: { type: String, required: true, trim: true, lowercase: true, index: true },
+		submittedByUserId: { type: String, trim: true, index: true },
+		submitterType: { type: String, enum: ['account', 'guest'], index: true },
 		inquiryType: { type: String, required: true, enum: INQUIRY_TYPES, index: true },
 		roleOrStage: { type: String, trim: true },
 		organization: { type: String, trim: true },
@@ -88,6 +98,18 @@ const InquirySchema = new Schema<IInquiry>(
 		status: { type: String, required: true, enum: INQUIRY_STATUSES, default: 'NEW', index: true },
 		internalNotes: { type: String, trim: true },
 		statusHistory: { type: [StatusHistorySchema], default: [] },
+		adminEmailStatus: {
+			type: String,
+			enum: ['pending', 'sent', 'failed'],
+			default: 'pending',
+		},
+		adminEmailError: { type: String },
+		senderEmailStatus: {
+			type: String,
+			enum: ['pending', 'sent', 'failed'],
+			default: 'pending',
+		},
+		senderEmailError: { type: String },
 		emailStatus: {
 			type: String,
 			required: true,

@@ -3,11 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { getHomeHeroArticleHref, getHomeSelectedWork, homePageContent } from './home';
 import { getHomePodcastEpisode } from './podcast';
 
-describe('Learning as Becoming homepage content', () => {
+describe('Duy Khánh homepage content', () => {
 	it('keeps one central message and a concrete teaching identity', () => {
-		expect(homePageContent.hero.headline).toEqual(['Không chỉ học để biết.', 'Học để trở thành.']);
+		expect(homePageContent.hero.headline).toEqual([
+			'Việc học không dừng ở điều ta biết.',
+			'Nó thay đổi cách ta nhìn và cách ta làm.',
+		]);
 		expect(homePageContent.hero.eyebrow).toBe('Duy Khánh · Giảng viên');
 		expect(homePageContent.manifesto.paragraphs).toHaveLength(1);
+		expect(homePageContent.manifesto.eyebrow).toBe('Quan niệm giảng dạy');
+		expect(homePageContent.principles.map((principle) => principle.title)).toEqual([
+			'Bắt đầu từ tình huống thật',
+			'Học bằng cách thử',
+			'Khép lại bằng một bước tiếp theo',
+		]);
 		expect(homePageContent.principles).toHaveLength(3);
 	});
 
@@ -31,11 +40,12 @@ describe('Learning as Becoming homepage content', () => {
 		expect(getHomeHeroArticleHref([])).toBe('/bai-viet');
 	});
 
-	it('ends with writing first and a source-tagged message invitation', () => {
-		expect(homePageContent.closing.primaryCta.href).toBe('/bai-viet');
-		expect(homePageContent.closing.secondaryCta.href).toBe(
+	it('ends with a source-tagged message invitation and a writing path', () => {
+		expect(homePageContent.closing.primaryCta.href).toBe(
 			'/lien-he?sourcePage=%2F&ref=home-closing',
 		);
-		expect(homePageContent.closing.secondaryCta.label).toBe('Gửi Khánh một lời nhắn');
+		expect(homePageContent.closing.primaryCta.label).toBe('Gửi lời nhắn');
+		expect(homePageContent.closing.secondaryCta.href).toBe('/bai-viet');
+		expect(homePageContent.closing.secondaryCta.label).toBe('Đọc thêm bài viết');
 	});
 });

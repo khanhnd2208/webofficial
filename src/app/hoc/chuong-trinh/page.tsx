@@ -33,10 +33,15 @@ export default async function LearnCatalogPage() {
 					>
 						← Học cùng Khánh
 					</Link>
-					<p className="mt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Chương trình</p>
-					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Chương trình học</h1>
+					<p className="mt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">
+						Chương trình
+					</p>
+					<h1 className="mt-3 font-display type-page-title font-medium text-ink">
+						Chương trình học
+					</h1>
 					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
-						Khóa học đang mở trong danh mục công khai. Nội dung bài học chi tiết dành cho học viên đã được ghi danh.
+						Khóa học đang mở trong danh mục công khai. Nội dung bài học chi tiết dành cho học viên
+						đã được ghi danh.
 					</p>
 				</div>
 			</section>
@@ -45,12 +50,17 @@ export default async function LearnCatalogPage() {
 				<div className="shell py-12 sm:py-16">
 					{teasers.length === 0 ? (
 						<div className="rounded-[18px] border border-hairline bg-paper px-8 py-16 text-center">
-							<p className="font-display text-2xl font-medium text-ink">Chưa có khóa trong danh mục</p>
+							<p className="font-display text-2xl font-medium text-ink">
+								Chưa có chương trình đang mở
+							</p>
 							<p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-secondary">
-								Khi có khóa PUBLISHED + CATALOG, chúng sẽ hiện tại đây. Bạn có thể gửi inquiry nếu quan tâm học cùng Khánh.
+								Khi có chương trình mới, thông tin sẽ xuất hiện tại đây. Bạn vẫn có thể gửi tôi vài
+								dòng nếu muốn tìm một lộ trình học phù hợp.
 							</p>
 							<div className="mt-8">
-								<MarketingCta href={`${routes.contact}?type=course`}>Quan tâm khóa học</MarketingCta>
+								<MarketingCta href={`${routes.contact}?type=course`}>
+									Quan tâm khóa học
+								</MarketingCta>
 							</div>
 						</div>
 					) : (
@@ -69,7 +79,9 @@ export default async function LearnCatalogPage() {
 											{course.title}
 										</h2>
 										{course.summary ? (
-											<p className="mt-2 text-sm leading-relaxed text-ink-secondary">{course.summary}</p>
+											<p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+												{course.summary}
+											</p>
 										) : null}
 										<span className="mt-4 inline-flex text-xs font-semibold uppercase tracking-wider text-vermilion">
 											Xem giới thiệu →

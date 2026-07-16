@@ -31,7 +31,7 @@ export default function GrowthPage() {
 					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">Podcast</p>
 					<h1 className="mt-3 font-display type-page-title font-medium text-ink">Phát triển bản thân</h1>
 					<p className="mt-5 text-base leading-relaxed text-ink-secondary">
-						Các tập đã xuất bản — nghe khi bạn sẵn sàng. Không tự phát.
+						Những cuộc trò chuyện để nghe chậm, nghĩ kỹ và nhìn lại điều đang diễn ra trong mình.
 					</p>
 				</div>
 			</section>

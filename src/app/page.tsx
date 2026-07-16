@@ -13,14 +13,14 @@ import { getLatestPosts } from '@/services/postService';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-	title: { absolute: 'Duy Khánh — Giảng viên và những ghi chép về việc học' },
+	title: { absolute: 'Duy Khánh — Giảng viên, người thiết kế chương trình học và người viết' },
 	description:
-		'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.',
+		'Duy Khánh giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.',
 	alternates: { canonical: absoluteUrl('/') },
 	openGraph: {
-		title: 'Duy Khánh — Giảng viên và những ghi chép về việc học',
+		title: 'Duy Khánh — Giảng viên, người thiết kế chương trình học và người viết',
 		description:
-			'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.',
+			'Duy Khánh giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.',
 		url: absoluteUrl('/'),
 		siteName: SITE_NAME,
 		locale: 'vi_VN',
@@ -30,15 +30,15 @@ export const metadata: Metadata = {
 				url: absoluteUrl('/brand/learning-as-becoming-og.jpg'),
 				width: 1200,
 				height: 630,
-				alt: 'Duy Khánh — Không chỉ học để biết. Học để trở thành.',
+				alt: 'Duy Khánh — Giảng viên, người thiết kế chương trình học và người viết.',
 			},
 		],
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: 'Duy Khánh — Giảng viên và những ghi chép về việc học',
+		title: 'Duy Khánh — Giảng viên, người thiết kế chương trình học và người viết',
 		description:
-			'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.',
+			'Duy Khánh giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.',
 		images: [absoluteUrl('/brand/learning-as-becoming-og.jpg')],
 	},
 };
@@ -47,7 +47,7 @@ export default async function Home() {
 	const posts = await getLatestPosts(3);
 	const podcast = getHomePodcastEpisode();
 	const homepageDescription =
-		'Duy Khánh là một giảng viên, viết về việc học, con người, công việc và những điều gặp trên đường.';
+		'Duy Khánh giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.';
 
 	const personLd = {
 		'@context': 'https://schema.org',

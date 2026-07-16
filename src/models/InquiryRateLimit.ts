@@ -1,22 +1,31 @@
 import mongoose, { Schema, type Model } from 'mongoose';
 
-/** TTL-backed rate limit hits — stores HMAC of client IP, never raw IP. */
+/**
+ * One atomic counter per fixed rate-limit window.
+ * `_id` is an HMAC bucket key; a raw IP address is never persisted.
+ *
+ * Older per-hit records may remain in the collection until their existing TTL
+ * expires. They are ignored by the bucket-based limiter, so no migration is
+ * required.
+ */
 export interface IInquiryRateLimit {
-	ipHmac: string;
-	createdAt: Date;
+	_id: string;
+	count: number;
+	windowStart: Date;
+	expiresAt: Date;
 }
-
-const RATE_LIMIT_WINDOW_SECONDS = 15 * 60;
 
 const InquiryRateLimitSchema = new Schema<IInquiryRateLimit>(
 	{
-		ipHmac: { type: String, required: true, index: true },
-		createdAt: { type: Date, default: Date.now, expires: RATE_LIMIT_WINDOW_SECONDS },
+		_id: { type: String, required: true },
+		count: { type: Number, required: true, min: 0, default: 0 },
+		windowStart: { type: Date, required: true },
+		expiresAt: { type: Date, required: true },
 	},
 	{ timestamps: false },
 );
 
-InquiryRateLimitSchema.index({ ipHmac: 1, createdAt: -1 });
+InquiryRateLimitSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const InquiryRateLimit =
 	(mongoose.models.InquiryRateLimit as Model<IInquiryRateLimit>) ??

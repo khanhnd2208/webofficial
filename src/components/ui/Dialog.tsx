@@ -79,12 +79,29 @@ export function Dialog({ open, onClose, title, description, children, className 
 		return () => el.removeEventListener('close', handleClose);
 	}, [open, onClose]);
 
+	useEffect(() => {
+		if (!open) return;
+		const previousOverflow = document.body.style.overflow;
+		const previousTouchAction = document.body.style.touchAction;
+		document.body.style.overflow = 'hidden';
+		document.body.style.touchAction = 'none';
+
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			document.body.style.touchAction = previousTouchAction;
+		};
+	}, [open]);
+
 	return (
 		<dialog
 			ref={dialogRef}
 			aria-labelledby={titleId}
 			aria-describedby={description ? descId : undefined}
 			className={`fixed inset-0 z-[70] m-auto max-h-[min(90dvh,40rem)] w-[min(100%-1.5rem,32rem)] overflow-auto rounded-lg border border-border-strong bg-surface p-0 text-foreground shadow-lg backdrop:bg-ink/40 open:flex open:flex-col [&::backdrop]:bg-black/40 ${className}`}
+			onCancel={(event) => {
+				event.preventDefault();
+				onClose();
+			}}
 			onClick={(e) => {
 				if (e.target === dialogRef.current) onClose();
 			}}

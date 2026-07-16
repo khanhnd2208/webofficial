@@ -2,7 +2,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { Breadcrumb, MarketingCta, SectionHeading, StructuredData } from '@/components/marketing';
-import { getApprovedTestimonials, getPublishedCaseStudies, getServiceBySlug, services } from '@/content';
+import {
+	getApprovedTestimonials,
+	getPublishedCaseStudies,
+	getServiceBySlug,
+	services,
+} from '@/content';
 import { routes } from '@/config/routes';
 import { SITE_NAME, absoluteUrl } from '@/config/site';
 
@@ -28,8 +33,8 @@ export default async function ServicePage({ params }: PageProps) {
 	const service = getServiceBySlug(slug);
 	if (!service) notFound();
 
-	const relatedCases = getPublishedCaseStudies().filter((c) =>
-		service.relatedCaseSlugs.includes(c.slug) || c.relatedServices.includes(service.slug),
+	const relatedCases = getPublishedCaseStudies().filter(
+		(c) => service.relatedCaseSlugs.includes(c.slug) || c.relatedServices.includes(service.slug),
 	);
 	const testimonials = getApprovedTestimonials(service.slug);
 
@@ -70,9 +75,15 @@ export default async function ServicePage({ params }: PageProps) {
 							{ label: service.shortTitle },
 						]}
 					/>
-					<p className="mt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Đồng hành</p>
-					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{service.title}</h1>
-					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">{service.summary}</p>
+					<p className="mt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">
+						Đồng hành
+					</p>
+					<h1 className="mt-3 font-display type-page-title font-medium text-ink">
+						{service.title}
+					</h1>
+					<p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
+						{service.summary}
+					</p>
 					<div className="mt-8">
 						<MarketingCta href={contactHref}>Trao đổi về {service.shortTitle}</MarketingCta>
 					</div>
@@ -82,7 +93,7 @@ export default async function ServicePage({ params }: PageProps) {
 			<section className="border-b border-hairline">
 				<div className="shell grid gap-12 py-14 lg:grid-cols-2">
 					<div>
-						<SectionHeading title="Nhận ra vấn đề" />
+						<SectionHeading title="Những tình huống thường gặp" />
 						<ul className="mt-6 space-y-3 text-sm text-ink-secondary">
 							{service.problems.map((p) => (
 								<li key={p} className="border-t border-hairline pt-3">
@@ -92,14 +103,18 @@ export default async function ServicePage({ params }: PageProps) {
 						</ul>
 					</div>
 					<div>
-						<SectionHeading title="Phù hợp / Không phù hợp" />
-						<p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">Dành cho</p>
+						<SectionHeading title="Ai phù hợp với hình thức này?" />
+						<p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+							Dành cho
+						</p>
 						<ul className="mt-2 space-y-2 text-sm text-ink-secondary">
 							{service.audience.map((a) => (
 								<li key={a}>· {a}</li>
 							))}
 						</ul>
-						<p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">Không dành cho</p>
+						<p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+							Không dành cho
+						</p>
 						<ul className="mt-2 space-y-2 text-sm text-ink-secondary">
 							{service.notFor.map((a) => (
 								<li key={a}>· {a}</li>
@@ -122,7 +137,7 @@ export default async function ServicePage({ params }: PageProps) {
 						</ul>
 					</div>
 					<div>
-						<SectionHeading title="Deliverables" />
+						<SectionHeading title="Bạn sẽ nhận được" />
 						<ul className="mt-6 space-y-3 text-sm text-ink-secondary">
 							{service.deliverables.map((d) => (
 								<li key={d} className="border-t border-hairline pt-3">
@@ -140,7 +155,9 @@ export default async function ServicePage({ params }: PageProps) {
 					<ol className="mt-8 grid gap-6 md:grid-cols-3">
 						{service.process.map((step, i) => (
 							<li key={step.title} className="border-t border-hairline pt-5">
-								<p className="font-mono text-[10px] uppercase tracking-[0.2em] text-vermilion">0{i + 1}</p>
+								<p className="font-mono text-[10px] uppercase tracking-[0.2em] text-vermilion">
+									0{i + 1}
+								</p>
 								<h3 className="mt-2 font-display text-lg font-medium text-ink">{step.title}</h3>
 								<p className="mt-2 text-sm text-ink-secondary">{step.description}</p>
 							</li>
@@ -151,7 +168,7 @@ export default async function ServicePage({ params }: PageProps) {
 
 			<section className="border-b border-hairline">
 				<div className="shell py-14">
-					<SectionHeading title="Format" />
+					<SectionHeading title="Hình thức đồng hành" />
 					<ul className="mt-8 grid gap-6 sm:grid-cols-2">
 						{service.formats.map((format) => (
 							<li key={format.name} className="border-t border-hairline pt-5">
@@ -166,16 +183,22 @@ export default async function ServicePage({ params }: PageProps) {
 			{(relatedCases.length > 0 || testimonials.length > 0) && (
 				<section className="border-b border-hairline">
 					<div className="shell py-14">
-						<SectionHeading title="Bằng chứng" />
+						<SectionHeading title="Những kết quả đã được phép chia sẻ" />
 						{/* Intentionally empty when no approved proof — section only renders with real items */}
 						<ul className="mt-8 space-y-6">
 							{relatedCases.map((c) => (
-								<li key={c.slug} className="border-t border-hairline pt-4 text-sm text-ink-secondary">
+								<li
+									key={c.slug}
+									className="border-t border-hairline pt-4 text-sm text-ink-secondary"
+								>
 									{c.title}
 								</li>
 							))}
 							{testimonials.map((t) => (
-								<li key={t.id} className="border-l border-vermilion pl-4 font-serif text-lg text-ink">
+								<li
+									key={t.id}
+									className="border-l border-vermilion pl-4 font-serif text-lg text-ink"
+								>
 									“{t.quote}”
 								</li>
 							))}
@@ -187,14 +210,16 @@ export default async function ServicePage({ params }: PageProps) {
 			<section className="border-b border-hairline">
 				<div className="shell py-14">
 					<SectionHeading title="Chi phí" />
-					<p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">{service.pricingNote}</p>
+					<p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
+						{service.pricingNote}
+					</p>
 				</div>
 			</section>
 
 			{service.faq.length > 0 ? (
 				<section className="border-b border-hairline">
 					<div className="shell py-14">
-						<SectionHeading title="FAQ" />
+						<SectionHeading title="Câu hỏi thường gặp" />
 						<ul className="mt-8 space-y-6">
 							{service.faq.map((item) => (
 								<li key={item.question} className="border-t border-hairline pt-5">
@@ -209,9 +234,12 @@ export default async function ServicePage({ params }: PageProps) {
 
 			<section>
 				<div className="shell py-14 sm:py-16">
-					<h2 className="font-display text-2xl font-medium text-ink sm:text-3xl">Sẵn sàng trao đổi?</h2>
+					<h2 className="font-display text-2xl font-medium text-ink sm:text-3xl">
+						Sẵn sàng trao đổi?
+					</h2>
 					<p className="mt-3 max-w-lg text-sm text-ink-secondary">
-						Gửi bối cảnh ngắn — Khánh phản hồi phạm vi phù hợp. Không báo giá tức thì trên trang này.
+						Gửi tôi vài dòng về bối cảnh và điều bạn muốn giải quyết. Tôi sẽ phản hồi về cách đồng
+						hành phù hợp trước khi trao đổi chi phí.
 					</p>
 					<div className="mt-8">
 						<MarketingCta href={contactHref}>Trao đổi về {service.shortTitle}</MarketingCta>

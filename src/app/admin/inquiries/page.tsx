@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { listInquiries } from '@/services/inquiryService';
 import {
 	INQUIRY_STATUSES,
+	INQUIRY_EMAIL_STATUS_LABELS,
 	INQUIRY_STATUS_LABELS,
 	INQUIRY_TYPES,
 	INQUIRY_TYPE_LABELS,
@@ -95,8 +96,8 @@ export default async function AdminInquiriesPage({
 						<tr>
 							<th className="px-4 py-3">Người gửi</th>
 							<th className="px-4 py-3">Loại</th>
-							<th className="px-4 py-3">Status</th>
-							<th className="px-4 py-3">Email</th>
+							<th className="px-4 py-3">Trạng thái</th>
+							<th className="px-4 py-3">Thông báo admin</th>
 							<th className="px-4 py-3">Ngày</th>
 						</tr>
 					</thead>
@@ -118,10 +119,19 @@ export default async function AdminInquiriesPage({
 											{item.name}
 										</Link>
 										<p className="text-xs text-muted">{item.email}</p>
+										<p className="text-xs text-muted">
+											{item.submitterType === 'account'
+												? 'Tài khoản'
+												: item.submitterType === 'guest'
+													? 'Khách'
+													: 'Không xác định'}
+										</p>
 									</td>
 									<td className="px-4 py-3">{INQUIRY_TYPE_LABELS[item.inquiryType]}</td>
 									<td className="px-4 py-3">{INQUIRY_STATUS_LABELS[item.status]}</td>
-									<td className="px-4 py-3">{item.emailStatus}</td>
+									<td className="px-4 py-3">
+										{INQUIRY_EMAIL_STATUS_LABELS[item.adminEmailStatus]}
+									</td>
 									<td className="px-4 py-3 text-xs text-muted">
 										{item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : '—'}
 									</td>

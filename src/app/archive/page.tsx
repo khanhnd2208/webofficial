@@ -29,7 +29,7 @@ export default function ArchivePage() {
 
 			<section className="section-space border-b border-hairline">
 				<div className="shell">
-					<h2 className="font-display text-2xl font-medium text-ink">Những mục đã được sắp xếp lại</h2>
+					<h2 className="font-display text-2xl font-medium text-ink">Tìm nội dung cũ ở đâu?</h2>
 					<ul className="mt-6 space-y-4">
 						<li className="border-t border-hairline pt-4 text-sm text-ink-secondary">
 							<span className="font-semibold text-ink">Thông tin công việc</span> →{' '}

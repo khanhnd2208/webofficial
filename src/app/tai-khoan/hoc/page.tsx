@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import ContactLink from '@/components/contact/ContactLink';
 import { routes } from '@/config/routes';
-import { siteProfile } from '@/config/site';
 import { learningService } from '@/features/progress';
 import { auth } from '@/lib/auth';
 
@@ -99,21 +99,13 @@ export default async function AccountLearningPage() {
 								>
 									Xem chương trình
 								</Link>
-								{siteProfile.contactEmail ? (
-									<a
-										href={`mailto:${siteProfile.contactEmail}?subject=${encodeURIComponent('Yêu cầu ghi danh khóa học')}&body=${encodeURIComponent(`Xin chào,\n\nTôi muốn được ghi danh vào khóa học.\n\nTài khoản: ${session.user.email ?? ''}\n\nCảm ơn.`)}`}
-										className="inline-flex min-h-11 items-center rounded-[10px] bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-200 hover:bg-ink/90"
-									>
-										Liên hệ để ghi danh
-									</a>
-								) : (
-									<Link
-										href={`${routes.contact}?type=course`}
-										className="inline-flex min-h-11 items-center rounded-[10px] bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-200 hover:bg-ink/90"
-									>
-										Gửi inquiry
-									</Link>
-								)}
+								<ContactLink
+									href={`${routes.contact}?type=course`}
+									contactContext={{ inquiryType: 'course', sourcePage: routes.accountLearning }}
+									className="inline-flex min-h-11 items-center rounded-[10px] bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-200 hover:bg-ink/90"
+								>
+									Gửi yêu cầu ghi danh
+								</ContactLink>
 							</div>
 						</div>
 					)}

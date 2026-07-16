@@ -1,6 +1,8 @@
 import Link from 'next/link';
 
+import ContactLink from '@/components/contact/ContactLink';
 import { getPublishedFooterGroups } from '@/config/navigation';
+import { routes } from '@/config/routes';
 import { SITE_DESCRIPTION, SITE_NAME, siteProfile } from '@/config/site';
 
 /**
@@ -48,7 +50,7 @@ export default function SiteFooter() {
 						)}
 					</div>
 					<nav
-						className="grid flex-1 gap-8 sm:grid-cols-2 lg:max-w-xl lg:gap-10"
+						className="grid flex-1 grid-cols-2 gap-8 max-[339px]:grid-cols-1 lg:max-w-xl lg:gap-10"
 						aria-label="Chân trang"
 					>
 						{groups.map((group) => (
@@ -59,12 +61,22 @@ export default function SiteFooter() {
 								<ul className="mt-3 space-y-2">
 									{group.links.map((link) => (
 										<li key={`${group.id}-${link.href}`}>
-											<Link
-												href={link.href}
-												className="text-sm text-ink-secondary transition-colors hover:text-ink"
-											>
-												{link.label}
-											</Link>
+											{link.href === routes.contact ? (
+												<ContactLink
+													href={link.href}
+													contactContext={{ campaignParams: { ref: 'footer' } }}
+													className="text-sm text-ink-secondary transition-colors hover:text-ink"
+												>
+													{link.label}
+												</ContactLink>
+											) : (
+												<Link
+													href={link.href}
+													className="text-sm text-ink-secondary transition-colors hover:text-ink"
+												>
+													{link.label}
+												</Link>
+											)}
 										</li>
 									))}
 								</ul>

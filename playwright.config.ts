@@ -18,6 +18,14 @@ export default defineConfig({
 				url: 'http://localhost:3000',
 				reuseExistingServer: false,
 				timeout: 180_000,
+				env: {
+					...process.env,
+					RESEND_API_KEY: process.env.RESEND_API_KEY ?? 're_e2e_not_used',
+					INQUIRY_FROM_EMAIL:
+						process.env.INQUIRY_FROM_EMAIL ?? 'Duy Khanh <noreply@example.com>',
+					INQUIRY_NOTIFY_EMAIL: process.env.INQUIRY_NOTIFY_EMAIL ?? 'admin@example.com',
+					AUTH_SECRET: process.env.AUTH_SECRET ?? 'e2e-rate-limit-secret',
+				},
 			}
 		: undefined,
 });
