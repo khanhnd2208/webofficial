@@ -39,38 +39,34 @@ export default function HomeHero() {
 		<section className={styles.hero} aria-labelledby="home-hero-title">
 			<div className={`shell ${styles.heroInner}`}>
 				<div className={styles.heroCopy}>
-					<div className={styles.heroHeadingPanel}>
-						<p className={`${styles.eyebrow} ${styles.heroEyebrow}`}>{hero.eyebrow}</p>
-						<h1 id="home-hero-title" className={styles.heroTitle}>
-							<span>{hero.headline[0]}</span> <span>{hero.headline[1]}</span>
-						</h1>
-					</div>
-					<div className={styles.heroBodyPanel}>
-						<p className={styles.heroDescription}>{hero.description}</p>
-						<div className={styles.heroActions}>
-							<Link
-								href={hero.primaryCta.href}
-								className={styles.primaryButton}
-								data-umami-event="home_about_click"
-								data-umami-event-source-page="/"
-							>
-								<span>{hero.primaryCta.label}</span>
-								<span className={styles.arrow} aria-hidden>
-									→
-								</span>
-							</Link>
-							<Link
-								href={routes.posts}
-								className={styles.textLink}
-								data-umami-event="home_hero_writing_click"
-								data-umami-event-source-page="/hero"
-							>
-								<span>{hero.articleCtaLabel}</span>
-								<span className={styles.arrow} aria-hidden>
-									→
-								</span>
-							</Link>
-						</div>
+					<p className={`${styles.eyebrow} ${styles.heroEyebrow}`}>{hero.eyebrow}</p>
+					<h1 id="home-hero-title" className={styles.heroTitle}>
+						<span>{hero.headline[0]}</span> <span>{hero.headline[1]}</span>
+					</h1>
+					<p className={styles.heroDescription}>{hero.description}</p>
+					<div className={styles.heroActions}>
+						<Link
+							href={hero.primaryCta.href}
+							className={styles.primaryButton}
+							data-umami-event="home_about_click"
+							data-umami-event-source-page="/"
+						>
+							<span>{hero.primaryCta.label}</span>
+							<span className={styles.arrow} aria-hidden>
+								→
+							</span>
+						</Link>
+						<Link
+							href={routes.posts}
+							className={styles.textLink}
+							data-umami-event="home_hero_writing_click"
+							data-umami-event-source-page="/hero"
+						>
+							<span>{hero.articleCtaLabel}</span>
+							<span className={styles.arrow} aria-hidden>
+								→
+							</span>
+						</Link>
 					</div>
 				</div>
 
@@ -142,8 +138,6 @@ export default function HomeHero() {
 						/>
 					</picture>
 				</div>
-
-				<p className={styles.mobileCycle}>{hero.learningCycle}</p>
 			</div>
 		</section>
 	);

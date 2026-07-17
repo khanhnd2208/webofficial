@@ -16,14 +16,14 @@ export default function SiteFooter() {
 	return (
 		<footer className="border-t border-hairline bg-canvas">
 			<div className="shell section-space-sm">
-				<div className="flex flex-col gap-10 lg:flex-row lg:justify-between lg:gap-16">
+				<div className="flex flex-col gap-7 lg:flex-row lg:justify-between lg:gap-12">
 					<div className="max-w-sm">
 						<p className="font-display text-lg font-medium tracking-tight text-ink">{SITE_NAME}</p>
-						<p className="mt-3 text-sm leading-relaxed text-ink-secondary">
+						<p className="mt-2.5 text-sm leading-relaxed text-ink-secondary">
 							{siteProfile.shortBio || SITE_DESCRIPTION}
 						</p>
 						{(email || social.length > 0) && (
-							<ul className="mt-5 space-y-2">
+							<ul className="mt-4 space-y-1.5">
 								{email ? (
 									<li>
 										<a
@@ -50,15 +50,13 @@ export default function SiteFooter() {
 						)}
 					</div>
 					<nav
-						className="grid flex-1 grid-cols-2 gap-8 max-[339px]:grid-cols-1 lg:max-w-xl lg:gap-10"
+						className="grid flex-1 grid-cols-2 gap-4 sm:gap-6 lg:max-w-xl lg:gap-8"
 						aria-label="Chân trang"
 					>
 						{groups.map((group) => (
 							<div key={group.id}>
-								<p className="text-sm font-medium text-ink">
-									{group.title}
-								</p>
-								<ul className="mt-3 space-y-2">
+								<p className="text-sm font-medium text-ink">{group.title}</p>
+								<ul className="mt-2.5 space-y-1.5">
 									{group.links.map((link) => (
 										<li key={`${group.id}-${link.href}`}>
 											{link.href === routes.contact ? (

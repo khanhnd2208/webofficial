@@ -12,12 +12,6 @@ export type HomeExperience = {
 	cta: string;
 };
 
-export type HomePrinciple = {
-	id: string;
-	title: string;
-	description: string;
-};
-
 export type HomePageContent = {
 	hero: {
 		eyebrow: string;
@@ -30,13 +24,6 @@ export type HomePageContent = {
 		learningCycle: string;
 		caption: string;
 	};
-	manifesto: {
-		eyebrow: string;
-		title: string;
-		paragraphs: string[];
-		quote: [string, string];
-	};
-	principles: HomePrinciple[];
 	experiences: {
 		eyebrow: string;
 		title: string;
@@ -70,9 +57,11 @@ export type HomePageContent = {
 export const homePageContent: HomePageContent = {
 	hero: {
 		eyebrow: 'Duy Khánh · Giảng viên',
-		headline: ['Việc học không dừng ở điều ta biết.', 'Nó thay đổi cách ta nhìn và cách ta làm.'],
-		description:
-			'Tôi là Duy Khánh, một giảng viên. Trong lớp học, tôi giúp người học hiểu rõ vấn đề, thử một cách làm và mang điều vừa học vào công việc lẫn đời sống.',
+		headline: [
+			'Learning changes how we see —',
+			'and how we act.',
+		],
+		description: 'Young lecturer, passionate about making education an art.',
 		primaryCta: {
 			label: 'Tìm hiểu về Khánh',
 			href: routes.about,
@@ -83,34 +72,6 @@ export const homePageContent: HomePageContent = {
 		learningCycle: 'Hiểu · Thử · Nhìn lại · Vận dụng',
 		caption: 'Một giảng viên luôn tò mò về việc con người học và trưởng thành.',
 	},
-	manifesto: {
-		eyebrow: 'Quan niệm giảng dạy',
-		title: 'Một buổi học có giá trị khi người học biết mình sẽ làm gì tiếp theo.',
-		paragraphs: [
-			'Tôi thiết kế mỗi buổi học như một hành trình ngắn: bắt đầu từ một tình huống có thật, cùng người học thử cách giải quyết, rồi khép lại bằng một điều họ có thể mang đi và vận dụng.',
-		],
-		quote: ['Hiểu để thấy rõ vấn đề.', 'Thử để tìm ra bước đi phù hợp.'],
-	},
-	principles: [
-		{
-			id: 'reality',
-			title: 'Bắt đầu từ tình huống thật',
-			description:
-				'Mỗi chủ đề được đặt vào một câu hỏi, quyết định hoặc tình huống mà người học có thể gặp trong công việc và đời sống.',
-		},
-		{
-			id: 'reflection',
-			title: 'Học bằng cách thử',
-			description:
-				'Người học được phân tích, lựa chọn và thử một cách làm trước khi cùng nhau nhìn lại điều hiệu quả và điều cần thay đổi.',
-		},
-		{
-			id: 'change',
-			title: 'Khép lại bằng một bước tiếp theo',
-			description:
-				'Mỗi buổi học kết thúc bằng một việc cụ thể để người học có thể tiếp tục suy nghĩ, thực hành hoặc vận dụng ngay sau lớp.',
-		},
-	],
 	experiences: {
 		eyebrow: 'Học cùng tôi',
 		title: 'Những cách bạn có thể học cùng tôi',
@@ -170,7 +131,7 @@ export const homePageContent: HomePageContent = {
 	},
 	closing: {
 		quote: ['', ''],
-		title: 'Có một câu hỏi bạn muốn nhìn cho rõ hơn? Hãy gửi tôi vài dòng.',
+		title: 'Có điều muốn trao đổi? Hãy gửi tôi vài dòng.',
 		paragraphs: [],
 		primaryCta: {
 			label: 'Gửi lời nhắn',

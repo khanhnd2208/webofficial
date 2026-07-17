@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 
 import HomeClosingCta from '@/components/home/HomeClosingCta';
 import HomeHero from '@/components/home/HomeHero';
-import HomeManifesto from '@/components/home/HomeManifesto';
 import HomeWriting from '@/components/home/HomeWriting';
 import homeStyles from '@/components/home/home.module.css';
 import { StructuredData } from '@/components/marketing';
@@ -71,7 +70,6 @@ export default async function Home() {
 		<main className={`${homeStyles.home} min-h-screen`}>
 			<StructuredData data={[personLd, websiteLd]} />
 			<HomeHero />
-			<HomeManifesto />
 			<HomeWriting posts={posts} podcast={podcast} />
 			<HomeClosingCta />
 		</main>

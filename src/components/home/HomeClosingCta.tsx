@@ -11,8 +11,8 @@ export default function HomeClosingCta() {
 	return (
 		<section className={`${styles.section} ${styles.closing}`} aria-labelledby="closing-title">
 			<div className={`shell ${styles.closingInner}`}>
-				<h2 id="closing-title">{closing.title}</h2>
 				<div className={styles.closingCopy}>
+					<h2 id="closing-title">{closing.title}</h2>
 					{closing.paragraphs.map((paragraph) => (
 						<p key={paragraph}>{paragraph}</p>
 					))}

@@ -57,7 +57,7 @@ export const siteProfile: SiteProfile = {
 	publicName: SITE_NAME,
 	role: SITE_EYEBROW,
 	shortBio:
-		'Tôi giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.',
+		'I want to make learning an experience that feels both artistic and deeply enjoyable.',
 	portraitSrc: '/brand/learning-as-becoming-mobile.jpg',
 	// contactEmail / socialLinks: leave empty until owner provides
 };

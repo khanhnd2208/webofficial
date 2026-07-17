@@ -15,8 +15,10 @@ export interface InquiryAvailability {
 
 /**
  * Shared server-side readiness check for both the contact page and dialog.
- * Development may persist an inquiry without outbound email; production fails
- * closed unless privacy, delivery, and abuse-protection configuration are ready.
+ * Receiving a message and delivering notification emails are deliberately
+ * separate concerns. A missing Resend configuration must not prevent MongoDB
+ * from accepting the inquiry; delivery remains visible as `pending` in admin.
+ * Production only fails closed when privacy or abuse protection is unavailable.
  */
 export function getInquiryAvailability(): InquiryAvailability {
 	const privacyPublished = isPrivacyPolicyPublished();
@@ -27,8 +29,6 @@ export function getInquiryAvailability(): InquiryAvailability {
 	let disabledReason: string | undefined;
 	if (!privacyPublished) {
 		disabledReason = 'Chính sách bảo mật chưa sẵn sàng.';
-	} else if (production && !emailConfigured) {
-		disabledReason = 'Kênh nhận lời nhắn chưa được cấu hình đầy đủ trên máy chủ.';
 	} else if (production && !rateLimitConfigured) {
 		disabledReason = 'Kênh nhận lời nhắn đang tạm khóa vì cấu hình bảo vệ chưa đầy đủ.';
 	}

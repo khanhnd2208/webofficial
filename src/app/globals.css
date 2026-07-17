@@ -13,7 +13,7 @@
 
 :root {
 	/* Boutique library — compact header */
-	--header-height: 64px;
+	--header-height: 56px;
 
 	/* The Explorer Teacher — light-only foundation */
 	--canvas: #f7f5f0;
@@ -87,7 +87,7 @@
 
 @media (min-width: 640px) {
 	:root {
-		--header-height: 68px;
+		--header-height: 60px;
 	}
 }
 
@@ -281,7 +281,7 @@ body::before {
 }
 
 .section-space-sm {
-	padding-block: clamp(1.5rem, 3.5vw, 2.5rem);
+	padding-block: clamp(1.25rem, 2.5vw, 2rem);
 }
 
 .type-wordmark {

@@ -8,7 +8,6 @@
 export const routes = {
 	// ─── Public marketing ─────────────────────────────────────────────────────
 	home: '/',
-	homeManifesto: '#manifesto',
 	homeLearningExperiences: '/#learning-experiences',
 	about: '/gioi-thieu',
 	/** In-page anchors on /gioi-thieu */

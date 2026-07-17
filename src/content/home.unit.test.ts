@@ -6,18 +6,16 @@ import { getHomePodcastEpisode } from './podcast';
 describe('Duy Khánh homepage content', () => {
 	it('keeps one central message and a concrete teaching identity', () => {
 		expect(homePageContent.hero.headline).toEqual([
-			'Việc học không dừng ở điều ta biết.',
-			'Nó thay đổi cách ta nhìn và cách ta làm.',
+			'Learning changes how we see —',
+			'and how we act.',
 		]);
 		expect(homePageContent.hero.eyebrow).toBe('Duy Khánh · Giảng viên');
-		expect(homePageContent.manifesto.paragraphs).toHaveLength(1);
-		expect(homePageContent.manifesto.eyebrow).toBe('Quan niệm giảng dạy');
-		expect(homePageContent.principles.map((principle) => principle.title)).toEqual([
-			'Bắt đầu từ tình huống thật',
-			'Học bằng cách thử',
-			'Khép lại bằng một bước tiếp theo',
-		]);
-		expect(homePageContent.principles).toHaveLength(3);
+		expect(homePageContent.hero.description).toBe(
+			'Young lecturer, passionate about making education an art.',
+		);
+		expect(homePageContent.closing.title).toBe(
+			'Có điều muốn trao đổi? Hãy gửi tôi vài dòng.',
+		);
 	});
 
 	it('publishes only the two verified homepage projects', () => {

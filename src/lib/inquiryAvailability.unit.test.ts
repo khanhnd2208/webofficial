@@ -9,18 +9,34 @@ afterEach(() => {
 });
 
 describe('getInquiryAvailability', () => {
-	it('requires delivery configuration and a rate-limit secret in production', () => {
+	it('keeps receiving messages when email delivery is not configured', () => {
 		vi.stubEnv('NODE_ENV', 'production');
 		vi.stubEnv('RESEND_API_KEY', '');
 		vi.stubEnv('INQUIRY_FROM_EMAIL', '');
 		vi.stubEnv('INQUIRY_NOTIFY_EMAIL', '');
+		vi.stubEnv('AUTH_SECRET', 'rate-limit-secret');
+		vi.stubEnv('NEXTAUTH_SECRET', '');
+		vi.stubEnv('INQUIRY_RATE_LIMIT_SECRET', '');
+		vi.stubEnv('ADMIN_SECRET', '');
+
+		const availability = getInquiryAvailability();
+
+		expect(availability.enabled).toBe(true);
+		expect(availability.emailConfigured).toBe(false);
+		expect(availability.rateLimitConfigured).toBe(true);
+		expect(availability.disabledReason).toBeUndefined();
+	});
+
+	it('still fails closed without a rate-limit secret in production', () => {
+		vi.stubEnv('NODE_ENV', 'production');
 		vi.stubEnv('AUTH_SECRET', '');
 		vi.stubEnv('NEXTAUTH_SECRET', '');
+		vi.stubEnv('INQUIRY_RATE_LIMIT_SECRET', '');
+		vi.stubEnv('ADMIN_SECRET', '');
 
 		const availability = getInquiryAvailability();
 
 		expect(availability.enabled).toBe(false);
-		expect(availability.emailConfigured).toBe(false);
 		expect(availability.rateLimitConfigured).toBe(false);
 	});
 

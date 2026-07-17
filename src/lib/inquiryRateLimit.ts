@@ -10,10 +10,14 @@ export const INQUIRY_RATE_LIMIT_MAX = 5;
 export const INQUIRY_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
 export function getRateLimitSecret(): string | null {
+	const dedicatedSecret = process.env.INQUIRY_RATE_LIMIT_SECRET?.trim();
+	if (dedicatedSecret) return dedicatedSecret;
 	const authSecret = process.env.AUTH_SECRET?.trim();
 	if (authSecret) return authSecret;
 	const nextAuthSecret = process.env.NEXTAUTH_SECRET?.trim();
-	return nextAuthSecret || null;
+	if (nextAuthSecret) return nextAuthSecret;
+	const adminSecret = process.env.ADMIN_SECRET?.trim();
+	return adminSecret || null;
 }
 
 export function getClientIp(request: NextRequest): string {
@@ -103,7 +107,7 @@ export async function assertInquiryRateLimit(request: NextRequest): Promise<void
 				'INQUIRY_UNAVAILABLE',
 			);
 		}
-		console.warn('[inquiryRateLimit] Missing AUTH_SECRET / NEXTAUTH_SECRET — skipped outside production');
+		console.warn('[inquiryRateLimit] Missing server secret — skipped outside production');
 		return;
 	}
 

@@ -64,6 +64,8 @@ describe('inquiry rate-limit buckets', () => {
 		vi.stubEnv('NODE_ENV', 'production');
 		vi.stubEnv('AUTH_SECRET', '');
 		vi.stubEnv('NEXTAUTH_SECRET', '');
+		vi.stubEnv('INQUIRY_RATE_LIMIT_SECRET', '');
+		vi.stubEnv('ADMIN_SECRET', '');
 
 		const request = new NextRequest('http://localhost/api/inquiries');
 		await expect(assertInquiryRateLimit(request)).rejects.toMatchObject({
