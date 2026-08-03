@@ -33,8 +33,10 @@ export default async function AccountLearningPage() {
 					>
 						← Tài khoản
 					</Link>
-					<p className="mt-4 font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">Học tập</p>
-					<h1 className="mt-3 font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+					<p className="mt-4 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+						Học tập
+					</p>
+					<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">
 						Xin chào{firstName ? `, ${firstName}` : ''}
 					</h1>
 				</div>
@@ -44,8 +46,10 @@ export default async function AccountLearningPage() {
 				<section>
 					{continueCourse?.nextLesson ? (
 						<div className="rounded-[18px] border border-hairline bg-paper p-6 sm:p-10">
-							<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-vermilion">Tiếp tục học</p>
-							<h2 className="mt-3 font-display text-2xl font-medium text-ink sm:text-3xl">
+							<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+								Tiếp tục học
+							</p>
+							<h2 className="mt-2.5 font-display type-section font-medium text-ink">
 								{continueCourse.title}
 							</h2>
 							<p className="mt-2 text-sm text-ink-secondary">
@@ -83,12 +87,14 @@ export default async function AccountLearningPage() {
 						</div>
 					) : courses.length > 0 ? (
 						<div className="rounded-[18px] border border-hairline bg-paper p-8 text-center sm:p-12">
-							<p className="font-display text-2xl font-medium text-ink">Bạn đã hoàn thành các khóa hiện có</p>
+							<p className="font-display type-section font-medium text-ink">
+								Bạn đã hoàn thành các khóa hiện có
+							</p>
 							<p className="mt-2 text-sm text-ink-secondary">Khóa mới sẽ xuất hiện khi bạn được ghi danh.</p>
 						</div>
 					) : (
 						<div className="rounded-[18px] border border-hairline bg-paper px-8 py-16 text-center">
-							<p className="font-display text-3xl font-medium text-ink">Chưa có khóa học</p>
+							<p className="font-display type-section font-medium text-ink">Chưa có khóa học</p>
 							<p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-secondary">
 								Khi được ghi danh, lộ trình học sẽ hiện tại đây. Liên hệ để yêu cầu tham gia hoặc xem chương trình công khai.
 							</p>

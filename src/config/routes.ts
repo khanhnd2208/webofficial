@@ -10,6 +10,9 @@ export const routes = {
 	home: '/',
 	homeLearningExperiences: '/#learning-experiences',
 	about: '/gioi-thieu',
+	projects: '/du-an',
+	project: (slug: string) => `/du-an/${slug}` as const,
+	services: '/dich-vu',
 	/** In-page anchors on /gioi-thieu */
 	aboutServices: '/gioi-thieu#dich-vu',
 	aboutTeaching: '/gioi-thieu#giang-day-workshop',
@@ -109,34 +112,42 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	destination: string;
 	permanent: boolean;
 }> = [
-	{ source: '/dong-hanh', destination: '/gioi-thieu?section=dich-vu', permanent: true },
+	{ source: '/dong-hanh', destination: '/dich-vu', permanent: true },
 	{
 		source: '/dong-hanh/mentoring',
-		destination: '/gioi-thieu?section=tu-van-phat-trien',
+		destination: '/dich-vu',
 		permanent: true,
 	},
 	{
 		source: '/dong-hanh/co-van-doanh-nghiep',
-		destination: '/gioi-thieu?section=tu-van-phat-trien',
+		destination: '/dich-vu',
 		permanent: true,
 	},
 	{
 		source: '/dong-hanh/dao-tao-workshop',
-		destination: '/gioi-thieu?section=giang-day-workshop',
+		destination: '/dich-vu',
 		permanent: true,
 	},
-	{ source: '/dong-hanh/ai-ung-dung', destination: '/gioi-thieu?section=dich-vu', permanent: true },
-	{ source: '/dong-hanh/:path*', destination: '/gioi-thieu?section=dich-vu', permanent: true },
-	{ source: '/case-study', destination: '/gioi-thieu?section=dau-moc', permanent: true },
-	{ source: '/case-study/:path*', destination: '/gioi-thieu?section=dau-moc', permanent: true },
-	{ source: '/giang-day', destination: '/gioi-thieu?section=giang-day-workshop', permanent: true },
-	{ source: '/goc-cua-khanh', destination: '/archive', permanent: true },
-	{ source: '/hoc', destination: '/archive', permanent: true },
-	{ source: '/hoc/chuong-trinh', destination: '/archive', permanent: true },
+	{ source: '/dong-hanh/ai-ung-dung', destination: '/dich-vu', permanent: true },
+	{ source: '/dong-hanh/:path*', destination: '/dich-vu', permanent: true },
+	{ source: '/case-study', destination: '/du-an', permanent: true },
+	{ source: '/case-study/:path*', destination: '/du-an', permanent: true },
+	{ source: '/giang-day', destination: '/dich-vu', permanent: true },
+	{ source: '/goc-cua-khanh', destination: '/du-an', permanent: true },
+	{ source: '/goc-cua-khanh/:path*', destination: '/du-an', permanent: true },
+	{ source: '/bai-viet', destination: '/', permanent: true },
+	{ source: '/bai-viet/:path*', destination: '/', permanent: true },
+	{ source: '/phat-trien-ban-than', destination: '/', permanent: true },
+	{ source: '/phat-trien-ban-than/:path*', destination: '/', permanent: true },
+	{ source: '/archive', destination: '/', permanent: true },
+	{ source: '/hoc', destination: '/', permanent: true },
+	{ source: '/hoc/chuong-trinh', destination: '/', permanent: true },
 ];
 
 export type PublicRoute =
 	| typeof routes.home
+	| typeof routes.projects
+	| typeof routes.services
 	| typeof routes.posts
 	| typeof routes.about
 	| typeof routes.growth

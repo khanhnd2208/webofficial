@@ -6,7 +6,6 @@
  * map so later phases can flip status without inventing new link lists.
  */
 
-import { hasPublishedPodcastEpisodes } from '@/content/podcast';
 import { SITE_NAME } from './site';
 import { routes } from './routes';
 
@@ -74,18 +73,26 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 		mobile: true,
 	},
 	{
-		id: 'writing',
-		href: routes.posts,
-		label: 'Bài viết',
+		id: 'projects',
+		href: routes.projects,
+		label: 'Dự án',
 		status: 'published',
 		desktop: true,
 		mobile: true,
 	},
 	{
-		id: 'growth',
-		href: routes.growth,
-		label: 'Podcast',
-		status: hasPublishedPodcastEpisodes() ? 'published' : 'draft',
+		id: 'services',
+		href: routes.services,
+		label: 'Dịch vụ',
+		status: 'published',
+		desktop: true,
+		mobile: true,
+	},
+	{
+		id: 'contact',
+		href: routes.contact,
+		label: 'Liên hệ',
+		status: 'published',
 		desktop: true,
 		mobile: true,
 	},
@@ -94,8 +101,8 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 /** Contact CTA — separate from nav links so it never competes with login. */
 export const CONTACT_CTA: ContactCta = {
 	href: routes.contact,
-	label: 'Gửi lời nhắn',
-	shortLabel: 'Lời nhắn',
+	label: 'Chọn nội dung trao đổi',
+	shortLabel: 'Trao đổi',
 	status: 'published',
 };
 
@@ -106,25 +113,9 @@ export const FOOTER_GROUPS: FooterGroup[] = [
 		links: [
 			{ href: routes.home, label: 'Trang chủ', status: 'published' },
 			{ href: routes.about, label: 'Giới thiệu', status: 'published' },
-			{ href: routes.posts, label: 'Bài viết', status: 'published' },
-			{
-				href: routes.growth,
-				label: 'Podcast',
-				status: hasPublishedPodcastEpisodes() ? 'published' : 'draft',
-			},
-			{ href: routes.contact, label: 'Gửi lời nhắn', status: 'published' },
-		],
-	},
-	{
-		id: 'utility',
-		title: 'Thông tin',
-		links: [
-			{ href: routes.archive, label: 'Lưu trữ', status: 'published' },
-			{ href: routes.login, label: 'Khu học tập', status: 'published' },
-			{ href: routes.policyPrivacy, label: 'Bảo mật', status: 'published' },
-			{ href: routes.policyTerms, label: 'Điều khoản', status: 'published' },
-			{ href: routes.policyCancellation, label: 'Hủy & đổi lịch', status: 'published' },
-			{ href: routes.policyAi, label: 'Nguyên tắc AI', status: 'published' },
+			{ href: routes.projects, label: 'Dự án', status: 'published' },
+			{ href: routes.services, label: 'Dịch vụ', status: 'published' },
+			{ href: routes.contact, label: 'Liên hệ', status: 'published' },
 		],
 	},
 ];

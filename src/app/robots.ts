@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
 			{
 				userAgent: '*',
 				allow: '/',
-				disallow: [
+					disallow: [
 					'/admin',
 					'/admin/',
 					'/dang-nhap',
@@ -24,12 +24,19 @@ export default function robots(): MetadataRoute.Robots {
 					'/dashboard',
 					'/archive',
 					'/archive/',
+					'/bai-viet',
+					'/bai-viet/',
+					'/phat-trien-ban-than',
+					'/phat-trien-ban-than/',
 					'/goc-cua-khanh',
 					'/goc-cua-khanh/',
 					'/dong-hanh',
 					'/dong-hanh/',
 					'/case-study',
 					'/case-study/',
+					'/giang-day',
+					'/dong-hanh',
+					'/dong-hanh/',
 				],
 			},
 		],

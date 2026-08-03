@@ -1,15 +1,11 @@
 export { default as MotionProvider, useMotionTier } from './MotionProvider';
-export { default as MaskText } from './MaskText';
-export { default as EditorialImage } from './EditorialImage';
 export { default as EditorialMedia } from './EditorialMedia';
 export { default as EditorialCover } from './EditorialCover';
 export { default as SectionReveal } from './SectionReveal';
 export { StaggerGroup, StaggerItem } from './StaggerGroup';
-export { default as AmbientLight } from './AmbientLight';
 export { default as ReadingProgress } from './ReadingProgress';
 export { default as RouteEntrance } from './RouteEntrance';
 export { default as CompletionSeal } from './CompletionSeal';
-export { default as HeroWordmark } from './HeroWordmark';
 export { default as JourneyLine } from './JourneyLine';
 export { default as HorizonReveal } from './HorizonReveal';
 export * from './tokens';

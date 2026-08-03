@@ -6,8 +6,8 @@ export default function NotFound() {
 	return (
 		<main className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16">
 			<div className="mx-auto max-w-md text-center">
-				<p className="text-xs font-bold uppercase tracking-widest text-muted">404</p>
-				<h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+				<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">404</p>
+				<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">
 					Không tìm thấy trang
 				</h1>
 				<p className="mt-3 text-sm leading-relaxed text-foreground-secondary">

@@ -17,8 +17,6 @@ import {
 	brandHierarchy,
 } from '@/config/site';
 import { PUBLIC_REDIRECTS, routes } from '@/config/routes';
-import { getPublishedServices, getApprovedTestimonials } from '@/content';
-import { hasPublishedPodcastEpisodes } from '@/content/podcast';
 import { getActivePublicCategories, selectHomeArticles } from '@/features/posts/publicAdapter';
 import { PUBLIC_INQUIRY_TYPE_OPTIONS } from '@/features/inquiries/constants';
 import type { PostListItemDTO } from '@/types/post';
@@ -26,7 +24,9 @@ import type { PostListItemDTO } from '@/types/post';
 describe('brand identity', () => {
 	it('uses Duy Khánh as the master brand with a clear Vietnamese positioning', () => {
 		expect(SITE_NAME).toBe('Duy Khánh');
-		expect(SITE_POSITIONING).toBe('Việc học thay đổi cách ta nhìn và cách ta làm.');
+		expect(SITE_POSITIONING).toBe(
+			'Biến kiến thức phức tạp thành năng lực, chương trình và quy trình có thể áp dụng.',
+		);
 		expect(EDITORIAL_NAME).toBe('HANOICAM');
 		expect(PERSONAL_MARK).toBe('NDK');
 		expect(brandHierarchy.master).toBe(SITE_NAME);
@@ -40,20 +40,14 @@ describe('publication gates', () => {
 		expect(isPublished('draft')).toBe(false);
 	});
 
-	it('exposes the compact public destinations and gates Podcast', () => {
+	it('exposes only the four portfolio destinations', () => {
 		const links = getDesktopNavLinks();
 		const labels = links.map((l) => l.label);
 		expect(labels).not.toContain('Trang chủ');
 		expect(labels).toContain('Giới thiệu');
-		expect(labels).not.toContain('Trải nghiệm học tập');
-		expect(labels).toContain('Bài viết');
-		if (hasPublishedPodcastEpisodes()) {
-			expect(labels).toContain('Podcast');
-			expect(labels).toHaveLength(3);
-		} else {
-			expect(labels).not.toContain('Podcast');
-			expect(labels).toHaveLength(2);
-		}
+		expect(labels).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ', 'Liên hệ']);
+		expect(labels).not.toContain('Bài viết');
+		expect(labels).not.toContain('Podcast');
 		expect(
 			links.every((l) => PUBLIC_NAV_ITEMS.find((i) => i.href === l.href)?.status === 'published'),
 		).toBe(true);
@@ -61,10 +55,10 @@ describe('publication gates', () => {
 		expect(links.some((l) => l.href === routes.accompany)).toBe(false);
 	});
 
-	it('publishes a quiet message link', () => {
+	it('publishes a specific contact CTA beside the primary destinations', () => {
 		expect(CONTACT_CTA.status).toBe('published');
-		expect(CONTACT_CTA.label).toBe('Gửi lời nhắn');
-		expect(getPublishedContactCta()?.href).toBe(routes.contact);
+		expect(CONTACT_CTA.label).toBe('Chọn nội dung trao đổi');
+		expect(getPublishedContactCta()).toEqual(CONTACT_CTA);
 	});
 
 	it('mirrors desktop items on mobile without explore group', () => {
@@ -72,62 +66,45 @@ describe('publication gates', () => {
 		expect(mobile).toEqual(getDesktopNavLinks().map((l) => l.label));
 	});
 
-	it('filters footer to published utility links', () => {
+	it('keeps the footer focused on the new public architecture', () => {
 		const groups = getPublishedFooterGroups();
 		expect(groups.length).toBeGreaterThanOrEqual(1);
 		const allHrefs = groups.flatMap((g) => g.links.map((l) => l.href));
-		expect(allHrefs).toContain(routes.posts);
+		expect(allHrefs).toContain(routes.projects);
+		expect(allHrefs).toContain(routes.services);
 		expect(allHrefs).toContain(routes.contact);
-		expect(allHrefs).toContain(routes.archive);
+		expect(allHrefs).not.toContain(routes.posts);
+		expect(allHrefs).not.toContain(routes.archive);
 		expect(allHrefs).not.toContain(routes.learn);
 		expect(allHrefs).not.toContain(routes.accompany);
 	});
 });
 
 describe('content gates', () => {
-	it('publishes exactly three services without inventing testimonials', () => {
-		expect(getPublishedServices()).toHaveLength(3);
-		expect(getPublishedServices().map((s) => s.slug)).toEqual([
-			'giang-day-workshop',
-			'thiet-ke-chuong-trinh',
-			'tu-van-phat-trien',
-		]);
-		expect(getApprovedTestimonials()).toHaveLength(0);
-	});
-
-	it('keeps podcast nav gated until a real episode exists', () => {
-		expect(hasPublishedPodcastEpisodes()).toBe(false);
-		const growth = PUBLIC_NAV_ITEMS.find((i) => i.id === 'growth');
-		expect(growth?.status).toBe('draft');
-	});
-
-	it('exposes additive public inquiry options', () => {
+	it('exposes the five contact subjects from the portfolio brief', () => {
 		expect(PUBLIC_INQUIRY_TYPE_OPTIONS.map((o) => o.value)).toEqual([
 			'training',
-			'course',
+			'ai',
 			'learning-design',
-			'people-organization',
-			'unsure',
+			'business',
 			'other',
 		]);
 	});
 });
 
 describe('redirect map', () => {
-	it('maps retired marketing URLs to about sections or archive', () => {
+	it('maps retired public UI to the new portfolio architecture', () => {
 		const bySource = Object.fromEntries(PUBLIC_REDIRECTS.map((r) => [r.source, r.destination]));
-		expect(bySource['/dong-hanh']).toBe('/gioi-thieu?section=dich-vu');
-		expect(bySource['/dong-hanh/mentoring']).toBe('/gioi-thieu?section=tu-van-phat-trien');
-		expect(bySource['/dong-hanh/co-van-doanh-nghiep']).toBe(
-			'/gioi-thieu?section=tu-van-phat-trien',
-		);
-		expect(bySource['/dong-hanh/dao-tao-workshop']).toBe('/gioi-thieu?section=giang-day-workshop');
-		expect(bySource['/dong-hanh/ai-ung-dung']).toBe('/gioi-thieu?section=dich-vu');
-		expect(bySource['/case-study']).toBe('/gioi-thieu?section=dau-moc');
-		expect(bySource['/giang-day']).toBe('/gioi-thieu?section=giang-day-workshop');
-		expect(bySource['/goc-cua-khanh']).toBe('/archive');
-		expect(bySource['/hoc']).toBe('/archive');
-		expect(bySource['/hoc/chuong-trinh']).toBe('/archive');
+		expect(bySource['/dong-hanh']).toBe('/dich-vu');
+		expect(bySource['/dong-hanh/mentoring']).toBe('/dich-vu');
+		expect(bySource['/dong-hanh/co-van-doanh-nghiep']).toBe('/dich-vu');
+		expect(bySource['/dong-hanh/dao-tao-workshop']).toBe('/dich-vu');
+		expect(bySource['/dong-hanh/ai-ung-dung']).toBe('/dich-vu');
+		expect(bySource['/case-study']).toBe('/du-an');
+		expect(bySource['/giang-day']).toBe('/dich-vu');
+		expect(bySource['/goc-cua-khanh']).toBe('/du-an');
+		expect(bySource['/hoc']).toBe('/');
+		expect(bySource['/hoc/chuong-trinh']).toBe('/');
 	});
 });
 
@@ -154,9 +131,11 @@ describe('writing adapters', () => {
 });
 
 describe('route map', () => {
-	it('includes Explorer Teacher destinations', () => {
+	it('includes the portfolio destinations while preserving internal route constants', () => {
 		expect(routes.contact).toBe('/lien-he');
 		expect(routes.about).toBe('/gioi-thieu');
+		expect(routes.projects).toBe('/du-an');
+		expect(routes.services).toBe('/dich-vu');
 		expect(routes.growth).toBe('/phat-trien-ban-than');
 		expect(routes.archive).toBe('/archive');
 		expect(routes.accountLearning).toBe('/tai-khoan/hoc');

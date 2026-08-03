@@ -33,12 +33,11 @@ export const PUBLIC_INQUIRY_TYPE_OPTIONS: ReadonlyArray<{
 	value: InquiryType;
 	label: string;
 }> = [
-	{ value: 'training', label: 'Giảng dạy hoặc workshop' },
-	{ value: 'course', label: 'Khóa học hoặc ghi danh' },
-	{ value: 'learning-design', label: 'Thiết kế chương trình học' },
-	{ value: 'people-organization', label: 'Trao đổi và tư vấn' },
-	{ value: 'unsure', label: 'Chưa chắc — muốn hỏi Khánh' },
-	{ value: 'other', label: 'Một chủ đề khác' },
+	{ value: 'training', label: 'Học và bổ trợ kiến thức quản trị' },
+	{ value: 'ai', label: 'Khóa học hoặc workshop AI' },
+	{ value: 'learning-design', label: 'Thiết kế chương trình đào tạo' },
+	{ value: 'business', label: 'Tư vấn hoặc cố vấn doanh nghiệp' },
+	{ value: 'other', label: 'Hợp tác khác' },
 ];
 
 export const INQUIRY_STATUSES = [

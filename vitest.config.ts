@@ -45,6 +45,7 @@ export default defineConfig({
 						'src/lib/normative/**/*.test.ts',
 					],
 					exclude: [
+						'src/_archived/**',
 						'src/**/*.integration.test.ts',
 						'src/**/*.test.tsx',
 						'src/services/__tests__/**',
@@ -62,6 +63,7 @@ export default defineConfig({
 						'src/**/*.integration.test.ts',
 						'src/services/__tests__/**/*.test.ts',
 					],
+					exclude: ['src/_archived/**'],
 					setupFiles: ['./src/test/setup.ts', './src/test/setup.integration.ts'],
 					testTimeout: 30_000,
 				},
@@ -72,6 +74,7 @@ export default defineConfig({
 					name: 'component',
 					environment: 'jsdom',
 					include: ['src/**/*.test.tsx'],
+					exclude: ['src/_archived/**'],
 					setupFiles: ['./src/test/setup.ts', './src/test/setup.component.ts'],
 				},
 			},

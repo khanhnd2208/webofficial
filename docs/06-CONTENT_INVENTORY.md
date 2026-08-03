@@ -1,71 +1,60 @@
-# Content inventory & publication matrix
+# Content inventory
 
-**Last updated:** 2026-07-13  
-**Legend:** `ready` = published + gate met · `draft` = built, hidden · `missing` = needs owner input
+**Last updated:** 2026-08-02
 
-## Routes / pages
+## Public portfolio
 
-| Target | Status | Notes |
-|--------|--------|-------|
-| `/` Homepage | ready | Proof/cases auto-hide when empty |
-| `/gioi-thieu` | ready | |
-| `/dong-hanh` + 4 services | ready | Full copy in `src/content/services.ts` |
-| `/lien-he` | ready | Prod form needs Resend env |
-| `/chinh-sach/*` | draft* | Published copy; `legalReview: pending` |
-| `/case-study` | draft | Infra ready; 0 approved cases |
-| `/bai-viet` Journal | ready | Taxonomy UI shipping; public pillar filter after 100% map |
-| `/bai-viet/chu-de/*` | draft | Pages exist when pillars defined |
-| `/bai-viet/bo-suu-tap/*` | draft | Pages exist when collections defined |
-| `/goc-cua-khanh` | ready | 2 published resources |
-| `/hoc` hub + catalog | ready (nav draft) | Infra live; set nav `Học` → published after first CATALOG course |
-| `/tai-khoan/hoc` | ready | Learner dashboard |
-| Journal taxonomy admin | ready | Pillar/type/collections/featured in editor |
-| Pillar/collection pages | ready | Filter public pillars only after 100% map |
-| Inquiry dashboard stats | ready | |
-| Retention purge script | ready | `scripts/purge-closed-inquiries.ts` |
+| Surface                      | Status                                                            | Source                                    |
+| ---------------------------- | ----------------------------------------------------------------- | ----------------------------------------- |
+| Homepage                     | ready — need-state routing and new positioning                    | `src/app/page.tsx`                        |
+| About                        | ready — current work, three roles and verified milestones         | `src/app/gioi-thieu/page.tsx`             |
+| Project index                | ready — filter removed until portfolio is deep enough             | `src/app/du-an/page.tsx`                  |
+| Four project details         | ready — scope separated from verified impact                      | `src/features/portfolio/data/projects.ts` |
+| Services                     | ready — three productized offers                                  | `src/app/dich-vu/page.tsx`                |
+| Contact                      | ready — timeframe visible; delivery remains environment-dependent | `src/app/lien-he/page.tsx`                |
+| Shared public marketing copy | ready                                                             | `src/content/publicMarketing.ts`          |
+| Public proof approval gate   | ready — empty until evidence is approved                          | `src/content/publicProof.ts`              |
+| Proof collection template    | ready                                                             | `docs/08-PROOF_COLLECTION_TEMPLATE.md`    |
+| Sitemap / robots             | ready                                                             | `src/app/sitemap.ts`, `src/app/robots.ts` |
+| Social preview               | ready                                                             | `public/og.png`                           |
 
-\*Policies are publicly readable but marked pending legal review.
+## Project records
 
-## Content pack
+1. AI50 — AI cho mọi người
+2. Strategic Management Learning Experience
+3. Moonie Café Business Development
+4. AI in Recruitment Research
 
-| Asset | Status |
-|-------|--------|
-| Service copy ×4 | ready |
-| Bio 50/150/long | ready (in brand brief + about) |
-| Public email | missing |
-| LinkedIn / social | missing |
-| Real portrait | missing (illustration used) |
-| Case studies ≥2 approved | missing |
-| Testimonials ≥3 approved | missing |
-| Activity photos ≥5 w/ permission | missing |
-| Legal review sign-off | missing |
-| Free lab resource ≥1 | ready |
-| Course PUBLISHED+CATALOG + E2E | missing |
+Project copy deliberately avoids unverified participant counts, revenue,
+performance claims, and invented outcomes.
 
-## Existing domains (do not break)
+Current project gallery images are branded illustrations rather than real
+artefacts. Every caption identifies this limitation and names the approved
+artefact that should replace it.
 
-| Domain | Status |
-|--------|--------|
-| Blog/posts Mongo | ready |
-| Auth Google | ready |
-| Admin shell | ready |
-| Vocabulary (admin) | ready |
-| Messages `/m/[slug]` | ready |
-| Course/enrollment/lesson PG | ready (visibility default PRIVATE) |
+## Preserved internal domains
 
-## Tools
+- Admin and authentication
+- MongoDB and PostgreSQL data
+- Posts and editorial administration
+- Course, enrollment, and lesson systems
+- Vocabulary and message tools
+- Inquiry storage and email delivery
 
-| Tool | Public? |
-|------|---------|
-| Vocabulary | no (admin) |
-| Lucky Card | no (admin) |
-| Messages admin | no |
-| Personality test | archived |
+## Archived public domains
 
-## Next owner actions
+Blog, podcast, lab/resources, former service hubs, case studies, and prior
+homepage iterations are stored in `src/_archived`. They are excluded from the
+TypeScript program and are not public navigation destinations.
 
-1. Fill email + LinkedIn in `src/config/site.ts`.
-2. Supply approved cases/testimonials or keep hidden.
-3. Supply portrait / activity photos with permission.
-4. Legal review of `/chinh-sach/*`.
-5. Publish first course as `PUBLISHED` + `CATALOG`, enroll test learner, then set nav `Học` → published.
+## Owner follow-up
+
+1. Add a public email and approved LinkedIn/CV URLs.
+2. Replace illustration fallbacks with approved real portrait, classroom,
+   workshop, project photos, and artefacts.
+3. Supply three approved testimonials or keep social proof hidden.
+4. Confirm project years and publish measurable outcomes only when evidence is
+   available.
+5. Confirm the exact public degree names, institutions, and preferred role title.
+6. Confirm a response-time promise before adding one to the contact page.
+7. Complete legal review of public policies.

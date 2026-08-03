@@ -1,47 +1,43 @@
-# Bản đồ đường dẫn — Duy Khánh
+# Route map — Duy Khánh
 
-Single source of truth: `src/config/routes.ts`, `src/config/navigation.ts`, `src/config/site.ts`, `src/content/*`.
+Sources of truth: `src/config/routes.ts`, `src/config/navigation.ts`, and
+`src/features/portfolio`.
 
-Navigation and footer render **only** links with `status: 'published'`.
+## Public portfolio
 
-## Brand hierarchy
+| Path | Purpose | Indexing |
+|------|---------|----------|
+| `/` | Homepage and positioning | index |
+| `/gioi-thieu` | Story, expertise, principles, milestones | index |
+| `/du-an` | Filterable project index | index |
+| `/du-an/[slug]` | Project context, problem, approach, outputs, lessons | index |
+| `/dich-vu` | Management education, applied AI, advisory | index |
+| `/lien-he` | Contact form | index |
+| `/chinh-sach/[slug]` | Required policies | allowed, omitted from primary nav |
 
-| Brand | Role |
-|-------|------|
-| **Duy Khánh** | Master brand / site wordmark |
-| **Việc học thay đổi cách ta nhìn và cách ta làm.** | Quan niệm giáo dục |
-| **HANOICAM** | Editorial journal brand |
-| **NDK** | Personal mark / signature |
+## Retired public routes
 
-## Public marketing
+| From | Destination |
+|------|-------------|
+| `/dong-hanh/*`, `/giang-day` | `/dich-vu` |
+| `/case-study/*`, `/goc-cua-khanh/*` | `/du-an` |
+| `/bai-viet/*`, `/phat-trien-ban-than/*`, `/archive` | `/` |
+| `/hoc`, `/hoc/chuong-trinh` | `/` |
 
-| Path | Purpose | Status |
-|------|---------|--------|
-| `/` | Trang chủ | Published |
-| `/gioi-thieu` | Giới thiệu con người, công việc và cách nghĩ về dạy học | Published |
-| `/bai-viet` | Bài viết và ghi chép | Published |
-| `/phat-trien-ban-than` | Podcast | Draft until real episode |
-| `/lien-he` | Gửi lời nhắn | Published (prod needs Resend) |
-| `/chinh-sach/[slug]` | Policies | Published |
-| `/archive` | Lưu trữ nội dung và công cụ cũ | Published + **noindex** |
+The corresponding UI implementations are stored under
+`src/_archived/routes-v1` and are not compiled by Next.js.
 
-## Redirects (retired marketing)
-
-| From | To |
-|------|----|
-| `/dong-hanh`, `/dong-hanh/ai-ung-dung` | `/gioi-thieu?section=dich-vu` |
-| Mentoring / business advisory | `/gioi-thieu?section=tu-van-phat-trien` |
-| Training workshop / `/giang-day` | `/gioi-thieu?section=giang-day-workshop` |
-| `/case-study` | `/gioi-thieu?section=dau-moc` |
-| `/goc-cua-khanh`, `/hoc`, `/hoc/chuong-trinh` | `/archive` |
-
-Lab resource detail URLs remain reachable (noindex). Learner routes `/hoc/khoa-hoc/*` and `/tai-khoan/hoc` are unchanged.
-
-## Learning & system
+## Internal/system routes
 
 | Path | Purpose |
 |------|---------|
-| `/tai-khoan/hoc` | Learner hub |
-| `/hoc/khoa-hoc/[slug]` | Course (enrolled / public intro) |
-| `/m/[slug]` | Public message recipient |
-| `/admin/*` | Admin (not in marketing chrome) |
+| `/dang-nhap` | Authentication |
+| `/tai-khoan/*` | Account and learner hub |
+| `/hoc/khoa-hoc/*` | Course and lesson surfaces |
+| `/vocabulary/*` | Vocabulary tools |
+| `/messages/*`, `/m/[slug]` | Message tools and recipient view |
+| `/admin/*` | Administration |
+| `/api/*` | Backend APIs |
+
+These remain operational but do not render public portfolio navigation or
+footer and are disallowed where appropriate in `robots.ts`.

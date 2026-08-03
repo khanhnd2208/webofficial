@@ -1,0 +1,4162 @@
+<!doctype html>
+<html lang="vi">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>UI/UX Expert Review Packet - Editorial Premium</title>
+	<style>
+		:root {
+			--canvas: #f8f7f4;
+			--paper: #f1efea;
+			--ink: #171717;
+			--muted: #595650;
+			--hairline: #d8d5ce;
+			--accent: #765625;
+			--dark: #11100e;
+			--code: #25221d;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			background: var(--canvas);
+			color: var(--ink);
+			font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			line-height: 1.6;
+		}
+		a { color: inherit; }
+		.shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+		.hero {
+			min-height: 72vh;
+			display: grid;
+			align-items: end;
+			padding: 72px 0 56px;
+			border-bottom: 1px solid var(--hairline);
+		}
+		.kicker, .panel-kicker {
+			text-transform: uppercase;
+			letter-spacing: .13em;
+			font-size: 12px;
+			font-weight: 700;
+			color: var(--accent);
+		}
+		h1, h2, h3 {
+			margin: 0;
+			font-family: Georgia, "Times New Roman", serif;
+			letter-spacing: 0;
+			line-height: 1;
+		}
+		h1 { max-width: 11ch; font-size: clamp(52px, 10vw, 120px); margin-top: 24px; }
+		h2 { font-size: clamp(36px, 5vw, 68px); margin-bottom: 20px; }
+		h3 { font-size: clamp(28px, 3vw, 44px); margin: 10px 0 14px; }
+		h4 { margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); }
+		.lead { max-width: 760px; margin: 28px 0 0; color: var(--muted); font-size: clamp(18px, 2vw, 24px); line-height: 1.65; }
+		.meta {
+			margin-top: 34px;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 12px;
+			color: var(--muted);
+			font-size: 14px;
+		}
+		.meta span { border: 1px solid var(--hairline); padding: 8px 12px; background: var(--paper); }
+		section.band { padding: 64px 0; border-bottom: 1px solid var(--hairline); }
+		.grid { display: grid; gap: 18px; }
+		.two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+		.panel {
+			border: 1px solid var(--hairline);
+			background: rgba(255,255,255,.28);
+			padding: 28px;
+		}
+		.panel .role { color: var(--muted); margin-top: 0; }
+		ul { padding-left: 20px; margin: 0; }
+		li + li { margin-top: 8px; }
+		.review-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+		.review-card { border-top: 1px solid var(--hairline); padding-top: 18px; color: var(--muted); }
+		.source-block {
+			border: 1px solid var(--hairline);
+			background: var(--paper);
+		}
+		.source-block + .source-block { margin-top: 12px; }
+		summary {
+			cursor: pointer;
+			display: flex;
+			justify-content: space-between;
+			gap: 16px;
+			padding: 16px 18px;
+			font-weight: 700;
+		}
+		summary small { color: var(--muted); font-weight: 500; }
+		.source-block p { margin: 0; padding: 0 18px 16px; color: var(--muted); }
+		pre {
+			margin: 0;
+			max-height: 720px;
+			overflow: auto;
+			background: var(--code);
+			color: #fff9ed;
+			padding: 20px;
+			font-size: 12px;
+			line-height: 1.55;
+		}
+		code { font-family: "SF Mono", Consolas, ui-monospace, monospace; }
+		.asset-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+		.asset { margin: 0; border: 1px solid var(--hairline); background: var(--paper); }
+		.asset img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-bottom: 1px solid var(--hairline); }
+		.asset figcaption { display: grid; gap: 3px; padding: 12px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+		.asset figcaption strong { color: var(--ink); }
+		.checklist {
+			counter-reset: item;
+			display: grid;
+			gap: 12px;
+			padding: 0;
+			margin: 0;
+			list-style: none;
+		}
+		.checklist li {
+			counter-increment: item;
+			border-left: 2px solid var(--accent);
+			padding: 4px 0 4px 14px;
+			color: var(--muted);
+		}
+		.checklist li::before {
+			content: counter(item, decimal-leading-zero) " ";
+			font-family: "SF Mono", Consolas, ui-monospace, monospace;
+			font-size: 11px;
+			color: var(--accent);
+			margin-right: 8px;
+		}
+		.footer {
+			background: var(--dark);
+			color: var(--canvas);
+			padding: 40px 0;
+			font-size: 14px;
+		}
+		@media (max-width: 760px) {
+			.shell { width: min(100% - 28px, 1180px); }
+			.hero { min-height: auto; padding: 48px 0; }
+			section.band { padding: 42px 0; }
+			.two-col, .review-grid, .asset-grid { grid-template-columns: 1fr; }
+			.panel { padding: 20px; }
+			summary { display: block; }
+			summary small { display: block; margin-top: 6px; }
+		}
+	</style>
+</head>
+<body>
+	<header class="hero">
+		<div class="shell">
+			<p class="kicker">UI/UX Expert Review Packet</p>
+			<h1>Editorial Premium Interface Export</h1>
+			<p class="lead">File này mô tả chi tiết website công khai hiện tại cho expert UI/UX hoặc AI agent review. Nội dung gồm cấu trúc từng route, hành vi mobile, asset đang dùng và source code liên quan được đọc trực tiếp từ workspace.</p>
+			<div class="meta">
+				<span>Generated: 2026-08-02T11:29:58.599Z</span>
+				<span>Workspace: /Users/duykhanh/Workspace/Active/personal-website</span>
+				<span>Scope: public website only</span>
+			</div>
+		</div>
+	</header>
+
+	<main>
+		<section class="band">
+			<div class="shell two-col">
+				<div>
+					<p class="kicker">Expert Agent Instructions</p>
+					<h2>Review Brief</h2>
+					<ol class="checklist"><li>Review as a UI/UX expert agent for a public professional website.</li><li>Prioritize mobile experience at 320px, 375px, 390px and 768px, then desktop at 1024px and 1440px.</li><li>Assess visual hierarchy, conversion clarity, credibility proof, accessibility, interaction states and content density.</li><li>Flag concrete issues with route, section, viewport and expected user impact.</li><li>Do not invent performance or conversion data. Treat unverified KPI gaps as content/evidence gaps.</li><li>Recommend fixes using the existing editorial premium direction, not a complete brand reset.</li></ol>
+				</div>
+				<div>
+					<p class="kicker">Primary Questions</p>
+					<h2>What To Judge</h2>
+					<ol class="checklist"><li>Does the editorial premium direction build expert credibility within the first viewport?</li><li>Is the mobile hero order effective enough for conversion, or should the image be compressed further?</li><li>Are service choices clear for first-time visitors who do not know which offering they need?</li><li>Do project cards and case studies provide enough proof when hard KPIs are intentionally limited?</li><li>Are CTA labels and destinations specific enough for high-quality inquiries?</li><li>Does the contact form collect enough context without creating unnecessary friction?</li><li>Are motion, focus, contrast and touch targets consistent with WCAG 2.2 AA expectations?</li><li>Where should real photos, artefacts or testimonials replace current placeholder/editorial imagery first?</li></ol>
+				</div>
+			</div>
+		</section>
+
+		<section class="band">
+			<div class="shell">
+				<p class="kicker">Route Map</p>
+				<h2>Current Public Interfaces</h2>
+				<div class="grid">
+		<article class="panel">
+			<div class="panel-kicker">/</div>
+			<h3>Trang chủ</h3>
+			<p class="role">Primary credibility and conversion entry.</p>
+			<section class="blueprint">
+				<h4>Semantic HTML Blueprint</h4>
+				<pre><code>&lt;main class=&quot;bg-canvas&quot;&gt;
+  &lt;header class=&quot;site-header fixed&quot;&gt;
+    &lt;a class=&quot;brand&quot;&gt;Duy Khánh&lt;/a&gt;
+    &lt;nav class=&quot;desktop-nav&quot;&gt;Dịch vụ · Dự án · Giới thiệu&lt;/nav&gt;
+    &lt;a class=&quot;primary-cta&quot;&gt;Bắt đầu trao đổi&lt;/a&gt;
+    &lt;button class=&quot;mobile-menu-trigger&quot;&gt;Menu&lt;/button&gt;
+  &lt;/header&gt;
+  &lt;section aria-labelledby=&quot;home-title&quot; class=&quot;hero&quot;&gt;
+    &lt;div class=&quot;hero-copy&quot;&gt;
+      &lt;p class=&quot;editorial-label&quot;&gt;Education · Applied AI · Business Advisory&lt;/p&gt;
+      &lt;h1 id=&quot;home-title&quot;&gt;Học để hiểu sâu. Làm để tạo thay đổi.&lt;/h1&gt;
+      &lt;p class=&quot;lead&quot;&gt;Giảng viên và người thiết kế trải nghiệm học tập...&lt;/p&gt;
+      &lt;div class=&quot;cta-row&quot;&gt;
+        &lt;a class=&quot;button dark&quot;&gt;Bắt đầu trao đổi&lt;/a&gt;
+        &lt;a class=&quot;button outline&quot;&gt;Xem dự án chọn lọc&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;aside class=&quot;proof-note&quot;&gt;Tiếp cận dựa trên nghiên cứu...&lt;/aside&gt;
+    &lt;/div&gt;
+    &lt;figure class=&quot;hero-media&quot;&gt;
+      &lt;img alt=&quot;Minh họa Duy Khánh trên hành trình học hỏi và giảng dạy&quot; /&gt;
+      &lt;figcaption&gt;Hiểu · Thử · Nhìn lại · Vận dụng&lt;/figcaption&gt;
+    &lt;/figure&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;trust-strip&quot;&gt;Vai trò · Nơi công tác · Trọng tâm · Phương pháp&lt;/section&gt;
+  &lt;section class=&quot;approach-statement&quot;&gt;Một giải pháp tốt không bắt đầu từ công cụ.&lt;/section&gt;
+  &lt;section class=&quot;expertise-entrypoints&quot;&gt;
+    &lt;article&gt;Giảng dạy quản trị → bằng chứng dự án&lt;/article&gt;
+    &lt;article&gt;Đào tạo ứng dụng AI → bằng chứng dự án&lt;/article&gt;
+    &lt;article&gt;Cố vấn doanh nghiệp → bằng chứng dự án&lt;/article&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;selected-projects&quot;&gt;Project cards with image, status, summary, impact&lt;/section&gt;
+  &lt;section class=&quot;process&quot;&gt;Làm rõ → Thiết kế → Đồng hành&lt;/section&gt;
+  &lt;section class=&quot;closing-cta dark&quot;&gt;Bắt đầu trao đổi&lt;/section&gt;
+&lt;/main&gt;</code></pre>
+			</section>
+			<div class="two-col">
+				<section>
+					<h4>Current Interface Sections</h4>
+					<ul><li>Fixed editorial header with desktop CTA and mobile menu.</li><li>Hero: value proposition and CTA appear before image on mobile; text-image layout on desktop.</li><li>Trust strip: role, institution, focus and research-based method.</li><li>Approach statement: &quot;Một giải pháp tốt không bắt đầu từ công cụ.&quot;</li><li>Three collaboration entry points with target audience, outputs and proof links.</li><li>Selected projects with imagery, status, summaries and contextual links.</li><li>Process sequence and dark final CTA.</li></ul>
+				</section>
+				<section>
+					<h4>Mobile / Responsive Notes</h4>
+					<ul><li>Hero copy and CTAs are first-viewport priorities.</li><li>CTA controls use editorial-button classes with mobile-friendly height.</li><li>Artwork is below copy and uses Next Image sizes for responsive LCP behavior.</li></ul>
+				</section>
+			</div>
+		</article>
+		<article class="panel">
+			<div class="panel-kicker">/dich-vu</div>
+			<h3>Dịch vụ</h3>
+			<p class="role">Self-routing page for three user needs.</p>
+			<section class="blueprint">
+				<h4>Semantic HTML Blueprint</h4>
+				<pre><code>&lt;main class=&quot;bg-canvas&quot;&gt;
+  &lt;section class=&quot;page-hero&quot;&gt;
+    &lt;p class=&quot;editorial-label&quot;&gt;Education · AI · Advisory&lt;/p&gt;
+    &lt;h1&gt;Tôi có thể hỗ trợ gì?&lt;/h1&gt;
+    &lt;p class=&quot;lead&quot;&gt;Ba hướng cộng tác cho ba loại nhu cầu...&lt;/p&gt;
+    &lt;aside class=&quot;proof-note&quot;&gt;Mỗi cuộc trao đổi bắt đầu bằng việc làm rõ...&lt;/aside&gt;
+  &lt;/section&gt;
+  &lt;nav class=&quot;sticky service-nav&quot; aria-label=&quot;Chọn hướng hỗ trợ&quot;&gt;
+    &lt;a href=&quot;#management-learning&quot;&gt;01 · Học quản trị&lt;/a&gt;
+    &lt;a href=&quot;#applied-ai&quot;&gt;02 · Ứng dụng AI&lt;/a&gt;
+    &lt;a href=&quot;#business-advisory&quot;&gt;03 · Cố vấn doanh nghiệp&lt;/a&gt;
+  &lt;/nav&gt;
+  &lt;section id=&quot;management-learning&quot; class=&quot;service-section&quot;&gt;
+    &lt;header&gt;&lt;span&gt;01&lt;/span&gt;&lt;h2&gt;Giảng dạy và hỗ trợ học tập về quản trị&lt;/h2&gt;&lt;p class=&quot;problem&quot;&gt;...&lt;/p&gt;&lt;/header&gt;
+    &lt;details open class=&quot;mobile-progressive-disclosure&quot;&gt;
+      &lt;summary&gt;Học quản trị&lt;/summary&gt;
+      &lt;div class=&quot;service-details&quot;&gt;Dành cho ai · Đầu ra · Cách làm&lt;/div&gt;
+    &lt;/details&gt;
+    &lt;footer&gt;&lt;a&gt;Bằng chứng&lt;/a&gt;&lt;a class=&quot;button dark&quot;&gt;Trao đổi nhu cầu&lt;/a&gt;&lt;/footer&gt;
+  &lt;/section&gt;
+  &lt;section id=&quot;applied-ai&quot; class=&quot;service-section alternate&quot;&gt;...&lt;/section&gt;
+  &lt;section id=&quot;business-advisory&quot; class=&quot;service-section&quot;&gt;...&lt;/section&gt;
+  &lt;section class=&quot;closing-cta dark&quot;&gt;Chưa chắc hướng nào phù hợp?&lt;/section&gt;
+&lt;/main&gt;</code></pre>
+			</section>
+			<div class="two-col">
+				<section>
+					<h4>Current Interface Sections</h4>
+					<ul><li>Editorial page intro with proof note.</li><li>Sticky horizontal service navigation.</li><li>Three service sections: audience, problem, outputs, approach, evidence and CTA.</li><li>Final dark CTA for visitors unsure which service fits.</li></ul>
+				</section>
+				<section>
+					<h4>Mobile / Responsive Notes</h4>
+					<ul><li>Native details-based progressive disclosure reduces perceived page length.</li><li>First service opens by default; other services are collapsed.</li><li>Service navigation scrolls horizontally with 44px minimum touch target.</li></ul>
+				</section>
+			</div>
+		</article>
+		<article class="panel">
+			<div class="panel-kicker">/du-an</div>
+			<h3>Dự án</h3>
+			<p class="role">Proof and case-study entry page.</p>
+			<section class="blueprint">
+				<h4>Semantic HTML Blueprint</h4>
+				<pre><code>&lt;main class=&quot;bg-canvas&quot;&gt;
+  &lt;section class=&quot;projects-index&quot;&gt;
+    &lt;header&gt;
+      &lt;p class=&quot;editorial-label&quot;&gt;Selected work&lt;/p&gt;
+      &lt;h1&gt;Dự án&lt;/h1&gt;
+      &lt;p class=&quot;lead&quot;&gt;Chương trình học, nghiên cứu và dự án cố vấn...&lt;/p&gt;
+      &lt;aside class=&quot;proof-note&quot;&gt;Chỉ số chỉ xuất hiện khi có cơ sở xác minh...&lt;/aside&gt;
+    &lt;/header&gt;
+    &lt;div class=&quot;filter-row&quot; role=&quot;group&quot;&gt;
+      &lt;button aria-pressed=&quot;true&quot;&gt;Tất cả&lt;/button&gt;
+      &lt;button&gt;Giảng dạy quản trị&lt;/button&gt;
+      &lt;button&gt;Ứng dụng AI&lt;/button&gt;
+      &lt;button&gt;Tư vấn doanh nghiệp&lt;/button&gt;
+      &lt;button&gt;Nghiên cứu&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;section class=&quot;project-grid&quot;&gt;
+      &lt;article class=&quot;project-card&quot;&gt;
+        &lt;img alt=&quot;Project cover&quot; /&gt;
+        &lt;p class=&quot;kicker&quot;&gt;Course Design · Applied AI&lt;/p&gt;
+        &lt;h2&gt;AI50 — AI cho mọi người&lt;/h2&gt;
+        &lt;p&gt;Status, summary and evidence note&lt;/p&gt;
+      &lt;/article&gt;
+    &lt;/section&gt;
+  &lt;/section&gt;
+&lt;/main&gt;</code></pre>
+			</section>
+			<div class="two-col">
+				<section>
+					<h4>Current Interface Sections</h4>
+					<ul><li>Editorial intro with evidence policy.</li><li>Mobile-friendly category filter.</li><li>Project cards with cover image, category, year, status, summary and impact note.</li><li>Links into full case studies.</li></ul>
+				</section>
+				<section>
+					<h4>Mobile / Responsive Notes</h4>
+					<ul><li>Filter row uses horizontal scroll and visible selected state.</li><li>Card images use fixed aspect ratio and object positioning for important artwork.</li></ul>
+				</section>
+			</div>
+		</article>
+		<article class="panel">
+			<div class="panel-kicker">/du-an/[slug]</div>
+			<h3>Case study detail</h3>
+			<p class="role">Deep proof page for a selected project.</p>
+			<section class="blueprint">
+				<h4>Semantic HTML Blueprint</h4>
+				<pre><code>&lt;main class=&quot;case-study&quot;&gt;
+  &lt;nav class=&quot;breadcrumb&quot;&gt;Dự án / Current case&lt;/nav&gt;
+  &lt;section class=&quot;case-hero&quot;&gt;
+    &lt;p class=&quot;kicker&quot;&gt;Category · Year · Status&lt;/p&gt;
+    &lt;h1&gt;Project title&lt;/h1&gt;
+    &lt;p class=&quot;lead&quot;&gt;Project summary&lt;/p&gt;
+    &lt;img class=&quot;cover&quot; alt=&quot;Project artefact or cover&quot; /&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;case-context&quot;&gt;Bối cảnh · Thách thức&lt;/section&gt;
+  &lt;section class=&quot;case-decisions&quot;&gt;
+    &lt;ol&gt;Decision 01 · Decision 02 · Decision 03&lt;/ol&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;artefact-gallery&quot;&gt;
+    &lt;figure&gt;&lt;img alt=&quot;Artefact&quot; /&gt;&lt;figcaption&gt;Caption&lt;/figcaption&gt;&lt;/figure&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;impact&quot;&gt;Verified impact metrics + evidence note&lt;/section&gt;
+  &lt;section class=&quot;lessons&quot;&gt;Bài học&lt;/section&gt;
+  &lt;section class=&quot;related-projects&quot;&gt;Related case studies&lt;/section&gt;
+  &lt;section class=&quot;contextual-cta&quot;&gt;Project-specific inquiry CTA&lt;/section&gt;
+&lt;/main&gt;</code></pre>
+			</section>
+			<div class="two-col">
+				<section>
+					<h4>Current Interface Sections</h4>
+					<ul><li>Hero with cover image and project metadata.</li><li>Context, problem, approach, deliverables, outcomes and lessons.</li><li>Gallery artefacts with captions.</li><li>Impact metrics only where evidence is available.</li><li>Related projects and contextual contact CTA.</li></ul>
+				</section>
+				<section>
+					<h4>Mobile / Responsive Notes</h4>
+					<ul><li>Image frames keep stable aspect ratios.</li><li>Long content remains readable without hover or JavaScript-only behavior.</li></ul>
+				</section>
+			</div>
+		</article>
+		<article class="panel">
+			<div class="panel-kicker">/gioi-thieu</div>
+			<h3>Giới thiệu</h3>
+			<p class="role">Authority-building page for person, philosophy and credentials.</p>
+			<section class="blueprint">
+				<h4>Semantic HTML Blueprint</h4>
+				<pre><code>&lt;main class=&quot;about&quot;&gt;
+  &lt;section class=&quot;about-hero&quot;&gt;
+    &lt;header&gt;
+      &lt;p class=&quot;editorial-label&quot;&gt;Giới thiệu&lt;/p&gt;
+      &lt;h1&gt;Tôi làm giáo dục để tiếp tục học.&lt;/h1&gt;
+      &lt;p class=&quot;lead&quot;&gt;Nguyễn Duy Khánh — giảng viên quản trị...&lt;/p&gt;
+      &lt;a class=&quot;button dark&quot;&gt;Đọc câu chuyện&lt;/a&gt;
+      &lt;a class=&quot;button outline&quot;&gt;Xem dự án&lt;/a&gt;
+    &lt;/header&gt;
+    &lt;figure&gt;&lt;img alt=&quot;Minh họa chân dung Duy Khánh&quot; /&gt;&lt;/figure&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;trust-strip&quot;&gt;Công việc · Thiết kế · Nghiên cứu · Cố vấn&lt;/section&gt;
+  &lt;section id=&quot;cau-chuyen&quot; class=&quot;professional-story&quot;&gt;Four narrative paragraphs + proof note&lt;/section&gt;
+  &lt;section class=&quot;capabilities&quot;&gt;Giảng dạy quản trị · Learning &amp; Applied AI · Business Advisory&lt;/section&gt;
+  &lt;section class=&quot;principles&quot;&gt;Rõ ràng · Có căn cứ · Thực tế · Có trách nhiệm&lt;/section&gt;
+  &lt;section class=&quot;milestones&quot;&gt;Nền tảng · Mở rộng · Thực hành · Hiện tại&lt;/section&gt;
+  &lt;section class=&quot;closing-cta dark&quot;&gt;Bắt đầu trao đổi&lt;/section&gt;
+&lt;/main&gt;</code></pre>
+			</section>
+			<div class="two-col">
+				<section>
+					<h4>Current Interface Sections</h4>
+					<ul><li>Hero story with portrait/figure image and two CTAs.</li><li>Trust strip for role, learning design, research and advisory.</li><li>Professional story.</li><li>Capabilities linked to proof projects.</li><li>Principles, milestones and final CTA.</li></ul>
+				</section>
+				<section>
+					<h4>Mobile / Responsive Notes</h4>
+					<ul><li>Hero remains text-led while keeping image available early.</li><li>Capabilities and principles stack into readable single-column sections.</li></ul>
+				</section>
+			</div>
+		</article>
+		<article class="panel">
+			<div class="panel-kicker">/lien-he</div>
+			<h3>Liên hệ</h3>
+			<p class="role">Primary lead-capture and qualification page.</p>
+			<section class="blueprint">
+				<h4>Semantic HTML Blueprint</h4>
+				<pre><code>&lt;main class=&quot;contact&quot;&gt;
+  &lt;section class=&quot;contact-layout&quot;&gt;
+    &lt;header class=&quot;sticky-context-panel&quot;&gt;
+      &lt;p class=&quot;editorial-label&quot;&gt;Liên hệ&lt;/p&gt;
+      &lt;h1&gt;Bắt đầu một cuộc trao đổi.&lt;/h1&gt;
+      &lt;p class=&quot;lead&quot;&gt;Hãy chia sẻ điều bạn đang muốn học...&lt;/p&gt;
+      &lt;a class=&quot;mobile-only&quot; href=&quot;#contact-form&quot;&gt;Điền biểu mẫu&lt;/a&gt;
+      &lt;div class=&quot;desktop-process&quot;&gt;Bạn chia sẻ · Tôi xem xét · Hai bên thống nhất&lt;/div&gt;
+      &lt;aside class=&quot;proof-note&quot;&gt;Không cần chuẩn bị một đề bài hoàn hảo...&lt;/aside&gt;
+      &lt;address&gt;Direct email/social links&lt;/address&gt;
+    &lt;/header&gt;
+    &lt;section id=&quot;contact-form&quot; aria-label=&quot;Biểu mẫu liên hệ&quot;&gt;
+      &lt;div class=&quot;form-frame&quot;&gt;
+        &lt;header&gt;&lt;p class=&quot;editorial-label&quot;&gt;Thông tin trao đổi&lt;/p&gt;&lt;h2&gt;Hãy để lại vài dòng.&lt;/h2&gt;&lt;/header&gt;
+        &lt;form&gt;
+          &lt;fieldset&gt;Thông tin liên hệ: name, email, organization&lt;/fieldset&gt;
+          &lt;fieldset&gt;Nhu cầu: inquiry type, context, timeframe&lt;/fieldset&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; /&gt; Privacy consent&lt;/label&gt;
+          &lt;div role=&quot;alert&quot;&gt;Field or summary errors when invalid&lt;/div&gt;
+          &lt;button type=&quot;submit&quot;&gt;Gửi lời nhắn&lt;/button&gt;
+        &lt;/form&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/section&gt;
+&lt;/main&gt;</code></pre>
+			</section>
+			<div class="two-col">
+				<section>
+					<h4>Current Interface Sections</h4>
+					<ul><li>Context-setting intro and direct channels.</li><li>Mobile &quot;Điền biểu mẫu&quot; anchor.</li><li>Desktop process steps beside form.</li><li>Grouped one-page inquiry form.</li><li>Field-level errors, summary error, pending state and success confirmation.</li></ul>
+				</section>
+				<section>
+					<h4>Mobile / Responsive Notes</h4>
+					<ul><li>Form appears earlier via anchor and condensed intro.</li><li>Labels stay visible; field controls have clear focus/error styling.</li></ul>
+				</section>
+			</div>
+		</article></div>
+			</div>
+		</section>
+
+		<section class="band">
+			<div class="shell">
+				<p class="kicker">System Snapshot</p>
+				<h2>Design System And Interaction Notes</h2>
+				<div class="review-grid">
+					<div class="review-card">Palette: paper/canvas foundation, dark ink, bronze accent, hairline borders, restrained editorial contrast.</div>
+					<div class="review-card">Typography: serif display headings, sans body copy, uppercase editorial labels, mono step numbers.</div>
+					<div class="review-card">Layout: constrained shell, border-separated bands, card use limited to repeated evidence/form elements.</div>
+					<div class="review-card">Navigation: fixed header, compact scroll state, desktop contact CTA, full-screen mobile menu.</div>
+					<div class="review-card">Conversion: contact CTAs appear in hero, service sections, case studies and final page bands.</div>
+					<div class="review-card">Accessibility: visible labels, focus-visible rules in CSS, dialog trap in mobile menu, field-level form errors.</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="band">
+			<div class="shell">
+				<p class="kicker">Visual Assets</p>
+				<h2>Current Image References</h2>
+				<div class="asset-grid">
+		<figure class="asset">
+			<img src="../public/og-editorial-premium.png" alt="public/og-editorial-premium.png" loading="lazy" />
+			<figcaption>
+				<strong>public/og-editorial-premium.png</strong>
+				<span>4048 KB</span>
+			</figcaption>
+		</figure>
+		<figure class="asset">
+			<img src="../public/brand/learning-as-becoming-mobile.jpg" alt="public/brand/learning-as-becoming-mobile.jpg" loading="lazy" />
+			<figcaption>
+				<strong>public/brand/learning-as-becoming-mobile.jpg</strong>
+				<span>644 KB</span>
+			</figcaption>
+		</figure>
+		<figure class="asset">
+			<img src="../public/brand/learning-as-becoming-desktop.jpg" alt="public/brand/learning-as-becoming-desktop.jpg" loading="lazy" />
+			<figcaption>
+				<strong>public/brand/learning-as-becoming-desktop.jpg</strong>
+				<span>487 KB</span>
+			</figcaption>
+		</figure>
+		<figure class="asset">
+			<img src="../public/brand/hero-figure.jpg" alt="public/brand/hero-figure.jpg" loading="lazy" />
+			<figcaption>
+				<strong>public/brand/hero-figure.jpg</strong>
+				<span>94 KB</span>
+			</figcaption>
+		</figure>
+		<figure class="asset">
+			<img src="../public/brand/hero-journey.jpg" alt="public/brand/hero-journey.jpg" loading="lazy" />
+			<figcaption>
+				<strong>public/brand/hero-journey.jpg</strong>
+				<span>153 KB</span>
+			</figcaption>
+		</figure>
+		<figure class="asset">
+			<img src="../public/brand/hero-landscape.jpg" alt="public/brand/hero-landscape.jpg" loading="lazy" />
+			<figcaption>
+				<strong>public/brand/hero-landscape.jpg</strong>
+				<span>72 KB</span>
+			</figcaption>
+		</figure></div>
+			</div>
+		</section>
+
+		<section class="band">
+			<div class="shell">
+				<p class="kicker">Exact Source Reference</p>
+				<h2>Route And Component Code</h2>
+				
+		<details class="source-block">
+			<summary>
+				<span>Homepage route</span>
+				<small>src/app/page.tsx · 332 lines</small>
+			</summary>
+			<p>Hero, trust strip, expertise entry points, selected projects, process and final CTA.</p>
+			<pre><code>import type { Metadata } from &#039;next&#039;;
+import Image from &#039;next/image&#039;;
+import Link from &#039;next/link&#039;;
+
+import { ProofNote, StructuredData, TrackedLink, TrustStrip } from &#039;@/components/marketing&#039;;
+import { SectionReveal } from &#039;@/components/motion&#039;;
+import { routes } from &#039;@/config/routes&#039;;
+import { SITE_NAME, SITE_ORIGIN, absoluteUrl } from &#039;@/config/site&#039;;
+import { getFeaturedProjects } from &#039;@/features/portfolio&#039;;
+
+export const metadata: Metadata = {
+	title: { absolute: &#039;Duy Khánh — Education, Applied AI &amp; Business Advisory&#039; },
+	description:
+		&#039;Duy Khánh giảng dạy quản trị, thiết kế chương trình ứng dụng AI và cố vấn doanh nghiệp bằng cách tiếp cận dựa trên nghiên cứu.&#039;,
+	alternates: { canonical: absoluteUrl(&#039;/&#039;) },
+	openGraph: {
+		title: &#039;Duy Khánh — Education, Applied AI &amp; Business Advisory&#039;,
+		description: &#039;Giảng dạy quản trị, ứng dụng AI và cố vấn doanh nghiệp dựa trên nghiên cứu.&#039;,
+		url: absoluteUrl(&#039;/&#039;),
+		siteName: SITE_NAME,
+		locale: &#039;vi_VN&#039;,
+		type: &#039;website&#039;,
+		images: [
+			{
+				url: absoluteUrl(&#039;/og-editorial-premium.png&#039;),
+				width: 1734,
+				height: 907,
+				alt: &#039;Duy Khánh — Học để hiểu sâu. Làm để tạo thay đổi.&#039;,
+			},
+		],
+	},
+	twitter: { card: &#039;summary_large_image&#039;, images: [absoluteUrl(&#039;/og-editorial-premium.png&#039;)] },
+};
+
+const expertise = [
+	{
+		number: &#039;01&#039;,
+		title: &#039;Giảng dạy quản trị&#039;,
+		audience: &#039;Sinh viên, người đi làm và tổ chức giáo dục.&#039;,
+		description:
+			&#039;Biến khái niệm quản trị phức tạp thành một cấu trúc người học có thể hiểu, thử và vận dụng.&#039;,
+		output: &#039;Lớp học · Workshop · Học liệu · Mentoring&#039;,
+		project: &#039;strategic-management-learning-experience&#039;,
+	},
+	{
+		number: &#039;02&#039;,
+		title: &#039;Đào tạo ứng dụng AI&#039;,
+		audience: &#039;Người mới, giảng viên, đội ngũ và nhà quản lý.&#039;,
+		description:
+			&#039;Giúp người học biết khi nào nên dùng AI, giao việc thế nào và phải kiểm chứng điều gì.&#039;,
+		output: &#039;Khóa học · Workflow · Checklist · Practice&#039;,
+		project: &#039;ai50-ai-cho-moi-nguoi&#039;,
+	},
+	{
+		number: &#039;03&#039;,
+		title: &#039;Cố vấn doanh nghiệp&#039;,
+		audience: &#039;Doanh nghiệp nhỏ, startup và tổ chức giáo dục.&#039;,
+		description:
+			&#039;Làm rõ vấn đề và thiết kế lựa chọn phù hợp với mục tiêu, dữ liệu, con người và nguồn lực thực tế.&#039;,
+		output: &#039;Phân tích · Process map · Khuyến nghị · Đồng hành&#039;,
+		project: &#039;moonie-cafe-business-development&#039;,
+	},
+] as const;
+
+const process = [
+	[&#039;01&#039;, &#039;Làm rõ&#039;, &#039;Hiểu đúng bối cảnh, câu hỏi và kết quả cần đạt trước khi chọn công cụ.&#039;],
+	[
+		&#039;02&#039;,
+		&#039;Thiết kế&#039;,
+		&#039;Kết nối nghiên cứu, phương pháp và trải nghiệm thành một cấu trúc có thể thực hiện.&#039;,
+	],
+	[&#039;03&#039;, &#039;Đồng hành&#039;, &#039;Thử nghiệm, quan sát và điều chỉnh để giải pháp sống được trong thực tế.&#039;],
+] as const;
+
+export default function HomePage() {
+	const featuredProjects = getFeaturedProjects();
+	const description =
+		&#039;Duy Khánh giảng dạy quản trị, phát triển chương trình ứng dụng AI và cố vấn doanh nghiệp bằng cách tiếp cận dựa trên nghiên cứu.&#039;;
+
+	return (
+		&lt;main className=&quot;overflow-hidden bg-canvas&quot;&gt;
+			&lt;StructuredData
+				data={[
+					{
+						&#039;@context&#039;: &#039;https://schema.org&#039;,
+						&#039;@type&#039;: &#039;Person&#039;,
+						name: SITE_NAME,
+						url: SITE_ORIGIN,
+						jobTitle: &#039;Giảng viên&#039;,
+						description,
+					},
+					{
+						&#039;@context&#039;: &#039;https://schema.org&#039;,
+						&#039;@type&#039;: &#039;WebSite&#039;,
+						name: SITE_NAME,
+						url: SITE_ORIGIN,
+						description,
+						inLanguage: &#039;vi-VN&#039;,
+					},
+				]}
+			/&gt;
+
+			&lt;section
+				className=&quot;border-b border-hairline pt-[var(--header-height)]&quot;
+				aria-labelledby=&quot;home-title&quot;
+			&gt;
+				&lt;div className=&quot;shell grid min-h-[calc(100svh-var(--header-height))] items-center gap-11 py-10 md:grid-cols-12 md:gap-10 md:py-16 lg:py-20&quot;&gt;
+					&lt;div className=&quot;md:col-span-7 md:pr-6 lg:pr-14&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Education · Applied AI · Business Advisory&lt;/p&gt;
+						&lt;h1 id=&quot;home-title&quot; className=&quot;premium-display mt-6 max-w-[10ch] text-ink&quot;&gt;
+							Học để hiểu sâu.
+							&lt;br /&gt;
+							Làm để tạo thay đổi.
+						&lt;/h1&gt;
+						&lt;p className=&quot;premium-lead mt-7 max-w-[38rem]&quot;&gt;
+							Tôi là Duy Khánh — giảng viên và người thiết kế trải nghiệm học tập. Tôi giúp người
+							học và tổ chức biến kiến thức quản trị, AI và dữ liệu thành hành động rõ ràng.
+						&lt;/p&gt;
+						&lt;div className=&quot;mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center&quot;&gt;
+							&lt;TrackedLink
+								href={routes.contact}
+								event=&quot;home_primary_cta_click&quot;
+								payload={{ sourcePage: routes.home }}
+								className=&quot;editorial-button editorial-button-dark&quot;
+							&gt;
+								Bắt đầu trao đổi &lt;span aria-hidden&gt;→&lt;/span&gt;
+							&lt;/TrackedLink&gt;
+							&lt;TrackedLink
+								href={routes.projects}
+								event=&quot;home_secondary_cta_click&quot;
+								payload={{ sourcePage: routes.home }}
+								className=&quot;editorial-button border-hairline bg-transparent text-ink&quot;
+							&gt;
+								Xem dự án chọn lọc &lt;span aria-hidden&gt;↗&lt;/span&gt;
+							&lt;/TrackedLink&gt;
+						&lt;/div&gt;
+						&lt;ProofNote&gt;
+							Tiếp cận dựa trên nghiên cứu; không đưa ra kết luận chắc chắn khi chưa có đủ bằng
+							chứng.
+						&lt;/ProofNote&gt;
+					&lt;/div&gt;
+					&lt;div className=&quot;md:col-span-5&quot; data-testid=&quot;home-hero-artwork&quot;&gt;
+						&lt;div className=&quot;premium-media aspect-[4/5]&quot;&gt;
+							&lt;Image
+								src=&quot;/brand/learning-as-becoming-mobile.jpg&quot;
+								alt=&quot;Minh họa Duy Khánh trên hành trình học hỏi và giảng dạy&quot;
+								fill
+								priority
+								sizes=&quot;(max-width: 767px) calc(100vw - 48px), (max-width: 1279px) 42vw, 480px&quot;
+								className=&quot;object-cover object-[15%_50%] grayscale-[8%] transition duration-1000 hover:scale-[1.02] hover:grayscale-0&quot;
+							/&gt;
+							&lt;span className=&quot;absolute bottom-4 right-4 z-10 bg-canvas/92 px-3 py-2 text-[0.58rem] uppercase tracking-[0.16em] text-ink-secondary backdrop-blur&quot;&gt;
+								Hiểu · Thử · Nhìn lại · Vận dụng
+							&lt;/span&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;bg-paper&quot;&gt;
+				&lt;div className=&quot;shell py-8 md:py-10&quot;&gt;
+					&lt;TrustStrip
+						items={[
+							{ label: &#039;Vai trò&#039;, value: &#039;Giảng viên quản trị kinh doanh&#039; },
+							{ label: &#039;Nơi công tác&#039;, value: &#039;Trường Đại học Hà Nội&#039; },
+							{ label: &#039;Trọng tâm&#039;, value: &#039;Management · Learning · Applied AI&#039; },
+							{ label: &#039;Phương pháp&#039;, value: &#039;Research-based · Human-centred&#039; },
+						]}
+					/&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;SectionReveal as=&quot;section&quot; className=&quot;editorial-section border-y border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid gap-10 lg:grid-cols-12 lg:gap-20&quot;&gt;
+					&lt;div className=&quot;lg:col-span-4&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Cách tôi tiếp cận&lt;/p&gt;
+					&lt;/div&gt;
+					&lt;div className=&quot;lg:col-span-7 lg:col-start-6&quot;&gt;
+						&lt;h2 className=&quot;editorial-heading&quot;&gt;Một giải pháp tốt không bắt đầu từ công cụ.&lt;/h2&gt;
+						&lt;p className=&quot;premium-lead mt-7&quot;&gt;
+							Nó bắt đầu từ việc hiểu đúng vấn đề, tìm được kiến thức phù hợp và chuyển kiến thức đó
+							thành một quyết định có thể thực hiện.
+						&lt;/p&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/SectionReveal&gt;
+
+			&lt;section
+				className=&quot;editorial-section border-b border-hairline&quot;
+				aria-labelledby=&quot;expertise-title&quot;
+			&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;header className=&quot;max-w-3xl&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Ba hướng cộng tác&lt;/p&gt;
+						&lt;h2 id=&quot;expertise-title&quot; className=&quot;editorial-heading mt-5&quot;&gt;
+							Bắt đầu từ nhu cầu của bạn.
+						&lt;/h2&gt;
+						&lt;p className=&quot;premium-lead mt-6&quot;&gt;
+							Mỗi hướng đi vào một bối cảnh khác nhau, nhưng cùng chung tiêu chuẩn: rõ mục tiêu, có
+							căn cứ và tạo được đầu ra hữu ích.
+						&lt;/p&gt;
+					&lt;/header&gt;
+					&lt;div className=&quot;mt-14 border-t border-hairline&quot;&gt;
+						{expertise.map((item) =&gt; (
+							&lt;SectionReveal
+								as=&quot;article&quot;
+								key={item.number}
+								className=&quot;grid gap-5 border-b border-hairline py-9 md:grid-cols-12 md:gap-8 md:py-12&quot;
+							&gt;
+								&lt;p className=&quot;font-mono text-xs text-accent md:col-span-1&quot;&gt;{item.number}&lt;/p&gt;
+								&lt;div className=&quot;md:col-span-4&quot;&gt;
+									&lt;h3 className=&quot;font-display text-3xl leading-[1.05] text-ink lg:text-4xl&quot;&gt;
+										{item.title}
+									&lt;/h3&gt;
+									&lt;p className=&quot;mt-4 text-sm leading-[1.7] text-ink-secondary&quot;&gt;{item.audience}&lt;/p&gt;
+								&lt;/div&gt;
+								&lt;div className=&quot;md:col-span-7 lg:grid lg:grid-cols-2 lg:gap-10&quot;&gt;
+									&lt;p className=&quot;text-base leading-[1.8] text-ink-secondary&quot;&gt;{item.description}&lt;/p&gt;
+									&lt;div className=&quot;mt-6 lg:mt-0&quot;&gt;
+										&lt;p className=&quot;editorial-label&quot;&gt;Đầu ra&lt;/p&gt;
+										&lt;p className=&quot;mt-3 text-sm leading-[1.75] text-ink&quot;&gt;{item.output}&lt;/p&gt;
+										&lt;Link href={routes.project(item.project)} className=&quot;editorial-text-link mt-6&quot;&gt;
+											Xem bằng chứng &lt;span aria-hidden&gt;→&lt;/span&gt;
+										&lt;/Link&gt;
+									&lt;/div&gt;
+								&lt;/div&gt;
+							&lt;/SectionReveal&gt;
+						))}
+					&lt;/div&gt;
+					&lt;Link href={routes.services} className=&quot;editorial-button mt-10&quot;&gt;
+						Xem toàn bộ dịch vụ &lt;span aria-hidden&gt;→&lt;/span&gt;
+					&lt;/Link&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section
+				className=&quot;editorial-section border-b border-hairline bg-paper&quot;
+				aria-labelledby=&quot;projects-title&quot;
+			&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;header className=&quot;flex flex-col justify-between gap-6 md:flex-row md:items-end&quot;&gt;
+						&lt;div&gt;
+							&lt;p className=&quot;editorial-label&quot;&gt;Selected evidence&lt;/p&gt;
+							&lt;h2 id=&quot;projects-title&quot; className=&quot;editorial-heading mt-5&quot;&gt;
+								Dự án chọn lọc
+							&lt;/h2&gt;
+						&lt;/div&gt;
+						&lt;p className=&quot;max-w-lg text-sm leading-[1.75] text-ink-secondary&quot;&gt;
+							Các chương trình học, nghiên cứu và dự án cố vấn được trình bày theo bối cảnh, quyết
+							định thiết kế và kết quả có thể xác minh.
+						&lt;/p&gt;
+					&lt;/header&gt;
+					&lt;div className=&quot;mt-14 grid gap-x-8 gap-y-16 md:grid-cols-2&quot;&gt;
+						{featuredProjects.map((project, index) =&gt; (
+							&lt;SectionReveal key={project.slug} className={index === 1 ? &#039;md:mt-20&#039; : &#039;&#039;}&gt;
+								&lt;TrackedLink
+									href={routes.project(project.slug)}
+									event=&quot;home_project_click&quot;
+									payload={{ slug: project.slug, sourcePage: routes.home }}
+									className=&quot;group block&quot;
+								&gt;
+									&lt;div
+										className={`premium-media ${index === 0 ? &#039;aspect-[16/11]&#039; : &#039;aspect-[4/3]&#039;}`}
+									&gt;
+										&lt;Image
+											src={project.coverImage}
+											alt=&quot;&quot;
+											fill
+											sizes=&quot;(max-width: 767px) calc(100vw - 48px), 44vw&quot;
+											className={`object-cover grayscale-[18%] transition duration-1000 group-hover:scale-[1.025] group-hover:grayscale-0 ${project.coverImage.includes(&#039;learning-as-becoming-desktop&#039;) ? &#039;object-left&#039; : &#039;object-center&#039;}`}
+										/&gt;
+									&lt;/div&gt;
+									&lt;div className=&quot;mt-6 border-t border-hairline pt-5&quot;&gt;
+										&lt;p className=&quot;editorial-label&quot;&gt;
+											{project.kicker} · {project.year}
+										&lt;/p&gt;
+										&lt;h3 className=&quot;mt-3 font-display text-3xl leading-tight text-ink transition-colors group-hover:text-accent sm:text-4xl&quot;&gt;
+											{project.title}
+										&lt;/h3&gt;
+										&lt;p className=&quot;mt-4 max-w-xl text-sm leading-[1.75] text-ink-secondary&quot;&gt;
+											{project.summary}
+										&lt;/p&gt;
+										&lt;span className=&quot;editorial-text-link mt-6&quot;&gt;
+											Đọc case study &lt;span aria-hidden&gt;→&lt;/span&gt;
+										&lt;/span&gt;
+									&lt;/div&gt;
+								&lt;/TrackedLink&gt;
+							&lt;/SectionReveal&gt;
+						))}
+					&lt;/div&gt;
+					&lt;Link href={routes.projects} className=&quot;editorial-button mt-14&quot;&gt;
+						Xem tất cả dự án &lt;span aria-hidden&gt;→&lt;/span&gt;
+					&lt;/Link&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid gap-10 md:grid-cols-3&quot;&gt;
+					{process.map(([number, title, body]) =&gt; (
+						&lt;div key={number} className=&quot;impact-metric&quot;&gt;
+							&lt;span className=&quot;font-mono text-xs text-accent&quot;&gt;{number}&lt;/span&gt;
+							&lt;h2 className=&quot;mt-6 font-display text-3xl text-ink&quot;&gt;{title}&lt;/h2&gt;
+							&lt;p className=&quot;mt-4 text-sm leading-[1.75] text-ink-secondary&quot;&gt;{body}&lt;/p&gt;
+						&lt;/div&gt;
+					))}
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section bg-ink text-center text-canvas&quot;&gt;
+				&lt;div className=&quot;shell mx-auto max-w-4xl&quot;&gt;
+					&lt;p className=&quot;editorial-label !text-sunlight&quot;&gt;Bắt đầu từ một câu hỏi&lt;/p&gt;
+					&lt;h2 className=&quot;mt-7 text-balance font-display text-[clamp(2.8rem,6vw,5.5rem)] leading-[0.98]&quot;&gt;
+						Bạn đang có một vấn đề cần làm rõ?
+					&lt;/h2&gt;
+					&lt;p className=&quot;mx-auto mt-7 max-w-xl text-base leading-[1.8] text-canvas/70&quot;&gt;
+						Hãy chia sẻ bối cảnh và kết quả bạn đang muốn tạo ra. Tôi sẽ phản hồi nếu đây là một chủ
+						đề phù hợp để cùng làm việc.
+					&lt;/p&gt;
+					&lt;TrackedLink
+						href={routes.contact}
+						event=&quot;home_closing_connect_click&quot;
+						payload={{ sourcePage: routes.home }}
+						className=&quot;editorial-button mt-9 border-canvas bg-canvas text-ink&quot;
+					&gt;
+						Bắt đầu trao đổi &lt;span aria-hidden&gt;→&lt;/span&gt;
+					&lt;/TrackedLink&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+		&lt;/main&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Services route</span>
+				<small>src/app/dich-vu/page.tsx · 257 lines</small>
+			</summary>
+			<p>Service navigation, progressive disclosure, evidence links and service CTAs.</p>
+			<pre><code>import type { Metadata } from &#039;next&#039;;
+import Link from &#039;next/link&#039;;
+
+import { ProofNote, ServiceDisclosure, TrackedLink } from &#039;@/components/marketing&#039;;
+import { SectionReveal } from &#039;@/components/motion&#039;;
+import { routes } from &#039;@/config/routes&#039;;
+import { absoluteUrl } from &#039;@/config/site&#039;;
+
+export const metadata: Metadata = {
+	title: &#039;Tôi có thể hỗ trợ gì?&#039;,
+	description: &#039;Giảng dạy quản trị, đào tạo ứng dụng AI và tư vấn doanh nghiệp cùng Duy Khánh.&#039;,
+	alternates: { canonical: absoluteUrl(routes.services) },
+};
+
+const services = [
+	{
+		id: &#039;management-learning&#039;,
+		number: &#039;01&#039;,
+		shortTitle: &#039;Học quản trị&#039;,
+		title: &#039;Giảng dạy và hỗ trợ học tập về quản trị&#039;,
+		audience: [
+			&#039;Sinh viên đại học và sau đại học&#039;,
+			&#039;Người đi làm cần bổ sung kiến thức quản trị&#039;,
+			&#039;Nhóm học tập hoặc tổ chức giáo dục&#039;,
+		],
+		problem:
+			&#039;Lý thuyết nhiều nhưng rời rạc; người học nhớ tên mô hình mà chưa nhìn thấy cách chúng liên kết với quyết định thực tế.&#039;,
+		outputs: [
+			&#039;Lớp học hoặc workshop&#039;,
+			&#039;Buổi học bổ trợ&#039;,
+			&#039;Mentoring học thuật&#039;,
+			&#039;Thiết kế và rà soát học liệu&#039;,
+		],
+		approach: [
+			&#039;Làm rõ mục tiêu học tập&#039;,
+			&#039;Cấu trúc lại khái niệm cốt lõi&#039;,
+			&#039;Đưa lý thuyết vào case&#039;,
+			&#039;Kiểm tra khả năng vận dụng&#039;,
+		],
+		proof: &#039;Strategic Management Learning Experience&#039;,
+		project: &#039;strategic-management-learning-experience&#039;,
+		inquiryType: &#039;training&#039;,
+	},
+	{
+		id: &#039;applied-ai&#039;,
+		number: &#039;02&#039;,
+		shortTitle: &#039;Ứng dụng AI&#039;,
+		title: &#039;Đào tạo ứng dụng AI&#039;,
+		audience: [
+			&#039;Người mới bắt đầu sử dụng AI&#039;,
+			&#039;Sinh viên và giảng viên&#039;,
+			&#039;Nhân sự văn phòng&#039;,
+			&#039;Nhà quản lý và doanh nghiệp nhỏ&#039;,
+		],
+		problem:
+			&#039;Người dùng biết nhiều mẹo prompt nhưng chưa có quy trình để giao việc, kiểm chứng và giữ quyền quyết định.&#039;,
+		outputs: [
+			&#039;Khóa học hoặc workshop&#039;,
+			&#039;Corporate training&#039;,
+			&#039;Workflow template&#039;,
+			&#039;Checklist kiểm chứng&#039;,
+		],
+		approach: [
+			&#039;Hiểu đúng công việc&#039;,
+			&#039;Phân chia vai trò người–AI&#039;,
+			&#039;Thiết kế vòng kiểm chứng&#039;,
+			&#039;Thực hành trên tình huống thật&#039;,
+		],
+		proof: &#039;AI50 — AI cho mọi người&#039;,
+		project: &#039;ai50-ai-cho-moi-nguoi&#039;,
+		inquiryType: &#039;ai&#039;,
+	},
+	{
+		id: &#039;business-advisory&#039;,
+		number: &#039;03&#039;,
+		shortTitle: &#039;Cố vấn doanh nghiệp&#039;,
+		title: &#039;Tư vấn và cố vấn doanh nghiệp&#039;,
+		audience: [&#039;Doanh nghiệp nhỏ và vừa&#039;, &#039;Startup&#039;, &#039;Tổ chức giáo dục&#039;, &#039;Doanh nghiệp dịch vụ&#039;],
+		problem:
+			&#039;Các vấn đề chiến lược, vận hành và con người thường được xử lý riêng lẻ dù chúng đang ảnh hưởng lẫn nhau.&#039;,
+		outputs: [&#039;Business analysis&#039;, &#039;Process map&#039;, &#039;Priority framework&#039;, &#039;Recommendation report&#039;],
+		approach: [
+			&#039;Làm rõ vấn đề&#039;,
+			&#039;Thu thập dữ liệu và bối cảnh&#039;,
+			&#039;Phân tích bằng khung phù hợp&#039;,
+			&#039;Thử nghiệm và điều chỉnh&#039;,
+		],
+		proof: &#039;Moonie Café Business Development&#039;,
+		project: &#039;moonie-cafe-business-development&#039;,
+		inquiryType: &#039;business&#039;,
+	},
+] as const;
+
+export default function ServicesPage() {
+	return (
+		&lt;main className=&quot;bg-canvas&quot;&gt;
+			&lt;section className=&quot;editorial-section border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid gap-10 lg:grid-cols-12 lg:items-end&quot;&gt;
+					&lt;header className=&quot;lg:col-span-8&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Education · AI · Advisory&lt;/p&gt;
+						&lt;h1 className=&quot;premium-display mt-7 max-w-[10ch] text-ink&quot;&gt;Tôi có thể hỗ trợ gì?&lt;/h1&gt;
+					&lt;/header&gt;
+					&lt;div className=&quot;lg:col-span-4&quot;&gt;
+						&lt;p className=&quot;premium-lead&quot;&gt;
+							Ba hướng cộng tác cho ba loại nhu cầu: hiểu sâu hơn, xây năng lực mới hoặc giải quyết
+							một vấn đề trong tổ chức.
+						&lt;/p&gt;
+						&lt;ProofNote&gt;
+							Mỗi cuộc trao đổi bắt đầu bằng việc làm rõ mức độ phù hợp, phạm vi và đầu ra mong
+							muốn.
+						&lt;/ProofNote&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;nav
+				className=&quot;sticky top-16 z-30 border-b border-hairline bg-canvas/95 backdrop-blur-md lg:top-[4.5rem]&quot;
+				aria-label=&quot;Chọn hướng hỗ trợ&quot;
+			&gt;
+				&lt;div className=&quot;shell no-scrollbar flex gap-2 overflow-x-auto py-3&quot;&gt;
+					{services.map((service) =&gt; (
+						&lt;TrackedLink
+							key={service.id}
+							href={`#${service.id}`}
+							event=&quot;service_select&quot;
+							payload={{ label: service.id, sourcePage: routes.services }}
+							className=&quot;inline-flex min-h-11 shrink-0 items-center border border-hairline px-4 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:border-accent hover:text-accent&quot;
+						&gt;
+							{service.number} · {service.shortTitle}
+						&lt;/TrackedLink&gt;
+					))}
+				&lt;/div&gt;
+			&lt;/nav&gt;
+
+			&lt;div&gt;
+				{services.map((service, index) =&gt; (
+					&lt;section
+						id={service.id}
+						key={service.id}
+						className={`scroll-mt-36 border-b border-hairline ${index % 2 === 1 ? &#039;bg-paper&#039; : &#039;&#039;}`}
+					&gt;
+						&lt;div className=&quot;shell py-16 md:py-24 lg:py-32&quot;&gt;
+							&lt;SectionReveal className=&quot;grid gap-8 lg:grid-cols-12 lg:gap-16&quot;&gt;
+								&lt;header className=&quot;lg:col-span-5&quot;&gt;
+									&lt;p className=&quot;font-mono text-xs tracking-[0.18em] text-accent&quot;&gt;
+										{service.number}
+									&lt;/p&gt;
+									&lt;h2 className=&quot;mt-6 text-balance font-display text-[clamp(2.75rem,5vw,5rem)] leading-[0.98] tracking-[-0.035em] text-ink&quot;&gt;
+										{service.title}
+									&lt;/h2&gt;
+									&lt;p className=&quot;mt-7 border-l border-accent pl-5 text-base leading-[1.8] text-ink-secondary&quot;&gt;
+										{service.problem}
+									&lt;/p&gt;
+								&lt;/header&gt;
+								&lt;div className=&quot;lg:col-span-6 lg:col-start-7&quot;&gt;
+									&lt;ServiceDisclosure
+										serviceId={service.id}
+										title={service.shortTitle}
+										defaultOpen={index === 0}
+									&gt;
+										&lt;div className=&quot;grid gap-9 pt-9 sm:grid-cols-2 lg:pt-0&quot;&gt;
+											&lt;div&gt;
+												&lt;h3 className=&quot;editorial-label&quot;&gt;Dành cho ai&lt;/h3&gt;
+												&lt;ul className=&quot;mt-5 space-y-3&quot;&gt;
+													{service.audience.map((item) =&gt; (
+														&lt;li
+															key={item}
+															className=&quot;border-b border-hairline pb-3 text-sm leading-[1.7] text-ink-secondary&quot;
+														&gt;
+															{item}
+														&lt;/li&gt;
+													))}
+												&lt;/ul&gt;
+											&lt;/div&gt;
+											&lt;div&gt;
+												&lt;h3 className=&quot;editorial-label&quot;&gt;Đầu ra&lt;/h3&gt;
+												&lt;ul className=&quot;mt-5 space-y-3&quot;&gt;
+													{service.outputs.map((item) =&gt; (
+														&lt;li
+															key={item}
+															className=&quot;border-b border-hairline pb-3 text-sm leading-[1.7] text-ink-secondary&quot;
+														&gt;
+															{item}
+														&lt;/li&gt;
+													))}
+												&lt;/ul&gt;
+											&lt;/div&gt;
+											&lt;div className=&quot;sm:col-span-2&quot;&gt;
+												&lt;h3 className=&quot;editorial-label&quot;&gt;Cách làm&lt;/h3&gt;
+												&lt;ol className=&quot;mt-5 grid border-t border-hairline sm:grid-cols-2&quot;&gt;
+													{service.approach.map((item, step) =&gt; (
+														&lt;li
+															key={item}
+															className=&quot;border-b border-hairline py-4 text-sm text-ink-secondary sm:px-4&quot;
+														&gt;
+															&lt;span className=&quot;mr-3 font-mono text-xs text-accent&quot;&gt;
+																0{step + 1}
+															&lt;/span&gt;
+															{item}
+														&lt;/li&gt;
+													))}
+												&lt;/ol&gt;
+											&lt;/div&gt;
+										&lt;/div&gt;
+									&lt;/ServiceDisclosure&gt;
+									&lt;div className=&quot;mt-9 flex flex-col gap-3 border-t border-hairline pt-7 sm:flex-row sm:flex-wrap&quot;&gt;
+										&lt;Link href={routes.project(service.project)} className=&quot;editorial-text-link&quot;&gt;
+											Bằng chứng: {service.proof} &lt;span aria-hidden&gt;↗&lt;/span&gt;
+										&lt;/Link&gt;
+										&lt;TrackedLink
+											href={`${routes.contact}?type=${service.inquiryType}&amp;sourcePage=${encodeURIComponent(routes.services)}`}
+											event=&quot;service_cta_click&quot;
+											payload={{
+												type: service.inquiryType,
+												label: service.id,
+												sourcePage: routes.services,
+											}}
+											className=&quot;editorial-button editorial-button-dark sm:ml-auto&quot;
+										&gt;
+											Trao đổi nhu cầu &lt;span aria-hidden&gt;→&lt;/span&gt;
+										&lt;/TrackedLink&gt;
+									&lt;/div&gt;
+								&lt;/div&gt;
+							&lt;/SectionReveal&gt;
+						&lt;/div&gt;
+					&lt;/section&gt;
+				))}
+			&lt;/div&gt;
+
+			&lt;section className=&quot;editorial-section bg-ink text-canvas&quot;&gt;
+				&lt;div className=&quot;shell grid gap-10 lg:grid-cols-12 lg:items-end&quot;&gt;
+					&lt;div className=&quot;lg:col-span-8&quot;&gt;
+						&lt;p className=&quot;editorial-label !text-sunlight&quot;&gt;Bước tiếp theo&lt;/p&gt;
+						&lt;h2 className=&quot;mt-6 text-balance font-display text-[clamp(2.8rem,6vw,5.5rem)] leading-none&quot;&gt;
+							Chưa chắc hướng nào phù hợp?
+						&lt;/h2&gt;
+					&lt;/div&gt;
+					&lt;div className=&quot;lg:col-span-4&quot;&gt;
+						&lt;p className=&quot;text-sm leading-[1.8] text-canvas/70&quot;&gt;
+							Chỉ cần mô tả ngắn bối cảnh và kết quả mong muốn. Tôi sẽ giúp bạn xác định một cách
+							bắt đầu ít áp lực.
+						&lt;/p&gt;
+						&lt;TrackedLink
+							href={`${routes.contact}?type=other`}
+							event=&quot;service_cta_click&quot;
+							payload={{ type: &#039;other&#039;, sourcePage: routes.services }}
+							className=&quot;editorial-button mt-7 border-canvas bg-canvas text-ink&quot;
+						&gt;
+							Bắt đầu trao đổi &lt;span aria-hidden&gt;→&lt;/span&gt;
+						&lt;/TrackedLink&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+		&lt;/main&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Projects index route</span>
+				<small>src/app/du-an/page.tsx · 41 lines</small>
+			</summary>
+			<p>Project listing intro, proof note and ProjectGrid integration.</p>
+			<pre><code>import type { Metadata } from &#039;next&#039;;
+
+import { ProofNote } from &#039;@/components/marketing&#039;;
+import { routes } from &#039;@/config/routes&#039;;
+import { absoluteUrl } from &#039;@/config/site&#039;;
+import { ProjectGrid, projects } from &#039;@/features/portfolio&#039;;
+
+export const metadata: Metadata = {
+	title: &#039;Dự án&#039;,
+	description: &#039;Các chương trình học, nghiên cứu, sản phẩm và dự án cố vấn của Duy Khánh.&#039;,
+	alternates: { canonical: absoluteUrl(routes.projects) },
+};
+
+export default function ProjectsPage() {
+	return (
+		&lt;main className=&quot;bg-canvas&quot;&gt;
+			&lt;section className=&quot;editorial-section border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;header className=&quot;grid gap-8 lg:grid-cols-12 lg:items-end&quot;&gt;
+						&lt;div className=&quot;lg:col-span-8&quot;&gt;
+							&lt;p className=&quot;editorial-label&quot;&gt;Selected work&lt;/p&gt;
+							&lt;h1 className=&quot;premium-display mt-7 text-ink&quot;&gt;Dự án&lt;/h1&gt;
+						&lt;/div&gt;
+						&lt;div className=&quot;lg:col-span-4&quot;&gt;
+							&lt;p className=&quot;premium-lead&quot;&gt;
+								Chương trình học, nghiên cứu và dự án cố vấn được trình bày qua vấn đề, quyết định
+								thiết kế, artefact và kết quả.
+							&lt;/p&gt;
+							&lt;ProofNote&gt;
+								Chỉ số chỉ xuất hiện khi có cơ sở xác minh; dự án đang phát triển được ghi rõ trạng
+								thái.
+							&lt;/ProofNote&gt;
+						&lt;/div&gt;
+					&lt;/header&gt;
+					&lt;ProjectGrid projects={projects} /&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+		&lt;/main&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Case study route</span>
+				<small>src/app/du-an/[slug]/page.tsx · 250 lines</small>
+			</summary>
+			<p>Case-study storytelling sequence, artefacts, impact metrics and contextual CTA.</p>
+			<pre><code>import type { Metadata } from &#039;next&#039;;
+import Image from &#039;next/image&#039;;
+import Link from &#039;next/link&#039;;
+import { notFound } from &#039;next/navigation&#039;;
+
+import { routes } from &#039;@/config/routes&#039;;
+import { absoluteUrl } from &#039;@/config/site&#039;;
+import { ImpactMetric, ProofNote, TestimonialBlock, TrackedLink } from &#039;@/components/marketing&#039;;
+import { CaseStudyViewTracker, getProject, projects } from &#039;@/features/portfolio&#039;;
+
+type ProjectPageProps = { params: Promise&lt;{ slug: string }&gt; };
+
+export function generateStaticParams() {
+	return projects.map((project) =&gt; ({ slug: project.slug }));
+}
+
+export async function generateMetadata({ params }: ProjectPageProps): Promise&lt;Metadata&gt; {
+	const { slug } = await params;
+	const project = getProject(slug);
+	if (!project) return {};
+	return {
+		title: project.title,
+		description: project.summary,
+		alternates: { canonical: absoluteUrl(routes.project(project.slug)) },
+		openGraph: {
+			title: project.title,
+			description: project.summary,
+			type: &#039;article&#039;,
+			images: [absoluteUrl(project.coverImage)],
+		},
+	};
+}
+
+export default async function ProjectDetailPage({ params }: ProjectPageProps) {
+	const { slug } = await params;
+	const project = getProject(slug);
+	if (!project) notFound();
+	const related = project.relatedProjects
+		.map(getProject)
+		.filter((item): item is NonNullable&lt;typeof item&gt; =&gt; Boolean(item));
+
+	return (
+		&lt;main className=&quot;bg-canvas&quot;&gt;
+			&lt;CaseStudyViewTracker slug={project.slug} /&gt;
+			&lt;section className=&quot;border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid min-h-[72svh] items-center gap-12 py-16 lg:grid-cols-12 lg:gap-16 lg:py-24&quot;&gt;
+					&lt;header className=&quot;lg:col-span-7&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;
+							{project.kicker} · {project.year}
+						&lt;/p&gt;
+						&lt;h1 className=&quot;mt-7 text-balance font-display text-[clamp(3.5rem,7vw,7.25rem)] font-normal leading-[0.9] tracking-[-0.045em] text-ink&quot;&gt;
+							{project.title}
+						&lt;/h1&gt;
+						&lt;p className=&quot;mt-8 max-w-2xl text-base leading-[1.85] text-ink-secondary sm:text-lg&quot;&gt;
+							{project.summary}
+						&lt;/p&gt;
+					&lt;/header&gt;
+					&lt;div className=&quot;lg:col-span-5&quot;&gt;
+						&lt;div className=&quot;premium-media relative aspect-[4/5]&quot;&gt;
+							&lt;Image
+								src={project.coverImage}
+								alt=&quot;&quot;
+								fill
+								priority
+								sizes=&quot;(max-width: 1023px) calc(100vw - 48px), 40vw&quot;
+								className={`object-cover grayscale-[14%] ${project.coverImage.includes(&#039;learning-as-becoming-desktop&#039;) ? &#039;object-left&#039; : &#039;object-center&#039;}`}
+							/&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;border-b border-hairline bg-paper py-10&quot;&gt;
+				&lt;div className=&quot;shell grid gap-8 sm:grid-cols-2 lg:grid-cols-4&quot;&gt;
+					{[
+						[&#039;Vai trò&#039;, project.role],
+						[&#039;Đối tượng&#039;, project.audience],
+						[&#039;Phạm vi&#039;, project.scope],
+						[&#039;Trạng thái&#039;, project.status],
+					].map(([label, value]) =&gt; (
+						&lt;div key={label}&gt;
+							&lt;p className=&quot;editorial-label&quot;&gt;{label}&lt;/p&gt;
+							&lt;p className=&quot;mt-3 text-sm leading-[1.7] text-ink&quot;&gt;{value}&lt;/p&gt;
+						&lt;/div&gt;
+					))}
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid gap-16 lg:grid-cols-12 lg:gap-24&quot;&gt;
+					&lt;div className=&quot;lg:col-span-5&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Bối cảnh&lt;/p&gt;
+						&lt;h2 className=&quot;editorial-heading mt-5&quot;&gt;Dự án bắt đầu từ đâu?&lt;/h2&gt;
+					&lt;/div&gt;
+					&lt;div className=&quot;space-y-14 lg:col-span-6 lg:col-start-7&quot;&gt;
+						&lt;div&gt;
+							&lt;h3 className=&quot;font-display text-3xl text-ink&quot;&gt;Bối cảnh thực tế&lt;/h3&gt;
+							&lt;p className=&quot;mt-5 text-base leading-[1.9] text-ink-secondary&quot;&gt;{project.context}&lt;/p&gt;
+						&lt;/div&gt;
+						&lt;div className=&quot;border-t border-hairline pt-12&quot;&gt;
+							&lt;h3 className=&quot;font-display text-3xl text-ink&quot;&gt;Vấn đề cần giải quyết&lt;/h3&gt;
+							&lt;p className=&quot;mt-5 text-base leading-[1.9] text-ink-secondary&quot;&gt;{project.problem}&lt;/p&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline bg-paper&quot;&gt;
+				&lt;div className=&quot;shell grid gap-16 lg:grid-cols-12 lg:gap-24&quot;&gt;
+					&lt;header className=&quot;lg:col-span-4&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Cách tiếp cận&lt;/p&gt;
+						&lt;h2 className=&quot;editorial-heading mt-5&quot;&gt;
+							Từ câu hỏi đến một cấu trúc có thể thực hiện.
+						&lt;/h2&gt;
+					&lt;/header&gt;
+					&lt;ol className=&quot;border-t border-hairline lg:col-span-7 lg:col-start-6&quot;&gt;
+						{project.approach.map((step, index) =&gt; (
+							&lt;li
+								key={step}
+								className=&quot;grid grid-cols-[3rem_1fr] gap-5 border-b border-hairline py-6&quot;
+							&gt;
+								&lt;span className=&quot;font-mono text-xs text-accent&quot;&gt;
+									{String(index + 1).padStart(2, &#039;0&#039;)}
+								&lt;/span&gt;
+								&lt;p className=&quot;text-sm leading-[1.8] text-ink-secondary&quot;&gt;{step}&lt;/p&gt;
+							&lt;/li&gt;
+						))}
+					&lt;/ol&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;header className=&quot;max-w-2xl&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Sản phẩm &amp; artefact&lt;/p&gt;
+						&lt;h2 className=&quot;editorial-heading mt-5&quot;&gt;Những gì được thiết kế và bàn giao.&lt;/h2&gt;
+					&lt;/header&gt;
+					&lt;ul className=&quot;mt-12 grid border-t border-hairline sm:grid-cols-2 lg:grid-cols-3&quot;&gt;
+						{project.deliverables.map((item, index) =&gt; (
+							&lt;li
+								key={item}
+								className=&quot;border-b border-hairline py-7 text-sm text-ink-secondary sm:px-6&quot;
+							&gt;
+								&lt;span className=&quot;mr-4 font-mono text-xs text-accent&quot;&gt;
+									{String(index + 1).padStart(2, &#039;0&#039;)}
+								&lt;/span&gt;
+								{item}
+							&lt;/li&gt;
+						))}
+					&lt;/ul&gt;
+					&lt;div className=&quot;mt-16 grid gap-8 md:grid-cols-2&quot;&gt;
+						{project.gallery.map((image) =&gt; (
+							&lt;figure key={image.src}&gt;
+								&lt;div className=&quot;premium-media relative aspect-[16/10]&quot;&gt;
+									&lt;Image
+										src={image.src}
+										alt={image.alt}
+										fill
+										sizes=&quot;(max-width: 767px) calc(100vw - 48px), 44vw&quot;
+										className=&quot;object-cover grayscale-[12%]&quot;
+									/&gt;
+								&lt;/div&gt;
+								&lt;figcaption className=&quot;mt-4 text-xs leading-[1.7] text-ink-secondary&quot;&gt;
+									{image.caption}
+								&lt;/figcaption&gt;
+							&lt;/figure&gt;
+						))}
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline bg-paper&quot;&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;div className=&quot;grid gap-8 sm:grid-cols-2 lg:grid-cols-4&quot;&gt;
+						{project.impact.map((metric) =&gt; (
+							&lt;ImpactMetric
+								key={`${metric.value}-${metric.label}`}
+								value={metric.value}
+								label={metric.label}
+							/&gt;
+						))}
+					&lt;/div&gt;
+					&lt;ProofNote&gt;{project.evidenceNote}&lt;/ProofNote&gt;
+					&lt;div className=&quot;mt-14 grid gap-14 border-t border-hairline pt-12 md:grid-cols-2 md:gap-20&quot;&gt;
+						&lt;div&gt;
+							&lt;p className=&quot;editorial-label&quot;&gt;Kết quả&lt;/p&gt;
+							&lt;h2 className=&quot;mt-5 font-display text-4xl text-ink&quot;&gt;Điều dự án tạo ra&lt;/h2&gt;
+							&lt;p className=&quot;mt-6 text-base leading-[1.9] text-ink-secondary&quot;&gt;{project.outcomes}&lt;/p&gt;
+						&lt;/div&gt;
+						&lt;div&gt;
+							&lt;p className=&quot;editorial-label&quot;&gt;Điều tôi học được&lt;/p&gt;
+							&lt;h2 className=&quot;mt-5 font-display text-4xl text-ink&quot;&gt;Một ghi chú để tiếp tục&lt;/h2&gt;
+							&lt;p className=&quot;mt-6 text-base leading-[1.9] text-ink-secondary&quot;&gt;{project.lessons}&lt;/p&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+					{project.testimonial ? (
+						&lt;div className=&quot;mt-14 max-w-3xl border-t border-hairline pt-12&quot;&gt;
+							&lt;TestimonialBlock {...project.testimonial} /&gt;
+						&lt;/div&gt;
+					) : null}
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;p className=&quot;editorial-label&quot;&gt;Dự án liên quan&lt;/p&gt;
+					&lt;div className=&quot;mt-10 grid gap-10 md:grid-cols-2&quot;&gt;
+						{related.map((item) =&gt; (
+							&lt;Link
+								key={item.slug}
+								href={routes.project(item.slug)}
+								className=&quot;group border-t border-hairline pt-6&quot;
+							&gt;
+								&lt;p className=&quot;editorial-label&quot;&gt;{item.kicker}&lt;/p&gt;
+								&lt;h2 className=&quot;mt-3 font-display text-3xl text-ink transition-colors group-hover:text-accent&quot;&gt;
+									{item.title}
+								&lt;/h2&gt;
+								&lt;span className=&quot;editorial-text-link mt-5&quot;&gt;
+									Xem dự án &lt;span aria-hidden&gt;→&lt;/span&gt;
+								&lt;/span&gt;
+							&lt;/Link&gt;
+						))}
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section bg-ink text-center text-canvas&quot;&gt;
+				&lt;div className=&quot;shell mx-auto max-w-4xl&quot;&gt;
+					&lt;p className=&quot;editorial-label !text-sunlight&quot;&gt;Một vấn đề tương tự?&lt;/p&gt;
+					&lt;h2 className=&quot;mt-6 text-balance font-display text-[clamp(2.8rem,6vw,5.2rem)] leading-none&quot;&gt;
+						Bạn đang muốn phát triển một chương trình hoặc giải quyết một vấn đề tương tự?
+					&lt;/h2&gt;
+					&lt;TrackedLink
+						href={`${routes.contact}?type=${project.cta.inquiryType}&amp;sourcePage=${encodeURIComponent(routes.project(project.slug))}`}
+						event=&quot;service_cta_click&quot;
+						payload={{
+							type: project.cta.inquiryType,
+							slug: project.slug,
+							sourcePage: routes.project(project.slug),
+						}}
+						className=&quot;editorial-button mt-9 border-canvas bg-canvas text-ink&quot;
+					&gt;
+						{project.cta.label} &lt;span aria-hidden&gt;→&lt;/span&gt;
+					&lt;/TrackedLink&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+		&lt;/main&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>About route</span>
+				<small>src/app/gioi-thieu/page.tsx · 224 lines</small>
+			</summary>
+			<p>Professional story, credentials, principles, milestones and proof-linked capabilities.</p>
+			<pre><code>import type { Metadata } from &#039;next&#039;;
+import Image from &#039;next/image&#039;;
+import Link from &#039;next/link&#039;;
+
+import { ProofNote, TrustStrip } from &#039;@/components/marketing&#039;;
+import { SectionReveal } from &#039;@/components/motion&#039;;
+import { routes } from &#039;@/config/routes&#039;;
+import { absoluteUrl } from &#039;@/config/site&#039;;
+
+export const metadata: Metadata = {
+	title: &#039;Giới thiệu&#039;,
+	description: &#039;Câu chuyện nghề nghiệp, lĩnh vực chuyên môn và nguyên tắc làm việc của Duy Khánh.&#039;,
+	alternates: { canonical: absoluteUrl(routes.about) },
+};
+
+const principles = [
+	[&#039;01&#039;, &#039;Rõ ràng&#039;, &#039;Giải thích dễ tiếp cận nhưng không đơn giản hóa sai bản chất.&#039;],
+	[
+		&#039;02&#039;,
+		&#039;Có căn cứ&#039;,
+		&#039;Dùng nghiên cứu và dữ liệu để hỗ trợ quyết định, không trang trí cho kết luận.&#039;,
+	],
+	[&#039;03&#039;, &#039;Thực tế&#039;, &#039;Thiết kế giải pháp phù hợp với con người, bối cảnh và nguồn lực đang có.&#039;],
+	[
+		&#039;04&#039;,
+		&#039;Có trách nhiệm&#039;,
+		&#039;Dùng công nghệ để hỗ trợ tư duy, không thay thế quyền quyết định của con người.&#039;,
+	],
+] as const;
+
+const milestones = [
+	[&#039;Nền tảng&#039;, &#039;Học tập tại Khoa Quản trị Kinh doanh và Du lịch, Trường Đại học Hà Nội.&#039;],
+	[&#039;Mở rộng&#039;, &#039;Hoàn thành chương trình thạc sĩ Quản trị kinh doanh tại Ý.&#039;],
+	[&#039;Thực hành&#039;, &#039;Làm việc trong các lĩnh vực giáo dục, nhân sự và khởi nghiệp.&#039;],
+	[
+		&#039;Hiện tại&#039;,
+		&#039;Giảng dạy tại Trường Đại học Hà Nội; phát triển chương trình quản trị và ứng dụng AI.&#039;,
+	],
+] as const;
+
+export default function AboutPage() {
+	return (
+		&lt;main className=&quot;bg-canvas&quot;&gt;
+			&lt;section className=&quot;border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid min-h-[76svh] items-center gap-12 py-14 md:grid-cols-12 md:py-20&quot;&gt;
+					&lt;header className=&quot;md:col-span-7&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Giới thiệu&lt;/p&gt;
+						&lt;h1 className=&quot;premium-display mt-7 max-w-[10ch] text-ink&quot;&gt;
+							Tôi làm giáo dục để tiếp tục học.
+						&lt;/h1&gt;
+						&lt;p className=&quot;premium-lead mt-8 max-w-2xl&quot;&gt;
+							Tôi là Nguyễn Duy Khánh — giảng viên quản trị, người thiết kế trải nghiệm học tập và
+							cố vấn dựa trên nghiên cứu.
+						&lt;/p&gt;
+						&lt;div className=&quot;mt-8 flex flex-col gap-3 sm:flex-row&quot;&gt;
+							&lt;Link href=&quot;#cau-chuyen&quot; className=&quot;editorial-button editorial-button-dark&quot;&gt;
+								Đọc câu chuyện &lt;span aria-hidden&gt;↓&lt;/span&gt;
+							&lt;/Link&gt;
+							&lt;Link href={routes.projects} className=&quot;editorial-button&quot;&gt;
+								Xem dự án &lt;span aria-hidden&gt;→&lt;/span&gt;
+							&lt;/Link&gt;
+						&lt;/div&gt;
+					&lt;/header&gt;
+					&lt;div className=&quot;md:col-span-5&quot;&gt;
+						&lt;div className=&quot;premium-media relative aspect-[4/5]&quot;&gt;
+							&lt;Image
+								src=&quot;/brand/hero-figure.jpg&quot;
+								alt=&quot;Minh họa chân dung Duy Khánh&quot;
+								fill
+								priority
+								sizes=&quot;(max-width: 767px) calc(100vw - 48px), 40vw&quot;
+								className=&quot;object-cover grayscale-[12%]&quot;
+							/&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;bg-paper&quot;&gt;
+				&lt;div className=&quot;shell py-9&quot;&gt;
+					&lt;TrustStrip
+						items={[
+							{ label: &#039;Công việc&#039;, value: &#039;Giảng dạy quản trị&#039; },
+							{ label: &#039;Thiết kế&#039;, value: &#039;Learning experience&#039; },
+							{ label: &#039;Nghiên cứu&#039;, value: &#039;AI trong quản trị&#039; },
+							{ label: &#039;Cố vấn&#039;, value: &#039;Tổ chức và doanh nghiệp&#039; },
+						]}
+					/&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section id=&quot;cau-chuyen&quot; className=&quot;editorial-section scroll-mt-24 border-y border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid gap-12 lg:grid-cols-12 lg:gap-20&quot;&gt;
+					&lt;div className=&quot;lg:col-span-4&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Câu chuyện nghề nghiệp&lt;/p&gt;
+						&lt;h2 className=&quot;editorial-heading mt-5&quot;&gt;
+							Hiểu đúng có thể thay đổi cách chúng ta hành động.
+						&lt;/h2&gt;
+					&lt;/div&gt;
+					&lt;div className=&quot;space-y-6 text-base leading-[1.9] text-ink-secondary sm:text-lg lg:col-span-6 lg:col-start-7&quot;&gt;
+						&lt;p&gt;
+							Tôi bắt đầu từ quản trị kinh doanh, đi qua những trải nghiệm trong giáo dục, nhân sự
+							và khởi nghiệp, rồi trở lại trường đại học với vai trò giảng viên.
+						&lt;/p&gt;
+						&lt;p&gt;
+							Trong lớp học, tôi thường bắt đầu từ những lý thuyết khó tiếp cận, cấu trúc lại chúng
+							bằng ngôn ngữ rõ ràng, case gần với thực tế và hoạt động buộc người học phải tự đưa ra
+							quyết định.
+						&lt;/p&gt;
+						&lt;p&gt;
+							Khi nghiên cứu và ứng dụng AI, tôi giữ cùng một nguyên tắc: công cụ chỉ hữu ích khi
+							con người hiểu rõ mục tiêu, tiêu chuẩn, giới hạn và trách nhiệm của mình.
+						&lt;/p&gt;
+						&lt;p&gt;
+							Cách tiếp cận đó cũng dẫn dắt công việc với tổ chức: hiểu đúng bài toán trước, lựa
+							chọn phương pháp phù hợp sau và cùng chuyển giải pháp thành hoạt động có thể thực
+							hiện.
+						&lt;/p&gt;
+						&lt;ProofNote&gt;
+							Những gì chưa có đủ dữ liệu sẽ được trình bày như giả thuyết hoặc công việc đang tiếp
+							tục, không phải kết luận cuối cùng.
+						&lt;/ProofNote&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline bg-paper&quot;&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;header className=&quot;max-w-3xl&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Năng lực gắn với bằng chứng&lt;/p&gt;
+						&lt;h2 className=&quot;editorial-heading mt-5&quot;&gt;Không chỉ nói mình có thể làm gì.&lt;/h2&gt;
+					&lt;/header&gt;
+					&lt;div className=&quot;mt-14 grid gap-10 md:grid-cols-3&quot;&gt;
+						{[
+							[
+								&#039;Giảng dạy quản trị&#039;,
+								&#039;Strategic Management, HRM, Organizational Behavior và Decision Making.&#039;,
+								&#039;strategic-management-learning-experience&#039;,
+							],
+							[
+								&#039;Learning &amp; Applied AI&#039;,
+								&#039;Curriculum design, learning experience, AI literacy và responsible AI.&#039;,
+								&#039;ai50-ai-cho-moi-nguoi&#039;,
+							],
+							[
+								&#039;Business Advisory&#039;,
+								&#039;Phân tích chiến lược, quy trình, con người và trải nghiệm khách hàng.&#039;,
+								&#039;moonie-cafe-business-development&#039;,
+							],
+						].map(([title, body, slug]) =&gt; (
+							&lt;SectionReveal key={title} className=&quot;premium-card pt-7&quot;&gt;
+								&lt;h3 className=&quot;font-display text-3xl text-ink&quot;&gt;{title}&lt;/h3&gt;
+								&lt;p className=&quot;mt-4 text-sm leading-[1.8] text-ink-secondary&quot;&gt;{body}&lt;/p&gt;
+								&lt;Link href={routes.project(slug)} className=&quot;editorial-text-link mt-6&quot;&gt;
+									Xem dự án liên quan &lt;span aria-hidden&gt;→&lt;/span&gt;
+								&lt;/Link&gt;
+							&lt;/SectionReveal&gt;
+						))}
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell&quot;&gt;
+					&lt;p className=&quot;editorial-label&quot;&gt;Nguyên tắc làm việc&lt;/p&gt;
+					&lt;div className=&quot;mt-10 grid border-t border-hairline md:grid-cols-4&quot;&gt;
+						{principles.map(([number, title, body]) =&gt; (
+							&lt;article
+								key={number}
+								className=&quot;border-b border-hairline py-8 md:border-r md:px-6 md:last:border-r-0&quot;
+							&gt;
+								&lt;span className=&quot;font-mono text-xs text-accent&quot;&gt;{number}&lt;/span&gt;
+								&lt;h2 className=&quot;mt-6 font-display text-3xl text-ink&quot;&gt;{title}&lt;/h2&gt;
+								&lt;p className=&quot;mt-4 text-sm leading-[1.75] text-ink-secondary&quot;&gt;{body}&lt;/p&gt;
+							&lt;/article&gt;
+						))}
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section
+				id=&quot;dau-moc&quot;
+				className=&quot;editorial-section scroll-mt-24 border-b border-hairline bg-paper&quot;
+			&gt;
+				&lt;div className=&quot;shell grid gap-12 lg:grid-cols-12 lg:gap-20&quot;&gt;
+					&lt;header className=&quot;lg:col-span-4&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Dấu mốc chọn lọc&lt;/p&gt;
+						&lt;h2 className=&quot;editorial-heading mt-5&quot;&gt;Một hành trình vẫn đang mở.&lt;/h2&gt;
+					&lt;/header&gt;
+					&lt;ol className=&quot;border-t border-hairline lg:col-span-7 lg:col-start-6&quot;&gt;
+						{milestones.map(([label, body], index) =&gt; (
+							&lt;li
+								key={label}
+								className=&quot;grid grid-cols-[3rem_1fr] gap-5 border-b border-hairline py-6&quot;
+							&gt;
+								&lt;span className=&quot;font-mono text-xs text-accent&quot;&gt;0{index + 1}&lt;/span&gt;
+								&lt;div&gt;
+									&lt;p className=&quot;editorial-label&quot;&gt;{label}&lt;/p&gt;
+									&lt;p className=&quot;mt-3 text-sm leading-[1.75] text-ink-secondary&quot;&gt;{body}&lt;/p&gt;
+								&lt;/div&gt;
+							&lt;/li&gt;
+						))}
+					&lt;/ol&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+
+			&lt;section className=&quot;editorial-section bg-ink text-center text-canvas&quot;&gt;
+				&lt;div className=&quot;shell mx-auto max-w-4xl&quot;&gt;
+					&lt;p className=&quot;editorial-label !text-sunlight&quot;&gt;Cùng làm việc&lt;/p&gt;
+					&lt;h2 className=&quot;mt-6 text-balance font-display text-[clamp(2.8rem,6vw,5.25rem)] leading-none&quot;&gt;
+						Một cuộc trao đổi tốt bắt đầu bằng bối cảnh thật.
+					&lt;/h2&gt;
+					&lt;Link
+						href={routes.contact}
+						className=&quot;editorial-button mt-9 border-canvas bg-canvas text-ink&quot;
+					&gt;
+						Bắt đầu trao đổi &lt;span aria-hidden&gt;→&lt;/span&gt;
+					&lt;/Link&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+		&lt;/main&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Contact route</span>
+				<small>src/app/lien-he/page.tsx · 116 lines</small>
+			</summary>
+			<p>Conversion page structure, mobile anchor and form frame.</p>
+			<pre><code>import type { Metadata } from &#039;next&#039;;
+import { Suspense } from &#039;react&#039;;
+
+import { ContactFormFromUrl } from &#039;@/components/contact/ContactForm&#039;;
+import { ProofNote } from &#039;@/components/marketing&#039;;
+import { routes } from &#039;@/config/routes&#039;;
+import { absoluteUrl, siteProfile } from &#039;@/config/site&#039;;
+import { getInquiryAvailability } from &#039;@/lib/inquiryAvailability&#039;;
+
+export const metadata: Metadata = {
+	title: &#039;Bắt đầu một cuộc trao đổi&#039;,
+	description: &#039;Chia sẻ điều bạn đang muốn học, phát triển hoặc giải quyết cùng Duy Khánh.&#039;,
+	alternates: { canonical: absoluteUrl(routes.contact) },
+};
+
+const steps = [
+	[&#039;01&#039;, &#039;Bạn chia sẻ&#039;, &#039;Bối cảnh, đối tượng và kết quả mong muốn.&#039;],
+	[&#039;02&#039;, &#039;Tôi xem xét&#039;, &#039;Mức độ phù hợp, câu hỏi cần làm rõ và cách bắt đầu.&#039;],
+	[&#039;03&#039;, &#039;Hai bên thống nhất&#039;, &#039;Đầu ra, phạm vi, thời gian và trách nhiệm nếu tiếp tục.&#039;],
+] as const;
+
+export default function ContactPage() {
+	const availability = getInquiryAvailability();
+	const email = siteProfile.contactEmail?.trim();
+	const social = siteProfile.socialLinks?.filter((item) =&gt; item.href &amp;&amp; item.label) ?? [];
+	return (
+		&lt;main className=&quot;bg-canvas&quot;&gt;
+			&lt;section className=&quot;border-b border-hairline&quot;&gt;
+				&lt;div className=&quot;shell grid gap-14 py-14 lg:grid-cols-12 lg:gap-20 lg:py-24&quot;&gt;
+					&lt;header className=&quot;lg:sticky lg:top-28 lg:col-span-5 lg:self-start&quot;&gt;
+						&lt;p className=&quot;editorial-label&quot;&gt;Liên hệ&lt;/p&gt;
+						&lt;h1 className=&quot;premium-display mt-7 max-w-[9ch] text-ink&quot;&gt;
+							Bắt đầu một cuộc trao đổi.
+						&lt;/h1&gt;
+						&lt;p className=&quot;premium-lead mt-8&quot;&gt;
+							Hãy chia sẻ điều bạn đang muốn học, phát triển hoặc giải quyết. Một vài dòng rõ bối
+							cảnh sẽ giúp cuộc trao đổi đi đúng trọng tâm ngay từ đầu.
+						&lt;/p&gt;
+						&lt;a href=&quot;#contact-form&quot; className=&quot;editorial-text-link mt-6 lg:hidden&quot;&gt;
+							Điền biểu mẫu &lt;span aria-hidden&gt;↓&lt;/span&gt;
+						&lt;/a&gt;
+						&lt;div className=&quot;mt-9 hidden space-y-5 border-t border-hairline pt-7 lg:block&quot;&gt;
+							{steps.map(([number, title, body]) =&gt; (
+								&lt;div key={number} className=&quot;grid grid-cols-[2.5rem_1fr] gap-3&quot;&gt;
+									&lt;span className=&quot;font-mono text-xs text-accent&quot;&gt;{number}&lt;/span&gt;
+									&lt;div&gt;
+										&lt;p className=&quot;text-sm font-semibold text-ink&quot;&gt;{title}&lt;/p&gt;
+										&lt;p className=&quot;mt-1 text-xs leading-[1.65] text-ink-secondary&quot;&gt;{body}&lt;/p&gt;
+									&lt;/div&gt;
+								&lt;/div&gt;
+							))}
+						&lt;/div&gt;
+						&lt;ProofNote&gt;
+							Không cần chuẩn bị một đề bài hoàn hảo. Điều quan trọng nhất là bối cảnh thật và kết
+							quả bạn đang kỳ vọng.
+						&lt;/ProofNote&gt;
+						{email || social.length &gt; 0 ? (
+							&lt;div className=&quot;mt-9 border-t border-hairline pt-7&quot;&gt;
+								&lt;p className=&quot;editorial-label&quot;&gt;Kênh trực tiếp&lt;/p&gt;
+								&lt;div className=&quot;mt-4 flex flex-wrap gap-x-5 gap-y-3&quot;&gt;
+									{email ? (
+										&lt;a href={`mailto:${email}`} className=&quot;editorial-text-link&quot;&gt;
+											{email}
+										&lt;/a&gt;
+									) : null}
+									{social.map((item) =&gt; (
+										&lt;a
+											key={item.href}
+											href={item.href}
+											target=&quot;_blank&quot;
+											rel=&quot;noopener noreferrer&quot;
+											className=&quot;editorial-text-link&quot;
+										&gt;
+											{item.label}
+										&lt;/a&gt;
+									))}
+								&lt;/div&gt;
+							&lt;/div&gt;
+						) : null}
+					&lt;/header&gt;
+					&lt;section
+						id=&quot;contact-form&quot;
+						className=&quot;scroll-mt-24 lg:col-span-6 lg:col-start-7&quot;
+						aria-label=&quot;Biểu mẫu liên hệ&quot;
+					&gt;
+						&lt;div className=&quot;border border-hairline bg-paper p-5 shadow-[0_28px_80px_rgb(53_43_27_/_0.08)] sm:p-8 lg:p-10&quot;&gt;
+							&lt;div className=&quot;mb-8&quot;&gt;
+								&lt;p className=&quot;editorial-label&quot;&gt;Thông tin trao đổi&lt;/p&gt;
+								&lt;h2 className=&quot;mt-4 font-display text-3xl text-ink sm:text-4xl&quot;&gt;
+									Hãy để lại vài dòng.
+								&lt;/h2&gt;
+								&lt;p className=&quot;mt-3 text-sm leading-[1.7] text-ink-secondary&quot;&gt;
+									Các trường bắt buộc giúp tôi có đủ bối cảnh để phản hồi hữu ích.
+								&lt;/p&gt;
+							&lt;/div&gt;
+							&lt;Suspense
+								fallback={
+									&lt;div
+										className=&quot;h-80 animate-pulse bg-canvas&quot;
+										aria-label=&quot;Đang chuẩn bị biểu mẫu&quot;
+									/&gt;
+								}
+							&gt;
+								&lt;ContactFormFromUrl
+									formEnabled={availability.enabled}
+									disabledReason={availability.disabledReason}
+								/&gt;
+							&lt;/Suspense&gt;
+						&lt;/div&gt;
+					&lt;/section&gt;
+				&lt;/div&gt;
+			&lt;/section&gt;
+		&lt;/main&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Navbar</span>
+				<small>src/components/site/Navbar.tsx · 186 lines</small>
+			</summary>
+			<p>Desktop CTA, compact scroll state, mobile full-screen menu and focus management.</p>
+			<pre><code>&#039;use client&#039;;
+
+import Link from &#039;next/link&#039;;
+import { usePathname } from &#039;next/navigation&#039;;
+import { useCallback, useEffect, useId, useRef, useState } from &#039;react&#039;;
+
+import { getDesktopNavLinks, getMobileNavLinks } from &#039;@/config/navigation&#039;;
+import { routes } from &#039;@/config/routes&#039;;
+import { SITE_NAME, siteProfile } from &#039;@/config/site&#039;;
+import ContactLink from &#039;@/components/contact/ContactLink&#039;;
+
+const INTERNAL_PREFIXES = [
+	&#039;/admin&#039;,
+	&#039;/m/&#039;,
+	&#039;/messages&#039;,
+	&#039;/vocabulary&#039;,
+	&#039;/tai-khoan&#039;,
+	&#039;/dang-nhap&#039;,
+	&#039;/hoc/&#039;,
+];
+
+export default function Navbar() {
+	const pathname = usePathname();
+	const [mobileOpen, setMobileOpen] = useState(false);
+	const [scrolled, setScrolled] = useState(false);
+	const panelRef = useRef&lt;HTMLDivElement&gt;(null);
+	const menuButtonRef = useRef&lt;HTMLButtonElement&gt;(null);
+	const menuId = useId();
+	const desktopLinks = getDesktopNavLinks();
+	const mobileLinks = getMobileNavLinks();
+	const hidden = INTERNAL_PREFIXES.some((prefix) =&gt; pathname.startsWith(prefix));
+
+	useEffect(() =&gt; {
+		const onScroll = () =&gt; setScrolled(window.scrollY &gt; 12);
+		onScroll();
+		window.addEventListener(&#039;scroll&#039;, onScroll, { passive: true });
+		return () =&gt; window.removeEventListener(&#039;scroll&#039;, onScroll);
+	}, []);
+
+	const closeMobile = useCallback(() =&gt; {
+		setMobileOpen(false);
+		queueMicrotask(() =&gt; menuButtonRef.current?.focus());
+	}, []);
+
+	useEffect(() =&gt; {
+		if (!mobileOpen) return;
+		const panel = panelRef.current;
+		panel?.querySelector&lt;HTMLElement&gt;(&#039;a, button&#039;)?.focus();
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = &#039;hidden&#039;;
+
+		function onKey(event: KeyboardEvent) {
+			if (event.key === &#039;Escape&#039;) closeMobile();
+			if (event.key !== &#039;Tab&#039; || !panel) return;
+			const nodes = panel.querySelectorAll&lt;HTMLElement&gt;(&#039;a[href], button:not([disabled])&#039;);
+			if (!nodes.length) return;
+			const first = nodes[0];
+			const last = nodes[nodes.length - 1];
+			if (event.shiftKey &amp;&amp; document.activeElement === first) {
+				event.preventDefault();
+				last.focus();
+			}
+			if (!event.shiftKey &amp;&amp; document.activeElement === last) {
+				event.preventDefault();
+				first.focus();
+			}
+		}
+
+		document.addEventListener(&#039;keydown&#039;, onKey);
+		return () =&gt; {
+			document.removeEventListener(&#039;keydown&#039;, onKey);
+			document.body.style.overflow = previousOverflow;
+		};
+	}, [mobileOpen, closeMobile]);
+
+	if (hidden) return null;
+
+	function isActive(href: string) {
+		return pathname === href || (href !== routes.home &amp;&amp; pathname.startsWith(`${href}/`));
+	}
+
+	return (
+		&lt;header
+			className={`fixed inset-x-0 top-0 z-50 border-b transition-[height,background-color,border-color] duration-300 ${scrolled ? &#039;h-16 lg:h-[4.5rem]&#039; : &#039;h-[var(--header-height)]&#039;} ${scrolled || mobileOpen ? &#039;border-hairline bg-canvas/95 backdrop-blur-md&#039; : &#039;border-transparent bg-canvas/85 backdrop-blur-sm&#039;}`}
+		&gt;
+			&lt;div className=&quot;shell flex h-full items-center justify-between&quot;&gt;
+				&lt;Link
+					href={routes.home}
+					aria-label={`${SITE_NAME} — trang chủ`}
+					className=&quot;font-display text-xl font-medium tracking-[0.03em] text-ink sm:text-2xl&quot;
+				&gt;
+					{SITE_NAME}
+				&lt;/Link&gt;
+				&lt;div className=&quot;hidden items-center gap-7 lg:flex&quot;&gt;
+					&lt;nav className=&quot;flex items-center gap-7&quot; aria-label=&quot;Chính&quot;&gt;
+						{desktopLinks.map((link) =&gt; (
+							&lt;Link
+								key={link.href}
+								href={link.href}
+								aria-current={isActive(link.href) ? &#039;page&#039; : undefined}
+								className={`relative py-3 text-xs font-medium tracking-[0.06em] transition-colors ${isActive(link.href) ? &#039;text-ink after:absolute after:inset-x-0 after:bottom-1 after:h-px after:bg-accent&#039; : &#039;text-ink-secondary hover:text-accent&#039;}`}
+							&gt;
+								{link.label}
+							&lt;/Link&gt;
+						))}
+					&lt;/nav&gt;
+					&lt;ContactLink
+						href={routes.contact}
+						className=&quot;inline-flex min-h-11 items-center border border-ink bg-ink px-5 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-canvas transition-colors hover:border-accent hover:bg-accent&quot;
+					&gt;
+						Bắt đầu trao đổi
+					&lt;/ContactLink&gt;
+				&lt;/div&gt;
+				&lt;button
+					ref={menuButtonRef}
+					type=&quot;button&quot;
+					onClick={() =&gt; setMobileOpen(true)}
+					className=&quot;min-h-11 min-w-11 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-ink lg:hidden&quot;
+					aria-label=&quot;Mở menu&quot;
+					aria-expanded={mobileOpen}
+					aria-controls={menuId}
+				&gt;
+					Menu
+				&lt;/button&gt;
+			&lt;/div&gt;
+
+			{mobileOpen ? (
+				&lt;div
+					id={menuId}
+					ref={panelRef}
+					role=&quot;dialog&quot;
+					aria-modal=&quot;true&quot;
+					aria-label=&quot;Menu điều hướng&quot;
+					className=&quot;fixed inset-0 z-50 flex min-h-svh flex-col bg-canvas px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5 lg:hidden&quot;
+				&gt;
+					&lt;div className=&quot;flex h-[var(--header-height)] items-center justify-between border-b border-hairline&quot;&gt;
+						&lt;Link
+							href={routes.home}
+							onClick={closeMobile}
+							className=&quot;font-display text-2xl text-ink&quot;
+						&gt;
+							{SITE_NAME}
+						&lt;/Link&gt;
+						&lt;button
+							type=&quot;button&quot;
+							onClick={closeMobile}
+							className=&quot;min-h-11 min-w-11 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-ink&quot;
+						&gt;
+							Đóng
+						&lt;/button&gt;
+					&lt;/div&gt;
+					&lt;nav className=&quot;flex flex-1 flex-col justify-center&quot; aria-label=&quot;Mobile&quot;&gt;
+						{[
+							{ href: routes.home, label: &#039;Trang chủ&#039; },
+							...mobileLinks.filter((link) =&gt; link.href !== routes.contact),
+						].map((link, index) =&gt; (
+							&lt;Link
+								key={link.href}
+								href={link.href}
+								onClick={closeMobile}
+								aria-current={isActive(link.href) ? &#039;page&#039; : undefined}
+								className={`group flex min-h-16 items-center justify-between border-b border-hairline py-4 font-display text-[clamp(2.25rem,10vw,4.25rem)] font-normal leading-none transition-colors ${isActive(link.href) ? &#039;text-accent&#039; : &#039;text-ink hover:text-accent&#039;}`}
+							&gt;
+								&lt;span&gt;{link.label}&lt;/span&gt;
+								&lt;span className=&quot;font-mono text-xs text-accent&quot;&gt;0{index + 1}&lt;/span&gt;
+							&lt;/Link&gt;
+						))}
+					&lt;/nav&gt;
+					&lt;div className=&quot;border-t border-hairline pt-5&quot;&gt;
+						&lt;ContactLink
+							href={routes.contact}
+							onClick={closeMobile}
+							className=&quot;editorial-button editorial-button-dark w-full&quot;
+						&gt;
+							Bắt đầu trao đổi &lt;span aria-hidden&gt;→&lt;/span&gt;
+						&lt;/ContactLink&gt;
+						&lt;p className=&quot;mt-4 text-xs leading-relaxed text-ink-secondary&quot;&gt;
+							{siteProfile.shortBio}
+						&lt;/p&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			) : null}
+		&lt;/header&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Contact form</span>
+				<small>src/components/contact/ContactForm.tsx · 473 lines</small>
+			</summary>
+			<p>Fields, validation, loading, success, error states and inquiry API payload.</p>
+			<pre><code>&#039;use client&#039;;
+
+import Link from &#039;next/link&#039;;
+import { useSearchParams } from &#039;next/navigation&#039;;
+import { useSession } from &#039;next-auth/react&#039;;
+import { useEffect, useId, useMemo, useRef, useState } from &#039;react&#039;;
+
+import { routes } from &#039;@/config/routes&#039;;
+import { PUBLIC_INQUIRY_TYPE_OPTIONS, type InquiryType } from &#039;@/features/inquiries/constants&#039;;
+import { trackEvent } from &#039;@/lib/analytics&#039;;
+import {
+	contactContextFromSearchParams,
+	mergeContactContext,
+	normalizeInquiryType,
+	type ContactContext,
+	type ContactContextInput,
+} from &#039;./ContactContext&#039;;
+
+type FormState = {
+	name: string;
+	email: string;
+	organization: string;
+	inquiryType: InquiryType;
+	context: string;
+	timeframe: string;
+	agreedPrivacy: boolean;
+	website: string;
+};
+
+const DEFAULT_CONTACT_CONTEXT: ContactContext = {
+	inquiryType: &#039;training&#039;,
+	sourcePage: routes.contact,
+};
+
+function emptyForm(type: InquiryType): FormState {
+	return {
+		name: &#039;&#039;,
+		email: &#039;&#039;,
+		organization: &#039;&#039;,
+		inquiryType: type,
+		context: &#039;&#039;,
+		timeframe: &#039;&#039;,
+		agreedPrivacy: false,
+		website: &#039;&#039;,
+	};
+}
+
+function isValidEmail(value: string): boolean {
+	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+type ContactFormProps = {
+	formEnabled: boolean;
+	disabledReason?: string;
+	contactContext?: ContactContextInput;
+	resetKey?: number;
+	onDirtyChange?: (dirty: boolean) =&gt; void;
+	onSuccess?: () =&gt; void;
+	showHomeLink?: boolean;
+};
+
+export default function ContactForm({
+	formEnabled,
+	disabledReason,
+	contactContext,
+	resetKey = 0,
+	onDirtyChange,
+	onSuccess,
+	showHomeLink = true,
+}: ContactFormProps) {
+	const { data: session, status: sessionStatus } = useSession();
+	const resolvedContext = useMemo(
+		() =&gt; mergeContactContext(DEFAULT_CONTACT_CONTEXT, contactContext),
+		[contactContext],
+	);
+	const initialType = normalizeInquiryType(resolvedContext.inquiryType);
+	const idPrefix = useId();
+	const ids = {
+		name: `${idPrefix}-name`,
+		email: `${idPrefix}-email`,
+		emailHelp: `${idPrefix}-email-help`,
+		organization: `${idPrefix}-organization`,
+		inquiryType: `${idPrefix}-inquiry-type`,
+		context: `${idPrefix}-context`,
+		timeframe: `${idPrefix}-timeframe`,
+		errorSummary: `${idPrefix}-error-summary`,
+		privacyError: `${idPrefix}-privacy-error`,
+	};
+
+	const [form, setForm] = useState&lt;FormState&gt;(() =&gt; emptyForm(initialType));
+	const [fieldErrors, setFieldErrors] = useState&lt;Record&lt;string, string&gt;&gt;({});
+	const [errorSummary, setErrorSummary] = useState&lt;string | null&gt;(null);
+	const [success, setSuccess] = useState(false);
+	const [pending, setPending] = useState(false);
+	const previousAccountEmail = useRef(&#039;&#039;);
+	const formRef = useRef&lt;HTMLFormElement&gt;(null);
+
+	const isAccount = sessionStatus === &#039;authenticated&#039;;
+	const accountEmail = session?.user?.email?.trim() || &#039;&#039;;
+	const accountName = session?.user?.name?.trim() || &#039;&#039;;
+
+	useEffect(() =&gt; {
+		trackEvent(&#039;contact_form_start&#039;, {
+			type: initialType,
+			sourcePage: resolvedContext.sourcePage,
+		});
+	}, [initialType, resolvedContext.sourcePage]);
+
+	useEffect(() =&gt; {
+		setForm(emptyForm(initialType));
+		setFieldErrors({});
+		setErrorSummary(null);
+		setSuccess(false);
+		setPending(false);
+		onDirtyChange?.(false);
+	}, [resetKey, initialType, onDirtyChange]);
+
+	useEffect(() =&gt; {
+		if (isAccount) {
+			previousAccountEmail.current = accountEmail;
+			setForm((current) =&gt; ({
+				...current,
+				name: current.name || accountName,
+				email: accountEmail,
+			}));
+			return;
+		}
+
+		if (sessionStatus === &#039;unauthenticated&#039; &amp;&amp; previousAccountEmail.current) {
+			const staleEmail = previousAccountEmail.current;
+			previousAccountEmail.current = &#039;&#039;;
+			setForm((current) =&gt; ({
+				...current,
+				email: current.email === staleEmail ? &#039;&#039; : current.email,
+			}));
+		}
+	}, [accountEmail, accountName, isAccount, resetKey, sessionStatus]);
+
+	function update&lt;K extends keyof FormState&gt;(key: K, value: FormState[K]) {
+		setForm((current) =&gt; ({ ...current, [key]: value }));
+		setFieldErrors((current) =&gt; {
+			if (!current[key]) return current;
+			const next = { ...current };
+			delete next[key];
+			return next;
+		});
+		setErrorSummary(null);
+		onDirtyChange?.(true);
+	}
+
+	function validate(): Record&lt;string, string&gt; {
+		const errors: Record&lt;string, string&gt; = {};
+		if (!form.name.trim()) errors.name = &#039;Vui lòng cho biết họ tên của bạn.&#039;;
+
+		if (isAccount &amp;&amp; !accountEmail) {
+			errors.email = &#039;Tài khoản của bạn chưa có email để nhận phản hồi.&#039;;
+		} else if (!form.email.trim()) {
+			errors.email = &#039;Vui lòng nhập email để tôi có thể phản hồi.&#039;;
+		} else if (!isValidEmail(form.email.trim())) {
+			errors.email = &#039;Vui lòng nhập email hợp lệ để tôi có thể phản hồi.&#039;;
+		}
+
+		if (!form.context.trim()) {
+			errors.context = &#039;Vui lòng chia sẻ vài dòng về điều bạn muốn trao đổi.&#039;;
+		}
+		if (!form.agreedPrivacy) {
+			errors.agreedPrivacy = &#039;Vui lòng đồng ý với chính sách bảo mật trước khi gửi.&#039;;
+		}
+		return errors;
+	}
+
+	async function onSubmit(event: React.FormEvent) {
+		event.preventDefault();
+		if (!formEnabled || pending || sessionStatus === &#039;loading&#039;) return;
+
+		setFieldErrors({});
+		setErrorSummary(null);
+		const validationErrors = validate();
+		if (Object.keys(validationErrors).length &gt; 0) {
+			setFieldErrors(validationErrors);
+			setErrorSummary(&#039;Vui lòng kiểm tra lại những thông tin được đánh dấu.&#039;);
+			trackEvent(&#039;contact_form_error&#039;, {
+				type: form.inquiryType,
+				sourcePage: resolvedContext.sourcePage,
+			});
+			requestAnimationFrame(() =&gt;
+				formRef.current?.querySelector&lt;HTMLElement&gt;(&#039;[aria-invalid=&quot;true&quot;]&#039;)?.focus(),
+			);
+			return;
+		}
+
+		setPending(true);
+		try {
+			trackEvent(&#039;contact_form_submit&#039;, {
+				type: form.inquiryType,
+				sourcePage: resolvedContext.sourcePage,
+			});
+			const response = await fetch(&#039;/api/inquiries&#039;, {
+				method: &#039;POST&#039;,
+				headers: { &#039;Content-Type&#039;: &#039;application/json&#039; },
+				body: JSON.stringify({
+					name: form.name.trim(),
+					email: isAccount ? accountEmail : form.email.trim(),
+					inquiryType: form.inquiryType,
+					organization: form.organization.trim() || undefined,
+					context: form.context.trim(),
+					timeframe: form.timeframe.trim() || undefined,
+					sourcePage: resolvedContext.sourcePage,
+					sourceCourseSlug: resolvedContext.sourceCourseSlug,
+					campaignParams: resolvedContext.campaignParams,
+					agreedPrivacy: form.agreedPrivacy,
+					website: form.website,
+				}),
+			});
+			const json = (await response.json()) as {
+				ok: boolean;
+				error?: string;
+				fields?: Record&lt;string, string&gt;;
+			};
+
+			if (!response.ok || !json.ok) {
+				setErrorSummary(
+					response.status &gt;= 500
+						? &#039;Lời nhắn chưa được gửi. Vui lòng thử lại hoặc liên hệ trực tiếp qua email.&#039;
+						: json.error ||
+								&#039;Lời nhắn chưa được gửi. Vui lòng thử lại hoặc liên hệ trực tiếp qua email.&#039;,
+				);
+				if (json.fields) setFieldErrors(json.fields);
+				return;
+			}
+
+			setSuccess(true);
+			onSuccess?.();
+		} catch {
+			setErrorSummary(&#039;Lời nhắn chưa được gửi. Vui lòng thử lại hoặc liên hệ trực tiếp qua email.&#039;);
+		} finally {
+			setPending(false);
+		}
+	}
+
+	if (success) {
+		return (
+			&lt;div className=&quot;border border-success/35 bg-success-subtle p-6 sm:p-8&quot; role=&quot;status&quot;&gt;
+				&lt;p className=&quot;editorial-label !text-success&quot;&gt;Lời nhắn đã được gửi&lt;/p&gt;
+				&lt;p className=&quot;mt-4 font-display text-3xl font-medium text-ink&quot;&gt;Cảm ơn bạn đã chia sẻ.&lt;/p&gt;
+				&lt;p className=&quot;mt-3 text-sm leading-relaxed text-ink-secondary&quot;&gt;
+					Tôi sẽ đọc bối cảnh, xem xét mức độ phù hợp và phản hồi qua email. Nếu cần thêm thông tin,
+					tôi sẽ hỏi lại trước khi đề xuất bước tiếp theo.
+				&lt;/p&gt;
+				{showHomeLink ? (
+					&lt;Link
+						href={routes.home}
+						className=&quot;mt-6 inline-flex text-sm font-medium text-accent hover:underline&quot;
+					&gt;
+						← Về trang chủ
+					&lt;/Link&gt;
+				) : null}
+			&lt;/div&gt;
+		);
+	}
+
+	if (!formEnabled) {
+		return (
+			&lt;div className=&quot;border-t border-hairline py-8&quot;&gt;
+				&lt;p className=&quot;font-display text-xl font-medium text-ink&quot;&gt;Kênh nhắn tin đang tạm đóng&lt;/p&gt;
+				&lt;p className=&quot;mt-3 text-sm text-ink-secondary&quot;&gt;
+					{disabledReason || &#039;Khánh sẽ mở lại kênh liên hệ sau khi hoàn tất cấu hình.&#039;}
+				&lt;/p&gt;
+			&lt;/div&gt;
+		);
+	}
+
+	const inputClass =
+		&#039;premium-field mt-2 placeholder:text-ink-secondary/55 read-only:cursor-not-allowed read-only:bg-paper read-only:text-ink-secondary&#039;;
+	const labelClass = &#039;block text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-ink&#039;;
+
+	return (
+		&lt;form
+			ref={formRef}
+			onSubmit={onSubmit}
+			className=&quot;space-y-9&quot;
+			noValidate
+			aria-busy={pending}
+			aria-describedby={errorSummary ? ids.errorSummary : undefined}
+		&gt;
+			{errorSummary ? (
+				&lt;div
+					id={ids.errorSummary}
+					role=&quot;alert&quot;
+					className=&quot;border border-error/40 bg-error-subtle px-4 py-3 text-sm leading-[1.6] text-ink&quot;
+				&gt;
+					{errorSummary}
+				&lt;/div&gt;
+			) : null}
+
+			&lt;div className=&quot;absolute -left-[9999px] h-0 w-0 overflow-hidden&quot; aria-hidden&gt;
+				&lt;label&gt;
+					Website
+					&lt;input
+						tabIndex={-1}
+						autoComplete=&quot;off&quot;
+						value={form.website}
+						onChange={(event) =&gt; update(&#039;website&#039;, event.target.value)}
+					/&gt;
+				&lt;/label&gt;
+			&lt;/div&gt;
+
+			&lt;fieldset className=&quot;grid gap-6 border-t border-hairline pt-7 sm:grid-cols-2 sm:gap-7&quot;&gt;
+				&lt;legend className=&quot;editorial-label pr-4&quot;&gt;Thông tin phản hồi&lt;/legend&gt;
+				&lt;div&gt;
+					&lt;label htmlFor={ids.name} className={labelClass}&gt;
+						Họ và tên
+					&lt;/label&gt;
+					&lt;input
+						id={ids.name}
+						required
+						autoComplete=&quot;name&quot;
+						className={inputClass}
+						value={form.name}
+						onChange={(event) =&gt; update(&#039;name&#039;, event.target.value)}
+						aria-invalid={Boolean(fieldErrors.name)}
+						aria-describedby={fieldErrors.name ? `${ids.name}-error` : undefined}
+					/&gt;
+					{fieldErrors.name ? (
+						&lt;p id={`${ids.name}-error`} className=&quot;mt-2 text-xs text-error&quot;&gt;
+							{fieldErrors.name}
+						&lt;/p&gt;
+					) : null}
+				&lt;/div&gt;
+				&lt;div&gt;
+					&lt;label htmlFor={ids.email} className={labelClass}&gt;
+						Email nhận phản hồi
+					&lt;/label&gt;
+					&lt;input
+						id={ids.email}
+						type=&quot;email&quot;
+						required
+						readOnly={isAccount}
+						autoComplete=&quot;email&quot;
+						className={inputClass}
+						value={form.email}
+						onChange={(event) =&gt; update(&#039;email&#039;, event.target.value)}
+						aria-describedby={[ids.emailHelp, fieldErrors.email ? `${ids.email}-error` : &#039;&#039;]
+							.filter(Boolean)
+							.join(&#039; &#039;)}
+						aria-invalid={Boolean(fieldErrors.email)}
+					/&gt;
+					&lt;p id={ids.emailHelp} className=&quot;mt-1.5 text-xs leading-relaxed text-ink-secondary&quot;&gt;
+						{isAccount
+							? &#039;Tôi sẽ phản hồi vào email của tài khoản này.&#039;
+							: &#039;Vui lòng nhập email bạn thường dùng để tôi có thể liên lạc.&#039;}
+					&lt;/p&gt;
+					{fieldErrors.email ? (
+						&lt;p id={`${ids.email}-error`} className=&quot;mt-2 text-xs text-error&quot;&gt;
+							{fieldErrors.email}
+						&lt;/p&gt;
+					) : null}
+				&lt;/div&gt;
+			&lt;/fieldset&gt;
+
+			&lt;fieldset className=&quot;grid gap-6 border-t border-hairline pt-7 sm:grid-cols-2 sm:gap-7&quot;&gt;
+				&lt;legend className=&quot;editorial-label pr-4&quot;&gt;Bối cảnh trao đổi&lt;/legend&gt;
+				&lt;div&gt;
+					&lt;label htmlFor={ids.organization} className={labelClass}&gt;
+						Tổ chức{&#039; &#039;}
+						&lt;span className=&quot;normal-case tracking-normal text-ink-secondary/70&quot;&gt;
+							(không bắt buộc)
+						&lt;/span&gt;
+					&lt;/label&gt;
+					&lt;input
+						id={ids.organization}
+						autoComplete=&quot;organization&quot;
+						className={inputClass}
+						value={form.organization}
+						onChange={(event) =&gt; update(&#039;organization&#039;, event.target.value)}
+					/&gt;
+				&lt;/div&gt;
+				&lt;div&gt;
+					&lt;label htmlFor={ids.inquiryType} className={labelClass}&gt;
+						Bạn đang liên hệ về
+					&lt;/label&gt;
+					&lt;select
+						id={ids.inquiryType}
+						className={inputClass}
+						value={form.inquiryType}
+						onChange={(event) =&gt; update(&#039;inquiryType&#039;, event.target.value as InquiryType)}
+					&gt;
+						{PUBLIC_INQUIRY_TYPE_OPTIONS.map((option) =&gt; (
+							&lt;option key={option.value} value={option.value}&gt;
+								{option.label}
+							&lt;/option&gt;
+						))}
+					&lt;/select&gt;
+				&lt;/div&gt;
+			&lt;/fieldset&gt;
+
+			&lt;div className=&quot;border-t border-hairline pt-7&quot;&gt;
+				&lt;label htmlFor={ids.context} className={labelClass}&gt;
+					Bạn đang muốn giải quyết điều gì?
+				&lt;/label&gt;
+				&lt;p className=&quot;mt-1 text-sm text-ink-secondary&quot;&gt;
+					Mô tả ngắn bối cảnh, đối tượng và kết quả bạn đang mong muốn.
+				&lt;/p&gt;
+				&lt;textarea
+					id={ids.context}
+					required
+					rows={6}
+					className={`${inputClass} min-h-40 resize-y`}
+					placeholder=&quot;Mô tả ngắn bối cảnh, đối tượng và kết quả bạn đang mong muốn.&quot;
+					value={form.context}
+					onChange={(event) =&gt; update(&#039;context&#039;, event.target.value)}
+					aria-invalid={Boolean(fieldErrors.context)}
+					aria-describedby={fieldErrors.context ? `${ids.context}-error` : undefined}
+				/&gt;
+				{fieldErrors.context ? (
+					&lt;p id={`${ids.context}-error`} className=&quot;mt-2 text-xs text-error&quot;&gt;
+						{fieldErrors.context}
+					&lt;/p&gt;
+				) : null}
+			&lt;/div&gt;
+
+			&lt;div&gt;
+				&lt;label className=&quot;flex min-h-11 items-start gap-3 border-t border-hairline pt-6 text-sm leading-relaxed text-ink-secondary&quot;&gt;
+					&lt;input
+						type=&quot;checkbox&quot;
+						required
+						className=&quot;mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]&quot;
+						checked={form.agreedPrivacy}
+						onChange={(event) =&gt; update(&#039;agreedPrivacy&#039;, event.target.checked)}
+						aria-invalid={Boolean(fieldErrors.agreedPrivacy)}
+						aria-describedby={fieldErrors.agreedPrivacy ? ids.privacyError : undefined}
+					/&gt;
+					&lt;span&gt;
+						Tôi đồng ý với{&#039; &#039;}
+						&lt;Link href={routes.policyPrivacy} className=&quot;text-accent underline underline-offset-2&quot;&gt;
+							chính sách bảo mật
+						&lt;/Link&gt;
+						.
+					&lt;/span&gt;
+				&lt;/label&gt;
+				{fieldErrors.agreedPrivacy ? (
+					&lt;p id={ids.privacyError} className=&quot;mt-2 text-xs text-error&quot;&gt;
+						{fieldErrors.agreedPrivacy}
+					&lt;/p&gt;
+				) : null}
+			&lt;/div&gt;
+
+			&lt;button
+				type=&quot;submit&quot;
+				disabled={pending || sessionStatus === &#039;loading&#039;}
+				className=&quot;group inline-flex min-h-13 w-full items-center justify-center border border-ink bg-ink px-6 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-paper transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto&quot;
+			&gt;
+				{pending ? &#039;Đang gửi…&#039; : &#039;Gửi lời nhắn&#039;}
+				{!pending &amp;&amp; sessionStatus !== &#039;loading&#039; ? (
+					&lt;span className=&quot;ml-3 transition-transform group-hover:translate-x-1&quot; aria-hidden&gt;
+						→
+					&lt;/span&gt;
+				) : null}
+			&lt;/button&gt;
+		&lt;/form&gt;
+	);
+}
+
+export function ContactFormFromUrl(props: Omit&lt;ContactFormProps, &#039;contactContext&#039;&gt;) {
+	const searchParams = useSearchParams();
+	const contactContext = useMemo(
+		() =&gt; contactContextFromSearchParams(searchParams, routes.contact),
+		[searchParams],
+	);
+
+	return &lt;ContactForm {...props} contactContext={contactContext} /&gt;;
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Project grid</span>
+				<small>src/features/portfolio/components/ProjectGrid.tsx · 88 lines</small>
+			</summary>
+			<p>Filter UI, project cards, image treatment and tracking.</p>
+			<pre><code>&#039;use client&#039;;
+
+import Link from &#039;next/link&#039;;
+import Image from &#039;next/image&#039;;
+import { useState } from &#039;react&#039;;
+
+import { routes } from &#039;@/config/routes&#039;;
+import { trackEvent } from &#039;@/lib/analytics&#039;;
+import { projectCategories, type Project } from &#039;../data/projects&#039;;
+
+export default function ProjectGrid({ projects }: { projects: Project[] }) {
+	const [active, setActive] = useState&lt;(typeof projectCategories)[number]&gt;(&#039;Tất cả&#039;);
+	const visible =
+		active === &#039;Tất cả&#039; ? projects : projects.filter((project) =&gt; project.category === active);
+	function selectCategory(category: (typeof projectCategories)[number]) {
+		setActive(category);
+		trackEvent(&#039;project_filter_select&#039;, { label: category, sourcePage: routes.projects });
+	}
+
+	return (
+		&lt;&gt;
+			&lt;div className=&quot;relative mt-10 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-12 after:bg-gradient-to-l after:from-canvas after:to-transparent md:after:hidden&quot;&gt;
+				&lt;div
+					className=&quot;no-scrollbar flex gap-2 overflow-x-auto border-b border-hairline pb-4 pr-10&quot;
+					aria-label=&quot;Lọc dự án&quot;
+				&gt;
+					{projectCategories.map((category) =&gt; (
+						&lt;button
+							key={category}
+							type=&quot;button&quot;
+							onClick={() =&gt; selectCategory(category)}
+							aria-pressed={active === category}
+							className={`min-h-11 shrink-0 border px-4 text-[0.65rem] font-semibold uppercase tracking-[0.12em] transition-colors ${active === category ? &#039;border-accent bg-accent text-white&#039; : &#039;border-hairline text-ink-secondary hover:border-ink hover:text-ink&#039;}`}
+						&gt;
+							{category}
+						&lt;/button&gt;
+					))}
+				&lt;/div&gt;
+			&lt;/div&gt;
+
+			&lt;div className=&quot;mt-16 grid gap-x-10 gap-y-24 md:grid-cols-2&quot; aria-live=&quot;polite&quot;&gt;
+				{visible.map((project, index) =&gt; (
+					&lt;Link
+						key={project.slug}
+						href={routes.project(project.slug)}
+						className={`group block ${index % 2 === 1 ? &#039;md:mt-24&#039; : &#039;&#039;}`}
+					&gt;
+						&lt;div className={`premium-media ${index % 3 === 1 ? &#039;aspect-[4/5]&#039; : &#039;aspect-[4/3]&#039;}`}&gt;
+							&lt;Image
+								src={project.coverImage}
+								alt=&quot;&quot;
+								fill
+								sizes=&quot;(max-width: 767px) calc(100vw - 48px), 44vw&quot;
+								className={`object-cover grayscale-[20%] transition duration-1000 group-hover:scale-[1.025] group-hover:grayscale-0 ${project.coverImage.includes(&#039;learning-as-becoming-desktop&#039;) ? &#039;object-left&#039; : &#039;object-center&#039;}`}
+							/&gt;
+						&lt;/div&gt;
+						&lt;div className=&quot;mt-6 border-t border-hairline pt-5&quot;&gt;
+							&lt;div className=&quot;flex items-center justify-between gap-4&quot;&gt;
+								&lt;p className=&quot;editorial-label&quot;&gt;
+									{project.kicker} · {project.year}
+								&lt;/p&gt;
+								&lt;span
+									className=&quot;text-accent transition-transform group-hover:translate-x-1&quot;
+									aria-hidden
+								&gt;
+									→
+								&lt;/span&gt;
+							&lt;/div&gt;
+							&lt;h2 className=&quot;mt-4 text-balance font-display text-[clamp(2rem,4vw,3.5rem)] font-normal leading-[1.02] tracking-[-0.025em] text-ink transition-colors group-hover:text-accent&quot;&gt;
+								{project.title}
+							&lt;/h2&gt;
+							&lt;p className=&quot;mt-5 max-w-xl text-sm leading-[1.8] text-ink-secondary&quot;&gt;
+								{project.summary}
+							&lt;/p&gt;
+							&lt;p className=&quot;mt-5 border-l border-accent pl-4 text-xs leading-[1.7] text-ink-secondary&quot;&gt;
+								{project.impact[0]?.value} {project.impact[0]?.label}
+							&lt;/p&gt;
+							&lt;span className=&quot;editorial-text-link mt-6&quot;&gt;
+								Xem dự án &lt;span aria-hidden&gt;→&lt;/span&gt;
+							&lt;/span&gt;
+						&lt;/div&gt;
+					&lt;/Link&gt;
+				))}
+			&lt;/div&gt;
+		&lt;/&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Service disclosure</span>
+				<small>src/components/marketing/ServiceDisclosure.tsx · 37 lines</small>
+			</summary>
+			<p>Mobile progressive disclosure and reduced-motion-compatible interaction.</p>
+			<pre><code>&#039;use client&#039;;
+
+import type { ReactNode } from &#039;react&#039;;
+
+import { trackEvent } from &#039;@/lib/analytics&#039;;
+
+export function ServiceDisclosure({
+	serviceId,
+	title,
+	defaultOpen = false,
+	children,
+}: {
+	serviceId: string;
+	title: string;
+	defaultOpen?: boolean;
+	children: ReactNode;
+}) {
+	return (
+		&lt;details
+			className=&quot;service-disclosure&quot;
+			open={defaultOpen}
+			onToggle={(event) =&gt; {
+				if (event.currentTarget.open)
+					trackEvent(&#039;service_detail_open&#039;, { label: serviceId, sourcePage: &#039;/dich-vu&#039; });
+			}}
+		&gt;
+			&lt;summary className=&quot;flex items-center justify-between gap-5 border-y border-hairline text-xs font-semibold uppercase tracking-[0.14em] text-ink&quot;&gt;
+				&lt;span&gt;Xem chi tiết {title}&lt;/span&gt;
+				&lt;span className=&quot;service-disclosure__icon text-xl font-light text-accent&quot; aria-hidden&gt;
+					+
+				&lt;/span&gt;
+			&lt;/summary&gt;
+			{children}
+		&lt;/details&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Premium primitives</span>
+				<small>src/components/marketing/PremiumPrimitives.tsx · 33 lines</small>
+			</summary>
+			<p>Trust strip, metrics and proof note primitives.</p>
+			<pre><code>import type { ReactNode } from &#039;react&#039;;
+
+export function TrustStrip({ items }: { items: ReadonlyArray&lt;{ label: string; value: string }&gt; }) {
+	return (
+		&lt;div className=&quot;trust-strip&quot; aria-label=&quot;Thông tin chuyên môn đã xác minh&quot;&gt;
+			{items.map((item) =&gt; (
+				&lt;div key={item.label} className=&quot;trust-strip__item&quot;&gt;
+					&lt;p className=&quot;editorial-label&quot;&gt;{item.label}&lt;/p&gt;
+					&lt;p className=&quot;mt-2 text-sm leading-[1.55] text-ink&quot;&gt;{item.value}&lt;/p&gt;
+				&lt;/div&gt;
+			))}
+		&lt;/div&gt;
+	);
+}
+
+export function ImpactMetric({ value, label }: { value: string; label: string }) {
+	return (
+		&lt;div className=&quot;impact-metric&quot;&gt;
+			&lt;p className=&quot;font-display text-[clamp(2.6rem,5vw,4.5rem)] leading-none text-ink&quot;&gt;{value}&lt;/p&gt;
+			&lt;p className=&quot;mt-3 max-w-52 text-xs leading-[1.65] text-ink-secondary&quot;&gt;{label}&lt;/p&gt;
+		&lt;/div&gt;
+	);
+}
+
+export function ProofNote({ children }: { children: ReactNode }) {
+	return (
+		&lt;p className=&quot;proof-note&quot;&gt;
+			&lt;span className=&quot;proof-note__mark&quot; aria-hidden /&gt;
+			{children}
+		&lt;/p&gt;
+	);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Analytics events</span>
+				<small>src/lib/analytics.ts · 67 lines</small>
+			</summary>
+			<p>CTA, service, project, form and disclosure event contracts.</p>
+			<pre><code>/**
+ * Umami analytics helper — no-op when env is missing.
+ * Never send PII, inquiry text, or personal learning data.
+ */
+
+export const ANALYTICS_EVENTS = [
+	&#039;service_view&#039;,
+	&#039;service_cta_click&#039;,
+	&#039;contact_form_start&#039;,
+	&#039;contact_form_submit&#039;,
+	&#039;resource_open&#039;,
+	&#039;resource_download&#039;,
+	&#039;article_complete&#039;,
+	&#039;case_study_view&#039;,
+	&#039;course_interest&#039;,
+	&#039;login_start&#039;,
+	&#039;home_hero_manifesto_click&#039;,
+	&#039;home_featured_article_click&#039;,
+	&#039;home_learning_experience_click&#039;,
+	&#039;home_project_click&#039;,
+	&#039;home_closing_connect_click&#039;,
+	&#039;home_primary_cta_click&#039;,
+	&#039;home_secondary_cta_click&#039;,
+	&#039;service_select&#039;,
+	&#039;service_detail_open&#039;,
+	&#039;project_filter_select&#039;,
+	&#039;contact_form_error&#039;,
+] as const;
+
+export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
+
+export type AnalyticsPayload = {
+	slug?: string;
+	type?: string;
+	sourcePage?: string;
+	label?: string;
+};
+
+declare global {
+	interface Window {
+		umami?: {
+			track: (event: string, data?: Record&lt;string, string&gt;) =&gt; void;
+		};
+	}
+}
+
+export function isAnalyticsEvent(value: string): value is AnalyticsEvent {
+	return (ANALYTICS_EVENTS as readonly string[]).includes(value);
+}
+
+export function trackEvent(event: AnalyticsEvent, payload: AnalyticsPayload = {}): void {
+	if (typeof window === &#039;undefined&#039;) return;
+	if (!isAnalyticsEvent(event)) return;
+
+	const data: Record&lt;string, string&gt; = {};
+	if (payload.slug) data.slug = payload.slug;
+	if (payload.type) data.type = payload.type;
+	if (payload.sourcePage) data.sourcePage = payload.sourcePage;
+	if (payload.label) data.label = payload.label;
+
+	try {
+		window.umami?.track(event, Object.keys(data).length ? data : undefined);
+	} catch {
+		// analytics must never break UX
+	}
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Project data model</span>
+				<small>src/features/portfolio/data/projects.ts · 282 lines</small>
+			</summary>
+			<p>Project content, artefacts, impact, evidence notes, testimonials and CTAs.</p>
+			<pre><code>export const projectCategories = [
+	&#039;Tất cả&#039;,
+	&#039;Giảng dạy quản trị&#039;,
+	&#039;Ứng dụng AI&#039;,
+	&#039;Tư vấn doanh nghiệp&#039;,
+	&#039;Nghiên cứu&#039;,
+] as const;
+
+export type ProjectCategory = Exclude&lt;(typeof projectCategories)[number], &#039;Tất cả&#039;&gt;;
+
+export type Project = {
+	title: string;
+	slug: string;
+	category: ProjectCategory;
+	kicker: string;
+	year: string;
+	status: string;
+	summary: string;
+	coverImage: string;
+	gallery: Array&lt;{ src: string; alt: string; caption: string }&gt;;
+	role: string;
+	audience: string;
+	scope: string;
+	context: string;
+	problem: string;
+	approach: string[];
+	deliverables: string[];
+	outcomes: string;
+	impact: Array&lt;{ value: string; label: string }&gt;;
+	evidenceNote: string;
+	testimonial?: {
+		quote: string;
+		personName?: string;
+		role?: string;
+		organization?: string;
+		anonymous?: boolean;
+	};
+	cta: { label: string; inquiryType: string };
+	lessons: string;
+	relatedProjects: string[];
+	featured: boolean;
+};
+
+export const projects: Project[] = [
+	{
+		title: &#039;AI50 — AI cho mọi người&#039;,
+		slug: &#039;ai50-ai-cho-moi-nguoi&#039;,
+		category: &#039;Ứng dụng AI&#039;,
+		kicker: &#039;Course Design · Applied AI&#039;,
+		year: &#039;2026&#039;,
+		status: &#039;Đang phát triển&#039;,
+		summary:
+			&#039;Một chương trình giúp người mới hiểu AI, giao việc rõ hơn, kiểm chứng đầu ra và xây dựng quy trình làm việc phù hợp.&#039;,
+		coverImage: &#039;/brand/learning-as-becoming-desktop.jpg&#039;,
+		gallery: [
+			{
+				src: &#039;/brand/hero-landscape.jpg&#039;,
+				alt: &#039;Minh họa cấu trúc học tập AI50&#039;,
+				caption:
+					&#039;Cấu trúc chương trình đang được hoàn thiện theo vòng lặp hiểu — thực hành — kiểm chứng.&#039;,
+			},
+			{
+				src: &#039;/brand/hero-journey.jpg&#039;,
+				alt: &#039;Minh họa hành trình người học trong chương trình AI50&#039;,
+				caption: &#039;Hành trình học đặt quyền quyết định và trách nhiệm của con người ở trung tâm.&#039;,
+			},
+		],
+		role: &#039;Course Designer &amp; Lecturer&#039;,
+		audience: &#039;Người mới sử dụng AI&#039;,
+		scope: &#039;Cấu trúc chương trình, học liệu, hoạt động thực hành và hệ thống kiểm chứng&#039;,
+		context:
+			&#039;AI50 được phát triển cho những người muốn đưa AI vào học tập và công việc nhưng chưa có một phương pháp đủ rõ để bắt đầu.&#039;,
+		problem:
+			&#039;Người mới thường tiếp cận AI qua các mẹo prompt rời rạc. Họ có thể tạo đầu ra nhanh nhưng khó xác định khi nào nên dùng AI, cần giao việc ra sao và phải kiểm tra điều gì.&#039;,
+		approach: [
+			&#039;Xác định những năng lực nền tảng cần có trước khi học công cụ.&#039;,
+			&#039;Cấu trúc nội dung theo một quy trình làm việc lặp lại được.&#039;,
+			&#039;Dùng bài tập gần với công việc thật để luyện cách giao việc và kiểm chứng.&#039;,
+			&#039;Đặt trách nhiệm và quyền quyết định của con người ở trung tâm.&#039;,
+		],
+		deliverables: [
+			&#039;Course structure&#039;,
+			&#039;Slide deck&#039;,
+			&#039;Practice activities&#039;,
+			&#039;Verification checklist&#039;,
+			&#039;Workflow templates&#039;,
+		],
+		outcomes:
+			&#039;Dự án đang hình thành một cấu trúc học thống nhất, giúp người mới đi từ hiểu khái niệm đến tự thiết kế cách cộng tác với AI.&#039;,
+		impact: [
+			{
+				value: &#039;5&#039;,
+				label: &#039;nhóm đầu ra: cấu trúc khóa học, slide, bài tập, checklist và workflow&#039;,
+			},
+		],
+		evidenceNote:
+			&#039;Kết quả định lượng sẽ chỉ được bổ sung sau khi chương trình có dữ liệu học tập đủ tin cậy.&#039;,
+		cta: { label: &#039;Trao đổi về đào tạo AI&#039;, inquiryType: &#039;ai&#039; },
+		lessons:
+			&#039;Dạy AI hiệu quả không bắt đầu bằng việc cung cấp thật nhiều prompt, mà bằng việc giúp người học hiểu công việc và tiêu chuẩn của chính họ.&#039;,
+		relatedProjects: [&#039;ai-in-recruitment-research&#039;, &#039;strategic-management-learning-experience&#039;],
+		featured: true,
+	},
+	{
+		title: &#039;Strategic Management Learning Experience&#039;,
+		slug: &#039;strategic-management-learning-experience&#039;,
+		category: &#039;Giảng dạy quản trị&#039;,
+		kicker: &#039;Management Education&#039;,
+		year: &#039;Hiện tại&#039;,
+		status: &#039;Đang sử dụng và tiếp tục cải tiến&#039;,
+		summary:
+			&#039;Thiết kế lại trải nghiệm học Strategic Management theo hướng trực quan, có cấu trúc và gắn với các doanh nghiệp thực tế.&#039;,
+		coverImage: &#039;/brand/hero-journey.jpg&#039;,
+		gallery: [
+			{
+				src: &#039;/brand/hero-figure.jpg&#039;,
+				alt: &#039;Minh họa người học trong trải nghiệm Strategic Management&#039;,
+				caption: &#039;Nội dung được tổ chức quanh hành trình phân tích — lựa chọn — thực thi.&#039;,
+			},
+			{
+				src: &#039;/brand/hero-landscape.jpg&#039;,
+				alt: &#039;Minh họa bản đồ liên kết các quyết định chiến lược&#039;,
+				caption: &#039;Case doanh nghiệp nối dữ liệu, lựa chọn và hệ quả thay vì chỉ minh họa mô hình.&#039;,
+			},
+		],
+		role: &#039;Course Designer &amp; Lecturer&#039;,
+		audience: &#039;Sinh viên học Strategic Management&#039;,
+		scope: &#039;Cấu trúc bài học, slide, case và hoạt động học tập&#039;,
+		context:
+			&#039;Học phần có nhiều mô hình phân tích và các khái niệm liên kết chặt chẽ, nhưng thường được trình bày như những công cụ tách rời.&#039;,
+		problem:
+			&#039;Nếu chỉ đi lần lượt theo textbook, người học dễ nhớ tên công cụ nhưng khó hiểu mối quan hệ giữa phân tích, lựa chọn và thực thi chiến lược.&#039;,
+		approach: [
+			&#039;Rà soát mục tiêu học tập và nguồn lý thuyết cốt lõi.&#039;,
+			&#039;Xác định các khái niệm người học bắt buộc phải hiểu.&#039;,
+			&#039;Sắp xếp nội dung thành một hành trình phân tích — lựa chọn — thực thi.&#039;,
+			&#039;Dùng case doanh nghiệp để nối lý thuyết với quyết định thực tế.&#039;,
+			&#039;Thiết kế hoạt động kiểm tra mức độ hiểu và khả năng áp dụng.&#039;,
+		],
+		deliverables: [
+			&#039;Course structure&#039;,
+			&#039;Slide deck&#039;,
+			&#039;Reading materials&#039;,
+			&#039;Case studies&#039;,
+			&#039;Learning activities&#039;,
+		],
+		outcomes:
+			&#039;Dự án giúp hình thành một cấu trúc bài học thống nhất hơn và giảm sự rời rạc giữa các công cụ phân tích.&#039;,
+		impact: [
+			{ value: &#039;5&#039;, label: &#039;nhóm học liệu được thiết kế đồng bộ cho cùng một hành trình học&#039; },
+		],
+		evidenceNote:
+			&#039;Tác động được mô tả ở mức thiết kế; số liệu người học chỉ công bố khi được tổng hợp và xác minh.&#039;,
+		cta: { label: &#039;Trao đổi về học tập quản trị&#039;, inquiryType: &#039;training&#039; },
+		lessons:
+			&#039;Một case tốt không chỉ minh họa lý thuyết; nó phải buộc người học nhìn thấy mối quan hệ giữa dữ liệu, lựa chọn và hệ quả.&#039;,
+		relatedProjects: [&#039;ai50-ai-cho-moi-nguoi&#039;, &#039;moonie-cafe-business-development&#039;],
+		featured: true,
+	},
+	{
+		title: &#039;Moonie Café Business Development&#039;,
+		slug: &#039;moonie-cafe-business-development&#039;,
+		category: &#039;Tư vấn doanh nghiệp&#039;,
+		kicker: &#039;Business Advisory&#039;,
+		year: &#039;Hiện tại&#039;,
+		status: &#039;Hồ sơ đang hoàn thiện&#039;,
+		summary:
+			&#039;Phân tích mô hình hoạt động, tài chính, marketing, vận hành và phát triển con người cho một doanh nghiệp dịch vụ nhỏ.&#039;,
+		coverImage: &#039;/brand/hero-landscape.jpg&#039;,
+		gallery: [
+			{
+				src: &#039;/brand/hero-journey.jpg&#039;,
+				alt: &#039;Minh họa hành trình phát triển doanh nghiệp Moonie Café&#039;,
+				caption: &#039;Phân tích đi theo dòng công việc thay vì tách rời từng chức năng.&#039;,
+			},
+			{
+				src: &#039;/brand/hero-figure.jpg&#039;,
+				alt: &#039;Minh họa vai trò con người trong cải tiến vận hành&#039;,
+				caption: &#039;Khuyến nghị được cân bằng với nguồn lực và năng lực vận hành thực tế.&#039;,
+			},
+		],
+		role: &#039;Business Advisor&#039;,
+		audience: &#039;Doanh nghiệp dịch vụ nhỏ&#039;,
+		scope: &#039;Phân tích mô hình hoạt động, vận hành, marketing và phát triển đội ngũ&#039;,
+		context:
+			&#039;Một doanh nghiệp nhỏ cần nhìn lại cách các quyết định về khách hàng, vận hành, tài chính và con người ảnh hưởng lẫn nhau.&#039;,
+		problem:
+			&#039;Các vấn đề vận hành thường được xử lý riêng lẻ, khiến giải pháp ngắn hạn ở một điểm có thể tạo thêm áp lực ở điểm khác.&#039;,
+		approach: [
+			&#039;Làm rõ mục tiêu và các dấu hiệu cho thấy hoạt động đang gặp trở ngại.&#039;,
+			&#039;Tổng hợp dữ liệu theo các dòng công việc thay vì theo phòng ban.&#039;,
+			&#039;Phân tích mối liên hệ giữa trải nghiệm khách hàng, vận hành và nguồn lực.&#039;,
+			&#039;Xây dựng các lựa chọn cải thiện theo mức độ ưu tiên và khả năng thực hiện.&#039;,
+		],
+		deliverables: [
+			&#039;Business analysis&#039;,
+			&#039;Process map&#039;,
+			&#039;Priority framework&#039;,
+			&#039;Recommendation report&#039;,
+		],
+		outcomes:
+			&#039;Hồ sơ dự án đang được hoàn thiện; các kết luận định lượng chỉ được công bố khi có dữ liệu đủ tin cậy.&#039;,
+		impact: [
+			{
+				value: &#039;4&#039;,
+				label: &#039;lăng kính phân tích: mô hình hoạt động, vận hành, marketing và con người&#039;,
+			},
+		],
+		evidenceNote: &#039;Không công bố KPI khi hồ sơ dữ liệu và quyền chia sẻ chưa được xác nhận.&#039;,
+		cta: { label: &#039;Trao đổi về vấn đề doanh nghiệp&#039;, inquiryType: &#039;business&#039; },
+		lessons:
+			&#039;Với doanh nghiệp nhỏ, giải pháp tốt phải cân bằng tham vọng thay đổi với năng lực vận hành thực tế của đội ngũ.&#039;,
+		relatedProjects: [&#039;strategic-management-learning-experience&#039;, &#039;ai-in-recruitment-research&#039;],
+		featured: true,
+	},
+	{
+		title: &#039;AI in Recruitment Research&#039;,
+		slug: &#039;ai-in-recruitment-research&#039;,
+		category: &#039;Nghiên cứu&#039;,
+		kicker: &#039;Research · Human Resource Management&#039;,
+		year: &#039;Hiện tại&#039;,
+		status: &#039;Nghiên cứu đang tiếp tục&#039;,
+		summary:
+			&#039;Nghiên cứu ứng dụng AI trong tuyển dụng, tập trung vào lợi ích, rủi ro, tính minh bạch và quản trị AI có trách nhiệm.&#039;,
+		coverImage: &#039;/brand/hero-figure.jpg&#039;,
+		gallery: [
+			{
+				src: &#039;/brand/hero-landscape.jpg&#039;,
+				alt: &#039;Minh họa bản đồ rủi ro AI trong tuyển dụng&#039;,
+				caption: &#039;Nghiên cứu đối chiếu lợi ích vận hành với rủi ro đối với ứng viên và tổ chức.&#039;,
+			},
+			{
+				src: &#039;/brand/learning-as-becoming-desktop.jpg&#039;,
+				alt: &#039;Minh họa nguyên tắc sử dụng AI có trách nhiệm&#039;,
+				caption: &#039;Các nguyên tắc được chuyển thành câu hỏi kiểm tra có thể dùng trong thực tế.&#039;,
+			},
+		],
+		role: &#039;Researcher&#039;,
+		audience: &#039;Nhà quản lý và người làm nhân sự&#039;,
+		scope: &#039;Tổng hợp nghiên cứu, phân tích rủi ro và khung ứng dụng có trách nhiệm&#039;,
+		context:
+			&#039;AI đang tham gia ngày càng sâu vào tuyển dụng, trong khi tiêu chí đánh giá, mức độ minh bạch và trách nhiệm ra quyết định chưa phải lúc nào cũng rõ.&#039;,
+		problem:
+			&#039;Tổ chức có thể tối ưu tốc độ xử lý nhưng đồng thời làm tăng rủi ro thiên lệch, khó giải thích và phụ thuộc vào đầu ra không được kiểm chứng.&#039;,
+		approach: [
+			&#039;Xác định các điểm AI tham gia trong quy trình tuyển dụng.&#039;,
+			&#039;Đối chiếu lợi ích vận hành với rủi ro đối với ứng viên và tổ chức.&#039;,
+			&#039;Tổng hợp các nguyên tắc minh bạch, giám sát và quyền quyết định của con người.&#039;,
+			&#039;Chuyển kết quả nghiên cứu thành câu hỏi kiểm tra có thể dùng trong thực tế.&#039;,
+		],
+		deliverables: [
+			&#039;Research synthesis&#039;,
+			&#039;Risk map&#039;,
+			&#039;Responsible-use checklist&#039;,
+			&#039;Teaching materials&#039;,
+		],
+		outcomes:
+			&#039;Nghiên cứu tạo nền tảng để thảo luận AI trong tuyển dụng một cách cân bằng hơn giữa hiệu quả, công bằng và trách nhiệm.&#039;,
+		impact: [
+			{
+				value: &#039;4&#039;,
+				label: &#039;nhóm đầu ra: tổng hợp nghiên cứu, bản đồ rủi ro, checklist và học liệu&#039;,
+			},
+		],
+		evidenceNote:
+			&#039;Đây là nghiên cứu đang tiếp tục; các kết luận sẽ được cập nhật khi nguồn và phạm vi phân tích thay đổi.&#039;,
+		cta: { label: &#039;Trao đổi về nghiên cứu AI&#039;, inquiryType: &#039;ai&#039; },
+		lessons:
+			&#039;Một ứng dụng AI chỉ có ý nghĩa khi tổ chức có thể giải thích mục tiêu, dữ liệu, giới hạn và người chịu trách nhiệm cho quyết định cuối cùng.&#039;,
+		relatedProjects: [&#039;ai50-ai-cho-moi-nguoi&#039;, &#039;moonie-cafe-business-development&#039;],
+		featured: false,
+	},
+];
+
+export function getProject(slug: string): Project | undefined {
+	return projects.find((project) =&gt; project.slug === slug);
+}
+
+export function getFeaturedProjects(): Project[] {
+	return projects.filter((project) =&gt; project.featured);
+}
+</code></pre>
+		</details>
+		<details class="source-block">
+			<summary>
+				<span>Global design system CSS</span>
+				<small>src/app/globals.css · 1163 lines</small>
+			</summary>
+			<p>Design tokens, editorial primitives, responsive behavior, focus and motion rules.</p>
+			<pre><code>@import &#039;tailwindcss&#039;;
+@plugin &quot;@tailwindcss/typography&quot;;
+@custom-variant dark (&amp;:where(.dark, .dark *));
+
+/* ═══════════════════════════════════════════════════════
+   Design System — Semantic Design Tokens
+   
+   Philosophy: Think in ROLES (background, surface, text),
+   not in COLORS (white, black, gray).
+   
+   Write once → adapts automatically to light/dark.
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+	/* Boutique library — compact header */
+	--header-height: 72px;
+
+	/* The Explorer Teacher — light-only foundation */
+	--canvas: #f8f7f4;
+	--paper: #f1efea;
+	--ink: #171717;
+	--ink-secondary: #595650;
+	--hairline: #d8d5ce;
+	--section-tint: #ece8e0;
+	--bronze: #765625;
+	--vermilion: #765625;
+	--sage: #879281;
+	--sunlight: #c89d4b;
+
+	/* Semantic aliases (existing class names keep working) */
+	--background: var(--canvas);
+	--background-secondary: #f0ede7;
+	--surface: var(--paper);
+	--surface-secondary: #f3efe6;
+	--surface-elevated: #fffcf7;
+	--surface-hover: #ebe6dc;
+	--surface-active: #e3ddd2;
+	--foreground: var(--ink);
+	--foreground-secondary: #3d3933;
+	--muted: var(--ink-secondary);
+	--muted-foreground: #4f4a43;
+	--border: var(--hairline);
+	--border-hover: #c9c0b1;
+	--border-strong: #9e9588;
+	--accent: var(--bronze);
+	--accent-hover: #6f482c;
+	--accent-subtle: #f6eee3;
+	--accent-muted: #f0e4d4;
+	--accent-foreground: #fffcf7;
+
+	--success: #5a7a62;
+	--success-subtle: #edf3ef;
+	--warning: #b8892e;
+	--warning-subtle: #faf3e6;
+	--error: #a9442a;
+	--error-subtle: #f7ebe6;
+
+	--indigo: #5b7fb5;
+	--indigo-subtle: #edf1f8;
+	--purple: #8b6fb0;
+	--purple-subtle: #f3eff8;
+	--teal: #4a9e8f;
+	--teal-subtle: #edf7f5;
+	--rose: #c46478;
+	--rose-subtle: #fdf0f3;
+
+	--shadow-sm: 0 1px 2px 0 rgb(24 32 39 / 0.04);
+	--shadow-md: 0 4px 6px -1px rgb(24 32 39 / 0.06), 0 2px 4px -2px rgb(24 32 39 / 0.04);
+	--shadow-lg: 0 10px 15px -3px rgb(24 32 39 / 0.07), 0 4px 6px -4px rgb(24 32 39 / 0.04);
+
+	/* Radius tiers — media cards use --radius-media */
+	--radius-sm: 10px;
+	--radius-media: 12px;
+	--radius-md: 14px;
+	--radius-lg: 20px;
+	--radius-xl: 20px;
+	--radius-full: 9999px;
+
+	/* Layout — boutique frame aligned with homepage */
+	--shell-max: 1280px;
+	--gutter: 24px;
+	/* Dense editorial rhythm (matches home .section) */
+	--section-space: 2.25rem;
+	/* Article measure 680–780px */
+	--measure: 42rem;
+	--measure-wide: 72ch;
+	--motion-fast: 180ms;
+	--motion-base: 280ms;
+	--motion-slow: 700ms;
+	--ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 640px) {
+	:root {
+		--header-height: 72px;
+	}
+}
+
+.dark {
+	--canvas: #11100e;
+	--paper: #1a1815;
+	--ink: #f2ece1;
+	--ink-secondary: #b7afa2;
+	--hairline: #35312b;
+	--section-tint: #211e19;
+	--vermilion: #e27757;
+	--sage: #a8b49f;
+	--sunlight: #7b4f2e;
+
+	--background: var(--canvas);
+	--background-secondary: #161410;
+	--surface: var(--paper);
+	--surface-secondary: #221f1b;
+	--surface-elevated: #26231f;
+	--surface-hover: #26231f;
+	--surface-active: #302c27;
+	--foreground: var(--ink);
+	--foreground-secondary: #d4cdc2;
+	--muted: var(--ink-secondary);
+	--muted-foreground: #c4bcaf;
+	--border: var(--hairline);
+	--border-hover: #464139;
+	--border-strong: #5c564c;
+	--accent: var(--vermilion);
+	--accent-hover: #eba07f;
+	--accent-subtle: #2a1c16;
+	--accent-muted: #2a1c16;
+	--accent-foreground: #11100e;
+
+	--success: #6aad7c;
+	--success-subtle: #1a2a1e;
+	--warning: #d4a03a;
+	--warning-subtle: #2a2210;
+	--error: var(--vermilion);
+	--error-subtle: #2a1c16;
+
+	--indigo: #7a9fd4;
+	--indigo-subtle: #1a2030;
+	--purple: #a78fca;
+	--purple-subtle: #221a2e;
+	--teal: #6abfb0;
+	--teal-subtle: #1a2a26;
+	--rose: #d48494;
+	--rose-subtle: #2a1a1e;
+
+	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+	--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+@media (min-width: 768px) {
+	:root {
+		--gutter: 40px;
+		--section-space: 3rem;
+	}
+}
+
+@media (min-width: 1024px) {
+	:root {
+		--header-height: 80px;
+		--gutter: 80px;
+		--section-space: 3.5rem;
+	}
+}
+
+/* ═══════════════════════════════════════════════════════
+   Register as Tailwind v4 Theme Utilities
+   
+   This allows: bg-surface, text-foreground, border-border
+   to work as first-class Tailwind classes.
+   ═══════════════════════════════════════════════════════ */
+@theme inline {
+	--color-canvas: var(--canvas);
+	--color-paper: var(--paper);
+	--color-ink: var(--ink);
+	--color-ink-secondary: var(--ink-secondary);
+	--color-vermilion: var(--vermilion);
+	--color-bronze: var(--bronze);
+	--color-sage: var(--sage);
+	--color-sunlight: var(--sunlight);
+	--color-hairline: var(--hairline);
+	--color-section-tint: var(--section-tint);
+	--color-background: var(--background);
+	--color-background-secondary: var(--background-secondary);
+	--color-surface: var(--surface);
+	--color-surface-secondary: var(--surface-secondary);
+	--color-surface-elevated: var(--surface-elevated);
+	--color-surface-hover: var(--surface-hover);
+	--color-surface-active: var(--surface-active);
+	--color-foreground: var(--foreground);
+	--color-foreground-secondary: var(--foreground-secondary);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-border: var(--border);
+	--color-border-hover: var(--border-hover);
+	--color-border-strong: var(--border-strong);
+	--color-accent: var(--accent);
+	--color-accent-hover: var(--accent-hover);
+	--color-accent-subtle: var(--accent-subtle);
+	--color-accent-muted: var(--accent-muted);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-success: var(--success);
+	--color-success-subtle: var(--success-subtle);
+	--color-warning: var(--warning);
+	--color-warning-subtle: var(--warning-subtle);
+	--color-error: var(--error);
+	--color-error-subtle: var(--error-subtle);
+	--color-indigo: var(--indigo);
+	--color-indigo-subtle: var(--indigo-subtle);
+	--color-purple: var(--purple);
+	--color-purple-subtle: var(--purple-subtle);
+	--color-teal: var(--teal);
+	--color-teal-subtle: var(--teal-subtle);
+	--color-rose: var(--rose);
+	--color-rose-subtle: var(--rose-subtle);
+	--font-sans: var(--font-inter);
+	--font-serif: var(--font-cormorant);
+	--font-display: var(--font-cormorant);
+	--font-mono: &#039;SF Mono&#039;, Monaco, Consolas, &#039;Liberation Mono&#039;, &#039;Courier New&#039;, monospace;
+	--radius-sm: 10px;
+	--radius-md: 14px;
+	--radius-lg: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Base Styles
+   ═══════════════════════════════════════════════════════ */
+
+* {
+	border-color: var(--border);
+}
+
+body {
+	background-color: var(--background);
+	color: var(--foreground);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-family:
+		var(--font-inter),
+		-apple-system,
+		BlinkMacSystemFont,
+		&#039;Segoe UI&#039;,
+		&#039;Roboto&#039;,
+		&#039;Helvetica Neue&#039;,
+		Arial,
+		sans-serif;
+	overflow-x: clip;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+/* Static paper grain — nearly invisible alone */
+body::before {
+	content: &#039;&#039;;
+	pointer-events: none;
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	opacity: 0.02;
+	mix-blend-mode: multiply;
+	background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox=&#039;0 0 256 256&#039; xmlns=&#039;http://www.w3.org/2000/svg&#039;%3E%3Cfilter id=&#039;n&#039;%3E%3CfeTurbulence type=&#039;fractalNoise&#039; baseFrequency=&#039;0.85&#039; numOctaves=&#039;4&#039; stitchTiles=&#039;stitch&#039;/%3E%3C/filter%3E%3Crect width=&#039;100%25&#039; height=&#039;100%25&#039; filter=&#039;url(%23n)&#039;/%3E%3C/svg%3E&quot;);
+}
+
+.dark body::before {
+	opacity: 0.018;
+	mix-blend-mode: soft-light;
+}
+
+.font-display {
+	font-family: var(--font-cormorant), Georgia, &#039;Times New Roman&#039;, serif;
+}
+
+@layer components {
+	.shell {
+		margin-inline: auto;
+		width: 100%;
+		max-width: var(--shell-max);
+		padding-inline: var(--gutter);
+	}
+}
+
+.section-space {
+	padding-block: var(--section-space);
+}
+
+.section-space-sm {
+	padding-block: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.type-wordmark {
+	/* Boutique scale — restrained display, not full-bleed poster */
+	font-size: 2.375rem;
+	line-height: 0.95;
+	letter-spacing: 0;
+	white-space: nowrap;
+	max-width: 100%;
+	overflow: visible;
+}
+
+/* Page H1 for marketing/editorial — smaller than home hero (short couplet) */
+.type-page-title {
+	font-size: clamp(1.875rem, 3.2vw, 2.5rem);
+	line-height: 1.12;
+	letter-spacing: -0.02em;
+}
+
+/* Section H2 — matches home writing/closing titles */
+.type-section {
+	font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+	line-height: 1.12;
+	letter-spacing: -0.02em;
+}
+
+/* Supporting lead under page/section titles */
+.type-lead {
+	font-size: 0.96875rem;
+	line-height: 1.65;
+}
+
+.prose-article {
+	font-family:
+		var(--font-inter),
+		-apple-system,
+		BlinkMacSystemFont,
+		&#039;Segoe UI&#039;,
+		sans-serif;
+	font-size: 1rem;
+	line-height: 1.75;
+	max-width: var(--measure);
+}
+
+@media (min-width: 640px) {
+	.type-wordmark {
+		font-size: 3rem;
+	}
+
+	.prose-article {
+		font-size: 1.0625rem;
+	}
+}
+
+@media (min-width: 1024px) {
+	.type-wordmark {
+		font-size: 3.625rem;
+	}
+}
+
+/* Accent thought-line — signature motif */
+.thought-line {
+	height: 1.5px;
+	background: var(--accent);
+	transform-origin: left center;
+}
+
+/* Portfolio 2026 — editorial primitives shared by all public pages. */
+.editorial-section {
+	padding-block: clamp(4.5rem, 9vw, 8.5rem);
+}
+
+.editorial-label {
+	font-size: 0.6875rem;
+	font-weight: 650;
+	letter-spacing: 0.16em;
+	line-height: 1.35;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.editorial-heading {
+	max-width: 48rem;
+	font-family: var(--font-cormorant), Georgia, &#039;Times New Roman&#039;, serif;
+	font-size: clamp(2.45rem, 5vw, 5rem);
+	font-weight: 400;
+	letter-spacing: -0.035em;
+	line-height: 1;
+	color: var(--ink);
+}
+
+.editorial-button {
+	display: inline-flex;
+	min-height: 3.25rem;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	border: 1px solid var(--ink);
+	padding: 0.9rem 1.4rem;
+	font-size: 0.6875rem;
+	font-weight: 650;
+	letter-spacing: 0.14em;
+	line-height: 1;
+	text-transform: uppercase;
+	transition:
+		background-color var(--motion-base) var(--ease-editorial),
+		border-color var(--motion-base) var(--ease-editorial),
+		color var(--motion-base) var(--ease-editorial),
+		gap var(--motion-base) var(--ease-editorial),
+		transform var(--motion-base) var(--ease-editorial);
+}
+
+.editorial-button-dark {
+	background: var(--ink);
+	color: var(--canvas);
+}
+
+.editorial-button:hover,
+.editorial-button:focus-visible {
+	gap: 1rem;
+	border-color: var(--accent);
+	background: var(--accent);
+	color: #fff;
+	transform: translateY(-1px);
+}
+
+.editorial-text-link {
+	display: inline-flex;
+	min-height: 2.75rem;
+	align-items: center;
+	gap: 0.5rem;
+	border-bottom: 1px solid currentColor;
+	padding-bottom: 0.25rem;
+	font-size: 0.6875rem;
+	font-weight: 650;
+	letter-spacing: 0.14em;
+	line-height: 1;
+	text-transform: uppercase;
+	color: var(--ink);
+	transition:
+		color 250ms ease,
+		gap 250ms ease;
+}
+
+.editorial-text-link:hover,
+.editorial-text-link:focus-visible {
+	gap: 0.8rem;
+	color: var(--accent);
+}
+
+/* Editorial premium primitives */
+.premium-lead {
+	max-width: var(--measure-wide);
+	font-size: clamp(1rem, 1.4vw, 1.125rem);
+	line-height: 1.82;
+	color: var(--ink-secondary);
+}
+
+.premium-display {
+	font-family: var(--font-cormorant), Georgia, &#039;Times New Roman&#039;, serif;
+	font-size: clamp(3.35rem, 7vw, 7.5rem);
+	font-weight: 400;
+	letter-spacing: -0.045em;
+	line-height: 0.91;
+	text-wrap: balance;
+}
+
+.premium-media {
+	position: relative;
+	overflow: hidden;
+	background: var(--paper);
+	box-shadow: 0 24px 70px rgb(53 43 27 / 0.08);
+}
+
+.premium-media::after {
+	content: &#039;&#039;;
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	border: 1px solid rgb(118 86 37 / 0.16);
+}
+
+.trust-strip {
+	display: grid;
+	border-top: 1px solid var(--hairline);
+	border-bottom: 1px solid var(--hairline);
+}
+
+.trust-strip__item {
+	padding-block: 1.5rem;
+}
+
+.trust-strip__item + .trust-strip__item {
+	border-top: 1px solid var(--hairline);
+}
+
+.impact-metric {
+	border-top: 1px solid var(--hairline);
+	padding-top: 1.25rem;
+}
+
+.proof-note {
+	display: flex;
+	max-width: 42rem;
+	align-items: flex-start;
+	gap: 0.75rem;
+	font-size: 0.8125rem;
+	line-height: 1.7;
+	color: var(--ink-secondary);
+}
+
+.proof-note__mark {
+	margin-top: 0.55rem;
+	height: 0.4rem;
+	width: 0.4rem;
+	flex: 0 0 auto;
+	border-radius: 999px;
+	background: var(--accent);
+}
+
+.premium-card {
+	border-top: 1px solid var(--hairline);
+	transition:
+		border-color var(--motion-base) ease,
+		transform var(--motion-base) var(--ease-editorial);
+}
+
+.premium-card:hover {
+	border-color: var(--accent);
+	transform: translateY(-2px);
+}
+
+.premium-field {
+	width: 100%;
+	min-height: 3.25rem;
+	border: 1px solid var(--border-strong);
+	background: color-mix(in srgb, var(--surface-elevated) 84%, transparent);
+	padding: 0.8rem 0.9rem;
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--ink);
+	transition:
+		border-color var(--motion-fast) ease,
+		background-color var(--motion-fast) ease,
+		box-shadow var(--motion-fast) ease;
+}
+
+.premium-field:hover {
+	border-color: var(--accent);
+}
+
+.premium-field:focus {
+	border-color: var(--accent);
+	background: var(--surface-elevated);
+	outline: none;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.premium-field[aria-invalid=&#039;true&#039;] {
+	border-color: var(--error);
+}
+
+.service-disclosure &gt; summary {
+	list-style: none;
+	cursor: pointer;
+	min-height: 4rem;
+	padding-block: 1rem;
+}
+
+.service-disclosure &gt; summary::-webkit-details-marker {
+	display: none;
+}
+
+.service-disclosure[open] .service-disclosure__icon {
+	transform: rotate(45deg);
+}
+
+.service-disclosure__icon {
+	transition: transform var(--motion-base) var(--ease-editorial);
+}
+
+@media (min-width: 640px) {
+	.trust-strip {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.trust-strip__item {
+		padding: 1.5rem;
+	}
+	.trust-strip__item:nth-child(2) {
+		border-top: 0;
+		border-left: 1px solid var(--hairline);
+	}
+}
+
+@media (min-width: 1024px) {
+	.trust-strip {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	.trust-strip__item + .trust-strip__item,
+	.trust-strip__item:nth-child(2) {
+		border-top: 0;
+		border-left: 1px solid var(--hairline);
+	}
+	.service-disclosure &gt; summary {
+		display: none;
+	}
+	.service-disclosure:not([open]) &gt; :not(summary) {
+		display: block;
+	}
+}
+
+@media (max-width: 639px) {
+	.premium-display {
+		font-size: clamp(3.15rem, 15vw, 4.25rem);
+		line-height: 0.94;
+	}
+	.editorial-heading {
+		font-size: clamp(2.35rem, 11vw, 3.45rem);
+		line-height: 1.02;
+	}
+	.editorial-button {
+		width: 100%;
+		min-height: 3.5rem;
+	}
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+.no-scrollbar {
+	scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+	}
+}
+
+.skip-link {
+	position: absolute;
+	left: var(--gutter);
+	top: -100px;
+	z-index: 100;
+	border-radius: var(--radius-sm);
+	background: var(--ink);
+	color: var(--paper);
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.skip-link:focus {
+	top: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	.animate-flame,
+	.animate-flame-inner,
+	.animate-flame-core,
+	.animate-sparkle {
+		animation: none !important;
+	}
+}
+
+/* Focus styles - accessible and elegant */
+:focus-visible {
+	outline: none;
+	box-shadow:
+		0 0 0 2px var(--background),
+		0 0 0 4px var(--accent);
+}
+
+/* Selection */
+::selection {
+	background-color: var(--accent-subtle);
+	color: var(--foreground);
+}
+
+/* Scrollbar - minimalist */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background-color: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var(--border);
+	border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: var(--border-hover);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Tiptap WYSIWYG Editor — Theme &amp; Content Styles
+   Styles for the Tiptap editor content area, placeholder,
+   code blocks with syntax highlighting, and table editing.
+   ═══════════════════════════════════════════════════════ */
+
+/* Placeholder */
+.tiptap-content p.is-editor-empty:first-child::before {
+	content: attr(data-placeholder);
+	float: left;
+	color: var(--muted);
+	pointer-events: none;
+	height: 0;
+	font-style: italic;
+}
+
+/* Focus ring on the editor wrapper */
+.tiptap-content:focus {
+	outline: none;
+}
+
+/* ── Force readable text in dark mode ──
+   The Color extension can set inline color:#000 or dark colors
+   that become invisible on dark backgrounds. Override those. */
+.dark .tiptap-content [style*=&#039;color: rgb(0&#039;],
+.dark .tiptap-content [style*=&#039;color: #000&#039;],
+.dark .tiptap-content [style*=&#039;color:#000&#039;],
+.dark .tiptap-content [style*=&#039;color: black&#039;],
+.dark .tiptap-content [style*=&#039;color:black&#039;] {
+	color: var(--foreground) !important;
+}
+
+/* Also fix for article/prose views where saved HTML has inline color */
+.dark .prose [style*=&#039;color: rgb(0&#039;],
+.dark .prose [style*=&#039;color: #000&#039;],
+.dark .prose [style*=&#039;color:#000&#039;],
+.dark .prose [style*=&#039;color: black&#039;],
+.dark .prose [style*=&#039;color:black&#039;] {
+	color: var(--foreground) !important;
+}
+
+/* Ensure all inline color styles in dark mode are inverted for very dark colors */
+.dark .tiptap-content [style*=&#039;color:&#039;],
+.dark .tiptap-content [style*=&#039;color: &#039;] {
+	--tw-text-opacity: 1;
+}
+
+.dark .prose [style*=&#039;color:&#039;],
+.dark .prose [style*=&#039;color: &#039;] {
+	--tw-text-opacity: 1;
+}
+
+/* ── Empty paragraph preservation ──
+   Tiptap outputs &lt;p&gt;&lt;/p&gt; for blank lines (Enter key).
+   Prose/browsers collapse these. This keeps the spacing. */
+.tiptap-content p:empty::before {
+	content: &#039;\00a0&#039;; /* non-breaking space */
+	display: inline-block;
+}
+
+/* ── Paragraph spacing ──
+   Ensure paragraphs have bottom margin for proper line spacing.
+   Tailwind prose has line-height but needs explicit margin. */
+.tiptap-content p {
+	margin-bottom: 1.25em;
+}
+
+.tiptap-content p:last-child {
+	margin-bottom: 0;
+}
+
+/* ── Text alignment from Tiptap&#039;s TextAlign extension ──
+   Tiptap emits inline style=&quot;text-align:…&quot; but some
+   frameworks strip inline styles. These ensure it works. */
+.tiptap-content [style*=&#039;text-align: center&#039;],
+.tiptap-content [style*=&#039;text-align:center&#039;] {
+	text-align: center;
+}
+.tiptap-content [style*=&#039;text-align: right&#039;],
+.tiptap-content [style*=&#039;text-align:right&#039;] {
+	text-align: right;
+}
+.tiptap-content [style*=&#039;text-align: justify&#039;],
+.tiptap-content [style*=&#039;text-align:justify&#039;] {
+	text-align: justify;
+}
+.tiptap-content [style*=&#039;text-align: left&#039;],
+.tiptap-content [style*=&#039;text-align:left&#039;] {
+	text-align: left;
+}
+
+/* Code blocks — lowlight syntax highlighting */
+.tiptap-content pre {
+	background-color: var(--surface-secondary);
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+	padding: 1rem 1.25rem;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	overflow-x: auto;
+}
+
+.tiptap-content pre code {
+	background: none;
+	padding: 0;
+	font-size: inherit;
+	color: var(--foreground);
+}
+
+/* Lowlight syntax highlighting — shared between editor &amp; article view */
+.tiptap-content .hljs-comment,
+.tiptap-content .hljs-quote,
+.prose .hljs-comment,
+.prose .hljs-quote {
+	color: #7f848e;
+	font-style: italic;
+}
+.tiptap-content .hljs-keyword,
+.tiptap-content .hljs-selector-tag,
+.prose .hljs-keyword,
+.prose .hljs-selector-tag {
+	color: #c678dd;
+}
+.tiptap-content .hljs-string,
+.tiptap-content .hljs-template-variable,
+.tiptap-content .hljs-addition,
+.prose .hljs-string,
+.prose .hljs-template-variable,
+.prose .hljs-addition {
+	color: #98c379;
+}
+.tiptap-content .hljs-number,
+.tiptap-content .hljs-literal,
+.prose .hljs-number,
+.prose .hljs-literal {
+	color: #d19a66;
+}
+.tiptap-content .hljs-built_in,
+.tiptap-content .hljs-type,
+.prose .hljs-built_in,
+.prose .hljs-type {
+	color: #e5c07b;
+}
+.tiptap-content .hljs-attr,
+.tiptap-content .hljs-variable,
+.prose .hljs-attr,
+.prose .hljs-variable {
+	color: #e06c75;
+}
+.tiptap-content .hljs-title,
+.tiptap-content .hljs-section,
+.prose .hljs-title,
+.prose .hljs-section {
+	color: #61afef;
+}
+.tiptap-content .hljs-name,
+.tiptap-content .hljs-tag,
+.prose .hljs-name,
+.prose .hljs-tag {
+	color: #e06c75;
+}
+.tiptap-content .hljs-selector-class,
+.tiptap-content .hljs-selector-id,
+.prose .hljs-selector-class,
+.prose .hljs-selector-id {
+	color: #61afef;
+}
+.tiptap-content .hljs-meta,
+.prose .hljs-meta {
+	color: #56b6c2;
+}
+
+/* Tables in editor */
+.tiptap-content table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 1.5rem 0;
+}
+
+.tiptap-content table td,
+.tiptap-content table th {
+	border: 1px solid var(--border);
+	padding: 0.5rem 0.75rem;
+	min-width: 80px;
+	vertical-align: top;
+	position: relative;
+}
+
+.tiptap-content table th {
+	background-color: var(--surface-secondary);
+	font-weight: 700;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--muted);
+}
+
+.tiptap-content table .selectedCell {
+	background-color: var(--accent-alpha-10, rgba(196, 75, 40, 0.1));
+}
+
+/* Column resize handle */
+.tiptap-content .column-resize-handle {
+	position: absolute;
+	right: -2px;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	background-color: var(--accent);
+	pointer-events: none;
+}
+
+/* Images in editor */
+.tiptap-content img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+	margin: 1rem auto;
+}
+
+.tiptap-content img.ProseMirror-selectednode {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 0.75rem;
+}
+
+/* Blockquote */
+.tiptap-content blockquote {
+	border-left: 3px solid var(--accent);
+	padding-left: 1rem;
+	color: var(--foreground-secondary);
+	font-style: normal;
+}
+
+/* Horizontal rule */
+.tiptap-content hr {
+	border: none;
+	border-top: 1px solid var(--border);
+	margin: 2rem 0;
+}
+
+/* Highlight */
+.tiptap-content mark {
+	border-radius: 2px;
+	padding: 0.1em 0.2em;
+}
+
+/* YouTube embeds */
+.tiptap-content div[data-youtube-video] {
+	margin: 1.5rem 0;
+}
+
+.tiptap-content div[data-youtube-video] iframe {
+	width: 100%;
+	aspect-ratio: 16/9;
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+}
+
+/* Dropcursor */
+.ProseMirror-dropcursor {
+	color: var(--accent) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Prose / Article Content Overrides
+   Fine-tune Tailwind Typography for our design system.
+   ═══════════════════════════════════════════════════════ */
+
+/* Override prose max-width so it respects container */
+.prose {
+	--tw-prose-body: var(--foreground-secondary);
+	--tw-prose-headings: var(--foreground);
+	--tw-prose-links: var(--accent);
+	--tw-prose-bold: var(--foreground);
+	--tw-prose-code: var(--accent);
+	--tw-prose-quotes: var(--foreground-secondary);
+	--tw-prose-quote-borders: var(--accent);
+	--tw-prose-hr: var(--border);
+	--tw-prose-th-borders: var(--border);
+	--tw-prose-td-borders: var(--border);
+}
+
+/* Tables — editorial style */
+.prose table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.prose thead th {
+	text-align: left;
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--muted);
+	border-bottom: 2px solid var(--border);
+	padding: 0.75rem 1rem;
+}
+
+.prose tbody td {
+	font-size: 0.875rem;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--border);
+	vertical-align: top;
+}
+
+.prose tbody tr:last-child td {
+	border-bottom: none;
+}
+
+/* Inline code */
+.prose :not(pre) &gt; code {
+	background-color: var(--surface-hover);
+	padding: 0.15em 0.4em;
+	border-radius: 4px;
+	font-size: 0.875em;
+	font-weight: 500;
+}
+
+.prose :not(pre) &gt; code::before,
+.prose :not(pre) &gt; code::after {
+	content: none;
+}
+
+/* Blockquote */
+.prose blockquote {
+	font-style: normal;
+	border-left: 3px solid var(--accent);
+	padding-left: 1.25rem;
+	color: var(--foreground-secondary);
+}
+
+/* Horizontal rule */
+.prose hr {
+	border-color: var(--border);
+	margin-top: 2.5rem;
+	margin-bottom: 2.5rem;
+}
+
+/* Images inside prose — centered */
+.prose img {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* Lists */
+.prose ul &gt; li::marker {
+	color: var(--accent);
+}
+
+.prose ol &gt; li::marker {
+	color: var(--muted);
+	font-weight: 600;
+}
+
+/* Pre / code blocks — styled for both CodeBlock (markdown) and raw HTML (Tiptap) */
+.prose pre {
+	background-color: var(--surface-secondary);
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+	padding: 1rem 1.25rem;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	overflow-x: auto;
+}
+
+.prose pre code {
+	background: none;
+	padding: 0;
+	font-size: inherit;
+	color: var(--foreground);
+}
+
+/* YouTube embeds in article view */
+.prose div[data-youtube-video] iframe {
+	width: 100%;
+	aspect-ratio: 16/9;
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+}
+
+/* Highlight marks in article view */
+.prose mark {
+	border-radius: 2px;
+	padding: 0.1em 0.2em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Streak Fire Animations
+   Multi-tier flame effects for login streak display
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes flame-sway {
+	0%,
+	100% {
+		transform: scaleX(1) scaleY(1) rotate(0deg);
+	}
+	25% {
+		transform: scaleX(0.97) scaleY(1.02) rotate(-1deg);
+	}
+	50% {
+		transform: scaleX(1.03) scaleY(0.98) rotate(0deg);
+	}
+	75% {
+		transform: scaleX(0.98) scaleY(1.01) rotate(1deg);
+	}
+}
+
+@keyframes flame-inner {
+	0%,
+	100% {
+		transform: translateY(0) scaleY(1);
+		opacity: 0.7;
+	}
+	50% {
+		transform: translateY(-1px) scaleY(1.04);
+		opacity: 0.85;
+	}
+}
+
+@keyframes flame-core {
+	0%,
+	100% {
+		transform: translateY(0) scaleY(1);
+		opacity: 0.5;
+	}
+	33% {
+		transform: translateY(-1.5px) scaleY(1.06);
+		opacity: 0.7;
+	}
+	66% {
+		transform: translateY(-0.5px) scaleY(0.97);
+		opacity: 0.55;
+	}
+}
+
+@keyframes sparkle-float {
+	0% {
+		transform: translateY(0) scale(1);
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-18px) scale(0);
+		opacity: 0;
+	}
+}
+
+.animate-flame {
+	animation: flame-sway 1.5s ease-in-out infinite;
+	transform-origin: bottom center;
+}
+
+.animate-flame-inner {
+	animation: flame-inner 1s ease-in-out infinite;
+	transform-origin: bottom center;
+}
+
+.animate-flame-core {
+	animation: flame-core 0.8s ease-in-out infinite;
+	transform-origin: bottom center;
+}
+
+.animate-sparkle {
+	animation: sparkle-float 1.2s ease-out infinite;
+}
+</code></pre>
+		</details>
+			</div>
+		</section>
+	</main>
+
+	<footer class="footer">
+		<div class="shell">Generated for UI/UX expert review. Open this file in a browser for a readable packet, or parse the embedded source blocks directly as an AI agent.</div>
+	</footer>
+</body>
+</html>

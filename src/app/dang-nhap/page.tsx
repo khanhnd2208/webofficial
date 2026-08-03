@@ -49,13 +49,13 @@ export default async function LoginPage({
 	return (
 		<main className="min-h-[calc(100svh-3.5rem)]">
 			<div className="grid min-h-[calc(100svh-3.5rem)] lg:grid-cols-2">
-				<aside className="relative hidden overflow-hidden border-r border-hairline bg-paper lg:flex lg:flex-col lg:justify-between lg:p-14 xl:p-20">
-					<p className="font-display text-lg tracking-[0.12em] text-ink">{SITE_NAME}</p>
+				<aside className="relative hidden overflow-hidden border-r border-hairline bg-paper lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
+					<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+						{SITE_NAME}
+					</p>
 					<div>
-						<p className="font-display text-4xl font-medium leading-snug text-ink xl:text-5xl">
-							Khu học tập
-						</p>
-						<p className="mt-6 max-w-sm text-base leading-relaxed text-ink-secondary">
+						<p className="font-display type-page-title font-medium text-ink">Khu học tập</p>
+						<p className="type-lead mt-4 max-w-sm text-ink-secondary">
 							Dành cho học viên đã được ghi danh vào lớp hoặc chương trình của Khánh.
 						</p>
 					</div>
@@ -64,7 +64,9 @@ export default async function LoginPage({
 
 				<div className="flex flex-col justify-start px-6 pb-10 pt-6 sm:px-10 sm:pt-10 lg:justify-center lg:px-16 lg:py-12">
 					<div className="mx-auto w-full max-w-sm">
-						<p className="font-display text-base tracking-[0.12em] text-ink lg:hidden">{SITE_NAME}</p>
+						<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent lg:hidden">
+							{SITE_NAME}
+						</p>
 
 						{errorMessage ? (
 							<div
@@ -79,7 +81,9 @@ export default async function LoginPage({
 							</div>
 						) : null}
 
-						<h1 className="mt-5 font-display text-3xl font-medium text-ink sm:mt-8">Đăng nhập</h1>
+						<h1 className="mt-5 font-display type-page-title font-medium text-ink sm:mt-8">
+							Đăng nhập
+						</h1>
 						<p className="mt-2 text-sm text-ink-secondary">
 							Tiếp tục với Google để mở tài khoản.
 							{backLabel ? (

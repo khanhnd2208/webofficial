@@ -24,11 +24,11 @@ export function TestimonialBlock({
 
 	return (
 		<figure className="border-l border-vermilion pl-5">
-			<blockquote className="font-serif text-lg leading-relaxed text-ink sm:text-xl">
+			<blockquote className="font-serif text-base leading-relaxed text-ink sm:text-lg">
 				“{quote}”
 			</blockquote>
 			{attribution ? (
-				<figcaption className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+				<figcaption className="mt-4 text-sm tracking-[0.02em] text-ink-secondary">
 					{attribution}
 				</figcaption>
 			) : null}

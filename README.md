@@ -1,6 +1,6 @@
 # Duy Khánh — Website cá nhân của một giảng viên
 
-> Giảng dạy, thiết kế chương trình học và những ghi chép về con người, công việc, cuộc sống.
+> Giảng dạy quản trị, ứng dụng AI và cố vấn doanh nghiệp dựa trên nghiên cứu.
 > Live: **[toiladuykhanh.com](https://toiladuykhanh.com)**
 
 ---
@@ -15,6 +15,8 @@
 | [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md) | System design, directory structure, infrastructure decisions |
 | [docs/03-CODING_STANDARDS.md](./docs/03-CODING_STANDARDS.md) | API patterns, type safety rules, naming conventions — **read before contributing** |
 | [docs/04-ADR_AND_CHANGELOG.md](./docs/04-ADR_AND_CHANGELOG.md) | Architecture Decision Records and refactoring history |
+| [docs/05-BRAND_BRIEF.md](./docs/05-BRAND_BRIEF.md) | Current editorial brand and visual direction |
+| [docs/06-CONTENT_INVENTORY.md](./docs/06-CONTENT_INVENTORY.md) | Current public content and preserved internal domains |
 
 ---
 
@@ -161,7 +163,7 @@ All API responses use a consistent envelope:
 
 ## Admin Access
 
-1. Go to `/login` and sign in with the Google account matching `ADMIN_EMAIL`.
+1. Go to `/dang-nhap` and sign in with the Google account matching `ADMIN_EMAIL`.
 2. The `admin` role is assigned automatically on first sign-in.
 3. Navigate to `/admin` for the full Writer Studio.
 
@@ -185,4 +187,4 @@ API routes enforce auth independently via `withAuth` / `withAdmin` wrappers — 
 
 ## Production Deployment
 
-See [`PRODUCTION_SETUP.md`](./PRODUCTION_SETUP.md) for the full deployment guide (PM2, Nginx, SSL).
+See [`docs/deployment/VPS.md`](./docs/deployment/VPS.md) for the full deployment guide (PM2, Nginx, SSL).

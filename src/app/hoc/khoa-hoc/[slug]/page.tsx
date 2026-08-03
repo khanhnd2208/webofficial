@@ -25,11 +25,9 @@ function EnrolledCourseView({ course }: { course: LearnerCourseDetail }) {
 					>
 						← Khu học của tôi
 					</Link>
-					<h1 className="mt-4 font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl lg:text-5xl">
-						{course.title}
-					</h1>
+					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{course.title}</h1>
 					{course.summary ? (
-						<p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">{course.summary}</p>
+						<p className="type-lead mt-3 max-w-xl text-ink-secondary">{course.summary}</p>
 					) : null}
 
 					<div className="mt-8 flex flex-wrap items-end justify-between gap-6">

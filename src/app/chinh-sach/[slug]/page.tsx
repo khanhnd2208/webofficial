@@ -37,32 +37,36 @@ export default async function PolicyPage({ params }: PageProps) {
 	if (!policy) notFound();
 
 	return (
-		<main className="min-h-screen">
+		<main className="min-h-screen bg-canvas">
 			<section className="border-b border-hairline">
-				<div className="shell py-14 sm:py-16">
-					<p className="text-sm font-medium text-ink-secondary">Chính sách</p>
-					<h1 className="mt-3 font-display type-page-title font-medium text-ink">{policy.title}</h1>
-					<p className="mt-4 max-w-2xl text-base text-ink-secondary">{policy.summary}</p>
-					<p className="mt-3 text-xs text-ink-secondary">Cập nhật ngày {formatPolicyDate(policy.updatedAt)}</p>
+				<div className="shell py-10 sm:py-14">
+					<p className="editorial-label">Chính sách</p>
+					<h1 className="type-page-title mt-4 font-display font-medium text-ink">{policy.title}</h1>
+					<p className="premium-lead mt-4 max-w-xl">{policy.summary}</p>
+					<p className="mt-3 text-sm text-ink-secondary">
+						Cập nhật ngày {formatPolicyDate(policy.updatedAt)}
+					</p>
 				</div>
 			</section>
 			<section>
-				<div className="shell max-w-3xl space-y-10 py-12 sm:py-14">
+				<div className="shell max-w-2xl space-y-8 py-10 sm:py-12">
 					{policy.sections.map((section) => (
-						<article key={section.heading} className="border-t border-hairline pt-6">
-							<h2 className="font-display text-xl font-medium text-ink">{section.heading}</h2>
-							<ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink-secondary">
+						<article key={section.heading} className="border-t border-hairline pt-5">
+							<h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+								{section.heading}
+							</h2>
+							<ul className="mt-3 space-y-2.5 text-base leading-relaxed text-ink-secondary">
 								{section.body.map((line) => (
 									<li key={line}>{line}</li>
 								))}
 							</ul>
 						</article>
 					))}
-					<p className="text-sm text-ink-secondary">
+					<p className="text-base text-ink-secondary">
 						<ContactLink
 							href={routes.contact}
 							contactContext={{ sourcePage: `/chinh-sach/${policy.slug}` }}
-							className="text-vermilion underline"
+							className="text-accent underline"
 						>
 							Gửi lời nhắn
 						</ContactLink>{' '}

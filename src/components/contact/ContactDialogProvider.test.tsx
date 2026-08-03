@@ -57,7 +57,7 @@ describe('ContactDialogProvider', () => {
 
 		await userEvent.click(link);
 		expect(await screen.findByRole('dialog')).toBeInTheDocument();
-		expect(screen.getByLabelText('Chủ đề')).toHaveValue('training');
+		expect(screen.getByLabelText('Bạn đang liên hệ về')).toHaveValue('training');
 		expect(document.body.style.overflow).toBe('hidden');
 
 		await userEvent.click(screen.getByRole('button', { name: 'Đóng' }));
@@ -80,16 +80,16 @@ describe('ContactDialogProvider', () => {
 		await user.click(screen.getByRole('link', { name: 'Gửi lời nhắn' }));
 		await user.type(screen.getByLabelText('Họ và tên'), 'Nguyễn An');
 		await user.type(screen.getByLabelText('Email nhận phản hồi'), 'an@example.com');
-		await user.type(screen.getByLabelText('Bạn muốn trao đổi điều gì?'), 'Nội dung bản nháp.');
+		await user.type(screen.getByLabelText('Bạn đang muốn giải quyết điều gì?'), 'Nội dung bản nháp.');
 		await user.click(screen.getByRole('button', { name: 'Đóng' }));
 
 		await user.click(screen.getByRole('link', { name: 'Gửi lời nhắn' }));
 		expect(screen.getByLabelText('Họ và tên')).toHaveValue('Nguyễn An');
-		expect(screen.getByLabelText('Bạn muốn trao đổi điều gì?')).toHaveValue('Nội dung bản nháp.');
+		expect(screen.getByLabelText('Bạn đang muốn giải quyết điều gì?')).toHaveValue('Nội dung bản nháp.');
 
 		await user.click(screen.getByRole('checkbox'));
 		await user.click(screen.getByRole('button', { name: 'Gửi lời nhắn' }));
-		expect(await screen.findByText('Lời nhắn đã được gửi.')).toBeInTheDocument();
+		expect(await screen.findByText('Cảm ơn bạn đã chia sẻ.')).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: /Về trang chủ/i })).not.toBeInTheDocument();
 		expect(document.body.style.overflow).toBe('hidden');
 		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -97,7 +97,7 @@ describe('ContactDialogProvider', () => {
 
 		await user.click(screen.getByRole('link', { name: 'Gửi lời nhắn' }));
 		expect(screen.getByLabelText('Họ và tên')).toHaveValue('');
-		expect(screen.getByLabelText('Bạn muốn trao đổi điều gì?')).toHaveValue('');
+		expect(screen.getByLabelText('Bạn đang muốn giải quyết điều gì?')).toHaveValue('');
 	});
 
 	it('keeps the current source and campaign in the real href used by a new tab', async () => {

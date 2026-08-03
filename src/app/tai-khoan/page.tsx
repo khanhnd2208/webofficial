@@ -30,10 +30,10 @@ export default async function ProfilePage() {
 		<main className="min-h-screen pb-16">
 			<section className="border-b border-hairline">
 				<div className="shell max-w-3xl py-10 sm:py-12">
-					<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">Tài khoản</p>
-					<h1 className="mt-3 font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl">
-						Hồ sơ học viên
-					</h1>
+					<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+						Tài khoản
+					</p>
+					<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">Hồ sơ học viên</h1>
 					<p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-secondary">
 						Thông tin Google được đồng bộ tự động. Bạn có thể bổ sung ngày sinh, trường, chuyên ngành và bio.
 					</p>

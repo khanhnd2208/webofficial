@@ -28,13 +28,7 @@ export type ContactContextInput = Partial<ContactContext>;
 export function normalizeInquiryType(raw: string | null | undefined): InquiryType {
 	if (!raw || !(INQUIRY_TYPES as readonly string[]).includes(raw)) return 'unsure';
 
-	const legacyMap: Partial<Record<InquiryType, InquiryType>> = {
-		mentoring: 'people-organization',
-		business: 'people-organization',
-		ai: 'other',
-	};
-	const typed = raw as InquiryType;
-	return legacyMap[typed] ?? typed;
+	return raw as InquiryType;
 }
 
 function clean(value: string | null | undefined): string | undefined {

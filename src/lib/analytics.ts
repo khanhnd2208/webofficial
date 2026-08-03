@@ -12,6 +12,7 @@ export const ANALYTICS_EVENTS = [
 	'resource_download',
 	'article_complete',
 	'case_study_view',
+	'case_artifact_engage',
 	'course_interest',
 	'login_start',
 	'home_hero_manifesto_click',
@@ -19,6 +20,16 @@ export const ANALYTICS_EVENTS = [
 	'home_learning_experience_click',
 	'home_project_click',
 	'home_closing_connect_click',
+	'home_primary_cta_click',
+	'home_secondary_cta_click',
+	'service_select',
+	'service_detail_open',
+	'project_filter_select',
+	'contact_form_error',
+	'contact_form_success',
+	'contact_open',
+	'home_need_select',
+	'service_proof_click',
 ] as const;
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
@@ -27,6 +38,7 @@ export type AnalyticsPayload = {
 	slug?: string;
 	type?: string;
 	sourcePage?: string;
+	label?: string;
 };
 
 declare global {
@@ -49,6 +61,7 @@ export function trackEvent(event: AnalyticsEvent, payload: AnalyticsPayload = {}
 	if (payload.slug) data.slug = payload.slug;
 	if (payload.type) data.type = payload.type;
 	if (payload.sourcePage) data.sourcePage = payload.sourcePage;
+	if (payload.label) data.label = payload.label;
 
 	try {
 		window.umami?.track(event, Object.keys(data).length ? data : undefined);

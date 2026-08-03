@@ -7,7 +7,8 @@
 export const SITE_NAME = 'Duy Khánh';
 
 /** Public positioning line — the central idea of the personal education space. */
-export const SITE_POSITIONING = 'Việc học thay đổi cách ta nhìn và cách ta làm.';
+export const SITE_POSITIONING =
+	'Biến kiến thức phức tạp thành năng lực, chương trình và quy trình có thể áp dụng.';
 
 /** Editorial brand for the journal. Not the site-wide wordmark. */
 export const EDITORIAL_NAME = 'HANOICAM';
@@ -15,7 +16,7 @@ export const EDITORIAL_NAME = 'HANOICAM';
 /** Personal mark / signature — not a product brand. */
 export const PERSONAL_MARK = 'NDK';
 
-export const SITE_EYEBROW = 'Duy Khánh · Giảng viên';
+export const SITE_EYEBROW = 'Management Education · Learning Design · Applied AI';
 
 /** Canonical production origin. Override with NEXT_PUBLIC_SITE_URL when needed. */
 export const SITE_ORIGIN =
@@ -23,7 +24,7 @@ export const SITE_ORIGIN =
 	(process.env.NODE_ENV === 'production' ? 'https://toiladuykhanh.com' : 'http://localhost:3000');
 
 export const SITE_DESCRIPTION =
-	'Duy Khánh giảng dạy, thiết kế chương trình học và viết về cách con người học, làm việc và trưởng thành.';
+	'Duy Khánh giúp người học và tổ chức biến kiến thức quản trị và AI thành chương trình, năng lực và quy trình có thể áp dụng.';
 
 export const SITE_CREATOR = SITE_NAME;
 
@@ -56,8 +57,7 @@ export const siteProfile: SiteProfile = {
 	personalMark: PERSONAL_MARK,
 	publicName: SITE_NAME,
 	role: SITE_EYEBROW,
-	shortBio:
-		'I want to make learning an experience that feels both artistic and deeply enjoyable.',
+	shortBio: 'Management Education · Learning Design · Applied AI',
 	portraitSrc: '/brand/learning-as-becoming-mobile.jpg',
 	// contactEmail / socialLinks: leave empty until owner provides
 };
@@ -68,5 +68,5 @@ export const brandHierarchy = {
 	positioning: SITE_POSITIONING,
 	editorial: EDITORIAL_NAME,
 	personalMark: PERSONAL_MARK,
-	tracks: ['Trải nghiệm học tập', 'Bài viết', 'Podcast'] as const,
+	tracks: ['Management Education', 'Learning Design', 'Applied AI'] as const,
 } as const;

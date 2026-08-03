@@ -40,13 +40,11 @@ test.describe('Public pages smoke', () => {
 			page.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i }),
 		).toBeAttached();
 		await expect(page.getByText(/Quan niệm giảng dạy/i)).toHaveCount(0);
-		await expect(page.getByRole('heading', { name: 'Những ghi chép mới' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Những điều tôi đang xây dựng' })).toBeVisible();
 		await expect(
 			page.getByRole('heading', { name: 'Những cách chúng ta có thể học cùng nhau' }),
 		).toHaveCount(0);
-		await expect(page.getByRole('heading', { name: 'Những điều tôi đang xây dựng' })).toHaveCount(
-			0,
-		);
+		await expect(page.getByRole('heading', { name: 'Những ghi chép mới' })).toHaveCount(0);
 		await expect(page.getByText('Learn Chinese', { exact: true })).toHaveCount(0);
 		await expect(page.getByText('AI Knowledge Systems', { exact: true })).toHaveCount(0);
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
@@ -63,9 +61,7 @@ test.describe('Public pages smoke', () => {
 			}),
 		).toBeVisible();
 		await expect(page.getByText(/Quan niệm giảng dạy/i)).toHaveCount(0);
-		await expect(
-			page.getByRole('heading', { name: /Có điều muốn trao đổi\? Hãy gửi tôi vài dòng\./i }),
-		).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Những điều tôi đang xây dựng/i })).toBeVisible();
 		await context.close();
 	});
 
@@ -83,6 +79,24 @@ test.describe('Public pages smoke', () => {
 		expect(heroAssets).toHaveLength(1);
 	});
 
+	test('desktop hero artwork fills its frame and preserves the subject', async ({ page }) => {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto('/');
+		const frame = page.getByTestId('home-hero-artwork');
+		const image = frame.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i });
+		const [frameBox, imageBox, objectPosition] = await Promise.all([
+			frame.boundingBox(),
+			image.boundingBox(),
+			image.evaluate((element) => getComputedStyle(element).objectPosition),
+		]);
+
+		expect(frameBox).not.toBeNull();
+		expect(imageBox).not.toBeNull();
+		expect(Math.abs(frameBox!.width - imageBox!.width)).toBeLessThanOrEqual(1);
+		expect(Math.abs(frameBox!.height - imageBox!.height)).toBeLessThanOrEqual(1);
+		expect(objectPosition).toBe('15% 50%');
+	});
+
 	test('homepage typography remains compact at critical viewport widths', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 
@@ -97,37 +111,37 @@ test.describe('Public pages smoke', () => {
 			name: /Learning changes how we see — and how we act\./i,
 		});
 		const eyebrow = page.getByText('Duy Khánh · Giảng viên', { exact: true });
-		const closingTitle = page.getByRole('heading', {
+		const sectionTitle = page.getByRole('heading', {
 			level: 2,
-			name: /Có điều muốn trao đổi\? Hãy gửi tôi vài dòng\./i,
+			name: /Những điều tôi đang xây dựng/i,
 		});
 		const heroSection = page.locator('main section').first();
 
 		expect(await renderedLineCount(heroTitle)).toBeLessThanOrEqual(4);
 		expect(await renderedLineCount(eyebrow)).toBe(1);
-		expect(await renderedLineCount(closingTitle)).toBeLessThanOrEqual(4);
+		expect(await renderedLineCount(sectionTitle)).toBeLessThanOrEqual(4);
 
 		for (const width of [320, 390, 768, 1024, 1440]) {
 			await page.setViewportSize({ width, height: 900 });
 			const maxHeroLines = width < 768 ? 4 : 3;
 			expect(await renderedLineCount(heroTitle)).toBeLessThanOrEqual(maxHeroLines);
-			expect(await renderedLineCount(closingTitle)).toBeLessThanOrEqual(width <= 768 ? 4 : 3);
+			expect(await renderedLineCount(sectionTitle)).toBeLessThanOrEqual(width <= 768 ? 4 : 3);
 			const [heroFontSize, sectionFontSize, heroHeight] = await Promise.all([
 				heroTitle.evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
 				page
 					.getByRole('heading', {
 						level: 2,
-						name: /Những ghi chép mới/i,
+						name: /Những điều tôi đang xây dựng/i,
 					})
 					.evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
 				heroSection.evaluate((element) => element.getBoundingClientRect().height),
 			]);
-			expect(heroFontSize).toBeGreaterThanOrEqual(40);
-			expect(heroFontSize).toBeLessThanOrEqual(60);
+			expect(heroFontSize).toBeGreaterThanOrEqual(width < 768 ? 38 : 54);
+			expect(heroFontSize).toBeLessThanOrEqual(width < 768 ? 60 : 84);
 			expect(sectionFontSize).toBeGreaterThanOrEqual(28);
-			expect(sectionFontSize).toBeLessThanOrEqual(36);
+			expect(sectionFontSize).toBeLessThanOrEqual(50);
 			expect(heroFontSize).toBeGreaterThan(sectionFontSize);
-			expect(heroHeight).toBeLessThanOrEqual(width < 768 ? 760 : 720);
+			expect(heroHeight).toBeLessThanOrEqual(width < 768 ? 1100 : 900);
 			const hasOverflow = await page.evaluate(
 				() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
 			);
@@ -136,11 +150,16 @@ test.describe('Public pages smoke', () => {
 
 		await page.setViewportSize({ width: 390, height: 844 });
 		const heroImage = page.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i });
+		const secondaryCta = page.getByRole('link', { name: /Đọc bài viết mới/i }).first();
 		const imageBox = await heroImage.boundingBox();
+		const secondaryCtaBox = await secondaryCta.boundingBox();
 		expect(imageBox).not.toBeNull();
-		expect(imageBox!.height).toBeGreaterThanOrEqual(190);
-		expect(imageBox!.height).toBeLessThanOrEqual(220);
-		expect(imageBox!.width / imageBox!.height).toBeGreaterThan(1.4);
+		expect(secondaryCtaBox).not.toBeNull();
+		expect(secondaryCtaBox!.height).toBeGreaterThanOrEqual(44);
+		expect(imageBox!.height).toBeGreaterThanOrEqual(300);
+		expect(imageBox!.height).toBeLessThanOrEqual(520);
+		expect(imageBox!.width / imageBox!.height).toBeGreaterThan(0.7);
+		expect(imageBox!.width / imageBox!.height).toBeLessThan(0.9);
 	});
 
 	test('about page introduces the person before three concise work areas', async ({ page }) => {
@@ -148,15 +167,18 @@ test.describe('Public pages smoke', () => {
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 		await expect(
 			page.getByRole('heading', {
-				name: /Tôi là Duy Khánh — giảng viên, người thiết kế chương trình học và người viết/i,
+				name: /Tôi là Duy Khánh/i,
 			}),
+		).toBeVisible();
+		await expect(
+			page.getByText(/Giảng viên, người thiết kế chương trình học và người viết/i),
 		).toBeVisible();
 		await page.setViewportSize({ width: 1440, height: 900 });
 		const heroContainerWidth = await page
 			.getByRole('heading', { level: 1 })
 			.locator('..')
 			.evaluate((element) => element.getBoundingClientRect().width);
-		expect(heroContainerWidth).toBeLessThanOrEqual(770);
+		expect(heroContainerWidth).toBeLessThanOrEqual(900);
 		await expect(page.locator('#dich-vu')).toBeVisible();
 		await expect(page.locator('#giang-day-workshop')).toBeVisible();
 		await expect(page.locator('#tu-van-phat-trien')).toBeVisible();
@@ -180,7 +202,9 @@ test.describe('Public pages smoke', () => {
 
 	test('archive is noindex', async ({ page }) => {
 		await page.goto('/archive');
-		await expect(page.getByRole('heading', { name: 'Lưu trữ' })).toBeVisible();
+		await expect(
+			page.getByRole('heading', { name: /Những ý tưởng đã bước ra khỏi trang giấy/i }),
+		).toBeVisible();
 		const robots = await page.locator('meta[name="robots"]').getAttribute('content');
 		expect(robots ?? '').toMatch(/noindex/i);
 	});
@@ -188,7 +212,7 @@ test.describe('Public pages smoke', () => {
 	test('contact page loads with public inquiry options', async ({ page }) => {
 		await page.goto('/lien-he');
 		await expect(
-			page.getByRole('heading', { name: /Gửi tôi một lời nhắn/i }).first(),
+			page.getByRole('heading', { name: /Hãy bắt đầu một cuộc đối thoại/i }).first(),
 		).toBeVisible();
 		const typeSelect = page.getByLabel('Chủ đề');
 		await expect(typeSelect).toBeVisible();
@@ -211,7 +235,7 @@ test.describe('Public pages smoke', () => {
 
 	test('bai viet library shows writing index', async ({ page }) => {
 		await page.goto('/bai-viet');
-		await expect(page.getByRole('heading', { name: 'Bài viết' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Những ghi chép đang mở/i })).toBeVisible();
 		const cards = page.locator('main article');
 		const count = await cards.count();
 		if (count > 0) {

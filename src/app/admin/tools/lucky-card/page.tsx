@@ -23,11 +23,11 @@ interface LuckyCardState {
 
 /* ─── Shared font stacks ──────────────────────────────────
    Inter → Vietnamese-safe UI font (loaded in layout.tsx with vietnamese subset)
-   Cormorant Garamond → Vietnamese-safe serif for card content
+   Source Serif 4 → Vietnamese-safe serif for card content
    Cinzel → Latin-only decorative, used ONLY for non-Vietnamese labels like "Lucky Card"
 */
 const FONT_UI = 'var(--font-inter), system-ui, sans-serif';
-const FONT_CARD = 'var(--font-cormorant), "Cormorant Garamond", Georgia, serif';
+const FONT_CARD = 'var(--font-serif-display), "Source Serif 4", Georgia, serif';
 const FONT_DISPLAY = 'var(--font-cinzel), serif'; // Only for pure Latin text
 
 // ─── SVG Icon set — no emojis in UI chrome ───────────────
@@ -532,7 +532,7 @@ function LuckyCardItem({ card, index, onFlip }: { card: CardData; index: number;
                 </span>
               </div>
 
-              {/* MAIN CONTENT — Cormorant Garamond (Vietnamese safe) + adaptive size */}
+              {/* MAIN CONTENT — Source Serif 4 (Vietnamese safe) + adaptive size */}
               <m.div
                 className="relative z-10 flex items-center justify-center px-5 sm:px-7"
                 style={{ maxWidth: "90%", maxHeight: "65%" }}

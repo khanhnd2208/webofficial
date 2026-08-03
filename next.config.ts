@@ -37,8 +37,8 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // Blog → Bài viết (permanent, SEO)
-      { source: '/blog', destination: '/bai-viet', permanent: true },
-      { source: '/blog/:path*', destination: '/bai-viet/:path*', permanent: true },
+      { source: '/blog', destination: '/', permanent: true },
+      { source: '/blog/:path*', destination: '/', permanent: true },
 
       // Auth & account renames
       { source: '/login', destination: '/dang-nhap', permanent: true },
