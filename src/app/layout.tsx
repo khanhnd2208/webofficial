@@ -36,14 +36,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE_ORIGIN),
 	title: {
-		default: 'Duy Khánh — Thiết kế học tập quản trị và đào tạo ứng dụng AI',
+		default: 'Duy Khánh — Giảng viên và người thiết kế trải nghiệm học tập',
 		template: `%s | ${SITE_NAME}`,
 	},
 	description: SITE_DESCRIPTION,
 	authors: [{ name: SITE_CREATOR, url: absoluteUrl('/') }],
 	creator: SITE_CREATOR,
 	openGraph: {
-		title: 'Duy Khánh — Thiết kế học tập quản trị và đào tạo ứng dụng AI',
+		title: 'Duy Khánh — Giảng viên và người thiết kế trải nghiệm học tập',
 		description: SITE_DESCRIPTION,
 		siteName: SITE_NAME,
 		locale: 'vi_VN',
@@ -54,13 +54,13 @@ export const metadata: Metadata = {
 				url: absoluteUrl('/og-editorial-premium.png'),
 				width: 1734,
 				height: 907,
-				alt: 'Duy Khánh — Học để hiểu sâu. Làm để tạo thay đổi.',
+				alt: 'Duy Khánh — Tôi làm giáo dục để tiếp tục học.',
 			},
 		],
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: 'Duy Khánh — Thiết kế học tập quản trị và đào tạo ứng dụng AI',
+		title: 'Duy Khánh — Giảng viên và người thiết kế trải nghiệm học tập',
 		description: SITE_DESCRIPTION,
 		images: [absoluteUrl('/og-editorial-premium.png')],
 	},

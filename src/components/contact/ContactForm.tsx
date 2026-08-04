@@ -19,9 +19,9 @@ import {
 type FormState = {
 	name: string;
 	email: string;
-	organization: string;
 	inquiryType: InquiryType;
 	context: string;
+	desiredOutcome: string;
 	timeframe: string;
 	agreedPrivacy: boolean;
 	website: string;
@@ -36,9 +36,9 @@ function emptyForm(type: InquiryType): FormState {
 	return {
 		name: '',
 		email: '',
-		organization: '',
 		inquiryType: type,
 		context: '',
+		desiredOutcome: '',
 		timeframe: '',
 		agreedPrivacy: false,
 		website: '',
@@ -79,9 +79,9 @@ export default function ContactForm({
 		name: `${idPrefix}-name`,
 		email: `${idPrefix}-email`,
 		emailHelp: `${idPrefix}-email-help`,
-		organization: `${idPrefix}-organization`,
 		inquiryType: `${idPrefix}-inquiry-type`,
 		context: `${idPrefix}-context`,
+		desiredOutcome: `${idPrefix}-desired-outcome`,
 		timeframe: `${idPrefix}-timeframe`,
 		errorSummary: `${idPrefix}-error-summary`,
 		privacyError: `${idPrefix}-privacy-error`,
@@ -145,7 +145,7 @@ export default function ContactForm({
 
 	function validate(): Record<string, string> {
 		const errors: Record<string, string> = {};
-		if (!form.name.trim()) errors.name = 'Vui lòng cho biết họ tên của bạn.';
+		if (!form.name.trim()) errors.name = 'Vui lòng cho biết tên của bạn.';
 
 		if (isAccount && !accountEmail) {
 			errors.email = 'Tài khoản của bạn chưa có email để nhận phản hồi.';
@@ -162,6 +162,14 @@ export default function ContactForm({
 			errors.agreedPrivacy = 'Vui lòng đồng ý với chính sách bảo mật trước khi gửi.';
 		}
 		return errors;
+	}
+
+	function buildContextPayload(): string {
+		const parts = [form.context.trim()];
+		if (form.desiredOutcome.trim()) {
+			parts.push(`Kết quả mong muốn: ${form.desiredOutcome.trim()}`);
+		}
+		return parts.join('\n\n');
 	}
 
 	async function onSubmit(event: React.FormEvent) {
@@ -197,8 +205,7 @@ export default function ContactForm({
 					name: form.name.trim(),
 					email: isAccount ? accountEmail : form.email.trim(),
 					inquiryType: form.inquiryType,
-					organization: form.organization.trim() || undefined,
-					context: form.context.trim(),
+					context: buildContextPayload(),
 					timeframe: form.timeframe.trim() || undefined,
 					sourcePage: resolvedContext.sourcePage,
 					sourceCourseSlug: resolvedContext.sourceCourseSlug,
@@ -243,8 +250,8 @@ export default function ContactForm({
 				<p className="editorial-label !text-success">Lời nhắn đã được gửi</p>
 				<p className="type-h3 mt-4">Cảm ơn bạn đã chia sẻ.</p>
 				<p className="mt-3 text-base leading-relaxed text-ink-secondary">
-					Tôi sẽ đọc bối cảnh, xem xét mức độ phù hợp và phản hồi qua email. Nếu cần thêm thông tin,
-					tôi sẽ hỏi lại trước khi đề xuất bước tiếp theo.
+					Tôi sẽ đọc bối cảnh, xem mình có phù hợp để hỗ trợ hay không và phản hồi bằng một câu hỏi
+					hoặc bước tiếp theo.
 				</p>
 				{showHomeLink ? (
 					<Link
@@ -277,7 +284,7 @@ export default function ContactForm({
 		<form
 			ref={formRef}
 			onSubmit={onSubmit}
-			className="space-y-9"
+			className="space-y-8"
 			noValidate
 			aria-busy={pending}
 			aria-describedby={errorSummary ? ids.errorSummary : undefined}
@@ -312,11 +319,10 @@ export default function ContactForm({
 				</label>
 			</div>
 
-			<fieldset className="grid gap-6 border-t border-hairline pt-7 sm:grid-cols-2 sm:gap-7">
-				<legend className="editorial-label pr-4">Thông tin phản hồi</legend>
+			<div className="grid gap-6 sm:grid-cols-2 sm:gap-7">
 				<div>
 					<label htmlFor={ids.name} className={labelClass}>
-						Họ và tên
+						Tên
 					</label>
 					<input
 						id={ids.name}
@@ -336,7 +342,7 @@ export default function ContactForm({
 				</div>
 				<div>
 					<label htmlFor={ids.email} className={labelClass}>
-						Email nhận phản hồi
+						Email
 					</label>
 					<input
 						id={ids.email}
@@ -355,7 +361,7 @@ export default function ContactForm({
 					<p id={ids.emailHelp} className="mt-1.5 text-xs leading-relaxed text-ink-secondary">
 						{isAccount
 							? 'Tôi sẽ phản hồi vào email của tài khoản này.'
-							: 'Vui lòng nhập email bạn thường dùng để tôi có thể liên lạc.'}
+							: 'Email bạn thường dùng để nhận phản hồi.'}
 					</p>
 					{fieldErrors.email ? (
 						<p id={`${ids.email}-error`} className="mt-2 text-xs text-error">
@@ -363,77 +369,36 @@ export default function ContactForm({
 						</p>
 					) : null}
 				</div>
-			</fieldset>
+			</div>
 
-			<fieldset className="grid gap-6 border-t border-hairline pt-7 sm:grid-cols-2 sm:gap-7">
-				<legend className="editorial-label pr-4">Bối cảnh trao đổi</legend>
-				<div>
-					<label htmlFor={ids.organization} className={labelClass}>
-						Tổ chức{' '}
-						<span className="normal-case tracking-normal text-ink-secondary/70">
-							(không bắt buộc)
-						</span>
-					</label>
-					<input
-						id={ids.organization}
-						autoComplete="organization"
-						className={inputClass}
-						value={form.organization}
-						onChange={(event) => update('organization', event.target.value)}
-					/>
-				</div>
-				<div>
-					<label htmlFor={ids.inquiryType} className={labelClass}>
-						Bạn đang liên hệ về
-					</label>
-					<select
-						id={ids.inquiryType}
-						className={inputClass}
-						value={form.inquiryType}
-						onChange={(event) => update('inquiryType', event.target.value as InquiryType)}
-					>
-						{PUBLIC_INQUIRY_TYPE_OPTIONS.map((option) => (
-							<option key={option.value} value={option.value}>
-								{option.label}
-							</option>
-						))}
-					</select>
-				</div>
-				<div className="sm:col-span-2">
-					<label htmlFor={ids.timeframe} className={labelClass}>
-						Thời gian dự kiến{' '}
-						<span className="normal-case tracking-normal text-ink-secondary/70">
-							(không bắt buộc)
-						</span>
-					</label>
-					<select
-						id={ids.timeframe}
-						className={inputClass}
-						value={form.timeframe}
-						onChange={(event) => update('timeframe', event.target.value)}
-					>
-						<option value="">Chọn mốc gần nhất</option>
-						<option value="2-4-weeks">Trong 2–4 tuần tới</option>
-						<option value="1-3-months">Trong 1–3 tháng tới</option>
-						<option value="after-3-months">Sau 3 tháng</option>
-						<option value="unsure">Chưa có mốc cụ thể</option>
-					</select>
-				</div>
-			</fieldset>
-
-			<div className="border-t border-hairline pt-7">
-				<label htmlFor={ids.context} className={labelClass}>
-					Bạn đang muốn giải quyết điều gì?
+			<div>
+				<label htmlFor={ids.inquiryType} className={labelClass}>
+					Bạn muốn trao đổi về điều gì?
 				</label>
-				<p className="mt-1 text-sm text-ink-secondary">
-					Ví dụ: đối tượng là ai, điều gì đang chưa hiệu quả và kết quả nào sẽ hữu ích với bạn?
-				</p>
+				<select
+					id={ids.inquiryType}
+					className={inputClass}
+					value={form.inquiryType}
+					onChange={(event) => update('inquiryType', event.target.value as InquiryType)}
+				>
+					{PUBLIC_INQUIRY_TYPE_OPTIONS.map((option) => (
+						<option key={option.value} value={option.value}>
+							{option.label}
+						</option>
+					))}
+				</select>
+			</div>
+
+			<div>
+				<label htmlFor={ids.context} className={labelClass}>
+					Bối cảnh hoặc điều đang khiến bạn băn khoăn
+				</label>
 				<textarea
 					id={ids.context}
 					required
-					rows={6}
-					className={`${inputClass} min-h-40 resize-y`}
-					placeholder="Cho tôi biết bối cảnh, người liên quan và điều bạn muốn thay đổi."
+					rows={5}
+					className={`${inputClass} min-h-36 resize-y`}
+					placeholder="Một vài dòng có bối cảnh là đủ để bắt đầu."
 					value={form.context}
 					onChange={(event) => update('context', event.target.value)}
 					aria-invalid={Boolean(fieldErrors.context)}
@@ -444,6 +409,39 @@ export default function ContactForm({
 						{fieldErrors.context}
 					</p>
 				) : null}
+			</div>
+
+			<div>
+				<label htmlFor={ids.desiredOutcome} className={labelClass}>
+					Kết quả bạn mong muốn{' '}
+					<span className="normal-case tracking-normal text-ink-secondary/70">(không bắt buộc)</span>
+				</label>
+				<textarea
+					id={ids.desiredOutcome}
+					rows={3}
+					className={`${inputClass} min-h-24 resize-y`}
+					value={form.desiredOutcome}
+					onChange={(event) => update('desiredOutcome', event.target.value)}
+				/>
+			</div>
+
+			<div>
+				<label htmlFor={ids.timeframe} className={labelClass}>
+					Thời gian dự kiến{' '}
+					<span className="normal-case tracking-normal text-ink-secondary/70">(không bắt buộc)</span>
+				</label>
+				<select
+					id={ids.timeframe}
+					className={inputClass}
+					value={form.timeframe}
+					onChange={(event) => update('timeframe', event.target.value)}
+				>
+					<option value="">Chọn mốc gần nhất</option>
+					<option value="2-4-weeks">Trong 2–4 tuần tới</option>
+					<option value="1-3-months">Trong 1–3 tháng tới</option>
+					<option value="after-3-months">Sau 3 tháng</option>
+					<option value="unsure">Chưa có mốc cụ thể</option>
+				</select>
 			</div>
 
 			<div>

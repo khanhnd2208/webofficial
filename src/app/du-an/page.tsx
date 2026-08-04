@@ -1,39 +1,32 @@
 import type { Metadata } from 'next';
 
-import { ProofNote } from '@/components/marketing';
+import { EditorialHero } from '@/components/marketing';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
+import { projectsPage } from '@/content/publicMarketing';
 import { ProjectGrid, projects } from '@/features/portfolio';
 
 export const metadata: Metadata = {
-	title: 'Công việc đã thực hiện',
+	title: 'Những điều tôi đang làm',
 	description:
-		'Các chương trình học, nghiên cứu và dự án cố vấn của Duy Khánh, trình bày rõ vấn đề, vai trò, đầu ra và bằng chứng hiện có.',
+		'Các lớp học, chương trình, nghiên cứu và thử nghiệm của Duy Khánh — ghi lại điều đã làm được, điều còn chưa chắc chắn và những gì học được trên đường đi.',
 	alternates: { canonical: absoluteUrl(routes.projects) },
 };
 
 export default function ProjectsPage() {
 	return (
 		<main className="bg-canvas">
-			<section className="editorial-section border-b border-hairline">
+			<EditorialHero
+				eyebrow={projectsPage.eyebrow}
+				title={projectsPage.title}
+				lead={projectsPage.lead}
+			/>
+			<section className="editorial-section">
 				<div className="shell">
-					<header className="grid gap-8 lg:grid-cols-12 lg:items-end">
-						<div className="lg:col-span-8">
-							<p className="editorial-label">Selected work</p>
-							<h1 className="premium-display mt-5 text-ink">Công việc đã thực hiện</h1>
-						</div>
-						<div className="lg:col-span-4">
-							<p className="premium-lead">
-								Mỗi hồ sơ cho thấy vấn đề được xử lý, vai trò của tôi, những gì được tạo ra và giới
-								hạn của bằng chứng hiện có.
-							</p>
-							<ProofNote>
-								Phạm vi và số lượng đầu ra không được gọi là tác động. Kết quả chỉ xuất hiện khi có
-								căn cứ xác minh.
-							</ProofNote>
-						</div>
-					</header>
-					<ProjectGrid projects={projects} />
+					<ProjectGrid
+						projects={projects}
+						flagshipSlug="strategic-management-learning-experience"
+					/>
 				</div>
 			</section>
 		</main>

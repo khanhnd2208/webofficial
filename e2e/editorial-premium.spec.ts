@@ -34,18 +34,23 @@ test.describe('Editorial premium public experience', () => {
 		expect(headingBox!.y).toBeLessThan(artworkBox!.y);
 	});
 
-	test('routes visitors from a need to the relevant offer and proof', async ({ page }) => {
+	test('routes visitors from classroom work to project proof and services', async ({ page }) => {
 		await page.goto('/');
-		const need = page.getByRole('heading', { name: 'Tôi muốn đào tạo một đội ngũ' });
-		await expect(need).toBeVisible();
-		const block = page.locator('article').filter({ has: need });
-		await expect(block.getByRole('link', { name: 'Xem giải pháp đào tạo' })).toHaveAttribute(
+		await expect(page.getByRole('heading', { name: 'AI50 — AI cho mọi người' })).toBeVisible();
+		await expect(
+			page.getByRole('link', { name: /AI50 — AI cho mọi người/i }).first(),
+		).toHaveAttribute('href', '/du-an/ai50-ai-cho-moi-nguoi');
+		await expect(page.getByRole('link', { name: /Learning at Moonie Café/i }).first()).toHaveAttribute(
 			'href',
-			'/dich-vu#applied-ai',
+			'/du-an/learning-at-moonie-cafe',
 		);
-		await expect(block.getByRole('link', { name: 'Xem chương trình AI50' })).toHaveAttribute(
+		await expect(page.getByRole('link', { name: /Xem các hình thức cộng tác/i })).toHaveAttribute(
 			'href',
-			'/du-an/ai50-ai-cho-moi-nguoi',
+			'/dich-vu',
+		);
+		await expect(page.getByRole('link', { name: /Gửi tôi một lời nhắn/i })).toHaveAttribute(
+			'href',
+			/\/lien-he/,
 		);
 	});
 
@@ -55,50 +60,65 @@ test.describe('Editorial premium public experience', () => {
 		await page.getByRole('button', { name: 'Mở menu' }).click();
 		const dialog = page.getByRole('dialog', { name: 'Menu điều hướng' });
 		await expect(dialog).toBeVisible();
-		await expect(dialog.getByRole('link', { name: /Chọn nội dung trao đổi/i })).toBeVisible();
+		await expect(dialog.getByRole('link', { name: /Gửi lời nhắn/i })).toBeVisible();
 		await page.keyboard.press('Escape');
 		await expect(dialog).toHaveCount(0);
 		await expect(page.getByRole('button', { name: 'Mở menu' })).toBeFocused();
 	});
 
-	test('services are scannable and project evidence remains reachable', async ({ page }) => {
+	test('services stay scannable without catalogue jargon', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/dich-vu');
-		await expect(page.getByRole('navigation', { name: 'Chọn hướng hỗ trợ' })).toBeVisible();
+		await expect(
+			page.getByRole('heading', { level: 1, name: /Ba cách chúng ta có thể cùng làm việc/i }),
+		).toBeVisible();
+		await expect(page.getByText(/không bị quảng cáo/i)).toHaveCount(0);
+		await expect(page.getByText('Có thể không phù hợp nếu')).toHaveCount(0);
+		await expect(page.getByText('Kết quả hướng tới')).toHaveCount(0);
 
 		const appliedAi = page.locator('#applied-ai');
 		await expect(
-			appliedAi.getByRole('heading', { name: /Đào tạo và thiết kế chương trình AI/i }),
+			appliedAi.getByRole('heading', { name: /Thiết kế và đào tạo AI/i }),
 		).toBeVisible();
-		await expect(appliedAi.getByText('Kết quả hướng tới')).toBeVisible();
-		await expect(appliedAi.getByText('Có thể không phù hợp nếu')).toBeVisible();
-		await expect(appliedAi.getByRole('link', { name: 'Nhận đề xuất chương trình AI' })).toBeVisible();
-
-		const disclosure = appliedAi.locator('details');
-		await expect(disclosure.locator('summary')).toContainText('Hình thức, đầu ra và cách làm');
-		await disclosure.locator('summary').click();
-		await expect(disclosure).toHaveAttribute('open', '');
-		await expect(appliedAi.getByText('Đầu ra cụ thể')).toBeVisible();
+		await expect(appliedAi.getByText('Khi nào hướng này hữu ích?')).toBeVisible();
+		await expect(
+			appliedAi.getByRole('link', { name: /Trao đổi về một chương trình AI/i }),
+		).toBeVisible();
 		await expect(appliedAi.getByRole('link', { name: /AI50/i })).toBeVisible();
+		await expect(page.getByText(/Cách làm này phù hợp nhất khi/i)).toBeVisible();
 	});
 
-	test('keeps a small portfolio honest without empty filters or fake impact', async ({ page }) => {
+	test('keeps a small portfolio honest without empty filters or temporary visuals', async ({
+		page,
+	}) => {
 		await page.goto('/du-an');
+		await expect(
+			page.getByRole('heading', {
+				level: 1,
+				name: /Những điều tôi đang làm và tiếp tục hoàn thiện/i,
+			}),
+		).toBeVisible();
 		await expect(page.getByLabel('Lọc dự án')).toHaveCount(0);
-		await expect(page.getByText('Vai trò').first()).toBeVisible();
+		await expect(page.getByText('Đầu ra nổi bật')).toHaveCount(0);
+		await expect(page.getByText(/giới hạn của bằng chứng/i)).toHaveCount(0);
 		await page.goto('/du-an/ai50-ai-cho-moi-nguoi');
-		await expect(page.getByText('Phạm vi & cấu phần')).toBeVisible();
-		await expect(page.getByText('Tác động đã xác minh')).toHaveCount(0);
-		await expect(page.getByText(/Hình minh họa tạm thời/).first()).toBeVisible();
+		await expect(page.getByText('Visual tạm thời')).toHaveCount(0);
+		await expect(page.getByText(/Hình minh họa tạm thời/i)).toHaveCount(0);
+		await expect(page.getByText(/Minh họa đang chờ được thay/i)).toHaveCount(0);
+		await expect(page.getByText('Điều tôi học được')).toBeVisible();
+		await expect(page.getByText('Giả định làm việc hiện tại')).toHaveCount(0);
+		await page.goto('/du-an/ai-in-recruitment-research');
+		await expect(page.getByText('Giả định làm việc hiện tại')).toBeVisible();
+		await expect(page.getByText('Điều dự án chứng minh')).toHaveCount(0);
 	});
 
 	test('contact form starts empty for guests and exposes clear fields', async ({ page }) => {
 		await page.goto('/lien-he');
 		await expect(
-			page.getByRole('heading', { level: 1, name: /Chọn nội dung muốn trao đổi/i }),
+			page.getByRole('heading', { level: 1, name: /Gửi tôi một lời nhắn/i }),
 		).toBeVisible();
-		await expect(page.getByLabel('Họ và tên')).toHaveValue('');
-		await expect(page.getByLabel('Email nhận phản hồi')).toHaveValue('');
+		await expect(page.getByLabel('Tên')).toHaveValue('');
+		await expect(page.getByLabel('Email')).toHaveValue('');
 		await expect(page.getByLabel(/Thời gian dự kiến/)).toBeVisible();
 		await expect(page.getByText(/Đang kiểm tra thông tin tài khoản/i)).toHaveCount(0);
 	});

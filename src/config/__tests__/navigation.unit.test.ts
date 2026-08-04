@@ -22,11 +22,9 @@ import { PUBLIC_INQUIRY_TYPE_OPTIONS } from '@/features/inquiries/constants';
 import type { PostListItemDTO } from '@/types/post';
 
 describe('brand identity', () => {
-	it('uses Duy Khánh as the master brand with a clear Vietnamese positioning', () => {
+	it('uses Duy Khánh as the master brand with a personal positioning line', () => {
 		expect(SITE_NAME).toBe('Duy Khánh');
-		expect(SITE_POSITIONING).toBe(
-			'Biến kiến thức phức tạp thành năng lực, chương trình và quy trình có thể áp dụng.',
-		);
+		expect(SITE_POSITIONING).toBe('Tôi dạy, học và viết từ Hà Nội.');
 		expect(EDITORIAL_NAME).toBe('HANOICAM');
 		expect(PERSONAL_MARK).toBe('NDK');
 		expect(brandHierarchy.master).toBe(SITE_NAME);
@@ -40,12 +38,13 @@ describe('publication gates', () => {
 		expect(isPublished('draft')).toBe(false);
 	});
 
-	it('exposes only the four portfolio destinations', () => {
+	it('exposes educator destinations without contact as a nav item', () => {
 		const links = getDesktopNavLinks();
 		const labels = links.map((l) => l.label);
 		expect(labels).not.toContain('Trang chủ');
-		expect(labels).toContain('Giới thiệu');
-		expect(labels).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ', 'Liên hệ']);
+		expect(labels).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ']);
+		expect(labels).not.toContain('Ghi chép');
+		expect(labels).not.toContain('Liên hệ');
 		expect(labels).not.toContain('Bài viết');
 		expect(labels).not.toContain('Podcast');
 		expect(
@@ -55,9 +54,10 @@ describe('publication gates', () => {
 		expect(links.some((l) => l.href === routes.accompany)).toBe(false);
 	});
 
-	it('publishes a specific contact CTA beside the primary destinations', () => {
+	it('publishes a single contact CTA to the contact page', () => {
 		expect(CONTACT_CTA.status).toBe('published');
-		expect(CONTACT_CTA.label).toBe('Chọn nội dung trao đổi');
+		expect(CONTACT_CTA.label).toBe('Gửi lời nhắn');
+		expect(CONTACT_CTA.href).toBe(routes.contact);
 		expect(getPublishedContactCta()).toEqual(CONTACT_CTA);
 	});
 
@@ -73,6 +73,7 @@ describe('publication gates', () => {
 		expect(allHrefs).toContain(routes.projects);
 		expect(allHrefs).toContain(routes.services);
 		expect(allHrefs).toContain(routes.contact);
+		expect(allHrefs).not.toContain(routes.notes);
 		expect(allHrefs).not.toContain(routes.posts);
 		expect(allHrefs).not.toContain(routes.archive);
 		expect(allHrefs).not.toContain(routes.learn);
@@ -103,6 +104,10 @@ describe('redirect map', () => {
 		expect(bySource['/case-study']).toBe('/du-an');
 		expect(bySource['/giang-day']).toBe('/dich-vu');
 		expect(bySource['/goc-cua-khanh']).toBe('/du-an');
+		expect(bySource['/bai-viet']).toBe('/ghi-chep');
+		expect(bySource['/du-an/moonie-cafe-business-development']).toBe(
+			'/du-an/learning-at-moonie-cafe',
+		);
 		expect(bySource['/hoc']).toBe('/');
 		expect(bySource['/hoc/chuong-trinh']).toBe('/');
 	});
@@ -136,6 +141,7 @@ describe('route map', () => {
 		expect(routes.about).toBe('/gioi-thieu');
 		expect(routes.projects).toBe('/du-an');
 		expect(routes.services).toBe('/dich-vu');
+		expect(routes.notes).toBe('/ghi-chep');
 		expect(routes.growth).toBe('/phat-trien-ban-than');
 		expect(routes.archive).toBe('/archive');
 		expect(routes.accountLearning).toBe('/tai-khoan/hoc');

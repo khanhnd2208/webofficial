@@ -1,9 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import ContactLink from '@/components/contact/ContactLink';
-import { routes } from '@/config/routes';
-
 type MarketingCtaProps = {
 	href: string;
 	children: ReactNode;
@@ -20,7 +17,7 @@ const variantClass = {
 } as const;
 
 /**
- * Marketing CTA — square corners, ink/vermilion system. Prefer over generic Button pills.
+ * Marketing CTA — square corners, ink/accent system. Prefer over generic Button pills.
  */
 export function MarketingCta({
 	href,
@@ -28,20 +25,8 @@ export function MarketingCta({
 	variant = 'primary',
 	className = '',
 }: MarketingCtaProps) {
-	const classNames = `${variantClass[variant]} ${className}`;
-	const opensContact =
-		href === routes.contact || href.startsWith(`${routes.contact}?`) || href.startsWith(`${routes.contact}#`);
-
-	if (opensContact) {
-		return (
-			<ContactLink href={href} className={classNames}>
-				{children}
-			</ContactLink>
-		);
-	}
-
 	return (
-		<Link href={href} className={classNames}>
+		<Link href={href} className={`${variantClass[variant]} ${className}`}>
 			{children}
 		</Link>
 	);

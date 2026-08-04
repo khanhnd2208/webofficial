@@ -55,19 +55,11 @@ export default function EditorialCover({
 					>
 						{typeof index === 'number' ? String(index).padStart(2, '0') : index}
 					</span>
-				) : (
-					<span
-						className={`block font-display text-3xl font-medium leading-none ${
-							espresso ? 'text-[#F2ECE1]/20' : 'text-ink/20'
-						}`}
-					>
-						Aa
-					</span>
-				)}
+				) : null}
 				<p
 					className={`mt-2 line-clamp-2 font-display text-base font-medium leading-snug sm:text-lg ${
 						espresso ? 'text-[#F2ECE1]/55' : 'text-ink/55'
-					}`}
+					} ${index == null ? 'mt-auto' : ''}`}
 				>
 					{title}
 				</p>

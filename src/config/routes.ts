@@ -8,7 +8,7 @@
 export const routes = {
 	// ─── Public marketing ─────────────────────────────────────────────────────
 	home: '/',
-	homeLearningExperiences: '/#learning-experiences',
+	homeLearningExperiences: '/#trong-lop-hoc',
 	about: '/gioi-thieu',
 	projects: '/du-an',
 	project: (slug: string) => `/du-an/${slug}` as const,
@@ -21,6 +21,8 @@ export const routes = {
 	aboutMilestones: '/gioi-thieu#dau-moc',
 	aboutProcess: '/gioi-thieu#quy-trinh',
 	contact: '/lien-he',
+	notes: '/ghi-chep',
+	note: (slug: string) => `/ghi-chep/${slug}` as const,
 	growth: '/phat-trien-ban-than',
 	growthEpisode: (slug: string) => `/phat-trien-ban-than/${slug}` as const,
 	archive: '/archive',
@@ -32,7 +34,7 @@ export const routes = {
 	trainingWorkshop: '/dong-hanh/dao-tao-workshop',
 	aiApplied: '/dong-hanh/ai-ung-dung',
 
-	// ─── Journal / Writing ────────────────────────────────────────────────────
+	// ─── Journal / Writing (legacy /bai-viet redirects to /ghi-chep) ───────────
 	posts: '/bai-viet',
 	post: (slug: string) => `/bai-viet/${slug}` as const,
 	postPillar: (slug: string) => `/bai-viet/chu-de/${slug}` as const,
@@ -135,8 +137,13 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	{ source: '/giang-day', destination: '/dich-vu', permanent: true },
 	{ source: '/goc-cua-khanh', destination: '/du-an', permanent: true },
 	{ source: '/goc-cua-khanh/:path*', destination: '/du-an', permanent: true },
-	{ source: '/bai-viet', destination: '/', permanent: true },
-	{ source: '/bai-viet/:path*', destination: '/', permanent: true },
+	{ source: '/bai-viet', destination: '/ghi-chep', permanent: true },
+	{ source: '/bai-viet/:path*', destination: '/ghi-chep', permanent: true },
+	{
+		source: '/du-an/moonie-cafe-business-development',
+		destination: '/du-an/learning-at-moonie-cafe',
+		permanent: true,
+	},
 	{ source: '/phat-trien-ban-than', destination: '/', permanent: true },
 	{ source: '/phat-trien-ban-than/:path*', destination: '/', permanent: true },
 	{ source: '/archive', destination: '/', permanent: true },
@@ -148,6 +155,7 @@ export type PublicRoute =
 	| typeof routes.home
 	| typeof routes.projects
 	| typeof routes.services
+	| typeof routes.notes
 	| typeof routes.posts
 	| typeof routes.about
 	| typeof routes.growth

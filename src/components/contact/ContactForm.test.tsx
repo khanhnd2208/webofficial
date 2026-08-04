@@ -32,21 +32,22 @@ describe('ContactForm', () => {
 	it('renders the concise Vietnamese fields for a guest', () => {
 		render(<ContactForm formEnabled />);
 
-		const name = screen.getByLabelText('Họ và tên');
-		const email = screen.getByLabelText('Email nhận phản hồi');
+		const name = screen.getByLabelText('Tên');
+		const email = screen.getByLabelText('Email');
 		expect(name).toBeInTheDocument();
 		expect(name).toHaveValue('');
 		expect(email).toBeRequired();
 		expect(email).toHaveValue('');
 		expect(email).not.toHaveAttribute('readonly');
-		expect(screen.getByLabelText('Bạn đang liên hệ về')).toHaveValue('training');
-		expect(screen.getByLabelText('Bạn đang muốn giải quyết điều gì?')).toBeInTheDocument();
-		expect(screen.getByLabelText(/Tổ chức/)).toBeInTheDocument();
-		expect(screen.getByLabelText(/Thời gian dự kiến/)).toBeInTheDocument();
+		expect(screen.getByLabelText('Bạn muốn trao đổi về điều gì?')).toHaveValue('training');
 		expect(
-			screen.getByText('Vui lòng nhập email bạn thường dùng để tôi có thể liên lạc.'),
+			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
 		).toBeInTheDocument();
+		expect(screen.getByLabelText(/Kết quả bạn mong muốn/)).toBeInTheDocument();
+		expect(screen.getByLabelText(/Thời gian dự kiến/)).toBeInTheDocument();
+		expect(screen.getByText('Email bạn thường dùng để nhận phản hồi.')).toBeInTheDocument();
 		expect(screen.queryByLabelText(/Ngân sách/i)).not.toBeInTheDocument();
+		expect(screen.queryByLabelText(/Tổ chức/)).not.toBeInTheDocument();
 	});
 
 	it('keeps guest name and email empty when the app has no session data', () => {
@@ -54,8 +55,8 @@ describe('ContactForm', () => {
 		session.status = 'unauthenticated';
 		render(<ContactForm formEnabled />);
 
-		expect(screen.getByLabelText('Họ và tên')).toHaveValue('');
-		expect(screen.getByLabelText('Email nhận phản hồi')).toHaveValue('');
+		expect(screen.getByLabelText('Tên')).toHaveValue('');
+		expect(screen.getByLabelText('Email')).toHaveValue('');
 		expect(
 			screen.queryByText('Tôi sẽ phản hồi vào email của tài khoản này.'),
 		).not.toBeInTheDocument();
@@ -67,8 +68,10 @@ describe('ContactForm', () => {
 		);
 		render(<ContactFormFromUrl formEnabled />);
 
-		expect(screen.getByLabelText('Bạn đang liên hệ về')).toHaveValue('learning-design');
-		expect(screen.getByLabelText('Bạn đang muốn giải quyết điều gì?')).toBeInTheDocument();
+		expect(screen.getByLabelText('Bạn muốn trao đổi về điều gì?')).toHaveValue('learning-design');
+		expect(
+			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
+		).toBeInTheDocument();
 	});
 
 	it('submits the direct context and shows a clear confirmation', async () => {
@@ -90,12 +93,13 @@ describe('ContactForm', () => {
 			/>,
 		);
 
-		await user.type(screen.getByLabelText('Họ và tên'), 'Nguyễn Văn A');
-		await user.type(screen.getByLabelText('Email nhận phản hồi'), 'a@example.com');
+		await user.type(screen.getByLabelText('Tên'), 'Nguyễn Văn A');
+		await user.type(screen.getByLabelText('Email'), 'a@example.com');
 		await user.type(
-			screen.getByLabelText('Bạn đang muốn giải quyết điều gì?'),
+			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
 			'Tôi muốn trao đổi về một lớp học.',
 		);
+		await user.type(screen.getByLabelText(/Kết quả bạn mong muốn/), 'Hiểu rõ bước tiếp theo.');
 		await user.selectOptions(screen.getByLabelText(/Thời gian dự kiến/), '1-3-months');
 		await user.click(screen.getByRole('checkbox'));
 		await user.click(screen.getByRole('button', { name: 'Gửi lời nhắn' }));
@@ -107,7 +111,8 @@ describe('ContactForm', () => {
 			name: 'Nguyễn Văn A',
 			email: 'a@example.com',
 			inquiryType: 'training',
-			context: 'Tôi muốn trao đổi về một lớp học.',
+			context:
+				'Tôi muốn trao đổi về một lớp học.\n\nKết quả mong muốn: Hiểu rõ bước tiếp theo.',
 			sourcePage: '/gioi-thieu',
 			sourceCourseSlug: 'leadership-101',
 			campaignParams: { ref: 'about' },
@@ -128,8 +133,8 @@ describe('ContactForm', () => {
 		const user = userEvent.setup();
 		render(<ContactForm formEnabled />);
 
-		const name = await screen.findByLabelText('Họ và tên');
-		const email = screen.getByLabelText('Email nhận phản hồi');
+		const name = await screen.findByLabelText('Tên');
+		const email = screen.getByLabelText('Email');
 		expect(name).toHaveValue('Nguyễn An');
 		expect(email).toHaveValue('account@example.com');
 		expect(email).toHaveAttribute('readonly');
@@ -138,7 +143,7 @@ describe('ContactForm', () => {
 		await user.clear(name);
 		await user.type(name, 'Tên tôi muốn dùng');
 		await user.type(
-			screen.getByLabelText('Bạn đang muốn giải quyết điều gì?'),
+			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
 			'Một lời nhắn đủ dài.',
 		);
 		await user.click(screen.getByRole('checkbox'));
@@ -164,8 +169,8 @@ describe('ContactForm', () => {
 		const user = userEvent.setup();
 		render(<ContactForm formEnabled />);
 
-		await user.type(screen.getByLabelText('Họ và tên'), 'Nguyễn An');
-		await user.type(screen.getByLabelText('Email nhận phản hồi'), 'email-sai');
+		await user.type(screen.getByLabelText('Tên'), 'Nguyễn An');
+		await user.type(screen.getByLabelText('Email'), 'email-sai');
 		await user.click(screen.getByRole('button', { name: 'Gửi lời nhắn' }));
 
 		expect(
@@ -189,10 +194,10 @@ describe('ContactForm', () => {
 		const user = userEvent.setup();
 		render(<ContactForm formEnabled />);
 
-		await user.type(screen.getByLabelText('Họ và tên'), 'Nguyễn An');
-		await user.type(screen.getByLabelText('Email nhận phản hồi'), 'an@example.com');
+		await user.type(screen.getByLabelText('Tên'), 'Nguyễn An');
+		await user.type(screen.getByLabelText('Email'), 'an@example.com');
 		await user.type(
-			screen.getByLabelText('Bạn đang muốn giải quyết điều gì?'),
+			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
 			'Tôi muốn hỏi thêm.',
 		);
 		await user.click(screen.getByRole('checkbox'));

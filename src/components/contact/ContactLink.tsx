@@ -10,7 +10,6 @@ import {
 	campaignParamsFromSearchParams,
 	type ContactContextInput,
 } from './ContactContext';
-import { useContactDialog } from './ContactDialogProvider';
 
 type ContactLinkProps = Omit<ComponentProps<typeof Link>, 'href'> & {
 	href?: string;
@@ -30,22 +29,19 @@ function getServerLocation(): string {
 	return '';
 }
 
-/** A real link for fallback/new-tab behavior that opens the global form on a plain click. */
+/** Attribution-preserving link to /lien-he — single contact flow, no modal. */
 export default function ContactLink({
 	href = routes.contact,
 	contactContext,
-	onClick,
-	target,
 	...props
 }: ContactLinkProps) {
-	const controller = useContactDialog();
 	const pathname = usePathname();
 	const currentLocation = useSyncExternalStore(
 		subscribeToLocation,
 		getClientLocation,
 		getServerLocation,
 	);
-	const fallbackHref = useMemo(() => {
+	const resolvedHref = useMemo(() => {
 		const origin = currentLocation ? new URL(currentLocation).origin : 'https://contact.local';
 		const enriched = new URL(buildContactHref(href, contactContext), origin);
 		if (!enriched.searchParams.has('sourcePage')) {
@@ -62,30 +58,5 @@ export default function ContactLink({
 		return `${enriched.pathname}${enriched.search}${enriched.hash}`;
 	}, [contactContext, currentLocation, href, pathname]);
 
-	return (
-		<Link
-			{...props}
-			href={fallbackHref}
-			target={target}
-			onClick={(event) => {
-				onClick?.(event);
-				if (
-					event.defaultPrevented ||
-					!controller ||
-					event.button !== 0 ||
-					event.metaKey ||
-					event.ctrlKey ||
-					event.shiftKey ||
-					event.altKey ||
-					Boolean(target && target !== '_self') ||
-					event.currentTarget.hasAttribute('download')
-				) {
-					return;
-				}
-
-				event.preventDefault();
-				controller.openContact(contactContext, fallbackHref);
-			}}
-		/>
-	);
+	return <Link {...props} href={resolvedHref} />;
 }

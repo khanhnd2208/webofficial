@@ -2,25 +2,18 @@
 
 import { SessionProvider } from 'next-auth/react';
 
-import {
-	ContactDialogProvider,
-	type ContactFormAvailability,
-} from '@/components/contact/ContactDialogProvider';
 import MotionProvider from '@/components/motion/MotionProvider';
 
 type ProvidersProps = {
 	children: React.ReactNode;
-	inquiryAvailability: ContactFormAvailability;
+	/** Kept for layout compatibility; contact form reads availability on the page. */
+	inquiryAvailability?: unknown;
 };
 
-export default function Providers({ children, inquiryAvailability }: ProvidersProps) {
+export default function Providers({ children }: ProvidersProps) {
 	return (
 		<SessionProvider>
-			<MotionProvider>
-				<ContactDialogProvider availability={inquiryAvailability}>
-					{children}
-				</ContactDialogProvider>
-			</MotionProvider>
+			<MotionProvider>{children}</MotionProvider>
 		</SessionProvider>
 	);
 }

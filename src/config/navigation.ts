@@ -4,8 +4,10 @@
  * Desktop and mobile share the same items; presentation differs.
  * Only `published` items render in header/footer. Draft routes stay in the
  * map so later phases can flip status without inventing new link lists.
+ * Ghi chép visibility is gated by published note count at runtime.
  */
 
+import { areNotesPublic } from '@/content/notes';
 import { SITE_NAME } from './site';
 import { routes } from './routes';
 
@@ -81,6 +83,14 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 		mobile: true,
 	},
 	{
+		id: 'notes',
+		href: routes.notes,
+		label: 'Ghi chép',
+		status: 'draft',
+		desktop: true,
+		mobile: true,
+	},
+	{
 		id: 'services',
 		href: routes.services,
 		label: 'Dịch vụ',
@@ -88,21 +98,13 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 		desktop: true,
 		mobile: true,
 	},
-	{
-		id: 'contact',
-		href: routes.contact,
-		label: 'Liên hệ',
-		status: 'published',
-		desktop: true,
-		mobile: true,
-	},
 ];
 
-/** Contact CTA — separate from nav links so it never competes with login. */
+/** Contact CTA — separate from nav links; leads to /lien-he (no modal). */
 export const CONTACT_CTA: ContactCta = {
 	href: routes.contact,
-	label: 'Chọn nội dung trao đổi',
-	shortLabel: 'Trao đổi',
+	label: 'Gửi lời nhắn',
+	shortLabel: 'Gửi lời nhắn',
 	status: 'published',
 };
 
@@ -114,6 +116,7 @@ export const FOOTER_GROUPS: FooterGroup[] = [
 			{ href: routes.home, label: 'Trang chủ', status: 'published' },
 			{ href: routes.about, label: 'Giới thiệu', status: 'published' },
 			{ href: routes.projects, label: 'Dự án', status: 'published' },
+			{ href: routes.notes, label: 'Ghi chép', status: 'draft' },
 			{ href: routes.services, label: 'Dịch vụ', status: 'published' },
 			{ href: routes.contact, label: 'Liên hệ', status: 'published' },
 		],
@@ -124,14 +127,24 @@ export function isPublished(status: PublishState): boolean {
 	return status === 'published';
 }
 
+function isNavItemVisible(item: PublicNavItem): boolean {
+	if (item.id === 'notes') return areNotesPublic();
+	return isPublished(item.status);
+}
+
+function isFooterLinkVisible(link: FooterLink): boolean {
+	if (link.href === routes.notes) return areNotesPublic();
+	return isPublished(link.status);
+}
+
 export function getDesktopNavLinks(): NavLink[] {
-	return PUBLIC_NAV_ITEMS.filter((item) => item.desktop && isPublished(item.status)).map(
+	return PUBLIC_NAV_ITEMS.filter((item) => item.desktop && isNavItemVisible(item)).map(
 		({ href, label }) => ({ href, label }),
 	);
 }
 
 export function getMobileNavLinks(): NavLink[] {
-	return PUBLIC_NAV_ITEMS.filter((item) => item.mobile && isPublished(item.status)).map(
+	return PUBLIC_NAV_ITEMS.filter((item) => item.mobile && isNavItemVisible(item)).map(
 		({ href, label }) => ({ href, label }),
 	);
 }
@@ -148,7 +161,7 @@ export function getPublishedContactCta(): ContactCta | null {
 export function getPublishedFooterGroups(): FooterGroup[] {
 	return FOOTER_GROUPS.map((group) => ({
 		...group,
-		links: group.links.filter((link) => isPublished(link.status)),
+		links: group.links.filter((link) => isFooterLinkVisible(link)),
 	})).filter((group) => group.links.length > 0);
 }
 

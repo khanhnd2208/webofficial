@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import SiteFooter from './SiteFooter';
 import { routes } from '@/config/routes';
 
-/** Footer only on public / learner surfaces — not admin, login, or public message recipient. */
+/** Footer only on public marketing surfaces — not admin, login, or public message recipient. */
 export default function ConditionalFooter() {
 	const pathname = usePathname();
 	const publicRoute =
@@ -14,7 +14,9 @@ export default function ConditionalFooter() {
 		pathname === routes.projects ||
 		pathname.startsWith(`${routes.projects}/`) ||
 		pathname === routes.services ||
-		pathname === routes.contact;
+		pathname === routes.contact ||
+		pathname === routes.notes ||
+		pathname.startsWith(`${routes.notes}/`);
 	if (!publicRoute) return null;
 	return <SiteFooter />;
 }

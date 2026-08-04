@@ -7,8 +7,7 @@
 export const SITE_NAME = 'Duy Khánh';
 
 /** Public positioning line — the central idea of the personal education space. */
-export const SITE_POSITIONING =
-	'Biến kiến thức phức tạp thành năng lực, chương trình và quy trình có thể áp dụng.';
+export const SITE_POSITIONING = 'Tôi dạy, học và viết từ Hà Nội.';
 
 /** Editorial brand for the journal. Not the site-wide wordmark. */
 export const EDITORIAL_NAME = 'HANOICAM';
@@ -24,7 +23,7 @@ export const SITE_ORIGIN =
 	(process.env.NODE_ENV === 'production' ? 'https://toiladuykhanh.com' : 'http://localhost:3000');
 
 export const SITE_DESCRIPTION =
-	'Duy Khánh giúp người học và tổ chức biến kiến thức quản trị và AI thành chương trình, năng lực và quy trình có thể áp dụng.';
+	'Duy Khánh là giảng viên và người thiết kế trải nghiệm học tập tại Hà Nội. Anh dạy quản trị, nghiên cứu AI trong công việc và lưu lại những điều học được trên hành trình ấy.';
 
 export const SITE_CREATOR = SITE_NAME;
 

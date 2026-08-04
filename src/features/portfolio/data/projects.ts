@@ -1,12 +1,13 @@
 export const projectCategories = [
 	'Tất cả',
-	'Giảng dạy quản trị',
-	'Ứng dụng AI',
-	'Tư vấn doanh nghiệp',
-	'Nghiên cứu',
+	'Lớp học và thiết kế học tập',
+	'AI và nghiên cứu',
+	'Quản trị trong thực tế',
 ] as const;
 
 export type ProjectCategory = Exclude<(typeof projectCategories)[number], 'Tất cả'>;
+
+export type ProjectTemplate = 'courseDesign' | 'learningLab' | 'inquiry';
 
 export type ProjectMedia = {
 	src: string;
@@ -17,297 +18,394 @@ export type ProjectMedia = {
 	proofStatus: 'temporary' | 'verified';
 };
 
+export type DesignJourneyStep = {
+	label: string;
+	body: string;
+};
+
+export type ProjectArtefact = {
+	title: string;
+	purpose: string;
+	media?: ProjectMedia;
+};
+
 export type Project = {
 	title: string;
 	slug: string;
+	template: ProjectTemplate;
 	category: ProjectCategory;
 	kicker: string;
+	subtitle?: string;
 	year: string;
 	status: string;
 	summary: string;
 	coverImage: string;
-	gallery: ProjectMedia[];
 	role: string;
 	audience: string;
-	scope: string;
-	context: string;
-	problem: string;
-	approach: string[];
-	deliverables: string[];
-	outcomes: string;
-	projectFacts: Array<{ value: string; label: string }>;
-	verifiedImpact?: Array<{ value: string; label: string }>;
-	evidenceNote: string;
-	testimonial?: {
-		quote: string;
-		personName?: string;
-		role?: string;
-		organization?: string;
-		anonymous?: boolean;
-	};
+	timeframe: string;
+	openingQuestion: string;
+	intendedChange: string[];
+	designJourney?: DesignJourneyStep[];
+	artefacts: ProjectArtefact[];
+	gallery: ProjectMedia[];
+	inClassroom?: string;
+	observed: string[];
+	notYetConcluded: string[];
+	/** Inquiry template fields */
+	workingAssumptions?: string[];
+	debateMap?: string[];
+	openQuestions?: string[];
+	sources?: string[];
+	lastUpdated?: string;
+	lessonsLearned: string;
+	nextVersion: string[];
 	cta: { label: string; inquiryType: string };
-	lessons: string;
 	relatedProjects: string[];
 	featured: boolean;
+	flagship?: boolean;
 };
+
+export function isVerifiedMedia(media: ProjectMedia): boolean {
+	return media.approval === 'approved' && media.proofStatus === 'verified';
+}
+
+export function getVerifiedGallery(project: Project): ProjectMedia[] {
+	return project.gallery.filter(isVerifiedMedia);
+}
+
+export function getVerifiedArtefacts(project: Project): ProjectArtefact[] {
+	return project.artefacts.filter(
+		(artefact) => !artefact.media || isVerifiedMedia(artefact.media),
+	);
+}
 
 export const projects: Project[] = [
 	{
+		title: 'Strategic Management Learning Experience',
+		slug: 'strategic-management-learning-experience',
+		template: 'courseDesign',
+		category: 'Lớp học và thiết kế học tập',
+		kicker: 'Teaching & Learning',
+		subtitle:
+			'Thiết kế lại cách người học nhìn thấy chiến lược như một quá trình liên kết, không phải một danh sách mô hình.',
+		year: 'Hiện tại',
+		status: 'Đang được giảng dạy',
+		summary:
+			'Thiết kế lại trải nghiệm học Strategic Management theo hướng trực quan, có cấu trúc và gắn với các doanh nghiệp thực tế.',
+		coverImage: '/brand/hero-journey.jpg',
+		role: 'Course Designer & Lecturer',
+		audience: 'Sinh viên học Strategic Management',
+		timeframe: 'Đang giảng dạy và tiếp tục cải tiến',
+		openingQuestion:
+			'Tôi nhận thấy người học dễ nhớ tên từng công cụ chiến lược hơn là nhìn thấy mối liên hệ giữa phân tích, lựa chọn và thực thi. Nếu chỉ đi lần lượt theo textbook, họ nắm được mô hình nhưng khó giải thích vì sao một quyết định chiến lược lại hợp lý trong bối cảnh cụ thể.',
+		intendedChange: [
+			'Người học hiểu chiến lược như một quá trình liên kết, không phải danh sách mô hình.',
+			'Người học biết dùng case để quan sát dữ liệu, đặt câu hỏi và giải thích lựa chọn.',
+			'Người học trải nghiệm việc phải chịu trách nhiệm cho một quyết định trong điều kiện thông tin không hoàn hảo.',
+		],
+		designJourney: [
+			{
+				label: 'Starting point',
+				body: 'Làm rõ mục tiêu học tập và những khái niệm bắt buộc phải hiểu trước khi đi vào công cụ.',
+			},
+			{
+				label: 'Learning journey',
+				body: 'Sắp xếp nội dung thành hành trình phân tích → lựa chọn → thực thi.',
+			},
+			{
+				label: 'Practice',
+				body: 'Dùng case doanh nghiệp để buộc người học nối lý thuyết với quyết định thực tế.',
+			},
+			{
+				label: 'Reflection',
+				body: 'Tạo không gian để người học giải thích cơ sở lựa chọn của mình, không chỉ nêu kết luận.',
+			},
+			{
+				label: 'Assessment',
+				body: 'Kiểm tra mức độ hiểu qua khả năng vận dụng, không chỉ qua việc nhớ tên công cụ.',
+			},
+		],
+		artefacts: [
+			{
+				title: 'Course journey map',
+				purpose: 'Giúp người học nhìn thấy toàn bộ hành trình trước khi đi vào từng công cụ.',
+			},
+			{
+				title: 'Slide deck tiêu biểu',
+				purpose: 'Làm rõ mối liên hệ giữa phân tích, lựa chọn và thực thi trong từng buổi học.',
+			},
+			{
+				title: 'Case doanh nghiệp',
+				purpose: 'Buộc người học đặt câu hỏi và lựa chọn trong một bối cảnh có ràng buộc thật.',
+			},
+			{
+				title: 'Learning activities',
+				purpose: 'Tạo không gian thực hành quan sát, thảo luận và giải thích quyết định.',
+			},
+		],
+		gallery: [],
+		inClassroom:
+			'Trong lớp, người học làm việc theo nhóm trên case, trình bày lựa chọn và nhận phản hồi về mức độ liên kết giữa dữ liệu và quyết định. Phần mạnh nhất thường không nằm ở câu trả lời đúng, mà ở khả năng giải thích đánh đổi.',
+		observed: [
+			'Cấu trúc bài học thống nhất hơn và giảm sự rời rạc giữa các công cụ phân tích.',
+			'Người học bắt đầu đặt câu hỏi về mối liên hệ giữa các bước thay vì chỉ liệt kê mô hình.',
+		],
+		notYetConcluded: [
+			'Tác động định lượng lên kết quả học tập chưa được tổng hợp đủ để công bố.',
+			'Mức độ chuyển giao sang môn học khác vẫn đang được quan sát.',
+		],
+		lessonsLearned:
+			'Một case tốt không chỉ minh họa lý thuyết; nó phải buộc người học nhìn thấy mối quan hệ giữa dữ liệu, lựa chọn và hệ quả. Thiết kế dự án này khiến tôi coi việc dạy như việc dựng một hành trình suy nghĩ, không phải một danh mục kiến thức.',
+		nextVersion: [
+			'Bổ sung course map trực quan vào học liệu công khai.',
+			'Thử thêm reflection cá nhân sau mỗi case lớn.',
+			'Thu thập feedback có phép đăng để hiểu chỗ người học còn vướng.',
+		],
+		cta: { label: 'Trao đổi về việc học quản trị', inquiryType: 'training' },
+		relatedProjects: ['ai50-ai-cho-moi-nguoi', 'learning-at-moonie-cafe'],
+		featured: true,
+		flagship: true,
+	},
+	{
 		title: 'AI50 — AI cho mọi người',
 		slug: 'ai50-ai-cho-moi-nguoi',
-		category: 'Ứng dụng AI',
-		kicker: 'Course Design · Applied AI',
+		template: 'courseDesign',
+		category: 'AI và nghiên cứu',
+		kicker: 'Teaching & Learning · Applied AI',
+		subtitle:
+			'Không dạy AI bằng mẹo prompt rời rạc, mà đi từ hiểu công việc tới giao việc và kiểm chứng.',
 		year: '2026',
 		status: 'Đang phát triển',
 		summary:
-			'Một chương trình giúp người mới hiểu AI, giao việc rõ hơn, kiểm chứng đầu ra và xây dựng quy trình làm việc phù hợp.',
+			'Một chương trình giúp người mới hiểu AI, giao việc rõ hơn, kiểm chứng đầu ra và xây dựng cách làm việc phù hợp.',
 		coverImage: '/brand/learning-as-becoming-desktop.jpg',
-		gallery: [
-			{
-				src: '/brand/hero-landscape.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa cấu trúc học tập AI50',
-				caption:
-					'Hình minh họa tạm thời cho vòng lặp hiểu — thực hành — kiểm chứng; sẽ được thay bằng course map đã phê duyệt.',
-			},
-			{
-				src: '/brand/hero-journey.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa hành trình người học trong chương trình AI50',
-				caption:
-					'Hình minh họa tạm thời; sẽ được thay bằng một trang học liệu thể hiện vai trò và trách nhiệm của người học.',
-			},
-		],
 		role: 'Course Designer & Lecturer',
 		audience: 'Người mới sử dụng AI',
-		scope: 'Cấu trúc chương trình, học liệu, hoạt động thực hành và hệ thống kiểm chứng',
-		context:
-			'AI50 được phát triển cho những người muốn đưa AI vào học tập và công việc nhưng chưa có một phương pháp đủ rõ để bắt đầu.',
-		problem:
-			'Người mới thường tiếp cận AI qua các mẹo prompt rời rạc. Họ có thể tạo đầu ra nhanh nhưng khó xác định khi nào nên dùng AI, cần giao việc ra sao và phải kiểm tra điều gì.',
-		approach: [
-			'Xác định những năng lực nền tảng cần có trước khi học công cụ.',
-			'Cấu trúc nội dung theo một quy trình làm việc lặp lại được.',
-			'Dùng bài tập gần với công việc thật để luyện cách giao việc và kiểm chứng.',
-			'Đặt trách nhiệm và quyền quyết định của con người ở trung tâm.',
+		timeframe: 'Pilot / đang phát triển',
+		openingQuestion:
+			'Tôi nhận thấy người mới thường tiếp cận AI qua các mẹo prompt. Họ tạo đầu ra nhanh nhưng khó xác định khi nào nên dùng AI, cần giao việc ra sao và phải kiểm tra điều gì trước khi tin vào kết quả.',
+		intendedChange: [
+			'Người học hiểu công việc của mình đủ rõ để biết AI nên tham gia ở đâu.',
+			'Người học giao việc cho AI với mục tiêu, ràng buộc và tiêu chuẩn đầu ra.',
+			'Người học giữ quyền đánh giá và chịu trách nhiệm cho quyết định cuối cùng.',
 		],
-		deliverables: [
-			'Course structure',
-			'Slide deck',
-			'Practice activities',
-			'Verification checklist',
-			'Workflow templates',
-		],
-		outcomes:
-			'Dự án đang hình thành một cấu trúc học thống nhất, giúp người mới đi từ hiểu khái niệm đến tự thiết kế cách cộng tác với AI.',
-		projectFacts: [
+		designJourney: [
 			{
-				value: '5',
-				label:
-					'nhóm đầu ra đang thiết kế: cấu trúc khóa học, slide, bài tập, checklist và workflow',
+				label: 'Starting point',
+				body: 'Bắt đầu từ công việc và tiêu chuẩn của con người, không từ danh sách công cụ.',
+			},
+			{
+				label: 'Learning journey',
+				body: 'Sáu bài học đi từ hiểu AI → chọn việc → giao việc → kiểm chứng → xây workflow → giữ trách nhiệm.',
+			},
+			{
+				label: 'Practice',
+				body: 'Thực hành trên tình huống gần với học tập và công việc thật.',
+			},
+			{
+				label: 'Reflection',
+				body: 'Người học tự đánh giá đâu là chỗ AI hữu ích và đâu là chỗ không nên giao.',
+			},
+			{
+				label: 'Assessment',
+				body: 'Kiểm tra qua khả năng thiết kế một vòng làm việc có kiểm chứng, không qua số lượng prompt.',
 			},
 		],
-		evidenceNote:
-			'Kết quả định lượng sẽ chỉ được bổ sung sau khi chương trình có dữ liệu học tập đủ tin cậy.',
-		cta: { label: 'Trao đổi về đào tạo AI', inquiryType: 'ai' },
-		lessons:
+		artefacts: [
+			{
+				title: 'Course structure — sáu bài học',
+				purpose: 'Cho thấy logic giữa các bài: mỗi bài mở một năng lực cần có trước bài tiếp theo.',
+			},
+			{
+				title: 'Exercise mẫu',
+				purpose: 'Luyện cách giao việc rõ ràng trên một tình huống công việc cụ thể.',
+			},
+			{
+				title: 'Verification checklist',
+				purpose: 'Giúp người học biết phải kiểm tra điều gì trước khi chấp nhận đầu ra của AI.',
+			},
+			{
+				title: 'Workflow mẫu',
+				purpose: 'Chuyển bài học thành một vòng làm việc có thể lặp lại trong thực tế.',
+			},
+		],
+		gallery: [],
+		inClassroom:
+			'AI50 đang ở giai đoạn pilot. Mục tiêu của các buổi thử là quan sát chỗ người học còn nhầm giữa tốc độ tạo đầu ra và chất lượng quyết định.',
+		observed: [
+			'Cấu trúc học thống nhất giúp người mới đi từ hiểu khái niệm đến tự thiết kế cách cộng tác với AI.',
+			'Người học dễ tiếp cận hơn khi bài bắt đầu từ công việc của họ thay vì từ tính năng công cụ.',
+		],
+		notYetConcluded: [
+			'Dữ liệu học tập từ các vòng pilot chưa đủ để công bố kết quả định lượng.',
+			'Mức độ phù hợp theo từng nhóm đối tượng vẫn đang được tinh chỉnh.',
+		],
+		lessonsLearned:
 			'Dạy AI hiệu quả không bắt đầu bằng việc cung cấp thật nhiều prompt, mà bằng việc giúp người học hiểu công việc và tiêu chuẩn của chính họ.',
+		nextVersion: [
+			'Hoàn thiện verification checklist để dùng trong lớp.',
+			'Thêm workflow mẫu cho hai nhóm đối tượng phổ biến.',
+			'Chạy thêm một vòng pilot và ghi nhận quan sát có hệ thống.',
+		],
+		cta: { label: 'Trao đổi về một chương trình AI', inquiryType: 'ai' },
 		relatedProjects: ['ai-in-recruitment-research', 'strategic-management-learning-experience'],
 		featured: true,
 	},
 	{
-		title: 'Strategic Management Learning Experience',
-		slug: 'strategic-management-learning-experience',
-		category: 'Giảng dạy quản trị',
-		kicker: 'Management Education',
+		title: 'Learning at Moonie Café',
+		slug: 'learning-at-moonie-cafe',
+		template: 'learningLab',
+		category: 'Quản trị trong thực tế',
+		kicker: 'Business in Practice · Learning Lab',
+		subtitle: 'Dạy và học quản trị trong một doanh nghiệp nhỏ đang vận hành thật.',
 		year: 'Hiện tại',
-		status: 'Đang sử dụng và tiếp tục cải tiến',
+		status: 'Đang phát triển',
 		summary:
-			'Thiết kế lại trải nghiệm học Strategic Management theo hướng trực quan, có cấu trúc và gắn với các doanh nghiệp thực tế.',
-		coverImage: '/brand/hero-journey.jpg',
-		gallery: [
-			{
-				src: '/brand/hero-figure.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa người học trong trải nghiệm Strategic Management',
-				caption:
-					'Hình minh họa tạm thời; sẽ được thay bằng slide thật về hành trình phân tích — lựa chọn — thực thi.',
-			},
-			{
-				src: '/brand/hero-landscape.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa bản đồ liên kết các quyết định chiến lược',
-				caption:
-					'Hình minh họa tạm thời; sẽ được thay bằng một artefact case đã ẩn thông tin người học.',
-			},
-		],
-		role: 'Course Designer & Lecturer',
-		audience: 'Sinh viên học Strategic Management',
-		scope: 'Cấu trúc bài học, slide, case và hoạt động học tập',
-		context:
-			'Học phần có nhiều mô hình phân tích và các khái niệm liên kết chặt chẽ, nhưng thường được trình bày như những công cụ tách rời.',
-		problem:
-			'Nếu chỉ đi lần lượt theo textbook, người học dễ nhớ tên công cụ nhưng khó hiểu mối quan hệ giữa phân tích, lựa chọn và thực thi chiến lược.',
-		approach: [
-			'Rà soát mục tiêu học tập và nguồn lý thuyết cốt lõi.',
-			'Xác định các khái niệm người học bắt buộc phải hiểu.',
-			'Sắp xếp nội dung thành một hành trình phân tích — lựa chọn — thực thi.',
-			'Dùng case doanh nghiệp để nối lý thuyết với quyết định thực tế.',
-			'Thiết kế hoạt động kiểm tra mức độ hiểu và khả năng áp dụng.',
-		],
-		deliverables: [
-			'Course structure',
-			'Slide deck',
-			'Reading materials',
-			'Case studies',
-			'Learning activities',
-		],
-		outcomes:
-			'Dự án giúp hình thành một cấu trúc bài học thống nhất hơn và giảm sự rời rạc giữa các công cụ phân tích.',
-		projectFacts: [{ value: '5', label: 'nhóm học liệu trong cùng một hệ thống trải nghiệm học' }],
-		evidenceNote:
-			'Tác động được mô tả ở mức thiết kế; số liệu người học chỉ công bố khi được tổng hợp và xác minh.',
-		cta: { label: 'Trao đổi về học tập quản trị', inquiryType: 'training' },
-		lessons:
-			'Một case tốt không chỉ minh họa lý thuyết; nó phải buộc người học nhìn thấy mối quan hệ giữa dữ liệu, lựa chọn và hệ quả.',
-		relatedProjects: ['ai50-ai-cho-moi-nguoi', 'moonie-cafe-business-development'],
-		featured: true,
-	},
-	{
-		title: 'Moonie Café Business Development',
-		slug: 'moonie-cafe-business-development',
-		category: 'Tư vấn doanh nghiệp',
-		kicker: 'Business Advisory',
-		year: 'Hiện tại',
-		status: 'Hồ sơ đang hoàn thiện',
-		summary:
-			'Phân tích mô hình hoạt động, tài chính, marketing, vận hành và phát triển con người cho một doanh nghiệp dịch vụ nhỏ.',
+			'Một không gian học tập gắn với doanh nghiệp dịch vụ nhỏ, nơi người học quan sát hoạt động thật và nối lý thuyết quản trị với vấn đề đang diễn ra.',
 		coverImage: '/brand/hero-landscape.jpg',
-		gallery: [
+		role: 'Educator & Learning Designer',
+		audience: 'Người học quản trị và đội ngũ doanh nghiệp nhỏ',
+		timeframe: 'Đang phát triển các module học tập',
+		openingQuestion:
+			'Tôi muốn biết điều gì xảy ra khi người học không chỉ đọc case trên giấy, mà được quan sát một doanh nghiệp nhỏ đang vận hành — với khách hàng thật, ràng buộc thật và những đánh đổi không thể trì hoãn.',
+		intendedChange: [
+			'Người học nhìn thấy mối liên hệ giữa khách hàng, vận hành, tài chính và con người trong một bối cảnh sống.',
+			'Người học biết đặt câu hỏi quản trị từ quan sát thực địa, không chỉ từ mô hình có sẵn.',
+			'Doanh nghiệp và lớp học cùng được lợi từ việc làm rõ vấn đề trước khi tìm giải pháp.',
+		],
+		designJourney: [
 			{
-				src: '/brand/hero-journey.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa hành trình phát triển doanh nghiệp Moonie Café',
-				caption:
-					'Hình minh họa tạm thời; sẽ được thay bằng process map khi quyền chia sẻ được xác nhận.',
+				label: 'Starting point',
+				body: 'Làm rõ câu hỏi học tập và ranh giới của những gì có thể quan sát tại doanh nghiệp.',
 			},
 			{
-				src: '/brand/hero-figure.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa vai trò con người trong cải tiến vận hành',
-				caption:
-					'Hình minh họa tạm thời; sẽ được thay bằng trích đoạn recommendation report đã được phép công bố.',
+				label: 'Learning journey',
+				body: 'Thiết kế các module xoay quanh trải nghiệm khách hàng, vận hành, con người và quyết định.',
 			},
-		],
-		role: 'Business Advisor',
-		audience: 'Doanh nghiệp dịch vụ nhỏ',
-		scope: 'Phân tích mô hình hoạt động, vận hành, marketing và phát triển đội ngũ',
-		context:
-			'Một doanh nghiệp nhỏ cần nhìn lại cách các quyết định về khách hàng, vận hành, tài chính và con người ảnh hưởng lẫn nhau.',
-		problem:
-			'Các vấn đề vận hành thường được xử lý riêng lẻ, khiến giải pháp ngắn hạn ở một điểm có thể tạo thêm áp lực ở điểm khác.',
-		approach: [
-			'Làm rõ mục tiêu và các dấu hiệu cho thấy hoạt động đang gặp trở ngại.',
-			'Tổng hợp dữ liệu theo các dòng công việc thay vì theo phòng ban.',
-			'Phân tích mối liên hệ giữa trải nghiệm khách hàng, vận hành và nguồn lực.',
-			'Xây dựng các lựa chọn cải thiện theo mức độ ưu tiên và khả năng thực hiện.',
-		],
-		deliverables: [
-			'Business analysis',
-			'Process map',
-			'Priority framework',
-			'Recommendation report',
-		],
-		outcomes:
-			'Hồ sơ dự án đang được hoàn thiện; các kết luận định lượng chỉ được công bố khi có dữ liệu đủ tin cậy.',
-		projectFacts: [
 			{
-				value: '4',
-				label:
-					'lăng kính trong phạm vi phân tích: mô hình hoạt động, vận hành, marketing và con người',
+				label: 'Practice',
+				body: 'Người học quan sát hoạt động, ghi nhận dấu hiệu và nối với khung lý thuyết phù hợp.',
+			},
+			{
+				label: 'Reflection',
+				body: 'Đối chiếu những gì quan sát được với giả định ban đầu và nêu đánh đổi nhìn thấy.',
+			},
+			{
+				label: 'Assessment',
+				body: 'Đánh giá qua khả năng đặt đúng vấn đề và đề xuất bước đi phù hợp với nguồn lực thực tế.',
 			},
 		],
-		evidenceNote: 'Không công bố KPI khi hồ sơ dữ liệu và quyền chia sẻ chưa được xác nhận.',
-		cta: { label: 'Trao đổi về vấn đề doanh nghiệp', inquiryType: 'business' },
-		lessons:
-			'Với doanh nghiệp nhỏ, giải pháp tốt phải cân bằng tham vọng thay đổi với năng lực vận hành thực tế của đội ngũ.',
+		artefacts: [
+			{
+				title: 'Module map',
+				purpose: 'Cho thấy các chủ đề học gắn với dòng hoạt động thật của quán.',
+			},
+			{
+				title: 'Observation guide',
+				purpose: 'Giúp người học quan sát có cấu trúc thay vì ghi nhận cảm tính.',
+			},
+			{
+				title: 'Field reflection prompts',
+				purpose: 'Buộc người học nối quan sát với khái niệm quản trị đã học.',
+			},
+		],
+		gallery: [],
+		inClassroom:
+			'Learning lab này đang được dựng dần. Ưu tiên hiện tại là giữ ranh giới rõ giữa trải nghiệm học tập và hoạt động kinh doanh, để cả hai bên đều được tôn trọng.',
+		observed: [
+			'Bối cảnh doanh nghiệp nhỏ làm cho khái niệm quản trị trở nên cụ thể nhanh hơn case giả định.',
+			'Người học đặt câu hỏi sâu hơn khi thấy ràng buộc nguồn lực ngay trước mắt.',
+		],
+		notYetConcluded: [
+			'Các module học tập vẫn đang được thiết kế và chưa có đủ artefact công khai.',
+			'Tác động lên cả người học và đội ngũ vận hành cần thêm thời gian quan sát.',
+		],
+		lessonsLearned:
+			'Dạy quản trị trong doanh nghiệp thật đòi hỏi sự khiêm tốn: không mang giải pháp có sẵn vào, mà giúp người học và đội ngũ nhìn rõ vấn đề trước đã.',
+		nextVersion: [
+			'Hoàn thiện observation guide cho buổi thực địa đầu tiên.',
+			'Thiết kế hai module xoay quanh trải nghiệm khách hàng và vận hành.',
+			'Xác định rõ những gì có thể chia sẻ công khai mà không ảnh hưởng doanh nghiệp.',
+		],
+		cta: { label: 'Trao đổi về một vấn đề doanh nghiệp', inquiryType: 'business' },
 		relatedProjects: ['strategic-management-learning-experience', 'ai-in-recruitment-research'],
 		featured: true,
 	},
 	{
 		title: 'AI in Recruitment Research',
 		slug: 'ai-in-recruitment-research',
-		category: 'Nghiên cứu',
-		kicker: 'Research · Human Resource Management',
+		template: 'inquiry',
+		category: 'AI và nghiên cứu',
+		kicker: 'Ongoing Inquiry · Human Resource Management',
+		subtitle: 'Nghiên cứu đang diễn ra về lợi ích, rủi ro và trách nhiệm khi AI tham gia tuyển dụng.',
 		year: 'Hiện tại',
-		status: 'Nghiên cứu đang tiếp tục',
+		status: 'Nghiên cứu đang diễn ra',
 		summary:
-			'Nghiên cứu ứng dụng AI trong tuyển dụng, tập trung vào lợi ích, rủi ro, tính minh bạch và quản trị AI có trách nhiệm.',
+			'Một cuộc điều tra đang tiếp diễn về ứng dụng AI trong tuyển dụng, tập trung vào lợi ích, rủi ro, tính minh bạch và quyền quyết định của con người.',
 		coverImage: '/brand/hero-figure.jpg',
-		gallery: [
-			{
-				src: '/brand/hero-landscape.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa bản đồ rủi ro AI trong tuyển dụng',
-				caption: 'Hình minh họa tạm thời; sẽ được thay bằng bản đồ rủi ro trích từ nghiên cứu.',
-			},
-			{
-				src: '/brand/learning-as-becoming-desktop.jpg',
-				kind: 'illustration',
-				approval: 'approved',
-				proofStatus: 'temporary',
-				alt: 'Minh họa nguyên tắc sử dụng AI có trách nhiệm',
-				caption:
-					'Hình minh họa tạm thời; sẽ được thay bằng responsible-use checklist đã hoàn thiện.',
-			},
-		],
 		role: 'Researcher',
 		audience: 'Nhà quản lý và người làm nhân sự',
-		scope: 'Tổng hợp nghiên cứu, phân tích rủi ro và khung ứng dụng có trách nhiệm',
-		context:
-			'AI đang tham gia ngày càng sâu vào tuyển dụng, trong khi tiêu chí đánh giá, mức độ minh bạch và trách nhiệm ra quyết định chưa phải lúc nào cũng rõ.',
-		problem:
-			'Tổ chức có thể tối ưu tốc độ xử lý nhưng đồng thời làm tăng rủi ro thiên lệch, khó giải thích và phụ thuộc vào đầu ra không được kiểm chứng.',
-		approach: [
-			'Xác định các điểm AI tham gia trong quy trình tuyển dụng.',
+		timeframe: 'Ongoing research',
+		openingQuestion:
+			'Khi AI tham gia ngày càng sâu vào tuyển dụng, tổ chức đang tối ưu điều gì — và đánh đổi điều gì về công bằng, minh bạch và trách nhiệm ra quyết định?',
+		intendedChange: [
+			'Làm rõ các điểm AI tham gia trong quy trình tuyển dụng.',
 			'Đối chiếu lợi ích vận hành với rủi ro đối với ứng viên và tổ chức.',
-			'Tổng hợp các nguyên tắc minh bạch, giám sát và quyền quyết định của con người.',
 			'Chuyển kết quả nghiên cứu thành câu hỏi kiểm tra có thể dùng trong thực tế.',
 		],
-		deliverables: [
-			'Research synthesis',
-			'Risk map',
-			'Responsible-use checklist',
-			'Teaching materials',
-		],
-		outcomes:
-			'Nghiên cứu tạo nền tảng để thảo luận AI trong tuyển dụng một cách cân bằng hơn giữa hiệu quả, công bằng và trách nhiệm.',
-		projectFacts: [
+		artefacts: [
 			{
-				value: '4',
-				label: 'cấu phần nghiên cứu: tổng hợp tài liệu, bản đồ rủi ro, checklist và học liệu',
+				title: 'Research synthesis',
+				purpose: 'Tổng hợp các nguồn và khái niệm chính đang định hình cuộc tranh luận.',
+			},
+			{
+				title: 'Debate map',
+				purpose: 'Nhìn thấy các lập luận đối lập thay vì chỉ liệt kê lợi ích.',
+			},
+			{
+				title: 'Working framework',
+				purpose: 'Giữ một khung tạm thời để kiểm tra giả định khi nguồn mới xuất hiện.',
 			},
 		],
-		evidenceNote:
-			'Đây là nghiên cứu đang tiếp tục; các kết luận sẽ được cập nhật khi nguồn và phạm vi phân tích thay đổi.',
+		gallery: [],
+		observed: [
+			'AI trong tuyển dụng thường được bàn luận theo hiệu quả vận hành trước, trong khi tiêu chí công bằng và giải thích còn mờ.',
+			'Quyền quyết định của con người cần được thiết kế chủ động, không phải để lại như phần dư của tự động hóa.',
+		],
+		notYetConcluded: [
+			'Phạm vi nguồn và bối cảnh tổ chức vẫn đang mở rộng.',
+			'Các giả định làm việc sẽ thay đổi khi có thêm bằng chứng thực địa.',
+		],
+		workingAssumptions: [
+			'Một ứng dụng AI chỉ có ý nghĩa khi tổ chức giải thích được mục tiêu, dữ liệu, giới hạn và người chịu trách nhiệm.',
+			'Tối ưu tốc độ xử lý không tự động đồng nghĩa với quyết định tuyển dụng tốt hơn.',
+			'Minh bạch với ứng viên và giám sát nội bộ là điều kiện, không phải phần phụ.',
+		],
+		debateMap: [
+			'Hiệu quả sàng lọc nhanh hơn ↔ rủi ro thiên lệch bị khuếch đại.',
+			'Tính nhất quán của thuật toán ↔ khó giải thích quyết định với ứng viên.',
+			'Tự động hóa quy trình ↔ nhu cầu giữ phán đoán của người làm nhân sự.',
+		],
+		openQuestions: [
+			'Tổ chức nhỏ có thể giám sát AI tuyển dụng ở mức nào là thực tế?',
+			'Những tín hiệu nào cho thấy AI đang tối ưu sai mục tiêu?',
+			'Làm sao dạy người làm nhân sự đặt câu hỏi đúng trước khi tin vào đầu ra?',
+		],
+		sources: [
+			'Tổng hợp nghiên cứu học thuật về AI trong HRM',
+			'Nguyên tắc sử dụng AI có trách nhiệm trong tuyển dụng',
+			'Quan sát từ thực tiễn đào tạo và tư vấn liên quan',
+		],
+		lastUpdated: '2026-06',
+		lessonsLearned:
+			'Nghiên cứu đang dạy tôi rằng câu hỏi tốt quan trọng hơn kết luận sớm. Việc giữ trạng thái “đang diễn ra” một cách trung thực cũng là một phần của trách nhiệm học thuật.',
+		nextVersion: [
+			'Cập nhật bản đồ tranh luận khi có nguồn mới.',
+			'Chuyển một phần giả định thành checklist dạy được trong lớp.',
+			'Viết ghi chép công khai về một điểm còn chưa rõ.',
+		],
 		cta: { label: 'Trao đổi về nghiên cứu AI', inquiryType: 'ai' },
-		lessons:
-			'Một ứng dụng AI chỉ có ý nghĩa khi tổ chức có thể giải thích mục tiêu, dữ liệu, giới hạn và người chịu trách nhiệm cho quyết định cuối cùng.',
-		relatedProjects: ['ai50-ai-cho-moi-nguoi', 'moonie-cafe-business-development'],
+		relatedProjects: ['ai50-ai-cho-moi-nguoi', 'learning-at-moonie-cafe'],
 		featured: false,
 	},
 ];
@@ -318,4 +416,8 @@ export function getProject(slug: string): Project | undefined {
 
 export function getFeaturedProjects(): Project[] {
 	return projects.filter((project) => project.featured);
+}
+
+export function getFlagshipProject(): Project | undefined {
+	return projects.find((project) => project.flagship) ?? projects.find((project) => project.featured);
 }

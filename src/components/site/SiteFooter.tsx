@@ -1,18 +1,21 @@
 import Link from 'next/link';
 
+import { getPublishedFooterGroups } from '@/config/navigation';
 import { routes } from '@/config/routes';
-import { SITE_NAME, siteProfile } from '@/config/site';
-
-const footerLinks = [
-	{ href: routes.about, label: 'Giới thiệu' },
-	{ href: routes.projects, label: 'Dự án' },
-	{ href: routes.services, label: 'Dịch vụ' },
-	{ href: routes.contact, label: 'Liên hệ' },
-] as const;
+import { SITE_NAME, SITE_POSITIONING, siteProfile } from '@/config/site';
 
 export default function SiteFooter() {
 	const email = siteProfile.contactEmail?.trim();
 	const social = siteProfile.socialLinks?.filter((item) => item.href && item.label) ?? [];
+	const footerLinks =
+		getPublishedFooterGroups()[0]?.links.filter((link) => link.href !== routes.home) ??
+		[
+			{ href: routes.about, label: 'Giới thiệu' },
+			{ href: routes.projects, label: 'Dự án' },
+			{ href: routes.services, label: 'Dịch vụ' },
+			{ href: routes.contact, label: 'Liên hệ' },
+		];
+
 	return (
 		<footer className="border-t border-hairline bg-paper">
 			<div className="shell py-16 sm:py-20">
@@ -22,8 +25,7 @@ export default function SiteFooter() {
 							{SITE_NAME}
 						</Link>
 						<p className="mt-4 max-w-sm text-base leading-[1.7] text-ink-secondary">
-							Biến kiến thức quản trị và AI thành năng lực, chương trình và quy trình có thể áp
-							dụng.
+							{SITE_POSITIONING}
 						</p>
 					</div>
 					<nav

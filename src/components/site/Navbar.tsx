@@ -155,7 +155,7 @@ export default function Navbar() {
 					<nav className="flex flex-1 flex-col justify-center" aria-label="Mobile">
 						{[
 							{ href: routes.home, label: 'Trang chủ' },
-							...mobileLinks.filter((link) => link.href !== routes.contact),
+							...mobileLinks,
 						].map((link, index) => (
 							<Link
 								key={link.href}
@@ -179,9 +179,11 @@ export default function Navbar() {
 								{contactCta.label} <span aria-hidden>→</span>
 							</ContactLink>
 						) : null}
-						<p className="mt-4 text-xs leading-relaxed text-ink-secondary">
-							{siteProfile.shortBio}
-						</p>
+						{siteProfile.shortBio ? (
+							<p className="mt-4 text-xs leading-relaxed text-ink-secondary">
+								{siteProfile.shortBio}
+							</p>
+						) : null}
 					</div>
 				</div>
 			) : null}

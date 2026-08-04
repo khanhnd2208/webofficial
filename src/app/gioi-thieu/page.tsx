@@ -1,240 +1,275 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 
-import { TrackedLink, TrustStrip } from '@/components/marketing';
-import { SectionReveal } from '@/components/motion';
+import {
+	ClosingNote,
+	PrincipleBlock,
+	StructuredData,
+	TrackedLink,
+	TreasureItem,
+} from '@/components/marketing';
+import { EditorialCover, SectionReveal } from '@/components/motion';
 import { routes } from '@/config/routes';
-import { absoluteUrl } from '@/config/site';
-import { verifiedTrustItems } from '@/content/publicMarketing';
+import { SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
+import {
+	aboutBeyond,
+	aboutClosing,
+	aboutCredentials,
+	aboutHero,
+	aboutPath,
+	aboutPrinciples,
+	aboutWorkToday,
+} from '@/content/about';
+import { areNotesPublic } from '@/content/notes';
+import { getPublishableTreasure, isTreasurePublic } from '@/content/treasure';
 
 export const metadata: Metadata = {
 	title: 'Giới thiệu — Nguyễn Duy Khánh',
 	description:
-		'Nguyễn Duy Khánh làm việc ở giao điểm giữa quản trị, thiết kế học tập và ứng dụng AI, kết nối sự chính xác của lý thuyết với thực hành.',
+		'Con đường của Nguyễn Duy Khánh từ quản trị, nhân sự, kinh doanh và công nghệ — luôn quay trở lại lớp học và câu hỏi làm thế nào để một điều khó trở nên rõ ràng.',
 	alternates: { canonical: absoluteUrl(routes.about) },
 };
 
-const roles = [
-	{
-		title: 'Educator',
-		body: 'Cấu trúc lại kiến thức quản trị khó, nối lý thuyết với case và tạo hoạt động buộc người học tự đưa ra quyết định.',
-		project: 'strategic-management-learning-experience',
-		link: 'Xem trải nghiệm học Strategic Management',
-	},
-	{
-		title: 'Learning Designer',
-		body: 'Chuyển mục tiêu học tập thành course map, học liệu, bài tập, workflow và tiêu chuẩn kiểm chứng có thể sử dụng.',
-		project: 'ai50-ai-cho-moi-nguoi',
-		link: 'Xem chương trình AI50',
-	},
-	{
-		title: 'Advisor',
-		body: 'Kết nối dữ liệu về khách hàng, vận hành và con người để giúp tổ chức nhìn đúng vấn đề và xác định ưu tiên khả thi.',
-		project: 'moonie-cafe-business-development',
-		link: 'Xem case doanh nghiệp',
-	},
-] as const;
-
-const principles = [
-	[
-		'01',
-		'Rõ nhưng không làm sai',
-		'Giải thích dễ tiếp cận, đồng thời giữ nguyên những sắc thái và giới hạn quan trọng.',
-	],
-	[
-		'02',
-		'Thiết kế để sử dụng',
-		'Mỗi khái niệm cần đi đến một hoạt động, công cụ hoặc quyết định phù hợp với bối cảnh.',
-	],
-	[
-		'03',
-		'Con người chịu trách nhiệm',
-		'Công nghệ hỗ trợ tư duy; quyền đánh giá và quyết định cuối cùng vẫn thuộc về con người.',
-	],
-] as const;
-
-const milestones = [
-	['Nền tảng quản trị', 'Học tập tại Khoa Quản trị Kinh doanh và Du lịch, Trường Đại học Hà Nội.'],
-	['Mở rộng góc nhìn', 'Hoàn thành chương trình thạc sĩ Quản trị kinh doanh tại Ý.'],
-	['Đi qua thực hành', 'Làm việc trong các lĩnh vực giáo dục, nhân sự và khởi nghiệp.'],
-	[
-		'Trở lại giáo dục',
-		'Giảng dạy tại Trường Đại học Hà Nội và phát triển các trải nghiệm học về quản trị, AI.',
-	],
-] as const;
+function workLinkHref(hrefKey: (typeof aboutWorkToday.links)[number]['hrefKey']): string {
+	switch (hrefKey) {
+		case 'classroom':
+			return routes.homeLearningExperiences;
+		case 'research':
+			return routes.project('ai-in-recruitment-research');
+		case 'projects':
+		default:
+			return routes.projects;
+	}
+}
 
 export default function AboutPage() {
+	const showNotes = areNotesPublic();
+	const showTreasure = isTreasurePublic();
+	const treasures = showTreasure ? getPublishableTreasure().slice(0, 3) : [];
+	const readingItems = aboutBeyond.reading.items;
+	const showReading = readingItems.length > 0;
+	const showBeyond = showNotes || showReading;
+
 	return (
 		<main className="bg-canvas">
+			<StructuredData
+				data={{
+					'@context': 'https://schema.org',
+					'@type': 'Person',
+					name: 'Nguyễn Duy Khánh',
+					alternateName: SITE_NAME,
+					url: SITE_ORIGIN,
+					jobTitle: 'Lecturer and Learning Experience Designer',
+					worksFor: {
+						'@type': 'Organization',
+						name: 'Trường Đại học Hà Nội',
+					},
+					description: aboutHero.lead,
+				}}
+			/>
+
 			<section className="border-b border-hairline">
 				<div className="shell grid items-center gap-10 py-12 md:grid-cols-12 md:py-16 lg:py-20">
 					<header className="md:col-span-7">
-						<p className="editorial-label">Giới thiệu</p>
-						<h1 className="premium-display mt-5 max-w-[14ch] text-ink">
-							Tôi làm giáo dục để tiếp tục học.
-						</h1>
-						<p className="premium-lead mt-6 max-w-2xl">
-							Tôi làm việc ở giao điểm giữa học thuật và thực hành: giữ sự chính xác của lý thuyết,
-							nhưng luôn tìm cách chuyển nó thành điều con người có thể hiểu và sử dụng.
-						</p>
-						<div className="mt-8 flex flex-col gap-3 sm:flex-row">
-							<TrackedLink
-								href="#cong-viec-hien-tai"
-								event="home_secondary_cta_click"
-								payload={{ sourcePage: routes.about, label: 'current-work' }}
-								className="editorial-button editorial-button-dark"
-							>
-								Xem công việc hiện tại <span aria-hidden>↓</span>
-							</TrackedLink>
-							<TrackedLink
-								href={routes.projects}
-								event="home_secondary_cta_click"
-								payload={{ sourcePage: routes.about, label: 'projects' }}
-								className="editorial-button"
-							>
-								Xem công việc đã thực hiện <span aria-hidden>→</span>
-							</TrackedLink>
-						</div>
+						<p className="editorial-label">{aboutHero.eyebrow}</p>
+						<h1 className="premium-display mt-5 max-w-[16ch] text-ink">{aboutHero.title}</h1>
+						<p className="premium-lead mt-6 max-w-2xl">{aboutHero.lead}</p>
 					</header>
 					<div className="md:col-span-5">
-						<figure>
-							<div className="premium-media relative aspect-[4/5]">
-								<Image
-									src="/brand/hero-figure.jpg"
-									alt="Minh họa chân dung Duy Khánh"
-									fill
-									priority
-									sizes="(max-width: 767px) calc(100vw - 48px), 40vw"
-									className="object-cover grayscale-[12%]"
-								/>
-							</div>
-							<figcaption className="mt-3 text-sm leading-[1.65] text-ink-secondary">
-								Hình minh họa hiện tại; sẽ thay bằng chân dung thật khi có ảnh được phê duyệt.
-							</figcaption>
-						</figure>
+						<EditorialCover title="Duy Khánh" kicker="Hà Nội · Lớp học" aspectRatio="4 / 5" />
 					</div>
 				</div>
 			</section>
 
-			<section className="bg-paper">
-				<div className="shell py-9">
-					<TrustStrip items={verifiedTrustItems} />
-				</div>
-			</section>
-
-			<section
-				id="cong-viec-hien-tai"
-				className="editorial-section scroll-mt-24 border-y border-hairline"
-			>
-				<div className="shell grid gap-12 lg:grid-cols-12 lg:gap-20">
-					<header className="lg:col-span-4">
-						<p className="editorial-label">Công việc hiện tại</p>
-						<h2 className="editorial-heading mt-4">
-							Biến kiến thức phức tạp thành năng lực có thể sử dụng.
-						</h2>
-					</header>
-					<div className="space-y-5 text-base leading-[1.75] text-ink-secondary lg:col-span-6 lg:col-start-7">
-						<p>
-							Tôi là Nguyễn Duy Khánh — giảng viên quản trị và người thiết kế trải nghiệm học tập
-							tại Trường Đại học Hà Nội.
-						</p>
-						<p>
-							Trong lớp học, tôi tổ chức lại lý thuyết thành một hành trình phân tích, lựa chọn và
-							thực hành. Khi làm việc với AI, tôi bắt đầu từ công việc và tiêu chuẩn của con người,
-							sau đó mới xác định công cụ nên tham gia ở đâu.
-						</p>
-						<p>
-							Cùng một cách tiếp cận được dùng trong công việc với tổ chức: hiểu mối liên hệ giữa
-							vấn đề, dữ liệu và nguồn lực trước khi thiết kế lựa chọn có thể thực hiện.
-						</p>
-					</div>
-				</div>
-			</section>
-
-			<section className="editorial-section border-b border-hairline bg-paper">
+			<section className="editorial-section border-b border-hairline">
 				<div className="shell">
 					<header className="max-w-3xl">
-						<p className="editorial-label">Ba vai trò, một năng lực lõi</p>
-						<h2 className="editorial-heading mt-4">
-							Từ hiểu biết đến trải nghiệm, công cụ và quyết định.
-						</h2>
+						<p className="editorial-label">Câu chuyện</p>
+						<h2 className="editorial-heading mt-5">{aboutPath.title}</h2>
 					</header>
-					<div className="mt-12 grid gap-10 md:grid-cols-3">
-						{roles.map((role) => (
-							<SectionReveal key={role.title} className="premium-card pt-7">
-								<h3 className="type-h3">{role.title}</h3>
-								<p className="mt-4 text-base leading-[1.7] text-ink-secondary">{role.body}</p>
-								<TrackedLink
-									href={routes.project(role.project)}
-									event="service_proof_click"
-									payload={{ slug: role.project, sourcePage: routes.about }}
-									className="editorial-text-link mt-6"
-								>
-									{role.link} <span aria-hidden>→</span>
-								</TrackedLink>
+					<div className="mt-14 space-y-20 md:space-y-28">
+						{aboutPath.chapters.map((chapter, index) => (
+							<SectionReveal
+								key={chapter.id}
+								className="grid items-start gap-8 border-t border-hairline pt-12 md:grid-cols-12 md:gap-12"
+							>
+								<span className="font-mono text-xs text-accent md:col-span-1">
+									{String(index + 1).padStart(2, '0')}
+								</span>
+								<div className={chapter.mediaSrc ? 'md:col-span-6' : 'md:col-span-8'}>
+									<h3 className="font-display text-2xl font-medium tracking-[-0.02em] text-ink md:text-3xl">
+										{chapter.title}
+									</h3>
+									<p className="mt-5 max-w-2xl text-lg leading-[1.75] text-ink-secondary">
+										{chapter.body}
+									</p>
+									<p className="mt-6 max-w-xl border-l border-accent pl-5 text-base leading-[1.7] text-ink">
+										{chapter.milestone}
+									</p>
+								</div>
+								{chapter.mediaSrc ? (
+									<figure className="md:col-span-5">
+										<div className="premium-media relative aspect-[4/5]">
+											<Image
+												src={chapter.mediaSrc}
+												alt={chapter.mediaAlt ?? ''}
+												fill
+												sizes="(max-width: 767px) calc(100vw - 48px), 36vw"
+												className="object-cover"
+											/>
+										</div>
+									</figure>
+								) : null}
 							</SectionReveal>
 						))}
 					</div>
 				</div>
 			</section>
 
-			<section id="dau-moc" className="editorial-section scroll-mt-24 border-b border-hairline">
-				<div className="shell grid gap-12 lg:grid-cols-12 lg:gap-20">
-					<header className="lg:col-span-4">
-						<p className="editorial-label">Hành trình nghề nghiệp</p>
-						<h2 className="editorial-heading mt-4">Từ quản trị đến thực hành, giáo dục và AI.</h2>
-					</header>
-					<ol className="border-t border-hairline lg:col-span-7 lg:col-start-6">
-						{milestones.map(([label, body], index) => (
-							<li
-								key={label}
-								className="grid grid-cols-[3rem_1fr] gap-5 border-b border-hairline py-6"
-							>
-								<span className="font-mono text-xs text-accent">0{index + 1}</span>
-								<div>
-									<p className="editorial-label">{label}</p>
-									<p className="mt-3 text-base leading-[1.7] text-ink-secondary">{body}</p>
-								</div>
-							</li>
-						))}
-					</ol>
-				</div>
-			</section>
-
 			<section className="editorial-section border-b border-hairline bg-paper">
-				<div className="shell">
-					<p className="editorial-label">Nguyên tắc làm việc</p>
-					<div className="mt-10 grid border-t border-hairline md:grid-cols-3">
-						{principles.map(([number, title, body]) => (
-							<article
-								key={number}
-								className="border-b border-hairline py-8 md:border-r md:px-6 md:last:border-r-0"
-							>
-								<span className="font-mono text-xs text-accent">{number}</span>
-								<h2 className="type-h3 mt-5">{title}</h2>
-								<p className="mt-3 text-base leading-[1.7] text-ink-secondary">{body}</p>
-							</article>
-						))}
+				<div className="shell grid gap-10 lg:grid-cols-12 lg:gap-16">
+					<header className="lg:col-span-5">
+						<p className="editorial-label">{aboutWorkToday.eyebrow}</p>
+						<h2 className="editorial-heading mt-5">{aboutWorkToday.title}</h2>
+					</header>
+					<div className="lg:col-span-6 lg:col-start-7">
+						<p className="text-lg leading-[1.75] text-ink-secondary">{aboutWorkToday.body}</p>
+						<ul className="mt-10 space-y-0 border-t border-hairline">
+							{aboutWorkToday.links.map((link) => (
+								<li key={link.id} className="border-b border-hairline">
+									<TrackedLink
+										href={workLinkHref(link.hrefKey)}
+										event="home_secondary_cta_click"
+										payload={{ sourcePage: routes.about, label: link.id }}
+										className="group flex min-h-14 items-center justify-between py-5 text-base font-semibold text-ink transition-colors hover:text-accent"
+									>
+										{link.label}
+										<span
+											className="transition-transform group-hover:translate-x-1"
+											aria-hidden
+										>
+											→
+										</span>
+									</TrackedLink>
+								</li>
+							))}
+						</ul>
 					</div>
 				</div>
 			</section>
 
-			<section className="editorial-section bg-ink text-center text-canvas">
-				<div className="shell mx-auto max-w-3xl">
-					<p className="editorial-label !text-sunlight">Cùng làm việc</p>
-					<h2 className="editorial-heading mx-auto mt-5 max-w-3xl text-balance text-canvas">
-						Bạn muốn học, thiết kế một chương trình hay giải quyết một vấn đề trong tổ chức?
-					</h2>
-					<TrackedLink
-						href={routes.contact}
-						event="contact_open"
-						payload={{ sourcePage: routes.about }}
-						className="editorial-button mt-8 border-canvas bg-canvas text-ink"
-					>
-						Chọn nội dung muốn trao đổi <span aria-hidden>→</span>
-					</TrackedLink>
+			<PrincipleBlock items={aboutPrinciples.items} />
+
+			{showBeyond ? (
+				<section className="editorial-section border-b border-hairline">
+					<div className="shell grid gap-12 lg:grid-cols-12 lg:gap-16">
+						<header className="lg:col-span-4">
+							<p className="editorial-label">Ngoài lớp học</p>
+							<h2 className="editorial-heading mt-5">{aboutBeyond.title}</h2>
+							<p className="premium-lead mt-5">{aboutBeyond.lead}</p>
+						</header>
+						<div className="space-y-12 lg:col-span-7 lg:col-start-6">
+							{showNotes ? (
+								<article className="border-t border-hairline pt-6">
+									<h3 className="type-h3">{aboutBeyond.hanoicam.title}</h3>
+									<p className="mt-3 text-base leading-[1.7] text-ink-secondary">
+										{aboutBeyond.hanoicam.body}
+									</p>
+									<Link href={routes.notes} className="editorial-text-link mt-5">
+										Đọc những ghi chép <span aria-hidden>→</span>
+									</Link>
+								</article>
+							) : null}
+							{showReading ? (
+								<article className="border-t border-hairline pt-6">
+									<h3 className="type-h3">{aboutBeyond.reading.title}</h3>
+									{aboutBeyond.reading.question ? (
+										<p className="mt-4 font-display text-xl leading-[1.45] text-ink">
+											{aboutBeyond.reading.question}
+										</p>
+									) : null}
+									<ul className="mt-6 space-y-4">
+										{readingItems.map((item) => (
+											<li
+												key={item.title}
+												className="border-b border-hairline pb-4 text-base text-ink-secondary"
+											>
+												<span className="font-medium text-ink">{item.title}</span>
+												{item.note ? (
+													<span className="mt-1 block text-sm">{item.note}</span>
+												) : null}
+											</li>
+										))}
+									</ul>
+									{aboutBeyond.reading.updatedAt ? (
+										<p className="mt-4 text-sm text-ink-secondary">
+											Cập nhật: {aboutBeyond.reading.updatedAt}
+										</p>
+									) : null}
+								</article>
+							) : null}
+						</div>
+					</div>
+				</section>
+			) : null}
+
+			{showTreasure ? (
+				<section className="editorial-section border-b border-hairline bg-paper">
+					<div className="shell">
+						<p className="editorial-label">My Treasure</p>
+						<p className="mt-5 max-w-2xl text-base leading-[1.7] text-ink-secondary">
+							Những mảnh nhỏ người học để lại — nhắc tôi rằng mối quan hệ trong lớp học có thật.
+						</p>
+						<div className="mt-10 grid gap-6 sm:grid-cols-3">
+							{treasures.map((item) => (
+								<TreasureItem key={item.id} item={item} />
+							))}
+						</div>
+					</div>
+				</section>
+			) : null}
+
+			<section className="editorial-section border-b border-hairline bg-paper">
+				<div className="shell grid gap-10 lg:grid-cols-12">
+					<header className="lg:col-span-4">
+						<p className="editorial-label">{aboutCredentials.title}</p>
+					</header>
+					<dl className="grid gap-6 sm:grid-cols-2 lg:col-span-8">
+						{aboutCredentials.items.map((item) => (
+							<div key={item.label} className="border-t border-hairline pt-4">
+								<dt className="text-sm text-ink-secondary">{item.label}</dt>
+								<dd className="mt-2 text-base font-medium text-ink">{item.value}</dd>
+							</div>
+						))}
+					</dl>
 				</div>
 			</section>
+
+			<ClosingNote
+				title={showNotes ? aboutClosing.titleWithNotes : aboutClosing.titleWithoutNotes}
+				primaryCta={{
+					href: routes.projects,
+					label: aboutClosing.primaryCta.label,
+					event: 'home_secondary_cta_click',
+					payload: { sourcePage: routes.about, label: 'projects' },
+				}}
+				secondaryCta={
+					showNotes
+						? {
+								href: routes.notes,
+								label: aboutClosing.notesCta.label,
+								event: 'home_secondary_cta_click',
+								payload: { sourcePage: routes.about, label: 'notes' },
+							}
+						: {
+								href: routes.contact,
+								label: aboutClosing.contactCta.label,
+								event: 'contact_open',
+								payload: { sourcePage: routes.about, label: 'contact' },
+							}
+				}
+			/>
 		</main>
 	);
 }
