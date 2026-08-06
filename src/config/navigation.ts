@@ -1,10 +1,11 @@
 /**
  * Navigation configuration — single source of truth for public chrome.
  *
- * Desktop and mobile share the same items; presentation differs.
- * Only `published` items render in header/footer. Draft routes stay in the
- * map so later phases can flip status without inventing new link lists.
- * Ghi chép visibility is gated by published note count at runtime.
+ * Public marketing: intro cover (`/`) → mục lục gate (`/muc-luc` via
+ * `GATE_NAV_ITEMS`) plus a fixed contact rail on destinations. Classic
+ * header/footer stay in this file for gradual migration and tests, but are
+ * no longer mounted on marketing surfaces. Ghi chép visibility is gated by
+ * published note count at runtime.
  */
 
 import { areNotesPublic } from '@/content/notes';
@@ -13,9 +14,22 @@ import { routes } from './routes';
 
 export type PublishState = 'draft' | 'published';
 
+/** Gate item readiness — locked items render but do not navigate. */
+export type GateItemStatus = 'published' | 'locked';
+
 export interface NavLink {
 	href: string;
 	label: string;
+}
+
+export interface GateNavItem {
+	id: string;
+	label: string;
+	status: GateItemStatus;
+	/** Present when status is published */
+	href?: string;
+	/** Soft teaser shown on hover — personal brand, not sales copy */
+	blurb?: string;
 }
 
 export interface PublicNavItem {
@@ -60,6 +74,40 @@ export interface AdminNavGroup {
 	group: string;
 	items: AdminNavItem[];
 }
+
+/**
+ * Mục lục gate — four centered destinations. Locked items stay visible but inert.
+ */
+export const GATE_NAV_ITEMS: GateNavItem[] = [
+	{
+		id: 'about',
+		href: routes.about,
+		label: 'Giới thiệu',
+		status: 'published',
+		blurb: 'Con đường đến với lớp học',
+	},
+	{
+		id: 'projects',
+		href: routes.projects,
+		label: 'Dự án',
+		status: 'published',
+		blurb: 'Lớp học, chương trình và thử nghiệm',
+	},
+	{
+		id: 'services',
+		href: routes.services,
+		label: 'Dịch vụ',
+		status: 'published',
+		blurb: 'Ba hướng làm việc cùng tôi',
+	},
+	{
+		id: 'my-space',
+		href: routes.mySpace,
+		label: 'My Space',
+		status: 'published',
+		blurb: 'Không gian cá nhân và những thử nghiệm',
+	},
+];
 
 /**
  * Primary public IA — logo handles Home; the header exposes real destinations.
@@ -125,6 +173,59 @@ export const FOOTER_GROUPS: FooterGroup[] = [
 
 export function isPublished(status: PublishState): boolean {
 	return status === 'published';
+}
+
+export function isGateItemLocked(item: GateNavItem): boolean {
+	return item.status === 'locked';
+}
+
+export function getGateNavItems(): GateNavItem[] {
+	return GATE_NAV_ITEMS;
+}
+
+/** Prefixes where marketing chrome (gate back, contact rail) must not appear. */
+export const INTERNAL_CHROME_PREFIXES = [
+	'/admin',
+	'/m/',
+	'/messages',
+	'/vocabulary',
+	'/tai-khoan',
+	'/dang-nhap',
+	'/hoc/',
+] as const;
+
+export function isInternalChromePath(pathname: string): boolean {
+	return INTERNAL_CHROME_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+/** Public marketing / utility surfaces that use minimal chrome instead of Navbar. */
+export function isMinimalChromePath(pathname: string): boolean {
+	return !isInternalChromePath(pathname);
+}
+
+/** Intro cover — no gate-back, no contact chrome. */
+export function isIntroPath(pathname: string): boolean {
+	return pathname === routes.home;
+}
+
+/** Mục lục destination menu. */
+export function isTocPath(pathname: string): boolean {
+	return pathname === routes.toc;
+}
+
+/** My Space hub and nested personal surfaces (tests, …). */
+export function isMySpacePath(pathname: string): boolean {
+	return pathname === routes.mySpace || pathname.startsWith(`${routes.mySpace}/`);
+}
+
+/** My Space hub only (2×2 grid) — not nested test pages. */
+export function isMySpaceHubPath(pathname: string): boolean {
+	return pathname === routes.mySpace;
+}
+
+/** Full-bleed public shells (intro + mục lục + My Space) — no GateBack top inset. */
+export function isFullBleedPublicPath(pathname: string): boolean {
+	return isIntroPath(pathname) || isTocPath(pathname) || isMySpacePath(pathname);
 }
 
 function isNavItemVisible(item: PublicNavItem): boolean {
@@ -196,6 +297,8 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 			{ href: routes.admin.vocabulary, label: 'Vocabulary' },
 			{ href: routes.admin.luckyCard, label: 'Lucky Card' },
 			{ href: routes.admin.messages, label: 'Lời nhắn' },
+			{ href: routes.admin.myspaceTests, label: 'My Space Tests' },
+			{ href: routes.admin.myspaceSubjects, label: 'Môn học (Tests)' },
 		],
 	},
 	{

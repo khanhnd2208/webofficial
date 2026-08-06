@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	aboutBeyond,
 	aboutClosing,
 	aboutCredentials,
 	aboutHero,
-	aboutPath,
-	aboutPrinciples,
-	aboutWorkToday,
+	aboutJourney,
 } from './about';
 import { NOTES_PUBLIC_MIN, areNotesPublic, getPublishedNotes, notes } from './notes';
 import {
@@ -19,47 +16,43 @@ import {
 import { corePositioning } from './publicMarketing';
 
 describe('about content', () => {
-	it('opens a story that does not repeat the homepage learning manifesto', () => {
-		expect(aboutHero.title).toBe('Con đường của tôi luôn quay trở lại lớp học.');
-		expect(aboutHero.lead).not.toContain('Nguyễn Duy Khánh');
-		expect(aboutHero.title).not.toContain('tiếp tục học');
-		expect(corePositioning.manifesto).toContain('tiếp tục học');
-		expect(corePositioning.full).not.toContain('không thay thế tư duy');
-		expect(aboutPrinciples.items.find((item) => item.id === 'human')?.body).toContain(
-			'đánh giá, lựa chọn và chịu trách nhiệm',
+	it('opens with a named hero profile and journey quote', () => {
+		expect(aboutHero.name).toBe('Khánh');
+		expect(aboutHero.fullName).toBe('Nguyễn Duy Khánh');
+		expect(aboutHero.greeting).toBe('Xin chào, mình là');
+		expect(aboutHero.quote).toContain('making education an art');
+		expect(aboutHero.manifesto).toBe(
+			'Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
 		);
+		expect(corePositioning.full).toContain('Nguyễn Duy Khánh');
 	});
 
-	it('keeps three grounded chapters as the spine of the page', () => {
-		expect(aboutPath.chapters).toHaveLength(3);
-		for (const chapter of aboutPath.chapters) {
-			expect(chapter.milestone.length).toBeGreaterThan(20);
-			expect(chapter.body).not.toMatch(/tạm thời|sẽ bổ sung|đang chờ/i);
-		}
-		expect(aboutPath.chapters[0]?.milestone).toContain('Khoa Quản trị');
-	});
-
-	it('collapses current work into one statement plus deep links', () => {
-		expect(aboutWorkToday.body).toContain('ba nơi');
-		expect(aboutWorkToday.links).toHaveLength(3);
-		expect(aboutWorkToday.links.map((link) => link.label)).toEqual([
-			'Những lớp học đang diễn ra',
-			'Các dự án thiết kế học tập',
-			'Những nghiên cứu và thử nghiệm mới',
+	it('maps the journey as current work, classrooms, and projects', () => {
+		expect(aboutJourney.title).toBe('Con đường đến với lớp học');
+		expect(aboutJourney.currentWork.title).toBe('Công việc hiện tại');
+		expect(aboutJourney.currentWork.items.map((item) => item.title)).toEqual([
+			'Giảng dạy',
+			'Thiết kế trải nghiệm học',
+			'Ứng dụng AI tạo sinh',
+		]);
+		expect(aboutJourney.classrooms.items).toHaveLength(6);
+		expect(aboutJourney.classrooms.items[0]).toBe('Đại học Hà Nội');
+		expect(aboutJourney.projects.items.map((item) => item.id)).toEqual([
+			'mini-erp',
+			'moonie',
+			'wang',
+			'hanoicam',
+			'kiddogo',
 		]);
 	});
 
-	it('gates beyond-classroom surfaces until content is reachable', () => {
-		expect(aboutBeyond.reading.items).toHaveLength(0);
-		expect(aboutBeyond.hanoicam.title).toBe('My Hanoicam');
-		expect(aboutCredentials.items[3]?.label).toBe('Mối quan tâm nghiên cứu hiện tại');
-	});
-
-	it('aligns closing CTAs with notes availability', () => {
-		expect(aboutClosing.primaryCta.hrefKey).toBe('projects');
-		expect(aboutClosing.contactCta.hrefKey).toBe('contact');
-		expect(aboutClosing.notesCta.hrefKey).toBe('notes');
-		expect(aboutClosing.titleWithoutNotes).toContain('cuộc trò chuyện mới');
+	it('closes with an applied-idea quote and quiet credentials', () => {
+		expect(aboutClosing.quote).toContain('hiểu rõ và dùng được');
+		expect(aboutCredentials.items).toEqual([
+			'Giảng viên, Khoa Quản trị Kinh doanh và Du lịch',
+			'Trường Đại học Hà Nội · Hà Nội, Việt Nam',
+		]);
+		expect(aboutCredentials.closing).toBe('Tôi dạy, học và viết từ Hà Nội.');
 	});
 });
 

@@ -86,6 +86,7 @@
 	--measure-wide: 72ch;
 	--motion-fast: 180ms;
 	--motion-base: 280ms;
+	--motion-gate: 320ms;
 	--motion-slow: 700ms;
 	--ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -404,7 +405,7 @@ body::before {
 		border-color var(--motion-base) var(--ease-editorial),
 		color var(--motion-base) var(--ease-editorial),
 		gap var(--motion-base) var(--ease-editorial),
-		transform var(--motion-base) var(--ease-editorial);
+		transform var(--motion-fast) var(--ease-editorial);
 }
 
 .editorial-button-dark {
@@ -415,10 +416,13 @@ body::before {
 .editorial-button:hover,
 .editorial-button:focus-visible {
 	gap: 0.85rem;
-	border-color: var(--accent);
-	background: var(--accent);
-	color: #fff;
-	transform: translateY(-1px);
+	border-color: var(--ink);
+	background: var(--ink);
+	color: var(--canvas);
+}
+
+.editorial-button:active {
+	transform: translateY(1px);
 }
 
 .editorial-text-link {
@@ -426,7 +430,11 @@ body::before {
 	min-height: 2.5rem;
 	align-items: center;
 	gap: 0.4rem;
-	border-bottom: 1px solid currentColor;
+	border-bottom: 1px solid transparent;
+	background-image: linear-gradient(currentColor, currentColor);
+	background-position: 0 100%;
+	background-repeat: no-repeat;
+	background-size: 100% 1px;
 	padding-bottom: 0.2rem;
 	font-size: 0.875rem;
 	font-weight: 600;
@@ -435,13 +443,16 @@ body::before {
 	color: var(--ink);
 	transition:
 		color 250ms ease,
-		gap 250ms ease;
+		gap 250ms ease,
+		background-size 350ms var(--ease-editorial);
 }
 
 .editorial-text-link:hover,
 .editorial-text-link:focus-visible {
 	gap: 0.65rem;
-	color: var(--accent);
+	color: var(--ink);
+	opacity: 0.72;
+	background-size: 40% 1px;
 }
 
 /* Editorial premium primitives — calm academic scale */
@@ -465,7 +476,6 @@ body::before {
 	position: relative;
 	overflow: hidden;
 	background: var(--paper);
-	box-shadow: 0 8px 28px rgb(53 43 27 / 0.05);
 }
 
 .premium-media::after {
@@ -474,6 +484,65 @@ body::before {
 	position: absolute;
 	inset: 0;
 	border: 1px solid rgb(118 86 37 / 0.12);
+}
+
+/* Projects index — editorial column strip */
+.project-img-wrapper::after {
+	content: '';
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+
+.project-index-scroller {
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	cursor: grab;
+	-webkit-overflow-scrolling: touch;
+}
+
+.project-index-scroller::-webkit-scrollbar {
+	display: none;
+}
+
+.project-index-scroller.is-dragging {
+	cursor: grabbing;
+	scroll-snap-type: none;
+	user-select: none;
+}
+
+.project-index-scroller.is-dragging a {
+	pointer-events: none;
+}
+
+.project-index-col {
+	flex: 0 0 85vw;
+	scroll-snap-align: start;
+}
+
+@media (min-width: 768px) {
+	.project-index-col {
+		/* ~2 visible + peek */
+		flex-basis: calc(100% / 2.15);
+	}
+}
+
+@media (min-width: 1024px) {
+	.project-index-col {
+		/* ~3 visible + peek of the next — works for 4 or 6+ */
+		flex-basis: calc(100% / 3.25);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.project-index-scroller {
+		scroll-snap-type: none;
+	}
 }
 
 .trust-strip {
@@ -517,26 +586,11 @@ body::before {
 .premium-card {
 	border: 1px solid var(--hairline);
 	background: var(--canvas);
-	transition:
-		border-color var(--motion-base) ease,
-		transform var(--motion-base) var(--ease-editorial);
-}
-
-.premium-card:hover {
-	border-color: var(--accent);
-	transform: translateY(-2px);
 }
 
 .marketing-card {
 	border: 1px solid var(--hairline);
 	background: var(--canvas);
-	transition:
-		border-color 180ms ease,
-		transform 180ms ease;
-}
-
-.marketing-card:hover {
-	border-color: rgb(118 86 37 / 0.45);
 }
 
 .marketing-card:hover .marketing-card-arrow {
@@ -685,18 +739,18 @@ body::before {
 	}
 }
 
-/* Focus styles - accessible and elegant */
+/* Focus styles - accessible and elegant (bronze ring) */
 :focus-visible {
 	outline: none;
 	box-shadow:
-		0 0 0 2px var(--background),
-		0 0 0 4px var(--accent);
+		0 0 0 2px var(--canvas),
+		0 0 0 4px var(--bronze);
 }
 
 /* Selection */
 ::selection {
-	background-color: var(--accent-subtle);
-	color: var(--foreground);
+	background-color: color-mix(in srgb, var(--bronze) 18%, transparent);
+	color: var(--ink);
 }
 
 /* Scrollbar - minimalist */
@@ -1183,4 +1237,371 @@ body::before {
 
 .animate-sparkle {
 	animation: sparkle-float 1.2s ease-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Intro cover (`/`) — vintage paper treatments + reveals
+   ═══════════════════════════════════════════════════════ */
+
+.intro-image-treatment {
+	/* Line-art brand assets already sit on paper — skip multiply or they vanish. */
+	filter: contrast(1.06) saturate(0.92);
+	will-change: transform;
+}
+
+.intro-image-portrait {
+	filter: grayscale(1) contrast(1.2);
+	opacity: 0.9;
+}
+
+.intro-noise-overlay {
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	mix-blend-mode: overlay;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
+}
+
+@keyframes intro-reveal-up {
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes intro-fade-in {
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes intro-mask-up {
+	from {
+		transform: translateY(110%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes intro-image-settle {
+	from {
+		opacity: 0;
+		transform: scale(1.04);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes intro-underline-draw {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
+@keyframes intro-ink-blink {
+	0%,
+	45% {
+		opacity: 1;
+	}
+	50%,
+	100% {
+		opacity: 0;
+	}
+}
+
+.intro-reveal-up {
+	opacity: 0;
+	transform: translateY(1.25rem);
+	animation: intro-reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.intro-reveal-meta {
+	opacity: 0;
+	animation: intro-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
+}
+
+.intro-reveal-delay-1 {
+	animation-delay: 0.42s;
+}
+
+.intro-reveal-delay-2 {
+	animation-delay: 0.55s;
+}
+
+.intro-reveal-delay-3 {
+	animation-delay: 0.78s;
+}
+
+.intro-mask {
+	display: inline-block;
+	overflow: hidden;
+	vertical-align: bottom;
+}
+
+.intro-mask-inner {
+	display: inline-block;
+	transform: translateY(110%);
+	animation: intro-mask-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.18s forwards;
+}
+
+.intro-pos-underline {
+	display: block;
+	height: 1px;
+	transform: scaleX(0);
+	transform-origin: left center;
+	background: currentColor;
+	animation: intro-underline-draw 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+.intro-image-fade {
+	opacity: 0;
+	animation: intro-image-settle 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+}
+
+.intro-ink-cursor {
+	display: inline-block;
+	width: 0.08em;
+	height: 0.85em;
+	margin-left: 0.12em;
+	vertical-align: -0.05em;
+	background: currentColor;
+	opacity: 0;
+	animation:
+		intro-fade-in 0.01s linear 0.9s forwards,
+		intro-ink-blink 1.1s steps(1) 0.9s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.intro-reveal-up,
+	.intro-reveal-meta,
+	.intro-image-fade,
+	.intro-mask-inner,
+	.intro-pos-underline {
+		opacity: 1;
+		transform: none;
+		animation: none;
+	}
+
+	.intro-ink-cursor {
+		animation: none;
+		opacity: 0.55;
+	}
+}
+
+/* ═══════════════════════════════════════════════════════
+   Mục lục gate — typographic entrance / exit
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes gate-item-enter {
+	from {
+		opacity: 0;
+		transform: translateY(0.75rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes gate-underline-draw {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
+.gate-item-enter {
+	opacity: 0;
+	animation: gate-item-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.gate-item-exit-fade {
+	opacity: 0 !important;
+	transform: translateY(0.5rem);
+}
+
+.gate-item-exit-select {
+	opacity: 1 !important;
+	transform: translateY(-0.35rem);
+}
+
+.gate-item-underline {
+	transform: scaleX(0);
+	opacity: 0;
+	transition:
+		opacity 200ms ease,
+		transform 0ms;
+}
+
+.group\/item:hover .gate-item-underline,
+.group\/item:focus-visible .gate-item-underline {
+	opacity: 1;
+	transform: scaleX(1);
+	transition:
+		opacity 200ms ease,
+		transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gate-item-underline-draw {
+	opacity: 1;
+	animation: gate-underline-draw 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.gate-item-enter,
+	.gate-item-exit-fade,
+	.gate-item-exit-select,
+	.gate-item-underline,
+	.gate-item-underline-draw {
+		opacity: 1;
+		transform: none;
+		animation: none;
+		transition: none;
+	}
+}
+
+/* Project index column entrance */
+@keyframes project-col-enter {
+	from {
+		opacity: 0;
+		transform: translateY(0.75rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.project-col-enter {
+	opacity: 0;
+	animation: project-col-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.project-col-enter {
+		opacity: 1;
+		transform: none;
+		animation: none;
+	}
+}
+
+/* Public chrome fade-in */
+@keyframes chrome-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.chrome-fade-in {
+	opacity: 0;
+	animation: chrome-fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+
+.chrome-fade-in-delay {
+	animation-delay: 0.4s;
+}
+
+/* Sheet panel entrance */
+@keyframes sheet-slide-up {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes sheet-slide-right {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+.sheet-panel-bottom {
+	animation: sheet-slide-up 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sheet-panel-right {
+	animation: sheet-slide-right 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.chrome-fade-in,
+	.sheet-panel-bottom,
+	.sheet-panel-right {
+		opacity: 1;
+		transform: none;
+		animation: none;
+	}
+}
+
+/* About journey timeline — dashed hairline connectors */
+.about-timeline-line {
+	position: absolute;
+	left: 24px;
+	top: 40px;
+	bottom: 0;
+	width: 1px;
+	background: repeating-linear-gradient(
+		to bottom,
+		var(--hairline) 0,
+		var(--hairline) 4px,
+		transparent 4px,
+		transparent 8px
+	);
+}
+
+.about-timeline-branch {
+	height: 1px;
+	background: repeating-linear-gradient(
+		to right,
+		var(--hairline) 0,
+		var(--hairline) 4px,
+		transparent 4px,
+		transparent 8px
+	);
+}
+
+.about-timeline-connector {
+	background: repeating-linear-gradient(
+		to bottom,
+		var(--hairline) 0,
+		var(--hairline) 4px,
+		transparent 4px,
+		transparent 8px
+	);
+}
+
+/* My Space quiz — soft pulse when revealing correct/wrong */
+@keyframes quiz-pulse {
+	0% {
+		transform: scale(1);
+	}
+	40% {
+		transform: scale(1.008);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-\[quiz-pulse_0\.4s_ease-out\] {
+		animation: none !important;
+	}
 }

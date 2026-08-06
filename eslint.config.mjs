@@ -40,6 +40,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // CommonJS PM2 config — require() is intentional
     "ecosystem.config.js",
+    // Archived snapshots — not shipped; keep lint focused on live app
+    "src/_archived/**",
   ]),
 ]);
 

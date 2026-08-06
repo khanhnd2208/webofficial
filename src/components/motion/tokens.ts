@@ -19,11 +19,14 @@ export const duration = {
 	button: 0.2,
 	/** HorizonReveal */
 	horizon: 0.6,
-	/** Route entrance fade */
-	page: 0.45,
+	/** Route entrance fade + soft rise */
+	page: 0.38,
+	/** Gate item exit before navigation */
+	gate: 0.32,
 	/** Section narrative */
 	section: 0.5,
 	textMask: 0.45,
+	underline: 0.55,
 	image: 0.55,
 	/** Full hero sequence budget */
 	hero: 1.6,
@@ -67,4 +70,26 @@ export const heroTimeline = {
 	cta: 0.8,
 	journeyLine: 1.0,
 	end: 1.6,
+} as const;
+
+/**
+ * Intro cover choreography (CSS animation-delay seconds).
+ * Meta → headline → POS underline → narrative → image → CTA.
+ */
+export const introTimeline = {
+	meta: 0.05,
+	headline: 0.18,
+	partOfSpeech: 0.42,
+	narrative: 0.55,
+	image: 0.12,
+	cta: 0.78,
+} as const;
+
+/**
+ * Mục lục gate entrance stagger (CSS animation-delay seconds).
+ */
+export const gateTimeline = {
+	itemBase: 0.12,
+	itemStep: 0.08,
+	exit: 0.32,
 } as const;

@@ -7,12 +7,21 @@
 
 export const routes = {
 	// ─── Public marketing ─────────────────────────────────────────────────────
+	/** Cover / entry — "Trở thành" intro before the destination menu. */
 	home: '/',
-	homeLearningExperiences: '/#trong-lop-hoc',
+	/** Table of contents — destination gate (Giới thiệu / Dự án / Dịch vụ / …). */
+	toc: '/muc-luc',
+	/** @deprecated Home no longer has an in-page classroom section; prefer routes.projects. */
+	homeLearningExperiences: '/du-an',
 	about: '/gioi-thieu',
 	projects: '/du-an',
 	project: (slug: string) => `/du-an/${slug}` as const,
 	services: '/dich-vu',
+	/** Personal experiments hub — boardgames, podcast, tests (evidence-gated tiles). */
+	mySpace: '/my-space',
+	mySpaceTests: '/my-space/tests',
+	mySpaceTest: (slug: string) => `/my-space/tests/${slug}` as const,
+	mySpaceTestPlay: (slug: string) => `/my-space/tests/${slug}/play` as const,
 	/** In-page anchors on /gioi-thieu */
 	aboutServices: '/gioi-thieu#dich-vu',
 	aboutTeaching: '/gioi-thieu#giang-day-workshop',
@@ -40,7 +49,8 @@ export const routes = {
 	postPillar: (slug: string) => `/bai-viet/chu-de/${slug}` as const,
 	postCollection: (slug: string) => `/bai-viet/bo-suu-tap/${slug}` as const,
 
-	// ─── Archived public surfaces (noindex; reachable via /archive) ───────────
+	// ─── Archived public surfaces (hubs redirect via PUBLIC_REDIRECTS) ─────────
+	// UI: src/_archived/marketing/routes-v1 · lab boardgames → features/kstrip-2026
 	lab: '/goc-cua-khanh',
 	labBoardgame: '/goc-cua-khanh/boardgame',
 	labTools: '/goc-cua-khanh/cong-cu',
@@ -87,6 +97,12 @@ export const routes = {
 		vocabulary: '/admin/tools/vocabulary',
 		luckyCard: '/admin/tools/lucky-card',
 		messages: '/admin/tools/messages',
+		myspaceTests: '/admin/myspace-tests',
+		myspaceTestNew: '/admin/myspace-tests/new',
+		myspaceTestEdit: (id: string) => `/admin/myspace-tests/${id}` as const,
+		myspaceQuestions: '/admin/myspace-tests/questions',
+		myspaceQuestionsImport: '/admin/myspace-tests/import',
+		myspaceSubjects: '/admin/myspace-tests/subjects',
 		users: '/admin/users',
 		media: '/admin/media',
 		settings: '/admin/settings',
@@ -153,8 +169,10 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 
 export type PublicRoute =
 	| typeof routes.home
+	| typeof routes.toc
 	| typeof routes.projects
 	| typeof routes.services
+	| typeof routes.mySpace
 	| typeof routes.notes
 	| typeof routes.posts
 	| typeof routes.about

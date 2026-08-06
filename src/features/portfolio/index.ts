@@ -1,5 +1,4 @@
-export { default as ProjectGrid } from './components/ProjectGrid';
-export { ProjectCard, ProjectFeature } from './components/ProjectCard';
+export { default as ProjectList } from './components/ProjectList';
 export { CaseStudyViewTracker } from './components/CaseStudyViewTracker';
 export {
 	getFeaturedProjects,

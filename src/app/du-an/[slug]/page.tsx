@@ -3,13 +3,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { ArtifactGallery, TrackedLink } from '@/components/marketing';
+import { TrackedLink } from '@/components/marketing';
+import ReadingProgress from '@/components/motion/ReadingProgress';
+import SectionReveal from '@/components/motion/SectionReveal';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 import {
 	CaseStudyViewTracker,
 	getProject,
-	getVerifiedGallery,
 	projects,
 	type Project,
 } from '@/features/portfolio';
@@ -38,53 +39,48 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 }
 
 function Opening({ project }: { project: Project }) {
-	const verifiedGallery = getVerifiedGallery(project);
-	const heroImage = verifiedGallery[0]?.src ?? project.coverImage;
-
 	return (
-		<section className="border-b border-hairline">
-			<div className="shell grid items-center gap-10 py-12 lg:grid-cols-12 lg:gap-16 lg:py-20">
+		<SectionReveal as="section" className="border-b border-hairline">
+			<div className="shell grid items-start gap-10 py-12 lg:grid-cols-12 lg:gap-16 lg:py-20">
 				<header className="lg:col-span-7">
 					<p className="editorial-label">
 						{project.category} · {project.year}
 					</p>
-					<h1 className="premium-display mt-5 text-ink">{project.title}</h1>
-					{project.subtitle ? (
-						<p className="mt-5 max-w-2xl text-lg leading-[1.65] text-ink md:text-xl">
-							{project.subtitle}
-						</p>
-					) : (
-						<p className="premium-lead mt-6 max-w-2xl">{project.summary}</p>
-					)}
+					<h1 className="mt-5 font-display text-[clamp(1.875rem,4vw,3rem)] font-medium leading-[1.15] tracking-[-0.02em] text-ink text-balance">
+						{project.title}
+					</h1>
+					<p className="mt-6 max-w-2xl text-base leading-[1.75] text-ink-secondary md:text-lg">
+						{project.summary}
+					</p>
 					<dl className="mt-10 grid gap-6 border-t border-hairline pt-8 sm:grid-cols-3">
 						<div>
-							<dt className="editorial-label">Vai trò</dt>
+							<dt className="text-xs tracking-[0.04em] text-ink/45">Vai trò</dt>
 							<dd className="mt-2 text-sm leading-[1.65] text-ink">{project.role}</dd>
 						</div>
 						<div>
-							<dt className="editorial-label">Thời gian</dt>
+							<dt className="text-xs tracking-[0.04em] text-ink/45">Thời gian</dt>
 							<dd className="mt-2 text-sm leading-[1.65] text-ink">{project.timeframe}</dd>
 						</div>
 						<div>
-							<dt className="editorial-label">Trạng thái</dt>
+							<dt className="text-xs tracking-[0.04em] text-ink/45">Trạng thái</dt>
 							<dd className="mt-2 text-sm leading-[1.65] text-ink">{project.status}</dd>
 						</div>
 					</dl>
 				</header>
 				<div className="lg:col-span-5">
-					<div className="premium-media relative aspect-[4/5]">
+					<div className="premium-media relative aspect-[4/5] bg-canvas">
 						<Image
-							src={heroImage}
+							src={project.coverImage}
 							alt=""
 							fill
 							priority
 							sizes="(max-width: 1023px) calc(100vw - 48px), 40vw"
-							className={`object-cover grayscale-[10%] ${heroImage.includes('learning-as-becoming-desktop') ? 'object-left' : 'object-center'}`}
+							className="object-contain object-center"
 						/>
 					</div>
 				</div>
 			</div>
-		</section>
+		</SectionReveal>
 	);
 }
 
@@ -92,48 +88,57 @@ function OpeningQuestion({ project }: { project: Project }) {
 	const title =
 		project.template === 'inquiry' ? 'Câu hỏi tôi đang theo đuổi' : 'Câu hỏi khởi đầu';
 	return (
-		<section className="editorial-section border-b border-hairline">
-			<div className="shell grid gap-10 lg:grid-cols-12">
+		<SectionReveal as="section" className="border-b border-hairline py-14 md:py-16">
+			<div className="shell grid gap-8 lg:grid-cols-12">
 				<div className="lg:col-span-4">
 					<p className="editorial-label">{title}</p>
 				</div>
 				<div className="lg:col-span-7 lg:col-start-6">
-					<p className="font-display text-2xl leading-[1.45] text-ink md:text-3xl">
+					<p className="font-display text-xl leading-[1.5] text-ink md:text-2xl">
 						{project.openingQuestion}
 					</p>
 				</div>
 			</div>
-		</section>
+		</SectionReveal>
 	);
 }
 
-function IntendedChange({ project }: { project: Project }) {
-	if (project.template === 'inquiry') return null;
-	return (
-		<section className="editorial-section border-b border-hairline bg-paper">
-			<div className="shell">
-				<p className="editorial-label">Điều tôi muốn thay đổi</p>
-				<ul className="mt-10 grid gap-8 border-t border-hairline pt-10 md:grid-cols-3">
-					{project.intendedChange.map((item, index) => (
-						<li key={item}>
-							<span className="font-mono text-xs text-accent">0{index + 1}</span>
-							<p className="mt-4 text-base leading-[1.7] text-ink">{item}</p>
-						</li>
-					))}
-				</ul>
-			</div>
-		</section>
-	);
-}
+function HowIWorked({ project }: { project: Project }) {
+	if (project.template === 'inquiry' && project.workingAssumptions?.length) {
+		return (
+			<SectionReveal as="section" className="border-b border-hairline bg-paper py-14 md:py-16">
+				<div className="shell grid gap-8 lg:grid-cols-12">
+					<header className="lg:col-span-4">
+						<p className="editorial-label">Cách tôi làm</p>
+						<h2 className="mt-3 font-display text-2xl font-medium tracking-[-0.02em] text-ink">
+							Giả định làm việc
+						</h2>
+					</header>
+					<ul className="space-y-5 lg:col-span-7 lg:col-start-6">
+						{project.workingAssumptions.map((item) => (
+							<li
+								key={item}
+								className="border-b border-hairline pb-5 text-base leading-[1.7] text-ink-secondary last:border-b-0"
+							>
+								{item}
+							</li>
+						))}
+					</ul>
+				</div>
+			</SectionReveal>
+		);
+	}
 
-function DesignJourney({ project }: { project: Project }) {
 	if (!project.designJourney?.length) return null;
+
 	return (
-		<section className="editorial-section border-b border-hairline">
-			<div className="shell grid gap-12 lg:grid-cols-12">
+		<SectionReveal as="section" className="border-b border-hairline bg-paper py-14 md:py-16">
+			<div className="shell grid gap-10 lg:grid-cols-12">
 				<header className="lg:col-span-4">
-					<p className="editorial-label">Tôi đã thiết kế như thế nào</p>
-					<h2 className="editorial-heading mt-4">Hành trình học tập</h2>
+					<p className="editorial-label">Cách tôi làm</p>
+					<h2 className="mt-3 font-display text-2xl font-medium tracking-[-0.02em] text-ink">
+						Hành trình
+					</h2>
 				</header>
 				<ol className="border-t border-hairline lg:col-span-7 lg:col-start-6">
 					{project.designJourney.map((step, index) => (
@@ -141,7 +146,7 @@ function DesignJourney({ project }: { project: Project }) {
 							key={step.label}
 							className="grid grid-cols-[3rem_1fr] gap-5 border-b border-hairline py-6"
 						>
-							<span className="font-mono text-xs text-accent">
+							<span className="font-mono text-xs text-ink/40">
 								{String(index + 1).padStart(2, '0')}
 							</span>
 							<div>
@@ -152,182 +157,53 @@ function DesignJourney({ project }: { project: Project }) {
 					))}
 				</ol>
 			</div>
-		</section>
+		</SectionReveal>
 	);
 }
 
-function InquirySections({ project }: { project: Project }) {
-	if (project.template !== 'inquiry') return null;
+function Observations({ project }: { project: Project }) {
+	const observedLabel =
+		project.template === 'inquiry' ? 'Điều tôi đang tạm thời kết luận' : 'Quan sát hiện có';
+
 	return (
-		<>
-			{project.workingAssumptions?.length ? (
-				<section className="editorial-section border-b border-hairline bg-paper">
-					<div className="shell grid gap-10 lg:grid-cols-12">
-						<header className="lg:col-span-4">
-							<p className="editorial-label">Giả định làm việc hiện tại</p>
-						</header>
-						<ul className="space-y-5 lg:col-span-7 lg:col-start-6">
-							{project.workingAssumptions.map((item) => (
-								<li
-									key={item}
-									className="border-b border-hairline pb-5 text-base leading-[1.7] text-ink-secondary"
-								>
-									{item}
-								</li>
-							))}
-						</ul>
+		<SectionReveal as="section" className="border-b border-hairline py-14 md:py-16">
+			<div className="shell max-w-[var(--measure)]">
+				<p className="editorial-label">{observedLabel}</p>
+				<ul className="mt-6 space-y-4">
+					{project.observed.map((item) => (
+						<li
+							key={item}
+							className="border-b border-hairline pb-4 text-base leading-[1.7] text-ink-secondary"
+						>
+							{item}
+						</li>
+					))}
+				</ul>
+				{project.notYetConcluded.length > 0 ? (
+					<div className="mt-10">
+						<p className="text-sm font-medium text-ink">Điều chưa rõ</p>
+						<p className="mt-3 text-base leading-[1.75] text-ink-secondary">
+							{project.notYetConcluded.join(' ')}
+						</p>
 					</div>
-				</section>
-			) : null}
-
-			{project.debateMap?.length ? (
-				<section className="editorial-section border-b border-hairline">
-					<div className="shell grid gap-10 lg:grid-cols-12">
-						<header className="lg:col-span-4">
-							<p className="editorial-label">Bản đồ tranh luận</p>
-						</header>
-						<ul className="space-y-5 lg:col-span-7 lg:col-start-6">
-							{project.debateMap.map((item) => (
-								<li
-									key={item}
-									className="border-b border-hairline pb-5 text-base leading-[1.7] text-ink"
-								>
-									{item}
-								</li>
-							))}
-						</ul>
-					</div>
-				</section>
-			) : null}
-
-			{project.sources?.length || project.openQuestions?.length ? (
-				<section className="editorial-section border-b border-hairline bg-paper">
-					<div className="shell grid gap-12 md:grid-cols-2">
-						{project.sources?.length ? (
-							<div>
-								<p className="editorial-label">Những nguồn và khái niệm chính</p>
-								<ul className="mt-6 space-y-4">
-									{project.sources.map((item) => (
-										<li
-											key={item}
-											className="border-b border-hairline pb-4 text-base text-ink-secondary"
-										>
-											{item}
-										</li>
-									))}
-								</ul>
-							</div>
-						) : null}
-						{project.openQuestions?.length ? (
-							<div>
-								<p className="editorial-label">Những điểm chưa rõ</p>
-								<ul className="mt-6 space-y-4">
-									{project.openQuestions.map((item) => (
-										<li
-											key={item}
-											className="border-b border-hairline pb-4 text-base text-ink-secondary"
-										>
-											{item}
-										</li>
-									))}
-								</ul>
-								{project.lastUpdated ? (
-									<p className="mt-8 text-sm text-ink-secondary">
-										Cập nhật gần nhất: {project.lastUpdated}
-									</p>
-								) : null}
-							</div>
-						) : null}
-					</div>
-				</section>
-			) : null}
-		</>
-	);
-}
-
-function InClassroom({ project }: { project: Project }) {
-	if (!project.inClassroom) return null;
-	return (
-		<section className="editorial-section border-b border-hairline bg-paper">
-			<div className="shell grid gap-10 lg:grid-cols-12">
-				<div className="lg:col-span-4">
-					<p className="editorial-label">Trong lớp học</p>
-				</div>
-				<p className="max-w-2xl text-lg leading-[1.75] text-ink-secondary lg:col-span-7 lg:col-start-6">
-					{project.inClassroom}
-				</p>
+				) : null}
 			</div>
-		</section>
-	);
-}
-
-function WhatChanged({ project }: { project: Project }) {
-	const observedLabel = project.template === 'inquiry' ? 'Điều tôi đang tạm thời kết luận' : 'Quan sát hiện có';
-	return (
-		<section className="editorial-section border-b border-hairline">
-			<div className="shell grid gap-12 md:grid-cols-2 md:gap-16">
-				<div>
-					<p className="editorial-label">{observedLabel}</p>
-					<ul className="mt-6 space-y-4">
-						{project.observed.map((item) => (
-							<li
-								key={item}
-								className="border-b border-hairline pb-4 text-base leading-[1.7] text-ink-secondary"
-							>
-								{item}
-							</li>
-						))}
-					</ul>
-				</div>
-				<div>
-					<p className="editorial-label">Điều chưa thể kết luận</p>
-					<ul className="mt-6 space-y-4">
-						{project.notYetConcluded.map((item) => (
-							<li
-								key={item}
-								className="border-b border-hairline pb-4 text-base leading-[1.7] text-ink-secondary"
-							>
-								{item}
-							</li>
-						))}
-					</ul>
-				</div>
-			</div>
-		</section>
+		</SectionReveal>
 	);
 }
 
 function Lessons({ project }: { project: Project }) {
 	return (
-		<section className="editorial-section border-b border-hairline bg-paper">
-			<div className="shell grid gap-10 lg:grid-cols-12">
+		<SectionReveal as="section" className="border-b border-hairline bg-paper py-14 md:py-16">
+			<div className="shell grid gap-8 lg:grid-cols-12">
 				<div className="lg:col-span-4">
 					<p className="editorial-label">Điều tôi học được</p>
 				</div>
-				<p className="font-display text-2xl leading-[1.45] text-ink md:text-3xl lg:col-span-7 lg:col-start-6">
+				<p className="font-display text-xl leading-[1.5] text-ink md:text-2xl lg:col-span-7 lg:col-start-6">
 					{project.lessonsLearned}
 				</p>
 			</div>
-		</section>
-	);
-}
-
-function NextVersion({ project }: { project: Project }) {
-	if (!project.nextVersion.length) return null;
-	return (
-		<section className="editorial-section border-b border-hairline">
-			<div className="shell">
-				<p className="editorial-label">Phiên bản tiếp theo</p>
-				<ul className="mt-8 grid gap-6 border-t border-hairline pt-8 md:grid-cols-3">
-					{project.nextVersion.map((item, index) => (
-						<li key={item}>
-							<span className="font-mono text-xs text-accent">0{index + 1}</span>
-							<p className="mt-3 text-base leading-[1.7] text-ink-secondary">{item}</p>
-						</li>
-					))}
-				</ul>
-			</div>
-		</section>
+		</SectionReveal>
 	);
 }
 
@@ -343,49 +219,41 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
 
 	return (
 		<main className="bg-canvas">
+			<ReadingProgress />
 			<CaseStudyViewTracker slug={project.slug} />
 			<Opening project={project} />
 			<OpeningQuestion project={project} />
-			<IntendedChange project={project} />
-			<DesignJourney project={project} />
-			<ArtifactGallery artefacts={project.artefacts} gallery={project.gallery} />
-			<InquirySections project={project} />
-			<InClassroom project={project} />
-			<WhatChanged project={project} />
+			<HowIWorked project={project} />
+			<Observations project={project} />
 			<Lessons project={project} />
-			<NextVersion project={project} />
 
 			{related.length > 0 ? (
-				<section className="editorial-section border-b border-hairline">
+				<SectionReveal as="section" className="border-b border-hairline py-14 md:py-16">
 					<div className="shell">
 						<p className="editorial-label">Dự án liên quan</p>
-						<div className="mt-8 grid gap-10 md:grid-cols-2">
+						<ul className="mt-8 space-y-6 border-t border-hairline pt-6">
 							{related.map((item) => (
-								<Link
-									key={item.slug}
-									href={routes.project(item.slug)}
-									className="group border-t border-hairline pt-6"
-								>
-									<p className="editorial-label">{item.category}</p>
-									<h2 className="type-h3 mt-3 transition-colors group-hover:text-accent">
-										{item.title}
-									</h2>
-									<span className="editorial-text-link mt-5">
-										Xem dự án <span aria-hidden>→</span>
-									</span>
-								</Link>
+								<li key={item.slug}>
+									<Link
+										href={routes.project(item.slug)}
+										className="group inline-flex flex-col"
+									>
+										<span className="font-display text-lg font-medium text-ink transition-opacity group-hover:opacity-70">
+											{item.title}
+										</span>
+										<span className="editorial-text-link mt-2 w-fit">
+											Xem dự án <span aria-hidden>→</span>
+										</span>
+									</Link>
+								</li>
 							))}
-						</div>
+						</ul>
 					</div>
-				</section>
+				</SectionReveal>
 			) : null}
 
-			<section className="editorial-section bg-ink text-center text-canvas">
-				<div className="shell mx-auto max-w-3xl">
-					<p className="editorial-label !text-sunlight">Tiếp theo</p>
-					<h2 className="editorial-heading mx-auto mt-5 max-w-3xl text-balance text-canvas">
-						Bạn đang suy nghĩ về một lớp học, chương trình hoặc câu hỏi tương tự?
-					</h2>
+			<SectionReveal as="section" className="py-14 md:py-16">
+				<div className="shell">
 					<TrackedLink
 						href={`${routes.contact}?type=${project.cta.inquiryType}&sourcePage=${encodeURIComponent(routes.project(project.slug))}`}
 						event="service_cta_click"
@@ -394,12 +262,12 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
 							slug: project.slug,
 							sourcePage: routes.project(project.slug),
 						}}
-						className="editorial-button mt-8 border-canvas bg-canvas text-ink"
+						className="editorial-text-link"
 					>
-						{project.cta.label} <span aria-hidden>→</span>
+						Trao đổi với tôi về dự án này <span aria-hidden>→</span>
 					</TrackedLink>
 				</div>
-			</section>
+			</SectionReveal>
 		</main>
 	);
 }

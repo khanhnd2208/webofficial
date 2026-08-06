@@ -4,24 +4,23 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import RouteEntrance from '@/components/motion/RouteEntrance';
+import { isFullBleedPublicPath, isInternalChromePath } from '@/config/navigation';
 
 /**
- * Light entrance on public/learner routes. Fixed header offset via padding.
- * Admin skipped (no cinematic).
+ * Light entrance on public routes. Modest top inset on inner pages so GateBack
+ * does not collide with titles. Intro, mục lục, and My Space stay full-bleed.
  */
 export default function MainContent({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
-	const skip = ['/admin', '/m/', '/messages', '/vocabulary', '/tai-khoan', '/dang-nhap', '/hoc/'].some(
-		(prefix) => pathname.startsWith(prefix),
-	);
-	const isHome = pathname === '/';
 
-	if (skip || isHome) {
+	if (isInternalChromePath(pathname)) {
 		return <div id="main-content">{children}</div>;
 	}
 
+	const fullBleed = isFullBleedPublicPath(pathname);
+
 	return (
-		<div id="main-content" className="pt-[var(--header-height)]">
+		<div id="main-content" className={fullBleed ? undefined : 'pt-14'}>
 			<RouteEntrance key={pathname}>{children}</RouteEntrance>
 		</div>
 	);

@@ -57,9 +57,17 @@ export const siteProfile: SiteProfile = {
 	publicName: SITE_NAME,
 	role: SITE_EYEBROW,
 	shortBio: 'Management Education · Learning Design · Applied AI',
-	portraitSrc: '/brand/learning-as-becoming-mobile.jpg',
+	portraitSrc: '/brand/portrait-journey.png',
 	// contactEmail / socialLinks: leave empty until owner provides
 };
+
+/**
+ * Shared brand illustration — used on Giới thiệu and as a temporary
+ * placeholder on other public pages until real project photos arrive.
+ */
+export const BRAND_PLACEHOLDER_IMAGE = '/brand/portrait-journey.png';
+export const BRAND_PLACEHOLDER_ALT =
+	'Minh họa chân dung Nguyễn Duy Khánh đứng trên vách đá nhìn ra hành trình phía trước';
 
 /** Brand hierarchy constants for docs and UI copy. */
 export const brandHierarchy = {

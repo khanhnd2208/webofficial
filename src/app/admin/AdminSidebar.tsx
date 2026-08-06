@@ -56,6 +56,12 @@ const ICONS: Record<string, ReactNode> = {
 			<path d="M3 5.5A1.5 1.5 0 014.5 4h11A1.5 1.5 0 0117 5.5v7A1.5 1.5 0 0115.5 14H8l-3.5 2.5V5.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
 		</svg>
 	),
+	[routes.admin.myspaceTests]: (
+		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
+			<path d="M5 3.5h10A1.5 1.5 0 0116.5 5v10a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 15V5A1.5 1.5 0 015 3.5z" stroke="currentColor" strokeWidth="1.4" />
+			<path d="M7 7.5h6M7 10.5h6M7 13.5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+		</svg>
+	),
 	[routes.admin.users]: (
 		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
 			<circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />

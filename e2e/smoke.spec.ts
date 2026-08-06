@@ -1,192 +1,132 @@
-import { test, expect, type Locator } from '@playwright/test';
-
-async function renderedLineCount(locator: Locator): Promise<number> {
-	return locator.evaluate((element) => {
-		const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-		const range = document.createRange();
-		const lineTops: number[] = [];
-		let node: Node | null;
-
-		while ((node = walker.nextNode())) {
-			const text = node.textContent ?? '';
-			for (let index = 0; index < text.length; index += 1) {
-				if (/\s/.test(text[index])) continue;
-				range.setStart(node, index);
-				range.setEnd(node, index + 1);
-				for (const rect of range.getClientRects()) {
-					const top = Math.round(rect.top);
-					if (!lineTops.some((value) => Math.abs(value - top) <= 2)) lineTops.push(top);
-				}
-			}
-		}
-
-		return lineTops.length;
-	});
-}
+import { test, expect } from '@playwright/test';
 
 test.describe('Public pages smoke', () => {
-	test('homepage communicates a clear learning philosophy and only verified content', async ({
-		page,
-	}) => {
+	test('homepage is an intro cover that opens the mục lục', async ({ page }) => {
 		await page.goto('/');
-		await expect(page).toHaveTitle(/Duy Khánh — Giảng viên và người thiết kế trải nghiệm học tập/i);
-		await expect(
-			page.getByRole('heading', {
-				name: /Tôi làm giáo dục để tiếp tục học\./i,
-			}),
-		).toBeVisible();
-		await expect(page.getByText('Educator · Explorer', { exact: true })).toBeVisible();
-		await expect(page.getByRole('link', { name: /Tìm hiểu về tôi/i }).first()).toBeVisible();
-		await expect(
-			page.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i }),
-		).toBeAttached();
-		await expect(page.getByText(/Quan niệm giảng dạy/i)).toHaveCount(0);
-		await expect(
-			page.getByRole('heading', {
-				name: /Những chương trình và thử nghiệm giáo dục đang được thực hiện/i,
-			}),
-		).toBeVisible();
-		await expect(page.getByRole('heading', { name: 'Tôi muốn đào tạo một đội ngũ' })).toHaveCount(0);
-		await expect(page.getByRole('heading', { name: 'My Hanoicam' })).toHaveCount(0);
+		await expect(page).toHaveTitle(/Duy Khánh — Trở thành/i);
+		await expect(page.getByTestId('intro-home')).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1, name: /Trở thành/i })).toBeVisible();
+		await expect(page.getByText('[động từ]').locator('visible=true')).toBeVisible();
+		await expect(page.getByText(/Chưa xong/i).locator('visible=true')).toBeVisible();
+		await expect(page.getByRole('link', { name: /Mở mục lục/i })).toBeVisible();
+		await expect(page.getByTestId('contact-rail')).toHaveCount(0);
+		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
+		await expect(page.getByTestId('gate-home')).toHaveCount(0);
+		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
+		await expect(page.getByRole('heading', { name: /Tôi làm giáo dục để tiếp tục học/i })).toHaveCount(
+			0,
+		);
 		await expect(page.getByText('Learn Chinese', { exact: true })).toHaveCount(0);
-		await expect(page.getByText('AI Knowledge Systems', { exact: true })).toHaveCount(0);
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
-		await expect(page.getByText(/tạm thời|sẽ thay|đang chờ|Hồ sơ đang hoàn thiện/i)).toHaveCount(0);
 	});
 
-	test('homepage core story remains readable without JavaScript', async ({ browser }) => {
+	test('mục lục is a minimal gate with four destinations', async ({ page }) => {
+		await page.goto('/muc-luc');
+		await expect(page.getByTestId('gate-home')).toBeVisible();
+		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
+		await expect(gate.getByRole('link', { name: 'Giới thiệu' })).toHaveAttribute(
+			'href',
+			'/gioi-thieu',
+		);
+		await expect(gate.getByRole('link', { name: 'Dự án' })).toHaveAttribute('href', '/du-an');
+		await expect(gate.getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute('href', '/dich-vu');
+		await expect(gate.getByRole('link', { name: /My Space/i })).toHaveAttribute(
+			'href',
+			'/my-space',
+		);
+		await expect(page.getByTestId('gate-item-locked')).toHaveCount(0);
+		await expect(page.getByTestId('contact-rail')).toBeVisible();
+		await expect(page.getByTestId('contact-rail')).toHaveText('Gửi lời nhắn');
+		await expect(page.getByTestId('intro-back')).toBeVisible();
+		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
+	});
+
+	test('intro opens the mục lục without JavaScript', async ({ browser }) => {
 		const context = await browser.newContext({ javaScriptEnabled: false });
 		const page = await context.newPage();
 		await page.goto('/');
 
-		await expect(
-			page.getByRole('heading', {
-				name: /Tôi làm giáo dục để tiếp tục học\./i,
-			}),
-		).toBeVisible();
-		await expect(
-			page.getByRole('heading', {
-				name: /Những chương trình và thử nghiệm giáo dục đang được thực hiện/i,
-			}),
-		).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1, name: /Trở thành/i })).toBeVisible();
+		await page.getByRole('link', { name: /Mở mục lục/i }).first().click();
+		await expect(page).toHaveURL(/\/muc-luc/);
+		await expect(page.getByRole('link', { name: 'Giới thiệu' })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Dự án' })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Dịch vụ' })).toBeVisible();
+		await expect(page.getByRole('link', { name: /My Space/i })).toBeVisible();
 		await context.close();
 	});
 
-	test('loads only one art-directed hero asset on mobile', async ({ page }) => {
-		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto('/');
-		await page.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i }).waitFor();
+	test('My Space is a minimal 2×2 hub; Tests tile opens the quiz index', async ({ page }) => {
+		await page.goto('/my-space');
+		await expect(page.getByTestId('my-space')).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1, name: 'My Space' })).toBeAttached();
+		await expect(page.getByTestId('myspace-tile-boardgames')).toBeVisible();
+		await expect(page.getByTestId('myspace-tile-podcast')).toBeVisible();
+		await expect(page.getByTestId('myspace-tile-tests')).toBeVisible();
+		await expect(page.getByTestId('myspace-tile-personality-tests')).toBeVisible();
+		await expect(page.getByTestId('gate-back')).toBeVisible();
+		await expect(page.getByTestId('contact-rail')).toBeVisible();
+		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 
-		const heroAssets = await page.evaluate(() =>
-			performance
-				.getEntriesByType('resource')
-				.map((entry) => entry.name)
-				.filter((name) => name.includes('learning-as-becoming-mobile')),
+		await page.getByTestId('myspace-tile-boardgames').click();
+		await expect(page.getByTestId('myspace-note-boardgames')).toHaveText(
+			'Góc này đang được hoàn thiện.',
 		);
-		expect(heroAssets).toHaveLength(1);
+		await expect(page).toHaveURL(/\/my-space$/);
+
+		await page.getByTestId('myspace-tile-tests').click();
+		await expect(page).toHaveURL(/\/my-space\/tests/);
+		await expect(page.getByTestId('myspace-tests')).toBeVisible();
+		await expect(page.getByTestId('myspace-back')).toBeVisible();
 	});
 
-	test('desktop hero artwork fills its frame and preserves the subject', async ({ page }) => {
-		await page.setViewportSize({ width: 1440, height: 900 });
-		await page.goto('/');
-		const frame = page.getByTestId('home-hero-artwork');
-		const image = frame.getByRole('img', { name: /hành trình học hỏi và giảng dạy/i });
-		const [frameBox, imageBox, objectPosition] = await Promise.all([
-			frame.boundingBox(),
-			image.boundingBox(),
-			image.evaluate((element) => getComputedStyle(element).objectPosition),
-		]);
-
-		expect(frameBox).not.toBeNull();
-		expect(imageBox).not.toBeNull();
-		expect(Math.abs(frameBox!.width - imageBox!.width)).toBeLessThanOrEqual(1);
-		expect(Math.abs(frameBox!.height - imageBox!.height)).toBeLessThanOrEqual(1);
-		expect(objectPosition).toBe('15% 50%');
-	});
-
-	test('homepage typography remains compact at critical viewport widths', async ({ page }) => {
+	test('intro and mục lục stay without horizontal overflow at critical widths', async ({
+		page,
+	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 
-		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto('/');
-		await page.evaluate(async () => {
-			await document.fonts.ready;
-		});
-
-		const heroTitle = page.getByRole('heading', {
-			level: 1,
-			name: /Tôi làm giáo dục để tiếp tục học\./i,
-		});
-		const eyebrow = page.getByText('Educator · Explorer', { exact: true });
-		const sectionTitle = page.getByRole('heading', {
-			level: 2,
-			name: /Những chương trình và thử nghiệm giáo dục đang được thực hiện/i,
-		});
-		const heroSection = page.locator('main section').first();
-
-		expect(await renderedLineCount(heroTitle)).toBeLessThanOrEqual(3);
-		expect(await renderedLineCount(eyebrow)).toBe(1);
-		expect(await renderedLineCount(sectionTitle)).toBeLessThanOrEqual(4);
-
-		for (const width of [320, 390, 768, 1024, 1440]) {
-			await page.setViewportSize({ width, height: 900 });
-			const maxHeroLines = width < 768 ? 3 : 2;
-			expect(await renderedLineCount(heroTitle)).toBeLessThanOrEqual(maxHeroLines);
-			expect(await renderedLineCount(sectionTitle)).toBeLessThanOrEqual(width <= 768 ? 5 : 3);
-			const [heroFontSize, sectionFontSize, heroHeight] = await Promise.all([
-				heroTitle.evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
-				page
-					.getByRole('heading', {
-						level: 2,
-						name: /Những chương trình và thử nghiệm giáo dục đang được thực hiện/i,
-					})
-					.evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
-				heroSection.evaluate((element) => element.getBoundingClientRect().height),
-			]);
-			const minHero = width <= 639 ? 30 : width < 1024 ? 34 : 40;
-			const minSection = width <= 639 ? 24 : 28;
-			expect(heroFontSize).toBeGreaterThanOrEqual(minHero);
-			expect(heroFontSize).toBeLessThanOrEqual(width < 768 ? 60 : 84);
-			expect(sectionFontSize).toBeGreaterThanOrEqual(minSection);
-			expect(sectionFontSize).toBeLessThanOrEqual(56);
-			expect(heroFontSize).toBeGreaterThan(sectionFontSize);
-			expect(heroHeight).toBeLessThanOrEqual(width < 768 ? 1300 : 1100);
-			const hasOverflow = await page.evaluate(
-				() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-			);
-			expect(hasOverflow).toBe(false);
+		for (const path of ['/', '/muc-luc', '/my-space'] as const) {
+			await page.goto(path);
+			for (const width of [320, 390, 768, 1024, 1440]) {
+				await page.setViewportSize({ width, height: 900 });
+				if (path === '/') {
+					await expect(page.getByTestId('intro-home')).toBeVisible();
+				} else if (path === '/muc-luc') {
+					await expect(page.getByTestId('gate-home')).toBeVisible();
+				} else {
+					await expect(page.getByTestId('my-space')).toBeVisible();
+				}
+				const hasOverflow = await page.evaluate(
+					() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+				);
+				expect(hasOverflow).toBe(false);
+			}
 		}
 	});
 
-	test('about page tells the becoming story without repeating the homepage hero', async ({
-		page,
-	}) => {
+	test('about page follows the journey-map profile layout', async ({ page }) => {
 		await page.goto('/gioi-thieu');
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 		await expect(
 			page.getByRole('heading', {
 				level: 1,
-				name: /Con đường của tôi luôn quay trở lại lớp học/i,
+				name: /^Khánh$/i,
 			}),
 		).toBeVisible();
+		await expect(page.getByText(/Xin chào, mình là/i)).toBeVisible();
+		await expect(page.getByText(/Giảng viên\s*\/\s*Nghiên cứu\s*\/\s*Người học/i)).toHaveCount(0);
 		await expect(
 			page.getByRole('heading', { name: /Tôi làm giáo dục để tiếp tục học/i }),
 		).toHaveCount(0);
-		await expect(
-			page.getByRole('heading', { name: /Con đường đưa tôi trở lại lớp học/i }),
-		).toBeVisible();
-		await expect(page.getByText(/Hình minh họa hiện tại|sẽ thay bằng chân dung/i)).toHaveCount(0);
-		await expect(page.getByText('Aa', { exact: true })).toHaveCount(0);
-		await expect(
-			page.getByRole('heading', { name: /Lớp học, thiết kế và những thử nghiệm mới/i }),
-		).toBeVisible();
-		await expect(page.getByRole('link', { name: 'Những lớp học đang diễn ra' })).toBeVisible();
-		await expect(page.getByText(/My Hanoicam/i)).toHaveCount(0);
-		await expect(page.getByText(/Một vài thông tin chính thức/i)).toBeVisible();
-		await expect(
-			page.getByRole('link', { name: /Gửi tôi một lời nhắn/i }),
-		).toBeVisible();
-		await expect(page.getByRole('link', { name: /Xem các hình thức cộng tác/i })).toHaveCount(0);
+		await expect(page.getByRole('heading', { name: /Con đường đến với lớp học/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Công việc hiện tại/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /^Giảng dạy$/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Những lớp học đã đi qua/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Một vài dự án đã làm/i })).toBeVisible();
+		await expect(page.getByText(/hiểu rõ và dùng được trong đời sống/i)).toBeVisible();
+		await expect(page.getByText(/My Hanoicam/i )).toHaveCount(0);
+		await expect(page.getByTestId('gate-back')).toBeVisible();
+		await expect(page.getByTestId('contact-rail')).toBeVisible();
 	});
 
 	test('retired service URLs redirect to the current architecture', async ({ page }) => {
@@ -225,7 +165,8 @@ test.describe('Public pages smoke', () => {
 		await expect(
 			page.getByLabel(/Bối cảnh hoặc điều đang khiến bạn băn khoăn/i),
 		).toBeVisible();
-		await expect(page.getByRole('dialog', { name: 'Gửi tôi một lời nhắn' })).toHaveCount(0);
+		await expect(page.getByTestId('contact-rail')).toHaveCount(0);
+		await expect(page.getByTestId('gate-back')).toBeVisible();
 	});
 
 	test('privacy policy loads', async ({ page }) => {
@@ -271,56 +212,55 @@ test.describe('Public pages smoke', () => {
 });
 
 test.describe('Navigation', () => {
-	test('public nav follows the educator-first information architecture', async ({ page }) => {
+	test('intro opens mục lục, which replaces classic header navigation', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await page.goto('/');
-		const header = page.locator('header');
-		await expect(header.getByRole('link', { name: 'Duy Khánh — trang chủ' })).toBeVisible();
-		const nav = page.locator('header nav[aria-label="Chính"]');
-		await expect(nav.getByRole('link', { name: 'Trang chủ' })).toHaveCount(0);
-		await expect(nav.getByRole('link', { name: 'Giới thiệu' })).toBeVisible();
-		await expect(nav.getByRole('link', { name: 'Dự án' })).toBeVisible();
-		await expect(nav.getByRole('link', { name: 'Dịch vụ' })).toBeVisible();
-		await expect(nav.getByRole('link', { name: 'Ghi chép' })).toHaveCount(0);
-		await expect(nav.getByRole('link', { name: 'Liên hệ' })).toHaveCount(0);
-		await expect(nav.getByRole('link', { name: 'Bài viết' })).toHaveCount(0);
-		await expect(header.getByRole('link', { name: 'Gửi lời nhắn' })).toBeVisible();
+		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'Mở menu' })).toHaveCount(0);
+		await page.getByRole('link', { name: /Mở mục lục/i }).click();
+		await expect(page).toHaveURL(/\/muc-luc/);
+		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
+		await expect(gate.getByRole('link', { name: 'Giới thiệu' })).toBeVisible();
+		await expect(gate.getByRole('link', { name: 'Dự án' })).toBeVisible();
+		await expect(gate.getByRole('link', { name: 'Dịch vụ' })).toBeVisible();
+		await expect(gate.getByRole('link', { name: /My Space/i })).toBeVisible();
+		await expect(page.getByTestId('contact-rail')).toBeVisible();
 	});
 
-	test('mobile menu supports keyboard escape', async ({ page }) => {
-		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto('/');
-		await page.getByRole('button', { name: 'Mở menu' }).click();
-		const dialog = page.getByRole('dialog', { name: 'Menu điều hướng' });
-		await expect(dialog).toBeVisible();
-		await expect(dialog.getByRole('link', { name: 'Gửi lời nhắn' })).toBeVisible();
-		await page.keyboard.press('Escape');
-		await expect(page.getByRole('dialog', { name: 'Menu điều hướng' })).toHaveCount(0);
-	});
-
-	test('contact CTA leads to the contact page without a modal', async ({ page }) => {
+	test('contact rail opens a quick message panel', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/gioi-thieu');
-		const trigger = page.locator('header').getByRole('link', { name: 'Gửi lời nhắn' });
-		await expect(trigger).toHaveAttribute('href', /\/lien-he/);
+		const trigger = page.getByTestId('contact-rail');
+		await expect(trigger).toHaveText('Gửi lời nhắn');
 		await trigger.click();
-		await expect(page).toHaveURL(/\/lien-he/);
-		await expect(page.getByRole('dialog', { name: 'Gửi tôi một lời nhắn' })).toHaveCount(0);
-		await expect(
-			page.getByRole('heading', { level: 1, name: /Gửi tôi một lời nhắn/i }),
-		).toBeVisible();
+		await expect(page.getByRole('dialog', { name: 'Gửi lời nhắn' })).toBeVisible();
+		await expect(page.getByLabel('Tên')).toBeVisible();
+		await expect(page.getByLabel('Email')).toBeVisible();
+		await expect(page.getByRole('textbox', { name: 'Lời nhắn' })).toBeVisible();
+		await expect(page.getByRole('link', { name: /Mở trang liên hệ đầy đủ/i })).toBeVisible();
+		await expect(page).toHaveURL(/\/gioi-thieu/);
 	});
 
-	test('footer stays compact with personal positioning', async ({ page }) => {
-		await page.goto('/');
-		const footer = page.locator('footer');
-		await expect(footer.getByText('Duy Khánh').first()).toBeVisible();
-		await expect(footer.getByText('Tôi dạy, học và viết từ Hà Nội.')).toBeVisible();
-		await expect(footer.getByRole('link', { name: 'Giới thiệu' })).toBeVisible();
-		await expect(footer.getByRole('link', { name: 'Dự án' })).toBeVisible();
-		await expect(footer.getByRole('link', { name: 'Dịch vụ' })).toBeVisible();
-		await expect(footer.getByRole('link', { name: 'Liên hệ' })).toBeVisible();
-		await expect(footer.getByText(/năng lực, chương trình và quy trình/i)).toHaveCount(0);
+	test('mobile contact FAB opens the same panel from mục lục', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/muc-luc');
+		await expect(page.getByTestId('contact-rail')).toBeHidden();
+		await page.getByTestId('contact-fab').click();
+		await expect(page.getByRole('dialog', { name: 'Gửi lời nhắn' })).toBeVisible();
+	});
+
+	test('gate back returns to the mục lục', async ({ page }) => {
+		await page.goto('/dich-vu');
+		await page.getByTestId('gate-back').click();
+		await expect(page).toHaveURL(/\/muc-luc/);
+		await expect(page.getByTestId('gate-home')).toBeVisible();
+	});
+
+	test('mục lục can return to the intro cover', async ({ page }) => {
+		await page.goto('/muc-luc');
+		await page.getByTestId('intro-back').click();
+		await expect(page).toHaveURL(/\/$/);
+		await expect(page.getByTestId('intro-home')).toBeVisible();
 	});
 });
 

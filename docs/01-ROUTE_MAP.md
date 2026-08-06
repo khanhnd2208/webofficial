@@ -12,6 +12,10 @@ Sources of truth: `src/config/routes.ts`, `src/config/navigation.ts`, and
 | `/du-an` | Filterable project index | index |
 | `/du-an/[slug]` | Project context, problem, approach, outputs, lessons | index |
 | `/dich-vu` | Management education, applied AI, advisory | index |
+| `/my-space` | Personal experiments hub (tiles open when real) | index |
+| `/my-space/tests` | Subject-first MCQ index (môn → bài → bắt đầu) | index |
+| `/my-space/tests/[slug]` | Redirect → play | noindex |
+| `/my-space/tests/[slug]/play` | Quiz session (balanced sample from attached questions) | noindex preferred via client play |
 | `/lien-he` | Contact form | index |
 | `/chinh-sach/[slug]` | Required policies | allowed, omitted from primary nav |
 
@@ -25,7 +29,16 @@ Sources of truth: `src/config/routes.ts`, `src/config/navigation.ts`, and
 | `/hoc`, `/hoc/chuong-trinh` | `/` |
 
 The corresponding UI implementations are stored under
-`src/_archived/routes-v1` and are not compiled by Next.js.
+`src/_archived/marketing/routes-v1` and are not compiled by Next.js.
+
+Standalone archived product modules (not mounted as live routes):
+
+| Module | Archive path |
+|--------|----------------|
+| Personality Test (research 2026) | `src/_archived/features/personality-test-research-2026` |
+| K'sTrip party games (spy, night-market, mafia) | `src/_archived/features/kstrip-2026` |
+
+See `src/_archived/README.md` for the full archive taxonomy.
 
 ## Internal/system routes
 
@@ -36,7 +49,7 @@ The corresponding UI implementations are stored under
 | `/hoc/khoa-hoc/*` | Course and lesson surfaces |
 | `/vocabulary/*` | Vocabulary tools |
 | `/messages/*`, `/m/[slug]` | Message tools and recipient view |
-| `/admin/*` | Administration |
+| `/admin/*` | Administration (incl. `/admin/myspace-tests`, `/admin/myspace-tests/subjects`, smart import) |
 | `/api/*` | Backend APIs |
 
 These remain operational but do not render public portfolio navigation or

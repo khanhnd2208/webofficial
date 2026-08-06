@@ -11,6 +11,7 @@
 | Project index                | ready — filter removed until portfolio is deep enough             | `src/app/du-an/page.tsx`                  |
 | Four project details         | ready — scope separated from verified impact                      | `src/features/portfolio/data/projects.ts` |
 | Services                     | ready — three productized offers                                  | `src/app/dich-vu/page.tsx`                |
+| My Space Tests               | ready — subject-first index; Subject entity; smart import + CSV | `src/app/my-space/tests`, `src/app/admin/myspace-tests` |
 | Contact                      | ready — timeframe visible; delivery remains environment-dependent | `src/app/lien-he/page.tsx`                |
 | Shared public marketing copy | ready                                                             | `src/content/publicMarketing.ts`          |
 | Public proof approval gate   | ready — empty until evidence is approved                          | `src/content/publicProof.ts`              |
@@ -43,9 +44,16 @@ artefact that should replace it.
 
 ## Archived public domains
 
-Blog, podcast, lab/resources, former service hubs, case studies, and prior
-homepage iterations are stored in `src/_archived`. They are excluded from the
-TypeScript program and are not public navigation destinations.
+Blog, podcast, lab/resources, former service hubs, case studies, prior
+homepage iterations, and standalone experiments are stored under
+`src/_archived` (see that README for the `homepage/` · `marketing/` ·
+`features/` layout). They are excluded from the TypeScript program and are
+not public navigation destinations.
+
+Notable feature archives:
+
+- Personality Test research — `features/personality-test-research-2026`
+- K'sTrip (MyTrip boardgames: spy, night-market, mafia) — `features/kstrip-2026`
 
 ## Owner follow-up
 

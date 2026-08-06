@@ -20,95 +20,86 @@ test.describe('Editorial premium public experience', () => {
 		});
 	}
 
-	test('puts the mobile value proposition before the artwork', async ({ page }) => {
+	test('keeps the intro cover centered without contact chrome on mobile', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/');
-		const heading = page.getByRole('heading', { level: 1 });
-		const artwork = page.getByTestId('home-hero-artwork');
-		const [headingBox, artworkBox] = await Promise.all([
-			heading.boundingBox(),
-			artwork.boundingBox(),
-		]);
-		expect(headingBox).not.toBeNull();
-		expect(artworkBox).not.toBeNull();
-		expect(headingBox!.y).toBeLessThan(artworkBox!.y);
+		const intro = page.getByTestId('intro-home');
+		await expect(intro).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1, name: /Trở thành/i })).toBeVisible();
+		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
+		const introBox = await intro.boundingBox();
+		expect(introBox).not.toBeNull();
+		expect(introBox!.x + introBox!.width / 2).toBeGreaterThan(140);
+		expect(introBox!.x + introBox!.width / 2).toBeLessThan(250);
 	});
 
-	test('routes visitors from classroom work to project proof and services', async ({ page }) => {
+	test('routes visitors from intro → mục lục into projects and services', async ({ page }) => {
+		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/');
-		await expect(page.getByRole('heading', { name: 'AI50 — AI cho mọi người' })).toBeVisible();
+		await page.getByRole('link', { name: /Mở mục lục/i }).click();
+		await expect(page).toHaveURL(/\/muc-luc/);
+		await page.getByRole('link', { name: 'Dự án' }).click();
+		await expect(page).toHaveURL(/\/du-an/);
+		await expect(page.getByRole('heading', { level: 1, name: /^Dự án$/i })).toBeVisible();
+
+		await page.getByTestId('gate-back').click();
+		await expect(page).toHaveURL(/\/muc-luc/);
+		await page.getByRole('link', { name: 'Dịch vụ' }).click();
+		await expect(page).toHaveURL(/\/dich-vu/);
 		await expect(
-			page.getByRole('link', { name: /AI50 — AI cho mọi người/i }).first(),
-		).toHaveAttribute('href', '/du-an/ai50-ai-cho-moi-nguoi');
-		await expect(page.getByRole('link', { name: /Learning at Moonie Café/i }).first()).toHaveAttribute(
-			'href',
-			'/du-an/learning-at-moonie-cafe',
-		);
-		await expect(page.getByRole('link', { name: /Xem các hình thức cộng tác/i })).toHaveAttribute(
-			'href',
-			'/dich-vu',
-		);
-		await expect(page.getByRole('link', { name: /Gửi tôi một lời nhắn/i })).toHaveAttribute(
-			'href',
-			/\/lien-he/,
-		);
+			page.getByRole('heading', {
+				level: 1,
+				name: /Những chương trình giúp kiến thức đi vào công việc\./i,
+			}),
+		).toBeVisible();
 	});
 
-	test('mobile menu traps the public journey and closes with Escape', async ({ page }) => {
-		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto('/');
-		await page.getByRole('button', { name: 'Mở menu' }).click();
-		const dialog = page.getByRole('dialog', { name: 'Menu điều hướng' });
-		await expect(dialog).toBeVisible();
-		await expect(dialog.getByRole('link', { name: /Gửi lời nhắn/i })).toBeVisible();
-		await page.keyboard.press('Escape');
-		await expect(dialog).toHaveCount(0);
-		await expect(page.getByRole('button', { name: 'Mở menu' })).toBeFocused();
-	});
-
-	test('services stay scannable without catalogue jargon', async ({ page }) => {
+	test('services stay condensed with journey graphics and no project proof', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/dich-vu');
 		await expect(
-			page.getByRole('heading', { level: 1, name: /Ba cách chúng ta có thể cùng làm việc/i }),
+			page.getByRole('heading', {
+				level: 1,
+				name: /Những chương trình giúp kiến thức đi vào công việc\./i,
+			}),
 		).toBeVisible();
 		await expect(page.getByText(/không bị quảng cáo/i)).toHaveCount(0);
-		await expect(page.getByText('Có thể không phù hợp nếu')).toHaveCount(0);
-		await expect(page.getByText('Kết quả hướng tới')).toHaveCount(0);
-
-		const appliedAi = page.locator('#applied-ai');
+		await expect(page.getByText('Khi nào hướng này hữu ích?')).toHaveCount(0);
+		await expect(page.locator('#management-learning')).toBeVisible();
+		await expect(page.locator('#applied-ai')).toBeVisible();
+		await expect(page.locator('#learning-programs')).toBeVisible();
+		await expect(page.getByText('Giảng viên đại học')).toBeVisible();
 		await expect(
-			appliedAi.getByRole('heading', { name: /Thiết kế và đào tạo AI/i }),
+			page.getByRole('heading', {
+				name: /Một chương trình phù hợp không bắt đầu từ slide/i,
+			}),
 		).toBeVisible();
-		await expect(appliedAi.getByText('Khi nào hướng này hữu ích?')).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Có thể chưa phù hợp nếu/i })).toHaveCount(0);
+		await expect(page.getByText('Nhìn lại công việc')).toHaveCount(0);
 		await expect(
-			appliedAi.getByRole('link', { name: /Trao đổi về một chương trình AI/i }),
+			page.getByRole('heading', { name: /Một vài câu hỏi thường gặp/i }),
 		).toBeVisible();
-		await expect(appliedAi.getByRole('link', { name: /AI50/i })).toBeVisible();
-		await expect(page.getByText(/Cách làm này phù hợp nhất khi/i)).toBeVisible();
+		await expect(page.getByRole('link', { name: /Gửi lời nhắn/i }).first()).toBeVisible();
+		await expect(page.getByRole('heading', { name: /^Dự án$/i })).toHaveCount(0);
 	});
 
 	test('keeps a small portfolio honest without empty filters or temporary visuals', async ({
 		page,
 	}) => {
 		await page.goto('/du-an');
-		await expect(
-			page.getByRole('heading', {
-				level: 1,
-				name: /Những điều tôi đang làm và tiếp tục hoàn thiện/i,
-			}),
-		).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1, name: /^Dự án$/i })).toBeVisible();
 		await expect(page.getByLabel('Lọc dự án')).toHaveCount(0);
 		await expect(page.getByText('Đầu ra nổi bật')).toHaveCount(0);
 		await expect(page.getByText(/giới hạn của bằng chứng/i)).toHaveCount(0);
 		await page.goto('/du-an/ai50-ai-cho-moi-nguoi');
 		await expect(page.getByText('Visual tạm thời')).toHaveCount(0);
-		await expect(page.getByText(/Hình minh họa tạm thời/i)).toHaveCount(0);
-		await expect(page.getByText(/Minh họa đang chờ được thay/i)).toHaveCount(0);
+		await expect(page.getByText(/Hình minh họa tạm thời/i )).toHaveCount(0);
+		await expect(page.getByText(/Minh họa đang chờ được thay/i )).toHaveCount(0);
 		await expect(page.getByText('Điều tôi học được')).toBeVisible();
 		await expect(page.getByText('Giả định làm việc hiện tại')).toHaveCount(0);
+		await expect(page.getByText(/Trao đổi với tôi về dự án này/i )).toBeVisible();
 		await page.goto('/du-an/ai-in-recruitment-research');
-		await expect(page.getByText('Giả định làm việc hiện tại')).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Giả định làm việc' })).toBeVisible();
 		await expect(page.getByText('Điều dự án chứng minh')).toHaveCount(0);
 	});
 
@@ -120,6 +111,6 @@ test.describe('Editorial premium public experience', () => {
 		await expect(page.getByLabel('Tên')).toHaveValue('');
 		await expect(page.getByLabel('Email')).toHaveValue('');
 		await expect(page.getByLabel(/Thời gian dự kiến/)).toBeVisible();
-		await expect(page.getByText(/Đang kiểm tra thông tin tài khoản/i)).toHaveCount(0);
+		await expect(page.getByText(/Đang kiểm tra thông tin tài khoản/i )).toHaveCount(0);
 	});
 });

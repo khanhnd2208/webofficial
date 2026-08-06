@@ -37,10 +37,27 @@ export const staggerContainer = {
 };
 
 export const pageEntrance = {
-	initial: { opacity: 0 },
+	initial: { opacity: 0.94, y: distance.ui },
 	animate: {
 		opacity: 1,
-		transition: { duration: duration.page, ease: ease.transition },
+		y: 0,
+		transition: { duration: duration.page, ease: ease.reveal },
+	},
+};
+
+export const textMaskReveal = {
+	hidden: { y: '110%' },
+	visible: {
+		y: 0,
+		transition: { duration: duration.textMask, ease: ease.reveal },
+	},
+};
+
+export const underlineDraw = {
+	hidden: { scaleX: 0 },
+	visible: {
+		scaleX: 1,
+		transition: { duration: duration.underline, ease: ease.reveal },
 	},
 };
 

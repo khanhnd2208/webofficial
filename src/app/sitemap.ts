@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 	const now = new Date();
 	const entries: MetadataRoute.Sitemap = [
 		{ url: absoluteUrl(routes.home), lastModified: now, changeFrequency: 'weekly', priority: 1 },
+		{ url: absoluteUrl(routes.toc), lastModified: now, changeFrequency: 'weekly', priority: 0.95 },
 		{ url: absoluteUrl(routes.about), lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
 		{
 			url: absoluteUrl(routes.projects),
@@ -27,6 +28,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			lastModified: now,
 			changeFrequency: 'monthly',
 			priority: 0.9,
+		},
+		{
+			url: absoluteUrl(routes.mySpace),
+			lastModified: now,
+			changeFrequency: 'monthly',
+			priority: 0.7,
+		},
+		{
+			url: absoluteUrl(routes.mySpaceTests),
+			lastModified: now,
+			changeFrequency: 'weekly',
+			priority: 0.65,
 		},
 		{
 			url: absoluteUrl(routes.contact),

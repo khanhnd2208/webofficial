@@ -7,6 +7,7 @@ import {
 	ConditionalFooter,
 	MainContent,
 	Navbar,
+	PublicMinimalChrome,
 	SkipLink,
 } from '@/components/site';
 import { SITE_CREATOR, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
 				url: absoluteUrl('/og-editorial-premium.png'),
 				width: 1734,
 				height: 907,
-				alt: 'Duy Khánh — Tôi làm giáo dục để tiếp tục học.',
+				alt: 'Duy Khánh — Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
 			},
 		],
 	},
@@ -79,6 +80,7 @@ export default function RootLayout({
 				<Providers inquiryAvailability={inquiryAvailability}>
 					<SkipLink />
 					<Navbar />
+					<PublicMinimalChrome />
 					<MainContent>{children}</MainContent>
 					<ConditionalFooter />
 					<AnalyticsScript />

@@ -92,7 +92,7 @@ export const projects: Project[] = [
 		status: 'Đang được giảng dạy',
 		summary:
 			'Thiết kế lại trải nghiệm học Strategic Management theo hướng trực quan, có cấu trúc và gắn với các doanh nghiệp thực tế.',
-		coverImage: '/brand/hero-journey.jpg',
+		coverImage: '/brand/portrait-journey.png',
 		role: 'Course Designer & Lecturer',
 		audience: 'Sinh viên học Strategic Management',
 		timeframe: 'Đang giảng dạy và tiếp tục cải tiến',
@@ -178,7 +178,7 @@ export const projects: Project[] = [
 		status: 'Đang phát triển',
 		summary:
 			'Một chương trình giúp người mới hiểu AI, giao việc rõ hơn, kiểm chứng đầu ra và xây dựng cách làm việc phù hợp.',
-		coverImage: '/brand/learning-as-becoming-desktop.jpg',
+		coverImage: '/brand/portrait-journey.png',
 		role: 'Course Designer & Lecturer',
 		audience: 'Người mới sử dụng AI',
 		timeframe: 'Pilot / đang phát triển',
@@ -262,7 +262,7 @@ export const projects: Project[] = [
 		status: 'Đang phát triển',
 		summary:
 			'Một không gian học tập gắn với doanh nghiệp dịch vụ nhỏ, nơi người học quan sát hoạt động thật và nối lý thuyết quản trị với vấn đề đang diễn ra.',
-		coverImage: '/brand/hero-landscape.jpg',
+		coverImage: '/brand/portrait-journey.png',
 		role: 'Educator & Learning Designer',
 		audience: 'Người học quản trị và đội ngũ doanh nghiệp nhỏ',
 		timeframe: 'Đang phát triển các module học tập',
@@ -342,7 +342,7 @@ export const projects: Project[] = [
 		status: 'Nghiên cứu đang diễn ra',
 		summary:
 			'Một cuộc điều tra đang tiếp diễn về ứng dụng AI trong tuyển dụng, tập trung vào lợi ích, rủi ro, tính minh bạch và quyền quyết định của con người.',
-		coverImage: '/brand/hero-figure.jpg',
+		coverImage: '/brand/portrait-journey.png',
 		role: 'Researcher',
 		audience: 'Nhà quản lý và người làm nhân sự',
 		timeframe: 'Ongoing research',

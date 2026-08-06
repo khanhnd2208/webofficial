@@ -234,3 +234,90 @@ model LessonProgress {
   @@unique([lessonId, userId])
   @@index([userId])
 }
+
+// ════════════════════════════════════════════════════════════════════════
+// My Space Tests — MCQ question bank, published presets, play sessions
+// ════════════════════════════════════════════════════════════════════════
+
+enum McqCorrectOption {
+  A
+  B
+  C
+  D
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  spaceTests   SpaceTest[]
+  mcqQuestions McqQuestion[]
+}
+
+model McqQuestion {
+  id                 String           @id @default(cuid())
+  subjectId          String?
+  topic              String
+  stem               String           @db.Text
+  optionA            String           @db.Text
+  optionB            String           @db.Text
+  optionC            String           @db.Text
+  optionD            String           @db.Text
+  correctOption      McqCorrectOption
+  difficulty         Int              @default(2)
+  aacsb              String           @default("")
+  learningObjective  String           @default("")
+  classification     String           @default("")
+  isActive           Boolean          @default(true)
+  spaceTestId        String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  subject   Subject?   @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  spaceTest SpaceTest? @relation(fields: [spaceTestId], references: [id], onDelete: Cascade)
+
+  @@index([subjectId, topic, difficulty])
+  @@index([subjectId, isActive])
+  @@index([isActive, subjectId, topic])
+  @@index([spaceTestId, isActive])
+}
+
+model SpaceTest {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  title            String
+  description      String        @default("") @db.Text
+  subjectId        String
+  topics           String[]      @default([])
+  difficulties     Int[]         @default([])
+  classifications  String[]      @default([])
+  questionCount    Int
+  status           PublishStatus @default(DRAFT)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  publishedAt      DateTime?
+
+  subject   Subject             @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  sessions  SpaceTestSession[]
+  questions McqQuestion[]
+
+  @@index([status, updatedAt(sort: Desc)])
+  @@index([subjectId, status])
+}
+
+model SpaceTestSession {
+  id           String    @id @default(cuid())
+  spaceTestId  String
+  questionIds  String[]
+  score        Int?
+  total        Int?
+  submittedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  spaceTest SpaceTest @relation(fields: [spaceTestId], references: [id], onDelete: Cascade)
+
+  @@index([spaceTestId, createdAt(sort: Desc)])
+}

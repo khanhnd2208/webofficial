@@ -2,11 +2,17 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	CONTACT_CTA,
+	GATE_NAV_ITEMS,
 	getDesktopNavLinks,
+	getGateNavItems,
 	getMobileNavLinks,
 	getPublishedContactCta,
 	getPublishedFooterGroups,
+	isFullBleedPublicPath,
+	isGateItemLocked,
+	isIntroPath,
 	isPublished,
+	isTocPath,
 	PUBLIC_NAV_ITEMS,
 } from '@/config/navigation';
 import {
@@ -38,7 +44,39 @@ describe('publication gates', () => {
 		expect(isPublished('draft')).toBe(false);
 	});
 
-	it('exposes educator destinations without contact as a nav item', () => {
+	it('exposes the four published gate destinations including My Space', () => {
+		const items = getGateNavItems();
+		expect(items).toEqual(GATE_NAV_ITEMS);
+		expect(items.map((item) => item.label)).toEqual([
+			'Giới thiệu',
+			'Dự án',
+			'Dịch vụ',
+			'My Space',
+		]);
+		expect(items[0]?.href).toBe(routes.about);
+		expect(items[1]?.href).toBe(routes.projects);
+		expect(items[2]?.href).toBe(routes.services);
+		expect(items[3]?.href).toBe(routes.mySpace);
+		expect(isGateItemLocked(items[3]!)).toBe(false);
+		expect(items.filter((item) => item.status === 'published')).toHaveLength(4);
+	});
+
+	it('keeps intro, mục lục, and My Space as distinct public shells', () => {
+		expect(routes.home).toBe('/');
+		expect(routes.toc).toBe('/muc-luc');
+		expect(routes.mySpace).toBe('/my-space');
+		expect(routes.home).not.toBe(routes.toc);
+		expect(isIntroPath('/')).toBe(true);
+		expect(isIntroPath('/muc-luc')).toBe(false);
+		expect(isTocPath('/muc-luc')).toBe(true);
+		expect(isFullBleedPublicPath('/')).toBe(true);
+		expect(isFullBleedPublicPath('/muc-luc')).toBe(true);
+		expect(isFullBleedPublicPath('/my-space')).toBe(true);
+		expect(isFullBleedPublicPath('/my-space/tests')).toBe(true);
+		expect(isFullBleedPublicPath('/gioi-thieu')).toBe(false);
+	});
+
+	it('keeps legacy desktop nav helpers for unpublished chrome consumers', () => {
 		const links = getDesktopNavLinks();
 		const labels = links.map((l) => l.label);
 		expect(labels).not.toContain('Trang chủ');
@@ -141,6 +179,8 @@ describe('route map', () => {
 		expect(routes.about).toBe('/gioi-thieu');
 		expect(routes.projects).toBe('/du-an');
 		expect(routes.services).toBe('/dich-vu');
+		expect(routes.toc).toBe('/muc-luc');
+		expect(routes.mySpace).toBe('/my-space');
 		expect(routes.notes).toBe('/ghi-chep');
 		expect(routes.growth).toBe('/phat-trien-ban-than');
 		expect(routes.archive).toBe('/archive');

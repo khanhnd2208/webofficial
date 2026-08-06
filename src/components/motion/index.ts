@@ -8,5 +8,7 @@ export { default as RouteEntrance } from './RouteEntrance';
 export { default as CompletionSeal } from './CompletionSeal';
 export { default as JourneyLine } from './JourneyLine';
 export { default as HorizonReveal } from './HorizonReveal';
+export { default as TextReveal } from './TextReveal';
+export { default as UnderlineDraw } from './UnderlineDraw';
 export * from './tokens';
 export * from './variants';

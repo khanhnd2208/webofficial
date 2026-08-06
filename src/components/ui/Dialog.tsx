@@ -156,14 +156,14 @@ export function Sheet({ open, onClose, title, children, side = 'bottom' }: Sheet
 
 	const panel =
 		side === 'bottom'
-			? 'mt-auto mb-0 w-full max-w-none rounded-t-2xl rounded-b-none max-h-[min(90dvh,36rem)]'
-			: 'ml-auto mr-0 h-full max-h-none w-[min(100%,20rem)] rounded-none border-l';
+			? 'mt-auto mb-0 w-full max-w-none rounded-t-2xl rounded-b-none max-h-[min(90dvh,36rem)] sheet-panel-bottom'
+			: 'ml-auto mr-0 h-full max-h-none w-[min(100%,28rem)] rounded-none border-l sheet-panel-right';
 
 	return (
 		<dialog
 			ref={dialogRef}
 			aria-labelledby={titleId}
-			className={`fixed inset-0 z-[70] m-0 max-h-none w-full max-w-none border-0 bg-transparent p-0 open:flex open:flex-col [&::backdrop]:bg-black/40 ${side === 'bottom' ? 'open:justify-end' : 'open:justify-start open:items-stretch'}`}
+			className={`fixed inset-0 z-[70] m-0 max-h-none w-full max-w-none border-0 bg-transparent p-0 open:flex open:flex-col [&::backdrop]:bg-black/40 [&::backdrop]:transition-opacity [&::backdrop]:duration-300 ${side === 'bottom' ? 'open:justify-end' : 'open:justify-start open:items-stretch'}`}
 			onClick={(e) => {
 				if (e.target === dialogRef.current) onClose();
 			}}

@@ -1,0 +1,89 @@
+import { z } from 'zod';
+
+export const mcqCorrectOptionSchema = z.enum(['A', 'B', 'C', 'D']);
+
+export const publishStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']);
+
+export const createSubjectSchema = z.object({
+	name: z.string().trim().min(1, 'Tên môn bắt buộc').max(200),
+});
+
+export const updateSubjectSchema = z.object({
+	name: z.string().trim().min(1, 'Tên môn bắt buộc').max(200),
+});
+
+export const createSpaceTestSchema = z.object({
+	title: z.string().trim().min(1, 'Tiêu đề bắt buộc').max(200),
+	slug: z.string().trim().min(1).max(120).optional(),
+	description: z.string().max(10_000).optional(),
+	subjectId: z.string().trim().min(1, 'Môn học bắt buộc'),
+	topics: z.array(z.string().trim().min(1).max(300)).max(100).optional(),
+	difficulties: z.array(z.number().int().min(1).max(10)).max(10).optional(),
+	classifications: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
+	questionCount: z.number().int().min(1).max(200),
+	status: publishStatusSchema.optional(),
+});
+
+export const updateSpaceTestSchema = z.object({
+	title: z.string().trim().min(1).max(200).optional(),
+	slug: z.string().trim().min(1).max(120).optional(),
+	description: z.string().max(10_000).optional(),
+	subjectId: z.string().trim().min(1).optional(),
+	topics: z.array(z.string().trim().min(1).max(300)).max(100).optional(),
+	difficulties: z.array(z.number().int().min(1).max(10)).max(10).optional(),
+	classifications: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
+	questionCount: z.number().int().min(1).max(200).optional(),
+	status: publishStatusSchema.optional(),
+});
+
+export const updateMcqQuestionSchema = z.object({
+	subjectId: z.string().trim().min(1).nullable().optional(),
+	topic: z.string().trim().min(1).max(300).optional(),
+	stem: z.string().trim().min(1).max(10_000).optional(),
+	optionA: z.string().trim().min(1).max(5_000).optional(),
+	optionB: z.string().trim().min(1).max(5_000).optional(),
+	optionC: z.string().trim().min(1).max(5_000).optional(),
+	optionD: z.string().trim().min(1).max(5_000).optional(),
+	correctOption: mcqCorrectOptionSchema.optional(),
+	difficulty: z.number().int().min(1).max(10).optional(),
+	aacsb: z.string().trim().max(500).optional(),
+	learningObjective: z.string().trim().max(1_000).optional(),
+	classification: z.string().trim().max(200).optional(),
+	isActive: z.boolean().optional(),
+});
+
+export const importTestMetaSchema = z.object({
+	subjectId: z.string().trim().min(1, 'Môn học bắt buộc'),
+	title: z.string().trim().min(1, 'Tiêu đề bắt buộc').max(200),
+	slug: z.string().trim().min(1).max(120).optional(),
+	description: z.string().max(10_000).optional(),
+	questionCount: z.number().int().min(1).max(200).optional(),
+	status: publishStatusSchema.optional(),
+});
+
+export const submitSessionSchema = z.object({
+	answers: z
+		.array(
+			z.object({
+				questionId: z.string().min(1),
+				chosen: mcqCorrectOptionSchema,
+			}),
+		)
+		.min(1)
+		.max(200),
+});
+
+export const checkAnswerSchema = z.object({
+	questionId: z.string().min(1),
+	chosen: mcqCorrectOptionSchema,
+});
+
+export type CreateSubjectInput = z.infer<typeof createSubjectSchema>;
+export type UpdateSubjectInput = z.infer<typeof updateSubjectSchema>;
+export type CreateSpaceTestInput = z.infer<typeof createSpaceTestSchema>;
+export type UpdateSpaceTestInput = z.infer<typeof updateSpaceTestSchema>;
+export type UpdateMcqQuestionInput = z.infer<typeof updateMcqQuestionSchema>;
+export type ImportTestMetaInput = z.infer<typeof importTestMetaSchema>;
+export type SubmitSessionInput = z.infer<typeof submitSessionSchema>;
+export type CheckAnswerInput = z.infer<typeof checkAnswerSchema>;
+export type McqCorrectOption = z.infer<typeof mcqCorrectOptionSchema>;

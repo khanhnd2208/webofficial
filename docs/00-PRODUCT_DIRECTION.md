@@ -17,11 +17,14 @@ capability, programs, and processes people can actually use.**
 3. **Dự án** — `/du-an`
 4. **Chi tiết dự án** — `/du-an/[slug]`
 5. **Dịch vụ** — `/dich-vu`
-6. **Liên hệ** — `/lien-he`
+6. **My Space** — `/my-space` (personal experiments; not the teaching portfolio)
+7. **Liên hệ** — `/lien-he`
 
 Policies remain readable where required by the contact form. Retired blog,
 podcast, lab, service, case-study, and archive pages redirect into the new
-portfolio instead of remaining separate public destinations.
+portfolio instead of remaining separate public destinations. My Space may
+reintroduce personal surfaces later when there is real content — keep tiles
+evidence-gated rather than shipping empty product routes.
 
 ## Internal boundary
 
@@ -29,7 +32,8 @@ portfolio instead of remaining separate public destinations.
   remain operational.
 - Internal surfaces are excluded from public navigation, sitemap, and public
   footer.
-- Archived public UI lives under `src/_archived` and is excluded by TypeScript.
+- Archived public UI and retired product modules live under `src/_archived`
+  (`homepage/`, `marketing/`, `features/`) and are excluded by TypeScript.
 
 ## Product principles
 

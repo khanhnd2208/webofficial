@@ -1,31 +1,52 @@
-# Public UI archive
+# Public UI & feature archive
 
-This directory preserves retired public-facing UI so it can be reviewed or
-restored without keeping obsolete routes in the live marketing website.
+Retired public UI and standalone product experiments live here so they can be
+reviewed or restored without shipping in the live marketing site.
 
-## Archive groups
+TypeScript, Vitest, and Next.js exclude this tree (`tsconfig.json`,
+`vitest.config.ts`). Nothing under `_archived` is imported by the live app.
 
-- `home-v1/`: first editorial homepage sections.
-- `home-v2/`: second homepage iteration and its test.
-- `home-v3/`: the final pre-portfolio homepage iteration and its content.
-- `legacy-content/`: retired static content for blog, podcast, lab, services, and cases.
-- `legacy-ui/`: retired shared UI, motion, marketing, learner, and public-content widgets.
-- `routes-v1/`: retired public marketing, blog, podcast, lab, and archive routes.
-- `personality-test-research-2026/`: the canonical archived personality-test feature, including research notes and tests.
+## Layout
 
-An older `personality-test/` copy was removed after a checksum audit proved all
-66 of its files were duplicated in `personality-test-research-2026/`. The
-removed copy remains recoverable from macOS Trash and Git history.
+```
+src/_archived/
+  homepage/          # Pre-portfolio homepage iterations
+    v1/
+    v2/
+    v3/
+  marketing/         # Retired marketing surfaces
+    content/         # Static content (blog, podcast, lab, services, cases…)
+    ui/              # Shared widgets (motion, marketing, public-content…)
+    routes-v1/       # Page implementations for retired public routes
+  features/          # Self-contained product modules
+    personality-test-research-2026/
+    kstrip-2026/     # K'sTrip party-game hub (spy, night-market, mafia)
+```
+
+| Group | What it preserves |
+|-------|-------------------|
+| `homepage/v1`–`v3` | Editorial homepage sections before the portfolio redesign |
+| `marketing/content` | Blog, podcast, lab, services, cases, pricing, audiences |
+| `marketing/ui` | Shared marketing / learner / public-content widgets |
+| `marketing/routes-v1` | `/bai-viet`, `/phat-trien-ban-than`, `/goc-cua-khanh`, `/dong-hanh`, `/case-study`, `/giang-day`, `/hoc` hubs, `/archive` |
+| `features/personality-test-research-2026` | Full personality-test research feature (UI, API, scoring, docs) |
+| `features/kstrip-2026` | K'sTrip / MyTrip boardgame hub (standalone Next app) |
 
 ## Scope boundary
 
-Only public UI is archived for the 2026 portfolio redesign. Admin pages, API
-routes, persistence models, database integrations, and existing data remain in
-place. Authentication and learner utilities may remain available as internal
-or no-index surfaces, but they are not part of the public navigation.
+Archiving here means **source preservation**, not live routes.
 
-## Restoring a file
+- Live marketing redirects for retired hubs live in `src/config/routes.ts`
+  (`PUBLIC_REDIRECTS`).
+- Admin pages, main-site APIs, auth, courses, vocabulary, and messages stay in
+  the active tree when still operational.
+- Feature archives (personality test, K'sTrip) keep their own app/API/layout
+  snapshots; they are not mounted under `src/app`.
 
-Copy the archived implementation back to its original location, then restore
-its imports and route/navigation entry. Archived files are intentionally not
-imported by the live application.
+## Restoring
+
+1. Copy the archived implementation back to its original active path (or mount
+   a feature under `src/app` / a workspace package).
+2. Restore imports, route constants, and navigation entries deliberately.
+3. For `features/kstrip-2026`, see that folder’s README — it is a nested
+   Next.js app (historically port `3001`), not a route slice of the main site.
