@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 
 import { routes } from '@/config/routes';
 
@@ -32,6 +33,11 @@ export default function QuizResultView({
 }: QuizResultViewProps) {
 	const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
 	const wrong = result.total - result.score;
+	const headingRef = useRef<HTMLHeadingElement>(null);
+
+	useEffect(() => {
+		headingRef.current?.focus({ preventScroll: true });
+	}, []);
 
 	return (
 		<main
@@ -43,7 +49,11 @@ export default function QuizResultView({
 					<p className="font-mono text-[0.75rem] font-semibold tracking-[0.1em] text-accent uppercase">
 						Kết quả
 					</p>
-					<h1 className="mt-4 font-display text-[clamp(2.75rem,8vw,4rem)] font-medium leading-none tracking-tight text-ink">
+					<h1
+						ref={headingRef}
+						tabIndex={-1}
+						className="mt-4 font-display text-[clamp(2.75rem,8vw,4rem)] font-medium leading-none tracking-tight text-ink outline-none"
+					>
 						{result.score}
 						<span className="text-ink-secondary">/{result.total}</span>
 					</h1>
@@ -124,7 +134,7 @@ export default function QuizResultView({
 						disabled={isPending}
 						className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] border border-ink bg-ink px-5 font-sans text-sm font-semibold text-canvas transition-colors hover:bg-transparent hover:text-ink disabled:opacity-50"
 					>
-						Làm lại
+						{isPending ? 'Đang tạo bài…' : 'Làm lại'}
 					</button>
 					<Link
 						href={routes.mySpaceTests}

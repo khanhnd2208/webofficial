@@ -81,23 +81,20 @@ export interface AdminNavGroup {
 export const GATE_NAV_ITEMS: GateNavItem[] = [
 	{
 		id: 'about',
-		href: routes.about,
 		label: 'Giới thiệu',
-		status: 'published',
+		status: 'locked',
 		blurb: 'Con đường đến với lớp học',
 	},
 	{
 		id: 'projects',
-		href: routes.projects,
 		label: 'Dự án',
-		status: 'published',
+		status: 'locked',
 		blurb: 'Lớp học, chương trình và thử nghiệm',
 	},
 	{
 		id: 'services',
-		href: routes.services,
 		label: 'Dịch vụ',
-		status: 'published',
+		status: 'locked',
 		blurb: 'Ba hướng làm việc cùng tôi',
 	},
 	{
@@ -221,6 +218,11 @@ export function isMySpacePath(pathname: string): boolean {
 /** My Space hub only (2×2 grid) — not nested test pages. */
 export function isMySpaceHubPath(pathname: string): boolean {
 	return pathname === routes.mySpace;
+}
+
+/** Quiz play surface — owns its own back chrome; hide site GateBack chip. */
+export function isMySpaceQuizPlayPath(pathname: string): boolean {
+	return /^\/my-space\/tests\/[^/]+\/play\/?$/.test(pathname);
 }
 
 /** Full-bleed public shells (intro + mục lục + My Space) — no GateBack top inset. */

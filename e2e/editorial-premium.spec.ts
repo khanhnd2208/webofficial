@@ -33,25 +33,21 @@ test.describe('Editorial premium public experience', () => {
 		expect(introBox!.x + introBox!.width / 2).toBeLessThan(250);
 	});
 
-	test('routes visitors from intro → mục lục into projects and services', async ({ page }) => {
+	test('routes visitors from intro → mục lục into My Space while marketing stays locked', async ({
+		page,
+	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/');
 		await page.getByRole('link', { name: /Mở mục lục/i }).click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await page.getByRole('link', { name: 'Dự án' }).click();
-		await expect(page).toHaveURL(/\/du-an/);
-		await expect(page.getByRole('heading', { level: 1, name: /^Dự án$/i })).toBeVisible();
-
-		await page.getByTestId('gate-back').click();
+		await expect(page.getByTestId('gate-item-locked')).toHaveCount(3);
+		await page.getByRole('button', { name: /Dự án/i }).click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await page.getByRole('link', { name: 'Dịch vụ' }).click();
-		await expect(page).toHaveURL(/\/dich-vu/);
-		await expect(
-			page.getByRole('heading', {
-				level: 1,
-				name: /Những chương trình giúp kiến thức đi vào công việc\./i,
-			}),
-		).toBeVisible();
+		await expect(page.getByTestId('gate-locked-note')).toBeVisible();
+
+		await page.getByRole('link', { name: /My Space/i }).click();
+		await expect(page).toHaveURL(/\/my-space/);
+		await expect(page.getByRole('heading', { level: 1, name: 'My Space' })).toBeAttached();
 	});
 
 	test('services stay condensed with journey graphics and no project proof', async ({ page }) => {

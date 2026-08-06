@@ -11,6 +11,7 @@ import {
 	isMinimalChromePath,
 	isMySpaceHubPath,
 	isMySpacePath,
+	isMySpaceQuizPlayPath,
 	isTocPath,
 } from '@/config/navigation';
 import { routes } from '@/config/routes';
@@ -20,6 +21,7 @@ import { routes } from '@/config/routes';
  * - GateBack on inner marketing pages (returns to mục lục)
  * - Soft return to intro on the mục lục itself
  * - Nested My Space surfaces return to the My Space hub
+ * - Quiz play owns its own back link (no fixed GateBack chip)
  * - "Gửi lời nhắn" rail / mobile FAB on destinations (not on intro)
  */
 export default function PublicMinimalChrome() {
@@ -29,44 +31,49 @@ export default function PublicMinimalChrome() {
 	if (!isMinimalChromePath(pathname) || isIntroPath(pathname)) return null;
 
 	const onToc = isTocPath(pathname);
-	const onMySpaceNested = isMySpacePath(pathname) && !isMySpaceHubPath(pathname);
+	const onQuizPlay = isMySpaceQuizPlayPath(pathname);
+	const onMySpaceNested =
+		isMySpacePath(pathname) && !isMySpaceHubPath(pathname) && !onQuizPlay;
 	const showContact = pathname !== routes.contact;
 	// Hide FAB where a fixed chip would collide with a full-bleed composition
 	// (services hero illustration, My Space centered grid / quiz).
 	const showMobileFab =
 		showContact && pathname !== routes.services && !isMySpacePath(pathname);
 	const sourcePage = pathname || routes.home;
+	const showBackChip = !onQuizPlay;
 
 	return (
 		<>
-			{onToc ? (
-				<Link
-					href={routes.home}
-					className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
-					aria-label="Về trang mở đầu"
-					data-testid="intro-back"
-				>
-					← Trở thành
-				</Link>
-			) : onMySpaceNested ? (
-				<Link
-					href={routes.mySpace}
-					className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
-					aria-label="Về My Space"
-					data-testid="myspace-back"
-				>
-					← My Space
-				</Link>
-			) : (
-				<Link
-					href={routes.toc}
-					className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
-					aria-label="Về mục lục"
-					data-testid="gate-back"
-				>
-					← Mục lục
-				</Link>
-			)}
+			{showBackChip ? (
+				onToc ? (
+					<Link
+						href={routes.home}
+						className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+						aria-label="Về trang mở đầu"
+						data-testid="intro-back"
+					>
+						← Trở thành
+					</Link>
+				) : onMySpaceNested ? (
+					<Link
+						href={routes.mySpace}
+						className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+						aria-label="Về My Space"
+						data-testid="myspace-back"
+					>
+						← My Space
+					</Link>
+				) : (
+					<Link
+						href={routes.toc}
+						className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+						aria-label="Về mục lục"
+						data-testid="gate-back"
+					>
+						← Mục lục
+					</Link>
+				)
+			) : null}
 
 			{showContact ? (
 				<>

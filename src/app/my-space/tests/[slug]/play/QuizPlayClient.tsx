@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useReducedMotion } from 'framer-motion';
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import {
 	MobileQuizBar,
@@ -48,7 +48,10 @@ export default function QuizPlayClient({
 	const [reveals, setReveals] = useState<Record<string, Reveal>>({});
 	const [result, setResult] = useState<SessionSubmitResult | null>(null);
 	const [focusKey, setFocusKey] = useState<McqCorrectOption>('A');
+	const [restarting, setRestarting] = useState(false);
 	const [isPending, startTransition] = useTransition();
+	const stemRef = useRef<HTMLHeadingElement>(null);
+	const prevIndexRef = useRef(index);
 
 	const current = questions[index];
 	const currentReveal = current ? reveals[current.id] : undefined;
@@ -57,8 +60,11 @@ export default function QuizPlayClient({
 	const answeredCount = Object.keys(reveals).length;
 	const correctCount = Object.values(reveals).filter((r) => r.isCorrect).length;
 	const questionIds = questions.map((q) => q.id);
+	const busyRestart = restarting || isPending;
 
 	async function restart() {
+		if (restarting) return;
+		setRestarting(true);
 		setError(null);
 		setAnswers({});
 		setReveals({});
@@ -75,6 +81,7 @@ export default function QuizPlayClient({
 			if (!json.ok || !json.data) {
 				setError(json.error ?? 'Không bắt đầu được bài');
 				setPhase('error');
+				setRestarting(false);
 				return;
 			}
 			startTransition(() => {
@@ -83,10 +90,12 @@ export default function QuizPlayClient({
 				setSubject(json.data!.subject);
 				setQuestions(json.data!.questions);
 				setPhase('playing');
+				setRestarting(false);
 			});
 		} catch {
 			setError('Không kết nối được server');
 			setPhase('error');
+			setRestarting(false);
 		}
 	}
 
@@ -183,6 +192,30 @@ export default function QuizPlayClient({
 		setFocusKey('A');
 	}
 
+	// Scroll to top + focus stem when question index changes
+	useEffect(() => {
+		if (prevIndexRef.current === index) return;
+		prevIndexRef.current = index;
+		window.scrollTo({
+			top: 0,
+			behavior: reduceMotion ? 'auto' : 'smooth',
+		});
+		// Defer focus until after AnimatePresence mounts the new stem
+		const id = window.setTimeout(() => {
+			stemRef.current?.focus({ preventScroll: true });
+		}, 50);
+		return () => window.clearTimeout(id);
+	}, [index, reduceMotion]);
+
+	// Scroll to top when entering result phase
+	useEffect(() => {
+		if (phase !== 'done') return;
+		window.scrollTo({
+			top: 0,
+			behavior: reduceMotion ? 'auto' : 'smooth',
+		});
+	}, [phase, reduceMotion]);
+
 	// Global keyboard shortcuts
 	useEffect(() => {
 		if (phase !== 'playing' && phase !== 'checking') return;
@@ -235,9 +268,10 @@ export default function QuizPlayClient({
 				<button
 					type="button"
 					onClick={() => void restart()}
-					className="mt-6 inline-flex min-h-11 items-center font-sans text-base font-medium text-ink underline decoration-ink/30 underline-offset-8 transition-colors hover:decoration-ink"
+					disabled={busyRestart}
+					className="mt-6 inline-flex min-h-11 items-center font-sans text-base font-medium text-ink underline decoration-ink/30 underline-offset-8 transition-colors hover:decoration-ink disabled:opacity-50"
 				>
-					Thử lại
+					{busyRestart ? 'Đang tạo bài…' : 'Thử lại'}
 				</button>
 				<Link
 					href={routes.mySpaceTests}
@@ -255,7 +289,7 @@ export default function QuizPlayClient({
 				title={title}
 				result={result}
 				onRestart={() => void restart()}
-				isPending={isPending}
+				isPending={busyRestart}
 			/>
 		);
 	}
@@ -272,11 +306,13 @@ export default function QuizPlayClient({
 
 	return (
 		<main
-			className="min-h-svh bg-canvas pt-20 pb-28 sm:pt-24 sm:pb-32"
+			className="min-h-svh bg-canvas pt-4 pb-28 sm:pt-6 sm:pb-32 lg:pt-10 lg:pb-24"
 			data-testid="myspace-quiz-play"
 		>
+			<h1 className="sr-only">{title}</h1>
 			<div className="shell">
 				<MobileQuizBar
+					title={title}
 					total={questions.length}
 					currentIndex={index}
 					answeredCount={answeredCount}
@@ -316,6 +352,7 @@ export default function QuizPlayClient({
 						onNext={() => void goNext()}
 						canPrev={index > 0}
 						canNext={answered}
+						stemRef={stemRef}
 					/>
 				</div>
 			</div>

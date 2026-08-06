@@ -271,8 +271,8 @@ export default function ImportCsvClient() {
 				Import bài test
 			</h1>
 			<p className="mt-2 text-sm text-muted">
-				Import thông minh: dán dữ liệu thô → copy prompt cho AI → dán CSV kết quả → chọn môn
-				và lưu.
+				Import thông minh: dán dữ liệu thô → copy prompt cho AI → dán CSV plain text từ
+				chat (không dùng file đính kèm) → chọn môn và lưu.
 			</p>
 
 			<div className="mt-6 flex flex-wrap gap-2">
@@ -351,7 +351,7 @@ export default function ImportCsvClient() {
 							value={aiCsv}
 							onChange={(e) => setAiCsv(e.target.value)}
 							rows={8}
-							placeholder="Dán CSV thuần do AI trả về…"
+							placeholder="Dán CSV plain text từ chat AI (bắt đầu bằng dòng header)…"
 							className="mt-3 w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-xs"
 						/>
 						<button

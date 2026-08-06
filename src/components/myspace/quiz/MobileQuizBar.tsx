@@ -1,11 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
+
+import { routes } from '@/config/routes';
 
 import QuestionNav from './QuestionNav';
 import type { Reveal } from './types';
 
 interface MobileQuizBarProps {
+	title: string;
 	total: number;
 	currentIndex: number;
 	answeredCount: number;
@@ -17,6 +21,7 @@ interface MobileQuizBarProps {
 }
 
 export default function MobileQuizBar({
+	title,
 	total,
 	currentIndex,
 	answeredCount,
@@ -30,26 +35,42 @@ export default function MobileQuizBar({
 	const pct = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
 
 	return (
-		<div className="sticky top-[var(--header-height)] z-20 -mx-[var(--gutter)] mb-4 border-b border-hairline bg-canvas/95 px-[var(--gutter)] py-3 backdrop-blur-sm lg:hidden">
-			<div className="flex flex-wrap items-center justify-between gap-2">
-				<p className="font-sans text-sm text-ink">
-					<span className="font-semibold">
-						Câu {currentIndex + 1}/{total}
-					</span>
-					<span className="text-ink-secondary">
-						{' '}
-						· {correctCount}/{answeredCount || 0} đúng
-					</span>
+		<div className="sticky top-0 z-20 -mx-[var(--gutter)] mb-4 border-b border-hairline bg-canvas/95 px-[var(--gutter)] pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur-sm lg:hidden">
+			<div className="flex items-center gap-3">
+				<Link
+					href={routes.mySpaceTests}
+					className="inline-flex min-h-11 shrink-0 items-center font-sans text-sm text-ink-secondary transition-colors hover:text-ink"
+					aria-label="Về Tests"
+					data-testid="myspace-quiz-back"
+				>
+					← Tests
+				</Link>
+				<p className="min-w-0 flex-1 truncate font-display text-sm font-medium tracking-tight text-ink">
+					{title}
 				</p>
 				<button
 					type="button"
 					onClick={() => setOpen((v) => !v)}
-					className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] border border-hairline bg-paper/60 px-3 font-sans text-sm font-medium text-ink"
+					className="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-sm)] border border-hairline bg-paper/60 px-3 font-sans text-sm font-medium text-ink"
 					aria-expanded={open}
 					aria-controls="myspace-quiz-mobile-nav"
 				>
-					{open ? 'Đóng danh sách' : 'Danh sách câu'}
+					{open ? 'Đóng' : 'Danh sách'}
 				</button>
+			</div>
+
+			<div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+				<p className="font-sans text-sm text-ink">
+					<span className="font-semibold">
+						Câu {currentIndex + 1}/{total}
+					</span>
+					{answeredCount > 0 ? (
+						<span className="text-ink-secondary">
+							{' '}
+							· {correctCount}/{answeredCount} đúng
+						</span>
+					) : null}
+				</p>
 			</div>
 
 			<div

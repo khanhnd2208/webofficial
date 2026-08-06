@@ -23,7 +23,27 @@ function TileLabel({ tile }: { tile: MySpaceTile }) {
 	return <>{tile.label}</>;
 }
 
-function TileVisual({ tile }: { tile: MySpaceTile }) {
+function DevelopingIcon({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			width="11"
+			height="11"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.75"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<rect x="5" y="11" width="14" height="10" rx="1.5" />
+			<path d="M8 11V8a4 4 0 0 1 8 0v3" />
+		</svg>
+	);
+}
+
+function TileVisual({ tile, locked }: { tile: MySpaceTile; locked?: boolean }) {
 	return (
 		<>
 			<div className="relative mb-6 h-28 w-28 sm:mb-0 sm:h-[7.5rem] sm:w-[7.5rem]">
@@ -33,20 +53,37 @@ function TileVisual({ tile }: { tile: MySpaceTile }) {
 					alt=""
 					width={120}
 					height={120}
-					className="h-full w-full object-contain opacity-80 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100"
+					className={`h-full w-full object-contain mix-blend-multiply transition-opacity duration-500 ${
+						locked
+							? 'opacity-45'
+							: 'opacity-80 group-hover:opacity-100 group-focus-visible:opacity-100'
+					}`}
 					sizes="120px"
 					aria-hidden
 				/>
 			</div>
-			<span className="font-display text-[clamp(1.75rem,3vw,2rem)] font-medium tracking-tight text-ink">
+			<span
+				className={`font-display text-[clamp(1.75rem,3vw,2rem)] font-medium tracking-tight ${
+					locked ? 'text-ink/45' : 'text-ink'
+				}`}
+			>
 				<TileLabel tile={tile} />
 			</span>
+			{locked ? (
+				<span className="mt-2 flex items-center gap-1.5 font-mono text-[0.625rem] tracking-[0.12em] text-ink/40 uppercase">
+					<DevelopingIcon className="opacity-70" />
+					{mySpacePage.comingSoonLabel}
+				</span>
+			) : null}
 		</>
 	);
 }
 
 const tileClassName =
 	'group flex flex-col items-center text-center transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] opacity-80 hover:opacity-100 hover:-translate-y-1 focus-visible:opacity-100 focus-visible:-translate-y-1 focus-visible:outline-none sm:gap-6';
+
+const lockedTileClassName =
+	'group flex cursor-not-allowed flex-col items-center bg-transparent p-0 text-center opacity-70 focus-visible:outline-none sm:gap-6';
 
 /**
  * Ultra-minimalist My Space grid — mobile stack, desktop 2×2.
@@ -77,12 +114,12 @@ export default function MySpaceGrid({ tiles }: { tiles: MySpaceTile[] }) {
 						) : (
 							<button
 								type="button"
-								className={`${tileClassName} cursor-pointer bg-transparent p-0`}
+								className={lockedTileClassName}
 								aria-expanded={isOpen}
 								data-testid={`myspace-tile-${tile.id}`}
 								onClick={() => setOpenId((current) => (current === tile.id ? null : tile.id))}
 							>
-								<TileVisual tile={tile} />
+								<TileVisual tile={tile} locked />
 							</button>
 						)}
 						{!published && isOpen ? (

@@ -153,7 +153,7 @@ export default function AnswerOption({
 	}
 
 	return (
-		<li className="border-0 p-0">
+		<li role="presentation" className="border-0 p-0">
 			<button
 				type="button"
 				role="radio"

@@ -78,6 +78,28 @@ export const checkAnswerSchema = z.object({
 	chosen: mcqCorrectOptionSchema,
 });
 
+export const playPoolFiltersSchema = z.object({
+	difficulties: z.array(z.number().int().min(1).max(10)).max(10).optional(),
+	learningObjectives: z.array(z.string().trim().min(1).max(1_000)).max(100).optional(),
+});
+
+export const startSessionSchema = z
+	.object({
+		mode: z.enum(['default', 'custom']).default('default'),
+		questionCount: z.number().int().min(1).max(200).optional(),
+		difficulties: z.array(z.number().int().min(1).max(10)).max(10).optional(),
+		learningObjectives: z.array(z.string().trim().min(1).max(1_000)).max(100).optional(),
+	})
+	.superRefine((val, ctx) => {
+		if (val.mode === 'custom' && val.questionCount === undefined) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'Số câu bắt buộc khi chọn chế độ tự điều chỉnh',
+				path: ['questionCount'],
+			});
+		}
+	});
+
 export type CreateSubjectInput = z.infer<typeof createSubjectSchema>;
 export type UpdateSubjectInput = z.infer<typeof updateSubjectSchema>;
 export type CreateSpaceTestInput = z.infer<typeof createSpaceTestSchema>;
@@ -86,4 +108,6 @@ export type UpdateMcqQuestionInput = z.infer<typeof updateMcqQuestionSchema>;
 export type ImportTestMetaInput = z.infer<typeof importTestMetaSchema>;
 export type SubmitSessionInput = z.infer<typeof submitSessionSchema>;
 export type CheckAnswerInput = z.infer<typeof checkAnswerSchema>;
+export type PlayPoolFiltersInput = z.infer<typeof playPoolFiltersSchema>;
+export type StartSessionInput = z.infer<typeof startSessionSchema>;
 export type McqCorrectOption = z.infer<typeof mcqCorrectOptionSchema>;

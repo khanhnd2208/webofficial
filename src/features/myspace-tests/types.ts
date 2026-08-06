@@ -111,3 +111,26 @@ export interface QuestionFilterMeta {
 	difficulties: number[];
 	classifications: string[];
 }
+
+export interface PlayFilterValue {
+	value: string;
+	count: number;
+}
+
+export interface PlayDifficultyValue {
+	value: number;
+	count: number;
+}
+
+export interface TestPlayOptions {
+	title: string;
+	subject: string;
+	defaultQuestionCount: number;
+	poolSize: number;
+	difficulties: PlayDifficultyValue[];
+	learningObjectives: PlayFilterValue[];
+}
+
+export interface PlayPoolCountResult {
+	count: number;
+}

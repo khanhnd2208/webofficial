@@ -20,21 +20,19 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
 	});
 
-	test('mục lục is a minimal gate with four destinations', async ({ page }) => {
+	test('mục lục locks marketing destinations and keeps My Space open', async ({ page }) => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link', { name: 'Giới thiệu' })).toHaveAttribute(
-			'href',
-			'/gioi-thieu',
-		);
-		await expect(gate.getByRole('link', { name: 'Dự án' })).toHaveAttribute('href', '/du-an');
-		await expect(gate.getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute('href', '/dich-vu');
+		await expect(page.getByTestId('gate-item-locked')).toHaveCount(3);
+		await expect(gate.getByRole('button', { name: /Giới thiệu/i })).toBeVisible();
+		await expect(gate.getByRole('button', { name: /Dự án/i })).toBeVisible();
+		await expect(gate.getByRole('button', { name: /Dịch vụ/i })).toBeVisible();
+		await expect(gate.getByText('Đang phát triển').first()).toBeVisible();
 		await expect(gate.getByRole('link', { name: /My Space/i })).toHaveAttribute(
 			'href',
 			'/my-space',
 		);
-		await expect(page.getByTestId('gate-item-locked')).toHaveCount(0);
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toHaveText('Gửi lời nhắn');
 		await expect(page.getByTestId('intro-back')).toBeVisible();
@@ -49,14 +47,15 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByRole('heading', { level: 1, name: /Trở thành/i })).toBeVisible();
 		await page.getByRole('link', { name: /Mở mục lục/i }).first().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByRole('link', { name: 'Giới thiệu' })).toBeVisible();
-		await expect(page.getByRole('link', { name: 'Dự án' })).toBeVisible();
-		await expect(page.getByRole('link', { name: 'Dịch vụ' })).toBeVisible();
+		await expect(page.getByRole('button', { name: /Giới thiệu/i })).toBeVisible();
+		await expect(page.getByRole('button', { name: /Dự án/i })).toBeVisible();
+		await expect(page.getByRole('button', { name: /Dịch vụ/i })).toBeVisible();
 		await expect(page.getByRole('link', { name: /My Space/i })).toBeVisible();
 		await context.close();
 	});
 
 	test('My Space is a minimal 2×2 hub; Tests tile opens the quiz index', async ({ page }) => {
+		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/my-space');
 		await expect(page.getByTestId('my-space')).toBeVisible();
 		await expect(page.getByRole('heading', { level: 1, name: 'My Space' })).toBeAttached();
@@ -76,7 +75,7 @@ test.describe('Public pages smoke', () => {
 
 		await page.getByTestId('myspace-tile-tests').click();
 		await expect(page).toHaveURL(/\/my-space\/tests/);
-		await expect(page.getByTestId('myspace-tests')).toBeVisible();
+		await expect(page.locator('[data-testid="myspace-tests"]:visible')).toBeVisible();
 		await expect(page.getByTestId('myspace-back')).toBeVisible();
 	});
 
@@ -220,9 +219,10 @@ test.describe('Navigation', () => {
 		await page.getByRole('link', { name: /Mở mục lục/i }).click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link', { name: 'Giới thiệu' })).toBeVisible();
-		await expect(gate.getByRole('link', { name: 'Dự án' })).toBeVisible();
-		await expect(gate.getByRole('link', { name: 'Dịch vụ' })).toBeVisible();
+		await expect(page.getByTestId('gate-item-locked')).toHaveCount(3);
+		await expect(gate.getByRole('button', { name: /Giới thiệu/i })).toBeVisible();
+		await expect(gate.getByRole('button', { name: /Dự án/i })).toBeVisible();
+		await expect(gate.getByRole('button', { name: /Dịch vụ/i })).toBeVisible();
 		await expect(gate.getByRole('link', { name: /My Space/i })).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 	});

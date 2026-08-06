@@ -318,6 +318,20 @@ type PoolQuestion = {
 	correctOption: McqQuestion['correctOption'];
 };
 
+export type PoolMetaRow = {
+	topic: string;
+	difficulty: number;
+	learningObjective: string;
+	classification: string;
+};
+
+export type PoolQueryFilters = {
+	topics?: string[];
+	difficulties?: number[];
+	learningObjectives?: string[];
+	classifications?: string[];
+};
+
 const poolSelect = {
 	id: true,
 	topic: true,
@@ -330,12 +344,74 @@ const poolSelect = {
 	correctOption: true,
 } as const;
 
+const poolMetaSelect = {
+	topic: true,
+	difficulty: true,
+	learningObjective: true,
+	classification: true,
+} as const;
+
+function poolWhereExtras(filters?: PoolQueryFilters) {
+	return {
+		...(filters?.topics && filters.topics.length > 0
+			? { topic: { in: filters.topics } }
+			: {}),
+		...(filters?.difficulties && filters.difficulties.length > 0
+			? { difficulty: { in: filters.difficulties } }
+			: {}),
+		...(filters?.learningObjectives && filters.learningObjectives.length > 0
+			? { learningObjective: { in: filters.learningObjectives } }
+			: {}),
+		...(filters?.classifications && filters.classifications.length > 0
+			? { classification: { in: filters.classifications } }
+			: {}),
+	};
+}
+
 export async function findActivePool(filters: {
 	subjectId: string;
 	topics?: string[];
 	difficulties?: number[];
+	learningObjectives?: string[];
 	classifications?: string[];
 }): Promise<PoolQuestion[]> {
+	return prisma.mcqQuestion.findMany({
+		where: {
+			isActive: true,
+			subjectId: filters.subjectId,
+			...poolWhereExtras(filters),
+		},
+		select: poolSelect,
+	});
+}
+
+export async function findActivePoolByTestId(
+	spaceTestId: string,
+	filters?: PoolQueryFilters,
+): Promise<PoolQuestion[]> {
+	return prisma.mcqQuestion.findMany({
+		where: {
+			isActive: true,
+			spaceTestId,
+			...poolWhereExtras(filters),
+		},
+		select: poolSelect,
+	});
+}
+
+export async function findPoolMetaByTestId(spaceTestId: string): Promise<PoolMetaRow[]> {
+	return prisma.mcqQuestion.findMany({
+		where: { isActive: true, spaceTestId },
+		select: poolMetaSelect,
+	});
+}
+
+export async function findPoolMetaByBank(filters: {
+	subjectId: string;
+	topics?: string[];
+	difficulties?: number[];
+	classifications?: string[];
+}): Promise<PoolMetaRow[]> {
 	return prisma.mcqQuestion.findMany({
 		where: {
 			isActive: true,
@@ -350,14 +426,7 @@ export async function findActivePool(filters: {
 				? { classification: { in: filters.classifications } }
 				: {}),
 		},
-		select: poolSelect,
-	});
-}
-
-export async function findActivePoolByTestId(spaceTestId: string): Promise<PoolQuestion[]> {
-	return prisma.mcqQuestion.findMany({
-		where: { isActive: true, spaceTestId },
-		select: poolSelect,
+		select: poolMetaSelect,
 	});
 }
 

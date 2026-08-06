@@ -96,8 +96,9 @@ export default function GateNav() {
 							>
 								<button
 									type="button"
-									className="group/item flex min-h-14 w-full cursor-pointer flex-col items-center justify-center gap-1 px-4 py-3 text-ink/35 transition-[opacity,color,transform] duration-[var(--motion-gate)] ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-ink/55 focus-visible:text-ink/55 focus-visible:outline-none"
+									className="group/item flex min-h-14 w-full cursor-not-allowed flex-col items-center justify-center gap-1 px-4 py-3 text-ink/35 transition-[opacity,color,transform] duration-[var(--motion-gate)] ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-ink/45 focus-visible:text-ink/45 focus-visible:outline-none"
 									aria-expanded={lockedOpen}
+									aria-disabled="true"
 									data-testid="gate-item-locked"
 									onClick={() =>
 										setLockedOpenId((current) => (current === item.id ? null : item.id))
@@ -116,7 +117,10 @@ export default function GateNav() {
 										</span>
 										<LockIcon className="opacity-70" />
 									</span>
-									<span className="sr-only"> — sắp mở</span>
+									<span className="flex items-center gap-1.5 font-mono text-[0.625rem] tracking-[0.12em] text-ink/40 uppercase">
+										Đang phát triển
+									</span>
+									<span className="sr-only"> — đang phát triển, chưa mở</span>
 								</button>
 								{lockedOpen ? (
 									<p

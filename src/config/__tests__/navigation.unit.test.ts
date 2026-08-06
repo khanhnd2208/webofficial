@@ -44,7 +44,7 @@ describe('publication gates', () => {
 		expect(isPublished('draft')).toBe(false);
 	});
 
-	it('exposes the four published gate destinations including My Space', () => {
+	it('locks marketing destinations while keeping My Space open', () => {
 		const items = getGateNavItems();
 		expect(items).toEqual(GATE_NAV_ITEMS);
 		expect(items.map((item) => item.label)).toEqual([
@@ -53,12 +53,16 @@ describe('publication gates', () => {
 			'Dịch vụ',
 			'My Space',
 		]);
-		expect(items[0]?.href).toBe(routes.about);
-		expect(items[1]?.href).toBe(routes.projects);
-		expect(items[2]?.href).toBe(routes.services);
+		expect(items[0]?.href).toBeUndefined();
+		expect(items[1]?.href).toBeUndefined();
+		expect(items[2]?.href).toBeUndefined();
 		expect(items[3]?.href).toBe(routes.mySpace);
+		expect(isGateItemLocked(items[0]!)).toBe(true);
+		expect(isGateItemLocked(items[1]!)).toBe(true);
+		expect(isGateItemLocked(items[2]!)).toBe(true);
 		expect(isGateItemLocked(items[3]!)).toBe(false);
-		expect(items.filter((item) => item.status === 'published')).toHaveLength(4);
+		expect(items.filter((item) => item.status === 'published')).toHaveLength(1);
+		expect(items.filter((item) => item.status === 'locked')).toHaveLength(3);
 	});
 
 	it('keeps intro, mục lục, and My Space as distinct public shells', () => {

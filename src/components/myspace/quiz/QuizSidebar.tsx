@@ -1,6 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import type { ReactNode } from 'react';
+
+import { routes } from '@/config/routes';
 
 import QuestionNav from './QuestionNav';
 import type { Reveal } from './types';
@@ -55,9 +58,17 @@ export default function QuizSidebar({
 
 	return (
 		<aside
-			className="hidden space-y-4 lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:block lg:self-start"
+			className="hidden space-y-4 lg:sticky lg:top-6 lg:block lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-y-auto"
 			data-testid="myspace-quiz-sidebar"
 		>
+			<Link
+				href={routes.mySpaceTests}
+				className="inline-flex min-h-11 items-center font-sans text-sm text-ink-secondary transition-colors hover:text-ink"
+				data-testid="myspace-quiz-back-desktop"
+			>
+				← Tests
+			</Link>
+
 			<Panel label="Bài test">
 				<p className="font-display text-lg font-medium leading-snug tracking-tight text-ink text-balance">
 					{title}

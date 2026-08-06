@@ -23,6 +23,7 @@ export interface MySpaceTile {
 export const mySpacePage = {
 	title: 'My Space',
 	lead: 'Một góc riêng cho những thứ tôi thích làm ngoài lớp học.',
+	comingSoonLabel: 'Đang phát triển',
 	comingSoonNote: 'Góc này đang được hoàn thiện.',
 } as const;
 

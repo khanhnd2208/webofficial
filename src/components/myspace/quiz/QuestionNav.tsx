@@ -34,7 +34,7 @@ function cellClass(status: QuestionNavStatus): string {
 		case 'current':
 			return 'bg-canvas text-ink border-ink ring-2 ring-ink/15';
 		case 'locked':
-			return 'bg-paper text-ink-secondary/70 border-hairline cursor-not-allowed';
+			return 'bg-paper text-ink-secondary border-hairline cursor-not-allowed';
 		default:
 			return 'bg-canvas text-ink border-hairline hover:border-ink/40';
 	}

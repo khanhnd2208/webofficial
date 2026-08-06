@@ -131,7 +131,7 @@ describe('buildTestBundlePrompt', () => {
 		expect(prompt).toContain('topic,stem,option_a,option_b,option_c,option_d,correct_option');
 		expect(prompt).toContain('Không điền');
 		expect(prompt).toContain('test_title');
-		expect(prompt).toContain('CSV thuần');
+		expect(prompt).toContain('plain text');
 	});
 
 	it('instructs keeping True/False as 2-option MCQ and skipping essays only', () => {
@@ -144,6 +144,16 @@ describe('buildTestBundlePrompt', () => {
 		expect(prompt).toContain('GIỮ (True/False');
 		expect(prompt).toContain('copyright');
 		expect(prompt).not.toMatch(/BỎ.*True\/False/i);
+	});
+
+	it('forbids file attachments and requires copy-pasteable chat CSV', () => {
+		const prompt = buildTestBundlePrompt('sample raw');
+		expect(prompt).toContain('CẤM');
+		expect(prompt).toContain('.csv');
+		expect(prompt).toContain('copy-paste');
+		expect(prompt).toContain('MẪU ĐẦU RA');
+		expect(prompt).toContain('code fence');
+		expect(prompt).toMatch(/Toàn bộ phản hồi = CSV/);
 	});
 });
 
@@ -167,6 +177,8 @@ describe('buildCsvFixPrompt', () => {
 		expect(prompt).toContain('Không có câu hỏi hợp lệ nào trong file');
 		expect(prompt).toContain('topic,stem,option_a,option_b,option_c,option_d,correct_option');
 		expect(prompt).toContain('đúng 11 cột');
-		expect(prompt).toContain('CSV thuần đã sửa');
+		expect(prompt).toContain('plain text');
+		expect(prompt).toContain('CẤM');
+		expect(prompt).toContain('.csv');
 	});
 });

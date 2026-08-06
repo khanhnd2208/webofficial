@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, m } from 'framer-motion';
-import { useEffect, useId, useRef, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, type KeyboardEvent, type RefObject } from 'react';
 
 import AnswerFeedback from './AnswerFeedback';
 import AnswerOption from './AnswerOption';
@@ -28,6 +28,8 @@ interface QuestionPanelProps {
 	onNext: () => void;
 	canPrev: boolean;
 	canNext: boolean;
+	/** Optional ref target for focus transfer after navigation */
+	stemRef?: RefObject<HTMLHeadingElement | null>;
 }
 
 function optionState(
@@ -47,6 +49,66 @@ function optionState(
 	return 'idle';
 }
 
+function NavRow({
+	index,
+	total,
+	phase,
+	canPrev,
+	canNext,
+	onPrev,
+	onNext,
+	className = '',
+	/** When true, attach the canonical e2e data-testid attributes (only one row should). */
+	withTestIds = false,
+}: {
+	index: number;
+	total: number;
+	phase: QuizPhase;
+	canPrev: boolean;
+	canNext: boolean;
+	onPrev: () => void;
+	onNext: () => void;
+	className?: string;
+	withTestIds?: boolean;
+}) {
+	const nextDisabled = !canNext || phase === 'checking' || phase === 'submitting';
+	const nextLabel =
+		phase === 'submitting'
+			? 'Đang nộp…'
+			: index < total - 1
+				? 'Câu tiếp →'
+				: 'Nộp bài →';
+
+	return (
+		<div className={`flex flex-wrap items-center justify-between gap-3 ${className}`}>
+			<button
+				type="button"
+				onClick={onPrev}
+				disabled={!canPrev}
+				className="inline-flex min-h-11 items-center gap-1.5 font-sans text-sm font-medium text-ink transition-colors hover:text-accent disabled:cursor-not-allowed disabled:text-ink-secondary/50"
+				data-testid={withTestIds ? 'myspace-quiz-prev' : undefined}
+			>
+				<span aria-hidden>←</span>
+				Câu trước
+			</button>
+
+			<p className="font-mono text-[0.875rem] font-semibold tracking-[0.04em] text-ink">
+				Câu {index + 1} / {total}
+			</p>
+
+			<button
+				type="button"
+				onClick={onNext}
+				disabled={nextDisabled}
+				className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-sm)] border border-ink bg-ink px-4 font-sans text-sm font-semibold text-canvas transition-colors hover:bg-transparent hover:text-ink disabled:cursor-not-allowed disabled:border-hairline disabled:bg-hairline disabled:text-ink-secondary"
+				data-testid={withTestIds ? 'myspace-quiz-next' : undefined}
+			>
+				{nextLabel}
+			</button>
+		</div>
+	);
+}
+
 export default function QuestionPanel({
 	question,
 	index,
@@ -62,6 +124,7 @@ export default function QuestionPanel({
 	onNext,
 	canPrev,
 	canNext,
+	stemRef,
 }: QuestionPanelProps) {
 	const stemId = useId();
 	const groupRef = useRef<HTMLUListElement>(null);
@@ -104,97 +167,99 @@ export default function QuestionPanel({
 		}
 	}
 
-	return (
-		<section className="rounded-[var(--radius-sm)] border border-hairline bg-paper/40 p-4 sm:p-6 lg:p-8">
-			{/* Header nav */}
-			<div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-4">
-				<button
-					type="button"
-					onClick={onPrev}
-					disabled={!canPrev}
-					className="inline-flex min-h-11 items-center gap-1.5 font-sans text-sm font-medium text-ink transition-colors hover:text-accent disabled:cursor-not-allowed disabled:text-ink-secondary/50"
-					data-testid="myspace-quiz-prev"
-				>
-					<span aria-hidden>←</span>
-					Câu trước
-				</button>
+	const navProps = {
+		index,
+		total,
+		phase,
+		canPrev,
+		canNext,
+		onPrev,
+		onNext,
+	};
 
-				<p className="font-mono text-[0.875rem] font-semibold tracking-[0.04em] text-ink">
+	return (
+		<>
+			<section className="rounded-[var(--radius-sm)] border border-hairline bg-paper/40 p-4 sm:p-6 lg:p-8">
+				{/* Desktop nav — top of card (owns canonical e2e testids) */}
+				<NavRow
+					{...navProps}
+					withTestIds
+					className="hidden border-b border-hairline pb-4 lg:flex"
+				/>
+
+				{/* Mobile counter only — action buttons live in the sticky bottom bar */}
+				<p className="font-mono text-[0.875rem] font-semibold tracking-[0.04em] text-ink lg:hidden">
 					Câu {index + 1} / {total}
 				</p>
 
-				<button
-					type="button"
-					onClick={onNext}
-					disabled={!canNext || phase === 'checking' || phase === 'submitting'}
-					className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-sm)] border border-ink bg-ink px-4 font-sans text-sm font-semibold text-canvas transition-colors hover:bg-transparent hover:text-ink disabled:cursor-not-allowed disabled:border-hairline disabled:bg-hairline disabled:text-ink-secondary"
-					data-testid="myspace-quiz-next"
-				>
-					{phase === 'submitting'
-						? 'Đang nộp…'
-						: index < total - 1
-							? 'Câu tiếp →'
-							: 'Nộp bài →'}
-				</button>
+				<AnimatePresence mode="wait">
+					<m.div
+						key={question.id}
+						initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+						transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+					>
+						{!reveal ? (
+							<p className="mt-5 font-sans text-sm text-ink-secondary">
+								Chọn một đáp án để tiếp tục
+							</p>
+						) : null}
+
+						<h2
+							ref={stemRef}
+							id={stemId}
+							tabIndex={-1}
+							className="mt-4 max-w-[62ch] scroll-mt-28 font-sans text-[clamp(1.0625rem,2.2vw,1.25rem)] font-medium leading-[1.65] text-ink text-balance break-words outline-none"
+						>
+							{question.stem}
+						</h2>
+
+						<ul
+							ref={groupRef}
+							className="mt-6 border-t border-hairline"
+							role="radiogroup"
+							aria-labelledby={stemId}
+						>
+							{question.options.map((opt) => {
+								const state = optionState(opt.key, chosen, reveal, phase);
+								return (
+									<AnswerOption
+										key={opt.key}
+										optionKey={opt.key}
+										text={opt.text}
+										state={state}
+										disabled={locked}
+										tabIndex={focusKey === opt.key ? 0 : -1}
+										onSelect={() => onChoose(opt.key)}
+										onKeyDown={(e) => handleOptionKeyDown(e, opt.key)}
+										reduceMotion={reduceMotion}
+									/>
+								);
+							})}
+						</ul>
+
+						{reveal ? (
+							<AnswerFeedback
+								isCorrect={reveal.isCorrect}
+								correctOption={reveal.correctOption}
+							/>
+						) : null}
+					</m.div>
+				</AnimatePresence>
+
+				<p className="mt-6 hidden font-mono text-[0.75rem] leading-relaxed text-ink-secondary lg:block">
+					{shortcutHint}
+				</p>
+			</section>
+
+			{/* Mobile sticky bottom action bar */}
+			<div
+				className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-canvas/95 px-[var(--gutter)] pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden"
+				data-testid="myspace-quiz-mobile-actions"
+			>
+				<NavRow {...navProps} />
 			</div>
-
-			<AnimatePresence mode="wait">
-				<m.div
-					key={question.id}
-					initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-					animate={{ opacity: 1, y: 0 }}
-					exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-					transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-				>
-					{!reveal ? (
-						<p className="mt-5 font-sans text-sm text-ink-secondary">
-							Chọn một đáp án để tiếp tục
-						</p>
-					) : null}
-
-					<h1
-						id={stemId}
-						className="mt-4 max-w-[62ch] font-sans text-[clamp(1.0625rem,2.2vw,1.25rem)] font-medium leading-[1.65] text-ink text-balance break-words"
-					>
-						{question.stem}
-					</h1>
-
-					<ul
-						ref={groupRef}
-						className="mt-6 border-t border-hairline"
-						role="radiogroup"
-						aria-labelledby={stemId}
-					>
-						{question.options.map((opt) => {
-							const state = optionState(opt.key, chosen, reveal, phase);
-							return (
-								<AnswerOption
-									key={opt.key}
-									optionKey={opt.key}
-									text={opt.text}
-									state={state}
-									disabled={locked}
-									tabIndex={focusKey === opt.key ? 0 : -1}
-									onSelect={() => onChoose(opt.key)}
-									onKeyDown={(e) => handleOptionKeyDown(e, opt.key)}
-									reduceMotion={reduceMotion}
-								/>
-							);
-						})}
-					</ul>
-
-					{reveal ? (
-						<AnswerFeedback
-							isCorrect={reveal.isCorrect}
-							correctOption={reveal.correctOption}
-						/>
-					) : null}
-				</m.div>
-			</AnimatePresence>
-
-			<p className="mt-6 font-mono text-[0.75rem] leading-relaxed text-ink-secondary">
-				{shortcutHint}
-			</p>
-		</section>
+		</>
 	);
 }

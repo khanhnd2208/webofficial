@@ -14,6 +14,8 @@ import type {
 	CreateSubjectInput,
 	ImportTestMetaInput,
 	McqCorrectOption,
+	PlayPoolFiltersInput,
+	StartSessionInput,
 	SubmitSessionInput,
 	UpdateMcqQuestionInput,
 	UpdateSpaceTestInput,
@@ -23,6 +25,7 @@ import * as repo from '../repositories/myspaceTestsRepository';
 import type {
 	CheckAnswerResult,
 	McqQuestionDTO,
+	PlayPoolCountResult,
 	PublicQuizQuestion,
 	PublicSpaceTestListItem,
 	PublicSubjectGroup,
@@ -33,6 +36,7 @@ import type {
 	SpaceTestWithQuestionCount,
 	SubjectDTO,
 	SubjectWithCounts,
+	TestPlayOptions,
 } from '../types';
 
 async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
@@ -469,28 +473,147 @@ export async function previewSample(filters: {
 	};
 }
 
-export async function startSession(slug: string): Promise<SessionStartResult> {
+type PublishedTest = NonNullable<Awaited<ReturnType<typeof repo.findSpaceTestBySlug>>>;
+
+type PoolFilters = {
+	difficulties?: number[];
+	learningObjectives?: string[];
+};
+
+function intersectFilters(base: number[], selected?: number[]): number[] | undefined {
+	if (!selected?.length) return base.length > 0 ? base : undefined;
+	if (base.length === 0) return selected;
+	return selected.filter((value) => base.includes(value));
+}
+
+async function resolveBasePool(test: PublishedTest, filters?: PoolFilters) {
+	const attachedBase = await repo.findActivePoolByTestId(test.id);
+	if (attachedBase.length > 0) {
+		const hasUserFilters = Boolean(
+			filters?.difficulties?.length || filters?.learningObjectives?.length,
+		);
+		if (!hasUserFilters) return { pool: attachedBase, source: 'attached' as const };
+		const filtered = await repo.findActivePoolByTestId(test.id, filters);
+		return { pool: filtered, source: 'attached' as const };
+	}
+
+	return {
+		pool: await repo.findActivePool({
+			subjectId: test.subjectId,
+			topics: test.topics.length > 0 ? test.topics : undefined,
+			difficulties: intersectFilters(test.difficulties, filters?.difficulties),
+			learningObjectives: filters?.learningObjectives,
+			classifications: test.classifications.length > 0 ? test.classifications : undefined,
+		}),
+		source: 'bank' as const,
+	};
+}
+
+async function resolvePoolMeta(test: PublishedTest) {
+	const attachedMeta = await repo.findPoolMetaByTestId(test.id);
+	if (attachedMeta.length > 0) return attachedMeta;
+	return repo.findPoolMetaByBank({
+		subjectId: test.subjectId,
+		topics: test.topics.length > 0 ? test.topics : undefined,
+		difficulties: test.difficulties.length > 0 ? test.difficulties : undefined,
+		classifications: test.classifications.length > 0 ? test.classifications : undefined,
+	});
+}
+
+function countByString(values: string[]): Array<{ value: string; count: number }> {
+	const map = new Map<string, number>();
+	for (const v of values) {
+		if (!v.trim()) continue;
+		map.set(v, (map.get(v) ?? 0) + 1);
+	}
+	return [...map.entries()]
+		.map(([value, count]) => ({ value, count }))
+		.sort((a, b) => a.value.localeCompare(b.value, undefined, { sensitivity: 'base' }));
+}
+
+function countByNumber(values: number[]): Array<{ value: number; count: number }> {
+	const map = new Map<number, number>();
+	for (const v of values) {
+		map.set(v, (map.get(v) ?? 0) + 1);
+	}
+	return [...map.entries()]
+		.map(([value, count]) => ({ value, count }))
+		.sort((a, b) => a.value - b.value);
+}
+
+async function requirePublishedTest(slug: string): Promise<PublishedTest> {
 	const test = await repo.findSpaceTestBySlug(slug);
 	if (!test || test.status !== 'PUBLISHED') {
 		throw new AppError('Không tìm thấy bài test', 404);
 	}
+	return test;
+}
 
-	const attached = await repo.findActivePoolByTestId(test.id);
-	const pool =
-		attached.length > 0
-			? attached
-			: await repo.findActivePool({
-					subjectId: test.subjectId,
-					topics: test.topics,
-					difficulties: test.difficulties,
-					classifications: test.classifications,
-				});
-
-	if (pool.length === 0) {
+export async function getPlayOptions(slug: string): Promise<TestPlayOptions> {
+	const test = await requirePublishedTest(slug);
+	const meta = await resolvePoolMeta(test);
+	if (meta.length === 0) {
 		throw new AppError('Ngân hàng câu hỏi trống cho bài test này', 422);
 	}
 
-	const sampled = sampleBalancedQuestions(pool, test.questionCount);
+	return {
+		title: test.title,
+		subject: test.subject.name,
+		defaultQuestionCount: test.questionCount,
+		poolSize: meta.length,
+		difficulties: countByNumber(meta.map((m) => m.difficulty)),
+		learningObjectives: countByString(meta.map((m) => m.learningObjective)),
+	};
+}
+
+export async function countPlayPool(
+	slug: string,
+	filters: PlayPoolFiltersInput,
+): Promise<PlayPoolCountResult> {
+	const test = await requirePublishedTest(slug);
+	const { pool } = await resolveBasePool(test, filters);
+	return { count: pool.length };
+}
+
+export async function startSession(
+	slug: string,
+	input?: StartSessionInput,
+): Promise<SessionStartResult> {
+	const test = await requirePublishedTest(slug);
+	const mode = input?.mode ?? 'default';
+
+	const userFilters: PoolFilters | undefined =
+		mode === 'custom'
+			? {
+					difficulties: input?.difficulties,
+					learningObjectives: input?.learningObjectives,
+				}
+			: undefined;
+
+	const { pool } = await resolveBasePool(test, userFilters);
+
+	if (pool.length === 0) {
+		throw new AppError(
+			mode === 'custom'
+				? 'Không có câu hỏi phù hợp với bộ lọc đã chọn'
+				: 'Ngân hàng câu hỏi trống cho bài test này',
+			422,
+		);
+	}
+
+	const questionCount =
+		mode === 'custom' && input?.questionCount !== undefined
+			? input.questionCount
+			: test.questionCount;
+
+	if (mode === 'custom' && questionCount > pool.length) {
+		throw new AppError(
+			`Chỉ có ${pool.length} câu phù hợp với bộ lọc đã chọn`,
+			422,
+		);
+	}
+
+	const sampled = sampleBalancedQuestions(pool, questionCount);
 	const session = await repo.createSession(
 		test.id,
 		sampled.map((q) => q.id),
