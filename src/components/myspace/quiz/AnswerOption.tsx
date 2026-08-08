@@ -16,42 +16,54 @@ interface AnswerOptionProps {
 	reduceMotion?: boolean;
 }
 
-function RadioGlyph({ state }: { state: AnswerOptionState }) {
+function LetterGlyph({
+	optionKey,
+	state,
+}: {
+	optionKey: McqCorrectOption;
+	state: AnswerOptionState;
+}) {
+	const base =
+		'flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-[0.75rem] font-semibold tracking-[0.04em]';
+
 	if (state === 'correct') {
 		return (
-			<span
-				className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success text-[0.75rem] font-bold text-canvas"
-				aria-hidden
-			>
-				✓
+			<span className={`${base} bg-success text-canvas`} aria-hidden>
+				{optionKey}
 			</span>
 		);
 	}
 	if (state === 'wrongPick') {
 		return (
-			<span
-				className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-error text-[0.75rem] font-bold text-canvas"
-				aria-hidden
-			>
-				✕
+			<span className={`${base} bg-error text-canvas`} aria-hidden>
+				{optionKey}
 			</span>
 		);
 	}
 	if (state === 'selected' || state === 'checking') {
 		return (
+			<span className={`${base} bg-accent text-canvas`} aria-hidden>
+				{optionKey}
+			</span>
+		);
+	}
+	if (state === 'other') {
+		return (
 			<span
-				className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-accent bg-accent"
+				className={`${base} border border-hairline bg-canvas text-ink-secondary`}
 				aria-hidden
 			>
-				<span className="h-2 w-2 rounded-full bg-canvas" />
+				{optionKey}
 			</span>
 		);
 	}
 	return (
 		<span
-			className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-hairline bg-canvas"
+			className={`${base} border border-hairline bg-canvas text-ink-secondary`}
 			aria-hidden
-		/>
+		>
+			{optionKey}
+		</span>
 	);
 }
 
@@ -75,8 +87,6 @@ function textTone(state: AnswerOptionState): string {
 	switch (state) {
 		case 'other':
 			return 'text-ink-secondary';
-		case 'wrongPick':
-			return 'text-ink';
 		default:
 			return 'text-ink';
 	}
@@ -93,7 +103,11 @@ export default function AnswerOption({
 	onKeyDown,
 	reduceMotion = false,
 }: AnswerOptionProps) {
-	const checked = state === 'selected' || state === 'checking' || state === 'correct' || state === 'wrongPick';
+	const checked =
+		state === 'selected' ||
+		state === 'checking' ||
+		state === 'correct' ||
+		state === 'wrongPick';
 	const pulse =
 		!reduceMotion && (state === 'correct' || state === 'wrongPick')
 			? 'animate-[quiz-pulse_0.4s_ease-out]'
@@ -101,48 +115,25 @@ export default function AnswerOption({
 
 	const content = (
 		<>
-			<span className="flex items-start gap-3 pt-0.5">
-				<RadioGlyph state={state} />
-				<span
-					className={`font-mono text-[0.8125rem] font-semibold tracking-[0.08em] ${
-						state === 'correct'
-							? 'text-success'
-							: state === 'wrongPick'
-								? 'text-error'
-								: state === 'selected' || state === 'checking'
-									? 'text-accent'
-									: 'text-ink-secondary'
-					}`}
-				>
-					{optionKey}
-				</span>
+			<span className="flex items-start pt-0.5">
+				<LetterGlyph optionKey={optionKey} state={state} />
 			</span>
 			<span className={`min-w-0 font-sans text-base leading-[1.6] ${textTone(state)}`}>
 				<span className="break-words">{text}</span>
-				{state === 'correct' ? (
-					<span className="ml-2 inline-block align-middle font-mono text-[0.6875rem] font-semibold tracking-[0.08em] text-success uppercase">
-						Đáp án đúng
-					</span>
-				) : null}
-				{state === 'wrongPick' ? (
-					<span className="ml-2 inline-block align-middle font-mono text-[0.6875rem] font-semibold tracking-[0.08em] text-error uppercase">
-						Bạn chọn
-					</span>
-				) : null}
 				{state === 'checking' ? (
 					<span className="ml-2 inline-flex items-center gap-1.5 align-middle font-mono text-[0.6875rem] tracking-[0.06em] text-ink-secondary">
 						<span
 							className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-hairline border-t-ink-secondary"
 							aria-hidden
 						/>
-						Đang kiểm tra…
+						Checking…
 					</span>
 				) : null}
 			</span>
 		</>
 	);
 
-	const baseClass = `grid w-full min-h-12 grid-cols-[4.5rem_1fr] gap-3 border-b border-hairline px-3 py-3.5 text-left transition-[background-color,color] duration-300 sm:grid-cols-[5rem_1fr] sm:gap-4 sm:px-4 sm:py-4 ${rowTone(state)} ${pulse}`;
+	const baseClass = `grid w-full min-h-12 grid-cols-[2.5rem_1fr] gap-3 border-b border-hairline px-3 py-3.5 text-left transition-[background-color,color] duration-300 sm:gap-4 sm:px-4 sm:py-4 ${rowTone(state)} ${pulse}`;
 
 	if (readOnly) {
 		return (

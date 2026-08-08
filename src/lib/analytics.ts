@@ -30,6 +30,9 @@ export const ANALYTICS_EVENTS = [
 	'contact_open',
 	'home_need_select',
 	'service_proof_click',
+	'myspace_test_start',
+	'myspace_test_complete',
+	'myspace_test_restart',
 ] as const;
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];

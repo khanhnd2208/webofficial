@@ -6,6 +6,8 @@ import { useCallback, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { routes } from '@/config/routes';
 import type { PublicSubjectGroup } from '@/features/myspace-tests';
 
+import { buildTestMetaLine } from './format';
+
 function formatIndex(n: number): string {
 	return String(n).padStart(2, '0');
 }
@@ -19,33 +21,43 @@ function TestList({
 }) {
 	return (
 		<ul className="divide-y divide-hairline border-t border-hairline" data-testid={listTestId}>
-			{tests.map((test) => (
-				<li key={test.slug} data-testid={`myspace-test-${test.slug}`}>
-					<div className="relative flex flex-col gap-3 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-						<div className="pointer-events-none min-w-0 flex-1">
-							<h3 className="font-display text-[clamp(1.15rem,2.2vw,1.35rem)] font-medium leading-snug tracking-tight text-ink text-balance">
-								{test.title}
-							</h3>
-							<p className="mt-1.5 font-sans text-sm text-ink-secondary">
-								{test.questionCount} câu
+			{tests.map((test) => {
+				const meta = buildTestMetaLine({
+					questionCount: test.questionCount,
+					attemptedCount: test.attemptedCount,
+					completedCount: test.completedCount,
+					avgScorePercent: test.avgScorePercent,
+					avgDurationMs: test.avgDurationMs,
+				});
+
+				return (
+					<li key={test.slug} data-testid={`myspace-test-${test.slug}`}>
+						<div className="relative flex flex-col gap-3 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+							<div className="pointer-events-none min-w-0 flex-1">
+								<h3 className="font-display text-[clamp(1.15rem,2.2vw,1.35rem)] font-medium leading-snug tracking-tight text-ink text-balance">
+									{test.title}
+								</h3>
 								{test.description ? (
-									<span className="mt-1 block line-clamp-2 leading-[1.55]">
+									<p className="mt-1.5 font-sans text-sm leading-[1.55] text-ink-secondary line-clamp-2">
 										{test.description}
-									</span>
+									</p>
 								) : null}
-							</p>
+								<p className="mt-2 font-sans text-sm tabular-nums text-ink-secondary">
+									{meta}
+								</p>
+							</div>
+							<Link
+								href={routes.mySpaceTestPlay(test.slug)}
+								className="z-10 inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-[var(--radius-sm)] border border-ink bg-ink px-4 font-sans text-sm font-semibold text-canvas transition-colors after:absolute after:inset-0 after:z-[1] after:content-[''] hover:bg-transparent hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+								data-testid={`myspace-test-start-${test.slug}`}
+							>
+								Start
+								<span aria-hidden>→</span>
+							</Link>
 						</div>
-						<Link
-							href={routes.mySpaceTestPlay(test.slug)}
-							className="z-10 inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-[var(--radius-sm)] border border-ink bg-ink px-4 font-sans text-sm font-semibold text-canvas transition-colors after:absolute after:inset-0 after:z-[1] after:content-[''] hover:bg-transparent hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-							data-testid={`myspace-test-start-${test.slug}`}
-						>
-							Bắt đầu
-							<span aria-hidden>→</span>
-						</Link>
-					</div>
-				</li>
-			))}
+					</li>
+				);
+			})}
 		</ul>
 	);
 }
@@ -64,11 +76,14 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 		setActiveIndex(index);
 	}, []);
 
-	const focusTab = useCallback((index: number) => {
-		const clamped = Math.max(0, Math.min(index, groups.length - 1));
-		setActiveIndex(clamped);
-		tabRefs.current[clamped]?.focus();
-	}, [groups.length]);
+	const focusTab = useCallback(
+		(index: number) => {
+			const clamped = Math.max(0, Math.min(index, groups.length - 1));
+			setActiveIndex(clamped);
+			tabRefs.current[clamped]?.focus();
+		},
+		[groups.length],
+	);
 
 	function onTabKeyDown(e: KeyboardEvent<HTMLButtonElement>, index: number) {
 		if (groups.length === 0) return;
@@ -93,7 +108,7 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 				className="mt-12 rounded-[var(--radius-sm)] border border-hairline bg-paper/40 px-5 py-8 font-sans text-base text-ink-secondary"
 				role="status"
 			>
-				Chưa có bài test nào được xuất bản.
+				No published tests yet.
 			</p>
 		);
 	}
@@ -127,7 +142,8 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 									</span>
 									<span className="flex shrink-0 items-center gap-2">
 										<span className="font-mono text-[0.7rem] tracking-[0.08em] text-ink-secondary uppercase">
-											{group.tests.length} bài
+											{group.tests.length}{' '}
+											{group.tests.length === 1 ? 'test' : 'tests'}
 										</span>
 										<span
 											aria-hidden
@@ -152,12 +168,12 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 
 			{/* Desktop master-detail with tab semantics */}
 			<div className="hidden lg:grid lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] xl:gap-14">
-				<nav aria-label="Môn học" data-testid="myspace-subjects-nav">
+				<nav aria-label="Subjects" data-testid="myspace-subjects-nav">
 					<p
 						id={tablistId}
 						className="font-mono text-[0.7rem] tracking-[0.14em] text-ink-secondary uppercase"
 					>
-						Môn học
+						Subjects
 					</p>
 					<ul
 						className="mt-4 divide-y divide-hairline border-y border-hairline"
@@ -226,17 +242,7 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 					data-testid="myspace-subject-panel"
 				>
 					{active ? (
-						<>
-							<header className="border-t border-hairline pt-4">
-								<p className="font-mono text-[0.7rem] tracking-[0.14em] text-accent uppercase">
-									{active.subject}
-								</p>
-								<p className="mt-2 font-sans text-sm text-ink-secondary">
-									{active.tests.length} bài test · chọn một bài để bắt đầu
-								</p>
-							</header>
-							<TestList tests={active.tests} listTestId="myspace-tests-list" />
-						</>
+						<TestList tests={active.tests} listTestId="myspace-tests-list" />
 					) : null}
 				</section>
 			</div>

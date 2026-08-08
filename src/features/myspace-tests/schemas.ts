@@ -89,9 +89,15 @@ export const startSessionSchema = z
 		questionCount: z.number().int().min(1).max(200).optional(),
 		difficulties: z.array(z.number().int().min(1).max(10)).max(10).optional(),
 		learningObjectives: z.array(z.string().trim().min(1).max(1_000)).max(100).optional(),
+		/** Reuse a prepared question set (e.g. after first answer). */
+		questionIds: z.array(z.string().min(1)).min(1).max(200).optional(),
+		/** Persist session row. False = preview/prepare only (no DB write). */
+		persist: z.boolean().default(true),
+		/** Mark as real attempt (answered ≥1). Use when creating on first answer. */
+		engage: z.boolean().default(false),
 	})
 	.superRefine((val, ctx) => {
-		if (val.mode === 'custom' && val.questionCount === undefined) {
+		if (val.mode === 'custom' && val.questionCount === undefined && !val.questionIds) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
 				message: 'Số câu bắt buộc khi chọn chế độ tự điều chỉnh',

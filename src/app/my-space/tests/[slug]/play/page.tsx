@@ -10,7 +10,7 @@ import QuizPlayClient from './QuizPlayClient';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-	title: 'Làm bài | Tests',
+	title: 'Take test | Tests',
 	robots: { index: false, follow: false },
 };
 
@@ -23,7 +23,7 @@ export default async function MySpaceTestPlayPage({
 
 	let session: SessionStartResult;
 	try {
-		session = await myspaceTestsService.startSession(slug);
+		session = await myspaceTestsService.preparePlay(slug);
 	} catch (err) {
 		if (err instanceof AppError && err.status === 404) notFound();
 		if (err instanceof AppError) {

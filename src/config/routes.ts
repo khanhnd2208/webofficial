@@ -100,6 +100,7 @@ export const routes = {
 		myspaceTests: '/admin/myspace-tests',
 		myspaceTestNew: '/admin/myspace-tests/new',
 		myspaceTestEdit: (id: string) => `/admin/myspace-tests/${id}` as const,
+		myspaceTestAnalytics: '/admin/myspace-tests/analytics',
 		myspaceQuestions: '/admin/myspace-tests/questions',
 		myspaceQuestionsImport: '/admin/myspace-tests/import',
 		myspaceSubjects: '/admin/myspace-tests/subjects',

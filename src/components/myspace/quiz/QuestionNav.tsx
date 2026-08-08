@@ -43,15 +43,15 @@ function cellClass(status: QuestionNavStatus): string {
 function statusLabel(status: QuestionNavStatus, n: number): string {
 	switch (status) {
 		case 'correct':
-			return `Câu ${n}, đúng`;
+			return `Question ${n}, correct`;
 		case 'wrong':
-			return `Câu ${n}, sai`;
+			return `Question ${n}, incorrect`;
 		case 'current':
-			return `Câu ${n}, đang làm`;
+			return `Question ${n}, current`;
 		case 'locked':
-			return `Câu ${n}, chưa tới`;
+			return `Question ${n}, locked`;
 		default:
-			return `Câu ${n}`;
+			return `Question ${n}`;
 	}
 }
 
@@ -69,7 +69,7 @@ export default function QuestionNav({
 			<div
 				className={`grid gap-2 ${compact ? 'grid-cols-6 sm:grid-cols-8' : 'grid-cols-5'}`}
 				role="group"
-				aria-label="Danh sách câu hỏi"
+				aria-label="Question list"
 			>
 				{Array.from({ length: total }, (_, i) => {
 					const qId = questionIds[i];
@@ -87,7 +87,7 @@ export default function QuestionNav({
 							key={qId ?? i}
 							type="button"
 							disabled={locked}
-							title={locked ? 'Chưa tới câu này' : undefined}
+							title={locked ? 'Not available yet' : undefined}
 							aria-label={statusLabel(status, i + 1)}
 							aria-current={i === currentIndex ? 'step' : undefined}
 							aria-disabled={locked}
@@ -100,34 +100,6 @@ export default function QuestionNav({
 					);
 				})}
 			</div>
-
-			<ul
-				className="mt-4 flex flex-wrap gap-x-4 gap-y-2 font-sans text-[0.75rem] text-ink-secondary"
-				aria-label="Chú giải trạng thái câu hỏi"
-			>
-				<li className="inline-flex items-center gap-1.5">
-					<span className="inline-block h-3 w-3 rounded-sm bg-success" aria-hidden />
-					Đúng
-				</li>
-				<li className="inline-flex items-center gap-1.5">
-					<span className="inline-block h-3 w-3 rounded-sm bg-error" aria-hidden />
-					Sai
-				</li>
-				<li className="inline-flex items-center gap-1.5">
-					<span
-						className="inline-block h-3 w-3 rounded-sm border-2 border-ink bg-canvas"
-						aria-hidden
-					/>
-					Đang làm
-				</li>
-				<li className="inline-flex items-center gap-1.5">
-					<span
-						className="inline-block h-3 w-3 rounded-sm border border-hairline bg-paper"
-						aria-hidden
-					/>
-					Chưa tới
-				</li>
-			</ul>
 		</div>
 	);
 }

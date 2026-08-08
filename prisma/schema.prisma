@@ -314,10 +314,14 @@ model SpaceTestSession {
   questionIds  String[]
   score        Int?
   total        Int?
+  /// Set when the learner answers the first question (real attempt).
+  engagedAt    DateTime?
   submittedAt  DateTime?
   createdAt    DateTime  @default(now())
 
   spaceTest SpaceTest @relation(fields: [spaceTestId], references: [id], onDelete: Cascade)
 
   @@index([spaceTestId, createdAt(sort: Desc)])
+  @@index([spaceTestId, engagedAt])
+  @@index([spaceTestId, submittedAt])
 }

@@ -1,15 +1,13 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 
 import SubjectExplorer from '@/components/myspace/tests/SubjectExplorer';
 import { myspaceTestsService } from '@/features/myspace-tests';
-import { routes } from '@/config/routes';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
 	title: 'Tests | My Space',
-	description: 'Bài kiểm tra trắc nghiệm trong My Space — chọn môn, chọn bài, làm bài.',
+	description: 'Practice tests in My Space — pick a subject, choose a test, start.',
 };
 
 export default async function MySpaceTestsPage() {
@@ -29,19 +27,11 @@ export default async function MySpaceTestsPage() {
 						Tests
 					</h1>
 					<p className="mt-4 text-base leading-[1.7] text-ink-secondary">
-						Chọn môn học, rồi chọn bài test. Câu hỏi lấy ngẫu nhiên trong bài. Mỗi câu
-						báo đúng/sai ngay — đáp án đã chọn không đổi được.
+						Pick a subject, then a test. Answers are checked as you go.
 					</p>
 				</header>
 
 				<SubjectExplorer groups={groups} />
-
-				<Link
-					href={routes.mySpace}
-					className="mt-12 inline-block font-sans text-sm text-ink-secondary transition-colors hover:text-ink"
-				>
-					← My Space
-				</Link>
 			</div>
 		</main>
 	);

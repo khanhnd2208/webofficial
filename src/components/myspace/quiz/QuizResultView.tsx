@@ -32,7 +32,6 @@ export default function QuizResultView({
 	isPending = false,
 }: QuizResultViewProps) {
 	const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
-	const wrong = result.total - result.score;
 	const headingRef = useRef<HTMLHeadingElement>(null);
 
 	useEffect(() => {
@@ -45,9 +44,9 @@ export default function QuizResultView({
 			data-testid="myspace-quiz-result"
 		>
 			<div className="shell">
-				<section className="rounded-[var(--radius-sm)] border border-hairline bg-paper/40 p-5 sm:p-8">
+				<header className="border-t border-hairline pt-6">
 					<p className="font-mono text-[0.75rem] font-semibold tracking-[0.1em] text-accent uppercase">
-						Kết quả
+						Results
 					</p>
 					<h1
 						ref={headingRef}
@@ -60,55 +59,30 @@ export default function QuizResultView({
 					<p className="mt-3 font-sans text-base text-ink-secondary">
 						{pct}% · {title}
 					</p>
+				</header>
 
-					<dl className="mt-8 grid grid-cols-3 gap-3 border-t border-hairline pt-6 sm:gap-6">
-						<div>
-							<dt className="font-mono text-[0.75rem] tracking-[0.06em] text-ink-secondary uppercase">
-								Đúng
-							</dt>
-							<dd className="mt-1 font-sans text-xl font-semibold text-success">
-								{result.score}
-							</dd>
-						</div>
-						<div>
-							<dt className="font-mono text-[0.75rem] tracking-[0.06em] text-ink-secondary uppercase">
-								Sai
-							</dt>
-							<dd className="mt-1 font-sans text-xl font-semibold text-error">{wrong}</dd>
-						</div>
-						<div>
-							<dt className="font-mono text-[0.75rem] tracking-[0.06em] text-ink-secondary uppercase">
-								Tổng
-							</dt>
-							<dd className="mt-1 font-sans text-xl font-semibold text-ink">
-								{result.total}
-							</dd>
-						</div>
-					</dl>
-				</section>
-
-				<ol className="mt-8 space-y-6">
+				<ol className="mt-10 space-y-5">
 					{result.review.map((item, i) => (
 						<li
 							key={item.questionId}
-							className="rounded-[var(--radius-sm)] border border-hairline bg-paper/40 p-4 sm:p-6"
+							className="border-t border-hairline pt-5"
 						>
 							<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 								<span className="font-mono text-[0.8125rem] font-semibold text-ink-secondary">
-									Câu {i + 1}
+									Question {i + 1}
 								</span>
 								<span
 									className={`font-sans text-sm font-semibold ${
 										item.isCorrect ? 'text-success' : 'text-error'
 									}`}
 								>
-									{item.isCorrect ? 'Đúng' : 'Sai'}
+									{item.isCorrect ? 'Correct' : 'Incorrect'}
 								</span>
 							</div>
 							<p className="mt-3 max-w-[62ch] font-sans text-base leading-[1.65] text-ink break-words">
 								{item.stem}
 							</p>
-							<ul className="mt-5 border-t border-hairline">
+							<ul className="mt-4 border-t border-hairline">
 								{item.options.map((opt) => (
 									<AnswerOption
 										key={opt.key}
@@ -134,7 +108,7 @@ export default function QuizResultView({
 						disabled={isPending}
 						className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] border border-ink bg-ink px-5 font-sans text-sm font-semibold text-canvas transition-colors hover:bg-transparent hover:text-ink disabled:opacity-50"
 					>
-						{isPending ? 'Đang tạo bài…' : 'Làm lại'}
+						{isPending ? 'Preparing…' : 'Try again'}
 					</button>
 					<Link
 						href={routes.mySpaceTests}

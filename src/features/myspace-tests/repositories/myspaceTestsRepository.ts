@@ -2,6 +2,12 @@ import type { McqQuestion, PublishStatus, SpaceTest, Subject } from '@prisma/cli
 
 import { prisma } from '@/lib/prisma';
 
+import {
+	avgDurationMs,
+	isQualifyingAttempt,
+	isQualifyingCompletion,
+	sessionDurationMs,
+} from '../sessionStats';
 import type {
 	CreateSpaceTestInput,
 	UpdateMcqQuestionInput,
@@ -615,9 +621,18 @@ export async function deleteSpaceTest(id: string): Promise<boolean> {
 	return true;
 }
 
-export async function createSession(spaceTestId: string, questionIds: string[]) {
+export async function createSession(
+	spaceTestId: string,
+	questionIds: string[],
+	options?: { engaged?: boolean },
+) {
+	const now = new Date();
 	return prisma.spaceTestSession.create({
-		data: { spaceTestId, questionIds },
+		data: {
+			spaceTestId,
+			questionIds,
+			...(options?.engaged ? { engagedAt: now } : {}),
+		},
 	});
 }
 
@@ -628,14 +643,28 @@ export async function findSessionById(id: string) {
 	});
 }
 
+/** Marks first real answer; no-op if already engaged or missing. */
+export async function markSessionEngaged(id: string): Promise<void> {
+	await prisma.spaceTestSession.updateMany({
+		where: { id, engagedAt: null },
+		data: { engagedAt: new Date() },
+	});
+}
+
 export async function submitSession(
 	id: string,
 	score: number,
 	total: number,
 ): Promise<void> {
+	const now = new Date();
 	await prisma.spaceTestSession.update({
 		where: { id },
-		data: { score, total, submittedAt: new Date() },
+		data: { score, total, submittedAt: now },
+	});
+	// Ensure engaged even if /check was skipped; do not overwrite existing engagedAt
+	await prisma.spaceTestSession.updateMany({
+		where: { id, engagedAt: null },
+		data: { engagedAt: now },
 	});
 }
 
@@ -644,6 +673,219 @@ export async function findQuestionsByIds(ids: string[]): Promise<McqQuestion[]> 
 	const rows = await prisma.mcqQuestion.findMany({ where: { id: { in: ids } } });
 	const byId = new Map(rows.map((r) => [r.id, r]));
 	return ids.map((id) => byId.get(id)).filter((r): r is McqQuestion => Boolean(r));
+}
+
+function avgScorePercent(
+	rows: Array<{ score: number | null; total: number | null }>,
+): number | null {
+	const scored = rows.filter(
+		(r): r is { score: number; total: number } =>
+			typeof r.score === 'number' && typeof r.total === 'number' && r.total > 0,
+	);
+	if (scored.length === 0) return null;
+	const sum = scored.reduce((acc, r) => acc + (r.score / r.total) * 100, 0);
+	return Math.round((sum / scored.length) * 10) / 10;
+}
+
+export async function getAttemptStatsByTest(): Promise<
+	import('../types').SpaceTestAttemptStats[]
+> {
+	const tests = await prisma.spaceTest.findMany({
+		select: { id: true, slug: true, title: true, status: true },
+		orderBy: { updatedAt: 'desc' },
+	});
+	if (tests.length === 0) return [];
+
+	const sessions = await prisma.spaceTestSession.findMany({
+		select: {
+			spaceTestId: true,
+			createdAt: true,
+			engagedAt: true,
+			submittedAt: true,
+			score: true,
+			total: true,
+		},
+	});
+
+	const byTest = new Map<
+		string,
+		{
+			opened: number;
+			engaged: number;
+			completed: number;
+			scored: Array<{ score: number | null; total: number | null }>;
+			durations: number[];
+			lastCompletedAt: Date | null;
+		}
+	>();
+
+	for (const t of tests) {
+		byTest.set(t.id, {
+			opened: 0,
+			engaged: 0,
+			completed: 0,
+			scored: [],
+			durations: [],
+			lastCompletedAt: null,
+		});
+	}
+
+	for (const s of sessions) {
+		const bucket = byTest.get(s.spaceTestId);
+		if (!bucket) continue;
+		bucket.opened += 1;
+
+		const timing = {
+			createdAt: s.createdAt,
+			engagedAt: s.engagedAt,
+			submittedAt: s.submittedAt,
+		};
+
+		if (isQualifyingAttempt(timing)) {
+			bucket.engaged += 1;
+		}
+		if (isQualifyingCompletion(timing)) {
+			bucket.completed += 1;
+			bucket.scored.push({ score: s.score, total: s.total });
+			bucket.durations.push(sessionDurationMs(timing));
+			if (!bucket.lastCompletedAt || s.submittedAt! > bucket.lastCompletedAt) {
+				bucket.lastCompletedAt = s.submittedAt;
+			}
+		}
+	}
+
+	return tests.map((t) => {
+		const b = byTest.get(t.id)!;
+		return {
+			spaceTestId: t.id,
+			slug: t.slug,
+			title: t.title,
+			status: t.status,
+			opened: b.opened,
+			engaged: b.engaged,
+			completed: b.completed,
+			avgScorePercent: avgScorePercent(b.scored),
+			avgDurationMs: avgDurationMs(b.durations),
+			lastCompletedAt: b.lastCompletedAt?.toISOString() ?? null,
+		};
+	});
+}
+
+export async function getAnalyticsOverview(
+	days = 30,
+): Promise<import('../types').SpaceTestAnalyticsOverview> {
+	const since = new Date();
+	since.setUTCDate(since.getUTCDate() - Math.max(1, days) + 1);
+	since.setUTCHours(0, 0, 0, 0);
+
+	const [byTest, recent, windowSessions] = await Promise.all([
+		getAttemptStatsByTest(),
+		prisma.spaceTestSession.findMany({
+			where: { submittedAt: { not: null } },
+			orderBy: { submittedAt: 'desc' },
+			take: 40,
+			select: {
+				id: true,
+				score: true,
+				total: true,
+				createdAt: true,
+				engagedAt: true,
+				submittedAt: true,
+				spaceTest: { select: { slug: true, title: true } },
+			},
+		}),
+		prisma.spaceTestSession.findMany({
+			where: { createdAt: { gte: since } },
+			select: {
+				createdAt: true,
+				engagedAt: true,
+				submittedAt: true,
+			},
+		}),
+	]);
+
+	const totals = {
+		opened: byTest.reduce((a, t) => a + t.opened, 0),
+		engaged: byTest.reduce((a, t) => a + t.engaged, 0),
+		completed: byTest.reduce((a, t) => a + t.completed, 0),
+		avgScorePercent: (() => {
+			const withAvg = byTest.filter((t) => t.avgScorePercent != null && t.completed > 0);
+			if (withAvg.length === 0) return null;
+			const weighted = withAvg.reduce(
+				(acc, t) => ({
+					sum: acc.sum + (t.avgScorePercent as number) * t.completed,
+					n: acc.n + t.completed,
+				}),
+				{ sum: 0, n: 0 },
+			);
+			return weighted.n === 0
+				? null
+				: Math.round((weighted.sum / weighted.n) * 10) / 10;
+		})(),
+	};
+
+	const dayMap = new Map<
+		string,
+		{ opened: number; engaged: number; completed: number }
+	>();
+	for (let i = 0; i < days; i++) {
+		const d = new Date(since);
+		d.setUTCDate(since.getUTCDate() + i);
+		const key = d.toISOString().slice(0, 10);
+		dayMap.set(key, { opened: 0, engaged: 0, completed: 0 });
+	}
+
+	for (const s of windowSessions) {
+		const openKey = s.createdAt.toISOString().slice(0, 10);
+		const openBucket = dayMap.get(openKey);
+		if (openBucket) openBucket.opened += 1;
+
+		const timing = {
+			createdAt: s.createdAt,
+			engagedAt: s.engagedAt,
+			submittedAt: s.submittedAt,
+		};
+
+		if (isQualifyingAttempt(timing) && (s.engagedAt || s.submittedAt)) {
+			const engKey = (s.engagedAt ?? s.createdAt).toISOString().slice(0, 10);
+			const engBucket = dayMap.get(engKey);
+			if (engBucket) engBucket.engaged += 1;
+		}
+		if (isQualifyingCompletion(timing) && s.submittedAt) {
+			const subKey = s.submittedAt.toISOString().slice(0, 10);
+			const subBucket = dayMap.get(subKey);
+			if (subBucket) subBucket.completed += 1;
+		}
+	}
+
+	const daily = [...dayMap.entries()].map(([date, v]) => ({ date, ...v }));
+
+	return {
+		totals,
+		byTest,
+		daily,
+		recentCompletions: recent
+			.filter(
+				(r) =>
+					r.submittedAt &&
+					r.score != null &&
+					r.total != null &&
+					isQualifyingCompletion({
+						createdAt: r.createdAt,
+						engagedAt: r.engagedAt,
+						submittedAt: r.submittedAt,
+					}),
+			)
+			.slice(0, 20)
+			.map((r) => ({
+				id: r.id,
+				slug: r.spaceTest.slug,
+				title: r.spaceTest.title,
+				score: r.score as number,
+				total: r.total as number,
+				submittedAt: r.submittedAt!.toISOString(),
+			})),
+	};
 }
 
 export { mapQuestion, mapSpaceTest, mapSubject };

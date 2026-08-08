@@ -17,6 +17,7 @@ import {
 } from '@/components/myspace/quiz';
 import { routes } from '@/config/routes';
 import type { CheckAnswerResult, SessionStartResult } from '@/features/myspace-tests';
+import { trackEvent } from '@/lib/analytics';
 
 const KEY_TO_OPTION: Record<string, McqCorrectOption> = {
 	a: 'A',
@@ -39,7 +40,7 @@ export default function QuizPlayClient({
 	const reduceMotion = useReducedMotion() ?? false;
 	const [phase, setPhase] = useState<QuizPhase>('playing');
 	const [error, setError] = useState<string | null>(null);
-	const [sessionId, setSessionId] = useState(initialSession.sessionId);
+	const [sessionId, setSessionId] = useState<string | null>(initialSession.sessionId);
 	const [title, setTitle] = useState(initialSession.title);
 	const [subject, setSubject] = useState(initialSession.subject);
 	const [questions, setQuestions] = useState<PublicQuizQuestion[]>(initialSession.questions);
@@ -52,6 +53,19 @@ export default function QuizPlayClient({
 	const [isPending, startTransition] = useTransition();
 	const stemRef = useRef<HTMLHeadingElement>(null);
 	const prevIndexRef = useRef(index);
+	const trackedStartRef = useRef(false);
+	const sessionIdRef = useRef<string | null>(initialSession.sessionId);
+	const ensuringSessionRef = useRef(false);
+
+	useEffect(() => {
+		sessionIdRef.current = sessionId;
+	}, [sessionId]);
+
+	useEffect(() => {
+		if (trackedStartRef.current) return;
+		trackedStartRef.current = true;
+		trackEvent('myspace_test_start', { slug });
+	}, [slug]);
 
 	const current = questions[index];
 	const currentReveal = current ? reveals[current.id] : undefined;
@@ -61,6 +75,40 @@ export default function QuizPlayClient({
 	const correctCount = Object.values(reveals).filter((r) => r.isCorrect).length;
 	const questionIds = questions.map((q) => q.id);
 	const busyRestart = restarting || isPending;
+
+	/** Persist session on first answer — counts as attempted. */
+	const ensureEngagedSession = useCallback(async (): Promise<string> => {
+		if (sessionIdRef.current) return sessionIdRef.current;
+		if (ensuringSessionRef.current) {
+			throw new Error('Starting session…');
+		}
+		ensuringSessionRef.current = true;
+		try {
+			const res = await fetch(`/api/myspace-tests/${slug}/sessions`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					mode: 'default',
+					questionIds: questions.map((q) => q.id),
+					persist: true,
+					engage: true,
+				}),
+			});
+			const json = (await res.json()) as {
+				ok: boolean;
+				data?: SessionStartResult;
+				error?: string;
+			};
+			if (!json.ok || !json.data?.sessionId) {
+				throw new Error(json.error ?? 'Could not start the test');
+			}
+			sessionIdRef.current = json.data.sessionId;
+			setSessionId(json.data.sessionId);
+			return json.data.sessionId;
+		} finally {
+			ensuringSessionRef.current = false;
+		}
+	}, [questions, slug]);
 
 	async function restart() {
 		if (restarting) return;
@@ -72,28 +120,34 @@ export default function QuizPlayClient({
 		setResult(null);
 		setFocusKey('A');
 		try {
-			const res = await fetch(`/api/myspace-tests/${slug}/sessions`, { method: 'POST' });
+			const res = await fetch(`/api/myspace-tests/${slug}/sessions`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ mode: 'default', persist: false }),
+			});
 			const json = (await res.json()) as {
 				ok: boolean;
 				data?: SessionStartResult;
 				error?: string;
 			};
 			if (!json.ok || !json.data) {
-				setError(json.error ?? 'Không bắt đầu được bài');
+				setError(json.error ?? 'Could not start the test');
 				setPhase('error');
 				setRestarting(false);
 				return;
 			}
 			startTransition(() => {
-				setSessionId(json.data!.sessionId);
+				sessionIdRef.current = null;
+				setSessionId(null);
 				setTitle(json.data!.title);
 				setSubject(json.data!.subject);
 				setQuestions(json.data!.questions);
 				setPhase('playing');
 				setRestarting(false);
 			});
+			trackEvent('myspace_test_restart', { slug });
 		} catch {
-			setError('Không kết nối được server');
+			setError('Could not connect to the server');
 			setPhase('error');
 			setRestarting(false);
 		}
@@ -105,8 +159,9 @@ export default function QuizPlayClient({
 			setPhase('checking');
 			setAnswers((prev) => ({ ...prev, [current.id]: key }));
 			try {
+				const activeSessionId = await ensureEngagedSession();
 				const res = await fetch(
-					`/api/myspace-tests/${slug}/sessions/${sessionId}/check`,
+					`/api/myspace-tests/${slug}/sessions/${activeSessionId}/check`,
 					{
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
@@ -119,18 +174,18 @@ export default function QuizPlayClient({
 					error?: string;
 				};
 				if (!json.ok || !json.data) {
-					setError(json.error ?? 'Không kiểm tra được đáp án');
+					setError(json.error ?? 'Could not check the answer');
 					setPhase('error');
 					return;
 				}
 				setReveals((prev) => ({ ...prev, [current.id]: json.data! }));
 				setPhase('playing');
 			} catch {
-				setError('Không kết nối được server');
+				setError('Could not connect to the server');
 				setPhase('error');
 			}
 		},
-		[answered, current, phase, sessionId, slug],
+		[answered, current, ensureEngagedSession, phase, slug],
 	);
 
 	const goNext = useCallback(async () => {
@@ -142,6 +197,12 @@ export default function QuizPlayClient({
 		}
 		setPhase('submitting');
 		try {
+			const activeSessionId = sessionIdRef.current;
+			if (!activeSessionId) {
+				setError('Session is not ready');
+				setPhase('error');
+				return;
+			}
 			const payload = {
 				answers: questions.map((q) => ({
 					questionId: q.id,
@@ -149,7 +210,7 @@ export default function QuizPlayClient({
 				})),
 			};
 			const res = await fetch(
-				`/api/myspace-tests/${slug}/sessions/${sessionId}/submit`,
+				`/api/myspace-tests/${slug}/sessions/${activeSessionId}/submit`,
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -162,17 +223,21 @@ export default function QuizPlayClient({
 				error?: string;
 			};
 			if (!json.ok || !json.data) {
-				setError(json.error ?? 'Nộp bài thất bại');
+				setError(json.error ?? 'Could not submit the test');
 				setPhase('error');
 				return;
 			}
 			setResult(json.data);
 			setPhase('done');
+			trackEvent('myspace_test_complete', {
+				slug,
+				label: `${json.data.score}/${json.data.total}`,
+			});
 		} catch {
-			setError('Không kết nối được server');
+			setError('Could not connect to the server');
 			setPhase('error');
 		}
-	}, [answered, answers, current, index, questions, sessionId, slug]);
+	}, [answered, answers, current, index, questions, slug]);
 
 	const goPrev = useCallback(() => {
 		if (index <= 0) return;
@@ -271,7 +336,7 @@ export default function QuizPlayClient({
 					disabled={busyRestart}
 					className="mt-6 inline-flex min-h-11 items-center font-sans text-base font-medium text-ink underline decoration-ink/30 underline-offset-8 transition-colors hover:decoration-ink disabled:opacity-50"
 				>
-					{busyRestart ? 'Đang tạo bài…' : 'Thử lại'}
+					{busyRestart ? 'Preparing…' : 'Try again'}
 				</button>
 				<Link
 					href={routes.mySpaceTests}
@@ -298,7 +363,7 @@ export default function QuizPlayClient({
 		return (
 			<main className="flex min-h-svh items-center justify-center bg-canvas px-6">
 				<p className="font-sans text-base text-ink-secondary">
-					Không có câu hỏi trong session.
+					No questions in this session.
 				</p>
 			</main>
 		);

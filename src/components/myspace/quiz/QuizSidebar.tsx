@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useState } from 'react';
 
 import { routes } from '@/config/routes';
 
@@ -21,27 +21,6 @@ interface QuizSidebarProps {
 	onJump: (index: number) => void;
 }
 
-function Panel({
-	label,
-	children,
-	className = '',
-}: {
-	label: string;
-	children: ReactNode;
-	className?: string;
-}) {
-	return (
-		<section
-			className={`rounded-[var(--radius-sm)] border border-hairline bg-paper/40 p-4 sm:p-5 ${className}`}
-		>
-			<p className="font-mono text-[0.75rem] font-semibold tracking-[0.1em] text-accent uppercase">
-				{label}
-			</p>
-			<div className="mt-3">{children}</div>
-		</section>
-	);
-}
-
 export default function QuizSidebar({
 	title,
 	subject,
@@ -54,11 +33,12 @@ export default function QuizSidebar({
 	answered,
 	onJump,
 }: QuizSidebarProps) {
+	const [navOpen, setNavOpen] = useState(false);
 	const pct = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
 
 	return (
 		<aside
-			className="hidden space-y-4 lg:sticky lg:top-6 lg:block lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-y-auto"
+			className="hidden space-y-5 lg:sticky lg:top-6 lg:block lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-y-auto"
 			data-testid="myspace-quiz-sidebar"
 		>
 			<Link
@@ -69,49 +49,74 @@ export default function QuizSidebar({
 				← Tests
 			</Link>
 
-			<Panel label="Bài test">
-				<p className="font-display text-lg font-medium leading-snug tracking-tight text-ink text-balance">
+			<div>
+				<p className="font-mono text-[0.7rem] tracking-[0.14em] text-accent uppercase">
+					{subject}
+				</p>
+				<p className="mt-2 font-display text-lg font-medium leading-snug tracking-tight text-ink text-balance">
 					{title}
 				</p>
-				<p className="mt-2 font-sans text-sm text-ink-secondary">
-					{subject} · {total} câu
-				</p>
-			</Panel>
+			</div>
 
-			<Panel label="Câu hỏi">
-				<QuestionNav
-					total={total}
-					currentIndex={currentIndex}
-					reveals={reveals}
-					questionIds={questionIds}
-					answered={answered}
-					onJump={onJump}
-				/>
-			</Panel>
-
-			<Panel label="Tiến độ">
+			<div>
 				<p className="font-sans text-sm text-ink">
-					<span className="font-semibold">{answeredCount}</span>
-					<span className="text-ink-secondary"> / {total} đã làm</span>
-				</p>
-				<p className="mt-1.5 font-sans text-sm text-ink">
-					<span className="font-semibold text-success">{correctCount}</span>
-					<span className="text-ink-secondary"> đúng · {pct}%</span>
+					<span className="font-semibold tabular-nums">{answeredCount}</span>
+					<span className="text-ink-secondary"> / {total} answered</span>
+					{answeredCount > 0 ? (
+						<span className="text-ink-secondary">
+							{' '}
+							· <span className="font-semibold text-success">{correctCount}</span> correct
+						</span>
+					) : null}
 				</p>
 				<div
-					className="mt-3 h-2 overflow-hidden rounded-full bg-hairline"
+					className="mt-2.5 h-1 overflow-hidden rounded-full bg-hairline"
 					role="progressbar"
 					aria-valuenow={pct}
 					aria-valuemin={0}
 					aria-valuemax={100}
-					aria-label="Phần trăm hoàn thành"
+					aria-label="Completion percent"
 				>
 					<div
 						className="h-full rounded-full bg-ink transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
 						style={{ width: `${pct}%` }}
 					/>
 				</div>
-			</Panel>
+			</div>
+
+			<div>
+				<button
+					type="button"
+					onClick={() => setNavOpen((v) => !v)}
+					aria-expanded={navOpen}
+					aria-controls="myspace-quiz-desktop-nav"
+					className="inline-flex min-h-11 items-center gap-2 font-sans text-sm font-medium text-ink transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+					data-testid="myspace-quiz-nav-toggle"
+				>
+					{navOpen ? 'Hide questions' : 'All questions'}
+					<span
+						aria-hidden
+						className={`inline-block text-ink-secondary transition-transform duration-200 ${
+							navOpen ? 'rotate-180' : ''
+						}`}
+					>
+						▾
+					</span>
+				</button>
+
+				{navOpen ? (
+					<div id="myspace-quiz-desktop-nav" className="mt-3">
+						<QuestionNav
+							total={total}
+							currentIndex={currentIndex}
+							reveals={reveals}
+							questionIds={questionIds}
+							answered={answered}
+							onJump={onJump}
+						/>
+					</div>
+				) : null}
+			</div>
 		</aside>
 	);
 }

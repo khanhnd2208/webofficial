@@ -83,7 +83,15 @@ function toPublicQuestion(q: {
 	};
 }
 
-function toPublicListItem(t: SpaceTestDTO): PublicSpaceTestListItem {
+function toPublicListItem(
+	t: SpaceTestDTO,
+	stats?: {
+		engaged: number;
+		completed: number;
+		avgScorePercent: number | null;
+		avgDurationMs: number | null;
+	},
+): PublicSpaceTestListItem {
 	return {
 		slug: t.slug,
 		title: t.title,
@@ -91,6 +99,10 @@ function toPublicListItem(t: SpaceTestDTO): PublicSpaceTestListItem {
 		subject: t.subjectName,
 		subjectId: t.subjectId,
 		questionCount: t.questionCount,
+		attemptedCount: stats?.engaged ?? 0,
+		completedCount: stats?.completed ?? 0,
+		avgScorePercent: stats?.avgScorePercent ?? null,
+		avgDurationMs: stats?.avgDurationMs ?? null,
 	};
 }
 
@@ -336,9 +348,34 @@ export async function listAdminTestsWithCounts(): Promise<SpaceTestWithQuestionC
 	return repo.listSpaceTestsWithQuestionCounts();
 }
 
+export async function getAnalyticsOverview(days = 30) {
+	return repo.getAnalyticsOverview(days);
+}
+
+export async function getAttemptStatsByTest() {
+	return repo.getAttemptStatsByTest();
+}
+
 export async function listPublishedTests(): Promise<PublicSpaceTestListItem[]> {
-	const tests = await repo.listSpaceTests('PUBLISHED');
-	return tests.map(toPublicListItem);
+	const [tests, stats] = await Promise.all([
+		repo.listSpaceTests('PUBLISHED'),
+		repo.getAttemptStatsByTest(),
+	]);
+	const byId = new Map(stats.map((s) => [s.spaceTestId, s]));
+	return tests.map((t) => {
+		const s = byId.get(t.id);
+		return toPublicListItem(
+			t,
+			s
+				? {
+						engaged: s.engaged,
+						completed: s.completed,
+						avgScorePercent: s.avgScorePercent,
+						avgDurationMs: s.avgDurationMs,
+					}
+				: undefined,
+		);
+	});
 }
 
 export async function listPublishedTestsGrouped(): Promise<PublicSubjectGroup[]> {
@@ -581,43 +618,83 @@ export async function startSession(
 ): Promise<SessionStartResult> {
 	const test = await requirePublishedTest(slug);
 	const mode = input?.mode ?? 'default';
+	const persist = input?.persist ?? true;
+	const engage = input?.engage ?? false;
 
-	const userFilters: PoolFilters | undefined =
-		mode === 'custom'
-			? {
-					difficulties: input?.difficulties,
-					learningObjectives: input?.learningObjectives,
-				}
-			: undefined;
+	let questionIds = input?.questionIds;
+	let sampled: Awaited<ReturnType<typeof resolveBasePool>>['pool'] = [];
 
-	const { pool } = await resolveBasePool(test, userFilters);
-
-	if (pool.length === 0) {
-		throw new AppError(
+	if (questionIds && questionIds.length > 0) {
+		const questions = await repo.findQuestionsByIds(questionIds);
+		if (questions.length !== questionIds.length) {
+			throw new AppError('Danh sách câu hỏi không hợp lệ', 400);
+		}
+		const allowed = new Set(
+			(await resolveBasePool(test)).pool.map((q) => q.id),
+		);
+		if (questionIds.some((id) => !allowed.has(id))) {
+			throw new AppError('Câu hỏi không thuộc bài test này', 400);
+		}
+		sampled = questions.map((q) => ({
+			id: q.id,
+			topic: q.topic,
+			difficulty: q.difficulty,
+			stem: q.stem,
+			optionA: q.optionA,
+			optionB: q.optionB,
+			optionC: q.optionC,
+			optionD: q.optionD,
+			correctOption: q.correctOption,
+		}));
+	} else {
+		const userFilters: PoolFilters | undefined =
 			mode === 'custom'
-				? 'Không có câu hỏi phù hợp với bộ lọc đã chọn'
-				: 'Ngân hàng câu hỏi trống cho bài test này',
-			422,
-		);
+				? {
+						difficulties: input?.difficulties,
+						learningObjectives: input?.learningObjectives,
+					}
+				: undefined;
+
+		const resolved = await resolveBasePool(test, userFilters);
+		sampled = resolved.pool;
+
+		if (sampled.length === 0) {
+			throw new AppError(
+				mode === 'custom'
+					? 'Không có câu hỏi phù hợp với bộ lọc đã chọn'
+					: 'Ngân hàng câu hỏi trống cho bài test này',
+				422,
+			);
+		}
+
+		const questionCount =
+			mode === 'custom' && input?.questionCount !== undefined
+				? input.questionCount
+				: test.questionCount;
+
+		if (mode === 'custom' && questionCount > sampled.length) {
+			throw new AppError(
+				`Chỉ có ${sampled.length} câu phù hợp với bộ lọc đã chọn`,
+				422,
+			);
+		}
+
+		sampled = sampleBalancedQuestions(sampled, questionCount);
+		questionIds = sampled.map((q) => q.id);
 	}
 
-	const questionCount =
-		mode === 'custom' && input?.questionCount !== undefined
-			? input.questionCount
-			: test.questionCount;
-
-	if (mode === 'custom' && questionCount > pool.length) {
-		throw new AppError(
-			`Chỉ có ${pool.length} câu phù hợp với bộ lọc đã chọn`,
-			422,
-		);
+	if (!persist) {
+		return {
+			sessionId: null,
+			title: test.title,
+			subject: test.subject.name,
+			questions: sampled.map(toPublicQuestion),
+		};
 	}
 
-	const sampled = sampleBalancedQuestions(pool, questionCount);
-	const session = await repo.createSession(
-		test.id,
-		sampled.map((q) => q.id),
-	);
+	const session = await repo.createSession(test.id, questionIds!, {
+		engaged: engage,
+	});
 
 	return {
 		sessionId: session.id,
@@ -625,6 +702,11 @@ export async function startSession(
 		subject: test.subject.name,
 		questions: sampled.map(toPublicQuestion),
 	};
+}
+
+/** Load a playable question set without writing a session row. */
+export async function preparePlay(slug: string): Promise<SessionStartResult> {
+	return startSession(slug, { mode: 'default', persist: false, engage: false });
 }
 
 export async function checkAnswer(
@@ -646,6 +728,10 @@ export async function checkAnswer(
 	const questions = await repo.findQuestionsByIds([input.questionId]);
 	const q = questions[0];
 	if (!q) throw new AppError('Không tìm thấy câu hỏi', 404);
+
+	if (!session.engagedAt) {
+		await repo.markSessionEngaged(sessionId);
+	}
 
 	return {
 		questionId: q.id,

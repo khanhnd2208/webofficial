@@ -60,6 +60,14 @@ export interface PublicSpaceTestListItem {
 	subject: string;
 	subjectId: string;
 	questionCount: number;
+	/** Answered ≥1 question. */
+	attemptedCount: number;
+	/** Submitted and spent ≥ 5 minutes. */
+	completedCount: number;
+	/** Average score % from qualifying completions only. */
+	avgScorePercent: number | null;
+	/** Mean duration (ms) of qualifying completions. */
+	avgDurationMs: number | null;
 }
 
 export interface PublicSubjectGroup {
@@ -72,6 +80,51 @@ export interface SpaceTestWithQuestionCount extends SpaceTestDTO {
 	attachedQuestionCount: number;
 }
 
+/** Per-test attempt analytics (anonymous sessions). */
+export interface SpaceTestAttemptStats {
+	spaceTestId: string;
+	slug: string;
+	title: string;
+	status: SpaceTestDTO['status'];
+	/** Every play-page load / restart creates a session (noisy). */
+	opened: number;
+	/** Answered ≥1 question. */
+	engaged: number;
+	/** Submitted and spent ≥ 5 minutes. */
+	completed: number;
+	/** Average % from qualifying completions. */
+	avgScorePercent: number | null;
+	/** Mean duration (ms) of qualifying completions. */
+	avgDurationMs: number | null;
+	lastCompletedAt: string | null;
+}
+
+export interface SpaceTestDailyStat {
+	date: string; // YYYY-MM-DD (UTC)
+	opened: number;
+	engaged: number;
+	completed: number;
+}
+
+export interface SpaceTestAnalyticsOverview {
+	totals: {
+		opened: number;
+		engaged: number;
+		completed: number;
+		avgScorePercent: number | null;
+	};
+	byTest: SpaceTestAttemptStats[];
+	daily: SpaceTestDailyStat[];
+	recentCompletions: Array<{
+		id: string;
+		slug: string;
+		title: string;
+		score: number;
+		total: number;
+		submittedAt: string;
+	}>;
+}
+
 export interface PublicQuizQuestion {
 	id: string;
 	stem: string;
@@ -79,7 +132,8 @@ export interface PublicQuizQuestion {
 }
 
 export interface SessionStartResult {
-	sessionId: string;
+	/** Null until the learner answers the first question. */
+	sessionId: string | null;
 	title: string;
 	subject: string;
 	questions: PublicQuizQuestion[];

@@ -6,7 +6,6 @@ export default function MySpaceTestsLoading() {
 					<div className="h-3 w-20 animate-pulse rounded bg-hairline" />
 					<div className="mt-5 h-10 w-40 animate-pulse rounded bg-hairline" />
 					<div className="mt-4 h-4 w-full max-w-md animate-pulse rounded bg-hairline" />
-					<div className="mt-2 h-4 w-3/4 max-w-sm animate-pulse rounded bg-hairline" />
 				</header>
 
 				<div className="mt-10 sm:mt-12">
@@ -30,24 +29,21 @@ export default function MySpaceTestsLoading() {
 								</div>
 							))}
 						</div>
-						<div>
-							<div className="h-3 w-24 animate-pulse rounded bg-hairline" />
-							<div className="mt-4 space-y-0 divide-y divide-hairline border-t border-hairline">
-								{Array.from({ length: 2 }, (_, i) => (
-									<div key={i} className="flex justify-between gap-6 py-5">
-										<div className="flex-1 space-y-2">
-											<div className="h-5 w-2/3 animate-pulse rounded bg-hairline" />
-											<div className="h-3 w-20 animate-pulse rounded bg-hairline" />
-										</div>
-										<div className="h-11 w-24 shrink-0 animate-pulse rounded bg-hairline" />
+						<div className="space-y-0 divide-y divide-hairline border-t border-hairline">
+							{Array.from({ length: 2 }, (_, i) => (
+								<div key={i} className="flex justify-between gap-6 py-5">
+									<div className="flex-1 space-y-2">
+										<div className="h-5 w-2/3 animate-pulse rounded bg-hairline" />
+										<div className="h-3 w-40 animate-pulse rounded bg-hairline" />
 									</div>
-								))}
-							</div>
+									<div className="h-11 w-24 shrink-0 animate-pulse rounded bg-hairline" />
+								</div>
+							))}
 						</div>
 					</div>
 				</div>
 
-				<span className="sr-only">Đang tải danh sách bài test…</span>
+				<span className="sr-only">Loading tests…</span>
 			</div>
 		</main>
 	);

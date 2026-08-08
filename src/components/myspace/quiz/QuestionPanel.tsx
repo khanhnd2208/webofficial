@@ -60,6 +60,8 @@ function NavRow({
 	className = '',
 	/** When true, attach the canonical e2e data-testid attributes (only one row should). */
 	withTestIds = false,
+	/** When false, omit the centered counter (mobile bottom bar keeps counter). */
+	showCounter = true,
 }: {
 	index: number;
 	total: number;
@@ -70,14 +72,15 @@ function NavRow({
 	onNext: () => void;
 	className?: string;
 	withTestIds?: boolean;
+	showCounter?: boolean;
 }) {
 	const nextDisabled = !canNext || phase === 'checking' || phase === 'submitting';
 	const nextLabel =
 		phase === 'submitting'
-			? 'Đang nộp…'
+			? 'Submitting…'
 			: index < total - 1
-				? 'Câu tiếp →'
-				: 'Nộp bài →';
+				? 'Next →'
+				: 'Submit →';
 
 	return (
 		<div className={`flex flex-wrap items-center justify-between gap-3 ${className}`}>
@@ -89,12 +92,16 @@ function NavRow({
 				data-testid={withTestIds ? 'myspace-quiz-prev' : undefined}
 			>
 				<span aria-hidden>←</span>
-				Câu trước
+				Previous
 			</button>
 
-			<p className="font-mono text-[0.875rem] font-semibold tracking-[0.04em] text-ink">
-				Câu {index + 1} / {total}
-			</p>
+			{showCounter ? (
+				<p className="font-mono text-[0.875rem] font-semibold tracking-[0.04em] text-ink">
+					Question {index + 1} / {total}
+				</p>
+			) : (
+				<span className="flex-1" aria-hidden />
+			)}
 
 			<button
 				type="button"
@@ -131,10 +138,6 @@ export default function QuestionPanel({
 	const answered = Boolean(reveal);
 	const locked = answered || phase === 'checking' || phase === 'submitting';
 	const optionKeys = question.options.map((o) => o.key);
-	const shortcutHint =
-		optionKeys.length <= 2
-			? 'Phím tắt: A–B hoặc 1–2 chọn đáp án · ← câu trước · → / Enter câu tiếp'
-			: 'Phím tắt: A–D hoặc 1–4 chọn đáp án · ← câu trước · → / Enter câu tiếp';
 
 	useEffect(() => {
 		const el = groupRef.current?.querySelector<HTMLButtonElement>(
@@ -187,11 +190,6 @@ export default function QuestionPanel({
 					className="hidden border-b border-hairline pb-4 lg:flex"
 				/>
 
-				{/* Mobile counter only — action buttons live in the sticky bottom bar */}
-				<p className="font-mono text-[0.875rem] font-semibold tracking-[0.04em] text-ink lg:hidden">
-					Câu {index + 1} / {total}
-				</p>
-
 				<AnimatePresence mode="wait">
 					<m.div
 						key={question.id}
@@ -200,17 +198,11 @@ export default function QuestionPanel({
 						exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
 						transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
 					>
-						{!reveal ? (
-							<p className="mt-5 font-sans text-sm text-ink-secondary">
-								Chọn một đáp án để tiếp tục
-							</p>
-						) : null}
-
 						<h2
 							ref={stemRef}
 							id={stemId}
 							tabIndex={-1}
-							className="mt-4 max-w-[62ch] scroll-mt-28 font-sans text-[clamp(1.0625rem,2.2vw,1.25rem)] font-medium leading-[1.65] text-ink text-balance break-words outline-none"
+							className="mt-4 max-w-[62ch] scroll-mt-28 font-sans text-[clamp(1.0625rem,2.2vw,1.25rem)] font-medium leading-[1.65] text-ink text-balance break-words outline-none lg:mt-5"
 						>
 							{question.stem}
 						</h2>
@@ -247,18 +239,14 @@ export default function QuestionPanel({
 						) : null}
 					</m.div>
 				</AnimatePresence>
-
-				<p className="mt-6 hidden font-mono text-[0.75rem] leading-relaxed text-ink-secondary lg:block">
-					{shortcutHint}
-				</p>
 			</section>
 
-			{/* Mobile sticky bottom action bar */}
+			{/* Mobile sticky bottom action bar — single counter lives here */}
 			<div
 				className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-canvas/95 px-[var(--gutter)] pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden"
 				data-testid="myspace-quiz-mobile-actions"
 			>
-				<NavRow {...navProps} />
+				<NavRow {...navProps} showCounter />
 			</div>
 		</>
 	);
