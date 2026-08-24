@@ -433,20 +433,6 @@ if [[ "$EXPECT_LOCKS" == "true" ]]; then
 	done
 fi
 
-# Releases share mutable data instead of copying it. This keeps uploads and
-# operator-only backups intact across promotion and rollback.
-install -d -m 755 "$DEPLOY_ROOT/public/uploads" "$DEPLOY_ROOT/public/music/uploads"
-for relative_path in public/uploads public/music/uploads backups theory; do
-	shared_path="$DEPLOY_ROOT/$relative_path"
-	if [[ ! -e "$shared_path" ]]; then
-		continue
-	fi
-	release_path="$RELEASE_DIR/$relative_path"
-	mkdir -p "$(dirname "$release_path")"
-	rm -rf -- "$release_path"
-	ln -s "$shared_path" "$release_path"
-done
-
 cat >"$RELEASE_DIR/.deploy-metadata" <<METADATA
 release_id=$RELEASE_ID
 source_sha=$SOURCE_SHA
@@ -496,6 +482,22 @@ NODE_ENV_CHECK
 echo "Building candidate before any database migration"
 NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
 test -s .next/BUILD_ID
+
+# Turbopack must build from a closed project tree. Attach mutable paths only
+# after the build, otherwise a symlink that points outside the release root can
+# make its filesystem traversal panic. Runtime releases still share uploads and
+# operator-only backups across promotion and rollback.
+install -d -m 755 "$DEPLOY_ROOT/public/uploads" "$DEPLOY_ROOT/public/music/uploads"
+for relative_path in public/uploads public/music/uploads backups theory; do
+	shared_path="$DEPLOY_ROOT/$relative_path"
+	if [[ ! -e "$shared_path" ]]; then
+		continue
+	fi
+	release_path="$RELEASE_DIR/$relative_path"
+	mkdir -p "$(dirname "$release_path")"
+	rm -rf -- "$release_path"
+	ln -s "$shared_path" "$release_path"
+done
 
 echo "Creating a fresh pre-migration database backup"
 "$BACKUP_COMMAND"

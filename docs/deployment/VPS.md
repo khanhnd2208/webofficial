@@ -121,11 +121,12 @@ The script performs these steps in order:
 3. Uses rsync with `--delete` only inside that new release. It excludes `.env*`,
    uploads, `backups/`, `theory/`, `.venv/`, `*.tsbuildinfo`, dependencies,
    build output, test output, and editor/temp files.
-4. Copies `.env.local` into the release with mode `0600` and links persistent
-   directories to their shared locations.
-5. Runs `npm ci`, `prisma generate`, and `next build` before any migration. The
-   release ID is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew
-   protection and cache busting.
+4. Copies `.env.local` into the release with mode `0600`.
+5. Runs `npm ci`, `prisma generate`, and `next build` before any migration, then
+   links persistent directories to their shared locations. Linking only after
+   the build keeps Turbopack inside the immutable release tree. The release ID
+   is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew protection and
+   cache busting.
 6. Runs the database backup command, then `prisma migrate deploy` and the
    idempotent Active Recall seed, then prunes build-only development
    dependencies before starting the runtime.
