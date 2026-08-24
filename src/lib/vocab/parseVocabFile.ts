@@ -2,15 +2,19 @@
    parseVocabFile.ts
    Parses a CSV or Excel (.xlsx/.xls) vocabulary upload file.
 
-   Required columns  : word / term, definition, ndk_explanation
-   Optional columns  : partOfSpeech / part_of_speech, example,
-                       hints_hard, hints_medium, hints_easy
+   Required columns  : term / word + at least one of meaning_vi / meaning_en / definition
+   Optional columns  : pronunciation, part_of_speech, explanation / ndk_explanation,
+                       example, hints_hard, hints_medium, hints_easy
 
    Hints are separated with "||" inside a single cell.
    ════════════════════════════════════════════════════════════════════════ */
 import { parse } from 'csv-parse/sync';
-import * as XLSX from 'xlsx';
+import { readSheet } from 'read-excel-file/browser';
+import writeXlsxFile from 'write-excel-file/browser';
 import type { CreateWordInput } from '@/types/vocab';
+
+import { isBlankVocabRow, normalizeVocabRow } from './normalizeVocabRow';
+import { canonicalVocabHeader, detectDelimiter } from './vocabHeaders';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface RowError {
@@ -25,37 +29,14 @@ export interface ParseResult {
 	errors: RowError[];
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-function parseHints(val: string | undefined): string[] {
-	return val ? val.split('||').map((s) => s.trim()).filter(Boolean) : [];
-}
+const MAX_SPREADSHEET_BYTES = 5 * 1024 * 1024;
 
 /**
  * Maps a raw row object (from CSV or XLSX sheet_to_json) to a vocab word.
  * Returns the word plus a `_missing` list so the caller can decide what to do.
  */
 export function mapRow(r: Record<string, string>): CreateWordInput & { _missing: string[] } {
-	const term = (r.word ?? r.term ?? '').trim();
-	const definition = (r.definition ?? '').trim();
-	const ndkExplanation =
-		(r.ndk_explanation ?? r.ndkExplanation ?? '').trim() || null;
-
-	const missing: string[] = [];
-	if (!term) missing.push('word/term');
-	if (!definition) missing.push('definition');
-	if (!ndkExplanation) missing.push('ndk_explanation');
-
-	return {
-		term,
-		definition,
-		partOfSpeech: (r.partOfSpeech ?? r.part_of_speech ?? '').trim(),
-		example: (r.example ?? '').trim(),
-		ndkExplanation,
-		hintsHard: parseHints(r.hints_hard),
-		hintsMedium: parseHints(r.hints_medium),
-		hintsEasy: parseHints(r.hints_easy),
-		_missing: missing,
-	};
+	return normalizeVocabRow(r);
 }
 
 /**
@@ -69,8 +50,7 @@ export function parseVocabRows(rawRows: Record<string, string>[]): ParseResult {
 	rawRows.forEach((r, idx) => {
 		const { _missing, ...word } = mapRow(r);
 
-		// Silently skip rows that are completely blank
-		if (!word.term && !word.definition && !word.ndkExplanation) return;
+		if (isBlankVocabRow(word)) return;
 
 		if (_missing.length > 0) {
 			errors.push({ row: idx + 2, missing: _missing }); // +2: row 1 = header
@@ -86,21 +66,34 @@ export function parseVocabRows(rawRows: Record<string, string>[]): ParseResult {
  * Reads a File (CSV or XLSX) and returns parsed words + row-level errors.
  */
 export async function parseVocabFile(file: File): Promise<ParseResult> {
-	const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+	if (file.size > MAX_SPREADSHEET_BYTES) {
+		throw new Error('File quá lớn (tối đa 5 MB).');
+	}
+	const isExcel = /\.xlsx$/i.test(file.name);
+	if (!isExcel && /\.xls$/i.test(file.name)) {
+		throw new Error('Định dạng .xls cũ không được hỗ trợ. Vui lòng lưu lại thành .xlsx rồi thử lại.');
+	}
 
 	let rawRows: Record<string, string>[];
 
 	if (isExcel) {
-		const buffer = await file.arrayBuffer();
-		const wb = XLSX.read(buffer, { type: 'array' });
-		const ws = wb.Sheets[wb.SheetNames[0]];
-		rawRows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: '' });
+		const bytes = new Uint8Array(await file.arrayBuffer());
+		if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) throw new Error('File .xlsx không hợp lệ.');
+		const rows = await readSheet(file);
+		const [header, ...dataRows] = rows;
+		const headers = (header ?? []).map((cell) => canonicalVocabHeader(String(cell ?? '')));
+		rawRows = dataRows.slice(0, 2000).map((row) =>
+			Object.fromEntries(headers.map((key, index) => [key, String(row[index] ?? '')])) as Record<string, string>,
+		);
 	} else {
 		const text = await file.text();
 		rawRows = parse(text, {
-			columns: true,
+			columns: (header: string[]) => header.map(canonicalVocabHeader),
 			skip_empty_lines: true,
 			trim: true,
+			relax_column_count: true,
+			delimiter: detectDelimiter(text),
+			bom: true,
 		}) as Record<string, string>[];
 	}
 
@@ -109,7 +102,7 @@ export async function parseVocabFile(file: File): Promise<ParseResult> {
 
 // ── Sample workbook generator ──────────────────────────────────────────────────
 /** Returns an ArrayBuffer containing a sample .xlsx file for download */
-export function buildSampleWorkbook(): ArrayBuffer {
+export async function buildSampleWorkbook(): Promise<Blob> {
 	const header = [
 		'word',
 		'definition',
@@ -154,13 +147,8 @@ export function buildSampleWorkbook(): ArrayBuffer {
 		],
 	];
 
-	const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-
-	// Style the header row bold (basic column widths for readability)
-	ws['!cols'] = header.map((_, i) => ({ wch: i < 3 ? 32 : 20 }));
-
-	const wb = XLSX.utils.book_new();
-	XLSX.utils.book_append_sheet(wb, ws, 'Từ vựng');
-	const bytes = new Uint8Array(XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as number[]);
-	return bytes.buffer.slice(0) as ArrayBuffer;
+	return writeXlsxFile([header, ...rows], {
+		sheet: 'Từ vựng',
+		columns: header.map((_, i) => ({ width: i < 3 ? 32 : 20 })),
+	}).toBlob();
 }

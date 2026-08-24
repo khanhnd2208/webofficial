@@ -18,8 +18,8 @@ type StoreSet = {
 	alreadyOwned?: boolean;
 };
 
-type Term = { word: string; definition: string; partOfSpeech: string; example: string; ndkExplanation: string; hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] };
-const EMPTY_TERM: Term = { word: '', definition: '', partOfSpeech: '', example: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [] };
+type Term = { word: string; definition: string; partOfSpeech: string; example: string; pronunciation: string; meaningEn: string; meaningVi: string; ndkExplanation: string; hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] };
+const EMPTY_TERM: Term = { word: '', definition: '', partOfSpeech: '', example: '', pronunciation: '', meaningEn: '', meaningVi: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [] };
 
 type EditableWord = {
 	id?: string;
@@ -27,6 +27,9 @@ type EditableWord = {
 	definition: string;
 	partOfSpeech: string;
 	example: string;
+	pronunciation: string;
+	meaningEn: string;
+	meaningVi: string;
 	ndkExplanation: string;
 	hintsHard: string[];
 	hintsMedium: string[];
@@ -35,7 +38,7 @@ type EditableWord = {
 	_deleted?: boolean;
 	_expanded?: boolean;
 };
-const EMPTY_EDIT_WORD: EditableWord = { term: '', definition: '', partOfSpeech: '', example: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [], _isNew: true, _deleted: false, _expanded: true };
+const EMPTY_EDIT_WORD: EditableWord = { term: '', definition: '', partOfSpeech: '', example: '', pronunciation: '', meaningEn: '', meaningVi: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [], _isNew: true, _deleted: false, _expanded: true };
 
 interface Props {
 	isAdmin: boolean;
@@ -353,7 +356,19 @@ function AdminStoreView() {
 					body: JSON.stringify({
 						title: uploadTitle.trim(),
 						description: uploadDesc.trim(),
-						words: validTerms.map((t) => ({ term: t.word, definition: t.definition, partOfSpeech: t.partOfSpeech, example: t.example, ndkExplanation: t.ndkExplanation || null, hintsHard: t.hintsHard, hintsMedium: t.hintsMedium, hintsEasy: t.hintsEasy })),
+						words: validTerms.map((t) => ({
+							term: t.word,
+							definition: t.meaningVi || t.definition,
+							partOfSpeech: t.partOfSpeech,
+							example: t.example,
+							pronunciation: t.pronunciation,
+							meaningEn: t.meaningEn,
+							meaningVi: t.meaningVi || t.definition,
+							ndkExplanation: t.ndkExplanation || null,
+							hintsHard: t.hintsHard,
+							hintsMedium: t.hintsMedium,
+							hintsEasy: t.hintsEasy,
+						})),
 					}),
 				});
 				const json = await res.json();
@@ -456,7 +471,7 @@ function AdminStoreView() {
 						<div>
 							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">File CSV / Excel <span className="text-error">*</span></label>
 							<div className="flex items-center gap-3">
-								<input ref={fileRef} type="file" accept=".csv,.xlsx,.xls"
+								<input ref={fileRef} type="file" accept=".csv,.xlsx"
 									onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
 									className="block text-sm text-foreground file:mr-3 file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-wider file:text-foreground hover:file:bg-surface-hover" />
 								{csvFile && <span className="text-xs text-muted">{csvFile.name}</span>}
@@ -486,13 +501,24 @@ function AdminStoreView() {
 											<input type="text" placeholder={`Từ ${i + 1}`} value={t.word}
 												onChange={(e) => updateTerm(i, 'word', e.target.value)}
 												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
-											<input type="text" placeholder="Định nghĩa" value={t.definition}
-												onChange={(e) => updateTerm(i, 'definition', e.target.value)}
+											<input type="text" placeholder="Phiên âm" value={t.pronunciation}
+												onChange={(e) => updateTerm(i, 'pronunciation', e.target.value)}
 												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
+											<input type="text" placeholder="Nghĩa tiếng Anh" value={t.meaningEn}
+												onChange={(e) => updateTerm(i, 'meaningEn', e.target.value)}
+												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
+											<input type="text" placeholder="Nghĩa tiếng Việt" value={t.meaningVi || t.definition}
+												onChange={(e) => {
+													updateTerm(i, 'meaningVi', e.target.value);
+													updateTerm(i, 'definition', e.target.value);
+												}}
+												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
+										</div>
+										<div className="grid gap-2 sm:grid-cols-4">
 											<input type="text" placeholder="Từ loại (tuỳ chọn)" value={t.partOfSpeech}
 												onChange={(e) => updateTerm(i, 'partOfSpeech', e.target.value)}
 												className="border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
-											<div className="flex gap-2">
+											<div className="flex gap-2 sm:col-span-3">
 												<input type="text" placeholder="Ví dụ (tuỳ chọn)" value={t.example}
 													onChange={(e) => updateTerm(i, 'example', e.target.value)}
 													className="flex-1 border border-border bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-foreground" />
@@ -701,12 +727,15 @@ function AdminSetEditor({ setId, onClose, onSaved }: { setId: string; onClose: (
 				const s = json.data.set;
 				setTitle(s.title);
 				setDesc(s.description ?? '');
-				setWords((s.words ?? []).map((w: { id: string; term: string; definition: string; partOfSpeech?: string; example?: string; ndkExplanation?: string | null; hintsHard?: string[]; hintsMedium?: string[]; hintsEasy?: string[] }) => ({
+				setWords((s.words ?? []).map((w: { id: string; term: string; definition: string; partOfSpeech?: string; example?: string; pronunciation?: string; meaningEn?: string; meaningVi?: string; ndkExplanation?: string | null; hintsHard?: string[]; hintsMedium?: string[]; hintsEasy?: string[] }) => ({
 					id: w.id,
 					term: w.term,
 					definition: w.definition,
 					partOfSpeech: w.partOfSpeech ?? '',
 					example: w.example ?? '',
+					pronunciation: w.pronunciation ?? '',
+					meaningEn: w.meaningEn ?? '',
+					meaningVi: w.meaningVi || w.definition,
 					ndkExplanation: w.ndkExplanation ?? '',
 					hintsHard: w.hintsHard ?? [],
 					hintsMedium: w.hintsMedium ?? [],
@@ -743,8 +772,8 @@ function AdminSetEditor({ setId, onClose, onSaved }: { setId: string; onClose: (
 	async function handleSave(e: React.FormEvent) {
 		e.preventDefault();
 		if (!title.trim()) { setError('Tiêu đề không được để trống'); return; }
-		const validNew = words.filter((w) => !w._deleted && w._isNew && (!w.term.trim() || !w.definition.trim()));
-		if (validNew.length > 0) { setError('Mỗi từ mới phải có từ và định nghĩa'); return; }
+		const validNew = words.filter((w) => !w._deleted && w._isNew && (!w.term.trim() || !(w.meaningVi || w.definition || w.meaningEn).trim()));
+		if (validNew.length > 0) { setError('Mỗi từ mới phải có từ và nghĩa'); return; }
 		setSaving(true);
 		setError('');
 		try {
@@ -754,9 +783,12 @@ function AdminSetEditor({ setId, onClose, onSaved }: { setId: string; onClose: (
 				.map((w) => ({
 					...(w.id ? { id: w.id } : {}),
 					term: w.term.trim(),
-					definition: w.definition.trim(),
+					definition: (w.meaningVi || w.definition).trim(),
 					partOfSpeech: w.partOfSpeech.trim(),
 					example: w.example.trim(),
+					pronunciation: w.pronunciation.trim(),
+					meaningEn: w.meaningEn.trim(),
+					meaningVi: (w.meaningVi || w.definition).trim(),
 					ndkExplanation: w.ndkExplanation.trim() || null,
 					hintsHard: w.hintsHard,
 					hintsMedium: w.hintsMedium,
@@ -929,7 +961,7 @@ function WordEditorCard({ word, index, onUpdate, onToggleExpand, onToggleDelete 
 					<div className="flex items-baseline gap-3">
 						<span className="truncate text-sm font-bold text-foreground">{word.term || <span className="italic text-muted">chưa nhập</span>}</span>
 						<span className="shrink-0 text-xs text-muted">—</span>
-						<span className="truncate text-sm text-foreground-secondary">{word.definition || <span className="italic text-muted">chưa nhập</span>}</span>
+						<span className="truncate text-sm text-foreground-secondary">{word.meaningVi || word.definition || <span className="italic text-muted">chưa nhập</span>}</span>
 					</div>
 					{(word.partOfSpeech || word.example) && (
 						<p className="mt-0.5 truncate text-[11px] text-muted">
@@ -985,11 +1017,32 @@ function WordEditorCard({ word, index, onUpdate, onToggleExpand, onToggleDelete 
 							/>
 						</div>
 						<div>
-							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Định nghĩa <span className="text-error">*</span></label>
+							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Phiên âm</label>
 							<input
-								type="text" value={word.definition}
-								onChange={(e) => onUpdate('definition', e.target.value)}
-								placeholder="Nghĩa / định nghĩa"
+								type="text" value={word.pronunciation}
+								onChange={(e) => onUpdate('pronunciation', e.target.value)}
+								placeholder="/rɪˈzɪliənt/"
+								className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+							/>
+						</div>
+						<div>
+							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Nghĩa tiếng Anh</label>
+							<input
+								type="text" value={word.meaningEn}
+								onChange={(e) => onUpdate('meaningEn', e.target.value)}
+								placeholder="English meaning"
+								className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
+							/>
+						</div>
+						<div>
+							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Nghĩa tiếng Việt <span className="text-error">*</span></label>
+							<input
+								type="text" value={word.meaningVi || word.definition}
+								onChange={(e) => {
+									onUpdate('meaningVi', e.target.value);
+									onUpdate('definition', e.target.value);
+								}}
+								placeholder="Nghĩa tiếng Việt"
 								className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-foreground"
 							/>
 						</div>

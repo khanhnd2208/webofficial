@@ -8,6 +8,7 @@ import {
 	type ParseTestBundleResult,
 } from '../parseTestBundleCsv';
 import { sampleBalancedQuestions } from '../sampleBalanced';
+import { compareTestsByDisplayOrder } from '../displayOrder';
 import type {
 	CheckAnswerInput,
 	CreateSpaceTestInput,
@@ -25,7 +26,9 @@ import * as repo from '../repositories/myspaceTestsRepository';
 import type {
 	CheckAnswerResult,
 	McqQuestionDTO,
+	PersonalProgress,
 	PlayPoolCountResult,
+	ProgressActor,
 	PublicQuizQuestion,
 	PublicSpaceTestListItem,
 	PublicSubjectGroup,
@@ -85,12 +88,7 @@ function toPublicQuestion(q: {
 
 function toPublicListItem(
 	t: SpaceTestDTO,
-	stats?: {
-		engaged: number;
-		completed: number;
-		avgScorePercent: number | null;
-		avgDurationMs: number | null;
-	},
+	personalProgress: PersonalProgress = repo.emptyPersonalProgress(),
 ): PublicSpaceTestListItem {
 	return {
 		slug: t.slug,
@@ -98,11 +96,12 @@ function toPublicListItem(
 		description: t.description,
 		subject: t.subjectName,
 		subjectId: t.subjectId,
+		topics: t.topics,
+		difficulties: t.difficulties,
+		classifications: t.classifications,
 		questionCount: t.questionCount,
-		attemptedCount: stats?.engaged ?? 0,
-		completedCount: stats?.completed ?? 0,
-		avgScorePercent: stats?.avgScorePercent ?? null,
-		avgDurationMs: stats?.avgDurationMs ?? null,
+		displayOrder: t.displayOrder,
+		personalProgress,
 	};
 }
 
@@ -356,30 +355,23 @@ export async function getAttemptStatsByTest() {
 	return repo.getAttemptStatsByTest();
 }
 
-export async function listPublishedTests(): Promise<PublicSpaceTestListItem[]> {
-	const [tests, stats] = await Promise.all([
-		repo.listSpaceTests('PUBLISHED'),
-		repo.getAttemptStatsByTest(),
-	]);
-	const byId = new Map(stats.map((s) => [s.spaceTestId, s]));
-	return tests.map((t) => {
-		const s = byId.get(t.id);
-		return toPublicListItem(
-			t,
-			s
-				? {
-						engaged: s.engaged,
-						completed: s.completed,
-						avgScorePercent: s.avgScorePercent,
-						avgDurationMs: s.avgDurationMs,
-					}
-				: undefined,
-		);
-	});
+export async function listPublishedTests(
+	actor: ProgressActor = {},
+): Promise<PublicSpaceTestListItem[]> {
+	const tests = await repo.listSpaceTests('PUBLISHED');
+	const progressById = await repo.getPersonalProgressByTestIds(
+		tests.map((t) => t.id),
+		actor,
+	);
+	return tests
+		.map((t) => toPublicListItem(t, progressById.get(t.id) ?? repo.emptyPersonalProgress()))
+		.sort(compareTestsByDisplayOrder);
 }
 
-export async function listPublishedTestsGrouped(): Promise<PublicSubjectGroup[]> {
-	const tests = await listPublishedTests();
+export async function listPublishedTestsGrouped(
+	actor: ProgressActor = {},
+): Promise<PublicSubjectGroup[]> {
+	const tests = await listPublishedTests(actor);
 	const bySubject = new Map<string, { subjectId: string; tests: PublicSpaceTestListItem[] }>();
 
 	for (const t of tests) {
@@ -397,11 +389,17 @@ export async function listPublishedTestsGrouped(): Promise<PublicSubjectGroup[]>
 		return {
 			subject,
 			subjectId: entry.subjectId,
-			tests: entry.tests.sort((a, b) =>
-				a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }),
-			),
+			tests: [...entry.tests].sort(compareTestsByDisplayOrder),
 		};
 	});
+}
+
+export async function claimGuestProgress(
+	userId: string,
+	guestId: string | null,
+): Promise<{ claimed: number }> {
+	if (!guestId) return { claimed: 0 };
+	return repo.claimGuestSessions(userId, guestId);
 }
 
 export async function getAdminTest(id: string): Promise<SpaceTestWithQuestionCount> {
@@ -615,6 +613,7 @@ export async function countPlayPool(
 export async function startSession(
 	slug: string,
 	input?: StartSessionInput,
+	actor: ProgressActor = {},
 ): Promise<SessionStartResult> {
 	const test = await requirePublishedTest(slug);
 	const mode = input?.mode ?? 'default';
@@ -692,8 +691,14 @@ export async function startSession(
 		};
 	}
 
+	if (!actor.userId && !actor.guestId) {
+		throw new AppError('Thiếu định danh phiên làm bài', 401);
+	}
+
 	const session = await repo.createSession(test.id, questionIds!, {
 		engaged: engage,
+		userId: actor.userId ?? null,
+		guestId: actor.userId ? null : (actor.guestId ?? null),
 	});
 
 	return {
@@ -709,15 +714,26 @@ export async function preparePlay(slug: string): Promise<SessionStartResult> {
 	return startSession(slug, { mode: 'default', persist: false, engage: false });
 }
 
+function requireSessionOwner(
+	session: { userId: string | null; guestId: string | null },
+	actor: ProgressActor,
+): void {
+	if (!repo.sessionBelongsToActor(session, actor)) {
+		throw new AppError('Bạn không có quyền truy cập phiên làm bài này', 403);
+	}
+}
+
 export async function checkAnswer(
 	slug: string,
 	sessionId: string,
 	input: CheckAnswerInput,
+	actor: ProgressActor = {},
 ): Promise<CheckAnswerResult> {
 	const session = await repo.findSessionById(sessionId);
 	if (!session || session.spaceTest.slug !== slug) {
 		throw new AppError('Không tìm thấy phiên làm bài', 404);
 	}
+	requireSessionOwner(session, actor);
 	if (session.submittedAt) {
 		throw new AppError('Phiên này đã nộp bài', 409);
 	}
@@ -745,11 +761,13 @@ export async function submitSession(
 	slug: string,
 	sessionId: string,
 	input: SubmitSessionInput,
+	actor: ProgressActor = {},
 ): Promise<SessionSubmitResult> {
 	const session = await repo.findSessionById(sessionId);
 	if (!session || session.spaceTest.slug !== slug) {
 		throw new AppError('Không tìm thấy phiên làm bài', 404);
 	}
+	requireSessionOwner(session, actor);
 	if (session.submittedAt) {
 		throw new AppError('Phiên này đã nộp bài', 409);
 	}

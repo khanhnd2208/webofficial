@@ -3,12 +3,21 @@
 > This document captures *why* key architectural decisions were made.  
 > Format: **ADR-NNN** — Decision → Context → Rationale → Consequences.
 
+## Current-state note (2026-08-10)
+
+The active application has moved beyond several early ADRs. The current source
+of truth is `docs/02-ARCHITECTURE.md`: it uses MongoDB/Mongoose for auth and
+content domains, Prisma/PostgreSQL for vocabulary, courses and My Space tests,
+and protects admin pages in `src/app/admin/layout.tsx`. There is no active
+`src/middleware.ts`. ADRs below are retained as historical decisions; when an
+ADR conflicts with active code, current code and the architecture document win.
+
 ---
 
 ## ADR-001 — Auth.js Split Config (Edge + Node.js)
 
 **Date:** Project inception  
-**Status:** Active
+**Status:** Historical / superseded for active route protection
 
 **Decision:** Split Auth.js configuration into `auth.config.ts` (edge-safe) and `auth.ts` (Node.js full).
 
@@ -17,7 +26,8 @@
 **Rationale:** This is the officially documented Auth.js v5 pattern for edge compatibility. `auth.config.ts` contains only the Google provider setup and cookie/session options — no external I/O. `auth.ts` extends it with the MongoDB adapter and `jwt`/`events` callbacks that query the database.
 
 **Consequences:**
-- `middleware.ts` imports from `auth.config.ts` only — stays edge-safe.
+- The original design used `middleware.ts` as the edge guard; the active code now
+  guards pages in `src/app/admin/layout.tsx` and keeps API checks at route level.
 - API routes and server components import from `auth.ts` — full power, Node.js runtime.
 - Cookie names/options are duplicated across both files and **must be kept in sync manually**.
 
@@ -30,7 +40,7 @@
 
 **Decision:** Maintain two separate MongoDB connection objects — Mongoose (`dbConnect.ts`) for application data and the native `MongoClient` (`mongodbClient.ts`) for the Auth.js adapter.
 
-**Context:** Auth.js's `MongoDBAdapter` requires a native `MongoClient` instance. All application models (Posts, Users, VocabSets, etc.) use Mongoose ODM for schema validation, middleware hooks, and type-safe queries.
+**Context:** Auth.js's `MongoDBAdapter` requires a native `MongoClient` instance. Mongo-backed application models use Mongoose, while vocabulary, teaching and My Space test data now use Prisma/PostgreSQL.
 
 **Rationale:** Forcing Mongoose to share its internal connection with the adapter would require extracting the underlying driver connection — a fragile coupling. Keeping two pools (max 10 connections each) is simpler and avoids cross-framework interference. On a free-tier Atlas cluster this is acceptable; revisit if pool count becomes a concern.
 
@@ -158,7 +168,7 @@ Before Phase 3, approximately half the model files used `||` and half used `??`.
 **Date:** 2026-03-26  
 **Status:** Archived (2026-07-12; implementation removed from active routes/build, data preserved)
 
-**Decision:** The Personality Test module uses **PostgreSQL** for all data storage (sessions, responses, results), while every other feature continues using MongoDB/Mongoose.
+**Decision:** The Personality Test module used **PostgreSQL** for all data storage (sessions, responses, results), while the then-active features continued using MongoDB/Mongoose.
 
 **Context:** The Personality Test module handles structured survey data with:
 - Fixed schema (57 questions, 5 demographic fields, denormalized scores)
@@ -409,7 +419,126 @@ npm run test:coverage # with coverage report
 
 ---
 
-## Changelog — UI/UX completion sprint (2026-07-12)
+## ADR-013 — My Space Tests Learning Workspace (personal progress + guest identity)
+
+**Date:** 2026-08-12
+**Status:** Active
+
+**Decision:** Treat `/my-space/tests` as a Learning Workspace with personal progress. Persist optional ownership on `SpaceTestSession` (`userId` for Auth.js users, `guestId` for anonymous learners via a first-party HttpOnly cookie). Catalogue DTOs expose `displayOrder` and `personalProgress` instead of global attempt aggregates.
+
+**Context:** The public catalogue previously showed site-wide attempt counts and averages that learners could mistake for personal data. Scaling to dozens of subjects also made horizontal chip filters brittle. Progress needed to work without forcing login, then merge cleanly after sign-in.
+
+**Rationale:**
+- Guest cookie UUID (1 year, `SameSite=Lax`, HttpOnly) avoids hardware fingerprinting while still enabling device-local history.
+- Claim endpoint is idempotent and runs after login so dual-read (`userId` + `guestId`) prevents progress flicker.
+- Play APIs authorize by ownership, not bare `sessionId`.
+- `displayOrder` (admin-controlled, title tie-break) keeps chapter order stable (Chapter 2 before Chapter 10).
+
+**Consequences:**
+- Public UI no longer shows global attempt/average stats; admin analytics retains them.
+- Orphan historical sessions remain for analytics but never appear in personal progress.
+- New migration `20260812100000_myspace_learning_workspace` backfills `displayOrder` and adds ownership columns.
+
+---
+
+## ADR-014 — My Class standalone learning hub
+
+**Date:** 2026-08-13
+**Status:** Active
+
+**Decision:** Build My Class as a PostgreSQL domain independent of the older Course/My Space Tests models. Knowledge Units are reusable identities with draft/published revisions. Tests score on the server, persist snapshots for authenticated learners, and attach the active cohort at submit time. Analytics report weighted KU evidence without mastery labels.
+
+**Consequences:**
+- Public queries read `currentPublishedRevision` only and require the full published Course → Lesson → Section → KU chain.
+- Membership uses `activeCourseUserKey = courseId:userId` so one user can be active in only one cohort per course.
+- Pending roster emails activate during server-side Auth.js sign-in and never block login.
+
+---
+
+## ADR-015 — My Class Study Tool visual language
+
+**Date:** 2026-08-15
+**Status:** Active
+
+**Decision:** Give My Class (learner + admin studio) its own Study Tool grammar — hairline structure, near-square radii (2/4/6/10), typographic emphasis, color reserved for state — instead of matching the public Editorial soft-card/pastel language. Tokens live under `.mc` in `src/app/my-class-theme.css`; rules live in `docs/09-DESIGN_SYSTEM.md` and `.cursor/rules/my-class-ui.mdc`.
+
+**Context:** Soft cards and pastel washes applied uniformly made hierarchy impossible to scan. Editorial marketing pages succeed via rules and type, but forcing that full grammar onto a dense learning product would hurt information density.
+
+**Consequences:**
+- Reader shows one reading level at a time via segmented control (persisted per course).
+- `McCard` is deprecated in favor of `McRows`/`McPanel`; admin shares `.mc` via `src/app/admin/my-class/layout.tsx`.
+- Guard test `designSystem.unit.test.ts` fails on banned utilities.
+
+---
+
+## ADR-016 — My Class in-place authoring on the learner surface
+
+**Date:** 2026-08-15
+**Status:** Active
+
+**Decision:** Admins edit My Class on the same learner workspace (`/my-space/my-class/[courseSlug]?edit=1`) instead of only in Studio. Draft/unpublished structure is loaded through a dedicated authoring path (`findAuthoringCourse` + `/api/admin/my-class/authoring/**`) gated by `withAdmin`. Public `/api/my-class/**` routes stay published-only.
+
+**Context:** Studio's content tab was always-on editing with a parallel tree, while the learner page already had outline, reader, and structural IDs. LMS tools such as Moodle use a turn-editing-on toggle on the real student view.
+
+**Consequences:**
+- `?edit=1` is ignored unless `session.user.role === 'admin'`.
+- Authoring mappers prefer the latest DRAFT revision and keep empty lessons/sections so newly created nodes are visible immediately.
+- Mutations reuse existing admin node/reorder/attach APIs; tests and vocab attach via picker rather than inline builders.
+- Progress writes (`postView`, complete) are disabled while editing.
+
+---
+
+## ADR-017 — My Class question bank + test library
+
+**Date:** 2026-08-16
+**Status:** Active
+
+**Decision:** My Class assessment uses a global question bank (MCQ single, MCQ multi, fill-in-the-blank with character boxes, Bloom 1–6, subject/nested-topic/tags, KU links) and a course-independent test library. Named tests are attached to course/lesson/section through `MyClassTestPlacement`. SpaceTest/`McqQuestion` stays a separate bank.
+
+**Context:** The previous `MyClassQuestion` model stored a single `correctKey` and FOUNDATION/ACADEMIC/EXPERT `level`, and each `MyClassTest` could live in only one course via `courseId` + `scope`. Filtering by course overwrote the knowledge-unit filter. Admins could not reuse a test across courses.
+
+**Consequences:**
+- Answer keys live in `answer Json` (Zod discriminated union). Attempts store `placementId`, `courseId`, `response`, `answerSnapshot`, and `earned`/`max`.
+- Topic `path` is materialized so descendant filters use `startsWith`.
+- `TEST_KU_OUT_OF_COURSE` is a publish warning, not a blocker.
+- Public play URLs stay `/my-space/my-class/[courseSlug]/tests/[testSlug]` and resolve the most specific published placement.
+- Studio bank is `/admin/my-class/bank`; `/admin/my-class/questions` redirects there.
+
+---
+
+## Changelog — My Class question bank (2026-08-16)
+
+- Question bank with type, Bloom, subject/topic/tags, bulk actions, and KU-suggested taxonomy
+- Test library with placements; one test can be attached to many courses
+- Learner TestRunner supports MCQ multi and fill-in-the-blank character boxes
+- Performance views show partial points (`earnedPoints` / `totalPoints`)
+
+---
+
+## Changelog — My Class in-place edit (2026-08-15)
+
+- Admin course list row actions: Sửa (`?edit=1`), Studio, Lưu trữ; unpublished-draft badge
+- Learner workspace edit toggle, outline drag-and-drop, inline unit editor, attach pickers
+- Authoring data path isolated from public `findPublishedCourse`
+
+---
+
+## Changelog — My Class (2026-08-13)
+
+- Admin Course builder, KU revision editor, question bank, Test builder, cohort roster and performance dashboard
+- Public Course/Lesson/KU/Test/Progress learner surfaces with guest vs authenticated rules
+- Curriculum JSON and question CSV import with shared preview/commit validators
+- Additive integrity migration for revision FK, question status, cohort attempts and membership keys
+
+---
+
+## Changelog — My Space Learning Workspace (2026-08-12)
+
+- `/my-space/tests` two-column Learning Workspace (sticky subject rail; mobile subject sheet)
+- Personal progress (guest cookie + Auth.js user) with claim-on-login merge
+- `SpaceTest.displayOrder` + admin form field; catalogue sorted by order then title
+- Session ownership enforced on create/check/submit; catalog DTO uses `personalProgress`
+
 
 **Phase 0–3 foundation (in progress toward launch):**
 - Tailwind v4 CSS-first: `@plugin "@tailwindcss/typography"`, `@custom-variant dark`, removed unused `tailwind.config.ts`
@@ -423,4 +552,3 @@ npm run test:coverage # with coverage report
 - Lesson editor route `/admin/courses/[id]/lessons/[lessonId]`; publish validation + field errors
 - Message unlock: single OTP input with paste/autofill + live region
 - Media/Settings hidden from admin nav until real
-

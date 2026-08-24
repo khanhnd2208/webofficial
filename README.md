@@ -16,6 +16,7 @@
 | [docs/03-CODING_STANDARDS.md](./docs/03-CODING_STANDARDS.md) | API patterns, type safety rules, naming conventions — **read before contributing** |
 | [docs/04-ADR_AND_CHANGELOG.md](./docs/04-ADR_AND_CHANGELOG.md) | Architecture Decision Records and refactoring history |
 | [docs/05-BRAND_BRIEF.md](./docs/05-BRAND_BRIEF.md) | Current editorial brand and visual direction |
+| [docs/09-DESIGN_SYSTEM.md](./docs/09-DESIGN_SYSTEM.md) | Editorial vs My Class Study Tool visual grammars |
 | [docs/06-CONTENT_INVENTORY.md](./docs/06-CONTENT_INVENTORY.md) | Current public content and preserved internal domains |
 
 ---
@@ -26,12 +27,12 @@
 |-------|-----------|
 | **Framework** | Next.js 16.1.6 (App Router) + React 19 |
 | **Language** | TypeScript 5 |
-| **Database** | MongoDB Atlas via Mongoose 9 + native MongoClient |
+| **Database** | Hybrid: MongoDB/Mongoose + native MongoClient, PostgreSQL/Prisma 7 |
 | **Auth** | Auth.js v5 (NextAuth beta) — Google OAuth, JWT sessions |
 | **Styling** | TailwindCSS v4 + `@tailwindcss/typography` |
 | **Rich Text** | TipTap v3 (15+ extensions) |
 | **Build** | Turbopack (dev) / Webpack (prod) |
-| **Runtime** | Node.js (server) + Edge (middleware) |
+| **Runtime** | Node.js server components/route handlers; no active middleware file |
 
 ---
 
@@ -40,7 +41,8 @@
 ### 1. Prerequisites
 
 - Node.js ≥ 20
-- A MongoDB Atlas connection string
+- A MongoDB connection string
+- A PostgreSQL database for learning-domain data
 - A Google OAuth app (Client ID + Secret)
 
 ### 2. Install & Run
@@ -57,8 +59,11 @@ Open [http://localhost:3000](http://localhost:3000).
 Create `.env.local` in the project root:
 
 ```bash
-# MongoDB
+# MongoDB — auth, users, profiles, posts, messages, inquiries, streaks
 MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/<dbname>
+
+# PostgreSQL — vocabulary, courses, enrollments, progress, My Space tests
+DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<dbname>
 
 # Auth.js v5
 AUTH_SECRET=<generate with: openssl rand -base64 32>
@@ -101,8 +106,8 @@ openssl rand -base64 32
 ### Testing prerequisites
 
 - **Unit / component tests:** no external services required.
-- **Integration tests:** `DATABASE_URL` in `.env.local` (PostgreSQL). MongoDB uses in-memory server automatically.
-- **E2E tests:** app built and served (Playwright starts it in CI).
+- **Integration tests:** MongoDB uses MongoDB Memory Server automatically. PostgreSQL tests require an explicit `TEST_DATABASE_URL`; they fail fast and never fall back to a development or production `DATABASE_URL`. Run `npm run test:db:setup` first when using the local PostgreSQL test database.
+- **E2E tests:** require a running app locally; the current GitHub Actions quality job does not invoke Playwright.
 
 See [docs/03-CODING_STANDARDS.md](./docs/03-CODING_STANDARDS.md) §10 for harness conventions.
 
@@ -127,25 +132,18 @@ All API responses use a consistent envelope:
 | `GET` | `/api/posts/tags` | All tags in use |
 | `GET` | `/api/posts/categories` | Predefined + used categories |
 | `POST` | `/api/posts/[slug]/reactions` | Increment a reaction (no auth) |
-| `GET` | `/api/posts/[slug]/comments` | Get approved comments |
 | `GET` | `/api/vocab-sets/store` | List public vocabulary sets |
 
 ### Authenticated Endpoints
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| `POST` | `/api/posts/[slug]/comments` | Submit a comment |
-| `PATCH` | `/api/posts/[slug]/comments` | Toggle like / delete own comment |
 | `GET/POST` | `/api/vocab-sets` | List / create vocabulary sets |
 | `GET/PUT/DELETE` | `/api/vocab-sets/[id]` | Get / edit / delete a set |
 | `POST` | `/api/vocab-sets/store` | Clone a public set |
 | `GET` | `/api/vocab-sets/all-terms` | Aggregate all terms across user's sets |
-| `GET/POST` | `/api/vocab-stats` | Get / record practice results |
 | `GET/POST` | `/api/streak` | Get / record login streak |
 | `GET/PATCH` | `/api/profile` | Get / update user profile |
-| `GET/PATCH` | `/api/notifications` | Get / mark notifications as read |
-| `GET/POST` | `/api/feedback/messages` | Get / submit feedback threads |
-| `PATCH` | `/api/feedback/messages/[id]/reply` | Reply to or close a thread |
 
 ### Admin-Only Endpoints
 
@@ -173,15 +171,25 @@ Role can also be changed manually via MongoDB or via `/admin/users` in the UI.
 
 ## Route Guards
 
-`src/middleware.ts` protects `/admin/*` routes at the Edge:
+`src/app/admin/layout.tsx` protects `/admin/*` pages with the server-side Auth.js session:
 
 | Condition | Outcome |
 |-----------|---------|
-| Not signed in | Redirect to `/login?from=<path>` |
-| Signed in, role ≠ `admin` | 403 inline HTML response |
-| Signed in, role = `admin` | Pass through |
+| Not signed in | Redirect to `/dang-nhap?from=/admin` |
+| Signed in, role ≠ `admin` | Redirect to `/` |
+| Signed in, role = `admin` | Render the admin page |
 
-API routes enforce auth independently via `withAuth` / `withAdmin` wrappers — middleware and API-layer guards are both required (defense in depth).
+API routes enforce auth independently via `withAuth` / `withAdmin` wrappers — page guards and API-layer guards remain separate defense-in-depth boundaries.
+
+## Project boundaries
+
+- `src/app/`: Next.js routes, pages, layouts, route handlers and route-local client components.
+- `src/components/`: reusable UI and marketing primitives.
+- `src/features/`: newer vertical slices with schemas, repositories, services and types.
+- `src/services/`: established cross-route business services.
+- `src/models/`: Mongoose models for Mongo-backed domains.
+- `prisma/schema.prisma` and `prisma/migrations/`: PostgreSQL schema and migrations.
+- `src/_archived/`: retired implementations excluded from TypeScript and active routing; do not import from it.
 
 ---
 

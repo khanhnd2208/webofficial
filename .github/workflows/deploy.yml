@@ -1,55 +1,79 @@
 name: 🚀 Deploy to VPS
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   deploy:
-    name: 🚢 Build & Deploy on VPS
+    name: 🚢 Release-based VPS deploy
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     environment:
       name: production
       url: https://toiladuykhanh.com
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Check out the requested revision
+        uses: actions/checkout@v4
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: 2222
-          command_timeout: 15m
-          script: |
-            set -e
+          fetch-depth: 1
 
-            echo "📂 [1/5] Pull latest code from GitHub..."
-            cd /var/www/webofficial
-            git fetch origin main
-            git reset --hard origin/main
+      - name: Require main with a successful CI run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Production deploys must run from refs/heads/main, not $GITHUB_REF" >&2
+            exit 1
+          fi
 
-            echo "📦 [2/5] Install dependencies..."
-            npm install --include=dev
+          conclusion="$(
+            gh run list \
+              --workflow ci.yml \
+              --commit "$GITHUB_SHA" \
+              --limit 1 \
+              --json conclusion \
+              --jq '.[0].conclusion // ""'
+          )"
+          if [[ "$conclusion" != "success" ]]; then
+            echo "CI has not succeeded for $GITHUB_SHA (conclusion: ${conclusion:-missing})" >&2
+            exit 1
+          fi
 
-            echo "🔧 [3/5] Prisma generate + migrate..."
-            npx prisma generate
-            npx prisma migrate deploy
+      - name: Configure pinned SSH trust
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          : "${VPS_SSH_KEY:?Missing VPS_SSH_KEY production secret}"
+          : "${VPS_KNOWN_HOSTS:?Missing VPS_KNOWN_HOSTS production secret}"
+          install -d -m 700 "$HOME/.ssh"
+          install -m 600 /dev/null "$HOME/.ssh/webofficial_deploy"
+          printf '%s\n' "$VPS_SSH_KEY" > "$HOME/.ssh/webofficial_deploy"
+          install -m 600 /dev/null "$HOME/.ssh/known_hosts"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
 
-            echo "🏗️  [4/5] Build Next.js..."
-            npm run build
-
-            echo "♻️  [5/5] Reload app (zero-downtime)..."
-            pm2 reload nextjs-app --update-env
-
-            echo "✅ Deploy hoàn tất!"
-            pm2 status nextjs-app --no-color
+      - name: Run the canonical staged deploy
+        env:
+          VPS_HOSTNAME: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          set -euo pipefail
+          : "${VPS_HOSTNAME:?Missing VPS_HOST production secret}"
+          : "${VPS_USER:?Missing VPS_USER production secret}"
+          release_id="${GITHUB_SHA:0:12}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          VPS_HOST="${VPS_USER}@${VPS_HOSTNAME}" \
+          VPS_PORT="${VPS_PORT:-22}" \
+          DEPLOY_KEY="$HOME/.ssh/webofficial_deploy" \
+          DEPLOY_RELEASE_ID="$release_id" \
+            bash scripts/deploy-vps.sh

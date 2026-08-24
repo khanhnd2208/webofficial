@@ -11,7 +11,8 @@
 | Project index                | ready — filter removed until portfolio is deep enough             | `src/app/du-an/page.tsx`                  |
 | Four project details         | ready — scope separated from verified impact                      | `src/features/portfolio/data/projects.ts` |
 | Services                     | ready — three productized offers                                  | `src/app/dich-vu/page.tsx`                |
-| My Space Tests               | ready — subject-first index; Subject entity; smart import + CSV | `src/app/my-space/tests`, `src/app/admin/myspace-tests` |
+| My Space Tests               | ready — Learning Workspace catalogue; personal progress; Subject entity; smart import + CSV | `src/app/my-space/tests`, `src/app/admin/myspace-tests` |
+| My Class                     | ready — Course/KU hub, question bank, reusable test library via placements | `src/app/my-space/my-class`, `src/app/admin/my-class` |
 | Contact                      | ready — timeframe visible; delivery remains environment-dependent | `src/app/lien-he/page.tsx`                |
 | Shared public marketing copy | ready                                                             | `src/content/publicMarketing.ts`          |
 | Public proof approval gate   | ready — empty until evidence is approved                          | `src/content/publicProof.ts`              |

@@ -46,8 +46,9 @@ const nextAuth = NextAuth({
 					);
 					token.role = dbUser?.role ?? 'student';
 				} catch {
-					// DB unreachable — fallback to admin-email check
-					token.role = user.email && ADMIN_EMAILS.includes(user.email) ? 'admin' : 'student';
+					// Role verification is security-sensitive. If MongoDB cannot confirm
+					// the persisted role, fail closed instead of inferring admin access.
+					token.role = 'student';
 				}
 
 				if (user.id && user.email) {
@@ -60,6 +61,12 @@ const nextAuth = NextAuth({
 						});
 					} catch {
 						// Do not block sign-in when profile sync fails.
+					}
+					try {
+						const { reconcilePendingMemberships } = await import('@/features/my-class/services/cohortService');
+						await reconcilePendingMemberships(user.id, user.email);
+					} catch {
+						// Membership reconcile must never block sign-in.
 					}
 				}
 			} else if (trigger === 'update') {

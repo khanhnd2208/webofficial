@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import dbConnect from '@/lib/dbConnect';
 import { AppError } from '@/lib/appError';
+import { readMp3Upload } from '@/lib/uploadValidation';
 import { MESSAGE_MUSIC_TRACKS } from '@/constants/message';
 import { musicFilenameToUrl } from '@/lib/musicUrl';
 import MessageMusic from '@/models/MessageMusic';
@@ -71,22 +72,14 @@ export async function uploadMusicTrack(
 	file: File,
 	label?: string,
 ): Promise<MusicTrackDTO> {
-	if (!file.type.startsWith('audio/') && !file.name.toLowerCase().endsWith('.mp3')) {
-		throw new AppError('Chỉ chấp nhận file MP3', 400);
-	}
-
-	const maxBytes = 15 * 1024 * 1024;
-	if (file.size > maxBytes) {
-		throw new AppError('File nhạc quá lớn (tối đa 15MB)', 400);
-	}
+	const normalized = await readMp3Upload(file);
 
 	const userDir = path.join(UPLOADS_DIR, userId);
 	await mkdir(userDir, { recursive: true });
 
-	const storedName = `${Date.now()}-${Math.random().toString(16).slice(2)}.mp3`;
+	const storedName = normalized.filename;
 	const filePath = path.join(userDir, storedName);
-	const bytes = Buffer.from(await file.arrayBuffer());
-	await writeFile(filePath, bytes);
+	await writeFile(filePath, normalized.bytes);
 
 	const url = `/music/uploads/${userId}/${storedName}`;
 	const displayLabel = label?.trim() || file.name.replace(/\.mp3$/i, '');

@@ -30,6 +30,10 @@ const KEY_TO_OPTION: Record<string, McqCorrectOption> = {
 	'4': 'D',
 };
 
+/** This is the single published ITM practice test that needs a completion message. */
+const ITM_PRACTICE_TEST_SLUG = 'practice-test';
+const ITM_PRACTICE_TEST_NOTE_ENDS_AT = Date.parse('2026-08-13T23:59:59+07:00');
+
 export default function QuizPlayClient({
 	slug,
 	initialSession,
@@ -353,6 +357,11 @@ export default function QuizPlayClient({
 			<QuizResultView
 				title={title}
 				result={result}
+				completionNote={
+					slug === ITM_PRACTICE_TEST_SLUG && Date.now() <= ITM_PRACTICE_TEST_NOTE_ENDS_AT
+						? 'Thầy chúc các bạn thi tốt nhé :">'
+						: undefined
+				}
 				onRestart={() => void restart()}
 				isPending={busyRestart}
 			/>

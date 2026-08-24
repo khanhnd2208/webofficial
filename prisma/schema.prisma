@@ -18,18 +18,20 @@ datasource db {
 // Canonical vocabulary set created and owned by an admin.
 // ownerId references MongoDB User._id as a plain string.
 model VocabSet {
-  id          String   @id @default(cuid())
-  title       String
-  description String   @default("")
-  ownerId     String   // MongoDB User._id
-  ownerName   String
-  isArchived  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @default("")
+  ownerId      String // MongoDB User._id
+  ownerName    String
+  isArchived   Boolean  @default(false)
+  isCourseOnly Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  words          Word[]
-  userVocabSets  UserVocabSet[]
-  gameScores     GameScore[]
+  words               Word[]
+  userVocabSets       UserVocabSet[]
+  gameScores          GameScore[]
+  myClassAssignments  MyClassVocabAssignment[]
 
   @@index([ownerId])
   @@index([isArchived, updatedAt(sort: Desc)])
@@ -39,21 +41,24 @@ model VocabSet {
 // Individual vocabulary term belonging to a VocabSet.
 // Soft-delete via isDeleted=true to hide from UI without losing data.
 model Word {
-  id             String   @id @default(cuid())
-  vocabSetId     String
-  term           String
-  definition     String
-  partOfSpeech   String   @default("")
-  example        String   @default("")
-  isDeleted      Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id           String   @id @default(cuid())
+  vocabSetId   String
+  term         String
+  definition   String
+  partOfSpeech String   @default("")
+  example      String   @default("")
+  pronunciation String  @default("")
+  meaningEn     String  @default("")
+  meaningVi     String  @default("")
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // ── v2: NDK's Explanation & Guess Who hints ──────────────────────────────
-  ndkExplanation String?    // Teacher's personal explanation (nullable)
-  hintsHard      String[]   // Hard hints (few, cryptic) for Guess Who game
-  hintsMedium    String[]   // Medium hints for Guess Who game
-  hintsEasy      String[]   // Easy hints for Guess Who game
+  ndkExplanation String? // Teacher's personal explanation (nullable)
+  hintsHard      String[] // Hard hints (few, cryptic) for Guess Who game
+  hintsMedium    String[] // Medium hints for Guess Who game
+  hintsEasy      String[] // Easy hints for Guess Who game
 
   vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
 
@@ -65,17 +70,20 @@ model Word {
 // status='active'       → visible in user's library
 // status='soft_deleted' → hidden from UI, can be restored on re-download
 model UserVocabSet {
-  id         String            @id @default(cuid())
-  userId     String            // MongoDB User._id
-  vocabSetId String
-  status     UserVocabSetStatus @default(active)
-  addedAt    DateTime          @default(now())
-  deletedAt  DateTime?
+  id             String              @id @default(cuid())
+  userId         String // MongoDB User._id
+  vocabSetId     String
+  status         UserVocabSetStatus  @default(active)
+  source         UserVocabSetSource  @default(STORE)
+  sourceCourseId String?
+  addedAt        DateTime            @default(now())
+  deletedAt      DateTime?
 
   vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
 
   @@unique([userId, vocabSetId])
   @@index([userId, status])
+  @@index([source, sourceCourseId])
 }
 
 // ─── GameScore ────────────────────────────────────────────────────────────────
@@ -85,14 +93,14 @@ model UserVocabSet {
 //              MATCHING/GUESS_WHO → 0–10000 (session total)
 model GameScore {
   id         String   @id @default(cuid())
-  userId     String   // MongoDB User._id
+  userId     String // MongoDB User._id
   userName   String
   vocabSetId String
   mode       GameMode
-  score      Float    // personal best
+  score      Float // personal best
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   vocabSet VocabSet @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
 
@@ -103,6 +111,11 @@ model GameScore {
 enum UserVocabSetStatus {
   active
   soft_deleted
+}
+
+enum UserVocabSetSource {
+  STORE
+  MY_CLASS
 }
 
 enum GameMode {
@@ -123,6 +136,41 @@ enum PublishStatus {
   ARCHIVED
 }
 
+// ─── Active Recall ───────────────────────────────────────────────────────────
+// Public, standalone question-and-answer decks. Cards are intentionally plain
+// text so imported teaching content stays safe and portable through CSV.
+model ActiveRecallDeck {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  subject     String        @default("")
+  lessonLabel String        @default("")
+  description String        @default("") @db.Text
+  status      PublishStatus @default(DRAFT)
+  position    Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?
+
+  cards ActiveRecallCard[]
+
+  @@index([status, position, updatedAt(sort: Desc)])
+}
+
+model ActiveRecallCard {
+  id        String   @id @default(cuid())
+  deckId    String
+  question  String   @db.Text
+  answer    String   @db.Text
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deck ActiveRecallDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@index([deckId, position])
+}
+
 enum CourseVisibility {
   PRIVATE
   CATALOG
@@ -134,23 +182,23 @@ enum EnrollmentStatus {
 }
 
 model Course {
-  id           String           @id @default(cuid())
-  slug         String           @unique
-  title        String
-  summary      String           @default("")
-  description  String           @default("") @db.Text
-  thumbnailUrl String?
-  status       PublishStatus    @default(DRAFT)
+  id               String           @id @default(cuid())
+  slug             String           @unique
+  title            String
+  summary          String           @default("")
+  description      String           @default("") @db.Text
+  thumbnailUrl     String?
+  status           PublishStatus    @default(DRAFT)
   /// Existing courses default PRIVATE — only PUBLISHED + CATALOG appear publicly.
-  visibility   CourseVisibility @default(PRIVATE)
-  audience     String           @default("")
-  learningOutcomes String       @default("") @db.Text
-  format       String           @default("")
-  durationText String           @default("")
-  prerequisites String          @default("") @db.Text
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  publishedAt  DateTime?
+  visibility       CourseVisibility @default(PRIVATE)
+  audience         String           @default("")
+  learningOutcomes String           @default("") @db.Text
+  format           String           @default("")
+  durationText     String           @default("")
+  prerequisites    String           @default("") @db.Text
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  publishedAt      DateTime?
 
   modules     CourseModule[]
   enrollments Enrollment[]
@@ -258,23 +306,23 @@ model Subject {
 }
 
 model McqQuestion {
-  id                 String           @id @default(cuid())
-  subjectId          String?
-  topic              String
-  stem               String           @db.Text
-  optionA            String           @db.Text
-  optionB            String           @db.Text
-  optionC            String           @db.Text
-  optionD            String           @db.Text
-  correctOption      McqCorrectOption
-  difficulty         Int              @default(2)
-  aacsb              String           @default("")
-  learningObjective  String           @default("")
-  classification     String           @default("")
-  isActive           Boolean          @default(true)
-  spaceTestId        String?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+  id                String           @id @default(cuid())
+  subjectId         String?
+  topic             String
+  stem              String           @db.Text
+  optionA           String           @db.Text
+  optionB           String           @db.Text
+  optionC           String           @db.Text
+  optionD           String           @db.Text
+  correctOption     McqCorrectOption
+  difficulty        Int              @default(2)
+  aacsb             String           @default("")
+  learningObjective String           @default("")
+  classification    String           @default("")
+  isActive          Boolean          @default(true)
+  spaceTestId       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   subject   Subject?   @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   spaceTest SpaceTest? @relation(fields: [spaceTestId], references: [id], onDelete: Cascade)
@@ -286,42 +334,871 @@ model McqQuestion {
 }
 
 model SpaceTest {
-  id               String        @id @default(cuid())
-  slug             String        @unique
-  title            String
-  description      String        @default("") @db.Text
-  subjectId        String
-  topics           String[]      @default([])
-  difficulties     Int[]         @default([])
-  classifications  String[]      @default([])
-  questionCount    Int
-  status           PublishStatus @default(DRAFT)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  publishedAt      DateTime?
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  description     String        @default("") @db.Text
+  subjectId       String
+  topics          String[]      @default([])
+  difficulties    Int[]         @default([])
+  classifications String[]      @default([])
+  questionCount   Int
+  /// Stable chapter/order within a subject; public catalogue sorts by this then title.
+  displayOrder    Int           @default(0)
+  status          PublishStatus @default(DRAFT)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  publishedAt     DateTime?
 
-  subject   Subject             @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  subject   Subject            @relation(fields: [subjectId], references: [id], onDelete: Restrict)
   sessions  SpaceTestSession[]
   questions McqQuestion[]
 
   @@index([status, updatedAt(sort: Desc)])
   @@index([subjectId, status])
+  @@index([subjectId, displayOrder])
 }
 
 model SpaceTestSession {
-  id           String    @id @default(cuid())
-  spaceTestId  String
-  questionIds  String[]
-  score        Int?
-  total        Int?
+  id          String    @id @default(cuid())
+  spaceTestId String
+  questionIds String[]
+  score       Int?
+  total       Int?
   /// Set when the learner answers the first question (real attempt).
-  engagedAt    DateTime?
-  submittedAt  DateTime?
-  createdAt    DateTime  @default(now())
+  engagedAt   DateTime?
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+  /// Auth.js / MongoDB User._id when the learner is signed in.
+  userId      String?
+  /// First-party guest cookie UUID when the learner is anonymous.
+  guestId     String?
 
   spaceTest SpaceTest @relation(fields: [spaceTestId], references: [id], onDelete: Cascade)
 
   @@index([spaceTestId, createdAt(sort: Desc)])
   @@index([spaceTestId, engagedAt])
   @@index([spaceTestId, submittedAt])
+  @@index([userId, submittedAt])
+  @@index([guestId, submittedAt])
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// My Class — standalone public learning hub
+// ════════════════════════════════════════════════════════════════════════
+
+enum MyClassPublishStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MyClassRevisionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MyClassQuestionStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MyClassQuestionType {
+  MCQ_SINGLE
+  MCQ_MULTI
+  FILL_BLANK
+}
+
+enum MyClassTestScope {
+  COURSE
+  LESSON
+  SECTION
+}
+
+enum MyClassTestRevealPolicy {
+  AFTER_SUBMIT
+  IMMEDIATE
+  NEVER
+}
+
+enum MyClassMembershipStatus {
+  PENDING
+  ACTIVE
+  REMOVED
+}
+
+enum MyClassCourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model MyClassSubject {
+  id        String               @id @default(cuid())
+  slug      String               @unique
+  name      String
+  summary   String               @default("")
+  position  Int                  @default(0)
+  status    MyClassPublishStatus @default(PUBLISHED)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  topics    MyClassTopic[]
+  questions MyClassQuestion[]
+  tests     MyClassTest[]
+  courses   MyClassCourse[]
+}
+
+model MyClassTopic {
+  id        String               @id @default(cuid())
+  subjectId String
+  parentId  String?
+  slug      String
+  name      String
+  path      String
+  depth     Int                  @default(0)
+  position  Int                  @default(0)
+  status    MyClassPublishStatus @default(PUBLISHED)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  subject        MyClassSubject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  parent         MyClassTopic?               @relation("MyClassTopicTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children       MyClassTopic[]              @relation("MyClassTopicTree")
+  questions      MyClassQuestion[]
+  knowledgeUnits MyClassTopicKnowledgeUnit[]
+
+  @@unique([subjectId, path])
+  @@index([subjectId, path])
+  @@index([parentId, position])
+}
+
+model MyClassTopicKnowledgeUnit {
+  id              String @id @default(cuid())
+  topicId         String
+  knowledgeUnitId String
+
+  topic         MyClassTopic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  knowledgeUnit KnowledgeUnit @relation(fields: [knowledgeUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, knowledgeUnitId])
+  @@index([knowledgeUnitId])
+}
+
+model MyClassCourse {
+  id           String               @id @default(cuid())
+  slug         String               @unique
+  title        String
+  summary      String               @default("")
+  description  String               @default("") @db.Text
+  thumbnailUrl String?
+  level        MyClassCourseLevel?
+  tags         String[]             @default([])
+  subjectId    String?
+  status       MyClassPublishStatus @default(DRAFT)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  publishedAt  DateTime?
+
+  subject          MyClassSubject?          @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  lessons          MyClassLesson[]
+  placements       MyClassTestPlacement[]
+  cohorts          MyClassCohort[]
+  memberships      MyClassMembership[]
+  kuProgress       MyClassKuProgress[]
+  vocabAssignments MyClassVocabAssignment[]
+  activityDays     MyClassActivityDay[]
+  attempts         MyClassTestAttempt[]
+
+  @@index([subjectId, status])
+  @@index([status, updatedAt])
+}
+
+model MyClassLesson {
+  id               String               @id @default(cuid())
+  courseId         String
+  slug             String
+  title            String
+  summary          String               @default("")
+  position         Int                  @default(0)
+  estimatedMinutes Int?
+  status           MyClassPublishStatus @default(DRAFT)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  course           MyClassCourse             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  sections         MyClassSection[]
+  placements       MyClassTestPlacement[]
+  vocabAssignments MyClassVocabAssignment[]
+
+  @@unique([courseId, slug])
+  @@index([courseId, position])
+}
+
+model MyClassSection {
+  id        String               @id @default(cuid())
+  lessonId  String
+  slug      String               @default("")
+  title     String
+  summary   String               @default("")
+  position  Int                  @default(0)
+  status    MyClassPublishStatus @default(DRAFT)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  lesson     MyClassLesson                 @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  knowledge  MyClassSectionKnowledgeUnit[]
+  placements MyClassTestPlacement[]
+
+  @@unique([lessonId, slug])
+  @@index([lessonId, position])
+}
+
+model KnowledgeUnit {
+  id                         String               @id @default(cuid())
+  slug                       String               @unique
+  status                     MyClassPublishStatus @default(DRAFT)
+  currentPublishedRevisionId String?              @unique
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  currentPublishedRevision KnowledgeUnitRevision?         @relation("KnowledgeUnitCurrentPublishedRevision", fields: [currentPublishedRevisionId], references: [id], onDelete: SetNull)
+  revisions                KnowledgeUnitRevision[]
+  mappings                 MyClassSectionKnowledgeUnit[]
+  questionLinks            MyClassQuestionKnowledgeUnit[]
+  topicLinks               MyClassTopicKnowledgeUnit[]
+  evidence                 MyClassAttemptKuEvidence[]
+  relatedFrom              KnowledgeUnitRelation[]        @relation("KnowledgeUnitRelationFrom")
+  relatedTo                KnowledgeUnitRelation[]        @relation("KnowledgeUnitRelationTo")
+  progress                 MyClassKuProgress[]
+}
+
+model KnowledgeUnitRevision {
+  id               String                @id @default(cuid())
+  knowledgeUnitId  String
+  version          Int
+  title            String
+  summary          String                @default("")
+  foundationHtml   String                @default("") @db.Text
+  academicHtml     String                @default("") @db.Text
+  expertHtml       String                @default("") @db.Text
+  estimatedMinutes Int?
+  status           MyClassRevisionStatus @default(DRAFT)
+  createdAt        DateTime              @default(now())
+  publishedAt      DateTime?
+
+  knowledgeUnit KnowledgeUnit  @relation(fields: [knowledgeUnitId], references: [id], onDelete: Cascade)
+  currentFor    KnowledgeUnit? @relation("KnowledgeUnitCurrentPublishedRevision")
+
+  @@unique([knowledgeUnitId, version])
+  @@index([knowledgeUnitId, status])
+}
+
+model MyClassSectionKnowledgeUnit {
+  id              String @id @default(cuid())
+  sectionId       String
+  knowledgeUnitId String
+  position        Int    @default(0)
+
+  section       MyClassSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  knowledgeUnit KnowledgeUnit  @relation(fields: [knowledgeUnitId], references: [id], onDelete: Restrict)
+
+  @@unique([sectionId, knowledgeUnitId])
+  @@index([sectionId, position])
+  @@index([knowledgeUnitId])
+}
+
+model KnowledgeUnitRelation {
+  id     String @id @default(cuid())
+  fromId String
+  toId   String
+
+  from KnowledgeUnit @relation("KnowledgeUnitRelationFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to   KnowledgeUnit @relation("KnowledgeUnitRelationTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@index([fromId])
+  @@index([toId])
+}
+
+model MyClassQuestion {
+  id          String                @id @default(cuid())
+  slug        String                @unique
+  type        MyClassQuestionType   @default(MCQ_SINGLE)
+  stem        String                @db.Text
+  options     Json
+  answer      Json
+  explanation String                @default("") @db.Text
+  hint        String                @default("") @db.Text
+  source      String                @default("")
+  difficulty  Int                   @default(2)
+  subjectId   String?
+  topicId     String?
+  tags        String[]              @default([])
+  status      MyClassQuestionStatus @default(ACTIVE)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  subject        MyClassSubject?                @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  topic          MyClassTopic?                  @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  knowledgeUnits MyClassQuestionKnowledgeUnit[]
+  tests          MyClassTestQuestion[]
+  answers        MyClassAttemptAnswer[]
+
+  @@index([status, type, difficulty])
+  @@index([subjectId, topicId, status])
+  @@index([status, updatedAt, id])
+}
+
+model MyClassQuestionKnowledgeUnit {
+  id              String @id @default(cuid())
+  questionId      String
+  knowledgeUnitId String
+
+  question      MyClassQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  knowledgeUnit KnowledgeUnit   @relation(fields: [knowledgeUnitId], references: [id], onDelete: Restrict)
+
+  @@unique([questionId, knowledgeUnitId])
+}
+
+model MyClassTest {
+  id               String                  @id @default(cuid())
+  slug             String                  @unique
+  title            String
+  description      String                  @default("") @db.Text
+  subjectId        String?
+  tags             String[]                @default([])
+  passScore        Int?
+  timeLimitMinutes Int?
+  maxAttempts      Int?
+  shuffleQuestions Boolean                 @default(false)
+  shuffleOptions   Boolean                 @default(false)
+  revealPolicy     MyClassTestRevealPolicy @default(AFTER_SUBMIT)
+  status           MyClassPublishStatus    @default(DRAFT)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  publishedAt      DateTime?
+
+  subject    MyClassSubject?        @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  questions  MyClassTestQuestion[]
+  placements MyClassTestPlacement[]
+  attempts   MyClassTestAttempt[]
+
+  @@index([status, updatedAt])
+  @@index([subjectId, status])
+}
+
+model MyClassTestPlacement {
+  id           String               @id @default(cuid())
+  testId       String
+  courseId     String
+  lessonId     String?
+  sectionId    String?
+  scope        MyClassTestScope
+  position     Int                  @default(0)
+  status       MyClassPublishStatus @default(PUBLISHED)
+  placementKey String               @unique
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  test     MyClassTest          @relation(fields: [testId], references: [id], onDelete: Cascade)
+  course   MyClassCourse        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson   MyClassLesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  section  MyClassSection?      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  attempts MyClassTestAttempt[]
+
+  @@index([courseId, status, position])
+  @@index([lessonId, status, position])
+  @@index([sectionId, status, position])
+  @@index([testId])
+}
+
+model MyClassTestQuestion {
+  id         String @id @default(cuid())
+  testId     String
+  questionId String
+  position   Int    @default(0)
+  points     Int    @default(1)
+
+  test     MyClassTest     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  question MyClassQuestion @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@unique([testId, questionId])
+  @@index([testId, position])
+  @@index([questionId])
+}
+
+model MyClassTestAttempt {
+  id              String   @id @default(cuid())
+  testId          String
+  placementId     String?
+  courseId        String?
+  userId          String?
+  guestId         String?
+  cohortId        String?
+  score           Int
+  total           Int
+  earnedPoints    Float    @default(0)
+  totalPoints     Float    @default(0)
+  durationSeconds Int?
+  submittedAt     DateTime @default(now())
+
+  test      MyClassTest                @relation(fields: [testId], references: [id], onDelete: Restrict)
+  placement MyClassTestPlacement?      @relation(fields: [placementId], references: [id], onDelete: SetNull)
+  course    MyClassCourse?             @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  cohort    MyClassCohort?             @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+  answers   MyClassAttemptAnswer[]
+  evidence  MyClassAttemptKuEvidence[]
+
+  @@index([userId, submittedAt])
+  @@index([guestId, submittedAt])
+  @@index([testId, submittedAt])
+  @@index([cohortId, submittedAt])
+  @@index([placementId, submittedAt])
+  @@index([courseId, submittedAt])
+}
+
+model MyClassAttemptAnswer {
+  id               String               @id @default(cuid())
+  attemptId        String
+  questionId       String
+  typeSnapshot     MyClassQuestionType  @default(MCQ_SINGLE)
+  stemSnapshot     String               @db.Text
+  optionsSnapshot  Json
+  answerSnapshot   Json
+  response         Json
+  correctKey       String?
+  chosenKey        String?
+  explanation      String               @default("") @db.Text
+  earned           Float                @default(0)
+  max              Float                @default(1)
+  isCorrect        Boolean
+
+  attempt  MyClassTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question MyClassQuestion    @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@index([attemptId])
+}
+
+model MyClassAttemptKuEvidence {
+  id              String @id @default(cuid())
+  attemptId       String
+  knowledgeUnitId String
+  weight          Float
+  correctCount    Float
+  questionCount   Float
+  knowledgeUnitSlugSnapshot  String?
+  knowledgeUnitTitleSnapshot String?
+  rawResponseCount           Int?
+
+  attempt       MyClassTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  knowledgeUnit KnowledgeUnit      @relation(fields: [knowledgeUnitId], references: [id], onDelete: Restrict)
+
+  @@unique([attemptId, knowledgeUnitId])
+}
+
+model MyClassKuProgress {
+  id              String    @id @default(cuid())
+  courseId        String
+  knowledgeUnitId String
+  userId          String?
+  guestId         String?
+  actorKey        String
+	firstViewedAt   DateTime?
+	lastViewedAt    DateTime?
+	completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  course        MyClassCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  knowledgeUnit KnowledgeUnit @relation(fields: [knowledgeUnitId], references: [id], onDelete: Restrict)
+
+  @@unique([courseId, knowledgeUnitId, actorKey])
+  @@index([userId])
+  @@index([guestId])
+  @@index([courseId, actorKey])
+  @@index([courseId, actorKey, lastViewedAt])
+}
+
+model MyClassVocabAssignment {
+  id         String   @id @default(cuid())
+  courseId   String
+  lessonId   String?
+  vocabSetId String
+  scopeKey   String   @unique
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  course   MyClassCourse  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson   MyClassLesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  vocabSet VocabSet       @relation(fields: [vocabSetId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, position])
+  @@index([lessonId, position])
+  @@index([vocabSetId])
+}
+
+model MyClassCohort {
+  id        String               @id @default(cuid())
+  courseId  String
+  name      String
+  term      String               @default("")
+  startsAt  DateTime?
+  endsAt    DateTime?
+  status    MyClassPublishStatus @default(PUBLISHED)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  course   MyClassCourse        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  members  MyClassMembership[]
+  attempts MyClassTestAttempt[]
+
+  @@index([courseId, status])
+}
+
+model MyClassMembership {
+  id                  String                  @id @default(cuid())
+  cohortId            String
+  courseId            String
+  email               String
+  name                String                  @default("")
+  userId              String?
+  status              MyClassMembershipStatus @default(PENDING)
+  activeCourseUserKey String?                 @unique
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  activatedAt         DateTime?
+  removedAt           DateTime?
+
+  cohort MyClassCohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  course MyClassCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([cohortId, email])
+  @@index([email, status])
+  @@index([userId, status])
+  @@index([courseId, status])
+}
+
+model MyClassActivityDay {
+  id        String   @id @default(cuid())
+  actorKey  String
+  courseId  String
+  day       DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  course MyClassCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([actorKey, courseId, day])
+  @@index([actorKey, day])
+  @@index([courseId, day])
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// Teaching — attendance + class participation gradebook
+// ════════════════════════════════════════════════════════════════════════
+
+enum TeachingClassStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TeachingEnrollmentStatus {
+  ACTIVE
+  WITHDRAWN
+}
+
+enum TeachingAttendanceMethod {
+  ROLL_CALL
+  SHORT_TEST
+}
+
+enum TeachingGroupAuditActor {
+  ADMIN
+  STUDENT
+  SYSTEM
+}
+
+enum TeachingGroupAuditAction {
+  CONFIGURE
+  OPEN
+  LOCK
+  MOVE
+  UNDO
+  TRANSFER_LEADER
+  RANDOMIZE
+  CLEAR
+  /// Deprecated: group names were removed; retained only for historical audit rows.
+  RENAME
+}
+
+enum TeachingAttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT_UNEXCUSED
+  ABSENT_EXCUSED
+  MAKEUP
+}
+
+enum TeachingLearningExperience {
+  CHALLENGE
+  SUPPORT
+}
+
+model TeachingClass {
+  id                         String              @id @default(cuid())
+  courseCode                 String
+  courseName                 String
+  groupNo                    String
+  /// Canonical class identifier; groupNo is retained for backwards-compatible imports.
+  classCode                  String              @default("")
+  term                       String
+  credits                    Int?
+  lecturerName               String              @default("")
+  lecturerCode               String              @default("")
+  totalWeeks                 Int                 @default(10)
+  /// Deprecated: scoring uses hardcoded 5 / 0.5 in domain/cp.ts.
+  cpMaxPoints                Decimal             @default(5) @db.Decimal(4, 2)
+  /// Deprecated: scoring uses hardcoded 5 / 0.5 in domain/cp.ts.
+  cpPerAbsence               Decimal             @default(0.5) @db.Decimal(4, 2)
+  maxParticipationPerSession Decimal             @default(2) @db.Decimal(4, 2)
+  absenceThresholdPercent    Int                 @default(20)
+  lateGraceMinutes           Int                 @default(15)
+  status                     TeachingClassStatus @default(ACTIVE)
+  publicSlug                 String?             @unique
+  publicTitle                String              @default("")
+  publicSummary              String              @default("")
+  publicDescription          String              @default("")
+  publicAnnouncement         String              @default("")
+  attendanceVisible          Boolean             @default(false)
+  classRules                 String              @default("")
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+
+  tutorials  TeachingTutorialClass[]
+  enrollments TeachingEnrollment[]
+  sessions   TeachingSession[]
+  publicLinks TeachingClassPublicLink[]
+  groupBoard TeachingGroupBoard?
+
+  @@unique([courseCode, groupNo, term])
+  @@unique([courseCode, classCode, term])
+  @@index([status, updatedAt])
+  @@index([attendanceVisible, updatedAt])
+}
+
+model TeachingClassPublicLink {
+  id           String   @id @default(cuid())
+  classId      String
+  label        String
+  url          String
+  description  String   @default("")
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  class TeachingClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([classId, displayOrder])
+}
+
+model TeachingTutorialClass {
+  id           String   @id @default(cuid())
+  classId      String
+  code         String
+  name         String
+  room         String   @default("")
+  scheduleNote String   @default("")
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  class       TeachingClass        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  enrollments TeachingEnrollment[]
+  sessions    TeachingSession[]
+
+  @@unique([classId, code])
+  @@index([classId, displayOrder])
+}
+
+model TeachingStudent {
+  id            String    @id @default(cuid())
+  studentCode   String    @unique
+  familyName    String
+  givenName     String
+  dateOfBirth   DateTime? @db.Date
+  homeClassCode String    @default("")
+  majorName     String    @default("")
+  phone         String?
+  email         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  enrollments TeachingEnrollment[]
+
+  @@index([familyName, givenName])
+}
+
+model TeachingEnrollment {
+  id              String                   @id @default(cuid())
+  classId         String
+  tutorialClassId String?
+  studentId       String
+  orderNo          Int
+  enrolledFromWeek Int                      @default(1)
+  status           TeachingEnrollmentStatus @default(ACTIVE)
+  giftCount        Int                      @default(0)
+  note             String                   @default("")
+  learningExperience TeachingLearningExperience?
+  learningExperienceSelectedAt DateTime?
+  learningExperienceChangeCount Int                     @default(0)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  class         TeachingClass          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  tutorialClass TeachingTutorialClass? @relation(fields: [tutorialClassId], references: [id], onDelete: SetNull)
+  student       TeachingStudent        @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  attendance    TeachingAttendance[]
+  participation TeachingParticipation[]
+  groupAssignment TeachingGroupAssignment?
+
+  @@unique([classId, studentId])
+  @@index([tutorialClassId, orderNo])
+  @@index([classId, status, orderNo])
+}
+
+model TeachingSession {
+  id                  String                   @id @default(cuid())
+  classId             String
+  tutorialClassId     String
+  weekNumber          Int
+  heldOn              DateTime?                @db.Date
+  topic               String                   @default("")
+  method              TeachingAttendanceMethod @default(ROLL_CALL)
+  isCancelled         Boolean                  @default(false)
+  attendanceTakenAt   DateTime?
+  attendanceTakenById String?
+  attendanceOpen      Boolean                  @default(false)
+  participationTakenAt DateTime?
+  participationTakenById String?
+  participationOpen   Boolean                  @default(false)
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  class         TeachingClass         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  tutorialClass TeachingTutorialClass @relation(fields: [tutorialClassId], references: [id], onDelete: Cascade)
+  attendance    TeachingAttendance[]
+  participation TeachingParticipation[]
+
+  @@unique([tutorialClassId, weekNumber])
+  @@index([classId, weekNumber])
+}
+
+model TeachingAttendance {
+  id                  String                    @id @default(cuid())
+  sessionId           String
+  enrollmentId        String
+  status              TeachingAttendanceStatus
+  /// Deprecated: CP now lives on TeachingParticipation.
+  participationPoints Decimal                   @default(0) @db.Decimal(4, 2)
+  note                String                    @default("")
+  recordedById        String?
+  recordedAt          DateTime                  @default(now())
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  session    TeachingSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  enrollment TeachingEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, enrollmentId])
+  @@index([enrollmentId])
+}
+
+model TeachingParticipation {
+  id           String   @id @default(cuid())
+  sessionId    String
+  enrollmentId String
+  points       Decimal  @default(0) @db.Decimal(4, 2)
+  note         String   @default("")
+  recordedById String?
+  recordedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  session    TeachingSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  enrollment TeachingEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, enrollmentId])
+  @@index([enrollmentId])
+}
+
+model TeachingGroupBoard {
+  id           String   @id @default(cuid())
+  classId      String   @unique
+  groupCount   Int      @default(0)
+  groupSize    Int      @default(0)
+  isOpen       Boolean  @default(false)
+  version      Int      @default(0)
+  claimEpoch   Int      @default(0)
+  openedAt     DateTime?
+  lockedAt     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  class        TeachingClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  groups       TeachingGroup[]
+  assignments  TeachingGroupAssignment[]
+  audits       TeachingGroupAudit[]
+}
+
+model TeachingGroup {
+  id           String   @id @default(cuid())
+  boardId      String
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  board        TeachingGroupBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  assignments  TeachingGroupAssignment[]
+
+  @@unique([boardId, displayOrder])
+  @@index([boardId, displayOrder])
+}
+
+model TeachingGroupAssignment {
+  id           String   @id @default(cuid())
+  boardId      String
+  groupId      String
+  enrollmentId String   @unique
+  slotIndex    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  board        TeachingGroupBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  group        TeachingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  enrollment   TeachingEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, slotIndex])
+  @@index([boardId, groupId])
+}
+
+model TeachingGroupAudit {
+  id              String                  @id @default(cuid())
+  boardId         String
+  actor           TeachingGroupAuditActor
+  action          TeachingGroupAuditAction
+  actorEnrollmentId String?
+  actorUserId     String?
+  enrollmentId    String?
+  fromGroupOrder  Int?
+  fromSlotIndex   Int?
+  toGroupOrder    Int?
+  toSlotIndex     Int?
+  metadata        Json?
+  createdAt       DateTime                @default(now())
+
+  board           TeachingGroupBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId, createdAt])
 }

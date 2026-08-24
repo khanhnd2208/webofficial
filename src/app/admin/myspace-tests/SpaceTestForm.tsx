@@ -27,6 +27,7 @@ export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 	const [newSubjectName, setNewSubjectName] = useState('');
 	const [showNewSubject, setShowNewSubject] = useState(false);
 	const [questionCount, setQuestionCount] = useState(initial?.questionCount ?? 10);
+	const [displayOrder, setDisplayOrder] = useState(initial?.displayOrder ?? 0);
 	const [status, setStatus] = useState(initial?.status ?? 'DRAFT');
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 				description,
 				subjectId,
 				questionCount,
+				...(isEdit || displayOrder > 0 ? { displayOrder } : {}),
 				status,
 			};
 			const res = await fetch(
@@ -210,6 +212,23 @@ export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 					onChange={(e) => setQuestionCount(Number(e.target.value))}
 					className="mt-1.5 w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
 				/>
+			</label>
+
+			<label className="block">
+				<span className="text-xs font-bold uppercase tracking-widest text-muted">
+					Thứ tự hiển thị trong môn
+				</span>
+				<input
+					type="number"
+					min={0}
+					max={100000}
+					value={displayOrder}
+					onChange={(e) => setDisplayOrder(Number(e.target.value))}
+					className="mt-1.5 w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+				/>
+				<span className="mt-1 block text-xs text-muted">
+					Số nhỏ hơn hiện trước. Bài mới để 0 sẽ được gắn cuối môn khi tạo.
+				</span>
 			</label>
 
 			<label className="block">

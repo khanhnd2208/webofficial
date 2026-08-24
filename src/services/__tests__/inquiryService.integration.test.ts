@@ -15,13 +15,13 @@ function baseDocument(overrides: Record<string, unknown> = {}) {
 	return {
 		name: 'Nguyễn Văn A',
 		email: 'sender@example.com',
-		inquiryType: 'training',
+		inquiryType: 'training' as const,
 		context: 'Tôi muốn hỏi về một workshop.',
 		agreedScope: false,
 		agreedPrivacy: true,
-		status: 'NEW',
-		statusHistory: [{ status: 'NEW', at: new Date() }],
-		emailStatus: 'failed',
+		status: 'NEW' as const,
+		statusHistory: [{ status: 'NEW' as const, at: new Date() }],
+		emailStatus: 'failed' as const,
 		...overrides,
 	};
 }

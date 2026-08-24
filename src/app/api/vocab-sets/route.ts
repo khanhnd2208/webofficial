@@ -2,12 +2,12 @@
    GET  /api/vocab-sets  — user's active library
    POST /api/vocab-sets  — create new VocabSet (admin, JSON or CSV/XLSX)
    ════════════════════════════════════════════════════════════════════════ */
-import { withAdmin, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withAdmin, withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
 import { createVocabSet, getUserLibrary } from '@/services/vocabSetService';
 import { parseVocabFile } from '@/lib/vocab/parseVocabFile';
 import type { CreateWordInput } from '@/types/vocab';
 
-export const GET = withAdmin(async (_req, user) => {
+export const GET = withAuth(async (_req, user) => {
 	const items = await getUserLibrary(user.id);
 	return apiSuccess({ items, total: items.length });
 });
@@ -35,7 +35,7 @@ export const POST = withAdmin(async (request, user) => {
 				.join(' | ');
 			const suffix = errors.length > 10 ? ` … và ${errors.length - 10} dòng khác` : '';
 			return apiError(
-				`${errors.length} dòng thiếu trường bắt buộc (word/term, definition, ndk_explanation). ${details}${suffix}`,
+				`${errors.length} dòng thiếu trường bắt buộc (term + meaning_vi/meaning_en). ${details}${suffix}`,
 				422,
 			);
 		}

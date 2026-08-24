@@ -54,7 +54,9 @@ describe('withErrorHandling', () => {
 		});
 		const res = await GET(new NextRequest('http://localhost/api/test'));
 		expect(res.status).toBe(422);
-		expect(await res.json()).toEqual({ ok: false, error: 'Bad input' });
+		const body = await res.json();
+		expect(body).toMatchObject({ ok: false, error: 'Bad input' });
+		expect(body.requestId).toEqual(expect.any(String));
 	});
 
 	it('maps unknown errors to generic 500', async () => {
@@ -63,7 +65,9 @@ describe('withErrorHandling', () => {
 		});
 		const res = await GET(new NextRequest('http://localhost/api/test'));
 		expect(res.status).toBe(500);
-		expect(await res.json()).toEqual({ ok: false, error: 'Internal server error' });
+		const body = await res.json();
+		expect(body).toMatchObject({ ok: false, error: 'Internal server error' });
+		expect(body.requestId).toEqual(expect.any(String));
 	});
 });
 

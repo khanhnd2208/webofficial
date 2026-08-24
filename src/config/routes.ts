@@ -19,9 +19,40 @@ export const routes = {
 	services: '/dich-vu',
 	/** Personal experiments hub — boardgames, podcast, tests (evidence-gated tiles). */
 	mySpace: '/my-space',
+	activeRecall: '/my-space/active-recall',
+	activeRecallDeck: (slug: string) => `/my-space/active-recall/${slug}` as const,
 	mySpaceTests: '/my-space/tests',
 	mySpaceTest: (slug: string) => `/my-space/tests/${slug}` as const,
 	mySpaceTestPlay: (slug: string) => `/my-space/tests/${slug}/play` as const,
+	myClass: '/my-space/my-class',
+	myClassCourse: (courseSlug: string) => `/my-space/my-class/${courseSlug}` as const,
+	myClassModule: (courseSlug: string, lessonSlug: string, moduleSlug: string) =>
+		`/my-space/my-class/${courseSlug}/modules/${lessonSlug}/${moduleSlug}` as const,
+	myClassCourseEdit: (courseSlug: string) => `/my-space/my-class/${courseSlug}?edit=1` as const,
+	myClassLesson: (courseSlug: string, lessonSlug: string) =>
+		`/my-space/my-class/${courseSlug}?lesson=${encodeURIComponent(lessonSlug)}` as const,
+	myClassUnit: (courseSlug: string, lessonSlug: string, unitSlug: string, options?: { sectionSlug?: string | null; level?: string | null }) => {
+		const path = `/my-space/my-class/${courseSlug}/${lessonSlug}/${unitSlug}`;
+		const params = new URLSearchParams();
+		if (options?.sectionSlug) params.set('s', options.sectionSlug);
+		if (options?.level) params.set('level', options.level);
+		const query = params.toString();
+		return `${path}${query ? `?${query}` : ''}` as const;
+	},
+	myClassReview: (courseSlug: string) => `/my-space/my-class/${courseSlug}/review` as const,
+	myClassKnowledge: (courseSlug: string, kuSlug: string) =>
+		`/my-space/my-class/${courseSlug}/knowledge/${kuSlug}` as const,
+	myClassVocabIndex: (courseSlug: string) => `/my-space/my-class/${courseSlug}/vocab` as const,
+	myClassVocab: (courseSlug: string, setId: string) =>
+		`/my-space/my-class/${courseSlug}/vocab/${setId}` as const,
+	myClassTest: (courseSlug: string, testSlug: string) =>
+		`/my-space/my-class/${courseSlug}/tests/${testSlug}` as const,
+	myClassProgress: '/my-space/my-class/progress',
+	mySpaceTeaching: '/my-space/teaching',
+	mySpaceTeachingNew: '/my-space/teaching/new',
+	mySpaceTeachingImport: '/my-space/teaching/import',
+	mySpaceTeachingClass: (id: string) => `/my-space/teaching/${id}` as const,
+	mySpaceTeachingClassTab: (id: string, tab: string) => `/my-space/teaching/${id}?tab=${tab}` as const,
 	/** In-page anchors on /gioi-thieu */
 	aboutServices: '/gioi-thieu#dich-vu',
 	aboutTeaching: '/gioi-thieu#giang-day-workshop',
@@ -77,6 +108,9 @@ export const routes = {
 	course: (slug: string) => `/hoc/khoa-hoc/${slug}` as const,
 	lesson: (courseSlug: string, lessonSlug: string) =>
 		`/hoc/khoa-hoc/${courseSlug}/bai/${lessonSlug}` as const,
+	teachingPublicClass: (slug: string) => `/lop/${slug}` as const,
+	teachingPublicClassTab: (slug: string, tab: 'attendance' | 'cp' | 'groups') => `/lop/${slug}?tab=${tab}` as const,
+	teachingPublicAttendance: (slug: string) => `/lop/${slug}` as const,
 
 	/** @deprecated Prefer aboutTeaching; kept for temporary redirects. */
 	teaching: '/giang-day',
@@ -96,6 +130,9 @@ export const routes = {
 		tools: '/admin/tools',
 		vocabulary: '/admin/tools/vocabulary',
 		luckyCard: '/admin/tools/lucky-card',
+		activeRecall: '/admin/tools/active-recall',
+		activeRecallNew: '/admin/tools/active-recall/new',
+		activeRecallEdit: (id: string) => `/admin/tools/active-recall/${id}` as const,
 		messages: '/admin/tools/messages',
 		myspaceTests: '/admin/myspace-tests',
 		myspaceTestNew: '/admin/myspace-tests/new',
@@ -104,6 +141,47 @@ export const routes = {
 		myspaceQuestions: '/admin/myspace-tests/questions',
 		myspaceQuestionsImport: '/admin/myspace-tests/import',
 		myspaceSubjects: '/admin/myspace-tests/subjects',
+		myClass: '/admin/my-class',
+		myClassCourses: '/admin/my-class/courses',
+		myClassCourseNew: '/admin/my-class/courses/new',
+		myClassCourse: (id: string) => `/admin/my-class/courses/${id}` as const,
+		myClassCourseOverview: (id: string) => `/admin/my-class/courses/${id}/overview` as const,
+		myClassCourseContent: (id: string) => `/admin/my-class/courses/${id}/content` as const,
+		myClassCourseVocabulary: (id: string) => `/admin/my-class/courses/${id}/vocabulary` as const,
+		myClassCoursePractice: (id: string) => `/admin/my-class/courses/${id}/practice` as const,
+		myClassCourseStudents: (id: string) => `/admin/my-class/courses/${id}/students` as const,
+		myClassCourseResults: (id: string) => `/admin/my-class/courses/${id}/results` as const,
+		myClassCourseSettings: (id: string) => `/admin/my-class/courses/${id}/settings` as const,
+		myClassKnowledge: '/admin/my-class/knowledge',
+		myClassKnowledgeNew: '/admin/my-class/knowledge/new',
+		myClassKnowledgeEdit: (id: string) => `/admin/my-class/knowledge/${id}` as const,
+		myClassTests: '/admin/my-class/tests',
+		myClassTestNew: '/admin/my-class/tests/new',
+		myClassTestEdit: (id: string) => `/admin/my-class/tests/${id}` as const,
+		myClassVocabulary: '/admin/my-class/vocabulary',
+		myClassVocabularyNew: '/admin/my-class/vocabulary/new',
+		myClassVocabularyEdit: (id: string) => `/admin/my-class/vocabulary/${id}` as const,
+		myClassBank: '/admin/my-class/bank',
+		myClassQuestions: '/admin/my-class/questions',
+		myClassQuestionNew: '/admin/my-class/questions/new',
+		myClassQuestionEdit: (id: string) => `/admin/my-class/questions/${id}` as const,
+		myClassCohorts: '/admin/my-class/cohorts',
+		myClassCohortNew: '/admin/my-class/cohorts/new',
+		myClassCohortEdit: (id: string) => `/admin/my-class/cohorts/${id}` as const,
+		myClassImport: '/admin/my-class/import',
+		myClassPerformance: '/admin/my-class/performance',
+		/** @deprecated Use routes.mySpaceTeaching. Kept for bookmark compatibility. */
+		teaching: '/admin/teaching',
+		teachingNew: '/admin/teaching/new',
+		teachingImport: '/admin/teaching/import',
+		teachingClass: (id: string) => `/admin/teaching/${id}` as const,
+		teachingClassTab: (id: string, tab: string) => `/admin/teaching/${id}?tab=${tab}` as const,
+		teachingGradebook: (id: string) => `/admin/teaching/${id}/gradebook` as const,
+		teachingRoster: (id: string) => `/admin/teaching/${id}/roster` as const,
+		teachingSessions: (id: string) => `/admin/teaching/${id}/sessions` as const,
+		teachingSettings: (id: string) => `/admin/teaching/${id}/settings` as const,
+		teachingPublic: (id: string) => `/admin/teaching/${id}/public` as const,
+		teachingAttendanceBoard: (id: string) => `/admin/teaching/${id}/attendance-board` as const,
 		users: '/admin/users',
 		media: '/admin/media',
 		settings: '/admin/settings',

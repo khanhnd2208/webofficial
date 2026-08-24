@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import { expand } from 'dotenv-expand';
+
+expand(config({ path: '.env.local', quiet: true }));
 
 export default defineConfig({
 	testDir: './e2e',
@@ -11,10 +15,22 @@ export default defineConfig({
 		baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
 		trace: 'on-first-retry',
 	},
-	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+	projects: [
+		{ name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+		{
+			name: 'mobile-chrome-smoke',
+			testMatch: /mobile-smoke\.spec\.ts/,
+			use: { ...devices['Pixel 5'] },
+		},
+		{
+			name: 'mobile-safari-smoke',
+			testMatch: /mobile-smoke\.spec\.ts/,
+			use: { ...devices['iPhone 13'] },
+		},
+	],
 	webServer: process.env.CI
 		? {
-				command: 'npm run build && npm run start -- -p 3000',
+				command: 'npm run start -- -p 3000',
 				url: 'http://localhost:3000',
 				reuseExistingServer: false,
 				timeout: 180_000,

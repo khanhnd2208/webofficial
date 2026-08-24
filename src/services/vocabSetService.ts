@@ -9,6 +9,7 @@
    • Users always read Words directly from the admin's source VocabSet
    ════════════════════════════════════════════════════════════════════════ */
 import { prisma } from '@/lib/prisma';
+import { listSkip, parseListQuery, toListPage } from '@/features/my-class/domain/listQuery';
 import type {
 	VocabSetDTO,
 	VocabSetListItemDTO,
@@ -17,7 +18,9 @@ import type {
 	StoreListResult,
 	CreateVocabSetInput,
 	UpdateVocabSetInput,
+	CreateWordInput,
 	WordDTO,
+	UserVocabSetSource,
 } from '@/types/vocab';
 import type { VocabSet, Word } from '@prisma/client';
 
@@ -36,10 +39,34 @@ function wordToDTO(w: Word): WordDTO {
 		definition: w.definition,
 		partOfSpeech: w.partOfSpeech,
 		example: w.example,
+		pronunciation: w.pronunciation,
+		meaningEn: w.meaningEn,
+		meaningVi: w.meaningVi,
 		ndkExplanation: w.ndkExplanation,
 		hintsHard: w.hintsHard,
 		hintsMedium: w.hintsMedium,
 		hintsEasy: w.hintsEasy,
+	};
+}
+
+/** Keep `definition` in sync so legacy games still read a single meaning string. */
+export function wordWriteData(w: CreateWordInput) {
+	const meaningEn = (w.meaningEn ?? '').trim();
+	const meaningVi = (w.meaningVi ?? '').trim();
+	const definitionIn = (w.definition ?? '').trim();
+	const meaningViOut = meaningVi || definitionIn;
+	return {
+		term: w.term.trim(),
+		definition: meaningViOut || meaningEn || definitionIn,
+		partOfSpeech: w.partOfSpeech?.trim() ?? '',
+		example: w.example?.trim() ?? '',
+		pronunciation: w.pronunciation?.trim() ?? '',
+		meaningEn,
+		meaningVi: meaningViOut,
+		ndkExplanation: w.ndkExplanation ?? null,
+		hintsHard: w.hintsHard ?? [],
+		hintsMedium: w.hintsMedium ?? [],
+		hintsEasy: w.hintsEasy ?? [],
 	};
 }
 
@@ -56,6 +83,7 @@ set: VocabSet & { words: Word[] },
 		words: activeWords.map(wordToDTO),
 		wordCount: activeWords.length,
 		isArchived: set.isArchived,
+		isCourseOnly: set.isCourseOnly,
 		createdAt: set.createdAt.toISOString(),
 		updatedAt: set.updatedAt.toISOString(),
 	};
@@ -72,6 +100,7 @@ set: VocabSet & { _count: { words: number } },
 		ownerName: set.ownerName,
 		wordCount: set._count.words,
 		isArchived: set.isArchived,
+		isCourseOnly: set.isCourseOnly,
 		createdAt: set.createdAt.toISOString(),
 		updatedAt: set.updatedAt.toISOString(),
 	};
@@ -97,6 +126,8 @@ return entries.map((entry) => ({
 ...setToDTO(entry.vocabSet),
 libraryEntryId: entry.id,
 status: entry.status as 'active',
+source: entry.source as UserVocabSetSource,
+sourceCourseId: entry.sourceCourseId,
 addedAt: entry.addedAt.toISOString(),
 }));
 }
@@ -129,6 +160,7 @@ data: { status: 'soft_deleted', deletedAt: new Date() },
 export async function addToLibrary(
 userId: string,
 vocabSetId: string,
+provenance?: { source?: UserVocabSetSource; sourceCourseId?: string | null },
 ): Promise<void> {
 const existing = await prisma.userVocabSet.findUnique({
 where: { userId_vocabSetId: { userId, vocabSetId } },
@@ -136,18 +168,42 @@ where: { userId_vocabSetId: { userId, vocabSetId } },
 
 if (existing) {
 if (existing.status === 'active') throw new AlreadyOwnedError();
-// Restore soft-deleted entry
 await prisma.userVocabSet.update({
 where: { userId_vocabSetId: { userId, vocabSetId } },
-data: { status: 'active', deletedAt: null },
+data: {
+	status: 'active',
+	deletedAt: null,
+	...(provenance?.source ? { source: provenance.source } : {}),
+	...(provenance?.sourceCourseId !== undefined ? { sourceCourseId: provenance.sourceCourseId } : {}),
+},
 });
 return;
 }
 
-// New entry
 await prisma.userVocabSet.create({
-data: { userId, vocabSetId },
+data: {
+	userId,
+	vocabSetId,
+	source: provenance?.source ?? 'STORE',
+	sourceCourseId: provenance?.sourceCourseId ?? null,
+},
 });
+}
+
+export async function getActiveLibraryEntry(userId: string, vocabSetId: string) {
+	return prisma.userVocabSet.findFirst({
+		where: { userId, vocabSetId, status: 'active' },
+	});
+}
+
+export async function canReadVocabSet(
+	user: { id: string; role: string },
+	set: { isArchived: boolean; isCourseOnly: boolean; id: string },
+): Promise<boolean> {
+	if (user.role === 'admin') return true;
+	const linked = await getActiveLibraryEntry(user.id, set.id);
+	if (linked) return true;
+	return !set.isArchived && !set.isCourseOnly;
 }
 
 // ─── Store (public listing) ────────────────────────────────────────────────────
@@ -165,13 +221,13 @@ const skip = (page - 1) * limit;
 
 const [sets, total] = await prisma.$transaction([
 prisma.vocabSet.findMany({
-where: { isArchived: false },
+where: { isArchived: false, isCourseOnly: false },
 orderBy: { updatedAt: 'desc' },
 skip,
 take: limit,
 include: { _count: { select: { words: { where: { isDeleted: false } } } } },
 }),
-prisma.vocabSet.count({ where: { isArchived: false } }),
+prisma.vocabSet.count({ where: { isArchived: false, isCourseOnly: false } }),
 ]);
 
 // Fetch ownership status for the current user in one query
@@ -218,22 +274,14 @@ input: CreateVocabSetInput,
 const set = await prisma.$transaction(async (tx) => {
 const created = await tx.vocabSet.create({
 data: {
-title: input.title.trim(),
-description: input.description?.trim() ?? '',
-ownerId,
-ownerName,
-words: {
-create: input.words.map((w) => ({
-term: w.term.trim(),
-definition: w.definition.trim(),
-partOfSpeech: w.partOfSpeech?.trim() ?? '',
-example: w.example?.trim() ?? '',
-ndkExplanation: w.ndkExplanation ?? null,
-hintsHard: w.hintsHard ?? [],
-hintsMedium: w.hintsMedium ?? [],
-hintsEasy: w.hintsEasy ?? [],
-})),
-},
+			title: input.title.trim(),
+			description: input.description?.trim() ?? '',
+			ownerId,
+			ownerName,
+			isCourseOnly: input.isCourseOnly ?? false,
+			words: {
+				create: input.words.map((w) => wordWriteData(w)),
+			},
 },
 include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
 });
@@ -280,32 +328,18 @@ if (w.id) {
 // Update existing
 await tx.word.update({
 where: { id: w.id },
-data: {
-term: w.term.trim(),
-definition: w.definition.trim(),
-partOfSpeech: w.partOfSpeech?.trim() ?? '',
-example: w.example?.trim() ?? '',
-ndkExplanation: w.ndkExplanation ?? null,
-hintsHard: w.hintsHard ?? [],
-hintsMedium: w.hintsMedium ?? [],
-hintsEasy: w.hintsEasy ?? [],
-isDeleted: false, // re-activate if it was soft-deleted
-},
+				data: {
+					...wordWriteData(w),
+					isDeleted: false, // re-activate if it was soft-deleted
+				},
 });
 } else {
 // Create new
 await tx.word.create({
-data: {
-vocabSetId: setId,
-term: w.term.trim(),
-definition: w.definition.trim(),
-partOfSpeech: w.partOfSpeech?.trim() ?? '',
-example: w.example?.trim() ?? '',
-ndkExplanation: w.ndkExplanation ?? null,
-hintsHard: w.hintsHard ?? [],
-hintsMedium: w.hintsMedium ?? [],
-hintsEasy: w.hintsEasy ?? [],
-},
+				data: {
+					vocabSetId: setId,
+					...wordWriteData(w),
+				},
 });
 }
 }
@@ -351,6 +385,96 @@ orderBy: { updatedAt: 'desc' },
 include: { _count: { select: { words: { where: { isDeleted: false } } } } },
 });
 return sets.map(setToListItem);
+}
+
+export type AdminVocabCatalogItem = VocabSetListItemDTO & {
+	assignmentCount: number;
+	libraryCount: number;
+	courses: Array<{ id: string; title: string }>;
+};
+
+const VOCAB_TABLE_SORTS = ['title', 'updatedAt', 'assignments', 'library'] as const;
+
+export async function listAdminVocabCatalog(filters?: {
+	q?: string;
+	courseId?: string;
+	archived?: boolean;
+	page?: number;
+	pageSize?: number;
+	sortBy?: string;
+	sortDir?: 'asc' | 'desc';
+}): Promise<import('@/features/my-class').ListPage<AdminVocabCatalogItem>> {
+	const query = parseListQuery(
+		{
+			q: filters?.q,
+			page: filters?.page ? String(filters.page) : undefined,
+			pageSize: filters?.pageSize ? String(filters.pageSize) : undefined,
+			sortBy: filters?.sortBy,
+			sortDir: filters?.sortDir,
+		},
+		{ sortFields: VOCAB_TABLE_SORTS, defaultSortBy: 'updatedAt' },
+	);
+	const needle = query.q;
+	const where = {
+		...(needle
+			? {
+					OR: [
+						{ title: { contains: needle, mode: 'insensitive' as const } },
+						{ description: { contains: needle, mode: 'insensitive' as const } },
+					],
+				}
+			: {}),
+		...(filters?.courseId
+			? { myClassAssignments: { some: { courseId: filters.courseId } } }
+			: {}),
+		...(filters?.archived === undefined ? {} : { isArchived: filters.archived }),
+	};
+	const sortDir = query.sortDir;
+	const orderBy =
+		query.sortBy === 'assignments'
+			? { myClassAssignments: { _count: sortDir } }
+			: query.sortBy === 'library'
+				? { userVocabSets: { _count: sortDir } }
+				: { [query.sortBy]: sortDir };
+	const [sets, total] = await Promise.all([
+		prisma.vocabSet.findMany({
+			where,
+			orderBy,
+			skip: listSkip(query.page, query.pageSize),
+			take: query.pageSize,
+			include: {
+				_count: {
+					select: {
+						words: { where: { isDeleted: false } },
+						myClassAssignments: true,
+						userVocabSets: { where: { status: 'active' } },
+					},
+				},
+				myClassAssignments: {
+					select: { course: { select: { id: true, title: true } } },
+					take: 6,
+				},
+			},
+		}),
+		prisma.vocabSet.count({ where }),
+	]);
+	return toListPage(
+		sets.map((set) => {
+			const courses = new Map<string, { id: string; title: string }>();
+			for (const row of set.myClassAssignments) {
+				courses.set(row.course.id, row.course);
+			}
+			return {
+				...setToListItem(set),
+				assignmentCount: set._count.myClassAssignments,
+				libraryCount: set._count.userVocabSets,
+				courses: [...courses.values()],
+			};
+		}),
+		total,
+		query.page,
+		query.pageSize,
+	);
 }
 
 /** Alias kept for callers that haven't been updated yet. Returns active library entries only. */

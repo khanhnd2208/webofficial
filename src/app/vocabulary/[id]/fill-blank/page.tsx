@@ -2,15 +2,16 @@
 
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useVocabSetUrl, useVocabScoreUrl, useVocabChrome, VocabPracticeFrame, VocabBackLink } from '@/components/vocab/practice/VocabApiProvider';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
 type WordRecord = { startTime: number; endTime: number; penaltyMs: number; correct: boolean };
 
 const WORD_TIME = 30; // seconds per word
 
-async function submitScore(vocabSetId: string, records: WordRecord[]) {
+async function submitScore(scoreUrl: string, records: WordRecord[]) {
 	try {
-		const res = await fetch(`/api/vocab-sets/${vocabSetId}/score`, {
+		const res = await fetch(scoreUrl, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ mode: 'FILL_BLANK', words: records }),
@@ -122,6 +123,7 @@ function burstConfetti(container: HTMLElement) {
 }
 
 export default function FillBlankPage({ params }: { params: Promise<{ id: string }> }) {
+	const vocabUrl = useVocabSetUrl();
 	const [id, setId] = useState('');
 	const [allWords, setAllWords] = useState<Word[] | null>(null);
 	const [error, setError] = useState('');
@@ -148,7 +150,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
 			setId(paramId);
-			const res = await fetch(`/api/vocab-sets/${paramId}`);
+			const res = await fetch(vocabUrl(paramId));
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
 			const words = (json.data.set?.words ?? json.data.words ?? []) as Word[];
@@ -157,7 +159,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 			setQuestions(q);
 			resetForQuestion(q[0]);
 		});
-	}, [params]);
+	}, [params, vocabUrl]);
 
 	function resetForQuestion(word: Word) {
 		const len = word.term.length;
@@ -342,24 +344,25 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	/* ── Loading / Error ── */
 	if (error) {
 		return (
-			<main className="min-h-screen flex items-center justify-center">
+			<VocabPracticeFrame className="min-h-screen flex items-center justify-center">
 				<p className="text-sm text-error">{error}</p>
-			</main>
+			</VocabPracticeFrame>
 		);
 	}
 
 	if (allWords === null) {
 		return (
-			<main className="min-h-screen flex items-center justify-center">
+			<VocabPracticeFrame className="min-h-screen flex items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
-			</main>
+			</VocabPracticeFrame>
 		);
 	}
 
 	/* ── Completion screen ── */
 	if (finished) {
 		return (
-			<main ref={containerRef} className="min-h-screen">
+			<VocabPracticeFrame className="min-h-screen">
+				<div ref={containerRef}>
 				<CompletionScreen
 					correct={correct}
 					wrong={wrong}
@@ -378,20 +381,20 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 						resetForQuestion(q[0]);
 					}}
 				/>
-			</main>
+				</div>
+			</VocabPracticeFrame>
 		);
 	}
 
 	const progress = total > 0 ? ((qIndex + 1) / total) * 100 : 0;
 
 	return (
-		<main ref={containerRef} className="min-h-screen select-none">
+		<VocabPracticeFrame className="min-h-screen select-none">
+			<div ref={containerRef}>
 			{/* Top bar */}
 			<div className="border-b border-border">
 				<div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-				<Link href="/vocabulary" className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors">
-					← Từ vựng
-				</Link>
+				<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
 				<div className="flex items-center gap-3 text-xs text-muted">
 						<span>{qIndex + 1}/{total}</span>
 						<span className="font-bold text-success">✓ {correct}</span>
@@ -607,7 +610,8 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 					100% { transform: translateY(0); opacity: 1; }
 				}
 			`}</style>
-		</main>
+			</div>
+		</VocabPracticeFrame>
 	);
 }
 
@@ -629,6 +633,8 @@ function CompletionScreen({
 	containerRef: React.RefObject<HTMLDivElement | null>;
 	onRestart: () => void;
 }) {
+	const chrome = useVocabChrome();
+	const scoreUrlFor = useVocabScoreUrl();
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
 	const [avgScore, setAvgScore] = useState<number | null>(null);
@@ -639,13 +645,13 @@ function CompletionScreen({
 	useEffect(() => {
 		if (scoreSubmittedRef.current || wordRecords.length === 0) return;
 		scoreSubmittedRef.current = true;
-		submitScore(id, wordRecords).then((data) => {
+		submitScore(scoreUrlFor(id), wordRecords).then((data) => {
 			if (data) {
 				setAvgScore(Math.round(data.score));
 				setScoreResult({ isNewBest: data.isNewBest, previousBest: Math.round(data.previousBest ?? 0) });
 			}
 		});
-	}, [id, wordRecords]);
+	}, [id, scoreUrlFor, wordRecords]);
 
 	useEffect(() => {
 		const t = setTimeout(() => setShow(true), 100);
@@ -672,9 +678,9 @@ function CompletionScreen({
 	const message = score >= 90 ? 'Xuất sắc!' : score >= 70 ? 'Tuyệt vời!' : score >= 50 ? 'Khá tốt!' : 'Cần luyện thêm!';
 
 	const practiceLinks = [
-		{ href: `/vocabulary/${id}/flashcards`, label: 'Flashcards', color: 'text-accent' },
-		{ href: `/vocabulary/${id}/mcq`, label: 'Trắc nghiệm', color: 'text-success' },
-		{ href: `/vocabulary/${id}/matching`, label: 'Nối từ', color: 'text-purple' },
+		{ href: chrome.modeHref(id, 'flashcards'), label: 'Flashcards', color: 'text-accent' },
+		{ href: chrome.modeHref(id, 'mcq'), label: 'Trắc nghiệm', color: 'text-success' },
+		{ href: chrome.modeHref(id, 'matching'), label: 'Nối từ', color: 'text-purple' },
 	];
 
 	return (
@@ -750,7 +756,7 @@ function CompletionScreen({
 							Làm lại
 						</button>
 						<Link
-							href={`/vocabulary/${id}`}
+							href={chrome.setHref(id)}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:border-foreground active:scale-95"
 						>
 							Quay lại bộ từ

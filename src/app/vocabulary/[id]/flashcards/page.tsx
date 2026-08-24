@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import FlashcardPrism from '@/components/vocab/FlashcardPrism';
 import type { FlashcardWord } from '@/components/vocab/FlashcardPrism';
+import { useVocabSetUrl, useVocabChrome, VocabPracticeFrame, VocabBackLink } from '@/components/vocab/practice/VocabApiProvider';
+import { clearPracticeDraft, readPracticeDraft, writePracticeDraft } from '@/features/my-class/client/practiceDraft';
 
 type Word = FlashcardWord;
 
@@ -89,19 +91,47 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	const [_stillLearning, setStillLearning] = useState<Word[]>([]);
 	const [index, setIndex] = useState(0);
 	const [animKey, setAnimKey] = useState(0);
+	const vocabUrl = useVocabSetUrl();
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
 			setId(paramId);
-			const res = await fetch(`/api/vocab-sets/${paramId}`);
+			const res = await fetch(vocabUrl(paramId));
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
 			const words = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(words);
-			setRemaining(shuffle(words));
+			const draft = readPracticeDraft<{ remainingIds: string[]; masteredIds: string[]; index: number }>(`flashcards:${paramId}`);
+			if (draft) {
+				const byId = new Map(words.map((word) => [word.id, word]));
+				const remainingRestored = draft.remainingIds.map((wordId) => byId.get(wordId)).filter((word): word is Word => Boolean(word));
+				const masteredRestored = draft.masteredIds.map((wordId) => byId.get(wordId)).filter((word): word is Word => Boolean(word));
+				if (remainingRestored.length) {
+					setRemaining(remainingRestored);
+					setMastered(masteredRestored);
+					setIndex(Math.min(draft.index, remainingRestored.length - 1));
+				} else {
+					setRemaining(shuffle(words));
+				}
+			} else {
+				setRemaining(shuffle(words));
+			}
 		});
-	}, [params]);
+	}, [params, vocabUrl]);
+
+	useEffect(() => {
+		if (!id || !allWords) return;
+		if (remaining.length === 0) {
+			clearPracticeDraft(`flashcards:${id}`);
+			return;
+		}
+		writePracticeDraft(`flashcards:${id}`, {
+			remainingIds: remaining.map((word) => word.id),
+			masteredIds: mastered.map((word) => word.id),
+			index,
+		});
+	}, [allWords, id, index, mastered, remaining]);
 
 	const card = remaining[index] ?? null;
 	const total = allWords?.length ?? 0;
@@ -150,24 +180,25 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	/* ── Loading / Error ── */
 	if (error) {
 		return (
-			<main className="min-h-screen flex items-center justify-center">
+			<VocabPracticeFrame className="min-h-screen flex items-center justify-center">
 				<p className="text-sm text-error">{error}</p>
-			</main>
+			</VocabPracticeFrame>
 		);
 	}
 
 	if (allWords === null) {
 		return (
-			<main className="min-h-screen flex items-center justify-center">
+			<VocabPracticeFrame className="min-h-screen flex items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
-			</main>
+			</VocabPracticeFrame>
 		);
 	}
 
 	/* ── Completion Screen ── */
 	if (remaining.length === 0) {
 		return (
-			<main ref={containerRef} className="min-h-screen">
+			<VocabPracticeFrame className="min-h-screen">
+				<div ref={containerRef}>
 				<CompletionScreen
 					total={total}
 					id={id}
@@ -180,20 +211,20 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 							setAnimKey(0);
 						}}
 				/>
-			</main>
+				</div>
+			</VocabPracticeFrame>
 		);
 	}
 
 	const progress = total > 0 ? (mastered.length / total) * 100 : 0;
 
 	return (
-		<main ref={containerRef} className="min-h-screen select-none">
+		<VocabPracticeFrame className="min-h-screen select-none">
+			<div ref={containerRef}>
 			{/* Top bar */}
 			<div className="border-b border-border">
 				<div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-					<Link href="/vocabulary" className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors">
-						← Từ vựng
-					</Link>
+					<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
 					<div className="flex items-center gap-3 text-xs text-muted">
 						<span className="font-bold text-success">{mastered.length}</span>
 						<span>/</span>
@@ -259,7 +290,8 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 					Tap để xoay · ← Chưa thuộc · → Đã thuộc · ⌘Z Hoàn tác
 				</p>
 			</div>
-		</main>
+			</div>
+		</VocabPracticeFrame>
 	);
 }
 
@@ -275,6 +307,7 @@ function CompletionScreen({
 	containerRef: React.RefObject<HTMLDivElement | null>;
 	onRestart: () => void;
 }) {
+	const chrome = useVocabChrome();
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
 
@@ -326,7 +359,7 @@ function CompletionScreen({
 							Học lại
 						</button>
 						<Link
-							href={`/vocabulary/${id}`}
+							href={chrome.setHref(id)}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:border-foreground active:scale-95"
 						>
 							Quay lại bộ từ
@@ -338,9 +371,9 @@ function CompletionScreen({
 						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Thử chế độ khác</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">
 							{[
-								{ href: `/vocabulary/${id}/mcq`, label: 'Trắc nghiệm', color: 'text-success' },
-								{ href: `/vocabulary/${id}/fill-blank`, label: 'Điền từ', color: 'text-indigo' },
-								{ href: `/vocabulary/${id}/matching`, label: 'Nối từ', color: 'text-purple' },
+								{ href: chrome.modeHref(id, 'mcq'), label: 'Trắc nghiệm', color: 'text-success' },
+								{ href: chrome.modeHref(id, 'fill-blank'), label: 'Điền từ', color: 'text-indigo' },
+								{ href: chrome.modeHref(id, 'matching'), label: 'Nối từ', color: 'text-purple' },
 							].map((link) => (
 								<Link
 									key={link.href}

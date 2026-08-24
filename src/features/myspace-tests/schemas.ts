@@ -21,6 +21,7 @@ export const createSpaceTestSchema = z.object({
 	difficulties: z.array(z.number().int().min(1).max(10)).max(10).optional(),
 	classifications: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
 	questionCount: z.number().int().min(1).max(200),
+	displayOrder: z.number().int().min(0).max(100_000).optional(),
 	status: publishStatusSchema.optional(),
 });
 
@@ -33,6 +34,7 @@ export const updateSpaceTestSchema = z.object({
 	difficulties: z.array(z.number().int().min(1).max(10)).max(10).optional(),
 	classifications: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
 	questionCount: z.number().int().min(1).max(200).optional(),
+	displayOrder: z.number().int().min(0).max(100_000).optional(),
 	status: publishStatusSchema.optional(),
 });
 

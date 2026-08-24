@@ -9,7 +9,9 @@ import {
 	getPublishedContactCta,
 	getPublishedFooterGroups,
 	isFullBleedPublicPath,
+	isLopPath,
 	isGateItemLocked,
+	isInternalChromePath,
 	isIntroPath,
 	isPublished,
 	isTocPath,
@@ -47,12 +49,7 @@ describe('publication gates', () => {
 	it('locks marketing destinations while keeping My Space open', () => {
 		const items = getGateNavItems();
 		expect(items).toEqual(GATE_NAV_ITEMS);
-		expect(items.map((item) => item.label)).toEqual([
-			'Giới thiệu',
-			'Dự án',
-			'Dịch vụ',
-			'My Space',
-		]);
+		expect(items.map((item) => item.label)).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ', 'My Space']);
 		expect(items[0]?.href).toBeUndefined();
 		expect(items[1]?.href).toBeUndefined();
 		expect(items[2]?.href).toBeUndefined();
@@ -78,6 +75,10 @@ describe('publication gates', () => {
 		expect(isFullBleedPublicPath('/my-space')).toBe(true);
 		expect(isFullBleedPublicPath('/my-space/tests')).toBe(true);
 		expect(isFullBleedPublicPath('/gioi-thieu')).toBe(false);
+		expect(isLopPath('/lop/hrm-101')).toBe(true);
+		expect(isFullBleedPublicPath('/lop/hrm-101')).toBe(true);
+		expect(isInternalChromePath('/my-space/teaching')).toBe(true);
+		expect(isInternalChromePath('/my-space/teaching/class-1')).toBe(true);
 	});
 
 	it('keeps legacy desktop nav helpers for unpublished chrome consumers', () => {

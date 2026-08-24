@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useGuessWhoSession } from '@/lib/vocab/useGuessWhoSession';
 import type { GuessWhoWord, WordResult } from '@/lib/vocab/useGuessWhoSession';
 import GuessWhoInput from '@/components/vocab/GuessWhoInput';
+import { useVocabSetUrl, useVocabScoreUrl, useVocabChrome, VocabPracticeFrame } from '@/components/vocab/practice/VocabApiProvider';
 import { useSoundEffects } from '@/lib/vocab/useSoundEffects';
 
 // Session Summary
@@ -16,11 +17,13 @@ function SessionSummary({
 }) {
   const [scoreData, setScoreData] = useState<{ score: number; isNewBest: boolean; previousBest: number } | null>(null);
   const submittedRef = useRef(false);
+  const chrome = useVocabChrome();
+  const scoreUrlFor = useVocabScoreUrl();
 
   useEffect(() => {
     if (submittedRef.current || sessionEndTime === 0) return;
     submittedRef.current = true;
-    fetch(`/api/vocab-sets/${setId}/score`, {
+    fetch(scoreUrlFor(setId), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode: 'GUESS_WHO', sessionStartTime, sessionEndTime, penaltyMs }),
@@ -75,7 +78,7 @@ function SessionSummary({
           className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95">
           🔄 Chơi lại
         </button>
-        <Link href={`/vocabulary/${setId}`}
+        <Link href={chrome.setHref(setId)}
           className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:border-foreground active:scale-95">
           Về trang bộ từ
         </Link>
@@ -207,6 +210,8 @@ function GuessWhoGame({ words, setId }: { words: GuessWhoWord[]; setId: string }
 
 // Page wrapper
 export default function GuessWhoPage({ params }: { params: Promise<{ id: string }> }) {
+  const vocabUrl = useVocabSetUrl();
+  const chrome = useVocabChrome();
   const [id, setId] = useState("");
   const [words, setWords] = useState<GuessWhoWord[] | null>(null);
   const [error, setError] = useState("");
@@ -214,25 +219,27 @@ export default function GuessWhoPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     params.then(async ({ id: paramId }) => {
       setId(paramId);
-      const res = await fetch(`/api/vocab-sets/${paramId}`);
+      const res = await fetch(vocabUrl(paramId));
       const json = await res.json();
       if (!json.ok) { setError(json.error); return; }
       setWords((json.data.set?.words ?? json.data.words ?? []) as GuessWhoWord[]);
     });
-  }, [params]);
+  }, [params, vocabUrl]);
 
-  if (error) return <main className="min-h-screen flex items-center justify-center"><p className="text-sm text-error">{error}</p></main>;
-  if (words === null) return <main className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" /></main>;
+  if (error) return <VocabPracticeFrame className="min-h-screen flex items-center justify-center"><p className="text-sm text-error">{error}</p></VocabPracticeFrame>;
+  if (words === null) return <VocabPracticeFrame className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" /></VocabPracticeFrame>;
 
   const eligibleCount = words.filter(w => (w.hintsHard.length + w.hintsMedium.length + w.hintsEasy.length) > 0).length;
 
   return (
-    <main className="min-h-screen">
+    <VocabPracticeFrame className="min-h-screen">
       <div className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link href={`/vocabulary/${id}`} className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors">
-            ← Bộ từ
-          </Link>
+          {chrome.embedded ? <span /> : (
+            <Link href={chrome.setHref(id)} className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors">
+              ← Bộ từ
+            </Link>
+          )}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">🎮 Guess Who I Am</span>
             <span className="rounded-full bg-surface-hover px-2 py-0.5 text-[10px] font-bold text-muted">{eligibleCount} từ</span>
@@ -242,16 +249,22 @@ export default function GuessWhoPage({ params }: { params: Promise<{ id: string 
 
       {eligibleCount === 0 ? (
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-          <div className="text-4xl">🤔</div>
           <h2 className="text-lg font-black uppercase tracking-tight text-foreground">Chưa có gợi ý nào</h2>
-          <p className="max-w-sm text-sm text-foreground-secondary">Bộ từ này chưa có gợi ý Guess Who. Admin cần thêm gợi ý trong tab Quản lí cửa hàng.</p>
-          <Link href="/vocabulary/store" className="mt-2 inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background hover:bg-transparent hover:text-foreground transition-all">
-            Đến cửa hàng từ vựng
+          <p className="max-w-sm text-sm text-foreground-secondary">
+            {chrome.embedded
+              ? 'Bộ từ chưa có gợi ý cho Guess Who. Chọn chế độ luyện khác hoặc quay lại danh sách từ.'
+              : 'Bộ từ này chưa có gợi ý Guess Who. Admin cần thêm gợi ý trong tab Quản lí cửa hàng.'}
+          </p>
+          <Link
+            href={chrome.embedded ? chrome.setHref(id) : '/vocabulary/store'}
+            className="mt-2 inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background hover:bg-transparent hover:text-foreground transition-all"
+          >
+            {chrome.embedded ? 'Về danh sách từ' : 'Đến cửa hàng từ vựng'}
           </Link>
         </div>
       ) : (
         <GuessWhoGame words={words} setId={id} />
       )}
-    </main>
+    </VocabPracticeFrame>
   );
 }

@@ -41,8 +41,6 @@ export default defineConfig({
 						'src/**/*.unit.test.ts',
 						'src/lib/__tests__/**/*.test.ts',
 						'src/utils/**/*.test.ts',
-						'src/lib/personality/**/*.test.ts',
-						'src/lib/normative/**/*.test.ts',
 					],
 					exclude: [
 						'src/_archived/**',

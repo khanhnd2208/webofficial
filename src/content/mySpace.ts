@@ -1,6 +1,6 @@
 /**
- * My Space hub — personal experiments, kept separate from the teaching portfolio.
- * Tiles stay coming-soon until a real destination exists (no empty public routes).
+ * My Space hub — personal experiments, including the knowledge workspace and
+ * the private Teaching workspace.
  */
 
 import { routes } from '@/config/routes';
@@ -10,8 +10,8 @@ export type MySpaceTileStatus = 'published' | 'coming-soon';
 export interface MySpaceTile {
 	id: string;
 	label: string;
-	/** Optional line break for long labels on narrow screens */
-	labelLines?: readonly [string, string];
+	/** Elevated rounded-square card instead of a flat icon tile (one per hub) */
+	featured?: boolean;
 	image: {
 		src: string;
 		alt: string;
@@ -57,9 +57,29 @@ export const mySpaceTiles: MySpaceTile[] = [
 		href: routes.mySpaceTests,
 	},
 	{
+		id: 'active-recall',
+		label: 'Active Recall',
+		image: {
+			src: '/brand/myspace/tests.png',
+			alt: 'Biểu tượng thẻ câu hỏi Active Recall',
+		},
+		status: 'published',
+		href: routes.activeRecall,
+	},
+	{
+		id: 'my-class',
+		label: 'Kho kiến thức',
+		featured: true,
+		image: {
+			src: '/brand/myspace/my-class.svg',
+			alt: 'Minh họa cuốn giáo trình — My Class',
+		},
+		status: 'published',
+		href: routes.myClass,
+	},
+	{
 		id: 'personality-tests',
 		label: 'Personality Tests',
-		labelLines: ['Personality', 'Tests'],
 		image: {
 			src: '/brand/myspace/personality-tests.png',
 			alt: 'Minh họa hai khuôn mặt — Personality Tests',

@@ -1,243 +1,164 @@
 # 02 — Architecture
 
-> System design, directory structure, data flow, and infrastructure decisions.
+> Current architecture of the active application. Historical designs and retired
+> routes live under `docs/archive/` and `src/_archived/`.
 
----
+## 1. High-level architecture
 
-## 1. High-Level Architecture
-
-HANOICAM follows a **Layered Architecture** adapted for Next.js App Router:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Presentation Layer (Next.js App Router)                    │
-│  ├── Server Components  → call Services directly            │
-│  └── Client Components  → fetch /api/* routes              │
-├─────────────────────────────────────────────────────────────┤
-│  Controller Layer (API Route Handlers)                      │
-│  └── src/app/api/**                                         │
-│      Wrapped with withAuth / withAdmin / withErrorHandling  │
-├─────────────────────────────────────────────────────────────┤
-│  Business Logic Layer (Services)                            │
-│  └── src/services/**                                        │
-│      Pure TypeScript — no HTTP, no NextRequest              │
-├─────────────────────────────────────────────────────────────┤
-│  Data Access Layer (Mongoose Models)                        │
-│  └── src/models/**                                          │
-│      Mongoose schemas + IDocument interfaces                │
-├─────────────────────────────────────────────────────────────┤
-│  Infrastructure Layer                                       │
-│  ├── src/lib/dbConnect.ts    Mongoose connection pool       │
-│  ├── src/lib/mongodbClient.ts  Native MongoClient           │
-│  └── MongoDB Atlas                                          │
-└─────────────────────────────────────────────────────────────┘
+```text
+Next.js App Router (`src/app`)
+├── Server Components ───────────────┐
+├── Client Components ── fetch ──────┼──> `src/app/api/**`
+└── Layouts / route-local UI          │       └── auth + validation
+                                     │
+                                     └──> services / feature services
+                                              ├── MongoDB access
+                                              └── Prisma/PostgreSQL access
 ```
 
-**Key design rule:** Server Components call services directly (zero HTTP overhead). Client Components always go through `/api/` routes.
+The application uses a hybrid data strategy:
 
----
+| Domain | Storage | Main access layer |
+|---|---|---|
+| Auth.js users/accounts, profiles, posts, inquiries, messages, streaks | MongoDB | Native MongoClient, Mongoose models and `src/services` |
+| Vocabulary sets, words, library entries, game scores | PostgreSQL | Prisma 7 + `@prisma/adapter-pg` |
+| Courses, modules, lessons, enrollments, lesson progress | PostgreSQL | Prisma-backed repositories/services in `src/features` |
+| My Space subjects, MCQ questions, tests, sessions, personal progress | PostgreSQL | Prisma-backed repositories/services in `src/features/myspace-tests` |
+| My Class courses, knowledge units, question bank, test library, placements, cohorts, attempts | PostgreSQL | Prisma-backed repositories/services in `src/features/my-class` |
 
-## 2. Directory Structure
+User IDs in PostgreSQL are strings that reference the MongoDB Auth.js user ID;
+there is no cross-database foreign key.
 
-```
-/
-├── docs/                         # 📚 Living documentation (this folder)
-├── public/
-│   ├── uploads/                  # Local image uploads (admin-only)
-│   └── sample-*.csv              # Example CSV formats for vocabulary import
-├── src/
-│   ├── app/                      # Next.js App Router — pages + API routes
-│   │   ├── globals.css           # Design tokens (CSS custom properties)
-│   │   ├── layout.tsx            # Root layout — Navbar, Providers, fonts
-│   │   ├── page.tsx              # Homepage (Server Component)
-│   │   ├── admin/                # Admin Studio — role-gated
-│   │   │   ├── layout.tsx        # Admin shell with sidebar
-│   │   │   ├── page.tsx          # Dashboard overview
-│   │   │   ├── posts/            # Post management
-│   │   │   ├── vocabulary/       # Vocab set management
-│   │   │   ├── users/            # User management + role assignment
-│   │   │   ├── feedback/         # Feedback thread management
-│   │   │   └── tools/            # Admin utilities (Lucky Card, etc.)
-│   │   ├── api/                  # REST API — all routes use apiUtils wrappers
-│   │   │   ├── auth/             # Auth.js handler (re-export only)
-│   │   │   ├── admin/            # Admin-only endpoints
-│   │   │   │   ├── posts/        # CRUD for posts
-│   │   │   │   ├── users/        # User list + role management
-│   │   │   │   └── vocab-sets/   # Admin-owned sets
-│   │   │   ├── posts/            # Public + admin post APIs
-│   │   │   ├── vocab-sets/       # Vocabulary set CRUD
-│   │   │   ├── vocab-stats/      # Practice result recording
-│   │   │   ├── feedback/         # Feedback threads
-│   │   │   ├── notifications/    # In-app notifications
-│   │   │   ├── streak/           # Login streak
-│   │   │   ├── profile/          # User profile
-│   │   │   └── uploads/          # Image upload (admin only)
-│   │   ├── blog/                 # Public blog pages
-│   │   ├── vocabulary/           # Vocabulary practice pages
-│   │   ├── dashboard/            # Authenticated user dashboard
-│   │   ├── profile/              # Profile edit page
-│   │   ├── feedback/             # Feedback submission page
-│   │   └── login/                # Google OAuth sign-in page
-│   │
-│   ├── components/               # Reusable UI components (flat — no sub-grouping yet)
-│   │   ├── Navbar.tsx            # Main navigation (client component)
-│   │   ├── Providers.tsx         # NextAuth + Theme providers
-│   │   ├── ThemeProvider.tsx     # next-themes wrapper
-│   │   ├── ThemeToggle.tsx       # Dark/light mode toggle
-│   │   ├── TiptapEditor.tsx      # Rich text editor (15+ extensions)
-│   │   ├── DualLanguageEditor.tsx # Side-by-side VI/EN editor
-│   │   ├── BilingualArticle.tsx  # Bilingual article renderer
-│   │   ├── CommentSection.tsx    # Comment tree + like/reply
-│   │   ├── ReactionBar.tsx       # Emoji reaction bar
-│   │   ├── BlogSearch.tsx        # Full-text search bar
-│   │   ├── BlogFilterBar.tsx     # Tag/category filter
-│   │   ├── CodeBlock.tsx         # Syntax highlighted code + copy button
-│   │   ├── FeedbackMessages.tsx  # Feedback thread viewer
-│   │   ├── ImageCropModal.tsx    # Profile picture crop
-│   │   ├── StreakFire.tsx        # Login streak flame indicator
-│   │   ├── TableOfContents.tsx   # Auto-generated ToC for articles
-│   │   ├── TagInput.tsx          # Multi-tag input
-│   │   ├── ThumbnailUpload.tsx   # Admin thumbnail uploader
-│   │   ├── ThumbnailPreview.tsx  # Thumbnail display
-│   │   ├── ViewTracker.tsx       # Post view count incrementer
-│   │   ├── ShareBar.tsx          # Social share buttons
-│   │   └── ScrollToTop.tsx       # Back-to-top button
-│   │
-│   ├── config/                   # ⚙️ Centralized configuration
-│   │   ├── constants.ts          # ALL magic numbers (limits, TTLs, sizes)
-│   │   └── navigation.ts         # NAV_LINKS, USER_MENU_LINKS arrays
-│   │
-│   ├── constants/
-│   │   └── post.ts               # POST_CATEGORIES (client-safe, no server deps)
-│   │
-│   ├── lib/                      # Infrastructure & cross-cutting concerns
-│   │   ├── auth.config.ts        # Edge-safe Auth.js config (middleware only)
-│   │   ├── auth.ts               # Full Auth.js config (Node.js — MongoDBAdapter)
-│   │   ├── apiAuth.ts            # getApiUser(), isAdmin() helpers
-│   │   ├── apiUtils.ts           # withAuth, withAdmin, withErrorHandling wrappers
-│   │   ├── dbConnect.ts          # Mongoose connection singleton
-│   │   └── mongodbClient.ts      # Native MongoClient (for Auth.js adapter)
-│   │
-│   ├── middleware.ts             # Edge Middleware — guards /admin/* routes
-│   │
-│   ├── models/                   # Mongoose schemas + TypeScript interfaces
-│   │   ├── Post.ts               # IPost, PostSchema
-│   │   ├── User.ts               # IUser, UserSchema
-│   │   ├── UserProfile.ts        # IUserProfile
-│   │   ├── Comment.ts            # IComment, CommentStatus
-│   │   ├── VocabSet.ts           # IVocabSet, IVocabTerm
-│   │   ├── WordStats.ts          # IWordStats, IPracticeEntry
-│   │   ├── LoginStreak.ts        # ILoginStreak
-│   │   ├── FeedbackMessage.ts    # IFeedbackMessage, IFeedbackReply
-│   │   └── Notification.ts       # INotification, NotificationType
-│   │
-│   ├── services/                 # Business logic — pure TypeScript, no HTTP
-│   │   ├── postService.ts        # Post CRUD + caching
-│   │   ├── commentService.ts     # Comment tree + moderation
-│   │   ├── vocabSetService.ts    # VocabSet CRUD + clone
-│   │   ├── wordStatsService.ts   # Practice result recording + retrieval
-│   │   ├── streakService.ts      # Login streak recording
-│   │   ├── userProfileService.ts # Profile sync + updates
-│   │   ├── userManagementService.ts  # Admin user list + role management
-│   │   ├── feedbackMessageService.ts # Feedback threads
-│   │   ├── notificationService.ts    # In-app notifications
-│   │   └── adminDashboardService.ts  # Aggregated admin stats
-│   │
-│   ├── types/                    # TypeScript type definitions
-│   │   ├── mongoose.ts           # LeanDoc<T>, WithId<T> utilities
-│   │   ├── post.ts               # PostListItemDTO, PostDetailDTO, etc.
-│   │   ├── vocabSet.ts           # VocabSetDTO, VocabTermDTO
-│   │   ├── user.ts               # UserRole, UserDTO
-│   │   ├── comment.ts            # CommentDTO
-│   │   ├── userProfile.ts        # UserProfileDTO
-│   │   ├── streak.ts             # StreakDTO
-│   │   ├── notification.ts       # NotificationDTO
-│   │   ├── feedbackMessage.ts    # FeedbackMessageDTO, FeedbackStatus
-│   │   ├── wordStats.ts          # WordStatsDTO
-│   │   └── next-auth.d.ts        # Module augmentation for JWT + Session
-│   │
-│   └── utils/                    # Pure utility functions — no side effects
-│       ├── index.ts              # Barrel export (re-exports all utils)
-│       ├── formatDate.ts         # formatDate, formatDateTime, formatDistanceToNow, timeAgo, formatDateShort
-│       ├── formatNumber.ts       # formatNumber (k/M suffix)
-│       └── slugify.ts            # URL-safe slug generation
+## 2. Active directory structure
+
+```text
+src/
+├── app/                 Next.js pages, layouts and API route handlers
+│   ├── admin/           server-guarded Admin Studio
+│   ├── api/             HTTP boundary; auth and response wrappers
+│   ├── vocabulary/      learner vocabulary UI and game modes
+│   ├── hoc/             course/lesson learner surfaces
+│   ├── my-space/        personal experiments and MCQ tests
+│   ├── messages/, m/    private message management and public unlock view
+│   └── public routes     marketing, notes, projects, services, policies, contact
+├── components/          reusable UI, site chrome, marketing and learning components
+├── config/              routes, navigation, site metadata and shared constants
+├── content/             editorial and marketing content kept separate from UI
+├── features/            vertical slices: courses, enrollments, progress,
+│                        myspace-tests, my-class, portfolio, posts and services
+├── lib/                 auth, database clients, API wrappers, validation and utilities
+├── models/              Mongoose schemas for MongoDB-backed domains
+├── services/            established business services shared by routes/components
+├── types/               DTOs and shared TypeScript declarations
+├── utils/               side-effect-free formatting and URL helpers
+└── _archived/           retired code; excluded from tsconfig and active routing
+
+prisma/
+├── schema.prisma        PostgreSQL models and enums
+└── migrations/          committed Prisma migration history
+
+src/test/                Vitest setup, database helpers, mocks and fixtures
+e2e/                     Playwright tests
 ```
 
----
+## 3. Request and data flow
 
-## 3. Data Flow
+### Server-rendered page
 
-### 3.1 Server Component → Service (zero HTTP overhead)
-```
-/app/admin/page.tsx (Server Component)
-  → import { getAdminOverviewStats } from '@/services/adminDashboardService'
-  → adminDashboardService calls dbConnect() then queries Mongoose models
-  → Returns plain DTO objects (no Mongoose Document leaked)
-  → Rendered as static HTML on the server
-```
-
-### 3.2 Client Component → API Route → Service
-```
-Client fetch('/api/vocab-sets')
-  → src/app/api/vocab-sets/route.ts
-  → export const GET = withAuth(async (_req, user) => { ... })
-  → withAuth: validates session via getApiUser() → 401 if missing
-  → vocabSetService.listMyVocabSets(user.id)
-  → Returns { ok: true, data: { items, total } }
+```text
+`src/app/**/page.tsx`
+  → feature/service function
+  → MongoDB or Prisma
+  → serializable DTO
+  → rendered HTML/RSC payload
 ```
 
-### 3.3 Authentication Data Flow
-```
-Google OAuth callback
-  → Auth.js jwt() callback fires (server-side, Node.js)
-  → Fetches role from MongoDB users collection
-  → Writes token.role into JWT
-  → JWT stored in httpOnly cookie (authjs.session-token)
-  
-Subsequent request to /admin/*
-  → Edge Middleware reads JWT via auth.config.ts (no Node.js)
-  → Checks token.role === 'admin'
-  → 401 redirect or 403 inline HTML
+Server Components should call services directly when no browser interaction is
+needed. This avoids an unnecessary internal HTTP request.
 
-API request with session cookie
-  → getApiUser(request) → auth() → reads JWT → returns ApiUser
-  → withAuth/withAdmin wrappers consume ApiUser
+### Client interaction
+
+```text
+Client Component
+  → `fetch('/api/...')`
+  → route handler in `src/app/api/**`
+  → `withErrorHandling` / `withAuth` / `withAdmin`
+  → schema validation and service/repository
+  → `{ ok: true, data }` or `{ ok: false, error }`
 ```
 
----
+### Authentication and admin access
 
-## 4. Infrastructure Decisions
+`src/lib/auth.config.ts` is the shared Auth.js configuration and defines the
+JWT/session shape and custom Vietnamese sign-in page. `src/lib/auth.ts` adds the
+MongoDB adapter and server-side callbacks. Active page protection is in
+`src/app/admin/layout.tsx`; API protection is independent and uses
+`src/lib/apiUtils.ts` plus `src/lib/apiAuth.ts`. There is currently no active
+`src/middleware.ts`.
 
-### 4.1 Dual MongoDB Client
+The admin role is read from the MongoDB `users` collection during sign-in and
+stored in the JWT. The configured admin email is a first-sign-in fallback; the
+database role is the source used by normal authorization checks.
 
-Two separate MongoDB connection mechanisms coexist intentionally:
+## 4. Database clients and boundaries
 
-| Client | File | Purpose |
-|--------|------|---------|
-| **Mongoose** | `src/lib/dbConnect.ts` | All application data (posts, users, vocab, etc.) |
-| **Native MongoClient** | `src/lib/mongodbClient.ts` | Auth.js `MongoDBAdapter` (manages `users`, `accounts`, `sessions` collections) |
+### MongoDB
 
-**Why two?** Auth.js requires its adapter to use the native MongoClient. Mongoose is used for all application models. Sharing the connection requires two pool configurations — keeping them separate avoids coupling and simplifies each driver's lifecycle.
+- `src/lib/dbConnect.ts`: cached Mongoose connection for application models.
+- `src/lib/mongodbClient.ts`: cached native `MongoClient` for Auth.js adapter.
+- `src/models/*.ts`: schemas and model registration guards.
+- `src/services/*.ts`: business operations; services return plain serializable data.
 
-### 4.2 Auth.js Split Config Pattern
+The two MongoDB clients are intentional because Auth.js requires a native
+MongoClient while application domains use Mongoose.
 
-Auth.js v5 is split across two files:
+### PostgreSQL
 
-| File | Runtime | Purpose |
-|------|---------|---------|
-| `auth.config.ts` | **Edge** | Google provider config, session/cookie options. Used by `middleware.ts`. No Node.js deps. |
-| `auth.ts` | **Node.js** | Extends `auth.config.ts` + MongoDBAdapter + jwt/events callbacks. Used by API routes and server components. |
+- `src/lib/prisma.ts`: Prisma 7 singleton using a `pg` pool and `PrismaPg`
+  driver adapter.
+- `prisma/schema.prisma`: source of truth for relational learning/tool data.
+- `src/features/*/repositories`: feature-specific persistence operations.
+- `src/services/vocabSetService.ts` and `scoreService.ts`: established Prisma
+  services for vocabulary flows.
 
-This is the [official Auth.js edge-compatibility pattern](https://authjs.dev/guides/edge-compatibility).
+Run migrations with `npm run db:migrate` locally or
+`npm run db:migrate:deploy` in deployment environments.
 
-### 4.3 Post Caching Strategy
+## 5. Caching, uploads and public content
 
-Public post queries use `unstable_cache` (Next.js) with a 60-second revalidation window (`PUBLIC_CACHE_REVALIDATE_SECONDS`). Admin mutations call `revalidatePath('/', 'layout')` to invalidate the cache immediately on publish/update/delete.
+- Public editorial reads may use Next.js cache/revalidation in the post service.
+- Admin mutations revalidate affected public paths where applicable.
+- Image uploads are written to `public/uploads/`, suitable for the current
+  single-server VPS deployment but not for horizontal scaling.
+- Editorial/marketing content is primarily composed from `src/content` and
+  feature data; it is not equivalent to the archived `/blog` application.
 
-### 4.4 Local File Uploads
+## 6. Testing harness
 
-Images are stored in `public/uploads/` on disk. This is intentional for the current single-server deployment. **Not suitable for multi-instance deployments** — migrate to S3/Cloudinary before scaling horizontally.
+Vitest has three projects configured in `vitest.config.ts`:
 
-### 4.5 Turbopack (Development)
+| Project | Environment | Scope |
+|---|---|---|
+| `unit` | Node | pure utilities, schemas, scoring and validation |
+| `integration` | Node | MongoDB Memory Server plus PostgreSQL test database |
+| `component` | jsdom | React components/hooks and Testing Library |
 
-`next.config.ts` enables Turbopack for `next dev`. Production builds (`next build`) use Webpack as standard.
+Integration setup loads `.env.test` then `.env.local`, starts an in-memory
+MongoDB instance, and requires an explicit `TEST_DATABASE_URL` for PostgreSQL;
+it never falls back to a development or production `DATABASE_URL`.
+`scripts/setup-test-db.sh` creates/applies migrations to the local PostgreSQL
+test database.
+
+Playwright tests live in `e2e/`. The GitHub Actions quality job invokes
+Playwright after the production build. When run with `CI=true`, its config
+starts the already-built app; locally, `npm run test:e2e` expects an
+already-running app at the configured base URL.
+
+## 7. Source-of-truth files
+
+- URL and redirect policy: `src/config/routes.ts`
+- Public/admin navigation: `src/config/navigation.ts`
+- Site metadata and brand constants: `src/config/site.ts`
+- Relational schema: `prisma/schema.prisma`
+- API response/auth conventions: `src/lib/apiUtils.ts`, `src/lib/apiAuth.ts`
+- Test projects and setup: `vitest.config.ts`, `src/test/`, `playwright.config.ts`

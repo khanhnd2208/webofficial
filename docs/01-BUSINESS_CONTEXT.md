@@ -1,128 +1,121 @@
 # 01 — Business Context
 
-> **HANOICAM** — Personal teaching platform by NDK.  
-> This document covers the product vision, user personas, and core domain logic.
+> Duy Khánh — personal teaching, publishing and learning platform.
+> HANOICAM is retained as the editorial identity for journal content.
 
----
+## 1. Product vision
 
-## 1. Project Vision
+The product combines a public personal brand site with a private teaching
+workspace. Public pages establish identity, projects, services, notes and a
+contact path. Authenticated surfaces provide learning tools and account
+features. The admin workspace manages content and teaching operations.
 
-HANOICAM is a **personal publishing and learning platform** built for a single admin author (NDK) to publish bilingual Vietnamese/English articles and interactive learning tools for a Vietnamese student audience.
+Core domains:
 
-The platform is intentionally lean — no multi-author, no open registration for writers. The author has full control over what is published and when. Students discover content passively (blog) or actively (vocabulary practice, feedback).
+1. Editorial public site: homepage, about, projects, services, notes, policies
+   and inquiries.
+2. Vocabulary practice: flashcards, MCQ, fill-in-blank, matching and Guess Who.
+3. Teaching domain: courses, modules, lessons, enrollment and progress.
+4. My Space tests: curated subjects, MCQ question banks, published tests and
+   learner sessions.
+5. My Class: standalone Course → Lesson → Section → Knowledge Unit learning hub
+   with reusable KUs, tests, cohorts and evidence-based analytics.
+6. Private messages, profiles and login streaks.
 
-**Core value propositions:**
+## 2. Personas and access
 
-1. A **bilingual blog** (Vietnamese + English side-by-side) that makes technical and educational content accessible.
-2. A **vocabulary practice system** (flashcards, MCQ, fill-in-blank, matching) tied to user-created or admin-published word sets.
-3. A **feedback channel** between students and the admin — a lightweight threaded messaging system (not a general comment section).
-4. A **login streak** gamification layer to encourage daily visits.
+### Admin / author
 
----
+Authenticated through Auth.js/Google OAuth with the `admin` role stored in the
+MongoDB user record. The admin uses `/admin` to manage posts, courses,
+enrollments, vocabulary, inquiries, messages, My Space tests, My Class and users.
 
-## 2. User Personas
+### Authenticated learner
 
-### 2.1 Admin / Author (NDK)
-- **Access:** Authenticated via Google OAuth with the email configured in `ADMIN_EMAIL` env var.
-- **Capabilities:** Full CRUD on posts, manage all vocabulary sets (including public ones), approve/reject comments, reply to feedback messages, view dashboard overview stats, change user roles.
-- **Primary surface:** `/admin` — protected by Edge Middleware + API-level role checks.
+Any authenticated user has the `student` role by default. Learners use
+`/tai-khoan`, `/vocabulary`, `/hoc/khoa-hoc/*`, `/my-space/tests/*`,
+`/my-space/my-class/*` and `/messages/*`. The current active role model is `student | admin`; legacy
+`teacher` values are normalized to `student`.
 
-### 2.2 Authenticated Student
-- **Access:** Authenticated via Google OAuth (any Google account).
-- **Role:** `student` (default). Can be promoted to `teacher` by admin.
-- **Capabilities:** Comment on posts (pending moderation), react to posts (emoji reactions), create private vocabulary sets, track personal learning streak, submit feedback to admin.
-- **Primary surfaces:** `/dashboard`, `/vocabulary`, `/profile`, `/feedback`.
+### Public visitor
 
-### 2.3 Public Visitor (Unauthenticated)
-- **Access:** No login required.
-- **Capabilities:** Read all published blog posts, browse public vocabulary sets in the store, view reactions and comments (approved only).
-- **Primary surfaces:** `/`, `/blog`, `/blog/[slug]`, `/vocabulary/store`.
+No login is needed for `/`, `/gioi-thieu`, `/du-an`, `/dich-vu`, `/ghi-chep`
+and `/lien-he`. Visitors can browse public content and submit an inquiry.
 
----
+## 3. Core flows
 
-## 3. Core Business Flows
+### Public publishing
 
-### 3.1 Content Publishing Flow
-```
-Admin creates post (/admin/posts/create)
-  → Rich text editor (TipTap) with optional English translation
-  → Thumbnail upload → stored in /public/uploads/
-  → Auto-generated slug from title (via slugify util)
-  → Save as Draft (isPublished: false) OR Publish immediately
-  → On publish: revalidatePath('/', 'layout') clears Next.js cache
-  → Post visible at /blog/[slug] and homepage
-```
-
-### 3.2 Authentication & Authorization Flow
-```
-User visits /login
-  → Signs in with Google OAuth (Auth.js v5)
-  → JWT callback: role fetched from MongoDB users collection
-  → Admin emails (ADMIN_EMAIL env) always get role: 'admin'
-  → Token.role written into JWT (persists for 30 days)
-  → Edge Middleware reads token.role to guard /admin routes
-  → API routes re-check via getApiUser() on every request
+```text
+Admin writes in `/admin/posts/create`
+  → TipTap content + metadata + optional thumbnail
+  → save draft or publish
+  → post service revalidates affected public paths
+  → published content is exposed through the current notes/public adapter
 ```
 
-### 3.3 Vocabulary Learning Flow
-```
-Student creates VocabSet (manually or via CSV upload)
-  → Supports UTF-8 BOM CSVs for Vietnamese terms
-  → CSV columns: word, definition (required) + partOfSpeech, example (optional)
-  → Terms capped at MAX_TERMS_PER_SET (2,000)
-Admin can publish sets to the public store (isPublic: true)
-  → Any authenticated user can clone a public set to their own account
-Student practices with chosen set
-  → POST /api/vocab-stats records each attempt (correct/wrong, mode)
-  → WordStats model tracks per-word accuracy and history
+### Authentication and authorization
+
+```text
+`/dang-nhap`
+  → Auth.js Google OAuth
+  → server callback reads role from MongoDB
+  → role is copied into the JWT/session
+  → `/admin` layout checks the server session
+  → API routes independently use `withAuth` / `withAdmin`
 ```
 
-### 3.4 Feedback & Moderation Flow
-```
-Authenticated user submits feedback (/feedback page)
-  → POST /api/feedback/messages creates a thread
-  → Admin receives in-app notification (Notification model)
-Admin replies to thread in /admin/feedback
-  → PATCH /api/feedback/messages/[id]/reply adds reply
-  → User receives in-app notification
-Admin can close thread (status: 'closed')
-Comments on blog posts follow same pattern:
-  → New comment → status: 'pending'
-  → Admin approves → status: 'approved', notifications sent
+There is no active `src/middleware.ts`; page protection is implemented in the
+admin layout and API protection is implemented at the route boundary.
+
+### Vocabulary
+
+```text
+Learner or admin creates/receives a vocabulary set
+  → words are stored in PostgreSQL through Prisma
+  → learner practices via a selected game mode
+  → `/api/vocab-sets/[id]/score` stores personal best scores
 ```
 
-### 3.5 Login Streak Flow
+### Courses and tests
+
+Courses follow `Course → CourseModule → Lesson`. Enrollment and lesson
+completion are separate relational records. My Space tests use
+`Subject → SpaceTest → McqQuestion` plus `SpaceTestSession` for attempts and
+engagement analytics.
+
+### Contact and private communication
+
+```text
+Visitor submits `/lien-he`
+  → `/api/inquiries` validates and rate-limits
+  → inquiry is stored in MongoDB
+  → optional Resend delivery notifies the configured inbox
+  → admin triages it in `/admin/inquiries`
 ```
-On authenticated page load: POST /api/streak
-  → streakService.recordLogin(userId)
-  → Records today's date in loginDays (capped at 90 days)
-  → Calculates currentStreak and longestStreak
-  → StreakFire component displays current streak in Navbar
-```
 
----
+Private messages use `/messages/*` and `/m/[slug]`; the public view may require
+an unlock/password flow.
 
-## 4. Domain Model Overview
+## 4. Domain ownership
 
-| Model | Purpose | Key Constraints |
-|-------|---------|----------------|
-| `User` | OAuth identity, role | Unique email, role: student/teacher/admin |
-| `UserProfile` | Extended profile info | 1-to-1 with User, auto-created on sign-in |
-| `Post` | Blog article | Unique slug, auto-generated from title |
-| `Comment` | Post comments | Status: pending/approved/hidden, max 2,000 chars |
-| `VocabSet` | Vocabulary collection | Max 2,000 terms per set, owned by user |
-| `WordStats` | Practice history | Per-user per-word, max 500 history entries |
-| `LoginStreak` | Daily login tracking | Max 90 days stored, rolling window |
-| `FeedbackMessage` | Admin↔User threads | Max 200 replies per thread |
-| `Notification` | In-app alerts | TTL: auto-deleted after 90 days |
+| Domain | Storage | Active code |
+|---|---|---|
+| Auth.js users, profiles, posts, inquiries, messages, streaks | MongoDB | `src/models`, `src/lib/dbConnect.ts`, `src/services` |
+| Vocabulary sets, words, library, scores | PostgreSQL | `prisma/schema.prisma`, `vocabSetService`, `scoreService` |
+| Courses, lessons, enrollment, progress | PostgreSQL | `src/features/courses`, `enrollments`, `progress` |
+| My Space subjects, questions, tests, sessions, personal progress | PostgreSQL | `src/features/myspace-tests` |
+| Public marketing/editorial composition | Source files + Mongo-backed notes | `src/content`, `src/features/portfolio`, `src/features/services` |
 
----
+PostgreSQL `userId` fields are string references to MongoDB Auth.js user IDs;
+the databases do not share foreign keys.
 
-## 5. Post Category Taxonomy
+## 5. Product boundaries
 
-Defined in `src/constants/post.ts` — safe to import in both client and server components:
-
-```
-Uncategorized | Tech & Programming | English Learning |
-Tutorial | Life & Thoughts | Review | Tips & Tricks
-```
+- Public marketing navigation must not expose unfinished or internal tools.
+- `/admin`, `/vocabulary`, `/messages`, `/tai-khoan` and learner routes use
+  internal chrome rather than public marketing chrome.
+- `src/_archived` and `docs/archive` describe retired products; they are not
+  implementation guidance for new work.
+- Use `src/config/routes.ts` and `src/config/navigation.ts` as URL/navigation
+  sources of truth.

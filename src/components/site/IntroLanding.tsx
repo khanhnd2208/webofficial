@@ -131,7 +131,7 @@ export default function IntroLanding() {
 					</span>
 					<Link
 						href={routes.toc}
-						className="pointer-events-auto group inline-flex items-center gap-3 border border-ink px-6 py-3 transition-[colors,gap] duration-300 hover:gap-4 hover:bg-ink hover:text-paper focus-visible:bg-ink focus-visible:text-paper focus-visible:outline-none"
+						className="pointer-events-auto group inline-flex min-h-11 items-center gap-3 border border-ink px-6 py-3 transition-[colors,gap] duration-300 hover:gap-4 hover:bg-ink hover:text-paper focus-visible:bg-ink focus-visible:text-paper focus-visible:outline-none"
 						data-testid="intro-open-toc"
 					>
 						<span className="font-mono text-[0.75rem] font-semibold tracking-[0.16em] uppercase">

@@ -27,6 +27,12 @@ inflated claims, generic leadership language, and sales-heavy copy.
 
 ## Visual system
 
+Applies to the **public Editorial surface** (home, mục lục, giới thiệu, dự án,
+marketing). The My Class learning product uses a separate **Study Tool** grammar —
+see [09-DESIGN_SYSTEM.md](./09-DESIGN_SYSTEM.md). Do not apply soft-card product
+UI patterns to public pages, and do not force My Class to match this editorial
+layout language.
+
 - Editorial, minimal, academic, human, refined.
 - Warm off-white `#F8F7F4`, soft black `#171717`, muted gray `#595650`,
   muted bronze `#765625`.

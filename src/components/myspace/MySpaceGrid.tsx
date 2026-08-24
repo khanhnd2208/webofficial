@@ -7,22 +7,6 @@ import { useState } from 'react';
 import { StaggerGroup, StaggerItem } from '@/components/motion/StaggerGroup';
 import { mySpacePage, type MySpaceTile } from '@/content/mySpace';
 
-function TileLabel({ tile }: { tile: MySpaceTile }) {
-	if (tile.labelLines) {
-		return (
-			<>
-				<span className="sm:hidden">
-					{tile.labelLines[0]}
-					<br />
-					{tile.labelLines[1]}
-				</span>
-				<span className="hidden sm:inline">{tile.label}</span>
-			</>
-		);
-	}
-	return <>{tile.label}</>;
-}
-
 function DevelopingIcon({ className }: { className?: string }) {
 	return (
 		<svg
@@ -43,83 +27,135 @@ function DevelopingIcon({ className }: { className?: string }) {
 	);
 }
 
-function TileVisual({ tile, locked }: { tile: MySpaceTile; locked?: boolean }) {
+function ComingSoonBadge() {
+	return (
+		<span className="mt-2 flex items-center gap-1.5 font-mono text-[0.625rem] tracking-[0.12em] text-ink/50 uppercase">
+			<DevelopingIcon className="opacity-70" />
+			{mySpacePage.comingSoonLabel}
+		</span>
+	);
+}
+
+function TileImage({
+	tile,
+	size,
+	className,
+}: {
+	tile: MySpaceTile;
+	size: number;
+	className: string;
+}) {
+	if (tile.id === 'active-recall') {
+		return (
+			<span className={`relative block ${className}`} aria-hidden>
+				<span className="absolute inset-x-[17%] top-[20%] h-[62%] rotate-[-9deg] border border-[#765625]/60 bg-paper" />
+				<span className="absolute inset-x-[17%] top-[20%] h-[62%] rotate-[4deg] border border-[#765625]/70 bg-paper" />
+				<span className="absolute inset-x-[17%] top-[20%] h-[62%] rotate-[12deg] border border-[#765625] bg-paper" />
+			</span>
+		);
+	}
+
+	return (
+		<Image
+			src={tile.image.src}
+			alt=""
+			width={size}
+			height={size}
+			unoptimized={tile.image.src.endsWith('.svg')}
+			className={`object-contain mix-blend-multiply ${className}`}
+			sizes={`${size}px`}
+			aria-hidden
+		/>
+	);
+}
+
+const nameClass = 'font-display text-xl leading-7 font-medium tracking-tight text-ink';
+
+/** Standard tile — quiet illustration over a compact label (EduPortal nav grammar). */
+function FlatTile({ tile, locked }: { tile: MySpaceTile; locked?: boolean }) {
 	return (
 		<>
-			<div className="relative mb-6 h-28 w-28 sm:mb-0 sm:h-[7.5rem] sm:w-[7.5rem]">
-				{/* Decorative — label below carries the accessible name */}
-				<Image
-					src={tile.image.src}
-					alt=""
-					width={120}
-					height={120}
-					className={`h-full w-full object-contain mix-blend-multiply transition-opacity duration-500 ${
-						locked
-							? 'opacity-45'
-							: 'opacity-80 group-hover:opacity-100 group-focus-visible:opacity-100'
-					}`}
-					sizes="120px"
-					aria-hidden
-				/>
-			</div>
+			<TileImage
+				tile={tile}
+				size={64}
+				className="h-16 w-16 transition-transform duration-500 group-hover:scale-105"
+			/>
+			<span className={nameClass}>{tile.label}</span>
+			{locked ? <ComingSoonBadge /> : null}
+		</>
+	);
+}
+
+/** Featured tile — elevated rounded square with the label inside, one per hub. */
+function FeaturedTile({ tile, locked }: { tile: MySpaceTile; locked?: boolean }) {
+	return (
+		<>
 			<span
-				className={`font-display text-[clamp(1.75rem,3vw,2rem)] font-medium tracking-tight ${
-					locked ? 'text-ink/45' : 'text-ink'
+				className={`flex h-40 w-40 flex-col items-center justify-center gap-2 rounded-3xl bg-surface-secondary transition-colors duration-300 sm:h-44 sm:w-44 ${
+					locked ? '' : 'group-hover:bg-surface-hover'
 				}`}
 			>
-				<TileLabel tile={tile} />
+				<TileImage
+					tile={tile}
+					size={80}
+					className="h-20 w-20 transition-transform duration-500 group-hover:scale-105"
+				/>
+				<span className={nameClass}>{tile.label}</span>
 			</span>
-			{locked ? (
-				<span className="mt-2 flex items-center gap-1.5 font-mono text-[0.625rem] tracking-[0.12em] text-ink/40 uppercase">
-					<DevelopingIcon className="opacity-70" />
-					{mySpacePage.comingSoonLabel}
-				</span>
-			) : null}
+			{locked ? <ComingSoonBadge /> : null}
 		</>
 	);
 }
 
 const tileClassName =
-	'group flex flex-col items-center text-center transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] opacity-80 hover:opacity-100 hover:-translate-y-1 focus-visible:opacity-100 focus-visible:-translate-y-1 focus-visible:outline-none sm:gap-6';
+	'group flex w-32 flex-col items-center text-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:outline-none';
+
+const featuredTileClassName =
+	'group flex flex-col items-center text-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:outline-none';
 
 const lockedTileClassName =
-	'group flex cursor-not-allowed flex-col items-center bg-transparent p-0 text-center opacity-70 focus-visible:outline-none sm:gap-6';
+	'group flex w-32 cursor-not-allowed flex-col items-center bg-transparent p-0 text-center opacity-45 focus-visible:outline-none';
+
+const lockedFeaturedTileClassName =
+	'group flex cursor-not-allowed flex-col items-center bg-transparent p-0 text-center opacity-45 focus-visible:outline-none';
 
 /**
- * Ultra-minimalist My Space grid — mobile stack, desktop 2×2.
- * Reuses site canvas / display type; chrome stays in PublicMinimalChrome.
+ * My Space hub — centered flex-wrap composition of quiet icon tiles with one
+ * featured rounded card. Reuses site canvas / display type; chrome stays in
+ * PublicMinimalChrome.
  */
 export default function MySpaceGrid({ tiles }: { tiles: MySpaceTile[] }) {
 	const [openId, setOpenId] = useState<string | null>(null);
 
 	return (
 		<StaggerGroup
-			className="grid w-full max-w-sm grid-cols-1 place-items-center gap-14 sm:max-w-3xl sm:grid-cols-2 sm:gap-20 md:gap-24 lg:gap-28"
+			className="flex w-full max-w-[50rem] flex-wrap items-center justify-center gap-x-12 gap-y-14 sm:gap-x-24 sm:gap-y-16 lg:gap-x-28"
 			staggerMs={0.08}
 		>
 			{tiles.map((tile) => {
 				const isOpen = openId === tile.id;
 				const published = tile.status === 'published' && tile.href;
+				const TileBody = tile.featured ? FeaturedTile : FlatTile;
 
 				return (
-					<StaggerItem key={tile.id} className="flex w-full flex-col items-center">
+					<StaggerItem key={tile.id} className="flex flex-col items-center">
 						{published ? (
 							<Link
 								href={tile.href!}
-								className={tileClassName}
+								className={tile.featured ? featuredTileClassName : tileClassName}
 								data-testid={`myspace-tile-${tile.id}`}
 							>
-								<TileVisual tile={tile} />
+								<TileBody tile={tile} />
 							</Link>
 						) : (
 							<button
 								type="button"
-								className={lockedTileClassName}
+								className={tile.featured ? lockedFeaturedTileClassName : lockedTileClassName}
 								aria-expanded={isOpen}
 								data-testid={`myspace-tile-${tile.id}`}
 								onClick={() => setOpenId((current) => (current === tile.id ? null : tile.id))}
 							>
-								<TileVisual tile={tile} locked />
+								<TileBody tile={tile} locked />
 							</button>
 						)}
 						{!published && isOpen ? (

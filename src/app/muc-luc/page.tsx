@@ -20,9 +20,9 @@ export default function TocPage() {
 			className="flex min-h-svh flex-col items-center justify-center bg-canvas px-8 py-16"
 			data-testid="gate-home"
 		>
-			<p className="gate-item-enter mb-10 font-mono text-[0.6875rem] tracking-[0.2em] text-ink/40 uppercase">
+			<h1 className="gate-item-enter mb-10 font-mono text-[0.6875rem] tracking-[0.2em] text-ink/40 uppercase">
 				Mục lục
-			</p>
+			</h1>
 			<GateNav />
 		</main>
 	);

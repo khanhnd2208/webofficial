@@ -2,6 +2,21 @@
 
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 
+function useBodyScrollLock(open: boolean) {
+	useEffect(() => {
+		if (!open) return;
+		const previousOverflow = document.body.style.overflow;
+		const previousTouchAction = document.body.style.touchAction;
+		document.body.style.overflow = 'hidden';
+		document.body.style.touchAction = 'none';
+
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			document.body.style.touchAction = previousTouchAction;
+		};
+	}, [open]);
+}
+
 type LiveRegionProps = {
 	message: string;
 	politeness?: 'polite' | 'assertive';
@@ -20,14 +35,17 @@ type ToastProps = {
 	message: string;
 	visible: boolean;
 	onDismiss?: () => void;
+	className?: string;
 };
 
-export function Toast({ message, visible, onDismiss }: ToastProps) {
+export function Toast({ message, visible, onDismiss, className }: ToastProps) {
 	if (!visible || !message) return null;
 	return (
 		<div
 			role="status"
-			className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[80] max-w-[min(92vw,24rem)] -translate-x-1/2 rounded-full border border-border-strong bg-foreground px-4 py-3 text-sm font-medium text-background shadow-lg"
+			className={`fixed left-1/2 z-[80] max-w-[min(92vw,24rem)] -translate-x-1/2 rounded-full border border-border-strong bg-foreground px-4 py-3 text-sm font-medium text-background shadow-lg ${
+				className ?? 'bottom-[max(1rem,env(safe-area-inset-bottom))]'
+			}`}
 		>
 			<div className="flex items-center gap-3">
 				<span>{message}</span>
@@ -79,18 +97,7 @@ export function Dialog({ open, onClose, title, description, children, className 
 		return () => el.removeEventListener('close', handleClose);
 	}, [open, onClose]);
 
-	useEffect(() => {
-		if (!open) return;
-		const previousOverflow = document.body.style.overflow;
-		const previousTouchAction = document.body.style.touchAction;
-		document.body.style.overflow = 'hidden';
-		document.body.style.touchAction = 'none';
-
-		return () => {
-			document.body.style.overflow = previousOverflow;
-			document.body.style.touchAction = previousTouchAction;
-		};
-	}, [open]);
+	useBodyScrollLock(open);
 
 	return (
 		<dialog
@@ -136,10 +143,10 @@ type SheetProps = {
 	onClose: () => void;
 	title: string;
 	children: ReactNode;
-	side?: 'bottom' | 'right';
+	side?: 'bottom' | 'right' | 'full';
 };
 
-/** Mobile sheet using native dialog + bottom/right panel presentation. */
+/** Mobile sheet using native dialog + bottom/right/full panel presentation. */
 export function Sheet({ open, onClose, title, children, side = 'bottom' }: SheetProps) {
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const titleId = useId();
@@ -154,22 +161,34 @@ export function Sheet({ open, onClose, title, children, side = 'bottom' }: Sheet
 		return () => el.removeEventListener('close', handleClose);
 	}, [open, onClose]);
 
+	useBodyScrollLock(open);
+
 	const panel =
 		side === 'bottom'
 			? 'mt-auto mb-0 w-full max-w-none rounded-t-2xl rounded-b-none max-h-[min(90dvh,36rem)] sheet-panel-bottom'
-			: 'ml-auto mr-0 h-full max-h-none w-[min(100%,28rem)] rounded-none border-l sheet-panel-right';
+			: side === 'full'
+				? 'm-0 h-full max-h-none w-full rounded-none border-0 sheet-panel-full'
+				: 'ml-auto mr-0 h-full max-h-none w-[min(100%,28rem)] rounded-none border-l sheet-panel-right';
+	const dialogAlign =
+		side === 'bottom'
+			? 'open:justify-end'
+			: 'open:justify-start open:items-stretch';
 
 	return (
 		<dialog
 			ref={dialogRef}
 			aria-labelledby={titleId}
-			className={`fixed inset-0 z-[70] m-0 max-h-none w-full max-w-none border-0 bg-transparent p-0 open:flex open:flex-col [&::backdrop]:bg-black/40 [&::backdrop]:transition-opacity [&::backdrop]:duration-300 ${side === 'bottom' ? 'open:justify-end' : 'open:justify-start open:items-stretch'}`}
+			className={`fixed inset-0 z-[70] m-0 h-dvh min-h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 open:flex open:flex-col [&::backdrop]:bg-black/40 [&::backdrop]:transition-opacity [&::backdrop]:duration-300 ${dialogAlign}`}
 			onClick={(e) => {
 				if (e.target === dialogRef.current) onClose();
 			}}
+			onCancel={(event) => {
+				event.preventDefault();
+				onClose();
+			}}
 		>
 			<div
-				className={`flex flex-col overflow-hidden border border-border-strong bg-surface text-foreground shadow-lg ${panel}`}
+				className={`flex max-h-full flex-col overflow-hidden border border-border-strong bg-surface text-foreground shadow-lg ${panel}`}
 				style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
 			>
 				<div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
@@ -185,7 +204,9 @@ export function Sheet({ open, onClose, title, children, side = 'bottom' }: Sheet
 						×
 					</button>
 				</div>
-				<div className="overflow-y-auto px-4 py-4">{children}</div>
+				<div className={`overflow-y-auto px-4 py-4 ${side === 'full' ? 'mx-auto w-full max-w-3xl' : ''}`}>
+					{children}
+				</div>
 			</div>
 		</dialog>
 	);

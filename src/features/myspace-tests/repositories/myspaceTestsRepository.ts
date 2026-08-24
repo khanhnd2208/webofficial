@@ -16,6 +16,8 @@ import type {
 import type {
 	McqQuestionInput,
 	McqQuestionDTO,
+	PersonalProgress,
+	ProgressActor,
 	SpaceTestDTO,
 	SubjectDTO,
 	SubjectWithCounts,
@@ -73,11 +75,32 @@ function mapSpaceTest(t: SpaceTestWithSubject | SpaceTest): SpaceTestDTO {
 		difficulties: t.difficulties,
 		classifications: t.classifications,
 		questionCount: t.questionCount,
+		displayOrder: t.displayOrder,
 		status: t.status,
 		createdAt: t.createdAt.toISOString(),
 		updatedAt: t.updatedAt.toISOString(),
 		publishedAt: t.publishedAt?.toISOString() ?? null,
 	};
+}
+
+export function emptyPersonalProgress(): PersonalProgress {
+	return {
+		status: 'not_started',
+		completedCount: 0,
+		bestScorePercent: null,
+		lastCompletedAt: null,
+		recentCompletions: [],
+	};
+}
+
+function actorOwnershipFilter(
+	actor: ProgressActor,
+): { OR: Array<{ userId: string } | { guestId: string }> } | null {
+	const clauses: Array<{ userId: string } | { guestId: string }> = [];
+	if (actor.userId) clauses.push({ userId: actor.userId });
+	if (actor.guestId) clauses.push({ guestId: actor.guestId });
+	if (clauses.length === 0) return null;
+	return { OR: clauses };
 }
 
 export async function listSubjects(): Promise<SubjectWithCounts[]> {
@@ -442,6 +465,14 @@ export async function countQuestionsByTestId(spaceTestId: string): Promise<numbe
 	});
 }
 
+export async function nextDisplayOrderForSubject(subjectId: string): Promise<number> {
+	const agg = await prisma.spaceTest.aggregate({
+		where: { subjectId },
+		_max: { displayOrder: true },
+	});
+	return (agg._max.displayOrder ?? 0) + 1;
+}
+
 export async function createSpaceTestWithQuestions(input: {
 	slug: string;
 	title: string;
@@ -450,9 +481,15 @@ export async function createSpaceTestWithQuestions(input: {
 	questionCount: number;
 	status: PublishStatus;
 	questions: McqQuestionInput[];
+	displayOrder?: number;
 }): Promise<SpaceTestDTO> {
 	const status = input.status;
 	return prisma.$transaction(async (tx) => {
+		const maxOrder = await tx.spaceTest.aggregate({
+			where: { subjectId: input.subjectId },
+			_max: { displayOrder: true },
+		});
+		const displayOrder = input.displayOrder ?? (maxOrder._max.displayOrder ?? 0) + 1;
 		const test = await tx.spaceTest.create({
 			data: {
 				slug: input.slug,
@@ -463,6 +500,7 @@ export async function createSpaceTestWithQuestions(input: {
 				difficulties: [],
 				classifications: [],
 				questionCount: input.questionCount,
+				displayOrder,
 				status,
 				publishedAt: status === 'PUBLISHED' ? new Date() : null,
 			},
@@ -558,9 +596,11 @@ export async function slugExists(slug: string, excludeId?: string): Promise<bool
 }
 
 export async function createSpaceTest(
-	input: CreateSpaceTestInput & { slug: string },
+	input: CreateSpaceTestInput & { slug: string; displayOrder?: number },
 ): Promise<SpaceTestDTO> {
 	const status = input.status ?? 'DRAFT';
+	const displayOrder =
+		input.displayOrder ?? (await nextDisplayOrderForSubject(input.subjectId));
 	const row = await prisma.spaceTest.create({
 		data: {
 			slug: input.slug,
@@ -571,6 +611,7 @@ export async function createSpaceTest(
 			difficulties: input.difficulties ?? [],
 			classifications: input.classifications ?? [],
 			questionCount: input.questionCount,
+			displayOrder,
 			status,
 			publishedAt: status === 'PUBLISHED' ? new Date() : null,
 		},
@@ -599,6 +640,7 @@ export async function updateSpaceTest(
 				? { classifications: input.classifications }
 				: {}),
 			...(input.questionCount !== undefined ? { questionCount: input.questionCount } : {}),
+			...(input.displayOrder !== undefined ? { displayOrder: input.displayOrder } : {}),
 			...(input.status !== undefined
 				? {
 						status: input.status,
@@ -624,7 +666,11 @@ export async function deleteSpaceTest(id: string): Promise<boolean> {
 export async function createSession(
 	spaceTestId: string,
 	questionIds: string[],
-	options?: { engaged?: boolean },
+	options?: {
+		engaged?: boolean;
+		userId?: string | null;
+		guestId?: string | null;
+	},
 ) {
 	const now = new Date();
 	return prisma.spaceTestSession.create({
@@ -632,6 +678,8 @@ export async function createSession(
 			spaceTestId,
 			questionIds,
 			...(options?.engaged ? { engagedAt: now } : {}),
+			...(options?.userId ? { userId: options.userId } : {}),
+			...(options?.guestId ? { guestId: options.guestId } : {}),
 		},
 	});
 }
@@ -640,6 +688,107 @@ export async function findSessionById(id: string) {
 	return prisma.spaceTestSession.findUnique({
 		where: { id },
 		include: { spaceTest: { include: { subject: true } } },
+	});
+}
+
+export function sessionBelongsToActor(
+	session: { userId: string | null; guestId: string | null },
+	actor: ProgressActor,
+): boolean {
+	if (session.userId) {
+		return Boolean(actor.userId && session.userId === actor.userId);
+	}
+	if (session.guestId) {
+		return Boolean(actor.guestId && session.guestId === actor.guestId);
+	}
+	return false;
+}
+
+/**
+ * Aggregate personal progress for many tests in one query.
+ * Only submitted sessions with ownership count; orphan analytics rows are ignored.
+ */
+export async function getPersonalProgressByTestIds(
+	testIds: string[],
+	actor: ProgressActor,
+): Promise<Map<string, PersonalProgress>> {
+	const result = new Map<string, PersonalProgress>();
+	for (const id of testIds) {
+		result.set(id, emptyPersonalProgress());
+	}
+	if (testIds.length === 0) return result;
+
+	const ownership = actorOwnershipFilter(actor);
+	if (!ownership) return result;
+
+	const sessions = await prisma.spaceTestSession.findMany({
+		where: {
+			spaceTestId: { in: testIds },
+			submittedAt: { not: null },
+			score: { not: null },
+			total: { not: null },
+			...ownership,
+		},
+		select: {
+			spaceTestId: true,
+			score: true,
+			total: true,
+			submittedAt: true,
+		},
+		orderBy: { submittedAt: 'desc' },
+	});
+
+	const buckets = new Map<
+		string,
+		Array<{ score: number; total: number; submittedAt: Date }>
+	>();
+
+	for (const session of sessions) {
+		if (session.score == null || session.total == null || !session.submittedAt) continue;
+		const list = buckets.get(session.spaceTestId) ?? [];
+		list.push({
+			score: session.score,
+			total: session.total,
+			submittedAt: session.submittedAt,
+		});
+		buckets.set(session.spaceTestId, list);
+	}
+
+	for (const [testId, completions] of buckets) {
+		const recent = completions.slice(0, 5).map((c) => ({
+			score: c.score,
+			total: c.total,
+			submittedAt: c.submittedAt.toISOString(),
+		}));
+		let best: number | null = null;
+		for (const c of completions) {
+			if (c.total <= 0) continue;
+			const pct = (c.score / c.total) * 100;
+			if (best == null || pct > best) best = pct;
+		}
+		result.set(testId, {
+			status: 'completed',
+			completedCount: completions.length,
+			bestScorePercent: best == null ? null : Math.round(best * 10) / 10,
+			lastCompletedAt: completions[0]?.submittedAt.toISOString() ?? null,
+			recentCompletions: recent,
+		});
+	}
+
+	return result;
+}
+
+/** Move guest-owned sessions onto a user account. Idempotent. */
+export async function claimGuestSessions(
+	userId: string,
+	guestId: string,
+): Promise<{ claimed: number }> {
+	return prisma.$transaction(async (tx) => {
+		const result = await tx.spaceTestSession.updateMany({
+			where: { guestId },
+			data: { userId, guestId: null },
+		});
+		return { claimed: result.count };
 	});
 }
 

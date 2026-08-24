@@ -15,6 +15,9 @@ export interface WordDTO {
 	definition: string;
 	partOfSpeech: string;
 	example: string;
+	pronunciation: string;
+	meaningEn: string;
+	meaningVi: string;
 	// v2: NDK's Explanation & Guess Who hints
 	ndkExplanation: string | null;
 	hintsHard: string[];
@@ -32,6 +35,7 @@ export interface VocabSetDTO {
 	words: WordDTO[];
 	wordCount: number;
 	isArchived: boolean;
+	isCourseOnly: boolean;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -44,6 +48,7 @@ export interface VocabSetListItemDTO {
 	ownerName: string;
 	wordCount: number;
 	isArchived: boolean;
+	isCourseOnly: boolean;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -65,18 +70,25 @@ export interface StoreListResult {
 // ─── User Library ─────────────────────────────────────────────────────────────
 export type UserVocabSetStatus = 'active' | 'soft_deleted';
 
+export type UserVocabSetSource = 'STORE' | 'MY_CLASS';
+
 export interface UserLibrarySetDTO extends VocabSetDTO {
 	libraryEntryId: string;
 	status: UserVocabSetStatus;
+	source: UserVocabSetSource;
+	sourceCourseId: string | null;
 	addedAt: string;
 }
 
 // ─── Create / Update inputs ───────────────────────────────────────────────────
 export interface CreateWordInput {
 	term: string;
-	definition: string;
+	definition?: string;
 	partOfSpeech?: string;
 	example?: string;
+	pronunciation?: string;
+	meaningEn?: string;
+	meaningVi?: string;
 	// v2: NDK's Explanation & Guess Who hints
 	ndkExplanation?: string | null;
 	hintsHard?: string[];
@@ -87,6 +99,7 @@ export interface CreateWordInput {
 export interface CreateVocabSetInput {
 	title: string;
 	description?: string;
+	isCourseOnly?: boolean;
 	words: CreateWordInput[];
 }
 

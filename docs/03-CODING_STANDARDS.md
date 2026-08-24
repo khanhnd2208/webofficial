@@ -14,7 +14,7 @@ All API route handlers **must** use one of the three wrappers below. Raw `async 
 | Wrapper | Auth Required | Admin Required | Use When |
 |---------|:---:|:---:|---------|
 | `withErrorHandling` | ❌ | ❌ | Public read endpoints (posts, categories, search) |
-| `withAuth` | ✅ | ❌ | Any authenticated user (vocab, streak, profile, comments) |
+| `withAuth` | ✅ | ❌ | Any authenticated user (vocab, streak, profile, messages) |
 | `withAdmin` | ✅ | ✅ | Admin-only mutations (post CRUD, user roles, uploads) |
 
 ### 1.2 Handler Signatures
@@ -49,7 +49,7 @@ interface ApiUser {
   id: string;      // MongoDB ObjectId as string
   email: string;
   name: string;
-  role: string;    // 'student' | 'teacher' | 'admin'
+  role: string;    // currently 'student' | 'admin'; legacy 'teacher' is normalized
   image?: string;
 }
 ```
@@ -219,7 +219,7 @@ const Post = mongoose.models.Post || mongoose.model<IPost>('Post', PostSchema);
 
 ### 4.3 DTO Pattern — Never Leak Mongoose Documents
 
-Services **must** map Mongoose documents to plain DTO objects before returning them. No `Document`, `HydratedDocument`, or `_id` as `ObjectId` should cross the service boundary.
+Services and repositories **must** return plain serializable DTO objects. No Mongoose `Document`, `HydratedDocument`, Prisma client object, or database-specific ID/date value should cross into a client component or API response.
 
 ```typescript
 // ✅ Correct — service returns plain DTO
@@ -238,6 +238,10 @@ export async function getVocabSetById(id: string): Promise<VocabSetDTO | null> {
   return toDTO(doc);   // ← plain object, safe to serialize
 }
 ```
+
+For Prisma, select/include only the fields needed by the use case and map
+`Date` values to ISO strings at the service/API boundary when the result is
+sent to a Client Component.
 
 ### 4.4 Request Body Typing
 
@@ -279,9 +283,10 @@ import {
 ### 5.2 `src/config/navigation.ts` — Nav Links
 
 ```typescript
-import { NAV_LINKS, USER_MENU_LINKS } from '@/config/navigation';
-// NAV_LINKS: [{ href: '/blog', label: 'Hanoicam Story' }, ...]
-// USER_MENU_LINKS: [{ href: '/dashboard', label: 'Dashboard' }, ...]
+import { PUBLIC_NAV_ITEMS } from '@/config/navigation';
+import { routes } from '@/config/routes';
+// Navigation is publish-gated and uses the current Vietnamese routes.
+// Use `routes` for URLs instead of hardcoding paths in components.
 ```
 
 ### 5.3 `src/constants/post.ts` — Post Categories (client-safe)
@@ -337,9 +342,9 @@ formatNumber(2_500_000) // "2.5M"
 | Model files | PascalCase | `Post.ts`, `VocabSet.ts` |
 | Config files | camelCase | `constants.ts`, `navigation.ts` |
 | Constants | `UPPER_SNAKE_CASE` | `MAX_TERMS_PER_SET`, `NOTIFICATION_POLL_INTERVAL_MS` |
-| Interfaces (Models) | `I` prefix | `IPost`, `IComment`, `IVocabSet` |
+| Interfaces (Models) | `I` prefix | `IPost`, `IInquiry`, `IVocabSet` |
 | DTOs (Types) | `DTO` suffix | `PostDetailDTO`, `VocabSetDTO`, `UserDTO` |
-| Functions | camelCase, verb-first | `getPostBySlug()`, `createComment()`, `recordLogin()` |
+| Functions | camelCase, verb-first | `getPostBySlug()`, `createInquiry()`, `recordLogin()` |
 | React components | PascalCase | `function Navbar()`, `function StreakFire()` |
 | API route exports | `const` + HTTP method | `export const GET = withAuth(...)` |
 
@@ -379,7 +384,7 @@ import { formatDateShort } from '@/utils/formatDate';
 - **Server Components** are the default. Add `'use client'` only when the component needs browser APIs, event listeners, or React hooks (`useState`, `useEffect`, etc.).
 - **File size guideline:** Any component exceeding ~200 lines should be considered for extraction into sub-components.
 - **Props typing:** Always define a named `interface Props` (or inline type) for component props — never use implicit `any` or untyped objects.
-- **No business logic in components:** Fetch data in Server Components via services, or in Client Components via `fetch('/api/...')`. No direct Mongoose queries from component files.
+- **No business logic in components:** Fetch data in Server Components via services, or in Client Components via `fetch('/api/...')`. No direct Mongoose or Prisma queries from component files.
 
 ---
 
@@ -390,14 +395,14 @@ import { formatDateShort } from '@/utils/formatDate';
 | Project | Environment | File pattern | Purpose |
 |---------|-------------|--------------|---------|
 | `unit` | `node` | `*.unit.test.ts`, `src/lib/__tests__/**` | Pure logic, scoring, utils |
-| `integration` | `node` + MongoDB Memory Server + Postgres | `*.integration.test.ts`, `src/services/__tests__/**` | Services, API route contracts |
+| `integration` | `node` + MongoDB Memory Server + PostgreSQL | `*.integration.test.ts`, `src/services/__tests__/**` | Services and API route contracts |
 | `component` | `jsdom` | `*.test.tsx` | React hooks and UI |
 
 Run commands:
 
 ```bash
 npm run test:unit          # fast — no database
-npm run test:integration   # requires DATABASE_URL in .env.local
+npm run test:integration   # requires an explicit TEST_DATABASE_URL
 npm run test:component     # jsdom + Testing Library
 npm run test:all           # all projects
 npm run test:coverage      # with v8 coverage report
@@ -426,4 +431,4 @@ npm run check              # typecheck + lint + test:all + build
 - API contract tests: `src/app/api/<route>/__tests__/route.integration.test.ts`.
 - Throw `AppError` from `@/lib/appError` in services — **not** from `@/lib/apiUtils` (avoids pulling auth into service imports).
 - Integration tests must clean up data in `beforeEach` using harness helpers.
-- CI runs on every push/PR via `.github/workflows/ci.yml`. Deploy waits for CI success.
+- Playwright starts a built app automatically in CI; local E2E runs require an app already listening at `PLAYWRIGHT_BASE_URL` (default `http://localhost:3000`).

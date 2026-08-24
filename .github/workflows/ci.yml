@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Lint, Typecheck, Test, Build
+    name: Lint, Typecheck, Test, Audit, Build, E2E
     runs-on: ubuntu-latest
 
     services:
@@ -29,13 +29,27 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      mongodb:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/teaching_platform_vocab_test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/teaching_platform_vocab_test
       AUTH_SECRET: ci-test-secret-not-for-production
-      AUTH_URL: http://localhost:3000
+      AUTH_URL: https://ci.invalid
+      NEXTAUTH_URL: https://ci.invalid
       MONGODB_URI: mongodb://127.0.0.1:27017/ci_placeholder
+      # Release builds mirror production: unfinished learner surfaces fail closed.
+      PUBLIC_TESTS_ENABLED: 'false'
+      PUBLIC_KNOWLEDGE_ENABLED: 'false'
+      TEACHING_GROUP_BOARD_ENABLED: 'false'
 
     steps:
       - uses: actions/checkout@v4
@@ -51,6 +65,9 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
 
+      - name: Prisma validate
+        run: npx prisma validate
+
       - name: Prisma migrate (test DB)
         run: npx prisma migrate deploy
 
@@ -58,7 +75,7 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint -- --max-warnings=0
 
       - name: Unit tests
         run: npm run test:unit
@@ -71,3 +88,23 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Seed release-critical E2E data
+        run: npm run db:seed:active-recall
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - name: Release-critical end-to-end tests
+        run: >-
+          npx playwright test
+          e2e/active-recall-admin.spec.ts
+          e2e/active-recall.spec.ts
+          e2e/editorial-premium.spec.ts
+          e2e/mobile-smoke.spec.ts
+          e2e/public-feature-locks.spec.ts
+          e2e/smoke.spec.ts
+          e2e/teaching-attendance-board.spec.ts

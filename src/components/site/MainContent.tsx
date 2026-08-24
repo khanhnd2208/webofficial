@@ -8,7 +8,7 @@ import { isFullBleedPublicPath, isInternalChromePath } from '@/config/navigation
 
 /**
  * Light entrance on public routes. Modest top inset on inner pages so GateBack
- * does not collide with titles. Intro, mục lục, and My Space stay full-bleed.
+ * does not collide with titles. Intro, mục lục, My Space, and /lop stay full-bleed.
  */
 export default function MainContent({ children }: { children: ReactNode }) {
 	const pathname = usePathname();

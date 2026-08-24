@@ -3,7 +3,7 @@
    Submit a completed game session. The server re-calculates the score
    from raw timestamps (anti-cheat). Only saves if new score > best.
    ════════════════════════════════════════════════════════════════════════ */
-import { withAdmin, apiSuccess, apiError, AppError } from '@/lib/apiUtils';
+import { withAuth, apiSuccess, apiError, AppError } from '@/lib/apiUtils';
 import {
 	ScoreValidationError,
 	submitGameScore,
@@ -12,7 +12,7 @@ import {
 
 type Ctx = { params: Promise<{ id: string }> };
 
-export const POST = withAdmin(async (request, user, ctx) => {
+export const POST = withAuth(async (request, user, ctx) => {
 	const { id: vocabSetId } = await (ctx as Ctx).params;
 
 	let body: ScoreBody;

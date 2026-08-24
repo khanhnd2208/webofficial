@@ -5,8 +5,8 @@
    ════════════════════════════════════════════════════════════════════════ */
 import { buildSampleWorkbook } from '@/lib/vocab/parseVocabFile';
 
-export function GET() {
-	const buffer = buildSampleWorkbook();
+export async function GET() {
+	const buffer = await buildSampleWorkbook();
 
 	const blob = new Blob([buffer], {
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

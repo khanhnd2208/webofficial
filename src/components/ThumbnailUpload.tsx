@@ -9,6 +9,7 @@ interface ThumbnailUploadProps {
 	value: string;
 	onChange: (url: string) => void;
 	uploadEndpoint?: string;
+	variant?: 'default' | 'product';
 }
 
 async function uploadFileToServer(file: File, endpoint = '/api/uploads'): Promise<string> {
@@ -19,7 +20,9 @@ async function uploadFileToServer(file: File, endpoint = '/api/uploads'): Promis
 	const ok = typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true;
 	if (!res.ok || !ok) {
 		const message =
-			typeof json === 'object' && json !== null && typeof (json as { error?: unknown }).error === 'string'
+			typeof json === 'object' &&
+			json !== null &&
+			typeof (json as { error?: unknown }).error === 'string'
 				? String((json as { error?: unknown }).error)
 				: `HTTP ${res.status}`;
 		throw new Error(message);
@@ -37,7 +40,9 @@ export default function ThumbnailUpload({
 	value,
 	onChange,
 	uploadEndpoint = '/api/uploads',
+	variant = 'default',
 }: ThumbnailUploadProps) {
+	const product = variant === 'product';
 	const [uploading, setUploading] = useState(false);
 	const [dragActive, setDragActive] = useState(false);
 	const [error, setError] = useState('');
@@ -90,29 +95,40 @@ export default function ThumbnailUpload({
 
 	return (
 		<div>
-			<div className="text-xs font-semibold uppercase tracking-wider text-muted">Thumbnail</div>
+			<div
+				className={
+					product
+						? 'text-sm font-bold text-ink'
+						: 'text-xs font-semibold uppercase tracking-wider text-muted'
+				}
+			>
+				{product ? 'Ảnh bìa khóa học' : 'Thumbnail'}
+			</div>
+			{product ? <p className="mc-meta mt-1">Tỉ lệ 16:9, đề xuất 1280 × 720px.</p> : null}
 
 			{value ? (
 				<div className="mt-2">
-					<div className="group relative overflow-hidden rounded-xl border border-border">
+					<div
+						className={`group relative overflow-hidden border border-border ${product ? 'rounded-[var(--mc-r-md)]' : 'rounded-xl'}`}
+					>
 						<img
 							src={value}
-							alt="Thumbnail preview"
-							className="aspect-2/1 w-full object-cover"
+							alt={product ? 'Xem trước ảnh bìa khóa học' : 'Thumbnail preview'}
+							className={`${product ? 'aspect-video' : 'aspect-2/1'} w-full object-cover`}
 						/>
 						{/* Overlay actions */}
-						<div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+						<div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
 							<button
 								type="button"
 								onClick={() => fileRef.current?.click()}
-								className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-bold text-black shadow transition-colors hover:bg-white"
+								className="min-h-11 rounded-lg bg-white/90 px-3 text-xs font-bold text-black shadow transition-colors hover:bg-white"
 							>
 								Đổi ảnh
 							</button>
 							<button
 								type="button"
 								onClick={() => onChange('')}
-								className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-bold text-white shadow transition-colors hover:bg-red-600"
+								className="min-h-11 rounded-lg bg-red-500/90 px-3 text-xs font-bold text-white shadow transition-colors hover:bg-red-600"
 							>
 								Xoá
 							</button>
@@ -122,15 +138,17 @@ export default function ThumbnailUpload({
 						<input
 							value={value}
 							onChange={(e) => onChange(e.target.value)}
-							className="w-full rounded-md border border-border bg-transparent px-3 py-1.5 text-xs text-muted outline-none focus:border-accent"
+							className={`w-full border border-border bg-transparent px-3 text-xs text-muted outline-none focus:border-accent ${product ? 'min-h-11 rounded-[var(--mc-r-sm)]' : 'py-1.5 rounded-md'}`}
 							placeholder="URL"
 						/>
 					</div>
 				</div>
 			) : (
 				<div
-					className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-colors ${
-						dragActive ? 'border-accent bg-accent-subtle' : 'border-border hover:border-accent/50'
+					className={`mt-2 flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-8 transition-colors ${product ? 'rounded-[var(--mc-r-md)]' : 'rounded-xl'} ${
+						dragActive
+							? `border-accent ${product ? 'bg-surface-sunken' : 'bg-accent-subtle'}`
+							: 'border-border hover:border-accent/50'
 					} ${uploading ? 'pointer-events-none opacity-60' : ''}`}
 					onClick={() => fileRef.current?.click()}
 					onDragOver={(e) => {
@@ -139,21 +157,59 @@ export default function ThumbnailUpload({
 					}}
 					onDragLeave={() => setDragActive(false)}
 					onDrop={onDrop}
+					role="button"
+					tabIndex={0}
+					aria-label="Chọn ảnh bìa khóa học"
+					onKeyDown={(event) => {
+						if (event.key === 'Enter' || event.key === ' ') {
+							event.preventDefault();
+							fileRef.current?.click();
+						}
+					}}
 				>
-					<input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+					<input
+						ref={fileRef}
+						type="file"
+						accept="image/*"
+						className="hidden"
+						onChange={onFileChange}
+					/>
 					{uploading ? (
 						<div className="flex items-center gap-2 text-sm text-muted">
 							<svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-								<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-								<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+								<circle
+									className="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									strokeWidth="4"
+								/>
+								<path
+									className="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+								/>
 							</svg>
 							Đang upload…
 						</div>
 					) : (
 						<>
-							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-hover text-muted">
-								<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+							<div
+								className={`flex h-12 w-12 items-center justify-center bg-surface-hover text-muted ${product ? 'rounded-[var(--mc-r-sm)]' : 'rounded-xl'}`}
+							>
+								<svg
+									className="h-6 w-6"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									strokeWidth={1.5}
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+									/>
 								</svg>
 							</div>
 							<p className="mt-3 text-sm font-medium text-foreground-secondary">
@@ -163,7 +219,8 @@ export default function ThumbnailUpload({
 								PNG, JPG, WebP — tối đa 10MB · Hỗ trợ cắt &amp; chỉnh sửa
 							</p>
 							<p className="mt-1 font-mono text-[10px] text-muted/60">
-								Kích thước đề xuất: 1200 × 600 px (tỉ lệ 2:1)
+								Kích thước đề xuất:{' '}
+								{product ? '1280 × 720 px (tỉ lệ 16:9)' : '1200 × 600 px (tỉ lệ 2:1)'}
 							</p>
 						</>
 					)}
@@ -177,7 +234,7 @@ export default function ThumbnailUpload({
 					<input
 						value={value}
 						onChange={(e) => onChange(e.target.value)}
-						className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+						className={`w-full border border-border px-3 py-2 text-sm outline-none transition-colors focus:border-accent ${product ? 'rounded-[var(--mc-r-sm)]' : 'rounded-lg'}`}
 						placeholder="Hoặc dán URL trực tiếp: https://..."
 					/>
 				</div>
@@ -187,7 +244,7 @@ export default function ThumbnailUpload({
 			{cropSrc ? (
 				<ImageCropModal
 					src={cropSrc}
-					aspectRatio={2}
+					aspectRatio={product ? 16 / 9 : 2}
 					onCropDone={onCropDone}
 					onCancel={() => setCropSrc(null)}
 				/>

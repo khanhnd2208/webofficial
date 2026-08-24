@@ -1,0 +1,45 @@
+---
+description: My Class product UI rules — M3 Indigo, focused, responsive
+globs:
+  - src/components/myclass/**
+  - src/app/my-space/my-class/**
+  - src/app/admin/my-class/**
+  - src/app/my-class-theme.css
+alwaysApply: false
+---
+
+# My Class UI — Product grammar
+
+Full spec: `docs/09-DESIGN_SYSTEM.md`. This surface is **not** the editorial
+marketing language.
+
+## Do
+
+- Structure with clear product surfaces, restrained borders and typography (`.mc-title`, `.mc-dek`, `.mc-eyebrow`, `.mc-h3`, `.mc-meta`, `.mc-num`)
+- Use `McPanel` for one independent task/object, `McRows` for dense lists, and never nest panels for decoration
+- Radius: `--mc-r-xs` (4) / `sm` (8 controls) / `md` (12 panels) / `lg` (16 overlays) / `full` (icon buttons, progress tracks)
+- Icons: Material Symbols via `McIcon` — do not add inline SVG icons
+- Active outline unit: accent left bar + `bg-surface-container-highest` + primary text
+- One solid ink primary CTA per task region (`bg-ink`, hover `bg-inverse-surface`)
+- Reader: single 800px column, Inter throughout, `McSegmented` for reading levels
+- Four registers: lesson (`01` + bold title + `1/22`), section (`1.1` uppercase eyebrow), unit (rail leaf), prose headings (sized ladder)
+- Outline expand/collapse is always free — including in edit mode. Lesson title
+  toggles open/close (open also jumps to first unit; second click collapses).
+  Header control: "Thu gọn tất cả" / "Mở tất cả"
+- Lesson jump always opens the first unit
+- Right rail = time + section tests only (no in-content heading list)
+- Edit outline: 360px sidebar, status dots instead of full badges, dnd-kit reorder
+- Admin: use `src/components/myclass/admin/studio/*` primitives; wrap under `.mc`
+
+## Do not
+
+- Decorative card nesting or arbitrary `rounded-2xl`/`3xl`
+- Decorative pastel washes; semantic success/error/warning feedback is allowed
+- Card-in-card nesting; 3-column multi-level reader
+- Gradients / tinted thumbnail placeholders
+- Hardcoded hex outside `my-class-theme.css`
+- Serif or bronze editorial tokens inside `.mc`
+
+Preserve test contracts: `data-testid` values and Vietnamese labels
+(`Đã hiểu`, reading level names, etc.). Outline tests show the real
+test title, not a generic "Progress Test" label.

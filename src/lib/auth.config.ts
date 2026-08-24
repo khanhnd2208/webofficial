@@ -75,7 +75,7 @@ export const authConfig: NextAuthConfig = {
 				const userRole = (user as { role?: string }).role;
 				// 'teacher' was a legacy role; normalize to 'student'.
 				token.role = userRole === 'admin' ? 'admin' : 'student';
-			} else if (!token.role || token.role === 'teacher') {
+			} else if (!token.role || String(token.role) === 'teacher') {
 				token.role = 'student';
 			}
 			return token;

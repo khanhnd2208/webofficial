@@ -49,17 +49,19 @@ describe('mapRow', () => {
 
 	it('reports missing word/term', () => {
 		const result = mapRow({ definition: 'def', ndk_explanation: 'ndk' });
-		expect(result._missing).toContain('word/term');
+		expect(result._missing).toContain('term');
 	});
 
-	it('reports missing definition', () => {
+	it('reports missing meaning when definition and bilingual fields are empty', () => {
 		const result = mapRow({ word: 'test', ndk_explanation: 'ndk' });
-		expect(result._missing).toContain('definition');
+		expect(result._missing).toContain('meaning_vi/meaning_en');
 	});
 
-	it('reports missing ndk_explanation', () => {
+	it('accepts definition as meaning_vi and treats ndk_explanation as optional', () => {
 		const result = mapRow({ word: 'test', definition: 'def' });
-		expect(result._missing).toContain('ndk_explanation');
+		expect(result._missing).toHaveLength(0);
+		expect(result.meaningVi).toBe('def');
+		expect(result.definition).toBe('def');
 	});
 
 	it('trims whitespace from all fields', () => {
@@ -85,16 +87,14 @@ describe('parseVocabRows', () => {
 		expect(errors).toHaveLength(0);
 	});
 
-	it('collects errors for rows missing ndk_explanation', () => {
+	it('accepts rows that have a meaning but no ndk_explanation', () => {
 		const rows: Record<string, string>[] = [
-			{ word: 'resilient', definition: 'phục hồi' }, // no ndk_explanation
+			{ word: 'resilient', definition: 'phục hồi' },
 			{ word: 'ok', definition: 'def', ndk_explanation: 'ndk' },
 		];
 		const { words, errors } = parseVocabRows(rows);
-		expect(words).toHaveLength(1);
-		expect(errors).toHaveLength(1);
-		expect(errors[0].row).toBe(2); // header=1, first data row=2
-		expect(errors[0].missing).toContain('ndk_explanation');
+		expect(words).toHaveLength(2);
+		expect(errors).toHaveLength(0);
 	});
 
 	it('collects errors for rows missing term', () => {
@@ -102,7 +102,7 @@ describe('parseVocabRows', () => {
 			{ definition: 'phục hồi', ndk_explanation: 'giải thích' }, // no word
 		];
 		const { errors } = parseVocabRows(rows);
-		expect(errors[0].missing).toContain('word/term');
+		expect(errors[0].missing).toContain('term');
 	});
 
 	it('silently skips completely blank rows', () => {
@@ -118,7 +118,7 @@ describe('parseVocabRows', () => {
 	it('assigns correct 1-based row numbers in errors (row 1 = header)', () => {
 		const rows: Record<string, string>[] = [
 			{ word: 'ok', definition: 'def', ndk_explanation: 'ndk' },       // row 2 → ok
-			{ word: 'bad', definition: 'def' },                               // row 3 → error
+			{ word: 'bad' },                                                 // row 3 → error (missing meaning)
 			{ word: 'ok2', definition: 'def2', ndk_explanation: 'ndk2' },    // row 4 → ok
 			{ word: '', definition: 'def', ndk_explanation: 'ndk' },         // row 5 → error (missing term)
 		];

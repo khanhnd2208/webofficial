@@ -4,5 +4,7 @@ export * from './parseMcqCsv';
 export * from './parseTestBundleCsv';
 export * from './sampleBalanced';
 export * from './sessionStats';
+export * from './search';
+export * from './displayOrder';
 export * from './prompts/testBundlePrompt';
 export * as myspaceTestsService from './services/myspaceTestsService';

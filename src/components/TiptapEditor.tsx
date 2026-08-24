@@ -18,6 +18,7 @@ import TableHeader from '@tiptap/extension-table-header';
 import Superscript from '@tiptap/extension-superscript';
 import Subscript from '@tiptap/extension-subscript';
 import { common, createLowlight } from 'lowlight';
+import { normalizeDraftHtml } from '@/features/my-class/client/adminDraft';
 
 const lowlight = createLowlight(common);
 
@@ -45,7 +46,7 @@ function Btn({
 			title={title}
 			aria-label={title}
 			aria-pressed={active}
-			className={`flex h-10 w-10 items-center justify-center rounded transition-colors sm:h-7 sm:w-7 ${
+			className={`flex h-11 w-11 items-center justify-center rounded transition-colors sm:h-11 sm:w-11 ${
 				active ? 'bg-accent/15 text-accent' : 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
 			} ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
 		>
@@ -112,17 +113,25 @@ interface TiptapEditorProps {
 	content: string;
 	onChange: (html: string) => void;
 	onImageUpload?: (file: File) => Promise<string>;
+	onImageUploadError?: (message: string) => void;
 	placeholder?: string;
 	/** Optional CSS font-family string; applied to the editor content area */
 	fontFamily?: string;
 }
 
-export default function TiptapEditor({ content, onChange, onImageUpload, placeholder = 'Bắt đầu viết bài...', fontFamily }: TiptapEditorProps) {
+function equivalentEditorHtml(left: string, right: string) {
+	return normalizeDraftHtml(left) === normalizeDraftHtml(right);
+}
+
+export default function TiptapEditor({ content, onChange, onImageUpload, onImageUploadError, placeholder = 'Bắt đầu viết bài...', fontFamily }: TiptapEditorProps) {
+	const contentRef = useRef(content);
+	contentRef.current = content;
 	const [showLinkDialog, setShowLinkDialog] = useState(false);
 	const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
 	const [showSourceView, setShowSourceView] = useState(false);
 	const [sourceHtml, setSourceHtml] = useState('');
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const isInternalUpdate = useRef(false);
 	const [isUploading, setIsUploading] = useState(false);
 
 	const editor = useEditor({
@@ -183,8 +192,10 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 			},
 		},
 		onUpdate: ({ editor: e }) => {
+			const html = e.getHTML();
+			if (equivalentEditorHtml(html, contentRef.current)) return;
 			isInternalUpdate.current = true;
-			onChange(e.getHTML());
+			onChange(html);
 			// Reset the flag after React finishes processing
 			queueMicrotask(() => { isInternalUpdate.current = false; });
 		},
@@ -196,12 +207,12 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 		try {
 			const url = await onImageUpload(file);
 			editor.chain().focus().setImage({ src: url }).run();
-		} catch {
-			/* toast? */
+		} catch (error) {
+			onImageUploadError?.(error instanceof Error ? error.message : 'Không tải ảnh lên được');
 		} finally {
 			setIsUploading(false);
 		}
-	}, [editor, onImageUpload]);
+	}, [editor, onImageUpload, onImageUploadError]);
 
 	// Sync external content changes (e.g. draft load) into the editor.
 	// Only update if the editor content is truly different from the prop.
@@ -219,14 +230,12 @@ export default function TiptapEditor({ content, onChange, onImageUpload, placeho
 	 
 	}, [fontFamily, editor]);
 
-	const isInternalUpdate = useRef(false);
 	useEffect(() => {
 		if (!editor || isInternalUpdate.current) return;
 		const currentHtml = editor.getHTML();
 		// Only set content if it actually differs (avoids cursor-reset loops)
-		if (content !== currentHtml) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(editor.commands.setContent as (...args: any[]) => void)(content, false);
+		if (content !== currentHtml && !equivalentEditorHtml(content, currentHtml)) {
+			editor.commands.setContent(content, { emitUpdate: false });
 		}
 	}, [editor, content]);
 

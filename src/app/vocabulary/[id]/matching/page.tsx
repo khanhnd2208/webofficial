@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useVocabSetUrl, useVocabScoreUrl, useVocabChrome, VocabPracticeFrame, VocabBackLink } from '@/components/vocab/practice/VocabApiProvider';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
 
@@ -137,6 +138,7 @@ function sparkleMatch(el1: HTMLElement, el2: HTMLElement) {
 }
 
 export default function MatchingPage({ params }: { params: Promise<{ id: string }> }) {
+	const vocabUrl = useVocabSetUrl();
 	const [id, setId] = useState('');
 	const [allWords, setAllWords] = useState<Word[] | null>(null);
 	const [error, setError] = useState('');
@@ -185,14 +187,14 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 	useEffect(() => {
 		params.then(async ({ id: paramId }) => {
 			setId(paramId);
-			const res = await fetch(`/api/vocab-sets/${paramId}`);
+			const res = await fetch(vocabUrl(paramId));
 			const json = await res.json();
 			if (!json.ok) { setError(json.error); return; }
 			const t = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(t);
 			startGame(t);
 		});
-	}, [params, startGame]);
+	}, [params, startGame, vocabUrl]);
 
 	// Timer
 	useEffect(() => {
@@ -258,17 +260,17 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 	/* ── Loading / Error ── */
 	if (error) {
 		return (
-			<main className="min-h-screen flex items-center justify-center">
+			<VocabPracticeFrame className="min-h-screen flex items-center justify-center">
 				<p className="text-sm text-error">{error}</p>
-			</main>
+			</VocabPracticeFrame>
 		);
 	}
 
 	if (allWords === null) {
 		return (
-			<main className="min-h-screen flex items-center justify-center">
+			<VocabPracticeFrame className="min-h-screen flex items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
-			</main>
+			</VocabPracticeFrame>
 		);
 	}
 
@@ -280,7 +282,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 		// eslint-disable-next-line react-hooks/refs
 		const wrongPairsSnap = wrongPairsRef.current;
 		return (
-			<main ref={containerRef} className="min-h-screen">
+			<VocabPracticeFrame className="min-h-screen">
+				<div ref={containerRef}>
 				<CompletionScreen
 					moves={moves}
 					elapsed={elapsed}
@@ -293,7 +296,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 						startGame(allWords);
 					}}
 				/>
-			</main>
+				</div>
+			</VocabPracticeFrame>
 		);
 	}
 
@@ -303,13 +307,12 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 	const progress = totalPairs > 0 ? (matchedPairs / totalPairs) * 100 : 0;
 
 	return (
-		<main ref={containerRef} className="min-h-screen select-none">
+		<VocabPracticeFrame className="min-h-screen select-none">
+			<div ref={containerRef}>
 			{/* Top bar */}
 			<div className="border-b border-border">
 				<div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-				<Link href="/vocabulary" className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors">
-					← Từ vựng
-				</Link>
+				<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
 				<div className="flex items-center gap-4 text-xs text-muted">
 						<span className="flex items-center gap-1.5">
 							<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -473,7 +476,8 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 					50% { opacity: 0.4; }
 				}
 			`}</style>
-		</main>
+			</div>
+		</VocabPracticeFrame>
 	);
 }
 
@@ -497,6 +501,8 @@ function CompletionScreen({
 	containerRef: React.RefObject<HTMLDivElement | null>;
 	onRestart: () => void;
 }) {
+	const chrome = useVocabChrome();
+	const scoreUrlFor = useVocabScoreUrl();
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
 	const [scoreData, setScoreData] = useState<{ score: number; isNewBest: boolean; previousBest: number } | null>(null);
@@ -511,7 +517,7 @@ function CompletionScreen({
 		scoreSubmittedRef.current = true;
 		const sessionEndTime = Date.now();
 		const penaltyMs = wrongPairs * 5000;
-		fetch(`/api/vocab-sets/${id}/score`, {
+		fetch(scoreUrlFor(id), {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ mode: 'MATCHING', sessionStartTime, sessionEndTime, penaltyMs }),
@@ -619,7 +625,7 @@ function CompletionScreen({
 							Chơi lại
 						</button>
 						<Link
-							href={`/vocabulary/${id}`}
+							href={chrome.setHref(id)}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:border-foreground active:scale-95"
 						>
 							Quay lại bộ từ
@@ -631,9 +637,9 @@ function CompletionScreen({
 						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Thử chế độ khác</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">
 							{[
-								{ href: `/vocabulary/${id}/flashcards`, label: 'Flashcards', color: 'text-accent' },
-								{ href: `/vocabulary/${id}/mcq`, label: 'Trắc nghiệm', color: 'text-success' },
-								{ href: `/vocabulary/${id}/fill-blank`, label: 'Điền từ', color: 'text-indigo' },
+								{ href: chrome.modeHref(id, 'flashcards'), label: 'Flashcards', color: 'text-accent' },
+								{ href: chrome.modeHref(id, 'mcq'), label: 'Trắc nghiệm', color: 'text-success' },
+								{ href: chrome.modeHref(id, 'fill-blank'), label: 'Điền từ', color: 'text-indigo' },
 							].map((link) => (
 								<Link
 									key={link.href}

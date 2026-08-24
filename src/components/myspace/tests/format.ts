@@ -13,8 +13,14 @@ export function formatDuration(ms: number | null): string | null {
 	return `${minutes} min`;
 }
 
+export function formatDifficulty(value: number): string {
+	if (value <= 1) return 'Dễ';
+	if (value === 2) return 'Trung bình';
+	return 'Khó';
+}
+
 export function formatCount(n: number): string {
-	return n.toLocaleString('en-US');
+	return n.toLocaleString('vi-VN');
 }
 
 export function scoreColorClass(avg: number | null): string {
@@ -24,45 +30,22 @@ export function scoreColorClass(avg: number | null): string {
 	return 'text-error';
 }
 
-/**
- * Build a compact meta line for a test row.
- * Empty / missing values are omitted (smart-hide).
- *
- * Example: "105 questions · 6 attempts · avg 82% · 12 min"
- * When no attempts yet: "105 questions"
- */
-export function buildTestMetaLine({
-	questionCount,
-	attemptedCount,
-	completedCount,
-	avgScorePercent,
-	avgDurationMs,
-}: {
-	questionCount: number;
-	attemptedCount: number;
-	completedCount: number;
-	avgScorePercent: number | null;
-	avgDurationMs: number | null;
-}): string {
-	const parts: string[] = [
-		`${formatCount(questionCount)} ${questionCount === 1 ? 'question' : 'questions'}`,
-	];
+export function formatCompletedDate(iso: string | null): string | null {
+	if (!iso) return null;
+	const date = new Date(iso);
+	if (Number.isNaN(date.getTime())) return null;
+	return date.toLocaleDateString('vi-VN', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	});
+}
 
-	if (attemptedCount > 0) {
-		parts.push(
-			`${formatCount(attemptedCount)} ${attemptedCount === 1 ? 'attempt' : 'attempts'}`,
-		);
-	}
-
-	if (avgScorePercent != null && completedCount > 0) {
-		const score = formatScorePercent(avgScorePercent);
-		if (score) parts.push(`avg ${score}`);
-	}
-
-	if (avgDurationMs != null && completedCount > 0) {
-		const time = formatDuration(avgDurationMs);
-		if (time) parts.push(time);
-	}
-
-	return parts.join(' · ');
+export function truncateDescription(text: string, maxLines = 2): string {
+	const cleaned = text.replace(/\s+/g, ' ').trim();
+	if (!cleaned) return '';
+	// Soft cap ~140 chars ≈ two short lines in the dense catalogue.
+	const maxChars = maxLines * 70;
+	if (cleaned.length <= maxChars) return cleaned;
+	return `${cleaned.slice(0, maxChars - 1).trimEnd()}…`;
 }

@@ -580,11 +580,11 @@ function parseCSVContent(text: string): string[] {
 }
 
 async function parseExcelFile(file: File): Promise<string[]> {
-  const XLSX = await import("xlsx");
-  const buffer = await file.arrayBuffer();
-  const wb = XLSX.read(buffer, { type: "array" });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows: string[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+  if (file.size > 5 * 1024 * 1024) throw new Error("File quá lớn (tối đa 5 MB).");
+  const { readSheet } = await import("read-excel-file/browser");
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) throw new Error("File .xlsx không hợp lệ.");
+  const rows = await readSheet(file);
   const results: string[] = [];
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -623,7 +623,7 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
     setError("");
     try {
       let contents: string[];
-      if (file.name.match(/\.xlsx?$/i)) {
+              if (file.name.match(/\.xlsx$/i)) {
         contents = await parseExcelFile(file);
       } else {
         const text = await file.text();
@@ -716,7 +716,7 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
               className="cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all hover:border-[#c8973a]/50"
               style={{ borderColor: "rgba(200,151,58,0.3)" }}
             >
-              <input ref={fileInputRef} type="file" accept=".csv,.txt,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
+              <input ref={fileInputRef} type="file" accept=".csv,.txt,.xlsx" onChange={handleFileUpload} className="hidden" />
               <div className="flex justify-center mb-3" style={{ color: uploading ? "#c8973a" : uploadedCards.length > 0 ? "#6aad7c" : "#b8a060" }}>
                 {uploading
                   ? <m.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Icons.Spinner /></m.div>
@@ -728,7 +728,7 @@ function SetupModal({ onSetup, onClose }: { onSetup: (cards: string[], title: st
               <p className="text-sm font-medium" style={{ color: "#f0d080", fontFamily: FONT_UI }}>
                 {uploading ? "Đang đọc file..." : uploadedCards.length > 0 ? `${uploadedCards.length} thẻ đã tải` : "Chọn file"}
               </p>
-              <p className="mt-1 text-[10px]" style={{ color: "#907848" }}>.csv · .txt · .xlsx · .xls</p>
+              <p className="mt-1 text-[10px]" style={{ color: "#907848" }}>.csv · .txt · .xlsx</p>
               <p className="mt-2 text-[10px]" style={{ color: "#907848" }}>
                 Chưa có file?{" "}
                 <a

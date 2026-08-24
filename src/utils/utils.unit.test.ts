@@ -23,6 +23,7 @@ describe('slugify', () => {
 
 	it('handles Vietnamese diacritics', () => {
 		expect(slugify('Tiếng Việt')).toBe('tieng-viet');
+		expect(slugify('Định nghĩa HRM')).toBe('dinh-nghia-hrm');
 	});
 });
 

@@ -33,17 +33,16 @@ test.describe('Editorial premium public experience', () => {
 		expect(introBox!.x + introBox!.width / 2).toBeLessThan(250);
 	});
 
-	test('routes visitors from intro → mục lục into My Space while marketing stays locked', async ({
+	test('routes visitors from intro to the open My Space destination', async ({
 		page,
 	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/');
-		await page.getByRole('link', { name: /Mở mục lục/i }).click();
+		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByTestId('gate-item-locked')).toHaveCount(3);
-		await page.getByRole('button', { name: /Dự án/i }).click();
-		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByTestId('gate-locked-note')).toBeVisible();
+		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
+		await expect(gate.getByRole('link')).toHaveCount(1);
+		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(3);
 
 		await page.getByRole('link', { name: /My Space/i }).click();
 		await expect(page).toHaveURL(/\/my-space/);

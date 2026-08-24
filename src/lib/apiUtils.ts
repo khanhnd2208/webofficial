@@ -17,10 +17,13 @@
  *   });
  */
 
+import { randomUUID } from 'node:crypto';
+
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { AppError } from '@/lib/appError';
 import { getApiUser, type ApiUser } from '@/lib/apiAuth';
+import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
 
 // ─── Response Helpers ──────────────────────────────────────────────────────────
 
@@ -52,6 +55,33 @@ export function apiError(
 	);
 }
 
+const REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
+
+/** Return a bounded request id suitable for correlation in logs and headers. */
+export function getRequestId(request: Pick<Request, 'headers'>): string {
+	const supplied = request.headers.get('x-request-id')?.trim();
+	return supplied && REQUEST_ID_PATTERN.test(supplied) ? supplied : randomUUID();
+}
+
+/** Add correlation metadata without changing the success response contract. */
+export async function withRequestId(response: NextResponse, requestId: string): Promise<NextResponse> {
+	response.headers.set('x-request-id', requestId);
+	if (response.status < 400) return response;
+
+	try {
+		const body = await response.clone().json();
+		if (body && typeof body === 'object' && !Array.isArray(body)) {
+			return NextResponse.json({ ...body, requestId }, {
+				status: response.status,
+				headers: response.headers,
+			});
+		}
+	} catch {
+		// Preserve non-JSON responses (for example framework-generated errors).
+	}
+	return response;
+}
+
 export { AppError } from '@/lib/appError';
 
 /**
@@ -66,8 +96,20 @@ function handleCaughtError(error: unknown): NextResponse {
 			fields: error.fields,
 		});
 	}
-	console.error('[API Error]', error);
 	return apiError('Internal server error', 500);
+}
+
+function logApiFailure(request: NextRequest, error: unknown, response: NextResponse, requestId: string, startedAt: number) {
+	console.error(
+		JSON.stringify({
+			requestId,
+			route: request.nextUrl.pathname,
+			method: request.method,
+			status: response.status,
+			code: error instanceof AppError ? error.code : 'INTERNAL_ERROR',
+			durationMs: Date.now() - startedAt,
+		}),
+	);
 }
 
 // ─── Auth Wrapper Types ────────────────────────────────────────────────────────
@@ -84,6 +126,11 @@ type PublicHandler = (
 	request: NextRequest,
 	context?: RouteContext
 ) => Promise<NextResponse>;
+
+type ResponseHandler = (
+	request: NextRequest,
+	context?: RouteContext
+) => Promise<Response>;
 
 /**
  * Next.js App Router dynamic route context.
@@ -107,14 +154,18 @@ type RouteContext = { params: Promise<any> };
  */
 export function withAuth(handler: AuthenticatedHandler) {
 	return async (request: NextRequest, context?: RouteContext): Promise<NextResponse> => {
+		const requestId = getRequestId(request);
+		const startedAt = Date.now();
 		try {
 			const user = await getApiUser(request);
 			if (!user) {
-				return apiError('Unauthorized', 401);
+				return withRequestId(apiError('Unauthorized', 401), requestId);
 			}
-			return await handler(request, user, context);
+			return withRequestId(await handler(request, user, context), requestId);
 		} catch (error) {
-			return handleCaughtError(error);
+			const response = handleCaughtError(error);
+			logApiFailure(request, error, response, requestId, startedAt);
+			return withRequestId(response, requestId);
 		}
 	};
 }
@@ -128,17 +179,21 @@ export function withAuth(handler: AuthenticatedHandler) {
  */
 export function withAdmin(handler: AuthenticatedHandler) {
 	return async (request: NextRequest, context?: RouteContext): Promise<NextResponse> => {
+		const requestId = getRequestId(request);
+		const startedAt = Date.now();
 		try {
 			const user = await getApiUser(request);
 			if (!user) {
-				return apiError('Unauthorized', 401);
+				return withRequestId(apiError('Unauthorized', 401), requestId);
 			}
 			if (user.role !== 'admin') {
-				return apiError('Forbidden', 403);
+				return withRequestId(apiError('Forbidden', 403), requestId);
 			}
-			return await handler(request, user, context);
+			return withRequestId(await handler(request, user, context), requestId);
 		} catch (error) {
-			return handleCaughtError(error);
+			const response = handleCaughtError(error);
+			logApiFailure(request, error, response, requestId, startedAt);
+			return withRequestId(response, requestId);
 		}
 	};
 }
@@ -150,10 +205,30 @@ export function withAdmin(handler: AuthenticatedHandler) {
  */
 export function withErrorHandling(handler: PublicHandler) {
 	return async (request: NextRequest, context?: RouteContext): Promise<NextResponse> => {
+		const requestId = getRequestId(request);
+		const startedAt = Date.now();
 		try {
-			return await handler(request, context);
+			return withRequestId(await handler(request, context), requestId);
 		} catch (error) {
-			return handleCaughtError(error);
+			const response = handleCaughtError(error);
+			logApiFailure(request, error, response, requestId, startedAt);
+			return withRequestId(response, requestId);
 		}
+	};
+}
+
+/**
+ * Feature gate for every group-board route. It runs outside the auth and
+ * request-body wrappers so disabled routes do not authenticate, rate-limit,
+ * parse input, query the database, or start a stream.
+ */
+export function withTeachingGroupBoard(handler: PublicHandler): PublicHandler;
+export function withTeachingGroupBoard(handler: ResponseHandler): ResponseHandler;
+export function withTeachingGroupBoard(handler: ResponseHandler) {
+	return async (request: NextRequest, context?: RouteContext) => {
+		if (!isTeachingGroupBoardEnabled()) {
+			return withRequestId(apiError('Not found', 404, { code: 'NOT_FOUND' }), getRequestId(request));
+		}
+		return handler(request, context);
 	};
 }

@@ -189,6 +189,8 @@ export const INTERNAL_CHROME_PREFIXES = [
 	'/tai-khoan',
 	'/dang-nhap',
 	'/hoc/',
+	'/my-space/my-class',
+	'/my-space/teaching',
 ] as const;
 
 export function isInternalChromePath(pathname: string): boolean {
@@ -215,7 +217,7 @@ export function isMySpacePath(pathname: string): boolean {
 	return pathname === routes.mySpace || pathname.startsWith(`${routes.mySpace}/`);
 }
 
-/** My Space hub only (2×2 grid) — not nested test pages. */
+/** My Space hub only — not nested test pages. */
 export function isMySpaceHubPath(pathname: string): boolean {
 	return pathname === routes.mySpace;
 }
@@ -225,9 +227,14 @@ export function isMySpaceQuizPlayPath(pathname: string): boolean {
 	return /^\/my-space\/tests\/[^/]+\/play\/?$/.test(pathname);
 }
 
-/** Full-bleed public shells (intro + mục lục + My Space) — no GateBack top inset. */
+/** Public teaching class board — owns its own chrome. */
+export function isLopPath(pathname: string): boolean {
+	return pathname === '/lop' || pathname.startsWith('/lop/');
+}
+
+/** Full-bleed public shells (intro + mục lục + My Space + class board) — no GateBack top inset. */
 export function isFullBleedPublicPath(pathname: string): boolean {
-	return isIntroPath(pathname) || isTocPath(pathname) || isMySpacePath(pathname);
+	return isIntroPath(pathname) || isTocPath(pathname) || isMySpacePath(pathname) || isLopPath(pathname);
 }
 
 function isNavItemVisible(item: PublicNavItem): boolean {
@@ -291,6 +298,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 		items: [
 			{ href: routes.admin.courses, label: 'Khóa học' },
 			{ href: routes.admin.enrollments, label: 'Học viên và ghi danh' },
+			{ href: routes.admin.myClass, label: 'My Class' },
 		],
 	},
 	{

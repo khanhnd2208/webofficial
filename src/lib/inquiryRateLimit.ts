@@ -42,10 +42,15 @@ export function getRateLimitWindowStart(nowMs = Date.now()): number {
 }
 
 /** HMAC includes the window, so stored bucket ids cannot be linked across windows. */
-export function hashRateLimitBucket(ip: string, secret: string, windowStartMs: number): string {
+export function hashRateLimitBucket(
+	ip: string,
+	secret: string,
+	windowStartMs: number,
+	scope = 'inquiry',
+): string {
 	return crypto
 		.createHmac('sha256', secret)
-		.update(`${ip}:${windowStartMs}`)
+		.update(`${scope}:${ip}:${windowStartMs}`)
 		.digest('hex');
 }
 
@@ -57,11 +62,12 @@ export function isRateLimitBreached(count: number, max = INQUIRY_RATE_LIMIT_MAX)
 export async function consumeRateLimitBucket(
 	bucketHmac: string,
 	windowStartMs: number,
+	windowMs = INQUIRY_RATE_LIMIT_WINDOW_MS,
 ): Promise<number> {
 	await dbConnect();
 
 	const windowStart = new Date(windowStartMs);
-	const expiresAt = new Date(windowStartMs + INQUIRY_RATE_LIMIT_WINDOW_MS);
+	const expiresAt = new Date(windowStartMs + windowMs);
 
 	const increment = () =>
 		InquiryRateLimit.findOneAndUpdate(
@@ -98,27 +104,42 @@ export async function consumeRateLimitBucket(
  * Only a window-scoped HMAC is persisted; the raw IP never leaves this module.
  */
 export async function assertInquiryRateLimit(request: NextRequest): Promise<void> {
+	return assertScopedRateLimit(request, 'inquiry', INQUIRY_RATE_LIMIT_MAX, INQUIRY_RATE_LIMIT_WINDOW_MS);
+}
+
+/** Generic Mongo-backed limiter for anonymous mutation endpoints. */
+export async function assertScopedRateLimit(
+	request: NextRequest,
+	scope: string,
+	max: number,
+	windowMs = INQUIRY_RATE_LIMIT_WINDOW_MS,
+): Promise<void> {
 	const secret = getRateLimitSecret();
 	if (!secret) {
 		if (process.env.NODE_ENV === 'production') {
+			const inquiryScope = scope === 'inquiry';
 			throw new AppError(
-				'Kênh nhận lời nhắn đang tạm khóa vì cấu hình bảo vệ chưa đầy đủ.',
+				inquiryScope
+					? 'Kênh nhận lời nhắn đang tạm khóa vì cấu hình bảo vệ chưa đầy đủ.'
+					: 'Tính năng này đang tạm khóa vì cấu hình bảo vệ chưa đầy đủ.',
 				503,
-				'INQUIRY_UNAVAILABLE',
+				inquiryScope ? 'INQUIRY_UNAVAILABLE' : 'RATE_LIMIT_UNAVAILABLE',
 			);
 		}
 		console.warn('[inquiryRateLimit] Missing server secret — skipped outside production');
 		return;
 	}
 
-	const windowStartMs = getRateLimitWindowStart();
-	const bucketHmac = hashRateLimitBucket(getClientIp(request), secret, windowStartMs);
-	const count = await consumeRateLimitBucket(bucketHmac, windowStartMs);
+	const windowStartMs = Math.floor(Date.now() / windowMs) * windowMs;
+	const bucketHmac = hashRateLimitBucket(getClientIp(request), secret, windowStartMs, scope);
+	const count = await consumeRateLimitBucket(bucketHmac, windowStartMs, windowMs);
 
 	// `count` already includes this request; the sixth request is the first denied one.
-	if (isRateLimitBreached(count - 1)) {
+	if (isRateLimitBreached(count - 1, max)) {
 		throw new AppError(
-			'Bạn đã gửi quá nhiều lời nhắn. Vui lòng thử lại sau khoảng 15 phút.',
+			 scope === 'inquiry'
+				? 'Bạn đã gửi quá nhiều lời nhắn. Vui lòng thử lại sau khoảng 15 phút.'
+				: 'Bạn đã thao tác quá nhiều lần. Vui lòng thử lại sau ít phút.',
 			429,
 			'RATE_LIMITED',
 		);

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
 
@@ -11,6 +11,7 @@ import type { AnswerOptionState, McqCorrectOption, SessionSubmitResult } from '.
 interface QuizResultViewProps {
 	title: string;
 	result: SessionSubmitResult;
+	completionNote?: string;
 	onRestart: () => void;
 	isPending?: boolean;
 }
@@ -25,14 +26,36 @@ function reviewOptionState(
 	return 'other';
 }
 
+function celebrateCompletion() {
+	if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+	void import('canvas-confetti').then(({ default: fireConfetti }) => {
+		const colors = ['#9A6B2B', '#D4A34E', '#F5E6C5', '#1C1B1A'];
+		const shared = {
+			colors,
+			decay: 0.92,
+			gravity: 1.05,
+			particleCount: 72,
+			spread: 68,
+			startVelocity: 46,
+			ticks: 240,
+		};
+
+		fireConfetti({ ...shared, angle: 58, origin: { x: 0.08, y: 0.72 } });
+		fireConfetti({ ...shared, angle: 122, origin: { x: 0.92, y: 0.72 } });
+	});
+}
+
 export default function QuizResultView({
 	title,
 	result,
+	completionNote,
 	onRestart,
 	isPending = false,
 }: QuizResultViewProps) {
 	const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
 	const headingRef = useRef<HTMLHeadingElement>(null);
+	const [isCompletionNoteVisible, setIsCompletionNoteVisible] = useState(true);
 
 	useEffect(() => {
 		headingRef.current?.focus({ preventScroll: true });
@@ -59,6 +82,30 @@ export default function QuizResultView({
 					<p className="mt-3 font-sans text-base text-ink-secondary">
 						{pct}% · {title}
 					</p>
+					{completionNote && isCompletionNoteVisible ? (
+						<aside
+							aria-label="Lời chúc từ thầy"
+							className="mt-6 flex max-w-xl flex-col gap-4 border border-accent/60 bg-accent/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+							data-testid="myspace-quiz-completion-note"
+						>
+							<div>
+								<p className="font-sans text-base font-medium leading-relaxed text-ink">
+									{completionNote}
+								</p>
+							</div>
+							<button
+								type="button"
+								onClick={() => {
+									setIsCompletionNoteVisible(false);
+									celebrateCompletion();
+									window.requestAnimationFrame(() => headingRef.current?.focus());
+								}}
+								className="inline-flex min-h-11 shrink-0 items-center justify-center border border-ink bg-ink px-4 font-sans text-sm font-semibold text-canvas transition-colors hover:bg-transparent hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+							>
+								Nhận lời chúc <span aria-hidden className="ml-2">✓</span>
+							</button>
+						</aside>
+					) : null}
 				</header>
 
 				<ol className="mt-10 space-y-5">

@@ -1,98 +1,92 @@
-import { test, expect } from '@playwright/test';
+import { devices, expect, test } from '@playwright/test';
 
-test.describe('My Space Tests quiz play', () => {
-	test('subject explorer shows tests and play starts from list', async ({ page }) => {
+test.describe('My Space Tests Learning Workspace', () => {
+	test('desktop: search, switch subject, open history affordances, start quiz', async ({
+		page,
+	}) => {
 		test.setTimeout(90_000);
-
+		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/my-space/tests', { waitUntil: 'networkidle' });
-		// Prefer the visible page — Next.js streaming can leave a hidden Suspense twin
+
 		const testsPage = page.locator('[data-testid="myspace-tests"]:visible');
 		await expect(testsPage).toBeVisible();
-		await expect(
-			testsPage.getByText(/Pick a subject, then a test/i),
-		).toBeVisible();
+		await expect(testsPage.getByRole('heading', { name: 'Bài kiểm tra' })).toBeVisible();
+		await expect(testsPage.getByTestId('myspace-subject-rail')).toBeVisible();
+		await expect(testsPage.getByTestId('myspace-test-search')).toBeVisible();
 
-		await expect(testsPage.getByTestId('myspace-subject-explorer')).toBeVisible();
-		await expect(testsPage.getByTestId('myspace-subjects-nav')).toBeVisible();
-
-		const subjects = testsPage
-			.getByTestId('myspace-subjects-nav')
-			.getByTestId(/myspace-subject-\d+/);
-		await expect(subjects.first()).toBeVisible();
-
-		const subjectCount = await subjects.count();
-		// Prefer a later subject when available — sample quizzes are shorter than full chapter banks
-		if (subjectCount > 1) {
-			await subjects.nth(1).click();
-			await expect(testsPage.getByTestId('myspace-subject-panel')).toBeVisible();
-		}
-
-		const list = testsPage.getByTestId('myspace-tests-list');
-		await expect(list).toBeVisible();
-		const start = list.getByRole('link', { name: /Start/i }).first();
+		const start = testsPage.getByTestId(/myspace-test-start-/).first();
 		if ((await start.count()) === 0) {
 			test.skip(true, 'No published tests available');
 			return;
 		}
 
-		await start.click();
+		const subjectFilter = testsPage.getByTestId(/myspace-subject-filter-/).nth(2);
+		await subjectFilter.click();
+		await expect(page).toHaveURL(/\?subject=/);
+
+		await testsPage.getByTestId('myspace-test-search').fill('zzz-no-match-e2e');
+		await expect(testsPage.getByTestId('myspace-tests-empty')).toBeVisible();
+		await testsPage.getByTestId('myspace-tests-clear-filters').click();
+
+		const quizStart = testsPage.getByTestId('myspace-test-start-principles-of-management-sample');
+		await expect(quizStart).toBeVisible();
+		await quizStart.click();
 		const play = page.locator('[data-testid="myspace-quiz-play"]:visible');
 		await expect(play).toBeVisible();
 
-		// Question grid is collapsed by default — open it before asserting progress cells
-		const navToggle = play.getByTestId('myspace-quiz-nav-toggle');
-		await expect(navToggle).toBeVisible();
-		await navToggle.click();
-		await expect(play.getByTestId('myspace-progress-1').first()).toBeVisible();
-
-		await play.getByTestId('myspace-option-A').click();
-		const feedback = play.getByTestId('myspace-answer-feedback');
-		await expect(feedback).toBeVisible();
-		await expect(feedback).toContainText(/Correct|Incorrect/);
-
-		const q1 = play.getByTestId('myspace-progress-1').first();
-		await expect(q1).toHaveAttribute('aria-label', /Question 1, (correct|incorrect)/);
-
-		const nextBtn = play.getByTestId('myspace-quiz-next');
-		await expect(nextBtn).toBeEnabled();
-
-		const firstNextLabel = (await nextBtn.textContent()) ?? '';
-		if (firstNextLabel.includes('Next')) {
-			await nextBtn.click();
-			await expect(play.getByText(/Question 2 \//).first()).toBeVisible();
-
-			const prevBtn = play.getByTestId('myspace-quiz-prev');
-			await expect(prevBtn).toBeEnabled();
-			await prevBtn.click();
-			await expect(play.getByText(/Question 1 \//).first()).toBeVisible();
-			await expect(play.getByTestId('myspace-answer-feedback')).toBeVisible();
-
-			for (;;) {
-				const playVisible = page.locator('[data-testid="myspace-quiz-play"]:visible');
-				if ((await playVisible.count()) === 0) break;
-
-				await expect(playVisible.getByTestId('myspace-option-A')).toHaveCount(1);
-
-				const next = playVisible.getByTestId('myspace-quiz-next');
-				const needsAnswer = await next.isDisabled();
-				if (needsAnswer) {
-					await playVisible.getByTestId('myspace-option-A').click();
-					await expect(playVisible.getByTestId('myspace-answer-feedback')).toBeVisible();
-					await expect(next).toBeEnabled({ timeout: 10_000 });
-				}
-
-				const label = (await next.textContent()) ?? '';
-				await next.click();
-				if (label.includes('Submit')) break;
+		for (let i = 0; i < 20; i += 1) {
+			const result = page.locator('[data-testid="myspace-quiz-result"]:visible');
+			if (await result.count()) break;
+			const option = play.locator('button[data-testid="myspace-option-A"]:not([disabled])').last();
+			if ((await option.count()) === 0) {
+				await page.waitForTimeout(500);
+				continue;
 			}
-		} else {
-			await nextBtn.click();
+			await option.click();
+			const next = play.getByTestId('myspace-quiz-next');
+			await expect(next).toBeEnabled({ timeout: 10_000 });
+			await next.click();
 		}
 
-		await expect(page.locator('[data-testid="myspace-quiz-result"]:visible')).toBeVisible({
-			timeout: 15_000,
+		const result = page.locator('[data-testid="myspace-quiz-result"]:visible');
+		await expect(result).toBeVisible();
+		await expect(result.getByRole('button', { name: 'Try again' })).toBeVisible();
+		await result.getByRole('link', { name: /Tests/i }).click();
+		await expect(page).toHaveURL(/\/my-space\/tests/);
+		await expect(page.getByTestId('myspace-test-status-principles-of-management-sample')).toHaveText(/Đã làm/);
+		await expect(page.getByTestId('myspace-test-start-principles-of-management-sample')).toHaveText(/Làm lại/);
+		await page.getByTestId('myspace-test-history-toggle-principles-of-management-sample').click();
+		await expect(page.getByTestId('myspace-test-history-principles-of-management-sample')).toBeVisible();
+	});
+
+	test('mobile: subject sheet supports escape and returns focus', async ({ browser }) => {
+		test.setTimeout(90_000);
+		const context = await browser.newContext({
+			...devices['iPhone 13'],
 		});
-		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+		const page = await context.newPage();
+		await page.goto('/my-space/tests', { waitUntil: 'networkidle' });
+
+		const testsPage = page.locator('[data-testid="myspace-tests"]:visible');
+		await expect(testsPage).toBeVisible();
+
+		const picker = testsPage.getByTestId('myspace-subject-picker');
+		await expect(picker).toBeVisible();
+		await picker.focus();
+		await picker.click();
+		await expect(page.getByRole('dialog', { name: /Chọn môn học/i })).toBeVisible();
+		await expect(page.getByTestId('myspace-subject-search-sheet')).toBeVisible();
+
+		await page.keyboard.press('Escape');
+		await expect(page.getByRole('dialog', { name: /Chọn môn học/i })).toHaveCount(0);
+		await expect(picker).toBeFocused();
+
+		const start = testsPage.getByTestId(/myspace-test-start-/).first();
+		if ((await start.count()) > 0) {
+			const box = await start.boundingBox();
+			expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+		}
+
+		await context.close();
 	});
 });

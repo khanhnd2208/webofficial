@@ -28,6 +28,9 @@ export default function PublicMinimalChrome() {
 	const pathname = usePathname();
 	const [panelOpen, setPanelOpen] = useState(false);
 
+	// Teaching public boards own their own compact header and must not inherit
+	// the marketing gate/contact chrome (especially the mobile floating CTA).
+	if (pathname === '/lop' || pathname.startsWith('/lop/')) return null;
 	if (!isMinimalChromePath(pathname) || isIntroPath(pathname)) return null;
 
 	const onToc = isTocPath(pathname);

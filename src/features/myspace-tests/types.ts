@@ -47,10 +47,34 @@ export interface SpaceTestDTO {
 	difficulties: number[];
 	classifications: string[];
 	questionCount: number;
+	displayOrder: number;
 	status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 	createdAt: string;
 	updatedAt: string;
 	publishedAt: string | null;
+}
+
+export type PersonalProgressStatus = 'not_started' | 'completed';
+
+export interface PersonalCompletion {
+	score: number;
+	total: number;
+	submittedAt: string;
+}
+
+/** Learner-owned progress for one published test (submitted sessions only). */
+export interface PersonalProgress {
+	status: PersonalProgressStatus;
+	completedCount: number;
+	bestScorePercent: number | null;
+	lastCompletedAt: string | null;
+	/** Most recent submissions, newest first (max 5). */
+	recentCompletions: PersonalCompletion[];
+}
+
+export interface ProgressActor {
+	userId?: string | null;
+	guestId?: string | null;
 }
 
 export interface PublicSpaceTestListItem {
@@ -59,15 +83,13 @@ export interface PublicSpaceTestListItem {
 	description: string;
 	subject: string;
 	subjectId: string;
+	/** Supporting study metadata, revealed only when a learner asks for details. */
+	topics: string[];
+	difficulties: number[];
+	classifications: string[];
 	questionCount: number;
-	/** Answered ≥1 question. */
-	attemptedCount: number;
-	/** Submitted and spent ≥ 5 minutes. */
-	completedCount: number;
-	/** Average score % from qualifying completions only. */
-	avgScorePercent: number | null;
-	/** Mean duration (ms) of qualifying completions. */
-	avgDurationMs: number | null;
+	displayOrder: number;
+	personalProgress: PersonalProgress;
 }
 
 export interface PublicSubjectGroup {

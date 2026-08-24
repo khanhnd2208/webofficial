@@ -2,61 +2,66 @@
 // PM2 Ecosystem Config — toiladuykhanh.com
 //
 // Usage (on VPS):
-//   pm2 start ecosystem.config.js      # First start
-//   deploy-webofficial                 # Standard deploy (git pull + build + restart)
+//   pm2 startOrReload current/ecosystem.config.js --only nextjs-app --update-env
+//   npm run deploy:vps                 # Canonical staged release deploy
 //
-// Secrets: kept ONLY in /var/www/webofficial/.env.local (not committed)
-// This file is safe to commit — no secrets hardcoded here.
+// Secrets: sourced from /var/www/webofficial/.env.local and copied with mode
+// 0600 into each immutable release. This file has no hardcoded secrets.
 // ────────────────────────────────────────────────────────────────
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
+const { parse: parseDotenv } = require('dotenv');
 
-// Parse .env.local into an object (supports KEY=VALUE and KEY="VALUE")
+const deployRoot = process.env.WEBOFFICIAL_DEPLOY_ROOT || '/var/www/webofficial';
+const currentDir = path.join(deployRoot, 'current');
+const appDir = fs.existsSync(currentDir) ? currentDir : deployRoot;
+const appName = process.env.PM2_APP_NAME || 'nextjs-app';
+const livePort = process.env.PM2_LIVE_PORT || '4000';
+
+// Parse the release-local environment snapshot. The canonical deploy copies it
+// from the protected shared .env.local with mode 0600 before every build.
 function loadEnvLocal(filePath) {
-  if (!fs.existsSync(filePath)) return {};
-  return fs.readFileSync(filePath, 'utf8')
-    .split('\n')
-    .reduce((acc, line) => {
-      const match = line.match(/^\s*([^#\s][^=]*?)\s*=\s*"?([^"\n]*)"?\s*$/);
-      if (match) acc[match[1].trim()] = match[2].trim();
-      return acc;
-    }, {});
+	if (!fs.existsSync(filePath)) return {};
+	return parseDotenv(fs.readFileSync(filePath));
 }
 
-const envLocal = loadEnvLocal(path.join(__dirname, '.env.local'));
+const envLocal = loadEnvLocal(path.join(appDir, '.env.local'));
 
 module.exports = {
-  apps: [
-    {
-      // ── App identity ──────────────────────────────────────────
-      name: 'nextjs-app',
-      cwd: '/var/www/webofficial',
+	apps: [
+		{
+			// ── App identity ──────────────────────────────────────────
+			name: appName,
+			cwd: appDir,
 
-      // ── Start command ─────────────────────────────────────────
-      script: 'npm',
-      args: 'start',
+			// ── Start command ─────────────────────────────────────────
+			script: path.join(appDir, 'node_modules/.bin/next'),
+			args: `start -H 127.0.0.1 -p ${livePort}`,
 
-      // ── Process settings ──────────────────────────────────────
-      instances: 1,            // Single instance (sufficient for current traffic)
-      exec_mode: 'fork',       // Fork mode (cluster mode requires custom server)
-      autorestart: true,       // Auto-restart on crash
-      watch: false,            // Do NOT watch files (we deploy manually)
-      max_memory_restart: '1G', // Restart if memory exceeds 1GB
+			// ── Process settings ──────────────────────────────────────
+			instances: 1, // Single instance (sufficient for current traffic)
+			exec_mode: 'fork', // Fork mode (cluster mode requires custom server)
+			autorestart: true, // Auto-restart on crash
+			watch: false, // Do NOT watch files (we deploy manually)
+			max_memory_restart: '1G', // Restart if memory exceeds 1GB
+			kill_timeout: 30000, // Let Next.js drain in-flight work on SIGTERM
 
-      // ── Logging ───────────────────────────────────────────────
-      error_file: '/root/.pm2/logs/nextjs-app-error.log',
-      out_file: '/root/.pm2/logs/nextjs-app-out.log',
-      merge_logs: true,
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+			// ── Logging ───────────────────────────────────────────────
+			error_file: '/root/.pm2/logs/nextjs-app-error.log',
+			out_file: '/root/.pm2/logs/nextjs-app-out.log',
+			merge_logs: true,
+			log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
 
-      // ── Environment ───────────────────────────────────────────
-      // Merges .env.local (loaded above) with fixed production values.
-      // NODE_ENV and PORT override anything in .env.local.
-      env: {
-        ...envLocal,
-        NODE_ENV: 'production',
-        PORT: '4000',
-      },
-    },
-  ],
+			// ── Environment ───────────────────────────────────────────
+			// Merges .env.local (loaded above) with fixed production values.
+			// NODE_ENV and PORT override anything in .env.local.
+			env: {
+				...envLocal,
+				NODE_ENV: 'production',
+				PORT: livePort,
+				NEXT_DEPLOYMENT_ID:
+					process.env.NEXT_DEPLOYMENT_ID || envLocal.NEXT_DEPLOYMENT_ID || path.basename(appDir),
+			},
+		},
+	],
 };

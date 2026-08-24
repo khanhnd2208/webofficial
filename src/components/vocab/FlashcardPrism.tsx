@@ -23,6 +23,9 @@ export interface FlashcardWord {
   partOfSpeech: string;
   example: string;
   ndkExplanation: string | null;
+  pronunciation?: string;
+  meaningEn?: string;
+  meaningVi?: string;
 }
 
 interface FlashcardPrismProps {
@@ -140,6 +143,11 @@ export default function FlashcardPrism({
             <span className="text-center text-2xl font-black tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               {word.term}
             </span>
+            {word.pronunciation ? (
+              <span className="mt-2 text-center text-sm text-muted">
+                {word.pronunciation}
+              </span>
+            ) : null}
             {word.partOfSpeech ? (
               <span className="mt-3 rounded-full bg-surface-hover px-3 py-1 text-xs font-medium italic text-muted">
                 {word.partOfSpeech}
@@ -167,8 +175,13 @@ export default function FlashcardPrism({
             }}
           >
             <span className="text-center text-xl font-bold leading-relaxed text-foreground sm:text-2xl">
-              {word.definition}
+              {word.meaningVi || word.definition}
             </span>
+            {word.meaningEn ? (
+              <p className="mt-3 max-w-sm text-center text-sm leading-relaxed text-muted">
+                {word.meaningEn}
+              </p>
+            ) : null}
             {word.example ? (
               <p className="mt-5 max-w-sm text-center text-sm italic leading-relaxed text-muted">
                 &ldquo;{word.example}&rdquo;

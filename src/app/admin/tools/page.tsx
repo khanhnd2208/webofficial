@@ -16,6 +16,11 @@ const TOOLS = [
 		description: 'Tạo bộ thẻ may mắn — lật thẻ để xem nội dung bí ẩn.',
 	},
 	{
+		href: routes.admin.activeRecall,
+		label: 'Active Recall',
+		description: 'Tạo và xuất bản bộ thẻ hỏi–đáp công khai.',
+	},
+	{
 		href: routes.admin.messages,
 		label: 'Lời nhắn',
 		description: 'Tạo và quản lý lời nhắn; người nhận mở qua /m/[slug].',
