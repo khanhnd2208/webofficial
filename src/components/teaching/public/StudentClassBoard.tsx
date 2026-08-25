@@ -131,7 +131,7 @@ export function StudentClassBoard({
 						Quản lý lớp ↗
 					</Link>
 				) : null}
-				</header>
+			</header>
 
 			{hasPublicContent ? (
 				<section className="mc-surface overflow-hidden" aria-label="Thông tin lớp">
@@ -181,7 +181,7 @@ export function StudentClassBoard({
 				</section>
 			) : null}
 
-				<details className="mc-surface hidden md:block">
+			<details className="mc-surface hidden md:block">
 				<summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-ink">
 					Quy định lớp
 				</summary>
@@ -302,7 +302,7 @@ export function StudentClassBoard({
 							enrollmentId: student.enrollmentId,
 							studentCode: student.studentCode,
 							fullName: `${student.familyName} ${student.givenName}`.trim(),
-							hasDateOfBirth: Boolean(student.hasDateOfBirth),
+							accessMode: student.hasDateOfBirth ? 'DOB_PASSWORD' : 'OPEN',
 						}))}
 					/>
 				</div>

@@ -5,14 +5,24 @@ import { cookies } from 'next/headers';
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
-import { maskStudentCode } from '../domain/privacy';
 import type { LearningExperienceChoiceInput, LearningExperienceLoginInput } from '../schemas';
-import type { LearningExperienceSession } from '../types';
+import type { LearningExperienceAccessMode, LearningExperienceSession } from '../types';
 
 const COOKIE_PREFIX = 'teaching-learning-experience-';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
 
-type ViewerToken = { classId: string; enrollmentId: string; exp: number };
+type ViewerToken = {
+	version: 2;
+	classId: string;
+	enrollmentId: string;
+	accessMode: LearningExperienceAccessMode;
+	exp: number;
+};
+
+type DecodedViewerToken = Omit<ViewerToken, 'version' | 'accessMode'> & {
+	version?: number;
+	accessMode?: LearningExperienceAccessMode;
+};
 
 function secret(): string | null {
 	const configured =
@@ -41,7 +51,7 @@ function encode(payload: ViewerToken) {
 	return `${body}.${signature}`;
 }
 
-function decode(value: string | undefined): ViewerToken | null {
+function decode(value: string | undefined): DecodedViewerToken | null {
 	if (!value) return null;
 	const [body, signature] = value.split('.');
 	if (!body || !signature) return null;
@@ -57,7 +67,7 @@ function decode(value: string | undefined): ViewerToken | null {
 	try {
 		const parsed = JSON.parse(
 			Buffer.from(body, 'base64url').toString('utf8'),
-		) as Partial<ViewerToken>;
+		) as Partial<DecodedViewerToken>;
 		if (
 			!parsed.classId ||
 			!parsed.enrollmentId ||
@@ -66,7 +76,7 @@ function decode(value: string | undefined): ViewerToken | null {
 		) {
 			return null;
 		}
-		return parsed as ViewerToken;
+		return parsed as DecodedViewerToken;
 	} catch {
 		return null;
 	}
@@ -77,6 +87,10 @@ function passwordFromDate(date: Date | null): string | null {
 	const day = String(date.getUTCDate()).padStart(2, '0');
 	const month = String(date.getUTCMonth() + 1).padStart(2, '0');
 	return `${day}${month}${date.getUTCFullYear()}`;
+}
+
+function accessModeFromDate(date: Date | null): LearningExperienceAccessMode {
+	return date ? 'DOB_PASSWORD' : 'OPEN';
 }
 
 function safeEqual(left: string, right: string) {
@@ -103,16 +117,17 @@ function toSession(enrollment: {
 	learningExperience: 'CHALLENGE' | 'SUPPORT' | null;
 	learningExperienceSelectedAt: Date | null;
 	learningExperienceChangeCount: number;
-		student: {
-			studentCode: string;
-			familyName: string;
-			givenName: string;
-			dateOfBirth: Date | null;
-		};
+	student: {
+		studentCode: string;
+		familyName: string;
+		givenName: string;
+		dateOfBirth: Date | null;
+	};
 }): LearningExperienceSession {
 	const locked = enrollment.learningExperienceChangeCount >= LEARNING_EXPERIENCE_CHANGE_LIMIT;
 	return {
 		authenticated: true,
+		accessMode: accessModeFromDate(enrollment.student.dateOfBirth),
 		student: {
 			enrollmentId: enrollment.id,
 			studentCode: enrollment.student.studentCode,
@@ -134,47 +149,20 @@ async function publicClass(slug: string) {
 	return teachingClass;
 }
 
-export async function searchLearningExperienceStudents(slug: string, query: string) {
-	const teachingClass = await publicClass(slug);
-	const normalizedQuery = query.trim();
-	if (!/^\d{1,40}$/.test(normalizedQuery)) return [];
-
-	const enrollments = await prisma.teachingEnrollment.findMany({
-		where: {
-			classId: teachingClass.id,
-			status: 'ACTIVE',
-			student: { studentCode: { contains: normalizedQuery, mode: 'insensitive' } },
-		},
-		orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
-		take: 8,
-		select: {
-			id: true,
-			student: {
-				select: {
-					studentCode: true,
-					familyName: true,
-					givenName: true,
-					dateOfBirth: true,
-				},
-			},
-		},
-	});
-
-	return enrollments.map((enrollment) => ({
-		enrollmentId: enrollment.id,
-		studentCode: maskStudentCode(enrollment.student.studentCode),
-		fullName: `${enrollment.student.familyName} ${enrollment.student.givenName}`.trim(),
-		hasDateOfBirth: Boolean(enrollment.student.dateOfBirth),
-	}));
-}
-
-async function setViewerCookie(slug: string, classId: string, enrollmentId: string) {
+async function setViewerCookie(
+	slug: string,
+	classId: string,
+	enrollmentId: string,
+	accessMode: LearningExperienceAccessMode,
+) {
 	const store = await cookies();
 	store.set(
 		cookieName(slug),
 		encode({
+			version: 2,
 			classId,
 			enrollmentId,
+			accessMode,
 			exp: Math.floor(Date.now() / 1000) + COOKIE_MAX_AGE,
 		}),
 		{
@@ -195,7 +183,11 @@ async function viewerEnrollment(slug: string) {
 		where: { id: token.enrollmentId, classId: teachingClass.id, status: 'ACTIVE' },
 		select: sessionSelect(),
 	});
-	return enrollment?.student.dateOfBirth ? enrollment : null;
+	if (!enrollment) return null;
+	const accessMode = accessModeFromDate(enrollment.student.dateOfBirth);
+	if (token.accessMode && token.accessMode !== accessMode) return null;
+	if (!token.accessMode && accessMode !== 'DOB_PASSWORD') return null;
+	return enrollment;
 }
 
 function identityRequired(): AppError {
@@ -250,22 +242,19 @@ export async function loginToLearningExperience(
 			'INVALID_STUDENT_CREDENTIALS',
 		);
 	}
+	const accessMode = accessModeFromDate(enrollment.student.dateOfBirth);
 	const expectedPassword = passwordFromDate(enrollment.student.dateOfBirth);
-	if (!expectedPassword) {
-		throw new AppError(
-			'Hồ sơ chưa có ngày sinh để xác thực. Vui lòng liên hệ giảng viên cập nhật roster.',
-			403,
-			'LEARNING_EXPERIENCE_DOB_REQUIRED',
-		);
-	}
-	if (!safeEqual(expectedPassword, input.password)) {
+	if (
+		accessMode === 'DOB_PASSWORD' &&
+		(!input.password || !safeEqual(expectedPassword!, input.password))
+	) {
 		throw new AppError(
 			'Mật khẩu ngày sinh chưa đúng. Hãy nhập đủ 8 số theo ddmmyyyy.',
 			401,
 			'INVALID_STUDENT_CREDENTIALS',
 		);
 	}
-	await setViewerCookie(slug, teachingClass.id, enrollment.id);
+	await setViewerCookie(slug, teachingClass.id, enrollment.id, accessMode);
 	return toSession(enrollment);
 }
 

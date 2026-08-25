@@ -253,6 +253,7 @@ export interface PublicAttendanceBoardStudent {
 
 export interface LearningExperienceSession {
 	authenticated: boolean;
+	accessMode?: LearningExperienceAccessMode;
 	student?: {
 		enrollmentId: string;
 		studentCode: string;
@@ -262,6 +263,15 @@ export interface LearningExperienceSession {
 	selectedAt?: string | null;
 	changesRemaining?: number;
 	locked?: boolean;
+}
+
+export type LearningExperienceAccessMode = 'OPEN' | 'DOB_PASSWORD';
+
+export interface LearningExperienceStudentOption {
+	enrollmentId: string;
+	studentCode: string;
+	fullName: string;
+	accessMode: LearningExperienceAccessMode;
 }
 
 export interface TeachingGiftMutationResult {

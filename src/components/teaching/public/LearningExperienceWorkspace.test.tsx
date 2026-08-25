@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { teachingApi } from '@/components/teaching/admin/api';
@@ -13,13 +14,13 @@ const students = [
 		enrollmentId: 'enrollment-1',
 		studentCode: '********45',
 		fullName: 'Nguyễn Minh Anh',
-		hasDateOfBirth: true,
+		accessMode: 'DOB_PASSWORD' as const,
 	},
 	{
 		enrollmentId: 'enrollment-2',
 		studentCode: '********99',
 		fullName: 'Trần Bình',
-		hasDateOfBirth: false,
+		accessMode: 'OPEN' as const,
 	},
 ];
 
@@ -109,8 +110,17 @@ describe('LearningExperienceWorkspace', () => {
 		});
 	});
 
-	it('blocks students whose audited birth date is missing', async () => {
-		apiMock.mockResolvedValueOnce({ authenticated: false });
+	it('lets a profile without a birth date enter without a password', async () => {
+		apiMock.mockResolvedValueOnce({ authenticated: false }).mockResolvedValueOnce({
+			authenticated: true,
+			accessMode: 'OPEN',
+			student: {
+				enrollmentId: 'enrollment-2',
+				studentCode: '2406090099',
+				fullName: 'Trần Bình',
+			},
+			choice: null,
+		});
 		render(
 			<LearningExperienceWorkspace
 				slug="hrm-01"
@@ -124,13 +134,17 @@ describe('LearningExperienceWorkspace', () => {
 		fireEvent.change(picker, { target: { value: 'Trần Bình' } });
 		fireEvent.click(screen.getByRole('option', { name: /\*{8}99.*Trần Bình/i }));
 
-		expect(screen.getByText('Roster chưa có ngày sinh')).toBeInTheDocument();
-		expect(screen.getByLabelText('Mật khẩu ngày sinh')).toBeDisabled();
-		expect(screen.getByText(/chưa thể xác thực/i)).toBeInTheDocument();
-		const enterButton = screen.getByRole('button', { name: /enter experience/i });
-		expect(enterButton).toBeDisabled();
+		expect(screen.getByText('Có thể vào ngay')).toBeInTheDocument();
+		expect(screen.queryByLabelText('Mật khẩu ngày sinh')).not.toBeInTheDocument();
+		const enterButton = screen.getByRole('button', { name: /vào trải nghiệm/i });
+		expect(enterButton).toBeEnabled();
 		fireEvent.click(enterButton);
-		expect(apiMock).toHaveBeenCalledTimes(1);
+
+		await waitFor(() => expect(apiMock).toHaveBeenCalledTimes(2));
+		expect(apiMock).toHaveBeenLastCalledWith('/api/teaching/classes/hrm-01/learning-experience', {
+			method: 'POST',
+			body: JSON.stringify({ enrollmentId: 'enrollment-2' }),
+		});
 	});
 
 	it('uses the selected enrollment when masked student codes are identical', async () => {
@@ -154,7 +168,7 @@ describe('LearningExperienceWorkspace', () => {
 						enrollmentId: 'enrollment-3',
 						studentCode: '********45',
 						fullName: 'Lê Minh',
-						hasDateOfBirth: true,
+						accessMode: 'DOB_PASSWORD',
 					},
 				]}
 			/>,
@@ -175,8 +189,63 @@ describe('LearningExperienceWorkspace', () => {
 		});
 	});
 
-	it('finds a masked roster option when the student enters their full numeric code', async () => {
-		apiMock.mockResolvedValueOnce({ authenticated: false }).mockResolvedValueOnce([students[0]]);
+	it('keeps touch selection before blur and supports keyboard and formatted password input', async () => {
+		apiMock.mockResolvedValueOnce({ authenticated: false }).mockResolvedValueOnce({
+			authenticated: true,
+			accessMode: 'DOB_PASSWORD',
+			student: {
+				enrollmentId: 'enrollment-1',
+				studentCode: '2406090045',
+				fullName: 'Nguyễn Minh Anh',
+			},
+			choice: null,
+		});
+		const user = userEvent.setup();
+
+		render(
+			<LearningExperienceWorkspace
+				slug="hrm-01"
+				courseName="Human Resource Management"
+				students={students}
+			/>,
+		);
+
+		const picker = await screen.findByLabelText('Chọn sinh viên trong lớp');
+		fireEvent.focus(picker);
+		fireEvent.pointerDown(screen.getByRole('option', { name: /\*{8}45.*Nguyễn Minh Anh/i }), {
+			pointerType: 'touch',
+		});
+		const password = screen.getByLabelText('Mật khẩu ngày sinh');
+		expect(password).toBeEnabled();
+		expect(password).toHaveAttribute('autocomplete', 'off');
+
+		await user.clear(password);
+		await user.type(password, '05/09/2006');
+		expect(screen.getByRole('button', { name: /enter experience/i })).toBeEnabled();
+		await user.click(screen.getByRole('button', { name: 'Hiện mật khẩu' }));
+		expect(password).toHaveAttribute('type', 'text');
+	});
+
+	it('selects the first student with ArrowDown and Enter', async () => {
+		apiMock.mockResolvedValueOnce({ authenticated: false });
+		render(
+			<LearningExperienceWorkspace
+				slug="hrm-01"
+				courseName="Human Resource Management"
+				students={students}
+			/>,
+		);
+
+		const picker = await screen.findByLabelText('Chọn sinh viên trong lớp');
+		fireEvent.focus(picker);
+		fireEvent.keyDown(picker, { key: 'ArrowDown' });
+		fireEvent.keyDown(picker, { key: 'Enter' });
+
+		expect(screen.getByLabelText('Mật khẩu ngày sinh')).toBeEnabled();
+	});
+
+	it('finds a masked roster option from a full numeric code without a network search', async () => {
+		apiMock.mockResolvedValueOnce({ authenticated: false });
 		render(
 			<LearningExperienceWorkspace
 				slug="hrm-01"
@@ -191,10 +260,7 @@ describe('LearningExperienceWorkspace', () => {
 		expect(
 			await screen.findByRole('option', { name: /\*{8}45.*Nguyễn Minh Anh/i }),
 		).toBeInTheDocument();
-		expect(apiMock).toHaveBeenLastCalledWith(
-			'/api/teaching/classes/hrm-01/learning-experience/students?q=2406090045',
-			expect.objectContaining({ signal: expect.any(AbortSignal) }),
-		);
+		expect(apiMock).toHaveBeenCalledTimes(1);
 		expect(
 			screen.queryByText('Không tìm thấy sinh viên phù hợp trong lớp.'),
 		).not.toBeInTheDocument();

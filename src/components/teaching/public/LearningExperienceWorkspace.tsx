@@ -1,13 +1,22 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type FormEvent,
+	type KeyboardEvent,
+	type PointerEvent,
+} from 'react';
 
 import { teachingApi } from '@/components/teaching/admin/api';
 import { Dialog } from '@/components/ui/Dialog';
 import type {
 	LearningExperienceChoice,
 	LearningExperienceSession,
+	LearningExperienceStudentOption,
 } from '@/features/teaching/types';
 
 import styles from './LearningExperienceWorkspace.module.css';
@@ -17,13 +26,6 @@ const EXPERIENCE_IMAGES = {
 	SUPPORT: '/brand/teaching/prince-princess-treatment.png',
 } satisfies Record<LearningExperienceChoice, string>;
 
-type StudentLoginOption = {
-	enrollmentId: string;
-	studentCode: string;
-	fullName: string;
-	hasDateOfBirth: boolean;
-};
-
 function normalizeSearch(value: string) {
 	return value
 		.normalize('NFD')
@@ -31,6 +33,12 @@ function normalizeSearch(value: string) {
 		.toLowerCase()
 		.replace(/\s+/g, ' ')
 		.trim();
+}
+
+function studentMatchesQuery(student: LearningExperienceStudentOption, query: string) {
+	if (!query) return true;
+	if (/^\d+$/.test(query)) return student.studentCode.endsWith(query.slice(-2));
+	return normalizeSearch(`${student.studentCode} ${student.fullName}`).includes(query);
 }
 
 const experiences: Array<{
@@ -81,41 +89,35 @@ export function LearningExperienceWorkspace({
 }: {
 	slug: string;
 	courseName: string;
-	students: StudentLoginOption[];
+	students: LearningExperienceStudentOption[];
 }) {
 	const endpoint = `/api/teaching/classes/${encodeURIComponent(slug)}/learning-experience`;
 	const [session, setSession] = useState<LearningExperienceSession | null>(null);
 	const [studentSearch, setStudentSearch] = useState('');
 	const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<string | null>(null);
-	const [codeSearchResults, setCodeSearchResults] = useState<StudentLoginOption[]>([]);
-	const [codeSearchPending, setCodeSearchPending] = useState(false);
-	const [codeSearchError, setCodeSearchError] = useState('');
 	const [password, setPassword] = useState('');
+	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState('');
 	const [notice, setNotice] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 	const [savingChoice, setSavingChoice] = useState<LearningExperienceChoice | null>(null);
 	const [pendingChoice, setPendingChoice] = useState<LearningExperienceChoice | null>(null);
 	const [pickerOpen, setPickerOpen] = useState(false);
+	const [highlightedIndex, setHighlightedIndex] = useState(-1);
 	const pickerRef = useRef<HTMLDivElement>(null);
+	const passwordRef = useRef<HTMLInputElement>(null);
 	const selectedStudent = useMemo(
 		() => students.find((student) => student.enrollmentId === selectedEnrollmentId) ?? null,
 		[selectedEnrollmentId, students],
 	);
 	const normalizedStudentSearch = normalizeSearch(studentSearch);
-	const isCodeSearch = /^\d+$/.test(normalizedStudentSearch);
 	const matchingStudents = useMemo(() => {
-		if (isCodeSearch) return codeSearchResults;
-		const query = normalizedStudentSearch;
-		const matches = query
-			? students.filter((student) =>
-					normalizeSearch(`${student.studentCode} ${student.fullName}`).includes(query),
-				)
-			: students;
-		return matches.slice(0, 8);
-	}, [codeSearchResults, isCodeSearch, normalizedStudentSearch, students]);
+		return students
+			.filter((student) => studentMatchesQuery(student, normalizedStudentSearch))
+			.slice(0, 8);
+	}, [normalizedStudentSearch, students]);
 	const studentsReady = useMemo(
-		() => students.filter((student) => student.hasDateOfBirth).length,
+		() => students.filter((student) => student.accessMode === 'DOB_PASSWORD').length,
 		[students],
 	);
 
@@ -136,41 +138,38 @@ export function LearningExperienceWorkspace({
 	}, [endpoint]);
 
 	useEffect(() => {
-		if (!isCodeSearch) {
-			setCodeSearchResults([]);
-			setCodeSearchPending(false);
-			setCodeSearchError('');
+		setHighlightedIndex(-1);
+	}, [normalizedStudentSearch]);
+
+	function selectStudent(student: LearningExperienceStudentOption) {
+		setStudentSearch(student.studentCode);
+		setSelectedEnrollmentId(student.enrollmentId);
+		setPassword('');
+		setShowPassword(false);
+		setError('');
+		setPickerOpen(false);
+		if (student.accessMode === 'DOB_PASSWORD') {
+			window.setTimeout(() => passwordRef.current?.focus(), 0);
+		}
+	}
+
+	function handleStudentKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+		if (event.key === 'Escape') {
+			setPickerOpen(false);
 			return;
 		}
-
-		let active = true;
-		const controller = new AbortController();
-		setCodeSearchResults([]);
-		setCodeSearchPending(true);
-		setCodeSearchError('');
-		const timer = window.setTimeout(() => {
-			teachingApi<StudentLoginOption[]>(
-				`${endpoint}/students?q=${encodeURIComponent(normalizedStudentSearch)}`,
-				{ signal: controller.signal },
-			)
-				.then((results) => {
-					if (active) setCodeSearchResults(results);
-				})
-				.catch((reason: unknown) => {
-					if (!active || (reason instanceof DOMException && reason.name === 'AbortError')) return;
-					setCodeSearchError('Không thể tìm MSV lúc này. Vui lòng thử lại.');
-				})
-				.finally(() => {
-					if (active) setCodeSearchPending(false);
-				});
-		}, 200);
-
-		return () => {
-			active = false;
-			controller.abort();
-			window.clearTimeout(timer);
-		};
-	}, [endpoint, isCodeSearch, normalizedStudentSearch]);
+		if (!pickerOpen || matchingStudents.length === 0) return;
+		if (event.key === 'ArrowDown') {
+			event.preventDefault();
+			setHighlightedIndex((current) => Math.min(current + 1, matchingStudents.length - 1));
+		} else if (event.key === 'ArrowUp') {
+			event.preventDefault();
+			setHighlightedIndex((current) => (current <= 0 ? matchingStudents.length - 1 : current - 1));
+		} else if (event.key === 'Enter') {
+			event.preventDefault();
+			selectStudent(matchingStudents[highlightedIndex] ?? matchingStudents[0]!);
+		}
+	}
 
 	async function login(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -179,25 +178,24 @@ export function LearningExperienceWorkspace({
 			setPickerOpen(true);
 			return;
 		}
-		if (!selectedStudent.hasDateOfBirth) {
-			setError('Hồ sơ chưa có ngày sinh để xác thực. Vui lòng liên hệ giảng viên cập nhật roster.');
-			return;
-		}
 		setSubmitting(true);
 		setError('');
 		setNotice('');
 		try {
 			const next = await teachingApi<LearningExperienceSession>(endpoint, {
 				method: 'POST',
-				body: JSON.stringify({ enrollmentId: selectedStudent.enrollmentId, password }),
+				body: JSON.stringify({
+					enrollmentId: selectedStudent.enrollmentId,
+					...(selectedStudent.accessMode === 'DOB_PASSWORD' ? { password } : {}),
+				}),
 			});
 			setSession(next);
 			setPassword('');
-			setNotice(
-				next.choice
-					? 'Đã khôi phục lựa chọn trước đây của bạn.'
-					: 'Xác thực thành công. Chọn trải nghiệm phù hợp với bạn.',
-			);
+				setNotice(
+					next.choice
+						? 'Đã khôi phục lựa chọn trước đây của bạn.'
+						: 'Đã mở quyền truy cập. Chọn trải nghiệm phù hợp với bạn.',
+				);
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể xác thực.');
 		} finally {
@@ -288,7 +286,7 @@ export function LearningExperienceWorkspace({
 					<p className={styles.kicker}>HRM · Player access</p>
 					<h2 id="learning-login-title">Mở trải nghiệm học tập của bạn</h2>
 					<p className={styles.authCopy}>
-						Xác nhận danh tính để đưa ra lựa chọn riêng của bạn trong lớp {courseName}.
+						Chọn hồ sơ sinh viên để mở lựa chọn riêng của bạn trong lớp {courseName}.
 					</p>
 					<form className={styles.authForm} onSubmit={login}>
 						<div
@@ -313,14 +311,14 @@ export function LearningExperienceWorkspace({
 										setStudentSearch(event.target.value.toUpperCase());
 										setSelectedEnrollmentId(null);
 										setPassword('');
+										setShowPassword(false);
+										setHighlightedIndex(-1);
 										setError('');
 										setPickerOpen(true);
 									}}
 									onFocus={() => setPickerOpen(true)}
-									onKeyDown={(event) => {
-										if (event.key === 'Escape') setPickerOpen(false);
-									}}
-									autoComplete="username"
+									onKeyDown={handleStudentKeyDown}
+									autoComplete="off"
 									autoCapitalize="characters"
 									placeholder="Tìm tên hoặc 2 số cuối MSV"
 									role="combobox"
@@ -340,86 +338,108 @@ export function LearningExperienceWorkspace({
 									role="listbox"
 									aria-label="Sinh viên trong lớp"
 								>
-									{matchingStudents.map((student) => (
+									{matchingStudents.map((student, index) => (
 										<button
 											type="button"
 											role="option"
 											aria-selected={selectedStudent?.enrollmentId === student.enrollmentId}
 											key={student.enrollmentId}
-											data-ready={student.hasDateOfBirth}
-											onClick={() => {
-												setStudentSearch(student.studentCode);
-												setSelectedEnrollmentId(student.enrollmentId);
-												setPassword('');
-												setError('');
-												setPickerOpen(false);
+											data-access={student.accessMode}
+											data-highlighted={highlightedIndex === index}
+											onPointerDown={(event) => {
+												if (event.pointerType !== 'mouse') {
+													event.preventDefault();
+													selectStudent(student);
+												}
 											}}
+											onClick={() => selectStudent(student)}
 										>
 											<span>
 												<strong>{student.studentCode}</strong>
 												<small>{student.fullName}</small>
 											</span>
-											<em>{student.hasDateOfBirth ? 'Sẵn sàng' : 'Thiếu ngày sinh'}</em>
+											<em>
+												{student.accessMode === 'DOB_PASSWORD'
+													? 'Cần mật khẩu ngày sinh'
+													: 'Vào không cần mật khẩu'}
+											</em>
 										</button>
 									))}
-									{codeSearchPending ? <p>Đang tìm MSV…</p> : null}
-									{codeSearchError ? <p>{codeSearchError}</p> : null}
-									{!codeSearchPending && !codeSearchError && matchingStudents.length === 0 ? (
+									{matchingStudents.length === 0 ? (
 										<p>Không tìm thấy sinh viên phù hợp trong lớp.</p>
 									) : null}
 								</div>
 							) : null}
 							{selectedStudent ? (
-								<div className={styles.selectedStudent} data-ready={selectedStudent.hasDateOfBirth}>
+								<div className={styles.selectedStudent} data-access={selectedStudent.accessMode}>
 									<span className="material-symbols-outlined" aria-hidden="true">
-										{selectedStudent.hasDateOfBirth ? 'check_circle' : 'warning'}
+										{selectedStudent.accessMode === 'DOB_PASSWORD' ? 'key' : 'login'}
 									</span>
 									<p>
 										<strong>{selectedStudent.fullName}</strong>
 										<small>{selectedStudent.studentCode}</small>
 									</p>
 									<em>
-										{selectedStudent.hasDateOfBirth
-											? 'Có thể xác thực'
-											: 'Roster chưa có ngày sinh'}
+										{selectedStudent.accessMode === 'DOB_PASSWORD'
+											? 'Nhập mật khẩu ngày sinh'
+											: 'Có thể vào ngay'}
 									</em>
 								</div>
 							) : (
 								<small>
-									{students.length} sinh viên · {studentsReady} hồ sơ đã có ngày sinh
+									{students.length} sinh viên · {studentsReady} hồ sơ cần mật khẩu ngày sinh
 								</small>
 							)}
 						</div>
-						<div className={styles.authField}>
-							<label htmlFor="learning-student-password">
-								<span>Mật khẩu ngày sinh</span>
-							</label>
-							<div className={styles.inputShell}>
-								<span className="material-symbols-outlined" aria-hidden="true">
-									key
-								</span>
-								<input
-									id="learning-student-password"
-									value={password}
-									onChange={(event) =>
-										setPassword(event.target.value.replace(/\D/g, '').slice(0, 8))
-									}
-									type="password"
-									inputMode="numeric"
-									autoComplete="current-password"
-									pattern="[0-9]{8}"
-									maxLength={8}
-									placeholder={selectedStudent?.hasDateOfBirth ? 'ddmmyyyy' : 'Cần cập nhật ngày sinh'}
-									disabled={!selectedStudent?.hasDateOfBirth}
-									required
-								/>
+						{selectedStudent?.accessMode === 'DOB_PASSWORD' ? (
+							<div className={styles.authField}>
+								<label htmlFor="learning-student-password">
+									<span>Mật khẩu ngày sinh</span>
+								</label>
+								<div className={styles.inputShell}>
+									<span className="material-symbols-outlined" aria-hidden="true">
+										key
+									</span>
+									<input
+										ref={passwordRef}
+										id="learning-student-password"
+										value={password}
+										onChange={(event) =>
+											setPassword(event.target.value.replace(/\D/g, '').slice(0, 8))
+										}
+										type={showPassword ? 'text' : 'password'}
+										inputMode="numeric"
+										autoComplete="off"
+										pattern="[0-9]{8}"
+										maxLength={8}
+										placeholder="ddmmyyyy"
+										required
+									/>
+									<button
+										type="button"
+										className={styles.passwordToggle}
+										aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+										onClick={() => setShowPassword((visible) => !visible)}
+									>
+										<span className="material-symbols-outlined" aria-hidden="true">
+											{showPassword ? 'visibility_off' : 'visibility'}
+										</span>
+									</button>
+								</div>
+								<small>8 chữ số, ví dụ 05/09/2006 → 05092006</small>
 							</div>
-							<small>
-								{selectedStudent?.hasDateOfBirth
-									? '8 chữ số, ví dụ 05/09/2006 → 05092006'
-									: 'Hồ sơ thiếu ngày sinh nên chưa thể xác thực. Vui lòng liên hệ giảng viên.'}
-							</small>
-						</div>
+						) : (
+							<div className={styles.accessHint}>
+								<span className="material-symbols-outlined" aria-hidden="true">
+									login
+								</span>
+								<p>
+									{selectedStudent
+										? 'Hồ sơ này không yêu cầu mật khẩu. Bạn có thể vào Learning Experience ngay.'
+										: 'Sau khi chọn sinh viên, hệ thống sẽ cho biết có cần mật khẩu hay không.'}
+								</p>
+							</div>
+						)}
 						{error ? (
 							<p className={styles.error} role="alert">
 								{error}
@@ -428,14 +448,17 @@ export function LearningExperienceWorkspace({
 						<button
 							type="submit"
 							className={styles.enterButton}
-								disabled={
-									submitting ||
-									!selectedStudent ||
-									!selectedStudent.hasDateOfBirth ||
-									password.length !== 8
-								}
-							>
-								{submitting ? 'Đang mở…' : 'Enter experience'}
+							disabled={
+								submitting ||
+								!selectedStudent ||
+								(selectedStudent.accessMode === 'DOB_PASSWORD' && password.length !== 8)
+							}
+						>
+							{submitting
+								? 'Đang mở…'
+								: selectedStudent?.accessMode === 'OPEN'
+									? 'Vào trải nghiệm'
+									: 'Enter experience'}
 							<span className="material-symbols-outlined" aria-hidden="true">
 								arrow_forward
 							</span>
@@ -457,7 +480,7 @@ export function LearningExperienceWorkspace({
 			<div className={styles.sparkles} aria-hidden="true" />
 			<div className={styles.playerBar}>
 				<div>
-					<span className={styles.playerLabel}>Player verified</span>
+					<span className={styles.playerLabel}>Learning Experience access</span>
 					<strong>{session.student?.fullName}</strong>
 					<span>{session.student?.studentCode}</span>
 				</div>

@@ -16,15 +16,19 @@ export default defineConfig({
 		trace: 'on-first-retry',
 	},
 	projects: [
-		{ name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+		{
+			name: 'chromium',
+			use: { ...devices['Desktop Chrome'] },
+			testIgnore: /teaching-learning-experience-mobile\.spec\.ts/,
+		},
 		{
 			name: 'mobile-chrome-smoke',
-			testMatch: /mobile-smoke\.spec\.ts/,
+			testMatch: /(mobile-smoke|teaching-learning-experience-mobile)\.spec\.ts/,
 			use: { ...devices['Pixel 5'] },
 		},
 		{
 			name: 'mobile-safari-smoke',
-			testMatch: /mobile-smoke\.spec\.ts/,
+			testMatch: /(mobile-smoke|teaching-learning-experience-mobile)\.spec\.ts/,
 			use: { ...devices['iPhone 13'] },
 		},
 	],
@@ -37,8 +41,7 @@ export default defineConfig({
 				env: {
 					...process.env,
 					RESEND_API_KEY: process.env.RESEND_API_KEY ?? 're_e2e_not_used',
-					INQUIRY_FROM_EMAIL:
-						process.env.INQUIRY_FROM_EMAIL ?? 'Duy Khanh <noreply@example.com>',
+					INQUIRY_FROM_EMAIL: process.env.INQUIRY_FROM_EMAIL ?? 'Duy Khanh <noreply@example.com>',
 					INQUIRY_NOTIFY_EMAIL: process.env.INQUIRY_NOTIFY_EMAIL ?? 'admin@example.com',
 					AUTH_SECRET: process.env.AUTH_SECRET ?? 'e2e-rate-limit-secret',
 				},

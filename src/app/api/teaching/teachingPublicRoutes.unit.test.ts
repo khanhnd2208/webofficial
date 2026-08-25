@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { invokeRoute } from '@/test/helpers/apiRoute';
 import { POST as claimRoute } from './classes/[slug]/groups/claim/route';
 import { POST as moveRoute } from './classes/[slug]/groups/move/route';
+import { POST as loginLearningExperienceRoute } from './classes/[slug]/learning-experience/route';
 import { PUT as saveLearningExperienceRoute } from './classes/[slug]/learning-experience/route';
 
 const mocks = vi.hoisted(() => ({
@@ -12,6 +13,7 @@ const mocks = vi.hoisted(() => ({
 	moveGroupAssignment: vi.fn(),
 	claimGroupViewer: vi.fn(),
 	getLearningExperienceViewerEnrollmentId: vi.fn(),
+	loginToLearningExperience: vi.fn(),
 	saveLearningExperienceChoice: vi.fn(),
 	assertScopedRateLimit: vi.fn(),
 }));
@@ -31,10 +33,12 @@ vi.mock('@/features/teaching', () => ({
 	moveGroupAssignment: mocks.moveGroupAssignment,
 	claimGroupViewer: mocks.claimGroupViewer,
 	getLearningExperienceViewerEnrollmentId: mocks.getLearningExperienceViewerEnrollmentId,
+	loginToLearningExperience: mocks.loginToLearningExperience,
 	saveLearningExperienceChoice: mocks.saveLearningExperienceChoice,
 	groupAssignmentSchema: { pick: () => ({}) },
 	groupClaimSchema: {},
 	learningExperienceChoiceSchema: {},
+	learningExperienceLoginSchema: {},
 	parseWithAppError: (_schema: unknown, data: unknown) => data,
 }));
 
@@ -47,9 +51,35 @@ describe('Teaching public group routes', () => {
 		mocks.moveGroupAssignment.mockReset();
 		mocks.claimGroupViewer.mockReset();
 		mocks.getLearningExperienceViewerEnrollmentId.mockReset();
+		mocks.loginToLearningExperience.mockReset();
 		mocks.saveLearningExperienceChoice.mockReset();
 		mocks.assertScopedRateLimit.mockReset();
 		mocks.assertScopedRateLimit.mockResolvedValue(undefined);
+	});
+
+	it('allows an open Learning Experience login without a password', async () => {
+		mocks.loginToLearningExperience.mockResolvedValue({
+			authenticated: true,
+			accessMode: 'OPEN',
+		});
+
+		const response = await invokeRoute(loginLearningExperienceRoute, {
+			method: 'POST',
+			url: 'http://localhost/api/teaching/classes/hrm/learning-experience',
+			params: { slug: 'hrm' },
+			body: { enrollmentId: 'enrollment-open' },
+		});
+
+		expect(response.status).toBe(200);
+		expect(mocks.assertScopedRateLimit).toHaveBeenCalledWith(
+			expect.anything(),
+			'teaching-learning-experience-login:hrm:enrollment-open',
+			10,
+			5 * 60 * 1000,
+		);
+		expect(mocks.loginToLearningExperience).toHaveBeenCalledWith('hrm', {
+			enrollmentId: 'enrollment-open',
+		});
 	});
 
 	it('scopes Learning Experience choice limits to the signed enrollment identity', async () => {

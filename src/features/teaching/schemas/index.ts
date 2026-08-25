@@ -295,7 +295,8 @@ export const learningExperienceLoginSchema = z
 		enrollmentId: z.string().min(1).max(100),
 		password: z
 			.string()
-			.regex(/^\d{8}$/, 'Mật khẩu gồm 8 chữ số theo định dạng ddmmyyyy'),
+			.regex(/^\d{8}$/, 'Mật khẩu gồm 8 chữ số theo định dạng ddmmyyyy')
+			.optional(),
 	})
 	.strict();
 

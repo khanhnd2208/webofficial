@@ -6,7 +6,6 @@ import {
 	getLearningExperienceSession,
 	loginToLearningExperience,
 	saveLearningExperienceChoice,
-	searchLearningExperienceStudents,
 } from './learningExperienceService';
 
 const mocks = vi.hoisted(() => ({
@@ -30,39 +29,6 @@ vi.mock('@/lib/prisma', () => ({
 		},
 	},
 }));
-
-describe('searchLearningExperienceStudents', () => {
-	it('searches the real code on the server but only returns its masked form', async () => {
-		mocks.classFindFirst.mockResolvedValue({ id: 'class-1' });
-		mocks.enrollmentFindMany.mockResolvedValue([
-			{
-				id: 'enrollment-1',
-				student: {
-					studentCode: '2406090045',
-					familyName: 'Nguyễn',
-					givenName: 'Minh Anh',
-					dateOfBirth: new Date('2006-05-29T00:00:00.000Z'),
-				},
-			},
-		]);
-
-		await expect(searchLearningExperienceStudents('hrm-01', '0900')).resolves.toEqual([
-			{
-				enrollmentId: 'enrollment-1',
-				studentCode: '********45',
-				fullName: 'Nguyễn Minh Anh',
-				hasDateOfBirth: true,
-			},
-		]);
-		expect(mocks.enrollmentFindMany).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.objectContaining({
-					student: { studentCode: { contains: '0900', mode: 'insensitive' } },
-				}),
-			}),
-		);
-	});
-});
 
 vi.mock('next/headers', () => ({
 	cookies: vi.fn(async () => ({ get: mocks.cookieGet, set: mocks.cookieSet })),
@@ -106,10 +72,7 @@ function encodeViewer(payload: ReturnType<typeof signedCookie>) {
 		process.env.ADMIN_SECRET?.trim() ||
 		'development-learning-experience-secret';
 	const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
-	const signature = crypto
-		.createHmac('sha256', signingSecret)
-		.update(body)
-		.digest('base64url');
+	const signature = crypto.createHmac('sha256', signingSecret).update(body).digest('base64url');
 	return `${body}.${signature}`;
 }
 
@@ -121,24 +84,51 @@ describe('loginToLearningExperience', () => {
 		mocks.cookieSet.mockReset();
 	});
 
-	it('fails closed when the roster birth date is missing', async () => {
+	it('allows an open roster profile to enter without a password', async () => {
 		mocks.enrollmentFindFirst.mockResolvedValue(enrollment(null));
 
 		await expect(
-			loginToLearningExperience('hrm-01', {
-				enrollmentId: 'enrollment-1',
-				password: '00000000',
-			}),
-		).rejects.toMatchObject({
-			status: 403,
-			code: 'LEARNING_EXPERIENCE_DOB_REQUIRED',
+			loginToLearningExperience('hrm-01', { enrollmentId: 'enrollment-1' }),
+		).resolves.toMatchObject({
+			authenticated: true,
+			accessMode: 'OPEN',
 		});
-		expect(mocks.cookieSet).not.toHaveBeenCalled();
+		expect(mocks.cookieSet).toHaveBeenCalledOnce();
 	});
 
-	it('invalidates an existing signed viewer cookie when the birth date is missing', async () => {
-		mocks.cookieGet.mockReturnValue({ value: encodeViewer(signedCookie()) });
+	it('restores an open session from its signed cookie', async () => {
+		const openCookie = {
+			...signedCookie(),
+			version: 2 as const,
+			accessMode: 'OPEN' as const,
+		};
+		mocks.cookieGet.mockReturnValue({ value: encodeViewer(openCookie) });
 		mocks.enrollmentFindFirst.mockResolvedValue(enrollment(null));
+
+		await expect(getLearningExperienceSession('hrm-01')).resolves.toMatchObject({
+			authenticated: true,
+			accessMode: 'OPEN',
+		});
+	});
+
+	it('keeps an existing versionless cookie for a profile that still requires a birth date', async () => {
+		mocks.cookieGet.mockReturnValue({ value: encodeViewer(signedCookie()) });
+		mocks.enrollmentFindFirst.mockResolvedValue(enrollment(new Date('2006-05-29T00:00:00.000Z')));
+
+		await expect(getLearningExperienceSession('hrm-01')).resolves.toMatchObject({
+			authenticated: true,
+			accessMode: 'DOB_PASSWORD',
+		});
+	});
+
+	it('invalidates an open cookie after a birth date is added', async () => {
+		const openCookie = {
+			...signedCookie(),
+			version: 2 as const,
+			accessMode: 'OPEN' as const,
+		};
+		mocks.cookieGet.mockReturnValue({ value: encodeViewer(openCookie) });
+		mocks.enrollmentFindFirst.mockResolvedValue(enrollment(new Date('2006-05-29T00:00:00.000Z')));
 
 		await expect(getLearningExperienceSession('hrm-01')).resolves.toEqual({
 			authenticated: false,
@@ -157,6 +147,15 @@ describe('loginToLearningExperience', () => {
 		expect(mocks.cookieSet).not.toHaveBeenCalled();
 	});
 
+	it('requires a password when a birth date exists', async () => {
+		mocks.enrollmentFindFirst.mockResolvedValue(enrollment(new Date('2006-05-29T00:00:00.000Z')));
+
+		await expect(
+			loginToLearningExperience('hrm-01', { enrollmentId: 'enrollment-1' }),
+		).rejects.toMatchObject({ status: 401, code: 'INVALID_STUDENT_CREDENTIALS' });
+		expect(mocks.cookieSet).not.toHaveBeenCalled();
+	});
+
 	it('creates a signed viewer session for the correct birth date', async () => {
 		mocks.enrollmentFindFirst.mockResolvedValue(enrollment(new Date('2006-05-29T00:00:00.000Z')));
 
@@ -167,6 +166,7 @@ describe('loginToLearningExperience', () => {
 
 		expect(result).toMatchObject({
 			authenticated: true,
+			accessMode: 'DOB_PASSWORD',
 			student: { studentCode: '2406090045', fullName: 'Nguyễn Minh Anh' },
 			changesRemaining: 1,
 			locked: false,
@@ -280,9 +280,7 @@ describe('saveLearningExperienceChoice', () => {
 	});
 
 	it('rejects a concurrent write instead of silently overwriting the first choice', async () => {
-		mocks.enrollmentFindFirst.mockResolvedValue(
-			enrollment(new Date('2006-05-29T00:00:00.000Z')),
-		);
+		mocks.enrollmentFindFirst.mockResolvedValue(enrollment(new Date('2006-05-29T00:00:00.000Z')));
 		mocks.enrollmentUpdateMany.mockResolvedValue({ count: 0 });
 
 		await expect(

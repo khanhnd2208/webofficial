@@ -59,6 +59,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		const suffix = Date.now().toString(36);
 		const slug = `e2e-learning-${suffix}`;
 		const learnerName = `Learning ${suffix}`;
+		const openLearnerName = `Open ${suffix}`;
 		const created = await page.request.post('/api/admin/teaching/classes', {
 			data: {
 				courseCode: `LEX${suffix}`.slice(0, 10),
@@ -99,6 +100,18 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				},
 			);
 			expect(enrolled.ok()).toBe(true);
+			const openEnrolled = await page.request.post(
+				`/api/admin/teaching/classes/${classId}/enrollments`,
+				{
+					data: {
+						studentCode: `27${Date.now()}`.slice(-10),
+						familyName: 'E2E',
+						givenName: openLearnerName,
+						dateOfBirth: null,
+					},
+				},
+			);
+			expect(openEnrolled.ok()).toBe(true);
 
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=learning`);
@@ -116,6 +129,17 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await page.getByRole('button', { name: 'Chọn thử thách' }).click();
 			await expect(page.getByRole('button', { name: 'Đã chọn' })).toBeVisible();
 			await expect(page.getByText(/Challenge accepted/)).toBeVisible();
+
+			await context.clearCookies();
+			await page.goto(`/lop/${slug}?tab=learning`);
+			await page.getByRole('combobox', { name: 'Chọn sinh viên trong lớp' }).fill(openLearnerName);
+			await page.getByRole('option', { name: new RegExp(openLearnerName) }).click();
+			await expect(page.getByText('Có thể vào ngay')).toBeVisible();
+			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
+			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
+			await expect(
+				page.getByRole('heading', { name: 'Choose your HRM learning style' }),
+			).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);

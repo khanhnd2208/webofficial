@@ -192,7 +192,7 @@
 
 .inputShell {
 	display: grid;
-	grid-template-columns: auto 1fr;
+	grid-template-columns: auto minmax(0, 1fr) auto;
 	align-items: center;
 	gap: 0.65rem;
 	min-height: 3.2rem;
@@ -234,6 +234,21 @@
 	opacity: 0.68;
 }
 
+.passwordToggle {
+	display: grid;
+	width: 2rem;
+	height: 2rem;
+	place-items: center;
+	border-radius: 0.35rem;
+	color: #665e51;
+}
+
+.passwordToggle:hover,
+.passwordToggle:focus-visible {
+	background: #efe1c8;
+	color: var(--learning-navy);
+}
+
 .studentPicker {
 	grid-template-columns: auto minmax(0, 1fr) auto;
 }
@@ -271,7 +286,8 @@
 }
 
 .studentOptions button:hover,
-.studentOptions button[aria-selected='true'] {
+.studentOptions button[aria-selected='true'],
+.studentOptions button[data-highlighted='true'] {
 	background: #efe1c8;
 }
 
@@ -306,7 +322,7 @@
 	white-space: nowrap;
 }
 
-.studentOptions button[data-ready='false'] em {
+.studentOptions button[data-access='DOB_PASSWORD'] em {
 	background: #fff0dc;
 	color: #935f11;
 }
@@ -331,10 +347,10 @@
 	color: #1d6847;
 }
 
-.selectedStudent[data-ready='false'] {
-	border-color: #e2bd82;
-	background: #fff4e5;
-	color: #81520d;
+.selectedStudent[data-access='OPEN'] {
+	border-color: #b8d7c7;
+	background: #f1faf5;
+	color: #1d6847;
 }
 
 .selectedStudent > span {
@@ -365,6 +381,28 @@
 	font-style: normal;
 	font-weight: 750;
 	text-align: right;
+}
+
+.accessHint {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.55rem;
+	padding: 0.7rem 0.75rem;
+	border: 1px solid #b8d7c7;
+	border-radius: 0.45rem;
+	background: #f1faf5;
+	color: #1d6847;
+	font-size: 0.72rem;
+	line-height: 1.45;
+}
+
+.accessHint span {
+	flex: 0 0 auto;
+	font-size: 1rem;
+}
+
+.accessHint p {
+	margin: 0;
 }
 
 .enterButton,
