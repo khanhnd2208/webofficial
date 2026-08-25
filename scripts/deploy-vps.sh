@@ -504,9 +504,9 @@ echo "Creating a fresh pre-migration database backup"
 BACKUP_COMPLETED="yes"
 printf 'backup_completed_at=%s\n' "$(date -u +%FT%TZ)" >>"$RELEASE_DIR/.deploy-metadata"
 
-echo "Applying committed migrations and the idempotent Active Recall seed"
+echo "Applying committed migrations and syncing canonical Active Recall decks"
 ./node_modules/.bin/prisma migrate deploy
-./node_modules/.bin/tsx scripts/seed-active-recall.ts
+./node_modules/.bin/tsx scripts/replace-active-recall-revisions.ts
 
 echo "Removing build-only development dependencies from the runtime release"
 HUSKY=0 npm prune --omit=dev --ignore-scripts --no-package-lock

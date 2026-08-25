@@ -26,7 +26,7 @@
 		"prepare": "husky",
 		"db:seed": "npx tsx prisma/seed.ts",
 		"db:seed:my-class": "npx tsx scripts/seed-my-class.ts",
-		"db:seed:active-recall": "npx tsx scripts/seed-active-recall.ts",
+		"db:sync:active-recall": "npx tsx scripts/replace-active-recall-revisions.ts",
 		"db:seed:teaching": "npx tsx scripts/seed-teaching.ts",
 		"db:seed:teaching:excel": "npx tsx scripts/seed-teaching-from-excel.ts",
 		"db:normalize-teaching": "npx tsx scripts/normalize-teaching-classes.ts",
