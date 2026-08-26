@@ -8,6 +8,7 @@ import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 import KnowledgeHeader from '@/components/knowledge/KnowledgeHeader';
 import SubjectOverview from '@/components/knowledge/SubjectOverview';
+import CourseWorkspace from '@/components/myclass/CourseWorkspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,5 +37,16 @@ export default async function MyClassCoursePage({ params, searchParams }: { para
 		redirect(routes.myClassUnit(courseSlug, String(query.lesson), String(query.unit), { sectionSlug: typeof query.s === 'string' ? query.s : null, level: query.level === 'readable' ? 'short' : query.level === 'academic' || query.level === 'deep' ? 'deep' : null }));
 	}
 	const { learnerState } = await loadCourseLearnerState(courseSlug, actor);
+	const isAdmin = session?.user?.role === 'admin';
+	if (isAdmin) {
+		return (
+			<CourseWorkspace
+				course={course}
+				initialState={learnerState}
+				isAdmin
+				editMode={query.edit === '1'}
+			/>
+		);
+	}
 	return <><KnowledgeHeader crumb={course.title} user={session?.user ?? null} loginHref={`${routes.login}?from=${encodeURIComponent(routes.myClassCourse(courseSlug))}`} /><SubjectOverview course={course} state={learnerState} /></>;
 }

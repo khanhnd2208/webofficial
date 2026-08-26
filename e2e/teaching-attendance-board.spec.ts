@@ -51,6 +51,116 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		expect(missing?.status()).toBe(404);
 	});
 
+	test('Class Notes publish a stable public snapshot and disappear when unpublished', async ({
+		page,
+		context,
+	}) => {
+		await addAdminSession(context);
+		const suffix = Date.now().toString(36);
+		const slug = `e2e-notes-${suffix}`;
+		const created = await page.request.post('/api/admin/teaching/classes', {
+			data: {
+				courseCode: `NOTE${suffix}`.slice(0, 10),
+				courseName: 'Class Notes E2E',
+				groupNo: '96',
+				term: `E2E ${suffix}`,
+				totalWeeks: 4,
+			},
+		});
+		expect(created.ok()).toBe(true);
+		const classId = ((await created.json()) as { data: { id: string } }).data.id;
+
+		try {
+			const publicPage = await page.request.patch(`/api/admin/teaching/classes/${classId}/public`, {
+				data: {
+					publicSlug: slug,
+					publicTitle: 'Class Notes E2E',
+					publicSummary: '',
+					publicDescription: '',
+					publicAnnouncement: '',
+					links: [],
+				},
+			});
+			expect(publicPage.ok()).toBe(true);
+			const shared = await page.request.patch(`/api/admin/teaching/classes/${classId}/share`, {
+				data: { shared: true },
+			});
+			expect(shared.ok()).toBe(true);
+
+			const noteResponse = await page.request.post(`/api/admin/teaching/classes/${classId}/notes`, {
+				data: { title: 'Tuần 1', html: '<p><span style="color: #2563eb">Bản công khai</span></p>' },
+			});
+			expect(noteResponse.ok()).toBe(true);
+			const noteId = ((await noteResponse.json()) as { data: { id: string } }).data.id;
+
+			const published = await page.request.post(`/api/admin/teaching/classes/${classId}/notes/${noteId}/publish`);
+			expect(published.ok()).toBe(true);
+			const changedDraft = await page.request.patch(`/api/admin/teaching/classes/${classId}/notes/${noteId}`, {
+				data: { title: 'Tuần 1 đã sửa', html: '<p>Bản nháp không công khai</p>' },
+			});
+			expect(changedDraft.ok()).toBe(true);
+
+			await context.clearCookies();
+			await page.goto(`/lop/${slug}?tab=notes`);
+			await expect(page.getByRole('tab', { name: 'Class Notes' })).toHaveAttribute('aria-selected', 'true');
+			await expect(page.getByRole('heading', { name: 'Tuần 1' })).toBeVisible();
+			await expect(page.getByText('Bản công khai')).toBeVisible();
+			await expect(page.getByText('Bản nháp không công khai')).toHaveCount(0);
+			await expect(page.locator('.mc-prose span[style*="color"]')).toBeVisible();
+
+			await addAdminSession(context);
+			const unpublished = await page.request.post(`/api/admin/teaching/classes/${classId}/notes/${noteId}/unpublish`);
+			expect(unpublished.ok()).toBe(true);
+			await context.clearCookies();
+			await page.goto(`/lop/${slug}?tab=notes`);
+			await expect(page.getByText('Chưa có Class Notes được xuất bản.')).toBeVisible();
+		} finally {
+			await context.clearCookies();
+			await addAdminSession(context);
+			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+		}
+	});
+
+	test('admin can apply text color and highlight in the Class Notes editor', async ({
+		page,
+		context,
+	}) => {
+		await addAdminSession(context);
+		const suffix = Date.now().toString(36);
+		const created = await page.request.post('/api/admin/teaching/classes', {
+			data: {
+				courseCode: `CLR${suffix}`.slice(0, 10),
+				courseName: 'Editor colors E2E',
+				groupNo: '95',
+				term: `E2E ${suffix}`,
+				totalWeeks: 4,
+			},
+		});
+		expect(created.ok()).toBe(true);
+		const classId = ((await created.json()) as { data: { id: string } }).data.id;
+
+		try {
+			await page.goto(`/my-space/teaching/${classId}?tab=notes`);
+			await page.getByRole('button', { name: /thêm/i }).click();
+			await page.locator('input[placeholder="Tiêu đề tuần / topic / phần"]').fill('Màu và highlight');
+			const editor = page.locator('.tiptap-content');
+			await editor.pressSequentially('Nội dung có màu');
+			await editor.press('ControlOrMeta+A');
+			await page.getByRole('button', { name: 'Màu chữ' }).click();
+			await page.getByRole('button', { name: 'Màu chữ: Đỏ' }).click();
+			await page.getByRole('button', { name: 'Highlight', exact: true }).click();
+			await page.getByRole('button', { name: 'Highlight: Vàng' }).click();
+
+			await expect(editor.locator('mark[style*="background-color"]')).toBeVisible();
+			await expect(editor.locator('span[style*="color"]')).toBeVisible();
+			const html = await editor.innerHTML();
+			expect(html).toMatch(/color:\s*(#dc2626|rgb\(220,\s*38,\s*38\))/i);
+			expect(html).toMatch(/background-color:\s*(#fef08a|rgb\(254,\s*240,\s*138\))/i);
+		} finally {
+			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+		}
+	});
+
 	test('a rostered learner authenticates and saves a Learning Experience choice', async ({
 		page,
 		context,

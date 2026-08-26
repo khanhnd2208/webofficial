@@ -1,6 +1,6 @@
 import { AppError } from '@/lib/appError';
 
-import { sanitizeTeachingHtml } from '../domain/sanitize';
+import { hasTeachingHtmlContent, sanitizeTeachingHtml } from '../domain/sanitize';
 import * as repo from '../repositories/teachingRepository';
 import type {
 	CreateTeachingClassNoteInput,
@@ -82,7 +82,7 @@ export async function deleteClassNote(classId: string, noteId: string) {
 export async function publishClassNote(classId: string, noteId: string): Promise<TeachingClassNoteRecord> {
 	const existing = await repo.getClassNote(noteId);
 	if (!existing || existing.classId !== classId) notFound('Class note');
-	if (!existing.draftTitle.trim() || !sanitizeTeachingHtml(existing.draftHtml).trim()) {
+	if (!existing.draftTitle.trim() || !hasTeachingHtmlContent(existing.draftHtml)) {
 		throw new AppError('Tiêu đề và nội dung không được để trống khi xuất bản.', 422, 'VALIDATION');
 	}
 	const updated = await repo.updateClassNote(noteId, {

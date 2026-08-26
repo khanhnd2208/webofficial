@@ -9,6 +9,8 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
+import Color from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Youtube from '@tiptap/extension-youtube';
 import { Table } from '@tiptap/extension-table';
@@ -57,6 +59,79 @@ function Btn({
 
 function Sep() {
 	return <div className="mx-0.5 h-5 w-px bg-border" />;
+}
+
+type PaletteColor = {
+	label: string;
+	value: string | null;
+};
+
+const TEXT_COLORS: PaletteColor[] = [
+	{ label: 'Mặc định', value: null },
+	{ label: 'Slate', value: '#475569' },
+	{ label: 'Đỏ', value: '#dc2626' },
+	{ label: 'Cam', value: '#ea580c' },
+	{ label: 'Vàng đậm', value: '#ca8a04' },
+	{ label: 'Xanh lá', value: '#15803d' },
+	{ label: 'Xanh dương', value: '#2563eb' },
+	{ label: 'Tím', value: '#7c3aed' },
+	{ label: 'Hồng', value: '#db2777' },
+];
+
+const HIGHLIGHT_COLORS: PaletteColor[] = [
+	{ label: 'Không highlight', value: null },
+	{ label: 'Vàng', value: '#fef08a' },
+	{ label: 'Cam nhạt', value: '#fed7aa' },
+	{ label: 'Xanh lá nhạt', value: '#bbf7d0' },
+	{ label: 'Xanh dương nhạt', value: '#bae6fd' },
+	{ label: 'Tím nhạt', value: '#ddd6fe' },
+	{ label: 'Hồng nhạt', value: '#fbcfe8' },
+];
+
+function Palette({
+	label,
+	colors,
+	current,
+	onSelect,
+}: {
+	label: string;
+	colors: PaletteColor[];
+	current?: string | null;
+	onSelect: (color: string | null) => void;
+}) {
+	return (
+		<div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-secondary/70 px-3 py-2" role="group" aria-label={label}>
+			<span className="mr-1 text-xs font-medium text-foreground-secondary">{label}</span>
+			{colors.map((color) => {
+				const selected = (current ?? null) === color.value;
+				const isClear = color.value === null;
+				return (
+					<button
+						key={color.label}
+						type="button"
+						onMouseDown={(event) => {
+							event.preventDefault();
+							onSelect(color.value);
+						}}
+						aria-label={`${label}: ${color.label}`}
+						title={color.label}
+						aria-pressed={selected}
+						className={`relative h-7 w-7 rounded-full border transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 ${selected ? 'ring-2 ring-accent ring-offset-1' : 'border-border'}`}
+						style={color.value ? { backgroundColor: color.value } : undefined}
+					>
+						{isClear ? (
+							<svg className="mx-auto h-4 w-4 text-foreground-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+								<circle cx="12" cy="12" r="8" />
+								<path d="M6.5 17.5l11-11" strokeLinecap="round" />
+							</svg>
+						) : label === 'Màu chữ' ? (
+							<span className="font-bold text-white drop-shadow-sm" aria-hidden="true">A</span>
+						) : null}
+					</button>
+				);
+			})}
+		</div>
+	);
 }
 
 /* ═════════════════════════════════════════════
@@ -129,6 +204,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 	const [showLinkDialog, setShowLinkDialog] = useState(false);
 	const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
 	const [showSourceView, setShowSourceView] = useState(false);
+	const [openPalette, setOpenPalette] = useState<'text' | 'highlight' | null>(null);
 	const [sourceHtml, setSourceHtml] = useState('');
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const isInternalUpdate = useRef(false);
@@ -139,12 +215,16 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 		extensions: [
 			StarterKit.configure({
 				codeBlock: false, // we use lowlight instead
+				link: false, // configured below with the editor's custom styling
+				underline: false, // registered below for the same reason
 				dropcursor: { color: 'var(--accent)', width: 2 },
 			}),
 			Placeholder.configure({ placeholder }),
 			Underline,
 			Superscript,
 			Subscript,
+			TextStyle,
+			Color,
 			Highlight.configure({ multicolor: true }),
 			TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] }),
 			Link.configure({
@@ -268,6 +348,18 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 		editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
 	}, [editor]);
 
+	const applyTextColor = useCallback((color: string | null) => {
+		if (!editor) return;
+		if (color) editor.chain().focus().setColor(color).run();
+		else editor.chain().focus().unsetColor().run();
+	}, [editor]);
+
+	const applyHighlight = useCallback((color: string | null) => {
+		if (!editor) return;
+		if (color) editor.chain().focus().toggleHighlight({ color }).run();
+		else editor.chain().focus().unsetHighlight().run();
+	}, [editor]);
+
 	const toggleSourceView = useCallback(() => {
 		if (!editor) return;
 		if (!showSourceView) {
@@ -303,6 +395,17 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 				</Btn>
 				<Btn onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive('subscript')} title="Subscript">
 					<span className="text-[10px] font-bold">X<sub className="text-[8px]">₂</sub></span>
+				</Btn>
+				<Btn onClick={() => setOpenPalette((value) => value === 'text' ? null : 'text')} active={openPalette === 'text'} title="Màu chữ">
+					<span className="relative font-serif text-sm font-bold leading-none" style={{ color: (editor.getAttributes('textStyle').color as string | undefined) ?? 'currentColor' }}>
+						A<span className="absolute -bottom-1 left-0 right-0 h-1 rounded-sm bg-current" />
+					</span>
+				</Btn>
+				<Btn onClick={() => setOpenPalette((value) => value === 'highlight' ? null : 'highlight')} active={openPalette === 'highlight' || editor.isActive('highlight')} title="Highlight">
+					<span className="relative text-sm font-bold leading-none">
+						<span aria-hidden="true">A</span>
+						<span className="absolute -bottom-1 left-[-2px] right-[-2px] h-1 rounded-sm" style={{ backgroundColor: (editor.getAttributes('highlight').color as string | undefined) ?? 'var(--accent)' }} />
+					</span>
 				</Btn>
 
 				<Sep />
@@ -397,7 +500,22 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 				</Btn>
 			</div>
 
-
+			{openPalette === 'text' && (
+				<Palette
+					label="Màu chữ"
+					colors={TEXT_COLORS}
+					current={editor.getAttributes('textStyle').color as string | undefined}
+					onSelect={applyTextColor}
+				/>
+			)}
+			{openPalette === 'highlight' && (
+				<Palette
+					label="Highlight"
+					colors={HIGHLIGHT_COLORS}
+					current={editor.getAttributes('highlight').color as string | undefined}
+					onSelect={applyHighlight}
+				/>
+			)}
 
 			{/* ═══ Link Dialog ═══ */}
 			{showLinkDialog && (

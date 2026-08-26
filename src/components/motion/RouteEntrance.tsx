@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { m, useReducedMotion } from 'framer-motion';
+import { m } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 import { useMotionTier } from './MotionProvider';
@@ -18,9 +18,8 @@ export default function RouteEntrance({
 	className?: string;
 }) {
 	const { tier } = useMotionTier();
-	const reduce = useReducedMotion();
 
-	if (reduce || tier === 'reduced') {
+	if (tier === 'reduced') {
 		return <div className={className}>{children}</div>;
 	}
 

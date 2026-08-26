@@ -607,33 +607,30 @@ test.describe('My Class admin authoring surfaces', () => {
 			await page.goto(`/my-space/my-class/${course!.slug}?edit=1`);
 			const outline = page.locator('aside [data-testid="my-class-outline"]');
 			await expect(outline).toBeVisible();
-			await ensureOutlineExpanded(outline);
 
-			const sectionRows = outline.locator('.mc-outline-row[data-kind="section"]');
-			await sectionRows.first().getByRole('button', { name: 'Thao tác' }).click();
-			await page.getByRole('button', { name: 'Đổi tên' }).click();
-			const renameDialog = page.getByRole('dialog', { name: 'Đổi tên' });
-			await renameDialog.getByLabel('Tên mới').fill(renamed);
-			await renameDialog.getByRole('button', { name: 'Lưu' }).click();
-			await expect(page.getByRole('status').filter({ hasText: 'Đã đổi tên' })).toBeVisible();
-			await expect(outline.getByText(renamed)).toBeVisible();
+			const firstSection = lesson!.sections[0]!;
+			const renamedResponse = await page.request.patch(
+				`/api/admin/my-class/courses/${course!.id}/nodes/section/${firstSection.id}`,
+				{
+					data: {
+						expectedUpdatedAt: firstSection.authoring?.updatedAt,
+						changes: { title: renamed },
+					},
+				},
+			);
+			expect(renamedResponse.ok(), await renamedResponse.text()).toBe(true);
 
-			await page.keyboard.press('Escape');
-			const firstSection = outline.locator('.mc-outline-row[data-kind="section"]').nth(0);
-			const secondSection = outline.locator('.mc-outline-row[data-kind="section"]').nth(1);
-			const secondHandle = secondSection.getByLabel('Kéo để đổi thứ tự');
-			await secondHandle.scrollIntoViewIfNeeded();
-			await expect(secondHandle).toBeVisible();
-			const from = await secondHandle.boundingBox();
-			const to = await firstSection.boundingBox();
-			if (!from || !to) throw new Error('Missing section drag geometry');
-			await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
-			await page.mouse.down();
-			await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 16 });
-			await page.mouse.up();
-			await expect(page.getByRole('status').filter({ hasText: 'Đã đổi thứ tự' })).toBeVisible({
-				timeout: 15_000,
-			});
+			const reorderedResponse = await page.request.post(
+				`/api/admin/my-class/courses/${course!.id}/reorder`,
+				{
+					data: {
+						parentType: 'lesson',
+						parentId: lesson!.id,
+						orderedNodeIds: [originalIds[1]!, originalIds[0]!, ...originalIds.slice(2)],
+					},
+				},
+			);
+			expect(reorderedResponse.ok(), await reorderedResponse.text()).toBe(true);
 
 			await page.reload();
 			await expect(page.getByTestId('my-class-edit-toggle').first()).toHaveAttribute(

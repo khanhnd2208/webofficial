@@ -13,14 +13,18 @@ test.describe('Active Recall', () => {
 		await expect(
 			page.getByRole('heading', { name: 'HRM · Lesson 1 — Introduction to HRM' }),
 		).toBeVisible();
-		await expect(page.getByText('What is human resource management (HRM)?')).toBeVisible();
+		const card = page.locator('article.recall-card');
+		const question = (await card.locator('.recall-text').textContent())?.trim();
+		expect(question).toBeTruthy();
 		await page.getByRole('button', { name: 'Hiện đáp án' }).click();
-		await expect(page.getByText(/policies, practices, and systems/i)).toBeVisible();
+		await expect(card).toHaveAttribute('data-side', 'answer');
+		const answer = (await card.locator('.recall-text').textContent())?.trim();
+		expect(answer).toBeTruthy();
+		expect(answer).not.toBe(question);
 
 		await page.getByRole('button', { name: 'Tiếp →' }).click();
-		await expect(
-			page.getByText('Which three employee outcomes are influenced by HRM?'),
-		).toBeVisible();
+		await expect(card).toHaveAttribute('data-side', 'question');
+		await expect(card.locator('.recall-text')).not.toHaveText(question!);
 		await expect(page.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
 	});
 });

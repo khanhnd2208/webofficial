@@ -536,6 +536,9 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 				`/api/admin/teaching/sessions/${sessionId}`,
 				{
 					method: 'PATCH',
+					// A teacher can switch from attendance to CP immediately after choosing a date.
+					// Keep this small mutation alive across that navigation so the session date is not lost.
+					keepalive: true,
 					body: JSON.stringify({ heldOn }),
 				},
 			);

@@ -3045,6 +3045,29 @@ body::before {
 	--tw-text-opacity: 1;
 }
 
+/* Preset editor colors stay readable on dark surfaces. The stored inline
+   color remains unchanged so switching themes never mutates note HTML. */
+.dark .tiptap-content [style*='color: #475569'],
+.dark .prose [style*='color: #475569'] {
+	color: #94a3b8 !important;
+}
+
+.dark .tiptap-content [style*='color: #ca8a04'],
+.dark .prose [style*='color: #ca8a04'] {
+	color: #facc15 !important;
+}
+
+/* Light highlight swatches need dark ink in both editor and read-only views. */
+.tiptap-content mark[style*='background-color']:not([style*='color']),
+.prose mark[style*='background-color']:not([style*='color']) {
+	color: #1f2937;
+}
+
+.dark .tiptap-content mark[style*='background-color']:not([style*='color']),
+.dark .prose mark[style*='background-color']:not([style*='color']) {
+	color: #111827 !important;
+}
+
 /* ── Empty paragraph preservation ──
    Tiptap outputs <p></p> for blank lines (Enter key).
    Prose/browsers collapse these. This keeps the spacing. */

@@ -54,9 +54,17 @@ export function ClassNotesAdminWorkspace({ classId, initial }: { classId: string
 	const [html, setHtml] = useState(initial[0]?.draftHtml ?? '');
 	const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 	const [busy, setBusy] = useState(false);
-	const hydrating = useRef(false);
+	const skipAutosaveForId = useRef<string | null>(initial[0]?.id ?? null);
+	const autosaveTimer = useRef<number | null>(null);
 	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 	const selected = useMemo(() => notes.find((note) => note.id === selectedId) ?? null, [notes, selectedId]);
+
+	const clearPendingAutosave = useCallback(() => {
+		if (autosaveTimer.current !== null) {
+			window.clearTimeout(autosaveTimer.current);
+			autosaveTimer.current = null;
+		}
+	}, []);
 
 	const persist = useCallback(async (noteId: string, nextTitle: string, nextHtml: string) => {
 		setSaveState('saving');
@@ -75,20 +83,26 @@ export function ClassNotesAdminWorkspace({ classId, initial }: { classId: string
 	}, [classId]);
 
 	useEffect(() => {
-		if (!selectedId || hydrating.current) return;
-		const timer = window.setTimeout(() => {
+		if (!selectedId) return;
+		if (skipAutosaveForId.current === selectedId) {
+			skipAutosaveForId.current = null;
+			return;
+		}
+		autosaveTimer.current = window.setTimeout(() => {
+			autosaveTimer.current = null;
 			void persist(selectedId, title, html).catch(() => undefined);
 		}, 700);
-		return () => window.clearTimeout(timer);
-	}, [html, persist, selectedId, title]);
+		return clearPendingAutosave;
+	}, [clearPendingAutosave, html, persist, selectedId, title]);
 
 	function selectNote(note: TeachingClassNoteRecord) {
-		hydrating.current = true;
+		if (note.id === selectedId) return;
+		clearPendingAutosave();
+		skipAutosaveForId.current = note.id;
 		setSelectedId(note.id);
 		setTitle(note.draftTitle);
 		setHtml(note.draftHtml);
 		setSaveState('idle');
-		queueMicrotask(() => { hydrating.current = false; });
 	}
 
 	async function addNote() {
@@ -100,6 +114,8 @@ export function ClassNotesAdminWorkspace({ classId, initial }: { classId: string
 			});
 			setNotes((current) => [...current, created]);
 			selectNote(created);
+		} catch {
+			setSaveState('error');
 		} finally {
 			setBusy(false);
 		}
@@ -115,6 +131,8 @@ export function ClassNotesAdminWorkspace({ classId, initial }: { classId: string
 			const next = remaining[0];
 			if (next) selectNote(next);
 			else { setSelectedId(null); setTitle(''); setHtml(''); }
+		} catch {
+			setSaveState('error');
 		} finally {
 			setBusy(false);
 		}
@@ -124,9 +142,12 @@ export function ClassNotesAdminWorkspace({ classId, initial }: { classId: string
 		if (!selected) return;
 		setBusy(true);
 		try {
+			clearPendingAutosave();
 			await persist(selected.id, title, html);
 			const updated = await teachingApi<TeachingClassNoteRecord>(`/api/admin/teaching/classes/${classId}/notes/${selected.id}/publish`, { method: 'POST' });
 			setNotes((current) => current.map((note) => (note.id === updated.id ? updated : note)));
+		} catch {
+			setSaveState('error');
 		} finally {
 			setBusy(false);
 		}
@@ -138,6 +159,9 @@ export function ClassNotesAdminWorkspace({ classId, initial }: { classId: string
 		try {
 			const updated = await teachingApi<TeachingClassNoteRecord>(`/api/admin/teaching/classes/${classId}/notes/${selected.id}/unpublish`, { method: 'POST' });
 			setNotes((current) => current.map((note) => (note.id === updated.id ? updated : note)));
+			setSaveState('saved');
+		} catch {
+			setSaveState('error');
 		} finally {
 			setBusy(false);
 		}
@@ -153,6 +177,7 @@ export function ClassNotesAdminWorkspace({ classId, initial }: { classId: string
 			await teachingApi(`/api/admin/teaching/classes/${classId}/notes`, { method: 'PUT', body: JSON.stringify({ ids: next.map((note) => note.id) }) });
 		} catch {
 			setNotes(notes);
+			setSaveState('error');
 		}
 	}
 

@@ -8,6 +8,7 @@ import { isReservedLessonSlug } from '@/features/my-class/domain/workspaceUrl';
 import { routes } from '@/config/routes';
 import KnowledgeHeader from '@/components/knowledge/KnowledgeHeader';
 import KnowledgeWorkspace from '@/components/knowledge/KnowledgeWorkspace';
+import CourseWorkspace from '@/components/myclass/CourseWorkspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,20 @@ export default async function MyClassUnitPage({ params, searchParams }: { params
 	const actor = userId ? { type: 'user' as const, userId, actorKey: userActorKey(userId) } : guestId ? { type: 'guest' as const, guestId, actorKey: guestActorKey(guestId) } : null;
 	const { learnerState } = await loadCourseLearnerState(courseSlug, actor);
 	const detail = await getKnowledgeUnit(courseSlug, unitSlug, { lessonSlug, sectionId: section.id });
+	if (session?.user?.role === 'admin') {
+		return (
+			<CourseWorkspace
+				course={course}
+				initialState={learnerState}
+				isAdmin
+				editMode={query.edit === '1'}
+				initialLessonSlug={lessonSlug}
+				initialUnitSlug={unitSlug}
+				initialSectionSlug={section.slug}
+				initialContent={{ ...detail, progress: learnerState }}
+			/>
+		);
+	}
 	const mode = query.level === 'readable' ? 'short' : query.level === 'academic' || query.level === 'deep' ? 'deep' : 'short';
 	return <><KnowledgeHeader crumb={`${course.title} · ${lesson.title}`} user={session?.user ?? null} loginHref={`${routes.login}?from=${encodeURIComponent(routes.myClassCourse(courseSlug))}`} /><KnowledgeWorkspace course={course} initialState={learnerState} initialLessonSlug={lessonSlug} initialUnitSlug={unitSlug} initialSectionSlug={section.slug} initialContent={{ ...detail, progress: learnerState }} initialMode={mode} /></>;
 }

@@ -71,6 +71,20 @@ describe('classNoteService', () => {
 		expect(mapPublicClassNote(note())).toBeNull();
 	});
 
+	it('rejects formatting-only drafts but allows an image-only note to publish', async () => {
+		vi.mocked(repo.getClassNote).mockResolvedValue(note({ draftHtml: '<p>&nbsp;</p><p><br></p>' }) as never);
+		await expect(publishClassNote('class-1', 'note-1')).rejects.toMatchObject({ status: 422 });
+
+		vi.mocked(repo.getClassNote).mockResolvedValue(note({ draftHtml: '<img src="/uploads/note.webp" alt="Sơ đồ">' }) as never);
+		vi.mocked(repo.updateClassNote).mockResolvedValue(note({
+			draftHtml: '<img src="/uploads/note.webp" alt="Sơ đồ">',
+			publishedTitle: 'Tuần 1',
+			publishedHtml: '<img src="/uploads/note.webp" alt="Sơ đồ">',
+			publishedAt: new Date(),
+		}) as never);
+		await expect(publishClassNote('class-1', 'note-1')).resolves.toMatchObject({ status: 'PUBLISHED' });
+	});
+
 	it('validates reorder ids against the class note set', async () => {
 		vi.mocked(repo.listClassNotes).mockResolvedValue([note(), note({ id: 'note-2', displayOrder: 1 })] as never);
 		await expect(reorderClassNotes('class-1', { ids: ['note-1'] })).rejects.toMatchObject({ status: 422 });
