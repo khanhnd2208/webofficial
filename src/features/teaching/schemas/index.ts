@@ -306,6 +306,24 @@ export const learningExperienceChoiceSchema = z
 	})
 	.strict();
 
+const noteTitle = z.string().trim().min(1).max(160);
+const noteHtml = z.string().max(250_000);
+
+export const createTeachingClassNoteSchema = z
+	.object({ title: noteTitle, html: noteHtml.optional() })
+	.strict();
+
+export const updateTeachingClassNoteSchema = z
+	.object({ title: noteTitle.optional(), html: noteHtml.optional() })
+	.strict()
+	.refine((value) => value.title !== undefined || value.html !== undefined, {
+		message: 'Provide title or html',
+	});
+
+export const reorderTeachingClassNotesSchema = z
+	.object({ ids: z.array(z.string().min(1).max(100)).max(500) })
+	.strict();
+
 export type CreateTeachingClassInput = z.infer<typeof createTeachingClassSchema>;
 export type UpdateTeachingClassInput = z.infer<typeof updateTeachingClassSchema>;
 export type CreateTutorialInput = z.infer<typeof createTutorialSchema>;
@@ -327,3 +345,6 @@ export type ConfigureGroupBoardInput = z.infer<typeof configureGroupBoardSchema>
 export type GroupAssignmentInput = z.infer<typeof groupAssignmentSchema>;
 export type LearningExperienceLoginInput = z.infer<typeof learningExperienceLoginSchema>;
 export type LearningExperienceChoiceInput = z.infer<typeof learningExperienceChoiceSchema>;
+export type CreateTeachingClassNoteInput = z.infer<typeof createTeachingClassNoteSchema>;
+export type UpdateTeachingClassNoteInput = z.infer<typeof updateTeachingClassNoteSchema>;
+export type ReorderTeachingClassNotesInput = z.infer<typeof reorderTeachingClassNotesSchema>;

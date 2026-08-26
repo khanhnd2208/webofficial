@@ -1525,6 +1525,7 @@ li[data-dragging='true'] {
 	background: transparent;
 	color: var(--ink-tertiary);
 	cursor: pointer;
+	user-select: none;
 }
 
 .mc-studio .mc-grid-week-date-value {

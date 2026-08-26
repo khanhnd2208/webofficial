@@ -981,6 +981,7 @@ model TeachingClass {
   sessions   TeachingSession[]
   publicLinks TeachingClassPublicLink[]
   groupBoard TeachingGroupBoard?
+  notes      TeachingClassNote[]
 
   @@unique([courseCode, groupNo, term])
   @@unique([courseCode, classCode, term])
@@ -997,6 +998,23 @@ model TeachingClassPublicLink {
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  class TeachingClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([classId, displayOrder])
+}
+
+model TeachingClassNote {
+  id              String        @id @default(cuid())
+  classId         String
+  draftTitle      String        @default("")
+  draftHtml       String        @default("") @db.Text
+  publishedTitle  String?
+  publishedHtml   String?       @db.Text
+  displayOrder    Int           @default(0)
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   class TeachingClass @relation(fields: [classId], references: [id], onDelete: Cascade)
 

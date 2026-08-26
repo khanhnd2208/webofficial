@@ -192,6 +192,25 @@ describe('ParticipationGrid', () => {
 		expect(onWeekSelect).toHaveBeenCalledWith(1);
 	});
 
+	it('does not visually select the inferred current week', () => {
+		const upcoming = [
+			{ ...sessions()[0]!, participationOpen: false, attendanceTakenAt: '2026-09-01T00:00:00.000Z' },
+			{
+				...sessions()[0]!,
+				id: 's2',
+				weekNumber: 2,
+				attendanceTakenAt: '2026-09-08T00:00:00.000Z',
+				participationOpen: false,
+			},
+			{ ...sessions()[0]!, id: 's3', weekNumber: 3, attendanceTakenAt: null, participationOpen: false },
+		];
+		const { container } = render(
+			<ParticipationGrid students={[student()]} sessions={upcoming} totalWeeks={3} />,
+		);
+
+		expect(container.querySelectorAll('[data-current]')).toHaveLength(0);
+	});
+
 	it('locks an ungraded CP week and exposes the week toggle', () => {
 		const onSessionToggle = vi.fn();
 		const locked = [{ ...sessions()[0]!, participationTakenAt: null, participationOpen: false }];

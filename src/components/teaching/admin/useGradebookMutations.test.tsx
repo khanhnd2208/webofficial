@@ -110,7 +110,12 @@ function Harness() {
 			<button type="button" onClick={() => state.retryMark('e1', 's1', 'attendance')}>
 				retry
 			</button>
+			<button type="button" onClick={() => void state.updateSessionDate('s1', '2026-09-15')}>
+				date
+			</button>
 			<span data-testid="status">{state.gradebook.students[0]?.marks.s1?.status}</span>
+			<span data-testid="date">{state.gradebook.sessions[0]?.heldOn ?? 'empty'}</span>
+			<span data-testid="toast">{state.toast}</span>
 			<span data-testid="save-state">{state.saveStates[key] ?? 'idle'}</span>
 			<span data-testid="saving">{state.isSaving ? 'saving' : 'idle'}</span>
 		</div>
@@ -157,5 +162,34 @@ describe('useGradebookMutations', () => {
 				}),
 			}),
 		);
+	});
+
+	it('optimistically saves a session date and confirms success', async () => {
+		api.teachingApi.mockResolvedValueOnce({
+			...initialGradebook().sessions[0],
+			heldOn: '2026-09-15',
+		});
+		render(<Harness />);
+
+		fireEvent.click(screen.getByRole('button', { name: 'date' }));
+		expect(screen.getByTestId('date')).toHaveTextContent('2026-09-15');
+		await waitFor(() => expect(screen.getByTestId('toast')).toHaveTextContent('Đã lưu ngày học'));
+		expect(api.teachingApi).toHaveBeenLastCalledWith(
+			'/api/admin/teaching/sessions/s1',
+			expect.objectContaining({
+				method: 'PATCH',
+				body: JSON.stringify({ heldOn: '2026-09-15' }),
+			}),
+		);
+	});
+
+	it('rolls a failed session date save back', async () => {
+		api.teachingApi.mockRejectedValueOnce(new Error('network down'));
+		render(<Harness />);
+
+		fireEvent.click(screen.getByRole('button', { name: 'date' }));
+		expect(screen.getByTestId('date')).toHaveTextContent('2026-09-15');
+		await waitFor(() => expect(screen.getByTestId('date')).toHaveTextContent('empty'));
+		expect(screen.getByTestId('toast')).toHaveTextContent('Lỗi lưu ngày: network down');
 	});
 });

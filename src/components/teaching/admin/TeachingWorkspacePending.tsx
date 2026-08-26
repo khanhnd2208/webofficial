@@ -19,6 +19,7 @@ const CORE_TABS = [
 	['attendance', 'Điểm danh'],
 	['cp', 'Điểm CP'],
 	['groups', 'Xếp nhóm'],
+	['notes', 'Class Notes'],
 ] as const;
 
 type PendingContextValue = {

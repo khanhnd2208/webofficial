@@ -5,6 +5,7 @@ import type {
 	TeachingGroupBoard,
 	TeachingPublicPageConfig,
 	TeachingRosterStudent,
+	TeachingClassNoteRecord,
 } from '@/features/teaching/types';
 
 import { AttendanceBoardPanel } from './AttendanceBoardPanel';
@@ -22,6 +23,7 @@ import {
 	TeachingWorkspacePending,
 } from './TeachingWorkspacePending';
 import { resolveTeachingWorkspaceTab } from './teachingWorkspaceTab';
+import { ClassNotesAdminWorkspace } from './ClassNotesAdminWorkspace';
 
 export function TeachingWorkspaceShell({
 	gradebook,
@@ -31,6 +33,7 @@ export function TeachingWorkspaceShell({
 	groupBoard,
 	groupBoardEnabled,
 	tab,
+	notes,
 }: {
 	gradebook: TeachingGradebook;
 	roster?: { class: TeachingGradebook['class']; students: TeachingRosterStudent[] };
@@ -39,6 +42,7 @@ export function TeachingWorkspaceShell({
 	groupBoard?: TeachingGroupBoard;
 	groupBoardEnabled: boolean;
 	tab?: string;
+	notes?: TeachingClassNoteRecord[];
 }) {
 	const activeTab = resolveTeachingWorkspaceTab(tab, groupBoardEnabled);
 	const isGradebookTab = activeTab === 'attendance' || activeTab === 'cp';
@@ -70,6 +74,7 @@ export function TeachingWorkspaceShell({
 				<TeachingPendingBody className={`mt-4 ${isGradebookTab ? 'teaching-workspace-content' : ''}`}>
 					{isGradebookTab ? <GradebookWorkspace initial={gradebook} initialView={activeTab === 'cp' ? 'participation' : 'attendance'} groupNumberByEnrollment={groupNumberByEnrollment} /> : null}
 					{groupBoardEnabled && activeTab === 'groups' ? <GroupBoardWorkspaceLoader classId={gradebook.class.id} slug={gradebook.class.publicSlug ?? undefined} initial={groupBoard} admin /> : null}
+					{activeTab === 'notes' ? <ClassNotesAdminWorkspace classId={gradebook.class.id} initial={notes ?? []} /> : null}
 					{activeTab === 'students' ? <RosterWorkspace classId={gradebook.class.id} tutorials={gradebook.tutorials} students={roster?.students ?? []} /> : null}
 					{activeTab === 'setup' ? (
 						<div className="space-y-4">

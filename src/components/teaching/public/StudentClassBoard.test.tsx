@@ -85,6 +85,7 @@ function board(): PublicClassBoard {
 			},
 		],
 		links: [],
+		notes: [],
 	};
 }
 
@@ -102,6 +103,22 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByRole('tab', { name: 'Điểm CP' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Xếp nhóm' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Learning Experience' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Class Notes' })).toBeInTheDocument();
+	});
+
+	it('opens published Class Notes and switches between note pages', () => {
+		const contentBoard = board();
+		contentBoard.notes = [
+			{ id: 'note-1', title: 'Tuần 1', html: '<p>Nội dung tuần 1</p>', publishedAt: '2026-09-01T00:00:00.000Z' },
+			{ id: 'note-2', title: 'Topic A', html: '<p>Nội dung topic A</p>', publishedAt: '2026-09-02T00:00:00.000Z' },
+		];
+		render(<StudentClassBoard board={contentBoard} initialTab="notes" />);
+		expect(screen.getByRole('tab', { name: 'Class Notes' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('heading', { name: 'Tuần 1' })).toBeInTheDocument();
+		expect(screen.getByText('Nội dung tuần 1')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Topic A' }));
+		expect(screen.getByRole('heading', { name: 'Topic A' })).toBeInTheDocument();
+		expect(screen.getByText('Nội dung topic A')).toBeInTheDocument();
 	});
 
 	it('shows the public summary, announcement, description and resource links', () => {

@@ -7,15 +7,16 @@ import { AttendanceGrid } from '../admin/AttendanceGrid';
 import { ParticipationGrid } from '../admin/ParticipationGrid';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
 import { LearningExperienceWorkspace } from './LearningExperienceWorkspace';
+import { ClassNotesWorkspace } from './ClassNotesWorkspace';
 import { Sheet } from '@/components/ui/Dialog';
 import type { BoardGridStudent } from '../board/gridTypes';
 import { getCpPolicyText } from '@/features/teaching/types';
 import type { PublicClassBoard } from '@/features/teaching/types';
 
-type PublicTab = 'attendance' | 'cp' | 'groups' | 'learning';
+type PublicTab = 'attendance' | 'cp' | 'groups' | 'learning' | 'notes';
 
 function resolvePublicTab(value?: string | null): PublicTab {
-	return value === 'cp' || value === 'groups' || value === 'learning' ? value : 'attendance';
+	return value === 'cp' || value === 'groups' || value === 'learning' || value === 'notes' ? value : 'attendance';
 }
 
 function toGridStudent(student: PublicClassBoard['students'][number]): BoardGridStudent {
@@ -285,6 +286,18 @@ export function StudentClassBoard({
 				>
 					Learning Experience
 				</button>
+				<button
+					type="button"
+					role="tab"
+					id="public-tab-notes"
+					aria-controls="public-panel-notes"
+					aria-selected={tab === 'notes'}
+					tabIndex={tab === 'notes' ? 0 : -1}
+					data-active={tab === 'notes'}
+					onClick={() => changeTab('notes')}
+				>
+					Class Notes
+				</button>
 			</nav>
 
 			{learningVisited ? (
@@ -305,6 +318,11 @@ export function StudentClassBoard({
 							accessMode: student.hasDateOfBirth ? 'DOB_PASSWORD' : 'OPEN',
 						}))}
 					/>
+				</div>
+			) : null}
+			{tab === 'notes' ? (
+				<div id="public-panel-notes" role="tabpanel" aria-labelledby="public-tab-notes" className="public-notes-panel">
+					<ClassNotesWorkspace notes={board.notes ?? []} />
 				</div>
 			) : null}
 			{groupBoardEnabled && tab === 'groups' ? (

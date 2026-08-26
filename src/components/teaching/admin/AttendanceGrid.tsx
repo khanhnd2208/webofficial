@@ -88,6 +88,18 @@ function attendanceTooltip(
 	return note?.trim() ? `${label} - ${note.trim()}` : label;
 }
 
+function openDatePicker(input: HTMLInputElement) {
+	const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
+	if (typeof pickerInput.showPicker === 'function') {
+		try {
+			pickerInput.showPicker();
+		} catch {
+			// Browsers may reject showPicker outside a trusted gesture; the input
+			// remains focused so the native keyboard interaction still works.
+		}
+	}
+}
+
 function AttendanceNoteEditor({
 	mark,
 	onClose,
@@ -410,7 +422,10 @@ export function AttendanceGrid({
 										)}
 									</span>
 									{session && onSessionDateChange && !readOnly && !session.isCancelled ? (
-										<label className="mc-grid-week-date-input">
+										<label
+											className="mc-grid-week-date-input"
+											title={`Chọn ngày học tuần ${weekNumber}`}
+										>
 											<span className="mc-grid-week-date-value" aria-hidden>
 												{sessionDateLabel(session.heldOn, 'dd/mm/yy')}
 											</span>
@@ -419,6 +434,13 @@ export function AttendanceGrid({
 												type="date"
 												value={session.heldOn ?? ''}
 												aria-label={`Ngày học tuần ${weekNumber}`}
+												onClick={(event) => openDatePicker(event.currentTarget)}
+												onKeyDown={(event) => {
+													if (event.key === 'Enter' || event.key === ' ') {
+														event.preventDefault();
+														openDatePicker(event.currentTarget);
+													}
+												}}
 												onChange={(event) => {
 													void onSessionDateChange(session, event.target.value || null);
 												}}

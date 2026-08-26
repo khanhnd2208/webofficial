@@ -69,6 +69,43 @@ export function getPublicPageConfig(id: string) {
 	});
 }
 
+export function listClassNotes(classId: string) {
+	return prisma.teachingClassNote.findMany({
+		where: { classId },
+		orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+	});
+}
+
+export function getClassNote(id: string) {
+	return prisma.teachingClassNote.findUnique({ where: { id } });
+}
+
+export function createClassNote(data: Prisma.TeachingClassNoteUncheckedCreateInput) {
+	return prisma.teachingClassNote.create({ data });
+}
+
+export function updateClassNote(
+	id: string,
+	data: Prisma.TeachingClassNoteUncheckedUpdateInput,
+) {
+	return prisma.teachingClassNote.update({ where: { id }, data });
+}
+
+export function deleteClassNote(id: string) {
+	return prisma.teachingClassNote.delete({ where: { id } });
+}
+
+export function reorderClassNotes(classId: string, ids: string[]) {
+	return prisma.$transaction(
+		ids.map((id, displayOrder) =>
+			prisma.teachingClassNote.update({
+				where: { id },
+				data: { displayOrder },
+			}),
+		),
+	);
+}
+
 export function updatePublicPageConfig(
 	id: string,
 	data: {
@@ -213,6 +250,10 @@ export function getAttendanceBoardBySlug(slug: string) {
 					attendance: true,
 					participation: true,
 				},
+			},
+			notes: {
+				where: { publishedAt: { not: null }, publishedHtml: { not: null } },
+				orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
 			},
 		},
 	});

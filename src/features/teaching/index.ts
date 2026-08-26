@@ -12,3 +12,4 @@ export * from './services/publicPageService';
 export * from './services/attendanceBoardService';
 export * from './services/groupBoardService';
 export * from './services/learningExperienceService';
+export * from './services/classNoteService';

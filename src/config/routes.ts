@@ -109,7 +109,7 @@ export const routes = {
 	lesson: (courseSlug: string, lessonSlug: string) =>
 		`/hoc/khoa-hoc/${courseSlug}/bai/${lessonSlug}` as const,
 	teachingPublicClass: (slug: string) => `/lop/${slug}` as const,
-	teachingPublicClassTab: (slug: string, tab: 'attendance' | 'cp' | 'groups') => `/lop/${slug}?tab=${tab}` as const,
+	teachingPublicClassTab: (slug: string, tab: 'attendance' | 'cp' | 'groups' | 'learning' | 'notes') => `/lop/${slug}?tab=${tab}` as const,
 	teachingPublicAttendance: (slug: string) => `/lop/${slug}` as const,
 
 	/** @deprecated Prefer aboutTeaching; kept for temporary redirects. */

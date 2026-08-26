@@ -244,6 +244,28 @@ describe('AttendanceGrid', () => {
 		);
 	});
 
+	it('opens the native date picker from click and keyboard gestures', () => {
+		const { container } = render(
+			<AttendanceGrid
+				students={[student()]}
+				sessions={sessions()}
+				totalWeeks={10}
+				onSessionDateChange={vi.fn()}
+			/>,
+		);
+		const dateInput = container.querySelector(
+			'input[aria-label="Ngày học tuần 1"]',
+		) as HTMLInputElement;
+		const showPicker = vi.fn();
+		Object.defineProperty(dateInput, 'showPicker', { configurable: true, value: showPicker });
+
+		fireEvent.click(dateInput);
+		fireEvent.keyDown(dateInput, { key: 'Enter' });
+		fireEvent.keyDown(dateInput, { key: ' ' });
+
+		expect(showPicker).toHaveBeenCalledTimes(3);
+	});
+
 	it('opens a note editor from the context menu without changing attendance', () => {
 		const onMarkChange = vi.fn();
 		render(

@@ -13,6 +13,7 @@ import type {
 } from '../types';
 import { notFound } from './classService';
 import { mapClass, mapSession, mapTutorial, policyFromClass } from './mappers';
+import { mapPublicClassNote } from './classNoteService';
 
 function boardPath(slug: string | null): string | null {
 	if (!slug) return null;
@@ -175,6 +176,10 @@ export async function getPublicClassBoard(slug: string): Promise<PublicClassBoar
 			description: link.description,
 			displayOrder: link.displayOrder,
 		})),
+		notes: (row.notes ?? []).flatMap((note) => {
+			const mapped = mapPublicClassNote(note);
+			return mapped ? [mapped] : [];
+		}),
 	};
 }
 

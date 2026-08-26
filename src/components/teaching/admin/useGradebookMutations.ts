@@ -545,6 +545,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 					session.id === updated.id ? updated : session,
 				),
 			}));
+			setToast('Đã lưu ngày học');
 		} catch (error) {
 			setGradebook((current) => ({
 				...current,

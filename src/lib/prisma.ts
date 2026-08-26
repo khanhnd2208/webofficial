@@ -24,6 +24,7 @@ const PRISMA_GENERATION = [
 	Prisma.ModelName.MyClassKuProgress,
 	Prisma.ModelName.MyClassCourse,
 	Prisma.ModelName.TeachingClass,
+	Prisma.ModelName.TeachingClassNote,
 	Prisma.ModelName.TeachingGroupBoard,
 	Prisma.ModelName.TeachingGroup,
 	Prisma.ModelName.TeachingGroupAssignment,
@@ -67,7 +68,8 @@ function assertGeneratedClient(client: PrismaClient): void {
 		typeof client.activeRecallDeck?.findMany === 'function' &&
 		typeof client.activeRecallCard?.findMany === 'function' &&
 		typeof client.myClassVocabAssignment?.findMany === 'function' &&
-		typeof client.teachingGroupBoard?.findMany === 'function'
+		typeof client.teachingGroupBoard?.findMany === 'function' &&
+		typeof client.teachingClassNote?.findMany === 'function'
 	) {
 		return;
 	}
@@ -90,7 +92,8 @@ function getPrismaClient(): PrismaClient {
 		typeof cached.activeRecallDeck?.findMany === 'function' &&
 		typeof cached.activeRecallCard?.findMany === 'function' &&
 		typeof cached.myClassVocabAssignment?.findMany === 'function' &&
-		typeof cached.teachingGroupBoard?.findMany === 'function'
+		typeof cached.teachingGroupBoard?.findMany === 'function' &&
+		typeof cached.teachingClassNote?.findMany === 'function'
 	) {
 		return cached;
 	}

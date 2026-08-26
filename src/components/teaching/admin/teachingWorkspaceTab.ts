@@ -1,9 +1,10 @@
-export type TeachingWorkspaceTab = 'attendance' | 'cp' | 'groups' | 'students' | 'setup' | 'share';
+export type TeachingWorkspaceTab = 'attendance' | 'cp' | 'groups' | 'notes' | 'students' | 'setup' | 'share';
 
 const WORKSPACE_TABS: TeachingWorkspaceTab[] = [
 	'attendance',
 	'cp',
 	'groups',
+	'notes',
 	'students',
 	'setup',
 	'share',

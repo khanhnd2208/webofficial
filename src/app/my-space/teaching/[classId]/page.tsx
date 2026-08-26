@@ -10,6 +10,7 @@ import {
 	getAttendanceBoardConfig,
 	getGradebook,
 	getGroupBoard,
+	getClassNotes,
 	listRoster,
 } from '@/features/teaching';
 import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
@@ -30,12 +31,13 @@ export default async function TeachingClassPage({
 	const groupBoardEnabled = isTeachingGroupBoardEnabled();
 	if (requestedTab === 'groups' && !groupBoardEnabled) redirect(routes.mySpaceTeachingClass(classId));
 	const tab = resolveTeachingWorkspaceTab(requestedTab, groupBoardEnabled);
-	const [gradebook, board, roster, publicPage, groupBoard] = await Promise.all([
+	const [gradebook, board, roster, publicPage, groupBoard, notes] = await Promise.all([
 		getGradebook(classId),
 		getAttendanceBoardConfig(classId),
 		teachingTabNeedsRoster(tab) ? listRoster(classId) : Promise.resolve(undefined),
 		teachingTabNeedsPublicPage(tab) ? ensureTeachingPublicDefaults(classId) : Promise.resolve(undefined),
 		teachingTabNeedsGroupBoard(tab, groupBoardEnabled) ? getGroupBoard(classId) : Promise.resolve(undefined),
+		tab === 'notes' ? getClassNotes(classId) : Promise.resolve(undefined),
 	]);
 	return (
 		<TeachingWorkspaceShell
@@ -45,6 +47,7 @@ export default async function TeachingClassPage({
 			publicPage={publicPage}
 			groupBoard={groupBoard}
 			groupBoardEnabled={groupBoardEnabled}
+			notes={notes}
 			tab={tab}
 		/>
 	);

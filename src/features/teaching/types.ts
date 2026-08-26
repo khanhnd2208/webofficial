@@ -228,6 +228,28 @@ export interface TeachingPublicPageConfig {
 	links: TeachingPublicLink[];
 }
 
+export type TeachingClassNoteStatus = 'DRAFT' | 'PUBLISHED' | 'MODIFIED';
+
+export interface TeachingClassNoteRecord {
+	id: string;
+	classId: string;
+	draftTitle: string;
+	draftHtml: string;
+	publishedTitle: string | null;
+	publishedHtml: string | null;
+	displayOrder: number;
+	publishedAt: string | null;
+	updatedAt: string;
+	status: TeachingClassNoteStatus;
+}
+
+export interface PublicClassNote {
+	id: string;
+	title: string;
+	html: string;
+	publishedAt: string;
+}
+
 export interface TeachingAttendanceBoardConfig {
 	class: TeachingClassRecord;
 	attendanceVisible: boolean;
@@ -299,6 +321,7 @@ export interface PublicClassBoard {
 	sessions: TeachingSessionRecord[];
 	students: PublicAttendanceBoardStudent[];
 	links: TeachingPublicLink[];
+	notes?: PublicClassNote[];
 }
 
 export type PublicAttendanceBoard = PublicClassBoard;

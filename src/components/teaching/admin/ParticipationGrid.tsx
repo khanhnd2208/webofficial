@@ -271,7 +271,6 @@ export function ParticipationGrid({
 									title={`Điểm CP tuần ${weekNumber}: 0,5 = có tham gia; 1 = đóng góp tốt; 2 = đóng góp nổi bật${session?.heldOn ? ` · ${sessionDateLabel(session.heldOn)}` : ''}`}
 									className="mc-grid-week"
 									data-week={weekNumber}
-									data-current={currentWeek === weekNumber}
 									data-selected={selectedWeek === weekNumber}
 									data-cp-open={isOpen}
 									data-cp-finalized={isFinalized}
@@ -505,10 +504,9 @@ export function ParticipationGrid({
 										return (
 											<td
 												key={weekNumber}
-												className="mc-grid-week"
-												data-week={weekNumber}
-												data-current={currentWeek === weekNumber}
-											>
+											className="mc-grid-week"
+											data-week={weekNumber}
+										>
 												<span className="text-ink-tertiary">–</span>
 											</td>
 										);
@@ -525,7 +523,6 @@ export function ParticipationGrid({
 											key={session.id}
 											className="mc-grid-week relative"
 											data-week={weekNumber}
-											data-current={currentWeek === weekNumber}
 											data-selected={selectedWeek === weekNumber}
 											data-save-state={state}
 										>
