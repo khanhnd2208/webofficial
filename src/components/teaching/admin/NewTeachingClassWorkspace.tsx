@@ -146,7 +146,7 @@ export function NewTeachingClassWorkspace() {
 					students,
 				}),
 			});
-			router.push(routes.mySpaceTeachingClassTab(result.gradebook.class.id, 'attendance'));
+			router.push(routes.admin.teachingClassTab(result.gradebook.class.id, 'attendance'));
 		} catch (reason) {
 			const typed = reason as Error & { fields?: Record<string, string> };
 			setError(typed.fields?.existingClassId ? 'Lớp đã tồn tại. Hãy mở lớp hiện có từ bước xem lại.' : typed.message);
@@ -158,12 +158,12 @@ export function NewTeachingClassWorkspace() {
 	return (
 		<div className="mc-studio-container max-w-5xl px-0 py-8">
 			<TeachingAppHeader
-				backHref={routes.mySpaceTeaching}
+				backHref={routes.admin.teaching}
 				backLabel="Các lớp"
 				eyebrow="Teaching"
 				title="Tạo lớp mới"
 				description="Tạo thông tin lớp và danh sách học viên trong một luồng."
-				actions={<StudioButton variant="quiet" onClick={() => router.push(routes.mySpaceTeaching)}>Huỷ</StudioButton>}
+				actions={<StudioButton variant="quiet" onClick={() => router.push(routes.admin.teaching)}>Huỷ</StudioButton>}
 			/>
 
 			<ol className="mc-stepper mt-6">
@@ -196,7 +196,7 @@ export function NewTeachingClassWorkspace() {
 							<div className="flex gap-2"><input ref={inputRef} type="file" accept=".xlsx" className="sr-only" onChange={(event) => void previewFile(event.target.files?.[0] ?? null)} /><StudioButton variant="secondary" disabled={busy} onClick={() => inputRef.current?.click()}>Chọn file</StudioButton></div>
 						</div>
 						{fileName ? <p className="mt-3 text-sm text-ink-secondary">{fileName} · {students.length} dòng hợp lệ</p> : null}
-						{preview?.existingClassId ? <div className="mc-banner mt-3" data-tone="error"><p>Lớp này đã tồn tại. Không ghi đè dữ liệu.</p><Link className="mt-2 inline-flex font-semibold underline" href={routes.mySpaceTeachingClassTab(preview.existingClassId, 'students')}>Mở lớp hiện có</Link></div> : null}
+						{preview?.existingClassId ? <div className="mc-banner mt-3" data-tone="error"><p>Lớp này đã tồn tại. Không ghi đè dữ liệu.</p><Link className="mt-2 inline-flex font-semibold underline" href={routes.admin.teachingClassTab(preview.existingClassId, 'students')}>Mở lớp hiện có</Link></div> : null}
 						{preview && preview.students.some((row) => !row.ok) ? <p className="mc-banner mt-3" data-tone="error">Có dòng lỗi trong file; chỉ các dòng hợp lệ mới được đưa vào bản xem trước.</p> : null}
 					</section>
 					<form className="mc-surface grid gap-3 p-5 md:grid-cols-4" onSubmit={addStudent}>

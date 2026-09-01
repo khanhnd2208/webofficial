@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { readGuestId } from '@/features/myspace-tests/guestIdentity';
 import { guestActorKey, userActorKey } from '@/features/my-class/domain/actor';
@@ -9,6 +9,7 @@ import { routes } from '@/config/routes';
 import KnowledgeHeader from '@/components/knowledge/KnowledgeHeader';
 import KnowledgeWorkspace from '@/components/knowledge/KnowledgeWorkspace';
 import CourseWorkspace from '@/components/myclass/CourseWorkspace';
+import { adminContentEditorHref } from '@/features/my-class/domain/adminEditRedirect';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,13 +36,15 @@ export default async function MyClassUnitPage({ params, searchParams }: { params
 	const actor = userId ? { type: 'user' as const, userId, actorKey: userActorKey(userId) } : guestId ? { type: 'guest' as const, guestId, actorKey: guestActorKey(guestId) } : null;
 	const { learnerState } = await loadCourseLearnerState(courseSlug, actor);
 	const detail = await getKnowledgeUnit(courseSlug, unitSlug, { lessonSlug, sectionId: section.id });
+	if (session?.user?.role === 'admin' && query.edit === '1') {
+		redirect(adminContentEditorHref(course, { lessonSlug, unitSlug, sectionSlug: section.slug }));
+	}
 	if (session?.user?.role === 'admin') {
 		return (
 			<CourseWorkspace
 				course={course}
 				initialState={learnerState}
 				isAdmin
-				editMode={query.edit === '1'}
 				initialLessonSlug={lessonSlug}
 				initialUnitSlug={unitSlug}
 				initialSectionSlug={section.slug}

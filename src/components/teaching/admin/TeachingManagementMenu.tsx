@@ -20,7 +20,7 @@ const ITEMS: ManagementItem[] = [
 export function TeachingManagementMenu({ classId, activeTab, publicPath }: { classId: string; activeTab?: string; publicPath?: string | null }) {
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const pending = useTeachingWorkspacePending();
-	const hrefFor = (value: ManagementItem['value']) => routes.mySpaceTeachingClassTab(classId, value);
+	const hrefFor = (value: ManagementItem['value']) => routes.admin.teachingClassTab(classId, value);
 
 	return (
 		<>

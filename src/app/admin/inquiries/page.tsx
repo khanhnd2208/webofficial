@@ -38,7 +38,7 @@ export default async function AdminInquiriesPage({
 	const newCount = result.items.filter((i) => i.status === 'NEW').length;
 
 	return (
-		<main className="mx-auto max-w-6xl px-6 py-8">
+		<div className="mx-auto max-w-6xl px-6 py-8">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Yêu cầu liên hệ</h1>
@@ -165,6 +165,6 @@ export default async function AdminInquiriesPage({
 					) : null}
 				</div>
 			) : null}
-		</main>
+		</div>
 	);
 }

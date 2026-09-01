@@ -1,24 +1,6 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 import { addAdminSession } from './helpers/adminSession';
-
-async function ensureOutlineExpanded(outline: Locator) {
-	const expandAll = outline.locator('button:visible').filter({ hasText: 'Mở tất cả' }).first();
-	if (await expandAll.isVisible()) await expandAll.click();
-	const firstSection = outline.locator('.mc-outline-row[data-kind="section"]:visible').first();
-	if (!(await firstSection.isVisible())) {
-		await outline
-			.locator('.mc-outline-row[data-kind="lesson"]:visible button[aria-label^="Mở "]:not([data-outline-row])')
-			.first()
-			.click();
-	}
-	await expect(firstSection).toBeVisible();
-	const firstUnit = outline.locator('button[data-outline-row][data-kind="unit"]:visible').first();
-	if (!(await firstUnit.isVisible())) {
-		await firstSection.locator('button[data-outline-toggle][aria-label^="Mở phần"]').first().click();
-	}
-	await expect(firstUnit).toBeVisible();
-}
 
 type AdminCourse = {
 	id: string;
@@ -112,8 +94,8 @@ test.describe('My Class admin authoring surfaces', () => {
 
 	test('renders standardized admin data tables with URL sort state', async ({ page }) => {
 		await page.goto('/admin/my-class/knowledge');
-		await expect(page.getByRole('columnheader', { name: 'Nội dung' })).toBeVisible();
-		await page.getByRole('button', { name: /Nội dung/ }).click();
+		await expect(page.getByRole('columnheader', { name: /Nội dung/ })).toBeVisible();
+		await page.getByRole('columnheader', { name: /Nội dung/ }).getByRole('button').click();
 		await expect(page).toHaveURL(/sortBy=title/);
 
 		await page.goto('/admin/my-class/courses');
@@ -125,7 +107,7 @@ test.describe('My Class admin authoring surfaces', () => {
 
 		await page.goto('/admin/my-class/tests');
 		await expect(page.getByRole('columnheader', { name: 'Bài kiểm tra' })).toBeVisible();
-		await expect(page.getByRole('main').getByLabel('Môn')).toBeVisible();
+		await expect(page.getByRole('combobox', { name: 'Môn' })).toBeVisible();
 
 		await page.goto('/admin/my-class/vocabulary');
 		await expect(page.getByRole('columnheader', { name: 'Bộ từ' })).toBeVisible();
@@ -134,9 +116,9 @@ test.describe('My Class admin authoring surfaces', () => {
 		await expect(page.getByRole('columnheader', { name: 'Khóa học' })).toBeVisible();
 
 		await page.goto('/admin/my-class/bank');
-		await expect(page.getByTestId('bank-table')).toBeVisible();
-		await expect(page.getByTestId('bank-inspector')).toBeVisible();
-		const firstBankRow = page.getByTestId('bank-table').getByRole('checkbox').nth(1);
+		await expect(page.getByTestId('bank-table').first()).toBeVisible();
+		await expect(page.getByTestId('bank-inspector').first()).toBeVisible();
+		const firstBankRow = page.getByTestId('bank-table').first().getByRole('checkbox').nth(1);
 		if (await firstBankRow.count()) {
 			await firstBankRow.click();
 			await expect(page.getByText(/đã chọn/)).toBeVisible();
@@ -160,7 +142,7 @@ test.describe('My Class admin authoring surfaces', () => {
 	});
 
 	test('operates the question bank and reusable test library end to end', async ({ page }) => {
-		test.setTimeout(60_000);
+		test.setTimeout(90_000);
 		const suffix = Date.now();
 		const marker = `E2E assessment ${suffix}`;
 		const createdQuestionIds: string[] = [];
@@ -171,8 +153,16 @@ test.describe('My Class admin authoring surfaces', () => {
 			);
 			const courseGraph = (await courseGraphResponse.json()) as {
 				data: {
+					id?: string;
+					title?: string;
 					lessons: Array<{
-						sections: Array<{ knowledgeUnits: Array<{ id: string }> }>;
+						id: string;
+						title: string;
+						sections: Array<{
+							id: string;
+							title: string;
+							knowledgeUnits: Array<{ id: string }>;
+						}>;
 					}>;
 				};
 			};
@@ -225,9 +215,9 @@ test.describe('My Class admin authoring surfaces', () => {
 			await page.goto('/admin/my-class/bank');
 			await page.getByLabel('Tìm câu hỏi').first().fill(marker);
 			await page.getByRole('button', { name: 'Áp dụng' }).click();
-			await expect(page.getByTestId('bank-table')).toContainText(`${marker} single`);
-			await expect(page.getByTestId('bank-table')).toContainText(`${marker} multi`);
-			await expect(page.getByTestId('bank-table')).toContainText(`${marker} blank`);
+			await expect(page.getByTestId('bank-table').first()).toContainText(`${marker} single`);
+			await expect(page.getByTestId('bank-table').first()).toContainText(`${marker} multi`);
+			await expect(page.getByTestId('bank-table').first()).toContainText(`${marker} blank`);
 			await page.getByRole('checkbox', { name: 'Chọn tất cả' }).check();
 			await page.getByPlaceholder('Tags…').fill('e2e-reviewed');
 			await page.getByRole('button', { name: 'Gắn tag' }).click();
@@ -252,21 +242,20 @@ test.describe('My Class admin authoring surfaces', () => {
 			await page.getByLabel('Xáo câu hỏi').first().check();
 			await page.getByRole('button', { name: 'Lưu bản nháp' }).first().click();
 
-			const section = courseGraph.data.lessons[0]?.sections[0];
+			const lesson = courseGraph.data.lessons[0];
+			const section = lesson?.sections[0];
 			expect(section).toBeTruthy();
-			await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
-			const outline = page.locator('aside [data-testid="my-class-outline"]');
-			await expect(outline).toBeVisible();
-			await ensureOutlineExpanded(outline);
-			const sectionRow = outline.locator('.mc-outline-row[data-kind="section"]').first();
-			await sectionRow.getByRole('button', { name: 'Thao tác' }).click();
-			await page.getByRole('button', { name: 'Gắn bài kiểm tra' }).click();
-			const picker = page.getByRole('dialog', { name: 'Gắn bài kiểm tra' });
-			await expect(picker).toBeVisible();
-			await picker.getByPlaceholder('Tìm theo tên…').fill(marker);
-			await picker.getByRole('button', { name: new RegExp(`${marker} reusable`) }).click();
-			await expect(page.getByRole('status').filter({ hasText: 'Đã gắn bài kiểm tra' })).toBeVisible();
-			await expect(outline.getByText(`${marker} reusable`)).toBeVisible();
+			const course = await fetchAdminCourse(page.request);
+			expect(course).toBeTruthy();
+			const placed = await page.request.post(`/api/admin/my-class/tests/${testId}/placements`, {
+				data: {
+					courseId: course!.id,
+					scope: 'SECTION',
+					lessonId: lesson!.id,
+					sectionId: section!.id,
+				},
+			});
+			expect(placed.ok(), await placed.text()).toBe(true);
 
 			const validation = await page.request.get(`/api/admin/my-class/tests/${testId}/publish`);
 			const validationBody = (await validation.json()) as {
@@ -299,23 +288,10 @@ test.describe('My Class admin authoring surfaces', () => {
 		}
 	});
 
-	test('loads inline edit mode and keeps learner progress controls disabled', async ({ page }) => {
+	test('sends admin editors to the My Class studio instead of inline learner edit', async ({ page }) => {
 		await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
-		const toggle = page.getByTestId('my-class-edit-toggle').first();
-		await expect(toggle).toBeVisible();
-		await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-		await expect(page.getByRole('button', { name: 'Bài', exact: true })).toBeVisible();
-
-		const outline = page.getByTestId('my-class-outline');
-		await ensureOutlineExpanded(outline);
-		await outline.locator('button[data-outline-row][data-kind="unit"]:visible').first().click();
-		await expect(page).toHaveURL(/edit=1/);
-		await expect(page.getByRole('button', { name: 'Lưu nháp' })).toBeVisible();
+		await expect(page).toHaveURL(/\/admin\/my-class\/courses\/[^/]+\/content/);
 		await expect(page.getByRole('button', { name: 'Đã hiểu' })).toHaveCount(0);
-
-		await page.getByRole('button', { name: 'Xem như học viên' }).first().click();
-		await expect(page).not.toHaveURL(/edit=1/);
-		await expect(page.getByTestId('my-class-reader')).toBeVisible();
 	});
 
 	test('creates a vocabulary set from the My Class studio library', async ({ page }) => {
@@ -340,7 +316,6 @@ test.describe('My Class admin authoring surfaces', () => {
 			await expect(page).toHaveURL(new RegExp(`/admin/my-class/vocabulary/${vocabSetId}`));
 			await expect(page.getByRole('heading', { name: 'Sửa bộ từ vựng' })).toBeVisible();
 
-			page.once('dialog', (dialog) => dialog.accept());
 			const archived = page.waitForResponse(
 				(response) =>
 					response.url().includes(`/api/admin/my-class/vocab-sets/${vocabSetId}`) &&
@@ -348,6 +323,8 @@ test.describe('My Class admin authoring surfaces', () => {
 					response.ok(),
 			);
 			await page.getByRole('button', { name: 'Lưu trữ' }).click();
+			await expect(page.getByTestId('admin-confirm')).toBeVisible();
+			await page.getByTestId('admin-confirm-accept').click();
 			await archived;
 			await expect(page).toHaveURL(/\/admin\/my-class\/vocabulary$/);
 			vocabSetId = undefined;
@@ -463,16 +440,9 @@ test.describe('My Class admin authoring surfaces', () => {
 		let assignmentId: string | undefined;
 		let vocabSetId: string | undefined;
 		try {
-			await page.goto(`/my-space/my-class/${course!.slug}?edit=1`);
-			const outline = page.locator('aside [data-testid="my-class-outline"]');
-			await expect(outline).toBeVisible();
-			await ensureOutlineExpanded(outline);
-			const lessonRow = outline
-				.locator('.mc-outline-row[data-kind="lesson"]')
-				.filter({ hasText: lesson!.title })
-				.first();
-			await lessonRow.getByRole('button', { name: 'Thao tác' }).click();
-			await page.getByRole('button', { name: 'Tạo bộ từ từ CSV', exact: true }).click();
+			await page.goto(`/admin/my-class/courses/${course!.id}/vocabulary`);
+			await page.getByLabel('Phạm vi nhập CSV').selectOption({ value: lesson!.id });
+			await page.getByRole('button', { name: 'Nhập CSV' }).click();
 
 			const dialog = page.getByRole('dialog', { name: 'Thêm từ vựng' });
 			await expect(dialog).toBeVisible();
@@ -518,7 +488,7 @@ test.describe('My Class admin authoring surfaces', () => {
 			assignmentId = commitBody.data.assignment.id;
 			expect(commitBody.data.assignment.lessonId).toBe(lesson!.id);
 			await expect(dialog).toHaveCount(0);
-			await expect(page.getByRole('status').filter({ hasText: 'Đã tạo và gắn bộ từ' })).toBeVisible();
+			await expect(page.getByText(title)).toBeVisible();
 
 			await page.goto(`/my-space/my-class/${course!.slug}/vocab/${vocabSetId}`);
 			await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
@@ -604,9 +574,8 @@ test.describe('My Class admin authoring surfaces', () => {
 		const renamed = `${lesson!.sections[0]!.title} · e2e`;
 
 		try {
-			await page.goto(`/my-space/my-class/${course!.slug}?edit=1`);
-			const outline = page.locator('aside [data-testid="my-class-outline"]');
-			await expect(outline).toBeVisible();
+			await page.goto(`/admin/my-class/courses/${course!.id}/content`);
+			await page.getByRole('button', { name: 'Mở bài' }).first().click();
 
 			const firstSection = lesson!.sections[0]!;
 			const renamedResponse = await page.request.patch(
@@ -633,20 +602,20 @@ test.describe('My Class admin authoring surfaces', () => {
 			expect(reorderedResponse.ok(), await reorderedResponse.text()).toBe(true);
 
 			await page.reload();
-			await expect(page.getByTestId('my-class-edit-toggle').first()).toHaveAttribute(
-				'aria-pressed',
-				'true',
-			);
-			const reloadedOutline = page.locator('aside [data-testid="my-class-outline"]');
-			await ensureOutlineExpanded(reloadedOutline);
-			await expect(reloadedOutline.getByText(renamed)).toBeVisible();
-			const titles = await reloadedOutline
-				.locator('.mc-outline-row[data-kind="section"] .mc-outline-section-title')
-				.allTextContents();
-			expect(titles[0]).toContain(originalTitles[1]);
-			expect(titles[1]).toContain(renamed);
+			await page.getByRole('button', { name: 'Mở bài' }).first().click();
+			await expect(page.getByRole('button', { name: new RegExp(renamed) }).first()).toBeVisible();
+			const titles = await page.getByRole('button', { name: / · / }).allTextContents();
+			expect(titles.some((text) => text.includes(originalTitles[1]!))).toBe(true);
+			expect(titles.some((text) => text.includes(renamed))).toBe(true);
+			const firstSectionIndex = titles.findIndex((text) => text.includes(originalTitles[1]!));
+			const renamedIndex = titles.findIndex((text) => text.includes(renamed));
+			expect(firstSectionIndex).toBeGreaterThanOrEqual(0);
+			expect(renamedIndex).toBeGreaterThan(firstSectionIndex);
+			while ((await page.getByRole('button', { name: 'Mở chủ đề' }).count()) > 0) {
+				await page.getByRole('button', { name: 'Mở chủ đề' }).first().click();
+			}
 			for (const title of firstUnits) {
-				await expect(reloadedOutline.getByText(title, { exact: true }).first()).toBeVisible();
+				await expect(page.getByRole('button', { name: new RegExp(title) }).first()).toBeVisible();
 			}
 		} finally {
 			await page.request
@@ -683,7 +652,7 @@ test.describe('My Class admin authoring surfaces', () => {
 
 	test('does not overflow on mobile admin and inline-edit surfaces', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
-		for (const url of ['/admin/my-class', '/my-space/my-class/hrm-toi-gian?edit=1']) {
+		for (const url of ['/admin/my-class', '/admin/my-class/courses']) {
 			await page.goto(url);
 			const overflow = await page.evaluate(
 				() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,

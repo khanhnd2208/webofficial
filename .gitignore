@@ -51,3 +51,13 @@ public/music/uploads/*
 !public/music/uploads/.gitkeep
 
 /src/generated/prisma
+
+# Local unpublished document tooling (not part of the website)
+/__pycache__/
+/cay_van_de_muc_tieu/
+/create_final_word_doc.py
+/generate_perfect_doc.py
+/generate_test.py
+/test_two_pages.py
+/final_verified_page-*.png
+/single_p_page-*.png

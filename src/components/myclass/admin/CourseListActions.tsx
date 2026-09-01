@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { StudioButton } from '@/components/myclass/admin/studio';
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { myClassApi } from '@/components/myclass/admin/api';
 import { routes } from '@/config/routes';
-import { Dialog } from '@/components/ui/Dialog';
 
 export default function CourseListActions({
 	courseId,
@@ -16,16 +15,21 @@ export default function CourseListActions({
 	courseSlug: string;
 }) {
 	const router = useRouter();
-	const [open, setOpen] = useState(false);
+	const { confirm, dialog } = useAdminConfirm();
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	async function archive() {
+		const ok = await confirm({
+			title: 'Lưu trữ khóa học?',
+			description: 'Khóa học sẽ biến mất khỏi trang học viên.',
+			confirmLabel: 'Lưu trữ',
+		});
+		if (!ok) return;
 		setBusy(true);
 		setError(null);
 		try {
 			await myClassApi(`/api/admin/my-class/courses/${courseId}`, { method: 'DELETE' });
-			setOpen(false);
 			router.refresh();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Không lưu trữ được');
@@ -50,23 +54,14 @@ export default function CourseListActions({
 			</Link>
 			<button
 				type="button"
-				className="inline-flex min-h-9 items-center rounded-[var(--mc-r-sm)] border border-mc-rule px-3 text-xs font-semibold text-ink-secondary hover:bg-surface-sunken"
-				onClick={() => setOpen(true)}
+				disabled={busy}
+				className="inline-flex min-h-9 items-center rounded-[var(--mc-r-sm)] border border-mc-rule px-3 text-xs font-semibold text-ink-secondary hover:bg-surface-sunken disabled:opacity-60"
+				onClick={() => void archive()}
 			>
 				Lưu trữ
 			</button>
-			<Dialog open={open} onClose={() => setOpen(false)} title="Lưu trữ khóa học?">
-				<p className="text-sm">Khóa học sẽ biến mất khỏi trang học viên.</p>
-				{error ? <p className="mt-2 text-sm text-error">{error}</p> : null}
-				<div className="mt-4 flex justify-end gap-2">
-					<StudioButton variant="quiet" onClick={() => setOpen(false)}>
-						Hủy
-					</StudioButton>
-					<StudioButton variant="danger" disabled={busy} onClick={() => void archive()}>
-						Lưu trữ
-					</StudioButton>
-				</div>
-			</Dialog>
+			{error ? <p className="basis-full text-right text-xs text-error">{error}</p> : null}
+			{dialog}
 		</div>
 	);
 }

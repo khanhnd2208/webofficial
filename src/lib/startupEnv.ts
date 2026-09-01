@@ -19,4 +19,17 @@ export function assertProductionEnvironment(): void {
 	if (!authUrl || !/^https:\/\//i.test(authUrl)) {
 		throw new Error('Production AUTH_URL or NEXTAUTH_URL must use https://');
 	}
+
+	let parsed: URL;
+	try {
+		parsed = new URL(authUrl);
+	} catch {
+		throw new Error('Production AUTH_URL or NEXTAUTH_URL is not a valid URL');
+	}
+	if (parsed.origin !== 'https://toiladuykhanh.com') {
+		throw new Error('Production AUTH_URL must be https://toiladuykhanh.com');
+	}
 }
+
+/** Canonical Google OAuth callback for the production origin. */
+export const GOOGLE_OAUTH_CALLBACK_PATH = '/api/auth/callback/google';

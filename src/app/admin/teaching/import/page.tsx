@@ -1,6 +1,22 @@
+import { ImportWorkspace } from '@/components/teaching/admin/ImportWorkspace';
+import { TeachingAppHeader } from '@/components/teaching/admin/TeachingAppHeader';
 import { routes } from '@/config/routes';
-import { redirect } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 
 export default function TeachingImportPage() {
-	redirect(routes.mySpaceTeachingImport);
+	return (
+		<div className="px-4 py-3 sm:px-6 sm:py-5">
+			<TeachingAppHeader
+				backHref={routes.admin.teaching}
+				backLabel="Các lớp"
+				eyebrow="Lớp học"
+				title="Nhập danh sách"
+				description="Tải lên mẫu Excel danh sách học viên."
+			/>
+			<div className="mt-4 sm:mt-5">
+				<ImportWorkspace />
+			</div>
+		</div>
+	);
 }

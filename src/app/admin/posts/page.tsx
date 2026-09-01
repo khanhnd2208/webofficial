@@ -42,18 +42,18 @@ export default async function AdminPostsPage({
 	const hasActiveFilters = !!(tag || (category && category !== 'all') || search || dateFrom || dateTo);
 
 	return (
-		<main className="mx-auto max-w-6xl px-6 py-8">
+		<div className="mx-auto max-w-6xl px-6 py-8">
 			{/* Header */}
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Blog Manager</h1>
+					<h1 className="text-2xl font-bold tracking-tight">Bài viết</h1>
 					<p className="mt-1 text-sm text-foreground-secondary">
-						Quản lý toàn bộ nội dung blog — tạo, sửa, xuất bản, phân tích.
+						Tạo, sửa, xuất bản và theo dõi bài viết.
 					</p>
 				</div>
 				<div className="flex items-center gap-3">
 					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/bai-viet" target="_blank">
-						Xem Blog ↗
+						Xem ghi chép ↗
 					</Link>
 					<Link
 						className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
@@ -182,7 +182,7 @@ export default async function AdminPostsPage({
 																		: 'bg-warning-subtle text-warning'
 																}`}
 															>
-																{p.isPublished ? 'Live' : 'Draft'}
+																{p.isPublished ? 'Đã xuất bản' : 'Bản nháp'}
 															</span>
 														</div>
 														<p className="mt-0.5 line-clamp-1 text-xs text-muted">{p.summary}</p>
@@ -263,7 +263,7 @@ export default async function AdminPostsPage({
 					/>
 				</footer>
 			)}
-		</main>
+		</div>
 	);
 }
 

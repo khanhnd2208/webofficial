@@ -13,6 +13,11 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 		await expect(page.getByTestId('gate-home')).toHaveCount(0);
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
+		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toBeVisible();
+		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toHaveAttribute(
+			'href',
+			'/dang-nhap?from=%2F',
+		);
 		await expect(
 			page.getByRole('heading', { name: /Tôi làm giáo dục để tiếp tục học/i }),
 		).toHaveCount(0);
@@ -33,6 +38,7 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toHaveText('Gửi lời nhắn');
 		await expect(page.getByTestId('intro-back')).toBeVisible();
+		await expect(page.getByTestId('site-auth-chip')).toBeVisible();
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
 	});
 
@@ -60,6 +66,7 @@ test.describe('Public pages smoke', () => {
 		await expect(page.locator('[data-testid^="myspace-tile-"]').first()).toBeVisible();
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await expect(page.getByTestId('gate-back')).toBeVisible();
+		await expect(page.getByTestId('site-auth-chip')).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 	});

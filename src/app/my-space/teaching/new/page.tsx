@@ -1,7 +1,12 @@
-import { NewTeachingClassWorkspace } from '@/components/teaching/admin/NewTeachingClassWorkspace';
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+import { routes } from '@/config/routes';
+import { hrefWithSearch } from '@/lib/navigation/hrefWithSearch';
 
-export default function NewTeachingClassPage() {
-	return <div className="py-6 sm:py-8"><NewTeachingClassWorkspace /></div>;
+export default async function MySpaceTeachingNewRedirect({
+	searchParams,
+}: {
+	searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+	redirect(hrefWithSearch(routes.admin.teachingNew, await searchParams));
 }

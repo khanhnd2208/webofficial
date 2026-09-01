@@ -26,7 +26,7 @@ export default async function AdminInquiryDetailPage({
 	)}`;
 
 	return (
-		<main className="mx-auto max-w-4xl px-6 py-8">
+		<div className="mx-auto max-w-4xl px-6 py-8">
 			<p className="text-sm text-muted">
 				<Link href={routes.admin.inquiries} className="underline">
 					← Yêu cầu liên hệ
@@ -154,6 +154,6 @@ export default async function AdminInquiryDetailPage({
 					) : null}
 				</div>
 			</section>
-		</main>
+		</div>
 	);
 }

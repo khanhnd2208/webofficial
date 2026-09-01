@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import IntroParallaxImage from '@/components/site/IntroParallaxImage';
+import SiteAuthChip from '@/components/site/SiteAuthChip';
 import { routes } from '@/config/routes';
 import { introPage } from '@/content/publicMarketing';
 
@@ -69,6 +70,7 @@ export default function IntroLanding() {
 							{introPage.locationLatin}, {introPage.year}
 						</span>
 					</div>
+					<SiteAuthChip variant="introMobile" className="intro-reveal-meta" />
 				</header>
 
 				<main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pt-8 pb-28">
@@ -147,9 +149,10 @@ export default function IntroLanding() {
 				<span className="intro-reveal-meta absolute top-8 left-8 z-30 font-display text-sm tracking-[0.2em] text-ink/70 uppercase">
 					{introPage.location}
 				</span>
-				<span className="intro-reveal-meta absolute top-8 right-8 z-30 font-display text-sm tracking-[0.2em] text-ink/70">
-					{introPage.year}
-				</span>
+				<div className="intro-reveal-meta absolute top-8 right-8 z-30 flex items-center gap-8">
+					<SiteAuthChip variant="intro" />
+					<span className="font-display text-sm tracking-[0.2em] text-ink/70">{introPage.year}</span>
+				</div>
 
 				<main className="relative flex flex-1 items-center justify-center p-8 lg:p-16">
 					<div className="relative z-20 grid w-full max-w-5xl grid-cols-12 items-center gap-8">

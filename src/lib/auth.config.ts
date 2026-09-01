@@ -1,6 +1,8 @@
 import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
 
+import { resolveAuthJsRedirect } from '@/lib/auth/safeRedirect';
+
 /**
  * Edge-safe Auth.js config — NO Node.js-only imports (no MongoDB, no mongoose).
  *
@@ -68,6 +70,9 @@ export const authConfig: NextAuthConfig = {
 			]
 			: [],
 	callbacks: {
+		async redirect({ url, baseUrl }) {
+			return resolveAuthJsRedirect(url, baseUrl);
+		},
 		// Edge-safe jwt: propagate role from user object into token.
 		// The full server-side auth.ts overrides this to also fetch from DB.
 		async jwt({ token, user }) {

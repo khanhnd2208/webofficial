@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ThumbnailUpload from '@/components/ThumbnailUpload';
 import { routes } from '@/config/routes';
+import { adminFetch } from '@/lib/admin/client';
 import {
 	StudioButton,
 	StudioField,
@@ -29,30 +30,28 @@ export default function NewMyClassCoursePage() {
 		event.preventDefault();
 		setBusy(true);
 		setError(null);
-		const response = await fetch('/api/admin/my-class/courses', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				title,
-				slug: slug || undefined,
-				summary,
-				description,
-				thumbnailUrl: thumbnailUrl || null,
-				level: level || null,
-				tags: tagsText
-					.split(',')
-					.map((item) => item.trim())
-					.filter(Boolean)
-					.slice(0, 10),
-			}),
-		});
-		const json = (await response.json()) as { ok: boolean; data?: { id: string }; error?: string };
-		if (!json.ok) {
-			setError(json.error ?? 'Không thể tạo khóa học');
+		try {
+			const created = await adminFetch<{ id: string }>('/api/admin/my-class/courses', {
+				method: 'POST',
+				body: JSON.stringify({
+					title,
+					slug: slug || undefined,
+					summary,
+					description,
+					thumbnailUrl: thumbnailUrl || null,
+					level: level || null,
+					tags: tagsText
+						.split(',')
+						.map((item) => item.trim())
+						.filter(Boolean)
+						.slice(0, 10),
+				}),
+			});
+			router.push(routes.admin.myClassCourseOverview(created.id));
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không thể tạo khóa học');
 			setBusy(false);
-			return;
 		}
-		router.push(routes.admin.myClassCourseOverview(String(json.data?.id)));
 	}
 
 	return (

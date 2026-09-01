@@ -1,14 +1,11 @@
+import { adminFetch } from '@/lib/admin/client';
+
 export async function uploadMyClassImage(file: File): Promise<string> {
 	const form = new FormData();
 	form.append('file', file);
-	const response = await fetch('/api/uploads', { method: 'POST', body: form });
-	const payload = (await response.json()) as {
-		ok: boolean;
-		data?: { url: string };
-		error?: string;
-	};
-	if (!response.ok || !payload.ok || !payload.data?.url) {
-		throw new Error(payload.error ?? 'Không tải ảnh lên được');
+	const payload = await adminFetch<{ url: string }>('/api/uploads', { method: 'POST', body: form });
+	if (!payload?.url) {
+		throw new Error('Không tải ảnh lên được');
 	}
-	return payload.data.url;
+	return payload.url;
 }

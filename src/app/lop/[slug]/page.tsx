@@ -51,7 +51,7 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 				<StudentClassBoard
 					board={board}
 					groupBoardEnabled={groupBoardEnabled}
-					manageHref={classId ? routes.mySpaceTeachingClass(classId) : undefined}
+					manageHref={classId ? routes.admin.teachingClass(classId) : undefined}
 					initialTab={tab}
 				/>
 			</main>

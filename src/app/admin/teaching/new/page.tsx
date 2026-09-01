@@ -1,8 +1,11 @@
-import { routes } from '@/config/routes';
-import { redirect } from 'next/navigation';
+import { NewTeachingClassWorkspace } from '@/components/teaching/admin/NewTeachingClassWorkspace';
 
 export const dynamic = 'force-dynamic';
 
 export default function NewTeachingClassPage() {
-	redirect(routes.mySpaceTeachingNew);
+	return (
+		<div className="px-4 py-6 sm:px-6 sm:py-8">
+			<NewTeachingClassWorkspace />
+		</div>
+	);
 }

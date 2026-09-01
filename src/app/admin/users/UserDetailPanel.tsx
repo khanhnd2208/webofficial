@@ -5,6 +5,7 @@ import type { UserDetail } from '@/services/userManagementService';
 import type { UserListItem } from '@/services/userManagementService';
 import type { UserRole } from '@/types/user';
 import { formatDateTime, formatDistanceToNow } from '@/utils/formatDate';
+import { adminFetch } from '@/lib/admin/client';
 
 const ROLE_COLORS: Record<UserRole, string> = {
 	admin: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/40',
@@ -28,10 +29,9 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setLoading(true);
 		setDetail(null);
-		fetch(`/api/admin/users/${userId}`)
-			.then((r) => r.json())
-			.then((json) => {
-				if (json.ok) setDetail(json.data as UserDetail);
+		void adminFetch<UserDetail>(`/api/admin/users/${userId}`)
+			.then((data) => {
+				setDetail(data);
 				setLoading(false);
 			})
 			.catch(() => setLoading(false));

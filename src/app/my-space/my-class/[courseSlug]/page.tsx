@@ -9,6 +9,7 @@ import { absoluteUrl } from '@/config/site';
 import KnowledgeHeader from '@/components/knowledge/KnowledgeHeader';
 import SubjectOverview from '@/components/knowledge/SubjectOverview';
 import CourseWorkspace from '@/components/myclass/CourseWorkspace';
+import { adminContentEditorHref } from '@/features/my-class/domain/adminEditRedirect';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,13 +39,15 @@ export default async function MyClassCoursePage({ params, searchParams }: { para
 	}
 	const { learnerState } = await loadCourseLearnerState(courseSlug, actor);
 	const isAdmin = session?.user?.role === 'admin';
+	if (isAdmin && query.edit === '1') {
+		redirect(adminContentEditorHref(course));
+	}
 	if (isAdmin) {
 		return (
 			<CourseWorkspace
 				course={course}
 				initialState={learnerState}
 				isAdmin
-				editMode={query.edit === '1'}
 			/>
 		);
 	}

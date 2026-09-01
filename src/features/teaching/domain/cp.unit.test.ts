@@ -58,6 +58,29 @@ describe('computeCp', () => {
 		expect(result.attendanceScore).toBe(4.5);
 	});
 
+	it('uses per-class deductions and can exclude late marks from the ban threshold', () => {
+		const result = computeCp(
+			{
+				...DEFAULT_CP_POLICY,
+				attendanceMaxPoints: 6,
+				cpMaxPoints: 4,
+				absenceDeductionPoints: 1,
+				lateDeductionPoints: 0.25,
+				lateCountsTowardAbsenceThreshold: false,
+				giftDeductionPoints: 0.5,
+			},
+			[taken('LATE'), taken('ABSENT_UNEXCUSED'), taken('PRESENT')],
+			[2, 2],
+			2,
+		);
+		expect(result.unexcusedAbsences).toBe(1);
+		expect(result.absenceDeduction).toBe(1.25);
+		expect(result.attendanceScore).toBe(4.75);
+		expect(result.giftDeduction).toBe(1);
+		expect(result.cp).toBe(3);
+		expect(result.totalScore).toBe(7.75);
+	});
+
 	it('floors Attendance at zero after many absences', () => {
 		const result = computeCp(
 			DEFAULT_CP_POLICY,

@@ -6,5 +6,5 @@ export const dynamic = 'force-dynamic';
 
 export default async function TeachingSettingsPage({ params }: { params: Promise<{ classId: string }> }) {
 	const { classId } = await params;
-	redirect(routes.mySpaceTeachingClassTab(classId, 'setup'));
+	redirect(routes.admin.teachingClassTab(classId, 'setup'));
 }

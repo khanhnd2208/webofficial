@@ -29,7 +29,10 @@ async function executeAction(action: OfflineAction): Promise<void> {
 			body: JSON.stringify({ vocabSetId: action.vocabSetId }),
 		});
 		// 409 = already owned — not an error worth retrying
-		if (!res.ok && res.status !== 409) throw new Error(`ADD_TO_LIBRARY failed: ${res.status}`);
+		if (!res.ok && res.status !== 409) {
+			if (res.status === 401) return;
+			throw new Error(`ADD_TO_LIBRARY failed: ${res.status}`);
+		}
 	}
 }
 

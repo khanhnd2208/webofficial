@@ -21,6 +21,10 @@ async function pointerDrag(page: Page, source: Locator, target: Locator) {
 }
 
 test.describe('Teaching group board UX', () => {
+	test.skip(
+		process.env.TEACHING_GROUP_BOARD_ENABLED !== 'true',
+		'Group board is disabled unless TEACHING_GROUP_BOARD_ENABLED=true',
+	);
 	test('keeps the desktop board compact and supports mobile sheet placement', async (
 		{ page, context },
 		testInfo,
@@ -86,7 +90,7 @@ test.describe('Teaching group board UX', () => {
 				{ width: 1920, height: 1080 },
 			]) {
 				await page.setViewportSize(viewport);
-				await page.goto(`/my-space/teaching/${classId}?tab=groups`);
+				await page.goto(`/admin/teaching/${classId}?tab=groups`);
 				await expect(page.getByTestId('group-grid')).toBeVisible();
 				await expect(page.getByTestId('group-admin-desktop-controls')).toBeVisible();
 				await expect(page.locator('.group-mobile-picker')).toHaveCount(0);
@@ -240,7 +244,7 @@ test.describe('Teaching group board UX', () => {
 			);
 			expect(reassigned.ok()).toBe(true);
 			await page.setViewportSize({ width: 390, height: 844 });
-			await page.goto(`/my-space/teaching/${classId}?tab=groups`);
+			await page.goto(`/admin/teaching/${classId}?tab=groups`);
 			await expect(page.getByTestId('group-grid')).toBeVisible();
 			await expect(page.locator('[data-draggable="true"]')).toHaveCount(0);
 			await expect(page.getByTestId('group-admin-desktop-controls')).toHaveCount(0);

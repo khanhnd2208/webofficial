@@ -31,15 +31,22 @@ function GoogleIcon({ className }: { className?: string }) {
 	);
 }
 
-export default function SignInWithGoogleButton({ callbackUrl }: { callbackUrl: string }) {
+export default function SignInWithGoogleButton({
+	redirectTo,
+	callbackUrl,
+}: {
+	redirectTo?: string;
+	/** @deprecated Auth.js v5 uses redirectTo; kept for existing call sites. */
+	callbackUrl?: string;
+}) {
 	const [loading, setLoading] = useState(false);
+	const destination = redirectTo ?? callbackUrl ?? '/tai-khoan';
 
 	const handleSignIn = async () => {
 		setLoading(true);
 		try {
-			await signIn('google', { callbackUrl }, { prompt: 'select_account' });
+			await signIn('google', { redirectTo: destination }, { prompt: 'select_account' });
 		} catch {
-			// signIn redirects on success, so errors here are genuine failures
 			setLoading(false);
 		}
 	};

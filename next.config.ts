@@ -76,6 +76,12 @@ const nextConfig: NextConfig = {
 			// Admin vocabulary alias
 			{ source: '/admin/vocabulary', destination: '/admin/tools/vocabulary', permanent: true },
 
+			// Temporary admin workspace consolidations (non-permanent until stable)
+			{ source: '/my-space/teaching', destination: '/admin/teaching', permanent: false },
+			{ source: '/my-space/teaching/:path*', destination: '/admin/teaching/:path*', permanent: false },
+			{ source: '/messages', destination: '/admin/tools/messages', permanent: false },
+			{ source: '/messages/:path*', destination: '/admin/tools/messages/:path*', permanent: false },
+
 			// Explorer Teacher — retired marketing URLs
 			...PUBLIC_REDIRECTS,
 		];

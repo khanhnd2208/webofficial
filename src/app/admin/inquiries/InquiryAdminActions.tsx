@@ -8,7 +8,9 @@ import {
 	INQUIRY_STATUS_LABELS,
 	type InquiryStatus,
 } from '@/features/inquiries/constants';
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { routes } from '@/config/routes';
+import { adminFetch } from '@/lib/admin/client';
 
 type Props = {
 	inquiryId: string;
@@ -23,20 +25,16 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, adminEma
 	const [internalNotes, setInternalNotes] = useState('');
 	const [error, setError] = useState<string | null>(null);
 	const [pending, startTransition] = useTransition();
+	const { confirm, dialog } = useAdminConfirm();
 
 	if (!inquiryId) return null;
 
 	async function patch(body: Record<string, unknown>) {
 		setError(null);
-		const res = await fetch(`/api/admin/inquiries/${inquiryId}`, {
+		await adminFetch(`/api/admin/inquiries/${inquiryId}`, {
 			method: 'PATCH',
-			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(body),
 		});
-		const json = await res.json();
-		if (!res.ok || !json.ok) {
-			throw new Error(json.error || 'Cập nhật thất bại');
-		}
 		router.refresh();
 	}
 
@@ -72,12 +70,15 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, adminEma
 	}
 
 	function onDelete() {
-		if (!window.confirm('Xóa vĩnh viễn yêu cầu liên hệ này? Không hoàn tác được.')) return;
 		startTransition(async () => {
+			const ok = await confirm({
+				title: 'Xoá yêu cầu liên hệ',
+				description: 'Xóa vĩnh viễn yêu cầu liên hệ này? Không hoàn tác được.',
+				confirmLabel: 'Xoá',
+			});
+			if (!ok) return;
 			try {
-				const res = await fetch(`/api/admin/inquiries/${inquiryId}`, { method: 'DELETE' });
-				const json = await res.json();
-				if (!res.ok || !json.ok) throw new Error(json.error || 'Xóa thất bại');
+				await adminFetch(`/api/admin/inquiries/${inquiryId}`, { method: 'DELETE' });
 				router.push(routes.admin.inquiries);
 				router.refresh();
 			} catch (e) {
@@ -162,6 +163,7 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, adminEma
 					Xóa vĩnh viễn
 				</button>
 			</div>
+			{dialog}
 		</div>
 	);
 }

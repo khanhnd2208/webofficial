@@ -1,21 +1,20 @@
 import { redirect } from 'next/navigation';
 
+import { AdminForbidden } from '@/components/admin/AdminForbidden';
+import AdminShell from '@/components/admin/AdminShell';
+import { routes } from '@/config/routes';
 import { auth } from '@/lib/auth';
-import AdminSidebar from './AdminSidebar';
+import { incomingAdminPath } from '@/lib/auth/incomingPath';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
 	const session = await auth();
 	if (!session?.user) {
-		redirect('/dang-nhap?from=/admin');
+		const from = await incomingAdminPath();
+		redirect(`${routes.login}?from=${encodeURIComponent(from)}`);
 	}
 	if (session.user.role !== 'admin') {
-		redirect('/');
+		return <AdminForbidden />;
 	}
 
-	return (
-		<div className="flex min-h-screen flex-col bg-background md:flex-row">
-			<AdminSidebar />
-			<div className="min-w-0 flex-1 overflow-auto">{children}</div>
-		</div>
-	);
+	return <AdminShell>{children}</AdminShell>;
 }

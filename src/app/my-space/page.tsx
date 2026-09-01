@@ -33,7 +33,7 @@ export default async function MySpacePage() {
 					label: 'Teaching',
 					image: { src: '/brand/myspace/my-class.svg', alt: 'Minh họa khu quản lý Teaching' },
 					status: 'published' as const,
-					href: routes.mySpaceTeaching,
+					href: routes.admin.teaching,
 				}]
 			: []),
 	];

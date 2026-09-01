@@ -55,7 +55,7 @@ export function ImportWorkspace() {
 					method: 'POST',
 					body,
 				});
-						router.push(routes.mySpaceTeachingClassTab(data.gradebook.class.id, 'attendance'));
+						router.push(routes.admin.teachingClassTab(data.gradebook.class.id, 'attendance'));
 			}
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Không thể import danh sách');

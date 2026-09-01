@@ -117,12 +117,22 @@ export default function VocabAssignmentManager({
 				>
 					Thư viện từ vựng
 				</Link>
+				<select
+					aria-label="Phạm vi nhập CSV"
+					value={importLessonId ?? ''}
+					onChange={(event) => setImportLessonId(event.target.value || null)}
+					className="min-h-11 rounded-[var(--mc-r-sm)] border border-mc-rule px-3 text-sm"
+				>
+					<option value="">Toàn khóa</option>
+					{lessons.map((lesson) => (
+						<option key={lesson.id} value={lesson.id}>
+							{lesson.title}
+						</option>
+					))}
+				</select>
 				<button
 					type="button"
-					onClick={() => {
-						setImportLessonId(scope || null);
-						setImportOpen(true);
-					}}
+					onClick={() => setImportOpen(true)}
 					className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] border border-mc-rule px-4 text-sm font-semibold"
 				>
 					Nhập CSV

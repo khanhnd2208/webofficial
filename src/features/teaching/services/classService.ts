@@ -167,6 +167,11 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 export async function updateTeachingClass(id: string, input: UpdateTeachingClassInput) {
 	const existing = await repo.getClass(id);
 	if (!existing) notFound();
+	const attendanceMaxPoints = input.attendanceMaxPoints ?? Number(existing.attendanceMaxPoints);
+	const cpMaxPoints = input.cpMaxPoints ?? Number(existing.cpMaxPoints);
+	if (Math.abs(attendanceMaxPoints + cpMaxPoints - 10) > 0.0001) {
+		throw new AppError('Attendance và CP phải cộng thành 10 điểm.', 422, 'VALIDATION');
+	}
 	const totalWeeks = input.totalWeeks ?? existing.totalWeeks;
 	const updated = await withUniqueConflict(
 		'A class with this course code, group and term already exists',
@@ -181,6 +186,12 @@ export async function updateTeachingClass(id: string, input: UpdateTeachingClass
 				lecturerName: input.lecturerName,
 				lecturerCode: input.lecturerCode,
 				totalWeeks: input.totalWeeks,
+				attendanceMaxPoints: input.attendanceMaxPoints,
+				cpMaxPoints: input.cpMaxPoints,
+				absenceDeductionPoints: input.absenceDeductionPoints,
+				lateDeductionPoints: input.lateDeductionPoints,
+				lateCountsTowardAbsenceThreshold: input.lateCountsTowardAbsenceThreshold,
+				giftDeductionPoints: input.giftDeductionPoints,
 				absenceThresholdPercent: input.absenceThresholdPercent,
 				lateGraceMinutes: input.lateGraceMinutes,
 				status: input.status,

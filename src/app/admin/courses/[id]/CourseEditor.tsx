@@ -7,26 +7,11 @@ import { useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { routes } from '@/config/routes';
+import { adminFetch } from '@/lib/admin/client';
 import type { CourseDetail, CourseVisibility, LessonDTO, PublishStatus } from '@/features/courses/types';
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
-	const res = await fetch(url, {
-		...init,
-		headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-	});
-	const json = (await res.json()) as {
-		ok: boolean;
-		data?: T;
-		error?: string;
-		fields?: Record<string, string>;
-		code?: string;
-	};
-	if (!json.ok) {
-		const err = new Error(json.error ?? 'Yêu cầu thất bại') as Error & { fields?: Record<string, string> };
-		err.fields = json.fields;
-		throw err;
-	}
-	return json.data as T;
+	return adminFetch<T>(url, init);
 }
 
 function lessonReady(lesson: LessonDTO): 'empty' | 'partial' | 'ready' {

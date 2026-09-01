@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
+import { adminFetch } from '@/lib/admin/client';
 import type {
 	ActiveRecallDeckDTO,
 	ActiveRecallStatus,
@@ -50,6 +52,7 @@ export default function ActiveRecallEditor({
 	initialDeck: ActiveRecallDeckDTO | null;
 }) {
 	const router = useRouter();
+	const { confirm, dialog } = useAdminConfirm();
 	const [deck, setDeck] = useState(initialDeck);
 	const [title, setTitle] = useState(initialDeck?.title ?? '');
 	const [slug, setSlug] = useState(initialDeck?.slug ?? '');
@@ -117,9 +120,8 @@ export default function ActiveRecallEditor({
 		setBusy(true);
 		setError(null);
 		try {
-			const response = await fetch('/api/admin/active-recall', {
+			const created = await adminFetch<ActiveRecallDeckDTO>('/api/admin/active-recall', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					title,
 					slug: slug || undefined,
@@ -129,13 +131,7 @@ export default function ActiveRecallEditor({
 					status: 'DRAFT',
 				}),
 			});
-			const json = (await response.json()) as {
-				ok: boolean;
-				data?: ActiveRecallDeckDTO;
-				error?: string;
-			};
-			if (!json.ok || !json.data) throw new Error(json.error ?? 'Không tạo được bộ thẻ');
-			router.replace(routes.admin.activeRecallEdit(json.data.id));
+			router.replace(routes.admin.activeRecallEdit(created.id));
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không tạo được bộ thẻ');
 		} finally {
@@ -153,9 +149,8 @@ export default function ActiveRecallEditor({
 		setError(null);
 		setNotice(null);
 		try {
-			const response = await fetch(`/api/admin/active-recall/${deck.id}`, {
+			const saved = await adminFetch<ActiveRecallDeckDTO>(`/api/admin/active-recall/${deck.id}`, {
 				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					title,
 					slug: slug || undefined,
@@ -171,28 +166,22 @@ export default function ActiveRecallEditor({
 					})),
 				}),
 			});
-			const json = (await response.json()) as {
-				ok: boolean;
-				data?: ActiveRecallDeckDTO;
-				error?: string;
-			};
-			if (!json.ok || !json.data) throw new Error(json.error ?? 'Không lưu được bộ thẻ');
-			setDeck(json.data);
-			setCards(deckCards(json.data));
-			setTitle(json.data.title);
-			setSlug(json.data.slug);
-			setSubject(json.data.subject);
-			setLessonLabel(json.data.lessonLabel);
-			setDescription(json.data.description);
-			setStatus(json.data.status);
+			setDeck(saved);
+			setCards(deckCards(saved));
+			setTitle(saved.title);
+			setSlug(saved.slug);
+			setSubject(saved.subject);
+			setLessonLabel(saved.lessonLabel);
+			setDescription(saved.description);
+			setStatus(saved.status);
 			initialRef.current = JSON.stringify({
-				title: json.data.title,
-				slug: json.data.slug,
-				subject: json.data.subject,
-				lessonLabel: json.data.lessonLabel,
-				description: json.data.description,
-				status: json.data.status,
-				cards: deckCards(json.data).map(({ id, question, answer }) => ({ id, question, answer })),
+				title: saved.title,
+				slug: saved.slug,
+				subject: saved.subject,
+				lessonLabel: saved.lessonLabel,
+				description: saved.description,
+				status: saved.status,
+				cards: deckCards(saved).map(({ id, question, answer }) => ({ id, question, answer })),
 			});
 			setNotice('Đã lưu thay đổi.');
 			router.refresh();
@@ -220,21 +209,15 @@ export default function ActiveRecallEditor({
 		setError(null);
 		setPreview(null);
 		try {
-			const response = await fetch(
-				`/api/admin/active-recall/${deck.id}/import?dryRun=1&mode=${importMode}`,
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ text: importText, mode: importMode }),
-				},
+			setPreview(
+				await adminFetch<RecallImportPreview>(
+					`/api/admin/active-recall/${deck.id}/import?dryRun=1&mode=${importMode}`,
+					{
+						method: 'POST',
+						body: JSON.stringify({ text: importText, mode: importMode }),
+					},
+				),
 			);
-			const json = (await response.json()) as {
-				ok: boolean;
-				data?: RecallImportPreview;
-				error?: string;
-			};
-			if (!json.ok || !json.data) throw new Error(json.error ?? 'Không đọc được dữ liệu');
-			setPreview(json.data);
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không đọc được dữ liệu');
 		} finally {
@@ -246,25 +229,25 @@ export default function ActiveRecallEditor({
 		if (!deck || !preview || preview.summary.invalid) return;
 		if (
 			mode === 'replace' &&
-			!window.confirm('Thay thế sẽ xóa các thẻ hiện có không nằm trong file import. Tiếp tục?')
+			!(await confirm({
+				title: 'Thay thế thẻ',
+				description: 'Thay thế sẽ xóa các thẻ hiện có không nằm trong file import. Tiếp tục?',
+				confirmLabel: 'Thay thế',
+			}))
 		)
 			return;
 		setBusy(true);
 		setError(null);
 		try {
-			const response = await fetch(`/api/admin/active-recall/${deck.id}/import`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ text: importText, mode, expectedUpdatedAt: deck.updatedAt }),
-			});
-			const json = (await response.json()) as {
-				ok: boolean;
-				data?: { deck: ActiveRecallDeckDTO };
-				error?: string;
-			};
-			if (!json.ok || !json.data) throw new Error(json.error ?? 'Không import được dữ liệu');
-			setDeck(json.data.deck);
-			setCards(deckCards(json.data.deck));
+			const imported = await adminFetch<{ deck: ActiveRecallDeckDTO }>(
+				`/api/admin/active-recall/${deck.id}/import`,
+				{
+					method: 'POST',
+					body: JSON.stringify({ text: importText, mode, expectedUpdatedAt: deck.updatedAt }),
+				},
+			);
+			setDeck(imported.deck);
+			setCards(deckCards(imported.deck));
 			setPreview(null);
 			setImportText('');
 			setNotice('Đã import dữ liệu.');
@@ -277,13 +260,19 @@ export default function ActiveRecallEditor({
 	}
 
 	async function archive() {
-		if (!deck || !window.confirm('Lưu trữ bộ thẻ này? Học viên sẽ không còn thấy nó.')) return;
+		if (
+			!deck ||
+			!(await confirm({
+				title: 'Lưu trữ bộ thẻ',
+				description: 'Lưu trữ bộ thẻ này? Học viên sẽ không còn thấy nó.',
+				confirmLabel: 'Lưu trữ',
+			}))
+		)
+			return;
 		setBusy(true);
 		setError(null);
 		try {
-			const response = await fetch(`/api/admin/active-recall/${deck.id}`, { method: 'DELETE' });
-			const json = (await response.json()) as { ok: boolean; error?: string };
-			if (!response.ok || !json.ok) throw new Error(json.error ?? 'Không thể lưu trữ bộ thẻ');
+			await adminFetch(`/api/admin/active-recall/${deck.id}`, { method: 'DELETE' });
 			router.push(routes.admin.activeRecall);
 			router.refresh();
 		} catch (reason) {
@@ -294,6 +283,7 @@ export default function ActiveRecallEditor({
 	}
 
 	return (
+		<>
 		<div className="mx-auto max-w-[88rem] px-6 py-8">
 			<div className="flex flex-wrap items-start justify-between gap-5 border-b border-border pb-6">
 				<div>
@@ -632,5 +622,7 @@ export default function ActiveRecallEditor({
 				</div>
 			) : null}
 		</div>
+		{dialog}
+		</>
 	);
 }

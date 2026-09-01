@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { McIcon } from '@/components/myclass/ui';
 import { LearningExperienceMark } from '@/components/teaching/public/LearningExperienceMark';
 import {
@@ -30,6 +31,7 @@ export interface AttendanceGridProps {
 	students: BoardGridStudent[];
 	sessions: TeachingSessionRecord[];
 	totalWeeks: number;
+	attendanceMaxPoints?: number;
 	selectedWeek?: number | null;
 	allowUnstartedEdit?: boolean;
 	showExtraColumns?: boolean;
@@ -105,11 +107,13 @@ function AttendanceNoteEditor({
 	onClose,
 	onSave,
 	onStatus,
+	readOnly = false,
 }: {
 	mark: TeachingAttendanceMark | { status: AttendanceStatus; note?: string } | undefined;
 	onClose: () => void;
 	onSave: (note: string) => void;
 	onStatus: (status: AttendanceStatus, note: string) => void;
+	readOnly?: boolean;
 }) {
 	const [note, setNote] = useState(mark?.note ?? '');
 	const { rootRef, textareaRef } = useGridNotePopover(onClose);
@@ -121,46 +125,52 @@ function AttendanceNoteEditor({
 			className="absolute left-0 top-full z-30 mt-1 w-64 rounded-[var(--mc-r-md)] border border-mc-rule bg-paper p-3 text-left shadow-[var(--mc-shadow-2)]"
 		>
 			<p className="text-xs font-semibold text-ink">Ghi chú / trạng thái đặc biệt</p>
-			<textarea
-				ref={textareaRef}
-				value={note}
-				onChange={(event) => setNote(event.target.value)}
-				placeholder="Nhập ghi chú…"
-				maxLength={240}
-				rows={3}
-				className="mt-2 w-full rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper p-2 text-sm"
-			/>
-			<div className="mt-2 grid grid-cols-2 gap-1">
-				<button
-					type="button"
-					className="min-h-8 rounded-[var(--mc-r-xs)] border border-mc-rule px-2 text-xs font-semibold hover:bg-surface-sunken"
-					onClick={() => onStatus('ABSENT_EXCUSED', note)}
-				>
-					Vắng có phép
-				</button>
-				<button
-					type="button"
-					className="min-h-8 rounded-[var(--mc-r-xs)] border border-mc-rule px-2 text-xs font-semibold hover:bg-surface-sunken"
-					onClick={() => onStatus('MAKEUP', note)}
-				>
-					Học bù
-				</button>
-			</div>
+			{readOnly ? (
+				<p className="mt-2 whitespace-pre-wrap text-sm text-ink-secondary">
+					{note || 'Không có ghi chú.'}
+				</p>
+			) : (
+				<textarea
+					ref={textareaRef}
+					value={note}
+					onChange={(event) => setNote(event.target.value)}
+					placeholder="Nhập ghi chú…"
+					maxLength={240}
+					rows={3}
+					className="mt-2 w-full rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper p-2 text-sm"
+				/>
+			)}
+			{!readOnly ? (
+				<div className="mt-2 grid grid-cols-2 gap-1">
+					{STATUS_OPTIONS.map((option) => (
+						<button
+							key={option.status}
+							type="button"
+							className="min-h-8 rounded-[var(--mc-r-xs)] border border-mc-rule px-2 text-xs font-semibold hover:bg-surface-sunken"
+							onClick={() => onStatus(option.status, note)}
+						>
+							{option.label}
+						</button>
+					))}
+				</div>
+			) : null}
 			<div className="mt-3 flex justify-end gap-2">
 				<button
 					type="button"
 					className="min-h-8 px-2 text-xs font-semibold text-ink-secondary"
 					onClick={onClose}
 				>
-					Huỷ
+					{readOnly ? 'Đóng' : 'Huỷ'}
 				</button>
-				<button
-					type="button"
-					className="min-h-8 rounded-[var(--mc-r-sm)] bg-ink px-3 text-xs font-semibold text-paper"
-					onClick={() => onSave(note)}
-				>
-					Lưu ghi chú
-				</button>
+				{!readOnly ? (
+					<button
+						type="button"
+						className="min-h-8 rounded-[var(--mc-r-sm)] bg-ink px-3 text-xs font-semibold text-paper"
+						onClick={() => onSave(note)}
+					>
+						Lưu ghi chú
+					</button>
+				) : null}
 			</div>
 		</div>
 	);
@@ -170,6 +180,7 @@ export function AttendanceGrid({
 	students,
 	sessions,
 	totalWeeks,
+	attendanceMaxPoints = ATTENDANCE_MAX_POINTS,
 	selectedWeek = null,
 	allowUnstartedEdit = false,
 	showExtraColumns = false,
@@ -187,6 +198,7 @@ export function AttendanceGrid({
 	saveState,
 	onRetry,
 }: AttendanceGridProps) {
+	const { confirm, dialog } = useAdminConfirm();
 	const [noteCell, setNoteCell] = useState<CellKey | null>(null);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const cycleValues = useRef(new Map<string, AttendanceStatus>());
@@ -257,6 +269,7 @@ export function AttendanceGrid({
 	}
 
 	return (
+		<>
 		<div
 			ref={wrapperRef}
 			className={`mc-grid-wrap ${publicCompact ? 'mc-grid-wrap-public' : ''}`}
@@ -406,6 +419,45 @@ export function AttendanceGrid({
 													</>
 												)}
 												{isOpen ? <span className="mc-grid-week-draft">Chưa tính điểm</span> : null}
+												<span className="mc-grid-week-state">
+													{isFinalized
+														? 'Đã chốt'
+														: isOpen
+															? 'Đang nhập'
+															: session?.attendanceTakenAt
+																? 'Tạm khóa'
+																: 'Chưa mở'}
+												</span>
+												{session && !readOnly && isOpen && onMarkChange ? (
+													<button
+														type="button"
+														className="mc-grid-week-bulk"
+														onClick={async () => {
+															const eligible = students.filter(
+																(student) => student.enrolledFromWeek <= weekNumber,
+															);
+															if (
+																!(await confirm({
+																	title: 'Đánh dấu cả tuần',
+																	description: `Đánh dấu Có mặt cho ${eligible.length} sinh viên ở tuần ${weekNumber}?`,
+																	confirmLabel: 'Đánh dấu',
+																	tone: 'default',
+																}))
+															)
+																return;
+															eligible.forEach((student) =>
+																onMarkChange({
+																	enrollmentId: student.enrollmentId,
+																	sessionId: session.id,
+																	status: 'PRESENT',
+																	note: student.marks[session.id]?.note ?? '',
+																}),
+															);
+														}}
+													>
+														Tất cả có mặt
+													</button>
+												) : null}
 											</span>
 										) : null}
 										{onWeekSelect && !readOnly ? (
@@ -465,13 +517,13 @@ export function AttendanceGrid({
 							</span>
 						</th>
 						<th
-							aria-label={`Attendance /${ATTENDANCE_MAX_POINTS}`}
-							title={`Điểm chuyên cần tối đa ${ATTENDANCE_MAX_POINTS}; mỗi buổi vắng không phép hoặc đi muộn trừ 0,5 điểm`}
+							aria-label={`Attendance /${attendanceMaxPoints}`}
+							title={`Điểm chuyên cần tối đa ${attendanceMaxPoints}; mức trừ được cấu hình theo lớp`}
 							className={`mc-grid-freeze-right mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 						>
 							<span className="mc-grid-summary-heading">
 								<span>Attendance</span>
-								<span>/{ATTENDANCE_MAX_POINTS}</span>
+								<span>/{attendanceMaxPoints}</span>
 							</span>
 						</th>
 						{showEligibilityColumn ? (
@@ -561,7 +613,7 @@ export function AttendanceGrid({
 													</span>
 													<span className="mc-grid-public-meta-line">
 														Attendance {formatTeachingScore(student.cp.attendanceScore)}/
-														{ATTENDANCE_MAX_POINTS}
+														{attendanceMaxPoints}
 														{showEligibilityColumn
 															? ` · ${student.cp.riskLevel === 'BANNED' ? 'Cấm thi' : student.cp.riskLevel === 'AT_RISK' ? 'Có nguy cơ' : 'Đủ điều kiện'}`
 															: ''}
@@ -701,6 +753,22 @@ export function AttendanceGrid({
 													)}
 												</button>
 											)}
+											{(readOnly ? Boolean(mark?.note) : !disabled) ? (
+												<button
+													type="button"
+													className="mc-grid-note-trigger"
+													aria-label="Xem ghi chú điểm danh"
+													onClick={(event) => {
+														event.stopPropagation();
+														setNoteCell({
+															enrollmentId: student.enrollmentId,
+															sessionId: session.id,
+														});
+													}}
+												>
+													…
+												</button>
+											) : null}
 											{started && state === 'saving' ? (
 												<span className="mc-grid-save-dot" aria-label="Đang lưu">
 													…
@@ -731,6 +799,7 @@ export function AttendanceGrid({
 														applyStatus(student, session, nextStatus, note);
 														setNoteCell(null);
 													}}
+													readOnly={readOnly}
 												/>
 											) : null}
 										</td>
@@ -744,7 +813,7 @@ export function AttendanceGrid({
 								<td
 									className={`mc-grid-freeze-right mc-grid-attendance-score mc-num font-semibold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 								>
-									{formatTeachingScore(student.cp.attendanceScore)} / {ATTENDANCE_MAX_POINTS}
+									{formatTeachingScore(student.cp.attendanceScore)} / {attendanceMaxPoints}
 								</td>
 								{showEligibilityColumn ? (
 									<td
@@ -767,5 +836,7 @@ export function AttendanceGrid({
 				</tbody>
 			</table>
 		</div>
+		{dialog}
+		</>
 	);
 }

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const TOOLS = [
 	{
 		href: routes.admin.vocabulary,
-		label: 'Vocabulary',
+		label: 'Từ vựng',
 		description: 'Quản lý bộ từ vựng — chỉ dành cho admin.',
 	},
 	{

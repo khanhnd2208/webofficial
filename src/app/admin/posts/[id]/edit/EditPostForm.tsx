@@ -9,6 +9,7 @@ import DualLanguageEditor from '@/components/DualLanguageEditor';
 import { POST_CATEGORIES } from '@/constants/post';
 import { JOURNAL_COLLECTIONS, JOURNAL_CONTENT_TYPES, JOURNAL_PILLARS } from '@/content/journal';
 import { slugify } from '@/utils/slugify';
+import { adminFetch } from '@/lib/admin/client';
 
 type AdminPost = {
 	id: string;
@@ -44,23 +45,9 @@ function htmlToPlainText(html: string): string {
 async function uploadImage(file: File): Promise<string> {
 	const fd = new FormData();
 	fd.append('file', file);
-	const res = await fetch('/api/uploads', { method: 'POST', body: fd });
-	const json = (await res.json()) as unknown;
-	const ok = typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true;
-	if (!res.ok || !ok) {
-		const message =
-			typeof json === 'object' && json !== null && typeof (json as { error?: unknown }).error === 'string'
-				? String((json as { error?: unknown }).error)
-				: `HTTP ${res.status}`;
-		throw new Error(message);
-	}
-	const data = (json as { data?: unknown }).data;
-	const url =
-		typeof data === 'object' && data !== null && typeof (data as { url?: unknown }).url === 'string'
-			? String((data as { url?: unknown }).url)
-			: '';
-	if (!url) throw new Error('Upload failed');
-	return url;
+	const data = await adminFetch<{ url?: string }>('/api/uploads', { method: 'POST', body: fd });
+	if (!data?.url) throw new Error('Upload failed');
+	return data.url;
 }
 
 export default function EditPostForm({ initial }: { initial: AdminPost }) {
@@ -128,9 +115,8 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 		isSavingRef.current = true;
 		setSaveState({ status: 'saving' });
 		try {
-			const res = await fetch(`/api/admin/posts/${initial.id}`, {
+			await adminFetch(`/api/admin/posts/${initial.id}`, {
 				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					title, slug, summary, content, contentEn, category, tags,
 					pillarSlug: pillarSlug || undefined,
@@ -144,15 +130,6 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 					isPublished,
 				}),
 			});
-			const json = (await res.json()) as unknown;
-			const ok = typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true;
-			if (!res.ok || !ok) {
-				const message =
-					typeof json === 'object' && json !== null && typeof (json as { error?: unknown }).error === 'string'
-						? String((json as { error?: unknown }).error)
-						: `HTTP ${res.status}`;
-				throw new Error(message);
-			}
 			setSaveState({ status: 'saved' });
 			// Auto-clear saved status after 3s so user can edit & save again
 			setTimeout(() => setSaveState((prev) => (prev.status === 'saved' ? { status: 'idle' } : prev)), 3000);
@@ -184,12 +161,8 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 	useEffect(() => {
 		void (async () => {
 			try {
-				const res = await fetch('/api/posts/tags');
-				const json = (await res.json()) as unknown;
-				if (typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true) {
-					const data = (json as { data?: string[] }).data;
-					if (Array.isArray(data)) setTagSuggestions(data);
-				}
+				const data = await adminFetch<string[]>('/api/posts/tags');
+				if (Array.isArray(data)) setTagSuggestions(data);
 			} catch {
 				/* ignore */
 			}
@@ -197,7 +170,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 	}, []);
 
 	return (
-		<main className="mx-auto max-w-6xl px-6 py-8">
+		<div className="mx-auto max-w-6xl px-6 py-8">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Chỉnh sửa bài viết</h1>
@@ -447,6 +420,6 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 					</span>
 				</div>
 			</section>
-		</main>
+		</div>
 	);
 }

@@ -1,9 +1,11 @@
 'use client';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Toast } from '@/components/ui/Dialog';
 import type { TeachingGradebook } from '@/features/teaching/types';
+import type { SessionLifecycleAction } from '@/features/teaching/schemas';
 
 import { AttendanceGrid } from './AttendanceGrid';
 import { ParticipationGrid } from './ParticipationGrid';
@@ -39,6 +41,7 @@ export function GradebookWorkspace({
 		saveStates,
 		retryMark,
 	} = useGradebookMutations(initial);
+	const { confirm, dialog } = useAdminConfirm();
 	const [tutorialId, setTutorialId] = useState(
 		initial.tutorials.length === 1 ? (initial.tutorials[0]?.id ?? '') : '',
 	);
@@ -74,6 +77,40 @@ export function GradebookWorkspace({
 		[gradebook.students],
 	);
 
+	async function requestLifecycle(
+		kind: 'attendance' | 'participation',
+		sessionId: string,
+		action: SessionLifecycleAction,
+	) {
+		const session = gradebook.sessions.find((item) => item.id === sessionId);
+		if (!session) return;
+		if (action === 'finalize' || action === 'unfinalize') {
+			const eligible = tutorialStudents.filter(
+				(student) => student.status === 'ACTIVE' && student.enrolledFromWeek <= session.weekNumber,
+			);
+			const marked = eligible.filter((student) =>
+				kind === 'attendance'
+					? Boolean(student.marks[sessionId])
+					: Boolean(student.participation[sessionId]),
+			).length;
+			const remaining = Math.max(0, eligible.length - marked);
+			const message =
+				action === 'finalize'
+					? kind === 'attendance'
+						? `Chốt điểm danh tuần ${session.weekNumber}? ${marked}/${eligible.length} sinh viên đã có trạng thái; ${remaining} ô trống sẽ thành Vắng không phép.`
+						: `Chốt CP tuần ${session.weekNumber}? ${marked}/${eligible.length} sinh viên đã được chấm; ${remaining} sinh viên còn lại sẽ nhận 0 CP.`
+					: `Mở lại ${kind === 'attendance' ? 'điểm danh' : 'chấm CP'} tuần ${session.weekNumber}? Điểm tuần này sẽ tạm thời không được tính và không hiển thị công khai.`;
+			const ok = await confirm({
+				title: action === 'finalize' ? 'Chốt tuần' : 'Mở lại tuần',
+				description: message,
+				confirmLabel: action === 'finalize' ? 'Chốt' : 'Mở lại',
+			});
+			if (!ok) return;
+		}
+		if (kind === 'attendance') void setAttendanceLifecycle(sessionId, action);
+		else void setParticipationLifecycle(sessionId, action);
+	}
+
 	useEffect(() => {
 		if (!isSaving) return;
 		const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
@@ -91,6 +128,7 @@ export function GradebookWorkspace({
 	}, [setToast, toast]);
 
 	return (
+		<>
 		<div className="mc-gradebook-workspace flex min-h-0 flex-1 flex-col space-y-3">
 			<div className="mc-gradebook-toolbar">
 				{gradebook.tutorials.length > 1 ? (
@@ -168,6 +206,7 @@ export function GradebookWorkspace({
 						students={students}
 						sessions={tutorialSessions}
 						totalWeeks={gradebook.class.totalWeeks}
+						attendanceMaxPoints={gradebook.policy.attendanceMaxPoints}
 						selectedWeek={selectedWeek}
 						groupNumberByEnrollment={groupNumberByEnrollment}
 						publicCompact
@@ -179,7 +218,7 @@ export function GradebookWorkspace({
 							void setAttendanceOpen(sessionId, open);
 						}}
 						onSessionLifecycle={(sessionId, action) => {
-							void setAttendanceLifecycle(sessionId, action);
+							requestLifecycle('attendance', sessionId, action);
 						}}
 						onSessionDateChange={(session, heldOn) => updateSessionDate(session.id, heldOn)}
 						togglingSessionId={togglingSessionId}
@@ -193,6 +232,8 @@ export function GradebookWorkspace({
 						students={students}
 						sessions={tutorialSessions}
 						totalWeeks={gradebook.class.totalWeeks}
+						attendanceMaxPoints={gradebook.policy.attendanceMaxPoints}
+						cpMaxPoints={gradebook.policy.cpMaxPoints}
 						selectedWeek={selectedWeek}
 						publicCompact
 						scrollMode="contained"
@@ -203,7 +244,7 @@ export function GradebookWorkspace({
 							void setParticipationOpen(sessionId, open);
 						}}
 						onSessionLifecycle={(sessionId, action) => {
-							void setParticipationLifecycle(sessionId, action);
+							requestLifecycle('participation', sessionId, action);
 						}}
 						togglingSessionId={togglingSessionId}
 						saveState={(enrollmentId, sessionId) =>
@@ -223,5 +264,7 @@ export function GradebookWorkspace({
 				className="mc-toast"
 			/>
 		</div>
+		{dialog}
+		</>
 	);
 }

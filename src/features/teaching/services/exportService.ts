@@ -33,8 +33,8 @@ export async function exportGradebookXlsx(
 		'Absences',
 		'CP tích lũy trước Gift',
 		'Gift (-)',
-		`Attendance /${ATTENDANCE_MAX_POINTS}`,
-		`CP /${CP_MAX_POINTS}`,
+		`Attendance /${gradebook.policy.attendanceMaxPoints ?? ATTENDANCE_MAX_POINTS}`,
+		`CP /${gradebook.policy.cpMaxPoints ?? CP_MAX_POINTS}`,
 		`Tổng /${TOTAL_MAX_POINTS}`,
 		'Status',
 	];

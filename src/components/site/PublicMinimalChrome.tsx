@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import QuickContactPanel from '@/components/contact/QuickContactPanel';
+import SiteAuthChip from '@/components/site/SiteAuthChip';
 import {
 	CONTACT_CTA,
 	isIntroPath,
@@ -77,6 +78,10 @@ export default function PublicMinimalChrome() {
 					</Link>
 				)
 			) : null}
+
+			<div className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50">
+				<SiteAuthChip />
+			</div>
 
 			{showContact ? (
 				<>

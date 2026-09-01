@@ -266,6 +266,11 @@ assert_application_smoke() {
 	local base_url="$1"
 	local api_body
 
+	expect_http_status "$base_url" '/vocabulary/store' 200
+	expect_http_status "$base_url" '/lop/no-such-class-ever' 404
+	expect_http_status "$base_url" '/admin/teaching?tab=cp' 307
+	expect_http_status "$base_url" '/my-space/teaching?tab=cp' 307
+	expect_http_status "$base_url" '/messages' 307
 	expect_http_status "$base_url" '/my-space/active-recall' 200
 	expect_http_status "$base_url" '/api/admin/active-recall' 401
 	if [[ "$EXPECT_LOCKS" != "true" ]]; then

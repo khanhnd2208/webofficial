@@ -9,6 +9,7 @@ import {
 	buildTestBundlePrompt,
 } from '@/features/myspace-tests/prompts/testBundlePrompt';
 import { routes } from '@/config/routes';
+import { adminFetch } from '@/lib/admin/client';
 import type { SubjectWithCounts } from '@/features/myspace-tests';
 
 type Preview = {
@@ -64,12 +65,8 @@ export default function ImportCsvClient() {
 	const [error, setError] = useState<string | null>(null);
 
 	const loadSubjects = useCallback(async () => {
-		const res = await fetch('/api/admin/myspace-subjects');
-		const json = (await res.json()) as {
-			ok: boolean;
-			data?: { items: SubjectWithCounts[] };
-		};
-		if (json.ok && json.data) setSubjects(json.data.items);
+		const data = await adminFetch<{ items: SubjectWithCounts[] }>('/api/admin/myspace-subjects');
+		if (data?.items) setSubjects(data.items);
 	}, []);
 
 	useEffect(() => {
@@ -117,32 +114,22 @@ export default function ImportCsvClient() {
 		setPreview(null);
 		setFixCopied(false);
 		try {
-			const res = await fetch('/api/admin/myspace-tests/import?dryRun=1', {
+			const data = await adminFetch<Preview>('/api/admin/myspace-tests/import?dryRun=1', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ text: aiCsv, allowMissingMeta: true }),
 			});
-			const json = (await res.json()) as {
-				ok: boolean;
-				data?: Preview;
-				error?: string;
-			};
-			if (!json.ok || !json.data) {
-				setError(json.error ?? 'Không kiểm tra được CSV');
-				return;
+			setPreview(data);
+			if (data.meta.title && !title) setTitle(data.meta.title);
+			if (data.meta.description && !description) {
+				setDescription(data.meta.description);
 			}
-			setPreview(json.data);
-			if (json.data.meta.title && !title) setTitle(json.data.meta.title);
-			if (json.data.meta.description && !description) {
-				setDescription(json.data.meta.description);
-			}
-			if (json.data.questionCount > 0) {
+			if (data.questionCount > 0) {
 				setQuestionCount(
-					json.data.meta.questionCount ?? Math.min(json.data.questionCount, 20),
+					data.meta.questionCount ?? Math.min(data.questionCount, 20),
 				);
 			}
-		} catch {
-			setError('Không kết nối được server');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không kết nối được server');
 		} finally {
 			setBusy(false);
 		}
@@ -150,23 +137,17 @@ export default function ImportCsvClient() {
 
 	async function createSubjectQuick() {
 		if (!newSubjectName.trim()) return;
-		const res = await fetch('/api/admin/myspace-subjects', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ name: newSubjectName.trim() }),
-		});
-		const json = (await res.json()) as {
-			ok: boolean;
-			data?: { id: string; name: string };
-			error?: string;
-		};
-		if (!json.ok || !json.data) {
-			setError(json.error ?? 'Không tạo được môn');
-			return;
+		try {
+			const created = await adminFetch<{ id: string; name: string }>('/api/admin/myspace-subjects', {
+				method: 'POST',
+				body: JSON.stringify({ name: newSubjectName.trim() }),
+			});
+			await loadSubjects();
+			setSubjectId(created.id);
+			setNewSubjectName('');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không tạo được môn');
 		}
-		await loadSubjects();
-		setSubjectId(json.data.id);
-		setNewSubjectName('');
 	}
 
 	async function saveSmartImport() {
@@ -174,9 +155,8 @@ export default function ImportCsvClient() {
 		setImporting(true);
 		setError(null);
 		try {
-			const res = await fetch('/api/admin/myspace-tests/import', {
+			const data = await adminFetch<ImportResult>('/api/admin/myspace-tests/import', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					text: aiCsv,
 					meta: {
@@ -188,19 +168,10 @@ export default function ImportCsvClient() {
 					},
 				}),
 			});
-			const json = (await res.json()) as {
-				ok: boolean;
-				data?: ImportResult;
-				error?: string;
-			};
-			if (!json.ok || !json.data) {
-				setError(json.error ?? 'Lưu thất bại');
-				return;
-			}
-			setResult(json.data);
+			setResult(data);
 			router.refresh();
-		} catch {
-			setError('Không kết nối được server');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không kết nối được server');
 		} finally {
 			setImporting(false);
 		}
@@ -214,22 +185,13 @@ export default function ImportCsvClient() {
 		try {
 			const form = new FormData();
 			form.append('file', selected);
-			const res = await fetch('/api/admin/myspace-tests/import?dryRun=1', {
+			const data = await adminFetch<Preview>('/api/admin/myspace-tests/import?dryRun=1', {
 				method: 'POST',
 				body: form,
 			});
-			const json = (await res.json()) as {
-				ok: boolean;
-				data?: Preview;
-				error?: string;
-			};
-			if (!json.ok || !json.data) {
-				setError(json.error ?? 'Không xem trước được file');
-				return;
-			}
-			setFilePreview(json.data);
-		} catch {
-			setError('Không kết nối được server');
+			setFilePreview(data);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không kết nối được server');
 		} finally {
 			setBusy(false);
 		}
@@ -242,23 +204,14 @@ export default function ImportCsvClient() {
 		try {
 			const form = new FormData();
 			form.append('file', file);
-			const res = await fetch('/api/admin/myspace-tests/import', {
+			const data = await adminFetch<ImportResult>('/api/admin/myspace-tests/import', {
 				method: 'POST',
 				body: form,
 			});
-			const json = (await res.json()) as {
-				ok: boolean;
-				data?: ImportResult;
-				error?: string;
-			};
-			if (!json.ok || !json.data) {
-				setError(json.error ?? 'Import thất bại');
-				return;
-			}
-			setResult(json.data);
+			setResult(data);
 			router.refresh();
-		} catch {
-			setError('Không kết nối được server');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không kết nối được server');
 		} finally {
 			setImporting(false);
 		}

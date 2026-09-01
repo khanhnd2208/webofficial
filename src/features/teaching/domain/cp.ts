@@ -24,6 +24,12 @@ export const TEACHING_SCORE_RULES = Object.freeze({
 export interface CpPolicy {
 	totalWeeks: number;
 	absenceThresholdPercent: number;
+	attendanceMaxPoints?: number;
+	cpMaxPoints?: number;
+	absenceDeductionPoints?: number;
+	lateDeductionPoints?: number;
+	lateCountsTowardAbsenceThreshold?: boolean;
+	giftDeductionPoints?: number;
 }
 
 export interface SessionCpInput {
@@ -57,6 +63,12 @@ export interface CpResult {
 export const DEFAULT_CP_POLICY: CpPolicy = {
 	totalWeeks: 10,
 	absenceThresholdPercent: 20,
+	attendanceMaxPoints: ATTENDANCE_MAX_POINTS,
+	cpMaxPoints: CP_MAX_POINTS,
+	absenceDeductionPoints: ABSENCE_DEDUCTION_POINTS,
+	lateDeductionPoints: ABSENCE_DEDUCTION_POINTS,
+	lateCountsTowardAbsenceThreshold: true,
+	giftDeductionPoints: 1,
 };
 
 export function clamp(value: number, min: number, max: number): number {
@@ -83,7 +95,9 @@ export function isAttendanceCounted(
 export function isParticipationCounted(
 	session: Pick<SessionCpInput, 'isCancelled' | 'participationTakenAt' | 'participationOpen'>,
 ): boolean {
-	return !session.isCancelled && Boolean(session.participationTakenAt) && !session.participationOpen;
+	return (
+		!session.isCancelled && Boolean(session.participationTakenAt) && !session.participationOpen
+	);
 }
 
 export function resolveSessionStatus(input: SessionCpInput): AttendanceStatus | null {
@@ -130,12 +144,19 @@ export function computeCp(
 	participationPoints: number[] = [],
 	giftCount = 0,
 ): CpResult {
+	const attendanceMaxPoints = policy.attendanceMaxPoints ?? ATTENDANCE_MAX_POINTS;
+	const cpMaxPoints = policy.cpMaxPoints ?? CP_MAX_POINTS;
+	const absenceDeductionPoints = policy.absenceDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
+	const lateDeductionPoints = policy.lateDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
+	const lateCountsTowardAbsenceThreshold = policy.lateCountsTowardAbsenceThreshold ?? true;
+	const giftDeductionPoints = policy.giftDeductionPoints ?? 1;
 	const taken = sessions.filter(isAttendanceCounted);
 	let unexcusedAbsences = 0;
 	let excusedAbsences = 0;
 	let lateCount = 0;
 	let presentCount = 0;
 	let makeupCount = 0;
+	let attendanceDeduction = 0;
 
 	for (const session of taken) {
 		const status = resolveSessionStatus(session);
@@ -144,9 +165,11 @@ export function computeCp(
 		else if (status === 'ABSENT_EXCUSED') excusedAbsences += 1;
 		else if (status === 'LATE') {
 			lateCount += 1;
-			unexcusedAbsences += 1;
+			attendanceDeduction += lateDeductionPoints;
+			if (lateCountsTowardAbsenceThreshold) unexcusedAbsences += 1;
 		} else if (status === 'ABSENT_UNEXCUSED') {
 			unexcusedAbsences += 1;
+			attendanceDeduction += absenceDeductionPoints;
 		}
 	}
 
@@ -155,17 +178,17 @@ export function computeCp(
 	const participationTotal = roundScore(
 		participationPoints.reduce((sum, points) => sum + points, 0),
 	);
-	const giftDeduction = Math.max(0, Math.trunc(giftCount));
-	const absenceDeduction = roundScore(unexcusedAbsences * ABSENCE_DEDUCTION_POINTS);
+	const giftDeduction = roundScore(Math.max(0, Math.trunc(giftCount)) * giftDeductionPoints);
+	const absenceDeduction = roundScore(attendanceDeduction);
 	const attendanceScore = roundScore(
-		clamp(ATTENDANCE_MAX_POINTS - absenceDeduction, 0, ATTENDANCE_MAX_POINTS),
+		clamp(attendanceMaxPoints - absenceDeduction, 0, attendanceMaxPoints),
 	);
-	const cappedParticipation = clamp(participationTotal, 0, CP_MAX_POINTS);
-	const cp = roundScore(clamp(cappedParticipation - giftDeduction, 0, CP_MAX_POINTS));
-	const totalScore = roundScore(clamp(attendanceScore + cp, 0, TOTAL_MAX_POINTS));
+	const cappedParticipation = clamp(participationTotal, 0, cpMaxPoints);
+	const cp = roundScore(clamp(cappedParticipation - giftDeduction, 0, cpMaxPoints));
+	const totalScore = roundScore(clamp(attendanceScore + cp, 0, attendanceMaxPoints + cpMaxPoints));
 	const riskLevel: RiskLevel = banned
 		? 'BANNED'
-		: unexcusedAbsences === banLimit && banLimit > 0
+		: unexcusedAbsences + 1 > banLimit && banLimit > 0
 			? 'AT_RISK'
 			: 'OK';
 

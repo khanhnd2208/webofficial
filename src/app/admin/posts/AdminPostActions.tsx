@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
+import { adminFetch } from '@/lib/admin/client';
+
 type Props = {
 	id: string;
 	slug: string;
@@ -13,24 +16,20 @@ type Props = {
 export default function AdminPostActions({ id, slug, title, isPublished }: Props) {
 	const [status, setStatus] = useState<'idle' | 'deleting' | 'error'>('idle');
 	const [error, setError] = useState<string>('');
+	const { confirm, dialog } = useAdminConfirm();
 
 	async function onDelete() {
-		const ok = window.confirm(`Xoá bài viết: "${title}"?`);
+		const ok = await confirm({
+			title: 'Xoá bài viết',
+			description: `Xoá bài viết “${title}”? Không hoàn tác được.`,
+			confirmLabel: 'Xoá',
+		});
 		if (!ok) return;
 
 		setStatus('deleting');
 		setError('');
 		try {
-			const res = await fetch(`/api/admin/posts/${id}`, { method: 'DELETE' });
-			const json = (await res.json()) as unknown;
-			const success = typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true;
-			if (!res.ok || !success) {
-				const message =
-					typeof json === 'object' && json !== null && typeof (json as { error?: unknown }).error === 'string'
-						? String((json as { error?: unknown }).error)
-						: `HTTP ${res.status}`;
-				throw new Error(message);
-			}
+			await adminFetch(`/api/admin/posts/${id}`, { method: 'DELETE' });
 			window.location.reload();
 		} catch (e) {
 			setStatus('error');
@@ -55,7 +54,7 @@ export default function AdminPostActions({ id, slug, title, isPublished }: Props
 				</Link>
 			) : (
 				<span className="rounded-md border border-border px-3 py-1 text-xs text-muted">
-					Chưa publish
+					Chưa xuất bản
 				</span>
 			)}
 			<button
@@ -67,6 +66,7 @@ export default function AdminPostActions({ id, slug, title, isPublished }: Props
 				{status === 'deleting' ? 'Đang xoá…' : 'Xoá'}
 			</button>
 			{status === 'error' ? <span className="text-xs text-error">{error}</span> : null}
+			{dialog}
 		</div>
 	);
 }

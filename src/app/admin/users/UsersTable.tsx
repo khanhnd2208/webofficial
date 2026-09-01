@@ -6,6 +6,7 @@ import type { UserListResult, UserListItem } from '@/services/userManagementServ
 import type { UserRole } from '@/types/user';
 import UserDetailPanel from './UserDetailPanel';
 import { formatDistanceToNow } from '@/utils/formatDate';
+import { adminFetch } from '@/lib/admin/client';
 
 interface Props {
 	result: UserListResult;
@@ -65,9 +66,8 @@ export default function UsersTable({
 	}
 
 	const handleRoleChange = useCallback(async (userId: string, newRole: UserRole) => {
-		await fetch(`/api/admin/users/${userId}/role`, {
+		await adminFetch(`/api/admin/users/${userId}/role`, {
 			method: 'PATCH',
-			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ role: newRole }),
 		});
 		startTransition(() => router.refresh());

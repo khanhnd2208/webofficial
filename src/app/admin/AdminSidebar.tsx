@@ -3,85 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { useCallback, useEffect, useId, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
-import { ADMIN_NAV_GROUPS } from '@/config/navigation';
+import { McIcon } from '@/components/myclass/ui/McIcon';
+import { ADMIN_NAV_GROUPS, isAdminNavActive } from '@/config/adminNavigation';
 import { routes } from '@/config/routes';
-
-const ICONS: Record<string, ReactNode> = {
-	[routes.admin.home]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-			<rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-			<rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-			<rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-		</svg>
-	),
-	[routes.admin.posts]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<path d="M4 4.5A1.5 1.5 0 015.5 3h9A1.5 1.5 0 0116 4.5v11a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 014 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
-			<path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-		</svg>
-	),
-	[routes.admin.postCreate]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-		</svg>
-	),
-	[routes.admin.courses]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<path d="M3 6.5L10 3l7 3.5v7L10 17l-7-3.5v-7z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-			<path d="M10 9v8" stroke="currentColor" strokeWidth="1.4" />
-		</svg>
-	),
-	[routes.admin.enrollments]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
-			<path d="M2 17c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-		</svg>
-	),
-	[routes.admin.vocabulary]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<path d="M3 4.5A1.5 1.5 0 014.5 3h11A1.5 1.5 0 0117 4.5v11a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
-			<path d="M6.5 7h7M6.5 10h7M6.5 13h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-		</svg>
-	),
-	[routes.admin.luckyCard]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-		</svg>
-	),
-	[routes.admin.messages]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<path d="M3 5.5A1.5 1.5 0 014.5 4h11A1.5 1.5 0 0117 5.5v7A1.5 1.5 0 0115.5 14H8l-3.5 2.5V5.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-		</svg>
-	),
-	[routes.admin.myspaceTests]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<path d="M5 3.5h10A1.5 1.5 0 0116.5 5v10a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 15V5A1.5 1.5 0 015 3.5z" stroke="currentColor" strokeWidth="1.4" />
-			<path d="M7 7.5h6M7 10.5h6M7 13.5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-		</svg>
-	),
-	[routes.admin.users]: (
-		<svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0" aria-hidden>
-			<circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
-			<path d="M2 17c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-		</svg>
-	),
-};
-
-function useIsActive(pathname: string) {
-	return (href: string, exact?: boolean) => {
-		if (exact || href === routes.admin.home) return pathname === href;
-		if (href === routes.admin.posts) {
-			return (
-				pathname === routes.admin.posts ||
-				(pathname.startsWith(`${routes.admin.posts}/`) && !pathname.startsWith(routes.admin.postCreate))
-			);
-		}
-		return pathname === href || pathname.startsWith(`${href}/`);
-	};
-}
 
 function NavItem({
 	href,
@@ -93,7 +19,7 @@ function NavItem({
 }: {
 	href: string;
 	label: string;
-	icon: ReactNode;
+	icon: Parameters<typeof McIcon>[0]['name'];
 	collapsed: boolean;
 	active: boolean;
 	onNavigate?: () => void;
@@ -109,7 +35,7 @@ function NavItem({
 					: 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
 			} ${collapsed ? 'justify-center' : ''}`}
 		>
-			<span className="relative shrink-0">{icon}</span>
+			<McIcon name={icon} size={16} className="shrink-0" />
 			{!collapsed && <span className="truncate">{label}</span>}
 		</Link>
 	);
@@ -123,7 +49,6 @@ function NavBody({
 	onNavigate?: () => void;
 }) {
 	const pathname = usePathname();
-	const isActive = useIsActive(pathname);
 	const { data: session } = useSession();
 
 	return (
@@ -135,7 +60,7 @@ function NavBody({
 						label="Tổng quan"
 						collapsed={collapsed}
 						active={pathname === routes.admin.home}
-						icon={ICONS[routes.admin.home]}
+						icon="dashboard"
 						onNavigate={onNavigate}
 					/>
 				</div>
@@ -144,7 +69,9 @@ function NavBody({
 					items.length === 0 ? null : (
 						<div key={group}>
 							{!collapsed && (
-								<p className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-muted/70">{group}</p>
+								<p className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-muted/70">
+									{group}
+								</p>
 							)}
 							<div className="space-y-0.5">
 								{items.map((item) => (
@@ -153,8 +80,8 @@ function NavBody({
 										href={item.href}
 										label={item.label}
 										collapsed={collapsed}
-										active={isActive(item.href, item.exact)}
-										icon={ICONS[item.href] ?? ICONS[routes.admin.posts]}
+										active={isAdminNavActive(pathname, item.href, item.exact)}
+										icon={item.icon}
 										onNavigate={onNavigate}
 									/>
 								))}
@@ -216,14 +143,13 @@ export default function AdminSidebar() {
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const drawerId = useId();
 	const pathname = usePathname();
+	const menuButtonRef = useRef<HTMLButtonElement>(null);
+	const drawerRef = useRef<HTMLElement>(null);
 
 	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-
-	// Close drawer on navigation without syncing in an effect:
-	const drawerKey = pathname;
-	const [navPath, setNavPath] = useState(pathname);
-	if (navPath !== drawerKey) {
-		setNavPath(drawerKey);
+	const [drawerRoute, setDrawerRoute] = useState(pathname);
+	if (drawerRoute !== pathname) {
+		setDrawerRoute(pathname);
 		if (drawerOpen) setDrawerOpen(false);
 	}
 
@@ -231,47 +157,75 @@ export default function AdminSidebar() {
 		if (!drawerOpen) return;
 		const prev = document.body.style.overflow;
 		document.body.style.overflow = 'hidden';
-		function onKey(e: KeyboardEvent) {
-			if (e.key === 'Escape') closeDrawer();
+		const drawer = drawerRef.current;
+		const menuButton = menuButtonRef.current;
+
+		function focusable(root: HTMLElement): HTMLElement[] {
+			return [...root.querySelectorAll<HTMLElement>(
+				'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+			)].filter((el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
 		}
+
+		const items = drawer ? focusable(drawer) : [];
+		(items[0] ?? drawer)?.focus();
+
+		function onKey(e: KeyboardEvent) {
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				closeDrawer();
+				return;
+			}
+			if (e.key !== 'Tab' || !drawer) return;
+			const cycle = focusable(drawer);
+			if (cycle.length === 0) {
+				e.preventDefault();
+				return;
+			}
+			const first = cycle[0]!;
+			const last = cycle[cycle.length - 1]!;
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		}
+
 		function onResize() {
 			if (window.matchMedia('(min-width: 768px)').matches) closeDrawer();
 		}
+
 		document.addEventListener('keydown', onKey);
 		window.addEventListener('resize', onResize);
 		return () => {
 			document.body.style.overflow = prev;
 			document.removeEventListener('keydown', onKey);
 			window.removeEventListener('resize', onResize);
+			menuButton?.focus();
 		};
 	}, [drawerOpen, closeDrawer]);
 
 	return (
 		<>
-			{/* Mobile top app bar */}
 			<header className="sticky top-0 z-40 flex h-[var(--header-height)] items-center gap-3 border-b border-border bg-surface px-3 md:hidden">
 				<button
+					ref={menuButtonRef}
 					type="button"
 					className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-hover"
 					aria-label={drawerOpen ? 'Đóng menu' : 'Mở menu'}
 					aria-expanded={drawerOpen}
 					aria-controls={drawerId}
+					data-testid="admin-menu-button"
 					onClick={() => setDrawerOpen((v) => !v)}
 				>
-					<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
-						{drawerOpen ? (
-							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-						) : (
-							<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-						)}
-					</svg>
+					<McIcon name={drawerOpen ? 'close' : 'menu'} size={20} />
 				</button>
 				<Link href={routes.admin.home} className="font-display text-base font-semibold tracking-wide text-foreground">
 					Admin
 				</Link>
 			</header>
 
-			{/* Mobile drawer */}
 			{drawerOpen ? (
 				<div className="fixed inset-0 z-50 md:hidden" role="presentation">
 					<button
@@ -281,10 +235,13 @@ export default function AdminSidebar() {
 						onClick={closeDrawer}
 					/>
 					<aside
+						ref={drawerRef}
 						id={drawerId}
 						role="dialog"
 						aria-modal="true"
 						aria-label="Menu quản trị"
+						tabIndex={-1}
+						data-testid="admin-mobile-drawer"
 						className="absolute inset-y-0 left-0 flex w-[min(100%,18rem)] flex-col border-r border-border bg-surface shadow-lg"
 					>
 						<div className="flex h-14 items-center justify-between border-b border-border px-3">
@@ -295,7 +252,7 @@ export default function AdminSidebar() {
 								className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-hover"
 								aria-label="Đóng"
 							>
-								×
+								<McIcon name="close" size={18} />
 							</button>
 						</div>
 						<NavBody collapsed={false} onNavigate={closeDrawer} />
@@ -303,7 +260,6 @@ export default function AdminSidebar() {
 				</div>
 			) : null}
 
-			{/* Desktop sidebar */}
 			<aside
 				className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-surface transition-all duration-200 md:flex ${
 					collapsed ? 'w-14' : 'w-56'
@@ -333,13 +289,7 @@ export default function AdminSidebar() {
 						className={`flex h-10 w-10 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-hover hover:text-foreground ${collapsed ? 'mx-auto' : ''}`}
 						aria-label={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
 					>
-						<svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden>
-							{collapsed ? (
-								<path d="M6 3l5 5-5 5M3 8h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-							) : (
-								<path d="M10 3L5 8l5 5M13 8H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-							)}
-						</svg>
+						<McIcon name={collapsed ? 'chevron_right' : 'chevron_left'} size={16} />
 					</button>
 				</div>
 				<NavBody collapsed={collapsed} />

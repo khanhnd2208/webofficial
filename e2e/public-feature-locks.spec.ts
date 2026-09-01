@@ -1,11 +1,13 @@
 import { expect, test } from '@playwright/test';
 
-const unfinishedFeaturesExplicitlyEnabled =
-	process.env.PUBLIC_TESTS_ENABLED === 'true' || process.env.PUBLIC_KNOWLEDGE_ENABLED === 'true';
+const unfinishedFeaturesOpen =
+	process.env.NODE_ENV !== 'production' &&
+	process.env.PUBLIC_TESTS_ENABLED !== 'false' &&
+	process.env.PUBLIC_KNOWLEDGE_ENABLED !== 'false';
 
 test.describe('unfinished public learning surfaces', () => {
 	test.skip(
-		unfinishedFeaturesExplicitlyEnabled,
+		unfinishedFeaturesOpen,
 		'This suite verifies the production fail-closed configuration.',
 	);
 

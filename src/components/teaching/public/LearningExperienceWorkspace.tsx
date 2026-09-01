@@ -159,6 +159,11 @@ export function LearningExperienceWorkspace({
 			return;
 		}
 		if (!pickerOpen || matchingStudents.length === 0) return;
+		if (event.key === 'Home' || event.key === 'End') {
+			event.preventDefault();
+			setHighlightedIndex(event.key === 'Home' ? 0 : matchingStudents.length - 1);
+			return;
+		}
 		if (event.key === 'ArrowDown') {
 			event.preventDefault();
 			setHighlightedIndex((current) => Math.min(current + 1, matchingStudents.length - 1));
@@ -191,11 +196,11 @@ export function LearningExperienceWorkspace({
 			});
 			setSession(next);
 			setPassword('');
-				setNotice(
-					next.choice
-						? 'Đã khôi phục lựa chọn trước đây của bạn.'
-						: 'Đã mở quyền truy cập. Chọn trải nghiệm phù hợp với bạn.',
-				);
+			setNotice(
+				next.choice
+					? 'Đã khôi phục lựa chọn trước đây của bạn.'
+					: 'Đã mở quyền truy cập. Chọn trải nghiệm phù hợp với bạn.',
+			);
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể xác thực.');
 		} finally {
@@ -325,6 +330,11 @@ export function LearningExperienceWorkspace({
 									aria-autocomplete="list"
 									aria-expanded={pickerOpen}
 									aria-controls="learning-student-options"
+									aria-activedescendant={
+										highlightedIndex >= 0
+											? `learning-student-option-${matchingStudents[highlightedIndex]?.enrollmentId}`
+											: undefined
+									}
 									required
 								/>
 								<span className={styles.pickerChevron} aria-hidden="true">
@@ -344,6 +354,7 @@ export function LearningExperienceWorkspace({
 											role="option"
 											aria-selected={selectedStudent?.enrollmentId === student.enrollmentId}
 											key={student.enrollmentId}
+											id={`learning-student-option-${student.enrollmentId}`}
 											data-access={student.accessMode}
 											data-highlighted={highlightedIndex === index}
 											onPointerDown={(event) => {

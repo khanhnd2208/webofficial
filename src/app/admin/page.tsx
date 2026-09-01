@@ -115,7 +115,7 @@ export default async function AdminHomePage() {
 						<QuickAction
 							href="/admin/posts"
 							label="Quản lý bài viết"
-							description="Xem, sửa, publish, xoá bài."
+							description="Xem, sửa, xuất bản, xoá bài."
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
 									<path d="M4 4.5A1.5 1.5 0 015.5 3h9A1.5 1.5 0 0116 4.5v11a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 014 15.5V4.5z" stroke="currentColor" strokeWidth="1.4" />
@@ -125,8 +125,8 @@ export default async function AdminHomePage() {
 						/>
 						<QuickAction
 							href="/admin/courses"
-							label="Khóa học"
-							description="Quản lý khóa học, chương và bài học."
+							label="Khóa học Chương–Bài"
+							description="Quản lý chương trình theo Chương → Bài học."
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
 									<path d="M3 6.5L10 3l7 3.5v7L10 17l-7-3.5v-7z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
@@ -147,7 +147,7 @@ export default async function AdminHomePage() {
 						<QuickAction
 							href="/admin/tools"
 							label="Công cụ"
-							description="Vocabulary, Lucky Card và Lời nhắn."
+							description="Từ vựng, Lucky Card và Lời nhắn."
 							icon={
 								<svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-foreground-secondary">
 									<path d="M10 2l2.09 4.26L17 7.27l-3.5 3.42L14.18 16 10 13.77 5.82 16l.68-5.31L3 7.27l4.91-.71L10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />

@@ -74,7 +74,7 @@ export function TeachingCoreTabs({
 	groupBoardEnabled: boolean;
 }) {
 	const pending = useTeachingWorkspacePending();
-	const tabLink = (value: TeachingWorkspaceTab) => routes.mySpaceTeachingClassTab(classId, value);
+	const tabLink = (value: TeachingWorkspaceTab) => routes.admin.teachingClassTab(classId, value);
 
 	return (
 		<div className="teaching-core-tabs-wrap">

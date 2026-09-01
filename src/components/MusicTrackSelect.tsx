@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import type { MusicTrackDTO } from '@/types/messageMusic';
 
 interface MusicTrackSelectProps {
@@ -10,6 +11,7 @@ interface MusicTrackSelectProps {
 }
 
 export default function MusicTrackSelect({ value, onChange }: MusicTrackSelectProps) {
+	const { confirm, dialog } = useAdminConfirm();
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const fileRef = useRef<HTMLInputElement>(null);
 	const [tracks, setTracks] = useState<MusicTrackDTO[]>([]);
@@ -84,7 +86,12 @@ export default function MusicTrackSelect({ value, onChange }: MusicTrackSelectPr
 
 	const handleDelete = async (track: MusicTrackDTO) => {
 		if (!track.canDelete || track.source !== 'upload') return;
-		if (!confirm(`Xóa "${track.label}"?`)) return;
+		const ok = await confirm({
+			title: 'Xóa nhạc',
+			description: `Xóa "${track.label}"?`,
+			confirmLabel: 'Xóa',
+		});
+		if (!ok) return;
 		setError('');
 		try {
 			const res = await fetch(`/api/messages/music/${track.id}`, {
@@ -105,6 +112,7 @@ export default function MusicTrackSelect({ value, onChange }: MusicTrackSelectPr
 	const uploads = tracks.filter((t) => t.source === 'upload');
 
 	return (
+		<>
 		<div className="space-y-4 rounded-2xl border border-border bg-surface p-5">
 			<div className="flex items-center justify-between gap-3">
 				<label className="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -236,5 +244,7 @@ export default function MusicTrackSelect({ value, onChange }: MusicTrackSelectPr
 				</p>
 			)}
 		</div>
+		{dialog}
+		</>
 	);
 }

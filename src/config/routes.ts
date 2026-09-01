@@ -111,6 +111,7 @@ export const routes = {
 	teachingPublicClass: (slug: string) => `/lop/${slug}` as const,
 	teachingPublicClassTab: (slug: string, tab: 'attendance' | 'cp' | 'groups' | 'learning' | 'notes') => `/lop/${slug}?tab=${tab}` as const,
 	teachingPublicAttendance: (slug: string) => `/lop/${slug}` as const,
+	vocabStore: '/vocabulary/store',
 
 	/** @deprecated Prefer aboutTeaching; kept for temporary redirects. */
 	teaching: '/giang-day',
@@ -134,6 +135,8 @@ export const routes = {
 		activeRecallNew: '/admin/tools/active-recall/new',
 		activeRecallEdit: (id: string) => `/admin/tools/active-recall/${id}` as const,
 		messages: '/admin/tools/messages',
+		messagesNew: '/admin/tools/messages/create',
+		messageEdit: (slug: string) => `/admin/tools/messages/${slug}` as const,
 		myspaceTests: '/admin/myspace-tests',
 		myspaceTestNew: '/admin/myspace-tests/new',
 		myspaceTestEdit: (id: string) => `/admin/myspace-tests/${id}` as const,
@@ -170,7 +173,6 @@ export const routes = {
 		myClassCohortEdit: (id: string) => `/admin/my-class/cohorts/${id}` as const,
 		myClassImport: '/admin/my-class/import',
 		myClassPerformance: '/admin/my-class/performance',
-		/** @deprecated Use routes.mySpaceTeaching. Kept for bookmark compatibility. */
 		teaching: '/admin/teaching',
 		teachingNew: '/admin/teaching/new',
 		teachingImport: '/admin/teaching/import',

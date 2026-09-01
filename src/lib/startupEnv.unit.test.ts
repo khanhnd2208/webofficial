@@ -9,7 +9,7 @@ const completeProductionEnvironment = {
 	AUTH_SECRET: 'test-secret',
 	GOOGLE_CLIENT_ID: 'google-client-id',
 	GOOGLE_CLIENT_SECRET: 'google-client-secret',
-	AUTH_URL: 'https://example.test',
+	AUTH_URL: 'https://toiladuykhanh.com',
 };
 
 afterEach(() => {
@@ -41,6 +41,17 @@ describe('assertProductionEnvironment', () => {
 
 		expect(() => assertProductionEnvironment()).toThrow(
 			'Production AUTH_URL or NEXTAUTH_URL must use https://',
+		);
+	});
+
+	it('requires the canonical production origin for Google OAuth', () => {
+		for (const [key, value] of Object.entries(completeProductionEnvironment)) {
+			vi.stubEnv(key, value);
+		}
+		vi.stubEnv('AUTH_URL', 'https://example.test');
+
+		expect(() => assertProductionEnvironment()).toThrow(
+			'Production AUTH_URL must be https://toiladuykhanh.com',
 		);
 	});
 

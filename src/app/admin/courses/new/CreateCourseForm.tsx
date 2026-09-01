@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { routes } from '@/config/routes';
+import { adminFetch } from '@/lib/admin/client';
 
 export default function CreateCourseForm() {
 	const router = useRouter();
@@ -18,20 +19,15 @@ export default function CreateCourseForm() {
 		setSaving(true);
 		setError(null);
 		try {
-			const res = await fetch('/api/admin/courses', {
+			const data = await adminFetch<{ id: string }>('/api/admin/courses', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					title,
 					slug: slug.trim() || undefined,
 					summary,
 				}),
 			});
-			const json = (await res.json()) as { ok: boolean; data?: { id: string }; error?: string };
-			if (!json.ok || !json.data) {
-				throw new Error(json.error ?? 'Không tạo được khóa học');
-			}
-			router.push(`${routes.admin.courses}/${json.data.id}`);
+			router.push(`${routes.admin.courses}/${data.id}`);
 			router.refresh();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Lỗi không xác định');

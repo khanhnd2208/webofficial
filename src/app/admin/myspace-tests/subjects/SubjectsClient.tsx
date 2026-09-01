@@ -3,10 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
+import { adminFetch } from '@/lib/admin/client';
 import type { SubjectWithCounts } from '@/features/myspace-tests';
 
 export default function SubjectsClient({ initial }: { initial: SubjectWithCounts[] }) {
 	const router = useRouter();
+	const { confirm, dialog } = useAdminConfirm();
 	const [name, setName] = useState('');
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -19,20 +22,14 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 		setBusy(true);
 		setError(null);
 		try {
-			const res = await fetch('/api/admin/myspace-subjects', {
+			await adminFetch('/api/admin/myspace-subjects', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ name: name.trim() }),
 			});
-			const json = (await res.json()) as { ok: boolean; error?: string };
-			if (!json.ok) {
-				setError(json.error ?? 'Không tạo được môn');
-				return;
-			}
 			setName('');
 			router.refresh();
-		} catch {
-			setError('Không kết nối được server');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không kết nối được server');
 		} finally {
 			setBusy(false);
 		}
@@ -43,47 +40,42 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 		setBusy(true);
 		setError(null);
 		try {
-			const res = await fetch(`/api/admin/myspace-subjects/${id}`, {
+			await adminFetch(`/api/admin/myspace-subjects/${id}`, {
 				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ name: editName.trim() }),
 			});
-			const json = (await res.json()) as { ok: boolean; error?: string };
-			if (!json.ok) {
-				setError(json.error ?? 'Không cập nhật được');
-				return;
-			}
 			setEditingId(null);
 			router.refresh();
-		} catch {
-			setError('Không kết nối được server');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không kết nối được server');
 		} finally {
 			setBusy(false);
 		}
 	}
 
 	async function onDelete(subject: SubjectWithCounts) {
-		if (!confirm(`Xóa môn “${subject.name}”?`)) return;
+		const ok = await confirm({
+			title: 'Xóa môn học',
+			description: `Xóa môn “${subject.name}”?`,
+			confirmLabel: 'Xóa',
+		});
+		if (!ok) return;
 		setBusy(true);
 		setError(null);
 		try {
-			const res = await fetch(`/api/admin/myspace-subjects/${subject.id}`, {
+			await adminFetch(`/api/admin/myspace-subjects/${subject.id}`, {
 				method: 'DELETE',
 			});
-			const json = (await res.json()) as { ok: boolean; error?: string };
-			if (!json.ok) {
-				setError(json.error ?? 'Không xóa được');
-				return;
-			}
 			router.refresh();
-		} catch {
-			setError('Không kết nối được server');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không kết nối được server');
 		} finally {
 			setBusy(false);
 		}
 	}
 
 	return (
+		<>
 		<div className="mt-8 space-y-6">
 			{error ? (
 				<p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -182,5 +174,7 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 				)}
 			</div>
 		</div>
+		{dialog}
+		</>
 	);
 }

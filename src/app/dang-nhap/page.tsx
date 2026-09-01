@@ -1,9 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import SignInWithGoogleButton from './sign-in-with-google-button';
 import { routes } from '@/config/routes';
 import { SITE_NAME } from '@/config/site';
+import { auth } from '@/lib/auth';
+import { authErrorMessage } from '@/lib/auth/errors';
+import { destinationLabel, sanitizeAuthRedirect } from '@/lib/auth/safeRedirect';
 
 export const metadata: Metadata = {
 	title: 'Đăng nhập',
@@ -11,39 +15,22 @@ export const metadata: Metadata = {
 	robots: { index: false, follow: false },
 };
 
-const ERROR_MESSAGES: Record<string, string> = {
-	OAuthAccountNotLinked:
-		'Email này đã được liên kết với một tài khoản khác. Vui lòng đăng nhập đúng tài khoản Google ban đầu hoặc thử lại.',
-	OAuthCallbackError: 'Đã xảy ra lỗi khi xác thực với Google. Vui lòng thử lại.',
-	OAuthSignin: 'Không thể kết nối đến Google. Vui lòng thử lại sau.',
-	SessionRequired: 'Vui lòng đăng nhập để tiếp tục.',
-	Default: 'Đã xảy ra lỗi đăng nhập. Vui lòng thử lại.',
-};
-
-function destinationLabel(from: string): string | null {
-	if (!from || from === '/' || from.startsWith('http')) return null;
-	if (from.startsWith('/admin')) return 'khu quản trị';
-	if (from.startsWith('/bai-viet')) return 'bài viết';
-	if (from.startsWith('/tai-khoan')) return 'tài khoản';
-	return 'trang bạn vừa mở';
-}
-
-function normalizeCallbackUrl(value?: string): string {
-	if (!value || value.startsWith('http')) return routes.home;
-	if (value.startsWith('/dashboard')) return routes.accountLearning;
-	if (value.startsWith('/giang-day')) return routes.learn;
-	return value;
-}
-
 export default async function LoginPage({
 	searchParams,
 }: {
 	searchParams?: Promise<{ from?: string; error?: string; callbackUrl?: string }>;
 }) {
 	const sp = await searchParams;
-	const from = normalizeCallbackUrl(sp?.callbackUrl ?? sp?.from);
-	const errorCode = sp?.error;
-	const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.Default) : null;
+	const session = await auth();
+	const from = sanitizeAuthRedirect(sp?.callbackUrl ?? sp?.from, {
+		role: session?.user?.role,
+	});
+
+	if (session?.user) {
+		redirect(from);
+	}
+
+	const errorMessage = authErrorMessage(sp?.error);
 	const backLabel = destinationLabel(from);
 
 	return (
@@ -95,7 +82,7 @@ export default async function LoginPage({
 						</p>
 
 						<div className="mt-6 sm:mt-8">
-							<SignInWithGoogleButton callbackUrl={from} />
+							<SignInWithGoogleButton redirectTo={from} />
 						</div>
 
 						{errorMessage ? (

@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import TagInput from '@/components/TagInput';
+import { routes } from '@/config/routes';
+import { clientLoginHref } from '@/lib/admin/client';
 
 /* ══════════════════════════════════════════════════════════════════
    Types
@@ -39,10 +41,6 @@ type EditableWord = {
 	_expanded?: boolean;
 };
 const EMPTY_EDIT_WORD: EditableWord = { term: '', definition: '', partOfSpeech: '', example: '', pronunciation: '', meaningEn: '', meaningVi: '', ndkExplanation: '', hintsHard: [], hintsMedium: [], hintsEasy: [], _isNew: true, _deleted: false, _expanded: true };
-
-interface Props {
-	isAdmin: boolean;
-}
 
 /* ══════════════════════════════════════════════════════════════════
    Shared UI helpers
@@ -143,6 +141,10 @@ function UserStoreView() {
 				body: JSON.stringify({ vocabSetId: set.id }),
 			});
 			if (res.status === 409) { showToast('Bạn đã sở hữu bộ từ này', 'info'); return; }
+			if (res.status === 401) {
+				window.location.assign(clientLoginHref(routes.vocabStore));
+				return;
+			}
 			if (!res.ok) throw new Error('Server error');
 			showToast(`Đã thêm "${set.title}" vào thư viện!`, 'success');
 		} catch {
@@ -261,7 +263,7 @@ function UserStoreView() {
 /* ══════════════════════════════════════════════════════════════════
    Admin Store Management View
 ══════════════════════════════════════════════════════════════════ */
-function AdminStoreView() {
+export function AdminStoreView() {
 	const [sets, setSets] = useState<StoreSet[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -1099,12 +1101,9 @@ function WordEditorCard({ word, index, onUpdate, onToggleExpand, onToggleDelete 
 /* ══════════════════════════════════════════════════════════════════
    Main Export
 ══════════════════════════════════════════════════════════════════ */
-export default function StoreClient({ isAdmin }: Props) {
-	const [tab, setTab] = useState<'store' | 'manage'>(isAdmin ? 'store' : 'store');
-
+export default function StoreClient() {
 	return (
 		<main className="min-h-screen">
-			{/* Header */}
 			<section className="border-b border-border">
 				<div className="mx-auto max-w-5xl px-6 py-12 sm:py-16">
 					<div className="flex items-center gap-3">
@@ -1120,9 +1119,7 @@ export default function StoreClient({ isAdmin }: Props) {
 								Cửa hàng từ vựng
 							</h1>
 							<p className="mt-2 text-sm text-foreground-secondary">
-								{isAdmin
-									? 'Khám phá cửa hàng hoặc quản lí bộ từ dưới góc độ Admin.'
-									: 'Khám phá bộ sưu tập từ vựng do Admin tuyển chọn.'}
+								Khám phá bộ sưu tập từ vựng do giảng viên tuyển chọn.
 							</p>
 						</div>
 						<Link href="/vocabulary"
@@ -1130,38 +1127,12 @@ export default function StoreClient({ isAdmin }: Props) {
 							Bộ từ của tôi
 						</Link>
 					</div>
-
-					{/* Admin tabs */}
-					{isAdmin && (
-						<div className="mt-6 flex gap-1 border-b border-border">
-							{([
-								{ key: 'store', label: 'Cửa hàng' },
-								{ key: 'manage', label: 'Quản lí bộ từ' },
-							] as const).map(({ key, label }) => (
-								<button
-									key={key}
-									onClick={() => setTab(key)}
-									className={`border-b-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors -mb-px ${
-										tab === key
-											? 'border-foreground text-foreground'
-											: 'border-transparent text-muted hover:text-foreground'
-									}`}
-								>
-									{label}
-									{key === 'manage' && (
-										<span className="ml-1.5 rounded-full bg-foreground px-1.5 py-0.5 text-[9px] font-black text-background">ADMIN</span>
-									)}
-								</button>
-							))}
-						</div>
-					)}
 				</div>
 			</section>
 
-			{/* Tab content */}
 			<section>
 				<div className="mx-auto max-w-5xl px-6 py-10 sm:py-12">
-					{tab === 'store' ? <UserStoreView /> : <AdminStoreView />}
+					<UserStoreView />
 				</div>
 			</section>
 		</main>

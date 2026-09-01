@@ -1,6 +1,6 @@
-import { requireVocabAdminAccess } from '@/lib/requireVocabAdmin';
+import type { ReactNode } from 'react';
 
-export default async function VocabularyLayout({ children }: { children: React.ReactNode }) {
-	await requireVocabAdminAccess();
+/** Learner vocabulary surfaces. Admin management lives under /admin/tools/vocabulary. */
+export default function VocabularyLayout({ children }: { children: ReactNode }) {
 	return children;
 }

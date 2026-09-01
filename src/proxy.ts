@@ -4,7 +4,18 @@ import { getLockedPublicLearningFeature } from '@/config/publicFeatureAccess';
 
 export function proxy(request: NextRequest) {
 	const lockedFeature = getLockedPublicLearningFeature(request.nextUrl.pathname);
-	if (!lockedFeature) return NextResponse.next();
+	if (!lockedFeature) {
+		const response = NextResponse.next();
+		const pathname = request.nextUrl.pathname;
+		if (
+			pathname.startsWith('/admin') ||
+			pathname.startsWith('/messages') ||
+			pathname.startsWith('/my-space/teaching')
+		) {
+			response.headers.set('x-pathname', `${pathname}${request.nextUrl.search}`);
+		}
+		return response;
+	}
 
 	const headers = {
 		'cache-control': 'no-store',
@@ -33,5 +44,11 @@ export const config = {
 		'/my-space/my-class/:path*',
 		'/api/myspace-tests/:path*',
 		'/api/my-class/:path*',
+		'/admin',
+		'/admin/:path*',
+		'/messages',
+		'/messages/:path*',
+		'/my-space/teaching',
+		'/my-space/teaching/:path*',
 	],
 };

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
+import { adminFetch } from '@/lib/admin/client';
 import { routes } from '@/config/routes';
 import type { SpaceTestDTO, SpaceTestWithQuestionCount, SubjectWithCounts } from '@/features/myspace-tests';
 
@@ -16,6 +18,7 @@ function attachedCount(initial?: Initial): number | null {
 
 export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 	const router = useRouter();
+	const { confirm, dialog } = useAdminConfirm();
 	const isEdit = Boolean(initial);
 	const attached = attachedCount(initial);
 
@@ -33,36 +36,30 @@ export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		void fetch('/api/admin/myspace-subjects')
-			.then((r) => r.json())
-			.then((json: { ok: boolean; data?: { items: SubjectWithCounts[] } }) => {
-				if (json.ok && json.data) setSubjects(json.data.items);
-			});
+		void adminFetch<{ items: SubjectWithCounts[] }>('/api/admin/myspace-subjects')
+			.then((data) => {
+				if (data?.items) setSubjects(data.items);
+			})
+			.catch(() => undefined);
 	}, []);
 
 	async function createSubjectQuick() {
 		if (!newSubjectName.trim()) return;
 		setError(null);
-		const res = await fetch('/api/admin/myspace-subjects', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ name: newSubjectName.trim() }),
-		});
-		const json = (await res.json()) as {
-			ok: boolean;
-			data?: SubjectWithCounts;
-			error?: string;
-		};
-		if (!json.ok || !json.data) {
-			setError(json.error ?? 'Không tạo được môn');
-			return;
+		try {
+			const created = await adminFetch<SubjectWithCounts>('/api/admin/myspace-subjects', {
+				method: 'POST',
+				body: JSON.stringify({ name: newSubjectName.trim() }),
+			});
+			setSubjects((prev) => [...prev, { ...created, testCount: 0, questionCount: 0 }].sort((a, b) =>
+				a.name.localeCompare(b.name),
+			));
+			setSubjectId(created.id);
+			setNewSubjectName('');
+			setShowNewSubject(false);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không tạo được môn');
 		}
-		setSubjects((prev) => [...prev, { ...json.data!, testCount: 0, questionCount: 0 }].sort((a, b) =>
-			a.name.localeCompare(b.name),
-		));
-		setSubjectId(json.data.id);
-		setNewSubjectName('');
-		setShowNewSubject(false);
 	}
 
 	async function onSubmit(e: React.FormEvent) {
@@ -79,23 +76,14 @@ export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 				...(isEdit || displayOrder > 0 ? { displayOrder } : {}),
 				status,
 			};
-			const res = await fetch(
+			const saved = await adminFetch<{ id: string }>(
 				isEdit ? `/api/admin/myspace-tests/${initial!.id}` : '/api/admin/myspace-tests',
 				{
 					method: isEdit ? 'PATCH' : 'POST',
-					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(payload),
 				},
 			);
-			const json = (await res.json()) as {
-				ok: boolean;
-				data?: { id: string };
-				error?: string;
-			};
-			if (!json.ok || !json.data) {
-				throw new Error(json.error ?? 'Không lưu được');
-			}
-			router.push(routes.admin.myspaceTestEdit(json.data.id));
+			router.push(routes.admin.myspaceTestEdit(saved.id));
 			router.refresh();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Lỗi không xác định');
@@ -104,13 +92,20 @@ export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 	}
 
 	async function onDelete() {
-		if (!initial || !confirm('Xóa bài test này?')) return;
-		await fetch(`/api/admin/myspace-tests/${initial.id}`, { method: 'DELETE' });
+		if (!initial) return;
+		const ok = await confirm({
+			title: 'Xóa bài test',
+			description: 'Xóa bài test này?',
+			confirmLabel: 'Xóa',
+		});
+		if (!ok) return;
+		await adminFetch(`/api/admin/myspace-tests/${initial.id}`, { method: 'DELETE' });
 		router.push(routes.admin.myspaceTests);
 		router.refresh();
 	}
 
 	return (
+		<>
 		<form onSubmit={onSubmit} className="mt-8 max-w-2xl space-y-5">
 			{error ? (
 				<p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -279,5 +274,7 @@ export default function SpaceTestForm({ initial }: { initial?: Initial }) {
 				</p>
 			) : null}
 		</form>
+		{dialog}
+		</>
 	);
 }

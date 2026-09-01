@@ -958,11 +958,18 @@ model TeachingClass {
   lecturerName               String              @default("")
   lecturerCode               String              @default("")
   totalWeeks                 Int                 @default(10)
-  /// Deprecated: scoring uses hardcoded 5 / 0.5 in domain/cp.ts.
+  /// Maximum points awarded for attendance. Attendance + CP must equal 10.
+  attendanceMaxPoints        Decimal             @default(5) @db.Decimal(4, 2)
+  /// Maximum points awarded for class participation.
   cpMaxPoints                Decimal             @default(5) @db.Decimal(4, 2)
-  /// Deprecated: scoring uses hardcoded 5 / 0.5 in domain/cp.ts.
+  /// Legacy field retained for backwards-compatible imports; use absenceDeductionPoints.
   cpPerAbsence               Decimal             @default(0.5) @db.Decimal(4, 2)
+  /// Legacy field retained for backwards-compatible imports; CP weekly values remain 0/0.5/1/2.
   maxParticipationPerSession Decimal             @default(2) @db.Decimal(4, 2)
+  absenceDeductionPoints     Decimal             @default(0.5) @db.Decimal(4, 2)
+  lateDeductionPoints        Decimal             @default(0.5) @db.Decimal(4, 2)
+  lateCountsTowardAbsenceThreshold Boolean        @default(true)
+  giftDeductionPoints        Decimal             @default(1) @db.Decimal(4, 2)
   absenceThresholdPercent    Int                 @default(20)
   lateGraceMinutes           Int                 @default(15)
   status                     TeachingClassStatus @default(ACTIVE)

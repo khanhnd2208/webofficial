@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { myClassApi } from '@/components/myclass/admin/api';
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import VocabSetEditor, { toCreateWords, useLoadedVocabSet } from '@/components/vocab/VocabSetEditor';
 import { routes } from '@/config/routes';
 
@@ -11,6 +12,7 @@ export default function EditVocabSetPage() {
 	const params = useParams<{ id: string }>();
 	const router = useRouter();
 	const draft = useLoadedVocabSet(params.id);
+	const { confirm, dialog } = useAdminConfirm();
 	const [busy, setBusy] = useState(false);
 
 	async function save(event: React.FormEvent) {
@@ -52,6 +54,7 @@ export default function EditVocabSetPage() {
 	}
 
 	return (
+		<>
 		<div className="mc-studio-container px-0 py-8">
 			<Link href={routes.admin.myClassVocabulary} className="text-xs uppercase tracking-widest text-muted">
 				← Thư viện từ vựng
@@ -81,7 +84,12 @@ export default function EditVocabSetPage() {
 							disabled={busy}
 							className="min-h-11 rounded-[var(--mc-r-sm)] border border-error/40 px-5 text-sm font-semibold text-error disabled:opacity-40"
 							onClick={async () => {
-								if (!window.confirm('Lưu trữ bộ từ này? Học viên sẽ không thấy bộ từ ở khóa học.')) return;
+								const ok = await confirm({
+									title: 'Lưu trữ bộ từ',
+									description: 'Lưu trữ bộ từ này? Học viên sẽ không thấy bộ từ ở khóa học.',
+									confirmLabel: 'Lưu trữ',
+								});
+								if (!ok) return;
 								setBusy(true);
 								draft.setError(null);
 								try {
@@ -99,5 +107,7 @@ export default function EditVocabSetPage() {
 				</form>
 			) : null}
 		</div>
+		{dialog}
+		</>
 	);
 }

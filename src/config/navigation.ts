@@ -64,16 +64,8 @@ export interface FooterGroup {
 	links: FooterLink[];
 }
 
-export interface AdminNavItem {
-	href: string;
-	label: string;
-	exact?: boolean;
-}
-
-export interface AdminNavGroup {
-	group: string;
-	items: AdminNavItem[];
-}
+export type { AdminNavGroup, AdminNavItem } from './adminNavigation';
+export { ADMIN_NAV_GROUPS } from './adminNavigation';
 
 /**
  * Mục lục gate — four centered destinations. Locked items stay visible but inert.
@@ -282,42 +274,6 @@ export const PUBLIC_NAV_LINKS: NavLink[] = getDesktopNavLinks();
 export const USER_MENU_LINKS: NavLink[] = [
 	{ href: routes.accountLearning, label: 'Khu học' },
 	{ href: routes.account, label: 'Tài khoản' },
-];
-
-/** Admin sidebar — grouped information architecture */
-export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
-	{
-		group: 'Nội dung',
-		items: [
-			{ href: routes.admin.posts, label: 'Bài viết' },
-			{ href: routes.admin.postCreate, label: 'Tạo bài viết' },
-		],
-	},
-	{
-		group: 'Giảng dạy',
-		items: [
-			{ href: routes.admin.courses, label: 'Khóa học' },
-			{ href: routes.admin.enrollments, label: 'Học viên và ghi danh' },
-			{ href: routes.admin.myClass, label: 'My Class' },
-		],
-	},
-	{
-		group: 'Công cụ',
-		items: [
-			{ href: routes.admin.vocabulary, label: 'Vocabulary' },
-			{ href: routes.admin.luckyCard, label: 'Lucky Card' },
-			{ href: routes.admin.messages, label: 'Lời nhắn' },
-			{ href: routes.admin.myspaceTests, label: 'My Space Tests' },
-			{ href: routes.admin.myspaceSubjects, label: 'Môn học (Tests)' },
-		],
-	},
-	{
-		group: 'Hệ thống',
-		items: [
-			{ href: routes.admin.inquiries, label: 'Yêu cầu liên hệ' },
-			{ href: routes.admin.users, label: 'Người dùng' },
-		],
-	},
 ];
 
 /** @deprecated Use PUBLIC_NAV_LINKS / getDesktopNavLinks() */

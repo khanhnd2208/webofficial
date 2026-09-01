@@ -27,6 +27,12 @@ export const POST = withErrorHandling(async (request: NextRequest, context) => {
 		10,
 		5 * 60 * 1000,
 	);
+	await assertScopedRateLimit(
+		request,
+		`teaching-learning-experience-login-class:${slug}`,
+		100,
+		5 * 60 * 1000,
+	);
 	return apiSuccess(await loginToLearningExperience(slug, input));
 });
 

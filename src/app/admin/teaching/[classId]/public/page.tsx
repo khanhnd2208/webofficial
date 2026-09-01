@@ -10,5 +10,5 @@ export default async function TeachingPublicPageAdmin({
 	params: Promise<{ classId: string }>;
 }) {
 	const { classId } = await params;
-	redirect(routes.mySpaceTeachingClassTab(classId, 'setup'));
+	redirect(routes.admin.teachingClassTab(classId, 'setup'));
 }

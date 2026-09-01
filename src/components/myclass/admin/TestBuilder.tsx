@@ -1,5 +1,6 @@
 'use client';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { routes } from '@/config/routes';
@@ -60,6 +61,7 @@ export default function TestBuilder({
 	subjects?: Array<{ id: string; name: string }>;
 }) {
 	const router = useRouter();
+	const { confirm, dialog } = useAdminConfirm();
 	const [tab, setTab] = useState<'questions' | 'placements' | 'settings'>('questions');
 	const [title, setTitle] = useState(initial.title);
 	const [slug, setSlug] = useState(initial.slug);
@@ -182,6 +184,7 @@ export default function TestBuilder({
 	}
 
 	return (
+		<>
 		<div className="space-y-5">
 			{error ? <p className="text-sm text-error">{error}</p> : null}
 			<div className="flex gap-2">
@@ -425,7 +428,12 @@ export default function TestBuilder({
 				<StudioButton
 					variant="danger"
 					onClick={async () => {
-						if (!window.confirm('Lưu trữ bài kiểm tra này? Học viên sẽ không còn thấy bài.')) return;
+						const ok = await confirm({
+							title: 'Lưu trữ bài kiểm tra',
+							description: 'Lưu trữ bài kiểm tra này? Học viên sẽ không còn thấy bài.',
+							confirmLabel: 'Lưu trữ',
+						});
+						if (!ok) return;
 						setError(null);
 						try {
 							await myClassApi(`/api/admin/my-class/tests/${initial.id}`, { method: 'DELETE' });
@@ -440,6 +448,8 @@ export default function TestBuilder({
 			</div>
 			<TestCsvImport open={csvOpen} testId={initial.id} existingCount={items.length} onImported={() => router.refresh()} onClose={() => setCsvOpen(false)} />
 		</div>
+		{dialog}
+		</>
 	);
 }
 

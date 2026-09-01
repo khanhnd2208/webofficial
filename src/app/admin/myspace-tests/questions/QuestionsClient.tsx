@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
+import { adminFetch } from '@/lib/admin/client';
 import type { McqQuestionDTO } from '@/features/myspace-tests';
 
 export default function QuestionsClient({
@@ -21,6 +23,7 @@ export default function QuestionsClient({
 	initialQ: string;
 }) {
 	const router = useRouter();
+	const { confirm, dialog } = useAdminConfirm();
 	const [subjectId, setSubjectId] = useState(initialSubjectId);
 	const [topic, setTopic] = useState(initialTopic);
 	const [q, setQ] = useState(initialQ);
@@ -45,12 +48,13 @@ export default function QuestionsClient({
 		setBusyId(item.id);
 		setError(null);
 		try {
-			await fetch(`/api/admin/myspace-questions/${item.id}`, {
+			await adminFetch(`/api/admin/myspace-questions/${item.id}`, {
 				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ isActive: !item.isActive }),
 			});
 			router.refresh();
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không cập nhật được');
 		} finally {
 			setBusyId(null);
 		}
@@ -68,43 +72,42 @@ export default function QuestionsClient({
 		setBusyId(editing.id);
 		setError(null);
 		try {
-			const res = await fetch(`/api/admin/myspace-questions/${editing.id}`, {
+			await adminFetch(`/api/admin/myspace-questions/${editing.id}`, {
 				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ stem: editStem, topic: editTopic }),
 			});
-			const json = (await res.json()) as { ok: boolean; error?: string };
-			if (!json.ok) {
-				setError(json.error ?? 'Không lưu được');
-				return;
-			}
 			setEditing(null);
 			router.refresh();
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không lưu được');
 		} finally {
 			setBusyId(null);
 		}
 	}
 
 	async function onDelete(item: McqQuestionDTO) {
-		if (!confirm('Xóa câu hỏi này?')) return;
+		const ok = await confirm({
+			title: 'Xóa câu hỏi',
+			description: 'Xóa câu hỏi này?',
+			confirmLabel: 'Xóa',
+		});
+		if (!ok) return;
 		setBusyId(item.id);
 		setError(null);
 		try {
-			const res = await fetch(`/api/admin/myspace-questions/${item.id}`, {
+			await adminFetch(`/api/admin/myspace-questions/${item.id}`, {
 				method: 'DELETE',
 			});
-			const json = (await res.json()) as { ok: boolean; error?: string };
-			if (!json.ok) {
-				setError(json.error ?? 'Không xóa được');
-				return;
-			}
 			router.refresh();
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Không xóa được');
 		} finally {
 			setBusyId(null);
 		}
 	}
 
 	return (
+		<>
 		<div className="mt-8">
 			{error ? (
 				<p className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -250,5 +253,7 @@ export default function QuestionsClient({
 				)}
 			</div>
 		</div>
+		{dialog}
+		</>
 	);
 }

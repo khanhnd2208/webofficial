@@ -10,7 +10,6 @@ import {
 	StudioSelect,
 } from '@/components/myclass/admin/studio';
 import { teachingApi } from '@/components/teaching/admin/api';
-import { ABSENCE_DEDUCTION_POINTS, ATTENDANCE_MAX_POINTS, CP_MAX_POINTS } from '@/features/teaching/domain/cp';
 import type { TeachingClassRecord } from '@/features/teaching/types';
 
 export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRecord }) {
@@ -34,8 +33,14 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 					credits: form.credits,
 					lecturerName: form.lecturerName,
 					lecturerCode: form.lecturerCode,
-				totalWeeks: form.totalWeeks,
-				absenceThresholdPercent: form.absenceThresholdPercent,
+					totalWeeks: form.totalWeeks,
+					attendanceMaxPoints: form.attendanceMaxPoints,
+					cpMaxPoints: form.cpMaxPoints,
+					absenceDeductionPoints: form.absenceDeductionPoints,
+					lateDeductionPoints: form.lateDeductionPoints,
+					lateCountsTowardAbsenceThreshold: form.lateCountsTowardAbsenceThreshold,
+					giftDeductionPoints: form.giftDeductionPoints,
+					absenceThresholdPercent: form.absenceThresholdPercent,
 					lateGraceMinutes: form.lateGraceMinutes,
 					status: form.status,
 				}),
@@ -103,10 +108,78 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 						onChange={(event) => setForm({ ...form, lateGraceMinutes: Number(event.target.value) })}
 					/>
 				</StudioField>
+				<StudioField label="Attendance tối đa">
+					<StudioInput
+						type="number"
+						min={0}
+						max={10}
+						step={0.5}
+						value={form.attendanceMaxPoints}
+						onChange={(event) =>
+							setForm({ ...form, attendanceMaxPoints: Number(event.target.value) })
+						}
+					/>
+				</StudioField>
+				<StudioField label="CP tối đa">
+					<StudioInput
+						type="number"
+						min={0}
+						max={10}
+						step={0.5}
+						value={form.cpMaxPoints}
+						onChange={(event) => setForm({ ...form, cpMaxPoints: Number(event.target.value) })}
+					/>
+				</StudioField>
+				<StudioField label="Mức trừ mỗi buổi vắng">
+					<StudioInput
+						type="number"
+						min={0}
+						max={10}
+						step={0.25}
+						value={form.absenceDeductionPoints}
+						onChange={(event) =>
+							setForm({ ...form, absenceDeductionPoints: Number(event.target.value) })
+						}
+					/>
+				</StudioField>
+				<StudioField label="Mức trừ đi muộn">
+					<StudioInput
+						type="number"
+						min={0}
+						max={10}
+						step={0.25}
+						value={form.lateDeductionPoints}
+						onChange={(event) =>
+							setForm({ ...form, lateDeductionPoints: Number(event.target.value) })
+						}
+					/>
+				</StudioField>
+				<StudioField label="Mức trừ mỗi Gift">
+					<StudioInput
+						type="number"
+						min={0}
+						max={10}
+						step={0.25}
+						value={form.giftDeductionPoints}
+						onChange={(event) =>
+							setForm({ ...form, giftDeductionPoints: Number(event.target.value) })
+						}
+					/>
+				</StudioField>
+				<label className="flex items-center gap-2 text-sm text-ink">
+					<input
+						type="checkbox"
+						checked={form.lateCountsTowardAbsenceThreshold}
+						onChange={(event) =>
+							setForm({ ...form, lateCountsTowardAbsenceThreshold: event.target.checked })
+						}
+					/>
+					Đi muộn tính vào ngưỡng vắng
+				</label>
 				<div className="rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-3 text-sm text-ink-secondary md:col-span-2">
-					<strong className="text-ink">Quy định điểm cố định:</strong> Attendance tối đa {ATTENDANCE_MAX_POINTS} điểm; CP
-					tối đa {CP_MAX_POINTS} điểm; mỗi buổi vắng không phép, đi muộn hoặc không có trạng thái khi buổi đã bắt đầu
-					trừ {ABSENCE_DEDUCTION_POINTS.toString().replace('.', ',')} điểm Attendance.
+					<strong className="text-ink">Preview:</strong> Attendance {form.attendanceMaxPoints} + CP{' '}
+					{form.cpMaxPoints} = {form.attendanceMaxPoints + form.cpMaxPoints}. CP mỗi tuần giữ các
+					mức 0 / 0,5 / 1 / 2.
 				</div>
 				<StudioField label="Ngưỡng cấm thi (%)">
 					<StudioInput

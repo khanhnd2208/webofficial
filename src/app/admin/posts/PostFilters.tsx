@@ -18,8 +18,8 @@ interface PostFiltersProps {
 
 const STATUS_OPTIONS = [
 	{ value: 'all', label: 'Tất cả' },
-	{ value: 'true', label: 'Published' },
-	{ value: 'false', label: 'Draft' },
+	{ value: 'true', label: 'Đã xuất bản' },
+	{ value: 'false', label: 'Bản nháp' },
 ] as const;
 
 const SORT_OPTIONS = [

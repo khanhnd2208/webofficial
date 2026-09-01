@@ -451,6 +451,19 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 		}
 	}
 
+	async function flushPending(kind: 'attendance' | 'participation', sessionId: string) {
+		const pending = [...queues.current.entries()]
+			.filter(([key]) => key.startsWith(`${kind}:`) && key.endsWith(`:${sessionId}`))
+			.map(([, request]) => request);
+		if (pending.length) await Promise.all(pending);
+		const failed = Object.entries(saveStates).some(
+			([key, state]) =>
+				key.startsWith(`${kind}:`) && key.endsWith(`:${sessionId}`) && state === 'error',
+		);
+		if (failed)
+			throw new Error('Có ô chưa lưu thành công trong tuần này. Hãy thử lại trước khi chốt.');
+	}
+
 	async function setAttendanceLifecycle(
 		sessionId: string,
 		action: SessionLifecycleAction,
@@ -458,6 +471,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	) {
 		setTogglingSessionId(sessionId);
 		try {
+			await flushPending('attendance', sessionId);
 			const result = await teachingApi<TeachingAttendanceMutationResult>(
 				`/api/admin/teaching/sessions/${sessionId}/attendance/lock`,
 				{
@@ -491,6 +505,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	async function setParticipationLifecycle(sessionId: string, action: SessionLifecycleAction) {
 		setTogglingSessionId(sessionId);
 		try {
+			await flushPending('participation', sessionId);
 			const result = await teachingApi<TeachingParticipationMutationResult>(
 				`/api/admin/teaching/sessions/${sessionId}/participation/lock`,
 				{

@@ -2,15 +2,17 @@
    GET  /api/vocab-sets/store        — paginated public store
    POST /api/vocab-sets/store        — add set to user's library
    ════════════════════════════════════════════════════════════════════════ */
-import { withAuth, apiSuccess, apiError } from '@/lib/apiUtils';
+import { withAuth, withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
+import { getApiUser } from '@/lib/apiAuth';
 import { getStore, addToLibrary, AlreadyOwnedError, getVocabSetById } from '@/services/vocabSetService';
 
-export const GET = withAuth(async (request, user) => {
+export const GET = withErrorHandling(async (request) => {
+	const user = await getApiUser(request);
 	const url = new URL(request.url);
 	const page = Math.max(1, Number(url.searchParams.get('page') ?? 1));
 	const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') ?? 20)));
 
-	const result = await getStore(user.id, page, limit);
+	const result = await getStore(user?.id ?? null, page, limit);
 	return apiSuccess(result);
 });
 

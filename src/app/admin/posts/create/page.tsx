@@ -8,6 +8,7 @@ import ThumbnailUpload from '@/components/ThumbnailUpload';
 import DualLanguageEditor from '@/components/DualLanguageEditor';
 import { POST_CATEGORIES } from '@/constants/post';
 import { slugify } from '@/utils/slugify';
+import { adminFetch } from '@/lib/admin/client';
 
 const DRAFT_KEY = 'blog-draft-create-v2';
 
@@ -40,23 +41,9 @@ function htmlToPlainText(html: string): string {
 async function uploadImage(file: File): Promise<string> {
 	const fd = new FormData();
 	fd.append('file', file);
-	const res = await fetch('/api/uploads', { method: 'POST', body: fd });
-	const json = (await res.json()) as unknown;
-	const ok = typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true;
-	if (!res.ok || !ok) {
-		const message =
-			typeof json === 'object' && json !== null && typeof (json as { error?: unknown }).error === 'string'
-				? String((json as { error?: unknown }).error)
-				: `HTTP ${res.status}`;
-		throw new Error(message);
-	}
-	const data = (json as { data?: unknown }).data;
-	const url =
-		typeof data === 'object' && data !== null && typeof (data as { url?: unknown }).url === 'string'
-			? String((data as { url?: unknown }).url)
-			: '';
-	if (!url) throw new Error('Upload failed');
-	return url;
+	const data = await adminFetch<{ url?: string }>('/api/uploads', { method: 'POST', body: fd });
+	if (!data?.url) throw new Error('Upload failed');
+	return data.url;
 }
 
 export default function CreatePostPage() {
@@ -146,9 +133,8 @@ export default function CreatePostPage() {
 		isSavingRef.current = true;
 		setSaveState({ status: 'saving' });
 		try {
-			const res = await fetch('/api/posts', {
+			const created = await adminFetch<{ slug?: string }>('/api/posts', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					title, slug, summary, content, contentEn, category, tags,
 					contentFormat: 'html',
@@ -158,20 +144,7 @@ export default function CreatePostPage() {
 					isPublished,
 				}),
 			});
-			const json = (await res.json()) as unknown;
-			const ok = typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true;
-			if (!res.ok || !ok) {
-				const message =
-					typeof json === 'object' && json !== null && typeof (json as { error?: unknown }).error === 'string'
-						? String((json as { error?: unknown }).error)
-						: `HTTP ${res.status}`;
-				throw new Error(message);
-			}
-			const data = (json as { data?: unknown }).data;
-			const createdSlug =
-				typeof data === 'object' && data !== null && typeof (data as { slug?: unknown }).slug === 'string'
-					? String((data as { slug?: unknown }).slug)
-					: slug;
+			const createdSlug = created?.slug || slug;
 			setSaveState({ status: 'saved', slug: createdSlug });
 			try {
 				localStorage.removeItem(DRAFT_KEY);
@@ -207,12 +180,8 @@ export default function CreatePostPage() {
 	useEffect(() => {
 		void (async () => {
 			try {
-				const res = await fetch('/api/posts/tags');
-				const json = (await res.json()) as unknown;
-				if (typeof json === 'object' && json !== null && (json as { ok?: unknown }).ok === true) {
-					const data = (json as { data?: string[] }).data;
-					if (Array.isArray(data)) setTagSuggestions(data);
-				}
+				const data = await adminFetch<string[]>('/api/posts/tags');
+				if (Array.isArray(data)) setTagSuggestions(data);
 			} catch {
 				/* ignore */
 			}
@@ -242,7 +211,7 @@ export default function CreatePostPage() {
 	}
 
 	return (
-		<main className="mx-auto max-w-6xl px-6 py-8">
+		<div className="mx-auto max-w-6xl px-6 py-8">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Viết bài mới</h1>
@@ -417,6 +386,6 @@ export default function CreatePostPage() {
 					</span>
 				</div>
 			</section>
-		</main>
+		</div>
 	);
 }

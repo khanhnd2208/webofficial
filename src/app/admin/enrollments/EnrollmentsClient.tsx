@@ -4,17 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Dialog } from '@/components/ui/Dialog';
 import type { CourseListItem, EnrollmentAdminDTO } from '@/features/courses/types';
+import { adminFetch } from '@/lib/admin/client';
 
 type UserHit = { id: string; name: string; email: string; image: string | null; role: string };
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
-	const res = await fetch(url, {
-		...init,
-		headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-	});
-	const json = (await res.json()) as { ok: boolean; data?: T; error?: string };
-	if (!json.ok) throw new Error(json.error ?? 'Yêu cầu thất bại');
-	return json.data as T;
+	return adminFetch<T>(url, init);
 }
 
 type RowAction = { id: string; action: 'revoke' | 'restore' };

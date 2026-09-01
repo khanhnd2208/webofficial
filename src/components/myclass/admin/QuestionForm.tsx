@@ -1,5 +1,6 @@
 'use client';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import TiptapEditor from '@/components/TiptapEditor';
@@ -89,6 +90,7 @@ export default function QuestionForm({
 	topics?: Array<{ id: string; name: string; path: string; subjectId: string }>;
 }) {
 	const router = useRouter();
+	const { confirm, dialog } = useAdminConfirm();
 	const [type, setType] = useState<MyClassQuestionType>(initial?.type ?? 'MCQ_SINGLE');
 	const [stem, setStem] = useState(initial?.stem ?? '');
 	const [slug, setSlug] = useState(initial?.slug ?? '');
@@ -211,6 +213,7 @@ export default function QuestionForm({
 	const stemBlankIds = extractBlankIds(stem);
 
 	return (
+		<>
 		<div className="space-y-5">
 			{error ? <p className="text-sm text-error">{error}</p> : null}
 			<StudioField label="Dạng câu">
@@ -442,7 +445,12 @@ export default function QuestionForm({
 					variant="danger"
 					disabled={busy}
 					onClick={async () => {
-						if (!window.confirm('Lưu trữ câu hỏi này? Các bài kiểm tra đã xuất bản liên quan sẽ chuyển về bản nháp.')) return;
+						const ok = await confirm({
+							title: 'Lưu trữ câu hỏi',
+							description: 'Lưu trữ câu hỏi này? Các bài kiểm tra đã xuất bản liên quan sẽ chuyển về bản nháp.',
+							confirmLabel: 'Lưu trữ',
+						});
+						if (!ok) return;
 						await myClassApi(`/api/admin/my-class/questions/${initial.id}`, { method: 'DELETE' });
 						router.push(routes.admin.myClassBank);
 					}}
@@ -451,5 +459,7 @@ export default function QuestionForm({
 				</StudioButton>
 			) : null}
 		</div>
+		{dialog}
+		</>
 	);
 }

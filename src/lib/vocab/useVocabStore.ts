@@ -7,6 +7,8 @@
    ════════════════════════════════════════════════════════════════════════ */
 import { useCallback, useEffect, useState } from 'react';
 import type { StoreSetDTO, StoreListResult } from '@/types/vocab';
+import { routes } from '@/config/routes';
+import { clientLoginHref } from '@/lib/admin/client';
 import { useOfflineQueue } from './useOfflineQueue';
 
 interface UseVocabStoreOptions {
@@ -74,6 +76,10 @@ body: JSON.stringify({ vocabSetId: set.id }),
 });
 				if (res.status === 409) {
 					showToast('Bạn đã sở hữu bộ từ này', 'info');
+					return;
+				}
+				if (res.status === 401) {
+					window.location.assign(clientLoginHref(routes.vocabStore));
 					return;
 				}
 				if (!res.ok) throw new Error('Server error');

@@ -87,20 +87,28 @@ describe('public learning proxy', () => {
 	);
 
 	it.each([
-		'/admin/my-class',
 		'/api/admin/my-class/courses',
-		'/admin/myspace-tests',
 		'/api/admin/myspace-tests',
-		'/my-space/teaching',
-		'/admin/teaching',
 		'/my-space/active-recall',
-		'/admin/tools/active-recall',
 		'/api/admin/active-recall',
-	])('does not intercept protected or preserved surface %s', (pathname) => {
+	])('does not intercept API or unrelated surface %s', (pathname) => {
 		productionFlags('false', 'false');
 
 		expect(matches(pathname)).toBe(false);
 		expect(getLockedPublicLearningFeature(pathname)).toBeNull();
 		expect(proxy(request(pathname)).headers.get('x-middleware-next')).toBe('1');
 	});
+
+	it.each(['/admin/my-class', '/admin/teaching', '/messages', '/my-space/teaching'])(
+		'passes admin chrome path %s through and records the pathname',
+		(pathname) => {
+			productionFlags('false', 'false');
+
+			expect(matches(pathname)).toBe(true);
+			expect(getLockedPublicLearningFeature(pathname)).toBeNull();
+			const response = proxy(request(pathname));
+			expect(response.headers.get('x-middleware-next')).toBe('1');
+			expect(response.headers.get('x-pathname')).toBe(pathname);
+		},
+	);
 });

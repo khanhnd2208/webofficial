@@ -1,9 +1,19 @@
-import { redirect } from 'next/navigation';
+import { AdminStoreView } from '@/app/vocabulary/store/StoreClient';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
-/**
- * Canonical admin Vocabulary entry.
- * Full isolation into features/tools happens in Phase 4; keep existing store UI for now.
- */
+export const dynamic = 'force-dynamic';
+
 export default function AdminToolsVocabularyPage() {
-	redirect('/vocabulary/store');
+	return (
+		<div className="px-6 py-8">
+			<AdminPageHeader
+				eyebrow="Công cụ"
+				title="Từ vựng"
+				description="Quản lý bộ từ trong cửa hàng. Trang học viên chỉ còn trải nghiệm cửa hàng."
+			/>
+			<div className="mt-8">
+				<AdminStoreView />
+			</div>
+		</div>
+	);
 }

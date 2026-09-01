@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import { formatTeachingScore, ATTENDANCE_MAX_POINTS, CP_MAX_POINTS, TOTAL_MAX_POINTS } from '@/features/teaching/domain/cp';
+import { formatTeachingScore, TOTAL_MAX_POINTS } from '@/features/teaching/domain/cp';
 import type { TeachingClassListItem } from '@/features/teaching/types';
 
 type ShareFilter = 'all' | 'shared' | 'private';
@@ -95,8 +95,8 @@ export function TeachingClassesTable({ classes }: { classes: TeachingClassListIt
 							<th>Học kỳ</th>
 							<th>Học viên</th>
 							<th>Điểm danh</th>
-							<th>Attendance TB /{ATTENDANCE_MAX_POINTS}</th>
-							<th>CP TB /{CP_MAX_POINTS}</th>
+							<th>Attendance TB</th>
+							<th>CP TB</th>
 							<th>Tổng TB /{TOTAL_MAX_POINTS}</th>
 							<th>Cảnh báo</th>
 							<th>Chia sẻ</th>
@@ -111,18 +111,18 @@ export function TeachingClassesTable({ classes }: { classes: TeachingClassListIt
 								role="link"
 								aria-label={`Mở lớp ${row.courseCode} ${row.courseName}`}
 								onClick={() => {
-									router.push(routes.mySpaceTeachingClassTab(row.id, 'attendance'));
+									router.push(routes.admin.teachingClassTab(row.id, 'attendance'));
 								}}
 								onKeyDown={(event) => {
 									if (event.key === 'Enter' || event.key === ' ') {
 										event.preventDefault();
-										router.push(routes.mySpaceTeachingClassTab(row.id, 'attendance'));
+										router.push(routes.admin.teachingClassTab(row.id, 'attendance'));
 									}
 								}}
 							>
 								<td>
 									<Link
-										href={routes.mySpaceTeachingClassTab(row.id, 'attendance')}
+										href={routes.admin.teachingClassTab(row.id, 'attendance')}
 										tabIndex={-1}
 										className="block font-semibold text-ink hover:text-accent hover:underline"
 									>
@@ -138,9 +138,21 @@ export function TeachingClassesTable({ classes }: { classes: TeachingClassListIt
 								<td className="mc-num">
 									{row.sessionsTaken}/{row.sessionCount || row.totalWeeks}
 								</td>
-								<td className="mc-num">{row.averageAttendance == null ? '—' : `${formatTeachingScore(row.averageAttendance)} / ${ATTENDANCE_MAX_POINTS}`}</td>
-								<td className="mc-num">{row.averageCp == null ? '—' : `${formatTeachingScore(row.averageCp)} / ${CP_MAX_POINTS}`}</td>
-								<td className="mc-num">{row.averageTotal == null ? '—' : `${formatTeachingScore(row.averageTotal)} / ${TOTAL_MAX_POINTS}`}</td>
+								<td className="mc-num">
+									{row.averageAttendance == null
+										? '—'
+										: `${formatTeachingScore(row.averageAttendance)} / ${row.attendanceMaxPoints}`}
+								</td>
+								<td className="mc-num">
+									{row.averageCp == null
+										? '—'
+										: `${formatTeachingScore(row.averageCp)} / ${row.cpMaxPoints}`}
+								</td>
+								<td className="mc-num">
+									{row.averageTotal == null
+										? '—'
+										: `${formatTeachingScore(row.averageTotal)} / ${TOTAL_MAX_POINTS}`}
+								</td>
 								<td className="mc-num">{row.atRiskCount + row.bannedCount || '—'}</td>
 								<td>
 									<span className={shareTone(row)}>{shareLabel(row)}</span>
@@ -154,7 +166,7 @@ export function TeachingClassesTable({ classes }: { classes: TeachingClassListIt
 				{filtered.map((row) => (
 					<Link
 						key={row.id}
-						href={routes.mySpaceTeachingClassTab(row.id, 'attendance')}
+						href={routes.admin.teachingClassTab(row.id, 'attendance')}
 						className="teaching-class-card"
 					>
 						<div className="flex items-start justify-between gap-3">
@@ -179,15 +191,27 @@ export function TeachingClassesTable({ classes }: { classes: TeachingClassListIt
 								<small>điểm danh</small>
 							</span>
 							<span>
-								<b>{row.averageAttendance == null ? '—' : `${formatTeachingScore(row.averageAttendance)} / ${ATTENDANCE_MAX_POINTS}`}</b>
-								<small>Attendance TB /{ATTENDANCE_MAX_POINTS}</small>
+								<b>
+									{row.averageAttendance == null
+										? '—'
+										: `${formatTeachingScore(row.averageAttendance)} / ${row.attendanceMaxPoints}`}
+								</b>
+								<small>Attendance TB /{row.attendanceMaxPoints}</small>
 							</span>
 							<span>
-								<b>{row.averageCp == null ? '—' : `${formatTeachingScore(row.averageCp)} / ${CP_MAX_POINTS}`}</b>
-								<small>CP TB /{CP_MAX_POINTS}</small>
+								<b>
+									{row.averageCp == null
+										? '—'
+										: `${formatTeachingScore(row.averageCp)} / ${row.cpMaxPoints}`}
+								</b>
+								<small>CP TB /{row.cpMaxPoints}</small>
 							</span>
 							<span>
-								<b>{row.averageTotal == null ? '—' : `${formatTeachingScore(row.averageTotal)} / ${TOTAL_MAX_POINTS}`}</b>
+								<b>
+									{row.averageTotal == null
+										? '—'
+										: `${formatTeachingScore(row.averageTotal)} / ${TOTAL_MAX_POINTS}`}
+								</b>
 								<small>Tổng TB /{TOTAL_MAX_POINTS}</small>
 							</span>
 							<span>

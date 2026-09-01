@@ -28,6 +28,8 @@ export interface ParticipationGridProps {
 	students: BoardGridStudent[];
 	sessions: TeachingSessionRecord[];
 	totalWeeks: number;
+	attendanceMaxPoints?: number;
+	cpMaxPoints?: number;
 	selectedWeek?: number | null;
 	showExtraColumns?: boolean;
 	readOnly?: boolean;
@@ -71,12 +73,18 @@ function participationTooltip(
 
 function ParticipationNoteEditor({
 	initialNote,
+	initialPoints,
 	onClose,
 	onSave,
+	onPoints,
+	readOnly = false,
 }: {
 	initialNote: string;
+	initialPoints?: number;
 	onClose: () => void;
 	onSave: (note: string) => void;
+	onPoints?: (points: 0 | 0.5 | 1 | 2) => void;
+	readOnly?: boolean;
 }) {
 	const [note, setNote] = useState(initialNote);
 	const { rootRef, textareaRef } = useGridNotePopover(onClose);
@@ -88,30 +96,52 @@ function ParticipationNoteEditor({
 			className="absolute left-0 top-full z-30 mt-1 w-64 rounded-[var(--mc-r-md)] border border-mc-rule bg-paper p-3 text-left shadow-[var(--mc-shadow-2)]"
 		>
 			<p className="text-xs font-semibold text-ink">Ghi chú điểm CP tuần này</p>
-			<textarea
-				ref={textareaRef}
-				value={note}
-				onChange={(event) => setNote(event.target.value)}
-				placeholder="Nhập ghi chú CP…"
-				maxLength={240}
-				rows={3}
-				className="mt-2 w-full rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper p-2 text-sm"
-			/>
+			{readOnly ? (
+				<p className="mt-2 whitespace-pre-wrap text-sm text-ink-secondary">
+					{note || 'Không có ghi chú.'}
+				</p>
+			) : (
+				<textarea
+					ref={textareaRef}
+					value={note}
+					onChange={(event) => setNote(event.target.value)}
+					placeholder="Nhập ghi chú CP…"
+					maxLength={240}
+					rows={3}
+					className="mt-2 w-full rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper p-2 text-sm"
+				/>
+			)}
+			{!readOnly && onPoints ? (
+				<div className="mt-2 grid grid-cols-4 gap-1">
+					{([0, 0.5, 1, 2] as const).map((points) => (
+						<button
+							key={points}
+							type="button"
+							className={`min-h-8 rounded-[var(--mc-r-xs)] border px-1 text-xs font-semibold ${initialPoints === points ? 'border-accent bg-accent-subtle' : 'border-mc-rule'}`}
+							onClick={() => onPoints(points)}
+						>
+							{points}
+						</button>
+					))}
+				</div>
+			) : null}
 			<div className="mt-3 flex justify-end gap-2">
 				<button
 					type="button"
 					className="min-h-8 px-2 text-xs font-semibold text-ink-secondary"
 					onClick={onClose}
 				>
-					Huỷ
+					{readOnly ? 'Đóng' : 'Huỷ'}
 				</button>
-				<button
-					type="button"
-					className="min-h-8 rounded-[var(--mc-r-sm)] bg-ink px-3 text-xs font-semibold text-paper"
-					onClick={() => onSave(note)}
-				>
-					Lưu ghi chú
-				</button>
+				{!readOnly ? (
+					<button
+						type="button"
+						className="min-h-8 rounded-[var(--mc-r-sm)] bg-ink px-3 text-xs font-semibold text-paper"
+						onClick={() => onSave(note)}
+					>
+						Lưu ghi chú
+					</button>
+				) : null}
 			</div>
 		</div>
 	);
@@ -121,6 +151,8 @@ export function ParticipationGrid({
 	students,
 	sessions,
 	totalWeeks,
+	attendanceMaxPoints = ATTENDANCE_MAX_POINTS,
+	cpMaxPoints = CP_MAX_POINTS,
 	selectedWeek = null,
 	showExtraColumns = false,
 	readOnly = false,
@@ -340,6 +372,15 @@ export function ParticipationGrid({
 													{isOpen ? (
 														<span className="mc-grid-week-draft">Chưa tính điểm</span>
 													) : null}
+													<span className="mc-grid-week-state">
+														{isFinalized
+															? 'Đã chốt'
+															: isOpen
+																? 'Đang nhập'
+																: session?.participationTakenAt
+																	? 'Tạm khóa'
+																	: 'Chưa mở'}
+													</span>
 												</span>
 											)
 										) : null}
@@ -370,13 +411,13 @@ export function ParticipationGrid({
 							<span className="mc-grid-summary-heading">Gift</span>
 						</th>
 						<th
-							aria-label={`Attendance /${ATTENDANCE_MAX_POINTS}`}
-							title={`Điểm chuyên cần tối đa ${ATTENDANCE_MAX_POINTS}, được tính từ bảng Điểm danh`}
+							aria-label={`Attendance /${attendanceMaxPoints}`}
+							title={`Điểm chuyên cần tối đa ${attendanceMaxPoints}, được tính từ bảng Điểm danh`}
 							className={`mc-grid-freeze-right mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 						>
 							<span className="mc-grid-summary-heading">
 								<span>Attendance</span>
-								<span>/{ATTENDANCE_MAX_POINTS}</span>
+								<span>/{attendanceMaxPoints}</span>
 							</span>
 						</th>
 						<th
@@ -452,8 +493,8 @@ export function ParticipationGrid({
 													</span>
 													<span className="mc-grid-public-meta-line">
 														Attendance {formatTeachingScore(student.cp.attendanceScore)}/
-														{ATTENDANCE_MAX_POINTS} · CP {formatTeachingScore(student.cp.cp)}/
-														{CP_MAX_POINTS} · Tổng {formatTeachingScore(student.cp.totalScore)}/
+														{attendanceMaxPoints} · CP {formatTeachingScore(student.cp.cp)}/
+														{cpMaxPoints} · Tổng {formatTeachingScore(student.cp.totalScore)}/
 														{TOTAL_MAX_POINTS}
 													</span>
 												</small>
@@ -502,11 +543,7 @@ export function ParticipationGrid({
 								{weeks.map(({ weekNumber, session }) => {
 									if (!session || weekNumber < student.enrolledFromWeek) {
 										return (
-											<td
-												key={weekNumber}
-											className="mc-grid-week"
-											data-week={weekNumber}
-										>
+											<td key={weekNumber} className="mc-grid-week" data-week={weekNumber}>
 												<span className="text-ink-tertiary">–</span>
 											</td>
 										);
@@ -579,12 +616,39 @@ export function ParticipationGrid({
 													{started ? pointsLabel(points) : '–'}
 												</button>
 											)}
+											{(readOnly ? Boolean(mark?.note) : open) ? (
+												<button
+													type="button"
+													className="mc-grid-note-trigger"
+													aria-label="Xem ghi chú CP"
+													onClick={(event) => {
+														event.stopPropagation();
+														setNoteCell({
+															enrollmentId: student.enrollmentId,
+															sessionId: session.id,
+														});
+													}}
+												>
+													…
+												</button>
+											) : null}
 											{noteCell?.enrollmentId === student.enrollmentId &&
 											noteCell.sessionId === session.id ? (
 												<ParticipationNoteEditor
 													initialNote={mark?.note ?? ''}
 													onClose={() => setNoteCell(null)}
 													onSave={(note) => saveNote(student, session, note)}
+													onPoints={(points) => {
+														onParticipationChange?.({
+															enrollmentId: student.enrollmentId,
+															sessionId: session.id,
+															points,
+															note: mark?.note ?? '',
+														});
+														setNoteCell(null);
+													}}
+													initialPoints={points}
+													readOnly={readOnly}
 												/>
 											) : null}
 											{state === 'saving' ? (
@@ -645,12 +709,12 @@ export function ParticipationGrid({
 								<td
 									className={`mc-grid-freeze-right mc-grid-attendance-score mc-num font-semibold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 								>
-									{formatTeachingScore(student.cp.attendanceScore)} / {ATTENDANCE_MAX_POINTS}
+									{formatTeachingScore(student.cp.attendanceScore)} / {attendanceMaxPoints}
 								</td>
 								<td
 									className={`mc-grid-freeze-right mc-grid-cp mc-num font-semibold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 								>
-									{formatTeachingScore(student.cp.cp)} / {CP_MAX_POINTS}
+									{formatTeachingScore(student.cp.cp)} / {cpMaxPoints}
 								</td>
 								<td
 									className={`mc-grid-freeze-right mc-grid-total-score mc-num font-bold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}

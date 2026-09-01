@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 
 import { AttendanceGrid } from '../admin/AttendanceGrid';
 import { ParticipationGrid } from '../admin/ParticipationGrid';
@@ -16,7 +16,9 @@ import type { PublicClassBoard } from '@/features/teaching/types';
 type PublicTab = 'attendance' | 'cp' | 'groups' | 'learning' | 'notes';
 
 function resolvePublicTab(value?: string | null): PublicTab {
-	return value === 'cp' || value === 'groups' || value === 'learning' || value === 'notes' ? value : 'attendance';
+	return value === 'cp' || value === 'groups' || value === 'learning' || value === 'notes'
+		? value
+		: 'attendance';
 }
 
 function toGridStudent(student: PublicClassBoard['students'][number]): BoardGridStudent {
@@ -95,6 +97,23 @@ export function StudentClassBoard({
 			const wrapper = gridWrapRef.current?.querySelector<HTMLElement>('.mc-grid-wrap');
 			wrapper?.scrollTo({ left: 0, behavior: 'auto' });
 		});
+	}
+
+	function handleTabKeyDown(event: KeyboardEvent<HTMLElement>) {
+		if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+		const tabs = Array.from(tabBarRef.current?.querySelectorAll<HTMLElement>('[role="tab"]') ?? []);
+		if (!tabs.length) return;
+		const current = tabs.indexOf(document.activeElement as HTMLElement);
+		const index = current < 0 ? 0 : current;
+		const next =
+			event.key === 'Home'
+				? 0
+				: event.key === 'End'
+					? tabs.length - 1
+					: (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+		event.preventDefault();
+		tabs[next]?.focus();
+		tabs[next]?.click();
 	}
 	const students = useMemo(() => board.students.map(toGridStudent), [board.students]);
 	const filteredStudents = useMemo(() => {
@@ -235,7 +254,13 @@ export function StudentClassBoard({
 				</div>
 			</Sheet>
 
-			<nav ref={tabBarRef} className="mc-tabbar" role="tablist" aria-label="Bảng lớp học">
+			<nav
+				ref={tabBarRef}
+				onKeyDown={handleTabKeyDown}
+				className="mc-tabbar"
+				role="tablist"
+				aria-label="Bảng lớp học"
+			>
 				<button
 					type="button"
 					role="tab"
@@ -321,7 +346,12 @@ export function StudentClassBoard({
 				</div>
 			) : null}
 			{tab === 'notes' ? (
-				<div id="public-panel-notes" role="tabpanel" aria-labelledby="public-tab-notes" className="public-notes-panel">
+				<div
+					id="public-panel-notes"
+					role="tabpanel"
+					aria-labelledby="public-tab-notes"
+					className="public-notes-panel"
+				>
 					<ClassNotesWorkspace notes={board.notes ?? []} />
 				</div>
 			) : null}
@@ -364,6 +394,7 @@ export function StudentClassBoard({
 								students={filteredStudents}
 								sessions={board.sessions}
 								totalWeeks={board.policy.totalWeeks}
+								attendanceMaxPoints={board.policy.attendanceMaxPoints}
 								readOnly
 								publicCompact
 								scrollMode="page"
@@ -375,6 +406,8 @@ export function StudentClassBoard({
 								students={filteredStudents}
 								sessions={board.sessions}
 								totalWeeks={board.policy.totalWeeks}
+								attendanceMaxPoints={board.policy.attendanceMaxPoints}
+								cpMaxPoints={board.policy.cpMaxPoints}
 								readOnly
 								publicCompact
 								scrollMode="page"

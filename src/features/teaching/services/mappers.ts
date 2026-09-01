@@ -40,6 +40,12 @@ export function mapClass(row: TeachingClass): TeachingClassRecord {
 		lecturerName: row.lecturerName,
 		lecturerCode: row.lecturerCode,
 		totalWeeks: row.totalWeeks,
+		attendanceMaxPoints: toNumber(row.attendanceMaxPoints),
+		cpMaxPoints: toNumber(row.cpMaxPoints),
+		absenceDeductionPoints: toNumber(row.absenceDeductionPoints),
+		lateDeductionPoints: toNumber(row.lateDeductionPoints),
+		lateCountsTowardAbsenceThreshold: row.lateCountsTowardAbsenceThreshold,
+		giftDeductionPoints: toNumber(row.giftDeductionPoints),
 		absenceThresholdPercent: row.absenceThresholdPercent,
 		lateGraceMinutes: row.lateGraceMinutes,
 		status: row.status,
@@ -59,6 +65,12 @@ export function policyFromClass(row: TeachingClass): CpPolicy {
 	return {
 		totalWeeks: row.totalWeeks,
 		absenceThresholdPercent: row.absenceThresholdPercent,
+		attendanceMaxPoints: toNumber(row.attendanceMaxPoints),
+		cpMaxPoints: toNumber(row.cpMaxPoints),
+		absenceDeductionPoints: toNumber(row.absenceDeductionPoints),
+		lateDeductionPoints: toNumber(row.lateDeductionPoints),
+		lateCountsTowardAbsenceThreshold: row.lateCountsTowardAbsenceThreshold,
+		giftDeductionPoints: toNumber(row.giftDeductionPoints),
 	};
 }
 
@@ -272,9 +284,7 @@ export function mapClassListItem(
 	const scopedSessions = row.sessions.filter((session) => session.weekNumber <= policy.totalWeeks);
 	const students = row.enrollments.map((enrollment) => {
 		const sessions = sessionsForEnrollment(
-			scopedSessions.filter(
-				(session) => session.tutorialClassId === enrollment.tutorialClassId,
-			),
+			scopedSessions.filter((session) => session.tutorialClassId === enrollment.tutorialClassId),
 			enrollment.enrolledFromWeek,
 		);
 		return computeCp(
