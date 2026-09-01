@@ -59,6 +59,10 @@ test.describe('Admin workspace release gates', () => {
 	});
 
 	test('learner edit flag sends admins to the My Class studio', async ({ page, context }) => {
+		test.skip(
+			process.env.PUBLIC_KNOWLEDGE_ENABLED === 'false',
+			'Public My Class is fail-closed in CI and production.',
+		);
 		await addAdminSession(context);
 		await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
 		await expect(page).toHaveURL(/\/admin\/my-class\/courses\/[^/]+\/content/);
@@ -109,13 +113,25 @@ test.describe('Admin workspace release gates', () => {
 		context,
 	}) => {
 		await addAdminSession(context);
-		await page.goto('/admin/my-class/courses');
-		await page.getByRole('button', { name: 'Lưu trữ' }).first().click();
-		const confirm = page.getByRole('dialog', { name: 'Lưu trữ khóa học?' });
-		await expect(confirm).toBeVisible();
-		await confirm.getByRole('button', { name: 'Huỷ' }).click();
-		await expect(confirm).toHaveCount(0);
-		await expect(page).toHaveURL(/\/admin\/my-class\/courses/);
-		await expect(page.getByRole('button', { name: 'Lưu trữ' }).first()).toBeVisible();
+		const slug = `confirm-e2e-${Date.now().toString(36)}`;
+		const created = await page.request.post('/api/admin/my-class/courses', {
+			data: { title: 'Confirm E2E', slug, summary: 'Smoke confirm dialog' },
+		});
+		expect(created.ok()).toBe(true);
+		const createdBody = (await created.json()) as { data: { id: string } };
+		const courseId = createdBody.data.id;
+		try {
+			await page.goto('/admin/my-class/courses');
+			const row = page.getByRole('row').filter({ hasText: 'Confirm E2E' });
+			await row.getByRole('button', { name: 'Lưu trữ' }).click();
+			const confirm = page.getByRole('dialog', { name: 'Lưu trữ khóa học?' });
+			await expect(confirm).toBeVisible();
+			await confirm.getByRole('button', { name: 'Huỷ' }).click();
+			await expect(confirm).toHaveCount(0);
+			await expect(page).toHaveURL(/\/admin\/my-class\/courses/);
+			await expect(row.getByRole('button', { name: 'Lưu trữ' })).toBeVisible();
+		} finally {
+			await page.request.delete(`/api/admin/my-class/courses/${courseId}`);
+		}
 	});
 });
