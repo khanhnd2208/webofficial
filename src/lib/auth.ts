@@ -91,7 +91,7 @@ const nextAuth = NextAuth({
 			const described = describeAuthError(error);
 			logAuth({
 				event: 'auth.logger',
-				stage: 'callback',
+				stage: 'logger',
 				ok: false,
 				correlationId: newAuthCorrelationId(),
 				provider: 'google',

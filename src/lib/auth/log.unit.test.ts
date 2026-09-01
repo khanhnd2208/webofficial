@@ -14,6 +14,28 @@ describe('describeAuthError', () => {
 		});
 	});
 
+	it('reads Auth.js cause.err instead of the wrapper bag', () => {
+		const error = Object.assign(new Error('OAuthCallback'), {
+			name: 'CallbackRouteError',
+			cause: {
+				err: Object.assign(new Error('email user@example.com already exists token=sekrit'), {
+					name: 'AdapterError',
+				}),
+				message: 'email user@example.com already exists',
+			},
+		});
+		expect(describeAuthError(error)).toEqual({
+			code: 'CallbackRouteError',
+			cause: 'AdapterError',
+		});
+		expect(JSON.stringify(describeAuthError(error))).not.toMatch(/user@|sekrit|already exists/);
+	});
+
+	it('falls back to AuthError when names are not identifiers', () => {
+		const error = { name: 'not a code <script>', cause: { err: { name: 'Bearer abc.secret' } } };
+		expect(describeAuthError(error)).toEqual({ code: 'AuthError' });
+	});
+
 	it('redacts emails and secrets from free text', () => {
 		expect(redactAuthText('Bearer abc.def and admin@site.com token=sekrit')).not.toMatch(/admin@/);
 		expect(redactAuthText('Bearer abc.def and admin@site.com token=sekrit')).not.toContain('sekrit');

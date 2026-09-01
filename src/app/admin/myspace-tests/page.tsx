@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { myspaceTestsService } from '@/features/myspace-tests';
 import { routes } from '@/config/routes';
 
@@ -33,47 +34,45 @@ export default async function AdminMyspaceTestsPage() {
 
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
-			<div className="flex flex-wrap items-end justify-between gap-4">
-				<div>
-					<p className="text-xs font-bold uppercase tracking-widest text-muted">My Space</p>
-					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Tests</h1>
-					<p className="mt-2 text-sm text-muted">
-						Import thông minh hoặc CSV để tạo bài test kèm câu hỏi.
-					</p>
-				</div>
+			<AdminPageHeader
+				eyebrow="Công cụ"
+				title="Bài kiểm tra My Space"
+				description="Import thông minh hoặc CSV để tạo bài test kèm câu hỏi."
+				actions={
 				<div className="flex flex-wrap gap-2">
 					<Link
 						href={routes.admin.myspaceTestAnalytics}
-						className="inline-flex rounded-full bg-foreground px-4 py-2 text-xs font-bold uppercase tracking-wider text-background"
+						className="inline-flex min-h-11 items-center rounded-lg bg-foreground px-4 text-xs font-bold uppercase tracking-wider text-background"
 					>
 						Thống kê ({totals.completed} nộp)
 					</Link>
 					<Link
 						href={routes.admin.myspaceQuestionsImport}
-						className="inline-flex rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-foreground"
+						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
 					>
 						Import thông minh
 					</Link>
 					<Link
 						href={routes.admin.myspaceSubjects}
-						className="inline-flex rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-foreground"
+						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
 					>
 						Môn học
 					</Link>
 					<Link
 						href={routes.admin.myspaceQuestions}
-						className="inline-flex rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-foreground"
+						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
 					>
 						Ngân hàng ({questions.total})
 					</Link>
 					<Link
 						href={routes.admin.myspaceTestNew}
-						className="inline-flex rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-foreground"
+						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
 					>
 						Tạo thủ công
 					</Link>
 				</div>
-			</div>
+				}
+			/>
 
 			{tests.length > 0 ? (
 				<section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -104,18 +103,12 @@ export default async function AdminMyspaceTestsPage() {
 			) : null}
 
 			{tests.length === 0 ? (
-				<div className="mt-10 border border-dashed border-border px-6 py-14 text-center">
-					<p className="text-sm font-bold text-foreground">Chưa có bài test</p>
-					<p className="mt-2 text-sm text-muted">
-						Bắt đầu bằng{' '}
-						<Link
-							href={routes.admin.myspaceQuestionsImport}
-							className="underline underline-offset-2"
-						>
-							import thông minh
-						</Link>
-						.
-					</p>
+				<div className="mt-10">
+					<AdminEmptyState
+						title="Chưa có bài test"
+						description="Bắt đầu bằng import thông minh để tạo bài kèm câu hỏi."
+						action={{ href: routes.admin.myspaceQuestionsImport, label: 'Import thông minh' }}
+					/>
 				</div>
 			) : (
 				<div className="mt-8 divide-y divide-border border border-border">

@@ -8,8 +8,6 @@
 
 import { routes } from '@/config/routes';
 
-export type AdminMutationStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
-
 export class AdminApiError extends Error {
 	status: number;
 	code?: string;

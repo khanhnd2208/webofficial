@@ -90,7 +90,7 @@ jobs:
         run: npm run build
 
       - name: Seed release-critical E2E data
-        run: npm run db:seed:active-recall
+        run: npm run db:sync:active-recall
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
@@ -103,6 +103,7 @@ jobs:
           npx playwright test
           e2e/active-recall-admin.spec.ts
           e2e/active-recall.spec.ts
+          e2e/admin-workspace.spec.ts
           e2e/editorial-premium.spec.ts
           e2e/mobile-smoke.spec.ts
           e2e/public-feature-locks.spec.ts

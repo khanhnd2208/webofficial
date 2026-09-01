@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getAdminUserList } from '@/services/userManagementService';
 import UsersTable from './UsersTable';
 import type { UserRole } from '@/types/user';
@@ -34,15 +35,11 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between flex-wrap gap-4">
-				<div>
-					<h1 className="text-2xl font-black tracking-tight text-foreground">Quản lý người dùng</h1>
-					<p className="mt-1 text-sm text-muted">
-						{result.total} tài khoản trong hệ thống
-					</p>
-				</div>
-				{/* Role badges */}
+			<AdminPageHeader
+				eyebrow="Hệ thống"
+				title="Người dùng"
+				description={`${result.total} tài khoản trong hệ thống`}
+				actions={
 				<div className="flex gap-2 text-xs flex-wrap">
 					{(['all', 'student', 'admin'] as const).map((r) => (
 						<a
@@ -58,7 +55,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 						</a>
 					))}
 				</div>
-			</div>
+				}
+			/>
 
 			<Suspense fallback={null}>
 				<UsersTable

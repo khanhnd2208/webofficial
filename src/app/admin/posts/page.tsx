@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
+
 import AdminPostActions from './AdminPostActions';
 import PostFilters from './PostFilters';
 
@@ -43,29 +45,24 @@ export default async function AdminPostsPage({
 
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
-			{/* Header */}
-			<header className="flex flex-wrap items-start justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Bài viết</h1>
-					<p className="mt-1 text-sm text-foreground-secondary">
-						Tạo, sửa, xuất bản và theo dõi bài viết.
-					</p>
-				</div>
-				<div className="flex items-center gap-3">
-					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/bai-viet" target="_blank">
-						Xem ghi chép ↗
-					</Link>
-					<Link
-						className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
-						href="/admin/posts/create"
-					>
-						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-						</svg>
-						Viết bài mới
-					</Link>
-				</div>
-			</header>
+			<AdminPageHeader
+				eyebrow="Nội dung"
+				title="Bài viết"
+				description="Tạo, sửa, xuất bản và theo dõi bài viết."
+				actions={
+					<div className="flex items-center gap-3">
+						<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/bai-viet" target="_blank">
+							Xem ghi chép ↗
+						</Link>
+						<Link
+							className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
+							href="/admin/posts/create"
+						>
+							Viết bài mới
+						</Link>
+					</div>
+				}
+			/>
 
 			{/* Dashboard Stats */}
 			<section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -127,26 +124,19 @@ export default async function AdminPostsPage({
 			{/* Post List Table */}
 			<section className="mt-4">
 				{result.items.length === 0 ? (
-					<div className="rounded-xl border border-border bg-surface p-12 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-secondary">
-							<svg className="h-6 w-6 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9.75m3 0h3m-9-3H15m-9 0h9m-9 3h3" />
-							</svg>
-						</div>
-						<p className="font-medium text-foreground">Không tìm thấy bài viết</p>
-						<p className="mt-1 text-sm text-muted">
-							{hasActiveFilters ? 'Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm.' : 'Bắt đầu viết bài đầu tiên!'}
-						</p>
-						{hasActiveFilters ? (
-							<Link href="/admin/posts" className="mt-3 inline-block text-sm font-medium text-accent underline underline-offset-4">
-								Xoá bộ lọc
-							</Link>
-						) : (
-							<Link href="/admin/posts/create" className="mt-3 inline-block text-sm font-medium text-accent underline underline-offset-4">
-								Tạo bài viết
-							</Link>
-						)}
-					</div>
+					<AdminEmptyState
+						title="Không tìm thấy bài viết"
+						description={
+							hasActiveFilters
+								? 'Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm.'
+								: 'Bắt đầu viết bài đầu tiên.'
+						}
+						action={
+							hasActiveFilters
+								? { href: '/admin/posts', label: 'Xoá bộ lọc' }
+								: { href: '/admin/posts/create', label: 'Tạo bài viết' }
+						}
+					/>
 				) : (
 					<div className="overflow-hidden rounded-xl border border-border">
 						<table className="w-full text-left text-sm">

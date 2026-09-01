@@ -147,11 +147,13 @@ export default function AdminSidebar() {
 	const drawerRef = useRef<HTMLElement>(null);
 
 	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-	const [drawerRoute, setDrawerRoute] = useState(pathname);
-	if (drawerRoute !== pathname) {
-		setDrawerRoute(pathname);
-		if (drawerOpen) setDrawerOpen(false);
-	}
+
+	useEffect(() => {
+		// Close the mobile drawer after navigation. Route is the source of truth;
+		// an effect keeps this out of render-phase state updates.
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- close on pathname change
+		setDrawerOpen(false);
+	}, [pathname]);
 
 	useEffect(() => {
 		if (!drawerOpen) return;

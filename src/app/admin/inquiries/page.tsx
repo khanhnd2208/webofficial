@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { listInquiries } from '@/services/inquiryService';
 import {
 	INQUIRY_STATUSES,
@@ -39,17 +40,16 @@ export default async function AdminInquiriesPage({
 
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
-			<header className="flex flex-wrap items-start justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Yêu cầu liên hệ</h1>
-					<p className="mt-1 text-sm text-foreground-secondary">
-						Lời nhắn từ biểu mẫu công khai — không ghi nội dung nhạy cảm vào nhật ký hệ thống.
+			<AdminPageHeader
+				eyebrow="Hệ thống"
+				title="Yêu cầu liên hệ"
+				description="Lời nhắn từ biểu mẫu công khai — không ghi nội dung nhạy cảm vào nhật ký hệ thống."
+				actions={
+					<p className="text-sm text-muted">
+						Trang này: {result.items.length} · Mới: {newCount} · Tổng: {result.total}
 					</p>
-				</div>
-				<p className="text-sm text-muted">
-					Trang này: {result.items.length} · Mới: {newCount} · Tổng: {result.total}
-				</p>
-			</header>
+				}
+			/>
 
 			<form className="mt-6 flex flex-wrap gap-3" method="get">
 				<input
@@ -90,6 +90,14 @@ export default async function AdminInquiriesPage({
 				</button>
 			</form>
 
+			{result.items.length === 0 ? (
+				<div className="mt-6">
+					<AdminEmptyState
+						title="Chưa có lời nhắn nào"
+						description="Các yêu cầu từ biểu mẫu công khai sẽ xuất hiện ở đây."
+					/>
+				</div>
+			) : (
 			<div className="mt-6 overflow-x-auto rounded-xl border border-border">
 				<table className="min-w-full text-left text-sm">
 					<thead className="border-b border-border bg-surface text-xs uppercase tracking-wider text-muted">
@@ -102,14 +110,7 @@ export default async function AdminInquiriesPage({
 						</tr>
 					</thead>
 					<tbody>
-						{result.items.length === 0 ? (
-							<tr>
-								<td colSpan={5} className="px-4 py-8 text-center text-muted">
-									Chưa có lời nhắn nào.
-								</td>
-							</tr>
-						) : (
-							result.items.map((item) => (
+						{result.items.map((item) => (
 								<tr key={item.id} className="border-b border-border last:border-0">
 									<td className="px-4 py-3">
 										<Link
@@ -136,11 +137,11 @@ export default async function AdminInquiriesPage({
 										{item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : '—'}
 									</td>
 								</tr>
-							))
-						)}
+						))}
 					</tbody>
 				</table>
 			</div>
+			)}
 
 			{result.totalPages > 1 ? (
 				<div className="mt-4 flex gap-2">

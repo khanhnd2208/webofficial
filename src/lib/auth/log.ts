@@ -35,20 +35,38 @@ export function redactAuthText(value: string): string {
 		.slice(0, 120);
 }
 
+const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9._-]*$/;
+
+function safeErrorName(value: unknown): string | undefined {
+	if (!value || typeof value !== 'object') return undefined;
+	const named = value as { name?: unknown; type?: unknown };
+	const raw =
+		typeof named.name === 'string' && named.name.trim()
+			? named.name
+			: typeof named.type === 'string'
+				? named.type
+				: undefined;
+	if (!raw) return undefined;
+	const cleaned = redactAuthText(raw);
+	return SAFE_ERROR_NAME.test(cleaned) ? cleaned : 'AuthError';
+}
+
+/** Auth.js wraps the original error at `cause.err`. Never read messages. */
+function unwrapAuthCause(cause: unknown): unknown {
+	if (!cause || typeof cause !== 'object') return undefined;
+	const nested = (cause as { err?: unknown }).err;
+	if (nested && typeof nested === 'object') return nested;
+	return cause;
+}
+
 /** Auth.js error name + cleaned cause name. Never include messages (they can hold emails). */
 export function describeAuthError(error: unknown): { code: string; cause?: string } {
-	if (!error || typeof error !== 'object') {
-		return { code: 'AuthError' };
-	}
-	const named = error as { name?: string; type?: string; cause?: unknown };
-	const code = redactAuthText(named.name || named.type || 'AuthError') || 'AuthError';
-	const causeRaw = named.cause;
-	if (!causeRaw || typeof causeRaw !== 'object') return { code };
-	const causeName = (causeRaw as { name?: string; type?: string }).name
-		|| (causeRaw as { type?: string }).type;
-	if (!causeName) return { code };
-	const cause = redactAuthText(causeName);
-	return cause ? { code, cause } : { code };
+	const code = safeErrorName(error) ?? 'AuthError';
+	if (!error || typeof error !== 'object') return { code };
+	const inner = unwrapAuthCause((error as { cause?: unknown }).cause);
+	const cause = inner ? safeErrorName(inner) : undefined;
+	if (!cause || cause === code) return { code };
+	return { code, cause };
 }
 
 export function newAuthCorrelationId(): string {

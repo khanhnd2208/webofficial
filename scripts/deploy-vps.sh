@@ -262,15 +262,90 @@ expect_http_status() {
 	fi
 }
 
+expect_redirect_location() {
+	local base_url="$1"
+	local path="$2"
+	local expected="$3"
+	local headers
+	headers="$(curl --silent --show-error --max-time 10 -D - -o /dev/null "${base_url}${path}")"
+	printf '%s' "$headers" | node -e '
+		const expected = process.argv[1];
+		const path = process.argv[2];
+		let raw = "";
+		process.stdin.on("data", (chunk) => { raw += chunk; });
+		process.stdin.on("end", () => {
+			const status = (raw.match(/^HTTP\/[\d.]+ (\d+)/im) || [])[1];
+			const locLine = raw.split(/\r?\n/).find((line) => /^location:/i.test(line)) || "";
+			let location = locLine.replace(/^location:\s*/i, "").trim();
+			try {
+				const parsed = new URL(location, "http://smoke.invalid");
+				location = `${parsed.pathname}${parsed.search}`;
+			} catch {
+				process.stderr.write(`Could not parse Location for ${path}: ${location}\n`);
+				process.exit(1);
+			}
+			if (status !== "307" && status !== "308") {
+				process.stderr.write(`Unexpected HTTP status for ${path}: expected 307/308, got ${status || "empty"}\n`);
+				process.exit(1);
+			}
+			if (location !== expected) {
+				process.stderr.write(`Unexpected Location for ${path}: expected ${expected}, got ${location}\n`);
+				process.exit(1);
+			}
+		});
+	' "$expected" "$path"
+}
+
+expect_guest_store_api() {
+	local base_url="$1"
+	local body
+	body="$(curl --silent --show-error --max-time 10 "${base_url}/api/vocab-sets/store?limit=5")"
+	printf '%s' "$body" | node -e '
+		let input = "";
+		process.stdin.on("data", (chunk) => { input += chunk; });
+		process.stdin.on("end", () => {
+			let payload;
+			try { payload = JSON.parse(input); } catch {
+				process.stderr.write("Guest store API did not return JSON\n");
+				process.exit(1);
+			}
+			const items = payload?.data?.items;
+			if (payload?.ok !== true || !Array.isArray(items)) {
+				process.stderr.write("Guest store API missing ok/items envelope\n");
+				process.exit(1);
+			}
+			if (items.some((item) => item?.alreadyOwned !== false)) {
+				process.stderr.write("Guest store API must mark every item alreadyOwned=false\n");
+				process.exit(1);
+			}
+		});
+	'
+}
+
+expect_store_post_unauthorized() {
+	local base_url="$1"
+	local actual
+	actual="$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' \
+		-X POST "${base_url}/api/vocab-sets/store" \
+		-H 'Content-Type: application/json' \
+		-d '{"vocabSetId":"smoke-unauthenticated"}')"
+	if [[ "$actual" != "401" ]]; then
+		echo "Unexpected HTTP status for POST /api/vocab-sets/store: expected 401, got $actual" >&2
+		return 1
+	fi
+}
+
 assert_application_smoke() {
 	local base_url="$1"
 	local api_body
 
 	expect_http_status "$base_url" '/vocabulary/store' 200
+	expect_guest_store_api "$base_url"
+	expect_store_post_unauthorized "$base_url"
 	expect_http_status "$base_url" '/lop/no-such-class-ever' 404
-	expect_http_status "$base_url" '/admin/teaching?tab=cp' 307
-	expect_http_status "$base_url" '/my-space/teaching?tab=cp' 307
-	expect_http_status "$base_url" '/messages' 307
+	expect_redirect_location "$base_url" '/admin/teaching?tab=cp' '/dang-nhap?from=%2Fadmin%2Fteaching%3Ftab%3Dcp'
+	expect_redirect_location "$base_url" '/my-space/teaching?tab=cp' '/admin/teaching?tab=cp'
+	expect_redirect_location "$base_url" '/messages' '/admin/tools/messages'
 	expect_http_status "$base_url" '/my-space/active-recall' 200
 	expect_http_status "$base_url" '/api/admin/active-recall' 401
 	if [[ "$EXPECT_LOCKS" != "true" ]]; then

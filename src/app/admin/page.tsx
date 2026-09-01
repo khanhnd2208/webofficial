@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getAdminOverviewStats } from '@/services/adminDashboardService';
 
 export const dynamic = 'force-dynamic';
@@ -71,11 +72,7 @@ export default async function AdminHomePage() {
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
 			<div className="space-y-8">
-				{/* Header */}
-				<div>
-					<p className="text-xs font-bold uppercase tracking-widest text-muted">Quản trị</p>
-					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Tổng quan</h1>
-				</div>
+				<AdminPageHeader eyebrow="Quản trị" title="Tổng quan" />
 
 				{/* Stats grid */}
 				<section>

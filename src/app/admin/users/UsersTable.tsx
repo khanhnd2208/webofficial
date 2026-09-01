@@ -5,6 +5,7 @@ import { useState, useTransition, useCallback } from 'react';
 import type { UserListResult, UserListItem } from '@/services/userManagementService';
 import type { UserRole } from '@/types/user';
 import UserDetailPanel from './UserDetailPanel';
+import { AdminEmptyState } from '@/components/admin/AdminPageHeader';
 import { formatDistanceToNow } from '@/utils/formatDate';
 import { adminFetch } from '@/lib/admin/client';
 
@@ -107,6 +108,12 @@ export default function UsersTable({
 			</form>
 
 			{/* Table */}
+			{result.users.length === 0 ? (
+				<AdminEmptyState
+					title="Không tìm thấy người dùng nào"
+					description="Thử đổi bộ lọc hoặc từ khoá tìm kiếm."
+				/>
+			) : (
 			<div className={`rounded-xl border border-border overflow-hidden transition-opacity ${isPending ? 'opacity-60' : ''}`}>
 				<div className="overflow-x-auto">
 					<table className="w-full text-sm">
@@ -141,14 +148,7 @@ export default function UsersTable({
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-border">
-							{result.users.length === 0 ? (
-								<tr>
-									<td colSpan={7} className="px-4 py-12 text-center text-muted text-sm">
-										Không tìm thấy người dùng nào
-									</td>
-								</tr>
-							) : (
-								result.users.map((u) => (
+								{result.users.map((u) => (
 									<UserRow
 										key={u.id}
 										user={u}
@@ -156,12 +156,12 @@ export default function UsersTable({
 										onSelect={() => setSelectedUser(selectedUser?.id === u.id ? null : u)}
 										onRoleChange={handleRoleChange}
 									/>
-								))
-							)}
+								))}
 						</tbody>
 					</table>
 				</div>
 			</div>
+			)}
 
 			{/* Pagination */}
 			{result.totalPages > 1 && (

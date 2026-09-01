@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Dialog } from '@/components/ui/Dialog';
+import { AdminErrorState } from '@/components/admin/AdminPageHeader';
 import type { CourseListItem, EnrollmentAdminDTO } from '@/features/courses/types';
 import { adminFetch } from '@/lib/admin/client';
 
@@ -120,9 +121,7 @@ export default function EnrollmentsClient({
 	return (
 		<div className="mt-8 space-y-6">
 			{error ? (
-				<p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-					{error}
-				</p>
+				<AdminErrorState title="Không tải được danh sách ghi danh" description={error} />
 			) : null}
 
 			<label className="block max-w-md">

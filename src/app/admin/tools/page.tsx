@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { routes } from '@/config/routes';
 
 export const dynamic = 'force-dynamic';
@@ -31,13 +32,11 @@ export default function ToolsPage() {
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
 			<div className="space-y-8">
-				<div>
-					<p className="text-xs font-bold uppercase tracking-widest text-muted">Admin</p>
-					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Công cụ</h1>
-					<p className="mt-3 text-sm text-muted leading-relaxed max-w-xl">
-						Công cụ mặc định chỉ dành cho admin. Chỉ đầu ra được thiết kế riêng mới công khai.
-					</p>
-				</div>
+				<AdminPageHeader
+					eyebrow="Công cụ"
+					title="Công cụ"
+					description="Công cụ mặc định chỉ dành cho admin. Chỉ đầu ra được thiết kế riêng mới công khai."
+				/>
 
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{TOOLS.map((tool) => (
