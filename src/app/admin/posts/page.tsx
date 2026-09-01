@@ -5,7 +5,12 @@ import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHe
 import AdminPostActions from './AdminPostActions';
 import PostFilters from './PostFilters';
 
-import { getAdminDashboardStats, getAdminPosts, getAllCategoriesAdmin, getAllTagsAdmin } from '@/services/postService';
+import {
+	getAdminDashboardStats,
+	getAdminPosts,
+	getAllCategoriesAdmin,
+	getAllTagsAdmin,
+} from '@/services/postService';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,7 +46,13 @@ export default async function AdminPostsPage({
 		getAllCategoriesAdmin(),
 	]);
 
-	const hasActiveFilters = !!(tag || (category && category !== 'all') || search || dateFrom || dateTo);
+	const hasActiveFilters = !!(
+		tag ||
+		(category && category !== 'all') ||
+		search ||
+		dateFrom ||
+		dateTo
+	);
 
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
@@ -51,7 +62,11 @@ export default async function AdminPostsPage({
 				description="Tạo, sửa, xuất bản và theo dõi bài viết."
 				actions={
 					<div className="flex items-center gap-3">
-						<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/bai-viet" target="_blank">
+						<Link
+							className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 hover:text-foreground"
+							href="/bai-viet"
+							target="_blank"
+						>
 							Xem ghi chép ↗
 						</Link>
 						<Link
@@ -105,12 +120,27 @@ export default async function AdminPostsPage({
 			{hasActiveFilters ? (
 				<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
 					<span>Đang lọc:</span>
-					{search && <span className="rounded-full bg-accent-subtle px-2 py-0.5 text-accent">Tìm: &quot;{search}&quot;</span>}
+					{search && (
+						<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-accent">
+							Tìm: &quot;{search}&quot;
+						</span>
+					)}
 					{tag && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Tag: {tag}</span>}
-					{category && category !== 'all' && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Chủ đề: {category}</span>}
-					{dateFrom && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Từ: {dateFrom}</span>}
-					{dateTo && <span className="rounded-full bg-surface-secondary px-2 py-0.5">Đến: {dateTo}</span>}
-					<Link href="/admin/posts" className="ml-1 font-medium text-accent underline underline-offset-2 hover:text-accent-hover">
+					{category && category !== 'all' && (
+						<span className="rounded-full bg-surface-secondary px-2 py-0.5">
+							Chủ đề: {category}
+						</span>
+					)}
+					{dateFrom && (
+						<span className="rounded-full bg-surface-secondary px-2 py-0.5">Từ: {dateFrom}</span>
+					)}
+					{dateTo && (
+						<span className="rounded-full bg-surface-secondary px-2 py-0.5">Đến: {dateTo}</span>
+					)}
+					<Link
+						href="/admin/posts"
+						className="ml-1 font-medium text-accent underline underline-offset-2 hover:text-accent-hover"
+					>
 						Xoá bộ lọc
 					</Link>
 				</div>
@@ -142,18 +172,31 @@ export default async function AdminPostsPage({
 						<table className="w-full text-left text-sm">
 							<thead>
 								<tr className="border-b border-border bg-surface-secondary/50">
-									<th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted">Bài viết</th>
-									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted md:table-cell">Chủ đề</th>
-									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted lg:table-cell">Thống kê</th>
-									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted sm:table-cell">Ngày</th>
-									<th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted">Thao tác</th>
+									<th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted">
+										Bài viết
+									</th>
+									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted md:table-cell">
+										Chủ đề
+									</th>
+									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted lg:table-cell">
+										Thống kê
+									</th>
+									<th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted sm:table-cell">
+										Ngày
+									</th>
+									<th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted">
+										Thao tác
+									</th>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-border">
 								{result.items.map((p) => {
 									const readingTime = Math.max(1, Math.round((p.wordCount || 0) / 200));
 									const totalReactions =
-										(p.reactions?.like || 0) + (p.reactions?.love || 0) + (p.reactions?.fire || 0) + (p.reactions?.clap || 0);
+										(p.reactions?.like || 0) +
+										(p.reactions?.love || 0) +
+										(p.reactions?.fire || 0) +
+										(p.reactions?.clap || 0);
 									return (
 										<tr key={p.id} className="transition-colors hover:bg-surface-hover/30">
 											{/* Title + tags + status */}
@@ -161,9 +204,13 @@ export default async function AdminPostsPage({
 												<div className="flex items-start gap-2">
 													<Link href={`/admin/posts/${p.id}/edit`} className="group min-w-0 flex-1">
 														<div className="flex items-center gap-2">
-															<span className="truncate font-medium text-foreground group-hover:text-accent">{p.title}</span>
+															<span className="truncate font-medium text-foreground group-hover:text-accent">
+																{p.title}
+															</span>
 															{p.isPinned ? (
-																<span className="inline-flex shrink-0 rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold text-accent">📌</span>
+																<span className="inline-flex shrink-0 rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold text-accent">
+																	📌
+																</span>
 															) : null}
 															<span
 																className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase ${
@@ -181,7 +228,10 @@ export default async function AdminPostsPage({
 												{p.tags.length > 0 && (
 													<div className="mt-1.5 flex flex-wrap gap-1">
 														{p.tags.slice(0, 4).map((t) => (
-															<span key={t} className="rounded bg-surface-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
+															<span
+																key={t}
+																className="rounded bg-surface-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground"
+															>
 																{t}
 															</span>
 														))}
@@ -202,9 +252,59 @@ export default async function AdminPostsPage({
 											{/* Stats */}
 											<td className="hidden px-4 py-3 lg:table-cell">
 												<div className="flex items-center gap-3 text-xs text-muted">
-													<span title="Lượt xem" className="inline-flex items-center gap-0.5"><svg className="h-3 w-3" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" strokeWidth="1.5" /><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" stroke="currentColor" strokeWidth="1.5" /></svg> {(p.views || 0).toLocaleString()}</span>
-													{totalReactions > 0 && <span title="Reactions" className="inline-flex items-center gap-0.5"><svg className="h-3 w-3" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg> {totalReactions}</span>}
-													<span title="Thời gian đọc" className="inline-flex items-center gap-0.5"><svg className="h-3 w-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" /><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> {readingTime}p</span>
+													<span title="Lượt xem" className="inline-flex items-center gap-0.5">
+														<svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
+															<path
+																d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"
+																stroke="currentColor"
+																strokeWidth="1.5"
+															/>
+															<circle
+																cx="12"
+																cy="12"
+																r="3"
+																fill="currentColor"
+																opacity="0.3"
+																stroke="currentColor"
+																strokeWidth="1.5"
+															/>
+														</svg>{' '}
+														{(p.views || 0).toLocaleString()}
+													</span>
+													{totalReactions > 0 && (
+														<span title="Reactions" className="inline-flex items-center gap-0.5">
+															<svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
+																<path
+																	d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"
+																	fill="currentColor"
+																	opacity="0.2"
+																	stroke="currentColor"
+																	strokeWidth="1.5"
+																	strokeLinejoin="round"
+																/>
+															</svg>{' '}
+															{totalReactions}
+														</span>
+													)}
+													<span title="Thời gian đọc" className="inline-flex items-center gap-0.5">
+														<svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
+															<circle
+																cx="12"
+																cy="12"
+																r="9"
+																stroke="currentColor"
+																strokeWidth="1.5"
+															/>
+															<path
+																d="M12 7v5l3 3"
+																stroke="currentColor"
+																strokeWidth="1.5"
+																strokeLinecap="round"
+																strokeLinejoin="round"
+															/>
+														</svg>{' '}
+														{readingTime}p
+													</span>
 												</div>
 											</td>
 
@@ -223,7 +323,12 @@ export default async function AdminPostsPage({
 											{/* Actions */}
 											<td className="px-4 py-3">
 												<div className="flex justify-end">
-													<AdminPostActions id={p.id} slug={p.slug} title={p.title} isPublished={p.isPublished} />
+													<AdminPostActions
+														id={p.id}
+														slug={p.slug}
+														title={p.title}
+														isPublished={p.isPublished}
+													/>
 												</div>
 											</td>
 										</tr>
@@ -241,7 +346,16 @@ export default async function AdminPostsPage({
 					<PaginationLink
 						label="← Trước"
 						disabled={result.page <= 1}
-						href={buildAdminUrl({ published, tag, category, search, sort, dateFrom, dateTo, page: result.page - 1 })}
+						href={buildAdminUrl({
+							published,
+							tag,
+							category,
+							search,
+							sort,
+							dateFrom,
+							dateTo,
+							page: result.page - 1,
+						})}
 					/>
 					<div className="text-xs text-muted">
 						Trang {result.page} / {result.totalPages}
@@ -249,7 +363,16 @@ export default async function AdminPostsPage({
 					<PaginationLink
 						label="Sau →"
 						disabled={result.page >= result.totalPages}
-						href={buildAdminUrl({ published, tag, category, search, sort, dateFrom, dateTo, page: result.page + 1 })}
+						href={buildAdminUrl({
+							published,
+							tag,
+							category,
+							search,
+							sort,
+							dateFrom,
+							dateTo,
+							page: result.page + 1,
+						})}
 					/>
 				</footer>
 			)}
@@ -257,10 +380,18 @@ export default async function AdminPostsPage({
 	);
 }
 
-function PaginationLink({ label, disabled, href }: { label: string; disabled: boolean; href: string }) {
+function PaginationLink({
+	label,
+	disabled,
+	href,
+}: {
+	label: string;
+	disabled: boolean;
+	href: string;
+}) {
 	return (
 		<Link
-			className={`rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors ${
+			className={`inline-flex min-h-11 items-center rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors ${
 				disabled ? 'pointer-events-none opacity-30' : 'hover:bg-surface-hover'
 			}`}
 			href={href}

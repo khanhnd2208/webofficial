@@ -25,10 +25,11 @@ test.describe('Teaching group board UX', () => {
 		process.env.TEACHING_GROUP_BOARD_ENABLED !== 'true',
 		'Group board is disabled unless TEACHING_GROUP_BOARD_ENABLED=true',
 	);
-	test('keeps the desktop board compact and supports mobile sheet placement', async (
-		{ page, context },
-		testInfo,
-	) => {
+	test('keeps the desktop board compact and supports mobile sheet placement', async ({
+		page,
+		context,
+	}, testInfo) => {
+		test.setTimeout(60_000);
 		await addAdminSession(context);
 		const suffix = `${testInfo.workerIndex.toString(36)}${testInfo.repeatEachIndex}${Date.now().toString(36)}`;
 		const slug = `e2e-groups-${suffix}`;
@@ -126,7 +127,9 @@ test.describe('Teaching group board UX', () => {
 			const publicMoveBodies: Array<{ groupId: string | null; slotIndex?: number }> = [];
 			page.on('request', (request) => {
 				if (new URL(request.url()).pathname === `/api/teaching/classes/${slug}/groups/move`) {
-					publicMoveBodies.push(request.postDataJSON() as { groupId: string | null; slotIndex?: number });
+					publicMoveBodies.push(
+						request.postDataJSON() as { groupId: string | null; slotIndex?: number },
+					);
 				}
 			});
 			await page.goto(`/lop/${slug}`);
@@ -166,11 +169,18 @@ test.describe('Teaching group board UX', () => {
 			await expect(page.locator('.group-student-card-pending')).toHaveCount(0);
 			await expect(page.locator('.group-student-card-drag')).toHaveCount(0);
 
+			const unassignResponse = page.waitForResponse((response) => {
+				if (new URL(response.url()).pathname !== `/api/teaching/classes/${slug}/groups/move`)
+					return false;
+				const body = response.request().postDataJSON() as { groupId?: string | null } | null;
+				return body?.groupId === null;
+			});
 			await pointerDrag(
 				page,
 				page.locator('[data-student-name="Nguyễn Group"]').first(),
 				page.locator('.group-unassigned-scroll'),
 			);
+			expect((await unassignResponse).ok()).toBe(true);
 			await expect(page.locator('.group-slot-filled')).toHaveCount(0);
 			await expect(
 				page.getByTestId('unassigned-list').locator('[data-student-name="Nguyễn Group"]'),
@@ -192,8 +202,7 @@ test.describe('Teaching group board UX', () => {
 				await page.goto(`/lop/${slug}`);
 				await page.getByRole('tab', { name: 'Xếp nhóm' }).click();
 				await expect(page.getByTestId('group-grid')).toBeVisible();
-				if (width < 768)
-					await expect(page.locator('[data-draggable="true"]')).toHaveCount(0);
+				if (width < 768) await expect(page.locator('[data-draggable="true"]')).toHaveCount(0);
 				const mobileFilter = await page.evaluate(() => ({
 					overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
 					filterBottom:

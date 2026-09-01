@@ -20,7 +20,10 @@ test.describe('My Space Tests Learning Workspace', () => {
 			return;
 		}
 
-		const subjectFilter = testsPage.getByTestId(/myspace-subject-filter-/).nth(2);
+		const subjectFilter = testsPage
+			.getByTestId('myspace-subject-rail')
+			.getByTestId(/myspace-subject-filter-/)
+			.nth(1);
 		await subjectFilter.click();
 		await expect(page).toHaveURL(/\?subject=/);
 
@@ -53,10 +56,16 @@ test.describe('My Space Tests Learning Workspace', () => {
 		await expect(result.getByRole('button', { name: 'Try again' })).toBeVisible();
 		await result.getByRole('link', { name: /Tests/i }).click();
 		await expect(page).toHaveURL(/\/my-space\/tests/);
-		await expect(page.getByTestId('myspace-test-status-principles-of-management-sample')).toHaveText(/Đã làm/);
-		await expect(page.getByTestId('myspace-test-start-principles-of-management-sample')).toHaveText(/Làm lại/);
+		await expect(
+			page.getByTestId('myspace-test-status-principles-of-management-sample'),
+		).toHaveText(/Đã làm/);
+		await expect(page.getByTestId('myspace-test-start-principles-of-management-sample')).toHaveText(
+			/Làm lại/,
+		);
 		await page.getByTestId('myspace-test-history-toggle-principles-of-management-sample').click();
-		await expect(page.getByTestId('myspace-test-history-principles-of-management-sample')).toBeVisible();
+		await expect(
+			page.getByTestId('myspace-test-history-principles-of-management-sample'),
+		).toBeVisible();
 	});
 
 	test('mobile: subject sheet supports escape and returns focus', async ({ browser }) => {

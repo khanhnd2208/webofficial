@@ -28,6 +28,7 @@ function NavItem({
 		<Link
 			href={href}
 			title={collapsed ? label : undefined}
+			aria-current={active ? 'page' : undefined}
 			onClick={onNavigate}
 			className={`relative flex min-h-11 items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors ${
 				active
@@ -41,13 +42,7 @@ function NavItem({
 	);
 }
 
-function NavBody({
-	collapsed,
-	onNavigate,
-}: {
-	collapsed: boolean;
-	onNavigate?: () => void;
-}) {
+function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
 	const pathname = usePathname();
 	const { data: session } = useSession();
 
@@ -106,7 +101,9 @@ function NavBody({
 				)}
 
 				{session?.user && (
-					<div className={`flex items-center gap-2 rounded-lg px-2 py-2 ${collapsed ? 'justify-center' : ''}`}>
+					<div
+						className={`flex items-center gap-2 rounded-lg px-2 py-2 ${collapsed ? 'justify-center' : ''}`}
+					>
 						{session.user.image ? (
 							<img
 								src={session.user.image}
@@ -120,7 +117,9 @@ function NavBody({
 						)}
 						{!collapsed && (
 							<div className="min-w-0 flex-1">
-								<p className="truncate text-xs font-bold text-foreground">{session.user.name ?? 'Admin'}</p>
+								<p className="truncate text-xs font-bold text-foreground">
+									{session.user.name ?? 'Admin'}
+								</p>
 								<button
 									type="button"
 									onClick={() => void signOut({ callbackUrl: routes.home })}
@@ -163,9 +162,11 @@ export default function AdminSidebar() {
 		const menuButton = menuButtonRef.current;
 
 		function focusable(root: HTMLElement): HTMLElement[] {
-			return [...root.querySelectorAll<HTMLElement>(
-				'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-			)].filter((el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
+			return [
+				...root.querySelectorAll<HTMLElement>(
+					'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+				),
+			].filter((el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
 		}
 
 		const items = drawer ? focusable(drawer) : [];
@@ -223,7 +224,10 @@ export default function AdminSidebar() {
 				>
 					<McIcon name={drawerOpen ? 'close' : 'menu'} size={20} />
 				</button>
-				<Link href={routes.admin.home} className="font-display text-base font-semibold tracking-wide text-foreground">
+				<Link
+					href={routes.admin.home}
+					className="inline-flex min-h-11 items-center px-2 font-display text-base font-semibold tracking-wide text-foreground"
+				>
 					Admin
 				</Link>
 			</header>

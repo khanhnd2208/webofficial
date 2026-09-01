@@ -10,13 +10,20 @@ type AdminCourse = {
 
 function unwrapAdminCourses(data: unknown): AdminCourse[] {
 	if (Array.isArray(data)) return data as AdminCourse[];
-	if (data && typeof data === 'object' && 'items' in data && Array.isArray((data as { items: AdminCourse[] }).items)) {
+	if (
+		data &&
+		typeof data === 'object' &&
+		'items' in data &&
+		Array.isArray((data as { items: AdminCourse[] }).items)
+	) {
 		return (data as { items: AdminCourse[] }).items;
 	}
 	return [];
 }
 
-async function fetchAdminCourse(request: { get: (url: string) => Promise<{ ok: () => boolean; json: () => Promise<unknown> }> }) {
+async function fetchAdminCourse(request: {
+	get: (url: string) => Promise<{ ok: () => boolean; json: () => Promise<unknown> }>;
+}) {
 	const response = await request.get('/api/admin/my-class/courses?q=hrm-toi-gian&pageSize=50');
 	expect(response.ok()).toBe(true);
 	const body = (await response.json()) as { data: unknown };
@@ -50,7 +57,15 @@ test.describe('My Class admin authoring surfaces', () => {
 
 		await page.goto(`/admin/my-class/courses/${course!.id}/overview`);
 		const main = page.getByRole('main');
-		for (const name of ['Tổng quan', 'Nội dung', 'Luyện tập', 'Từ vựng', 'Học viên', 'Kết quả', 'Cài đặt']) {
+		for (const name of [
+			'Tổng quan',
+			'Nội dung',
+			'Luyện tập',
+			'Từ vựng',
+			'Học viên',
+			'Kết quả',
+			'Cài đặt',
+		]) {
 			await expect(main.getByRole('link', { name, exact: true })).toBeVisible();
 		}
 
@@ -95,7 +110,10 @@ test.describe('My Class admin authoring surfaces', () => {
 	test('renders standardized admin data tables with URL sort state', async ({ page }) => {
 		await page.goto('/admin/my-class/knowledge');
 		await expect(page.getByRole('columnheader', { name: /Nội dung/ })).toBeVisible();
-		await page.getByRole('columnheader', { name: /Nội dung/ }).getByRole('button').click();
+		await page
+			.getByRole('columnheader', { name: /Nội dung/ })
+			.getByRole('button')
+			.click();
 		await expect(page).toHaveURL(/sortBy=title/);
 
 		await page.goto('/admin/my-class/courses');
@@ -173,7 +191,10 @@ test.describe('My Class admin authoring surfaces', () => {
 					slug: `e2e-single-${suffix}`,
 					type: 'MCQ_SINGLE',
 					stem: `${marker} single`,
-					options: [{ key: 'A', text: 'Đúng' }, { key: 'B', text: 'Sai' }],
+					options: [
+						{ key: 'A', text: 'Đúng' },
+						{ key: 'B', text: 'Sai' },
+					],
 					answer: { type: 'MCQ_SINGLE', correctKey: 'A' },
 					difficulty: 1,
 					knowledgeUnitIds: [knowledgeUnitId!],
@@ -199,7 +220,15 @@ test.describe('My Class admin authoring surfaces', () => {
 					answer: {
 						type: 'FILL_BLANK',
 						scoring: 'PARTIAL',
-						blanks: [{ id: '1', length: 3, accepted: ['mau'], caseSensitive: false, ignoreDiacritics: true }],
+						blanks: [
+							{
+								id: '1',
+								length: 3,
+								accepted: ['mau'],
+								caseSensitive: false,
+								ignoreDiacritics: true,
+							},
+						],
 					},
 					difficulty: 3,
 					knowledgeUnitIds: [knowledgeUnitId!],
@@ -263,7 +292,9 @@ test.describe('My Class admin authoring surfaces', () => {
 				error?: string;
 			};
 			expect(validation.ok(), JSON.stringify(validationBody)).toBe(true);
-			expect((validationBody.data ?? []).filter((issue) => issue.severity !== 'warning')).toEqual([]);
+			expect((validationBody.data ?? []).filter((issue) => issue.severity !== 'warning')).toEqual(
+				[],
+			);
 			const published = await page.request.post(`/api/admin/my-class/tests/${testId}/publish`);
 			expect(published.ok(), await published.text()).toBe(true);
 			await expect
@@ -288,7 +319,9 @@ test.describe('My Class admin authoring surfaces', () => {
 		}
 	});
 
-	test('sends admin editors to the My Class studio instead of inline learner edit', async ({ page }) => {
+	test('sends admin editors to the My Class studio instead of inline learner edit', async ({
+		page,
+	}) => {
 		await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
 		await expect(page).toHaveURL(/\/admin\/my-class\/courses\/[^/]+\/content/);
 		await expect(page.getByRole('button', { name: 'Đã hiểu' })).toHaveCount(0);
@@ -389,9 +422,9 @@ test.describe('My Class admin authoring surfaces', () => {
 			await expect(dialog.getByText('1 từ hợp lệ')).toBeVisible();
 			const committed = page.waitForResponse(
 				(response) =>
-					response.url().endsWith(
-						`/api/admin/my-class/courses/${course!.id}/vocab-assignments/import`,
-					) &&
+					response
+						.url()
+						.endsWith(`/api/admin/my-class/courses/${course!.id}/vocab-assignments/import`) &&
 					response.request().method() === 'POST' &&
 					response.status() === 201,
 			);
@@ -441,7 +474,9 @@ test.describe('My Class admin authoring surfaces', () => {
 		let vocabSetId: string | undefined;
 		try {
 			await page.goto(`/admin/my-class/courses/${course!.id}/vocabulary`);
-			await page.getByLabel('Phạm vi nhập CSV').selectOption({ value: lesson!.id });
+			await page
+				.locator('select[aria-label="Phạm vi nhập CSV"]:visible')
+				.selectOption({ value: lesson!.id });
 			await page.getByRole('button', { name: 'Nhập CSV' }).click();
 
 			const dialog = page.getByRole('dialog', { name: 'Thêm từ vựng' });
@@ -471,9 +506,9 @@ test.describe('My Class admin authoring surfaces', () => {
 
 			const committed = page.waitForResponse(
 				(response) =>
-					response.url().endsWith(
-						`/api/admin/my-class/courses/${course!.id}/vocab-assignments/import`,
-					) &&
+					response
+						.url()
+						.endsWith(`/api/admin/my-class/courses/${course!.id}/vocab-assignments/import`) &&
 					response.request().method() === 'POST' &&
 					response.status() === 201,
 			);
@@ -498,9 +533,7 @@ test.describe('My Class admin authoring surfaces', () => {
 			await expect(firstWord).toContainText('a person with an interest in a project');
 			await expect(firstWord).toContainText('bên liên quan');
 
-			await page.goto(
-				`/my-space/my-class/${course!.slug}/vocab/${vocabSetId}/flashcards`,
-			);
+			await page.goto(`/my-space/my-class/${course!.slug}/vocab/${vocabSetId}/flashcards`);
 			if (!(await page.getByText(firstTerm, { exact: true }).isVisible())) {
 				await page.getByTitle('Chưa thuộc').click();
 			}
@@ -518,9 +551,7 @@ test.describe('My Class admin authoring surfaces', () => {
 		}
 	});
 
-	test('rejects an invalid lesson without leaving an orphan vocabulary set', async ({
-		page,
-	}) => {
+	test('rejects an invalid lesson without leaving an orphan vocabulary set', async ({ page }) => {
 		const course = await fetchAdminCourse(page.request);
 		expect(course).toBeTruthy();
 		const title = `Orphan guard E2E ${Date.now()}`;
@@ -550,7 +581,9 @@ test.describe('My Class admin authoring surfaces', () => {
 		const course = await fetchAdminCourse(page.request);
 		expect(course).toBeTruthy();
 
-		const authoringRes = await page.request.get(`/api/admin/my-class/authoring/courses/${course!.slug}`);
+		const authoringRes = await page.request.get(
+			`/api/admin/my-class/authoring/courses/${course!.slug}`,
+		);
 		expect(authoringRes.ok()).toBe(true);
 		const authoring = (await authoringRes.json()) as {
 			data: {

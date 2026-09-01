@@ -11,7 +11,9 @@ import { routes } from '@/config/routes';
 import { DEFAULT_DISPLAY_FONT } from '@/constants/message';
 import { adminFetch } from '@/lib/admin/client';
 
-const MessageEditorWithFont = dynamic(() => import('@/components/MessageEditorWithFont'), { ssr: false });
+const MessageEditorWithFont = dynamic(() => import('@/components/MessageEditorWithFont'), {
+	ssr: false,
+});
 
 const DRAFT_KEY = 'message-draft-create-v3';
 
@@ -29,20 +31,25 @@ interface DraftData {
 	coverImageUrl: string;
 	musicTrack: string;
 	usePassword: boolean;
-	password: string;
 	expiresAt: string;
 	isPublished: boolean;
 	savedAt: number;
 }
 
 function htmlToPlainText(html: string): string {
-	return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+	return html
+		.replace(/<[^>]*>/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 async function uploadImage(file: File): Promise<string> {
 	const fd = new FormData();
 	fd.append('file', file);
-	const data = await adminFetch<{ url?: string }>('/api/messages/upload', { method: 'POST', body: fd });
+	const data = await adminFetch<{ url?: string }>('/api/messages/upload', {
+		method: 'POST',
+		body: fd,
+	});
 	if (!data?.url) throw new Error('Upload failed');
 	return data.url;
 }
@@ -81,7 +88,6 @@ export default function CreateMessagePage() {
 			setCoverImageUrl(draft.coverImageUrl || '');
 			setMusicTrack(draft.musicTrack || '');
 			setUsePassword(draft.usePassword || false);
-			setPassword(draft.password || '');
 			setExpiresAt(draft.expiresAt || '');
 			setIsPublished(draft.isPublished ?? true);
 			setDraftRestored(true);
@@ -102,7 +108,6 @@ export default function CreateMessagePage() {
 				coverImageUrl,
 				musicTrack,
 				usePassword,
-				password,
 				expiresAt,
 				isPublished,
 				savedAt: Date.now(),
@@ -122,7 +127,6 @@ export default function CreateMessagePage() {
 		coverImageUrl,
 		musicTrack,
 		usePassword,
-		password,
 		expiresAt,
 		isPublished,
 		plainText,
@@ -172,7 +176,10 @@ export default function CreateMessagePage() {
 			setSaveState({ status: 'saved', slug: created.slug });
 			router.push(routes.admin.messageEdit(created.slug));
 		} catch (e) {
-			setSaveState({ status: 'error', message: e instanceof Error ? e.message : 'Lỗi không xác định' });
+			setSaveState({
+				status: 'error',
+				message: e instanceof Error ? e.message : 'Lỗi không xác định',
+			});
 		} finally {
 			isSavingRef.current = false;
 		}

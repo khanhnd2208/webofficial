@@ -25,7 +25,10 @@ test.describe('Admin workspace release gates', () => {
 		await expect(page).toHaveURL(/\/admin\/teaching\?tab=cp/);
 	});
 
-	test('a signed-in admin opening /dang-nhap is sent to the destination', async ({ page, context }) => {
+	test('a signed-in admin opening /dang-nhap is sent to the destination', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		await page.goto(`/dang-nhap?from=${encodeURIComponent('/admin/teaching?tab=cp')}`);
 		await expect(page).toHaveURL(/\/admin\/teaching\?tab=cp/);
@@ -41,7 +44,10 @@ test.describe('Admin workspace release gates', () => {
 		await expect(page.getByRole('main')).toHaveCount(1);
 	});
 
-	test('mobile drawer traps focus and restores it to the menu button', async ({ page, context }) => {
+	test('mobile drawer traps focus and restores it to the menu button', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/admin');
@@ -51,7 +57,9 @@ test.describe('Admin workspace release gates', () => {
 		const drawer = page.getByTestId('admin-mobile-drawer');
 		await expect(drawer).toBeVisible();
 		expect(
-			await drawer.evaluate((el) => el.contains(document.activeElement) || el === document.activeElement),
+			await drawer.evaluate(
+				(el) => el.contains(document.activeElement) || el === document.activeElement,
+			),
 		).toBe(true);
 		await page.keyboard.press('Escape');
 		await expect(drawer).toHaveCount(0);
@@ -98,7 +106,10 @@ test.describe('Admin workspace release gates', () => {
 		await expect(page).not.toHaveURL(/\/dang-nhap/);
 	});
 
-	test('standard myspace-tests CRUD pages use the shared admin header', async ({ page, context }) => {
+	test('standard myspace-tests CRUD pages use the shared admin header', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		await page.goto('/admin/myspace-tests/questions');
 		await expect(page.getByRole('heading', { name: 'Ngân hàng câu hỏi' })).toBeVisible();
@@ -122,7 +133,7 @@ test.describe('Admin workspace release gates', () => {
 		const courseId = createdBody.data.id;
 		try {
 			await page.goto('/admin/my-class/courses');
-			const row = page.getByRole('row').filter({ hasText: 'Confirm E2E' });
+			const row = page.getByRole('row').filter({ hasText: `/${slug}` });
 			await row.getByRole('button', { name: 'Lưu trữ' }).click();
 			const confirm = page.getByRole('dialog', { name: 'Lưu trữ khóa học?' });
 			await expect(confirm).toBeVisible();

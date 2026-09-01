@@ -509,7 +509,8 @@
 }
 .teaching-app-header-back {
 	display: inline-flex;
-	min-height: 2.25rem;
+	min-height: 2.75rem;
+	min-width: 2.75rem;
 	flex: none;
 	align-items: center;
 	gap: 0.3rem;
@@ -2250,7 +2251,7 @@
 		padding-block: 0.45rem 0.35rem;
 	}
 	.teaching-app-header-back {
-		width: 2.25rem;
+		width: 2.75rem;
 		justify-content: center;
 	}
 	.teaching-app-header-back-label {

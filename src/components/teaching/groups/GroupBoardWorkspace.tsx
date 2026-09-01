@@ -30,7 +30,12 @@ type Board = TeachingGroupBoard & {
 	undoAvailableCount?: number;
 	slug?: string;
 };
-export type GroupBoardWorkspaceProps = { classId?: string; slug?: string; initial?: Board; admin?: boolean };
+export type GroupBoardWorkspaceProps = {
+	classId?: string;
+	slug?: string;
+	initial?: Board;
+	admin?: boolean;
+};
 type Props = GroupBoardWorkspaceProps;
 type Card = Pick<
 	TeachingGroupAssignmentRecord,
@@ -385,8 +390,15 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 		const pointerCollisions = pointerWithin(args);
 		return pointerCollisions.length ? pointerCollisions : rectIntersection(args);
 	}, []);
-	const applyServerBoard = useCallback((next: Board) => {
-		setBoard((current) => (!current || next.version >= current.version ? next : current));
+	const applyServerBoard = useCallback((next: Board, acceptSameVersion = false) => {
+		const current = boardRef.current;
+		if (
+			current &&
+			(next.version < current.version || (!acceptSameVersion && next.version === current.version))
+		)
+			return;
+		boardRef.current = next;
+		setBoard(next);
 	}, []);
 
 	const showToast = useCallback((message: string) => {
@@ -501,7 +513,7 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 				method: 'POST',
 				body: JSON.stringify({ enrollmentId: claimedEnrollmentId }),
 			});
-			setBoard(next);
+			applyServerBoard(next, true);
 			setError('');
 			if (target && next?.viewerEnrollmentId === claimedEnrollmentId) {
 				setPendingTarget(null);
@@ -570,7 +582,7 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 				method: admin ? 'PUT' : 'POST',
 				body: JSON.stringify(payload),
 			});
-			applyServerBoard(next);
+			applyServerBoard(next, true);
 			const message = groupId
 				? 'Đã cập nhật vị trí sinh viên.'
 				: 'Đã đưa sinh viên về danh sách chưa xếp.';
@@ -617,9 +629,7 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 		const enrollmentId = String(event.active.id).replace('student:', '');
 		const overId = event.over ? String(event.over.id) : '';
 		const slotId = /^slot:(.+):(\d+)$/.exec(overId);
-		const targetFromId = slotId
-			? { groupId: slotId[1], slotIndex: Number(slotId[2]) }
-			: undefined;
+		const targetFromId = slotId ? { groupId: slotId[1], slotIndex: Number(slotId[2]) } : undefined;
 		const targetData = event.over?.data.current as
 			| { groupId?: string; slotIndex?: number }
 			| undefined;
@@ -801,14 +811,13 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 	}
 
 	async function undoLatest() {
-		if (admin || !slug || !board?.viewerEnrollmentId || !board.undoAvailableCount || undoPending)
-			return;
+		if (!slug) return;
 		setUndoPending(true);
 		try {
 			const next = await teachingApi<Board>(`/api/teaching/classes/${slug}/groups/undo`, {
 				method: 'POST',
 			});
-			setBoard(next);
+			applyServerBoard(next, true);
 			setSelected(next.viewerEnrollmentId ?? null);
 			showToast('Đã hoàn tác thao tác gần nhất.');
 			setAnnouncement('Đã hoàn tác thao tác gần nhất.');
@@ -1207,11 +1216,15 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 						<button
 							type="button"
 							className="mc-button mc-button-ghost group-undo-button"
-							onClick={() => void undoLatest()}
+							onPointerUp={() => void undoLatest()}
+							onClick={(event) => {
+								if (event.detail === 0) void undoLatest();
+							}}
 							disabled={
 								!board.isOpen ||
 								!board.viewerEnrollmentId ||
 								!board.undoAvailableCount ||
+								Boolean(pendingEnrollmentId) ||
 								undoPending
 							}
 							title={
@@ -1336,9 +1349,7 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 						<DragOverlay
 							adjustScale={false}
 							dropAnimation={
-								reducedMotion
-									? null
-									: { duration: 140, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }
+								reducedMotion ? null : { duration: 140, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }
 							}
 						>
 							{activeId ? (
