@@ -45,6 +45,9 @@ jobs:
       AUTH_SECRET: ci-test-secret-not-for-production
       AUTH_URL: https://ci.invalid
       NEXTAUTH_URL: https://ci.invalid
+      # Placeholders so `next start` can boot in CI. Not real Google credentials.
+      GOOGLE_CLIENT_ID: ci-not-a-real-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-not-a-real-google-client-secret
       MONGODB_URI: mongodb://127.0.0.1:27017/ci_placeholder
       # Release builds mirror production: unfinished learner surfaces fail closed.
       PUBLIC_TESTS_ENABLED: 'false'

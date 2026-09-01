@@ -44,6 +44,11 @@ export default defineConfig({
 					INQUIRY_FROM_EMAIL: process.env.INQUIRY_FROM_EMAIL ?? 'Duy Khanh <noreply@example.com>',
 					INQUIRY_NOTIFY_EMAIL: process.env.INQUIRY_NOTIFY_EMAIL ?? 'admin@example.com',
 					AUTH_SECRET: process.env.AUTH_SECRET ?? 'e2e-rate-limit-secret',
+					GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? 'ci-not-a-real-google-client-id',
+					GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? 'ci-not-a-real-google-client-secret',
+					// Production startup requires the canonical origin even for CI `next start`.
+					AUTH_URL: 'https://toiladuykhanh.com',
+					NEXTAUTH_URL: 'https://toiladuykhanh.com',
 				},
 			}
 		: undefined,
