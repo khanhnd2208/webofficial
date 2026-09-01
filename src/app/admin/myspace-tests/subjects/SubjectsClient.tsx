@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { AdminEmptyState, AdminErrorState } from '@/components/admin/AdminPageHeader';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { adminFetch } from '@/lib/admin/client';
 import type { SubjectWithCounts } from '@/features/myspace-tests';
@@ -78,9 +79,7 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 		<>
 		<div className="mt-8 space-y-6">
 			{error ? (
-				<p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-					{error}
-				</p>
+				<AdminErrorState title="Không cập nhật được môn học" description={error} />
 			) : null}
 
 			<form onSubmit={onCreate} className="flex flex-wrap items-end gap-3">
@@ -104,7 +103,9 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 
 			<div className="divide-y divide-border border border-border">
 				{initial.length === 0 ? (
-					<p className="p-6 text-sm text-muted">Chưa có môn học nào.</p>
+					<div className="p-4">
+						<AdminEmptyState title="Chưa có môn học nào" description="Tạo môn mới ở form phía trên." />
+					</div>
 				) : (
 					initial.map((s) => (
 						<div

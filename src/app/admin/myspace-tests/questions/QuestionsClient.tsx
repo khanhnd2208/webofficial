@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { AdminEmptyState, AdminErrorState } from '@/components/admin/AdminPageHeader';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { adminFetch } from '@/lib/admin/client';
 import type { McqQuestionDTO } from '@/features/myspace-tests';
@@ -110,9 +111,9 @@ export default function QuestionsClient({
 		<>
 		<div className="mt-8">
 			{error ? (
-				<p className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-					{error}
-				</p>
+				<div className="mb-4">
+					<AdminErrorState title="Không cập nhật được câu hỏi" description={error} />
+				</div>
 			) : null}
 
 			<form onSubmit={applyFilters} className="flex flex-wrap items-end gap-3">
@@ -209,7 +210,12 @@ export default function QuestionsClient({
 
 			<div className="mt-6 divide-y divide-border border border-border">
 				{initialItems.length === 0 ? (
-					<p className="p-6 text-sm text-muted">Không có câu hỏi khớp bộ lọc.</p>
+					<div className="p-4">
+						<AdminEmptyState
+							title="Không có câu hỏi khớp bộ lọc"
+							description="Thử đổi môn, chủ đề hoặc từ khóa."
+						/>
+					</div>
 				) : (
 					initialItems.map((item) => (
 						<div key={item.id} className="flex flex-wrap items-start justify-between gap-3 p-4">

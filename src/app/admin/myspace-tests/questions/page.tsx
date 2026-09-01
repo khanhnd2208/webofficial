@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { myspaceTestsService } from '@/features/myspace-tests';
 import { routes } from '@/config/routes';
 import QuestionsClient from './QuestionsClient';
@@ -28,29 +29,27 @@ export default async function QuestionsPage({
 
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
-			<div className="flex flex-wrap items-end justify-between gap-4">
-				<div>
-					<p className="text-xs font-bold uppercase tracking-widest text-muted">My Space Tests</p>
-					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
-						Ngân hàng câu hỏi
-					</h1>
-					<p className="mt-2 text-sm text-muted">{total} câu</p>
-				</div>
-				<div className="flex gap-2">
-					<Link
-						href={routes.admin.myspaceQuestionsImport}
-						className="inline-flex rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider"
-					>
-						Import
-					</Link>
-					<Link
-						href={routes.admin.myspaceTests}
-						className="inline-flex rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider"
-					>
-						← Bài test
-					</Link>
-				</div>
-			</div>
+			<AdminPageHeader
+				eyebrow="My Space Tests"
+				title="Ngân hàng câu hỏi"
+				description={`${total} câu`}
+				actions={
+					<div className="flex flex-wrap gap-2">
+						<Link
+							href={routes.admin.myspaceQuestionsImport}
+							className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider"
+						>
+							Import
+						</Link>
+						<Link
+							href={routes.admin.myspaceTests}
+							className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider"
+						>
+							← Bài test
+						</Link>
+					</div>
+				}
+			/>
 
 			<QuestionsClient
 				initialItems={items}

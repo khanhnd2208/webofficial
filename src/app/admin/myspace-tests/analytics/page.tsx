@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { myspaceTestsService } from '@/features/myspace-tests';
 import { routes } from '@/config/routes';
 
@@ -47,24 +48,19 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
-			<div className="flex flex-wrap items-end justify-between gap-4">
-				<div>
-					<p className="text-xs font-bold uppercase tracking-widest text-muted">My Space</p>
-					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
-						Thống kê làm bài
-					</h1>
-					<p className="mt-2 max-w-xl text-sm text-muted">
-						Đã làm = trả lời ≥ 1 câu. Hoàn thành / điểm TB / thời gian TB chỉ tính phiên ≥ 5
-						phút.
-					</p>
-				</div>
-				<Link
-					href={routes.admin.myspaceTests}
-					className="inline-flex rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-foreground"
-				>
-					← Tests
-				</Link>
-			</div>
+			<AdminPageHeader
+				eyebrow="My Space"
+				title="Thống kê làm bài"
+				description="Đã làm = trả lời ≥ 1 câu. Hoàn thành / điểm TB / thời gian TB chỉ tính phiên ≥ 5 phút."
+				actions={
+					<Link
+						href={routes.admin.myspaceTests}
+						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
+					>
+						← Tests
+					</Link>
+				}
+			/>
 
 			<section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
 				<Stat label="Đã làm" value={totals.engaged} sub="trả lời ≥ 1 câu" />
@@ -91,7 +87,9 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 				<h2 className="text-sm font-bold uppercase tracking-widest text-muted">Theo bài test</h2>
 				<div className="mt-4 divide-y divide-border border border-border">
 					{byTest.length === 0 ? (
-						<p className="p-4 text-sm text-muted">Chưa có dữ liệu.</p>
+						<div className="p-4">
+							<AdminEmptyState title="Chưa có dữ liệu" description="Chưa có lượt làm bài để thống kê." />
+						</div>
 					) : (
 						byTest.map((t) => {
 							const rate =
@@ -181,7 +179,9 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 				</h2>
 				<div className="mt-4 divide-y divide-border border border-border">
 					{recentCompletions.length === 0 ? (
-						<p className="p-4 text-sm text-muted">Chưa có ai nộp bài.</p>
+						<div className="p-4">
+							<AdminEmptyState title="Chưa có ai nộp bài" />
+						</div>
 					) : (
 						recentCompletions.map((r) => (
 							<div
