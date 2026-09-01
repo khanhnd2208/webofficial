@@ -94,6 +94,16 @@ test.describe('Admin workspace release gates', () => {
 		await expect(page).not.toHaveURL(/\/dang-nhap/);
 	});
 
+	test('standard myspace-tests CRUD pages use the shared admin header', async ({ page, context }) => {
+		await addAdminSession(context);
+		await page.goto('/admin/myspace-tests/questions');
+		await expect(page.getByRole('heading', { name: 'Ngân hàng câu hỏi' })).toBeVisible();
+		await page.goto('/admin/myspace-tests/subjects');
+		await expect(page.getByRole('heading', { name: 'Môn học' })).toBeVisible();
+		await page.goto('/admin/myspace-tests/analytics');
+		await expect(page.getByRole('heading', { name: 'Thống kê làm bài' })).toBeVisible();
+	});
+
 	test('standard admin confirm dialog can be dismissed without mutating', async ({
 		page,
 		context,
