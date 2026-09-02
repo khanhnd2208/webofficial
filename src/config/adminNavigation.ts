@@ -1,5 +1,11 @@
-import { routes } from '@/config/routes';
 import type { McIconName } from '@/components/myclass/ui/McIcon';
+
+import {
+	getActiveAdminNavItems,
+	getArchivedModulesByGroup,
+	isArchivedAdminPath,
+} from '@/config/moduleRegistry';
+import { routes } from '@/config/routes';
 
 export type AdminWorkspaceWidth = 'standard' | 'wide' | 'full-workspace';
 
@@ -35,44 +41,25 @@ export const MY_CLASS_LOCAL_NAV: AdminNavItem[] = [
 	{ href: routes.admin.myClassImport, label: 'Nhập dữ liệu', icon: 'upload' },
 ];
 
+/** Primary admin sidebar — only the modules currently in operation. */
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 	{
-		group: 'Nội dung',
-		items: [
-			{ href: routes.admin.posts, label: 'Bài viết', icon: 'assignment' },
-			{ href: routes.admin.postCreate, label: 'Tạo bài viết', icon: 'add' },
-		],
-	},
-	{
-		group: 'Giảng dạy',
-		items: [
-			{ href: routes.admin.teaching, label: 'Lớp học', icon: 'event_available' },
-			{ href: routes.admin.myClass, label: 'My Class', icon: 'school' },
-			{ href: routes.admin.courses, label: 'Khóa học Chương–Bài', icon: 'book' },
-			{ href: routes.admin.enrollments, label: 'Học viên và ghi danh', icon: 'groups' },
-		],
-	},
-	{
-		group: 'Công cụ',
-		items: [
-			{ href: routes.admin.vocabulary, label: 'Từ vựng', icon: 'menu_book' },
-			{ href: routes.admin.luckyCard, label: 'Lucky Card', icon: 'campaign' },
-			{ href: routes.admin.activeRecall, label: 'Active Recall', icon: 'quiz' },
-			{ href: routes.admin.messages, label: 'Lời nhắn', icon: 'assignment' },
-			{ href: routes.admin.myspaceTests, label: 'Bài kiểm tra My Space', icon: 'quiz' },
-			{ href: routes.admin.myspaceSubjects, label: 'Môn học', icon: 'library_books' },
-		],
-	},
-	{
-		group: 'Hệ thống',
-		items: [
-			{ href: routes.admin.inquiries, label: 'Yêu cầu liên hệ', icon: 'campaign' },
-			{ href: routes.admin.users, label: 'Người dùng', icon: 'groups' },
-			{ href: routes.admin.media, label: 'Tệp media', icon: 'upload' },
-			{ href: routes.admin.settings, label: 'Cài đặt', icon: 'settings' },
-		],
+		group: 'Đang dùng',
+		items: getActiveAdminNavItems(),
 	},
 ];
+
+/** Archive sidebar — every paused module, grouped for later retrieval. */
+export const ARCHIVE_NAV_GROUPS: AdminNavGroup[] = getArchivedModulesByGroup().map(
+	({ group, modules }) => ({
+		group,
+		items: modules.map((module) => ({
+			href: module.adminHref,
+			label: module.label,
+			icon: module.icon,
+		})),
+	}),
+);
 
 const ROUTE_META: AdminRouteMeta[] = [
 	{
@@ -80,9 +67,12 @@ const ROUTE_META: AdminRouteMeta[] = [
 		label: 'My Class',
 		width: 'wide',
 		localNav: MY_CLASS_LOCAL_NAV,
-		localNavAction: { href: routes.myClass, label: 'Mở trang học viên', external: true },
 	},
 	{ href: routes.admin.teaching, label: 'Lớp học', width: 'full-workspace' },
+	{ href: routes.admin.website, label: 'Website', width: 'standard' },
+	{ href: routes.admin.inquiries, label: 'Yêu cầu liên hệ', width: 'standard' },
+	{ href: routes.admin.activeRecall, label: 'Active Recall', width: 'standard' },
+	{ href: routes.admin.archive, label: 'Kho lưu trữ', width: 'standard' },
 	{ href: routes.admin.posts, label: 'Bài viết', width: 'standard' },
 	{ href: routes.admin.courses, label: 'Khóa học Chương–Bài', width: 'standard' },
 	{ href: routes.admin.enrollments, label: 'Học viên và ghi danh', width: 'standard' },
@@ -93,6 +83,13 @@ const ROUTE_META: AdminRouteMeta[] = [
 
 export function isAdminNavActive(pathname: string, href: string, exact?: boolean): boolean {
 	if (exact || href === routes.admin.home) return pathname === href;
+	if (href === routes.admin.website) {
+		return (
+			pathname === routes.admin.website ||
+			pathname === routes.admin.inquiries ||
+			pathname.startsWith(`${routes.admin.inquiries}/`)
+		);
+	}
 	if (href === routes.admin.posts) {
 		return (
 			pathname === routes.admin.posts ||
@@ -101,6 +98,9 @@ export function isAdminNavActive(pathname: string, href: string, exact?: boolean
 	}
 	if (href === routes.admin.myClass) {
 		return pathname === routes.admin.myClass || pathname.startsWith(`${routes.admin.myClass}/`);
+	}
+	if (href === routes.admin.tools) {
+		return pathname === routes.admin.tools;
 	}
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -114,5 +114,13 @@ export function resolveAdminRoute(pathname: string): AdminRouteMeta {
 		}
 		if (pathname === meta.href || pathname.startsWith(`${meta.href}/`)) return meta;
 	}
-	return { href: pathname, label: 'Quản trị', width: 'standard' };
+	return {
+		href: pathname,
+		label: isArchivedAdminPath(pathname) ? 'Kho lưu trữ' : 'Quản trị',
+		width: 'standard',
+	};
+}
+
+export function getAdminNavGroupsForPath(pathname: string): AdminNavGroup[] {
+	return isArchivedAdminPath(pathname) ? ARCHIVE_NAV_GROUPS : ADMIN_NAV_GROUPS;
 }

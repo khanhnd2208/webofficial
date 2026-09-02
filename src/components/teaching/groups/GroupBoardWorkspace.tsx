@@ -18,6 +18,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import { teachingApi } from '@/components/teaching/admin/api';
+import { TeachingPopover, TeachingPopoverRoot } from '@/components/teaching/TeachingPopover';
 import { Dialog, LiveRegion, Sheet, Toast } from '@/components/ui/Dialog';
 import type {
 	TeachingGroupAssignmentRecord,
@@ -1190,6 +1191,7 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 		);
 
 	return (
+		<TeachingPopoverRoot>
 		<div
 			className={`group-board-workspace space-y-3 ${!admin && !board.isOpen ? 'group-board-locked' : ''}`}
 		>
@@ -1246,11 +1248,23 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 							className="group-admin-desktop-controls"
 							data-testid="group-admin-desktop-controls"
 						>
-							<details className="group-toolbar-menu relative">
-								<summary className="mc-button mc-button-ghost list-none">Thiết lập</summary>
+							<TeachingPopover
+								closeOnInsideClick={false}
+								ariaLabel="Thiết lập nhóm"
+								trigger={({ toggle, triggerRef, triggerProps }) => (
+									<button
+										ref={triggerRef}
+										className="mc-button mc-button-ghost min-h-11"
+										{...triggerProps}
+										onClick={toggle}
+									>
+										Thiết lập
+									</button>
+								)}
+							>
 								<form
 									onSubmit={saveConfig}
-									className="absolute right-0 z-20 mt-2 grid w-64 gap-3 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper p-4 shadow-lg"
+									className="grid w-64 gap-3 p-2"
 								>
 									<label className="text-xs font-semibold">
 										Số nhóm
@@ -1280,7 +1294,7 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 										Lưu cấu hình
 									</button>
 								</form>
-							</details>
+							</TeachingPopover>
 							{board.configured ? (
 								<>
 									<button
@@ -1575,5 +1589,6 @@ export function GroupBoardWorkspace({ classId, slug, initial, admin = false }: P
 			</Sheet>
 			<Toast message={toast} visible={Boolean(toast)} />
 		</div>
+		</TeachingPopoverRoot>
 	);
 }

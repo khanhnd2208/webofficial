@@ -12,6 +12,7 @@ import {
 } from 'react';
 
 import { teachingApi } from '@/components/teaching/admin/api';
+import { useTeachingDismissible } from '@/components/teaching/TeachingPopover';
 import { Dialog } from '@/components/ui/Dialog';
 import type {
 	LearningExperienceChoice,
@@ -106,6 +107,11 @@ export function LearningExperienceWorkspace({
 	const [highlightedIndex, setHighlightedIndex] = useState(-1);
 	const pickerRef = useRef<HTMLDivElement>(null);
 	const passwordRef = useRef<HTMLInputElement>(null);
+	useTeachingDismissible({
+		open: pickerOpen,
+		onClose: () => setPickerOpen(false),
+		rootRef: pickerRef,
+	});
 	const selectedStudent = useMemo(
 		() => students.find((student) => student.enrollmentId === selectedEnrollmentId) ?? null,
 		[selectedEnrollmentId, students],

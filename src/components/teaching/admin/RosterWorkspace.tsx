@@ -1,17 +1,15 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import {
 	StudioButton,
-	StudioField,
-	StudioInput,
-	StudioSelect,
 } from '@/components/myclass/admin/studio';
 import { teachingApi } from '@/components/teaching/admin/api';
 import { formatDob } from '@/components/teaching/admin/attendanceLabels';
+import { StudentIntakeWorkspace } from '@/components/teaching/admin/StudentIntakeWorkspace';
 import { LearningExperienceMark } from '@/components/teaching/public/LearningExperienceMark';
 import { Sheet } from '@/components/ui/Dialog';
 import type { TeachingRosterStudent, TeachingTutorialRecord } from '@/features/teaching/types';
@@ -37,24 +35,13 @@ export function RosterWorkspace({
 }) {
 	const router = useRouter();
 	const { confirm, dialog } = useAdminConfirm();
-	const importRef = useRef<HTMLInputElement>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [importMessage, setImportMessage] = useState('');
-	const [importing, setImporting] = useState(false);
 	const [editing, setEditing] = useState<StudentEditDraft | null>(null);
 	const [addOpen, setAddOpen] = useState(false);
 	const [query, setQuery] = useState('');
 	const [statusFilter, setStatusFilter] = useState<'all' | 'ACTIVE' | 'WITHDRAWN'>('ACTIVE');
 	const [tutorialFilter, setTutorialFilter] = useState('all');
-	const [form, setForm] = useState({
-		studentCode: '',
-		familyName: '',
-		givenName: '',
-		homeClassCode: '',
-		majorName: '',
-		dateOfBirth: '',
-		tutorialClassId: tutorials[0]?.id ?? '',
-	});
 	const filteredStudents = useMemo(() => {
 		const normalized = query.trim().toLowerCase();
 		return students.filter((student) => {
@@ -69,34 +56,6 @@ export function RosterWorkspace({
 			return matchesQuery && matchesStatus && matchesTutorial;
 		});
 	}, [students, query, statusFilter, tutorialFilter]);
-
-	async function addStudent(event: React.FormEvent) {
-		event.preventDefault();
-		setError(null);
-		try {
-			await teachingApi(`/api/admin/teaching/classes/${classId}/enrollments`, {
-				method: 'POST',
-				body: JSON.stringify({
-					...form,
-					dateOfBirth: form.dateOfBirth || null,
-					tutorialClassId: form.tutorialClassId || null,
-				}),
-			});
-			setForm((current) => ({
-				...current,
-				studentCode: '',
-				familyName: '',
-				givenName: '',
-				homeClassCode: '',
-				majorName: '',
-				dateOfBirth: '',
-			}));
-			setAddOpen(false);
-			router.refresh();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Could not add student');
-		}
-	}
 
 	async function assignTutorial(enrollmentId: string, tutorialClassId: string) {
 		setError(null);
@@ -215,29 +174,6 @@ export function RosterWorkspace({
 		}
 	}
 
-	async function importRoster(file: File | null) {
-		if (!file) return;
-		setImporting(true);
-		setError(null);
-		setImportMessage('');
-		try {
-			const body = new FormData();
-			body.append('file', file);
-			const result = await teachingApi<{
-				addedCount: number;
-				updatedCount: number;
-				skippedCount: number;
-			}>(`/api/admin/teaching/classes/${classId}/roster-import`, { method: 'POST', body });
-			setImportMessage(
-				`Đã thêm ${result.addedCount}, bổ sung dữ liệu còn thiếu cho ${result.updatedCount} học viên; không đổi ${result.skippedCount} mã đã có.`,
-			);
-			router.refresh();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Không thể import danh sách');
-		} finally {
-			setImporting(false);
-		}
-	}
 
 	return (
 		<>
@@ -246,108 +182,34 @@ export function RosterWorkspace({
 				<div>
 					<h2 className="font-semibold text-ink">Danh sách học viên</h2>
 					<p className="mc-meta mt-1">
-						Thêm thủ công hoặc import bổ sung; mã đã có chỉ được điền các trường còn thiếu.
+						Bổ sung học viên bằng nhập tay, dán bảng, CSV mẫu hoặc Excel. Mọi khác biệt hồ sơ phải được đối chiếu trước khi lưu.
 					</p>
 				</div>
-				<div className="flex flex-wrap gap-2">
-					<StudioButton onClick={() => setAddOpen(true)}>Thêm học viên</StudioButton>
-					<input
-						ref={importRef}
-						type="file"
-						accept=".xlsx"
-						className="sr-only"
-						onChange={(event) => void importRoster(event.target.files?.[0] ?? null)}
-					/>
-					<StudioButton
-						variant="secondary"
-						disabled={importing}
-						onClick={() => importRef.current?.click()}
-					>
-						{importing ? 'Đang import…' : 'Import danh sách'}
-					</StudioButton>
-				</div>
+				<StudioButton onClick={() => setAddOpen(true)}>Bổ sung sinh viên</StudioButton>
 			</div>
-			<Sheet open={addOpen} onClose={() => setAddOpen(false)} title="Thêm học viên">
-				<form className="grid gap-3 md:grid-cols-2" onSubmit={addStudent}>
-					<StudioField label="Mã SV">
-						<StudioInput
-							required
-							value={form.studentCode}
-							onChange={(event) =>
-								setForm((current) => ({ ...current, studentCode: event.target.value }))
-							}
-						/>
-					</StudioField>
-					<StudioField label="Họ lót">
-						<StudioInput
-							required
-							value={form.familyName}
-							onChange={(event) =>
-								setForm((current) => ({ ...current, familyName: event.target.value }))
-							}
-						/>
-					</StudioField>
-					<StudioField label="Tên">
-						<StudioInput
-							required
-							value={form.givenName}
-							onChange={(event) =>
-								setForm((current) => ({ ...current, givenName: event.target.value }))
-							}
-						/>
-					</StudioField>
-					<StudioField label="Mã lớp">
-						<StudioInput
-							value={form.homeClassCode}
-							onChange={(event) =>
-								setForm((current) => ({ ...current, homeClassCode: event.target.value }))
-							}
-						/>
-					</StudioField>
-					<StudioField label="Ngành">
-						<StudioInput
-							value={form.majorName}
-							onChange={(event) =>
-								setForm((current) => ({ ...current, majorName: event.target.value }))
-							}
-						/>
-					</StudioField>
-					<StudioField label="Ngày sinh">
-						<StudioInput
-							type="date"
-							value={form.dateOfBirth}
-							onChange={(event) =>
-								setForm((current) => ({ ...current, dateOfBirth: event.target.value }))
-							}
-						/>
-					</StudioField>
-					<StudioField label="Lớp tutorial">
-						<StudioSelect
-							required
-							value={form.tutorialClassId}
-							onChange={(event) =>
-								setForm((current) => ({ ...current, tutorialClassId: event.target.value }))
-							}
-						>
-							<option value="" disabled>
-								Chọn tutorial
-							</option>
-							{tutorials.map((tutorial) => (
-								<option key={tutorial.id} value={tutorial.id}>
-									{tutorial.code} · {tutorial.name}
-								</option>
-							))}
-						</StudioSelect>
-					</StudioField>
-					<div className="flex items-end">
-						<StudioButton type="submit">Thêm học viên</StudioButton>
-					</div>
-					{error ? <p className="md:col-span-2 text-sm text-error">{error}</p> : null}
-				</form>
-			</Sheet>
+			{addOpen ? (
+				<div className="mc-surface p-4">
+					<StudentIntakeWorkspace
+						classId={classId}
+						tutorials={tutorials}
+						onCommitted={(result) => {
+							setImportMessage(
+								`Đã thêm ${result.addedCount}, tái kích hoạt ${result.reactivatedCount}, bổ sung ${result.filledCount}, cập nhật ${result.updatedCount}, bỏ qua ${result.skippedCount}.`,
+							);
+							setAddOpen(false);
+							router.refresh();
+						}}
+					/>
+				</div>
+			) : null}
 			{importMessage ? (
 				<p className="mc-banner" data-tone="ok">
 					{importMessage}
+				</p>
+			) : null}
+			{error ? (
+				<p className="mc-banner" data-tone="error">
+					{error}
 				</p>
 			) : null}
 			<div className="teaching-roster-toolbar mc-surface flex flex-wrap gap-2 p-3">
@@ -494,7 +356,14 @@ export function RosterWorkspace({
 												className="min-h-9 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-2 text-sm"
 											/>
 										) : (
-											formatDob(student.dateOfBirth)
+											<>
+												{formatDob(student.dateOfBirth)}
+												<small className="mt-0.5 block text-[11px] text-ink-secondary">
+													{student.dateOfBirth
+														? 'Mật khẩu LE: ddmmyyyy'
+														: 'Vào LE trực tiếp'}
+												</small>
+											</>
 										)}
 									</td>
 									<td>

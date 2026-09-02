@@ -25,16 +25,23 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
 	});
 
-	test('mục lục locks marketing destinations and keeps My Space open', async ({ page }) => {
+	test('mục lục opens brand destinations and My Space', async ({ page }) => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(1);
-		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(3);
+		await expect(gate.getByRole('link')).toHaveCount(4);
+		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
+			'href',
+			'/gioi-thieu',
+		);
+		await expect(gate.getByRole('link', { name: /Dự án/i })).toHaveAttribute('href', '/du-an');
+		await expect(gate.getByRole('link', { name: /Dịch vụ/i })).toHaveAttribute('href', '/dich-vu');
 		await expect(gate.getByRole('link', { name: /My Space/i })).toHaveAttribute(
 			'href',
 			'/my-space',
 		);
+		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toHaveText('Gửi lời nhắn');
 		await expect(page.getByTestId('intro-back')).toBeVisible();
@@ -53,22 +60,21 @@ test.describe('Public pages smoke', () => {
 			.first()
 			.click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByTestId('gate-item-locked')).toHaveCount(3);
+		await expect(page.getByTestId('gate-item-locked')).toHaveCount(0);
 		await expect(page.getByRole('link', { name: /My Space/i })).toBeVisible();
 		await context.close();
 	});
 
-	test('My Space renders public tiles but keeps Teaching private', async ({ page }) => {
+	test('My Space hub contains only Teaching and Active Recall', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/my-space');
+		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.getByTestId('my-space')).toBeVisible();
-		await expect(page.getByRole('heading', { level: 1, name: 'My Space' })).toBeAttached();
-		await expect(page.locator('[data-testid^="myspace-tile-"]').first()).toBeVisible();
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
-		await expect(page.getByTestId('gate-back')).toBeVisible();
-		await expect(page.getByTestId('site-auth-chip')).toBeVisible();
-		await expect(page.getByTestId('contact-rail')).toBeVisible();
-		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
+		await page.getByTestId('myspace-tile-active-recall').click();
+		await expect(page).toHaveURL(/\/my-space\/active-recall/);
+		await expect(page.getByTestId('myspace-back')).toHaveAttribute('href', '/my-space');
 	});
 
 	test('intro and mục lục stay without horizontal overflow at critical widths', async ({
@@ -76,7 +82,7 @@ test.describe('Public pages smoke', () => {
 	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 
-		for (const path of ['/', '/muc-luc', '/my-space'] as const) {
+		for (const path of ['/', '/muc-luc', '/my-space', '/my-space/active-recall'] as const) {
 			await page.goto(path);
 			for (const width of [320, 390, 768, 1024, 1440]) {
 				await page.setViewportSize({ width, height: 900 });
@@ -84,8 +90,10 @@ test.describe('Public pages smoke', () => {
 					await expect(page.getByTestId('intro-home')).toBeVisible();
 				} else if (path === '/muc-luc') {
 					await expect(page.getByTestId('gate-home')).toBeVisible();
-				} else {
+				} else if (path === '/my-space') {
 					await expect(page.getByTestId('my-space')).toBeVisible();
+				} else {
+					await expect(page).toHaveURL(/\/my-space\/active-recall/);
 				}
 				const hasOverflow = await page.evaluate(
 					() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -209,8 +217,8 @@ test.describe('Navigation', () => {
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(1);
-		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(3);
+		await expect(gate.getByRole('link')).toHaveCount(4);
+		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /My Space/i })).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 	});

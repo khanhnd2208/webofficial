@@ -192,6 +192,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	const [toast, setToast] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveStates, setSaveStates] = useState<Record<string, GradebookSaveState>>({});
+	const [sessionDateStates, setSessionDateStates] = useState<Record<string, GradebookSaveState>>({});
 	const [togglingSessionId, setTogglingSessionId] = useState<string | null>(null);
 	const queues = useRef(new Map<string, Promise<void>>());
 	const revisions = useRef(new Map<string, number>());
@@ -536,6 +537,9 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 
 	async function updateSessionDate(sessionId: string, heldOn: string | null) {
 		let previousDate: string | null = null;
+		setSessionDateStates((current) => ({ ...current, [sessionId]: 'saving' }));
+		pendingCount.current += 1;
+		setIsSaving(true);
 		setGradebook((current) => {
 			const currentSession = current.sessions.find((session) => session.id === sessionId);
 			previousDate = currentSession?.heldOn ?? null;
@@ -551,9 +555,6 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 				`/api/admin/teaching/sessions/${sessionId}`,
 				{
 					method: 'PATCH',
-					// A teacher can switch from attendance to CP immediately after choosing a date.
-					// Keep this small mutation alive across that navigation so the session date is not lost.
-					keepalive: true,
 					body: JSON.stringify({ heldOn }),
 				},
 			);
@@ -563,6 +564,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 					session.id === updated.id ? updated : session,
 				),
 			}));
+			setSessionDateStates((current) => ({ ...current, [sessionId]: 'saved' }));
 			setToast('Đã lưu ngày học');
 		} catch (error) {
 			setGradebook((current) => ({
@@ -573,9 +575,14 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 						: session,
 				),
 			}));
+			setSessionDateStates((current) => ({ ...current, [sessionId]: 'error' }));
 			setToast(
 				error instanceof Error ? `Lỗi lưu ngày: ${error.message}` : 'Không thể lưu ngày học',
 			);
+			throw error;
+		} finally {
+			pendingCount.current = Math.max(0, pendingCount.current - 1);
+			setIsSaving(pendingCount.current > 0);
 		}
 	}
 
@@ -631,6 +638,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 		setParticipationOpen,
 		setParticipationLifecycle,
 		updateSessionDate,
+		sessionDateStates,
 		togglingSessionId,
 		toast,
 		setToast,

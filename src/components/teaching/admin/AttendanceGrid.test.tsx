@@ -235,7 +235,7 @@ describe('AttendanceGrid', () => {
 			/>,
 		);
 		expect(screen.getByText('01/09/26')).toBeInTheDocument();
-		const dateInput = container.querySelector('input[aria-label="Ngày học tuần 1"]');
+		const dateInput = container.querySelector('input[type="date"]');
 		expect(dateInput).not.toBeNull();
 		fireEvent.change(dateInput!, { target: { value: '2026-09-15' } });
 		expect(onSessionDateChange).toHaveBeenCalledWith(
@@ -253,17 +253,13 @@ describe('AttendanceGrid', () => {
 				onSessionDateChange={vi.fn()}
 			/>,
 		);
-		const dateInput = container.querySelector(
-			'input[aria-label="Ngày học tuần 1"]',
-		) as HTMLInputElement;
+		const calendar = screen.getByRole('button', { name: 'Mở lịch tuần 1' });
+		const dateInput = container.querySelector('input[type="date"]') as HTMLInputElement;
 		const showPicker = vi.fn();
 		Object.defineProperty(dateInput, 'showPicker', { configurable: true, value: showPicker });
 
-		fireEvent.click(dateInput);
-		fireEvent.keyDown(dateInput, { key: 'Enter' });
-		fireEvent.keyDown(dateInput, { key: ' ' });
-
-		expect(showPicker).toHaveBeenCalledTimes(3);
+		fireEvent.click(calendar);
+		expect(showPicker).toHaveBeenCalledTimes(1);
 	});
 
 	it('opens a note editor from the context menu without changing attendance', () => {

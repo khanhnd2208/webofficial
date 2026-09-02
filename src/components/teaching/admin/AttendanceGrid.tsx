@@ -24,6 +24,7 @@ import {
 	studentInitials,
 	weekColumns,
 } from './attendanceLabels';
+import { SessionDateInput } from './SessionDateInput';
 import { useGridNotePopover } from './useGridNotePopover';
 import { scrollGridWeekIntoView, syncGridScrollState, type GridScrollMode } from './gridScroll';
 
@@ -52,6 +53,7 @@ export interface AttendanceGridProps {
 		session: TeachingSessionRecord,
 		heldOn: string | null,
 	) => void | Promise<void>;
+	sessionDateSaveState?: (sessionId: string) => GradebookSaveState | undefined;
 	onWeekSelect?: (weekNumber: number) => void;
 	togglingSessionId?: string | null;
 	saveState?: (enrollmentId: string, sessionId: string) => GradebookSaveState | undefined;
@@ -88,18 +90,6 @@ function attendanceTooltip(
 	if (!status) return fallback;
 	const label = STATUS_OPTIONS.find((option) => option.status === status)?.label ?? status;
 	return note?.trim() ? `${label} - ${note.trim()}` : label;
-}
-
-function openDatePicker(input: HTMLInputElement) {
-	const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
-	if (typeof pickerInput.showPicker === 'function') {
-		try {
-			pickerInput.showPicker();
-		} catch {
-			// Browsers may reject showPicker outside a trusted gesture; the input
-			// remains focused so the native keyboard interaction still works.
-		}
-	}
 }
 
 function AttendanceNoteEditor({
@@ -193,6 +183,7 @@ export function AttendanceGrid({
 	onSessionToggle,
 	onSessionLifecycle,
 	onSessionDateChange,
+	sessionDateSaveState,
 	onWeekSelect,
 	togglingSessionId = null,
 	saveState,
@@ -474,30 +465,12 @@ export function AttendanceGrid({
 										)}
 									</span>
 									{session && onSessionDateChange && !readOnly && !session.isCancelled ? (
-										<label
-											className="mc-grid-week-date-input"
-											title={`Chọn ngày học tuần ${weekNumber}`}
-										>
-											<span className="mc-grid-week-date-value" aria-hidden>
-												{sessionDateLabel(session.heldOn, 'dd/mm/yy')}
-											</span>
-											<span className="sr-only">Ngày học tuần {weekNumber}</span>
-											<input
-												type="date"
-												value={session.heldOn ?? ''}
-												aria-label={`Ngày học tuần ${weekNumber}`}
-												onClick={(event) => openDatePicker(event.currentTarget)}
-												onKeyDown={(event) => {
-													if (event.key === 'Enter' || event.key === ' ') {
-														event.preventDefault();
-														openDatePicker(event.currentTarget);
-													}
-												}}
-												onChange={(event) => {
-													void onSessionDateChange(session, event.target.value || null);
-												}}
-											/>
-										</label>
+										<SessionDateInput
+											weekNumber={weekNumber}
+											value={session.heldOn}
+											saveState={sessionDateSaveState?.(session.id)}
+											onCommit={(heldOn) => onSessionDateChange(session, heldOn)}
+										/>
 									) : (
 										<span className="mc-grid-week-sub">
 											{sessionDateLabel(session?.heldOn ?? null)}

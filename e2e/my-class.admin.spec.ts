@@ -319,11 +319,9 @@ test.describe('My Class admin authoring surfaces', () => {
 		}
 	});
 
-	test('sends admin editors to the My Class studio instead of inline learner edit', async ({
-		page,
-	}) => {
-		await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
-		await expect(page).toHaveURL(/\/admin\/my-class\/courses\/[^/]+\/content/);
+	test('My Class studio stays available in the archive shell', async ({ page }) => {
+		await page.goto('/admin/my-class/courses');
+		await expect(page.getByTestId('archive-banner')).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Đã hiểu' })).toHaveCount(0);
 	});
 
@@ -524,21 +522,7 @@ test.describe('My Class admin authoring surfaces', () => {
 			expect(commitBody.data.assignment.lessonId).toBe(lesson!.id);
 			await expect(dialog).toHaveCount(0);
 			await expect(page.getByText(title)).toBeVisible();
-
-			await page.goto(`/my-space/my-class/${course!.slug}/vocab/${vocabSetId}`);
-			await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
-			const firstWord = page.getByRole('listitem').filter({ hasText: firstTerm });
-			await expect(firstWord).toBeVisible();
-			await expect(firstWord).toContainText('/ˈsteɪkˌhəʊldə/');
-			await expect(firstWord).toContainText('a person with an interest in a project');
-			await expect(firstWord).toContainText('bên liên quan');
-
-			await page.goto(`/my-space/my-class/${course!.slug}/vocab/${vocabSetId}/flashcards`);
-			if (!(await page.getByText(firstTerm, { exact: true }).isVisible())) {
-				await page.getByTitle('Chưa thuộc').click();
-			}
-			await expect(page.getByText(firstTerm, { exact: true })).toBeVisible();
-			await expect(page.getByText('/ˈsteɪkˌhəʊldə/', { exact: true })).toBeVisible();
+			await expect(page.getByTestId('archive-banner')).toBeVisible();
 		} finally {
 			if (assignmentId) {
 				await page.request.delete(

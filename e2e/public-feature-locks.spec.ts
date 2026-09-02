@@ -1,22 +1,16 @@
 import { expect, test } from '@playwright/test';
 
-const unfinishedFeaturesOpen =
-	process.env.NODE_ENV !== 'production' &&
-	process.env.PUBLIC_TESTS_ENABLED !== 'false' &&
-	process.env.PUBLIC_KNOWLEDGE_ENABLED !== 'false';
-
-test.describe('unfinished public learning surfaces', () => {
-	test.skip(
-		unfinishedFeaturesOpen,
-		'This suite verifies the production fail-closed configuration.',
-	);
-
-	test('returns non-cacheable 404s for Tests and Kho kiến thức pages', async ({ request }) => {
+test.describe('archived public learning surfaces', () => {
+	test('returns non-cacheable 404s for Tests, My Class and vocabulary pages', async ({
+		request,
+	}) => {
 		for (const path of [
 			'/my-space/tests',
 			'/my-space/tests/example/play',
 			'/my-space/my-class',
 			'/my-space/my-class/example/lesson/unit',
+			'/vocabulary',
+			'/vocabulary/store',
 		]) {
 			const response = await request.get(path, { maxRedirects: 0 });
 			expect(response.status(), path).toBe(404);
@@ -25,7 +19,7 @@ test.describe('unfinished public learning surfaces', () => {
 		}
 	});
 
-	test('returns the standard 404 envelope for direct APIs', async ({ request }) => {
+	test('returns the standard 404 envelope for direct public APIs', async ({ request }) => {
 		for (const path of [
 			'/api/myspace-tests',
 			'/api/myspace-tests/example/sessions',
@@ -43,17 +37,19 @@ test.describe('unfinished public learning surfaces', () => {
 		}
 	});
 
-	test('shows locked tiles while keeping Active Recall available', async ({ page }) => {
+	test('keeps a focused My Space hub with Teaching and Active Recall', async ({ page }) => {
 		await page.goto('/my-space');
-
-		for (const id of ['tests', 'my-class']) {
-			const tile = page.getByTestId(`myspace-tile-${id}`);
-			await expect(tile).toBeVisible();
-			expect(await tile.evaluate((element) => element.tagName)).toBe('BUTTON');
-		}
+		await expect(page).toHaveURL(/\/my-space$/);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
+			'href',
+			'/my-space/teaching',
+		);
 		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveAttribute(
 			'href',
 			'/my-space/active-recall',
 		);
+		await expect(page.getByTestId('myspace-tile-tests')).toHaveCount(0);
+		await expect(page.getByTestId('myspace-tile-my-class')).toHaveCount(0);
 	});
 });

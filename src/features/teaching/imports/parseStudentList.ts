@@ -1,5 +1,8 @@
 import { readSheet } from 'read-excel-file/node';
 
+import { parseDateOfBirth } from '../domain/studentIdentity';
+import { normalizeStudentCode, normalizeUnicode } from '../domain/studentIdentity';
+
 export interface ParsedStudentRow {
 	orderNo: number;
 	studentCode: string;
@@ -10,6 +13,8 @@ export interface ParsedStudentRow {
 	dateOfBirth: string | null;
 	phone: string | null;
 	email: string | null;
+	tutorialCode: string | null;
+	enrolledFromWeek: number | null;
 	ok: boolean;
 	errors: string[];
 }
@@ -43,24 +48,41 @@ const HEADER_ALIASES: Record<
 		| 'dateOfBirth'
 		| 'phone'
 		| 'email'
+		| 'tutorialCode'
+		| 'enrolledFromWeek'
 	>
 > = {
 	stt: 'orderNo',
 	'ma sv': 'studentCode',
 	'mã sv': 'studentCode',
+	masv: 'studentCode',
+	'student code': 'studentCode',
 	'ho lot': 'familyName',
 	'họ lót': 'familyName',
+	holot: 'familyName',
 	ten: 'givenName',
 	tên: 'givenName',
 	'ma lop': 'homeClassCode',
 	'mã lớp': 'homeClassCode',
+	malop: 'homeClassCode',
 	'ten lop': 'majorName',
 	'tên lớp': 'majorName',
+	'ten nganh': 'majorName',
+	'tên ngành': 'majorName',
 	'ngay sinh': 'dateOfBirth',
 	'ngày sinh': 'dateOfBirth',
+	dob: 'dateOfBirth',
 	'dien thoai': 'phone',
 	'điện thoại': 'phone',
+	phone: 'phone',
 	email: 'email',
+	'ma tutorial': 'tutorialCode',
+	'mã tutorial': 'tutorialCode',
+	tutorial: 'tutorialCode',
+	'tutorial class': 'tutorialCode',
+	'hoc tu tuan': 'enrolledFromWeek',
+	'học từ tuần': 'enrolledFromWeek',
+	'from week': 'enrolledFromWeek',
 };
 
 function cellText(value: unknown): string {
@@ -70,11 +92,19 @@ function cellText(value: unknown): string {
 		const mm = String(value.getMonth() + 1).padStart(2, '0');
 		return `${dd}/${mm}/${value.getFullYear()}`;
 	}
-	return String(value).replace(/\s+/g, ' ').trim();
+	if (typeof value === 'number' && Number.isFinite(value)) {
+		return String(value);
+	}
+	return normalizeUnicode(String(value));
 }
 
 function normalizeLabel(value: string): string {
-	return value.normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
+	return value
+		.normalize('NFC')
+		.toLowerCase()
+		.replace(/[_-]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 function parseOrderNo(value: string, fallback: number): number {
@@ -87,26 +117,17 @@ function parseCredits(value: string): number | null {
 	return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function parseDateOfBirth(value: string): { iso: string | null; error?: string } {
-	if (!value) return { iso: null };
-	const match = value.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
-	if (!match) return { iso: null, error: 'Date of birth must be dd/MM/yyyy' };
-	const day = Number(match[1]);
-	const month = Number(match[2]);
-	const year = Number(match[3]);
-	const date = new Date(Date.UTC(year, month - 1, day));
-	if (
-		date.getUTCFullYear() !== year ||
-		date.getUTCMonth() !== month - 1 ||
-		date.getUTCDate() !== day
-	) {
-		return { iso: null, error: 'Date of birth is not a valid calendar date' };
-	}
-	return { iso: date.toISOString().slice(0, 10) };
+function parseWeek(value: string): number | null {
+	if (!value) return null;
+	const n = Number.parseInt(value, 10);
+	return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function findHeaderRow(rows: unknown[][]): number {
-	return rows.findIndex((row) => normalizeLabel(cellText(row[0])) === 'stt');
+export function findHeaderRow(rows: unknown[][]): number {
+	return rows.findIndex((row) => {
+		const labels = row.map((cell) => normalizeLabel(cellText(cell)));
+		return labels.includes('stt') || labels.includes('mã sv') || labels.includes('ma sv');
+	});
 }
 
 function labelValue(rows: unknown[][], label: string): string {
@@ -175,7 +196,7 @@ export function parseStudentListFromRows(rows: unknown[][]): ParsedStudentList {
 
 	for (let i = headerRowIndex + 1; i < rows.length; i += 1) {
 		const row = rows[i] ?? [];
-		const studentCode = cellText(row[studentCodeIndex]);
+		const studentCode = normalizeStudentCode(cellText(row[studentCodeIndex]));
 		if (!studentCode && row.every((cell) => !cellText(cell))) continue;
 
 		const values: ParsedStudentRow = {
@@ -188,6 +209,8 @@ export function parseStudentListFromRows(rows: unknown[][]): ParsedStudentList {
 			dateOfBirth: null,
 			phone: null,
 			email: null,
+			tutorialCode: null,
+			enrolledFromWeek: null,
 			ok: true,
 			errors: [],
 		};
@@ -200,13 +223,15 @@ export function parseStudentListFromRows(rows: unknown[][]): ParsedStudentList {
 				const parsed = parseDateOfBirth(text);
 				values.dateOfBirth = parsed.iso;
 				if (parsed.error) values.errors.push(parsed.error);
-			} else if (key === 'studentCode') values.studentCode = text;
+			} else if (key === 'studentCode') values.studentCode = normalizeStudentCode(text);
 			else if (key === 'phone') values.phone = text || null;
-			else if (key === 'email') values.email = text || null;
+			else if (key === 'email') values.email = text.toLowerCase() || null;
 			else if (key === 'familyName') values.familyName = text;
 			else if (key === 'givenName') values.givenName = text;
 			else if (key === 'homeClassCode') values.homeClassCode = text;
 			else if (key === 'majorName') values.majorName = text;
+			else if (key === 'tutorialCode') values.tutorialCode = text || null;
+			else if (key === 'enrolledFromWeek') values.enrolledFromWeek = parseWeek(text);
 		});
 
 		if (!values.studentCode) values.errors.push('Student code is required');

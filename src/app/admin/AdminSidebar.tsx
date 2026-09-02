@@ -6,7 +6,8 @@ import { signOut, useSession } from 'next-auth/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { McIcon } from '@/components/myclass/ui/McIcon';
-import { ADMIN_NAV_GROUPS, isAdminNavActive } from '@/config/adminNavigation';
+import { getAdminNavGroupsForPath, isAdminNavActive } from '@/config/adminNavigation';
+import { isArchivedAdminPath } from '@/config/moduleRegistry';
 import { routes } from '@/config/routes';
 
 function NavItem({
@@ -45,22 +46,31 @@ function NavItem({
 function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
 	const pathname = usePathname();
 	const { data: session } = useSession();
+	const archived = isArchivedAdminPath(pathname);
+	const groups = getAdminNavGroupsForPath(pathname);
 
 	return (
 		<>
-			<nav className="flex-1 space-y-5 overflow-y-auto px-2 py-4" aria-label="Quản trị">
+			<nav
+				className="flex-1 space-y-5 overflow-y-auto px-2 py-4"
+				aria-label={archived ? 'Kho lưu trữ' : 'Quản trị'}
+			>
 				<div>
 					<NavItem
-						href={routes.admin.home}
-						label="Tổng quan"
+						href={archived ? routes.admin.archive : routes.admin.home}
+						label={archived ? 'Kho lưu trữ' : 'Tổng quan'}
 						collapsed={collapsed}
-						active={pathname === routes.admin.home}
+						active={
+							archived
+								? pathname === routes.admin.archive
+								: pathname === routes.admin.home
+						}
 						icon="dashboard"
 						onNavigate={onNavigate}
 					/>
 				</div>
 
-				{ADMIN_NAV_GROUPS.map(({ group, items }) =>
+				{groups.map(({ group, items }) =>
 					items.length === 0 ? null : (
 						<div key={group}>
 							{!collapsed && (
@@ -88,7 +98,24 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 
 			<div className="space-y-1 border-t border-border p-2">
 				{!collapsed && (
-					<div className="flex flex-wrap items-center gap-2 px-2 pb-2">
+					<div className="flex flex-col gap-1 px-2 pb-2">
+						{archived ? (
+							<Link
+								href={routes.admin.home}
+								className="text-[11px] font-semibold text-foreground-secondary transition-colors hover:text-foreground"
+								data-testid="archive-sidebar-back"
+							>
+								← Về admin chính
+							</Link>
+						) : (
+							<Link
+								href={routes.admin.archive}
+								className="text-[11px] text-muted/80 transition-colors hover:text-muted"
+								data-testid="admin-archive-link"
+							>
+								Kho lưu trữ
+							</Link>
+						)}
 						<a
 							href={routes.home}
 							target="_blank"
@@ -146,6 +173,9 @@ export default function AdminSidebar() {
 	const drawerRef = useRef<HTMLElement>(null);
 
 	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+	const archived = isArchivedAdminPath(pathname);
+	const brandHref = archived ? routes.admin.archive : routes.admin.home;
+	const brandLabel = archived ? 'Kho lưu trữ' : 'Admin';
 
 	useEffect(() => {
 		// Close the mobile drawer after navigation. Route is the source of truth;
@@ -225,10 +255,10 @@ export default function AdminSidebar() {
 					<McIcon name={drawerOpen ? 'close' : 'menu'} size={20} />
 				</button>
 				<Link
-					href={routes.admin.home}
+					href={brandHref}
 					className="inline-flex min-h-11 items-center px-2 font-display text-base font-semibold tracking-wide text-foreground"
 				>
-					Admin
+					{brandLabel}
 				</Link>
 			</header>
 
@@ -245,13 +275,13 @@ export default function AdminSidebar() {
 						id={drawerId}
 						role="dialog"
 						aria-modal="true"
-						aria-label="Menu quản trị"
+						aria-label={archived ? 'Menu kho lưu trữ' : 'Menu quản trị'}
 						tabIndex={-1}
 						data-testid="admin-mobile-drawer"
 						className="absolute inset-y-0 left-0 flex w-[min(100%,18rem)] flex-col border-r border-border bg-surface shadow-lg"
 					>
 						<div className="flex h-14 items-center justify-between border-b border-border px-3">
-							<span className="text-sm font-black uppercase tracking-wider">Admin</span>
+							<span className="text-sm font-black uppercase tracking-wider">{brandLabel}</span>
 							<button
 								type="button"
 								onClick={closeDrawer}
@@ -274,16 +304,16 @@ export default function AdminSidebar() {
 				<div className="flex h-14 items-center justify-between border-b border-border px-3">
 					{!collapsed ? (
 						<Link
-							href={routes.admin.home}
+							href={brandHref}
 							className="flex items-center gap-2.5 text-sm font-black uppercase tracking-wider text-foreground"
 						>
 							<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground">
 								<span className="text-[11px] font-black text-background">H</span>
 							</div>
-							Admin
+							{brandLabel}
 						</Link>
 					) : (
-						<Link href={routes.admin.home} className="mx-auto" aria-label="Admin">
+						<Link href={brandHref} className="mx-auto" aria-label={brandLabel}>
 							<div className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground">
 								<span className="text-[11px] font-black text-background">H</span>
 							</div>

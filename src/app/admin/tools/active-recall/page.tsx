@@ -11,7 +11,7 @@ export default async function ActiveRecallAdminPage() {
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
 			<AdminPageHeader
-				eyebrow="Công cụ"
+				eyebrow="Active Recall"
 				title="Active Recall"
 				description="Các bộ thẻ hỏi–đáp công khai và bản nháp."
 				actions={

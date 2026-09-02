@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { routes } from '@/config/routes';
 import type {
 	TeachingAttendanceBoardConfig,
@@ -34,6 +36,7 @@ export function TeachingWorkspaceShell({
 	groupBoardEnabled,
 	tab,
 	notes,
+	week,
 }: {
 	gradebook: TeachingGradebook;
 	roster?: { class: TeachingGradebook['class']; students: TeachingRosterStudent[] };
@@ -43,6 +46,7 @@ export function TeachingWorkspaceShell({
 	groupBoardEnabled: boolean;
 	tab?: string;
 	notes?: TeachingClassNoteRecord[];
+	week?: number | null;
 }) {
 	const activeTab = resolveTeachingWorkspaceTab(tab, groupBoardEnabled);
 	const isGradebookTab = activeTab === 'attendance' || activeTab === 'cp';
@@ -53,7 +57,7 @@ export function TeachingWorkspaceShell({
 	) : undefined;
 
 	return (
-		<TeachingWorkspacePending>
+		<TeachingWorkspacePending initialWeek={week}>
 			<div className={`teaching-workspace-shell py-2 sm:py-3 ${isGradebookTab ? 'teaching-workspace-shell-gradebook' : ''}`} data-teaching-shell>
 				<TeachingAppHeader
 					backHref={routes.admin.teaching}
@@ -68,11 +72,15 @@ export function TeachingWorkspaceShell({
 						</div>
 					}
 					actions={<TeachingManagementMenu classId={gradebook.class.id} activeTab={activeTab} publicPath={board.publicPath} />}
-					tabs={<TeachingCoreTabs classId={gradebook.class.id} activeTab={activeTab} groupBoardEnabled={groupBoardEnabled} />}
+					tabs={
+						<Suspense>
+							<TeachingCoreTabs classId={gradebook.class.id} activeTab={activeTab} groupBoardEnabled={groupBoardEnabled} />
+						</Suspense>
+					}
 				/>
 
 				<TeachingPendingBody className={`mt-4 ${isGradebookTab ? 'teaching-workspace-content' : ''}`}>
-					{isGradebookTab ? <GradebookWorkspace initial={gradebook} initialView={activeTab === 'cp' ? 'participation' : 'attendance'} groupNumberByEnrollment={groupNumberByEnrollment} /> : null}
+					{isGradebookTab ? <GradebookWorkspace initial={gradebook} initialView={activeTab === 'cp' ? 'participation' : 'attendance'} groupNumberByEnrollment={groupNumberByEnrollment} initialWeek={week ?? null} /> : null}
 					{groupBoardEnabled && activeTab === 'groups' ? <GroupBoardWorkspaceLoader classId={gradebook.class.id} slug={gradebook.class.publicSlug ?? undefined} initial={groupBoard} admin /> : null}
 					{activeTab === 'notes' ? <ClassNotesAdminWorkspace classId={gradebook.class.id} initial={notes ?? []} /> : null}
 					{activeTab === 'students' ? <RosterWorkspace classId={gradebook.class.id} tutorials={gradebook.tutorials} students={roster?.students ?? []} /> : null}

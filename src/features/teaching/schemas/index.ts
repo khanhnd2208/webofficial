@@ -99,6 +99,19 @@ export const addEnrollmentSchema = studentIdentitySchema.extend({
 	orderNo: z.number().int().min(1).optional(),
 	tutorialClassId: z.string().min(1).nullable().optional(),
 	enrolledFromWeek: z.number().int().min(1).max(40).optional(),
+	confirmExisting: z.boolean().optional(),
+	conflictResolution: z
+		.object({
+			familyName: z.enum(['keep', 'use_new']).optional(),
+			givenName: z.enum(['keep', 'use_new']).optional(),
+			dateOfBirth: z.enum(['keep', 'use_new']).optional(),
+			homeClassCode: z.enum(['keep', 'use_new']).optional(),
+			majorName: z.enum(['keep', 'use_new']).optional(),
+			phone: z.enum(['keep', 'use_new']).optional(),
+			email: z.enum(['keep', 'use_new']).optional(),
+		})
+		.optional(),
+	expectedUpdatedAt: z.string().datetime().nullable().optional(),
 });
 
 export const teachingClassSetupSchema = z.object({
@@ -330,7 +343,50 @@ export const reorderTeachingClassNotesSchema = z
 	.object({ ids: z.array(z.string().min(1).max(100)).max(500) })
 	.strict();
 
+export const rosterImportCommitSchema = z
+	.object({
+		rows: z
+			.array(
+				z.object({
+					key: z.string().min(1),
+					expectedUpdatedAt: z.string().nullable().optional(),
+					resolution: z
+						.record(z.string(), z.enum(['keep', 'use_new']))
+						.optional(),
+					input: z.object({
+						sourceRow: z.number().int().min(1).optional(),
+						orderNo: z.number().int().min(1).nullable().optional(),
+						studentCode: trimmed(40).min(1),
+						familyName: trimmed(120).min(1),
+						givenName: trimmed(80).min(1),
+						homeClassCode: trimmed(40).optional(),
+						majorName: trimmed(160).optional(),
+						dateOfBirth: z
+							.string()
+							.regex(/^\d{4}-\d{2}-\d{2}$/)
+							.nullable()
+							.optional(),
+						phone: trimmed(40).nullable().optional(),
+						email: z.string().trim().email().max(200).nullable().optional(),
+						tutorialCode: trimmed(20).nullable().optional(),
+						tutorialClassId: z.string().min(1).nullable().optional(),
+						enrolledFromWeek: z.number().int().min(1).max(40).nullable().optional(),
+					}),
+				}),
+			)
+			.min(1)
+			.max(500),
+	})
+	.strict();
+
+export const teachingClassSetupFromRosterSchema = z.object({
+	class: createTeachingClassSchema,
+	rows: rosterImportCommitSchema.shape.rows,
+});
+
 export type CreateTeachingClassInput = z.infer<typeof createTeachingClassSchema>;
+export type RosterImportCommitBody = z.infer<typeof rosterImportCommitSchema>;
+export type TeachingClassSetupFromRosterInput = z.infer<typeof teachingClassSetupFromRosterSchema>;
 export type UpdateTeachingClassInput = z.infer<typeof updateTeachingClassSchema>;
 export type CreateTutorialInput = z.infer<typeof createTutorialSchema>;
 export type UpdateTutorialInput = z.infer<typeof updateTutorialSchema>;

@@ -7,7 +7,7 @@ import { routes } from '@/config/routes';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-	title: 'Active Recall | My Space',
+	title: 'Active Recall',
 	description: 'Bộ thẻ câu hỏi và đáp án để tự kiểm tra kiến thức.',
 };
 
@@ -17,7 +17,6 @@ export default async function ActiveRecallIndexPage() {
 		<main className="min-h-svh bg-canvas px-6 pt-24 pb-24 sm:px-8 sm:pt-28">
 			<div className="shell max-w-5xl">
 				<header className="border-t border-hairline pt-5">
-					<p className="text-sm text-ink-secondary">My Space</p>
 					<h1 className="mt-1 font-display text-[clamp(2.1rem,5vw,4.5rem)] font-medium tracking-tight text-ink">Active Recall</h1>
 					<p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-secondary">Tự trả lời trước khi lật thẻ để đối chiếu. Mỗi bộ tập trung vào một bài học hoặc chủ đề.</p>
 				</header>

@@ -84,6 +84,7 @@ function session(id: string, weekNumber: number): TeachingSession {
 const student: TeachingStudent = {
 	id: 'student-1',
 	studentCode: 'SV01',
+	studentCodeNormalized: 'SV01',
 	familyName: 'Nguyễn',
 	givenName: 'An',
 	dateOfBirth: new Date('2006-05-29T00:00:00.000Z'),

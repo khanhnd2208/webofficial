@@ -41,7 +41,7 @@ export default async function AdminInquiriesPage({
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
 			<AdminPageHeader
-				eyebrow="Hệ thống"
+				eyebrow="Website"
 				title="Yêu cầu liên hệ"
 				description="Lời nhắn từ biểu mẫu công khai — không ghi nội dung nhạy cảm vào nhật ký hệ thống."
 				actions={

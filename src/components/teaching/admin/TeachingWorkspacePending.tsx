@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
 	createContext,
 	useCallback,
 	useContext,
+	useRef,
+	useState,
 	useTransition,
 	type MouseEvent,
 	type ReactNode,
@@ -25,6 +27,9 @@ const CORE_TABS = [
 type PendingContextValue = {
 	isPending: boolean;
 	navigate: (href: string) => void;
+	holdUntil: (task: Promise<unknown>) => void;
+	week?: number;
+	setWeek: (week: number) => void;
 };
 
 const TeachingWorkspacePendingContext = createContext<PendingContextValue | null>(null);
@@ -33,20 +38,40 @@ export function useTeachingWorkspacePending() {
 	return useContext(TeachingWorkspacePendingContext);
 }
 
-export function TeachingWorkspacePending({ children }: { children: ReactNode }) {
+export function TeachingWorkspacePending({
+	children,
+	initialWeek,
+}: {
+	children: ReactNode;
+	initialWeek?: number | null;
+}) {
 	const router = useRouter();
 	const [isPending, startTransition] = useTransition();
+	const [week, setWeek] = useState<number | undefined>(initialWeek ?? undefined);
+	const holds = useRef<Promise<unknown>[]>([]);
+	const holdUntil = useCallback((task: Promise<unknown>) => {
+		holds.current.push(task);
+	}, []);
 	const navigate = useCallback(
 		(href: string) => {
-			startTransition(() => {
-				router.push(href);
-			});
+			const run = async () => {
+				const pendingHolds = holds.current.splice(0, holds.current.length);
+				if (pendingHolds.length > 0) {
+					const results = await Promise.allSettled(pendingHolds);
+					const failed = results.some((result) => result.status === 'rejected');
+					if (failed && /tab=(cp|attendance)/.test(href)) return;
+				}
+				startTransition(() => {
+					router.push(href);
+				});
+			};
+			void run();
 		},
 		[router],
 	);
 
 	return (
-		<TeachingWorkspacePendingContext.Provider value={{ isPending, navigate }}>
+		<TeachingWorkspacePendingContext.Provider value={{ isPending, navigate, holdUntil, week, setWeek }}>
 			{children}
 		</TeachingWorkspacePendingContext.Provider>
 	);
@@ -74,7 +99,10 @@ export function TeachingCoreTabs({
 	groupBoardEnabled: boolean;
 }) {
 	const pending = useTeachingWorkspacePending();
-	const tabLink = (value: TeachingWorkspaceTab) => routes.admin.teachingClassTab(classId, value);
+	const searchParams = useSearchParams();
+	const week = pending?.week ?? (Number(searchParams.get('week') || '') || undefined);
+	const tabLink = (value: TeachingWorkspaceTab) =>
+		routes.admin.teachingClassTab(classId, value, value === 'attendance' || value === 'cp' ? week : undefined);
 
 	return (
 		<div className="teaching-core-tabs-wrap">

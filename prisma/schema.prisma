@@ -1048,17 +1048,18 @@ model TeachingTutorialClass {
 }
 
 model TeachingStudent {
-  id            String    @id @default(cuid())
-  studentCode   String    @unique
-  familyName    String
-  givenName     String
-  dateOfBirth   DateTime? @db.Date
-  homeClassCode String    @default("")
-  majorName     String    @default("")
-  phone         String?
-  email         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  studentCode           String    @unique
+  studentCodeNormalized String    @unique
+  familyName            String
+  givenName             String
+  dateOfBirth           DateTime? @db.Date
+  homeClassCode         String    @default("")
+  majorName             String    @default("")
+  phone                 String?
+  email                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   enrollments TeachingEnrollment[]
 

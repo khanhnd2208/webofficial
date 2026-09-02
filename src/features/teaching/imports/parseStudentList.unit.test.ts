@@ -94,6 +94,14 @@ describe('parseStudentList', () => {
 		const parsed = parseStudentListFromRows(rows);
 		expect(parsed.students[2]?.ok).toBe(false);
 		expect(parsed.students[2]?.errors.join(' ')).toMatch(/Duplicate student code/);
-		expect(parsed.students[2]?.errors.join(' ')).toMatch(/valid calendar date/);
+		expect(parsed.students[2]?.errors.join(' ')).toMatch(/tồn tại|calendar date/i);
+	});
+
+	it('treats student codes that differ only by case or spaces as duplicates', () => {
+		const rows = sampleRows();
+		rows.push(['3', ' 2406090045 ', 'Trùng', 'Mã', '1K-24', 'Quản trị Kinh doanh', '01/01/2006']);
+		const parsed = parseStudentListFromRows(rows);
+		expect(parsed.students[2]?.ok).toBe(false);
+		expect(parsed.students[2]?.studentCode).toBe('2406090045');
 	});
 });

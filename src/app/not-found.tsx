@@ -21,10 +21,10 @@ export default function NotFound() {
 						Về trang chủ
 					</Link>
 					<Link
-						href={routes.posts}
+						href={routes.toc}
 						className="inline-flex min-h-11 items-center justify-center rounded-full border border-border-strong px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-hover"
 					>
-						Xem bài viết
+						Mở mục lục
 					</Link>
 				</div>
 			</div>

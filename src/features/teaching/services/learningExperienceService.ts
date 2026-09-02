@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 
 import type { LearningExperienceChoiceInput, LearningExperienceLoginInput } from '../schemas';
 import type { LearningExperienceAccessMode, LearningExperienceSession } from '../types';
+import { accessModeFromDateOfBirth, passwordFromDateOfBirth } from '../domain/studentIdentity';
 
 const COOKIE_PREFIX = 'teaching-learning-experience-';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
@@ -83,14 +84,11 @@ function decode(value: string | undefined): DecodedViewerToken | null {
 }
 
 function passwordFromDate(date: Date | null): string | null {
-	if (!date) return null;
-	const day = String(date.getUTCDate()).padStart(2, '0');
-	const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-	return `${day}${month}${date.getUTCFullYear()}`;
+	return passwordFromDateOfBirth(date);
 }
 
 function accessModeFromDate(date: Date | null): LearningExperienceAccessMode {
-	return date ? 'DOB_PASSWORD' : 'OPEN';
+	return accessModeFromDateOfBirth(date);
 }
 
 function safeEqual(left: string, right: string) {

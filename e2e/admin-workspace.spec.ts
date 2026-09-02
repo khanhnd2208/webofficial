@@ -3,10 +3,9 @@ import { expect, test } from '@playwright/test';
 import { addAdminSession, addStudentSession } from './helpers/adminSession';
 
 test.describe('Admin workspace release gates', () => {
-	test('guests can open the vocabulary store without admin login', async ({ page }) => {
+	test('guests cannot open the archived vocabulary store', async ({ page }) => {
 		const response = await page.goto('/vocabulary/store');
-		expect(response?.status()).toBe(200);
-		await expect(page).not.toHaveURL(/\/dang-nhap/);
+		expect(response?.status()).toBe(404);
 		await expect(page).not.toHaveURL(/\/admin\/tools\/vocabulary/);
 	});
 
@@ -66,44 +65,33 @@ test.describe('Admin workspace release gates', () => {
 		await expect(menu).toBeFocused();
 	});
 
-	test('learner edit flag sends admins to the My Class studio', async ({ page, context }) => {
-		test.skip(
-			process.env.PUBLIC_KNOWLEDGE_ENABLED === 'false',
-			'Public My Class is fail-closed in CI and production.',
-		);
+	test('learner edit flag on archived My Class is not a public entry', async ({ page, context }) => {
 		await addAdminSession(context);
-		await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
-		await expect(page).toHaveURL(/\/admin\/my-class\/courses\/[^/]+\/content/);
+		const response = await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
+		expect(response?.status()).toBe(404);
 	});
 
-	test('guests adding a store set are sent to login with the store return path', async ({
+	test('guests hitting the archived vocabulary store receive a 404', async ({ page }) => {
+		const response = await page.goto('/vocabulary/store');
+		expect(response?.status()).toBe(404);
+	});
+
+	test('signed-in students cannot browse the archived vocabulary store', async ({
 		page,
+		context,
 	}) => {
-		await page.goto('/vocabulary/store');
-		const add = page.getByRole('button', { name: 'Thêm vào thư viện' }).first();
-		if ((await add.count()) === 0) {
-			test.skip(true, 'Cửa hàng chưa có bộ từ để kiểm tra thêm vào thư viện');
-		}
-		await add.click();
-		await expect(page).toHaveURL(/\/dang-nhap/);
-		expect(decodeURIComponent(new URL(page.url()).searchParams.get('from') ?? '')).toBe(
-			'/vocabulary/store',
-		);
-	});
-
-	test('signed-in students can browse the vocabulary store', async ({ page, context }) => {
 		await addStudentSession(context);
 		const response = await page.goto('/vocabulary/store');
-		expect(response?.status()).toBe(200);
-		await expect(page).not.toHaveURL(/\/dang-nhap/);
-		await expect(page).not.toHaveURL(/\/admin/);
+		expect(response?.status()).toBe(404);
 	});
 
-	test('signed-in admins can browse the vocabulary store', async ({ page, context }) => {
+	test('signed-in admins cannot browse the archived vocabulary store', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		const response = await page.goto('/vocabulary/store');
-		expect(response?.status()).toBe(200);
-		await expect(page).not.toHaveURL(/\/dang-nhap/);
+		expect(response?.status()).toBe(404);
 	});
 
 	test('standard myspace-tests CRUD pages use the shared admin header', async ({

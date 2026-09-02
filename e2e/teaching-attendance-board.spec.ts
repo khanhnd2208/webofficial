@@ -39,16 +39,14 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		await expect(page).toHaveURL(/\/dang-nhap/);
 	});
 
-	test('Teaching tile is visible in My Space only for an admin', async ({ page, context }) => {
+	test('Teaching is not a public My Space destination', async ({ page, context }) => {
 		await page.goto('/my-space');
+		await expect(page).toHaveURL(/\/my-space\/active-recall/);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await addAdminSession(context);
 		await page.goto('/my-space');
-		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
-			'href',
-			'/admin/teaching',
-		);
+		await expect(page).toHaveURL(/\/my-space\/active-recall/);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 	});
 
 	test('missing classes return 404', async ({ page }) => {
@@ -288,7 +286,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 
 		try {
 			const firstImport = await page.request.post(
-				`/api/admin/teaching/classes/${classId}/roster-import`,
+				`/api/admin/teaching/classes/${classId}/roster-import?mode=commit`,
 				{
 					multipart: {
 						file: {
@@ -307,9 +305,13 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(await gradebook.json()).toMatchObject({
 				data: {
 					students: expect.arrayContaining([
-						expect.objectContaining({ studentCode, familyName: 'Nguyễn Văn', givenName: 'An' }),
 						expect.objectContaining({
-							studentCode: `${studentCode}B`,
+							studentCode: studentCode.toUpperCase(),
+							familyName: 'Nguyễn Văn',
+							givenName: 'An',
+						}),
+						expect.objectContaining({
+							studentCode: `${studentCode}B`.toUpperCase(),
 							familyName: 'Trần Thị',
 							givenName: 'Bình',
 						}),
@@ -318,7 +320,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			});
 
 			const secondImport = await page.request.post(
-				`/api/admin/teaching/classes/${classId}/roster-import`,
+				`/api/admin/teaching/classes/${classId}/roster-import?mode=commit`,
 				{
 					multipart: {
 						file: {
@@ -670,11 +672,20 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(
 				page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }),
 			).toBeVisible();
+			await page.locator('.teaching-management-desktop button').click();
+			await expect(page.getByRole('menu', { name: 'Quản lý lớp' })).toBeVisible();
+			await page.locator('body').click({ position: { x: 8, y: 8 } });
+			await expect(page.getByRole('menu', { name: 'Quản lý lớp' })).toHaveCount(0);
+
 			const weekDate = page.getByLabel('Ngày học tuần 1', { exact: true });
-			await weekDate.fill('2026-09-01');
-			await expect(weekDate).toHaveValue('2026-09-01');
+			await weekDate.fill('01');
+			await page.getByLabel('Tháng học tuần 1', { exact: true }).fill('09');
+			await page.getByLabel('Năm học tuần 1', { exact: true }).fill('2026');
+			await expect(weekDate).toHaveValue('01');
+			await expect(page.getByLabel('Tháng học tuần 1', { exact: true })).toHaveValue('09');
+			await expect(page.getByLabel('Năm học tuần 1', { exact: true })).toHaveValue('2026');
 			await expect(page.getByText('Đã lưu ngày học')).toBeVisible();
-			await expect(page.locator('.mc-grid-week-date-value').first()).toHaveText('01/09/26');
+			await expect(page.locator('.mc-session-date-status').first()).toContainText('01/09/26');
 			await page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở buổi tuần/)).toBeVisible();
 
@@ -691,7 +702,8 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await page.getByRole('button', { name: 'Lưu ghi chú' }).click();
 			await expect(page.getByText('Đã lưu điểm danh')).toBeVisible();
 
-			await page.goto(`/admin/teaching/${classId}?tab=cp`);
+			await page.getByRole('link', { name: 'Điểm CP' }).click();
+			await expect(page).toHaveURL(new RegExp(`[?&]week=1`));
 			await expect(page.getByTestId('participation-grid').first()).toBeVisible();
 			await expect(page.getByRole('columnheader', { name: 'Nhóm', exact: true })).toHaveCount(0);
 			await expect(

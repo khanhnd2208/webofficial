@@ -118,32 +118,45 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 					})),
 				});
 				for (const [index, studentInput] of input.students.entries()) {
-					const student = await transaction.teachingStudent.upsert({
-						where: { studentCode: studentInput.studentCode },
-						create: {
-							studentCode: studentInput.studentCode,
-							familyName: studentInput.familyName,
-							givenName: studentInput.givenName,
-							dateOfBirth: studentInput.dateOfBirth
-								? new Date(`${studentInput.dateOfBirth}T00:00:00.000Z`)
-								: null,
-							homeClassCode: studentInput.homeClassCode ?? '',
-							majorName: studentInput.majorName ?? '',
-							phone: studentInput.phone ?? null,
-							email: studentInput.email ?? null,
-						},
-						update: {
-							familyName: studentInput.familyName,
-							givenName: studentInput.givenName,
-							dateOfBirth: studentInput.dateOfBirth
-								? new Date(`${studentInput.dateOfBirth}T00:00:00.000Z`)
-								: undefined,
-							homeClassCode: studentInput.homeClassCode || undefined,
-							majorName: studentInput.majorName || undefined,
-							phone: studentInput.phone || undefined,
-							email: studentInput.email || undefined,
-						},
+					const studentCode = studentInput.studentCode.trim().toUpperCase();
+					const existingStudent = await transaction.teachingStudent.findUnique({
+						where: { studentCodeNormalized: studentCode },
 					});
+					const createData = {
+						studentCode,
+						studentCodeNormalized: studentCode,
+						familyName: studentInput.familyName,
+						givenName: studentInput.givenName,
+						dateOfBirth: studentInput.dateOfBirth
+							? new Date(`${studentInput.dateOfBirth}T00:00:00.000Z`)
+							: null,
+						homeClassCode: studentInput.homeClassCode ?? '',
+						majorName: studentInput.majorName ?? '',
+						phone: studentInput.phone ?? null,
+						email: studentInput.email ?? null,
+					};
+					const student = existingStudent
+						? await transaction.teachingStudent.update({
+								where: { id: existingStudent.id },
+								data: {
+									familyName: existingStudent.familyName.trim()
+										? existingStudent.familyName
+										: createData.familyName,
+									givenName: existingStudent.givenName.trim()
+										? existingStudent.givenName
+										: createData.givenName,
+									dateOfBirth: existingStudent.dateOfBirth ?? createData.dateOfBirth,
+									homeClassCode: existingStudent.homeClassCode.trim()
+										? existingStudent.homeClassCode
+										: createData.homeClassCode,
+									majorName: existingStudent.majorName.trim()
+										? existingStudent.majorName
+										: createData.majorName,
+									phone: existingStudent.phone?.trim() ? existingStudent.phone : createData.phone,
+									email: existingStudent.email?.trim() ? existingStudent.email : createData.email,
+								},
+							})
+						: await transaction.teachingStudent.create({ data: createData });
 					await transaction.teachingEnrollment.create({
 						data: {
 							classId: teachingClass.id,

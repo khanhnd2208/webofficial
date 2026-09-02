@@ -73,20 +73,23 @@ export { ADMIN_NAV_GROUPS } from './adminNavigation';
 export const GATE_NAV_ITEMS: GateNavItem[] = [
 	{
 		id: 'about',
+		href: routes.about,
 		label: 'Giới thiệu',
-		status: 'locked',
+		status: 'published',
 		blurb: 'Con đường đến với lớp học',
 	},
 	{
 		id: 'projects',
+		href: routes.projects,
 		label: 'Dự án',
-		status: 'locked',
+		status: 'published',
 		blurb: 'Lớp học, chương trình và thử nghiệm',
 	},
 	{
 		id: 'services',
+		href: routes.services,
 		label: 'Dịch vụ',
-		status: 'locked',
+		status: 'published',
 		blurb: 'Ba hướng làm việc cùng tôi',
 	},
 	{
@@ -94,7 +97,7 @@ export const GATE_NAV_ITEMS: GateNavItem[] = [
 		href: routes.mySpace,
 		label: 'My Space',
 		status: 'published',
-		blurb: 'Không gian cá nhân và những thử nghiệm',
+		blurb: 'Teaching và Active Recall',
 	},
 ];
 
@@ -153,9 +156,9 @@ export const FOOTER_GROUPS: FooterGroup[] = [
 			{ href: routes.home, label: 'Trang chủ', status: 'published' },
 			{ href: routes.about, label: 'Giới thiệu', status: 'published' },
 			{ href: routes.projects, label: 'Dự án', status: 'published' },
-			{ href: routes.notes, label: 'Ghi chép', status: 'draft' },
 			{ href: routes.services, label: 'Dịch vụ', status: 'published' },
 			{ href: routes.contact, label: 'Liên hệ', status: 'published' },
+			{ href: routes.mySpace, label: 'My Space', status: 'published' },
 		],
 	},
 ];
@@ -202,6 +205,11 @@ export function isIntroPath(pathname: string): boolean {
 /** Mục lục destination menu. */
 export function isTocPath(pathname: string): boolean {
 	return pathname === routes.toc;
+}
+
+/** Active Recall — public operating surface nested under /my-space. */
+export function isActiveRecallPath(pathname: string): boolean {
+	return pathname === routes.activeRecall || pathname.startsWith(`${routes.activeRecall}/`);
 }
 
 /** My Space hub and nested personal surfaces (tests, …). */

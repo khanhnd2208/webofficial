@@ -12,7 +12,7 @@ export default function TeachingImportPage() {
 				backLabel="Các lớp"
 				eyebrow="Lớp học"
 				title="Nhập danh sách"
-				description="Tải lên mẫu Excel danh sách học viên."
+				description="Tải CSV mẫu, dán bảng, hoặc import Excel danh sách học viên."
 			/>
 			<div className="mt-4 sm:mt-5">
 				<ImportWorkspace />

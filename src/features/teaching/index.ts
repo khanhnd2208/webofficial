@@ -1,5 +1,14 @@
 export * from './schemas';
 export * from './types';
+export type {
+	NormalizedTeachingStudentInput,
+	RawTeachingStudentInput,
+	RosterConflictResolution,
+	RosterFieldConflict,
+	RosterImportCommitResult,
+	RosterImportPreview,
+	RosterImportPreviewRow,
+} from './domain/rosterImport';
 export * from './domain/cp';
 export * from './domain/privacy';
 export * from './services/classService';

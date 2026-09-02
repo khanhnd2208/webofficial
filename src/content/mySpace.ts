@@ -1,7 +1,4 @@
-/**
- * My Space hub — personal experiments, including the knowledge workspace and
- * the private Teaching workspace.
- */
+/** My Space hub — the two learning workspaces currently in operation. */
 
 import { routes } from '@/config/routes';
 
@@ -22,39 +19,22 @@ export interface MySpaceTile {
 
 export const mySpacePage = {
 	title: 'My Space',
-	lead: 'Một góc riêng cho những thứ tôi thích làm ngoài lớp học.',
+	lead: 'Teaching và Active Recall.',
 	comingSoonLabel: 'Đang phát triển',
 	comingSoonNote: 'Góc này đang được hoàn thiện.',
 } as const;
 
 export const mySpaceTiles: MySpaceTile[] = [
 	{
-		id: 'boardgames',
-		label: 'Boardgames',
+		id: 'teaching',
+		label: 'Teaching',
+		featured: true,
 		image: {
-			src: '/brand/myspace/boardgames.png',
-			alt: 'Minh họa xúc xắc — Boardgames',
-		},
-		status: 'coming-soon',
-	},
-	{
-		id: 'podcast',
-		label: 'Podcast',
-		image: {
-			src: '/brand/myspace/podcast.png',
-			alt: 'Minh họa micro — Podcast',
-		},
-		status: 'coming-soon',
-	},
-	{
-		id: 'tests',
-		label: 'Tests',
-		image: {
-			src: '/brand/myspace/tests.png',
-			alt: 'Minh họa bảng kiểm tra — Tests',
+			src: '/brand/myspace/my-class.svg',
+			alt: 'Minh họa khu Teaching',
 		},
 		status: 'published',
-		href: routes.mySpaceTests,
+		href: routes.mySpaceTeaching,
 	},
 	{
 		id: 'active-recall',
@@ -65,25 +45,5 @@ export const mySpaceTiles: MySpaceTile[] = [
 		},
 		status: 'published',
 		href: routes.activeRecall,
-	},
-	{
-		id: 'my-class',
-		label: 'Kho kiến thức',
-		featured: true,
-		image: {
-			src: '/brand/myspace/my-class.svg',
-			alt: 'Minh họa cuốn giáo trình — My Class',
-		},
-		status: 'published',
-		href: routes.myClass,
-	},
-	{
-		id: 'personality-tests',
-		label: 'Personality Tests',
-		image: {
-			src: '/brand/myspace/personality-tests.png',
-			alt: 'Minh họa hai khuôn mặt — Personality Tests',
-		},
-		status: 'coming-soon',
 	},
 ];

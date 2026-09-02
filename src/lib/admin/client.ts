@@ -12,17 +12,25 @@ export class AdminApiError extends Error {
 	status: number;
 	code?: string;
 	fields?: Record<string, string>;
+	details?: unknown;
 	requestId?: string;
 
 	constructor(
 		message: string,
-		init: { status: number; code?: string; fields?: Record<string, string>; requestId?: string },
+		init: {
+			status: number;
+			code?: string;
+			fields?: Record<string, string>;
+			details?: unknown;
+			requestId?: string;
+		},
 	) {
 		super(message);
 		this.name = 'AdminApiError';
 		this.status = init.status;
 		this.code = init.code;
 		this.fields = init.fields;
+		this.details = init.details;
 		this.requestId = init.requestId;
 	}
 }
@@ -33,6 +41,7 @@ type Envelope<T> = {
 	error?: string;
 	code?: string;
 	fields?: Record<string, string>;
+	details?: unknown;
 	requestId?: string;
 };
 
@@ -111,6 +120,7 @@ export async function adminFetch<T>(url: string, init?: RequestInit): Promise<T>
 			status,
 			code: json.code,
 			fields: json.fields,
+			details: json.details,
 			requestId: json.requestId ?? requestId,
 		});
 	}

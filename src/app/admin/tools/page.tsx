@@ -17,11 +17,6 @@ const TOOLS = [
 		description: 'Tạo bộ thẻ may mắn — lật thẻ để xem nội dung bí ẩn.',
 	},
 	{
-		href: routes.admin.activeRecall,
-		label: 'Active Recall',
-		description: 'Tạo và xuất bản bộ thẻ hỏi–đáp công khai.',
-	},
-	{
 		href: routes.admin.messages,
 		label: 'Lời nhắn',
 		description: 'Tạo và quản lý lời nhắn; người nhận mở qua /m/[slug].',
@@ -33,9 +28,9 @@ export default function ToolsPage() {
 		<div className="mx-auto max-w-5xl px-6 py-8">
 			<div className="space-y-8">
 				<AdminPageHeader
-					eyebrow="Công cụ"
-					title="Công cụ"
-					description="Công cụ mặc định chỉ dành cho admin. Chỉ đầu ra được thiết kế riêng mới công khai."
+				eyebrow="Kho lưu trữ"
+				title="Công cụ"
+				description="Hub công cụ cũ. Active Recall đã chuyển sang admin chính. Các tool còn lại vẫn dùng được từ Kho lưu trữ."
 				/>
 
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

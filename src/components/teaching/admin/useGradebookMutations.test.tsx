@@ -116,7 +116,7 @@ function Harness() {
 			<button type="button" onClick={() => state.retryMark('e1', 's1', 'attendance')}>
 				retry
 			</button>
-			<button type="button" onClick={() => void state.updateSessionDate('s1', '2026-09-15')}>
+			<button type="button" onClick={() => void state.updateSessionDate('s1', '2026-09-15').catch(() => undefined)}>
 				date
 			</button>
 			<span data-testid="status">{state.gradebook.students[0]?.marks.s1?.status}</span>

@@ -16,9 +16,11 @@ describe('adminDashboardService', () => {
 		await User.deleteMany({});
 	});
 
-	it('returns zero counts on empty database', async () => {
+	it('returns zero counts on empty database for the operating dashboard', async () => {
 		const stats = await getAdminOverviewStats();
-		expect(stats.users.activeEnrollments).toBe(0);
-		expect(typeof stats.posts.published).toBe('number');
+		expect(stats.website.newInquiries).toBe(0);
+		expect(typeof stats.teaching.activeClasses).toBe('number');
+		expect(typeof stats.activeRecall.decks).toBe('number');
+		expect(typeof stats.activeRecall.published).toBe('number');
 	});
 });

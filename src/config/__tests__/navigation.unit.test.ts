@@ -10,6 +10,7 @@ import {
 	getPublishedFooterGroups,
 	isFullBleedPublicPath,
 	isLopPath,
+	isActiveRecallPath,
 	isGateItemLocked,
 	isInternalChromePath,
 	isIntroPath,
@@ -46,20 +47,24 @@ describe('publication gates', () => {
 		expect(isPublished('draft')).toBe(false);
 	});
 
-	it('locks marketing destinations while keeping My Space open', () => {
+	it('opens brand destinations and My Space from the mục lục', () => {
 		const items = getGateNavItems();
 		expect(items).toEqual(GATE_NAV_ITEMS);
-		expect(items.map((item) => item.label)).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ', 'My Space']);
-		expect(items[0]?.href).toBeUndefined();
-		expect(items[1]?.href).toBeUndefined();
-		expect(items[2]?.href).toBeUndefined();
-		expect(items[3]?.href).toBe(routes.mySpace);
-		expect(isGateItemLocked(items[0]!)).toBe(true);
-		expect(isGateItemLocked(items[1]!)).toBe(true);
-		expect(isGateItemLocked(items[2]!)).toBe(true);
-		expect(isGateItemLocked(items[3]!)).toBe(false);
-		expect(items.filter((item) => item.status === 'published')).toHaveLength(1);
-		expect(items.filter((item) => item.status === 'locked')).toHaveLength(3);
+		expect(items.map((item) => item.label)).toEqual([
+			'Giới thiệu',
+			'Dự án',
+			'Dịch vụ',
+			'My Space',
+		]);
+		expect(items.map((item) => item.href)).toEqual([
+			routes.about,
+			routes.projects,
+			routes.services,
+			routes.mySpace,
+		]);
+		expect(items.every((item) => !isGateItemLocked(item))).toBe(true);
+		expect(items.filter((item) => item.status === 'published')).toHaveLength(4);
+		expect(items.some((item) => item.href === routes.activeRecall)).toBe(false);
 	});
 
 	it('keeps intro, mục lục, and My Space as distinct public shells', () => {
@@ -73,7 +78,10 @@ describe('publication gates', () => {
 		expect(isFullBleedPublicPath('/')).toBe(true);
 		expect(isFullBleedPublicPath('/muc-luc')).toBe(true);
 		expect(isFullBleedPublicPath('/my-space')).toBe(true);
-		expect(isFullBleedPublicPath('/my-space/tests')).toBe(true);
+		expect(isFullBleedPublicPath('/my-space/active-recall')).toBe(true);
+		expect(isActiveRecallPath('/my-space/active-recall')).toBe(true);
+		expect(isActiveRecallPath('/my-space/active-recall/hrm')).toBe(true);
+		expect(isActiveRecallPath('/my-space/tests')).toBe(false);
 		expect(isFullBleedPublicPath('/gioi-thieu')).toBe(false);
 		expect(isLopPath('/lop/hrm-101')).toBe(true);
 		expect(isFullBleedPublicPath('/lop/hrm-101')).toBe(true);
@@ -116,6 +124,7 @@ describe('publication gates', () => {
 		expect(allHrefs).toContain(routes.projects);
 		expect(allHrefs).toContain(routes.services);
 		expect(allHrefs).toContain(routes.contact);
+		expect(allHrefs).toContain(routes.mySpace);
 		expect(allHrefs).not.toContain(routes.notes);
 		expect(allHrefs).not.toContain(routes.posts);
 		expect(allHrefs).not.toContain(routes.archive);
@@ -190,6 +199,7 @@ describe('route map', () => {
 		expect(routes.growth).toBe('/phat-trien-ban-than');
 		expect(routes.archive).toBe('/archive');
 		expect(routes.accountLearning).toBe('/tai-khoan/hoc');
-		expect(routes.policyPrivacy).toBe('/chinh-sach/bao-mat');
+		expect(routes.admin.website).toBe('/admin/website');
+		expect(routes.admin.archive).toBe('/admin/archive');
 	});
 });

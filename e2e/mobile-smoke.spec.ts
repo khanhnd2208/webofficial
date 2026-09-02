@@ -13,8 +13,8 @@ test.describe('Mobile public smoke', () => {
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 		await expect(page.getByRole('heading', { level: 1, name: 'Mục lục' })).toBeVisible();
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(1);
-		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(3);
+		await expect(gate.getByRole('link')).toHaveCount(4);
+		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
 	});
 
 	test('public surfaces do not overflow horizontally', async ({ page }) => {

@@ -33,7 +33,7 @@ test.describe('Editorial premium public experience', () => {
 		expect(introBox!.x + introBox!.width / 2).toBeLessThan(250);
 	});
 
-	test('routes visitors from intro to the open My Space destination', async ({
+	test('routes visitors from intro through My Space to Active Recall', async ({
 		page,
 	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -41,12 +41,13 @@ test.describe('Editorial premium public experience', () => {
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(1);
-		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(3);
+		await expect(gate.getByRole('link')).toHaveCount(4);
+		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
 
 		await page.getByRole('link', { name: /My Space/i }).click();
-		await expect(page).toHaveURL(/\/my-space/);
-		await expect(page.getByRole('heading', { level: 1, name: 'My Space' })).toBeAttached();
+		await expect(page).toHaveURL(/\/my-space$/);
+		await page.getByTestId('myspace-tile-active-recall').click();
+		await expect(page).toHaveURL(/\/my-space\/active-recall/);
 	});
 
 	test('services stay condensed with journey graphics and no project proof', async ({ page }) => {

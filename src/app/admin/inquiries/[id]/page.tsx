@@ -29,7 +29,7 @@ export default async function AdminInquiryDetailPage({
 	return (
 		<div className="mx-auto max-w-4xl px-6 py-8">
 			<AdminPageHeader
-				eyebrow="Yêu cầu liên hệ"
+				eyebrow="Website"
 				title={inquiry.name}
 				description={
 					<>

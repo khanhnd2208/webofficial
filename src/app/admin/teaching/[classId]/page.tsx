@@ -24,10 +24,12 @@ export default async function TeachingClassPage({
 	searchParams,
 }: {
 	params: Promise<{ classId: string }>;
-	searchParams?: Promise<{ tab?: string }>;
+	searchParams?: Promise<{ tab?: string; week?: string }>;
 }) {
 	const { classId } = await params;
-	const requestedTab = (await searchParams)?.tab;
+	const query = await searchParams;
+	const requestedTab = query?.tab;
+	const week = Number(query?.week || '') || null;
 	const groupBoardEnabled = isTeachingGroupBoardEnabled();
 	if (requestedTab === 'groups' && !groupBoardEnabled) redirect(routes.admin.teachingClass(classId));
 	const tab = resolveTeachingWorkspaceTab(requestedTab, groupBoardEnabled);
@@ -49,6 +51,7 @@ export default async function TeachingClassPage({
 			groupBoardEnabled={groupBoardEnabled}
 			notes={notes}
 			tab={tab}
+			week={week}
 		/>
 	);
 }

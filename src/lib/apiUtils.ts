@@ -42,7 +42,7 @@ export function apiSuccess<T>(data: T, status = 200): NextResponse {
 export function apiError(
 	message: string,
 	status = 400,
-	extra?: { code?: string; fields?: Record<string, string> },
+	extra?: { code?: string; fields?: Record<string, string>; details?: unknown },
 ): NextResponse {
 	return NextResponse.json(
 		{
@@ -50,6 +50,7 @@ export function apiError(
 			error: message,
 			...(extra?.code ? { code: extra.code } : {}),
 			...(extra?.fields ? { fields: extra.fields } : {}),
+			...(extra?.details !== undefined ? { details: extra.details } : {}),
 		},
 		{ status },
 	);
@@ -94,6 +95,7 @@ function handleCaughtError(error: unknown): NextResponse {
 		return apiError(error.message, error.status, {
 			code: error.code,
 			fields: error.fields,
+			details: error.details,
 		});
 	}
 	return apiError('Internal server error', 500);

@@ -2,6 +2,7 @@ import type { Prisma, TeachingStudent } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
+import { normalizeStudentCode } from '../domain/studentIdentity';
 
 export const DEFAULT_TUTORIAL_CODE = 'T01';
 export const DEFAULT_TUTORIAL_NAME = 'Tutorial 1';
@@ -311,7 +312,19 @@ export function updateSession(id: string, data: Prisma.TeachingSessionUncheckedU
 }
 
 export function getStudentByCode(studentCode: string) {
-	return prisma.teachingStudent.findUnique({ where: { studentCode } });
+	return prisma.teachingStudent.findUnique({
+		where: { studentCodeNormalized: normalizeStudentCode(studentCode) },
+	});
+}
+
+export function findStudentsByNormalizedCodes(codes: string[]) {
+	if (codes.length === 0) return Promise.resolve([]);
+	return prisma.teachingStudent.findMany({
+		where: { studentCodeNormalized: { in: codes.map(normalizeStudentCode) } },
+		include: {
+			enrollments: { select: { id: true, classId: true, status: true } },
+		},
+	});
 }
 
 export function upsertStudent(data: {
@@ -324,17 +337,25 @@ export function upsertStudent(data: {
 	phone?: string | null;
 	email?: string | null;
 }) {
+	const studentCode = normalizeStudentCode(data.studentCode);
+	const payload = {
+		...data,
+		studentCode,
+		studentCodeNormalized: studentCode,
+	};
 	return prisma.teachingStudent.upsert({
-		where: { studentCode: data.studentCode },
-		create: data,
+		where: { studentCodeNormalized: studentCode },
+		create: payload,
 		update: {
-			familyName: data.familyName,
-			givenName: data.givenName,
-			dateOfBirth: data.dateOfBirth,
-			homeClassCode: data.homeClassCode,
-			majorName: data.majorName,
-			phone: data.phone ?? undefined,
-			email: data.email ?? undefined,
+			familyName: payload.familyName,
+			givenName: payload.givenName,
+			dateOfBirth: payload.dateOfBirth,
+			homeClassCode: payload.homeClassCode,
+			majorName: payload.majorName,
+			phone: payload.phone ?? undefined,
+			email: payload.email ?? undefined,
+			studentCode,
+			studentCodeNormalized: studentCode,
 		},
 	});
 }

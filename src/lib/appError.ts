@@ -8,6 +8,7 @@ export class AppError extends Error {
 		public readonly status: number = 400,
 		public readonly code?: string,
 		public readonly fields?: Record<string, string>,
+		public readonly details?: unknown,
 	) {
 		super(message);
 		this.name = 'AppError';

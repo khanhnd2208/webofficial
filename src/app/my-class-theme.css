@@ -1593,6 +1593,72 @@ li[data-dragging='true'] {
 	cursor: pointer;
 }
 
+.mc-studio .mc-session-date {
+	display: grid;
+	justify-items: center;
+	gap: 0.15rem;
+	margin-top: 0.2rem;
+	min-width: 7.5rem;
+}
+
+.mc-studio .mc-session-date[data-invalid='true'] .mc-session-date-fields {
+	border-color: var(--error);
+}
+
+.mc-studio .mc-session-date-fields {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.15rem;
+	min-height: 1.75rem;
+	padding: 0 0.2rem;
+	border: 1px solid var(--mc-rule);
+	border-radius: var(--mc-r-xs);
+	background: var(--paper);
+}
+
+.mc-studio .mc-session-date-fields input {
+	width: 1.4rem;
+	border: 0;
+	background: transparent;
+	text-align: center;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: var(--ink);
+}
+
+.mc-studio .mc-session-date-fields input:nth-of-type(3) {
+	width: 2.4rem;
+}
+
+.mc-studio .mc-session-date-calendar,
+.mc-studio .mc-session-date-clear {
+	display: inline-flex;
+	min-height: 1.5rem;
+	min-width: 1.5rem;
+	align-items: center;
+	justify-content: center;
+	color: var(--ink-secondary);
+}
+
+.mc-studio .mc-session-date-status {
+	font-size: 0.625rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--ink-tertiary);
+}
+
+.mc-studio .mc-session-date-status[data-tone='saving'] {
+	color: var(--accent);
+}
+
+.mc-studio .mc-session-date-status[data-tone='error'] {
+	color: var(--error);
+}
+
+.mc-studio .mc-session-date-status[data-tone='ok'] {
+	color: var(--ink-secondary);
+}
+
 .mc-studio .mc-grid-cell {
 	position: relative;
 	display: inline-flex;

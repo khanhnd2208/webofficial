@@ -1,19 +1,57 @@
 import { AppError } from '@/lib/appError';
-import { importStudentListIntoClass } from '@/features/teaching';
+import {
+	commitRosterImport,
+	parseWithAppError,
+	previewRosterImport,
+	rosterImportCommitSchema,
+} from '@/features/teaching';
+import { readRosterImportSource } from '@/features/teaching/imports/readRosterImportSource';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import type { NextRequest } from 'next/server';
 
-async function readWorkbook(request: NextRequest) {
-	const form = await request.formData();
-	const file = form.get('file');
-	if (!(file instanceof File) || file.size === 0 || file.size > 10 * 1024 * 1024) {
-		throw new AppError('Upload an Excel student list (.xlsx)', 422, 'VALIDATION');
-	}
-	const buffer = Buffer.from(await file.arrayBuffer());
-	if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) throw new AppError('File .xlsx không hợp lệ.', 422, 'VALIDATION');
-	return buffer;
+async function classId(context?: { params: Promise<{ classId: string }> }) {
+	return String((await context!.params).classId);
 }
 
-export const POST = withAdmin(async (request: NextRequest, _user, context) =>
-	apiSuccess(await importStudentListIntoClass(String((await context!.params).classId), await readWorkbook(request))),
-);
+function rosterImportMode(request: NextRequest): 'preview' | 'commit' {
+	const mode = request.nextUrl.searchParams.get('mode');
+	if (mode === 'commit') return 'commit';
+	if (mode === 'preview') return 'preview';
+	const contentType = request.headers.get('content-type') ?? '';
+	return contentType.includes('multipart/form-data') ? 'commit' : 'preview';
+}
+
+export const POST = withAdmin(async (request: NextRequest, _user, context) => {
+	const id = await classId(context);
+	const mode = rosterImportMode(request);
+	if (mode === 'commit') {
+		const contentType = request.headers.get('content-type') ?? '';
+		if (contentType.includes('application/json')) {
+			const body = parseWithAppError(rosterImportCommitSchema, await request.json());
+			return apiSuccess(await commitRosterImport({ classId: id, rows: body.rows }));
+		}
+		const source = await readRosterImportSource(request);
+		const preview = await previewRosterImport({ source, classId: id });
+		if (preview.summary.invalidCount > 0 || preview.summary.conflictCount > 0) {
+			throw new AppError(
+				'Hãy đối chiếu dữ liệu trùng và sửa lỗi trước khi lưu.',
+				409,
+				'STUDENT_PROFILE_CONFLICT',
+			);
+		}
+		return apiSuccess(
+			await commitRosterImport({
+				classId: id,
+				rows: preview.rows.map((row) => ({
+					key: row.key,
+					input: row.input,
+					expectedUpdatedAt: row.existing?.updatedAt ?? null,
+					resolution: row.resolution,
+				})),
+			}),
+		);
+	}
+	return apiSuccess(
+		await previewRosterImport({ source: await readRosterImportSource(request), classId: id }),
+	);
+});

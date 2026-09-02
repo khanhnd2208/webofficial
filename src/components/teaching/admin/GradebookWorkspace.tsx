@@ -11,17 +11,21 @@ import { AttendanceGrid } from './AttendanceGrid';
 import { ParticipationGrid } from './ParticipationGrid';
 import { TutorialSwitcher } from './TutorialSwitcher';
 import { mutationKey, useGradebookMutations } from './useGradebookMutations';
+import { useTeachingWorkspacePending } from './TeachingWorkspacePending';
 
 type GradebookView = 'attendance' | 'participation';
 export function GradebookWorkspace({
 	initial,
 	initialView = 'attendance',
 	groupNumberByEnrollment,
+	initialWeek = null,
 }: {
 	initial: TeachingGradebook;
 	initialView?: GradebookView;
 	groupNumberByEnrollment?: Record<string, number>;
+	initialWeek?: number | null;
 }) {
+	const pending = useTeachingWorkspacePending();
 	const {
 		gradebook,
 		persistMark,
@@ -33,6 +37,7 @@ export function GradebookWorkspace({
 		setParticipationOpen,
 		setParticipationLifecycle,
 		updateSessionDate,
+		sessionDateStates,
 		togglingSessionId,
 		toast,
 		setToast,
@@ -46,8 +51,13 @@ export function GradebookWorkspace({
 		initial.tutorials.length === 1 ? (initial.tutorials[0]?.id ?? '') : '',
 	);
 	const [query, setQuery] = useState('');
-	const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+	const [selectedWeek, setSelectedWeek] = useState<number | null>(initialWeek ?? pending?.week ?? null);
 	const view = initialView;
+
+	function selectWeek(weekNumber: number) {
+		setSelectedWeek(weekNumber);
+		pending?.setWeek(weekNumber);
+	}
 
 	const tutorialSessions = useMemo(
 		() =>
@@ -212,7 +222,7 @@ export function GradebookWorkspace({
 						publicCompact
 						scrollMode="contained"
 						showEligibilityColumn={false}
-						onWeekSelect={setSelectedWeek}
+						onWeekSelect={selectWeek}
 						onMarkChange={persistMark}
 						onSessionToggle={(sessionId, open) => {
 							void setAttendanceOpen(sessionId, open);
@@ -220,7 +230,13 @@ export function GradebookWorkspace({
 						onSessionLifecycle={(sessionId, action) => {
 							requestLifecycle('attendance', sessionId, action);
 						}}
-						onSessionDateChange={(session, heldOn) => updateSessionDate(session.id, heldOn)}
+						onSessionDateChange={(session, heldOn) => {
+							selectWeek(session.weekNumber);
+							const task = updateSessionDate(session.id, heldOn);
+							pending?.holdUntil(task);
+							return task;
+						}}
+						sessionDateSaveState={(sessionId) => sessionDateStates[sessionId]}
 						togglingSessionId={togglingSessionId}
 						saveState={(enrollmentId, sessionId) =>
 							saveStates[mutationKey('attendance', enrollmentId, sessionId)]
@@ -237,7 +253,7 @@ export function GradebookWorkspace({
 						selectedWeek={selectedWeek}
 						publicCompact
 						scrollMode="contained"
-						onWeekSelect={setSelectedWeek}
+						onWeekSelect={selectWeek}
 						onParticipationChange={persistParticipation}
 						onGiftChange={(enrollmentId, delta) => persistGift({ enrollmentId, delta })}
 						onSessionToggle={(sessionId, open) => {

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { unstable_doesMiddlewareMatch } from 'next/dist/experimental/testing/server/middleware-testing-utils';
 
+import { isArchivedPublicPath } from '@/config/moduleRegistry';
 import { getLockedPublicLearningFeature } from '@/config/publicFeatureAccess';
 
 import { config, proxy } from './proxy';
@@ -33,10 +34,13 @@ describe('public learning proxy', () => {
 		'/my-space/tests/practice-test/play',
 		'/my-space/my-class',
 		'/my-space/my-class/hrm-toi-gian/unit-1',
-	])('returns a non-cacheable, non-indexable 404 for locked page %s', async (pathname) => {
-		productionFlags('false', 'false');
+		'/vocabulary',
+		'/vocabulary/store',
+	])('returns a non-cacheable, non-indexable 404 for archived page %s', async (pathname) => {
+		productionFlags('true', 'true');
 
 		expect(matches(pathname)).toBe(true);
+		expect(isArchivedPublicPath(pathname)).toBe(true);
 		const response = proxy(request(pathname));
 
 		expect(response.status).toBe(404);
@@ -51,8 +55,8 @@ describe('public learning proxy', () => {
 		'/api/myspace-tests/practice-test/sessions',
 		'/api/my-class/courses',
 		'/api/my-class/tests/hrm/quiz/submit',
-	])('returns the standard feature 404 for locked API %s', async (pathname) => {
-		productionFlags('false', 'false');
+	])('returns the standard feature 404 for archived public API %s', async (pathname) => {
+		productionFlags('true', 'true');
 
 		expect(matches(pathname)).toBe(true);
 		const response = proxy(request(pathname));
@@ -69,24 +73,6 @@ describe('public learning proxy', () => {
 	});
 
 	it.each([
-		['/my-space/tests', 'true', 'false'],
-		['/api/myspace-tests', 'true', 'false'],
-		['/my-space/my-class', 'false', 'true'],
-		['/api/my-class/courses', 'false', 'true'],
-	] as const)(
-		'passes %s through when its production flag is enabled',
-		(pathname, tests, knowledge) => {
-			productionFlags(tests, knowledge);
-
-			expect(matches(pathname)).toBe(true);
-			const response = proxy(request(pathname));
-
-			expect(response.status).toBe(200);
-			expect(response.headers.get('x-middleware-next')).toBe('1');
-		},
-	);
-
-	it.each([
 		'/api/admin/my-class/courses',
 		'/api/admin/myspace-tests',
 		'/my-space/active-recall',
@@ -96,6 +82,7 @@ describe('public learning proxy', () => {
 
 		expect(matches(pathname)).toBe(false);
 		expect(getLockedPublicLearningFeature(pathname)).toBeNull();
+		expect(isArchivedPublicPath(pathname)).toBe(false);
 		expect(proxy(request(pathname)).headers.get('x-middleware-next')).toBe('1');
 	});
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { McIcon } from '@/components/myclass/ui';
+import { useTeachingDismissible } from '@/components/teaching/TeachingPopover';
 import type { TeachingTutorialRecord } from '@/features/teaching/types';
 
 export function TutorialSwitcher({
@@ -20,32 +21,26 @@ export function TutorialSwitcher({
 }) {
 	const [open, setOpen] = useState(false);
 	const root = useRef<HTMLDivElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
 	const current = allowAll && !value
 		? { id: '', code: 'Tất cả', name: allLabel }
 		: (tutorials.find((tutorial) => tutorial.id === value) ?? (allowAll ? { id: '', code: 'Tất cả', name: allLabel } : tutorials[0]));
 
-	useEffect(() => {
-		function onPointer(event: MouseEvent) {
-			if (!root.current?.contains(event.target as Node)) setOpen(false);
-		}
-		function onKey(event: KeyboardEvent) {
-			if (event.key === 'Escape') setOpen(false);
-		}
-		document.addEventListener('mousedown', onPointer);
-		document.addEventListener('keydown', onKey);
-		return () => {
-			document.removeEventListener('mousedown', onPointer);
-			document.removeEventListener('keydown', onKey);
-		};
-	}, []);
+	useTeachingDismissible({
+		open,
+		onClose: () => setOpen(false),
+		rootRef: root,
+		triggerRef,
+	});
 
 	if (!current && !allowAll) return null;
 
 	return (
 		<div ref={root} className="relative">
 			<button
+				ref={triggerRef}
 				type="button"
-				className="inline-flex min-h-9 items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs font-semibold uppercase tracking-wide text-ink-secondary hover:bg-surface-sunken"
+				className="inline-flex min-h-11 items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs font-semibold uppercase tracking-wide text-ink-secondary hover:bg-surface-sunken"
 				aria-haspopup="listbox"
 				aria-expanded={open}
 				onClick={() => setOpen((val) => !val)}

@@ -17,7 +17,7 @@ export const routes = {
 	projects: '/du-an',
 	project: (slug: string) => `/du-an/${slug}` as const,
 	services: '/dich-vu',
-	/** Personal experiments hub — boardgames, podcast, tests (evidence-gated tiles). */
+	/** Focused hub for Teaching and Active Recall. */
 	mySpace: '/my-space',
 	activeRecall: '/my-space/active-recall',
 	activeRecallDeck: (slug: string) => `/my-space/active-recall/${slug}` as const,
@@ -117,8 +117,10 @@ export const routes = {
 	teaching: '/giang-day',
 
 	// ─── Admin ────────────────────────────────────────────────────────────────
-	admin: {
+		admin: {
 		home: '/admin',
+		website: '/admin/website',
+		archive: '/admin/archive',
 		posts: '/admin/posts',
 		postCreate: '/admin/posts/create',
 		postEdit: (id: string) => `/admin/posts/${id}/edit` as const,
@@ -177,7 +179,10 @@ export const routes = {
 		teachingNew: '/admin/teaching/new',
 		teachingImport: '/admin/teaching/import',
 		teachingClass: (id: string) => `/admin/teaching/${id}` as const,
-		teachingClassTab: (id: string, tab: string) => `/admin/teaching/${id}?tab=${tab}` as const,
+		teachingClassTab: (id: string, tab: string, week?: number) =>
+			week
+				? (`/admin/teaching/${id}?tab=${tab}&week=${week}` as const)
+				: (`/admin/teaching/${id}?tab=${tab}` as const),
 		teachingGradebook: (id: string) => `/admin/teaching/${id}/gradebook` as const,
 		teachingRoster: (id: string) => `/admin/teaching/${id}/roster` as const,
 		teachingSessions: (id: string) => `/admin/teaching/${id}/sessions` as const,
