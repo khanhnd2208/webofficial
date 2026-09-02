@@ -339,7 +339,7 @@ assert_application_smoke() {
 	local base_url="$1"
 	local api_body
 
-	expect_http_status "$base_url" '/vocabulary/store' 200
+	expect_http_status "$base_url" '/vocabulary/store' 404
 	expect_guest_store_api "$base_url"
 	expect_store_post_unauthorized "$base_url"
 	expect_http_status "$base_url" '/lop/no-such-class-ever' 404
@@ -352,7 +352,7 @@ assert_application_smoke() {
 		return 0
 	fi
 
-	for locked_page in /my-space/tests /my-space/my-class; do
+	for locked_page in /my-space/tests /my-space/my-class /vocabulary /vocabulary/store; do
 		expect_http_status "$base_url" "$locked_page" 404
 	done
 	for locked_api in /api/myspace-tests /api/my-class; do
