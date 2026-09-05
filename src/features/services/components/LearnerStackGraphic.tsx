@@ -8,7 +8,7 @@ import { duration, ease } from '@/components/motion/tokens';
 const CARDS = [
 	{ label: 'Tiếng Anh', x: 36, y: 36, rotate: -4 },
 	{ label: 'AI & tự học', x: 72, y: 72, rotate: 1 },
-	{ label: 'Phương pháp học', x: 108, y: 108, rotate: 3 },
+	{ label: 'Phương pháp học', x: 108, y: 88, rotate: 3 },
 ] as const;
 
 /**
@@ -30,7 +30,7 @@ export function LearnerStackGraphic({ className = '' }: { className?: string }) 
 			{CARDS.map((card, i) => (
 				<m.g
 					key={card.label}
-					initial={instant ? false : { opacity: 0, y: 16 }}
+					initial={instant ? false : { opacity: 1, y: 16 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{

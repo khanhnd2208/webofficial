@@ -596,7 +596,7 @@ export function ParticipationGrid({
 															});
 														}}
 													>
-														<McIcon name="more_horiz" size={16} />
+														<McIcon name="forum" size={16} />
 													</button>
 												) : null}
 												{noteCell?.enrollmentId === student.enrollmentId &&

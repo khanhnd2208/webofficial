@@ -1,3 +1,4 @@
+import { removeEnrollmentGroup } from '../domain/groupTransactions';
 import { AppError } from '@/lib/appError';
 
 import {
@@ -16,10 +17,7 @@ import {
 } from '../domain/rosterImport';
 import { parseIsoDate, toIsoDate, withUniqueConflict } from '../domain/prismaErrors';
 import { normalizeStudentCode } from '../domain/studentIdentity';
-import {
-	isLikelyStudentHeaderRow,
-	parseDelimitedTable,
-} from '../imports/parseDelimited';
+import { isLikelyStudentHeaderRow, parseDelimitedTable } from '../imports/parseDelimited';
 import {
 	enforceRowLimit,
 	markBatchDuplicates,
@@ -163,9 +161,7 @@ export async function previewRosterImport(options: {
 	const tutorials: TutorialRef[] = options.classId ? await repo.listTutorials(options.classId) : [];
 	const maxWeek = teachingClass?.totalWeeks ?? 40;
 	let inputs = markBatchDuplicates(
-		enforceRowLimit(
-			parsed.inputs.map((input) => normalizeRawStudentInput(input, { maxWeek })),
-		),
+		enforceRowLimit(parsed.inputs.map((input) => normalizeRawStudentInput(input, { maxWeek }))),
 	);
 	if (tutorials.length > 0) inputs = bindTutorials(inputs, tutorials);
 
@@ -191,9 +187,7 @@ export async function previewRosterImport(options: {
 	);
 
 	const rows: RosterImportPreviewRow[] = inputs.map((input) => {
-		const existing = input.studentCode
-			? byCode.get(input.studentCode)
-			: undefined;
+		const existing = input.studentCode ? byCode.get(input.studentCode) : undefined;
 		const snapshot = existing
 			? snapshotFromStudent(existing, options.classId ?? existingClassId ?? undefined)
 			: null;
@@ -250,7 +244,9 @@ export async function commitRosterImport(options: {
 	const normalizedRows = markBatchDuplicates(
 		enforceRowLimit(
 			bindTutorials(
-				options.rows.map((row) => normalizeRawStudentInput(row.input, { maxWeek: teachingClass.totalWeeks })),
+				options.rows.map((row) =>
+					normalizeRawStudentInput(row.input, { maxWeek: teachingClass.totalWeeks }),
+				),
 				tutorials,
 			),
 		),
@@ -282,7 +278,11 @@ export async function commitRosterImport(options: {
 				const existing = row.input.studentCode
 					? await tx.teachingStudent.findUnique({
 							where: { studentCodeNormalized: row.input.studentCode },
-							include: { enrollments: { select: { id: true, classId: true, status: true } } },
+							include: {
+								enrollments: {
+									select: { id: true, classId: true, status: true, tutorialClassId: true },
+								},
+							},
 						})
 					: null;
 				const snapshot = existing ? snapshotFromStudent(existing, options.classId) : null;
@@ -327,9 +327,16 @@ export async function commitRosterImport(options: {
 				if (classified.fillBlankFields.length > 0) result.filledCount += 1;
 				if (usedNew) result.updatedCount += 1;
 
-				const classEnrollment = existing?.enrollments.find((item) => item.classId === options.classId);
-				const tutorialClassId =
-					row.input.tutorialClassId ?? defaultTutorialId;
+				const classEnrollment = existing?.enrollments.find(
+					(item) => item.classId === options.classId,
+				);
+				const tutorialClassId = row.input.tutorialClassId ?? defaultTutorialId;
+				if (
+					classEnrollment &&
+					tutorialClassId &&
+					tutorialClassId !== classEnrollment.tutorialClassId
+				)
+					await removeEnrollmentGroup(tx, classEnrollment.id);
 				if (!classEnrollment) {
 					await tx.teachingEnrollment.create({
 						data: {
@@ -353,7 +360,11 @@ export async function commitRosterImport(options: {
 						},
 					});
 					result.reactivatedCount += 1;
-				} else if (tutorialClassId || row.input.orderNo != null || row.input.enrolledFromWeek != null) {
+				} else if (
+					tutorialClassId ||
+					row.input.orderNo != null ||
+					row.input.enrolledFromWeek != null
+				) {
 					await tx.teachingEnrollment.update({
 						where: { id: classEnrollment.id },
 						data: {
@@ -367,7 +378,7 @@ export async function commitRosterImport(options: {
 				}
 			}
 		},
-		{ timeout: 60_000, maxWait: 10_000 },
+		{ timeout: 60_000, maxWait: 10_000, isolationLevel: 'Serializable' },
 	);
 
 	return result;
@@ -439,7 +450,11 @@ export async function setupTeachingClassFromRoster(input: {
 						const existing = await tx.teachingStudent.findUnique({
 							where: { studentCodeNormalized: normalized.studentCode },
 						});
-						if (existing && row.expectedUpdatedAt && existing.updatedAt.toISOString() !== row.expectedUpdatedAt) {
+						if (
+							existing &&
+							row.expectedUpdatedAt &&
+							existing.updatedAt.toISOString() !== row.expectedUpdatedAt
+						) {
 							throw new AppError('Dữ liệu đã thay đổi, hãy đối chiếu lại', 409, 'STALE_PREVIEW');
 						}
 						const snapshot = existing
@@ -485,7 +500,7 @@ export async function setupTeachingClassFromRoster(input: {
 					}
 					return teachingClass.id;
 				},
-				{ timeout: 60_000, maxWait: 10_000 },
+				{ timeout: 60_000, maxWait: 10_000, isolationLevel: 'Serializable' },
 			),
 	);
 
@@ -535,7 +550,11 @@ export async function importStudentListIntoClass(classId: string, buffer: Buffer
 		throw new AppError('Fix validation errors before importing', 422, 'VALIDATION');
 	}
 	if (preview.summary.conflictCount > 0) {
-		throw new AppError('Hãy đối chiếu dữ liệu trùng trước khi lưu.', 409, 'STUDENT_PROFILE_CONFLICT');
+		throw new AppError(
+			'Hãy đối chiếu dữ liệu trùng trước khi lưu.',
+			409,
+			'STUDENT_PROFILE_CONFLICT',
+		);
 	}
 	return commitRosterImport({
 		classId,

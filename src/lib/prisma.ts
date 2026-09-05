@@ -30,6 +30,8 @@ const PRISMA_GENERATION = [
 	Prisma.ModelName.TeachingGroupAssignment,
 	Prisma.ModelName.TeachingGroupAudit,
 	'TeachingEnrollment.learningExperience.v2',
+	'TeachingGroupBoard.tutorialClassId.v1',
+	'TeachingGroup.maxSize.v1',
 ].join('|');
 
 type PrismaGlobal = {

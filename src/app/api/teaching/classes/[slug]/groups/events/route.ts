@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { getGroupBoardVersion, getPublicClassIdBySlug } from '@/features/teaching';
+import { getGroupBoardVersion, getPublicClassIdBySlug, groupBoardTutorialQuerySchema, parseWithAppError } from '@/features/teaching';
 import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
 import { apiError } from '@/lib/apiUtils';
 
@@ -12,7 +12,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
 	const slug = String((await context.params).slug);
 	const classId = await getPublicClassIdBySlug(slug);
 	if (!classId) return Response.json({ ok: false, error: 'Not found' }, { status: 404 });
-	let lastVersion = await getGroupBoardVersion(classId);
+	const tutorialClassId = request.nextUrl.searchParams.get('tutorialClassId')?.trim();
+	if (!tutorialClassId) return apiError('Thiếu tutorialClassId.', 422, { code: 'VALIDATION' });
+	parseWithAppError(groupBoardTutorialQuerySchema, { tutorialClassId });
+	let lastVersion = await getGroupBoardVersion(classId, tutorialClassId);
 	let timer: ReturnType<typeof setInterval> | undefined;
 	let heartbeat: ReturnType<typeof setInterval> | undefined;
 	const stream = new ReadableStream<Uint8Array>({
@@ -22,7 +25,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
 				controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
 			send('connected', { version: lastVersion });
 			timer = setInterval(() => {
-				void getGroupBoardVersion(classId)
+				void getGroupBoardVersion(classId, tutorialClassId)
 					.then((version) => {
 						if (version !== lastVersion) {
 							lastVersion = version;

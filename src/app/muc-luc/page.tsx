@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import GateNav from '@/components/site/GateNav';
 import { routes } from '@/config/routes';
@@ -16,14 +17,12 @@ export const metadata: Metadata = {
  */
 export default function TocPage() {
 	return (
-		<main
-			className="flex min-h-svh flex-col items-center justify-center bg-canvas px-8 py-16"
-			data-testid="gate-home"
-		>
-			<h1 className="gate-item-enter mb-10 font-mono text-[0.6875rem] tracking-[0.2em] text-ink/40 uppercase">
-				Mục lục
-			</h1>
+		<main className="personal-book book-toc-page" data-testid="gate-home">
+			<h1 className="book-caption book-toc-label">Mục lục</h1>
 			<GateNav />
+			<div className="book-page-end">
+				<Link href={routes.contact}>Gửi lời nhắn ↗</Link>
+			</div>
 		</main>
 	);
 }

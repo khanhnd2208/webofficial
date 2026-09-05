@@ -13,14 +13,18 @@ export function GridPopover({
 }: {
 	label: string;
 	trigger: ReactNode;
-	children: ReactNode;
+	children: ReactNode | ((close: () => void) => ReactNode);
 	menu?: boolean;
 	disabled?: boolean;
 }) {
 	const id = useId();
 	const [open, setOpen] = useState(false);
+	const [returnFocus, setReturnFocus] = useState(false);
 	const anchor = useRef<HTMLButtonElement>(null);
 	const panel = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		if (!open && returnFocus) anchor.current?.focus();
+	}, [open, returnFocus]);
 	useEffect(() => {
 		if (!open) return;
 		const triggerNode = anchor.current;
@@ -32,9 +36,10 @@ export function GridPopover({
 			panel.current.style.top = `${Math.max(8, Math.min(rect.bottom + 6, window.innerHeight - box.height - 8))}px`;
 		};
 		update();
-		panel.current
-			?.querySelector<HTMLElement>('input:not([type="date"]), button:not(:disabled)')
-			?.focus();
+		(
+			panel.current?.querySelector<HTMLElement>('[data-autofocus]') ??
+			panel.current?.querySelector<HTMLElement>('input:not([type="date"]), button:not(:disabled)')
+		)?.focus();
 		const dismiss = (e: Event) => {
 			if (!panel.current?.contains(e.target as Node) && !triggerNode?.contains(e.target as Node))
 				setOpen(false);
@@ -87,7 +92,10 @@ export function GridPopover({
 				aria-expanded={open}
 				aria-controls={open ? id : undefined}
 				disabled={disabled}
-				onClick={() => setOpen((v) => !v)}
+				onClick={() => {
+					setReturnFocus(false);
+					setOpen((v) => !v);
+				}}
 			>
 				{trigger}
 			</button>
@@ -107,7 +115,12 @@ export function GridPopover({
 								}
 							}}
 						>
-							{children}
+							{typeof children === 'function'
+								? children(() => {
+										setOpen(false);
+										setReturnFocus(true);
+									})
+								: children}
 						</div>
 					</div>,
 					document.body,

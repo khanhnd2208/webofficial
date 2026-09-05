@@ -70,10 +70,10 @@ export function KnowledgeToWorkGraphic({ className = '' }: { className?: string 
 
 			{/* Nodes */}
 			{[
-				{ cx: 130, cy: 104, label: 'Kiến thức', lx: 98, ly: 132 },
+				{ cx: 130, cy: 84, label: 'Kiến thức', lx: 98, ly: 132 },
 				{ cx: 230, cy: 88, label: 'Hiểu', lx: 214, ly: 68 },
 				{ cx: 330, cy: 128, label: 'Thử', lx: 316, ly: 152 },
-				{ cx: 392, cy: 108, label: 'Công việc', lx: 348, ly: 88 },
+				{ cx: 392, cy: 88, label: 'Công việc', lx: 348, ly: 88 },
 			].map((node, i) => (
 				<g key={node.label}>
 					<m.circle
@@ -82,7 +82,7 @@ export function KnowledgeToWorkGraphic({ className = '' }: { className?: string 
 						r="5"
 						className="fill-canvas stroke-accent"
 						strokeWidth="1.5"
-						initial={instant ? false : { scale: 0, opacity: 0 }}
+						initial={instant ? false : { scale: 0, opacity: 1 }}
 						whileInView={{ scale: 1, opacity: 1 }}
 						viewport={{ once: true }}
 						transition={{
@@ -96,7 +96,7 @@ export function KnowledgeToWorkGraphic({ className = '' }: { className?: string 
 						y={node.ly}
 						className="fill-ink/70"
 						style={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
-						initial={instant ? false : { opacity: 0, y: 6 }}
+						initial={instant ? false : { opacity: 1, y: 6 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
 						transition={{

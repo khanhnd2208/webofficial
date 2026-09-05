@@ -3798,3 +3798,92 @@ body::before {
 		animation: none !important;
 	}
 }
+
+/* Tutorial group list — simplified admin/public roster */
+.group-list-workspace {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.group-list-table thead th {
+	background: color-mix(in srgb, var(--mc-brand) 88%, black);
+	color: #fff;
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-align: center;
+	padding: 0.65rem 0.75rem;
+	white-space: nowrap;
+}
+
+.group-list-table tbody td {
+	padding: 0.55rem 0.75rem;
+	border-top: 1px solid var(--mc-rule);
+	vertical-align: middle;
+}
+
+.group-list-table tbody tr:nth-child(even) {
+	background: color-mix(in srgb, var(--mc-brand) 6%, transparent);
+}
+
+.group-list-table tbody td:nth-child(1),
+.group-list-table tbody td:nth-child(2),
+.group-list-table tbody td:nth-child(4) {
+	text-align: center;
+}
+
+.group-list-lx {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 9rem;
+	padding: 0.25rem 0.65rem;
+	border-radius: var(--mc-r-sm);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.group-list-lx-support {
+	background: #e2efda;
+	color: #1f4d1f;
+}
+
+.group-list-lx-challenge {
+	background: #fce4d6;
+	color: #7a2e1a;
+}
+
+.group-list-lx-neutral {
+	background: var(--mc-surface-sunken, #f3f4f6);
+	color: var(--mc-ink-secondary, #64748b);
+}
+
+.group-list-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	justify-content: flex-end;
+	white-space: nowrap;
+}
+
+.group-list-section + .group-list-section {
+	border-top: 3px double var(--mc-rule);
+}
+
+@media (max-width: 767px) {
+	.group-list-table thead { display: none; }
+	.group-list-table, .group-list-table tbody { display: block; width: 100%; }
+	.group-list-table tbody tr {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		padding: 12px 16px;
+		border-bottom: 1px solid var(--mc-rule);
+	}
+	.group-list-table tbody td { display: block; border: 0; padding: 3px 0; text-align: left; overflow-wrap: anywhere; }
+	.group-list-table tbody td:nth-child(1) { display: none; }
+	.group-list-table tbody td:nth-child(2) { grid-row: 2; font-size: 12px; text-align: left; }
+	.group-list-table tbody td:nth-child(3) { grid-row: 1; font-weight: 600; }
+	.group-list-table tbody td:nth-child(4) { text-align: left; }
+	.group-list-table tbody td.group-list-actions { display: flex; flex-wrap: wrap; justify-content: flex-start; white-space: normal; }
+	.group-list-lx { white-space: normal; }
+}

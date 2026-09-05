@@ -76,7 +76,7 @@ export const GATE_NAV_ITEMS: GateNavItem[] = [
 		href: routes.about,
 		label: 'Giới thiệu',
 		status: 'published',
-		blurb: 'Con đường đến với lớp học',
+		blurb: 'Lớp học và những thử nghiệm',
 	},
 	{
 		id: 'projects',
@@ -234,7 +234,9 @@ export function isLopPath(pathname: string): boolean {
 
 /** Full-bleed public shells (intro + mục lục + My Space + class board) — no GateBack top inset. */
 export function isFullBleedPublicPath(pathname: string): boolean {
-	return isIntroPath(pathname) || isTocPath(pathname) || isMySpacePath(pathname) || isLopPath(pathname);
+	return (
+		isIntroPath(pathname) || isTocPath(pathname) || isMySpacePath(pathname) || isLopPath(pathname)
+	);
 }
 
 function isNavItemVisible(item: PublicNavItem): boolean {

@@ -22,6 +22,11 @@ export default defineConfig({
 			testIgnore: /teaching-learning-experience-mobile\.spec\.ts/,
 		},
 		{
+			name: 'teaching-groups-webkit',
+			testMatch: /teaching-groups\.spec\.ts/,
+			use: { ...devices['Desktop Safari'] },
+		},
+		{
 			name: 'teaching-webkit',
 			grep: /guest|legacy Teaching|My Space links|missing classes|visitor sees|admin sees|admin workspace/,
 			testMatch: /teaching-attendance-board\.spec\.ts/,

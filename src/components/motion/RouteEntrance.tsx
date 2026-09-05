@@ -28,7 +28,7 @@ export default function RouteEntrance({
 	return (
 		<m.div
 			className={className}
-			initial={{ opacity: 0.94, y: rise }}
+			initial={{ opacity: 1, y: rise }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: duration.page, ease: ease.reveal }}
 		>

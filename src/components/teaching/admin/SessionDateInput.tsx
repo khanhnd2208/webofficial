@@ -1,317 +1,188 @@
 'use client';
 
-import { useId, useRef, useState } from 'react';
-
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { GridPopover } from './GridPopover';
 import { McIcon } from '@/components/myclass/ui';
-import { parseCalendarDate } from '@/features/teaching/domain/studentIdentity';
-import { sessionDateLabel } from '@/components/teaching/admin/attendanceLabels';
-import type { GradebookSaveState } from '@/components/teaching/admin/useGradebookMutations';
+import { sessionDateLabel } from './attendanceLabels';
+import type { GradebookSaveState } from './useGradebookMutations';
 
-function partsFromIso(iso: string | null): { dd: string; mm: string; yyyy: string } {
-	if (!iso) return { dd: '', mm: '', yyyy: '' };
-	const [year, month, day] = iso.split('-');
-	return { dd: day ?? '', mm: month ?? '', yyyy: year ?? '' };
-}
-
-function openDatePicker(input: HTMLInputElement) {
-	const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
-	if (typeof pickerInput.showPicker === 'function') {
-		try {
-			pickerInput.showPicker();
-			return true;
-		} catch {
-			// Native picker can reject outside a trusted gesture.
-		}
-	}
-	return false;
-}
-
-function SessionDateEditor({
-	weekNumber,
-	value,
-	saveState,
-	disabled,
-	onCommit,
-}: {
+type Props = {
 	weekNumber: number;
 	value: string | null;
 	saveState?: GradebookSaveState | 'idle';
 	disabled?: boolean;
 	onCommit: (heldOn: string | null) => void | Promise<void>;
-}) {
-	const labelId = useId();
-	const nativeRef = useRef<HTMLInputElement>(null);
-	const ddRef = useRef<HTMLInputElement>(null);
-	const mmRef = useRef<HTMLInputElement>(null);
-	const yyyyRef = useRef<HTMLInputElement>(null);
-	const [draft, setDraft] = useState(() => partsFromIso(value));
-	const [error, setError] = useState('');
-	const [nativeFallback, setNativeFallback] = useState(false);
-	const [commitState, setCommitState] = useState<'idle' | 'saving' | 'error'>('idle');
-	const attempted = useRef<string | null>(null);
+};
+
+// Calendar dates stay local; converting through UTC can shift the selected day.
+function iso(date: Date) {
+	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+function dateFromIso(value: string) {
+	const [year, month, day] = value.split('-').map(Number);
+	return new Date(year, month - 1, day, 12);
+}
+
+function SessionCalendar({
+	value,
+	weekNumber,
+	disabled,
+	saveState,
+	onCommit,
+	close,
+}: Props & { close: () => void }) {
+	const today = iso(new Date());
+	const [focused, setFocused] = useState(value ?? today);
+	const [selected, setSelected] = useState(value);
+	const [month, setMonth] = useState(() => (value ?? today).slice(0, 7));
+	const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle');
 	const inFlight = useRef(false);
-	const cancelled = useRef(false);
-	const [syncedValue, setSyncedValue] = useState(value);
+	const attempted = useRef<string | null>(value);
+	const calendar = useRef<HTMLDivElement>(null);
+	const focusRequested = useRef(false);
+	const heading = useId();
+	const first = dateFromIso(`${month}-01`);
+	const offset = (first.getDay() + 6) % 7;
+	const days = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+	const busy = disabled || status === 'saving' || saveState === 'saving';
 
-	if (value !== syncedValue) {
-		setSyncedValue(value);
-		if (commitState === 'idle') {
-			setDraft(partsFromIso(value));
-			setError('');
+	useLayoutEffect(() => {
+		if (focusRequested.current) {
+			calendar.current?.querySelector<HTMLButtonElement>(`[data-date="${focused}"]`)?.focus();
+			focusRequested.current = false;
 		}
+	}, [focused, month]);
+
+	function moveFocus(date: Date) {
+		const next = iso(date);
+		focusRequested.current = true;
+		setMonth(next.slice(0, 7));
+		setFocused(next);
 	}
-
-	function applyText(text: string, source: 'dd' | 'mm' | 'yyyy' | 'paste') {
-		cancelled.current = false;
-		const compact = text.replace(/[^\d]/g, '');
-		if (source === 'paste' || compact.length >= 8) {
-			const parsed = parseCalendarDate(text.trim() || compact);
-			if (parsed.iso) {
-				setDraft(partsFromIso(parsed.iso));
-				setError('');
-				commit(parsed.iso);
-				return;
-			}
-			if (source === 'paste') {
-				setError(parsed.error ?? 'Ngày không hợp lệ');
-				return;
-			}
-		}
-		if (source === 'dd') {
-			setDraft((current) => ({ ...current, dd: compact.slice(0, 2) }));
-			if (compact.length >= 2) mmRef.current?.focus();
-		} else if (source === 'mm') {
-			setDraft((current) => ({ ...current, mm: compact.slice(0, 2) }));
-			if (compact.length >= 2) yyyyRef.current?.focus();
-		} else {
-			const nextYear = compact.slice(0, 4);
-			setDraft((current) => ({ ...current, yyyy: nextYear }));
-			if (nextYear.length >= 4 && draft.dd && draft.mm) {
-				const parsed = parseCalendarDate(`${draft.dd}/${draft.mm}/${nextYear}`);
-				if (parsed.iso) {
-					setError('');
-					void commit(parsed.iso);
-				} else {
-					setError(parsed.error ?? 'Ngày không hợp lệ');
-				}
-			}
-		}
+	function moveMonth(delta: number) {
+		const next = new Date(first.getFullYear(), first.getMonth() + delta, 1, 12);
+		setMonth(iso(next).slice(0, 7));
+		setFocused(iso(next));
 	}
-
-	function commitDraft() {
-		if (cancelled.current || inFlight.current) return;
-		if (!draft.dd && !draft.mm && !draft.yyyy) {
-			setError('');
-			if (value) commit(null);
+	async function commit(next: string | null) {
+		if (inFlight.current || busy) return;
+		if (next === value && status !== 'error') {
+			close();
 			return;
 		}
-		const parsed = parseCalendarDate(`${draft.dd}/${draft.mm}/${draft.yyyy}`);
-		if (!parsed.iso) {
-			setError(parsed.error ?? 'Ngày không hợp lệ');
-			return;
-		}
-		setError('');
-		if (parsed.iso !== value) commit(parsed.iso);
-	}
-
-	function cancelDraft() {
-		cancelled.current = true;
-		if (commitState === 'idle') {
-			setDraft(partsFromIso(value));
-			setError('');
-		}
-	}
-
-	function commit(heldOn: string | null) {
-		if (inFlight.current || (heldOn === value && commitState !== 'error')) return;
-		attempted.current = heldOn;
 		inFlight.current = true;
-		setCommitState('saving');
-		void (async () => {
-			try {
-				await onCommit(heldOn);
-				setCommitState('idle');
-				setError('');
-			} catch {
-				setCommitState('error');
-				setError('Không thể lưu ngày. Vui lòng thử lại.');
-			} finally {
-				inFlight.current = false;
-			}
-		})();
+		attempted.current = next;
+		setSelected(next);
+		setStatus('saving');
+		try {
+			await onCommit(next);
+			close();
+		} catch {
+			setStatus('error');
+		} finally {
+			inFlight.current = false;
+		}
 	}
-
-	const status =
-		saveState === 'saving'
-			? 'Đang lưu…'
-			: saveState === 'error'
-				? 'Lỗi lưu ngày'
-				: saveState === 'saved'
-					? 'Đã lưu'
-					: '';
 
 	return (
-		<div className="mc-session-date" data-invalid={error ? 'true' : undefined}>
-			<span id={labelId} className="sr-only">
-				Ngày học tuần {weekNumber}
-			</span>
-			<div
-				className="mc-session-date-fields"
-				onBlur={(event) => {
-					if (!event.currentTarget.contains(event.relatedTarget as Node)) commitDraft();
-				}}
-			>
-				<input
-					ref={ddRef}
-					inputMode="numeric"
-					maxLength={2}
-					placeholder="DD"
-					aria-describedby={`${labelId}-status`}
-					aria-invalid={Boolean(error)}
-					aria-label={`Ngày học tuần ${weekNumber}`}
-					disabled={disabled || commitState === 'saving'}
-					value={draft.dd}
-					onChange={(event) => applyText(event.target.value, 'dd')}
-					onPaste={(event) => {
-						event.preventDefault();
-						applyText(event.clipboardData.getData('text'), 'paste');
-					}}
-					onKeyDown={(event) => {
-						if (event.key === 'Enter') {
-							event.preventDefault();
-							commitDraft();
-						}
-						if (event.key === 'Escape') {
-							event.preventDefault();
-							cancelDraft();
-						}
-					}}
-				/>
-				<span aria-hidden>/</span>
-				<input
-					ref={mmRef}
-					inputMode="numeric"
-					maxLength={2}
-					placeholder="MM"
-					aria-describedby={`${labelId}-status`}
-					aria-invalid={Boolean(error)}
-					aria-label={`Tháng học tuần ${weekNumber}`}
-					disabled={disabled || commitState === 'saving'}
-					value={draft.mm}
-					onChange={(event) => applyText(event.target.value, 'mm')}
-					onPaste={(event) => {
-						event.preventDefault();
-						applyText(event.clipboardData.getData('text'), 'paste');
-					}}
-					onKeyDown={(event) => {
-						if (event.key === 'Enter') {
-							event.preventDefault();
-							commitDraft();
-						}
-						if (event.key === 'Escape') {
-							event.preventDefault();
-							cancelDraft();
-						}
-					}}
-				/>
-				<span aria-hidden>/</span>
-				<input
-					ref={yyyyRef}
-					inputMode="numeric"
-					maxLength={4}
-					placeholder="YYYY"
-					aria-describedby={`${labelId}-status`}
-					aria-invalid={Boolean(error)}
-					aria-label={`Năm học tuần ${weekNumber}`}
-					disabled={disabled || commitState === 'saving'}
-					value={draft.yyyy}
-					onChange={(event) => applyText(event.target.value, 'yyyy')}
-					onPaste={(event) => {
-						event.preventDefault();
-						applyText(event.clipboardData.getData('text'), 'paste');
-					}}
-					onKeyDown={(event) => {
-						if (event.key === 'Enter') {
-							event.preventDefault();
-							commitDraft();
-						}
-						if (event.key === 'Escape') {
-							event.preventDefault();
-							cancelDraft();
-						}
-					}}
-				/>
+		<div className="mc-session-calendar" ref={calendar} aria-busy={status === 'saving'}>
+			<p className="mc-grid-menu-hint">Ngày học tuần {weekNumber}</p>
+			<div className="mc-calendar-heading">
 				<button
 					type="button"
-					className="mc-session-date-calendar"
-					aria-label={`Mở lịch tuần ${weekNumber}`}
-					disabled={disabled || commitState === 'saving'}
-					onClick={() => {
-						if (nativeRef.current && !openDatePicker(nativeRef.current)) setNativeFallback(true);
-					}}
+					aria-label="Tháng trước"
+					disabled={busy}
+					onClick={() => moveMonth(-1)}
 				>
-					<McIcon name="calendar_month" size={16} />
+					<McIcon name="chevron_left" size={18} />
 				</button>
-				{value ? (
+				<strong id={heading} aria-live="polite">
+					Tháng {first.getMonth() + 1} / {first.getFullYear()}
+				</strong>
+				<button type="button" aria-label="Tháng sau" disabled={busy} onClick={() => moveMonth(1)}>
+					<McIcon name="chevron_right" size={18} />
+				</button>
+			</div>
+			<div className="mc-calendar-days" role="group" aria-labelledby={heading}>
+				{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day) => (
+					<span className="mc-calendar-weekday" key={day}>
+						{day}
+					</span>
+				))}
+				{Array.from({ length: offset }, (_, i) => (
+					<span key={`blank-${i}`} />
+				))}
+				{Array.from({ length: days }, (_, i) => {
+					const day = `${month}-${String(i + 1).padStart(2, '0')}`;
+					return (
+						<button
+							type="button"
+							key={day}
+							data-date={day}
+							data-autofocus={day === focused ? true : undefined}
+							aria-label={`${i + 1}/${first.getMonth() + 1}/${first.getFullYear()}`}
+							aria-pressed={selected === day}
+							aria-current={day === today ? 'date' : undefined}
+							tabIndex={day === focused ? 0 : -1}
+							disabled={busy}
+							onClick={() => void commit(day)}
+							onKeyDown={(event) => {
+								const date = dateFromIso(day);
+								const shift = (
+									{ ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 } as Record<
+										string,
+										number
+									>
+								)[event.key];
+								if (shift !== undefined) date.setDate(date.getDate() + shift);
+								else if (event.key === 'Home')
+									date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+								else if (event.key === 'End')
+									date.setDate(date.getDate() + 6 - ((date.getDay() + 6) % 7));
+								else return;
+								event.preventDefault();
+								moveFocus(date);
+							}}
+						>
+							{i + 1}
+						</button>
+					);
+				})}
+			</div>
+			<div className="mc-calendar-footer">
+				<button type="button" disabled={busy} onClick={() => moveFocus(dateFromIso(today))}>
+					Hôm nay
+				</button>
+				{value || selected ? (
 					<button
 						type="button"
-						className="mc-session-date-clear"
+						disabled={busy}
 						aria-label={`Xóa ngày tuần ${weekNumber}`}
-						disabled={disabled || commitState === 'saving'}
-						onClick={() => {
-							setDraft({ dd: '', mm: '', yyyy: '' });
-							setError('');
-							commit(null);
-						}}
+						onClick={() => void commit(null)}
 					>
-						×
+						<McIcon name="close" size={16} />
+						Xóa ngày
 					</button>
 				) : null}
 			</div>
-			<input
-				ref={nativeRef}
-				disabled={disabled || commitState === 'saving'}
-				type="date"
-				className={nativeFallback ? 'mc-native-date' : 'sr-only'}
-				tabIndex={nativeFallback ? 0 : -1}
-				value={value ?? ''}
-				aria-label={`Chọn ngày tuần ${weekNumber}`}
-				aria-hidden={!nativeFallback}
-				onChange={(event) => {
-					const next = event.target.value || null;
-					if (next) {
-						setDraft(partsFromIso(next));
-						setError('');
-						commit(next);
-					}
-				}}
-			/>
-			<span
-				role={error ? 'alert' : 'status'}
-				id={`${labelId}-status`}
-				className="mc-session-date-status"
-				data-tone={saveState === 'error' ? 'error' : saveState === 'saving' ? 'saving' : 'ok'}
-			>
-				{error || status}
-			</span>
-			<button type="button" disabled={disabled || commitState === 'saving'} onClick={commitDraft}>
-				Lưu ngày
-			</button>
-			{commitState === 'error' ? (
-				<button type="button" onClick={() => commit(attempted.current)}>
-					Thử lại lưu ngày
-				</button>
+			{status === 'saving' ? <p role="status">Đang lưu…</p> : null}
+			{status === 'error' ? (
+				<>
+					<p role="alert">Không thể lưu ngày. Vui lòng thử lại.</p>
+					<button type="button" disabled={busy} onClick={() => void commit(attempted.current)}>
+						Thử lại lưu ngày
+					</button>
+				</>
 			) : null}
 		</div>
 	);
 }
 
-export function SessionDateInput(props: Parameters<typeof SessionDateEditor>[0]) {
+export function SessionDateInput(props: Props) {
 	return (
 		<GridPopover
 			label={`Sửa ngày tuần ${props.weekNumber}`}
-			disabled={props.disabled}
+			disabled={props.disabled || props.saveState === 'saving'}
 			trigger={
 				<>
 					<McIcon name="calendar_month" size={16} />
@@ -319,8 +190,7 @@ export function SessionDateInput(props: Parameters<typeof SessionDateEditor>[0])
 				</>
 			}
 		>
-			<p className="mc-grid-menu-hint">Ngày học tuần {props.weekNumber}</p>
-			<SessionDateEditor {...props} />
+			{(close) => <SessionCalendar {...props} close={close} />}
 		</GridPopover>
 	);
 }

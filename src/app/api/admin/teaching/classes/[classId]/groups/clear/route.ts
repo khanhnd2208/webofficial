@@ -1,10 +1,15 @@
-import { clearGroupAssignments, clearGroupBoardSchema, parseJsonWithAppError } from '@/features/teaching';
-import { apiSuccess, withAdmin, withTeachingGroupBoard } from '@/lib/apiUtils';
 import type { NextRequest } from 'next/server';
 
-export const POST = withTeachingGroupBoard(withAdmin(async (request: NextRequest, _user, context) => {
-	const body = await parseJsonWithAppError(clearGroupBoardSchema, request);
-	return apiSuccess(
-		await clearGroupAssignments(String((await context!.params).classId), body.expectedVersion),
-	);
-}));
+import { AppError } from '@/lib/appError';
+import { withAdmin, withTeachingGroupBoard } from '@/lib/apiUtils';
+
+async function classId(context?: { params: Promise<{ classId: string }> }) {
+	return String((await context!.params).classId);
+}
+
+export const POST = withTeachingGroupBoard(
+	withAdmin(async (_request: NextRequest, _user, context) => {
+		await classId(context);
+		throw new AppError('Xóa toàn bộ đã được gỡ bỏ.', 410, 'GONE');
+	}),
+);

@@ -1,3 +1,4 @@
+import { groupTransaction, removeEnrollmentGroup } from '../domain/groupTransactions';
 import type { Prisma, TeachingStudent } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
@@ -85,10 +86,7 @@ export function createClassNote(data: Prisma.TeachingClassNoteUncheckedCreateInp
 	return prisma.teachingClassNote.create({ data });
 }
 
-export function updateClassNote(
-	id: string,
-	data: Prisma.TeachingClassNoteUncheckedUpdateInput,
-) {
+export function updateClassNote(id: string, data: Prisma.TeachingClassNoteUncheckedUpdateInput) {
 	return prisma.teachingClassNote.update({ where: { id }, data });
 }
 
@@ -469,27 +467,43 @@ export function upsertEnrollment(data: {
 	orderNo: number;
 	enrolledFromWeek?: number;
 }) {
-	return prisma.teachingEnrollment.upsert({
-		where: { classId_studentId: { classId: data.classId, studentId: data.studentId } },
-		create: {
-			classId: data.classId,
-			studentId: data.studentId,
-			tutorialClassId: data.tutorialClassId,
-			orderNo: data.orderNo,
-			status: 'ACTIVE',
-			enrolledFromWeek: data.enrolledFromWeek ?? 1,
-		},
-		update: {
-			tutorialClassId: data.tutorialClassId,
-			orderNo: data.orderNo,
-			status: 'ACTIVE',
-			...(data.enrolledFromWeek != null ? { enrolledFromWeek: data.enrolledFromWeek } : {}),
-		},
+	return groupTransaction(async (tx) => {
+		const existing = await tx.teachingEnrollment.findUnique({
+			where: { classId_studentId: { classId: data.classId, studentId: data.studentId } },
+		});
+		if (existing && existing.tutorialClassId !== data.tutorialClassId)
+			await removeEnrollmentGroup(tx, existing.id);
+		return tx.teachingEnrollment.upsert({
+			where: { classId_studentId: { classId: data.classId, studentId: data.studentId } },
+			create: {
+				classId: data.classId,
+				studentId: data.studentId,
+				tutorialClassId: data.tutorialClassId,
+				orderNo: data.orderNo,
+				status: 'ACTIVE',
+				enrolledFromWeek: data.enrolledFromWeek ?? 1,
+			},
+			update: {
+				tutorialClassId: data.tutorialClassId,
+				orderNo: data.orderNo,
+				status: 'ACTIVE',
+				...(data.enrolledFromWeek != null ? { enrolledFromWeek: data.enrolledFromWeek } : {}),
+			},
+		});
 	});
 }
 
 export function updateEnrollment(id: string, data: Prisma.TeachingEnrollmentUncheckedUpdateInput) {
-	return prisma.teachingEnrollment.update({ where: { id }, data, include: { student: true } });
+	return groupTransaction(async (tx) => {
+		const existing = await tx.teachingEnrollment.findUniqueOrThrow({ where: { id } });
+		if (
+			(data.tutorialClassId !== undefined && data.tutorialClassId !== existing.tutorialClassId) ||
+			data.status === 'WITHDRAWN'
+		) {
+			await removeEnrollmentGroup(tx, id);
+		}
+		return tx.teachingEnrollment.update({ where: { id }, data, include: { student: true } });
+	});
 }
 
 export function countActiveEnrollments(classId: string) {
@@ -592,7 +606,8 @@ async function writeAttendanceSession(
 			data: {
 				heldOn:
 					heldOn === undefined ? undefined : heldOn ? new Date(`${heldOn}T00:00:00.000Z`) : null,
-				attendanceTakenAt: mode === 'finalize' ? (session.attendanceTakenAt ?? new Date()) : undefined,
+				attendanceTakenAt:
+					mode === 'finalize' ? (session.attendanceTakenAt ?? new Date()) : undefined,
 				attendanceTakenById: userId ?? session.attendanceTakenById,
 				attendanceOpen: mode === 'open',
 			},

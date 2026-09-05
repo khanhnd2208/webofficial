@@ -4,7 +4,7 @@ import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Toast } from '@/components/ui/Dialog';
-import type { TeachingGradebook } from '@/features/teaching/types';
+import type { GroupNumbersByTutorial, TeachingGradebook } from '@/features/teaching/types';
 import type { SessionLifecycleAction } from '@/features/teaching/schemas';
 
 import { AttendanceGrid } from './AttendanceGrid';
@@ -17,12 +17,12 @@ type GradebookView = 'attendance' | 'participation';
 export function GradebookWorkspace({
 	initial,
 	initialView = 'attendance',
-	groupNumberByEnrollment,
+	groupNumbersByTutorial,
 	initialWeek = null,
 }: {
 	initial: TeachingGradebook;
 	initialView?: GradebookView;
-	groupNumberByEnrollment?: Record<string, number>;
+	groupNumbersByTutorial?: GroupNumbersByTutorial;
 	initialWeek?: number | null;
 }) {
 	const pending = useTeachingWorkspacePending();
@@ -50,6 +50,11 @@ export function GradebookWorkspace({
 	const [tutorialId, setTutorialId] = useState(
 		initial.tutorials.length === 1 ? (initial.tutorials[0]?.id ?? '') : '',
 	);
+	const groupNumberByEnrollment = useMemo(() => {
+		if (!groupNumbersByTutorial) return undefined;
+		if (!tutorialId) return {};
+		return groupNumbersByTutorial[tutorialId] ?? {};
+	}, [groupNumbersByTutorial, tutorialId]);
 	const [query, setQuery] = useState('');
 	const [selectedWeek, setSelectedWeek] = useState<number | null>(initialWeek ?? pending?.week ?? null);
 	const view = initialView;
@@ -237,7 +242,7 @@ export function GradebookWorkspace({
 						onSessionDateChange={(session, heldOn) => {
 							selectWeek(session.weekNumber);
 							const task = updateSessionDate(session.id, heldOn);
-							pending?.holdUntil(task);
+							pending?.holdUntil(task, `session-date:${session.id}`);
 							return task;
 						}}
 						sessionDateSaveState={(sessionId) => sessionDateStates[sessionId]}

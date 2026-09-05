@@ -35,7 +35,7 @@ export type ServiceOffer = {
 
 export const servicesPage = {
 	eyebrow: 'Dịch vụ',
-	title: 'Những chương trình giúp kiến thức đi vào công việc.',
+	title: 'Chúng ta có thể bắt đầu từ một việc bạn muốn làm tốt hơn.',
 	lead: 'Tôi thiết kế và trực tiếp triển khai các chương trình về quản trị, AI và năng lực học tập cho doanh nghiệp, đội nhóm và người học.',
 	leadSecondary:
 		'Nội dung có nền tảng học thuật rõ ràng, nhưng luôn được điều chỉnh theo người học, ngành nghề và những công việc họ thực sự cần thực hiện.',
@@ -60,15 +60,8 @@ export const serviceOffers: readonly ServiceOffer[] = [
 		number: '01',
 		title: 'Đào tạo quản trị ứng dụng',
 		audience: 'Dành cho quản lý, nhóm chuyên môn và đơn vị đào tạo.',
-		outcome:
-			'Giúp người học tổ chức công việc, quản lý con người và ra quyết định có cơ sở.',
-		topics: [
-			'Quản trị nền tảng',
-			'Chiến lược',
-			'Nhân sự',
-			'Lãnh đạo',
-			'Giao tiếp và phối hợp',
-		],
+		outcome: 'Giúp người học tổ chức công việc, quản lý con người và ra quyết định có cơ sở.',
+		topics: ['Quản trị nền tảng', 'Chiến lược', 'Nhân sự', 'Lãnh đạo', 'Giao tiếp và phối hợp'],
 		formats: ['Chuyên đề', 'Workshop', 'Module ngắn', 'Lộ trình đào tạo'],
 		cta: 'Trao đổi về chương trình quản trị',
 		inquiryType: 'training',

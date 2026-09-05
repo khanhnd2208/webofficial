@@ -27,7 +27,7 @@ const CORE_TABS = [
 type PendingContextValue = {
 	isPending: boolean;
 	navigate: (href: string) => void;
-	holdUntil: (task: Promise<unknown>) => void;
+	holdUntil: (task: Promise<unknown>, key?: string) => void;
 	week?: number;
 	setWeek: (week: number) => void;
 };
@@ -48,18 +48,28 @@ export function TeachingWorkspacePending({
 	const router = useRouter();
 	const [isPending, startTransition] = useTransition();
 	const [week, setWeek] = useState<number | undefined>(initialWeek ?? undefined);
-	const holds = useRef<Promise<unknown>[]>([]);
-	const holdUntil = useCallback((task: Promise<unknown>) => {
-		holds.current.push(task);
+	const holds = useRef(new Map<string | Promise<unknown>, Promise<unknown>>());
+	const holdUntil = useCallback((task: Promise<unknown>, key?: string) => {
+		// A retry for the same field supersedes its previous failed attempt.
+		holds.current.set(key ?? task, task);
+		void task.catch(() => {});
 	}, []);
 	const navigate = useCallback(
 		(href: string) => {
 			const run = async () => {
-				const pendingHolds = holds.current.splice(0, holds.current.length);
-				if (pendingHolds.length > 0) {
-					const results = await Promise.allSettled(pendingHolds);
-					const failed = results.some((result) => result.status === 'rejected');
-					if (failed && /tab=(cp|attendance)/.test(href)) return;
+				while (holds.current.size > 0) {
+					const pendingHolds = [...holds.current.entries()];
+					const results = await Promise.allSettled(pendingHolds.map(([, task]) => task));
+					let failed = false;
+					pendingHolds.forEach(([key, task], index) => {
+						if (holds.current.get(key) !== task) return;
+						if (results[index].status === 'fulfilled') holds.current.delete(key);
+						else failed = true;
+					});
+					if (failed) {
+						if (/tab=(cp|attendance)/.test(href)) return;
+						break;
+					}
 				}
 				startTransition(() => {
 					router.push(href);
@@ -71,7 +81,9 @@ export function TeachingWorkspacePending({
 	);
 
 	return (
-		<TeachingWorkspacePendingContext.Provider value={{ isPending, navigate, holdUntil, week, setWeek }}>
+		<TeachingWorkspacePendingContext.Provider
+			value={{ isPending, navigate, holdUntil, week, setWeek }}
+		>
 			{children}
 		</TeachingWorkspacePendingContext.Provider>
 	);
@@ -102,25 +114,33 @@ export function TeachingCoreTabs({
 	const searchParams = useSearchParams();
 	const week = pending?.week ?? (Number(searchParams.get('week') || '') || undefined);
 	const tabLink = (value: TeachingWorkspaceTab) =>
-		routes.mySpaceTeachingClassTab(classId, value, value === 'attendance' || value === 'cp' ? week : undefined);
+		routes.mySpaceTeachingClassTab(
+			classId,
+			value,
+			value === 'attendance' || value === 'cp' ? week : undefined,
+		);
 
 	return (
 		<div className="teaching-core-tabs-wrap">
 			<nav aria-label="Khu vực lớp học" className="mc-tabbar teaching-core-tabs overflow-x-auto">
-				{CORE_TABS.filter(([value]) => value !== 'groups' || groupBoardEnabled).map(([value, label]) => {
-					const href = tabLink(value);
-					return (
-						<Link
-							key={value}
-							href={href}
-							aria-current={activeTab === value ? 'page' : undefined}
-							data-active={activeTab === value}
-							onClick={pending ? (event) => handleSoftNav(event, href, pending.navigate) : undefined}
-						>
-							{label}
-						</Link>
-					);
-				})}
+				{CORE_TABS.filter(([value]) => value !== 'groups' || groupBoardEnabled).map(
+					([value, label]) => {
+						const href = tabLink(value);
+						return (
+							<Link
+								key={value}
+								href={href}
+								aria-current={activeTab === value ? 'page' : undefined}
+								data-active={activeTab === value}
+								onClick={
+									pending ? (event) => handleSoftNav(event, href, pending.navigate) : undefined
+								}
+							>
+								{label}
+							</Link>
+						);
+					},
+				)}
 			</nav>
 			<span
 				className="teaching-tab-progress"

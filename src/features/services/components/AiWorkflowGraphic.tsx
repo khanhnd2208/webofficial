@@ -48,13 +48,9 @@ export function AiWorkflowGraphic({ className = '' }: { className?: string }) {
 							cx="140"
 							cy={step.y + 12}
 							r={isCheckpoint ? 7 : 5}
-							className={
-								isCheckpoint
-									? 'fill-accent stroke-accent'
-									: 'fill-canvas stroke-ink/40'
-							}
+							className={isCheckpoint ? 'fill-accent stroke-accent' : 'fill-canvas stroke-ink/40'}
 							strokeWidth="1.5"
-							initial={instant ? false : { scale: 0, opacity: 0 }}
+							initial={instant ? false : { scale: 0, opacity: 1 }}
 							whileInView={{ scale: 1, opacity: 1 }}
 							viewport={{ once: true }}
 							transition={{
@@ -71,7 +67,7 @@ export function AiWorkflowGraphic({ className = '' }: { className?: string }) {
 							rx="2"
 							className="fill-canvas stroke-ink/25"
 							strokeWidth="1"
-							initial={instant ? false : { opacity: 0 }}
+							initial={instant ? false : { opacity: 1 }}
 							whileInView={{ opacity: 1 }}
 							viewport={{ once: true }}
 							transition={{
@@ -85,7 +81,7 @@ export function AiWorkflowGraphic({ className = '' }: { className?: string }) {
 							y={step.y + 18}
 							className="fill-ink"
 							style={{ fontSize: 10, fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}
-							initial={instant ? false : { opacity: 0 }}
+							initial={instant ? false : { opacity: 1 }}
 							whileInView={{ opacity: 1 }}
 							viewport={{ once: true }}
 							transition={{

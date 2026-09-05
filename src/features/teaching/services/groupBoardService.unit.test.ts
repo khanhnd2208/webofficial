@@ -22,8 +22,25 @@ describe('groupClaimSchema', () => {
 });
 
 describe('configureGroupBoardSchema', () => {
+	it('requires tutorial scope and default capacity', () => {
+		expect(
+			configureGroupBoardSchema.safeParse({
+				tutorialClassId: 'tut-1',
+				groupCount: 2,
+				defaultGroupSize: 4,
+			}).success,
+		).toBe(true);
+	});
+
 	it('rejects the removed group rename payload', () => {
-		expect(configureGroupBoardSchema.safeParse({ groupCount: 2, groupSize: 4, names: { 'group-1': 'Alpha' } }).success).toBe(false);
+		expect(
+			configureGroupBoardSchema.safeParse({
+				tutorialClassId: 'tut-1',
+				groupCount: 2,
+				defaultGroupSize: 4,
+				names: { 'group-1': 'Alpha' },
+			}).success,
+		).toBe(false);
 	});
 });
 

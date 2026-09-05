@@ -19,70 +19,35 @@ type ServiceCardProps = {
  * Accordion uses native <details> so it works without JS.
  */
 export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCardProps) {
-	const isSupporting = variant === 'supporting';
-
+	const related =
+		offer.inquiryType === 'training'
+			? { slug: 'strategic-management-learning-experience', label: 'Strategic Management' }
+			: offer.inquiryType === 'ai'
+				? { slug: 'ai50-ai-cho-moi-nguoi', label: 'AI50 — AI cho mọi người' }
+				: { slug: 'learning-at-moonie-cafe', label: 'Learning at Moonie Café' };
 	return (
-		<article
-			id={offer.id}
-			className={`group h-full scroll-mt-24 border border-hairline bg-paper/40 transition-colors duration-300 hover:border-ink/25 ${
-				isSupporting ? 'md:grid md:grid-cols-12 md:gap-8' : 'flex flex-col'
-			}`}
-		>
-			<div
-				className={`flex items-center justify-center border-hairline bg-canvas/60 p-6 text-ink ${
-					isSupporting
-						? 'border-b md:col-span-4 md:border-r md:border-b-0'
-						: 'min-h-56 border-b md:min-h-80'
-				}`}
-			>
-				<div className="w-full max-w-[18rem] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02] [&_svg]:h-auto [&_svg]:w-full">
+		<article id={offer.id} className={`book-service-offer book-service-${variant}`}>
+			<div className="book-service-heading">
+				<span className="book-chapter-number">{offer.number}</span>
+				<h3>{offer.title}</h3>
+				<div className="book-service-graphic" aria-hidden="true">
 					{graphic}
 				</div>
 			</div>
-
-			<div className={`flex flex-1 flex-col p-6 md:p-8 ${isSupporting ? 'md:col-span-8' : ''}`}>
-				<p className="font-mono text-[0.6875rem] tracking-[0.16em] text-ink/45">
-					{offer.number}
+			<div className="book-service-body">
+				<p className="book-caption">{offer.audience}</p>
+				<p className="book-lead">{offer.outcome}</p>
+				<p>
+					<span className="book-service-label">Nội dung có thể bắt đầu từ</span>
+					{offer.topics.join(' · ')}.
 				</p>
-				<h3 className="mt-2 font-display text-[clamp(1.25rem,2vw,1.625rem)] font-medium tracking-[-0.02em] text-ink">
-					{offer.title}
-				</h3>
-				<p className="mt-3 text-sm leading-[1.65] text-ink-secondary">{offer.audience}</p>
-				<p className="mt-3 text-sm leading-[1.65] text-ink">{offer.outcome}</p>
-
-				{offer.topics.length > 0 ? (
-					<div className="mt-5">
-						<p className="text-[0.6875rem] font-semibold tracking-[0.06em] text-ink/50 uppercase">
-							Có thể tập trung vào
-						</p>
-						<ul className="mt-2 flex flex-wrap gap-2">
-							{offer.topics.map((topic) => (
-								<li
-									key={topic}
-									className="border border-hairline bg-canvas px-2.5 py-1 text-xs text-ink"
-								>
-									{topic}
-								</li>
-							))}
-						</ul>
-					</div>
-				) : null}
-
-				<div className="mt-4">
-					<p className="text-[0.6875rem] font-semibold tracking-[0.06em] text-ink/50 uppercase">
-						Hình thức
-					</p>
-					<ul className="mt-2 flex flex-wrap gap-2">
-						{offer.formats.map((format) => (
-							<li
-								key={format}
-								className="rounded-full border border-ink/15 px-2.5 py-1 text-xs text-ink-secondary"
-							>
-								{format}
-							</li>
-						))}
-					</ul>
-				</div>
+				<p>
+					<span className="book-service-label">Hình thức</span>
+					{offer.formats.join(' · ')}.
+				</p>
+				<Link href={`/du-an/${related.slug}`} className="book-service-related">
+					Từ một dự án: {related.label} <span aria-hidden="true">↗</span>
+				</Link>
 
 				{offer.details.length > 0 ? (
 					<details
@@ -96,7 +61,7 @@ export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCard
 							}
 						}}
 					>
-						<summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
+						<summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-ink [&::-webkit-details-marker]:hidden">
 							<span>Xem nội dung có thể triển khai</span>
 							<span
 								className="text-lg font-light text-accent transition-transform duration-200 group-open/acc:rotate-45"
@@ -114,10 +79,7 @@ export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCard
 									) : null}
 									<ul className="mt-2 space-y-1">
 										{group.items.map((item) => (
-											<li
-												key={item}
-												className="text-sm leading-[1.55] text-ink-secondary"
-											>
+											<li key={item} className="text-sm leading-[1.55] text-ink-secondary">
 												{item}
 											</li>
 										))}
@@ -125,7 +87,7 @@ export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCard
 								</div>
 							))}
 							{offer.principleStrip ? (
-								<p className="border-t border-hairline pt-3 text-xs tracking-[0.04em] text-ink/55">
+								<p className="border-t border-hairline pt-3 text-[0.8125rem] tracking-[0.04em] text-ink-secondary">
 									{offer.principleStrip.join(' · ')}
 								</p>
 							) : null}
@@ -134,7 +96,7 @@ export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCard
 									{offer.deliverables.map((item) => (
 										<li key={item.label} className="border border-hairline bg-canvas p-3">
 											<p className="text-sm font-semibold text-ink">{item.label}</p>
-											<p className="mt-1 text-xs leading-snug text-ink-secondary">
+											<p className="mt-1 text-[0.8125rem] leading-snug text-ink-secondary">
 												{item.description}
 											</p>
 										</li>

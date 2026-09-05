@@ -13,6 +13,7 @@ import {
 import { SITE_CREATOR, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
 import { getInquiryAvailability } from '@/lib/inquiryAvailability';
 import './globals.css';
+import './personal-book.css';
 
 const inter = Inter({
 	variable: '--font-inter',

@@ -2,7 +2,6 @@
 
 import { McIcon } from '@/components/myclass/ui/McIcon';
 import type { SessionLifecycleAction } from '@/features/teaching/schemas';
-import { GridPopover } from './GridPopover';
 
 export function GridWeekActions({
 	weekNumber,
@@ -13,7 +12,6 @@ export function GridWeekActions({
 	busy,
 	onLifecycle,
 	onToggle,
-	onBulk,
 }: {
 	weekNumber: number;
 	kind: 'điểm danh' | 'CP';
@@ -23,7 +21,6 @@ export function GridWeekActions({
 	busy: boolean;
 	onLifecycle?: (action: SessionLifecycleAction) => void;
 	onToggle?: (open: boolean) => void;
-	onBulk?: () => void;
 }) {
 	const state = cancelled ? 'Đã hủy' : finalized ? 'Đã chốt' : open ? 'Đang nhập' : 'Chưa chốt';
 	return (
@@ -35,49 +32,41 @@ export function GridWeekActions({
 				{state}
 			</span>
 			{!cancelled && (onLifecycle || onToggle) ? (
-				<GridPopover
-					label={`Thao tác ${kind} tuần ${weekNumber}`}
-					menu
-					disabled={busy}
-					trigger={<McIcon name="more_horiz" size={18} />}
-				>
-					{finalized ? (
+				<span className="mc-grid-week-buttons">
+					<button
+						type="button"
+						className="mc-grid-week-action"
+						disabled={busy}
+						aria-label={`${finalized ? 'Mở lại' : open ? 'Tạm khóa' : 'Mở'} ${kind} tuần ${weekNumber}`}
+						title={
+							finalized
+								? 'Mở nhập lại (cần bỏ chốt)'
+								: open
+									? 'Đang mở nhập · Bấm để tạm khóa'
+									: 'Đang khóa nhập · Bấm để mở'
+						}
+						onClick={() =>
+							onLifecycle
+								? onLifecycle(finalized ? 'unfinalize' : open ? 'park' : 'open')
+								: onToggle?.(finalized || !open)
+						}
+					>
+						<McIcon name={open && !finalized ? 'lock_open' : 'lock'} size={18} />
+					</button>
+					{onLifecycle ? (
 						<button
 							type="button"
-							role="menuitem"
-							onClick={() => (onLifecycle ? onLifecycle('unfinalize') : onToggle?.(true))}
+							className="mc-grid-week-action"
+							disabled={busy}
+							data-finalized={finalized}
+							aria-label={`${finalized ? 'Bỏ chốt' : 'Chốt'} ${kind} tuần ${weekNumber}`}
+							title={finalized ? 'Đã chốt · Bấm để bỏ chốt' : 'Chốt buổi để tính điểm'}
+							onClick={() => onLifecycle(finalized ? 'unfinalize' : 'finalize')}
 						>
-							<McIcon name="lock_open" size={18} />
-							Bỏ chốt {kind} tuần {weekNumber}
-						</button>
-					) : (
-						<>
-							<button
-								type="button"
-								role="menuitem"
-								onClick={() =>
-									onLifecycle ? onLifecycle(open ? 'park' : 'open') : onToggle?.(!open)
-								}
-							>
-								<McIcon name={open ? 'lock' : 'lock_open'} size={18} />
-								{open ? 'Tạm khóa' : 'Mở'} {kind} tuần {weekNumber}
-							</button>
-							{onLifecycle ? (
-								<button type="button" role="menuitem" onClick={() => onLifecycle('finalize')}>
-									<McIcon name="check_circle" size={18} />
-									Chốt {kind} tuần {weekNumber}
-								</button>
-							) : null}
-						</>
-					)}
-					{open && onBulk ? (
-						<button type="button" role="menuitem" onClick={onBulk}>
-							<McIcon name="groups" size={18} />
-							Tất cả có mặt
+							<McIcon name={finalized ? 'verified' : 'check_circle'} size={18} />
 						</button>
 					) : null}
-					<p className="mc-grid-menu-hint">Chỉ buổi đã chốt mới tính điểm.</p>
-				</GridPopover>
+				</span>
 			) : null}
 		</span>
 	);

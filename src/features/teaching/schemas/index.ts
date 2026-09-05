@@ -286,23 +286,58 @@ export const shareTeachingClassSchema = z
 	})
 	.strict();
 
+export const groupBoardTutorialQuerySchema = z.object({
+	tutorialClassId: z.string().min(1),
+});
+
 export const configureGroupBoardSchema = z
 	.object({
+		tutorialClassId: z.string().min(1),
 		groupCount: z.number().int().min(1).max(50),
-		groupSize: z.number().int().min(2).max(50),
+		defaultGroupSize: z.number().int().min(1).max(50),
 		expectedVersion: z.number().int().min(0).optional(),
 	})
 	.strict();
 
+export const setGroupCapacitySchema = z
+	.object({
+		tutorialClassId: z.string().min(1),
+		maxSize: z.number().int().min(1).max(50).nullable(),
+		expectedVersion: z.number().int().min(0).optional(),
+	})
+	.strict();
+
+export const addGroupMembersSchema = z
+	.object({
+		tutorialClassId: z.string().min(1),
+		groupId: z.string().min(1),
+		studentCodes: z.array(z.string().trim().min(1)).min(1).max(100),
+		preview: z.boolean().optional(),
+		expectedVersion: z.number().int().min(0).optional(),
+	})
+	.strict();
+
+export const moveGroupMemberSchema = z
+	.object({
+		tutorialClassId: z.string().min(1),
+		enrollmentId: z.string().min(1),
+		targetGroupId: z.string().min(1).nullable(),
+		expectedVersion: z.number().int().min(0).optional(),
+	})
+	.strict();
+
+/** @deprecated Student self-assign is disabled; kept for route compatibility tests. */
 export const groupBoardOpenSchema = z.object({ open: z.boolean() });
 
+/** @deprecated Use moveGroupMemberSchema */
 export const groupAssignmentSchema = z.object({
+	tutorialClassId: z.string().min(1),
 	enrollmentId: z.string().min(1),
 	groupId: z.string().min(1).nullable(),
-	slotIndex: z.number().int().min(0).max(49).optional(),
 	expectedVersion: z.number().int().min(0).optional(),
 });
 
+/** @deprecated Student claim is disabled */
 export const groupClaimSchema = z
 	.object({
 		enrollmentId: z.string().min(1),

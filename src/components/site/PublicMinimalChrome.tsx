@@ -34,15 +34,17 @@ export default function PublicMinimalChrome() {
 	if (pathname === '/lop' || pathname.startsWith('/lop/')) return null;
 	if (!isMinimalChromePath(pathname) || isIntroPath(pathname)) return null;
 
+	const isBookPage = [routes.toc, routes.about, routes.projects, routes.services].some(
+		(route) => route === pathname,
+	);
 	const onToc = isTocPath(pathname);
 	const onQuizPlay = isMySpaceQuizPlayPath(pathname);
-	const onMySpaceNested =
-		isMySpacePath(pathname) && !isMySpaceHubPath(pathname) && !onQuizPlay;
+	const onMySpaceNested = isMySpacePath(pathname) && !isMySpaceHubPath(pathname) && !onQuizPlay;
 	const showContact = pathname !== routes.contact;
 	// Hide FAB where a fixed chip would collide with a full-bleed composition
 	// (services hero illustration, My Space centered grid / quiz).
 	const showMobileFab =
-		showContact && pathname !== routes.services && !isMySpacePath(pathname);
+		showContact && !isBookPage && pathname !== routes.services && !isMySpacePath(pathname);
 	const sourcePage = pathname || routes.home;
 	const showBackChip = !onQuizPlay;
 
@@ -52,7 +54,7 @@ export default function PublicMinimalChrome() {
 				onToc ? (
 					<Link
 						href={routes.home}
-						className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+						className={`${isBookPage ? 'book-chrome' : ''} chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none`}
 						aria-label="Về trang mở đầu"
 						data-testid="intro-back"
 					>
@@ -61,7 +63,7 @@ export default function PublicMinimalChrome() {
 				) : onMySpaceNested ? (
 					<Link
 						href={routes.mySpace}
-						className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+						className={`${isBookPage ? 'book-chrome' : ''} chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none`}
 						aria-label="Về My Space"
 						data-testid="myspace-back"
 					>
@@ -70,7 +72,7 @@ export default function PublicMinimalChrome() {
 				) : (
 					<Link
 						href={routes.toc}
-						className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+						className={`${isBookPage ? 'book-chrome' : ''} chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-50 inline-flex min-h-10 min-w-10 items-center text-[0.6875rem] tracking-[0.16em] text-ink/55 transition-colors duration-300 hover:text-ink focus-visible:text-ink focus-visible:outline-none`}
 						aria-label="Về mục lục"
 						data-testid="gate-back"
 					>
@@ -79,7 +81,9 @@ export default function PublicMinimalChrome() {
 				)
 			) : null}
 
-			<div className="chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50">
+			<div
+				className={`${isBookPage ? 'book-chrome' : ''} chrome-fade-in fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50`}
+			>
 				<SiteAuthChip />
 			</div>
 
@@ -88,7 +92,7 @@ export default function PublicMinimalChrome() {
 					{/* Desktop — vertical rail */}
 					<button
 						type="button"
-						className="chrome-fade-in chrome-fade-in-delay fixed top-1/2 right-[max(0.65rem,env(safe-area-inset-right))] z-50 hidden -translate-y-1/2 px-1.5 py-3 text-[0.6875rem] tracking-[0.22em] text-ink/45 transition-colors duration-300 hover:bg-paper hover:text-ink focus-visible:bg-paper focus-visible:text-ink focus-visible:outline-none md:inline-flex [writing-mode:vertical-rl]"
+						className={`${isBookPage ? 'book-chrome' : ''} chrome-fade-in chrome-fade-in-delay fixed top-1/2 right-[max(0.65rem,env(safe-area-inset-right))] z-50 hidden -translate-y-1/2 px-1.5 py-3 text-[0.6875rem] tracking-[0.22em] text-ink/45 transition-colors duration-300 hover:bg-paper hover:text-ink focus-visible:bg-paper focus-visible:text-ink focus-visible:outline-none md:inline-flex [writing-mode:vertical-rl]`}
 						aria-label={CONTACT_CTA.label}
 						data-testid="contact-rail"
 						onClick={() => setPanelOpen(true)}

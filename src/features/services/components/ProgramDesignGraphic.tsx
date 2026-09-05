@@ -36,9 +36,7 @@ export function ProgramDesignGraphic() {
 					<StaggerItem
 						key={q.id}
 						className={`relative border-hairline bg-paper/50 p-6 md:p-7 ${
-							index < programDesign.questions.length - 1
-								? 'border-b md:border-r md:border-b-0'
-								: ''
+							index < programDesign.questions.length - 1 ? 'border-b md:border-r md:border-b-0' : ''
 						}`}
 					>
 						{index < programDesign.questions.length - 1 ? (
@@ -64,7 +62,7 @@ export function ProgramDesignGraphic() {
 				<m.span
 					aria-hidden
 					className="text-ink-secondary"
-					initial={instant ? false : { opacity: 0, y: -6 }}
+					initial={instant ? false : { opacity: 1, y: -6 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: instant ? 0 : duration.ui, ease: ease.reveal }}
@@ -73,7 +71,7 @@ export function ProgramDesignGraphic() {
 				</m.span>
 				<m.div
 					className="w-full max-w-xl border border-ink/15 bg-accent-subtle px-5 py-4"
-					initial={instant ? false : { opacity: 0, y: 10 }}
+					initial={instant ? false : { opacity: 1, y: 8 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{

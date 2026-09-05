@@ -17,11 +17,12 @@ export default function MainContent({ children }: { children: ReactNode }) {
 		return <div id="main-content">{children}</div>;
 	}
 
+	const isBookPage = ['/', '/muc-luc', '/gioi-thieu', '/du-an', '/dich-vu'].includes(pathname);
 	const fullBleed = isFullBleedPublicPath(pathname);
 
 	return (
 		<div id="main-content" className={fullBleed ? undefined : 'pt-14'}>
-			<RouteEntrance key={pathname}>{children}</RouteEntrance>
+			{isBookPage ? children : <RouteEntrance key={pathname}>{children}</RouteEntrance>}
 		</div>
 	);
 }

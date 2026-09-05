@@ -148,14 +148,16 @@ export type TeachingGroupAuditAction =
 	| 'TRANSFER_LEADER'
 	| 'RANDOMIZE'
 	| 'CLEAR'
-	| 'RENAME';
+	| 'RENAME'
+	| 'ADD_BATCH'
+	| 'REMOVE'
+	| 'UPDATE_CAPACITY';
 
 export interface TeachingGroupAssignmentRecord {
 	enrollmentId: string;
 	groupId: string;
 	groupOrder: number;
-	slotIndex: number;
-	role: 'LEADER' | 'MEMBER';
+	memberOrder: number;
 	studentCode: string;
 	familyName: string;
 	givenName: string;
@@ -165,18 +167,22 @@ export interface TeachingGroupAssignmentRecord {
 export interface TeachingGroupRecord {
 	id: string;
 	displayOrder: number;
+	maxSize: number | null;
+	effectiveMaxSize: number;
 	assignments: TeachingGroupAssignmentRecord[];
 }
 
 export interface TeachingGroupBoard {
 	classId: string;
+	tutorialClassId: string;
+	tutorialCode: string;
+	tutorialName: string;
 	groupCount: number;
-	groupSize: number;
-	isOpen: boolean;
+	defaultGroupSize: number;
 	version: number;
-	claimEpoch: number;
 	configured: boolean;
 	activeStudentCount: number;
+	assignedCount: number;
 	groups: TeachingGroupRecord[];
 	unassigned: Array<
 		Pick<
@@ -186,12 +192,11 @@ export interface TeachingGroupBoard {
 	>;
 }
 
-export interface PublicTeachingGroupBoard extends Omit<TeachingGroupBoard, 'classId'> {
+export interface PublicTeachingGroupBoard extends TeachingGroupBoard {
 	slug: string;
-	classId?: string;
-	viewerEnrollmentId?: string | null;
-	undoAvailableCount?: number;
 }
+
+export type GroupNumbersByTutorial = Record<string, Record<string, number>>;
 
 export interface TeachingClassSetupResult {
 	gradebook: TeachingGradebook;

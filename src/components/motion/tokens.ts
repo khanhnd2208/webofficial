@@ -24,13 +24,13 @@ export const duration = {
 	/** Gate item exit before navigation */
 	gate: 0.32,
 	/** Section narrative */
-	section: 0.5,
+	section: 0.35,
 	textMask: 0.45,
 	underline: 0.55,
 	image: 0.55,
 	/** Full hero sequence budget */
 	hero: 1.6,
-	pathDraw: 1.1,
+	pathDraw: 0.8,
 	seal: 0.22,
 	reducedCrossfade: 0.15,
 } as const;
@@ -38,7 +38,7 @@ export const duration = {
 export const distance = {
 	hover: 2,
 	ui: 8,
-	section: 20,
+	section: 8,
 	horizon: 20,
 	parallaxBg: 24,
 	parallaxFigure: 8,

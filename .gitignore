@@ -18,6 +18,7 @@ src/_archived/**/.next/
 /coverage
 /test-results/
 /playwright-report/
+/outputs/
 
 # next.js
 /.next/

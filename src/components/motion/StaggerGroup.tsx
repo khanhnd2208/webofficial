@@ -48,7 +48,7 @@ export function StaggerItem({ children, className }: { children: ReactNode; clas
 		<m.div
 			className={className}
 			variants={{
-				hidden: { opacity: 0, y: distance.ui },
+				hidden: { opacity: 1, y: distance.ui },
 				visible: {
 					opacity: 1,
 					y: 0,

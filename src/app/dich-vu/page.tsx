@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 
 import SectionReveal from '@/components/motion/SectionReveal';
-import { StaggerGroup, StaggerItem } from '@/components/motion/StaggerGroup';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 import { serviceOffers, servicesPage } from '@/content/services';
@@ -14,7 +13,6 @@ import {
 	ServicesClosing,
 	ServicesFaq,
 	ServicesHero,
-	TrustStrip,
 } from '@/features/services';
 
 export const metadata: Metadata = {
@@ -27,16 +25,9 @@ const [managementOffer, aiOffer, learningOffer] = serviceOffers;
 
 export default function ServicesPage() {
 	return (
-		<main className="bg-canvas">
+		<main className="personal-book book-services bg-canvas">
 			{/* 01 — Hero */}
-			<SectionReveal>
-				<ServicesHero />
-			</SectionReveal>
-
-			{/* 02 — Trust */}
-			<SectionReveal>
-				<TrustStrip />
-			</SectionReveal>
+			<ServicesHero />
 
 			{/* 03 — Offers */}
 			<section
@@ -53,31 +44,19 @@ export default function ServicesPage() {
 					</h2>
 				</SectionReveal>
 
-				<StaggerGroup className="mt-10 grid gap-6 lg:grid-cols-2">
-					<StaggerItem>
-						<ServiceCard
-							offer={managementOffer}
-							graphic={<ManagementSystemGraphic />}
-						/>
-					</StaggerItem>
-					<StaggerItem>
-						<ServiceCard offer={aiOffer} graphic={<AiWorkflowGraphic />} />
-					</StaggerItem>
-				</StaggerGroup>
-
-				<SectionReveal className="mt-6">
+				<div className="book-service-offers">
+					<ServiceCard offer={managementOffer} graphic={<ManagementSystemGraphic />} />
+					<ServiceCard offer={aiOffer} graphic={<AiWorkflowGraphic />} />
 					<ServiceCard
 						offer={learningOffer}
 						graphic={<LearnerStackGraphic />}
 						variant="supporting"
 					/>
-				</SectionReveal>
+				</div>
 			</section>
 
 			{/* 04 — Method infographic */}
-			<SectionReveal>
-				<ProgramDesignGraphic />
-			</SectionReveal>
+			<ProgramDesignGraphic />
 
 			{/* 05 — FAQ */}
 			<section

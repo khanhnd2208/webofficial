@@ -2,13 +2,13 @@
 
 import dynamic from 'next/dynamic';
 
-import type { GroupBoardWorkspaceProps } from './GroupBoardWorkspace';
+import type { GroupListWorkspaceProps } from './GroupListWorkspace';
 
-const GroupBoardWorkspace = dynamic(
-	() => import('./GroupBoardWorkspace').then((module) => module.GroupBoardWorkspace),
+const GroupListWorkspace = dynamic(
+	() => import('./GroupListWorkspace').then((module) => module.GroupListWorkspace),
 	{ ssr: false },
 );
 
-export function GroupBoardWorkspaceLoader(props: GroupBoardWorkspaceProps) {
-	return <GroupBoardWorkspace {...props} />;
+export function GroupBoardWorkspaceLoader(props: GroupListWorkspaceProps) {
+	return <GroupListWorkspace {...props} />;
 }

@@ -28,7 +28,7 @@ describe('about content', () => {
 	});
 
 	it('maps the journey as current work, classrooms, and projects', () => {
-		expect(aboutJourney.title).toBe('Con đường đến với lớp học');
+		expect(aboutJourney.title).toBe('Lớp học, công việc và những thử nghiệm');
 		expect(aboutJourney.currentWork.title).toBe('Công việc hiện tại');
 		expect(aboutJourney.currentWork.items.map((item) => item.title)).toEqual([
 			'Giảng dạy',

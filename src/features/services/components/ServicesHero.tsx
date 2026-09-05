@@ -20,9 +20,6 @@ export function ServicesHero() {
 					<p className="mt-5 max-w-[38rem] text-base leading-[1.7] text-ink-secondary md:text-lg">
 						{servicesPage.lead}
 					</p>
-					<p className="mt-3 max-w-[38rem] text-base leading-[1.7] text-ink-secondary">
-						{servicesPage.leadSecondary}
-					</p>
 					<div className="mt-8 flex flex-wrap items-center gap-4">
 						<a href="#huong-lam-viec" className="editorial-button">
 							{servicesPage.heroCtas.scroll}
@@ -34,7 +31,7 @@ export function ServicesHero() {
 						</Link>
 					</div>
 				</div>
-				<div className="flex justify-center text-ink lg:col-span-5 lg:justify-end">
+				<div className="book-service-hero-graphic hidden justify-center text-ink lg:col-span-5 lg:flex lg:justify-end">
 					<KnowledgeToWorkGraphic className="h-auto w-full max-w-[22rem] lg:max-w-none" />
 				</div>
 			</div>

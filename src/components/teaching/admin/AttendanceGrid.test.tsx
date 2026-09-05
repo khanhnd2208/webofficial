@@ -183,13 +183,12 @@ describe('AttendanceGrid', () => {
 			/>,
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Thao tác điểm danh tuần 1' }));
-		expect(screen.getByRole('menuitem', { name: 'Mở điểm danh tuần 1' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Mở điểm danh tuần 1' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: '2406090045 tuần 1 chưa bắt đầu' })).toHaveAttribute(
 			'data-status',
 			'PRESENT',
 		);
-		fireEvent.click(screen.getByRole('menuitem', { name: 'Mở điểm danh tuần 1' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Mở điểm danh tuần 1' }));
 		expect(onSessionToggle).toHaveBeenCalledWith('sess-1', true);
 
 		rerender(
@@ -201,8 +200,7 @@ describe('AttendanceGrid', () => {
 				onSessionToggle={onSessionToggle}
 			/>,
 		);
-		fireEvent.click(screen.getByRole('button', { name: 'Thao tác điểm danh tuần 1' }));
-		expect(screen.getByRole('menuitem', { name: 'Tạm khóa điểm danh tuần 1' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Tạm khóa điểm danh tuần 1' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: '2406090045 tuần 1' })).toHaveAttribute(
 			'data-status',
 			'PRESENT',
@@ -238,32 +236,11 @@ describe('AttendanceGrid', () => {
 		);
 		expect(screen.getByText('01/09/26')).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
-		const dateInput = document.querySelector('input[type="date"]');
-		expect(dateInput).not.toBeNull();
-		fireEvent.change(dateInput!, { target: { value: '2026-09-15' } });
+		fireEvent.click(screen.getByRole('button', { name: '15/9/2026' }));
 		expect(onSessionDateChange).toHaveBeenCalledWith(
 			expect.objectContaining({ id: 'sess-1' }),
 			'2026-09-15',
 		);
-	});
-
-	it('opens the native date picker from click and keyboard gestures', () => {
-		render(
-			<AttendanceGrid
-				students={[student()]}
-				sessions={sessions()}
-				totalWeeks={10}
-				onSessionDateChange={vi.fn()}
-			/>,
-		);
-		fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
-		const calendar = screen.getByRole('button', { name: 'Mở lịch tuần 1' });
-		const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
-		const showPicker = vi.fn();
-		Object.defineProperty(dateInput, 'showPicker', { configurable: true, value: showPicker });
-
-		fireEvent.click(calendar);
-		expect(showPicker).toHaveBeenCalledTimes(1);
 	});
 
 	it('opens a note editor from the context menu without changing attendance', () => {

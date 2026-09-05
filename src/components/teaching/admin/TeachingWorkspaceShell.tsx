@@ -5,6 +5,7 @@ import type {
 	TeachingAttendanceBoardConfig,
 	TeachingGradebook,
 	TeachingGroupBoard,
+	GroupNumbersByTutorial,
 	TeachingPublicPageConfig,
 	TeachingRosterStudent,
 	TeachingClassNoteRecord,
@@ -33,6 +34,7 @@ export function TeachingWorkspaceShell({
 	board,
 	publicPage,
 	groupBoard,
+	groupNumbersByTutorial,
 	groupBoardEnabled,
 	tab,
 	notes,
@@ -43,6 +45,7 @@ export function TeachingWorkspaceShell({
 	board: TeachingAttendanceBoardConfig;
 	publicPage?: TeachingPublicPageConfig;
 	groupBoard?: TeachingGroupBoard;
+	groupNumbersByTutorial?: GroupNumbersByTutorial;
 	groupBoardEnabled: boolean;
 	tab?: string;
 	notes?: TeachingClassNoteRecord[];
@@ -50,11 +53,6 @@ export function TeachingWorkspaceShell({
 }) {
 	const activeTab = resolveTeachingWorkspaceTab(tab, groupBoardEnabled);
 	const isGradebookTab = activeTab === 'attendance' || activeTab === 'cp';
-	const groupNumberByEnrollment = groupBoardEnabled ? Object.fromEntries(
-		(groupBoard?.groups ?? []).flatMap((group) =>
-			group.assignments.map((assignment) => [assignment.enrollmentId, assignment.groupOrder + 1]),
-		),
-	) : undefined;
 
 	return (
 		<TeachingWorkspacePending initialWeek={week}>
@@ -80,8 +78,23 @@ export function TeachingWorkspaceShell({
 				/>
 
 				<TeachingPendingBody className={`mt-4 ${isGradebookTab ? 'teaching-workspace-content' : ''}`}>
-					{isGradebookTab ? <GradebookWorkspace initial={gradebook} initialView={activeTab === 'cp' ? 'participation' : 'attendance'} groupNumberByEnrollment={groupNumberByEnrollment} initialWeek={week ?? null} /> : null}
-					{groupBoardEnabled && activeTab === 'groups' ? <GroupBoardWorkspaceLoader classId={gradebook.class.id} slug={gradebook.class.publicSlug ?? undefined} initial={groupBoard} admin /> : null}
+					{isGradebookTab ? (
+						<GradebookWorkspace
+							initial={gradebook}
+							initialView={activeTab === 'cp' ? 'participation' : 'attendance'}
+							groupNumbersByTutorial={groupBoardEnabled ? groupNumbersByTutorial : undefined}
+							initialWeek={week ?? null}
+						/>
+					) : null}
+					{groupBoardEnabled && activeTab === 'groups' ? (
+						<GroupBoardWorkspaceLoader
+							classId={gradebook.class.id}
+							slug={gradebook.class.publicSlug ?? undefined}
+							tutorials={gradebook.tutorials}
+							initial={groupBoard}
+							admin
+						/>
+					) : null}
 					{activeTab === 'notes' ? <ClassNotesAdminWorkspace classId={gradebook.class.id} initial={notes ?? []} /> : null}
 					{activeTab === 'students' ? <RosterWorkspace classId={gradebook.class.id} tutorials={gradebook.tutorials} students={roster?.students ?? []} /> : null}
 					{activeTab === 'setup' ? (

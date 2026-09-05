@@ -1,60 +1,69 @@
 # Brand brief — Duy Khánh
 
-**Status:** owner-approved direction
-**Last updated:** 2026-08-03
+**Status:** owner-approved direction, implemented September 2026
+**Last updated:** 2026-09-05
 
-## Positioning
+## A personal book still being written
 
-**Biến kiến thức phức tạp thành năng lực, chương trình và quy trình có thể áp dụng.**
+Visitors should understand and remember Khánh first. Projects provide evidence of
+his thinking and work; services invite a conversation about working together.
 
-Public promise:
+The cover keeps **Trở thành**, **[động từ]**, and **Chưa xong. Và có lẽ, đó mới là
+điều hay.** The illustrated explorer, landscape, warm paper, and personal English
+quotation belong to the identity. Do not replace them with generic sales copy.
 
-> Tôi giúp người học và tổ chức biến kiến thức quản trị và AI thành năng lực,
-> chương trình và quy trình có thể áp dụng.
+Keep the voice calm, specific, sincere, and evidence-aware. Preserve the owner's
+personal expressions. Never invent affiliations, outcomes, dates, or testimonials.
 
-Core principle: **Hiểu đúng vấn đề trước khi tìm giải pháp.**
+## Public reading journey
 
-## Three pillars
+- `/`: a book cover, with the author's name and an immediately usable “Mở mục lục”.
+- `/muc-luc`: aligned, numbered entries with visible descriptions; ordinary links.
+- `/gioi-thieu`: portrait illustration, personal introduction, and chapters A/B/C
+  about work, classrooms, and personal projects. School names do not imply a
+  particular relationship beyond what the owner has supplied.
+- `/du-an`: a horizontal dossier from 1024px; vertical reading below 1024px. Each
+  project includes a summary, role, status, and a distinct conceptual cover.
+- `/dich-vu`: three editorial sections, native expandable details, relevant project
+  links, three questions about the learner/context/outcome, and an invitation to write.
 
-1. Management Education
-2. Learning Design
-3. Applied AI
+My Space remains a destination. My Class and admin retain their separate Study
+Tool grammar; see [09-DESIGN_SYSTEM.md](./09-DESIGN_SYSTEM.md).
 
-## Voice
+## Graphic system
 
-Calm, specific, sincere, and evidence-aware. Avoid unverified numbers,
-inflated claims, generic leadership language, and sales-heavy copy.
+- Warm canvas `#F8F7F4`, paper `#F1EFEA`, ink `#171717`, readable secondary ink
+  `#595650`, bronze `#765625`. Sunlight yellow belongs to illustration, not small text.
+- Source Serif 4: headings, personal quotations, and cover. Inter: reading text.
+  Mono: indices and notes; the table of contents deliberately keeps a typewriter voice.
+- Cover typography has its own generous scale. Content H1: about 40–64px desktop,
+  32–40px mobile. Body: 16–18px, line height about 1.65–1.75. Informative captions:
+  at least 13px. Test Vietnamese accents and text enlargement.
+- Prefer fine rules, chapter indices, modest asymmetry, and a single journey stroke.
+  Reduce nested frames, heavy shadows, and generic icon grids.
+- Project covers may use muted paper tints and original SVG diagrams grounded in
+  existing project content. Label conceptual covers “Minh họa ý tưởng dự án”.
+  A conceptual cover is not documentary evidence of delivered work.
+- The existing portrait is an illustration, captioned “Chân dung minh họa”.
+- Keep login available, visually quiet. Mobile contact links stay in the reading
+  flow; desktop contact rail retains the existing quick-contact panel.
 
-## Visual system
+## Motion and robustness
 
-Applies to the **public Editorial surface** (home, mục lục, giới thiệu, dự án,
-marketing). The My Class learning product uses a separate **Study Tool** grammar —
-see [09-DESIGN_SYSTEM.md](./09-DESIGN_SYSTEM.md). Do not apply soft-card product
-UI patterns to public pages, and do not force My Class to match this editorial
-layout language.
+Motion supports opening, progression, and feedback. The cover arrives in 750–850ms;
+section movement is at most 8px over 350ms; the journey stroke draws in 800ms.
+Parallax uses small translation and fixed overscan, without pointer-triggered zoom.
+No enforced navigation delay, sibling dimming, or perpetual blinking is needed.
 
-- Editorial, minimal, academic, human, refined.
-- Warm off-white `#F8F7F4`, soft black `#171717`, muted gray `#595650`,
-  muted bronze `#765625`.
-- **Source Serif 4** for display headings; **Inter** for body copy.
-- Type scale (strong, readable — not poster):
-  - Display / H1: max ~60px (`clamp(2.25rem, 4vw, 3.75rem)`)
-  - Section H2: max ~36px (`clamp(1.75rem, 2.5vw, 2.25rem)`)
-  - Card H3: max ~28px (`.type-h3`)
-  - Body: 16px; lead: 16–18px; labels: 12px sentence case
-- Large whitespace, fine rules, asymmetric project rhythm, restrained motion.
-- Light-only public theme; no account icon, dark-mode toggle, neon AI imagery,
-  heavy shadows, or decorative controls.
-- Avoid fashion-display Didone serifs, ALL-CAPS wide tracking, and oversized
-  hero type that competes with reading.
+HTML content is visible before hydration. Native links and details work without
+JavaScript. Respect reduced-motion preferences and keep primary controls reachable.
+Do not stack a route-wide entrance over these pages' section animations.
 
-## Owner-supplied media
+## Implementation and verification
 
-| Field                             | Status                                                             |
-| --------------------------------- | ------------------------------------------------------------------ |
-| Public email                      | missing — set `siteProfile.contactEmail`                           |
-| LinkedIn / CV                     | missing — set `siteProfile.socialLinks`                            |
-| Real portrait and activity photos | missing — current illustration is explicitly labelled as temporary |
-| Real project artefacts            | missing — case galleries identify temporary illustrations          |
-| Approved testimonials             | missing — testimonial UI remains data-driven and hidden when empty |
-| Social preview                    | ready — `public/og.png`                                            |
+`src/app/personal-book.css` scopes visual rules to the five public pages. Existing
+URLs, contact payloads, project records, and backend contracts are retained.
+`e2e/personal-book.spec.ts` covers responsive layouts, no-JS reading, native
+navigation, project dragging versus clicking, keyboard use, reduced motion, short
+screens, and zoom-equivalent reflow. Screenshots, video, and rendering measurements
+are QA artifacts; local measurements are not field Core Web Vitals.

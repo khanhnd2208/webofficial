@@ -108,7 +108,7 @@ describe('Teaching public group routes', () => {
 		});
 	});
 
-	it('rejects a group move without an identity cookie', async () => {
+	it('rejects student group moves', async () => {
 		mocks.getGroupViewer.mockResolvedValue(null);
 		const response = await invokeRoute(moveRoute, {
 			method: 'POST',
@@ -116,11 +116,11 @@ describe('Teaching public group routes', () => {
 			params: { slug: 'hrm' },
 			body: { groupId: 'g1', slotIndex: 0 },
 		});
-		expect(response.status).toBe(401);
+		expect(response.status).toBe(403);
 		expect(mocks.moveGroupAssignment).not.toHaveBeenCalled();
 	});
 
-	it('claims a viewer through the public endpoint', async () => {
+	it('rejects student claims through the public endpoint', async () => {
 		mocks.claimGroupViewer.mockResolvedValue({ slug: 'hrm', viewerEnrollmentId: 'e1' });
 		const response = await invokeRoute(claimRoute, {
 			method: 'POST',
@@ -128,8 +128,8 @@ describe('Teaching public group routes', () => {
 			params: { slug: 'hrm' },
 			body: { enrollmentId: 'e1' },
 		});
-		expect(response.status).toBe(200);
-		expect(mocks.claimGroupViewer).toHaveBeenCalledWith('hrm', 'e1');
+		expect(response.status).toBe(403);
+		expect(mocks.claimGroupViewer).not.toHaveBeenCalled();
 	});
 
 	it('hides every public group operation when the feature is disabled', async () => {

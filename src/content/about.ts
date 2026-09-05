@@ -12,7 +12,7 @@ export const aboutHero = {
 	fullName: 'Nguyễn Duy Khánh',
 	quote:
 		'Emotion guides us to bad decisions but great lessons, and always to love. Young lecturer, passionate about making education an art.',
-	portraitCaption: 'Ảnh chân dung',
+	portraitCaption: 'Chân dung minh họa',
 	/** Brand manifesto — kept for metadata / continuity; not the page H1. */
 	manifesto: 'Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
 } as const;
@@ -33,7 +33,7 @@ export type AboutProjectItem = {
 };
 
 export const aboutJourney = {
-	title: 'Con đường đến với lớp học',
+	title: 'Lớp học, công việc và những thử nghiệm',
 	currentWork: {
 		label: 'A',
 		title: 'Công việc hiện tại',

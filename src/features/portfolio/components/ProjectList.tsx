@@ -1,6 +1,7 @@
 'use client';
 
-import Image from 'next/image';
+import ProjectCover from './ProjectCover';
+import { useMotionTier } from '@/components/motion/MotionProvider';
 import Link from 'next/link';
 import {
 	useCallback,
@@ -21,6 +22,7 @@ function formatIndex(index: number): string {
 const DRAG_THRESHOLD_PX = 6;
 
 export default function ProjectList({ projects }: { projects: Project[] }) {
+	const { reduced } = useMotionTier();
 	const scrollerRef = useRef<HTMLUListElement>(null);
 	const dragRef = useRef({
 		active: false,
@@ -74,7 +76,12 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 	}, []);
 
 	const onPointerDown = (event: ReactPointerEvent<HTMLUListElement>) => {
-		if (event.pointerType !== 'mouse' || event.button !== 0) return;
+		if (
+			event.pointerType !== 'mouse' ||
+			event.button !== 0 ||
+			!window.matchMedia('(min-width: 1024px)').matches
+		)
+			return;
 		const el = scrollerRef.current;
 		if (!el) return;
 		dragRef.current = {
@@ -84,8 +91,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 			startScroll: el.scrollLeft,
 			pointerId: event.pointerId,
 		};
-		el.setPointerCapture(event.pointerId);
-		setDragging(true);
+		// Capture only after a real drag so normal link clicks keep their target.
 	};
 
 	const onPointerMove = (event: ReactPointerEvent<HTMLUListElement>) => {
@@ -93,7 +99,11 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 		const el = scrollerRef.current;
 		if (!drag.active || !el || drag.pointerId !== event.pointerId) return;
 		const delta = event.clientX - drag.startX;
-		if (Math.abs(delta) > DRAG_THRESHOLD_PX) drag.moved = true;
+		if (Math.abs(delta) > DRAG_THRESHOLD_PX) {
+			drag.moved = true;
+			el.setPointerCapture(event.pointerId);
+			setDragging(true);
+		}
 		el.scrollLeft = drag.startScroll - delta;
 	};
 
@@ -107,13 +117,13 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 		const el = scrollerRef.current;
 		if (!el) return;
 		const amount = Math.round(el.clientWidth * 0.72) * direction;
-		el.scrollBy({ left: amount, behavior: 'smooth' });
+		el.scrollBy({ left: amount, behavior: reduced ? 'instant' : 'smooth' });
 	};
 
 	const scrollable = canScrollLeft || canScrollRight;
 
 	return (
-		<div className="project-index relative">
+		<div className="book-project-index relative">
 			<div className="shell mb-4 flex items-center justify-between gap-4">
 				<p className="font-mono text-[0.75rem] tracking-[0.08em] text-ink-secondary">
 					{formatIndex(0)} — {formatIndex(projects.length - 1)}
@@ -133,7 +143,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 								aria-label="Xem dự án trước"
 								disabled={!canScrollLeft}
 								onClick={() => scrollByPage(-1)}
-								className="inline-flex h-9 w-9 items-center justify-center border border-hairline text-ink transition-colors hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
+								className="inline-flex h-11 w-11 items-center justify-center border border-hairline text-ink transition-colors hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
 							>
 								←
 							</button>
@@ -142,7 +152,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 								aria-label="Xem dự án tiếp"
 								disabled={!canScrollRight}
 								onClick={() => scrollByPage(1)}
-								className="inline-flex h-9 w-9 items-center justify-center border border-hairline text-ink transition-colors hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
+								className="inline-flex h-11 w-11 items-center justify-center border border-hairline text-ink transition-colors hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
 							>
 								→
 							</button>
@@ -167,15 +177,13 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 
 				<ul
 					ref={scrollerRef}
-					className={`project-index-scroller flex min-h-[min(72vh,44rem)] touch-pan-x ${
-						dragging ? 'is-dragging' : ''
-					}`}
+					className={`book-project-scroller ${dragging ? 'is-dragging' : ''}`}
 					onPointerDown={onPointerDown}
 					onPointerMove={onPointerMove}
 					onPointerUp={onPointerUp}
 					onPointerCancel={onPointerUp}
 					tabIndex={scrollable ? 0 : undefined}
-					aria-label="Danh sách dự án, kéo ngang để xem thêm"
+					aria-label="Danh sách dự án"
 					onKeyDown={(event) => {
 						if (event.key === 'ArrowRight') {
 							event.preventDefault();
@@ -189,7 +197,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 					{projects.map((project, index) => (
 						<li
 							key={project.slug}
-							className="project-index-col project-col-enter relative shrink-0 border-r border-hairline last:border-r-0"
+							className="book-project-column"
 							style={{ animationDelay: `${0.08 + index * 0.07}s` }}
 						>
 							<Link
@@ -205,13 +213,11 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 										sourcePage: routes.projects,
 									});
 								}}
-								className="project-col group flex h-full flex-col justify-between gap-8 p-6 transition-colors duration-[400ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:bg-paper md:p-8"
+								className="book-project-link group"
 								data-testid={`project-list-item-${project.slug}`}
 							>
 								<div>
-									<span className="project-number mb-8 block font-display text-[clamp(2rem,3.2vw,3.25rem)] font-medium leading-[1.2] text-ink/18 transition-colors duration-500 group-hover:text-accent md:mb-12">
-										{formatIndex(index)}
-									</span>
+									<span className="book-project-number">{formatIndex(index)}</span>
 									<h2 className="font-display text-[clamp(1.25rem,1.5vw,1.75rem)] font-medium leading-tight tracking-[-0.02em] text-ink transition-colors duration-300 group-hover:text-accent">
 										{project.title}
 									</h2>
@@ -220,19 +226,14 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 									</p>
 								</div>
 
-								<div className="mt-auto">
-									<div className="project-img-wrapper premium-media relative mb-5 aspect-[4/5] w-full overflow-hidden">
-										<Image
-											src={project.coverImage}
-											alt=""
-											fill
-											sizes="(max-width: 767px) 85vw, 30vw"
-											draggable={false}
-											className="pointer-events-none object-cover object-center opacity-80 grayscale transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02] group-hover:opacity-100 group-hover:grayscale-0"
-										/>
-									</div>
-									<span className="block font-mono text-[0.8125rem] leading-[1.4] tracking-wide text-ink-secondary">
-										{project.year}
+								<p className="book-project-summary">{project.summary}</p>
+								<ProjectCover project={project} />
+								<div className="book-project-bottom">
+									<span className="book-caption">
+										{project.status} · {project.year}
+									</span>
+									<span className="book-link">
+										Xem dự án <span aria-hidden="true">↗</span>
 									</span>
 								</div>
 							</Link>

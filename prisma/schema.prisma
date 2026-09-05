@@ -931,6 +931,9 @@ enum TeachingGroupAuditAction {
   CLEAR
   /// Deprecated: group names were removed; retained only for historical audit rows.
   RENAME
+  ADD_BATCH
+  REMOVE
+  UPDATE_CAPACITY
 }
 
 enum TeachingAttendanceStatus {
@@ -987,7 +990,7 @@ model TeachingClass {
   enrollments TeachingEnrollment[]
   sessions   TeachingSession[]
   publicLinks TeachingClassPublicLink[]
-  groupBoard TeachingGroupBoard?
+  groupBoards TeachingGroupBoard[]
   notes      TeachingClassNote[]
 
   @@unique([courseCode, groupNo, term])
@@ -1042,6 +1045,7 @@ model TeachingTutorialClass {
   class       TeachingClass        @relation(fields: [classId], references: [id], onDelete: Cascade)
   enrollments TeachingEnrollment[]
   sessions    TeachingSession[]
+  groupBoard  TeachingGroupBoard?
 
   @@unique([classId, code])
   @@index([classId, displayOrder])
@@ -1160,28 +1164,29 @@ model TeachingParticipation {
 }
 
 model TeachingGroupBoard {
-  id           String   @id @default(cuid())
-  classId      String   @unique
-  groupCount   Int      @default(0)
-  groupSize    Int      @default(0)
-  isOpen       Boolean  @default(false)
-  version      Int      @default(0)
-  claimEpoch   Int      @default(0)
-  openedAt     DateTime?
-  lockedAt     DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  classId         String
+  tutorialClassId String   @unique
+  groupCount      Int      @default(0)
+  groupSize       Int      @default(5)
+  version         Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  class        TeachingClass @relation(fields: [classId], references: [id], onDelete: Cascade)
-  groups       TeachingGroup[]
-  assignments  TeachingGroupAssignment[]
-  audits       TeachingGroupAudit[]
+  class           TeachingClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  tutorialClass   TeachingTutorialClass @relation(fields: [tutorialClassId], references: [id], onDelete: Cascade)
+  groups          TeachingGroup[]
+  assignments     TeachingGroupAssignment[]
+  audits          TeachingGroupAudit[]
+
+  @@index([classId])
 }
 
 model TeachingGroup {
   id           String   @id @default(cuid())
   boardId      String
   displayOrder Int
+  maxSize      Int?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -1227,4 +1232,12 @@ model TeachingGroupAudit {
   board           TeachingGroupBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
   @@index([boardId, createdAt])
+}
+
+// Immutable migration snapshot, deliberately independent of live class relations.
+model TeachingGroupBoardArchive {
+  id            String   @id @default(cuid())
+  legacyBoardId String   @unique
+  snapshot      Json
+  createdAt     DateTime @default(now())
 }

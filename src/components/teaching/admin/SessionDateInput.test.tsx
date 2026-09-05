@@ -1,83 +1,68 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { SessionDateInput } from './SessionDateInput';
 
-describe('SessionDateInput', () => {
-	it('pastes compact and slash dates then commits ISO', () => {
-		const onCommit = vi.fn();
-		render(<SessionDateInput weekNumber={1} value={null} onCommit={onCommit} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
-		const day = screen.getByLabelText('Ngày học tuần 1');
-		fireEvent.paste(day, { clipboardData: { getData: () => '05092026' } });
-		expect(onCommit).toHaveBeenCalledWith('2026-09-05');
-	});
-
-	it('rejects a non-calendar date immediately', () => {
-		const onCommit = vi.fn();
-		render(<SessionDateInput weekNumber={2} value={null} onCommit={onCommit} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 2' }));
-		fireEvent.change(screen.getByLabelText('Ngày học tuần 2'), { target: { value: '31' } });
-		fireEvent.change(screen.getByLabelText('Tháng học tuần 2'), { target: { value: '02' } });
-		fireEvent.change(screen.getByLabelText('Năm học tuần 2'), { target: { value: '2026' } });
-		expect(onCommit).not.toHaveBeenCalled();
-		expect(screen.getByText(/không tồn tại/i)).toBeInTheDocument();
-	});
-});
-
-it.each(['29022024', '29/02/2024'])('accepts leap dates pasted as %s', async (text) => {
-	const onCommit = vi.fn().mockResolvedValue(undefined);
-	render(<SessionDateInput weekNumber={1} value={null} onCommit={onCommit} />);
-	fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
-	fireEvent.paste(screen.getByLabelText('Ngày học tuần 1'), {
-		clipboardData: { getData: () => text },
-	});
-	expect(onCommit).toHaveBeenCalledWith('2024-02-29');
-});
-
-it('rejects invalid pasted text without changing the saved date', () => {
-	const onCommit = vi.fn();
-	render(<SessionDateInput weekNumber={1} value="2026-09-01" onCommit={onCommit} />);
-	fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
-	fireEvent.paste(screen.getByLabelText('Ngày học tuần 1'), {
-		clipboardData: { getData: () => '31/02/2026' },
-	});
-	expect(screen.getByRole('alert')).toBeVisible();
-	expect(onCommit).not.toHaveBeenCalled();
-});
-
-it('cancels a partial date with Escape without saving', () => {
-	const onCommit = vi.fn();
-	render(<SessionDateInput weekNumber={1} value="2026-09-01" onCommit={onCommit} />);
+function open(
+	value: string | null = '2026-09-01',
+	onCommit = vi.fn().mockResolvedValue(undefined),
+) {
+	render(<SessionDateInput weekNumber={1} value={value} onCommit={onCommit} />);
 	const trigger = screen.getByRole('button', { name: 'Sửa ngày tuần 1' });
 	fireEvent.click(trigger);
-	const day = screen.getByLabelText('Ngày học tuần 1');
-	fireEvent.change(day, { target: { value: '2' } });
-	fireEvent.keyDown(day, { key: 'Escape' });
-	expect(onCommit).not.toHaveBeenCalled();
-	expect(trigger).toHaveFocus();
-	expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-});
-
-it('retries a failed date and prevents duplicate submissions while saving', async () => {
-	const onCommit = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(undefined);
-	render(<SessionDateInput weekNumber={1} value="2026-09-01" onCommit={onCommit} />);
-	fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
-	const day = screen.getByLabelText('Ngày học tuần 1');
-	fireEvent.change(day, { target: { value: '12' } });
-	fireEvent.keyDown(day, { key: 'Enter' });
-	fireEvent.keyDown(day, { key: 'Enter' });
-	expect(onCommit).toHaveBeenCalledTimes(1);
-	await screen.findByRole('button', { name: 'Thử lại lưu ngày' });
-	expect(day).toHaveValue('12');
-	fireEvent.click(screen.getByRole('button', { name: 'Thử lại lưu ngày' }));
-	expect(onCommit).toHaveBeenLastCalledWith('2026-09-12');
-});
-
-it('clears the date explicitly', async () => {
-	const onCommit = vi.fn().mockResolvedValue(undefined);
-	render(<SessionDateInput weekNumber={1} value="2026-09-01" onCommit={onCommit} />);
-	fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
-	fireEvent.click(screen.getByRole('button', { name: 'Xóa ngày tuần 1' }));
-	expect(onCommit).toHaveBeenCalledWith(null);
+	return { trigger, onCommit };
+}
+describe('calendar-first session date', () => {
+	it('shows a calendar immediately, selects and saves without numeric input', async () => {
+		const { onCommit, trigger } = open();
+		expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: '1/9/2026' })).toHaveFocus();
+		fireEvent.click(screen.getByRole('button', { name: '12/9/2026' }));
+		expect(onCommit).toHaveBeenCalledWith('2026-09-12');
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+		expect(trigger).toHaveFocus();
+	});
+	it('opens an empty date on today and marks today', () => {
+		open(null);
+		expect(document.querySelector('[aria-current="date"]')).toHaveFocus();
+	});
+	it.each(['2024-02-01', '2026-02-01'])('only offers valid days in %s', (value) => {
+		open(value);
+		const leap = value.startsWith('2024');
+		expect(screen.queryByRole('button', { name: `29/2/${leap ? 2024 : 2026}` }) !== null).toBe(
+			leap,
+		);
+		expect(screen.queryByRole('button', { name: /30\/2/ })).not.toBeInTheDocument();
+	});
+	it('moves across year boundaries and supports keyboard navigation', () => {
+		const { trigger, onCommit } = open('2026-12-31');
+		fireEvent.keyDown(screen.getByRole('button', { name: '31/12/2026' }), { key: 'ArrowRight' });
+		expect(screen.getByRole('button', { name: '1/1/2027' })).toHaveFocus();
+		fireEvent.click(screen.getByRole('button', { name: 'Tháng trước' }));
+		expect(screen.getByRole('group', { name: 'Tháng 12 / 2026' })).toBeVisible();
+		fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+		expect(trigger).toHaveFocus();
+		expect(onCommit).not.toHaveBeenCalled();
+	});
+	it('retains a failed selection, retries, and rejects duplicate clicks', async () => {
+		const onCommit = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('offline'))
+			.mockResolvedValue(undefined);
+		open('2026-09-01', onCommit);
+		const day = screen.getByRole('button', { name: '12/9/2026' });
+		fireEvent.click(day);
+		fireEvent.click(day);
+		expect(onCommit).toHaveBeenCalledTimes(1);
+		expect(await screen.findByRole('alert')).toBeVisible();
+		expect(day).toHaveAttribute('aria-pressed', 'true');
+		fireEvent.click(screen.getByRole('button', { name: 'Thử lại lưu ngày' }));
+		expect(onCommit).toHaveBeenLastCalledWith('2026-09-12');
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	});
+	it('clears explicitly', async () => {
+		const { onCommit } = open();
+		fireEvent.click(screen.getByRole('button', { name: 'Xóa ngày tuần 1' }));
+		expect(onCommit).toHaveBeenCalledWith(null);
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	});
 });

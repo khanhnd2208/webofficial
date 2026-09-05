@@ -36,7 +36,7 @@ describe('public marketing content', () => {
 	it('structures services as a chooser with three offers and depth behind accordion', () => {
 		expect(servicesPage.eyebrow).toBe('Dịch vụ');
 		expect(servicesPage.title).toBe(
-			'Những chương trình giúp kiến thức đi vào công việc.',
+			'Chúng ta có thể bắt đầu từ một việc bạn muốn làm tốt hơn.',
 		);
 		expect(servicesPage.trustStrip).toHaveLength(4);
 		expect(serviceOffers).toHaveLength(3);

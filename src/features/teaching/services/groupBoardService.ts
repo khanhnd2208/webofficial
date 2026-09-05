@@ -1,135 +1,27 @@
-import crypto from 'node:crypto';
-
 import type { Prisma } from '@prisma/client';
-
-import { cookies } from 'next/headers';
 
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
+import { groupTransaction, removeEnrollmentGroup } from '../domain/groupTransactions';
 import { maskStudentCode } from '../domain/privacy';
 import { withUniqueConflict } from '../domain/prismaErrors';
 import { assertTeachingGroupBoardEnabled } from '../groupBoardAvailability';
 
 import type {
+	GroupNumbersByTutorial,
 	PublicTeachingGroupBoard,
-	TeachingGroupBoard,
 	TeachingGroupAssignmentRecord,
+	TeachingGroupBoard,
 	TeachingGroupRecord,
 } from '../types';
 
-const COOKIE_PREFIX = 'teaching-group-';
-const COOKIE_MAX_AGE = 24 * 60 * 60;
-
-type Placement = { enrollmentId: string; groupId: string; slotIndex: number };
-type GroupPosition = { groupOrder: number | null; slotIndex: number | null };
-
-function secret(): string | null {
-	const configured =
-		process.env.AUTH_SECRET?.trim() ||
-		process.env.NEXTAUTH_SECRET?.trim() ||
-		process.env.ADMIN_SECRET?.trim();
-	if (configured) return configured;
-	return process.env.NODE_ENV === 'production' ? null : 'development-group-secret';
+function normalizeStudentCode(value: string) {
+	return value.trim().replace(/\s+/g, '');
 }
 
-function cookieName(slug: string) {
-	return `${COOKIE_PREFIX}${slug.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-}
-
-function encode(payload: Record<string, string | number>) {
-	const signingSecret = secret();
-	if (!signingSecret)
-		throw new AppError(
-			'Chức năng xếp nhóm đang tạm khóa vì thiếu cấu hình bảo vệ.',
-			503,
-			'GROUP_AUTH_UNAVAILABLE',
-		);
-	const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
-	const signature = crypto.createHmac('sha256', signingSecret).update(body).digest('base64url');
-	return `${body}.${signature}`;
-}
-
-function decode(
-	value: string | undefined,
-): { classId: string; enrollmentId: string; epoch: number; exp: number } | null {
-	if (!value) return null;
-	const [body, signature] = value.split('.');
-	if (!body || !signature) return null;
-	const signingSecret = secret();
-	if (!signingSecret) return null;
-	const expected = crypto.createHmac('sha256', signingSecret).update(body).digest('base64url');
-	if (
-		signature.length !== expected.length ||
-		!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
-	)
-		return null;
-	try {
-		const parsed = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as {
-			classId?: string;
-			enrollmentId?: string;
-			epoch?: number;
-			exp?: number;
-		};
-		if (
-			!parsed.classId ||
-			!parsed.enrollmentId ||
-			!Number.isInteger(parsed.epoch) ||
-			!parsed.exp ||
-			parsed.exp < Math.floor(Date.now() / 1000)
-		)
-			return null;
-		return {
-			classId: parsed.classId,
-			enrollmentId: parsed.enrollmentId,
-			epoch: Number(parsed.epoch),
-			exp: Number(parsed.exp),
-		};
-	} catch {
-		return null;
-	}
-}
-
-async function setViewerCookie(
-	slug: string,
-	payload: { classId: string; enrollmentId: string; epoch: number },
-) {
-	const store = await cookies();
-	store.set(
-		cookieName(slug),
-		encode({ ...payload, exp: Math.floor(Date.now() / 1000) + COOKIE_MAX_AGE }),
-		{
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'lax',
-			maxAge: COOKIE_MAX_AGE,
-			path: '/',
-		},
-	);
-}
-
-export async function forgetGroupViewer(slug: string) {
-	assertTeachingGroupBoardEnabled();
-	const store = await cookies();
-	store.set(cookieName(slug), '', { httpOnly: true, maxAge: 0, path: '/' });
-}
-
-async function viewerFor(slug: string, classId: string, epoch: number) {
-	const value = (await cookies()).get(cookieName(slug))?.value;
-	const token = decode(value);
-	if (!token || token.classId !== classId || token.epoch !== epoch) return null;
-	const enrollment = await prisma.teachingEnrollment.findFirst({
-		where: { id: token.enrollmentId, classId, status: 'ACTIVE' },
-		include: { student: { select: { studentCode: true, givenName: true } } },
-	});
-	return enrollment
-		? {
-				enrollmentId: enrollment.id,
-				studentCode: enrollment.student.studentCode,
-				givenName: enrollment.student.givenName,
-				claimEpoch: token.epoch,
-			}
-		: null;
+function effectiveMaxSize(group: { maxSize: number | null }, board: { groupSize: number }) {
+	return group.maxSize ?? board.groupSize;
 }
 
 function mapAssignment(row: {
@@ -145,8 +37,7 @@ function mapAssignment(row: {
 		enrollmentId: row.enrollmentId,
 		groupId: row.group.id,
 		groupOrder: row.group.displayOrder,
-		slotIndex: row.slotIndex,
-		role: row.slotIndex === 0 ? 'LEADER' : 'MEMBER',
+		memberOrder: row.slotIndex,
 		studentCode: row.enrollment.student.studentCode,
 		familyName: row.enrollment.student.familyName,
 		givenName: row.enrollment.student.givenName,
@@ -154,25 +45,126 @@ function mapAssignment(row: {
 	};
 }
 
-export async function getGroupBoard(classId: string): Promise<TeachingGroupBoard>;
+async function assertTutorialInClass(classId: string, tutorialClassId: string) {
+	const tutorial = await prisma.teachingTutorialClass.findFirst({
+		where: { id: tutorialClassId, classId },
+		select: { id: true, code: true, name: true },
+	});
+	if (!tutorial) throw new AppError('Tutorial không thuộc lớp này.', 404, 'NOT_FOUND');
+	return tutorial;
+}
+
+async function ensureBoard(tx: Prisma.TransactionClient, classId: string, tutorialClassId: string) {
+	return tx.teachingGroupBoard.upsert({
+		where: { tutorialClassId },
+		create: { classId, tutorialClassId },
+		update: {},
+		include: { groups: { orderBy: { displayOrder: 'asc' } } },
+	});
+}
+
+function suggestedGroupCount(studentCount: number, defaultSize: number) {
+	if (studentCount <= 0) return 1;
+	return Math.max(1, Math.ceil(studentCount / defaultSize));
+}
+
+function buildBoardPayload(
+	classId: string,
+	tutorial: { id: string; code: string; name: string },
+	board: {
+		classId: string;
+		tutorialClassId: string;
+		groupCount: number;
+		groupSize: number;
+		version: number;
+		groups: Array<{ id: string; displayOrder: number; maxSize: number | null }>;
+		assignments: Array<{
+			enrollmentId: string;
+			slotIndex: number;
+			group: { id: string; displayOrder: number };
+			enrollment: {
+				learningExperience: TeachingGroupAssignmentRecord['learningExperience'];
+				student: { studentCode: string; familyName: string; givenName: string };
+			};
+		}>;
+	} | null,
+	students: Array<{
+		id: string;
+		learningExperience: TeachingGroupAssignmentRecord['learningExperience'];
+		student: { studentCode: string; familyName: string; givenName: string };
+	}>,
+	maskCodes: boolean,
+): TeachingGroupBoard {
+	const activeIds = new Set(students.map((student) => student.id));
+	const assignments = (board?.assignments ?? [])
+		.filter((row) => activeIds.has(row.enrollmentId))
+		.map((row) => {
+			const assignment = mapAssignment(row);
+			return {
+				...assignment,
+				studentCode: maskCodes ? maskStudentCode(assignment.studentCode) : assignment.studentCode,
+			};
+		});
+	const byGroup = new Map<string, TeachingGroupAssignmentRecord[]>();
+	for (const assignment of assignments) {
+		byGroup.set(assignment.groupId, [...(byGroup.get(assignment.groupId) ?? []), assignment]);
+	}
+	const defaultGroupSize = board?.groupSize ?? 5;
+	const groups: TeachingGroupRecord[] = (board?.groups ?? []).map((group) => ({
+		id: group.id,
+		displayOrder: group.displayOrder,
+		maxSize: group.maxSize,
+		effectiveMaxSize: effectiveMaxSize(group, { groupSize: defaultGroupSize }),
+		assignments: (byGroup.get(group.id) ?? []).sort((a, b) => a.memberOrder - b.memberOrder),
+	}));
+	const assigned = new Set(assignments.map((item) => item.enrollmentId));
+	const unassigned = students
+		.filter((student) => !assigned.has(student.id))
+		.map((student) => ({
+			enrollmentId: student.id,
+			studentCode: maskCodes
+				? maskStudentCode(student.student.studentCode)
+				: student.student.studentCode,
+			familyName: student.student.familyName,
+			givenName: student.student.givenName,
+			learningExperience: student.learningExperience,
+		}));
+
+	return {
+		classId,
+		tutorialClassId: tutorial.id,
+		tutorialCode: tutorial.code,
+		tutorialName: tutorial.name,
+		groupCount: board?.groupCount ?? 0,
+		defaultGroupSize,
+		version: board?.version ?? 0,
+		configured: Boolean(board && board.groupCount > 0 && board.groupSize > 0),
+		activeStudentCount: students.length,
+		assignedCount: assignments.length,
+		groups,
+		unassigned,
+	};
+}
+
 export async function getGroupBoard(
 	classId: string,
+	tutorialClassId: string,
+): Promise<TeachingGroupBoard>;
+export async function getGroupBoard(
+	classId: string,
+	tutorialClassId: string,
 	slug: string,
-	verifiedViewerEnrollmentId?: string,
 ): Promise<PublicTeachingGroupBoard>;
 export async function getGroupBoard(
 	classId: string,
+	tutorialClassId: string,
 	slug?: string,
-	verifiedViewerEnrollmentId?: string,
 ): Promise<TeachingGroupBoard | PublicTeachingGroupBoard> {
 	assertTeachingGroupBoardEnabled();
-	const [teachingClass, board] = await Promise.all([
-		prisma.teachingClass.findUnique({
-			where: { id: classId },
-			select: { id: true, publicSlug: true },
-		}),
+	const tutorial = await assertTutorialInClass(classId, tutorialClassId);
+	const [board, students] = await Promise.all([
 		prisma.teachingGroupBoard.findUnique({
-			where: { classId },
+			where: { tutorialClassId },
 			include: {
 				groups: { orderBy: { displayOrder: 'asc' } },
 				assignments: {
@@ -187,627 +179,291 @@ export async function getGroupBoard(
 				},
 			},
 		}),
+		prisma.teachingEnrollment.findMany({
+			where: { classId, tutorialClassId, status: 'ACTIVE' },
+			orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
+			include: { student: { select: { studentCode: true, familyName: true, givenName: true } } },
+		}),
 	]);
-	if (!teachingClass) throw new AppError('Class not found', 404, 'NOT_FOUND');
-	const students = await prisma.teachingEnrollment.findMany({
-		where: { classId, status: 'ACTIVE' },
-		orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
-		include: { student: { select: { studentCode: true, familyName: true, givenName: true } } },
-	});
-	const assignments = board?.assignments.map(mapAssignment) ?? [];
-	const byGroup = new Map<string, TeachingGroupAssignmentRecord[]>();
-	for (const assignment of assignments)
-		byGroup.set(assignment.groupId, [...(byGroup.get(assignment.groupId) ?? []), assignment]);
-	const groups: TeachingGroupRecord[] = (board?.groups ?? []).map((group) => ({
-		id: group.id,
-		displayOrder: group.displayOrder,
-		assignments: (byGroup.get(group.id) ?? []).sort((a, b) => a.slotIndex - b.slotIndex),
-	}));
-	const assigned = new Set(assignments.map((item) => item.enrollmentId));
-	const unassigned = students
-		.filter((student) => !assigned.has(student.id))
-		.map((student) => ({
-			enrollmentId: student.id,
-			studentCode: slug
-				? maskStudentCode(student.student.studentCode)
-				: student.student.studentCode,
-			familyName: student.student.familyName,
-			givenName: student.student.givenName,
-			learningExperience: student.learningExperience,
-		}));
-	const data = {
-		classId,
-		groupCount: board?.groupCount ?? 0,
-		groupSize: board?.groupSize ?? 0,
-		isOpen: board?.isOpen ?? false,
-		version: board?.version ?? 0,
-		claimEpoch: board?.claimEpoch ?? 0,
-		configured: Boolean(board && board.groupCount > 0 && board.groupSize > 0),
-		activeStudentCount: students.length,
-		groups,
-		unassigned,
-	};
+
+	const data = buildBoardPayload(classId, tutorial, board, students, Boolean(slug));
 	if (!slug) return data;
-	data.groups = data.groups.map((group) => ({
-		...group,
-		assignments: group.assignments.map((assignment) => ({
-			...assignment,
-			studentCode: maskStudentCode(assignment.studentCode),
-		})),
-	}));
-	const viewerEnrollmentId =
-		verifiedViewerEnrollmentId ??
-		(board ? (await viewerFor(slug, classId, board.claimEpoch))?.enrollmentId : null);
-	return {
-		...data,
-		slug,
-		viewerEnrollmentId: viewerEnrollmentId ?? null,
-		undoAvailableCount:
-			viewerEnrollmentId && board
-				? await countUndoableMoves(board.id, viewerEnrollmentId, board.claimEpoch)
-				: 0,
-	};
+	return { ...data, slug };
 }
 
-async function ensureBoard(tx: Prisma.TransactionClient, classId: string) {
-	return tx.teachingGroupBoard.upsert({
+export async function getGroupNumbersByEnrollment(
+	classId: string,
+): Promise<GroupNumbersByTutorial> {
+	assertTeachingGroupBoardEnabled();
+	const boards = await prisma.teachingGroupBoard.findMany({
 		where: { classId },
-		create: { classId },
-		update: {},
-		include: { groups: { orderBy: { displayOrder: 'asc' } } },
+		select: {
+			tutorialClassId: true,
+			assignments: {
+				select: {
+					enrollmentId: true,
+					enrollment: { select: { tutorialClassId: true, status: true } },
+					group: { select: { displayOrder: true } },
+				},
+			},
+		},
 	});
+	const result: GroupNumbersByTutorial = {};
+	for (const board of boards) {
+		result[board.tutorialClassId] = Object.fromEntries(
+			board.assignments
+				.filter(
+					(assignment) =>
+						assignment.enrollment.status === 'ACTIVE' &&
+						assignment.enrollment.tutorialClassId === board.tutorialClassId,
+				)
+				.map((assignment) => [assignment.enrollmentId, assignment.group.displayOrder + 1]),
+		);
+	}
+	return result;
 }
 
 export async function configureGroupBoard(
 	classId: string,
-	input: { groupCount: number; groupSize: number; expectedVersion?: number },
+	input: {
+		tutorialClassId: string;
+		groupCount: number;
+		defaultGroupSize: number;
+		expectedVersion?: number;
+		actorUserId?: string;
+	},
 ) {
 	assertTeachingGroupBoardEnabled();
+	await assertTutorialInClass(classId, input.tutorialClassId);
 	if (
 		!Number.isInteger(input.groupCount) ||
 		input.groupCount < 1 ||
 		input.groupCount > 50 ||
-		!Number.isInteger(input.groupSize) ||
-		input.groupSize < 2 ||
-		input.groupSize > 50
+		!Number.isInteger(input.defaultGroupSize) ||
+		input.defaultGroupSize < 1 ||
+		input.defaultGroupSize > 50
 	) {
-		throw new AppError('Số nhóm phải từ 1–50 và sức chứa mỗi nhóm từ 2–50.', 422, 'VALIDATION');
+		throw new AppError('Số nhóm phải từ 1–50 và sức chứa mặc định từ 1–50.', 422, 'VALIDATION');
 	}
-	await prisma.$transaction(async (tx) => {
-		const board = await ensureBoard(tx, classId);
-		if (board.isOpen)
-			throw new AppError('Hãy khóa bảng trước khi đổi cấu trúc nhóm.', 409, 'GROUP_BOARD_OPEN');
-		if (input.expectedVersion != null && input.expectedVersion !== board.version)
+
+	await groupTransaction(async (tx) => {
+		const board = await ensureBoard(tx, classId, input.tutorialClassId);
+		if (input.expectedVersion != null && input.expectedVersion !== board.version) {
 			throw new AppError('Bảng đã thay đổi. Hãy tải lại trước khi lưu.', 409, 'STALE_BOARD');
+		}
+
 		const assignments = await tx.teachingGroupAssignment.findMany({
 			where: { boardId: board.id },
 			include: { group: true },
 		});
 		for (const assignment of assignments) {
+			if (assignment.group.displayOrder >= input.groupCount) {
+				throw new AppError(
+					'Không thể giảm số nhóm khi vẫn còn sinh viên ở nhóm sẽ bị xóa.',
+					409,
+					'GROUP_CAPACITY_CONFLICT',
+				);
+			}
+			const group = board.groups.find((item) => item.id === assignment.groupId);
 			if (
-				assignment.group.displayOrder >= input.groupCount ||
-				assignment.slotIndex >= input.groupSize
+				group?.maxSize == null &&
+				assignments.filter((item) => item.groupId === assignment.groupId).length >
+					input.defaultGroupSize
 			) {
 				throw new AppError(
-					'Không thể giảm cấu trúc khi vẫn còn người ở các ô sẽ bị xóa.',
+					'Không thể giảm sức chứa mặc định khi nhóm đã vượt giới hạn mới.',
 					409,
 					'GROUP_CAPACITY_CONFLICT',
 				);
 			}
 		}
+
 		const groups = [...board.groups];
 		for (let index = 0; index < input.groupCount; index += 1) {
-			const current = groups[index];
-			if (!current)
-				await tx.teachingGroup.create({ data: { boardId: board.id, displayOrder: index } });
+			if (!groups[index]) {
+				await tx.teachingGroup.create({
+					data: { boardId: board.id, displayOrder: index },
+				});
+			}
 		}
 		await tx.teachingGroup.deleteMany({
 			where: { boardId: board.id, displayOrder: { gte: input.groupCount } },
 		});
 		await tx.teachingGroupBoard.update({
 			where: { id: board.id },
-			data: { groupCount: input.groupCount, groupSize: input.groupSize, version: { increment: 1 } },
+			data: {
+				groupCount: input.groupCount,
+				groupSize: input.defaultGroupSize,
+				version: { increment: 1 },
+			},
 		});
 		await tx.teachingGroupAudit.create({
 			data: {
 				boardId: board.id,
 				actor: 'ADMIN',
+				actorUserId: input.actorUserId,
 				action: 'CONFIGURE',
-				metadata: { groupCount: input.groupCount, groupSize: input.groupSize },
+				metadata: {
+					groupCount: input.groupCount,
+					defaultGroupSize: input.defaultGroupSize,
+				},
 			},
 		});
 	});
-	return getGroupBoard(classId);
+
+	return getGroupBoard(classId, input.tutorialClassId);
 }
 
-export async function setGroupBoardOpen(classId: string, open: boolean) {
-	assertTeachingGroupBoardEnabled();
-	return prisma.$transaction(async (tx) => {
-		const board = await ensureBoard(tx, classId);
-		if (!board.groupCount || !board.groupSize)
-			throw new AppError(
-				'Hãy thiết lập số nhóm và sức chứa trước.',
-				422,
-				'GROUP_BOARD_UNCONFIGURED',
-			);
-		if (board.isOpen === open) return board;
-		if (open) {
-			const [klass, count] = await Promise.all([
-				tx.teachingClass.findUnique({
-					where: { id: classId },
-					select: { status: true, attendanceVisible: true, publicSlug: true },
-				}),
-				tx.teachingEnrollment.count({ where: { classId, status: 'ACTIVE' } }),
-			]);
-			if (!klass || klass.status !== 'ACTIVE' || !klass.attendanceVisible || !klass.publicSlug)
-				throw new AppError(
-					'Lớp phải đang hoạt động và được chia sẻ trước khi mở bảng.',
-					409,
-					'CLASS_NOT_PUBLIC',
-				);
-			if (count > board.groupCount * board.groupSize)
-				throw new AppError(
-					'Tổng sức chứa nhóm chưa đủ cho sĩ số hiện tại.',
-					409,
-					'GROUP_CAPACITY_TOO_SMALL',
-				);
-		}
-		const updated = await tx.teachingGroupBoard.update({
-			where: { id: board.id },
-			data: {
-				isOpen: open,
-				claimEpoch: { increment: 1 },
-				version: { increment: 1 },
-				openedAt: open ? new Date() : board.openedAt,
-				lockedAt: open ? null : new Date(),
-			},
-		});
-		await tx.teachingGroupAudit.create({
-			data: { boardId: board.id, actor: 'ADMIN', action: open ? 'OPEN' : 'LOCK' },
-		});
-		return updated;
-	});
-}
-
-async function assertTarget(
-	tx: Prisma.TransactionClient,
-	boardId: string,
-	groupId: string,
-	slotIndex: number,
-	groupSize: number,
-) {
-	const group = await tx.teachingGroup.findFirst({ where: { id: groupId, boardId } });
-	if (!group || !Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= groupSize)
-		throw new AppError('Ô nhóm không hợp lệ.', 422, 'INVALID_GROUP_SLOT');
-	const occupied = await tx.teachingGroupAssignment.findFirst({ where: { groupId, slotIndex } });
-	if (occupied)
-		throw new AppError(
-			'Ô này vừa được người khác chọn. Hãy chọn ô trống.',
-			409,
-			'GROUP_SLOT_OCCUPIED',
-		);
-	return group;
-}
-
-export async function moveGroupAssignment(
+export async function setGroupCapacity(
 	classId: string,
+	groupId: string,
 	input: {
-		enrollmentId: string;
-		groupId: string | null;
-		slotIndex?: number;
+		tutorialClassId: string;
+		maxSize: number | null;
 		expectedVersion?: number;
-		actor: 'ADMIN' | 'STUDENT';
-		actorEnrollmentId?: string;
-		actorClaimEpoch?: number;
+		actorUserId?: string;
 	},
 ) {
 	assertTeachingGroupBoardEnabled();
-	await withUniqueConflict(
-		'Ô này vừa được người khác chọn. Hãy chọn ô trống.',
-		() =>
-			prisma.$transaction(async (tx) => {
-				const board = await tx.teachingGroupBoard.findUnique({ where: { classId } });
-				if (!board || !board.groupCount)
-					throw new AppError('Bảng xếp nhóm chưa được thiết lập.', 404, 'GROUP_BOARD_NOT_FOUND');
-				if (
-					input.actor === 'STUDENT' &&
-					(!board.isOpen ||
-						input.actorEnrollmentId !== input.enrollmentId ||
-						input.actorClaimEpoch !== board.claimEpoch)
-				)
-					throw new AppError(
-						'Bảng đã khóa hoặc lựa chọn tên đã hết hiệu lực.',
-						403,
-						'GROUP_MOVE_FORBIDDEN',
-					);
-				if (input.expectedVersion != null && input.expectedVersion !== board.version)
-					throw new AppError('Bảng đã thay đổi. Hãy tải lại.', 409, 'STALE_BOARD');
-				const enrollment = await tx.teachingEnrollment.findFirst({
-					where: { id: input.enrollmentId, classId, status: 'ACTIVE' },
-				});
-				if (!enrollment) throw new AppError('Sinh viên không thuộc lớp này.', 404, 'NOT_FOUND');
-				const existing = await tx.teachingGroupAssignment.findUnique({
-					where: { enrollmentId: input.enrollmentId },
-					include: { group: true },
-				});
-				const fromGroupOrder = existing?.group.displayOrder ?? null;
-				const fromSlotIndex = existing?.slotIndex ?? null;
-				let toGroupOrder: number | null = null;
-				if (input.groupId == null) {
-					if (existing)
-						await tx.teachingGroupAssignment.delete({
-							where: { enrollmentId: input.enrollmentId },
-						});
-				} else {
-					if (existing?.groupId === input.groupId && existing.slotIndex === (input.slotIndex ?? 0))
-						return;
-					const targetGroup = await assertTarget(
-						tx,
-						board.id,
-						input.groupId,
-						input.slotIndex ?? 0,
-						board.groupSize,
-					);
-					toGroupOrder = targetGroup.displayOrder;
-					if (existing) {
-						await tx.teachingGroupAssignment.delete({
-							where: { enrollmentId: input.enrollmentId },
-						});
-					}
-					await tx.teachingGroupAssignment.create({
-						data: {
-							boardId: board.id,
-							groupId: input.groupId,
-							enrollmentId: input.enrollmentId,
-							slotIndex: input.slotIndex ?? 0,
-						},
-					});
-				}
-				await tx.teachingGroupBoard.update({
-					where: { id: board.id },
-					data: { version: { increment: 1 } },
-				});
-				await tx.teachingGroupAudit.create({
-					data: {
-						boardId: board.id,
-						actor: input.actor,
-						action: 'MOVE',
-						actorEnrollmentId: input.actorEnrollmentId,
-						enrollmentId: input.enrollmentId,
-						fromGroupOrder,
-						fromSlotIndex,
-						toGroupOrder,
-						toSlotIndex: input.groupId ? (input.slotIndex ?? 0) : null,
-						metadata: input.actor === 'STUDENT' ? { claimEpoch: board.claimEpoch } : undefined,
-					},
-				});
-			}),
-		'GROUP_SLOT_OCCUPIED',
-	);
-	return getGroupBoard(classId);
-}
+	await assertTutorialInClass(classId, input.tutorialClassId);
+	if (
+		input.maxSize != null &&
+		(!Number.isInteger(input.maxSize) || input.maxSize < 1 || input.maxSize > 50)
+	) {
+		throw new AppError('Sức chứa nhóm phải từ 1–50.', 422, 'VALIDATION');
+	}
 
-export async function clearGroupAssignments(classId: string, expectedVersion?: number) {
-	assertTeachingGroupBoardEnabled();
-	await prisma.$transaction(async (tx) => {
-		const board = await tx.teachingGroupBoard.findUnique({ where: { classId } });
-		if (!board)
+	await groupTransaction(async (tx) => {
+		const board = await tx.teachingGroupBoard.findUnique({
+			where: { tutorialClassId: input.tutorialClassId },
+			include: { groups: true },
+		});
+		if (!board || board.classId !== classId) {
 			throw new AppError('Bảng xếp nhóm chưa được thiết lập.', 404, 'GROUP_BOARD_NOT_FOUND');
-		if (board.isOpen)
-			throw new AppError('Hãy khóa bảng trước khi xóa toàn bộ.', 409, 'GROUP_BOARD_OPEN');
-		if (expectedVersion != null && expectedVersion !== board.version)
+		}
+		if (input.expectedVersion != null && input.expectedVersion !== board.version) {
 			throw new AppError('Bảng đã thay đổi. Hãy tải lại.', 409, 'STALE_BOARD');
-		await tx.teachingGroupAssignment.deleteMany({ where: { boardId: board.id } });
+		}
+		const group = board.groups.find((item) => item.id === groupId);
+		if (!group) throw new AppError('Nhóm không hợp lệ.', 422, 'INVALID_GROUP');
+
+		const memberCount = await tx.teachingGroupAssignment.count({ where: { groupId } });
+		const nextCapacity = input.maxSize ?? board.groupSize;
+		if (memberCount > nextCapacity) {
+			throw new AppError(
+				'Không thể giảm sức chứa dưới số thành viên hiện có.',
+				409,
+				'GROUP_CAPACITY_CONFLICT',
+			);
+		}
+
+		await tx.teachingGroup.update({
+			where: { id: groupId },
+			data: { maxSize: input.maxSize },
+		});
 		await tx.teachingGroupBoard.update({
 			where: { id: board.id },
 			data: { version: { increment: 1 } },
 		});
 		await tx.teachingGroupAudit.create({
-			data: { boardId: board.id, actor: 'ADMIN', action: 'CLEAR' },
+			data: {
+				boardId: board.id,
+				actor: 'ADMIN',
+				actorUserId: input.actorUserId,
+				action: 'UPDATE_CAPACITY',
+				metadata: { groupOrder: group.displayOrder, maxSize: input.maxSize },
+			},
 		});
 	});
-	return getGroupBoard(classId);
+
+	return getGroupBoard(classId, input.tutorialClassId);
 }
 
-function seededShuffle<T>(items: T[], seed: number) {
-	let value = seed >>> 0;
-	const next = () => {
-		value = (value + 0x6d2b79f5) | 0;
-		let t = Math.imul(value ^ (value >>> 15), 1 | value);
-		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-	};
-	const result = [...items];
-	for (let index = result.length - 1; index > 0; index -= 1) {
-		const swap = Math.floor(next() * (index + 1));
-		[result[index], result[swap]] = [result[swap], result[index]];
-	}
-	return result;
+async function nextMemberOrder(tx: Prisma.TransactionClient, groupId: string) {
+	const max = await tx.teachingGroupAssignment.aggregate({
+		where: { groupId },
+		_max: { slotIndex: true },
+	});
+	return (max._max.slotIndex ?? -1) + 1;
 }
 
-export async function randomizeGroupAssignments(
+export async function addGroupMembers(
 	classId: string,
-	input: { expectedVersion?: number; placements?: Placement[]; seed?: number },
+	input: {
+		tutorialClassId: string;
+		groupId: string;
+		studentCodes: string[];
+		expectedVersion?: number;
+		actorUserId?: string;
+	},
 ) {
 	assertTeachingGroupBoardEnabled();
-	const board = await prisma.teachingGroupBoard.findUnique({
-		where: { classId },
-		include: { groups: { orderBy: { displayOrder: 'asc' } }, assignments: true },
-	});
-	if (!board)
-		throw new AppError('Bảng xếp nhóm chưa được thiết lập.', 404, 'GROUP_BOARD_NOT_FOUND');
-	if (board.isOpen)
-		throw new AppError('Hãy khóa bảng trước khi xếp ngẫu nhiên.', 409, 'GROUP_BOARD_OPEN');
-	if (input.expectedVersion != null && input.expectedVersion !== board.version)
-		throw new AppError('Bảng đã thay đổi. Hãy tải lại.', 409, 'STALE_BOARD');
-	const assigned = new Set(board.assignments.map((assignment) => assignment.enrollmentId));
-	const students = await prisma.teachingEnrollment.findMany({
-		where: { classId, status: 'ACTIVE', id: { notIn: [...assigned] } },
-		orderBy: { orderNo: 'asc' },
-		include: { student: true },
-	});
-	const occupied = new Set(
-		board.assignments.map((assignment) => `${assignment.groupId}:${assignment.slotIndex}`),
-	);
-	const slots = board.groups
-		.flatMap((group) =>
-			Array.from({ length: board.groupSize }, (_, slotIndex) => ({ groupId: group.id, slotIndex })),
-		)
-		.filter((slot) => !occupied.has(`${slot.groupId}:${slot.slotIndex}`));
-	if (!input.placements) {
-		const seed = input.seed ?? crypto.randomInt(1, 2 ** 31 - 1);
-		const shuffled = seededShuffle(students, seed);
-		return {
-			preview: true,
-			seed,
-			version: board.version,
-			placements: shuffled.slice(0, slots.length).map((student, index) => ({
-				enrollmentId: student.id,
-				groupId: slots[index]!.groupId,
-				slotIndex: slots[index]!.slotIndex,
-				studentCode: student.student.studentCode,
-			})),
-		};
+	await assertTutorialInClass(classId, input.tutorialClassId);
+	const normalizedCodes = input.studentCodes.map(normalizeStudentCode).filter(Boolean);
+	if (!normalizedCodes.length) {
+		throw new AppError('Hãy nhập ít nhất một mã sinh viên.', 422, 'VALIDATION');
 	}
-	const placements = input.placements ?? [];
-	const duplicateEnrollment = new Set<string>();
-	const duplicateSlot = new Set<string>();
-	for (const placement of placements) {
-		if (
-			duplicateEnrollment.has(placement.enrollmentId) ||
-			duplicateSlot.has(`${placement.groupId}:${placement.slotIndex}`)
-		) {
-			throw new AppError(
-				'Preview xếp ngẫu nhiên không hợp lệ. Hãy tạo lại preview.',
-				422,
-				'INVALID_RANDOM_PREVIEW',
-			);
-		}
-		duplicateEnrollment.add(placement.enrollmentId);
-		duplicateSlot.add(`${placement.groupId}:${placement.slotIndex}`);
-	}
+
 	await withUniqueConflict(
-		'Ô này vừa được người khác chọn. Hãy chọn ô trống.',
+		'Một số sinh viên vừa được thêm vào nhóm khác. Hãy tải lại.',
 		() =>
-			prisma.$transaction(async (tx) => {
-				const current = await tx.teachingGroupBoard.findUnique({ where: { classId } });
-				if (!current || current.version !== board.version)
-					throw new AppError('Bảng đã thay đổi. Hãy tạo lại preview.', 409, 'STALE_BOARD');
-				for (const placement of placements) {
-					await assertTarget(
-						tx,
-						current.id,
-						placement.groupId,
-						placement.slotIndex,
-						current.groupSize,
-					);
-					const student = await tx.teachingEnrollment.findFirst({
-						where: { id: placement.enrollmentId, classId, status: 'ACTIVE' },
-					});
-					if (!student) throw new AppError('Sinh viên không thuộc lớp này.', 404, 'NOT_FOUND');
-					await tx.teachingGroupAssignment.create({
-						data: {
-							boardId: current.id,
-							groupId: placement.groupId,
-							enrollmentId: placement.enrollmentId,
-							slotIndex: placement.slotIndex,
-						},
+			groupTransaction(async (tx) => {
+				const preview = await previewGroupMembers(
+					classId,
+					input.tutorialClassId,
+					input.groupId,
+					normalizedCodes,
+					tx,
+				);
+				const validCodes = preview.resolved.map((item) => item.studentCode);
+				if (!validCodes.length) {
+					throw new AppError('Không có mã hợp lệ để thêm.', 422, 'VALIDATION', {
+						errors: preview.errors.join('\n'),
 					});
 				}
-				await tx.teachingGroupBoard.update({
-					where: { id: current.id },
-					data: { version: { increment: 1 } },
+				if (preview.errors.length) {
+					throw new AppError('Một số mã không hợp lệ. Hãy sửa trước khi lưu.', 422, 'VALIDATION', {
+						errors: preview.errors.join('\n'),
+					});
+				}
+
+				const board = await tx.teachingGroupBoard.findUnique({
+					where: { tutorialClassId: input.tutorialClassId },
+					include: { groups: true },
 				});
-				await tx.teachingGroupAudit.create({
-					data: {
-						boardId: current.id,
-						actor: 'ADMIN',
-						action: 'RANDOMIZE',
-						metadata: { count: placements.length, seed: input.seed ?? null },
-					},
-				});
-			}),
-		'GROUP_SLOT_OCCUPIED',
-	);
-	return getGroupBoard(classId);
-}
-
-export async function claimGroupViewer(slug: string, enrollmentId: string) {
-	assertTeachingGroupBoardEnabled();
-	const klass = await prisma.teachingClass.findFirst({
-		where: { publicSlug: slug, attendanceVisible: true, status: 'ACTIVE' },
-		select: { id: true },
-	});
-	if (!klass) throw new AppError('Không tìm thấy lớp.', 404, 'NOT_FOUND');
-	const board = await prisma.teachingGroupBoard.findUnique({
-		where: { classId: klass.id },
-		select: { id: true, groupCount: true, groupSize: true, isOpen: true, claimEpoch: true },
-	});
-	if (!board || !board.groupCount || !board.groupSize)
-		throw new AppError('Bảng xếp nhóm chưa được thiết lập.', 404, 'GROUP_BOARD_NOT_FOUND');
-	if (!board.isOpen)
-		throw new AppError('Bảng đang khóa. Hãy chờ giảng viên mở bảng.', 409, 'GROUP_BOARD_LOCKED');
-	const enrollment = await prisma.teachingEnrollment.findFirst({
-		where: { id: enrollmentId, classId: klass.id, status: 'ACTIVE' },
-	});
-	if (!enrollment) throw new AppError('Không tìm thấy sinh viên trong lớp.', 404, 'NOT_FOUND');
-	await setViewerCookie(slug, {
-		classId: klass.id,
-		enrollmentId: enrollment.id,
-		epoch: board.claimEpoch,
-	});
-	return getGroupBoard(klass.id, slug, enrollment.id);
-}
-
-export async function getGroupViewer(slug: string) {
-	assertTeachingGroupBoardEnabled();
-	const klass = await prisma.teachingClass.findFirst({
-		where: { publicSlug: slug, attendanceVisible: true, status: 'ACTIVE' },
-		select: { id: true },
-	});
-	if (!klass) return null;
-	const board = await prisma.teachingGroupBoard.findUnique({
-		where: { classId: klass.id },
-		select: { claimEpoch: true },
-	});
-	return board ? viewerFor(slug, klass.id, board.claimEpoch) : null;
-}
-
-function auditClaimEpoch(metadata: unknown): number | null {
-	if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return null;
-	const value = (metadata as { claimEpoch?: unknown }).claimEpoch;
-	return typeof value === 'number' && Number.isInteger(value) ? value : null;
-}
-
-async function countUndoableMoves(boardId: string, enrollmentId: string, claimEpoch: number) {
-	const [moves, undos] = await Promise.all([
-		prisma.teachingGroupAudit.findMany({
-			where: { boardId, actor: 'STUDENT', actorEnrollmentId: enrollmentId, action: 'MOVE' },
-			orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-			take: 3,
-			select: { id: true, metadata: true },
-		}),
-		prisma.teachingGroupAudit.findMany({
-			where: { boardId, actor: 'STUDENT', actorEnrollmentId: enrollmentId, action: 'UNDO' },
-			orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-			take: 3,
-			select: { metadata: true },
-		}),
-	]);
-	const undone = new Set(
-		undos
-			.map((audit) =>
-				auditClaimEpoch(audit.metadata) === claimEpoch
-					? (audit.metadata as { undoOf?: unknown })?.undoOf
-					: null,
-			)
-			.filter((value): value is string => typeof value === 'string'),
-	);
-	return moves.filter(
-		(move) => auditClaimEpoch(move.metadata) === claimEpoch && !undone.has(move.id),
-	).length;
-}
-
-export async function undoLatestGroupMove(slug: string) {
-	assertTeachingGroupBoardEnabled();
-	const klass = await prisma.teachingClass.findFirst({
-		where: { publicSlug: slug, attendanceVisible: true, status: 'ACTIVE' },
-		select: { id: true },
-	});
-	if (!klass) throw new AppError('Không tìm thấy lớp.', 404, 'NOT_FOUND');
-	const viewer = await getGroupViewer(slug);
-	if (!viewer)
-		throw new AppError('Hãy chọn tên của bạn trước khi hoàn tác.', 401, 'IDENTITY_REQUIRED');
-	await withUniqueConflict(
-		'Ô này vừa được người khác chọn. Hãy chọn ô trống.',
-		() =>
-			prisma.$transaction(async (tx) => {
-				const board = await tx.teachingGroupBoard.findUnique({ where: { classId: klass.id } });
-				if (!board || !board.groupCount)
+				if (!board || !board.groupCount || board.classId !== classId) {
 					throw new AppError('Bảng xếp nhóm chưa được thiết lập.', 404, 'GROUP_BOARD_NOT_FOUND');
-				if (!board.isOpen)
-					throw new AppError('Bảng đang khóa. Không thể hoàn tác.', 409, 'GROUP_BOARD_LOCKED');
-				const [moves, undos, current] = await Promise.all([
-					tx.teachingGroupAudit.findMany({
-						where: {
-							boardId: board.id,
-							actor: 'STUDENT',
-							actorEnrollmentId: viewer.enrollmentId,
-							action: 'MOVE',
-						},
-						orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-						take: 3,
-					}),
-					tx.teachingGroupAudit.findMany({
-						where: {
-							boardId: board.id,
-							actor: 'STUDENT',
-							actorEnrollmentId: viewer.enrollmentId,
-							action: 'UNDO',
-						},
-						orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-						take: 3,
-					}),
-					tx.teachingGroupAssignment.findUnique({
-						where: { enrollmentId: viewer.enrollmentId },
-						include: { group: true },
-					}),
-				]);
-				const undone = new Set(
-					undos
-						.map((audit) =>
-							auditClaimEpoch(audit.metadata) === board.claimEpoch
-								? (audit.metadata as { undoOf?: unknown })?.undoOf
-								: null,
-						)
-						.filter((value): value is string => typeof value === 'string'),
-				);
-				const currentPosition: GroupPosition = {
-					groupOrder: current?.group.displayOrder ?? null,
-					slotIndex: current?.slotIndex ?? null,
-				};
-				const source = moves.find(
-					(move) =>
-						auditClaimEpoch(move.metadata) === board.claimEpoch &&
-						!undone.has(move.id) &&
-						currentPosition.groupOrder === move.toGroupOrder &&
-						currentPosition.slotIndex === move.toSlotIndex,
-				);
-				if (!source)
-					throw new AppError(
-						'Không thể hoàn tác vì vị trí hiện tại đã thay đổi.',
-						409,
-						'UNDO_CONFLICT',
-					);
-				let restoreGroupId: string | null = null;
-				if (source.fromGroupOrder != null) {
-					const restoreGroup = await tx.teachingGroup.findFirst({
-						where: { boardId: board.id, displayOrder: source.fromGroupOrder },
-					});
-					if (!restoreGroup || source.fromSlotIndex == null)
-						throw new AppError('Vị trí cũ không còn tồn tại.', 409, 'UNDO_CONFLICT');
-					const occupied = await tx.teachingGroupAssignment.findFirst({
-						where: { groupId: restoreGroup.id, slotIndex: source.fromSlotIndex },
-					});
-					if (occupied)
-						throw new AppError(
-							'Không thể hoàn tác vì vị trí cũ đã có người.',
-							409,
-							'UNDO_CONFLICT',
-						);
-					restoreGroupId = restoreGroup.id;
 				}
-				if (current)
-					await tx.teachingGroupAssignment.delete({ where: { enrollmentId: viewer.enrollmentId } });
-				if (restoreGroupId)
+				if (input.expectedVersion != null && input.expectedVersion !== board.version) {
+					throw new AppError('Bảng đã thay đổi. Hãy tải lại.', 409, 'STALE_BOARD');
+				}
+				const group = board.groups.find((item) => item.id === input.groupId);
+				if (!group) throw new AppError('Nhóm không hợp lệ.', 422, 'INVALID_GROUP');
+
+				const capacity = effectiveMaxSize(group, board);
+				const currentCount = await tx.teachingGroupAssignment.count({
+					where: { groupId: input.groupId },
+				});
+				if (currentCount + validCodes.length > capacity) {
+					throw new AppError(
+						`Nhóm chỉ còn ${Math.max(0, capacity - currentCount)} chỗ trống.`,
+						409,
+						'GROUP_FULL',
+					);
+				}
+
+				for (const item of preview.resolved) {
+					const slotIndex = await nextMemberOrder(tx, input.groupId);
 					await tx.teachingGroupAssignment.create({
 						data: {
 							boardId: board.id,
-							groupId: restoreGroupId,
-							enrollmentId: viewer.enrollmentId,
-							slotIndex: source.fromSlotIndex!,
+							groupId: input.groupId,
+							enrollmentId: item.enrollmentId,
+							slotIndex,
 						},
 					});
+				}
+
 				await tx.teachingGroupBoard.update({
 					where: { id: board.id },
 					data: { version: { increment: 1 } },
@@ -815,21 +471,243 @@ export async function undoLatestGroupMove(slug: string) {
 				await tx.teachingGroupAudit.create({
 					data: {
 						boardId: board.id,
-						actor: 'STUDENT',
-						action: 'UNDO',
-						actorEnrollmentId: viewer.enrollmentId,
-						enrollmentId: viewer.enrollmentId,
-						fromGroupOrder: source.toGroupOrder,
-						fromSlotIndex: source.toSlotIndex,
-						toGroupOrder: source.fromGroupOrder,
-						toSlotIndex: source.fromSlotIndex,
-						metadata: { claimEpoch: board.claimEpoch, undoOf: source.id },
+						actor: 'ADMIN',
+						actorUserId: input.actorUserId,
+						action: 'ADD_BATCH',
+						metadata: {
+							groupOrder: group.displayOrder,
+							studentCodes: validCodes,
+							count: validCodes.length,
+						},
 					},
 				});
 			}),
 		'GROUP_SLOT_OCCUPIED',
 	);
-	return getGroupBoard(klass.id, slug, viewer.enrollmentId);
+
+	return getGroupBoard(classId, input.tutorialClassId);
+}
+
+export async function previewGroupMembers(
+	classId: string,
+	tutorialClassId: string,
+	groupId: string,
+	studentCodes: string[],
+	db: Prisma.TransactionClient = prisma,
+) {
+	assertTeachingGroupBoardEnabled();
+	await assertTutorialInClass(classId, tutorialClassId);
+	const board = await db.teachingGroupBoard.findUnique({
+		where: { tutorialClassId },
+		include: {
+			groups: true,
+			assignments: { include: { group: true } },
+		},
+	});
+	if (!board || !board.groupCount) {
+		throw new AppError('Bảng xếp nhóm chưa được thiết lập.', 404, 'GROUP_BOARD_NOT_FOUND');
+	}
+	const group = board.groups.find((item) => item.id === groupId);
+	if (!group) throw new AppError('Nhóm không hợp lệ.', 422, 'INVALID_GROUP');
+
+	const enrollments = await db.teachingEnrollment.findMany({
+		where: { classId, status: 'ACTIVE' },
+		include: { student: { select: { studentCode: true, familyName: true, givenName: true } } },
+	});
+	const byCode = new Map(
+		enrollments.map((enrollment) => [
+			normalizeStudentCode(enrollment.student.studentCode),
+			enrollment,
+		]),
+	);
+	const assigned = new Map(
+		board.assignments.map((assignment) => [assignment.enrollmentId, assignment.group]),
+	);
+
+	const errors: string[] = [];
+	const resolved: Array<{
+		enrollmentId: string;
+		studentCode: string;
+		familyName: string;
+		givenName: string;
+	}> = [];
+	const seen = new Set<string>();
+
+	for (const rawCode of studentCodes) {
+		const code = normalizeStudentCode(rawCode);
+		if (!code) continue;
+		if (seen.has(code)) {
+			errors.push(`${code}: mã trùng trong danh sách nhập`);
+			continue;
+		}
+		seen.add(code);
+		const enrollment = byCode.get(code);
+		if (!enrollment) {
+			errors.push(`${code}: không tìm thấy trong lớp`);
+			continue;
+		}
+		if (enrollment.tutorialClassId !== tutorialClassId) {
+			errors.push(`${code}: không thuộc tutorial đang chọn`);
+			continue;
+		}
+		const existing = assigned.get(enrollment.id);
+		if (existing) {
+			if (existing.id === groupId) {
+				errors.push(`${code}: đã có trong nhóm này`);
+			} else {
+				errors.push(`${code}: đã thuộc Nhóm ${existing.displayOrder + 1}`);
+			}
+			continue;
+		}
+		resolved.push({
+			enrollmentId: enrollment.id,
+			studentCode: enrollment.student.studentCode,
+			familyName: enrollment.student.familyName,
+			givenName: enrollment.student.givenName,
+		});
+	}
+
+	const capacity = effectiveMaxSize(group, board);
+	const currentCount = board.assignments.filter(
+		(assignment) => assignment.groupId === groupId,
+	).length;
+	const remaining = Math.max(0, capacity - currentCount);
+
+	return {
+		resolved,
+		errors,
+		remaining,
+		capacity,
+		currentCount,
+	};
+}
+
+export async function moveGroupMember(
+	classId: string,
+	input: {
+		tutorialClassId: string;
+		enrollmentId: string;
+		targetGroupId: string | null;
+		expectedVersion?: number;
+		actorUserId?: string;
+	},
+) {
+	assertTeachingGroupBoardEnabled();
+	await assertTutorialInClass(classId, input.tutorialClassId);
+
+	await withUniqueConflict(
+		'Nhóm vừa thay đổi. Hãy tải lại.',
+		() =>
+			groupTransaction(async (tx) => {
+				const board = await tx.teachingGroupBoard.findUnique({
+					where: { tutorialClassId: input.tutorialClassId },
+					include: { groups: true },
+				});
+				if (!board || !board.groupCount || board.classId !== classId) {
+					throw new AppError('Bảng xếp nhóm chưa được thiết lập.', 404, 'GROUP_BOARD_NOT_FOUND');
+				}
+				if (input.expectedVersion != null && input.expectedVersion !== board.version) {
+					throw new AppError('Bảng đã thay đổi. Hãy tải lại.', 409, 'STALE_BOARD');
+				}
+
+				const enrollment = await tx.teachingEnrollment.findFirst({
+					where: {
+						id: input.enrollmentId,
+						classId,
+						tutorialClassId: input.tutorialClassId,
+						status: 'ACTIVE',
+					},
+				});
+				if (!enrollment)
+					throw new AppError('Sinh viên không thuộc tutorial này.', 404, 'NOT_FOUND');
+
+				const existing = await tx.teachingGroupAssignment.findUnique({
+					where: { enrollmentId: input.enrollmentId },
+					include: { group: true },
+				});
+				const fromGroupOrder = existing?.group.displayOrder ?? null;
+
+				if (input.targetGroupId == null) {
+					if (existing) {
+						await tx.teachingGroupAssignment.delete({
+							where: { enrollmentId: input.enrollmentId },
+						});
+					}
+				} else {
+					const targetGroup = board.groups.find((item) => item.id === input.targetGroupId);
+					if (!targetGroup) throw new AppError('Nhóm không hợp lệ.', 422, 'INVALID_GROUP');
+					if (existing?.groupId === input.targetGroupId) return;
+
+					const capacity = effectiveMaxSize(targetGroup, board);
+					const targetCount = await tx.teachingGroupAssignment.count({
+						where: { groupId: input.targetGroupId },
+					});
+					if (targetCount >= capacity) {
+						throw new AppError('Nhóm đích đã đầy.', 409, 'GROUP_FULL');
+					}
+
+					if (existing) {
+						await tx.teachingGroupAssignment.delete({
+							where: { enrollmentId: input.enrollmentId },
+						});
+					}
+					const slotIndex = await nextMemberOrder(tx, input.targetGroupId);
+					await tx.teachingGroupAssignment.create({
+						data: {
+							boardId: board.id,
+							groupId: input.targetGroupId,
+							enrollmentId: input.enrollmentId,
+							slotIndex,
+						},
+					});
+				}
+
+				await tx.teachingGroupBoard.update({
+					where: { id: board.id },
+					data: { version: { increment: 1 } },
+				});
+				await tx.teachingGroupAudit.create({
+					data: {
+						boardId: board.id,
+						actor: 'ADMIN',
+						actorUserId: input.actorUserId,
+						action: input.targetGroupId == null ? 'REMOVE' : 'MOVE',
+						enrollmentId: input.enrollmentId,
+						fromGroupOrder,
+						toGroupOrder:
+							input.targetGroupId == null
+								? null
+								: (board.groups.find((item) => item.id === input.targetGroupId)?.displayOrder ??
+									null),
+					},
+				});
+			}),
+		'GROUP_SLOT_OCCUPIED',
+	);
+
+	return getGroupBoard(classId, input.tutorialClassId);
+}
+
+export async function ensureDefaultGroupBoard(classId: string, tutorialClassId: string) {
+	assertTeachingGroupBoardEnabled();
+	await assertTutorialInClass(classId, tutorialClassId);
+	const existing = await prisma.teachingGroupBoard.findUnique({ where: { tutorialClassId } });
+	if (existing?.groupCount) return existing;
+
+	const studentCount = await prisma.teachingEnrollment.count({
+		where: { classId, tutorialClassId, status: 'ACTIVE' },
+	});
+	const defaultGroupSize = 5;
+	const groupCount = suggestedGroupCount(studentCount, defaultGroupSize);
+	return configureGroupBoard(classId, {
+		tutorialClassId,
+		groupCount,
+		defaultGroupSize,
+	});
+}
+
+export async function removeGroupAssignmentForEnrollment(enrollmentId: string) {
+	return groupTransaction((tx) => removeEnrollmentGroup(tx, enrollmentId));
 }
 
 export async function getPublicClassIdBySlug(slug: string): Promise<string | null> {
@@ -841,11 +719,61 @@ export async function getPublicClassIdBySlug(slug: string): Promise<string | nul
 	return teachingClass?.id ?? null;
 }
 
-export async function getGroupBoardVersion(classId: string): Promise<number> {
+export async function getGroupBoardVersion(
+	classId: string,
+	tutorialClassId: string,
+): Promise<number> {
 	assertTeachingGroupBoardEnabled();
 	const board = await prisma.teachingGroupBoard.findUnique({
-		where: { classId },
-		select: { version: true },
+		where: { tutorialClassId },
+		select: { version: true, classId: true },
 	});
-	return board?.version ?? 0;
+	if (!board || board.classId !== classId) return 0;
+	return board.version;
+}
+
+/** @deprecated Student self-assign disabled */
+export async function moveGroupAssignment(): Promise<never> {
+	assertTeachingGroupBoardEnabled();
+	throw new AppError('Sinh viên không thể tự xếp nhóm.', 403, 'GROUP_MOVE_FORBIDDEN');
+}
+
+/** @deprecated Board open/lock removed */
+export async function setGroupBoardOpen(): Promise<never> {
+	assertTeachingGroupBoardEnabled();
+	throw new AppError('Chức năng mở/khóa bảng đã được gỡ bỏ.', 410, 'GONE');
+}
+
+/** @deprecated Student claim disabled */
+export async function claimGroupViewer(): Promise<never> {
+	assertTeachingGroupBoardEnabled();
+	throw new AppError('Sinh viên không thể tự xếp nhóm.', 403, 'GROUP_MOVE_FORBIDDEN');
+}
+
+/** @deprecated Student claim disabled */
+export async function getGroupViewer(): Promise<null> {
+	return null;
+}
+
+/** @deprecated Student undo disabled */
+export async function undoLatestGroupMove(): Promise<never> {
+	assertTeachingGroupBoardEnabled();
+	throw new AppError('Sinh viên không thể tự xếp nhóm.', 403, 'GROUP_MOVE_FORBIDDEN');
+}
+
+/** @deprecated No-op */
+export async function forgetGroupViewer(_slug?: string) {
+	return;
+}
+
+/** @deprecated Randomize removed */
+export async function randomizeGroupAssignments(): Promise<never> {
+	assertTeachingGroupBoardEnabled();
+	throw new AppError('Xếp ngẫu nhiên đã được gỡ bỏ.', 410, 'GONE');
+}
+
+/** @deprecated Use moveGroupMember to unassign individually */
+export async function clearGroupAssignments(): Promise<never> {
+	assertTeachingGroupBoardEnabled();
+	throw new AppError('Xóa toàn bộ đã được gỡ bỏ.', 410, 'GONE');
 }

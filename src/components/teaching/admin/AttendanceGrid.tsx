@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { createPortal } from 'react-dom';
 import { GridWeekActions } from './GridWeekActions';
 import { McIcon } from '@/components/myclass/ui';
@@ -194,7 +193,6 @@ export function AttendanceGrid({
 	saveState,
 	onRetry,
 }: AttendanceGridProps) {
-	const { confirm, dialog } = useAdminConfirm();
 	const [noteCell, setNoteCell] = useState<CellKey | null>(null);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const cycleValues = useRef(new Map<string, AttendanceStatus>());
@@ -385,32 +383,6 @@ export function AttendanceGrid({
 													onToggle={
 														!readOnly && onSessionToggle
 															? (open) => onSessionToggle(session.id, open)
-															: undefined
-													}
-													onBulk={
-														!readOnly && session && isOpen && onMarkChange
-															? async () => {
-																	const eligible = students.filter(
-																		(student) => student.enrolledFromWeek <= weekNumber,
-																	);
-																	if (
-																		!(await confirm({
-																			title: 'Đánh dấu cả tuần',
-																			description: `Đánh dấu Có mặt cho ${eligible.length} sinh viên ở tuần ${weekNumber}?`,
-																			confirmLabel: 'Đánh dấu',
-																			tone: 'default',
-																		}))
-																	)
-																		return;
-																	eligible.forEach((student) =>
-																		onMarkChange({
-																			enrollmentId: student.enrollmentId,
-																			sessionId: session.id,
-																			status: 'PRESENT',
-																			note: student.marks[session.id]?.note ?? '',
-																		}),
-																	);
-																}
 															: undefined
 													}
 												/>
@@ -706,7 +678,7 @@ export function AttendanceGrid({
 															});
 														}}
 													>
-														<McIcon name="more_horiz" size={16} />
+														<McIcon name="forum" size={16} />
 													</button>
 												) : null}
 												{started && state === 'saving' ? (
@@ -786,7 +758,6 @@ export function AttendanceGrid({
 				}{' '}
 				buổi
 			</p>
-			{dialog}
 		</>
 	);
 }

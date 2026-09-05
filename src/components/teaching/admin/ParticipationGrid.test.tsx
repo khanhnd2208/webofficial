@@ -235,8 +235,7 @@ describe('ParticipationGrid', () => {
 		const cell = screen.getByRole('button', { name: /SV01 tuần 1 chưa chấm CP/ });
 		expect(cell).toBeDisabled();
 		expect(cell).toHaveAttribute('data-points', '');
-		fireEvent.click(screen.getByRole('button', { name: 'Thao tác CP tuần 1' }));
-		fireEvent.click(screen.getByRole('menuitem', { name: 'Mở CP tuần 1' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Mở CP tuần 1' }));
 		expect(onSessionToggle).toHaveBeenCalledWith('s1', true);
 	});
 

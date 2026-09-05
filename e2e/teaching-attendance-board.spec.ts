@@ -696,7 +696,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			).toHaveAttribute('data-selected', 'true');
 
 			await expect(
-				page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }),
+				page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }),
 			).toBeVisible();
 			await page.locator('.teaching-management-desktop button').click();
 			await expect(page.getByRole('menu', { name: 'Quản lý lớp' })).toBeVisible();
@@ -704,25 +704,50 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByRole('menu', { name: 'Quản lý lớp' })).toHaveCount(0);
 
 			await page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }).click();
-			await page.getByRole('button', { name: 'Mở lịch tuần 1', exact: true }).click();
-			await page.keyboard.press('Escape');
-			if (!(await page.getByRole('dialog', { name: 'Sửa ngày tuần 1', exact: true }).isVisible())) {
-				await page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }).click();
+			await expect(page.getByRole('group', { name: /Tháng/ })).toBeVisible();
+			// New sessions open on today's month; navigate deterministically to the test date.
+			const targetMonth = 2026 * 12 + 8;
+			for (let i = 0; i < 120; i++) {
+				const label = await page.locator('.mc-calendar-heading strong').innerText();
+				const parts = label.match(/Tháng (\d+) \/ (\d+)/)!;
+				const current = Number(parts[2]) * 12 + Number(parts[1]) - 1;
+				if (current === targetMonth) break;
+				await page
+					.getByRole('button', {
+						name: current > targetMonth ? 'Tháng trước' : 'Tháng sau',
+						exact: true,
+					})
+					.click();
 			}
-			const weekDate = page.getByLabel('Ngày học tuần 1', { exact: true });
-			await weekDate.fill('01');
-			await page.getByLabel('Tháng học tuần 1', { exact: true }).fill('09');
-			await page.getByLabel('Năm học tuần 1', { exact: true }).fill('2026');
-			await expect(weekDate).toHaveValue('01');
-			await expect(page.getByLabel('Tháng học tuần 1', { exact: true })).toHaveValue('09');
-			await expect(page.getByLabel('Năm học tuần 1', { exact: true })).toHaveValue('2026');
+
+			await page.route(
+				'**/api/admin/teaching/sessions/*',
+				async (route) => {
+					await new Promise((resolve) => setTimeout(resolve, 150));
+					await route.fulfill({
+						status: 500,
+						contentType: 'application/json',
+						body: JSON.stringify({ error: 'Test date save failure' }),
+					});
+				},
+				{ times: 1 },
+			);
+			await page.getByRole('button', { name: '1/9/2026', exact: true }).press('Enter');
+			await expect(page.getByRole('alert').filter({ hasText: 'Không thể lưu ngày' })).toBeVisible();
+			await expect(page.getByRole('button', { name: '1/9/2026', exact: true })).toHaveAttribute(
+				'aria-pressed',
+				'true',
+			);
+			await page.getByRole('button', { name: 'Thử lại lưu ngày', exact: true }).click();
+
+			await expect(page.getByRole('dialog', { name: 'Sửa ngày tuần 1', exact: true })).toHaveCount(
+				0,
+			);
 			await expect(page.getByText('Đã lưu ngày học')).toBeVisible();
-			await weekDate.press('Escape');
 			await expect(
 				page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }),
 			).toContainText('01/09/26');
-			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Mở điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở buổi tuần/)).toBeVisible();
 
 			const attendanceCell = page.locator('button.mc-grid-cell:not(:disabled)').first();
@@ -746,8 +771,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				page.getByRole('columnheader', { name: 'Số buổi vắng', exact: true }),
 			).toHaveCount(0);
 			await expect(page.locator('.mc-grid-week-sub').first()).toHaveText('01/09/26');
-			await page.getByRole('button', { name: 'Thao tác CP tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Mở CP tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Mở CP tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở chấm CP tuần/)).toBeVisible();
 			const cpCell = page.locator('button.mc-grid-participation-cell').first();
 			await cpCell.click();
@@ -785,19 +809,33 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 					expect.objectContaining({ points: 0.5, note: 'Có tiến bộ trong thảo luận' }),
 				]),
 			);
-			await page.getByRole('button', { name: 'Thao tác CP tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Tạm khóa CP tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Tạm khóa CP tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã khóa chấm CP tuần/)).toBeVisible();
 			await expect(cpCell).toBeDisabled();
-			await page.getByRole('button', { name: 'Thao tác CP tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Mở CP tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Mở CP tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở chấm CP tuần/)).toBeVisible();
+			await page.getByRole('button', { name: 'Chốt CP tuần 1', exact: true }).click();
+			await page
+				.getByRole('dialog', { name: 'Chốt tuần' })
+				.getByTestId('admin-confirm-accept')
+				.click();
+			await expect(
+				page.getByRole('button', { name: 'Bỏ chốt CP tuần 1', exact: true }),
+			).toBeVisible();
+			await page.getByRole('button', { name: 'Mở lại CP tuần 1', exact: true }).click();
+			await page
+				.getByRole('dialog', { name: 'Mở lại tuần' })
+				.getByTestId('admin-confirm-accept')
+				.click();
+			await expect(
+				page.getByRole('button', { name: 'Tạm khóa CP tuần 1', exact: true }),
+			).toBeVisible();
+
 			await expect(cpCell).toHaveAttribute('data-points', '0.5');
 
 			await page.goto(`/my-space/teaching/${classId}?tab=attendance`);
 			const lockedAttendanceCell = page.locator('button.mc-grid-cell').first();
-			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Tạm khóa điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Tạm khóa điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã khóa buổi tuần/)).toBeVisible();
 			await expect(lockedAttendanceCell).toHaveAttribute('data-status', 'ABSENT_UNEXCUSED');
 			await expect(lockedAttendanceCell).toBeDisabled();
@@ -823,8 +861,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				]),
 			);
 
-			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Mở điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở buổi tuần/)).toBeVisible();
 			await expect(lockedAttendanceCell).toHaveAttribute('data-status', 'ABSENT_UNEXCUSED');
 			const reopened = await page.request.get(`/api/admin/teaching/classes/${classId}/gradebook`);
@@ -849,8 +886,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				]),
 			);
 
-			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Chốt điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Chốt điểm danh tuần 1', exact: true }).click();
 			await page
 				.getByRole('dialog', { name: 'Chốt tuần' })
 				.getByTestId('admin-confirm-accept')
@@ -870,21 +906,45 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 					(session) => session.attendanceOpen === false && session.attendanceTakenAt !== null,
 				),
 			).toBe(true);
-			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
 			await expect(
-				page.getByRole('menuitem', { name: 'Bỏ chốt điểm danh tuần 1', exact: true }),
+				page.getByRole('button', { name: 'Bỏ chốt điểm danh tuần 1', exact: true }),
 			).toBeVisible();
 			await page
-				.getByRole('menuitem', { name: 'Bỏ chốt điểm danh tuần 1', exact: true })
+				.getByRole('button', { name: 'Bỏ chốt điểm danh tuần 1', exact: true })
 				.press('Escape');
-			await mkdir('outputs/teaching-ui-review', { recursive: true });
+			await mkdir('outputs/teaching-ui-direct', { recursive: true });
 			await page.screenshot({
-				path: `outputs/teaching-ui-review/after-attendance-${test.info().project.name}.png`,
+				path: `outputs/teaching-ui-direct/after-attendance-${test.info().project.name}.png`,
 			});
+
+			await page.getByRole('button', { name: 'Chọn tuần 1', exact: true }).click();
+			for (const width of [1440, 1024, 768, 390]) {
+				await page.setViewportSize({ width, height: 900 });
+				await page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }).click();
+				const calendar = page.getByRole('dialog', { name: 'Sửa ngày tuần 1', exact: true });
+				await expect(calendar).toBeVisible();
+				const box = await calendar.boundingBox();
+				expect(box!.x).toBeGreaterThanOrEqual(0);
+				expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+				await page.screenshot({
+					path: `outputs/teaching-ui-direct/calendar-${test.info().project.name}-${width}.png`,
+				});
+				await page.keyboard.press('Escape');
+				await expect(
+					page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }),
+				).toBeFocused();
+				expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+					true,
+				);
+				await page.screenshot({
+					path: `outputs/teaching-ui-direct/after-attendance-${test.info().project.name}-${width}.png`,
+				});
+			}
+			await page.setViewportSize({ width: 1440, height: 900 });
 
 			await page.goto(`/my-space/teaching/${classId}?tab=cp`);
 			await expect(page.getByTestId('participation-grid').first()).toBeVisible();
-			await mkdir('outputs/teaching-ui-review', { recursive: true });
+			await mkdir('outputs/teaching-ui-direct', { recursive: true });
 			await page.getByRole('button', { name: 'Chọn tuần 1', exact: true }).click();
 			await expect(
 				page.getByTestId('participation-grid').locator('thead [data-week="1"]'),
@@ -926,7 +986,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 					)
 					.toEqual(expect.objectContaining({ fits: true }));
 				await page.screenshot({
-					path: `outputs/teaching-ui-review/after-cp-${test.info().project.name}-${width}.png`,
+					path: `outputs/teaching-ui-direct/after-cp-${test.info().project.name}-${width}.png`,
 				});
 			}
 			await page.setViewportSize({ width: 390, height: 800 });
@@ -1024,8 +1084,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			});
 
 			await page.goto(`/my-space/teaching/${classId}?tab=attendance`);
-			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
-			await page.getByRole('menuitem', { name: 'Mở điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở buổi tuần/)).toBeVisible();
 			const cell = page.locator('button.mc-grid-cell:not(:disabled)').first();
 			await cell.click();
