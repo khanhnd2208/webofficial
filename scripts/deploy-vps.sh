@@ -589,7 +589,12 @@ echo "Applying committed migrations and syncing canonical Active Recall decks"
 ./node_modules/.bin/tsx scripts/replace-active-recall-revisions.ts
 
 echo "Removing build-only development dependencies from the runtime release"
-HUSKY=0 npm prune --omit=dev --ignore-scripts --no-package-lock
+if ! HUSKY=0 npm prune --omit=dev --ignore-scripts --no-package-lock; then
+	echo "npm prune failed on the installed tree; reinstalling production dependencies from the lockfile"
+	rm -rf node_modules
+	HUSKY=0 npm ci --omit=dev
+	./node_modules/.bin/prisma generate
+fi
 test -x ./node_modules/.bin/next
 
 if ss -ltnH | awk '{ print $4 }' | grep -Eq ":${CANDIDATE_PORT}$"; then
