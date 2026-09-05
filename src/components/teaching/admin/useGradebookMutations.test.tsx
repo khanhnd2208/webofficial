@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { TeachingGradebook } from '@/features/teaching/types';
@@ -19,13 +19,13 @@ function initialGradebook(): TeachingGradebook {
 			credits: null,
 			lecturerName: '',
 			lecturerCode: '',
-		totalWeeks: 1,
-		attendanceMaxPoints: 5,
-		cpMaxPoints: 5,
-		absenceDeductionPoints: 0.5,
-		lateDeductionPoints: 0.5,
-		lateCountsTowardAbsenceThreshold: true,
-		giftDeductionPoints: 1,
+			totalWeeks: 1,
+			attendanceMaxPoints: 5,
+			cpMaxPoints: 5,
+			absenceDeductionPoints: 0.5,
+			lateDeductionPoints: 0.5,
+			lateCountsTowardAbsenceThreshold: true,
+			giftDeductionPoints: 1,
 			absenceThresholdPercent: 20,
 			lateGraceMinutes: 15,
 			status: 'ACTIVE',
@@ -96,7 +96,15 @@ function initialGradebook(): TeachingGradebook {
 				},
 			},
 		],
-		stats: { studentCount: 1, sessionsTaken: 1, averageAttendance: 5, averageCp: 0, averageTotal: 5, atRiskCount: 0, bannedCount: 0 },
+		stats: {
+			studentCount: 1,
+			sessionsTaken: 1,
+			averageAttendance: 5,
+			averageCp: 0,
+			averageTotal: 5,
+			atRiskCount: 0,
+			bannedCount: 0,
+		},
 	};
 }
 
@@ -116,7 +124,10 @@ function Harness() {
 			<button type="button" onClick={() => state.retryMark('e1', 's1', 'attendance')}>
 				retry
 			</button>
-			<button type="button" onClick={() => void state.updateSessionDate('s1', '2026-09-15').catch(() => undefined)}>
+			<button
+				type="button"
+				onClick={() => void state.updateSessionDate('s1', '2026-09-15').catch(() => undefined)}
+			>
 				date
 			</button>
 			<span data-testid="status">{state.gradebook.students[0]?.marks.s1?.status}</span>
@@ -199,3 +210,112 @@ describe('useGradebookMutations', () => {
 		expect(screen.getByTestId('toast')).toHaveTextContent('Lỗi lưu ngày: network down');
 	});
 });
+
+describe('finalize while saving', () => {
+	it.each(['attendance', 'participation'] as const)(
+		'blocks %s finalization when an in-flight save fails',
+		async (kind) => {
+			api.teachingApi.mockReset();
+			api.teachingApi.mockResolvedValue({
+				session: initialGradebook().sessions[0],
+				students: initialGradebook().students,
+				stats: initialGradebook().stats,
+			});
+			let rejectSave!: (error: Error) => void;
+			api.teachingApi.mockImplementationOnce(
+				() =>
+					new Promise((_, reject) => {
+						rejectSave = reject;
+					}),
+			);
+			const { result } = renderHook(() => useGradebookMutations(initialGradebook()));
+			act(() => {
+				if (kind === 'attendance')
+					result.current.persistMark({
+						enrollmentId: 'e1',
+						sessionId: 's1',
+						status: 'LATE',
+						note: '',
+					});
+				else
+					result.current.persistParticipation({
+						enrollmentId: 'e1',
+						sessionId: 's1',
+						points: 1,
+						note: '',
+					});
+			});
+			await waitFor(() => expect(api.teachingApi).toHaveBeenCalledTimes(1));
+			let finalization!: Promise<unknown>;
+			act(() => {
+				finalization = (
+					kind === 'attendance'
+						? result.current.setAttendanceLifecycle('s1', 'finalize')
+						: result.current.setParticipationLifecycle('s1', 'finalize')
+				).catch((error) => error);
+			});
+			await act(async () => {
+				rejectSave(new Error('network down'));
+				await finalization;
+			});
+			expect(api.teachingApi).toHaveBeenCalledTimes(1);
+			expect(result.current.toast).toContain('chưa lưu thành công');
+		},
+	);
+});
+
+it.each(['attendance', 'participation'] as const)(
+	'waits for %s saving, suppresses duplicate finalize, releases the busy state after success',
+	async (kind) => {
+		api.teachingApi.mockReset();
+		let resolveSave!: (value: unknown) => void;
+		const saved = {
+			session: initialGradebook().sessions[0],
+			students: initialGradebook().students,
+			stats: initialGradebook().stats,
+		};
+		api.teachingApi
+			.mockImplementationOnce(
+				() =>
+					new Promise((resolve) => {
+						resolveSave = resolve;
+					}),
+			)
+			.mockResolvedValue(saved);
+		const { result } = renderHook(() => useGradebookMutations(initialGradebook()));
+		const persist = () =>
+			kind === 'attendance'
+				? result.current.persistMark({
+						enrollmentId: 'e1',
+						sessionId: 's1',
+						status: 'LATE',
+						note: '',
+					})
+				: result.current.persistParticipation({
+						enrollmentId: 'e1',
+						sessionId: 's1',
+						points: 1,
+						note: '',
+					});
+		const finalize = () =>
+			kind === 'attendance'
+				? result.current.setAttendanceLifecycle('s1', 'finalize')
+				: result.current.setParticipationLifecycle('s1', 'finalize');
+		act(persist);
+		await waitFor(() => expect(api.teachingApi).toHaveBeenCalledTimes(1));
+		let pending!: Promise<void>;
+		act(() => {
+			pending = finalize();
+			void finalize();
+			persist();
+		});
+		expect(api.teachingApi).toHaveBeenCalledTimes(1);
+		await act(async () => {
+			resolveSave(saved);
+			await pending;
+		});
+		expect(api.teachingApi).toHaveBeenCalledTimes(2);
+		expect(api.teachingApi.mock.calls[1]?.[0]).toContain('/lock');
+		expect(result.current.togglingSessionId).toBeNull();
+	},
+);

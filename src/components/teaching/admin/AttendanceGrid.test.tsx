@@ -183,12 +183,13 @@ describe('AttendanceGrid', () => {
 			/>,
 		);
 
-		expect(screen.getByRole('button', { name: 'Mở điểm danh tuần 1' })).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Thao tác điểm danh tuần 1' }));
+		expect(screen.getByRole('menuitem', { name: 'Mở điểm danh tuần 1' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: '2406090045 tuần 1 chưa bắt đầu' })).toHaveAttribute(
 			'data-status',
 			'PRESENT',
 		);
-		fireEvent.click(screen.getByRole('button', { name: 'Mở điểm danh tuần 1' }));
+		fireEvent.click(screen.getByRole('menuitem', { name: 'Mở điểm danh tuần 1' }));
 		expect(onSessionToggle).toHaveBeenCalledWith('sess-1', true);
 
 		rerender(
@@ -200,7 +201,8 @@ describe('AttendanceGrid', () => {
 				onSessionToggle={onSessionToggle}
 			/>,
 		);
-		expect(screen.getByRole('button', { name: 'Khóa điểm danh tuần 1' })).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Thao tác điểm danh tuần 1' }));
+		expect(screen.getByRole('menuitem', { name: 'Tạm khóa điểm danh tuần 1' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: '2406090045 tuần 1' })).toHaveAttribute(
 			'data-status',
 			'PRESENT',
@@ -226,7 +228,7 @@ describe('AttendanceGrid', () => {
 		const dated = sessions().map((session) =>
 			session.id === 'sess-1' ? { ...session, heldOn: '2026-09-01' } : session,
 		);
-		const { container } = render(
+		render(
 			<AttendanceGrid
 				students={[student()]}
 				sessions={dated}
@@ -235,7 +237,8 @@ describe('AttendanceGrid', () => {
 			/>,
 		);
 		expect(screen.getByText('01/09/26')).toBeInTheDocument();
-		const dateInput = container.querySelector('input[type="date"]');
+		fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
+		const dateInput = document.querySelector('input[type="date"]');
 		expect(dateInput).not.toBeNull();
 		fireEvent.change(dateInput!, { target: { value: '2026-09-15' } });
 		expect(onSessionDateChange).toHaveBeenCalledWith(
@@ -245,7 +248,7 @@ describe('AttendanceGrid', () => {
 	});
 
 	it('opens the native date picker from click and keyboard gestures', () => {
-		const { container } = render(
+		render(
 			<AttendanceGrid
 				students={[student()]}
 				sessions={sessions()}
@@ -253,8 +256,9 @@ describe('AttendanceGrid', () => {
 				onSessionDateChange={vi.fn()}
 			/>,
 		);
+		fireEvent.click(screen.getByRole('button', { name: 'Sửa ngày tuần 1' }));
 		const calendar = screen.getByRole('button', { name: 'Mở lịch tuần 1' });
-		const dateInput = container.querySelector('input[type="date"]') as HTMLInputElement;
+		const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
 		const showPicker = vi.fn();
 		Object.defineProperty(dateInput, 'showPicker', { configurable: true, value: showPicker });
 

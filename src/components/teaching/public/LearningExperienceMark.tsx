@@ -1,6 +1,8 @@
 import type { LearningExperienceChoice } from '@/features/teaching/types';
 import type { CSSProperties } from 'react';
 
+import { McIcon } from '@/components/myclass/ui';
+
 export function LearningExperienceMark({
 	choice,
 	size = 'md',
@@ -49,9 +51,11 @@ export function LearningExperienceMark({
 				</svg>
 			) : (
 				<>
-					<span className="material-symbols-outlined lx-mark-icon" aria-hidden="true">
-						{choice === 'CHALLENGE' ? 'bolt' : 'auto_awesome'}
-					</span>
+					<McIcon
+						name={choice === 'CHALLENGE' ? 'bolt' : 'auto_awesome'}
+						size={15}
+						className="lx-mark-icon"
+					/>
 					<span className="lx-mark-label">{choice === 'CHALLENGE' ? 'Challenge' : 'Royal'}</span>
 				</>
 			)}

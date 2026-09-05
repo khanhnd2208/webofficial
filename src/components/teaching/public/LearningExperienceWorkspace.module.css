@@ -135,9 +135,9 @@
 	color: var(--learning-gold-light);
 }
 
-.authCrest span {
-	font-size: 2rem;
-	font-variation-settings: 'FILL' 1;
+.authCrest svg {
+	width: 2rem;
+	height: 2rem;
 }
 
 .kicker {
@@ -210,9 +210,10 @@
 	box-shadow: 0 0 0 3px rgb(16 44 72 / 14%);
 }
 
-.inputShell > span {
+.inputShell > svg {
+	width: 1.2rem;
+	height: 1.2rem;
 	color: #9b6b27;
-	font-size: 1.2rem;
 }
 
 .inputShell input {
@@ -254,8 +255,9 @@
 }
 
 .pickerChevron {
+	width: 1.1rem !important;
+	height: 1.1rem !important;
 	color: #665e51 !important;
-	font-size: 0.9rem !important;
 }
 
 .studentOptions {
@@ -353,9 +355,9 @@
 	color: #1d6847;
 }
 
-.selectedStudent > span {
-	font-size: 1.15rem;
-	font-variation-settings: 'FILL' 1;
+.selectedStudent > svg {
+	width: 1.15rem;
+	height: 1.15rem;
 }
 
 .selectedStudent p {
@@ -396,9 +398,10 @@
 	line-height: 1.45;
 }
 
-.accessHint span {
+.accessHint svg {
 	flex: 0 0 auto;
-	font-size: 1rem;
+	width: 1rem;
+	height: 1rem;
 }
 
 .accessHint p {
@@ -451,8 +454,10 @@
 	line-height: 1.4;
 }
 
-.securityNote span {
-	font-size: 1rem;
+.securityNote svg {
+	width: 1rem;
+	height: 1rem;
+	flex-shrink: 0;
 }
 
 .error {
@@ -738,9 +743,9 @@
 	color: #6a4510;
 }
 
-.selectedBadge span {
-	font-size: 1rem;
-	font-variation-settings: 'FILL' 1;
+.selectedBadge svg {
+	width: 1rem;
+	height: 1rem;
 }
 
 .cardBody h3 {
@@ -808,13 +813,13 @@
 	border-left: 1px solid rgb(201 149 70 / 35%);
 }
 
-.featureGrid :global(.material-symbols-outlined) {
+.featureGrid :global(svg) {
 	color: var(--learning-gold-light);
-	font-size: 1.55rem;
-	font-variation-settings: 'FILL' 1;
+	width: 1.55rem;
+	height: 1.55rem;
 }
 
-.choiceCard[data-tone='support'] .featureGrid :global(.material-symbols-outlined) {
+.choiceCard[data-tone='support'] .featureGrid :global(svg) {
 	color: #a87429;
 }
 
@@ -846,8 +851,11 @@
 	border-color: #f2ca7c;
 }
 
-.choiceButton span {
-	font-size: 1.1rem;
+.choiceButton svg,
+.enterButton svg {
+	width: 1.1rem;
+	height: 1.1rem;
+	flex-shrink: 0;
 }
 
 .statusBar {
@@ -869,8 +877,10 @@
 	text-align: center;
 }
 
-.statusBar span {
-	font-size: 1.1rem;
+.statusBar svg {
+	width: 1.1rem;
+	height: 1.1rem;
+	flex-shrink: 0;
 }
 
 .statusBar[data-error='true'] {

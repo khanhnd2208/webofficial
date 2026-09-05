@@ -10,18 +10,18 @@ import {
 import { routes } from './routes';
 
 describe('admin navigation', () => {
-	it('limits the main sidebar to Website, Teaching and Active Recall', () => {
+	it('limits the main sidebar to Website and Active Recall', () => {
 		const hrefs = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
 		const labels = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.label));
 		expect(hrefs).toEqual([
 			routes.admin.website,
-			routes.admin.teaching,
 			routes.admin.activeRecall,
 		]);
-		expect(labels).toEqual(['Website', 'Teaching', 'Active Recall']);
+		expect(labels).toEqual(['Website', 'Active Recall']);
 		expect(hrefs).not.toContain(routes.admin.myClass);
 		expect(hrefs).not.toContain(routes.admin.posts);
 		expect(hrefs).not.toContain(routes.admin.users);
+		expect(hrefs).not.toContain(routes.admin.teaching);
 		expect(hrefs.every((href) => href.startsWith('/admin'))).toBe(true);
 	});
 
@@ -39,7 +39,7 @@ describe('admin navigation', () => {
 
 	it('switches nav groups by operating shell', () => {
 		expect(getAdminNavGroupsForPath(routes.admin.home)).toBe(ADMIN_NAV_GROUPS);
-		expect(getAdminNavGroupsForPath(routes.admin.teaching)).toBe(ADMIN_NAV_GROUPS);
+		expect(getAdminNavGroupsForPath(routes.admin.website)).toBe(ADMIN_NAV_GROUPS);
 		expect(getAdminNavGroupsForPath(routes.admin.myClass)).toBe(ARCHIVE_NAV_GROUPS);
 		expect(getAdminNavGroupsForPath(routes.admin.archive)).toBe(ARCHIVE_NAV_GROUPS);
 	});
@@ -48,7 +48,6 @@ describe('admin navigation', () => {
 		expect(isAdminNavActive(routes.admin.website, routes.admin.website)).toBe(true);
 		expect(isAdminNavActive(routes.admin.inquiries, routes.admin.website)).toBe(true);
 		expect(isAdminNavActive(`${routes.admin.inquiries}/abc`, routes.admin.website)).toBe(true);
-		expect(isAdminNavActive(routes.admin.teaching, routes.admin.website)).toBe(false);
 	});
 
 	it('does not highlight the archived tools hub on Active Recall', () => {
@@ -62,11 +61,5 @@ describe('admin navigation', () => {
 		expect(meta.width).toBe('wide');
 		expect(meta.localNav?.length).toBeGreaterThan(3);
 		expect(isAdminNavActive('/admin/my-class/courses', routes.admin.myClassCourses)).toBe(true);
-	});
-
-	it('resolves Teaching to a full workspace without a second sidebar', () => {
-		const meta = resolveAdminRoute('/admin/teaching/class-1');
-		expect(meta.width).toBe('full-workspace');
-		expect(meta.localNav).toBeUndefined();
 	});
 });

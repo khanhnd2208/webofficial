@@ -76,9 +76,52 @@ const nextConfig: NextConfig = {
 			// Admin vocabulary alias
 			{ source: '/admin/vocabulary', destination: '/admin/tools/vocabulary', permanent: true },
 
+			// Teaching now lives in My Space. Keep old bookmarks working without
+			// rendering the Admin shell before the compatibility redirect completes.
+			{
+				source: '/admin/teaching/:classId/attendance-board',
+				destination: '/my-space/teaching/:classId?tab=share',
+				permanent: false,
+			},
+			{
+				source: '/admin/teaching/:classId/gradebook',
+				destination: '/my-space/teaching/:classId?tab=attendance',
+				permanent: false,
+			},
+			{
+				source: '/admin/teaching/:classId/roster',
+				destination: '/my-space/teaching/:classId?tab=students',
+				permanent: false,
+			},
+			{
+				source: '/admin/teaching/:classId/sessions',
+				destination: '/my-space/teaching/:classId?tab=setup',
+				permanent: false,
+			},
+			{
+				source: '/admin/teaching/:classId/settings',
+				destination: '/my-space/teaching/:classId?tab=setup',
+				permanent: false,
+			},
+			{
+				source: '/admin/teaching/:classId/public',
+				destination: '/my-space/teaching/:classId?tab=setup',
+				permanent: false,
+			},
+			{ source: '/admin/teaching/new', destination: '/my-space/teaching/new', permanent: false },
+			{
+				source: '/admin/teaching/import',
+				destination: '/my-space/teaching/import',
+				permanent: false,
+			},
+			{
+				source: '/admin/teaching/:classId',
+				destination: '/my-space/teaching/:classId',
+				permanent: false,
+			},
+			{ source: '/admin/teaching', destination: '/my-space/teaching', permanent: false },
+
 			// Temporary admin workspace consolidations (non-permanent until stable)
-			{ source: '/my-space/teaching', destination: '/admin/teaching', permanent: false },
-			{ source: '/my-space/teaching/:path*', destination: '/admin/teaching/:path*', permanent: false },
 			{ source: '/messages', destination: '/admin/tools/messages', permanent: false },
 			{ source: '/messages/:path*', destination: '/admin/tools/messages/:path*', permanent: false },
 

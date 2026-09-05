@@ -102,7 +102,7 @@ export function TeachingCoreTabs({
 	const searchParams = useSearchParams();
 	const week = pending?.week ?? (Number(searchParams.get('week') || '') || undefined);
 	const tabLink = (value: TeachingWorkspaceTab) =>
-		routes.admin.teachingClassTab(classId, value, value === 'attendance' || value === 'cp' ? week : undefined);
+		routes.mySpaceTeachingClassTab(classId, value, value === 'attendance' || value === 'cp' ? week : undefined);
 
 	return (
 		<div className="teaching-core-tabs-wrap">

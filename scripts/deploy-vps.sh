@@ -343,8 +343,8 @@ assert_application_smoke() {
 	expect_guest_store_api "$base_url"
 	expect_store_post_unauthorized "$base_url"
 	expect_http_status "$base_url" '/lop/no-such-class-ever' 404
-	expect_redirect_location "$base_url" '/admin/teaching?tab=cp' '/dang-nhap?from=%2Fadmin%2Fteaching%3Ftab%3Dcp'
-	expect_redirect_location "$base_url" '/my-space/teaching?tab=cp' '/admin/teaching?tab=cp'
+	expect_redirect_location "$base_url" '/admin/teaching?tab=cp' '/my-space/teaching?tab=cp'
+	expect_redirect_location "$base_url" '/my-space/teaching?tab=cp' '/dang-nhap?from=%2Fmy-space%2Fteaching%3Ftab%3Dcp'
 	expect_redirect_location "$base_url" '/messages' '/admin/tools/messages'
 	expect_http_status "$base_url" '/my-space/active-recall' 200
 	expect_http_status "$base_url" '/api/admin/active-recall' 401

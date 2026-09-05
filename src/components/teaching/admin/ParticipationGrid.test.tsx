@@ -194,7 +194,11 @@ describe('ParticipationGrid', () => {
 
 	it('does not visually select the inferred current week', () => {
 		const upcoming = [
-			{ ...sessions()[0]!, participationOpen: false, attendanceTakenAt: '2026-09-01T00:00:00.000Z' },
+			{
+				...sessions()[0]!,
+				participationOpen: false,
+				attendanceTakenAt: '2026-09-01T00:00:00.000Z',
+			},
 			{
 				...sessions()[0]!,
 				id: 's2',
@@ -202,7 +206,13 @@ describe('ParticipationGrid', () => {
 				attendanceTakenAt: '2026-09-08T00:00:00.000Z',
 				participationOpen: false,
 			},
-			{ ...sessions()[0]!, id: 's3', weekNumber: 3, attendanceTakenAt: null, participationOpen: false },
+			{
+				...sessions()[0]!,
+				id: 's3',
+				weekNumber: 3,
+				attendanceTakenAt: null,
+				participationOpen: false,
+			},
 		];
 		const { container } = render(
 			<ParticipationGrid students={[student()]} sessions={upcoming} totalWeeks={3} />,
@@ -225,7 +235,8 @@ describe('ParticipationGrid', () => {
 		const cell = screen.getByRole('button', { name: /SV01 tuần 1 chưa chấm CP/ });
 		expect(cell).toBeDisabled();
 		expect(cell).toHaveAttribute('data-points', '');
-		fireEvent.click(screen.getByRole('button', { name: 'Mở chấm CP tuần 1' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Thao tác CP tuần 1' }));
+		fireEvent.click(screen.getByRole('menuitem', { name: 'Mở CP tuần 1' }));
 		expect(onSessionToggle).toHaveBeenCalledWith('s1', true);
 	});
 

@@ -192,7 +192,9 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	const [toast, setToast] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveStates, setSaveStates] = useState<Record<string, GradebookSaveState>>({});
-	const [sessionDateStates, setSessionDateStates] = useState<Record<string, GradebookSaveState>>({});
+	const [sessionDateStates, setSessionDateStates] = useState<Record<string, GradebookSaveState>>(
+		{},
+	);
 	const [togglingSessionId, setTogglingSessionId] = useState<string | null>(null);
 	const queues = useRef(new Map<string, Promise<void>>());
 	const revisions = useRef(new Map<string, number>());
@@ -201,10 +203,13 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	);
 	const snapshots = useRef(new Map<string, CellSnapshot>());
 	const pendingCount = useRef(0);
+	const latestSaveStates = useRef<Record<string, GradebookSaveState>>({});
+	const lifecycleBusy = useRef<string | null>(null);
 
 	function nextRevision(key: string) {
 		const revision = (revisions.current.get(key) ?? 0) + 1;
 		revisions.current.set(key, revision);
+		latestSaveStates.current[key] = 'saving';
 		setSaveStates((current) => ({ ...current, [key]: 'saving' }));
 		pendingCount.current += 1;
 		setIsSaving(true);
@@ -215,6 +220,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 		pendingCount.current = Math.max(0, pendingCount.current - 1);
 		setIsSaving(pendingCount.current > 0);
 		if (revisions.current.get(key) === revision) {
+			latestSaveStates.current[key] = state;
 			setSaveStates((current) => ({ ...current, [key]: state }));
 		}
 	}
@@ -232,6 +238,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	}
 
 	function persistMark(payload: AttendancePayload) {
+		if (lifecycleBusy.current === payload.sessionId) return;
 		const key = mutationKey('attendance', payload.enrollmentId, payload.sessionId);
 		const revision = nextRevision(key);
 		retryPayloads.current.set(key, payload);
@@ -308,6 +315,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	}
 
 	function persistParticipation(payload: ParticipationPayload) {
+		if (lifecycleBusy.current === payload.sessionId) return;
 		const key = mutationKey('participation', payload.enrollmentId, payload.sessionId);
 		const revision = nextRevision(key);
 		retryPayloads.current.set(key, payload);
@@ -457,7 +465,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 			.filter(([key]) => key.startsWith(`${kind}:`) && key.endsWith(`:${sessionId}`))
 			.map(([, request]) => request);
 		if (pending.length) await Promise.all(pending);
-		const failed = Object.entries(saveStates).some(
+		const failed = Object.entries(latestSaveStates.current).some(
 			([key, state]) =>
 				key.startsWith(`${kind}:`) && key.endsWith(`:${sessionId}`) && state === 'error',
 		);
@@ -470,6 +478,8 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 		action: SessionLifecycleAction,
 		heldOn?: string | null,
 	) {
+		if (lifecycleBusy.current) return;
+		lifecycleBusy.current = sessionId;
 		setTogglingSessionId(sessionId);
 		try {
 			await flushPending('attendance', sessionId);
@@ -495,6 +505,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 			);
 			throw error;
 		} finally {
+			lifecycleBusy.current = null;
 			setTogglingSessionId(null);
 		}
 	}
@@ -504,6 +515,8 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 	}
 
 	async function setParticipationLifecycle(sessionId: string, action: SessionLifecycleAction) {
+		if (lifecycleBusy.current) return;
+		lifecycleBusy.current = sessionId;
 		setTogglingSessionId(sessionId);
 		try {
 			await flushPending('participation', sessionId);
@@ -527,6 +540,7 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 			setToast(error instanceof Error ? error.message : 'Không thể cập nhật trạng thái chấm CP');
 			throw error;
 		} finally {
+			lifecycleBusy.current = null;
 			setTogglingSessionId(null);
 		}
 	}

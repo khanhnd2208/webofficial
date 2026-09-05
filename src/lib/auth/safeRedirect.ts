@@ -47,10 +47,10 @@ function applyLegacyAliases(path: string): string {
 		return `/tai-khoan/hoc${search}`;
 	}
 	if (pathname === '/giang-day' || pathname.startsWith('/giang-day/')) {
-		return `/admin/teaching${search}`;
+		return `/my-space/teaching${search}`;
 	}
-	if (pathname === '/my-space/teaching' || pathname.startsWith('/my-space/teaching/')) {
-		return `/admin/teaching${pathname.slice('/my-space/teaching'.length)}${search}`;
+	if (pathname === '/admin/teaching' || pathname.startsWith('/admin/teaching/')) {
+		return `/my-space/teaching${pathname.slice('/admin/teaching'.length)}${search}`;
 	}
 	if (pathname === '/messages' || pathname.startsWith('/messages/')) {
 		return `/admin/tools/messages${pathname.slice('/messages'.length)}${search}`;
@@ -107,6 +107,7 @@ export function resolveAuthJsRedirect(url: string, baseUrl: string): string {
 
 export function destinationLabel(from: string): string | null {
 	if (!from || from === '/' || from.startsWith('http')) return null;
+	if (from.startsWith('/my-space/teaching')) return 'lớp học';
 	if (from.startsWith('/admin')) return 'khu quản trị';
 	if (from.startsWith('/ghi-chep') || from.startsWith('/bai-viet')) return 'ghi chép';
 	if (from.startsWith('/tai-khoan')) return 'tài khoản';

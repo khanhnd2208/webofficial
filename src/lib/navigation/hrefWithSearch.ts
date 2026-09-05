@@ -1,12 +1,14 @@
 export function hrefWithSearch(
-	pathname: string,
+	href: string,
 	searchParams?: Record<string, string | string[] | undefined>,
 ): string {
-	if (!searchParams) return pathname;
-	const sp = new URLSearchParams();
+	if (!searchParams) return href;
+	const [pathname, existingQuery = ''] = href.split('?', 2);
+	const sp = new URLSearchParams(existingQuery);
 	for (const [key, value] of Object.entries(searchParams)) {
 		if (typeof value === 'string' && value) sp.set(key, value);
 		else if (Array.isArray(value)) {
+			sp.delete(key);
 			for (const item of value) {
 				if (item) sp.append(key, item);
 			}

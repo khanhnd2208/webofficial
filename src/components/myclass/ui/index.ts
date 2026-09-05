@@ -1,7 +1,7 @@
 export { McPanel, McCard } from './McPanel';
 export { McButton } from './McButton';
 export { McBadge } from './McBadge';
-export { McIcon } from './McIcon';
+export { McIcon, MC_ICON_NAMES, isMcIconName } from './McIcon';
 export type { McIconName } from './McIcon';
 export { McMeter, McProgressBar } from './McMeter';
 export { McProgressRing } from './McProgressRing';

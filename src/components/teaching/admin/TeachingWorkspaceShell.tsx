@@ -60,7 +60,7 @@ export function TeachingWorkspaceShell({
 		<TeachingWorkspacePending initialWeek={week}>
 			<div className={`teaching-workspace-shell py-2 sm:py-3 ${isGradebookTab ? 'teaching-workspace-shell-gradebook' : ''}`} data-teaching-shell>
 				<TeachingAppHeader
-					backHref={routes.admin.teaching}
+					backHref={routes.mySpaceTeaching}
 					backLabel="Các lớp"
 					eyebrow={`${gradebook.class.courseCode} · Mã lớp ${gradebook.class.classCode ?? gradebook.class.groupNo} · ${gradebook.class.term}`}
 					title={gradebook.class.courseName}

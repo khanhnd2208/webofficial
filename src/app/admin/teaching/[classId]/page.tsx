@@ -1,57 +1,15 @@
-import {
-	resolveTeachingWorkspaceTab,
-	teachingTabNeedsGroupBoard,
-	teachingTabNeedsPublicPage,
-	teachingTabNeedsRoster,
-} from '@/components/teaching/admin/teachingWorkspaceTab';
-import { TeachingWorkspaceShell } from '@/components/teaching/admin/TeachingWorkspaceShell';
-import {
-	ensureTeachingPublicDefaults,
-	getAttendanceBoardConfig,
-	getGradebook,
-	getGroupBoard,
-	getClassNotes,
-	listRoster,
-} from '@/features/teaching';
-import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
 import { redirect } from 'next/navigation';
+
 import { routes } from '@/config/routes';
+import { hrefWithSearch } from '@/lib/navigation/hrefWithSearch';
 
-export const dynamic = 'force-dynamic';
-
-export default async function TeachingClassPage({
+export default async function LegacyTeachingClassRedirect({
 	params,
 	searchParams,
 }: {
 	params: Promise<{ classId: string }>;
-	searchParams?: Promise<{ tab?: string; week?: string }>;
+	searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
 	const { classId } = await params;
-	const query = await searchParams;
-	const requestedTab = query?.tab;
-	const week = Number(query?.week || '') || null;
-	const groupBoardEnabled = isTeachingGroupBoardEnabled();
-	if (requestedTab === 'groups' && !groupBoardEnabled) redirect(routes.admin.teachingClass(classId));
-	const tab = resolveTeachingWorkspaceTab(requestedTab, groupBoardEnabled);
-	const [gradebook, board, roster, publicPage, groupBoard, notes] = await Promise.all([
-		getGradebook(classId),
-		getAttendanceBoardConfig(classId),
-		teachingTabNeedsRoster(tab) ? listRoster(classId) : Promise.resolve(undefined),
-		teachingTabNeedsPublicPage(tab) ? ensureTeachingPublicDefaults(classId) : Promise.resolve(undefined),
-		teachingTabNeedsGroupBoard(tab, groupBoardEnabled) ? getGroupBoard(classId) : Promise.resolve(undefined),
-		tab === 'notes' ? getClassNotes(classId) : Promise.resolve(undefined),
-	]);
-	return (
-		<TeachingWorkspaceShell
-			gradebook={gradebook}
-			roster={roster}
-			board={board}
-			publicPage={publicPage}
-			groupBoard={groupBoard}
-			groupBoardEnabled={groupBoardEnabled}
-			notes={notes}
-			tab={tab}
-			week={week}
-		/>
-	);
+	redirect(hrefWithSearch(routes.mySpaceTeachingClass(classId), await searchParams));
 }

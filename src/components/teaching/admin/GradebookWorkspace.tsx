@@ -117,8 +117,12 @@ export function GradebookWorkspace({
 			});
 			if (!ok) return;
 		}
-		if (kind === 'attendance') void setAttendanceLifecycle(sessionId, action);
-		else void setParticipationLifecycle(sessionId, action);
+		try {
+			if (kind === 'attendance') await setAttendanceLifecycle(sessionId, action);
+			else await setParticipationLifecycle(sessionId, action);
+		} catch {
+			// The mutation hook already exposes the failure and retry state in the workspace.
+		}
 	}
 
 	useEffect(() => {

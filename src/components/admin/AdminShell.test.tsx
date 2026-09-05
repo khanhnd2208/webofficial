@@ -24,18 +24,18 @@ describe('ArchiveBanner', () => {
 });
 
 describe('AdminShell', () => {
-	it('uses the main shell for Website, Teaching and Active Recall', () => {
-		navigation.pathname = '/admin/teaching/class-1';
+	it('uses the main shell for Website and Active Recall', () => {
+		navigation.pathname = '/admin/website';
 		render(
 			<AdminShell>
-				<p>Teaching workspace</p>
+				<p>Website workspace</p>
 			</AdminShell>,
 		);
 
 		expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		expect(screen.queryByTestId('archive-banner')).not.toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Website' })).toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Teaching' })).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'Teaching' })).not.toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Active Recall' })).toHaveAttribute(
 			'href',
 			'/admin/tools/active-recall',

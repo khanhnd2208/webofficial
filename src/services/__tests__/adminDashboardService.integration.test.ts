@@ -19,7 +19,6 @@ describe('adminDashboardService', () => {
 	it('returns zero counts on empty database for the operating dashboard', async () => {
 		const stats = await getAdminOverviewStats();
 		expect(stats.website.newInquiries).toBe(0);
-		expect(typeof stats.teaching.activeClasses).toBe('number');
 		expect(typeof stats.activeRecall.decks).toBe('number');
 		expect(typeof stats.activeRecall.published).toBe('number');
 	});

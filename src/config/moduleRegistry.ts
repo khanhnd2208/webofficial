@@ -23,6 +23,8 @@ export type OperatingModule = {
 	adminHref: string;
 	adminPrefixes: readonly string[];
 	publicPrefixes: readonly string[];
+	/** Active product area that intentionally lives outside the Admin shell. */
+	showInAdminNavigation?: boolean;
 };
 
 export const OPERATING_MODULES: readonly OperatingModule[] = [
@@ -35,13 +37,7 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		archiveGroup: 'Website',
 		adminHref: routes.admin.website,
 		adminPrefixes: [routes.admin.website, routes.admin.inquiries],
-		publicPrefixes: [
-			routes.about,
-			routes.projects,
-			routes.services,
-			routes.contact,
-			routes.toc,
-		],
+		publicPrefixes: [routes.about, routes.projects, routes.services, routes.contact, routes.toc],
 	},
 	{
 		id: 'teaching',
@@ -53,6 +49,7 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		adminHref: routes.admin.teaching,
 		adminPrefixes: [routes.admin.teaching],
 		publicPrefixes: ['/lop'],
+		showInAdminNavigation: false,
 	},
 	{
 		id: 'active-recall',
@@ -295,9 +292,11 @@ export function getActiveAdminNavItems(): Array<{
 	label: string;
 	icon: McIconName;
 }> {
-	return getActiveModules().map((area) => ({
-		href: area.adminHref,
-		label: area.label,
-		icon: area.icon,
-	}));
+	return getActiveModules()
+		.filter((area) => area.showInAdminNavigation !== false)
+		.map((area) => ({
+			href: area.adminHref,
+			label: area.label,
+			icon: area.icon,
+		}));
 }

@@ -1,7 +1,7 @@
 /**
  * Admin Dashboard Service
  * Aggregates stats for the focused operating dashboard:
- * Website, Teaching, and Active Recall.
+ * Website and Active Recall. Teaching has its own workspace in My Space.
  */
 
 import { prisma } from '@/lib/prisma';
@@ -12,9 +12,6 @@ export interface AdminOverviewStats {
 	website: {
 		newInquiries: number;
 	};
-	teaching: {
-		activeClasses: number;
-	};
 	activeRecall: {
 		decks: number;
 		published: number;
@@ -24,16 +21,14 @@ export interface AdminOverviewStats {
 export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 	await dbConnect();
 
-	const [newInquiries, activeClasses, decks, published] = await Promise.all([
+	const [newInquiries, decks, published] = await Promise.all([
 		Inquiry.countDocuments({ status: 'NEW' }),
-		prisma.teachingClass.count({ where: { status: 'ACTIVE' } }),
 		prisma.activeRecallDeck.count(),
 		prisma.activeRecallDeck.count({ where: { status: 'PUBLISHED' } }),
 	]);
 
 	return {
 		website: { newInquiries },
-		teaching: { activeClasses },
 		activeRecall: { decks, published },
 	};
 }

@@ -11,6 +11,7 @@ import {
 	type PointerEvent,
 } from 'react';
 
+import { McIcon, type McIconName } from '@/components/myclass/ui';
 import { teachingApi } from '@/components/teaching/admin/api';
 import { useTeachingDismissible } from '@/components/teaching/TeachingPopover';
 import { Dialog } from '@/components/ui/Dialog';
@@ -48,7 +49,7 @@ const experiences: Array<{
 	title: string;
 	subtitle: string;
 	action: string;
-	features: Array<{ icon: string; label: string }>;
+	features: Array<{ icon: McIconName; label: string }>;
 }> = [
 	{
 		choice: 'CHALLENGE',
@@ -292,7 +293,7 @@ export function LearningExperienceWorkspace({
 				<div className={styles.authScrim} />
 				<div className={styles.authPanel}>
 					<div className={styles.authCrest} aria-hidden="true">
-						<span className="material-symbols-outlined">school</span>
+						<McIcon name="school" size={32} />
 					</div>
 					<p className={styles.kicker}>HRM · Player access</p>
 					<h2 id="learning-login-title">Mở trải nghiệm học tập của bạn</h2>
@@ -312,9 +313,7 @@ export function LearningExperienceWorkspace({
 								<span>Chọn sinh viên trong lớp</span>
 							</label>
 							<div className={`${styles.inputShell} ${styles.studentPicker}`}>
-								<span className="material-symbols-outlined" aria-hidden="true">
-									search
-								</span>
+								<McIcon name="search" size={20} />
 								<input
 									id="learning-student-code"
 									value={studentSearch}
@@ -343,9 +342,7 @@ export function LearningExperienceWorkspace({
 									}
 									required
 								/>
-								<span className={styles.pickerChevron} aria-hidden="true">
-									⌄
-								</span>
+								<McIcon name="expand_more" size={18} className={styles.pickerChevron} />
 							</div>
 							{pickerOpen ? (
 								<div
@@ -389,9 +386,10 @@ export function LearningExperienceWorkspace({
 							) : null}
 							{selectedStudent ? (
 								<div className={styles.selectedStudent} data-access={selectedStudent.accessMode}>
-									<span className="material-symbols-outlined" aria-hidden="true">
-										{selectedStudent.accessMode === 'DOB_PASSWORD' ? 'key' : 'login'}
-									</span>
+									<McIcon
+										name={selectedStudent.accessMode === 'DOB_PASSWORD' ? 'key' : 'login'}
+										size={18}
+									/>
 									<p>
 										<strong>{selectedStudent.fullName}</strong>
 										<small>{selectedStudent.studentCode}</small>
@@ -414,9 +412,7 @@ export function LearningExperienceWorkspace({
 									<span>Mật khẩu ngày sinh</span>
 								</label>
 								<div className={styles.inputShell}>
-									<span className="material-symbols-outlined" aria-hidden="true">
-										key
-									</span>
+									<McIcon name="key" size={20} />
 									<input
 										ref={passwordRef}
 										id="learning-student-password"
@@ -438,18 +434,14 @@ export function LearningExperienceWorkspace({
 										aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
 										onClick={() => setShowPassword((visible) => !visible)}
 									>
-										<span className="material-symbols-outlined" aria-hidden="true">
-											{showPassword ? 'visibility_off' : 'visibility'}
-										</span>
+										<McIcon name={showPassword ? 'visibility_off' : 'visibility'} size={18} />
 									</button>
 								</div>
 								<small>8 chữ số, ví dụ 05/09/2006 → 05092006</small>
 							</div>
 						) : (
 							<div className={styles.accessHint}>
-								<span className="material-symbols-outlined" aria-hidden="true">
-									login
-								</span>
+								<McIcon name="login" size={16} />
 								<p>
 									{selectedStudent
 										? 'Hồ sơ này không yêu cầu mật khẩu. Bạn có thể vào Learning Experience ngay.'
@@ -476,15 +468,11 @@ export function LearningExperienceWorkspace({
 								: selectedStudent?.accessMode === 'OPEN'
 									? 'Vào trải nghiệm'
 									: 'Enter experience'}
-							<span className="material-symbols-outlined" aria-hidden="true">
-								arrow_forward
-							</span>
+							<McIcon name="arrow_forward" size={18} />
 						</button>
 					</form>
 					<p className={styles.securityNote}>
-						<span className="material-symbols-outlined" aria-hidden="true">
-							verified_user
-						</span>
+						<McIcon name="verified_user" size={16} />
 						Ngày sinh chỉ được kiểm tra trên server và không hiển thị công khai.
 					</p>
 				</div>
@@ -559,9 +547,7 @@ export function LearningExperienceWorkspace({
 								<span className={styles.modePill}>{item.mode}</span>
 								{selected ? (
 									<span className={styles.selectedBadge}>
-										<span className="material-symbols-outlined" aria-hidden="true">
-											workspace_premium
-										</span>
+										<McIcon name="workspace_premium" size={16} />
 										Lựa chọn của bạn
 									</span>
 								) : null}
@@ -574,9 +560,7 @@ export function LearningExperienceWorkspace({
 								<div className={styles.featureGrid}>
 									{item.features.map((feature) => (
 										<div key={feature.label}>
-											<span className="material-symbols-outlined" aria-hidden="true">
-												{feature.icon}
-											</span>
+											<McIcon name={feature.icon} size={22} />
 											<span>{feature.label}</span>
 										</div>
 									))}
@@ -588,9 +572,10 @@ export function LearningExperienceWorkspace({
 									onClick={() => requestChoice(item.choice)}
 								>
 									{buttonLabel}
-									<span className="material-symbols-outlined" aria-hidden="true">
-										{selected ? 'check_circle' : locked ? 'lock' : 'arrow_forward'}
-									</span>
+									<McIcon
+										name={selected ? 'check_circle' : locked ? 'lock' : 'arrow_forward'}
+										size={18}
+									/>
 								</button>
 							</div>
 						</article>
@@ -599,9 +584,10 @@ export function LearningExperienceWorkspace({
 			</div>
 
 			<div className={styles.statusBar} aria-live="polite" data-error={Boolean(error)}>
-				<span className="material-symbols-outlined" aria-hidden="true">
-					{error ? 'error' : session.locked ? 'lock' : session.choice ? 'auto_awesome' : 'explore'}
-				</span>
+				<McIcon
+					name={error ? 'error' : session.locked ? 'lock' : session.choice ? 'auto_awesome' : 'explore'}
+					size={18}
+				/>
 				<p>
 					{error ||
 						notice ||

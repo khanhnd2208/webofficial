@@ -16,21 +16,28 @@ function prefersReducedMotion() {
  * summary column, so the available corridor is calculated from the live
  * sticky column bounds instead.
  */
-export function scrollGridWeekIntoView(wrapper: HTMLElement | null, weekNumber: number): void {
+export function scrollGridWeekIntoView(
+	wrapper: HTMLElement | null,
+	weekNumber: number,
+	behavior: ScrollBehavior = 'smooth',
+): void {
 	if (!wrapper) return;
 	const target = wrapper.querySelector<HTMLElement>(`[data-week="${weekNumber}"]`);
 	if (!target) return;
 
 	const wrapperRect = wrapper.getBoundingClientRect();
-	const identity = wrapper.querySelector<HTMLElement>('.mc-grid-public-identity');
-	const summary = wrapper.querySelector<HTMLElement>('.mc-grid-summary-start');
+	const stickyRects = (selector: string) =>
+		[...wrapper.querySelectorAll<HTMLElement>(selector)]
+			.filter((el) => getComputedStyle(el).position === 'sticky')
+			.map((el) => el.getBoundingClientRect())
+			.filter((rect) => rect.width > 0);
 	const leftEdge = Math.max(
 		wrapperRect.left,
-		identity?.getBoundingClientRect().right ?? wrapperRect.left,
+		...stickyRects('.mc-grid-public-identity, .mc-grid-freeze-left').map((rect) => rect.right),
 	);
 	const rightEdge = Math.min(
 		wrapperRect.right,
-		summary?.getBoundingClientRect().left ?? wrapperRect.right,
+		...stickyRects('.mc-grid-freeze-right, .mc-grid-summary-start').map((rect) => rect.left),
 	);
 	const targetRect = target.getBoundingClientRect();
 	let delta = 0;
@@ -47,7 +54,7 @@ export function scrollGridWeekIntoView(wrapper: HTMLElement | null, weekNumber: 
 		Math.min(wrapper.scrollWidth - wrapper.clientWidth, wrapper.scrollLeft + delta),
 	);
 	if (typeof wrapper.scrollTo === 'function') {
-		wrapper.scrollTo({ left: nextLeft, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+		wrapper.scrollTo({ left: nextLeft, behavior: prefersReducedMotion() ? 'auto' : behavior });
 	} else {
 		wrapper.scrollLeft = nextLeft;
 	}

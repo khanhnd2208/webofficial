@@ -52,23 +52,20 @@ test.describe('Focused operating mode', () => {
 		);
 	});
 
-	test('admin main menu only shows Website, Teaching and Active Recall', async ({
-		page,
-		context,
-	}) => {
+	test('admin main menu only shows Website and Active Recall', async ({ page, context }) => {
 		await addAdminSession(context);
 		await page.goto('/admin');
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		const nav = page.getByRole('navigation', { name: 'Quản trị' });
 		await expect(nav.getByRole('link', { name: 'Website' })).toBeVisible();
-		await expect(nav.getByRole('link', { name: 'Teaching' })).toBeVisible();
 		await expect(nav.getByRole('link', { name: 'Active Recall' })).toBeVisible();
+		await expect(nav.getByRole('link', { name: 'Teaching' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'My Class' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Bài viết' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Người dùng' })).toHaveCount(0);
 		await expect(page.getByTestId('admin-archive-link')).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Tổng quan' })).toBeVisible();
-		await expect(page.getByRole('link', { name: 'Mở Teaching' })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Mở Teaching' })).toHaveCount(0);
 	});
 
 	test('Website hub and contact inbox stay on the main shell', async ({ page, context }) => {
@@ -109,6 +106,8 @@ test.describe('Focused operating mode', () => {
 		await page.goto('/admin/posts');
 		await expect(page.getByTestId('archive-banner')).toBeVisible();
 		await expect(page.getByRole('heading', { name: /Bài viết|Quản lý bài viết/i })).toBeVisible();
-		await expect(page.getByRole('navigation', { name: 'Kho lưu trữ' }).getByRole('link', { name: 'Website' })).toHaveCount(0);
+		await expect(
+			page.getByRole('navigation', { name: 'Kho lưu trữ' }).getByRole('link', { name: 'Website' }),
+		).toHaveCount(0);
 	});
 });

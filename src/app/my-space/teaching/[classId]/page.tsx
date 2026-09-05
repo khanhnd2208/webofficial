@@ -1,15 +1,58 @@
 import { redirect } from 'next/navigation';
 
+import {
+	resolveTeachingWorkspaceTab,
+	teachingTabNeedsGroupBoard,
+	teachingTabNeedsPublicPage,
+	teachingTabNeedsRoster,
+} from '@/components/teaching/admin/teachingWorkspaceTab';
+import { TeachingWorkspaceShell } from '@/components/teaching/admin/TeachingWorkspaceShell';
+import {
+	ensureTeachingPublicDefaults,
+	getAttendanceBoardConfig,
+	getGradebook,
+	getGroupBoard,
+	getClassNotes,
+	listRoster,
+} from '@/features/teaching';
+import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
 import { routes } from '@/config/routes';
-import { hrefWithSearch } from '@/lib/navigation/hrefWithSearch';
 
-export default async function MySpaceTeachingClassRedirect({
+export const dynamic = 'force-dynamic';
+
+export default async function MySpaceTeachingClassPage({
 	params,
 	searchParams,
 }: {
 	params: Promise<{ classId: string }>;
-	searchParams?: Promise<Record<string, string | string[] | undefined>>;
+	searchParams?: Promise<{ tab?: string; week?: string }>;
 }) {
 	const { classId } = await params;
-	redirect(hrefWithSearch(routes.admin.teachingClass(classId), await searchParams));
+	const query = await searchParams;
+	const requestedTab = query?.tab;
+	const week = Number(query?.week || '') || null;
+	const groupBoardEnabled = isTeachingGroupBoardEnabled();
+	if (requestedTab === 'groups' && !groupBoardEnabled) redirect(routes.mySpaceTeachingClass(classId));
+	const tab = resolveTeachingWorkspaceTab(requestedTab, groupBoardEnabled);
+	const [gradebook, board, roster, publicPage, groupBoard, notes] = await Promise.all([
+		getGradebook(classId),
+		getAttendanceBoardConfig(classId),
+		teachingTabNeedsRoster(tab) ? listRoster(classId) : Promise.resolve(undefined),
+		teachingTabNeedsPublicPage(tab) ? ensureTeachingPublicDefaults(classId) : Promise.resolve(undefined),
+		teachingTabNeedsGroupBoard(tab, groupBoardEnabled) ? getGroupBoard(classId) : Promise.resolve(undefined),
+		tab === 'notes' ? getClassNotes(classId) : Promise.resolve(undefined),
+	]);
+	return (
+		<TeachingWorkspaceShell
+			gradebook={gradebook}
+			roster={roster}
+			board={board}
+			publicPage={publicPage}
+			groupBoard={groupBoard}
+			groupBoardEnabled={groupBoardEnabled}
+			notes={notes}
+			tab={tab}
+			week={week}
+		/>
+	);
 }

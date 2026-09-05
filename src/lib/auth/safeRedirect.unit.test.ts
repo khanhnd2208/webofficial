@@ -9,8 +9,11 @@ import {
 
 describe('sanitizeAuthRedirect', () => {
 	it('keeps internal admin destinations', () => {
-		expect(sanitizeAuthRedirect('/admin/teaching?tab=cp', { role: 'admin' })).toBe(
-			'/admin/teaching?tab=cp',
+		expect(sanitizeAuthRedirect('/admin/website', { role: 'admin' })).toBe(
+			'/admin/website',
+		);
+		expect(sanitizeAuthRedirect('/my-space/teaching?tab=cp', { role: 'admin' })).toBe(
+			'/my-space/teaching?tab=cp',
 		);
 	});
 
@@ -37,13 +40,17 @@ describe('sanitizeAuthRedirect', () => {
 
 	it('rewrites retired account aliases', () => {
 		expect(sanitizeAuthRedirect('/dashboard')).toBe('/tai-khoan/hoc');
-		expect(sanitizeAuthRedirect('/giang-day')).toBe('/admin/teaching');
+		expect(sanitizeAuthRedirect('/giang-day')).toBe('/my-space/teaching');
+		expect(sanitizeAuthRedirect('/admin/teaching')).toBe('/my-space/teaching');
+		expect(sanitizeAuthRedirect('/admin/teaching/class-1?tab=cp&week=2')).toBe(
+			'/my-space/teaching/class-1?tab=cp&week=2',
+		);
 		expect(sanitizeAuthRedirect('/profile')).toBe('/tai-khoan');
 		expect(sanitizeAuthRedirect('/my-space/teaching?tab=cp', { role: 'admin' })).toBe(
-			'/admin/teaching?tab=cp',
+			'/my-space/teaching?tab=cp',
 		);
 		expect(sanitizeAuthRedirect('/my-space/teaching/class-1?tab=cp', { role: 'admin' })).toBe(
-			'/admin/teaching/class-1?tab=cp',
+			'/my-space/teaching/class-1?tab=cp',
 		);
 		expect(sanitizeAuthRedirect('/messages/hello', { role: 'admin' })).toBe(
 			'/admin/tools/messages/hello',
@@ -65,6 +72,7 @@ describe('isSafeInternalPath', () => {
 
 describe('destinationLabel', () => {
 	it('names common destinations in Vietnamese', () => {
+		expect(destinationLabel('/my-space/teaching')).toBe('lớp học');
 		expect(destinationLabel('/admin/posts')).toBe('khu quản trị');
 		expect(destinationLabel('/tai-khoan')).toBe('tài khoản');
 		expect(destinationLabel('/')).toBeNull();

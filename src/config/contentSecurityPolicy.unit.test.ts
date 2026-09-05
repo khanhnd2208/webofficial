@@ -10,7 +10,7 @@ describe('buildContentSecurityPolicy', () => {
 		expect(buildContentSecurityPolicy('production')).not.toContain("'unsafe-eval'");
 	});
 
-	it('allows the stylesheet and font hosts used by Material Symbols', () => {
+	it('allows the stylesheet and font hosts used by Google Fonts', () => {
 		const policy = buildContentSecurityPolicy('production');
 		expect(policy).toContain("style-src 'self' 'unsafe-inline' https://fonts.googleapis.com");
 		expect(policy).toContain("font-src 'self' data: https://fonts.gstatic.com");

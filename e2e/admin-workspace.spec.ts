@@ -14,14 +14,17 @@ test.describe('Admin workspace release gates', () => {
 		await expect(page).toHaveURL(/\/dang-nhap/);
 		expect(page.url()).toContain('from=');
 		expect(decodeURIComponent(new URL(page.url()).searchParams.get('from') ?? '')).toBe(
-			'/admin/teaching?tab=cp',
+			'/my-space/teaching?tab=cp',
 		);
 	});
 
-	test('old teaching aliases preserve path and query', async ({ page, context }) => {
+	test('old admin teaching links preserve path and query on the canonical workspace', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
-		await page.goto('/my-space/teaching?tab=cp');
-		await expect(page).toHaveURL(/\/admin\/teaching\?tab=cp/);
+		await page.goto('/admin/teaching?tab=cp');
+		await expect(page).toHaveURL(/\/my-space\/teaching\?tab=cp/);
 	});
 
 	test('a signed-in admin opening /dang-nhap is sent to the destination', async ({
@@ -30,17 +33,21 @@ test.describe('Admin workspace release gates', () => {
 	}) => {
 		await addAdminSession(context);
 		await page.goto(`/dang-nhap?from=${encodeURIComponent('/admin/teaching?tab=cp')}`);
-		await expect(page).toHaveURL(/\/admin\/teaching\?tab=cp/);
+		await expect(page).toHaveURL(/\/my-space\/teaching\?tab=cp/);
 	});
 
-	test('admin shell exposes exactly one main landmark', async ({ page, context }) => {
+	test('admin and teaching workspaces expose exactly one main landmark', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		await page.goto('/admin/my-class');
 		await expect(page.getByRole('main')).toHaveCount(1);
 		await page.goto('/admin/posts');
 		await expect(page.getByRole('main')).toHaveCount(1);
-		await page.goto('/admin/teaching');
+		await page.goto('/my-space/teaching');
 		await expect(page.getByRole('main')).toHaveCount(1);
+		await expect(page.getByTestId('admin-shell')).toHaveCount(0);
 	});
 
 	test('mobile drawer traps focus and restores it to the menu button', async ({
@@ -65,7 +72,10 @@ test.describe('Admin workspace release gates', () => {
 		await expect(menu).toBeFocused();
 	});
 
-	test('learner edit flag on archived My Class is not a public entry', async ({ page, context }) => {
+	test('learner edit flag on archived My Class is not a public entry', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		const response = await page.goto('/my-space/my-class/hrm-toi-gian?edit=1');
 		expect(response?.status()).toBe(404);

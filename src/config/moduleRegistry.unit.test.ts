@@ -14,12 +14,13 @@ import {
 import { routes } from './routes';
 
 describe('operating module registry', () => {
-	it('keeps only Website, Teaching and Active Recall as active modules', () => {
+	it('keeps Teaching active while allowing it to live outside Admin navigation', () => {
 		expect(getActiveModules().map((module) => module.id)).toEqual([
 			'website',
 			'teaching',
 			'active-recall',
 		]);
+		expect(resolveModuleByAdminPath(routes.admin.teaching)?.showInAdminNavigation).toBe(false);
 	});
 
 	it('classifies paused product areas as archived without dropping them', () => {
@@ -70,12 +71,10 @@ describe('operating module registry', () => {
 		expect(resolveModuleByAdminPath(routes.admin.vocabulary)?.id).toBe('vocabulary');
 	});
 
-	it('keeps main admin chrome for Website, Teaching and Active Recall', () => {
+	it('keeps main admin chrome for Website and Active Recall', () => {
 		expect(isMainAdminPath(routes.admin.home)).toBe(true);
 		expect(isMainAdminPath(routes.admin.website)).toBe(true);
 		expect(isMainAdminPath(`${routes.admin.inquiries}/abc`)).toBe(true);
-		expect(isMainAdminPath(routes.admin.teaching)).toBe(true);
-		expect(isMainAdminPath(`${routes.admin.teaching}/class-1`)).toBe(true);
 		expect(isMainAdminPath(routes.admin.activeRecall)).toBe(true);
 		expect(isArchivedAdminPath(routes.admin.home)).toBe(false);
 		expect(isArchivedAdminPath(routes.admin.activeRecall)).toBe(false);
@@ -106,5 +105,6 @@ describe('operating module registry', () => {
 			expect.arrayContaining([routes.notes, routes.myClass, routes.mySpaceTests, '/vocabulary']),
 		);
 		expect(resolveModuleByPublicPath(routes.activeRecall)?.id).toBe('active-recall');
+		expect(resolveModuleByPublicPath('/lop/hrm-101')?.id).toBe('teaching');
 	});
 });

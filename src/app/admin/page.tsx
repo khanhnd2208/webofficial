@@ -67,22 +67,17 @@ export default async function AdminHomePage() {
 				<AdminPageHeader
 					eyebrow="Quản trị"
 					title="Tổng quan"
-					description="Luồng đang dùng: Website, Teaching và Active Recall."
+					description="Luồng đang dùng: Website và Active Recall."
 				/>
 
 				<section>
 					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Số liệu</p>
-					<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+					<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 						<Stat
 							label="Inquiry mới"
 							value={stats.website.newInquiries}
 							accent
 							sub="hộp thư Website"
-						/>
-						<Stat
-							label="Lớp đang dạy"
-							value={stats.teaching.activeClasses}
-							sub="Teaching"
 						/>
 						<Stat
 							label="Bộ Active Recall"
@@ -96,15 +91,10 @@ export default async function AdminHomePage() {
 					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Thao tác nhanh</p>
 					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 						<QuickAction
-							href={routes.admin.teaching}
-							label="Mở Teaching"
-							description="Điểm danh, CP và danh sách lớp."
-							primary
-						/>
-						<QuickAction
 							href={routes.admin.activeRecall}
 							label="Mở Active Recall"
 							description="Tạo và xuất bản bộ thẻ hỏi–đáp."
+							primary
 						/>
 						<QuickAction
 							href={routes.admin.website}
@@ -115,11 +105,6 @@ export default async function AdminHomePage() {
 							href={routes.admin.inquiries}
 							label="Hộp thư liên hệ"
 							description="Đọc lời nhắn gửi từ trang Liên hệ."
-						/>
-						<QuickAction
-							href={routes.admin.teachingNew}
-							label="Tạo lớp mới"
-							description="Thêm lớp Teaching từ Excel hoặc nhập tay."
 						/>
 						<QuickAction
 							href={routes.admin.activeRecallNew}

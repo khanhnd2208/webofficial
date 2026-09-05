@@ -22,6 +22,12 @@ export default defineConfig({
 			testIgnore: /teaching-learning-experience-mobile\.spec\.ts/,
 		},
 		{
+			name: 'teaching-webkit',
+			grep: /guest|legacy Teaching|My Space links|missing classes|visitor sees|admin sees|admin workspace/,
+			testMatch: /teaching-attendance-board\.spec\.ts/,
+			use: { ...devices['Desktop Safari'] },
+		},
+		{
 			name: 'mobile-chrome-smoke',
 			testMatch: /(mobile-smoke|teaching-learning-experience-mobile)\.spec\.ts/,
 			use: { ...devices['Pixel 5'] },
@@ -45,7 +51,8 @@ export default defineConfig({
 					INQUIRY_NOTIFY_EMAIL: process.env.INQUIRY_NOTIFY_EMAIL ?? 'admin@example.com',
 					AUTH_SECRET: process.env.AUTH_SECRET ?? 'e2e-rate-limit-secret',
 					GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? 'ci-not-a-real-google-client-id',
-					GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? 'ci-not-a-real-google-client-secret',
+					GOOGLE_CLIENT_SECRET:
+						process.env.GOOGLE_CLIENT_SECRET ?? 'ci-not-a-real-google-client-secret',
 					// Production startup requires the canonical origin even for CI `next start`.
 					AUTH_URL: 'https://toiladuykhanh.com',
 					NEXTAUTH_URL: 'https://toiladuykhanh.com',

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
 import writeXlsxFile from 'write-excel-file/node';
 
 import { addAdminSession } from './helpers/adminSession';
@@ -30,23 +31,32 @@ async function rosterWorkbookBuffer({
 
 test.describe('Teaching class dashboard (/lop/[slug])', () => {
 	test('guest cannot open the private Teaching workspace', async ({ page }) => {
-		await page.goto('/admin/teaching');
-		await expect(page).toHaveURL(/\/dang-nhap/);
-	});
-
-	test('legacy Teaching alias still sends guests to login', async ({ page }) => {
 		await page.goto('/my-space/teaching');
 		await expect(page).toHaveURL(/\/dang-nhap/);
 	});
 
-	test('Teaching is not a public My Space destination', async ({ page, context }) => {
+	test('legacy Teaching alias still sends guests to login', async ({ page }) => {
+		await page.goto('/admin/teaching');
+		await expect(page).toHaveURL(/\/dang-nhap/);
+	});
+
+	test('My Space links to protected Teaching and adds Admin only for administrators', async ({
+		page,
+		context,
+	}) => {
 		await page.goto('/my-space');
-		await expect(page).toHaveURL(/\/my-space\/active-recall/);
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
+		await expect(page).toHaveURL(/\/my-space$/);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
+			'href',
+			'/my-space/teaching',
+		);
 		await addAdminSession(context);
 		await page.goto('/my-space');
-		await expect(page).toHaveURL(/\/my-space\/active-recall/);
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
+		await expect(page).toHaveURL(/\/my-space$/);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
+			'href',
+			'/my-space/teaching',
+		);
 	});
 
 	test('missing classes return 404', async ({ page }) => {
@@ -96,23 +106,33 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(noteResponse.ok()).toBe(true);
 			const noteId = ((await noteResponse.json()) as { data: { id: string } }).data.id;
 
-			const published = await page.request.post(`/api/admin/teaching/classes/${classId}/notes/${noteId}/publish`);
+			const published = await page.request.post(
+				`/api/admin/teaching/classes/${classId}/notes/${noteId}/publish`,
+			);
 			expect(published.ok()).toBe(true);
-			const changedDraft = await page.request.patch(`/api/admin/teaching/classes/${classId}/notes/${noteId}`, {
-				data: { title: 'Tuần 1 đã sửa', html: '<p>Bản nháp không công khai</p>' },
-			});
+			const changedDraft = await page.request.patch(
+				`/api/admin/teaching/classes/${classId}/notes/${noteId}`,
+				{
+					data: { title: 'Tuần 1 đã sửa', html: '<p>Bản nháp không công khai</p>' },
+				},
+			);
 			expect(changedDraft.ok()).toBe(true);
 
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
-			await expect(page.getByRole('tab', { name: 'Class Notes' })).toHaveAttribute('aria-selected', 'true');
+			await expect(page.getByRole('tab', { name: 'Class Notes' })).toHaveAttribute(
+				'aria-selected',
+				'true',
+			);
 			await expect(page.getByRole('heading', { name: 'Tuần 1' })).toBeVisible();
 			await expect(page.getByText('Bản công khai')).toBeVisible();
 			await expect(page.getByText('Bản nháp không công khai')).toHaveCount(0);
 			await expect(page.locator('.mc-prose span[style*="color"]')).toBeVisible();
 
 			await addAdminSession(context);
-			const unpublished = await page.request.post(`/api/admin/teaching/classes/${classId}/notes/${noteId}/unpublish`);
+			const unpublished = await page.request.post(
+				`/api/admin/teaching/classes/${classId}/notes/${noteId}/unpublish`,
+			);
 			expect(unpublished.ok()).toBe(true);
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
@@ -143,9 +163,11 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		const classId = ((await created.json()) as { data: { id: string } }).data.id;
 
 		try {
-			await page.goto(`/admin/teaching/${classId}?tab=notes`);
+			await page.goto(`/my-space/teaching/${classId}?tab=notes`);
 			await page.getByRole('button', { name: /thêm/i }).click();
-			await page.locator('input[placeholder="Tiêu đề tuần / topic / phần"]').fill('Màu và highlight');
+			await page
+				.locator('input[placeholder="Tiêu đề tuần / topic / phần"]')
+				.fill('Màu và highlight');
 			const editor = page.locator('.tiptap-content');
 			await editor.pressSequentially('Nội dung có màu');
 			await editor.press('ControlOrMeta+A');
@@ -232,7 +254,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				page.getByRole('heading', { name: 'Mở trải nghiệm học tập của bạn' }),
 			).toBeVisible();
 			await page.getByRole('combobox', { name: 'Chọn sinh viên trong lớp' }).fill(learnerName);
-			await page.getByRole('option', { name: new RegExp(learnerName) }).click();
+			await page.getByRole('option', { name: new RegExp(learnerName, 'i') }).click();
 			await page.getByLabel('Mật khẩu ngày sinh').fill('29052006');
 			await page.getByRole('button', { name: 'Enter experience' }).click();
 
@@ -246,7 +268,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=learning`);
 			await page.getByRole('combobox', { name: 'Chọn sinh viên trong lớp' }).fill(openLearnerName);
-			await page.getByRole('option', { name: new RegExp(openLearnerName) }).click();
+			await page.getByRole('option', { name: new RegExp(openLearnerName, 'i') }).click();
 			await expect(page.getByText('Có thể vào ngay')).toBeVisible();
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
@@ -390,7 +412,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				`/api/admin/teaching/classes/${classId}/enrollments`,
 				{
 					data: {
-						studentCode: `SV${suffix}`.slice(0, 10),
+						studentCode: `SV${suffix}`.slice(-10),
 						familyName: 'Nguyễn Văn',
 						givenName: 'An',
 					},
@@ -518,7 +540,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			// Add a student with tutorialClassId
 			const stu = await page.request.post(`/api/admin/teaching/classes/${classId}/enrollments`, {
 				data: {
-					studentCode: `SVADM${suffix}`.slice(0, 10),
+					studentCode: `SVADM${suffix}`.slice(-10),
 					familyName: 'Trần Thị',
 					givenName: 'Bình',
 					tutorialClassId,
@@ -549,13 +571,13 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			}
 			for (let index = 1; index < publicSummaryGeometry.length; index += 1) {
 				expect(publicSummaryGeometry[index]!.left).toBeGreaterThanOrEqual(
-					publicSummaryGeometry[index - 1]!.right,
+					publicSummaryGeometry[index - 1]!.right - 1,
 				);
 			}
 			await expect(page.getByText('Chế độ giảng viên')).toHaveCount(0);
 			await expect(page.getByRole('link', { name: 'Quản lý lớp ↗' })).toHaveAttribute(
 				'href',
-				`/admin/teaching/${classId}`,
+				`/my-space/teaching/${classId}`,
 			);
 			await expect(page.locator('button.mc-grid-cell')).toHaveCount(0);
 			await expect(page.locator('button.mc-grid-participation-cell')).toHaveCount(0);
@@ -611,7 +633,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				`/api/admin/teaching/classes/${classId}/enrollments`,
 				{
 					data: {
-						studentCode: `SVWS${suffix}`.slice(0, 10),
+						studentCode: `SVWS${suffix}`.slice(-10),
 						familyName: 'Nguyễn Văn',
 						givenName: 'Workspace',
 						tutorialClassId,
@@ -621,10 +643,13 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(enrollmentResponse.ok()).toBe(true);
 
 			await page.goto(`/admin/teaching/${classId}/gradebook`);
-			await expect(page).toHaveURL(new RegExp(`/admin/teaching/${classId}\\?tab=attendance`));
+			await expect(page).toHaveURL(new RegExp(`/my-space/teaching/${classId}\\?tab=attendance`));
 
-			await page.goto(`/admin/teaching/${classId}?tab=attendance`);
+			await page.goto(`/my-space/teaching/${classId}?tab=attendance`);
 			await expect(page.getByTestId('attendance-grid').first()).toBeVisible();
+			await expect(page.getByTestId('attendance-grid').locator('[data-icon="help"]')).toHaveCount(
+				0,
+			);
 			await expect(page.getByRole('columnheader', { name: /W10/ })).toBeVisible();
 			if (process.env.TEACHING_GROUP_BOARD_ENABLED === 'true') {
 				await expect(page.getByRole('columnheader', { name: 'Nhóm', exact: true })).toBeVisible();
@@ -644,7 +669,8 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				await page.locator('.teaching-management-desktop .teaching-icon-button:visible').count(),
 			).toBe(1);
 			expect(
-				(await page.locator('[data-teaching-app-header]').first().boundingBox())?.height ?? Infinity,
+				(await page.locator('[data-teaching-app-header]').first().boundingBox())?.height ??
+					Infinity,
 			).toBeLessThan(140);
 
 			const desktopGeometry = await page.evaluate(() => {
@@ -670,13 +696,19 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			).toHaveAttribute('data-selected', 'true');
 
 			await expect(
-				page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }),
+				page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }),
 			).toBeVisible();
 			await page.locator('.teaching-management-desktop button').click();
 			await expect(page.getByRole('menu', { name: 'Quản lý lớp' })).toBeVisible();
 			await page.locator('body').click({ position: { x: 8, y: 8 } });
 			await expect(page.getByRole('menu', { name: 'Quản lý lớp' })).toHaveCount(0);
 
+			await page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Mở lịch tuần 1', exact: true }).click();
+			await page.keyboard.press('Escape');
+			if (!(await page.getByRole('dialog', { name: 'Sửa ngày tuần 1', exact: true }).isVisible())) {
+				await page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }).click();
+			}
 			const weekDate = page.getByLabel('Ngày học tuần 1', { exact: true });
 			await weekDate.fill('01');
 			await page.getByLabel('Tháng học tuần 1', { exact: true }).fill('09');
@@ -685,8 +717,12 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByLabel('Tháng học tuần 1', { exact: true })).toHaveValue('09');
 			await expect(page.getByLabel('Năm học tuần 1', { exact: true })).toHaveValue('2026');
 			await expect(page.getByText('Đã lưu ngày học')).toBeVisible();
-			await expect(page.locator('.mc-session-date-status').first()).toContainText('01/09/26');
-			await page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }).click();
+			await weekDate.press('Escape');
+			await expect(
+				page.getByRole('button', { name: 'Sửa ngày tuần 1', exact: true }),
+			).toContainText('01/09/26');
+			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Mở điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở buổi tuần/)).toBeVisible();
 
 			const attendanceCell = page.locator('button.mc-grid-cell:not(:disabled)').first();
@@ -710,7 +746,8 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				page.getByRole('columnheader', { name: 'Số buổi vắng', exact: true }),
 			).toHaveCount(0);
 			await expect(page.locator('.mc-grid-week-sub').first()).toHaveText('01/09/26');
-			await page.getByRole('button', { name: 'Mở chấm CP tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Thao tác CP tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Mở CP tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở chấm CP tuần/)).toBeVisible();
 			const cpCell = page.locator('button.mc-grid-participation-cell').first();
 			await cpCell.click();
@@ -748,15 +785,19 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 					expect.objectContaining({ points: 0.5, note: 'Có tiến bộ trong thảo luận' }),
 				]),
 			);
-			await page.getByRole('button', { name: 'Khóa chấm CP tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Thao tác CP tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Tạm khóa CP tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã khóa chấm CP tuần/)).toBeVisible();
 			await expect(cpCell).toBeDisabled();
-			await page.getByRole('button', { name: 'Mở chấm CP tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Thao tác CP tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Mở CP tuần 1', exact: true }).click();
+			await expect(page.getByText(/Đã mở chấm CP tuần/)).toBeVisible();
 			await expect(cpCell).toHaveAttribute('data-points', '0.5');
 
-			await page.goto(`/admin/teaching/${classId}?tab=attendance`);
+			await page.goto(`/my-space/teaching/${classId}?tab=attendance`);
 			const lockedAttendanceCell = page.locator('button.mc-grid-cell').first();
-			await page.getByRole('button', { name: 'Khóa điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Tạm khóa điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã khóa buổi tuần/)).toBeVisible();
 			await expect(lockedAttendanceCell).toHaveAttribute('data-status', 'ABSENT_UNEXCUSED');
 			await expect(lockedAttendanceCell).toBeDisabled();
@@ -782,7 +823,8 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				]),
 			);
 
-			await page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Mở điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở buổi tuần/)).toBeVisible();
 			await expect(lockedAttendanceCell).toHaveAttribute('data-status', 'ABSENT_UNEXCUSED');
 			const reopened = await page.request.get(`/api/admin/teaching/classes/${classId}/gradebook`);
@@ -807,8 +849,12 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				]),
 			);
 
-			await page.getByRole('button', { name: 'Chốt điểm danh tuần 1', exact: true }).click();
-			await page.getByRole('dialog', { name: 'Chốt tuần' }).getByTestId('admin-confirm-accept').click();
+			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Chốt điểm danh tuần 1', exact: true }).click();
+			await page
+				.getByRole('dialog', { name: 'Chốt tuần' })
+				.getByTestId('admin-confirm-accept')
+				.click();
 			await expect(page.getByText(/Đã chốt điểm danh tuần/)).toBeVisible();
 			const finalized = await page.request.get(`/api/admin/teaching/classes/${classId}/gradebook`);
 			const finalizedData = (await finalized.json()) as {
@@ -824,12 +870,65 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 					(session) => session.attendanceOpen === false && session.attendanceTakenAt !== null,
 				),
 			).toBe(true);
+			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
 			await expect(
-				page.getByRole('button', { name: 'Bỏ chốt điểm danh tuần 1', exact: true }),
+				page.getByRole('menuitem', { name: 'Bỏ chốt điểm danh tuần 1', exact: true }),
 			).toBeVisible();
+			await page
+				.getByRole('menuitem', { name: 'Bỏ chốt điểm danh tuần 1', exact: true })
+				.press('Escape');
+			await mkdir('outputs/teaching-ui-review', { recursive: true });
+			await page.screenshot({
+				path: `outputs/teaching-ui-review/after-attendance-${test.info().project.name}.png`,
+			});
 
-			await page.goto(`/admin/teaching/${classId}?tab=cp`);
+			await page.goto(`/my-space/teaching/${classId}?tab=cp`);
 			await expect(page.getByTestId('participation-grid').first()).toBeVisible();
+			await mkdir('outputs/teaching-ui-review', { recursive: true });
+			await page.getByRole('button', { name: 'Chọn tuần 1', exact: true }).click();
+			await expect(
+				page.getByTestId('participation-grid').locator('thead [data-week="1"]'),
+			).toHaveAttribute('data-selected', 'true');
+			for (const width of [1440, 1024, 768, 390]) {
+				await page.setViewportSize({ width, height: 900 });
+				expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+					true,
+				);
+				await expect
+					.poll(async () =>
+						page.getByTestId('participation-grid').evaluate((table) => {
+							const target = table.querySelector('thead [data-week="1"]')!.getBoundingClientRect();
+							const left = Math.max(
+								...Array.from(
+									table.querySelectorAll(
+										'thead .mc-grid-freeze-left, thead .mc-grid-public-identity',
+									),
+								)
+									.filter(
+										(el) =>
+											getComputedStyle(el).position === 'sticky' &&
+											el.getBoundingClientRect().width > 0,
+									)
+									.map((el) => el.getBoundingClientRect().right),
+							);
+							return {
+								fits:
+									target.left >= left - 1 &&
+									target.right <= table.parentElement!.getBoundingClientRect().right + 1,
+								left,
+								targetLeft: target.left,
+								targetRight: target.right,
+								width: innerWidth,
+								scrollLeft: table.parentElement!.scrollLeft,
+								active: document.activeElement?.outerHTML.slice(0, 160),
+							};
+						}),
+					)
+					.toEqual(expect.objectContaining({ fits: true }));
+				await page.screenshot({
+					path: `outputs/teaching-ui-review/after-cp-${test.info().project.name}-${width}.png`,
+				});
+			}
 			await page.setViewportSize({ width: 390, height: 800 });
 			await expect(page.locator('.mc-grid-public-identity').first()).toBeVisible();
 			await expect(page.locator('.mc-grid-desktop-only').first()).toBeHidden();
@@ -839,7 +938,8 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				await page.locator('.teaching-management-mobile .teaching-icon-button:visible').count(),
 			).toBe(1);
 			expect(
-				(await page.locator('[data-teaching-app-header]').first().boundingBox())?.height ?? Infinity,
+				(await page.locator('[data-teaching-app-header]').first().boundingBox())?.height ??
+					Infinity,
 			).toBeLessThan(145);
 			await page.getByRole('button', { name: 'Mở menu quản lý' }).click();
 			await expect(page.getByRole('dialog', { name: 'Quản lý lớp' })).toBeVisible();
@@ -901,7 +1001,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			const initialData = (await initial.json()) as { data: { tutorials: Array<{ id: string }> } };
 			const added = await page.request.post(`/api/admin/teaching/classes/${classId}/enrollments`, {
 				data: {
-					studentCode: `SVER${suffix}`.slice(0, 10),
+					studentCode: `SVER${suffix}`.slice(-10),
 					familyName: 'Lê',
 					givenName: 'Retry',
 					tutorialClassId: initialData.data.tutorials[0]!.id,
@@ -923,8 +1023,9 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				await route.continue();
 			});
 
-			await page.goto(`/admin/teaching/${classId}?tab=attendance`);
-			await page.getByRole('button', { name: 'Mở điểm danh tuần 1', exact: true }).click();
+			await page.goto(`/my-space/teaching/${classId}?tab=attendance`);
+			await page.getByRole('button', { name: 'Thao tác điểm danh tuần 1', exact: true }).click();
+			await page.getByRole('menuitem', { name: 'Mở điểm danh tuần 1', exact: true }).click();
 			await expect(page.getByText(/Đã mở buổi tuần/)).toBeVisible();
 			const cell = page.locator('button.mc-grid-cell:not(:disabled)').first();
 			await cell.click();

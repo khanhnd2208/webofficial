@@ -12,6 +12,7 @@ describe('gridScroll', () => {
 		const summary = document.createElement('div');
 		const week = document.createElement('div');
 		summary.className = 'mc-grid-summary-start';
+		summary.style.position = 'sticky';
 		week.dataset.week = '10';
 		wrapper.append(summary, week);
 		Object.defineProperties(wrapper, {
@@ -49,4 +50,29 @@ describe('gridScroll', () => {
 
 		expect(scrollTo).not.toHaveBeenCalled();
 	});
+});
+
+it('ignores hidden score columns when positioning a mobile week', () => {
+	const wrapper = document.createElement('div');
+	const identity = document.createElement('div');
+	const hidden = document.createElement('div');
+	const week = document.createElement('div');
+	identity.className = 'mc-grid-public-identity';
+	identity.style.position = 'sticky';
+	hidden.className = 'mc-grid-summary-start';
+	hidden.style.display = 'none';
+	week.dataset.week = '2';
+	wrapper.append(identity, hidden, week);
+	Object.defineProperties(wrapper, {
+		clientWidth: { value: 390 },
+		scrollWidth: { value: 1500 },
+		scrollLeft: { value: 0, writable: true },
+	});
+	wrapper.getBoundingClientRect = () => rect(0, 390);
+	identity.getBoundingClientRect = () => rect(0, 160);
+	hidden.getBoundingClientRect = () => rect(0, 0);
+	week.getBoundingClientRect = () => rect(260, 360);
+	wrapper.scrollTo = vi.fn();
+	scrollGridWeekIntoView(wrapper, 2);
+	expect(wrapper.scrollTo).not.toHaveBeenCalled();
 });

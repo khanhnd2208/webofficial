@@ -17,7 +17,7 @@ export default function MySpaceTeachingError({
 				<button type="button" onClick={reset} className="min-h-11 rounded-lg bg-ink px-4 text-sm font-semibold text-paper">
 					Thử lại
 				</button>
-				<Link href={routes.admin.teaching} className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold">
+				<Link href={routes.mySpaceTeaching} className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold">
 					Về danh sách lớp
 				</Link>
 			</div>

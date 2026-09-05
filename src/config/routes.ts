@@ -52,7 +52,10 @@ export const routes = {
 	mySpaceTeachingNew: '/my-space/teaching/new',
 	mySpaceTeachingImport: '/my-space/teaching/import',
 	mySpaceTeachingClass: (id: string) => `/my-space/teaching/${id}` as const,
-	mySpaceTeachingClassTab: (id: string, tab: string) => `/my-space/teaching/${id}?tab=${tab}` as const,
+	mySpaceTeachingClassTab: (id: string, tab: string, week?: number) =>
+		week
+			? (`/my-space/teaching/${id}?tab=${tab}&week=${week}` as const)
+			: (`/my-space/teaching/${id}?tab=${tab}` as const),
 	/** In-page anchors on /gioi-thieu */
 	aboutServices: '/gioi-thieu#dich-vu',
 	aboutTeaching: '/gioi-thieu#giang-day-workshop',
@@ -175,19 +178,30 @@ export const routes = {
 		myClassCohortEdit: (id: string) => `/admin/my-class/cohorts/${id}` as const,
 		myClassImport: '/admin/my-class/import',
 		myClassPerformance: '/admin/my-class/performance',
+		/** @deprecated Use routes.mySpaceTeaching */
 		teaching: '/admin/teaching',
+		/** @deprecated Use routes.mySpaceTeachingNew */
 		teachingNew: '/admin/teaching/new',
+		/** @deprecated Use routes.mySpaceTeachingImport */
 		teachingImport: '/admin/teaching/import',
+		/** @deprecated Use routes.mySpaceTeachingClass */
 		teachingClass: (id: string) => `/admin/teaching/${id}` as const,
+		/** @deprecated Use routes.mySpaceTeachingClassTab */
 		teachingClassTab: (id: string, tab: string, week?: number) =>
 			week
 				? (`/admin/teaching/${id}?tab=${tab}&week=${week}` as const)
 				: (`/admin/teaching/${id}?tab=${tab}` as const),
+		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'attendance') */
 		teachingGradebook: (id: string) => `/admin/teaching/${id}/gradebook` as const,
+		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'students') */
 		teachingRoster: (id: string) => `/admin/teaching/${id}/roster` as const,
+		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'setup') */
 		teachingSessions: (id: string) => `/admin/teaching/${id}/sessions` as const,
+		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'setup') */
 		teachingSettings: (id: string) => `/admin/teaching/${id}/settings` as const,
+		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'setup') */
 		teachingPublic: (id: string) => `/admin/teaching/${id}/public` as const,
+		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'share') */
 		teachingAttendanceBoard: (id: string) => `/admin/teaching/${id}/attendance-board` as const,
 		users: '/admin/users',
 		media: '/admin/media',

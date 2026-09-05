@@ -45,23 +45,33 @@ function TileImage({
 	size: number;
 	className: string;
 }) {
-	if (tile.id === 'active-recall') {
+	if (tile.visual.kind === 'cards') {
 		return (
-			<span className={`relative block ${className}`} aria-hidden>
+			<span className={`relative block ${className}`} aria-hidden="true">
 				<span className="absolute inset-x-[17%] top-[20%] h-[62%] rotate-[-9deg] border border-[#765625]/60 bg-paper" />
 				<span className="absolute inset-x-[17%] top-[20%] h-[62%] rotate-[4deg] border border-[#765625]/70 bg-paper" />
 				<span className="absolute inset-x-[17%] top-[20%] h-[62%] rotate-[12deg] border border-[#765625] bg-paper" />
 			</span>
 		);
 	}
+	if (tile.visual.kind === 'monogram') {
+		return (
+			<span className={`flex items-center justify-center ${className}`} aria-hidden="true">
+				<span className="flex h-14 w-14 items-center justify-center rounded-full bg-ink font-sans text-xl font-black tracking-wider text-paper shadow-sm transition-transform duration-500 group-hover:scale-105">
+					{tile.visual.text}
+				</span>
+			</span>
+		);
+	}
 
 	return (
 		<Image
-			src={tile.image.src}
+			src={tile.visual.src}
 			alt=""
 			width={size}
 			height={size}
-			unoptimized={tile.image.src.endsWith('.svg')}
+			unoptimized={tile.visual.src.endsWith('.svg')}
+			loading={tile.featured ? 'eager' : 'lazy'}
 			className={`object-contain mix-blend-multiply ${className}`}
 			sizes={`${size}px`}
 			aria-hidden

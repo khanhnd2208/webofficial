@@ -1,41 +1,12 @@
-import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-import { TeachingClassesTable } from '@/components/teaching/admin/TeachingClassesTable';
-import { TeachingAppHeader } from '@/components/teaching/admin/TeachingAppHeader';
 import { routes } from '@/config/routes';
-import { listTeachingClasses } from '@/features/teaching';
+import { hrefWithSearch } from '@/lib/navigation/hrefWithSearch';
 
-export const dynamic = 'force-dynamic';
-
-export default async function TeachingClassesPage() {
-	const classes = await listTeachingClasses();
-	return (
-		<div className="py-3 sm:py-5 px-4 sm:px-6">
-			<TeachingAppHeader
-				backHref={routes.admin.home}
-				backLabel="Admin"
-				eyebrow="Lớp học"
-				title="Lớp học"
-				description="Điểm danh, chấm CP và quản lý danh sách học viên."
-				actions={
-					<Link
-						href={routes.admin.teachingNew}
-						className="inline-flex min-h-11 touch-manipulation items-center justify-center rounded-[var(--mc-r-sm)] border border-transparent bg-ink px-3 text-xs font-semibold text-paper transition-colors hover:bg-inverse-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-					>
-						Tạo lớp
-					</Link>
-				}
-			/>
-			{classes.length === 0 ? (
-				<div className="mc-surface mt-6 p-8 text-center">
-					<p className="font-semibold text-ink">Chưa có lớp học</p>
-					<p className="mc-meta mt-2">
-						Tạo lớp mới rồi thêm học viên bằng Excel hoặc nhập thủ công.
-					</p>
-				</div>
-			) : (
-				<TeachingClassesTable classes={classes} />
-			)}
-		</div>
-	);
+export default async function LegacyTeachingPageRedirect({
+	searchParams,
+}: {
+	searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+	redirect(hrefWithSearch(routes.mySpaceTeaching, await searchParams));
 }

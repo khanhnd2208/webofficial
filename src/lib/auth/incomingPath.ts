@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 
 import { sanitizeAuthRedirect } from '@/lib/auth/safeRedirect';
 
-export async function incomingAdminPath(): Promise<string> {
+export async function incomingProtectedPath(fallback: string): Promise<string> {
 	const headerList = await headers();
 	const candidates = [
 		headerList.get('x-pathname'),
@@ -16,5 +16,13 @@ export async function incomingAdminPath(): Promise<string> {
 		const safe = sanitizeAuthRedirect(path, { role: 'admin', fallback: '' });
 		if (safe) return safe;
 	}
-	return '/admin';
+	return fallback;
+}
+
+export async function incomingAdminPath(): Promise<string> {
+	return incomingProtectedPath('/admin');
+}
+
+export async function incomingTeachingPath(): Promise<string> {
+	return incomingProtectedPath('/my-space/teaching');
 }

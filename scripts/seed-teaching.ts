@@ -190,9 +190,7 @@ async function seedTutorial(params: {
 			},
 		});
 		const forced = forcedStatuses(index);
-		const weekStatuses =
-			forced ??
-			Array.from({ length: TAKEN_WEEKS }, () => pickStatus(rng));
+		const weekStatuses = forced ?? Array.from({ length: TAKEN_WEEKS }, () => pickStatus(rng));
 		const enrollment = await prisma.teachingEnrollment.create({
 			data: {
 				classId: params.classId,
@@ -204,7 +202,10 @@ async function seedTutorial(params: {
 		});
 		for (let week = 0; week < TAKEN_WEEKS; week += 1) {
 			const status = weekStatuses[week]!;
-			const participationPoints = status === 'PRESENT' || status === 'MAKEUP' ? PARTICIPATION[Math.floor(rng() * PARTICIPATION.length)]! : 0;
+			const participationPoints =
+				status === 'PRESENT' || status === 'MAKEUP'
+					? PARTICIPATION[Math.floor(rng() * PARTICIPATION.length)]!
+					: 0;
 			marks.push({
 				sessionId: createdSessions[week]!.id,
 				enrollmentId: enrollment.id,
@@ -293,9 +294,9 @@ async function main() {
 				},
 				tutorials: [t01, t02],
 				urls: {
-					gradebook: `/admin/teaching/${teachingClass.id}/gradebook`,
+					gradebook: `/my-space/teaching/${teachingClass.id}?tab=attendance`,
 					publicPage: `/lop/${teachingClass.publicSlug}`,
-					import: '/admin/teaching/import',
+					import: '/my-space/teaching/import',
 				},
 			},
 			null,

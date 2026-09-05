@@ -68,7 +68,6 @@ const ROUTE_META: AdminRouteMeta[] = [
 		width: 'wide',
 		localNav: MY_CLASS_LOCAL_NAV,
 	},
-	{ href: routes.admin.teaching, label: 'Lớp học', width: 'full-workspace' },
 	{ href: routes.admin.website, label: 'Website', width: 'standard' },
 	{ href: routes.admin.inquiries, label: 'Yêu cầu liên hệ', width: 'standard' },
 	{ href: routes.admin.activeRecall, label: 'Active Recall', width: 'standard' },

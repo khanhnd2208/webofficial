@@ -15,7 +15,7 @@ export function ImportWorkspace() {
 			commitLabel="Tạo lớp từ danh sách"
 			onExternalCommit={async (preview, resolutions) => {
 				if (preview.existingClassId) {
-					router.push(routes.admin.teachingClassTab(preview.existingClassId, 'students'));
+					router.push(routes.mySpaceTeachingClassTab(preview.existingClassId, 'students'));
 					return;
 				}
 				if (!preview.metadata?.courseCode || !preview.metadata.groupNo) {
@@ -44,7 +44,7 @@ export function ImportWorkspace() {
 						}),
 					},
 				);
-				router.push(routes.admin.teachingClassTab(result.gradebook.class.id, 'attendance'));
+				router.push(routes.mySpaceTeachingClassTab(result.gradebook.class.id, 'attendance'));
 			}}
 		/>
 	);

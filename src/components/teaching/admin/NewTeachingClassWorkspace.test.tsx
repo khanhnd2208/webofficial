@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { teachingApi } from '@/components/teaching/admin/api';
+import { routes } from '@/config/routes';
 
 import { NewTeachingClassWorkspace } from './NewTeachingClassWorkspace';
 
@@ -103,5 +104,8 @@ describe('NewTeachingClassWorkspace', () => {
 			phone: '0901234567',
 			email: 'sv01@example.edu',
 		});
+		expect(navigation.push).toHaveBeenCalledWith(
+			routes.mySpaceTeachingClassTab('class-1', 'attendance'),
+		);
 	});
 });

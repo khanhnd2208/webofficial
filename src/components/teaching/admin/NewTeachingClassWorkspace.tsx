@@ -82,7 +82,7 @@ export function NewTeachingClassWorkspace() {
 					})),
 				}),
 			});
-			router.push(routes.admin.teachingClassTab(result.gradebook.class.id, 'attendance'));
+			router.push(routes.mySpaceTeachingClassTab(result.gradebook.class.id, 'attendance'));
 		} catch (reason) {
 			const typed = reason as Error & { fields?: Record<string, string> };
 			setError(
@@ -98,13 +98,13 @@ export function NewTeachingClassWorkspace() {
 	return (
 		<div className="mc-studio-container max-w-5xl px-0 py-8">
 			<TeachingAppHeader
-				backHref={routes.admin.teaching}
+				backHref={routes.mySpaceTeaching}
 				backLabel="Các lớp"
 				eyebrow="Teaching"
 				title="Tạo lớp mới"
 				description="Tạo thông tin lớp và danh sách học viên trong một luồng."
 				actions={
-					<StudioButton variant="quiet" onClick={() => router.push(routes.admin.teaching)}>
+					<StudioButton variant="quiet" onClick={() => router.push(routes.mySpaceTeaching)}>
 						Huỷ
 					</StudioButton>
 				}
@@ -181,7 +181,7 @@ export function NewTeachingClassWorkspace() {
 							<p>Lớp này đã tồn tại. Không ghi đè dữ liệu.</p>
 							<Link
 								className="mt-2 inline-flex font-semibold underline"
-								href={routes.admin.teachingClassTab(preview.existingClassId, 'students')}
+								href={routes.mySpaceTeachingClassTab(preview.existingClassId, 'students')}
 							>
 								Mở lớp hiện có
 							</Link>

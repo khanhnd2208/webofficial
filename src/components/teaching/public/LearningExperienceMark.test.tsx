@@ -20,8 +20,9 @@ describe('LearningExperienceMark', () => {
 	});
 
 	it('keeps the descriptive badge in roster contexts', () => {
-		render(<LearningExperienceMark choice="CHALLENGE" />);
+		const { container } = render(<LearningExperienceMark choice="CHALLENGE" />);
 
 		expect(screen.getByLabelText('Challenge mode')).toHaveTextContent('Challenge');
+		expect(container.querySelector('[data-icon="bolt"]')).toBeInTheDocument();
 	});
 });
