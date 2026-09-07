@@ -15,11 +15,7 @@ import { routes } from './routes';
 
 describe('operating module registry', () => {
 	it('keeps Teaching active while allowing it to live outside Admin navigation', () => {
-		expect(getActiveModules().map((module) => module.id)).toEqual([
-			'website',
-			'teaching',
-			'active-recall',
-		]);
+		expect(getActiveModules().map((module) => module.id)).toEqual(['website', 'teaching']);
 		expect(resolveModuleByAdminPath(routes.admin.teaching)?.showInAdminNavigation).toBe(false);
 	});
 
@@ -43,7 +39,6 @@ describe('operating module registry', () => {
 		);
 		expect(ids).not.toContain('website');
 		expect(ids).not.toContain('teaching');
-		expect(ids).not.toContain('active-recall');
 	});
 
 	it('groups archived modules for the archive hub', () => {
@@ -64,14 +59,14 @@ describe('operating module registry', () => {
 		);
 	});
 
-	it('resolves Active Recall admin paths without treating the tools hub as the owner', () => {
-		expect(resolveModuleByAdminPath(routes.admin.activeRecall)?.id).toBe('active-recall');
+	it('folds Active Recall admin paths into Teaching without treating the tools hub as the owner', () => {
+		expect(resolveModuleByAdminPath(routes.admin.activeRecall)?.id).toBe('teaching');
 		expect(resolveModuleByAdminPath(`${routes.admin.activeRecall}/new`)?.status).toBe('active');
 		expect(resolveModuleByAdminPath(routes.admin.tools)?.id).toBe('tools-hub');
 		expect(resolveModuleByAdminPath(routes.admin.vocabulary)?.id).toBe('vocabulary');
 	});
 
-	it('keeps main admin chrome for Website and Active Recall', () => {
+	it('keeps main admin chrome for Website and Teaching compatibility paths', () => {
 		expect(isMainAdminPath(routes.admin.home)).toBe(true);
 		expect(isMainAdminPath(routes.admin.website)).toBe(true);
 		expect(isMainAdminPath(`${routes.admin.inquiries}/abc`)).toBe(true);
@@ -91,7 +86,7 @@ describe('operating module registry', () => {
 		expect(isArchivedAdminPath('/admin/unknown-legacy')).toBe(true);
 	});
 
-	it('marks archived public surfaces and leaves brand, Teaching and Active Recall open', () => {
+	it('marks archived public surfaces and leaves brand and Teaching open', () => {
 		expect(isArchivedPublicPath(routes.notes)).toBe(true);
 		expect(isArchivedPublicPath(`${routes.notes}/a-note`)).toBe(true);
 		expect(isArchivedPublicPath(routes.myClass)).toBe(true);
@@ -104,7 +99,7 @@ describe('operating module registry', () => {
 		expect(getArchivedPublicPrefixes()).toEqual(
 			expect.arrayContaining([routes.notes, routes.myClass, routes.mySpaceTests, '/vocabulary']),
 		);
-		expect(resolveModuleByPublicPath(routes.activeRecall)?.id).toBe('active-recall');
+		expect(resolveModuleByPublicPath(routes.activeRecall)?.id).toBe('teaching');
 		expect(resolveModuleByPublicPath('/lop/hrm-101')?.id).toBe('teaching');
 	});
 });

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * My Space — focused hub for Teaching, Active Recall, and Admin for privileged accounts.
+ * My Space — focused hub for Teaching and Admin for privileged accounts.
  * Full-bleed centered composition; back + contact live in PublicMinimalChrome.
  */
 export default async function MySpacePage() {

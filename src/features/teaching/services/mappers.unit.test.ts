@@ -17,6 +17,7 @@ const finalizedAt = new Date('2026-08-25T01:00:00.000Z');
 
 const classRow: TeachingClass = {
 	id: 'class-1',
+	courseId: 'course-1',
 	courseCode: 'HRM',
 	courseName: 'Human Resource Management',
 	groupNo: '01',
@@ -209,11 +210,13 @@ describe('Teaching mappers total-week boundary', () => {
 					],
 				},
 			],
-			_count: { enrollments: 1, sessions: 2, tutorials: 1 },
+			_count: { enrollments: 1, sessions: 2, tutorials: 1, notes: 0, publicLinks: 0 },
 		});
 
 		expect(item.sessionCount).toBe(1);
 		expect(item.sessionsTaken).toBe(1);
 		expect(item.averageCp).toBe(1);
+		expect(item.canDelete).toBe(false);
+		expect(item.deleteBlockers.students).toBe(1);
 	});
 });

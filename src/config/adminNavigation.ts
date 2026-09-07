@@ -70,7 +70,7 @@ const ROUTE_META: AdminRouteMeta[] = [
 	},
 	{ href: routes.admin.website, label: 'Website', width: 'standard' },
 	{ href: routes.admin.inquiries, label: 'Yêu cầu liên hệ', width: 'standard' },
-	{ href: routes.admin.activeRecall, label: 'Active Recall', width: 'standard' },
+	{ href: routes.admin.activeRecall, label: 'Teaching', width: 'standard' },
 	{ href: routes.admin.archive, label: 'Kho lưu trữ', width: 'standard' },
 	{ href: routes.admin.posts, label: 'Bài viết', width: 'standard' },
 	{ href: routes.admin.courses, label: 'Khóa học Chương–Bài', width: 'standard' },

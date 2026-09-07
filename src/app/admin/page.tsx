@@ -67,7 +67,7 @@ export default async function AdminHomePage() {
 				<AdminPageHeader
 					eyebrow="Quản trị"
 					title="Tổng quan"
-					description="Luồng đang dùng: Website và Active Recall."
+					description="Website là khu quản trị chính. Teaching và Active Recall nằm trong My Space."
 				/>
 
 				<section>
@@ -91,9 +91,9 @@ export default async function AdminHomePage() {
 					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Thao tác nhanh</p>
 					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 						<QuickAction
-							href={routes.admin.activeRecall}
-							label="Mở Active Recall"
-							description="Tạo và xuất bản bộ thẻ hỏi–đáp."
+							href={routes.mySpaceTeaching}
+							label="Mở Teaching"
+							description="Quản lý môn học, lớp và Active Recall."
 							primary
 						/>
 						<QuickAction
@@ -105,11 +105,6 @@ export default async function AdminHomePage() {
 							href={routes.admin.inquiries}
 							label="Hộp thư liên hệ"
 							description="Đọc lời nhắn gửi từ trang Liên hệ."
-						/>
-						<QuickAction
-							href={routes.admin.activeRecallNew}
-							label="Tạo bộ thẻ"
-							description="Soạn bộ Active Recall mới."
 						/>
 					</div>
 				</section>

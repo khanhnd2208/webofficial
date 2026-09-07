@@ -24,6 +24,6 @@ describe('teachingWorkspaceTab', () => {
 		expect(teachingTabNeedsRoster('students')).toBe(true);
 		expect(teachingTabNeedsRoster('setup')).toBe(false);
 		expect(teachingTabNeedsPublicPage('setup')).toBe(true);
-		expect(teachingTabNeedsPublicPage('share')).toBe(false);
+		expect(teachingTabNeedsPublicPage('share')).toBe(true);
 	});
 });

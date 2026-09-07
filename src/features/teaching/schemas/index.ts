@@ -26,6 +26,7 @@ export async function parseJsonWithAppError<T>(schema: z.ZodType<T>, request: Re
 }
 
 export const teachingClassStatusSchema = z.enum(['ACTIVE', 'ARCHIVED']);
+export const teachingCourseStatusSchema = z.enum(['ACTIVE', 'ARCHIVED']);
 export const teachingEnrollmentStatusSchema = z.enum(['ACTIVE', 'WITHDRAWN']);
 export const teachingAttendanceMethodSchema = z.enum(['ROLL_CALL', 'SHORT_TEST']);
 export const teachingAttendanceStatusSchema = z.enum([
@@ -38,19 +39,67 @@ export const teachingAttendanceStatusSchema = z.enum([
 
 const trimmed = (max: number) => z.string().trim().max(max);
 
-export const createTeachingClassSchema = z.object({
-	courseCode: trimmed(40).min(1),
-	courseName: trimmed(200).min(1),
-	groupNo: trimmed(20).min(1),
-	term: trimmed(120).min(1),
-	credits: z.number().int().min(1).max(20).nullable().optional(),
-	lecturerName: trimmed(120).optional(),
-	lecturerCode: trimmed(40).optional(),
-	totalWeeks: z.number().int().min(1).max(20).optional(),
-});
+export const createTeachingCourseSchema = z
+	.object({
+		courseCode: trimmed(40).min(1),
+		courseName: trimmed(200).min(1),
+	})
+	.strict();
+
+export const createTeachingClassSchema = z
+	.object({
+		courseId: z.string().trim().min(1).optional(),
+		courseCode: trimmed(40).optional(),
+		courseName: trimmed(200).optional(),
+		groupNo: trimmed(20).min(1),
+		term: trimmed(120).min(1),
+		credits: z.number().int().min(1).max(20).nullable().optional(),
+		lecturerName: trimmed(120).optional(),
+		lecturerCode: trimmed(40).optional(),
+		totalWeeks: z.number().int().min(1).max(20).optional(),
+	})
+	.superRefine((value, ctx) => {
+		if (value.courseId) return;
+		if (!value.courseCode) {
+			ctx.addIssue({ code: 'custom', path: ['courseCode'], message: 'Hãy chọn môn học' });
+		}
+		if (!value.courseName) {
+			ctx.addIssue({ code: 'custom', path: ['courseName'], message: 'Hãy chọn môn học' });
+		}
+	});
+
+export const updateTeachingCourseSchema = z
+	.object({
+		courseCode: trimmed(40).min(1).optional(),
+		courseName: trimmed(200).min(1).optional(),
+		status: teachingCourseStatusSchema.optional(),
+	})
+	.strict()
+	.refine((value) => Object.keys(value).length > 0, 'Provide at least one field');
+
+export const updateTeachingClassRecallSchema = z
+	.object({
+		assignments: z
+			.array(
+				z.object({
+					deckId: z.string().min(1),
+					enabled: z.boolean(),
+					displayOrder: z.number().int().min(0).optional(),
+				}),
+			)
+			.max(200)
+			.refine(
+				(assignments) =>
+					new Set(assignments.map((assignment) => assignment.deckId)).size ===
+					assignments.length,
+				'Mỗi bộ thẻ chỉ được xuất hiện một lần',
+			),
+	})
+	.strict();
 
 export const updateTeachingClassSchema = z
 	.object({
+		courseId: z.string().trim().min(1).optional(),
 		courseCode: trimmed(40).min(1).optional(),
 		courseName: trimmed(200).min(1).optional(),
 		groupNo: trimmed(20).min(1).optional(),
@@ -419,6 +468,9 @@ export const teachingClassSetupFromRosterSchema = z.object({
 	rows: rosterImportCommitSchema.shape.rows,
 });
 
+export type CreateTeachingCourseInput = z.infer<typeof createTeachingCourseSchema>;
+export type UpdateTeachingCourseInput = z.infer<typeof updateTeachingCourseSchema>;
+export type UpdateTeachingClassRecallInput = z.infer<typeof updateTeachingClassRecallSchema>;
 export type CreateTeachingClassInput = z.infer<typeof createTeachingClassSchema>;
 export type RosterImportCommitBody = z.infer<typeof rosterImportCommitSchema>;
 export type TeachingClassSetupFromRosterInput = z.infer<typeof teachingClassSetupFromRosterSchema>;

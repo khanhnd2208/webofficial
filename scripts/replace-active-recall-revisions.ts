@@ -7,6 +7,8 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 
+import { HRM_COURSE_CODE, HRM_COURSE_NAME } from '../src/features/teaching/domain/courseIdentity';
+
 expand(config({ path: '.env.local' }));
 
 const connectionString = process.env.DATABASE_URL;
@@ -60,27 +62,87 @@ function cardsMatch(actual: Card[], expected: Card[]) {
 	return actual.length === expected.length && actual.every((card, index) => card.question === expected[index].question && card.answer === expected[index].answer && card.position === expected[index].position);
 }
 
+async function ensureHrmCourse(tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) {
+	const existing =
+		(await tx.teachingCourse.findUnique({ where: { courseCode: HRM_COURSE_CODE } })) ??
+		(await tx.teachingCourse.findUnique({ where: { courseCode: 'HRM101' } }));
+	if (existing) return existing;
+	return tx.teachingCourse.create({
+		data: { courseCode: HRM_COURSE_CODE, courseName: HRM_COURSE_NAME },
+	});
+}
+
+async function enableDeckForCourseClasses(
+	tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+	courseId: string,
+	deckId: string,
+	displayOrder: number,
+) {
+	const classes = await tx.teachingClass.findMany({
+		where: { courseId },
+		select: { id: true },
+	});
+	if (!classes.length) return;
+	await tx.teachingClassRecallDeck.createMany({
+		data: classes.map((teachingClass) => ({
+			classId: teachingClass.id,
+			deckId,
+			enabled: true,
+			displayOrder,
+		})),
+		skipDuplicates: true,
+	});
+}
+
 async function syncDeck(
 	tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
 	deck: { slug: string; title: string; lessonLabel: string; description: string; cards: Card[] },
+	course: { id: string; courseName: string },
 ) {
 	const existing = await tx.activeRecallDeck.findUnique({
 		where: { slug: deck.slug },
 		include: { cards: { orderBy: { position: 'asc' } } },
 	});
 	if (!existing) {
-		await tx.activeRecallDeck.create({
-			data: { ...deck, subject: 'Human Resource Management', status: 'PUBLISHED', publishedAt: new Date(), cards: { create: deck.cards } },
+		const created = await tx.activeRecallDeck.create({
+			data: {
+				...deck,
+				courseId: course.id,
+				subject: course.courseName,
+				status: 'PUBLISHED',
+				publishedAt: new Date(),
+				cards: { create: deck.cards },
+			},
 		});
+		await enableDeckForCourseClasses(tx, course.id, created.id, 0);
 		return { slug: deck.slug, action: 'created', cards: deck.cards.length };
 	}
-	if (cardsMatch(existing.cards, deck.cards)) return { slug: deck.slug, action: 'unchanged', cards: deck.cards.length };
+	if (
+		cardsMatch(existing.cards, deck.cards) &&
+		existing.courseId === course.id &&
+		existing.status === 'PUBLISHED'
+	) {
+		await enableDeckForCourseClasses(tx, course.id, existing.id, existing.position);
+		return { slug: deck.slug, action: 'unchanged', cards: deck.cards.length };
+	}
 	await tx.activeRecallCard.deleteMany({ where: { deckId: existing.id } });
 	await tx.activeRecallCard.createMany({ data: deck.cards.map((card) => ({ ...card, deckId: existing.id })) });
+	if (existing.courseId !== course.id) {
+		await tx.teachingClassRecallDeck.deleteMany({ where: { deckId: existing.id } });
+	}
 	await tx.activeRecallDeck.update({
 		where: { id: existing.id },
-		data: { title: deck.title, subject: 'Human Resource Management', lessonLabel: deck.lessonLabel, description: deck.description, status: 'PUBLISHED', publishedAt: existing.publishedAt ?? new Date() },
+		data: {
+			title: deck.title,
+			courseId: course.id,
+			subject: course.courseName,
+			lessonLabel: deck.lessonLabel,
+			description: deck.description,
+			status: 'PUBLISHED',
+			publishedAt: existing.publishedAt ?? new Date(),
+		},
 	});
+	await enableDeckForCourseClasses(tx, course.id, existing.id, existing.position);
 	return { slug: deck.slug, action: 'replaced', oldCards: existing.cards.length, cards: deck.cards.length };
 }
 
@@ -91,10 +153,14 @@ async function main() {
 		...chapterTwoCaseCards.map(([question, answer], index) => ({ question, answer, position: 41 + index })),
 	];
 	if (chapterTwo.length !== 49) throw new Error(`Expected 49 Chapter 2 cards, found ${chapterTwo.length}.`);
-	const result = await prisma.$transaction(async (tx) => [
-		await syncDeck(tx, { slug: 'hrm-lesson-1', title: 'HRM · Lesson 1 — Introduction to HRM', lessonLabel: 'Lesson 1', description: 'Active recall cards for the foundations of human resource management.', cards: chapterOne }),
-		await syncDeck(tx, { slug: 'hrm-lesson-2', title: 'HRM · Lesson 2 — Work Analysis and Job Design', lessonLabel: 'Lesson 2', description: 'Active recall cards for work analysis and job design.', cards: chapterTwo }),
-	]);
+	const result = await prisma.$transaction(async (tx) => {
+		const course = await ensureHrmCourse(tx);
+		const decks = [
+			await syncDeck(tx, { slug: 'hrm-lesson-1', title: 'HRM · Lesson 1 — Introduction to HRM', lessonLabel: 'Lesson 1', description: 'Active recall cards for the foundations of human resource management.', cards: chapterOne }, course),
+			await syncDeck(tx, { slug: 'hrm-lesson-2', title: 'HRM · Lesson 2 — Work Analysis and Job Design', lessonLabel: 'Lesson 2', description: 'Active recall cards for work analysis and job design.', cards: chapterTwo }, course),
+		];
+		return decks;
+	});
 	console.log(JSON.stringify(result));
 }
 

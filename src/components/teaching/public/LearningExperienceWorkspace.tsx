@@ -239,6 +239,7 @@ export function LearningExperienceWorkspace({
 	}
 
 	function requestChoice(choice: LearningExperienceChoice) {
+		if (session?.locked && session.choice && session.choice !== choice) return;
 		if (!session?.choice || session.choice === choice) {
 			void choose(choice);
 			return;
@@ -261,7 +262,7 @@ export function LearningExperienceWorkspace({
 	}
 
 	function tilt(event: PointerEvent<HTMLElement>) {
-		if (event.pointerType === 'touch') return;
+		if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		const rect = event.currentTarget.getBoundingClientRect();
 		const x = (event.clientX - rect.left) / rect.width - 0.5;
 		const y = (event.clientY - rect.top) / rect.height - 0.5;
@@ -295,7 +296,7 @@ export function LearningExperienceWorkspace({
 					<div className={styles.authCrest} aria-hidden="true">
 						<McIcon name="school" size={32} />
 					</div>
-					<p className={styles.kicker}>HRM · Player access</p>
+					<p className={styles.kicker}>{courseName} · Player access</p>
 					<h2 id="learning-login-title">Mở trải nghiệm học tập của bạn</h2>
 					<p className={styles.authCopy}>
 						Chọn hồ sơ sinh viên để mở lựa chọn riêng của bạn trong lớp {courseName}.
@@ -496,7 +497,7 @@ export function LearningExperienceWorkspace({
 
 			<header className={styles.heroHeader}>
 				<p className={styles.kicker}>Learning experience · {courseName}</p>
-				<h2 id="learning-experience-title">Choose your HRM learning style</h2>
+				<h2 id="learning-experience-title">Choose your learning style</h2>
 				<div className={styles.titleRule}>
 					<span />
 					<p>Different styles. Same goal. Your growth.</p>
@@ -520,7 +521,7 @@ export function LearningExperienceWorkspace({
 								: locked
 									? 'Đã khóa'
 									: session.choice
-										? 'Đổi sang lựa chọn này · còn 1 lần'
+										? 'Đổi sang lựa chọn này'
 										: item.action;
 					return (
 						<article
@@ -592,9 +593,9 @@ export function LearningExperienceWorkspace({
 					{error ||
 						notice ||
 						(session.locked
-							? 'Lựa chọn đã khóa. Cần đổi? Nhắn giảng viên để được hỗ trợ.'
+							? 'Lựa chọn đã khóa. Không thể chọn lại. Nếu cần hỗ trợ, hãy nhắn giảng viên.'
 							: session.choice
-								? 'Bạn còn 1 lần đổi duy nhất.'
+								? 'Lựa chọn đã được ghi nhận.'
 								: 'Chọn một con đường để bắt đầu hành trình.')}
 				</p>
 			</div>

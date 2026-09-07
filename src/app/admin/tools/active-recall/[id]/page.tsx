@@ -1,13 +1,17 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
-import ActiveRecallEditor from '@/components/active-recall/ActiveRecallEditor';
 import { getAdminRecallDeck } from '@/features/active-recall';
+import { routes } from '@/config/routes';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditActiveRecallDeckPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LegacyEditActiveRecallRedirect({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
 	const { id } = await params;
 	const deck = await getAdminRecallDeck(id);
 	if (!deck) notFound();
-	return <ActiveRecallEditor initialDeck={deck} />;
+	redirect(routes.mySpaceTeachingRecallEdit(deck.courseId, deck.id));
 }

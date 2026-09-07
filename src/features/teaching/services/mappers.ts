@@ -9,6 +9,13 @@ import type {
 } from '@prisma/client';
 
 import {
+	hasAuthoredStudentPage,
+	isClassShared,
+	isCustomizedSession,
+	summarizeClassDeleteBlockers,
+	type ClassUserContentSnapshot,
+} from '../domain/adminLifecycle';
+import {
 	computeCp,
 	isParticipationCounted,
 	sessionsForEnrollment,
@@ -31,6 +38,7 @@ import type {
 export function mapClass(row: TeachingClass): TeachingClassRecord {
 	return {
 		id: row.id,
+		courseId: row.courseId,
 		courseCode: row.courseCode,
 		courseName: row.courseName,
 		groupNo: row.groupNo,
@@ -253,6 +261,88 @@ export function mapGradebook(params: {
 	};
 }
 
+export function classSnapshotFromListRow(row: {
+	publicTitle?: string | null;
+	publicSummary?: string | null;
+	publicDescription?: string | null;
+	publicAnnouncement?: string | null;
+	classRules?: string | null;
+	attendanceVisible?: boolean;
+	publicSlug?: string | null;
+	enrollments: Array<{
+		attendance: unknown[];
+		participation: unknown[];
+	}>;
+	sessions: Array<{
+		heldOn: Date | string | null;
+		topic?: string;
+		method?: string;
+		isCancelled: boolean;
+		attendanceTakenAt: Date | string | null;
+		participationTakenAt: Date | string | null;
+	}>;
+	groupBoards?: Array<{ groupCount: number; _count: { assignments: number } }>;
+	_count: { enrollments: number; notes?: number; publicLinks?: number };
+}): ClassUserContentSnapshot {
+	return {
+		enrollmentCount: row._count.enrollments,
+		attendanceCount: row.enrollments.reduce((sum, item) => sum + item.attendance.length, 0),
+		participationCount: row.enrollments.reduce((sum, item) => sum + item.participation.length, 0),
+		configuredGroupCount: (row.groupBoards ?? []).filter(
+			(board) => board.groupCount > 0 || board._count.assignments > 0,
+		).length,
+		noteCount: row._count.notes ?? 0,
+		publicLinkCount: row._count.publicLinks ?? 0,
+		customizedSessionCount: row.sessions.filter((session) =>
+			isCustomizedSession({
+				heldOn: session.heldOn,
+				topic: session.topic ?? '',
+				method: session.method ?? 'ROLL_CALL',
+				isCancelled: session.isCancelled,
+				attendanceTakenAt: session.attendanceTakenAt,
+				participationTakenAt: session.participationTakenAt,
+			}),
+		).length,
+		studentPageCount: hasAuthoredStudentPage(row) ? 1 : 0,
+		sharingCount: isClassShared(row) ? 1 : 0,
+	};
+}
+
+export function classSnapshotFromLifecycle(row: {
+	publicTitle?: string | null;
+	publicSummary?: string | null;
+	publicDescription?: string | null;
+	publicAnnouncement?: string | null;
+	classRules?: string | null;
+	attendanceVisible?: boolean;
+	publicSlug?: string | null;
+	_count: { enrollments: number; notes: number; publicLinks: number };
+	sessions: Array<{
+		heldOn: Date | string | null;
+		topic: string;
+		method: string;
+		isCancelled: boolean;
+		attendanceTakenAt: Date | string | null;
+		participationTakenAt: Date | string | null;
+		_count: { attendance: number; participation: number };
+	}>;
+	groupBoards: Array<{ groupCount: number; _count: { assignments: number } }>;
+}): ClassUserContentSnapshot {
+	return {
+		enrollmentCount: row._count.enrollments,
+		attendanceCount: row.sessions.reduce((sum, session) => sum + session._count.attendance, 0),
+		participationCount: row.sessions.reduce((sum, session) => sum + session._count.participation, 0),
+		configuredGroupCount: row.groupBoards.filter(
+			(board) => board.groupCount > 0 || board._count.assignments > 0,
+		).length,
+		noteCount: row._count.notes,
+		publicLinkCount: row._count.publicLinks,
+		customizedSessionCount: row.sessions.filter((session) => isCustomizedSession(session)).length,
+		studentPageCount: hasAuthoredStudentPage(row) ? 1 : 0,
+		sharingCount: isClassShared(row) ? 1 : 0,
+	};
+}
+
 export function mapClassListItem(
 	row: TeachingClass & {
 		tutorials: TeachingTutorialClass[];
@@ -262,6 +352,9 @@ export function mapClassListItem(
 				| 'id'
 				| 'tutorialClassId'
 				| 'weekNumber'
+				| 'heldOn'
+				| 'topic'
+				| 'method'
 				| 'attendanceTakenAt'
 				| 'attendanceOpen'
 				| 'participationTakenAt'
@@ -277,7 +370,14 @@ export function mapClassListItem(
 			attendance: Array<{ status: TeachingAttendance['status']; sessionId: string }>;
 			participation: Array<{ points: TeachingParticipation['points']; sessionId: string }>;
 		}>;
-		_count: { enrollments: number; sessions: number; tutorials: number };
+		groupBoards?: Array<{ groupCount: number; _count: { assignments: number } }>;
+		_count: {
+			enrollments: number;
+			sessions: number;
+			tutorials: number;
+			notes?: number;
+			publicLinks?: number;
+		};
 	},
 ): TeachingClassListItem {
 	const policy = policyFromClass(row);
@@ -315,6 +415,7 @@ export function mapClassListItem(
 			? null
 			: Math.round((students.reduce((sum, cp) => sum + selector(cp), 0) / students.length) * 100) /
 				100;
+	const deleteBlockers = summarizeClassDeleteBlockers(classSnapshotFromListRow(row));
 	return {
 		...mapClass(row),
 		studentCount: row.enrollments.length,
@@ -328,5 +429,7 @@ export function mapClassListItem(
 		averageTotal: average((cp) => cp.totalScore),
 		atRiskCount,
 		bannedCount,
+		canDelete: Object.keys(deleteBlockers).length === 0,
+		deleteBlockers,
 	};
 }

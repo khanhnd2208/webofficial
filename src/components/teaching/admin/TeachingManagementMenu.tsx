@@ -13,9 +13,8 @@ import { teachingSoftNavProps, useTeachingWorkspacePending } from './TeachingWor
 type ManagementItem = { value: 'students' | 'setup' | 'share'; label: string; description: string };
 
 const ITEMS: ManagementItem[] = [
-	{ value: 'students', label: 'Học viên', description: 'Danh sách, thêm và chỉnh sửa học viên' },
 	{ value: 'setup', label: 'Thiết lập', description: 'Thông tin lớp và buổi học' },
-	{ value: 'share', label: 'Chia sẻ', description: 'Đường dẫn và quyền xem của sinh viên' },
+	{ value: 'share', label: 'Trang sinh viên', description: 'Nội dung, đường dẫn và quyền xem' },
 ];
 
 export function TeachingManagementMenu({ classId, activeTab, publicPath }: { classId: string; activeTab?: string; publicPath?: string | null }) {

@@ -4,6 +4,17 @@ import { describe, expect, it } from 'vitest';
 import { TeachingPopover, TeachingPopoverRoot } from '@/components/teaching/TeachingPopover';
 
 describe('TeachingPopover', () => {
+	it('portals outside clipping containers and supports keyboard navigation', () => {
+		render(<div data-testid="clipping" style={{ overflow: 'hidden' }}><TeachingPopover trigger={({ toggle, triggerRef, triggerProps }) => <button ref={triggerRef} {...triggerProps} onClick={toggle}>Menu</button>}><button>Sửa</button><button>Xóa</button></TeachingPopover></div>);
+		const trigger = screen.getByRole('button', { name: 'Menu' });
+		fireEvent.click(trigger);
+		expect(screen.getByTestId('clipping')).not.toContainElement(screen.getByRole('menu'));
+		expect(screen.getByRole('button', { name: 'Sửa' })).toHaveFocus();
+		fireEvent.keyDown(screen.getByRole('button', { name: 'Sửa' }), { key: 'ArrowDown' });
+		expect(screen.getByRole('button', { name: 'Xóa' })).toHaveFocus();
+		fireEvent.keyDown(screen.getByRole('button', { name: 'Xóa' }), { key: 'Escape' });
+		expect(trigger).toHaveFocus();
+	});
 	it('closes on outside click and Escape', () => {
 		render(
 			<div>

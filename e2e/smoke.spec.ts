@@ -65,16 +65,15 @@ test.describe('Public pages smoke', () => {
 		await context.close();
 	});
 
-	test('My Space hub contains only Teaching and Active Recall', async ({ page }) => {
+	test('My Space hub contains only Teaching', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.getByTestId('my-space')).toBeVisible();
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(1);
 		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
-		await page.getByTestId('myspace-tile-active-recall').click();
-		await expect(page).toHaveURL(/\/my-space\/active-recall/);
-		await expect(page.getByTestId('myspace-back')).toHaveAttribute('href', '/my-space');
+		await page.getByTestId('myspace-tile-teaching').click();
+		await expect(page).toHaveURL(/\/dang-nhap|\/my-space\/teaching/);
 	});
 
 	test('intro and mục lục stay without horizontal overflow at critical widths', async ({
@@ -82,7 +81,7 @@ test.describe('Public pages smoke', () => {
 	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 
-		for (const path of ['/', '/muc-luc', '/my-space', '/my-space/active-recall'] as const) {
+		for (const path of ['/', '/muc-luc', '/my-space'] as const) {
 			await page.goto(path);
 			for (const width of [320, 390, 768, 1024, 1440]) {
 				await page.setViewportSize({ width, height: 900 });
@@ -90,10 +89,8 @@ test.describe('Public pages smoke', () => {
 					await expect(page.getByTestId('intro-home')).toBeVisible();
 				} else if (path === '/muc-luc') {
 					await expect(page.getByTestId('gate-home')).toBeVisible();
-				} else if (path === '/my-space') {
-					await expect(page.getByTestId('my-space')).toBeVisible();
 				} else {
-					await expect(page).toHaveURL(/\/my-space\/active-recall/);
+					await expect(page.getByTestId('my-space')).toBeVisible();
 				}
 				const hasOverflow = await page.evaluate(
 					() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -117,7 +114,7 @@ test.describe('Public pages smoke', () => {
 		await expect(
 			page.getByRole('heading', { name: /Tôi làm giáo dục để tiếp tục học/i }),
 		).toHaveCount(0);
-		await expect(page.getByRole('heading', { name: /Con đường đến với lớp học/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Lớp học, công việc và những thử nghiệm/i })).toBeVisible();
 		await expect(page.getByRole('heading', { name: /Công việc hiện tại/i })).toBeVisible();
 		await expect(page.getByRole('heading', { name: /^Giảng dạy$/i })).toBeVisible();
 		await expect(page.getByRole('heading', { name: /Những lớp học đã đi qua/i })).toBeVisible();
@@ -237,12 +234,17 @@ test.describe('Navigation', () => {
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 	});
 
-	test('mobile contact FAB opens the same panel from mục lục', async ({ page }) => {
+	test('mobile contact FAB stays off book pages and remains available from contact', async ({
+		page,
+	}) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('contact-rail')).toBeHidden();
-		await page.getByTestId('contact-fab').click();
-		await expect(page.getByRole('dialog', { name: 'Gửi lời nhắn' })).toBeVisible();
+		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
+		await page.goto('/lien-he');
+		await expect(
+			page.getByRole('heading', { level: 1, name: /Gửi tôi một lời nhắn/i }),
+		).toBeVisible();
 	});
 
 	test('gate back returns to the mục lục', async ({ page }) => {

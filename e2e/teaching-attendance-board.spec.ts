@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import writeXlsxFile from 'write-excel-file/node';
 
 import { addAdminSession } from './helpers/adminSession';
+import { cleanupTeachingClass } from './helpers/teachingCleanup';
 
 async function rosterWorkbookBuffer({
 	courseCode,
@@ -140,7 +141,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 
@@ -182,7 +183,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(html).toMatch(/color:\s*(#dc2626|rgb\(220,\s*38,\s*38\))/i);
 			expect(html).toMatch(/background-color:\s*(#fef08a|rgb\(254,\s*240,\s*138\))/i);
 		} finally {
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 
@@ -259,7 +260,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await page.getByRole('button', { name: 'Enter experience' }).click();
 
 			await expect(
-				page.getByRole('heading', { name: 'Choose your HRM learning style' }),
+				page.getByRole('heading', { name: 'Choose your learning style' }),
 			).toBeVisible();
 			await page.getByRole('button', { name: 'Chọn thử thách' }).click();
 			await expect(page.getByRole('button', { name: 'Đã chọn' })).toBeVisible();
@@ -273,12 +274,12 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
 			await expect(
-				page.getByRole('heading', { name: 'Choose your HRM learning style' }),
+				page.getByRole('heading', { name: 'Choose your learning style' }),
 			).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 
@@ -357,7 +358,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(await secondImport.json()).toMatchObject({ data: { addedCount: 0, skippedCount: 2 } });
 		} finally {
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 
@@ -485,7 +486,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			}
 		} finally {
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 
@@ -597,7 +598,64 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.locator('button.mc-grid-participation-cell')).toHaveCount(0);
 		} finally {
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
+		}
+	});
+
+	test('public attendance keeps students who are not yet assigned a tutorial', async ({
+		page,
+		context,
+	}) => {
+		await addAdminSession(context);
+		const suffix = Date.now().toString(36);
+		const created = await page.request.post('/api/admin/teaching/classes', {
+			data: {
+				courseCode: `UNT${suffix}`.slice(0, 10),
+				courseName: 'Unassigned Tutorial E2E',
+				groupNo: '91',
+				term: `E2E ${suffix}`,
+				totalWeeks: 4,
+			},
+		});
+		expect(created.ok()).toBe(true);
+		const classId = ((await created.json()) as { data: { id: string } }).data.id;
+		const slug = `unassigned-${suffix}`;
+
+		try {
+			const publicPage = await page.request.patch(`/api/admin/teaching/classes/${classId}/public`, {
+				data: {
+					publicSlug: slug,
+					publicTitle: 'Unassigned Tutorial E2E',
+					publicSummary: '',
+					publicDescription: '',
+					publicAnnouncement: '',
+					links: [],
+				},
+			});
+			expect(publicPage.ok()).toBe(true);
+			const shared = await page.request.patch(`/api/admin/teaching/classes/${classId}/share`, {
+				data: { shared: true },
+			});
+			expect(shared.ok()).toBe(true);
+			const enrolled = await page.request.post(`/api/admin/teaching/classes/${classId}/enrollments`, {
+				data: {
+					studentCode: `27${suffix}`.slice(-10),
+					familyName: 'E2E',
+					givenName: `Unassigned ${suffix}`,
+					tutorialClassId: null,
+				},
+			});
+			expect(enrolled.ok()).toBe(true);
+
+			await context.clearCookies();
+			await page.goto(`/lop/${slug}`);
+			await expect(page.getByText('1 SV')).toBeVisible();
+			await expect(page.getByLabel('Tutorial')).toHaveValue('');
+			await expect(page.locator('#public-tutorial option[value="__unassigned__"]')).toHaveCount(1);
+			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
+		} finally {
+			await addAdminSession(context);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 
@@ -1035,7 +1093,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			).toBeLessThanOrEqual(1);
 		} finally {
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 
@@ -1098,7 +1156,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByText('Đã lưu điểm danh')).toBeVisible();
 		} finally {
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 });

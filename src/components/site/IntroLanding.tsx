@@ -19,8 +19,17 @@ export default function IntroLanding() {
 					<h1 className="cover-title">{introPage.headline}</h1>
 					<p className="cover-pos">{introPage.partOfSpeech}</p>
 					<div className="cover-narrative">
-						{introPage.lines.map((line) => (
-							<p key={line}>{line}</p>
+						{introPage.lines.map((line, index) => (
+							<p key={line}>
+								{index === 0 ? (
+									<span className="cover-cursor-line">
+										{line}
+										<span className="intro-ink-cursor" aria-hidden="true" />
+									</span>
+								) : (
+									line
+								)}
+							</p>
 						))}
 					</div>
 					<Link className="book-link cover-cta" href={routes.toc} data-testid="intro-open-toc">

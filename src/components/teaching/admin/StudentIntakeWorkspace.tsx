@@ -265,6 +265,24 @@ export function StudentIntakeWorkspace({
 						<StudioField label="Tên">
 							<StudioInput required value={manual.givenName} onChange={(event) => setManual({ ...manual, givenName: event.target.value })} />
 						</StudioField>
+						<StudioField label="Tutorial">
+							{tutorials.length > 0 ? (
+								<StudioSelect value={manual.tutorialClassId} onChange={(event) => setManual({ ...manual, tutorialClassId: event.target.value })}>
+									<option value="">Chưa phân tutorial</option>
+									{tutorials.map((tutorial) => (
+										<option key={tutorial.id} value={tutorial.id}>
+											{tutorial.code} · {tutorial.name}
+										</option>
+									))}
+								</StudioSelect>
+							) : (
+								<StudioInput value={manual.tutorialCode} onChange={(event) => setManual({ ...manual, tutorialCode: event.target.value })} placeholder="Không bắt buộc" />
+							)}
+						</StudioField>
+						<StudioField label="Học từ tuần">
+							<StudioInput type="number" min={1} value={manual.enrolledFromWeek} onChange={(event) => setManual({ ...manual, enrolledFromWeek: event.target.value })} />
+						</StudioField>
+<details className="md:col-span-3"><summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">Thông tin bổ sung</summary><div className="grid gap-3 md:grid-cols-3">
 						<StudioField label="STT">
 							<StudioInput type="number" min={1} value={manual.orderNo} onChange={(event) => setManual({ ...manual, orderNo: event.target.value })} />
 						</StudioField>
@@ -283,23 +301,7 @@ export function StudentIntakeWorkspace({
 						<StudioField label="Email">
 							<StudioInput type="email" value={manual.email} onChange={(event) => setManual({ ...manual, email: event.target.value })} />
 						</StudioField>
-						<StudioField label="Tutorial">
-							{tutorials.length > 0 ? (
-								<StudioSelect value={manual.tutorialClassId} onChange={(event) => setManual({ ...manual, tutorialClassId: event.target.value })}>
-									<option value="">Chưa phân tutorial</option>
-									{tutorials.map((tutorial) => (
-										<option key={tutorial.id} value={tutorial.id}>
-											{tutorial.code} · {tutorial.name}
-										</option>
-									))}
-								</StudioSelect>
-							) : (
-								<StudioInput value={manual.tutorialCode} onChange={(event) => setManual({ ...manual, tutorialCode: event.target.value })} placeholder="Không bắt buộc" />
-							)}
-						</StudioField>
-						<StudioField label="Học từ tuần">
-							<StudioInput type="number" min={1} value={manual.enrolledFromWeek} onChange={(event) => setManual({ ...manual, enrolledFromWeek: event.target.value })} />
-						</StudioField>
+</div></details>
 						<div className="flex items-end">
 							<StudioButton type="submit" disabled={busy}>
 								Xem trước
@@ -383,7 +385,8 @@ export function StudentIntakeWorkspace({
 									Giữ toàn bộ dữ liệu hiện tại
 								</StudioButton>
 							) : null}
-							<StudioButton disabled={busy || !canCommit} onClick={() => void commit()}>
+							<StudioButton variant="secondary" disabled={busy} onClick={() => setPreview(null)}>Quay lại</StudioButton>
+<StudioButton disabled={busy || !canCommit} onClick={() => void commit()}>
 								{busy ? 'Đang lưu…' : commitLabel}
 							</StudioButton>
 						</div>

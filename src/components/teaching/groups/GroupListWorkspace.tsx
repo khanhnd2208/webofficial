@@ -138,7 +138,12 @@ export function GroupListWorkspace({
 		setSaving(false);
 	}
 	function showSaveError(error: unknown, fallback: string) {
-		setToast(error instanceof Error ? error.message : fallback);
+		const fields =
+			error instanceof AdminApiError ? error.fields?.errors || error.fields?._ : undefined;
+		setToast(
+			[error instanceof Error ? error.message : fallback, fields].filter(Boolean).join('\n') ||
+				fallback,
+		);
 		if (error instanceof AdminApiError && error.code === 'STALE_BOARD')
 			setReload((value) => value + 1);
 	}
@@ -339,41 +344,70 @@ export function GroupListWorkspace({
 
 	return (
 		<div className="group-list-workspace" aria-busy={loading || saving}>
-			<header className="group-list-header mc-card-head flex flex-wrap items-center justify-between gap-3">
-				<div>
-					<h2 className="text-lg font-semibold text-brand">
-						DANH SÁCH PHÂN CHIA NHÓM
-						{board ? ` — TUTORIAL ${board.tutorialCode}` : ''}
-					</h2>
-					{board ? (
-						<p className="mt-1 text-sm text-ink-secondary">
-							Đã xếp {board.assignedCount}/{board.activeStudentCount} · Chưa xếp{' '}
-							{board.unassigned.length}
+			<header className="group-list-header mc-card-head">
+				<div className="group-list-heading-row">
+					<div>
+						<p className="group-list-eyebrow">
+							GROUP DIRECTORY · {admin ? 'ADMIN VIEW' : 'STUDENT VIEW'}
 						</p>
-					) : null}
+						<h2 className="group-list-title">
+							DANH SÁCH PHÂN CHIA NHÓM
+							{board ? ` — TUTORIAL ${board.tutorialCode}` : ''}
+						</h2>
+						<p className="group-list-subtitle">
+							{board ? board.tutorialName : 'Chọn tutorial để xem danh sách thành viên.'}
+						</p>
+					</div>
+					<div className="group-list-header-actions">
+						<fieldset disabled={saving}>
+							<TutorialSwitcher
+								tutorials={tutorials}
+								value={tutorialId}
+								onChange={changeTutorial}
+							/>
+						</fieldset>
+						{admin ? (
+							<button
+								type="button"
+								className="mc-button mc-button-secondary min-h-11"
+								onClick={() => {
+									if (!board) return;
+									setGroupCountDraft(
+										String(
+											board.groupCount || Math.max(1, Math.ceil(board.activeStudentCount / 5)),
+										),
+									);
+									setDefaultSizeDraft(String(board.defaultGroupSize));
+									setConfigOpen(true);
+								}}
+								disabled={!board || saving || loading}
+							>
+								Thiết lập nhóm
+							</button>
+						) : null}
+					</div>
 				</div>
-				<div className="flex flex-wrap items-center gap-2">
-					<fieldset disabled={saving}>
-						<TutorialSwitcher tutorials={tutorials} value={tutorialId} onChange={changeTutorial} />
-					</fieldset>
-					{admin ? (
-						<button
-							type="button"
-							className="mc-button mc-button-secondary min-h-11"
-							onClick={() => {
-								if (!board) return;
-								setGroupCountDraft(
-									String(board.groupCount || Math.max(1, Math.ceil(board.activeStudentCount / 5))),
-								);
-								setDefaultSizeDraft(String(board.defaultGroupSize));
-								setConfigOpen(true);
-							}}
-							disabled={!board || saving || loading}
+				{board ? (
+					<div className="group-list-metrics" aria-label="Tổng quan phân nhóm">
+						<div className="group-list-metric">
+							<span>Đã xếp</span>
+							<strong>
+								{board.assignedCount}
+								<small>/{board.activeStudentCount}</small>
+							</strong>
+						</div>
+						<div className="group-list-metric">
+							<span>Số nhóm</span>
+							<strong>{board.groupCount}</strong>
+						</div>
+						<div
+							className={`group-list-metric ${board.unassigned.length ? 'is-warning' : 'is-complete'}`}
 						>
-							Thiết lập nhóm
-						</button>
-					) : null}
-				</div>
+							<span>Chưa xếp</span>
+							<strong>{board.unassigned.length}</strong>
+						</div>
+					</div>
+				) : null}
 			</header>
 
 			<div className="group-list-toolbar mt-4 flex flex-wrap items-center gap-3">
@@ -406,98 +440,124 @@ export function GroupListWorkspace({
 						: 'Giảng viên chưa thiết lập nhóm cho tutorial này.'}
 				</div>
 			) : (
-				<div className="group-list-sections mt-4 space-y-6">
-					{filteredGroups.map((group) => (
-						<section key={group.id} className="group-list-section mc-surface overflow-hidden">
-							<div className="group-list-section-head flex flex-wrap items-center justify-between gap-2 border-b border-mc-rule bg-surface-sunken px-4 py-3">
-								<h3 className="text-sm font-semibold uppercase tracking-wide text-ink">
-									{groupTitle(board.groups.find((item) => item.id === group.id) ?? group)}
-								</h3>
-								{admin ? (
-									<div className="flex flex-wrap gap-2">
-										<button
-											type="button"
-											disabled={saving}
-											className="mc-button mc-button-secondary text-xs"
-											onClick={() => {
-												setCapacityGroupId(group.id);
-												setCapacityDraft(group.maxSize != null ? String(group.maxSize) : '');
-											}}
-										>
-											Sức chứa
-										</button>
-										<button
-											type="button"
-											disabled={saving}
-											className="mc-button mc-button-primary text-xs"
-											onClick={() => {
-												setAddGroupId(group.id);
-												setCodesDraft('');
-												setPreview(null);
-											}}
-										>
-											Thêm sinh viên
-										</button>
+				<div className="group-list-grid mt-4">
+					{filteredGroups.map((group) => {
+						const sourceGroup = board.groups.find((item) => item.id === group.id) ?? group;
+						const ratio = sourceGroup.effectiveMaxSize
+							? sourceGroup.assignments.length / sourceGroup.effectiveMaxSize
+							: 0;
+						return (
+							<section
+								key={group.id}
+								className="group-list-section mc-surface overflow-hidden"
+								data-density={ratio >= 1 ? 'full' : 'open'}
+							>
+								<div className="group-list-section-head">
+									<div className="group-list-section-title">
+										<span className="group-list-number">
+											{String(sourceGroup.displayOrder + 1).padStart(2, '0')}
+										</span>
+										<div>
+											<h3>{groupTitle(sourceGroup)}</h3>
+											<p>
+												{ratio >= 1
+													? 'Đã đủ thành viên'
+													: `${sourceGroup.effectiveMaxSize - sourceGroup.assignments.length} chỗ trống`}
+											</p>
+										</div>
 									</div>
-								) : null}
-							</div>
-
-							{group.assignments.length ? (
-								<div className="group-list-table-wrap overflow-x-auto">
-									<table className="group-list-table w-full text-sm">
-										<thead>
-											<tr>
-												<th>STT</th>
-												<th>Mã sinh viên</th>
-												<th>Họ và tên</th>
-												<th>Trải nghiệm học tập</th>
-												{admin ? <th aria-label="Thao tác" /> : null}
-											</tr>
-										</thead>
-										<tbody>
-											{group.assignments.map((member) => {
-												const lx = learningLabel(member.learningExperience);
-												return (
-													<tr key={member.enrollmentId}>
-														<td>{serialByEnrollment.get(member.enrollmentId) ?? '—'}</td>
-														<td>{member.studentCode}</td>
-														<td>{fullName(member.familyName, member.givenName)}</td>
-														<td>
-															<span className={`group-list-lx group-list-lx-${lx.tone}`}>
-																{lx.text}
-															</span>
-														</td>
-														{admin ? (
-															<td className="group-list-actions">
-																<button
-																	type="button"
-																	className="mc-button mc-button-ghost text-xs"
-																	onClick={() => setMoveEnrollmentId(member.enrollmentId)}
-																>
-																	Chuyển nhóm
-																</button>
-																<button
-																	type="button"
-																	className="mc-button mc-button-ghost text-xs text-danger"
-																	onClick={() => void moveMember(member.enrollmentId, null)}
-																>
-																	Bỏ khỏi nhóm
-																</button>
-															</td>
-														) : null}
-													</tr>
-												);
-											})}
-										</tbody>
-									</table>
+									<span
+										className="group-list-capacity"
+										aria-label={`${sourceGroup.assignments.length} trên ${sourceGroup.effectiveMaxSize} sinh viên`}
+									>
+										{sourceGroup.assignments.length}/{sourceGroup.effectiveMaxSize}
+									</span>
+									{admin ? (
+										<div className="flex flex-wrap gap-2">
+											<button
+												type="button"
+												disabled={saving}
+												className="mc-button mc-button-secondary text-xs"
+												onClick={() => {
+													setCapacityGroupId(group.id);
+													setCapacityDraft(group.maxSize != null ? String(group.maxSize) : '');
+												}}
+											>
+												Sức chứa
+											</button>
+											<button
+												type="button"
+												disabled={saving}
+												className="mc-button mc-button-primary text-xs"
+												onClick={() => {
+													setAddGroupId(group.id);
+													setCodesDraft('');
+													setPreview(null);
+												}}
+											>
+												Thêm sinh viên
+											</button>
+										</div>
+									) : null}
 								</div>
-							) : (
-								<p className="px-4 py-6 text-sm text-ink-secondary">
-									Chưa có sinh viên trong nhóm.
-								</p>
-							)}
-						</section>
-					))}
+
+								{group.assignments.length ? (
+									<div className="group-list-table-wrap overflow-x-auto">
+										<table className="group-list-table w-full text-sm">
+											<thead>
+												<tr>
+													<th>STT</th>
+													<th>Mã sinh viên</th>
+													<th>Họ và tên</th>
+													<th>Trải nghiệm học tập</th>
+													{admin ? <th aria-label="Thao tác" /> : null}
+												</tr>
+											</thead>
+											<tbody>
+												{group.assignments.map((member) => {
+													const lx = learningLabel(member.learningExperience);
+													return (
+														<tr key={member.enrollmentId}>
+															<td>{serialByEnrollment.get(member.enrollmentId) ?? '—'}</td>
+															<td>{member.studentCode}</td>
+															<td>{fullName(member.familyName, member.givenName)}</td>
+															<td>
+																<span className={`group-list-lx group-list-lx-${lx.tone}`}>
+																	{lx.text}
+																</span>
+															</td>
+															{admin ? (
+																<td className="group-list-actions">
+																	<button
+																		type="button"
+																		className="mc-button mc-button-ghost text-xs"
+																		onClick={() => setMoveEnrollmentId(member.enrollmentId)}
+																	>
+																		Chuyển nhóm
+																	</button>
+																	<button
+																		type="button"
+																		className="mc-button mc-button-ghost text-xs text-danger"
+																		onClick={() => void moveMember(member.enrollmentId, null)}
+																	>
+																		Bỏ khỏi nhóm
+																	</button>
+																</td>
+															) : null}
+														</tr>
+													);
+												})}
+											</tbody>
+										</table>
+									</div>
+								) : (
+									<p className="px-4 py-6 text-sm text-ink-secondary">
+										Chưa có sinh viên trong nhóm.
+									</p>
+								)}
+							</section>
+						);
+					})}
 
 					<section className="group-list-section group-list-unassigned mc-surface overflow-hidden">
 						<div className="group-list-section-head border-b border-mc-rule bg-surface-sunken px-4 py-3">

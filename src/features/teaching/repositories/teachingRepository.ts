@@ -3,6 +3,7 @@ import type { Prisma, TeachingStudent } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
+import { classIdentityMatches } from '../domain/adminLifecycle';
 import { normalizeStudentCode } from '../domain/studentIdentity';
 
 export const DEFAULT_TUTORIAL_CODE = 'T01';
@@ -10,7 +11,12 @@ export const DEFAULT_TUTORIAL_NAME = 'Tutorial 1';
 
 const classInclude = {
 	tutorials: { orderBy: [{ displayOrder: 'asc' as const }, { code: 'asc' as const }] },
-	_count: { select: { enrollments: true, sessions: true, tutorials: true } },
+	_count: {
+		select: { enrollments: true, sessions: true, tutorials: true, notes: true, publicLinks: true },
+	},
+	groupBoards: {
+		select: { groupCount: true, _count: { select: { assignments: true } } },
+	},
 } satisfies Prisma.TeachingClassInclude;
 
 export async function listClasses() {
@@ -23,6 +29,9 @@ export async function listClasses() {
 					id: true,
 					tutorialClassId: true,
 					weekNumber: true,
+					heldOn: true,
+					topic: true,
+					method: true,
 					attendanceTakenAt: true,
 					attendanceOpen: true,
 					participationTakenAt: true,
@@ -190,6 +199,60 @@ export function updateClassRecord(id: string, data: Prisma.TeachingClassUpdateIn
 
 export function deleteClassRecord(id: string) {
 	return prisma.teachingClass.delete({ where: { id } });
+}
+
+export async function findClassByIdentity(input: {
+	courseId: string;
+	classCode: string;
+	term: string;
+}) {
+	const rows = await prisma.teachingClass.findMany({
+		where: { courseId: input.courseId },
+		select: { id: true, classCode: true, groupNo: true, term: true },
+	});
+	const match = rows.find((row) => classIdentityMatches(row, input));
+	return match ? { id: match.id } : null;
+}
+
+export function getClassLifecycleSnapshot(id: string) {
+	return prisma.teachingClass.findUnique({
+		where: { id },
+		select: {
+			id: true,
+			publicTitle: true,
+			publicSummary: true,
+			publicDescription: true,
+			publicAnnouncement: true,
+			classRules: true,
+			attendanceVisible: true,
+			publicSlug: true,
+			_count: {
+				select: { enrollments: true, notes: true, publicLinks: true },
+			},
+			sessions: {
+				select: {
+					heldOn: true,
+					topic: true,
+					method: true,
+					isCancelled: true,
+					attendanceTakenAt: true,
+					participationTakenAt: true,
+					_count: { select: { attendance: true, participation: true } },
+				},
+			},
+			groupBoards: {
+				select: { groupCount: true, _count: { select: { assignments: true } } },
+			},
+		},
+	});
+}
+
+export function listDistinctTerms() {
+	return prisma.teachingClass.findMany({
+		select: { term: true },
+		distinct: ['term'],
+		orderBy: { term: 'asc' },
+	});
 }
 
 export function createTutorial(data: Prisma.TeachingTutorialClassUncheckedCreateInput) {
@@ -747,6 +810,55 @@ export async function decrementGift(enrollmentId: string) {
 		data: { giftCount: { decrement: 1 } },
 	});
 	return updated.count > 0;
+}
+
+export function listCourses() {
+	return prisma.teachingCourse.findMany({
+		orderBy: [{ courseCode: 'asc' }, { courseName: 'asc' }],
+		include: {
+			_count: {
+				select: {
+					classes: true,
+					decks: true,
+				},
+			},
+			classes: {
+				select: {
+					id: true,
+					status: true,
+					_count: { select: { tutorials: true } },
+				},
+			},
+			decks: {
+				select: { status: true },
+			},
+		},
+	});
+}
+
+export function getCourse(id: string) {
+	return prisma.teachingCourse.findUnique({ where: { id } });
+}
+
+export function getCourseByCode(courseCode: string) {
+	return prisma.teachingCourse.findUnique({ where: { courseCode } });
+}
+
+export async function enablePublishedDecksForClass(classId: string, courseId: string) {
+	const decks = await prisma.activeRecallDeck.findMany({
+		where: { courseId, status: 'PUBLISHED' },
+		select: { id: true, position: true },
+	});
+	if (!decks.length) return;
+	await prisma.teachingClassRecallDeck.createMany({
+		data: decks.map((deck) => ({
+			classId,
+			deckId: deck.id,
+			enabled: true,
+			displayOrder: deck.position,
+		})),
+		skipDuplicates: true,
+	});
 }
 
 export { prisma };

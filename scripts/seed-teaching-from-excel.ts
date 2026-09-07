@@ -122,10 +122,19 @@ async function main() {
 		async (transaction) => {
 			await transaction.teachingClass.deleteMany();
 			await transaction.teachingStudent.deleteMany();
+			const course = await transaction.teachingCourse.upsert({
+				where: { courseCode: detailed.metadata.courseCode },
+				update: { courseName: detailed.metadata.courseName },
+				create: {
+					courseCode: detailed.metadata.courseCode,
+					courseName: detailed.metadata.courseName,
+				},
+			});
 
 			for (const [tutorialIndex, tutorialInput] of tutorials.entries()) {
 				const teachingClass = await transaction.teachingClass.create({
 					data: {
+						courseId: course.id,
 						courseCode: detailed.metadata.courseCode,
 						courseName: detailed.metadata.courseName,
 						groupNo: tutorialInput.groupNo,

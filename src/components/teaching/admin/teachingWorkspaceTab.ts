@@ -1,10 +1,19 @@
-export type TeachingWorkspaceTab = 'attendance' | 'cp' | 'groups' | 'notes' | 'students' | 'setup' | 'share';
+export type TeachingWorkspaceTab =
+	| 'attendance'
+	| 'cp'
+	| 'groups'
+	| 'notes'
+	| 'recall'
+	| 'students'
+	| 'setup'
+	| 'share';
 
 const WORKSPACE_TABS: TeachingWorkspaceTab[] = [
 	'attendance',
 	'cp',
 	'groups',
 	'notes',
+	'recall',
 	'students',
 	'setup',
 	'share',
@@ -27,5 +36,5 @@ export function teachingTabNeedsRoster(tab: TeachingWorkspaceTab) {
 }
 
 export function teachingTabNeedsPublicPage(tab: TeachingWorkspaceTab) {
-	return tab === 'setup';
+	return tab === 'setup' || tab === 'share';
 }

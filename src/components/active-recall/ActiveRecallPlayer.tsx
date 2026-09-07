@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { ActiveRecallDeckDTO } from '@/features/active-recall';
+import { recallToStoredHtml } from '@/features/active-recall/richText';
 
 type StoredState = { currentId?: string; shuffled?: boolean };
 
@@ -16,7 +17,13 @@ function shuffle<T>(items: T[]) {
 }
 
 function RecallText({ children }: { children: string }) {
-	return <div className="recall-text whitespace-pre-wrap">{children}</div>;
+	return (
+		<div
+			className="recall-text"
+			suppressHydrationWarning
+			dangerouslySetInnerHTML={{ __html: recallToStoredHtml(children) }}
+		/>
+	);
 }
 
 export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO }) {
@@ -101,7 +108,9 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 			const target = event.target;
 			if (
 				target instanceof Element &&
-				target.matches('input, textarea, select, [contenteditable="true"]')
+				target.closest(
+					'a, button, input, textarea, select, summary, [role="button"], [contenteditable="true"]',
+				)
 			)
 				return;
 			if (event.key === ' ' || event.key === 'Enter') {
@@ -200,6 +209,8 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 						<RecallText>{revealed ? card.answer : card.question}</RecallText>
 					</article>
 				</section>
+				<p className="mb-3 text-center text-xs text-ink-secondary sm:hidden">Chạm vào thẻ để lật câu hỏi và đáp án.</p>
+				{last ? <button type="button" className="recall-quiet-button mb-3 min-h-11 self-center" onClick={() => { setCurrentId(ids[0]!); setRevealed(false); }}>Học lại từ đầu</button> : null}
 
 				<nav
 					className="recall-controls flex items-center justify-between gap-4"

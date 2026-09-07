@@ -1,10 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
+import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
+import {
+	StudioButton,
+	StudioField,
+	StudioInput,
+	StudioSelect,
+} from '@/components/myclass/admin/studio';
+import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
+import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu';
+import { Dialog } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
-import type { TeachingClassListItem } from '@/features/teaching/types';
+import { formatDependencySummary } from '@/features/teaching/domain/adminLifecycle';
+import type { TeachingClassListItem, TeachingClassStatus } from '@/features/teaching/types';
 
 type StatusFilter = 'all' | 'active' | 'archived';
 
@@ -12,21 +24,41 @@ function shareLabel(row: TeachingClassListItem) {
 	return row.attendanceVisible ? 'Đang chia sẻ' : 'Riêng tư';
 }
 
-function shareTone(row: TeachingClassListItem) {
-	return row.attendanceVisible ? 'teaching-status teaching-status-ok' : 'teaching-status';
+function mutationError(reason: unknown, fallback: string) {
+	if (reason instanceof AdminApiError) {
+		const summary = reason.details
+			? formatDependencySummary(reason.details as Record<string, number>)
+			: '';
+		return summary ? `${reason.message}: ${summary}` : reason.message;
+	}
+	return reason instanceof Error ? reason.message : fallback;
 }
 
-export function TeachingClassCards({ classes }: { classes: TeachingClassListItem[] }) {
+export function TeachingClassCards({
+	classes,
+	newClassHref = routes.mySpaceTeachingNew,
+	termSuggestions = [],
+}: {
+	classes: TeachingClassListItem[];
+	newClassHref?: string;
+	termSuggestions?: string[];
+}) {
+	const router = useRouter();
+	const { confirm, dialog } = useAdminConfirm();
 	const [query, setQuery] = useState('');
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState('');
+	const [editClass, setEditClass] = useState<TeachingClassListItem | null>(null);
+	const [draft, setDraft] = useState({ groupNo: '', term: '', status: 'ACTIVE' as TeachingClassStatus });
 
 	const filtered = useMemo(() => {
-		const value = query.trim().toLowerCase();
+		const value = query.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
 		return classes.filter((row) => {
 			const matchesQuery =
 				!value ||
 				`${row.courseCode} ${row.courseName} ${row.groupNo} ${row.classCode ?? ''} ${row.term}`
-					.toLowerCase()
+					.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
 					.includes(value);
 			const matchesStatus =
 				statusFilter === 'all' ||
@@ -35,20 +67,89 @@ export function TeachingClassCards({ classes }: { classes: TeachingClassListItem
 		});
 	}, [classes, query, statusFilter]);
 
+	async function run(action: () => Promise<void>) {
+		setBusy(true);
+		setError('');
+		try {
+			await action();
+			router.refresh();
+		} catch (reason) {
+			setError(mutationError(reason, 'Không thực hiện được thao tác'));
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	function openEdit(row: TeachingClassListItem) {
+		setError('');
+		setEditClass(row);
+		setDraft({
+			groupNo: row.classCode ?? row.groupNo,
+			term: row.term,
+			status: row.status,
+		});
+	}
+
+	async function saveClass() {
+		if (!editClass) return;
+		await run(async () => {
+			await teachingApi(`/api/admin/teaching/classes/${editClass.id}`, {
+				method: 'PATCH',
+				body: JSON.stringify(draft),
+			});
+			setEditClass(null);
+		});
+	}
+
+	async function setStatus(row: TeachingClassListItem, status: TeachingClassStatus) {
+		const ok = await confirm({
+			title: status === 'ARCHIVED' ? 'Lưu trữ lớp' : 'Khôi phục lớp',
+			description:
+				status === 'ARCHIVED'
+					? 'Lớp đã lưu trữ sẽ ẩn khỏi danh sách mặc định.'
+					: 'Khôi phục lớp này vào danh sách đang dạy.',
+			confirmLabel: status === 'ARCHIVED' ? 'Lưu trữ' : 'Khôi phục',
+			tone: status === 'ARCHIVED' ? 'danger' : 'default',
+		});
+		if (!ok) return;
+		await run(async () => {
+			await teachingApi(`/api/admin/teaching/classes/${row.id}`, {
+				method: 'PATCH',
+				body: JSON.stringify({ status }),
+			});
+		});
+	}
+
+	async function deleteClass(row: TeachingClassListItem) {
+		if (!row.canDelete) {
+			setError(
+				`Chỉ xóa được lớp trống. Hiện còn ${formatDependencySummary(row.deleteBlockers)}`,
+			);
+			return;
+		}
+		const ok = await confirm({
+			title: 'Xóa lớp',
+			description: `Xóa vĩnh viễn lớp ${row.classCode ?? row.groupNo}? Thao tác này không hoàn tác được.`,
+			confirmLabel: 'Xóa vĩnh viễn',
+			tone: 'danger',
+		});
+		if (!ok) return;
+		await run(async () => {
+			await teachingApi(`/api/admin/teaching/classes/${row.id}`, { method: 'DELETE' });
+		});
+	}
+
 	if (classes.length === 0) {
 		return (
-			<div
-				className="mc-surface rounded-2xl p-8 sm:p-12 text-center"
-				data-testid="teaching-empty-all"
-			>
+			<div className="mc-surface rounded-2xl p-8 text-center sm:p-12" data-testid="teaching-empty-all">
 				<p className="text-base font-semibold text-ink">Chưa có lớp học</p>
-				<p className="mc-meta mt-2 max-w-md mx-auto text-sm text-ink-secondary">
-					Tạo lớp mới rồi thêm học viên bằng Excel hoặc nhập thủ công để bắt đầu quản lý.
+				<p className="mc-meta mx-auto mt-2 max-w-md text-sm text-ink-secondary">
+					Tạo lớp rỗng rồi thêm học viên bằng Excel hoặc nhập thủ công.
 				</p>
 				<div className="mt-6">
 					<Link
-						href={routes.mySpaceTeachingNew}
-						className="inline-flex min-h-11 touch-manipulation items-center justify-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-xs font-semibold text-paper transition-colors hover:bg-inverse-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+						href={newClassHref}
+						className="inline-flex min-h-11 items-center justify-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-xs font-semibold text-paper"
 					>
 						Tạo lớp đầu tiên
 					</Link>
@@ -61,10 +162,8 @@ export function TeachingClassCards({ classes }: { classes: TeachingClassListItem
 		<section className="space-y-6" aria-label="Danh sách lớp học">
 			<div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
 				<div className="min-w-0">
-					<h2 className="text-base font-semibold text-ink">Các lớp đang quản lý</h2>
-					<p className="mc-meta mt-0.5 text-xs text-ink-secondary">
-						Chọn lớp để vào bảng điểm danh, điểm CP và trao đổi nhóm.
-					</p>
+					<h2 className="text-base font-semibold text-ink">Các lớp theo kỳ</h2>
+					<p className="mc-meta mt-0.5 text-xs text-ink-secondary">Chọn lớp để vào điểm danh và học viên.</p>
 				</div>
 				<div className="flex items-center gap-2 sm:shrink-0">
 					<label className="min-w-0 flex-1 sm:w-64 sm:flex-none">
@@ -73,8 +172,8 @@ export function TeachingClassCards({ classes }: { classes: TeachingClassListItem
 							type="search"
 							value={query}
 							onChange={(event) => setQuery(event.target.value)}
-							placeholder="Tìm lớp, học phần hoặc học kỳ…"
-							className="mc-input w-full min-h-11 text-xs"
+							placeholder="Tìm lớp hoặc học kỳ…"
+							className="mc-input min-h-11 w-full text-xs"
 							data-testid="teaching-search-input"
 						/>
 					</label>
@@ -94,97 +193,160 @@ export function TeachingClassCards({ classes }: { classes: TeachingClassListItem
 				</div>
 			</div>
 
+			{error ? (
+				<p role="alert" className="text-sm font-semibold text-error">
+					{error}
+				</p>
+			) : null}
+
 			{filtered.length === 0 ? (
-				<div
-					className="mc-surface rounded-2xl p-8 sm:p-12 text-center"
-					data-testid="teaching-empty-filtered"
-				>
+				<div className="mc-surface rounded-2xl p-8 text-center" data-testid="teaching-empty-filtered">
 					<p className="text-sm font-semibold text-ink">Không có kết quả phù hợp</p>
-					<p className="mc-meta mt-1 text-xs text-ink-secondary">
-						Thử thay đổi từ khóa tìm kiếm hoặc đổi bộ lọc trạng thái.
-					</p>
 					<button
 						type="button"
 						onClick={() => {
 							setQuery('');
 							setStatusFilter('active');
 						}}
-						className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[var(--mc-r-sm)] border border-border px-3 text-xs font-medium text-ink transition-colors hover:bg-surface-hover"
+						className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[var(--mc-r-sm)] border border-border px-3 text-xs font-medium"
 					>
 						Đặt lại bộ lọc
 					</button>
 				</div>
 			) : (
-				<div
-					className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-					data-testid="teaching-class-cards-grid"
-				>
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="teaching-class-cards-grid">
 					{filtered.map((row) => {
-						const openHref = routes.mySpaceTeachingClassTab(row.id, 'attendance');
 						const warnings = row.atRiskCount + row.bannedCount;
 						const isArchived = row.status === 'ARCHIVED';
-
+						const classCode = row.classCode ?? row.groupNo;
 						return (
-							<article key={row.id}>
+							<article
+								key={row.id}
+								className={`relative flex h-full flex-col rounded-2xl border bg-surface ${
+									isArchived ? 'border-border/60 opacity-80' : 'border-border/80'
+								}`}
+							>
 								<Link
-									href={openHref}
-									aria-label={`Mở lớp ${row.courseName}`}
-									className={`group flex h-full flex-col justify-between rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none ${
-										isArchived
-											? 'border-border/60 bg-surface/60 opacity-80'
-											: 'border-border/80 bg-surface hover:border-accent/40 hover:bg-surface'
-									}`}
+									href={routes.mySpaceTeachingClassTab(row.id, 'attendance')}
+									aria-label={`Mở lớp ${classCode}`}
+									className="flex flex-1 flex-col p-5 pr-14 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
 									data-testid={`teaching-class-card-${row.id}`}
 								>
-									<div>
-										<p className="font-mono text-xs font-bold uppercase tracking-wider text-accent">
-											{row.courseCode} · Lớp {row.classCode ?? row.groupNo}
-										</p>
-
-										<h3 className="mt-2 text-base font-semibold leading-snug text-ink transition-colors group-hover:text-accent">
-											{row.courseName}
-										</h3>
-										<p className="mt-1 text-xs text-ink-secondary">{row.term}</p>
-										<div className="mt-3 flex flex-wrap items-center gap-1.5">
-											<span
-												className="teaching-status text-[0.625rem]"
-												data-tone={isArchived ? 'muted' : 'ok'}
-											>
-												{isArchived ? 'Đã lưu trữ' : 'Đang dạy'}
-											</span>
-											<span className={`${shareTone(row)} text-[0.625rem]`}>{shareLabel(row)}</span>
-										</div>
-
-										<div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 pt-3 text-xs text-ink-secondary">
-											<div className="flex items-center gap-1">
-												<span className="font-semibold text-ink">{row.studentCount}</span>
-												<span>học viên</span>
-											</div>
-											<div className="flex items-center gap-1">
-												<span className="font-semibold text-ink">
-													{row.sessionsTaken}/{row.sessionCount || row.totalWeeks}
-												</span>
-												<span>buổi điểm danh</span>
-											</div>
-											{warnings > 0 ? (
-												<span className="rounded-full bg-error/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-error">
-													{warnings} cảnh báo
-												</span>
-											) : null}
-										</div>
-									</div>
-
-									<div className="mt-5 flex items-center justify-end pt-2">
-										<span className="inline-flex items-center gap-1 text-xs font-semibold text-accent group-hover:underline">
-											Mở lớp <span aria-hidden="true">→</span>
+									<p className="font-mono text-xs font-bold uppercase tracking-wider text-accent">
+										Lớp {classCode}
+									</p>
+									<p className="mt-2 text-sm font-medium text-ink">{row.term}</p>
+									<div className="mt-3 flex flex-wrap items-center gap-1.5">
+										<span className="teaching-status text-[0.625rem]" data-tone={isArchived ? 'muted' : 'ok'}>
+											{isArchived ? 'Đã lưu trữ' : 'Đang dạy'}
+										</span>
+										<span className={`teaching-status text-[0.625rem] ${row.attendanceVisible ? 'teaching-status-ok' : ''}`}>
+											{shareLabel(row)}
 										</span>
 									</div>
+									<div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 pt-3 text-xs text-ink-secondary">
+										<div>
+											<span className="font-semibold text-ink">{row.studentCount}</span> học viên
+										</div>
+										{warnings > 0 ? (
+											<span className="rounded-full bg-error/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-error">
+												{warnings} cảnh báo
+											</span>
+										) : null}
+									</div>
 								</Link>
+								<div className="absolute right-2 top-2">
+									<TeachingQuickMenu
+										label={`Thao tác lớp ${classCode}`}
+										disabled={busy}
+										items={[
+											{ id: 'edit', label: 'Sửa', onSelect: () => openEdit(row) },
+											isArchived
+												? {
+														id: 'restore',
+														label: 'Khôi phục',
+														onSelect: () => void setStatus(row, 'ACTIVE'),
+													}
+												: {
+														id: 'archive',
+														label: 'Lưu trữ',
+														onSelect: () => void setStatus(row, 'ARCHIVED'),
+													},
+											{
+												id: 'delete',
+												label: 'Xóa vĩnh viễn',
+												tone: 'danger',
+												disabled: !row.canDelete,
+												onSelect: () => void deleteClass(row),
+											},
+										]}
+									/>
+								</div>
 							</article>
 						);
 					})}
 				</div>
 			)}
+
+			<Dialog
+				open={Boolean(editClass)}
+				onClose={() => {
+					if (!busy) setEditClass(null);
+				}}
+				title="Sửa lớp"
+				description="Mã lớp được chuẩn hóa chữ hoa. Học kỳ giữ nguyên cách viết hiện có."
+				>
+				<form
+					className="grid gap-4"
+					onSubmit={(event) => {
+						event.preventDefault();
+						void saveClass();
+					}}
+				>
+					{error ? <p role="alert" tabIndex={-1} ref={(node) => { node?.focus(); }} className="rounded-[var(--mc-r-sm)] bg-error/10 px-3 py-2 text-sm font-semibold text-error">{error}</p> : null}
+					<StudioField label="Mã lớp">
+						<StudioInput
+							required
+							value={draft.groupNo}
+							onChange={(event) => setDraft((current) => ({ ...current, groupNo: event.target.value }))}
+							autoFocus
+						/>
+					</StudioField>
+					<StudioField label="Học kỳ">
+						<StudioInput
+							required
+							list="teaching-term-suggestions"
+							value={draft.term}
+							onChange={(event) => setDraft((current) => ({ ...current, term: event.target.value }))}
+						/>
+					</StudioField>
+					<StudioField label="Trạng thái">
+						<StudioSelect
+							value={draft.status}
+							onChange={(event) =>
+								setDraft((current) => ({ ...current, status: event.target.value as TeachingClassStatus }))
+							}
+						>
+							<option value="ACTIVE">Đang dạy</option>
+							<option value="ARCHIVED">Đã lưu trữ</option>
+						</StudioSelect>
+					</StudioField>
+					<datalist id="teaching-term-suggestions">
+						{termSuggestions.map((term) => (
+							<option key={term} value={term} />
+						))}
+					</datalist>
+					<div className="flex justify-end gap-2">
+						<StudioButton variant="quiet" onClick={() => setEditClass(null)} disabled={busy}>
+							Huỷ
+						</StudioButton>
+						<StudioButton type="submit" disabled={busy || !draft.groupNo.trim() || !draft.term.trim()}>
+							{busy ? 'Đang lưu…' : 'Lưu'}
+						</StudioButton>
+					</div>
+				</form>
+			</Dialog>
+			{dialog}
 		</section>
 	);
 }

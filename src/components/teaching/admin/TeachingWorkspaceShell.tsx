@@ -9,12 +9,12 @@ import type {
 	TeachingPublicPageConfig,
 	TeachingRosterStudent,
 	TeachingClassNoteRecord,
+	TeachingClassRecallAssignment,
 } from '@/features/teaching/types';
 
-import { AttendanceBoardPanel } from './AttendanceBoardPanel';
+import { StudentPageWorkspace } from './StudentPageWorkspace';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
 import { GradebookWorkspace } from './GradebookWorkspace';
-import { PublicPageEditor } from './PublicPageEditor';
 import { RosterWorkspace } from './RosterWorkspace';
 import { SessionsWorkspace } from './SessionsWorkspace';
 import { SettingsForm } from './SettingsForm';
@@ -27,6 +27,7 @@ import {
 } from './TeachingWorkspacePending';
 import { resolveTeachingWorkspaceTab } from './teachingWorkspaceTab';
 import { ClassNotesAdminWorkspace } from './ClassNotesAdminWorkspace';
+import { ClassRecallWorkspace } from './ClassRecallWorkspace';
 
 export function TeachingWorkspaceShell({
 	gradebook,
@@ -38,7 +39,9 @@ export function TeachingWorkspaceShell({
 	groupBoardEnabled,
 	tab,
 	notes,
+	recallAssignments,
 	week,
+	tutorialId,
 }: {
 	gradebook: TeachingGradebook;
 	roster?: { class: TeachingGradebook['class']; students: TeachingRosterStudent[] };
@@ -49,7 +52,9 @@ export function TeachingWorkspaceShell({
 	groupBoardEnabled: boolean;
 	tab?: string;
 	notes?: TeachingClassNoteRecord[];
+	recallAssignments?: TeachingClassRecallAssignment[];
 	week?: number | null;
+	tutorialId?: string;
 }) {
 	const activeTab = resolveTeachingWorkspaceTab(tab, groupBoardEnabled);
 	const isGradebookTab = activeTab === 'attendance' || activeTab === 'cp';
@@ -58,8 +63,8 @@ export function TeachingWorkspaceShell({
 		<TeachingWorkspacePending initialWeek={week}>
 			<div className={`teaching-workspace-shell py-2 sm:py-3 ${isGradebookTab ? 'teaching-workspace-shell-gradebook' : ''}`} data-teaching-shell>
 				<TeachingAppHeader
-					backHref={routes.mySpaceTeaching}
-					backLabel="Các lớp"
+					backHref={routes.mySpaceTeachingCourse(gradebook.class.courseId)}
+					backLabel="Về môn học"
 					eyebrow={`${gradebook.class.courseCode} · Mã lớp ${gradebook.class.classCode ?? gradebook.class.groupNo} · ${gradebook.class.term}`}
 					title={gradebook.class.courseName}
 					description={
@@ -72,7 +77,7 @@ export function TeachingWorkspaceShell({
 					actions={<TeachingManagementMenu classId={gradebook.class.id} activeTab={activeTab} publicPath={board.publicPath} />}
 					tabs={
 						<Suspense>
-							<TeachingCoreTabs classId={gradebook.class.id} activeTab={activeTab} groupBoardEnabled={groupBoardEnabled} />
+							<TeachingCoreTabs classId={gradebook.class.id} activeTab={activeTab} groupBoardEnabled={groupBoardEnabled} tutorialId={tutorialId} />
 						</Suspense>
 					}
 				/>
@@ -84,6 +89,7 @@ export function TeachingWorkspaceShell({
 							initialView={activeTab === 'cp' ? 'participation' : 'attendance'}
 							groupNumbersByTutorial={groupBoardEnabled ? groupNumbersByTutorial : undefined}
 							initialWeek={week ?? null}
+							initialTutorialId={tutorialId}
 						/>
 					) : null}
 					{groupBoardEnabled && activeTab === 'groups' ? (
@@ -96,20 +102,23 @@ export function TeachingWorkspaceShell({
 						/>
 					) : null}
 					{activeTab === 'notes' ? <ClassNotesAdminWorkspace classId={gradebook.class.id} initial={notes ?? []} /> : null}
+					{activeTab === 'recall' ? (
+						<ClassRecallWorkspace
+							classId={gradebook.class.id}
+							courseId={gradebook.class.courseId}
+							initial={recallAssignments ?? []}
+						/>
+					) : null}
 					{activeTab === 'students' ? <RosterWorkspace classId={gradebook.class.id} tutorials={gradebook.tutorials} students={roster?.students ?? []} /> : null}
 					{activeTab === 'setup' ? (
 						<div className="space-y-4">
 							<SettingsForm teachingClass={gradebook.class} />
 							<SessionsWorkspace classId={gradebook.class.id} tutorials={gradebook.tutorials} />
-							{publicPage ? (
-								<details className="mc-surface p-4">
-									<summary className="cursor-pointer text-sm font-semibold text-ink">Trang công khai và tài nguyên</summary>
-									<PublicPageEditor initial={publicPage} />
-								</details>
-							) : null}
 						</div>
 					) : null}
-					{activeTab === 'share' ? <AttendanceBoardPanel initial={board} /> : null}
+					{activeTab === 'share' ? (
+						<StudentPageWorkspace page={publicPage} board={board} />
+					) : null}
 				</TeachingPendingBody>
 			</div>
 		</TeachingWorkspacePending>

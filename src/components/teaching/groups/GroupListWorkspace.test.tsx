@@ -74,5 +74,6 @@ describe('GroupListWorkspace', () => {
 		expect(screen.getByText(/DANH SÁCH PHÂN CHIA NHÓM/i)).toBeInTheDocument();
 		expect(screen.getByText(/Nhóm 1 · 1\/5 sinh viên/i)).toBeInTheDocument();
 		expect(screen.getByText(/Hỗ trợ \(Support\)/i)).toBeInTheDocument();
+		expect(document.querySelector('.group-list-grid')).toBeTruthy();
 	});
 });

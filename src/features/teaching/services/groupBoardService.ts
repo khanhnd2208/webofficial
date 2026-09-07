@@ -4,6 +4,7 @@ import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
 import { groupTransaction, removeEnrollmentGroup } from '../domain/groupTransactions';
+import { memberSlotIndexes } from '../domain/groupSlots';
 import { maskStudentCode } from '../domain/privacy';
 import { withUniqueConflict } from '../domain/prismaErrors';
 import { assertTeachingGroupBoardEnabled } from '../groupBoardAvailability';
@@ -379,12 +380,48 @@ export async function setGroupCapacity(
 	return getGroupBoard(classId, input.tutorialClassId);
 }
 
-async function nextMemberOrder(tx: Prisma.TransactionClient, groupId: string) {
-	const max = await tx.teachingGroupAssignment.aggregate({
+async function occupiedSlots(tx: Prisma.TransactionClient, groupId: string) {
+	const rows = await tx.teachingGroupAssignment.findMany({
 		where: { groupId },
-		_max: { slotIndex: true },
+		select: { slotIndex: true },
 	});
-	return (max._max.slotIndex ?? -1) + 1;
+	return rows.map((row) => row.slotIndex);
+}
+
+async function releaseStaleAssignments(
+	tx: Prisma.TransactionClient,
+	boardId: string,
+	enrollmentIds: string[],
+) {
+	if (!enrollmentIds.length) return;
+	const leftovers = await tx.teachingGroupAssignment.findMany({
+		where: { enrollmentId: { in: enrollmentIds } },
+		include: { group: true },
+	});
+	for (const leftover of leftovers) {
+		if (leftover.boardId === boardId) {
+			throw new AppError(
+				`Sinh viên đã thuộc Nhóm ${leftover.group.displayOrder + 1}.`,
+				409,
+				'ALREADY_ASSIGNED',
+			);
+		}
+		await tx.teachingGroupAssignment.delete({ where: { enrollmentId: leftover.enrollmentId } });
+		await tx.teachingGroupBoard.update({
+			where: { id: leftover.boardId },
+			data: { version: { increment: 1 } },
+		});
+		await tx.teachingGroupAudit.create({
+			data: {
+				boardId: leftover.boardId,
+				actor: 'SYSTEM',
+				action: 'REMOVE',
+				enrollmentId: leftover.enrollmentId,
+				fromGroupOrder: leftover.group.displayOrder,
+				metadata: { reason: 'stale_assignment_before_reassign' },
+			},
+		});
+	}
 }
 
 export async function addGroupMembers(
@@ -441,28 +478,26 @@ export async function addGroupMembers(
 				if (!group) throw new AppError('Nhóm không hợp lệ.', 422, 'INVALID_GROUP');
 
 				const capacity = effectiveMaxSize(group, board);
-				const currentCount = await tx.teachingGroupAssignment.count({
-					where: { groupId: input.groupId },
-				});
-				if (currentCount + validCodes.length > capacity) {
+				const usedSlots = await occupiedSlots(tx, input.groupId);
+				if (usedSlots.length + validCodes.length > capacity) {
 					throw new AppError(
-						`Nhóm chỉ còn ${Math.max(0, capacity - currentCount)} chỗ trống.`,
+						`Nhóm chỉ còn ${Math.max(0, capacity - usedSlots.length)} chỗ trống.`,
 						409,
 						'GROUP_FULL',
 					);
 				}
 
-				for (const item of preview.resolved) {
-					const slotIndex = await nextMemberOrder(tx, input.groupId);
-					await tx.teachingGroupAssignment.create({
-						data: {
-							boardId: board.id,
-							groupId: input.groupId,
-							enrollmentId: item.enrollmentId,
-							slotIndex,
-						},
-					});
-				}
+				const enrollmentIds = preview.resolved.map((item) => item.enrollmentId);
+				await releaseStaleAssignments(tx, board.id, enrollmentIds);
+				const slots = memberSlotIndexes(usedSlots, preview.resolved.length);
+				await tx.teachingGroupAssignment.createMany({
+					data: preview.resolved.map((item, index) => ({
+						boardId: board.id,
+						groupId: input.groupId,
+						enrollmentId: item.enrollmentId,
+						slotIndex: slots[index]!,
+					})),
+				});
 
 				await tx.teachingGroupBoard.update({
 					where: { id: board.id },
@@ -651,7 +686,7 @@ export async function moveGroupMember(
 							where: { enrollmentId: input.enrollmentId },
 						});
 					}
-					const slotIndex = await nextMemberOrder(tx, input.targetGroupId);
+					const slotIndex = memberSlotIndexes(await occupiedSlots(tx, input.targetGroupId), 1)[0]!;
 					await tx.teachingGroupAssignment.create({
 						data: {
 							boardId: board.id,

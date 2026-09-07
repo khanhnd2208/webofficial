@@ -64,6 +64,7 @@ async function main() {
 					existing ??
 					(await tx.teachingClass.create({
 						data: {
+							courseId: source.courseId,
 							courseCode: source.courseCode,
 							courseName: source.courseName,
 							groupNo: `${source.groupNo}-${tutorial.code}`,

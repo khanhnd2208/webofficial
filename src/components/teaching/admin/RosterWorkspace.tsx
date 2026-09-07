@@ -520,6 +520,7 @@ export function RosterWorkspace({
 							void saveEdit();
 						}}
 					>
+						{error ? <p role="alert" tabIndex={-1} ref={(node) => { node?.focus(); }} className="text-sm text-error md:col-span-2">{error}</p> : null}
 						<label className="text-xs font-semibold">
 							STT
 							<input

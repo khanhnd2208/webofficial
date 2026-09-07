@@ -29,9 +29,12 @@ const PRISMA_GENERATION = [
 	Prisma.ModelName.TeachingGroup,
 	Prisma.ModelName.TeachingGroupAssignment,
 	Prisma.ModelName.TeachingGroupAudit,
+	Prisma.ModelName.TeachingCourse,
+	Prisma.ModelName.TeachingClassRecallDeck,
 	'TeachingEnrollment.learningExperience.v2',
 	'TeachingGroupBoard.tutorialClassId.v1',
 	'TeachingGroup.maxSize.v1',
+	'TeachingCourse.status.v1',
 ].join('|');
 
 type PrismaGlobal = {
@@ -71,7 +74,9 @@ function assertGeneratedClient(client: PrismaClient): void {
 		typeof client.activeRecallCard?.findMany === 'function' &&
 		typeof client.myClassVocabAssignment?.findMany === 'function' &&
 		typeof client.teachingGroupBoard?.findMany === 'function' &&
-		typeof client.teachingClassNote?.findMany === 'function'
+		typeof client.teachingClassNote?.findMany === 'function' &&
+		typeof client.teachingCourse?.findMany === 'function' &&
+		typeof client.teachingClassRecallDeck?.findMany === 'function'
 	) {
 		return;
 	}
@@ -95,7 +100,9 @@ function getPrismaClient(): PrismaClient {
 		typeof cached.activeRecallCard?.findMany === 'function' &&
 		typeof cached.myClassVocabAssignment?.findMany === 'function' &&
 		typeof cached.teachingGroupBoard?.findMany === 'function' &&
-		typeof cached.teachingClassNote?.findMany === 'function'
+		typeof cached.teachingClassNote?.findMany === 'function' &&
+		typeof cached.teachingCourse?.findMany === 'function' &&
+		typeof cached.teachingClassRecallDeck?.findMany === 'function'
 	) {
 		return cached;
 	}

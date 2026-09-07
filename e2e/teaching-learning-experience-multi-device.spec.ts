@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { addAdminSession } from './helpers/adminSession';
+import { cleanupTeachingClass } from './helpers/teachingCleanup';
 
 test.describe('Learning Experience multi-device access', () => {
 	test('keeps independent sessions when the same network logs in concurrently', async ({
@@ -126,7 +127,7 @@ test.describe('Learning Experience multi-device access', () => {
 				await Promise.all(learnerPages.map((learnerPage) => learnerPage.reload()));
 				for (const learnerPage of learnerPages) {
 					await expect(
-						learnerPage.getByRole('heading', { name: 'Choose your HRM learning style' }),
+						learnerPage.getByRole('heading', { name: 'Choose your learning style' }),
 					).toBeVisible();
 				}
 			} finally {
@@ -135,7 +136,7 @@ test.describe('Learning Experience multi-device access', () => {
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 });

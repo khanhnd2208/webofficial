@@ -1,14 +1,19 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { routes } from '@/config/routes';
 import type { TeachingClassListItem } from '@/features/teaching/types';
 
 import { TeachingClassCards } from './TeachingClassCards';
 
+vi.mock('next/navigation', () => ({
+	useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
+}));
+
 function createMockClass(overrides: Partial<TeachingClassListItem>): TeachingClassListItem {
 	return {
 		id: 'class-1',
+		courseId: 'course-1',
 		courseCode: '61MGT3HRM',
 		courseName: 'Quản trị nhân sự',
 		groupNo: '39-01',
@@ -45,6 +50,8 @@ function createMockClass(overrides: Partial<TeachingClassListItem>): TeachingCla
 		averageTotal: 4.9,
 		atRiskCount: 0,
 		bannedCount: 0,
+		canDelete: false,
+		deleteBlockers: { students: 41 },
 		...overrides,
 	};
 }
@@ -89,27 +96,20 @@ describe('TeachingClassCards', () => {
 		);
 	});
 
-	it('defaults to active status filter and displays cards without average score table columns', () => {
+	it('defaults to active status filter and displays compact class identity', () => {
 		render(<TeachingClassCards classes={mockClasses} />);
-		// Active class is visible
-		expect(screen.getByText('61MGT3HRM · Lớp 39-01')).toBeInTheDocument();
-		expect(screen.getByText('Quản trị nhân sự')).toBeInTheDocument();
+		expect(screen.getByText('Lớp 39-01')).toBeInTheDocument();
+		expect(screen.getByText('HỌC KỲ 1 - NĂM HỌC 2026 - 2027')).toBeInTheDocument();
 		expect(screen.getByText('41')).toBeInTheDocument();
-		expect(screen.getByText('1/10')).toBeInTheDocument();
+		expect(screen.queryByText('Quản trị nhân sự')).not.toBeInTheDocument();
+		expect(screen.queryByText('1/10')).not.toBeInTheDocument();
 		const card = screen.getByTestId('teaching-class-card-class-1');
 		expect(card).toHaveTextContent('Đang dạy');
 		expect(card).toHaveTextContent('Đang chia sẻ');
 
-		// Archived class is filtered out by default status filter "active"
-		expect(screen.queryByText('61MGT3OB · Lớp 38-02')).not.toBeInTheDocument();
+		expect(screen.queryByText('Lớp 38-02')).not.toBeInTheDocument();
 
-		// Ensure table or average columns are NOT rendered
-		expect(screen.queryByText('Attendance TB')).not.toBeInTheDocument();
-		expect(screen.queryByText('CP TB')).not.toBeInTheDocument();
-		expect(screen.queryByText('Tổng TB /10')).not.toBeInTheDocument();
-
-		// Check link opens class attendance tab in My Space
-		const link = screen.getByRole('link', { name: 'Mở lớp Quản trị nhân sự' });
+		const link = screen.getByRole('link', { name: 'Mở lớp 39-01' });
 		expect(link).toHaveAttribute('href', routes.mySpaceTeachingClassTab('class-1', 'attendance'));
 		expect(link).toHaveClass('focus-visible:ring-2');
 	});
@@ -120,14 +120,14 @@ describe('TeachingClassCards', () => {
 
 		// Switch to all
 		fireEvent.change(statusSelect, { target: { value: 'all' } });
-		expect(screen.getByText('61MGT3HRM · Lớp 39-01')).toBeInTheDocument();
-		expect(screen.getByText('61MGT3OB · Lớp 38-02')).toBeInTheDocument();
+		expect(screen.getByText('Lớp 39-01')).toBeInTheDocument();
+		expect(screen.getByText('Lớp 38-02')).toBeInTheDocument();
 		expect(screen.getByText('2 cảnh báo')).toBeInTheDocument();
 
 		// Switch to archived
 		fireEvent.change(statusSelect, { target: { value: 'archived' } });
-		expect(screen.queryByText('61MGT3HRM · Lớp 39-01')).not.toBeInTheDocument();
-		expect(screen.getByText('61MGT3OB · Lớp 38-02')).toBeInTheDocument();
+		expect(screen.queryByText('Lớp 39-01')).not.toBeInTheDocument();
+		expect(screen.getByText('Lớp 38-02')).toBeInTheDocument();
 	});
 
 	it('filters by search keyword and handles no match empty state', () => {
@@ -135,7 +135,7 @@ describe('TeachingClassCards', () => {
 		const searchInput = screen.getByTestId('teaching-search-input');
 
 		fireEvent.change(searchInput, { target: { value: 'nhân sự' } });
-		expect(screen.getByText('61MGT3HRM · Lớp 39-01')).toBeInTheDocument();
+		expect(screen.getByText('Lớp 39-01')).toBeInTheDocument();
 
 		fireEvent.change(searchInput, { target: { value: 'không tồn tại' } });
 		expect(screen.getByTestId('teaching-empty-filtered')).toBeInTheDocument();
@@ -143,8 +143,8 @@ describe('TeachingClassCards', () => {
 
 		// Reset filters button
 		fireEvent.click(screen.getByRole('button', { name: 'Đặt lại bộ lọc' }));
-		expect(screen.getByText('61MGT3HRM · Lớp 39-01')).toBeInTheDocument();
-		expect(screen.queryByText('61MGT3OB · Lớp 38-02')).not.toBeInTheDocument();
+		expect(screen.getByText('Lớp 39-01')).toBeInTheDocument();
+		expect(screen.queryByText('Lớp 38-02')).not.toBeInTheDocument();
 	});
 
 	it('searches by the canonical class code when it differs from the group number', () => {
@@ -157,6 +157,6 @@ describe('TeachingClassCards', () => {
 		fireEvent.change(screen.getByTestId('teaching-search-input'), {
 			target: { value: 'HRM-A1' },
 		});
-		expect(screen.getByText('61MGT3HRM · Lớp HRM-A1')).toBeInTheDocument();
+		expect(screen.getByText('Lớp HRM-A1')).toBeInTheDocument();
 	});
 });

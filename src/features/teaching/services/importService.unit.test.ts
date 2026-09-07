@@ -2,11 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
 	parseStudentListBuffer: vi.fn(),
-	classFindUnique: vi.fn(),
+	classFindMany: vi.fn(),
 	getRosterClass: vi.fn(),
 	listTutorials: vi.fn(),
 	findStudentsByNormalizedCodes: vi.fn(),
 	getTeachingClass: vi.fn(),
+	getCourse: vi.fn(),
+	findClassByIdentity: vi.fn(),
 	transaction: vi.fn(),
 	studentFindUnique: vi.fn(),
 	studentCreate: vi.fn(),
@@ -22,7 +24,7 @@ vi.mock('../imports/parseStudentList', () => ({
 
 vi.mock('../repositories/teachingRepository', () => ({
 	prisma: {
-		teachingClass: { findUnique: mocks.classFindUnique },
+		teachingClass: { findMany: mocks.classFindMany },
 		teachingStudent: {
 			findUnique: mocks.studentFindUnique,
 			create: mocks.studentCreate,
@@ -37,6 +39,8 @@ vi.mock('../repositories/teachingRepository', () => ({
 	getRosterClass: mocks.getRosterClass,
 	listTutorials: mocks.listTutorials,
 	findStudentsByNormalizedCodes: mocks.findStudentsByNormalizedCodes,
+	getCourse: mocks.getCourse,
+	findClassByIdentity: mocks.findClassByIdentity,
 	DEFAULT_TUTORIAL_CODE: 'T01',
 	DEFAULT_TUTORIAL_NAME: 'Tutorial 1',
 }));
@@ -46,7 +50,7 @@ vi.mock('./classService', () => ({
 	getGradebook: vi.fn(),
 }));
 
-import { commitRosterImport, importStudentListIntoClass, previewRosterImport } from './importService';
+import { commitRosterImport, importStudentListIntoClass, previewRosterImport, setupTeachingClassFromRoster } from './importService';
 
 const metadata = {
 	courseName: 'Human Resource Management',
@@ -80,7 +84,8 @@ function row(studentCode: string, orderNo: number, extra: Record<string, unknown
 describe('roster import preview and commit', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mocks.classFindUnique.mockResolvedValue(null);
+		mocks.classFindMany.mockResolvedValue([]);
+		mocks.findClassByIdentity.mockResolvedValue(null);
 		mocks.getTeachingClass.mockResolvedValue({ courseCode: 'HRM', groupNo: '01', totalWeeks: 10 });
 		mocks.listTutorials.mockResolvedValue([{ id: 'tutorial-1', code: 'T01' }]);
 		mocks.findStudentsByNormalizedCodes.mockResolvedValue([]);
@@ -136,6 +141,32 @@ describe('roster import preview and commit', () => {
 		await expect(importStudentListIntoClass('class-1', Buffer.from('xlsx'))).rejects.toThrow(
 			/đối chiếu/i,
 		);
+	});
+
+	it('detects an existing class through the canonical course code', async () => {
+		mocks.parseStudentListBuffer.mockResolvedValue({
+			metadata: { ...metadata, courseCode: ' hrm ' },
+			students: [row('SV03', 1)],
+			headerRowIndex: 6,
+		});
+		mocks.classFindMany.mockResolvedValue([
+			{ id: 'class-existing', classCode: '01', groupNo: '01', term: 'HK1' },
+		]);
+
+		const preview = await previewRosterImport({
+			source: { kind: 'xlsx', buffer: Buffer.from('xlsx') },
+		});
+
+		expect(preview.existingClassId).toBe('class-existing');
+		expect(mocks.classFindMany).toHaveBeenCalledWith({
+			where: {
+				OR: [
+					{ course: { courseCode: '61MGT3HRM' } },
+					{ courseCode: ' hrm ' },
+				],
+			},
+			select: { id: true, classCode: true, groupNo: true, term: true },
+		});
 	});
 
 	it('commits a whole batch in one transaction and rolls back on failure', async () => {
@@ -211,5 +242,50 @@ describe('roster import preview and commit', () => {
 		expect(result.skippedCount).toBe(1);
 		expect(mocks.studentUpdate).not.toHaveBeenCalled();
 		expect(mocks.enrollmentCreate).not.toHaveBeenCalled();
+	});
+});
+
+describe('setupTeachingClassFromRoster guards', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mocks.findClassByIdentity.mockResolvedValue(null);
+		mocks.getTeachingClass.mockResolvedValue({ courseCode: 'AUDIT', groupNo: 'LOWER', totalWeeks: 10 });
+	});
+
+	it('blocks creating a class on an archived course', async () => {
+		mocks.getCourse.mockResolvedValue({
+			id: 'course-1',
+			courseCode: 'AUDIT',
+			courseName: 'Audit',
+			status: 'ARCHIVED',
+		});
+		await expect(
+			setupTeachingClassFromRoster({
+				class: { courseId: 'course-1', groupNo: 'lower', term: 'Audit  term' },
+				rows: [],
+			}),
+		).rejects.toMatchObject({ status: 409, code: 'COURSE_ARCHIVED' });
+		expect(mocks.transaction).not.toHaveBeenCalled();
+	});
+
+	it('normalizes class identity and rejects a duplicate after collapsing case and spaces', async () => {
+		mocks.getCourse.mockResolvedValue({
+			id: 'course-1',
+			courseCode: 'AUDIT',
+			courseName: 'Audit',
+			status: 'ACTIVE',
+		});
+		mocks.findClassByIdentity.mockResolvedValue({ id: 'existing' });
+		await expect(
+			setupTeachingClassFromRoster({
+				class: { courseId: 'course-1', groupNo: 'lower', term: 'Audit  term' },
+				rows: [],
+			}),
+		).rejects.toMatchObject({ status: 409, code: 'CLASS_EXISTS' });
+		expect(mocks.findClassByIdentity).toHaveBeenCalledWith({
+			courseId: 'course-1',
+			classCode: 'LOWER',
+			term: 'Audit term',
+		});
 	});
 });

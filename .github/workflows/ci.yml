@@ -93,7 +93,9 @@ jobs:
         run: npm run build
 
       - name: Seed release-critical E2E data
-        run: npm run db:sync:active-recall
+        run: |
+          npm run db:seed:teaching
+          npm run db:sync:active-recall
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
@@ -111,4 +113,12 @@ jobs:
           e2e/mobile-smoke.spec.ts
           e2e/public-feature-locks.spec.ts
           e2e/smoke.spec.ts
+          e2e/teaching-admin-workspace.spec.ts
           e2e/teaching-attendance-board.spec.ts
+          e2e/teaching-learning-experience-mobile.spec.ts
+          e2e/teaching-learning-experience-multi-device.spec.ts
+
+      - name: Teaching groups end-to-end tests
+        env:
+          TEACHING_GROUP_BOARD_ENABLED: 'true'
+        run: npx playwright test e2e/teaching-groups.spec.ts

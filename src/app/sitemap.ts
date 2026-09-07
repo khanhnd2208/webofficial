@@ -41,12 +41,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			priority: 0.75,
 		},
 		{
-			url: absoluteUrl(routes.activeRecall),
-			lastModified: now,
-			changeFrequency: 'weekly',
-			priority: 0.7,
-		},
-		{
 			url: absoluteUrl(routes.contact),
 			lastModified: now,
 			changeFrequency: 'monthly',

@@ -33,9 +33,7 @@ test.describe('Editorial premium public experience', () => {
 		expect(introBox!.x + introBox!.width / 2).toBeLessThan(250);
 	});
 
-	test('routes visitors from intro through My Space to Active Recall', async ({
-		page,
-	}) => {
+	test('routes visitors from intro through My Space to Teaching', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
@@ -46,8 +44,8 @@ test.describe('Editorial premium public experience', () => {
 
 		await page.getByRole('link', { name: /My Space/i }).click();
 		await expect(page).toHaveURL(/\/my-space$/);
-		await page.getByTestId('myspace-tile-active-recall').click();
-		await expect(page).toHaveURL(/\/my-space\/active-recall/);
+		await page.getByTestId('myspace-tile-teaching').click();
+		await expect(page).toHaveURL(/\/dang-nhap|\/my-space\/teaching/);
 	});
 
 	test('services stay condensed with journey graphics and no project proof', async ({ page }) => {
@@ -56,7 +54,7 @@ test.describe('Editorial premium public experience', () => {
 		await expect(
 			page.getByRole('heading', {
 				level: 1,
-				name: /Những chương trình giúp kiến thức đi vào công việc\./i,
+				name: /Chúng ta có thể bắt đầu từ một việc bạn muốn làm tốt hơn/i,
 			}),
 		).toBeVisible();
 		await expect(page.getByText(/không bị quảng cáo/i)).toHaveCount(0);

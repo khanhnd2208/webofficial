@@ -1,5 +1,7 @@
-import ActiveRecallEditor from '@/components/active-recall/ActiveRecallEditor';
+import { redirect } from 'next/navigation';
 
-export default function NewActiveRecallDeckPage() {
-	return <ActiveRecallEditor initialDeck={null} />;
+import { routes } from '@/config/routes';
+
+export default function LegacyNewActiveRecallRedirect() {
+	redirect(routes.mySpaceTeaching);
 }

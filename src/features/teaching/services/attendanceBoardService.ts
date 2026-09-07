@@ -14,6 +14,7 @@ import type {
 import { notFound } from './classService';
 import { mapClass, mapSession, mapTutorial, policyFromClass } from './mappers';
 import { mapPublicClassNote } from './classNoteService';
+import { listPublishedRecallDecksForClass } from '@/features/active-recall';
 
 function boardPath(slug: string | null): string | null {
 	if (!slug) return null;
@@ -150,9 +151,12 @@ export async function getPublicClassBoard(slug: string): Promise<PublicClassBoar
 		};
 	});
 
+	const recallDecks = await listPublishedRecallDecksForClass(row.id);
+
 	return {
 		slug: row.publicSlug,
 		title: row.publicTitle || row.courseName,
+		courseId: row.courseId,
 		summary: row.publicSummary,
 		description: row.publicDescription,
 		announcement: row.publicAnnouncement,
@@ -180,6 +184,14 @@ export async function getPublicClassBoard(slug: string): Promise<PublicClassBoar
 			const mapped = mapPublicClassNote(note);
 			return mapped ? [mapped] : [];
 		}),
+		recallDecks: recallDecks.map((deck) => ({
+			id: deck.id,
+			slug: deck.slug,
+			title: deck.title,
+			lessonLabel: deck.lessonLabel,
+			description: deck.description,
+			cardCount: deck.cardCount,
+		})),
 	};
 }
 

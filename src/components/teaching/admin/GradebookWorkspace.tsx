@@ -19,11 +19,13 @@ export function GradebookWorkspace({
 	initialView = 'attendance',
 	groupNumbersByTutorial,
 	initialWeek = null,
+	initialTutorialId,
 }: {
 	initial: TeachingGradebook;
 	initialView?: GradebookView;
 	groupNumbersByTutorial?: GroupNumbersByTutorial;
 	initialWeek?: number | null;
+	initialTutorialId?: string;
 }) {
 	const pending = useTeachingWorkspacePending();
 	const {
@@ -48,7 +50,9 @@ export function GradebookWorkspace({
 	} = useGradebookMutations(initial);
 	const { confirm, dialog } = useAdminConfirm();
 	const [tutorialId, setTutorialId] = useState(
-		initial.tutorials.length === 1 ? (initial.tutorials[0]?.id ?? '') : '',
+		initialTutorialId && initial.tutorials.some((tutorial) => tutorial.id === initialTutorialId)
+			? initialTutorialId
+			: (initial.tutorials[0]?.id ?? ''),
 	);
 	const groupNumberByEnrollment = useMemo(() => {
 		if (!groupNumbersByTutorial) return undefined;
@@ -75,12 +79,12 @@ export function GradebookWorkspace({
 		[gradebook.students, tutorialId],
 	);
 	const students = useMemo(() => {
-		const q = query.trim().toLowerCase();
+		const q = query.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
 		return tutorialStudents.filter(
 			(student) =>
 				!q ||
 				`${student.studentCode} ${student.familyName} ${student.givenName}`
-					.toLowerCase()
+					.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
 					.includes(q),
 		);
 	}, [query, tutorialStudents]);
@@ -131,14 +135,14 @@ export function GradebookWorkspace({
 	}
 
 	useEffect(() => {
-		if (!isSaving) return;
+		if (!isSaving && !hasSaveError) return;
 		const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
 			event.preventDefault();
 			event.returnValue = '';
 		};
 		window.addEventListener('beforeunload', warnBeforeLeaving);
 		return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
-	}, [isSaving]);
+	}, [isSaving, hasSaveError]);
 
 	useEffect(() => {
 		if (!toast) return;
@@ -154,9 +158,13 @@ export function GradebookWorkspace({
 					<TutorialSwitcher
 						tutorials={gradebook.tutorials}
 						value={tutorialId}
-						onChange={(id) => {
+							onChange={(id) => {
 							setTutorialId(id);
 							setSelectedWeek(null);
+							const params = new URLSearchParams(window.location.search);
+							if (id) params.set('tutorial', id);
+							else params.delete('tutorial');
+							window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
 						}}
 					/>
 				) : null}

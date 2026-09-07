@@ -1,5 +1,5 @@
 /**
- * Seed a Teaching attendance sample class: HRM101, two tutorials, 20 students each,
+ * Seed a Teaching attendance sample class: 61MGT3HRM, two tutorials, 20 students each,
  * with weeks 1-5 already marked. Run: npm run db:seed:teaching
  */
 import { config } from 'dotenv';
@@ -7,6 +7,9 @@ import { expand } from 'dotenv-expand';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, type TeachingAttendanceStatus } from '@prisma/client';
+
+import { HRM_COURSE_CODE, HRM_COURSE_NAME } from '../src/features/teaching/domain/courseIdentity';
+import { normalizeStudentCode } from '../src/features/teaching/domain/studentIdentity';
 
 expand(config({ path: '.env.local' }));
 
@@ -16,7 +19,6 @@ const connectionString =
 const pool = new Pool({ connectionString });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
-const COURSE_CODE = 'HRM101';
 const GROUP_NO = '01';
 const TERM = 'Fall 2026';
 const TOTAL_WEEKS = 10;
@@ -178,6 +180,7 @@ async function seedTutorial(params: {
 			where: { studentCode },
 			create: {
 				studentCode,
+				studentCodeNormalized: normalizeStudentCode(studentCode),
 				familyName: name.familyName,
 				givenName: name.givenName,
 				dateOfBirth: new Date(Date.UTC(2005, (index * 3) % 12, 4 + (index % 24))),
@@ -227,15 +230,52 @@ async function seedTutorial(params: {
 	return { id: tutorial.id, code: tutorial.code, students: params.names.length };
 }
 
-async function main() {
-	await prisma.teachingClass.deleteMany({
-		where: { courseCode: COURSE_CODE, groupNo: GROUP_NO, term: TERM },
+async function seedGroupBoard(classId: string, tutorialClassId: string) {
+	const enrollments = await prisma.teachingEnrollment.findMany({
+		where: { classId, tutorialClassId, status: 'ACTIVE' },
+		orderBy: { orderNo: 'asc' },
+		select: { id: true },
+	});
+	const groupSize = 5;
+	const groupCount = Math.max(1, Math.ceil(enrollments.length / groupSize));
+	const board = await prisma.teachingGroupBoard.create({
+		data: { classId, tutorialClassId, groupCount, groupSize, version: 1 },
 	});
 
+	for (let displayOrder = 0; displayOrder < groupCount; displayOrder += 1) {
+		const group = await prisma.teachingGroup.create({
+			data: { boardId: board.id, displayOrder },
+		});
+		const members = enrollments.slice(displayOrder * groupSize, (displayOrder + 1) * groupSize);
+		if (members.length > 0) {
+			await prisma.teachingGroupAssignment.createMany({
+				data: members.map((enrollment, slotIndex) => ({
+					boardId: board.id,
+					groupId: group.id,
+					enrollmentId: enrollment.id,
+					slotIndex,
+				})),
+			});
+		}
+	}
+	return { id: board.id, tutorialClassId, groups: groupCount, students: enrollments.length };
+}
+
+async function main() {
+	await prisma.teachingClass.deleteMany({
+		where: { OR: [{ publicSlug: 'hrm-fall-2026' }, { courseCode: HRM_COURSE_CODE, groupNo: GROUP_NO, term: TERM }] },
+	});
+
+	const course = await prisma.teachingCourse.upsert({
+		where: { courseCode: HRM_COURSE_CODE },
+		update: {},
+		create: { courseCode: HRM_COURSE_CODE, courseName: HRM_COURSE_NAME },
+	});
 	const teachingClass = await prisma.teachingClass.create({
 		data: {
-			courseCode: COURSE_CODE,
-			courseName: 'Human Resource Management',
+			courseId: course.id,
+			courseCode: course.courseCode,
+			courseName: course.courseName,
 			groupNo: GROUP_NO,
 			term: TERM,
 			credits: 3,
@@ -273,6 +313,10 @@ async function main() {
 		heldOnStart: new Date(Date.UTC(2026, 8, 8)),
 		rngSeed: 202,
 	});
+	const groupBoards = [
+		await seedGroupBoard(teachingClass.id, t01.id),
+		await seedGroupBoard(teachingClass.id, t02.id),
+	];
 	await prisma.teachingClassPublicLink.create({
 		data: {
 			classId: teachingClass.id,
@@ -293,6 +337,7 @@ async function main() {
 					term: teachingClass.term,
 				},
 				tutorials: [t01, t02],
+				groupBoards,
 				urls: {
 					gradebook: `/my-space/teaching/${teachingClass.id}?tab=attendance`,
 					publicPage: `/lop/${teachingClass.publicSlug}`,

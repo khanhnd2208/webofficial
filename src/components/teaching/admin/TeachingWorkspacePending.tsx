@@ -22,6 +22,8 @@ const CORE_TABS = [
 	['cp', 'Điểm CP'],
 	['groups', 'Xếp nhóm'],
 	['notes', 'Class Notes'],
+	['recall', 'Active Recall'],
+	['students', 'Sinh viên'],
 ] as const;
 
 type PendingContextValue = {
@@ -105,10 +107,12 @@ export function TeachingCoreTabs({
 	classId,
 	activeTab,
 	groupBoardEnabled,
+	tutorialId,
 }: {
 	classId: string;
 	activeTab: TeachingWorkspaceTab;
 	groupBoardEnabled: boolean;
+	tutorialId?: string;
 }) {
 	const pending = useTeachingWorkspacePending();
 	const searchParams = useSearchParams();
@@ -118,6 +122,7 @@ export function TeachingCoreTabs({
 			classId,
 			value,
 			value === 'attendance' || value === 'cp' ? week : undefined,
+			searchParams.get('tutorial') ?? tutorialId,
 		);
 
 	return (

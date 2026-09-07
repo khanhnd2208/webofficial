@@ -19,9 +19,7 @@ test.describe('Focused operating mode', () => {
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 	});
 
-	test('sitemap keeps brand, Teaching class boards out, and Active Recall in', async ({
-		request,
-	}) => {
+	test('sitemap keeps brand pages and leaves Teaching class boards out', async ({ request }) => {
 		const response = await request.get('/sitemap.xml');
 		expect(response.ok()).toBeTruthy();
 		const xml = await response.text();
@@ -30,42 +28,39 @@ test.describe('Focused operating mode', () => {
 		expect(xml).toContain('/dich-vu');
 		expect(xml).toContain('/lien-he');
 		expect(xml).toMatch(/<loc>[^<]*\/my-space<\/loc>/);
-		expect(xml).toContain('/my-space/active-recall');
+		expect(xml).not.toContain('/my-space/active-recall');
 		expect(xml).not.toContain('/ghi-chep');
 		expect(xml).not.toContain('/my-space/tests');
 		expect(xml).not.toContain('/my-space/my-class');
 		expect(xml).not.toContain('/vocabulary');
 	});
 
-	test('My Space contains only Teaching and Active Recall', async ({ page }) => {
+	test('My Space contains only Teaching', async ({ page }) => {
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.getByTestId('my-space')).toBeVisible();
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(1);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
 			'href',
 			'/my-space/teaching',
 		);
-		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveAttribute(
-			'href',
-			'/my-space/active-recall',
-		);
+		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveCount(0);
 	});
 
-	test('admin main menu only shows Website and Active Recall', async ({ page, context }) => {
+	test('admin main menu only shows Website', async ({ page, context }) => {
 		await addAdminSession(context);
 		await page.goto('/admin');
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		const nav = page.getByRole('navigation', { name: 'Quản trị' });
 		await expect(nav.getByRole('link', { name: 'Website' })).toBeVisible();
-		await expect(nav.getByRole('link', { name: 'Active Recall' })).toBeVisible();
+		await expect(nav.getByRole('link', { name: 'Active Recall' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Teaching' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'My Class' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Bài viết' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Người dùng' })).toHaveCount(0);
 		await expect(page.getByTestId('admin-archive-link')).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Tổng quan' })).toBeVisible();
-		await expect(page.getByRole('link', { name: 'Mở Teaching' })).toHaveCount(0);
+		await expect(page.getByRole('link', { name: 'Mở Teaching' })).toBeVisible();
 	});
 
 	test('Website hub and contact inbox stay on the main shell', async ({ page, context }) => {

@@ -10,12 +10,66 @@ import {
 import type { TeachingClassSetupInput } from './schemas';
 
 export type TeachingClassStatus = 'ACTIVE' | 'ARCHIVED';
+export type TeachingCourseStatus = 'ACTIVE' | 'ARCHIVED';
 export type TeachingEnrollmentStatus = 'ACTIVE' | 'WITHDRAWN';
+export type TeachingDependencyCounts = {
+	classes?: number;
+	activeClasses?: number;
+	decks?: number;
+	activeDecks?: number;
+	classLinks?: number;
+	students?: number;
+	attendance?: number;
+	participation?: number;
+	groups?: number;
+	notes?: number;
+	publicLinks?: number;
+	customizedSessions?: number;
+	studentPage?: number;
+	sharing?: number;
+	cards?: number;
+};
 export type TeachingAttendanceMethod = 'ROLL_CALL' | 'SHORT_TEST';
 export type LearningExperienceChoice = 'CHALLENGE' | 'SUPPORT';
 
+export interface TeachingCourseRecord {
+	id: string;
+	courseCode: string;
+	courseName: string;
+	status: TeachingCourseStatus;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface TeachingCourseListItem extends TeachingCourseRecord {
+	classCount: number;
+	activeClassCount: number;
+	tutorialCount: number;
+	deckCount: number;
+	publishedDeckCount: number;
+	activeDeckCount: number;
+	canDelete: boolean;
+	canArchive: boolean;
+	archiveBlockers: TeachingDependencyCounts;
+	deleteBlockers: TeachingDependencyCounts;
+	classes: TeachingClassListItem[];
+}
+
+export interface TeachingClassRecallAssignment {
+	id: string;
+	deckId: string;
+	slug: string;
+	title: string;
+	lessonLabel: string;
+	status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+	cardCount: number;
+	enabled: boolean;
+	displayOrder: number;
+}
+
 export interface TeachingClassRecord {
 	id: string;
+	courseId: string;
 	courseCode: string;
 	courseName: string;
 	groupNo: string;
@@ -55,6 +109,8 @@ export interface TeachingClassListItem extends TeachingClassRecord {
 	averageTotal: number | null;
 	atRiskCount: number;
 	bannedCount: number;
+	canDelete: boolean;
+	deleteBlockers: TeachingDependencyCounts;
 }
 
 export interface TeachingTutorialRecord {
@@ -312,12 +368,22 @@ export interface TeachingGiftMutationResult {
 	stats: TeachingGradebook['stats'];
 }
 
+export interface PublicRecallDeckListItem {
+	id: string;
+	slug: string;
+	title: string;
+	lessonLabel: string;
+	description: string;
+	cardCount: number;
+}
+
 export interface PublicClassBoard {
 	slug: string;
 	title: string;
 	summary: string;
 	description: string;
 	announcement: string;
+	courseId?: string;
 	courseCode: string;
 	courseName: string;
 	groupNo: string;
@@ -333,6 +399,7 @@ export interface PublicClassBoard {
 	students: PublicAttendanceBoardStudent[];
 	links: TeachingPublicLink[];
 	notes?: PublicClassNote[];
+	recallDecks?: PublicRecallDeckListItem[];
 }
 
 export type PublicAttendanceBoard = PublicClassBoard;

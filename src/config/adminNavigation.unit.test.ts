@@ -10,14 +10,11 @@ import {
 import { routes } from './routes';
 
 describe('admin navigation', () => {
-	it('limits the main sidebar to Website and Active Recall', () => {
+	it('limits the main sidebar to Website', () => {
 		const hrefs = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
 		const labels = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.label));
-		expect(hrefs).toEqual([
-			routes.admin.website,
-			routes.admin.activeRecall,
-		]);
-		expect(labels).toEqual(['Website', 'Active Recall']);
+		expect(hrefs).toEqual([routes.admin.website]);
+		expect(labels).toEqual(['Website']);
 		expect(hrefs).not.toContain(routes.admin.myClass);
 		expect(hrefs).not.toContain(routes.admin.posts);
 		expect(hrefs).not.toContain(routes.admin.users);

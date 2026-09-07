@@ -17,9 +17,11 @@ export const routes = {
 	projects: '/du-an',
 	project: (slug: string) => `/du-an/${slug}` as const,
 	services: '/dich-vu',
-	/** Focused hub for Teaching and Active Recall. */
+	/** Focused hub for Teaching. */
 	mySpace: '/my-space',
+	/** @deprecated Active Recall now lives inside Teaching class boards. */
 	activeRecall: '/my-space/active-recall',
+	/** @deprecated Use teachingPublicRecallDeck */
 	activeRecallDeck: (slug: string) => `/my-space/active-recall/${slug}` as const,
 	mySpaceTests: '/my-space/tests',
 	mySpaceTest: (slug: string) => `/my-space/tests/${slug}` as const,
@@ -50,12 +52,23 @@ export const routes = {
 	myClassProgress: '/my-space/my-class/progress',
 	mySpaceTeaching: '/my-space/teaching',
 	mySpaceTeachingNew: '/my-space/teaching/new',
+	mySpaceTeachingCourseNewClass: (courseId: string) =>
+		`/my-space/teaching/new?courseId=${encodeURIComponent(courseId)}` as const,
 	mySpaceTeachingImport: '/my-space/teaching/import',
+	mySpaceTeachingCourse: (id: string) => `/my-space/teaching/courses/${id}` as const,
+	mySpaceTeachingCourseTab: (id: string, tab: string) =>
+		`/my-space/teaching/courses/${id}?tab=${tab}` as const,
+	mySpaceTeachingRecallNew: (courseId: string) =>
+		`/my-space/teaching/courses/${courseId}/recall/new` as const,
+	mySpaceTeachingRecallEdit: (courseId: string, deckId: string) =>
+		`/my-space/teaching/courses/${courseId}/recall/${deckId}` as const,
 	mySpaceTeachingClass: (id: string) => `/my-space/teaching/${id}` as const,
-	mySpaceTeachingClassTab: (id: string, tab: string, week?: number) =>
-		week
-			? (`/my-space/teaching/${id}?tab=${tab}&week=${week}` as const)
-			: (`/my-space/teaching/${id}?tab=${tab}` as const),
+	mySpaceTeachingClassTab: (id: string, tab: string, week?: number, tutorial?: string) => {
+		const params = new URLSearchParams({ tab });
+		if (week) params.set('week', String(week));
+		if (tutorial) params.set('tutorial', tutorial);
+		return `/my-space/teaching/${id}?${params.toString()}` as const;
+	},
 	/** In-page anchors on /gioi-thieu */
 	aboutServices: '/gioi-thieu#dich-vu',
 	aboutTeaching: '/gioi-thieu#giang-day-workshop',
@@ -112,7 +125,17 @@ export const routes = {
 	lesson: (courseSlug: string, lessonSlug: string) =>
 		`/hoc/khoa-hoc/${courseSlug}/bai/${lessonSlug}` as const,
 	teachingPublicClass: (slug: string) => `/lop/${slug}` as const,
-	teachingPublicClassTab: (slug: string, tab: 'attendance' | 'cp' | 'groups' | 'learning' | 'notes') => `/lop/${slug}?tab=${tab}` as const,
+	teachingPublicClassTab: (
+		slug: string,
+		tab: 'attendance' | 'cp' | 'groups' | 'learning' | 'notes' | 'recall',
+		tutorial?: string,
+	) => {
+		const params = new URLSearchParams({ tab });
+		if (tutorial) params.set('tutorial', tutorial);
+		return `/lop/${slug}?${params.toString()}` as const;
+	},
+	teachingPublicRecallDeck: (classSlug: string, deckSlug: string) =>
+		`/lop/${classSlug}/active-recall/${deckSlug}` as const,
 	teachingPublicAttendance: (slug: string) => `/lop/${slug}` as const,
 	vocabStore: '/vocabulary/store',
 

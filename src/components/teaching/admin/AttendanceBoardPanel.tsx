@@ -9,8 +9,9 @@ import { absoluteUrl } from '@/config/site';
 import type { TeachingAttendanceBoardConfig } from '@/features/teaching/types';
 
 import { teachingApi } from './api';
+import { useTeachingLeaveGuard } from './useTeachingLeaveGuard';
 
-export function AttendanceBoardPanel({ initial }: { initial: TeachingAttendanceBoardConfig }) {
+export function AttendanceBoardPanel({ initial, publicPath, onSaved }: { initial: TeachingAttendanceBoardConfig; publicPath?: string | null; onSaved?: (updated: TeachingAttendanceBoardConfig) => void }) {
 	const [config, setConfig] = useState(initial);
 	const [rules, setRules] = useState(initial.classRules);
 	const [busy, setBusy] = useState(false);
@@ -18,9 +19,11 @@ export function AttendanceBoardPanel({ initial }: { initial: TeachingAttendanceB
 	const [error, setError] = useState('');
 	const [copied, setCopied] = useState(false);
 
-	const sharePath = config.publicPath;
+	const sharePath = publicPath === undefined ? config.publicPath : publicPath;
+	const leaveDialog = useTeachingLeaveGuard({ dirty: () => rules !== config.classRules || busy, save: () => save({ shared: config.attendanceVisible, classRules: rules }) });
 	const shareUrl = sharePath ? absoluteUrl(sharePath) : null;
 	async function save(next: { shared: boolean; classRules?: string }) {
+		if (busy) return false;
 		setBusy(true);
 		setMessage('');
 		setError('');
@@ -33,14 +36,17 @@ export function AttendanceBoardPanel({ initial }: { initial: TeachingAttendanceB
 				},
 			);
 			setConfig(updated);
-			setRules(updated.classRules);
+			onSaved?.(updated);
+			if (next.classRules !== undefined) setRules(updated.classRules);
 			setMessage(
-				next.shared
+				next.classRules !== undefined ? 'Đã lưu nội quy.' : next.shared
 					? 'Đã chia sẻ. Ai có đường dẫn đều có thể theo dõi toàn bộ lớp.'
 					: 'Đã tắt chia sẻ.',
 			);
+			return true;
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể lưu bảng điểm danh');
+			return false;
 		} finally {
 			setBusy(false);
 		}
@@ -59,10 +65,11 @@ export function AttendanceBoardPanel({ initial }: { initial: TeachingAttendanceB
 
 	return (
 		<div className="mt-6 space-y-5">
+			{leaveDialog}
 			<section className="mc-surface flex flex-wrap items-center justify-between gap-4 p-4">
 				<div className="flex items-center gap-3">
 					<span className="teaching-status" data-tone={config.attendanceVisible ? 'ok' : 'muted'}>
-						{config.attendanceVisible ? 'Sinh viên đang xem' : 'Chưa chia sẻ'}
+						{config.attendanceVisible ? 'Đã bật chia sẻ' : 'Chưa chia sẻ'}
 					</span>
 					<div>
 						<p className="text-sm font-semibold text-ink">Bảng điểm danh và CP</p>
@@ -86,7 +93,7 @@ export function AttendanceBoardPanel({ initial }: { initial: TeachingAttendanceB
 					<StudioButton
 						variant={config.attendanceVisible ? 'secondary' : 'primary'}
 						disabled={busy}
-						onClick={() => save({ shared: !config.attendanceVisible, classRules: rules })}
+						onClick={() => save({ shared: !config.attendanceVisible })}
 					>
 						{config.attendanceVisible ? 'Tắt chia sẻ' : 'Chia sẻ cho sinh viên'}
 					</StudioButton>

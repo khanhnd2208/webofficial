@@ -1,4 +1,11 @@
-import { archiveAdminRecallDeck, getAdminRecallDeck, updateActiveRecallDeckSchema, updateAdminRecallDeck } from '@/features/active-recall';
+import {
+	deleteAdminRecallDeck,
+	getAdminRecallDeck,
+	updateActiveRecallDeckMetaSchema,
+	updateActiveRecallDeckSchema,
+	updateAdminRecallDeck,
+	updateAdminRecallDeckMeta,
+} from '@/features/active-recall';
 import { apiSuccess, AppError, withAdmin } from '@/lib/apiUtils';
 import { parseSchema } from '@/shared/validation/parse';
 
@@ -11,12 +18,16 @@ export const GET = withAdmin(async (_request, _user, context) => {
 
 export const PATCH = withAdmin(async (request, _user, context) => {
 	const id = String((await context!.params).id);
-	const body = parseSchema(updateActiveRecallDeckSchema, await request.json());
-	return apiSuccess(await updateAdminRecallDeck(id, body));
+	const json: unknown = await request.json();
+	if (json && typeof json === 'object' && 'cards' in json) {
+		const body = parseSchema(updateActiveRecallDeckSchema, json);
+		return apiSuccess(await updateAdminRecallDeck(id, body));
+	}
+	const body = parseSchema(updateActiveRecallDeckMetaSchema, json);
+	return apiSuccess(await updateAdminRecallDeckMeta(id, body));
 });
 
 export const DELETE = withAdmin(async (_request, _user, context) => {
 	const id = String((await context!.params).id);
-	await archiveAdminRecallDeck(id);
-	return apiSuccess({ archived: true });
+	return apiSuccess(await deleteAdminRecallDeck(id));
 });

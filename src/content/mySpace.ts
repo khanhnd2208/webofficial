@@ -33,7 +33,7 @@ export interface MySpaceTile {
 
 export const mySpacePage = {
 	title: 'My Space',
-	lead: 'Teaching và Active Recall.',
+	lead: 'Teaching: lớp học, điểm danh và Active Recall theo môn.',
 	comingSoonLabel: 'Đang phát triển',
 	comingSoonNote: 'Góc này đang được hoàn thiện.',
 } as const;
@@ -50,16 +50,6 @@ export const mySpaceTiles: MySpaceTile[] = [
 		},
 		status: 'published',
 		href: routes.mySpaceTeaching,
-	},
-	{
-		id: 'active-recall',
-		label: 'Active Recall',
-		visual: {
-			kind: 'cards',
-			alt: 'Biểu tượng thẻ câu hỏi Active Recall',
-		},
-		status: 'published',
-		href: routes.activeRecall,
 	},
 ];
 

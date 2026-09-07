@@ -11,7 +11,7 @@ import { redirect } from 'next/navigation';
 
 type PublicClassPageProps = {
 	params: Promise<{ slug: string }>;
-	searchParams?: Promise<{ tab?: string }>;
+	searchParams?: Promise<{ tab?: string; tutorial?: string }>;
 };
 
 const getBoard = cache(getPublicClassBoard);
@@ -30,7 +30,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function PublicClassPage({ params, searchParams }: PublicClassPageProps) {
 	const { slug } = await params;
-	const tab = (await searchParams)?.tab;
+	const query = await searchParams;
+	const tab = query?.tab;
+	const tutorial = query?.tutorial;
 	const groupBoardEnabled = isTeachingGroupBoardEnabled();
 	if (tab === 'groups' && !groupBoardEnabled) redirect(routes.teachingPublicClass(slug));
 	const session = await auth();
@@ -53,6 +55,7 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 					groupBoardEnabled={groupBoardEnabled}
 					manageHref={classId ? routes.mySpaceTeachingClass(classId) : undefined}
 					initialTab={tab}
+					initialTutorialId={tutorial}
 				/>
 			</main>
 		</div>

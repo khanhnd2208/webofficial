@@ -13,12 +13,17 @@ export type ActiveRecallDeckListItem = {
 	id: string;
 	slug: string;
 	title: string;
+	courseId: string;
+	courseCode: string;
+	courseName: string;
 	subject: string;
 	lessonLabel: string;
 	description: string;
 	status: ActiveRecallStatus;
 	position: number;
 	cardCount: number;
+	classLinkCount: number;
+	canDelete: boolean;
 	updatedAt: string;
 	publishedAt: string | null;
 };

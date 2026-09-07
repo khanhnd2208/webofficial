@@ -1,6 +1,8 @@
 'use client';
+import { StudentClassIntro } from '../public/StudentClassIntro';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useTeachingLeaveGuard } from './useTeachingLeaveGuard';
 import Link from 'next/link';
 
 import {
@@ -11,7 +13,7 @@ import {
 } from '@/components/myclass/admin/studio';
 import { McIcon } from '@/components/myclass/ui';
 import { routes } from '@/config/routes';
-import type { TeachingPublicPageConfig } from '@/features/teaching/types';
+import type { TeachingPublicPageConfig, TeachingClassRecord } from '@/features/teaching/types';
 
 import { teachingApi } from './api';
 
@@ -32,7 +34,8 @@ function normalizeSlug(value: string) {
 		.slice(0, 80);
 }
 
-export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfig }) {
+export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: TeachingPublicPageConfig; savedClass?: TeachingClassRecord; onSaved?: (updated: TeachingPublicPageConfig) => void }) {
+	const formRef = useRef<HTMLFormElement>(null);
 	const [form, setForm] = useState({
 		publicSlug: initial.class.publicSlug ?? '',
 		publicTitle: initial.class.publicTitle || initial.class.courseName,
@@ -40,6 +43,7 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 		publicDescription: initial.class.publicDescription,
 		publicAnnouncement: initial.class.publicAnnouncement,
 	});
+	const [savedSlug, setSavedSlug] = useState(initial.class.publicSlug ?? '');
 	const [links, setLinks] = useState<LinkDraft[]>(
 		initial.links.map((link) => ({
 			key: link.id,
@@ -48,15 +52,22 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 			description: link.description,
 		})),
 	);
+	const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify({ form, links }));
 	const [busy, setBusy] = useState(false);
 	const [message, setMessage] = useState('');
 	const [error, setError] = useState('');
 	const [copied, setCopied] = useState(false);
 
 	const publicPath = form.publicSlug ? routes.teachingPublicClass(form.publicSlug) : '';
-	const isShared = initial.class.attendanceVisible;
+	const effectiveSlug = savedClass ? savedClass.publicSlug : savedSlug;
+	const savedPublicPath = effectiveSlug ? routes.teachingPublicClass(effectiveSlug) : '';
+	const isShared = (savedClass ?? initial.class).attendanceVisible;
+	const isDirty = JSON.stringify({ form, links }) !== savedSnapshot;
+	const leaveDialog = useTeachingLeaveGuard({ dirty: () => isDirty || busy, save });
 
 	async function save() {
+		if (busy) return false;
+		if (formRef.current && !formRef.current.reportValidity()) return false;
 		setBusy(true);
 		setMessage('');
 		setError('');
@@ -83,6 +94,8 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 				publicDescription: updated.class.publicDescription,
 				publicAnnouncement: updated.class.publicAnnouncement,
 			});
+			setSavedSlug(updated.class.publicSlug ?? '');
+			onSaved?.(updated);
 			setLinks(
 				updated.links.map((link) => ({
 					key: link.id,
@@ -91,22 +104,34 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 					description: link.description,
 				})),
 			);
+			setSavedSnapshot(JSON.stringify({
+				form: {
+					publicSlug: updated.class.publicSlug ?? '',
+					publicTitle: updated.class.publicTitle,
+					publicSummary: updated.class.publicSummary,
+					publicDescription: updated.class.publicDescription,
+					publicAnnouncement: updated.class.publicAnnouncement,
+				},
+				links: updated.links.map((link) => ({ key: link.id, label: link.label, url: link.url, description: link.description })),
+			}));
 			setMessage(updated.class.attendanceVisible ? 'Đã lưu nội dung trang sinh viên.' : 'Đã lưu nội dung. Lớp hiện chưa được chia sẻ.');
+			return true;
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể lưu trang công khai');
+			return false;
 		} finally {
 			setBusy(false);
 		}
 	}
 
 	async function copyPublicUrl() {
-		if (!isShared || !publicPath) return;
+		if (!isShared || !savedPublicPath) return;
 		try {
-			await navigator.clipboard.writeText(`${window.location.origin}${publicPath}`);
+			await navigator.clipboard.writeText(`${window.location.origin}${savedPublicPath}`);
 			setCopied(true);
 			window.setTimeout(() => setCopied(false), 1800);
 		} catch {
-			setError(`Không thể sao chép tự động. Hãy sao chép thủ công: ${window.location.origin}${publicPath}`);
+			setError(`Không thể sao chép tự động. Hãy sao chép thủ công: ${window.location.origin}${savedPublicPath}`);
 		}
 	}
 
@@ -116,6 +141,7 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 
 	return (
 		<div className="mt-6 space-y-5">
+			{leaveDialog}
 			<section className="mc-surface flex flex-wrap items-center justify-between gap-4 p-4">
 				<div className="flex items-center gap-3">
 					<span className="teaching-status" data-tone={isShared ? 'ok' : 'muted'}>
@@ -124,12 +150,12 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 					<div>
 						<p className="text-sm font-semibold text-ink">Nội dung trang sinh viên</p>
 						<p className="mc-meta mt-0.5">
-							Nội dung giới thiệu và tài nguyên của trang công khai; bảng điểm danh, CP và nội quy được quản lý ở mục Chia sẻ.
+							Giới thiệu và tài nguyên; quyền xem và nội quy ở phần bên dưới.
 						</p>
 					</div>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					{isShared && publicPath ? (
+					{isShared && savedPublicPath ? (
 						<button
 							type="button"
 							className="inline-flex min-h-10 items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm font-semibold text-ink hover:bg-surface-sunken"
@@ -139,9 +165,9 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 							{copied ? 'Đã sao chép' : 'Sao chép liên kết'}
 						</button>
 					) : null}
-					{isShared && publicPath ? (
+					{isShared && savedPublicPath ? (
 						<Link
-							href={publicPath}
+						href={savedPublicPath}
 							target="_blank"
 							className="inline-flex min-h-10 items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm font-semibold text-ink hover:bg-surface-sunken"
 						>
@@ -153,7 +179,7 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 			</section>
 
 			<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-				<form
+				<form ref={formRef}
 					className="space-y-6"
 					 onSubmit={(event) => {
 						event.preventDefault();
@@ -295,63 +321,16 @@ export function PublicPageEditor({ initial }: { initial: TeachingPublicPageConfi
 					<div className="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[var(--mc-r-md)] border border-mc-rule bg-paper/95 p-4 shadow-[var(--mc-shadow-2)] backdrop-blur">
 						<div>
 							{message ? <p className="text-sm font-semibold text-mc-done">{message}</p> : null}
-							{error ? <p className="text-sm font-semibold text-error">{error}</p> : null}
+							{error ? <p role="alert" tabIndex={-1} ref={(node) => { node?.focus(); }} className="text-sm font-semibold text-error">{error}</p> : null}
 						</div>
-						<StudioButton type="submit" disabled={busy}>Lưu nội dung</StudioButton>
+						<StudioButton type="submit" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu nội dung'}</StudioButton>
 					</div>
 				</form>
 
 				<aside className="xl:sticky xl:top-6 xl:self-start">
 					<p className="mc-eyebrow mb-2">Xem trước</p>
-					<div className="overflow-hidden rounded-[var(--mc-r-md)] border border-mc-rule bg-paper shadow-[var(--mc-shadow-1)]">
-						<div className="border-b border-mc-rule bg-ink p-5 text-paper">
-							<p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-65">
-								{initial.class.courseCode} · {initial.class.term}
-							</p>
-							<h2 className="mt-3 text-2xl font-semibold leading-tight">
-								{form.publicTitle || initial.class.courseName}
-							</h2>
-							<p className="mt-3 text-sm leading-6 opacity-80">
-								{form.publicSummary || 'Tóm tắt công khai sẽ hiển thị ở đây.'}
-							</p>
-						</div>
-						<div className="space-y-5 p-5">
-							{form.publicAnnouncement ? (
-								<div className="rounded-[var(--mc-r-sm)] bg-accent-subtle p-3 text-sm text-ink">
-									{form.publicAnnouncement}
-								</div>
-							) : null}
-							<div>
-								<p className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Lớp học</p>
-								<p className="mt-2 text-sm text-ink">
-									Lớp {initial.class.groupNo} · {initial.class.lecturerName || 'Giảng viên'}
-								</p>
-							</div>
-							{form.publicDescription ? (
-								<p className="line-clamp-6 whitespace-pre-line text-sm leading-6 text-ink-secondary">
-									{form.publicDescription}
-								</p>
-							) : null}
-							{links.length ? (
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">
-											Liên kết quan trọng
-									</p>
-									<ul className="mt-2 space-y-2">
-										{links.slice(0, 4).map((link) => (
-											<li key={link.key} className="flex items-center gap-2 text-sm font-semibold text-accent">
-												<McIcon name="link" size={15} />
-														{link.label || 'Liên kết chưa đặt tên'}
-											</li>
-										))}
-									</ul>
-								</div>
-							) : null}
-						</div>
-					</div>
-					<p className="mc-meta mt-3">
-					Bảng điểm danh, CP và nội quy lớp không được chỉnh sửa tại đây; hãy dùng mục Chia sẻ để quản lý phần học viên xem.
-					</p>
+					<h2 className="mb-3 text-xl font-semibold">{form.publicTitle || initial.class.courseName}</h2>
+					<StudentClassIntro summary={form.publicSummary} description={form.publicDescription} announcement={form.publicAnnouncement} links={links.map(link => ({ ...link, id: link.key }))} />
 				</aside>
 			</div>
 		</div>

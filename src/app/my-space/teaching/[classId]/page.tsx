@@ -14,6 +14,7 @@ import {
 	getGroupBoard,
 	getGroupNumbersByEnrollment,
 	getClassNotes,
+	listClassRecallAssignments,
 	listRoster,
 } from '@/features/teaching';
 import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
@@ -26,16 +27,17 @@ export default async function MySpaceTeachingClassPage({
 	searchParams,
 }: {
 	params: Promise<{ classId: string }>;
-	searchParams?: Promise<{ tab?: string; week?: string }>;
+	searchParams?: Promise<{ tab?: string; week?: string; tutorial?: string }>;
 }) {
 	const { classId } = await params;
 	const query = await searchParams;
 	const requestedTab = query?.tab;
 	const week = Number(query?.week || '') || null;
+	const tutorialId = query?.tutorial || undefined;
 	const groupBoardEnabled = isTeachingGroupBoardEnabled();
 	if (requestedTab === 'groups' && !groupBoardEnabled) redirect(routes.mySpaceTeachingClass(classId));
 	const tab = resolveTeachingWorkspaceTab(requestedTab, groupBoardEnabled);
-	const [gradebook, board, roster, publicPage, , groupNumbersByTutorial, notes] =
+	const [gradebook, board, roster, publicPage, , groupNumbersByTutorial, notes, recallAssignments] =
 		await Promise.all([
 			getGradebook(classId),
 			getAttendanceBoardConfig(classId),
@@ -46,6 +48,7 @@ export default async function MySpaceTeachingClassPage({
 				? getGroupNumbersByEnrollment(classId)
 				: Promise.resolve(undefined),
 			tab === 'notes' ? getClassNotes(classId) : Promise.resolve(undefined),
+			tab === 'recall' ? listClassRecallAssignments(classId) : Promise.resolve(undefined),
 		]);
 	const initialGroupBoard =
 		tab === 'groups' && groupBoardEnabled && gradebook.tutorials.length === 1
@@ -61,8 +64,10 @@ export default async function MySpaceTeachingClassPage({
 			groupNumbersByTutorial={groupNumbersByTutorial}
 			groupBoardEnabled={groupBoardEnabled}
 			notes={notes}
+			recallAssignments={recallAssignments}
 			tab={tab}
 			week={week}
+			tutorialId={tutorialId}
 		/>
 	);
 }

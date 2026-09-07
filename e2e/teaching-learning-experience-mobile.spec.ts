@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { addAdminSession } from './helpers/adminSession';
+import { cleanupTeachingClass } from './helpers/teachingCleanup';
 
 test.describe('Learning Experience mobile access', () => {
 	test('supports birth-date and open entry on touch-sized screens', async ({ page, context }) => {
@@ -71,7 +72,7 @@ test.describe('Learning Experience mobile access', () => {
 			await expect(page.getByRole('button', { name: 'Enter experience' })).toBeEnabled();
 			await page.getByRole('button', { name: 'Enter experience' }).tap();
 			await expect(
-				page.getByRole('heading', { name: 'Choose your HRM learning style' }),
+				page.getByRole('heading', { name: 'Choose your learning style' }),
 			).toBeVisible();
 
 			await context.clearCookies();
@@ -81,12 +82,12 @@ test.describe('Learning Experience mobile access', () => {
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).tap();
 			await expect(
-				page.getByRole('heading', { name: 'Choose your HRM learning style' }),
+				page.getByRole('heading', { name: 'Choose your learning style' }),
 			).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
-			await page.request.delete(`/api/admin/teaching/classes/${classId}`);
+			await cleanupTeachingClass(page.request, classId);
 		}
 	});
 });

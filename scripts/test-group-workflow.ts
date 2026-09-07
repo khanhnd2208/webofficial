@@ -23,8 +23,15 @@ async function main() {
 		console.log(`PASS ${label}`);
 	}
 	async function fixture(suffix: string) {
+		const course = await db.teachingCourse.create({
+			data: {
+				courseCode: prefix + suffix,
+				courseName: 'Group checks',
+			},
+		});
 		const klass = await db.teachingClass.create({
 			data: {
+				courseId: course.id,
 				courseCode: prefix + suffix,
 				courseName: 'Group checks',
 				groupNo: '01',

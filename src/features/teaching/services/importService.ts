@@ -1,5 +1,12 @@
 import { removeEnrollmentGroup } from '../domain/groupTransactions';
+import { classIdentityMatches, normalizeClassCode, normalizeTerm } from '../domain/adminLifecycle';
 import { AppError } from '@/lib/appError';
+import {
+	ensureTeachingCourse,
+	lockActiveCourse,
+	normalizeCourseCode,
+	throwIfCourseArchived,
+} from '../domain/courseIdentity';
 
 import {
 	applyConflictResolution,
@@ -167,17 +174,20 @@ export async function previewRosterImport(options: {
 
 	let existingClassId: string | null = options.classId ?? null;
 	if (!existingClassId && parsed.metadata.courseCode && parsed.metadata.groupNo) {
-		const existingClass = await repo.prisma.teachingClass.findUnique({
+		const normalizedCourseCode = normalizeCourseCode(parsed.metadata.courseCode);
+		const classCode = normalizeClassCode(parsed.metadata.groupNo);
+		const term = normalizeTerm(parsed.metadata.term || 'Unknown term');
+		const candidates = await repo.prisma.teachingClass.findMany({
 			where: {
-				courseCode_groupNo_term: {
-					courseCode: parsed.metadata.courseCode,
-					groupNo: parsed.metadata.groupNo,
-					term: parsed.metadata.term || 'Unknown term',
-				},
+				OR: [
+					{ course: { courseCode: normalizedCourseCode } },
+					{ courseCode: parsed.metadata.courseCode },
+				],
 			},
-			select: { id: true },
+			select: { id: true, classCode: true, groupNo: true, term: true },
 		});
-		existingClassId = existingClass?.id ?? null;
+		existingClassId =
+			candidates.find((row) => classIdentityMatches(row, { classCode, term }))?.id ?? null;
 	}
 
 	const codes = [...new Set(inputs.map((row) => row.studentCode).filter(Boolean))];
@@ -409,18 +419,40 @@ export async function setupTeachingClassFromRoster(input: {
 	}
 
 	const totalWeeks = input.class.totalWeeks ?? 10;
+	const course = input.class.courseId
+		? await repo.getCourse(input.class.courseId)
+		: await ensureTeachingCourse(repo.prisma, {
+				courseCode: input.class.courseCode ?? '',
+				courseName: input.class.courseName ?? '',
+			});
+	if (!course) throw new AppError('Không tìm thấy môn học', 404, 'NOT_FOUND');
+	throwIfCourseArchived(course.status);
+	const groupNo = normalizeClassCode(input.class.groupNo);
+	const term = normalizeTerm(input.class.term);
+	const existingIdentity = await repo.findClassByIdentity({
+		courseId: course.id,
+		classCode: groupNo,
+		term,
+	});
+	if (existingIdentity) {
+		throw new AppError('Lớp với mã này đã tồn tại trong học kỳ đã chọn', 409, 'CLASS_EXISTS', {
+			existingClassId: existingIdentity.id,
+		});
+	}
 	const classId = await withUniqueConflict(
 		'A class with this course code, group and term already exists',
 		async () =>
 			repo.prisma.$transaction(
 				async (tx) => {
+					await lockActiveCourse(tx, course.id);
 					const teachingClass = await tx.teachingClass.create({
 						data: {
-							courseCode: input.class.courseCode,
-							courseName: input.class.courseName,
-							groupNo: input.class.groupNo,
-							classCode: input.class.groupNo,
-							term: input.class.term,
+							courseId: course.id,
+							courseCode: course.courseCode,
+							courseName: course.courseName,
+							groupNo,
+							classCode: groupNo,
+							term,
 							credits: input.class.credits ?? null,
 							lecturerName: input.class.lecturerName ?? '',
 							lecturerCode: input.class.lecturerCode ?? '',
@@ -496,6 +528,21 @@ export async function setupTeachingClassFromRoster(input: {
 								orderNo: normalized.orderNo ?? index + 1,
 								enrolledFromWeek: normalized.enrolledFromWeek ?? 1,
 							},
+						});
+					}
+					const publishedDecks = await tx.activeRecallDeck.findMany({
+						where: { courseId: course.id, status: 'PUBLISHED' },
+						select: { id: true, position: true },
+					});
+					if (publishedDecks.length) {
+						await tx.teachingClassRecallDeck.createMany({
+							data: publishedDecks.map((deck) => ({
+								classId: teachingClass.id,
+								deckId: deck.id,
+								enabled: true,
+								displayOrder: deck.position,
+							})),
+							skipDuplicates: true,
 						});
 					}
 					return teachingClass.id;

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import Link from 'next/link';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TeachingClassNoteRecord } from '@/features/teaching/types';
@@ -33,6 +34,36 @@ function note(overrides: Partial<TeachingClassNoteRecord> = {}): TeachingClassNo
 }
 
 describe('ClassNotesAdminWorkspace', () => {
+	it('flushes a draft before the 700ms delay when an internal tab is clicked, retaining it on failure', async () => {
+		apiMock.mockRejectedValueOnce(new Error('offline'));
+		render(<><Link href="/my-space/teaching/class-1?tab=cp">Điểm CP</Link><ClassNotesAdminWorkspace classId="class-1" initial={[note()]} /></>);
+		fireEvent.change(screen.getByDisplayValue('Tuần 1'), { target: { value: 'Bản sửa cần giữ' } });
+		fireEvent.click(screen.getByRole('link', { name: 'Điểm CP' }));
+		await act(async () => {});
+		expect(apiMock).toHaveBeenCalledWith(expect.stringContaining('/notes/note-1'), expect.objectContaining({ body: JSON.stringify({ title: 'Bản sửa cần giữ', html: note().draftHtml }) }));
+		expect(screen.getByDisplayValue('Bản sửa cần giữ')).toBeInTheDocument();
+		expect(screen.getByRole('dialog', { name: 'Thay đổi chưa lưu' })).toBeVisible();
+		fireEvent.click(screen.getByRole('button', { name: 'Ở lại' }));
+		apiMock.mockResolvedValueOnce(note({ draftTitle: 'Bản sửa cần giữ' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }));
+		await act(async () => {});
+		expect(screen.getByText('Đã lưu')).toBeInTheDocument();
+	});
+
+	it('saves newer edits after a slow request before selecting another note', async () => {
+		let finish!: (value: TeachingClassNoteRecord) => void;
+		apiMock.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+		apiMock.mockResolvedValueOnce(note({ draftTitle: 'Mới nhất' }));
+		render(<ClassNotesAdminWorkspace classId="class-1" initial={[note(), note({ id: 'note-2', draftTitle: 'Tuần 2' })]} />);
+		fireEvent.change(screen.getByDisplayValue('Tuần 1'), { target: { value: 'Bản đang gửi' } });
+		await act(async () => { await vi.advanceTimersByTimeAsync(700); });
+		fireEvent.change(screen.getByDisplayValue('Bản đang gửi'), { target: { value: 'Mới nhất' } });
+		fireEvent.click(screen.getByRole('button', { name: /Tuần 2/ }));
+		expect(screen.getByDisplayValue('Mới nhất')).toBeInTheDocument();
+		await act(async () => { finish(note({ draftTitle: 'Bản đang gửi' })); });
+		expect(apiMock).toHaveBeenLastCalledWith(expect.stringContaining('/notes/note-1'), expect.objectContaining({ body: JSON.stringify({ title: 'Mới nhất', html: note().draftHtml }) }));
+		expect(screen.getByDisplayValue('Tuần 2')).toBeInTheDocument();
+	});
 	beforeEach(() => {
 		vi.useFakeTimers();
 		apiMock.mockReset();

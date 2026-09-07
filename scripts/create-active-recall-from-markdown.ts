@@ -6,6 +6,8 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 
+import { HRM_COURSE_CODE, HRM_COURSE_NAME } from '../src/features/teaching/domain/courseIdentity';
+
 expand(config({ path: '.env.local' }));
 
 const [sourcePath, slug, title, lessonLabel, description] = process.argv.slice(2);
@@ -49,19 +51,43 @@ async function main() {
 	const cards = parseCards(readFileSync(sourcePath, 'utf8'));
 	const existing = await prisma.activeRecallDeck.findUnique({ where: { slug }, select: { id: true } });
 	if (existing) throw new Error(`Deck ${slug} already exists; refusing to overwrite it.`);
+	const course = await prisma.teachingCourse.upsert({
+		where: { courseCode: HRM_COURSE_CODE },
+		update: {},
+		create: { courseCode: HRM_COURSE_CODE, courseName: HRM_COURSE_NAME },
+	});
 
-	const deck = await prisma.activeRecallDeck.create({
-		data: {
-			slug,
-			title,
-			subject: 'Human Resource Management',
-			lessonLabel,
-			description: description ?? '',
-			status: 'PUBLISHED',
-			publishedAt: new Date(),
-			cards: { create: cards },
-		},
-		select: { id: true, title: true, _count: { select: { cards: true } } },
+	const deck = await prisma.$transaction(async (tx) => {
+		const created = await tx.activeRecallDeck.create({
+			data: {
+				slug,
+				title,
+				courseId: course.id,
+				subject: course.courseName,
+				lessonLabel,
+				description: description ?? '',
+				status: 'PUBLISHED',
+				publishedAt: new Date(),
+				cards: { create: cards },
+			},
+			select: { id: true, title: true, position: true, _count: { select: { cards: true } } },
+		});
+		const classes = await tx.teachingClass.findMany({
+			where: { courseId: course.id },
+			select: { id: true },
+		});
+		if (classes.length) {
+			await tx.teachingClassRecallDeck.createMany({
+				data: classes.map((teachingClass) => ({
+					classId: teachingClass.id,
+					deckId: created.id,
+					enabled: true,
+					displayOrder: created.position,
+				})),
+				skipDuplicates: true,
+			});
+		}
+		return created;
 	});
 
 	console.log(`Created ${deck.title} (${deck.id}) with ${deck._count.cards} cards.`);

@@ -104,6 +104,71 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByRole('tab', { name: 'Xếp nhóm' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Learning Experience' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Class Notes' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Active Recall' })).toBeInTheDocument();
+	});
+
+	it('lists enabled Active Recall decks on the class board', () => {
+		const contentBoard = board();
+		contentBoard.recallDecks = [
+			{
+				id: 'deck-1',
+				slug: 'hrm-lesson-1',
+				title: 'HRM · Lesson 1 — Introduction to HRM',
+				lessonLabel: 'Lesson 1',
+				description: 'Foundations',
+				cardCount: 28,
+			},
+		];
+		render(<StudentClassBoard board={contentBoard} initialTab="recall" />);
+		expect(screen.getByRole('tab', { name: 'Active Recall' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('link', { name: /HRM · Lesson 1/i })).toHaveAttribute(
+			'href',
+			'/lop/hrm-101/active-recall/hrm-lesson-1',
+		);
+	});
+
+	it('keeps tutorial selection scoped across the public attendance board', () => {
+		const contentBoard = board();
+		contentBoard.tutorials = [
+			{ id: 'tutorial-1', classId: 'class-1', code: 'T01', name: 'Nhóm 01', room: '', scheduleNote: '', displayOrder: 0, studentCount: 2 },
+			{ id: 'tutorial-2', classId: 'class-1', code: 'T02', name: 'Nhóm 02', room: '', scheduleNote: '', displayOrder: 1, studentCount: 1 },
+		];
+		contentBoard.sessions.push({ ...contentBoard.sessions[0]!, id: 'session-2', tutorialClassId: 'tutorial-2' });
+		contentBoard.students.push({ ...contentBoard.students[0]!, enrollmentId: 'e3', tutorialClassId: 'tutorial-2', studentCode: '********77', marks: { 'session-2': { status: 'PRESENT' } }, participation: { 'session-2': { points: 1, note: '' } } });
+		render(<StudentClassBoard board={contentBoard} />);
+		const grid = screen.getByTestId('attendance-grid');
+		expect(screen.getByLabelText('Tutorial')).toHaveValue('tutorial-1');
+		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
+		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: 'tutorial-2' } });
+		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
+		expect(screen.getByText('********77')).toBeInTheDocument();
+		expect(screen.queryByText('********45')).not.toBeInTheDocument();
+	});
+
+	it('keeps unassigned students visible instead of hiding them behind the first tutorial', () => {
+		const contentBoard = board();
+		contentBoard.tutorials = [
+			{ id: 'tutorial-1', classId: 'class-1', code: 'T01', name: 'Nhóm 01', room: '', scheduleNote: '', displayOrder: 0, studentCount: 2 },
+		];
+		contentBoard.students.push({
+			...contentBoard.students[0]!,
+			enrollmentId: 'e-unassigned',
+			tutorialClassId: null,
+			studentCode: '********00',
+			givenName: 'Chưa phân',
+		});
+		render(<StudentClassBoard board={contentBoard} />);
+		expect(screen.getByLabelText('Tutorial')).toHaveValue('');
+		expect(screen.getByRole('option', { name: 'Toàn lớp' })).toBeInTheDocument();
+		expect(screen.getByRole('option', { name: 'Chưa phân tutorial' })).toBeInTheDocument();
+		expect(screen.getByText('********00')).toBeInTheDocument();
+		expect(screen.getByText('********45')).toBeInTheDocument();
+		expect(screen.getByText(/3 SV/)).toBeInTheDocument();
+		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: 'tutorial-1' } });
+		expect(screen.queryByText('********00')).not.toBeInTheDocument();
+		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: '__unassigned__' } });
+		expect(screen.getByText('********00')).toBeInTheDocument();
+		expect(screen.queryByText('********45')).not.toBeInTheDocument();
 	});
 
 	it('opens published Class Notes and switches between note pages', () => {

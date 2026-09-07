@@ -1,5 +1,9 @@
+import type { Prisma } from '@prisma/client';
+
 import { AppError } from '@/lib/appError';
 
+import { dependencyConflict, isEmptyClassScaffold, normalizeClassCode, normalizeTerm } from '../domain/adminLifecycle';
+import { ensureTeachingCourse, lockActiveCourse, throwIfCourseArchived } from '../domain/courseIdentity';
 import { withUniqueConflict } from '../domain/prismaErrors';
 import * as repo from '../repositories/teachingRepository';
 import { DEFAULT_TUTORIAL_CODE, DEFAULT_TUTORIAL_NAME } from '../repositories/teachingRepository';
@@ -8,7 +12,8 @@ import type {
 	TeachingClassSetupInput,
 	UpdateTeachingClassInput,
 } from '../schemas';
-import { mapClass, mapClassListItem, mapGradebook } from './mappers';
+import { classSnapshotFromLifecycle, mapClass, mapClassListItem, mapGradebook } from './mappers';
+import { enablePublishedDecksForClass } from './recallPlacementService';
 
 function notFound(entity = 'Class'): never {
 	throw new AppError(`${entity} not found`, 404, 'NOT_FOUND');
@@ -39,6 +44,27 @@ export async function createDefaultTutorial(classId: string, totalWeeks: number)
 	return tutorial;
 }
 
+async function enablePublishedDecksInTransaction(
+	transaction: Prisma.TransactionClient,
+	classId: string,
+	courseId: string,
+) {
+	const decks = await transaction.activeRecallDeck.findMany({
+		where: { courseId, status: 'PUBLISHED' },
+		select: { id: true, position: true },
+	});
+	if (!decks.length) return;
+	await transaction.teachingClassRecallDeck.createMany({
+		data: decks.map((deck) => ({
+			classId,
+			deckId: deck.id,
+			enabled: true,
+			displayOrder: deck.position,
+		})),
+		skipDuplicates: true,
+	});
+}
+
 export async function listTeachingClasses() {
 	const rows = await repo.listClasses();
 	return rows.map(mapClassListItem);
@@ -54,25 +80,96 @@ export async function getTeachingClass(id: string) {
 	return mapClass(row);
 }
 
+async function resolveCourse(input: {
+	courseId?: string;
+	courseCode?: string;
+	courseName?: string;
+}) {
+	if (input.courseId) {
+		const existing = await repo.getCourse(input.courseId);
+		if (!existing) throw new AppError('Không tìm thấy môn học', 404, 'NOT_FOUND');
+		throwIfCourseArchived(existing.status);
+		return existing;
+	}
+	if (!input.courseCode || !input.courseName) {
+		throw new AppError('Hãy chọn môn học', 422, 'VALIDATION');
+	}
+	const course = await ensureTeachingCourse(repo.prisma, {
+		courseCode: input.courseCode,
+		courseName: input.courseName,
+	});
+	throwIfCourseArchived(course.status);
+	return course;
+}
+
+async function assertClassIdentityAvailable(input: {
+	courseId: string;
+	classCode: string;
+	term: string;
+	excludeId?: string;
+}) {
+	const existing = await repo.findClassByIdentity({
+		courseId: input.courseId,
+		classCode: input.classCode,
+		term: input.term,
+	});
+	if (existing && existing.id !== input.excludeId) {
+		throw new AppError('Lớp với mã này đã tồn tại trong học kỳ đã chọn', 409, 'CLASS_EXISTS', {
+			groupNo: 'Mã lớp đã được dùng trong học kỳ này',
+			term: 'Học kỳ này đã có lớp cùng mã',
+		});
+	}
+}
+
 export async function createTeachingClass(input: CreateTeachingClassInput) {
 	const totalWeeks = input.totalWeeks ?? 10;
-	const created = await withUniqueConflict(
-		'A class with this course code, group and term already exists',
+	const groupNo = normalizeClassCode(input.groupNo);
+	const term = normalizeTerm(input.term);
+	const course = await resolveCourse(input);
+	await assertClassIdentityAvailable({ courseId: course.id, classCode: groupNo, term });
+	const classId = await withUniqueConflict(
+		'Lớp với mã này đã tồn tại trong học kỳ đã chọn',
 		() =>
-			repo.createClassRecord({
-				courseCode: input.courseCode,
-				courseName: input.courseName,
-				groupNo: input.groupNo,
-				classCode: input.groupNo,
-				term: input.term,
-				credits: input.credits ?? null,
-				lecturerName: input.lecturerName ?? '',
-				lecturerCode: input.lecturerCode ?? '',
-				totalWeeks,
+			repo.prisma.$transaction(async (transaction) => {
+				await lockActiveCourse(transaction, course.id);
+				const teachingClass = await transaction.teachingClass.create({
+					data: {
+						courseId: course.id,
+						courseCode: course.courseCode,
+						courseName: course.courseName,
+						groupNo,
+						classCode: groupNo,
+						term,
+						credits: input.credits ?? null,
+						lecturerName: input.lecturerName ?? '',
+						lecturerCode: input.lecturerCode ?? '',
+						totalWeeks,
+					},
+				});
+				const tutorial = await transaction.teachingTutorialClass.create({
+					data: {
+						classId: teachingClass.id,
+						code: DEFAULT_TUTORIAL_CODE,
+						name: DEFAULT_TUTORIAL_NAME,
+						displayOrder: 0,
+					},
+				});
+				await transaction.teachingSession.createMany({
+					data: Array.from({ length: totalWeeks }, (_, index) => ({
+						classId: teachingClass.id,
+						tutorialClassId: tutorial.id,
+						weekNumber: index + 1,
+					})),
+				});
+				await enablePublishedDecksInTransaction(
+					transaction,
+					teachingClass.id,
+					course.id,
+				);
+				return teachingClass.id;
 			}),
 	);
-	await createDefaultTutorial(created.id, totalWeeks);
-	return getTeachingClass(created.id);
+	return getTeachingClass(classId);
 }
 
 export async function setupTeachingClass(input: TeachingClassSetupInput) {
@@ -85,17 +182,23 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 		seenCodes.add(student.studentCode);
 	}
 
+	const course = await resolveCourse(input.class);
+	const groupNo = normalizeClassCode(input.class.groupNo);
+	const term = normalizeTerm(input.class.term);
+	await assertClassIdentityAvailable({ courseId: course.id, classCode: groupNo, term });
 	const classId = await withUniqueConflict(
-		'A class with this course code, group and term already exists',
+		'Lớp với mã này đã tồn tại trong học kỳ đã chọn',
 		async () =>
 			repo.prisma.$transaction(async (transaction) => {
+				await lockActiveCourse(transaction, course.id);
 				const teachingClass = await transaction.teachingClass.create({
 					data: {
-						courseCode: input.class.courseCode,
-						courseName: input.class.courseName,
-						groupNo: input.class.groupNo,
-						classCode: input.class.groupNo,
-						term: input.class.term,
+						courseId: course.id,
+						courseCode: course.courseCode,
+						courseName: course.courseName,
+						groupNo,
+						classCode: groupNo,
+						term,
 						credits: input.class.credits ?? null,
 						lecturerName: input.class.lecturerName ?? '',
 						lecturerCode: input.class.lecturerCode ?? '',
@@ -167,6 +270,11 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 						},
 					});
 				}
+				await enablePublishedDecksInTransaction(
+					transaction,
+					teachingClass.id,
+					course.id,
+				);
 				return teachingClass.id;
 			}),
 	);
@@ -186,28 +294,68 @@ export async function updateTeachingClass(id: string, input: UpdateTeachingClass
 		throw new AppError('Attendance và CP phải cộng thành 10 điểm.', 422, 'VALIDATION');
 	}
 	const totalWeeks = input.totalWeeks ?? existing.totalWeeks;
+	const nextCourse =
+		input.courseId || input.courseCode || input.courseName
+			? await resolveCourse({
+					courseId: input.courseId,
+					courseCode: input.courseCode ?? existing.courseCode,
+					courseName: input.courseName ?? existing.courseName,
+				})
+			: { id: existing.courseId, courseCode: existing.courseCode, courseName: existing.courseName };
+	const nextGroupNo = input.groupNo != null ? normalizeClassCode(input.groupNo) : existing.groupNo;
+	const nextTerm = input.term != null ? normalizeTerm(input.term) : existing.term;
+	if (nextGroupNo !== existing.groupNo || nextTerm !== existing.term || nextCourse.id !== existing.courseId) {
+		await assertClassIdentityAvailable({
+			courseId: nextCourse.id,
+			classCode: nextGroupNo,
+			term: nextTerm,
+			excludeId: id,
+		});
+	}
+	const nextStatus = input.status ?? existing.status;
 	const updated = await withUniqueConflict(
-		'A class with this course code, group and term already exists',
+		'Lớp với mã này đã tồn tại trong học kỳ đã chọn',
 		() =>
-			repo.updateClassRecord(id, {
-				courseCode: input.courseCode,
-				courseName: input.courseName,
-				groupNo: input.groupNo,
-				classCode: input.groupNo,
-				term: input.term,
-				credits: input.credits === undefined ? undefined : input.credits,
-				lecturerName: input.lecturerName,
-				lecturerCode: input.lecturerCode,
-				totalWeeks: input.totalWeeks,
-				attendanceMaxPoints: input.attendanceMaxPoints,
-				cpMaxPoints: input.cpMaxPoints,
-				absenceDeductionPoints: input.absenceDeductionPoints,
-				lateDeductionPoints: input.lateDeductionPoints,
-				lateCountsTowardAbsenceThreshold: input.lateCountsTowardAbsenceThreshold,
-				giftDeductionPoints: input.giftDeductionPoints,
-				absenceThresholdPercent: input.absenceThresholdPercent,
-				lateGraceMinutes: input.lateGraceMinutes,
-				status: input.status,
+			repo.prisma.$transaction(async (transaction) => {
+				if (nextStatus === 'ACTIVE') {
+					await lockActiveCourse(transaction, nextCourse.id);
+				}
+				return transaction.teachingClass.update({
+					where: { id },
+					data: {
+						course: { connect: { id: nextCourse.id } },
+						courseCode: nextCourse.courseCode,
+						courseName: nextCourse.courseName,
+						groupNo: nextGroupNo,
+						classCode: nextGroupNo,
+						term: nextTerm,
+						credits: input.credits === undefined ? undefined : input.credits,
+						lecturerName: input.lecturerName,
+						lecturerCode: input.lecturerCode,
+						totalWeeks: input.totalWeeks,
+						attendanceMaxPoints: input.attendanceMaxPoints,
+						cpMaxPoints: input.cpMaxPoints,
+						absenceDeductionPoints: input.absenceDeductionPoints,
+						lateDeductionPoints: input.lateDeductionPoints,
+						lateCountsTowardAbsenceThreshold: input.lateCountsTowardAbsenceThreshold,
+						giftDeductionPoints: input.giftDeductionPoints,
+						absenceThresholdPercent: input.absenceThresholdPercent,
+						lateGraceMinutes: input.lateGraceMinutes,
+						status: input.status,
+					},
+					include: {
+						tutorials: { orderBy: [{ displayOrder: 'asc' as const }, { code: 'asc' as const }] },
+						_count: {
+							select: {
+								enrollments: true,
+								sessions: true,
+								tutorials: true,
+								notes: true,
+								publicLinks: true,
+							},
+						},
+					},
+				});
 			}),
 	);
 	if (totalWeeks > existing.totalWeeks) {
@@ -215,12 +363,33 @@ export async function updateTeachingClass(id: string, input: UpdateTeachingClass
 			await ensureWeeksForTutorial(id, tutorial.id, totalWeeks);
 		}
 	}
+	if (nextCourse.id !== existing.courseId) {
+		await repo.prisma.teachingClassRecallDeck.deleteMany({ where: { classId: id } });
+		await enablePublishedDecksForClass(id, nextCourse.id);
+	}
 	return mapClass(updated);
 }
 
 export async function deleteTeachingClass(id: string) {
-	const existing = await repo.getClass(id);
+	const existing = await repo.getClassLifecycleSnapshot(id);
 	if (!existing) notFound();
+	const snapshot = classSnapshotFromLifecycle(existing);
+	if (!isEmptyClassScaffold(snapshot)) {
+		throw dependencyConflict(
+			'Chỉ xóa được lớp còn trống, chưa có học viên hay nội dung tùy chỉnh',
+			{
+				students: snapshot.enrollmentCount || undefined,
+				attendance: snapshot.attendanceCount || undefined,
+				participation: snapshot.participationCount || undefined,
+				groups: snapshot.configuredGroupCount || undefined,
+				notes: snapshot.noteCount || undefined,
+				publicLinks: snapshot.publicLinkCount || undefined,
+				customizedSessions: snapshot.customizedSessionCount || undefined,
+				studentPage: snapshot.studentPageCount || undefined,
+				sharing: snapshot.sharingCount || undefined,
+			},
+		);
+	}
 	await repo.deleteClassRecord(id);
 	return { id };
 }

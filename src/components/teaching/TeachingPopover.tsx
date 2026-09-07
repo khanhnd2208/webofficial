@@ -8,10 +8,10 @@ import {
 	useId,
 	useRef,
 	useState,
-	type CSSProperties,
 	type ReactNode,
 	type RefObject,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 type Registry = {
 	activeId: string | null;
@@ -36,11 +36,13 @@ export function useTeachingDismissible({
 	onClose,
 	rootRef,
 	triggerRef,
+	panelRef,
 }: {
 	open: boolean;
 	onClose: () => void;
 	rootRef: RefObject<HTMLElement | null>;
 	triggerRef?: RefObject<HTMLElement | null>;
+	panelRef?: RefObject<HTMLElement | null>;
 }) {
 	const closedByEscape = useRef(false);
 
@@ -56,7 +58,7 @@ export function useTeachingDismissible({
 		}
 
 		function onPointerDown(event: PointerEvent) {
-			if (!rootRef.current?.contains(event.target as Node)) onClose();
+			if (!rootRef.current?.contains(event.target as Node) && !panelRef?.current?.contains(event.target as Node)) onClose();
 		}
 
 		document.addEventListener('keydown', onKeyDown);
@@ -67,7 +69,7 @@ export function useTeachingDismissible({
 			document.removeEventListener('pointerdown', onPointerDown);
 			if (closedByEscape.current) triggerNode?.focus();
 		};
-	}, [open, onClose, rootRef, triggerRef]);
+	}, [open, onClose, panelRef, rootRef, triggerRef]);
 }
 
 export function TeachingPopover({
@@ -98,6 +100,7 @@ export function TeachingPopover({
 	const open = registry ? registry.activeId === id : localOpen;
 	const rootRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
+	const panelRef = useRef<HTMLDivElement>(null);
 
 	const close = useCallback(() => {
 		if (registry) {
@@ -115,10 +118,28 @@ export function TeachingPopover({
 		}
 	}, [id, registry]);
 
-	useTeachingDismissible({ open, onClose: close, rootRef, triggerRef });
-
-	const panelStyle: CSSProperties =
-		align === 'right' ? { right: 0 } : { left: 0 };
+	useTeachingDismissible({ open, onClose: close, rootRef, triggerRef, panelRef });
+	useEffect(() => {
+		if (!open || !triggerRef.current || !panelRef.current) return;
+		const update = () => {
+			if (!triggerRef.current || !panelRef.current) return;
+			const rect = triggerRef.current.getBoundingClientRect();
+			const panelHeight = panelRef.current.getBoundingClientRect().height;
+			panelRef.current.style.top = `${Math.max(8, Math.min(rect.bottom + 8, window.innerHeight - panelHeight - 8))}px`;
+			const width = panelRef.current.getBoundingClientRect().width;
+			const desiredLeft = align === 'right' ? rect.right - width : rect.left;
+			panelRef.current.style.left = `${Math.max(8, Math.min(desiredLeft, window.innerWidth - width - 8))}px`;
+			panelRef.current.style.right = 'auto';
+		};
+		update();
+		panelRef.current.querySelector<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled)')?.focus();
+		window.addEventListener('resize', update);
+		window.addEventListener('scroll', update, true);
+		return () => {
+			window.removeEventListener('resize', update);
+			window.removeEventListener('scroll', update, true);
+		};
+	}, [align, open]);
 
 	return (
 		<div ref={rootRef} className="relative">
@@ -132,18 +153,30 @@ export function TeachingPopover({
 					'aria-haspopup': closeOnInsideClick ? 'menu' : 'dialog',
 				},
 			})}
-			{open ? (
+			{open && typeof document !== 'undefined' ? createPortal(
 				<div
+					ref={panelRef}
 					role={closeOnInsideClick ? 'menu' : 'dialog'}
 					aria-label={ariaLabel}
-					className="absolute z-40 mt-2 min-w-56 rounded-[var(--mc-r-md)] border border-mc-rule bg-paper p-2 shadow-lg"
-					style={panelStyle}
+					className="fixed z-[90] max-h-[min(70dvh,32rem)] min-w-56 max-w-[calc(100vw-1rem)] overflow-auto rounded-[var(--mc-r-md)] border border-mc-rule bg-paper p-2 shadow-lg"
+					style={{ top: 0, left: 0 }}
+					onKeyDown={(event) => {
+						if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); triggerRef.current?.focus(); return; }
+						const items = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]') ?? []);
+						if (event.key === 'Tab') { close(); triggerRef.current?.focus(); return; }
+						if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !items.length) return;
+						event.preventDefault();
+						const current = items.indexOf(document.activeElement as HTMLElement);
+						const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+						items[next]?.focus();
+					}}
 					onClick={() => {
 						if (closeOnInsideClick) close();
 					}}
 				>
 					{children}
-				</div>
+				</div>,
+				document.body,
 			) : null}
 		</div>
 	);

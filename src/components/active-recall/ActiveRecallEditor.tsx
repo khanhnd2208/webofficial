@@ -11,19 +11,101 @@ import type {
 	ActiveRecallStatus,
 	RecallImportPreview,
 } from '@/features/active-recall';
+import { toRecallCsv, toRecallPaste } from '@/features/active-recall/parser';
+import { recallHasContent } from '@/features/active-recall/richText';
 import { routes } from '@/config/routes';
+
+import RecallRichTextEditor from './RecallRichTextEditor';
 
 type EditorCard = { id?: string; localId: string; question: string; answer: string };
 
 const emptyCard = (): EditorCard => ({ localId: crypto.randomUUID(), question: '', answer: '' });
 
-function csv(rows: EditorCard[]) {
-	const quote = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
-	return `\uFEFFid,question,answer,order\r\n${rows.map((row, index) => [row.id ?? '', row.question, row.answer, index].map(quote).join(',')).join('\r\n')}\r\n`;
-}
+const ACTIVE_RECALL_AI_FORMATTING_GUIDE = `Khi soạn nội dung Active Recall, hãy trả về đúng định dạng để tôi có thể copy-paste trực tiếp.
 
-function qaText(rows: EditorCard[]) {
-	return rows.map((row) => `Q: ${row.question}\nA: ${row.answer}`).join('\n---\n');
+Mỗi thẻ dùng một trong các cặp nhãn:
+- Q: / A:
+- Question: / Answer:
+- Câu hỏi: / Đáp án:
+
+Có thể ngăn cách các thẻ bằng dòng ---.
+
+Hỗ trợ định dạng:
+- Đậm: **nội dung**
+- Nghiêng: *nội dung*
+- Gạch chân: <u>nội dung</u>
+- Màu chữ: <span style="color: #dc2626">nội dung</span>
+
+Chỉ dùng các màu sau:
+#475569, #dc2626, #ea580c, #ca8a04, #15803d, #2563eb, #7c3aed, #db2777.
+
+Có thể kết hợp định dạng, ví dụ:
+<u><span style="color: #dc2626">Ý rất quan trọng</span></u>
+**<u>Khái niệm cốt lõi</u>**
+*Ví dụ minh họa*
+
+Hỗ trợ danh sách:
+- Ý thứ nhất
+- Ý thứ hai
+
+hoặc:
+1. Ý thứ nhất
+2. Ý thứ hai
+
+Quy tắc cho bullet points:
+- Chỉ đặt bullet trong nội dung câu hỏi hoặc đáp án, sau nhãn Q:/A: hoặc Câu hỏi:/Đáp án:.
+- Để danh sách dễ đọc, đặt nhãn đáp án trên một dòng riêng, rồi bắt đầu mỗi bullet ở dòng kế tiếp.
+- Mỗi mục phải bắt đầu chính xác bằng "- " (gạch ngang + khoảng trắng) hoặc "1. " (số + dấu chấm + khoảng trắng).
+- Không thụt lề đầu dòng, không dùng bullet lồng nhau, không dùng ký hiệu •, *, hoặc – thay cho "- ".
+- Không đặt Q:, A:, Question:, Answer:, Câu hỏi:, Đáp án: hoặc --- ở đầu một bullet; nếu cần dùng các cụm này, thêm dấu \\ ở trước.
+
+Ví dụ danh sách đúng:
+
+Câu hỏi: Các mục tiêu của HRM là gì?
+Đáp án:
+- Thu hút nhân sự phù hợp
+- Phát triển năng lực
+- Giữ chân nhân viên
+
+Ví dụ danh sách đánh số đúng:
+
+Câu hỏi: Quy trình tuyển dụng gồm những bước nào?
+Đáp án:
+1. Xác định nhu cầu tuyển dụng
+2. Thu hút ứng viên
+3. Sàng lọc và lựa chọn
+
+Không dùng bảng Markdown, ảnh, link, heading (#), code block, HTML/CSS ngoài các thẻ <u> và <span style="color: ...">.
+
+Nếu nội dung câu hỏi hoặc đáp án có một dòng bắt đầu bằng Q:, A:, Question:, Answer:, Câu hỏi:, Đáp án: hoặc ---, hãy thêm dấu \\ ở đầu dòng để hệ thống không hiểu nhầm đó là thẻ mới.
+
+Ví dụ đầu ra:
+
+Câu hỏi: **HRM** là gì?
+Đáp án: HRM là *quản trị nguồn nhân lực*.
+
+---
+Câu hỏi: Vì sao job autonomy quan trọng?
+Đáp án:
+- Tăng <u>trách nhiệm</u>
+- Hỗ trợ động lực làm việc
+- <span style="color: #dc2626">Giảm sự phụ thuộc vào giám sát liên tục</span>`;
+
+async function copyText(value: string) {
+	if (navigator.clipboard?.writeText) {
+		await navigator.clipboard.writeText(value);
+		return;
+	}
+	const textarea = document.createElement('textarea');
+	textarea.value = value;
+	textarea.setAttribute('readonly', '');
+	textarea.style.position = 'fixed';
+	textarea.style.opacity = '0';
+	document.body.append(textarea);
+	textarea.select();
+	const copied = document.execCommand('copy');
+	textarea.remove();
+	if (!copied) throw new Error('COPY_FAILED');
 }
 
 function download(filename: string, text: string) {
@@ -46,21 +128,51 @@ function deckCards(deck: ActiveRecallDeckDTO | null): EditorCard[] {
 	);
 }
 
+function deckSnapshot(deck: ActiveRecallDeckDTO) {
+	return JSON.stringify({
+		title: deck.title,
+		slug: deck.slug,
+		subject: deck.subject,
+		lessonLabel: deck.lessonLabel,
+		description: deck.description,
+		status: deck.status,
+		cards: deck.cards.map(({ id, question, answer }) => ({ id, question, answer })),
+	});
+}
+
 export default function ActiveRecallEditor({
 	initialDeck,
+	courseId,
+	courseName,
 }: {
 	initialDeck: ActiveRecallDeckDTO | null;
+	courseId?: string;
+	courseName?: string;
 }) {
 	const router = useRouter();
 	const { confirm, dialog } = useAdminConfirm();
 	const [deck, setDeck] = useState(initialDeck);
 	const [title, setTitle] = useState(initialDeck?.title ?? '');
 	const [slug, setSlug] = useState(initialDeck?.slug ?? '');
-	const [subject, setSubject] = useState(initialDeck?.subject ?? '');
+	const resolvedCourseId = courseId ?? initialDeck?.courseId ?? '';
+	const [subject, setSubject] = useState(courseName ?? initialDeck?.courseName ?? initialDeck?.subject ?? '');
+	const listHref = resolvedCourseId
+		? routes.mySpaceTeachingCourseTab(resolvedCourseId, 'recall')
+		: routes.admin.activeRecall;
+	const deckApiPath = (deckId: string) =>
+		resolvedCourseId
+			? `/api/admin/teaching/courses/${resolvedCourseId}/recall/${deckId}`
+			: `/api/admin/active-recall/${deckId}`;
 	const [lessonLabel, setLessonLabel] = useState(initialDeck?.lessonLabel ?? '');
 	const [description, setDescription] = useState(initialDeck?.description ?? '');
 	const [status, setStatus] = useState<ActiveRecallStatus>(initialDeck?.status ?? 'DRAFT');
-	const [cards, setCards] = useState<EditorCard[]>(() => deckCards(initialDeck));
+	const [cards, setCards] = useState<EditorCard[]>(() => {
+		const existing = deckCards(initialDeck);
+		return existing.length ? existing : [emptyCard()];
+	});
+	const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
+	const [detailsOpen, setDetailsOpen] = useState(false);
+	const [importOpen, setImportOpen] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [notice, setNotice] = useState<string | null>(null);
@@ -112,26 +224,59 @@ export default function ActiveRecallEditor({
 		window.setTimeout(() => setNotice(null), 7000);
 	}
 
+	function cardsForSave() {
+		const nextErrors: Record<string, string> = {};
+		const valid: EditorCard[] = [];
+		for (const card of cards) {
+			const hasQuestion = recallHasContent(card.question);
+			const hasAnswer = recallHasContent(card.answer);
+			if (!hasQuestion && !hasAnswer) continue;
+			if (!hasQuestion) nextErrors[card.localId] = 'Thẻ thiếu câu hỏi';
+			else if (!hasAnswer) nextErrors[card.localId] = 'Thẻ thiếu đáp án';
+			else valid.push(card);
+		}
+		setCardErrors(nextErrors);
+		return { valid, invalid: Object.keys(nextErrors).length > 0 };
+	}
+
 	async function createDeck() {
 		if (!title.trim()) {
 			setError('Hãy nhập tên bộ thẻ');
 			return;
 		}
+		const { valid, invalid } = cardsForSave();
+		if (invalid) {
+			setError('Một số thẻ chưa đủ câu hỏi và đáp án');
+			return;
+		}
 		setBusy(true);
 		setError(null);
 		try {
-			const created = await adminFetch<ActiveRecallDeckDTO>('/api/admin/active-recall', {
-				method: 'POST',
-				body: JSON.stringify({
-					title,
-					slug: slug || undefined,
-					subject,
-					lessonLabel,
-					description,
-					status: 'DRAFT',
-				}),
-			});
-			router.replace(routes.admin.activeRecallEdit(created.id));
+			const created = await adminFetch<ActiveRecallDeckDTO>(
+				resolvedCourseId
+					? `/api/admin/teaching/courses/${resolvedCourseId}/recall`
+					: '/api/admin/active-recall',
+				{
+					method: 'POST',
+					body: JSON.stringify({
+						title,
+						courseId: resolvedCourseId || undefined,
+						subject,
+						lessonLabel,
+						description,
+						status: 'DRAFT',
+						cards: valid.map((card) => ({
+							question: card.question,
+							answer: card.answer,
+						})),
+					}),
+				},
+			);
+			router.replace(
+				resolvedCourseId
+					? routes.mySpaceTeachingRecallEdit(resolvedCourseId, created.id)
+					: routes.admin.activeRecallEdit(created.id),
+			);
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không tạo được bộ thẻ');
 		} finally {
@@ -141,25 +286,27 @@ export default function ActiveRecallEditor({
 
 	async function saveDeck() {
 		if (!deck) return createDeck();
-		if (cards.some((card) => !card.question.trim() || !card.answer.trim())) {
-			setError('Mỗi thẻ cần đủ câu hỏi và đáp án');
+		const { valid, invalid } = cardsForSave();
+		if (invalid) {
+			setError('Một số thẻ chưa đủ câu hỏi và đáp án');
 			return;
 		}
 		setBusy(true);
 		setError(null);
 		setNotice(null);
 		try {
-			const saved = await adminFetch<ActiveRecallDeckDTO>(`/api/admin/active-recall/${deck.id}`, {
+			const saved = await adminFetch<ActiveRecallDeckDTO>(deckApiPath(deck.id), {
 				method: 'PATCH',
 				body: JSON.stringify({
 					title,
 					slug: slug || undefined,
+					courseId: resolvedCourseId || undefined,
 					subject,
 					lessonLabel,
 					description,
 					status,
 					expectedUpdatedAt: deck.updatedAt,
-					cards: cards.map((card) => ({
+					cards: valid.map((card) => ({
 						id: card.id,
 						question: card.question,
 						answer: card.answer,
@@ -174,15 +321,7 @@ export default function ActiveRecallEditor({
 			setLessonLabel(saved.lessonLabel);
 			setDescription(saved.description);
 			setStatus(saved.status);
-			initialRef.current = JSON.stringify({
-				title: saved.title,
-				slug: saved.slug,
-				subject: saved.subject,
-				lessonLabel: saved.lessonLabel,
-				description: saved.description,
-				status: saved.status,
-				cards: deckCards(saved).map(({ id, question, answer }) => ({ id, question, answer })),
-			});
+			initialRef.current = deckSnapshot(saved);
 			setNotice('Đã lưu thay đổi.');
 			router.refresh();
 		} catch (reason) {
@@ -205,13 +344,17 @@ export default function ActiveRecallEditor({
 
 	async function runPreview() {
 		if (!deck || !importText.trim()) return;
+		if (dirty) {
+			setError('Hãy lưu thay đổi trước khi import.');
+			return;
+		}
 		setBusy(true);
 		setError(null);
 		setPreview(null);
 		try {
 			setPreview(
 				await adminFetch<RecallImportPreview>(
-					`/api/admin/active-recall/${deck.id}/import?dryRun=1&mode=${importMode}`,
+					`${deckApiPath(deck.id)}/import?dryRun=1&mode=${importMode}`,
 					{
 						method: 'POST',
 						body: JSON.stringify({ text: importText, mode: importMode }),
@@ -226,7 +369,11 @@ export default function ActiveRecallEditor({
 	}
 
 	async function commitImport(mode: 'append' | 'replace') {
-		if (!deck || !preview || preview.summary.invalid) return;
+		if (!deck || !preview || preview.summary.invalid || preview.summary.orphanAnswers) return;
+		if (dirty) {
+			setError('Hãy lưu thay đổi trước khi import.');
+			return;
+		}
 		if (
 			mode === 'replace' &&
 			!(await confirm({
@@ -240,7 +387,7 @@ export default function ActiveRecallEditor({
 		setError(null);
 		try {
 			const imported = await adminFetch<{ deck: ActiveRecallDeckDTO }>(
-				`/api/admin/active-recall/${deck.id}/import`,
+				`${deckApiPath(deck.id)}/import`,
 				{
 					method: 'POST',
 					body: JSON.stringify({ text: importText, mode, expectedUpdatedAt: deck.updatedAt }),
@@ -248,6 +395,7 @@ export default function ActiveRecallEditor({
 			);
 			setDeck(imported.deck);
 			setCards(deckCards(imported.deck));
+			initialRef.current = deckSnapshot(imported.deck);
 			setPreview(null);
 			setImportText('');
 			setNotice('Đã import dữ liệu.');
@@ -272,8 +420,11 @@ export default function ActiveRecallEditor({
 		setBusy(true);
 		setError(null);
 		try {
-			await adminFetch(`/api/admin/active-recall/${deck.id}`, { method: 'DELETE' });
-			router.push(routes.admin.activeRecall);
+			await adminFetch(deckApiPath(deck.id), {
+				method: 'PATCH',
+				body: JSON.stringify({ status: 'ARCHIVED', expectedUpdatedAt: deck.updatedAt }),
+			});
+			router.push(listHref);
 			router.refresh();
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể lưu trữ bộ thẻ');
@@ -288,18 +439,20 @@ export default function ActiveRecallEditor({
 			<div className="flex flex-wrap items-start justify-between gap-5 border-b border-border pb-6">
 				<div>
 					<p className="text-xs font-bold uppercase tracking-widest text-muted">
-						Công cụ · Active Recall
+						Teaching · Active Recall
 					</p>
 					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
 						{deck ? 'Chỉnh sửa bộ thẻ' : 'Tạo bộ thẻ'}
 					</h1>
 					<p className="mt-2 text-sm text-muted">
-						Dán Q/A hoặc CSV, xem trước rồi lưu. Phím tắt: Cmd/Ctrl+S.
+						{deck
+							? 'Sửa thẻ trực tiếp. Phím tắt: Cmd/Ctrl+S.'
+							: 'Nhập tên bộ và nội dung thẻ. Slug tự sinh, mặc định bản nháp.'}
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
 					<Link
-						href={routes.admin.activeRecall}
+						href={listHref}
 						className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground"
 					>
 						Danh sách
@@ -358,74 +511,107 @@ export default function ActiveRecallEditor({
 						placeholder="HRM · Lesson 1"
 					/>
 				</label>
-				<label className="text-sm font-semibold">
-					Đường dẫn{' '}
-					{deck?.status !== 'DRAFT' ? (
-						<span className="font-normal text-muted">(đã khóa sau xuất bản)</span>
-					) : null}
-					<input
-						value={slug}
-						onChange={(event) => setSlug(event.target.value)}
-						disabled={Boolean(deck && deck.status !== 'DRAFT')}
-						className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal disabled:opacity-60"
-						placeholder="hrm-lesson-1"
-					/>
-				</label>
-				<label className="text-sm font-semibold">
-					Môn học
-					<input
-						value={subject}
-						onChange={(event) => setSubject(event.target.value)}
-						className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-						placeholder="Human Resource Management"
-					/>
-				</label>
-				<label className="text-sm font-semibold">
-					Nhãn bài
-					<input
-						value={lessonLabel}
-						onChange={(event) => setLessonLabel(event.target.value)}
-						className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-						placeholder="Lesson 1"
-					/>
-				</label>
-				<label className="text-sm font-semibold md:col-span-2">
-					Mô tả
-					<textarea
-						value={description}
-						onChange={(event) => setDescription(event.target.value)}
-						rows={2}
-						className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-					/>
-				</label>
-				<label className="text-sm font-semibold">
-					Trạng thái
-					<select
-						value={status}
-						onChange={(event) => setStatus(event.target.value as ActiveRecallStatus)}
-						className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-					>
-						<option value="DRAFT">Bản nháp</option>
-						<option value="PUBLISHED">Công khai</option>
-						<option value="ARCHIVED">Lưu trữ</option>
-					</select>
-				</label>
+				{deck ? (
+					<label className="text-sm font-semibold">
+						Trạng thái
+						<select
+							value={status}
+							onChange={(event) => setStatus(event.target.value as ActiveRecallStatus)}
+							className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
+						>
+							<option value="DRAFT">Bản nháp</option>
+							<option value="PUBLISHED">Công khai</option>
+							<option value="ARCHIVED">Lưu trữ</option>
+						</select>
+					</label>
+				) : (
+					<p className="self-end text-sm text-muted">Môn: {subject || 'đang kế thừa môn hiện tại'}</p>
+				)}
 			</section>
 
 			{deck ? (
-				<section className="mt-7 border border-border bg-surface p-5">
-					<div className="flex flex-wrap items-center justify-between gap-3">
-						<div>
-							<h2 className="font-bold text-foreground">Import / export</h2>
-							<p className="mt-1 text-sm text-muted">
-								Dán Q:/A:, Question:/Answer:, Câu hỏi:/Đáp án: hoặc CSV có cột question,answer.
+				<details
+					className="mt-4 border border-border bg-surface p-5"
+					open={detailsOpen}
+					onToggle={(event) => setDetailsOpen((event.target as HTMLDetailsElement).open)}
+				>
+					<summary className="cursor-pointer text-sm font-semibold text-ink">Chi tiết</summary>
+					<div className="mt-4 grid gap-4 md:grid-cols-2">
+						<label className="text-sm font-semibold">
+							Đường dẫn{' '}
+							{deck.status !== 'DRAFT' ? (
+								<span className="font-normal text-muted">(đã khóa sau xuất bản)</span>
+							) : null}
+							<input
+								value={slug}
+								onChange={(event) => setSlug(event.target.value)}
+								disabled={deck.status !== 'DRAFT'}
+								className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal disabled:opacity-60"
+								placeholder="hrm-lesson-1"
+							/>
+						</label>
+						<label className="text-sm font-semibold">
+							Nhãn bài
+							<input
+								value={lessonLabel}
+								onChange={(event) => setLessonLabel(event.target.value)}
+								className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
+								placeholder="Lesson 1"
+							/>
+						</label>
+						<label className="text-sm font-semibold md:col-span-2">
+							Mô tả
+							<textarea
+								value={description}
+								onChange={(event) => setDescription(event.target.value)}
+								rows={2}
+								className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
+							/>
+						</label>
+					</div>
+				</details>
+			) : null}
+
+			{deck ? (
+				<details
+					className="mt-4 border border-border bg-surface p-5"
+					open={importOpen}
+					onToggle={(event) => setImportOpen((event.target as HTMLDetailsElement).open)}
+				>
+					<summary className="cursor-pointer text-sm font-semibold text-ink">Nhập nhiều</summary>
+					<div className="mt-4">
+						<div className="flex flex-wrap items-center justify-between gap-3">
+							<p className="text-sm text-muted">
+								Dán Q:/A: hoặc CSV. Có thể sao chép hướng dẫn cho AI.
 							</p>
-						</div>
-						<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-2">
 							<button
 								type="button"
 								className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
-								onClick={() => download(`${deck.slug}.csv`, csv(cards))}
+								onClick={() =>
+									void copyText(ACTIVE_RECALL_AI_FORMATTING_GUIDE)
+										.then(() => setNotice('Đã sao chép hướng dẫn định dạng cho AI.'))
+										.catch(() => setError('Không thể sao chép hướng dẫn. Hãy thử lại.'))
+								}
+							>
+								Sao chép hướng dẫn cho AI
+							</button>
+							<button
+								type="button"
+								className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
+								onClick={() =>
+									download(
+										`${deck.slug}.csv`,
+										toRecallCsv(
+											cards.map((card, index) => ({
+												id: card.id ?? '',
+												question: card.question,
+												answer: card.answer,
+												position: index,
+											})),
+										),
+									)
+								}
 							>
 								Xuất CSV
 							</button>
@@ -433,9 +619,9 @@ export default function ActiveRecallEditor({
 								type="button"
 								className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
 								onClick={() =>
-									void navigator.clipboard
-										.writeText(qaText(cards))
+									void copyText(toRecallPaste(cards))
 										.then(() => setNotice('Đã sao chép dạng Q/A.'))
+										.catch(() => setError('Không thể sao chép Q/A. Hãy thử lại.'))
 								}
 							>
 								Sao chép Q/A
@@ -450,7 +636,9 @@ export default function ActiveRecallEditor({
 						}}
 						rows={8}
 						className="mt-4 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-						placeholder={'Q: What is HRM?\nA: ...\n---\nQ: ...\nA: ...'}
+						placeholder={
+							'Q: What is **HRM**?\nA: A *system* with <u>policies</u>\n---\nQuestion: ...\nAnswer: ...'
+						}
 					/>
 					<div className="mt-3 flex flex-wrap items-center gap-2">
 						<select
@@ -507,7 +695,8 @@ export default function ActiveRecallEditor({
 							</ul>
 						</div>
 					) : null}
-				</section>
+					</div>
+				</details>
 			) : null}
 
 			<section className="mt-7">
@@ -517,7 +706,7 @@ export default function ActiveRecallEditor({
 							Thẻ <span className="text-muted">{cards.length}</span>
 						</h2>
 						<p className="mt-1 text-sm text-muted">
-							Kéo để sắp thứ tự, hoặc dùng mũi tên. Mỗi thẻ luôn có một câu hỏi và một đáp án.
+							Kéo nút ⠿ để sắp thứ tự. Có thể chỉnh đậm, nghiêng, gạch chân và màu trên từng mặt thẻ.
 						</p>
 					</div>
 					<button
@@ -532,37 +721,54 @@ export default function ActiveRecallEditor({
 					{cards.map((card, index) => (
 						<article
 							key={card.localId}
-							draggable
-							onDragStart={() => setDragIndex(index)}
 							onDragOver={(event) => event.preventDefault()}
 							onDrop={() => {
 								if (dragIndex !== null) moveCard(dragIndex, index);
 								setDragIndex(null);
 							}}
-							className="grid gap-3 border border-border bg-surface p-4 lg:grid-cols-[2.4rem_minmax(0,1fr)_minmax(0,1fr)_auto]"
+							className={`grid gap-3 border bg-surface p-4 lg:grid-cols-[2.4rem_minmax(0,1fr)_minmax(0,1fr)_auto] ${
+								cardErrors[card.localId] ? 'border-error' : 'border-border'
+							}`}
 						>
 							<div className="flex items-start gap-1 pt-1 text-sm text-muted">
-								<span className="cursor-grab select-none">⠿</span>
+								<span
+									draggable
+									onDragStart={() => setDragIndex(index)}
+									className="cursor-grab select-none"
+									aria-label={`Kéo thẻ ${index + 1}`}
+								>
+									⠿
+								</span>
 								<span className="tabular-nums">{index + 1}</span>
 							</div>
-							<label className="text-xs font-bold uppercase tracking-wide text-muted">
-								Câu hỏi
-								<textarea
+							<div>
+								<p
+									id={`recall-question-${card.localId}`}
+									className="text-xs font-bold uppercase tracking-wide text-muted"
+								>
+									Câu hỏi
+								</p>
+								<RecallRichTextEditor
 									value={card.question}
-									onChange={(event) => updateCard(card.localId, { question: event.target.value })}
-									rows={4}
-									className="mt-2 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm font-normal normal-case tracking-normal text-foreground"
+									onChange={(question) => updateCard(card.localId, { question })}
+									labelledBy={`recall-question-${card.localId}`}
+									placeholder="What is **HRM**?"
 								/>
-							</label>
-							<label className="text-xs font-bold uppercase tracking-wide text-muted">
-								Đáp án
-								<textarea
+							</div>
+							<div>
+								<p
+									id={`recall-answer-${card.localId}`}
+									className="text-xs font-bold uppercase tracking-wide text-muted"
+								>
+									Đáp án
+								</p>
+								<RecallRichTextEditor
 									value={card.answer}
-									onChange={(event) => updateCard(card.localId, { answer: event.target.value })}
-									rows={4}
-									className="mt-2 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm font-normal normal-case tracking-normal text-foreground"
+									onChange={(answer) => updateCard(card.localId, { answer })}
+									labelledBy={`recall-answer-${card.localId}`}
+									placeholder="A *system*…"
 								/>
-							</label>
+							</div>
 							<div className="flex items-start gap-1">
 								<button
 									type="button"
@@ -605,6 +811,11 @@ export default function ActiveRecallEditor({
 									×
 								</button>
 							</div>
+							{cardErrors[card.localId] ? (
+								<p className="text-sm font-semibold text-error lg:col-span-4" role="alert">
+									{cardErrors[card.localId]}
+								</p>
+							) : null}
 						</article>
 					))}
 				</div>

@@ -24,7 +24,7 @@ describe('ArchiveBanner', () => {
 });
 
 describe('AdminShell', () => {
-	it('uses the main shell for Website and Active Recall', () => {
+	it('uses the main shell for Website', () => {
 		navigation.pathname = '/admin/website';
 		render(
 			<AdminShell>
@@ -36,10 +36,7 @@ describe('AdminShell', () => {
 		expect(screen.queryByTestId('archive-banner')).not.toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Website' })).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: 'Teaching' })).not.toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Active Recall' })).toHaveAttribute(
-			'href',
-			'/admin/tools/active-recall',
-		);
+		expect(screen.queryByRole('link', { name: 'Active Recall' })).not.toBeInTheDocument();
 		expect(screen.getByTestId('admin-archive-link')).toHaveAttribute('href', '/admin/archive');
 		expect(screen.queryByRole('link', { name: 'My Class' })).not.toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: 'Bài viết' })).not.toBeInTheDocument();
@@ -79,7 +76,7 @@ describe('AdminShell', () => {
 		);
 	});
 
-	it('marks Active Recall as the current main-nav item', () => {
+	it('keeps legacy Active Recall admin URLs on the main shell', () => {
 		navigation.pathname = '/admin/tools/active-recall/new';
 		render(
 			<AdminShell>
@@ -88,8 +85,7 @@ describe('AdminShell', () => {
 		);
 
 		expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
-		const activeRecall = screen.getByRole('link', { name: 'Active Recall' });
-		expect(activeRecall.className).toMatch(/bg-foreground/);
-		expect(screen.getByRole('link', { name: 'Website' }).className).not.toMatch(/bg-foreground/);
+		expect(screen.queryByRole('link', { name: 'Active Recall' })).not.toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Website' })).toBeInTheDocument();
 	});
 });

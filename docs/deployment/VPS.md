@@ -127,9 +127,9 @@ The script performs these steps in order:
    the build keeps Turbopack inside the immutable release tree. The release ID
    is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew protection and
    cache busting.
-6. Runs the database backup command, then `prisma migrate deploy` and the
-   idempotent Active Recall seed, then prunes build-only development
-   dependencies before starting the runtime.
+6. Runs the database backup command, then `prisma migrate deploy`, then prunes
+   build-only development dependencies before starting the runtime. Active Recall
+   content is not reseeding during deploy; production decks stay as stored.
 7. Starts the candidate on port 4001 and verifies readiness, liveness, Google
    Auth provider metadata, Active Recall availability, admin API protection,
    and the intended Test/Knowledge 404 locks.

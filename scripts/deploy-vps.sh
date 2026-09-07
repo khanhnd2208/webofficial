@@ -335,7 +335,7 @@ expect_store_post_unauthorized() {
 	fi
 }
 
-assert_application_smoke() {
+assert_shared_smoke() {
 	local base_url="$1"
 	local api_body
 
@@ -346,7 +346,6 @@ assert_application_smoke() {
 	expect_redirect_location "$base_url" '/admin/teaching?tab=cp' '/my-space/teaching?tab=cp'
 	expect_redirect_location "$base_url" '/my-space/teaching?tab=cp' '/dang-nhap?from=%2Fmy-space%2Fteaching%3Ftab%3Dcp'
 	expect_redirect_location "$base_url" '/messages' '/admin/tools/messages'
-	expect_http_status "$base_url" '/my-space/active-recall' 200
 	expect_http_status "$base_url" '/api/admin/active-recall' 401
 	if [[ "$EXPECT_LOCKS" != "true" ]]; then
 		return 0
@@ -367,6 +366,18 @@ assert_application_smoke() {
 			});
 		'
 	done
+}
+
+assert_candidate_smoke() {
+	assert_shared_smoke "$1"
+	# New-release behavior: personal Active Recall now lives under Teaching.
+	expect_redirect_location "$1" '/my-space/active-recall' '/my-space'
+}
+
+assert_rollback_smoke() {
+	# Previous release may still serve /my-space/active-recall as 200.
+	# Do not require the new redirect or automatic rollback will be disabled.
+	assert_shared_smoke "$1"
 }
 
 pm2_process_uses_current_config() {
@@ -584,9 +595,8 @@ echo "Creating a fresh pre-migration database backup"
 BACKUP_COMPLETED="yes"
 printf 'backup_completed_at=%s\n' "$(date -u +%FT%TZ)" >>"$RELEASE_DIR/.deploy-metadata"
 
-echo "Applying committed migrations and syncing canonical Active Recall decks"
+echo "Applying committed migrations"
 ./node_modules/.bin/prisma migrate deploy
-./node_modules/.bin/tsx scripts/replace-active-recall-revisions.ts
 
 echo "Removing build-only development dependencies from the runtime release"
 if ! HUSKY=0 npm prune --omit=dev --ignore-scripts --no-package-lock; then
@@ -625,10 +635,10 @@ curl --fail --silent --show-error --max-time 10 \
 			if (!providers.google?.callbackUrl) process.exit(1);
 		});
 	'
-assert_application_smoke "http://127.0.0.1:${CANDIDATE_PORT}"
+assert_candidate_smoke "http://127.0.0.1:${CANDIDATE_PORT}"
 
 if wait_for_ready "$LIVE_PORT" 1 && \
-	assert_application_smoke "http://127.0.0.1:${LIVE_PORT}"; then
+	assert_rollback_smoke "http://127.0.0.1:${LIVE_PORT}"; then
 	ROLLBACK_SMOKE_SAFE=1
 	echo "The previous release passed the required rollback smoke."
 else
@@ -662,7 +672,7 @@ curl --fail --silent --show-error --max-time 15 \
 			if (!providers.google?.callbackUrl) process.exit(1);
 		});
 	'
-assert_application_smoke "$PUBLIC_URL"
+assert_candidate_smoke "$PUBLIC_URL"
 
 pm2 save --force
 SWAPPED=0

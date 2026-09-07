@@ -143,18 +143,23 @@ model ActiveRecallDeck {
   id          String        @id @default(cuid())
   slug        String        @unique
   title       String
+  /// Denormalized course name; classification now lives on TeachingCourse.
   subject     String        @default("")
   lessonLabel String        @default("")
   description String        @default("") @db.Text
   status      PublishStatus @default(DRAFT)
   position    Int           @default(0)
+  courseId    String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   publishedAt DateTime?
 
-  cards ActiveRecallCard[]
+  course      TeachingCourse             @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  cards       ActiveRecallCard[]
+  classLinks  TeachingClassRecallDeck[]
 
   @@index([status, position, updatedAt(sort: Desc)])
+  @@index([courseId, status, position])
 }
 
 model ActiveRecallCard {
@@ -896,10 +901,47 @@ model MyClassActivityDay {
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// Teaching — attendance + class participation gradebook
+// Teaching — course → class/term → tutorial, attendance + participation
 // ════════════════════════════════════════════════════════════════════════
 
+model TeachingCourse {
+  id         String               @id @default(cuid())
+  courseCode String               @unique
+  courseName String
+  status     TeachingCourseStatus @default(ACTIVE)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  classes TeachingClass[]
+  decks   ActiveRecallDeck[]
+
+  @@index([status, updatedAt(sort: Desc)])
+  @@index([updatedAt(sort: Desc)])
+}
+
+model TeachingClassRecallDeck {
+  id           String   @id @default(cuid())
+  classId      String
+  deckId       String
+  enabled      Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  class TeachingClass    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  deck  ActiveRecallDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, deckId])
+  @@index([classId, enabled, displayOrder])
+  @@index([deckId])
+}
+
 enum TeachingClassStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TeachingCourseStatus {
   ACTIVE
   ARCHIVED
 }
@@ -951,6 +993,7 @@ enum TeachingLearningExperience {
 
 model TeachingClass {
   id                         String              @id @default(cuid())
+  courseId                   String
   courseCode                 String
   courseName                 String
   groupNo                    String
@@ -986,15 +1029,18 @@ model TeachingClass {
   createdAt                  DateTime            @default(now())
   updatedAt                  DateTime            @updatedAt
 
-  tutorials  TeachingTutorialClass[]
+  course      TeachingCourse           @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  tutorials   TeachingTutorialClass[]
   enrollments TeachingEnrollment[]
-  sessions   TeachingSession[]
+  sessions    TeachingSession[]
   publicLinks TeachingClassPublicLink[]
   groupBoards TeachingGroupBoard[]
-  notes      TeachingClassNote[]
+  notes       TeachingClassNote[]
+  recallDecks TeachingClassRecallDeck[]
 
   @@unique([courseCode, groupNo, term])
   @@unique([courseCode, classCode, term])
+  @@index([courseId, status, updatedAt])
   @@index([status, updatedAt])
   @@index([attendanceVisible, updatedAt])
 }

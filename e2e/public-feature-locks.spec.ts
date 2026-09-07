@@ -37,18 +37,15 @@ test.describe('archived public learning surfaces', () => {
 		}
 	});
 
-	test('keeps a focused My Space hub with Teaching and Active Recall', async ({ page }) => {
+	test('keeps a focused My Space hub with Teaching', async ({ page }) => {
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(1);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
 			'href',
 			'/my-space/teaching',
 		);
-		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveAttribute(
-			'href',
-			'/my-space/active-recall',
-		);
+		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-tests')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-my-class')).toHaveCount(0);
 	});

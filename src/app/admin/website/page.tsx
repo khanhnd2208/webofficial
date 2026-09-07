@@ -7,12 +7,12 @@ export const dynamic = 'force-dynamic';
 
 const PUBLIC_PAGES = [
 	{ href: routes.home, label: 'Trang mở đầu', description: 'Màn hình “Trở thành” trước mục lục.' },
-	{ href: routes.toc, label: 'Mục lục', description: 'Cổng Giới thiệu, Dự án, Dịch vụ và Active Recall.' },
+	{ href: routes.toc, label: 'Mục lục', description: 'Cổng Giới thiệu, Dự án và Dịch vụ.' },
 	{ href: routes.about, label: 'Giới thiệu', description: 'Hành trình và công việc hiện tại.' },
 	{ href: routes.projects, label: 'Dự án', description: 'Các lớp học và thử nghiệm đã làm.' },
 	{ href: routes.services, label: 'Dịch vụ', description: 'Ba hướng làm việc cùng tôi.' },
 	{ href: routes.contact, label: 'Liên hệ', description: 'Biểu mẫu gửi lời nhắn công khai.' },
-	{ href: routes.mySpace, label: 'My Space', description: 'Cổng vào Teaching và Active Recall.' },
+	{ href: routes.mySpace, label: 'My Space', description: 'Cổng vào Teaching.' },
 ] as const;
 
 export default function AdminWebsitePage() {

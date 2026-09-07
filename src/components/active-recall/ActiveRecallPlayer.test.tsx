@@ -7,12 +7,17 @@ const deck = {
 	id: 'deck-1',
 	slug: 'demo',
 	title: 'Demo',
+	courseId: 'course-1',
+	courseCode: 'HRM101',
+	courseName: 'Human Resource Management',
 	subject: 'HRM',
 	lessonLabel: 'Lesson 1',
 	description: '',
 	status: 'PUBLISHED' as const,
 	position: 0,
 	cardCount: 2,
+	classLinkCount: 0,
+	canDelete: false,
 	updatedAt: new Date().toISOString(),
 	createdAt: new Date().toISOString(),
 	publishedAt: new Date().toISOString(),
@@ -57,6 +62,14 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.getByText('Question two')).toBeVisible();
 	});
 
+	it('does not hijack Enter or Space from interactive controls', () => {
+		render(<ActiveRecallPlayer deck={deck} />);
+		const nextButton = screen.getByRole('button', { name: 'Tiếp →' });
+		fireEvent.keyDown(nextButton, { key: 'Enter' });
+		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
+		expect(screen.getByText('Question one')).toBeVisible();
+	});
+
 	it('restores the last card from this device', async () => {
 		localStorage.setItem(
 			'active-recall:deck-1',
@@ -64,5 +77,56 @@ describe('ActiveRecallPlayer', () => {
 		);
 		render(<ActiveRecallPlayer deck={deck} />);
 		await waitFor(() => expect(screen.getByText('Question two')).toBeVisible());
+	});
+
+	it('renders stored HTML formatting on both sides of a card', () => {
+		render(
+			<ActiveRecallPlayer
+				deck={{
+					...deck,
+					cards: [
+						{
+							id: 'formatted',
+							question: '<p>What is <strong>HRM</strong>?</p>',
+							answer:
+								'<p>A <em>system</em> with <u>policies</u> and <span style="color: #dc2626">risk</span>.</p>',
+							position: 0,
+							createdAt: '',
+							updatedAt: '',
+						},
+					],
+				}}
+			/>,
+		);
+
+		expect(screen.getByText('HRM').tagName).toBe('STRONG');
+		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
+		expect(screen.getByText('system').tagName).toBe('EM');
+		expect(screen.getByText('policies').tagName).toBe('U');
+		expect(screen.getByText('risk')).toHaveStyle({ color: 'rgb(220, 38, 38)' });
+	});
+
+	it('does not render injected scripts from card HTML', () => {
+		render(
+			<ActiveRecallPlayer
+				deck={{
+					...deck,
+					cards: [
+						{
+							id: 'unsafe',
+							question: '<p>Safe<script>window.__xss = 1</script></p>',
+							answer: 'Answer',
+							position: 0,
+							createdAt: '',
+							updatedAt: '',
+						},
+					],
+				}}
+			/>,
+		);
+
+		expect(screen.getByText('Safe')).toBeVisible();
+		expect(document.querySelector('.recall-text script')).toBeNull();
+		expect((window as Window & { __xss?: number }).__xss).toBeUndefined();
 	});
 });

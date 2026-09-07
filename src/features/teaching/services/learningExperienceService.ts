@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma';
 import type { LearningExperienceChoiceInput, LearningExperienceLoginInput } from '../schemas';
 import type { LearningExperienceAccessMode, LearningExperienceSession } from '../types';
 import { accessModeFromDateOfBirth, passwordFromDateOfBirth } from '../domain/studentIdentity';
+import { isHrmCourseKey } from '../domain/courseIdentity';
 
 const COOKIE_PREFIX = 'teaching-learning-experience-';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
@@ -121,8 +122,11 @@ function toSession(enrollment: {
 		givenName: string;
 		dateOfBirth: Date | null;
 	};
+	reselectionLocked?: boolean;
 }): LearningExperienceSession {
-	const locked = enrollment.learningExperienceChangeCount >= LEARNING_EXPERIENCE_CHANGE_LIMIT;
+	const locked = enrollment.reselectionLocked === true
+		? enrollment.learningExperience !== null
+		: enrollment.learningExperienceChangeCount >= LEARNING_EXPERIENCE_CHANGE_LIMIT;
 	return {
 		authenticated: true,
 		accessMode: accessModeFromDate(enrollment.student.dateOfBirth),
@@ -141,10 +145,13 @@ function toSession(enrollment: {
 async function publicClass(slug: string) {
 	const teachingClass = await prisma.teachingClass.findFirst({
 		where: { publicSlug: slug, attendanceVisible: true, status: 'ACTIVE' },
-		select: { id: true },
+		select: { id: true, courseCode: true },
 	});
 	if (!teachingClass) throw new AppError('Không tìm thấy lớp.', 404, 'NOT_FOUND');
-	return teachingClass;
+	return {
+		...teachingClass,
+		reselectionLocked: isHrmCourseKey(teachingClass.courseCode ?? ''),
+	};
 }
 
 async function setViewerCookie(
@@ -185,7 +192,7 @@ async function viewerEnrollment(slug: string) {
 	const accessMode = accessModeFromDate(enrollment.student.dateOfBirth);
 	if (token.accessMode && token.accessMode !== accessMode) return null;
 	if (!token.accessMode && accessMode !== 'DOB_PASSWORD') return null;
-	return enrollment;
+	return { ...enrollment, reselectionLocked: teachingClass.reselectionLocked };
 }
 
 function identityRequired(): AppError {
@@ -253,7 +260,10 @@ export async function loginToLearningExperience(
 		);
 	}
 	await setViewerCookie(slug, teachingClass.id, enrollment.id, accessMode);
-	return toSession(enrollment);
+	return toSession({
+		...enrollment,
+		reselectionLocked: teachingClass.reselectionLocked,
+	});
 }
 
 export async function saveLearningExperienceChoice(
@@ -265,7 +275,10 @@ export async function saveLearningExperienceChoice(
 	if (enrollment.learningExperience === input.choice) {
 		return toSession(enrollment);
 	}
-	if (enrollment.learningExperienceChangeCount >= LEARNING_EXPERIENCE_CHANGE_LIMIT) {
+	if (
+		(enrollment.reselectionLocked && enrollment.learningExperience !== null) ||
+		enrollment.learningExperienceChangeCount >= LEARNING_EXPERIENCE_CHANGE_LIMIT
+	) {
 		throw new AppError(
 			'Bạn đã dùng hết lượt đổi. Nhắn giảng viên nếu cần hỗ trợ.',
 			409,
@@ -302,7 +315,10 @@ export async function saveLearningExperienceChoice(
 		select: sessionSelect(),
 	});
 	if (!updated) throw identityRequired();
-	return toSession(updated);
+	return toSession({
+		...updated,
+		reselectionLocked: enrollment.reselectionLocked,
+	});
 }
 
 export async function logoutFromLearningExperience(slug: string) {

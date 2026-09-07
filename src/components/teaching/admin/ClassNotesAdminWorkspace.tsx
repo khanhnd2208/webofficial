@@ -22,6 +22,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import type { TeachingClassNoteRecord } from '@/features/teaching/types';
 import { teachingApi } from './api';
+import { useTeachingLeaveGuard } from './useTeachingLeaveGuard';
 import { uploadMyClassImage } from '@/components/myclass/admin/uploadImage';
 
 const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: false });
@@ -73,7 +74,7 @@ export function ClassNotesAdminWorkspace({
 	const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null);
 	const [title, setTitle] = useState(initial[0]?.draftTitle ?? '');
 	const [html, setHtml] = useState(initial[0]?.draftHtml ?? '');
-	const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+	const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('saved');
 	const [busy, setBusy] = useState(false);
 	const { confirm, dialog } = useAdminConfirm();
 	const latestDraft = useRef({
@@ -112,13 +113,13 @@ export function ClassNotesAdminWorkspace({
 					},
 				);
 				setNotes((current) => current.map((note) => (note.id === updated.id ? updated : note)));
-				setSaveState('saved');
-				if (
+				const savedLatest = (
 					selectedId === noteId &&
 					latestDraft.current.title === nextTitle &&
 					latestDraft.current.html === nextHtml
-				)
-					dirtyRef.current = false;
+				);
+				setSaveState(savedLatest ? 'saved' : 'idle');
+				if (savedLatest) dirtyRef.current = false;
 				return updated;
 			} catch {
 				setSaveState('error');
@@ -130,7 +131,10 @@ export function ClassNotesAdminWorkspace({
 
 	const trackPersist = useCallback(
 		(noteId: string, nextTitle: string, nextHtml: string) => {
-			const request = persist(noteId, nextTitle, nextHtml);
+			const previous = pendingPersist.current;
+			const request = previous
+				? previous.catch(() => undefined).then(() => persist(noteId, nextTitle, nextHtml))
+				: persist(noteId, nextTitle, nextHtml);
 			const tracked = request.finally(() => {
 				if (pendingPersist.current === tracked) pendingPersist.current = null;
 			});
@@ -156,35 +160,33 @@ export function ClassNotesAdminWorkspace({
 		return clearPendingAutosave;
 	}, [clearPendingAutosave, html, selectedId, title, trackPersist]);
 
-	useEffect(() => {
-		const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
-			if (!dirtyRef.current && !pendingPersist.current) return;
-			event.preventDefault();
-			event.returnValue = '';
-		};
-		window.addEventListener('beforeunload', warnBeforeLeaving);
-		return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
-	}, []);
+	async function flushDraft() {
+		clearPendingAutosave();
+		try {
+			if (pendingPersist.current) await pendingPersist.current;
+			while (selectedId && dirtyRef.current) {
+				await trackPersist(selectedId, latestDraft.current.title, latestDraft.current.html);
+			}
+			return true;
+		} catch { return false; }
+	}
+	const leaveDialog = useTeachingLeaveGuard({
+		dirty: () => dirtyRef.current || Boolean(pendingPersist.current),
+		save: flushDraft,
+		autoSave: true,
+	});
 
 	async function selectNote(note: TeachingClassNoteRecord) {
 		if (note.id === selectedId) return;
 		clearPendingAutosave();
-		if (selectedId && dirtyRef.current) {
-			try {
-				await (pendingPersist.current ??
-					trackPersist(selectedId, latestDraft.current.title, latestDraft.current.html));
-			} catch {
-				setSaveState('error');
-				return;
-			}
-		}
+		if (!(await flushDraft())) return;
 		skipAutosaveForId.current = note.id;
 		setSelectedId(note.id);
 		setTitle(note.draftTitle);
 		setHtml(note.draftHtml);
 		latestDraft.current = { title: note.draftTitle, html: note.draftHtml };
 		dirtyRef.current = false;
-		setSaveState('idle');
+		setSaveState('saved');
 	}
 
 	async function addNote() {
@@ -218,11 +220,14 @@ export function ClassNotesAdminWorkspace({
 			return;
 		setBusy(true);
 		try {
+			clearPendingAutosave();
+			if (pendingPersist.current) await pendingPersist.current.catch(() => undefined);
 			await teachingApi<{ id: string }>(
 				`/api/admin/teaching/classes/${classId}/notes/${selected.id}`,
 				{ method: 'DELETE' },
 			);
 			const remaining = notes.filter((note) => note.id !== selected.id);
+			dirtyRef.current = false;
 			setNotes(remaining);
 			const next = remaining[0];
 			if (next) void selectNote(next);
@@ -243,7 +248,8 @@ export function ClassNotesAdminWorkspace({
 		setBusy(true);
 		try {
 			clearPendingAutosave();
-			await trackPersist(selected.id, title, html);
+			if (pendingPersist.current) await pendingPersist.current;
+			await trackPersist(selected.id, latestDraft.current.title, latestDraft.current.html);
 			const updated = await teachingApi<TeachingClassNoteRecord>(
 				`/api/admin/teaching/classes/${classId}/notes/${selected.id}/publish`,
 				{ method: 'POST' },
@@ -355,8 +361,9 @@ export function ClassNotesAdminWorkspace({
 											? 'Đang lưu…'
 											: saveState === 'error'
 												? 'Lưu lỗi'
-												: 'Đã lưu'}
+												: saveState === 'idle' ? 'Chưa lưu' : 'Đã lưu'}
 									</span>
+									{saveState === 'error' ? <button type="button" className="mc-button min-h-11" onClick={() => void flushDraft()}>Thử lại</button> : null}
 									{selected.status === 'MODIFIED' ? (
 										<span className="mc-chip">Có thay đổi chưa xuất bản</span>
 									) : null}
@@ -402,6 +409,7 @@ export function ClassNotesAdminWorkspace({
 									setTitle(value);
 									latestDraft.current.title = value;
 									dirtyRef.current = true;
+									setSaveState('idle');
 								}}
 								maxLength={160}
 								placeholder="Tiêu đề tuần / topic / phần"
@@ -414,6 +422,7 @@ export function ClassNotesAdminWorkspace({
 										setHtml(value);
 										latestDraft.current.html = value;
 										dirtyRef.current = true;
+										setSaveState('idle');
 									}}
 									onImageUpload={uploadMyClassImage}
 									onImageUploadError={() => setSaveState('error')}
@@ -430,6 +439,7 @@ export function ClassNotesAdminWorkspace({
 			</div>
 		</section>
 		{dialog}
+		{leaveDialog}
 		</>
 	);
 }

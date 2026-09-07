@@ -8,9 +8,14 @@ vi.mock('../repositories/teachingRepository', () => ({
 	getClassIdBySlug: vi.fn(),
 }));
 
+vi.mock('@/features/active-recall', () => ({
+	listPublishedRecallDecksForClass: vi.fn(async () => []),
+}));
+
 function boardClass(overrides: Record<string, unknown> = {}) {
 	return {
 		id: 'class-1',
+		courseId: 'course-1',
 		courseCode: 'HRM101',
 		courseName: 'Human Resource Management',
 		groupNo: '01',
@@ -202,6 +207,7 @@ describe('getPublicClassBoard', () => {
 		expect(result?.students[0]).not.toHaveProperty('homeClassCode');
 		expect(result?.students[0]).not.toHaveProperty('majorName');
 		expect(result?.students[0]).not.toHaveProperty('note');
+		expect(result?.recallDecks).toEqual([]);
 	});
 
 	it('keeps sessions beyond totalWeeks out of the public board and score', async () => {

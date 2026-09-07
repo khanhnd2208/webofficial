@@ -22,3 +22,7 @@ export * from './services/attendanceBoardService';
 export * from './services/groupBoardService';
 export * from './services/learningExperienceService';
 export * from './services/classNoteService';
+export * from './services/courseService';
+export * from './services/recallPlacementService';
+export * from './domain/courseIdentity';
+export * from './domain/adminLifecycle';

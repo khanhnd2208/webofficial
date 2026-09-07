@@ -97,7 +97,7 @@ export const GATE_NAV_ITEMS: GateNavItem[] = [
 		href: routes.mySpace,
 		label: 'My Space',
 		status: 'published',
-		blurb: 'Teaching và Active Recall',
+		blurb: 'Teaching và lớp học',
 	},
 ];
 

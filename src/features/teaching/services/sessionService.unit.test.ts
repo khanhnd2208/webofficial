@@ -107,6 +107,7 @@ function gradebook(
 	return {
 		class: {
 			id: 'c1',
+			courseId: 'course-1',
 			courseCode: 'HRM',
 			courseName: 'HRM',
 			groupNo: '1',
