@@ -370,8 +370,8 @@ assert_shared_smoke() {
 
 assert_candidate_smoke() {
 	assert_shared_smoke "$1"
-	# New-release behavior: personal Active Recall now lives under Teaching.
-	expect_redirect_location "$1" '/my-space/active-recall' '/my-space'
+	# Learners still use the published My Space catalogue; keep that URL live.
+	expect_http_status "$1" '/my-space/active-recall' 200
 }
 
 assert_rollback_smoke() {
