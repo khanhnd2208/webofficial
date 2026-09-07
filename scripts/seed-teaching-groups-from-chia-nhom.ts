@@ -228,6 +228,9 @@ async function main() {
 					groups: number;
 					unassigned: number;
 				}> = [];
+				await tx.teachingGroupAssignment.deleteMany({
+					where: { enrollment: { classId: { in: plan.map((item) => item.classId) } } },
+				});
 				for (const item of plan) {
 					const sourceRows = source.filter((row) => row.groupNo === item.groupNo);
 					const enrollments = await tx.teachingEnrollment.findMany({
