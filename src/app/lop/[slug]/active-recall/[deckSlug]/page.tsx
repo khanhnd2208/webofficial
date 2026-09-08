@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import ActiveRecallPlayer from '@/components/active-recall/ActiveRecallPlayer';
@@ -32,16 +31,10 @@ export default async function PublicClassRecallDeckPage({
 	const deck = await getPublishedRecallDeckForClass(slug, deckSlug);
 	if (!deck) notFound();
 	return (
-		<div className="min-h-svh bg-canvas">
-			<div className="mx-auto w-[min(100%-2rem,74rem)] pt-6">
-				<Link
-					href={routes.teachingPublicClassTab(slug, 'recall')}
-					className="text-sm font-semibold text-accent hover:underline"
-				>
-					← Active Recall của lớp
-				</Link>
-			</div>
-			<ActiveRecallPlayer deck={deck} />
-		</div>
+		<ActiveRecallPlayer
+			deck={deck}
+			backHref={routes.teachingPublicClassTab(slug, 'recall')}
+			backLabel="Active Recall của lớp"
+		/>
 	);
 }

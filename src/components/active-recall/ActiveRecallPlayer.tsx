@@ -1,9 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import type { ActiveRecallDeckDTO } from '@/features/active-recall';
 import { recallToStoredHtml } from '@/features/active-recall/richText';
+
+import {
+	DEFAULT_READING_SIZE,
+	READING_SIZE_LABELS,
+	READING_SIZES,
+	readStoredReadingSize,
+	subscribeReadingSize,
+	writeStoredReadingSize,
+} from './readingSize';
 
 type StoredState = { currentId?: string; shuffled?: boolean };
 
@@ -16,6 +26,11 @@ function shuffle<T>(items: T[]) {
 	return next;
 }
 
+function hasTextSelection() {
+	const selection = window.getSelection();
+	return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
+}
+
 function RecallText({ children }: { children: string }) {
 	return (
 		<div
@@ -26,16 +41,33 @@ function RecallText({ children }: { children: string }) {
 	);
 }
 
-export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO }) {
+export default function ActiveRecallPlayer({
+	deck,
+	backHref,
+	backLabel,
+}: {
+	deck: ActiveRecallDeckDTO;
+	backHref?: string;
+	backLabel?: string;
+}) {
 	const [ids, setIds] = useState(() => deck.cards.map((card) => card.id));
 	const [currentId, setCurrentId] = useState(deck.cards[0]?.id ?? '');
 	const [revealed, setRevealed] = useState(false);
 	const [presentation, setPresentation] = useState(false);
+	const [nativeFullscreen, setNativeFullscreen] = useState(false);
+	const readingSize = useSyncExternalStore(
+		subscribeReadingSize,
+		readStoredReadingSize,
+		() => DEFAULT_READING_SIZE,
+	);
 	const rootRef = useRef<HTMLElement>(null);
+	const cardBodyRef = useRef<HTMLDivElement>(null);
+	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const storageKey = `active-recall:${deck.id}`;
 	const byId = useMemo(() => new Map(deck.cards.map((card) => [card.id, card])), [deck.cards]);
 	const currentIndex = Math.max(0, ids.indexOf(currentId));
 	const card = byId.get(currentId) ?? deck.cards[0];
+	const fallbackPresentation = presentation && !nativeFullscreen;
 
 	useEffect(() => {
 		try {
@@ -67,10 +99,22 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 	}, [card, deck.cards, ids, storageKey]);
 
 	useEffect(() => {
-		const onFullscreen = () => setPresentation(Boolean(document.fullscreenElement));
+		const onFullscreen = () => {
+			const ours = document.fullscreenElement === rootRef.current;
+			setNativeFullscreen(ours);
+			if (ours) setPresentation(true);
+			else if (!document.fullscreenElement) setPresentation(false);
+		};
 		document.addEventListener('fullscreenchange', onFullscreen);
 		return () => document.removeEventListener('fullscreenchange', onFullscreen);
 	}, []);
+
+	useEffect(() => {
+		const body = cardBodyRef.current;
+		if (!body) return;
+		if (typeof body.scrollTo === 'function') body.scrollTo({ top: 0, left: 0 });
+		else body.scrollTop = 0;
+	}, [currentId, revealed]);
 
 	const move = useCallback(
 		(direction: -1 | 1) => {
@@ -85,26 +129,108 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 	);
 	const flip = useCallback(() => setRevealed((value) => !value), []);
 
-	const togglePresentation = useCallback(async () => {
+	const chooseReadingSize = useCallback((size: (typeof READING_SIZES)[number]) => {
+		writeStoredReadingSize(size);
+	}, []);
+
+	const leavePresentation = useCallback(async () => {
+		try {
+			if (document.fullscreenElement === rootRef.current) {
+				await document.exitFullscreen?.();
+			}
+		} catch {
+			// Check the actual fullscreen state below; a browser can reject while completing
+			// the exit, or reject while still keeping the player fullscreen.
+		}
+		if (document.fullscreenElement === rootRef.current) return;
+		setNativeFullscreen(false);
+		setPresentation(false);
+		window.requestAnimationFrame(() => restoreFocusRef.current?.focus?.());
+	}, []);
+
+	const enterPresentation = useCallback(async () => {
 		const root = rootRef.current;
 		if (!root) return;
-		if (document.fullscreenElement) {
-			await document.exitFullscreen?.();
-			return;
-		}
+		restoreFocusRef.current =
+			document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		if (root.requestFullscreen) {
+			let timer = 0;
 			try {
-				await root.requestFullscreen();
-				return;
+				await Promise.race([
+					root.requestFullscreen(),
+					new Promise((_, reject) => {
+						timer = window.setTimeout(() => reject(new Error('fullscreen-timeout')), 500);
+					}),
+				]);
 			} catch {
 				// Fall through to the visual fallback below.
+			} finally {
+				window.clearTimeout(timer);
 			}
 		}
-		setPresentation((value) => !value);
+		setPresentation(true);
 	}, []);
+
+	const togglePresentation = useCallback(async () => {
+		if (presentation || document.fullscreenElement === rootRef.current) {
+			await leavePresentation();
+			return;
+		}
+		await enterPresentation();
+	}, [enterPresentation, leavePresentation, presentation]);
+
+	useEffect(() => {
+		if (!presentation || nativeFullscreen) return;
+		const previousOverflow = document.body.style.overflow;
+		const previousPadding = document.body.style.paddingRight;
+		const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+		document.body.style.overflow = 'hidden';
+		if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			document.body.style.paddingRight = previousPadding;
+		};
+	}, [nativeFullscreen, presentation]);
+
+	useEffect(() => {
+		if (!presentation || nativeFullscreen) return;
+		const root = rootRef.current;
+		if (!root) return;
+
+		const focusable = () =>
+			Array.from(
+				root.querySelectorAll<HTMLElement>(
+					'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+				),
+			).filter((element) => element.offsetParent !== null);
+
+		focusable()[0]?.focus();
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key !== 'Tab') return;
+			const items = focusable();
+			if (items.length === 0) return;
+			const first = items[0]!;
+			const last = items[items.length - 1]!;
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault();
+				last.focus();
+			} else if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault();
+				first.focus();
+			}
+		};
+		document.addEventListener('keydown', onKeyDown, true);
+		return () => document.removeEventListener('keydown', onKeyDown, true);
+	}, [nativeFullscreen, presentation]);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
+			if (event.key === 'Escape' && (presentation || document.fullscreenElement === rootRef.current)) {
+				event.preventDefault();
+				void leavePresentation();
+				return;
+			}
 			const target = event.target;
 			if (
 				target instanceof Element &&
@@ -129,31 +255,39 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 		};
 		window.addEventListener('keydown', onKey);
 		return () => window.removeEventListener('keydown', onKey);
-	}, [move, togglePresentation]);
+	}, [leavePresentation, move, presentation, togglePresentation]);
 
 	if (!card) return null;
 	const first = currentIndex === 0;
 	const last = currentIndex === ids.length - 1;
+	const flipLabel = revealed ? 'Xem câu hỏi' : 'Hiện đáp án';
 
 	return (
 		<main
 			ref={rootRef}
 			className={`recall-player min-h-svh bg-canvas text-ink ${presentation ? 'recall-player-presentation' : ''}`}
+			data-reading-size={readingSize}
+			data-has-back={backHref && backLabel ? 'true' : 'false'}
+			data-mode={presentation ? 'presentation' : 'study'}
+			role={fallbackPresentation ? 'dialog' : undefined}
+			aria-label={fallbackPresentation ? 'Chế độ trình chiếu Active Recall' : undefined}
+			aria-modal={fallbackPresentation ? true : undefined}
 		>
-			<div className="recall-player-inner mx-auto flex min-h-svh w-full max-w-[76rem] flex-col px-5 pt-24 pb-6 sm:px-8 sm:pt-28">
-				<header className="recall-player-head flex flex-wrap items-end justify-between gap-4 border-t border-hairline pt-4">
+			<div className="recall-player-inner">
+				{backHref && backLabel ? (
+					<Link href={backHref} className="recall-player-back recall-player-chrome">
+						← {backLabel}
+					</Link>
+				) : null}
+
+				<header className="recall-player-head recall-player-chrome">
 					<div>
 						<p className="text-sm text-ink-secondary">
 							{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ')}
 						</p>
-						<h1 className="mt-1 font-display text-2xl font-medium tracking-tight sm:text-3xl">
-							{deck.title}
-						</h1>
+						<h1 className="recall-player-title">{deck.title}</h1>
 					</div>
-					<div
-						className="flex items-center gap-3 text-sm text-ink-secondary"
-						aria-label="Tiến độ thẻ"
-					>
+					<div className="recall-player-tools" aria-label="Tiến độ thẻ">
 						<span className="tabular-nums">
 							{currentIndex + 1}/{ids.length}
 						</span>
@@ -169,30 +303,47 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 						>
 							Xáo câu
 						</button>
+						<div className="recall-size-group" role="radiogroup" aria-label="Cỡ chữ">
+							{READING_SIZES.map((size) => (
+								<button
+									key={size}
+									type="button"
+									role="radio"
+									aria-checked={readingSize === size}
+									className="recall-size-button"
+									onClick={() => chooseReadingSize(size)}
+								>
+									{READING_SIZE_LABELS[size]}
+								</button>
+							))}
+						</div>
 						<button
 							type="button"
 							className="recall-quiet-button"
 							onClick={() => void togglePresentation()}
 						>
-							{presentation ? 'Thoát trình chiếu' : 'Trình chiếu'}
+							Trình chiếu
 						</button>
 					</div>
 				</header>
 
-				<div className="recall-progress mt-5" aria-hidden="true">
+				<div className="recall-progress" aria-hidden="true">
 					<span style={{ width: `${((currentIndex + 1) / ids.length) * 100}%` }} />
 				</div>
 
 				<section
-					className="recall-card-shell my-6 flex min-h-0 flex-1 items-center justify-center"
+					className="recall-card-shell"
 					aria-live="polite"
 					aria-atomic="true"
 				>
 					<article
 						role="button"
 						tabIndex={0}
-						aria-label={revealed ? 'Xem lại câu hỏi' : 'Hiện đáp án'}
-						onClick={flip}
+						aria-label={revealed ? 'Thẻ đáp án. Chạm để xem câu hỏi' : 'Thẻ câu hỏi. Chạm để hiện đáp án'}
+						onClick={() => {
+							if (hasTextSelection()) return;
+							flip();
+						}}
 						onKeyDown={(event) => {
 							if (event.key === ' ' || event.key === 'Enter') {
 								event.preventDefault();
@@ -203,19 +354,32 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 						className={`recall-card ${revealed ? 'is-revealed' : ''}`}
 						data-side={revealed ? 'answer' : 'question'}
 					>
-						<p className="recall-card-order" aria-hidden="true">
-							{currentIndex + 1} / {ids.length}
-						</p>
-						<RecallText>{revealed ? card.answer : card.question}</RecallText>
+						<p className="recall-card-kicker">{revealed ? 'Đáp án' : 'Câu hỏi'}</p>
+						<div className="recall-card-body" ref={cardBodyRef}>
+							<RecallText>{revealed ? card.answer : card.question}</RecallText>
+						</div>
 					</article>
 				</section>
-				<p className="mb-3 text-center text-xs text-ink-secondary sm:hidden">Chạm vào thẻ để lật câu hỏi và đáp án.</p>
-				{last ? <button type="button" className="recall-quiet-button mb-3 min-h-11 self-center" onClick={() => { setCurrentId(ids[0]!); setRevealed(false); }}>Học lại từ đầu</button> : null}
+				<p className="recall-player-chrome mb-3 text-center text-xs text-ink-secondary sm:hidden">
+					Chạm vào thẻ để lật câu hỏi và đáp án.
+				</p>
+				{last ? (
+					<button
+						type="button"
+						className="recall-quiet-button recall-player-chrome mb-3 min-h-11 self-center"
+						onClick={() => {
+							setCurrentId(ids[0]!);
+							setRevealed(false);
+						}}
+					>
+						Học lại từ đầu
+					</button>
+				) : null}
 
-				<nav
-					className="recall-controls flex items-center justify-between gap-4"
-					aria-label="Điều hướng thẻ"
-				>
+				<p className="recall-player-hint recall-player-chrome">
+					Space để lật · ← → để chuyển · F để trình chiếu
+				</p>
+				<nav className="recall-controls" aria-label={presentation ? 'Điều khiển trình chiếu' : 'Điều hướng thẻ'}>
 					<button
 						type="button"
 						className="recall-nav-button"
@@ -224,17 +388,26 @@ export default function ActiveRecallPlayer({ deck }: { deck: ActiveRecallDeckDTO
 					>
 						← Trước
 					</button>
-					<p className="hidden text-center text-xs text-ink-secondary sm:block">
-						Space để lật · ← → để chuyển · F để trình chiếu
-					</p>
+					<button type="button" className="recall-reveal-button" onClick={flip}>
+						{flipLabel}
+					</button>
 					<button
 						type="button"
-						className="recall-nav-button recall-nav-button-primary"
+						className="recall-nav-button"
 						onClick={() => move(1)}
 						disabled={last}
 					>
 						Tiếp →
 					</button>
+					{presentation ? (
+						<button
+							type="button"
+							className="recall-nav-button recall-nav-button-exit"
+							onClick={() => void leavePresentation()}
+						>
+							Thoát
+						</button>
+					) : null}
 				</nav>
 			</div>
 		</main>

@@ -18,6 +18,15 @@ test.describe('Active Recall', () => {
 		const card = page.locator('article.recall-card');
 		const question = (await card.locator('.recall-text').textContent())?.trim();
 		expect(question).toBeTruthy();
+		const questionSize = await card.locator('.recall-text').evaluate((node) =>
+			parseFloat(getComputedStyle(node).fontSize),
+		);
+		expect(questionSize).toBeGreaterThanOrEqual(16);
+		expect(questionSize).toBeLessThanOrEqual(32);
+		await page.screenshot({
+			path: 'test-results/active-recall-myspace-study.png',
+			fullPage: true,
+		});
 		await page.getByRole('button', { name: 'Hiện đáp án' }).click();
 		await expect(card).toHaveAttribute('data-side', 'answer');
 		const answer = (await card.locator('.recall-text').textContent())?.trim();
@@ -45,6 +54,15 @@ test.describe('Active Recall', () => {
 		const card = page.locator('article.recall-card');
 		const question = (await card.locator('.recall-text').textContent())?.trim();
 		expect(question).toBeTruthy();
+		const questionSize = await card.locator('.recall-text').evaluate((node) =>
+			parseFloat(getComputedStyle(node).fontSize),
+		);
+		expect(questionSize).toBeGreaterThanOrEqual(16);
+		expect(questionSize).toBeLessThanOrEqual(32);
+		await page.screenshot({
+			path: 'test-results/active-recall-class-study.png',
+			fullPage: true,
+		});
 		await page.getByRole('button', { name: 'Hiện đáp án' }).click();
 		await expect(card).toHaveAttribute('data-side', 'answer');
 		const answer = (await card.locator('.recall-text').textContent())?.trim();

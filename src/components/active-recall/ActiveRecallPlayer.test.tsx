@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ActiveRecallPlayer from './ActiveRecallPlayer';
+import { DEFAULT_READING_SIZE, READING_SIZE_STORAGE_KEY } from './readingSize';
 
 const deck = {
 	id: 'deck-1',
@@ -16,8 +17,8 @@ const deck = {
 	status: 'PUBLISHED' as const,
 	position: 0,
 	cardCount: 2,
-	classLinkCount: 0,
 	canDelete: false,
+	classLinkCount: 0,
 	updatedAt: new Date().toISOString(),
 	createdAt: new Date().toISOString(),
 	publishedAt: new Date().toISOString(),
@@ -42,16 +43,41 @@ const deck = {
 };
 
 describe('ActiveRecallPlayer', () => {
+	const originalRequestFullscreen = HTMLElement.prototype.requestFullscreen;
+	const originalExitFullscreen = Document.prototype.exitFullscreen;
+	const fullscreenDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'fullscreenElement');
+
 	beforeEach(() => localStorage.clear());
+
+	afterEach(() => {
+		HTMLElement.prototype.requestFullscreen = originalRequestFullscreen;
+		if (originalExitFullscreen) {
+			Document.prototype.exitFullscreen = originalExitFullscreen;
+		} else {
+			Reflect.deleteProperty(Document.prototype, 'exitFullscreen');
+		}
+		if (fullscreenDescriptor) {
+			Object.defineProperty(document, 'fullscreenElement', fullscreenDescriptor);
+		} else {
+			Reflect.deleteProperty(document, 'fullscreenElement');
+		}
+		document.body.style.overflow = '';
+		document.body.style.paddingRight = '';
+		vi.restoreAllMocks();
+	});
+
 	it('reveals an answer only when requested and resets on navigation', () => {
 		render(<ActiveRecallPlayer deck={deck} />);
 		expect(screen.getByText('Question one')).toBeVisible();
+		expect(screen.getByText('Câu hỏi')).toBeVisible();
 		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
 		expect(screen.getByText('Answer one')).toBeVisible();
+		expect(screen.getByText('Đáp án')).toBeVisible();
 		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
 		expect(screen.getByText('Question two')).toBeVisible();
 		expect(screen.queryByText('Answer two')).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
 	});
 
 	it('supports keyboard flip and navigation', () => {
@@ -128,5 +154,140 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.getByText('Safe')).toBeVisible();
 		expect(document.querySelector('.recall-text script')).toBeNull();
 		expect((window as Window & { __xss?: number }).__xss).toBeUndefined();
+	});
+
+	it('defaults to medium reading size and remembers a new choice across decks', async () => {
+		const { unmount } = render(<ActiveRecallPlayer deck={deck} />);
+		expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', DEFAULT_READING_SIZE);
+		expect(screen.getByRole('radio', { name: 'Vừa' })).toHaveAttribute('aria-checked', 'true');
+
+		fireEvent.click(screen.getByRole('radio', { name: 'Lớn' }));
+		expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', 'large');
+		expect(localStorage.getItem(READING_SIZE_STORAGE_KEY)).toBe('large');
+		unmount();
+
+		render(<ActiveRecallPlayer deck={{ ...deck, id: 'deck-2', title: 'Other' }} />);
+		await waitFor(() =>
+			expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', 'large'),
+		);
+		expect(screen.getByRole('radio', { name: 'Lớn' })).toHaveAttribute('aria-checked', 'true');
+	});
+
+	it('falls back to medium reading size when stored data is invalid', async () => {
+		localStorage.setItem(READING_SIZE_STORAGE_KEY, 'huge');
+		render(<ActiveRecallPlayer deck={deck} />);
+		await waitFor(() =>
+			expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', 'medium'),
+		);
+	});
+
+	it('renders a class back link when the page provides one', () => {
+		render(
+			<ActiveRecallPlayer
+				deck={deck}
+				backHref="/lop/hrm-fall-2026?tab=recall"
+				backLabel="Active Recall của lớp"
+			/>,
+		);
+		expect(screen.getByRole('link', { name: /Active Recall của lớp/ })).toHaveAttribute(
+			'href',
+			'/lop/hrm-fall-2026?tab=recall',
+		);
+		expect(screen.getByRole('main')).toHaveAttribute('data-has-back', 'true');
+	});
+
+	it('flips from the card itself unless the learner is selecting text', () => {
+		render(<ActiveRecallPlayer deck={deck} />);
+		const card = screen.getByRole('button', { name: /Thẻ câu hỏi/ });
+		fireEvent.click(card);
+		expect(screen.getByText('Answer one')).toBeVisible();
+		fireEvent.click(screen.getByRole('button', { name: /Thẻ đáp án/ }));
+		expect(screen.getByText('Question one')).toBeVisible();
+
+		const original = window.getSelection.bind(window);
+		window.getSelection = () =>
+			({
+				isCollapsed: false,
+				toString: () => 'Question one',
+			}) as Selection;
+		fireEvent.click(screen.getByRole('button', { name: /Thẻ câu hỏi/ }));
+		expect(screen.getByText('Question one')).toBeVisible();
+		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
+		window.getSelection = original;
+	});
+
+	it('enters native fullscreen and keeps presentation controls available', async () => {
+		let fullscreen = false;
+		Object.defineProperty(document, 'fullscreenElement', {
+			configurable: true,
+			get: () => (fullscreen ? document.querySelector('.recall-player') : null),
+		});
+		HTMLElement.prototype.requestFullscreen = vi.fn(async () => {
+			fullscreen = true;
+			document.dispatchEvent(new Event('fullscreenchange'));
+		});
+
+		render(<ActiveRecallPlayer deck={deck} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Trình chiếu' }));
+		await waitFor(() =>
+			expect(screen.getByRole('main')).toHaveClass('recall-player-presentation'),
+		);
+		expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
+		expect(screen.getByRole('button', { name: '← Trước' })).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Tiếp →' })).toBeVisible();
+		expect(screen.getByRole('main')).toHaveAttribute('data-mode', 'presentation');
+	});
+
+	it('uses a fallback presentation when fullscreen is denied and exits with Escape', async () => {
+		HTMLElement.prototype.requestFullscreen = vi.fn(async () => {
+			throw new Error('denied');
+		});
+
+		render(<ActiveRecallPlayer deck={deck} />);
+		const presentButton = screen.getByRole('button', { name: 'Trình chiếu' });
+		presentButton.focus();
+		fireEvent.click(presentButton);
+		await waitFor(() =>
+			expect(screen.getByRole('dialog', { name: 'Chế độ trình chiếu Active Recall' })).toHaveClass(
+				'recall-player-presentation',
+			),
+		);
+		expect(document.body.style.overflow).toBe('hidden');
+		expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible();
+		expect(screen.getByRole('dialog', { name: 'Chế độ trình chiếu Active Recall' })).toHaveAttribute(
+			'aria-modal',
+			'true',
+		);
+
+		fireEvent.keyDown(window, { key: 'Escape' });
+		await waitFor(() =>
+			expect(screen.getByRole('main')).not.toHaveClass('recall-player-presentation'),
+		);
+		expect(document.body.style.overflow).toBe('');
+		expect(screen.queryByRole('button', { name: 'Thoát' })).not.toBeInTheDocument();
+		await waitFor(() => expect(presentButton).toHaveFocus());
+	});
+
+	it('keeps presentation controls when native fullscreen exit is rejected', async () => {
+		let fullscreen = false;
+		Object.defineProperty(document, 'fullscreenElement', {
+			configurable: true,
+			get: () => (fullscreen ? document.querySelector('.recall-player') : null),
+		});
+		HTMLElement.prototype.requestFullscreen = vi.fn(async () => {
+			fullscreen = true;
+			document.dispatchEvent(new Event('fullscreenchange'));
+		});
+		Document.prototype.exitFullscreen = vi.fn(async () => {
+			throw new Error('exit denied');
+		});
+
+		render(<ActiveRecallPlayer deck={deck} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Trình chiếu' }));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible());
+		fireEvent.click(screen.getByRole('button', { name: 'Thoát' }));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible());
+		expect(screen.getByRole('main')).toHaveClass('recall-player-presentation');
 	});
 });

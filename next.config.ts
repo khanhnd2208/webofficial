@@ -5,6 +5,10 @@ import { PUBLIC_REDIRECTS } from './src/config/routes';
 
 const nextConfig: NextConfig = {
 	poweredByHeader: false,
+	// The deploy script provides a unique value per release. Next.js uses this
+	// identifier to protect clients with stale Server Action references during
+	// rolling or symlink-based deployments.
+	deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
 	async headers() {
 		return [
 			{

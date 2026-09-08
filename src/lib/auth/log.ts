@@ -41,10 +41,10 @@ function safeErrorName(value: unknown): string | undefined {
 	if (!value || typeof value !== 'object') return undefined;
 	const named = value as { name?: unknown; type?: unknown };
 	const raw =
-		typeof named.name === 'string' && named.name.trim()
-			? named.name
-			: typeof named.type === 'string'
-				? named.type
+		typeof named.type === 'string' && named.type.trim()
+			? named.type
+			: typeof named.name === 'string' && named.name.trim()
+				? named.name
 				: undefined;
 	if (!raw) return undefined;
 	const cleaned = redactAuthText(raw);
