@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ActiveRecallPlayer from './ActiveRecallPlayer';
@@ -103,6 +103,66 @@ describe('ActiveRecallPlayer', () => {
 		);
 		render(<ActiveRecallPlayer deck={deck} />);
 		await waitFor(() => expect(screen.getByText('Question two')).toBeVisible());
+	});
+
+	it('shuffles then restores the original order, first question, and stored state', async () => {
+		vi.spyOn(Math, 'random').mockReturnValue(0);
+		const { unmount } = render(<ActiveRecallPlayer deck={deck} />);
+		await waitFor(() =>
+			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
+				currentId: 'a',
+				shuffled: false,
+			}),
+		);
+
+		expect(screen.getByText('Question one')).toBeVisible();
+		expect(screen.getByText('1/2')).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute('aria-pressed', 'false');
+
+		fireEvent.click(screen.getByRole('button', { name: 'Xáo câu' }));
+		expect(screen.getByText('Question two')).toBeVisible();
+		expect(screen.getByText('Câu hỏi')).toBeVisible();
+		expect(screen.getByText('1/2')).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Về thứ tự ban đầu' })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+		);
+		await waitFor(() =>
+			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
+				currentId: 'b',
+				shuffled: true,
+			}),
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
+		expect(screen.getByText('Answer two')).toBeVisible();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Về thứ tự ban đầu' }));
+		expect(screen.getByText('Question one')).toBeVisible();
+		expect(screen.getByText('Câu hỏi')).toBeVisible();
+		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
+		expect(screen.getByText('1/2')).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute('aria-pressed', 'false');
+		await waitFor(() =>
+			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
+				currentId: 'a',
+				shuffled: false,
+			}),
+		);
+
+		unmount();
+		render(<ActiveRecallPlayer deck={deck} />);
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		});
+		expect(screen.getByText('Question one')).toBeVisible();
+		expect(screen.getByText('Câu hỏi')).toBeVisible();
+		expect(screen.getByText('1/2')).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Xáo câu' })).toBeVisible();
+		expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
+			currentId: 'a',
+			shuffled: false,
+		});
 	});
 
 	it('renders stored HTML formatting on both sides of a card', () => {

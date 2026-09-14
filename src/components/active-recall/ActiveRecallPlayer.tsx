@@ -50,9 +50,12 @@ export default function ActiveRecallPlayer({
 	backHref?: string;
 	backLabel?: string;
 }) {
-	const [ids, setIds] = useState(() => deck.cards.map((card) => card.id));
+	const originalIds = useMemo(() => deck.cards.map((card) => card.id), [deck.cards]);
+	const [ids, setIds] = useState(originalIds);
 	const [currentId, setCurrentId] = useState(deck.cards[0]?.id ?? '');
 	const [revealed, setRevealed] = useState(false);
+	const [shuffled, setShuffled] = useState(false);
+	const [hydrated, setHydrated] = useState(false);
 	const [presentation, setPresentation] = useState(false);
 	const [nativeFullscreen, setNativeFullscreen] = useState(false);
 	const readingSize = useSyncExternalStore(
@@ -70,33 +73,41 @@ export default function ActiveRecallPlayer({
 	const fallbackPresentation = presentation && !nativeFullscreen;
 
 	useEffect(() => {
+		let cancelled = false;
 		try {
 			const stored = JSON.parse(localStorage.getItem(storageKey) ?? '{}') as StoredState;
-			if (!stored.shuffled && (!stored.currentId || !byId.has(stored.currentId))) return;
 			const timer = window.setTimeout(() => {
-				if (stored.shuffled) setIds(shuffle(deck.cards.map((item) => item.id)));
+				if (cancelled) return;
+				if (stored.shuffled) {
+					setIds(shuffle(originalIds));
+					setShuffled(true);
+				}
 				if (stored.currentId && byId.has(stored.currentId)) setCurrentId(stored.currentId);
+				setHydrated(true);
 			}, 0);
-			return () => window.clearTimeout(timer);
+			return () => {
+				cancelled = true;
+				window.clearTimeout(timer);
+			};
 		} catch {
-			// A private browser mode should not block studying.
+			setHydrated(true);
 		}
-	}, [byId, deck.cards, storageKey]);
+	}, [byId, originalIds, storageKey]);
 
 	useEffect(() => {
-		if (!card) return;
+		if (!hydrated || !card) return;
 		try {
 			localStorage.setItem(
 				storageKey,
 				JSON.stringify({
 					currentId: card.id,
-					shuffled: ids.join(',') !== deck.cards.map((item) => item.id).join(','),
+					shuffled,
 				} satisfies StoredState),
 			);
 		} catch {
 			// Device-local resume is optional.
 		}
-	}, [card, deck.cards, ids, storageKey]);
+	}, [card, hydrated, shuffled, storageKey]);
 
 	useEffect(() => {
 		const onFullscreen = () => {
@@ -128,6 +139,21 @@ export default function ActiveRecallPlayer({
 		[ids],
 	);
 	const flip = useCallback(() => setRevealed((value) => !value), []);
+
+	const applyOrder = useCallback((nextIds: string[], nextShuffled: boolean) => {
+		setIds(nextIds);
+		setCurrentId(nextIds[0] ?? '');
+		setRevealed(false);
+		setShuffled(nextShuffled);
+	}, []);
+
+	const toggleShuffle = useCallback(() => {
+		if (shuffled) {
+			applyOrder(originalIds, false);
+			return;
+		}
+		applyOrder(shuffle(originalIds), true);
+	}, [applyOrder, originalIds, shuffled]);
 
 	const chooseReadingSize = useCallback((size: (typeof READING_SIZES)[number]) => {
 		writeStoredReadingSize(size);
@@ -294,14 +320,10 @@ export default function ActiveRecallPlayer({
 						<button
 							type="button"
 							className="recall-quiet-button"
-							onClick={() => {
-								const shuffledIds = shuffle(deck.cards.map((item) => item.id));
-								setIds(shuffledIds);
-								setCurrentId(shuffledIds[0] ?? '');
-								setRevealed(false);
-							}}
+							aria-pressed={shuffled}
+							onClick={toggleShuffle}
 						>
-							Xáo câu
+							{shuffled ? 'Về thứ tự ban đầu' : 'Xáo câu'}
 						</button>
 						<div className="recall-size-group" role="radiogroup" aria-label="Cỡ chữ">
 							{READING_SIZES.map((size) => (
