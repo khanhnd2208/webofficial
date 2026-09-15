@@ -10,6 +10,8 @@ describe('roleForNewUser', () => {
 	it('grants admin only to the allowlist and fail-closes everyone else', () => {
 		expect(roleForNewUser('khanhnd2208@gmail.com')).toBe('admin');
 		expect(roleForNewUser('KHANHND2208@GMAIL.COM')).toBe('admin');
+		expect(roleForNewUser('khanhndfmt@hanu.edu.vn')).toBe('admin');
+		expect(roleForNewUser('KHANHNDFMT@HANU.EDU.VN')).toBe('admin');
 		expect(roleForNewUser('student@example.com')).toBe('student');
 		expect(roleForNewUser(null)).toBe('student');
 	});
@@ -24,6 +26,7 @@ describe('roleForNewUser', () => {
 describe('reconciledRole', () => {
 	it('upgrades an allowlisted existing account', () => {
 		expect(reconciledRole('khanhnd2208@gmail.com', 'student')).toBe('admin');
+		expect(reconciledRole('khanhndfmt@hanu.edu.vn', 'student')).toBe('admin');
 	});
 
 	it('keeps a manually promoted admin who is not on the allowlist', () => {

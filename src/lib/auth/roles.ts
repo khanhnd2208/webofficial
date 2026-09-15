@@ -2,7 +2,9 @@ export type AppRole = 'admin' | 'student';
 
 function adminAllowlist(): string[] {
 	const extras = process.env.ADMIN_EMAIL;
-	return ['khanhnd2208@gmail.com', extras].filter((value): value is string => Boolean(value));
+	return ['khanhnd2208@gmail.com', 'khanhndfmt@hanu.edu.vn', extras].filter(
+		(value): value is string => Boolean(value),
+	);
 }
 
 export function normalizeEmail(email: string | null | undefined): string {
