@@ -138,4 +138,58 @@ describe('Active Recall import parser', () => {
 		expect(preview.rows[0]?.question).not.toContain('<em>');
 		expect(recallVisibleText(preview.rows[0]?.answer)).toBe('Q: not a new card');
 	});
+
+	it('parses optional QVI:/AVI: Vietnamese translation lines in paste content', () => {
+		const preview = previewRecallImport(
+			'Q: What is HRM?\nA: A system.\nQVI: HRM là gì?\nAVI: Một hệ thống.\n---\nQ: No translation here\nA: Plain answer',
+		);
+		expect(preview.summary).toMatchObject({ valid: 2, invalid: 0 });
+		expect(recallVisibleText(preview.rows[0]?.questionVi)).toBe('HRM là gì?');
+		expect(recallVisibleText(preview.rows[0]?.answerVi)).toBe('Một hệ thống.');
+		expect(recallVisibleText(preview.rows[1]?.questionVi)).toBe('');
+		expect(recallVisibleText(preview.rows[1]?.answerVi)).toBe('');
+	});
+
+	it('round-trips Vietnamese translations through CSV export/import', () => {
+		const csv = toRecallCsv([
+			{
+				id: 'card-1',
+				question: 'What is HRM?',
+				answer: 'A system.',
+				questionVi: 'HRM là gì?',
+				answerVi: 'Một hệ thống.',
+				position: 0,
+			},
+		]);
+		expect(csv).toContain('questionVi');
+		expect(csv).toContain('answerVi');
+		const preview = previewRecallImport(csv);
+		expect(preview.format).toBe('csv');
+		expect(preview.summary).toMatchObject({ valid: 1, invalid: 0 });
+		expect(recallVisibleText(preview.rows[0]?.questionVi)).toBe('HRM là gì?');
+		expect(recallVisibleText(preview.rows[0]?.answerVi)).toBe('Một hệ thống.');
+	});
+
+	it('round-trips Vietnamese translations through Q/A paste export/import', () => {
+		const paste = toRecallPaste([
+			{
+				question: 'What is HRM?',
+				answer: 'A system.',
+				questionVi: 'HRM là gì?',
+				answerVi: 'Một hệ thống.',
+			},
+		]);
+		expect(paste).toContain('QVI: HRM là gì?');
+		expect(paste).toContain('AVI: Một hệ thống.');
+		const preview = previewRecallImport(paste);
+		expect(preview.summary).toMatchObject({ valid: 1, invalid: 0 });
+		expect(recallVisibleText(preview.rows[0]?.questionVi)).toBe('HRM là gì?');
+		expect(recallVisibleText(preview.rows[0]?.answerVi)).toBe('Một hệ thống.');
+	});
+
+	it('omits QVI:/AVI: lines from paste export when a card has no translation', () => {
+		const paste = toRecallPaste([{ question: 'What is HRM?', answer: 'A system.' }]);
+		expect(paste).not.toContain('QVI:');
+		expect(paste).not.toContain('AVI:');
+	});
 });

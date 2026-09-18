@@ -67,6 +67,8 @@ function deck(overrides: Partial<ActiveRecallDeckDTO> = {}): ActiveRecallDeckDTO
 				id: 'card-1',
 				question: 'What is HRM?',
 				answer: 'Human resource management',
+				questionVi: '',
+				answerVi: '',
 				position: 0,
 				createdAt: '2026-09-01T00:00:00.000Z',
 				updatedAt: '2026-09-01T00:00:00.000Z',
@@ -134,7 +136,14 @@ describe('ActiveRecallEditor', () => {
 				lessonLabel: '',
 				description: '',
 				status: 'DRAFT',
-				cards: [{ question: 'What is HRM?', answer: 'Human resource management' }],
+				cards: [
+					{
+						question: 'What is HRM?',
+						answer: 'Human resource management',
+						questionVi: '',
+						answerVi: '',
+					},
+				],
 			}),
 		});
 	});

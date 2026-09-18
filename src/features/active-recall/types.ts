@@ -4,6 +4,8 @@ export type ActiveRecallCardDTO = {
 	id: string;
 	question: string;
 	answer: string;
+	questionVi: string;
+	answerVi: string;
 	position: number;
 	createdAt: string;
 	updatedAt: string;
@@ -38,6 +40,8 @@ export type RecallImportRow = {
 	id?: string;
 	question: string;
 	answer: string;
+	questionVi?: string;
+	answerVi?: string;
 	order?: number;
 	errors: string[];
 	action?: 'create' | 'update' | 'skip';

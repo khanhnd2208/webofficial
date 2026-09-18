@@ -10,6 +10,8 @@ export const recallCardDraftSchema = z.object({
 	id: z.string().trim().min(1).optional(),
 	question: z.string(),
 	answer: z.string(),
+	questionVi: z.string().optional(),
+	answerVi: z.string().optional(),
 });
 
 const requiredText = (max: number, label: string) =>
@@ -24,12 +26,23 @@ const requiredRecallHtml = (max: number, label: string) =>
 			.refine((value) => recallVisibleLength(value) <= max, `${label} quá dài`),
 	);
 
+const optionalRecallHtml = (max: number, label: string) =>
+	z.preprocess(
+		(value) => (typeof value === 'string' ? recallImportToStoredHtml(value) : value),
+		z
+			.string()
+			.default('')
+			.refine((value) => recallVisibleLength(value) <= max, `${label} quá dài`),
+	);
+
 export const activeRecallStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']);
 
 export const activeRecallCardInputSchema = z.object({
 	id: z.string().trim().min(1).optional(),
 	question: requiredRecallHtml(ACTIVE_RECALL_MAX_QUESTION_LENGTH, 'Câu hỏi'),
 	answer: requiredRecallHtml(ACTIVE_RECALL_MAX_ANSWER_LENGTH, 'Đáp án'),
+	questionVi: optionalRecallHtml(ACTIVE_RECALL_MAX_QUESTION_LENGTH, 'Câu hỏi (Tiếng Việt)'),
+	answerVi: optionalRecallHtml(ACTIVE_RECALL_MAX_ANSWER_LENGTH, 'Đáp án (Tiếng Việt)'),
 });
 
 export const createActiveRecallDeckSchema = z.object({

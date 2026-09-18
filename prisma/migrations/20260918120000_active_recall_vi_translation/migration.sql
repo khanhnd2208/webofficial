@@ -1,0 +1,2 @@
+ALTER TABLE "ActiveRecallCard" ADD COLUMN "questionVi" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "ActiveRecallCard" ADD COLUMN "answerVi" TEXT NOT NULL DEFAULT '';

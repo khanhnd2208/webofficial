@@ -163,13 +163,15 @@ model ActiveRecallDeck {
 }
 
 model ActiveRecallCard {
-  id        String   @id @default(cuid())
-  deckId    String
-  question  String   @db.Text
-  answer    String   @db.Text
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  deckId     String
+  question   String   @db.Text
+  answer     String   @db.Text
+  questionVi String   @default("") @db.Text
+  answerVi   String   @default("") @db.Text
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   deck ActiveRecallDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
 

@@ -15,11 +15,24 @@ import { toRecallCsv, toRecallPaste } from '@/features/active-recall/parser';
 import { recallHasContent } from '@/features/active-recall/richText';
 import { routes } from '@/config/routes';
 
-import RecallRichTextEditor from './RecallRichTextEditor';
+import RecallCardLanguageTabs from './RecallCardLanguageTabs';
 
-type EditorCard = { id?: string; localId: string; question: string; answer: string };
+type EditorCard = {
+	id?: string;
+	localId: string;
+	question: string;
+	answer: string;
+	questionVi: string;
+	answerVi: string;
+};
 
-const emptyCard = (): EditorCard => ({ localId: crypto.randomUUID(), question: '', answer: '' });
+const emptyCard = (): EditorCard => ({
+	localId: crypto.randomUUID(),
+	question: '',
+	answer: '',
+	questionVi: '',
+	answerVi: '',
+});
 
 const ACTIVE_RECALL_AI_FORMATTING_GUIDE = `Khi soạn nội dung Active Recall, hãy trả về đúng định dạng để tôi có thể copy-paste trực tiếp.
 
@@ -27,6 +40,11 @@ Mỗi thẻ dùng một trong các cặp nhãn:
 - Q: / A:
 - Question: / Answer:
 - Câu hỏi: / Đáp án:
+
+Nếu muốn thêm bản dịch tiếng Việt cho thẻ (khi câu hỏi/đáp án gốc không phải tiếng Việt), thêm 2 dòng tùy chọn ngay sau Q:/A: của thẻ đó:
+- QVI: (bản dịch của câu hỏi)
+- AVI: (bản dịch của đáp án)
+Có thể chỉ dùng QVI: hoặc AVI: nếu chỉ cần dịch một phía. Bỏ qua cả hai nếu thẻ không cần bản dịch.
 
 Có thể ngăn cách các thẻ bằng dòng ---.
 
@@ -77,12 +95,18 @@ Câu hỏi: Quy trình tuyển dụng gồm những bước nào?
 
 Không dùng bảng Markdown, ảnh, link, heading (#), code block, HTML/CSS ngoài các thẻ <u> và <span style="color: ...">.
 
-Nếu nội dung câu hỏi hoặc đáp án có một dòng bắt đầu bằng Q:, A:, Question:, Answer:, Câu hỏi:, Đáp án: hoặc ---, hãy thêm dấu \\ ở đầu dòng để hệ thống không hiểu nhầm đó là thẻ mới.
+Nếu nội dung câu hỏi hoặc đáp án có một dòng bắt đầu bằng Q:, A:, QVI:, AVI:, Question:, Answer:, Câu hỏi:, Đáp án: hoặc ---, hãy thêm dấu \\ ở đầu dòng để hệ thống không hiểu nhầm đó là thẻ mới.
 
 Ví dụ đầu ra:
 
 Câu hỏi: **HRM** là gì?
 Đáp án: HRM là *quản trị nguồn nhân lực*.
+
+---
+Q: What is job autonomy?
+A: The degree of <u>freedom</u> an employee has in deciding how to do their work.
+QVI: Job autonomy là gì?
+AVI: Mức độ <u>tự do</u> mà nhân viên có khi quyết định cách thực hiện công việc.
 
 ---
 Câu hỏi: Vì sao job autonomy quan trọng?
@@ -124,6 +148,8 @@ function deckCards(deck: ActiveRecallDeckDTO | null): EditorCard[] {
 			localId: card.id,
 			question: card.question,
 			answer: card.answer,
+			questionVi: card.questionVi,
+			answerVi: card.answerVi,
 		})) ?? []
 	);
 }
@@ -136,7 +162,13 @@ function deckSnapshot(deck: ActiveRecallDeckDTO) {
 		lessonLabel: deck.lessonLabel,
 		description: deck.description,
 		status: deck.status,
-		cards: deck.cards.map(({ id, question, answer }) => ({ id, question, answer })),
+		cards: deck.cards.map(({ id, question, answer, questionVi, answerVi }) => ({
+			id,
+			question,
+			answer,
+			questionVi,
+			answerVi,
+		})),
 	});
 }
 
@@ -192,7 +224,13 @@ export default function ActiveRecallEditor({
 				lessonLabel,
 				description,
 				status,
-				cards: cards.map(({ id, question, answer }) => ({ id, question, answer })),
+				cards: cards.map(({ id, question, answer, questionVi, answerVi }) => ({
+					id,
+					question,
+					answer,
+					questionVi,
+					answerVi,
+				})),
 			}),
 		[cards, description, lessonLabel, slug, status, subject, title],
 	);
@@ -268,6 +306,8 @@ export default function ActiveRecallEditor({
 						cards: valid.map((card) => ({
 							question: card.question,
 							answer: card.answer,
+							questionVi: card.questionVi,
+							answerVi: card.answerVi,
 						})),
 					}),
 				},
@@ -310,6 +350,8 @@ export default function ActiveRecallEditor({
 						id: card.id,
 						question: card.question,
 						answer: card.answer,
+						questionVi: card.questionVi,
+						answerVi: card.answerVi,
 					})),
 				}),
 			});
@@ -607,6 +649,8 @@ export default function ActiveRecallEditor({
 												id: card.id ?? '',
 												question: card.question,
 												answer: card.answer,
+												questionVi: card.questionVi,
+												answerVi: card.answerVi,
 												position: index,
 											})),
 										),
@@ -726,7 +770,7 @@ export default function ActiveRecallEditor({
 								if (dragIndex !== null) moveCard(dragIndex, index);
 								setDragIndex(null);
 							}}
-							className={`grid gap-3 border bg-surface p-4 lg:grid-cols-[2.4rem_minmax(0,1fr)_minmax(0,1fr)_auto] ${
+							className={`grid gap-3 border bg-surface p-4 lg:grid-cols-[2.4rem_minmax(0,1fr)_auto] ${
 								cardErrors[card.localId] ? 'border-error' : 'border-border'
 							}`}
 						>
@@ -741,34 +785,17 @@ export default function ActiveRecallEditor({
 								</span>
 								<span className="tabular-nums">{index + 1}</span>
 							</div>
-							<div>
-								<p
-									id={`recall-question-${card.localId}`}
-									className="text-xs font-bold uppercase tracking-wide text-muted"
-								>
-									Câu hỏi
-								</p>
-								<RecallRichTextEditor
-									value={card.question}
-									onChange={(question) => updateCard(card.localId, { question })}
-									labelledBy={`recall-question-${card.localId}`}
-									placeholder="What is **HRM**?"
-								/>
-							</div>
-							<div>
-								<p
-									id={`recall-answer-${card.localId}`}
-									className="text-xs font-bold uppercase tracking-wide text-muted"
-								>
-									Đáp án
-								</p>
-								<RecallRichTextEditor
-									value={card.answer}
-									onChange={(answer) => updateCard(card.localId, { answer })}
-									labelledBy={`recall-answer-${card.localId}`}
-									placeholder="A *system*…"
-								/>
-							</div>
+							<RecallCardLanguageTabs
+								idPrefix={`recall-${card.localId}`}
+								question={card.question}
+								answer={card.answer}
+								questionVi={card.questionVi}
+								answerVi={card.answerVi}
+								onChangeQuestion={(question) => updateCard(card.localId, { question })}
+								onChangeAnswer={(answer) => updateCard(card.localId, { answer })}
+								onChangeQuestionVi={(questionVi) => updateCard(card.localId, { questionVi })}
+								onChangeAnswerVi={(answerVi) => updateCard(card.localId, { answerVi })}
+							/>
 							<div className="flex items-start gap-1">
 								<button
 									type="button"
@@ -812,7 +839,7 @@ export default function ActiveRecallEditor({
 								</button>
 							</div>
 							{cardErrors[card.localId] ? (
-								<p className="text-sm font-semibold text-error lg:col-span-4" role="alert">
+								<p className="text-sm font-semibold text-error lg:col-span-3" role="alert">
 									{cardErrors[card.localId]}
 								</p>
 							) : null}

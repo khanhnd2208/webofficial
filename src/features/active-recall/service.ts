@@ -30,6 +30,8 @@ const cardSelect = {
 	id: true,
 	question: true,
 	answer: true,
+	questionVi: true,
+	answerVi: true,
 	position: true,
 	createdAt: true,
 	updatedAt: true,
@@ -84,6 +86,8 @@ function mapDeck(
 			id: string;
 			question: string;
 			answer: string;
+			questionVi: string;
+			answerVi: string;
 			position: number;
 			createdAt: Date;
 			updatedAt: Date;
@@ -97,6 +101,8 @@ function mapDeck(
 			id: card.id,
 			question: card.question,
 			answer: card.answer,
+			questionVi: card.questionVi,
+			answerVi: card.answerVi,
 			position: card.position,
 			createdAt: card.createdAt.toISOString(),
 			updatedAt: card.updatedAt.toISOString(),
@@ -300,6 +306,8 @@ export async function createAdminRecallDeck(input: CreateActiveRecallDeckInput) 
 							create: cards.map((card, position) => ({
 								question: card.question,
 								answer: card.answer,
+								questionVi: card.questionVi,
+								answerVi: card.answerVi,
 								position,
 							})),
 						}
@@ -377,11 +385,24 @@ export async function updateAdminRecallDeck(id: string, input: UpdateActiveRecal
 			if (card.id) {
 				await tx.activeRecallCard.update({
 					where: { id: card.id },
-					data: { question: card.question, answer: card.answer, position },
+					data: {
+						question: card.question,
+						answer: card.answer,
+						questionVi: card.questionVi,
+						answerVi: card.answerVi,
+						position,
+					},
 				});
 			} else {
 				await tx.activeRecallCard.create({
-					data: { deckId: id, question: card.question, answer: card.answer, position },
+					data: {
+						deckId: id,
+						question: card.question,
+						answer: card.answer,
+						questionVi: card.questionVi,
+						answerVi: card.answerVi,
+						position,
+					},
 				});
 			}
 		}
@@ -562,7 +583,13 @@ export async function importAdminRecallCards(id: string, input: ActiveRecallImpo
 			if (row.action === 'update' && row.id && input.mode !== 'replace') {
 				await tx.activeRecallCard.update({
 					where: { id: row.id },
-					data: { question: row.question, answer: row.answer, position: row.order ?? position },
+					data: {
+						question: row.question,
+						answer: row.answer,
+						questionVi: row.questionVi ?? '',
+						answerVi: row.answerVi ?? '',
+						position: row.order ?? position,
+					},
 				});
 			} else {
 				await tx.activeRecallCard.create({
@@ -571,6 +598,8 @@ export async function importAdminRecallCards(id: string, input: ActiveRecallImpo
 						deckId: id,
 						question: row.question,
 						answer: row.answer,
+						questionVi: row.questionVi ?? '',
+						answerVi: row.answerVi ?? '',
 						position: row.order ?? position,
 					},
 				});

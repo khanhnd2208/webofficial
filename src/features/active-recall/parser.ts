@@ -16,6 +16,8 @@ type ParsedImport = Omit<RecallImportPreview, 'summary'> & { orphanAnswers: numb
 
 const QUESTION = /^(?:q|question|câu\s*hỏi)\s*:\s*(.*)$/i;
 const ANSWER = /^(?:a|answer|đáp\s*án)\s*:\s*(.*)$/i;
+const QUESTION_VI = /^(?:qvi|question\s*vi|câu\s*hỏi\s*vi)\s*:\s*(.*)$/i;
+const ANSWER_VI = /^(?:avi|answer\s*vi|đáp\s*án\s*vi)\s*:\s*(.*)$/i;
 const SEPARATOR = /^---+\s*$/;
 const INLINE_ANSWER = /\s+(?:a|answer|đáp\s*án)\s*:\s*/i;
 
@@ -37,6 +39,8 @@ function headerKey(value: string) {
 	if (['id', 'card id', 'ma'].includes(header)) return 'id';
 	if (['question', 'q', 'cau hoi', 'front'].includes(header)) return 'question';
 	if (['answer', 'a', 'dap an', 'back'].includes(header)) return 'answer';
+	if (['question vi', 'questionvi', 'qvi', 'cau hoi vi', 'front vi'].includes(header)) return 'questionVi';
+	if (['answer vi', 'answervi', 'avi', 'dap an vi', 'back vi'].includes(header)) return 'answerVi';
 	if (['order', 'position', 'thu tu'].includes(header)) return 'order';
 	return header;
 }
@@ -58,7 +62,7 @@ function hasDelimitedHeaders(text: string) {
 	return headers.includes('question') && headers.includes('answer');
 }
 
-function rowErrors(question: string, answer: string) {
+function rowErrors(question: string, answer: string, questionVi = '', answerVi = '') {
 	const errors: string[] = [];
 	if (!recallHasContent(question)) errors.push('Thiếu câu hỏi');
 	if (!recallHasContent(answer)) errors.push('Thiếu đáp án');
@@ -68,6 +72,12 @@ function rowErrors(question: string, answer: string) {
 	if (recallVisibleLength(answer) > ACTIVE_RECALL_MAX_ANSWER_LENGTH) {
 		errors.push(`Đáp án vượt quá ${ACTIVE_RECALL_MAX_ANSWER_LENGTH} ký tự`);
 	}
+	if (recallVisibleLength(questionVi) > ACTIVE_RECALL_MAX_QUESTION_LENGTH) {
+		errors.push(`Câu hỏi (Tiếng Việt) vượt quá ${ACTIVE_RECALL_MAX_QUESTION_LENGTH} ký tự`);
+	}
+	if (recallVisibleLength(answerVi) > ACTIVE_RECALL_MAX_ANSWER_LENGTH) {
+		errors.push(`Đáp án (Tiếng Việt) vượt quá ${ACTIVE_RECALL_MAX_ANSWER_LENGTH} ký tự`);
+	}
 	return errors;
 }
 
@@ -75,7 +85,9 @@ function preview(rows: RecallImportRow[], format: RecallImportPreview['format'],
 	for (const row of rows) {
 		row.question = recallImportToStoredHtml(row.question);
 		row.answer = recallImportToStoredHtml(row.answer);
-		row.errors.push(...rowErrors(row.question, row.answer));
+		row.questionVi = recallImportToStoredHtml(row.questionVi ?? '');
+		row.answerVi = recallImportToStoredHtml(row.answerVi ?? '');
+		row.errors.push(...rowErrors(row.question, row.answer, row.questionVi, row.answerVi));
 	}
 	const seenIds = new Map<string, number>();
 	for (const row of rows) {
@@ -103,7 +115,12 @@ function preview(rows: RecallImportRow[], format: RecallImportPreview['format'],
 }
 
 function unescapePasteLine(line: string) {
-	return line.startsWith('\\') && (QUESTION.test(line.slice(1)) || ANSWER.test(line.slice(1)) || SEPARATOR.test(line.slice(1)))
+	return line.startsWith('\\') &&
+		(QUESTION.test(line.slice(1)) ||
+			ANSWER.test(line.slice(1)) ||
+			QUESTION_VI.test(line.slice(1)) ||
+			ANSWER_VI.test(line.slice(1)) ||
+			SEPARATOR.test(line.slice(1)))
 		? line.slice(1)
 		: line;
 }
@@ -120,12 +137,21 @@ function splitInlineAnswer(value: string) {
 function parsePaste(text: string): ParsedImport {
 	const rows: RecallImportRow[] = [];
 	let orphanAnswers = 0;
-	let current: { row: number; question: string[]; answer: string[]; field: 'question' | 'answer' | null } | null = null;
+	let current: {
+		row: number;
+		question: string[];
+		answer: string[];
+		questionVi: string[];
+		answerVi: string[];
+		field: 'question' | 'answer' | 'questionVi' | 'answerVi' | null;
+	} | null = null;
 	const finish = () => {
 		if (!current) return;
 		const question = clean(current.question.join('\n'));
 		const answer = clean(current.answer.join('\n'));
-		rows.push({ row: current.row, question, answer, errors: [] });
+		const questionVi = clean(current.questionVi.join('\n'));
+		const answerVi = clean(current.answerVi.join('\n'));
+		rows.push({ row: current.row, question, answer, questionVi, answerVi, errors: [] });
 		current = null;
 	};
 
@@ -133,6 +159,8 @@ function parsePaste(text: string): ParsedImport {
 		const line = unescapePasteLine(rawLine);
 		const question = line.match(QUESTION);
 		const answer = line.match(ANSWER);
+		const questionVi = line.match(QUESTION_VI);
+		const answerVi = line.match(ANSWER_VI);
 		if (SEPARATOR.test(line) && line === rawLine) {
 			finish();
 			return;
@@ -144,6 +172,8 @@ function parsePaste(text: string): ParsedImport {
 				row: index + 1,
 				question: [inlineAnswer?.question ?? unescapePasteLine(question[1] ?? '')],
 				answer: inlineAnswer ? [inlineAnswer.answer] : [],
+				questionVi: [],
+				answerVi: [],
 				field: inlineAnswer ? 'answer' : 'question',
 			};
 			return;
@@ -155,6 +185,18 @@ function parsePaste(text: string): ParsedImport {
 			}
 			current.answer.push(unescapePasteLine(answer[1] ?? ''));
 			current.field = 'answer';
+			return;
+		}
+		if (questionVi && line === rawLine) {
+			if (!current) return;
+			current.questionVi.push(unescapePasteLine(questionVi[1] ?? ''));
+			current.field = 'questionVi';
+			return;
+		}
+		if (answerVi && line === rawLine) {
+			if (!current) return;
+			current.answerVi.push(unescapePasteLine(answerVi[1] ?? ''));
+			current.field = 'answerVi';
 			return;
 		}
 		if (!current || !current.field) return;
@@ -173,16 +215,22 @@ function parseTsv(text: string): ParsedImport {
 	const answerIndex = hasHeader ? header.indexOf('answer') : 1;
 	const idIndex = hasHeader ? header.indexOf('id') : -1;
 	const orderIndex = hasHeader ? header.indexOf('order') : -1;
+	const questionViIndex = hasHeader ? header.indexOf('questionVi') : -1;
+	const answerViIndex = hasHeader ? header.indexOf('answerVi') : -1;
 	lines.slice(hasHeader ? 1 : 0).forEach((line, index) => {
 		const cells = line.split('\t');
 		const question = clean(cells[questionIndex] ?? '');
 		const answer = clean(cells[answerIndex] ?? '');
+		const questionVi = questionViIndex >= 0 ? clean(cells[questionViIndex] ?? '') : '';
+		const answerVi = answerViIndex >= 0 ? clean(cells[answerViIndex] ?? '') : '';
 		const order = orderIndex >= 0 && /^\d+$/.test(cells[orderIndex] ?? '') ? Number(cells[orderIndex]) : undefined;
 		rows.push({
 			row: index + (hasHeader ? 2 : 1),
 			id: cells[idIndex]?.trim() || undefined,
 			question,
 			answer,
+			questionVi,
+			answerVi,
 			order,
 			errors: [],
 		});
@@ -206,6 +254,8 @@ function parseCsv(text: string): ParsedImport {
 	const rows = records.map((record, index) => {
 		const question = clean(record.question ?? '');
 		const answer = clean(record.answer ?? '');
+		const questionVi = clean(record.questionVi ?? '');
+		const answerVi = clean(record.answerVi ?? '');
 		const errors: string[] = [];
 		const rawOrder = record.order?.trim();
 		if (rawOrder && !/^\d+$/.test(rawOrder)) errors.push('Thứ tự phải là số nguyên không âm');
@@ -214,6 +264,8 @@ function parseCsv(text: string): ParsedImport {
 			id: record.id?.trim() || undefined,
 			question,
 			answer,
+			questionVi,
+			answerVi,
 			order: rawOrder ? Number(rawOrder) : undefined,
 			errors,
 		};
@@ -235,11 +287,27 @@ export function previewRecallImport(text: string): RecallImportPreview {
 	return preview(parsed.rows, parsed.format, parsed.orphanAnswers);
 }
 
-export function toRecallCsv(rows: Array<{ id: string; question: string; answer: string; position: number }>) {
+export function toRecallCsv(
+	rows: Array<{
+		id: string;
+		question: string;
+		answer: string;
+		questionVi?: string;
+		answerVi?: string;
+		position: number;
+	}>,
+) {
 	const quote = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
-	return `\uFEFFid,question,answer,order\r\n${rows
+	return `\uFEFFid,question,questionVi,answer,answerVi,order\r\n${rows
 		.map((row) =>
-			[row.id, recallHtmlToMarkdown(row.question), recallHtmlToMarkdown(row.answer), row.position]
+			[
+				row.id,
+				recallHtmlToMarkdown(row.question),
+				recallHtmlToMarkdown(row.questionVi ?? ''),
+				recallHtmlToMarkdown(row.answer),
+				recallHtmlToMarkdown(row.answerVi ?? ''),
+				row.position,
+			]
 				.map(quote)
 				.join(','),
 		)
@@ -250,17 +318,32 @@ function escapePasteBody(value: string) {
 	return value
 		.split('\n')
 		.map((line) =>
-			QUESTION.test(line) || ANSWER.test(line) || SEPARATOR.test(line) ? `\\${line}` : line,
+			QUESTION.test(line) ||
+			ANSWER.test(line) ||
+			QUESTION_VI.test(line) ||
+			ANSWER_VI.test(line) ||
+			SEPARATOR.test(line)
+				? `\\${line}`
+				: line,
 		)
 		.join('\n');
 }
 
-export function toRecallPaste(rows: Array<{ question: string; answer: string }>) {
+export function toRecallPaste(
+	rows: Array<{ question: string; answer: string; questionVi?: string; answerVi?: string }>,
+) {
 	return rows
 		.map((row) => {
 			const question = escapePasteBody(recallHtmlToMarkdown(row.question));
 			const answer = escapePasteBody(recallHtmlToMarkdown(row.answer));
-			return `Q: ${question}\nA: ${answer}`;
+			const lines = [`Q: ${question}`, `A: ${answer}`];
+			if (row.questionVi && recallHasContent(row.questionVi)) {
+				lines.push(`QVI: ${escapePasteBody(recallHtmlToMarkdown(row.questionVi))}`);
+			}
+			if (row.answerVi && recallHasContent(row.answerVi)) {
+				lines.push(`AVI: ${escapePasteBody(recallHtmlToMarkdown(row.answerVi))}`);
+			}
+			return lines.join('\n');
 		})
 		.join('\n---\n');
 }

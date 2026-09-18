@@ -1,10 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	useSyncExternalStore,
+	type PointerEvent as ReactPointerEvent,
+} from 'react';
 
 import type { ActiveRecallDeckDTO } from '@/features/active-recall';
-import { recallToStoredHtml } from '@/features/active-recall/richText';
+import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/richText';
 
 import {
 	DEFAULT_READING_SIZE,
@@ -14,8 +22,14 @@ import {
 	subscribeReadingSize,
 	writeStoredReadingSize,
 } from './readingSize';
+import RecallHintButton, { RecallPresentIcon, RecallSizeGlyph } from './RecallHintButton';
 
-type StoredState = { currentId?: string; shuffled?: boolean };
+type StoredState = {
+	currentId?: string;
+	shuffled?: boolean;
+	viMode?: boolean;
+	splitView?: boolean;
+};
 
 function shuffle<T>(items: T[]) {
 	const next = [...items];
@@ -31,6 +45,8 @@ function hasTextSelection() {
 	return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
 }
 
+const CARD_DRAG_PX = 8;
+
 function RecallText({ children }: { children: string }) {
 	return (
 		<div
@@ -41,20 +57,45 @@ function RecallText({ children }: { children: string }) {
 	);
 }
 
+function RecallSplitPane({
+	label,
+	html,
+	emptyLabel,
+}: {
+	label: string;
+	html: string;
+	emptyLabel: string;
+}) {
+	return (
+		<section className="recall-split-pane" aria-label={label}>
+			<p className="recall-split-label">{label}</p>
+			{recallHasContent(html) ? (
+				<RecallText>{html}</RecallText>
+			) : (
+				<p className="recall-split-empty">{emptyLabel}</p>
+			)}
+		</section>
+	);
+}
+
 export default function ActiveRecallPlayer({
 	deck,
 	backHref,
 	backLabel,
+	showViToggle = false,
 }: {
 	deck: ActiveRecallDeckDTO;
 	backHref?: string;
 	backLabel?: string;
+	showViToggle?: boolean;
 }) {
 	const originalIds = useMemo(() => deck.cards.map((card) => card.id), [deck.cards]);
 	const [ids, setIds] = useState(originalIds);
 	const [currentId, setCurrentId] = useState(deck.cards[0]?.id ?? '');
 	const [revealed, setRevealed] = useState(false);
 	const [shuffled, setShuffled] = useState(false);
+	const [viMode, setViMode] = useState(false);
+	const [splitView, setSplitView] = useState(false);
 	const [hydrated, setHydrated] = useState(false);
 	const [presentation, setPresentation] = useState(false);
 	const [nativeFullscreen, setNativeFullscreen] = useState(false);
@@ -66,6 +107,7 @@ export default function ActiveRecallPlayer({
 	const rootRef = useRef<HTMLElement>(null);
 	const cardBodyRef = useRef<HTMLDivElement>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
+	const cardGesture = useRef({ x: 0, y: 0, skip: false });
 	const storageKey = `active-recall:${deck.id}`;
 	const byId = useMemo(() => new Map(deck.cards.map((card) => [card.id, card])), [deck.cards]);
 	const currentIndex = Math.max(0, ids.indexOf(currentId));
@@ -83,6 +125,8 @@ export default function ActiveRecallPlayer({
 					setShuffled(true);
 				}
 				if (stored.currentId && byId.has(stored.currentId)) setCurrentId(stored.currentId);
+				if (showViToggle && stored.viMode) setViMode(true);
+				if (showViToggle && stored.splitView) setSplitView(true);
 				setHydrated(true);
 			}, 0);
 			return () => {
@@ -92,22 +136,30 @@ export default function ActiveRecallPlayer({
 		} catch {
 			setHydrated(true);
 		}
-	}, [byId, originalIds, storageKey]);
+	}, [byId, originalIds, showViToggle, storageKey]);
 
 	useEffect(() => {
 		if (!hydrated || !card) return;
 		try {
+			let previous: StoredState = {};
+			try {
+				previous = JSON.parse(localStorage.getItem(storageKey) ?? '{}') as StoredState;
+			} catch {
+				previous = {};
+			}
 			localStorage.setItem(
 				storageKey,
 				JSON.stringify({
 					currentId: card.id,
 					shuffled,
+					viMode: showViToggle ? viMode : Boolean(previous.viMode),
+					splitView: showViToggle ? splitView : Boolean(previous.splitView),
 				} satisfies StoredState),
 			);
 		} catch {
 			// Device-local resume is optional.
 		}
-	}, [card, hydrated, shuffled, storageKey]);
+	}, [card, hydrated, shuffled, showViToggle, splitView, storageKey, viMode]);
 
 	useEffect(() => {
 		const onFullscreen = () => {
@@ -125,7 +177,7 @@ export default function ActiveRecallPlayer({
 		if (!body) return;
 		if (typeof body.scrollTo === 'function') body.scrollTo({ top: 0, left: 0 });
 		else body.scrollTop = 0;
-	}, [currentId, revealed]);
+	}, [currentId, revealed, splitView]);
 
 	const move = useCallback(
 		(direction: -1 | 1) => {
@@ -139,6 +191,30 @@ export default function ActiveRecallPlayer({
 		[ids],
 	);
 	const flip = useCallback(() => setRevealed((value) => !value), []);
+
+	const onCardPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+		cardGesture.current = {
+			x: event.clientX,
+			y: event.clientY,
+			skip: hasTextSelection(),
+		};
+	}, []);
+
+	const onCardPointerMove = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+		const gesture = cardGesture.current;
+		if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > CARD_DRAG_PX) {
+			gesture.skip = true;
+		}
+	}, []);
+
+	const onCardPointerUp = useCallback(() => {
+		if (hasTextSelection()) cardGesture.current.skip = true;
+	}, []);
+
+	const onCardClick = useCallback(() => {
+		if (cardGesture.current.skip || hasTextSelection()) return;
+		flip();
+	}, [flip]);
 
 	const applyOrder = useCallback((nextIds: string[], nextShuffled: boolean) => {
 		setIds(nextIds);
@@ -154,6 +230,15 @@ export default function ActiveRecallPlayer({
 		}
 		applyOrder(shuffle(originalIds), true);
 	}, [applyOrder, originalIds, shuffled]);
+
+	const toggleViMode = useCallback(() => {
+		setSplitView(false);
+		setViMode((value) => !value);
+	}, []);
+
+	const toggleSplitView = useCallback(() => {
+		setSplitView((value) => !value);
+	}, []);
 
 	const chooseReadingSize = useCallback((size: (typeof READING_SIZES)[number]) => {
 		writeStoredReadingSize(size);
@@ -287,6 +372,8 @@ export default function ActiveRecallPlayer({
 	const first = currentIndex === 0;
 	const last = currentIndex === ids.length - 1;
 	const flipLabel = revealed ? 'Xem câu hỏi' : 'Hiện đáp án';
+	const questionText = viMode && card.questionVi ? card.questionVi : card.question;
+	const answerText = viMode && card.answerVi ? card.answerVi : card.answer;
 
 	return (
 		<main
@@ -295,6 +382,7 @@ export default function ActiveRecallPlayer({
 			data-reading-size={readingSize}
 			data-has-back={backHref && backLabel ? 'true' : 'false'}
 			data-mode={presentation ? 'presentation' : 'study'}
+			data-lang={splitView ? 'split' : viMode ? 'vi' : 'en'}
 			role={fallbackPresentation ? 'dialog' : undefined}
 			aria-label={fallbackPresentation ? 'Chế độ trình chiếu Active Recall' : undefined}
 			aria-modal={fallbackPresentation ? true : undefined}
@@ -314,6 +402,37 @@ export default function ActiveRecallPlayer({
 						<h1 className="recall-player-title">{deck.title}</h1>
 					</div>
 					<div className="recall-player-tools" aria-label="Tiến độ thẻ">
+						{showViToggle ? (
+							<div className="recall-lang-group" role="group" aria-label="Ngôn ngữ">
+								<RecallHintButton
+									className={`recall-lang-chip ${viMode && !splitView ? 'is-en' : splitView ? 'is-idle' : 'is-vi'}`}
+									aria-pressed={viMode && !splitView}
+									hint={
+										viMode && !splitView
+											? 'Đang học bản tiếng Việt. Bấm EN để xem bản tiếng Anh.'
+											: 'Học dễ hơn với bản tiếng Việt. Bấm VI để đổi câu hỏi và đáp án.'
+									}
+									onClick={toggleViMode}
+								>
+									<span className="recall-lang-chip-mark">{viMode ? 'EN' : 'VI'}</span>
+								</RecallHintButton>
+								<RecallHintButton
+									className={`recall-split-chip ${splitView ? 'is-on' : ''}`}
+									aria-pressed={splitView}
+									label="Hai ngôn ngữ"
+									hint={
+										splitView
+											? 'Đang xem tiếng Anh và tiếng Việt cùng lúc. Bấm để về một ngôn ngữ.'
+											: 'Xem tiếng Anh và tiếng Việt cùng lúc.'
+									}
+									onClick={toggleSplitView}
+								>
+									<span className="recall-split-chip-mark" aria-hidden="true">
+										EN<span>|</span>VI
+									</span>
+								</RecallHintButton>
+							</div>
+						) : null}
 						<span className="tabular-nums">
 							{currentIndex + 1}/{ids.length}
 						</span>
@@ -327,25 +446,27 @@ export default function ActiveRecallPlayer({
 						</button>
 						<div className="recall-size-group" role="radiogroup" aria-label="Cỡ chữ">
 							{READING_SIZES.map((size) => (
-								<button
+								<RecallHintButton
 									key={size}
-									type="button"
 									role="radio"
 									aria-checked={readingSize === size}
-									className="recall-size-button"
+									className="recall-icon-button"
+									label={READING_SIZE_LABELS[size]}
+									hint={size === 'small' ? 'Cỡ chữ nhỏ' : 'Cỡ chữ lớn'}
 									onClick={() => chooseReadingSize(size)}
 								>
-									{READING_SIZE_LABELS[size]}
-								</button>
+									<RecallSizeGlyph size={size} />
+								</RecallHintButton>
 							))}
 						</div>
-						<button
-							type="button"
-							className="recall-quiet-button"
+						<RecallHintButton
+							className="recall-icon-button"
+							label="Trình chiếu"
+							hint="Trình chiếu toàn màn hình"
 							onClick={() => void togglePresentation()}
 						>
-							Trình chiếu
-						</button>
+							<RecallPresentIcon />
+						</RecallHintButton>
 					</div>
 				</header>
 
@@ -362,10 +483,10 @@ export default function ActiveRecallPlayer({
 						role="button"
 						tabIndex={0}
 						aria-label={revealed ? 'Thẻ đáp án. Chạm để xem câu hỏi' : 'Thẻ câu hỏi. Chạm để hiện đáp án'}
-						onClick={() => {
-							if (hasTextSelection()) return;
-							flip();
-						}}
+						onPointerDown={onCardPointerDown}
+						onPointerMove={onCardPointerMove}
+						onPointerUp={onCardPointerUp}
+						onClick={onCardClick}
 						onKeyDown={(event) => {
 							if (event.key === ' ' || event.key === 'Enter') {
 								event.preventDefault();
@@ -373,16 +494,37 @@ export default function ActiveRecallPlayer({
 								flip();
 							}
 						}}
-						className={`recall-card ${revealed ? 'is-revealed' : ''}`}
+						className={`recall-card ${revealed ? 'is-revealed' : ''} ${splitView ? 'is-split' : ''}`}
 						data-side={revealed ? 'answer' : 'question'}
 					>
 						<p className="recall-card-kicker">{revealed ? 'Đáp án' : 'Câu hỏi'}</p>
-						<div className="recall-card-body" ref={cardBodyRef}>
-							<RecallText>{revealed ? card.answer : card.question}</RecallText>
+						<div
+							className="recall-card-body"
+							ref={cardBodyRef}
+							onScroll={() => {
+								cardGesture.current.skip = true;
+							}}
+						>
+							{splitView ? (
+								<div className="recall-split">
+									<RecallSplitPane
+										label="EN"
+										html={revealed ? card.answer : card.question}
+										emptyLabel="Không có nội dung"
+									/>
+									<RecallSplitPane
+										label="VI"
+										html={revealed ? card.answerVi : card.questionVi}
+										emptyLabel="Chưa có bản tiếng Việt"
+									/>
+								</div>
+							) : (
+								<RecallText>{revealed ? answerText : questionText}</RecallText>
+							)}
 						</div>
 					</article>
 				</section>
-				<p className="recall-player-chrome mb-3 text-center text-xs text-ink-secondary sm:hidden">
+				<p className="recall-player-chrome recall-player-touch-hint mb-3 text-center text-xs text-ink-secondary sm:hidden">
 					Chạm vào thẻ để lật câu hỏi và đáp án.
 				</p>
 				{last ? (

@@ -11,6 +11,8 @@ export type PreparedRecallCard = {
 	id?: string;
 	question: string;
 	answer: string;
+	questionVi: string;
+	answerVi: string;
 };
 
 function tooLong(value: string, max: number) {
@@ -24,6 +26,8 @@ export function prepareRecallCardsForSave(cards: RecallCardDraftInput[]): Prepar
 	cards.forEach((card, index) => {
 		const question = recallImportToStoredHtml(card.question ?? '');
 		const answer = recallImportToStoredHtml(card.answer ?? '');
+		const questionVi = recallImportToStoredHtml(card.questionVi ?? '');
+		const answerVi = recallImportToStoredHtml(card.answerVi ?? '');
 		const hasQuestion = recallHasContent(question);
 		const hasAnswer = recallHasContent(answer);
 		if (!hasQuestion && !hasAnswer) return;
@@ -43,7 +47,15 @@ export function prepareRecallCardsForSave(cards: RecallCardDraftInput[]): Prepar
 			fields[`cards.${index}.answer`] = 'Đáp án quá dài';
 			return;
 		}
-		prepared.push({ id: card.id, question, answer });
+		if (tooLong(questionVi, ACTIVE_RECALL_MAX_QUESTION_LENGTH)) {
+			fields[`cards.${index}.questionVi`] = 'Câu hỏi (Tiếng Việt) quá dài';
+			return;
+		}
+		if (tooLong(answerVi, ACTIVE_RECALL_MAX_ANSWER_LENGTH)) {
+			fields[`cards.${index}.answerVi`] = 'Đáp án (Tiếng Việt) quá dài';
+			return;
+		}
+		prepared.push({ id: card.id, question, answer, questionVi, answerVi });
 	});
 
 	if (Object.keys(fields).length > 0) {

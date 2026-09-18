@@ -1,20 +1,20 @@
 export const READING_SIZE_STORAGE_KEY = 'active-recall:reading-size';
 export const READING_SIZE_EVENT = 'active-recall:reading-size';
 
-export const READING_SIZES = ['small', 'medium', 'large'] as const;
+export const READING_SIZES = ['small', 'large'] as const;
 
 export type ReadingSize = (typeof READING_SIZES)[number];
 
 export const READING_SIZE_LABELS: Record<ReadingSize, string> = {
 	small: 'Nhỏ',
-	medium: 'Vừa',
 	large: 'Lớn',
 };
 
-export const DEFAULT_READING_SIZE: ReadingSize = 'medium';
+export const DEFAULT_READING_SIZE: ReadingSize = 'large';
 
 export function parseReadingSize(value: unknown): ReadingSize {
-	if (value === 'small' || value === 'medium' || value === 'large') return value;
+	if (value === 'small' || value === 'large') return value;
+	if (value === 'medium') return 'large';
 	return DEFAULT_READING_SIZE;
 }
 
