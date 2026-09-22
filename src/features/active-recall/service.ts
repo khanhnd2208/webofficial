@@ -11,6 +11,13 @@ import {
 } from '@/features/teaching/domain/courseIdentity';
 
 import { prepareRecallCardsForSave } from './cards';
+import {
+	persistRecallCardWrites,
+	planRecallCardWrites,
+	RECALL_WRITE_TX,
+	type RecallCardCreate,
+	type RecallCardUpdate,
+} from './persist';
 import { previewRecallImport } from './parser';
 import { recallVisibleText } from './richText';
 import type {
@@ -320,7 +327,7 @@ export async function createAdminRecallDeck(input: CreateActiveRecallDeckInput) 
 			},
 		});
 		return created;
-	});
+	}, RECALL_WRITE_TX);
 	return mapDeck(row);
 }
 
@@ -328,7 +335,10 @@ export async function updateAdminRecallDeck(id: string, input: UpdateActiveRecal
 	const existing = await findDeckRecord(id);
 	if (!existing) throw new AppError('Không tìm thấy bộ thẻ', 404);
 	assertCurrent(input.expectedUpdatedAt, existing.updatedAt);
-	const cards = prepareRecallCardsForSave(input.cards);
+	const cards = prepareRecallCardsForSave(
+		input.cards,
+		new Map(existing.cards.map((card) => [card.id, card])),
+	);
 	if (existing.status !== 'DRAFT' && input.slug && input.slug !== existing.slug) {
 		throw new AppError('Không thể đổi đường dẫn sau khi bộ thẻ đã xuất bản', 422);
 	}
@@ -378,34 +388,7 @@ export async function updateAdminRecallDeck(id: string, input: UpdateActiveRecal
 		if (existing.courseId !== course.id) {
 			await tx.teachingClassRecallDeck.deleteMany({ where: { deckId: id } });
 		}
-		await tx.activeRecallCard.deleteMany({
-			where: { deckId: id, ...(ids.length ? { id: { notIn: ids } } : {}) },
-		});
-		for (const [position, card] of cards.entries()) {
-			if (card.id) {
-				await tx.activeRecallCard.update({
-					where: { id: card.id },
-					data: {
-						question: card.question,
-						answer: card.answer,
-						questionVi: card.questionVi,
-						answerVi: card.answerVi,
-						position,
-					},
-				});
-			} else {
-				await tx.activeRecallCard.create({
-					data: {
-						deckId: id,
-						question: card.question,
-						answer: card.answer,
-						questionVi: card.questionVi,
-						answerVi: card.answerVi,
-						position,
-					},
-				});
-			}
-		}
+		await persistRecallCardWrites(tx, id, planRecallCardWrites(existing.cards, cards));
 		if (input.status === 'PUBLISHED' && existing.status !== 'PUBLISHED') {
 			const classes = await tx.teachingClass.findMany({
 				where: { courseId: course.id },
@@ -423,7 +406,7 @@ export async function updateAdminRecallDeck(id: string, input: UpdateActiveRecal
 				});
 			}
 		}
-	});
+	}, RECALL_WRITE_TX);
 	return (await getAdminRecallDeck(id))!;
 }
 
@@ -477,7 +460,7 @@ export async function updateAdminRecallDeckMeta(id: string, input: UpdateActiveR
 				});
 			}
 		}
-	});
+	}, RECALL_WRITE_TX);
 	return (await getAdminRecallDeck(id))!;
 }
 
@@ -578,34 +561,38 @@ export async function importAdminRecallCards(id: string, input: ActiveRecallImpo
 				'STALE_DECK',
 			);
 		if (input.mode === 'replace') await tx.activeRecallCard.deleteMany({ where: { deckId: id } });
+		const toCreate: RecallCardCreate[] = [];
+		const toUpdate: RecallCardUpdate[] = [];
 		let position = input.mode === 'replace' ? 0 : existing.cards.length;
 		for (const row of active) {
+			const nextPosition = row.order ?? position;
 			if (row.action === 'update' && row.id && input.mode !== 'replace') {
-				await tx.activeRecallCard.update({
-					where: { id: row.id },
-					data: {
-						question: row.question,
-						answer: row.answer,
-						questionVi: row.questionVi ?? '',
-						answerVi: row.answerVi ?? '',
-						position: row.order ?? position,
-					},
+				toUpdate.push({
+					id: row.id,
+					question: row.question,
+					answer: row.answer,
+					questionVi: row.questionVi ?? '',
+					answerVi: row.answerVi ?? '',
+					position: nextPosition,
 				});
 			} else {
-				await tx.activeRecallCard.create({
-					data: {
-						...(input.mode === 'replace' && row.id ? { id: row.id } : {}),
-						deckId: id,
-						question: row.question,
-						answer: row.answer,
-						questionVi: row.questionVi ?? '',
-						answerVi: row.answerVi ?? '',
-						position: row.order ?? position,
-					},
+				toCreate.push({
+					...(input.mode === 'replace' && row.id ? { id: row.id } : {}),
+					question: row.question,
+					answer: row.answer,
+					questionVi: row.questionVi ?? '',
+					answerVi: row.answerVi ?? '',
+					position: nextPosition,
 				});
 			}
 			position += 1;
 		}
-	});
+		await persistRecallCardWrites(
+			tx,
+			id,
+			{ keepIds: [], toCreate, toUpdate },
+			{ deleteMissing: false },
+		);
+	}, RECALL_WRITE_TX);
 	return { deck: (await getAdminRecallDeck(id))!, preview };
 }

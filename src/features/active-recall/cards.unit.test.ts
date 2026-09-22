@@ -38,4 +38,28 @@ describe('prepareRecallCardsForSave', () => {
 			});
 		}
 	});
+
+	it('reuses stored HTML when a card has not changed, so save does not resanitize the whole deck', () => {
+		const stored = {
+			id: 'card-1',
+			question: '<p>What is HRM?</p>',
+			answer: '<p>Human resource management</p>',
+			questionVi: '',
+			answerVi: '',
+		};
+		expect(
+			prepareRecallCardsForSave(
+				[
+					{
+						id: 'card-1',
+						question: '<p>What is HRM?</p>',
+						answer: '<p>Human resource management</p>',
+						questionVi: '',
+						answerVi: '',
+					},
+				],
+				new Map([[stored.id, stored]]),
+			),
+		).toEqual([stored]);
+	});
 });

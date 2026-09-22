@@ -162,4 +162,29 @@ describe('ActiveRecallEditor', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Hoàn tác' }));
 		expect(screen.getByDisplayValue('What is HRM?')).toBeInTheDocument();
 	});
+
+	it('ignores overlapping save clicks and Cmd+S while a save is in flight', async () => {
+		let resolveSave: ((value: ActiveRecallDeckDTO) => void) | undefined;
+		fetchMock.mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					resolveSave = resolve;
+				}),
+		);
+		render(
+			<ActiveRecallEditor
+				initialDeck={deck()}
+				courseId="course-1"
+				courseName="Human Resource Management"
+			/>,
+		);
+		const saveButtons = screen.getAllByRole('button', { name: 'Lưu thay đổi' });
+		fireEvent.click(saveButtons[0]!);
+		fireEvent.click(saveButtons[0]!);
+		fireEvent.click(saveButtons[1] ?? saveButtons[0]!);
+		fireEvent.keyDown(window, { key: 's', metaKey: true });
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		resolveSave?.(deck({ updatedAt: '2026-09-02T00:00:00.000Z' }));
+		await waitFor(() => expect(screen.getByText('Đã lưu thay đổi.')).toBeInTheDocument());
+	});
 });

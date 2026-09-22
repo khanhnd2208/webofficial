@@ -15,15 +15,53 @@ export type PreparedRecallCard = {
 	answerVi: string;
 };
 
+export type ExistingStoredRecallCard = {
+	id: string;
+	question: string;
+	answer: string;
+	questionVi: string;
+	answerVi: string;
+};
+
+function unchangedStoredCard(
+	card: RecallCardDraftInput,
+	existing: ExistingStoredRecallCard | undefined,
+): PreparedRecallCard | null {
+	if (!existing) return null;
+	if (
+		card.question === existing.question &&
+		card.answer === existing.answer &&
+		(card.questionVi ?? '') === existing.questionVi &&
+		(card.answerVi ?? '') === existing.answerVi
+	) {
+		return {
+			id: card.id,
+			question: existing.question,
+			answer: existing.answer,
+			questionVi: existing.questionVi,
+			answerVi: existing.answerVi,
+		};
+	}
+	return null;
+}
+
 function tooLong(value: string, max: number) {
 	return recallVisibleLength(value) > max;
 }
 
-export function prepareRecallCardsForSave(cards: RecallCardDraftInput[]): PreparedRecallCard[] {
+export function prepareRecallCardsForSave(
+	cards: RecallCardDraftInput[],
+	existingById?: ReadonlyMap<string, ExistingStoredRecallCard>,
+): PreparedRecallCard[] {
 	const prepared: PreparedRecallCard[] = [];
 	const fields: Record<string, string> = {};
 
 	cards.forEach((card, index) => {
+		const unchanged = card.id ? unchangedStoredCard(card, existingById?.get(card.id)) : null;
+		if (unchanged) {
+			prepared.push(unchanged);
+			return;
+		}
 		const question = recallImportToStoredHtml(card.question ?? '');
 		const answer = recallImportToStoredHtml(card.answer ?? '');
 		const questionVi = recallImportToStoredHtml(card.questionVi ?? '');

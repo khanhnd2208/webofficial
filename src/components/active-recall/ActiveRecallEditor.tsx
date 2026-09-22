@@ -214,6 +214,20 @@ export default function ActiveRecallEditor({
 	const [dragIndex, setDragIndex] = useState<number | null>(null);
 	const [undoCard, setUndoCard] = useState<EditorCard | null>(null);
 	const initialRef = useRef('');
+	const savingRef = useRef(false);
+
+	function beginWrite() {
+		if (savingRef.current) return false;
+		savingRef.current = true;
+		setBusy(true);
+		setError(null);
+		return true;
+	}
+
+	function endWrite() {
+		savingRef.current = false;
+		setBusy(false);
+	}
 
 	const snapshot = useMemo(
 		() =>
@@ -287,8 +301,8 @@ export default function ActiveRecallEditor({
 			setError('Một số thẻ chưa đủ câu hỏi và đáp án');
 			return;
 		}
-		setBusy(true);
-		setError(null);
+		if (!beginWrite()) return;
+		setNotice(null);
 		try {
 			const created = await adminFetch<ActiveRecallDeckDTO>(
 				resolvedCourseId
@@ -320,7 +334,7 @@ export default function ActiveRecallEditor({
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không tạo được bộ thẻ');
 		} finally {
-			setBusy(false);
+			endWrite();
 		}
 	}
 
@@ -331,8 +345,7 @@ export default function ActiveRecallEditor({
 			setError('Một số thẻ chưa đủ câu hỏi và đáp án');
 			return;
 		}
-		setBusy(true);
-		setError(null);
+		if (!beginWrite()) return;
 		setNotice(null);
 		try {
 			const saved = await adminFetch<ActiveRecallDeckDTO>(deckApiPath(deck.id), {
@@ -369,7 +382,7 @@ export default function ActiveRecallEditor({
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không lưu được bộ thẻ');
 		} finally {
-			setBusy(false);
+			endWrite();
 		}
 	}
 
@@ -390,8 +403,7 @@ export default function ActiveRecallEditor({
 			setError('Hãy lưu thay đổi trước khi import.');
 			return;
 		}
-		setBusy(true);
-		setError(null);
+		if (!beginWrite()) return;
 		setPreview(null);
 		try {
 			setPreview(
@@ -406,7 +418,7 @@ export default function ActiveRecallEditor({
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không đọc được dữ liệu');
 		} finally {
-			setBusy(false);
+			endWrite();
 		}
 	}
 
@@ -425,8 +437,8 @@ export default function ActiveRecallEditor({
 			}))
 		)
 			return;
-		setBusy(true);
-		setError(null);
+		if (!beginWrite()) return;
+		setNotice(null);
 		try {
 			const imported = await adminFetch<{ deck: ActiveRecallDeckDTO }>(
 				`${deckApiPath(deck.id)}/import`,
@@ -445,7 +457,7 @@ export default function ActiveRecallEditor({
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không import được dữ liệu');
 		} finally {
-			setBusy(false);
+			endWrite();
 		}
 	}
 
@@ -459,8 +471,7 @@ export default function ActiveRecallEditor({
 			}))
 		)
 			return;
-		setBusy(true);
-		setError(null);
+		if (!beginWrite()) return;
 		try {
 			await adminFetch(deckApiPath(deck.id), {
 				method: 'PATCH',
@@ -471,7 +482,7 @@ export default function ActiveRecallEditor({
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể lưu trữ bộ thẻ');
 		} finally {
-			setBusy(false);
+			endWrite();
 		}
 	}
 
@@ -853,9 +864,10 @@ export default function ActiveRecallEditor({
 					<button
 						type="button"
 						onClick={() => void saveDeck()}
-						className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background"
+						className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background disabled:opacity-50"
+						disabled={busy}
 					>
-						Lưu thay đổi
+						{busy ? 'Đang lưu…' : 'Lưu thay đổi'}
 					</button>
 				</div>
 			) : null}

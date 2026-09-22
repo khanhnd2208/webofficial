@@ -43,7 +43,7 @@ module.exports = {
 			exec_mode: 'fork', // Fork mode (cluster mode requires custom server)
 			autorestart: true, // Auto-restart on crash
 			watch: false, // Do NOT watch files (we deploy manually)
-			max_memory_restart: '1G', // Restart if memory exceeds 1GB
+			max_memory_restart: '2G', // Next.js + Prisma + rich-text decks can exceed 1GB during saves
 			kill_timeout: 30000, // Let Next.js drain in-flight work on SIGTERM
 
 			// ── Logging ───────────────────────────────────────────────
