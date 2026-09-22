@@ -112,6 +112,7 @@ describe('Group request lifecycle', () => {
 		);
 		render(<GroupListWorkspace classId="c1" tutorials={tutorials} initial={initial} admin />);
 		fireEvent.click(screen.getByRole('button', { name: 'Thêm sinh viên' }));
+		fireEvent.click(screen.getByRole('button', { name: /dán nhiều mã cùng lúc/ }));
 		const input = screen.getByRole('textbox', { name: /Mã sinh viên/ });
 		fireEvent.change(input, { target: { value: '2300000003' } });
 		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra mã' }));
@@ -129,5 +130,54 @@ describe('Group request lifecycle', () => {
 		);
 		await waitFor(() => expect(screen.getByRole('button', { name: 'Lưu' })).toBeDisabled());
 		expect(screen.queryByText(/Test Old/)).not.toBeInTheDocument();
+	});
+});
+
+describe('Quick-add student picker', () => {
+	const withUnassigned: TeachingGroupBoard = {
+		...initial,
+		unassigned: [
+			{
+				enrollmentId: 'e9',
+				studentCode: '2300000009',
+				familyName: 'Test',
+				givenName: 'Chi',
+				learningExperience: null,
+			},
+		],
+	};
+
+	it('shows matching unassigned students as the query is typed and adds one on click', async () => {
+		vi.mocked(teachingApi).mockResolvedValue({
+			board: { ...withUnassigned, unassigned: [], assignedCount: 3 },
+			skipped: [],
+		});
+		render(<GroupListWorkspace classId="c1" tutorials={tutorials} initial={withUnassigned} admin />);
+		fireEvent.click(screen.getByRole('button', { name: 'Thêm sinh viên' }));
+
+		const search = screen.getByRole('textbox', { name: /Tìm sinh viên theo mã hoặc tên/ });
+		expect(screen.queryByRole('button', { name: /Test Chi/ })).not.toBeInTheDocument();
+
+		fireEvent.change(search, { target: { value: 'Chi' } });
+		const suggestion = screen.getByRole('button', { name: /Test Chi/ });
+		expect(suggestion).toHaveTextContent('2300000009');
+
+		fireEvent.click(suggestion);
+
+		await waitFor(() =>
+			expect(teachingApi).toHaveBeenCalledWith(
+				'/api/admin/teaching/classes/c1/groups/members',
+				expect.objectContaining({
+					method: 'POST',
+					body: JSON.stringify({
+						tutorialClassId: 't1',
+						groupId: 'g1',
+						studentCodes: ['2300000009'],
+						expectedVersion: 1,
+					}),
+				}),
+			),
+		);
+		await waitFor(() => expect(screen.queryByText('2300000009')).not.toBeInTheDocument());
 	});
 });

@@ -69,6 +69,8 @@ export function GroupListWorkspace({
 	);
 	const [defaultSizeDraft, setDefaultSizeDraft] = useState(String(initial?.defaultGroupSize ?? 5));
 	const [addGroupId, setAddGroupId] = useState<string | null>(null);
+	const [pickerQuery, setPickerQuery] = useState('');
+	const [bulkPasteOpen, setBulkPasteOpen] = useState(false);
 	const [codesDraft, setCodesDraft] = useState('');
 	const [preview, setPreview] = useState<PreviewResult | null>(null);
 	const [previewLoading, setPreviewLoading] = useState(false);
@@ -188,6 +190,27 @@ export function GroupListWorkspace({
 		);
 	}, [board, query]);
 
+	const addTargetGroup = useMemo(
+		() => board?.groups.find((group) => group.id === addGroupId) ?? null,
+		[board, addGroupId],
+	);
+	const addTargetRemaining = addTargetGroup
+		? addTargetGroup.effectiveMaxSize - addTargetGroup.assignments.length
+		: 0;
+
+	const pickerSuggestions = useMemo(() => {
+		if (!board || !addGroupId) return [];
+		const q = pickerQuery.trim().toLowerCase();
+		if (!q) return [];
+		return board.unassigned
+			.filter((student) =>
+				`${student.studentCode} ${student.familyName} ${student.givenName}`
+					.toLowerCase()
+					.includes(q),
+			)
+			.slice(0, 8);
+	}, [board, addGroupId, pickerQuery]);
+
 	async function saveConfig() {
 		if (!classId || !tutorialId || !board || !beginSave()) return;
 		const groupCount = Number(groupCountDraft);
@@ -256,7 +279,7 @@ export function GroupListWorkspace({
 			.map((code) => code.trim())
 			.filter(Boolean);
 		try {
-			const next = await teachingApi<TeachingGroupBoard>(
+			const result = await teachingApi<{ board: TeachingGroupBoard; skipped: string[] }>(
 				`/api/admin/teaching/classes/${classId}/groups/members`,
 				{
 					method: 'POST',
@@ -269,10 +292,40 @@ export function GroupListWorkspace({
 					}),
 				},
 			);
-			setBoard(next);
+			setBoard(result.board);
 			setAddGroupId(null);
 			setCodesDraft('');
 			setPreview(null);
+			setToast(
+				result.skipped.length
+					? `Đã thêm sinh viên vào nhóm. Bỏ qua ${result.skipped.length} mã lỗi:\n${result.skipped.join('\n')}`
+					: 'Đã thêm sinh viên vào nhóm.',
+			);
+		} catch (error) {
+			showSaveError(error, 'Không thêm được sinh viên.');
+		} finally {
+			finishSave();
+		}
+	}
+
+	async function quickAddMember(groupId: string, studentCode: string) {
+		if (!classId || !tutorialId || !board || !beginSave()) return;
+		try {
+			const result = await teachingApi<{ board: TeachingGroupBoard; skipped: string[] }>(
+				`/api/admin/teaching/classes/${classId}/groups/members`,
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						tutorialClassId: tutorialId,
+						groupId,
+						studentCodes: [studentCode],
+						expectedVersion: board.version,
+					}),
+				},
+			);
+			setBoard(result.board);
+			setPickerQuery('');
 			setToast('Đã thêm sinh viên vào nhóm.');
 		} catch (error) {
 			showSaveError(error, 'Không thêm được sinh viên.');
@@ -491,6 +544,8 @@ export function GroupListWorkspace({
 												className="mc-button mc-button-primary text-xs"
 												onClick={() => {
 													setAddGroupId(group.id);
+													setPickerQuery('');
+													setBulkPasteOpen(false);
 													setCodesDraft('');
 													setPreview(null);
 												}}
@@ -660,76 +715,166 @@ export function GroupListWorkspace({
 						if (savingRef.current) return;
 						previewRequest.current += 1;
 						setAddGroupId(null);
+						setPickerQuery('');
+						setBulkPasteOpen(false);
 						setPreview(null);
 						setCodesDraft('');
 					}}
 				>
 					<div className="space-y-4">
-						<label className="block text-sm">
-							<span className="mb-1 block font-medium">Mã sinh viên (một hoặc nhiều dòng)</span>
-							<textarea
-								disabled={saving}
-								className="mc-input min-h-32 w-full font-mono text-sm"
-								value={codesDraft}
-								onChange={(event) => {
-									previewRequest.current += 1;
-									setPreviewLoading(false);
-									setCodesDraft(event.target.value);
-									setPreview(null);
-								}}
-								placeholder="Dán từ Excel hoặc nhập từng mã…"
-							/>
-						</label>
-						{previewLoading ? <p className="text-xs text-ink-secondary">Đang kiểm tra…</p> : null}
-						{preview?.resolved.length ? (
-							<div className="rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-3 text-sm">
-								<p className="font-medium text-ink">
-									{preview.resolved.length} mã hợp lệ · còn {preview.remaining} chỗ
-								</p>
-								<ul className="mt-2 space-y-1 text-ink-secondary">
-									{preview.resolved.map((item) => (
-										<li key={item.enrollmentId}>
-											{item.studentCode} — {fullName(item.familyName, item.givenName)}
-										</li>
-									))}
-								</ul>
-							</div>
-						) : null}
-						{preview && preview.resolved.length > preview.remaining ? (
+						{addTargetRemaining <= 0 ? (
 							<p role="alert" className="text-sm text-danger">
-								Số sinh viên vượt {preview.remaining} chỗ còn lại. Hãy bớt mã hoặc tăng sức chứa
-								nhóm.
+								Nhóm đã đủ thành viên. Hãy tăng sức chứa nhóm trước khi thêm.
 							</p>
-						) : null}
-						{preview?.errors.length ? (
-							<div className="rounded-[var(--mc-r-sm)] border border-danger/30 bg-danger/5 p-3 text-sm text-danger">
-								{preview.errors.map((error) => (
-									<p key={error}>{error}</p>
-								))}
+						) : (
+							<label className="relative block text-sm">
+								<span className="mb-1 block font-medium">Tìm sinh viên theo mã hoặc tên</span>
+								<input
+									type="text"
+									autoComplete="off"
+									disabled={saving}
+									className="mc-input w-full"
+									value={pickerQuery}
+									onChange={(event) => setPickerQuery(event.target.value)}
+									onKeyDown={(event) => {
+										if (event.key !== 'Enter') return;
+										const first = pickerSuggestions[0];
+										if (first) void quickAddMember(addGroupId, first.studentCode);
+									}}
+									placeholder="Nhập mã sinh viên hoặc tên…"
+								/>
+								{pickerQuery.trim() ? (
+									<ul className="mc-surface absolute z-10 mt-1 max-h-64 w-full overflow-y-auto border border-mc-rule shadow-lg">
+										{pickerSuggestions.length ? (
+											pickerSuggestions.map((student) => (
+												<li key={student.enrollmentId}>
+													<button
+														type="button"
+														disabled={saving}
+														className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-surface-sunken disabled:opacity-50"
+														onClick={() => void quickAddMember(addGroupId, student.studentCode)}
+													>
+														<span>
+															<span className="font-medium text-ink">
+																{fullName(student.familyName, student.givenName)}
+															</span>
+															<span className="block text-xs text-ink-secondary">
+																{student.studentCode}
+															</span>
+														</span>
+														<span className="text-xs text-ink-secondary">Thêm</span>
+													</button>
+												</li>
+											))
+										) : (
+											<li className="px-3 py-2 text-sm text-ink-secondary">
+												Không tìm thấy sinh viên chưa xếp nhóm phù hợp.
+											</li>
+										)}
+									</ul>
+								) : null}
+							</label>
+						)}
+
+						<button
+							type="button"
+							className="text-xs font-medium text-ink-secondary underline"
+							onClick={() => setBulkPasteOpen((value) => !value)}
+						>
+							{bulkPasteOpen ? 'Ẩn dán nhiều mã cùng lúc' : 'Hoặc dán nhiều mã cùng lúc (Excel)'}
+						</button>
+
+						{bulkPasteOpen ? (
+							<div className="space-y-4 border-t border-mc-rule pt-4">
+								<label className="block text-sm">
+									<span className="mb-1 block font-medium">
+										Mã sinh viên (một hoặc nhiều dòng)
+									</span>
+									<textarea
+										disabled={saving}
+										className="mc-input min-h-32 w-full font-mono text-sm"
+										value={codesDraft}
+										onChange={(event) => {
+											previewRequest.current += 1;
+											setPreviewLoading(false);
+											setCodesDraft(event.target.value);
+											setPreview(null);
+										}}
+										placeholder="Dán từ Excel hoặc nhập từng mã…"
+									/>
+								</label>
+								{previewLoading ? (
+									<p className="text-xs text-ink-secondary">Đang kiểm tra…</p>
+								) : null}
+								{preview?.resolved.length ? (
+									<div className="rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-3 text-sm">
+										<p className="font-medium text-ink">
+											{preview.resolved.length} mã hợp lệ · còn {preview.remaining} chỗ
+										</p>
+										<ul className="mt-2 space-y-1 text-ink-secondary">
+											{preview.resolved.map((item) => (
+												<li key={item.enrollmentId}>
+													{item.studentCode} — {fullName(item.familyName, item.givenName)}
+												</li>
+											))}
+										</ul>
+									</div>
+								) : null}
+								{preview && preview.resolved.length > preview.remaining ? (
+									<p role="alert" className="text-sm text-danger">
+										Số sinh viên vượt {preview.remaining} chỗ còn lại. Hãy bớt mã hoặc tăng sức
+										chứa nhóm.
+									</p>
+								) : null}
+								{preview?.errors.length ? (
+									<div className="rounded-[var(--mc-r-sm)] border border-danger/30 bg-danger/5 p-3 text-sm text-danger">
+										<p className="font-medium">Các mã sau sẽ bị bỏ qua khi lưu:</p>
+										{preview.errors.map((error) => (
+											<p key={error}>{error}</p>
+										))}
+									</div>
+								) : null}
+								<div className="flex justify-end gap-2">
+									<button
+										type="button"
+										className="mc-button mc-button-secondary"
+										onClick={() => void runPreview(addGroupId)}
+										disabled={previewLoading}
+									>
+										Kiểm tra mã
+									</button>
+									<button
+										type="button"
+										className="mc-button mc-button-primary"
+										onClick={() => void saveMembers(addGroupId)}
+										disabled={
+											saving ||
+											previewLoading ||
+											!preview?.resolved.length ||
+											preview.resolved.length > preview.remaining
+										}
+									>
+										Lưu
+									</button>
+								</div>
 							</div>
 						) : null}
-						<div className="flex justify-end gap-2">
+
+						<div className="flex justify-end">
 							<button
 								type="button"
+								disabled={saving}
 								className="mc-button mc-button-secondary"
-								onClick={() => void runPreview(addGroupId)}
-								disabled={previewLoading}
+								onClick={() => {
+									previewRequest.current += 1;
+									setAddGroupId(null);
+									setPickerQuery('');
+									setBulkPasteOpen(false);
+									setPreview(null);
+									setCodesDraft('');
+								}}
 							>
-								Kiểm tra mã
-							</button>
-							<button
-								type="button"
-								className="mc-button mc-button-primary"
-								onClick={() => void saveMembers(addGroupId)}
-								disabled={
-									saving ||
-									previewLoading ||
-									!preview?.resolved.length ||
-									!!preview.errors.length ||
-									preview.resolved.length > preview.remaining
-								}
-							>
-								Lưu
+								Đóng
 							</button>
 						</div>
 					</div>

@@ -821,28 +821,42 @@
 
 .recall-player-presentation .recall-card.is-split .recall-text,
 .recall-player:fullscreen .recall-card.is-split .recall-text {
-	font-size: clamp(1.35rem, 2vw, 1.85rem);
+	font-size: clamp(2rem, 4.4vw, 3.75rem);
 }
 
 .recall-player-presentation .recall-card.is-split.is-revealed .recall-text,
 .recall-player:fullscreen .recall-card.is-split.is-revealed .recall-text {
-	font-size: clamp(1.2rem, 1.8vw, 1.65rem);
+	font-size: clamp(1.75rem, 3.8vw, 3.25rem);
+}
+
+.recall-player-presentation .recall-card-kicker,
+.recall-player:fullscreen .recall-card-kicker {
+	font-size: clamp(1.125rem, 1.8vw, 1.75rem);
 }
 
 .recall-player-presentation .recall-text,
 .recall-player:fullscreen .recall-text {
 	max-width: none;
 	width: 100%;
-	font-size: clamp(1.75rem, 2.4vw, 2.25rem);
-	line-height: 1.4;
+	font-size: clamp(3rem, 6.5vw, 5.5rem);
+	line-height: 1.35;
 	letter-spacing: -0.02em;
 }
 
 .recall-player-presentation .recall-card.is-revealed .recall-text,
 .recall-player:fullscreen .recall-card.is-revealed .recall-text {
-	font-size: clamp(1.5rem, 2.1vw, 2rem);
-	line-height: 1.4;
+	font-size: clamp(2.5rem, 5.5vw, 4.75rem);
+	line-height: 1.35;
 	letter-spacing: -0.01em;
+}
+
+.recall-player-presentation .recall-reveal-button,
+.recall-player-presentation .recall-nav-button,
+.recall-player:fullscreen .recall-reveal-button,
+.recall-player:fullscreen .recall-nav-button {
+	min-height: 4rem;
+	padding: 1rem 1.5rem;
+	font-size: clamp(1.25rem, 2vw, 1.625rem);
 }
 
 .recall-player-presentation .recall-text p,

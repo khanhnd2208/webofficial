@@ -7,6 +7,7 @@ import { groupTransaction, removeEnrollmentGroup } from '../domain/groupTransact
 import { memberSlotIndexes } from '../domain/groupSlots';
 import { maskStudentCode } from '../domain/privacy';
 import { withUniqueConflict } from '../domain/prismaErrors';
+import { normalizeStudentCode } from '../domain/studentIdentity';
 import { assertTeachingGroupBoardEnabled } from '../groupBoardAvailability';
 
 import type {
@@ -16,10 +17,6 @@ import type {
 	TeachingGroupBoard,
 	TeachingGroupRecord,
 } from '../types';
-
-function normalizeStudentCode(value: string) {
-	return value.trim().replace(/\s+/g, '');
-}
 
 function effectiveMaxSize(group: { maxSize: number | null }, board: { groupSize: number }) {
 	return group.maxSize ?? board.groupSize;
@@ -441,6 +438,8 @@ export async function addGroupMembers(
 		throw new AppError('Hãy nhập ít nhất một mã sinh viên.', 422, 'VALIDATION');
 	}
 
+	let skipped: string[] = [];
+
 	await withUniqueConflict(
 		'Một số sinh viên vừa được thêm vào nhóm khác. Hãy tải lại.',
 		() =>
@@ -458,11 +457,7 @@ export async function addGroupMembers(
 						errors: preview.errors.join('\n'),
 					});
 				}
-				if (preview.errors.length) {
-					throw new AppError('Một số mã không hợp lệ. Hãy sửa trước khi lưu.', 422, 'VALIDATION', {
-						errors: preview.errors.join('\n'),
-					});
-				}
+				skipped = preview.errors;
 
 				const board = await tx.teachingGroupBoard.findUnique({
 					where: { tutorialClassId: input.tutorialClassId },
@@ -520,7 +515,7 @@ export async function addGroupMembers(
 		'GROUP_SLOT_OCCUPIED',
 	);
 
-	return getGroupBoard(classId, input.tutorialClassId);
+	return { board: await getGroupBoard(classId, input.tutorialClassId), skipped };
 }
 
 export async function previewGroupMembers(
