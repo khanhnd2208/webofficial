@@ -100,26 +100,18 @@ test.describe('Public pages smoke', () => {
 		}
 	});
 
-	test('about page follows the journey-map profile layout', async ({ page }) => {
+	test('about page introduces Khánh and leads to programmes', async ({ page }) => {
 		await page.goto('/gioi-thieu');
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 		await expect(
-			page.getByRole('heading', {
-				level: 1,
-				name: /^Khánh$/i,
-			}),
+			page.getByRole('heading', { level: 1, name: /^Nguyễn Duy Khánh$/i }),
 		).toBeVisible();
-		await expect(page.getByText(/Xin chào, mình là/i)).toBeVisible();
-		await expect(page.getByText(/Giảng viên\s*\/\s*Nghiên cứu\s*\/\s*Người học/i)).toHaveCount(0);
-		await expect(
-			page.getByRole('heading', { name: /Tôi làm giáo dục để tiếp tục học/i }),
-		).toHaveCount(0);
-		await expect(page.getByRole('heading', { name: /Lớp học, công việc và những thử nghiệm/i })).toBeVisible();
-		await expect(page.getByRole('heading', { name: /Công việc hiện tại/i })).toBeVisible();
-		await expect(page.getByRole('heading', { name: /^Giảng dạy$/i })).toBeVisible();
-		await expect(page.getByRole('heading', { name: /Những lớp học đã đi qua/i })).toBeVisible();
-		await expect(page.getByRole('heading', { name: /Một vài dự án đã làm/i })).toBeVisible();
-		await expect(page.getByText(/hiểu rõ và dùng được trong đời sống/i)).toBeVisible();
+		await expect(page.getByText(/Giảng viên Quản trị · Trường Đại học Hà Nội/i)).toBeVisible();
+		await expect(page.getByRole('link', { name: /Xem chương trình/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Chương trình tôi đang triển khai/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Dự án tiêu biểu/i })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /^Nền tảng$/i })).toBeVisible();
+		await expect(page.getByText(/Hiểu đúng vấn đề trước khi tìm giải pháp/i)).toBeVisible();
 		await expect(page.getByText(/My Hanoicam/i)).toHaveCount(0);
 		await expect(page.getByTestId('gate-back')).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toBeVisible();

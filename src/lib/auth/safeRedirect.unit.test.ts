@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	destinationLabel,
 	isSafeInternalPath,
+	loginRedirectTarget,
 	resolveAuthJsRedirect,
 	sanitizeAuthRedirect,
 } from './safeRedirect';
@@ -34,7 +35,7 @@ describe('sanitizeAuthRedirect', () => {
 
 	it('does not loop back to the login page', () => {
 		expect(sanitizeAuthRedirect('/dang-nhap?error=CallbackRouteError', { role: 'admin' })).toBe(
-			'/admin',
+			'/my-space/teaching',
 		);
 	});
 
@@ -57,8 +58,8 @@ describe('sanitizeAuthRedirect', () => {
 		);
 	});
 
-	it('uses the admin home when the signed-in role is admin and no destination exists', () => {
-		expect(sanitizeAuthRedirect(undefined, { role: 'admin' })).toBe('/admin');
+	it('lands admins in Teaching when no destination exists', () => {
+		expect(sanitizeAuthRedirect(undefined, { role: 'admin' })).toBe('/my-space/teaching');
 	});
 });
 
@@ -70,11 +71,32 @@ describe('isSafeInternalPath', () => {
 	});
 });
 
+describe('loginRedirectTarget', () => {
+	it('keeps real destinations so shared class links still open after sign-in', () => {
+		expect(loginRedirectTarget('/my-space/teaching/class-1?tab=cp')).toBe(
+			'/my-space/teaching/class-1?tab=cp',
+		);
+		expect(loginRedirectTarget('/admin/posts')).toBe('/admin/posts');
+	});
+
+	it('returns to the homepage when sign-in started there', () => {
+		expect(loginRedirectTarget('/')).toBe('/');
+	});
+
+	it('routes missing and unsafe destinations through the role-aware landing', () => {
+		expect(loginRedirectTarget(undefined)).toBe('/dang-nhap/tiep-tuc');
+		expect(loginRedirectTarget('/dang-nhap')).toBe('/dang-nhap/tiep-tuc');
+		expect(loginRedirectTarget('https://evil.example/x')).toBe('/x');
+		expect(loginRedirectTarget('//evil.example')).toBe('/dang-nhap/tiep-tuc');
+	});
+});
+
 describe('destinationLabel', () => {
 	it('names common destinations in Vietnamese', () => {
 		expect(destinationLabel('/my-space/teaching')).toBe('lớp học');
 		expect(destinationLabel('/admin/posts')).toBe('khu quản trị');
 		expect(destinationLabel('/tai-khoan')).toBe('tài khoản');
 		expect(destinationLabel('/')).toBeNull();
+		expect(destinationLabel('/dang-nhap/tiep-tuc')).toBeNull();
 	});
 });

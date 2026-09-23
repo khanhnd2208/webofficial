@@ -3,17 +3,29 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { StructuredData } from '@/components/marketing';
 import SectionReveal from '@/components/motion/SectionReveal';
-import JourneyLine from '@/components/motion/JourneyLine';
 import { routes } from '@/config/routes';
 import { absoluteUrl, siteProfile, BRAND_PLACEHOLDER_IMAGE } from '@/config/site';
-import { aboutHero, aboutJourney, aboutClosing, aboutCredentials } from '@/content/about';
+import {
+	aboutBackground,
+	aboutClosing,
+	aboutHero,
+	aboutPrograms,
+	aboutProjects,
+} from '@/content/about';
+import { serviceOffers } from '@/content/services';
+import { getProject } from '@/features/portfolio';
+
 export const metadata: Metadata = {
 	title: `Giới thiệu — ${aboutHero.fullName}`,
-	description: `${aboutHero.quote} ${aboutHero.manifesto}`,
+	description: `${aboutHero.fullName} — ${aboutHero.role}, ${aboutHero.organisation}. ${aboutHero.promise}`,
 	alternates: { canonical: absoluteUrl(routes.about) },
 };
+
+const featuredProjects = aboutProjects.featuredSlugs
+	.map((slug) => getProject(slug))
+	.filter((project) => project !== undefined);
+
 export default function AboutPage() {
-	const { currentWork, classrooms, projects } = aboutJourney;
 	return (
 		<main className="personal-book book-about">
 			<StructuredData
@@ -23,8 +35,8 @@ export default function AboutPage() {
 					name: aboutHero.fullName,
 					url: absoluteUrl(routes.about),
 					jobTitle: 'Lecturer and Learning Experience Designer',
-					worksFor: { '@type': 'Organization', name: 'Trường Đại học Hà Nội' },
-					description: aboutHero.manifesto,
+					worksFor: { '@type': 'Organization', name: aboutHero.organisation },
+					description: aboutHero.promise,
 				}}
 			/>
 			<article className="book-shell">
@@ -33,95 +45,105 @@ export default function AboutPage() {
 						<div>
 							<Image
 								src={siteProfile.portraitSrc ?? BRAND_PLACEHOLDER_IMAGE}
-								alt="Chân dung minh họa Khánh trên hành trình học hỏi"
+								alt={`Chân dung minh họa ${aboutHero.fullName}`}
 								fill
 								loading="eager"
-								sizes="(max-width: 767px) 280px, 360px"
+								sizes="(max-width: 767px) 200px, 360px"
 							/>
 						</div>
-						<figcaption className="book-caption">{aboutHero.portraitCaption}</figcaption>
 					</figure>
 					<div>
-						<p className="book-greeting">{aboutHero.greeting}</p>
-						<h1>{aboutHero.name}</h1>
-						<p className="book-profile-intro">Tôi là Nguyễn Duy Khánh, giảng viên tại Hà Nội.</p>
-						<blockquote lang="en">{aboutHero.quote}</blockquote>
-						<p className="book-caption">{aboutCredentials.closing}</p>
-					</div>
-				</section>
-				<div className="book-journey-heading">
-					<JourneyLine variant="process" className="h-9 w-36 text-accent" />
-					<h2>{aboutJourney.title}</h2>
-				</div>
-				<SectionReveal as="section" className="book-chapter">
-					<header>
-						<span className="book-chapter-number">A</span>
-						<h3>{currentWork.title}</h3>
-					</header>
-					<div>
-						<p className="book-lead">
-							Tôi dạy quản trị, thiết kế trải nghiệm học tập và khám phá cách AI có thể giúp con
-							người học và làm việc tốt hơn.
+						<p className="book-about-pillars">{aboutHero.pillars.join(' · ')}</p>
+						<h1>{aboutHero.fullName}</h1>
+						<p className="book-about-role">
+							{aboutHero.role} · {aboutHero.organisation}
 						</p>
-						<div className="book-work-list">
-							{currentWork.items.map((item) => (
-								<div key={item.id}>
-									<h4>{item.title}</h4>
-									<p>{item.body}.</p>
-								</div>
-							))}
+						<p className="book-profile-intro">{aboutHero.promise}</p>
+						<div className="book-about-actions">
+							<a href={`#${aboutPrograms.id}`} className="book-button">
+								{aboutHero.ctas.programs}
+							</a>
+							<Link href={routes.contact} className="book-link">
+								{aboutHero.ctas.contact} <span aria-hidden="true">→</span>
+							</Link>
 						</div>
 					</div>
-				</SectionReveal>
+				</section>
+
 				<SectionReveal as="section" className="book-chapter">
-					<header>
-						<span className="book-chapter-number">B</span>
-						<h3>{classrooms.title}</h3>
+					<header id={aboutPrograms.id}>
+						<h2>{aboutPrograms.title}</h2>
 					</header>
 					<div>
-						<p className="book-lead">{aboutHero.manifesto}</p>
-						<ul className="book-schools">
-							{classrooms.items.map((school) => (
-								<li key={school}>{school}</li>
-							))}
-						</ul>
-					</div>
-				</SectionReveal>
-				<SectionReveal as="section" className="book-chapter">
-					<header>
-						<span className="book-chapter-number">C</span>
-						<h3>{projects.title}</h3>
-					</header>
-					<div>
-						<p className="book-lead">
-							Một vài dự án bên cạnh lớp học — những bối cảnh khác nhau để học và thử.
-						</p>
-						<ul className="book-personal-projects">
-							{projects.items.map((item, index) => (
-								<li key={item.id}>
-									<span className="book-caption">{String(index + 1).padStart(2, '0')}</span>
-									{item.href ? (
-										<Link href={item.href}>
-											{item.title}
-											<span aria-hidden="true">↗</span>
-										</Link>
-									) : (
-										<span>{item.title}</span>
-									)}
+						<p className="book-lead">{aboutPrograms.lead}</p>
+						<ul className="book-about-rows">
+							{serviceOffers.map((offer) => (
+								<li key={offer.id}>
+									<span className="book-caption">{offer.number}</span>
+									<div>
+										<h3>{offer.title}</h3>
+										<p>{offer.outcome}</p>
+										<p className="book-caption">{offer.audience}</p>
+									</div>
 								</li>
 							))}
 						</ul>
+						<Link href={routes.services} className="book-link">
+							{aboutPrograms.cta} <span aria-hidden="true">→</span>
+						</Link>
 					</div>
 				</SectionReveal>
+
+				<SectionReveal as="section" className="book-chapter">
+					<header>
+						<h2>{aboutProjects.title}</h2>
+					</header>
+					<div>
+						<ul className="book-about-rows">
+							{featuredProjects.map((project) => (
+								<li key={project.slug}>
+									<span className="book-caption">{project.year}</span>
+									<Link href={routes.project(project.slug)} className="book-about-project">
+										<h3>
+											{project.title} <span aria-hidden="true">↗</span>
+										</h3>
+										<p>{project.summary}</p>
+										<p className="book-caption">{project.status}</p>
+									</Link>
+								</li>
+							))}
+						</ul>
+						<Link href={routes.projects} className="book-link">
+							{aboutProjects.cta} <span aria-hidden="true">→</span>
+						</Link>
+					</div>
+				</SectionReveal>
+
+				<SectionReveal as="section" className="book-chapter">
+					<header>
+						<h2>{aboutBackground.title}</h2>
+					</header>
+					<div>
+						<p className="book-lead">{aboutBackground.current}</p>
+						<h3 className="book-about-label">{aboutBackground.placesLabel}</h3>
+						<ul className="book-schools">
+							{aboutBackground.places.map((place) => (
+								<li key={place}>{place}</li>
+							))}
+						</ul>
+					</div>
+				</SectionReveal>
+
 				<section className="book-closing">
-					<blockquote>{aboutClosing.quote}</blockquote>
-					<Link href={routes.projects} className="book-link">
-						Xem những dự án tôi đang làm <span aria-hidden="true">→</span>
+					<blockquote>{aboutClosing.principle}</blockquote>
+					<p className="book-about-closing-lead">{aboutClosing.lead}</p>
+					<Link href={routes.contact} className="book-button">
+						{aboutClosing.cta}
 					</Link>
 				</section>
 				<div className="book-page-end">
 					<Link href={routes.toc}>← Mục lục</Link>
-					<Link href={routes.contact}>Gửi lời nhắn ↗</Link>
+					<Link href={routes.services}>Dịch vụ →</Link>
 				</div>
 			</article>
 		</main>

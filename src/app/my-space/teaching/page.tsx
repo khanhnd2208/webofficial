@@ -1,3 +1,6 @@
+import Link from 'next/link';
+
+import { TeachingActiveClasses } from '@/components/teaching/admin/TeachingActiveClasses';
 import { TeachingAppHeader } from '@/components/teaching/admin/TeachingAppHeader';
 import { TeachingCourseCards } from '@/components/teaching/admin/TeachingCourseCards';
 import { routes } from '@/config/routes';
@@ -14,10 +17,24 @@ export default async function MySpaceTeachingPage() {
 				backHref={routes.mySpace}
 				backLabel="My Space"
 				eyebrow="Teaching"
-				title="Môn học"
-				description="Thêm môn, tạo lớp rỗng và quản lý Active Recall từ menu ⋯."
+				title="Lớp và môn học"
+				description="Mở lớp để điểm danh, chấm CP hoặc chia sẻ link cho sinh viên."
+				actions={
+					<div className="flex items-center gap-2">
+						<Link href={routes.admin.home} className="teaching-icon-button min-h-11 text-xs font-semibold">
+							Quản trị
+						</Link>
+						<Link
+							href={routes.mySpaceTeachingNew}
+							className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-xs font-semibold text-paper"
+						>
+							Tạo lớp
+						</Link>
+					</div>
+				}
 			/>
-			<div className="mt-6 sm:mt-8">
+			<div className="mt-6 space-y-8 sm:mt-8">
+				<TeachingActiveClasses courses={courses} />
 				<TeachingCourseCards courses={courses} />
 			</div>
 		</div>

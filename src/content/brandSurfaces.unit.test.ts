@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	aboutBackground,
 	aboutClosing,
 	aboutCredentials,
 	aboutHero,
-	aboutJourney,
+	aboutProjects,
 } from './about';
+import { getProject } from '@/features/portfolio';
 import { NOTES_PUBLIC_MIN, areNotesPublic, getPublishedNotes, notes } from './notes';
 import {
 	TREASURE_PUBLIC_MIN,
@@ -16,43 +18,29 @@ import {
 import { corePositioning } from './publicMarketing';
 
 describe('about content', () => {
-	it('opens with a named hero profile and journey quote', () => {
-		expect(aboutHero.name).toBe('Khánh');
+	it('opens with who Khánh is, where he teaches, and what he offers', () => {
 		expect(aboutHero.fullName).toBe('Nguyễn Duy Khánh');
-		expect(aboutHero.greeting).toBe('Xin chào, mình là');
-		expect(aboutHero.quote).toContain('making education an art');
-		expect(aboutHero.manifesto).toBe(
-			'Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
-		);
+		expect(aboutHero.organisation).toBe('Trường Đại học Hà Nội');
+		expect(aboutHero.promise).toContain('năng lực, chương trình và quy trình');
+		expect(aboutHero.pillars).toEqual(['Management Education', 'Learning Design', 'Applied AI']);
 		expect(corePositioning.full).toContain('Nguyễn Duy Khánh');
 	});
 
-	it('maps the journey as current work, classrooms, and projects', () => {
-		expect(aboutJourney.title).toBe('Lớp học, công việc và những thử nghiệm');
-		expect(aboutJourney.currentWork.title).toBe('Công việc hiện tại');
-		expect(aboutJourney.currentWork.items.map((item) => item.title)).toEqual([
-			'Giảng dạy',
-			'Thiết kế trải nghiệm học',
-			'Ứng dụng AI tạo sinh',
-		]);
-		expect(aboutJourney.classrooms.items).toHaveLength(6);
-		expect(aboutJourney.classrooms.items[0]).toBe('Đại học Hà Nội');
-		expect(aboutJourney.projects.items.map((item) => item.id)).toEqual([
-			'mini-erp',
-			'moonie',
-			'wang',
-			'hanoicam',
-			'kiddogo',
-		]);
+	it('features only projects that have a public case page', () => {
+		expect(aboutProjects.featuredSlugs).toHaveLength(3);
+		for (const slug of aboutProjects.featuredSlugs) {
+			expect(getProject(slug)).toBeDefined();
+		}
 	});
 
-	it('closes with an applied-idea quote and quiet credentials', () => {
-		expect(aboutClosing.quote).toContain('hiểu rõ và dùng được');
+	it('keeps background and credentials factual', () => {
+		expect(aboutBackground.places).toHaveLength(6);
+		expect(aboutBackground.places[0]).toBe('Đại học Hà Nội');
+		expect(aboutClosing.principle).toBe('Hiểu đúng vấn đề trước khi tìm giải pháp.');
 		expect(aboutCredentials.items).toEqual([
 			'Giảng viên, Khoa Quản trị Kinh doanh và Du lịch',
 			'Trường Đại học Hà Nội · Hà Nội, Việt Nam',
 		]);
-		expect(aboutCredentials.closing).toBe('Tôi dạy, học và viết từ Hà Nội.');
 	});
 });
 

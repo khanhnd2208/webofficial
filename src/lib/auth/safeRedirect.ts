@@ -6,7 +6,13 @@
 const LOGIN_PATHS = new Set(['/dang-nhap', '/login']);
 
 export const AUTH_DEFAULT_AFTER_LOGIN = '/tai-khoan';
-export const AUTH_DEFAULT_AFTER_LOGIN_ADMIN = '/admin';
+/** Admins spend most of their time in Teaching, so land there instead of the admin overview. */
+export const AUTH_DEFAULT_AFTER_LOGIN_ADMIN = '/my-space/teaching';
+/**
+ * Role-aware landing used when the login has no meaningful destination (direct visit or the
+ * homepage). The role is only known after Google returns, so this page resolves it server-side.
+ */
+export const AUTH_CONTINUE_PATH = '/dang-nhap/tiep-tuc';
 
 export type AuthRedirectRole = 'admin' | 'student';
 
@@ -79,6 +85,15 @@ export function sanitizeAuthRedirect(
 	return aliased;
 }
 
+/**
+ * Where Google should send the browser after a fresh sign-in. Signing in only adds the session,
+ * so the page the person came from (homepage included) is kept. Only a direct visit to the
+ * login page, with no origin, goes through the role-aware continue page.
+ */
+export function loginRedirectTarget(raw: string | null | undefined): string {
+	return sanitizeAuthRedirect(raw, { fallback: AUTH_CONTINUE_PATH });
+}
+
 /** Auth.js `redirect` callback: always return an absolute URL on this origin. */
 export function resolveAuthJsRedirect(url: string, baseUrl: string): string {
 	let origin: URL;
@@ -106,7 +121,7 @@ export function resolveAuthJsRedirect(url: string, baseUrl: string): string {
 }
 
 export function destinationLabel(from: string): string | null {
-	if (!from || from === '/' || from.startsWith('http')) return null;
+	if (!from || from === '/' || from === AUTH_CONTINUE_PATH || from.startsWith('http')) return null;
 	if (from.startsWith('/my-space/teaching')) return 'lớp học';
 	if (from.startsWith('/admin')) return 'khu quản trị';
 	if (from.startsWith('/ghi-chep') || from.startsWith('/bai-viet')) return 'ghi chép';

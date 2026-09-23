@@ -7,7 +7,7 @@ import { routes } from '@/config/routes';
 import { SITE_NAME } from '@/config/site';
 import { auth } from '@/lib/auth';
 import { authErrorMessage } from '@/lib/auth/errors';
-import { destinationLabel, sanitizeAuthRedirect } from '@/lib/auth/safeRedirect';
+import { destinationLabel, loginRedirectTarget, sanitizeAuthRedirect } from '@/lib/auth/safeRedirect';
 
 export const metadata: Metadata = {
 	title: 'Đăng nhập',
@@ -22,13 +22,13 @@ export default async function LoginPage({
 }) {
 	const sp = await searchParams;
 	const session = await auth();
-	const from = sanitizeAuthRedirect(sp?.callbackUrl ?? sp?.from, {
-		role: session?.user?.role,
-	});
+	const requested = sp?.callbackUrl ?? sp?.from;
 
 	if (session?.user) {
-		redirect(from);
+		redirect(sanitizeAuthRedirect(requested, { role: session.user.role }));
 	}
+
+	const from = loginRedirectTarget(requested);
 
 	const errorMessage = authErrorMessage(sp?.error);
 	const backLabel = destinationLabel(from);

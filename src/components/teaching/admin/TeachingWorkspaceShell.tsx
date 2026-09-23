@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { routes } from '@/config/routes';
@@ -63,9 +64,20 @@ export function TeachingWorkspaceShell({
 		<TeachingWorkspacePending initialWeek={week}>
 			<div className={`teaching-workspace-shell py-2 sm:py-3 ${isGradebookTab ? 'teaching-workspace-shell-gradebook' : ''}`} data-teaching-shell>
 				<TeachingAppHeader
-					backHref={routes.mySpaceTeachingCourse(gradebook.class.courseId)}
-					backLabel="Về môn học"
-					eyebrow={`${gradebook.class.courseCode} · Mã lớp ${gradebook.class.classCode ?? gradebook.class.groupNo} · ${gradebook.class.term}`}
+					backHref={routes.mySpaceTeaching}
+					backLabel="Các lớp"
+					eyebrow={
+						<>
+							<Link
+								href={routes.mySpaceTeachingCourse(gradebook.class.courseId)}
+								className="underline-offset-2 hover:underline"
+								title="Mở trang môn học"
+							>
+								{gradebook.class.courseCode}
+							</Link>
+							{` · Mã lớp ${gradebook.class.classCode ?? gradebook.class.groupNo} · ${gradebook.class.term}`}
+						</>
+					}
 					title={gradebook.class.courseName}
 					description={
 						<div className="teaching-class-meta flex flex-wrap items-center gap-1.5">

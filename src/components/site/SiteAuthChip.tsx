@@ -29,9 +29,9 @@ export default function SiteAuthChip({ variant = 'chrome', className = '' }: Sit
 	const href = !signedIn
 		? `${routes.login}?from=${encodeURIComponent(pathname || '/')}`
 		: isAdmin
-			? routes.admin.home
+			? routes.mySpaceTeaching
 			: routes.account;
-	const label = !signedIn ? 'Đăng nhập' : isAdmin ? 'Admin' : 'Tài khoản';
+	const label = !signedIn ? 'Đăng nhập' : isAdmin ? 'Teaching' : 'Tài khoản';
 
 	return (
 		<Link
