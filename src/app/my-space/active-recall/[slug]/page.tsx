@@ -28,5 +28,6 @@ export default async function ActiveRecallDeckPage({
 	const { slug } = await params;
 	const deck = await getPublishedRecallDeck(slug);
 	if (!deck) notFound();
-	return <ActiveRecallPlayer deck={deck} />;
+	// Older shared links point here; keep them on the same bilingual player as class links.
+	return <ActiveRecallPlayer deck={deck} showViToggle />;
 }

@@ -1,5 +1,6 @@
 export { default as AnalyticsScript } from './AnalyticsScript';
 export { default as ConditionalFooter } from './ConditionalFooter';
+export { default as DeploymentRefresh } from './DeploymentRefresh';
 export { default as GateNav } from './GateNav';
 export { default as IntroLanding } from './IntroLanding';
 export { default as MainContent } from './MainContent';

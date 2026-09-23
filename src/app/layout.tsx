@@ -5,6 +5,7 @@ import Providers from '@/components/Providers';
 import {
 	AnalyticsScript,
 	ConditionalFooter,
+	DeploymentRefresh,
 	MainContent,
 	Navbar,
 	PublicMinimalChrome,
@@ -85,6 +86,7 @@ export default function RootLayout({
 					<MainContent>{children}</MainContent>
 					<ConditionalFooter />
 					<AnalyticsScript />
+					<DeploymentRefresh />
 				</Providers>
 			</body>
 		</html>
