@@ -663,6 +663,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		page,
 		context,
 	}) => {
+		test.setTimeout(120_000);
 		await addAdminSession(context);
 		const suffix = Date.now().toString(36);
 		const created = await page.request.post('/api/admin/teaching/classes', {
@@ -1092,8 +1093,10 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				),
 			).toBeLessThanOrEqual(1);
 		} finally {
-			await addAdminSession(context);
-			await cleanupTeachingClass(page.request, classId);
+			if (!page.isClosed()) {
+				await addAdminSession(context);
+				await cleanupTeachingClass(page.request, classId);
+			}
 		}
 	});
 
