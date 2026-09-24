@@ -1,8 +1,9 @@
 import { gunzipSync } from 'node:zlib';
+import { resolve } from 'node:path';
 
 import { LearnCourseLevel, Prisma, PublishStatus } from '@prisma/client';
+import { config as loadEnv } from 'dotenv';
 
-import { prisma } from '../src/lib/prisma';
 import { parseCourseMarkdown } from '../src/features/learn/lessonImport';
 import { compareLectureText } from '../src/features/learn/textFidelity';
 
@@ -333,6 +334,8 @@ function normalizeLecture(raw: string): string {
 }
 
 async function main() {
+	loadEnv({ path: resolve(process.cwd(), '.env.local') });
+	const { prisma } = await import('../src/lib/prisma');
 	const raw = gunzipSync(Buffer.from(SOURCE_GZIP_BASE64, 'base64')).toString('utf8');
 	const markdown = normalizeLecture(raw);
 	const parsed = parseCourseMarkdown(markdown);
