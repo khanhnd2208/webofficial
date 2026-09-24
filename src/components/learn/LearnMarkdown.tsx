@@ -1,5 +1,5 @@
 import ReactMarkdown, { type Components } from 'react-markdown';
-import type { ReactNode } from 'react';
+import { isValidElement, type ReactNode } from 'react';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 
@@ -8,6 +8,15 @@ import remarkLearnFootnotes from '@/features/learn/remarkFootnotes';
 import { headingId } from '@/features/learn/outline';
 
 import LearnFigure from './LearnFigure';
+import LearnMermaid from './LearnMermaid';
+
+function mermaidSource(children: ReactNode): string | null {
+	const child = Array.isArray(children) ? children[0] : children;
+	if (!isValidElement<{ className?: string; children?: ReactNode }>(child)) return null;
+	const className = child.props.className ?? '';
+	if (!className.split(/\s+/).includes('language-mermaid')) return null;
+	return textOf(child.props.children).replace(/\n$/, '');
+}
 
 function textOf(children: ReactNode): string {
 	if (typeof children === 'string' || typeof children === 'number') return String(children);
@@ -32,6 +41,11 @@ const components: Components = {
 		return (
 			<a href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} {...props} />
 		);
+	},
+	pre: ({ node: _node, children }) => {
+		const source = mermaidSource(children);
+		if (source !== null) return <LearnMermaid source={source} />;
+		return <pre>{children}</pre>;
 	},
 };
 

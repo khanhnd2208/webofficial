@@ -136,6 +136,7 @@ export default function ImportLessonDialog({
 					</button>
 				</li>
 				<li>Mở ChatGPT, Claude hoặc Gemini, dán prompt, thay dòng [DÁN…] bằng bài, rồi gửi. Bài dài thì nhắn “tiếp” tới khi hết.</li>
+				<li>Bài soạn trên Google Docs / Claude Docs: tải về dạng Markdown (.md) thay vì chép chữ. Làm vậy giữ được bảng, in đậm và sơ đồ.</li>
 				<li>Chép cả câu trả lời (hoặc nút chép của khối code) vào ô Kết quả AI. Dán nối nhiều phần cũng được.</li>
 				<li>Dán bản gốc vào ô Bản gốc để đối chiếu từng chữ.</li>
 			</ol>

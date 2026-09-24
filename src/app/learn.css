@@ -2011,6 +2011,36 @@
 	padding: 0;
 	background: none;
 }
+.ln-diagram {
+	margin: 1.5em 0;
+	padding: 1rem 0.75rem;
+	overflow-x: auto;
+	border: 1px solid var(--hairline);
+	border-radius: 10px;
+	background: var(--paper);
+	text-align: center;
+}
+.ln-diagram svg {
+	display: inline-block;
+	height: auto;
+	max-width: none;
+}
+.ln-diagram--pending {
+	height: 12rem;
+	background: linear-gradient(90deg, var(--paper), var(--accent-subtle), var(--paper));
+}
+.ln-diagram--error {
+	text-align: left;
+}
+.ln-diagram--error p {
+	margin: 0 0 0.6rem;
+	color: var(--error);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.ln-diagram--error pre {
+	margin: 0;
+}
 .ln-table {
 	overflow-x: auto;
 }

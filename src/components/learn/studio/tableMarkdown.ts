@@ -30,7 +30,7 @@ export const LearnTable = Table.extend({
 				} else {
 					raw = cellNode.content ? h.renderChildren(cellNode.content) : '';
 				}
-				const text = escapeCellPipes(collapseWhitespace(raw));
+				const text = escapeCellPipes(collapseWhitespace(raw.replace(/&nbsp;/gi, ' ')));
 				cells.push({ text, isHeader: cellNode.type === 'tableHeader' });
 			});
 			rows.push(cells);

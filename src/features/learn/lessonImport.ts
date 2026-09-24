@@ -424,6 +424,51 @@ export function cleanAiPaste(raw: string): { markdown: string; warnings: string[
 	return { markdown, warnings };
 }
 
+const RAW_MERMAID_LINE = /^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
+const DOC_BYLINE = /·\s*@\S/;
+
+function looksLikeFlatTable(body: string[]): boolean {
+	const rows = body.map((line) => line.trim()).filter(Boolean);
+	if (rows.length < 4) return false;
+	const short = rows.filter((line) => line.length <= 80 && !/[.!?…]/.test(line));
+	return short.length >= 4 && short.length / rows.length >= 0.6;
+}
+
+/** Flags diagrams and flattened tables the AI prompt is supposed to rebuild. */
+export function structureWarnings(markdown: string): string[] {
+	const warnings: string[] = [];
+	const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
+	const mask = computeFenceMask(lines);
+	if (lines.some((line, index) => !mask[index] && RAW_MERMAID_LINE.test(line.trim()))) {
+		warnings.push('Có sơ đồ chưa bọc trong khối ```mermaid');
+	}
+	let open = false;
+	let lang = '';
+	let body: string[] = [];
+	const flush = () => {
+		if (open && (lang === 'text' || lang === '') && looksLikeFlatTable(body)) {
+			warnings.push('Có khối mã trông như bảng bị dàn phẳng. Hãy để AI dựng lại thành bảng');
+		}
+		open = false;
+		lang = '';
+		body = [];
+	};
+	for (const line of lines) {
+		const fence = line.trim().match(/^(`{3,}|~{3,})(.*)$/);
+		if (fence) {
+			if (!open) {
+				open = true;
+				lang = fence[2].trim().toLowerCase();
+				body = [];
+			} else flush();
+			continue;
+		}
+		if (open) body.push(line);
+	}
+	flush();
+	return [...new Set(warnings)];
+}
+
 /** One file may hold several lessons. Each top-level `# ` line, outside a code fence, starts one. */
 export function parseCourseMarkdown(raw: string): ImportedCourse {
 	const cleaned = cleanAiPaste(raw);
@@ -434,15 +479,21 @@ export function parseCourseMarkdown(raw: string): ImportedCourse {
 	lines.forEach((line, index) => {
 		if (!mask[index] && /^#\s+\S/.test(line.trim())) starts.push(index);
 	});
+	const structural = structureWarnings(source);
+	const byline = (description: string) =>
+		DOC_BYLINE.test(description) ? ['Dòng mô tả là tên tác giả/ngày, không phải mô tả'] : [];
 	if (starts.length <= 1) {
 		const lesson = parseLessonMarkdown(source);
-		return { lessons: [lesson], warnings: [...cleaned.warnings, ...lesson.warnings] };
+		return { lessons: [lesson], warnings: [...cleaned.warnings, ...structural, ...byline(lesson.lessonDescription), ...lesson.warnings] };
 	}
 	const lessons = starts.map((start, index) => {
 		const end = index + 1 < starts.length ? starts[index + 1] : lines.length;
 		return parseLessonMarkdown(lines.slice(start, end).join('\n'));
 	});
-	return { lessons, warnings: [...cleaned.warnings, ...lessons.flatMap((lesson) => lesson.warnings)] };
+	return {
+		lessons,
+		warnings: [...cleaned.warnings, ...structural, ...lessons.flatMap((lesson) => [...byline(lesson.lessonDescription), ...lesson.warnings])],
+	};
 }
 
 function durationLabel(minutes: number | null): string {

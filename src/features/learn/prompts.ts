@@ -1,6 +1,7 @@
 /** Prompts the admin copies into ChatGPT / Claude / Gemini, then pastes the result back. */
 
 const FENCE = '````';
+const CODE_FENCE = '```';
 
 export const LEARN_MARKDOWN_GUIDE = `# Tên bài học
 > Một câu mô tả — chỉ khi tài liệu gốc đã có câu đó
@@ -9,6 +10,18 @@ export const LEARN_MARKDOWN_GUIDE = `# Tên bài học
 Nội dung mục bằng Markdown: **đậm**, *nghiêng* chỉ khi gốc đã in như vậy, danh sách, bảng.
 
 Dòng "| 6 phút" sau tên mục là tùy chọn. Hệ thống tự tính thời lượng nếu bỏ.
+
+|  | Cột B | Cột C |
+| --- | --- | --- |
+| Hàng | Ô |  |
+
+\`\`\`mermaid
+flowchart TD
+    A["Ý trên"] --> B["Ý dưới"]
+\`\`\`
+
+> [!TIP]
+> Mẹo nhớ.
 
 > [!DEFINITION]
 > Nội dung định nghĩa.
@@ -76,24 +89,39 @@ KHỐI HỌC THUẬT — chỉ bọc, không đổi chữ. Mỗi dòng trong kh�
 - > [!QUOTE] trích dẫn (giữ nguyên dòng tác giả như gốc)
 - > [!EXAMPLE] ví dụ, tình huống
 - > [!REFLECT] câu hỏi thảo luận không có đáp án
-- > [!NOTE] ghi chú
-- > [!WARNING] lưu ý, cảnh báo
+- > [!NOTE] ghi chú, "Lưu ý về từ ngữ", "Đọc thêm"
+- > [!WARNING] "Lưu ý", "Lưu ý quan trọng"
+- > [!TIP] "Mẹo", "Mẹo nhớ", "Một hình ảnh dễ nhớ"
 - > [!IMPORTANT] ý cốt lõi mà gốc đã nhấn mạnh
+- "Câu hỏi nhanh", "Liên hệ bản thân", "Thử sức", "Suy ngẫm" → [!REFLECT]
+- "Ví dụ…", "Ví dụ tổng hợp" → [!EXAMPLE], gồm cả danh sách đi kèm
 Tiêu đề sau [!KIND] chỉ khi gốc có một dòng nhãn riêng cho khối đó (ví dụ "Ví dụ 3: Toyota") → chuyển nguyên dòng đó lên làm tiêu đề, không lặp lại trong thân. Không có thì để trống.
-- > [!TAKEAWAYS] chỉ khi gốc có danh sách "Ý chính", "Ghi nhớ" hoặc "Tóm tắt" rõ ràng; mỗi ý là > - ....
+- > [!TAKEAWAYS] chỉ cho "Mục tiêu" hoặc "Bạn sẽ nắm được" ở đầu mục. "Ghi nhớ" hoặc "Tổng kết" ở cuối bài → > [!IMPORTANT] rồi nhãn nguyên văn, vì [!TAKEAWAYS] hiện ở đầu mục với nhãn "Bạn sẽ nắm được".
 - === QUIZ: <tên nguyên văn> === chỉ khi gốc có câu hỏi trắc nghiệm kèm đáp án. Định dạng: Câu n: / A. … / Đáp án: X / Giải thích: (chỉ khi gốc có). Không có đáp án → dùng [!REFLECT], không tự chọn đáp án.
+
+CẢNH BÁO: BẢN GỐC CHÉP TỪ DOCS/WORD
+Bản chép văn bản thường làm mất bảng, in đậm và sơ đồ. Hãy dựng lại, không đổi chữ trong ô.
+
+- Bảng bị dàn phẳng (mỗi ô một dòng): nhận ra bằng một chuỗi dòng ngắn lặp lại theo chu kỳ bằng số cột của hàng tiêu đề, thường đứng ngay sau một câu dẫn kết thúc bằng ":". Dựng lại thành bảng Markdown, chữ trong ô giữ nguyên văn. Ô gộp (dòng trống trong chuỗi) thì để trống ô đó. Ô đầu tiên của hàng tiêu đề trống thì vẫn giữ ô trống. Không bao giờ bọc bảng trong ${CODE_FENCE}.
+- Sơ đồ: nếu bản gốc có mã Mermaid (dòng bắt đầu flowchart, graph, mindmap, timeline, sequenceDiagram) thì bọc nguyên văn trong ${CODE_FENCE}mermaid. Nếu bản gốc có hình hoặc sơ đồ chỉ còn chú thích, hoặc mô tả rõ một cấp bậc, quy trình hay chu trình, được thêm một sơ đồ ${CODE_FENCE}mermaid ngay sau đoạn đó. Không thay chữ, giữ nguyên chú thích.
+- Quy tắc vẽ: chỉ dùng flowchart TD cho cấp bậc hoặc sơ đồ từ 5 nút trở lên (dễ đọc trên điện thoại), flowchart LR cho quy trình tối đa 4 bước, và mindmap cho sơ đồ tỏa từ một ý trung tâm. Tối đa 8 nút. Nhãn đặt trong ngoặc kép A["…"], mỗi dòng tối đa khoảng 6 từ, xuống dòng bằng <br/>. ID nút là chữ không dấu. Không dùng style, classDef, click, %%{init}, emoji. Trang đọc tự tô màu.
+- Đoạn văn: giữa hai đoạn luôn có một dòng trống. Chỉ giữ xuống dòng đơn trong thơ, địa chỉ hoặc trích dẫn nhiều dòng.
+- Nhãn đầu đoạn sang khối, nhãn chuyển thành tiêu đề khối, theo các loại ở trên.
+- In đậm: được in đậm nhãn mở đầu như **Lý do 1 —** và thuật ngữ ngay chỗ nó được định nghĩa, vì bản chép văn bản đã làm mất in đậm của bản gốc. Nhãn đứng riêng một dòng kiểu "Thay đổi 1: …", "Lý do 1: …" → ##.
+- Byline: bỏ dòng ngày, tác giả, "@Tên" ngay dưới tên bài. Dòng 2 (>) chỉ dành cho mô tả thật.
+- Link sang tab hoặc tài liệu khác không có trong bài: giữ nguyên chữ, không tự tạo link.
 
 GIỮ NGUYÊN CÁC PHẦN KHÁC
 - Danh sách: -  cho gạch đầu dòng. Giữ số thứ tự gốc cho danh sách số.
-- In đậm, in nghiêng chỉ khi gốc có. Không tự thêm.
-- Bảng → bảng Markdown, chữ trong ô nguyên văn. Ký tự | trong ô viết \\|. Bảng có ô gộp không chuyển được thì giữ dạng văn bản như gốc.
+- In đậm, in nghiêng theo quy tắc ở trên. Không tự thêm chữ mới.
+- Bảng Markdown: chữ trong ô nguyên văn. Ký tự | trong ô viết \\|.
 - Chú thích cuối trang → [^1] và [^1]: nội dung ở cuối mục chứa nó.
 - Chú thích hình, sơ đồ giữ nguyên dòng chữ. Ảnh sẽ chèn sau trong studio.
 
 CÁCH TRẢ KẾT QUẢ
 - Toàn bộ kết quả nằm trong MỘT khối ${FENCE}markdown … ${FENCE} (4 dấu backtick). Không chữ nào ngoài khối.
 - Bài dài: không được rút gọn. Nếu sắp hết độ dài trả lời, dừng ở cuối một SECTION trọn vẹn, đóng khối, và viết dòng <<<CÒN TIẾP>>>. Khi tôi nhắn "tiếp", tiếp tục từ SECTION kế tiếp trong một khối mới, không lặp lại, không có dòng #  lần nữa.
-- Tự kiểm tra trước khi gửi: không thiếu đoạn nào, không có câu nào do bạn viết, chỉ một dòng # .
+- Tự kiểm tra trước khi gửi: không thiếu đoạn nào, không có câu nào do bạn viết, chỉ một dòng #, không còn bảng dàn phẳng, không có ${CODE_FENCE}text, mọi sơ đồ nằm trong ${CODE_FENCE}mermaid.
 
 --- TÀI LIỆU GỐC ---
 [DÁN TOÀN BỘ BÀI GIẢNG VÀO ĐÂY]`;

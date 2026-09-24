@@ -75,6 +75,16 @@ describe('studio editor markdown round-trip', () => {
 		expect(body).toContain('a \\| b');
 	});
 
+	it('keeps a mermaid fence and an empty table cell', () => {
+		const md = ['```mermaid', 'flowchart TD', '    A["Kim tự tháp"] --> B["Cấp dưới"]', '```', '', '|  | B |', '| --- | --- |', '| một | hai |'].join('\n');
+		const once = roundTrip(md);
+		expect(once).toContain('```mermaid');
+		expect(once).toContain('flowchart TD');
+		expect(once).toMatch(/\|\s+\|\s+B\s+\|/);
+		expect(once).not.toContain('&nbsp;');
+		expect(roundTrip(once)).toBe(once);
+	});
+
 	it('keeps a multi-paragraph callout', () => {
 		const md = '> [!EXAMPLE] Toyota\n> Đoạn một.\n>\n> Đoạn hai.';
 		expect(lectureWords(roundTrip(md))).toEqual(lectureWords(md));

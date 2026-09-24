@@ -8,6 +8,7 @@ import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLear
 import { autoSectionRawText, cleanAiPaste, exportCourseMarkdown, exportLessonMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
+import { readingOutline } from './outline';
 import { compareLectureText, lectureWords } from './textFidelity';
 import type { LearnQuiz } from './types';
 
@@ -366,6 +367,51 @@ describe('helpers', () => {
 		});
 		expect(again).toBe(exported);
 		expect(lectureWords(exported).length).toBeGreaterThan(10);
+	});
+
+	it('ignores mermaid diagrams and a Docs byline when the description repeats the lecture', () => {
+		const original = ['Bài', '24 thg 9, 2026 · @Nguyen Duy Khanh', 'flowchart TD', '    A["Nút"] --> B["Nút hai"]', 'Đoạn văn.'].join('\n');
+		const formatted = ['# Bài', '> Đoạn văn.', '', 'Đoạn văn.', '', '```mermaid', 'flowchart TD', '    A["Sơ đồ mới"] --> B["Không tính"]', '```'].join('\n');
+		expect(compareLectureText(original, formatted).hunks).toEqual([]);
+		expect(compareLectureText(original, formatted.replace('> Đoạn văn.', '> Câu AI tự viết thêm.')).hunks.length).toBeGreaterThan(0);
+	});
+
+	it('warns about an unfenced diagram, a flattened table, and a byline description', () => {
+		const raw = ['# Bài', '> 24 thg 9, 2026 · @Ten', '', '=== SECTION: A ===', 'flowchart TD', '    A --> B', '', '```text', 'Cột', 'Một', 'Hai', 'Ba', '```'].join('\n');
+		const warnings = parseCourseMarkdown(raw).warnings;
+		expect(warnings).toContain('Có sơ đồ chưa bọc trong khối ```mermaid');
+		expect(warnings).toContain('Có khối mã trông như bảng bị dàn phẳng. Hãy để AI dựng lại thành bảng');
+		expect(warnings).toContain('Dòng mô tả là tên tác giả/ngày, không phải mô tả');
+	});
+
+	it('parses the ITM lesson without changing a word', () => {
+		const root = path.join(import.meta.dirname, '../../../content/learn/itm');
+		const original = readFileSync(path.join(root, 'bai-1.original.txt'), 'utf8');
+		const markdown = readFileSync(path.join(root, 'bai-1.md'), 'utf8');
+		const parsed = parseCourseMarkdown(markdown);
+		expect(parsed.warnings).toEqual([]);
+		expect(parsed.lessons[0].sections.map((section) => section.title)).toEqual([
+			'Mở đầu: Vì sao một tổ chức có thể sụp đổ dù không ai phá nó?',
+			'Phần 1. Nhà quản trị là ai, và họ làm việc ở đâu?',
+			'Phần 2. Vì sao tổ chức cần nhà quản trị?',
+			'Phần 3. Quản trị là gì, và nhà quản trị thực sự làm gì?',
+			'Phần 4. Điều gì đang thay đổi công việc của nhà quản trị?',
+			'Phần 5. Nghề quản trị và những kỹ năng cần có',
+			'Phần 6. Không định làm sếp, có cần học quản trị không?',
+			'Góc đọc thêm',
+			'Tổng kết bài 1',
+		]);
+		expect(parsed.lessons[0].lessonDescription).toBe(
+			'Cách một nhóm người được điều phối quyết định rất nhiều đến việc nhóm đó thành công hay thất bại.',
+		);
+		expect(parsed.lessons[0].sections.find((section) => section.title === 'Góc đọc thêm')?.summary).toMatch(/không bắt buộc/);
+		expect(compareLectureText(original, markdown)).toEqual({ matchPercent: 100, hunks: [] });
+		expect(markdown.match(/^\| ---/gm)).toHaveLength(7);
+		expect(markdown.match(/```mermaid/g)).toHaveLength(3);
+		expect(markdown).not.toContain('```text');
+		const byTitle = (title: string) => parsed.lessons[0].sections.find((section) => section.title === title)?.markdown ?? '';
+		expect(readingOutline(byTitle('Phần 4. Điều gì đang thay đổi công việc của nhà quản trị?')).length).toBeGreaterThanOrEqual(3);
+		expect(readingOutline(byTitle('Phần 6. Không định làm sếp, có cần học quản trị không?')).length).toBeGreaterThanOrEqual(3);
 	});
 
 	it('estimates reading time with a one-minute floor', () => {

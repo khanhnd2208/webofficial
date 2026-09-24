@@ -32,18 +32,35 @@ export interface LectureComparison {
 	hunks: TextHunk[];
 }
 
-function stripFormatting(markdown: string): string {
+const MERMAID_FENCE_OPEN = /^\s*(`{3,}|~{3,})mermaid\s*$/i;
+const RAW_MERMAID_START = /^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
+const DOC_BYLINE = /·\s*@\S/;
+
+function stripFormatting(markdown: string, side: 'original' | 'formatted'): string {
 	const normalized = markdown.normalize('NFC').replace(ZERO_WIDTH, '');
 	const lines = normalized.replace(/\r\n?/g, '\n').split('\n');
 	const out: string[] = [];
 	let inFence = false;
-	for (const rawLine of lines) {
+	let inMermaidFence = false;
+	for (let index = 0; index < lines.length; index += 1) {
+		const rawLine = lines[index];
+		if (side === 'original' && index < 3 && DOC_BYLINE.test(rawLine)) continue;
+		if (!inFence && MERMAID_FENCE_OPEN.test(rawLine)) {
+			inFence = true;
+			inMermaidFence = true;
+			continue;
+		}
 		if (/^\s*(`{3,}|~{3,})/.test(rawLine)) {
 			inFence = !inFence;
+			inMermaidFence = false;
 			continue;
 		}
 		if (inFence) {
-			out.push(rawLine);
+			if (!inMermaidFence) out.push(rawLine);
+			continue;
+		}
+		if (side === 'original' && RAW_MERMAID_START.test(rawLine.trim())) {
+			while (index + 1 < lines.length && /^\s+\S/.test(lines[index + 1])) index += 1;
 			continue;
 		}
 		let line = rawLine;
@@ -73,7 +90,7 @@ function stripFormatting(markdown: string): string {
 
 /** Content words only: formatting markers removed, NFC, zero-width characters dropped. */
 export function lectureWords(markdown: string): string[] {
-	return stripFormatting(markdown).split(/\s+/).filter(Boolean);
+	return stripFormatting(markdown, 'formatted').split(/\s+/).filter(Boolean);
 }
 
 function sameWords(left: string[], right: string[]): boolean {
@@ -171,10 +188,35 @@ export function countPlaces(hunks: TextHunk[]): number {
 	return count;
 }
 
+function sameWordsIgnoreCase(left: string[], right: string[]): boolean {
+	if (left.length !== right.length) return false;
+	for (let i = 0; i < left.length; i += 1) {
+		if (left[i].toLocaleLowerCase('vi') !== right[i].toLocaleLowerCase('vi')) return false;
+	}
+	return true;
+}
+
+/** A Docs byline was dropped. Ignore the new description only when those words already exist in the lecture. */
+function withoutBylineReplacement(original: string, formatted: string): string {
+	const head = original.replace(/\r\n?/g, '\n').split('\n').slice(0, 3);
+	if (!head.some((line) => DOC_BYLINE.test(line))) return formatted;
+	const lines = formatted.replace(/\r\n?/g, '\n').split('\n');
+	const index = lines.findIndex((line, i) => i < 5 && /^>\s+\S/.test(line) && !/^>\s*\[!/.test(line));
+	if (index < 0) return formatted;
+	const description = stripFormatting(lines[index], 'formatted').split(/\s+/).filter(Boolean);
+	const source = stripFormatting(original, 'original').split(/\s+/).filter(Boolean);
+	const found = source.some((_, start) => sameWordsIgnoreCase(source.slice(start, start + description.length), description));
+	if (!found) return formatted;
+	lines.splice(index, 1);
+	return lines.join('\n');
+}
+
 /** Compare a source lecture with AI output. Outer ```markdown fences are ignored. */
 export function compareLectureText(original: string, formatted: string): LectureComparison {
-	const left = lectureWords(cleanAiPaste(original).markdown);
-	const right = lectureWords(cleanAiPaste(formatted).markdown);
+	const cleanedOriginal = cleanAiPaste(original).markdown;
+	const cleanedFormatted = cleanAiPaste(formatted).markdown;
+	const left = stripFormatting(cleanedOriginal, 'original').split(/\s+/).filter(Boolean);
+	const right = stripFormatting(withoutBylineReplacement(cleanedOriginal, cleanedFormatted), 'formatted').split(/\s+/).filter(Boolean);
 	if (sameWords(left, right)) return { matchPercent: 100, hunks: [] };
 	const hunks = hunksFromChanges(boundedDiff(left, right));
 	const changed = hunks.reduce((sum, hunk) => sum + hunk.words.length, 0);
