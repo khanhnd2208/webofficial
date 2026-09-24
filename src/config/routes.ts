@@ -50,6 +50,12 @@ export const routes = {
 	myClassTest: (courseSlug: string, testSlug: string) =>
 		`/my-space/my-class/${courseSlug}/tests/${testSlug}` as const,
 	myClassProgress: '/my-space/my-class/progress',
+	/** Self-paced courses: catalog, reader and admin studio. */
+	learnCourses: '/my-space/courses',
+	learnCourse: (slug: string, sectionId?: string | null) =>
+		`/my-space/courses/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
+	learnStudio: (slug: string, sectionId?: string | null) =>
+		`/my-space/courses/${slug}/studio${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	mySpaceTeaching: '/my-space/teaching',
 	mySpaceTeachingNew: '/my-space/teaching/new',
 	mySpaceTeachingCourseNewClass: (courseId: string) =>

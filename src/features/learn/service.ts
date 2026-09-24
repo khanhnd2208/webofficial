@@ -1,0 +1,494 @@
+import { Prisma, type LearnSection } from '@prisma/client';
+
+import { AppError } from '@/lib/appError';
+import { prisma } from '@/lib/prisma';
+import { slugify } from '@/utils/slugify';
+
+import {
+	gradeQuiz,
+	quizForLearner,
+	quizKey,
+	readCheckpoint,
+	readQuiz,
+	readQuizResult,
+	sectionMinutes,
+} from './content';
+import { parseLessonMarkdown } from './lessonImport';
+import type {
+	CreateLearnCourseInput,
+	CreateLearnLessonInput,
+	CreateLearnSectionInput,
+	ReorderLearnOutlineInput,
+	UpdateLearnCourseInput,
+	UpdateLearnLessonInput,
+	UpdateLearnProgressInput,
+	UpdateLearnSectionInput,
+} from './schemas';
+import type {
+	LearnCourseListItem,
+	LearnCourseMeta,
+	LearnCourseOutline,
+	LearnQuizReview,
+	LearnReaderSection,
+	LearnSectionProgressState,
+	LearnStudioCourse,
+	LearnStudioLesson,
+	LearnStudioSection,
+} from './types';
+
+/** Who is asking: learners only ever see published courses; the admin also sees drafts. */
+export interface LearnViewer {
+	userId: string;
+	isAdmin: boolean;
+}
+
+const visibleStatus = (viewer: Pick<LearnViewer, 'isAdmin'>) =>
+	viewer.isAdmin ? { not: 'ARCHIVED' as const } : ('PUBLISHED' as const);
+
+const courseMetaSelect = {
+	id: true,
+	slug: true,
+	title: true,
+	subtitle: true,
+	description: true,
+	category: true,
+	level: true,
+	status: true,
+	updatedAt: true,
+} as const;
+
+function mapMeta(row: Prisma.LearnCourseGetPayload<{ select: typeof courseMetaSelect }>): LearnCourseMeta {
+	return { ...row, updatedAt: row.updatedAt.toISOString() };
+}
+
+function minutesOf(section: Pick<LearnSection, 'type' | 'durationMinutes' | 'markdown' | 'quiz'>) {
+	return sectionMinutes({
+		type: section.type,
+		durationMinutes: section.durationMinutes,
+		markdown: section.markdown,
+		quiz: readQuiz(section.quiz),
+	});
+}
+
+function mapStudioSection(section: LearnSection): LearnStudioSection {
+	return {
+		id: section.id,
+		lessonId: section.lessonId,
+		type: section.type,
+		title: section.title,
+		durationMinutes: section.durationMinutes,
+		summary: section.summary,
+		keyTakeaways: section.keyTakeaways,
+		markdown: section.markdown,
+		checkpoint: readCheckpoint(section.checkpoint),
+		quiz: readQuiz(section.quiz),
+		updatedAt: section.updatedAt.toISOString(),
+	};
+}
+
+/** Map Prisma's "record not found" to a 404 and let every other failure surface. */
+function notFound(message: string) {
+	return (error: unknown): never => {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+			throw new AppError(message, 404);
+		}
+		throw error;
+	};
+}
+
+function jsonOrNull(value: unknown) {
+	return value === null ? Prisma.DbNull : (value as Prisma.InputJsonValue);
+}
+
+async function uniqueSlug(source: string, excludeId?: string) {
+	const base = slugify(source) || 'khoa-hoc';
+	let candidate = base;
+	let index = 2;
+	while (
+		await prisma.learnCourse.findFirst({
+			where: { slug: candidate, ...(excludeId ? { NOT: { id: excludeId } } : {}) },
+			select: { id: true },
+		})
+	) {
+		candidate = `${base}-${index}`;
+		index += 1;
+	}
+	return candidate;
+}
+
+const orderedOutline = {
+	lessons: {
+		orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+		include: { sections: { orderBy: [{ position: 'asc' }, { createdAt: 'asc' }] } },
+	},
+} satisfies Prisma.LearnCourseInclude;
+
+// ─── Learner ─────────────────────────────────────────────────────────────────
+
+export async function listLearnCourses(viewer: LearnViewer): Promise<LearnCourseListItem[]> {
+	const rows = await prisma.learnCourse.findMany({
+		where: { status: visibleStatus(viewer) },
+		orderBy: [{ position: 'asc' }, { updatedAt: 'desc' }],
+		select: {
+			...courseMetaSelect,
+			lessons: {
+				select: {
+					sections: { select: { type: true, durationMinutes: true, markdown: true, quiz: true } },
+				},
+			},
+		},
+	});
+	const completed = await prisma.learnSectionProgress.groupBy({
+		by: ['courseId'],
+		where: { userId: viewer.userId, completedAt: { not: null } },
+		_count: { _all: true },
+	});
+	const completedByCourse = new Map(completed.map((row) => [row.courseId, row._count._all]));
+
+	return rows.map(({ lessons, ...row }) => {
+		const sections = lessons.flatMap((lesson) => lesson.sections);
+		return {
+			...mapMeta(row),
+			lessonCount: lessons.length,
+			sectionCount: sections.length,
+			totalMinutes: sections.reduce((sum, section) => sum + minutesOf(section), 0),
+			completedCount: completedByCourse.get(row.id) ?? 0,
+		};
+	});
+}
+
+export async function getLearnCourseOutline(
+	slug: string,
+	viewer: Pick<LearnViewer, 'isAdmin'>,
+): Promise<LearnCourseOutline | null> {
+	const row = await prisma.learnCourse.findFirst({
+		where: { slug, status: visibleStatus(viewer) },
+		select: { ...courseMetaSelect, ...orderedOutline },
+	});
+	if (!row) return null;
+	const { lessons, ...meta } = row;
+	return {
+		...mapMeta(meta),
+		lessons: lessons.map((lesson) => ({
+			id: lesson.id,
+			title: lesson.title,
+			description: lesson.description,
+			sections: lesson.sections.map((section) => ({
+				id: section.id,
+				title: section.title,
+				type: section.type,
+				minutes: minutesOf(section),
+			})),
+		})),
+	};
+}
+
+export async function getLearnProgress(
+	userId: string,
+	courseId: string,
+): Promise<Record<string, LearnSectionProgressState>> {
+	const rows = await prisma.learnSectionProgress.findMany({ where: { userId, courseId } });
+	return Object.fromEntries(
+		rows.map((row) => [
+			row.sectionId,
+			{
+				completed: Boolean(row.completedAt),
+				note: row.note,
+				quizResult: readQuizResult(row.quizResult),
+			},
+		]),
+	);
+}
+
+function reviewFor(section: LearnSection, result: unknown): LearnQuizReview | null {
+	const quiz = readQuiz(section.quiz);
+	const parsed = readQuizResult(result);
+	return quiz && parsed ? { result: parsed, key: quizKey(quiz) } : null;
+}
+
+export async function getLearnReaderSection(
+	courseId: string,
+	sectionId: string,
+	userId: string,
+): Promise<LearnReaderSection | null> {
+	const section = await prisma.learnSection.findFirst({
+		where: { id: sectionId, lesson: { courseId } },
+		include: { progress: { where: { userId }, select: { quizResult: true } } },
+	});
+	if (!section) return null;
+	const quiz = readQuiz(section.quiz);
+	return {
+		id: section.id,
+		lessonId: section.lessonId,
+		type: section.type,
+		title: section.title,
+		minutes: minutesOf(section),
+		summary: section.summary,
+		keyTakeaways: section.keyTakeaways,
+		markdown: section.markdown,
+		checkpoint: readCheckpoint(section.checkpoint),
+		quiz: section.type === 'QUIZ' && quiz ? quizForLearner(quiz) : null,
+		review: section.type === 'QUIZ' ? reviewFor(section, section.progress[0]?.quizResult) : null,
+	};
+}
+
+async function sectionForViewer(sectionId: string, viewer: LearnViewer) {
+	if (!viewer.userId) throw new AppError('Phiên đăng nhập không hợp lệ', 401);
+	const section = await prisma.learnSection.findFirst({
+		where: { id: sectionId, lesson: { course: { status: visibleStatus(viewer) } } },
+		include: { lesson: { select: { courseId: true } } },
+	});
+	if (!section) throw new AppError('Không tìm thấy mục học', 404);
+	return section;
+}
+
+export async function updateLearnProgress(
+	sectionId: string,
+	viewer: LearnViewer,
+	input: UpdateLearnProgressInput,
+): Promise<LearnSectionProgressState> {
+	const section = await sectionForViewer(sectionId, viewer);
+	const data: Prisma.LearnSectionProgressUpdateInput = {};
+	if (input.completed !== undefined) data.completedAt = input.completed ? new Date() : null;
+	if (input.note !== undefined) data.note = input.note;
+
+	const row = await prisma.learnSectionProgress.upsert({
+		where: { userId_sectionId: { userId: viewer.userId, sectionId } },
+		create: {
+			userId: viewer.userId,
+			sectionId,
+			courseId: section.lesson.courseId,
+			completedAt: input.completed ? new Date() : null,
+			note: input.note ?? '',
+		},
+		update: data,
+	});
+	return { completed: Boolean(row.completedAt), note: row.note, quizResult: readQuizResult(row.quizResult) };
+}
+
+export async function submitLearnQuiz(
+	sectionId: string,
+	viewer: LearnViewer,
+	answers: Record<string, number>,
+): Promise<LearnQuizReview> {
+	const section = await sectionForViewer(sectionId, viewer);
+	const quiz = readQuiz(section.quiz);
+	if (section.type !== 'QUIZ' || !quiz || !quiz.questions.length) {
+		throw new AppError('Mục này không có bài kiểm tra', 400);
+	}
+	const result = gradeQuiz(quiz, answers);
+	// A passed quiz completes the section; a failed retry never un-completes it.
+	const completedAt = result.passed ? new Date() : undefined;
+	await prisma.learnSectionProgress.upsert({
+		where: { userId_sectionId: { userId: viewer.userId, sectionId } },
+		create: {
+			userId: viewer.userId,
+			sectionId,
+			courseId: section.lesson.courseId,
+			quizResult: result as unknown as Prisma.InputJsonValue,
+			completedAt: completedAt ?? null,
+		},
+		update: {
+			quizResult: result as unknown as Prisma.InputJsonValue,
+			...(completedAt ? { completedAt } : {}),
+		},
+	});
+	return { result, key: quizKey(quiz) };
+}
+
+// ─── Studio (admin) ──────────────────────────────────────────────────────────
+
+function mapStudioLesson(
+	lesson: Prisma.LearnLessonGetPayload<{ include: { sections: true } }>,
+): LearnStudioLesson {
+	return {
+		id: lesson.id,
+		title: lesson.title,
+		description: lesson.description,
+		sections: lesson.sections.map(mapStudioSection),
+	};
+}
+
+export async function getLearnStudioCourse(slug: string): Promise<LearnStudioCourse | null> {
+	const row = await prisma.learnCourse.findUnique({
+		where: { slug },
+		select: { ...courseMetaSelect, ...orderedOutline },
+	});
+	if (!row) return null;
+	const { lessons, ...meta } = row;
+	return { ...mapMeta(meta), lessons: lessons.map(mapStudioLesson) };
+}
+
+export async function createLearnCourse(input: CreateLearnCourseInput): Promise<LearnCourseMeta> {
+	const last = await prisma.learnCourse.aggregate({ _max: { position: true } });
+	const row = await prisma.learnCourse.create({
+		data: {
+			...input,
+			slug: await uniqueSlug(input.title),
+			position: (last._max.position ?? -1) + 1,
+			lessons: { create: { title: 'Bài 1', sections: { create: { title: 'Mục đầu tiên' } } } },
+		},
+		select: courseMetaSelect,
+	});
+	return mapMeta(row);
+}
+
+export async function updateLearnCourse(id: string, input: UpdateLearnCourseInput): Promise<LearnCourseMeta> {
+	const current = await prisma.learnCourse.findUnique({ where: { id }, select: { status: true } });
+	if (!current) throw new AppError('Không tìm thấy khóa học', 404);
+	const { slug, ...rest } = input;
+	const row = await prisma.learnCourse.update({
+		where: { id },
+		data: {
+			...rest,
+			...(slug !== undefined ? { slug: await uniqueSlug(slug || rest.title || 'khoa-hoc', id) } : {}),
+			...(input.status === 'PUBLISHED' && current.status !== 'PUBLISHED' ? { publishedAt: new Date() } : {}),
+		},
+		select: courseMetaSelect,
+	});
+	return mapMeta(row);
+}
+
+export async function deleteLearnCourse(id: string): Promise<{ id: string }> {
+	await prisma.learnCourse.delete({ where: { id } }).catch(notFound('Không tìm thấy khóa học'));
+	return { id };
+}
+
+async function nextLessonPosition(courseId: string) {
+	const course = await prisma.learnCourse.findUnique({ where: { id: courseId }, select: { id: true } });
+	if (!course) throw new AppError('Không tìm thấy khóa học', 404);
+	const last = await prisma.learnLesson.aggregate({ where: { courseId }, _max: { position: true } });
+	return (last._max.position ?? -1) + 1;
+}
+
+export async function createLearnLesson(
+	courseId: string,
+	input: CreateLearnLessonInput,
+): Promise<LearnStudioLesson> {
+	const position = await nextLessonPosition(courseId);
+	const lesson = await prisma.learnLesson.create({
+		data: {
+			courseId,
+			title: input.title,
+			description: input.description,
+			position,
+			sections: { create: { title: 'Mục mới' } },
+		},
+		include: { sections: true },
+	});
+	return mapStudioLesson(lesson);
+}
+
+export async function importLearnLesson(courseId: string, markdown: string): Promise<LearnStudioLesson> {
+	const parsed = parseLessonMarkdown(markdown);
+	if (!parsed.sections.length) throw new AppError('Không tìm thấy mục nào để nhập', 400);
+	const position = await nextLessonPosition(courseId);
+	const lesson = await prisma.learnLesson.create({
+		data: {
+			courseId,
+			title: parsed.lessonTitle.slice(0, 200),
+			description: parsed.lessonDescription.slice(0, 4_000),
+			position,
+			sections: {
+				create: parsed.sections.map((section, index) => ({
+					title: section.title.slice(0, 200),
+					summary: section.summary.slice(0, 2_000),
+					markdown: section.markdown,
+					durationMinutes: section.durationMinutes,
+					position: index,
+				})),
+			},
+		},
+		include: { sections: { orderBy: { position: 'asc' } } },
+	});
+	return mapStudioLesson(lesson);
+}
+
+export async function updateLearnLesson(id: string, input: UpdateLearnLessonInput): Promise<{ id: string }> {
+	await prisma.learnLesson.update({ where: { id }, data: input }).catch(notFound('Không tìm thấy bài học'));
+	return { id };
+}
+
+export async function deleteLearnLesson(id: string): Promise<{ id: string }> {
+	await prisma.learnLesson.delete({ where: { id } }).catch(notFound('Không tìm thấy bài học'));
+	return { id };
+}
+
+export async function createLearnSection(
+	lessonId: string,
+	input: CreateLearnSectionInput,
+): Promise<LearnStudioSection> {
+	const lesson = await prisma.learnLesson.findUnique({ where: { id: lessonId }, select: { id: true } });
+	if (!lesson) throw new AppError('Không tìm thấy bài học', 404);
+	const last = await prisma.learnSection.aggregate({ where: { lessonId }, _max: { position: true } });
+	const isQuiz = input.type === 'QUIZ';
+	const section = await prisma.learnSection.create({
+		data: {
+			lessonId,
+			type: input.type,
+			title: input.title ?? (isQuiz ? 'Bài kiểm tra' : 'Mục mới'),
+			position: (last._max.position ?? -1) + 1,
+			...(isQuiz
+				? { quiz: { passingScorePercent: 70, timeLimitMinutes: null, questions: [] } }
+				: {}),
+		},
+	});
+	return mapStudioSection(section);
+}
+
+export async function updateLearnSection(
+	id: string,
+	input: UpdateLearnSectionInput,
+): Promise<LearnStudioSection> {
+	const { checkpoint, quiz, ...rest } = input;
+	const section = await prisma.learnSection
+		.update({
+			where: { id },
+			data: {
+				...rest,
+				...(checkpoint !== undefined ? { checkpoint: jsonOrNull(checkpoint) } : {}),
+				...(quiz !== undefined ? { quiz: jsonOrNull(quiz) } : {}),
+			},
+		})
+		.catch(notFound('Không tìm thấy mục học'));
+	return mapStudioSection(section);
+}
+
+export async function deleteLearnSection(id: string): Promise<{ id: string }> {
+	await prisma.learnSection.delete({ where: { id } }).catch(notFound('Không tìm thấy mục học'));
+	return { id };
+}
+
+/** Persist the full outline order in one go, including sections moved between lessons. */
+export async function reorderLearnOutline(
+	courseId: string,
+	input: ReorderLearnOutlineInput,
+): Promise<{ ok: true }> {
+	const lessons = await prisma.learnLesson.findMany({
+		where: { courseId },
+		select: { id: true, sections: { select: { id: true } } },
+	});
+	const lessonIds = new Set(lessons.map((lesson) => lesson.id));
+	const sectionIds = new Set(lessons.flatMap((lesson) => lesson.sections.map((section) => section.id)));
+	const incomingSections = input.lessons.flatMap((lesson) => lesson.sectionIds);
+	if (
+		input.lessons.length !== lessonIds.size ||
+		input.lessons.some((lesson) => !lessonIds.has(lesson.id)) ||
+		incomingSections.length !== sectionIds.size ||
+		incomingSections.some((id) => !sectionIds.has(id))
+	) {
+		throw new AppError('Mục lục đã thay đổi ở nơi khác. Hãy tải lại trang.', 409);
+	}
+
+	await prisma.$transaction([
+		...input.lessons.map((lesson, position) =>
+			prisma.learnLesson.update({ where: { id: lesson.id }, data: { position } }),
+		),
+		...input.lessons.flatMap((lesson) =>
+			lesson.sectionIds.map((sectionId, position) =>
+				prisma.learnSection.update({ where: { id: sectionId }, data: { lessonId: lesson.id, position } }),
+			),
+		),
+	]);
+	return { ok: true };
+}

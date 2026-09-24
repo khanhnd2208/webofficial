@@ -26,3 +26,7 @@ export async function incomingAdminPath(): Promise<string> {
 export async function incomingTeachingPath(): Promise<string> {
 	return incomingProtectedPath('/my-space/teaching');
 }
+
+export async function incomingLearnPath(): Promise<string> {
+	return incomingProtectedPath('/my-space/courses');
+}

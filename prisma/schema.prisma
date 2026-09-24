@@ -1289,3 +1289,96 @@ model TeachingGroupBoardArchive {
   snapshot      Json
   createdAt     DateTime @default(now())
 }
+
+// ─── Learn: self-paced courses in My Space (/my-space/courses) ───────────────
+// Course → Lesson → Section. Section body is NDK markdown (callouts `> [!KIND]`).
+
+enum LearnCourseLevel {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum LearnSectionType {
+  READING
+  QUIZ
+}
+
+model LearnCourse {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  title       String
+  subtitle    String           @default("")
+  description String           @default("") @db.Text
+  category    String           @default("")
+  level       LearnCourseLevel @default(BASIC)
+  status      PublishStatus    @default(DRAFT)
+  position    Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  publishedAt DateTime?
+
+  lessons  LearnLesson[]
+  progress LearnSectionProgress[]
+
+  @@index([status, position])
+}
+
+model LearnLesson {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  description String   @default("") @db.Text
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course   LearnCourse    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  sections LearnSection[]
+
+  @@index([courseId, position])
+}
+
+model LearnSection {
+  id              String           @id @default(cuid())
+  lessonId        String
+  type            LearnSectionType @default(READING)
+  title           String
+  /// Null = estimate from the markdown word count.
+  durationMinutes Int?
+  summary         String           @default("") @db.Text
+  keyTakeaways    String[]         @default([])
+  markdown        String           @default("") @db.Text
+  /// { question, options[], correctIndex, explanation } shown inside a reading section.
+  checkpoint      Json?
+  /// { passingScorePercent, timeLimitMinutes?, questions[] } for QUIZ sections.
+  quiz            Json?
+  position        Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  lesson   LearnLesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  progress LearnSectionProgress[]
+
+  @@index([lessonId, position])
+}
+
+/// One row per learner per section, so completing, noting and quizzing never overwrite each other.
+model LearnSectionProgress {
+  id          String    @id @default(cuid())
+  userId      String // MongoDB User._id
+  courseId    String
+  sectionId   String
+  completedAt DateTime?
+  note        String    @default("") @db.Text
+  /// { score, total, percentage, passed, answers, completedAt }
+  quizResult  Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  course  LearnCourse  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  section LearnSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sectionId])
+  @@index([userId, courseId])
+}

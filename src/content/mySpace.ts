@@ -33,7 +33,7 @@ export interface MySpaceTile {
 
 export const mySpacePage = {
 	title: 'My Space',
-	lead: 'Teaching: lớp học, điểm danh và Active Recall theo môn.',
+	lead: 'Teaching: lớp học, điểm danh và Active Recall theo môn. Khóa học: bài đọc và bài kiểm tra tự học.',
 	comingSoonLabel: 'Đang phát triển',
 	comingSoonNote: 'Góc này đang được hoàn thiện.',
 } as const;
@@ -50,6 +50,16 @@ export const mySpaceTiles: MySpaceTile[] = [
 		},
 		status: 'published',
 		href: routes.mySpaceTeaching,
+	},
+	{
+		id: 'courses',
+		label: 'Khóa học',
+		visual: {
+			kind: 'cards',
+			alt: 'Minh họa chồng tài liệu khóa học',
+		},
+		status: 'published',
+		href: routes.learnCourses,
 	},
 ];
 

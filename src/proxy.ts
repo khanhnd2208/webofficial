@@ -35,7 +35,8 @@ export function proxy(request: NextRequest) {
 	if (
 		pathname.startsWith('/admin') ||
 		pathname.startsWith('/messages') ||
-		pathname.startsWith('/my-space/teaching')
+		pathname.startsWith('/my-space/teaching') ||
+		pathname.startsWith('/my-space/courses')
 	) {
 		response.headers.set('x-pathname', `${pathname}${request.nextUrl.search}`);
 	}
@@ -60,5 +61,7 @@ export const config = {
 		'/messages/:path*',
 		'/my-space/teaching',
 		'/my-space/teaching/:path*',
+		'/my-space/courses',
+		'/my-space/courses/:path*',
 	],
 };

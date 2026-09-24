@@ -123,6 +123,7 @@ export function resolveAuthJsRedirect(url: string, baseUrl: string): string {
 export function destinationLabel(from: string): string | null {
 	if (!from || from === '/' || from === AUTH_CONTINUE_PATH || from.startsWith('http')) return null;
 	if (from.startsWith('/my-space/teaching')) return 'lớp học';
+	if (from.startsWith('/my-space/courses')) return 'khóa học';
 	if (from.startsWith('/admin')) return 'khu quản trị';
 	if (from.startsWith('/ghi-chep') || from.startsWith('/bai-viet')) return 'ghi chép';
 	if (from.startsWith('/tai-khoan')) return 'tài khoản';

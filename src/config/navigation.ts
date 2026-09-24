@@ -186,6 +186,7 @@ export const INTERNAL_CHROME_PREFIXES = [
 	'/hoc/',
 	'/my-space/my-class',
 	'/my-space/teaching',
+	'/my-space/courses',
 ] as const;
 
 export function isInternalChromePath(pathname: string): boolean {
