@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+
+import { LearnIcon } from './LearnIcon';
+import { LearnScrollProgress } from './LearnPlayerChrome';
 
 const COLLAPSED_KEY = 'ln:outline-collapsed';
 const COLLAPSED_EVENT = 'ln:outline-collapsed';
@@ -23,20 +26,29 @@ function subscribeCollapsed(onChange: () => void) {
 }
 
 /**
- * Two-column reader: sticky outline on the left (collapsible on desktop, a drawer on
- * mobile) and the measure-limited article on the right.
+ * Course player: focused top bar, sticky curriculum sidebar (collapsible on desktop, a
+ * drawer on mobile) and the measure-limited article.
  */
 export default function LearnReaderFrame({
 	header,
+	outlineHead,
 	outline,
 	children,
 }: {
 	header: ReactNode;
+	outlineHead?: ReactNode;
 	outline: ReactNode;
 	children: ReactNode;
 }) {
 	const collapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
+
+	useEffect(() => {
+		if (!drawerOpen) return;
+		const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setDrawerOpen(false);
+		window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	}, [drawerOpen]);
 
 	function toggleCollapsed() {
 		try {
@@ -57,12 +69,10 @@ export default function LearnReaderFrame({
 					aria-label={collapsed ? 'Hiện mục lục' : 'Mục lục'}
 					title="Mục lục"
 				>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-						<rect x="3.5" y="4.5" width="17" height="15" rx="1.5" />
-						<path d="M9.5 4.5v15" />
-					</svg>
+					<LearnIcon name="sidebar" size={18} strokeWidth={1.6} />
 				</button>
 				{header}
+				<LearnScrollProgress />
 			</header>
 			<div className="ln-frame__body">
 				<aside
@@ -73,12 +83,13 @@ export default function LearnReaderFrame({
 					}}
 				>
 					<div className="ln-frame__drawer-head">
-						<span>Mục lục</span>
+						<span>Nội dung khóa học</span>
 						<button type="button" className="ln-icon-btn" onClick={() => setDrawerOpen(false)} aria-label="Đóng mục lục">
-							×
+							<LearnIcon name="close" size={16} />
 						</button>
 					</div>
-					{outline}
+					{outlineHead}
+					<div className="ln-frame__outline-scroll">{outline}</div>
 				</aside>
 				{drawerOpen ? <button type="button" className="ln-frame__scrim" aria-label="Đóng mục lục" onClick={() => setDrawerOpen(false)} /> : null}
 				<main className="ln-frame__main">{children}</main>

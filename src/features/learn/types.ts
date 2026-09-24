@@ -69,6 +69,11 @@ export interface LearnCourseListItem extends LearnCourseMeta {
 	sectionCount: number;
 	totalMinutes: number;
 	completedCount: number;
+	quizCount: number;
+	/** First unfinished section, so "Tiếp tục" lands where the learner left off. */
+	nextSectionId: string | null;
+	/** Last time this learner touched the course (completion, note or quiz). */
+	lastActivityAt: string | null;
 }
 
 export interface LearnOutlineSection {

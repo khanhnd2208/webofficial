@@ -132,18 +132,26 @@ export async function listLearnCourses(viewer: LearnViewer): Promise<LearnCourse
 		select: {
 			...courseMetaSelect,
 			lessons: {
+				orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
 				select: {
-					sections: { select: { type: true, durationMinutes: true, markdown: true, quiz: true } },
+					sections: {
+						orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+						select: { id: true, type: true, durationMinutes: true, markdown: true, quiz: true },
+					},
 				},
 			},
 		},
 	});
-	const completed = await prisma.learnSectionProgress.groupBy({
-		by: ['courseId'],
-		where: { userId: viewer.userId, completedAt: { not: null } },
-		_count: { _all: true },
+	const progress = await prisma.learnSectionProgress.findMany({
+		where: { userId: viewer.userId },
+		select: { courseId: true, sectionId: true, completedAt: true, updatedAt: true },
 	});
-	const completedByCourse = new Map(completed.map((row) => [row.courseId, row._count._all]));
+	const completedSections = new Set(progress.filter((row) => row.completedAt).map((row) => row.sectionId));
+	const lastActivity = new Map<string, Date>();
+	for (const row of progress) {
+		const seen = lastActivity.get(row.courseId);
+		if (!seen || row.updatedAt > seen) lastActivity.set(row.courseId, row.updatedAt);
+	}
 
 	return rows.map(({ lessons, ...row }) => {
 		const sections = lessons.flatMap((lesson) => lesson.sections);
@@ -152,7 +160,10 @@ export async function listLearnCourses(viewer: LearnViewer): Promise<LearnCourse
 			lessonCount: lessons.length,
 			sectionCount: sections.length,
 			totalMinutes: sections.reduce((sum, section) => sum + minutesOf(section), 0),
-			completedCount: completedByCourse.get(row.id) ?? 0,
+			completedCount: sections.filter((section) => completedSections.has(section.id)).length,
+			quizCount: sections.filter((section) => section.type === 'QUIZ').length,
+			nextSectionId: sections.find((section) => !completedSections.has(section.id))?.id ?? null,
+			lastActivityAt: lastActivity.get(row.id)?.toISOString() ?? null,
 		};
 	});
 }

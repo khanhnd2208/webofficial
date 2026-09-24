@@ -95,23 +95,54 @@ export default function LearnQuizRunner({
 				</div>
 			) : (
 				<div className="ln-quiz__bar">
-					<span>
-						{quiz.questions.length} câu · cần {quiz.passingScorePercent}% để đạt
-					</span>
-					{secondsLeft !== null ? (
-						<span className="tabular-nums" data-urgent={secondsLeft < 60 ? 'true' : undefined}>
-							Còn {clock(secondsLeft)}
+					<div className="ln-quiz__bar-row">
+						<span>
+							{quiz.questions.length} câu · cần {quiz.passingScorePercent}% để đạt
 						</span>
-					) : null}
+						<span className="tabular-nums">
+							{secondsLeft !== null ? (
+								<span data-urgent={secondsLeft < 60 ? 'true' : undefined}>Còn {clock(secondsLeft)} · </span>
+							) : null}
+							{answeredCount}/{quiz.questions.length}
+						</span>
+					</div>
+					<div className="ln-bar ln-bar--thin" aria-hidden="true">
+						<span style={{ width: `${(answeredCount / quiz.questions.length) * 100}%` }} />
+					</div>
 				</div>
 			)}
+
+			<nav className="ln-quiz__nav" aria-label="Đi tới câu hỏi">
+				{quiz.questions.map((question, index) => {
+					const key = keyById.get(question.id);
+					const picked = shownAnswers[question.id];
+					const state = key
+						? picked === key.correctIndex
+							? 'correct'
+							: 'wrong'
+						: picked !== undefined
+							? 'answered'
+							: undefined;
+					return (
+						<a
+							key={question.id}
+							href={`#ln-q-${question.id}`}
+							className="ln-quiz__nav-item tabular-nums"
+							data-state={state}
+							aria-label={`Câu ${index + 1}${state === 'answered' ? ' (đã trả lời)' : state === 'correct' ? ' (đúng)' : state === 'wrong' ? ' (sai)' : ''}`}
+						>
+							{index + 1}
+						</a>
+					);
+				})}
+			</nav>
 
 			<ol className="ln-quiz__list">
 				{quiz.questions.map((question, index) => {
 					const key = keyById.get(question.id);
 					const picked = shownAnswers[question.id];
 					return (
-						<li key={question.id} className="ln-quiz__item">
+						<li key={question.id} id={`ln-q-${question.id}`} className="ln-quiz__item">
 							<p className="ln-quiz__question">
 								<span className="ln-quiz__number">Câu {index + 1}</span>
 								{question.question}

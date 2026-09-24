@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { adminFetch } from '@/lib/admin/client';
 
+import { LearnIcon } from './LearnIcon';
+
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 const SAVE_LABEL: Record<SaveState, string> = {
@@ -47,7 +49,9 @@ export default function LearnNotes({ sectionId, initialNote }: { sectionId: stri
 	return (
 		<section className="ln-notes" aria-label="Ghi chú của bạn">
 			<button type="button" className="ln-notes__toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
-				<span>Ghi chú của bạn</span>
+				<span>
+					<LearnIcon name="note" size={16} /> Ghi chú của bạn
+				</span>
 				<span className="ln-notes__state">{open ? SAVE_LABEL[state] : note ? 'Có ghi chú' : 'Chỉ bạn thấy'}</span>
 			</button>
 			{open ? (
