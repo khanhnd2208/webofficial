@@ -87,9 +87,10 @@ test.describe('Teaching group list UX', () => {
 			await page.getByRole('textbox', { name: /Mã sinh viên/ }).fill(`${codes[0]}\n${codes[2]}`);
 			await page.getByRole('button', { name: 'Kiểm tra mã' }).click();
 			await expect(page.getByText(/không thuộc tutorial đang chọn/)).toBeVisible();
+			await expect(page.getByText(/sẽ bị bỏ qua khi lưu/)).toBeVisible();
 			await expect(
 				page.getByRole('dialog').getByRole('button', { name: 'Lưu', exact: true }),
-			).toBeDisabled();
+			).toBeEnabled();
 			await page.getByRole('textbox', { name: /Mã sinh viên/ }).fill(`${codes[0]}\n${codes[1]}`);
 			await page.getByRole('button', { name: 'Kiểm tra mã' }).click();
 			await expect(page.getByText('2 mã hợp lệ · còn 2 chỗ')).toBeVisible();
