@@ -30,6 +30,7 @@
 		"db:seed:teaching": "npx tsx scripts/seed-teaching.ts",
 		"db:seed:teaching:excel": "npx tsx scripts/seed-teaching-from-excel.ts",
 		"db:normalize-teaching": "npx tsx scripts/normalize-teaching-classes.ts",
+		"db:seed:itm": "npx tsx scripts/seed-itm-course.ts",
 		"db:migrate": "npx prisma migrate dev",
 		"db:migrate:deploy": "npx prisma migrate deploy",
 		"db:studio": "npx prisma studio",
