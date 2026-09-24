@@ -3206,6 +3206,7 @@
 	text-align: left;
 	font-size: 0.8rem;
 }
+.ln-editor__upload {
 	margin: 0;
 	padding: 0.35rem 0.8rem;
 	color: var(--ink-secondary);
