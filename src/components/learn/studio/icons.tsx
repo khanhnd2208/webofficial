@@ -27,6 +27,7 @@ const PATHS = {
 	duplicate: 'M9 9h10v11H9zM5 15V4h10M14 12v5M11.5 14.5h5',
 	close: 'M6 6l12 12M18 6 6 18',
 	markdown: 'M3 6h18v12H3zM6.5 15V9l2.5 3 2.5-3v6M16.5 9v6M14.5 13l2 2 2-2',
+	image: 'M4 5h16v14H4zM8.5 10.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM4 16l4.5-5 3.5 4 2.5-3L20 16',
 } as const;
 
 export type StudioIconName = keyof typeof PATHS;

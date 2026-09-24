@@ -169,10 +169,14 @@ export const Callout = Node.create({
 		(node.content ?? []).forEach((child: unknown) => {
 			blocks.push(helpers.renderChildren([child as never]));
 		});
-		const body = blocks
+		// An empty callout body serializes its placeholder paragraph as "&nbsp;"; drop those
+		// lines so an untouched callout round-trips back to just its header.
+		const bodyLines = blocks
 			.join('\n\n')
 			.split('\n')
-			.map((line) => (line.trim() ? `> ${line}` : '>'));
+			.filter((line) => line.trim() !== '&nbsp;');
+		if (!bodyLines.length) return head;
+		const body = bodyLines.map((line) => (line.trim() ? `> ${line}` : '>'));
 		return [head, ...body].join('\n');
 	},
 });

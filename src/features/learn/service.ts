@@ -14,15 +14,16 @@ import {
 	sectionMinutes,
 } from './content';
 import { parseLessonMarkdown } from './lessonImport';
-import type {
-	CreateLearnCourseInput,
-	CreateLearnLessonInput,
-	CreateLearnSectionInput,
-	ReorderLearnOutlineInput,
-	UpdateLearnCourseInput,
-	UpdateLearnLessonInput,
-	UpdateLearnProgressInput,
-	UpdateLearnSectionInput,
+import {
+	LEARN_MAX_MARKDOWN,
+	type CreateLearnCourseInput,
+	type CreateLearnLessonInput,
+	type CreateLearnSectionInput,
+	type ReorderLearnOutlineInput,
+	type UpdateLearnCourseInput,
+	type UpdateLearnLessonInput,
+	type UpdateLearnProgressInput,
+	type UpdateLearnSectionInput,
 } from './schemas';
 import type {
 	LearnCourseListItem,
@@ -393,6 +394,10 @@ export async function createLearnLesson(
 export async function importLearnLesson(courseId: string, markdown: string): Promise<LearnStudioLesson> {
 	const parsed = parseLessonMarkdown(markdown);
 	if (!parsed.sections.length) throw new AppError('Không tìm thấy mục nào để nhập', 400);
+	const oversized = parsed.sections.find((section) => section.markdown.length > LEARN_MAX_MARKDOWN);
+	if (oversized) {
+		throw new AppError(`Mục "${oversized.title}" quá dài để lưu. Hãy tách nhỏ mục này rồi nhập lại.`, 400);
+	}
 	const position = await nextLessonPosition(courseId);
 	const lesson = await prisma.learnLesson.create({
 		data: {

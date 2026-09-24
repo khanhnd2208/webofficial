@@ -12,6 +12,7 @@
  */
 
 import { countWords } from './content';
+import { LEARN_MAX_MARKDOWN } from './schemas';
 
 export interface ImportedSection {
 	title: string;
@@ -40,6 +41,36 @@ function parseDuration(raw: string): number | null {
 	if (!match) return null;
 	const minutes = Number(match[1]);
 	return minutes > 0 ? minutes : null;
+}
+
+/** True for lines inside a ``` or ~~~ fenced code block, so delimiters and markers there are left alone. */
+function computeFenceMask(lines: string[]): boolean[] {
+	const mask = new Array(lines.length).fill(false);
+	let inFence = false;
+	for (let i = 0; i < lines.length; i++) {
+		if (/^\s*(`{3,}|~{3,})/.test(lines[i])) {
+			mask[i] = true;
+			inFence = !inFence;
+			continue;
+		}
+		mask[i] = inFence;
+	}
+	return mask;
+}
+
+/**
+ * A line opening with a 3–4 digit number and a period — "1945. Năm lịch sử" — parses as
+ * an ordered list start under CommonMark and gets renumbered on the next save. Escape the
+ * period so years stay plain text; real list numbering essentially never starts past 99.
+ */
+function escapeYearLikeListMarkers(lines: string[], mask: boolean[]): string[] {
+	return lines.map((line, i) => {
+		if (mask[i]) return line;
+		const atParagraphStart = i === 0 || lines[i - 1].trim() === '' || mask[i - 1];
+		if (!atParagraphStart) return line;
+		const match = line.match(/^(\s{0,3})(\d{3,4})\.(\s.*)$/);
+		return match ? `${match[1]}${match[2]}\\.${match[3]}` : line;
+	});
 }
 
 function splitTitleAndDuration(titleLine: string): { title: string; durationMinutes: number | null } {
@@ -91,14 +122,18 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		}
 	}
 
+	const fenceMask = computeFenceMask(lines);
+
 	const slices: Slice[] = [];
 	lines.forEach((line, index) => {
+		if (fenceMask[index]) return;
 		const match = line.trim().match(SECTION_DELIMITER_RE);
 		if (match) slices.push({ titleLine: match[1].trim(), start: index });
 	});
 
 	if (!slices.length) {
 		lines.forEach((line, index) => {
+			if (fenceMask[index]) return;
 			if (index !== titleIndex && /^##\s+/.test(line.trim())) {
 				slices.push({ titleLine: line.trim().replace(/^##\s+/, ''), start: index });
 			}
@@ -110,11 +145,26 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		}
 	}
 
+	function checkOversized(title: string, markdown: string) {
+		if (markdown.length > LEARN_MAX_MARKDOWN) {
+			warnings.push(
+				`"${title}": ${markdown.length.toLocaleString('vi-VN')} ký tự, vượt giới hạn ${LEARN_MAX_MARKDOWN.toLocaleString('vi-VN')} ký tự cho một mục. Hãy tách nhỏ mục này trước khi nhập.`,
+			);
+		}
+	}
+
+	function buildMarkdown(start: number, end: number): string {
+		return escapeYearLikeListMarkers(lines.slice(start, end), fenceMask.slice(start, end))
+			.join('\n')
+			.trim();
+	}
+
 	const bodyStart = Math.max(titleIndex, descriptionIndex) + 1;
 
 	if (!slices.length) {
-		const markdown = lines.slice(bodyStart).join('\n').trim();
+		const markdown = buildMarkdown(bodyStart, lines.length);
 		warnings.push('Không tìm thấy dấu phân mục. Toàn bộ nội dung được gom thành 1 mục.');
+		if (markdown) checkOversized(lessonTitle || 'Nội dung bài học', markdown);
 		return {
 			lessonTitle: lessonTitle || 'Bài học mới',
 			lessonDescription,
@@ -133,34 +183,54 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		};
 	}
 
-	const preamble = lines.slice(bodyStart, slices[0].start).join('\n').trim();
-	if (preamble && !lessonDescription) {
-		lessonDescription = preamble.split('\n')[0].replace(/^>\s*/, '').trim();
-	} else if (preamble) {
-		warnings.push('Có đoạn văn trước mục đầu tiên. Đoạn này không được nhập.');
+	const sections: ImportedSection[] = [];
+
+	const preambleLines = lines.slice(bodyStart, slices[0].start);
+	const preamble = preambleLines.join('\n').trim();
+	if (preamble) {
+		let introStart = bodyStart;
+		if (!lessonDescription && isPlainQuote(preambleLines[0]?.trim() ?? '')) {
+			lessonDescription = preambleLines[0].trim().replace(/^>\s*/, '').trim();
+			introStart += 1;
+		}
+		const introMarkdown = buildMarkdown(introStart, slices[0].start);
+		if (introMarkdown) {
+			checkOversized('Giới thiệu', introMarkdown);
+			sections.push({
+				title: 'Giới thiệu',
+				durationMinutes: null,
+				summary: '',
+				markdown: introMarkdown,
+				wordCount: countWords(introMarkdown),
+			});
+		}
 	}
 
-	const sections = slices.map((slice, index): ImportedSection => {
+	slices.forEach((slice, index) => {
 		const end = index + 1 < slices.length ? slices[index + 1].start : lines.length;
 		const body = lines.slice(slice.start + 1, end);
+		const bodyMask = fenceMask.slice(slice.start + 1, end);
 		const { title, durationMinutes } = splitTitleAndDuration(slice.titleLine);
 
 		// Summary = a plain `>` quote as the first non-empty line of the section only.
 		let summary = '';
 		const firstContent = body.findIndex((line) => line.trim());
-		if (firstContent >= 0 && isPlainQuote(body[firstContent].trim())) {
+		if (firstContent >= 0 && !bodyMask[firstContent] && isPlainQuote(body[firstContent].trim())) {
 			summary = body[firstContent].trim().replace(/^>\s*/, '').trim();
 			body.splice(firstContent, 1);
+			bodyMask.splice(firstContent, 1);
 		}
 
-		const markdown = body.join('\n').trim();
-		return {
-			title: title || `Mục ${index + 1}`,
+		const markdown = escapeYearLikeListMarkers(body, bodyMask).join('\n').trim();
+		const sectionTitle = title || `Mục ${sections.length + 1}`;
+		if (markdown) checkOversized(sectionTitle, markdown);
+		sections.push({
+			title: sectionTitle,
 			durationMinutes,
 			summary,
 			markdown,
 			wordCount: countWords(markdown),
-		};
+		});
 	});
 
 	const empty = sections.filter((section) => !section.markdown).length;

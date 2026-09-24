@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { formatMinutes, estimateReadingMinutes } from '@/features/learn/content';
 import { autoSectionRawText, parseLessonMarkdown } from '@/features/learn/lessonImport';
 import { LEARN_MARKDOWN_GUIDE, LEARN_REFORMAT_PROMPT } from '@/features/learn/prompts';
+import { LEARN_MAX_MARKDOWN } from '@/features/learn/schemas';
 
 import { StudioIcon } from './icons';
 import StudioDialog from './StudioDialog';
@@ -23,6 +24,7 @@ export default function ImportLessonDialog({
 	const [guideOpen, setGuideOpen] = useState(false);
 	const parsed = useMemo(() => (text.trim() ? parseLessonMarkdown(text) : null), [text]);
 	const { copied, copy } = useCopy();
+	const oversized = parsed?.sections.some((section) => section.markdown.length > LEARN_MAX_MARKDOWN) ?? false;
 
 	async function submit() {
 		setBusy(true);
@@ -48,7 +50,7 @@ export default function ImportLessonDialog({
 					<button
 						type="button"
 						className="ln-btn ln-btn--primary"
-						disabled={busy || !parsed?.sections.length}
+						disabled={busy || !parsed?.sections.length || oversized}
 						onClick={submit}
 					>
 						{busy ? 'Đang nhập…' : `Nhập ${parsed?.sections.length ?? 0} mục`}

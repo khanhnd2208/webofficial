@@ -1,17 +1,14 @@
 'use client';
 
 import type { Editor } from '@tiptap/core';
-import Placeholder from '@tiptap/extension-placeholder';
-import { TableKit } from '@tiptap/extension-table';
-import { Markdown } from '@tiptap/markdown';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { CALLOUT_KINDS, CALLOUT_LABELS } from '@/features/learn/callouts';
 import { countWords, estimateReadingMinutes, normalizeEditorMarkdown } from '@/features/learn/content';
+import { findUnsupportedMarkdown } from '@/features/learn/markdownFidelity';
 
-import { Callout } from './calloutExtension';
+import { learnEditorExtensions } from './editorExtensions';
 import { StudioIcon, type StudioIconName } from './icons';
 import { filterSlashCommands, type SlashCommand } from './slashCommands';
 
@@ -95,6 +92,13 @@ function Toolbar({ editor }: { editor: Editor }) {
 		editor.chain().focus().extendMarkRange('link').setLink({ href: href.trim() }).run();
 	}
 
+	function insertImage() {
+		const src = window.prompt('Dán đường dẫn ảnh (ví dụ /uploads/ten-anh.webp)');
+		if (!src?.trim()) return;
+		const alt = window.prompt('Mô tả ảnh (tuỳ chọn)')?.trim() || '';
+		editor.chain().focus().setImage({ src: src.trim(), alt }).run();
+	}
+
 	return (
 		<div className="ln-toolbar" role="toolbar" aria-label="Định dạng">
 			<select
@@ -144,6 +148,7 @@ function Toolbar({ editor }: { editor: Editor }) {
 				) : null}
 			</div>
 			<ToolButton icon="table" label="Chèn bảng" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} />
+			<ToolButton icon="image" label="Chèn ảnh" onClick={insertImage} />
 			<ToolButton icon="hr" label="Đường kẻ" onClick={() => editor.chain().focus().setHorizontalRule().run()} />
 			{state.table ? (
 				<span className="ln-toolbar__group">
@@ -221,8 +226,12 @@ export default function LearnRichEditor({
 	value: string;
 	onChange: (markdown: string) => void;
 }) {
-	const [mode, setMode] = useState<Mode>('visual');
+	const [mode, setMode] = useState<Mode>(() => (findUnsupportedMarkdown(value).length ? 'markdown' : 'visual'));
 	const [source, setSource] = useState(value);
+	const [modeWarning, setModeWarning] = useState<string[] | null>(() => {
+		const unsupported = findUnsupportedMarkdown(value);
+		return unsupported.length ? unsupported : null;
+	});
 	const [slash, setSlash] = useState<SlashState | null>(null);
 	const slashRef = useRef<SlashState | null>(null);
 	const wrapperRef = useRef<HTMLDivElement>(null);
@@ -273,20 +282,7 @@ export default function LearnRichEditor({
 
 	const editor = useEditor({
 		immediatelyRender: false,
-		extensions: [
-			StarterKit.configure({
-				heading: { levels: [2, 3, 4] },
-				underline: false,
-				link: { openOnClick: false, autolink: true },
-			}),
-			TableKit.configure({ table: { resizable: false } }),
-			Placeholder.configure({
-				placeholder: ({ node }) =>
-					node.type.name === 'paragraph' ? 'Viết nội dung, hoặc gõ / để chèn định nghĩa, trích dẫn, bảng…' : '',
-			}),
-			Callout,
-			Markdown.configure({ markedOptions: { gfm: true, breaks: true } }),
-		],
+		extensions: learnEditorExtensions(),
 		content: value,
 		contentType: 'markdown',
 		editorProps: {
@@ -324,13 +320,24 @@ export default function LearnRichEditor({
 		editorRef.current = editor;
 	}, [editor]);
 
-	function switchMode(next: Mode) {
+	function switchMode(next: Mode, force = false) {
 		if (next === mode || !editor) return;
 		if (next === 'markdown') {
 			setSource(normalizeEditorMarkdown(editor.getMarkdown()));
-		} else {
-			editor.commands.setContent(source, { contentType: 'markdown', emitUpdate: false });
+			setModeWarning(null);
+			updateSlash(null);
+			setMode(next);
+			return;
 		}
+		if (!force) {
+			const unsupported = findUnsupportedMarkdown(source);
+			if (unsupported.length) {
+				setModeWarning(unsupported);
+				return;
+			}
+		}
+		editor.commands.setContent(source, { contentType: 'markdown', emitUpdate: false });
+		setModeWarning(null);
 		updateSlash(null);
 		setMode(next);
 	}
@@ -368,16 +375,34 @@ export default function LearnRichEditor({
 					</div>
 				</>
 			) : (
-				<textarea
-					className="ln-editor__source"
-					value={source}
-					spellCheck={false}
-					onChange={(event) => {
-						setSource(event.target.value);
-						onChangeRef.current(event.target.value);
-					}}
-					placeholder={'## Tiêu đề\n\nNội dung…\n\n> [!DEFINITION] Khái niệm\n> Định nghĩa…'}
-				/>
+				<div className="ln-editor__source-wrap">
+					{modeWarning ? (
+						<div className="ln-editor__warning" role="alert">
+							<p>
+								Mục này có {modeWarning.join(', ')} — soạn trực quan hiện chưa giữ được các phần này. Sửa ở đây,
+								hoặc vẫn chuyển sang và chấp nhận mất định dạng đó.
+							</p>
+							<div className="flex flex-wrap gap-x-4 gap-y-1">
+								<button type="button" className="ln-link-btn" onClick={() => switchMode('visual', true)}>
+									Vẫn chuyển sang soạn trực quan
+								</button>
+								<button type="button" className="ln-link-btn" onClick={() => setModeWarning(null)}>
+									Ở lại Markdown
+								</button>
+							</div>
+						</div>
+					) : null}
+					<textarea
+						className="ln-editor__source"
+						value={source}
+						spellCheck={false}
+						onChange={(event) => {
+							setSource(event.target.value);
+							onChangeRef.current(event.target.value);
+						}}
+						placeholder={'## Tiêu đề\n\nNội dung…\n\n> [!DEFINITION] Khái niệm\n> Định nghĩa…'}
+					/>
+				</div>
 			)}
 		</div>
 	);

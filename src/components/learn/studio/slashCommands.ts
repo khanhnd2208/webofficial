@@ -89,6 +89,19 @@ export const SLASH_COMMANDS: SlashCommand[] = [
 		run: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
 	},
 	{
+		id: 'image',
+		label: 'Ảnh (theo URL)',
+		hint: 'Dán link ảnh đã tải lên',
+		group: 'Chèn',
+		keywords: 'image anh hinh img picture',
+		run: (editor) => {
+			const src = window.prompt('Dán đường dẫn ảnh (ví dụ /uploads/ten-anh.webp)');
+			if (!src?.trim()) return;
+			const alt = window.prompt('Mô tả ảnh (tuỳ chọn)')?.trim() || '';
+			editor.chain().focus().setImage({ src: src.trim(), alt }).run();
+		},
+	},
+	{
 		id: 'hr',
 		label: 'Đường kẻ',
 		hint: 'Ngăn cách hai phần',

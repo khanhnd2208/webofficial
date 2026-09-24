@@ -56,12 +56,20 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 		if (draft.options.length < 2) {
 			warnings.push(`${label}: cần ít nhất 2 phương án, đã bỏ qua.`);
 		} else {
-			if (draft.correctIndex < 0) warnings.push(`${label}: chưa đánh dấu đáp án đúng, tạm chọn A.`);
+			let correctIndex = draft.correctIndex;
+			if (correctIndex < 0) {
+				warnings.push(`${label}: chưa đánh dấu đáp án đúng, tạm chọn A.`);
+				correctIndex = 0;
+			} else if (correctIndex >= draft.options.length) {
+				const letter = String.fromCharCode(65 + correctIndex);
+				warnings.push(`${label}: đáp án "${letter}" không khớp phương án nào, tạm chọn A.`);
+				correctIndex = 0;
+			}
 			questions.push({
 				id: newQuestionId(),
 				question,
 				options: draft.options,
-				correctIndex: Math.max(0, draft.correctIndex),
+				correctIndex,
 				explanation: draft.explanation.join(' ').trim(),
 			});
 		}

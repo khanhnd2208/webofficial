@@ -4,6 +4,7 @@ import { resolveCalloutKind } from './callouts';
 import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz } from './content';
 import { autoSectionRawText, parseLessonMarkdown } from './lessonImport';
 import { parseQuizPaste } from './quizImport';
+import { LEARN_MAX_MARKDOWN } from './schemas';
 import type { LearnQuiz } from './types';
 
 describe('parseLessonMarkdown', () => {
@@ -54,6 +55,46 @@ describe('parseLessonMarkdown', () => {
 		expect(single.sections).toHaveLength(1);
 		expect(single.sections[0].markdown).toBe('Chỉ một đoạn văn.');
 	});
+
+	it('ignores a SECTION-shaped line inside a fenced code block', () => {
+		const parsed = parseLessonMarkdown(
+			[
+				'# T',
+				'',
+				'=== SECTION: A ===',
+				'',
+				'```',
+				'=== SECTION: fake ===',
+				'```',
+				'',
+				'=== SECTION: B ===',
+				'x',
+			].join('\n'),
+		);
+		expect(parsed.sections.map((section) => section.title)).toEqual(['A', 'B']);
+		expect(parsed.sections[0].markdown).toContain('=== SECTION: fake ===');
+	});
+
+	it('turns a preamble before the first section into a Giới thiệu section instead of dropping it', () => {
+		const parsed = parseLessonMarkdown(
+			['# T', '> Mô tả', '', 'Đoạn mở đầu dài.', '', '=== SECTION: A ===', 'thân'].join('\n'),
+		);
+		expect(parsed.lessonDescription).toBe('Mô tả');
+		expect(parsed.sections.map((section) => section.title)).toEqual(['Giới thiệu', 'A']);
+		expect(parsed.sections[0].markdown).toBe('Đoạn mở đầu dài.');
+		expect(parsed.warnings).not.toContain('Có đoạn văn trước mục đầu tiên. Đoạn này không được nhập.');
+	});
+
+	it('warns when an imported section is too long to ever be saved', () => {
+		const body = 'x'.repeat(LEARN_MAX_MARKDOWN + 1);
+		const parsed = parseLessonMarkdown(`# T\n\n=== SECTION: A ===\n${body}`);
+		expect(parsed.warnings.some((warning) => warning.includes('vượt giới hạn'))).toBe(true);
+	});
+
+	it('escapes a year-like line so it is not parsed as an ordered list start', () => {
+		const parsed = parseLessonMarkdown('# T\n\n=== SECTION: A ===\n1945. Năm lịch sử\n\n2. Không phải list?');
+		expect(parsed.sections[0].markdown).toContain('1945\\. Năm lịch sử');
+	});
 });
 
 describe('autoSectionRawText', () => {
@@ -98,6 +139,13 @@ describe('parseQuizPaste', () => {
 		expect(questions).toHaveLength(1);
 		expect(questions[0].correctIndex).toBe(0);
 		expect(warnings).toHaveLength(2);
+	});
+
+	it('falls back to A and warns when the marked answer letter has no matching option', () => {
+		const { questions, warnings } = parseQuizPaste('Câu 1: Hỏi?\nA. a\nB. b\nC. c\nĐáp án: E');
+		expect(questions).toHaveLength(1);
+		expect(questions[0].correctIndex).toBe(0);
+		expect(warnings.some((warning) => warning.includes('không khớp phương án'))).toBe(true);
 	});
 });
 
