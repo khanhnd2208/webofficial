@@ -1,7 +1,8 @@
 import { gunzipSync } from 'node:zlib';
 
-import { LearnCourseLevel, Prisma, PublishStatus, PrismaClient } from '@prisma/client';
+import { LearnCourseLevel, Prisma, PublishStatus } from '@prisma/client';
 
+import { prisma } from '../src/lib/prisma';
 import { parseCourseMarkdown } from '../src/features/learn/lessonImport';
 import { compareLectureText } from '../src/features/learn/textFidelity';
 
@@ -354,7 +355,6 @@ async function main() {
 		return;
 	}
 
-	const prisma = new PrismaClient();
 	try {
 		const existing = await prisma.learnCourse.findUnique({
 			where: { slug: COURSE_SLUG },
