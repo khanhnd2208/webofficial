@@ -72,7 +72,7 @@
 		"@types/canvas-confetti": "^1.9.0",
 		"bcryptjs": "^3.0.3",
 		"canvas-confetti": "^1.9.4",
-		"csv-parse": "^6.1.0",
+		"csv-parse": "^7.0.2",
 		"dotenv": "^17.4.2",
 		"dotenv-expand": "^13.0.0",
 		"framer-motion": "^12.34.0",
@@ -81,7 +81,7 @@
 		"mongodb": "^6.21.0",
 		"mongoose": "^9.9.3",
 		"nanoid": "^5.1.16",
-		"next": "^16.3.0",
+		"next": "^16.3.6",
 		"next-auth": "^5.0.0-beta.32",
 		"pg": "^8.20.0",
 		"react": "^19.2.4",
@@ -94,7 +94,7 @@
 		"remark-gfm": "^4.0.1",
 		"resend": "^6.17.2",
 		"server-only": "^0.0.1",
-		"sharp": "^0.35.3",
+		"sharp": "^0.35.4",
 		"write-excel-file": "^4.1.1",
 		"zod": "^4.4.3"
 	},
@@ -110,7 +110,7 @@
 		"@types/pg": "^8.20.0",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
-		"@vitest/coverage-v8": "^4.1.1",
+		"@vitest/coverage-v8": "^4.1.11",
 		"eslint": "^9.39.2",
 		"eslint-config-next": "^16.3.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -124,7 +124,7 @@
 		"tailwindcss": "^4",
 		"tsx": "4.23.12",
 		"typescript": "^5",
-		"vitest": "^4.1.1"
+		"vitest": "^4.1.11"
 	},
 	"lint-staged": {
 		"*.{ts,tsx}": [
