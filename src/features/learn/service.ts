@@ -1,4 +1,5 @@
 import { Prisma, type LearnSection } from '@prisma/client';
+import { cache } from 'react';
 
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
@@ -169,12 +170,12 @@ export async function listLearnCourses(viewer: LearnViewer): Promise<LearnCourse
 	});
 }
 
-export async function getLearnCourseOutline(
+const loadLearnCourseOutline = cache(async function loadLearnCourseOutline(
 	slug: string,
-	viewer: Pick<LearnViewer, 'isAdmin'>,
+	isAdmin: boolean,
 ): Promise<LearnCourseOutline | null> {
 	const row = await prisma.learnCourse.findFirst({
-		where: { slug, status: visibleStatus(viewer) },
+		where: { slug, status: visibleStatus({ isAdmin }) },
 		select: { ...courseMetaSelect, ...orderedOutline },
 	});
 	if (!row) return null;
@@ -193,6 +194,13 @@ export async function getLearnCourseOutline(
 			})),
 		})),
 	};
+});
+
+export function getLearnCourseOutline(
+	slug: string,
+	viewer: Pick<LearnViewer, 'isAdmin'>,
+): Promise<LearnCourseOutline | null> {
+	return loadLearnCourseOutline(slug, viewer.isAdmin);
 }
 
 export async function getLearnProgress(

@@ -6,12 +6,13 @@ import LearnCheckpointCard from '@/components/learn/LearnCheckpointCard';
 import LearnCompleteButton from '@/components/learn/LearnCompleteButton';
 import LearnCourseOverview from '@/components/learn/LearnCourseOverview';
 import LearnCurriculum from '@/components/learn/LearnCurriculum';
-import { LearnIcon, LearnProgressRing } from '@/components/learn/LearnIcon';
+import { LearnIcon } from '@/components/learn/LearnIcon';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
-import LearnNotes from '@/components/learn/LearnNotes';
+import LearnNotesDrawer from '@/components/learn/LearnNotesDrawer';
 import { LearnKeyboardNav } from '@/components/learn/LearnPlayerChrome';
 import LearnQuizRunner from '@/components/learn/LearnQuizRunner';
 import LearnReaderFrame from '@/components/learn/LearnReaderFrame';
+import LearnReaderPrefs from '@/components/learn/LearnReaderPrefs';
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
 import { readingOutline } from '@/features/learn/outline';
@@ -63,13 +64,12 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 
 	const outlineHead = (
 		<div className="ln-outline-head">
-			<LearnProgressRing percent={summary.percent} size={40} stroke={4} />
-			<div className="min-w-0">
-				<p className="ln-outline-head__title">{summary.percent}% hoàn thành</p>
-				<p className="ln-outline-head__sub tabular-nums">
-					{summary.completedCount}/{summary.totalCount} mục
-					{summary.remainingMinutes ? ` · còn ${formatMinutes(summary.remainingMinutes)}` : ''}
-				</p>
+			<p className="ln-outline-head__line tabular-nums">
+				{summary.completedCount}/{summary.totalCount} mục
+				{summary.remainingMinutes ? ` · còn ${formatMinutes(summary.remainingMinutes)}` : ''}
+			</p>
+			<div className="ln-bar ln-bar--thin" aria-hidden="true">
+				<span style={{ width: `${summary.percent}%` }} />
 			</div>
 		</div>
 	);
@@ -86,38 +86,52 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 		</nav>
 	);
 
+	const quizPassed = Boolean(section?.type === 'QUIZ' && section.review?.result.passed);
+	const headings = section?.type === 'READING' && section.markdown ? readingOutline(section.markdown) : [];
+
+	function primaryAction() {
+		if (section && current && section.type === 'READING') {
+			return (
+				<LearnCompleteButton
+					sectionId={section.id}
+					completed={Boolean(state?.completed)}
+					nextHref={nextHref}
+					nextTitle={next?.title}
+					finishesCourse={finishesCourse}
+					overviewHref={overviewHref}
+				/>
+			);
+		}
+		if (section?.type !== 'QUIZ') return null;
+		const continueHref = quizPassed ? (finishesCourse ? overviewHref : nextHref) : null;
+		if (continueHref) {
+			return (
+				<Link href={continueHref} className="ln-btn ln-btn--primary">
+					Tiếp tục →
+				</Link>
+			);
+		}
+		return nextHref ? (
+			<Link href={nextHref} className="ln-pager ln-pager--skip">
+				Bỏ qua →
+			</Link>
+		) : null;
+	}
+
 	const header = (
 		<>
 			<Link href={overviewHref} className="ln-topbar__back" title="Về trang khóa học (O)">
 				<LearnIcon name="arrowLeft" size={16} />
-				<span className="ln-topbar__title">{course.title}</span>
-			</Link>
-			<span className="ln-topbar__progress" aria-label={`Đã hoàn thành ${summary.completedCount} trên ${summary.totalCount} mục`}>
-				<LearnProgressRing percent={summary.percent} size={30} stroke={3} showValue={false} />
-				<span className="tabular-nums">
-					{summary.completedCount}/{summary.totalCount}
+				<span className="ln-topbar__title">
+					{course.title}
+					{current ? <span className="ln-topbar__section"> / {current.title}</span> : null}
 				</span>
+			</Link>
+			<span className="ln-topbar__count tabular-nums" aria-label={`Đã hoàn thành ${summary.completedCount} trên ${summary.totalCount} mục`}>
+				{summary.completedCount}/{summary.totalCount}
 			</span>
-			<span className="ln-topbar__nav">
-				{previousHref ? (
-					<Link href={previousHref} className="ln-icon-btn" aria-label="Mục trước" title="Mục trước (←)">
-						<LearnIcon name="chevronLeft" size={18} />
-					</Link>
-				) : (
-					<span className="ln-icon-btn" aria-disabled="true">
-						<LearnIcon name="chevronLeft" size={18} />
-					</span>
-				)}
-				{nextHref ? (
-					<Link href={nextHref} className="ln-icon-btn" aria-label="Mục tiếp" title="Mục tiếp (→)">
-						<LearnIcon name="chevronRight" size={18} />
-					</Link>
-				) : (
-					<span className="ln-icon-btn" aria-disabled="true">
-						<LearnIcon name="chevronRight" size={18} />
-					</span>
-				)}
-			</span>
+			<LearnReaderPrefs />
+			{section ? <LearnNotesDrawer key={section.id} sectionId={section.id} initialNote={state?.note ?? ''} /> : null}
 			{viewer.isAdmin ? (
 				<Link href={routes.learnStudio(course.slug, current?.id)} className="ln-btn ln-btn--ghost ln-btn--sm ln-topbar__studio">
 					<LearnIcon name="edit" size={14} /> Soạn bài
@@ -136,44 +150,31 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 				</div>
 			) : (
 				<article className="ln-reader" key={section.id}>
-					<nav className="ln-reader__crumbs" aria-label="Vị trí">
-						<Link href={overviewHref}>Bài {current.lessonIndex + 1}</Link>
-						<LearnIcon name="chevronRight" size={12} />
-						<span>{current.lessonTitle}</span>
-					</nav>
+					<p className="ln-reader__eyebrow">
+						Bài {current.lessonIndex + 1}
+						<span aria-hidden="true"> · </span>
+						<Link href={overviewHref}>{current.lessonTitle}</Link>
+					</p>
 					<h1 className="ln-reader__title">{section.title}</h1>
-					<div className="ln-reader__meta">
-						<span className="ln-chip">
-							<LearnIcon name={section.type === 'QUIZ' ? 'quiz' : 'reading'} size={13} />
-							{section.type === 'QUIZ' ? 'Bài kiểm tra' : 'Bài đọc'}
-						</span>
-						<span className="ln-chip">
-							<LearnIcon name="clock" size={13} />
-							{formatMinutes(section.minutes)}
-						</span>
-						<span className="ln-chip tabular-nums">
-							Mục {position + 1}/{flat.length}
-						</span>
+					<p className="ln-reader__meta">
+						{section.type === 'QUIZ' ? 'Bài kiểm tra' : 'Bài đọc'}
+						<span aria-hidden="true"> · </span>
+						{formatMinutes(section.minutes)}
 						{state?.completed ? (
-							<span className="ln-chip" data-status="completed">
-								<LearnIcon name="check" size={13} strokeWidth={2.4} />
-								Đã hoàn thành
-							</span>
+							<>
+								<span aria-hidden="true"> · </span>
+								<span className="ln-reader__done">✓ Đã hoàn thành</span>
+							</>
 						) : null}
-					</div>
+					</p>
 					{section.summary ? <p className="ln-reader__lead">{section.summary}</p> : null}
 
 					{section.keyTakeaways.length ? (
 						<aside className="ln-takeaways" aria-label="Ý chính">
-							<p className="ln-takeaways__label">
-								<LearnIcon name="target" size={15} /> Bạn sẽ nắm được
-							</p>
+							<p className="ln-takeaways__label">Bạn sẽ nắm được</p>
 							<ul>
 								{section.keyTakeaways.map((item) => (
-									<li key={item}>
-										<LearnIcon name="check" size={14} strokeWidth={2.4} />
-										<span>{item}</span>
-									</li>
+									<li key={item}>{item}</li>
 								))}
 							</ul>
 						</aside>
@@ -181,7 +182,14 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 
 					{section.type === 'QUIZ' ? (
 						section.quiz && section.quiz.questions.length ? (
-							<LearnQuizRunner sectionId={section.id} quiz={section.quiz} initialReview={section.review} />
+							<LearnQuizRunner
+								sectionId={section.id}
+								quiz={section.quiz}
+								initialReview={section.review}
+								nextHref={nextHref}
+								finishesCourse={finishesCourse}
+								overviewHref={overviewHref}
+							/>
 						) : (
 							<p className="mt-8 text-ink-secondary">Bài kiểm tra này chưa có câu hỏi.</p>
 						)
@@ -189,17 +197,17 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 						<>
 							{section.markdown ? (
 								<>
-									{readingOutline(section.markdown).length >= 3 ? (
-										<nav className="ln-toc" aria-label="Trong mục này">
-											<p>Trong mục này</p>
+									{headings.length >= 3 ? (
+										<details className="ln-toc">
+											<summary>Trong mục này</summary>
 											<ol>
-												{readingOutline(section.markdown).map((heading) => (
+												{headings.map((heading) => (
 													<li key={heading.id} data-level={heading.level}>
 														<a href={`#${heading.id}`}>{heading.text}</a>
 													</li>
 												))}
 											</ol>
-										</nav>
+										</details>
 									) : null}
 									<LearnMarkdown markdown={section.markdown} />
 								</>
@@ -210,50 +218,41 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 						</>
 					)}
 
-					<LearnNotes sectionId={section.id} initialNote={state?.note ?? ''} />
-
 					<footer className="ln-reader__footer">
 						{previous && previousHref ? (
 							<Link href={previousHref} className="ln-pager">
-								<span className="ln-pager__dir">
-									<LearnIcon name="chevronLeft" size={14} /> Trước
-								</span>
-								<span className="ln-pager__title">{previous.title}</span>
+								← {previous.title}
 							</Link>
 						) : (
 							<span />
 						)}
-						{section.type === 'READING' ? (
-							<LearnCompleteButton
-								sectionId={section.id}
-								completed={Boolean(state?.completed)}
-								nextHref={nextHref}
-								finishesCourse={finishesCourse}
-								overviewHref={overviewHref}
-							/>
-						) : (
-							<span />
-						)}
-						{next && nextHref ? (
-							<Link href={nextHref} className="ln-pager ln-pager--next">
-								<span className="ln-pager__dir">
-									Tiếp <LearnIcon name="chevronRight" size={14} />
-								</span>
-								<span className="ln-pager__title">{next.title}</span>
-							</Link>
-						) : (
-							<Link href={overviewHref} className="ln-pager ln-pager--next">
-								<span className="ln-pager__dir">Kết thúc</span>
-								<span className="ln-pager__title">Về trang khóa học</span>
-							</Link>
-						)}
+						<div className="ln-reader__action">{primaryAction()}</div>
 					</footer>
-					<p className="ln-reader__hint">
-						<LearnIcon name="keyboard" size={14} /> Phím tắt: <kbd>←</kbd> <kbd>→</kbd> chuyển mục · <kbd>O</kbd> về
-						trang khóa học
-					</p>
 				</article>
 			)}
+			{section && current ? (
+				<div className="ln-actionbar">
+					{previousHref ? (
+						<Link href={previousHref} className="ln-icon-btn" aria-label="Mục trước">
+							<LearnIcon name="chevronLeft" size={18} />
+						</Link>
+					) : (
+						<span className="ln-icon-btn" aria-disabled="true">
+							<LearnIcon name="chevronLeft" size={18} />
+						</span>
+					)}
+					<div className="ln-actionbar__primary">{primaryAction()}</div>
+					{nextHref ? (
+						<Link href={nextHref} className="ln-icon-btn" aria-label="Mục tiếp">
+							<LearnIcon name="chevronRight" size={18} />
+						</Link>
+					) : (
+						<span className="ln-icon-btn" aria-disabled="true">
+							<LearnIcon name="chevronRight" size={18} />
+						</span>
+					)}
+				</div>
+			) : null}
 		</LearnReaderFrame>
 	);
 }

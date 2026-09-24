@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
@@ -27,7 +27,25 @@ export default function LearnCurriculum({
 	compact?: boolean;
 }) {
 	const [open, setOpen] = useState<Set<string>>(() => new Set(openLessonId ? [openLessonId] : []));
+	const [trackedLessonId, setTrackedLessonId] = useState(openLessonId);
+	const currentRef = useRef<HTMLAnchorElement>(null);
 	const allOpen = lessons.length > 0 && lessons.every((lesson) => open.has(lesson.id));
+
+	if (openLessonId !== trackedLessonId) {
+		setTrackedLessonId(openLessonId);
+		if (openLessonId) {
+			setOpen((current) => {
+				if (current.has(openLessonId)) return current;
+				const nextSet = new Set(current);
+				nextSet.add(openLessonId);
+				return nextSet;
+			});
+		}
+	}
+
+	useEffect(() => {
+		currentRef.current?.scrollIntoView?.({ block: 'nearest' });
+	}, [currentId]);
 
 	function toggle(id: string) {
 		setOpen((current) => {
@@ -40,7 +58,7 @@ export default function LearnCurriculum({
 
 	return (
 		<div className="ln-curriculum" data-compact={compact ? 'true' : undefined}>
-			{lessons.length > 1 ? (
+			{!compact && lessons.length > 1 ? (
 				<div className="ln-curriculum__tools">
 					<button
 						type="button"
@@ -86,6 +104,7 @@ export default function LearnCurriculum({
 									return (
 										<li key={section.id}>
 											<Link
+												ref={active ? currentRef : undefined}
 												href={routes.learnCourse(courseSlug, section.id)}
 												className="ln-item"
 												aria-current={active ? 'page' : undefined}

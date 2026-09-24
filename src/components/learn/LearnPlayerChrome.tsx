@@ -41,6 +41,14 @@ function isTyping(target: EventTarget | null) {
 	return element.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName);
 }
 
+function shouldIgnore(target: EventTarget | null) {
+	if (isTyping(target)) return true;
+	const element = target as HTMLElement | null;
+	if (element?.closest('[role="radio"], [role="radiogroup"], .ln-table')) return true;
+	if (document.querySelector('dialog[open], [aria-modal="true"]')) return true;
+	return false;
+}
+
 /** ← / → (or J / K) move between sections, O returns to the course overview. */
 export function LearnKeyboardNav({
 	previousHref,
@@ -55,7 +63,7 @@ export function LearnKeyboardNav({
 
 	useEffect(() => {
 		function onKey(event: KeyboardEvent) {
-			if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
+			if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || shouldIgnore(event.target)) return;
 			const key = event.key.toLowerCase();
 			if ((key === 'arrowleft' || key === 'k') && previousHref) {
 				event.preventDefault();

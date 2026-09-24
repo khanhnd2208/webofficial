@@ -8,7 +8,7 @@ import { formatMinutes } from '@/features/learn/content';
 import { courseHue, courseStatus, percentOf, type LearnCourseStatus } from '@/features/learn/progress';
 import { LEARN_LEVEL_LABELS, type LearnCourseListItem, type LearnLevel } from '@/features/learn/types';
 
-import { LearnCourseCover, LearnIcon } from './LearnIcon';
+import { LearnIcon } from './LearnIcon';
 
 type Tab = 'all' | LearnCourseStatus;
 type Sort = 'recommended' | 'recent' | 'progress' | 'title' | 'shortest';
@@ -16,8 +16,7 @@ type Sort = 'recommended' | 'recent' | 'progress' | 'title' | 'shortest';
 const TABS: Array<{ id: Tab; label: string }> = [
 	{ id: 'all', label: 'Tất cả' },
 	{ id: 'in-progress', label: 'Đang học' },
-	{ id: 'not-started', label: 'Chưa bắt đầu' },
-	{ id: 'completed', label: 'Đã hoàn thành' },
+	{ id: 'completed', label: 'Hoàn thành' },
 ];
 
 const SORTS: Array<{ id: Sort; label: string }> = [
@@ -49,6 +48,7 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 	const [category, setCategory] = useState('');
 	const [level, setLevel] = useState<LearnLevel | ''>('');
 	const [sort, setSort] = useState<Sort>('recommended');
+	const [filtersOpen, setFiltersOpen] = useState(false);
 	const deferredQuery = useDeferredValue(query);
 
 	const enriched = useMemo(
@@ -151,33 +151,49 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 						))}
 					</select>
 				) : null}
-				{levels.length > 1 ? (
-					<select
-						className="ln-select"
-						value={level}
-						onChange={(event) => setLevel(event.target.value as LearnLevel | '')}
-						aria-label="Trình độ"
-					>
-						<option value="">Mọi trình độ</option>
-						{levels.map((item) => (
-							<option key={item} value={item}>
-								{LEARN_LEVEL_LABELS[item]}
-							</option>
-						))}
-					</select>
+				{courses.length >= 7 ? (
+					<div className="ln-filter-more">
+						<button
+							type="button"
+							className="ln-btn ln-btn--ghost ln-btn--sm"
+							aria-expanded={filtersOpen}
+							onClick={() => setFiltersOpen((value) => !value)}
+						>
+							Lọc
+						</button>
+						{filtersOpen ? (
+							<div className="ln-filter-more__panel">
+								{levels.length > 1 ? (
+									<select
+										className="ln-select"
+										value={level}
+										onChange={(event) => setLevel(event.target.value as LearnLevel | '')}
+										aria-label="Trình độ"
+									>
+										<option value="">Mọi trình độ</option>
+										{levels.map((item) => (
+											<option key={item} value={item}>
+												{LEARN_LEVEL_LABELS[item]}
+											</option>
+										))}
+									</select>
+								) : null}
+								<select
+									className="ln-select"
+									value={sort}
+									onChange={(event) => setSort(event.target.value as Sort)}
+									aria-label="Sắp xếp"
+								>
+									{SORTS.map((item) => (
+										<option key={item.id} value={item.id}>
+											{item.label}
+										</option>
+									))}
+								</select>
+							</div>
+						) : null}
+					</div>
 				) : null}
-				<select
-					className="ln-select"
-					value={sort}
-					onChange={(event) => setSort(event.target.value as Sort)}
-					aria-label="Sắp xếp"
-				>
-					{SORTS.map((item) => (
-						<option key={item.id} value={item.id}>
-							{item.label}
-						</option>
-					))}
-				</select>
 			</div>
 
 			<p className="ln-browse__summary" aria-live="polite">
@@ -191,65 +207,35 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 
 			{visible.length ? (
 				<ul className="ln-grid">
-					{visible.map(({ course, status, percent }) => {
-						const resumeHref = routes.learnCourse(course.slug, course.nextSectionId ?? undefined);
-						return (
-							<li key={course.id} className="ln-card">
-								<Link href={routes.learnCourse(course.slug)} className="ln-card__cover-link" tabIndex={-1} aria-hidden="true">
-									<LearnCourseCover hue={courseHue(course.slug)} title={course.title} category={course.category} />
-								</Link>
-								<div className="ln-card__body">
-									<div className="ln-card__chips">
-										<span className="ln-chip">{LEARN_LEVEL_LABELS[course.level]}</span>
-										{course.status !== 'PUBLISHED' ? <span className="ln-chip ln-chip--draft">Bản nháp</span> : null}
-										{status !== 'not-started' ? (
-											<span className="ln-chip" data-status={status}>
-												{STATUS_LABEL[status]}
-											</span>
-										) : null}
-									</div>
-									<h2 className="ln-card__title">
-										<Link href={routes.learnCourse(course.slug)}>{course.title}</Link>
-									</h2>
+					{visible.map(({ course, status, percent }) => (
+						<li key={course.id}>
+							<Link
+								href={routes.learnCourse(course.slug)}
+								className="ln-card"
+								style={{ ['--ln-hue' as string]: courseHue(course.slug) }}
+							>
+								<span className="ln-card__hue" aria-hidden="true" />
+								<span className="ln-card__body">
+									<h2 className="ln-card__title">{course.title}</h2>
 									{course.subtitle ? <p className="ln-card__subtitle">{course.subtitle}</p> : null}
 									<p className="ln-card__meta">
-										<span>
-											<LearnIcon name="layers" size={14} /> {course.lessonCount} bài
-										</span>
-										<span>
-											<LearnIcon name="reading" size={14} /> {course.sectionCount} mục
-										</span>
-										<span>
-											<LearnIcon name="clock" size={14} /> {formatMinutes(course.totalMinutes)}
-										</span>
-										{course.quizCount ? (
-											<span>
-												<LearnIcon name="quiz" size={14} /> {course.quizCount} kiểm tra
-											</span>
-										) : null}
+										{LEARN_LEVEL_LABELS[course.level]} · {course.lessonCount} bài · {course.sectionCount} mục ·{' '}
+										{formatMinutes(course.totalMinutes)}
+										{course.status !== 'PUBLISHED' ? ' · Bản nháp' : ''}
+										{status !== 'not-started' ? ` · ${STATUS_LABEL[status]}` : ''}
 									</p>
-									<div className="ln-card__foot">
-										{status === 'not-started' ? (
-											<span className="ln-card__hint">Chưa bắt đầu</span>
-										) : (
-											<div className="ln-card__progress">
-												<div className="ln-bar" aria-hidden="true">
-													<span style={{ width: `${percent}%` }} />
-												</div>
-												<span className="tabular-nums">{percent}%</span>
+									{status === 'not-started' ? null : (
+										<div className="ln-card__progress">
+											<div className="ln-bar ln-bar--thin" aria-hidden="true">
+												<span style={{ width: `${percent}%` }} />
 											</div>
-										)}
-										<Link
-											href={status === 'completed' ? routes.learnCourse(course.slug) : resumeHref}
-											className="ln-btn ln-btn--primary ln-btn--sm"
-										>
-											{status === 'completed' ? 'Ôn lại' : status === 'in-progress' ? 'Tiếp tục' : 'Bắt đầu'}
-										</Link>
-									</div>
-								</div>
-							</li>
-						);
-					})}
+											<span className="tabular-nums">{percent}%</span>
+										</div>
+									)}
+								</span>
+							</Link>
+						</li>
+					))}
 				</ul>
 			) : (
 				<div className="ln-empty">

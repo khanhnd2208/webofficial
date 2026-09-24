@@ -1,10 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { LearnQuizForLearner, LearnQuizReview } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
+
+import { celebrate } from './celebrate';
 
 const LETTERS = 'ABCDEFGH';
 
@@ -14,18 +17,41 @@ function clock(seconds: number) {
 	return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function draftKey(sectionId: string) {
+	return `ln:quiz-draft:${sectionId}`;
+}
+
+function readDraft(sectionId: string): Record<string, number> {
+	try {
+		const raw = window.sessionStorage.getItem(draftKey(sectionId));
+		if (!raw) return {};
+		const parsed = JSON.parse(raw) as unknown;
+		if (!parsed || typeof parsed !== 'object') return {};
+		return parsed as Record<string, number>;
+	} catch {
+		return {};
+	}
+}
+
 export default function LearnQuizRunner({
 	sectionId,
 	quiz,
 	initialReview,
+	nextHref = null,
+	finishesCourse = false,
+	overviewHref,
 }: {
 	sectionId: string;
 	quiz: LearnQuizForLearner;
 	initialReview: LearnQuizReview | null;
+	nextHref?: string | null;
+	finishesCourse?: boolean;
+	overviewHref?: string;
 }) {
 	const router = useRouter();
 	const [review, setReview] = useState<LearnQuizReview | null>(initialReview);
 	const [answers, setAnswers] = useState<Record<string, number>>({});
+	const [draftReady, setDraftReady] = useState(Boolean(initialReview));
 	const [confirming, setConfirming] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -37,6 +63,21 @@ export default function LearnQuizRunner({
 		answersRef.current = answers;
 	}, [answers]);
 
+	useEffect(() => {
+		if (initialReview) return;
+		setAnswers(readDraft(sectionId));
+		setDraftReady(true);
+	}, [sectionId, initialReview]);
+
+	useEffect(() => {
+		if (!draftReady || review) return;
+		try {
+			window.sessionStorage.setItem(draftKey(sectionId), JSON.stringify(answers));
+		} catch {
+			/* storage unavailable */
+		}
+	}, [answers, draftReady, review, sectionId]);
+
 	const answeredCount = quiz.questions.filter((question) => answers[question.id] !== undefined).length;
 
 	const submit = useCallback(async () => {
@@ -47,9 +88,19 @@ export default function LearnQuizRunner({
 				method: 'POST',
 				body: JSON.stringify({ answers: answersRef.current }),
 			});
+			try {
+				window.sessionStorage.removeItem(draftKey(sectionId));
+			} catch {
+				/* storage unavailable */
+			}
 			setReview(result);
 			setSecondsLeft(null);
 			setConfirming(false);
+			if (result.result.passed && finishesCourse && overviewHref) {
+				void celebrate();
+				router.push(overviewHref);
+				return;
+			}
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 			router.refresh();
 		} catch (err) {
@@ -57,7 +108,7 @@ export default function LearnQuizRunner({
 		} finally {
 			setBusy(false);
 		}
-	}, [router, sectionId]);
+	}, [router, sectionId, finishesCourse, overviewHref]);
 
 	useEffect(() => {
 		if (secondsLeft === null || review) return;
@@ -73,38 +124,56 @@ export default function LearnQuizRunner({
 		setReview(null);
 		setAnswers({});
 		setSecondsLeft(quiz.timeLimitMinutes ? quiz.timeLimitMinutes * 60 : null);
+		try {
+			window.sessionStorage.removeItem(draftKey(sectionId));
+		} catch {
+			/* storage unavailable */
+		}
+	}
+
+	function moveOption(questionId: string, optionIndex: number, optionCount: number, direction: 1 | -1) {
+		const next = (optionIndex + direction + optionCount) % optionCount;
+		setAnswers((current) => ({ ...current, [questionId]: next }));
+		const group = document.getElementById(`ln-q-${questionId}`);
+		const radios = group?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+		radios?.[next]?.focus();
 	}
 
 	const keyById = new Map(review?.key.map((item) => [item.id, item]));
 	const shownAnswers = review ? review.result.answers : answers;
+	const continueHref = review?.result.passed ? (finishesCourse ? overviewHref : nextHref) : null;
 
 	return (
 		<div className="ln-quiz">
 			{review ? (
-				<div className="ln-quiz__score" data-passed={review.result.passed ? 'true' : 'false'}>
+				<div className="ln-quiz__score" data-passed={review.result.passed ? 'true' : 'false'} role="status">
 					<p className="ln-quiz__percent tabular-nums">{review.result.percentage}%</p>
 					<div>
 						<p className="font-medium">
-							{review.result.passed ? 'Đạt yêu cầu' : 'Chưa đạt'} · {review.result.score}/{review.result.total} câu đúng
+							{review.result.passed ? 'Đạt' : 'Chưa đạt'} · {review.result.score}/{review.result.total}
 						</p>
-						<p className="text-sm text-ink-secondary">Cần {quiz.passingScorePercent}% để đạt. Xem lại giải thích bên dưới.</p>
+						<p className="text-sm text-ink-secondary">Cần {quiz.passingScorePercent}% để đạt.</p>
 					</div>
 					<button type="button" className="ln-btn" onClick={retry}>
 						Làm lại
 					</button>
+					{continueHref ? (
+						<Link href={continueHref} className="ln-btn ln-btn--primary">
+							Tiếp tục →
+						</Link>
+					) : null}
 				</div>
 			) : (
 				<div className="ln-quiz__bar">
 					<div className="ln-quiz__bar-row">
 						<span>
-							{quiz.questions.length} câu · cần {quiz.passingScorePercent}% để đạt
+							{quiz.questions.length} câu · cần {quiz.passingScorePercent}% · đã làm {answeredCount}/{quiz.questions.length}
 						</span>
-						<span className="tabular-nums">
-							{secondsLeft !== null ? (
-								<span data-urgent={secondsLeft < 60 ? 'true' : undefined}>Còn {clock(secondsLeft)} · </span>
-							) : null}
-							{answeredCount}/{quiz.questions.length}
-						</span>
+						{secondsLeft !== null ? (
+							<span className="tabular-nums" data-urgent={secondsLeft < 60 ? 'true' : undefined}>
+								Còn {clock(secondsLeft)}
+							</span>
+						) : null}
 					</div>
 					<div className="ln-bar ln-bar--thin" aria-hidden="true">
 						<span style={{ width: `${(answeredCount / quiz.questions.length) * 100}%` }} />
@@ -112,35 +181,38 @@ export default function LearnQuizRunner({
 				</div>
 			)}
 
-			<nav className="ln-quiz__nav" aria-label="Đi tới câu hỏi">
-				{quiz.questions.map((question, index) => {
-					const key = keyById.get(question.id);
-					const picked = shownAnswers[question.id];
-					const state = key
-						? picked === key.correctIndex
-							? 'correct'
-							: 'wrong'
-						: picked !== undefined
-							? 'answered'
-							: undefined;
-					return (
-						<a
-							key={question.id}
-							href={`#ln-q-${question.id}`}
-							className="ln-quiz__nav-item tabular-nums"
-							data-state={state}
-							aria-label={`Câu ${index + 1}${state === 'answered' ? ' (đã trả lời)' : state === 'correct' ? ' (đúng)' : state === 'wrong' ? ' (sai)' : ''}`}
-						>
-							{index + 1}
-						</a>
-					);
-				})}
-			</nav>
+			{quiz.questions.length >= 6 ? (
+				<nav className="ln-quiz__nav" aria-label="Đi tới câu hỏi">
+					{quiz.questions.map((question, index) => {
+						const key = keyById.get(question.id);
+						const picked = shownAnswers[question.id];
+						const state = key
+							? picked === key.correctIndex
+								? 'correct'
+								: 'wrong'
+							: picked !== undefined
+								? 'answered'
+								: undefined;
+						return (
+							<a
+								key={question.id}
+								href={`#ln-q-${question.id}`}
+								className="ln-quiz__nav-item tabular-nums"
+								data-state={state}
+								aria-label={`Câu ${index + 1}${state === 'answered' ? ' (đã trả lời)' : state === 'correct' ? ' (đúng)' : state === 'wrong' ? ' (sai)' : ''}`}
+							>
+								{index + 1}
+							</a>
+						);
+					})}
+				</nav>
+			) : null}
 
 			<ol className="ln-quiz__list">
 				{quiz.questions.map((question, index) => {
 					const key = keyById.get(question.id);
 					const picked = shownAnswers[question.id];
+					const tabIndex = picked === undefined ? 0 : picked;
 					return (
 						<li key={question.id} id={`ln-q-${question.id}`} className="ln-quiz__item">
 							<p className="ln-quiz__question">
@@ -164,10 +236,21 @@ export default function LearnQuizRunner({
 											type="button"
 											role="radio"
 											aria-checked={picked === optionIndex}
+											tabIndex={optionIndex === tabIndex ? 0 : -1}
 											className="ln-option"
 											data-state={state}
 											disabled={Boolean(review) || busy}
 											onClick={() => setAnswers((current) => ({ ...current, [question.id]: optionIndex }))}
+											onKeyDown={(event) => {
+												if (review || busy) return;
+												if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+													event.preventDefault();
+													moveOption(question.id, optionIndex, question.options.length, 1);
+												} else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+													event.preventDefault();
+													moveOption(question.id, optionIndex, question.options.length, -1);
+												}
+											}}
 										>
 											<span className="ln-option__letter">{LETTERS[optionIndex]}</span>
 											<span>{option}</span>
