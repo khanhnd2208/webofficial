@@ -475,7 +475,11 @@ export async function createLearnSection(
 const REVISION_GAP_MS = 10 * 60 * 1000;
 const REVISION_KEEP = 50;
 
-async function snapshotSection(sectionId: string, reason: 'autosave' | 'import' | 'restore', force: boolean) {
+async function snapshotSection(
+	sectionId: string,
+	reason: 'autosave' | 'import' | 'restore' | 'manual',
+	force: boolean,
+) {
 	const current = await prisma.learnSection.findUnique({ where: { id: sectionId } });
 	if (!current) return;
 	if (!force) {
@@ -657,6 +661,13 @@ export async function importLearnMarkdown(
 
 	const saved = await lessonInCourse(courseId, target.id);
 	return [mapStudioLesson(saved)];
+}
+
+export async function createSectionRevision(sectionId: string) {
+	const current = await prisma.learnSection.findUnique({ where: { id: sectionId }, select: { id: true } });
+	if (!current) throw new AppError('Không tìm thấy mục học', 404);
+	await snapshotSection(sectionId, 'manual', true);
+	return listSectionRevisions(sectionId);
 }
 
 export async function listSectionRevisions(sectionId: string) {

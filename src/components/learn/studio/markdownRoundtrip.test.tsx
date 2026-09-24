@@ -1,7 +1,12 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { Editor } from '@tiptap/core';
 import { describe, expect, it } from 'vitest';
 
 import { normalizeEditorMarkdown } from '@/features/learn/content';
+import { cleanAiPaste, parseCourseMarkdown } from '@/features/learn/lessonImport';
+import { lectureWords } from '@/features/learn/textFidelity';
 
 import { learnEditorExtensions } from './editorExtensions';
 
@@ -55,6 +60,24 @@ describe('studio editor markdown round-trip', () => {
 		const once = roundTrip(md);
 		expect(once).toContain('một');
 		expect(once).toContain('hai');
+	});
+
+	it('keeps lecture words for each reading section of the sample lecture', () => {
+		const ai = readFileSync(path.join(import.meta.dirname, '../../../features/learn/__fixtures__/sample-lecture.ai.md'), 'utf8');
+		const reading = parseCourseMarkdown(ai).lessons[0].sections.filter((section) => section.type === 'READING');
+		expect(reading.length).toBeGreaterThan(0);
+		for (const section of reading) {
+			expect(lectureWords(roundTrip(section.markdown))).toEqual(lectureWords(section.markdown));
+		}
+		const body = cleanAiPaste(ai).markdown;
+		expect(body).toContain('> [!QUOTE]');
+		expect(body).toContain('[^1]:');
+		expect(body).toContain('a \\| b');
+	});
+
+	it('keeps a multi-paragraph callout', () => {
+		const md = '> [!EXAMPLE] Toyota\n> Đoạn một.\n>\n> Đoạn hai.';
+		expect(lectureWords(roundTrip(md))).toEqual(lectureWords(md));
 	});
 
 	it('is stable across two passes for a mixed document', () => {

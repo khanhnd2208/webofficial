@@ -387,23 +387,62 @@ export interface ImportedCourse {
 	warnings: string[];
 }
 
+const CONTINUATION = /^<<<\s*CÒN TIẾP\s*>>>$/i;
+const MARKDOWN_FENCE_OPEN = /^(`{3,}|~{3,})(markdown|md)\s*$/i;
+
+/**
+ * Pulls AI chat output down to the markdown the parser understands.
+ * Keeps the inside of ```markdown / ````md / ~~~markdown fences (several "tiếp" parts
+ * are joined in order). An unlabeled code fence inside the lecture stays as content.
+ */
+export function cleanAiPaste(raw: string): { markdown: string; warnings: string[] } {
+	const text = raw.replace(/\r\n?/g, '\n');
+	const lines = text.split('\n');
+	const blocks: string[] = [];
+	for (let i = 0; i < lines.length; i++) {
+		const open = lines[i].trim().match(MARKDOWN_FENCE_OPEN);
+		if (!open) continue;
+		const fence = open[1][0];
+		const width = open[1].length;
+		const body: string[] = [];
+		i += 1;
+		for (; i < lines.length; i++) {
+			const close = lines[i].trim().match(/^(`{3,}|~{3,})\s*$/);
+			if (close && close[1][0] === fence && close[1].length >= width) break;
+			body.push(lines[i]);
+		}
+		blocks.push(body.join('\n'));
+	}
+	const source = (blocks.length ? blocks.join('\n\n') : text).split('\n');
+	const warnings: string[] = [];
+	const lastRaw = [...lines].reverse().find((line) => line.trim());
+	const lastContent = [...source].reverse().find((line) => line.trim());
+	if ((lastRaw && CONTINUATION.test(lastRaw.trim())) || (lastContent && CONTINUATION.test(lastContent.trim()))) {
+		warnings.push("AI chưa trả hết bài, nhắn 'tiếp' và dán phần còn lại");
+	}
+	const markdown = source.filter((line) => !CONTINUATION.test(line.trim())).join('\n').trim();
+	return { markdown, warnings };
+}
+
 /** One file may hold several lessons. Each top-level `# ` line, outside a code fence, starts one. */
 export function parseCourseMarkdown(raw: string): ImportedCourse {
-	const lines = raw.replace(/\r\n?/g, '\n').split('\n');
+	const cleaned = cleanAiPaste(raw);
+	const source = cleaned.markdown;
+	const lines = source.split('\n');
 	const mask = computeFenceMask(lines);
 	const starts: number[] = [];
 	lines.forEach((line, index) => {
 		if (!mask[index] && /^#\s+\S/.test(line.trim())) starts.push(index);
 	});
 	if (starts.length <= 1) {
-		const lesson = parseLessonMarkdown(raw);
-		return { lessons: [lesson], warnings: lesson.warnings };
+		const lesson = parseLessonMarkdown(source);
+		return { lessons: [lesson], warnings: [...cleaned.warnings, ...lesson.warnings] };
 	}
 	const lessons = starts.map((start, index) => {
 		const end = index + 1 < starts.length ? starts[index + 1] : lines.length;
 		return parseLessonMarkdown(lines.slice(start, end).join('\n'));
 	});
-	return { lessons, warnings: lessons.flatMap((lesson) => lesson.warnings) };
+	return { lessons, warnings: [...cleaned.warnings, ...lessons.flatMap((lesson) => lesson.warnings)] };
 }
 
 function durationLabel(minutes: number | null): string {

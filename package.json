@@ -73,6 +73,7 @@
 		"bcryptjs": "^3.0.3",
 		"canvas-confetti": "^1.9.4",
 		"csv-parse": "^7.0.2",
+		"diff": "^9.0.0",
 		"dotenv": "^17.4.2",
 		"dotenv-expand": "^13.0.0",
 		"framer-motion": "^12.34.0",

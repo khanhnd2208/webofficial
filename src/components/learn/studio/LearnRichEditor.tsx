@@ -8,10 +8,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CALLOUT_KINDS, CALLOUT_LABELS } from '@/features/learn/callouts';
 import { countWords, estimateReadingMinutes, normalizeEditorMarkdown } from '@/features/learn/content';
 import { findUnsupportedMarkdown } from '@/features/learn/markdownFidelity';
+import { compareLectureText, type TextHunk } from '@/features/learn/textFidelity';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import { adminFetch } from '@/lib/admin/client';
 
 import { learnEditorExtensions } from './editorExtensions';
+import TextDiff from './TextDiff';
 import { StudioIcon, type StudioIconName } from './icons';
 import { filterSlashCommands, type SlashCommand } from './slashCommands';
 
@@ -246,9 +248,11 @@ function SlashMenu({
 export default function LearnRichEditor({
 	value,
 	onChange,
+	sessionChanges,
 }: {
 	value: string;
 	onChange: (markdown: string) => void;
+	sessionChanges?: { count: number; onReview: () => void } | null;
 }) {
 	const [mode, setMode] = useState<Mode>(() => (findUnsupportedMarkdown(value).length ? 'markdown' : 'visual'));
 	const [source, setSource] = useState(value);
@@ -256,6 +260,7 @@ export default function LearnRichEditor({
 		const unsupported = findUnsupportedMarkdown(value);
 		return unsupported.length ? unsupported : null;
 	});
+	const [lossHunks, setLossHunks] = useState<TextHunk[] | null>(null);
 	const [uploadNote, setUploadNote] = useState<string | null>(null);
 	const [slash, setSlash] = useState<SlashState | null>(null);
 	const fileRef = useRef<HTMLInputElement>(null);
@@ -314,9 +319,17 @@ export default function LearnRichEditor({
 		contentType: 'markdown',
 		onCreate: ({ editor: current }) => {
 			const image = (current.storage as { image?: { pick?: () => void; upload?: (file: File, apply?: (url: string) => void) => void } }).image;
-			if (!image) return;
-			image.pick = () => fileRef.current?.click();
-			image.upload = (file, apply) => uploadRef.current(file, apply);
+			if (image) {
+				image.pick = () => fileRef.current?.click();
+				image.upload = (file, apply) => uploadRef.current(file, apply);
+			}
+			const exported = normalizeEditorMarkdown(current.getMarkdown());
+			const fidelity = compareLectureText(value, exported);
+			if (fidelity.hunks.length) {
+				setMode('markdown');
+				setSource(value);
+				setLossHunks(fidelity.hunks);
+			}
 		},
 		editorProps: {
 			attributes: { class: 'ln-prose ln-editor__content', spellcheck: 'false' },
@@ -389,19 +402,23 @@ export default function LearnRichEditor({
 		if (next === 'markdown') {
 			setSource(normalizeEditorMarkdown(editor.getMarkdown()));
 			setModeWarning(null);
+			setLossHunks(null);
 			updateSlash(null);
 			setMode(next);
 			return;
 		}
+		editor.commands.setContent(source, { contentType: 'markdown', emitUpdate: false });
 		if (!force) {
 			const unsupported = findUnsupportedMarkdown(source);
-			if (unsupported.length) {
-				setModeWarning(unsupported);
+			const fidelity = compareLectureText(source, normalizeEditorMarkdown(editor.getMarkdown()));
+			if (unsupported.length || fidelity.hunks.length) {
+				setModeWarning(unsupported.length ? unsupported : null);
+				setLossHunks(fidelity.hunks.length ? fidelity.hunks : null);
 				return;
 			}
 		}
-		editor.commands.setContent(source, { contentType: 'markdown', emitUpdate: false });
 		setModeWarning(null);
+		setLossHunks(null);
 		updateSlash(null);
 		setMode(next);
 	}
@@ -419,6 +436,11 @@ export default function LearnRichEditor({
 				<button type="button" role="tab" aria-selected={mode === 'markdown'} onClick={() => switchMode('markdown')}>
 					<StudioIcon name="markdown" /> Markdown
 				</button>
+				{sessionChanges && sessionChanges.count > 0 ? (
+					<button type="button" className="ln-link-btn" onClick={sessionChanges.onReview}>
+						{sessionChanges.count} chỗ đã sửa · Xem
+					</button>
+				) : null}
 				<span className="ln-editor__count tabular-nums">
 					{words.toLocaleString('vi-VN')} từ · ~{estimateReadingMinutes(markdownNow)} phút đọc
 				</span>
@@ -450,17 +472,32 @@ export default function LearnRichEditor({
 				</>
 			) : (
 				<div className="ln-editor__source-wrap">
-					{modeWarning ? (
+					{modeWarning || lossHunks?.length ? (
 						<div className="ln-editor__warning" role="alert">
-							<p>
-								Mục này có {modeWarning.join(', ')} — soạn trực quan hiện chưa giữ được các phần này. Sửa ở đây,
-								hoặc vẫn chuyển sang và chấp nhận mất định dạng đó.
-							</p>
+							{modeWarning?.length ? (
+								<p>
+									Mục này có {modeWarning.join(', ')} — soạn trực quan hiện chưa giữ được các phần này. Sửa ở đây,
+									hoặc vẫn chuyển sang và chấp nhận mất định dạng đó.
+								</p>
+							) : null}
+							{lossHunks?.length ? (
+								<>
+									<p>Chuyển sang soạn trực quan sẽ đổi các chữ sau.</p>
+									<TextDiff hunks={lossHunks} />
+								</>
+							) : null}
 							<div className="flex flex-wrap gap-x-4 gap-y-1">
 								<button type="button" className="ln-link-btn" onClick={() => switchMode('visual', true)}>
 									Vẫn chuyển sang soạn trực quan
 								</button>
-								<button type="button" className="ln-link-btn" onClick={() => setModeWarning(null)}>
+								<button
+									type="button"
+									className="ln-link-btn"
+									onClick={() => {
+										setModeWarning(null);
+										setLossHunks(null);
+									}}
+								>
 									Ở lại Markdown
 								</button>
 							</div>

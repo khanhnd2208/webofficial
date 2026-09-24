@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
 import { exportCourseMarkdown } from '@/features/learn/lessonImport';
+import { countPlaces, wordDiff } from '@/features/learn/textFidelity';
 import type {
 	LearnCourseMeta,
 	LearnSectionKind,
@@ -20,7 +21,9 @@ import { StudioIcon } from './icons';
 import ImportLessonDialog from './ImportLessonDialog';
 import LearnQuizEditor from './LearnQuizEditor';
 import LearnRichEditor from './LearnRichEditor';
+import StudioDialog from './StudioDialog';
 import StudioInspector, { type SectionPatch } from './StudioInspector';
+import TextDiff from './TextDiff';
 import StudioOutline from './StudioOutline';
 import { useStudioSaver, type SaveStatus } from './useStudioSaver';
 
@@ -66,11 +69,29 @@ export default function LearnStudio({
 		findSection(initialLessons, initialSectionId)?.id ?? initialLessons[0]?.sections[0]?.id ?? null,
 	);
 	const [dialog, setDialog] = useState<'import' | 'settings' | null>(null);
+	const [reviewChanges, setReviewChanges] = useState(false);
+	const [baselines, setBaselines] = useState<Record<string, string>>({});
+	const [trackedSectionId, setTrackedSectionId] = useState<string | null>(null);
 	const [actionError, setActionError] = useState<string | null>(null);
 	const saver = useStudioSaver();
 	const { flush, queue } = saver;
 
 	const section = useMemo(() => findSection(lessons, selectedId), [lessons, selectedId]);
+	if (section && section.id !== trackedSectionId) {
+		setTrackedSectionId(section.id);
+		if (baselines[section.id] === undefined) {
+			setBaselines((current) =>
+				current[section.id] !== undefined ? current : { ...current, [section.id]: section.markdown },
+			);
+		}
+	}
+	const deferredMarkdown = useDeferredValue(section?.markdown ?? '');
+	const sessionBase = section ? baselines[section.id] : undefined;
+	const sessionHunks = useMemo(() => {
+		if (sessionBase == null) return [];
+		return wordDiff(sessionBase, deferredMarkdown);
+	}, [sessionBase, deferredMarkdown]);
+	const sessionPlaces = countPlaces(sessionHunks);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
@@ -369,7 +390,11 @@ export default function LearnStudio({
 									onChange={(quiz) => patchSection(section.id, { quiz })}
 								/>
 							) : (
-								<LearnRichEditor value={section.markdown} onChange={(markdown) => patchSection(section.id, { markdown })} />
+								<LearnRichEditor
+									value={section.markdown}
+									onChange={(markdown) => patchSection(section.id, { markdown })}
+									sessionChanges={{ count: sessionPlaces, onReview: () => setReviewChanges(true) }}
+								/>
 							)}
 						</div>
 					) : (
@@ -395,6 +420,10 @@ export default function LearnStudio({
 								})),
 							)
 						}
+						onSaveVersion={async () => {
+							await flush();
+							await adminFetch(`/api/admin/learn/sections/${section.id}/revisions`, { method: 'POST' });
+						}}
 						previewHref={routes.learnCourse(meta.slug, section.id)}
 					/>
 				) : (
@@ -409,6 +438,39 @@ export default function LearnStudio({
 					onClose={() => setDialog(null)}
 					onImport={importLesson}
 				/>
+			) : null}
+			{reviewChanges && section ? (
+				<StudioDialog
+					title="Thay đổi trong phiên này"
+					size="narrow"
+					onClose={() => setReviewChanges(false)}
+					footer={
+						<>
+							<button type="button" className="ln-btn" onClick={() => setReviewChanges(false)}>
+								Đóng
+							</button>
+							<button
+								type="button"
+								className="ln-btn ln-btn--primary"
+								disabled={!sessionPlaces}
+								onClick={() => {
+									const base = baselines[section.id];
+									if (base == null) return;
+									patchSection(section.id, { markdown: base });
+									setReviewChanges(false);
+								}}
+							>
+								Hoàn tác tất cả về lúc mở
+							</button>
+						</>
+					}
+				>
+					{sessionPlaces ? (
+						<TextDiff hunks={sessionHunks} />
+					) : (
+						<p className="text-sm text-ink-secondary">Chưa có chữ nào khác lúc mở mục này.</p>
+					)}
+				</StudioDialog>
 			) : null}
 			{dialog === 'settings' ? (
 				<CourseSettingsDialog course={meta} onClose={() => setDialog(null)} onSave={saveSettings} onDelete={deleteCourse} />

@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 
 import { estimateReadingMinutes, sectionMinutes } from '@/features/learn/content';
+import { exportLessonMarkdown } from '@/features/learn/lessonImport';
 import type { LearnCheckpoint, LearnStudioLesson, LearnStudioSection } from '@/features/learn/types';
-import { adminFetch } from '@/lib/admin/client';
 
 import { StudioIcon } from './icons';
 import OptionListEditor from './OptionListEditor';
+import SectionHistory from './SectionHistory';
 
 export type SectionPatch = Partial<
 	Pick<LearnStudioSection, 'title' | 'type' | 'durationMinutes' | 'summary' | 'keyTakeaways' | 'markdown' | 'checkpoint' | 'quiz'>
@@ -107,54 +108,13 @@ function CheckpointEditor({
 	);
 }
 
-function SectionHistory({ sectionId, onRestored }: { sectionId: string; onRestored: (section: LearnStudioSection) => void }) {
-	const [open, setOpen] = useState(false);
-	const [rows, setRows] = useState<Array<{ id: string; title: string; reason: string; createdAt: string; markdown: string }>>([]);
-	const [preview, setPreview] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (!open) return;
-		void adminFetch<typeof rows>(`/api/admin/learn/sections/${sectionId}/revisions`).then(setRows).catch(() => setRows([]));
-	}, [open, sectionId]);
-
-	return (
-		<div className="ln-inspector__group">
-			<button type="button" className="ln-link-btn" onClick={() => setOpen((value) => !value)}>
-				{open ? 'Ẩn lịch sử' : 'Lịch sử'}
-			</button>
-			{open ? (
-				rows.length ? (
-					<ul className="ln-history">
-						{rows.map((row) => (
-							<li key={row.id}>
-								<button type="button" onClick={() => setPreview(row.markdown)}>
-									{new Date(row.createdAt).toLocaleString('vi-VN')} · {row.reason}
-								</button>
-								<button
-									type="button"
-									onClick={() =>
-										void adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${sectionId}/revisions/${row.id}`, {
-											method: 'POST',
-										}).then(onRestored)
-									}
-								>
-									Khôi phục
-								</button>
-							</li>
-						))}
-					</ul>
-				) : (
-					<p className="ln-inspector__hint">Chưa có bản lưu. Bản mới được giữ khi lần sửa trước đã hơn 10 phút.</p>
-				)
-			) : null}
-			{preview !== null ? <pre className="ln-history__preview">{preview.slice(0, 1200)}</pre> : null}
-		</div>
-	);
-}
-
 function downloadMarkdown(section: LearnStudioSection) {
-	const header = [`## ${section.title}`, section.summary ? `> ${section.summary}` : ''].filter(Boolean).join('\n');
-	const blob = new Blob([`${header}\n\n${section.markdown}\n`], { type: 'text/markdown;charset=utf-8' });
+	const markdown = exportLessonMarkdown({
+		title: section.title,
+		description: '',
+		sections: [section],
+	});
+	const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
 	link.href = url;
@@ -170,6 +130,7 @@ export default function StudioInspector({
 	onMove,
 	onDelete,
 	onRestored,
+	onSaveVersion,
 	previewHref,
 }: {
 	section: LearnStudioSection;
@@ -178,6 +139,7 @@ export default function StudioInspector({
 	onMove: (lessonId: string) => void;
 	onDelete: () => void;
 	onRestored: (section: LearnStudioSection) => void;
+	onSaveVersion: () => Promise<void>;
 	previewHref: string;
 }) {
 	const autoMinutes =
@@ -278,7 +240,12 @@ export default function StudioInspector({
 			</div>
 
 			<div className="ln-inspector__actions">
-				<SectionHistory sectionId={section.id} onRestored={onRestored} />
+				<SectionHistory
+					sectionId={section.id}
+					currentMarkdown={section.markdown}
+					onRestored={onRestored}
+					onSaveVersion={onSaveVersion}
+				/>
 				<a className="ln-btn ln-btn--block" href={previewHref} target="_blank" rel="noreferrer">
 					<StudioIcon name="eye" size={14} /> Xem như học viên
 				</a>

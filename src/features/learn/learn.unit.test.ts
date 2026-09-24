@@ -1,11 +1,18 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { resolveCalloutKind } from './callouts';
 import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz } from './content';
-import { autoSectionRawText, exportCourseMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
+import { autoSectionRawText, cleanAiPaste, exportCourseMarkdown, exportLessonMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
+import { compareLectureText, lectureWords } from './textFidelity';
 import type { LearnQuiz } from './types';
+
+const originalLecture = readFileSync(path.join(import.meta.dirname, '__fixtures__/sample-lecture.original.txt'), 'utf8');
+const aiLecture = readFileSync(path.join(import.meta.dirname, '__fixtures__/sample-lecture.ai.md'), 'utf8');
 
 describe('parseLessonMarkdown', () => {
 	it('splits NDK sections with title, duration and summary', () => {
@@ -285,6 +292,80 @@ describe('helpers', () => {
 
 	it('drops empty editor paragraphs and extra blank lines', () => {
 		expect(normalizeEditorMarkdown('A\n\n\n| t |\n\n\n&nbsp;\n')).toBe('A\n\n| t |');
+	});
+
+	it('cleans an AI paste, joins continuations, and keeps an unlabeled code fence', () => {
+		const pasted = [
+			'Xin chào, đây là bài.',
+			'````markdown',
+			'# Bài',
+			'',
+			'=== SECTION: A ===',
+			'```',
+			'giữ nguyên dòng này',
+			'```',
+			'````',
+			'<<<CÒN TIẾP>>>',
+			'````md',
+			'=== SECTION: B ===',
+			'phần hai',
+			'````',
+		].join('\n');
+		const cleaned = cleanAiPaste(pasted);
+		expect(cleaned.markdown).toContain('giữ nguyên dòng này');
+		expect(cleaned.markdown).toContain('=== SECTION: B ===');
+		expect(cleaned.markdown).not.toContain('Xin chào');
+		expect(cleaned.markdown).not.toContain('CÒN TIẾP');
+		expect(cleaned.warnings).toEqual([]);
+
+		const unfinished = cleanAiPaste('````markdown\n# Bài\n\n=== SECTION: A ===\nx\n````\n<<<CÒN TIẾP>>>');
+		expect(unfinished.warnings[0]).toMatch(/chưa trả hết bài/);
+		expect(unfinished.markdown).not.toContain('CÒN TIẾP');
+	});
+
+	it('keeps every word of the sample lecture and reports a one-word edit', () => {
+		const match = compareLectureText(originalLecture, aiLecture);
+		expect(match.hunks).toEqual([]);
+		expect(match.matchPercent).toBe(100);
+
+		const cleaned = cleanAiPaste(aiLecture).markdown;
+		const swapped = cleaned.replace('kanban', 'jidoka');
+		const changed = compareLectureText(originalLecture, swapped);
+		expect(changed.hunks).toEqual([
+			expect.objectContaining({ kind: 'removed', words: ['kanban.'] }),
+			expect.objectContaining({ kind: 'added', words: ['jidoka.'] }),
+		]);
+
+		const dropped = cleaned.replace('Toyota áp dụng kanban.\n', '');
+		expect(compareLectureText(originalLecture, dropped).hunks).toEqual([
+			expect.objectContaining({ kind: 'removed', words: ['Toyota', 'áp', 'dụng', 'kanban.'] }),
+		]);
+
+		const added = cleaned.replace('Toyota áp dụng kanban.', 'Toyota áp dụng kanban. Thêm một câu.');
+		expect(compareLectureText(originalLecture, added).hunks).toEqual([
+			expect.objectContaining({ kind: 'added', words: ['Thêm', 'một', 'câu.'] }),
+		]);
+	});
+
+	it('parses the sample lecture and round-trips the export', () => {
+		const parsed = parseCourseMarkdown(aiLecture);
+		expect(parsed.lessons).toHaveLength(1);
+		expect(parsed.lessons[0].sections.map((section) => section.type)).toEqual(['READING', 'QUIZ']);
+		expect(parsed.lessons[0].sections[0].markdown).toContain('> [!DEFINITION] Mâu thuẫn biện chứng');
+		expect(parsed.lessons[0].sections[0].markdown).toContain('[^1]:');
+		expect(parsed.lessons[0].sections[1].quiz?.questions).toHaveLength(1);
+		const exported = exportLessonMarkdown({
+			title: parsed.lessons[0].lessonTitle,
+			description: parsed.lessons[0].lessonDescription,
+			sections: parsed.lessons[0].sections,
+		});
+		const again = exportLessonMarkdown({
+			title: parseLessonMarkdown(exported).lessonTitle,
+			description: parseLessonMarkdown(exported).lessonDescription,
+			sections: parseLessonMarkdown(exported).sections,
+		});
+		expect(again).toBe(exported);
+		expect(lectureWords(exported).length).toBeGreaterThan(10);
 	});
 
 	it('estimates reading time with a one-minute floor', () => {
