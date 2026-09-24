@@ -27,7 +27,7 @@ test.describe('Active Recall', () => {
 			path: 'test-results/active-recall-myspace-study.png',
 			fullPage: true,
 		});
-		await page.getByRole('button', { name: 'Hiện đáp án' }).click();
+		await page.getByRole('button', { name: 'Hiện đáp án', exact: true }).click();
 		await expect(card).toHaveAttribute('data-side', 'answer');
 		const answer = (await card.locator('.recall-text').textContent())?.trim();
 		expect(answer).toBeTruthy();
@@ -36,7 +36,7 @@ test.describe('Active Recall', () => {
 		await page.getByRole('button', { name: 'Tiếp →' }).click();
 		await expect(card).toHaveAttribute('data-side', 'question');
 		await expect(card.locator('.recall-text')).not.toHaveText(question!);
-		await expect(page.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Hiện đáp án', exact: true })).toBeVisible();
 	});
 
 	test('a learner can open a class deck, flip a card, and continue', async ({ page }) => {
@@ -63,7 +63,7 @@ test.describe('Active Recall', () => {
 			path: 'test-results/active-recall-class-study.png',
 			fullPage: true,
 		});
-		await page.getByRole('button', { name: 'Hiện đáp án' }).click();
+		await page.getByRole('button', { name: 'Hiện đáp án', exact: true }).click();
 		await expect(card).toHaveAttribute('data-side', 'answer');
 		const answer = (await card.locator('.recall-text').textContent())?.trim();
 		expect(answer).toBeTruthy();
@@ -72,7 +72,7 @@ test.describe('Active Recall', () => {
 		await page.getByRole('button', { name: 'Tiếp →' }).click();
 		await expect(card).toHaveAttribute('data-side', 'question');
 		await expect(card.locator('.recall-text')).not.toHaveText(question!);
-		await expect(page.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Hiện đáp án', exact: true })).toBeVisible();
 	});
 
 	test('unknown My Space deck slugs return 404', async ({ page }) => {

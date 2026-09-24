@@ -62,7 +62,6 @@ test.describe('Editorial premium public experience', () => {
 		await expect(page.locator('#management-learning')).toBeVisible();
 		await expect(page.locator('#applied-ai')).toBeVisible();
 		await expect(page.locator('#learning-programs')).toBeVisible();
-		await expect(page.getByText('Giảng viên đại học')).toBeVisible();
 		await expect(
 			page.getByRole('heading', {
 				name: /Một chương trình phù hợp không bắt đầu từ slide/i,

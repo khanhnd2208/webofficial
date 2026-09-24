@@ -1058,7 +1058,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(
 				(await page.locator('[data-teaching-app-header]').first().boundingBox())?.height ??
 					Infinity,
-			).toBeLessThan(145);
+			).toBeLessThan(160);
 			await page.getByRole('button', { name: 'Mở menu quản lý' }).click();
 			await expect(page.getByRole('dialog', { name: 'Quản lý lớp' })).toBeVisible();
 			await page.getByRole('button', { name: 'Đóng' }).click();

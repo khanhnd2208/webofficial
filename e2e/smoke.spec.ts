@@ -65,13 +65,14 @@ test.describe('Public pages smoke', () => {
 		await context.close();
 	});
 
-	test('My Space hub contains only Teaching', async ({ page }) => {
+	test('My Space hub contains Teaching and Courses', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.getByTestId('my-space')).toBeVisible();
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(1);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
 		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
+		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
 		await page.getByTestId('myspace-tile-teaching').click();
 		await expect(page).toHaveURL(/\/dang-nhap|\/my-space\/teaching/);
 	});
