@@ -43,14 +43,19 @@ function reorder(ids: string[], event: DragEndEvent): string[] | null {
 
 function SectionRow({
 	section,
+	lessonId,
 	selected,
 	onSelect,
 }: {
 	section: LearnStudioSection;
+	lessonId: string;
 	selected: boolean;
 	onSelect: () => void;
 }) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+		id: section.id,
+		data: { type: 'section', lessonId },
+	});
 	return (
 		<li
 			ref={setNodeRef}
@@ -77,7 +82,6 @@ function LessonBlock({
 	selectedId,
 	onSelect,
 	onRename,
-	onReorderSections,
 	onAddSection,
 	onDelete,
 }: {
@@ -86,12 +90,13 @@ function LessonBlock({
 	selectedId: string | null;
 	onSelect: (sectionId: string) => void;
 	onRename: (title: string) => void;
-	onReorderSections: (ids: string[]) => void;
 	onAddSection: (type: LearnSectionKind) => void;
 	onDelete: () => void;
 }) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id });
-	const sensors = useOutlineSensors();
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+		id: lesson.id,
+		data: { type: 'lesson', lessonId: lesson.id },
+	});
 	const ids = lesson.sections.map((section) => section.id);
 	const [title, setTitle] = useState(lesson.title);
 
@@ -123,29 +128,19 @@ function LessonBlock({
 				}}
 				onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()}
 			/>
-			<DndContext
-				id={`ln-sections-${lesson.id}`}
-				sensors={sensors}
-				collisionDetection={closestCenter}
-				modifiers={[restrictToVerticalAxis]}
-				onDragEnd={(event) => {
-					const next = reorder(ids, event);
-					if (next) onReorderSections(next);
-				}}
-			>
-				<SortableContext items={ids} strategy={verticalListSortingStrategy}>
-					<ol className="ln-souter__sections">
-						{lesson.sections.map((section) => (
-							<SectionRow
-								key={section.id}
-								section={section}
-								selected={section.id === selectedId}
-								onSelect={() => onSelect(section.id)}
-							/>
-						))}
-					</ol>
-				</SortableContext>
-			</DndContext>
+			<SortableContext id={lesson.id} items={ids} strategy={verticalListSortingStrategy}>
+				<ol className="ln-souter__sections">
+					{lesson.sections.map((section) => (
+						<SectionRow
+							key={section.id}
+							section={section}
+							lessonId={lesson.id}
+							selected={section.id === selectedId}
+							onSelect={() => onSelect(section.id)}
+						/>
+					))}
+				</ol>
+			</SortableContext>
 			<div className="ln-souter__add">
 				<button type="button" className="ln-link-btn" onClick={() => onAddSection('READING')}>
 					+ Mục đọc
@@ -165,6 +160,7 @@ export default function StudioOutline({
 	onRenameLesson,
 	onReorderLessons,
 	onReorderSections,
+	onPlaceSection,
 	onAddSection,
 	onDeleteLesson,
 	onAddLesson,
@@ -176,6 +172,7 @@ export default function StudioOutline({
 	onRenameLesson: (lessonId: string, title: string) => void;
 	onReorderLessons: (ids: string[]) => void;
 	onReorderSections: (lessonId: string, ids: string[]) => void;
+	onPlaceSection: (sectionId: string, lessonId: string, beforeId: string | null) => void;
 	onAddSection: (lessonId: string, type: LearnSectionKind) => void;
 	onDeleteLesson: (lessonId: string) => void;
 	onAddLesson: () => void;
@@ -192,8 +189,29 @@ export default function StudioOutline({
 				collisionDetection={closestCenter}
 				modifiers={[restrictToVerticalAxis]}
 				onDragEnd={(event) => {
-					const next = reorder(ids, event);
-					if (next) onReorderLessons(next);
+					const activeType = event.active.data.current?.type;
+					if (activeType === 'lesson') {
+						const next = reorder(ids, event);
+						if (next) onReorderLessons(next);
+						return;
+					}
+					if (activeType !== 'section' || !event.over) return;
+					const fromLesson = String(event.active.data.current?.lessonId ?? '');
+					const overType = event.over.data.current?.type;
+					const toLesson =
+						overType === 'section'
+							? String(event.over.data.current?.lessonId ?? '')
+							: overType === 'lesson'
+								? String(event.over.id)
+								: '';
+					if (!toLesson) return;
+					if (toLesson === fromLesson && overType === 'section') {
+						const lesson = lessons.find((item) => item.id === fromLesson);
+						const next = lesson ? reorder(lesson.sections.map((section) => section.id), event) : null;
+						if (next) onReorderSections(fromLesson, next);
+						return;
+					}
+					onPlaceSection(String(event.active.id), toLesson, overType === 'section' ? String(event.over.id) : null);
 				}}
 			>
 				<SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -205,7 +223,6 @@ export default function StudioOutline({
 							selectedId={selectedId}
 							onSelect={onSelect}
 							onRename={(title) => onRenameLesson(lesson.id, title)}
-							onReorderSections={(sectionIds) => onReorderSections(lesson.id, sectionIds)}
 							onAddSection={(type) => onAddSection(lesson.id, type)}
 							onDelete={() => onDeleteLesson(lesson.id)}
 						/>

@@ -1357,10 +1357,29 @@ model LearnSection {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  lesson   LearnLesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  progress LearnSectionProgress[]
+  lesson    LearnLesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  progress  LearnSectionProgress[]
+  revisions LearnSectionRevision[]
 
   @@index([lessonId, position])
+}
+
+/// A snapshot of a section before a later save, import overwrite, or restore. Capped at 50 per section.
+model LearnSectionRevision {
+  id           String   @id @default(cuid())
+  sectionId    String
+  title        String
+  summary      String   @default("") @db.Text
+  markdown     String   @default("") @db.Text
+  keyTakeaways String[] @default([])
+  checkpoint   Json?
+  quiz         Json?
+  reason       String   @default("autosave")
+  createdAt    DateTime @default(now())
+
+  section LearnSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId, createdAt])
 }
 
 /// One row per learner per section, so completing, noting and quizzing never overwrite each other.

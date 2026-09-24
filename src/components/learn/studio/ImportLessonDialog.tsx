@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 
 import { formatMinutes, estimateReadingMinutes } from '@/features/learn/content';
-import { autoSectionRawText, parseLessonMarkdown } from '@/features/learn/lessonImport';
+import { autoSectionRawText, parseCourseMarkdown, planContentReplace, type ImportedSection } from '@/features/learn/lessonImport';
 import { LEARN_MARKDOWN_GUIDE, LEARN_REFORMAT_PROMPT } from '@/features/learn/prompts';
 import { LEARN_MAX_MARKDOWN } from '@/features/learn/schemas';
 
@@ -12,25 +12,35 @@ import StudioDialog from './StudioDialog';
 import { useCopy } from './useCopy';
 
 export default function ImportLessonDialog({
+	lessons,
+	selectedLessonId,
 	onClose,
 	onImport,
 }: {
+	lessons: Array<{ id: string; title: string; sections: Array<{ id: string; title: string }> }>;
+	selectedLessonId: string | null;
 	onClose: () => void;
-	onImport: (markdown: string) => Promise<void>;
+	onImport: (input: { markdown: string; mode: 'create' | 'append' | 'replace'; lessonId?: string }) => Promise<void>;
 }) {
 	const [text, setText] = useState('');
+	const [mode, setMode] = useState<'create' | 'append' | 'replace'>('create');
+	const [lessonId, setLessonId] = useState(selectedLessonId ?? lessons[0]?.id ?? '');
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [guideOpen, setGuideOpen] = useState(false);
-	const parsed = useMemo(() => (text.trim() ? parseLessonMarkdown(text) : null), [text]);
+	const parsed = useMemo(() => (text.trim() ? parseCourseMarkdown(text) : null), [text]);
 	const { copied, copy } = useCopy();
-	const oversized = parsed?.sections.some((section) => section.markdown.length > LEARN_MAX_MARKDOWN) ?? false;
+	const sections = parsed?.lessons.flatMap((lesson) => lesson.sections) ?? [];
+	const oversized = sections.some((section) => section.markdown.length > LEARN_MAX_MARKDOWN);
+	const target = lessons.find((lesson) => lesson.id === lessonId);
+	const replacePlan =
+		mode === 'replace' && target ? planContentReplace(target.sections, sections as ImportedSection[]) : null;
 
 	async function submit() {
 		setBusy(true);
 		setError(null);
 		try {
-			await onImport(text);
+			await onImport({ markdown: text, mode, lessonId: mode === 'create' ? undefined : lessonId });
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Không nhập được bài học');
 			setBusy(false);
@@ -50,16 +60,32 @@ export default function ImportLessonDialog({
 					<button
 						type="button"
 						className="ln-btn ln-btn--primary"
-						disabled={busy || !parsed?.sections.length || oversized}
+						disabled={busy || !sections.length || oversized || (mode !== 'create' && !lessonId)}
 						onClick={submit}
 					>
-						{busy ? 'Đang nhập…' : `Nhập ${parsed?.sections.length ?? 0} mục`}
+						{busy ? 'Đang nhập…' : `Nhập ${sections.length} mục`}
 					</button>
 				</>
 			}
 		>
 			<div className="ln-split">
 				<div className="flex min-h-0 flex-col gap-2">
+					<div className="flex flex-wrap items-center gap-2">
+						<select className="ln-input" value={mode} aria-label="Cách nhập" onChange={(event) => setMode(event.target.value as typeof mode)}>
+							<option value="create">Tạo bài mới</option>
+							<option value="append">Thêm mục vào bài đang chọn</option>
+							<option value="replace">Thay nội dung bài</option>
+						</select>
+						{mode !== 'create' ? (
+							<select className="ln-input" value={lessonId} aria-label="Bài nhận nội dung" onChange={(event) => setLessonId(event.target.value)}>
+								{lessons.map((lesson) => (
+									<option key={lesson.id} value={lesson.id}>
+										{lesson.title}
+									</option>
+								))}
+							</select>
+						) : null}
+					</div>
 					<div className="flex flex-wrap items-center gap-x-4 gap-y-1">
 						<button type="button" className="ln-link-btn" onClick={() => copy(LEARN_REFORMAT_PROMPT)}>
 							<StudioIcon name="copy" size={14} /> {copied ? 'Đã chép prompt' : 'Chép prompt AI định dạng bài'}
@@ -93,28 +119,44 @@ export default function ImportLessonDialog({
 					<p className="ln-preview__label">Xem trước</p>
 					{parsed ? (
 						<>
-							<p className="font-display text-xl font-medium">{parsed.lessonTitle}</p>
-							{parsed.lessonDescription ? (
-								<p className="mt-1 text-sm text-ink-secondary">{parsed.lessonDescription}</p>
-							) : null}
+							{parsed.lessons.map((lesson) => (
+								<div key={lesson.lessonTitle}>
+									<p className="font-display text-xl font-medium">{lesson.lessonTitle}</p>
+									{lesson.lessonDescription ? (
+										<p className="mt-1 text-sm text-ink-secondary">{lesson.lessonDescription}</p>
+									) : null}
+								</div>
+							))}
 							{parsed.warnings.map((warning) => (
 								<p key={warning} className="ln-warning">
 									{warning}
 								</p>
 							))}
+							{replacePlan ? (
+								<p className="ln-warning">
+									Thêm {replacePlan.creates.length} mục, sửa {replacePlan.updates.length} mục, xóa {replacePlan.deletes.length} mục.
+									{replacePlan.deletes.length
+										? ' Mục bị xóa sẽ mất tiến độ và ghi chú của học viên.'
+										: ' Mục trùng tên được cập nhật tại chỗ, tiến độ học viên giữ nguyên.'}
+								</p>
+							) : null}
 							<ol className="ln-preview__sections">
-								{parsed.sections.map((section, index) => (
+								{sections.map((section, index) => (
 									<li key={index}>
 										<span className="ln-preview__index tabular-nums">{index + 1}</span>
 										<span className="min-w-0 flex-1">
-											<span className="block font-medium">{section.title}</span>
+											<span className="block font-medium">
+												{section.type === 'QUIZ' ? 'Kiểm tra · ' : ''}
+												{section.title}
+											</span>
 											{section.summary ? (
 												<span className="block text-sm text-ink-secondary">{section.summary}</span>
 											) : null}
 										</span>
 										<span className="text-xs text-ink-secondary tabular-nums">
-											{section.wordCount} từ ·{' '}
-											{formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}
+											{section.type === 'QUIZ'
+												? `${section.quiz?.questions.length ?? 0} câu`
+												: `${section.wordCount} từ · ${formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}`}
 										</span>
 									</li>
 								))}

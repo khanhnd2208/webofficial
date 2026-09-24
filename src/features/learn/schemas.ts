@@ -67,6 +67,8 @@ export const createLearnLessonSchema = z.object({
 
 export const importLearnLessonSchema = z.object({
 	markdown: z.string().min(1, 'Chưa có nội dung').max(LEARN_MAX_MARKDOWN * 5, 'Nội dung quá dài'),
+	mode: z.enum(['create', 'append', 'replace']).default('create'),
+	lessonId: z.string().min(1).optional(),
 });
 
 export const updateLearnLessonSchema = z

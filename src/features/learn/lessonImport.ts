@@ -12,7 +12,10 @@
  */
 
 import { countWords } from './content';
+import { findExternalImages } from './images';
+import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
+import type { LearnCheckpoint, LearnQuiz, LearnSectionKind } from './types';
 
 export interface ImportedSection {
 	title: string;
@@ -20,6 +23,10 @@ export interface ImportedSection {
 	summary: string;
 	markdown: string;
 	wordCount: number;
+	type: LearnSectionKind;
+	keyTakeaways: string[];
+	checkpoint: LearnCheckpoint | null;
+	quiz: LearnQuiz | null;
 }
 
 export interface ImportedLesson {
@@ -30,17 +37,27 @@ export interface ImportedLesson {
 }
 
 const SECTION_DELIMITER_RE =
-	/^(?:={3,}|-{3,}|#{2,3})\s*(?:SECTION|MỤC|PHẦN)\s*:\s*(.+?)(?:\s*(?:={3,}|-{3,}))?$/i;
+	/^(?:={3,}|-{3,}|#{2,3})\s*(SECTION|MỤC|PHẦN|QUIZ)\s*:\s*(.+?)(?:\s*(?:={3,}|-{3,}))?$/i;
 
 function isPlainQuote(line: string): boolean {
 	return line.startsWith('>') && !/^>\s*\[!/.test(line);
 }
 
 function parseDuration(raw: string): number | null {
-	const match = raw.match(/(\d{1,3})\s*(?:phút|phut|min|minutes?|')/i) ?? raw.match(/^\s*(\d{1,3})\s*$/);
-	if (!match) return null;
-	const minutes = Number(match[1]);
-	return minutes > 0 ? minutes : null;
+	const minutes = raw.match(/(\d{1,3})\s*(?:phút|phut|min|minutes?|')/i);
+	if (minutes) {
+		const value = Number(minutes[1]);
+		return value > 0 ? value : null;
+	}
+	const hours = raw.match(/(\d{1,2})\s*(?:giờ|gio|hours?|h)(?!\w)/i);
+	if (hours) {
+		const value = Number(hours[1]) * 60;
+		return value > 0 ? value : null;
+	}
+	const bare = raw.match(/^\s*(\d{1,3})\s*$/);
+	if (!bare) return null;
+	const value = Number(bare[1]);
+	return value > 0 ? value : null;
 }
 
 /** True for lines inside a ``` or ~~~ fenced code block, so delimiters and markers there are left alone. */
@@ -79,7 +96,7 @@ function splitTitleAndDuration(titleLine: string): { title: string; durationMinu
 	if (title.includes('|')) {
 		const [head, ...rest] = title.split('|');
 		title = head;
-		durationMinutes = parseDuration(rest.join('|'));
+		durationMinutes = parseDuration(rest.join('|').replace(/[=-]+\s*$/, ''));
 	} else {
 		const bracket = title.match(/[([]\s*(\d{1,3}\s*phút(?:\s*đọc)?)\s*[)\]]/i);
 		if (bracket) {
@@ -92,7 +109,78 @@ function splitTitleAndDuration(titleLine: string): { title: string; durationMinu
 
 interface Slice {
 	titleLine: string;
+	kind: 'READING' | 'QUIZ';
 	start: number;
+}
+
+function pullCallout(markdown: string, tag: string): { body: string | null; rest: string } {
+	const lines = markdown.split('\n');
+	const start = lines.findIndex((line) => new RegExp(`^>\\s*\\[!${tag}\\]`, 'i').test(line.trim()));
+	if (start < 0) return { body: null, rest: markdown };
+	let end = start + 1;
+	while (end < lines.length && /^>\s?/.test(lines[end]) && !/^>\s*\[!/.test(lines[end].trim())) end += 1;
+	const body = lines
+		.slice(start + 1, end)
+		.map((line) => line.replace(/^>\s?/, '').trim())
+		.filter(Boolean)
+		.join('\n');
+	const rest = [...lines.slice(0, start), ...lines.slice(end)].join('\n').replace(/\n{3,}/g, '\n\n').trim();
+	return { body, rest };
+}
+
+function parseCheckpoint(body: string): LearnCheckpoint | null {
+	const lines = body.split('\n').map((line) => line.trim()).filter(Boolean);
+	if (!lines.length) return null;
+	const options: string[] = [];
+	let question = '';
+	let correctIndex = 0;
+	let explanation = '';
+	for (const line of lines) {
+		const option = line.match(/^([A-Ha-h])\s*[.)]\s+(.*)$/);
+		const answer = line.match(/^(?:đáp\s*án|answer)\s*[:：]\s*([A-Ha-h])/i);
+		const explain = line.match(/^(?:giải\s*thích|explanation)\s*[:：]\s*(.*)$/i);
+		if (option && !explanation) {
+			options.push(option[2].trim());
+			continue;
+		}
+		if (answer) {
+			correctIndex = answer[1].toUpperCase().charCodeAt(0) - 65;
+			continue;
+		}
+		if (explain) {
+			explanation = explain[1].trim();
+			continue;
+		}
+		if (!options.length) question = question ? `${question} ${line}` : line;
+		else explanation = explanation ? `${explanation} ${line}` : line;
+	}
+	if (!question || options.length < 2) return null;
+	if (correctIndex < 0 || correctIndex >= options.length) correctIndex = 0;
+	return { question, options, correctIndex, explanation };
+}
+
+function takeawayItems(body: string): string[] {
+	return body
+		.split('\n')
+		.map((line) => line.replace(/^[-*]\s+/, '').trim())
+		.filter(Boolean);
+}
+
+function readingSection(title: string, durationMinutes: number | null, summary: string, markdown: string): ImportedSection {
+	const takeaways = pullCallout(markdown, 'TAKEAWAYS');
+	const checkpoint = pullCallout(takeaways.rest, 'CHECKPOINT');
+	const body = checkpoint.rest;
+	return {
+		title,
+		durationMinutes,
+		summary,
+		markdown: body,
+		wordCount: countWords(body),
+		type: 'READING',
+		keyTakeaways: takeaways.body ? takeawayItems(takeaways.body) : [],
+		checkpoint: checkpoint.body ? parseCheckpoint(checkpoint.body) : null,
+		quiz: null,
+	};
 }
 
 export function parseLessonMarkdown(raw: string): ImportedLesson {
@@ -128,14 +216,14 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 	lines.forEach((line, index) => {
 		if (fenceMask[index]) return;
 		const match = line.trim().match(SECTION_DELIMITER_RE);
-		if (match) slices.push({ titleLine: match[1].trim(), start: index });
+		if (match) slices.push({ titleLine: match[2].trim(), kind: /^quiz$/i.test(match[1]) ? 'QUIZ' : 'READING', start: index });
 	});
 
 	if (!slices.length) {
 		lines.forEach((line, index) => {
 			if (fenceMask[index]) return;
 			if (index !== titleIndex && /^##\s+/.test(line.trim())) {
-				slices.push({ titleLine: line.trim().replace(/^##\s+/, ''), start: index });
+				slices.push({ titleLine: line.trim().replace(/^##\s+/, ''), kind: 'READING', start: index });
 			}
 		});
 		if (slices.length) {
@@ -165,20 +253,12 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		const markdown = buildMarkdown(bodyStart, lines.length);
 		warnings.push('Không tìm thấy dấu phân mục. Toàn bộ nội dung được gom thành 1 mục.');
 		if (markdown) checkOversized(lessonTitle || 'Nội dung bài học', markdown);
+		const external = findExternalImages(markdown);
+		if (external.length) warnings.push(`Ảnh ngoài sẽ không hiển thị, hãy tải lên: ${external.join(', ')}`);
 		return {
 			lessonTitle: lessonTitle || 'Bài học mới',
 			lessonDescription,
-			sections: markdown
-				? [
-						{
-							title: lessonTitle || 'Nội dung bài học',
-							durationMinutes: null,
-							summary: '',
-							markdown,
-							wordCount: countWords(markdown),
-						},
-					]
-				: [],
+			sections: markdown ? [readingSection(lessonTitle || 'Nội dung bài học', null, '', markdown)] : [],
 			warnings,
 		};
 	}
@@ -196,13 +276,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		const introMarkdown = buildMarkdown(introStart, slices[0].start);
 		if (introMarkdown) {
 			checkOversized('Giới thiệu', introMarkdown);
-			sections.push({
-				title: 'Giới thiệu',
-				durationMinutes: null,
-				summary: '',
-				markdown: introMarkdown,
-				wordCount: countWords(introMarkdown),
-			});
+			sections.push(readingSection('Giới thiệu', null, '', introMarkdown));
 		}
 	}
 
@@ -223,17 +297,35 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 
 		const markdown = escapeYearLikeListMarkers(body, bodyMask).join('\n').trim();
 		const sectionTitle = title || `Mục ${sections.length + 1}`;
+		if (slice.kind === 'QUIZ') {
+			const pasted = parseQuizPaste(markdown);
+			for (const warning of pasted.warnings) warnings.push(`"${sectionTitle}": ${warning}`);
+			sections.push({
+				title: sectionTitle,
+				durationMinutes,
+				summary,
+				markdown: '',
+				wordCount: 0,
+				type: 'QUIZ',
+				keyTakeaways: [],
+				checkpoint: null,
+				quiz: {
+					passingScorePercent: 70,
+					timeLimitMinutes: durationMinutes,
+					questions: pasted.questions,
+				},
+			});
+			return;
+		}
 		if (markdown) checkOversized(sectionTitle, markdown);
-		sections.push({
-			title: sectionTitle,
-			durationMinutes,
-			summary,
-			markdown,
-			wordCount: countWords(markdown),
-		});
+		const external = findExternalImages(markdown);
+		if (external.length) warnings.push(`"${sectionTitle}": ảnh ngoài sẽ không hiển thị, hãy tải lên (${external.length}).`);
+		sections.push(readingSection(sectionTitle, durationMinutes, summary, markdown));
 	});
 
-	const empty = sections.filter((section) => !section.markdown).length;
+	const empty = sections.filter(
+		(section) => section.type === 'READING' && !section.markdown && !section.keyTakeaways.length && !section.checkpoint,
+	).length;
 	if (empty) warnings.push(`${empty} mục chưa có nội dung.`);
 
 	return {
@@ -251,7 +343,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
  */
 export function autoSectionRawText(raw: string, fallbackTitle = 'Bài học mới'): string {
 	const trimmed = raw.trim();
-	if (!trimmed || /^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN)\s*:/im.test(trimmed)) return trimmed;
+	if (!trimmed || /^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ)\s*:/im.test(trimmed)) return trimmed;
 
 	const lines = trimmed.replace(/\r\n?/g, '\n').split('\n');
 	let lessonTitle = fallbackTitle;
@@ -289,3 +381,133 @@ export function autoSectionRawText(raw: string, fallbackTitle = 'Bài học mớ
 	});
 	return chunks.join('\n').trim();
 }
+
+export interface ImportedCourse {
+	lessons: ImportedLesson[];
+	warnings: string[];
+}
+
+/** One file may hold several lessons. Each top-level `# ` line, outside a code fence, starts one. */
+export function parseCourseMarkdown(raw: string): ImportedCourse {
+	const lines = raw.replace(/\r\n?/g, '\n').split('\n');
+	const mask = computeFenceMask(lines);
+	const starts: number[] = [];
+	lines.forEach((line, index) => {
+		if (!mask[index] && /^#\s+\S/.test(line.trim())) starts.push(index);
+	});
+	if (starts.length <= 1) {
+		const lesson = parseLessonMarkdown(raw);
+		return { lessons: [lesson], warnings: lesson.warnings };
+	}
+	const lessons = starts.map((start, index) => {
+		const end = index + 1 < starts.length ? starts[index + 1] : lines.length;
+		return parseLessonMarkdown(lines.slice(start, end).join('\n'));
+	});
+	return { lessons, warnings: lessons.flatMap((lesson) => lesson.warnings) };
+}
+
+function durationLabel(minutes: number | null): string {
+	return minutes ? ` | ${minutes} phút` : '';
+}
+
+function checkpointMarkdown(checkpoint: LearnCheckpoint): string {
+	const letters = checkpoint.options.map((option, index) => `> ${String.fromCharCode(65 + index)}. ${option}`);
+	const answer = `> Đáp án: ${String.fromCharCode(65 + checkpoint.correctIndex)}`;
+	const explanation = checkpoint.explanation ? `> Giải thích: ${checkpoint.explanation}` : '';
+	return ['> [!CHECKPOINT]', `> ${checkpoint.question}`, ...letters, answer, explanation].filter(Boolean).join('\n');
+}
+
+function quizMarkdown(quiz: LearnQuiz): string {
+	return quiz.questions
+		.map((question, index) => {
+			const options = question.options.map((option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`);
+			const answer = `Đáp án: ${String.fromCharCode(65 + question.correctIndex)}`;
+			const explanation = question.explanation ? `Giải thích: ${question.explanation}` : '';
+			return [`Câu ${index + 1}: ${question.question}`, ...options, answer, explanation].filter(Boolean).join('\n');
+		})
+		.join('\n\n');
+}
+
+export interface ExportableSection {
+	type: LearnSectionKind;
+	title: string;
+	durationMinutes: number | null;
+	summary: string;
+	markdown: string;
+	keyTakeaways: string[];
+	checkpoint: LearnCheckpoint | null;
+	quiz: LearnQuiz | null;
+}
+
+export interface ExportableLesson {
+	title: string;
+	description: string;
+	sections: ExportableSection[];
+}
+
+export function exportLessonMarkdown(lesson: ExportableLesson): string {
+	const lines = [`# ${lesson.title}`];
+	if (lesson.description.trim()) lines.push(`> ${lesson.description.trim()}`);
+	for (const section of lesson.sections) {
+		lines.push('');
+		const kind = section.type === 'QUIZ' ? 'QUIZ' : 'SECTION';
+		const minutes = section.type === 'QUIZ' ? section.quiz?.timeLimitMinutes ?? section.durationMinutes : section.durationMinutes;
+		lines.push(`=== ${kind}: ${section.title}${durationLabel(minutes)} ===`);
+		if (section.summary.trim()) lines.push(`> ${section.summary.trim()}`);
+		if (section.type === 'QUIZ' && section.quiz) {
+			lines.push('', quizMarkdown(section.quiz));
+			continue;
+		}
+		if (section.keyTakeaways.length) {
+			lines.push('', '> [!TAKEAWAYS]', ...section.keyTakeaways.map((item) => `> - ${item}`));
+		}
+		if (section.checkpoint) lines.push('', checkpointMarkdown(section.checkpoint));
+		if (section.markdown.trim()) lines.push('', section.markdown.trim());
+	}
+	return `${lines.join('\n').trim()}\n`;
+}
+
+export function exportCourseMarkdown(lessons: ExportableLesson[]): string {
+	return `${lessons.map((lesson) => exportLessonMarkdown(lesson).trim()).join('\n\n')}\n`;
+}
+
+export interface ExistingSectionRef {
+	id: string;
+	title: string;
+}
+
+export interface ReplacePlan {
+	updates: Array<{ id: string; section: ImportedSection }>;
+	creates: ImportedSection[];
+	deletes: ExistingSectionRef[];
+}
+
+function sameTitle(left: string, right: string): boolean {
+	return left.trim().toLocaleLowerCase('vi') === right.trim().toLocaleLowerCase('vi');
+}
+
+/** Match by title first, then by leftover position. Callers update rows in place and never recreate them. */
+export function planContentReplace(existing: ExistingSectionRef[], incoming: ImportedSection[]): ReplacePlan {
+	const used = new Set<string>();
+	const updates: ReplacePlan['updates'] = [];
+	const creates: ImportedSection[] = [];
+	const unmatched: ImportedSection[] = [];
+
+	for (const section of incoming) {
+		const match = existing.find((item) => !used.has(item.id) && sameTitle(item.title, section.title));
+		if (match) {
+			used.add(match.id);
+			updates.push({ id: match.id, section });
+		} else unmatched.push(section);
+	}
+	const leftovers = existing.filter((item) => !used.has(item.id));
+	unmatched.forEach((section, index) => {
+		const slot = leftovers[index];
+		if (slot) {
+			used.add(slot.id);
+			updates.push({ id: slot.id, section });
+		} else creates.push(section);
+	});
+	return { updates, creates, deletes: existing.filter((item) => !used.has(item.id)) };
+}
+

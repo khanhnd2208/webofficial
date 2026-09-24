@@ -19,8 +19,13 @@ describe('studio editor markdown round-trip', () => {
 		expect(roundTrip(md)).toBe(md);
 	});
 
-	it('keeps an inline image between text', () => {
-		const md = 'Xem hình ![icon](/uploads/b.png) bên cạnh';
+	it('keeps a sized image with its caption', () => {
+		const md = '![Sơ đồ](/uploads/a.webp#w=50 "Hình 1")';
+		expect(roundTrip(md)).toBe(md);
+	});
+
+	it('keeps a footnote reference and its definition', () => {
+		const md = 'Câu[^1] tiếp.\n\n[^1]: Nguồn.';
 		expect(roundTrip(md)).toBe(md);
 	});
 

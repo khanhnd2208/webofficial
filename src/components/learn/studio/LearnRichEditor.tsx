@@ -2,11 +2,14 @@
 
 import type { Editor } from '@tiptap/core';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { CALLOUT_KINDS, CALLOUT_LABELS } from '@/features/learn/callouts';
 import { countWords, estimateReadingMinutes, normalizeEditorMarkdown } from '@/features/learn/content';
 import { findUnsupportedMarkdown } from '@/features/learn/markdownFidelity';
+import LearnMarkdown from '@/components/learn/LearnMarkdown';
+import { adminFetch } from '@/lib/admin/client';
 
 import { learnEditorExtensions } from './editorExtensions';
 import { StudioIcon, type StudioIconName } from './icons';
@@ -50,7 +53,7 @@ function ToolButton({
 	);
 }
 
-function Toolbar({ editor }: { editor: Editor }) {
+function Toolbar({ editor, onPickImage }: { editor: Editor; onPickImage: () => void }) {
 	const state = useEditorState({
 		editor,
 		selector: ({ editor: current }) => ({
@@ -75,6 +78,8 @@ function Toolbar({ editor }: { editor: Editor }) {
 		}),
 	});
 	const [calloutOpen, setCalloutOpen] = useState(false);
+	const [linkOpen, setLinkOpen] = useState(false);
+	const [href, setHref] = useState('');
 
 	function setBlock(value: string) {
 		const chain = editor.chain().focus();
@@ -85,18 +90,19 @@ function Toolbar({ editor }: { editor: Editor }) {
 	function toggleLink() {
 		if (state.link) {
 			editor.chain().focus().extendMarkRange('link').unsetLink().run();
+			setLinkOpen(false);
 			return;
 		}
-		const href = window.prompt('Dán đường dẫn (https://…)');
-		if (!href) return;
-		editor.chain().focus().extendMarkRange('link').setLink({ href: href.trim() }).run();
+		const current = editor.getAttributes('link').href;
+		setHref(typeof current === 'string' ? current : '');
+		setLinkOpen(true);
 	}
 
-	function insertImage() {
-		const src = window.prompt('Dán đường dẫn ảnh (ví dụ /uploads/ten-anh.webp)');
-		if (!src?.trim()) return;
-		const alt = window.prompt('Mô tả ảnh (tuỳ chọn)')?.trim() || '';
-		editor.chain().focus().setImage({ src: src.trim(), alt }).run();
+	function applyLink() {
+		const next = href.trim();
+		setLinkOpen(false);
+		if (!next) return;
+		editor.chain().focus().extendMarkRange('link').setLink({ href: next }).run();
 	}
 
 	return (
@@ -116,7 +122,25 @@ function Toolbar({ editor }: { editor: Editor }) {
 			<ToolButton icon="bold" label="Đậm (⌘B)" active={state.bold} onClick={() => editor.chain().focus().toggleBold().run()} />
 			<ToolButton icon="italic" label="Nghiêng (⌘I)" active={state.italic} onClick={() => editor.chain().focus().toggleItalic().run()} />
 			<ToolButton icon="strike" label="Gạch ngang" active={state.strike} onClick={() => editor.chain().focus().toggleStrike().run()} />
-			<ToolButton icon="link" label={state.link ? 'Bỏ liên kết' : 'Chèn liên kết'} active={state.link} onClick={toggleLink} />
+			<ToolButton icon="link" label={state.link ? 'Bỏ liên kết' : 'Chèn liên kết'} active={state.link || linkOpen} onClick={toggleLink} />
+			{linkOpen ? (
+				<form
+					className="ln-linkpop"
+					onSubmit={(event) => {
+						event.preventDefault();
+						applyLink();
+					}}
+				>
+					<input
+						autoFocus
+						value={href}
+						placeholder="https://"
+						aria-label="Đường dẫn"
+						onChange={(event) => setHref(event.target.value)}
+					/>
+					<button type="submit">Gắn</button>
+				</form>
+			) : null}
 			<span className="ln-toolbar__sep" />
 			<ToolButton icon="list" label="Danh sách" active={state.bullet} onClick={() => editor.chain().focus().toggleBulletList().run()} />
 			<ToolButton icon="ordered" label="Danh sách số" active={state.ordered} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
@@ -148,7 +172,7 @@ function Toolbar({ editor }: { editor: Editor }) {
 				) : null}
 			</div>
 			<ToolButton icon="table" label="Chèn bảng" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} />
-			<ToolButton icon="image" label="Chèn ảnh" onClick={insertImage} />
+			<ToolButton icon="image" label="Chèn ảnh" onClick={onPickImage} />
 			<ToolButton icon="hr" label="Đường kẻ" onClick={() => editor.chain().focus().setHorizontalRule().run()} />
 			{state.table ? (
 				<span className="ln-toolbar__group">
@@ -232,7 +256,10 @@ export default function LearnRichEditor({
 		const unsupported = findUnsupportedMarkdown(value);
 		return unsupported.length ? unsupported : null;
 	});
+	const [uploadNote, setUploadNote] = useState<string | null>(null);
 	const [slash, setSlash] = useState<SlashState | null>(null);
+	const fileRef = useRef<HTMLInputElement>(null);
+	const uploadRef = useRef<(file: File, apply?: (url: string) => void) => void>(() => {});
 	const slashRef = useRef<SlashState | null>(null);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const onChangeRef = useRef(onChange);
@@ -285,8 +312,28 @@ export default function LearnRichEditor({
 		extensions: learnEditorExtensions(),
 		content: value,
 		contentType: 'markdown',
+		onCreate: ({ editor: current }) => {
+			const image = (current.storage as { image?: { pick?: () => void; upload?: (file: File, apply?: (url: string) => void) => void } }).image;
+			if (!image) return;
+			image.pick = () => fileRef.current?.click();
+			image.upload = (file, apply) => uploadRef.current(file, apply);
+		},
 		editorProps: {
 			attributes: { class: 'ln-prose ln-editor__content', spellcheck: 'false' },
+			handleDrop: (_view, event) => {
+				const file = [...(event.dataTransfer?.files ?? [])].find((item) => item.type.startsWith('image/'));
+				if (!file) return false;
+				event.preventDefault();
+				uploadRef.current(file);
+				return true;
+			},
+			handlePaste: (_view, event) => {
+				const file = [...(event.clipboardData?.files ?? [])].find((item) => item.type.startsWith('image/'));
+				if (!file) return false;
+				event.preventDefault();
+				uploadRef.current(file);
+				return true;
+			},
 			handleKeyDown: (_view, event) => {
 				const current = slashRef.current;
 				if (!current) return false;
@@ -319,6 +366,23 @@ export default function LearnRichEditor({
 	useEffect(() => {
 		editorRef.current = editor;
 	}, [editor]);
+
+	async function uploadImage(file: File, apply?: (url: string) => void) {
+		setUploadNote('Đang tải ảnh…');
+		try {
+			const form = new FormData();
+			form.append('file', file);
+			const payload = await adminFetch<{ url: string }>('/api/uploads', { method: 'POST', body: form });
+			if (apply) apply(payload.url);
+			else editorRef.current?.chain().focus().setLearnImage({ src: payload.url, alt: file.name.replace(/\.[^.]+$/, '') }).run();
+			setUploadNote(null);
+		} catch (err) {
+			setUploadNote(err instanceof Error ? err.message : 'Không tải ảnh lên được');
+		}
+	}
+	useEffect(() => {
+		uploadRef.current = (file, apply) => void uploadImage(file, apply);
+	});
 
 	function switchMode(next: Mode, force = false) {
 		if (next === mode || !editor) return;
@@ -361,8 +425,18 @@ export default function LearnRichEditor({
 			</div>
 			{mode === 'visual' ? (
 				<>
-					{editor ? <Toolbar editor={editor} /> : null}
+					{editor ? <Toolbar editor={editor} onPickImage={() => fileRef.current?.click()} /> : null}
+					{uploadNote ? <p className="ln-editor__upload" role="status">{uploadNote}</p> : null}
 					<div ref={wrapperRef} className="ln-editor__surface">
+						{editor ? (
+							<BubbleMenu editor={editor} className="ln-bubble">
+								<button type="button" onClick={() => editor.chain().focus().toggleBold().run()}>Đậm</button>
+								<button type="button" onClick={() => editor.chain().focus().toggleItalic().run()}>Nghiêng</button>
+								<button type="button" onClick={() => editor.chain().focus().toggleStrike().run()}>Gạch</button>
+								<button type="button" onClick={() => editor.chain().focus().toggleCode().run()}>Code</button>
+								<button type="button" onClick={() => editor.chain().focus().setCallout('important').run()}>Cốt lõi</button>
+							</BubbleMenu>
+						) : null}
 						<EditorContent editor={editor} />
 						{slash ? (
 							<SlashMenu
@@ -392,6 +466,7 @@ export default function LearnRichEditor({
 							</div>
 						</div>
 					) : null}
+				<div className="ln-editor__split">
 					<textarea
 						className="ln-editor__source"
 						value={source}
@@ -402,8 +477,23 @@ export default function LearnRichEditor({
 						}}
 						placeholder={'## Tiêu đề\n\nNội dung…\n\n> [!DEFINITION] Khái niệm\n> Định nghĩa…'}
 					/>
+					<div className="ln-editor__preview" aria-label="Xem trước">
+						<LearnMarkdown markdown={source} />
+					</div>
+				</div>
 				</div>
 			)}
+			<input
+				ref={fileRef}
+				type="file"
+				accept="image/*"
+				hidden
+				onChange={(event) => {
+					const file = event.target.files?.[0];
+					event.target.value = '';
+					if (file) void uploadImage(file);
+				}}
+			/>
 		</div>
 	);
 }

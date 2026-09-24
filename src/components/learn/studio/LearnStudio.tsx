@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
+import { exportCourseMarkdown } from '@/features/learn/lessonImport';
 import type {
 	LearnCourseMeta,
 	LearnSectionKind,
@@ -175,14 +176,15 @@ export default function LearnStudio({
 		select(lesson.sections[0]?.id ?? null);
 	}
 
-	async function importLesson(markdown: string) {
+	async function importLesson(input: { markdown: string; mode: 'create' | 'append' | 'replace'; lessonId?: string }) {
 		await flush();
-		const lesson = await adminFetch<LearnStudioLesson>(`/api/admin/learn/courses/${meta.id}/lessons`, {
-			method: 'POST',
-			body: JSON.stringify({ markdown }),
-		});
-		setLessons((current) => [...current, lesson]);
-		select(lesson.sections[0]?.id ?? null);
+		const result = await adminFetch<LearnStudioLesson | { lessons: LearnStudioLesson[] }>(
+			`/api/admin/learn/courses/${meta.id}/lessons`,
+			{ method: 'POST', body: JSON.stringify(input) },
+		);
+		const imported = 'lessons' in result ? result.lessons : [result];
+		setLessons((current) => (input.mode === 'create' ? [...current, ...imported] : current.map((lesson) => imported.find((item) => item.id === lesson.id) ?? lesson)));
+		select(imported[0]?.sections[0]?.id ?? null);
 		setDialog(null);
 	}
 
@@ -274,6 +276,28 @@ export default function LearnStudio({
 						</button>
 					) : null}
 				</span>
+				<button
+					type="button"
+					className="ln-btn"
+					onClick={() => {
+						const markdown = exportCourseMarkdown(
+							lessons.map((lesson) => ({
+								title: lesson.title,
+								description: lesson.description,
+								sections: lesson.sections,
+							})),
+						);
+						const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+						const url = URL.createObjectURL(blob);
+						const link = document.createElement('a');
+						link.href = url;
+						link.download = `${meta.slug || 'khoa-hoc'}.md`;
+						link.click();
+						URL.revokeObjectURL(url);
+					}}
+				>
+					Xuất cả khóa
+				</button>
 				<div className="ln-segmented ln-studio__status" role="radiogroup" aria-label="Trạng thái khóa học">
 					<button type="button" role="radio" aria-checked={!published} onClick={() => published && void setStatus('DRAFT')}>
 						Bản nháp
@@ -298,6 +322,23 @@ export default function LearnStudio({
 					onRenameLesson={renameLesson}
 					onReorderLessons={reorderLessons}
 					onReorderSections={reorderSections}
+					onPlaceSection={(sectionId, lessonId, beforeId) => {
+						const moving = findSection(lessons, sectionId);
+						if (!moving) return;
+						const stripped = lessons.map((lesson) => ({
+							...lesson,
+							sections: lesson.sections.filter((item) => item.id !== sectionId),
+						}));
+						void saveOutline(
+							stripped.map((lesson) => {
+								if (lesson.id !== lessonId) return lesson;
+								const sections = [...lesson.sections];
+								const index = beforeId ? sections.findIndex((item) => item.id === beforeId) : sections.length;
+								sections.splice(index < 0 ? sections.length : index, 0, { ...moving, lessonId });
+								return { ...lesson, sections };
+							}),
+						);
+					}}
 					onAddSection={(lessonId, type) => void addSection(lessonId, type)}
 					onDeleteLesson={(id) => void deleteLesson(id)}
 					onAddLesson={() => void addLesson()}
@@ -346,6 +387,14 @@ export default function LearnStudio({
 						onPatch={(patch) => patchSection(section.id, patch)}
 						onMove={(lessonId) => moveSection(section.id, lessonId)}
 						onDelete={() => void deleteSection(section.id)}
+						onRestored={(restored) =>
+							setLessons((current) =>
+								current.map((lesson) => ({
+									...lesson,
+									sections: lesson.sections.map((item) => (item.id === restored.id ? restored : item)),
+								})),
+							)
+						}
 						previewHref={routes.learnCourse(meta.slug, section.id)}
 					/>
 				) : (
@@ -353,7 +402,14 @@ export default function LearnStudio({
 				)}
 			</div>
 
-			{dialog === 'import' ? <ImportLessonDialog onClose={() => setDialog(null)} onImport={importLesson} /> : null}
+			{dialog === 'import' ? (
+				<ImportLessonDialog
+					lessons={lessons}
+					selectedLessonId={section?.lessonId ?? lessons[0]?.id ?? null}
+					onClose={() => setDialog(null)}
+					onImport={importLesson}
+				/>
+			) : null}
 			{dialog === 'settings' ? (
 				<CourseSettingsDialog course={meta} onClose={() => setDialog(null)} onSave={saveSettings} onDelete={deleteCourse} />
 			) : null}

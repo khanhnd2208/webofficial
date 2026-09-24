@@ -90,16 +90,22 @@ export const SLASH_COMMANDS: SlashCommand[] = [
 	},
 	{
 		id: 'image',
-		label: 'Ảnh (theo URL)',
-		hint: 'Dán link ảnh đã tải lên',
+		label: 'Ảnh',
+		hint: 'Tải lên hoặc dán ảnh',
 		group: 'Chèn',
 		keywords: 'image anh hinh img picture',
 		run: (editor) => {
-			const src = window.prompt('Dán đường dẫn ảnh (ví dụ /uploads/ten-anh.webp)');
-			if (!src?.trim()) return;
-			const alt = window.prompt('Mô tả ảnh (tuỳ chọn)')?.trim() || '';
-			editor.chain().focus().setImage({ src: src.trim(), alt }).run();
+			const pick = (editor.storage as { image?: { pick?: () => void } }).image?.pick;
+			pick?.();
 		},
+	},
+	{
+		id: 'footnote',
+		label: 'Chú thích nguồn',
+		hint: 'Số tham chiếu và nguồn cuối mục',
+		group: 'Chèn',
+		keywords: 'footnote chu thich nguon note',
+		run: (editor) => editor.chain().focus().insertFootnote().run(),
 	},
 	{
 		id: 'hr',

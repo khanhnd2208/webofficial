@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { resolveCalloutKind } from './callouts';
 import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz } from './content';
-import { autoSectionRawText, parseLessonMarkdown } from './lessonImport';
+import { autoSectionRawText, exportCourseMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
 import type { LearnQuiz } from './types';
@@ -91,6 +91,38 @@ describe('parseLessonMarkdown', () => {
 		expect(parsed.warnings.some((warning) => warning.includes('vượt giới hạn'))).toBe(true);
 	});
 
+	it('reads a quiz section, takeaways, a checkpoint and an hour-long duration', () => {
+		const parsed = parseLessonMarkdown(
+			[
+				'# Bài',
+				'',
+				'=== SECTION: Khái niệm | 1 giờ ===',
+				'> [!TAKEAWAYS]',
+				'> - Nắm khái niệm',
+				'> [!CHECKPOINT]',
+				'> Mâu thuẫn là gì?',
+				'> A. Sai',
+				'> B. Đúng',
+				'> Đáp án: B',
+				'Thân bài.',
+				'',
+				'=== QUIZ: Kiểm tra | 10 phút ===',
+				'Câu 1: Hỏi?',
+				'A. a',
+				'B. b',
+				'Đáp án: A',
+			].join('\n'),
+		);
+		expect(parsed.sections[0]).toMatchObject({
+			durationMinutes: 60,
+			keyTakeaways: ['Nắm khái niệm'],
+			markdown: 'Thân bài.',
+		});
+		expect(parsed.sections[0].checkpoint).toMatchObject({ question: 'Mâu thuẫn là gì?', correctIndex: 1 });
+		expect(parsed.sections[1].type).toBe('QUIZ');
+		expect(parsed.sections[1].quiz?.questions[0].correctIndex).toBe(0);
+		expect(parsed.sections[1].quiz?.timeLimitMinutes).toBe(10);
+	});
 	it('escapes a year-like line so it is not parsed as an ordered list start', () => {
 		const parsed = parseLessonMarkdown('# T\n\n=== SECTION: A ===\n1945. Năm lịch sử\n\n2. Không phải list?');
 		expect(parsed.sections[0].markdown).toContain('1945\\. Năm lịch sử');
@@ -104,6 +136,73 @@ describe('autoSectionRawText', () => {
 		expect(out).toContain('=== SECTION: I. Khái niệm ===');
 		expect(out).toContain('Nội dung hai.');
 		expect(parseLessonMarkdown(out).sections).toHaveLength(3);
+	});
+});
+
+describe('course markdown exchange', () => {
+	it('splits a file into one lesson per top-level heading', () => {
+		const parsed = parseCourseMarkdown('# Một\n\n=== SECTION: A ===\nna\n\n# Hai\n\n=== SECTION: B ===\nbb');
+		expect(parsed.lessons.map((lesson) => lesson.lessonTitle)).toEqual(['Một', 'Hai']);
+		expect(parsed.lessons[1].sections[0].title).toBe('B');
+	});
+
+	it('round-trips a lesson that has a quiz, takeaways and a checkpoint', () => {
+		const source = [
+			'# Bài',
+			'> Mô tả',
+			'',
+			'=== SECTION: Khái niệm | 6 phút ===',
+			'> Tóm tắt',
+			'',
+			'> [!TAKEAWAYS]',
+			'> - Ý một',
+			'',
+			'> [!CHECKPOINT]',
+			'> Câu hỏi?',
+			'> A. Sai',
+			'> B. Đúng',
+			'> Đáp án: B',
+			'',
+			'Thân.',
+			'',
+			'=== QUIZ: Kiểm tra | 10 phút ===',
+			'',
+			'Câu 1: Hỏi?',
+			'A. a',
+			'B. b',
+			'Đáp án: A',
+			'',
+		].join('\n');
+		const lesson = parseLessonMarkdown(source);
+		const again = parseLessonMarkdown(
+			exportCourseMarkdown([
+				{
+					title: lesson.lessonTitle,
+					description: lesson.lessonDescription,
+					sections: lesson.sections,
+				},
+			]),
+		);
+		expect(again.lessonTitle).toBe('Bài');
+		expect(again.sections[0].keyTakeaways).toEqual(['Ý một']);
+		expect(again.sections[0].checkpoint?.correctIndex).toBe(1);
+		expect(again.sections[0].markdown).toBe('Thân.');
+		expect(again.sections[1].quiz?.questions[0].question).toBe('Hỏi?');
+	});
+
+	it('updates matched sections in place and only deletes the ones left over', () => {
+		const incoming = parseLessonMarkdown('# Bài\n\n=== SECTION: Giữ ===\nx\n\n=== SECTION: Mới ===\ny').sections;
+		const plan = planContentReplace(
+			[
+				{ id: 'a', title: 'Giữ' },
+				{ id: 'b', title: 'Cũ' },
+			],
+			incoming,
+		);
+		expect(plan.updates.map((item) => item.id)).toEqual(['a', 'b']);
+		expect(plan.updates[1].section.title).toBe('Mới');
+		expect(plan.deletes).toEqual([]);
+		expect(plan.creates).toEqual([]);
 	});
 });
 

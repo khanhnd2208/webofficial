@@ -14,6 +14,7 @@ import LearnQuizRunner from '@/components/learn/LearnQuizRunner';
 import LearnReaderFrame from '@/components/learn/LearnReaderFrame';
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
+import { readingOutline } from '@/features/learn/outline';
 import { summarizeCourse, toCurriculumLessons } from '@/features/learn/progress';
 import { getLearnCourseOutline, getLearnProgress, getLearnReaderSection } from '@/features/learn/service';
 import { auth } from '@/lib/auth';
@@ -187,7 +188,21 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					) : (
 						<>
 							{section.markdown ? (
-								<LearnMarkdown markdown={section.markdown} />
+								<>
+									{readingOutline(section.markdown).length >= 3 ? (
+										<nav className="ln-toc" aria-label="Trong mục này">
+											<p>Trong mục này</p>
+											<ol>
+												{readingOutline(section.markdown).map((heading) => (
+													<li key={heading.id} data-level={heading.level}>
+														<a href={`#${heading.id}`}>{heading.text}</a>
+													</li>
+												))}
+											</ol>
+										</nav>
+									) : null}
+									<LearnMarkdown markdown={section.markdown} />
+								</>
 							) : (
 								<p className="mt-8 text-ink-secondary">Mục này chưa có nội dung.</p>
 							)}

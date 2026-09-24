@@ -22,7 +22,27 @@ Nội dung mục bằng Markdown: **đậm**, *nghiêng*, danh sách, bảng.
 > Câu hỏi gợi mở.
 
 === SECTION: 2. Tên mục tiếp theo | 8 phút ===
-…`;
+…
+
+=== QUIZ: Kiểm tra nhanh | 10 phút ===
+Câu 1: Câu hỏi?
+A. Phương án
+B. Phương án
+Đáp án: A
+Giải thích: Vì sao.
+
+Trong một mục đọc có thể thêm:
+
+> [!TAKEAWAYS]
+> - Ý chính cần nhớ
+
+> [!CHECKPOINT]
+> Câu hỏi nhanh?
+> A. Sai
+> B. Đúng
+> Đáp án: B
+
+Ảnh: ![Mô tả](/uploads/ten.webp "Chú thích") hoặc ![Mô tả](/uploads/ten.webp#w=50 "Chú thích")`;
 
 export const LEARN_REFORMAT_PROMPT = `Bạn là công cụ định dạng Markdown nguyên văn cho bài giảng khoa học xã hội.
 Tôi sẽ dán tài liệu gốc. Việc DUY NHẤT của bạn là chia mục và gắn thẻ theo chuẩn bên dưới.

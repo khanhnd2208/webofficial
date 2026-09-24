@@ -4,12 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 import LearnRichEditor from './LearnRichEditor';
 
 describe('LearnRichEditor mode guard', () => {
-	it('opens in Markdown mode with a warning when the stored content has a footnote', async () => {
-		render(<LearnRichEditor value={'Câu[^1].\n\n[^1]: Nguồn.'} onChange={vi.fn()} />);
+	it('opens in Markdown mode with a warning when the stored content has raw HTML', async () => {
+		render(<LearnRichEditor value={'Chữ <u>gạch chân</u>.'} onChange={vi.fn()} />);
 
 		const markdownTab = screen.getByRole('tab', { name: /markdown/i });
 		expect(markdownTab).toHaveAttribute('aria-selected', 'true');
-		expect(screen.getByRole('alert')).toHaveTextContent(/chú thích nguồn/i);
+		expect(screen.getByRole('alert')).toHaveTextContent(/thẻ HTML/i);
 		expect(screen.queryByRole('toolbar', { name: 'Định dạng' })).not.toBeInTheDocument();
 	});
 

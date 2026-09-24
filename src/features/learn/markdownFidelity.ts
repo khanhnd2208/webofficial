@@ -11,7 +11,6 @@ interface FidelityCheck {
 }
 
 const CHECKS: FidelityCheck[] = [
-	{ label: 'chú thích nguồn (footnote [^…])', test: /\[\^[^\]]+\]/ },
 	{ label: 'việc cần làm (- [ ] / - [x])', test: /^[ \t]*[-*][ \t]+\[[ xX]\][ \t]/m },
 	{ label: 'thẻ HTML (<u>, <sup>, <sub>, <mark>…)', test: /<\/?(u|sup|sub|mark|kbd|ins|abbr)\b/i },
 ];
