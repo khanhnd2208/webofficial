@@ -83,6 +83,7 @@ test.describe('Teaching group list UX', () => {
 				.locator('.group-list-section')
 				.filter({ has: page.getByRole('heading', { name: /^Nhóm 2 ·/ }) });
 			await g1.getByRole('button', { name: 'Thêm sinh viên' }).click();
+			await page.getByRole('button', { name: /dán nhiều mã cùng lúc/ }).click();
 			await page.getByRole('textbox', { name: /Mã sinh viên/ }).fill(`${codes[0]}\n${codes[2]}`);
 			await page.getByRole('button', { name: 'Kiểm tra mã' }).click();
 			await expect(page.getByText(/không thuộc tutorial đang chọn/)).toBeVisible();
