@@ -100,8 +100,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Production dependency audit
-        run: npm audit --omit=dev --audit-level=moderate
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate
 
       - name: Release-critical end-to-end tests
         run: >-
