@@ -70,6 +70,7 @@ export default function LearnStudio({
 	);
 	const [dialog, setDialog] = useState<'import' | 'settings' | null>(null);
 	const [reviewChanges, setReviewChanges] = useState(false);
+	const [editorEpoch, setEditorEpoch] = useState(0);
 	const [baselines, setBaselines] = useState<Record<string, string>>({});
 	const [trackedSectionId, setTrackedSectionId] = useState<string | null>(null);
 	const [actionError, setActionError] = useState<string | null>(null);
@@ -368,7 +369,7 @@ export default function LearnStudio({
 
 				<main className="ln-studio__canvas">
 					{section ? (
-						<div className="ln-studio__page" key={section.id}>
+						<div className="ln-studio__page" key={`${section.id}:${editorEpoch}`}>
 							<p className="ln-eyebrow">
 								{section.type === 'QUIZ' ? 'Bài kiểm tra' : 'Bài đọc'} ·{' '}
 								{lessons.find((lesson) => lesson.id === section.lessonId)?.title}
@@ -412,14 +413,15 @@ export default function LearnStudio({
 						onPatch={(patch) => patchSection(section.id, patch)}
 						onMove={(lessonId) => moveSection(section.id, lessonId)}
 						onDelete={() => void deleteSection(section.id)}
-						onRestored={(restored) =>
+						onRestored={(restored) => {
+							setEditorEpoch((epoch) => epoch + 1);
 							setLessons((current) =>
 								current.map((lesson) => ({
 									...lesson,
 									sections: lesson.sections.map((item) => (item.id === restored.id ? restored : item)),
 								})),
-							)
-						}
+							);
+						}}
 						onSaveVersion={async () => {
 							await flush();
 							await adminFetch(`/api/admin/learn/sections/${section.id}/revisions`, { method: 'POST' });
@@ -457,6 +459,7 @@ export default function LearnStudio({
 									const base = baselines[section.id];
 									if (base == null) return;
 									patchSection(section.id, { markdown: base });
+									setEditorEpoch((epoch) => epoch + 1);
 									setReviewChanges(false);
 								}}
 							>

@@ -3,7 +3,7 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { formatMinutes, estimateReadingMinutes } from '@/features/learn/content';
-import { autoSectionRawText, parseCourseMarkdown, planContentReplace, type ImportedSection } from '@/features/learn/lessonImport';
+import { autoSectionRawText, parseCourseMarkdown, planContentReplace } from '@/features/learn/lessonImport';
 import { LEARN_MARKDOWN_GUIDE, LEARN_REFORMAT_PROMPT } from '@/features/learn/prompts';
 import { LEARN_MAX_MARKDOWN } from '@/features/learn/schemas';
 import { compareLectureText, countPlaces, wordDiff, type TextHunk } from '@/features/learn/textFidelity';
@@ -59,32 +59,35 @@ export default function ImportLessonDialog({
 	const { copied, copy } = useCopy();
 	const sections = parsed?.lessons.flatMap((lesson) => lesson.sections) ?? [];
 	const oversized = sections.some((section) => section.markdown.length > LEARN_MAX_MARKDOWN);
-	const target = lessons.find((lesson) => lesson.id === lessonId);
-	const replacePlan =
-		mode === 'replace' && target ? planContentReplace(target.sections, sections as ImportedSection[]) : null;
 	const places = fidelity ? countPlaces(fidelity.hunks) : 0;
 	const needsAck = places > 0;
 	const multiLesson = (parsed?.lessons.length ?? 0) > 1 && mode !== 'create';
 
-	const replaceRows: Array<{ id: string; title: string; status: 'same' | 'changed' | 'new' | 'delete'; hunks: TextHunk[] }> = [];
-	if (replacePlan && target) {
-		for (const update of replacePlan.updates) {
-			const existing = target.sections.find((section) => section.id === update.id);
+	const replaceRows = useMemo(() => {
+		if (mode !== 'replace' || !deferredText.trim()) return [];
+		const current = lessons.find((lesson) => lesson.id === lessonId);
+		if (!current) return [];
+		const incoming = parseCourseMarkdown(deferredText).lessons.flatMap((lesson) => lesson.sections);
+		const plan = planContentReplace(current.sections, incoming);
+		const rows: Array<{ id: string; title: string; status: 'same' | 'changed' | 'new' | 'delete'; hunks: TextHunk[] }> = [];
+		for (const update of plan.updates) {
+			const existing = current.sections.find((section) => section.id === update.id);
 			const hunks = existing ? wordDiff(fingerprint(existing), fingerprint(update.section)) : [];
-			replaceRows.push({
+			rows.push({
 				id: update.id,
 				title: update.section.title,
 				status: hunks.length ? 'changed' : 'same',
 				hunks,
 			});
 		}
-		replacePlan.creates.forEach((section, index) => {
-			replaceRows.push({ id: `new-${index}`, title: section.title, status: 'new', hunks: [] });
+		plan.creates.forEach((section, index) => {
+			rows.push({ id: `new-${index}`, title: section.title, status: 'new', hunks: [] });
 		});
-		for (const deleted of replacePlan.deletes) {
-			replaceRows.push({ id: deleted.id, title: deleted.title, status: 'delete', hunks: [] });
+		for (const deleted of plan.deletes) {
+			rows.push({ id: deleted.id, title: deleted.title, status: 'delete', hunks: [] });
 		}
-	}
+		return rows;
+	}, [mode, lessons, lessonId, deferredText]);
 
 	async function submit() {
 		setBusy(true);
@@ -226,6 +229,9 @@ export default function ImportLessonDialog({
 							))}
 							{multiLesson ? (
 								<p className="ln-warning">Có nhiều dòng # — chế độ này sẽ gộp nhiều bài vào một bài.</p>
+							) : null}
+							{replaceRows.some((row) => row.status === 'delete') ? (
+								<p className="ln-warning">Mục bị xóa sẽ mất tiến độ và ghi chú của học viên.</p>
 							) : null}
 							{replaceRows.length ? (
 								<ul className="ln-preview__sections">
