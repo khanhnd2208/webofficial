@@ -19,7 +19,7 @@ export const errorsVi: MessageTree = {
 	NEED_MIN_PLAYERS: 'Cần ít nhất {min} người chơi',
 	NEED_MIN_PLAYERS_FOR_SPIES: 'Chơi với {spies} Spy cần ít nhất {min} người',
 	SPY_COUNT_INVALID: 'Số Spy chỉ có thể là 1 hoặc 2',
-	SPY_COUNT_NEEDS_ROOM: 'Chơi với {spies} Spy cần phòng tối đa từ {min} người trở lên',
+	SPY_COUNT_NEEDS_ROOM: 'Chơi với {spies} Spy cần đặt số người tối đa từ {min} trở lên',
 	NOT_ROLE_REVEAL: 'Không ở giai đoạn nhận vai',
 	NOT_VOTE: 'Không ở giai đoạn bỏ phiếu',
 	VOTE_SELF: 'Không thể bầu chính mình',

@@ -832,8 +832,8 @@ function settleAfterLeave(game: GameDoc, leftToken: string, at: Date): void {
 	if (game.phase === 'role-reveal') {
 		applyLazyPhaseAdvance(game);
 	}
-	if (game.phase === 'role-reveal' || game.players.length < 2) return;
 
+	// Checked in every phase and at any table size: a vote with no Spy left could only "miss".
 	const outcome = checkOutcome(outcomePlayers(game));
 	if (outcome) {
 		finalizeResult(game, outcome, at);

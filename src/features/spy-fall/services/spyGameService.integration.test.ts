@@ -194,6 +194,39 @@ describe('Spy Fall — two spies', () => {
 	});
 });
 
+describe('Spy Fall — players leaving', () => {
+	it('the spy leaving while words are being read hands the win to the civilians', async () => {
+		const table = await openTable(4);
+		await startGame(table.code, table.host);
+		const roles = await rolesOf(table.code);
+		const [spy] = byRole(roles, 'spy');
+		const [civilian] = byRole(roles, 'civilian');
+
+		await leaveRoom(table.code, spy!);
+
+		const state = await getScopedState(table.code, civilian!);
+		expect(state.phase).toBe('result');
+		expect(state.result?.winningSide).toBe('civilian');
+		expect(state.result?.endReason).toBe('spies-gone');
+	});
+
+	it('civilians leaving until they cannot outvote the spy hands the win to the spy', async () => {
+		const table = await openTable(4);
+		const roles = await startAndOpenVote(table);
+		const [spy] = byRole(roles, 'spy');
+		const [civ1, civ2, civ3] = byRole(roles, 'civilian');
+
+		await leaveRoom(table.code, civ1!);
+		expect((await getScopedState(table.code, spy!)).phase).toBe('vote');
+		await leaveRoom(table.code, civ2!);
+
+		const state = await getScopedState(table.code, civ3!);
+		expect(state.phase).toBe('result');
+		expect(state.result?.winningSide).toBe('antagonist');
+		expect(state.result?.endReason).toBe('outnumbered');
+	});
+});
+
 describe('Spy Fall — settings', () => {
 	it('defaults to one spy with hidden roles', async () => {
 		const table = await openTable(4);
