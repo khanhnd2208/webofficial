@@ -8,6 +8,7 @@ import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
 import ActionBar, { ActionBarNote } from '../ActionBar';
 import PlayerList from '../PlayerList';
+import StakesBanner from '../StakesBanner';
 import StepGuide from '../StepGuide';
 
 interface Props {
@@ -34,6 +35,8 @@ export default function DiscussionPhase({ state, onNext, busy }: Props) {
 						tipKey="spy.steps.discussionTip"
 					/>
 				)}
+
+				<StakesBanner state={state} />
 
 				<div className="rounded-2xl border border-warning/40 bg-warning-subtle px-4 py-4 text-center">
 					<p className="text-xs font-semibold uppercase tracking-wider text-warning">

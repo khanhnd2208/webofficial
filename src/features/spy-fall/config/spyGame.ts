@@ -1,6 +1,7 @@
 /**
  * Spy Fall — room limits and round rules.
- * One rule set: hidden roles, eliminate one player per round.
+ * Each vote must catch a Spy: a miss ends the game for the Spies, and the
+ * Civilians win once every Spy is caught (one vote per Spy).
  */
 
 export const SPY_MIN_PLAYERS = 4;
@@ -26,17 +27,42 @@ export const SPY_PHASES = [
 	'result',
 ] as const;
 
+/** How many Spies the host can deal. */
+export const SPY_COUNTS = [1, 2] as const;
+export type SpyCount = (typeof SPY_COUNTS)[number];
+export const SPY_DEFAULT_COUNT: SpyCount = 1;
+
+/** Two Spies need enough Civilians left to outvote the second one after the first is caught. */
+export const SPY_TWO_SPIES_MIN_PLAYERS = 5;
+
+export function isSpyCount(value: unknown): value is SpyCount {
+	return SPY_COUNTS.includes(value as SpyCount);
+}
+
+/** Stored rooms predating the setting deal one Spy. */
+export function normalizeSpyCount(value: unknown): SpyCount {
+	return isSpyCount(value) ? value : SPY_DEFAULT_COUNT;
+}
+
+export function minPlayersForSpies(spyCount: SpyCount): number {
+	return spyCount === 2 ? SPY_TWO_SPIES_MIN_PLAYERS : SPY_MIN_PLAYERS;
+}
+
 export interface RoleDistribution {
 	civilians: number;
 	spies: number;
 }
 
-/** One Spy, everyone else is a Civilian. */
-export function getRoleDistribution(playerCount: number): RoleDistribution {
-	if (playerCount < SPY_MIN_PLAYERS || playerCount > SPY_MAX_PLAYERS) {
-		throw new Error(`Player count must be ${SPY_MIN_PLAYERS}–${SPY_MAX_PLAYERS}`);
+/** `spyCount` Spies, everyone else is a Civilian. */
+export function getRoleDistribution(
+	playerCount: number,
+	spyCount: SpyCount = SPY_DEFAULT_COUNT,
+): RoleDistribution {
+	const min = minPlayersForSpies(spyCount);
+	if (playerCount < min || playerCount > SPY_MAX_PLAYERS) {
+		throw new Error(`Player count must be ${min}–${SPY_MAX_PLAYERS} for ${spyCount} spies`);
 	}
-	return { civilians: playerCount - 1, spies: 1 };
+	return { civilians: playerCount - spyCount, spies: spyCount };
 }
 
 export const SPY_TOPICS = [

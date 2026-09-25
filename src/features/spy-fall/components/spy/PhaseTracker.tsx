@@ -7,6 +7,8 @@ import { cn } from '@/features/spy-fall/lib/cn';
 import GameIcon, { type GameIconName } from '@/features/spy-fall/components/ui/GameIcon';
 
 const STEPS: GamePhase[] = ['role-reveal', 'discussion', 'vote', 'reveal'];
+/** With one Spy the vote ends the game, so there is no reveal between rounds. */
+const STEPS_WITHOUT_REVEAL: GamePhase[] = ['role-reveal', 'discussion', 'vote'];
 const STEP_ICONS: Record<GamePhase, GameIconName> = {
 	'lobby': 'users',
 	'role-reveal': 'passport',
@@ -18,19 +20,22 @@ const STEP_ICONS: Record<GamePhase, GameIconName> = {
 
 interface Props {
 	current: GamePhase;
+	/** Two-Spy games reveal the first catch before the final guess. */
+	showReveal?: boolean;
 	className?: string;
 }
 
 /** One round's steps. The active step always shows its name, even on narrow screens. */
-export default function PhaseTracker({ current, className }: Props) {
+export default function PhaseTracker({ current, showReveal = true, className }: Props) {
 	const t = useT();
+	const steps = showReveal ? STEPS : STEPS_WITHOUT_REVEAL;
 	const shown = current;
-	const currentIdx = STEPS.indexOf(shown);
+	const currentIdx = steps.indexOf(shown);
 
 	return (
 		<nav aria-label={t('spy.steps.heading')} className={className}>
 			<ol className="flex items-center gap-1">
-				{STEPS.map((phase, idx) => {
+				{steps.map((phase, idx) => {
 					const isActive = phase === shown;
 					const isPast = idx < currentIdx;
 					return (

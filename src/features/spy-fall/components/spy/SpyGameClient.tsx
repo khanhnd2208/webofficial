@@ -293,6 +293,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 			roomName={state.name}
 			code={state.code}
 			round={state.round}
+			spyCount={state.spyCount}
 			onLeave={() => void handleLeave()}
 			leaveBusy={busy}
 			onOpenGuide={() => setBriefingOpen(true)}
@@ -376,7 +377,12 @@ export default function SpyGameClient({ code, initialName }: Props) {
 
 			<BriefingSheet open={briefingOpen} onClose={closeBriefing} />
 			{canReviewRole && state.self ? (
-				<RoleSheet open={roleOpen} onClose={closeRole} self={state.self} />
+				<RoleSheet
+					open={roleOpen}
+					onClose={closeRole}
+					self={state.self}
+					spyCount={state.spyCount}
+				/>
 			) : null}
 		</GameShell>
 	);

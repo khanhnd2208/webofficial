@@ -1,8 +1,9 @@
 import mongoose, { Schema, type Model } from 'mongoose';
 
-import { SPY_PHASES } from '@/features/spy-fall/config/spyGame';
+import { SPY_COUNTS, SPY_DEFAULT_COUNT, SPY_PHASES } from '@/features/spy-fall/config/spyGame';
 import type {
 	EliminationLogEntry,
+	GameEndReason,
 	GamePhase,
 	PlayerRole,
 	WinningSide,
@@ -29,6 +30,7 @@ export interface ISpyWordPair {
 
 export interface ISpyResult {
 	winningSide?: WinningSide;
+	endReason?: GameEndReason;
 	revealedAt?: Date;
 	durationSeconds?: number;
 }
@@ -41,6 +43,8 @@ export interface ISpyGame {
 	topic: string;
 	excludedTags: string[];
 	playtestMode: boolean;
+	spyCount: number;
+	revealRoles: boolean;
 	hostToken: string;
 	phase: GamePhase;
 	version: number;
@@ -84,6 +88,8 @@ const SpyGameSchema = new Schema<ISpyGame>(
 		topic: { type: String, required: true },
 		excludedTags: { type: [String], default: [] },
 		playtestMode: { type: Boolean, default: false },
+		spyCount: { type: Number, enum: SPY_COUNTS, default: SPY_DEFAULT_COUNT },
+		revealRoles: { type: Boolean, default: false },
 		hostToken: { type: String, required: true },
 		phase: { type: String, enum: SPY_PHASES, default: 'lobby', index: true },
 		version: { type: Number, default: 0 },
@@ -114,6 +120,10 @@ const SpyGameSchema = new Schema<ISpyGame>(
 		eliminatedTokens: { type: [String], default: [] },
 		result: {
 			winningSide: { type: String, enum: ['civilian', 'antagonist'] },
+			endReason: {
+				type: String,
+				enum: ['all-spies-caught', 'wrong-vote', 'no-elimination', 'spies-gone', 'outnumbered'],
+			},
 			revealedAt: Date,
 			durationSeconds: Number,
 		},

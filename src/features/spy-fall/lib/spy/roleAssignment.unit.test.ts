@@ -15,6 +15,23 @@ describe('assignRoles', () => {
 			expect(assigned.filter((p) => p.keyword === 'A')).toHaveLength(n - 1);
 		}
 	});
+
+	it('deals two spies who share the spy word when asked', () => {
+		for (const n of [5, 8, 12]) {
+			const assigned = assignRoles(players(n), { civilianWord: 'A', spyWord: 'B' }, Math.random, 2);
+			const spies = assigned.filter((p) => p.role === 'spy');
+			expect(spies).toHaveLength(2);
+			expect(spies.every((p) => p.keyword === 'B')).toBe(true);
+			expect(assigned.filter((p) => p.role === 'civilian' && p.keyword === 'A')).toHaveLength(n - 2);
+			expect(new Set(assigned.map((p) => p.token)).size).toBe(n);
+		}
+	});
+
+	it('refuses two spies below the minimum table size', () => {
+		expect(() =>
+			assignRoles(players(4), { civilianWord: 'A', spyWord: 'B' }, Math.random, 2),
+		).toThrow();
+	});
 });
 
 describe('pickFirstSpeaker', () => {

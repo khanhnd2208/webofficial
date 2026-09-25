@@ -11,7 +11,11 @@ import {
 	SPY_PLAYER_TOKEN_LENGTH,
 	SPY_RECENT_WORD_PAIRS,
 	SPY_ROOM_CODE_LENGTH,
+	isSpyCount,
+	minPlayersForSpies,
 	normalizeExcludedTags,
+	normalizeSpyCount,
+	type SpyCount,
 } from '@/features/spy-fall/config/spyGame';
 import { AppError } from '@/features/spy-fall/lib/appError';
 import { assignRoles, pickFirstSpeaker } from '@/features/spy-fall/lib/spy/roleAssignment';
@@ -27,7 +31,11 @@ import {
 	wordBankFor,
 } from '@/features/spy-fall/lib/spy/wordBank';
 import { resolveRoundVote } from '@/features/spy-fall/lib/spy/voteResolver';
-import { checkOutcome } from '@/features/spy-fall/lib/spy/winConditions';
+import {
+	checkOutcome,
+	resolveVoteOutcome,
+	type GameOutcome,
+} from '@/features/spy-fall/lib/spy/winConditions';
 import { normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 import dbConnect from '@/features/spy-fall/lib/dbConnect';
 import SpyGame, { type ISpyGame, type ISpyPlayer } from '@/features/spy-fall/models/SpyGame';
@@ -190,8 +198,9 @@ function votePool(game: GameDoc): string[] {
 	return livingPlayers(game).map((p) => p.token);
 }
 
-function finalizeResult(game: GameDoc, winningSide: 'civilian' | 'antagonist', at: Date): void {
-	game.result.winningSide = winningSide;
+function finalizeResult(game: GameDoc, outcome: GameOutcome, at: Date): void {
+	game.result.winningSide = outcome.winningSide;
+	game.result.endReason = outcome.reason;
 	game.result.revealedAt = at;
 	if (game.startedAt) {
 		game.result.durationSeconds = Math.round((at.getTime() - game.startedAt.getTime()) / 1000);
@@ -242,7 +251,8 @@ function resolveVote(game: GameDoc, at: Date): void {
 	game.voteCandidates = [];
 	game.isRevote = false;
 
-	const outcome = checkOutcome(outcomePlayers(game));
+	// Every vote must catch a Spy: a miss ends the game, a catch with Spies left means one more round.
+	const outcome = resolveVoteOutcome(eliminated?.role ?? null, outcomePlayers(game));
 	if (outcome) {
 		finalizeResult(game, outcome, at);
 		return;
@@ -264,6 +274,37 @@ function beginNextRound(game: GameDoc): void {
 function showRole(role: PlayerRole | undefined, eliminated: boolean, phase: GamePhase): boolean {
 	if (!role) return false;
 	return eliminated || phase === 'result';
+}
+
+/** A player always learns their own role at the end, and during play only when the room reveals roles. */
+function showOwnRole(game: GameDoc): boolean {
+	if (game.phase === 'result') return true;
+	return Boolean(game.revealRoles) && isInGamePhase(game.phase);
+}
+
+function spiesCaught(game: GameDoc): number {
+	return (game.eliminationLog ?? []).filter((entry) => entry.role === 'spy').length;
+}
+
+function assertSpyCountFitsRoom(spyCount: SpyCount, maxPlayers: number): void {
+	const min = minPlayersForSpies(spyCount);
+	if (maxPlayers < min) throw new AppError('SPY_COUNT_NEEDS_ROOM', 400, { min, spies: spyCount });
+}
+
+function parseSpyCount(value: unknown): SpyCount {
+	if (!isSpyCount(value)) throw new AppError('SPY_COUNT_INVALID', 400);
+	return value;
+}
+
+function assertMaxPlayers(maxPlayers: unknown): asserts maxPlayers is number {
+	if (
+		typeof maxPlayers !== 'number' ||
+		!Number.isInteger(maxPlayers) ||
+		maxPlayers < SPY_MIN_PLAYERS ||
+		maxPlayers > SPY_MAX_PLAYERS
+	) {
+		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: SPY_MIN_PLAYERS, max: SPY_MAX_PLAYERS });
+	}
 }
 
 function toPublicRoomDTO(game: GameDoc): PublicRoomListItemDTO {
@@ -313,6 +354,9 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 		topic: game.topic,
 		excludedTags: normalizeExcludedTags(game.excludedTags),
 		playtestMode: Boolean(game.playtestMode),
+		spyCount: normalizeSpyCount(game.spyCount),
+		revealRoles: Boolean(game.revealRoles),
+		spiesCaught: spiesCaught(game),
 		round: game.round ?? 1,
 		playerCount: game.players.length,
 		players,
@@ -327,7 +371,7 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 					hasMemorizedRole: viewer.hasMemorizedRole,
 					isHost: viewer.token === game.hostToken,
 					isEliminated: viewer.isEliminated,
-					...(revealAll ? { role: viewer.role } : {}),
+					...(viewer.role && showOwnRole(game) ? { role: viewer.role } : {}),
 					keyword: viewer.keyword ?? null,
 					voteToken: viewer.voteToken ?? null,
 					...(game.phase === 'vote' ? { hasVoted: Boolean(viewer.voteToken) } : {}),
@@ -343,6 +387,7 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 	if (revealAll && game.wordPair && game.result.winningSide) {
 		dto.result = {
 			winningSide: game.result.winningSide,
+			...(game.result.endReason ? { endReason: game.result.endReason } : {}),
 			civilianWord: game.wordPair.civilianWord,
 			spyWord: game.wordPair.spyWord,
 			eliminationLog: game.eliminationLog ?? [],
@@ -442,9 +487,9 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 	}
 
 	const maxPlayers = input.maxPlayers ?? SPY_MAX_PLAYERS;
-	if (maxPlayers < SPY_MIN_PLAYERS || maxPlayers > SPY_MAX_PLAYERS) {
-		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: SPY_MIN_PLAYERS, max: SPY_MAX_PLAYERS });
-	}
+	assertMaxPlayers(maxPlayers);
+	const spyCount = input.spyCount === undefined ? normalizeSpyCount(undefined) : parseSpyCount(input.spyCount);
+	assertSpyCountFitsRoom(spyCount, maxPlayers);
 
 	await dbConnect();
 	const hostToken = generateToken();
@@ -465,6 +510,8 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 		topic: input.topic ?? 'any',
 		excludedTags: normalizeExcludedTags(input.excludedTags),
 		playtestMode: input.playtestMode ?? false,
+		spyCount,
+		revealRoles: input.revealRoles === true,
 		hostToken,
 		phase: 'lobby',
 		version: 0,
@@ -543,8 +590,12 @@ export async function startGame(
 	return mutateGame(code, playerToken, (game) => {
 		if (game.hostToken !== playerToken) throw new AppError('HOST_ONLY_START', 403);
 		if (game.phase !== 'lobby') throw new AppError('GAME_ALREADY_STARTED', 400);
-		if (game.players.length < SPY_MIN_PLAYERS) {
-			throw new AppError('NEED_MIN_PLAYERS', 400, { min: SPY_MIN_PLAYERS });
+		const spyCount = normalizeSpyCount(game.spyCount);
+		const minPlayers = minPlayersForSpies(spyCount);
+		if (game.players.length < minPlayers) {
+			throw spyCount === 1
+				? new AppError('NEED_MIN_PLAYERS', 400, { min: minPlayers })
+				: new AppError('NEED_MIN_PLAYERS_FOR_SPIES', 400, { min: minPlayers, spies: spyCount });
 		}
 
 		const topic = game.topic === 'any' ? undefined : game.topic;
@@ -567,6 +618,7 @@ export async function startGame(
 			game.players.map((p) => ({ token: p.token, name: p.name })),
 			game.wordPair,
 			Math.random,
+			spyCount,
 		);
 
 		for (const a of assigned) {
@@ -651,9 +703,17 @@ export async function updateSettings(
 		if (game.hostToken !== playerToken) throw new AppError('HOST_ONLY_SETTINGS', 403);
 		if (game.phase !== 'lobby') throw new AppError('SETTINGS_LOBBY_ONLY', 400);
 
+		const maxPlayers = input.maxPlayers ?? game.maxPlayers;
+		assertMaxPlayers(maxPlayers);
+		const spyCount =
+			input.spyCount === undefined ? normalizeSpyCount(game.spyCount) : parseSpyCount(input.spyCount);
+		assertSpyCountFitsRoom(spyCount, maxPlayers);
+
 		if (input.name !== undefined) game.name = input.name.trim();
 		if (input.isPublic !== undefined) game.isPublic = input.isPublic;
-		if (input.maxPlayers !== undefined) game.maxPlayers = input.maxPlayers;
+		game.maxPlayers = maxPlayers;
+		game.spyCount = spyCount;
+		if (input.revealRoles !== undefined) game.revealRoles = input.revealRoles === true;
 		if (input.topic !== undefined) game.topic = input.topic;
 		if (input.excludedTags !== undefined) {
 			game.excludedTags = normalizeExcludedTags(input.excludedTags);
@@ -772,8 +832,8 @@ function settleAfterLeave(game: GameDoc, leftToken: string, at: Date): void {
 	if (game.phase === 'role-reveal') {
 		applyLazyPhaseAdvance(game);
 	}
-	if (game.phase === 'role-reveal' || game.players.length < 2) return;
 
+	// Checked in every phase and at any table size: a vote with no Spy left could only "miss".
 	const outcome = checkOutcome(outcomePlayers(game));
 	if (outcome) {
 		finalizeResult(game, outcome, at);

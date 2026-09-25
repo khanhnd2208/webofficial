@@ -19,7 +19,7 @@ export const spyVi: MessageTree = {
 		noPublicHint: 'Tạo phòng mới để những người khác có thể tham gia bằng mã phòng.',
 		guide: 'Hướng dẫn chơi',
 		playerCount: '4–12 người',
-		spyCount: '1 Spy',
+		spyCount: '1–2 Spy',
 		guestNote: 'Không cần tài khoản',
 		posterAlt: 'Bàn điều tra bí mật với bản đồ, hộ chiếu và ghim đỏ trong ga tàu đêm',
 		guideAlt: 'Bản đồ và hồ sơ mật trên bàn điều tra của Spy Fall',
@@ -56,7 +56,7 @@ export const spyVi: MessageTree = {
 		sections: {
 			whoTitle: 'Bạn biết gì?',
 			whoBody:
-				'Mọi người chỉ thấy từ của mình, không biết mình là Dân hay Spy. Có đúng một người nhận từ hơi khác.',
+				'Mỗi người chỉ thấy từ của mình. Có 1 hoặc 2 Spy (chủ phòng chọn) nhận từ hơi khác. Mặc định không ai biết mình là Dân hay Spy; chủ phòng có thể bật chế độ cho mọi người biết vai.',
 			startTitle: 'Nói theo vòng',
 			startBody:
 				'Người được chỉ định nói trước, đi theo chiều kim đồng hồ. Mỗi người một câu về từ của mình, rồi hỏi đáp tự do.',
@@ -64,11 +64,12 @@ export const spyVi: MessageTree = {
 			talkBody: 'So sánh cách mọi người mô tả. Ai nói lệch, hoặc nói quá chung, thì đáng nghi.',
 			voteTitle: 'Bỏ phiếu',
 			voteBody: 'Mỗi người còn sống bầu đúng một người khác. Khi đủ phiếu, kết quả hiện ngay.',
-			elimTitle: 'Lộ vai rồi chơi tiếp',
+			elimTitle: 'Mỗi lượt bầu phải trúng Spy',
 			elimBody:
-				'Người bị loại lộ vai. Hòa phiếu thì bầu lại một lần giữa những người hòa. Vẫn hòa thì không ai bị loại.',
+				'Người bị bầu ra lộ vai. Hòa phiếu thì bầu lại một lần giữa những người hòa. Bầu nhầm Dân, hoặc vẫn hòa, là ván kết thúc ngay.',
 			winTitle: 'Ai thắng',
-			winBody: 'Dân thắng ngay khi loại được Spy. Spy thắng nếu sống sót tới lúc chỉ còn 2 người.',
+			winBody:
+				'1 Spy: chỉ có một lượt bầu — trúng Spy thì Dân thắng, trượt thì Spy thắng. 2 Spy: bầu trúng Spy đầu tiên thì được thêm một lượt đoán; trúng cả hai thì Dân thắng, trượt ở lượt nào thì Spy thắng.',
 		},
 		honorTitle: 'Luật danh dự',
 		honor: {
@@ -99,6 +100,19 @@ export const spyVi: MessageTree = {
 		topicAny: 'Bất kỳ',
 		publicRoom: 'Phòng công khai',
 		playtest: 'Chế độ playtest',
+		spyCount: 'Số Spy',
+		spyCountOption: '{count} Spy',
+		spyCountHintOne: '1 Spy: một lượt bầu quyết định cả ván.',
+		spyCountHintTwo: '2 Spy: trúng Spy đầu tiên thì thêm một lượt đoán. Cần ít nhất {min} người.',
+		twoSpiesNeedRoom: '2 Spy (cần phòng từ {min} người)',
+		revealRoles: 'Cho mọi người biết vai của mình',
+		revealRolesHint:
+			'Tắt (mặc định): mỗi người chỉ thấy từ, không biết mình là Dân hay Spy. Bật: thẻ bí mật hiện thêm vai.',
+		rulesTitle: 'Luật ván này',
+		ruleOneSpy: '1 Spy — chỉ một lượt bầu: trúng Spy thì Dân thắng, trượt thì Spy thắng',
+		ruleTwoSpies: '2 Spy — bầu trúng Spy đầu tiên thì thêm một lượt đoán; phải trúng cả hai',
+		ruleRolesHidden: 'Không ai biết mình là Dân hay Spy',
+		ruleRolesShown: 'Mỗi người được biết vai của mình',
 		kick: 'Mời rời',
 		renamed: 'Đã đổi tên',
 		kicked: 'Đã mời rời phòng',
@@ -125,6 +139,11 @@ export const spyVi: MessageTree = {
 		startVote: 'Bắt đầu bỏ phiếu',
 		waitHost: 'Chờ chủ phòng bắt đầu bỏ phiếu…',
 	},
+	stakes: {
+		one: 'Chỉ có một lượt bầu: trúng Spy thì Dân thắng, trượt thì Spy thắng.',
+		twoFirst: 'Ván có 2 Spy. Bầu trúng Spy thì được thêm một lượt đoán; trượt là Spy thắng.',
+		twoLast: 'Đã bắt được 1/2 Spy. Lượt đoán cuối: trúng Spy còn lại thì Dân thắng.',
+	},
 	vote: {
 		lockConfirm: 'Vẫn còn người chưa bầu. Chốt phiếu ngay?',
 		waitOthers: 'Đã bầu — chờ mọi người…',
@@ -137,22 +156,33 @@ export const spyVi: MessageTree = {
 	},
 	reveal: {
 		roundOut: 'Kết quả vòng {round}',
+		caught: 'Bắt được Spy!',
 		wasRole: 'Vai của người này là',
-		nobodyOut: 'Không ai bị loại',
-		noVotes: 'Không có phiếu nào được bầu.',
-		tieAgain: 'Vẫn hòa sau khi bầu lại.',
+		oneMore: 'Còn 1 Spy nữa trong bàn — được thêm một lượt đoán.',
 		tally: 'Số phiếu',
 		eliminated: '{name} bị loại',
-		next: 'Sang vòng {round}',
-		waitHost: 'Chờ chủ phòng sang vòng tiếp…',
+		next: 'Lượt đoán cuối · vòng {round}',
+		waitHost: 'Chờ chủ phòng mở lượt đoán cuối…',
 		votes: '{count} phiếu',
 	},
 	result: {
 		youWon: 'Bạn thắng 🎉',
 		youLost: 'Bạn thua ván này',
 		spyWas: 'Spy là: {name}',
+		spiesWere: 'Hai Spy là: {name}',
 		officersWin: 'Dân thắng!',
 		spyWin: 'Spy thắng!',
+		spiesWin: 'Spy thắng!',
+		reason: {
+			caughtOne: 'Cả bàn đã bầu trúng Spy.',
+			caughtTwo: 'Cả hai Spy đều bị bầu trúng.',
+			wrongVote: '{name} bị bầu ra nhưng là Dân.',
+			noVotes: 'Không có phiếu nào được bầu — Spy thoát.',
+			tie: 'Vẫn hòa sau khi bầu lại, không ai bị loại — Spy thoát.',
+			spiesGone: 'Spy cuối cùng đã rời phòng.',
+			outnumbered: 'Còn quá ít Dân để bầu áp đảo Spy.',
+		},
+		finalTally: 'Phiếu lượt cuối',
 		duration: 'Thời lượng: {time}',
 		civilianWord: 'Từ của Dân',
 		spyWord: 'Từ của Spy',
@@ -167,6 +197,11 @@ export const spyVi: MessageTree = {
 		readyCount: '{done}/{total} người đã xem từ',
 		holdFirst: 'Giữ thẻ để xem từ trước',
 		unknownSide: 'Bạn không biết mình là Dân hay Spy.',
+		unknownSideTwo: 'Bạn không biết mình là Dân hay Spy. Ván này có 2 Spy.',
+		yourRole: 'Vai của bạn',
+		civilianHint: 'Bạn là Dân: tìm ra Spy, đừng để lộ từ.',
+		spyHint: 'Bạn là Spy: hòa vào đám đông và đoán xem Dân đang nói về từ gì.',
+		spyHintTwo: 'Bạn là Spy. Còn 1 Spy khác cùng từ với bạn, nhưng bạn không biết là ai.',
 		peekHint: 'Giữ thẻ để xem lại. Nhớ che màn hình.',
 		memorized: 'Đã ghi nhớ',
 		keyword: 'Từ của bạn',
@@ -177,24 +212,28 @@ export const spyVi: MessageTree = {
 		hide: 'Ẩn',
 		show: 'Hiện hướng dẫn',
 		lobbyHost:
-			'Mời mọi người quét QR hoặc nhập mã phòng.\nCần ít nhất 4 người. Ngồi thành vòng tròn để biết thứ tự nói.\nĐủ người thì bấm Bắt đầu ở cuối màn hình.',
+			'Mời mọi người quét QR hoặc nhập mã phòng.\nCần ít nhất 4 người (5 người nếu chơi 2 Spy). Ngồi thành vòng tròn để biết thứ tự nói.\nChọn số Spy và chế độ vai trong Cài đặt phòng, rồi bấm Bắt đầu ở cuối màn hình.',
 		lobbyGuest:
 			'Bạn đã vào phòng. Ngồi cùng vòng tròn với mọi người.\nKhông cần bấm gì — chờ chủ phòng bắt đầu.',
 		roleReveal:
 			'Giữ ngón tay trên thẻ để xem từ. Che màn hình khỏi người bên cạnh.\nKhông ai biết mình là Dân hay Spy: có đúng một người nhận từ hơi khác.\nNhớ từ rồi bấm "Đã ghi nhớ". Xem lại bất cứ lúc nào bằng nút 🪪.',
+		roleRevealTwo:
+			'Giữ ngón tay trên thẻ để xem từ. Che màn hình khỏi người bên cạnh.\nKhông ai biết mình là Dân hay Spy: có hai người nhận từ hơi khác.\nNhớ từ rồi bấm "Đã ghi nhớ". Xem lại bất cứ lúc nào bằng nút 🪪.',
+		roleRevealKnown:
+			'Giữ ngón tay trên thẻ để xem từ và vai. Che màn hình khỏi người bên cạnh.\nVán này mỗi người biết vai của mình: có đúng một Spy.\nNhớ từ rồi bấm "Đã ghi nhớ". Xem lại bất cứ lúc nào bằng nút 🪪.',
+		roleRevealKnownTwo:
+			'Giữ ngón tay trên thẻ để xem từ và vai. Che màn hình khỏi người bên cạnh.\nVán này mỗi người biết vai của mình: có hai Spy, nhưng Spy không biết Spy kia là ai.\nNhớ từ rồi bấm "Đã ghi nhớ". Xem lại bất cứ lúc nào bằng nút 🪪.',
 		discussion:
 			'{name} nói trước, rồi đi theo chiều kim đồng hồ.\nMỗi người nói MỘT câu mô tả từ của mình — không nói thẳng từ.\nSau đó hỏi đáp tự do. Khi cả bàn sẵn sàng, chủ phòng mở bỏ phiếu.',
 		discussionTip: 'Mẹo: câu quá chung dễ bị nghi; câu quá cụ thể có thể làm lộ từ.',
 		discussionOut: 'Bạn đã bị loại. Hãy im lặng theo dõi, đừng gợi ý cho ai.',
 		vote: 'Chạm vào người bạn nghi nhất. Phiếu là bí mật.\nChạm người khác để đổi phiếu, chạm lại để bỏ chọn.\nKhi mọi người còn lại đã bầu xong, kết quả hiện ngay.',
 		revote:
-			'Hòa phiếu! Lần này chỉ bầu giữa những người đang hòa.\nNếu vẫn hòa, vòng này không ai bị loại.',
+			'Hòa phiếu! Lần này chỉ bầu giữa những người đang hòa.\nNếu vẫn hòa, không ai bị loại và Spy thắng.',
 		voteOut: 'Bạn đã bị loại nên không bầu. Theo dõi kết quả nhé.',
 		reveal:
-			'Người bị loại đã lộ vai và từ giờ không được nói nữa.\nSpy vẫn còn trong bàn. Vòng mới sẽ chọn lại người nói trước.',
-		revealTie:
-			'Vòng này không ai bị loại.\nSpy vẫn còn trong bàn. Vòng mới sẽ chọn lại người nói trước.',
-		revealHost: 'Bấm nút ở cuối màn hình khi cả bàn sẵn sàng sang vòng mới.',
+			'Người bị loại đã lộ vai Spy và từ giờ không được nói nữa.\nVẫn còn 1 Spy trong bàn. Vòng mới chọn lại người nói trước — đây là lượt đoán cuối.',
+		revealHost: 'Bấm nút ở cuối màn hình khi cả bàn sẵn sàng cho lượt đoán cuối.',
 		result:
 			'Hai từ đã lộ: xem ai giữ từ nào.\nChủ phòng bấm "Chơi lại" để về phòng chờ. Ván sau sẽ có cặp từ mới.',
 	},
@@ -300,7 +339,7 @@ export const spyEn: MessageTree = {
 		noPublicHint: 'Create a room so other players can join with the room code.',
 		guide: 'How to play',
 		playerCount: '4–12 players',
-		spyCount: '1 spy',
+		spyCount: '1–2 spies',
 		guestNote: 'No account needed',
 		posterAlt:
 			'A covert investigation desk with a map, passport and red pin at a night train station',
@@ -338,7 +377,7 @@ export const spyEn: MessageTree = {
 		sections: {
 			whoTitle: 'What you know',
 			whoBody:
-				'Everyone only sees their own word. Nobody knows if they are Civilian or Spy. Exactly one person has a slightly different word.',
+				'Everyone only sees their own word. One or two Spies (the host picks) get a slightly different word. By default nobody knows if they are Civilian or Spy; the host can turn on a mode that tells everyone their role.',
 			startTitle: 'Talk in order',
 			startBody:
 				'The named player speaks first, then go clockwise. One sentence each about your word, then ask freely.',
@@ -347,12 +386,12 @@ export const spyEn: MessageTree = {
 			voteTitle: 'Vote',
 			voteBody:
 				'Each living player votes for exactly one other player. Results appear as soon as every ballot is in.',
-			elimTitle: 'Reveal, then continue',
+			elimTitle: 'Every vote must hit a Spy',
 			elimBody:
-				'The eliminated player’s role is shown. A tie triggers one revote among the tied players. A second tie eliminates nobody.',
+				'The player voted out reveals their role. A tie triggers one revote among the tied players. Voting out a Civilian, or tying again, ends the game on the spot.',
 			winTitle: 'Who wins',
 			winBody:
-				'Civilians win as soon as the Spy is voted out. The Spy wins by surviving until only 2 players are left.',
+				'1 Spy: there is a single vote — hit the Spy and the Civilians win, miss and the Spy wins. 2 Spies: catching the first Spy earns one more guess; catch both to win, miss on either vote and the Spies win.',
 		},
 		honorTitle: 'Honor rules',
 		honor: {
@@ -383,6 +422,19 @@ export const spyEn: MessageTree = {
 		topicAny: 'Any',
 		publicRoom: 'Public room',
 		playtest: 'Playtest mode',
+		spyCount: 'Number of spies',
+		spyCountOption: '{count} spy(s)',
+		spyCountHintOne: '1 spy: a single vote decides the game.',
+		spyCountHintTwo: '2 spies: catching the first earns one more guess. Needs at least {min} players.',
+		twoSpiesNeedRoom: '2 spies (needs a room for {min}+)',
+		revealRoles: 'Tell everyone their role',
+		revealRolesHint:
+			'Off (default): everyone only sees a word and does not know if they are Civilian or Spy. On: the secret card also shows your role.',
+		rulesTitle: 'Rules for this game',
+		ruleOneSpy: '1 spy — a single vote: hit the Spy and Civilians win, miss and the Spy wins',
+		ruleTwoSpies: '2 spies — catching the first Spy earns one more guess; you must catch both',
+		ruleRolesHidden: 'Nobody knows if they are Civilian or Spy',
+		ruleRolesShown: 'Everyone is told their own role',
 		kick: 'Remove',
 		renamed: 'Name updated',
 		kicked: 'Player removed',
@@ -408,6 +460,11 @@ export const spyEn: MessageTree = {
 		startVote: 'Start the vote',
 		waitHost: 'Waiting for the host to start the vote…',
 	},
+	stakes: {
+		one: 'There is only one vote: hit the Spy and Civilians win, miss and the Spy wins.',
+		twoFirst: 'Two spies this game. Catch one to earn another guess; a miss means the Spies win.',
+		twoLast: '1 of 2 spies caught. Final guess: find the other Spy and the Civilians win.',
+	},
 	vote: {
 		lockConfirm: 'Some players have not voted yet. Lock votes now?',
 		waitOthers: 'Voted — waiting for everyone…',
@@ -420,22 +477,33 @@ export const spyEn: MessageTree = {
 	},
 	reveal: {
 		roundOut: 'Round {round} result',
+		caught: 'Spy caught!',
 		wasRole: 'Their role was',
-		nobodyOut: 'Nobody is out',
-		noVotes: 'No votes were cast.',
-		tieAgain: 'Still tied after the revote.',
+		oneMore: 'One more Spy is still at the table — you get one more guess.',
 		tally: 'Votes',
 		eliminated: '{name} is out',
-		next: 'Go to round {round}',
-		waitHost: 'Waiting for the host to continue…',
+		next: 'Final guess · round {round}',
+		waitHost: 'Waiting for the host to open the final guess…',
 		votes: '{count} votes',
 	},
 	result: {
 		youWon: 'You won 🎉',
 		youLost: 'You lost this one',
 		spyWas: 'The Spy was: {name}',
+		spiesWere: 'The Spies were: {name}',
 		officersWin: 'Civilians win!',
 		spyWin: 'The Spy wins!',
+		spiesWin: 'The Spies win!',
+		reason: {
+			caughtOne: 'The table voted out the Spy.',
+			caughtTwo: 'Both Spies were voted out.',
+			wrongVote: '{name} was voted out, but was a Civilian.',
+			noVotes: 'No votes were cast — the Spies got away.',
+			tie: 'Still tied after the revote, nobody was out — the Spies got away.',
+			spiesGone: 'The last Spy left the room.',
+			outnumbered: 'Too few Civilians are left to outvote the Spies.',
+		},
+		finalTally: 'Final vote',
 		duration: 'Length: {time}',
 		civilianWord: 'Civilian word',
 		spyWord: 'Spy word',
@@ -450,6 +518,11 @@ export const spyEn: MessageTree = {
 		readyCount: '{done}/{total} players have seen their word',
 		holdFirst: 'Hold the card to see your word first',
 		unknownSide: 'You don’t know if you are Civilian or Spy.',
+		unknownSideTwo: 'You don’t know if you are Civilian or Spy. There are 2 spies this game.',
+		yourRole: 'Your role',
+		civilianHint: 'You are a Civilian: find the Spy without giving your word away.',
+		spyHint: 'You are the Spy: blend in and work out what the Civilians are describing.',
+		spyHintTwo: 'You are a Spy. One other Spy shares your word, but you don’t know who.',
 		peekHint: 'Hold the card to peek. Keep your screen hidden.',
 		memorized: 'Got it',
 		keyword: 'Your word',
@@ -460,24 +533,28 @@ export const spyEn: MessageTree = {
 		hide: 'Hide',
 		show: 'Show tips',
 		lobbyHost:
-			'Ask everyone to scan the QR code or enter the room code.\nYou need at least 4 players. Sit in a circle so the speaking order is clear.\nWhen everyone is in, tap Start at the bottom.',
+			'Ask everyone to scan the QR code or enter the room code.\nYou need at least 4 players (5 for two spies). Sit in a circle so the speaking order is clear.\nPick the number of spies and the role mode in Room settings, then tap Start at the bottom.',
 		lobbyGuest:
 			'You are in. Sit in the circle with everyone else.\nNothing to tap — wait for the host to start.',
 		roleReveal:
 			'Press and hold the card to see your word. Keep your screen hidden.\nNobody knows if they are Civilian or Spy: exactly one person has a slightly different word.\nRemember it, then tap "Got it". Peek again any time with the 🪪 button.',
+		roleRevealTwo:
+			'Press and hold the card to see your word. Keep your screen hidden.\nNobody knows if they are Civilian or Spy: two people have a slightly different word.\nRemember it, then tap "Got it". Peek again any time with the 🪪 button.',
+		roleRevealKnown:
+			'Press and hold the card to see your word and role. Keep your screen hidden.\nThis game everyone knows their role: there is exactly one Spy.\nRemember it, then tap "Got it". Peek again any time with the 🪪 button.',
+		roleRevealKnownTwo:
+			'Press and hold the card to see your word and role. Keep your screen hidden.\nThis game everyone knows their role: there are two Spies, but neither knows who the other is.\nRemember it, then tap "Got it". Peek again any time with the 🪪 button.',
 		discussion:
 			'{name} speaks first, then go clockwise.\nEveryone says ONE sentence about their word — never the word itself.\nThen ask each other anything. When the table is ready, the host opens the vote.',
 		discussionTip: 'Tip: too vague looks suspicious; too specific may give the word away.',
 		discussionOut: 'You are out. Stay quiet and watch — no hints.',
 		vote: 'Tap the player you suspect most. Ballots are secret.\nTap someone else to switch, or tap again to clear.\nThe result appears as soon as every remaining player has voted.',
 		revote:
-			'Tie! This time you vote only between the tied players.\nIf it is still a tie, nobody is out this round.',
+			'Tie! This time you vote only between the tied players.\nIf it is still a tie, nobody is out and the Spies win.',
 		voteOut: 'You are out, so you do not vote. Watch the result.',
 		reveal:
-			'The eliminated player’s role is shown. They stay silent from now on.\nThe Spy is still at the table. The next round picks a new first speaker.',
-		revealTie:
-			'Nobody is out this round.\nThe Spy is still at the table. The next round picks a new first speaker.',
-		revealHost: 'Tap the button at the bottom when the table is ready for the next round.',
+			'The eliminated player was a Spy and stays silent from now on.\nOne Spy is still at the table. The next round picks a new first speaker — it is the final guess.',
+		revealHost: 'Tap the button at the bottom when the table is ready for the final guess.',
 		result:
 			'Both words are revealed: see who had which.\nThe host taps "Play again" to return to the lobby. The next game uses a new pair.',
 	},
