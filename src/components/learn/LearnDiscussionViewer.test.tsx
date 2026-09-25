@@ -47,4 +47,25 @@ describe('LearnDiscussionViewer', () => {
 			}),
 		);
 	});
+
+	it('keeps arrow keys on questions after a reveal and does not re-complete after the learner un-marks', async () => {
+		adminFetch.mockReset();
+		adminFetch.mockResolvedValue({});
+		window.history.replaceState(null, '', window.location.pathname);
+		const user = userEvent.setup();
+		const discussion ={ questions: [{ id: 'd1', question: 'Một?', answer: 'Đáp một.' }, { id: 'd2', question: 'Hai?', answer: 'Đáp hai.' }] };
+		const { rerender } = render(<LearnDiscussionViewer sectionId="s-mark" completed={false} discussion={discussion} />);
+
+		await user.click(await screen.findByRole('button', { name: 'Xem đáp án mẫu' }));
+		await waitFor(() => expect(document.activeElement).toHaveAttribute('data-ln-stepper'));
+		await user.keyboard('{ArrowRight}');
+		expect(screen.getByText('Hai?')).toBeInTheDocument();
+		await user.click(screen.getByRole('button', { name: 'Xem đáp án mẫu' }));
+		await waitFor(() => expect(adminFetch).toHaveBeenCalledTimes(1));
+
+		rerender(<LearnDiscussionViewer sectionId="s-mark" completed discussion={discussion} />);
+		rerender(<LearnDiscussionViewer sectionId="s-mark" completed={false} discussion={discussion} />);
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(adminFetch).toHaveBeenCalledTimes(1);
+	});
 });

@@ -2294,6 +2294,10 @@
 	gap: 1rem;
 	margin-top: 1.5rem;
 }
+/* Focus parks here after a pick or reveal so arrow keys keep switching questions. */
+.ln-stepper:focus {
+	outline: none;
+}
 .ln-stepper__card {
 	display: grid;
 	gap: 1rem;
@@ -2304,6 +2308,10 @@
 }
 .ln-stepper__question .ln-prose {
 	margin: 0;
+}
+.ln-stepper__question .ln-prose > :first-child,
+.ln-sample .ln-prose > :first-child {
+	margin-top: 0;
 }
 .ln-stepper__nav {
 	display: flex;
@@ -2327,6 +2335,90 @@
 }
 .ln-sample .ln-prose {
 	margin: 0;
+}
+.ln-stepper .ln-quiz__nav-item[data-state='current'] {
+	border-color: var(--ink);
+	background: var(--ink);
+	color: var(--canvas);
+}
+.ln-stepper__nav {
+	align-items: center;
+}
+.ln-disc {
+	gap: 1.25rem;
+	padding: 1.5rem;
+}
+.ln-disc__head {
+	display: grid;
+	gap: 0.4rem;
+}
+.ln-disc__part {
+	color: var(--ink-secondary);
+	font-size: 0.8125rem;
+}
+.ln-disc__title {
+	color: var(--ink);
+	font-size: 1.25rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+.ln-disc__level {
+	display: inline-block;
+	margin-right: 0.5rem;
+	padding: 0.1rem 0.5rem;
+	border: 1px solid var(--hairline);
+	border-radius: 999px;
+	color: var(--ink-secondary);
+	font-size: 0.75rem;
+	font-weight: 500;
+	vertical-align: 0.2em;
+}
+.ln-disc__label {
+	margin-bottom: 0.3rem;
+	color: var(--ink-secondary);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+.ln-disc__block .ln-prose {
+	margin: 0;
+}
+.ln-disc__block[data-kind='ask'] {
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--ink) 4%, var(--surface-elevated));
+}
+.ln-disc__block[data-kind='ask'] .ln-prose {
+	font-weight: 500;
+}
+.ln-disc__block[data-kind='takeaway'] {
+	padding: 0.9rem 1rem;
+	border-left: 3px solid var(--success);
+	background: color-mix(in srgb, var(--success) 8%, var(--surface-elevated));
+}
+.ln-disc__block[data-kind='takeaway'] .ln-disc__label {
+	color: var(--success);
+}
+.ln-disc__answer {
+	display: grid;
+	gap: 1.25rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--hairline);
+}
+.ln-disc__answer-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+@media (max-width: 640px) {
+	.ln-disc {
+		padding: 1.1rem;
+	}
+	.ln-disc__title {
+		font-size: 1.125rem;
+	}
 }
 .ln-preview__list [data-missing='true'] {
 	outline: 1px solid color-mix(in srgb, var(--error) 45%, transparent);

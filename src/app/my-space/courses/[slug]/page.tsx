@@ -154,8 +154,12 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 			) : (
 				<article className="ln-reader" key={section.id}>
 					<p className="ln-reader__eyebrow">
-						Bài {current.lessonIndex + 1}
-						<span aria-hidden="true"> · </span>
+						{/^bài\s*\d/i.test(current.lessonTitle) ? null : (
+							<>
+								Bài {current.lessonIndex + 1}
+								<span aria-hidden="true"> · </span>
+							</>
+						)}
 						<Link href={overviewHref}>{current.lessonTitle}</Link>
 					</p>
 					<h1 className="ln-reader__title">{section.title}</h1>

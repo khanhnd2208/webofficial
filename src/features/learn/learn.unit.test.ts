@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveCalloutKind } from './callouts';
 import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz, sectionMinutes } from './content';
 import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
+import { ANSWER_LABELS, discussionQuestionView, discussionQuestionViews, splitLabelled } from './discussionView';
 import { autoSectionRawText, cleanAiPaste, exportCourseMarkdown, exportLessonMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
@@ -500,5 +501,46 @@ describe('helpers', () => {
 	it('estimates reading time with a one-minute floor', () => {
 		expect(estimateReadingMinutes('ngắn')).toBe(1);
 		expect(estimateReadingMinutes(Array(900).fill('từ').join(' '))).toBe(5);
+	});
+});
+
+describe('discussionQuestionView', () => {
+	it('lifts the part, level and title and labels the situation and the ask', () => {
+		const view = discussionQuestionView(
+			'## Phần 1. Tổ chức là gì\n\nÁp dụng — Nhóm bạn đá bóng\n\nTình huống: 15 người đá bóng.\nAi rảnh thì đến.\n\nCâu hỏi: Đã là tổ chức chưa?',
+		);
+		expect(view).toEqual({
+			part: 'Phần 1. Tổ chức là gì',
+			level: 'Áp dụng',
+			title: 'Nhóm bạn đá bóng',
+			blocks: [
+				{ label: 'Tình huống', markdown: '15 người đá bóng.\nAi rảnh thì đến.' },
+				{ label: 'Câu hỏi', markdown: 'Đã là tổ chức chưa?' },
+			],
+		});
+		expect(discussionQuestionView('Đánh giá (đọc thêm) — Đừng dạy hết nghề\n\nCâu hỏi: Vì sao?').level).toBe('Đánh giá · đọc thêm');
+	});
+
+	it('carries a part heading to the questions that follow it', () => {
+		const parts = discussionQuestionViews(['## Phần 1\n\nCâu hỏi: A?', 'Câu hỏi: B?', '## Phần 2\n\nCâu hỏi: C?']).map((view) => view.part);
+		expect(parts).toEqual(['Phần 1', 'Phần 1', 'Phần 2']);
+	});
+
+	it('leaves free-form prompts as plain markdown', () => {
+		expect(discussionQuestionView('Vì sao nhóm trễ hạn — theo bạn?')).toEqual({
+			part: null,
+			level: null,
+			title: null,
+			blocks: [{ label: null, markdown: 'Vì sao nhóm trễ hạn — theo bạn?' }],
+		});
+	});
+
+	it('splits answers at paragraph-leading labels only, never inside code fences', () => {
+		const blocks = splitLabelled(
+			'Nhắc lại bài học: Định nghĩa.\n\nCùng suy nghĩ từng bước:\n\nBước 1 — Điều rút ra: chưa phải nhãn.\n\n```\nĐiều rút ra: trong code\n```\n\nĐiều rút ra: Một câu.',
+			ANSWER_LABELS,
+		);
+		expect(blocks.map((block) => block.label)).toEqual(['Nhắc lại bài học', 'Cùng suy nghĩ từng bước', 'Điều rút ra']);
+		expect(blocks[1].markdown).toContain('Điều rút ra: trong code');
 	});
 });
