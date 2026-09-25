@@ -233,6 +233,10 @@ export const spyVi: MessageTree = {
 		'lễ hội': 'lễ hội & phong tục',
 		'thương hiệu': 'thương hiệu',
 		'khái niệm': 'khái niệm',
+		'phương tiện': 'phương tiện',
+		'thời trang': 'thời trang',
+		'thiên nhiên': 'thiên nhiên & vũ trụ',
+		'tình huống': 'tình huống dở khóc dở cười',
 		// Rooms created before the food/drink split.
 		'ăn uống': 'ăn uống',
 	},
@@ -498,6 +502,10 @@ export const spyEn: MessageTree = {
 		'lễ hội': 'holidays & customs',
 		'thương hiệu': 'brands',
 		'khái niệm': 'concepts',
+		'phương tiện': 'vehicles',
+		'thời trang': 'fashion',
+		'thiên nhiên': 'nature & space',
+		'tình huống': 'awkward situations',
 		// Rooms created before the food/drink split.
 		'ăn uống': 'food & drinks',
 	},

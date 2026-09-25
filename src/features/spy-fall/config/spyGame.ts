@@ -55,6 +55,10 @@ export const SPY_TOPICS = [
 	'lễ hội',
 	'thương hiệu',
 	'khái niệm',
+	'phương tiện',
+	'thời trang',
+	'thiên nhiên',
+	'tình huống',
 ] as const;
 
 export type SpyTopic = (typeof SPY_TOPICS)[number];

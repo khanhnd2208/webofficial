@@ -69,6 +69,10 @@ describe('WORD_BANK', () => {
 	it('keeps the English bank smaller, with independent ids', () => {
 		expect(WORD_BANK_EN.length).toBeGreaterThanOrEqual(40);
 		expect(WORD_BANK_EN.length).toBeLessThan(WORD_BANK.length);
+		// An empty topic would block the start button for English rooms.
+		for (const topic of SPY_TOPICS) {
+			expect(WORD_BANK_EN.some((pair) => pair.category === topic)).toBe(true);
+		}
 		const viIds = new Set(WORD_BANK.map((pair) => pair.id));
 		for (const pair of WORD_BANK_EN) {
 			expect(pair.id.startsWith('en-')).toBe(true);

@@ -139,4 +139,32 @@ export const WORD_BANK_EN: WordPairEntry[] = [
 	pair('en-106', 'khái niệm', 'Crush', 'Ex', ['romance']),
 	pair('en-107', 'khái niệm', 'FOMO', 'Overthinking', ['genz']),
 	pair('en-108', 'khái niệm', 'Déjà vu', 'Hunch'),
+
+	pair('en-112', 'phương tiện', 'Motorbike', 'E-bike'),
+	pair('en-113', 'phương tiện', 'Bus', 'Subway'),
+	pair('en-114', 'phương tiện', 'Airplane', 'Helicopter'),
+	pair('en-115', 'phương tiện', 'Ambulance', 'Fire truck'),
+	pair('en-116', 'phương tiện', 'Hot air balloon', 'Paraglider'),
+	pair('en-117', 'phương tiện', 'Roller coaster', 'Ferris wheel'),
+
+	pair('en-118', 'thời trang', 'Jeans', 'Chinos'),
+	pair('en-119', 'thời trang', 'Sneakers', 'Loafers'),
+	pair('en-120', 'thời trang', 'Hoodie', 'Windbreaker'),
+	pair('en-121', 'thời trang', 'Necktie', 'Bow tie'),
+	pair('en-122', 'thời trang', 'Lipstick', 'Blush'),
+	pair('en-123', 'thời trang', 'Baseball cap', 'Bucket hat'),
+
+	pair('en-124', 'thiên nhiên', 'Hurricane', 'Tornado'),
+	pair('en-125', 'thiên nhiên', 'Earthquake', 'Volcano'),
+	pair('en-126', 'thiên nhiên', 'Rainbow', 'Northern lights'),
+	pair('en-127', 'thiên nhiên', 'Solar eclipse', 'Lunar eclipse'),
+	pair('en-128', 'thiên nhiên', 'Shooting star', 'Comet'),
+	pair('en-129', 'thiên nhiên', 'Waterfall', 'Hot spring'),
+
+	pair('en-130', 'tình huống', 'Stuck in an elevator', 'Locked out of the house'),
+	pair('en-131', 'tình huống', 'Phone dropped in water', 'Cracked phone screen'),
+	pair('en-132', 'tình huống', 'Texting the wrong person', "Liking an ex's old photo", ['romance']),
+	pair('en-133', 'tình huống', 'Missing a flight', 'Late for a job interview'),
+	pair('en-134', 'tình huống', 'Forgetting your speech', 'Mic dies mid-speech', ['school', 'office']),
+	pair('en-135', 'tình huống', 'Winning the lottery', 'Finding a lost wallet'),
 ];
