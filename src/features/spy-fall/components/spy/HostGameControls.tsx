@@ -12,39 +12,53 @@ interface Props {
 	onRestart: () => void;
 }
 
-export default function HostGameControls({ phase, busy, onConfirmAll, onRestart }: Props) {
+/** Rarely needed host escape hatches, tucked away so they are not tapped by accident. */
+export default function HostGameControls({
+	phase,
+	busy,
+	onConfirmAll,
+	onRestart,
+}: Props) {
 	const t = useT();
-	const canConfirmAll = phase === 'role-reveal' || phase === 'opening';
 
 	return (
-		<div className="mt-6 space-y-3 border-t border-border pt-4">
-			{canConfirmAll && onConfirmAll ? (
+		<details className="group rounded-xl border border-dashed border-border px-4 py-2 text-sm">
+			<summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-muted">
+				<span>🛠 {t('spy.actions.hostTools')}</span>
+				<span aria-hidden className="transition-transform group-open:rotate-180">
+					▾
+				</span>
+			</summary>
+			<div className="space-y-2 pb-2 pt-1">
+				{phase === 'role-reveal' && onConfirmAll ? (
+					<Button
+						fullWidth
+						size="md"
+						variant="secondary"
+						loading={busy}
+						onClick={() => {
+							playTap();
+							onConfirmAll();
+						}}
+					>
+						{t('spy.host.confirmAll')}
+					</Button>
+				) : null}
 				<Button
 					fullWidth
-					variant="secondary"
+					size="md"
+					variant="ghost"
 					loading={busy}
+					className="text-danger"
 					onClick={() => {
-						playTap();
-						onConfirmAll();
+						if (!window.confirm(t('spy.host.restartConfirm'))) return;
+						playConfirm();
+						onRestart();
 					}}
 				>
-					{t('spy.host.confirmAll')}
+					{t('spy.host.restart')}
 				</Button>
-			) : null}
-
-			<Button
-				fullWidth
-				variant="destructive"
-				loading={busy}
-				onClick={() => {
-					const ok = window.confirm(t('spy.host.restartConfirm'));
-					if (!ok) return;
-					playConfirm();
-					onRestart();
-				}}
-			>
-				{t('spy.host.restart')}
-			</Button>
-		</div>
+			</div>
+		</details>
 	);
 }

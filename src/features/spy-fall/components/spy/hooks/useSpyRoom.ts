@@ -6,7 +6,7 @@ import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvi
 import { SPY_POLL_INTERVAL_MS } from '@/features/spy-fall/config/spyGame';
 import { fetchRoomState, patchSpyAction, postSpyAction } from '@/features/spy-fall/lib/spy/api';
 import { storePlayerToken } from '@/features/spy-fall/lib/spy/clientToken';
-import type { RoomStateDTO, UpdateSettingsInput, VoteInput } from '@/features/spy-fall/types/spyGame';
+import type { RoomStateDTO, UpdateSettingsInput } from '@/features/spy-fall/types/spyGame';
 
 interface UseSpyRoomOptions {
 	code: string;
@@ -18,25 +18,35 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 	const t = useT();
 	const { locale } = useLocale();
 	const localeRef = useRef(locale);
-	localeRef.current = locale;
+	useEffect(() => {
+		localeRef.current = locale;
+	}, [locale]);
 	const [state, setState] = useState<RoomStateDTO | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 	const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 	const tokenRef = useRef(playerToken);
-	tokenRef.current = playerToken;
 
 	const refresh = useCallback(async () => {
+		const requestToken = tokenRef.current;
 		try {
-			const data = await fetchRoomState(code, tokenRef.current);
-			setState(data);
+			const data = await fetchRoomState(code, requestToken);
+			// A poll sent before join (or before the stored token loaded) describes a different viewer.
+			if (requestToken !== tokenRef.current) return;
+			setState((prev) => (prev && data.version < prev.version ? prev : data));
 			setError(null);
 		} catch (e) {
+			if (requestToken !== tokenRef.current) return;
 			setError(e instanceof Error ? e.message : t('common.connectionLost'));
-		} finally {
-			setLoading(false);
 		}
+		setLoading(false);
 	}, [code, t]);
+
+	// Track the viewer's token and re-read as soon as it changes, so a dropped poll is replaced right away.
+	useEffect(() => {
+		tokenRef.current = playerToken;
+		if (playerToken) void refresh();
+	}, [playerToken, refresh]);
 
 	useEffect(() => {
 		void refresh();
@@ -56,7 +66,7 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 	// Screen wake lock during discussion/vote
 	useEffect(() => {
 		const phase = state?.phase;
-		const needsLock = phase === 'discussion' || phase === 'vote' || phase === 'runoff';
+		const needsLock = phase === 'discussion' || phase === 'vote' || phase === 'reveal';
 
 		async function acquire() {
 			try {
@@ -92,17 +102,11 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 					{ name, playerToken: existingToken },
 				);
 				storePlayerToken(code, data.playerToken);
+				tokenRef.current = data.playerToken;
 				onTokenReceived?.(data.playerToken);
 				setState(data.state);
 				return data;
 			}),
-		setReady: (ready: boolean) =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/ready`, {
-					token: tokenRef.current,
-					ready,
-				}),
-			),
 		start: () =>
 			action(() =>
 				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/start`, {
@@ -116,46 +120,11 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 					token: tokenRef.current,
 				}),
 			),
-		spoke: () =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/spoke`, {
-					token: tokenRef.current,
-				}),
-			),
-		hostMarkSpoke: (targetToken: string, spoken: boolean) =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/spoke`, {
-					token: tokenRef.current,
-					targetToken,
-					spoken,
-				}),
-			),
-		suspect: (suspectTokens: string[] | null) =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/suspect`, {
-					token: tokenRef.current,
-					suspectTokens,
-				}),
-			),
-		vote: (input: VoteInput) =>
+		vote: (targetToken: string | null) =>
 			action(() =>
 				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/vote`, {
 					token: tokenRef.current,
-					...input,
-				}),
-			),
-		runoffVote: (choices: string[]) =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/runoff-vote`, {
-					token: tokenRef.current,
-					choices,
-				}),
-			),
-		mrWhiteResult: (guessResult: 'correct' | 'incorrect') =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/mrwhite-result`, {
-					token: tokenRef.current,
-					guessResult,
+					targetToken,
 				}),
 			),
 		settings: (input: UpdateSettingsInput) =>
@@ -168,12 +137,6 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 		next: () =>
 			action(() =>
 				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/next`, {
-					token: tokenRef.current,
-				}),
-			),
-		revealWords: () =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/reveal-words`, {
 					token: tokenRef.current,
 				}),
 			),

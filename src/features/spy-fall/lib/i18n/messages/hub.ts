@@ -28,7 +28,7 @@ export const hubVi: MessageTree = {
 			subtitle: 'Spyfall · Suy luận xã hội',
 			description: 'Tìm ra ai không biết từ khóa bí mật — vote, nghi ngờ và bluff cùng nhau.',
 			players: '4–12 người',
-			duration: '6–10 phút',
+			duration: '10–15 phút',
 		},
 		mafia: {
 			title: 'Ma Sói',
@@ -101,7 +101,7 @@ export const hubEn: MessageTree = {
 			subtitle: 'Spyfall · Social deduction',
 			description: 'Find who doesn’t know the secret word — vote, suspect, and bluff together.',
 			players: '4–12 players',
-			duration: '6–10 min',
+			duration: '10–15 min',
 		},
 		mafia: {
 			title: 'Werewolf',

@@ -2,6 +2,7 @@
 
 import QRCode from 'react-qr-code';
 
+import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { BASE_PATH, withBasePath } from '@/features/spy-fall/lib/basePath';
 import { Button } from '@/features/spy-fall/components/ui';
 import { useToast } from '@/features/spy-fall/components/ui/Toast';
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function QrInvite({ code, roomName }: Props) {
+	const t = useT();
 	const { toast } = useToast();
 	const url =
 		typeof window !== 'undefined'
@@ -27,9 +29,9 @@ export default function QrInvite({ code, roomName }: Props) {
 		playTap();
 		try {
 			await navigator.clipboard.writeText(code);
-			toast('Đã sao chép mã phòng', 'success');
+			toast(t('spy.invite.copiedCode'), 'success');
 		} catch {
-			toast('Không sao chép được mã', 'error');
+			toast(t('spy.invite.copyFail'), 'error');
 		}
 	}
 
@@ -38,20 +40,20 @@ export default function QrInvite({ code, roomName }: Props) {
 		playTap();
 		try {
 			await navigator.clipboard.writeText(url);
-			toast('Đã sao chép link mời', 'success');
+			toast(t('spy.invite.copiedLink'), 'success');
 		} catch {
-			toast('Không sao chép được link', 'error');
+			toast(t('spy.invite.copyFail'), 'error');
 		}
 	}
 
 	async function shareInvite() {
 		hapticLight();
 		playTap();
-		const text = `Tham gia Spy Fall — mã phòng ${code}`;
+		const text = t('spy.invite.shareText', { code });
 		if (typeof navigator !== 'undefined' && navigator.share) {
 			try {
 				await navigator.share({ title: roomName ?? 'Spy Fall', text, url });
-				toast('Đã mở chia sẻ', 'success');
+				toast(t('spy.invite.shared'), 'success');
 				return;
 			} catch {
 				// user cancelled or unsupported — fall through to copy
@@ -61,21 +63,21 @@ export default function QrInvite({ code, roomName }: Props) {
 	}
 
 	return (
-		<TicketCard title={roomName} code={code} subtitle="Quét để tham gia điệp vụ">
+		<TicketCard title={roomName} code={code} subtitle={t('spy.invite.scan')}>
 			<div className="flex flex-col items-center gap-4">
 				<div className="rounded-xl bg-white p-3 shadow-sm">
 					<QRCode value={url} size={160} />
 				</div>
 				<p className="max-w-[240px] break-all text-center text-xs text-muted">{url}</p>
-				<div className="flex w-full flex-wrap justify-center gap-2">
-					<Button type="button" variant="secondary" size="sm" onClick={() => void copyCode()}>
-						Sao chép mã
+				<div className="grid w-full grid-cols-3 gap-2">
+					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copyCode()}>
+						{t('spy.invite.copyCode')}
 					</Button>
-					<Button type="button" variant="secondary" size="sm" onClick={() => void copyLink()}>
-						Sao chép link
+					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copyLink()}>
+						{t('spy.invite.copyLink')}
 					</Button>
-					<Button type="button" variant="tertiary" size="sm" onClick={() => void shareInvite()}>
-						Chia sẻ
+					<Button type="button" variant="tertiary" size="sm" className="whitespace-nowrap px-2" onClick={() => void shareInvite()}>
+						{t('spy.invite.share')}
 					</Button>
 				</div>
 			</div>

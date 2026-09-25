@@ -21,15 +21,14 @@ import { routes } from '@/config/routes';
 import GameShell from './GameShell';
 import ConnectionBanner from './ConnectionBanner';
 import HostGameControls from './HostGameControls';
-import { BriefingFab, BriefingSheet } from './MissionBriefing';
-import { RoleFab, RoleSheet } from './RoleReview';
+import { HostToolsContext, WordPeekContext } from './ActionBar';
+import { BriefingSheet } from './MissionBriefing';
+import { RoleSheet } from './RoleReview';
 import DiscussionPhase from './phases/DiscussionPhase';
 import LobbyPhase from './phases/LobbyPhase';
-import MrWhiteGuessPhase from './phases/MrWhiteGuessPhase';
-import OpeningPhase from './phases/OpeningPhase';
 import ResultPhase from './phases/ResultPhase';
+import RevealPhase from './phases/RevealPhase';
 import RoleRevealPhase from './phases/RoleRevealPhase';
-import RunoffPhase from './phases/RunoffPhase';
 import VotePhase from './phases/VotePhase';
 import { useSpyRoom } from './hooks/useSpyRoom';
 
@@ -253,13 +252,31 @@ export default function SpyGameClient({ code, initialName }: Props) {
 			!['lobby', 'result', 'role-reveal'].includes(state.phase),
 	);
 
+	const openRole = () => setRoleOpen(true);
+	const hostTools =
+		state.isHost && state.phase !== 'lobby' && state.phase !== 'result' ? (
+			<HostGameControls
+				phase={state.phase}
+				busy={busy}
+				onConfirmAll={() => wrap(() => api.next())}
+				onRestart={() =>
+					wrap(async () => {
+						await api.restart();
+						toast(t('spy.host.restarted'), 'success');
+					})
+				}
+			/>
+		) : null;
+
 	return (
 		<GameShell
 			phase={state.phase}
 			roomName={state.name}
 			code={state.code}
+			round={state.round}
 			onLeave={() => void handleLeave()}
 			leaveBusy={busy}
+			onOpenGuide={() => setBriefingOpen(true)}
 		>
 			<ConnectionBanner
 				error={displayError}
@@ -269,144 +286,79 @@ export default function SpyGameClient({ code, initialName }: Props) {
 				}}
 			/>
 
-			<div className="animate-fade-in">
-				{state.phase === 'lobby' && (
-					<LobbyPhase
-						state={state}
-						busy={busy}
-						onReady={(r) =>
-							wrap(async () => {
-								await api.setReady(r);
-								toast(r ? t('spy.lobby.readyToast') : t('spy.lobby.unreadyToast'), 'success');
-							})
-						}
-						onStart={() => wrap(() => api.start())}
-						onSettings={(s) => wrap(() => api.settings(s))}
-						onRename={(name) =>
-							wrap(async () => {
-								await api.rename(name);
-								storeRecentPlayerName(name);
-								toast(t('spy.lobby.renamed'), 'success');
-							})
-						}
-						onKick={(targetToken) =>
-							wrap(async () => {
-								await api.kick(targetToken);
-								toast(t('spy.lobby.kicked'), 'success');
-							})
-						}
-					/>
-				)}
+			<WordPeekContext.Provider value={canReviewRole ? openRole : null}>
+				<HostToolsContext.Provider value={hostTools}>
+					<div key={state.phase} className="flex flex-1 flex-col animate-fade-in">
+						{state.phase === 'lobby' && (
+							<LobbyPhase
+								state={state}
+								busy={busy}
+								onStart={() => wrap(() => api.start())}
+								onSettings={(s) => wrap(() => api.settings(s))}
+								onRename={(name) =>
+									wrap(async () => {
+										await api.rename(name);
+										storeRecentPlayerName(name);
+										toast(t('spy.lobby.renamed'), 'success');
+									})
+								}
+								onKick={(targetToken) =>
+									wrap(async () => {
+										await api.kick(targetToken);
+										toast(t('spy.lobby.kicked'), 'success');
+									})
+								}
+							/>
+						)}
 
-				{state.phase === 'role-reveal' && state.self && (
-					<RoleRevealPhase
-						self={state.self}
-						busy={busy}
-						hideRoles={state.hideRoles}
-						onConfirm={() => wrap(() => api.memorized())}
-					/>
-				)}
+						{state.phase === 'role-reveal' && state.self && (
+							<RoleRevealPhase
+								state={state}
+								busy={busy}
+								onConfirm={() => wrap(() => api.memorized())}
+							/>
+						)}
 
-				{state.phase === 'opening' && (
-					<OpeningPhase
-						state={state}
-						busy={busy}
-						onSpoke={() => wrap(() => api.spoke())}
-						onHostMarkSpoke={(tok, s) => wrap(() => api.hostMarkSpoke(tok, s))}
-					/>
-				)}
+						{state.phase === 'discussion' && (
+							<DiscussionPhase state={state} busy={busy} onNext={() => wrap(() => api.next())} />
+						)}
 
-				{state.phase === 'discussion' && (
-					<DiscussionPhase
-						state={state}
-						busy={busy}
-						onSuspect={(tok) => wrap(() => api.suspect(tok))}
-						onNext={() => wrap(() => api.next())}
-					/>
-				)}
+						{state.phase === 'vote' && (
+							<VotePhase
+								state={state}
+								busy={busy}
+								onVote={(target) => wrap(() => api.vote(target))}
+								onNext={() => wrap(() => api.next())}
+							/>
+						)}
 
-				{state.phase === 'vote' && (
-					<VotePhase
-						state={state}
-						busy={busy}
-						onVote={(v1, v2, c) =>
-							wrap(() => api.vote({ vote1Token: v1, vote2Token: v2, confirmed: c }))
-						}
-						onNext={() => wrap(() => api.next())}
-					/>
-				)}
+						{state.phase === 'reveal' && (
+							<RevealPhase state={state} busy={busy} onNext={() => wrap(() => api.next())} />
+						)}
 
-				{state.phase === 'runoff' && state.runoff && (
-					<RunoffPhase
-						state={state}
-						busy={busy}
-						onSubmit={(choices) => wrap(() => api.runoffVote(choices))}
-						onNext={() => wrap(() => api.next())}
-					/>
-				)}
 
-				{state.phase === 'mrwhite-guess' && (
-					<MrWhiteGuessPhase
-						state={state}
-						busy={busy}
-						onResult={(correct) =>
-							wrap(() => api.mrWhiteResult(correct ? 'correct' : 'incorrect'))
-						}
-					/>
-				)}
+						{state.phase === 'result' && state.result && (
+							<ResultPhase
+								state={state}
+								busy={busy}
+								onPlayAgain={
+									state.isHost
+										? () =>
+												wrap(async () => {
+													await api.playAgain();
+													toast(t('spy.result.playAgainToast'), 'success');
+												})
+										: undefined
+								}
+							/>
+						)}
+					</div>
+				</HostToolsContext.Provider>
+			</WordPeekContext.Provider>
 
-				{state.phase === 'result' && state.result && (
-					<ResultPhase
-						state={state}
-						busy={busy}
-						onRevealWords={
-							state.isHost && !state.result.wordsRevealed
-								? () => wrap(() => api.revealWords())
-								: undefined
-						}
-						onPlayAgain={
-							state.isHost
-								? () =>
-										wrap(async () => {
-											await api.playAgain();
-											toast(t('spy.result.playAgainToast'), 'success');
-										})
-								: undefined
-						}
-					/>
-				)}
-			</div>
-
-			{state.isHost && state.phase !== 'lobby' && state.phase !== 'result' ? (
-				<HostGameControls
-					phase={state.phase}
-					busy={busy}
-					onConfirmAll={
-						state.phase === 'role-reveal' || state.phase === 'opening'
-							? () => wrap(() => api.next())
-							: undefined
-					}
-					onRestart={() =>
-						wrap(async () => {
-							await api.restart();
-							toast(t('spy.host.restarted'), 'success');
-						})
-					}
-				/>
-			) : null}
-
-			<BriefingFab onOpen={() => setBriefingOpen(true)} />
-			<BriefingSheet open={briefingOpen} onClose={closeBriefing} hideRoles={state.hideRoles} />
+			<BriefingSheet open={briefingOpen} onClose={closeBriefing} />
 			{canReviewRole && state.self ? (
-				<>
-					<RoleFab onOpen={() => setRoleOpen(true)} />
-					<RoleSheet
-						open={roleOpen}
-						onClose={closeRole}
-						self={state.self}
-						hideRoles={state.hideRoles}
-					/>
-				</>
+				<RoleSheet open={roleOpen} onClose={closeRole} self={state.self} />
 			) : null}
 		</GameShell>
 	);

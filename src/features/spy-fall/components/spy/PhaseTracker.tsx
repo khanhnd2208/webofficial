@@ -5,51 +5,43 @@ import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { cn } from '@/features/spy-fall/lib/cn';
 
-const PHASE_ORDER: GamePhase[] = [
-	'lobby',
-	'role-reveal',
-	'opening',
-	'discussion',
-	'vote',
-	'runoff',
-	'mrwhite-guess',
-	'result',
-];
+const STEPS: GamePhase[] = ['role-reveal', 'discussion', 'vote', 'reveal'];
 
 interface Props {
 	current: GamePhase;
 	className?: string;
 }
 
+/** One round's steps. The active step always shows its name, even on narrow screens. */
 export default function PhaseTracker({ current, className }: Props) {
 	const t = useT();
-	const currentIdx = PHASE_ORDER.indexOf(current);
+	const shown = current;
+	const currentIdx = STEPS.indexOf(shown);
 
 	return (
-		<nav aria-label={t('spy.phases.lobby')} className={cn('overflow-x-auto pb-1', className)}>
-			<ol className="flex min-w-max gap-1">
-				{PHASE_ORDER.filter((p) => p !== 'runoff' && p !== 'mrwhite-guess').map((phase, idx) => {
-					const phaseIdx = PHASE_ORDER.indexOf(phase);
-					const isActive = phase === current;
-					const isPast = phaseIdx < currentIdx;
-					const isRunoffOrMrWhite =
-						(current === 'runoff' || current === 'mrwhite-guess') &&
-						phase === 'vote';
-
+		<nav aria-label={t('spy.steps.heading')} className={className}>
+			<ol className="flex items-center gap-1">
+				{STEPS.map((phase, idx) => {
+					const isActive = phase === shown;
+					const isPast = idx < currentIdx;
 					return (
-						<li key={phase}>
+						<li key={phase} className={cn(isActive ? 'flex-[2.5]' : 'flex-1', 'min-w-0')}>
 							<span
+								aria-current={isActive ? 'step' : undefined}
 								className={cn(
-									'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors',
-									isActive || isRunoffOrMrWhite
+									'flex h-7 items-center justify-center gap-1 truncate rounded-full px-2 text-[11px] font-semibold transition-colors',
+									isActive
 										? 'bg-accent text-accent-foreground'
 										: isPast
 											? 'bg-success-subtle text-success'
 											: 'bg-surface-secondary text-muted',
 								)}
 							>
-								<span className="font-mono">{idx + 1}</span>
-								<span className="hidden sm:inline">{t(`spy.phases.${phase}`)}</span>
+								{isActive ? (
+									<span className="truncate">{t(`spy.phases.${current}`)}</span>
+								) : (
+									<span className="font-mono">{isPast ? '✓' : idx + 1}</span>
+								)}
 							</span>
 						</li>
 					);

@@ -4,7 +4,6 @@ import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 
 import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
 import { cn } from '@/features/spy-fall/lib/cn';
 
 import PhaseTracker from './PhaseTracker';
@@ -13,59 +12,76 @@ interface Props {
 	phase: GamePhase;
 	roomName: string;
 	code: string;
+	round?: number;
 	children: React.ReactNode;
 	className?: string;
 	onLeave?: () => void;
 	leaveBusy?: boolean;
+	onOpenGuide?: () => void;
 }
+
+const iconButton =
+	'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-base text-foreground transition hover:bg-surface-hover disabled:opacity-40';
 
 export default function GameShell({
 	phase,
 	roomName,
 	code,
+	round,
 	children,
 	className,
 	onLeave,
 	leaveBusy,
+	onOpenGuide,
 }: Props) {
 	const t = useT();
+	const inGame = phase !== 'lobby' && phase !== 'result';
 
 	return (
-		<div
-			className={cn(
-				'relative min-h-screen bg-background pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))]',
-				className,
-			)}
-		>
+		<div className={cn('relative min-h-dvh bg-background', className)}>
 			<div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_top,rgba(196,75,40,0.06),transparent_70%)]" />
-			<div className="relative mx-auto max-w-md px-4 py-6 pt-[max(1.5rem,env(safe-area-inset-top))] lg:max-w-3xl">
-				<div className="mb-4 flex items-start justify-between gap-3">
-					<header className="min-w-0 flex-1 text-center">
-						<p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
-							{t(`spy.phases.${phase}`)}
-						</p>
-						<h1 className="font-display truncate text-xl font-bold text-ink">{roomName}</h1>
-						<p className="font-mono text-xs text-muted">{code}</p>
-					</header>
-					<div className="flex shrink-0 flex-col items-end gap-2">
-						<PrefsToggleGroup />
+			<div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-4 lg:max-w-3xl">
+				<header className="sticky top-0 z-30 -mx-4 mb-4 border-b border-border bg-background/95 px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+					<div className="flex items-center gap-2">
 						{onLeave ? (
-							<Button
-								variant="ghost"
-								size="sm"
+							<button
+								type="button"
 								onClick={onLeave}
-								loading={leaveBusy}
-								className="text-xs text-muted"
+								disabled={leaveBusy}
+								className={iconButton}
+								aria-label={t('spy.shell.leave')}
+								title={t('spy.shell.leave')}
 							>
-								{t('spy.shell.leave')}
-							</Button>
+								<span aria-hidden>←</span>
+							</button>
 						) : null}
+						<div className="min-w-0 flex-1">
+							<h1 className="font-display truncate text-base font-bold leading-tight text-ink">
+								{roomName}
+							</h1>
+							<p className="font-mono text-[11px] tracking-widest text-muted">
+								{code}
+								{inGame && round ? ` · ${t('spy.discussion.title', { round })}` : ''}
+							</p>
+						</div>
+						{onOpenGuide ? (
+							<button
+								type="button"
+								onClick={onOpenGuide}
+								className={iconButton}
+								aria-label={t('spy.guide.title')}
+								title={t('spy.guide.title')}
+							>
+								<span aria-hidden className="font-bold">
+									?
+								</span>
+							</button>
+						) : null}
+						<PrefsToggleGroup />
 					</div>
-				</div>
-				{phase !== 'lobby' && phase !== 'result' ? (
-					<PhaseTracker current={phase} className="mb-6" />
-				) : null}
-				{children}
+					{inGame ? <PhaseTracker current={phase} className="mt-2" /> : null}
+				</header>
+				<main className="flex flex-1 flex-col">{children}</main>
 			</div>
 		</div>
 	);

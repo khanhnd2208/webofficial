@@ -100,7 +100,6 @@ export default function SpyMenuClient() {
 					hostName: normalized,
 					maxPlayers: SPY_MAX_PLAYERS,
 					topic: 'any',
-					difficulty: 'mixed',
 					isPublic: true,
 				},
 			);
@@ -301,8 +300,7 @@ export default function SpyMenuClient() {
 													{r.playerCount}/{r.maxPlayers} ·{' '}
 													{r.topic === 'any'
 														? t('spy.lobby.topicAny')
-														: t(`spy.topics.${r.topic}`)}{' '}
-													· {t(`spy.difficulty.${r.difficulty}`)}
+														: t(`spy.topics.${r.topic}`)}
 												</div>
 											</button>
 										</li>

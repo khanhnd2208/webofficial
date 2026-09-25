@@ -5,49 +5,64 @@ import { useCallback, useState } from 'react';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button, Dossier } from '@/features/spy-fall/components/ui';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
-import type { PlayerSelfDTO } from '@/features/spy-fall/types/spyGame';
+import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
+import ActionBar from '../ActionBar';
 import RoleDossierContent from '../RoleDossierContent';
+import StepGuide from '../StepGuide';
 
 interface Props {
-	self: PlayerSelfDTO;
+	state: RoomStateDTO;
 	onConfirm: () => void;
 	busy?: boolean;
-	hideRoles?: boolean;
 }
 
-export default function RoleRevealPhase({ self, onConfirm, busy, hideRoles }: Props) {
+export default function RoleRevealPhase({ state, onConfirm, busy }: Props) {
 	const t = useT();
+	const self = state.self!;
 	const [revealed, setRevealed] = useState(false);
+	const [seen, setSeen] = useState(false);
+	const ready = state.players.filter((p) => p.hasMemorizedRole).length;
 
-	const handlePointerDown = useCallback(() => setRevealed(true), []);
+	const handlePointerDown = useCallback(() => {
+		setRevealed(true);
+		setSeen(true);
+	}, []);
 	const handlePointerUp = useCallback(() => setRevealed(false), []);
 
 	return (
-		<div className="space-y-6 text-center">
-			<p className="text-sm text-muted-foreground">
-				{hideRoles ? t('spy.roleReveal.keyword') : t('spy.phases.role-reveal')}
-			</p>
+		<>
+			<div className="space-y-6">
+				<StepGuide stepsKey="spy.steps.roleReveal" />
+				<Dossier
+					revealed={revealed}
+					onRevealStart={handlePointerDown}
+					onRevealEnd={handlePointerUp}
+				>
+					<RoleDossierContent self={self} />
+				</Dossier>
+				<p className="text-center text-sm text-muted-foreground">
+					{t('spy.roleReveal.readyCount', { done: ready, total: state.players.length })}
+				</p>
+			</div>
 
-			<Dossier
-				revealed={revealed}
-				onRevealStart={handlePointerDown}
-				onRevealEnd={handlePointerUp}
-			>
-				<RoleDossierContent self={self} hideRoles={hideRoles} />
-			</Dossier>
-
-			<Button
-				fullWidth
-				disabled={busy || self.hasMemorizedRole}
-				loading={busy}
-				onClick={() => {
-					playConfirm();
-					onConfirm();
-				}}
-			>
-				{self.hasMemorizedRole ? t('spy.opening.waitOthers') : t('spy.roleReveal.memorized')}
-			</Button>
-		</div>
+			<ActionBar>
+				<Button
+					fullWidth
+					disabled={busy || self.hasMemorizedRole || !seen}
+					loading={busy}
+					onClick={() => {
+						playConfirm();
+						onConfirm();
+					}}
+				>
+					{self.hasMemorizedRole
+						? t('spy.roleReveal.waitOthers')
+						: seen
+							? t('spy.roleReveal.memorized')
+							: t('spy.roleReveal.holdFirst')}
+				</Button>
+			</ActionBar>
+		</>
 	);
 }

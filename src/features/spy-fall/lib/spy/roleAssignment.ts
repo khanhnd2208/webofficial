@@ -8,13 +8,18 @@ export interface AssignablePlayer {
 
 export interface AssignedPlayer extends AssignablePlayer {
 	role: PlayerRole;
-	keyword?: string;
-	teammateName?: string;
+	keyword: string;
 }
 
 export interface WordPair {
 	civilianWord: string;
 	spyWord: string;
+}
+
+export interface SpeakerCandidate {
+	token: string;
+	role?: PlayerRole;
+	isEliminated?: boolean;
 }
 
 function shuffle<T>(arr: T[], random: () => number): T[] {
@@ -30,55 +35,36 @@ export function assignRoles(
 	players: AssignablePlayer[],
 	wordPair: WordPair,
 	random: () => number = Math.random,
-	hideRoles = false,
 ): AssignedPlayer[] {
-	const dist = getRoleDistribution(players.length, hideRoles);
+	const dist = getRoleDistribution(players.length);
 	const shuffled = shuffle(players, random);
 
 	const roles: PlayerRole[] = [
 		...Array(dist.spies).fill('spy' as const),
-		...Array(dist.mrWhites).fill('mrwhite' as const),
 		...Array(dist.civilians).fill('civilian' as const),
 	];
 
 	const shuffledRoles = shuffle(roles, random);
 
-	let spyName: string | undefined;
-	let mrWhiteName: string | undefined;
-
-	const assigned = shuffled.map((player, i) => {
+	return shuffled.map((player, i) => {
 		const role = shuffledRoles[i]!;
-		const result: AssignedPlayer = { ...player, role };
-
-		if (role === 'civilian') {
-			result.keyword = wordPair.civilianWord;
-		} else if (role === 'spy') {
-			result.keyword = wordPair.spyWord;
-			spyName = player.name;
-		} else {
-			mrWhiteName = player.name;
-		}
-
-		return result;
+		return {
+			...player,
+			role,
+			keyword: role === 'spy' ? wordPair.spyWord : wordPair.civilianWord,
+		};
 	});
-
-	// Wire teammate names
-	for (const p of assigned) {
-		if (p.role === 'spy' && mrWhiteName) {
-			p.teammateName = mrWhiteName;
-		}
-		if (p.role === 'mrwhite' && spyName) {
-			p.teammateName = spyName;
-		}
-	}
-
-	return assigned;
 }
 
+/** First speaker is a random living player. */
 export function pickFirstSpeaker(
-	players: AssignablePlayer[],
+	players: SpeakerCandidate[],
 	random: () => number = Math.random,
 ): string {
-	const index = Math.floor(random() * players.length);
-	return players[index]!.token;
+	const pool = players.filter((p) => !p.isEliminated);
+	if (pool.length === 0) {
+		throw new Error('No eligible speaker');
+	}
+	const index = Math.floor(random() * pool.length);
+	return pool[index]!.token;
 }

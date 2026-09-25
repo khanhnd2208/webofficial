@@ -1,161 +1,111 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Badge, Button, Card, Panel, Stamp } from '@/features/spy-fall/components/ui';
+import { Button } from '@/features/spy-fall/components/ui';
 import { cn } from '@/features/spy-fall/lib/cn';
-import { getPhaseHint } from '@/features/spy-fall/lib/spy/i18n';
-import { playConfirm, playTap } from '@/features/spy-fall/lib/sounds';
+import { playTap } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
+import ActionBar, { ActionBarNote } from '../ActionBar';
 import PlayerList from '../PlayerList';
+import StepGuide from '../StepGuide';
 
 interface Props {
 	state: RoomStateDTO;
-	onVote: (vote1: string | null, vote2: string | null, confirmed: boolean) => void;
+	onVote: (targetToken: string | null) => void;
 	onNext?: () => void;
 	busy?: boolean;
-}
-
-function initialSelected(self: RoomStateDTO['self']): string[] {
-	if (!self) return [];
-	return [self.vote1Token, self.vote2Token].filter((tok): tok is string => Boolean(tok));
 }
 
 export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 	const t = useT();
 	const self = state.self;
-	const needed = state.votesRequired ?? 2;
-	const [selected, setSelected] = useState<string[]>(() => initialSelected(self));
-
-	const others = state.players.filter((p) => p.token !== self?.token);
-	const sealedCount = state.players.filter((p) => p.voteConfirmed === true).length;
-	const totalPlayers = state.players.length;
-	const allConfirmed = totalPlayers > 0 && sealedCount === totalPlayers;
-	const selectionComplete = selected.length === needed;
-
-	const selectedPlayers = useMemo(
-		() =>
-			selected.map((token) => ({
-				token,
-				name: others.find((p) => p.token === token)?.name ?? '?',
-			})),
-		[selected, others],
+	const living = state.players.filter((p) => !p.isEliminated);
+	const voted = living.filter((p) => p.hasVoted).length;
+	const candidateSet = new Set(state.voteCandidates);
+	const restricted = state.isRevote && candidateSet.size > 0;
+	const choices = living.filter(
+		(p) => p.token !== self?.token && (!restricted || candidateSet.has(p.token)),
 	);
-
-	function persist(next: string[]) {
-		onVote(next[0] ?? null, next[1] ?? null, false);
-	}
-
-	function handleToggle(token: string) {
-		if (self?.voteConfirmed) return;
-		playTap();
-		setSelected((prev) => {
-			if (prev.includes(token)) {
-				const next = prev.filter((tok) => tok !== token);
-				persist(next);
-				return next;
-			}
-			if (prev.length >= needed) return prev;
-			const next = [...prev, token];
-			persist(next);
-			return next;
-		});
-	}
-
-	function handleClear() {
-		setSelected([]);
-		void onVote(null, null, false);
-	}
+	const tiedNames = state.voteCandidates
+		.map((token) => state.players.find((p) => p.token === token)?.name)
+		.filter(Boolean)
+		.join(', ');
+	const pickedName = choices.find((p) => p.token === self?.voteToken)?.name;
+	const progress = living.length > 0 ? Math.round((voted / living.length) * 100) : 0;
+	const out = Boolean(self?.isEliminated);
 
 	return (
-		<div className="space-y-4">
-			<Card className="text-center">
-				<p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-					{t('spy.vote.sealed')}
-				</p>
-				<p className="font-display mt-1 text-3xl font-bold tabular-nums text-ink">
-					{sealedCount}/{totalPlayers}
-				</p>
-				<p
-					className={cn(
-						'mt-1 text-sm',
-						allConfirmed ? 'font-semibold text-success' : 'text-muted-foreground',
-					)}
-				>
-					{allConfirmed ? t('spy.discussion.enough') : t('spy.opening.waitOthers')}
-				</p>
-			</Card>
+		<>
+			<div className="space-y-4">
+				<StepGuide
+					stepsKey={out ? 'spy.steps.voteOut' : state.isRevote ? 'spy.steps.revote' : 'spy.steps.vote'}
+				/>
 
-			<Panel title={t('spy.vote.title')} description={getPhaseHint(t, 'vote')}>
-				<div className="flex justify-center">
-					<Stamp label={t('spy.vote.sealed')} variant="classified" />
+				{state.isRevote ? (
+					<div className="rounded-xl border border-warning/40 bg-warning-subtle px-4 py-3 text-center text-sm font-semibold text-warning">
+						⚖ {t('spy.vote.revote', { names: tiedNames })}
+					</div>
+				) : null}
+
+				<div>
+					<div className="flex items-baseline justify-between text-sm">
+						<span className="font-semibold text-ink">
+							{t('spy.vote.count', { done: voted, total: living.length })}
+						</span>
+						{pickedName ? (
+							<span className="truncate pl-3 text-muted-foreground">
+								{t('spy.vote.yourPick', { name: pickedName })}
+							</span>
+						) : null}
+					</div>
+					<div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-secondary">
+						<div
+							className={cn('h-full rounded-full bg-accent transition-[width] duration-300')}
+							style={{ width: `${progress}%` }}
+						/>
+					</div>
 				</div>
-				<p
-					className={cn(
-						'mt-3 text-center text-sm font-medium',
-						selectionComplete && 'font-semibold text-success',
-					)}
-				>
-					{selectionComplete ? '✓ ' : ''}
-					{selected.length}/{needed}
-				</p>
-			</Panel>
 
-			{selectedPlayers.length > 0 ? (
-				<div className="flex flex-wrap justify-center gap-2">
-					{selectedPlayers.map((p) => (
-						<Badge key={p.token} variant="accent">
-							{p.name}
-						</Badge>
-					))}
-				</div>
-			) : null}
+				{out ? (
+					<PlayerList players={living} selfToken={self?.token} showVoted />
+				) : (
+					<PlayerList
+						players={choices}
+						selectable
+						disabled={busy}
+						selectedToken={self?.voteToken}
+						onSelect={(token) => {
+							playTap();
+							onVote(token === self?.voteToken ? null : token);
+						}}
+					/>
+				)}
+			</div>
 
-			<PlayerList
-				players={others}
-				selectable={!self?.voteConfirmed}
-				selectedTokens={selected}
-				onSelect={handleToggle}
-			/>
-
-			{self && !self.voteConfirmed ? (
-				<div className="space-y-2">
+			<ActionBar>
+				{state.isHost && onNext ? (
 					<Button
+						variant="secondary"
 						fullWidth
 						loading={busy}
-						disabled={selected.length !== needed}
 						onClick={() => {
-							playConfirm();
-							onVote(selected[0] ?? null, selected[1] ?? null, true);
+							if (voted < living.length && !window.confirm(t('spy.vote.lockConfirm'))) return;
+							onNext();
 						}}
 					>
-						{t('spy.vote.seal')}
+						{t('spy.vote.lock')}
 					</Button>
-					{selected.length > 0 ? (
-						<Button variant="ghost" size="sm" fullWidth onClick={handleClear}>
-							{t('common.back')}
-						</Button>
-					) : null}
-				</div>
-			) : null}
-
-			{self?.voteConfirmed && !state.isHost ? (
-				<p className="text-center text-sm text-muted">{t('spy.vote.waitHost')}</p>
-			) : null}
-
-			{state.isHost && onNext ? (
-				<Button
-					variant={allConfirmed ? 'primary' : 'secondary'}
-					fullWidth
-					loading={busy}
-					className={cn(allConfirmed && 'animate-pulse')}
-					onClick={onNext}
-				>
-					{t('spy.vote.open')}
-				</Button>
-			) : null}
-		</div>
+				) : (
+					<ActionBarNote>
+						{out
+							? t('spy.vote.watching')
+							: pickedName
+								? t('spy.vote.waitOthers')
+								: t('spy.vote.pickOne')}
+					</ActionBarNote>
+				)}
+			</ActionBar>
+		</>
 	);
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { cn } from '@/features/spy-fall/lib/cn';
 
 interface DossierProps {
@@ -17,6 +18,8 @@ export default function Dossier({
 	children,
 	className,
 }: DossierProps) {
+	const t = useT();
+
 	return (
 		<div className={cn('mx-auto max-w-sm select-none touch-none', className)}>
 			<div
@@ -29,14 +32,18 @@ export default function Dossier({
 				onPointerDown={onRevealStart}
 				onPointerUp={onRevealEnd}
 				onPointerLeave={onRevealEnd}
+				onPointerCancel={onRevealEnd}
 				onContextMenu={(e) => e.preventDefault()}
 			>
 				{!revealed && (
 					<div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-surface-secondary/95 backdrop-blur-[2px]">
-						<span className="font-mono text-xs uppercase tracking-[0.3em] text-classified">Classified</span>
-						<p className="font-display text-xl font-bold text-muted">Giữ để mở hồ sơ</p>
+						<span className="font-mono text-xs uppercase tracking-[0.3em] text-classified">
+							{t('spy.dossier.hidden')}
+						</span>
+						<span aria-hidden className="text-4xl">👆</span>
+						<p className="font-display text-xl font-bold text-muted">{t('spy.dossier.hold')}</p>
 						<p className="text-xs text-muted-foreground px-6 text-center">
-							Chạm và giữ — đừng để người khác nhìn thấy
+							{t('spy.dossier.holdHint')}
 						</p>
 					</div>
 				)}

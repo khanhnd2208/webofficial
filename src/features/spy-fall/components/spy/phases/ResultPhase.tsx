@@ -4,164 +4,170 @@ import { useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Badge, Button, Card, Stamp } from '@/features/spy-fall/components/ui';
+import { Badge, Button, Card } from '@/features/spy-fall/components/ui';
 import { cn } from '@/features/spy-fall/lib/cn';
 import { getRoleLabel } from '@/features/spy-fall/lib/spy/i18n';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type { PlayerPublicDTO, RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
+import ActionBar, { ActionBarNote } from '../ActionBar';
 import PassportAvatar from '../PassportAvatar';
+import StepGuide from '../StepGuide';
 
 interface Props {
 	state: RoomStateDTO;
 	busy?: boolean;
-	onRevealWords?: () => void;
 	onPlayAgain?: () => void;
 }
 
 function roleBadgeVariant(role: PlayerPublicDTO['role']): 'success' | 'danger' | 'default' {
 	if (role === 'civilian') return 'success';
-	if (role === 'spy' || role === 'mrwhite') return 'danger';
+	if (role === 'spy') return 'danger';
 	return 'default';
 }
 
-export default function ResultPhase({ state, busy, onRevealWords, onPlayAgain }: Props) {
+export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 	const t = useT();
 	const result = state.result!;
+	const names = useMemo(
+		() => new Map(state.players.map((p) => [p.token, p.name])),
+		[state.players],
+	);
+	const civiliansWon = result.winningSide === 'civilian';
+	const spyNames = state.players
+		.filter((p) => p.role === 'spy')
+		.map((p) => p.name)
+		.join(', ');
+	const selfRole = state.self?.role;
+	const selfWon =
+		selfRole != null && (selfRole === 'civilian') === civiliansWon;
 
 	useEffect(() => {
+		if (!selfWon) return;
 		confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-	}, []);
-
-	const winnerLabel =
-		result.winningSide === 'civilian' ? t('spy.result.officersWin') : t('spy.result.spyWin');
+	}, [selfWon]);
 
 	const duration = `${Math.floor(result.durationSeconds / 60)}:${(result.durationSeconds % 60)
 		.toString()
 		.padStart(2, '0')}`;
 
-	const rankedPlayers = useMemo(
-		() =>
-			[...state.players].sort(
-				(a, b) => (b.votesReceived ?? 0) - (a.votesReceived ?? 0),
-			),
-		[state.players],
-	);
-
 	return (
-		<div className="space-y-6 animate-fade-in">
-			<div className="text-center">
-				<Stamp label="Declassified" variant="declassified" animate className="mb-4" />
-				<h2
-					className={cn(
-						'font-display text-4xl font-bold',
-						result.winningSide === 'civilian' ? 'text-success' : 'text-danger',
-					)}
-				>
-					{winnerLabel}
-				</h2>
-				<p className="mt-2 text-base text-muted-foreground">
-					{t('spy.result.duration', { time: duration })}
-				</p>
-			</div>
-
-			<Card elevated className="space-y-3 text-center">
-				<p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-					{t('spy.result.debrief')}
-				</p>
-				{result.wordsRevealed ? (
-					<>
-						<p>
-							{t('spy.result.officerWord')}{' '}
-							<strong className="font-display text-xl text-ink">{result.civilianWord}</strong>
+		<>
+			<div className="space-y-6 animate-fade-in">
+				<div className="text-center">
+					<h2
+						className={cn(
+							'font-display text-4xl font-bold',
+							civiliansWon ? 'text-success' : 'text-danger',
+						)}
+					>
+						{civiliansWon ? t('spy.result.officersWin') : t('spy.result.spyWin')}
+					</h2>
+					{selfRole ? (
+						<p className="mt-2 text-base font-semibold text-ink">
+							{selfWon ? t('spy.result.youWon') : t('spy.result.youLost')}
 						</p>
-						<p>
-							{t('spy.result.spyWord')}{' '}
-							<strong className="font-display text-xl text-ink">{result.spyWord}</strong>
-						</p>
-					</>
-				) : (
-					<p className="text-sm text-muted-foreground">{t('spy.result.wordsHidden')}</p>
-				)}
-				{result.mrWhiteGuessResult !== 'skipped' &&
-				result.mrWhiteGuessResult !== 'pending' &&
-				!state.hideRoles ? (
-					<p className="text-sm text-muted-foreground">
-						{result.mrWhiteGuessResult === 'correct'
-							? t('spy.result.mwCorrect')
-							: t('spy.result.mwWrong')}
+					) : null}
+					<p className="mt-1 text-sm text-muted-foreground">
+						{t('spy.result.duration', { time: duration })}
 					</p>
-				) : null}
-				{onRevealWords ? (
-					<Button fullWidth loading={busy} onClick={onRevealWords}>
-						{t('spy.result.reveal')}
-					</Button>
-				) : !result.wordsRevealed ? (
-					<p className="text-sm text-muted">{t('spy.result.waitReveal')}</p>
-				) : null}
-			</Card>
+				</div>
 
-			<div>
-				<h3 className="mb-3 font-mono text-xs font-bold uppercase tracking-wider text-muted">
-					{t('spy.result.roster')}
-				</h3>
-				<ul className="space-y-2">
-					{rankedPlayers.map((p) => {
-						const eliminated = result.eliminatedTokens.includes(p.token);
-						const votes = p.votesReceived ?? 0;
-						return (
+				<div className="grid grid-cols-2 gap-3">
+					<Card elevated className="p-4 text-center">
+						<p className="text-xs text-muted">{t('spy.result.civilianWord')}</p>
+						<p className="mt-1 break-words font-display text-2xl font-bold text-ink">
+							{result.civilianWord}
+						</p>
+					</Card>
+					<Card elevated className="border-danger/40 p-4 text-center">
+						<p className="text-xs text-muted">{t('spy.result.spyWord')}</p>
+						<p className="mt-1 break-words font-display text-2xl font-bold text-danger">
+							{result.spyWord}
+						</p>
+					</Card>
+				</div>
+				<div className="space-y-1 text-center text-sm">
+					{spyNames ? <p>{t('spy.result.spyWas', { name: spyNames })}</p> : null}
+				</div>
+
+				{result.eliminationLog.length > 0 ? (
+					<section>
+						<h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
+							{t('spy.result.timeline')}
+						</h3>
+						<ol className="space-y-1.5 text-sm">
+							{result.eliminationLog.map((entry, index) => {
+								const who = entry.token ? (names.get(entry.token) ?? '?') : t('spy.result.nobody');
+								return (
+									<li
+										key={`${entry.round}-${index}`}
+										className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2"
+									>
+										<span className="min-w-0 truncate">
+											<span className="text-muted">{t('spy.discussion.title', { round: entry.round })}</span>{' '}
+											· {who}
+										</span>
+										{entry.role ? (
+											<Badge variant={roleBadgeVariant(entry.role)}>{getRoleLabel(t, entry.role)}</Badge>
+										) : null}
+									</li>
+								);
+							})}
+						</ol>
+					</section>
+				) : null}
+
+				<section>
+					<h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
+						{t('spy.result.roster')}
+					</h3>
+					<ul className="space-y-2">
+						{state.players.map((p) => (
 							<li
 								key={p.token}
 								className={cn(
 									'flex items-center justify-between gap-3 rounded-xl border px-4 py-3',
-									eliminated
-										? 'border-danger/30 bg-danger-subtle'
-										: 'border-border bg-surface',
+									p.role === 'civilian' ? 'border-border bg-surface' : 'border-danger/30 bg-danger-subtle',
 								)}
 							>
 								<div className="flex min-w-0 items-center gap-3">
 									<PassportAvatar name={p.name} avatarSeed={p.avatarSeed} size="sm" />
-									<span className="truncate font-medium">{p.name}</span>
-									{eliminated ? (
-										<Stamp label={t('spy.result.elim')} variant="suspect" className="text-[8px]" />
+									<span className={cn('truncate font-medium', p.isEliminated && 'line-through opacity-70')}>
+										{p.name}
+									</span>
+									{p.token === state.self?.token ? (
+										<Badge variant="accent">{t('spy.player.you')}</Badge>
 									) : null}
 								</div>
-								<div className="flex shrink-0 items-center gap-2">
-									<Badge variant={votes > 0 ? 'warning' : 'muted'}>
-										{t('spy.result.votes', { count: votes })}
-									</Badge>
-									<Badge variant={roleBadgeVariant(p.role)}>
-										{p.role ? getRoleLabel(t, p.role) : '?'}
-									</Badge>
-								</div>
+								<Badge variant={roleBadgeVariant(p.role)}>
+									{p.role ? getRoleLabel(t, p.role) : '?'}
+								</Badge>
 							</li>
-						);
-					})}
-				</ul>
+						))}
+					</ul>
+				</section>
+
+				<StepGuide stepsKey="spy.steps.result" />
 			</div>
 
-			{state.debug && state.debug.length > 0 ? (
-				<details className="text-xs text-muted">
-					<summary>{t('spy.result.debug')}</summary>
-					<pre className="mt-2 overflow-auto">{JSON.stringify(state.debug, null, 2)}</pre>
-				</details>
-			) : null}
-
-			{onPlayAgain ? (
-				<Button
-					fullWidth
-					variant="success"
-					loading={busy}
-					onClick={() => {
-						playConfirm();
-						onPlayAgain();
-					}}
-				>
-					{t('spy.result.playAgain')}
-				</Button>
-			) : !state.isHost ? (
-				<p className="text-center text-sm text-muted">{t('spy.result.waitPlayAgain')}</p>
-			) : null}
-		</div>
+			<ActionBar>
+				{onPlayAgain ? (
+					<Button
+						fullWidth
+						variant="success"
+						loading={busy}
+						onClick={() => {
+							playConfirm();
+							onPlayAgain();
+						}}
+					>
+						{t('spy.result.playAgain')}
+					</Button>
+				) : (
+					<ActionBarNote>{t('spy.result.waitPlayAgain')}</ActionBarNote>
+				)}
+			</ActionBar>
+		</>
 	);
 }

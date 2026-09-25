@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
+import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { cn } from '@/features/spy-fall/lib/cn';
 
 interface SheetProps {
@@ -16,6 +17,7 @@ const FOCUSABLE_SELECTOR =
 	'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export default function Sheet({ open, onClose, title, children, className }: SheetProps) {
+	const t = useT();
 	const panelRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<Element | null>(null);
 	const onCloseRef = useRef(onClose);
@@ -55,7 +57,7 @@ export default function Sheet({ open, onClose, title, children, className }: She
 				type="button"
 				className="absolute inset-0 bg-[var(--overlay)]"
 				onClick={onClose}
-				aria-label="Đóng"
+				aria-label={t('common.close')}
 			/>
 			<div
 				ref={panelRef}
@@ -72,7 +74,7 @@ export default function Sheet({ open, onClose, title, children, className }: She
 						type="button"
 						onClick={onClose}
 						className="flex h-10 w-10 items-center justify-center rounded-full text-2xl text-muted hover:bg-surface-hover"
-						aria-label="Đóng"
+						aria-label={t('common.close')}
 					>
 						×
 					</button>

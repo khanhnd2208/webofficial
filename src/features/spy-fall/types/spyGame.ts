@@ -1,24 +1,16 @@
-import type { SpyDifficulty, SpyTopic } from '@/features/spy-fall/config/spyGame';
-
-// ─── Enums ─────────────────────────────────────────────────────────────────────
+import type { SpyTag, SpyTopic } from '@/features/spy-fall/config/spyGame';
 
 export type GamePhase =
 	| 'lobby'
 	| 'role-reveal'
-	| 'opening'
 	| 'discussion'
 	| 'vote'
-	| 'runoff'
-	| 'mrwhite-guess'
+	| 'reveal'
 	| 'result';
 
-export type PlayerRole = 'civilian' | 'spy' | 'mrwhite';
+export type PlayerRole = 'civilian' | 'spy';
 
 export type WinningSide = 'civilian' | 'antagonist';
-
-export type MrWhiteGuessResult = 'correct' | 'incorrect' | 'pending' | 'skipped';
-
-// ─── Word pair ─────────────────────────────────────────────────────────────────
 
 export interface WordPairDTO {
 	civilianWord: string;
@@ -26,39 +18,38 @@ export interface WordPairDTO {
 	topic: string;
 }
 
-// ─── Player DTOs (scoped for privacy) ──────────────────────────────────────────
+export interface VoteTallyEntry {
+	token: string;
+	votes: number;
+}
+
+export interface EliminationLogEntry {
+	round: number;
+	token: string | null;
+	role?: PlayerRole;
+	tally: VoteTallyEntry[];
+	wasRevote: boolean;
+}
 
 export interface PlayerPublicDTO {
 	token: string;
 	name: string;
 	avatarSeed: string;
 	connected: boolean;
-	isReady: boolean;
 	hasMemorizedRole: boolean;
-	hasSpoken: boolean;
-	suspicionCount: number;
 	isHost: boolean;
 	isEliminated: boolean;
-	/** Visible during vote/runoff — ballot sealed, not who they voted for */
-	voteConfirmed?: boolean;
-	/** Only set on result phase for all players */
+	/** Set during vote: whether this player has cast a ballot. Never who they voted for. */
+	hasVoted?: boolean;
+	/** Visible once eliminated, and for everyone on the result screen. */
 	role?: PlayerRole;
-	/** Only set on result phase — votes received in primary vote tally */
-	votesReceived?: number;
 }
 
 export interface PlayerSelfDTO extends PlayerPublicDTO {
 	role?: PlayerRole;
 	keyword?: string | null;
-	teammateName?: string | null;
-	publicSuspectTokens: string[];
-	vote1Token?: string | null;
-	vote2Token?: string | null;
-	voteConfirmed: boolean;
-	runoffChoices: string[];
+	voteToken?: string | null;
 }
-
-// ─── Room list item ────────────────────────────────────────────────────────────
 
 export interface PublicRoomListItemDTO {
 	code: string;
@@ -66,45 +57,16 @@ export interface PublicRoomListItemDTO {
 	playerCount: number;
 	maxPlayers: number;
 	topic: string;
-	difficulty: SpyDifficulty;
 	status: 'waiting' | 'playing';
 }
 
-// ─── Runoff state ──────────────────────────────────────────────────────────────
-
-export interface RunoffStateDTO {
-	candidateTokens: string[];
-	slotsRemaining: number;
-}
-
-// ─── Mr. White guess ───────────────────────────────────────────────────────────
-
-export interface MrWhiteStateDTO {
-	token: string | null;
-	playerName: string | null;
-	guessResult: MrWhiteGuessResult;
-	canConfirm: boolean;
-}
-
-// ─── Result ────────────────────────────────────────────────────────────────────
-
 export interface GameResultDTO {
 	winningSide: WinningSide;
-	eliminatedTokens: string[];
-	wordsRevealed: boolean;
-	civilianWord?: string;
-	spyWord?: string;
-	mrWhiteGuessResult: MrWhiteGuessResult;
+	civilianWord: string;
+	spyWord: string;
+	eliminationLog: EliminationLogEntry[];
 	durationSeconds: number;
 }
-
-export interface TieBreakDebugDTO {
-	step: string;
-	detail: string;
-	randomPick?: string[];
-}
-
-// ─── Full scoped room state ────────────────────────────────────────────────────
 
 export interface RoomStateDTO {
 	code: string;
@@ -116,36 +78,27 @@ export interface RoomStateDTO {
 	isPublic: boolean;
 	maxPlayers: number;
 	topic: string;
-	difficulty: SpyDifficulty;
-	showQuestionHints: boolean;
-	/** When true: hide role identity mid-game; always 1 Spy, no Mr. White */
-	hideRoles: boolean;
-	/** When true: host sees tie-break debug on result */
+	/** Word tags the host keeps out of the draw. */
+	excludedTags: SpyTag[];
 	playtestMode: boolean;
+	round: number;
 	playerCount: number;
 	players: PlayerPublicDTO[];
 	self: PlayerSelfDTO | null;
+	firstSpeaker?: { token: string; name: string };
+	voteCandidates: string[];
+	isRevote: boolean;
+	lastRound?: EliminationLogEntry;
 	wordPair?: WordPairDTO;
-	runoff?: RunoffStateDTO;
-	mrWhite?: MrWhiteStateDTO;
 	result?: GameResultDTO;
-	/** Vote phase: how many suspects each player must pick (equals bad-side count) */
-	votesRequired?: number;
-	/** Discussion phase: how many suspects each player may mark (equals bad-side count) */
-	suspectsRequired?: number;
-	debug?: TieBreakDebugDTO[];
 }
-
-// ─── Create / join inputs ────────────────────────────────────────────────────────
 
 export interface CreateRoomInput {
 	name: string;
 	isPublic?: boolean;
 	maxPlayers?: number;
 	topic?: SpyTopic | string;
-	difficulty?: SpyDifficulty;
-	showQuestionHints?: boolean;
-	hideRoles?: boolean;
+	excludedTags?: string[];
 	playtestMode?: boolean;
 	hostName: string;
 }
@@ -161,24 +114,12 @@ export interface UpdateSettingsInput {
 	isPublic?: boolean;
 	maxPlayers?: number;
 	topic?: string;
-	difficulty?: SpyDifficulty;
-	showQuestionHints?: boolean;
-	hideRoles?: boolean;
+	excludedTags?: string[];
 	playtestMode?: boolean;
 }
 
 export interface VoteInput {
-	vote1Token?: string | null;
-	vote2Token?: string | null;
-	confirmed?: boolean;
-}
-
-export interface RunoffVoteInput {
-	choices: string[];
-}
-
-export interface MrWhiteResultInput {
-	guessResult: 'correct' | 'incorrect';
+	targetToken?: string | null;
 }
 
 export interface RenamePlayerInput {
