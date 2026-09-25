@@ -1,6 +1,11 @@
 name: 🚀 Deploy to VPS
 
 on:
+  # Every push to main deploys once its CI run succeeds; manual runs stay available.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -15,6 +20,14 @@ jobs:
   deploy:
     name: 🚢 Release-based VPS deploy
     runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
+    env:
+      # workflow_run runs against main's tip, so deploy the commit CI actually tested.
+      DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
     environment:
       name: production
       url: https://toiladuykhanh.com
@@ -23,6 +36,7 @@ jobs:
       - name: Check out the requested revision
         uses: actions/checkout@v4
         with:
+          ref: ${{ env.DEPLOY_SHA }}
           fetch-depth: 1
 
       - name: Require main with a successful CI run
@@ -38,13 +52,13 @@ jobs:
           conclusion="$(
             gh run list \
               --workflow ci.yml \
-              --commit "$GITHUB_SHA" \
+              --commit "$DEPLOY_SHA" \
               --limit 1 \
               --json conclusion \
               --jq '.[0].conclusion // ""'
           )"
           if [[ "$conclusion" != "success" ]]; then
-            echo "CI has not succeeded for $GITHUB_SHA (conclusion: ${conclusion:-missing})" >&2
+            echo "CI has not succeeded for $DEPLOY_SHA (conclusion: ${conclusion:-missing})" >&2
             exit 1
           fi
 
@@ -71,7 +85,7 @@ jobs:
           set -euo pipefail
           : "${VPS_HOSTNAME:?Missing VPS_HOST production secret}"
           : "${VPS_USER:?Missing VPS_USER production secret}"
-          release_id="${GITHUB_SHA:0:12}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          release_id="${DEPLOY_SHA:0:12}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           VPS_HOST="${VPS_USER}@${VPS_HOSTNAME}" \
           VPS_PORT="${VPS_PORT:-22}" \
           DEPLOY_KEY="$HOME/.ssh/webofficial_deploy" \
