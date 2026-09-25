@@ -13,10 +13,6 @@ export function BriefingContent() {
 
 	return (
 		<div className="space-y-4">
-			<div className="rounded-xl border border-dashed border-stamp/40 bg-accent-subtle/50 p-4 text-sm text-foreground-secondary">
-				<strong className="text-ink">{t('spy.guide.title')}</strong>
-				{` — ${t('spy.guide.sections.whoBody')}`}
-			</div>
 			{sections.map((s, i) => (
 				<div key={s.title}>
 					<h3 className="font-display text-sm font-semibold text-ink">

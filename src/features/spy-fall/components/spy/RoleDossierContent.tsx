@@ -17,9 +17,10 @@ export default function RoleDossierContent({ self, spyCount }: Props) {
 	const role = self.role;
 
 	let hint: string;
-	if (role === 'spy') hint = t(spyCount === 2 ? 'spy.roleReveal.spyHintTwo' : 'spy.roleReveal.spyHint');
+	const many = spyCount > 1;
+	if (role === 'spy') hint = t(many ? 'spy.roleReveal.spyHintMany' : 'spy.roleReveal.spyHint', { count: spyCount });
 	else if (role === 'civilian') hint = t('spy.roleReveal.civilianHint');
-	else hint = t(spyCount === 2 ? 'spy.roleReveal.unknownSideTwo' : 'spy.roleReveal.unknownSide');
+	else hint = t(many ? 'spy.roleReveal.unknownSideMany' : 'spy.roleReveal.unknownSide', { count: spyCount });
 
 	return (
 		<>

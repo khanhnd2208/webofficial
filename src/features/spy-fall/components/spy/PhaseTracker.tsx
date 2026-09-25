@@ -20,7 +20,7 @@ const STEP_ICONS: Record<GamePhase, GameIconName> = {
 
 interface Props {
 	current: GamePhase;
-	/** Two-Spy games reveal the first catch before the final guess. */
+	/** Multi-Spy games reveal each catch before the next guess. */
 	showReveal?: boolean;
 	className?: string;
 }

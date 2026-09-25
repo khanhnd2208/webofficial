@@ -155,7 +155,11 @@ export default function LobbyPhase({
 			<ul className="space-y-1.5">
 				<li className="flex items-start gap-2">
 					<GameIcon name="target" size={15} className="mt-0.5 shrink-0 text-accent" />
-					<span>{t(state.spyCount === 2 ? 'spy.lobby.ruleTwoSpies' : 'spy.lobby.ruleOneSpy')}</span>
+					<span>
+						{state.spyCount > 1
+							? t('spy.lobby.ruleManySpies', { count: state.spyCount })
+							: t('spy.lobby.ruleOneSpy')}
+					</span>
 				</li>
 				<li className="flex items-start gap-2">
 					<GameIcon name={state.revealRoles ? 'eye' : 'lock'} size={15} className="mt-0.5 shrink-0 text-accent" />
@@ -226,8 +230,8 @@ export default function LobbyPhase({
 									label={t('spy.lobby.spyCount')}
 									htmlFor="settings-spy-count"
 									hint={
-										state.spyCount === 2
-											? t('spy.lobby.spyCountHintTwo', { min: minPlayersForSpies(2) })
+										state.spyCount > 1
+											? t('spy.lobby.spyCountHintMany', { count: state.spyCount, min: minPlayers })
 											: t('spy.lobby.spyCountHintOne')
 									}
 								>
@@ -237,12 +241,13 @@ export default function LobbyPhase({
 										onChange={(e) => onSettings({ spyCount: Number(e.target.value) })}
 									>
 										{SPY_COUNTS.map((count) => {
-											const fits = state.maxPlayers >= minPlayersForSpies(count);
+											const min = minPlayersForSpies(count);
+											const fits = state.maxPlayers >= min;
 											return (
 												<option key={count} value={count} disabled={!fits}>
 													{fits
 														? t('spy.lobby.spyCountOption', { count })
-														: t('spy.lobby.twoSpiesNeedRoom', { min: minPlayersForSpies(count) })}
+														: t('spy.lobby.spyCountNeedRoom', { count, min })}
 												</option>
 											);
 										})}

@@ -194,6 +194,48 @@ describe('Spy Fall — two spies', () => {
 	});
 });
 
+describe('Spy Fall — three spies', () => {
+	it('every catch earns another guess until all three are caught', async () => {
+		const table = await openTable(7, { spyCount: 3 });
+		const roles = await startAndOpenVote(table);
+		const spies = byRole(roles, 'spy');
+		const [civilian] = byRole(roles, 'civilian');
+		expect(spies).toHaveLength(3);
+
+		for (const [index, spy] of spies.slice(0, 2).entries()) {
+			const reveal = await everyoneVotes(table, spy, civilian!);
+			expect(reveal.phase).toBe('reveal');
+			expect(reveal.spiesCaught).toBe(index + 1);
+			await hostAdvancePhase(table.code, table.host);
+			await hostAdvancePhase(table.code, table.host);
+		}
+
+		const state = await everyoneVotes(table, spies[2]!, civilian!);
+		expect(state.phase).toBe('result');
+		expect(state.result?.winningSide).toBe('civilian');
+		expect(state.result?.endReason).toBe('all-spies-caught');
+		expect(state.result?.eliminationLog.map((e) => e.role)).toEqual(['spy', 'spy', 'spy']);
+	});
+
+	it('a miss after two catches still ends the game for the spies', async () => {
+		const table = await openTable(7, { spyCount: 3 });
+		const roles = await startAndOpenVote(table);
+		const spies = byRole(roles, 'spy');
+		const [civilian] = byRole(roles, 'civilian');
+
+		for (const spy of spies.slice(0, 2)) {
+			await everyoneVotes(table, spy, civilian!);
+			await hostAdvancePhase(table.code, table.host);
+			await hostAdvancePhase(table.code, table.host);
+		}
+		const state = await everyoneVotes(table, civilian!, spies[2]!);
+
+		expect(state.phase).toBe('result');
+		expect(state.result?.winningSide).toBe('antagonist');
+		expect(state.result?.endReason).toBe('wrong-vote');
+	});
+});
+
 describe('Spy Fall — players leaving', () => {
 	it('the spy leaving while words are being read hands the win to the civilians', async () => {
 		const table = await openTable(4);
@@ -241,7 +283,7 @@ describe('Spy Fall — settings', () => {
 		await expect(updateSettings(table.code, table.host, { spyCount: 2 })).rejects.toMatchObject({
 			code: 'SPY_COUNT_NEEDS_ROOM',
 		});
-		await expect(updateSettings(table.code, table.host, { spyCount: 3 })).rejects.toMatchObject({
+		await expect(updateSettings(table.code, table.host, { spyCount: 4 })).rejects.toMatchObject({
 			code: 'SPY_COUNT_INVALID',
 		});
 	});
@@ -259,6 +301,20 @@ describe('Spy Fall — settings', () => {
 			code: 'NEED_MIN_PLAYERS_FOR_SPIES',
 			params: { min: 5, spies: 2 },
 		});
+	});
+
+	it('needs seven players to start with three spies', async () => {
+		const table = await openTable(6, { spyCount: 3 });
+		await expect(startGame(table.code, table.host)).rejects.toMatchObject({
+			code: 'NEED_MIN_PLAYERS_FOR_SPIES',
+			params: { min: 7, spies: 3 },
+		});
+	});
+
+	it('lets the host pick the spy count when creating the room', async () => {
+		const table = await openTable(1, { spyCount: 3 });
+		const state = await getScopedState(table.code, table.host);
+		expect(state.spyCount).toBe(3);
 	});
 
 	it('keeps each role hidden from its owner by default', async () => {

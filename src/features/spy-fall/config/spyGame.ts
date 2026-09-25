@@ -28,12 +28,10 @@ export const SPY_PHASES = [
 ] as const;
 
 /** How many Spies the host can deal. */
-export const SPY_COUNTS = [1, 2] as const;
+export const SPY_COUNTS = [1, 2, 3] as const;
 export type SpyCount = (typeof SPY_COUNTS)[number];
 export const SPY_DEFAULT_COUNT: SpyCount = 1;
-
-/** Two Spies need enough Civilians left to outvote the second one after the first is caught. */
-export const SPY_TWO_SPIES_MIN_PLAYERS = 5;
+export const SPY_MAX_COUNT: SpyCount = SPY_COUNTS[SPY_COUNTS.length - 1]!;
 
 export function isSpyCount(value: unknown): value is SpyCount {
 	return SPY_COUNTS.includes(value as SpyCount);
@@ -44,8 +42,12 @@ export function normalizeSpyCount(value: unknown): SpyCount {
 	return isSpyCount(value) ? value : SPY_DEFAULT_COUNT;
 }
 
+/**
+ * Civilians must still outnumber the Spies left after every catch but the last,
+ * so N Spies need at least 2N + 1 players (4 for one Spy, 5 for two, 7 for three).
+ */
 export function minPlayersForSpies(spyCount: SpyCount): number {
-	return spyCount === 2 ? SPY_TWO_SPIES_MIN_PLAYERS : SPY_MIN_PLAYERS;
+	return Math.max(SPY_MIN_PLAYERS, spyCount * 2 + 1);
 }
 
 export interface RoleDistribution {

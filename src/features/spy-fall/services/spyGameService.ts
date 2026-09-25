@@ -4,6 +4,7 @@ import { customAlphabet } from 'nanoid';
 import {
 	SPY_DISCONNECT_THRESHOLD_MS,
 	SPY_HOST_HANDOFF_MS,
+	SPY_MAX_COUNT,
 	SPY_MAX_PLAYERS,
 	SPY_MAX_ROOM_NAME_LENGTH,
 	SPY_MIN_PLAYERS,
@@ -292,7 +293,7 @@ function assertSpyCountFitsRoom(spyCount: SpyCount, maxPlayers: number): void {
 }
 
 function parseSpyCount(value: unknown): SpyCount {
-	if (!isSpyCount(value)) throw new AppError('SPY_COUNT_INVALID', 400);
+	if (!isSpyCount(value)) throw new AppError('SPY_COUNT_INVALID', 400, { max: SPY_MAX_COUNT });
 	return value;
 }
 

@@ -82,6 +82,27 @@ describe('resolveVoteOutcome — two spies', () => {
 	});
 });
 
+describe('resolveVoteOutcome — three spies', () => {
+	it('each catch with spies still hidden earns one more round', () => {
+		expect(resolveVoteOutcome('spy', table(4, 3, { spies: 1 }))).toBeNull();
+		expect(resolveVoteOutcome('spy', table(4, 3, { spies: 2 }))).toBeNull();
+	});
+
+	it('civilians win once the third vote catches the last spy', () => {
+		expect(resolveVoteOutcome('spy', table(4, 3, { spies: 3 }))).toEqual({
+			winningSide: 'civilian',
+			reason: 'all-spies-caught',
+		});
+	});
+
+	it('a miss on any vote ends the game for the spies', () => {
+		expect(resolveVoteOutcome('civilian', table(4, 3, { civilians: 1, spies: 2 }))).toEqual({
+			winningSide: 'antagonist',
+			reason: 'wrong-vote',
+		});
+	});
+});
+
 describe('checkOutcome (after someone leaves)', () => {
 	it('civilians win when no spy is left at the table', () => {
 		expect(checkOutcome(table(3, 1, { spies: 1 }))).toEqual({

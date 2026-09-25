@@ -18,8 +18,8 @@ interface Props {
 }
 
 function roleRevealStepsKey({ revealRoles, spyCount }: RoomStateDTO): string {
-	const two = spyCount === 2 ? 'Two' : '';
-	return revealRoles ? `spy.steps.roleRevealKnown${two}` : `spy.steps.roleReveal${two}`;
+	const many = spyCount > 1 ? 'Many' : '';
+	return revealRoles ? `spy.steps.roleRevealKnown${many}` : `spy.steps.roleReveal${many}`;
 }
 
 export default function RoleRevealPhase({ state, onConfirm, busy }: Props) {
@@ -38,7 +38,7 @@ export default function RoleRevealPhase({ state, onConfirm, busy }: Props) {
 	return (
 		<>
 			<div className="space-y-6">
-				<StepGuide stepsKey={roleRevealStepsKey(state)} />
+				<StepGuide stepsKey={roleRevealStepsKey(state)} params={{ count: state.spyCount }} />
 				<Dossier
 					revealed={revealed}
 					onRevealStart={handlePointerDown}

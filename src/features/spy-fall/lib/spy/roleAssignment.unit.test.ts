@@ -27,9 +27,22 @@ describe('assignRoles', () => {
 		}
 	});
 
-	it('refuses two spies below the minimum table size', () => {
+	it('deals three spies who share the spy word when asked', () => {
+		for (const n of [7, 9, 12]) {
+			const assigned = assignRoles(players(n), { civilianWord: 'A', spyWord: 'B' }, Math.random, 3);
+			const spies = assigned.filter((p) => p.role === 'spy');
+			expect(spies).toHaveLength(3);
+			expect(spies.every((p) => p.keyword === 'B')).toBe(true);
+			expect(assigned.filter((p) => p.role === 'civilian' && p.keyword === 'A')).toHaveLength(n - 3);
+		}
+	});
+
+	it('refuses more spies than the table size allows', () => {
 		expect(() =>
 			assignRoles(players(4), { civilianWord: 'A', spyWord: 'B' }, Math.random, 2),
+		).toThrow();
+		expect(() =>
+			assignRoles(players(6), { civilianWord: 'A', spyWord: 'B' }, Math.random, 3),
 		).toThrow();
 	});
 });
