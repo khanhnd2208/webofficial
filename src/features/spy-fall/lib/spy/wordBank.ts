@@ -707,7 +707,7 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-364', 'giải trí', 'Friends', 'How I Met Your Mother', ['pop-culture']),
 	pair('vi-365', 'giải trí', 'Hậu duệ mặt trời', 'Hạ cánh nơi anh', ['anime-kpop', 'romance']),
 	pair('vi-366', 'giải trí', 'Nhạc Trịnh', 'Nhạc Bolero', ['vietnam']),
-	pair('vi-367', 'giải trí', 'Thần đồng Đất Việt', 'Trạng Quỷnh', ['vietnam', 'childhood']),
+	pair('vi-367', 'giải trí', 'Thần đồng Đất Việt', 'Trạng Quỳnh', ['vietnam', 'childhood']),
 	pair('vi-711', 'giải trí', 'Twilight', 'Vampire Diaries', ['romance', 'spooky']),
 	pair('vi-712', 'giải trí', 'Nhà Bà Nữ', 'Bố Già', ['vietnam', 'pop-culture']),
 	pair('vi-713', 'giải trí', 'Mắt Biếc', 'Tôi thấy hoa vàng trên cỏ xanh', ['vietnam', 'romance']),
