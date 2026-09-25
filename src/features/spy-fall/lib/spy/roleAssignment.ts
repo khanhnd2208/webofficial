@@ -1,5 +1,9 @@
 import type { PlayerRole } from '@/features/spy-fall/types/spyGame';
-import { getRoleDistribution } from '@/features/spy-fall/config/spyGame';
+import {
+	SPY_DEFAULT_COUNT,
+	getRoleDistribution,
+	type SpyCount,
+} from '@/features/spy-fall/config/spyGame';
 
 export interface AssignablePlayer {
 	token: string;
@@ -35,8 +39,9 @@ export function assignRoles(
 	players: AssignablePlayer[],
 	wordPair: WordPair,
 	random: () => number = Math.random,
+	spyCount: SpyCount = SPY_DEFAULT_COUNT,
 ): AssignedPlayer[] {
-	const dist = getRoleDistribution(players.length);
+	const dist = getRoleDistribution(players.length, spyCount);
 	const shuffled = shuffle(players, random);
 
 	const roles: PlayerRole[] = [

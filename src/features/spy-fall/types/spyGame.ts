@@ -1,4 +1,4 @@
-import type { SpyTag, SpyTopic } from '@/features/spy-fall/config/spyGame';
+import type { SpyCount, SpyTag, SpyTopic } from '@/features/spy-fall/config/spyGame';
 
 export type GamePhase =
 	| 'lobby'
@@ -11,6 +11,19 @@ export type GamePhase =
 export type PlayerRole = 'civilian' | 'spy';
 
 export type WinningSide = 'civilian' | 'antagonist';
+
+/** Why the game ended, so the result screen can explain it. */
+export type GameEndReason =
+	/** The votes caught every Spy. */
+	| 'all-spies-caught'
+	/** The vote eliminated a Civilian. */
+	| 'wrong-vote'
+	/** The vote eliminated nobody (a second tie, or no ballots). */
+	| 'no-elimination'
+	/** The last hidden Spy left the room. */
+	| 'spies-gone'
+	/** Players left until Civilians could no longer outvote the Spies. */
+	| 'outnumbered';
 
 export interface WordPairDTO {
 	civilianWord: string;
@@ -62,6 +75,7 @@ export interface PublicRoomListItemDTO {
 
 export interface GameResultDTO {
 	winningSide: WinningSide;
+	endReason?: GameEndReason;
 	civilianWord: string;
 	spyWord: string;
 	eliminationLog: EliminationLogEntry[];
@@ -81,6 +95,12 @@ export interface RoomStateDTO {
 	/** Word tags the host keeps out of the draw. */
 	excludedTags: SpyTag[];
 	playtestMode: boolean;
+	/** How many Spies are dealt. Each one needs its own correct vote. */
+	spyCount: SpyCount;
+	/** When on, each player sees whether they are a Civilian or a Spy. */
+	revealRoles: boolean;
+	/** Spies voted out so far this game. */
+	spiesCaught: number;
 	round: number;
 	playerCount: number;
 	players: PlayerPublicDTO[];
@@ -100,6 +120,8 @@ export interface CreateRoomInput {
 	topic?: SpyTopic | string;
 	excludedTags?: string[];
 	playtestMode?: boolean;
+	spyCount?: number;
+	revealRoles?: boolean;
 	hostName: string;
 }
 
@@ -116,6 +138,8 @@ export interface UpdateSettingsInput {
 	topic?: string;
 	excludedTags?: string[];
 	playtestMode?: boolean;
+	spyCount?: number;
+	revealRoles?: boolean;
 }
 
 export interface VoteInput {

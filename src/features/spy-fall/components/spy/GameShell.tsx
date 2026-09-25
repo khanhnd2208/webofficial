@@ -1,5 +1,6 @@
 'use client';
 
+import type { SpyCount } from '@/features/spy-fall/config/spyGame';
 import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 
 import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
@@ -14,6 +15,7 @@ interface Props {
 	roomName: string;
 	code: string;
 	round?: number;
+	spyCount?: SpyCount;
 	children: React.ReactNode;
 	className?: string;
 	onLeave?: () => void;
@@ -29,6 +31,7 @@ export default function GameShell({
 	roomName,
 	code,
 	round,
+	spyCount = 1,
 	children,
 	className,
 	onLeave,
@@ -79,7 +82,7 @@ export default function GameShell({
 						) : null}
 						<PrefsToggleGroup />
 					</div>
-					{inGame ? <PhaseTracker current={phase} className="mt-2" /> : null}
+					{inGame ? <PhaseTracker current={phase} showReveal={spyCount > 1} className="mt-2" /> : null}
 				</header>
 				<main className="flex flex-1 flex-col">{children}</main>
 			</div>

@@ -9,6 +9,7 @@ import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
 import ActionBar, { ActionBarNote } from '../ActionBar';
 import PlayerList from '../PlayerList';
+import StakesBanner from '../StakesBanner';
 import StepGuide from '../StepGuide';
 
 interface Props {
@@ -42,6 +43,8 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 				<StepGuide
 					stepsKey={out ? 'spy.steps.voteOut' : state.isRevote ? 'spy.steps.revote' : 'spy.steps.vote'}
 				/>
+
+				<StakesBanner state={state} />
 
 				{state.isRevote ? (
 					<div className="rounded-xl border border-warning/40 bg-warning-subtle px-4 py-3 text-center text-sm font-semibold text-warning">

@@ -12,7 +12,12 @@ import {
 	Panel,
 	Select,
 } from '@/features/spy-fall/components/ui';
-import { SPY_MAX_PLAYERS, SPY_MIN_PLAYERS } from '@/features/spy-fall/config/spyGame';
+import {
+	SPY_COUNTS,
+	SPY_MAX_PLAYERS,
+	SPY_MIN_PLAYERS,
+	minPlayersForSpies,
+} from '@/features/spy-fall/config/spyGame';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
@@ -47,7 +52,8 @@ export default function LobbyPhase({
 	const [editingName, setEditingName] = useState(false);
 	const [draftName, setDraftName] = useState(state.self?.name ?? '');
 	const [renameError, setRenameError] = useState<string | null>(null);
-	const missing = Math.max(0, SPY_MIN_PLAYERS - state.playerCount);
+	const minPlayers = minPlayersForSpies(state.spyCount);
+	const missing = Math.max(0, minPlayers - state.playerCount);
 
 	function handleRenameSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -141,11 +147,32 @@ export default function LobbyPhase({
 
 	const invite = <QrInvite code={state.code} roomName={state.name} />;
 
+	const rules = (
+		<Card className="space-y-2 text-sm">
+			<h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+				{t('spy.lobby.rulesTitle')}
+			</h2>
+			<ul className="space-y-1.5">
+				<li className="flex items-start gap-2">
+					<GameIcon name="target" size={15} className="mt-0.5 shrink-0 text-accent" />
+					<span>{t(state.spyCount === 2 ? 'spy.lobby.ruleTwoSpies' : 'spy.lobby.ruleOneSpy')}</span>
+				</li>
+				<li className="flex items-start gap-2">
+					<GameIcon name={state.revealRoles ? 'eye' : 'lock'} size={15} className="mt-0.5 shrink-0 text-accent" />
+					<span>
+						{t(state.revealRoles ? 'spy.lobby.ruleRolesShown' : 'spy.lobby.ruleRolesHidden')}
+					</span>
+				</li>
+			</ul>
+		</Card>
+	);
+
 	return (
 		<>
 			<div className="space-y-6 lg:grid lg:grid-cols-[1fr_minmax(280px,360px)] lg:items-start lg:gap-8 lg:space-y-0">
 				<div className="space-y-6">
 					<StepGuide stepsKey={state.isHost ? 'spy.steps.lobbyHost' : 'spy.steps.lobbyGuest'} />
+					{rules}
 					{state.isHost ? (
 						<>
 							{invite}
@@ -179,21 +206,57 @@ export default function LobbyPhase({
 										onBlur={(e) => onSettings({ name: e.target.value })}
 									/>
 								</Field>
-								<Field label={t('spy.lobby.maxPlayers')}>
+								<Field label={t('spy.lobby.maxPlayers')} htmlFor="settings-max-players">
 									<Select
+										id="settings-max-players"
 										defaultValue={state.maxPlayers}
 										onChange={(e) => onSettings({ maxPlayers: Number(e.target.value) })}
 									>
 										{Array.from({ length: SPY_MAX_PLAYERS - SPY_MIN_PLAYERS + 1 }, (_, i) => {
 											const n = SPY_MIN_PLAYERS + i;
 											return (
-												<option key={n} value={n}>
+												<option key={n} value={n} disabled={n < minPlayers}>
 													{n}
 												</option>
 											);
 										})}
 									</Select>
 								</Field>
+								<Field
+									label={t('spy.lobby.spyCount')}
+									htmlFor="settings-spy-count"
+									hint={
+										state.spyCount === 2
+											? t('spy.lobby.spyCountHintTwo', { min: minPlayersForSpies(2) })
+											: t('spy.lobby.spyCountHintOne')
+									}
+								>
+									<Select
+										id="settings-spy-count"
+										defaultValue={state.spyCount}
+										onChange={(e) => onSettings({ spyCount: Number(e.target.value) })}
+									>
+										{SPY_COUNTS.map((count) => {
+											const fits = state.maxPlayers >= minPlayersForSpies(count);
+											return (
+												<option key={count} value={count} disabled={!fits}>
+													{fits
+														? t('spy.lobby.spyCountOption', { count })
+														: t('spy.lobby.twoSpiesNeedRoom', { min: minPlayersForSpies(count) })}
+												</option>
+											);
+										})}
+									</Select>
+								</Field>
+								<div className="space-y-1">
+									<Checkbox
+										id="settings-reveal-roles"
+										label={t('spy.lobby.revealRoles')}
+										defaultChecked={state.revealRoles}
+										onChange={(e) => onSettings({ revealRoles: e.target.checked })}
+									/>
+									<p className="pl-8 text-xs text-muted">{t('spy.lobby.revealRolesHint')}</p>
+								</div>
 								<WordFilterSettings
 									topic={state.topic}
 									excludedTags={state.excludedTags ?? []}

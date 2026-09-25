@@ -21,31 +21,28 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 	const eliminated = round?.token ? state.players.find((p) => p.token === round.token) : undefined;
 	const nameByToken = new Map(state.players.map((p) => [p.token, p.name]));
 	const counted = (round?.tally ?? []).filter((row) => row.votes > 0).sort((a, b) => b.votes - a.votes);
-	const noVotes = counted.length === 0;
 
 	return (
 		<>
 			<div className="space-y-5">
+				{/* Reached only in two-Spy games, right after the first Spy is voted out. */}
 				<Card elevated className="space-y-3 py-8 text-center">
-					{eliminated && round?.role ? (
+					<p className="text-xs font-semibold uppercase tracking-wider text-muted">
+						{t('spy.reveal.roundOut', { round: round?.round ?? state.round })}
+					</p>
+					<h2 className="font-display text-3xl font-bold text-success">{t('spy.reveal.caught')}</h2>
+					{eliminated ? (
+						<p className="font-display text-xl font-semibold text-ink">
+							{t('spy.reveal.eliminated', { name: eliminated.name })}
+						</p>
+					) : null}
+					{round?.role ? (
 						<>
-							<p className="text-xs font-semibold uppercase tracking-wider text-muted">
-								{t('spy.reveal.roundOut', { round: round.round })}
-							</p>
-							<h2 className="font-display text-3xl font-bold text-ink">
-								{t('spy.reveal.eliminated', { name: eliminated.name })}
-							</h2>
 							<p className="text-sm text-muted-foreground">{t('spy.reveal.wasRole')}</p>
 							<Stamp label={getRoleLabel(t, round.role)} variant="suspect" animate />
 						</>
-					) : (
-						<>
-							<h2 className="font-display text-3xl font-bold text-ink">{t('spy.reveal.nobodyOut')}</h2>
-							<p className="text-sm text-muted-foreground">
-								{noVotes ? t('spy.reveal.noVotes') : t('spy.reveal.tieAgain')}
-							</p>
-						</>
-					)}
+					) : null}
+					<p className="px-4 pt-2 text-sm font-medium text-ink">{t('spy.reveal.oneMore')}</p>
 				</Card>
 
 				{counted.length > 0 ? (
@@ -70,8 +67,9 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 				) : null}
 
 				<StepGuide
-					stepsKey={eliminated ? 'spy.steps.reveal' : 'spy.steps.revealTie'}
-					tipKey={state.isHost ? 'spy.steps.revealHost' : undefined} />
+					stepsKey="spy.steps.reveal"
+					tipKey={state.isHost ? 'spy.steps.revealHost' : undefined}
+				/>
 			</div>
 
 			<ActionBar>
