@@ -140,6 +140,7 @@
 	},
 	"overrides": {
 		"linkify-it": "^6.1.0",
+		"lodash-es": "^4.18.1",
 		"markdown-it": "^15.0.0",
 		"deepmerge-ts": "^8.0.2",
 		"mysql2": "^3.22.0"
