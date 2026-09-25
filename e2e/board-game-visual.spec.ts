@@ -6,6 +6,23 @@ const gamePaths = [
 	'/my-space/board-game/spy-fall/guide',
 ] as const;
 
+test('board game gallery loads both covers and links to each game', async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto('/my-space/board-game');
+	for (const slug of ['spy-fall', 'ma-soi']) {
+		const card = page.locator(`a[href="/my-space/board-game/${slug}"]`);
+		await card.scrollIntoViewIfNeeded();
+		const cover = card.locator('img');
+		await expect
+			.poll(() =>
+				cover.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+			)
+			.toBe(true);
+		await expect(card).toBeVisible();
+	}
+	await expect(page.getByRole('heading', { name: 'Chơi cùng nhau' })).toBeVisible();
+});
+
 test('game artwork loads and game pages fit small screens', async ({ page }) => {
 	for (const width of [320, 390, 768, 1440]) {
 		await page.setViewportSize({ width, height: 900 });
@@ -14,8 +31,10 @@ test('game artwork loads and game pages fit small screens', async ({ page }) => 
 			const artwork = page.locator('.game-theme-hero img');
 			await expect(artwork).toBeVisible();
 			await expect
-				.poll(() =>
-					artwork.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+				.poll(
+					() =>
+						artwork.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+					{ timeout: 15_000, message: `${path} artwork did not load at ${width}px` },
 				)
 				.toBe(true);
 			expect(

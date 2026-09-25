@@ -33,7 +33,8 @@ export default function SpyGuidePage() {
 
 				<section className="game-theme-hero rounded-[1.25rem]">
 					<Image
-						src="/brand/myspace/spy-fall-editorial.png"
+						src="/brand/myspace/spy-fall-editorial.webp"
+						unoptimized
 						alt={t('spy.menu.guideAlt')}
 						fill
 						className="game-theme-hero-image"

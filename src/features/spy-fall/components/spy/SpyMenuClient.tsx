@@ -153,7 +153,8 @@ export default function SpyMenuClient() {
 
 				<header className="game-theme-hero rounded-[1.25rem]">
 					<Image
-						src="/brand/myspace/spy-fall-menu-poster.png"
+						src="/brand/myspace/spy-fall-menu-poster.webp"
+						unoptimized
 						alt={t('spy.menu.posterAlt')}
 						fill
 						priority

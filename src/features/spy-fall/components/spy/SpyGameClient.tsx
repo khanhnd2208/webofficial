@@ -190,7 +190,8 @@ export default function SpyGameClient({ code, initialName }: Props) {
 				<div className="relative mx-auto max-w-xl px-4 py-8 pb-[max(4rem,env(safe-area-inset-bottom))]">
 					<header className="game-theme-hero rounded-[1.25rem]">
 						<Image
-							src="/brand/myspace/spy-fall-menu-poster.png"
+							src="/brand/myspace/spy-fall-menu-poster.webp"
+							unoptimized
 							alt={t('spy.menu.posterAlt')}
 							fill
 							className="game-theme-hero-image"

@@ -22,12 +22,15 @@ export default function BoardGamePage() {
 				</Link>
 				<header className="mt-14 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
 					<div>
-						<p className="font-mono text-xs tracking-[0.22em] text-ink/45 uppercase">My Space · Board Game</p>
+						<p className="font-mono text-xs tracking-[0.22em] text-ink/45 uppercase">
+							My Space · Board Game
+						</p>
 						<h1 className="mt-4 max-w-2xl font-display text-5xl font-medium tracking-tight text-ink sm:text-6xl">
 							Chơi cùng nhau
 						</h1>
 						<p className="mt-5 max-w-xl text-base leading-relaxed text-ink-secondary sm:text-lg">
-							Một góc nhỏ để mở game, tạo phòng và mời mọi người cùng tham gia — không cần tài khoản.
+							Một góc nhỏ để mở game, tạo phòng và mời mọi người cùng tham gia — không cần tài
+							khoản.
 						</p>
 					</div>
 					<p className="max-w-[16rem] border-l border-vermilion/60 pl-4 font-mono text-[0.68rem] leading-relaxed tracking-[0.14em] text-ink-secondary uppercase">
@@ -41,7 +44,8 @@ export default function BoardGamePage() {
 						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-3xl border border-hairline bg-paper transition duration-500 hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
 					>
 						<Image
-							src="/brand/myspace/spy-fall-editorial.png"
+							src="/brand/myspace/spy-fall-editorial.webp"
+							unoptimized
 							alt="Minh hoạ screen-print của một nhà ga đêm với vali và ghim đỏ cho Spy Fall"
 							fill
 							priority
@@ -51,16 +55,25 @@ export default function BoardGamePage() {
 						<div className="absolute inset-0 -z-0 bg-gradient-to-r from-[#11100e] via-[#11100e]/85 via-45% to-[#11100e]/15" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-vermilion uppercase">01 · Suy luận xã hội</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">4–12 người</span>
+								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-vermilion uppercase">
+									01 · Suy luận xã hội
+								</p>
+								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">
+									4–12 người
+								</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">Spy Fall</h2>
+								<h2 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
+									Spy Fall
+								</h2>
 								<p className="mt-3 max-w-sm text-sm leading-relaxed text-ink/75 sm:text-base">
 									Tìm ra điệp viên giữa nhóm bạn. Mỗi người dùng điện thoại của mình.
 								</p>
 								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-vermilion uppercase">
-									Vào game <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+									Vào game{' '}
+									<span className="transition-transform duration-300 group-hover:translate-x-1">
+										→
+									</span>
 								</span>
 							</div>
 						</div>
@@ -71,7 +84,8 @@ export default function BoardGamePage() {
 						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-3xl border border-hairline bg-paper transition duration-500 hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
 					>
 						<Image
-							src="/brand/myspace/ma-soi-editorial.png"
+							src="/brand/myspace/ma-soi-editorial.webp"
+							unoptimized
 							alt="Minh hoạ screen-print của một bàn chơi làng quê dưới trăng cho Ma Sói"
 							fill
 							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
@@ -80,16 +94,25 @@ export default function BoardGamePage() {
 						<div className="absolute inset-0 -z-0 bg-gradient-to-r from-[#11100e] via-[#11100e]/85 via-45% to-[#11100e]/15" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-vermilion uppercase">02 · Bàn làng dưới trăng</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">5–20 người</span>
+								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-vermilion uppercase">
+									02 · Bàn làng dưới trăng
+								</p>
+								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">
+									5–20 người
+								</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">Ma Sói</h2>
+								<h2 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
+									Ma Sói
+								</h2>
 								<p className="mt-3 max-w-sm text-sm leading-relaxed text-ink/75 sm:text-base">
 									Chia thẻ vai cho cả nhóm. Mỗi người xem thẻ bí mật trên điện thoại của mình.
 								</p>
 								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-vermilion uppercase">
-									Vào game <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+									Vào game{' '}
+									<span className="transition-transform duration-300 group-hover:translate-x-1">
+										→
+									</span>
 								</span>
 							</div>
 						</div>

@@ -105,7 +105,8 @@ export default function WerewolfMenuClient() {
 				</div>
 				<header className="game-theme-hero rounded-[1.25rem]">
 					<Image
-						src="/brand/myspace/ma-soi-menu-poster.png"
+						src="/brand/myspace/ma-soi-menu-poster.webp"
+						unoptimized
 						alt={t('mafia.menu.posterAlt')}
 						fill
 						priority
