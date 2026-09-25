@@ -15,8 +15,14 @@ import { withBasePath } from '@/features/spy-fall/lib/basePath';
 import { cn } from '@/features/spy-fall/lib/cn';
 import { canonicalRoleCounts, reconcileRoleDraft } from '@/features/werewolf/lib/roleDraft';
 import type { Faction, RoleCount } from '@/features/werewolf/types';
+import GameIcon, { type GameIconName } from '@/features/spy-fall/components/ui/GameIcon';
 
 const FACTION_ORDER: Faction[] = ['villager', 'werewolf', 'solo'];
+const FACTION_ICONS: Record<Faction, GameIconName> = {
+	villager: 'users',
+	werewolf: 'wolf',
+	solo: 'target',
+};
 
 interface Props {
 	playerCount: number;
@@ -81,7 +87,8 @@ export default function RoleSetupPanel({
 
 			{FACTION_ORDER.map((faction) => (
 				<div key={faction} className="space-y-2">
-					<h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+					<h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+						<GameIcon name={FACTION_ICONS[faction]} size={15} />
 						{t(`mafia.faction.${faction}`)}
 					</h3>
 					<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -107,9 +114,11 @@ export default function RoleSetupPanel({
 												type="button"
 												className="h-9 w-9 rounded-lg border border-border text-lg"
 												aria-label={t('mafia.roles.decAria')}
-												onClick={() => onChange(withCount(roleCounts, role.roleId, Math.max(0, count - 1)))}
+												onClick={() =>
+													onChange(withCount(roleCounts, role.roleId, Math.max(0, count - 1)))
+												}
 											>
-												−
+												<GameIcon name="minus" size={15} />
 											</button>
 											<span className="w-6 text-center font-mono text-sm">{count}</span>
 											<button
@@ -118,7 +127,7 @@ export default function RoleSetupPanel({
 												aria-label={t('mafia.roles.incAria')}
 												onClick={() => onChange(withCount(roleCounts, role.roleId, count + 1))}
 											>
-												+
+												<GameIcon name="plus" size={15} />
 											</button>
 										</div>
 									</li>
@@ -128,9 +137,13 @@ export default function RoleSetupPanel({
 				</div>
 			))}
 
-			<p className={cn('text-sm', diff === 0 ? 'text-success' : 'text-warning-foreground')}>{footer}</p>
+			<p className={cn('text-sm', diff === 0 ? 'text-success' : 'text-warning-foreground')}>
+				{footer}
+			</p>
 			{playerCount < MIN_PLAYERS ? (
-				<p className="text-sm text-muted-foreground">{t('mafia.roles.needPlayers', { min: MIN_PLAYERS })}</p>
+				<p className="text-sm text-muted-foreground">
+					{t('mafia.roles.needPlayers', { min: MIN_PLAYERS })}
+				</p>
 			) : null}
 			{warningKey ? <p className="text-sm text-warning-foreground">{t(warningKey)}</p> : null}
 

@@ -2,6 +2,7 @@
 
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 import { cn } from '@/features/spy-fall/lib/cn';
 import { playTap } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
@@ -44,7 +45,7 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 
 				{state.isRevote ? (
 					<div className="rounded-xl border border-warning/40 bg-warning-subtle px-4 py-3 text-center text-sm font-semibold text-warning">
-						⚖ {t('spy.vote.revote', { names: tiedNames })}
+						<GameIcon name="target" size={15} className="mr-1 inline" /> {t('spy.vote.revote', { names: tiedNames })}
 					</div>
 				) : null}
 

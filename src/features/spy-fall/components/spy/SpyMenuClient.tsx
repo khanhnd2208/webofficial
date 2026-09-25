@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -15,10 +16,15 @@ import {
 	Input,
 	Skeleton,
 } from '@/features/spy-fall/components/ui';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 import { SPY_MAX_PLAYERS } from '@/features/spy-fall/config/spyGame';
 import { withBasePath } from '@/features/spy-fall/lib/basePath';
 import { postSpyAction } from '@/features/spy-fall/lib/spy/api';
-import { getRecentPlayerName, storePlayerToken, storeRecentPlayerName } from '@/features/spy-fall/lib/spy/clientToken';
+import {
+	getRecentPlayerName,
+	storePlayerToken,
+	storeRecentPlayerName,
+} from '@/features/spy-fall/lib/spy/clientToken';
 import { hapticLight } from '@/features/spy-fall/lib/haptics';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 import { playConfirm, playTap } from '@/features/spy-fall/lib/sounds';
@@ -106,9 +112,7 @@ export default function SpyMenuClient() {
 			storePlayerToken(data.state.code, data.playerToken);
 			storeRecentPlayerName(normalized);
 			playConfirm();
-			router.push(
-				`${routes.spyFallRoom(data.state.code)}?name=${encodeURIComponent(normalized)}`,
-			);
+			router.push(`${routes.spyFallRoom(data.state.code)}?name=${encodeURIComponent(normalized)}`);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : t('spy.join.joinFail'));
 		} finally {
@@ -134,25 +138,60 @@ export default function SpyMenuClient() {
 	}
 
 	return (
-		<div className="relative min-h-screen bg-background">
-			<div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_top,rgb(196,75,40,0.08),transparent_70%)]" />
-			<div className="relative mx-auto max-w-md px-4 py-8 pb-[max(4rem,env(safe-area-inset-bottom))] lg:max-w-lg">
-				<div className="mb-6 flex justify-end">
+		<div className="game-theme game-theme-spy">
+			<div className="relative mx-auto max-w-3xl px-4 py-5 pb-[max(4rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8">
+				<div className="mb-5 flex items-center justify-between gap-4">
+					<Link
+						href={routes.boardGame}
+						className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted transition hover:text-foreground"
+					>
+						<GameIcon name="arrow-left" size={15} />
+						Board Game
+					</Link>
 					<PrefsToggleGroup />
 				</div>
 
-				<header className="text-center">
-					<p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">Covert Expedition</p>
-					<p className="mt-3 text-5xl" aria-hidden>
-						🕵️
-					</p>
-					<h1 className="font-display mt-2 text-3xl font-bold tracking-tight text-ink">
-						{t('spy.menu.title')}
-					</h1>
-					<p className="mt-2 text-sm text-muted-foreground">{t('spy.menu.subtitle')}</p>
+				<header className="game-theme-hero rounded-[1.25rem]">
+					<Image
+						src="/brand/myspace/spy-fall-menu-poster.png"
+						alt={t('spy.menu.posterAlt')}
+						fill
+						priority
+						className="game-theme-hero-image"
+						sizes="(max-width: 768px) 100vw, 768px"
+					/>
+					<div className="relative z-10 flex min-h-[18rem] flex-col justify-between p-6 sm:min-h-[20rem] sm:p-9">
+						<div className="flex items-start justify-between gap-6">
+							<div className="game-theme-mark">
+								<GameIcon name="spy" size={30} />
+							</div>
+							<p className="game-theme-kicker max-w-[9rem] text-right">Covert Expedition</p>
+						</div>
+						<div className="max-w-md">
+							<h1 className="font-display text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+								{t('spy.menu.title')}
+							</h1>
+							<p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground-secondary sm:text-base">
+								{t('spy.menu.subtitle')}
+							</p>
+							<div className="mt-5 flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+								<span className="rounded-full border border-border/80 bg-background/40 px-3 py-1.5">
+									<GameIcon name="users" size={13} className="mr-1.5 inline" />
+									{t('spy.menu.playerCount')}
+								</span>
+								<span className="rounded-full border border-border/80 bg-background/40 px-3 py-1.5">
+									<GameIcon name="target" size={13} className="mr-1.5 inline" />
+									{t('spy.menu.spyCount')}
+								</span>
+							</div>
+						</div>
+					</div>
 				</header>
 
-				<Card elevated className="mt-8 space-y-4">
+				<Card
+					elevated
+					className="game-theme-panel relative z-20 mx-auto -mt-6 max-w-xl space-y-4 rounded-[1.15rem] p-5 sm:p-7"
+				>
 					{view === 'menu' && (
 						<form onSubmit={handleMenuSubmit} className="space-y-4">
 							<Field label={t('spy.menu.yourName')} htmlFor="spy-name" error={nameError}>
@@ -170,6 +209,7 @@ export default function SpyMenuClient() {
 							</Field>
 
 							<Button type="submit" fullWidth>
+								<GameIcon name="compass" size={18} />
 								{t('spy.menu.createRoom')}
 							</Button>
 							<Button
@@ -186,6 +226,7 @@ export default function SpyMenuClient() {
 									setView('join');
 								}}
 							>
+								<GameIcon name="lock" size={18} />
 								{t('spy.menu.joinCode')}
 							</Button>
 							<Button
@@ -204,6 +245,7 @@ export default function SpyMenuClient() {
 									void loadPublicRooms();
 								}}
 							>
+								<GameIcon name="users" size={18} />
 								{t('spy.menu.publicRooms')}
 							</Button>
 						</form>
@@ -212,7 +254,8 @@ export default function SpyMenuClient() {
 					{view === 'create' && (
 						<form onSubmit={handleCreate} className="space-y-4">
 							<Button type="button" variant="ghost" size="sm" onClick={() => setView('menu')}>
-								← {t('common.back')}
+								<GameIcon name="arrow-left" size={15} />
+								{t('common.back')}
 							</Button>
 							<Field label={t('spy.menu.roomName')} htmlFor="room-name">
 								<Input
@@ -231,7 +274,8 @@ export default function SpyMenuClient() {
 					{view === 'join' && (
 						<form onSubmit={handleJoinSubmit} className="space-y-4">
 							<Button type="button" variant="ghost" size="sm" onClick={() => setView('menu')}>
-								← {t('common.back')}
+								<GameIcon name="arrow-left" size={15} />
+								{t('common.back')}
 							</Button>
 							<Field
 								label={t('spy.menu.missionCode')}
@@ -257,7 +301,8 @@ export default function SpyMenuClient() {
 					{view === 'public' && (
 						<div className="space-y-4">
 							<Button type="button" variant="ghost" size="sm" onClick={() => setView('menu')}>
-								← {t('common.back')}
+								<GameIcon name="arrow-left" size={15} />
+								{t('common.back')}
 							</Button>
 							{loadingPublic ? (
 								<div className="space-y-2">
@@ -268,7 +313,7 @@ export default function SpyMenuClient() {
 								<ErrorState message={error} onRetry={() => void loadPublicRooms()} />
 							) : publicRooms.length === 0 ? (
 								<EmptyState
-									icon="🛫"
+									icon={<GameIcon name="map" size={28} />}
 									title={t('spy.menu.noPublic')}
 									description={t('spy.menu.noPublicHint')}
 									actionLabel={t('spy.menu.create')}
@@ -290,7 +335,7 @@ export default function SpyMenuClient() {
 													hapticLight();
 													storeRecentPlayerName(normalized);
 													router.push(
-									`${routes.spyFallRoom(r.code)}?name=${encodeURIComponent(normalized)}`,
+														`${routes.spyFallRoom(r.code)}?name=${encodeURIComponent(normalized)}`,
 													);
 												}}
 												className="w-full rounded-xl border border-border bg-surface p-4 text-left transition hover:bg-surface-hover"
@@ -298,9 +343,7 @@ export default function SpyMenuClient() {
 												<div className="font-semibold text-foreground">{r.name}</div>
 												<div className="mt-1 text-xs text-muted">
 													{r.playerCount}/{r.maxPlayers} ·{' '}
-													{r.topic === 'any'
-														? t('spy.lobby.topicAny')
-														: t(`spy.topics.${r.topic}`)}
+													{r.topic === 'any' ? t('spy.lobby.topicAny') : t(`spy.topics.${r.topic}`)}
 												</div>
 											</button>
 										</li>
@@ -311,13 +354,15 @@ export default function SpyMenuClient() {
 					)}
 				</Card>
 
-				<nav className="mt-6 flex flex-col items-center gap-2 text-sm">
-					<Link href={routes.boardGame} className="text-muted hover:text-foreground">
-						← Board Game
-					</Link>
-					<Link href={routes.spyFallGuide} className="text-accent hover:underline">
+				<nav className="mx-auto mt-7 flex max-w-xl items-center justify-between gap-3 border-t border-border/70 pt-4 text-xs uppercase tracking-[0.14em]">
+					<Link
+						href={routes.spyFallGuide}
+						className="inline-flex items-center gap-2 text-accent hover:underline"
+					>
+						<GameIcon name="book" size={15} />
 						{t('spy.menu.guide')}
 					</Link>
+					<span className="font-mono text-[10px] text-muted">{t('spy.menu.guestNote')}</span>
 				</nav>
 			</div>
 		</div>

@@ -2,6 +2,7 @@
 
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
@@ -36,7 +37,7 @@ export default function DiscussionPhase({ state, onNext, busy }: Props) {
 
 				<div className="rounded-2xl border border-warning/40 bg-warning-subtle px-4 py-4 text-center">
 					<p className="text-xs font-semibold uppercase tracking-wider text-warning">
-						🎤 {t('spy.discussion.firstLabel')}
+						<GameIcon name="sound" size={15} className="mr-1 inline" /> {t('spy.discussion.firstLabel')}
 					</p>
 					<p className="mt-1 font-display text-2xl font-bold text-ink">{speaker}</p>
 					<p className="mt-1 text-xs text-muted-foreground">{t('spy.discussion.clockwise')}</p>

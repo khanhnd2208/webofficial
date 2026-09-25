@@ -19,7 +19,10 @@ export const mafiaVi: MessageTree = {
 		codePlaceholder: 'ABCDEF',
 		codeTooShort: 'Mã phòng cần đủ 6 ký tự',
 		back: 'Quay lại',
-		backToHub: '← Board Game',
+		backToHub: 'Board Game',
+		playerCount: '5–20 người',
+		nightTag: 'Một đêm bí mật',
+		posterAlt: 'Bàn chơi Ma Sói dưới ánh đèn dầu giữa làng quê ban đêm',
 	},
 	room: {
 		closed: 'Phòng đã đóng',
@@ -83,7 +86,7 @@ export const mafiaVi: MessageTree = {
 		tagline: 'Một điện thoại · Chuyền tay xem vai',
 		newGame: 'Tạo ván mới',
 		continue: 'Tiếp tục phát vai',
-		backToSite: "← Spy Fall · Amazing Boardgames",
+		backToSite: '← Spy Fall · Amazing Boardgames',
 		guideLink: 'Hướng dẫn chơi',
 	},
 	guide: {
@@ -107,7 +110,8 @@ export const mafiaVi: MessageTree = {
 		moveUpAria: 'Di chuyển lên',
 		moveDownAria: 'Di chuyển xuống',
 		removeAria: 'Xóa',
-		duplicate: 'Có nhiều người cùng tên “{name}”. Hãy thêm ký hiệu để tránh chuyền nhầm điện thoại.',
+		duplicate:
+			'Có nhiều người cùng tên “{name}”. Hãy thêm ký hiệu để tránh chuyền nhầm điện thoại.',
 		add: 'Thêm người chơi',
 		pasteToggle: 'Dán danh sách',
 		pasteLabel: 'Dán tên, mỗi dòng một người',
@@ -116,7 +120,8 @@ export const mafiaVi: MessageTree = {
 	},
 	seat: {
 		title: 'Sắp xếp theo vị trí ngồi',
-		subtitle: 'Hãy bắt đầu từ người ngồi gần quản trò nhất, sau đó xếp theo chiều chuyền điện thoại.',
+		subtitle:
+			'Hãy bắt đầu từ người ngồi gần quản trò nhất, sau đó xếp theo chiều chuyền điện thoại.',
 		dragAria: 'Kéo để sắp xếp',
 		upAria: 'Lên',
 		downAria: 'Xuống',
@@ -339,7 +344,10 @@ export const mafiaEn: MessageTree = {
 		codePlaceholder: 'ABCDEF',
 		codeTooShort: 'The room code needs 6 characters',
 		back: 'Back',
-		backToHub: '← Board Game',
+		backToHub: 'Board Game',
+		playerCount: '5–20 players',
+		nightTag: 'A secret night',
+		posterAlt: 'A Werewolf game table under a lantern in a village at night',
 	},
 	room: {
 		closed: 'Room closed',
@@ -403,7 +411,7 @@ export const mafiaEn: MessageTree = {
 		tagline: 'One phone · Pass-and-play roles',
 		newGame: 'New game',
 		continue: 'Continue dealing',
-		backToSite: "← Spy Fall · Amazing Boardgames",
+		backToSite: '← Spy Fall · Amazing Boardgames',
 		guideLink: 'How to play',
 	},
 	guide: {
@@ -427,7 +435,8 @@ export const mafiaEn: MessageTree = {
 		moveUpAria: 'Move up',
 		moveDownAria: 'Move down',
 		removeAria: 'Remove',
-		duplicate: 'Multiple players named “{name}”. Add a mark so the phone isn’t passed to the wrong person.',
+		duplicate:
+			'Multiple players named “{name}”. Add a mark so the phone isn’t passed to the wrong person.',
 		add: 'Add player',
 		pasteToggle: 'Paste list',
 		pasteLabel: 'Paste names, one per line',

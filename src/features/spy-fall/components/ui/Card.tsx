@@ -10,7 +10,7 @@ export default function Card({ children, className, elevated }: CardProps) {
 	return (
 		<div
 			className={cn(
-				'rounded-2xl border border-border p-5 shadow-sm',
+				'game-theme-panel rounded-2xl border border-border p-5 shadow-sm',
 				elevated ? 'bg-surface-elevated' : 'bg-surface',
 				className,
 			)}

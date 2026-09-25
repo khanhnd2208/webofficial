@@ -4,8 +4,17 @@ import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { cn } from '@/features/spy-fall/lib/cn';
+import GameIcon, { type GameIconName } from '@/features/spy-fall/components/ui/GameIcon';
 
 const STEPS: GamePhase[] = ['role-reveal', 'discussion', 'vote', 'reveal'];
+const STEP_ICONS: Record<GamePhase, GameIconName> = {
+	'lobby': 'users',
+	'role-reveal': 'passport',
+	'discussion': 'users',
+	'vote': 'target',
+	'reveal': 'eye',
+	'result': 'check',
+};
 
 interface Props {
 	current: GamePhase;
@@ -38,9 +47,9 @@ export default function PhaseTracker({ current, className }: Props) {
 								)}
 							>
 								{isActive ? (
-									<span className="truncate">{t(`spy.phases.${current}`)}</span>
+									<span className="flex min-w-0 items-center gap-1.5 truncate"><GameIcon name={STEP_ICONS[phase]} size={14} /><span className="truncate">{t(`spy.phases.${current}`)}</span></span>
 								) : (
-									<span className="font-mono">{isPast ? '✓' : idx + 1}</span>
+									<span className="flex items-center justify-center"><GameIcon name={isPast ? 'check' : STEP_ICONS[phase]} size={13} /></span>
 								)}
 							</span>
 						</li>

@@ -2,6 +2,7 @@
 
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { cn } from '@/features/spy-fall/lib/cn';
+import GameIcon from './GameIcon';
 
 interface DossierProps {
 	revealed: boolean;
@@ -40,7 +41,7 @@ export default function Dossier({
 						<span className="font-mono text-xs uppercase tracking-[0.3em] text-classified">
 							{t('spy.dossier.hidden')}
 						</span>
-						<span aria-hidden className="text-4xl">👆</span>
+						<span aria-hidden className="game-theme-mark h-12 w-12 rounded-full shadow-none"><GameIcon name="eye" size={23} /></span>
 						<p className="font-display text-xl font-bold text-muted">{t('spy.dossier.hold')}</p>
 						<p className="text-xs text-muted-foreground px-6 text-center">
 							{t('spy.dossier.holdHint')}

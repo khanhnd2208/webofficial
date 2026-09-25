@@ -1,7 +1,8 @@
 import Button from './Button';
+import GameIcon from './GameIcon';
 
 interface EmptyStateProps {
-	icon?: string;
+	icon?: React.ReactNode;
 	title: string;
 	description: string;
 	actionLabel?: string;
@@ -9,7 +10,7 @@ interface EmptyStateProps {
 }
 
 export default function EmptyState({
-	icon = '📭',
+	icon = <GameIcon name="map" size={28} />,
 	title,
 	description,
 	actionLabel,
@@ -17,7 +18,7 @@ export default function EmptyState({
 }: EmptyStateProps) {
 	return (
 		<div className="rounded-2xl border border-dashed border-border bg-surface/50 px-6 py-12 text-center">
-			<div className="text-4xl" aria-hidden>
+			<div className="game-theme-mark mx-auto h-12 w-12 rounded-full shadow-none" aria-hidden>
 				{icon}
 			</div>
 			<h3 className="mt-4 font-display text-lg font-semibold text-foreground">{title}</h3>

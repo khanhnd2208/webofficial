@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react';
 
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { cn } from '@/features/spy-fall/lib/cn';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 
 /** Opens the "my word" sheet; null when there is no word to show in this phase. */
 export const WordPeekContext = createContext<(() => void) | null>(null);
@@ -43,7 +44,7 @@ export default function ActionBar({ children, className }: Props) {
 							aria-label={t('spy.actions.myWord')}
 							title={t('spy.actions.myWord')}
 						>
-							<span aria-hidden>🪪</span>
+							<GameIcon name="passport" size={21} />
 						</button>
 					) : null}
 					<div className="min-w-0 flex-1">{children}</div>

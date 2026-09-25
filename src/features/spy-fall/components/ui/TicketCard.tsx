@@ -16,7 +16,7 @@ export default function TicketCard({ title, code, subtitle, children, className 
 	return (
 		<div
 			className={cn(
-				'ticket-notch relative overflow-hidden rounded-2xl border-2 border-dashed border-border-strong bg-surface-elevated shadow-md',
+				'game-theme-panel ticket-notch relative overflow-hidden rounded-2xl border-2 border-dashed border-border-strong bg-surface-elevated shadow-md',
 				className,
 			)}
 		>

@@ -11,12 +11,15 @@ import ConnectionDot from '@/features/spy-fall/components/spy/ConnectionDot';
 import PassportAvatar from '@/features/spy-fall/components/spy/PassportAvatar';
 import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
 import { Button, Field, Spinner } from '@/features/spy-fall/components/ui';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 import { hapticLight } from '@/features/spy-fall/lib/haptics';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 import HostBoard from '@/features/werewolf/components/HostBoard';
 import InviteCard from '@/features/werewolf/components/InviteCard';
 import RoleCard from '@/features/werewolf/components/RoleCard';
-import RoleSetupPanel, { useDebouncedRoleCounts } from '@/features/werewolf/components/RoleSetupPanel';
+import RoleSetupPanel, {
+	useDebouncedRoleCounts,
+} from '@/features/werewolf/components/RoleSetupPanel';
 import { useWerewolfRoom } from '@/features/werewolf/components/hooks/useWerewolfRoom';
 import {
 	clearPlayerToken,
@@ -155,7 +158,10 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 
 	if (!hydrated || (loading && !state && errorCode !== 'ROOM_NOT_FOUND')) {
 		return (
-			<div className="flex min-h-screen flex-col items-center justify-center gap-3 text-muted">
+			<div className="game-theme game-theme-werewolf flex min-h-screen flex-col items-center justify-center gap-3 text-muted">
+				<div className="game-theme-mark mb-2">
+					<GameIcon name="wolf" size={25} />
+				</div>
 				<Spinner size="lg" />
 				<p>{t('mafia.room.entering')}</p>
 			</div>
@@ -164,7 +170,7 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 
 	if (errorCode === 'ROOM_NOT_FOUND') {
 		return (
-			<div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+			<div className="game-theme game-theme-werewolf mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
 				<h1 className="font-display text-2xl font-semibold text-ink">{t('mafia.room.closed')}</h1>
 				<p className="text-sm text-muted-foreground">{t('mafia.room.closedBody')}</p>
 				<Button type="button" onClick={() => router.push(routes.maSoi)}>
@@ -180,7 +186,7 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 
 	if (removed) {
 		return (
-			<div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+			<div className="game-theme game-theme-werewolf mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
 				<h1 className="font-display text-2xl font-semibold text-ink">{t('mafia.room.kicked')}</h1>
 				<p className="text-sm text-muted-foreground">{t('mafia.room.kickedBody')}</p>
 				<Button type="button" onClick={() => router.push(routes.maSoi)}>
@@ -193,8 +199,10 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 	const inRoom = Boolean(state && (state.isHost || (state.self && !state.self.left)));
 	if (!inRoom) {
 		return (
-			<div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-				<h1 className="font-display text-2xl font-semibold text-ink">{t('mafia.room.joinTitle')}</h1>
+			<div className="game-theme game-theme-werewolf mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
+				<h1 className="font-display text-2xl font-semibold text-ink">
+					{t('mafia.room.joinTitle')}
+				</h1>
 				<p className="mt-1 font-mono text-sm tracking-widest text-muted">{code}</p>
 				<form
 					className="mt-6 space-y-4"
@@ -236,12 +244,22 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 	if (!state) return null;
 
 	return (
-		<div className="relative min-h-dvh bg-background">
+		<div className="game-theme game-theme-werewolf">
 			<div className="mx-auto flex min-h-dvh max-w-md flex-col px-4 pb-10 lg:max-w-3xl">
 				<header className="sticky top-0 z-20 -mx-4 mb-4 flex items-center gap-2 border-b border-border bg-background/90 px-4 py-3 backdrop-blur">
-					<button type="button" className="text-sm text-muted-foreground" onClick={() => void handleLeave()} disabled={busy}>
-						{t('mafia.lobby.leave')}
+					<button
+						type="button"
+						className="game-theme-icon-button"
+						onClick={() => void handleLeave()}
+						disabled={busy}
+						aria-label={t('mafia.lobby.leave')}
+						title={t('mafia.lobby.leave')}
+					>
+						<GameIcon name="arrow-left" size={17} />
 					</button>
+					<span className="game-theme-mark h-9 w-9 rounded-lg shadow-none">
+						<GameIcon name="wolf" size={17} />
+					</span>
 					<div className="min-w-0 flex-1 text-center">
 						<p className="font-display text-sm font-semibold text-ink">{state.hostName}</p>
 						<p className="font-mono text-[11px] tracking-widest text-muted">{state.code}</p>
@@ -322,7 +340,17 @@ function PlayerList({
 	busy = false,
 	onKick,
 }: {
-	state: { players: { token: string; name: string; avatarSeed: string; connected: boolean; left?: boolean }[]; hostName: string; hostConnected: boolean };
+	state: {
+		players: {
+			token: string;
+			name: string;
+			avatarSeed: string;
+			connected: boolean;
+			left?: boolean;
+		}[];
+		hostName: string;
+		hostConnected: boolean;
+	};
 	selfToken: string | null;
 	busy?: boolean;
 	onKick?: (token: string, name: string) => void;
@@ -330,8 +358,12 @@ function PlayerList({
 	const t = useT();
 	return (
 		<section>
-			<h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">{t('mafia.lobby.players')}</h2>
-			{state.players.length === 0 ? <p className="text-sm text-muted-foreground">{t('mafia.lobby.empty')}</p> : null}
+			<h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+				{t('mafia.lobby.players')}
+			</h2>
+			{state.players.length === 0 ? (
+				<p className="text-sm text-muted-foreground">{t('mafia.lobby.empty')}</p>
+			) : null}
 			<ul className="space-y-2">
 				<li className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
 					<ConnectionDot connected={state.hostConnected} />
@@ -339,13 +371,25 @@ function PlayerList({
 					<span className="text-xs text-muted">{t('mafia.header.hostAria')}</span>
 				</li>
 				{state.players.map((player) => (
-					<li key={player.token} className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
+					<li
+						key={player.token}
+						className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2"
+					>
 						<PassportAvatar name={player.name} avatarSeed={player.avatarSeed} size="sm" />
 						<ConnectionDot connected={player.connected} />
 						<span className="truncate text-sm text-ink">{player.name}</span>
-						{player.token === selfToken ? <span className="text-xs text-muted">{t('mafia.lobby.you')}</span> : null}
+						{player.token === selfToken ? (
+							<span className="text-xs text-muted">{t('mafia.lobby.you')}</span>
+						) : null}
 						{onKick && !player.left ? (
-							<Button type="button" variant="ghost" size="sm" className="ml-auto" disabled={busy} onClick={() => onKick(player.token, player.name)}>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="ml-auto"
+								disabled={busy}
+								onClick={() => onKick(player.token, player.name)}
+							>
 								{t('mafia.host.kick')}
 							</Button>
 						) : null}

@@ -23,6 +23,7 @@ import PlayerList from '../PlayerList';
 import QrInvite from '../QrInvite';
 import StepGuide from '../StepGuide';
 import WordFilterSettings from '../WordFilterSettings';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 
 interface Props {
 	state: RoomStateDTO;
@@ -167,7 +168,7 @@ export default function LobbyPhase({
 							aria-expanded={showSettings}
 							onClick={() => setShowSettings(!showSettings)}
 						>
-							⚙ {showSettings ? t('spy.lobby.hideSettings') : t('spy.lobby.settings')}
+											<GameIcon name="settings" size={16} /> {showSettings ? t('spy.lobby.hideSettings') : t('spy.lobby.settings')}
 						</Button>
 						{showSettings ? (
 							<Card className="space-y-4 text-sm">

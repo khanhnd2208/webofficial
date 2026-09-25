@@ -8,6 +8,7 @@ import { withBasePath } from '@/features/spy-fall/lib/basePath';
 import { cn } from '@/features/spy-fall/lib/cn';
 import { hapticLight } from '@/features/spy-fall/lib/haptics';
 import type { Faction } from '@/features/werewolf/types';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 
 const FACTION_CHIP: Record<Faction, string> = {
 	villager: 'bg-emerald-700/90 text-white',
@@ -52,13 +53,13 @@ export default function RoleCard({ roleId, onViewed }: Props) {
 
 	return (
 		<div className="flex flex-col items-center gap-3">
-			<p className="text-center text-sm text-muted-foreground">{t('mafia.card.privacy')}</p>
+			<p className="flex items-center gap-2 text-center text-sm text-muted-foreground"><GameIcon name="lock" size={15} />{t('mafia.card.privacy')}</p>
 			<div
 				role="button"
 				tabIndex={0}
 				aria-label={t('mafia.card.hold')}
 				className={cn(
-					'relative aspect-[2/3] w-[88vw] max-h-[70vh] max-w-[340px] touch-none select-none overflow-hidden rounded-2xl',
+					'relative aspect-[2/3] w-[88vw] max-h-[70vh] max-w-[340px] touch-none select-none overflow-hidden rounded-2xl border-2 border-[color:var(--game-line)] shadow-[0_18px_50px_rgb(0_0_0_/_0.28)]',
 					showFace ? '' : 'cursor-pointer',
 				)}
 				onPointerDown={startHold}
@@ -96,7 +97,7 @@ export default function RoleCard({ roleId, onViewed }: Props) {
 					</div>
 				) : null}
 			</div>
-			<p className="text-center text-xs text-muted-foreground">{t('mafia.card.hold')}</p>
+			<p className="flex items-center gap-2 text-center text-xs text-muted-foreground"><GameIcon name="eye" size={14} />{t('mafia.card.hold')}</p>
 		</div>
 	);
 }

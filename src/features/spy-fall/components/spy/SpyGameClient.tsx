@@ -1,11 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
 import { Button, ErrorState, Field, Spinner, useToast } from '@/features/spy-fall/components/ui';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 import {
 	clearPlayerToken,
 	getRecentPlayerName,
@@ -117,7 +119,8 @@ export default function SpyGameClient({ code, initialName }: Props) {
 	const hasCredentials = Boolean(
 		playerToken || isValidPlayerName(normalizePlayerName(initialName ?? '')),
 	);
-	const awaitingSession = hasCredentials && (loading || !state?.self) && !joinError && !joinTimedOut;
+	const awaitingSession =
+		hasCredentials && (loading || !state?.self) && !joinError && !joinTimedOut;
 
 	useEffect(() => {
 		if (!awaitingSession) return;
@@ -159,7 +162,10 @@ export default function SpyGameClient({ code, initialName }: Props) {
 
 	if (!hydrated) {
 		return (
-			<div className="flex min-h-screen flex-col items-center justify-center gap-3 text-muted">
+			<div className="game-theme game-theme-spy flex min-h-screen flex-col items-center justify-center gap-3 text-muted">
+				<div className="game-theme-mark mb-2">
+					<GameIcon name="spy" size={25} />
+				</div>
 				<Spinner size="lg" />
 				<p>{t('spy.join.entering')}</p>
 			</div>
@@ -168,7 +174,10 @@ export default function SpyGameClient({ code, initialName }: Props) {
 
 	if (awaitingSession) {
 		return (
-			<div className="flex min-h-screen flex-col items-center justify-center gap-3 text-muted">
+			<div className="game-theme game-theme-spy flex min-h-screen flex-col items-center justify-center gap-3 text-muted">
+				<div className="game-theme-mark mb-2">
+					<GameIcon name="spy" size={25} />
+				</div>
 				<Spinner size="lg" />
 				<p>{t('spy.join.entering')}</p>
 			</div>
@@ -177,19 +186,31 @@ export default function SpyGameClient({ code, initialName }: Props) {
 
 	if (!state?.self) {
 		return (
-			<div className="relative min-h-screen bg-background">
-				<div className="mx-auto max-w-md px-4 py-10 pb-[max(4rem,env(safe-area-inset-bottom))] lg:max-w-lg">
-					<header className="mb-6 text-center">
-						<p className="font-mono text-xs uppercase tracking-widest text-muted">
-							{t('spy.join.eyebrow')}
-						</p>
-						<h1 className="font-display mt-2 text-2xl font-bold text-ink">
-							{t('spy.join.room', { code })}
-						</h1>
+			<div className="game-theme game-theme-spy">
+				<div className="relative mx-auto max-w-xl px-4 py-8 pb-[max(4rem,env(safe-area-inset-bottom))]">
+					<header className="game-theme-hero rounded-[1.25rem]">
+						<Image
+							src="/brand/myspace/spy-fall-menu-poster.png"
+							alt={t('spy.menu.posterAlt')}
+							fill
+							className="game-theme-hero-image"
+							sizes="(max-width: 576px) 100vw, 576px"
+						/>
+						<div className="relative z-10 flex min-h-[18rem] flex-col justify-between p-6 sm:p-8">
+							<div className="game-theme-mark">
+								<GameIcon name="spy" size={27} />
+							</div>
+							<div>
+								<p className="game-theme-kicker">{t('spy.join.eyebrow')}</p>
+								<h1 className="mt-2 font-display text-3xl font-bold text-ink">
+									{t('spy.join.room', { code })}
+								</h1>
+							</div>
+						</div>
 					</header>
 					<form
 						onSubmit={handleJoin}
-						className="space-y-4 rounded-2xl border border-border bg-surface-elevated p-6 shadow-sm"
+						className="game-theme-panel relative z-10 mx-4 -mt-6 space-y-4 rounded-2xl p-6 shadow-sm"
 					>
 						<Field label={t('spy.join.name')} htmlFor="join-name">
 							<PlayerNameInput
@@ -211,12 +232,8 @@ export default function SpyGameClient({ code, initialName }: Props) {
 								}}
 							/>
 						)}
-						<Button
-							type="submit"
-							fullWidth
-							loading={busy}
-							disabled={!isValidPlayerName(joinName)}
-						>
+						<Button type="submit" fullWidth loading={busy} disabled={!isValidPlayerName(joinName)}>
+							<GameIcon name="lock" size={17} />
 							{t('spy.join.submit')}
 						</Button>
 						<Button
@@ -226,6 +243,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 							fullWidth
 							onClick={() => router.push(routes.spyFall)}
 						>
+							<GameIcon name="arrow-left" size={16} />
 							{t('spy.join.backMenu')}
 						</Button>
 					</form>
@@ -236,7 +254,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 
 	if (!state) {
 		return (
-			<div className="mx-auto max-w-md px-4 py-12">
+			<div className="game-theme game-theme-spy mx-auto max-w-md px-4 py-12">
 				<ErrorState
 					title={t('spy.join.loadFailTitle')}
 					message={error ?? t('spy.join.loadFailBody')}
@@ -249,7 +267,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 	const displayError = joinError ?? error;
 	const canReviewRole = Boolean(
 		(state.self?.keyword || state.self?.role) &&
-			!['lobby', 'result', 'role-reveal'].includes(state.phase),
+		!['lobby', 'result', 'role-reveal'].includes(state.phase),
 	);
 
 	const openRole = () => setRoleOpen(true);
@@ -335,7 +353,6 @@ export default function SpyGameClient({ code, initialName }: Props) {
 						{state.phase === 'reveal' && (
 							<RevealPhase state={state} busy={busy} onNext={() => wrap(() => api.next())} />
 						)}
-
 
 						{state.phase === 'result' && state.result && (
 							<ResultPhase

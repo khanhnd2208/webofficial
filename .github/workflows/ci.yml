@@ -108,6 +108,7 @@ jobs:
           npx playwright test
           e2e/active-recall-admin.spec.ts
           e2e/active-recall.spec.ts
+          e2e/board-game-visual.spec.ts
           e2e/admin-workspace.spec.ts
           e2e/editorial-premium.spec.ts
           e2e/mobile-smoke.spec.ts

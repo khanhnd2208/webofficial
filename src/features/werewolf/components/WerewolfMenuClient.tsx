@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -9,6 +10,7 @@ import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGro
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
 import { Button, Card, Field } from '@/features/spy-fall/components/ui';
+import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 import { hapticLight } from '@/features/spy-fall/lib/haptics';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 import { postWerewolfAction } from '@/features/werewolf/lib/api';
@@ -53,9 +55,12 @@ export default function WerewolfMenuClient() {
 		setError(null);
 		hapticLight();
 		try {
-			const data = await postWerewolfAction<{ state: RoomStateDTO; hostToken: string }>('/api/ma-soi/rooms', {
-				hostName,
-			});
+			const data = await postWerewolfAction<{ state: RoomStateDTO; hostToken: string }>(
+				'/api/ma-soi/rooms',
+				{
+					hostName,
+				},
+			);
 			storePlayerToken(data.state.code, data.hostToken);
 			storeRecentPlayerName(hostName);
 			router.push(routes.maSoiRoom(data.state.code));
@@ -86,31 +91,67 @@ export default function WerewolfMenuClient() {
 	}
 
 	return (
-		<div className="relative min-h-screen bg-background">
-			<div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_top,rgba(120,30,40,0.12),transparent_70%)]" />
-			<div className="relative mx-auto max-w-md px-4 py-8 pb-[max(4rem,env(safe-area-inset-bottom))]">
-				<div className="mb-6 flex items-center justify-between">
-					<Link href={routes.boardGame} className="text-sm text-muted-foreground hover:text-ink">
+		<div className="game-theme game-theme-werewolf">
+			<div className="relative mx-auto max-w-3xl px-4 py-5 pb-[max(4rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8">
+				<div className="mb-5 flex items-center justify-between gap-4">
+					<Link
+						href={routes.boardGame}
+						className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted transition hover:text-foreground"
+					>
+						<GameIcon name="arrow-left" size={15} />
 						{t('mafia.menu.backToHub')}
 					</Link>
 					<PrefsToggleGroup />
 				</div>
-				<header className="text-center">
-					<p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">{t('mafia.menu.eyebrow')}</p>
-					<p className="mt-3 text-5xl" aria-hidden>
-						🐺
-					</p>
-					<h1 className="font-display mt-2 text-3xl font-bold text-ink">{t('mafia.menu.title')}</h1>
-					<p className="mt-2 text-sm text-muted-foreground">{t('mafia.menu.subtitle')}</p>
+				<header className="game-theme-hero rounded-[1.25rem]">
+					<Image
+						src="/brand/myspace/ma-soi-menu-poster.png"
+						alt={t('mafia.menu.posterAlt')}
+						fill
+						priority
+						className="game-theme-hero-image"
+						sizes="(max-width: 768px) 100vw, 768px"
+					/>
+					<div className="relative z-10 flex min-h-[18rem] flex-col justify-between p-6 sm:min-h-[20rem] sm:p-9">
+						<div className="flex items-start justify-between gap-6">
+							<div className="game-theme-mark">
+								<GameIcon name="wolf" size={30} />
+							</div>
+							<p className="game-theme-kicker max-w-[9rem] text-right">{t('mafia.menu.eyebrow')}</p>
+						</div>
+						<div className="max-w-md">
+							<h1 className="font-display text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+								{t('mafia.menu.title')}
+							</h1>
+							<p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground-secondary sm:text-base">
+								{t('mafia.menu.subtitle')}
+							</p>
+							<div className="mt-5 flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+								<span className="rounded-full border border-border/80 bg-background/40 px-3 py-1.5">
+									<GameIcon name="users" size={13} className="mr-1.5 inline" />
+									{t('mafia.menu.playerCount')}
+								</span>
+								<span className="rounded-full border border-border/80 bg-background/40 px-3 py-1.5">
+									<GameIcon name="moon" size={13} className="mr-1.5 inline" />
+									{t('mafia.menu.nightTag')}
+								</span>
+							</div>
+						</div>
+					</div>
 				</header>
 
-				<Card elevated className="mt-8 space-y-4">
+				<Card
+					elevated
+					className="game-theme-panel relative z-20 mx-auto -mt-6 max-w-xl space-y-4 rounded-[1.15rem] p-5 sm:p-7"
+				>
 					{view === 'menu' ? (
 						<div className="space-y-3">
 							<Button type="button" fullWidth onClick={() => setView('create')}>
+								<GameIcon name="lantern" size={18} />
 								{t('mafia.menu.create')}
 							</Button>
 							<Button type="button" fullWidth variant="secondary" onClick={() => setView('join')}>
+								<GameIcon name="lock" size={18} />
 								{t('mafia.menu.join')}
 							</Button>
 						</div>
@@ -133,9 +174,11 @@ export default function WerewolfMenuClient() {
 							</Field>
 							{error ? <p className="text-sm text-danger">{error}</p> : null}
 							<Button type="submit" fullWidth loading={busy}>
+								<GameIcon name="lantern" size={18} />
 								{t('mafia.menu.create')}
 							</Button>
 							<Button type="button" fullWidth variant="ghost" onClick={() => setView('menu')}>
+								<GameIcon name="arrow-left" size={15} />
 								{t('mafia.menu.back')}
 							</Button>
 						</form>
@@ -171,9 +214,11 @@ export default function WerewolfMenuClient() {
 								/>
 							</Field>
 							<Button type="submit" fullWidth>
+								<GameIcon name="lock" size={18} />
 								{t('mafia.menu.join')}
 							</Button>
 							<Button type="button" fullWidth variant="ghost" onClick={() => setView('menu')}>
+								<GameIcon name="arrow-left" size={15} />
 								{t('mafia.menu.back')}
 							</Button>
 						</form>
