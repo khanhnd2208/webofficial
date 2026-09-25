@@ -33,7 +33,7 @@ export interface MySpaceTile {
 
 export const mySpacePage = {
 	title: 'My Space',
-	lead: 'Teaching: lớp học, điểm danh và Active Recall theo môn. Khóa học: bài đọc và bài kiểm tra tự học.',
+	lead: 'Teaching, khóa học và những trải nghiệm chơi cùng nhau.',
 	comingSoonLabel: 'Đang phát triển',
 	comingSoonNote: 'Góc này đang được hoàn thiện.',
 } as const;
@@ -60,6 +60,16 @@ export const mySpaceTiles: MySpaceTile[] = [
 		},
 		status: 'published',
 		href: routes.learnCourses,
+	},
+	{
+		id: 'board-game',
+		label: 'Board Game',
+		visual: {
+			kind: 'cards',
+			alt: 'Minh họa bộ bài Board Game',
+		},
+		status: 'published',
+		href: routes.boardGame,
 	},
 ];
 

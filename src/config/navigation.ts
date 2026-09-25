@@ -187,6 +187,7 @@ export const INTERNAL_CHROME_PREFIXES = [
 	'/my-space/my-class',
 	'/my-space/teaching',
 	'/my-space/courses',
+	'/my-space/board-game',
 ] as const;
 
 export function isInternalChromePath(pathname: string): boolean {

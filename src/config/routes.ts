@@ -19,6 +19,10 @@ export const routes = {
 	services: '/dich-vu',
 	/** Focused hub for Teaching. */
 	mySpace: '/my-space',
+	boardGame: '/my-space/board-game',
+	spyFall: '/my-space/board-game/spy-fall',
+	spyFallRoom: (code: string) => `/my-space/board-game/spy-fall/room/${code}` as const,
+	spyFallGuide: '/my-space/board-game/spy-fall/guide',
 	/** @deprecated Active Recall now lives inside Teaching class boards. */
 	activeRecall: '/my-space/active-recall',
 	/** @deprecated Use teachingPublicRecallDeck */
