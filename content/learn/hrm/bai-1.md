@@ -1,0 +1,554 @@
+# Bài 1 — Quản trị nguồn nhân lực: con người làm nên tổ chức
+
+=== SECTION: Mở đầu: quán cà phê của chị Hạnh ===
+
+Chị Hạnh mở một quán cà phê nhỏ gần trường đại học. Quán có ba bạn nhân viên, chị tự pha chế, tự trả lương, ai nghỉ thì chị đứng quầy thay. Năm đầu mọi thứ chạy khá êm.
+
+Sang năm thứ hai, chị mở thêm quán thứ hai. Chị đăng tuyển gấp trên nhóm Facebook, ai đến phỏng vấn cũng nhận. Chỉ vài tháng sau, rắc rối kéo đến.
+
+• Cùng một ly bạc xỉu, quán này ngọt, quán kia nhạt. Khách bắt đầu phàn nàn.
+
+• Hai bạn nhân viên cũ, pha chế giỏi nhất, xin nghỉ. Một bạn nói: "Em làm lâu mà lương như người mới vào."
+
+• Một bạn mới bị trừ lương vì đi muộn, còn một bạn khác đi muộn nhiều hơn lại không sao, vì là cháu của chị.
+
+• Chị Hạnh hết thời gian nghĩ món mới, vì ngày nào cũng phải xếp ca, tìm người thay, giải quyết cãi nhau.
+
+Chị than: "Chuyện nhân sự mệt quá, chị chỉ muốn bán cà phê thôi." Nhưng hãy để ý. Những rắc rối trên không phải chuyện phụ bên lề việc bán cà phê. Chúng quyết định ly cà phê có ngon đều hay không, khách có quay lại hay không.
+
+Bài này sẽ giúp bạn trả lời sáu câu hỏi:
+
+1. Quản trị nguồn nhân lực là gì, và vì sao nó làm tổ chức mạnh lên hay yếu đi?
+
+2. Người làm nhân sự trong một tổ chức phụ trách những việc gì?
+
+3. Muốn làm nhân sự giỏi, cần những năng lực nào?
+
+4. Vì sao quản lý trực tiếp (trưởng ca, trưởng nhóm) cũng đang làm nhân sự mỗi ngày?
+
+5. Những vấn đề đạo đức nào thường gặp trong quản trị nhân lực?
+
+6. Nghề nhân sự có những con đường nào?
+
+## Một hiểu lầm cần bỏ ngay: "Nhân sự là phòng làm giấy tờ: chấm công, tính lương, lưu hồ sơ." Giấy tờ chỉ là phần nổi. Phần chìm, và quan trọng hơn, là những quyết định về ai làm việc cho tổ chức và họ làm việc thế nào. Chị Hạnh chưa có phòng nhân sự, nhưng ngày nào chị cũng đang làm quản trị nhân lực, chỉ là làm chưa có hệ thống.
+
+## Về cách tôi viết bài giảng này
+
+Tôi viết bộ bài giảng này cho người học từ mọi ngành, kể cả người chưa từng đi làm. Bạn không cần biết trước gì về quản trị. Mỗi thuật ngữ sẽ được giải thích ngay lần đầu xuất hiện, kèm tên tiếng Anh trong ngoặc để bạn tra cứu thêm.
+
+Kiến thức trong bài dựa trên giáo trình quản trị nhân lực dùng phổ biến ở các trường kinh doanh. Nhưng tôi không kể lại sách. Tôi giảng bằng ví dụ đời thường Việt Nam: quán cà phê, cửa hàng, công ty nhỏ, những chuyện đi làm mà ai cũng gặp.
+
+Có ba điều bạn nên biết trước:
+
+• Giáo trình gốc viết cho bối cảnh Mỹ. Khi bài nhắc đến luật hay cơ quan nhà nước, tôi sẽ nói rõ "ở Mỹ" và chỉ rút ra nguyên tắc chung. Quy định cụ thể của Việt Nam bạn cần tra văn bản pháp luật hiện hành.
+
+• Tôi tránh số liệu cụ thể. Lương, tỷ lệ, khảo sát thay đổi rất nhanh. Bạn hãy nắm xu hướng và lý lẽ, đừng học thuộc con số.
+
+• Mỗi bài có hai phần. Tab "Bài giảng" để đọc hiểu. Tab "Câu hỏi phản biện" để luyện áp dụng vào tình huống thật, có lời giải từng bước.
+
+Cách học tôi khuyên: đọc một phần, dừng lại ở câu hỏi liên hệ bản thân, tự trả lời trong đầu rồi mới đọc tiếp.
+
+## Bản đồ bài học
+
+Không phải phần nào cũng quan trọng như nhau. Bảng dưới cho bạn biết nên dồn sức vào đâu.
+
+Tầng
+
+Nội dung
+
+Bạn cần
+
+Cốt lõi
+
+Phần 1: Quản trị nguồn nhân lực và vốn nhân lực · Phần 2: Các chức năng của nhân sự · Phần 4: Quản lý trực tiếp làm nhân sự · Phần 5: Đạo đức, quyền của người lao động, ba chuẩn mực
+
+Hiểu chắc, giải thích được bằng ví dụ của mình
+
+Nhận biết
+
+Phần 3: Bốn nhóm năng lực của người làm nhân sự · Phần 6: Nghề nhân sự
+
+Nắm ý chính, nhận ra khi gặp
+
+Đọc thêm
+
+Mười năng lực chi tiết · Trải nghiệm nhân viên · Nhân sự dùng mạng xã hội · Phân tích dữ liệu nhân sự · Tình thế khó của người làm nhân sự
+
+Không bắt buộc, đọc khi tò mò
+
+=== SECTION: Phần 1. Quản trị nguồn nhân lực là gì, và vì sao nó quan trọng ===
+
+## 1.1. Định nghĩa
+
+Quản trị nguồn nhân lực (Human Resource Management – HRM) là các chính sách, cách làm và hệ thống tác động đến hành vi, thái độ và kết quả làm việc của nhân viên.
+
+Các giáo trình tiếng Việt gọi môn này bằng nhiều tên: quản trị nhân lực, quản trị nguồn nhân lực, quản trị nhân sự. Bạn hãy bám vào nghĩa, đừng bám vào tên. Nhiều công ty còn gọi gọn là "cách làm với con người" (people practices).
+
+Để ý ba chữ trong định nghĩa. Chính sách là quy định chung, ví dụ "đi muộn quá 15 phút thì trừ nửa ca". Cách làm là việc thực tế, ví dụ trưởng ca nhắc nhở ra sao. Hệ thống là cách các thứ đó nối với nhau thành một guồng chạy đều.
+
+Đối tượng mà ba thứ này tác động là hành vi, thái độ và kết quả làm việc. Nói cách khác, quản trị nhân lực không phải là quản lý hồ sơ. Nó là quản lý những gì con người làm, nghĩ và tạo ra.
+
+## 1.2. Tám hoạt động của quản trị nhân lực
+
+Giáo trình liệt kê tám hoạt động. Chúng nên cùng phục vụ chiến lược kinh doanh của tổ chức. Để dễ nhớ, tôi gom thành bốn cặp theo đường đi của một nhân viên, từ trước khi vào làm đến khi gắn bó lâu dài.
+
+```mermaid
+flowchart LR
+  A["Chuẩn bị<br/>Phân tích & thiết kế công việc<br/>Hoạch định nhân lực"] --> B["Có người<br/>Tuyển mộ<br/>Tuyển chọn"]
+  B --> C["Làm tốt<br/>Đào tạo & phát triển<br/>Quản lý kết quả"]
+  C --> D["Ở lại<br/>Lương thưởng, phúc lợi<br/>Quan hệ nhân viên"]
+  D --> E(["Kết quả của<br/>tổ chức"])
+```
+
+Đọc sơ đồ từ trái sang phải. Trước hết phải biết cần làm việc gì và cần bao nhiêu người, rồi mới đi tìm người, dạy người, đánh giá người, trả công và giữ người. Chi tiết từng hoạt động nằm ở Phần 2.
+
+Một tổ chức thường làm tốt nhất khi cả tám hoạt động đều được quản lý tốt và ăn khớp với nhau. Hỏng một mắt xích là cả chuỗi bị ảnh hưởng. Quán chị Hạnh là ví dụ: tuyển vội (khâu "có người"), không dạy công thức chung (khâu "làm tốt"), trả lương không phân biệt người cũ người mới (khâu "ở lại").
+
+## 1.3. Vốn nhân lực: con người là một loại tài sản
+
+Ngày trước, nhiều nhà quản lý coi nhân sự là một khoản chi phí bắt buộc. Tài sản tạo giá trị, theo họ, là tiền, máy móc, công nghệ, nhà xưởng. Ngày nay, cách nhìn đó đã thay đổi nhiều.
+
+Vốn nhân lực (human capital) là nhân viên của tổ chức, được nhìn qua những đặc điểm tạo ra giá trị kinh tế: được đào tạo gì, có kinh nghiệm gì, óc phán đoán, trí tuệ, các mối quan hệ và sự thấu hiểu công việc (insight).
+
+Hãy nghĩ đến một bạn pha chế lâu năm. Bạn ấy biết canh độ ngọt theo thời tiết (kinh nghiệm). Bạn ấy nhớ khách quen uống ít đá (mối quan hệ). Bạn ấy biết khi nào nên đổi món vì khách chê (óc phán đoán). Những thứ đó không nằm trong cái máy pha nào cả.
+
+Quản trị nhân lực tác động đến kết quả của tổ chức qua hai đường:
+
+```mermaid
+flowchart LR
+  H["Quản trị<br/>nhân lực"] --> T["AI làm việc<br/>Đào tạo, kinh nghiệm,<br/>phán đoán, quan hệ..."]
+  H --> B["Họ làm việc THẾ NÀO<br/>Động lực, nỗ lực"]
+  T --> P(["Kết quả tổ chức<br/>Chất lượng, lợi nhuận,<br/>sự hài lòng của khách"])
+  B --> P
+```
+
+Đường thứ nhất là ai vào làm: tuyển đúng người có đúng kỹ năng. Đường thứ hai là họ làm thế nào: có muốn cố gắng hay chỉ làm cho xong. Người giỏi mà không có động lực thì cũng như máy tốt mà không cắm điện.
+
+> [!TIP] Câu dễ nhớ:
+> Máy móc có thể mua. Một đội ngũ giỏi và gắn bó thì phải xây.
+
+## 1.4. Vì sao con người có thể tạo lợi thế cạnh tranh bền vững
+
+Lợi thế cạnh tranh bền vững (sustainable competitive advantage) nghĩa là làm tốt hơn đối thủ ở một điểm nào đó, và giữ được điểm đó trong thời gian dài. Nguồn lực nào tạo ra lợi thế kiểu này thường có bốn đặc điểm. Nguồn nhân lực có đủ cả bốn.
+
+| Đặc điểm | Nghĩa là | Ví dụ ở một quán cà phê |
+| --- | --- | --- |
+| Có giá trị (valuable) | Người giỏi làm được những việc quan trọng với tổ chức | Bạn pha chế giữ vị đồ uống đều, khách tin tưởng |
+| Hiếm (rare) | Người có kỹ năng cao không dễ tìm | Chủ quán có thể mất hàng tháng mới tìm được một quản lý quán giỏi |
+| Khó bắt chước (hard to imitate) | Đối thủ khó biết chính xác ai và điều gì tạo ra khác biệt, càng khó sao chép cả hệ thống đó | Đối thủ mua được cùng máy, học được công thức, nhưng khó sao chép một đội nhớ tên khách quen và phối hợp nhịp nhàng giờ cao điểm |
+| Khó thay thế (no good substitutes) | Khó có nguồn lực nào khác làm được điều người tận tâm làm | Máy bán hàng tự động không thay được một nhân viên biết khách đang buồn và hỏi han |
+
+Chú ý chữ khó bắt chước. Cái khó sao chép không chỉ là từng cá nhân. Đó là cả cách tổ chức tuyển, dạy, đánh giá và giữ những người đó. Vì vậy, lợi thế về con người đến từ quản trị nhân lực, không tự nhiên mà có.
+
+Nhưng hãy nhớ: bốn đặc điểm này là tiềm năng. Tổ chức chỉ biến tiềm năng thành kết quả thông qua cách làm quản trị nhân lực. Tuyển người giỏi rồi đối xử tệ thì người giỏi cũng ra đi.
+
+> [!TIP] Câu dễ nhớ:
+> Nhân sự không chỉ là một khoản chi. Làm đúng cách, đó là một trong những nguồn tạo giá trị khó bị sao chép nhất.
+
+## 1.5. Hệ thống làm việc hiệu suất cao (nhận biết)
+
+Hệ thống làm việc hiệu suất cao (high-performance work system) là tổ chức mà công nghệ, cơ cấu, con người và quy trình ăn khớp với nhau để tạo lợi thế cạnh tranh. Khi công nghệ thay đổi, quản trị nhân lực phải bảo đảm tổ chức có đúng loại người cho thách thức mới.
+
+> [!EXAMPLE] Ví dụ:
+> quán chuyển sang nhận đơn qua ứng dụng giao hàng thì cần người biết xử lý đơn online, và cần thưởng cho tinh thần học việc mới. Khái niệm này sẽ được học kỹ ở một bài sau.
+
+> [!REFLECT] Liên hệ bản thân:
+> Nghĩ về một nơi bạn từng làm thêm, hoặc một quán bạn hay ghé. Điều gì ở con người nơi đó khiến bạn muốn quay lại, hoặc không muốn quay lại? Điều đó thuộc đường "ai làm việc" hay đường "họ làm việc thế nào"?
+
+=== SECTION: Phần 2. Bộ phận nhân sự làm những việc gì ===
+
+Ở hầu hết tổ chức, trừ những nơi rất nhỏ, có một bộ phận nhân sự (HR department) chịu trách nhiệm về quản trị nhân lực. Nhưng "chịu trách nhiệm" không có nghĩa là tự tay làm hết. Nhiều việc do quản lý trực tiếp làm, hoặc thuê bên ngoài làm, còn bộ phận nhân sự thiết kế và điều phối.
+
+Không có hai bộ phận nhân sự nào giống hệt nhau. Nơi thì nhân sự tham mưu trực tiếp cho giám đốc. Nơi thì nhân sự chủ yếu thực hiện quyết định từ cấp trên. Quy mô, ngành nghề và quan điểm của lãnh đạo tạo ra khác biệt đó.
+
+## 2.1. Nhìn nhân sự như một "doanh nghiệp" với ba dòng sản phẩm
+
+Một cách nhìn hữu ích: coi bộ phận nhân sự như một doanh nghiệp nhỏ bên trong tổ chức, bán ba loại "sản phẩm" cho các bộ phận khác.
+
+| Dòng sản phẩm | Làm gì | Người làm cần hiểu | Ví dụ ở một chuỗi cà phê |
+| --- | --- | --- | --- |
+| Dịch vụ hành chính và giao dịch (administrative services and transactions) | Xử lý việc hành chính nhanh, đúng, chất lượng | Chuyên môn của từng tác vụ | Làm hợp đồng cho người mới, trả lời thắc mắc về bảo hiểm, chấm công |
+| Dịch vụ đối tác kinh doanh (business partner services) | Xây hệ thống giúp tổ chức thu hút, giữ chân và phát triển đúng người | Hoạt động kinh doanh cần gì | Thiết kế chương trình dạy pha chế chuẩn cho mọi chi nhánh |
+| Đối tác chiến lược (strategic partner) | Góp phần xây chiến lược, chỉ ra con người có thể tạo lợi thế ra sao | Doanh nghiệp, ngành và đối thủ | Chuỗi định mở thêm năm quán: cần bao nhiêu quản lý quán, lấy từ đâu, bao lâu thì đào tạo xong |
+
+Đi từ dòng một đến dòng ba, người làm nhân sự càng phải hiểu kinh doanh sâu hơn. Dòng một cần làm đúng. Dòng ba cần nghĩ đúng.
+
+> [!TIP] Câu dễ nhớ:
+> Nhân sự giỏi không chỉ làm đúng giấy tờ, mà còn giúp ông chủ nghĩ đúng về con người.
+
+## 2.2. Các chức năng cụ thể
+
+Cách nhìn thứ hai là liệt kê các việc cụ thể. Giáo trình nêu mười nhóm việc; bảng đầy đủ nằm ở Góc đọc thêm. Ở đây tôi chia làm hai nhóm: sáu hoạt động chính (đã gặp ở sơ đồ Phần 1) và bốn việc nền tảng giúp sáu hoạt động đó chạy được.
+
+## Nhóm A: Sáu hoạt động chính
+
+(1) Phân tích và thiết kế công việc. Để làm ra sản phẩm, tổ chức cần nhiều nhiệm vụ. Các nhiệm vụ được gom lại thành từng công việc (job).
+
+Phân tích công việc (job analysis) là quá trình thu thập thông tin chi tiết về các công việc.
+
+Thiết kế công việc (job design) là xác định công việc sẽ được thực hiện thế nào và gồm những nhiệm vụ gì.
+
+Công việc có thể hẹp (chỉ rửa ly) hoặc rộng (vừa pha chế, vừa thu ngân, vừa chăm sóc khách). Công việc hẹp dễ tuyển, dạy nhanh, trả lương thấp hơn. Khi tổ chức coi trọng chất lượng và sáng tạo, xu hướng là thiết kế công việc rộng hơn, thậm chí giao việc cho cả nhóm.
+
+(2) Tuyển mộ và tuyển chọn. Biết cần loại người nào rồi, tổ chức mới đi tìm.
+
+Tuyển mộ (recruitment) là quá trình tổ chức tìm kiếm ứng viên cho các vị trí có thể tuyển.
+
+Tuyển chọn (selection) là quá trình tổ chức xác định ứng viên nào có kiến thức, kỹ năng, năng lực và các đặc điểm khác cần thiết để giúp tổ chức đạt mục tiêu.
+
+Hãy phân biệt rõ: tuyển mộ là kéo người đến, tuyển chọn là chọn người ở lại. Tuyển chọn không chỉ dành cho người mới, mà còn dùng khi chuyển nhân viên cũ sang vị trí khác. Có nơi tìm người rộng rãi bên ngoài (đăng tin tuyển dụng, mạng xã hội, ngày hội việc làm); có nơi ưu tiên đề bạt nội bộ và nhờ nhân viên giới thiệu.
+
+Nơi thì chọn theo kỹ năng cụ thể (biết dùng máy pha espresso). Nơi thì chọn theo năng lực chung (làm việc nhóm, xử lý tình huống). Lựa chọn này quyết định cả câu hỏi phỏng vấn lẫn nơi đi tìm người.
+
+(3) Đào tạo và phát triển.
+
+Đào tạo (training) là nỗ lực có kế hoạch của tổ chức giúp nhân viên học kiến thức, kỹ năng, hành vi liên quan đến công việc, với mục đích áp dụng vào công việc.
+
+Phát triển (development) là việc tiếp thu kiến thức, kỹ năng, hành vi giúp nhân viên đáp ứng tốt hơn những thay đổi trong yêu cầu công việc và nhu cầu khách hàng.
+
+Đào tạo nhìn vào việc hôm nay: dạy bạn mới pha đúng công thức. Phát triển nhìn vào việc ngày mai: chuẩn bị cho một bạn pha chế giỏi để sau này làm quản lý quán. Tổ chức phải quyết định đầu tư cho việc nào, cho vài người hay cho tất cả.
+
+(4) Quản lý kết quả làm việc.
+
+Quản lý kết quả làm việc (performance management) là quá trình nhà quản lý bảo đảm các hoạt động và kết quả của nhân viên đóng góp vào mục tiêu của tổ chức.
+
+Cách đo có thể nhìn vào hành vi (chào khách ngay khi khách bước vào) hoặc kết quả (số lời phàn nàn trong tháng), hoặc cả hai. Khi người đánh giá không rành chi tiết công việc, đo kết quả thường dễ hơn đo hành vi. Người đánh giá thường là quản lý trực tiếp; nhiều nơi cho nhân viên tự đánh giá, có nơi thêm đồng nghiệp và cấp dưới.
+
+(5) Lương, thưởng và phúc lợi. Trả công ảnh hưởng mạnh đến động lực, nhất là khi thưởng gắn với thành tích. Quyết định trả công cũng phải hợp với chiến lược. Quán muốn nổi tiếng vì phục vụ xuất sắc có thể trả cao hơn mặt bằng để giữ người giỏi. Quán theo chiến lược giá rẻ thì cần biết rõ mặt bằng chung để không chi quá mức cần.
+
+Ngoài quyết định trả bao nhiêu, còn việc quản lý: theo dõi lương và phúc lợi từng người, giải đáp thắc mắc, báo cáo cho cơ quan nhà nước. Đây là việc đòi hỏi chính xác và hiểu nhiều quy định pháp luật.
+
+(6) Quan hệ nhân viên (employee relations). Là việc giữ mối quan hệ tích cực với nhân viên: soạn sổ tay nhân viên, truyền thông nội bộ, trả lời thắc mắc, tiếp nhận khiếu nại khi nhân viên không hài lòng với cách quản lý trực tiếp xử lý. Ở nơi có công đoàn, việc này còn gồm thương lượng và giữ liên lạc với đại diện công đoàn.
+
+## Nhóm B: Bốn việc nền tảng
+
+(7) Xây dựng và quản lý chính sách nhân sự. Chính sách giúp quyết định công bằng và nhất quán. Quay lại quán chị Hạnh: nếu có quy định rõ "đi muộn thì xử lý thế nào", và áp dụng cho mọi người kể cả người nhà, thì không ai thấy mình bị đối xử khác. Chính sách chỉ có tác dụng khi nhân viên biết và hiểu nó, nên người làm nhân sự phải truyền đạt qua nhiều kênh.
+
+(8) Quản lý và sử dụng dữ liệu nhân sự. Mọi hoạt động nhân sự đều sinh ra hồ sơ: đơn ứng tuyển, kết quả đánh giá, bảng lương. Hồ sơ phải chính xác, và phải được bảo mật: chỉ người có thẩm quyền mới được xem. Dữ liệu còn có thể trở thành lợi thế.
+
+Phân tích dữ liệu nhân sự (workforce analytics) là việc dùng công cụ định lượng và phương pháp khoa học để phân tích dữ liệu nhân sự và các nguồn khác, nhằm ra quyết định dựa trên bằng chứng, phục vụ mục tiêu kinh doanh.
+
+> [!EXAMPLE] Ví dụ:
+> chuỗi cà phê xem dữ liệu và thấy nhân viên nghỉ việc nhiều nhất ở tháng thứ hai. Từ đó chuỗi biết nên cải thiện giai đoạn hướng dẫn người mới, thay vì đoán mò.
+
+(9) Bảo đảm tuân thủ pháp luật lao động. Nhà nước có nhiều quy định về đối xử với người lao động: không phân biệt đối xử, an toàn lao động, tiền lương, quyền riêng tư, chấm dứt hợp đồng. Giáo trình gốc dùng ví dụ luật Mỹ. Ở Việt Nam, khung chính là Bộ luật Lao động và các văn bản hướng dẫn; chi tiết cụ thể bạn cần tra văn bản hiện hành. Nguyên tắc chung giống nhau: luật thay đổi liên tục, và phần lớn nhà quản lý dựa vào người làm nhân sự để theo kịp.
+
+(10) Hỗ trợ chiến lược của tổ chức. Ngày xưa nhân sự chủ yếu làm giấy tờ. Ngày nay, nhân sự ở nhiều nơi phải hiểu kinh doanh, dự đoán xu hướng, phát triển nhân tài và thuyết phục lãnh đạo về chiến lược nhân sự. Việc này gồm mấy khái niệm then chốt:
+
+Hoạch định nhân lực (human resource planning) là xác định số lượng và loại nhân viên tổ chức sẽ cần để đạt mục tiêu.
+
+Hoạch định có thể cho thấy cần tuyển thêm, cần đào tạo lại, hoặc cần ít người hơn. Khi đó, hoạch định cũng gồm cả cách xử lý hoặc tránh việc cắt giảm.
+
+Quản lý nhân tài (talent management) là nỗ lực có hệ thống, có kế hoạch để thu hút, giữ chân, phát triển và tạo động lực cho nhân viên và nhà quản lý có kỹ năng cao.
+
+> [!EXAMPLE] Ví dụ:
+> một chuỗi trà sữa luôn thiếu pha chế giỏi. Thay vì tranh nhau tuyển với các chuỗi khác, chuỗi hợp tác với một trường cao đẳng nghề mở lớp pha chế cho người trẻ đang thất nghiệp, dạy cả kỹ năng nghề lẫn kỹ năng giao tiếp. Đây là quản lý nhân tài: gắn tuyển, dạy, giữ người vào một kế hoạch chung.
+
+Quản trị nhân lực dựa trên bằng chứng (evidence-based HR) là thu thập và dùng dữ liệu để chứng minh các hoạt động nhân sự có tác động tích cực đến lợi nhuận hoặc đến các bên liên quan chủ chốt.
+
+Nếu bạn muốn giám đốc chi tiền cho khóa đào tạo, hãy cho giám đốc thấy trước và sau khóa học, số lời phàn nàn thay đổi ra sao. Nhân sự nói bằng dữ liệu thì mới được nghe như tài chính hay marketing.
+
+Nhân sự còn giúp tổ chức quản lý thay đổi (change management). Mở quán mới, đổi công nghệ, sáp nhập đều khiến nhân viên lo lắng, tức giận hoặc bối rối. Người làm nhân sự dùng hiểu biết về hành vi con người để giúp thay đổi diễn ra suôn sẻ hơn.
+
+Cuối cùng là tính bền vững.
+
+Tính bền vững (sustainability) là khả năng tạo lợi nhuận mà không làm cạn kiệt nguồn lực của tổ chức, gồm nhân viên, tài nguyên thiên nhiên và sự ủng hộ của cộng đồng xung quanh.
+
+Các bên liên quan (stakeholders) là những bên có lợi ích gắn với sự thành công của tổ chức, thường gồm chủ sở hữu hoặc cổ đông, cộng đồng, khách hàng và nhân viên.
+
+Một tổ chức theo hướng bền vững thường ưu tiên phát triển nhân viên hơn cắt chi phí ngắn hạn, kế hoạch dài hạn hơn giải pháp tình thế, công bằng hơn lợi nhuận trước mắt. Vắt kiệt nhân viên để có lãi quý này cũng giống khai thác cạn một mỏ: năm sau không còn gì để khai thác.
+
+> [!TIP] Câu dễ nhớ:
+> Nhân sự làm mười việc, nhưng mọi việc đều quy về một câu hỏi: tổ chức có đúng người, đúng việc, đúng lúc, và họ có muốn cố gắng không?
+
+> [!REFLECT] Liên hệ bản thân:
+> Trong mười việc trên, việc nào bạn từng thấy một nơi làm việc làm tốt, và việc nào làm kém? Hệ quả bạn nhìn thấy là gì?
+
+=== SECTION: Phần 3. Người làm nhân sự cần những năng lực gì ===
+
+Với chừng ấy việc, bộ phận nhân sự cần gom nhiều loại kỹ năng. Hiệp hội Quản trị Nhân sự Mỹ (Society for Human Resource Management – SHRM) đưa ra một khung gồm mười năng lực, chia thành bốn nhóm. Bạn chỉ cần nắm bốn nhóm; danh sách mười năng lực nằm ở Góc đọc thêm.
+
+| Nhóm năng lực | Câu hỏi nhóm này trả lời | Ví dụ |
+| --- | --- | --- |
+| Chuyên môn (technical) | Bạn có biết làm nghề nhân sự không? | Biết thiết kế quy trình tuyển dụng, dùng phần mềm nhân sự, cập nhật quy định pháp luật |
+| Quan hệ con người (interpersonal) | Bạn có làm việc được với người khác không? | Lắng nghe, góp ý mang tính xây dựng, tạo lòng tin, tôn trọng người có văn hóa khác mình |
+| Kinh doanh (business) | Bạn có hiểu công việc của mình giúp tổ chức kiếm tiền và phát triển ra sao không? | Đọc số liệu, tư vấn cho quản lý, chỉ ra một khóa đào tạo sẽ tác động đến doanh thu thế nào |
+| Lãnh đạo (leadership) | Bạn có dẫn dắt người khác một cách chính trực không? | Giữ bí mật hồ sơ, xử lý báo cáo sai phạm, thúc đẩy sự công bằng và hòa nhập |
+
+Thông điệp của khung này: biết làm nghiệp vụ nhân sự thôi là chưa đủ. Người làm nhân sự còn phải làm việc tốt với người khác, đóng góp vào thành công kinh doanh, và dẫn dắt một cách có đạo đức. Thiếu một nhóm, dù giỏi các nhóm kia, vẫn có thể gây rắc rối lớn.
+
+> [!EXAMPLE] Ví dụ:
+> một bạn rất giỏi phân tích số liệu được giao triển khai phần mềm quản lý nhân sự. Nếu bạn ấy không biết thuyết phục trưởng các bộ phận vì sao phần mềm giúp họ, phần mềm tốt mấy cũng nằm im. Kỹ năng kỹ thuật cần đi cùng kỹ năng quan hệ và hiểu biết kinh doanh.
+
+> [!TIP] Câu dễ nhớ:
+> Biết nghiệp vụ là điều kiện cần. Hiểu người, hiểu kinh doanh và giữ chính trực mới là điều kiện đủ.
+
+> [!REFLECT] Liên hệ bản thân:
+> Trong bốn nhóm, nhóm nào là thế mạnh của bạn lúc này? Nhóm nào bạn cần rèn nhất?
+
+=== SECTION: Phần 4. Quản lý trực tiếp cũng đang làm nhân sự ===
+
+Quản trị nhân lực không chỉ là việc của những người ngồi ở phòng nhân sự. Ở tổ chức lớn, phòng nhân sự tư vấn và hỗ trợ các bộ phận khác. Ở tổ chức nhỏ, có thể có một người phụ trách nhân sự, nhưng các quản lý trực tiếp làm phần lớn việc nhân sự.
+
+Quản lý trực tiếp (supervisor) là người trực tiếp giao việc và theo dõi một nhóm nhân viên: trưởng ca, trưởng nhóm, quản lý cửa hàng. Ở doanh nghiệp mới thành lập, quản lý trực tiếp thường chính là người sáng lập, như chị Hạnh.
+
+Dù có hay không có phòng nhân sự, quản lý trực tiếp thường tham gia vào hầu hết các chức năng nhân sự:
+
+```mermaid
+flowchart LR
+  S(["Quản lý trực tiếp"])
+  S --> A["Giúp xác định<br/>công việc cần làm"]
+  S --> B["Dự báo<br/>cần bao nhiêu người"]
+  S --> C["Phỏng vấn,<br/>tham gia chọn người"]
+  S --> D["Hướng dẫn,<br/>đào tạo tại chỗ"]
+  S --> E["Đánh giá<br/>kết quả làm việc"]
+  S --> F["Đề xuất tăng lương,<br/>thăng chức"]
+  S --> G["Truyền đạt<br/>chính sách"]
+  S --> H["Tạo động lực bằng<br/>lương, phúc lợi, ghi nhận"]
+```
+
+Điểm quan trọng nhất: quản lý trực tiếp là "tiếng nói của công ty" với nhân viên hằng ngày. Nhân viên ít khi gặp giám đốc hay phòng nhân sự. Họ cảm nhận công ty qua cách trưởng ca giao việc, nhắc nhở và ghi nhận.
+
+Hãy nghĩ về hai bạn nghỉ việc ở quán chị Hạnh. Có thể chính sách lương là của chị, nhưng cảm giác "làm lâu mà không được ghi nhận" thường đến từ những lần không ai nói một câu cảm ơn. Một chính sách tốt mà quản lý trực tiếp thực hiện kém thì nhân viên vẫn chỉ thấy cái kém.
+
+Người sáng lập cũng cần nhận ra giới hạn của mình. Khi chủ doanh nghiệp nhỏ tự ôm hết việc nhân sự, họ có thể không còn thời gian cho việc kinh doanh chính. Lúc đó, thuê người hoặc thuê dịch vụ bên ngoài làm phần hành chính nhân sự là một lựa chọn hợp lý; nhưng các quyết định về con người của chính đội mình thì người quản lý vẫn phải tham gia.
+
+> [!TIP] Câu dễ nhớ:
+> Phòng nhân sự viết chính sách. Quản lý trực tiếp biến chính sách thành trải nghiệm hằng ngày của nhân viên.
+
+> [!REFLECT] Liên hệ bản thân:
+> Nếu mai bạn được làm trưởng nhóm bài tập lớn, bạn sẽ đang làm những việc nhân sự nào trong sơ đồ trên?
+
+=== SECTION: Phần 5. Đạo đức trong quản trị nhân lực ===
+
+Hễ hành động của người này ảnh hưởng đến người kia là có vấn đề đạo đức. Quyết định nhân sự ảnh hưởng trực tiếp đến sinh kế, danh dự và cảm giác an toàn của người lao động, nên đạo đức ở đây không phải chuyện phụ.
+
+Đạo đức (ethics) là những nguyên tắc cơ bản về đúng và sai. Hành vi có đạo đức là hành vi phù hợp với các nguyên tắc đó.
+
+Ở nhiều nước, công chúng không mấy tin vào đạo đức của giới kinh doanh. Trong tổ chức, không ít nhân viên biết có sai phạm nhưng không lên tiếng.
+
+Vì vậy, xây dựng quy trình để nhân viên báo cáo sai phạm một cách an toàn, và đào tạo để phòng tránh quấy rối, là những việc nằm trong trách nhiệm của nhân sự. Một tổ chức nổi tiếng là tử tế cũng dễ thu hút người giỏi hơn.
+
+## 5.1. Năm quyền cơ bản của người lao động
+
+Khi làm nhân sự có đạo đức, ta phải coi người lao động là người có những quyền cơ bản. Cách hiểu này bắt nguồn từ triết học Khai sáng, đặc biệt là tư tưởng của triết gia Immanuel Kant. Giáo trình nêu năm quyền.
+
+| Quyền | Nghĩa là | Ví dụ ở nơi làm việc |
+| --- | --- | --- |
+| Quyền tự nguyện đồng ý (right of free consent) | Chỉ bị đối xử theo cách mình biết rõ và tự nguyện đồng ý | Tuyển "nhân viên phục vụ" nhưng thực chất bắt đi phát tờ rơi ngoài đường cả ngày là lừa dối người lao động |
+| Quyền riêng tư (right of privacy) | Được làm điều mình muốn trong đời tư và tự quyết định tiết lộ gì | Hồ sơ sức khỏe, hoàn cảnh gia đình của nhân viên phải được giữ kín, không đem ra bàn tán |
+| Quyền tự do lương tâm (right of freedom of conscience) | Được từ chối làm điều trái đạo đức, miễn niềm tin đó phù hợp chuẩn mực chung | Nhân viên từ chối pha chế bằng nguyên liệu đã hết hạn theo lệnh quản lý |
+| Quyền tự do ngôn luận (right of freedom of speech) | Được phê phán cách làm sai của tổ chức một cách thiện chí, không xâm phạm quyền của người khác | Nhân viên góp ý qua hòm thư hoặc đường dây nóng nội bộ về việc chia tiền tip không minh bạch |
+| Quyền được xét xử công bằng (right to due process) | Khi cho rằng quyền của mình bị xâm phạm, được nghe và xem xét một cách công bằng, khách quan | Nhân viên bị kỷ luật được trình bày lý do trước khi có quyết định cuối cùng |
+
+Về quyền được xét xử công bằng, giáo trình dẫn ví dụ ở Mỹ: có cơ quan nhà nước tiếp nhận khiếu nại về phân biệt đối xử khi nhân viên cho rằng công ty xử lý không công bằng. Nguyên tắc chung là người lao động cần có nơi để được lắng nghe, bên trong hoặc bên ngoài tổ chức.
+
+Một cách nghĩ về đạo đức kinh doanh: hành động đúng là hành động hạn chế tối đa việc lấn vào và tránh vi phạm năm quyền này.
+
+Quyền riêng tư đang ngày càng khó giữ. Khi hồ sơ nhân viên được lưu trên máy tính và mạng, càng nhiều người có thể truy cập, được phép hoặc không. Thông tin sức khỏe đặc biệt nhạy cảm, và nhiều nước có luật riêng để bảo vệ nó.
+
+## 5.2. Bốn nguyên tắc của những công ty vừa đạo đức vừa thành công (nhận biết)
+
+Những công ty vừa có đạo đức vừa thành công thường có bốn điểm chung:
+
+1. Cùng có lợi: quan hệ với khách hàng, nhà cung cấp, đối tác theo hướng hai bên cùng được.
+
+2. Nhân viên chịu trách nhiệm cho hành động của công ty, không đổ lỗi "tôi chỉ làm theo lệnh".
+
+3. Có mục đích hoặc tầm nhìn mà nhân viên coi trọng và dùng trong công việc hằng ngày.
+
+4. Coi trọng công bằng: lợi ích của người khác được tính ngang với lợi ích của mình.
+
+## 5.3. Ba chuẩn mực để kiểm tra một quyết định nhân sự
+
+Đây là công cụ quan trọng nhất của phần này. Một hoạt động nhân sự được coi là có đạo đức khi thỏa mãn cả ba chuẩn mực.
+
+```mermaid
+flowchart LR
+  A["1. Lợi ích lớn nhất<br/>cho nhiều người nhất"] --> X{{"Lựa chọn<br/>có đạo đức"}}
+  B["2. Tôn trọng<br/>quyền cơ bản"] --> X
+  C["3. Công bằng<br/>và bình đẳng"] --> X
+```
+
+1. Lợi ích lớn nhất cho nhiều người nhất: quyết định mang lại điều tốt cho số đông nhất có thể.
+
+2. Tôn trọng quyền cơ bản của con người: quyền riêng tư, được xét xử công bằng, tự nguyện đồng ý, tự do ngôn luận.
+
+3. Đối xử công bằng và bình đẳng với nhân viên và khách hàng.
+
+Xét một ví dụ về chuẩn mực công bằng. Công ty A chỉ có một phúc lợi: hỗ trợ tiền gửi trẻ. Công ty B cho mỗi người một khoản cố định hằng tháng, tự chọn dùng cho gửi trẻ, tập thể dục hay học ngoại ngữ.
+
+Ở công ty A, phúc lợi chỉ có giá trị với người có con nhỏ. Ở công ty B, ai cũng có cơ hội nhận phúc lợi ngang giá trị, và mỗi người tự quyết định dùng thế nào. Xét theo nghĩa "mọi người đều có phần như nhau", cách của công ty B công bằng hơn.
+
+Nhưng hãy để ý: công bằng về cơ hội không đảm bảo mọi người dùng như nhau. Có người dùng hết, có người không dùng. Chuẩn mực đạo đức giúp ta đặt câu hỏi đúng, không phải lúc nào cũng cho ra một đáp án duy nhất.
+
+> [!TIP] Câu dễ nhớ:
+> Một quyết định nhân sự có đạo đức phải qua được ba cửa: có lợi cho số đông, không xâm phạm quyền cơ bản, và đối xử công bằng.
+
+> [!REFLECT] Liên hệ bản thân:
+> Bạn đã bao giờ thấy một quy định ở trường hay nơi làm thêm có lợi cho số đông, nhưng lại không công bằng với một nhóm nhỏ? Nó vấp ở cửa nào?
+
+=== SECTION: Phần 6. Nghề nhân sự ===
+
+Nghề nhân sự có hai hướng đi chính.
+
+• Chuyên sâu (specialist): tập trung vào một mảng như tuyển dụng, đào tạo, lương thưởng, phúc lợi hay quan hệ lao động.
+
+• Tổng quát (generalist): làm nhiều việc cùng lúc, từ tuyển dụng, đào tạo đến lương thưởng và quan hệ nhân viên. Ở doanh nghiệp nhỏ, người làm nhân sự thường là generalist.
+
+Thu nhập phụ thuộc vào học vấn, kinh nghiệm và ngành. Theo dữ liệu ở Mỹ mà giáo trình dẫn, các vị trí quản lý (quản lý lương thưởng, quản lý nhân sự, quản lý đào tạo) thường có lương cao hơn rõ rệt so với chuyên viên và trợ lý. Mức lương cụ thể thay đổi theo thị trường, nên bạn hãy tra số liệu hiện hành nếu cần.
+
+Học gì để làm nhân sự? Phần lớn người làm nhân sự có bằng đại học, thường là kinh doanh hoặc quản trị nhân lực. Cũng có người đi lên từ kinh tế học, tâm lý học, khoa học xã hội, nhân văn hay luật. Dù xuất phát từ đâu, bạn cần hiểu ngôn ngữ của các bộ phận khác, nhất là tài chính, để thuyết phục lãnh đạo bằng lý lẽ kinh doanh.
+
+Phát triển nghề thế nào? Người làm nhân sự có thể học tiếp thạc sĩ, thi chứng chỉ nghề, đi theo quan sát (shadowing) một quản lý ở bộ phận khác, hoặc chuyển tạm sang bộ phận khác để hiểu kinh doanh. Nhiều người giỏi nghề được luân chuyển qua nhiều vị trí nhân sự khác nhau trước khi lên vị trí lãnh đạo.
+
+Chứng chỉ và hội nghề nghiệp. Trên thế giới, hai tổ chức được biết đến nhiều là SHRM (với các chứng chỉ SHRM-CP, SHRM-SCP) và HR Certification Institute – HRCI (với các chứng chỉ PHR, SPHR, aPHRi cho người mới vào nghề). Chứng chỉ không bắt buộc để làm nghề, nhưng giúp chứng minh năng lực một cách có hệ thống.
+
+> [!TIP] Câu dễ nhớ:
+> Làm nhân sự giỏi cần cân bằng ba thứ: kỹ năng con người, hiểu biết pháp luật, và hiểu biết kinh doanh.
+
+> [!REFLECT] Liên hệ bản thân:
+> Nếu chọn nghề nhân sự, bạn nghiêng về hướng chuyên sâu hay tổng quát? Vì sao?
+
+=== SECTION: Góc đọc thêm ===
+
+Phần này không bắt buộc. Đây là các nhánh rẽ của chương, giúp bạn thấy bức tranh rộng hơn.
+
+Bảng đầy đủ mười nhóm việc của bộ phận nhân sự
+
+| Chức năng | Công việc cụ thể |
+| --- | --- |
+| Phân tích và thiết kế công việc | Phân tích công việc; thiết kế công việc; viết bản mô tả công việc |
+| Tuyển mộ và tuyển chọn | Tìm ứng viên; đăng tin tuyển dụng; phỏng vấn; kiểm tra; điều phối lao động thời vụ |
+| Đào tạo và phát triển | Hướng dẫn người mới; đào tạo kỹ năng; chương trình phát triển nghề nghiệp |
+| Quản lý kết quả làm việc | Tiêu chí đo lường; tổ chức đánh giá; phản hồi và kèm cặp; kỷ luật |
+| Lương, thưởng, phúc lợi | Quản lý lương; thưởng theo thành tích; bảo hiểm; nghỉ phép; hưu trí; chia lợi nhuận; sức khỏe |
+| Quan hệ nhân viên | Khảo sát thái độ; quan hệ lao động; sổ tay nhân viên; truyền thông nội bộ; tuân thủ luật lao động; hỗ trợ chuyển công tác hoặc chuyển việc |
+| Chính sách nhân sự | Xây dựng chính sách; truyền đạt chính sách |
+| Dữ liệu và hệ thống thông tin nhân sự | Lưu hồ sơ; hệ thống thông tin nhân sự; phân tích dữ liệu nhân sự |
+| Tuân thủ pháp luật | Chính sách bảo đảm hành vi đúng luật; báo cáo; niêm yết thông tin; kiểm tra an toàn; điều chỉnh cho người khuyết tật |
+| Hỗ trợ chiến lược | Hoạch định và dự báo nhân lực; quản lý nhân tài; quản lý thay đổi |
+
+Mười năng lực trong khung của SHRM
+
+| Nhóm | Năng lực | Hiểu ngắn gọn |
+| --- | --- | --- |
+| Chuyên môn | Chuyên môn nhân sự (HR expertise) | Hiểu và thực hiện được các chức năng nhân sự, cập nhật pháp luật |
+| Quan hệ con người | Quản lý quan hệ (relationship management) | Đối xử tôn trọng, xây lòng tin, phục vụ tốt người mình hỗ trợ |
+| Quan hệ con người | Giao tiếp (communication) | Trình bày rõ, góp ý xây dựng, lắng nghe |
+| Quan hệ con người | Tư duy toàn cầu (global mindset) | Tôn trọng nhiều góc nhìn, hiểu văn hóa khác, giải quyết mâu thuẫn |
+| Kinh doanh | Hiểu biết kinh doanh (business acumen) | Hiểu nhân sự đóng góp vào thành công kinh doanh ra sao |
+| Kinh doanh | Tư vấn (consultation) | Kèm cặp, thu thập dữ liệu hỗ trợ quyết định, thiết kế giải pháp |
+| Kinh doanh | Năng lực phân tích (analytical aptitude) | Thu thập dữ liệu, dùng thống kê, chọn giải pháp dựa trên kết quả phân tích |
+| Lãnh đạo | Lãnh đạo và định hướng (leadership and navigation) | Hành xử nhất quán với văn hóa, khuyến khích hợp tác, đặt tầm nhìn |
+| Lãnh đạo | Hành xử có đạo đức (ethical practice) | Chính trực, giữ bí mật, xử lý báo cáo sai phạm |
+| Lãnh đạo | Đa dạng, công bằng, hòa nhập (diversity, equity & inclusion) | Ủng hộ lực lượng lao động đa dạng, làm chính sách công bằng hơn |
+
+Trải nghiệm nhân viên: nhân sự phải chứng minh bằng kết quả
+
+Trải nghiệm nhân viên (employee experience) là cảm nhận của nhân viên về việc đời sống công việc có khớp với mong đợi của họ không. Nó bắt đầu từ ngày đầu đi làm, gồm khối lượng việc, cách nhận lương và phúc lợi, phản hồi từ quản lý, cơ hội học hỏi, sức khỏe và an toàn.
+
+Người làm nhân sự thường thấy nhân viên có trải nghiệm tốt thì làm tốt hơn và ở lại lâu hơn. Nhưng nhiều lãnh đạo kinh doanh chưa tin rằng đầu tư vào trải nghiệm nhân viên mang lại lợi nhuận. Bài học: nhân sự nên bắt đầu từ những cải tiến đo được, đặt mục tiêu rõ, so sánh trước và sau, rồi trình kết quả.
+
+Trở thành đối tác chiến lược
+
+Nhiều tổ chức thuê ngoài việc hành chính, để nhân sự nội bộ tập trung làm đối tác chiến lược. Việc đó đòi hỏi bốn khả năng:
+
+• Tạo uy tín: với nhân viên thì cần chính trực và biết kèm cặp; với quản lý thì cần hiểu công ty kiếm tiền thế nào.
+
+• Giúp tổ chức vượt qua thay đổi: theo dõi môi trường bên ngoài và đoán trước tác động.
+
+• Dùng dữ liệu và công nghệ: ví dụ, khi có công ty dịch vụ chào nhận làm lương giá rẻ, nhân sự phải tự phân tích được con số tiết kiệm đó có thật không và còn tác động gì khác.
+
+• Phá vỡ "ốc đảo" nhân sự: làm việc sát với các bộ phận kinh doanh, và phối hợp với bộ phận khác như marketing.
+
+Nhân sự dùng mạng xã hội
+
+Mạng xã hội là nơi tổ chức tìm được người. Người làm nhân sự dùng nó để xây thương hiệu nhà tuyển dụng (employer brand), tức hình ảnh của tổ chức trong mắt nhân viên hiện tại, ứng viên và cộng đồng. Họ cũng dùng mạng xã hội để đăng tuyển và chia sẻ tài liệu đào tạo.
+
+Chọn kênh theo nhóm người cần tìm: mỗi nghề và mỗi độ tuổi tụ tập ở những nền tảng khác nhau. Nội dung nên gắn với mục tiêu, như chuyện nhân viên được ghi nhận hay lộ trình thăng tiến. Người làm nhân sự giỏi không chỉ đăng bài mà còn đo mức độ tương tác, và luôn có người trả lời bình luận kịp thời.
+
+Năng lực phân tích không chỉ là kỹ thuật
+
+Một tập đoàn khoa học và công nghệ của Đức (Merck KGaA) gom toàn bộ dữ liệu nhân sự về một nền tảng phân tích chung. Phần mềm tự lo phần tính toán. Việc của người làm nhân sự là hiểu vấn đề kinh doanh, giúp quản lý đặt đúng câu hỏi và diễn giải kết quả.
+
+Để quản lý chịu dùng hệ thống mới, người làm nhân sự phải giỏi quản lý quan hệ và giao tiếp. Họ không "bán" công cụ, mà cho thấy công cụ giúp giải những bài toán thật như chia thưởng thế nào hay phản hồi ra sao cho hiệu quả.
+
+Tình thế khó: nhân sự đứng về phía ai?
+
+Mục tiêu của nhân sự thường khớp với mục tiêu của tổ chức. Nhưng có lúc lợi ích va chạm. Lời khuyên của nhiều người làm nghề: đặt giá trị lâu dài của tổ chức lên trên lợi ích tức thời của bất kỳ cá nhân nào.
+
+Tình huống khó nhất: một nhân viên khiếu nại bị quấy rối bởi một quản lý đang mang về nhiều doanh thu. Lãnh đạo có thể muốn "cho qua", chỉ chuyển một người sang phòng khác, hoặc giữ kín. Nếu nhân sự chiều theo, người bị hại mất niềm tin, những người khác không dám lên tiếng, và sai phạm tiếp diễn. Đây là lúc năng lực "hành xử có đạo đức" bị thử thách thật sự.
+
+=== SECTION: Tổng kết ===
+
+## Ghi nhớ trong 8 dòng
+
+1. Quản trị nguồn nhân lực là các chính sách, cách làm và hệ thống tác động đến hành vi, thái độ và kết quả làm việc của nhân viên.
+
+2. Nó tác động đến kết quả tổ chức qua hai đường: ai làm việc và họ làm việc thế nào.
+
+3. Con người có thể tạo lợi thế cạnh tranh bền vững vì có giá trị, hiếm, khó bắt chước và khó thay thế; nhưng đó chỉ là tiềm năng, phải có quản trị tốt mới thành kết quả.
+
+4. Bộ phận nhân sự bán ba "sản phẩm": dịch vụ hành chính, dịch vụ đối tác kinh doanh, và vai trò đối tác chiến lược.
+
+5. Nhân sự làm sáu hoạt động chính và bốn việc nền tảng: chính sách, dữ liệu, tuân thủ pháp luật, hỗ trợ chiến lược.
+
+6. Người làm nhân sự cần bốn nhóm năng lực: chuyên môn, quan hệ con người, kinh doanh, lãnh đạo.
+
+7. Quản lý trực tiếp làm nhân sự mỗi ngày và là "tiếng nói của công ty" với nhân viên.
+
+8. Quyết định nhân sự có đạo đức phải qua ba cửa: lợi ích cho số đông, tôn trọng quyền cơ bản, công bằng.
+
+## Bảng từ khóa
+
+| Thuật ngữ | Tiếng Anh | Nghĩa ngắn gọn |
+| --- | --- | --- |
+| Quản trị nguồn nhân lực | Human resource management (HRM) | Chính sách, cách làm, hệ thống tác động đến hành vi, thái độ, kết quả của nhân viên |
+| Vốn nhân lực | Human capital | Nhân viên nhìn qua đào tạo, kinh nghiệm, phán đoán, trí tuệ, quan hệ, sự thấu hiểu |
+| Lợi thế cạnh tranh bền vững | Sustainable competitive advantage | Hơn đối thủ ở một điểm và giữ được lâu |
+| Phân tích công việc | Job analysis | Thu thập thông tin chi tiết về công việc |
+| Thiết kế công việc | Job design | Xác định công việc làm thế nào, gồm nhiệm vụ gì |
+| Tuyển mộ | Recruitment | Tìm kiếm, thu hút ứng viên |
+| Tuyển chọn | Selection | Xác định ứng viên phù hợp nhất để đạt mục tiêu |
+| Đào tạo | Training | Giúp học kỹ năng cho công việc hiện tại |
+| Phát triển | Development | Chuẩn bị cho yêu cầu thay đổi và công việc tương lai |
+| Quản lý kết quả làm việc | Performance management | Bảo đảm việc làm và kết quả của nhân viên phục vụ mục tiêu tổ chức |
+| Phân tích dữ liệu nhân sự | Workforce analytics | Dùng công cụ định lượng để ra quyết định nhân sự dựa trên bằng chứng |
+| Hoạch định nhân lực | Human resource planning | Xác định cần bao nhiêu người, loại người nào |
+| Quản lý nhân tài | Talent management | Nỗ lực có hệ thống để thu hút, giữ, phát triển, tạo động lực cho người giỏi |
+| Nhân sự dựa trên bằng chứng | Evidence-based HR | Dùng dữ liệu chứng minh hoạt động nhân sự mang lại lợi ích |
+| Tính bền vững | Sustainability | Có lãi mà không làm cạn nguồn lực: con người, tự nhiên, cộng đồng |
+| Các bên liên quan | Stakeholders | Những bên có lợi ích gắn với thành công của tổ chức |
+| Quản lý trực tiếp | Supervisor | Người trực tiếp giao việc và theo dõi một nhóm nhân viên |
+| Đạo đức | Ethics | Nguyên tắc cơ bản về đúng và sai |
+
+## Câu hỏi tự kiểm tra
+
+1. Nêu định nghĩa quản trị nguồn nhân lực. Ba thứ nó tác động đến là gì?
+
+2. Vì sao nói con người "khó bắt chước"? Cái gì thực sự khó sao chép?
+
+3. Phân biệt tuyển mộ và tuyển chọn bằng một ví dụ của bạn.
+
+4. Phân biệt đào tạo và phát triển. Một khóa học Excel cho kế toán mới vào là đào tạo hay phát triển?
+
+5. Ba "dòng sản phẩm" của bộ phận nhân sự là gì? Dòng nào đòi hỏi hiểu kinh doanh sâu nhất?
+
+6. Vì sao quản lý trực tiếp được gọi là "tiếng nói của công ty"?
+
+7. Kể tên năm quyền cơ bản của người lao động.
+
+8. Ba chuẩn mực để kiểm tra một quyết định nhân sự có đạo đức là gì?
+
+## Bài tập thực hành
+
+1. Quán chuyển sang bán online. Một quán bánh mì gia đình quyết định dùng phần mềm bán hàng và nhận đơn qua ứng dụng giao đồ ăn, để bán được nhiều đơn nhỏ hơn và nhanh hơn. Những chức năng nhân sự nào sẽ bị ảnh hưởng? Nhân sự có thể giúp thay đổi này thành công bằng cách nào?
+
+2. Tự mở doanh nghiệp. Nếu bạn mở một cửa hàng nhỏ, bạn sẽ thuê chuyên gia hoặc dịch vụ bên ngoài làm những việc nhân sự nào, và tự giữ lại việc nào? Vì sao?
+
+3. Sàn trơn ở quán bún. Một nhân viên quán bún trượt ngã vì nước dùng đổ ra sàn, phải nghỉ một buổi. Chủ quán nhận ra mình chưa để tâm đến an toàn. Một người bạn khuyên: "Đặt nhiều quy định an toàn quá thì mất tập trung vào khách." Chủ quán nên xử lý thế nào? Những mảng nhân sự nào liên quan?
+
+4. Lời khuyên cho bạn. Một người bạn muốn theo nghề nhân sự. Dựa trên bài này, bạn khuyên bạn ấy chuẩn bị những gì?
+
+Sau khi đọc xong bài giảng, hãy chuyển sang tab Câu hỏi phản biện để luyện áp dụng kiến thức vào các tình huống thật, có lời giải từng bước.

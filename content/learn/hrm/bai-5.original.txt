@@ -1,0 +1,670 @@
+Bài 5 — Hoạch định và tuyển mộ nhân lực
+Môn Quản trị nhân lực · 25 thg 9, 2026 · @Nguyen Duy Khanh
+Mở đầu: Cái Tết "chạy theo sau" của chị Thu
+Chị Thu là chủ chuỗi cà phê Gió Chiều, có 5 quán ở Hà Nội và khoảng 85 nhân viên. Tháng Chạp năm ngoái, đúng lúc khách đông nhất, 3 bạn pha chế và gần chục bạn phục vụ lần lượt xin nghỉ để về quê hoặc chuyển chỗ làm.
+Chị vội đăng tin lên nhóm tìm việc trên mạng xã hội, ai đến cũng nhận. Các bạn mới học việc hai ngày rồi đứng quầy luôn. Khách phàn nàn đồ uống lúc đậm lúc nhạt, và hai bạn mới nghỉ ngay sau một tuần.
+Sang hè, hai quán gần trường đại học vắng hẳn vì sinh viên về quê. Lần này chị lại thừa người, phải cắt ca. Vài bạn làm giỏi thấy thu nhập giảm nên cũng nghỉ luôn.
+Năm nay chị định mở quán thứ 6 trước Tết. Chị nói: "Tôi không muốn năm nào cũng chạy theo sau như thế nữa. Nhưng bắt đầu từ đâu?"
+Câu hỏi của chị Thu chính là nội dung của bài này. Học xong, bạn sẽ trả lời được:
+1. Hoạch định nhân lực là gì, và gồm những bước nào?
+2. Làm sao biết sắp tới mình cần bao nhiêu người, và sẽ có sẵn bao nhiêu người?
+3. Khi thừa hoặc thiếu người, có những cách xử lý nào, mỗi cách được gì và mất gì?
+4. Những chính sách nào làm một vị trí công việc hấp dẫn ứng viên hơn?
+5. Nên tìm ứng viên ở đâu, và làm sao biết nguồn nào hiệu quả?
+6. Người tuyển dụng quan trọng đến đâu, và làm gì để họ giúp được nhiều hơn?
+Một hiểu lầm cần bỏ: "Thiếu người thì tuyển, thừa người thì cho nghỉ." Tuyển thêm chỉ là một trong nhiều cách xử lý thiếu người, và thường là cách chậm, khó rút lại. Cho nghỉ là cách nhanh nhất để hết thừa người, nhưng cũng gây tổn thương nhiều nhất. Người làm nhân sự giỏi nhìn trước để có nhiều lựa chọn hơn.
+Về cách tôi viết bài giảng này
+Tôi viết cho người chưa từng học quản trị nhân lực. Bạn chỉ cần đọc chậm, làm theo các câu hỏi nhỏ trong bài là hiểu được.
+Kiến thức trong bài có cơ sở khoa học, nhưng tôi giảng bằng ví dụ và kinh nghiệm thay vì trích nghiên cứu. Vì vậy bạn sẽ không thấy chú thích nguồn hay số liệu khảo sát.
+Giáo trình gốc là sách Mỹ, nên có những chỗ gắn với luật và thị trường Mỹ. Ở những chỗ đó tôi nói rõ "ở Mỹ", rồi rút ra nguyên tắc chung mà bạn dùng được ở Việt Nam.
+Mỗi thuật ngữ được giải thích ngay lần đầu xuất hiện, kèm tiếng Anh trong ngoặc. Các giáo trình Việt đôi khi dịch khác nhau; khi đó, hãy bám vào nghĩa thay vì bám vào chữ.
+Cuối bài có bộ câu hỏi tình huống ở tab bên cạnh. Hãy tự viết câu trả lời trước rồi mới xem lời giải.
+Bản đồ bài học
+Không phải phần nào cũng quan trọng như nhau. Hãy dành nhiều thời gian nhất cho tầng Cốt lõi.
+Tầng
+Bạn cần làm gì
+Nội dung
+Cốt lõi
+Hiểu chắc, giải thích lại được bằng lời của mình
+Hoạch định nhân lực và ba giai đoạn (Phần 1) · Dự báo cầu, cung, thừa hay thiếu (Phần 2) · Các cách xử lý thừa và thiếu, xét theo tốc độ và hệ quả (Phần 3) · Tuyển mộ khác tuyển chọn; ba yếu tố ảnh hưởng đến tuyển mộ (Phần 4) · Nguồn nội bộ và nguồn bên ngoài; tỷ lệ qua vòng và chi phí mỗi người được tuyển (Phần 5)
+Nhận biết
+Nắm ý chính, nhận ra khi gặp
+Phân tích xu hướng, chỉ báo dẫn dắt, ma trận chuyển đổi (Phần 2) · Năng lực cốt lõi; cắt giảm nhân sự, giảm giờ làm, nghỉ hưu sớm, lao động tạm thời, người làm dịch vụ độc lập, thuê ngoài, làm thêm giờ; thực hiện và đánh giá kế hoạch (Phần 3) · Các chính sách nhân sự làm vị trí hấp dẫn hơn (Phần 4) · Từng nguồn ứng viên cụ thể; thiên vị người thân (Phần 5) · Vai trò, giới hạn của người tuyển dụng; giới thiệu công việc thực tế (Phần 6)
+Đọc thêm
+Không bắt buộc, đọc khi muốn mở rộng
+Bảng đầy đủ các phương án xử lý thừa và thiếu · Rà soát cơ cấu lực lượng lao động · Các câu chuyện doanh nghiệp trong chương (Góc đọc thêm)
+Phần 1. Hoạch định nhân lực: nhìn trước để có lựa chọn
+1.1. Hoạch định nhân lực là gì?
+Hoạch định nguồn nhân lực (human resource planning) là việc xác định số lượng và loại nhân viên mà tổ chức sẽ cần để đạt được mục tiêu của mình.
+Chú ý hai chữ "số lượng" và "loại". Cần 10 người chưa đủ; phải biết đó là 10 người làm gì, có kỹ năng gì.
+Muốn làm được việc này, tổ chức cần biết hai điều. Thứ nhất, đội ngũ hiện tại mạnh ở đâu, yếu ở đâu. Thứ hai, tổ chức muốn trở thành gì trong tương lai: lớn cỡ nào, bán sản phẩm gì, phục vụ ai.
+Hoạch định nhân lực đặt hai bức tranh đó cạnh nhau. Nó so sánh hiện tại với mục tiêu, rồi chỉ ra nhân lực cần thay đổi gì. Thay đổi có thể là tuyển thêm, đào tạo người cũ kỹ năng mới, hoặc thu hẹp đội ngũ.
+Ví dụ. Mục tiêu của chị Thu là mở quán thứ 6 trước Tết. Mỗi quán hiện có 1 quản lý quán, 2 trưởng ca, 6 pha chế và 8 phục vụ. Vậy chị cần thêm đúng bấy nhiêu người đủ năng lực, sẵn sàng trước ngày khai trương. Chưa kể số người sẽ nghỉ việc dịp cuối năm.
+Câu dễ nhớ: Hoạch định nhân lực là trả lời trước câu hỏi "bao nhiêu người, người thế nào, khi nào", thay vì trả lời vội khi đã thiếu.
+1.2. Quy trình ba giai đoạn
+Quy trình hoạch định nhân lực gồm ba giai đoạn: (1) dự báo; (2) đặt mục tiêu và hoạch định chiến lược; (3) thực hiện và đánh giá chương trình.
+flowchart TD
+    A[Dự báo cầu lao động] --> C[Dự báo thừa hay thiếu]
+    B[Dự báo cung lao động] --> C
+    C --> D[Đặt mục tiêu và<br/>hoạch định chiến lược]
+    D --> E[Thực hiện và<br/>đánh giá chương trình]
+    E -. phản hồi .-> A
+    E -. phản hồi .-> B
+    E -. phản hồi .-> D
+Đọc sơ đồ từ trên xuống: dự báo cầu và cung, so sánh để thấy thừa hay thiếu, đặt mục tiêu và chọn cách xử lý, rồi làm và đánh giá. Các đường nét đứt cho thấy kết quả đánh giá quay lại điều chỉnh dự báo và mục tiêu của vòng sau.
+Giai đoạn
+Câu hỏi chính
+Với chị Thu
+1. Dự báo
+Sẽ cần bao nhiêu người? Sẽ có bao nhiêu người? Thừa hay thiếu ở đâu?
+Tháng Chạp cần thêm người cho quán mới và mùa cao điểm; ai có thể nghỉ?
+2. Đặt mục tiêu và hoạch định chiến lược
+Cần đạt con số nào, trước ngày nào? Dùng cách gì?
+Đủ 17 người cho quán mới trước ngày khai trương; chọn tuyển, đào tạo hay điều chuyển
+3. Thực hiện và đánh giá
+Ai chịu trách nhiệm? Kết quả có đạt không, vì sao?
+Giao người phụ trách, theo dõi tiến độ từng tuần, rút kinh nghiệm cho năm sau
+Câu dễ nhớ: Dự báo để biết khoảng trống, đặt mục tiêu để biết lấp bao nhiêu, thực hiện và đánh giá để biết mình lấp đúng chưa.
+Liên hệ bản thân: Nghĩ về một nơi bạn từng làm thêm hoặc một câu lạc bộ bạn từng tham gia. Họ có thiếu người vào những thời điểm đoán trước được không? Nếu họ biết trước, họ có thể làm gì khác?
+Phần 2. Dự báo: sẽ cần bao nhiêu người, sẽ có bao nhiêu người?
+2.1. Dự báo là gì?
+Dự báo (forecasting) là nỗ lực xác định cung và cầu đối với từng loại nhân lực, nhằm dự đoán những bộ phận nào trong tổ chức sẽ thiếu hoặc thừa lao động.
+Mục tiêu cuối cùng không phải là một con số đẹp. Mục tiêu là chỉ ra được chỗ nào sắp thiếu, chỗ nào sắp thừa.
+Có hai cách dự báo: dùng phương pháp thống kê hoặc dùng phán đoán của người có kinh nghiệm. Thống kê dựa vào xu hướng trong quá khứ; khi điều kiện ổn định, nó thường chính xác hơn cảm tính.
+Nhưng có những biến cố chưa từng có tiền lệ, như đại dịch COVID-19. Khi đó, số liệu cũ gần như vô dụng. Tổ chức phải dựa vào phán đoán của các chuyên gia, gom kinh nghiệm và "dự đoán tốt nhất" của nhiều người lại.
+Câu dễ nhớ: Số liệu cho biết điều thường xảy ra; kinh nghiệm cho biết lúc nào "lần này khác".
+2.2. Dự báo cầu lao động
+Cầu lao động (labor demand) là số người, theo từng loại công việc hoặc kỹ năng, mà tổ chức sẽ cần. Người lập kế hoạch xác định các nhóm công việc quan trọng, rồi dự đoán nhu cầu mỗi nhóm sẽ tăng hay giảm.
+Cách bài bản nhất là phân tích xu hướng.
+Phân tích xu hướng (trend analysis) là xây dựng và áp dụng các mô hình thống kê để dự đoán cầu lao động của năm tới, dựa trên các số liệu tương đối khách quan của năm trước.
+Các số liệu đó gọi là chỉ báo dẫn dắt.
+Chỉ báo dẫn dắt (leading indicators) là những thước đo khách quan dự đoán chính xác cầu lao động trong tương lai.
+Một số giáo trình dịch là "chỉ số báo trước" hay "chỉ báo sớm". Hãy bám vào nghĩa: đó là những con số thay đổi trước, và kéo theo nhu cầu về người.
+Chỉ báo dẫn dắt có thể là doanh số, lượng hàng tồn kho, động thái của đối thủ, thay đổi công nghệ, hay xu hướng dân số. Với chị Thu, đó có thể là:
+• Số ly bán ra mỗi tuần trong mùa Tết năm ngoái.
+• Số quán sắp khai trương.
+• Lịch nghỉ hè, lịch thi của các trường đại học gần quán.
+• Việc chuỗi mua thêm máy pha tự động, giúp một người pha được nhiều ly hơn.
+Chỉ báo cuối cùng cho thấy công nghệ có thể làm cầu lao động tăng chậm hơn doanh số. Ở nhiều ngành sản xuất, sản lượng tăng nhanh hơn số người làm, vì máy móc giúp mỗi người làm ra nhiều hơn.
+Mô hình thống kê chỉ đáng tin khi có một lịch sử dài và ổn định. Vì vậy, nó hầu như luôn cần được bổ sung bằng phán đoán của người có kinh nghiệm. Giả sử năm nay một trung tâm thương mại lớn mở ngay cạnh quán của chị Thu: số liệu năm ngoái không thể biết điều đó.
+Câu dễ nhớ: Chỉ báo dẫn dắt là con số chuyển động trước khi nhu cầu về người chuyển động.
+2.3. Xác định cung lao động
+Cung lao động (labor supply) là số người, theo từng loại công việc hoặc kỹ năng, mà tổ chức sẽ có sẵn. Có hai nguồn cung: bên trong và bên ngoài tổ chức.
+Cung bên trong. Trước hết, đếm xem hiện có bao nhiêu người ở mỗi vị trí, hoặc có mỗi kỹ năng. Sau đó điều chỉnh theo những thay đổi sắp tới: nghỉ hưu, thăng chức, điều chuyển, tự xin nghỉ, bị cho thôi việc.
+Một công cụ thống kê cho việc này là ma trận chuyển đổi.
+Ma trận chuyển đổi (transitional matrix) là một bảng liệt kê các nhóm công việc ở một thời điểm, và cho thấy tỷ lệ nhân viên của mỗi nhóm đó nằm ở các nhóm công việc nào ở một thời điểm sau.
+Nó trả lời hai câu hỏi: "Người ở mỗi vị trí đã đi đâu?" và "Người đang ở mỗi vị trí từ đâu đến?" Một số tài liệu gọi là "ma trận chuyển tiếp"; nghĩa như nhau.
+Dưới đây là ma trận của chuỗi Gió Chiều trong một năm. Sách thường ghi bằng tỷ lệ; tôi ghi bằng số người để bạn đọc được cả hai chiều.
+Một năm trước ↓ / Hiện nay →
+Quản lý quán
+Trưởng ca
+Pha chế
+Phục vụ
+Đã rời chuỗi
+Tổng một năm trước
+Quản lý quán
+4
+
+1
+5
+Trưởng ca
+1
+7
+
+2
+10
+Pha chế
+
+3
+15
+
+12
+30
+Phục vụ
+
+4
+16
+20
+40
+Tuyển mới từ bên ngoài
+0
+0
+11
+24
+
+Tổng hiện nay
+5
+10
+30
+40
+
+Đọc theo hàng: người đã đi đâu? Lấy hàng "Pha chế": trong 30 người một năm trước, 15 người (50%) vẫn là pha chế, 3 người (10%) lên trưởng ca, 12 người (40%) đã rời chuỗi. Chia mỗi ô cho tổng của hàng, bạn sẽ có ma trận dạng tỷ lệ như trong sách.
+Đọc các hàng, ta thấy một lộ trình nghề nghiệp: phục vụ → pha chế → trưởng ca → quản lý quán. Ta cũng thấy phục vụ và pha chế nghỉ việc nhiều nhất.
+Đọc theo cột: người đang có từ đâu đến? Cả 5 quản lý quán hiện nay đều từ bên trong: 4 người giữ nguyên, 1 người là trưởng ca được đề bạt. Ngược lại, 24 trong 40 phục vụ (60%) mới được tuyển từ bên ngoài.
+Điều này gợi ý cách lập kế hoạch khác nhau. Muốn có quản lý quán, chị Thu nên tập trung bồi dưỡng trưởng ca. Muốn có phục vụ, chị phải giỏi tuyển mộ và tuyển chọn người mới.
+Ma trận chỉ mô tả quá khứ. Nó dùng được cho tương lai khi điều kiện gần như không đổi. Người lập kế hoạch vẫn cần phán đoán: chẳng hạn, nếu chị Thu vừa mở lớp đào tạo pha chế, số phục vụ đủ khả năng lên pha chế có thể tăng.
+Nhiều tổ chức còn lưu danh mục kỹ năng (skills inventory) của nhân viên trong hệ thống dữ liệu nhân sự. Khi cần một kỹ năng mới, họ tra xem trong tổ chức đã có bao nhiêu người có kỹ năng đó.
+Cung bên ngoài. Người lập kế hoạch cũng cần theo dõi thị trường lao động: quy mô, tỷ lệ thất nghiệp, và những kiểu người sẽ có mặt trên thị trường.
+Sách kể trường hợp ngành vận tải ở Mỹ. Nhu cầu tài xế xe tải tăng mạnh, trong khi nhiều tài xế sắp nghỉ hưu, và người trẻ phải đủ tuổi mới được lái. Kết quả là khó tìm đủ người, kể cả khi tăng lương.
+Với chị Thu, cung bên ngoài chịu ảnh hưởng của những điều như: người lao động trẻ về quê dịp Tết, sinh viên bận thi hoặc nghỉ hè, hay một chuỗi đối thủ mở gần đó và trả lương cao hơn. Ở Mỹ có cơ quan thống kê lao động công bố số liệu; ở Việt Nam, bạn có thể theo dõi các báo cáo thị trường lao động của cơ quan thống kê nhà nước và các trung tâm dịch vụ việc làm.
+Câu dễ nhớ: Đọc ma trận theo hàng để biết người đi đâu; đọc theo cột để biết người từ đâu tới.
+2.4. Xác định thừa hay thiếu
+Có dự báo cầu và cung, người lập kế hoạch so sánh hai con số cho từng nhóm công việc. Cầu lớn hơn cung là thiếu lao động (labor shortage); cung lớn hơn cầu là thừa lao động (labor surplus).
+Chị Thu giả định 12 tháng tới diễn ra giống 12 tháng qua. Chị dùng ma trận ở trên để dự báo đội ngũ 12 tháng tới, khi chuỗi có 5 quán cũ và 1 quán mới:
+Vị trí
+Cầu: cần có
+Cung bên trong dự kiến
+Chênh lệch
+Quản lý quán
+6
+5 (4 ở lại + 1 trưởng ca lên)
+Thiếu 1
+Trưởng ca
+12
+10 (7 ở lại + 3 pha chế lên)
+Thiếu 2
+Pha chế
+36
+19 (15 ở lại + 4 phục vụ lên)
+Thiếu 17
+Phục vụ
+48
+16 (16 ở lại)
+Thiếu 32
+Con số "thiếu 17 pha chế" gồm 11 người để thay người nghỉ (như năm qua) và 6 người cho quán mới. Năm ngoái, người nghỉ dồn vào dịp cuối năm, nên phần lớn khoảng trống sẽ lộ ra đúng mùa cao điểm. Biết trước từ tháng 9, chị Thu có vài tháng để chuẩn bị, thay vì chạy theo sau vào tháng Chạp.
+Một ví dụ từ sách: một công ty bảo hiểm ở Mỹ dự báo rằng lập trình viên sẽ ngày càng khó tuyển. Họ mở chương trình cho chính nhân viên của mình học lập trình, trực tuyến và tại nơi làm việc.
+Câu dễ nhớ: Cầu là cần bao nhiêu, cung là sẽ có bao nhiêu; khoảng trống giữa hai con số chính là việc của người làm nhân sự.
+Liên hệ bản thân: Nếu bạn là chủ một quán ăn gần trường, hãy kể ra ba chỉ báo dẫn dắt giúp bạn đoán tháng nào cần nhiều người nhất.
+Phần 3. Thừa hay thiếu người: chọn cách xử lý nào?
+3.1. Đặt mục tiêu cụ thể
+Giai đoạn thứ hai của hoạch định là đặt mục tiêu và hoạch định chiến lược. Mục tiêu phải lấy thẳng từ kết quả so sánh cung và cầu.
+Mục tiêu tốt có một con số cụ thể và một mốc thời gian cụ thể. Nó giúp mọi người tập trung vào vấn đề, và cho ta cơ sở để đo xem mình làm được đến đâu.
+Mục tiêu mơ hồ
+Mục tiêu cụ thể
+"Cố gắng có đủ người dịp Tết"
+"Đến ngày 15/12 có đủ 36 pha chế đạt chuẩn tay nghề của chuỗi"
+"Giảm bớt người nghỉ việc"
+"Trong năm tới, giảm số phục vụ nghỉ việc từ 20 xuống còn 12 người"
+Với mỗi mục tiêu, tổ chức chọn một hoặc vài chiến lược nhân sự để đạt được nó.
+3.2. Bức tranh chung: mỗi cách được gì, mất gì
+Các phương án khác nhau rất nhiều về chi phí, tốc độ và hiệu quả. Sách so sánh chúng theo hai thước đo:
+• Khi thừa người: tốc độ có kết quả, và mức tổn thương gây ra cho người lao động.
+• Khi thiếu người: tốc độ có kết quả, và khả năng rút lại về sau nếu tình hình đổi chiều.
+Khi thừa người, các phương án chia thành ba nhóm:
+1. Nhanh nhưng gây tổn thương cao: cắt giảm nhân sự, giảm lương, giáng chức.
+2. Nhanh, tổn thương vừa phải: điều chuyển sang bộ phận khác, chia sẻ công việc (mọi người cùng làm ít giờ hơn thay vì một số người mất việc).
+3. Chậm nhưng ít tổn thương: đóng băng tuyển dụng, chờ hao hụt tự nhiên (người tự nghỉ, nghỉ hưu mà không tuyển thay), nghỉ hưu sớm, đào tạo lại.
+Khi thiếu người, cũng có ba nhóm:
+1. Nhanh và dễ rút lại: làm thêm giờ, dùng lao động tạm thời, thuê ngoài.
+2. Chậm nhưng tương đối dễ rút lại: đào tạo lại người đang có rồi điều chuyển, giảm tỷ lệ nghỉ việc.
+3. Chậm và khó rút lại: tuyển mới từ bên ngoài, đổi mới công nghệ (dùng máy thay người).
+Bảng đầy đủ nằm ở Góc đọc thêm. Điều quan trọng là hiểu vì sao mỗi cách nằm ở nhóm đó.
+Ví dụ, vì sao tuyển mới lại "chậm và khó rút lại"? Tuyển và đào tạo một người mới tốn thời gian và tiền bạc. Nếu sau này thiếu người biến thành thừa người, tổ chức lại phải tính đến chuyện cho nghỉ, với mọi hệ quả của nó.
+Một lựa chọn khác là phát triển trong đội ngũ hiện tại những kỹ năng đang thiếu. Cách này có lợi nhất khi tổ chức vừa thiếu người có kỹ năng này, vừa thừa người có kỹ năng khác. Chẳng hạn, chuỗi có thể dạy pha chế cho những bạn phục vụ đang dư vào mùa vắng.
+Câu dễ nhớ: Khi thừa người, hỏi "ai bị tổn thương và bao nhiêu"; khi thiếu người, hỏi "nếu mai tình hình đổi chiều, mình rút lại được không".
+3.3. Năng lực cốt lõi: ai nên là nhân viên chính thức?
+Năng lực cốt lõi (core competency) là tập hợp kiến thức và kỹ năng giúp tổ chức vượt trội hơn đối thủ và tạo ra giá trị cho khách hàng.
+Tổ chức thường có lợi nhất khi tuyển và giữ chân những người tạo ra năng lực cốt lõi. Với những việc không thuộc năng lực cốt lõi, tổ chức có thể dùng các cách khác thay vì tuyển nhân viên chính thức toàn thời gian.
+Ở một cửa hàng bán lẻ, chọn đúng hàng khách muốn mua và phục vụ khách thật tốt là năng lực cốt lõi. Ở chuỗi Gió Chiều, đó là tay nghề pha chế và cách phục vụ tạo nên trải nghiệm riêng của quán. Còn làm sổ sách kế toán, tính lương hay bảo trì máy pha thì chị Thu có thể thuê bên ngoài.
+Câu dễ nhớ: Giữ trong nhà những gì làm nên sự khác biệt; cân nhắc thuê ngoài những gì ai làm cũng như nhau.
+3.4. Khi thừa người
+Nếu dự báo được thừa người từ sớm, tổ chức có thể đóng băng tuyển dụng và chờ hao hụt tự nhiên. Tiếc là nhiều tổ chức, để giữ sức cạnh tranh trong môi trường thay đổi nhanh, lại chọn cách nhanh nhất: cắt giảm nhân sự.
+Cắt giảm nhân sự
+Cắt giảm nhân sự (downsizing) là việc chủ động loại bỏ một số lượng lớn nhân sự, với mục tiêu nâng cao năng lực cạnh tranh của tổ chức.
+Tổ chức thường cắt giảm vì bốn lý do:
+1. Giảm chi phí: lao động là một khoản lớn trong tổng chi phí.
+2. Thay lao động bằng công nghệ: đóng nhà máy cũ, tự động hóa.
+3. Sáp nhập và mua lại: hai tổ chức gộp lại thường cần ít vị trí quản lý hơn.
+4. Chuyển đến nơi chi phí thấp hơn: sang vùng hoặc nước có tiền lương thấp hơn.
+Cắt giảm có tác dụng ngay lên chi phí. Nhưng nhiều bằng chứng cho thấy nó thường làm hại hiệu quả dài hạn. Tác hại thường lớn hơn ở những tổ chức cạnh tranh bằng con người: làm nghiên cứu và phát triển, nhân viên tiếp xúc nhiều với khách, hay làm việc theo nhóm.
+Vì sao cắt giảm hay không đạt kỳ vọng?
+• Mất người giỏi và mất các mối quan hệ làm việc, vốn là nơi sinh ra sáng tạo và sự linh hoạt.
+• Người ở lại mất tinh thần: họ lo cho bản thân, ngại rủi ro, thôi hy vọng thăng tiến, và bắt đầu tìm chỗ khác.
+• Phải tuyển lại: nhiều nơi sau đó phải tuyển lại chính những người đã cho nghỉ, vì hóa ra không thay được họ.
+• Tiếng xấu: hình ảnh "công ty sa thải hàng loạt" làm việc tuyển người sau này khó hơn.
+Cách thực hiện cũng rất quan trọng. Sách kể việc Google bị chỉ trích mạnh khi báo tin cho hàng nghìn nhân viên nghỉ việc qua email, trái với hình ảnh một công ty trọng nhân viên.
+Tuy vậy, không phải lúc nào cũng phải tuyển lại. Khi nhu cầu giảm hẳn, như bóng đèn sợi đốt bị đèn LED thay thế, những vị trí đó có thể không bao giờ quay lại.
+Nhiều tác hại có thể giảm bằng kế hoạch tốt hơn. Thay vì cắt đồng loạt, hãy cắt có chọn lọc để tăng sức cạnh tranh. Đồng thời cho nhân viên thấy họ được đối xử công bằng, thấy kế hoạch cho tương lai, và thấy tổ chức hành xử có trách nhiệm.
+Giảm giờ làm
+Một phương án được xem là chia gánh nặng công bằng hơn là giảm giờ làm của nhiều người, thường kèm giảm lương tương ứng. Nó rẻ hơn cắt giảm vì không phải trả trợ cấp thôi việc. Khi việc nhiều trở lại, tăng giờ làm cũng dễ hơn nhiều so với tuyển lại người mới.
+Ở châu Âu và một số bang của Mỹ có chương trình "chia sẻ công việc": nhà nước bù một phần tiền lương bị mất để doanh nghiệp giữ chân người lao động có kinh nghiệm.
+Nghỉ hưu sớm
+Nhiều tổ chức mời nhân viên lớn tuổi nghỉ hưu sớm kèm một khoản hỗ trợ, để giảm người nhanh hơn tốc độ hao hụt tự nhiên. Cách này ít đau hơn sa thải. Nhưng nó chậm, và có rủi ro: chính những người giỏi, dễ tìm việc khác, lại hay nhận lời ra đi.
+Câu dễ nhớ: Cắt giảm cắt được chi phí ngay hôm nay, nhưng có thể cắt luôn cả những gì giúp tổ chức mạnh vào ngày mai.
+3.5. Khi thiếu người
+Sách giới thiệu kỹ bốn cách: lao động tạm thời, người làm dịch vụ độc lập, thuê ngoài và làm thêm giờ.
+Lao động tạm thời
+Đây là cách phổ biến nhất để xử lý thiếu người. Tổ chức thuê người qua một công ty cung ứng nhân sự: tổ chức trả tiền cho công ty cung ứng, công ty đó trả lương cho người lao động.
+Lợi ích
+Bất lợi
+Linh hoạt: tăng giảm người nhanh khi nhu cầu thay đổi
+Người tạm thời có thể ít gắn bó, và thái độ đó có thể lan sang khách hàng
+Tiết kiệm: bên cung ứng lo thủ tục và nhiều khoản phúc lợi
+Có nơi gặp người không đến làm đều đặn
+Bên cung ứng có thể đã kiểm tra và đào tạo sẵn
+Căng thẳng có thể nảy sinh giữa người tạm thời và nhân viên chính thức
+Người ngoài mang góc nhìn khách quan và kinh nghiệm từ nơi khác
+Không xây được đội ngũ lâu dài bên trong
+Nhiều tổ chức giữ nhân viên chính thức ở vị trí then chốt, và dùng người tạm thời để bổ sung, không phải để thay thế. Để tránh căng thẳng, đừng đưa người tạm thời vào ngay sau đợt cắt giảm, và nên chọn bên cung ứng có lo phúc lợi cho người lao động.
+Người làm dịch vụ độc lập
+Tổ chức cũng có thể ký trực tiếp với từng người để làm một việc nhất định, như một nhà thiết kế tự do hay một lập trình viên làm theo dự án. Sách gọi họ là người làm dịch vụ độc lập (independent contractor). Hãy bám vào nghĩa: đây không phải người có hợp đồng lao động với tổ chức.
+Ở Mỹ, luật phân biệt rõ: với người làm dịch vụ độc lập, tổ chức được yêu cầu kết quả cần đạt, nhưng không được quản lý trực tiếp cách làm, như làm ở đâu, giờ nào. Nếu đối xử với họ như nhân viên, tổ chức phải gánh các nghĩa vụ pháp lý của người sử dụng lao động.
+Ở Việt Nam, luật lao động cũng xét bản chất hơn tên gọi. Nếu thỏa thuận có việc làm được trả lương và có sự quản lý, điều hành, giám sát của một bên, thì dù gọi là "hợp đồng cộng tác viên" hay "hợp đồng dịch vụ", vẫn có thể được coi là hợp đồng lao động. Khi áp dụng thật, hãy hỏi ý kiến người am hiểu luật lao động.
+Thuê ngoài
+Thuê ngoài (outsourcing) là ký hợp đồng với một tổ chức khác (nhà cung cấp, bên thứ ba hoặc đơn vị tư vấn) để họ cung cấp dịch vụ.
+Khác với thuê một người lấp một vị trí, thuê ngoài là giao cả một mảng việc. Ví dụ, một shop online giao toàn bộ việc lưu kho, đóng gói và giao hàng cho một công ty kho vận.
+Bên nhận thuê có thể làm rẻ hơn nhờ chuyên môn hóa và lợi thế theo quy mô (economies of scale): làm càng nhiều thì chi phí cho mỗi đơn vị càng giảm. Chi phí cũng thấp hơn khi bên nhận thuê đặt ở nơi tiền lương thấp.
+Nhưng lỗi chất lượng, lộ thông tin hay chăm sóc khách hàng kém có thể xóa sạch khoản tiết kiệm. Sách đưa ra bốn lời khuyên:
+1. Tìm hiểu bên nhận thuê làm được gì, không chỉ giá bao nhiêu.
+2. Không giao ra bên ngoài những việc liên quan bí mật kinh doanh hoặc cần bảo mật chặt.
+3. Bắt đầu nhỏ và theo dõi sát, nhất là lúc đầu, khi dễ phát sinh sự cố nhất.
+4. Tìm cơ hội thuê ngoài ở những mảng giúp tăng trưởng, như hợp tác với đội ngũ bán hàng có kinh nghiệm ở thị trường mới.
+Một ví dụ trong sách: một hãng sản xuất động cơ máy bay giao việc điều phối linh kiện cho một công ty vận chuyển lớn. Quý đầu tiên, bên nhận thuê giao sai và làm hỏng nhiều linh kiện vì chưa quen ngành, khiến hãng giao hàng trễ. Hai bên sửa được vào quý sau, và sau đó bên nhận thuê làm tốt hơn cả bộ phận cũ. Bài học: sự cố lúc đầu là bình thường, nên phải bắt đầu nhỏ và theo dõi sát.
+Làm thêm giờ
+Nếu dự đoán việc thiếu người chỉ là tạm thời, tổ chức có thể muốn một cách đơn giản hơn: đề nghị nhân viên bán thời gian làm toàn thời gian, hoặc làm thêm giờ.
+Làm thêm giờ phải trả cao hơn giờ thường. Ở Mỹ, nhân viên không thuộc cấp quản lý được trả gấp rưỡi. Việt Nam cũng quy định tiền làm thêm giờ cao hơn giờ thường và giới hạn số giờ làm thêm. Dù vậy, nhiều nơi vẫn thấy rẻ hơn tuyển và đào tạo người mới.
+Trong thời gian ngắn, nhiều người thích có thêm thu nhập. Kéo dài, họ căng thẳng và bực bội, tinh thần đi xuống. Vì vậy làm thêm giờ hợp nhất với thiếu người ngắn hạn.
+Câu dễ nhớ: Cách nhanh và dễ rút lại hợp với thiếu người ngắn hạn; thiếu người lâu dài thì cần xây từ bên trong hoặc tuyển mới.
+3.6. Thực hiện và đánh giá kế hoạch
+Đây là giai đoạn cuối của quy trình. Khi thực hiện, phải có một người cụ thể chịu trách nhiệm đạt mục tiêu. Người đó cần đủ quyền hạn và nguồn lực, và phải báo cáo tiến độ đều đặn để tổ chức biết mọi việc có đúng lịch không.
+Khi hoạch định và tuyển người gắn chặt với chiến lược và với việc phát triển nhân viên, ta có một chương trình quản trị nhân tài (talent management) hoàn chỉnh. Các hệ thống dữ liệu và trí tuệ nhân tạo giúp việc này dễ hơn, nhưng chỉ khi dữ liệu thu thập được là chính xác.
+Khi đánh giá, câu hỏi đầu tiên là: đã tránh được thừa hay thiếu người chưa? Nhưng cần đi xa hơn: phần nào của quy trình làm nên thành công hay thất bại?
+Chẳng hạn, nếu vẫn thiếu người có kỹ năng cần thiết, lỗi nằm ở đâu? Ở khâu dự báo (không đoán ra kỹ năng nào sẽ cần), hay ở khâu thực hiện (có dự báo đúng nhưng nhân viên không đăng ký học, hoặc không có khóa học phù hợp)?
+Cuối cùng, hãy đo cả hiệu suất của quy trình: tốn bao nhiêu tiền, mất bao nhiêu ngày để tuyển được một người. Đôi khi cách cải thiện tốt nhất là làm nhanh hơn, rẻ hơn.
+Câu dễ nhớ: Đánh giá không chỉ hỏi "đủ người chưa", mà hỏi "nếu chưa, hỏng ở khâu nào".
+Liên hệ bản thân: Nếu mùa hè tới quán gần trường của chị Thu lại vắng khách, bạn sẽ chọn phương án nào trong nhóm "khi thừa người"? Nó được gì và mất gì?
+Phần 4. Tuyển mộ: làm cho vị trí đáng để ứng tuyển
+4.1. Tuyển mộ là gì, và khác tuyển chọn thế nào?
+Khó mà đoán chính xác năm nào cần tuyển bao nhiêu người cho từng vị trí. Vì vậy, tổ chức cần có sẵn một nguồn người có thể mời vào khi cần. Đó là việc của tuyển mộ.
+Tuyển mộ (recruiting) là mọi hoạt động mà tổ chức thực hiện với mục đích chính là tìm ra và thu hút những người có thể trở thành nhân viên.
+Tuyển mộ là cầu nối giữa hoạch định và tuyển chọn (selection), tức việc quyết định ai là người phù hợp nhất. Tuyển chọn là chủ đề của bài sau.
+Hai việc này có mục tiêu khác nhau. Tuyển mộ khuyến khích người phù hợp nộp đơn; tuyển chọn quyết định nhận ai. Sách cho rằng làm tách riêng thì hiệu quả hơn, thay vì gộp chung, chẳng hạn một buổi phỏng vấn vừa chấm điểm ứng viên vừa "chào bán" công ty.
+Lưu ý thuật ngữ. Nhiều tài liệu tiếng Việt dùng "tuyển dụng" để chỉ cả hai việc. Trong bài này, "tuyển mộ" là thu hút ứng viên, "tuyển chọn" là chọn người. Hãy bám vào nghĩa.
+Câu dễ nhớ: Tuyển mộ là mời đúng người đến gõ cửa; tuyển chọn là quyết định mở cửa cho ai.
+4.2. Ba yếu tố ảnh hưởng đến tuyển mộ
+Mọi tổ chức đều phải ra quyết định ở ba mảng: chính sách nhân sự, nguồn tuyển mộ, và người tuyển dụng.
+flowchart TD
+    P[Chính sách nhân sự] --> V[Đặc điểm của<br/>vị trí cần tuyển]
+    R[Người tuyển dụng:<br/>đặc điểm và hành vi] --> V
+    R --> A[Đặc điểm của<br/>ứng viên]
+    S[Nguồn tuyển mộ] --> A
+    V --> J{Quyết định<br/>chọn việc}
+    A --> J
+• Chính sách nhân sự định hình vị trí cần tuyển trông như thế nào.
+• Nguồn tuyển mộ quyết định tổ chức tiếp cận được những ai.
+• Người tuyển dụng ảnh hưởng đến cả hai.
+Cuối cùng, ứng viên có nhận việc hay không, và tổ chức có mời hay không, phụ thuộc vào mức độ khớp giữa vị trí và ứng viên. Phần này nói về chính sách; Phần 5 nói về nguồn; Phần 6 nói về người tuyển dụng.
+4.3. Chính sách nhân sự làm vị trí hấp dẫn hơn
+Chính sách nhân sự (personnel policies) là các quyết định của tổ chức về cách thực hiện quản trị nhân sự, trong đó có cách lấp các vị trí trống. Nghiên cứu về tuyển mộ cho thấy: đặc điểm của vị trí dự đoán việc ứng viên có chọn công việc hay không tốt hơn so với người tuyển dụng hay nguồn tuyển mộ.
+Nói cách khác, lương, cơ hội thăng tiến, sự ổn định của công việc thường nặng ký hơn lời mời chào khéo léo. Sách nêu bốn nhóm chính sách:
+1. Tuyển nội bộ hay tuyển bên ngoài. Tổ chức có chính sách "đề bạt từ bên trong" sẽ ưu tiên lấp vị trí cấp cao hơn bằng người đang làm cho mình. Cơ hội thăng tiến làm công việc hấp dẫn hơn, với cả ứng viên lẫn nhân viên hiện tại.
+Ví dụ, nếu tin tuyển phục vụ của Gió Chiều ghi rõ lộ trình "phục vụ → pha chế → trưởng ca → quản lý quán", người trẻ muốn đi đường dài sẽ chú ý hơn.
+2. Trả lương dẫn đầu thị trường (lead-the-market pay). Tức là trả cao hơn mức lương phổ biến trên thị trường cho cùng công việc. Lương cao hơn cũng bù được những điểm kém hấp dẫn, như làm ca đêm hay làm ở nơi nguy hiểm. Ngoài lương, tổ chức có thể dùng thưởng, cổ phần hay các hình thức trả công khác.
+3. Quy định về chấm dứt quan hệ lao động. Đây là phần gắn với luật Mỹ.
+Chấm dứt tùy ý (employment at will) là nguyên tắc cho rằng, nếu không có hợp đồng quy định khác, người sử dụng lao động hoặc người lao động có thể kết thúc quan hệ lao động bất cứ lúc nào, bất kể lý do.
+Chính sách bảo đảm quy trình công bằng (due-process policies) là các chính sách nêu chính thức những bước mà nhân viên có thể thực hiện để khiếu nại quyết định cho thôi việc của người sử dụng lao động.
+Ở Mỹ, luật sư thường khuyên doanh nghiệp ghi "chấm dứt tùy ý" trong giấy tờ tuyển dụng để tránh bị kiện. Nhưng ứng viên bị thu hút bởi nơi có chính sách quy trình công bằng hơn, vì nó cho thấy công việc ổn định và quyền lợi được bảo vệ. Doanh nghiệp phải cân nhắc giữa lợi thế pháp lý và sức hút tuyển mộ.
+Ở Việt Nam, việc chấm dứt hợp đồng lao động do luật quy định riêng, nên đừng áp nguyên xi khái niệm này. Nguyên tắc chung vẫn đúng: người lao động bị thu hút bởi nơi cho thấy họ sẽ được đối xử công bằng khi có bất đồng.
+4. Hình ảnh và sự hiện diện của tổ chức. Hình ảnh của tổ chức, ví dụ là nơi sáng tạo hay có trách nhiệm xã hội, ảnh hưởng đến việc người ta có muốn làm ở đó không. Nhiều người muốn làm cho nơi có giá trị giống mình.
+Xây hình ảnh cần cả hai: để nhiều người biết đến, và làm cho họ thấy hấp dẫn. Mạng xã hội giúp làm việc này bằng hình ảnh, video và câu chuyện thật, và bằng cách trò chuyện hai chiều với người lao động. Sách kể một công ty phần mềm làm cả phim hoạt hình và trò chơi điện tử để cho thấy làm việc ở đó như thế nào.
+Điều quan trọng: hình ảnh phải khớp với trải nghiệm thật khi làm việc ở đó. Một fanpage đẹp mà thực tế khác xa sẽ tạo ra kỳ vọng sai, và người mới sẽ sớm ra đi.
+Câu dễ nhớ: Ứng viên chọn công việc trước tiên vì bản thân công việc, rồi mới đến người mời và nơi họ nhìn thấy lời mời.
+Liên hệ bản thân: Khi bạn tìm việc làm thêm, điều gì trong tin tuyển khiến bạn muốn nộp đơn nhất: lương, giờ làm linh hoạt, cơ hội học hỏi, hay hình ảnh của nơi đó? Nó thuộc nhóm chính sách nào ở trên?
+Phần 5. Tìm ứng viên ở đâu, và nguồn nào tốt?
+Thị trường lao động rất rộng, nhưng mỗi tổ chức chỉ chạm tới một phần nhỏ. Cách tổ chức thông báo nhu cầu, và đối tượng nó nhắm tới, quyết định nó gặp được những ai.
+Người đọc tấm biển "Cần tuyển nhân viên" dán ở cửa quán khác với người được một công ty chủ động nhắn tin qua hồ sơ nghề nghiệp trên mạng. Mỗi nguồn có điểm mạnh và điểm yếu riêng.
+5.1. Nguồn nội bộ
+Nguồn nội bộ (internal sources) là những nhân viên đang giữ vị trí khác trong tổ chức. Cách phổ biến để tiếp cận họ là thông báo tuyển nội bộ.
+Thông báo tuyển nội bộ (job posting) là việc thông tin về vị trí trống trên bảng tin công ty, bản tin nội bộ, mạng nội bộ, và mọi kênh tổ chức dùng để trao đổi với nhân viên.
+Ngoài ra, các quản lý cũng có thể đề cử người phù hợp. Nguồn nội bộ có ba ưu điểm lớn:
+• Tổ chức đã biết rõ ứng viên.
+• Ứng viên đã hiểu công việc và tổ chức, nên ít có kỳ vọng sai.
+• Thường rẻ hơn và nhanh hơn tuyển bên ngoài.
+Thêm nữa, khi thấy đồng nghiệp được đề bạt, người khác cũng có động lực phấn đấu. Nhưng điều đó chỉ xảy ra nếu thông tin thật sự đến được với nhân viên.
+Sách kể một thực tế: nhiều nhân viên không biết công ty mình đang có vị trí trống, và ít người thấy quản lý khuyến khích mình ứng tuyển nội bộ. Khi đó, lợi thế thuộc về người có quan hệ rộng trong công ty, chưa chắc là người giỏi nhất. Tổ chức nào làm cho thông báo dễ tìm và lộ trình nghề nghiệp dễ hiểu sẽ giữ người tốt hơn.
+Câu dễ nhớ: Cơ hội nội bộ chỉ giữ chân được người khi người ta biết là nó tồn tại.
+5.2. Nguồn bên ngoài
+Dù nguồn nội bộ có nhiều lợi ích, tổ chức vẫn thường có lý do để tuyển bên ngoài:
+• Với vị trí đầu vào, và đôi khi vị trí chuyên môn cấp cao, bên trong không có ai để đề bạt.
+• Người ngoài giúp đội ngũ đa dạng hơn và mang đến ý tưởng mới. Tổ chức chỉ tuyển nội bộ dễ thành nơi mọi người nghĩ giống nhau, khó đổi mới.
+• Khi kinh tế khó khăn, nơi khác ngừng tuyển hoặc cắt giảm; tổ chức vẫn tăng trưởng được sẽ có cơ hội đón người giỏi.
+Dưới đây là các nguồn bên ngoài chính. Trên thực tế, một ứng viên thường biết đến tổ chức qua nhiều nguồn cùng lúc. Người tuyển dụng giỏi không chỉ chọn nguồn rẻ nhất, mà chọn tổ hợp nguồn hợp nhất với từng loại vị trí.
+a. Ứng viên tự nộp và ứng viên được giới thiệu
+Ứng viên tự nộp (direct applicants) là người ứng tuyển mà tổ chức không cần mời gọi.
+Ứng viên được giới thiệu (referrals) là người ứng tuyển vì có ai đó trong tổ chức gợi ý họ nộp đơn.
+Hai nguồn này có chung một điểm mạnh: tự sàng lọc (self-selection). Người tự nộp đơn thường đã tìm hiểu và thấy mình hợp với vị trí. Với người được giới thiệu, nhân viên hiện tại, vốn hiểu cả công việc lẫn người bạn của mình, đã "lọc hộ" một bước.
+Hai nguồn này cũng rẻ hơn nhiều so với tuyển mộ chính thức. Vì vậy chúng thường nằm trong nhóm nguồn tốt nhất.
+Một số công ty còn giữ mạng lưới "cựu nhân viên" (alumni) để mời lại người giỏi từng rời đi, hoặc người đã nghỉ hưu cho việc thời vụ. Một số nơi thưởng cho nhân viên giới thiệu người, nhưng chỉ khi người đó được tuyển và làm tốt đủ một thời gian nhất định.
+Điểm yếu lớn nhất: người ta thường giới thiệu người giống mình, nên tổ chức ít có góc nhìn mới. Giới thiệu cũng có thể dẫn đến chuyện thiếu công bằng, như thiên vị người thân (nepotism), tức tuyển người nhà. Nhân viên dễ bất bình khi người thân của chủ hay sếp được tuyển và thăng tiến nhanh.
+b. Nền tảng tìm việc và mạng lưới nghề nghiệp
+Đây là các trang tìm việc trực tuyến và mạng xã hội nghề nghiệp như LinkedIn. Người tìm việc đăng hồ sơ; nhà tuyển dụng đặt tiêu chí, hệ thống lọc và gửi về hồ sơ phù hợp. Hệ thống còn có thể gửi thông báo cho người phù hợp, kể cả những người không chủ động tìm việc.
+Điểm mạnh là tìm được người khớp với tiêu chí, kể cả người đang có việc. Điểm cần nhớ: hệ thống ưu tiên người biết viết hồ sơ đúng từ khóa, chưa chắc là người làm giỏi nhất.
+Phần lớn doanh nghiệp ngày nay có dùng mạng xã hội để tuyển người, dù hiếm khi là kênh chính. Nền tảng nào đang được ưa chuộng thay đổi rất nhanh, nên hãy nhớ nguyên tắc, đừng nhớ tên nền tảng.
+c. Quảng cáo tuyển dụng
+Tin tuyển dụng có thể đặt trên trang việc làm, báo, ấn phẩm chuyên ngành, hay chỉ là tấm biển ở cửa quán. Nguyên tắc là đặt tin ở nơi người phù hợp dễ thấy nhất. Tin phải dễ đọc lướt và dễ hành động, ví dụ ứng tuyển được ngay trên điện thoại.
+Cách viết tin cũng quyết định ai sẽ nộp đơn. Tin chứa đúng những từ người tìm việc hay tìm sẽ đến đúng người hơn.
+Sách cảnh báo về "tin tuyển ma" (ghost jobs): đăng tuyển những vị trí không định tuyển thật, để tỏ ra công ty đang lớn hoặc để gom sẵn hồ sơ. Người nộp đơn bị lãng phí công sức và sẽ có cái nhìn xấu về công ty.
+d. Trung tâm dịch vụ việc làm của nhà nước
+Ở Mỹ, người nhận trợ cấp thất nghiệp phải đăng ký với văn phòng việc làm của bang. Doanh nghiệp có thể gửi nhu cầu tuyển, và văn phòng giới thiệu ứng viên miễn phí. Ở Việt Nam cũng có các trung tâm dịch vụ việc làm của nhà nước ở các tỉnh, thành.
+Điểm mạnh của nguồn này là chi phí thấp. Theo sách, các cơ quan này còn có bộ phận riêng hỗ trợ một số nhóm như người khuyết tật hay cựu quân nhân, hữu ích cho mục tiêu đa dạng.
+e. Công ty tuyển dụng tư nhân và công ty săn đầu người
+Công ty tuyển dụng tư nhân tính phí doanh nghiệp, nên đắt hơn nhưng phù hợp với một số loại ứng viên, nhất là lao động văn phòng.
+Với vị trí quản lý và chuyên gia, có loại công ty săn đầu người (executive search firm, headhunter). Họ tìm người gần như chỉ trong số những người đang có việc. Họ đóng vai trò trung gian giữ bí mật, vì ứng viên thường không muốn công ty hiện tại biết mình đang tìm chỗ mới. Nhiều công ty săn đầu người chuyên sâu một ngành, nên gợi ý được những ứng viên mà doanh nghiệp tự tìm sẽ không nghĩ tới.
+f. Trường đại học và cao đẳng
+Đây là nguồn quan trọng cho các vị trí chuyên môn và quản lý cấp đầu vào. Doanh nghiệp thường tập trung vào các trường mạnh ở lĩnh vực mình cần, và có thể tài trợ học bổng, cùng làm dự án để góp phần đào tạo kỹ năng mình cần.
+Chương trình thực tập (internship) là một trong những cách tốt nhất để có mặt ở trường. Doanh nghiệp được tiếp cận ứng viên sớm và đánh giá trực tiếp năng lực của họ. Sinh viên thì được trải nghiệm thật công việc. Nhờ đó, cả hai bên quyết định việc có gắn bó lâu dài hay không dựa trên thông tin đầy đủ.
+Ngày hội việc làm (job fair) cũng là cách ít tốn kém để có mặt ở trường, và có thể tổ chức trực tuyến.
+Nguồn
+Điểm mạnh
+Điểm cần lưu ý
+Nội bộ
+Biết rõ ứng viên, ít kỳ vọng sai, nhanh, rẻ, tạo động lực
+Không đủ cho mọi nhu cầu; dễ nghĩ giống nhau
+Tự nộp, được giới thiệu
+Rẻ, ứng viên đã tự sàng lọc
+Ít góc nhìn mới; nguy cơ thiên vị người thân
+Nền tảng tìm việc, mạng nghề nghiệp
+Tiếp cận rộng, cả người không chủ động tìm việc
+Ưu tiên người viết hồ sơ đúng từ khóa
+Quảng cáo tuyển dụng
+Chủ động nhắm đúng nơi người phù hợp hay xem
+Hiệu quả phụ thuộc cách viết và nơi đặt tin
+Trung tâm việc làm nhà nước
+Chi phí thấp
+Chủ yếu phù hợp lao động phổ thông
+Công ty tuyển dụng, săn đầu người
+Tìm được người khó tìm, giữ bí mật
+Chi phí cao
+Trường học
+Người trẻ có nền tảng; thực tập giúp hai bên hiểu nhau
+Ứng viên chưa có kinh nghiệm làm việc
+Câu dễ nhớ: Không có nguồn tốt nhất cho mọi vị trí, chỉ có nguồn hợp nhất cho từng vị trí.
+5.3. Đo chất lượng của một nguồn tuyển
+Vì không có quy tắc nào nói nguồn nào tốt nhất, tổ chức nên theo dõi chất lượng của từng nguồn. Sách giới thiệu hai thước đo.
+Tỷ lệ qua vòng (yield ratio) là tỷ lệ phần trăm ứng viên đi tiếp thành công từ một vòng của quá trình tuyển mộ và tuyển chọn sang vòng kế tiếp.
+Ví dụ: tỷ lệ qua vòng hồ sơ = số người được phỏng vấn / số hồ sơ nhận được. Tỷ lệ cao nghĩa là nguồn đó mang lại nhiều ứng viên đáng phỏng vấn. Một số tài liệu gọi đây là "tỷ lệ sàng lọc" hay "tỷ lệ hiệu suất"; hãy bám vào nghĩa.
+Chi phí cho mỗi người được tuyển (cost per hire) là tổng số tiền bỏ ra để lấp một vị trí. Cách tính: lấy chi phí dùng một nguồn cho một loại vị trí, chia cho số người được tuyển vào loại vị trí đó từ nguồn đó.
+Chi phí mỗi người thấp nghĩa là nguồn đó hiệu quả về tiền: mang lại người đạt yêu cầu với ít chi phí.
+Ví dụ giả định: trong nửa năm, chuỗi Gió Chiều tuyển pha chế từ bốn nguồn.
+
+Nhóm tìm việc trên mạng xã hội
+Nhân viên giới thiệu
+Trang việc làm trả phí
+Trường nghề (hợp tác)
+Hồ sơ nhận được
+120
+15
+60
+20
+Đến phỏng vấn
+60
+12
+30
+18
+Tỷ lệ qua vòng
+50%
+80%
+50%
+90%
+Đạt yêu cầu
+15
+9
+10
+12
+Tỷ lệ qua vòng
+25%
+75%
+33%
+67%
+Nhận việc
+10
+8
+5
+6
+Tỷ lệ qua vòng
+67%
+89%
+50%
+50%
+Tỷ lệ tích lũy (nhận việc / hồ sơ)
+8%
+53%
+8%
+30%
+Chi phí
+2 triệu đồng
+4 triệu đồng (thưởng giới thiệu)
+5 triệu đồng
+3 triệu đồng
+Chi phí mỗi người được tuyển
+200 nghìn
+500 nghìn
+1 triệu
+500 nghìn
+Đọc bảng thế nào?
+• Nhóm mạng xã hội có chi phí mỗi người thấp nhất, nhưng tỷ lệ tích lũy cũng thấp: 120 hồ sơ, 60 buổi phỏng vấn, chỉ được 10 người.
+• Giới thiệu có tỷ lệ tích lũy cao nhất: cứ 15 hồ sơ thì được 8 người, với chi phí vừa phải.
+• Trang việc làm trả phí vừa đắt nhất vừa có tỷ lệ tích lũy thấp: đây là nguồn nên xem lại.
+Điều sâu hơn: Chi phí 200 nghìn của nhóm mạng xã hội chưa tính thời gian của quản lý cho 60 buổi phỏng vấn. Nếu tính cả, nguồn "rẻ nhất" có thể không còn rẻ. Hai thước đo này cũng chưa cho biết người được tuyển làm việc tốt đến đâu sau đó, hay đội ngũ có đa dạng không. Tổ chức giỏi theo dõi cả những điều đó.
+Câu dễ nhớ: Tỷ lệ qua vòng cho biết nguồn nào "trúng"; chi phí mỗi người cho biết nguồn nào "đáng tiền"; cần xem cả hai.
+Liên hệ bản thân: Công việc làm thêm gần nhất của bạn đến từ nguồn nào? Từ góc nhìn của nơi tuyển bạn, nguồn đó có ưu và nhược điểm gì?
+Phần 6. Người tuyển dụng: quan trọng đến đâu?
+6.1. Vai trò và giới hạn
+Người tuyển dụng (recruiter) ảnh hưởng đến cả hình ảnh của vị trí lẫn loại ứng viên tìm đến. Nhưng ảnh hưởng đó thường nhỏ hơn ta nghĩ, vì ba lý do:
+1. Họ thường xuất hiện muộn. Khi gặp người tuyển dụng, nhiều ứng viên đã tự quyết định mình muốn gì, vị trí có gì, và khả năng được nhận ra sao.
+2. Ứng viên dè chừng. Biết nhiệm vụ của người tuyển dụng là "chào bán", nhiều người chỉ tin một phần, và đối chiếu với điều nghe từ bạn bè, mạng xã hội, thầy cô.
+3. Ứng viên đã biết về công ty. Khi ứng viên quen thuộc với sản phẩm của công ty, ảnh hưởng của người tuyển dụng càng yếu.
+Nhắc lại Phần 4: điều ảnh hưởng mạnh nhất đến việc ứng viên nhận việc, và nhất là ở lại lâu, là đặc điểm của công việc: lương, sự ổn định, cơ hội thăng tiến. Người tuyển dụng đứng sau những yếu tố đó.
+6.2. Đặc điểm của người tuyển dụng
+Tổ chức phải chọn: người tuyển dụng là chuyên viên nhân sự, hay là người làm chuyên môn (đang làm công việc đó, hoặc đang quản lý người làm công việc đó)?
+Một số nghiên cứu cho thấy ứng viên thường thấy chuyên viên nhân sự kém đáng tin hơn, và kém hứng thú với công việc hơn khi người tuyển là chuyên viên nhân sự. Điều này không có nghĩa chuyên viên nhân sự vô dụng. Nó có nghĩa họ phải cố gắng thêm để cho thấy mình hiểu công việc và nói thật.
+Nhìn chung, ứng viên thích người tuyển dụng ấm áp và cung cấp thông tin:
+• Ấm áp: tỏ ra quan tâm đến ứng viên và hào hứng về những gì ứng viên có thể đóng góp.
+• Cung cấp thông tin: trả lời được đúng điều ứng viên muốn biết.
+Còn tuổi, giới tính, chủng tộc của người tuyển dụng có ảnh hưởng hay không thì bằng chứng phức tạp và không nhất quán.
+6.3. Hành vi của người tuyển dụng: nói thật đến đâu?
+Vì phải thu hút ứng viên, người tuyển dụng dễ bị áp lực phóng đại điểm tốt và giấu điểm xấu của công việc. Đây là một thế khó thật sự.
+• Ứng viên rất nhạy với thông tin tiêu cực. Những ứng viên giỏi nhất có thể lùi lại khi nghe điều không hay.
+• Nhưng nếu tô hồng quá, người mới sẽ vỡ mộng. Kỳ vọng không được đáp ứng làm tăng nghỉ việc, và người mới có thể thấy tổ chức không trung thực.
+Giới thiệu công việc thực tế (realistic job preview) là thông tin cơ bản về cả mặt tích cực lẫn tiêu cực của một công việc.
+Một số tài liệu gọi là "bản xem trước công việc thực tế". Với vị trí pha chế ở Gió Chiều, nó có thể gồm: đứng gần như cả ca, cao điểm dịp Tết và cuối tuần, phải làm đúng công thức từng gam; đổi lại được học nghề bài bản và có lộ trình lên trưởng ca.
+Nghiên cứu cho thấy giới thiệu công việc thực tế chỉ giúp giảm nghỉ việc một cách yếu và không ổn định. Nhưng nó rẻ và dễ làm, nên tổ chức vẫn nên cân nhắc dùng. Đừng kỳ vọng nó là thuốc chữa nghỉ việc.
+Câu dễ nhớ: Nói thật về công việc có thể làm mất vài ứng viên hôm nay, nhưng tô hồng thường làm mất nhân viên ngày mai.
+6.4. Làm sao để người tuyển dụng giúp được nhiều hơn?
+Phần lớn người tuyển dụng ít được đào tạo. Nghiên cứu gợi ý ba việc tổ chức có thể làm:
+1. Phản hồi kịp thời. Ứng viên ghét phải chờ. Im lặng lâu khiến họ nghĩ tổ chức không coi trọng hồ sơ của mình.
+2. Tránh hành vi gây phản cảm. Sách dẫn lời những ứng viên từng gặp người tuyển dụng suýt ngáp trước mặt ứng viên, đùa cợt về ngoại hình, liên tục nhắc chuyện ứng viên đã rời trường nhiều năm, xếp lịch phỏng vấn chồng chéo rồi như thể đổ lỗi cho ứng viên. Mỗi hành vi như vậy làm xấu hình ảnh của cả tổ chức.
+3. Tuyển theo nhóm. Ghép người làm chuyên môn, vốn được ứng viên tin hơn, với chuyên viên nhân sự, người nắm chính sách và quy trình của tổ chức.
+Với chị Thu, buổi phỏng vấn pha chế có thể gồm một trưởng ca giỏi nghề và một người phụ trách nhân sự. Trưởng ca nói thật về công việc; người nhân sự nói rõ lương, ca, hợp đồng. Và dù đỗ hay trượt, ứng viên đều được báo kết quả đúng hẹn.
+Câu dễ nhớ: Người tuyển dụng không quyết định ứng viên chọn việc, nhưng có thể làm hỏng một lựa chọn lẽ ra đã thành.
+Liên hệ bản thân: Hãy nhớ lại một lần phỏng vấn (xin việc, vào câu lạc bộ, học bổng). Người phỏng vấn đã làm gì khiến bạn muốn hoặc không muốn tham gia hơn?
+Góc đọc thêm
+Phần này không bắt buộc. Nó gồm bảng tra cứu đầy đủ, một kỹ thuật dùng ở Mỹ, và các câu chuyện doanh nghiệp trong chương đã được rút gọn.
+Bảng đầy đủ: các phương án xử lý thừa và thiếu
+Khi thừa người
+Phương án
+Tốc độ có kết quả
+Mức tổn thương gây ra
+Cắt giảm nhân sự (downsizing)
+Nhanh
+Cao
+Giảm lương (pay reductions)
+Nhanh
+Cao
+Giáng chức (demotions)
+Nhanh
+Cao
+Điều chuyển (transfers)
+Nhanh
+Vừa
+Chia sẻ công việc (work sharing)
+Nhanh
+Vừa
+Đóng băng tuyển dụng (hiring freeze)
+Chậm
+Thấp
+Hao hụt tự nhiên (natural attrition)
+Chậm
+Thấp
+Nghỉ hưu sớm (early retirement)
+Chậm
+Thấp
+Đào tạo lại (retraining)
+Chậm
+Thấp
+Khi thiếu người
+Phương án
+Tốc độ có kết quả
+Khả năng rút lại về sau
+Làm thêm giờ (overtime)
+Nhanh
+Cao
+Lao động tạm thời (temporary employees)
+Nhanh
+Cao
+Thuê ngoài (outsourcing)
+Nhanh
+Cao
+Đào tạo lại rồi điều chuyển (retrained transfers)
+Chậm
+Cao
+Giảm tỷ lệ nghỉ việc (turnover reductions)
+Chậm
+Vừa
+Tuyển mới từ bên ngoài (new external hires)
+Chậm
+Thấp
+Đổi mới công nghệ (technological innovation)
+Chậm
+Thấp
+Rà soát cơ cấu lực lượng lao động
+Ở Mỹ, nhiều tổ chức có chính sách "hành động khẳng định" (affirmative action) để tăng sự đa dạng hoặc đáp ứng yêu cầu của chính phủ. Khi đó, họ làm thêm một lớp hoạch định cho các nhóm được luật bảo vệ, như phụ nữ hay các nhóm sắc tộc thiểu số.
+Rà soát cơ cấu lực lượng lao động (workforce utilization review) là việc so sánh tỷ lệ nhân viên thuộc các nhóm được bảo vệ trong tổ chức với tỷ lệ mà mỗi nhóm chiếm trong thị trường lao động liên quan.
+Nếu một nhóm chiếm phần lớn trong thị trường lao động của một nghề, nhưng chỉ chiếm phần rất nhỏ trong số nhân viên làm nghề đó ở tổ chức, đó là dấu hiệu sử dụng chưa tương xứng (underutilization). Nguyên nhân có thể nằm ở khâu tuyển chọn, hoặc ở khâu đề bạt, điều chuyển. Ma trận chuyển đổi giúp tìm ra nguyên nhân.
+Các bước rà soát giống hệt quy trình hoạch định ở Phần 1: đánh giá hiện trạng, dự báo, đặt mục tiêu và mốc thời gian, thực hiện, rồi đánh giá. Nguyên tắc chung dùng được ở mọi nơi: so sánh cơ cấu đội ngũ với cơ cấu thị trường để phát hiện những nhóm có thể đang bị bỏ sót.
+Một kỹ thuật dự báo: hồi quy bội
+Phần tóm tắt của chương nhắc đến hồi quy bội (multiple regression): một kỹ thuật thống kê gộp nhiều chỉ báo dẫn dắt thành một con số dự báo duy nhất về nhu cầu nhân lực. Bạn sẽ gặp kỹ thuật này kỹ hơn trong các môn thống kê.
+Câu chuyện doanh nghiệp trong chương
+Tìm nhân tài ở những nơi từng bị bỏ qua. Một tập đoàn bảo hiểm y tế lớn ở Mỹ đón nhiều kỹ sư phần mềm khi các công ty công nghệ cắt giảm. Họ còn mở chương trình học nghề ngắn không cần kinh nghiệm, hợp tác đào tạo cựu quân nhân, và cho làm việc từ xa để mở rộng vùng tuyển. Bài học: khi nguồn quen thuộc cạn, hãy nhìn vào những nhóm người mình chưa từng tính đến.
+Tuyển người khi thị trường khan hiếm lao động. Khi tỷ lệ thất nghiệp thấp, doanh nghiệp khó tìm người. Sách kể các cách sáng tạo: một công ty điện đặt hẳn một trường trung học ngay tại xưởng, học sinh vừa học vừa làm; một chuỗi siêu thị mở chương trình thực tập luân chuyển cho sinh viên; một công ty bỏ yêu cầu bằng đại học; một số nơi mời người lớn tuổi làm bán thời gian; một nhà máy mua robot khi không tuyển đủ người. Bài học: thiếu người có rất nhiều lối ra, không chỉ là tăng lương hay đăng tin.
+Mở rộng nguồn nhân tài. Bốn gợi ý từ sách: đào tạo kỹ năng mới cho nhân viên lớn tuổi thay vì cho rằng họ lạc hậu; tự đào tạo những kỹ năng khó tìm qua chương trình học nghề có lương; tìm ở cả trường cao đẳng và khóa học ngắn hạn, không chỉ đại học danh tiếng; đặt văn phòng ở nơi có sẵn người, hoặc cho làm việc từ xa. Hãy tự hỏi: mỗi cách có rủi ro gì?
+Đào tạo lại thay vì thay người. Một tập đoàn viễn thông lớn ở Mỹ nhận ra chỉ khoảng một nửa nhân viên có kỹ năng hợp với nhu cầu tương lai. Thay vì cho nghỉ rồi tuyển người mới, việc vừa khó vừa đắt, họ mở các khóa học trực tuyến và cổng thông tin để nhân viên chọn lộ trình và tự học. Người đã học được chọn vào vị trí mới nhiều hơn hẳn so với người ngoài. Bài học: đây là phương án "đào tạo lại rồi điều chuyển" ở quy mô lớn.
+Làm dịch vụ độc lập chưa phải việc chính của đa số. Ở Mỹ, trong số người có thu nhập tự làm, phần lớn chỉ làm thêm bên cạnh công việc làm công. Số người sống chủ yếu bằng nghề tự do ít hơn nhiều so với hình ảnh "kinh tế tự do" trên báo chí. Bài học: muốn dùng người làm dịch vụ độc lập, hãy tìm đúng nơi có những người thật sự muốn làm theo cách này.
+Rút ngắn thời gian tuyển. Một chuỗi khách sạn quốc tế thấy quy trình tuyển quá chậm, mất người giỏi vào tay đối thủ. Họ dùng phỏng vấn video: ứng viên tự trả lời câu hỏi lúc nào tiện, người tuyển dụng xem lại sau. Thời gian tuyển giảm từ hơn một tháng xuống vài ngày. Bài học: đánh giá kế hoạch nhân sự gồm cả đo tốc độ và chi phí của quy trình.
+Tuyển qua mạng xã hội: hai mũi nhọn. Mũi thứ nhất: xây "thương hiệu nhà tuyển dụng" trên mạng, vừa đăng thông tin hữu ích, vừa lắng nghe và xử lý những lời phàn nàn. Mũi thứ hai: phân tích dữ liệu để tìm người giỏi đang thảo luận về ngành, rồi chủ động mời trò chuyện. Cần chú ý đừng chỉ tìm theo vài kỹ năng kỹ thuật mà bỏ qua kỹ năng làm việc nhóm, lãnh đạo.
+Tạo lộ trình để giữ người. Một công ty bán rượu trực tuyến ít nhân viên gặp riêng từng người để lập kế hoạch phát triển nghề nghiệp, và mời nhân viên trình bày ý tưởng kinh doanh với ban lãnh đạo. Nhờ vậy, khi có vị trí trống, họ đã biết ai muốn gì và ai có tiềm năng. Bài học: nguồn nội bộ mạnh không tự có; nó được xây từ trước.
+Góc đạo đức: làm tạm thời và làm dịch vụ có công bằng với người lao động? Người làm theo cách này thường không có phúc lợi như nhân viên, thu nhập bấp bênh, có khi phải tự chịu chi phí làm việc, và dễ bị bỏ sót khi đào tạo an toàn. Nhưng nhiều người lại thích vì được tự chủ giờ giấc và cách làm. Hãy tự hỏi: bạn sẽ dựa vào những điều kiện nào để đánh giá một thỏa thuận như vậy là công bằng?
+Tuyển người tị nạn ở Mỹ. Nhiều doanh nghiệp lớn cam kết tuyển người tị nạn và ghi nhận họ gắn bó hơn mức trung bình. Để làm được, họ thuê phiên dịch, mở lớp ngôn ngữ, dịch tin tuyển sang nhiều thứ tiếng, và bỏ yêu cầu ngoại ngữ ở những vị trí không thật cần. Bài học: mở rộng nguồn ứng viên thường đòi hỏi thay đổi cả cách tuyển, cách đào tạo và cách hỗ trợ.
+Tự xây nguồn cung lao động. Một công ty phần mềm nhỏ ở Mỹ từng thuê làm ở nước ngoài, nhưng chi phí tăng và khó kiểm soát. Người sáng lập mở một khóa đào tạo lập trình miễn phí sáu tuần cho những nhóm hay bị bỏ qua, rồi nhận người học tốt vào học việc có lương. Người học việc cũ nay kèm cặp người mới. Bài học: khi thị trường không có sẵn người, tổ chức có thể tự "sản xuất" ra người.
+Khi không thể trả lương cao. Một tổ chức phi lợi nhuận chăm sóc người khuyết tật ở Mỹ phụ thuộc vào mức chi trả do nhà nước đặt ra, nên khó tăng lương. Thưởng tuyển dụng và thưởng giới thiệu ít tác dụng. Sức hút lớn nhất của họ là sứ mệnh: tìm những người xem việc chăm sóc người khác là ý nghĩa sống, không chỉ là một công việc.
+Tổng kết
+Ghi nhớ trong 10 dòng
+1. Hoạch định nhân lực là xác định số lượng và loại nhân viên tổ chức cần để đạt mục tiêu.
+2. Quy trình có ba giai đoạn: dự báo; đặt mục tiêu và hoạch định chiến lược; thực hiện và đánh giá.
+3. Dự báo so sánh cầu (sẽ cần bao nhiêu) với cung (sẽ có bao nhiêu) để thấy chỗ thừa, chỗ thiếu.
+4. Thống kê mạnh khi tình hình ổn định; khi có biến cố chưa từng có, cần phán đoán của người có kinh nghiệm.
+5. Ma trận chuyển đổi đọc theo hàng cho biết người đi đâu, đọc theo cột cho biết người từ đâu đến.
+6. Khi thừa người, cân nhắc tốc độ và mức tổn thương; khi thiếu người, cân nhắc tốc độ và khả năng rút lại.
+7. Cắt giảm nhân sự nhanh nhưng thường làm hại hiệu quả dài hạn nếu làm không khéo.
+8. Tuyển mộ là thu hút ứng viên; tuyển chọn là chọn người. Đặc điểm công việc thường nặng ký hơn người tuyển dụng hay nguồn tuyển.
+9. Không có nguồn tuyển tốt nhất cho mọi vị trí; hãy đo bằng tỷ lệ qua vòng và chi phí mỗi người được tuyển.
+10. Người tuyển dụng có ảnh hưởng hạn chế, nhưng phản hồi kịp thời, cư xử đúng mực, tuyển theo nhóm và nói thật về công việc giúp họ tạo khác biệt.
+Bảng từ khóa
+Thuật ngữ
+Tiếng Anh
+Nghĩa ngắn gọn
+Hoạch định nguồn nhân lực
+Human resource planning
+Xác định số lượng và loại nhân viên cần để đạt mục tiêu
+Dự báo
+Forecasting
+Xác định cung và cầu nhân lực để thấy chỗ sẽ thừa, chỗ sẽ thiếu
+Cầu lao động / Cung lao động
+Labor demand / Labor supply
+Số người sẽ cần / số người sẽ có, theo từng loại
+Phân tích xu hướng
+Trend analysis
+Dùng mô hình thống kê và số liệu năm trước để dự báo cầu năm tới
+Chỉ báo dẫn dắt
+Leading indicators
+Thước đo khách quan dự đoán cầu lao động tương lai
+Ma trận chuyển đổi
+Transitional matrix
+Bảng cho thấy người ở mỗi vị trí đã chuyển đi đâu sau một thời gian
+Năng lực cốt lõi
+Core competency
+Kiến thức, kỹ năng giúp tổ chức hơn đối thủ và tạo giá trị cho khách
+Cắt giảm nhân sự
+Downsizing
+Chủ động loại bỏ số lượng lớn nhân sự để tăng sức cạnh tranh
+Người làm dịch vụ độc lập
+Independent contractor
+Người được thuê làm một việc theo kết quả, không phải nhân viên
+Thuê ngoài
+Outsourcing
+Ký với tổ chức khác để họ cung cấp dịch vụ
+Lợi thế theo quy mô
+Economies of scale
+Làm càng nhiều, chi phí mỗi đơn vị càng giảm
+Rà soát cơ cấu lực lượng lao động
+Workforce utilization review
+So sánh tỷ lệ các nhóm được bảo vệ trong tổ chức với thị trường lao động
+Tuyển mộ
+Recruiting
+Hoạt động tìm và thu hút người có thể trở thành nhân viên
+Tuyển chọn
+Selection
+Quyết định ứng viên nào phù hợp nhất
+Chấm dứt tùy ý
+Employment at will
+Nguyên tắc luật Mỹ: hai bên có thể kết thúc quan hệ lao động bất cứ lúc nào
+Chính sách bảo đảm quy trình công bằng
+Due-process policies
+Các bước chính thức để nhân viên khiếu nại quyết định cho thôi việc
+Thông báo tuyển nội bộ
+Job posting
+Thông tin vị trí trống qua các kênh nội bộ
+Ứng viên tự nộp
+Direct applicants
+Người ứng tuyển không cần tổ chức mời gọi
+Ứng viên được giới thiệu
+Referrals
+Người ứng tuyển vì có người trong tổ chức gợi ý
+Tự sàng lọc
+Self-selection
+Ứng viên tự đánh giá mình hợp với vị trí trước khi nộp đơn
+Thiên vị người thân
+Nepotism
+Tuyển người nhà
+Công ty săn đầu người
+Executive search firm
+Công ty tìm người cho vị trí quản lý, chuyên gia, chủ yếu trong số người đang có việc
+Tỷ lệ qua vòng
+Yield ratio
+Tỷ lệ ứng viên đi tiếp từ vòng này sang vòng sau
+Chi phí cho mỗi người được tuyển
+Cost per hire
+Chi phí dùng một nguồn chia cho số người được tuyển từ nguồn đó
+Giới thiệu công việc thực tế
+Realistic job preview
+Thông tin về cả mặt tốt lẫn mặt chưa tốt của công việc
+Câu hỏi tự kiểm tra
+1. Hoạch định nhân lực trả lời những câu hỏi nào? Kể tên ba giai đoạn của quy trình.
+2. Vì sao dự báo bằng thống kê cần được bổ sung bằng phán đoán của người có kinh nghiệm?
+3. Chỉ báo dẫn dắt là gì? Cho hai ví dụ với một quán ăn.
+4. Ma trận chuyển đổi trả lời hai câu hỏi nào? Đọc theo hàng và theo cột khác nhau thế nào?
+5. Vì sao tuyển mới từ bên ngoài được xếp vào nhóm "chậm và khó rút lại"?
+6. Nêu bốn lý do tổ chức cắt giảm nhân sự, và ba lý do cắt giảm hay không đạt kỳ vọng.
+7. Tuyển mộ khác tuyển chọn ở điểm nào?
+8. Nêu ba ưu điểm của nguồn nội bộ và hai lý do vẫn cần tuyển bên ngoài.
+9. Điểm mạnh chung của ứng viên tự nộp và ứng viên được giới thiệu là gì? Điểm yếu của giới thiệu là gì?
+10. Tỷ lệ qua vòng và chi phí mỗi người được tuyển đo điều gì khác nhau?
+11. Vì sao ảnh hưởng của người tuyển dụng thường hạn chế? Nêu ba cách tăng ảnh hưởng đó.
+Bài tập thực hành
+1. Dự báo cho một nơi quen thuộc. Chọn một quán ăn, cửa hàng, hay câu lạc bộ bạn biết rõ. Liệt kê ba nhóm vị trí, ba chỉ báo dẫn dắt, và dự đoán thời điểm nào trong năm sẽ thiếu hoặc thừa người.
+2. Đọc ma trận. Dùng ma trận của chuỗi Gió Chiều ở Phần 2: vị trí nào có tỷ lệ rời chuỗi cao nhất? Chuỗi nên làm gì để giảm con số đó? Vị trí nào dựa nhiều nhất vào nguồn nội bộ, vị trí nào dựa nhiều nhất vào tuyển ngoài?
+3. Sắp thiếu người lâu dài. Giả sử một doanh nghiệp dự báo sẽ thiếu người ở các vị trí then chốt trong vài năm tới. Hãy đề xuất hướng xử lý ở ba mảng: tuyển mộ, đào tạo, và lương thưởng.
+4. Chính sách nhân sự. Cho một ví dụ chính sách giúp thu hút nhiều ứng viên hơn, và một ví dụ chính sách làm giảm số ứng viên. Chúng có ảnh hưởng đến chất lượng ứng viên không?
+5. Nhìn lại chính mình. Liệt kê những công việc bạn từng làm (kể cả làm thêm, tình nguyện). Bạn được tuyển qua nguồn nào? Từ góc nhìn của nơi tuyển, nguồn đó có ưu và nhược điểm gì?
+6. Tổ chức nhỏ, lương không cao. Một nhóm tình nguyện hoặc một cơ sở xã hội không thể trả lương cao. Họ nên tập trung vào những nguồn ứng viên nào, và dùng mạng xã hội thế nào để thu hút người?
+Bộ câu hỏi tình huống có lời giải nằm ở tab Câu hỏi phản biện. Hãy tự viết câu trả lời trước khi xem lời giải.

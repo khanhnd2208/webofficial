@@ -1,0 +1,660 @@
+Câu hỏi phản biện — Bài 4
+Cách dùng bộ câu hỏi
+Bộ câu hỏi này đi theo thứ tự các phần của bài giảng. Mỗi câu là một tình huống thực tế, để bạn luyện dùng kiến thức vừa học vào đời sống, chứ không phải để học thuộc.
+Các mức tư duy (thang Bloom)
+Mức
+Nghĩa là bạn cần…
+Dạng câu hỏi
+Hiểu
+Giải thích lại bằng lời của mình, nhận ra khái niệm trong ví dụ
+"Đây là… hay…? Vì sao?"
+Áp dụng
+Dùng khái niệm để làm một việc cụ thể
+"Hãy lập / viết / chọn…"
+Phân tích
+Tách tình huống ra, tìm nguyên nhân, chỉ ra mối liên hệ
+"Vấn đề thật nằm ở đâu?"
+Đánh giá
+Cân nhắc ưu nhược, đưa ra nhận định có lý lẽ
+"Ý kiến này đúng đến đâu?"
+Sáng tạo
+Kết hợp nhiều khái niệm để đề xuất một giải pháp mới
+"Hãy thiết kế…"
+Mỗi câu có bốn phần
+1. Tình huống và câu hỏi.
+2. Nhắc lại bài học: phần lý thuyết cần dùng, viết lại ngắn gọn.
+3. Cùng suy nghĩ từng bước: lời giải đi từng bước.
+4. Điều rút ra: một câu để nhớ.
+Cách học hiệu quả
+Đọc tình huống và câu hỏi, rồi tự viết câu trả lời trước khi đọc phần nhắc lại và lời giải. Sau đó so sánh: bạn dùng đúng khái niệm chưa, bỏ sót bước nào?
+Một số câu có đáp án khái niệm khá rõ. Với các câu Phân tích, Đánh giá, Sáng tạo, có thể có nhiều câu trả lời tốt; điều quan trọng là dùng đúng khái niệm và giải thích được lý do.
+Danh sách câu hỏi
+#
+Phần
+Mức
+Tình huống
+1
+1. Dòng công việc
+Hiểu
+Quán chị Hạnh có mấy công việc, mấy vị trí?
+2
+1. Dòng công việc
+Áp dụng
+Tiệm bánh kem online của Vy
+3
+2. Cơ cấu tổ chức
+Phân tích
+Đơn trễ ở shop mỹ phẩm của anh Quân, phòng nào cũng vô can
+4
+3. Phân tích công việc
+Hiểu
+Việc hay người? Phân loại yêu cầu cho thu ngân
+5
+3. Phân tích công việc
+Áp dụng
+Viết bản mô tả và tiêu chuẩn cho nhân viên kho của anh Quân
+6
+3. Phân tích công việc
+Phân tích
+"Và các nhiệm vụ khác" ở quán chị Hạnh
+7
+3. Phân tích công việc
+Phân tích
+Cùng chức danh, khác việc, cùng lương ở xưởng may
+8
+4. Nguồn thông tin
+Phân tích
+Nhân viên kể một đằng, trưởng phòng kể một nẻo
+9
+4. Công cụ phân tích
+Áp dụng
+Chọn công cụ nào cho mục đích nào?
+10
+5. Mô hình năng lực
+Áp dụng
+Tìm tổ trưởng chuyền giỏi
+11
+5. Công nghệ
+Đánh giá
+Chatbot vào shop, nhân viên chăm sóc khách hàng đi đâu?
+12
+6. Thiết kế cho hiệu quả
+Đánh giá
+Dây chuyền bánh Trung thu của Vy
+13
+7. Tạo động lực
+Phân tích
+Chấm điểm công việc của Thư
+14
+7. Tạo động lực
+Hiểu
+Ba đề xuất cho công nhân may: mở rộng hay làm giàu?
+15
+7. Lịch linh hoạt
+Đánh giá
+Agency của chị Mai muốn làm bốn ngày một tuần
+16
+8. Công thái học
+Áp dụng
+Đức bê hàng, Thư làm ở nhà
+17
+9. Sức trí óc
+Phân tích
+Thư bị ngắt quãng cả ngày
+18
+Tổng hợp
+Sáng tạo
+Chị Hạnh mở chi nhánh thứ hai
+Phần 1–3: Dòng công việc, cơ cấu và phân tích công việc
+Câu 1 · Hiểu — Mấy công việc, mấy vị trí?
+Tình huống: Sau khi Lan nghỉ, chị Hạnh sắp xếp lại quán:
+• Anh Minh pha chế ca sáng, Hòa pha chế ca chiều.
+• Lan (tuyển lại được) và Khoa làm phục vụ.
+• Chị Hạnh tự đứng thu ngân, đồng thời lo việc quản lý quán.
+Chị Hạnh nói với bạn: "Quán chị giờ có năm công việc."
+Câu hỏi: Câu nói đó đúng hay sai? Quán có bao nhiêu công việc, bao nhiêu vị trí? Phân biệt hai khái niệm này giúp gì cho chị Hạnh?
+Nhắc lại bài học: Công việc (job) là một tập hợp các nhiệm vụ có liên quan, tức là "một loại việc". Vị trí (position) là tập hợp nhiệm vụ do một người cụ thể đảm nhận, tức là "một chỗ cho một người". Một trường có nhiều vị trí giảng dạy, nhưng chỉ một công việc: giáo viên.
+Cùng suy nghĩ từng bước:
+Bước 1 — Đếm vị trí. Mỗi người là một vị trí: Minh, Hòa, Lan, Khoa, chị Hạnh. Quán có năm vị trí.
+Bước 2 — Đếm công việc. Gom các vị trí làm cùng loại việc:
+Công việc
+Các vị trí
+Pha chế
+Minh, Hòa
+Phục vụ
+Lan, Khoa
+Thu ngân
+Chị Hạnh
+Như vậy quán có ba công việc, nếu chỉ tính các việc vận hành quầy. Chị Hạnh đã nhầm vị trí với công việc.
+Bước 3 — Vì sao phân biệt lại có ích. Chị chỉ cần viết ba bản mô tả công việc, không phải năm. Minh và Hòa dùng chung bản mô tả "Pha chế", nên được yêu cầu và đánh giá theo cùng một chuẩn; hai người không ai phải thắc mắc "sao em làm nhiều hơn anh ấy".
+Điều sâu hơn: vị trí của chị Hạnh gồm cả việc thu ngân lẫn việc quản lý. Ở doanh nghiệp nhỏ, một vị trí thường ôm nhiều loại việc. Khi quán lớn lên và chị muốn tuyển người thu ngân, chị cần tách phần việc thu ngân ra thành một công việc riêng, rõ ràng.
+Điều rút ra: Công việc là loại việc; vị trí là chỗ của một người. Viết bản mô tả cho công việc, tuyển người vào vị trí.
+Câu 2 · Áp dụng — Tiệm bánh kem online của Vy
+Tình huống: Vy mở tiệm bánh kem nhận đặt qua fanpage, giao trong ngày. Tiệm có Vy làm bánh, một bạn trực fanpage chốt đơn, một bạn giao hàng. Gần đây khách phàn nàn hai chuyện: bánh giao trễ giờ, và chữ trên bánh viết sai tên. Vy bực: "Chắc tại thợ ẩu."
+Câu hỏi: Hãy làm phân tích dòng công việc cho việc "giao một chiếc bánh kem" của tiệm. Phân tích này gợi ý nguyên nhân của hai lời phàn nàn nằm ở đâu?
+Nhắc lại bài học: Phân tích dòng công việc đi ngược ba bước: (1) đầu ra là gì, đo bằng số lượng và chất lượng thế nào; (2) cần những hoạt động nào để tạo ra đầu ra; (3) cần những đầu vào nào, gồm nguyên liệu và thông tin, thiết bị, và nhân lực (kiến thức, kỹ năng, khả năng).
+Cùng suy nghĩ từng bước:
+Bước 1 — Đầu ra. Một chiếc bánh đúng mẫu, đúng chữ, đến tay khách đúng giờ hẹn. Đo số lượng: mỗi ngày làm và giao được bao nhiêu bánh. Đo chất lượng: bao nhiêu bánh giao đúng giờ, bao nhiêu bánh đúng mẫu và đúng chữ, khách có hài lòng không.
+Bước 2 — Hoạt động. Chốt đơn với khách (mẫu, chữ viết, giờ giao, địa chỉ) → chuyển thông tin cho người làm bánh → nướng cốt, làm kem, trang trí → viết chữ → kiểm tra trước khi đóng hộp → đóng hộp → giao.
+Bước 3 — Đầu vào.
+Loại đầu vào
+Tiệm của Vy
+Nguyên liệu và thông tin
+Bột, trứng, kem, trái cây; phiếu đơn ghi mẫu bánh, chữ cần viết, giờ giao, địa chỉ
+Thiết bị
+Lò nướng, tủ mát, dụng cụ trang trí, hộp bánh, xe máy giao hàng
+Nhân lực
+Kỹ năng trang trí, viết chữ bằng kem; sự cẩn thận khi đối chiếu đơn; kỹ năng giao tiếp khi chốt đơn
+Bước 4 — Soi hai lời phàn nàn vào dòng chảy.
+• Sai chữ: lỗi có thể nằm ở đầu vào thông tin. Nếu bạn trực fanpage chỉ nhắn lại cho Vy "bánh tên Hà nha" mà không có phiếu đơn chuẩn, thì lỗi phát sinh trước khi Vy cầm túi bắt kem. Ngoài ra, dòng chảy thiếu hẳn một hoạt động: đối chiếu chữ với phiếu đơn trước khi đóng hộp.
+• Giao trễ: cần xem ở khâu chốt đơn, giờ giao có được ghi rõ và sắp xếp theo thứ tự không; và thiết bị, nhân lực giao hàng có đủ cho giờ cao điểm không.
+Kết luận: phân tích chưa chứng minh "thợ ẩu". Nó cho thấy những điểm yếu trong dòng chảy mà dù thợ giỏi đến đâu cũng dễ mắc lỗi.
+Điều rút ra: Đi ngược từ đầu ra giúp ta tìm lỗi ở cả dòng chảy, thay vì đổ lỗi cho người đứng ở khâu cuối.
+Câu 3 · Phân tích — Đơn trễ, phòng nào cũng vô can
+Tình huống: Anh Quân có một shop mỹ phẩm online khoảng hai mươi người, chia ba phòng: Marketing (chạy quảng cáo, chốt đơn), Kho (đóng gói, bàn giao cho đơn vị vận chuyển), Chăm sóc khách hàng (trả lời tin nhắn khách). Mọi khoản hoàn tiền đều chờ anh Quân duyệt. Sau đợt khuyến mãi lớn, đơn trễ hàng loạt:
+• Marketing: "Kho đóng gói chậm quá."
+• Kho: "Marketing chạy khuyến mãi mà không báo trước, bọn em lấy đâu ra người."
+• Chăm sóc khách hàng: "Bọn em chỉ biết xin lỗi khách, có quyết được gì đâu."
+Anh Quân kết luận: "Nhân viên thiếu trách nhiệm." Anh đang nghĩ đến việc tổ chức lại thành hai nhóm theo khách hàng: nhóm khách lẻ và nhóm đại lý, mỗi nhóm tự lo trọn từ quảng cáo đến giao hàng.
+Câu hỏi: Vấn đề nằm ở con người hay ở cách tổ chức? Việc chuyển sang cơ cấu theo nhóm khách hàng có giải quyết được không?
+Nhắc lại bài học:
+• Cơ cấu có thể tập trung (quyền ở vài người trên cùng) hoặc phân quyền; có thể theo chức năng hoặc theo bộ phận (theo sản phẩm, nhóm khách hàng).
+• Cơ cấu theo chức năng thường đi kèm công việc chuyên môn hẹp, ít quyền. Quản lý phòng chức năng cần giỏi xử lý xung đột và kéo mọi người về mục tiêu chung. Muốn trao quyền, nên thiết kế công việc kiểu lo trọn cho một nhóm khách hay một sản phẩm.
+• Một lỗi hay bị bỏ qua: muốn các phòng phối hợp nhưng không chỉ định vị trí nào chịu trách nhiệm giải quyết xung đột.
+Cùng suy nghĩ từng bước:
+Bước 1 — Nhận diện cơ cấu. Shop đang theo chức năng và rất tập trung: mọi quyết định khó đều dồn về anh Quân.
+Bước 2 — Nhìn đầu ra. Đầu ra mà khách quan tâm là "đơn đến tay đúng hẹn". Đầu ra này chạy qua cả ba phòng, nhưng không phòng nào sở hữu trọn nó. Mỗi phòng chỉ thấy khâu của mình, nên ai cũng thấy mình làm đúng.
+Bước 3 — Tìm chỗ gãy. Có hai chỗ gãy do thiết kế:
+Chỗ gãy
+Biểu hiện
+Không vị trí nào chịu trách nhiệm xung đột giữa các phòng
+Marketing và Kho đổ lỗi qua lại, không ai có quyền chốt "khuyến mãi phải báo trước bao lâu"
+Chăm sóc khách hàng không có quyền
+Họ đối mặt với khách nhưng không được quyết hoàn tiền hay tặng bù, nên chỉ biết xin lỗi
+Vì vậy, kết luận "nhân viên thiếu trách nhiệm" chưa đứng vững. Khi không ai được giao trách nhiệm với toàn bộ đầu ra, thì thái độ "không phải việc của tôi" là điều dễ hiểu.
+Bước 4 — Đánh giá phương án chia nhóm theo khách. Ý tưởng này đúng một nửa.
+• Mặt được: mỗi nhóm sở hữu trọn đầu ra cho khách của mình, trách nhiệm rộng hơn, dễ trao quyền hơn.
+• Mặt phải tính: trưởng nhóm lúc này phải lo từ quảng cáo đến kho, nên cần kinh nghiệm và tư duy tổng hợp hơn; anh Quân cần có người đủ sức. Mỗi người cũng phải làm nhiều loại việc hơn, nên cần đào tạo.
+• Việc làm ngay được, dù giữ hay đổi cơ cấu: chỉ định rõ ai quyết khi các phòng xung đột; đặt quy tắc Marketing báo Kho trước một khoảng thời gian cố định trước mỗi đợt khuyến mãi; trao cho Chăm sóc khách hàng quyền tự xử lý hoàn tiền dưới một mức nhất định.
+Điều rút ra: Khi không ai sở hữu trọn đầu ra, lỗi sẽ rơi vào khe giữa các phòng. Sửa cái khung trước khi trách người.
+Câu 4 · Hiểu — Việc hay người?
+Tình huống: Chị Hạnh chuẩn bị tuyển một người thu ngân để chị rảnh tay quản lý. Chị ghi ra một danh sách yêu cầu lộn xộn:
+1. Thu tiền, in hóa đơn cho khách.
+2. Biết bảng giá và các chương trình khuyến mãi của quán.
+3. Dùng thành thạo máy tính tiền và quét mã chuyển khoản.
+4. Đối chiếu tiền mặt và tiền chuyển khoản cuối ca.
+5. Có khả năng hợp tác với phục vụ và pha chế.
+6. Trung thực, cẩn thận.
+7. Nhận order của khách mua mang đi.
+Câu hỏi: Mục nào thuộc bản mô tả công việc (TDRs), mục nào thuộc bản tiêu chuẩn công việc (KSAOs)? Với mục thuộc KSAOs, ghi rõ là K, S, A hay O. Khi phỏng vấn, làm sao chị Hạnh biết ứng viên có "trung thực, cẩn thận"?
+Nhắc lại bài học: Bản mô tả công việc liệt kê nhiệm vụ, bổn phận, trách nhiệm (TDRs), là hành động quan sát được. Bản tiêu chuẩn công việc liệt kê kiến thức, kỹ năng, khả năng, đặc điểm khác (KSAOs) của người làm. Kiến thức là thông tin cần biết; kỹ năng là độ thành thạo khi làm một nhiệm vụ cụ thể; khả năng là năng lực chung, bền vững hơn; đặc điểm khác gồm nét tính cách và yêu cầu pháp lý. KSAOs không nhìn thấy trực tiếp, chỉ suy ra được khi người đó làm việc hoặc qua sản phẩm của họ.
+Cùng suy nghĩ từng bước:
+Bước 1 — Hỏi: đây là thứ người thu ngân làm, hay thứ người thu ngân có?
+Mục
+Loại
+Vì sao
+1. Thu tiền, in hóa đơn
+TDR
+Một hành động, quan sát được
+2. Biết bảng giá, khuyến mãi
+K — Kiến thức
+Thông tin cần biết
+3. Dùng thành thạo máy tính tiền
+S — Kỹ năng
+Độ thành thạo khi làm một nhiệm vụ cụ thể
+4. Đối chiếu tiền cuối ca
+TDR
+Một hành động, quan sát được
+5. Khả năng hợp tác
+A — Khả năng
+Năng lực chung, dùng được cho nhiều việc
+6. Trung thực, cẩn thận
+O — Đặc điểm khác
+Nét tính cách
+7. Nhận order mang đi
+TDR
+Một hành động, quan sát được
+Bước 2 — Chỗ dễ nhầm. Mục 3 và mục 1 nghe na ná nhau. Mục 1 nói về việc phải làm; mục 3 nói về mức độ làm giỏi của người làm. Mục 3 và mục 5 cũng dễ lẫn: kỹ năng dùng máy gắn với một nhiệm vụ cụ thể, còn khả năng hợp tác là năng lực chung.
+Bước 3 — Kiểm tra "trung thực, cẩn thận" khi phỏng vấn. Đây là KSAO, không nhìn thấy trực tiếp. Chị Hạnh không thể hỏi "Em có trung thực không?" rồi tin ngay câu trả lời. Chị có thể nhờ ứng viên kể một lần cụ thể họ phát hiện sai lệch khi đếm tiền và đã xử lý thế nào, hoặc cho làm thử một bài đối chiếu hóa đơn nhỏ. Chị cũng nên hiểu rằng không cách nào đảm bảo tuyệt đối; vì vậy quy trình đối chiếu cuối ca (mục 4) vẫn cần có.
+Điều rút ra: Việc thì nhìn thấy; phẩm chất của người thì phải suy ra từ việc họ làm.
+Câu 5 · Áp dụng — Viết bản mô tả và tiêu chuẩn cho nhân viên kho
+Tình huống: Sau vụ đơn trễ ở Câu 3, anh Quân quyết định viết lại bản mô tả cho từng công việc, bắt đầu từ kho. Đức, nhân viên kho, kể một ngày làm việc của mình:
+• Sáng nhận hàng từ nhà cung cấp, đếm, kiểm tra hạn sử dụng, xếp lên kệ.
+• In đơn, đi nhặt hàng theo đơn, đóng gói, dán mã vận đơn, bàn giao cho đơn vị vận chuyển.
+• Hàng mỹ phẩm có hạn dùng, nên phải xuất lô gần hết hạn trước.
+• Cuối tháng kiểm kê cùng kế toán.
+• Dịp khuyến mãi, số đơn tăng vọt; phải bê thùng hàng nặng lên xuống kệ cao.
+Bản mô tả cũ của anh Quân chỉ có một dòng: "Nhân viên kho: nhanh nhẹn, chăm chỉ, chịu được áp lực."
+Câu hỏi: Bản mô tả cũ sai ở đâu? Hãy viết bản mô tả công việc và bản tiêu chuẩn công việc cho vị trí này.
+Nhắc lại bài học: Bản mô tả công việc gồm chức danh, tóm tắt ngắn các nhiệm vụ, và danh sách nhiệm vụ thiết yếu kèm chi tiết; nhiều nơi ghi thêm điều kiện làm việc. Nó nói về việc (TDRs). Bản tiêu chuẩn công việc nói về người (KSAOs: kiến thức, kỹ năng, khả năng, đặc điểm khác).
+Cùng suy nghĩ từng bước:
+Bước 1 — Chẩn đoán bản cũ. "Nhanh nhẹn, chăm chỉ, chịu được áp lực" toàn là đặc điểm của người, tức là KSAOs, và lại rất mơ hồ. Bản cũ không có một nhiệm vụ nào. Đức không biết mình chịu trách nhiệm đến đâu, còn anh Quân không có gì để đánh giá Đức ngoài cảm giác.
+Bước 2 — Bản mô tả công việc.
+Mục
+Nội dung
+Chức danh
+Nhân viên kho vận
+Tóm tắt
+Nhận, lưu trữ và xuất hàng; đảm bảo đơn hàng được đóng gói đúng, đủ, kịp bàn giao cho đơn vị vận chuyển
+Nhiệm vụ thiết yếu
+(1) Nhận hàng: đếm số lượng, kiểm tra hạn sử dụng và tình trạng bao bì, đối chiếu với phiếu nhập. (2) Lưu kho: xếp hàng đúng vị trí, xuất lô gần hết hạn trước. (3) Xử lý đơn: nhặt hàng theo đơn, đóng gói, dán mã vận đơn, bàn giao cho đơn vị vận chuyển trong ngày. (4) Kiểm kê cuối tháng cùng kế toán, báo cáo chênh lệch. (5) Báo trước cho quản lý khi lượng hàng tồn không đủ cho đợt khuyến mãi sắp tới.
+Điều kiện làm việc
+Đứng và đi lại nhiều; thường xuyên bê thùng hàng; khối lượng việc tăng mạnh vào dịp khuyến mãi
+Nhiệm vụ (5) được thêm vào có chủ đích: nó nối công việc của Đức với chỗ gãy đã tìm ra ở Câu 3.
+Bước 3 — Bản tiêu chuẩn công việc.
+KSAOs
+Yêu cầu
+Kiến thức
+Quy trình nhập, xuất, kiểm kê; nguyên tắc xuất hàng gần hết hạn trước
+Kỹ năng
+Dùng phần mềm quản lý kho và máy in vận đơn; đóng gói chắc chắn, gọn
+Khả năng
+Làm việc chính xác với số liệu; đủ sức khỏe để bê thùng hàng thường xuyên
+Đặc điểm khác
+Trung thực (vì quản lý hàng hóa có giá trị), bền bỉ trong mùa cao điểm
+Bước 4 — Tự kiểm tra. Đọc lại cột bản mô tả: câu nào cũng phải là thứ quan sát được. Đọc lại cột bản tiêu chuẩn: câu nào cũng phải là thứ người làm có. Nếu "chịu được áp lực" vẫn cần, hãy diễn đạt nó cụ thể hơn, như "bền bỉ trong mùa cao điểm", để khi phỏng vấn biết hỏi gì.
+Điều rút ra: Bản mô tả tốt bắt đầu bằng động từ chỉ việc làm, không bắt đầu bằng tính từ khen người.
+Câu 6 · Phân tích — "Và các nhiệm vụ khác"
+Tình huống: Bản mô tả công việc phục vụ ở quán chị Hạnh có thêm dòng "và các nhiệm vụ khác khi được yêu cầu". Vài tháng sau:
+• Việc dọn nhà vệ sinh và đi mua đá gần như luôn giao cho Lan, vì chị Hạnh nghĩ "con gái dọn dẹp khéo hơn".
+• Việc bê két nước ngọt luôn giao cho Khoa, vì "con trai khỏe hơn".
+• Cuối năm, chị Hạnh đánh giá Lan thấp hơn Khoa với lý do "Lan hay vắng mặt ở khu phục vụ khách".
+Lan buồn và nói sẽ nghỉ.
+Câu hỏi: Hãy phân tích những vấn đề trong cách chị Hạnh dùng dòng "và các nhiệm vụ khác". Chị nên sửa thế nào?
+Nhắc lại bài học:
+• Dòng "và các nhiệm vụ khác khi được yêu cầu" có mục đích chính đáng: tránh kiểu "việc đó không phải việc của em".
+• Đi kèm là trách nhiệm của người quản lý: giao phần việc thêm một cách công bằng, không dồn cho một nhóm người, không dùng nó làm cái cớ. Ở Mỹ, giao việc kiểu đó có thể vi phạm luật chống phân biệt đối xử.
+• Việc đánh giá nhân viên nên dựa trên kết quả làm việc so với yêu cầu công việc.
+• Bản mô tả nên được rà lại định kỳ; buổi đánh giá là dịp tốt để đối chiếu việc thực tế với việc trên giấy.
+Cùng suy nghĩ từng bước:
+Bước 1 — Dòng này không sai; cách dùng mới là vấn đề. Quán nhỏ luôn có việc phát sinh, nên cần một điều khoản linh hoạt.
+Bước 2 — Vấn đề thứ nhất: giao việc theo giới tính, không theo công việc. Lan và Khoa làm cùng một công việc, nên việc phát sinh nên được chia theo nhu cầu của quán, không theo "con gái" hay "con trai". Cả hai phía đều bị đóng khung: Lan luôn nhận việc dọn dẹp, Khoa luôn nhận việc nặng. Hệ quả thực tế: người bị giao dồn thấy bất công và nghỉ, quán mất người đã được đào tạo.
+Bước 3 — Vấn đề thứ hai: đánh giá mâu thuẫn với chính cách giao việc. Lan "vắng mặt ở khu phục vụ" chính vì được sai đi dọn dẹp, đi mua đá. Chị Hạnh lại chấm Lan theo tiêu chí có mặt ở khu phục vụ, tức là phạt Lan vì làm đúng việc chị giao. Đánh giá như vậy không còn bám vào yêu cầu công việc.
+Bước 4 — Vấn đề thứ ba: "việc khác" đã thành việc thường xuyên. Dọn vệ sinh, mua đá, bê két nước diễn ra hằng tuần, không còn là "phát sinh". Bản mô tả công việc đã lỗi thời.
+Bước 5 — Cách sửa.
+Vấn đề
+Cách sửa
+Giao việc theo định kiến
+Lập bảng phân công luân phiên việc phát sinh cho cả hai người phục vụ
+"Việc khác" đã thành thường xuyên
+Ghi rõ các việc này vào bản mô tả công việc phục vụ
+Đánh giá lệch
+Tiêu chí đánh giá tính cả những việc được giao thêm; xem lại đánh giá của Lan
+Điều rút ra: "Các nhiệm vụ khác" là điều khoản linh hoạt, không phải tấm séc khống; việc gì lặp lại thì phải được viết vào bản mô tả.
+Câu 7 · Phân tích — Cùng chức danh, khác việc, cùng lương
+Tình huống: Chị Ngọc vừa về làm trưởng phòng nhân sự ở một xưởng may. Phòng điều hành có hai người cùng chức danh "nhân viên văn phòng xưởng", cùng mức lương:
+• Hằng tính định mức nguyên liệu, lên lịch chạy chuyền, theo dõi tiến độ đơn hàng.
+• Nga nhập dữ liệu chấm công và lưu hồ sơ.
+Hằng xin nghỉ vì thấy bất công. Giám đốc nói: "Tăng lương cho Hằng thì Nga cũng sẽ đòi, cùng chức danh mà." Công ty chưa từng làm phân tích công việc.
+Câu hỏi: Việc thiếu phân tích công việc đang gây trục trặc ở những hoạt động nhân sự nào? Phân tích công việc giúp chị Ngọc giải quyết ra sao?
+Nhắc lại bài học: Phân tích công việc là viên gạch nền của quản trị nhân lực, cung cấp thông tin cho thiết kế lại công việc, hoạch định nhân lực, tuyển chọn, đào tạo, đánh giá, phát triển nghề nghiệp và định giá công việc. Định giá công việc so sánh các công việc để xác định giá trị tương đối của từng việc, làm cơ sở cho thang lương công bằng. Nếu nhân viên thấy thang lương không công bằng, họ dễ bất mãn và nghỉ việc.
+Cùng suy nghĩ từng bước:
+Bước 1 — Tìm gốc. Một chức danh đang che hai công việc khác hẳn nhau. Vì chưa phân tích công việc, công ty chỉ nhìn thấy chức danh, không nhìn thấy việc.
+Bước 2 — Những hoạt động đang trục trặc.
+Hoạt động
+Trục trặc cụ thể
+Định giá công việc
+Hai việc có độ phức tạp và trách nhiệm khác nhau nhưng được trả như nhau, nên Hằng thấy bất công
+Tuyển chọn
+Nếu Hằng nghỉ và công ty đăng tuyển "nhân viên văn phòng xưởng", ứng viên đến sẽ không đúng người cần để lên lịch chuyền
+Đào tạo
+Không biết người mới cần học những gì
+Đánh giá
+Không có tiêu chí riêng cho từng việc
+Phát triển nghề nghiệp
+Nga không thấy con đường để phát triển lên công việc như của Hằng
+Bước 3 — Phân tích công việc giúp gì. Chị Ngọc tách thành hai công việc, ví dụ "nhân viên kế hoạch sản xuất" và "nhân viên hành chính nhân sự", mỗi công việc có bản mô tả và bản tiêu chuẩn riêng. Sau đó so sánh giá trị tương đối của hai công việc để xếp vào các bậc lương khác nhau.
+Bước 4 — Trả lời nỗi lo của giám đốc. Khi lương gắn với công việc đã được phân tích, việc trả Hằng cao hơn có lý do giải thích được với Nga: hai người làm hai việc khác nhau. Còn nếu tăng lương cho Hằng chỉ vì Hằng dọa nghỉ, thì nỗi lo "Nga cũng đòi" là có cơ sở. Nga cũng có một con đường rõ ràng: muốn lên bậc đó thì cần học những KSAOs của công việc kế hoạch.
+Điều rút ra: Trả lương theo chức danh mà không hiểu việc thì chức danh giống nhau che mất sự khác biệt thật.
+Câu 8 · Phân tích — Người làm kể một đằng, trưởng phòng kể một nẻo
+Tình huống: Chị Ngọc bắt đầu phân tích công việc kế hoạch sản xuất (Câu 7) và phỏng vấn hai người:
+• Hằng (người đang làm): "Việc quan trọng nhất và tốn thời gian nhất của em là tính định mức. Ngoài ra ngày nào em cũng phải chạy xuống xưởng mấy lần xử lý chuyện thiếu nguyên liệu."
+• Anh Dũng (trưởng phòng sản xuất, quản lý trực tiếp của Hằng): "Việc quan trọng nhất là báo cáo tiến độ kịp thời để trả lời khách hàng. Tính định mức có phần mềm hỗ trợ rồi."
+Chị Ngọc phân vân không biết tin ai.
+Câu hỏi: Chị Ngọc nên dùng thông tin của hai người thế nào? Cần bổ sung nguồn nào khác?
+Nhắc lại bài học: Người đang làm hiểu chi tiết công việc nhất, nhưng có động cơ "kể cho to" để mình có vẻ có giá trị hơn; vì vậy cần bổ sung thông tin từ người quản lý. Người quản lý thường đánh giá chính xác hơn nhiệm vụ nào quan trọng; người đang làm thường nắm chính xác hơn thời gian thực tế dành cho từng việc và rủi ro an toàn. Ngoài ra có thể dùng dữ liệu số (cần cân nhắc quyền riêng tư) và chuyên gia bên ngoài.
+Cùng suy nghĩ từng bước:
+Bước 1 — Không cần chọn tin một người. Hai người mạnh ở hai chỗ khác nhau, nên hãy lấy phần mạnh của từng người.
+Câu hỏi
+Nguồn đáng tin hơn
+Kết luận tạm
+Nhiệm vụ nào quan trọng nhất?
+Anh Dũng
+Báo cáo tiến độ cho khách là nhiệm vụ then chốt
+Thời gian thực tế dồn vào đâu?
+Hằng
+Nhiều thời gian đi vào việc chạy xuống xưởng xử lý thiếu nguyên liệu
+Bước 2 — Để ý động cơ. Hằng vừa đòi tăng lương ở Câu 7, nên có động cơ nhấn mạnh phần việc "khó" như tính định mức. Điều này không có nghĩa Hằng nói dối, chỉ là chị Ngọc cần kiểm tra chéo.
+Bước 3 — Bổ sung nguồn. Quan sát Hằng làm việc vài ngày; xem sản phẩm thật như lịch chuyền, báo cáo tiến độ; nếu dùng dữ liệu như lịch sử tin nhắn hay email để đếm thời gian, cần nói trước với Hằng và chỉ dùng cho mục đích phân tích.
+Bước 4 — Điều sâu hơn: khoảng lệch cũng là thông tin. Việc Hằng mất nhiều thời gian xử lý thiếu nguyên liệu mà trưởng phòng không nhắc tới cho thấy có thể dòng công việc đang có lỗ hổng ở đầu vào. Đây là manh mối để thiết kế lại công việc, chứ không chỉ để viết bản mô tả.
+Điều rút ra: Hỏi người làm để biết thời gian đi đâu; hỏi người quản lý để biết việc nào quan trọng; chỗ hai bên lệch nhau thường là chỗ cần sửa.
+Câu 9 · Áp dụng — Công cụ nào cho mục đích nào?
+Tình huống: Chị Ngọc có ba việc cần làm trong năm nay:
+1. So sánh giá trị tương đối của nhiều công việc rất khác nhau trong xưởng, từ thợ cắt, thợ may, kiểm hàng đến kế toán, kế hoạch, để xây thang lương.
+2. Xác định những khả năng cần có khi tuyển thợ kiểm hàng, như độ tinh mắt, phân biệt màu, sự tập trung.
+3. Viết nhanh bản mô tả đầu tiên cho một công việc xưởng chưa từng có: nhân viên quản lý gian hàng trên sàn thương mại điện tử.
+Câu hỏi: Với mỗi việc, chị Ngọc nên tham khảo công cụ nào trong ba công cụ O*NET, PAQ, Fleishman? Cần lưu ý gì?
+Nhắc lại bài học:
+• O*NET: cơ sở dữ liệu nghề nghiệp của Mỹ, mô tả nhiều nghề bằng một ngôn ngữ chung; điểm xuất phát tốt để tham khảo.
+• PAQ: bảng câu hỏi chuẩn hóa, so sánh được các công việc khác nhau, xét cả quá trình từ đầu vào đến đầu ra; nhưng cần người điền được đào tạo, và báo cáo khá trừu tượng, khó dùng để viết bản mô tả.
+• Fleishman: chấm mức độ các khả năng mà công việc đòi hỏi; hữu ích cho tuyển chọn, đào tạo, phát triển nghề nghiệp.
+• Các công cụ xuất phát từ Mỹ; dùng ở Việt Nam thì làm gợi ý rồi đối chiếu với thực tế.
+Cùng suy nghĩ từng bước:
+Việc
+Công cụ phù hợp
+Vì sao
+Lưu ý
+1. So sánh nhiều công việc để xây thang lương
+PAQ
+Dùng cùng một bộ câu hỏi cho mọi công việc nên so sánh được
+Cần người được đào tạo điền, có thể phải thuê đơn vị bên ngoài; điểm do người đang làm tự chấm thường kém tin cậy hơn
+2. Xác định khả năng cần có của thợ kiểm hàng
+Fleishman
+Tập trung đúng vào khả năng của người, có thang mức cụ thể
+Người chấm thường là chính thợ kiểm hàng giỏi; kết quả dùng tiếp cho tuyển chọn và đào tạo
+3. Viết nhanh bản mô tả cho công việc mới
+O*NET (nếu có nghề tương tự)
+Có sẵn mô tả nhiệm vụ, kỹ năng để tham khảo
+Mô tả mang tính khái quát và theo thị trường Mỹ; nếu không có mục phù hợp, hãy đi từ đầu ra cần có của công việc (như Phần 1) và tham khảo các tin tuyển dụng thật
+Điều sâu hơn: PAQ tốt để so sánh nhưng không tốt để viết bản mô tả; O*NET tốt để tham khảo nhưng không thay được việc hỏi người thật ở xưởng mình. Không công cụ nào làm được mọi việc.
+Điều rút ra: Chọn công cụ theo câu hỏi cần trả lời: so sánh công việc, tìm khả năng của người, hay mô tả việc.
+Phần 4–7: Công cụ, xu hướng và thiết kế công việc
+Câu 10 · Áp dụng — Tìm tổ trưởng chuyền giỏi
+Tình huống: Xưởng may của chị Ngọc có thói quen đề bạt thợ may giỏi nhất chuyền lên làm tổ trưởng. Nhiều người thất bại: may rất giỏi nhưng không biết kèm người mới, không xử lý được mâu thuẫn trong tổ, và không theo kịp số liệu tiến độ. Giám đốc nhờ chị Ngọc "tìm cách chọn tổ trưởng cho đúng".
+Câu hỏi: Hãy dựng một mô hình năng lực đơn giản cho vị trí tổ trưởng chuyền, gồm ba năng lực, có định nghĩa và mức thành thạo. Chị Ngọc dùng mô hình này vào những việc gì?
+Nhắc lại bài học:
+• Năng lực là vùng khả năng cá nhân giúp làm tốt công việc. Mô hình năng lực mô tả tất cả năng lực cần để thành công trong một nghề hoặc nhóm công việc, gồm tên, định nghĩa và các mức thành thạo.
+• Mô hình năng lực tập trung vào cách con người làm việc; phân tích công việc tập trung vào nhiệm vụ và kết quả.
+• Mô hình năng lực định hướng tuyển dụng, đào tạo, phát triển và là cơ sở công bằng để đánh giá. Khi phỏng vấn, có thể nhờ ứng viên kể ví dụ cụ thể họ đã thể hiện năng lực.
+• Tổ trưởng sản xuất dành nhiều thời gian quan sát nhân viên để giữ an toàn, chất lượng, quy trình, và dựa nhiều vào hiểu biết kỹ thuật (Phần 3).
+Cùng suy nghĩ từng bước:
+Bước 1 — Nhận ra lỗi của cách chọn cũ. Xưởng đang chọn theo kết quả của công việc cũ (may giỏi), trong khi tổ trưởng là một công việc khác. Thợ may giỏi nhất không tự động thành tổ trưởng giỏi.
+Bước 2 — Dựng mô hình. Dùng chung một thang ba mức: (1) Dưới kỳ vọng: chưa làm được việc cơ bản; (2) Đạt kỳ vọng: hiểu nguyên tắc, làm tốt việc thường ngày, ít cần hỗ trợ; (3) Vượt kỳ vọng: xử lý được việc phức tạp, có thể hướng dẫn và dẫn dắt người khác.
+Năng lực
+Định nghĩa
+Hành vi ở mức 2 (Đạt kỳ vọng)
+Kèm cặp và quan sát
+Nhìn ra cách người khác đang làm, giúp người mới làm đúng chuẩn
+Người mới trong tổ đạt năng suất chuẩn trong thời gian dự kiến; phát hiện thao tác sai trước khi thành lỗi hàng loạt
+Giữ hòa khí và mục tiêu chung
+Xử lý mâu thuẫn, kéo mọi người về chỉ tiêu của tổ
+Giải quyết được mâu thuẫn thường ngày trong tổ mà không phải đẩy lên quản lý
+Hiểu quy trình và số liệu
+Nắm kỹ thuật may, đọc được số liệu tiến độ, chất lượng
+Báo cáo đúng tiến độ; nhận ra khi chuyền chậm và biết nguyên nhân ở khâu nào
+Bước 3 — Dùng mô hình vào đâu.
+Việc
+Cách dùng
+Tuyển chọn, đề bạt
+Phỏng vấn theo năng lực: "Kể về một lần anh chị giúp một bạn mới làm được việc. Anh chị đã làm gì?"
+Đào tạo
+Thợ giỏi có tiềm năng nhưng yếu kèm cặp thì được đào tạo kỹ năng kèm cặp trước khi lên tổ trưởng
+Đánh giá
+Tổ trưởng được đánh giá theo cả kết quả của tổ lẫn mức thành thạo từng năng lực
+Phát triển nghề nghiệp
+Thợ may nhìn thấy mình cần gì để lên tổ trưởng
+Điều rút ra: Muốn chọn người cho công việc mới, hãy nhìn năng lực công việc đó cần, đừng chỉ nhìn thành tích ở công việc cũ.
+Câu 11 · Đánh giá — Chatbot vào shop, nhân viên chăm sóc khách hàng đi đâu?
+Tình huống: Shop của anh Quân gắn chatbot vào fanpage. Chatbot tự trả lời những câu như "đơn của em tới đâu rồi", "còn màu này không", "phí ship bao nhiêu". Một người bạn khuyên anh Quân: "Có chatbot rồi thì chăm sóc khách hàng là việc thừa, cắt hết đi." Thư, một trong ba nhân viên chăm sóc khách hàng, rất lo.
+Câu hỏi: Lời khuyên đó đúng đến đâu? Anh Quân nên làm gì với công việc chăm sóc khách hàng?
+Nhắc lại bài học:
+• Công nghệ cho phép tự động hóa những việc trước đây chỉ người làm được. Các nhà phân tích còn tranh luận về tác động lên số lượng việc làm, nhưng đồng ý rằng bản chất công việc đang thay đổi.
+• Kỳ vọng phổ biến là công nghệ hỗ trợ nhiều hơn thay thế con người. Phân tích công việc phải trả lời thêm: việc nào giao cho người, việc nào cho công nghệ.
+• Ví dụ: khi chatbot trả lời thắc mắc thường ngày, người làm nhân sự có thời gian cho việc phân tích, lập kế hoạch; KSAOs cần có cũng thay đổi.
+• Nguồn sai phổ biến nhất của phân tích công việc là bản mô tả lỗi thời.
+Cùng suy nghĩ từng bước:
+Bước 1 — Tách công việc thành từng nhiệm vụ. Đừng hỏi "chatbot có thay được Thư không", mà hỏi "chatbot làm được nhiệm vụ nào của Thư".
+Nhiệm vụ
+Giao cho
+Vì sao
+Tra cứu đơn, trả lời tồn kho, phí ship
+Chatbot
+Lặp lại, có quy tắc rõ
+Xử lý khiếu nại hàng lỗi, giao sai
+Người
+Cần phán đoán, thương lượng, xoa dịu khách đang bực
+Trường hợp ngoại lệ chatbot không hiểu
+Người
+Chatbot cần người đỡ khi bí
+Rà câu trả lời của chatbot, cập nhật khi có khuyến mãi mới
+Người
+Sai một câu trả lời tự động có thể lặp lại với hàng trăm khách
+Bước 2 — Đánh giá lời khuyên. Lời khuyên đúng một nửa. Đúng ở chỗ phần việc lặp lại thực sự đã do máy làm, nên có thể không cần giữ nguyên số người như trước. Sai ở chỗ coi cả công việc là thừa: phần việc khó nhất, liên quan trực tiếp đến uy tín của shop, vẫn cần người.
+Bước 3 — Công việc thay đổi thì phải phân tích lại. Bản mô tả cũ của Thư giờ đã lỗi thời. Công việc mới nghiêng về xử lý khiếu nại và giám sát chatbot. KSAOs cũng đổi: cần kỹ năng xử lý tình huống khó, thương lượng, và biết đọc, sửa kịch bản trả lời của chatbot.
+Bước 4 — Cách làm chuyên nghiệp. Chạy thử một thời gian, đo xem còn bao nhiêu tin nhắn cần người xử lý; sau đó mới quyết số người. Ưu tiên đào tạo lại những người muốn chuyển sang công việc mới. Nếu phải giảm người, nói rõ lý do và lộ trình, không để nhân viên đoán.
+Điều rút ra: Công nghệ thường thay thế nhiệm vụ trước khi thay thế công việc; việc của nhà quản trị là chia lại nhiệm vụ cho đúng.
+Câu 12 · Đánh giá — Dây chuyền bánh Trung thu
+Tình huống: Mùa Trung thu, tiệm của Vy (Câu 2) nhận đơn bánh trung thu gấp nhiều lần ngày thường. Vy bấm giờ từng công đoạn, sắp lại bàn cho mọi thứ trong tầm tay, chia thành dây chuyền: nhào vỏ, chia nhân, đóng khuôn, nướng, để nguội, đóng hộp. Mỗi người thời vụ làm một khâu, được hướng dẫn trong một buổi, và được trả theo số bánh làm ra. Sản lượng tăng rõ rệt. Một người bạn khuyên: "Làm dây chuyền hiệu quả thế thì làm quanh năm luôn đi."
+Câu hỏi: Cách thiết kế của Vy dựa trên hướng tiếp cận nào? Lời khuyên của người bạn đúng đến đâu?
+Nhắc lại bài học:
+• Kỹ thuật công nghiệp tìm cách tổ chức công việc đơn giản nhất để hiệu quả nhất, thường qua nghiên cứu thời gian và thao tác để tìm "một cách tốt nhất"; rồi tuyển người làm được, đào tạo đúng cách đó, trả lương theo cách khuyến khích làm hết sức.
+• Kết quả là công việc đơn giản, học nhanh, chuyên môn hóa cao, lặp lại. Lợi ích đo được và thực tế.
+• Mặt trái: công việc quá đơn giản, lặp lại có thể nhàm chán, người làm thấy vô nghĩa. Đa số tổ chức kết hợp với các hướng thiết kế khác.
+Cùng suy nghĩ từng bước:
+Bước 1 — Nhận diện. Vy dùng đúng kỹ thuật công nghiệp: bấm giờ, sắp xếp thao tác, chia nhỏ khâu, đào tạo nhanh, trả theo sản lượng.
+Bước 2 — Vì sao nó hợp với mùa Trung thu.
+Đặc điểm mùa Trung thu
+Vì sao kỹ thuật công nghiệp hợp
+Cần nhiều người trong thời gian ngắn
+Việc đơn giản nên người mới học trong một buổi là làm được
+Người làm là thời vụ, làm vài tuần
+Sự nhàm chán chưa kịp thành vấn đề lớn
+Sản phẩm giống nhau, số lượng lớn
+"Một cách tốt nhất" lặp lại được cho hàng nghìn chiếc bánh
+Bước 3 — Vì sao làm quanh năm thì khác. Ngày thường, tiệm làm bánh kem theo mẫu riêng của từng khách, số lượng ít, nhân viên là người gắn bó lâu dài. Một người chỉ bắt kem viền cả năm dễ chán, dễ nghỉ. Họ cũng không còn thấy "chiếc bánh của mình", mất cảm giác làm trọn một sản phẩm.
+Bước 4 — Kết luận. Lời khuyên đúng một nửa. Dây chuyền là lựa chọn tốt cho mùa cao điểm với lao động thời vụ. Quanh năm, Vy nên giữ các thao tác hiệu quả đã tìm ra (bàn sắp gọn, quy trình chuẩn), nhưng kết hợp với các cách làm công việc thú vị hơn, như cho thợ luân phiên các khâu hoặc làm trọn một chiếc bánh. Một lưu ý chuyên môn: trả theo sản lượng thì cần có khâu kiểm tra chất lượng, để "nhanh" không lấn át "đúng".
+Điều rút ra: Hiệu quả là điểm xuất phát, không phải điểm dừng; thiết kế nào cũng phải hợp với loại việc và loại người làm.
+Câu 13 · Phân tích — Chấm điểm công việc của Thư
+Tình huống: Sau khi có chatbot (Câu 11), Thư chuyên nhận những khiếu nại chatbot không xử lý được. Nhưng:
+• Thư chỉ ghi nhận khiếu nại rồi chuyển cho kho kiểm tra; kho xử lý xong không báo lại.
+• Mọi quyết định đổi hàng, hoàn tiền dù chỉ vài chục nghìn đồng đều phải chờ anh Quân duyệt.
+• Thư không biết khách cuối cùng có hài lòng không.
+• Thư biết nếu khiếu nại bị bỏ lơ, khách có thể mất tiền oan và shop mất uy tín.
+Thư nói: "Em thấy mình như cái hộp thư chuyển tiếp."
+Câu hỏi: Hãy dùng Mô hình đặc điểm công việc để chẩn đoán công việc của Thư, và đề xuất cách thiết kế lại.
+Nhắc lại bài học: Mô hình đặc điểm công việc (Hackman và Oldham) mô tả công việc bằng năm đặc điểm: đa dạng kỹ năng, tính trọn vẹn của nhiệm vụ, ý nghĩa của nhiệm vụ, quyền tự chủ, phản hồi (từ chính công việc). Công việc càng có nhiều năm đặc điểm này càng tạo động lực. Khác biệt cá nhân ảnh hưởng đến mức một người được thúc đẩy bởi các đặc điểm này. Làm giàu công việc là thêm quyền ra quyết định vào công việc.
+Cùng suy nghĩ từng bước:
+Bước 1 — Chấm từng đặc điểm.
+Đặc điểm
+Mức
+Bằng chứng
+Đa dạng kỹ năng
+Trung bình
+Có dùng kỹ năng giao tiếp, ghi nhận, nhưng không được thương lượng hay giải quyết
+Tính trọn vẹn
+Thấp
+Chỉ làm khúc đầu (ghi nhận), khúc giữa và cuối do người khác làm
+Ý nghĩa
+Khá cao
+Thư thấy rõ việc của mình ảnh hưởng đến quyền lợi của khách và uy tín của shop
+Quyền tự chủ
+Thấp
+Khoản nhỏ nhất cũng phải chờ duyệt
+Phản hồi
+Thấp
+Không biết kết quả cuối cùng
+Bước 2 — Đọc kết quả. Ý nghĩa cao mà trọn vẹn, tự chủ, phản hồi thấp là tổ hợp dễ gây bực bội: Thư biết việc quan trọng nhưng không làm được gì cho ra kết quả. Câu "cái hộp thư chuyển tiếp" diễn đạt đúng điểm thấp về tính trọn vẹn.
+Bước 3 — Thiết kế lại.
+Đặc điểm cần nâng
+Đề xuất
+Tính trọn vẹn
+Thư theo trọn một khiếu nại từ lúc nhận đến lúc khách nhận hàng đổi hoặc tiền hoàn
+Quyền tự chủ (làm giàu công việc)
+Thư được tự quyết đổi hàng, hoàn tiền dưới một mức cho phép; trên mức đó mới cần anh Quân duyệt
+Phản hồi
+Sau mỗi khiếu nại, khách chấm điểm; Thư xem được điểm của mình
+Đa dạng kỹ năng
+Thêm việc thương lượng phương án với khách và phối hợp với kho
+Bước 4 — Kiểm tra lại với người thật. Trước khi trao thêm quyền, hỏi Thư có muốn không; không phải ai cũng hào hứng với thêm trách nhiệm. Và trao quyền cần kèm quy tắc rõ ràng: mức hoàn tiền tối đa, trường hợp nào phải báo lên, định kỳ anh Quân xem lại các quyết định.
+Điều rút ra: Người ta chán không phải vì việc khó, mà vì làm mãi không thấy việc của mình đi đến đâu.
+Câu 14 · Hiểu — Mở rộng hay làm giàu?
+Tình huống: Ở xưởng may của chị Ngọc, nhiều công nhân chỉ may một đường may cả ngày, ví dụ may cổ áo, và than chán. Ba tổ trưởng đưa ra ba đề xuất:
+• Đề xuất A: Mỗi tuần công nhân đổi sang một khâu khác: tuần này may cổ, tuần sau may tay, tuần sau nữa may thân.
+• Đề xuất B: Gộp may cổ, tra tay áo và cắt chỉ thừa thành một công việc cho mỗi người.
+• Đề xuất C: Tổ được quyền dừng chuyền khi phát hiện lỗi chất lượng, và tự phân công, tự sắp xếp nhịp làm trong ngày miễn là đạt chỉ tiêu.
+Câu hỏi: Mỗi đề xuất thuộc cách thiết kế nào? Đề xuất nào tăng quyền tự chủ? Mỗi đề xuất có giới hạn gì?
+Nhắc lại bài học:
+• Mở rộng công việc là thêm các loại nhiệm vụ. Hai kỹ thuật: ghép công việc (gộp vài việc đơn giản thành một, nếu việc nào cũng nhàm thì gộp lại vẫn nhàm) và luân chuyển công việc (không sửa công việc, mà cho người lần lượt làm nhiều công việc; các việc vẫn có thể lặp lại).
+• Làm giàu công việc là thêm quyền ra quyết định; ví dụ trao cho công nhân quyền dừng dây chuyền khi chất lượng không đạt. Không phải ai cũng hưởng ứng.
+• Nhóm tự quản có quyền với trọn một quy trình, như tự xếp lịch, tự giải quyết vấn đề của nhóm.
+Cùng suy nghĩ từng bước:
+Đề xuất
+Thuộc loại
+Có tăng quyền tự chủ?
+Giới hạn
+A. Đổi khâu mỗi tuần
+Mở rộng — luân chuyển công việc
+Không
+Mỗi khâu vẫn lặp lại; cần đào tạo công nhân nhiều khâu; năng suất có thể giảm lúc mới đổi
+B. Gộp ba việc
+Mở rộng — ghép công việc
+Không
+Ba việc đều khá đơn giản, gộp lại có thể vẫn nhàm
+C. Quyền dừng chuyền, tự phân công
+Làm giàu công việc, tiến gần tới nhóm tự quản
+Có
+Không phải ai cũng muốn thêm trách nhiệm; tổ cần được đào tạo để quyết định tốt
+Mẹo phân biệt: A đổi chỗ làm, B thêm việc, C thêm quyền. Chỉ C chạm vào quyền tự chủ, đặc điểm mà A và B không thay đổi.
+Điều sâu hơn: các đề xuất không loại trừ nhau. Xưởng có thể kết hợp A với C: luân chuyển để công nhân biết nhiều khâu, nhờ đó tổ mới có thể tự phân công linh hoạt.
+Điều rút ra: Mở rộng là cho thêm việc; làm giàu là cho thêm quyền.
+Phần 7–9 và câu tổng hợp
+Câu 15 · Đánh giá — Agency muốn làm bốn ngày một tuần
+Tình huống: Chị Mai điều hành một agency truyền thông nhỏ, khoảng mười hai người. Nhân viên đọc tin một số công ty nước ngoài làm bốn ngày một tuần và đề xuất áp dụng. Chị Mai đang cân nhắc hai phương án:
+• Phương án 1: Làm bốn ngày, mỗi ngày mười tiếng, giữ nguyên tổng số giờ.
+• Phương án 2: Làm bốn ngày, mỗi ngày tám tiếng, giảm tổng số giờ; nhân viên trong nhóm tự chọn ngày nghỉ sao cho ngày nào cũng có người trực khách.
+Agency đang họp nội bộ gần như mỗi sáng, và khách hàng hay nhắn việc gấp cả ngày.
+Câu hỏi: Hãy đánh giá hai phương án. Chị Mai nên chuẩn bị gì trước khi quyết định?
+Nhắc lại bài học:
+• Tuần làm việc nén là làm đủ số giờ của tuần trong ít hơn năm ngày. Ngày làm dài dễ gây kiệt sức. Ở Mỹ, vượt 40 giờ một tuần thì phải trả tiền làm thêm giờ cho nhân viên không giữ vai trò quản lý; ở Việt Nam cần kiểm tra quy định hiện hành về thời giờ làm việc và làm thêm giờ.
+• Các hình thức linh hoạt khác gồm giờ làm linh hoạt (tự chọn giờ bắt đầu, kết thúc quanh khung giờ bắt buộc) và chia sẻ công việc.
+• Khác biệt cá nhân ảnh hưởng đến việc mỗi người được thúc đẩy bởi điều gì.
+• Góc đọc thêm: muốn tăng linh hoạt, nên xác định yêu cầu thật của tổ chức và nhu cầu cụ thể của nhân viên. Ở công ty Alter Agents, giảm giờ mà không thiết kế lại công việc khiến nhân viên căng thẳng hơn; những nơi thành công thường rà quy trình và cắt việc kém hiệu quả như họp hằng ngày trước khi đổi lịch.
+Cùng suy nghĩ từng bước:
+Bước 1 — Đánh giá từng phương án.
+
+Phương án 1: bốn ngày × mười tiếng
+Phương án 2: bốn ngày × tám tiếng
+Được
+Thêm một ngày nghỉ mà khối lượng giờ không đổi
+Thêm ngày nghỉ và giảm tổng giờ, rất hấp dẫn với nhân viên
+Rủi ro
+Ngày làm dài dễ kiệt sức, nhất là với việc sáng tạo; cần kiểm tra quy định về giờ làm
+Khối lượng việc không tự giảm theo; dễ có người lén làm ngày thứ năm, người khác thì lo lỡ việc
+Điều kiện để thành công
+Việc chia được thành khối dài, ít bị khách gọi gấp
+Phải cắt được lượng việc tương ứng với số giờ bị giảm
+Bước 2 — Chỗ nguy hiểm nhất. Cả hai phương án đều chỉ đổi lịch, chưa đổi công việc. Trong khi agency đang có hai điểm nghẽn rõ ràng: họp mỗi sáng và việc gấp của khách rải rác cả ngày. Nếu giữ nguyên hai điểm này, phương án 2 gần như chắc sẽ dồn việc vào bốn ngày.
+Bước 3 — Chuẩn bị trước khi quyết.
+1. Xác định yêu cầu thật của agency: khách cần liên lạc được vào khung giờ nào; việc nào bắt buộc làm trong giờ đó.
+2. Hỏi nhu cầu thật của nhân viên: họ muốn ngày nghỉ trọn, muốn đi muộn về muộn, hay muốn bớt họp? Có thể giờ làm linh hoạt hoặc một ngày nghỉ có lương mỗi tháng đáp ứng tốt hơn.
+3. Thiết kế lại công việc trước: giảm họp hằng ngày, có quy tắc tiếp nhận việc gấp, phân công người trực khách theo lịch luân phiên.
+4. Chạy thử có đo lường: khảo sát mức hài lòng và mức căng thẳng trước và sau, theo dõi xem có ai làm thêm ngoài lịch không.
+Kết luận: không phương án nào tốt hay xấu tự thân; chúng chỉ tốt khi công việc được thiết kế lại cho khớp với lịch mới.
+Điều rút ra: Đổi lịch mà không đổi việc thì việc vẫn nguyên đó, chỉ bị dồn lại.
+Câu 16 · Áp dụng — Đức bê hàng, Thư làm ở nhà
+Tình huống: Ở shop anh Quân:
+• Đức (Câu 5) phải bê thùng hàng nặng lên kệ cao nhiều lần mỗi ngày, mùa khuyến mãi càng nhiều. Gần đây Đức hay đau lưng.
+• Thư (Câu 13) được làm ở nhà hai ngày mỗi tuần. Thư ôm laptop ngồi trên giường hoặc sofa, cuối ngày mỏi cổ, mỏi vai.
+Anh Quân nói: "Đức còn trẻ, khỏe mà. Còn Thư ở nhà thì ngồi thế nào là việc của em ấy."
+Câu hỏi: Hãy áp dụng công thái học để đề xuất cách thiết kế lại cho từng người. Không sửa thì shop mất gì?
+Nhắc lại bài học:
+• Công thái học nghiên cứu sự tương tác giữa cơ thể con người và môi trường làm việc, nhằm giảm căng thẳng thể chất bằng cách sắp xếp môi trường theo cách cơ thể vận hành. Nó cũng xét ánh sáng, không gian, số giờ làm.
+• Cách áp dụng: thiết kế lại thiết bị cho việc nặng nhọc; thiết kế lại dụng cụ để hạn chế bệnh nghề nghiệp; thiết kế lại chính công việc và cách làm.
+• Laptop không thể vừa đặt màn hình ngang tầm mắt vừa đặt bàn phím đủ thấp; cần bàn phím hoặc màn hình rời. Người dùng nên nghỉ giải lao thường xuyên, để ý tư thế, dùng xen kẽ nhiều thiết bị nhập liệu.
+• Góc đọc thêm: khi làm tại nhà, một số công ty trao đổi với nhân viên về góc làm việc và hỗ trợ thiết bị; việc theo dõi tư thế bằng công nghệ đặt ra câu hỏi về quyền riêng tư.
+Cùng suy nghĩ từng bước:
+Bước 1 — Đức. Công thái học yêu cầu sửa chỗ làm cho vừa người, không trông vào việc "còn trẻ, khỏe".
+Hướng
+Đề xuất
+Thiết bị
+Xe đẩy, thang có tay vịn cho kệ cao
+Sắp xếp chỗ làm
+Hàng nặng, bán chạy để ở tầng kệ ngang hông; hàng nhẹ mới để trên cao
+Cách làm
+Chia nhỏ thùng khi nhập kho; mùa cao điểm bố trí hai người cùng bê hàng nặng; xen kẽ việc bê với việc đóng gói
+Bản mô tả công việc
+Ghi rõ điều kiện làm việc có mang vác, để tuyển và phân công phù hợp
+Bước 2 — Thư. Góc làm việc ở nhà nằm ngoài tầm kiểm soát trực tiếp của shop, nhưng hậu quả thì shop vẫn chịu.
+Hướng
+Đề xuất
+Thiết bị
+Shop hỗ trợ bàn phím và chuột rời, giá đỡ laptop, hoặc một khoản phụ cấp thiết bị
+Hướng dẫn
+Một danh sách ngắn: màn hình ngang tầm mắt, khuỷu tay gập vuông góc, nghỉ vài phút sau mỗi khoảng thời gian làm liên tục
+Cách trao đổi
+Hỏi Thư về góc làm việc và cùng tìm cách sửa; không cần và không nên theo dõi bằng camera để kiểm tra tư thế
+Bước 3 — Tính chi phí hai phía.
+Sửa thì tốn
+Không sửa thì mất
+Tiền mua xe đẩy, thang, giá đỡ, bàn phím; thời gian sắp xếp lại kho
+Đức nghỉ ốm đúng mùa cao điểm; chấn thương lâu dài; Thư giảm năng suất, cả hai có thể nghỉ việc; tuyển và đào tạo người thay tốn hơn nhiều
+Điều rút ra: Cơ thể khỏe không phải là thiết bị an toàn; chỗ làm mới là thứ cần được thiết kế.
+Câu 17 · Phân tích — Bị ngắt quãng cả ngày
+Tình huống: Sau khi được trao quyền hoàn tiền (Câu 13), Thư làm việc có trách nhiệm hơn. Nhưng một ngày của Thư như sau:
+• Nhóm Zalo của shop báo tin liên tục.
+• Anh Quân nhắn riêng "em xem giúp anh cái này" vài lần mỗi giờ.
+• Chatbot đẩy sang khiếu nại mới bất cứ lúc nào.
+• Để hoàn tiền, Thư phải mở ba chỗ khác nhau để tra đơn, tra lịch sử khách và chuyển tiền.
+Tuần trước Thư hoàn nhầm tiền cho một đơn khác. Anh Quân nhắc: "Em cẩn thận hơn đi."
+Câu hỏi: Lỗi của Thư đến từ đâu? Anh Quân nên thiết kế lại công việc này thế nào về mặt sức trí óc?
+Nhắc lại bài học:
+• Thiết kế vừa sức trí óc thường là giảm lượng thông tin phải xử lý: hạn chế thông tin và việc phải ghi nhớ; hiển thị rõ ràng; hướng dẫn rõ; phần mềm hỗ trợ; danh sách kiểm tra; hệ thống gom các chỉ số quan trọng vào một màn hình.
+• Đơn giản hóa có lợi nhất nơi người làm mong được giảm tải, và nơi cái giá của sai sót rất đắt. Nhưng công việc quá đơn giản có thể kém tạo động lực.
+• Bị ngắt quãng làm giảm hiệu suất và tăng lỗi. Thời gian phục hồi để quay lại mạch việc thường dài hơn nhiều lần chính lần bị ngắt. Có thể thiết kế công việc để người làm chặn khoảng thời gian tập trung, hoặc gom việc đọc tin nhắn vào vài khung giờ.
+Cùng suy nghĩ từng bước:
+Bước 1 — Nhìn lỗi như một sản phẩm của thiết kế. Lời nhắc "cẩn thận hơn" đặt toàn bộ gánh nặng lên sự chú ý của Thư. Nhưng công việc đang có ba yếu tố làm tăng lỗi: bị ngắt quãng liên tục, phải ghép thông tin từ ba chỗ, và không có bước kiểm tra trước khi chuyển tiền.
+Bước 2 — Tính cái giá của sai sót. Hoàn tiền là việc mất tiền thật và khó lấy lại. Đây chính là loại việc nên được thiết kế để giảm tải trí óc.
+Bước 3 — Thiết kế lại.
+Vấn đề
+Đề xuất
+Bị ngắt quãng
+Tách kênh: việc gấp của khách một kênh, trao đổi nội bộ một kênh; Thư được tắt thông báo nhóm chung trong các khung giờ xử lý khiếu nại; anh Quân gom câu hỏi gửi vào vài thời điểm trong ngày
+Ghép thông tin từ ba chỗ
+Một màn hình tra cứu gom mã đơn, lịch sử khách, số tiền cần hoàn
+Không có bước kiểm tra
+Danh sách kiểm tra ngắn trước khi bấm chuyển: khớp mã đơn, khớp tên khách, khớp số tiền
+Bước 4 — Điều sâu hơn: giảm tải không có nghĩa là rút quyền. Nếu anh Quân phản ứng bằng cách lấy lại quyền hoàn tiền, anh sẽ phá đi những gì đã làm ở Câu 13. Mục tiêu là giữ phần việc có ý nghĩa và có quyền, nhưng bỏ đi phần gánh nặng trí óc không cần thiết.
+Điều rút ra: Khi một người giỏi liên tục mắc cùng một lỗi, hãy xem lại thiết kế công việc trước khi nói "cẩn thận hơn".
+Câu 18 · Sáng tạo — Chị Hạnh mở chi nhánh thứ hai
+Tình huống: Quay lại câu chuyện mở đầu. Quán của chị Hạnh giờ đã ổn định. Chị chuẩn bị mở chi nhánh thứ hai ở quận khác và sẽ tuyển một quản lý chi nhánh cùng khoảng sáu nhân viên. Chị không thể có mặt ở cả hai nơi. Chị nói: "Chị không muốn lặp lại chuyện của Lan lần nữa."
+Câu hỏi: Hãy thiết kế cho chị Hạnh một kế hoạch về công việc cho chi nhánh mới, dùng các công cụ của bài học: từ dòng công việc, phân tích công việc, đến thiết kế công việc theo bốn hướng.
+Nhắc lại bài học: Toàn bộ bài: phân tích dòng công việc (đầu ra → hoạt động → đầu vào); công việc và vị trí; bản mô tả (TDRs) và bản tiêu chuẩn (KSAOs); hỏi cả người làm lẫn người quản lý; mô hình năng lực; bản mô tả phải cập nhật định kỳ; bốn hướng thiết kế: hiệu quả, động lực, an toàn cho cơ thể, vừa sức trí óc.
+Cùng suy nghĩ từng bước:
+Bước 1 — Dòng công việc của chi nhánh. Bắt đầu từ đầu ra: đồ uống đúng vị, đúng giờ, chỗ ngồi sạch, doanh thu được ghi nhận chính xác. Từ đó liệt kê hoạt động và đầu vào như Phần 1. Chi nhánh mới có thêm một đầu ra mà quán cũ không cần: báo cáo gửi chị Hạnh, vì chị không có mặt.
+Bước 2 — Xác định công việc và vị trí.
+Công việc
+Số vị trí dự kiến
+Ghi chú
+Quản lý chi nhánh
+1
+Công việc mới hoàn toàn, cần phân tích kỹ nhất
+Pha chế
+2
+Dùng lại bản mô tả của quán cũ
+Phục vụ
+3
+Dùng lại bản mô tả đã sửa sau Câu 6, có ghi rõ việc phát sinh và luân phiên
+Thu ngân
+1
+Dùng lại bản đã làm ở Câu 4
+Bước 3 — Phân tích công việc quản lý chi nhánh. Chị Hạnh tự viết bản mô tả từ chính những gì chị đang làm, nhờ anh Minh (người làm lâu năm) góp ý phần vận hành. Thêm một mô hình năng lực ngắn: điều hành ca làm việc, kèm cặp nhân viên mới, quản lý chi phí và số liệu. Khi tuyển, phỏng vấn theo năng lực và nhờ ứng viên kể ví dụ thật. Không mặc định người thân hay người quen sẽ làm quản lý; họ cũng đi qua cùng một tiêu chuẩn.
+Bước 4 — Thiết kế công việc theo bốn hướng.
+Hướng
+Áp vào chi nhánh mới
+Hiệu quả
+Công thức chuẩn cho từng món; quầy bố trí theo thứ tự thao tác pha chế để giảm đi lại
+Động lực
+Quản lý chi nhánh được tự quyết xếp ca và chi phí nhỏ trong hạn mức; phục vụ được tự xử lý phàn nàn nhỏ như đổi món hoặc tặng thêm topping; luân phiên phục vụ và thu ngân để bớt nhàm; mỗi tháng chia sẻ nhận xét của khách với cả đội
+An toàn cho cơ thể
+Quầy pha chế đúng độ cao; thảm chống mỏi; xe đẩy cho bao đá và két nước; ghế cao cho thu ngân
+Vừa sức trí óc
+Công thức dán tại quầy; order hiển thị trên màn hình thay vì nhớ miệng; danh sách kiểm tra mở ca và đóng ca
+Bước 5 — Cơ chế giữ cho hệ thống bền. Đây là phần người làm nghề thật sự sẽ không bỏ qua:
+• Hạn mức duyệt: chi tiêu trên một mức nhất định phải báo chị Hạnh.
+• Đối chiếu định kỳ: doanh thu và tồn kho được đối chiếu hằng ngày theo mẫu báo cáo chung.
+• Ít nhất hai người biết mỗi việc: ví dụ cả quản lý và một nhân viên đều biết mở ca, đóng ca, để chi nhánh không tê liệt khi một người nghỉ.
+• Rà lại bản mô tả sau ba tháng đầu và vào mỗi kỳ đánh giá, vì công việc ở chi nhánh mới chắc chắn sẽ thay đổi.
+• Lương gắn với công việc: so sánh giá trị tương đối của các công việc để trả lương nhất quán giữa hai chi nhánh.
+• Lịch làm việc: kiểm tra quy định hiện hành về thời giờ làm việc trước khi chốt ca.
+Bước 6 — Nhìn lại câu chuyện của Lan. Lan nghỉ không phải vì "khó tuyển người", mà vì công việc chưa được hiểu, chưa được viết ra và chưa được thiết kế. Với kế hoạch này, người mới ở chi nhánh hai biết mình làm gì, được đánh giá theo tiêu chí nào, và có lý do để ở lại.
+Điều rút ra: Tuyển được người là bước giữa; hiểu việc là bước đầu, và thiết kế việc cho tốt là điều giữ người ở lại.

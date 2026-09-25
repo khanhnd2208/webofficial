@@ -1,0 +1,856 @@
+# Bài 4 — Phân tích và thiết kế công việc
+
+=== SECTION: Mở đầu: quán cà phê của chị Hạnh ===
+
+Chị Hạnh mở một quán cà phê nhỏ gần trường đại học. Quán đông dần, chị đăng một dòng lên nhóm tìm việc: "Cần tuyển nhân viên quán cà phê, nhanh nhẹn, chịu khó, lương thỏa thuận." Vài hôm sau, Lan được nhận.
+
+Tuần đầu, Lan không rõ mình làm gì. Lúc thì chạy bàn, lúc rửa ly, lúc đứng quầy pha chế, có hôm được nhờ đi chợ mua đá. Anh Minh, người pha chế lâu năm, khó chịu vì Lan "đụng vào quầy của anh"; còn Lan thấy mình bị sai vặt.
+
+Cuối tháng, chị Hạnh nhận xét "Lan làm chưa tốt", nhưng không nói được chưa tốt ở điểm nào. Lan hỏi lương có tăng không, chị cũng không biết dựa vào đâu để trả lời. Hai tháng sau Lan nghỉ, và chị Hạnh kết luận: "Bây giờ khó tuyển người quá."
+
+Nhưng có thật là do khó tuyển? Vấn đề bắt đầu từ trước khi đăng tin: chị Hạnh chưa trả lời câu hỏi "công việc này là gì, và cần người như thế nào". Bài học hôm nay xoay quanh đúng câu hỏi đó.
+
+Bài này sẽ trả lời các câu hỏi:
+
+1. Muốn biết một bộ phận cần những việc gì và cần người ra sao, ta bắt đầu từ đâu?
+
+2. Cách tổ chức bộ máy ảnh hưởng thế nào đến từng công việc?
+
+3. Phân tích công việc là gì? Bản mô tả công việc và bản tiêu chuẩn công việc khác nhau ra sao? Vì sao chúng quan trọng?
+
+4. Thông tin về một công việc lấy ở đâu, bằng công cụ gì?
+
+5. Công việc đang thay đổi thế nào dưới tác động của công nghệ?
+
+6. Thiết kế công việc thế nào để làm hiệu quả?
+
+7. … để người làm có động lực?
+
+8. … để an toàn cho cơ thể?
+
+9. … để vừa sức trí óc?
+
+## Một hiểu lầm cần bỏ: Nhiều người nghĩ bản mô tả công việc là tờ giấy thủ tục, soạn ra để đăng tuyển rồi cất vào ngăn kéo. Thực ra, hiểu công việc là nền móng cho gần như mọi việc của quản trị nhân lực: tuyển ai, đào tạo gì, đánh giá thế nào, trả lương bao nhiêu. Nền móng lệch thì mọi thứ xây bên trên đều lệch theo.
+
+Muốn tuyển đúng người, trước hết phải hiểu đúng việc.
+
+## Về cách tôi viết bài giảng này
+
+Bài giảng được viết để bạn tự đọc là hiểu, kể cả khi bạn chưa từng học quản trị. Kiến thức bám theo giáo trình quản trị nhân lực, nhưng tôi giảng bằng ví dụ đời thường thay vì trích dẫn nghiên cứu.
+
+• Mỗi thuật ngữ được giải thích ngay lần đầu xuất hiện, kèm tiếng Anh trong ngoặc để bạn tra thêm.
+
+• Giáo trình gốc là sách Mỹ, nên phần nào dựa vào luật Mỹ tôi sẽ nói rõ "ở Mỹ". Khi áp dụng ở Việt Nam, bạn cần kiểm tra quy định hiện hành.
+
+• Bản đồ bài học chia nội dung thành ba tầng. Hãy ưu tiên tầng Cốt lõi trước.
+
+• Học xong, hãy sang tab Câu hỏi phản biện và tự viết câu trả lời trước khi xem lời giải.
+
+## Bản đồ bài học
+
+Bài này dài, nên tôi chia thành ba tầng để bạn biết chỗ nào cần học chắc, chỗ nào chỉ cần nắm ý.
+
+Tầng
+
+Bạn cần làm gì
+
+Nội dung
+
+Cốt lõi
+
+Hiểu chắc, giải thích lại được bằng lời của mình
+
+Phần 1: phân tích dòng công việc; công việc và vị trí · Phần 3: phân tích công việc, bản mô tả và bản tiêu chuẩn công việc, vì sao quan trọng · Phần 6: thiết kế công việc và bốn hướng tiếp cận; thiết kế cho hiệu quả · Phần 7: năm đặc điểm của công việc tạo động lực; mở rộng và làm giàu công việc
+
+Nhận biết
+
+Nắm ý chính, nhận ra khi gặp
+
+Phần 2: dòng công việc và cơ cấu tổ chức · Phần 4: nguồn thông tin và công cụ phân tích · Phần 5: mô hình năng lực, công việc thay đổi vì công nghệ · Phần 7: nhóm tự quản, lịch làm việc linh hoạt, làm việc từ xa · Phần 8: công thái học · Phần 9: thiết kế vừa sức trí óc
+
+Đọc thêm
+
+Không bắt buộc, đọc khi có thời gian
+
+Góc đọc thêm: các câu chuyện doanh nghiệp, bảng chi tiết các công cụ phân tích
+
+```mermaid
+flowchart LR
+    A[Phân tích<br/>dòng công việc] --> B[Phân tích<br/>công việc]
+    B --> C[Thiết kế<br/>công việc]
+    B --> D[Tuyển dụng, đào tạo,<br/>đánh giá, trả lương]
+    C --> D
+```
+
+Đọc sơ đồ từ trái sang phải: hiểu cả dòng chảy công việc trước, rồi hiểu từng công việc, rồi mới thiết kế lại và dùng cho các hoạt động nhân sự khác.
+
+=== SECTION: Phần 1. Nhìn cả dòng chảy trước khi nhìn từng công việc ===
+
+Tầng: Cốt lõi
+
+Thiết kế dòng công việc
+
+Quay lại quán của chị Hạnh. Chị định tuyển "một nhân viên" mà chưa nhìn xem cả quán đang phải làm ra cái gì và bằng những việc gì. Cách làm đúng là đi ngược lại: nhìn cả dòng chảy công việc trước, rồi mới chia việc cho từng người.
+
+Thiết kế dòng công việc (work flow design) là quá trình phân tích các nhiệm vụ cần thiết để tạo ra một sản phẩm hoặc dịch vụ. Dựa vào đó, nhà quản trị giao các nhiệm vụ cho từng công việc và từng vị trí cụ thể.
+
+Quyết định dựa trên cả dòng chảy thường cho kết quả tốt hơn cách cũ là xem xét từng công việc riêng lẻ. Lý do đơn giản: một công việc chỉ có ý nghĩa khi nó khớp với các công việc trước và sau nó.
+
+Công việc và vị trí
+
+Hai từ này nghe giống nhau nhưng khác nghĩa.
+
+Công việc (job) là một tập hợp các nhiệm vụ có liên quan với nhau. Vị trí (position) là tập hợp nhiệm vụ do một người cụ thể đảm nhận.
+
+Một trường học có nhiều vị trí giảng dạy, nhưng tất cả người đứng lớp đều làm cùng một công việc: giáo viên. Quán chị Hạnh có ba người pha chế chia ca sáng, chiều, tối: đó là một công việc (pha chế) và ba vị trí.
+
+Ghi chú dịch thuật: các tài liệu tiếng Việt dịch hai từ này khác nhau. Có nơi dùng "vị trí việc làm" để chỉ cả một loại công việc. Bạn hãy bám vào nghĩa: công việc là "loại việc", vị trí là "một chỗ cho một người".
+
+Phân tích dòng công việc: ba bước
+
+Trước khi thiết kế, cần phân tích xem có những việc gì. Việc phân tích này đi theo ba bước, bắt đầu từ cái cuối cùng: đầu ra.
+
+```mermaid
+flowchart LR
+    A["Bước 1: Đầu ra<br/>Làm ra cái gì?<br/>Đo bằng gì?"] --> B["Bước 2: Hoạt động<br/>Cần làm những<br/>nhiệm vụ nào?"]
+    B --> C["Nguyên liệu và<br/>thông tin"]
+    B --> D["Thiết bị"]
+    B --> E["Nhân lực<br/>(kiến thức, kỹ năng,<br/>khả năng)"]
+```
+
+Mũi tên chỉ thứ tự phân tích, không phải thứ tự sản xuất. Ba ô bên phải là Bước 3: các loại đầu vào.
+
+Bước 1 — Đầu ra (outputs). Đầu ra là sản phẩm của một đơn vị làm việc, như một phòng ban hay một nhóm. Đầu ra có thể hữu hình (một ly cà phê, một chi tiết máy) hoặc vô hình (một khu vực được bảo vệ an toàn, một câu hỏi của khách được giải đáp). Khi xác định đầu ra, cần xét cả số lượng lẫn chất lượng.
+
+Bước 2 — Hoạt động, hay quy trình làm việc (work processes). Đây là những việc các thành viên phải làm để tạo ra đầu ra. Chúng được mô tả thành cách làm cụ thể cho từng nhiệm vụ, của từng người, ở từng khâu. Nắm rõ quy trình giúp thiết kế hệ thống làm việc gọn hơn, và biết cần điều chỉnh nhân sự ra sao khi một khâu được tự động hóa, thuê ngoài hay tổ chức lại.
+
+Bước 3 — Đầu vào (inputs). Có ba loại:
+
+• Nguyên liệu và thông tin: vật tư, dữ liệu cần dùng.
+
+• Thiết bị: máy móc, cơ sở vật chất, hệ thống.
+
+• Nhân lực: kiến thức, kỹ năng và khả năng mà người làm cần có.
+
+Áp vào quán chị Hạnh:
+
+Bước
+
+Quán cà phê
+
+Đầu ra
+
+Đồ uống đến tay khách: bao nhiêu ly mỗi giờ cao điểm (số lượng); đúng món, đúng vị, chờ không quá lâu (chất lượng). Thêm một đầu ra vô hình: chỗ ngồi sạch sẽ.
+
+Hoạt động
+
+Nhận order, thu tiền, pha chế, mang ra bàn, dọn bàn, rửa ly, nhập nguyên liệu
+
+Nguyên liệu và thông tin
+
+Cà phê, sữa, đá, trái cây; phiếu order; công thức từng món
+
+Thiết bị
+
+Máy pha, máy xay, tủ lạnh, máy tính tiền
+
+Nhân lực
+
+Biết công thức; pha nhanh và đều tay; nhớ order, giao tiếp vui vẻ với khách
+
+Nhìn bảng này, chị Hạnh sẽ thấy quán không cần "một nhân viên nhanh nhẹn", mà cần phân rõ ai lo cụm việc nào.
+
+Đi ngược từ đầu ra: làm ra cái gì → bằng những việc gì → cần những gì.
+
+> [!REFLECT] Liên hệ bản thân:
+> Hãy nghĩ về nhóm làm bài tập lớn gần nhất của bạn. Đầu ra của nhóm là gì, đo chất lượng bằng gì? Có hoạt động nào bị bỏ sót vì không ai được giao?
+
+=== SECTION: Phần 2. Dòng công việc chảy trong khung cơ cấu tổ chức ===
+
+Tầng: Nhận biết
+
+Dòng công việc không trôi trong khoảng không. Nó chảy trong cơ cấu tổ chức (organizational structure), tức cách tổ chức sắp xếp con người, nhóm và quyền hạn. Cơ cấu tốt là cơ cấu đặt những người cần phối hợp với nhau vào đúng chỗ để tạo ra đầu ra một cách hiệu quả.
+
+Hai lựa chọn cơ bản
+
+| Lựa chọn | Nghĩa là |
+| --- | --- |
+| Ví dụ ở một shop mỹ phẩm online | Tập trung (centralized) hay phân quyền (decentralized) |
+| Quyền quyết định nằm trong tay vài người ở trên cùng, hay được chia cho nhiều người | Mọi khoản hoàn tiền đều chờ chủ shop duyệt, hay nhân viên chăm sóc khách hàng được tự quyết dưới một mức nhất định |
+| Theo chức năng (functional) hay theo bộ phận (divisional) | Gom người theo loại việc, hay gom theo sản phẩm hoặc nhóm khách hàng |
+| Chia phòng Marketing, Kho, Chăm sóc khách hàng; hay chia nhóm "khách lẻ" và nhóm "đại lý", mỗi nhóm tự lo trọn cho khách của mình | Cơ cấu ảnh hưởng đến công việc thế nào |
+
+Không có công thức duy nhất, nhưng có vài xu hướng dễ thấy:
+
+• Cơ cấu theo chức năng thường đi kèm những công việc chuyên môn hẹp, ít quyền hạn, mỗi người làm riêng phần mình.
+
+• Công việc cần làm nhóm hoặc trách nhiệm rộng thường hợp với cơ cấu theo bộ phận. Muốn trao quyền cho nhân viên, nên thiết kế công việc kiểu "lo trọn cho một nhóm khách" hoặc "lo trọn một sản phẩm", thay vì chỉ làm một khâu hẹp.
+
+• Công việc của nhà quản lý cũng khác nhau. Quản lý một bộ phận phụ trách trọn một sản phẩm hay nhóm khách thường đòi hỏi nhiều kinh nghiệm và tư duy tổng hợp hơn. Quản lý một phòng chức năng lại cần giỏi xử lý xung đột và kéo mọi người hướng về mục tiêu chung, vì nhân viên ở đó thường gắn bó với phòng ban hay nghề của mình hơn là với mục tiêu lớn.
+
+Hai lỗi hay bị bỏ qua
+
+Phân tích từng công việc riêng lẻ mà quên nhìn cả tổ chức dễ dẫn đến hai lỗi:
+
+1. Nhiều cấp mà không phân rõ kết quả của từng cấp. Trong một đội bán hàng, cấp một lo từng đơn hàng, cấp hai lo xây quan hệ với khách, cấp ba lo chiến lược cho cả khu vực trong một đến hai năm. Nếu người ở cấp ba không biết làm chiến lược, họ sẽ quay xuống làm việc của cấp hai.
+
+2. Muốn các phòng phối hợp nhưng không chỉ định ai giải quyết xung đột. Kho và chăm sóc khách hàng cãi nhau vì đơn trễ, nhưng không vị trí nào có trách nhiệm xử lý, nên chuyện cứ lặp lại.
+
+Muốn hiểu một công việc, hãy nhìn cả cái khung chứa nó.
+
+> [!REFLECT] Liên hệ bản thân:
+> Nơi bạn đi làm thêm hoặc câu lạc bộ bạn tham gia được chia theo chức năng hay theo nhóm khách hàng, dự án? Khi có mâu thuẫn giữa hai nhóm, ai là người được giao xử lý?
+
+=== SECTION: Phần 3. Phân tích công việc: hiểu cho đúng một công việc ===
+
+Tầng: Cốt lõi
+
+Sau khi nhìn cả dòng chảy, ta phóng to vào từng công việc. Muốn làm tốt, tổ chức phải khớp được yêu cầu của công việc với con người làm việc đó. Muốn khớp được, trước hết phải hiểu công việc.
+
+Phân tích công việc (job analysis) là quá trình thu thập thông tin chi tiết về các công việc.
+
+Ai làm việc này? Ở doanh nghiệp rất nhỏ như quán chị Hạnh, người quản lý trực tiếp có thể tự làm. Thường thì đây là việc của người làm nhân sự chuyên nghiệp; công ty lớn có thể có chuyên viên phân tích công việc, hoặc thuê một đơn vị bên ngoài.
+
+Kết quả của phân tích công việc là hai tài liệu: bản mô tả công việc và bản tiêu chuẩn công việc.
+
+Bản mô tả công việc: nói về VIỆC
+
+Bản mô tả công việc (job description) liệt kê các nhiệm vụ, bổn phận và trách nhiệm (tasks, duties and responsibilities — viết tắt TDRs) mà một công việc bao gồm.
+
+Điểm quan trọng: TDRs là những hành động quan sát được. Công việc của phóng viên ảnh đòi hỏi dùng máy ảnh để chụp; nếu bạn đi theo họ một ngày, gần như chắc chắn bạn sẽ thấy họ chụp ảnh. Khi đánh giá một người làm việc tốt hay chưa, thông tin chi tiết về TDRs là thứ cần nhất, vì nó cho biết người đó đáp ứng từng yêu cầu đến đâu.
+
+Một bản mô tả công việc thường có ba phần:
+
+1. Chức danh công việc (job title).
+
+2. Tóm tắt ngắn các nhiệm vụ, bổn phận, trách nhiệm.
+
+3. Danh sách các nhiệm vụ thiết yếu (essential duties), mỗi nhiệm vụ nêu chi tiết các việc cụ thể phải làm.
+
+Nhiều nơi ghi thêm điều kiện làm việc, như làm theo ca hay làm ngoài trời. Mỗi tổ chức có thể điều chỉnh mẫu này, nhưng mọi bản mô tả trong cùng một tổ chức nên theo cùng một mẫu. Nhờ vậy, các quyết định về lương và thăng tiến nhất quán hơn, và tổ chức chứng minh được mình ra quyết định nhân sự công bằng.
+
+Viết và cập nhật bản mô tả. Khi tạo ra một công việc mới, cần một bản mô tả mới. Thông tin lấy từ người đang làm việc tương tự, người quản lý trực tiếp, hoặc những người đang lập ra vị trí đó; người viết xác định các nhiệm vụ thiết yếu, gồm cả việc tay chân lẫn việc trí óc, cùng phương pháp và nguồn lực cần dùng.
+
+Sau đó, bản mô tả nên được rà lại định kỳ, chẳng hạn mỗi năm một lần. Buổi đánh giá cuối kỳ là dịp tốt để đối chiếu "việc thực tế đang làm" với "việc ghi trên giấy".
+
+Đưa cho người mới. Nhân viên mới nên nhận bản mô tả công việc để hiểu mình được kỳ vọng làm gì. Nhưng bản mô tả không nên bị hiểu là giới hạn sự tận tâm của họ.
+
+Nhiều bản mô tả có câu "và các nhiệm vụ khác khi được yêu cầu" để tránh kiểu trả lời "việc đó không phải việc của em". Đi kèm câu này là một trách nhiệm của người quản lý: giao phần việc thêm một cách công bằng.
+
+Việc lặt vặt không nên chỉ dồn cho một nhóm người, và không ai được dùng "việc khác" làm cái cớ giao việc quá sức để ép một người nghỉ. Ở Mỹ, cách giao việc như vậy có thể vi phạm luật chống phân biệt đối xử; ở đâu thì nó cũng làm hỏng niềm tin.
+
+Bản tiêu chuẩn công việc: nói về NGƯỜI
+
+Bản tiêu chuẩn công việc (job specification) liệt kê kiến thức, kỹ năng, khả năng và các đặc điểm khác (knowledge, skills, abilities and other characteristics — viết tắt KSAOs) mà một người cần có để làm được công việc.
+
+| Thành phần | Nghĩa là | Ví dụ |
+| --- | --- | --- |
+| Kiến thức (Knowledge) | Thông tin về sự kiện hoặc quy trình cần biết để làm tốt một nhiệm vụ | Biết thực đơn, giá và thành phần từng món |
+| Kỹ năng (Skill) | Mức độ thành thạo khi làm một nhiệm vụ cụ thể | Ghi order nhanh và đúng; dùng máy tính tiền thành thạo |
+| Khả năng (Ability) | Năng lực chung, bền vững hơn, không gắn với một nhiệm vụ cụ thể | Khả năng hợp tác với người khác; khả năng giữ bình tĩnh |
+| Đặc điểm khác (Other characteristics) | Nét tính cách như sự bền bỉ, động lực; và các yêu cầu pháp lý như giấy phép, chứng chỉ | Đúng giờ, bền bỉ; với nghề lái xe thì cần bằng lái |
+
+Chỗ dễ nhầm nhất là kỹ năng và khả năng. Kỹ năng gắn với một nhiệm vụ cụ thể và luyện được qua kinh nghiệm. Khả năng rộng hơn, là nền để làm nhiều việc khác nhau.
+
+Khác với TDRs, KSAOs không nhìn thấy trực tiếp. Bạn không thể nhìn một ứng viên mà biết họ có chụp ảnh đẹp không. Bạn chỉ biết khi họ làm việc, hoặc khi xem sản phẩm của họ, như bộ ảnh họ đã chụp. Bằng cấp cũng là một dấu hiệu gián tiếp cho thấy một người có mức kiến thức, kỹ năng nhất định. Vì vậy, khi tuyển dụng, phỏng vấn và quyết định nên tập trung vào KSAOs.
+
+Một ví dụ về cách tìm KSAOs: khi phỏng vấn các tổ trưởng sản xuất xem họ làm gì mỗi ngày, người ta thấy họ dành nhiều thời gian quan sát nhân viên để giữ an toàn, giữ chất lượng và giữ quy trình trơn tru, và họ dựa nhiều vào hiểu biết kỹ thuật. Từ đó, tiêu chuẩn cho vị trí tổ trưởng nên có: kỹ năng quan sát cách người khác làm việc, và kiến thức sâu về quy trình, công cụ sản xuất.
+
+Áp vào quán chị Hạnh
+
+Bản mô tả công việc (việc)
+
+Bản tiêu chuẩn công việc (người)
+
+Chức danh: Nhân viên phục vụ
+
+Kiến thức: thực đơn, giá, quy trình gọi món của quán
+
+Tóm tắt: đón khách, nhận order, mang đồ uống, giữ khu vực khách ngồi sạch sẽ
+
+Kỹ năng: ghi order chính xác, dùng máy tính tiền
+
+Nhiệm vụ thiết yếu: chào khách và giới thiệu món; ghi order và chuyển cho quầy pha chế; mang đồ uống ra đúng bàn; dọn bàn sau khi khách về; hỗ trợ rửa ly giờ cao điểm
+
+Khả năng: giao tiếp vui vẻ, giữ bình tĩnh khi đông khách, phối hợp với người pha chế
+
+Điều kiện làm việc: làm theo ca, đứng và đi lại nhiều
+
+Đặc điểm khác: đúng giờ, làm được ca tối cuối tuần
+
+Chỉ với hai cột này, chị Hạnh đã giải quyết được nhiều chuyện: Lan biết việc nào của mình, anh Minh biết quầy pha chế là việc của ai, và cuối tháng chị có cơ sở để nói Lan làm tốt hay chưa ở điểm nào.
+
+Mô tả công việc nói về việc (nhìn thấy được). Tiêu chuẩn công việc nói về người (suy ra từ việc họ làm).
+
+Vì sao phân tích công việc là "viên gạch nền"
+
+Phân tích công việc quan trọng đến mức được gọi là viên gạch nền của mọi việc quản trị nhân lực làm. Gần như hoạt động nào cũng cần thông tin từ nó:
+
+Hoạt động
+
+Cần gì từ phân tích công việc
+
+Thiết kế lại công việc (work redesign)
+
+Biết chi tiết công việc hiện tại; thiết kế việc mới cũng giống như phân tích một công việc chưa tồn tại
+
+Hoạch định nhân lực (HR planning)
+
+Biết mỗi công việc cần kỹ năng ở mức nào để tính xem cần loại người nào
+
+Tuyển chọn (selection)
+
+Biết người được tuyển phải làm gì và cần kiến thức, kỹ năng, khả năng gì
+
+Đào tạo (training)
+
+Biết nhiệm vụ của công việc để đào tạo đúng thứ cần
+
+Đánh giá thực hiện công việc (performance appraisal)
+
+Biết hành vi và kết quả nào là làm tốt
+
+Phát triển nghề nghiệp (career planning)
+
+Biết yêu cầu kỹ năng của các công việc để hướng mỗi người vào nơi họ làm được và thấy hài lòng
+
+Định giá công việc (job evaluation)
+
+So sánh các công việc để xác định giá trị tương đối của từng việc, làm cơ sở cho một thang lương công bằng
+
+Định giá công việc cần nhấn thêm một chút. Nếu nhân viên thấy thang lương không công bằng, họ dễ bất mãn và nghỉ việc, hoặc chẳng thấy lý do gì để phấn đấu lên vị trí cao hơn.
+
+Về mặt pháp lý. Ở Mỹ, bản mô tả và bản tiêu chuẩn công việc rõ ràng giúp doanh nghiệp tuân thủ luật bình đẳng việc làm. Ví dụ, cơ quan quản lý có thể xem bản mô tả để xác định đâu là chức năng thiết yếu của công việc, khi xét liệu một người khuyết tật có làm được việc nếu được hỗ trợ hợp lý; danh sách nhiệm vụ cũng được dùng để so sánh khi có khiếu nại trả lương không bình đẳng.
+
+Nguyên tắc chung rút ra: giấy tờ rõ ràng giúp giữ các quyết định bám vào công việc, nhưng giấy tờ không thay thế được cách đối xử công bằng.
+
+Với người quản lý trực tiếp, phân tích công việc giúp họ nhìn rõ các loại việc trong đơn vị, xem dòng công việc đã hợp lý chưa, và có cơ sở khi tuyển người, đánh giá, đề xuất khen thưởng.
+
+Công việc chưa rõ thì tuyển dụng, đào tạo, đánh giá và trả lương đều thành đoán mò.
+
+> [!REFLECT] Liên hệ bản thân:
+> Công việc làm thêm gần nhất của bạn có bản mô tả công việc không? Nếu không, bạn đã biết mình "làm tốt" hay "làm chưa tốt" dựa vào đâu?
+
+=== SECTION: Phần 4. Lấy thông tin về công việc ở đâu, bằng công cụ gì ===
+
+Tầng: Nhận biết
+
+Hỏi ai?
+
+Người đang làm công việc đó (incumbent). Đây là nguồn tự nhiên nhất, vì họ hiểu chi tiết công việc hơn ai hết. Nhưng họ cũng có động cơ để "kể cho to", làm công việc nghe quan trọng hơn thực tế để mình có vẻ có giá trị hơn.
+
+Người quan sát, nhất là người quản lý trực tiếp. Họ xem người làm có đang làm đúng những gì cần làm không. Vì vậy, thông tin từ người đang làm nên được bổ sung bằng thông tin từ người quản lý.
+
+Hai nguồn này mạnh ở những chỗ khác nhau. Người quản lý thường đánh giá chính xác hơn nhiệm vụ nào quan trọng. Người đang làm thường nắm chính xác hơn thời gian thực tế dành cho từng việc và những rủi ro an toàn họ gặp hằng ngày.
+
+Dữ liệu số. Một số nơi đo hoạt động khách quan hơn bằng dữ liệu từ máy tính hoặc thiết bị đeo trên người, chẳng hạn một người tương tác với đồng nghiệp bao nhiêu lần. Ghép dữ liệu này với kết quả làm việc có thể gợi ý hoạt động nào đi kèm với làm việc giỏi. Cách này cần cân nhắc kỹ quyền riêng tư của người lao động.
+
+Chuyên gia phân tích bên ngoài. Khi cần đánh giá mức độ kỹ năng, người có kinh nghiệm chấm điểm nhiều loại công việc khác nhau thường là nguồn tốt nhất.
+
+Người làm biết việc tốn bao nhiêu thời gian; người quản lý biết việc nào quan trọng. Hỏi cả hai.
+
+Dùng công cụ gì?
+
+Sau khi thu thập thông tin, người phân tích cần công cụ để sắp xếp và phân tích nó. Có ba công cụ chuẩn hóa hay được nhắc đến, đều xuất phát từ Mỹ:
+
+| Công cụ | Là gì | Mạnh ở | Hạn chế |
+| --- | --- | --- | --- |
+| O*NET (Occupational Information Network) | Cơ sở dữ liệu nghề nghiệp trực tuyến của Bộ Lao động Mỹ, phát triển từ cuốn Dictionary of Occupational Titles | Dùng một "ngôn ngữ chung" để mô tả khả năng, cách làm việc, hoạt động và bối cảnh làm việc của rất nhiều nghề; là điểm xuất phát tốt để tham khảo | Mô tả nghề ở mức khái quát; xây dựng cho nền kinh tế Mỹ, dù có nghiên cứu cho thấy kết quả khá tương đồng ở các nước khác |
+| Bảng câu hỏi phân tích vị trí (Position Analysis Questionnaire — PAQ) | Bảng câu hỏi chuẩn hóa với 195 mục về hành vi, điều kiện và đặc điểm công việc, dùng được cho rất nhiều loại việc | So sánh được các công việc khác nhau; xem xét cả quá trình từ đầu vào đến đầu ra | Người điền cần đọc hiểu ở trình độ đại học và được đào tạo riêng; báo cáo khá trừu tượng, khó dùng để viết bản mô tả hay thiết kế lại công việc |
+| Hệ thống phân tích công việc Fleishman (Fleishman Job Analysis System) | Nhờ chuyên gia về công việc đó (thường là chính người đang làm) chấm mức độ cần có của 52 loại khả năng, trên thang 7 điểm | Cho bức tranh về khả năng công việc đòi hỏi; hữu ích cho tuyển chọn, đào tạo, phát triển nghề nghiệp | Tập trung vào khả năng của người, không mô tả toàn bộ công việc |
+
+Với PAQ, nên biết thêm hai điều. Thứ nhất, các mục hỏi được xếp vào sáu nhóm: người làm lấy thông tin từ đâu; phải suy nghĩ, ra quyết định thế nào; làm ra sản phẩm bằng hoạt động và dụng cụ gì; quan hệ với người khác ra sao; làm trong bối cảnh vật chất và xã hội nào; và các đặc điểm khác. Thứ hai, điểm do người đang làm tự chấm thường kém tin cậy hơn điểm của người quản lý hay chuyên viên được đào tạo.
+
+Với Fleishman, mỗi mức trên thang đều có mô tả cụ thể. Ví dụ với khả năng "đọc hiểu văn bản", mức thấp nhất là hiểu thông tin ngắn, đơn giản, từ ngữ thông dụng; mức cao nhất là hiểu văn bản phức tạp, nhiều từ lạ, phải phân biệt nghĩa rất tinh tế.
+
+Lưu ý khi dùng ở Việt Nam: các công cụ này có thể tham khảo để hiểu cách mô tả một nghề, nhưng thị trường lao động, chức danh và mức yêu cầu có thể khác. Hãy dùng chúng làm gợi ý, rồi đối chiếu với thực tế công việc ở tổ chức của bạn.
+
+Phân tích công việc làm theo nhóm
+
+Ngày càng nhiều việc được giao cho nhóm, nơi các thành viên phụ thuộc chặt vào nhau. Để mô tả một nhóm, có ba chiều quan trọng nhất:
+
+1. Mức khác biệt về kỹ năng (skill differentiation): các thành viên có chuyên môn riêng đến mức nào.
+
+2. Mức khác biệt về quyền hạn (authority differentiation): quyền quyết định nằm ở từng người, ở nhóm nhỏ, hay ở cả nhóm.
+
+3. Độ ổn định về thời gian (temporal stability): các thành viên phải làm việc cùng nhau trong bao lâu.
+
+Ví dụ, một ê-kíp mổ có kỹ năng rất khác nhau và quyền quyết định tập trung ở bác sĩ mổ chính. Một nhóm làm bài tập lớn trong một học kỳ thì thường kỹ năng khá giống nhau, quyền quyết định chia đều, và chỉ đi cùng nhau vài tháng.
+
+> [!REFLECT] Liên hệ bản thân:
+> Nếu được nhờ mô tả công việc làm thêm của bạn, bạn có xu hướng "kể cho to" phần nào không? Người quản lý của bạn sẽ mô tả nó khác đi ở điểm nào?
+
+=== SECTION: Phần 5. Công việc không đứng yên: các xu hướng mới ===
+
+Tầng: Nhận biết
+
+Mô hình năng lực: từ "làm việc gì" sang "làm việc thế nào"
+
+Phân tích công việc truyền thống mô tả từng công việc riêng lẻ. Nhưng khi tổ chức muốn quản trị nhân tài để phục vụ chiến lược, họ cần nghĩ rộng hơn: tổ chức cần những năng lực gì để thành công, và làm sao thu hút, phát triển những năng lực đó.
+
+Năng lực (competency) là một vùng khả năng của cá nhân giúp người đó làm tốt công việc của mình. Mô hình năng lực (competency model) xác định và mô tả tất cả các năng lực cần có để thành công trong một nghề hoặc một nhóm công việc.
+
+Mô hình năng lực có thể làm cho một nhóm nghề, cho một cấp trong tổ chức, hoặc cho toàn bộ tổ chức. Ví dụ, một công ty có thể yêu cầu mọi quản lý cấp trung, thậm chí mọi nhân viên, đều phải hành xử chính trực, tôn trọng sự khác biệt và hết lòng làm khách hàng hài lòng.
+
+Một mô hình năng lực thường có hai nửa: bên trái là tên và định nghĩa từng năng lực, bên phải là các mức thành thạo kèm hành vi để nhận biết. Ví dụ cho vị trí cửa hàng trưởng của một chuỗi trà sữa:
+
+| Năng lực | Mức 1 — Dưới kỳ vọng | Mức 2 — Đạt kỳ vọng | Mức 3 — Vượt kỳ vọng |
+| --- | --- | --- | --- |
+| Kèm cặp nhân viên: giúp nhân viên mới làm được việc nhanh và đúng chuẩn | Chưa làm được việc cơ bản | Hiểu nguyên tắc, làm tốt việc thường ngày, ít cần hỗ trợ | Xử lý được việc phức tạp, có thể hướng dẫn và dẫn dắt người khác |
+| Hướng về khách hàng: tạo niềm tin qua giao tiếp cởi mở, thẳng thắn với khách | (như trên) | (như trên) | (như trên) |
+| Quản lý chi phí: đọc số liệu bán hàng, đặt mục tiêu chi phí cho cửa hàng | (như trên) | (như trên) | (như trên) |
+
+Khác biệt then chốt: phân tích công việc tập trung vào nhiệm vụ và kết quả; mô hình năng lực tập trung nhiều hơn vào cách con người làm việc.
+
+Mô hình năng lực giúp các hoạt động nhân sự cùng hướng về chiến lược. Tuyển theo năng lực gắn với thành công trong công việc có xu hướng giảm rủi ro tuyển phải người không hợp việc và làm đa dạng hơn nguồn ứng viên. Nó cũng định hướng cho đào tạo, phát triển, và là cơ sở công bằng để đặt tiêu chí đánh giá.
+
+Một cách làm thực tế khi phỏng vấn: chọn vài năng lực chính, rồi nhờ ứng viên kể ví dụ cụ thể họ đã thể hiện năng lực đó thế nào, chẳng hạn "Kể về một lần bạn phải tự thúc đẩy mình bắt tay vào một việc khó."
+
+Công việc luôn thay đổi
+
+Ta hay nghĩ "công việc" là thứ cố định, nhưng thực tế nó thay đổi theo thời gian. Chính người làm và người quản lý cũng liên tục điều chỉnh công việc một chút cho hợp sở thích hoặc hoàn cảnh. Sai sót trong phân tích công việc có nhiều nguồn, nhưng nguồn phổ biến nhất có lẽ là bản mô tả công việc đã lỗi thời.
+
+Vì vậy, phân tích công việc không chỉ làm một lần khi tạo ra công việc, mà còn phải phát hiện thay đổi theo thời gian.
+
+Công nghệ thay đổi công việc nhanh hơn
+
+Robot, trí tuệ nhân tạo, nhận dạng giọng nói và các ứng dụng công nghệ thông tin cho phép tự động hóa những việc trước đây chỉ người làm được. Điều này thường giúp giảm chi phí và nâng chất lượng. Các nhà phân tích còn tranh luận về tác động lên số lượng việc làm, nhưng đều đồng ý rằng bản chất công việc đang thay đổi.
+
+Một kỳ vọng phổ biến là công nghệ sẽ hỗ trợ (augment) nhiều hơn là thay thế (replace) con người: máy cung cấp thông tin, trợ giúp để người làm được nhiều hơn trước. Vì vậy, phân tích công việc phải trả lời thêm một câu: việc nào giao cho người, việc nào giao cho công nghệ?
+
+> [!EXAMPLE] Ví dụ ngay trong nghề nhân sự:
+> trước đây nhân viên nhân sự trực điện thoại trả lời thắc mắc và làm thủ tục giấy tờ cho nhân viên. Ở nhiều nơi, giờ nhân viên nhắn hỏi chatbot, chatbot gợi ý câu trả lời và làm các thủ tục đơn giản. Người làm nhân sự có thêm thời gian để phân tích dữ liệu và lên kế hoạch nhân tài. Nghĩa là KSAOs cần cho người làm nhân sự tương lai cũng đã khác.
+
+Bài toán cân bằng: linh hoạt và giấy tờ
+
+Cơ cấu làm việc theo dự án ngày càng phổ biến, công việc đổi nhanh, không thể tuần nào cũng viết lại bản mô tả. Vì thế bản mô tả và bản tiêu chuẩn công việc cần linh hoạt. Nhưng yêu cầu pháp lý lại cần tài liệu rõ ràng, cụ thể. Tổ chức phải cân bằng hai nhu cầu này, và nhiều nơi giải quyết bằng cách đầu tư kỹ hơn vào thiết kế công việc, nội dung của các phần tiếp theo.
+
+Bản mô tả công việc là tấm ảnh chụp, còn công việc là thước phim. Ảnh cần được chụp lại định kỳ.
+
+> [!REFLECT] Liên hệ bản thân:
+> Ở công việc bạn biết rõ nhất, việc nào đã hoặc sắp được máy làm thay? Khi đó người làm cần thêm kỹ năng gì?
+
+=== SECTION: Phần 6. Thiết kế công việc, và thiết kế cho hiệu quả ===
+
+Tầng: Cốt lõi
+
+Thiết kế công việc là gì
+
+Phân tích công việc giúp hiểu những công việc đang có. Nhưng tổ chức còn phải tạo ra công việc mới khi mở rộng, và định kỳ xem có nên sửa công việc cũ khi muốn nâng chất lượng hay hiệu quả.
+
+Thiết kế công việc (job design) là quá trình xác định công việc sẽ được thực hiện như thế nào và gồm những nhiệm vụ gì. Thiết kế lại công việc (job redesign) là quá trình tương tự nhưng áp dụng để thay đổi một công việc đang có.
+
+Muốn thiết kế tốt, cần hiểu kỹ hai thứ: bản thân công việc (nhờ phân tích công việc, Phần 3) và vị trí của nó trong dòng chảy của cả đơn vị (nhờ phân tích dòng công việc, Phần 1). Có hiểu biết đó rồi, nhà quản trị có bốn hướng để thiết kế, mỗi hướng chú trọng một mặt khác nhau của công việc:
+
+```mermaid
+flowchart TD
+    A["Hiệu quả<br/>(kỹ thuật công nghiệp)"] --> J((CÔNG VIỆC))
+    B["Động lực<br/>(mở rộng, làm giàu,<br/>làm nhóm, linh hoạt)"] --> J
+    C["An toàn và sức khỏe<br/>(công thái học)"] --> J
+    D["Sức trí óc<br/>(lọc thông tin, hiển thị rõ,<br/>công cụ hỗ trợ trí nhớ)"] --> J
+```
+
+Bốn hướng này thường phải cân nhắc cùng lúc, vì làm mạnh một hướng có thể làm yếu hướng khác. Các phần 6 đến 9 lần lượt đi qua từng hướng.
+
+Thiết kế cho hiệu quả
+
+Nếu người lao động làm việc hiệu quả nhất có thể, tổ chức được lợi vì chi phí thấp hơn và mỗi người làm ra nhiều hơn; người lao động cũng có thể đỡ mệt hơn. Đây là nền tảng của kỹ thuật công nghiệp.
+
+Kỹ thuật công nghiệp (industrial engineering) là việc nghiên cứu công việc để tìm cách tổ chức đơn giản nhất, nhằm đạt hiệu quả cao nhất.
+
+Áp kỹ thuật công nghiệp vào một công việc thường làm nó đơn giản đi, đến mức gần như ai cũng được đào tạo nhanh để làm. Kết quả là những công việc chuyên môn hóa cao và lặp đi lặp lại.
+
+Cách làm truyền thống là tìm "một cách tốt nhất" (one best way) để làm việc, thông qua nghiên cứu thời gian và thao tác (time-and-motion studies): bấm giờ, quan sát từng động tác để tìm chuỗi động tác hiệu quả nhất. Sau đó, tổ chức:
+
+1. Tuyển người dựa trên khả năng làm được việc đó.
+
+2. Đào tạo họ làm đúng "cách tốt nhất" đã tìm ra.
+
+3. Trả lương theo cách khuyến khích họ làm hết sức (sẽ học ở các bài về tiền lương).
+
+> [!EXAMPLE] Ví dụ:
+> Một bếp cơm văn phòng giao hàng trăm suất mỗi trưa. Người quản lý bấm giờ từng công đoạn và thấy nhân viên đi lại quá nhiều để lấy hộp và muỗng. Chị sắp lại bàn để mọi thứ trong tầm tay, chia dây chuyền thành chia cơm, gắp món, đóng nắp, dán nhãn, mỗi người một khâu. Suất cơm ra nhanh và đều hơn hẳn.
+
+Mặt trái. Lợi ích của kỹ thuật công nghiệp đo được và rất thực tế. Nhưng chỉ chăm chăm vào hiệu quả có thể tạo ra những công việc quá đơn giản, lặp lại đến nhàm chán; người làm dễ thấy việc mình vô nghĩa. Người dán nhãn trong bếp cơm kia có thể làm nhanh nhất tuần đầu, rồi chán và nghỉ vào tháng thứ ba. Vì vậy, đa số tổ chức kết hợp kỹ thuật công nghiệp với các hướng thiết kế khác.
+
+Hiệu quả là điểm xuất phát, không phải điểm dừng: công việc quá đơn giản thì nhanh, nhưng cũng nhanh chán.
+
+> [!REFLECT] Liên hệ bản thân:
+> Bạn từng làm một việc được chia nhỏ đến mức lặp lại cả ngày chưa, như đứng quầy gói quà dịp Tết hay nhập liệu? Sau bao lâu thì bạn bắt đầu thấy chán?
+
+=== SECTION: Phần 7. Thiết kế công việc tạo động lực ===
+
+Tầng: Cốt lõi (năm đặc điểm, mở rộng và làm giàu công việc) · Nhận biết (nhóm tự quản, lịch linh hoạt, làm từ xa)
+
+Khi phải cạnh tranh để giữ người, khi cần những người làm việc bằng chuyên môn, hay khi cần nhân viên thật lòng quan tâm đến khách hàng, chỉ chú trọng hiệu quả là không đủ. Tổ chức cần người lao động đến chỗ làm với sự hào hứng, gắn bó và sáng tạo. Muốn vậy, bản thân công việc phải có những đặc điểm khiến người ta muốn làm.
+
+Mô hình đặc điểm công việc
+
+Mô hình nổi tiếng nhất cho câu hỏi này là Mô hình đặc điểm công việc (Job Characteristics Model) của Richard Hackman và Greg Oldham. Mô hình mô tả mọi công việc bằng năm đặc điểm:
+
+| Đặc điểm | Nghĩa là | Thấp → Cao |
+| --- | --- | --- |
+| Đa dạng kỹ năng (skill variety) | Công việc đòi hỏi dùng nhiều kỹ năng khác nhau đến mức nào | Cần ít kỹ năng → cần nhiều kỹ năng |
+| Tính trọn vẹn của nhiệm vụ (task identity) | Người làm hoàn thành trọn một phần việc từ đầu đến cuối đến mức nào, như lắp trọn một bộ phận hay giải quyết xong một khiếu nại của khách | Làm một mảnh nhỏ → làm trọn một phần việc |
+| Ý nghĩa của nhiệm vụ (task significance) | Công việc ảnh hưởng quan trọng đến cuộc sống của người khác đến mức nào | Ảnh hưởng nhỏ → ảnh hưởng lớn |
+| Quyền tự chủ (autonomy) | Người làm được tự quyết định cách làm việc đến mức nào | Người khác quyết → tự do quyết định |
+| Phản hồi (feedback) | Người làm nhận được thông tin rõ ràng về kết quả làm việc từ chính công việc đến mức nào | Khó biết mình làm tốt không → thấy ngay |
+
+Theo mô hình, công việc càng có nhiều năm đặc điểm này thì càng tạo động lực. Người làm một công việc như vậy được dự đoán sẽ hài lòng hơn, làm được nhiều hơn và tốt hơn.
+
+> [!EXAMPLE] Ví dụ:
+> Tú làm chăm sóc khách hàng cho một shop quần áo online. Trước đây, Tú chỉ trả lời tin nhắn theo mẫu có sẵn, khách khiếu nại thì chuyển cho chủ shop, và không bao giờ biết khách có hài lòng hay không.
+
+Sau khi thiết kế lại, Tú xử lý trọn một khiếu nại từ lúc nhận đến lúc xong (trọn vẹn), tự quyết đổi hàng hay hoàn tiền dưới một mức cho phép (tự chủ), dùng cả kỹ năng tư vấn, kiểm tra đơn, thương lượng (đa dạng), và xem được điểm đánh giá khách để lại sau mỗi cuộc trò chuyện (phản hồi). Tú cũng thấy rõ hơn việc mình làm giúp khách đỡ bực mình ra sao (ý nghĩa).
+
+> [!WARNING] Lưu ý:
+> mỗi người mỗi khác. Khác biệt cá nhân ảnh hưởng đến mức một người được thúc đẩy bởi các đặc điểm này. Một người làm tốt nhất trong môi trường có khuôn khổ rõ ràng có thể không thấy hào hứng với quyền tự chủ, và hợp hơn với công việc mà người quản lý ra hầu hết quyết định.
+
+Các cách áp dụng mô hình vào thực tế gồm: mở rộng công việc, làm giàu công việc, nhóm tự quản, lịch làm việc linh hoạt và làm việc từ xa.
+
+Mở rộng công việc
+
+Mở rộng công việc (job enlargement) là mở rộng các loại nhiệm vụ trong một công việc, nhằm làm công việc bớt lặp lại và thú vị hơn.
+
+Có hai kỹ thuật:
+
+• Ghép công việc (job extension): gộp vài công việc tương đối đơn giản thành một công việc có nhiều loại nhiệm vụ hơn. Ví dụ gộp lễ tân, đánh máy và lưu hồ sơ thành một công việc. Cách này đơn giản, nhưng nếu việc nào cũng nhàm thì gộp lại vẫn nhàm.
+
+• Luân chuyển công việc (job rotation): không sửa bản thân công việc, mà cho người lao động lần lượt làm nhiều công việc khác nhau. Ví dụ trong một tổ sản xuất, hôm nay lắp ráp, mai đóng thùng. Các việc có thể vẫn lặp lại, nhưng có thêm sự thay đổi.
+
+Cạm bẫy của mở rộng công việc. Công việc cũng bị "mở rộng" khi tổ chức giao thêm mục tiêu, hoặc khi ít người hơn phải gánh phần việc trước đây nhiều người làm. Khi đó, thách thức là đừng để công việc chuyển từ "thú vị hơn" sang "kiệt sức". Nhiều bệnh viện, chẳng hạn, đã mở rộng việc của nhân viên tiếp đón: ngoài nhập thông tin người bệnh, họ còn tư vấn chi phí và xử lý hồ sơ bảo hiểm. Việc nặng và phức tạp hơn thì thu nhập cũng cần được xem lại cho tương xứng.
+
+Làm giàu công việc
+
+Làm giàu công việc (job enrichment) là trao thêm quyền cho người lao động bằng cách bổ sung quyền ra quyết định vào công việc của họ.
+
+Ý tưởng này đến từ thuyết hai yếu tố (two-factor theory) của Frederick Herzberg. Theo Herzberg, con người được thúc đẩy bởi những khía cạnh bên trong của công việc, như ý nghĩa của nó, nhiều hơn là bởi phần thưởng bên ngoài như tiền lương. Ông nêu năm yếu tố gắn với công việc tạo động lực: thành tích, sự ghi nhận, sự phát triển, trách nhiệm, và được làm trọn công việc.
+
+> [!EXAMPLE] Ví dụ làm giàu công việc:
+
+• Công nhân được quyền dừng dây chuyền khi chất lượng không đạt, và mỗi người làm vài nhiệm vụ để hoàn thành trọn một công đoạn.
+
+• Nhân viên bán hàng được quyền tự giải quyết vấn đề của khách, kể cả quyết định hoàn tiền hay đổi hàng.
+
+Nhưng không phải ai cũng hưởng ứng. Công việc được làm giàu hợp nhất với người linh hoạt và biết đáp ứng người khác; với họ, động lực có thể tăng rõ rệt.
+
+| Ghép công việc | Luân chuyển | Làm giàu công việc |
+| --- | --- | --- |
+| Thay đổi gì | Thêm loại việc | Đổi chỗ làm giữa các việc |
+| Thêm quyền quyết định | Công việc có được thiết kế lại không | Có |
+| Không | Có | Rủi ro |
+| Việc nào cũng nhàm thì gộp vẫn nhàm | Việc vẫn lặp lại | Không hợp với người không muốn thêm trách nhiệm |
+
+Ghi chú: nhiều giáo trình tiếng Việt gọi mở rộng công việc là "theo chiều ngang" (thêm việc cùng cấp) và làm giàu công việc là "theo chiều dọc" (thêm quyền vốn của cấp trên). Hãy bám vào nghĩa.
+
+Mở rộng là cho thêm việc; làm giàu là cho thêm quyền.
+
+Nhóm tự quản
+
+Thay vì làm giàu từng công việc riêng lẻ, một số tổ chức trao quyền cho cả một nhóm tự quản (self-managing work team). Nhóm chịu trách nhiệm cho trọn một quy trình hoặc một phân đoạn công việc. Thành viên thường được quyền tự xếp lịch, tuyển người vào nhóm, giải quyết vấn đề về kết quả của nhóm, và làm những việc trước đây thuộc về quản lý.
+
+Làm nhóm như vậy mang lại cho công việc quyền tự chủ, sự đa dạng kỹ năng và tính trọn vẹn. Vì trách nhiệm lớn, công việc của mỗi người thường được định nghĩa rộng, ai cũng có thể phải làm mọi việc của nhóm. Thách thức cho tổ chức là đào tạo đủ để các thành viên làm được. Một cách khác là giao cho nhóm trách nhiệm với một quy trình hay một nhóm khách, rồi để nhóm tự phân công.
+
+Nhóm thường làm tốt hơn khi được tự quản thật sự, thành viên tham gia nhiều vào việc ra quyết định, mỗi người làm nhiều loại nhiệm vụ, và thấy nỗ lực của mình có ý nghĩa.
+
+Lịch làm việc linh hoạt
+
+Một cách để người lao động có tiếng nói trong công việc là cho họ linh hoạt về thời gian làm việc. Cách làm này trở nên phổ biến từ đại dịch COVID-19.
+
+| Hình thức | Là gì | Lưu ý |
+| --- | --- | --- |
+| Giờ làm linh hoạt (flextime) | Nhân viên toàn thời gian tự chọn giờ bắt đầu và kết thúc trong khuôn khổ tổ chức đặt ra. Thường có một khung giờ bắt buộc (core time), ví dụ 10 giờ đến 15 giờ, còn lại tự sắp xếp | Người đi sớm về sớm để đón con; người "cú đêm" đến muộn về muộn; có thể điều chỉnh một ngày để đi khám, đi họp phụ huynh |
+| Chia sẻ công việc (job sharing) | Hai người làm bán thời gian cùng đảm nhận một công việc | Giúp giữ người muốn có thời gian đi học hay chăm sóc gia đình; hai người cần hợp tác và bàn giao kỹ |
+| Tuần làm việc nén (compressed workweek) | Làm đủ số giờ của tuần trong ít hơn năm ngày, ví dụ bốn ngày mười tiếng | Không hẳn là linh hoạt cho từng người; ngày làm dài dễ gây kiệt sức |
+
+Về tuần làm việc nén: ở Mỹ, nếu tổng giờ làm vượt 40 giờ một tuần, luật yêu cầu trả tiền làm thêm giờ cho nhân viên không giữ vai trò quản lý. Ở Việt Nam hay nước nào khác, trước khi đổi lịch làm việc, cần kiểm tra quy định hiện hành về thời giờ làm việc và làm thêm giờ.
+
+Làm việc từ xa
+
+Sự linh hoạt còn có thể mở rộng sang địa điểm làm việc. Trước cách mạng công nghiệp, đa số người làm việc ở hoặc gần nhà; nhà máy và văn phòng tách công việc khỏi gia đình. Từ đại dịch COVID-19, làm việc từ xa (remote work) trở thành một yếu tố quan trọng trong thiết kế công việc.
+
+Với tổ chức, lợi ích gồm: cần ít mặt bằng văn phòng hơn, tạo linh hoạt cho người khuyết tật hoặc người phải chăm con, chăm cha mẹ; những người này cũng có xu hướng nghỉ làm ít hơn so với khi phải đi lại. Một số nghiên cứu gần đây cho thấy làm việc từ xa có thể gắn với năng suất tốt hơn, niềm tin giữa nhân viên và quản lý cao hơn, và ít người nghỉ việc hơn.
+
+Tuy vậy, nên làm từ xa đến đâu vẫn còn tranh luận, vì hiệu quả khó đo. Tổ chức nào cho làm từ xa cần có chính sách nêu rõ kỳ vọng của cả hai bên.
+
+Công việc tạo động lực không phải là công việc nhẹ nhàng, mà là công việc khiến người làm thấy mình có kỹ năng, có quyền và có ý nghĩa.
+
+> [!REFLECT] Liên hệ bản thân:
+> Hãy chấm công việc làm thêm (hoặc vai trò trong câu lạc bộ) của bạn từ 1 đến 5 cho từng đặc điểm trong năm đặc điểm trên. Đặc điểm nào thấp nhất? Nếu được sửa một điều, bạn sẽ sửa gì?
+
+=== SECTION: Phần 8. Thiết kế công việc an toàn cho cơ thể ===
+
+Tầng: Nhận biết
+
+Cách một người dùng cơ thể khi làm việc, dù là khuân tủ lạnh lên xe tải hay ngồi yên trước màn hình, đều ảnh hưởng đến sức khỏe của họ. Nó cũng ảnh hưởng đến việc họ làm tốt đến đâu và làm được bao lâu.
+
+Công thái học (ergonomics) là ngành nghiên cứu sự tương tác giữa cơ thể con người và đặc điểm của môi trường làm việc vật chất. Mục tiêu là giảm căng thẳng thể chất cho người lao động, bằng cách sắp xếp môi trường làm việc theo cách cơ thể con người vận hành.
+
+Nói gọn: sửa chỗ làm cho vừa với người, thay vì bắt người gồng mình cho vừa với chỗ làm. Công thái học quan tâm đến những kết quả như giảm mệt mỏi, đau nhức và các vấn đề sức khỏe. Nó cũng xét cả bối cảnh làm việc như ánh sáng, không gian và số giờ làm.
+
+Công thái học được áp dụng thế nào
+
+1. Thiết kế lại thiết bị cho những công việc nặng nhọc, để giảm sức lực cần dùng, giúp nhiều người làm được hơn. Ví dụ: cho nhân viên kho dùng xe nâng tay thay vì bê từng thùng.
+
+2. Thiết kế lại máy móc, dụng cụ để hạn chế bệnh nghề nghiệp. Ví dụ: chỉnh độ cao bàn phím để giảm đau cổ tay do gõ phím lâu; chọn bàn ghế đúng tư thế cho nhân viên văn phòng.
+
+3. Thiết kế lại chính công việc và cách làm để giảm căng thẳng, nhắm vào những thao tác hay gây chấn thương. Ví dụ: thu ngân siêu thị được bố trí ghế cao và thảm chống mỏi, xen kẽ việc đứng quầy với việc khác.
+
+Các xưởng sản xuất được thiết kế lại theo công thái học thường ghi nhận ít chấn thương hơn, năng suất và chất lượng tốt hơn, nhân viên gắn bó hơn. Có hãng xe tính công thái học ngay từ khi thiết kế dây chuyền: gắn cảm biến chuyển động lên người công nhân khi họ làm thử các thao tác dự kiến, rồi dựa vào dữ liệu để sửa từng trạm làm việc trước khi chính thức vận hành.
+
+Thách thức mới: điện thoại và laptop
+
+Thiết bị di động đem lại rủi ro chấn thương do lặp lại (repetitive-stress injuries):
+
+• Nhắn tin bằng ngón cái liên tục có thể làm viêm gân ngón cái.
+
+• Laptop gắn liền màn hình và bàn phím, nên không thể vừa đặt màn hình ngang tầm mắt, vừa đặt bàn phím đủ thấp để khuỷu tay gập vuông góc. Người dùng nhiều phải chọn giữa mỏi mắt, mỏi cổ hoặc mỏi cổ tay, trừ khi nối thêm bàn phím hoặc màn hình rời.
+
+• Màn hình cảm ứng đặt xa, phải với tay chạm liên tục, có thể gây đau vai.
+
+Người lao động có thể tự bảo vệ bằng cách nghỉ giải lao thường xuyên, để ý tư thế, và dùng xen kẽ chuột, bàn phím, bút cảm ứng thay vì chỉ chạm màn hình. Khi làm việc tại nhà, câu hỏi "ai chịu trách nhiệm cho góc làm việc" trở nên khó hơn; xem thêm ở Góc đọc thêm.
+
+Sửa chỗ làm cho vừa người, đừng bắt người gồng mình cho vừa chỗ làm.
+
+> [!REFLECT] Liên hệ bản thân:
+> Góc học tập của bạn đang khiến phần nào trên cơ thể mỏi nhất sau hai giờ ngồi? Sửa một thứ rẻ nhất, bạn sẽ sửa gì?
+
+=== SECTION: Phần 9. Thiết kế công việc vừa sức trí óc ===
+
+Tầng: Nhận biết
+
+Cơ thể có giới hạn, và trí óc cũng vậy. Ngoài việc tuyển người có năng lực trí tuệ phù hợp, tổ chức có thể thiết kế công việc để làm được chính xác và an toàn, dựa trên cách bộ não xử lý thông tin. Thường thì điều này có nghĩa là giảm lượng thông tin người làm phải xử lý.
+
+Đơn giản hóa: lúc nào nên, lúc nào không
+
+Công việc đơn giản hơn thì người làm ít mắc lỗi và ít tai nạn hơn. Nhưng công việc đơn giản cũng có thể kém tạo động lực, đây là điểm vướng với Phần 7.
+
+Công việc nhiều thử thách không phải lúc nào cũng xấu. Người ta thường mệt mỏi và bất mãn với việc khó khi cảm thấy mình ít kiểm soát được tình hình, thiếu sự hỗ trợ của người xung quanh, và làm việc chủ yếu để né lỗi. Ngược lại, họ có thể thích thú với việc khó khi có quyền kiểm soát, có hỗ trợ, nhất là khi họ thích học hỏi và không sợ sai.
+
+Vì vậy, đơn giản hóa có lợi nhất ở hai chỗ:
+
+• Nơi người làm thật sự mong được giảm tải, vì công việc cực kỳ căng thẳng.
+
+• Nơi cái giá của sai sót rất đắt, như công việc của bác sĩ phẫu thuật hay kiểm soát viên không lưu.
+
+Cách giảm tải cho trí óc
+
+• Hạn chế lượng thông tin và những thứ phải ghi nhớ.
+
+• Ánh sáng đủ, đồng hồ đo và màn hình hiển thị dễ đọc, thiết bị dễ dùng, hướng dẫn rõ ràng.
+
+• Phần mềm hỗ trợ theo dõi tiến độ cho công việc dự án, làm nhóm, làm ở nhiều nơi; phần mềm tính toán thay, lọc thư rác.
+
+• Công cụ tự tạo như danh sách kiểm tra, bảng biểu; nhiều người tự làm những thứ này để giảm tải cho chính mình.
+
+• Hệ thống thông tin trình bày thông minh: thay vì bắt người dùng lục tìm, hệ thống gom và làm nổi bật những con số quan trọng. Ví dụ, khi hồ sơ bệnh án điện tử chứa quá nhiều dữ liệu, một số bệnh viện làm "bảng điều khiển" (dashboard) gom các chỉ số then chốt của người bệnh vào một màn hình; bác sĩ nắm tình hình nhanh hơn, có thêm thời gian nói chuyện với người bệnh, và ít sai sót hơn.
+
+• Tuyển chọn người có khả năng đáp ứng yêu cầu trí óc của công việc. Việc nào cũng cần suy nghĩ, ghi nhớ và tập trung ở mức nào đó, nên với mọi công việc, tổ chức cần xem người làm có đáp ứng được không.
+
+Khi công nghệ làm trí óc quá tải
+
+Công nghệ có lúc giảm tải, có lúc làm nặng thêm. Nghe điện thoại trong khi gõ máy, lướt web trong lúc đồng nghiệp thuyết trình, hay cứ vài phút lại dừng việc để xem tin nhắn Zalo, email: những thứ này có thể mang thông tin cần thiết, nhưng chúng cắt ngang dòng suy nghĩ, làm giảm hiệu suất và tăng khả năng mắc lỗi.
+
+Phần lớn thiệt hại nằm ở thời gian phục hồi (recovery time): khoảng thời gian để đầu óc quay lại việc đang làm sau khi bị ngắt. Khoảng này thường dài hơn nhiều lần so với chính lần bị ngắt. Liếc tin nhắn nửa phút, có khi mất vài phút mới vào lại được mạch việc.
+
+Khó mà thiết kế công việc không bao giờ bị ngắt quãng, và cũng ít ai muốn cắt hẳn liên lạc. Nhưng có thể thiết kế công việc để người làm tự quản lý thời gian: cho phép chặn những khoảng thời gian tập trung không nghe điện thoại, không trả lời tin nhắn; hoặc gom việc đọc và trả lời tin nhắn vào một hai khung giờ cố định trong ngày. Có những nhà quản lý đánh dấu "bận" vài khối một đến ba giờ trên lịch mỗi tuần, chỉ để rà lại mục tiêu và tiến độ.
+
+Mỗi lần bị ngắt tốn nhiều hơn thời gian của chính lần ngắt đó.
+
+> [!REFLECT] Liên hệ bản thân:
+> Trong một buổi tự học hai giờ, bạn cầm điện thoại lên bao nhiêu lần? Thử một buổi úp điện thoại xuống và so sánh.
+
+=== SECTION: Góc đọc thêm ===
+
+Tầng: Đọc thêm — không bắt buộc. Đây là các câu chuyện trong giáo trình, tôi rút gọn và thêm một điều rút ra cho mỗi câu chuyện.
+
+1. Yelp: quyết định làm việc từ xa hoàn toàn dựa trên dữ liệu
+
+Yelp là một trang web tổng hợp đánh giá của người tiêu dùng về các cửa hàng, nên nhân viên không cần ngồi chung một chỗ để làm ra sản phẩm. Khi nhiều công ty gọi nhân viên quay lại văn phòng sau đại dịch, Yelp làm ngược lại: chuyển sang làm từ xa hoàn toàn, chỉ thỉnh thoảng tổ chức gặp mặt trực tiếp. Quyết định dựa trên khảo sát và hành vi thực tế: nhân viên làm việc ít nhất là hiệu quả như trước, hài lòng hơn, số người ứng tuyển tăng; khi được chọn, rất ít người chọn lên văn phòng hằng ngày, nên công ty đóng bớt văn phòng.
+
+Điều rút ra: thiết kế công việc tốt dựa trên dữ liệu về công việc và con người, không dựa trên thói quen.
+
+2. Một bản mô tả công việc thật: tổ lái tàu hỏa
+
+Công ty đường sắt Union Pacific (Mỹ) mô tả công việc tổ lái tàu hỏa rất cụ thể. Phần việc: bắt đầu từ vị trí điều phối dưới mặt đất rồi tiến lên trưởng tàu, lái tàu; làm ngoài trời mọi thời tiết, thường ở độ cao, đeo đồ bảo hộ; đọc tín hiệu tay, đếm toa; không làm theo giờ hành chính, luôn trong trạng thái sẵn sàng được gọi, có khi xa nhà hơn một ngày. Phần người: đủ tuổi trưởng thành, đọc hiểu tiếng Anh và qua bài kiểm tra đọc hiểu; thị lực, thính lực tốt (phân biệt màu, nhìn ban đêm, ước lượng tốc độ vật chuyển động); đủ sức mang vác vật nặng, giữ thăng bằng; phản ứng nhanh khi tình huống thay đổi.
+
+Điều rút ra: một bản mô tả tốt cho ứng viên biết chính xác mình sẽ đối mặt với gì, và giúp họ tự loại mình nếu không hợp.
+
+3. Công việc mới toanh: chuyên viên mạng xã hội
+
+Công việc này còn mới đến mức cơ sở dữ liệu nghề nghiệp của Mỹ chưa có mục riêng. Doanh nghiệp tự xác định yêu cầu từ nhu cầu: viết nội dung hấp dẫn cho nhiều nền tảng, hiểu nội dung nào hợp với kênh nào, hiểu hình ảnh thương hiệu, và phản hồi khéo léo những vấn đề khách nêu trên mạng. Một số nơi giao thêm phần việc quản lý: lên kế hoạch đăng bài theo chiến lược marketing, đo lường mức độ hiệu quả, và làm báo cáo định kỳ.
+
+Điều rút ra: với công việc chưa có mẫu, hãy bắt đầu từ đầu ra cần có, rồi suy ra nhiệm vụ và KSAOs.
+
+4. Giọng nói ở quầy mua mang đi có thể là máy
+
+Sau đại dịch, nhiều chuỗi đồ ăn nhanh ở Mỹ khó tuyển người nên tăng tự động hóa. Chủ nhà hàng đánh giá chỉ vài vai trò là khó tự động hóa, dẫn đầu là đầu bếp và quản lý; các việc như nhận order ở làn mua mang đi, pha chế cà phê được xem là dễ tự động hóa hơn. Một số chuỗi đã thử trợ lý giọng nói nhận order, bước đầu thấy order chính xác hơn và khách chờ ít hơn.
+
+Điều rút ra: câu hỏi không chỉ là "máy có làm được không", mà là "việc nào nên giao cho máy, việc nào cho người".
+
+5. Bệnh viện "tinh gọn" vì người bệnh
+
+Một hệ thống y tế ở Mỹ (Atrium Health Navicent) dùng phương pháp cải tiến quy trình để tìm lỗi trong dịch vụ. Ở dịch vụ cấp cứu, nhân viên khu thành thị quá tải còn khu nông thôn thường rảnh, lại làm ca 24 giờ nên kiệt sức; bệnh viện đổi ca thành thị sang 12 giờ, cho nhân viên đăng ký nguyện vọng nơi và giờ làm, tăng xe cứu thương vào giờ cao điểm.
+
+Ở khoa cấp cứu, tỷ lệ nhiễm khuẩn khi lấy máu cao; đào tạo lại nhiều lần không ăn thua, vì nguyên nhân thật là thiếu vật tư và quy trình chưa quen. Bệnh viện chuẩn bị sẵn bộ dụng cụ kèm hướng dẫn, bố trí một kỹ thuật viên chuyên lấy máu, nhờ vậy điều dưỡng có thêm thời gian chăm sóc người bệnh.
+
+Điều rút ra: khi kết quả kém, đừng vội kết luận "do người"; nhiều khi nguyên nhân nằm ở thiết kế công việc.
+
+6. Người lo cho nhân viên cũng kiệt sức
+
+Những năm gần đây, người làm nhân sự bị "mở rộng công việc" bất đắc dĩ: vừa soạn chính sách an toàn trong đại dịch, vừa đưa nhân viên quay lại, vừa tuyển gấp, vừa học công nghệ mới và cách quản lý nhân viên làm từ xa. Họ quá tải, thấy mất kiểm soát, ít được ghi nhận, trong khi vẫn phải lo động lực cho người khác. Lãnh đạo có thể giúp bằng cách đầu tư vào công nghệ, chương trình sức khỏe, sự linh hoạt và sự ghi nhận.
+
+Điều rút ra: mở rộng công việc mà không kèm nguồn lực và ghi nhận thì dễ thành kiệt sức.
+
+7. Lên kế hoạch cho sự linh hoạt
+
+Năm gợi ý khi muốn tăng sự linh hoạt ở nơi làm việc:
+
+1. Xác định yêu cầu thật của tổ chức: việc gì cần làm vào giờ nào, thay vì mặc định "tám giờ sáng đến năm giờ chiều".
+
+2. Tìm hiểu nhu cầu cụ thể của nhân viên: ví dụ một đơn vị điều chỉnh lịch làm theo lịch nghỉ học của con nhân viên, và thấy ít người nghỉ việc hơn.
+
+3. Lên kế hoạch giám sát: người làm từ xa cần tự giác và có công cụ; người quản lý cần được đào tạo cách theo dõi công việc từ xa.
+
+4. Chuẩn bị cho yêu cầu pháp lý: ví dụ có cách ghi nhận giờ làm thực tế nếu nhân viên được hưởng tiền làm thêm giờ.
+
+5. Cởi mở: phần mềm xếp lịch hiện đại cho phép nhân viên đăng ký kiểu linh hoạt mình cần.
+
+8. Không khí sạch, đầu óc minh mẫn
+
+Chất hữu cơ dễ bay hơi phát ra từ thảm, nội thất, chất tẩy rửa, bút dạ, máy in là một dạng ô nhiễm trong văn phòng. Một nghiên cứu cho các nhóm nhân viên làm việc ở mức thông gió khác nhau rồi làm bài kiểm tra nhận thức: nhóm được thông gió nhiều hơn đạt điểm cao hơn rõ rệt.
+
+Điều rút ra: thiết kế cho trí óc bao gồm cả môi trường vật chất, không chỉ khối lượng thông tin.
+
+9. Chủ đề đạo đức: công thái học ở nhà ai lo?
+
+Văn phòng thường có ghế chỉnh được, màn hình lớn, bàn đúng độ cao. Nhưng khi làm tại nhà, nhân viên có thể ngồi còng lưng trên sofa hàng giờ. Nếu họ đau lưng, chấn thương, cả người lao động và doanh nghiệp đều chịu thiệt; một số công ty đã trao đổi với nhân viên về góc làm việc và hỗ trợ thiết bị. Công nghệ đeo trên người có thể cảnh báo tư thế sai, nhưng đặt ra câu hỏi: phòng ngừa chấn thương quan trọng đến đâu so với quyền riêng tư trong nhà?
+
+10. Mayo Clinic thiết kế lại công việc dù đang làm tốt
+
+Mayo Clinic là hệ thống y tế nổi tiếng ở Mỹ. Khi bên chi trả ngày càng siết chi phí, lãnh đạo quyết định xem lại cách làm việc ở mọi bộ phận, dù tổ chức vẫn đang hoạt động tốt.
+
+Một số dịch vụ cho người bệnh động kinh vốn do bác sĩ làm được giao cho điều dưỡng, vừa giảm chi phí vừa giúp bác sĩ có thời gian khám người bệnh mới. Vai trò bác sĩ được mở rộng sang cả việc tìm cách giảm lãng phí; các ê-kíp mổ tim thi đua rút ngắn thời gian chuẩn bị phòng mổ.
+
+Ở khu hồi sức, lượng dữ liệu về mỗi người bệnh quá lớn, nên một nhóm hỏi các bác sĩ dữ liệu nào thật sự quan trọng. Từ đó họ làm hệ thống hiển thị vài chục chỉ số then chốt với mã màu và cảnh báo.
+
+11. Walmart: công nghệ cộng con người
+
+Walmart xây các trung tâm xử lý đơn hàng tự động, rút quy trình lấy, đóng gói, gửi hàng từ nhiều bước thủ công xuống ít bước do robot hỗ trợ, và người làm không phải đi bộ nhiều cây số mỗi ngày nữa. Công ty cũng dùng trí tuệ nhân tạo để thương lượng các đơn mua hàng thông thường với nhà cung cấp, để nhân viên thu mua dành thời gian xây quan hệ và cải thiện dịch vụ. Với nhân viên công nghệ, công ty yêu cầu lên văn phòng một số ngày mỗi tuần và gom về ít trung tâm hơn.
+
+12. Tuần làm bốn ngày thất bại ở một công ty nhỏ
+
+Alter Agents, một công ty nghiên cứu thị trường nhỏ ở Mỹ, thử tuần làm bốn ngày, 32 giờ, trong mười tuần; các thành viên trong nhóm tự chọn ngày nghỉ sao cho ngày nào cũng có người trực. Khách hàng không nhận ra thay đổi, nhưng khảo sát cuối đợt cho thấy nhân viên kém hài lòng hơn và căng thẳng hơn: người thì vẫn làm ngày thứ năm để kịp việc và thấy ấm ức, người nghỉ đúng lịch thì lo bị lỡ việc.
+
+Bà giám đốc bỏ mô hình này, chuyển sang cho thêm một ngày nghỉ có lương mỗi tháng, và nhân viên hài lòng hơn. Những công ty thử tuần bốn ngày thành công thường đã rà lại quy trình và cắt bớt việc kém hiệu quả, như họp hằng ngày, trước khi đổi lịch.
+
+Điều rút ra: giảm giờ mà không thiết kế lại công việc thì khối lượng việc vẫn nguyên đó, chỉ bị dồn lại.
+
+13. Chi tiết bảng câu hỏi PAQ
+
+| Sáu nhóm câu hỏi | Hỏi về |
+| --- | --- |
+| Thông tin đầu vào | Người làm lấy thông tin cần thiết ở đâu, bằng cách nào |
+| Quá trình tư duy | Suy luận, ra quyết định, lập kế hoạch, xử lý thông tin |
+| Đầu ra công việc | Hoạt động thể chất, dụng cụ, thiết bị dùng để làm việc |
+| Quan hệ với người khác | Các mối quan hệ cần có khi làm việc |
+| Bối cảnh công việc | Môi trường vật chất và xã hội nơi làm việc |
+| Đặc điểm khác | Những hoạt động, điều kiện, đặc điểm khác liên quan |
+
+Mỗi mục được chấm trên sáu thang: mức độ sử dụng, lượng thời gian, tầm quan trọng với công việc, khả năng xảy ra, mức độ áp dụng, và một thang đặc biệt riêng cho một số mục. Kết quả được máy tính chấm và xuất báo cáo điểm theo các khía cạnh của công việc.
+
+14. Chiến lược công thái học của cơ quan an toàn lao động Mỹ
+
+Ở Mỹ, cơ quan an toàn và sức khỏe nghề nghiệp (OSHA) khuyến khích thiết kế công việc theo công thái học bằng bốn cách: ban hành hướng dẫn (không phải quy định bắt buộc) cho từng ngành như chế biến thịt, xưởng đúc, viện dưỡng lão, xưởng đóng tàu, cửa hàng tạp hóa; xử lý vi phạm nghĩa vụ chung bảo vệ người lao động khỏi mối nguy, kể cả mối nguy công thái học; phối hợp với các hiệp hội ngành để tư vấn; và lập một ủy ban tư vấn để xác định hướng nghiên cứu tiếp theo.
+
+=== SECTION: Tổng kết ===
+
+## Ghi nhớ trong 10 dòng
+
+1. Nhìn cả dòng chảy trước: phân tích dòng công việc đi ngược từ đầu ra → hoạt động → đầu vào (nguyên liệu và thông tin, thiết bị, nhân lực).
+
+2. Công việc là một loại việc; vị trí là chỗ cho một người cụ thể.
+
+3. Cơ cấu theo chức năng thường đi với việc hẹp, ít quyền; muốn trao quyền và làm nhóm thì thường hợp với cơ cấu theo sản phẩm hoặc nhóm khách.
+
+4. Phân tích công việc tạo ra hai tài liệu: bản mô tả (TDRs — việc, quan sát được) và bản tiêu chuẩn (KSAOs — người, suy ra được).
+
+5. Phân tích công việc là viên gạch nền cho thiết kế lại công việc, hoạch định, tuyển chọn, đào tạo, đánh giá, phát triển nghề nghiệp và định giá công việc.
+
+6. Lấy thông tin từ cả người đang làm lẫn người quản lý; công cụ chuẩn hóa gồm O*NET, PAQ, Fleishman.
+
+7. Mô hình năng lực chú trọng cách làm việc; công việc luôn thay đổi, nên bản mô tả phải được cập nhật và phải quyết định việc nào cho người, việc nào cho máy.
+
+8. Thiết kế công việc có bốn hướng: hiệu quả, động lực, an toàn cho cơ thể, vừa sức trí óc — thường phải cân bằng giữa chúng.
+
+9. Công việc tạo động lực có đủ năm đặc điểm: đa dạng kỹ năng, trọn vẹn, có ý nghĩa, tự chủ, phản hồi; mở rộng là thêm việc, làm giàu là thêm quyền.
+
+10. Sửa chỗ làm cho vừa với cơ thể và trí óc con người, thay vì bắt người gồng mình.
+
+## Bảng từ khóa
+
+| Thuật ngữ | Tiếng Anh | Nghĩa ngắn gọn |
+| --- | --- | --- |
+| Thiết kế dòng công việc | Work flow design | Phân tích các nhiệm vụ cần để tạo ra sản phẩm, dịch vụ, rồi giao cho công việc và vị trí |
+| Công việc | Job | Tập hợp các nhiệm vụ có liên quan |
+| Vị trí | Position | Tập hợp nhiệm vụ do một người cụ thể đảm nhận |
+| Phân tích công việc | Job analysis | Thu thập thông tin chi tiết về công việc |
+| Bản mô tả công việc | Job description | Danh sách nhiệm vụ, bổn phận, trách nhiệm (TDRs) |
+| Bản tiêu chuẩn công việc | Job specification | Danh sách kiến thức, kỹ năng, khả năng, đặc điểm khác (KSAOs) người làm cần có |
+| Người đang giữ vị trí | Incumbent | Người hiện đang làm công việc đó |
+| Bảng câu hỏi phân tích vị trí | Position Analysis Questionnaire (PAQ) | Bảng câu hỏi chuẩn hóa về hành vi, điều kiện, đặc điểm công việc |
+| Hệ thống phân tích Fleishman | Fleishman Job Analysis System | Chấm mức độ các khả năng mà công việc đòi hỏi |
+| Năng lực | Competency | Vùng khả năng cá nhân giúp làm tốt công việc |
+| Mô hình năng lực | Competency model | Tập hợp các năng lực cần để thành công trong một nghề hay nhóm công việc |
+| Thiết kế công việc | Job design | Xác định công việc được làm thế nào và gồm nhiệm vụ gì |
+| Kỹ thuật công nghiệp | Industrial engineering | Tìm cách tổ chức công việc đơn giản nhất để hiệu quả nhất |
+| Mô hình đặc điểm công việc | Job Characteristics Model | Năm đặc điểm làm công việc tạo động lực |
+| Mở rộng công việc | Job enlargement | Thêm các loại nhiệm vụ vào công việc |
+| Ghép công việc | Job extension | Gộp vài công việc đơn giản thành một |
+| Luân chuyển công việc | Job rotation | Cho người lao động lần lượt làm nhiều công việc |
+| Làm giàu công việc | Job enrichment | Thêm quyền ra quyết định vào công việc |
+| Giờ làm linh hoạt | Flextime | Tự chọn giờ bắt đầu, kết thúc quanh khung giờ bắt buộc |
+| Chia sẻ công việc | Job sharing | Hai người bán thời gian cùng làm một công việc |
+| Công thái học | Ergonomics | Nghiên cứu sự tương tác giữa cơ thể con người và môi trường làm việc |
+
+## Câu hỏi tự kiểm tra
+
+Mức Nhớ
+
+1. Ba bước của phân tích dòng công việc là gì? Đầu vào gồm những loại nào?
+
+2. TDRs và KSAOs là viết tắt của những từ nào?
+
+3. Năm đặc điểm trong Mô hình đặc điểm công việc là gì?
+
+4. Bốn hướng thiết kế công việc là gì?
+
+Mức Hiểu
+
+5. Vì sao nói TDRs quan sát được còn KSAOs thì không? Cho một ví dụ.
+
+6. Kỹ năng và khả năng khác nhau ở điểm nào?
+
+7. Vì sao chỉ hỏi người đang làm công việc là chưa đủ khi phân tích công việc?
+
+8. Mô hình năng lực khác phân tích công việc truyền thống ở trọng tâm nào?
+
+9. Luân chuyển công việc khác làm giàu công việc thế nào?
+
+10. Vì sao đơn giản hóa công việc không phải lúc nào cũng tốt?
+
+## Bài tập thực hành
+
+1. Quán ăn nhanh: Giả sử bạn quản lý một quán cơm tấm bán mang đi. Đầu ra của quán là gì, đo bằng gì? Các hoạt động và ba loại đầu vào là gì? Sau đó làm tương tự cho riêng công việc thu ngân.
+
+2. Công việc "sinh viên": Hãy phân tích "công việc" của một sinh viên. Viết bản mô tả công việc (chức danh, tóm tắt, nhiệm vụ thiết yếu) và bản tiêu chuẩn công việc (KSAOs).
+
+3. Tổng đài chăm sóc khách hàng của một shop bán hàng online: làm sao thiết kế công việc này cho hiệu quả? Mặt trái là gì? Rồi làm sao để công việc tạo động lực hơn?
+
+4. Công thái học cho ba nghề: lập trình viên, shipper, cô giáo mầm non. Mỗi nghề có rủi ro thể chất gì? Sửa thì tốn gì, không sửa thì mất gì?
+
+5. Thu ngân và máy tính tiền: Máy tự tính tiền thối cho khách. Điều này thay đổi bản mô tả và bản tiêu chuẩn công việc của thu ngân thế nào? Khi tuyển, bạn sẽ tìm người có phẩm chất gì?
+
+6. Nghề mơ ước: Tra một nghề bạn muốn làm trên cơ sở dữ liệu O*NET (onetonline.org) hoặc từ các tin tuyển dụng thật. Liệt kê kỹ năng yêu cầu, rồi tự chấm xem bạn đang đáp ứng đến đâu.
+
+Học xong phần này, hãy sang tab Câu hỏi phản biện để luyện áp dụng kiến thức vào tình huống thực tế.

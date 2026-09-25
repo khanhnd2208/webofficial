@@ -1,0 +1,1409 @@
+=== SECTION: Cách dùng bộ câu hỏi ===
+
+Bộ câu hỏi này đi theo đúng thứ tự sáu phần của bài giảng. Mỗi câu là một tình huống thực tế, với những con người và công việc quen thuộc ở Việt Nam.
+
+Các câu đi từ dễ đến khó theo thang Bloom, một cách chia mức độ tư duy:
+
+| Mức | Nghĩa là bạn cần… | Dạng câu hỏi |
+| --- | --- | --- |
+| Hiểu | Giải thích lại khái niệm bằng lời của mình, nhận ra nó trong tình huống | "Đây có phải là…?", "Việc này thuộc nhóm nào?" |
+| Áp dụng | Dùng khái niệm để xử lý một tình huống cụ thể | "Nên chọn cách nào?", "Hãy xếp các việc sau…" |
+| Phân tích | Tách tình huống thành từng phần, đọc số liệu, tìm nguyên nhân thật | "Vì sao lại…?", "Điều gì đang thật sự xảy ra?" |
+| Đánh giá | Cân nhắc cả hai phía, đưa ra nhận định có lý do | "Ý kiến này đúng đến đâu?" |
+| Sáng tạo | Kết hợp nhiều khái niệm thành một giải pháp mới | "Hãy thiết kế…" |
+
+Mỗi câu có bốn phần:
+
+1. Tình huống và câu hỏi: chuyện gì đang xảy ra, và bạn cần trả lời gì.
+
+2. Nhắc lại bài học: những gì trong bài giảng bạn cần dùng, viết lại thật ngắn.
+
+3. Cùng suy nghĩ từng bước: lời giải đi từng bước một.
+
+4. Điều rút ra: một câu để nhớ.
+
+Cách học hiệu quả: Đọc tình huống và câu hỏi, rồi dừng lại. Tự viết câu trả lời của bạn ra giấy, dù ngắn. Sau đó mới đọc phần nhắc lại và lời giải, và so với câu trả lời của mình.
+
+Một số câu có đáp án khái niệm khá rõ. Với các câu Phân tích, Đánh giá, Sáng tạo, có thể có nhiều câu trả lời tốt; điều quan trọng là dùng đúng khái niệm và giải thích được lý do.
+
+| Danh sách câu hỏi | # | Phần |
+| --- | --- | --- |
+| Mức | Tình huống | 1 |
+
+1. Hoạch định
+
+Hiểu
+
+Anh Quân: "Có người nghỉ thì đăng tin là xong"
+
+2
+
+1. Hoạch định
+
+Áp dụng
+
+Shop của chị Lan Anh chuẩn bị mùa sale
+
+3
+
+2. Dự báo
+
+Áp dụng
+
+Đâu là chỉ báo dẫn dắt?
+
+4
+
+2. Dự báo
+
+Phân tích
+
+Ma trận của tiệm bánh Phố Cũ
+
+5
+
+2. Dự báo
+
+Đánh giá
+
+Mô hình của Minh hay kinh nghiệm của chị Lan Anh?
+
+6
+
+3. Thừa và thiếu
+
+Áp dụng
+
+Xưởng may mất đơn ba tháng
+
+7
+
+3. Thừa và thiếu
+
+Phân tích
+
+Cắt giảm một đêm, hậu quả ba tháng
+
+8
+
+3. Thừa và thiếu
+
+Đánh giá
+
+Thiếu tám người đóng gói trước Tết
+
+9
+
+3. Thừa và thiếu
+
+Áp dụng
+
+"Cộng tác viên" phải chấm công
+
+10
+
+3. Thừa và thiếu
+
+Phân tích
+
+Kế hoạch đào tạo thợ của anh Quân hỏng ở đâu?
+
+11
+
+4. Tuyển mộ
+
+Hiểu
+
+Năm thay đổi của Gió Chiều
+
+12
+
+4. Tuyển mộ
+
+Đánh giá
+
+"Cứ trả cao hơn thị trường là tuyển được hết"
+
+13
+
+5. Nguồn ứng viên
+
+Áp dụng
+
+Bốn vị trí, bốn nguồn
+
+14
+
+5. Nguồn ứng viên
+
+Phân tích
+
+Nguồn rẻ nhất có phải nguồn tốt nhất?
+
+15
+
+5. Nguồn ứng viên
+
+Đánh giá
+
+"Tuyển người quen cho chắc"
+
+16
+
+6. Người tuyển dụng
+
+Phân tích
+
+Vì sao ứng viên giỏi từ chối?
+
+17
+
+6. Người tuyển dụng
+
+| Đánh giá | Fanpage "vui như Tết" | 18 |
+| --- | --- | --- |
+| Tổng hợp | Sáng tạo | Kế hoạch nhân lực mùa Tết cho chị Thu |
+
+=== DISCUSSION: Câu hỏi phản biện — Bài 5 ===
+
+## Phần 1–2. Hoạch định và dự báo
+
+Câu 1:
+### Câu 1 · Hiểu — "Có người nghỉ thì đăng tin là xong"
+
+> [!EXAMPLE] Tình huống:
+> Anh Quân là chủ tiệm bánh mì Phố Cũ, có 3 cửa hàng với 6 thợ làm bánh chính, 12 thợ phụ và 15 nhân viên bán hàng. Năm tới, anh định mở thêm một quầy bánh trong trung tâm thương mại. Anh nói:
+> "Hoạch định nhân lực là việc của công ty lớn. Tôi đơn giản thôi: có người nghỉ thì đăng tin tuyển người thay. Thế cũng là hoạch định rồi."
+
+> [!REFLECT] Câu hỏi:
+> Cách làm của anh Quân có phải là hoạch định nhân lực không? Nếu chưa, nó còn thiếu những gì?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Hoạch định nguồn nhân lực là xác định số lượng và loại nhân viên tổ chức sẽ cần để đạt mục tiêu. Nó so sánh hiện tại với mục tiêu tương lai, rồi chỉ ra nhân lực cần thay đổi gì.
+• Quy trình có ba giai đoạn: (1) dự báo; (2) đặt mục tiêu và hoạch định chiến lược; (3) thực hiện và đánh giá.
+• Hiểu lầm cần bỏ: "Thiếu người thì tuyển, thừa người thì cho nghỉ." Tuyển mới là cách chậm và khó rút lại.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: So với định nghĩa. Hoạch định gắn nhân lực với mục tiêu. Anh Quân có mục tiêu rõ (quầy mới), nhưng cách làm của anh không nhắc gì đến nó. Anh chỉ phản ứng khi có người nghỉ.
+
+#### Bước 2: Đối chiếu ba giai đoạn.
+
+Giai đoạn
+
+Anh Quân đã làm chưa?
+
+Dự báo
+
+Chưa. Anh không ước tính quầy mới cần bao nhiêu thợ, bao nhiêu người bán, cũng không đoán trước ai sắp nghỉ.
+
+Đặt mục tiêu và chiến lược
+
+Chưa. Không có con số, không có mốc thời gian, và chỉ có đúng một cách: tuyển mới.
+
+Thực hiện và đánh giá
+
+Chỉ có "đăng tin". Không ai chịu trách nhiệm, không ai xem cách làm đó hiệu quả đến đâu.
+
+#### Bước 3: Hệ quả. Vì luôn đợi có người nghỉ mới hành động, anh Quân luôn đi sau một bước. Anh cũng tự bỏ qua những cách khác, như đào tạo thợ phụ lên thợ chính, vốn cần thời gian chuẩn bị.
+
+#### Bước 4: Điều sâu hơn. Hoạch định không phụ thuộc quy mô. Với tiệm của anh Quân, chỉ cần một bảng ba dòng (thợ chính, thợ phụ, bán hàng) với ba cột "cần có – sẽ có – chênh lệch" là đã bắt đầu hoạch định.
+
+> [!IMPORTANT] Điều rút ra:
+> Thay người khi có người nghỉ là phản ứng; hoạch định là nhìn trước khoảng trống giữa hiện tại và mục tiêu.
+
+Câu 2:
+### Câu 2 · Áp dụng — Shop của chị Lan Anh chuẩn bị mùa sale
+
+> [!EXAMPLE] Tình huống:
+> Chị Lan Anh có một shop mỹ phẩm online với 12 nhân viên: tư vấn khách qua tin nhắn, đóng gói hàng, và bán hàng qua livestream. Chuẩn bị cho mùa sale cuối năm, chị ghi ra các việc cần làm, không theo thứ tự:
+> • (a) Giao cho bạn Hà, trưởng kho, chịu trách nhiệm có đủ người đóng gói, báo cáo tiến độ mỗi sáng thứ Hai.
+> • (b) Xem lại số đơn mỗi ngày trong mùa sale năm ngoái.
+> • (c) Chốt mục tiêu: trước ngày 1/11 có đủ 8 người đóng gói đã được hướng dẫn quy trình.
+> • (d) Hỏi từng bạn xem ai định nghỉ việc hoặc về quê trước Tết.
+> • (e) Sau mùa sale, so số đơn giao trễ với năm ngoái và tìm nguyên nhân.
+> • (f) Quyết định thuê người qua công ty cung ứng, hay cho nhân viên hiện tại làm thêm giờ.
+> • (g) So số người cần với số người sẽ có, cho từng vị trí.
+
+> [!REFLECT] Câu hỏi:
+> Xếp mỗi việc vào một trong ba giai đoạn của quy trình hoạch định. Kế hoạch của chị Lan Anh còn thiếu gì?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Dự báo gồm: dự báo cầu, dự báo cung (bên trong và bên ngoài), rồi so sánh để thấy thừa hay thiếu.
+• Đặt mục tiêu: có con số cụ thể và mốc thời gian cụ thể, lấy thẳng từ kết quả dự báo; sau đó chọn chiến lược.
+• Thực hiện: có một người cụ thể chịu trách nhiệm, đủ quyền và nguồn lực, báo cáo tiến độ đều đặn. Đánh giá: đã tránh được thừa, thiếu chưa, và khâu nào làm nên kết quả.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Xếp các việc.
+
+Giai đoạn
+
+Việc
+
+Vì sao
+
+Dự báo
+
+(b), (d), (g)
+
+(b) là dữ liệu để dự báo cầu; (d) là dự báo cung bên trong; (g) so sánh để thấy thừa hay thiếu
+
+Đặt mục tiêu và chiến lược
+
+(c), (f)
+
+(c) có con số và mốc thời gian; (f) chọn cách xử lý thiếu người
+
+Thực hiện và đánh giá
+
+(a), (e)
+
+(a) có người chịu trách nhiệm và báo cáo định kỳ; (e) đánh giá kết quả và tìm nguyên nhân
+
+#### Bước 2: Tìm chỗ thiếu.
+
+• Cung bên ngoài: chị chưa nhìn ra thị trường. Mùa sale, các shop khác cũng tuyển người đóng gói; sinh viên có thể đang thi cuối kỳ.
+
+• Các vị trí khác: kế hoạch chỉ nói về đóng gói. Mùa sale thì tin nhắn của khách và các buổi livestream cũng tăng.
+
+• Thứ tự: con số "8 người" ở (c) phải đến sau (g). Nếu chị đặt con số trước rồi mới so sánh, mục tiêu có thể không khớp với dự báo.
+
+#### Bước 3: Điều sâu hơn. Việc (e) không chỉ để "chấm điểm" năm nay. Kết quả của nó quay lại làm đầu vào cho dự báo năm sau, như các đường phản hồi trong sơ đồ quy trình.
+
+> [!IMPORTANT] Điều rút ra:
+> Mỗi việc trong kế hoạch nhân sự trả lời một trong ba câu: thiếu thừa ở đâu, lấp bằng cách nào, đã lấp được chưa.
+
+Câu 3:
+### Câu 3 · Áp dụng — Đâu là chỉ báo dẫn dắt?
+
+> [!EXAMPLE] Tình huống:
+> Chị Lan Anh muốn dự báo mùa sale tới cần bao nhiêu người đóng gói. Chị có trong tay sáu thông tin:
+> 1. Số đơn mỗi ngày trong mùa sale năm ngoái.
+> 2. Lịch các đợt sale lớn của sàn thương mại điện tử năm nay.
+> 3. Số đơn khách đặt trước trong tuần trước đợt sale.
+> 4. Các bạn đóng gói than: "Dạo này mệt quá chị ơi."
+> 5. Shop vừa mua máy in vận đơn và máy dán thùng tự động.
+> 6. Chị Lan Anh có "linh cảm" năm nay sẽ đông hơn.
+
+> [!REFLECT] Câu hỏi:
+> Thông tin nào là chỉ báo dẫn dắt giúp dự báo cầu lao động đóng gói? Thông tin nào không phải, và vì sao?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Chỉ báo dẫn dắt là những thước đo khách quan dự đoán chính xác cầu lao động trong tương lai. Ví dụ: doanh số, tồn kho, động thái của đối thủ, thay đổi công nghệ, xu hướng dân số.
+• Công nghệ giúp mỗi người làm ra nhiều hơn, nên cầu lao động có thể tăng chậm hơn doanh số.
+• Bên cạnh thống kê, phán đoán của người có kinh nghiệm vẫn cần thiết.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Đặt hai câu hỏi cho mỗi thông tin. Nó có khách quan, đo đếm được không? Nó có thay đổi trước khi nhu cầu về người thay đổi không?
+
+#### Bước 2: Xét từng thông tin.
+
+Thông tin
+
+Là chỉ báo dẫn dắt?
+
+Lý do
+
+1. Số đơn mùa sale năm ngoái
+
+Có
+
+Số liệu khách quan của năm trước, là đầu vào cho phân tích xu hướng
+
+2. Lịch sale của sàn
+
+Có
+
+Khách quan, biết trước, và kéo theo lượng đơn
+
+3. Số đơn đặt trước
+
+Có, và rất sát
+
+Đo được, và xuất hiện ngay trước khi việc đóng gói tăng
+
+4. Nhân viên than mệt
+
+Không
+
+Mang tính chủ quan, và phản ánh khối lượng việc hiện tại, không dự đoán tương lai
+
+5. Máy in và máy dán thùng
+
+Có
+
+Thay đổi công nghệ; nó làm giảm số người cần cho mỗi đơn
+
+6. Linh cảm của chị
+
+Không
+
+Đây là phán đoán, không phải thước đo khách quan
+
+#### Bước 3: Điều sâu hơn. Chỉ báo dẫn dắt không phải lúc nào cũng đẩy nhu cầu lên; thông tin số 5 kéo nó xuống. Còn thông tin 4 và 6 không vô ích. Lời than mệt là tín hiệu cần để ý nguy cơ nghỉ việc, tức ảnh hưởng đến cung. Linh cảm của chị có giá trị nếu chị nói ra được nó dựa vào đâu.
+
+> [!IMPORTANT] Điều rút ra:
+> Chỉ báo dẫn dắt phải vừa đo được, vừa đi trước nhu cầu; những gì còn lại là phán đoán, có ích nhưng phải gọi đúng tên.
+
+Câu 4:
+### Câu 4 · Phân tích — Ma trận của tiệm bánh Phố Cũ
+
+> [!EXAMPLE] Tình huống:
+> Anh Quân (Câu 1) thử lập ma trận chuyển đổi cho tiệm bánh trong năm qua:
+> Một năm trước ↓ / Hiện nay →
+> Thợ chính
+> Thợ phụ
+> Bán hàng
+> Đã nghỉ
+> Tổng một năm trước
+> Thợ chính
+> 5
+> 1
+> 6
+> Thợ phụ
+> 0
+> 6
+> 6
+> 12
+> Bán hàng
+> 2
+> 7
+> 6
+> 15
+> Tuyển mới từ bên ngoài
+> 1
+> 4
+> 8
+> Tổng hiện nay
+> 6
+> 12
+> 15
+> Anh nhận xét: "Thợ phụ nghỉ nhiều vì lớp trẻ bây giờ không chịu khó."
+
+> [!REFLECT] Câu hỏi:
+> (a) Đọc theo hàng, thợ phụ đã đi đâu? (b) Đọc theo cột, thợ chính hiện nay từ đâu đến? (c) Ma trận có chứng minh nhận xét của anh Quân không? Anh nên làm gì tiếp?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Ma trận chuyển đổi trả lời hai câu hỏi: người ở mỗi vị trí đã đi đâu (đọc theo hàng), và người đang ở mỗi vị trí từ đâu đến (đọc theo cột).
+• Đọc các hàng có thể thấy lộ trình nghề nghiệp, và thấy vị trí nào nghỉ việc nhiều.
+• Ma trận chỉ mô tả quá khứ; người lập kế hoạch vẫn cần phán đoán.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Đọc theo hàng. Trong 12 thợ phụ một năm trước: 6 người (50%) vẫn là thợ phụ, 0 người lên thợ chính, 6 người (50%) đã nghỉ. Với bán hàng: 2 người (13%) lên thợ phụ, 7 người (47%) ở lại, 6 người (40%) nghỉ.
+
+#### Bước 2: Đọc theo cột. Trong 6 thợ chính hiện nay, 5 người đã là thợ chính từ trước, 1 người tuyển từ bên ngoài. Không ai đi lên từ thợ phụ.
+
+#### Bước 3: Ma trận nói được gì, không nói được gì. Ma trận cho biết điều gì đã xảy ra, không cho biết vì sao. Nó không chứng minh được "lớp trẻ không chịu khó".
+
+Ngược lại, nó gợi ra một giả thuyết khác: ở tiệm này, trong một năm, con đường từ thợ phụ lên thợ chính gần như không có. Những thợ phụ muốn thành thợ chính có thể đi nơi khác để được lên. Còn lối từ bán hàng lên thợ phụ thì có tồn tại.
+
+#### Bước 4: Việc nên làm tiếp.
+
+• Hỏi những người đã nghỉ: họ đi đâu, vì sao đi. Đó là cách kiểm tra giả thuyết nào đúng.
+
+• Xem dữ liệu nhiều năm hơn: có thể thợ phụ cần hơn một năm mới đủ tay nghề lên thợ chính.
+
+• Nếu quầy mới cần thêm thợ chính, hiện tiệm phụ thuộc hoàn toàn vào tuyển ngoài. Anh nên cân nhắc một lộ trình đào tạo thợ phụ lên thợ chính.
+
+> [!IMPORTANT] Điều rút ra:
+> Ma trận cho biết người đã đi đâu, chưa cho biết vì sao họ đi; trước khi đổ lỗi cho người lao động, hãy xem con đường mình mở cho họ.
+
+Câu 5:
+### Câu 5 · Đánh giá — Mô hình của Minh hay kinh nghiệm của chị Lan Anh?
+
+> [!EXAMPLE] Tình huống:
+> Minh, em họ chị Lan Anh (Câu 2, 3), đang học phân tích dữ liệu. Minh dùng số liệu bán hàng ba năm qua để lập một mô hình, và dự báo mùa sale tới cần 10 người đóng gói. Chị Lan Anh nghi ngờ:
+> "Năm nay khác. Sàn vừa đổi cách tính phí, một đối thủ lớn vừa mở kho ngay khu mình. Mô hình của em đâu có biết."
+> Minh đáp: "Số liệu không biết nói dối, cảm giác thì có."
+
+> [!REFLECT] Câu hỏi:
+> Ai đúng? Chị Lan Anh nên dự báo thế nào?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Có hai cách dự báo: thống kê và phán đoán. Khi điều kiện ổn định, thống kê thường chính xác hơn cảm tính.
+• Với biến cố chưa có tiền lệ, số liệu cũ ít tác dụng; cần gom phán đoán và "dự đoán tốt nhất" của những người có kinh nghiệm.
+• Mô hình thống kê cần một lịch sử dài và ổn định, và hầu như luôn cần được bổ sung bằng phán đoán.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Minh đúng ở đâu. Thống kê giúp tránh những dự đoán theo cảm xúc. Ba năm số liệu là tài sản quý, tốt hơn nhiều so với đoán mò.
+
+#### Bước 2: Minh chưa đúng ở đâu. Ba năm là một lịch sử ngắn. Quan trọng hơn, hai thay đổi chị Lan Anh nêu không hề có trong số liệu cũ, nên mô hình không thể "biết" chúng. Số liệu không nói dối, nhưng nó chỉ nói về quá khứ.
+
+#### Bước 3: Chị Lan Anh đúng ở đâu, chưa đúng ở đâu. Chị chỉ ra những thay đổi cụ thể, kiểm tra được; đó là phán đoán tốt. Nhưng chị chưa nói được chúng làm số đơn tăng hay giảm, và bao nhiêu. Nếu dừng ở "năm nay khác", phán đoán ấy khó dùng.
+
+#### Bước 4: Kết hợp.
+
+1. Lấy con số 10 của Minh làm điểm xuất phát.
+
+2. Họp nhanh với trưởng kho và nhóm tư vấn khách, gom phán đoán về từng thay đổi: nó đẩy đơn lên hay kéo xuống, khoảng bao nhiêu.
+
+3. Ghi rõ con số đã điều chỉnh vì lý do gì, để sau mùa sale kiểm tra xem điều chỉnh nào đúng.
+
+4. Vì còn nhiều bất định, ưu tiên những cách xử lý nhanh và dễ rút lại, như lao động tạm thời, cho phần chênh lệch chưa chắc chắn.
+
+> [!IMPORTANT] Điều rút ra:
+> Cả hai đúng một nửa: dùng mô hình làm điểm xuất phát, dùng kinh nghiệm để điều chỉnh, và ghi rõ mình điều chỉnh vì điều gì.
+
+## Phần 3. Xử lý thừa và thiếu người
+
+Câu 6:
+### Câu 6 · Áp dụng — Xưởng may mất đơn ba tháng
+
+> [!EXAMPLE] Tình huống:
+> Anh Khoa có một xưởng may 60 công nhân, làm hàng cho một đối tác nước ngoài. Đối tác báo: ba tháng tới, đơn hàng giảm khoảng một nửa, sau đó dự kiến trở lại bình thường. Thợ may tay nghề cao rất khó tuyển; mỗi người mới mất nhiều tháng mới làm quen được.
+> Anh Khoa đang cân nhắc năm phương án:
+> 1. Cho 25 người nghỉ việc.
+> 2. Giảm giờ làm của tất cả mọi người, kèm giảm lương tương ứng.
+> 3. Chuyển một số người sang tổ hoàn thiện và kiểm hàng, nơi đang thiếu người.
+> 4. Ngừng tuyển mới, không tuyển thay người tự nghỉ.
+> 5. Mời vài người sắp đến tuổi nghỉ hưu nghỉ sớm, kèm một khoản hỗ trợ.
+
+> [!REFLECT] Câu hỏi:
+> Xếp từng phương án theo tốc độ và mức tổn thương. Với tình hình của xưởng, anh Khoa nên kết hợp những cách nào?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Khi thừa người, các phương án được so theo tốc độ có kết quả và mức tổn thương cho người lao động.
+• Giảm giờ làm chia gánh nặng công bằng hơn, rẻ hơn cắt giảm, và dễ tăng giờ trở lại hơn là tuyển lại người.
+• Nghỉ hưu sớm ít đau nhưng chậm, và người giỏi có thể là người nhận lời ra đi.
+• Phát triển kỹ năng trong đội ngũ có lợi nhất khi vừa thiếu người ở chỗ này, vừa thừa người ở chỗ khác.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Xếp các phương án.
+
+Phương án
+
+Tên gọi trong bài
+
+Tốc độ
+
+Mức tổn thương
+
+1. Cho 25 người nghỉ
+
+Cắt giảm nhân sự
+
+Nhanh
+
+Cao
+
+2. Giảm giờ cho mọi người
+
+Chia sẻ công việc
+
+Nhanh
+
+Vừa
+
+3. Chuyển sang tổ khác
+
+Điều chuyển
+
+Nhanh
+
+Vừa
+
+4. Ngừng tuyển mới
+
+Đóng băng tuyển dụng, hao hụt tự nhiên
+
+Chậm
+
+Thấp
+
+5. Mời nghỉ hưu sớm
+
+Nghỉ hưu sớm
+
+Chậm
+
+Thấp
+
+#### Bước 2: Xác định hai dữ kiện then chốt. Thứ nhất, tình trạng thừa người chỉ kéo dài ba tháng. Thứ hai, thợ giỏi khó tuyển lại. Vậy mất người lúc này rất đắt, vì ba tháng sau xưởng lại cần họ.
+
+#### Bước 3: Chọn kết hợp.
+
+• Nên dùng: điều chuyển (3) ngay, vì xưởng đang vừa thừa ở tổ may, vừa thiếu ở tổ hoàn thiện. Phần thừa còn lại xử lý bằng giảm giờ đều cho mọi người (2). Kèm theo đóng băng tuyển dụng (4), vì cách này gần như không tốn gì.
+
+• Không cần thiết: nghỉ hưu sớm (5) quá chậm cho một đợt giảm ba tháng, và có thể mất người giỏi.
+
+• Không phù hợp: cắt giảm (1) nhanh, nhưng mất đúng loại người khó tìm nhất. Ba tháng sau phải tuyển và đào tạo lại, và người ở lại mất tinh thần.
+
+#### Bước 4: Điều sâu hơn. Giảm giờ làm cũng có cái giá: thu nhập giảm, người có tay nghề dễ tìm việc khác có thể ra đi. Anh Khoa nên nói rõ với công nhân vì sao giảm, giảm đến khi nào, và dùng thời gian rảnh để dạy thêm kỹ năng. Việc giảm giờ và giảm lương cũng phải làm đúng thỏa thuận và quy định pháp luật; anh nên hỏi người am hiểu luật lao động. Và nếu đơn hàng không trở lại, bài toán sẽ khác hẳn.
+
+> [!IMPORTANT] Điều rút ra:
+> Thừa người tạm thời thì chọn cách giữ người; mất người giỏi để tiết kiệm ba tháng thường là một món nợ phải trả sau.
+
+Câu 7:
+### Câu 7 · Phân tích — Cắt giảm một đêm, hậu quả ba tháng
+
+> [!EXAMPLE] Tình huống:
+> Công ty phần mềm của anh Bảo có 80 người. Gặp khó khăn về vốn, anh quyết định cắt giảm một phần ba nhân sự. Người bị cắt được chọn theo tiêu chí "lương cao nhất". Thông báo gửi qua email lúc 11 giờ đêm; sáng hôm sau, tài khoản của họ bị khóa.
+> Ba tháng sau:
+> • Chị Ngọc, trưởng nhóm giỏi nhất còn lại, xin nghỉ.
+> • Người ở lại ít khi đề xuất ý tưởng mới, họp xong là im lặng.
+> • Sản phẩm mới trễ hạn hai tháng.
+> • Công ty phải mời lại hai kỹ sư đã bị cho nghỉ, với mức lương cao hơn trước.
+> • Tin tuyển dụng mới nhận được rất ít hồ sơ, nhiều bình luận nhắc chuyện "sa thải qua email".
+
+> [!REFLECT] Câu hỏi:
+> Vì sao đợt cắt giảm không mang lại kết quả anh Bảo mong đợi? Nếu buộc phải cắt giảm, lẽ ra anh nên làm thế nào?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Cắt giảm nhân sự có tác dụng ngay lên chi phí, nhưng thường làm hại hiệu quả dài hạn, nhất là ở tổ chức cạnh tranh bằng con người, như làm nghiên cứu và phát triển.
+• Bốn lý do cắt giảm hay không đạt kỳ vọng: mất người giỏi và các mối quan hệ làm việc; người ở lại mất tinh thần, ngại rủi ro, tìm chỗ khác; phải tuyển lại; tiếng xấu làm khó tuyển người sau này.
+• Cách giảm tác hại: cắt có chọn lọc thay vì đồng loạt; cho nhân viên thấy sự công bằng, kế hoạch cho tương lai, và cách hành xử có trách nhiệm.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Ghép từng hậu quả với lý do trong bài.
+
+Hậu quả
+
+Lý do trong bài
+
+Chị Ngọc nghỉ; người ở lại im lặng
+
+Người ở lại mất tinh thần, ngại rủi ro, tìm chỗ khác
+
+Sản phẩm trễ hạn
+
+Mất người giỏi và các mối quan hệ làm việc
+
+Mời lại hai kỹ sư, lương cao hơn
+
+Phải tuyển lại người không thay được
+
+Ít hồ sơ, bình luận tiêu cực
+
+Tiếng xấu làm khó tuyển người sau này
+
+#### Bước 2: Vì sao ở đây tác hại nặng. Công ty phần mềm sống bằng chất xám và làm việc nhóm, đúng loại tổ chức mà cắt giảm dễ gây hại nhất. Tiêu chí "lương cao nhất" không có tính chiến lược: người lương cao thường là người kinh nghiệm nhất, nắm những phần quan trọng nhất của sản phẩm.
+
+#### Bước 3: Cách làm tốt hơn, nếu buộc phải cắt.
+
+1. Trước hết, xem các phương án ít đau hơn, như giảm giờ làm hay đóng băng tuyển dụng, có đủ để vượt qua khó khăn không.
+
+2. Chọn người theo nhu cầu chiến lược: giữ những năng lực tạo ra sản phẩm cốt lõi.
+
+3. Báo tin trực tiếp, tôn trọng, giải thích lý do; hỗ trợ người phải ra đi.
+
+4. Nói chuyện với người ở lại về kế hoạch phía trước, để họ thấy tương lai và thấy mọi người được đối xử công bằng.
+
+#### Bước 4: Điều sâu hơn. Bài học không phải là "không bao giờ được cắt giảm". Nếu không cắt thì công ty có thể hết tiền, cắt giảm có thể là lựa chọn đúng. Vấn đề của anh Bảo nằm ở cắt ai và cắt thế nào.
+
+> [!IMPORTANT] Điều rút ra:
+> Cắt giảm tiết kiệm được tiền lương hôm nay; cắt sai người và sai cách thì trả lại bằng người giỏi, tiến độ và danh tiếng.
+
+Câu 8:
+### Câu 8 · Đánh giá — Thiếu tám người đóng gói trước Tết
+
+> [!EXAMPLE] Tình huống:
+> Chị Lan Anh dự báo: sáu tuần trước Tết, shop cần thêm 8 người đóng gói ngoài 5 bạn đang có. Sau Tết, đơn hàng trở lại mức bình thường. Có bốn đề xuất:
+> • Hà (trưởng kho): cho 5 bạn đóng gói hiện tại làm thêm giờ mỗi ngày.
+> • Minh: thuê 8 người qua một công ty cung ứng lao động thời vụ.
+> • Một bạn tư vấn: giao hẳn khâu lưu kho, đóng gói, giao hàng cho một công ty kho vận, bắt đầu từ tháng này.
+> • Chị Lan Anh: tuyển thẳng 8 nhân viên chính thức "cho chắc".
+
+> [!REFLECT] Câu hỏi:
+> Đánh giá từng đề xuất. Chị Lan Anh nên chọn gì?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Khi thiếu người, so theo tốc độ và khả năng rút lại. Làm thêm giờ, lao động tạm thời, thuê ngoài: nhanh và dễ rút lại. Tuyển mới: chậm và khó rút lại.
+• Làm thêm giờ hợp với thiếu người ngắn hạn; kéo dài thì căng thẳng, tinh thần đi xuống.
+• Lao động tạm thời: linh hoạt, tiết kiệm; nhưng có thể ít gắn bó, và dễ căng thẳng với nhân viên chính thức.
+• Thuê ngoài: tìm hiểu bên nhận thuê làm được gì, bắt đầu nhỏ, theo dõi sát, nhất là lúc đầu dễ có sự cố.
+• Năng lực cốt lõi nên giữ trong nhà; việc không thuộc năng lực cốt lõi có thể giao ra ngoài.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Xác định tính chất của việc thiếu người. Thiếu người kéo dài sáu tuần, đoán trước được, rồi biến mất. Vậy nên ưu tiên cách nhanh và dễ rút lại.
+
+#### Bước 2: Đánh giá từng đề xuất.
+
+Đề xuất
+
+Điểm mạnh
+
+Điểm yếu
+
+Làm thêm giờ
+
+Nhanh, dễ dừng; người cũ đã quen việc
+
+5 người không thể gánh việc của 13 người trong sáu tuần; mệt mỏi dễ gây nhầm đơn đúng lúc cao điểm
+
+Lao động tạm thời
+
+Nhanh, hết Tết là dừng; bên cung ứng lo thủ tục
+
+Người mới chưa quen quy trình, có thể ít gắn bó; cần người kèm
+
+Thuê ngoài từ tháng này
+
+Nếu hợp, có thể lâu dài và hiệu quả nhờ quy mô
+
+Chuyển đổi ngay trước cao điểm là rủi ro lớn nhất, đúng lúc dễ có sự cố
+
+Tuyển 8 người chính thức
+
+Có đội ngũ gắn bó hơn
+
+Chậm; sau Tết thừa người, lại phải tính chuyện cho nghỉ
+
+#### Bước 3: Kết luận. Không có đề xuất nào đủ một mình. Một kết hợp hợp lý:
+
+1. Thuê người tạm thời làm lực lượng chính cho phần thiếu.
+
+2. Cho 5 bạn cũ làm thêm giờ vừa phải, với vai trò kèm cặp và kiểm tra đơn của người mới.
+
+3. Viết quy trình đóng gói ngắn gọn, có hình minh họa, để người mới làm đúng ngay.
+
+4. Nếu muốn thử thuê ngoài, thử sau Tết, bắt đầu với một phần nhỏ đơn hàng và theo dõi sát.
+
+#### Bước 4: Điều sâu hơn. Thuê ngoài hay không còn tùy việc đóng gói có phải năng lực cốt lõi của shop không. Nếu khách chọn shop vì hộp quà đẹp và tấm thiệp viết tay, đóng gói là một phần trải nghiệm, nên giữ trong nhà. Nếu chỉ là cho hàng vào thùng, giao ra ngoài hợp lý hơn.
+
+> [!IMPORTANT] Điều rút ra:
+> Thiếu người ngắn hạn thì chọn cách nhanh và dễ rút lại; đừng giải bài toán sáu tuần bằng một quyết định khó đảo ngược.
+
+Câu 9:
+### Câu 9 · Áp dụng — "Cộng tác viên" phải chấm công
+
+> [!EXAMPLE] Tình huống:
+> Chị Lan Anh ký "hợp đồng cộng tác viên" với 3 bạn livestream bán hàng, vì nghĩ như vậy sẽ không phải lo các nghĩa vụ như với nhân viên. Nhưng chị yêu cầu:
+> • Có mặt ở shop từ 9 giờ đến 17 giờ mỗi ngày, chấm công bằng vân tay.
+> • Livestream theo kịch bản và khung giờ chị sắp xếp.
+> • Đi muộn bị trừ tiền.
+> • Nhận lương cố định mỗi tháng, cộng hoa hồng.
+
+> [!REFLECT] Câu hỏi:
+> Ba bạn này có thật sự là người làm dịch vụ độc lập không? Chị Lan Anh nên xử lý thế nào?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Ở Mỹ, với người làm dịch vụ độc lập, tổ chức được yêu cầu kết quả cần đạt, nhưng không được quản lý trực tiếp cách làm, như làm ở đâu, giờ nào.
+• Ở Việt Nam, luật lao động xét bản chất hơn tên gọi: nếu có việc làm được trả lương và có sự quản lý, điều hành, giám sát của một bên, thỏa thuận có thể được coi là hợp đồng lao động, dù gọi là "hợp đồng cộng tác viên".
+• Khi áp dụng thật, cần hỏi ý kiến người am hiểu luật lao động.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Tìm dấu hiệu quản lý. Giờ giấc cố định, địa điểm cố định, chấm công, làm theo kịch bản và lịch do chủ sắp xếp, phạt đi muộn, lương cố định hằng tháng. Đây đều là dấu hiệu của việc được quản lý cách làm, không chỉ được giao kết quả.
+
+#### Bước 2: Kết luận. Về bản chất, ba bạn đang làm việc như nhân viên. Cái tên "cộng tác viên" không làm thay đổi điều đó. Chị Lan Anh có rủi ro: thỏa thuận này có thể bị coi là hợp đồng lao động, kéo theo các nghĩa vụ của người sử dụng lao động.
+
+#### Bước 3: Hai cách làm minh bạch.
+
+Nếu chị cần…
+
+Thì nên…
+
+Quản lý giờ giấc, địa điểm, cách làm
+
+Ký hợp đồng lao động đúng tên gọi (có thể bán thời gian), thực hiện đủ nghĩa vụ
+
+Chỉ cần kết quả
+
+Thỏa thuận theo đầu ra: số buổi live, chỉ tiêu, tiêu chuẩn nội dung; để các bạn tự chủ giờ giấc và cách làm; bỏ chấm công và phạt đi muộn
+
+Dù chọn cách nào, chị nên nhờ người am hiểu luật lao động xem lại hợp đồng.
+
+#### Bước 4: Điều sâu hơn. Ngoài chuyện pháp lý còn chuyện công bằng. Người bị quản lý như nhân viên mà không có quyền lợi như nhân viên dễ thấy bất công, và dễ rời đi khi có chỗ tốt hơn.
+
+> [!IMPORTANT] Điều rút ra:
+> Người làm dịch vụ độc lập được giao kết quả, không bị quản lý cách làm; gọi tên khác đi không đổi được bản chất.
+
+Câu 10:
+### Câu 10 · Phân tích — Kế hoạch đào tạo thợ của anh Quân hỏng ở đâu?
+
+> [!EXAMPLE] Tình huống:
+> Sau khi đọc ma trận (Câu 4), anh Quân đặt mục tiêu: "Trước Tết, 4 thợ phụ đủ tay nghề thợ chính để đứng quầy mới." Sáu tháng sau, chỉ 1 bạn đạt. Anh Quân kể lại:
+> • Anh chọn đúng 4 bạn có năng khiếu, bạn nào cũng muốn học.
+> • Lớp học vào sáng Chủ nhật, lúc tiệm đông nhất; thợ chính dạy lớp hay bị gọi ra quầy.
+> • Không ai được giao phụ trách lớp; anh Quân bận mở quầy nên không hỏi tới.
+> • Đến tháng thứ năm anh mới biết lớp đã nghỉ sáu buổi.
+> • Quầy mới mở ra đông khách đúng như dự đoán, và thực sự cần 4 thợ chính.
+
+> [!REFLECT] Câu hỏi:
+> Kế hoạch hỏng ở khâu dự báo hay khâu thực hiện? Lần sau anh Quân cần sửa gì?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Mục tiêu tốt có con số và mốc thời gian cụ thể.
+• Khi thực hiện, phải có một người cụ thể chịu trách nhiệm, có đủ quyền hạn và nguồn lực, báo cáo tiến độ đều đặn.
+• Khi đánh giá, cần tìm xem phần nào của quy trình làm nên thất bại: dự báo sai, hay thực hiện chưa tới (nhân viên không học, hoặc không có khóa học phù hợp).
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Kiểm tra khâu dự báo và mục tiêu. Quầy mới đông như dự đoán và thực sự cần 4 thợ chính, nên dự báo cầu đúng. Mục tiêu có con số (4 người) và mốc thời gian (trước Tết). Người học có năng khiếu và có động lực. Khâu này ổn.
+
+#### Bước 2: Kiểm tra khâu thực hiện.
+
+Yêu cầu
+
+Thực tế
+
+Một người cụ thể chịu trách nhiệm
+
+Không ai được giao
+
+Đủ quyền hạn và nguồn lực
+
+Người dạy không có thời gian thật, vì lớp trùng giờ cao điểm
+
+Báo cáo tiến độ đều đặn
+
+Không có; tháng thứ năm mới phát hiện vấn đề
+
+Vậy kế hoạch hỏng ở khâu thực hiện.
+
+#### Bước 3: Sửa cho lần sau.
+
+1. Giao một thợ chính phụ trách lớp, có quyền xếp lịch, và được rút khỏi quầy trong giờ dạy.
+
+2. Dời lớp sang khung giờ vắng khách.
+
+3. Chia mục tiêu thành các mốc nhỏ, ví dụ mỗi tháng kiểm tra tay nghề một lần.
+
+4. Người phụ trách báo cáo anh Quân hai tuần một lần.
+
+5. Chuẩn bị phương án dự phòng: nếu đến một mốc nhất định vẫn chậm, tuyển thêm từ bên ngoài hoặc thuê người tạm thời cho quầy mới.
+
+#### Bước 4: Điều sâu hơn. Hãy hỏi vì sao 1 bạn vẫn đạt: bạn ấy tự học thêm, hay được một thợ chính kèm riêng? Điều đó có thể thành cách làm cho lần sau. Và khi đã đào tạo xong, anh Quân cần giữ các bạn bằng một lộ trình rõ ràng; nếu không, như ma trận ở Câu 4 gợi ý, người giỏi có thể đi nơi khác.
+
+> [!IMPORTANT] Điều rút ra:
+> Khi kết quả không đạt, đừng vội đổi mục tiêu; hãy hỏi xem hỏng ở dự báo hay hỏng ở thực hiện.
+
+## Phần 4–6. Tuyển mộ, nguồn ứng viên và người tuyển dụng
+
+Câu 11:
+### Câu 11 · Hiểu — Năm thay đổi của Gió Chiều
+
+> [!EXAMPLE] Tình huống:
+> Để tuyển người cho mùa Tết, chị Thu thực hiện năm thay đổi:
+> • (a) Trả lương ca tối cao hơn mức phổ biến trong khu vực.
+> • (b) Đăng tin ở một trường nghề có dạy pha chế, và trong các nhóm sinh viên.
+> • (c) Mời một trưởng ca giỏi nghề cùng phỏng vấn với người phụ trách nhân sự.
+> • (d) Ghi rõ lộ trình "phục vụ → pha chế → trưởng ca → quản lý quán" trong tin tuyển, và ưu tiên đề bạt người trong chuỗi.
+> • (e) Cho ứng viên pha thử ba món để chọn người pha giỏi nhất.
+
+> [!REFLECT] Câu hỏi:
+> Mỗi thay đổi thuộc yếu tố nào trong ba yếu tố ảnh hưởng đến tuyển mộ, và nó tác động chủ yếu đến điều gì? Có thay đổi nào không thuộc tuyển mộ không?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Tuyển mộ là mọi hoạt động nhằm tìm ra và thu hút người có thể trở thành nhân viên. Tuyển chọn là quyết định ai phù hợp nhất.
+• Ba yếu tố: chính sách nhân sự định hình đặc điểm của vị trí; nguồn tuyển mộ quyết định tiếp cận được những ai; người tuyển dụng ảnh hưởng đến cả hai.
+• Đặc điểm của vị trí dự đoán việc ứng viên chọn công việc tốt hơn so với người tuyển dụng hay nguồn tuyển.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Xếp từng thay đổi.
+
+Thay đổi
+
+Thuộc yếu tố
+
+Tác động chủ yếu đến
+
+(a) Lương ca tối cao hơn
+
+Chính sách nhân sự: trả lương dẫn đầu thị trường
+
+Đặc điểm của vị trí
+
+(b) Đăng tin ở trường nghề, nhóm sinh viên
+
+Nguồn tuyển mộ
+
+Đặc điểm của ứng viên (ai biết đến tin)
+
+(c) Trưởng ca cùng phỏng vấn
+
+Người tuyển dụng
+
+Cả hai
+
+(d) Lộ trình và ưu tiên đề bạt
+
+Chính sách nhân sự: tuyển nội bộ
+
+Đặc điểm của vị trí
+
+(e) Pha thử ba món
+
+Không thuộc tuyển mộ
+
+Đây là tuyển chọn: quyết định nhận ai
+
+#### Bước 2: Chú ý thay đổi (e). Pha thử là một cách chọn người, không phải cách thu hút người. Nếu Gió Chiều không thu hút đủ người giỏi đến gõ cửa, bài pha thử hay đến mấy cũng chỉ chọn được trong số ít ỏi đó.
+
+#### Bước 3: Điều sâu hơn. Theo nghiên cứu, những thay đổi làm vị trí hấp dẫn hơn, tức (a) và (d), thường có tác dụng lớn nhất đến việc ứng viên chọn Gió Chiều.
+
+> [!IMPORTANT] Điều rút ra:
+> Tuyển mộ làm cho đúng người muốn đến; tuyển chọn quyết định ai được nhận; đừng lẫn hai việc với nhau.
+
+Câu 12:
+### Câu 12 · Đánh giá — "Cứ trả cao hơn thị trường là tuyển được hết"
+
+> [!EXAMPLE] Tình huống:
+> Anh Tuấn có một xưởng in bao bì, làm ca đêm, tiếng máy ồn. Khó tuyển người, anh tăng lương cao hơn hẳn mặt bằng thị trường. Số người nộp đơn tăng rõ. Nhưng sau ba tháng, nhiều người mới xin nghỉ. Họ nói:
+> • "Làm bao lâu cũng không lên được tổ trưởng, vì tổ trưởng toàn người nhà của chủ."
+> • "Có bạn bị cho nghỉ đột ngột, không ai giải thích, không được nói lại."
+> • "Tin tuyển hứa 'môi trường chuyên nghiệp, hiện đại', vào làm thì khác hẳn."
+> Anh Tuấn kết luận: "Chắc tăng lương chưa đủ, phải tăng nữa."
+
+> [!REFLECT] Câu hỏi:
+> Quan điểm "cứ trả cao hơn thị trường là tuyển được hết" đúng đến đâu? Anh Tuấn nên làm gì?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Trả lương dẫn đầu thị trường tạo lợi thế tuyển mộ, và có thể bù cho những điểm kém hấp dẫn như ca đêm.
+• Chính sách tuyển nội bộ tạo cơ hội thăng tiến, làm công việc hấp dẫn hơn.
+• Ứng viên bị thu hút bởi nơi cho thấy họ sẽ được đối xử công bằng khi có bất đồng.
+• Hình ảnh của tổ chức phải khớp với trải nghiệm thật; nếu không, người mới sẽ sớm ra đi.
+• Việc ứng viên nhận việc, và nhất là ở lại lâu, phụ thuộc nhiều vào đặc điểm của công việc: lương, sự ổn định, cơ hội thăng tiến.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Phần đúng. Lương cao hơn thị trường thật sự giúp anh Tuấn: số người nộp đơn tăng, và nó bù được phần nào cho ca đêm và tiếng ồn.
+
+#### Bước 2: Phần chưa đúng. Lương kéo được người đến, nhưng ba lời phàn nàn cho thấy người đi vì những chuyện khác:
+
+Lời phàn nàn
+
+Chính sách còn thiếu
+
+Không lên được tổ trưởng
+
+Cơ hội thăng tiến công bằng cho người trong xưởng
+
+Bị cho nghỉ không được giải thích
+
+Quy trình công bằng khi xử lý kỷ luật, cho thôi việc
+
+Tin tuyển khác thực tế
+
+Hình ảnh khớp với trải nghiệm thật
+
+#### Bước 3: Vì sao tăng lương tiếp không giải quyết được. Tăng tiếp sẽ kéo thêm người đến, nhưng ba lý do ra đi vẫn còn nguyên. Anh Tuấn sẽ trả nhiều hơn cho một dòng người vào rồi ra.
+
+#### Bước 4: Nên làm gì.
+
+1. Giữ mức lương hiện tại, chưa cần tăng thêm.
+
+2. Mở con đường lên tổ trưởng cho mọi người, với tiêu chí rõ ràng, thông báo công khai trong xưởng.
+
+3. Xây quy trình rõ ràng khi xử lý kỷ luật hay cho thôi việc, cho người lao động được trình bày, và làm đúng quy định pháp luật.
+
+4. Viết lại tin tuyển cho đúng thực tế: nói rõ ca đêm, tiếng ồn, và những gì xưởng thật sự có.
+
+> [!IMPORTANT] Điều rút ra:
+> Quan điểm này đúng một nửa: lương cao kéo người đến, nhưng cơ hội, sự công bằng và sự thật mới giữ người ở lại.
+
+Câu 13:
+### Câu 13 · Áp dụng — Bốn vị trí, bốn nguồn
+
+> [!EXAMPLE] Tình huống:
+> Chuỗi Gió Chiều cần tuyển bốn loại vị trí:
+> • (a) Một quản lý cho quán thứ 6.
+> • (b) Khoảng 10 phục vụ bán thời gian cho dịp Tết.
+> • (c) Một giám đốc tài chính, khi chuỗi chuẩn bị kêu gọi vốn. Người phù hợp thường đang làm ở công ty khác và không muốn lộ chuyện tìm việc.
+> • (d) Một chuyên viên marketing mới tốt nghiệp.
+
+> [!REFLECT] Câu hỏi:
+> Với mỗi vị trí, chị Thu nên dựa chủ yếu vào nguồn nào? Vì sao?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Nguồn nội bộ: biết rõ ứng viên, ứng viên hiểu công việc, nhanh, rẻ, tạo động lực; nhưng thông báo phải thật sự đến được với nhân viên.
+• Ứng viên tự nộp và được giới thiệu: rẻ, đã tự sàng lọc; nhưng ít góc nhìn mới.
+• Công ty săn đầu người: tìm người cho vị trí quản lý, chuyên gia, chủ yếu trong số người đang có việc; giữ bí mật; chi phí cao.
+• Trường học: nguồn quan trọng cho vị trí đầu vào; thực tập giúp hai bên hiểu nhau trước.
+• Không có nguồn tốt nhất cho mọi vị trí; một ứng viên thường đến qua nhiều nguồn.
+
+### Cùng suy nghĩ từng bước:
+
+Vị trí
+
+Nguồn chính
+
+Lý do
+
+(a) Quản lý quán
+
+Nội bộ: thông báo công khai cho các trưởng ca
+
+Ma trận cho thấy quản lý quán vốn đến từ bên trong; trưởng ca hiểu văn hóa và quy trình chuỗi; đề bạt còn tạo động lực cho người khác
+
+(b) Phục vụ Tết
+
+Nhân viên giới thiệu, nhóm sinh viên, trường nghề
+
+Cần nhiều người, nhanh, chi phí thấp; người được giới thiệu đã được "lọc hộ" một bước
+
+(c) Giám đốc tài chính
+
+Công ty săn đầu người
+
+Người phù hợp đang có việc, cần kín đáo; bên săn đầu người chuyên ngành giới thiệu được người chị Thu tự tìm không thấy; chi phí cao nhưng xứng với vị trí then chốt
+
+(d) Marketing mới tốt nghiệp
+
+Trường đại học: thực tập, ngày hội việc làm; kèm nền tảng tìm việc
+
+Vị trí đầu vào; thực tập cho hai bên thử hiểu nhau trước khi cam kết
+
+Điều sâu hơn: Với (a), chị Thu cần chắc rằng mọi trưởng ca đều biết vị trí này đang mở. Nếu chỉ người thân quen với chị biết, lợi thế sẽ thuộc về người có quan hệ, chưa chắc là người giỏi nhất. Với (b), chị có thể kết hợp thêm lao động tạm thời qua công ty cung ứng, như đã bàn ở Phần 3.
+
+> [!IMPORTANT] Điều rút ra:
+> Chọn nguồn theo vị trí: ai cần kín đáo, ai cần nhanh, ai cần đã hiểu văn hóa, ai cần được thử trước.
+
+Câu 14:
+### Câu 14 · Phân tích — Nguồn rẻ nhất có phải nguồn tốt nhất?
+
+> [!EXAMPLE] Tình huống:
+> Chị Hương quản lý một tổng đài chăm sóc khách hàng. Nửa năm qua, chị tuyển nhân viên tổng đài từ ba nguồn. Chị còn ghi lại số người vẫn làm việc sau sáu tháng:
+> Trang việc làm trả phí
+> Ngày hội việc làm ở trường
+> Nhân viên giới thiệu
+> Hồ sơ nhận được
+> 300
+> 80
+> 25
+> Đến phỏng vấn
+> 90
+> 60
+> 20
+> Đạt yêu cầu
+> 30
+> 24
+> 12
+> Nhận việc
+> 20
+> 12
+> 10
+> Chi phí
+> 12 triệu đồng
+> 9 triệu đồng
+> 10 triệu đồng (thưởng giới thiệu)
+> Còn làm sau 6 tháng
+> 8
+> 9
+> 8
+> Phòng tài chính đề nghị: "Trang việc làm có chi phí mỗi người được tuyển thấp nhất, dồn hết ngân sách vào đó."
+
+> [!REFLECT] Câu hỏi:
+> (a) Tính tỷ lệ qua vòng tích lũy và chi phí mỗi người được tuyển của từng nguồn. (b) Đề nghị của phòng tài chính có hợp lý không, khi xét cả số người còn làm sau sáu tháng?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Tỷ lệ qua vòng là tỷ lệ ứng viên đi tiếp từ vòng này sang vòng sau. Tỷ lệ cao nghĩa là nguồn đó hiệu quả trong việc mang lại ứng viên phù hợp.
+• Chi phí cho mỗi người được tuyển = chi phí dùng nguồn đó / số người được tuyển từ nguồn đó.
+• Hai thước đo này chưa tính thời gian của người phỏng vấn, và chưa cho biết người được tuyển làm việc tốt đến đâu sau đó.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Tính theo bài học.
+
+Trang việc làm
+
+Ngày hội ở trường
+
+Giới thiệu
+
+Tỷ lệ tích lũy (nhận việc / hồ sơ)
+
+20/300 ≈ 7%
+
+12/80 = 15%
+
+10/25 = 40%
+
+Chi phí mỗi người được tuyển
+
+12 triệu / 20 = 600 nghìn
+
+9 triệu / 12 = 750 nghìn
+
+10 triệu / 10 = 1 triệu
+
+Nếu chỉ nhìn chi phí mỗi người được tuyển, phòng tài chính đúng: trang việc làm rẻ nhất.
+
+#### Bước 2: Tính thêm theo số người ở lại. Đây là bước mở rộng, dựa trên ý của bài học rằng cần biết người được tuyển có đóng góp thật không.
+
+Trang việc làm
+
+Ngày hội ở trường
+
+Giới thiệu
+
+Tỷ lệ còn làm sau 6 tháng
+
+8/20 = 40%
+
+9/12 = 75%
+
+8/10 = 80%
+
+Chi phí cho mỗi người còn làm
+
+12 triệu / 8 = 1,5 triệu
+
+9 triệu / 9 = 1 triệu
+
+10 triệu / 8 = 1,25 triệu
+
+Kết luận đảo ngược: trang việc làm thành nguồn đắt nhất tính trên mỗi người còn làm.
+
+#### Bước 3: Chi phí ẩn. Trang việc làm cần 90 buổi phỏng vấn để có 20 người. Giới thiệu chỉ cần 20 buổi để có 10 người. Thời gian phỏng vấn chưa được tính vào chi phí.
+
+#### Bước 4: Đề xuất. Không nên dồn hết vào trang việc làm. Nên tăng phần cho ngày hội ở trường và chương trình giới thiệu. Nhưng giới thiệu chỉ mang lại 25 hồ sơ, và dễ đem đến người giống nhau, nên vẫn cần nguồn có số lượng lớn. Với trang việc làm, chị Hương có thể thử viết tin sát thực tế hơn, rồi đo lại.
+
+Điều sâu hơn: Vì sao người từ ngày hội và từ giới thiệu ở lại lâu hơn? Một giả thuyết: họ được nghe người thật kể về công việc thật trước khi nhận việc. Chị Hương nên kiểm tra giả thuyết này, chứ chưa nên kết luận ngay.
+
+> [!IMPORTANT] Điều rút ra:
+> Nguồn rẻ nhất tính trên mỗi người được tuyển chưa chắc rẻ nhất tính trên mỗi người ở lại và làm tốt.
+
+Câu 15:
+### Câu 15 · Đánh giá — "Tuyển người quen cho chắc"
+
+> [!EXAMPLE] Tình huống:
+> Anh Tùng có một công ty nội thất gia đình khoảng 40 người. Gần như mọi người đều vào làm nhờ người quen giới thiệu. Gần đây:
+> • Vị trí trưởng phòng kinh doanh được giao cho em vợ anh Tùng, dù có nhân viên lâu năm làm tốt hơn.
+> • Nhân viên chỉ biết có vị trí trống khi thấy người mới đến.
+> • Trong các cuộc họp, ít ai có ý tưởng mới; mọi người nghĩ khá giống nhau.
+> • Vài nhân viên giỏi bắt đầu nói "ở đây làm giỏi không bằng quen biết".
+> Anh Tùng nói: "Người quen thì tin được, lại đỡ tốn tiền tuyển."
+
+> [!REFLECT] Câu hỏi:
+> Quan điểm của anh Tùng đúng đến đâu? Anh nên điều chỉnh thế nào?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Ứng viên được giới thiệu có lợi thế tự sàng lọc, và rẻ hơn tuyển mộ chính thức.
+• Điểm yếu: người ta giới thiệu người giống mình, nên tổ chức ít góc nhìn mới; giới thiệu có thể dẫn đến thiên vị người thân, khiến nhân viên bất bình.
+• Khi nhân viên không biết về vị trí trống, lợi thế thuộc về người có quan hệ, chưa chắc là người giỏi nhất.
+• Tổ chức chỉ tuyển từ bên trong dễ thành nơi mọi người nghĩ giống nhau, khó đổi mới.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Phần đúng. Người được giới thiệu thường hợp với công việc hơn, vì người giới thiệu hiểu cả hai phía. Chi phí cũng thấp. Đây là lý do nhiều tổ chức giỏi vẫn dùng giới thiệu làm nguồn chính.
+
+#### Bước 2: Phần chưa đúng.
+
+Hiện tượng
+
+Hệ quả theo bài học
+
+Mọi người nghĩ giống nhau
+
+Nguồn tuyển quá hẹp, ít góc nhìn mới
+
+Em vợ lên trưởng phòng
+
+Nhân viên thấy thiên vị người thân, mất động lực
+
+Không ai biết vị trí trống
+
+Người có quan hệ được lợi, người giỏi bị bỏ qua
+
+"Làm giỏi không bằng quen biết"
+
+Người giỏi có thể là người rời đi đầu tiên
+
+#### Bước 3: Điều chỉnh như người làm nghề. Không cần bỏ giới thiệu, chỉ cần đặt nó vào khuôn khổ:
+
+1. Mọi ứng viên, dù quen hay lạ, đi qua cùng một quy trình và cùng tiêu chí tuyển chọn.
+
+2. Mọi vị trí trống, nhất là vị trí quản lý, được thông báo công khai trong công ty trước.
+
+3. Người thân của người ra quyết định không tự quyết việc tuyển hay đề bạt người nhà mình.
+
+4. Bổ sung nguồn bên ngoài (trường học, nền tảng tìm việc) cho những vị trí cần ý tưởng mới.
+
+5. Theo dõi kết quả theo từng nguồn để biết nguồn nào thật sự tốt.
+
+> [!IMPORTANT] Điều rút ra:
+> Quan điểm này đúng một nửa: giới thiệu là nguồn tốt, nhưng nó cần luật chơi chung, nếu không cái "chắc" hôm nay sẽ đổi lấy sự bất công và sự trì trệ ngày mai.
+
+Câu 16:
+### Câu 16 · Phân tích — Vì sao ứng viên giỏi từ chối?
+
+> [!EXAMPLE] Tình huống:
+> Tổng đài của chị Hương (Câu 14) tuyển một trưởng nhóm. Năm ứng viên tốt liên tiếp từ chối lời mời hoặc bỏ giữa chừng. Chị Hương tìm hiểu và biết:
+> • Người phỏng vấn duy nhất là một chuyên viên nhân sự mới vào, không trả lời được câu hỏi về cách chia ca và chỉ tiêu cuộc gọi.
+> • Sau phỏng vấn, ứng viên chờ ba tuần mới nhận được phản hồi.
+> • Một ứng viên kể người phỏng vấn nhìn điện thoại gần như suốt buổi, và đùa về ngoại hình của cô.
+> • Lương và phúc lợi ngang mặt bằng thị trường.
+
+> [!REFLECT] Câu hỏi:
+> Những nguyên nhân nào có thể khiến ứng viên từ chối? Chị Hương nên thay đổi gì, và điều gì người tuyển dụng không tự sửa được?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Ứng viên thường thấy chuyên viên nhân sự kém đáng tin hơn người làm chuyên môn; chuyên viên nhân sự phải cố thêm để cho thấy mình hiểu công việc.
+• Ứng viên thích người tuyển dụng ấm áp (quan tâm, hào hứng về ứng viên) và cung cấp thông tin (trả lời đúng điều họ muốn biết).
+• Ba cách tăng tác động của người tuyển dụng: phản hồi kịp thời, tránh hành vi gây phản cảm, tuyển theo nhóm.
+• Ảnh hưởng của người tuyển dụng có giới hạn; đặc điểm công việc thường quan trọng hơn.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Ghép dữ kiện với bài học.
+
+Dữ kiện
+
+Vấn đề
+
+Không trả lời được về ca, chỉ tiêu
+
+Không cung cấp thông tin; chuyên viên nhân sự bị thấy là kém đáng tin
+
+Chờ ba tuần
+
+Phản hồi chậm, ứng viên nghĩ công ty không coi trọng mình
+
+Nhìn điện thoại, đùa về ngoại hình
+
+Không ấm áp, hành vi gây phản cảm
+
+Lương ngang thị trường
+
+Vị trí không có gì nổi bật để bù lại trải nghiệm tệ
+
+#### Bước 2: Thay đổi cách tuyển.
+
+1. Phỏng vấn theo cặp: một trưởng nhóm hoặc quản lý tổng đài (người làm chuyên môn) và một chuyên viên nhân sự (nắm chính sách, quy trình).
+
+2. Cam kết phản hồi trong một thời hạn ngắn, và báo cả khi ứng viên không đạt.
+
+3. Hướng dẫn người phỏng vấn cách cư xử: tập trung vào ứng viên, không bình luận về ngoại hình.
+
+#### Bước 3: Điều người tuyển dụng không tự sửa được. Nếu sau khi sửa cách tuyển mà ứng viên giỏi vẫn từ chối, hãy nhìn vào bản thân vị trí: lương, lịch ca, cơ hội thăng tiến. Đó là việc của chính sách nhân sự.
+
+Điều sâu hơn: Chị Hương nên hỏi trực tiếp vài ứng viên đã từ chối xem lý do thật là gì. Những gì chị biết hiện nay mới là giả thuyết.
+
+> [!IMPORTANT] Điều rút ra:
+> Người tuyển dụng hiếm khi làm ứng viên chọn công việc, nhưng rất dễ làm ứng viên bỏ đi.
+
+Câu 17:
+### Câu 17 · Đánh giá — Fanpage "vui như Tết"
+
+> [!EXAMPLE] Tình huống:
+> Hoàng phụ trách tuyển dụng cho một chuỗi nhà hàng lẩu. Hoàng đề xuất:
+> • Fanpage tuyển dụng chỉ đăng ảnh tiệc, dã ngoại, sinh nhật nhân viên.
+> • Dặn người phỏng vấn đừng nhắc chuyện ca tối kéo đến 23 giờ, và cuối tuần, lễ Tết đều phải làm.
+> Chị Phương, quản lý vùng, muốn làm video "Một ngày làm phục vụ" quay thật: cảnh tối thứ Bảy đông khách, bưng nồi nước lẩu nóng; nhưng cũng có cảnh được đào tạo, bữa cơm nhân viên, và một bạn phục vụ lên ca trưởng.
+> Hoàng lo: "Nói thật thế thì ai dám nộp đơn?"
+
+> [!REFLECT] Câu hỏi:
+> Đánh giá hai cách làm. Chuỗi nên chọn cách nào?
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Hình ảnh của tổ chức ảnh hưởng đến việc người ta muốn làm ở đó, nhưng phải khớp với trải nghiệm thật.
+• Ứng viên rất nhạy với thông tin tiêu cực; ứng viên giỏi nhất có thể lùi lại. Nhưng tô hồng quá thì người mới vỡ mộng, dễ nghỉ việc, và có thể thấy tổ chức không trung thực.
+• Giới thiệu công việc thực tế chỉ giúp giảm nghỉ việc một cách yếu và không ổn định, nhưng rẻ và dễ làm, nên vẫn đáng cân nhắc.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1: Hoàng đúng ở đâu. Nỗi lo của Hoàng có cơ sở: ứng viên nhạy với thông tin tiêu cực, và số người nộp đơn có thể giảm.
+
+#### Bước 2: Cách của Hoàng mất gì. Người mới vào sẽ gặp ca 23 giờ và Tết đi làm mà không được báo trước. Kỳ vọng không được đáp ứng làm tăng nghỉ việc. Họ cũng có thể thấy chuỗi không trung thực, và kể lại với bạn bè, làm xấu hình ảnh chuỗi.
+
+#### Bước 3: Cách của chị Phương được gì, và không nên kỳ vọng gì. Video cho thấy cả mặt vất vả lẫn mặt tốt thật, nên người nộp đơn là người đã biết mình sẽ gặp gì. Chi phí thấp, dễ làm. Nhưng đừng kỳ vọng nó giải quyết hết chuyện nghỉ việc; tác dụng của nó được ghi nhận là khá yếu.
+
+#### Bước 4: Kết luận.
+
+1. Chọn hướng của chị Phương, và giữ những hình ảnh vui có thật của Hoàng; hai thứ không mâu thuẫn.
+
+2. Nói rõ lịch ca trong tin tuyển và khi phỏng vấn.
+
+3. Nếu ca đêm và ngày Tết là điểm trừ lớn, xem xét bù bằng chính sách, như phụ cấp ca đêm, ngày lễ.
+
+4. Đo tỷ lệ người mới nghỉ trong ba tháng đầu, trước và sau khi đổi cách làm.
+
+> [!IMPORTANT] Điều rút ra:
+> Nói thật có thể làm bớt vài hồ sơ hôm nay, nhưng tô hồng thường làm mất người ngày mai.
+
+## Câu tổng hợp
+
+Câu 18:
+### Câu 18 · Sáng tạo — Kế hoạch nhân lực mùa Tết cho chị Thu
+
+> [!EXAMPLE] Tình huống:
+> Quay lại câu chuyện mở đầu bài giảng. Bây giờ là tháng 9. Chị Thu, chủ chuỗi cà phê Gió Chiều, nhờ bạn lập kế hoạch nhân lực cho năm tới. Những gì chị có:
+> • Dự báo 12 tháng tới (Phần 2 của bài giảng): thiếu 1 quản lý quán, 2 trưởng ca, 17 pha chế, 32 phục vụ. Theo kinh nghiệm năm ngoái, người nghỉ dồn vào dịp cuối năm.
+> • Quán thứ 6 khai trương trước Tết.
+> • Mùa hè, hai quán gần trường đại học vắng khách, sẽ thừa người.
+> • Ma trận cho thấy: quản lý quán đến từ bên trong; phục vụ và pha chế nghỉ việc nhiều; phần lớn phục vụ được tuyển từ bên ngoài.
+> • Chị không thể trả lương cao hơn hẳn thị trường cho mọi vị trí.
+
+> [!REFLECT] Câu hỏi:
+> Hãy thiết kế kế hoạch nhân lực cho chị Thu, đủ ba giai đoạn: mục tiêu, chiến lược cho cả lúc thiếu và lúc thừa người, nguồn và cách tuyển mộ, người chịu trách nhiệm và cách đánh giá.
+
+Đáp án mẫu:
+
+### Nhắc lại bài học:
+• Quy trình hoạch định: dự báo → đặt mục tiêu và hoạch định chiến lược → thực hiện và đánh giá, có phản hồi cho vòng sau.
+• Mục tiêu tốt có con số và mốc thời gian.
+• Khi thiếu người: so tốc độ và khả năng rút lại. Khi thừa người: so tốc độ và mức tổn thương. Có thể phát triển kỹ năng trong đội ngũ khi vừa thiếu chỗ này vừa thừa chỗ kia.
+• Chính sách nhân sự làm vị trí hấp dẫn hơn: tuyển nội bộ, lương, sự công bằng, hình ảnh khớp với thực tế.
+• Nguồn: nội bộ, giới thiệu, trường học, nền tảng tìm việc, lao động tạm thời…; đo bằng tỷ lệ qua vòng và chi phí mỗi người được tuyển.
+• Người tuyển dụng: phản hồi kịp thời, cư xử đúng mực, tuyển theo nhóm; giới thiệu công việc thực tế.
+• Thực hiện: một người chịu trách nhiệm, đủ quyền và nguồn lực, báo cáo đều đặn. Đánh giá: hỏng ở dự báo hay ở thực hiện.
+
+### Cùng suy nghĩ từng bước:
+
+Dưới đây là một phương án mẫu. Phương án của bạn có thể khác, miễn là dùng đúng khái niệm và giải thích được lý do.
+
+#### Bước 1: Đặt mục tiêu cụ thể.
+
+Mục tiêu
+
+Con số
+
+Mốc thời gian
+
+Đủ người cho quán thứ 6
+
+1 quản lý quán, 2 trưởng ca, 6 pha chế, 8 phục vụ đã được đào tạo
+
+Hai tuần trước ngày khai trương
+
+Đủ người cho mùa Tết ở cả 6 quán
+
+36 pha chế và 48 phục vụ đang làm việc, cộng lực lượng tạm thời cho cao điểm
+
+Ngày 15/12
+
+Giảm nghỉ việc
+
+Số phục vụ nghỉ trong năm giảm từ 20 xuống còn 12 người
+
+Hết năm tới
+
+Không cắt người mùa hè
+
+Không cho ai nghỉ việc vì vắng khách ở hai quán gần trường
+
+Tháng 6–8
+
+#### Bước 2: Chọn chiến lược cho từng vị trí.
+
+Vị trí
+
+Thiếu
+
+Chiến lược chính
+
+Vì sao
+
+Quản lý quán
+
+1
+
+Đề bạt một trưởng ca, cho đứng thay quản lý từ tháng 10
+
+Ma trận cho thấy đây là con đường sẵn có; người nội bộ hiểu văn hóa chuỗi
+
+Trưởng ca
+
+2
+
+Đào tạo lại rồi điều chuyển: bồi dưỡng pha chế giỏi lên trưởng ca
+
+Chậm nhưng dễ rút lại; bắt đầu ngay từ tháng 9 là kịp
+
+Pha chế
+
+17
+
+Mở lớp dạy pha chế cho phục vụ có năng khiếu; tuyển mới phần còn lại qua trường nghề
+
+Phần thay người nghỉ lặp lại hằng năm, nên cần người lâu dài
+
+Phục vụ
+
+32
+
+Tuyển mới phần lâu dài; lao động tạm thời và làm thêm giờ vừa phải cho cao điểm Tết
+
+Phần cao điểm ngắn hạn cần cách nhanh và dễ rút lại
+
+Song song, giảm nghỉ việc là cách xử lý thiếu người "từ gốc": hỏi người đã nghỉ vì sao họ đi; nêu rõ lộ trình thăng tiến; phụ cấp cho ca Tết để bù phần kém hấp dẫn.
+
+#### Bước 3: Chuẩn bị cho mùa hè thừa người. Vì thừa người mùa hè đoán trước được, chị Thu xử lý bằng các cách ít tổn thương:
+
+1. Từ mùa xuân, đóng băng tuyển dụng ở hai quán gần trường, để hao hụt tự nhiên làm giảm người.
+
+2. Điều chuyển bớt người sang các quán không bị ảnh hưởng.
+
+3. Dùng thời gian vắng khách để dạy thêm kỹ năng, như phục vụ học pha chế, chuẩn bị cho mùa Tết sau.
+
+4. Nếu vẫn phải giảm giờ, nói rõ lý do, thời hạn, cách chia, và làm đúng quy định pháp luật.
+
+#### Bước 4: Tuyển mộ.
+
+Việc
+
+Cách làm
+
+Nguồn
+
+Thông báo nội bộ công khai cho vị trí quản lý và trưởng ca; thưởng giới thiệu cho nhân viên, chỉ trả khi người được giới thiệu làm đủ một thời gian; hợp tác với trường nghề; tin tuyển trong các nhóm sinh viên
+
+Chính sách trong tin tuyển
+
+Nêu lộ trình "phục vụ → pha chế → trưởng ca → quản lý quán"; nói rõ lịch ca và phụ cấp Tết
+
+Người tuyển dụng
+
+Phỏng vấn theo cặp: một trưởng ca và người phụ trách nhân sự; phản hồi mọi ứng viên trong vài ngày
+
+Giới thiệu công việc thực tế
+
+Một video ngắn quay một ca làm thật, cả lúc đông khách lẫn lúc được đào tạo
+
+#### Bước 5: Thực hiện và đánh giá.
+
+• Giao một người, ví dụ một quản lý quán giỏi được giao thêm vai trò điều phối nhân sự, chịu trách nhiệm cả kế hoạch, có ngân sách và quyền quyết định.
+
+• Từ tháng 10, người này báo cáo chị Thu mỗi tuần: đã tuyển được bao nhiêu, lớp đào tạo đến đâu.
+
+• Theo dõi từng nguồn tuyển bằng tỷ lệ qua vòng, chi phí mỗi người được tuyển, và số người còn làm sau ba tháng.
+
+• Sau Tết, đánh giá: có thiếu người không, thiếu ở đâu, hỏng ở dự báo hay ở thực hiện. Cập nhật ma trận chuyển đổi làm đầu vào cho năm sau.
+
+#### Bước 6: Điều sâu hơn. Kế hoạch này có một đánh đổi: chị Thu đầu tư thời gian và tiền cho đào tạo từ tháng 9, khi chưa thấy thiếu người. Đó chính là cái giá của việc "nhìn trước". Nó thường rẻ hơn cái giá của việc "chạy theo sau": tuyển vội, khách phàn nàn, và người mới bỏ đi sau một tuần.
+
+> [!IMPORTANT] Điều rút ra:
+> Hoạch định nhân lực biến "chạy theo sau" thành "đi trước một mùa": biết trước khoảng trống, chọn cách lấp hợp với từng khoảng trống, và kiểm tra xem mình đã lấp đúng chưa.
