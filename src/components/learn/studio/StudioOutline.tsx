@@ -23,7 +23,7 @@ import { useState } from 'react';
 
 import { exportLessonMarkdown } from '@/features/learn/lessonImport';
 import { LEARN_EDIT_PROMPT } from '@/features/learn/prompts';
-import type { LearnSectionKind, LearnStudioLesson, LearnStudioSection } from '@/features/learn/types';
+import { LEARN_SECTION_KIND_SHORT, type LearnSectionKind, type LearnStudioLesson, type LearnStudioSection } from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
 import { useCopy } from './useCopy';
@@ -73,7 +73,7 @@ function SectionRow({
 			<button type="button" className="ln-souter__section-btn" onClick={onSelect}>
 				<span className="ln-outline__mark" data-kind={section.type} aria-hidden="true" />
 				<span className="min-w-0 flex-1 truncate">{section.title || 'Chưa đặt tên'}</span>
-				{section.type === 'QUIZ' ? <span className="ln-souter__tag">Kiểm tra</span> : null}
+				{section.type !== 'READING' ? <span className="ln-souter__tag">{LEARN_SECTION_KIND_SHORT[section.type]}</span> : null}
 			</button>
 		</li>
 	);
@@ -166,6 +166,12 @@ function LessonBlock({
 				</button>
 				<button type="button" className="ln-link-btn" onClick={() => onAddSection('QUIZ')}>
 					+ Bài kiểm tra
+				</button>
+				<button type="button" className="ln-link-btn" onClick={() => onAddSection('PRACTICE')}>
+					+ Luyện tập
+				</button>
+				<button type="button" className="ln-link-btn" onClick={() => onAddSection('DISCUSSION')}>
+					+ Phản biện
 				</button>
 			</div>
 		</div>

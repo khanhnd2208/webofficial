@@ -2,16 +2,19 @@
 
 import { useRef } from 'react';
 
-import { estimateReadingMinutes, sectionMinutes } from '@/features/learn/content';
+import { sectionMinutes } from '@/features/learn/content';
 import { exportLessonMarkdown } from '@/features/learn/lessonImport';
-import type { LearnCheckpoint, LearnStudioLesson, LearnStudioSection } from '@/features/learn/types';
+import { LEARN_SECTION_KIND_SHORT, type LearnCheckpoint, type LearnSectionKind, type LearnStudioLesson, type LearnStudioSection } from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
 import OptionListEditor from './OptionListEditor';
 import SectionHistory from './SectionHistory';
 
 export type SectionPatch = Partial<
-	Pick<LearnStudioSection, 'title' | 'type' | 'durationMinutes' | 'summary' | 'keyTakeaways' | 'markdown' | 'checkpoint' | 'quiz'>
+	Pick<
+		LearnStudioSection,
+		'title' | 'type' | 'durationMinutes' | 'summary' | 'keyTakeaways' | 'markdown' | 'checkpoint' | 'quiz' | 'discussion'
+	>
 >;
 
 function TakeawaysEditor({ items, onChange }: { items: string[]; onChange: (items: string[]) => void }) {
@@ -142,17 +145,14 @@ export default function StudioInspector({
 	onSaveVersion: () => Promise<void>;
 	previewHref: string;
 }) {
-	const autoMinutes =
-		section.type === 'QUIZ'
-			? sectionMinutes({ ...section, durationMinutes: null })
-			: estimateReadingMinutes(section.markdown);
+	const autoMinutes = sectionMinutes({ ...section, durationMinutes: null });
 
 	return (
 		<aside className="ln-inspector" aria-label="Thuộc tính mục">
 			<div className="ln-inspector__group">
 				<p className="ln-inspector__label">Loại mục</p>
 				<div className="ln-segmented" role="radiogroup" aria-label="Loại mục">
-					{(['READING', 'QUIZ'] as const).map((type) => (
+					{(['READING', 'QUIZ', 'PRACTICE', 'DISCUSSION'] as const satisfies readonly LearnSectionKind[]).map((type) => (
 						<button
 							key={type}
 							type="button"
@@ -161,13 +161,14 @@ export default function StudioInspector({
 							onClick={() =>
 								onPatch({
 									type,
-									...(type === 'QUIZ' && !section.quiz
+									...((type === 'QUIZ' || type === 'PRACTICE') && !section.quiz
 										? { quiz: { passingScorePercent: 70, timeLimitMinutes: null, questions: [] } }
 										: {}),
+									...(type === 'DISCUSSION' && !section.discussion ? { discussion: { questions: [] } } : {}),
 								})
 							}
 						>
-							{type === 'READING' ? 'Bài đọc' : 'Kiểm tra'}
+							{LEARN_SECTION_KIND_SHORT[type]}
 						</button>
 					))}
 				</div>

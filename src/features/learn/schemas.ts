@@ -8,7 +8,7 @@ const title = (label: string, max = 200) =>
 
 export const learnLevelSchema = z.enum(['BASIC', 'INTERMEDIATE', 'ADVANCED']);
 export const learnStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']);
-export const learnSectionTypeSchema = z.enum(['READING', 'QUIZ']);
+export const learnSectionTypeSchema = z.enum(['READING', 'QUIZ', 'PRACTICE', 'DISCUSSION']);
 
 const options = z
 	.array(z.string().trim().max(1_000))
@@ -38,6 +38,16 @@ export const learnQuizSchema = z.object({
 	passingScorePercent: z.number().int().min(0).max(100).default(70),
 	timeLimitMinutes: z.number().int().min(1).max(600).nullable().default(null),
 	questions: z.array(learnQuizQuestionSchema).max(LEARN_MAX_QUESTIONS),
+});
+
+export const learnDiscussionQuestionSchema = z.object({
+	id: z.string().trim().min(1).max(64),
+	question: z.string().trim().max(8_000),
+	answer: z.string().trim().max(30_000).default(''),
+});
+
+export const learnDiscussionSchema = z.object({
+	questions: z.array(learnDiscussionQuestionSchema).max(LEARN_MAX_QUESTIONS),
 });
 
 export const createLearnCourseSchema = z.object({
@@ -93,6 +103,7 @@ export const updateLearnSectionSchema = z
 		markdown: z.string().max(LEARN_MAX_MARKDOWN, 'Nội dung quá dài').optional(),
 		checkpoint: learnCheckpointSchema.nullable().optional(),
 		quiz: learnQuizSchema.nullable().optional(),
+		discussion: learnDiscussionSchema.nullable().optional(),
 	})
 	.strict();
 

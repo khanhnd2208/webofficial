@@ -4,7 +4,8 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { resolveCalloutKind } from './callouts';
-import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz } from './content';
+import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz, sectionMinutes } from './content';
+import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
 import { autoSectionRawText, cleanAiPaste, exportCourseMarkdown, exportLessonMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
@@ -412,6 +413,88 @@ describe('helpers', () => {
 		const byTitle = (title: string) => parsed.lessons[0].sections.find((section) => section.title === title)?.markdown ?? '';
 		expect(readingOutline(byTitle('Phần 4. Điều gì đang thay đổi công việc của nhà quản trị?')).length).toBeGreaterThanOrEqual(3);
 		expect(readingOutline(byTitle('Phần 6. Không định làm sếp, có cần học quản trị không?')).length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('imports practice and discussion sections and round-trips them', () => {
+		const source = [
+			'# Bài',
+			'',
+			'=== PRACTICE: Luyện tập | 4 phút ===',
+			'Câu 1: Dòng một',
+			'tiếp',
+			'A. Sai',
+			'B. Đúng',
+			'Đáp án: B',
+			'Giải thích: Vì đúng.',
+			'',
+			'Đoạn hai.',
+			'',
+			'=== PHẢN BIỆN: Câu hỏi phản biện ===',
+			'## Nhóm A',
+			'',
+			'Câu 1: Vì sao?',
+			'',
+			'Đáp án mẫu:',
+			'Vì nguồn gốc.',
+			'',
+			'- Ý một',
+			'',
+			'Nhắc lại Câu 1: không tách.',
+			'',
+			'Câu 2: Câu kế?',
+			'',
+			'Gợi ý trả lời:',
+			'| A | B |',
+			'| --- | --- |',
+			'| 1 | 2 |',
+		].join('\n');
+		const parsed = parseLessonMarkdown(source);
+		expect(parsed.sections.map((section) => section.type)).toEqual(['PRACTICE', 'DISCUSSION']);
+		expect(parsed.sections[0].quiz?.questions[0]).toMatchObject({
+			question: 'Dòng một\ntiếp',
+			correctIndex: 1,
+			explanation: 'Vì đúng.\n\nĐoạn hai.',
+		});
+		expect(parsed.sections[1].discussion?.questions[0].question).toContain('## Nhóm A');
+		expect(parsed.sections[1].discussion?.questions[0].question).toContain('Vì sao?');
+		expect(parsed.sections[1].discussion?.questions[0].answer).toContain('Nhắc lại Câu 1: không tách.');
+		expect(parsed.sections[1].discussion?.questions[1].answer).toContain('| 1 | 2 |');
+		expect(parsed.sections[1].discussion?.questions).toHaveLength(2);
+		const exported = exportLessonMarkdown({
+			title: parsed.lessonTitle,
+			description: parsed.lessonDescription,
+			sections: parsed.sections,
+		});
+		const again = parseLessonMarkdown(exported);
+		expect(again.sections[0].quiz?.questions[0].question).toBe(parsed.sections[0].quiz?.questions[0].question);
+		expect(again.sections[1].discussion?.questions[1].answer).toContain('| 1 | 2 |');
+		expect(sectionMinutes({ type: 'PRACTICE', durationMinutes: null, markdown: '', quiz: parsed.sections[0].quiz, discussion: null })).toBe(1);
+		expect(sectionMinutes({ type: 'DISCUSSION', durationMinutes: null, markdown: '', quiz: null, discussion: parsed.sections[1].discussion })).toBeGreaterThan(0);
+	});
+
+	it('flags a missing quiz answer instead of pretending A is correct', () => {
+		const { questions, warnings, missingAnswer } = parseQuizPaste('Câu 1: Hỏi?\nA. a\nB. b\nĐáp án: ?');
+		expect(questions).toHaveLength(1);
+		expect(missingAnswer).toEqual([questions[0].id]);
+		expect(warnings[0]).toMatch(/thiếu đáp án/);
+	});
+
+	it('keeps a discussion answer that mentions an earlier question number', () => {
+		const { questions, warnings } = parseDiscussionPaste('Câu 1: Hỏi?\n\nĐáp án:\nXem lại Câu 1: trong thân.\n\nCâu 2: Tiếp?\n\nTrả lời:');
+		expect(questions).toHaveLength(2);
+		expect(questions[0].answer).toContain('Câu 1: trong thân.');
+		expect(warnings.some((warning) => warning.includes('Câu 2'))).toBe(true);
+		expect(discussionMarkdown({ questions }).includes('Đáp án mẫu:')).toBe(true);
+	});
+
+	it('ignores question labels when comparing a formatted quiz to its source', () => {
+		const original = '1) Hỏi gì\na) Một\nb) Hai\nĐáp án: B';
+		const formatted = 'Câu 1: Hỏi gì\nA. Một\nB. Hai\nĐáp án: B';
+		expect(compareLectureText(original, formatted, { questions: true }).hunks).toEqual([]);
+		expect(compareLectureText(original, formatted.replace('Hai', 'Ba'), { questions: true }).hunks).toEqual([
+			expect.objectContaining({ kind: 'removed', words: ['Hai'] }),
+			expect.objectContaining({ kind: 'added', words: ['Ba'] }),
+		]);
 	});
 
 	it('estimates reading time with a one-minute floor', () => {

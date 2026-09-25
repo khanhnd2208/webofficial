@@ -36,7 +36,7 @@ const MERMAID_FENCE_OPEN = /^\s*(`{3,}|~{3,})mermaid\s*$/i;
 const RAW_MERMAID_START = /^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
 const DOC_BYLINE = /·\s*@\S/;
 
-function stripFormatting(markdown: string, side: 'original' | 'formatted'): string {
+function stripFormatting(markdown: string, side: 'original' | 'formatted', questions = false): string {
 	const normalized = markdown.normalize('NFC').replace(ZERO_WIDTH, '');
 	const lines = normalized.replace(/\r\n?/g, '\n').split('\n');
 	const out: string[] = [];
@@ -66,7 +66,7 @@ function stripFormatting(markdown: string, side: 'original' | 'formatted'): stri
 		let line = rawLine;
 		const section = line
 			.trim()
-			.match(/^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ)\s*:\s*(.+?)\s*(?:={3,}|-{3,})\s*$/i);
+			.match(/^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ|PRACTICE|DISCUSSION|LUYỆN\s*TẬP|PHẢN\s*BIỆN|KIỂM\s*TRA)\s*:\s*(.+?)\s*(?:={3,}|-{3,})\s*$/i);
 		if (section) {
 			line = section[1].replace(/\|\s*\d{1,3}\s*(?:phút|phut|min(?:utes)?|giờ|gio|hours?|h)\b[^|]*$/i, '').trim();
 		}
@@ -79,6 +79,16 @@ function stripFormatting(markdown: string, side: 'original' | 'formatted'): stri
 		line = line.replace(/^(?:>\s?)+/, '');
 		line = line.replace(/^\[![A-Z]+\]\s*/i, '');
 		line = line.replace(/^#{1,6}\s+/, '');
+		if (questions) {
+			line = line.replace(/^(?:câu(?:\s+hỏi)?|question)\s*\d+\s*[:.)]\s*/i, '');
+			line = line.replace(/^\d+\s*[:.)]\s+/, '');
+			line = line.replace(/^[A-Ha-h]\s*[.)]\s+/, '');
+			line = line.replace(
+				/^(?:đáp\s*án\s*mẫu|gợi\s*ý\s*trả\s*lời|hướng\s*dẫn(?:\s*trả\s*lời)?|đáp\s*án(?:\s*đúng)?|sample\s*answer|answer|correct)\s*[:：]\s*(?:[A-Ha-h]|\?)?\s*/i,
+				'',
+			);
+			line = line.replace(/^(?:giải\s*thích|explanation|lý\s*do)\s*[:：]\s*/i, '');
+		}
 		line = line.replace(/^\s*(?:[-*+]|•|●|▪|–)\s+/, '');
 		line = line.replace(/\*\*|__|~~/g, '');
 		line = line.replace(/(^|\s)[*_`](?=\S)/g, '$1');
@@ -212,11 +222,18 @@ function withoutBylineReplacement(original: string, formatted: string): string {
 }
 
 /** Compare a source lecture with AI output. Outer ```markdown fences are ignored. */
-export function compareLectureText(original: string, formatted: string): LectureComparison {
+export function compareLectureText(
+	original: string,
+	formatted: string,
+	options?: { questions?: boolean },
+): LectureComparison {
+	const questions = Boolean(options?.questions);
 	const cleanedOriginal = cleanAiPaste(original).markdown;
 	const cleanedFormatted = cleanAiPaste(formatted).markdown;
-	const left = stripFormatting(cleanedOriginal, 'original').split(/\s+/).filter(Boolean);
-	const right = stripFormatting(withoutBylineReplacement(cleanedOriginal, cleanedFormatted), 'formatted').split(/\s+/).filter(Boolean);
+	const left = stripFormatting(cleanedOriginal, 'original', questions).split(/\s+/).filter(Boolean);
+	const right = stripFormatting(withoutBylineReplacement(cleanedOriginal, cleanedFormatted), 'formatted', questions)
+		.split(/\s+/)
+		.filter(Boolean);
 	if (sameWords(left, right)) return { matchPercent: 100, hunks: [] };
 	const hunks = hunksFromChanges(boundedDiff(left, right));
 	const changed = hunks.reduce((sum, hunk) => sum + hunk.words.length, 0);

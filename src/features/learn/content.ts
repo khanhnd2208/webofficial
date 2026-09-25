@@ -1,6 +1,7 @@
-import { learnCheckpointSchema, learnQuizSchema } from './schemas';
+import { learnCheckpointSchema, learnDiscussionSchema, learnQuizSchema } from './schemas';
 import type {
 	LearnCheckpoint,
+	LearnDiscussion,
 	LearnQuiz,
 	LearnQuizForLearner,
 	LearnQuizResult,
@@ -38,10 +39,16 @@ export function sectionMinutes(section: {
 	durationMinutes: number | null;
 	markdown: string;
 	quiz: LearnQuiz | null;
+	discussion?: LearnDiscussion | null;
 }): number {
 	if (section.durationMinutes) return section.durationMinutes;
 	if (section.type === 'QUIZ') {
 		return section.quiz?.timeLimitMinutes ?? Math.max(1, section.quiz?.questions.length ?? 1);
+	}
+	if (section.type === 'PRACTICE') return Math.max(1, section.quiz?.questions.length ?? 1);
+	if (section.type === 'DISCUSSION') {
+		const text = (section.discussion?.questions ?? []).map((item) => `${item.question}\n${item.answer}`).join('\n');
+		return estimateReadingMinutes(text);
 	}
 	return estimateReadingMinutes(section.markdown);
 }
@@ -63,6 +70,12 @@ export function readCheckpoint(value: unknown): LearnCheckpoint | null {
 export function readQuiz(value: unknown): LearnQuiz | null {
 	if (!value) return null;
 	const parsed = learnQuizSchema.safeParse(value);
+	return parsed.success ? parsed.data : null;
+}
+
+export function readDiscussion(value: unknown): LearnDiscussion | null {
+	if (!value) return null;
+	const parsed = learnDiscussionSchema.safeParse(value);
 	return parsed.success ? parsed.data : null;
 }
 

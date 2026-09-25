@@ -44,7 +44,7 @@ function isTyping(target: EventTarget | null) {
 function shouldIgnore(target: EventTarget | null) {
 	if (isTyping(target)) return true;
 	const element = target as HTMLElement | null;
-	if (element?.closest('[role="radio"], [role="radiogroup"], .ln-table')) return true;
+	if (element?.closest('[role="radio"], [role="radiogroup"], .ln-table, [data-ln-stepper]')) return true;
 	if (document.querySelector('dialog[open], [aria-modal="true"]')) return true;
 	return false;
 }

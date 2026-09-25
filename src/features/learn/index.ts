@@ -1,5 +1,6 @@
 export * from './callouts';
 export * from './content';
+export * from './discussionImport';
 export * from './lessonImport';
 export * from './prompts';
 export * from './quizImport';

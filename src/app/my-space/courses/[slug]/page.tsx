@@ -4,10 +4,12 @@ import { notFound } from 'next/navigation';
 
 import LearnCheckpointCard from '@/components/learn/LearnCheckpointCard';
 import LearnCompleteButton from '@/components/learn/LearnCompleteButton';
+import LearnDiscussionViewer from '@/components/learn/LearnDiscussionViewer';
 import LearnCourseOverview from '@/components/learn/LearnCourseOverview';
 import LearnCurriculum from '@/components/learn/LearnCurriculum';
 import { LearnIcon } from '@/components/learn/LearnIcon';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
+import LearnPracticeRunner from '@/components/learn/LearnPracticeRunner';
 import LearnNotesDrawer from '@/components/learn/LearnNotesDrawer';
 import { LearnKeyboardNav } from '@/components/learn/LearnPlayerChrome';
 import LearnQuizRunner from '@/components/learn/LearnQuizRunner';
@@ -18,6 +20,7 @@ import { formatMinutes } from '@/features/learn/content';
 import { readingOutline } from '@/features/learn/outline';
 import { summarizeCourse, toCurriculumLessons } from '@/features/learn/progress';
 import { getLearnCourseOutline, getLearnProgress, getLearnReaderSection } from '@/features/learn/service';
+import { LEARN_SECTION_KIND_LABELS } from '@/features/learn/types';
 import { auth } from '@/lib/auth';
 
 import { learnViewerFrom } from '../viewer';
@@ -90,7 +93,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 	const headings = section?.type === 'READING' && section.markdown ? readingOutline(section.markdown) : [];
 
 	function primaryAction() {
-		if (section && current && section.type === 'READING') {
+		if (section && current && (section.type === 'READING' || section.type === 'PRACTICE' || section.type === 'DISCUSSION')) {
 			return (
 				<LearnCompleteButton
 					sectionId={section.id}
@@ -157,7 +160,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					</p>
 					<h1 className="ln-reader__title">{section.title}</h1>
 					<p className="ln-reader__meta">
-						{section.type === 'QUIZ' ? 'Bài kiểm tra' : 'Bài đọc'}
+						{LEARN_SECTION_KIND_LABELS[section.type]}
 						<span aria-hidden="true"> · </span>
 						{formatMinutes(section.minutes)}
 						{state?.completed ? (
@@ -192,6 +195,18 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 							/>
 						) : (
 							<p className="mt-8 text-ink-secondary">Bài kiểm tra này chưa có câu hỏi.</p>
+						)
+					) : section.type === 'PRACTICE' ? (
+						section.practice?.length ? (
+							<LearnPracticeRunner sectionId={section.id} questions={section.practice} completed={Boolean(state?.completed)} />
+						) : (
+							<p className="mt-8 text-ink-secondary">Mục luyện tập này chưa có câu hỏi.</p>
+						)
+					) : section.type === 'DISCUSSION' ? (
+						section.discussion ? (
+							<LearnDiscussionViewer sectionId={section.id} discussion={section.discussion} completed={Boolean(state?.completed)} />
+						) : (
+							<p className="mt-8 text-ink-secondary">Mục này chưa có câu hỏi.</p>
 						)
 					) : (
 						<>

@@ -55,6 +55,19 @@ B. Phương án
 Đáp án: A
 Giải thích: Vì sao — chỉ khi gốc có.
 
+=== PRACTICE: Luyện tập ===
+Câu 1: Câu hỏi?
+A. Phương án
+B. Phương án
+Đáp án: B
+Giải thích: Vì sao — chỉ khi gốc có.
+
+=== DISCUSSION: Câu hỏi phản biện ===
+Câu 1: Câu hỏi, có thể nhiều dòng.
+
+Đáp án mẫu:
+Đáp án giữ nguyên markdown.
+
 Trong một mục đọc có thể thêm:
 
 > [!TAKEAWAYS]
@@ -97,7 +110,9 @@ KHỐI HỌC THUẬT — chỉ bọc, không đổi chữ. Mỗi dòng trong kh�
 - "Ví dụ…", "Ví dụ tổng hợp" → [!EXAMPLE], gồm cả danh sách đi kèm
 Tiêu đề sau [!KIND] chỉ khi gốc có một dòng nhãn riêng cho khối đó (ví dụ "Ví dụ 3: Toyota") → chuyển nguyên dòng đó lên làm tiêu đề, không lặp lại trong thân. Không có thì để trống.
 - > [!TAKEAWAYS] chỉ cho "Mục tiêu" hoặc "Bạn sẽ nắm được" ở đầu mục. "Ghi nhớ" hoặc "Tổng kết" ở cuối bài → > [!IMPORTANT] rồi nhãn nguyên văn, vì [!TAKEAWAYS] hiện ở đầu mục với nhãn "Bạn sẽ nắm được".
-- === QUIZ: <tên nguyên văn> === chỉ khi gốc có câu hỏi trắc nghiệm kèm đáp án. Định dạng: Câu n: / A. … / Đáp án: X / Giải thích: (chỉ khi gốc có). Không có đáp án → dùng [!REFLECT], không tự chọn đáp án.
+- === QUIZ: <tên nguyên văn> === chỉ khi gốc gọi khối đó là bài kiểm tra. Định dạng: Câu n: / A. … / Đáp án: X / Giải thích: (chỉ khi gốc có).
+- === PRACTICE: <tên nguyên văn> === cho bộ trắc nghiệm luyện tập có đáp án (không phải bài kiểm tra). Cùng định dạng với QUIZ. Không có đáp án → Đáp án: ?, không tự chọn.
+- === DISCUSSION: <tên nguyên văn> === cho câu hỏi có đáp án mẫu hoặc gợi ý trả lời. Định dạng: Câu n: / dòng trống / Đáp án mẫu: / markdown nguyên văn. Câu hỏi không có đáp án vẫn là [!REFLECT].
 
 CẢNH BÁO: BẢN GỐC CHÉP TỪ DOCS/WORD
 Bản chép văn bản thường làm mất bảng, in đậm và sơ đồ. Hãy dựng lại, không đổi chữ trong ô.
@@ -151,3 +166,58 @@ Yêu cầu: phương án nhiễu hợp lý, độ dài các phương án tương
 
 --- NỘI DUNG BÀI HỌC ---
 [DÁN NỘI DUNG VÀO ĐÂY]`;
+
+const STRUCTURE_GUIDE = `- Bảng bị dàn phẳng (mỗi ô một dòng): nhận ra bằng một chuỗi dòng ngắn lặp lại theo chu kỳ bằng số cột của hàng tiêu đề. Dựng lại thành bảng Markdown, chữ trong ô giữ nguyên văn. Không bao giờ bọc bảng trong ${CODE_FENCE}.
+- Danh sách: - cho gạch đầu dòng. Giữ số thứ tự gốc.
+- In đậm chỉ khi gốc đã in đậm, hoặc nhãn luận điểm đứng riêng.
+- Sơ đồ Mermaid có sẵn thì bọc trong ${CODE_FENCE}mermaid, không đổi chữ.`;
+
+export const LEARN_PRACTICE_FORMAT_PROMPT = `Bạn là công cụ chỉ gắn định dạng cho bộ trắc nghiệm. Mọi chữ của câu hỏi, phương án và giải thích phải giữ nguyên từng ký tự. Không sửa chính tả, không dịch, không rút gọn, không thêm câu, phương án hay giải thích, không tự chọn đáp án.
+
+MẪU MỖI CÂU
+Câu 1: …
+A. …
+B. …
+Đáp án: B
+Giải thích: …
+(Giải thích chỉ khi gốc có, được nhiều dòng. Một dòng trống giữa các câu.)
+
+CHỈ ĐƯỢC ĐỔI NHÃN
+- Đánh số lại thành Câu 1, Câu 2, …
+- a) hoặc 1) thành A. B. C.
+- Đáp án lấy từ dấu trong gốc (in đậm, ✓, "(đúng)") hoặc bảng đáp án cuối ("1-B, 2-C") rồi gắn vào đúng câu.
+- Gốc không có đáp án → Đáp án: ?
+- Câu nhiều đáp án đúng hoặc câu tự luận: không chuyển. Liệt kê nguyên văn bên ngoài khối kết quả.
+
+${STRUCTURE_GUIDE}
+
+CÁCH TRẢ KẾT QUẢ
+- Toàn bộ kết quả nằm trong MỘT khối ${FENCE}markdown. Không chữ nào ngoài khối, trừ danh sách câu không chuyển được.
+- Bài dài: dừng ở hết một câu, đóng khối, viết <<<CÒN TIẾP>>>. Khi tôi nhắn "tiếp", tiếp tục từ câu kế, không lặp.
+- Tự kiểm: số câu trắc nghiệm bằng số câu một đáp án trong gốc.
+
+--- BỘ CÂU GỐC ---
+[DÁN VÀO ĐÂY]`;
+
+export const LEARN_DISCUSSION_FORMAT_PROMPT = `Bạn là công cụ chỉ gắn định dạng cho câu hỏi phản biện và đáp án mẫu. Mọi chữ phải giữ nguyên từng ký tự. Không sửa chính tả, không dịch, không rút gọn, không thêm câu hay tự viết đáp án.
+
+MẪU
+Câu 1: …
+
+Đáp án mẫu:
+…
+
+- Nhãn gốc "Gợi ý trả lời", "Hướng dẫn", "Trả lời", "Đáp án" → đổi thành "Đáp án mẫu:" (chỉ nhãn được đổi).
+- Câu không có đáp án trong gốc → để "Đáp án mẫu:" trống, không tự viết.
+- Tiêu đề nhóm câu → một dòng ## ngay trước câu đầu của nhóm.
+
+${STRUCTURE_GUIDE}
+- Trong đáp án: đoạn cách nhau một dòng trống.
+
+CÁCH TRẢ KẾT QUẢ
+- Toàn bộ kết quả nằm trong MỘT khối ${FENCE}markdown. Không chữ nào ngoài khối.
+- Bài dài: dừng ở hết một câu, đóng khối, viết <<<CÒN TIẾP>>>. Khi tôi nhắn "tiếp", tiếp tục từ câu kế, không lặp.
+- Tự kiểm: số câu bằng gốc, không có câu nào do bạn viết.
+
+--- CÂU HỎI GỐC ---
+[DÁN VÀO ĐÂY]`;

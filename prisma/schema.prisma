@@ -1302,6 +1302,8 @@ enum LearnCourseLevel {
 enum LearnSectionType {
   READING
   QUIZ
+  PRACTICE
+  DISCUSSION
 }
 
 model LearnCourse {
@@ -1351,8 +1353,10 @@ model LearnSection {
   markdown        String           @default("") @db.Text
   /// { question, options[], correctIndex, explanation } shown inside a reading section.
   checkpoint      Json?
-  /// { passingScorePercent, timeLimitMinutes?, questions[] } for QUIZ sections.
+  /// { passingScorePercent, timeLimitMinutes?, questions[] } for QUIZ and PRACTICE sections.
   quiz            Json?
+  /// { questions: [{ id, question, answer }] } for DISCUSSION sections.
+  discussion      Json?
   position        Int              @default(0)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -1374,6 +1378,7 @@ model LearnSectionRevision {
   keyTakeaways String[] @default([])
   checkpoint   Json?
   quiz         Json?
+  discussion   Json?
   reason       String   @default("autosave")
   createdAt    DateTime @default(now())
 

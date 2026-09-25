@@ -7,7 +7,16 @@ import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
 import type { LearnCurriculumLesson } from '@/features/learn/progress';
 
-import { LearnIcon } from './LearnIcon';
+import { LEARN_SECTION_KIND_SHORT, type LearnSectionKind } from '@/features/learn/types';
+
+import { LearnIcon, type LearnIconName } from './LearnIcon';
+
+const SECTION_ICONS: Record<LearnSectionKind, LearnIconName> = {
+	READING: 'reading',
+	QUIZ: 'quiz',
+	PRACTICE: 'practice',
+	DISCUSSION: 'discussion',
+};
 
 /**
  * Lesson accordion with per-section status. The overview shows it full width; the player
@@ -118,8 +127,8 @@ export default function LearnCurriculum({
 												<span className="ln-item__body">
 													<span className="ln-item__title">{section.title}</span>
 													<span className="ln-item__meta">
-														<LearnIcon name={section.type === 'QUIZ' ? 'quiz' : 'reading'} size={13} />
-														{section.type === 'QUIZ' ? 'Kiểm tra' : 'Bài đọc'} · {section.minutes} phút
+														<LearnIcon name={SECTION_ICONS[section.type]} size={13} />
+														{LEARN_SECTION_KIND_SHORT[section.type]} · {section.minutes} phút
 														{section.hasNote ? (
 															<span className="ln-item__note" title="Có ghi chú">
 																<LearnIcon name="note" size={13} />

@@ -7,7 +7,7 @@ import { autoSectionRawText, parseCourseMarkdown, planContentReplace } from '@/f
 import { LEARN_MARKDOWN_GUIDE, LEARN_REFORMAT_PROMPT } from '@/features/learn/prompts';
 import { LEARN_MAX_MARKDOWN } from '@/features/learn/schemas';
 import { compareLectureText, countPlaces, wordDiff, type TextHunk } from '@/features/learn/textFidelity';
-import type { LearnQuiz, LearnStudioLesson } from '@/features/learn/types';
+import { LEARN_SECTION_KIND_SHORT, type LearnQuiz, type LearnDiscussion, type LearnStudioLesson } from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
 import StudioDialog from './StudioDialog';
@@ -20,12 +20,15 @@ function fingerprint(section: {
 	markdown: string;
 	keyTakeaways?: string[];
 	quiz?: LearnQuiz | null;
+	discussion?: LearnDiscussion | null;
 }): string {
 	const questions =
 		section.quiz?.questions
 			.map((question) => [question.question, ...question.options, question.explanation].filter(Boolean).join('\n'))
 			.join('\n\n') ?? '';
-	return [section.title, section.summary, section.markdown, ...(section.keyTakeaways ?? []), questions].join('\n');
+	const prompts =
+		section.discussion?.questions.map((question) => [question.question, question.answer].filter(Boolean).join('\n')).join('\n\n') ?? '';
+	return [section.title, section.summary, section.markdown, ...(section.keyTakeaways ?? []), questions, prompts].join('\n');
 }
 
 export default function ImportLessonDialog({
@@ -260,7 +263,7 @@ export default function ImportLessonDialog({
 											<span className="ln-preview__index tabular-nums">{index + 1}</span>
 											<span className="min-w-0 flex-1">
 												<span className="block font-medium">
-													{section.type === 'QUIZ' ? 'Kiểm tra · ' : ''}
+													{section.type !== 'READING' ? `${LEARN_SECTION_KIND_SHORT[section.type]} · ` : ''}
 													{section.title}
 												</span>
 												{section.summary ? (
@@ -268,9 +271,11 @@ export default function ImportLessonDialog({
 												) : null}
 											</span>
 											<span className="text-xs text-ink-secondary tabular-nums">
-												{section.type === 'QUIZ'
+												{section.type === 'QUIZ' || section.type === 'PRACTICE'
 													? `${section.quiz?.questions.length ?? 0} câu`
-													: `${section.wordCount} từ · ${formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}`}
+													: section.type === 'DISCUSSION'
+														? `${section.discussion?.questions.length ?? 0} câu`
+														: `${section.wordCount} từ · ${formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}`}
 											</span>
 										</li>
 									))}

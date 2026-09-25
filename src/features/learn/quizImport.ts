@@ -14,11 +14,13 @@ import type { LearnQuizQuestion } from './types';
 export interface QuizPasteResult {
 	questions: LearnQuizQuestion[];
 	warnings: string[];
+	/** Question ids whose answer was missing or did not match an option. */
+	missingAnswer: string[];
 }
 
 const QUESTION_RE = /^(?:\*\*)?(?:câu(?:\s+hỏi)?\s*\d+|question\s*\d+|q\d*|\d+)\s*[:.)]\s*(?:\*\*)?\s*(.*)$/i;
 const OPTION_RE = /^([*✓✔]\s*)?([A-Ha-h])\s*[.)]\s+(.*)$/;
-const ANSWER_RE = /^(?:\*\*)?(?:đáp\s*án(?:\s*đúng)?|answer|correct)\s*[:：]\s*(?:\*\*)?\s*([A-Ha-h])\b/i;
+const ANSWER_RE = /^(?:\*\*)?(?:đáp\s*án(?:\s*đúng)?|answer|correct)\s*[:：]\s*(?:\*\*)?\s*([A-Ha-h]|\?)\b/i;
 const EXPLANATION_RE = /^(?:\*\*)?(?:giải\s*thích|explanation|lý\s*do)\s*[:：]\s*(?:\*\*)?\s*(.*)$/i;
 const CORRECT_SUFFIX_RE = /\s*(?:\((?:đúng|correct)\)|✓|✔)\s*$/i;
 
@@ -28,6 +30,7 @@ interface Draft {
 	correctIndex: number;
 	explanation: string[];
 	stage: 'question' | 'options' | 'explanation';
+	missingAnswer: boolean;
 }
 
 function emptyDraft(firstLine = ''): Draft {
@@ -37,17 +40,19 @@ function emptyDraft(firstLine = ''): Draft {
 		correctIndex: -1,
 		explanation: [],
 		stage: 'question',
+		missingAnswer: false,
 	};
 }
 
 export function parseQuizPaste(raw: string): QuizPasteResult {
 	const warnings: string[] = [];
 	const questions: LearnQuizQuestion[] = [];
+	const missingAnswer: string[] = [];
 	let draft: Draft | null = null;
 
 	const flush = () => {
 		if (!draft) return;
-		const question = draft.question.join(' ').trim();
+		const question = draft.question.join('\n').trim();
 		if (!question && !draft.options.length) {
 			draft = null;
 			return;
@@ -57,20 +62,25 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 			warnings.push(`${label}: cần ít nhất 2 phương án, đã bỏ qua.`);
 		} else {
 			let correctIndex = draft.correctIndex;
+			let unanswered = draft.missingAnswer;
 			if (correctIndex < 0) {
-				warnings.push(`${label}: chưa đánh dấu đáp án đúng, tạm chọn A.`);
+				warnings.push(`${label}: thiếu đáp án.`);
 				correctIndex = 0;
+				unanswered = true;
 			} else if (correctIndex >= draft.options.length) {
 				const letter = String.fromCharCode(65 + correctIndex);
-				warnings.push(`${label}: đáp án "${letter}" không khớp phương án nào, tạm chọn A.`);
+				warnings.push(`${label}: đáp án "${letter}" không khớp phương án nào.`);
 				correctIndex = 0;
+				unanswered = true;
 			}
+			const id = newQuestionId();
+			if (unanswered) missingAnswer.push(id);
 			questions.push({
-				id: newQuestionId(),
+				id,
 				question,
 				options: draft.options,
 				correctIndex,
-				explanation: draft.explanation.join(' ').trim(),
+				explanation: draft.explanation.join('\n').replace(/\n{3,}/g, '\n\n').trim(),
 			});
 		}
 		draft = null;
@@ -78,11 +88,15 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 
 	for (const rawLine of raw.replace(/\r\n?/g, '\n').split('\n')) {
 		const line = rawLine.trim();
-		if (!line) continue;
+		if (!line) {
+			if (draft?.stage === 'explanation') draft.explanation.push('');
+			continue;
+		}
 
 		const answer = line.match(ANSWER_RE);
 		if (answer && draft) {
-			draft.correctIndex = answer[1].toUpperCase().charCodeAt(0) - 65;
+			if (answer[1] === '?') draft.missingAnswer = true;
+			else draft.correctIndex = answer[1].toUpperCase().charCodeAt(0) - 65;
 			draft.stage = 'explanation';
 			continue;
 		}
@@ -120,5 +134,5 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 	}
 	flush();
 
-	return { questions, warnings };
+	return { questions, warnings, missingAnswer };
 }

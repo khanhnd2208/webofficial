@@ -10,6 +10,7 @@ import {
 	quizForLearner,
 	quizKey,
 	readCheckpoint,
+	readDiscussion,
 	readQuiz,
 	readQuizResult,
 	sectionMinutes,
@@ -63,12 +64,13 @@ function mapMeta(row: Prisma.LearnCourseGetPayload<{ select: typeof courseMetaSe
 	return { ...row, updatedAt: row.updatedAt.toISOString() };
 }
 
-function minutesOf(section: Pick<LearnSection, 'type' | 'durationMinutes' | 'markdown' | 'quiz'>) {
+function minutesOf(section: Pick<LearnSection, 'type' | 'durationMinutes' | 'markdown' | 'quiz' | 'discussion'>) {
 	return sectionMinutes({
 		type: section.type,
 		durationMinutes: section.durationMinutes,
 		markdown: section.markdown,
 		quiz: readQuiz(section.quiz),
+		discussion: readDiscussion(section.discussion),
 	});
 }
 
@@ -84,6 +86,7 @@ function mapStudioSection(section: LearnSection): LearnStudioSection {
 		markdown: section.markdown,
 		checkpoint: readCheckpoint(section.checkpoint),
 		quiz: readQuiz(section.quiz),
+		discussion: readDiscussion(section.discussion),
 		updatedAt: section.updatedAt.toISOString(),
 	};
 }
@@ -138,7 +141,7 @@ export async function listLearnCourses(viewer: LearnViewer): Promise<LearnCourse
 				select: {
 					sections: {
 						orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
-						select: { id: true, type: true, durationMinutes: true, markdown: true, quiz: true },
+						select: { id: true, type: true, durationMinutes: true, markdown: true, quiz: true, discussion: true },
 					},
 				},
 			},
@@ -249,6 +252,8 @@ export async function getLearnReaderSection(
 		checkpoint: readCheckpoint(section.checkpoint),
 		quiz: section.type === 'QUIZ' && quiz ? quizForLearner(quiz) : null,
 		review: section.type === 'QUIZ' ? reviewFor(section, section.progress[0]?.quizResult) : null,
+		practice: section.type === 'PRACTICE' && quiz ? quiz.questions : null,
+		discussion: section.type === 'DISCUSSION' ? readDiscussion(section.discussion) : null,
 	};
 }
 
@@ -407,16 +412,16 @@ function assertSectionsFit(sections: ImportedSection[]) {
 }
 
 function sectionData(section: ImportedSection, position: number) {
-	const isQuiz = section.type === 'QUIZ';
 	return {
 		type: section.type,
 		title: section.title.slice(0, 200),
 		summary: section.summary.slice(0, 2_000),
-		markdown: isQuiz ? '' : section.markdown,
+		markdown: section.type === 'READING' ? section.markdown : '',
 		durationMinutes: section.durationMinutes,
 		keyTakeaways: section.keyTakeaways,
 		checkpoint: jsonOrNull(section.checkpoint),
 		quiz: jsonOrNull(section.quiz),
+		discussion: jsonOrNull(section.discussion),
 		position,
 	};
 }
@@ -457,16 +462,25 @@ export async function createLearnSection(
 	const lesson = await prisma.learnLesson.findUnique({ where: { id: lessonId }, select: { id: true } });
 	if (!lesson) throw new AppError('Không tìm thấy bài học', 404);
 	const last = await prisma.learnSection.aggregate({ where: { lessonId }, _max: { position: true } });
-	const isQuiz = input.type === 'QUIZ';
+	const title =
+		input.title ??
+		(input.type === 'QUIZ'
+			? 'Bài kiểm tra'
+			: input.type === 'PRACTICE'
+				? 'Luyện tập'
+				: input.type === 'DISCUSSION'
+					? 'Câu hỏi phản biện'
+					: 'Mục mới');
 	const section = await prisma.learnSection.create({
 		data: {
 			lessonId,
 			type: input.type,
-			title: input.title ?? (isQuiz ? 'Bài kiểm tra' : 'Mục mới'),
+			title,
 			position: (last._max.position ?? -1) + 1,
-			...(isQuiz
+			...((input.type === 'QUIZ' || input.type === 'PRACTICE')
 				? { quiz: { passingScorePercent: 70, timeLimitMinutes: null, questions: [] } }
 				: {}),
+			...(input.type === 'DISCUSSION' ? { discussion: { questions: [] } } : {}),
 		},
 	});
 	return mapStudioSection(section);
@@ -500,6 +514,7 @@ async function snapshotSection(
 			keyTakeaways: current.keyTakeaways,
 			checkpoint: current.checkpoint === null ? Prisma.DbNull : (current.checkpoint as Prisma.InputJsonValue),
 			quiz: current.quiz === null ? Prisma.DbNull : (current.quiz as Prisma.InputJsonValue),
+			discussion: current.discussion === null ? Prisma.DbNull : (current.discussion as Prisma.InputJsonValue),
 			reason,
 		},
 	});
@@ -518,11 +533,11 @@ export async function updateLearnSection(
 	id: string,
 	input: UpdateLearnSectionInput,
 ): Promise<LearnStudioSection> {
-	const contentTouched = ['markdown', 'title', 'summary', 'keyTakeaways', 'checkpoint', 'quiz'].some(
+	const contentTouched = ['markdown', 'title', 'summary', 'keyTakeaways', 'checkpoint', 'quiz', 'discussion'].some(
 		(key) => key in input,
 	);
 	if (contentTouched) await snapshotSection(id, 'autosave', false);
-	const { checkpoint, quiz, ...rest } = input;
+	const { checkpoint, quiz, discussion, ...rest } = input;
 	const section = await prisma.learnSection
 		.update({
 			where: { id },
@@ -530,6 +545,7 @@ export async function updateLearnSection(
 				...rest,
 				...(checkpoint !== undefined ? { checkpoint: jsonOrNull(checkpoint) } : {}),
 				...(quiz !== undefined ? { quiz: jsonOrNull(quiz) } : {}),
+				...(discussion !== undefined ? { discussion: jsonOrNull(discussion) } : {}),
 			},
 		})
 		.catch(notFound('Không tìm thấy mục học'));
@@ -646,6 +662,7 @@ export async function importLearnMarkdown(
 							keyTakeaways: data.keyTakeaways,
 							checkpoint: data.checkpoint,
 							quiz: data.quiz,
+							discussion: data.discussion,
 							position: index,
 						},
 					});
@@ -694,6 +711,7 @@ export async function restoreSectionRevision(sectionId: string, revisionId: stri
 				keyTakeaways: revision.keyTakeaways,
 				checkpoint: revision.checkpoint === null ? Prisma.DbNull : (revision.checkpoint as Prisma.InputJsonValue),
 				quiz: revision.quiz === null ? Prisma.DbNull : (revision.quiz as Prisma.InputJsonValue),
+				discussion: revision.discussion === null ? Prisma.DbNull : (revision.discussion as Prisma.InputJsonValue),
 			},
 		})
 		.catch(notFound('Không tìm thấy mục học'));

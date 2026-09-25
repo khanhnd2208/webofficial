@@ -4,6 +4,8 @@ const PATHS = {
 	book: 'M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5',
 	reading: 'M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z',
 	quiz: 'M9 4h6l1 2h3v15H5V6h3zM9 12l2 2 4-4M9 17h6',
+	practice: 'M8 4h8v16H8zM8 8h8M10 12l1.2 1.2L14 10.5M10 16h4',
+	discussion: 'M5 5h10a2 2 0 0 1 2 2v5H8l-3 3V7a2 2 0 0 1 2-2zM11 15h6l3 3v-6a2 2 0 0 0-2-2h-1',
 	clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
 	layers: 'M12 3 3 8l9 5 9-5zM3 13l9 5 9-5',
 	check: 'M5 12.5l4.5 4.5L19 7.5',

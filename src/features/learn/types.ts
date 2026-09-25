@@ -1,7 +1,22 @@
 import type { PublishStatus } from '@prisma/client';
 
 export type LearnLevel = 'BASIC' | 'INTERMEDIATE' | 'ADVANCED';
-export type LearnSectionKind = 'READING' | 'QUIZ';
+export type LearnSectionKind = 'READING' | 'QUIZ' | 'PRACTICE' | 'DISCUSSION';
+
+export const LEARN_SECTION_KIND_LABELS: Record<LearnSectionKind, string> = {
+	READING: 'Bài đọc',
+	QUIZ: 'Bài kiểm tra',
+	PRACTICE: 'Luyện tập',
+	DISCUSSION: 'Phản biện',
+};
+
+/** Shorter labels for outlines and import previews. */
+export const LEARN_SECTION_KIND_SHORT: Record<LearnSectionKind, string> = {
+	READING: 'Bài đọc',
+	QUIZ: 'Kiểm tra',
+	PRACTICE: 'Luyện tập',
+	DISCUSSION: 'Phản biện',
+};
 
 export const LEARN_LEVEL_LABELS: Record<LearnLevel, string> = {
 	BASIC: 'Cơ bản',
@@ -28,6 +43,18 @@ export interface LearnQuiz {
 	passingScorePercent: number;
 	timeLimitMinutes: number | null;
 	questions: LearnQuizQuestion[];
+}
+
+export interface LearnDiscussionQuestion {
+	id: string;
+	/** Markdown. */
+	question: string;
+	/** Markdown sample answer. */
+	answer: string;
+}
+
+export interface LearnDiscussion {
+	questions: LearnDiscussionQuestion[];
 }
 
 /** Quiz as a learner sees it before submitting: no answers, no explanations. */
@@ -113,6 +140,9 @@ export interface LearnReaderSection {
 	checkpoint: LearnCheckpoint | null;
 	quiz: LearnQuizForLearner | null;
 	review: LearnQuizReview | null;
+	/** Full questions, including the answer key. Practice reveals it as soon as the learner picks. */
+	practice: LearnQuizQuestion[] | null;
+	discussion: LearnDiscussion | null;
 }
 
 /** Full editable section for the studio. */
@@ -127,6 +157,7 @@ export interface LearnStudioSection {
 	markdown: string;
 	checkpoint: LearnCheckpoint | null;
 	quiz: LearnQuiz | null;
+	discussion: LearnDiscussion | null;
 	updatedAt: string;
 }
 

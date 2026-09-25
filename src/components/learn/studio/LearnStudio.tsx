@@ -7,18 +7,20 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'rea
 import { routes } from '@/config/routes';
 import { exportCourseMarkdown } from '@/features/learn/lessonImport';
 import { countPlaces, wordDiff } from '@/features/learn/textFidelity';
-import type {
-	LearnCourseMeta,
-	LearnSectionKind,
-	LearnStudioCourse,
-	LearnStudioLesson,
-	LearnStudioSection,
+import {
+	LEARN_SECTION_KIND_LABELS,
+	type LearnCourseMeta,
+	type LearnSectionKind,
+	type LearnStudioCourse,
+	type LearnStudioLesson,
+	type LearnStudioSection,
 } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
 
 import CourseSettingsDialog, { type CourseSettingsPatch } from './CourseSettingsDialog';
 import { StudioIcon } from './icons';
 import ImportLessonDialog from './ImportLessonDialog';
+import LearnDiscussionEditor from './LearnDiscussionEditor';
 import LearnQuizEditor from './LearnQuizEditor';
 import LearnRichEditor from './LearnRichEditor';
 import StudioDialog from './StudioDialog';
@@ -371,7 +373,7 @@ export default function LearnStudio({
 					{section ? (
 						<div className="ln-studio__page" key={`${section.id}:${editorEpoch}`}>
 							<p className="ln-eyebrow">
-								{section.type === 'QUIZ' ? 'Bài kiểm tra' : 'Bài đọc'} ·{' '}
+								{LEARN_SECTION_KIND_LABELS[section.type]} ·{' '}
 								{lessons.find((lesson) => lesson.id === section.lessonId)?.title}
 							</p>
 							<textarea
@@ -384,11 +386,17 @@ export default function LearnStudio({
 								onChange={(event) => patchSection(section.id, { title: event.target.value.replace(/\n/g, ' ') })}
 								style={{ fieldSizing: 'content' } as React.CSSProperties}
 							/>
-							{section.type === 'QUIZ' ? (
+							{section.type === 'QUIZ' || section.type === 'PRACTICE' ? (
 								<LearnQuizEditor
 									sectionId={section.id}
+									variant={section.type === 'PRACTICE' ? 'practice' : 'quiz'}
 									quiz={section.quiz ?? { passingScorePercent: 70, timeLimitMinutes: null, questions: [] }}
 									onChange={(quiz) => patchSection(section.id, { quiz })}
+								/>
+							) : section.type === 'DISCUSSION' ? (
+								<LearnDiscussionEditor
+									discussion={section.discussion ?? { questions: [] }}
+									onChange={(discussion) => patchSection(section.id, { discussion })}
 								/>
 							) : (
 								<LearnRichEditor

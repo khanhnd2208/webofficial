@@ -3,122 +3,34 @@
 import { useState } from 'react';
 
 import { newQuestionId } from '@/features/learn/content';
-import { LEARN_QUIZ_PROMPT } from '@/features/learn/prompts';
+import { LEARN_PRACTICE_FORMAT_PROMPT, LEARN_QUIZ_PROMPT } from '@/features/learn/prompts';
 import { parseQuizPaste } from '@/features/learn/quizImport';
 import type { LearnQuiz, LearnQuizQuestion } from '@/features/learn/types';
 
+import AutoTextarea from './AutoTextarea';
 import { StudioIcon } from './icons';
 import OptionListEditor from './OptionListEditor';
-import StudioDialog from './StudioDialog';
-import { useCopy } from './useCopy';
+import QuestionPasteDialog from './QuestionPasteDialog';
 
 function emptyQuestion(): LearnQuizQuestion {
 	return { id: newQuestionId(), question: '', options: ['', '', '', ''], correctIndex: 0, explanation: '' };
-}
-
-function AutoTextarea({
-	value,
-	onChange,
-	placeholder,
-	className,
-}: {
-	value: string;
-	onChange: (value: string) => void;
-	placeholder: string;
-	className: string;
-}) {
-	return (
-		<textarea
-			className={className}
-			value={value}
-			placeholder={placeholder}
-			rows={1}
-			onChange={(event) => onChange(event.target.value)}
-			style={{ fieldSizing: 'content' } as React.CSSProperties}
-		/>
-	);
-}
-
-function QuizPasteDialog({ onClose, onAdd }: { onClose: () => void; onAdd: (questions: LearnQuizQuestion[]) => void }) {
-	const [text, setText] = useState('');
-	const parsed = parseQuizPaste(text);
-	const { copied, copy } = useCopy();
-
-	return (
-		<StudioDialog
-			title="Dán nhiều câu hỏi"
-			onClose={onClose}
-			footer={
-				<>
-					<button type="button" className="ln-btn" onClick={onClose}>
-						Hủy
-					</button>
-					<button
-						type="button"
-						className="ln-btn ln-btn--primary"
-						disabled={!parsed.questions.length}
-						onClick={() => onAdd(parsed.questions)}
-					>
-						Thêm {parsed.questions.length || ''} câu
-					</button>
-				</>
-			}
-		>
-			<div className="ln-split">
-				<div className="flex min-h-0 flex-col gap-2">
-					<div className="flex items-center justify-between gap-2">
-						<p className="text-sm text-ink-secondary">Mỗi câu: câu hỏi, các dòng A. B. C., rồi “Đáp án: B”.</p>
-						<button type="button" className="ln-link-btn" onClick={() => copy(LEARN_QUIZ_PROMPT)}>
-							<StudioIcon name="copy" size={14} /> {copied ? 'Đã chép prompt' : 'Chép prompt AI'}
-						</button>
-					</div>
-					<textarea
-						autoFocus
-						className="ln-editor__source min-h-[18rem] flex-1"
-						value={text}
-						onChange={(event) => setText(event.target.value)}
-						placeholder={'Câu 1: Mâu thuẫn biện chứng là gì?\nA. Sai sót của tư duy\nB. Nguồn gốc của vận động\nC. Hiện tượng ngẫu nhiên\nĐáp án: B\nGiải thích: …'}
-					/>
-				</div>
-				<div className="ln-preview">
-					<p className="ln-preview__label">Xem trước · {parsed.questions.length} câu</p>
-					{parsed.warnings.map((warning) => (
-						<p key={warning} className="ln-warning">
-							{warning}
-						</p>
-					))}
-					<ol className="ln-preview__list">
-						{parsed.questions.map((question, index) => (
-							<li key={question.id}>
-								<p className="font-medium">
-									{index + 1}. {question.question || <em>(chưa có câu hỏi)</em>}
-								</p>
-								<ul>
-									{question.options.map((option, optionIndex) => (
-										<li key={optionIndex} data-correct={optionIndex === question.correctIndex ? 'true' : undefined}>
-											{'ABCDEFGH'[optionIndex]}. {option}
-										</li>
-									))}
-								</ul>
-							</li>
-						))}
-					</ol>
-				</div>
-			</div>
-		</StudioDialog>
-	);
 }
 
 export default function LearnQuizEditor({
 	sectionId,
 	quiz,
 	onChange,
+	variant = 'quiz',
 }: {
 	sectionId: string;
 	quiz: LearnQuiz;
 	onChange: (quiz: LearnQuiz) => void;
+	variant?: 'quiz' | 'practice';
 }) {
 	const [pasteOpen, setPasteOpen] = useState(false);
+	const [pasteText, setPasteText] = useState('');
+	const parsed = parseQuizPaste(pasteText);
+	const missing = new Set(parsed.missingAnswer);
 
 	function setQuestions(questions: LearnQuizQuestion[]) {
 		onChange({ ...quiz, questions });
@@ -145,6 +57,7 @@ export default function LearnQuizEditor({
 
 	return (
 		<div className="ln-quizedit">
+			{variant === 'quiz' ? (
 			<div className="ln-quizedit__settings">
 				<label>
 					<span>Điểm đạt</span>
@@ -180,6 +93,9 @@ export default function LearnQuizEditor({
 				</label>
 				<span className="ml-auto text-sm text-ink-secondary tabular-nums">{quiz.questions.length} câu hỏi</span>
 			</div>
+			) : (
+				<p className="text-sm text-ink-secondary">{quiz.questions.length} câu · học viên thấy đáp án ngay khi chọn</p>
+			)}
 
 			{quiz.questions.length ? (
 				<ol className="ln-qlist">
@@ -237,7 +153,7 @@ export default function LearnQuizEditor({
 							<AutoTextarea
 								className="ln-qcard__explain"
 								value={question.explanation}
-								placeholder="Giải thích đáp án (hiện sau khi nộp bài)"
+								placeholder={variant === 'practice' ? 'Giải thích (hiện ngay khi học viên chọn)' : 'Giải thích đáp án (hiện sau khi nộp bài)'}
 								onChange={(value) => update(index, { explanation: value })}
 							/>
 						</li>
@@ -257,12 +173,46 @@ export default function LearnQuizEditor({
 			</div>
 
 			{pasteOpen ? (
-				<QuizPasteDialog
+				<QuestionPasteDialog
+					title="Dán nhiều câu hỏi"
+					hint="Mỗi câu: câu hỏi, các dòng A. B. C., rồi “Đáp án: B”."
+					placeholder={'Câu 1: Mâu thuẫn biện chứng là gì?\nA. Sai sót của tư duy\nB. Nguồn gốc của vận động\nĐáp án: B\nGiải thích: …'}
+					formatPrompt={LEARN_PRACTICE_FORMAT_PROMPT}
+					composePrompt={variant === 'quiz' ? LEARN_QUIZ_PROMPT : undefined}
+					text={pasteText}
+					onText={setPasteText}
+					warnings={parsed.warnings}
+					missingCount={parsed.missingAnswer.length}
+					canAdd={parsed.questions.length > 0}
+					addLabel={`Thêm ${parsed.questions.length || ''} câu`}
 					onClose={() => setPasteOpen(false)}
-					onAdd={(questions) => {
-						setQuestions([...quiz.questions, ...questions]);
+					onAdd={() => {
+						setQuestions([...quiz.questions, ...parsed.questions]);
+						setPasteText('');
 						setPasteOpen(false);
 					}}
+					preview={
+						<>
+							<p className="ln-preview__label">Xem trước · {parsed.questions.length} câu</p>
+							<ol className="ln-preview__list">
+								{parsed.questions.map((question, index) => (
+									<li key={question.id} data-missing={missing.has(question.id) ? 'true' : undefined}>
+										<p className="font-medium">
+											{index + 1}. {question.question || <em>(chưa có câu hỏi)</em>}
+											{missing.has(question.id) ? <span className="ln-warning"> · thiếu đáp án</span> : null}
+										</p>
+										<ul>
+											{question.options.map((option, optionIndex) => (
+												<li key={optionIndex} data-correct={!missing.has(question.id) && optionIndex === question.correctIndex ? 'true' : undefined}>
+													{'ABCDEFGH'[optionIndex]}. {option}
+												</li>
+											))}
+										</ul>
+									</li>
+								))}
+							</ol>
+						</>
+					}
 				/>
 			) : null}
 		</div>

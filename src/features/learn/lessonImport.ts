@@ -12,10 +12,11 @@
  */
 
 import { countWords } from './content';
+import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
 import { findExternalImages } from './images';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
-import type { LearnCheckpoint, LearnQuiz, LearnSectionKind } from './types';
+import type { LearnCheckpoint, LearnDiscussion, LearnQuiz, LearnSectionKind } from './types';
 
 export interface ImportedSection {
 	title: string;
@@ -27,6 +28,7 @@ export interface ImportedSection {
 	keyTakeaways: string[];
 	checkpoint: LearnCheckpoint | null;
 	quiz: LearnQuiz | null;
+	discussion: LearnDiscussion | null;
 }
 
 export interface ImportedLesson {
@@ -37,7 +39,15 @@ export interface ImportedLesson {
 }
 
 const SECTION_DELIMITER_RE =
-	/^(?:={3,}|-{3,}|#{2,3})\s*(SECTION|MỤC|PHẦN|QUIZ)\s*:\s*(.+?)(?:\s*(?:={3,}|-{3,}))?$/i;
+	/^(?:={3,}|-{3,}|#{2,3})\s*(SECTION|MỤC|PHẦN|QUIZ|KIỂM\s*TRA|KIEM\s*TRA|PRACTICE|LUYỆN\s*TẬP|LUYEN\s*TAP|DISCUSSION|PHẢN\s*BIỆN|PHAN\s*BIEN)\s*:\s*(.+?)(?:\s*(?:={3,}|-{3,}))?$/i;
+
+function sliceKind(label: string): LearnSectionKind {
+	const key = label.toLocaleLowerCase('vi').replace(/\s+/g, '');
+	if (key === 'quiz' || key === 'kiểmtra' || key === 'kiemtra') return 'QUIZ';
+	if (key === 'practice' || key === 'luyệntập' || key === 'luyentap') return 'PRACTICE';
+	if (key === 'discussion' || key === 'phảnbiện' || key === 'phanbien') return 'DISCUSSION';
+	return 'READING';
+}
 
 function isPlainQuote(line: string): boolean {
 	return line.startsWith('>') && !/^>\s*\[!/.test(line);
@@ -109,7 +119,7 @@ function splitTitleAndDuration(titleLine: string): { title: string; durationMinu
 
 interface Slice {
 	titleLine: string;
-	kind: 'READING' | 'QUIZ';
+	kind: LearnSectionKind;
 	start: number;
 }
 
@@ -180,6 +190,7 @@ function readingSection(title: string, durationMinutes: number | null, summary: 
 		keyTakeaways: takeaways.body ? takeawayItems(takeaways.body) : [],
 		checkpoint: checkpoint.body ? parseCheckpoint(checkpoint.body) : null,
 		quiz: null,
+		discussion: null,
 	};
 }
 
@@ -216,7 +227,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 	lines.forEach((line, index) => {
 		if (fenceMask[index]) return;
 		const match = line.trim().match(SECTION_DELIMITER_RE);
-		if (match) slices.push({ titleLine: match[2].trim(), kind: /^quiz$/i.test(match[1]) ? 'QUIZ' : 'READING', start: index });
+		if (match) slices.push({ titleLine: match[2].trim(), kind: sliceKind(match[1]), start: index });
 	});
 
 	if (!slices.length) {
@@ -297,7 +308,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 
 		const markdown = escapeYearLikeListMarkers(body, bodyMask).join('\n').trim();
 		const sectionTitle = title || `Mục ${sections.length + 1}`;
-		if (slice.kind === 'QUIZ') {
+		if (slice.kind === 'QUIZ' || slice.kind === 'PRACTICE') {
 			const pasted = parseQuizPaste(markdown);
 			for (const warning of pasted.warnings) warnings.push(`"${sectionTitle}": ${warning}`);
 			sections.push({
@@ -305,15 +316,33 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 				durationMinutes,
 				summary,
 				markdown: '',
-				wordCount: 0,
-				type: 'QUIZ',
+				wordCount: pasted.questions.reduce((sum, question) => sum + countWords(question.question), 0),
+				type: slice.kind,
 				keyTakeaways: [],
 				checkpoint: null,
 				quiz: {
 					passingScorePercent: 70,
-					timeLimitMinutes: durationMinutes,
+					timeLimitMinutes: slice.kind === 'QUIZ' ? durationMinutes : null,
 					questions: pasted.questions,
 				},
+				discussion: null,
+			});
+			return;
+		}
+		if (slice.kind === 'DISCUSSION') {
+			const pasted = parseDiscussionPaste(markdown);
+			for (const warning of pasted.warnings) warnings.push(`"${sectionTitle}": ${warning}`);
+			sections.push({
+				title: sectionTitle,
+				durationMinutes,
+				summary,
+				markdown: '',
+				wordCount: pasted.questions.reduce((sum, question) => sum + countWords(`${question.question}\n${question.answer}`), 0),
+				type: 'DISCUSSION',
+				keyTakeaways: [],
+				checkpoint: null,
+				quiz: null,
+				discussion: { questions: pasted.questions },
 			});
 			return;
 		}
@@ -343,7 +372,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
  */
 export function autoSectionRawText(raw: string, fallbackTitle = 'Bài học mới'): string {
 	const trimmed = raw.trim();
-	if (!trimmed || /^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ)\s*:/im.test(trimmed)) return trimmed;
+	if (!trimmed || /^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ|PRACTICE|DISCUSSION|LUYỆN\s*TẬP|PHẢN\s*BIỆN|KIỂM\s*TRA)\s*:/im.test(trimmed)) return trimmed;
 
 	const lines = trimmed.replace(/\r\n?/g, '\n').split('\n');
 	let lessonTitle = fallbackTitle;
@@ -527,6 +556,7 @@ export interface ExportableSection {
 	keyTakeaways: string[];
 	checkpoint: LearnCheckpoint | null;
 	quiz: LearnQuiz | null;
+	discussion: LearnDiscussion | null;
 }
 
 export interface ExportableLesson {
@@ -540,12 +570,16 @@ export function exportLessonMarkdown(lesson: ExportableLesson): string {
 	if (lesson.description.trim()) lines.push(`> ${lesson.description.trim()}`);
 	for (const section of lesson.sections) {
 		lines.push('');
-		const kind = section.type === 'QUIZ' ? 'QUIZ' : 'SECTION';
+		const kind = section.type === 'READING' ? 'SECTION' : section.type;
 		const minutes = section.type === 'QUIZ' ? section.quiz?.timeLimitMinutes ?? section.durationMinutes : section.durationMinutes;
 		lines.push(`=== ${kind}: ${section.title}${durationLabel(minutes)} ===`);
 		if (section.summary.trim()) lines.push(`> ${section.summary.trim()}`);
-		if (section.type === 'QUIZ' && section.quiz) {
+		if ((section.type === 'QUIZ' || section.type === 'PRACTICE') && section.quiz) {
 			lines.push('', quizMarkdown(section.quiz));
+			continue;
+		}
+		if (section.type === 'DISCUSSION' && section.discussion) {
+			lines.push('', discussionMarkdown(section.discussion));
 			continue;
 		}
 		if (section.keyTakeaways.length) {
