@@ -1,16 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-
 import { newQuestionId } from '@/features/learn/content';
-import { LEARN_PRACTICE_FORMAT_PROMPT, LEARN_QUIZ_PROMPT } from '@/features/learn/prompts';
-import { parseQuizPaste } from '@/features/learn/quizImport';
 import type { LearnQuiz, LearnQuizQuestion } from '@/features/learn/types';
 
 import AutoTextarea from './AutoTextarea';
 import { StudioIcon } from './icons';
 import OptionListEditor from './OptionListEditor';
-import QuestionPasteDialog from './QuestionPasteDialog';
 
 function emptyQuestion(): LearnQuizQuestion {
 	return { id: newQuestionId(), question: '', options: ['', '', '', ''], correctIndex: 0, explanation: '' };
@@ -20,18 +15,15 @@ export default function LearnQuizEditor({
 	sectionId,
 	quiz,
 	onChange,
+	onOpenImport,
 	variant = 'quiz',
 }: {
 	sectionId: string;
 	quiz: LearnQuiz;
 	onChange: (quiz: LearnQuiz) => void;
+	onOpenImport: () => void;
 	variant?: 'quiz' | 'practice';
 }) {
-	const [pasteOpen, setPasteOpen] = useState(false);
-	const [pasteText, setPasteText] = useState('');
-	const parsed = parseQuizPaste(pasteText);
-	const missing = new Set(parsed.missingAnswer);
-
 	function setQuestions(questions: LearnQuizQuestion[]) {
 		onChange({ ...quiz, questions });
 	}
@@ -118,18 +110,6 @@ export default function LearnQuizEditor({
 									</button>
 									<button
 										type="button"
-										className="ln-icon-btn"
-										aria-label="Nhân bản"
-										onClick={() => {
-											const next = [...quiz.questions];
-											next.splice(index + 1, 0, { ...question, id: newQuestionId() });
-											setQuestions(next);
-										}}
-									>
-										<StudioIcon name="duplicate" size={14} />
-									</button>
-									<button
-										type="button"
 										className="ln-icon-btn ln-icon-btn--danger"
 										aria-label="Xóa câu hỏi"
 										onClick={() => setQuestions(quiz.questions.filter((_, i) => i !== index))}
@@ -167,54 +147,10 @@ export default function LearnQuizEditor({
 				<button type="button" className="ln-btn" onClick={addQuestion}>
 					<StudioIcon name="plus" size={14} /> Thêm câu hỏi
 				</button>
-				<button type="button" className="ln-btn" onClick={() => setPasteOpen(true)}>
-					<StudioIcon name="import" size={14} /> Dán nhiều câu
+				<button type="button" className="ln-btn" onClick={onOpenImport}>
+					<StudioIcon name="import" size={14} /> Nhập bằng AI
 				</button>
 			</div>
-
-			{pasteOpen ? (
-				<QuestionPasteDialog
-					title="Dán nhiều câu hỏi"
-					hint="Mỗi câu: câu hỏi, các dòng A. B. C., rồi “Đáp án: B”."
-					placeholder={'Câu 1: Mâu thuẫn biện chứng là gì?\nA. Sai sót của tư duy\nB. Nguồn gốc của vận động\nĐáp án: B\nGiải thích: …'}
-					formatPrompt={LEARN_PRACTICE_FORMAT_PROMPT}
-					composePrompt={variant === 'quiz' ? LEARN_QUIZ_PROMPT : undefined}
-					text={pasteText}
-					onText={setPasteText}
-					warnings={parsed.warnings}
-					missingCount={parsed.missingAnswer.length}
-					canAdd={parsed.questions.length > 0}
-					addLabel={`Thêm ${parsed.questions.length || ''} câu`}
-					onClose={() => setPasteOpen(false)}
-					onAdd={() => {
-						setQuestions([...quiz.questions, ...parsed.questions]);
-						setPasteText('');
-						setPasteOpen(false);
-					}}
-					preview={
-						<>
-							<p className="ln-preview__label">Xem trước · {parsed.questions.length} câu</p>
-							<ol className="ln-preview__list">
-								{parsed.questions.map((question, index) => (
-									<li key={question.id} data-missing={missing.has(question.id) ? 'true' : undefined}>
-										<p className="font-medium">
-											{index + 1}. {question.question || <em>(chưa có câu hỏi)</em>}
-											{missing.has(question.id) ? <span className="ln-warning"> · thiếu đáp án</span> : null}
-										</p>
-										<ul>
-											{question.options.map((option, optionIndex) => (
-												<li key={optionIndex} data-correct={!missing.has(question.id) && optionIndex === question.correctIndex ? 'true' : undefined}>
-													{'ABCDEFGH'[optionIndex]}. {option}
-												</li>
-											))}
-										</ul>
-									</li>
-								))}
-							</ol>
-						</>
-					}
-				/>
-			) : null}
 		</div>
 	);
 }

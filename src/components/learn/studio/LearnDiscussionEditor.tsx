@@ -3,14 +3,11 @@
 import { useState } from 'react';
 
 import { newQuestionId } from '@/features/learn/content';
-import { parseDiscussionPaste } from '@/features/learn/discussionImport';
-import { LEARN_DISCUSSION_FORMAT_PROMPT } from '@/features/learn/prompts';
 import type { LearnDiscussion, LearnDiscussionQuestion } from '@/features/learn/types';
 
 import LearnMarkdown from '../LearnMarkdown';
 import AutoTextarea from './AutoTextarea';
 import { StudioIcon } from './icons';
-import QuestionPasteDialog from './QuestionPasteDialog';
 
 function emptyQuestion(): LearnDiscussionQuestion {
 	return { id: newQuestionId(), question: '', answer: '' };
@@ -19,14 +16,13 @@ function emptyQuestion(): LearnDiscussionQuestion {
 export default function LearnDiscussionEditor({
 	discussion,
 	onChange,
+	onOpenImport,
 }: {
 	discussion: LearnDiscussion;
 	onChange: (discussion: LearnDiscussion) => void;
+	onOpenImport: () => void;
 }) {
-	const [pasteOpen, setPasteOpen] = useState(false);
-	const [pasteText, setPasteText] = useState('');
 	const [previewId, setPreviewId] = useState<string | null>(null);
-	const parsed = parseDiscussionPaste(pasteText);
 
 	function setQuestions(questions: LearnDiscussionQuestion[]) {
 		onChange({ questions });
@@ -68,18 +64,6 @@ export default function LearnDiscussionEditor({
 									</button>
 									<button
 										type="button"
-										className="ln-icon-btn"
-										aria-label="Nhân bản"
-										onClick={() => {
-											const next = [...discussion.questions];
-											next.splice(index + 1, 0, { ...question, id: newQuestionId() });
-											setQuestions(next);
-										}}
-									>
-										<StudioIcon name="duplicate" size={14} />
-									</button>
-									<button
-										type="button"
 										className="ln-icon-btn ln-icon-btn--danger"
 										aria-label="Xóa câu hỏi"
 										onClick={() => setQuestions(discussion.questions.filter((_, i) => i !== index))}
@@ -105,6 +89,7 @@ export default function LearnDiscussionEditor({
 							</button>
 							{previewId === question.id ? (
 								<div className="ln-sample">
+									<LearnMarkdown markdown={question.question || '_Chưa có câu hỏi._'} />
 									<LearnMarkdown markdown={question.answer || '_Chưa có đáp án mẫu._'} />
 								</div>
 							) : null}
@@ -118,45 +103,10 @@ export default function LearnDiscussionEditor({
 				<button type="button" className="ln-btn" onClick={() => setQuestions([...discussion.questions, emptyQuestion()])}>
 					<StudioIcon name="plus" size={14} /> Thêm câu hỏi
 				</button>
-				<button type="button" className="ln-btn" onClick={() => setPasteOpen(true)}>
-					<StudioIcon name="import" size={14} /> Dán nhiều câu
+				<button type="button" className="ln-btn" onClick={onOpenImport}>
+					<StudioIcon name="import" size={14} /> Nhập bằng AI
 				</button>
 			</div>
-			{pasteOpen ? (
-				<QuestionPasteDialog
-					title="Dán câu hỏi phản biện"
-					hint="Mỗi câu: “Câu n: …”, dòng trống, rồi “Đáp án mẫu:”."
-					placeholder={'Câu 1: Vì sao mâu thuẫn là nguồn gốc của vận động?\n\nĐáp án mẫu:\nVì …'}
-					formatPrompt={LEARN_DISCUSSION_FORMAT_PROMPT}
-					text={pasteText}
-					onText={setPasteText}
-					warnings={parsed.warnings}
-					missingCount={parsed.questions.filter((question) => !question.answer.trim()).length}
-					canAdd={parsed.questions.length > 0}
-					addLabel={`Thêm ${parsed.questions.length || ''} câu`}
-					onClose={() => setPasteOpen(false)}
-					onAdd={() => {
-						setQuestions([...discussion.questions, ...parsed.questions]);
-						setPasteText('');
-						setPasteOpen(false);
-					}}
-					preview={
-						<>
-							<p className="ln-preview__label">Xem trước · {parsed.questions.length} câu</p>
-							<ol className="ln-preview__list">
-								{parsed.questions.map((question, index) => (
-									<li key={question.id}>
-										<p className="font-medium">
-											{index + 1}. {question.question || <em>(chưa có câu hỏi)</em>}
-										</p>
-										{question.answer ? <p className="text-sm text-ink-secondary">{question.answer}</p> : <p className="ln-warning">Thiếu đáp án mẫu</p>}
-									</li>
-								))}
-							</ol>
-						</>
-					}
-				/>
-			) : null}
 		</div>
 	);
 }

@@ -369,52 +369,6 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 	};
 }
 
-/**
- * Turns raw lecture text (no NDK delimiters) into NDK markdown by promoting academic
- * headings — "I. …", "1. …", "Chương 2: …", "## …" — to section delimiters.
- * The user's text is never rewritten, only wrapped.
- */
-export function autoSectionRawText(raw: string, fallbackTitle = 'Bài học mới'): string {
-	const trimmed = raw.trim();
-	if (!trimmed || /^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ|PRACTICE|DISCUSSION|LUYỆN\s*TẬP|PHẢN\s*BIỆN|KIỂM\s*TRA)\s*:/im.test(trimmed)) return trimmed;
-
-	const lines = trimmed.replace(/\r\n?/g, '\n').split('\n');
-	let lessonTitle = fallbackTitle;
-	let skipUntil = 0;
-	for (let i = 0; i < Math.min(lines.length, 10); i++) {
-		const line = lines[i].trim();
-		if (/^#\s+/.test(line)) {
-			lessonTitle = line.replace(/^#\s+/, '');
-			skipUntil = i + 1;
-			if (lines[i + 1] && isPlainQuote(lines[i + 1].trim())) skipUntil = i + 2;
-			break;
-		}
-	}
-
-	const heading =
-		/^(?:#{2,3}\s+(.+)|((?:Phần|Chương|Mục|Bài|Tiết)\s+(?:\d+|[IVXLCDM]+|[A-Z])[:.]?\s*.+)|([IVXLCDM]+[.)]\s+\S.+)|(\d+[.)]\s+[A-ZÀ-Ỹ].+))$/u;
-
-	const markers: Array<{ index: number; title: string }> = [];
-	for (let i = skipUntil; i < lines.length; i++) {
-		const match = lines[i].trim().match(heading);
-		if (match) markers.push({ index: i, title: (match[1] ?? match[2] ?? match[3] ?? match[4]).trim() });
-	}
-
-	const head = lines.slice(0, skipUntil).join('\n').trim() || `# ${lessonTitle}`;
-	if (!markers.length) {
-		return `${head}\n\n=== SECTION: Nội dung bài học ===\n\n${lines.slice(skipUntil).join('\n').trim()}`;
-	}
-
-	const chunks = [head, ''];
-	const preamble = lines.slice(skipUntil, markers[0].index).join('\n').trim();
-	if (preamble) chunks.push('=== SECTION: Giới thiệu ===', '', preamble, '');
-	markers.forEach((marker, m) => {
-		const end = m + 1 < markers.length ? markers[m + 1].index : lines.length;
-		chunks.push(`=== SECTION: ${marker.title} ===`, '', lines.slice(marker.index + 1, end).join('\n').trim(), '');
-	});
-	return chunks.join('\n').trim();
-}
-
 export interface ImportedCourse {
 	lessons: ImportedLesson[];
 	warnings: string[];

@@ -248,11 +248,9 @@ function SlashMenu({
 export default function LearnRichEditor({
 	value,
 	onChange,
-	sessionChanges,
 }: {
 	value: string;
 	onChange: (markdown: string) => void;
-	sessionChanges?: { count: number; onReview: () => void } | null;
 }) {
 	const [mode, setMode] = useState<Mode>(() => (findUnsupportedMarkdown(value).length ? 'markdown' : 'visual'));
 	const [source, setSource] = useState(value);
@@ -436,11 +434,6 @@ export default function LearnRichEditor({
 				<button type="button" role="tab" aria-selected={mode === 'markdown'} onClick={() => switchMode('markdown')}>
 					<StudioIcon name="markdown" /> Markdown
 				</button>
-				{sessionChanges && sessionChanges.count > 0 ? (
-					<button type="button" className="ln-link-btn" onClick={sessionChanges.onReview}>
-						{sessionChanges.count} chỗ đã sửa · Xem
-					</button>
-				) : null}
 				<span className="ln-editor__count tabular-nums">
 					{words.toLocaleString('vi-VN')} từ · ~{estimateReadingMinutes(markdownNow)} phút đọc
 				</span>

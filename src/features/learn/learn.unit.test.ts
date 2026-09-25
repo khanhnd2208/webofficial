@@ -7,7 +7,7 @@ import { resolveCalloutKind } from './callouts';
 import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz, sectionMinutes } from './content';
 import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
 import { ANSWER_LABELS, discussionQuestionView, discussionQuestionViews, splitLabelled } from './discussionView';
-import { autoSectionRawText, cleanAiPaste, exportCourseMarkdown, exportLessonMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
+import { cleanAiPaste, exportCourseMarkdown, exportLessonMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
 import { readingOutline } from './outline';
@@ -136,16 +136,6 @@ describe('parseLessonMarkdown', () => {
 	it('escapes a year-like line so it is not parsed as an ordered list start', () => {
 		const parsed = parseLessonMarkdown('# T\n\n=== SECTION: A ===\n1945. Năm lịch sử\n\n2. Không phải list?');
 		expect(parsed.sections[0].markdown).toContain('1945\\. Năm lịch sử');
-	});
-});
-
-describe('autoSectionRawText', () => {
-	it('promotes academic headings to section delimiters without rewriting text', () => {
-		const out = autoSectionRawText('# Bài 1\nMở đầu.\nI. Khái niệm\nNội dung một.\nII. Ý nghĩa\nNội dung hai.');
-		expect(out).toContain('=== SECTION: Giới thiệu ===');
-		expect(out).toContain('=== SECTION: I. Khái niệm ===');
-		expect(out).toContain('Nội dung hai.');
-		expect(parseLessonMarkdown(out).sections).toHaveLength(3);
 	});
 });
 

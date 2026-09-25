@@ -21,12 +21,9 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
 
-import { exportLessonMarkdown } from '@/features/learn/lessonImport';
-import { LEARN_EDIT_PROMPT } from '@/features/learn/prompts';
 import { LEARN_SECTION_KIND_SHORT, type LearnSectionKind, type LearnStudioLesson, type LearnStudioSection } from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
-import { useCopy } from './useCopy';
 
 function useOutlineSensors() {
 	return useSensors(
@@ -102,7 +99,6 @@ function LessonBlock({
 	});
 	const ids = lesson.sections.map((section) => section.id);
 	const [title, setTitle] = useState(lesson.title);
-	const { copied, copy } = useCopy();
 
 	return (
 		<div
@@ -146,21 +142,6 @@ function LessonBlock({
 				</ol>
 			</SortableContext>
 			<div className="ln-souter__add">
-				<button
-					type="button"
-					className="ln-link-btn"
-					onClick={() =>
-						void copy(
-							`${LEARN_EDIT_PROMPT}\n${exportLessonMarkdown({
-								title: lesson.title,
-								description: lesson.description,
-								sections: lesson.sections,
-							})}`,
-						)
-					}
-				>
-					{copied ? 'Đã chép bài' : 'Chép bài này để sửa bằng AI'}
-				</button>
 				<button type="button" className="ln-link-btn" onClick={() => onAddSection('READING')}>
 					+ Mục đọc
 				</button>
@@ -259,7 +240,7 @@ export default function StudioOutline({
 					<StudioIcon name="plus" size={14} /> Thêm bài
 				</button>
 				<button type="button" className="ln-btn ln-btn--block" onClick={onImport}>
-					<StudioIcon name="import" size={14} /> Nhập bài từ Markdown
+					<StudioIcon name="import" size={14} /> Nhập bằng AI
 				</button>
 			</div>
 		</nav>

@@ -50,24 +50,30 @@ const course: LearnStudioCourse = {
 	],
 };
 
-describe('LearnStudio editor reload', () => {
+describe('LearnStudio save button', () => {
 	beforeEach(() => {
 		adminFetch.mockReset();
 		adminFetch.mockResolvedValue(undefined);
 	});
 
-	it('shows the opened text again after undoing every edit in the session', async () => {
+	it('shows Lưu after an edit, patches on click, then shows Đã lưu', async () => {
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
 
 		await waitFor(() => expect(screen.getByRole('toolbar', { name: 'Định dạng' })).toBeInTheDocument());
+		expect(screen.getByRole('button', { name: 'Đã lưu ✓' })).toBeDisabled();
+
 		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
 		fireEvent.change(screen.getByPlaceholderText(/Tiêu đề/), { target: { value: 'Bản đã sửa' } });
 
-		fireEvent.click(await screen.findByRole('button', { name: /chỗ đã sửa · Xem/ }));
-		fireEvent.click(screen.getByRole('button', { name: 'Hoàn tác tất cả về lúc mở' }));
+		const save = screen.getByRole('button', { name: 'Lưu' });
+		expect(save).toBeEnabled();
+		fireEvent.click(save);
 
-		await waitFor(() => expect(screen.getByRole('toolbar', { name: 'Định dạng' })).toBeInTheDocument());
-		expect(document.querySelector('.ln-editor__content')?.textContent).toContain('Bản lúc mở');
-		expect(document.querySelector('.ln-editor__content')?.textContent).not.toContain('Bản đã sửa');
+		await waitFor(() => expect(adminFetch).toHaveBeenCalled());
+		expect(adminFetch).toHaveBeenCalledWith(
+			'/api/admin/learn/sections/section-1',
+			expect.objectContaining({ method: 'PATCH' }),
+		);
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Đã lưu ✓' })).toBeDisabled());
 	});
 });

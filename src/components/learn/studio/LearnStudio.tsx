@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import { exportCourseMarkdown } from '@/features/learn/lessonImport';
-import { countPlaces, wordDiff } from '@/features/learn/textFidelity';
 import {
 	LEARN_SECTION_KIND_LABELS,
 	type LearnCourseMeta,
+	type LearnDiscussion,
+	type LearnQuiz,
 	type LearnSectionKind,
 	type LearnStudioCourse,
 	type LearnStudioLesson,
@@ -17,26 +17,36 @@ import {
 } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
 
+import AiImportDialog, { type AiImportInput, type AiImportKind } from './AiImportDialog';
 import CourseSettingsDialog, { type CourseSettingsPatch } from './CourseSettingsDialog';
 import { StudioIcon } from './icons';
-import ImportLessonDialog from './ImportLessonDialog';
 import LearnDiscussionEditor from './LearnDiscussionEditor';
 import LearnQuizEditor from './LearnQuizEditor';
 import LearnRichEditor from './LearnRichEditor';
-import StudioDialog from './StudioDialog';
 import StudioInspector, { type SectionPatch } from './StudioInspector';
-import TextDiff from './TextDiff';
 import StudioOutline from './StudioOutline';
 import { useStudioSaver, type SaveStatus } from './useStudioSaver';
 
 const SAVE_LABEL: Record<SaveStatus, string> = {
-	saved: 'Đã lưu',
-	pending: 'Chưa lưu…',
+	saved: 'Đã lưu ✓',
+	pending: 'Lưu',
 	saving: 'Đang lưu…',
-	error: 'Lỗi lưu',
+	error: 'Lưu',
 };
 
 /** Only send what the API accepts: blank titles and empty takeaway rows stay local. */
+function questionBody(
+	input: Exclude<AiImportInput, { kind: 'lesson' }>,
+	current: LearnStudioSection | null,
+): { quiz: LearnQuiz } | { discussion: LearnDiscussion } {
+	if (input.kind === 'discussion') {
+		const existing = current?.discussion?.questions ?? [];
+		return { discussion: { questions: input.mode === 'append' ? [...existing, ...input.questions] : input.questions } };
+	}
+	const quiz = current?.quiz ?? { passingScorePercent: 70, timeLimitMinutes: null, questions: [] };
+	return { quiz: { ...quiz, questions: input.mode === 'append' ? [...quiz.questions, ...input.questions] : input.questions } };
+}
+
 function networkPatch(patch: SectionPatch): Record<string, unknown> {
 	const body: Record<string, unknown> = { ...patch };
 	if (patch.title !== undefined) {
@@ -70,31 +80,17 @@ export default function LearnStudio({
 	const [selectedId, setSelectedId] = useState<string | null>(
 		findSection(initialLessons, initialSectionId)?.id ?? initialLessons[0]?.sections[0]?.id ?? null,
 	);
-	const [dialog, setDialog] = useState<'import' | 'settings' | null>(null);
-	const [reviewChanges, setReviewChanges] = useState(false);
-	const [editorEpoch, setEditorEpoch] = useState(0);
-	const [baselines, setBaselines] = useState<Record<string, string>>({});
-	const [trackedSectionId, setTrackedSectionId] = useState<string | null>(null);
+	const [dialog, setDialog] = useState<'settings' | null>(null);
+	const [importRequest, setImportRequest] = useState<{
+		kind: AiImportKind;
+		locked: boolean;
+		target?: { sectionId: string; count: number };
+	} | null>(null);
 	const [actionError, setActionError] = useState<string | null>(null);
 	const saver = useStudioSaver();
 	const { flush, queue } = saver;
 
 	const section = useMemo(() => findSection(lessons, selectedId), [lessons, selectedId]);
-	if (section && section.id !== trackedSectionId) {
-		setTrackedSectionId(section.id);
-		if (baselines[section.id] === undefined) {
-			setBaselines((current) =>
-				current[section.id] !== undefined ? current : { ...current, [section.id]: section.markdown },
-			);
-		}
-	}
-	const deferredMarkdown = useDeferredValue(section?.markdown ?? '');
-	const sessionBase = section ? baselines[section.id] : undefined;
-	const sessionHunks = useMemo(() => {
-		if (sessionBase == null) return [];
-		return wordDiff(sessionBase, deferredMarkdown);
-	}, [sessionBase, deferredMarkdown]);
-	const sessionPlaces = countPlaces(sessionHunks);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
@@ -200,16 +196,75 @@ export default function LearnStudio({
 		select(lesson.sections[0]?.id ?? null);
 	}
 
-	async function importLesson(input: { markdown: string; mode: 'create' | 'append' | 'replace'; lessonId?: string }) {
-		await flush();
-		const result = await adminFetch<LearnStudioLesson | { lessons: LearnStudioLesson[] }>(
-			`/api/admin/learn/courses/${meta.id}/lessons`,
-			{ method: 'POST', body: JSON.stringify(input) },
+	function replaceSection(updated: LearnStudioSection) {
+		setLessons((current) =>
+			current.map((lesson) => ({
+				...lesson,
+				sections: lesson.sections.map((item) => (item.id === updated.id ? updated : item)),
+			})),
 		);
-		const imported = 'lessons' in result ? result.lessons : [result];
-		setLessons((current) => (input.mode === 'create' ? [...current, ...imported] : current.map((lesson) => imported.find((item) => item.id === lesson.id) ?? lesson)));
-		select(imported[0]?.sections[0]?.id ?? null);
-		setDialog(null);
+	}
+
+	async function saveImport(input: AiImportInput) {
+		if (input.kind === 'lesson') {
+			await flush();
+			const result = await adminFetch<LearnStudioLesson | { lessons: LearnStudioLesson[] }>(
+				`/api/admin/learn/courses/${meta.id}/lessons`,
+				{
+					method: 'POST',
+					body: JSON.stringify({
+						markdown: input.markdown,
+						mode: input.mode,
+						lessonId: input.mode === 'create' ? undefined : input.lessonId,
+					}),
+				},
+			);
+			const imported = 'lessons' in result ? result.lessons : [result];
+			setLessons((current) =>
+				input.mode === 'create'
+					? [...current, ...imported]
+					: current.map((lesson) => imported.find((item) => item.id === lesson.id) ?? lesson),
+			);
+			select(imported[0]?.sections[0]?.id ?? null);
+			setImportRequest(null);
+			return;
+		}
+
+		if (input.mode === 'create') {
+			const type: LearnSectionKind = input.kind === 'discussion' ? 'DISCUSSION' : input.kind === 'practice' ? 'PRACTICE' : 'QUIZ';
+			const created = await adminFetch<LearnStudioSection>(`/api/admin/learn/lessons/${input.lessonId}/sections`, {
+				method: 'POST',
+				body: JSON.stringify({ type, title: input.title }),
+			});
+			try {
+				const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${created.id}`, {
+					method: 'PATCH',
+					body: JSON.stringify(questionBody(input, null)),
+				});
+				setLessons((current) =>
+					current.map((lesson) =>
+						lesson.id === input.lessonId ? { ...lesson, sections: [...lesson.sections, updated] } : lesson,
+					),
+				);
+				select(updated.id);
+				setImportRequest(null);
+			} catch (err) {
+				await adminFetch(`/api/admin/learn/sections/${created.id}`, { method: 'DELETE' }).catch(() => undefined);
+				throw err;
+			}
+			return;
+		}
+
+		await flush();
+		const current = findSection(lessons, input.sectionId);
+		if (!current) throw new Error('Không tìm thấy mục');
+		const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${input.sectionId}`, {
+			method: 'PATCH',
+			body: JSON.stringify(questionBody(input, current)),
+		});
+		replaceSection(updated);
+		select(updated.id);
+		setImportRequest(null);
 	}
 
 	async function deleteLesson(id: string) {
@@ -291,36 +346,16 @@ export default function LearnStudio({
 					<span className="truncate">{meta.title}</span>
 					<StudioIcon name="settings" size={14} />
 				</button>
-				<span className="ln-save" data-status={saver.status} role="status" title={saver.error ?? undefined}>
-					<span className="ln-save__dot" aria-hidden="true" />
-					{SAVE_LABEL[saver.status]}
-					{saver.status === 'error' ? (
-						<button type="button" className="ln-link-btn" onClick={() => void flush()}>
-							Thử lại
-						</button>
-					) : null}
-				</span>
 				<button
 					type="button"
-					className="ln-btn"
-					onClick={() => {
-						const markdown = exportCourseMarkdown(
-							lessons.map((lesson) => ({
-								title: lesson.title,
-								description: lesson.description,
-								sections: lesson.sections,
-							})),
-						);
-						const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
-						const url = URL.createObjectURL(blob);
-						const link = document.createElement('a');
-						link.href = url;
-						link.download = `${meta.slug || 'khoa-hoc'}.md`;
-						link.click();
-						URL.revokeObjectURL(url);
-					}}
+					className={`ln-save ln-btn${saver.status === 'pending' || saver.status === 'error' ? ' ln-btn--primary' : ''}`}
+					data-status={saver.status}
+					title={saver.error ?? undefined}
+					disabled={saver.status === 'saved' || saver.status === 'saving'}
+					onClick={() => void flush()}
 				>
-					Xuất cả khóa
+					<span className="ln-save__dot" aria-hidden="true" />
+					{SAVE_LABEL[saver.status]}
 				</button>
 				<div className="ln-segmented ln-studio__status" role="radiogroup" aria-label="Trạng thái khóa học">
 					<button type="button" role="radio" aria-checked={!published} onClick={() => published && void setStatus('DRAFT')}>
@@ -366,12 +401,12 @@ export default function LearnStudio({
 					onAddSection={(lessonId, type) => void addSection(lessonId, type)}
 					onDeleteLesson={(id) => void deleteLesson(id)}
 					onAddLesson={() => void addLesson()}
-					onImport={() => setDialog('import')}
+					onImport={() => setImportRequest({ kind: 'lesson', locked: false })}
 				/>
 
 				<main className="ln-studio__canvas">
 					{section ? (
-						<div className="ln-studio__page" key={`${section.id}:${editorEpoch}`}>
+						<div className="ln-studio__page" key={section.id}>
 							<p className="ln-eyebrow">
 								{LEARN_SECTION_KIND_LABELS[section.type]} ·{' '}
 								{lessons.find((lesson) => lesson.id === section.lessonId)?.title}
@@ -392,24 +427,37 @@ export default function LearnStudio({
 									variant={section.type === 'PRACTICE' ? 'practice' : 'quiz'}
 									quiz={section.quiz ?? { passingScorePercent: 70, timeLimitMinutes: null, questions: [] }}
 									onChange={(quiz) => patchSection(section.id, { quiz })}
+									onOpenImport={() =>
+										setImportRequest({
+											kind: section.type === 'PRACTICE' ? 'practice' : 'quiz',
+											locked: true,
+											target: {
+												sectionId: section.id,
+												count: section.quiz?.questions.length ?? 0,
+											},
+										})
+									}
 								/>
 							) : section.type === 'DISCUSSION' ? (
 								<LearnDiscussionEditor
 									discussion={section.discussion ?? { questions: [] }}
 									onChange={(discussion) => patchSection(section.id, { discussion })}
+									onOpenImport={() =>
+										setImportRequest({
+											kind: 'discussion',
+											locked: true,
+											target: { sectionId: section.id, count: section.discussion?.questions.length ?? 0 },
+										})
+									}
 								/>
 							) : (
-								<LearnRichEditor
-									value={section.markdown}
-									onChange={(markdown) => patchSection(section.id, { markdown })}
-									sessionChanges={{ count: sessionPlaces, onReview: () => setReviewChanges(true) }}
-								/>
+								<LearnRichEditor value={section.markdown} onChange={(markdown) => patchSection(section.id, { markdown })} />
 							)}
 						</div>
 					) : (
 						<div className="ln-studio__empty">
 							<p className="font-display text-2xl">Chọn một mục để soạn</p>
-							<p className="mt-2 text-ink-secondary">Hoặc thêm bài mới, nhập cả bài từ Markdown ở cột trái.</p>
+							<p className="mt-2 text-ink-secondary">Hoặc thêm bài mới, nhập bằng AI ở cột trái.</p>
 						</div>
 					)}
 				</main>
@@ -421,19 +469,6 @@ export default function LearnStudio({
 						onPatch={(patch) => patchSection(section.id, patch)}
 						onMove={(lessonId) => moveSection(section.id, lessonId)}
 						onDelete={() => void deleteSection(section.id)}
-						onRestored={(restored) => {
-							setEditorEpoch((epoch) => epoch + 1);
-							setLessons((current) =>
-								current.map((lesson) => ({
-									...lesson,
-									sections: lesson.sections.map((item) => (item.id === restored.id ? restored : item)),
-								})),
-							);
-						}}
-						onSaveVersion={async () => {
-							await flush();
-							await adminFetch(`/api/admin/learn/sections/${section.id}/revisions`, { method: 'POST' });
-						}}
 						previewHref={routes.learnCourse(meta.slug, section.id)}
 					/>
 				) : (
@@ -441,47 +476,16 @@ export default function LearnStudio({
 				)}
 			</div>
 
-			{dialog === 'import' ? (
-				<ImportLessonDialog
+			{importRequest ? (
+				<AiImportDialog
+					kind={importRequest.kind}
+					lockKind={importRequest.locked}
 					lessons={lessons}
 					selectedLessonId={section?.lessonId ?? lessons[0]?.id ?? null}
-					onClose={() => setDialog(null)}
-					onImport={importLesson}
+					target={importRequest.target}
+					onClose={() => setImportRequest(null)}
+					onSave={saveImport}
 				/>
-			) : null}
-			{reviewChanges && section ? (
-				<StudioDialog
-					title="Thay đổi trong phiên này"
-					size="narrow"
-					onClose={() => setReviewChanges(false)}
-					footer={
-						<>
-							<button type="button" className="ln-btn" onClick={() => setReviewChanges(false)}>
-								Đóng
-							</button>
-							<button
-								type="button"
-								className="ln-btn ln-btn--primary"
-								disabled={!sessionPlaces}
-								onClick={() => {
-									const base = baselines[section.id];
-									if (base == null) return;
-									patchSection(section.id, { markdown: base });
-									setEditorEpoch((epoch) => epoch + 1);
-									setReviewChanges(false);
-								}}
-							>
-								Hoàn tác tất cả về lúc mở
-							</button>
-						</>
-					}
-				>
-					{sessionPlaces ? (
-						<TextDiff hunks={sessionHunks} />
-					) : (
-						<p className="text-sm text-ink-secondary">Chưa có chữ nào khác lúc mở mục này.</p>
-					)}
-				</StudioDialog>
 			) : null}
 			{dialog === 'settings' ? (
 				<CourseSettingsDialog course={meta} onClose={() => setDialog(null)} onSave={saveSettings} onDelete={deleteCourse} />
