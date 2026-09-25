@@ -27,6 +27,7 @@ async function main() {
 	loadEnv({ path: resolve(process.cwd(), '.env.local') });
 	const original = readFileSync(resolve(process.cwd(), 'content/learn/itm/bai-1.original.txt'), 'utf8');
 	const markdown = readFileSync(resolve(process.cwd(), 'content/learn/itm/bai-1.md'), 'utf8');
+	const extrasMarkdown = readFileSync(resolve(process.cwd(), 'content/learn/itm/bai-1-them.md'), 'utf8');
 	const parsed = parseCourseMarkdown(markdown);
 	if (parsed.lessons.length !== 1 || parsed.lessons[0]?.lessonTitle !== LESSON_TITLE) {
 		throw new Error('ITM lesson normalization produced an unexpected lesson shape');
@@ -45,8 +46,15 @@ async function main() {
 	if (fidelity.hunks.length) {
 		throw new Error(`ITM formatting changed ${fidelity.hunks.length} word hunks`);
 	}
+	const extras = parseCourseMarkdown(extrasMarkdown).lessons[0]?.sections ?? [];
+	if (extras.map((section) => section.type).join(',') !== 'QUIZ,READING,DISCUSSION') {
+		throw new Error(`Expected quiz, guide, and discussion sections, got ${extras.map((section) => section.type).join(',')}`);
+	}
+	if (extras[0]?.quiz?.questions.length !== 3) throw new Error('ITM quiz must have 3 questions');
+	if (extras[2]?.discussion?.questions.length !== 16) throw new Error('ITM discussion must have 16 questions');
+	const sections = [...lesson.sections, ...extras];
 	if (process.argv.includes('--dry-run')) {
-		console.log(JSON.stringify({ status: 'valid', lessonTitle: lesson.lessonTitle, sectionCount: lesson.sections.length, matchPercent: fidelity.matchPercent }));
+		console.log(JSON.stringify({ status: 'valid', lessonTitle: lesson.lessonTitle, sectionCount: sections.length, quizQuestions: extras[0]?.quiz?.questions.length, discussionQuestions: extras[2]?.discussion?.questions.length, matchPercent: fidelity.matchPercent }));
 		return;
 	}
 
@@ -61,7 +69,34 @@ async function main() {
 				(item) => item.title === LESSON_TITLE && item.sections.some((section) => section.markdown.includes('Nhà quản trị')),
 			);
 			if (alreadySeeded) {
-				console.log(JSON.stringify({ status: 'skipped', courseId: existing.id, slug: existing.slug }));
+				const target = existing.lessons.find((item) => item.title === LESSON_TITLE);
+				const have = new Set(target?.sections.map((section) => section.title) ?? []);
+				const missing = extras.filter((section) => !have.has(section.title));
+				if (!target || !missing.length) {
+					console.log(JSON.stringify({ status: 'skipped', courseId: existing.id, slug: existing.slug }));
+					return;
+				}
+				const start = target.sections.length;
+				await prisma.$transaction(
+					missing.map((section, index) =>
+						prisma.learnSection.create({
+							data: {
+								lessonId: target.id,
+								type: section.type,
+								title: section.title,
+								durationMinutes: section.durationMinutes,
+								summary: section.summary,
+								keyTakeaways: section.keyTakeaways,
+								markdown: section.markdown,
+								checkpoint: section.checkpoint === null ? Prisma.DbNull : (section.checkpoint as Prisma.InputJsonValue),
+								quiz: section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
+								discussion: section.discussion === null ? Prisma.DbNull : (section.discussion as Prisma.InputJsonValue),
+								position: start + index,
+							},
+						}),
+					),
+				);
+				console.log(JSON.stringify({ status: 'appended', courseId: existing.id, added: missing.map((section) => section.title) }));
 				return;
 			}
 			const placeholderOnly =
@@ -117,7 +152,7 @@ async function main() {
 					position: 0,
 				},
 			});
-			for (const [position, section] of lesson.sections.entries()) {
+			for (const [position, section] of sections.entries()) {
 				await tx.learnSection.create({
 					data: {
 						lessonId: savedLesson.id,
@@ -129,11 +164,12 @@ async function main() {
 						markdown: section.markdown,
 						checkpoint: section.checkpoint === null ? Prisma.DbNull : (section.checkpoint as Prisma.InputJsonValue),
 						quiz: section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
+						discussion: section.discussion === null ? Prisma.DbNull : (section.discussion as Prisma.InputJsonValue),
 						position,
 					},
 				});
 			}
-			return { courseId: course.id, lessonId: savedLesson.id, sectionCount: lesson.sections.length };
+			return { courseId: course.id, lessonId: savedLesson.id, sectionCount: sections.length };
 		});
 		console.log(JSON.stringify({ status: 'created', ...result }));
 	} finally {
