@@ -574,6 +574,27 @@ describe('discussionQuestionView', () => {
 		expect(parts).toEqual(['Phần 1', 'Phần 1', 'Phần 2']);
 	});
 
+	it('reads the callout and heading format the discussion prompt now asks for', () => {
+		const view = discussionQuestionView(
+			'### Hiểu — Ba tiệm bánh\n\n> [!EXAMPLE] Tình huống:\n> Tiệm A làm nhanh.\n>\n> Tiệm B làm đúng.\n\n> [!REFLECT] Câu hỏi:\n> Tiệm nào hiệu quả?',
+		);
+		expect(view.level).toBe('Hiểu');
+		expect(view.title).toBe('Ba tiệm bánh');
+		expect(view.blocks).toEqual([
+			{ label: 'Tình huống', markdown: 'Tiệm A làm nhanh.\n\nTiệm B làm đúng.' },
+			{ label: 'Câu hỏi', markdown: 'Tiệm nào hiệu quả?' },
+		]);
+		const answer = splitLabelled(
+			'### Nhắc lại bài học:\nĐịnh nghĩa.\n\n### Cùng suy nghĩ từng bước:\n\n#### Bước 1 —\nSo sánh.\n\n> [!IMPORTANT] Điều rút ra:\n> Một câu.',
+			ANSWER_LABELS,
+		);
+		expect(answer).toEqual([
+			{ label: 'Nhắc lại bài học', markdown: 'Định nghĩa.' },
+			{ label: 'Cùng suy nghĩ từng bước', markdown: '#### Bước 1 —\nSo sánh.' },
+			{ label: 'Điều rút ra', markdown: 'Một câu.' },
+		]);
+	});
+
 	it('leaves free-form prompts as plain markdown', () => {
 		expect(discussionQuestionView('Vì sao nhóm trễ hạn — theo bạn?')).toEqual({
 			part: null,

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { ANSWER_LABELS, discussionQuestionViews, splitLabelled } from '@/features/learn/discussionView';
+import { ANSWER_LABELS, ASK_LABELS, TAKEAWAY_LABELS, discussionQuestionViews, splitLabelled } from '@/features/learn/discussionView';
 import type { LearnDiscussion } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
 
@@ -166,7 +166,7 @@ export default function LearnDiscussionViewer({
 						</header>
 					) : null}
 					{view.blocks.map((block, blockIndex) => (
-						<div key={blockIndex} className="ln-disc__block" data-kind={block.label === 'Câu hỏi' || block.label === 'Yêu cầu' ? 'ask' : undefined}>
+						<div key={blockIndex} className="ln-disc__block" data-kind={block.label && ASK_LABELS.includes(block.label) ? 'ask' : undefined}>
 							{block.label ? <p className="ln-disc__label">{block.label}</p> : null}
 							{block.markdown ? <LearnMarkdown markdown={block.markdown} /> : null}
 						</div>
@@ -181,7 +181,7 @@ export default function LearnDiscussionViewer({
 							</div>
 							{question.answer.trim() ? (
 								splitLabelled(question.answer, ANSWER_LABELS).map((block, blockIndex) => (
-									<div key={blockIndex} className="ln-disc__block" data-kind={block.label === 'Điều rút ra' ? 'takeaway' : undefined}>
+									<div key={blockIndex} className="ln-disc__block" data-kind={block.label && TAKEAWAY_LABELS.includes(block.label) ? 'takeaway' : undefined}>
 										{block.label ? <p className="ln-disc__label">{block.label}</p> : null}
 										{block.markdown ? <LearnMarkdown markdown={block.markdown} /> : null}
 									</div>
