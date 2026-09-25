@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 import type { LearnQuizQuestion } from '@/features/learn/types';
@@ -54,7 +53,6 @@ export default function LearnPracticeRunner({
 	finishesCourse?: boolean;
 	overviewHref?: string;
 }) {
-	const router = useRouter();
 	const [ready, setReady] = useState(false);
 	const [index, setIndex] = useState(0);
 	const [picks, setPicks] = useState<Record<string, number>>({});
@@ -97,7 +95,6 @@ export default function LearnPracticeRunner({
 			.then(() => {
 				if (cancelled) return;
 				setMarked(true);
-				router.refresh();
 			})
 			.catch(() => {
 				if (!cancelled) setMarked(false);
@@ -105,7 +102,7 @@ export default function LearnPracticeRunner({
 		return () => {
 			cancelled = true;
 		};
-	}, [ready, marked, answered, questions.length, sectionId, router]);
+	}, [ready, marked, answered, questions.length, sectionId]);
 
 	/**
 	 * Picking disables the options and retrying unmounts its button, which would drop focus to

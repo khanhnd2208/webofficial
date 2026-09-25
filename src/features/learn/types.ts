@@ -158,7 +158,15 @@ export interface LearnStudioSection {
 	checkpoint: LearnCheckpoint | null;
 	quiz: LearnQuiz | null;
 	discussion: LearnDiscussion | null;
+	estimatedMinutes: number;
 	updatedAt: string;
+}
+
+/** Autosave acknowledgement. Import and create still receive a full LearnStudioSection. */
+export interface LearnSectionWriteResult {
+	id: string;
+	updatedAt: string;
+	estimatedMinutes: number;
 }
 
 export interface LearnStudioLesson {

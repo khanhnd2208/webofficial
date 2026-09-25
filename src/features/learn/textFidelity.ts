@@ -72,7 +72,9 @@ function stripFormatting(markdown: string, side: 'original' | 'formatted', quest
 		}
 		if (/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line) || /^\s*-{3,}\s*$/.test(line)) continue;
 		line = line.replace(/\\([\\`*_{}[\]()#+.!|>~-])/g, '$1');
-		line = line.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, '$1 $3');
+		// Image alt text and captions are presentation metadata, not lecture prose.
+		// Ignore them so adding a teaching illustration does not look like a content edit.
+		line = line.replace(/!\[[^\]]*\]\((?:[^)\s]+)(?:\s+"[^"]*")?\)/g, '');
 		line = line.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
 		line = line.replace(/\[\^(\d+)\]:?/g, ' $1 ');
 		line = line.replace(/(?<!\\)\|/g, ' ');

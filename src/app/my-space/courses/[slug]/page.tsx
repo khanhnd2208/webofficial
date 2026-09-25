@@ -45,19 +45,30 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 	const course = await getLearnCourseOutline(slug, viewer);
 	if (!course) notFound();
 
-	const progress = await getLearnProgress(viewer.userId, course.id);
-	const summary = summarizeCourse(course, progress);
 	const requested = typeof query.s === 'string' ? query.s : undefined;
 
 	// Without a section the course opens on its overview, like any LMS course home.
-	if (!requested) return <LearnCourseOverview course={course} summary={summary} isAdmin={viewer.isAdmin} />;
+	if (!requested) {
+		const progress = await getLearnProgress(viewer.userId, course.id);
+		const summary = summarizeCourse(course, progress);
+		return <LearnCourseOverview course={course} summary={summary} isAdmin={viewer.isAdmin} />;
+	}
 
+	const [progress, requestedSection] = await Promise.all([
+		getLearnProgress(viewer.userId, course.id),
+		getLearnReaderSection(course.id, requested, viewer.userId),
+	]);
+	const summary = summarizeCourse(course, progress);
 	const flat = summary.sections;
-	const current = flat.find((section) => section.id === requested) ?? summary.nextSection ?? flat[0];
+	let current = flat.find((section) => section.id === requested) ?? null;
+	let section = current ? requestedSection : null;
+	if (!current) {
+		current = summary.nextSection ?? flat[0] ?? null;
+		section = current ? await getLearnReaderSection(course.id, current.id, viewer.userId) : null;
+	}
 	const position = current ? flat.indexOf(current) : -1;
 	const previous = position > 0 ? flat[position - 1] : null;
 	const next = position >= 0 && position < flat.length - 1 ? flat[position + 1] : null;
-	const section = current ? await getLearnReaderSection(course.id, current.id, viewer.userId) : null;
 	const state = section ? progress[section.id] : undefined;
 	const overviewHref = routes.learnCourse(course.slug);
 	const previousHref = previous ? routes.learnCourse(course.slug, previous.id) : null;

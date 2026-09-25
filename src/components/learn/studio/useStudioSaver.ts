@@ -13,6 +13,20 @@ interface PendingPatch {
 
 const DEBOUNCE_MS = 900;
 
+const editorFlushes = new Set<() => void>();
+
+/** LearnRichEditor registers here so Ctrl/Cmd+S and Lưu flush pending markdown first. */
+export function registerEditorFlush(flush: () => void) {
+	editorFlushes.add(flush);
+	return () => {
+		editorFlushes.delete(flush);
+	};
+}
+
+function flushEditors() {
+	for (const flush of editorFlushes) flush();
+}
+
 /**
  * Debounced PATCH queue keyed by entity. Edits to the same entity merge into one request;
  * a failed request is re-queued underneath any newer edits so nothing typed is lost.
@@ -25,6 +39,7 @@ export function useStudioSaver() {
 	const [error, setError] = useState<string | null>(null);
 
 	const flush = useCallback(async (): Promise<void> => {
+		flushEditors();
 		if (timer.current) {
 			clearTimeout(timer.current);
 			timer.current = null;

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -73,7 +72,6 @@ export default function LearnDiscussionViewer({
 	finishesCourse?: boolean;
 	overviewHref?: string;
 }) {
-	const router = useRouter();
 	const questions = discussion.questions;
 	const [ready, setReady] = useState(false);
 	const [index, setIndex] = useState(0);
@@ -129,7 +127,6 @@ export default function LearnDiscussionViewer({
 			.then(() => {
 				if (cancelled) return;
 				setMarked(true);
-				router.refresh();
 			})
 			.catch(() => {
 				if (!cancelled) setMarked(false);
@@ -137,7 +134,7 @@ export default function LearnDiscussionViewer({
 		return () => {
 			cancelled = true;
 		};
-	}, [ready, marked, opened, questions, sectionId, router]);
+	}, [ready, marked, opened, questions, sectionId]);
 
 	useStepperScroll(rootRef, index, ready);
 

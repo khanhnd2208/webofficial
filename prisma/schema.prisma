@@ -1348,6 +1348,8 @@ model LearnSection {
   title           String
   /// Null = estimate from the markdown word count.
   durationMinutes Int?
+  /// Stored reading time so catalogs never load markdown, quiz, or discussion.
+  estimatedMinutes Int             @default(1)
   summary         String           @default("") @db.Text
   keyTakeaways    String[]         @default([])
   markdown        String           @default("") @db.Text

@@ -237,7 +237,7 @@ export default function LearnStudio({
 				body: JSON.stringify({ type, title: input.title }),
 			});
 			try {
-				const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${created.id}`, {
+				const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${created.id}?full=1`, {
 					method: 'PATCH',
 					body: JSON.stringify(questionBody(input, null)),
 				});
@@ -258,7 +258,7 @@ export default function LearnStudio({
 		await flush();
 		const current = findSection(lessons, input.sectionId);
 		if (!current) throw new Error('Không tìm thấy mục');
-		const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${input.sectionId}`, {
+		const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${input.sectionId}?full=1`, {
 			method: 'PATCH',
 			body: JSON.stringify(questionBody(input, current)),
 		});

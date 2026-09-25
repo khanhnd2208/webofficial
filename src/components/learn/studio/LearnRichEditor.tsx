@@ -13,6 +13,7 @@ import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import { adminFetch } from '@/lib/admin/client';
 
 import { learnEditorExtensions } from './editorExtensions';
+import { registerEditorFlush } from './useStudioSaver';
 import TextDiff from './TextDiff';
 import { StudioIcon, type StudioIconName } from './icons';
 import { filterSlashCommands, type SlashCommand } from './slashCommands';
@@ -267,6 +268,31 @@ export default function LearnRichEditor({
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const onChangeRef = useRef(onChange);
 	const editorRef = useRef<Editor | null>(null);
+	const dirtyRef = useRef(false);
+	const dirtyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const readPending = useRef<(() => string) | null>(null);
+
+	const flushPending = useCallback(() => {
+		if (!dirtyRef.current || !readPending.current) return;
+		dirtyRef.current = false;
+		if (dirtyTimer.current) {
+			clearTimeout(dirtyTimer.current);
+			dirtyTimer.current = null;
+		}
+		const markdown = readPending.current();
+		readPending.current = null;
+		onChangeRef.current(markdown);
+	}, []);
+
+	const scheduleChange = useCallback((read: () => string) => {
+		readPending.current = read;
+		dirtyRef.current = true;
+		if (dirtyTimer.current) clearTimeout(dirtyTimer.current);
+		dirtyTimer.current = setTimeout(() => {
+			dirtyTimer.current = null;
+			flushPending();
+		}, 300);
+	}, [flushPending]);
 
 	useEffect(() => {
 		onChangeRef.current = onChange;
@@ -368,15 +394,22 @@ export default function LearnRichEditor({
 		},
 		onUpdate: ({ editor: current }) => {
 			detectSlash(current);
-			onChangeRef.current(normalizeEditorMarkdown(current.getMarkdown()));
+			scheduleChange(() => normalizeEditorMarkdown(current.getMarkdown()));
 		},
 		onSelectionUpdate: ({ editor: current }) => detectSlash(current),
-		onBlur: () => updateSlash(null),
+		onBlur: () => {
+			updateSlash(null);
+			flushPending();
+		},
 	});
 
 	useEffect(() => {
 		editorRef.current = editor;
 	}, [editor]);
+
+	useEffect(() => registerEditorFlush(flushPending), [flushPending]);
+
+	useEffect(() => () => flushPending(), [flushPending]);
 
 	async function uploadImage(file: File, apply?: (url: string) => void) {
 		setUploadNote('Đang tải ảnh…');
@@ -397,6 +430,7 @@ export default function LearnRichEditor({
 
 	function switchMode(next: Mode, force = false) {
 		if (next === mode || !editor) return;
+		flushPending();
 		if (next === 'markdown') {
 			setSource(normalizeEditorMarkdown(editor.getMarkdown()));
 			setModeWarning(null);
@@ -505,6 +539,7 @@ export default function LearnRichEditor({
 							setSource(event.target.value);
 							onChangeRef.current(event.target.value);
 						}}
+						onBlur={() => flushPending()}
 						placeholder={'## Tiêu đề\n\nNội dung…\n\n> [!DEFINITION] Khái niệm\n> Định nghĩa…'}
 					/>
 					<div className="ln-editor__preview" aria-label="Xem trước">

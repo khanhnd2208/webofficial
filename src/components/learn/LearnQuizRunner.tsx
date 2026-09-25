@@ -102,7 +102,6 @@ export default function LearnQuizRunner({
 				return;
 			}
 			window.scrollTo({ top: 0, behavior: 'smooth' });
-			router.refresh();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Không nộp được bài');
 		} finally {

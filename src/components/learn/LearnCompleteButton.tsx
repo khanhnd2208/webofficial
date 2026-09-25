@@ -42,7 +42,6 @@ export default function LearnCompleteButton({
 			startTransition(() => {
 				if (finished && overviewHref) router.push(overviewHref);
 				else if (goNext && nextHref) router.push(nextHref);
-				else router.refresh();
 			});
 		} catch (err) {
 			setDone(!value);

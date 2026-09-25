@@ -34,6 +34,7 @@ import type {
 	LearnQuizReview,
 	LearnReaderSection,
 	LearnSectionProgressState,
+	LearnSectionWriteResult,
 	LearnStudioCourse,
 	LearnStudioLesson,
 	LearnStudioSection,
@@ -64,7 +65,13 @@ function mapMeta(row: Prisma.LearnCourseGetPayload<{ select: typeof courseMetaSe
 	return { ...row, updatedAt: row.updatedAt.toISOString() };
 }
 
-function minutesOf(section: Pick<LearnSection, 'type' | 'durationMinutes' | 'markdown' | 'quiz' | 'discussion'>) {
+function storedMinutes(section: {
+	type: LearnSection['type'];
+	durationMinutes: number | null;
+	markdown: string;
+	quiz: unknown;
+	discussion: unknown;
+}) {
 	return sectionMinutes({
 		type: section.type,
 		durationMinutes: section.durationMinutes,
@@ -74,7 +81,21 @@ function minutesOf(section: Pick<LearnSection, 'type' | 'durationMinutes' | 'mar
 	});
 }
 
-function mapStudioSection(section: LearnSection): LearnStudioSection {
+function mapStudioSection(section: {
+	id: string;
+	lessonId: string;
+	type: LearnSection['type'];
+	title: string;
+	durationMinutes: number | null;
+	estimatedMinutes: number;
+	summary: string;
+	keyTakeaways: string[];
+	markdown: string;
+	checkpoint: Prisma.JsonValue;
+	quiz: Prisma.JsonValue;
+	discussion: Prisma.JsonValue;
+	updatedAt: Date;
+}): LearnStudioSection {
 	return {
 		id: section.id,
 		lessonId: section.lessonId,
@@ -87,6 +108,7 @@ function mapStudioSection(section: LearnSection): LearnStudioSection {
 		checkpoint: readCheckpoint(section.checkpoint),
 		quiz: readQuiz(section.quiz),
 		discussion: readDiscussion(section.discussion),
+		estimatedMinutes: section.estimatedMinutes,
 		updatedAt: section.updatedAt.toISOString(),
 	};
 }
@@ -121,12 +143,52 @@ async function uniqueSlug(source: string, excludeId?: string) {
 	return candidate;
 }
 
-const orderedOutline = {
+const outlineOrder = [{ position: 'asc' as const }, { createdAt: 'asc' as const }];
+
+/** Learner outline: titles and stored minutes only. Markdown stays on the open section. */
+const learnerOutlineSelect = {
 	lessons: {
-		orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
-		include: { sections: { orderBy: [{ position: 'asc' }, { createdAt: 'asc' }] } },
+		orderBy: outlineOrder,
+		select: {
+			id: true,
+			title: true,
+			description: true,
+			sections: {
+				orderBy: outlineOrder,
+				select: { id: true, title: true, type: true, estimatedMinutes: true },
+			},
+		},
 	},
-} satisfies Prisma.LearnCourseInclude;
+} satisfies Prisma.LearnCourseSelect;
+
+const studioSectionSelect = {
+	id: true,
+	lessonId: true,
+	type: true,
+	title: true,
+	durationMinutes: true,
+	estimatedMinutes: true,
+	summary: true,
+	keyTakeaways: true,
+	markdown: true,
+	checkpoint: true,
+	quiz: true,
+	discussion: true,
+	updatedAt: true,
+} as const;
+
+/** Studio still loads every column of every section so the editor can open any item. */
+const studioOutlineSelect = {
+	lessons: {
+		orderBy: outlineOrder,
+		select: {
+			id: true,
+			title: true,
+			description: true,
+			sections: { orderBy: outlineOrder, select: studioSectionSelect },
+		},
+	},
+} satisfies Prisma.LearnCourseSelect;
 
 // ─── Learner ─────────────────────────────────────────────────────────────────
 
@@ -141,7 +203,7 @@ export async function listLearnCourses(viewer: LearnViewer): Promise<LearnCourse
 				select: {
 					sections: {
 						orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
-						select: { id: true, type: true, durationMinutes: true, markdown: true, quiz: true, discussion: true },
+						select: { id: true, type: true, estimatedMinutes: true },
 					},
 				},
 			},
@@ -164,7 +226,7 @@ export async function listLearnCourses(viewer: LearnViewer): Promise<LearnCourse
 			...mapMeta(row),
 			lessonCount: lessons.length,
 			sectionCount: sections.length,
-			totalMinutes: sections.reduce((sum, section) => sum + minutesOf(section), 0),
+			totalMinutes: sections.reduce((sum, section) => sum + section.estimatedMinutes, 0),
 			completedCount: sections.filter((section) => completedSections.has(section.id)).length,
 			quizCount: sections.filter((section) => section.type === 'QUIZ').length,
 			nextSectionId: sections.find((section) => !completedSections.has(section.id))?.id ?? null,
@@ -179,7 +241,7 @@ const loadLearnCourseOutline = cache(async function loadLearnCourseOutline(
 ): Promise<LearnCourseOutline | null> {
 	const row = await prisma.learnCourse.findFirst({
 		where: { slug, status: visibleStatus({ isAdmin }) },
-		select: { ...courseMetaSelect, ...orderedOutline },
+		select: { ...courseMetaSelect, ...learnerOutlineSelect },
 	});
 	if (!row) return null;
 	const { lessons, ...meta } = row;
@@ -193,7 +255,7 @@ const loadLearnCourseOutline = cache(async function loadLearnCourseOutline(
 				id: section.id,
 				title: section.title,
 				type: section.type,
-				minutes: minutesOf(section),
+				minutes: section.estimatedMinutes,
 			})),
 		})),
 	};
@@ -206,11 +268,14 @@ export function getLearnCourseOutline(
 	return loadLearnCourseOutline(slug, viewer.isAdmin);
 }
 
-export async function getLearnProgress(
+export const getLearnProgress = cache(async function getLearnProgress(
 	userId: string,
 	courseId: string,
 ): Promise<Record<string, LearnSectionProgressState>> {
-	const rows = await prisma.learnSectionProgress.findMany({ where: { userId, courseId } });
+	const rows = await prisma.learnSectionProgress.findMany({
+		where: { userId, courseId },
+		select: { sectionId: true, completedAt: true, note: true, quizResult: true },
+	});
 	return Object.fromEntries(
 		rows.map((row) => [
 			row.sectionId,
@@ -221,7 +286,7 @@ export async function getLearnProgress(
 			},
 		]),
 	);
-}
+});
 
 function reviewFor(section: LearnSection, result: unknown): LearnQuizReview | null {
 	const quiz = readQuiz(section.quiz);
@@ -245,7 +310,7 @@ export async function getLearnReaderSection(
 		lessonId: section.lessonId,
 		type: section.type,
 		title: section.title,
-		minutes: minutesOf(section),
+		minutes: section.estimatedMinutes,
 		summary: section.summary,
 		keyTakeaways: section.keyTakeaways,
 		markdown: section.markdown,
@@ -323,9 +388,12 @@ export async function submitLearnQuiz(
 
 // ─── Studio (admin) ──────────────────────────────────────────────────────────
 
-function mapStudioLesson(
-	lesson: Prisma.LearnLessonGetPayload<{ include: { sections: true } }>,
-): LearnStudioLesson {
+function mapStudioLesson(lesson: {
+	id: string;
+	title: string;
+	description: string;
+	sections: Parameters<typeof mapStudioSection>[0][];
+}): LearnStudioLesson {
 	return {
 		id: lesson.id,
 		title: lesson.title,
@@ -337,7 +405,7 @@ function mapStudioLesson(
 export async function getLearnStudioCourse(slug: string): Promise<LearnStudioCourse | null> {
 	const row = await prisma.learnCourse.findUnique({
 		where: { slug },
-		select: { ...courseMetaSelect, ...orderedOutline },
+		select: { ...courseMetaSelect, ...studioOutlineSelect },
 	});
 	if (!row) return null;
 	const { lessons, ...meta } = row;
@@ -412,17 +480,25 @@ function assertSectionsFit(sections: ImportedSection[]) {
 }
 
 function sectionData(section: ImportedSection, position: number) {
+	const markdown = section.type === 'READING' ? section.markdown : '';
 	return {
 		type: section.type,
 		title: section.title.slice(0, 200),
 		summary: section.summary.slice(0, 2_000),
-		markdown: section.type === 'READING' ? section.markdown : '',
+		markdown,
 		durationMinutes: section.durationMinutes,
 		keyTakeaways: section.keyTakeaways,
 		checkpoint: jsonOrNull(section.checkpoint),
 		quiz: jsonOrNull(section.quiz),
 		discussion: jsonOrNull(section.discussion),
 		position,
+		estimatedMinutes: storedMinutes({
+			type: section.type,
+			durationMinutes: section.durationMinutes,
+			markdown,
+			quiz: section.quiz,
+			discussion: section.discussion,
+		}),
 	};
 }
 
@@ -471,16 +547,26 @@ export async function createLearnSection(
 				: input.type === 'DISCUSSION'
 					? 'Câu hỏi phản biện'
 					: 'Mục mới');
+	const quiz =
+		input.type === 'QUIZ' || input.type === 'PRACTICE'
+			? { passingScorePercent: 70, timeLimitMinutes: null, questions: [] }
+			: null;
+	const discussion = input.type === 'DISCUSSION' ? { questions: [] } : null;
 	const section = await prisma.learnSection.create({
 		data: {
 			lessonId,
 			type: input.type,
 			title,
 			position: (last._max.position ?? -1) + 1,
-			...((input.type === 'QUIZ' || input.type === 'PRACTICE')
-				? { quiz: { passingScorePercent: 70, timeLimitMinutes: null, questions: [] } }
-				: {}),
-			...(input.type === 'DISCUSSION' ? { discussion: { questions: [] } } : {}),
+			...(quiz ? { quiz } : {}),
+			...(discussion ? { discussion } : {}),
+			estimatedMinutes: storedMinutes({
+				type: input.type,
+				durationMinutes: null,
+				markdown: '',
+				quiz,
+				discussion,
+			}),
 		},
 	});
 	return mapStudioSection(section);
@@ -494,62 +580,100 @@ async function snapshotSection(
 	reason: 'autosave' | 'import' | 'restore' | 'manual',
 	force: boolean,
 ) {
-	const current = await prisma.learnSection.findUnique({ where: { id: sectionId } });
-	if (!current) return;
 	if (!force) {
 		const latest = await prisma.learnSectionRevision.findFirst({
 			where: { sectionId },
 			orderBy: { createdAt: 'desc' },
 			select: { createdAt: true },
 		});
-		const lastAt = latest?.createdAt ?? current.createdAt;
+		const created = latest
+			? null
+			: await prisma.learnSection.findUnique({ where: { id: sectionId }, select: { createdAt: true } });
+		if (!latest && !created) return;
+		const lastAt = latest?.createdAt ?? created!.createdAt;
 		if (Date.now() - lastAt.getTime() < REVISION_GAP_MS) return;
 	}
-	await prisma.learnSectionRevision.create({
-		data: {
-			sectionId,
-			title: current.title,
-			summary: current.summary,
-			markdown: current.markdown,
-			keyTakeaways: current.keyTakeaways,
-			checkpoint: current.checkpoint === null ? Prisma.DbNull : (current.checkpoint as Prisma.InputJsonValue),
-			quiz: current.quiz === null ? Prisma.DbNull : (current.quiz as Prisma.InputJsonValue),
-			discussion: current.discussion === null ? Prisma.DbNull : (current.discussion as Prisma.InputJsonValue),
-			reason,
-		},
+	const current = await prisma.learnSection.findUnique({ where: { id: sectionId } });
+	if (!current) return;
+	await prisma.$transaction(async (tx) => {
+		await tx.learnSectionRevision.create({
+			data: {
+				sectionId,
+				title: current.title,
+				summary: current.summary,
+				markdown: current.markdown,
+				keyTakeaways: current.keyTakeaways,
+				checkpoint: current.checkpoint === null ? Prisma.DbNull : (current.checkpoint as Prisma.InputJsonValue),
+				quiz: current.quiz === null ? Prisma.DbNull : (current.quiz as Prisma.InputJsonValue),
+				discussion: current.discussion === null ? Prisma.DbNull : (current.discussion as Prisma.InputJsonValue),
+				reason,
+			},
+		});
+		const stale = await tx.learnSectionRevision.findMany({
+			where: { sectionId },
+			orderBy: { createdAt: 'desc' },
+			skip: REVISION_KEEP,
+			select: { id: true },
+		});
+		if (stale.length) {
+			await tx.learnSectionRevision.deleteMany({ where: { id: { in: stale.map((row) => row.id) } } });
+		}
 	});
-	const stale = await prisma.learnSectionRevision.findMany({
-		where: { sectionId },
-		orderBy: { createdAt: 'desc' },
-		skip: REVISION_KEEP,
-		select: { id: true },
-	});
-	if (stale.length) {
-		await prisma.learnSectionRevision.deleteMany({ where: { id: { in: stale.map((row) => row.id) } } });
-	}
 }
+
+const MINUTES_FIELDS = ['markdown', 'quiz', 'discussion', 'type', 'durationMinutes'] as const;
 
 export async function updateLearnSection(
 	id: string,
 	input: UpdateLearnSectionInput,
-): Promise<LearnStudioSection> {
+	options?: { full?: boolean },
+): Promise<LearnStudioSection | LearnSectionWriteResult> {
 	const contentTouched = ['markdown', 'title', 'summary', 'keyTakeaways', 'checkpoint', 'quiz', 'discussion'].some(
 		(key) => key in input,
 	);
 	if (contentTouched) await snapshotSection(id, 'autosave', false);
+	const minutesTouched = MINUTES_FIELDS.some((key) => key in input);
+	let estimatedMinutes: number | undefined;
+	if (minutesTouched) {
+		const current = await prisma.learnSection.findUnique({
+			where: { id },
+			select: { type: true, durationMinutes: true, markdown: true, quiz: true, discussion: true },
+		});
+		if (!current) throw new AppError('Không tìm thấy mục học', 404);
+		estimatedMinutes = storedMinutes({
+			type: input.type ?? current.type,
+			durationMinutes: 'durationMinutes' in input ? (input.durationMinutes ?? null) : current.durationMinutes,
+			markdown: input.markdown ?? current.markdown,
+			quiz: 'quiz' in input ? input.quiz : current.quiz,
+			discussion: 'discussion' in input ? input.discussion : current.discussion,
+		});
+	}
 	const { checkpoint, quiz, discussion, ...rest } = input;
+	const data = {
+		...rest,
+		...(checkpoint !== undefined ? { checkpoint: jsonOrNull(checkpoint) } : {}),
+		...(quiz !== undefined ? { quiz: jsonOrNull(quiz) } : {}),
+		...(discussion !== undefined ? { discussion: jsonOrNull(discussion) } : {}),
+		...(estimatedMinutes !== undefined ? { estimatedMinutes } : {}),
+	};
+	if (options?.full) {
+		const section = await prisma.learnSection
+			.update({ where: { id }, data })
+			.catch(notFound('Không tìm thấy mục học'));
+		return mapStudioSection(section);
+	}
 	const section = await prisma.learnSection
 		.update({
 			where: { id },
-			data: {
-				...rest,
-				...(checkpoint !== undefined ? { checkpoint: jsonOrNull(checkpoint) } : {}),
-				...(quiz !== undefined ? { quiz: jsonOrNull(quiz) } : {}),
-				...(discussion !== undefined ? { discussion: jsonOrNull(discussion) } : {}),
-			},
+			data,
+			select: { id: true, updatedAt: true, estimatedMinutes: true },
 		})
 		.catch(notFound('Không tìm thấy mục học'));
-	return mapStudioSection(section);
+	return {
+		id: section.id,
+		updatedAt: section.updatedAt.toISOString(),
+		estimatedMinutes: section.estimatedMinutes,
+	};
 }
 
 export async function deleteLearnSection(id: string): Promise<{ id: string }> {
@@ -645,12 +769,15 @@ export async function importLearnMarkdown(
 			incoming,
 		);
 		const bySection = new Map(plan.updates.map((item) => [item.section, item.id]));
+		for (const section of incoming) {
+			const existingId = bySection.get(section);
+			if (existingId) await snapshotSection(existingId, 'import', true);
+		}
 		await prisma.$transaction(async (tx) => {
 			for (const [index, section] of incoming.entries()) {
 				const existingId = bySection.get(section);
 				const data = sectionData(section, index);
 				if (existingId) {
-					await snapshotSection(existingId, 'import', true);
 					await tx.learnSection.update({
 						where: { id: existingId },
 						data: {
@@ -659,6 +786,7 @@ export async function importLearnMarkdown(
 							summary: data.summary,
 							markdown: data.markdown,
 							durationMinutes: data.durationMinutes,
+							estimatedMinutes: data.estimatedMinutes,
 							keyTakeaways: data.keyTakeaways,
 							checkpoint: data.checkpoint,
 							quiz: data.quiz,
@@ -692,7 +820,7 @@ export async function listSectionRevisions(sectionId: string) {
 		where: { sectionId },
 		orderBy: { createdAt: 'desc' },
 		take: REVISION_KEEP,
-		select: { id: true, title: true, reason: true, createdAt: true, markdown: true },
+		select: { id: true, title: true, reason: true, createdAt: true },
 	});
 	return rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString() }));
 }
@@ -701,6 +829,11 @@ export async function restoreSectionRevision(sectionId: string, revisionId: stri
 	const revision = await prisma.learnSectionRevision.findFirst({ where: { id: revisionId, sectionId } });
 	if (!revision) throw new AppError('Không tìm thấy bản lưu', 404);
 	await snapshotSection(sectionId, 'restore', true);
+	const current = await prisma.learnSection.findUnique({
+		where: { id: sectionId },
+		select: { type: true, durationMinutes: true },
+	});
+	if (!current) throw new AppError('Không tìm thấy mục học', 404);
 	const section = await prisma.learnSection
 		.update({
 			where: { id: sectionId },
@@ -712,6 +845,13 @@ export async function restoreSectionRevision(sectionId: string, revisionId: stri
 				checkpoint: revision.checkpoint === null ? Prisma.DbNull : (revision.checkpoint as Prisma.InputJsonValue),
 				quiz: revision.quiz === null ? Prisma.DbNull : (revision.quiz as Prisma.InputJsonValue),
 				discussion: revision.discussion === null ? Prisma.DbNull : (revision.discussion as Prisma.InputJsonValue),
+				estimatedMinutes: storedMinutes({
+					type: current.type,
+					durationMinutes: current.durationMinutes,
+					markdown: revision.markdown,
+					quiz: revision.quiz,
+					discussion: revision.discussion,
+				}),
 			},
 		})
 		.catch(notFound('Không tìm thấy mục học'));
