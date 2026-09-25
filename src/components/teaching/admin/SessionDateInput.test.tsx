@@ -18,8 +18,10 @@ describe('calendar-first session date', () => {
 		expect(screen.getByRole('button', { name: '1/9/2026' })).toHaveFocus();
 		fireEvent.click(screen.getByRole('button', { name: '12/9/2026' }));
 		expect(onCommit).toHaveBeenCalledWith('2026-09-12');
-		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-		expect(trigger).toHaveFocus();
+		await waitFor(() => {
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+			expect(trigger).toHaveFocus();
+		});
 	});
 	it('opens an empty date on today and marks today', () => {
 		open(null);

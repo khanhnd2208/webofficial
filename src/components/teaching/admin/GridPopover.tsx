@@ -23,7 +23,10 @@ export function GridPopover({
 	const anchor = useRef<HTMLButtonElement>(null);
 	const panel = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		if (!open && returnFocus) anchor.current?.focus();
+		if (!open && returnFocus) {
+			const node = anchor.current;
+			queueMicrotask(() => node?.focus());
+		}
 	}, [open, returnFocus]);
 	useEffect(() => {
 		if (!open) return;
