@@ -7,6 +7,8 @@ import type { LearnQuizQuestion } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
 
 import LearnMarkdown from './LearnMarkdown';
+import LearnStepperFinish from './LearnStepperFinish';
+import { useStepperScroll } from './useStepperScroll';
 
 const LETTERS = 'ABCDEFGH';
 
@@ -39,10 +41,18 @@ export default function LearnPracticeRunner({
 	sectionId,
 	questions,
 	completed,
+	nextHref = null,
+	nextTitle = null,
+	finishesCourse = false,
+	overviewHref,
 }: {
 	sectionId: string;
 	questions: LearnQuizQuestion[];
 	completed: boolean;
+	nextHref?: string | null;
+	nextTitle?: string | null;
+	finishesCourse?: boolean;
+	overviewHref?: string;
 }) {
 	const router = useRouter();
 	const [ready, setReady] = useState(false);
@@ -118,6 +128,8 @@ export default function LearnPracticeRunner({
 		setIndex(Math.max(0, Math.min(questions.length - 1, next)));
 	}
 
+	useStepperScroll(rootRef, `${index}:${summary ? 1 : 0}`, ready);
+
 	const question = questions[index];
 	const picked = question ? picks[question.id] : undefined;
 	const showSummary = summary;
@@ -130,34 +142,29 @@ export default function LearnPracticeRunner({
 			data-ln-stepper=""
 			onKeyDown={(event) => onStepperKey(event, questions.length, index, go, question, pick)}
 		>
-			<div className="ln-quiz__bar">
-				<div className="ln-quiz__bar-row">
-					<span>
-						Câu {Math.min(index + 1, questions.length)}/{questions.length} · Đúng {correct} · Sai {answered - correct}
-					</span>
-				</div>
-				<div className="ln-bar ln-bar--thin" aria-hidden="true">
-					<span style={{ width: `${questions.length ? (answered / questions.length) * 100 : 0}%` }} />
-				</div>
+			<div className="ln-practice__bar">
+				<nav className="ln-quiz__nav" aria-label="Đi tới câu hỏi">
+					{questions.map((item, itemIndex) => {
+						const choice = picks[item.id];
+						const state = choice === undefined ? undefined : choice === item.correctIndex ? 'correct' : 'wrong';
+						return (
+							<button
+								key={item.id}
+								type="button"
+								className="ln-quiz__nav-item tabular-nums"
+								data-state={itemIndex === index && !showSummary ? 'current' : state}
+								aria-label={`Câu ${itemIndex + 1}`}
+								onClick={() => go(itemIndex)}
+							>
+								{itemIndex + 1}
+							</button>
+						);
+					})}
+				</nav>
+				<p className="ln-practice__score tabular-nums">
+					Đúng {correct} · Sai {answered - correct}
+				</p>
 			</div>
-			<nav className="ln-quiz__nav" aria-label="Đi tới câu hỏi">
-				{questions.map((item, itemIndex) => {
-					const choice = picks[item.id];
-					const state = choice === undefined ? undefined : choice === item.correctIndex ? 'correct' : 'wrong';
-					return (
-						<button
-							key={item.id}
-							type="button"
-							className="ln-quiz__nav-item tabular-nums"
-							data-state={itemIndex === index && !showSummary ? 'current' : state}
-							aria-label={`Câu ${itemIndex + 1}`}
-							onClick={() => go(itemIndex)}
-						>
-							{itemIndex + 1}
-						</button>
-					);
-				})}
-			</nav>
 
 			{showSummary ? (
 				<div className="ln-quiz__score" data-passed={wrongIds.length === 0 ? 'true' : 'false'} role="status">
@@ -257,18 +264,36 @@ export default function LearnPracticeRunner({
 			)}
 
 			{questions.length ? (
-				<div className="ln-stepper__nav">
-					<button type="button" className="ln-btn" onClick={() => go(index - 1)} disabled={index === 0 || showSummary}>
-						← Câu trước
-					</button>
-					<button
-						ref={nextRef}
-						type="button"
-						className="ln-btn ln-btn--primary"
-						onClick={() => (index >= questions.length - 1 ? setSummary(true) : go(index + 1))}
-					>
-						{index >= questions.length - 1 ? 'Xem tổng kết' : 'Câu tiếp →'}
-					</button>
+				<div className="ln-stepper__dock">
+					<div className="ln-stepper__nav">
+						{showSummary ? (
+							<span />
+						) : (
+							<button type="button" className="ln-btn" onClick={() => go(index - 1)} disabled={index === 0}>
+								← Câu trước
+							</button>
+						)}
+						{showSummary ? (
+							<LearnStepperFinish
+								sectionId={sectionId}
+								completed={marked || answered === questions.length}
+								nextHref={nextHref}
+								nextTitle={nextTitle}
+								finishesCourse={finishesCourse}
+								overviewHref={overviewHref}
+							/>
+						) : (
+							<button
+								ref={nextRef}
+								type="button"
+								className="ln-btn ln-btn--primary"
+								data-ln-primary=""
+								onClick={() => (index >= questions.length - 1 ? setSummary(true) : go(index + 1))}
+							>
+								{index >= questions.length - 1 ? 'Xem tổng kết' : 'Câu tiếp →'}
+							</button>
+						)}
+					</div>
 				</div>
 			) : null}
 		</div>

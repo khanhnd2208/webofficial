@@ -99,6 +99,7 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 	}, [enriched, tab, category, level, deferredQuery, sort]);
 
 	const filtersActive = Boolean(query || category || level || tab !== 'all');
+	const showBrowse = courses.length >= 6;
 
 	function reset() {
 		setTab('all');
@@ -109,6 +110,7 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 
 	return (
 		<section aria-label="Danh sách khóa học" className="ln-browse">
+			{showBrowse ? (
 			<div className="ln-tabs" role="tablist" aria-label="Lọc theo trạng thái">
 				{TABS.map((item) => (
 					<button
@@ -124,7 +126,9 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 					</button>
 				))}
 			</div>
+			) : null}
 
+			{showBrowse ? (
 			<div className="ln-filters">
 				<label className="ln-search">
 					<LearnIcon name="search" size={17} />
@@ -195,7 +199,9 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 					</div>
 				) : null}
 			</div>
+			) : null}
 
+			{showBrowse ? (
 			<p className="ln-browse__summary" aria-live="polite">
 				{visible.length} khóa học
 				{filtersActive ? (
@@ -204,6 +210,7 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 					</button>
 				) : null}
 			</p>
+			) : null}
 
 			{visible.length ? (
 				<ul className="ln-grid">

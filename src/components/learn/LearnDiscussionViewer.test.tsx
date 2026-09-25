@@ -37,7 +37,7 @@ describe('LearnDiscussionViewer', () => {
 		expect(screen.getByText('nguồn gốc')).toBeInTheDocument();
 		expect(adminFetch).not.toHaveBeenCalled();
 
-		await user.click(screen.getByRole('button', { name: 'Câu sau →' }));
+		await user.click(screen.getByRole('button', { name: 'Câu tiếp →' }));
 		expect(screen.getByText('Thế nào?')).toBeInTheDocument();
 		await user.click(screen.getByRole('button', { name: 'Xem đáp án mẫu' }));
 		await waitFor(() =>
@@ -67,5 +67,43 @@ describe('LearnDiscussionViewer', () => {
 		rerender(<LearnDiscussionViewer sectionId="s-mark" completed={false} discussion={discussion} />);
 		await new Promise((resolve) => setTimeout(resolve, 50));
 		expect(adminFetch).toHaveBeenCalledTimes(1);
+	});
+
+	it('resumes the first unopened question when the url has no hash', async () => {
+		window.localStorage.setItem('ln:discussion:s-resume', JSON.stringify({ opened: ['d1'], completed: false }));
+		window.history.replaceState(null, '', window.location.pathname);
+		render(
+			<LearnDiscussionViewer
+				sectionId="s-resume"
+				completed={false}
+				discussion={{
+					questions: [
+						{ id: 'd1', question: 'Một?', answer: 'Đáp một.' },
+						{ id: 'd2', question: 'Hai?', answer: 'Đáp hai.' },
+					],
+				}}
+			/>,
+		);
+		expect(await screen.findByText('Hai?')).toBeInTheDocument();
+		expect(screen.queryByText('Một?')).not.toBeInTheDocument();
+	});
+
+	it('offers the next section once the last answer is open', async () => {
+		window.localStorage.setItem('ln:discussion:s-next', JSON.stringify({ opened: ['d1', 'd2'], completed: true }));
+		window.history.replaceState(null, '', `${window.location.pathname}#cau-2`);
+		render(
+			<LearnDiscussionViewer
+				sectionId="s-next"
+				completed
+				nextHref="/my-space/courses/demo?s=s2"
+				discussion={{
+					questions: [
+						{ id: 'd1', question: 'Một?', answer: 'Đáp một.' },
+						{ id: 'd2', question: 'Hai?', answer: 'Đáp hai.' },
+					],
+				}}
+			/>,
+		);
+		expect(await screen.findByRole('link', { name: 'Sang mục tiếp →' })).toHaveAttribute('href', '/my-space/courses/demo?s=s2');
 	});
 });

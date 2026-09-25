@@ -22,7 +22,8 @@ export interface DiscussionQuestionView {
 	blocks: DiscussionBlock[];
 }
 
-const LEVEL_RE = /^(Nhớ|Hiểu|Áp dụng|Vận dụng|Phân tích|Đánh giá|Sáng tạo)\s*(?:\(([^)]+)\))?\s+[—–]\s+(\S.*)$/i;
+/** Accepts an optional `Câu N ·` prefix that the discussion prompts now carry. */
+const LEVEL_RE = /^(?:Câu\s+\d+\s*·\s*)?(Nhớ|Hiểu|Áp dụng|Vận dụng|Phân tích|Đánh giá|Sáng tạo)\s*(?:\(([^)]+)\))?\s+[—–]\s+(\S.*)$/i;
 
 export const QUESTION_LABELS = ['Tình huống', 'Bối cảnh', 'Case', 'Câu hỏi', 'Yêu cầu'];
 export const ANSWER_LABELS = [
@@ -38,6 +39,10 @@ export const ANSWER_LABELS = [
 /** Labels whose block is the one thing a learner should ask for or keep. */
 export const ASK_LABELS = ['Câu hỏi', 'Yêu cầu'];
 export const TAKEAWAY_LABELS = ['Điều rút ra', 'Kết luận', 'Ghi nhớ'];
+/** Recap of the lesson: quieter than the question and the takeaway. */
+export const RECALL_LABELS = ['Nhắc lại bài học', 'Kiến thức cần dùng', 'Gợi nhớ'];
+/** Worked steps, written with `#### Bước N`. */
+export const STEP_LABELS = ['Cùng suy nghĩ từng bước', 'Lời giải'];
 
 function escape(text: string) {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

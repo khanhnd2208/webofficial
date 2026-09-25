@@ -93,7 +93,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 	const headings = section?.type === 'READING' && section.markdown ? readingOutline(section.markdown) : [];
 
 	function primaryAction() {
-		if (section && current && (section.type === 'READING' || section.type === 'PRACTICE' || section.type === 'DISCUSSION')) {
+		if (section && current && section.type === 'READING') {
 			return (
 				<LearnCompleteButton
 					sectionId={section.id}
@@ -202,13 +202,29 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 						)
 					) : section.type === 'PRACTICE' ? (
 						section.practice?.length ? (
-							<LearnPracticeRunner sectionId={section.id} questions={section.practice} completed={Boolean(state?.completed)} />
+							<LearnPracticeRunner
+								sectionId={section.id}
+								questions={section.practice}
+								completed={Boolean(state?.completed)}
+								nextHref={nextHref}
+								nextTitle={next?.title}
+								finishesCourse={finishesCourse}
+								overviewHref={overviewHref}
+							/>
 						) : (
 							<p className="mt-8 text-ink-secondary">Mục luyện tập này chưa có câu hỏi.</p>
 						)
 					) : section.type === 'DISCUSSION' ? (
 						section.discussion ? (
-							<LearnDiscussionViewer sectionId={section.id} discussion={section.discussion} completed={Boolean(state?.completed)} />
+							<LearnDiscussionViewer
+								sectionId={section.id}
+								discussion={section.discussion}
+								completed={Boolean(state?.completed)}
+								nextHref={nextHref}
+								nextTitle={next?.title}
+								finishesCourse={finishesCourse}
+								overviewHref={overviewHref}
+							/>
 						) : (
 							<p className="mt-8 text-ink-secondary">Mục này chưa có câu hỏi.</p>
 						)

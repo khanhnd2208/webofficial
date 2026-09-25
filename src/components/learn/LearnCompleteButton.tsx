@@ -57,11 +57,11 @@ export default function LearnCompleteButton({
 			{done ? (
 				<>
 					{nextHref ? (
-						<Link href={nextHref} className="ln-btn ln-btn--primary">
+						<Link href={nextHref} className="ln-btn ln-btn--primary" data-ln-primary="">
 							Tiếp: {nextTitle ?? 'mục sau'} →
 						</Link>
 					) : overviewHref ? (
-						<Link href={overviewHref} className="ln-btn ln-btn--primary">
+						<Link href={overviewHref} className="ln-btn ln-btn--primary" data-ln-primary="">
 							Về trang khóa học
 						</Link>
 					) : null}
@@ -78,6 +78,7 @@ export default function LearnCompleteButton({
 				<button
 					type="button"
 					className="ln-btn ln-btn--primary"
+					data-ln-primary=""
 					onClick={() => save(true, true)}
 					disabled={pending}
 					title="Hoàn thành và sang mục tiếp (→)"

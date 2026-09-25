@@ -557,6 +557,10 @@ describe('discussionQuestionView', () => {
 			],
 		});
 		expect(discussionQuestionView('Đánh giá (đọc thêm) — Đừng dạy hết nghề\n\nCâu hỏi: Vì sao?').level).toBe('Đánh giá · đọc thêm');
+		expect(discussionQuestionView('### Câu 1 · Hiểu — Nhân sự chỉ là giấy tờ\n\nCâu hỏi: Vì sao?')).toMatchObject({
+			level: 'Hiểu',
+			title: 'Nhân sự chỉ là giấy tờ',
+		});
 	});
 
 	it('carries a part heading to the questions that follow it', () => {
