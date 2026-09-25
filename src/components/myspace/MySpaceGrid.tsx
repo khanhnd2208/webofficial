@@ -72,7 +72,7 @@ function TileImage({
 			height={size}
 			unoptimized={tile.visual.src.endsWith('.svg')}
 			loading={tile.featured ? 'eager' : 'lazy'}
-			className={`object-contain mix-blend-multiply ${className}`}
+			className={`object-contain mix-blend-multiply drop-shadow-[0_7px_10px_rgba(23,23,23,0.08)] ${className}`}
 			sizes={`${size}px`}
 			aria-hidden
 		/>
@@ -87,8 +87,8 @@ function FlatTile({ tile, locked }: { tile: MySpaceTile; locked?: boolean }) {
 		<>
 			<TileImage
 				tile={tile}
-				size={64}
-				className="h-16 w-16 transition-transform duration-500 group-hover:scale-105"
+				size={80}
+				className="h-20 w-20 transition-transform duration-500 group-hover:scale-105"
 			/>
 			<span className={nameClass}>{tile.label}</span>
 			{locked ? <ComingSoonBadge /> : null}
@@ -107,8 +107,8 @@ function FeaturedTile({ tile, locked }: { tile: MySpaceTile; locked?: boolean })
 			>
 				<TileImage
 					tile={tile}
-					size={80}
-					className="h-20 w-20 transition-transform duration-500 group-hover:scale-105"
+					size={96}
+					className="h-24 w-24 transition-transform duration-500 group-hover:scale-105"
 				/>
 				<span className={nameClass}>{tile.label}</span>
 			</span>

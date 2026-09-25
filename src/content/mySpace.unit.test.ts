@@ -23,8 +23,8 @@ describe('My Space operating hub', () => {
 		expect(adminTiles[3]).toEqual(mySpaceAdminTile);
 		expect(mySpaceAdminTile.href).toBe(routes.admin.home);
 		expect(mySpaceAdminTile.visual).toEqual({
-			kind: 'monogram',
-			text: 'H',
+			kind: 'image',
+			src: '/brand/myspace/admin-v2.png',
 			alt: 'Biểu tượng khu quản trị Admin',
 		});
 	});

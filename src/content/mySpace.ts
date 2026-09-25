@@ -45,7 +45,7 @@ export const mySpaceTiles: MySpaceTile[] = [
 		featured: true,
 		visual: {
 			kind: 'image',
-			src: '/brand/myspace/my-class.svg',
+			src: '/brand/myspace/teaching-v2.png',
 			alt: 'Minh họa khu Teaching',
 		},
 		status: 'published',
@@ -55,7 +55,8 @@ export const mySpaceTiles: MySpaceTile[] = [
 		id: 'courses',
 		label: 'Khóa học',
 		visual: {
-			kind: 'cards',
+			kind: 'image',
+			src: '/brand/myspace/courses-v2.png',
 			alt: 'Minh họa chồng tài liệu khóa học',
 		},
 		status: 'published',
@@ -65,7 +66,8 @@ export const mySpaceTiles: MySpaceTile[] = [
 		id: 'board-game',
 		label: 'Board Game',
 		visual: {
-			kind: 'cards',
+			kind: 'image',
+			src: '/brand/myspace/board-game-v2.png',
 			alt: 'Minh họa bộ bài Board Game',
 		},
 		status: 'published',
@@ -77,8 +79,8 @@ export const mySpaceAdminTile: MySpaceTile = {
 	id: 'admin',
 	label: 'Admin',
 	visual: {
-		kind: 'monogram',
-		text: 'H',
+		kind: 'image',
+		src: '/brand/myspace/admin-v2.png',
 		alt: 'Biểu tượng khu quản trị Admin',
 	},
 	status: 'published',
