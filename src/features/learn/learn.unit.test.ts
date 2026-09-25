@@ -593,6 +593,12 @@ describe('discussionQuestionView', () => {
 			{ label: 'Cùng suy nghĩ từng bước', markdown: '#### Bước 1 —\nSo sánh.' },
 			{ label: 'Điều rút ra', markdown: 'Một câu.' },
 		]);
+		expect(
+			splitLabelled('### Cùng suy nghĩ từng bước — phần (a):\n\n#### Bước 1 —\nXem.\n\n### Kết luận (a):\nĐây là kết luận.', ANSWER_LABELS).map((block) => [block.label, block.markdown.split('\n')[0]]),
+		).toEqual([
+			['Cùng suy nghĩ từng bước', '— phần (a)'],
+			['Kết luận', '(a)'],
+		]);
 	});
 
 	it('leaves free-form prompts as plain markdown', () => {

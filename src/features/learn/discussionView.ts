@@ -50,7 +50,7 @@ function escape(text: string) {
  */
 export function splitLabelled(markdown: string, labels: string[]): DiscussionBlock[] {
 	const labelRe = new RegExp(
-		`^(>\\s*\\[![A-Za-z]+\\]\\s*|#{2,4}\\s+)?(?:\\*\\*)?(${labels.map(escape).join('|')})(?:\\*\\*)?\\s*[:：]\\s*(?:\\*\\*)?\\s*(.*)$`,
+		`^(>\\s*\\[![A-Za-z]+\\]\\s*|#{2,4}\\s+)?(?:\\*\\*)?(${labels.map(escape).join('|')})(?:\\*\\*)?(?:\\s+(\\([^)]*\\)|[—–][^:：]+))?\\s*[:：]\\s*(?:\\*\\*)?\\s*(.*)$`,
 		'i',
 	);
 	const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
@@ -70,7 +70,8 @@ export function splitLabelled(markdown: string, labels: string[]): DiscussionBlo
 		if (match) {
 			const label = labels.find((item) => item.toLowerCase() === match[2].toLowerCase()) ?? match[2];
 			quoted = Boolean(match[1]?.startsWith('>'));
-			blocks.push({ label, lines: match[3] ? [match[3]] : [] });
+			const lead = [match[3], match[4]].filter(Boolean).join(' ');
+			blocks.push({ label, lines: lead ? [lead] : [] });
 			return;
 		}
 		blocks[blocks.length - 1].lines.push(line);

@@ -72,6 +72,23 @@ async function main() {
 				const target = existing.lessons.find((item) => item.title === LESSON_TITLE);
 				const have = new Set(target?.sections.map((section) => section.title) ?? []);
 				const missing = extras.filter((section) => !have.has(section.title));
+				const discussion = extras.find((section) => section.type === 'DISCUSSION');
+				const currentDiscussion = target?.sections.find((section) => section.type === 'DISCUSSION' && section.title === discussion?.title);
+				if (target && discussion && currentDiscussion) {
+					await prisma.learnSection.update({
+						where: { id: currentDiscussion.id },
+						data: {
+							title: discussion.title,
+							durationMinutes: discussion.durationMinutes,
+							summary: discussion.summary,
+							keyTakeaways: discussion.keyTakeaways,
+							markdown: discussion.markdown,
+							discussion: discussion.discussion === null ? Prisma.DbNull : (discussion.discussion as Prisma.InputJsonValue),
+						},
+					});
+					console.log(JSON.stringify({ status: 'updated', courseId: existing.id, sectionId: currentDiscussion.id, title: discussion.title, questions: discussion.discussion?.questions.length ?? 0 }));
+					return;
+				}
 				if (!target || !missing.length) {
 					console.log(JSON.stringify({ status: 'skipped', courseId: existing.id, slug: existing.slug }));
 					return;
