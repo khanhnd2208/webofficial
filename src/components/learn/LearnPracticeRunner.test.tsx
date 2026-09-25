@@ -45,4 +45,16 @@ describe('LearnPracticeRunner', () => {
 		expect(screen.getByText('1/2')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Làm lại câu sai' })).toBeInTheDocument();
 	});
+
+	it('keeps focus in the stepper after a pick, so the arrow key moves to the next question', async () => {
+		adminFetch.mockReset();
+		adminFetch.mockResolvedValue({});
+		const user = userEvent.setup();
+		render(<LearnPracticeRunner sectionId="s-focus" questions={questions} completed={false} />);
+
+		await user.click(await screen.findByRole('radio', { name: /Đúng/ }));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Câu tiếp →' })).toHaveFocus());
+		await user.keyboard('{ArrowRight}');
+		expect(screen.getByText('Câu hai?')).toBeInTheDocument();
+	});
 });

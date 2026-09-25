@@ -63,10 +63,29 @@ B. Phương án
 Giải thích: Vì sao — chỉ khi gốc có.
 
 === DISCUSSION: Câu hỏi phản biện ===
-Câu 1: Câu hỏi, có thể nhiều dòng.
+## Tên nhóm, chỉ khi gốc có
+
+Câu 1:
+### Hiểu — Tiêu đề câu nguyên văn
+
+> [!EXAMPLE] Tình huống:
+> Đoạn tình huống nguyên văn.
+
+> [!REFLECT] Câu hỏi:
+> Câu người học phải trả lời.
 
 Đáp án mẫu:
-Đáp án giữ nguyên markdown.
+
+### Nhắc lại bài học:
+Đoạn hoặc danh sách nguyên văn.
+
+### Cùng suy nghĩ từng bước:
+
+#### Bước 1 —
+Đoạn của bước, nguyên văn.
+
+> [!IMPORTANT] Điều rút ra:
+> Một câu kết nguyên văn.
 
 Trong một mục đọc có thể thêm:
 
@@ -112,7 +131,7 @@ Tiêu đề sau [!KIND] chỉ khi gốc có một dòng nhãn riêng cho khối 
 - > [!TAKEAWAYS] chỉ cho "Mục tiêu" hoặc "Bạn sẽ nắm được" ở đầu mục. "Ghi nhớ" hoặc "Tổng kết" ở cuối bài → > [!IMPORTANT] rồi nhãn nguyên văn, vì [!TAKEAWAYS] hiện ở đầu mục với nhãn "Bạn sẽ nắm được".
 - === QUIZ: <tên nguyên văn> === chỉ khi gốc gọi khối đó là bài kiểm tra. Định dạng: Câu n: / A. … / Đáp án: X / Giải thích: (chỉ khi gốc có).
 - === PRACTICE: <tên nguyên văn> === cho bộ trắc nghiệm luyện tập có đáp án (không phải bài kiểm tra). Cùng định dạng với QUIZ. Không có đáp án → Đáp án: ?, không tự chọn.
-- === DISCUSSION: <tên nguyên văn> === cho câu hỏi có đáp án mẫu hoặc gợi ý trả lời. Định dạng: Câu n: / dòng trống / Đáp án mẫu: / markdown nguyên văn. Câu hỏi không có đáp án vẫn là [!REFLECT].
+- === DISCUSSION: <tên nguyên văn> === cho câu hỏi có đáp án mẫu hoặc gợi ý trả lời. Mỗi câu: Câu n: đứng riêng, tiêu đề thành ###, tình huống thành [!EXAMPLE], câu hỏi thành [!REFLECT], rồi một dòng Đáp án mẫu:. Trong đáp án, nhãn phần thành ###, mỗi bước thành ####, câu kết ngắn thành [!IMPORTANT]. Không dùng ## bên trong câu. Câu hỏi không có đáp án vẫn là [!REFLECT] trong bài đọc, không đưa vào DISCUSSION.
 
 CẢNH BÁO: BẢN GỐC CHÉP TỪ DOCS/WORD
 Bản chép văn bản thường làm mất bảng, in đậm và sơ đồ. Hãy dựng lại, không đổi chữ trong ô.
@@ -199,25 +218,69 @@ CÁCH TRẢ KẾT QUẢ
 --- BỘ CÂU GỐC ---
 [DÁN VÀO ĐÂY]`;
 
-export const LEARN_DISCUSSION_FORMAT_PROMPT = `Bạn là công cụ chỉ gắn định dạng cho câu hỏi phản biện và đáp án mẫu. Mọi chữ phải giữ nguyên từng ký tự. Không sửa chính tả, không dịch, không rút gọn, không thêm câu hay tự viết đáp án.
+export const LEARN_DISCUSSION_FORMAT_PROMPT = `Bạn là công cụ chỉ gắn định dạng cho câu hỏi phản biện và đáp án mẫu. Mọi chữ, số, dấu câu và thứ tự phải giữ nguyên. Không sửa chính tả, không dịch, không rút gọn, không thêm câu, bước, tình huống hay đáp án. Chỉ được thêm ký hiệu Markdown liệt kê bên dưới, và chỉ được đổi đúng một nhãn: nhãn mở đáp án thành "Đáp án mẫu:".
 
-MẪU
-Câu 1: …
+VÌ SAO PHẢI GẮN KHỐI
+Trang đọc hiện từng câu một. Phần trước nút "Xem đáp án mẫu" là đề bài; phần sau là lời giải. Nếu để "Tình huống:", "Câu hỏi:", "Bước 1 —", "Điều rút ra:" dính đầu đoạn văn, người học thấy một khối chữ không tách được. Hãy đưa mỗi nhãn có sẵn trong gốc lên đúng loại khối bên dưới. Không có nhãn đó trong gốc thì không được tự thêm khối.
+
+MẪU MỘT CÂU — chép hình, không chép chữ ví dụ
+## Phần 1. Tên nhóm nguyên văn
+
+Câu 1:
+### Hiểu — Tiêu đề câu nguyên văn
+
+> [!EXAMPLE] Tình huống:
+> Đoạn tình huống nguyên văn. Dòng tiếp của cùng tình huống cũng bắt đầu bằng >.
+
+> [!REFLECT] Câu hỏi:
+> Câu người học phải trả lời, nguyên văn.
 
 Đáp án mẫu:
-…
 
-- Nhãn gốc "Gợi ý trả lời", "Hướng dẫn", "Trả lời", "Đáp án" → đổi thành "Đáp án mẫu:" (chỉ nhãn được đổi).
-- Câu không có đáp án trong gốc → để "Đáp án mẫu:" trống, không tự viết.
-- Tiêu đề nhóm câu → một dòng ## ngay trước câu đầu của nhóm.
+### Nhắc lại bài học:
+Đoạn hoặc danh sách nguyên văn.
 
+### Cùng suy nghĩ từng bước:
+Câu dẫn ngay sau nhãn, nếu gốc có.
+
+#### Bước 1 —
+Phần còn lại của bước, nguyên văn, kể cả danh sách và bảng.
+
+> [!IMPORTANT] Điều rút ra:
+> Câu kết nguyên văn.
+
+Câu 2:
+### …
+
+ĐỀ BÀI — nằm trước dòng Đáp án mẫu
+- "Câu n:" đứng một mình trên một dòng, rồi một dòng trống. Không viết tiêu đề cùng dòng với "Câu n:".
+- Dòng tiêu đề của câu (kèm mức như Hiểu, Áp dụng, Phân tích, Đánh giá, Sáng tạo nếu gốc có) → ### giữ nguyên cả dòng, kể cả dấu gạch.
+- "Tình huống:", "Bối cảnh:", "Case:" → khối > [!EXAMPLE], nhãn gốc để nguyên làm tiêu đề khối (giữ dấu hai chấm). Phần chữ sau dấu hai chấm xuống thân khối. Nhiều đoạn thì mỗi dòng thân bắt đầu bằng "> ".
+- Dòng "Câu hỏi:" hoặc "Yêu cầu:" — tức câu người học phải trả lời, khác với tiêu đề — → khối > [!REFLECT], cùng cách tách nhãn và thân. Không đánh số lại dòng này thành "Câu n:".
+- Không nhét bảng hoặc danh sách nhiều bước vào trong khối >. Bảng và danh sách để ngoài khối.
+
+ĐÁP ÁN — nằm sau đúng một dòng "Đáp án mẫu:"
+- Dòng đó đứng riêng, một dòng trống phía trên, không chữ nào khác trên dòng. Nhãn gốc "Gợi ý trả lời", "Gợi ý đáp án", "Hướng dẫn trả lời", "Trả lời", "Đáp án" đều đổi thành dòng này. Chỉ đổi nhãn mở đầu đáp án, một lần.
+- Câu không có đáp án trong gốc → vẫn viết "Đáp án mẫu:" rồi để trống, không tự viết.
+- "Nhắc lại bài học:", "Kiến thức cần dùng:", "Gợi nhớ:" → ### giữ nguyên nhãn, kể cả dấu hai chấm. Chữ cùng dòng sau dấu hai chấm thành đoạn ngay dưới tiêu đề.
+- "Cùng suy nghĩ từng bước:", "Lời giải:", "Phân tích:" → ### cùng cách. Nếu nhãn gốc là "Hướng dẫn:" mà nó nằm trong đáp án, cũng thành ###, không được viết lại thành "Đáp án mẫu:".
+- "Bước 1 —", "Bước 2 —", … → #### chỉ gồm nhãn và dấu gạch (ví dụ "#### Bước 1 —"). Phần chữ sau dấu gạch là thân, không cắt giữa câu, không bỏ dấu chấm.
+- "Điều rút ra:", "Kết luận:", "Ghi nhớ:" nếu chỉ một đoạn ngắn → > [!IMPORTANT], nhãn gốc làm tiêu đề khối. Nếu phần đó có danh sách hoặc nhiều đoạn → ###, không bọc trong >.
+- Đoạn trong đáp án cách nhau một dòng trống. Danh sách bắt đầu sau một dòng trống.
+
+BẢNG, DANH SÁCH, IN ĐẬM
 ${STRUCTURE_GUIDE}
-- Trong đáp án: đoạn cách nhau một dòng trống.
+- Bảng so sánh trong lời giải (mỗi hàng một ý, các cột lặp lại) phải thành bảng Markdown, không để mỗi ô một dòng. Không bọc bảng trong ${CODE_FENCE}.
+
+ĐƯỜNG RÀNH KHÔNG ĐƯỢC VƯỢT
+- ## chỉ dùng cho tiêu đề nhóm có sẵn trong gốc (Phần, Chương, nhóm mức). Đặt ## ngay trước "Câu n:" của câu đầu nhóm, cách một dòng trống. Bên trong đề bài và đáp án không được có dòng ##. Tiêu đề con dùng ### hoặc ####. Không dòng nào bắt đầu bằng một dấu #.
+- Không được có dòng nào bên trong đáp án bắt đầu bằng "Câu" kèm số ("Câu 1:", "Câu 8:"). Lời nhắc chéo kiểu "xem lại câu 1" phải nằm giữa câu, không đứng đầu dòng. Nếu không, máy sẽ cắt đôi câu.
+- "Đáp án mẫu:" chỉ xuất hiện một lần cho mỗi câu, đúng chỗ ngăn đề bài và đáp án.
 
 CÁCH TRẢ KẾT QUẢ
 - Toàn bộ kết quả nằm trong MỘT khối ${FENCE}markdown. Không chữ nào ngoài khối.
 - Bài dài: dừng ở hết một câu, đóng khối, viết <<<CÒN TIẾP>>>. Khi tôi nhắn "tiếp", tiếp tục từ câu kế, không lặp.
-- Tự kiểm: số câu bằng gốc, không có câu nào do bạn viết.
+- Tự kiểm trước khi gửi: số câu bằng gốc; không có câu, bước hay nhãn nào do bạn viết; mỗi câu có đúng một dòng Đáp án mẫu:; không còn nhãn "Tình huống:", "Bước n —", "Điều rút ra:" dính đầu một đoạn văn thường.
 
 --- CÂU HỎI GỐC ---
 [DÁN VÀO ĐÂY]`;

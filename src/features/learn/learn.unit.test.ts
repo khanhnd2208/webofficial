@@ -498,6 +498,54 @@ describe('helpers', () => {
 		]);
 	});
 
+	it('keeps numbered statements in a stem and option-like lines in an explanation', () => {
+		const { questions, warnings } = parseQuizPaste(
+			[
+				'Câu 1: Cho các nhận định sau:',
+				'1. Vật chất có trước',
+				'2. Ý thức có sau',
+				'Số nhận định đúng là:',
+				'A. 1',
+				'B. 2',
+				'Đáp án: B',
+				'Giải thích:',
+				'A. sai vì thiếu một ý.',
+				'B. đúng.',
+				'',
+				'Câu 2: Tiếp?',
+				'A. Có',
+				'B. Không',
+				'Đáp án: A',
+			].join('\n'),
+		);
+		expect(warnings).toEqual([]);
+		expect(questions).toHaveLength(2);
+		expect(questions[0].question).toBe('Cho các nhận định sau:\n1. Vật chất có trước\n2. Ý thức có sau\nSố nhận định đúng là:');
+		expect(questions[0].explanation).toBe('A. sai vì thiếu một ý.\nB. đúng.');
+	});
+
+	it('keeps later answer-like labels inside a discussion answer', () => {
+		const { questions } = parseDiscussionPaste(
+			'Câu 1: Phân tích.\n\nĐáp án mẫu:\nÝ một.\n\nHướng dẫn: nêu ví dụ cụ thể.\n\nTrả lời: đây là trích dẫn.',
+		);
+		expect(questions[0].answer).toBe('Ý một.\n\nHướng dẫn: nêu ví dụ cụ thể.\n\nTrả lời: đây là trích dẫn.');
+	});
+
+	it('keeps "## Luyện tập:" and "### Kiểm tra:" subheadings inside a reading section', () => {
+		const parsed = parseLessonMarkdown(
+			'# Bài\n\n=== SECTION: I. Mở đầu ===\nĐoạn.\n\n## Luyện tập: Vận dụng\nĐoạn.\n\n### Kiểm tra: hiểu bài\nĐoạn.\n\n=== LUYỆN TẬP: Ôn ===\nCâu 1: Hỏi?\nA. a\nB. b\nĐáp án: A',
+		);
+		expect(parsed.sections.map((section) => section.type)).toEqual(['READING', 'PRACTICE']);
+		expect(parsed.sections[0].markdown).toContain('## Luyện tập: Vận dụng');
+	});
+
+	it('does not count renamed answer labels or a key letter glued to a word as edits', () => {
+		const original = 'Câu 1: Vì sao?\nTrả lời: Bởi vì A.\n\n**Câu 2.** Ra sao?\nGợi ý đáp án: Được.';
+		const formatted = 'Câu 1: Vì sao?\n\nĐáp án mẫu:\nBởi vì A.\n\nCâu 2: Ra sao?\n\nĐáp án mẫu:\nĐược.';
+		expect(compareLectureText(original, formatted, { questions: true }).hunks).toEqual([]);
+		expect(compareLectureText('Câu 1: X?\nĐáp án: Bởi Y.', 'Câu 1: X?\n\nĐáp án mẫu:\nBởi Y.', { questions: true }).hunks).toEqual([]);
+	});
+
 	it('estimates reading time with a one-minute floor', () => {
 		expect(estimateReadingMinutes('ngắn')).toBe(1);
 		expect(estimateReadingMinutes(Array(900).fill('từ').join(' '))).toBe(5);

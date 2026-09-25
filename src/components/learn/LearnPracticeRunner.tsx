@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 import type { LearnQuizQuestion } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
@@ -50,6 +50,8 @@ export default function LearnPracticeRunner({
 	const [picks, setPicks] = useState<Record<string, number>>({});
 	const [marked, setMarked] = useState(completed);
 	const [summary, setSummary] = useState(false);
+	const rootRef = useRef<HTMLDivElement>(null);
+	const nextRef = useRef<HTMLButtonElement>(null);
 
 	useEffect(() => {
 		const saved = readSaved(sectionId);
@@ -95,9 +97,20 @@ export default function LearnPracticeRunner({
 		};
 	}, [ready, marked, answered, questions.length, sectionId, router]);
 
+	/**
+	 * Picking disables the options and retrying unmounts its button, which would drop focus to
+	 * <body>, where ←/→ switch sections instead of questions. Keep focus inside the stepper.
+	 */
+	function keepFocus(target: 'next' | 'root') {
+		window.requestAnimationFrame(() =>
+			(target === 'next' ? nextRef.current : rootRef.current)?.focus({ preventScroll: true }),
+		);
+	}
+
 	function pick(question: LearnQuizQuestion, optionIndex: number) {
 		if (picks[question.id] !== undefined) return;
 		setPicks((current) => ({ ...current, [question.id]: optionIndex }));
+		keepFocus('next');
 	}
 
 	function go(next: number) {
@@ -110,7 +123,13 @@ export default function LearnPracticeRunner({
 	const showSummary = summary;
 
 	return (
-		<div className="ln-stepper" data-ln-stepper="" onKeyDown={(event) => onStepperKey(event, questions.length, index, go, question, pick)}>
+		<div
+			ref={rootRef}
+			tabIndex={-1}
+			className="ln-stepper"
+			data-ln-stepper=""
+			onKeyDown={(event) => onStepperKey(event, questions.length, index, go, question, pick)}
+		>
 			<div className="ln-quiz__bar">
 				<div className="ln-quiz__bar-row">
 					<span>
@@ -160,6 +179,7 @@ export default function LearnPracticeRunner({
 								});
 								const first = questions.findIndex((item) => wrongIds.includes(item.id));
 								go(first < 0 ? 0 : first);
+								keepFocus('root');
 							}}
 						>
 							Làm lại câu sai
@@ -171,6 +191,7 @@ export default function LearnPracticeRunner({
 						onClick={() => {
 							setPicks({});
 							go(0);
+							keepFocus('root');
 						}}
 					>
 						Làm lại từ đầu
@@ -214,11 +235,18 @@ export default function LearnPracticeRunner({
 								{picked === question.correctIndex ? 'Chính xác.' : `Chưa đúng. Đáp án: ${LETTERS[question.correctIndex]}`}
 							</p>
 							{question.explanation ? <LearnMarkdown markdown={question.explanation} /> : null}
-							<button type="button" className="ln-link-btn" onClick={() => setPicks((current) => {
-								const next = { ...current };
-								delete next[question.id];
-								return next;
-							})}>
+							<button
+								type="button"
+								className="ln-link-btn"
+								onClick={() => {
+									setPicks((current) => {
+										const next = { ...current };
+										delete next[question.id];
+										return next;
+									});
+									keepFocus('root');
+								}}
+							>
 								Thử lại câu này
 							</button>
 						</div>
@@ -234,6 +262,7 @@ export default function LearnPracticeRunner({
 						← Câu trước
 					</button>
 					<button
+						ref={nextRef}
 						type="button"
 						className="ln-btn ln-btn--primary"
 						onClick={() => (index >= questions.length - 1 ? setSummary(true) : go(index + 1))}

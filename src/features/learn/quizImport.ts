@@ -19,6 +19,7 @@ export interface QuizPasteResult {
 }
 
 const QUESTION_RE = /^(?:\*\*)?(?:câu(?:\s+hỏi)?\s*\d+|question\s*\d+|q\d*|\d+)\s*[:.)]\s*(?:\*\*)?\s*(.*)$/i;
+const LABELLED_QUESTION_RE = /^(?:\*\*)?(?:câu(?:\s+hỏi)?|question)\s*\d+\s*[:.)]/i;
 const OPTION_RE = /^([*✓✔]\s*)?([A-Ha-h])\s*[.)]\s+(.*)$/;
 const ANSWER_RE = /^(?:\*\*)?(?:đáp\s*án(?:\s*đúng)?|answer|correct)\s*[:：]\s*(?:\*\*)?\s*([A-Ha-h]|\?)\b/i;
 const EXPLANATION_RE = /^(?:\*\*)?(?:giải\s*thích|explanation|lý\s*do)\s*[:：]\s*(?:\*\*)?\s*(.*)$/i;
@@ -86,7 +87,12 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 		draft = null;
 	};
 
-	for (const rawLine of raw.replace(/\r\n?/g, '\n').split('\n')) {
+	const lines = raw.replace(/\r\n?/g, '\n').split('\n');
+	// Once a paste numbers its questions "Câu n:", a bare "1." is a statement inside a stem
+	// ("Cho các nhận định sau: 1. … 2. …") and "A." inside an explanation is prose, not a new question.
+	const labelled = lines.some((line) => LABELLED_QUESTION_RE.test(line.trim()));
+
+	for (const rawLine of lines) {
 		const line = rawLine.trim();
 		if (!line) {
 			if (draft?.stage === 'explanation') draft.explanation.push('');
@@ -119,9 +125,10 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 			continue;
 		}
 
-		const question = line.match(QUESTION_RE);
+		const matched = line.match(QUESTION_RE);
+		const question = matched && (!labelled || LABELLED_QUESTION_RE.test(line)) ? matched : null;
 		if (question || !draft || draft.stage !== 'question') {
-			if (draft?.stage === 'explanation' && !question && !option) {
+			if (draft?.stage === 'explanation' && !question && (labelled || !option)) {
 				draft.explanation.push(line);
 				continue;
 			}

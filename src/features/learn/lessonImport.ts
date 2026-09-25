@@ -38,8 +38,12 @@ export interface ImportedLesson {
 	warnings: string[];
 }
 
+/**
+ * Vietnamese aliases only count on === / --- lines: lectures use "## Luyện tập: …" or
+ * "### Kiểm tra: …" as ordinary subheadings, which must stay inside their reading section.
+ */
 const SECTION_DELIMITER_RE =
-	/^(?:={3,}|-{3,}|#{2,3})\s*(SECTION|MỤC|PHẦN|QUIZ|KIỂM\s*TRA|KIEM\s*TRA|PRACTICE|LUYỆN\s*TẬP|LUYEN\s*TAP|DISCUSSION|PHẢN\s*BIỆN|PHAN\s*BIEN)\s*:\s*(.+?)(?:\s*(?:={3,}|-{3,}))?$/i;
+	/^(?:(?:={3,}|-{3,})\s*(SECTION|MỤC|PHẦN|QUIZ|KIỂM\s*TRA|KIEM\s*TRA|PRACTICE|LUYỆN\s*TẬP|LUYEN\s*TAP|DISCUSSION|PHẢN\s*BIỆN|PHAN\s*BIEN)|#{2,3}\s*(SECTION|MỤC|PHẦN|QUIZ|PRACTICE|DISCUSSION))\s*:\s*(.+?)(?:\s*(?:={3,}|-{3,}))?$/i;
 
 function sliceKind(label: string): LearnSectionKind {
 	const key = label.toLocaleLowerCase('vi').replace(/\s+/g, '');
@@ -227,7 +231,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 	lines.forEach((line, index) => {
 		if (fenceMask[index]) return;
 		const match = line.trim().match(SECTION_DELIMITER_RE);
-		if (match) slices.push({ titleLine: match[2].trim(), kind: sliceKind(match[1]), start: index });
+		if (match) slices.push({ titleLine: match[3].trim(), kind: sliceKind(match[1] ?? match[2]), start: index });
 	});
 
 	if (!slices.length) {

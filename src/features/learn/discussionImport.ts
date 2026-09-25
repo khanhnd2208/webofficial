@@ -1,12 +1,19 @@
 /**
  * Bulk-paste parser for discussion prompts:
  *
- *   ## Nhóm (optional, attached to the next question)
+ *   ## Nhóm (optional, attached to the next question — never use ## inside an item)
  *
- *   Câu 1: Question, which may run for several paragraphs.
+ *   Câu 1:
+ *   ### Tiêu đề
+ *   > [!EXAMPLE] Tình huống:
+ *   > …
+ *   > [!REFLECT] Câu hỏi:
+ *   > …
  *
  *   Đáp án mẫu:
- *   Markdown kept as written: paragraphs, lists, tables, callouts.
+ *   ### Nhắc lại bài học:
+ *   #### Bước 1 —
+ *   > [!IMPORTANT] Điều rút ra:
  *
  *   Câu 2: …
  */
@@ -21,7 +28,7 @@ export interface DiscussionPasteResult {
 
 const QUESTION_RE = /^(?:\*\*)?(?:câu(?:\s+hỏi)?|question)\s*(\d+)\s*[:.)]\s*(?:\*\*)?\s*(.*)$/i;
 const ANSWER_RE =
-	/^(?:\*\*)?(?:đáp\s*án\s*mẫu|gợi\s*ý\s*trả\s*lời|hướng\s*dẫn(?:\s*trả\s*lời)?|trả\s*lời|đáp\s*án|sample\s*answer|answer)\s*[:：]\s*(?:\*\*)?\s*(.*)$/i;
+	/^(?:\*\*)?(?:đáp\s*án\s*mẫu|gợi\s*ý\s*(?:trả\s*lời|đáp\s*án)|hướng\s*dẫn(?:\s*trả\s*lời)?|trả\s*lời|đáp\s*án|sample\s*answer|answer)\s*[:：]\s*(?:\*\*)?\s*(.*)$/i;
 
 interface Draft {
 	question: string[];
@@ -113,7 +120,8 @@ export function parseDiscussionPaste(raw: string): DiscussionPasteResult {
 			continue;
 		}
 
-		const answer = line.trim().match(ANSWER_RE);
+		// Only the first label opens the answer; later "Hướng dẫn:" or "Trả lời:" lines are answer text.
+		const answer = draft?.stage === 'question' ? line.trim().match(ANSWER_RE) : null;
 		if (answer && draft) {
 			draft.stage = 'answer';
 			if (answer[1]) draft.answer.push(answer[1]);

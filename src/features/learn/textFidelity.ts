@@ -80,11 +80,15 @@ function stripFormatting(markdown: string, side: 'original' | 'formatted', quest
 		line = line.replace(/^\[![A-Z]+\]\s*/i, '');
 		line = line.replace(/^#{1,6}\s+/, '');
 		if (questions) {
+			// Labels are often bold in the source ("**Câu 1:**"), so drop emphasis before matching them.
+			line = line.replace(/\*\*|__/g, '');
 			line = line.replace(/^(?:câu(?:\s+hỏi)?|question)\s*\d+\s*[:.)]\s*/i, '');
 			line = line.replace(/^\d+\s*[:.)]\s+/, '');
 			line = line.replace(/^[A-Ha-h]\s*[.)]\s+/, '');
+			// Same answer labels the paste parsers accept. The key letter is dropped only when it stands
+			// alone, so "Đáp án: Bởi vì…" keeps its first word.
 			line = line.replace(
-				/^(?:đáp\s*án\s*mẫu|gợi\s*ý\s*trả\s*lời|hướng\s*dẫn(?:\s*trả\s*lời)?|đáp\s*án(?:\s*đúng)?|sample\s*answer|answer|correct)\s*[:：]\s*(?:[A-Ha-h]|\?)?\s*/i,
+				/^(?:đáp\s*án\s*mẫu|gợi\s*ý(?:\s*(?:trả\s*lời|đáp\s*án))?|hướng\s*dẫn(?:\s*trả\s*lời)?|trả\s*lời|đáp\s*án(?:\s*đúng)?|sample\s*answer|answer|correct)\s*[:：]\s*(?:(?:[A-Ha-h]|\?)(?![\p{L}\p{N}]))?\s*/iu,
 				'',
 			);
 			line = line.replace(/^(?:giải\s*thích|explanation|lý\s*do)\s*[:：]\s*/i, '');

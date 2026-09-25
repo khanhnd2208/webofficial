@@ -42,7 +42,7 @@ export default function QuestionPasteDialog({
 }) {
 	const [pane, setPane] = useState<'ai' | 'original'>('ai');
 	const [original, setOriginal] = useState('');
-	const [acked, setAcked] = useState(false);
+	const [ackedFor, setAckedFor] = useState<string | null>(null);
 	const { copied, copy } = useCopy();
 	const { copied: copiedCompose, copy: copyCompose } = useCopy();
 	const fidelity = useMemo(
@@ -51,6 +51,9 @@ export default function QuestionPasteDialog({
 	);
 	const places = fidelity ? countPlaces(fidelity.hunks) : 0;
 	const needsAck = places > 0 || missingCount > 0;
+	// A tick covers the paste it was given for; editing either pane asks again.
+	const ackKey = `${places}:${missingCount}:${text}\u0000${original}`;
+	const acked = ackedFor === ackKey;
 
 	return (
 		<StudioDialog
@@ -60,7 +63,7 @@ export default function QuestionPasteDialog({
 				<>
 					{needsAck ? (
 						<label className="mr-auto flex items-center gap-2 text-sm">
-							<input type="checkbox" checked={acked} onChange={(event) => setAcked(event.target.checked)} />
+							<input type="checkbox" checked={acked} onChange={(event) => setAckedFor(event.target.checked ? ackKey : null)} />
 							{places > 0 ? `${places} chỗ khác bản gốc` : null}
 							{places > 0 && missingCount > 0 ? ' · ' : null}
 							{missingCount > 0 ? `${missingCount} câu thiếu đáp án` : null}
