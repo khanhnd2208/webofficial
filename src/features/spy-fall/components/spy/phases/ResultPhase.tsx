@@ -41,7 +41,9 @@ function endReasonText(
 	const last = result.eliminationLog.at(-1);
 	switch (result.endReason) {
 		case 'all-spies-caught':
-			return t(spyCount === 2 ? 'spy.result.reason.caughtTwo' : 'spy.result.reason.caughtOne');
+			return spyCount > 1
+				? t('spy.result.reason.caughtAll', { count: spyCount })
+				: t('spy.result.reason.caughtOne');
 		case 'wrong-vote':
 			return t('spy.result.reason.wrongVote', {
 				name: (last?.token && names.get(last.token)) || '?',
@@ -69,7 +71,7 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 	const civiliansWon = result.winningSide === 'civilian';
 	const spies = state.players.filter((p) => p.role === 'spy');
 	const spyNames = spies.map((p) => p.name).join(', ');
-	const twoSpies = state.spyCount === 2;
+	const manySpies = state.spyCount > 1;
 	const reason = endReasonText(t, result, state.spyCount, names);
 	const finalRound = result.eliminationLog.at(-1);
 	const finalTally = (finalRound?.tally ?? [])
@@ -100,7 +102,7 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 					>
 						{civiliansWon
 							? t('spy.result.officersWin')
-							: t(twoSpies ? 'spy.result.spiesWin' : 'spy.result.spyWin')}
+							: t(manySpies ? 'spy.result.spiesWin' : 'spy.result.spyWin')}
 					</h2>
 					{reason ? <p className="mt-2 text-sm text-foreground-secondary">{reason}</p> : null}
 					{selfRole ? (

@@ -17,7 +17,14 @@ import {
 	Skeleton,
 } from '@/features/spy-fall/components/ui';
 import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
-import { SPY_MAX_PLAYERS } from '@/features/spy-fall/config/spyGame';
+import {
+	SPY_COUNTS,
+	SPY_DEFAULT_COUNT,
+	SPY_MAX_PLAYERS,
+	minPlayersForSpies,
+	type SpyCount,
+} from '@/features/spy-fall/config/spyGame';
+import { cn } from '@/features/spy-fall/lib/cn';
 import { withBasePath } from '@/features/spy-fall/lib/basePath';
 import { postSpyAction } from '@/features/spy-fall/lib/spy/api';
 import {
@@ -40,6 +47,7 @@ export default function SpyMenuClient() {
 	const [view, setView] = useState<View>('menu');
 	const [name, setName] = useState('');
 	const [roomName, setRoomName] = useState('');
+	const [spyCount, setSpyCount] = useState<SpyCount>(SPY_DEFAULT_COUNT);
 	const [joinCode, setJoinCode] = useState('');
 	const [publicRooms, setPublicRooms] = useState<PublicRoomListItemDTO[]>([]);
 	const [loadingPublic, setLoadingPublic] = useState(false);
@@ -105,6 +113,7 @@ export default function SpyMenuClient() {
 					name: roomName,
 					hostName: normalized,
 					maxPlayers: SPY_MAX_PLAYERS,
+					spyCount,
 					topic: 'any',
 					isPublic: true,
 				},
@@ -264,6 +273,43 @@ export default function SpyMenuClient() {
 									value={roomName}
 									onChange={(e) => setRoomName(e.target.value)}
 								/>
+							</Field>
+							<Field
+								label={t('spy.lobby.spyCount')}
+								hint={
+									spyCount > 1
+										? t('spy.lobby.spyCountHintMany', {
+												count: spyCount,
+												min: minPlayersForSpies(spyCount),
+											})
+										: t('spy.lobby.spyCountHintOne')
+								}
+							>
+								<div role="radiogroup" aria-label={t('spy.lobby.spyCount')} className="grid grid-cols-3 gap-2">
+									{SPY_COUNTS.map((count) => {
+										const selected = count === spyCount;
+										return (
+											<button
+												key={count}
+												type="button"
+												role="radio"
+												aria-checked={selected}
+												onClick={() => {
+													playTap();
+													setSpyCount(count);
+												}}
+												className={cn(
+													'min-h-11 rounded-xl border px-3 text-sm font-semibold transition',
+													selected
+														? 'border-accent bg-accent text-accent-foreground'
+														: 'border-border bg-surface text-foreground hover:bg-surface-hover',
+												)}
+											>
+												{t('spy.lobby.spyCountOption', { count })}
+											</button>
+										);
+									})}
+								</div>
 							</Field>
 							{error ? <ErrorState message={error} /> : null}
 							<Button type="submit" fullWidth loading={busy}>

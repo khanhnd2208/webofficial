@@ -21,11 +21,13 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 	const eliminated = round?.token ? state.players.find((p) => p.token === round.token) : undefined;
 	const nameByToken = new Map(state.players.map((p) => [p.token, p.name]));
 	const counted = (round?.tally ?? []).filter((row) => row.votes > 0).sort((a, b) => b.votes - a.votes);
+	const spiesLeft = Math.max(0, state.spyCount - state.spiesCaught);
+	const finalGuess = spiesLeft <= 1;
 
 	return (
 		<>
 			<div className="space-y-5">
-				{/* Reached only in two-Spy games, right after the first Spy is voted out. */}
+				{/* Reached only in multi-Spy games, after a Spy is voted out and others are still hidden. */}
 				<Card elevated className="space-y-3 py-8 text-center">
 					<p className="text-xs font-semibold uppercase tracking-wider text-muted">
 						{t('spy.reveal.roundOut', { round: round?.round ?? state.round })}
@@ -42,7 +44,7 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 							<Stamp label={getRoleLabel(t, round.role)} variant="suspect" animate />
 						</>
 					) : null}
-					<p className="px-4 pt-2 text-sm font-medium text-ink">{t('spy.reveal.oneMore')}</p>
+					<p className="px-4 pt-2 text-sm font-medium text-ink">{t('spy.reveal.spiesLeft', { count: spiesLeft })}</p>
 				</Card>
 
 				{counted.length > 0 ? (
@@ -67,7 +69,8 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 				) : null}
 
 				<StepGuide
-					stepsKey="spy.steps.reveal"
+					stepsKey={finalGuess ? 'spy.steps.reveal' : 'spy.steps.revealMore'}
+					params={{ count: spiesLeft }}
 					tipKey={state.isHost ? 'spy.steps.revealHost' : undefined}
 				/>
 			</div>
@@ -82,7 +85,7 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 							onNext();
 						}}
 					>
-						{t('spy.reveal.next', { round: state.round + 1 })}
+						{t(finalGuess ? 'spy.reveal.nextFinal' : 'spy.reveal.nextMore', { round: state.round + 1 })}
 					</Button>
 				) : (
 					<ActionBarNote>{t('spy.reveal.waitHost')}</ActionBarNote>

@@ -10,15 +10,16 @@ interface Props {
 	className?: string;
 }
 
-/** What this vote decides: the whole game with one Spy, or a first or final guess with two. */
+/** What this vote decides: the whole game with one Spy, else a first, middle or final guess. */
 function stakesKey({ spyCount, spiesCaught }: Props['state']): string {
 	if (spyCount === 1) return 'spy.stakes.one';
-	return spiesCaught > 0 ? 'spy.stakes.twoLast' : 'spy.stakes.twoFirst';
+	if (spiesCaught === 0) return 'spy.stakes.first';
+	return spiesCaught >= spyCount - 1 ? 'spy.stakes.last' : 'spy.stakes.middle';
 }
 
 export default function StakesBanner({ state, className }: Props) {
 	const t = useT();
-	const finalGuess = state.spyCount === 1 || state.spiesCaught > 0;
+	const finalGuess = state.spiesCaught >= state.spyCount - 1;
 
 	return (
 		<p
@@ -31,7 +32,7 @@ export default function StakesBanner({ state, className }: Props) {
 			)}
 		>
 			<GameIcon name="target" size={16} className="mt-0.5 shrink-0" />
-			<span>{t(stakesKey(state))}</span>
+			<span>{t(stakesKey(state), { caught: state.spiesCaught, total: state.spyCount })}</span>
 		</p>
 	);
 }
