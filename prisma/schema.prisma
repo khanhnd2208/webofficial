@@ -1320,8 +1320,9 @@ model LearnCourse {
   updatedAt   DateTime         @updatedAt
   publishedAt DateTime?
 
-  lessons  LearnLesson[]
-  progress LearnSectionProgress[]
+  lessons       LearnLesson[]
+  progress      LearnSectionProgress[]
+  studySessions LearnStudySession[]
 
   @@index([status, position])
 }
@@ -1407,4 +1408,52 @@ model LearnSectionProgress {
 
   @@unique([userId, sectionId])
   @@index([userId, courseId])
+}
+
+/// A signed-in learner's visit to a self-paced course. Client supplied timing
+/// is bounded and accepted only while this session owns the learner's lease.
+model LearnStudySession {
+  id                 String    @id
+  userId             String
+  courseId           String
+  startedAt          DateTime  @default(now())
+  lastActivityAt     DateTime  @default(now())
+  lastHeartbeatAt    DateTime  @default(now())
+  endedAt            DateTime?
+  totalActiveSeconds Int       @default(0)
+  lastSequence       Int       @default(-1)
+
+  course  LearnCourse        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  buckets LearnStudyBucket[]
+
+  @@index([courseId, startedAt])
+  @@index([userId, courseId, startedAt])
+  @@index([userId, lastActivityAt])
+}
+
+/// Small daily per-section aggregates. No row is written for every heartbeat.
+model LearnStudyBucket {
+  id           String   @id @default(cuid())
+  sessionId    String
+  sectionId    String
+  sectionTitle String
+  day          DateTime @db.Date
+  seconds      Int      @default(0)
+
+  session LearnStudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, sectionId, day])
+  @@index([sectionId, day])
+  @@index([sessionId, day])
+}
+
+/// One active timer owner per account prevents cross-device/tab double counts.
+model LearnStudyLease {
+  userId    String   @id
+  sessionId String
+  clientId  String
+  expiresAt DateTime
+  updatedAt DateTime @updatedAt
+
+  @@index([expiresAt])
 }

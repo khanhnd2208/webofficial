@@ -15,7 +15,11 @@ import { routes } from './routes';
 
 describe('operating module registry', () => {
 	it('keeps Teaching active while allowing it to live outside Admin navigation', () => {
-		expect(getActiveModules().map((module) => module.id)).toEqual(['website', 'teaching']);
+		expect(getActiveModules().map((module) => module.id)).toEqual([
+			'website',
+			'learning-analytics',
+			'teaching',
+		]);
 		expect(resolveModuleByAdminPath(routes.admin.teaching)?.showInAdminNavigation).toBe(false);
 	});
 
@@ -69,6 +73,7 @@ describe('operating module registry', () => {
 	it('keeps main admin chrome for Website and Teaching compatibility paths', () => {
 		expect(isMainAdminPath(routes.admin.home)).toBe(true);
 		expect(isMainAdminPath(routes.admin.website)).toBe(true);
+		expect(isMainAdminPath(routes.admin.learnAnalytics)).toBe(true);
 		expect(isMainAdminPath(`${routes.admin.inquiries}/abc`)).toBe(true);
 		expect(isMainAdminPath(routes.admin.activeRecall)).toBe(true);
 		expect(isArchivedAdminPath(routes.admin.home)).toBe(false);

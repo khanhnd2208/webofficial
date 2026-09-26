@@ -9,7 +9,7 @@ export const policies: PolicyPage[] = [
 		slug: 'bao-mat',
 		title: 'Chính sách bảo mật',
 		summary: 'Cách website thu thập, dùng và bảo vệ dữ liệu khi bạn đọc bài, đăng nhập hoặc gửi liên hệ.',
-		updatedAt: '2026-07-16',
+		updatedAt: '2026-09-26',
 		status: 'published',
 		legalReview: 'pending',
 		sections: [
@@ -20,6 +20,7 @@ export const policies: PolicyPage[] = [
 					'Nội dung bạn gửi qua biểu mẫu liên hệ: tên, email, chủ đề và lời nhắn.',
 					'Khi bạn đã đăng nhập, email tài khoản được dùng làm địa chỉ nhận phản hồi và được ghi nhận cùng lời nhắn.',
 					'Dữ liệu kỹ thuật tối thiểu để vận hành, duy trì phiên đăng nhập và chống thư rác.',
+					'Khi bạn học khóa học sau khi đăng nhập, website ghi nhận khóa học, mục học, thời điểm hoạt động và thời lượng tương tác ước tính để lưu tiến độ và lập báo cáo học tập. Bộ đếm tạm dừng khi tab bị ẩn hoặc không có thao tác trong 5 phút.',
 					'Không lưu địa chỉ IP thô trong yêu cầu liên hệ; cơ chế giới hạn tần suất dùng mã hóa một chiều.',
 				],
 			},

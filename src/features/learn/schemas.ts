@@ -125,6 +125,25 @@ export const submitLearnQuizSchema = z.object({
 	answers: z.record(z.string(), z.number().int().min(0)),
 });
 
+export const beginLearnStudySchema = z.object({
+	sessionId: z.string().uuid(),
+	clientId: z.string().uuid(),
+	claimLease: z.boolean(),
+	courseSlug: z.string().trim().min(1).max(180),
+});
+
+export const heartbeatLearnStudySchema = z
+	.object({
+		sessionId: z.string().uuid(),
+		clientId: z.string().uuid(),
+		sequence: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+		seconds: z.number().int().min(0).max(75),
+		sectionId: z.string().min(1).max(128).nullable(),
+		active: z.boolean(),
+		releaseLease: z.boolean(),
+	})
+	.strict();
+
 export type CreateLearnCourseInput = z.infer<typeof createLearnCourseSchema>;
 export type UpdateLearnCourseInput = z.infer<typeof updateLearnCourseSchema>;
 export type CreateLearnLessonInput = z.infer<typeof createLearnLessonSchema>;

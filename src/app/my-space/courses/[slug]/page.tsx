@@ -15,11 +15,16 @@ import { LearnKeyboardNav } from '@/components/learn/LearnPlayerChrome';
 import LearnQuizRunner from '@/components/learn/LearnQuizRunner';
 import LearnReaderFrame from '@/components/learn/LearnReaderFrame';
 import LearnReaderPrefs from '@/components/learn/LearnReaderPrefs';
+import LearnStudyTracker from '@/components/learn/LearnStudyTracker';
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
 import { readingOutline } from '@/features/learn/outline';
 import { summarizeCourse, toCurriculumLessons } from '@/features/learn/progress';
-import { getLearnCourseOutline, getLearnProgress, getLearnReaderSection } from '@/features/learn/service';
+import {
+	getLearnCourseOutline,
+	getLearnProgress,
+	getLearnReaderSection,
+} from '@/features/learn/service';
 import { LEARN_SECTION_KIND_LABELS } from '@/features/learn/types';
 import { auth } from '@/lib/auth';
 
@@ -51,7 +56,12 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 	if (!requested) {
 		const progress = await getLearnProgress(viewer.userId, course.id);
 		const summary = summarizeCourse(course, progress);
-		return <LearnCourseOverview course={course} summary={summary} isAdmin={viewer.isAdmin} />;
+		return (
+			<>
+				{!viewer.isAdmin ? <LearnStudyTracker userId={viewer.userId} courseSlug={course.slug} sectionId={null} /> : null}
+				<LearnCourseOverview course={course} summary={summary} isAdmin={viewer.isAdmin} />
+			</>
+		);
 	}
 
 	const [progress, requestedSection] = await Promise.all([
@@ -74,7 +84,9 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 	const previousHref = previous ? routes.learnCourse(course.slug, previous.id) : null;
 	const nextHref = next ? routes.learnCourse(course.slug, next.id) : null;
 	const remaining = flat.filter((item) => !item.completed);
-	const finishesCourse = Boolean(current && remaining.length === 1 && remaining[0].id === current.id);
+	const finishesCourse = Boolean(
+		current && remaining.length === 1 && remaining[0].id === current.id,
+	);
 
 	const outlineHead = (
 		<div className="ln-outline-head">
@@ -101,7 +113,8 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 	);
 
 	const quizPassed = Boolean(section?.type === 'QUIZ' && section.review?.result.passed);
-	const headings = section?.type === 'READING' && section.markdown ? readingOutline(section.markdown) : [];
+	const headings =
+		section?.type === 'READING' && section.markdown ? readingOutline(section.markdown) : [];
 
 	function primaryAction() {
 		if (section && current && section.type === 'READING') {
@@ -141,13 +154,21 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					{current ? <span className="ln-topbar__section"> / {current.title}</span> : null}
 				</span>
 			</Link>
-			<span className="ln-topbar__count tabular-nums" aria-label={`Đã hoàn thành ${summary.completedCount} trên ${summary.totalCount} mục`}>
+			<span
+				className="ln-topbar__count tabular-nums"
+				aria-label={`Đã hoàn thành ${summary.completedCount} trên ${summary.totalCount} mục`}
+			>
 				{summary.completedCount}/{summary.totalCount}
 			</span>
 			<LearnReaderPrefs />
-			{section ? <LearnNotesDrawer key={section.id} sectionId={section.id} initialNote={state?.note ?? ''} /> : null}
+			{section ? (
+				<LearnNotesDrawer key={section.id} sectionId={section.id} initialNote={state?.note ?? ''} />
+			) : null}
 			{viewer.isAdmin ? (
-				<Link href={routes.learnStudio(course.slug, current?.id)} className="ln-btn ln-btn--ghost ln-btn--sm ln-topbar__studio">
+				<Link
+					href={routes.learnStudio(course.slug, current?.id)}
+					className="ln-btn ln-btn--ghost ln-btn--sm ln-topbar__studio"
+				>
 					<LearnIcon name="edit" size={14} /> Soạn bài
 				</Link>
 			) : null}
@@ -156,7 +177,14 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 
 	return (
 		<LearnReaderFrame header={header} outlineHead={outlineHead} outline={outline}>
-			<LearnKeyboardNav previousHref={previousHref} nextHref={nextHref} overviewHref={overviewHref} />
+			{!viewer.isAdmin ? (
+				<LearnStudyTracker userId={viewer.userId} courseSlug={course.slug} sectionId={section?.id ?? null} />
+			) : null}
+			<LearnKeyboardNav
+				previousHref={previousHref}
+				nextHref={nextHref}
+				overviewHref={overviewHref}
+			/>
 			{!section || !current ? (
 				<div className="ln-reader__empty">
 					<h1 className="ln-reader__title">{course.title}</h1>

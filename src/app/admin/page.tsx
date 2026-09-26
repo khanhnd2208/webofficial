@@ -20,7 +20,9 @@ function Stat({
 	return (
 		<div className="rounded-xl border border-border bg-surface p-5">
 			<p className="text-xs font-bold uppercase tracking-widest text-muted">{label}</p>
-			<p className={`mt-2 text-3xl font-black tracking-tight ${accent ? 'text-accent' : 'text-foreground'}`}>
+			<p
+				className={`mt-2 text-3xl font-black tracking-tight ${accent ? 'text-accent' : 'text-foreground'}`}
+			>
 				{value}
 			</p>
 			{sub && <p className="mt-1 text-xs text-muted">{sub}</p>}
@@ -49,8 +51,12 @@ function QuickAction({
 			}`}
 		>
 			<div className="min-w-0">
-				<p className={`text-sm font-bold ${primary ? 'text-background' : 'text-foreground'}`}>{label}</p>
-				<p className={`mt-0.5 text-xs leading-relaxed ${primary ? 'text-background/60' : 'text-muted'}`}>
+				<p className={`text-sm font-bold ${primary ? 'text-background' : 'text-foreground'}`}>
+					{label}
+				</p>
+				<p
+					className={`mt-0.5 text-xs leading-relaxed ${primary ? 'text-background/60' : 'text-muted'}`}
+				>
 					{description}
 				</p>
 			</div>
@@ -88,7 +94,9 @@ export default async function AdminHomePage() {
 				</section>
 
 				<section>
-					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Thao tác nhanh</p>
+					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">
+						Thao tác nhanh
+					</p>
 					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 						<QuickAction
 							href={routes.mySpaceTeaching}
@@ -105,6 +113,11 @@ export default async function AdminHomePage() {
 							href={routes.admin.inquiries}
 							label="Hộp thư liên hệ"
 							description="Đọc lời nhắn gửi từ trang Liên hệ."
+						/>
+						<QuickAction
+							href={routes.admin.learnAnalytics}
+							label="Thống kê học tập"
+							description="Xem học viên và thời gian tương tác theo khóa học."
 						/>
 					</div>
 				</section>

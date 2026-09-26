@@ -10,11 +10,11 @@ import {
 import { routes } from './routes';
 
 describe('admin navigation', () => {
-	it('limits the main sidebar to Website', () => {
+	it('shows Website and course analytics in the main sidebar', () => {
 		const hrefs = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
 		const labels = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.label));
-		expect(hrefs).toEqual([routes.admin.website]);
-		expect(labels).toEqual(['Website']);
+		expect(hrefs).toEqual([routes.admin.website, routes.admin.learnAnalytics]);
+		expect(labels).toEqual(['Website', 'Thống kê học tập']);
 		expect(hrefs).not.toContain(routes.admin.myClass);
 		expect(hrefs).not.toContain(routes.admin.posts);
 		expect(hrefs).not.toContain(routes.admin.users);

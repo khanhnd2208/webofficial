@@ -6,4 +6,5 @@ export * from './prompts';
 export * from './quizImport';
 export * from './schemas';
 export * from './service';
+export * from './studyAnalytics';
 export * from './types';

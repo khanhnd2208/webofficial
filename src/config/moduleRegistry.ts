@@ -40,6 +40,17 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		publicPrefixes: [routes.about, routes.projects, routes.services, routes.contact, routes.toc],
 	},
 	{
+		id: 'learning-analytics',
+		status: 'active',
+		label: 'Thống kê học tập',
+		description: 'Lượt vào khóa học, tiến độ và thời gian tương tác',
+		icon: 'bar_chart',
+		archiveGroup: 'My Space',
+		adminHref: routes.admin.learnAnalytics,
+		adminPrefixes: [routes.admin.learnAnalytics],
+		publicPrefixes: ['/my-space/courses'],
+	},
+	{
 		id: 'teaching',
 		status: 'active',
 		label: 'Teaching',

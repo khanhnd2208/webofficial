@@ -178,6 +178,7 @@ export const routes = {
 		messagesNew: '/admin/tools/messages/create',
 		messageEdit: (slug: string) => `/admin/tools/messages/${slug}` as const,
 		myspaceTests: '/admin/myspace-tests',
+		learnAnalytics: '/admin/learn-analytics',
 		myspaceTestNew: '/admin/myspace-tests/new',
 		myspaceTestEdit: (id: string) => `/admin/myspace-tests/${id}` as const,
 		myspaceTestAnalytics: '/admin/myspace-tests/analytics',
