@@ -15,12 +15,13 @@ import {
 import {
 	SPY_COUNTS,
 	SPY_MAX_PLAYERS,
+	SPY_MAX_ROOM_NAME_LENGTH,
 	SPY_MIN_PLAYERS,
 	minPlayersForSpies,
 } from '@/features/spy-fall/config/spyGame';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
-import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
+import type { RoomStateDTO, UpdateSettingsInput } from '@/features/spy-fall/types/spyGame';
 
 import ActionBar, { ActionBarNote } from '../ActionBar';
 import PlayerNameInput from '../PlayerNameInput';
@@ -33,9 +34,9 @@ import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 interface Props {
 	state: RoomStateDTO;
 	onStart: () => void;
-	onSettings: (settings: Record<string, unknown>) => void;
+	onSettings: (settings: UpdateSettingsInput) => void | Promise<unknown>;
 	onRename?: (name: string) => void;
-	onKick?: (targetToken: string) => void;
+	onKick?: (targetId: string) => void;
 	busy?: boolean;
 }
 
@@ -49,11 +50,18 @@ export default function LobbyPhase({
 }: Props) {
 	const t = useT();
 	const [showSettings, setShowSettings] = useState(false);
+	const [roomNameDraft, setRoomNameDraft] = useState(state.name);
+	const [syncedRoomName, setSyncedRoomName] = useState(state.name);
+	if (state.name !== syncedRoomName) {
+		setSyncedRoomName(state.name);
+		setRoomNameDraft(state.name);
+	}
 	const [editingName, setEditingName] = useState(false);
 	const [draftName, setDraftName] = useState(state.self?.name ?? '');
 	const [renameError, setRenameError] = useState<string | null>(null);
 	const minPlayers = minPlayersForSpies(state.spyCount);
 	const missing = Math.max(0, minPlayers - state.playerCount);
+	const maxPlayerFloor = Math.max(minPlayers, state.playerCount);
 
 	function handleRenameSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -81,13 +89,13 @@ export default function LobbyPhase({
 		>
 			<PlayerList
 				players={state.players}
-				selfToken={state.self?.token}
+				selfId={state.self?.id}
 				onKick={
 					state.isHost && onKick
-						? (token) => {
-								const name = state.players.find((p) => p.token === token)?.name ?? '?';
+						? (id) => {
+								const name = state.players.find((p) => p.id === id)?.name ?? '?';
 								if (window.confirm(t('spy.lobby.kickConfirm', { name }))) {
-									onKick(token);
+									onKick(id);
 								}
 							}
 						: undefined
@@ -206,20 +214,27 @@ export default function LobbyPhase({
 								<Field label={t('spy.lobby.roomName')} htmlFor="settings-name">
 									<Input
 										id="settings-name"
-										defaultValue={state.name}
-										onBlur={(e) => onSettings({ name: e.target.value })}
+										value={roomNameDraft}
+										maxLength={SPY_MAX_ROOM_NAME_LENGTH}
+										onChange={(e) => setRoomNameDraft(e.target.value)}
+										onBlur={() => {
+											if (roomNameDraft === state.name) return;
+											void Promise.resolve(onSettings({ name: roomNameDraft })).then((ok) => {
+												if (ok === false) setRoomNameDraft(state.name);
+											});
+										}}
 									/>
 								</Field>
 								<Field label={t('spy.lobby.maxPlayers')} htmlFor="settings-max-players">
 									<Select
 										id="settings-max-players"
-										defaultValue={state.maxPlayers}
+										value={String(state.maxPlayers)}
 										onChange={(e) => onSettings({ maxPlayers: Number(e.target.value) })}
 									>
 										{Array.from({ length: SPY_MAX_PLAYERS - SPY_MIN_PLAYERS + 1 }, (_, i) => {
 											const n = SPY_MIN_PLAYERS + i;
 											return (
-												<option key={n} value={n} disabled={n < minPlayers}>
+												<option key={n} value={n} disabled={n < maxPlayerFloor}>
 													{n}
 												</option>
 											);
@@ -237,7 +252,7 @@ export default function LobbyPhase({
 								>
 									<Select
 										id="settings-spy-count"
-										defaultValue={state.spyCount}
+										value={String(state.spyCount)}
 										onChange={(e) => onSettings({ spyCount: Number(e.target.value) })}
 									>
 										{SPY_COUNTS.map((count) => {
@@ -257,7 +272,7 @@ export default function LobbyPhase({
 									<Checkbox
 										id="settings-reveal-roles"
 										label={t('spy.lobby.revealRoles')}
-										defaultChecked={state.revealRoles}
+										checked={state.revealRoles}
 										onChange={(e) => onSettings({ revealRoles: e.target.checked })}
 									/>
 									<p className="pl-8 text-xs text-muted">{t('spy.lobby.revealRolesHint')}</p>
@@ -269,13 +284,8 @@ export default function LobbyPhase({
 								/>
 								<Checkbox
 									label={t('spy.lobby.publicRoom')}
-									defaultChecked={state.isPublic}
+									checked={state.isPublic}
 									onChange={(e) => onSettings({ isPublic: e.target.checked })}
-								/>
-								<Checkbox
-									label={t('spy.lobby.playtest')}
-									defaultChecked={state.playtestMode}
-									onChange={(e) => onSettings({ playtestMode: e.target.checked })}
 								/>
 							</Card>
 						) : null}

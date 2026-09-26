@@ -10,6 +10,7 @@ export const spyVi: MessageTree = {
 		joinCode: 'Tham gia bằng mã',
 		publicRooms: 'Xem phòng công khai',
 		roomName: 'Tên phòng',
+		defaultRoomName: 'Phòng của {name}',
 		creating: 'Đang tạo phòng…',
 		create: 'Tạo phòng',
 		missionCode: 'Mã nhiệm vụ',
@@ -63,7 +64,8 @@ export const spyVi: MessageTree = {
 			talkTitle: 'Tìm người lệch',
 			talkBody: 'So sánh cách mọi người mô tả. Ai nói lệch, hoặc nói quá chung, thì đáng nghi.',
 			voteTitle: 'Bỏ phiếu',
-			voteBody: 'Mỗi người còn sống bầu đúng một người khác. Khi đủ phiếu, kết quả hiện ngay.',
+			voteBody:
+				'Mỗi người còn sống bầu đúng một người khác. Khi đủ phiếu, kết quả hiện ngay. Chủ phòng có thể chốt sớm nếu có người vắng; phiếu chưa bầu không được tính.',
 			elimTitle: 'Mỗi lượt bầu phải trúng Spy',
 			elimBody:
 				'Người bị bầu ra lộ vai. Hòa phiếu thì bầu lại một lần giữa những người hòa. Bầu nhầm Dân, hoặc vẫn hòa, là ván kết thúc ngay.',
@@ -99,7 +101,6 @@ export const spyVi: MessageTree = {
 		topic: 'Chủ đề',
 		topicAny: 'Bất kỳ',
 		publicRoom: 'Phòng công khai',
-		playtest: 'Chế độ playtest',
 		spyCount: 'Số Spy',
 		spyCountOption: '{count} Spy',
 		spyCountHintOne: '1 Spy: một lượt bầu quyết định cả ván.',
@@ -147,7 +148,11 @@ export const spyVi: MessageTree = {
 		last: 'Đã bắt được {caught}/{total} Spy. Lượt đoán cuối: trúng Spy còn lại thì Dân thắng.',
 	},
 	vote: {
-		lockConfirm: 'Vẫn còn người chưa bầu. Chốt phiếu ngay?',
+		lockConfirmNone: 'Chưa ai bầu. Chốt bây giờ thì không ai bị loại — Spy thắng. Chắc chắn?',
+		lockConfirmSome:
+			'Còn {missing} người chưa bầu; phiếu của họ không được tính. {tie} Chốt ngay?',
+		lockTieEnds: 'Nếu hòa thì Spy thắng.',
+		lockTieRevote: 'Nếu hòa sẽ bầu lại một lần.',
 		waitOthers: 'Đã bầu — chờ mọi người…',
 		pickOne: 'Chạm vào một người để bầu',
 		count: 'Đã bầu {done}/{total}',
@@ -192,6 +197,7 @@ export const spyVi: MessageTree = {
 		timeline: 'Các vòng',
 		nobody: 'không ai bị loại',
 		roster: 'Vai của cả phòng',
+		departed: 'đã rời',
 		playAgain: 'Chơi lại',
 		waitPlayAgain: 'Chờ chủ phòng bắt đầu ván mới…',
 		playAgainToast: 'Đã về phòng chờ',
@@ -336,6 +342,7 @@ export const spyEn: MessageTree = {
 		joinCode: 'Join with code',
 		publicRooms: 'Browse public rooms',
 		roomName: 'Room name',
+		defaultRoomName: "{name}'s room",
 		creating: 'Creating room…',
 		create: 'Create room',
 		missionCode: 'Mission code',
@@ -391,7 +398,7 @@ export const spyEn: MessageTree = {
 			talkBody: 'Compare how people describe their word. Someone who sounds off is worth a vote.',
 			voteTitle: 'Vote',
 			voteBody:
-				'Each living player votes for exactly one other player. Results appear as soon as every ballot is in.',
+				'Each living player votes for exactly one other player. Results appear as soon as every ballot is in. The host can lock early if someone is away; uncast votes do not count.',
 			elimTitle: 'Every vote must hit a Spy',
 			elimBody:
 				'The player voted out reveals their role. A tie triggers one revote among the tied players. Voting out a Civilian, or tying again, ends the game on the spot.',
@@ -427,7 +434,6 @@ export const spyEn: MessageTree = {
 		topic: 'Topic',
 		topicAny: 'Any',
 		publicRoom: 'Public room',
-		playtest: 'Playtest mode',
 		spyCount: 'Number of spies',
 		spyCountOption: '{count} spy(s)',
 		spyCountHintOne: '1 spy: a single vote decides the game.',
@@ -474,7 +480,11 @@ export const spyEn: MessageTree = {
 		last: '{caught} of {total} spies caught. Final guess: find the last Spy and the Civilians win.',
 	},
 	vote: {
-		lockConfirm: 'Some players have not voted yet. Lock votes now?',
+		lockConfirmNone: 'Nobody has voted. Locking now eliminates nobody — the Spies win. Continue?',
+		lockConfirmSome:
+			'{missing} players have not voted; their ballots will not count. {tie} Lock now?',
+		lockTieEnds: 'A tie means the Spies win.',
+		lockTieRevote: 'A tie means one revote.',
 		waitOthers: 'Voted — waiting for everyone…',
 		pickOne: 'Tap a player to vote',
 		count: 'Voted {done}/{total}',
@@ -519,6 +529,7 @@ export const spyEn: MessageTree = {
 		timeline: 'Rounds',
 		nobody: 'nobody eliminated',
 		roster: 'Everyone’s role',
+		departed: 'left',
 		playAgain: 'Play again',
 		waitPlayAgain: 'Waiting for the host to start a new game…',
 		playAgainToast: 'Back in the lobby',

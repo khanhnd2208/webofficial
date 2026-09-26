@@ -8,6 +8,8 @@ export const SPY_MIN_PLAYERS = 4;
 export const SPY_MAX_PLAYERS = 12;
 export const SPY_ROOM_CODE_LENGTH = 6;
 export const SPY_PLAYER_TOKEN_LENGTH = 21;
+/** Public player id. Shorter than the auth token and safe to send to the whole room. */
+export const SPY_PLAYER_ID_LENGTH = 10;
 export const SPY_MAX_PLAYER_NAME_LENGTH = 24;
 export const SPY_MAX_ROOM_NAME_LENGTH = 48;
 export const SPY_RECENT_WORD_PAIRS = 10;

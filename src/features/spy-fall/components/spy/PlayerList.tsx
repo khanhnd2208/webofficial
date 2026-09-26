@@ -16,26 +16,26 @@ import PassportAvatar from './PassportAvatar';
 interface Props {
 	players: PlayerPublicDTO[];
 	/** Marks "You" on your own row. */
-	selfToken?: string | null;
+	selfId?: string | null;
 	/** Marks the player who speaks first this round. */
-	firstSpeakerToken?: string | null;
-	onSelect?: (token: string) => void;
-	onKick?: (token: string) => void;
+	firstSpeakerId?: string | null;
+	onSelect?: (id: string) => void;
+	onKick?: (id: string) => void;
 	showVoted?: boolean;
 	selectable?: boolean;
-	selectedToken?: string | null;
+	selectedId?: string | null;
 	disabled?: boolean;
 }
 
 export default function PlayerList({
 	players,
-	selfToken,
-	firstSpeakerToken,
+	selfId,
+	firstSpeakerId,
 	onSelect,
 	onKick,
 	showVoted,
 	selectable,
-	selectedToken,
+	selectedId,
 	disabled,
 }: Props) {
 	const t = useT();
@@ -44,9 +44,9 @@ export default function PlayerList({
 		<ul className="space-y-2" role="list">
 			{players.map((p) => {
 				const eliminated = p.isEliminated;
-				const selected = selectedToken === p.token;
-				const isFirst = firstSpeakerToken === p.token && !eliminated;
-				const isSelf = selfToken === p.token;
+				const selected = selectedId === p.id;
+				const isFirst = firstSpeakerId === p.id && !eliminated;
+				const isSelf = selfId === p.id;
 
 				const content = (
 					<>
@@ -96,7 +96,7 @@ export default function PlayerList({
 				if (!selectable) {
 					return (
 						<li
-							key={p.token}
+							key={p.id}
 							className={cn(
 								'flex min-h-16 items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3',
 								isFirst && 'border-warning bg-warning-subtle',
@@ -107,7 +107,7 @@ export default function PlayerList({
 							{onKick && !p.isHost ? (
 								<button
 									type="button"
-									onClick={() => onKick(p.token)}
+									onClick={() => onKick(p.id)}
 									className="min-h-9 shrink-0 rounded-lg px-2 text-xs font-medium text-danger hover:bg-danger-subtle"
 								>
 									{t('spy.lobby.kick')}
@@ -119,7 +119,7 @@ export default function PlayerList({
 
 				const blocked = disabled || eliminated;
 				return (
-					<li key={p.token}>
+					<li key={p.id}>
 						<button
 							type="button"
 							disabled={blocked}
@@ -127,7 +127,7 @@ export default function PlayerList({
 							onClick={() => {
 								if (blocked) return;
 								hapticLight();
-								onSelect?.(p.token);
+								onSelect?.(p.id);
 							}}
 							className={cn(
 								'flex min-h-16 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-[border-color,background-color,box-shadow] duration-[var(--dur-fast)] active:scale-[0.99]',

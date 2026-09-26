@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
@@ -21,6 +21,7 @@ import {
 	SPY_COUNTS,
 	SPY_DEFAULT_COUNT,
 	SPY_MAX_PLAYERS,
+	SPY_MAX_ROOM_NAME_LENGTH,
 	minPlayersForSpies,
 	type SpyCount,
 } from '@/features/spy-fall/config/spyGame';
@@ -54,6 +55,7 @@ export default function SpyMenuClient() {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [nameError, setNameError] = useState<string | null>(null);
+	const roomNameEdited = useRef(false);
 
 	useEffect(() => {
 		setName(getRecentPlayerName() ?? '');
@@ -67,6 +69,14 @@ export default function SpyMenuClient() {
 		return null;
 	}
 
+	function openCreate(playerName: string) {
+		const normalized = normalizePlayerName(playerName);
+		if (!roomNameEdited.current) {
+			setRoomName(t('spy.menu.defaultRoomName', { name: normalized }));
+		}
+		setView('create');
+	}
+
 	function handleMenuSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		const err = validateName();
@@ -74,10 +84,11 @@ export default function SpyMenuClient() {
 			setNameError(err);
 			return;
 		}
+		const normalized = normalizePlayerName(name);
 		setNameError(null);
-		setName(normalizePlayerName(name));
+		setName(normalized);
 		playTap();
-		setView('create');
+		openCreate(normalized);
 	}
 
 	async function loadPublicRooms() {
@@ -271,7 +282,11 @@ export default function SpyMenuClient() {
 								<Input
 									id="room-name"
 									value={roomName}
-									onChange={(e) => setRoomName(e.target.value)}
+									maxLength={SPY_MAX_ROOM_NAME_LENGTH}
+									onChange={(e) => {
+										roomNameEdited.current = true;
+										setRoomName(e.target.value);
+									}}
 								/>
 							</Field>
 							<Field
@@ -364,7 +379,7 @@ export default function SpyMenuClient() {
 									title={t('spy.menu.noPublic')}
 									description={t('spy.menu.noPublicHint')}
 									actionLabel={t('spy.menu.create')}
-									onAction={() => setView('create')}
+									onAction={() => openCreate(name)}
 								/>
 							) : (
 								<ul className="space-y-2">

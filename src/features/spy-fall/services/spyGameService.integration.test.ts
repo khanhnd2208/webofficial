@@ -39,21 +39,41 @@ async function rolesOf(code: string): Promise<Map<string, PlayerRole>> {
 	return new Map(game!.players.map((p) => [p.token, p.role!]));
 }
 
+async function idsByToken(code: string): Promise<Map<string, string>> {
+	const game = await SpyGame.findOne({ code }).lean();
+	return new Map(game!.players.map((p) => [p.token, p.id]));
+}
+
+/** Advance using the phase the server is actually in, the way a fresh screen would. */
+async function advance(code: string, token: string) {
+	const state = await getScopedState(code, token);
+	return hostAdvancePhase(code, token, {
+		phase: state.phase,
+		round: state.round,
+		isRevote: state.isRevote,
+	});
+}
+
 async function startAndOpenVote(table: Table) {
 	await startGame(table.code, table.host);
 	for (const token of table.tokens) await confirmMemorized(table.code, token);
-	const state = await hostAdvancePhase(table.code, table.host);
+	const state = await advance(table.code, table.host);
 	expect(state.phase).toBe('vote');
 	return rolesOf(table.code);
 }
 
-/** Every living player votes for `target`; the target votes for `fallback`. */
+/** Every living player votes for `target`; the target votes for `fallback`. Both arguments are auth tokens. */
 async function everyoneVotes(table: Table, target: string, fallback: string) {
+	const ids = await idsByToken(table.code);
 	const state = await getScopedState(table.code, table.host);
-	const living = state.players.filter((p) => !p.isEliminated).map((p) => p.token);
+	const living = new Set(state.players.filter((p) => !p.isEliminated).map((p) => p.id));
+	const targetId = ids.get(target)!;
+	const fallbackId = ids.get(fallback)!;
 	let last = state;
-	for (const voter of living) {
-		last = await submitVote(table.code, voter, voter === target ? fallback : target);
+	for (const voter of table.tokens) {
+		const voterId = ids.get(voter);
+		if (!voterId || !living.has(voterId)) continue;
+		last = await submitVote(table.code, voter, voter === target ? fallbackId : targetId);
 	}
 	return last;
 }
@@ -94,18 +114,19 @@ describe('Spy Fall — one spy', () => {
 		const table = await openTable(4);
 		await startAndOpenVote(table);
 		const [a, b, c, d] = table.tokens as [string, string, string, string];
+		const ids = await idsByToken(table.code);
 
 		const tie = async () => {
-			await submitVote(table.code, a, b);
-			await submitVote(table.code, b, a);
-			await submitVote(table.code, c, a);
-			return submitVote(table.code, d, b);
+			await submitVote(table.code, a, ids.get(b)!);
+			await submitVote(table.code, b, ids.get(a)!);
+			await submitVote(table.code, c, ids.get(a)!);
+			return submitVote(table.code, d, ids.get(b)!);
 		};
 
 		const revote = await tie();
 		expect(revote.phase).toBe('vote');
 		expect(revote.isRevote).toBe(true);
-		expect(revote.voteCandidates.sort()).toEqual([a, b].sort());
+		expect(revote.voteCandidates.sort()).toEqual([ids.get(a)!, ids.get(b)!].sort());
 
 		const state = await tie();
 		expect(state.phase).toBe('result');
@@ -117,7 +138,7 @@ describe('Spy Fall — one spy', () => {
 		const table = await openTable(4);
 		await startAndOpenVote(table);
 
-		const state = await hostAdvancePhase(table.code, table.host);
+		const state = await advance(table.code, table.host);
 
 		expect(state.phase).toBe('result');
 		expect(state.result?.endReason).toBe('no-elimination');
@@ -137,10 +158,10 @@ describe('Spy Fall — two spies', () => {
 		expect(reveal.spiesCaught).toBe(1);
 		expect(reveal.lastRound?.role).toBe('spy');
 
-		const discussion = await hostAdvancePhase(table.code, table.host);
+		const discussion = await advance(table.code, table.host);
 		expect(discussion.phase).toBe('discussion');
 		expect(discussion.round).toBe(2);
-		await hostAdvancePhase(table.code, table.host);
+		await advance(table.code, table.host);
 
 		const state = await everyoneVotes(table, spy2!, civilian!);
 		expect(state.phase).toBe('result');
@@ -169,8 +190,8 @@ describe('Spy Fall — two spies', () => {
 		const [civilian] = byRole(roles, 'civilian');
 
 		await everyoneVotes(table, spy1!, civilian!);
-		await hostAdvancePhase(table.code, table.host);
-		await hostAdvancePhase(table.code, table.host);
+		await advance(table.code, table.host);
+		await advance(table.code, table.host);
 		const state = await everyoneVotes(table, civilian!, spy2!);
 
 		expect(state.phase).toBe('result');
@@ -206,8 +227,8 @@ describe('Spy Fall — three spies', () => {
 			const reveal = await everyoneVotes(table, spy, civilian!);
 			expect(reveal.phase).toBe('reveal');
 			expect(reveal.spiesCaught).toBe(index + 1);
-			await hostAdvancePhase(table.code, table.host);
-			await hostAdvancePhase(table.code, table.host);
+			await advance(table.code, table.host);
+			await advance(table.code, table.host);
 		}
 
 		const state = await everyoneVotes(table, spies[2]!, civilian!);
@@ -225,8 +246,8 @@ describe('Spy Fall — three spies', () => {
 
 		for (const spy of spies.slice(0, 2)) {
 			await everyoneVotes(table, spy, civilian!);
-			await hostAdvancePhase(table.code, table.host);
-			await hostAdvancePhase(table.code, table.host);
+			await advance(table.code, table.host);
+			await advance(table.code, table.host);
 		}
 		const state = await everyoneVotes(table, civilian!, spies[2]!);
 
@@ -327,6 +348,23 @@ describe('Spy Fall — settings', () => {
 		}
 	});
 
+	it('rejects an empty room name instead of failing inside the database', async () => {
+		const table = await openTable(4);
+		await expect(updateSettings(table.code, table.host, { name: '   ' })).rejects.toMatchObject({
+			code: 'ROOM_NAME_REQUIRED',
+		});
+		const state = await getScopedState(table.code, table.host);
+		expect(state.name).toBe('Test room');
+	});
+
+	it('will not shrink the room below the players already inside', async () => {
+		const table = await openTable(6);
+		await expect(updateSettings(table.code, table.host, { maxPlayers: 5 })).rejects.toMatchObject({
+			code: 'MAX_PLAYERS_INVALID',
+			params: { min: 6, max: 12 },
+		});
+	});
+
 	it('tells each player only their own role when roles are revealed', async () => {
 		const table = await openTable(5, { spyCount: 2 });
 		await updateSettings(table.code, table.host, { revealRoles: true });
@@ -339,5 +377,90 @@ describe('Spy Fall — settings', () => {
 			expect(state.self?.role).toBe(roles.get(token));
 			expect(state.players.every((p) => p.role === undefined)).toBe(true);
 		}
+	});
+});
+
+describe('Spy Fall — secrets and stale screens', () => {
+	it('does not put another player’s token in the room state', async () => {
+		const table = await openTable(4);
+		await startGame(table.code, table.host);
+		const viewer = await getScopedState(table.code, table.host);
+		const raw = JSON.stringify(viewer);
+		for (const other of table.tokens.slice(1)) {
+			expect(raw).not.toContain(other);
+		}
+		expect(viewer.self?.token).toBe(table.host);
+		expect(viewer.players.every((p) => !('token' in p) && !('keyword' in p))).toBe(true);
+
+		const game = await SpyGame.findOne({ code: table.code }).lean();
+		const other = game!.players.find((p) => p.token !== table.host)!;
+		const byPublicId = await getScopedState(table.code, other.id);
+		expect(byPublicId.self).toBeNull();
+		expect(JSON.stringify(byPublicId)).not.toContain(other.keyword ?? 'missing-keyword');
+	});
+
+	it('rejects a host phase move made on a stale screen', async () => {
+		const table = await openTable(4);
+		await startAndOpenVote(table);
+		const shown = await getScopedState(table.code, table.host);
+		expect(shown.phase).toBe('vote');
+		expect(shown.isRevote).toBe(false);
+
+		const [a, b, c, d] = table.tokens as [string, string, string, string];
+		const ids = await idsByToken(table.code);
+		await submitVote(table.code, a, ids.get(b)!);
+		await submitVote(table.code, b, ids.get(a)!);
+		await submitVote(table.code, c, ids.get(a)!);
+		await submitVote(table.code, d, ids.get(b)!);
+
+		const revote = await getScopedState(table.code, table.host);
+		expect(revote.phase).toBe('vote');
+		expect(revote.isRevote).toBe(true);
+
+		await expect(
+			hostAdvancePhase(table.code, table.host, {
+				phase: shown.phase,
+				round: shown.round,
+				isRevote: false,
+			}),
+		).rejects.toMatchObject({ code: 'PHASE_CHANGED', status: 409 });
+
+		const after = await getScopedState(table.code, table.host);
+		expect(after.phase).toBe('vote');
+		expect(after.isRevote).toBe(true);
+	});
+});
+
+describe('Spy Fall — a spy leaving mid-game', () => {
+	it('drops the remaining-spy count and keeps the leaver’s name', async () => {
+		const table = await openTable(6, { spyCount: 2 });
+		const roles = await startAndOpenVote(table);
+		const [spy] = byRole(roles, 'spy');
+		const [civilian] = byRole(roles, 'civilian');
+		const spyName = `P${table.tokens.indexOf(spy!)}`;
+
+		await leaveRoom(table.code, spy!);
+
+		const state = await getScopedState(table.code, civilian!);
+		expect(state.phase).toBe('vote');
+		expect(state.spiesRemaining).toBe(1);
+		expect(state.departed).toEqual([
+			expect.objectContaining({ name: spyName, role: 'spy' }),
+		]);
+		expect(JSON.stringify(state.departed)).not.toContain(spy);
+	});
+
+	it('gives the room to a player seen recently when the host leaves', async () => {
+		const table = await openTable(4);
+		const game = await SpyGame.findOne({ code: table.code });
+		const others = game!.players.filter((p) => p.token !== table.host);
+		others[0]!.lastSeenAt = new Date(Date.now() - 60_000);
+		others[1]!.lastSeenAt = new Date();
+		await game!.save();
+
+		await leaveRoom(table.code, table.host);
+
+		const after = await SpyGame.findOne({ code: table.code }).lean();
+		expect(after!.hostToken).toBe(others[1]!.token);
 	});
 });

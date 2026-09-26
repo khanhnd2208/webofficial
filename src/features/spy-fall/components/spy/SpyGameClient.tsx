@@ -84,6 +84,22 @@ export default function SpyGameClient({ code, initialName }: Props) {
 		[t],
 	);
 
+	const wrapAction = useCallback(
+		async (fn: () => Promise<unknown>) => {
+			setBusy(true);
+			try {
+				await fn();
+				return true;
+			} catch (e) {
+				toast(e instanceof Error ? e.message : t('common.unknownError'), 'error');
+				return false;
+			} finally {
+				setBusy(false);
+			}
+		},
+		[t, toast],
+	);
+
 	const joinRoom = useCallback(
 		async (name: string, existingToken?: string) => {
 			const trimmed = normalizePlayerName(name);
@@ -154,7 +170,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 			toast(t('spy.shell.left'), 'default');
 			router.push(routes.spyFall);
 		} catch (e) {
-			setJoinError(e instanceof Error ? e.message : t('spy.shell.leaveFail'));
+			toast(e instanceof Error ? e.message : t('spy.shell.leaveFail'), 'error');
 		} finally {
 			setBusy(false);
 		}
@@ -265,21 +281,24 @@ export default function SpyGameClient({ code, initialName }: Props) {
 		);
 	}
 
-	const displayError = joinError ?? error;
 	const canReviewRole = Boolean(
 		(state.self?.keyword || state.self?.role) &&
 		!['lobby', 'result', 'role-reveal'].includes(state.phase),
 	);
 
 	const openRole = () => setRoleOpen(true);
+	const advanceFromScreen = () =>
+		wrapAction(() =>
+			api.next({ phase: state.phase, round: state.round, isRevote: state.isRevote }),
+		);
 	const hostTools =
 		state.isHost && state.phase !== 'lobby' && state.phase !== 'result' ? (
 			<HostGameControls
 				phase={state.phase}
 				busy={busy}
-				onConfirmAll={() => wrap(() => api.next())}
+				onConfirmAll={advanceFromScreen}
 				onRestart={() =>
-					wrap(async () => {
+					wrapAction(async () => {
 						await api.restart();
 						toast(t('spy.host.restarted'), 'success');
 					})
@@ -298,13 +317,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 			leaveBusy={busy}
 			onOpenGuide={() => setBriefingOpen(true)}
 		>
-			<ConnectionBanner
-				error={displayError}
-				onRetry={() => {
-					setJoinError(null);
-					void refresh();
-				}}
-			/>
+			<ConnectionBanner error={error} onRetry={() => void refresh()} />
 
 			<WordPeekContext.Provider value={canReviewRole ? openRole : null}>
 				<HostToolsContext.Provider value={hostTools}>
@@ -313,18 +326,18 @@ export default function SpyGameClient({ code, initialName }: Props) {
 							<LobbyPhase
 								state={state}
 								busy={busy}
-								onStart={() => wrap(() => api.start())}
-								onSettings={(s) => wrap(() => api.settings(s))}
+								onStart={() => wrapAction(() => api.start())}
+								onSettings={(s) => wrapAction(() => api.settings(s))}
 								onRename={(name) =>
-									wrap(async () => {
+									wrapAction(async () => {
 										await api.rename(name);
 										storeRecentPlayerName(name);
 										toast(t('spy.lobby.renamed'), 'success');
 									})
 								}
-								onKick={(targetToken) =>
-									wrap(async () => {
-										await api.kick(targetToken);
+								onKick={(targetId) =>
+									wrapAction(async () => {
+										await api.kick(targetId);
 										toast(t('spy.lobby.kicked'), 'success');
 									})
 								}
@@ -335,25 +348,25 @@ export default function SpyGameClient({ code, initialName }: Props) {
 							<RoleRevealPhase
 								state={state}
 								busy={busy}
-								onConfirm={() => wrap(() => api.memorized())}
+								onConfirm={() => wrapAction(() => api.memorized())}
 							/>
 						)}
 
 						{state.phase === 'discussion' && (
-							<DiscussionPhase state={state} busy={busy} onNext={() => wrap(() => api.next())} />
+							<DiscussionPhase state={state} busy={busy} onNext={advanceFromScreen} />
 						)}
 
 						{state.phase === 'vote' && (
 							<VotePhase
 								state={state}
 								busy={busy}
-								onVote={(target) => wrap(() => api.vote(target))}
-								onNext={() => wrap(() => api.next())}
+								onVote={(target) => wrapAction(() => api.vote(target))}
+								onNext={advanceFromScreen}
 							/>
 						)}
 
 						{state.phase === 'reveal' && (
-							<RevealPhase state={state} busy={busy} onNext={() => wrap(() => api.next())} />
+							<RevealPhase state={state} busy={busy} onNext={advanceFromScreen} />
 						)}
 
 						{state.phase === 'result' && state.result && (
@@ -363,7 +376,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 								onPlayAgain={
 									state.isHost
 										? () =>
-												wrap(async () => {
+												wrapAction(async () => {
 													await api.playAgain();
 													toast(t('spy.result.playAgainToast'), 'success');
 												})

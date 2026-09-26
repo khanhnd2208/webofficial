@@ -2,7 +2,6 @@ import mongoose, { Schema, type Model } from 'mongoose';
 
 import { SPY_COUNTS, SPY_DEFAULT_COUNT, SPY_PHASES } from '@/features/spy-fall/config/spyGame';
 import type {
-	EliminationLogEntry,
 	GameEndReason,
 	GamePhase,
 	PlayerRole,
@@ -10,7 +9,10 @@ import type {
 } from '@/features/spy-fall/types/spyGame';
 
 export interface ISpyPlayer {
+	/** Auth secret. Never copied into a room-state DTO except onto the viewer's own `self`. */
 	token: string;
+	/** Public id sent to every client. Distinct from `token`. */
+	id: string;
 	name: string;
 	avatarSeed: string;
 	connected: boolean;
@@ -18,8 +20,33 @@ export interface ISpyPlayer {
 	role?: PlayerRole;
 	keyword?: string;
 	hasMemorizedRole: boolean;
+	/** Auth token of the player this person voted for. Mapped to a public id in the DTO. */
 	voteToken?: string;
 	isEliminated: boolean;
+}
+
+/** Stored ballot row. `token` is an auth token; the DTO replaces it with a public id. */
+export interface ISpyVoteTally {
+	token: string;
+	votes: number;
+}
+
+export interface ISpyElimination {
+	round: number;
+	token: string | null;
+	role?: PlayerRole;
+	tally: ISpyVoteTally[];
+	wasRevote: boolean;
+}
+
+/** Someone who left after the deal. `token` stays in the database so logs can still be mapped to `id`. */
+export interface ISpyDeparted {
+	token: string;
+	id: string;
+	name: string;
+	avatarSeed: string;
+	role?: PlayerRole;
+	round: number;
 }
 
 export interface ISpyWordPair {
@@ -42,7 +69,6 @@ export interface ISpyGame {
 	maxPlayers: number;
 	topic: string;
 	excludedTags: string[];
-	playtestMode: boolean;
 	spyCount: number;
 	revealRoles: boolean;
 	hostToken: string;
@@ -52,7 +78,8 @@ export interface ISpyGame {
 	firstSpeakerToken?: string;
 	voteCandidates: string[];
 	isRevote: boolean;
-	eliminationLog: EliminationLogEntry[];
+	eliminationLog: ISpyElimination[];
+	departed: ISpyDeparted[];
 	startedAt?: Date;
 	wordPair?: ISpyWordPair;
 	recentWordPairIds: string[];
@@ -66,6 +93,7 @@ export interface ISpyGame {
 const SpyPlayerSchema = new Schema<ISpyPlayer>(
 	{
 		token: { type: String, required: true },
+		id: { type: String, required: true },
 		name: { type: String, required: true, trim: true },
 		avatarSeed: { type: String, required: true },
 		connected: { type: Boolean, default: true },
@@ -76,7 +104,8 @@ const SpyPlayerSchema = new Schema<ISpyPlayer>(
 		voteToken: { type: String },
 		isEliminated: { type: Boolean, default: false },
 	},
-	{ _id: false },
+	// `id: false` turns off Mongoose's virtual so the public `id` path is the real field.
+	{ _id: false, id: false },
 );
 
 const SpyGameSchema = new Schema<ISpyGame>(
@@ -87,7 +116,6 @@ const SpyGameSchema = new Schema<ISpyGame>(
 		maxPlayers: { type: Number, required: true, min: 4, max: 12 },
 		topic: { type: String, required: true },
 		excludedTags: { type: [String], default: [] },
-		playtestMode: { type: Boolean, default: false },
 		spyCount: { type: Number, enum: SPY_COUNTS, default: SPY_DEFAULT_COUNT },
 		revealRoles: { type: Boolean, default: false },
 		hostToken: { type: String, required: true },
@@ -105,6 +133,19 @@ const SpyGameSchema = new Schema<ISpyGame>(
 					role: { type: String, enum: ['civilian', 'spy'] },
 					tally: [{ token: String, votes: Number }],
 					wasRevote: Boolean,
+				},
+			],
+			default: [],
+		},
+		departed: {
+			type: [
+				{
+					token: { type: String, required: true },
+					id: { type: String, required: true },
+					name: { type: String, required: true },
+					avatarSeed: { type: String, required: true },
+					role: { type: String, enum: ['civilian', 'spy'] },
+					round: { type: Number, required: true },
 				},
 			],
 			default: [],
@@ -134,6 +175,12 @@ const SpyGameSchema = new Schema<ISpyGame>(
 SpyGameSchema.index({ isPublic: 1, phase: 1, updatedAt: -1 });
 // Abandoned rooms (every poll bumps updatedAt) clear themselves after a day.
 SpyGameSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 });
+
+// A long-running dev server keeps the first compiled model. Drop it so schema
+// changes (like the public player id) apply without restarting the process.
+if (process.env.NODE_ENV !== 'production' && mongoose.models.SpyGame) {
+	mongoose.deleteModel('SpyGame');
+}
 
 const SpyGame =
 	(mongoose.models.SpyGame as Model<ISpyGame>) ??

@@ -9,6 +9,7 @@ import {
 	SPY_MAX_ROOM_NAME_LENGTH,
 	SPY_MIN_PLAYERS,
 	SPY_PHASES,
+	SPY_PLAYER_ID_LENGTH,
 	SPY_PLAYER_TOKEN_LENGTH,
 	SPY_RECENT_WORD_PAIRS,
 	SPY_ROOM_CODE_LENGTH,
@@ -39,11 +40,18 @@ import {
 } from '@/features/spy-fall/lib/spy/winConditions';
 import { normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 import dbConnect from '@/features/spy-fall/lib/dbConnect';
-import SpyGame, { type ISpyGame, type ISpyPlayer } from '@/features/spy-fall/models/SpyGame';
+import SpyGame, {
+	type ISpyDeparted,
+	type ISpyElimination,
+	type ISpyGame,
+	type ISpyPlayer,
+} from '@/features/spy-fall/models/SpyGame';
 import type {
 	CreateRoomInput,
+	DepartedPlayerDTO,
 	EliminationLogEntry,
 	GamePhase,
+	PhaseCursor,
 	PlayerRole,
 	PublicRoomListItemDTO,
 	RoomStateDTO,
@@ -54,6 +62,10 @@ const generateCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', SPY_ROOM
 const generateToken = customAlphabet(
 	'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
 	SPY_PLAYER_TOKEN_LENGTH,
+);
+const generatePlayerId = customAlphabet(
+	'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+	SPY_PLAYER_ID_LENGTH,
 );
 
 const VALID_PHASES = new Set<string>(SPY_PHASES);
@@ -82,6 +94,37 @@ function now(): Date {
 
 function findPlayer(game: GameDoc, token: string): ISpyPlayer | undefined {
 	return game.players.find((p) => p.token === token);
+}
+
+function findPlayerById(game: GameDoc, id: string): ISpyPlayer | undefined {
+	return game.players.find((p) => p.id === id);
+}
+
+/** Rooms created before public ids existed get one the next time they are read. */
+function ensurePlayerIds(game: GameDoc): boolean {
+	let changed = false;
+	const used = new Set(game.players.map((p) => p.id).filter((id): id is string => Boolean(id)));
+	for (const player of game.players) {
+		if (player.id) continue;
+		let id = generatePlayerId();
+		while (used.has(id)) id = generatePlayerId();
+		player.id = id;
+		used.add(id);
+		changed = true;
+	}
+	return changed;
+}
+
+function departedOf(game: GameDoc): ISpyDeparted[] {
+	return game.departed ?? [];
+}
+
+/** Public id for a stored auth token. Checks people who already left so old ballots still resolve. */
+function idOf(game: GameDoc, token: string | null | undefined): string | null {
+	if (!token) return null;
+	const player = findPlayer(game, token);
+	if (player?.id) return player.id;
+	return departedOf(game).find((p) => p.token === token)?.id ?? null;
 }
 
 function assertPlayer(game: GameDoc, token: string): ISpyPlayer {
@@ -119,10 +162,13 @@ function clearVotes(game: GameDoc): void {
 	}
 }
 
+function isRecentlySeen(player: ISpyPlayer, at: Date): boolean {
+	return player.lastSeenAt.getTime() >= at.getTime() - SPY_DISCONNECT_THRESHOLD_MS;
+}
+
 function updateConnectionStatus(game: GameDoc, at: Date): void {
-	const threshold = at.getTime() - SPY_DISCONNECT_THRESHOLD_MS;
 	for (const p of game.players) {
-		p.connected = p.lastSeenAt.getTime() >= threshold;
+		p.connected = isRecentlySeen(p, at);
 	}
 }
 
@@ -133,9 +179,8 @@ function updateConnectionStatus(game: GameDoc, at: Date): void {
 function migrateHostIfNeeded(game: GameDoc, at: Date): boolean {
 	const host = findPlayer(game, game.hostToken);
 	if (host && host.lastSeenAt.getTime() >= at.getTime() - SPY_HOST_HANDOFF_MS) return false;
-	const connectedSince = at.getTime() - SPY_DISCONNECT_THRESHOLD_MS;
 	const replacement = game.players.find(
-		(p) => p.token !== game.hostToken && p.lastSeenAt.getTime() >= connectedSince,
+		(p) => p.token !== game.hostToken && isRecentlySeen(p, at),
 	);
 	if (!replacement) return false;
 	game.hostToken = replacement.token;
@@ -155,10 +200,12 @@ async function unsetResetArtifacts(code: string): Promise<void> {
 }
 
 function blankPlayer(token: string, name: string, at: Date): ISpyPlayer {
+	const id = generatePlayerId();
 	return {
 		token,
+		id,
 		name,
-		avatarSeed: token.slice(0, 8),
+		avatarSeed: id,
 		connected: true,
 		lastSeenAt: at,
 		hasMemorizedRole: false,
@@ -176,6 +223,7 @@ function resetGameToLobby(game: GameDoc): void {
 	game.voteCandidates = [];
 	game.isRevote = false;
 	game.eliminationLog = [];
+	game.departed = [];
 	game.result = {};
 
 	for (const p of game.players) {
@@ -240,7 +288,7 @@ function resolveVote(game: GameDoc, at: Date): void {
 		}
 	}
 
-	const entry: EliminationLogEntry = {
+	const entry: ISpyElimination = {
 		round: game.round,
 		token: eliminatedToken,
 		...(eliminated?.role ? { role: eliminated.role } : {}),
@@ -287,6 +335,50 @@ function spiesCaught(game: GameDoc): number {
 	return (game.eliminationLog ?? []).filter((entry) => entry.role === 'spy').length;
 }
 
+function spiesRemaining(game: GameDoc): number {
+	return game.players.filter((p) => p.role === 'spy' && !p.isEliminated).length;
+}
+
+function assertRoomName(name: string | undefined): string {
+	const trimmed = name?.trim() ?? '';
+	if (!trimmed) throw new AppError('ROOM_NAME_REQUIRED', 400);
+	if (trimmed.length > SPY_MAX_ROOM_NAME_LENGTH) {
+		throw new AppError('ROOM_NAME_TOO_LONG', 400, { max: SPY_MAX_ROOM_NAME_LENGTH });
+	}
+	return trimmed;
+}
+
+function assertPhaseCursor(game: GameDoc, from: PhaseCursor): void {
+	const matches =
+		from.phase === game.phase &&
+		from.round === (game.round ?? 1) &&
+		Boolean(from.isRevote) === Boolean(game.isRevote);
+	if (!matches) throw new AppError('PHASE_CHANGED', 409);
+}
+
+function toPublicLog(game: GameDoc, entry: ISpyElimination): EliminationLogEntry {
+	return {
+		round: entry.round,
+		id: idOf(game, entry.token),
+		...(entry.role ? { role: entry.role } : {}),
+		tally: (entry.tally ?? []).flatMap((row) => {
+			const id = idOf(game, row.token);
+			return id ? [{ id, votes: row.votes }] : [];
+		}),
+		wasRevote: Boolean(entry.wasRevote),
+	};
+}
+
+function toPublicDeparted(entry: ISpyDeparted): DepartedPlayerDTO {
+	return {
+		id: entry.id,
+		name: entry.name,
+		avatarSeed: entry.avatarSeed,
+		...(entry.role ? { role: entry.role } : {}),
+		round: entry.round,
+	};
+}
+
 function assertSpyCountFitsRoom(spyCount: SpyCount, maxPlayers: number): void {
 	const min = minPlayersForSpies(spyCount);
 	if (maxPlayers < min) throw new AppError('SPY_COUNT_NEEDS_ROOM', 400, { min, spies: spyCount });
@@ -297,14 +389,15 @@ function parseSpyCount(value: unknown): SpyCount {
 	return value;
 }
 
-function assertMaxPlayers(maxPlayers: unknown): asserts maxPlayers is number {
+function assertMaxPlayers(maxPlayers: unknown, floor = SPY_MIN_PLAYERS): asserts maxPlayers is number {
+	const min = Math.max(SPY_MIN_PLAYERS, floor);
 	if (
 		typeof maxPlayers !== 'number' ||
 		!Number.isInteger(maxPlayers) ||
-		maxPlayers < SPY_MIN_PLAYERS ||
+		maxPlayers < min ||
 		maxPlayers > SPY_MAX_PLAYERS
 	) {
-		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: SPY_MIN_PLAYERS, max: SPY_MAX_PLAYERS });
+		throw new AppError('MAX_PLAYERS_INVALID', 400, { min, max: SPY_MAX_PLAYERS });
 	}
 }
 
@@ -327,7 +420,7 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 	const lastRound = game.eliminationLog.at(-1);
 
 	const players = game.players.map((p) => ({
-		token: p.token,
+		id: p.id,
 		name: p.name,
 		avatarSeed: p.avatarSeed,
 		connected: p.connected,
@@ -341,7 +434,7 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 	const speaker = game.firstSpeakerToken
 		? game.players.find((p) => p.token === game.firstSpeakerToken)
 		: undefined;
-
+	const speakerId = speaker ? idOf(game, speaker.token) : null;
 
 	const dto: RoomStateDTO = {
 		code: game.code,
@@ -354,17 +447,22 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 		maxPlayers: game.maxPlayers,
 		topic: game.topic,
 		excludedTags: normalizeExcludedTags(game.excludedTags),
-		playtestMode: Boolean(game.playtestMode),
 		spyCount: normalizeSpyCount(game.spyCount),
 		revealRoles: Boolean(game.revealRoles),
 		spiesCaught: spiesCaught(game),
+		spiesRemaining: spiesRemaining(game),
 		round: game.round ?? 1,
 		playerCount: game.players.length,
 		players,
-		voteCandidates: game.voteCandidates ?? [],
+		departed: departedOf(game).map(toPublicDeparted),
+		voteCandidates: (game.voteCandidates ?? []).flatMap((token) => {
+			const id = idOf(game, token);
+			return id ? [id] : [];
+		}),
 		isRevote: Boolean(game.isRevote),
 		self: viewer
 			? {
+					id: viewer.id,
 					token: viewer.token,
 					name: viewer.name,
 					avatarSeed: viewer.avatarSeed,
@@ -374,16 +472,16 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 					isEliminated: viewer.isEliminated,
 					...(viewer.role && showOwnRole(game) ? { role: viewer.role } : {}),
 					keyword: viewer.keyword ?? null,
-					voteToken: viewer.voteToken ?? null,
+					voteId: idOf(game, viewer.voteToken),
 					...(game.phase === 'vote' ? { hasVoted: Boolean(viewer.voteToken) } : {}),
 				}
 			: null,
 	};
 
-	if (speaker) {
-		dto.firstSpeaker = { token: speaker.token, name: speaker.name };
+	if (speaker && speakerId) {
+		dto.firstSpeaker = { id: speakerId, name: speaker.name };
 	}
-	if (lastRound) dto.lastRound = lastRound;
+	if (lastRound) dto.lastRound = toPublicLog(game, lastRound);
 
 	if (revealAll && game.wordPair && game.result.winningSide) {
 		dto.result = {
@@ -391,7 +489,7 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 			...(game.result.endReason ? { endReason: game.result.endReason } : {}),
 			civilianWord: game.wordPair.civilianWord,
 			spyWord: game.wordPair.spyWord,
-			eliminationLog: game.eliminationLog ?? [],
+			eliminationLog: (game.eliminationLog ?? []).map((entry) => toPublicLog(game, entry)),
 			durationSeconds: game.result.durationSeconds ?? 0,
 		};
 		dto.wordPair = game.wordPair;
@@ -412,10 +510,11 @@ async function loadAndAdvance(
 		let game = (await SpyGame.findOne({ code: code.toUpperCase() })) as GameDoc | null;
 		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
 
+		let changed = ensurePlayerIds(game);
+
 		if (!VALID_PHASES.has(game.phase)) {
 			resetGameToLobby(game);
-			game.version += 1;
-			await game.save();
+			changed = true;
 		}
 
 		if (viewerToken) {
@@ -426,7 +525,7 @@ async function loadAndAdvance(
 			}
 		}
 
-		let changed = applyLazyPhaseAdvance(game);
+		if (applyLazyPhaseAdvance(game)) changed = true;
 		// Two last ballots saved at the same moment each see the other missing; settle it here.
 		if (game.phase === 'vote' && everyLivingPlayerVoted(game)) {
 			resolveVote(game, at);
@@ -466,6 +565,7 @@ async function mutateGame(
 		if (!VALID_PHASES.has(game.phase)) {
 			resetGameToLobby(game);
 		}
+		ensurePlayerIds(game);
 
 		assertPlayer(game, playerToken);
 		await mutator(game);
@@ -482,10 +582,7 @@ async function mutateGame(
 export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> {
 	const hostName = normalizePlayerName(input.hostName ?? '');
 	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
-	if (!input.name?.trim()) throw new AppError('ROOM_NAME_REQUIRED', 400);
-	if (input.name.length > SPY_MAX_ROOM_NAME_LENGTH) {
-		throw new AppError('ROOM_NAME_TOO_LONG', 400, { max: SPY_MAX_ROOM_NAME_LENGTH });
-	}
+	const roomName = assertRoomName(input.name);
 
 	const maxPlayers = input.maxPlayers ?? SPY_MAX_PLAYERS;
 	assertMaxPlayers(maxPlayers);
@@ -505,12 +602,11 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 	const at = now();
 	const game = await SpyGame.create({
 		code,
-		name: input.name.trim(),
+		name: roomName,
 		isPublic: Boolean(input.isPublic),
 		maxPlayers,
 		topic: input.topic ?? 'any',
 		excludedTags: normalizeExcludedTags(input.excludedTags),
-		playtestMode: input.playtestMode ?? false,
 		spyCount,
 		revealRoles: input.revealRoles === true,
 		hostToken,
@@ -520,6 +616,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 		voteCandidates: [],
 		isRevote: false,
 		eliminationLog: [],
+		departed: [],
 		recentWordPairIds: [],
 		players: [blankPlayer(hostToken, hostName, at)],
 		eliminatedTokens: [],
@@ -551,6 +648,7 @@ export async function joinRoom(
 		const game = (await SpyGame.findOne({ code: code.toUpperCase() })) as GameDoc | null;
 		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
 		if (isInGamePhase(game.phase)) throw new AppError('GAME_IN_PROGRESS', 400);
+		ensurePlayerIds(game);
 
 		if (existingToken) {
 			const existing = findPlayer(game, existingToken);
@@ -663,7 +761,7 @@ export async function confirmMemorized(code: string, playerToken: string): Promi
 export async function submitVote(
 	code: string,
 	playerToken: string,
-	targetToken: string | null,
+	targetId: string | null,
 ): Promise<RoomStateDTO> {
 	return mutateGame(
 		code,
@@ -673,18 +771,18 @@ export async function submitVote(
 			const player = assertPlayer(game, playerToken);
 			if (player.isEliminated) throw new AppError('VOTE_ELIMINATED', 400);
 
-			if (!targetToken) {
+			if (!targetId) {
 				player.voteToken = undefined;
 				return;
 			}
 
-			if (targetToken === playerToken) throw new AppError('VOTE_SELF', 400);
-			const target = assertPlayer(game, targetToken);
-			if (target.isEliminated) throw new AppError('VOTE_NOT_CANDIDATE', 400);
+			const target = findPlayerById(game, targetId);
+			if (!target || target.isEliminated) throw new AppError('VOTE_NOT_CANDIDATE', 400);
+			if (target.token === playerToken) throw new AppError('VOTE_SELF', 400);
 			const pool = votePool(game);
-			if (!pool.includes(targetToken)) throw new AppError('VOTE_NOT_CANDIDATE', 400);
+			if (!pool.includes(target.token)) throw new AppError('VOTE_NOT_CANDIDATE', 400);
 
-			player.voteToken = targetToken;
+			player.voteToken = target.token;
 
 			const living = livingPlayers(game);
 			if (living.every((p) => Boolean(p.voteToken))) {
@@ -705,12 +803,12 @@ export async function updateSettings(
 		if (game.phase !== 'lobby') throw new AppError('SETTINGS_LOBBY_ONLY', 400);
 
 		const maxPlayers = input.maxPlayers ?? game.maxPlayers;
-		assertMaxPlayers(maxPlayers);
+		assertMaxPlayers(maxPlayers, game.players.length);
 		const spyCount =
 			input.spyCount === undefined ? normalizeSpyCount(game.spyCount) : parseSpyCount(input.spyCount);
 		assertSpyCountFitsRoom(spyCount, maxPlayers);
 
-		if (input.name !== undefined) game.name = input.name.trim();
+		if (input.name !== undefined) game.name = assertRoomName(input.name);
 		if (input.isPublic !== undefined) game.isPublic = input.isPublic;
 		game.maxPlayers = maxPlayers;
 		game.spyCount = spyCount;
@@ -719,13 +817,17 @@ export async function updateSettings(
 		if (input.excludedTags !== undefined) {
 			game.excludedTags = normalizeExcludedTags(input.excludedTags);
 		}
-		if (input.playtestMode !== undefined) game.playtestMode = input.playtestMode;
 	});
 }
 
-export async function hostAdvancePhase(code: string, hostToken: string): Promise<RoomStateDTO> {
+export async function hostAdvancePhase(
+	code: string,
+	hostToken: string,
+	from: PhaseCursor,
+): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, (game) => {
 		if (game.hostToken !== hostToken) throw new AppError('HOST_ONLY', 403);
+		assertPhaseCursor(game, from);
 		const at = now();
 
 		if (game.phase === 'role-reveal') {
@@ -779,7 +881,7 @@ export async function restartRoom(code: string, hostToken: string): Promise<Room
 export async function kickPlayer(
 	code: string,
 	hostToken: string,
-	targetToken: string,
+	targetId: string,
 ): Promise<RoomStateDTO> {
 	return mutateGame(
 		code,
@@ -787,9 +889,10 @@ export async function kickPlayer(
 		(game) => {
 			if (game.hostToken !== hostToken) throw new AppError('HOST_ONLY', 403);
 			if (game.phase !== 'lobby') throw new AppError('KICK_LOBBY_ONLY', 400);
-			if (targetToken === hostToken) throw new AppError('CANNOT_KICK_SELF', 400);
-			assertPlayer(game, targetToken);
-			game.players = game.players.filter((p) => p.token !== targetToken);
+			const target = findPlayerById(game, targetId);
+			if (!target) throw new AppError('PLAYER_NOT_FOUND', 404);
+			if (target.token === hostToken) throw new AppError('CANNOT_KICK_SELF', 400);
+			game.players = game.players.filter((p) => p.id !== targetId);
 		},
 		'lobby',
 	);
@@ -855,8 +958,21 @@ export async function leaveRoom(
 		const game = (await SpyGame.findOne({ code: code.toUpperCase() })) as GameDoc | null;
 		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
 
-		assertPlayer(game, playerToken);
+		const leaving = assertPlayer(game, playerToken);
+		ensurePlayerIds(game);
 		const wasHost = game.hostToken === playerToken;
+		const recordDeparture = game.phase !== 'lobby' && game.phase !== 'result';
+		if (recordDeparture) {
+			const entry: ISpyDeparted = {
+				token: leaving.token,
+				id: leaving.id,
+				name: leaving.name,
+				avatarSeed: leaving.avatarSeed,
+				...(leaving.role ? { role: leaving.role } : {}),
+				round: game.round ?? 1,
+			};
+			game.departed = [...departedOf(game), entry];
+		}
 		game.players = game.players.filter((p) => p.token !== playerToken);
 
 		if (game.players.length === 0) {
@@ -865,11 +981,11 @@ export async function leaveRoom(
 		}
 
 		if (wasHost) {
-			const replacement = game.players.find((p) => p.connected) ?? game.players[0]!;
+			const replacement = game.players.find((p) => isRecentlySeen(p, at)) ?? game.players[0]!;
 			game.hostToken = replacement.token;
 		}
 
-		if (game.phase !== 'lobby' && game.phase !== 'result') {
+		if (recordDeparture) {
 			settleAfterLeave(game, playerToken, at);
 		}
 

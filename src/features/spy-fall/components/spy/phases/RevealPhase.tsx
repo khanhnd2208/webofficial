@@ -18,10 +18,10 @@ interface Props {
 export default function RevealPhase({ state, onNext, busy }: Props) {
 	const t = useT();
 	const round = state.lastRound;
-	const eliminated = round?.token ? state.players.find((p) => p.token === round.token) : undefined;
-	const nameByToken = new Map(state.players.map((p) => [p.token, p.name]));
+	const eliminated = round?.id ? state.players.find((p) => p.id === round.id) : undefined;
+	const nameById = new Map(state.players.map((p) => [p.id, p.name]));
 	const counted = (round?.tally ?? []).filter((row) => row.votes > 0).sort((a, b) => b.votes - a.votes);
-	const spiesLeft = Math.max(0, state.spyCount - state.spiesCaught);
+	const spiesLeft = state.spiesRemaining;
 	const finalGuess = spiesLeft <= 1;
 
 	return (
@@ -55,10 +55,10 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 						<ul className="space-y-1.5">
 							{counted.map((row) => (
 								<li
-									key={row.token}
+									key={row.id}
 									className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-sm"
 								>
-									<span className="truncate">{nameByToken.get(row.token) ?? '?'}</span>
+									<span className="truncate">{nameById.get(row.id) ?? '?'}</span>
 									<span className="shrink-0 font-semibold tabular-nums">
 										{t('spy.reveal.votes', { count: row.votes })}
 									</span>

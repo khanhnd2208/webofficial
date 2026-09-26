@@ -32,20 +32,21 @@ export interface WordPairDTO {
 }
 
 export interface VoteTallyEntry {
-	token: string;
+	id: string;
 	votes: number;
 }
 
 export interface EliminationLogEntry {
 	round: number;
-	token: string | null;
+	/** Public id of the eliminated player, or null when nobody was eliminated. */
+	id: string | null;
 	role?: PlayerRole;
 	tally: VoteTallyEntry[];
 	wasRevote: boolean;
 }
 
 export interface PlayerPublicDTO {
-	token: string;
+	id: string;
 	name: string;
 	avatarSeed: string;
 	connected: boolean;
@@ -58,10 +59,22 @@ export interface PlayerPublicDTO {
 	role?: PlayerRole;
 }
 
+/** A player who left after the game started. Shown on the result roster, never their auth token. */
+export interface DepartedPlayerDTO {
+	id: string;
+	name: string;
+	avatarSeed: string;
+	role?: PlayerRole;
+	round: number;
+}
+
 export interface PlayerSelfDTO extends PlayerPublicDTO {
+	/** The viewer's own auth secret. Other players' tokens are never included in room state. */
+	token: string;
 	role?: PlayerRole;
 	keyword?: string | null;
-	voteToken?: string | null;
+	/** Public id of the player this viewer voted for. */
+	voteId?: string | null;
 }
 
 export interface PublicRoomListItemDTO {
@@ -94,18 +107,22 @@ export interface RoomStateDTO {
 	topic: string;
 	/** Word tags the host keeps out of the draw. */
 	excludedTags: SpyTag[];
-	playtestMode: boolean;
 	/** How many Spies are dealt. Each one needs its own correct vote. */
 	spyCount: SpyCount;
 	/** When on, each player sees whether they are a Civilian or a Spy. */
 	revealRoles: boolean;
 	/** Spies voted out so far this game. */
 	spiesCaught: number;
+	/** Spies still in the room and not yet eliminated. */
+	spiesRemaining: number;
 	round: number;
 	playerCount: number;
 	players: PlayerPublicDTO[];
+	/** Players who left mid-game. Empty in the lobby. */
+	departed: DepartedPlayerDTO[];
 	self: PlayerSelfDTO | null;
-	firstSpeaker?: { token: string; name: string };
+	firstSpeaker?: { id: string; name: string };
+	/** Public ids of the players who can be voted for. */
 	voteCandidates: string[];
 	isRevote: boolean;
 	lastRound?: EliminationLogEntry;
@@ -119,10 +136,16 @@ export interface CreateRoomInput {
 	maxPlayers?: number;
 	topic?: SpyTopic | string;
 	excludedTags?: string[];
-	playtestMode?: boolean;
 	spyCount?: number;
 	revealRoles?: boolean;
 	hostName: string;
+}
+
+/** The phase the host's screen was showing when they asked to move on. */
+export interface PhaseCursor {
+	phase: GamePhase;
+	round: number;
+	isRevote: boolean;
 }
 
 export interface JoinRoomInput {
@@ -137,13 +160,12 @@ export interface UpdateSettingsInput {
 	maxPlayers?: number;
 	topic?: string;
 	excludedTags?: string[];
-	playtestMode?: boolean;
 	spyCount?: number;
 	revealRoles?: boolean;
 }
 
 export interface VoteInput {
-	targetToken?: string | null;
+	targetId?: string | null;
 }
 
 export interface RenamePlayerInput {

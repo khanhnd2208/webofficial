@@ -6,7 +6,7 @@ import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvi
 import { SPY_POLL_INTERVAL_MS } from '@/features/spy-fall/config/spyGame';
 import { fetchRoomState, patchSpyAction, postSpyAction } from '@/features/spy-fall/lib/spy/api';
 import { storePlayerToken } from '@/features/spy-fall/lib/spy/clientToken';
-import type { RoomStateDTO, UpdateSettingsInput } from '@/features/spy-fall/types/spyGame';
+import type { PhaseCursor, RoomStateDTO, UpdateSettingsInput } from '@/features/spy-fall/types/spyGame';
 
 interface UseSpyRoomOptions {
 	code: string;
@@ -120,11 +120,11 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 					token: tokenRef.current,
 				}),
 			),
-		vote: (targetToken: string | null) =>
+		vote: (targetId: string | null) =>
 			action(() =>
 				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/vote`, {
 					token: tokenRef.current,
-					targetToken,
+					targetId,
 				}),
 			),
 		settings: (input: UpdateSettingsInput) =>
@@ -134,12 +134,18 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 					...input,
 				}),
 			),
-		next: () =>
-			action(() =>
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/next`, {
-					token: tokenRef.current,
-				}),
-			),
+		next: (from: PhaseCursor) =>
+			action(async () => {
+				try {
+					return await postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/next`, {
+						token: tokenRef.current,
+						from,
+					});
+				} catch (error) {
+					await refresh();
+					throw error;
+				}
+			}),
 		playAgain: () =>
 			action(() =>
 				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/play-again`, {
@@ -159,11 +165,11 @@ export function useSpyRoom({ code, playerToken, onTokenReceived }: UseSpyRoomOpt
 					name,
 				}),
 			),
-		kick: (targetToken: string) =>
+		kick: (targetId: string) =>
 			action(() =>
 				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/kick`, {
 					token: tokenRef.current,
-					targetToken,
+					targetId,
 				}),
 			),
 		leave: () =>

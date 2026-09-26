@@ -14,7 +14,7 @@ import StepGuide from '../StepGuide';
 
 interface Props {
 	state: RoomStateDTO;
-	onVote: (targetToken: string | null) => void;
+	onVote: (targetId: string | null) => void;
 	onNext?: () => void;
 	busy?: boolean;
 }
@@ -27,15 +27,22 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 	const candidateSet = new Set(state.voteCandidates);
 	const restricted = state.isRevote && candidateSet.size > 0;
 	const choices = living.filter(
-		(p) => p.token !== self?.token && (!restricted || candidateSet.has(p.token)),
+		(p) => p.id !== self?.id && (!restricted || candidateSet.has(p.id)),
 	);
 	const tiedNames = state.voteCandidates
-		.map((token) => state.players.find((p) => p.token === token)?.name)
+		.map((id) => state.players.find((p) => p.id === id)?.name)
 		.filter(Boolean)
 		.join(', ');
-	const pickedName = choices.find((p) => p.token === self?.voteToken)?.name;
+	const pickedName = choices.find((p) => p.id === self?.voteId)?.name;
 	const progress = living.length > 0 ? Math.round((voted / living.length) * 100) : 0;
 	const out = Boolean(self?.isEliminated);
+	const missing = living.length - voted;
+
+	function lockWarning(): string {
+		if (voted === 0) return t('spy.vote.lockConfirmNone');
+		const tie = state.isRevote ? t('spy.vote.lockTieEnds') : t('spy.vote.lockTieRevote');
+		return t('spy.vote.lockConfirmSome', { missing, tie });
+	}
 
 	return (
 		<>
@@ -72,16 +79,16 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 				</div>
 
 				{out ? (
-					<PlayerList players={living} selfToken={self?.token} showVoted />
+					<PlayerList players={living} selfId={self?.id} showVoted />
 				) : (
 					<PlayerList
 						players={choices}
 						selectable
 						disabled={busy}
-						selectedToken={self?.voteToken}
-						onSelect={(token) => {
+						selectedId={self?.voteId}
+						onSelect={(id) => {
 							playTap();
-							onVote(token === self?.voteToken ? null : token);
+							onVote(id === self?.voteId ? null : id);
 						}}
 					/>
 				)}
@@ -94,7 +101,7 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 						fullWidth
 						loading={busy}
 						onClick={() => {
-							if (voted < living.length && !window.confirm(t('spy.vote.lockConfirm'))) return;
+							if (voted < living.length && !window.confirm(lockWarning())) return;
 							onNext();
 						}}
 					>

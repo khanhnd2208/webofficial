@@ -46,7 +46,7 @@ function endReasonText(
 				: t('spy.result.reason.caughtOne');
 		case 'wrong-vote':
 			return t('spy.result.reason.wrongVote', {
-				name: (last?.token && names.get(last.token)) || '?',
+				name: (last?.id && names.get(last.id)) || '?',
 			});
 		case 'no-elimination':
 			return last?.tally.some((row) => row.votes > 0)
@@ -64,13 +64,23 @@ function endReasonText(
 export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 	const t = useT();
 	const result = state.result!;
-	const names = useMemo(
-		() => new Map(state.players.map((p) => [p.token, p.name])),
-		[state.players],
-	);
+	const names = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const player of state.players) map.set(player.id, player.name);
+		for (const player of state.departed) map.set(player.id, player.name);
+		return map;
+	}, [state.players, state.departed]);
 	const civiliansWon = result.winningSide === 'civilian';
-	const spies = state.players.filter((p) => p.role === 'spy');
-	const spyNames = spies.map((p) => p.name).join(', ');
+	const roster = [
+		...state.players.map((player) => ({ ...player, departed: false })),
+		...state.departed.map((player) => ({
+			...player,
+			isEliminated: false,
+			departed: true,
+		})),
+	];
+	const spies = roster.filter((player) => player.role === 'spy');
+	const spyNames = spies.map((player) => player.name).join(', ');
 	const manySpies = state.spyCount > 1;
 	const reason = endReasonText(t, result, state.spyCount, names);
 	const finalRound = result.eliminationLog.at(-1);
@@ -147,10 +157,10 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 						<ul className="space-y-1.5">
 							{finalTally.map((row) => (
 								<li
-									key={row.token}
+									key={row.id}
 									className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-sm"
 								>
-									<span className="truncate">{names.get(row.token) ?? '?'}</span>
+									<span className="truncate">{names.get(row.id) ?? '?'}</span>
 									<span className="shrink-0 font-semibold tabular-nums">
 										{t('spy.reveal.votes', { count: row.votes })}
 									</span>
@@ -167,7 +177,7 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 						</h3>
 						<ol className="space-y-1.5 text-sm">
 							{result.eliminationLog.map((entry, index) => {
-								const who = entry.token ? (names.get(entry.token) ?? '?') : t('spy.result.nobody');
+								const who = entry.id ? (names.get(entry.id) ?? '?') : t('spy.result.nobody');
 								return (
 									<li
 										key={`${entry.round}-${index}`}
@@ -192,9 +202,9 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 						{t('spy.result.roster')}
 					</h3>
 					<ul className="space-y-2">
-						{state.players.map((p) => (
+						{roster.map((p) => (
 							<li
-								key={p.token}
+								key={p.id}
 								className={cn(
 									'flex items-center justify-between gap-3 rounded-xl border px-4 py-3',
 									p.role === 'civilian' ? 'border-border bg-surface' : 'border-danger/30 bg-danger-subtle',
@@ -205,9 +215,10 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 									<span className={cn('truncate font-medium', p.isEliminated && 'line-through opacity-70')}>
 										{p.name}
 									</span>
-									{p.token === state.self?.token ? (
+									{p.id === state.self?.id ? (
 										<Badge variant="accent">{t('spy.player.you')}</Badge>
 									) : null}
+									{p.departed ? <Badge variant="muted">{t('spy.result.departed')}</Badge> : null}
 								</div>
 								<Badge variant={roleBadgeVariant(p.role)}>
 									{p.role ? getRoleLabel(t, p.role) : '?'}

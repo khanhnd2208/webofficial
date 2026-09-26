@@ -6,20 +6,21 @@ import { cn } from '@/features/spy-fall/lib/cn';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
 interface Props {
-	state: Pick<RoomStateDTO, 'spyCount' | 'spiesCaught'>;
+	state: Pick<RoomStateDTO, 'spyCount' | 'spiesCaught' | 'spiesRemaining'>;
 	className?: string;
 }
 
 /** What this vote decides: the whole game with one Spy, else a first, middle or final guess. */
-function stakesKey({ spyCount, spiesCaught }: Props['state']): string {
+function stakesKey({ spyCount, spiesCaught, spiesRemaining }: Props['state']): string {
 	if (spyCount === 1) return 'spy.stakes.one';
+	if (spiesRemaining <= 1) return 'spy.stakes.last';
 	if (spiesCaught === 0) return 'spy.stakes.first';
-	return spiesCaught >= spyCount - 1 ? 'spy.stakes.last' : 'spy.stakes.middle';
+	return 'spy.stakes.middle';
 }
 
 export default function StakesBanner({ state, className }: Props) {
 	const t = useT();
-	const finalGuess = state.spiesCaught >= state.spyCount - 1;
+	const finalGuess = state.spyCount === 1 || state.spiesRemaining <= 1;
 
 	return (
 		<p

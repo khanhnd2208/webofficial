@@ -48,8 +48,8 @@ export default function DiscussionPhase({ state, onNext, busy }: Props) {
 
 				<PlayerList
 					players={state.players}
-					selfToken={self?.token}
-					firstSpeakerToken={state.firstSpeaker?.token}
+					selfId={self?.id}
+					firstSpeakerId={state.firstSpeaker?.id}
 				/>
 				<p className="text-center text-xs text-muted-foreground">
 					{t('spy.discussion.alive', { count: living })}
