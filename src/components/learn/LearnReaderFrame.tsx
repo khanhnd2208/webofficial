@@ -98,6 +98,7 @@ export default function LearnReaderFrame({
 				</button>
 				{header}
 				<LearnScrollProgress />
+				<div className="ln-nav-progress" aria-hidden="true" />
 			</header>
 			<div className="ln-frame__body">
 				<aside

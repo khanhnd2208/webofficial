@@ -8,6 +8,7 @@ import LearnDiscussionViewer from '@/components/learn/LearnDiscussionViewer';
 import LearnCourseOverview from '@/components/learn/LearnCourseOverview';
 import LearnCurriculum from '@/components/learn/LearnCurriculum';
 import { LearnIcon } from '@/components/learn/LearnIcon';
+import LearnLinkPending from '@/components/learn/LearnLinkPending';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import LearnPracticeRunner from '@/components/learn/LearnPracticeRunner';
 import LearnNotesDrawer from '@/components/learn/LearnNotesDrawer';
@@ -17,7 +18,7 @@ import LearnReaderFrame from '@/components/learn/LearnReaderFrame';
 import LearnReaderPrefs from '@/components/learn/LearnReaderPrefs';
 import LearnStudyTracker from '@/components/learn/LearnStudyTracker';
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/content';
+import { formatMinutes } from '@/features/learn/format';
 import { readingOutline } from '@/features/learn/outline';
 import { summarizeCourse, toCurriculumLessons } from '@/features/learn/progress';
 import {
@@ -135,12 +136,14 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 			return (
 				<Link href={continueHref} className="ln-btn ln-btn--primary">
 					Tiếp tục →
+					<LearnLinkPending />
 				</Link>
 			);
 		}
 		return nextHref ? (
 			<Link href={nextHref} className="ln-pager ln-pager--skip">
 				Bỏ qua →
+				<LearnLinkPending />
 			</Link>
 		) : null;
 	}
@@ -153,6 +156,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					{course.title}
 					{current ? <span className="ln-topbar__section"> / {current.title}</span> : null}
 				</span>
+				<LearnLinkPending />
 			</Link>
 			<span
 				className="ln-topbar__count tabular-nums"
@@ -296,6 +300,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 						{previous && previousHref ? (
 							<Link href={previousHref} className="ln-pager">
 								← {previous.title}
+								<LearnLinkPending />
 							</Link>
 						) : (
 							<span />
@@ -309,6 +314,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					{previousHref ? (
 						<Link href={previousHref} className="ln-icon-btn" aria-label="Mục trước">
 							<LearnIcon name="chevronLeft" size={18} />
+							<LearnLinkPending />
 						</Link>
 					) : (
 						<span className="ln-icon-btn" aria-disabled="true">
@@ -319,6 +325,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					{nextHref ? (
 						<Link href={nextHref} className="ln-icon-btn" aria-label="Mục tiếp">
 							<LearnIcon name="chevronRight" size={18} />
+							<LearnLinkPending />
 						</Link>
 					) : (
 						<span className="ln-icon-btn" aria-disabled="true">

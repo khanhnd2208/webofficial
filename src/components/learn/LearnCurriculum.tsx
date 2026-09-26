@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/content';
+import { formatMinutes } from '@/features/learn/format';
 import type { LearnCurriculumLesson } from '@/features/learn/progress';
 
 import { LEARN_SECTION_KIND_SHORT, type LearnSectionKind } from '@/features/learn/types';
 
 import { LearnIcon, type LearnIconName } from './LearnIcon';
+import LearnLinkPending from './LearnLinkPending';
 
 const SECTION_ICONS: Record<LearnSectionKind, LearnIconName> = {
 	READING: 'reading',
@@ -145,6 +146,7 @@ export default function LearnCurriculum({
 													{section.completed ? '(đã hoàn thành)' : ''}
 													{active ? '(đang xem)' : ''}
 												</span>
+												<LearnLinkPending />
 											</Link>
 										</li>
 									);

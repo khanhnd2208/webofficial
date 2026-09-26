@@ -53,12 +53,7 @@ export function sectionMinutes(section: {
 	return estimateReadingMinutes(section.markdown);
 }
 
-export function formatMinutes(minutes: number): string {
-	if (minutes < 60) return `${minutes} phút`;
-	const hours = Math.floor(minutes / 60);
-	const rest = minutes % 60;
-	return rest ? `${hours} giờ ${rest} phút` : `${hours} giờ`;
-}
+export { formatMinutes } from './format';
 
 /** JSON columns are written through zod, but read defensively in case of manual edits. */
 export function readCheckpoint(value: unknown): LearnCheckpoint | null {

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import LearnCompleteButton from './LearnCompleteButton';
+import LearnLinkPending from './LearnLinkPending';
 
 /** Last step of a practice or discussion stepper: a link once the section is done, otherwise the complete button. */
 export default function LearnStepperFinish({
@@ -36,6 +37,7 @@ export default function LearnStepperFinish({
 		return (
 			<Link href={overviewHref} className="ln-btn ln-btn--primary" data-ln-primary="">
 				Hoàn thành khóa học
+				<LearnLinkPending />
 			</Link>
 		);
 	}
@@ -43,6 +45,7 @@ export default function LearnStepperFinish({
 		return (
 			<Link href={nextHref} className="ln-btn ln-btn--primary" data-ln-primary="">
 				Sang mục tiếp →
+				<LearnLinkPending />
 			</Link>
 		);
 	}
@@ -50,6 +53,7 @@ export default function LearnStepperFinish({
 		return (
 			<Link href={overviewHref} className="ln-btn ln-btn--primary" data-ln-primary="">
 				Về trang khóa học
+				<LearnLinkPending />
 			</Link>
 		);
 	}

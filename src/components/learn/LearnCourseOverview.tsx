@@ -1,13 +1,14 @@
 import Link from 'next/link';
 
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/content';
+import { formatMinutes } from '@/features/learn/format';
 import { toCurriculumLessons, type LearnCourseSummary } from '@/features/learn/progress';
 import { LEARN_LEVEL_LABELS, type LearnCourseOutline } from '@/features/learn/types';
 
 import LearnAppBar from './LearnAppBar';
 import LearnCurriculum from './LearnCurriculum';
 import { LearnIcon } from './LearnIcon';
+import LearnLinkPending from './LearnLinkPending';
 
 const ABOUT_FOLD = 280;
 
@@ -74,6 +75,7 @@ export default function LearnCourseOverview({
 						{cta.href ? (
 							<Link href={cta.href} className="ln-btn ln-btn--primary">
 								{cta.label}
+								<LearnLinkPending />
 							</Link>
 						) : null}
 					</header>

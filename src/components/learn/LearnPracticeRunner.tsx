@@ -1,13 +1,16 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 import type { LearnQuizQuestion } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
 
-import LearnMarkdown from './LearnMarkdown';
 import LearnStepperFinish from './LearnStepperFinish';
 import { useStepperScroll } from './useStepperScroll';
+
+// Reading sections render markdown on the server; only these steppers need the parser in the browser.
+const LearnMarkdown = dynamic(() => import('./LearnMarkdown'));
 
 const LETTERS = 'ABCDEFGH';
 

@@ -1,4 +1,4 @@
-import ReactMarkdown, { type Components } from 'react-markdown';
+import ReactMarkdown, { type Components, type ExtraProps } from 'react-markdown';
 import { isValidElement, type ReactNode } from 'react';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -24,7 +24,29 @@ function textOf(children: ReactNode): string {
 	return '';
 }
 
+/**
+ * `![alt](src)` parses as a paragraph around the image, and the image renders as a
+ * <figure>, which may not sit inside <p>. The browser splits such markup, so hydration no
+ * longer matches and React re-renders the whole page on the client. Unwrap those paragraphs.
+ */
+function paragraphWithImage(node: ExtraProps['node']): 'only' | 'mixed' | null {
+	const children = node?.children ?? [];
+	if (!children.some((child) => child.type === 'element' && child.tagName === 'img')) return null;
+	const onlyImages = children.every(
+		(child) =>
+			(child.type === 'element' && (child.tagName === 'img' || child.tagName === 'br')) ||
+			(child.type === 'text' && !child.value.trim()),
+	);
+	return onlyImages ? 'only' : 'mixed';
+}
+
 const components: Components = {
+	p: ({ node, children }) => {
+		const image = paragraphWithImage(node);
+		if (image === 'only') return <>{children}</>;
+		if (image === 'mixed') return <div>{children}</div>;
+		return <p>{children}</p>;
+	},
 	table: ({ node: _node, ...props }) => (
 		<div className="ln-table">
 			<table {...props} />

@@ -30,7 +30,7 @@ describe('LearnPracticeRunner', () => {
 
 		await user.click(await screen.findByRole('radio', { name: /Sai/ }));
 		expect(screen.getByText(/Chưa đúng/)).toBeInTheDocument();
-		expect(screen.getByText('đúng')).toBeInTheDocument();
+		expect(await screen.findByText('đúng')).toBeInTheDocument();
 
 		await user.click(screen.getByRole('button', { name: 'Câu tiếp →' }));
 		await user.click(screen.getByRole('radio', { name: 'BB' }));

@@ -8,6 +8,7 @@ import type { LearnQuizForLearner, LearnQuizReview } from '@/features/learn/type
 import { adminFetch } from '@/lib/admin/client';
 
 import { celebrate } from './celebrate';
+import LearnLinkPending from './LearnLinkPending';
 
 const LETTERS = 'ABCDEFGH';
 
@@ -159,6 +160,7 @@ export default function LearnQuizRunner({
 					{continueHref ? (
 						<Link href={continueHref} className="ln-btn ln-btn--primary">
 							Tiếp tục →
+							<LearnLinkPending />
 						</Link>
 					) : null}
 				</div>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/content';
+import { formatMinutes } from '@/features/learn/format';
 import { courseHue, courseStatus, percentOf, type LearnCourseStatus } from '@/features/learn/progress';
 import { LEARN_LEVEL_LABELS, type LearnCourseListItem, type LearnLevel } from '@/features/learn/types';
 

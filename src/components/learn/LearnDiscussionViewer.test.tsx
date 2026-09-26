@@ -34,7 +34,7 @@ describe('LearnDiscussionViewer', () => {
 
 		expect(screen.queryByText('nguồn gốc')).not.toBeInTheDocument();
 		await user.click(screen.getByRole('button', { name: 'Xem đáp án mẫu' }));
-		expect(screen.getByText('nguồn gốc')).toBeInTheDocument();
+		expect(await screen.findByText('nguồn gốc')).toBeInTheDocument();
 		expect(adminFetch).not.toHaveBeenCalled();
 
 		await user.click(screen.getByRole('button', { name: 'Câu tiếp →' }));
