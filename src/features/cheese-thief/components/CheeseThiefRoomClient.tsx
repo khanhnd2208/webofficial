@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
+import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
 import { useCheeseThiefRoom } from '@/features/cheese-thief/components/hooks/useCheeseThiefRoom';
 import DayPhase from '@/features/cheese-thief/components/phases/DayPhase';
 import DealPhase from '@/features/cheese-thief/components/phases/DealPhase';
@@ -17,8 +18,9 @@ import VotePhase from '@/features/cheese-thief/components/phases/VotePhase';
 import { clearPlayerToken, getStoredPlayerToken, storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
 import CheeseCheckPhase from '@/features/cheese-thief/components/phases/CheeseCheckPhase';
 import TiePhase from '@/features/cheese-thief/components/phases/TiePhase';
-import { unlockTableAudio } from '@/features/cheese-thief/lib/narration';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { startNightTrack, unlockTableAudio } from '@/features/cheese-thief/lib/narration';
+import { prepareNightTrack } from '@/features/cheese-thief/lib/nightTrack';
+import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
 import { Button, Field, Spinner } from '@/features/spy-fall/components/ui';
 import { getRecentPlayerName, storeRecentPlayerName } from '@/features/spy-fall/lib/spy/clientToken';
@@ -31,6 +33,7 @@ interface Props {
 
 export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 	const t = useT();
+	const { locale } = useLocale();
 	const router = useRouter();
 	const [hydrated, setHydrated] = useState(false);
 	const [playerToken, setPlayerToken] = useState<string | null>(null);
@@ -43,6 +46,17 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 		playerToken,
 		onTokenReceived: setPlayerToken,
 	});
+
+	// The host phone builds the recorded night while the table reads roles or looks at the cheese,
+	// so the tap that starts the night can also start the sound.
+	const hostPhase = state?.isHost ? state.phase : null;
+	const tableMode = state?.mode ?? 'classic';
+	const hourSeconds = state?.hourSeconds;
+	useEffect(() => {
+		if (hourSeconds === undefined) return;
+		if (hostPhase === 'deal') void prepareNightTrack({ locale, mode: tableMode, night: 1, hourSeconds });
+		if (hostPhase === 'cheese-check') void prepareNightTrack({ locale, mode: tableMode, night: 2, hourSeconds });
+	}, [hostPhase, tableMode, hourSeconds, locale]);
 
 	useEffect(() => {
 		const stored = getStoredPlayerToken(code);
@@ -121,10 +135,17 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 					<Link href={routes.cheeseThief} className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">
 						{state.code}
 					</Link>
+					<CheeseRulesButton
+						playerCount={state.playerCount}
+						mode={state.mode}
+						scapegoatEnabled={state.scapegoatEnabled}
+						className="text-sm text-muted underline-offset-2 hover:underline"
+					/>
 					<button
 						type="button"
 						className="text-sm text-muted"
 						onClick={() => {
+							if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
 							void api.leave().finally(() => {
 								clearPlayerToken(code);
 								router.push(routes.cheeseThief);
@@ -144,6 +165,7 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						onStart={() => void run(api.start)}
 						onScapegoat={(enabled) => void run(() => api.settings({ scapegoat: enabled }))}
 						onMode={(mode) => void run(() => api.settings({ mode }))}
+						onHourSeconds={(hourSeconds) => void run(() => api.settings({ hourSeconds }))}
 						onKick={(id) => void run(() => api.kick(id))}
 					/>
 				)}
@@ -153,14 +175,14 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						busy={busy}
 						onRemember={(hour) => void run(() => api.memorized(hour))}
 						onBeginNight={() => {
-							unlockTableAudio();
+							if (!startNightTrack({ locale, mode: state.mode, night: 1, hourSeconds: state.hourSeconds })) unlockTableAudio();
 							void run(api.beginNight);
 						}}
 					/>
 				)}
 				{phase === 'night' && <NightPhase state={state} fetchedAt={fetchedAt} />}
 				{phase === 'cheese-check' && (
-					<CheeseCheckPhase isHost={state.isHost} busy={busy} onConfirm={(present) => void run(() => api.cheese(present))} />
+					<CheeseCheckPhase isHost={state.isHost} hourSeconds={state.hourSeconds} busy={busy} onConfirm={(present) => void run(() => api.cheese(present))} />
 				)}
 				{phase === 'secret' && <SecretPhase state={state} busy={busy} onSubmit={(picks) => void run(() => api.secret(picks))} />}
 				{phase === 'secret-result' && (

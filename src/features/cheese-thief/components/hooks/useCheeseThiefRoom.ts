@@ -59,9 +59,12 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived }: Optio
 
 	useEffect(() => {
 		const phase = state?.phase;
-		const hostNight = Boolean(state?.isHost && (phase === 'night' || phase === 'cheese-check'));
+		// The host keeps polling through the day talk too, so the host seat does not drift to another phone.
+		const hostHolds = Boolean(
+			state?.isHost && (phase === 'night' || phase === 'cheese-check' || phase === 'day' || phase === 'tie'),
+		);
 		const tableLooking = phase === 'deal' || phase === 'secret' || phase === 'secret-result' || phase === 'vote';
-		const needsLock = hostNight || tableLooking;
+		const needsLock = hostHolds || tableLooking;
 
 		async function acquire() {
 			try {
@@ -103,7 +106,7 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived }: Optio
 				setFetchedAt(Date.now());
 				return data;
 			}),
-		settings: (input: { scapegoat?: boolean; name?: string; mode?: 'classic' | 'two-night' }) =>
+		settings: (input: { scapegoat?: boolean; name?: string; mode?: 'classic' | 'two-night'; hourSeconds?: number }) =>
 			action(() =>
 				patchCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/settings`, {
 					token: tokenRef.current,

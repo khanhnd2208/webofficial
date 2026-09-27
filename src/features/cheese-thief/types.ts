@@ -34,6 +34,8 @@ export interface PlayerSelfDTO {
 	wakeHours2?: number[];
 	/** Own vote, vote phase only. */
 	voteId?: string | null;
+	/** Own picks are in, secret minute only. Never shown for anyone else. */
+	hasChosenSecret?: boolean;
 	/** Own job, secret minute only. Same slot order on every phone. */
 	secretJob?: { followers: number; peek: boolean };
 	/** Own card, secret-result only. */
@@ -62,6 +64,8 @@ export interface RoomStateDTO {
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
 	mode: CheeseMode;
+	/** Length of one night hour, set by the host in the lobby. */
+	hourSeconds: number;
 	playerCount: number;
 	players: PlayerPublicDTO[];
 	self: PlayerSelfDTO | null;
@@ -101,6 +105,7 @@ export interface CreateRoomInput {
 	maxPlayers?: number;
 	scapegoat?: boolean;
 	mode?: CheeseMode;
+	hourSeconds?: number;
 }
 
 export interface UpdateSettingsInput {
@@ -109,4 +114,5 @@ export interface UpdateSettingsInput {
 	maxPlayers?: number;
 	scapegoat?: boolean;
 	mode?: CheeseMode;
+	hourSeconds?: number;
 }

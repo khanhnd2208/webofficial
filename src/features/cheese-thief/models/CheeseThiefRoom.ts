@@ -1,6 +1,16 @@
 import mongoose, { Schema, type Model } from 'mongoose';
 
-import { CHEESE_MODES, CHEESE_PHASES, type CheeseMode, type NightNumber } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	CHEESE_HOUR_SECONDS_DEFAULT,
+	CHEESE_HOUR_SECONDS_MAX,
+	CHEESE_HOUR_SECONDS_MIN,
+	CHEESE_MAX_PLAYERS,
+	CHEESE_MIN_PLAYERS,
+	CHEESE_MODES,
+	CHEESE_PHASES,
+	type CheeseMode,
+	type NightNumber,
+} from '@/features/cheese-thief/config/cheeseThief';
 import type { CheeseRole, CheeseWinner } from '@/features/cheese-thief/lib/rules';
 
 export interface ICheesePlayer {
@@ -28,6 +38,7 @@ export interface ICheeseRoom {
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
 	mode: CheeseMode;
+	hourSeconds: number;
 	hostToken: string;
 	phase: (typeof CHEESE_PHASES)[number];
 	nightNumber: NightNumber;
@@ -75,9 +86,15 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		code: { type: String, required: true, unique: true, trim: true, uppercase: true, index: true },
 		name: { type: String, required: true, trim: true },
 		isPublic: { type: Boolean, default: true, index: true },
-		maxPlayers: { type: Number, required: true, min: 4, max: 8 },
+		maxPlayers: { type: Number, required: true, min: CHEESE_MIN_PLAYERS, max: CHEESE_MAX_PLAYERS },
 		scapegoatEnabled: { type: Boolean, default: false },
 		mode: { type: String, enum: CHEESE_MODES, default: 'classic' },
+		hourSeconds: {
+			type: Number,
+			default: CHEESE_HOUR_SECONDS_DEFAULT,
+			min: CHEESE_HOUR_SECONDS_MIN,
+			max: CHEESE_HOUR_SECONDS_MAX,
+		},
 		hostToken: { type: String, required: true },
 		phase: { type: String, enum: CHEESE_PHASES, default: 'lobby', index: true },
 		version: { type: Number, default: 0 },

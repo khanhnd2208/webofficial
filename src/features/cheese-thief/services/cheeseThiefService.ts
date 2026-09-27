@@ -4,20 +4,24 @@ import { customAlphabet } from 'nanoid';
 import {
 	CHEESE_DISCONNECT_THRESHOLD_MS,
 	CHEESE_HOST_HANDOFF_MS,
-	CHEESE_HOUR_MS,
-	CHEESE_INTRO_MS,
+	CHEESE_HOUR_SECONDS_DEFAULT,
+	CHEESE_HOUR_SECONDS_MAX,
+	CHEESE_HOUR_SECONDS_MIN,
 	CHEESE_MAX_PLAYERS,
 	CHEESE_MAX_ROOM_NAME_LENGTH,
 	CHEESE_MIN_PLAYERS,
-	CHEESE_OUTRO_MS,
 	CHEESE_PHASES,
 	CHEESE_PLAYER_ID_LENGTH,
 	CHEESE_PLAYER_TOKEN_LENGTH,
 	CHEESE_ROOM_CODE_LENGTH,
+	CHEESE_ROUND_HOST_HANDOFF_MS,
 	CHEESE_SECRET_MAX_MS,
 	CHEESE_SECRET_MIN_MS,
-	TWO_NIGHT_MIN_PLAYERS,
 	isCheeseMode,
+	isHourSeconds,
+	isPlayerCountAllowed,
+	nightTiming,
+	playerRangeFor,
 	presetFor,
 	type CheesePhase,
 	type NightNumber,
@@ -59,7 +63,6 @@ const generatePlayerId = customAlphabet(
 	CHEESE_PLAYER_ID_LENGTH,
 );
 
-const NIGHT_TIMING = { introMs: CHEESE_INTRO_MS, hourMs: CHEESE_HOUR_MS, outroMs: CHEESE_OUTRO_MS };
 const VALID_PHASES = new Set<string>(CHEESE_PHASES);
 const MAX_SAVE_ATTEMPTS = 3;
 
@@ -134,6 +137,12 @@ function assertMaxPlayers(maxPlayers: unknown): asserts maxPlayers is number {
 	}
 }
 
+function assertHourSeconds(hourSeconds: unknown): asserts hourSeconds is number {
+	if (!isHourSeconds(hourSeconds)) {
+		throw new AppError('HOUR_SECONDS_INVALID', 400, { min: CHEESE_HOUR_SECONDS_MIN, max: CHEESE_HOUR_SECONDS_MAX });
+	}
+}
+
 function mapRecord(value: ICheeseRoom['peekByPlayer'] | undefined): Record<string, string> {
 	if (!value) return {};
 	if (value instanceof Map) return Object.fromEntries(value.entries());
@@ -171,7 +180,8 @@ function updateConnectionStatus(game: RoomDoc, at: Date): void {
 
 function migrateHostIfNeeded(game: RoomDoc, at: Date): boolean {
 	const host = findPlayer(game, game.hostToken);
-	if (host && host.lastSeenAt.getTime() >= at.getTime() - CHEESE_HOST_HANDOFF_MS) return false;
+	const handoffMs = game.phase === 'lobby' ? CHEESE_HOST_HANDOFF_MS : CHEESE_ROUND_HOST_HANDOFF_MS;
+	if (host && host.lastSeenAt.getTime() >= at.getTime() - handoffMs) return false;
 	const replacement = game.players.find((player) => player.token !== game.hostToken && isRecentlySeen(player, at));
 	if (!replacement) return false;
 	game.hostToken = replacement.token;
@@ -254,7 +264,7 @@ function enterSecret(game: RoomDoc, at: Date, theftNight: NightNumber): void {
 
 function advanceClock(game: RoomDoc, at: Date): boolean {
 	if (game.phase === 'night' && game.nightStartedAt) {
-		if (at.getTime() >= nightEndsAt(game.nightStartedAt.getTime(), NIGHT_TIMING)) {
+		if (at.getTime() >= nightEndsAt(game.nightStartedAt.getTime(), nightTiming(game.hourSeconds))) {
 			if ((game.mode ?? 'classic') === 'two-night' && (game.nightNumber ?? 1) === 1) {
 				game.phase = 'cheese-check';
 				return true;
@@ -302,6 +312,7 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		...((player.dice2 ?? []).length > 0 ? { dice2: player.dice2 } : {}),
 		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 		hasMemorizedRole: player.hasMemorizedRole,
+		hasChosenSecret: (player.secretPicks ?? []).length > 0,
 		hasSeenSecret: player.hasSeenSecret,
 		...(player.voteId ? { voteId: player.voteId } : {}),
 	}));
@@ -316,6 +327,7 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		maxPlayers: game.maxPlayers,
 		scapegoatEnabled: game.scapegoatEnabled,
 		mode: game.mode ?? 'classic',
+		hourSeconds: game.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT,
 		nightNumber: game.nightNumber === 2 ? 2 : 1,
 		...(game.theftNight === 1 || game.theftNight === 2 ? { theftNight: game.theftNight } : {}),
 		voteRound: game.voteRound ?? 0,
@@ -405,6 +417,8 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 	const maxPlayers = input.maxPlayers ?? CHEESE_MAX_PLAYERS;
 	assertMaxPlayers(maxPlayers);
 	if (input.mode !== undefined && !isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
+	const hourSeconds = input.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT;
+	assertHourSeconds(hourSeconds);
 
 	await dbConnect();
 	const hostToken = generateToken();
@@ -423,6 +437,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 		maxPlayers,
 		scapegoatEnabled: input.scapegoat === true,
 		mode: input.mode && isCheeseMode(input.mode) ? input.mode : 'classic',
+		hourSeconds,
 		nightNumber: 1,
 		voteRound: 0,
 		hostToken,
@@ -518,18 +533,22 @@ export async function updateSettings(
 			if (!isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
 			game.mode = input.mode;
 		}
+		if (input.hourSeconds !== undefined) {
+			assertHourSeconds(input.hourSeconds);
+			game.hourSeconds = input.hourSeconds;
+		}
 	});
 }
 
 export async function startGame(code: string, hostToken: string): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, 'lobby', (game) => {
 		assertHost(game, hostToken);
-		if (game.players.length < CHEESE_MIN_PLAYERS || game.players.length > CHEESE_MAX_PLAYERS) {
-			throw new AppError('NEED_MIN_PLAYERS', 400, { min: CHEESE_MIN_PLAYERS });
-		}
 		const mode = game.mode ?? 'classic';
-		if (mode === 'two-night' && game.players.length < TWO_NIGHT_MIN_PLAYERS) {
-			throw new AppError('TWO_NIGHT_NEEDS_FIVE', 400);
+		if (!isPlayerCountAllowed(game.players.length, mode)) {
+			const { min, max } = playerRangeFor(mode);
+			if (mode === 'two-night') throw new AppError('TWO_NIGHT_NEEDS_FIVE', 400, { min, max });
+			if (game.players.length > max) throw new AppError('CLASSIC_TOO_MANY', 400, { max });
+			throw new AppError('NEED_MIN_PLAYERS', 400, { min });
 		}
 		const { seats } = deal(
 			game.players.map((player) => player.id),

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
@@ -41,7 +42,10 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 	return (
 		<div className="fixed inset-0 z-50 flex flex-col items-center bg-[#0c0b09] px-5 pt-10 pb-8 text-[#f4efe4]">
 			<div className="flex w-full max-w-md flex-1 flex-col">
-				<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">{t('cheese.secret.onlyYou')}</p>
+				<div className="flex items-center justify-between">
+					<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">{t('cheese.secret.onlyYou')}</p>
+					<CheeseThiefArt scene="secret" size={38} />
+				</div>
 				<h1 className="mt-3 font-display text-4xl font-medium">{t('cheese.secret.title')}</h1>
 				<p className="mt-3 text-sm leading-relaxed text-[#f4efe4]/70">{t('cheese.secret.order')}</p>
 				{jobText && (
@@ -69,6 +73,9 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 						);
 					})}
 				</div>
+				{state.self?.hasChosenSecret && (
+					<p className="mt-4 text-center text-sm text-[#e0a045]">{t('cheese.secret.chosen')}</p>
+				)}
 				<Button
 					fullWidth
 					className="mt-auto"

@@ -4,7 +4,7 @@ import CheeseThiefMenuClient from '@/features/cheese-thief/components/CheeseThie
 
 export const metadata: Metadata = {
 	title: 'Cheese Thief | Board Game',
-	description: 'Party game cho 4–8 người. Điện thoại chỉ chia bí mật, canh đêm, và tính phiếu.',
+	description: 'Party game cho 4–12 người. Điện thoại chỉ chia bí mật, canh đêm, và tính phiếu.',
 };
 
 export default function CheeseThiefPage() {

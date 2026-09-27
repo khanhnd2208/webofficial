@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import PutPhoneDown from '@/features/cheese-thief/components/PutPhoneDown';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
@@ -37,6 +38,7 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 			<h1 className="text-center font-display text-3xl font-medium">{t('cheese.deal.title')}</h1>
 			<div onPointerDown={() => setHeld(true)}>
 				<HoldToReveal>
+					<CheeseThiefArt scene={self.role === 'thief' ? 'cheese' : self.role === 'scapegoat' ? 'reveal' : 'mouse'} size={54} />
 					<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#e0a045] uppercase">
 						{t(`cheese.deal.role.${self.role}`)}
 					</p>

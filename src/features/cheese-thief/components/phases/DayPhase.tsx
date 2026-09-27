@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {
 	state: RoomStateDTO;
@@ -31,9 +32,7 @@ export default function DayPhase({ state, fetchedAt, busy, onVote }: Props) {
 
 	return (
 		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-6 text-center">
-			<p className="font-display text-6xl" aria-hidden>
-				☀️
-			</p>
+			<CheeseThiefArt scene="sunrise" size={96} />
 			<h1 className="max-w-md font-display text-4xl leading-tight font-medium">{t('cheese.day.title')}</h1>
 			<p className="max-w-md text-base leading-relaxed text-muted">{t('cheese.day.body')}</p>
 			<p className="font-mono text-sm tracking-[0.16em] text-muted">{clock}</p>

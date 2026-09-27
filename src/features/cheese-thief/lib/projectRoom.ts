@@ -1,4 +1,10 @@
-import type { CheeseMode, CheesePhase, NightNumber, TablePreset } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	CHEESE_HOUR_SECONDS_DEFAULT,
+	type CheeseMode,
+	type CheesePhase,
+	type NightNumber,
+	type TablePreset,
+} from '@/features/cheese-thief/config/cheeseThief';
 import {
 	cardIsEmpty,
 	hoursInNight,
@@ -29,6 +35,7 @@ export interface ProjectPlayer {
 	dice2?: number[];
 	chosenHour?: number;
 	hasMemorizedRole: boolean;
+	hasChosenSecret?: boolean;
 	hasSeenSecret: boolean;
 	voteId?: string;
 }
@@ -42,6 +49,7 @@ export interface ProjectRoom {
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
 	mode?: CheeseMode;
+	hourSeconds?: number;
 	nightNumber?: NightNumber;
 	theftNight?: NightNumber;
 	voteRound?: number;
@@ -177,6 +185,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 						}
 					: {}),
 				...(secretJob ? { secretJob: { followers: secretJob.followers?.count ?? 0, peek: secretJob.peek } } : {}),
+				...(room.phase === 'secret' ? { hasChosenSecret: Boolean(viewer.hasChosenSecret) } : {}),
 				...(voting ? { voteId: viewer.voteId ?? null } : {}),
 				...(secretCard ? { secretCard } : {}),
 			}
@@ -193,6 +202,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		maxPlayers: room.maxPlayers,
 		scapegoatEnabled: room.scapegoatEnabled,
 		mode,
+		hourSeconds: room.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT,
 		playerCount: room.players.length,
 		players,
 		self,

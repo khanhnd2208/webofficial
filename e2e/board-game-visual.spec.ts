@@ -29,7 +29,7 @@ test('game artwork loads and game pages fit small screens', async ({ page }) => 
 		await page.setViewportSize({ width, height: 900 });
 		for (const path of gamePaths) {
 			await page.goto(path);
-			const artwork = page.locator('.game-theme-hero img');
+			const artwork = page.locator('.game-theme-hero img.game-theme-hero-image');
 			await expect(artwork).toBeVisible();
 			await expect
 				.poll(
@@ -69,7 +69,7 @@ test('Spy Fall room entry keeps its artwork and a route back to the menu', async
 	await page.setViewportSize({ width: 390, height: 844 });
 	await page.goto('/my-space/board-game/spy-fall/room/ABCDEF');
 	await expect(page.getByRole('heading', { name: 'Phòng ABCDEF' })).toBeVisible();
-	const artwork = page.locator('.game-theme-hero img');
+	const artwork = page.locator('.game-theme-hero img.game-theme-hero-image');
 	await expect
 		.poll(() =>
 			artwork.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),

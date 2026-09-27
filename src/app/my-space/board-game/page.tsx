@@ -123,9 +123,8 @@ export default function BoardGamePage() {
 						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-3xl border border-hairline bg-paper transition duration-500 hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
 					>
 						<Image
-							src="/brand/myspace/cheese-thief-editorial.webp"
-							unoptimized
-							alt="Minh hoạ screen-print của một bàn đêm với miếng cheese và những chú chuột đang ngủ"
+							src="/board-game/cheese-thief/cover.webp"
+							alt="Tranh minh họa Cheese Thief: chú chuột lén lấy miếng cheese dưới ánh đèn đêm"
 							fill
 							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
 							sizes="(max-width: 640px) 100vw, 1024px"
@@ -137,7 +136,7 @@ export default function BoardGamePage() {
 									03 · Bàn ăn đêm
 								</p>
 								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">
-									4–8 người
+									4–12 người
 								</span>
 							</div>
 							<div className="max-w-md">

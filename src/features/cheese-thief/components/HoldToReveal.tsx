@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 
 import { cn } from '@/features/spy-fall/lib/cn';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {
 	children: React.ReactNode;
@@ -43,11 +44,7 @@ export default function HoldToReveal({ children, className, compact = false, cov
 						<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">
 							{cover ?? t('cheese.deal.holdFirst')}
 						</p>
-						{!compact && (
-							<p className="font-display text-5xl" aria-hidden>
-								🧀
-							</p>
-						)}
+						<CheeseThiefArt scene={compact ? 'secret' : 'cheese'} size={compact ? 48 : 68} />
 					</div>
 				)}
 				<div

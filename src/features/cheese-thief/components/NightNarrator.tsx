@@ -1,53 +1,97 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-	CHEESE_HOUR_MS,
-	CHEESE_INTRO_MS,
-	CHEESE_OUTRO_MS,
-} from '@/features/cheese-thief/config/cheeseThief';
+import { nightTiming } from '@/features/cheese-thief/config/cheeseThief';
 import {
 	narrationSuspended,
 	playClockTick,
 	playHourChime,
+	playNightTrack,
 	speakLine,
+	stopTableAudio,
+	syncNightTrack,
 	unlockTableAudio,
 } from '@/features/cheese-thief/lib/narration';
 import { narrationKey, segmentAt } from '@/features/cheese-thief/lib/nightSchedule';
+import { prepareNightTrack, type NightTrackSpec } from '@/features/cheese-thief/lib/nightTrack';
 import type { CheeseMode, NightNumber } from '@/features/cheese-thief/config/cheeseThief';
 import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-
-const TIMING = { introMs: CHEESE_INTRO_MS, hourMs: CHEESE_HOUR_MS, outroMs: CHEESE_OUTRO_MS };
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {
 	nightStartedAt: string;
 	serverNow: string;
 	fetchedAt: number;
 	mode: CheeseMode;
+	hourSeconds: number;
 	night: NightNumber;
 }
 
-export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mode, night }: Props) {
+/**
+ * `track`: the recorded night is playing. `pending`: it is still being built.
+ * `blocked`: the browser wants a tap before it plays. `speech`: no track, speak each line instead.
+ */
+type Voice = 'pending' | 'track' | 'blocked' | 'speech';
+
+export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mode, hourSeconds, night }: Props) {
 	const t = useT();
 	const { locale } = useLocale();
 	const lastCue = useRef<string | null>(null);
+	const trackUrl = useRef<string | null>(null);
+	const skewRef = useRef(0);
 	const [line, setLine] = useState('');
 	const [needsTap, setNeedsTap] = useState(false);
+	const [voice, setVoice] = useState<Voice>('pending');
+	const voiceRef = useRef<Voice>('pending');
+	const spec = useMemo<NightTrackSpec>(() => ({ locale, mode, night, hourSeconds }), [locale, mode, night, hourSeconds]);
+	const started = new Date(nightStartedAt).getTime();
+
+	function changeVoice(next: Voice) {
+		voiceRef.current = next;
+		setVoice(next);
+	}
+
+	const elapsedSec = () => (Date.now() + skewRef.current - started) / 1000;
 
 	useEffect(() => {
 		lastCue.current = null;
 	}, [nightStartedAt]);
 
+	useEffect(() => stopTableAudio, []);
+
 	useEffect(() => {
-		const started = new Date(nightStartedAt).getTime();
-		const skew = new Date(serverNow).getTime() - fetchedAt;
+		let cancelled = false;
+		voiceRef.current = 'pending';
+		void prepareNightTrack(spec).then(async (url) => {
+			if (cancelled) return;
+			if (!url) {
+				changeVoice('speech');
+				return;
+			}
+			trackUrl.current = url;
+			const expected = (Date.now() + skewRef.current - started) / 1000;
+			if (syncNightTrack(url, spec, expected)) {
+				changeVoice('track');
+				return;
+			}
+			const playing = await playNightTrack(url, expected);
+			if (!cancelled) changeVoice(playing ? 'track' : 'blocked');
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [spec, started]);
+
+	useEffect(() => {
+		skewRef.current = new Date(serverNow).getTime() - fetchedAt;
+		const timing = nightTiming(hourSeconds);
 		let timer = 0;
 		let lastTick = 0;
 
 		const tick = () => {
-			const now = Date.now() + skew;
-			const segment = segmentAt(started, now, TIMING);
+			const now = Date.now() + skewRef.current;
+			const segment = segmentAt(started, now, timing);
 			if (segment.kind === 'done') {
 				setLine('');
 				return;
@@ -57,15 +101,20 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 			const hour = 'hour' in segment ? segment.hour : '';
 			const text = t(`cheese.narrator.${spokenKey}`, { hour });
 			setLine(text);
-			if (cueKey !== lastCue.current) {
-				lastCue.current = cueKey;
-				playHourChime();
-				const spoken = speakLine(text, locale);
-				if (!spoken) setNeedsTap(narrationSuspended());
-			}
-			if (now - lastTick >= 1000) {
-				lastTick = now;
-				playClockTick();
+
+			if (voiceRef.current === 'track' && trackUrl.current) {
+				if (!syncNightTrack(trackUrl.current, spec, (now - started) / 1000)) changeVoice('blocked');
+			} else if (voiceRef.current === 'speech') {
+				if (cueKey !== lastCue.current) {
+					lastCue.current = cueKey;
+					playHourChime();
+					const spoken = speakLine(text, locale);
+					if (!spoken) setNeedsTap(narrationSuspended());
+				}
+				if (now - lastTick >= 1000) {
+					lastTick = now;
+					playClockTick();
+				}
 			}
 			timer = window.setTimeout(tick, 200);
 		};
@@ -79,17 +128,24 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 			window.clearTimeout(timer);
 			window.speechSynthesis?.removeEventListener('voiceschanged', onVoices);
 		};
-	}, [nightStartedAt, serverNow, fetchedAt, locale, t, mode, night]);
+	}, [started, serverNow, fetchedAt, locale, t, mode, hourSeconds, night, spec]);
+
+	const showTap = voice === 'blocked' || (voice === 'speech' && needsTap);
 
 	return (
 		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-8 px-6 text-center text-[#f4efe4]">
 			<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">{t('cheese.night.hostHint')}</p>
+			<CheeseThiefArt scene={mode === 'two-night' && night === 2 ? 'two-moons' : 'moon'} size={112} />
 			<p className="max-w-md font-display text-4xl leading-tight font-medium sm:text-5xl">{line}</p>
-			{needsTap && (
+			{showTap && (
 				<button
 					type="button"
 					className="min-h-12 rounded-full border border-[#e0a045] px-5 text-sm text-[#e0a045]"
 					onClick={() => {
+						if (voice === 'blocked' && trackUrl.current) {
+							void playNightTrack(trackUrl.current, elapsedSec()).then((ok) => changeVoice(ok ? 'track' : 'blocked'));
+							return;
+						}
 						unlockTableAudio();
 						setNeedsTap(false);
 						lastCue.current = null;

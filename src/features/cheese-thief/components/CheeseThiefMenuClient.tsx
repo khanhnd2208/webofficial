@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
+import { CHEESE_MAX_PLAYERS } from '@/features/cheese-thief/config/cheeseThief';
 import { postCheeseAction } from '@/features/cheese-thief/lib/api';
 import { storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
@@ -14,6 +15,8 @@ import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
 import { Button, Field, Input } from '@/features/spy-fall/components/ui';
 import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
+import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
 import { getRecentPlayerName, storeRecentPlayerName } from '@/features/spy-fall/lib/spy/clientToken';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 
@@ -54,7 +57,7 @@ export default function CheeseThiefMenuClient() {
 				name: roomName.trim() || t('cheese.menu.defaultRoom', { name: hostName }),
 				hostName,
 				scapegoat,
-				maxPlayers: 8,
+				maxPlayers: CHEESE_MAX_PLAYERS,
 				isPublic: true,
 			});
 			storePlayerToken(data.state.code, data.playerToken);
@@ -93,8 +96,7 @@ export default function CheeseThiefMenuClient() {
 
 				<header className="game-theme-hero rounded-[1.25rem]">
 					<Image
-						src="/brand/myspace/cheese-thief-editorial.webp"
-						unoptimized
+						src="/board-game/cheese-thief/cover.webp"
 						alt={t('cheese.menu.posterAlt')}
 						fill
 						priority
@@ -102,6 +104,9 @@ export default function CheeseThiefMenuClient() {
 						sizes="(max-width: 768px) 100vw, 720px"
 					/>
 					<div className="relative z-10 flex min-h-72 flex-col justify-end p-6 sm:min-h-80 sm:p-8">
+						<div className="absolute top-5 right-5 rounded-full border border-white/15 bg-black/20 p-2 backdrop-blur-sm sm:top-7 sm:right-7">
+							<CheeseThiefArt scene="mouse" size={60} />
+						</div>
 						<p className="game-theme-kicker">{t('cheese.menu.kicker')}</p>
 						<h1 className="mt-3 font-display text-5xl font-medium tracking-tight">{t('cheese.menu.title')}</h1>
 						<p className="mt-3 max-w-md text-sm leading-relaxed text-foreground/80 sm:text-base">{t('cheese.menu.tagline')}</p>
@@ -133,6 +138,7 @@ export default function CheeseThiefMenuClient() {
 							<Button fullWidth variant="secondary" onClick={() => setView('join')}>
 								{t('cheese.menu.join')}
 							</Button>
+							<CheeseRulesButton className="block w-full py-2 text-center text-sm font-medium underline underline-offset-4" />
 							<p className="text-center font-mono text-[0.68rem] tracking-[0.14em] text-muted uppercase">
 								{t('cheese.menu.players')} · {t('cheese.menu.noAccount')}
 							</p>

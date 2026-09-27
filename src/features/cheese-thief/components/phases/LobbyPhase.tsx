@@ -2,12 +2,20 @@
 
 import QRCode from 'react-qr-code';
 
-import { CHEESE_MAX_PLAYERS, CHEESE_MIN_PLAYERS, TWO_NIGHT_MIN_PLAYERS, type CheeseMode } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	CLASSIC_MAX_PLAYERS,
+	TWO_NIGHT_MIN_PLAYERS,
+	isPlayerCountAllowed,
+	type CheeseMode,
+} from '@/features/cheese-thief/config/cheeseThief';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { routes } from '@/config/routes';
 import { BASE_PATH } from '@/features/spy-fall/lib/basePath';
+import HourLengthSetting from '@/features/cheese-thief/components/HourLengthSetting';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
+import { CheeseRulesButton, TableRulesCard } from '@/features/cheese-thief/components/CheeseRulesGuide';
 import { cn } from '@/features/spy-fall/lib/cn';
 import PassportAvatar from '@/features/spy-fall/components/spy/PassportAvatar';
 
@@ -17,15 +25,16 @@ interface Props {
 	onStart: () => void;
 	onScapegoat: (enabled: boolean) => void;
 	onMode: (mode: CheeseMode) => void;
+	onHourSeconds: (seconds: number) => void;
 	onKick: (id: string) => void;
 }
 
-export default function LobbyPhase({ state, busy, onStart, onScapegoat, onMode, onKick }: Props) {
+export default function LobbyPhase({ state, busy, onStart, onScapegoat, onMode, onHourSeconds, onKick }: Props) {
 	const t = useT();
 	const twoNight = state.mode === 'two-night';
 	const twoNightBlocked = twoNight && state.playerCount < TWO_NIGHT_MIN_PLAYERS;
-	const ready =
-		state.playerCount >= CHEESE_MIN_PLAYERS && state.playerCount <= CHEESE_MAX_PLAYERS && !twoNightBlocked;
+	const classicFull = !twoNight && state.playerCount > CLASSIC_MAX_PLAYERS;
+	const ready = isPlayerCountAllowed(state.playerCount, state.mode);
 	const modeLabel = twoNight ? t('cheese.lobby.mode.twoNight') : t('cheese.lobby.mode.classic');
 	const url =
 		typeof window !== 'undefined'
@@ -82,12 +91,15 @@ export default function LobbyPhase({ state, busy, onStart, onScapegoat, onMode, 
 							aria-checked={state.mode === mode}
 							disabled={busy}
 							className={cn(
-								'min-h-14 rounded-2xl border px-3 text-sm font-medium',
+								'min-h-16 rounded-2xl border px-3 py-2 text-sm font-medium',
 								state.mode === mode ? 'border-foreground bg-foreground text-background' : 'border-border bg-surface',
 							)}
 							onClick={() => onMode(mode)}
 						>
-							{mode === 'classic' ? t('cheese.lobby.mode.classic') : t('cheese.lobby.mode.twoNight')}
+							<span className="flex flex-col items-center gap-1">
+								<CheeseThiefArt scene={mode === 'classic' ? 'moon' : 'two-moons'} size={32} />
+								<span>{mode === 'classic' ? t('cheese.lobby.mode.classic') : t('cheese.lobby.mode.twoNight')}</span>
+							</span>
 						</button>
 					))}
 				</div>
@@ -96,6 +108,8 @@ export default function LobbyPhase({ state, busy, onStart, onScapegoat, onMode, 
 					{t('cheese.lobby.mode.label')}: {modeLabel}
 				</p>
 			)}
+
+			<HourLengthSetting hourSeconds={state.hourSeconds} isHost={state.isHost} busy={busy} onChange={onHourSeconds} />
 
 			{state.isHost && (
 				<label className="flex items-start gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
@@ -112,8 +126,18 @@ export default function LobbyPhase({ state, busy, onStart, onScapegoat, onMode, 
 				</label>
 			)}
 
+			<TableRulesCard playerCount={state.playerCount} mode={state.mode} scapegoatEnabled={state.scapegoatEnabled} />
+
 			<section className="space-y-2 text-sm leading-relaxed text-foreground/80">
-				<h2 className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">{t('cheese.lobby.rulesTitle')}</h2>
+				<div className="flex items-baseline justify-between gap-3">
+					<h2 className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">{t('cheese.lobby.rulesTitle')}</h2>
+					<CheeseRulesButton
+						playerCount={state.playerCount}
+						mode={state.mode}
+						scapegoatEnabled={state.scapegoatEnabled}
+						className="text-sm font-medium underline underline-offset-4"
+					/>
+				</div>
 				<p>{t('cheese.lobby.rule1')}</p>
 				{twoNight ? (
 					<>
@@ -135,6 +159,7 @@ export default function LobbyPhase({ state, busy, onStart, onScapegoat, onMode, 
 			{state.isHost && (
 				<>
 					{twoNightBlocked && <p className="text-center text-sm text-muted">{t('cheese.lobby.twoNight.need')}</p>}
+					{classicFull && <p className="text-center text-sm text-muted">{t('cheese.lobby.classicFull')}</p>}
 					<Button fullWidth disabled={!ready || busy} loading={busy} onClick={onStart}>
 						{t('cheese.lobby.start')}
 					</Button>

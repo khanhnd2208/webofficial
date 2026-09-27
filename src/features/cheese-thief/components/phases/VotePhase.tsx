@@ -6,6 +6,7 @@ import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
 import { cn } from '@/features/spy-fall/lib/cn';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {
 	state: RoomStateDTO;
@@ -22,6 +23,7 @@ export default function VotePhase({ state, busy, onVote }: Props) {
 	return (
 		<div className="space-y-6">
 			<div className="space-y-2 text-center">
+				<CheeseThiefArt scene="ballot" size={52} className="mx-auto" />
 				<h1 className="font-display text-4xl font-medium">{t('cheese.vote.title')}</h1>
 				{state.isRunoff && <p className="text-sm text-muted">{t('cheese.vote.runoff')}</p>}
 				<p className="font-mono text-xs tracking-[0.14em] text-muted uppercase">
@@ -45,7 +47,7 @@ export default function VotePhase({ state, busy, onVote }: Props) {
 				))}
 			</div>
 			<Button fullWidth disabled={busy || !choice || Boolean(state.self?.voteId)} loading={busy} onClick={() => choice && onVote(choice)}>
-				{t('cheese.vote.cast')}
+				{state.self?.voteId ? t('cheese.vote.done') : t('cheese.vote.cast')}
 			</Button>
 		</div>
 	);

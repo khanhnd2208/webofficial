@@ -1,5 +1,6 @@
 import type { MessageTree } from '@/features/spy-fall/lib/i18n/types';
 
+import { cheeseGuideEn, cheeseGuideVi } from './cheeseGuide';
 import { cheeseEn, cheeseVi } from './cheeseThief';
 import { commonEn, commonVi } from './common';
 import { errorsEn, errorsVi } from './errors';
@@ -9,7 +10,7 @@ import { nightMarketEn, nightMarketVi } from './nightMarket';
 import { spyEn, spyVi } from './spy';
 
 export const vi: MessageTree = {
-	cheese: cheeseVi,
+	cheese: { ...cheeseVi, guide: cheeseGuideVi },
 	common: commonVi,
 	hub: hubVi,
 	spy: spyVi,
@@ -19,7 +20,7 @@ export const vi: MessageTree = {
 };
 
 export const en: MessageTree = {
-	cheese: cheeseEn,
+	cheese: { ...cheeseEn, guide: cheeseGuideEn },
 	common: commonEn,
 	hub: hubEn,
 	spy: spyEn,

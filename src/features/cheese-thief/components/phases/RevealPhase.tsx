@@ -3,6 +3,7 @@
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {
 	state: RoomStateDTO;
@@ -21,6 +22,7 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 
 	return (
 		<div className="space-y-8">
+			<CheeseThiefArt scene="reveal" size={84} className="mx-auto" />
 			<section className="space-y-2 text-center">
 				<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">{t('cheese.reveal.flipped')}</p>
 				{flipped.map((row) => (

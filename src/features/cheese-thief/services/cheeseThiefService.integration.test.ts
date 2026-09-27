@@ -15,6 +15,7 @@ import {
 	startVote,
 	submitSecret,
 	submitVote,
+	updateSettings,
 } from '@/features/cheese-thief/services/cheeseThiefService';
 import type { CheeseRole } from '@/features/cheese-thief/lib/rules';
 
@@ -223,8 +224,82 @@ describe('Cheese Thief table', () => {
 		expect(secret.choiceCount).toBe(2);
 	});
 
+	it('tells only the viewer that their secret picks are in', async () => {
+		const table = await openTable(5);
+		const secret = await reachSecret(table);
+		expect(secret.self?.hasChosenSecret).toBe(false);
+		const others = secret.players.filter((player) => player.id !== secret.self?.id).map((player) => player.id);
+		const mine = await submitSecret(table.code, table.host, others.slice(0, secret.choiceCount ?? 1));
+		expect(mine.self?.hasChosenSecret).toBe(true);
+		expect(JSON.stringify(mine.players)).not.toContain('hasChosen');
+		const neighbour = await getScopedState(table.code, table.tokens[1]!);
+		expect(neighbour.self?.hasChosenSecret).toBe(false);
+	});
+
+	it('keeps the host through a long day talk, but hands off a silent host in the lobby', async () => {
+		const table = await openTable(5);
+		await reachSecret(table);
+		await finishSecret(table);
+		for (const token of table.tokens) await markSecretSeen(table.code, token);
+		await CheeseThiefRoom.updateOne(
+			{ code: table.code },
+			{ $set: { 'players.0.lastSeenAt': new Date(Date.now() - 5 * 60_000) } },
+		);
+		const day = await getScopedState(table.code, table.tokens[1]!);
+		expect(day.phase).toBe('day');
+		expect(day.players[0]?.isHost).toBe(true);
+
+		const lobbyTable = await openTable(4);
+		await CheeseThiefRoom.updateOne(
+			{ code: lobbyTable.code },
+			{ $set: { 'players.0.lastSeenAt': new Date(Date.now() - 2 * 60_000) } },
+		);
+		const lobby = await getScopedState(lobbyTable.code, lobbyTable.tokens[1]!);
+		expect(lobby.isHost).toBe(true);
+	});
+
+	it('lets the host set the hour length in the lobby, and the night runs on it', async () => {
+		const table = await openTable(5);
+		await expect(updateSettings(table.code, table.tokens[1]!, { hourSeconds: 20 })).rejects.toThrow('HOST_ONLY');
+		await expect(updateSettings(table.code, table.host, { hourSeconds: 6 })).rejects.toThrow('HOUR_SECONDS_INVALID');
+		await expect(updateSettings(table.code, table.host, { hourSeconds: 31 })).rejects.toThrow('HOUR_SECONDS_INVALID');
+		const lobby = await updateSettings(table.code, table.host, { hourSeconds: 20 });
+		expect(lobby.hourSeconds).toBe(20);
+
+		await startGame(table.code, table.host);
+		await expect(updateSettings(table.code, table.host, { hourSeconds: 10 })).rejects.toThrow('ROOM_OR_PHASE_INVALID');
+		for (const token of table.tokens) await confirmMemorized(table.code, token);
+		await beginNight(table.code, table.host);
+		// 8s intro + 6 × 20s + 6s outro = 134s; the default 10s hour would already be over at 80s.
+		await rewind(table.code, 'nightStartedAt', 80_000);
+		const still = await getScopedState(table.code, table.host);
+		expect(still.phase).toBe('night');
+		expect(still.hourSeconds).toBe(20);
+		await rewind(table.code, 'nightStartedAt', 135_000);
+		expect((await getScopedState(table.code, table.host)).phase).toBe('secret');
+	});
+
 	it('refuses Two Nights with four players', async () => {
 		const table = await openTable(4, { mode: 'two-night' });
 		await expect(startGame(table.code, table.host)).rejects.toThrow('TWO_NIGHT_NEEDS_FIVE');
+	});
+
+	it('seats up to 12 for Two Nights, but stops Classic at 8', async () => {
+		const table = await openTable(12);
+		await expect(joinRoom(table.code, 'P12')).rejects.toThrow('ROOM_FULL');
+		await expect(startGame(table.code, table.host)).rejects.toThrow('CLASSIC_TOO_MANY');
+
+		await updateSettings(table.code, table.host, { mode: 'two-night' });
+		await startGame(table.code, table.host);
+		const roles = [...(await rolesOf(table.code)).values()];
+		expect(roles.filter((role) => role === 'thief')).toHaveLength(1);
+		for (const token of table.tokens) await confirmMemorized(table.code, token);
+		await beginNight(table.code, table.host);
+		await rewind(table.code, 'nightStartedAt', 80_000);
+		expect((await getScopedState(table.code, table.host)).phase).toBe('cheese-check');
+		await reportCheese(table.code, table.host, false);
+		const secret = await getScopedState(table.code, table.host);
+		expect(secret.phase).toBe('secret');
+		expect(secret.choiceCount).toBe(3);
 	});
 });

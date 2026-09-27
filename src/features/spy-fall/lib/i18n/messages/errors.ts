@@ -47,8 +47,10 @@ export const errorsVi: MessageTree = {
 	NEED_ALL_MEMORIZED: 'Chờ mọi người xem xong vai rồi mới bắt đầu đêm',
 	PICK_COUNT: 'Hãy chọn đúng {count} người',
 	PICK_UNKNOWN: 'Chỉ chọn người đang ngồi trong bàn này',
-	TWO_NIGHT_NEEDS_FIVE: 'Hai Đêm cần từ 5 đến 8 người',
+	TWO_NIGHT_NEEDS_FIVE: 'Hai Đêm cần từ {min} đến {max} người',
+	CLASSIC_TOO_MANY: 'Cổ điển tối đa {max} người — chuyển sang Hai Đêm để chơi đông hơn',
 	MODE_INVALID: 'Chế độ chơi không hợp lệ',
+	HOUR_SECONDS_INVALID: 'Mỗi giờ phải dài từ {min} đến {max} giây',
 	CHEESE_REPORT_INVALID: 'Hãy báo cheese còn hay đã mất',
 };
 
@@ -99,7 +101,9 @@ export const errorsEn: MessageTree = {
 	NEED_ALL_MEMORIZED: 'Wait until everyone has seen their role',
 	PICK_COUNT: 'Choose exactly {count} people',
 	PICK_UNKNOWN: 'Choose someone at this table',
-	TWO_NIGHT_NEEDS_FIVE: 'Two Nights needs 5 to 8 players',
+	TWO_NIGHT_NEEDS_FIVE: 'Two Nights needs {min} to {max} players',
+	CLASSIC_TOO_MANY: 'Classic seats at most {max} — switch to Two Nights for a bigger table',
 	MODE_INVALID: 'That game mode is not valid',
+	HOUR_SECONDS_INVALID: 'Each hour must last {min} to {max} seconds',
 	CHEESE_REPORT_INVALID: 'Say whether the cheese is still there',
 };

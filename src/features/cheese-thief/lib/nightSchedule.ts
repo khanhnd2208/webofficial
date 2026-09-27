@@ -1,4 +1,9 @@
-import { CHEESE_HOURS, type CheeseMode, type NightNumber } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	CHEESE_HOURS,
+	CHEESE_SLEEP_MAX_MS,
+	type CheeseMode,
+	type NightNumber,
+} from '@/features/cheese-thief/config/cheeseThief';
 
 export interface NightTiming {
 	introMs: number;
@@ -27,8 +32,8 @@ export function segmentAt(startedAt: number, now: number, timing: NightTiming): 
 	}
 	cursor = introEnd;
 
-	const wakeMs = Math.floor(timing.hourMs / 2);
-	const sleepMs = timing.hourMs - wakeMs;
+	const sleepMs = Math.min(CHEESE_SLEEP_MAX_MS, Math.floor(timing.hourMs / 2));
+	const wakeMs = timing.hourMs - sleepMs;
 
 	for (const hour of CHEESE_HOURS) {
 		const wakeEnd = cursor + wakeMs;
@@ -53,6 +58,60 @@ export function segmentAt(startedAt: number, now: number, timing: NightTiming): 
 
 export function nightEndsAt(startedAt: number, timing: NightTiming): number {
 	return startedAt + timing.introMs + CHEESE_HOURS.length * timing.hourMs + timing.outroMs;
+}
+
+/** Recorded narration, one file per line. `wake-N` bakes the hour into the clip. */
+export const CHEESE_VOICE_CLIPS = [
+	'night-start',
+	'night1-start',
+	'night2-start',
+	'wake-1',
+	'wake-2',
+	'wake-3',
+	'wake-4',
+	'wake-5',
+	'wake-6',
+	'sleep',
+	'night-end',
+	'night1-end',
+	'cheese-gone',
+] as const;
+
+export type VoiceClip = (typeof CHEESE_VOICE_CLIPS)[number];
+
+export interface NightCue {
+	atMs: number;
+	clip: VoiceClip;
+}
+
+/** Every line of one night, in order, with its offset from the night start. Feeds the recorded night track. */
+export function nightCues(mode: CheeseMode, night: NightNumber, timing: NightTiming): NightCue[] {
+	const cues: NightCue[] = [];
+	let at = 0;
+	for (;;) {
+		const segment = segmentAt(0, at, timing);
+		if (segment.kind === 'done') return cues;
+		const key = narrationKey(segment, mode, night);
+		const clip = (segment.kind === 'hour-wake' ? `wake-${segment.hour}` : key) as VoiceClip;
+		cues.push({ atMs: at, clip });
+		at = segment.endsAt;
+	}
+}
+
+/** How long the preview keeps playing after it calls the next hour. */
+export const ROUND_PREVIEW_TAIL_MS = 4_500;
+
+/**
+ * One round as the table will hear it: "1 o'clock" to "2 o'clock", so the host
+ * can hear the length they picked before the night.
+ */
+export function roundPreviewCues(timing: NightTiming): { cues: NightCue[]; seconds: number } {
+	const from = timing.introMs;
+	const to = timing.introMs + timing.hourMs;
+	const cues = nightCues('classic', 1, timing)
+		.filter((cue) => cue.atMs >= from && cue.atMs <= to)
+		.map((cue) => ({ ...cue, atMs: cue.atMs - from }));
+	return { cues, seconds: (timing.hourMs + ROUND_PREVIEW_TAIL_MS) / 1000 };
 }
 
 /** Which spoken line this slice of the night is. Hour cues stay the same in every mode. */

@@ -2,6 +2,7 @@
 
 import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import PutPhoneDown from '@/features/cheese-thief/components/PutPhoneDown';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import type { SecretCard } from '@/features/cheese-thief/lib/rules';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
@@ -28,6 +29,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 	return (
 		<div className="fixed inset-0 z-50 flex flex-col justify-center gap-6 bg-[#0c0b09] px-5 text-[#f4efe4]">
 			<h1 className="text-center font-display text-3xl font-medium">{t('cheese.result.title')}</h1>
+			<CheeseThiefArt scene="secret" size={76} className="self-center" />
 			<HoldToReveal>
 				{empty && <p className="text-lg leading-relaxed">{t('cheese.result.nothing')}</p>}
 				{card?.peek && (

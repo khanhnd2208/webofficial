@@ -146,14 +146,16 @@ export function wasAlone(seat: Seat, seats: Seat[], preset: TablePreset, night: 
 }
 
 /**
- * Classic: only a Sleepyhead awake with nobody else. The Thief never peeks.
+ * Classic: a Sleepyhead awake with nobody else. The Thief never peeks.
+ * The Scapegoat plays as a Sleepyhead does, so it peeks too.
  * Two Nights: a Sleepyhead alone on a played night, or a Thief who waited out an alone Night 1 (5–6 players).
  */
 export function canPeek(seat: Seat, seats: Seat[], preset: TablePreset, ctx: NightContext = CLASSIC_NIGHT): boolean {
 	if (!preset.peek) return false;
-	if (ctx.mode === 'classic') return seat.role === 'sleepyhead' && wasAlone(seat, seats, preset, 1);
+	const sleeper = seat.role !== 'thief';
+	if (ctx.mode === 'classic') return sleeper && wasAlone(seat, seats, preset, 1);
 	const nights: NightNumber[] = TWO_NIGHT_PEEK_NIGHTS === 'theft-night' ? [ctx.theftNight] : playedNights(ctx.theftNight);
-	if (seat.role === 'sleepyhead') return nights.some((night) => wasAlone(seat, seats, preset, night));
+	if (sleeper) return nights.some((night) => wasAlone(seat, seats, preset, night));
 	if (seat.role === 'thief') {
 		return preset.thiefPeeksAfterWaiting && ctx.theftNight === 2 && wasAlone(seat, seats, preset, 1);
 	}
@@ -161,13 +163,14 @@ export function canPeek(seat: Seat, seats: Seat[], preset: TablePreset, ctx: Nig
 }
 
 /**
- * Same number of taps for every phone. Two Nights is always 2, so the count
- * cannot reveal whether the Thief waited.
+ * Same number of taps for every phone, fixed by the table size alone.
+ * Two Nights never drops below 2, so the count cannot reveal whether the Thief waited;
+ * it grows to 3 where the Thief names 3 followers.
  */
 export function sharedChoiceCount(preset: TablePreset, mode: CheeseMode = 'classic'): number {
-	if (mode === 'two-night') return 2;
-	if (preset.followerMode === 'pick' && preset.followerPickCount >= 2) return 2;
-	return 1;
+	const followerSlots = preset.followerMode === 'pick' ? preset.followerPickCount : 1;
+	if (mode === 'two-night') return Math.max(2, followerSlots + (preset.thiefPeeksAfterWaiting ? 1 : 0));
+	return Math.max(1, followerSlots);
 }
 
 export function secretJobFor(
