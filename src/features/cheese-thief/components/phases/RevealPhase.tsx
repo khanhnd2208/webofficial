@@ -17,6 +17,7 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 	const thief = roster.find((row) => row.role === 'thief');
 	const followers = roster.filter((row) => row.follower);
 	const scapegoat = roster.find((row) => row.role === 'scapegoat');
+	const night2 = roster.some((row) => row.wakeHours2 !== null && row.wakeHours2 !== undefined);
 
 	return (
 		<div className="space-y-8">
@@ -44,6 +45,14 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 				)}
 			</section>
 
+			{state.theftHour !== undefined && (
+				<p className="text-center text-sm text-muted">
+					{state.mode === 'two-night' && state.theftNight
+						? t('cheese.reveal.theftNight', { night: state.theftNight, hour: state.theftHour })
+						: t('cheese.reveal.theft', { hour: state.theftHour })}
+				</p>
+			)}
+
 			{state.winner && (
 				<p className="text-center font-display text-2xl font-medium">{t(`cheese.reveal.winner.${state.winner}`)}</p>
 			)}
@@ -53,7 +62,14 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 					<tr>
 						<th className="py-2 font-normal">{t('cheese.reveal.colName')}</th>
 						<th className="py-2 font-normal">{t('cheese.reveal.colRole')}</th>
-						<th className="py-2 font-normal">{t('cheese.reveal.colHour')}</th>
+						{night2 ? (
+							<>
+								<th className="py-2 font-normal">{t('cheese.reveal.colNight1')}</th>
+								<th className="py-2 font-normal">{t('cheese.reveal.colNight2')}</th>
+							</>
+						) : (
+							<th className="py-2 font-normal">{t('cheese.reveal.colHour')}</th>
+						)}
 						<th className="py-2 font-normal">{t('cheese.reveal.colHunch')}</th>
 					</tr>
 				</thead>
@@ -63,6 +79,7 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 							<td className="py-2 pr-2">{row.name}</td>
 							<td className="py-2 pr-2">{t(`cheese.deal.role.${row.role}`)}</td>
 							<td className="py-2 pr-2">{row.wakeHours.join(', ')}</td>
+							{night2 && <td className="py-2 pr-2">{(row.wakeHours2 ?? []).join(', ')}</td>}
 							<td className="py-2">
 								{row.hunchCorrect === null
 									? t('cheese.reveal.hunchNone')

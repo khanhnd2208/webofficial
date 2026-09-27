@@ -15,6 +15,8 @@ import SecretPhase from '@/features/cheese-thief/components/phases/SecretPhase';
 import SecretResultPhase from '@/features/cheese-thief/components/phases/SecretResultPhase';
 import VotePhase from '@/features/cheese-thief/components/phases/VotePhase';
 import { clearPlayerToken, getStoredPlayerToken, storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
+import CheeseCheckPhase from '@/features/cheese-thief/components/phases/CheeseCheckPhase';
+import TiePhase from '@/features/cheese-thief/components/phases/TiePhase';
 import { unlockTableAudio } from '@/features/cheese-thief/lib/narration';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
@@ -114,7 +116,7 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 
 	return (
 		<div className="game-theme game-theme-cheese min-h-svh">
-			{phase !== 'night' && phase !== 'secret' && phase !== 'secret-result' && (
+			{phase !== 'night' && phase !== 'cheese-check' && phase !== 'secret' && phase !== 'secret-result' && (
 				<header className="mx-auto flex max-w-md items-center justify-between px-5 pt-5">
 					<Link href={routes.cheeseThief} className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">
 						{state.code}
@@ -141,6 +143,7 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						busy={busy}
 						onStart={() => void run(api.start)}
 						onScapegoat={(enabled) => void run(() => api.settings({ scapegoat: enabled }))}
+						onMode={(mode) => void run(() => api.settings({ mode }))}
 						onKick={(id) => void run(() => api.kick(id))}
 					/>
 				)}
@@ -156,6 +159,9 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 					/>
 				)}
 				{phase === 'night' && <NightPhase state={state} fetchedAt={fetchedAt} />}
+				{phase === 'cheese-check' && (
+					<CheeseCheckPhase isHost={state.isHost} busy={busy} onConfirm={(present) => void run(() => api.cheese(present))} />
+				)}
 				{phase === 'secret' && <SecretPhase state={state} busy={busy} onSubmit={(picks) => void run(() => api.secret(picks))} />}
 				{phase === 'secret-result' && (
 					<SecretResultPhase
@@ -167,8 +173,9 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 				)}
 				{phase === 'day' && <DayPhase state={state} fetchedAt={fetchedAt} busy={busy} onVote={() => void run(api.startVote)} />}
 				{phase === 'vote' && (
-					<VotePhase key={state.isRunoff ? 'runoff' : 'open'} state={state} busy={busy} onVote={(id) => void run(() => api.vote(id))} />
+					<VotePhase key={`vote-${state.voteRound ?? 1}`} state={state} busy={busy} onVote={(id) => void run(() => api.vote(id))} />
 				)}
+				{phase === 'tie' && <TiePhase state={state} busy={busy} onRevote={() => void run(api.revote)} />}
 				{phase === 'reveal' && <RevealPhase state={state} busy={busy} onAgain={() => void run(api.playAgain)} />}
 			</main>
 		</div>

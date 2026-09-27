@@ -59,7 +59,7 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived }: Optio
 
 	useEffect(() => {
 		const phase = state?.phase;
-		const hostNight = Boolean(state?.isHost && phase === 'night');
+		const hostNight = Boolean(state?.isHost && (phase === 'night' || phase === 'cheese-check'));
 		const tableLooking = phase === 'deal' || phase === 'secret' || phase === 'secret-result' || phase === 'vote';
 		const needsLock = hostNight || tableLooking;
 
@@ -103,7 +103,7 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived }: Optio
 				setFetchedAt(Date.now());
 				return data;
 			}),
-		settings: (input: { scapegoat?: boolean; name?: string }) =>
+		settings: (input: { scapegoat?: boolean; name?: string; mode?: 'classic' | 'two-night' }) =>
 			action(() =>
 				patchCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/settings`, {
 					token: tokenRef.current,
@@ -143,6 +143,15 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived }: Optio
 					targetId,
 				}),
 			),
+		cheese: (present: boolean) =>
+			action(() =>
+				postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/cheese`, {
+					token: tokenRef.current,
+					present,
+				}),
+			),
+		revote: () =>
+			action(() => postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/revote`, { token: tokenRef.current })),
 		playAgain: () =>
 			action(() =>
 				postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/play-again`, { token: tokenRef.current }),

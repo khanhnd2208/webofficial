@@ -2,12 +2,13 @@
 
 import QRCode from 'react-qr-code';
 
-import { CHEESE_MAX_PLAYERS, CHEESE_MIN_PLAYERS } from '@/features/cheese-thief/config/cheeseThief';
+import { CHEESE_MAX_PLAYERS, CHEESE_MIN_PLAYERS, TWO_NIGHT_MIN_PLAYERS, type CheeseMode } from '@/features/cheese-thief/config/cheeseThief';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { routes } from '@/config/routes';
 import { BASE_PATH } from '@/features/spy-fall/lib/basePath';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
+import { cn } from '@/features/spy-fall/lib/cn';
 import PassportAvatar from '@/features/spy-fall/components/spy/PassportAvatar';
 
 interface Props {
@@ -15,12 +16,17 @@ interface Props {
 	busy: boolean;
 	onStart: () => void;
 	onScapegoat: (enabled: boolean) => void;
+	onMode: (mode: CheeseMode) => void;
 	onKick: (id: string) => void;
 }
 
-export default function LobbyPhase({ state, busy, onStart, onScapegoat, onKick }: Props) {
+export default function LobbyPhase({ state, busy, onStart, onScapegoat, onMode, onKick }: Props) {
 	const t = useT();
-	const ready = state.playerCount >= CHEESE_MIN_PLAYERS && state.playerCount <= CHEESE_MAX_PLAYERS;
+	const twoNight = state.mode === 'two-night';
+	const twoNightBlocked = twoNight && state.playerCount < TWO_NIGHT_MIN_PLAYERS;
+	const ready =
+		state.playerCount >= CHEESE_MIN_PLAYERS && state.playerCount <= CHEESE_MAX_PLAYERS && !twoNightBlocked;
+	const modeLabel = twoNight ? t('cheese.lobby.mode.twoNight') : t('cheese.lobby.mode.classic');
 	const url =
 		typeof window !== 'undefined'
 			? `${window.location.origin}${BASE_PATH}${routes.cheeseThiefRoom(state.code)}`
@@ -66,6 +72,31 @@ export default function LobbyPhase({ state, busy, onStart, onScapegoat, onKick }
 
 			<p className="text-sm text-muted">{t('cheese.lobby.need', { count: state.playerCount })}</p>
 
+			{state.isHost ? (
+				<div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('cheese.lobby.mode.label')}>
+					{( ['classic', 'two-night'] as const).map((mode) => (
+						<button
+							key={mode}
+							type="button"
+							role="radio"
+							aria-checked={state.mode === mode}
+							disabled={busy}
+							className={cn(
+								'min-h-14 rounded-2xl border px-3 text-sm font-medium',
+								state.mode === mode ? 'border-foreground bg-foreground text-background' : 'border-border bg-surface',
+							)}
+							onClick={() => onMode(mode)}
+						>
+							{mode === 'classic' ? t('cheese.lobby.mode.classic') : t('cheese.lobby.mode.twoNight')}
+						</button>
+					))}
+				</div>
+			) : (
+				<p className="text-sm text-muted">
+					{t('cheese.lobby.mode.label')}: {modeLabel}
+				</p>
+			)}
+
 			{state.isHost && (
 				<label className="flex items-start gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
 					<input
@@ -84,16 +115,30 @@ export default function LobbyPhase({ state, busy, onStart, onScapegoat, onKick }
 			<section className="space-y-2 text-sm leading-relaxed text-foreground/80">
 				<h2 className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">{t('cheese.lobby.rulesTitle')}</h2>
 				<p>{t('cheese.lobby.rule1')}</p>
-				<p>{t('cheese.lobby.rule2')}</p>
-				<p>{t('cheese.lobby.rule3')}</p>
-				<p>{t('cheese.lobby.rule4')}</p>
+				{twoNight ? (
+					<>
+						<p>{t('cheese.lobby.twoNight.rule1')}</p>
+						<p>{t('cheese.lobby.twoNight.rule2')}</p>
+						<p>{t('cheese.lobby.twoNight.rule3')}</p>
+						<p>{t('cheese.lobby.twoNight.rule4')}</p>
+					</>
+				) : (
+					<>
+						<p>{t('cheese.lobby.rule2')}</p>
+						<p>{t('cheese.lobby.rule3')}</p>
+						<p>{t('cheese.lobby.rule4')}</p>
+					</>
+				)}
 				<p>{t('cheese.lobby.rule5')}</p>
 			</section>
 
 			{state.isHost && (
-				<Button fullWidth disabled={!ready || busy} loading={busy} onClick={onStart}>
-					{t('cheese.lobby.start')}
-				</Button>
+				<>
+					{twoNightBlocked && <p className="text-center text-sm text-muted">{t('cheese.lobby.twoNight.need')}</p>}
+					<Button fullWidth disabled={!ready || busy} loading={busy} onClick={onStart}>
+						{t('cheese.lobby.start')}
+					</Button>
+				</>
 			)}
 		</div>
 	);

@@ -14,7 +14,8 @@ import {
 	speakLine,
 	unlockTableAudio,
 } from '@/features/cheese-thief/lib/narration';
-import { segmentAt } from '@/features/cheese-thief/lib/nightSchedule';
+import { narrationKey, segmentAt } from '@/features/cheese-thief/lib/nightSchedule';
+import type { CheeseMode, NightNumber } from '@/features/cheese-thief/config/cheeseThief';
 import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 
 const TIMING = { introMs: CHEESE_INTRO_MS, hourMs: CHEESE_HOUR_MS, outroMs: CHEESE_OUTRO_MS };
@@ -23,14 +24,20 @@ interface Props {
 	nightStartedAt: string;
 	serverNow: string;
 	fetchedAt: number;
+	mode: CheeseMode;
+	night: NightNumber;
 }
 
-export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt }: Props) {
+export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mode, night }: Props) {
 	const t = useT();
 	const { locale } = useLocale();
 	const lastCue = useRef<string | null>(null);
 	const [line, setLine] = useState('');
 	const [needsTap, setNeedsTap] = useState(false);
+
+	useEffect(() => {
+		lastCue.current = null;
+	}, [nightStartedAt]);
 
 	useEffect(() => {
 		const started = new Date(nightStartedAt).getTime();
@@ -45,9 +52,10 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt }: 
 				setLine('');
 				return;
 			}
-			const cueKey = segment.kind === 'hour-wake' || segment.kind === 'hour-sleep' ? `${segment.cueId}-${segment.hour}` : segment.cueId;
+			const spokenKey = narrationKey(segment, mode, night);
+			const cueKey = segment.kind === 'hour-wake' || segment.kind === 'hour-sleep' ? `${spokenKey}-${segment.hour}` : spokenKey;
 			const hour = 'hour' in segment ? segment.hour : '';
-			const text = t(`cheese.narrator.${segment.cueId}`, { hour });
+			const text = t(`cheese.narrator.${spokenKey}`, { hour });
 			setLine(text);
 			if (cueKey !== lastCue.current) {
 				lastCue.current = cueKey;
@@ -71,7 +79,7 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt }: 
 			window.clearTimeout(timer);
 			window.speechSynthesis?.removeEventListener('voiceschanged', onVoices);
 		};
-	}, [nightStartedAt, serverNow, fetchedAt, locale, t]);
+	}, [nightStartedAt, serverNow, fetchedAt, locale, t, mode, night]);
 
 	return (
 		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-8 px-6 text-center text-[#f4efe4]">

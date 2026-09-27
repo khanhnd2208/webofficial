@@ -25,7 +25,13 @@ export default function NightPhase({ state, fetchedAt }: Props) {
 
 	return (
 		<div className="fixed inset-0 z-50 bg-[#0c0b09]">
-			<NightNarrator nightStartedAt={state.nightStartedAt} serverNow={state.serverNow} fetchedAt={fetchedAt} />
+			<NightNarrator
+				nightStartedAt={state.nightStartedAt}
+				serverNow={state.serverNow}
+				fetchedAt={fetchedAt}
+				mode={state.mode}
+				night={state.nightNumber ?? 1}
+			/>
 		</div>
 	);
 }

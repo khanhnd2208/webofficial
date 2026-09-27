@@ -47,6 +47,9 @@ export const errorsVi: MessageTree = {
 	NEED_ALL_MEMORIZED: 'Chờ mọi người xem xong vai rồi mới bắt đầu đêm',
 	PICK_COUNT: 'Hãy chọn đúng {count} người',
 	PICK_UNKNOWN: 'Chỉ chọn người đang ngồi trong bàn này',
+	TWO_NIGHT_NEEDS_FIVE: 'Hai Đêm cần từ 5 đến 8 người',
+	MODE_INVALID: 'Chế độ chơi không hợp lệ',
+	CHEESE_REPORT_INVALID: 'Hãy báo cheese còn hay đã mất',
 };
 
 export const errorsEn: MessageTree = {
@@ -96,4 +99,7 @@ export const errorsEn: MessageTree = {
 	NEED_ALL_MEMORIZED: 'Wait until everyone has seen their role',
 	PICK_COUNT: 'Choose exactly {count} people',
 	PICK_UNKNOWN: 'Choose someone at this table',
+	TWO_NIGHT_NEEDS_FIVE: 'Two Nights needs 5 to 8 players',
+	MODE_INVALID: 'That game mode is not valid',
+	CHEESE_REPORT_INVALID: 'Say whether the cheese is still there',
 };

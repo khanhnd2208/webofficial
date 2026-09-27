@@ -24,24 +24,38 @@ export const CHEESE_SECRET_MAX_MS = 60_000;
 
 export const CHEESE_HOURS = [1, 2, 3, 4, 5, 6] as const;
 
+export const CHEESE_MODES = ['classic', 'two-night'] as const;
+export type CheeseMode = (typeof CHEESE_MODES)[number];
+export type NightNumber = 1 | 2;
+
+/** Two Nights needs a second die, which collides with the 4-player double-die rule. */
+export const TWO_NIGHT_MIN_PLAYERS = 5;
+
+/**
+ * Which nights an alone Sleepyhead may peek.
+ * `any-played` is the cost of the Thief waiting: more people get a look.
+ * Switch this one line if a real table feels too open.
+ */
+export const TWO_NIGHT_PEEK_NIGHTS = 'any-played' as 'any-played' | 'theft-night';
+
 export const CHEESE_PHASES = [
 	'lobby',
 	'deal',
 	'night',
+	'cheese-check',
 	'secret',
 	'secret-result',
 	'day',
 	'vote',
+	'tie',
 	'reveal',
 ] as const;
 
 export type CheesePhase = (typeof CHEESE_PHASES)[number];
 
-/**
- * Round-2 tie: every tied player is flipped. The Thief among them is caught.
- * Change this one constant if a later rules pass wants a different fallback.
- */
-export const TIE_FALLBACK = 'flip-all' as const;
+export function isCheeseMode(value: unknown): value is CheeseMode {
+	return value === 'classic' || value === 'two-night';
+}
 
 export type FollowerMode = 'none' | 'witness' | 'pick';
 
@@ -56,6 +70,8 @@ export interface TablePreset {
 	followersKnowThief: boolean;
 	thiefKnowsFollowers: boolean;
 	followersKnowEachOther: boolean;
+	/** Two Nights only: a Thief who waited out an alone Night 1 may peek. Off at 7–8. */
+	thiefPeeksAfterWaiting: boolean;
 }
 
 /**
@@ -72,6 +88,7 @@ export const PRESETS: Record<TablePreset['playerCount'], TablePreset> = {
 		followersKnowThief: false,
 		thiefKnowsFollowers: false,
 		followersKnowEachOther: false,
+		thiefPeeksAfterWaiting: false,
 	},
 	5: {
 		playerCount: 5,
@@ -82,6 +99,7 @@ export const PRESETS: Record<TablePreset['playerCount'], TablePreset> = {
 		followersKnowThief: true,
 		thiefKnowsFollowers: true,
 		followersKnowEachOther: false,
+		thiefPeeksAfterWaiting: false,
 	},
 	6: {
 		playerCount: 6,
@@ -92,6 +110,7 @@ export const PRESETS: Record<TablePreset['playerCount'], TablePreset> = {
 		followersKnowThief: true,
 		thiefKnowsFollowers: true,
 		followersKnowEachOther: false,
+		thiefPeeksAfterWaiting: false,
 	},
 	7: {
 		playerCount: 7,
@@ -102,6 +121,7 @@ export const PRESETS: Record<TablePreset['playerCount'], TablePreset> = {
 		followersKnowThief: false,
 		thiefKnowsFollowers: true,
 		followersKnowEachOther: true,
+		thiefPeeksAfterWaiting: false,
 	},
 	8: {
 		playerCount: 8,
@@ -112,15 +132,22 @@ export const PRESETS: Record<TablePreset['playerCount'], TablePreset> = {
 		followersKnowThief: true,
 		thiefKnowsFollowers: true,
 		followersKnowEachOther: false,
+		thiefPeeksAfterWaiting: false,
 	},
 };
 
-export function presetFor(playerCount: number): TablePreset {
+export function presetFor(playerCount: number, mode: CheeseMode = 'classic'): TablePreset {
+	if (mode === 'two-night' && playerCount < TWO_NIGHT_MIN_PLAYERS) {
+		throw new Error(`Two Nights needs ${TWO_NIGHT_MIN_PLAYERS}–8 players, received ${playerCount}`);
+	}
 	const preset = PRESETS[playerCount as TablePreset['playerCount']];
 	if (!preset) {
 		throw new Error(`Cheese Thief supports 4–8 players, received ${playerCount}`);
 	}
-	return preset;
+	return {
+		...preset,
+		thiefPeeksAfterWaiting: mode === 'two-night' && playerCount <= 6,
+	};
 }
 
 export function nightDurationMs(

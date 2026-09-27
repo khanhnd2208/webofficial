@@ -25,7 +25,10 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 	const ready = state.players.filter((player) => player.hasMemorizedRole).length;
 	const allReady = ready === state.players.length && state.players.length > 0;
 	const twoDice = dice.length === 2;
+	const twoNight = state.mode === 'two-night';
 	const remembered = Boolean(self?.hasMemorizedRole);
+	const blurb =
+		twoNight && self?.role === 'thief' ? t('cheese.deal.blurbTwoNight.thief') : t(`cheese.deal.blurb.${self?.role ?? 'sleepyhead'}`);
 
 	if (!self?.role) return null;
 
@@ -37,13 +40,32 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 					<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#e0a045] uppercase">
 						{t(`cheese.deal.role.${self.role}`)}
 					</p>
-					<p className="max-w-xs text-sm leading-relaxed text-[#f4efe4]/80">{t(`cheese.deal.blurb.${self.role}`)}</p>
-					<p className="font-display text-4xl text-[#f4efe4]">
-						{self.role === 'thief' && twoDice ? dice.join(' · ') : twoDice ? (hour ? String(hour) : '—') : (self.wakeHours ?? []).join(' · ')}
-					</p>
-					<p className="text-xs tracking-wide text-[#f4efe4]/60 uppercase">
-						{self.role === 'thief' && twoDice ? t('cheese.deal.bothHours') : t('cheese.deal.yourHours')}
-					</p>
+					<p className="max-w-xs text-sm leading-relaxed text-[#f4efe4]/80">{blurb}</p>
+					{twoNight ? (
+						<div className="space-y-1 text-center">
+							<p className="font-display text-3xl text-[#f4efe4]">
+								{t('cheese.deal.night1', { hours: (self.wakeHours ?? []).join(' · ') })}
+							</p>
+							<p className="font-display text-3xl text-[#f4efe4]">
+								{t('cheese.deal.night2', { hours: (self.wakeHours2 ?? []).join(' · ') })}
+							</p>
+						</div>
+					) : (
+						<>
+							<p className="font-display text-4xl text-[#f4efe4]">
+								{self.role === 'thief' && twoDice
+									? dice.join(' · ')
+									: twoDice
+										? hour
+											? String(hour)
+											: '—'
+										: (self.wakeHours ?? []).join(' · ')}
+							</p>
+							<p className="text-xs tracking-wide text-[#f4efe4]/60 uppercase">
+								{self.role === 'thief' && twoDice ? t('cheese.deal.bothHours') : t('cheese.deal.yourHours')}
+							</p>
+						</>
+					)}
 				</HoldToReveal>
 			</div>
 

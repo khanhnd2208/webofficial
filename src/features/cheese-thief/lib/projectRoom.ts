@@ -1,9 +1,13 @@
-import type { CheesePhase, TablePreset } from '@/features/cheese-thief/config/cheeseThief';
+import type { CheeseMode, CheesePhase, NightNumber, TablePreset } from '@/features/cheese-thief/config/cheeseThief';
 import {
 	cardIsEmpty,
+	hoursInNight,
 	secretCardFor,
+	secretJobFor,
+	theftHourOf,
 	wakeHoursOf,
 	type CheeseRole,
+	type NightContext,
 	type ResolvedSecret,
 	type Seat,
 } from '@/features/cheese-thief/lib/rules';
@@ -22,6 +26,7 @@ export interface ProjectPlayer {
 	connected: boolean;
 	role?: CheeseRole;
 	dice: number[];
+	dice2?: number[];
 	chosenHour?: number;
 	hasMemorizedRole: boolean;
 	hasSeenSecret: boolean;
@@ -36,6 +41,10 @@ export interface ProjectRoom {
 	isPublic: boolean;
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
+	mode?: CheeseMode;
+	nightNumber?: NightNumber;
+	theftNight?: NightNumber;
+	voteRound?: number;
 	hostToken: string;
 	nightStartedAt?: Date;
 	dayStartedAt?: Date;
@@ -55,8 +64,13 @@ function seatsOf(room: ProjectRoom): Seat[] {
 		id: player.id,
 		role: player.role ?? 'sleepyhead',
 		dice: player.dice,
+		...(player.dice2 ? { dice2: player.dice2 } : {}),
 		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 	}));
+}
+
+function nightContextOf(room: ProjectRoom): NightContext {
+	return { mode: room.mode ?? 'classic', theftNight: room.theftNight ?? 1 };
 }
 
 function namesOf(room: ProjectRoom): Map<string, string> {
@@ -76,6 +90,9 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 	const seats = room.preset ? seatsOf(room) : [];
 	const names = namesOf(room);
 	const resolved = room.resolved ?? { followerIds: room.followerIds, peekByPlayer: {}, hunchByPlayer: {} };
+	const mode = room.mode ?? 'classic';
+	const ctx = nightContextOf(room);
+	const night2Played = mode === 'two-night' && room.theftNight === 2;
 
 	const players: PlayerPublicDTO[] = room.players.map((player) => {
 		const row: PlayerPublicDTO = {
@@ -100,9 +117,23 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 
 	let secretCard: PlayerSelfDTO['secretCard'];
 	if (secretResult && viewer && room.preset && viewer.role) {
-		const card = secretCardFor(viewer.id, seats, names, room.preset, resolved);
+		const card = secretCardFor(viewer.id, seats, names, room.preset, resolved, ctx);
 		secretCard = cardIsEmpty(card) ? { peek: null, allies: null, recruited: null } : card;
 	}
+	const secretJob =
+		room.phase === 'secret' && viewer && room.preset && viewer.role
+			? secretJobFor(
+					seats.find((seat) => seat.id === viewer.id) ?? {
+						id: viewer.id,
+						role: viewer.role,
+						dice: viewer.dice,
+						dice2: viewer.dice2,
+					},
+					seats,
+					room.preset,
+					ctx,
+				)
+			: undefined;
 
 	const self: PlayerSelfDTO | null = viewer
 		? {
@@ -123,13 +154,29 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 											id: viewer.id,
 											role: viewer.role,
 											dice: viewer.dice,
+											dice2: viewer.dice2,
 											chosenHour: viewer.chosenHour,
 										},
 										room.preset.dicePerPlayer,
 									)
 								: [],
+							...(mode === 'two-night' && room.preset
+								? {
+										wakeHours2: hoursInNight(
+											{
+												id: viewer.id,
+												role: viewer.role,
+												dice: viewer.dice,
+												dice2: viewer.dice2,
+											},
+											2,
+											room.preset.dicePerPlayer,
+										),
+									}
+								: {}),
 						}
 					: {}),
+				...(secretJob ? { secretJob: { followers: secretJob.followers?.count ?? 0, peek: secretJob.peek } } : {}),
 				...(voting ? { voteId: viewer.voteId ?? null } : {}),
 				...(secretCard ? { secretCard } : {}),
 			}
@@ -145,27 +192,38 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		isPublic: room.isPublic,
 		maxPlayers: room.maxPlayers,
 		scapegoatEnabled: room.scapegoatEnabled,
+		mode,
 		playerCount: room.players.length,
 		players,
 		self,
 	};
 
+	if ((room.phase === 'night' || room.phase === 'cheese-check') && room.nightNumber) {
+		dto.nightNumber = room.nightNumber;
+	}
 	if (room.phase === 'night' && room.nightStartedAt) {
 		dto.nightStartedAt = room.nightStartedAt.toISOString();
+	}
+	if (mode === 'two-night' && room.theftNight && !['lobby', 'deal', 'night', 'cheese-check'].includes(room.phase)) {
+		dto.theftNight = room.theftNight;
 	}
 	if (room.phase === 'day' && room.dayStartedAt) {
 		dto.dayStartedAt = room.dayStartedAt.toISOString();
 	}
 	if (room.phase === 'secret') dto.choiceCount = room.choiceCount;
-	if (voting) {
-		dto.isRunoff = room.isRunoff;
-		dto.voteCandidateIds = room.isRunoff ? room.voteCandidateIds : room.players.map((player) => player.id);
-		dto.votesCast = room.players.filter((player) => player.voteId).length;
+	if (voting || room.phase === 'tie') {
+		dto.voteRound = room.voteRound ?? 1;
+		dto.isRunoff = room.isRunoff || room.phase === 'tie';
+		dto.voteCandidateIds =
+			room.isRunoff || room.phase === 'tie' ? room.voteCandidateIds : room.players.map((player) => player.id);
+		if (voting) dto.votesCast = room.players.filter((player) => player.voteId).length;
 	}
 	if (reveal && room.preset) {
 		dto.flippedIds = room.flippedIds;
 		dto.followerIds = room.followerIds;
 		dto.winner = room.winner;
+		const thief = seats.find((seat) => seat.role === 'thief');
+		if (thief) dto.theftHour = theftHourOf(thief, room.preset.dicePerPlayer, room.theftNight ?? 1);
 		dto.roster = room.players.map((player): RevealRowDTO => {
 			const role = player.role ?? 'sleepyhead';
 			const hunch = resolved.hunchByPlayer[player.id];
@@ -174,9 +232,16 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 				name: player.name,
 				role,
 				wakeHours: wakeHoursOf(
-					{ id: player.id, role, dice: player.dice, chosenHour: player.chosenHour },
+					{ id: player.id, role, dice: player.dice, dice2: player.dice2, chosenHour: player.chosenHour },
 					room.preset!.dicePerPlayer,
 				),
+				wakeHours2: night2Played
+					? hoursInNight(
+							{ id: player.id, role, dice: player.dice, dice2: player.dice2 },
+							2,
+							room.preset!.dicePerPlayer,
+						)
+					: null,
 				hunchCorrect: hunch ? seats.find((seat) => seat.id === hunch)?.role === 'thief' : null,
 				flipped: room.flippedIds.includes(player.id),
 				follower: room.followerIds.includes(player.id),

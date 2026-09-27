@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
@@ -18,6 +19,16 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 	const count = state.choiceCount ?? 1;
 	const [picks, setPicks] = useState<string[]>([]);
 	const others = state.players.filter((player) => player.id !== state.self?.id);
+	const job = state.self?.secretJob;
+	const jobText = !job
+		? ''
+		: job.followers > 0 && job.peek
+			? t('cheese.secret.job.followersPeek')
+			: job.followers > 0
+				? t(job.followers >= count ? 'cheese.secret.job.followers' : 'cheese.secret.job.followersCamo', { count: job.followers })
+				: job.peek
+					? t(count > 1 ? 'cheese.secret.job.peek' : 'cheese.secret.job.peekOnly')
+					: t(count > 1 ? 'cheese.secret.job.hunch' : 'cheese.secret.job.hunchOnly');
 
 	function toggle(id: string) {
 		setPicks((current) => {
@@ -32,9 +43,12 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 			<div className="flex w-full max-w-md flex-1 flex-col">
 				<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">{t('cheese.secret.onlyYou')}</p>
 				<h1 className="mt-3 font-display text-4xl font-medium">{t('cheese.secret.title')}</h1>
-				<p className="mt-3 text-sm leading-relaxed text-[#f4efe4]/70">
-					{count > 1 ? t('cheese.secret.hintTwo') : t('cheese.secret.hint')}
-				</p>
+				<p className="mt-3 text-sm leading-relaxed text-[#f4efe4]/70">{t('cheese.secret.order')}</p>
+				{jobText && (
+					<HoldToReveal className="mt-4" compact cover={t('cheese.secret.job.label')}>
+						<p className="text-base leading-relaxed text-[#f4efe4]">{jobText}</p>
+					</HoldToReveal>
+				)}
 				<div className="mt-6 grid gap-2">
 					{others.map((player) => {
 						const order = picks.indexOf(player.id);

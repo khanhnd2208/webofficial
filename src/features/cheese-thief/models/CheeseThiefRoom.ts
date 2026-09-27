@@ -1,6 +1,6 @@
 import mongoose, { Schema, type Model } from 'mongoose';
 
-import { CHEESE_PHASES } from '@/features/cheese-thief/config/cheeseThief';
+import { CHEESE_MODES, CHEESE_PHASES, type CheeseMode, type NightNumber } from '@/features/cheese-thief/config/cheeseThief';
 import type { CheeseRole, CheeseWinner } from '@/features/cheese-thief/lib/rules';
 
 export interface ICheesePlayer {
@@ -12,6 +12,7 @@ export interface ICheesePlayer {
 	lastSeenAt: Date;
 	role?: CheeseRole;
 	dice: number[];
+	dice2: number[];
 	chosenHour?: number;
 	hasMemorizedRole: boolean;
 	/** Public ids, in tap order. Cleared when the secret minute resolves. */
@@ -26,8 +27,12 @@ export interface ICheeseRoom {
 	isPublic: boolean;
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
+	mode: CheeseMode;
 	hostToken: string;
 	phase: (typeof CHEESE_PHASES)[number];
+	nightNumber: NightNumber;
+	theftNight?: NightNumber;
+	voteRound: number;
 	version: number;
 	players: ICheesePlayer[];
 	nightStartedAt?: Date;
@@ -55,6 +60,7 @@ const CheesePlayerSchema = new Schema<ICheesePlayer>(
 		lastSeenAt: { type: Date, default: Date.now },
 		role: { type: String, enum: ['thief', 'sleepyhead', 'scapegoat'] },
 		dice: { type: [Number], default: [] },
+		dice2: { type: [Number], default: [] },
 		chosenHour: { type: Number },
 		hasMemorizedRole: { type: Boolean, default: false },
 		secretPicks: { type: [String], default: [] },
@@ -71,6 +77,7 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		isPublic: { type: Boolean, default: true, index: true },
 		maxPlayers: { type: Number, required: true, min: 4, max: 8 },
 		scapegoatEnabled: { type: Boolean, default: false },
+		mode: { type: String, enum: CHEESE_MODES, default: 'classic' },
 		hostToken: { type: String, required: true },
 		phase: { type: String, enum: CHEESE_PHASES, default: 'lobby', index: true },
 		version: { type: Number, default: 0 },
@@ -78,6 +85,9 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		nightStartedAt: { type: Date },
 		secretStartedAt: { type: Date },
 		dayStartedAt: { type: Date },
+		nightNumber: { type: Number, default: 1 },
+		theftNight: { type: Number },
+		voteRound: { type: Number, default: 0 },
 		choiceCount: { type: Number, default: 1 },
 		isRunoff: { type: Boolean, default: false },
 		voteCandidateIds: { type: [String], default: [] },

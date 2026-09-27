@@ -9,6 +9,8 @@ import {
 	joinRoom,
 	markSecretSeen,
 	playAgain,
+	reportCheese,
+	revote,
 	startGame,
 	startVote,
 	submitSecret,
@@ -22,8 +24,16 @@ interface Table {
 	tokens: string[];
 }
 
-async function openTable(playerCount: number, scapegoat = false): Promise<Table> {
-	const created = await createRoom({ name: 'Bàn phô mai', hostName: 'P0', scapegoat });
+async function openTable(
+	playerCount: number,
+	options: { scapegoat?: boolean; mode?: 'classic' | 'two-night' } = {},
+): Promise<Table> {
+	const created = await createRoom({
+		name: 'Bàn phô mai',
+		hostName: 'P0',
+		scapegoat: options.scapegoat,
+		mode: options.mode,
+	});
 	const host = created.self!.token;
 	const tokens = [host];
 	for (let i = 1; i < playerCount; i++) {
@@ -131,7 +141,7 @@ describe('Cheese Thief table', () => {
 		expect(follower.players.every((player) => player.role === undefined)).toBe(true);
 	});
 
-	it('opens a runoff and flips the tied group if the second vote ties', async () => {
+	it('stays in a tie until one name is ahead', async () => {
 		const table = await openTable(4);
 		await startGame(table.code, table.host);
 		const game = await CheeseThiefRoom.findOne({ code: table.code }).lean();
@@ -154,15 +164,67 @@ describe('Cheese Thief table', () => {
 			await submitVote(table.code, c, ids[0]!);
 			return submitVote(table.code, d, ids[1]!);
 		};
-		const runoff = await tie();
-		expect(runoff.phase).toBe('vote');
-		expect(runoff.isRunoff).toBe(true);
-		expect(runoff.voteCandidateIds?.sort()).toEqual([ids[0], ids[1]].sort());
+		const firstTie = await tie();
+		expect(firstTie.phase).toBe('tie');
+		expect(firstTie.voteCandidateIds?.sort()).toEqual([ids[0], ids[1]].sort());
 
-		const reveal = await tie();
+		const again = await revote(table.code, table.host);
+		expect(again.phase).toBe('vote');
+		expect(again.voteRound).toBe(2);
+
+		const secondTie = await tie();
+		expect(secondTie.phase).toBe('tie');
+		expect(secondTie.voteCandidateIds?.sort()).toEqual([ids[0], ids[1]].sort());
+
+		await revote(table.code, table.host);
+		await submitVote(table.code, a, ids[1]!);
+		await submitVote(table.code, b, ids[0]!);
+		await submitVote(table.code, c, ids[1]!);
+		const reveal = await submitVote(table.code, d, ids[1]!);
 		expect(reveal.phase).toBe('reveal');
-		expect(reveal.flippedIds?.sort()).toEqual([ids[0], ids[1]].sort());
-		const thiefId = game!.players.find((player) => player.role === 'thief')!.id;
-		expect(reveal.winner).toBe(reveal.flippedIds?.includes(thiefId) ? 'sleepyheads' : 'thief');
+		expect(reveal.flippedIds).toEqual([ids[1]]);
+	});
+
+	it('asks the host about the cheese after Night 1, and skips Night 2 when it is gone', async () => {
+		const table = await openTable(5, { mode: 'two-night' });
+		await startGame(table.code, table.host);
+		for (const token of table.tokens) await confirmMemorized(table.code, token);
+		await beginNight(table.code, table.host);
+		await rewind(table.code, 'nightStartedAt', 80_000);
+		const check = await getScopedState(table.code, table.host);
+		expect(check.phase).toBe('cheese-check');
+		expect(check.self?.role).toBeUndefined();
+		expect(JSON.stringify(check)).not.toContain('secretJob');
+
+		await expect(reportCheese(table.code, table.tokens[1]!, false)).rejects.toThrow('HOST_ONLY');
+		const secret = await reportCheese(table.code, table.host, false);
+		expect(secret.phase).toBe('secret');
+		expect(secret.theftNight).toBe(1);
+		expect(secret.choiceCount).toBe(2);
+		expect(secret.self?.secretJob).toEqual({ followers: expect.any(Number), peek: expect.any(Boolean) });
+	});
+
+	it('starts Night 2 when the cheese is still there', async () => {
+		const table = await openTable(6, { mode: 'two-night' });
+		await startGame(table.code, table.host);
+		for (const token of table.tokens) await confirmMemorized(table.code, token);
+		await beginNight(table.code, table.host);
+		await rewind(table.code, 'nightStartedAt', 80_000);
+		await getScopedState(table.code, table.host);
+		const night2 = await reportCheese(table.code, table.host, true);
+		expect(night2.phase).toBe('night');
+		expect(night2.nightNumber).toBe(2);
+		expect(night2.self?.wakeHours).toBeUndefined();
+
+		await rewind(table.code, 'nightStartedAt', 80_000);
+		const secret = await getScopedState(table.code, table.host);
+		expect(secret.phase).toBe('secret');
+		expect(secret.theftNight).toBe(2);
+		expect(secret.choiceCount).toBe(2);
+	});
+
+	it('refuses Two Nights with four players', async () => {
+		const table = await openTable(4, { mode: 'two-night' });
+		await expect(startGame(table.code, table.host)).rejects.toThrow('TWO_NIGHT_NEEDS_FIVE');
 	});
 });

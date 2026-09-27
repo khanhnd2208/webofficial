@@ -16,8 +16,11 @@ import {
 	CHEESE_ROOM_CODE_LENGTH,
 	CHEESE_SECRET_MAX_MS,
 	CHEESE_SECRET_MIN_MS,
+	TWO_NIGHT_MIN_PLAYERS,
+	isCheeseMode,
 	presetFor,
 	type CheesePhase,
+	type NightNumber,
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
 import { AppError } from '@/features/spy-fall/lib/appError';
@@ -29,8 +32,9 @@ import {
 	deal,
 	decideOutcome,
 	resolveSecret,
-	resolveVoteOrRunoff,
+	resolveVote,
 	sharedChoiceCount,
+	type NightContext,
 	type ResolvedSecret,
 	type Seat,
 } from '@/features/cheese-thief/lib/rules';
@@ -103,6 +107,7 @@ function blankPlayer(token: string, name: string, at: Date): ICheesePlayer {
 		connected: true,
 		lastSeenAt: at,
 		dice: [],
+		dice2: [],
 		hasMemorizedRole: false,
 		secretPicks: [],
 		hasSeenSecret: false,
@@ -140,12 +145,18 @@ function seatsOf(game: RoomDoc): Seat[] {
 		id: player.id,
 		role: player.role ?? 'sleepyhead',
 		dice: player.dice ?? [],
+		...((player.dice2 ?? []).length > 0 ? { dice2: player.dice2 } : {}),
 		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 	}));
 }
 
 function tablePreset(game: RoomDoc): TablePreset {
-	return presetFor(game.players.length);
+	return presetFor(game.players.length, game.mode ?? 'classic');
+}
+
+function nightContext(game: RoomDoc): NightContext {
+	const theftNight: NightNumber = game.theftNight === 2 ? 2 : 1;
+	return { mode: game.mode ?? 'classic', theftNight };
 }
 
 function isRecentlySeen(player: ICheesePlayer, at: Date): boolean {
@@ -173,6 +184,9 @@ function resetToLobby(game: RoomDoc): void {
 	game.secretStartedAt = undefined;
 	game.dayStartedAt = undefined;
 	game.choiceCount = 1;
+	game.nightNumber = 1;
+	game.theftNight = undefined;
+	game.voteRound = 0;
 	game.isRunoff = false;
 	game.voteCandidateIds = [];
 	game.flippedIds = [];
@@ -183,6 +197,7 @@ function resetToLobby(game: RoomDoc): void {
 	for (const player of game.players) {
 		player.role = undefined;
 		player.dice = [];
+		player.dice2 = [];
 		player.chosenHour = undefined;
 		player.hasMemorizedRole = false;
 		player.secretPicks = [];
@@ -203,7 +218,7 @@ function applySecretResolution(game: RoomDoc): void {
 	const preset = tablePreset(game);
 	const picks: Record<string, string[]> = {};
 	for (const player of game.players) picks[player.id] = player.secretPicks ?? [];
-	const resolved = resolveSecret(seatsOf(game), preset, picks, Math.random);
+	const resolved = resolveSecret(seatsOf(game), preset, picks, Math.random, nightContext(game));
 	game.followerIds = resolved.followerIds;
 	game.peekByPlayer = resolved.peekByPlayer;
 	game.hunchByPlayer = resolved.hunchByPlayer;
@@ -216,11 +231,11 @@ function settleVote(game: RoomDoc): void {
 	const ballots = game.players
 		.filter((player) => player.voteId)
 		.map((player) => ({ voterId: player.id, targetId: player.voteId! }));
-	const resolution = resolveVoteOrRunoff(ballots, game.isRunoff, game.voteCandidateIds ?? []);
-	if (resolution.kind === 'runoff') {
+	const resolution = resolveVote(ballots, game.voteCandidateIds ?? []);
+	if (resolution.kind === 'tie') {
 		game.isRunoff = true;
 		game.voteCandidateIds = resolution.candidateIds;
-		game.phase = 'vote';
+		game.phase = 'tie';
 		for (const player of game.players) player.voteId = undefined;
 		return;
 	}
@@ -229,20 +244,29 @@ function settleVote(game: RoomDoc): void {
 	game.phase = 'reveal';
 }
 
+function enterSecret(game: RoomDoc, at: Date, theftNight: NightNumber): void {
+	game.phase = 'secret';
+	game.secretStartedAt = at;
+	game.theftNight = theftNight;
+	game.choiceCount = sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
+	for (const player of game.players) player.secretPicks = [];
+}
+
 function advanceClock(game: RoomDoc, at: Date): boolean {
 	if (game.phase === 'night' && game.nightStartedAt) {
 		if (at.getTime() >= nightEndsAt(game.nightStartedAt.getTime(), NIGHT_TIMING)) {
-			game.phase = 'secret';
-			game.secretStartedAt = at;
-			game.choiceCount = sharedChoiceCount(tablePreset(game));
-			for (const player of game.players) player.secretPicks = [];
+			if ((game.mode ?? 'classic') === 'two-night' && (game.nightNumber ?? 1) === 1) {
+				game.phase = 'cheese-check';
+				return true;
+			}
+			enterSecret(game, at, (game.mode ?? 'classic') === 'two-night' ? 2 : 1);
 			return true;
 		}
 	}
 
 	if (game.phase === 'secret' && game.secretStartedAt) {
 		const elapsed = at.getTime() - game.secretStartedAt.getTime();
-		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game));
+		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
 		const everyoneChose = game.players.every((player) => (player.secretPicks ?? []).length === choiceCount);
 		const timedOut = elapsed >= CHEESE_SECRET_MAX_MS;
 		const minElapsed = elapsed >= CHEESE_SECRET_MIN_MS;
@@ -275,6 +299,7 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		connected: player.connected,
 		...(player.role ? { role: player.role } : {}),
 		dice: player.dice ?? [],
+		...((player.dice2 ?? []).length > 0 ? { dice2: player.dice2 } : {}),
 		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 		hasMemorizedRole: player.hasMemorizedRole,
 		hasSeenSecret: player.hasSeenSecret,
@@ -290,6 +315,10 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		isPublic: game.isPublic,
 		maxPlayers: game.maxPlayers,
 		scapegoatEnabled: game.scapegoatEnabled,
+		mode: game.mode ?? 'classic',
+		nightNumber: game.nightNumber === 2 ? 2 : 1,
+		...(game.theftNight === 1 || game.theftNight === 2 ? { theftNight: game.theftNight } : {}),
+		voteRound: game.voteRound ?? 0,
 		hostToken: game.hostToken,
 		...(game.nightStartedAt ? { nightStartedAt: game.nightStartedAt } : {}),
 		...(game.dayStartedAt ? { dayStartedAt: game.dayStartedAt } : {}),
@@ -299,7 +328,7 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		flippedIds: game.flippedIds ?? [],
 		followerIds: game.followerIds ?? [],
 		...(game.winner ? { winner: game.winner } : {}),
-		...(inRound ? { preset: presetFor(game.players.length), resolved: resolvedOf(game) } : {}),
+		...(inRound ? { preset: tablePreset(game), resolved: resolvedOf(game) } : {}),
 		players,
 	};
 }
@@ -375,6 +404,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 	const roomName = assertRoomName(input.name);
 	const maxPlayers = input.maxPlayers ?? CHEESE_MAX_PLAYERS;
 	assertMaxPlayers(maxPlayers);
+	if (input.mode !== undefined && !isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
 
 	await dbConnect();
 	const hostToken = generateToken();
@@ -392,6 +422,9 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 		isPublic: input.isPublic !== false,
 		maxPlayers,
 		scapegoatEnabled: input.scapegoat === true,
+		mode: input.mode && isCheeseMode(input.mode) ? input.mode : 'classic',
+		nightNumber: 1,
+		voteRound: 0,
 		hostToken,
 		phase: 'lobby',
 		version: 0,
@@ -481,6 +514,10 @@ export async function updateSettings(
 			game.maxPlayers = input.maxPlayers;
 		}
 		if (input.scapegoat !== undefined) game.scapegoatEnabled = Boolean(input.scapegoat);
+		if (input.mode !== undefined) {
+			if (!isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
+			game.mode = input.mode;
+		}
 	});
 }
 
@@ -490,10 +527,15 @@ export async function startGame(code: string, hostToken: string): Promise<RoomSt
 		if (game.players.length < CHEESE_MIN_PLAYERS || game.players.length > CHEESE_MAX_PLAYERS) {
 			throw new AppError('NEED_MIN_PLAYERS', 400, { min: CHEESE_MIN_PLAYERS });
 		}
+		const mode = game.mode ?? 'classic';
+		if (mode === 'two-night' && game.players.length < TWO_NIGHT_MIN_PLAYERS) {
+			throw new AppError('TWO_NIGHT_NEEDS_FIVE', 400);
+		}
 		const { seats } = deal(
 			game.players.map((player) => player.id),
 			game.scapegoatEnabled,
 			Math.random,
+			mode,
 		);
 		const byId = new Map(seats.map((seat) => [seat.id, seat]));
 		for (const player of game.players) {
@@ -501,6 +543,7 @@ export async function startGame(code: string, hostToken: string): Promise<RoomSt
 			if (!seat) continue;
 			player.role = seat.role;
 			player.dice = seat.dice;
+			player.dice2 = seat.dice2 ?? [];
 			player.chosenHour = undefined;
 			player.hasMemorizedRole = false;
 			player.secretPicks = [];
@@ -511,7 +554,10 @@ export async function startGame(code: string, hostToken: string): Promise<RoomSt
 		game.nightStartedAt = undefined;
 		game.secretStartedAt = undefined;
 		game.dayStartedAt = undefined;
-		game.choiceCount = sharedChoiceCount(presetFor(game.players.length));
+		game.choiceCount = sharedChoiceCount(tablePreset(game), mode);
+		game.nightNumber = 1;
+		game.theftNight = undefined;
+		game.voteRound = 0;
 		game.isRunoff = false;
 		game.voteCandidateIds = [];
 		game.flippedIds = [];
@@ -550,6 +596,7 @@ export async function beginNight(code: string, hostToken: string): Promise<RoomS
 			throw new AppError('CHOOSE_HOUR', 400);
 		}
 		game.phase = 'night';
+		game.nightNumber = 1;
 		game.nightStartedAt = at;
 	});
 }
@@ -557,7 +604,7 @@ export async function beginNight(code: string, hostToken: string): Promise<RoomS
 export async function submitSecret(code: string, playerToken: string, picks: string[]): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, 'secret', (game) => {
 		const player = assertPlayer(game, playerToken);
-		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game));
+		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
 		if (!Array.isArray(picks) || picks.length !== choiceCount) {
 			throw new AppError('PICK_COUNT', 400, { count: choiceCount });
 		}
@@ -579,6 +626,7 @@ export async function startVote(code: string, hostToken: string): Promise<RoomSt
 		assertHost(game, hostToken);
 		game.phase = 'vote';
 		game.isRunoff = false;
+		game.voteRound = 1;
 		game.voteCandidateIds = game.players.map((player) => player.id);
 		for (const player of game.players) player.voteId = undefined;
 	});
@@ -590,10 +638,33 @@ export async function submitVote(code: string, playerToken: string, targetId: st
 		if (!targetId || targetId === player.id) throw new AppError('VOTE_SELF', 400);
 		const target = findPlayerById(game, targetId);
 		if (!target) throw new AppError('VOTE_NOT_CANDIDATE', 400);
-		if (game.isRunoff && !(game.voteCandidateIds ?? []).includes(targetId)) {
+		if (!(game.voteCandidateIds ?? []).includes(targetId)) {
 			throw new AppError('VOTE_NOT_CANDIDATE', 400);
 		}
 		player.voteId = targetId;
+	});
+}
+
+export async function reportCheese(code: string, hostToken: string, present: boolean): Promise<RoomStateDTO> {
+	return mutateGame(code, hostToken, 'cheese-check', (game, at) => {
+		assertHost(game, hostToken);
+		if (present) {
+			game.nightNumber = 2;
+			game.nightStartedAt = at;
+			game.phase = 'night';
+			return;
+		}
+		enterSecret(game, at, 1);
+	});
+}
+
+export async function revote(code: string, hostToken: string): Promise<RoomStateDTO> {
+	return mutateGame(code, hostToken, 'tie', (game) => {
+		assertHost(game, hostToken);
+		game.phase = 'vote';
+		game.isRunoff = true;
+		game.voteRound = (game.voteRound ?? 0) + 1;
+		for (const player of game.players) player.voteId = undefined;
 	});
 }
 

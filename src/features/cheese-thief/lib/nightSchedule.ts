@@ -1,4 +1,4 @@
-import { CHEESE_HOURS } from '@/features/cheese-thief/config/cheeseThief';
+import { CHEESE_HOURS, type CheeseMode, type NightNumber } from '@/features/cheese-thief/config/cheeseThief';
 
 export interface NightTiming {
 	introMs: number;
@@ -53,4 +53,12 @@ export function segmentAt(startedAt: number, now: number, timing: NightTiming): 
 
 export function nightEndsAt(startedAt: number, timing: NightTiming): number {
 	return startedAt + timing.introMs + CHEESE_HOURS.length * timing.hourMs + timing.outroMs;
+}
+
+/** Which spoken line this slice of the night is. Hour cues stay the same in every mode. */
+export function narrationKey(segment: NightSegment, mode: CheeseMode, night: NightNumber): string {
+	if (segment.cueId === 'wake' || segment.cueId === 'sleep' || segment.cueId === 'done') return segment.cueId;
+	if (mode === 'classic') return segment.cueId;
+	if (segment.kind === 'intro') return night === 1 ? 'night1-start' : 'night2-start';
+	return night === 1 ? 'night1-end' : 'night-end';
 }

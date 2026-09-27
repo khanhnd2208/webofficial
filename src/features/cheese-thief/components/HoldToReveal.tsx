@@ -8,10 +8,12 @@ import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 interface Props {
 	children: React.ReactNode;
 	className?: string;
+	compact?: boolean;
+	cover?: string;
 }
 
 /** Same shell on every phone. The private line exists only while the finger is down. */
-export default function HoldToReveal({ children, className }: Props) {
+export default function HoldToReveal({ children, className, compact = false, cover }: Props) {
 	const t = useT();
 	const [open, setOpen] = useState(false);
 	const show = useCallback(() => setOpen(true), []);
@@ -22,8 +24,8 @@ export default function HoldToReveal({ children, className }: Props) {
 			<div
 				role="button"
 				tabIndex={0}
-				aria-label={t('cheese.deal.holdFirst')}
-				className="relative min-h-64 overflow-hidden rounded-3xl border border-white/10 bg-[#16140f]"
+				aria-label={cover ?? t('cheese.deal.holdFirst')}
+				className={cn('relative overflow-hidden rounded-3xl border border-white/10 bg-[#16140f]', compact ? 'min-h-28' : 'min-h-64')}
 				onPointerDown={show}
 				onPointerUp={hide}
 				onPointerLeave={hide}
@@ -39,15 +41,21 @@ export default function HoldToReveal({ children, className }: Props) {
 				{!open && (
 					<div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#16140f] px-6 text-center">
 						<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">
-							{t('cheese.deal.holdFirst')}
+							{cover ?? t('cheese.deal.holdFirst')}
 						</p>
-						<p className="font-display text-5xl" aria-hidden>
-							🧀
-						</p>
+						{!compact && (
+							<p className="font-display text-5xl" aria-hidden>
+								🧀
+							</p>
+						)}
 					</div>
 				)}
 				<div
-					className={cn('flex min-h-64 flex-col items-center justify-center gap-3 p-8 text-center', open ? 'opacity-100' : 'opacity-0')}
+					className={cn(
+						'flex flex-col items-center justify-center gap-3 text-center',
+						compact ? 'min-h-28 px-5 py-4' : 'min-h-64 p-8',
+						open ? 'opacity-100' : 'opacity-0',
+					)}
 					aria-hidden={!open}
 					{...(!open ? { inert: true } : {})}
 				>
