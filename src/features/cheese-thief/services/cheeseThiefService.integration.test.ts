@@ -407,6 +407,7 @@ describe('Cheese Thief table', () => {
 		}
 		await beginNight(table.code, table.host);
 		await rewind(table.code, 'nightStartedAt', 200_000);
+		expect((await getScopedState(table.code, table.host)).phase).toBe('secret');
 		await finishSecret(table);
 		for (const token of table.tokens) await markSecretSeen(table.code, token);
 		await startVote(table.code, table.host);
