@@ -133,6 +133,13 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived }: Optio
 					picks,
 				}),
 			),
+		/** Saves the selection as it stands, so running out of time keeps the first slots. */
+		secretDraft: (picks: string[]) =>
+			postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/secret`, {
+				token: tokenRef.current,
+				picks,
+				draft: true,
+			}),
 		seen: () =>
 			action(() => postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/seen`, { token: tokenRef.current })),
 		startVote: () =>

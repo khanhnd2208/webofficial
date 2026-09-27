@@ -161,9 +161,17 @@ describe('wake hours, witnesses, peek', () => {
 		const thief = seat({ id: 'thief', role: 'thief', dice: [5, 2], chosenHour: 5 });
 		const mouse = seat({ id: 'mouse', role: 'sleepyhead', dice: [5, 2], chosenHour: 2 });
 		expect(wakeHoursOf(thief, 2)).toEqual([2, 5]);
-		expect(theftHourOf(thief, 2)).toBe(2);
+		expect(theftHourOf(thief, 2)).toBe(5);
 		expect(wakeHoursOf(mouse, 2)).toEqual([2]);
 		expect(canPeek(mouse, [thief, mouse], four)).toBe(false);
+	});
+
+	it('at 4 players the theft hour is the one the thief chose, not the earlier die', () => {
+		expect(theftHourOf(seat({ id: 't', role: 'thief', dice: [1, 6], chosenHour: 6 }), 2)).toBe(6);
+		expect(theftHourOf(seat({ id: 't', role: 'thief', dice: [1, 6], chosenHour: 1 }), 2)).toBe(1);
+		// A stale or missing choice falls back to the earlier die.
+		expect(theftHourOf(seat({ id: 't', role: 'thief', dice: [3, 6], chosenHour: 4 }), 2)).toBe(3);
+		expect(theftHourOf(seat({ id: 't', role: 'thief', dice: [3, 6] }), 2)).toBe(3);
 	});
 
 	it('a scapegoat awake alone peeks, as a Sleepyhead does', () => {

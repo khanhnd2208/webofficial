@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
@@ -13,12 +13,73 @@ interface Props {
 	state: RoomStateDTO;
 	busy: boolean;
 	onSubmit: (picks: string[]) => void;
+	/** Saves an unfinished selection. Failures are ignored; the next tap or Done tries again. */
+	onDraft: (picks: string[]) => Promise<unknown>;
 }
 
-export default function SecretPhase({ state, busy, onSubmit }: Props) {
+type SlotRole = 'follower' | 'peek' | 'hunch' | 'filler';
+
+/** Same order the server reads picks in (`slotsOf`): followers, then the peek, then the hunch. */
+function slotRoleAt(index: number, job: { followers: number; peek: boolean }): SlotRole {
+	if (index < job.followers) return 'follower';
+	const peekAt = job.peek ? job.followers : -1;
+	if (index === peekAt) return 'peek';
+	// Only non-Thieves have a hunch worth recording; the Thief's spare slots just match the screens.
+	if (job.followers === 0 && index === (job.peek ? 1 : 0)) return 'hunch';
+	return 'filler';
+}
+
+/** Sends drafts one at a time, latest wins, so a slow request never lands after a newer one. */
+function useDraftSender(send: (picks: string[]) => Promise<unknown>) {
+	const inFlight = useRef<Promise<void> | null>(null);
+	const queued = useRef<string[] | null>(null);
+	const sendRef = useRef(send);
+	useEffect(() => {
+		sendRef.current = send;
+	}, [send]);
+
+	const pump = useCallback((): Promise<void> => {
+		if (inFlight.current) return inFlight.current;
+		const run = async () => {
+			while (queued.current) {
+				const next = queued.current;
+				queued.current = null;
+				try {
+					await sendRef.current(next);
+				} catch {
+					// A draft is best effort.
+				}
+			}
+			inFlight.current = null;
+		};
+		inFlight.current = run();
+		return inFlight.current;
+	}, []);
+
+	const queue = useCallback(
+		(picks: string[]) => {
+			queued.current = picks;
+			void pump();
+		},
+		[pump],
+	);
+
+	/** Resolves once every queued draft has landed, so Done is never overwritten by an older draft. */
+	const settle = useCallback(async () => {
+		while (inFlight.current) await inFlight.current;
+	}, []);
+
+	return { queue, settle };
+}
+
+export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 	const t = useT();
 	const count = state.choiceCount ?? 1;
 	const [picks, setPicks] = useState<string[]>([]);
+	const [full, setFull] = useState(false);
+	const [settling, setSettling] = useState(false);
+	const locked = busy || settling;
+	const drafts = useDraftSender(onDraft);
 	const others = state.players.filter((player) => player.id !== state.self?.id);
 	const job = state.self?.secretJob;
 	const jobText = !job
@@ -36,13 +97,32 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 					? t(count > 1 ? 'cheese.secret.job.peek' : 'cheese.secret.job.peekOnly')
 					: t(count > 1 ? 'cheese.secret.job.hunch' : 'cheese.secret.job.hunchOnly');
 
+	// Tapping past the last slot used to drop slot ① silently — often the player to peek at.
 	function toggle(id: string) {
-		setPicks((current) => {
-			if (current.includes(id)) return current.filter((item) => item !== id);
-			if (current.length >= count) return [...current.slice(1), id];
-			return [...current, id];
-		});
+		if (locked) return;
+		let next: string[];
+		if (picks.includes(id)) next = picks.filter((item) => item !== id);
+		else if (picks.length >= count) {
+			setFull(true);
+			return;
+		} else next = [...picks, id];
+		setFull(false);
+		setPicks(next);
+		drafts.queue(next);
 	}
+
+	// Freeze the list while older drafts land, so Done confirms exactly what the screen shows.
+	async function submit() {
+		setSettling(true);
+		try {
+			await drafts.settle();
+			onSubmit(picks);
+		} finally {
+			setSettling(false);
+		}
+	}
+
+	const nameOf = (id: string | undefined) => others.find((player) => player.id === id)?.name;
 
 	return (
 		<div className="fixed inset-0 z-50 overflow-y-auto bg-[#0c0b09] text-[#f4efe4]">
@@ -58,6 +138,21 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 				{jobText && (
 					<HoldToReveal className="mt-4" compact cover={t('cheese.secret.job.label')}>
 						<p className="text-base leading-relaxed text-[#f4efe4]">{jobText}</p>
+						{job && (
+							<ol className="mt-3 w-full space-y-1 text-left text-sm text-[#f4efe4]/85">
+								{Array.from({ length: count }, (_, index) => (
+									<li key={index} className="flex gap-2">
+										<span className="font-mono text-[#e0a045]">{index + 1}.</span>
+										<span className="min-w-0 break-words">
+											{t(`cheese.secret.slot.${slotRoleAt(index, job)}`)}:{' '}
+											<strong className="font-medium text-[#f4efe4]">
+												{nameOf(picks[index]) ?? '—'}
+											</strong>
+										</span>
+									</li>
+								))}
+							</ol>
+						)}
 					</HoldToReveal>
 				)}
 				<div className="mt-6 grid gap-2">
@@ -73,7 +168,7 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 									selected ? 'border-[#e0a045] bg-[#e0a045]/15' : 'border-white/10 bg-white/5',
 								)}
 								aria-pressed={selected}
-								disabled={busy}
+								disabled={locked}
 								onClick={() => toggle(player.id)}
 							>
 								<span className="min-w-0 break-words">{player.name}</span>
@@ -96,13 +191,15 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 						className="mb-2 text-center font-mono text-xs tracking-[0.12em] text-[#f4efe4]/80"
 						aria-live="polite"
 					>
-						{t('cheese.secret.selected', { done: picks.length, total: count })}
+						{full
+							? t('cheese.secret.full', { total: count })
+							: t('cheese.secret.selected', { done: picks.length, total: count })}
 					</p>
 					<Button
 						fullWidth
-						disabled={busy || picks.length !== count}
-						loading={busy}
-						onClick={() => onSubmit(picks)}
+						disabled={locked || picks.length !== count}
+						loading={locked}
+						onClick={() => void submit()}
 					>
 						{t('cheese.secret.done')}
 					</Button>

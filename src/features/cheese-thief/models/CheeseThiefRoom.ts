@@ -26,8 +26,10 @@ export interface ICheesePlayer {
 	dice2: number[];
 	chosenHour?: number;
 	hasMemorizedRole: boolean;
-	/** Public ids, in tap order. Cleared when the secret minute resolves. */
+	/** Public ids, in tap order. Saved as a draft on every tap, so a timeout keeps a partial peek. */
 	secretPicks: string[];
+	/** Set when the player pressed Done. Only confirmed picks can end the secret minute early. */
+	secretConfirmed: boolean;
 	hasSeenSecret: boolean;
 	voteId?: string;
 }
@@ -79,6 +81,7 @@ const CheesePlayerSchema = new Schema<ICheesePlayer>(
 		chosenHour: { type: Number },
 		hasMemorizedRole: { type: Boolean, default: false },
 		secretPicks: { type: [String], default: [] },
+		secretConfirmed: { type: Boolean, default: false },
 		hasSeenSecret: { type: Boolean, default: false },
 		voteId: { type: String },
 	},

@@ -18,7 +18,7 @@ export const cheeseGuideVi: MessageTree = {
 	notAllowed: '{mode} chơi với {min}–{max} người. Bàn này đang để {count}.',
 	table: {
 		twoPick:
-			'Mỗi người nhận 2 số. Chuột ngủ chọn 1 số để mở mắt; người trộm mở mắt ở cả 2 số và lấy vật ở số nhỏ hơn. Hai số giống nhau thì chỉ mở mắt một lần.',
+			'Mỗi người nhận 2 số. Chuột ngủ chọn 1 số để mở mắt; người trộm mở mắt ở cả 2 số và tự chọn 1 trong 2 số để lấy vật. Hai số giống nhau thì chỉ mở mắt một lần.',
 		one: 'Mỗi người nhận 1 số từ 1 đến 6. Đó là giờ mình được mở mắt.',
 		perNight: 'Mỗi người nhận 2 số riêng: một số dùng trong Đêm 1, một số dùng trong Đêm 2.',
 		noPeek: 'Bàn này không có quyền xem giờ của người khác, dù bạn mở mắt một mình.',
@@ -64,7 +64,7 @@ export const cheeseGuideVi: MessageTree = {
 			title: 'Bước 2 · Chơi ban đêm',
 			b1: 'Tất cả úp điện thoại, nhắm mắt và im lặng. Máy chủ phòng sẽ gọi lần lượt “1 giờ”, “2 giờ”… đến “6 giờ”. Mỗi số có thời gian như nhau.',
 			b2: 'Khi nghe đúng số của mình, bạn mở mắt. Khi máy bảo nhắm mắt ngủ tiếp, bạn nhắm mắt lại. Không nói chuyện hoặc ra hiệu bằng tay.',
-			b3: 'Nếu là người trộm, bạn lấy vật ở giữa bàn và giấu đi tại giờ phải lấy. Khi chơi 1 đêm, lấy ở giờ thức đầu tiên, kể cả khi có người đang nhìn.',
+			b3: 'Nếu là người trộm, bạn lấy vật ở giữa bàn và giấu đi tại giờ phải lấy. Khi chơi 1 đêm, lấy ở giờ thức đầu tiên, kể cả khi có người đang nhìn. Bàn 4 người: bạn mở mắt ở cả 2 số và lấy ở giờ đã chọn lúc chia vai.',
 			b4: 'Nếu là chuột ngủ, hãy nhớ những ai cùng mở mắt và bạn có thấy ai lấy vật không. Đừng hỏi hoặc trao đổi cho đến khi trời sáng.',
 			b5: 'Ở bàn có quyền xem giờ, nếu chỉ mình bạn mở mắt ở giờ đó, sau đêm bạn sẽ được chọn 1 người để biết số giờ của họ. Không cần chạm vào điện thoại hay đồ vật nào trong lúc đang nhắm mắt chơi.',
 			b6: 'Nếu có người khác cùng mở mắt, bạn không được xem giờ nhờ lượt đó. Bàn 4 người không có quyền xem giờ, kể cả khi mở mắt một mình.',
@@ -75,7 +75,7 @@ export const cheeseGuideVi: MessageTree = {
 			b1: 'Khi đêm cuối cùng kết thúc, mọi người cùng cầm điện thoại nhưng chỉ nhìn máy của mình. Màn “Phút bí mật” yêu cầu tất cả chọn cùng số tên để người bên cạnh không biết bạn đang làm gì.',
 			b2: 'Nhấn giữ “Việc của bạn” để đọc việc thật của mình. Nếu là người trộm, bạn có thể phải chọn đồng phạm. Nếu được xem giờ, bạn chọn người muốn biết số. Những lựa chọn còn lại chỉ là đoán ai trộm hoặc chọn cho đủ số ô.',
 			b3: 'Chạm tên theo đúng thứ tự màn hình yêu cầu: đồng phạm trước, người muốn xem giờ tiếp theo, rồi mới đến người bạn nghi là trộm. Số 1, 2… cạnh tên cho biết thứ tự đã chọn. Mỗi tên chỉ chọn được một lần.',
-			b4: 'Bấm “Xong” sau khi chọn đủ. Màn này kéo dài ít nhất 15 giây và nhiều nhất 60 giây. Nếu người trộm chưa chọn đủ đồng phạm, máy chọn ngẫu nhiên phần còn thiếu; nếu bạn chưa chọn người để xem giờ, bạn mất lượt xem.',
+			b4: 'Bấm “Xong” sau khi chọn đủ. Màn này kéo dài ít nhất 15 giây và nhiều nhất 60 giây. Nếu người trộm chưa chọn đủ đồng phạm, máy chọn ngẫu nhiên phần còn thiếu; tên bạn đã chạm được máy giữ lại, nên người ở ô xem giờ vẫn được tính; chỉ khi chưa chạm tên nào thì bạn mất lượt xem.',
 			b5: 'Tiếp theo, nhấn giữ để đọc kết quả riêng: chẳng hạn số giờ vừa xem được hoặc tin mình đã thành đồng phạm. Bấm “Đã xem” và úp máy xuống. Những lượt đoán ai trộm không quyết định thắng thua.',
 		},
 		day: {
@@ -157,7 +157,7 @@ export const cheeseGuideEn: MessageTree = {
 	notAllowed: '{mode} plays with {min}–{max} players. This table is set to {count}.',
 	table: {
 		twoPick:
-			'Everyone gets 2 numbers. A Sleepyhead chooses 1 number to wake at. The Thief wakes at both and takes the object at the earlier one. Matching numbers mean one wake-up.',
+			'Everyone gets 2 numbers. A Sleepyhead chooses 1 number to wake at. The Thief wakes at both and chooses which of the two to take the object at. Matching numbers mean one wake-up.',
 		one: 'Everyone gets one number from 1 to 6. Open your eyes when that number is called.',
 		perNight: 'Everyone gets two separate numbers: one for Night 1 and one for Night 2.',
 		noPeek: 'At this table, nobody may learn another player’s number by waking alone.',
@@ -203,7 +203,7 @@ export const cheeseGuideEn: MessageTree = {
 			title: 'Step 2 · Play the night',
 			b1: 'Everyone puts their phone face down, closes their eyes, and stays quiet. The host phone calls “1 o’clock”, “2 o’clock” and so on through 6. Each number lasts the same amount of time.',
 			b2: 'Open your eyes when your number is called. Close them again when the phone tells everyone to sleep. Do not talk or signal.',
-			b3: 'If you are the Thief, take the object and hide it at the required number. On 1 night, you must do this at your first wake-up, even if someone is watching.',
+			b3: 'If you are the Thief, take the object and hide it at the required number. On 1 night, you must do this at your first wake-up, even if someone is watching. At 4 players, you wake at both numbers and take it at the hour you chose when roles were dealt.',
 			b4: 'If you are a Sleepyhead, remember who else opened their eyes and whether you saw anyone take the object. Wait until morning to discuss it.',
 			b5: 'At tables that allow peeking, waking alone lets you choose one player and learn their number after the night. Do not touch your phone or anything else to make that choice during the night.',
 			b6: 'If someone else opens their eyes with you, that wake-up does not earn a peek. Four-player tables never allow peeking.',
@@ -214,7 +214,7 @@ export const cheeseGuideEn: MessageTree = {
 			b1: 'After the final night, everyone picks up their phone but looks only at their own screen. The Secret minute asks everyone to select the same number of names, so neighbors cannot tell who has a special job.',
 			b2: 'Press and hold “Your job” to read what your choices really do. The Thief may need to choose Followers. If you earned a peek, choose whose number to see. Other choices are guesses or fillers.',
 			b3: 'Tap names in the order shown: Followers first, then whose number to see, then your guess about the Thief. The 1, 2… beside each name shows the selection order. Each name can only be selected once.',
-			b4: 'Tap “Done” when you have selected enough names. This phase lasts at least 15 and at most 60 seconds. If the Thief runs out of time, missing Followers are chosen at random; an unfinished peek is lost.',
+			b4: 'Tap “Done” when you have selected enough names. This phase lasts at least 15 and at most 60 seconds. If the Thief runs out of time, missing Followers are chosen at random; names you already tapped are kept, so the player in your peek slot still counts. You lose the peek only if you tapped no name.',
 			b5: 'Next, press and hold to read your private result, such as a player’s number or the news that you became a Follower. Tap “Seen” and put your phone down. Guesses do not decide who wins.',
 		},
 		day: {

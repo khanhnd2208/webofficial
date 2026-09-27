@@ -5,7 +5,9 @@ import { submitSecret } from '@/features/cheese-thief/services/cheeseThiefServic
 
 export const POST = withErrorHandling(async (request: NextRequest, context) => {
 	const { code } = await context!.params;
-	const body = (await request.json()) as { token?: string; picks?: string[] };
+	const body = (await request.json()) as { token?: string; picks?: string[]; draft?: unknown };
 	if (!body.token) return apiError('TOKEN_REQUIRED', 400);
-	return apiSuccess(await submitSecret(code, body.token, body.picks ?? []));
+	return apiSuccess(
+		await submitSecret(code, body.token, body.picks ?? [], { draft: body.draft === true }),
+	);
 });

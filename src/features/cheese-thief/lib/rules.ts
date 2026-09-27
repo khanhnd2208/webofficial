@@ -120,8 +120,15 @@ export function wakeHoursOf(seat: Seat, dicePerPlayer: 1 | 2): number[] {
 	return seat.dice[0] === undefined ? [] : [seat.dice[0]];
 }
 
+/**
+ * At 4 players the Thief wakes at both hours but takes the cheese at the one they chose.
+ * Always taking the earlier die would push the theft toward 1 o'clock (min of 2d6).
+ */
 export function theftHourOf(seat: Seat, dicePerPlayer: 1 | 2, night: NightNumber = 1): number {
 	const hours = hoursInNight(seat, night, dicePerPlayer);
+	if (night === 1 && dicePerPlayer === 2 && seat.chosenHour !== undefined && hours.includes(seat.chosenHour)) {
+		return seat.chosenHour;
+	}
 	return Math.min(...hours);
 }
 
