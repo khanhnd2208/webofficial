@@ -77,6 +77,8 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 	const count = state.choiceCount ?? 1;
 	const [picks, setPicks] = useState<string[]>([]);
 	const [full, setFull] = useState(false);
+	const [settling, setSettling] = useState(false);
+	const locked = busy || settling;
 	const drafts = useDraftSender(onDraft);
 	const others = state.players.filter((player) => player.id !== state.self?.id);
 	const job = state.self?.secretJob;
@@ -97,6 +99,7 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 
 	// Tapping past the last slot used to drop slot ① silently — often the player to peek at.
 	function toggle(id: string) {
+		if (locked) return;
 		let next: string[];
 		if (picks.includes(id)) next = picks.filter((item) => item !== id);
 		else if (picks.length >= count) {
@@ -108,9 +111,15 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 		drafts.queue(next);
 	}
 
+	// Freeze the list while older drafts land, so Done confirms exactly what the screen shows.
 	async function submit() {
-		await drafts.settle();
-		onSubmit(picks);
+		setSettling(true);
+		try {
+			await drafts.settle();
+			onSubmit(picks);
+		} finally {
+			setSettling(false);
+		}
 	}
 
 	const nameOf = (id: string | undefined) => others.find((player) => player.id === id)?.name;
@@ -159,7 +168,7 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 									selected ? 'border-[#e0a045] bg-[#e0a045]/15' : 'border-white/10 bg-white/5',
 								)}
 								aria-pressed={selected}
-								disabled={busy}
+								disabled={locked}
 								onClick={() => toggle(player.id)}
 							>
 								<span className="min-w-0 break-words">{player.name}</span>
@@ -188,8 +197,8 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 					</p>
 					<Button
 						fullWidth
-						disabled={busy || picks.length !== count}
-						loading={busy}
+						disabled={locked || picks.length !== count}
+						loading={locked}
 						onClick={() => void submit()}
 					>
 						{t('cheese.secret.done')}
