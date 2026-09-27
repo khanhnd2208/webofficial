@@ -356,4 +356,67 @@ describe('Cheese Thief table', () => {
 		expect(follower.self?.secretCard?.recruited?.allyNames).toHaveLength(3);
 		expect(follower.self?.secretCard?.recruited?.allyNames).not.toContain(thief.name);
 	});
+
+	it('keeps a lone sleepyhead\'s peek when the minute runs out before they press Done', async () => {
+		const table = await openTable(10);
+		await startGame(table.code, table.host);
+		const dealt = (await CheeseThiefRoom.findOne({ code: table.code }))!;
+		const lone = dealt.players.find((player) => player.role !== 'thief')!;
+		// Everyone else shares hours 1–5, so only the lone seat wakes at 6.
+		dealt.players.forEach((player, index) => {
+			player.dice = player.id === lone.id ? [6] : [1 + (index % 5)];
+		});
+		await dealt.save();
+		for (const token of table.tokens) await confirmMemorized(table.code, token);
+		await beginNight(table.code, table.host);
+		await rewind(table.code, 'nightStartedAt', 200_000);
+		const secret = await getScopedState(table.code, lone.token);
+		expect(secret.phase).toBe('secret');
+		expect(secret.choiceCount).toBe(3);
+		expect(secret.self?.secretJob).toEqual({ followers: 0, peek: true });
+
+		const target = dealt.players.find((player) => player.id !== lone.id)!;
+		const drafted = await submitSecret(table.code, lone.token, [target.id], { draft: true });
+		expect(drafted.self?.hasChosenSecret).toBe(false);
+		await expect(submitSecret(table.code, lone.token, [target.id])).rejects.toMatchObject({ code: 'PICK_COUNT' });
+
+		// Full drafts from everyone do not end the minute early; only Done does.
+		for (const player of dealt.players) {
+			if (player.id === lone.id) continue;
+			const picks = dealt.players.filter((other) => other.id !== player.id).slice(0, 3).map((other) => other.id);
+			await submitSecret(table.code, player.token, picks, { draft: true });
+		}
+		await rewind(table.code, 'secretStartedAt', 20_000);
+		expect((await getScopedState(table.code, lone.token)).phase).toBe('secret');
+
+		await rewind(table.code, 'secretStartedAt', 61_000);
+		const result = await getScopedState(table.code, lone.token);
+		expect(result.phase).toBe('secret-result');
+		expect(result.self?.secretCard?.peek).toEqual({ name: target.name, hours: [...target.dice] });
+	});
+
+	it('at 4 players reveals the hour the thief chose, not the earlier die', async () => {
+		const table = await openTable(4);
+		await startGame(table.code, table.host);
+		const dealt = (await CheeseThiefRoom.findOne({ code: table.code }))!;
+		for (const player of dealt.players) player.dice = [2, 5];
+		await dealt.save();
+		const thief = dealt.players.find((player) => player.role === 'thief')!;
+		for (const player of dealt.players) {
+			await confirmMemorized(table.code, player.token, player.id === thief.id ? 5 : 2);
+		}
+		await beginNight(table.code, table.host);
+		await rewind(table.code, 'nightStartedAt', 200_000);
+		await finishSecret(table);
+		for (const token of table.tokens) await markSecretSeen(table.code, token);
+		await startVote(table.code, table.host);
+		const innocent = dealt.players.find((player) => player.id !== thief.id)!;
+		let reveal = await getScopedState(table.code, table.host);
+		for (const player of dealt.players) {
+			const target = player.id === innocent.id ? thief.id : innocent.id;
+			reveal = await submitVote(table.code, player.token, target);
+		}
+		expect(reveal.phase).toBe('reveal');
+		expect(reveal.theftHour).toBe(5);
+	});
 });

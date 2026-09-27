@@ -232,6 +232,7 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						state={state}
 						busy={busy}
 						onSubmit={(picks) => void run(() => api.secret(picks))}
+						onDraft={api.secretDraft}
 					/>
 				)}
 				{phase === 'secret-result' && (

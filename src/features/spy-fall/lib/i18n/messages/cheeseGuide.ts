@@ -18,7 +18,7 @@ export const cheeseGuideVi: MessageTree = {
 	notAllowed: '{mode} chơi với {min}–{max} người. Bàn này đang để {count}.',
 	table: {
 		twoPick:
-			'Mỗi người nhận 2 số. Chuột ngủ chọn 1 số để mở mắt; người trộm mở mắt ở cả 2 số và lấy vật ở số nhỏ hơn. Hai số giống nhau thì chỉ mở mắt một lần.',
+			'Mỗi người nhận 2 số. Chuột ngủ chọn 1 số để mở mắt; người trộm mở mắt ở cả 2 số và tự chọn 1 trong 2 số để lấy vật. Hai số giống nhau thì chỉ mở mắt một lần.',
 		one: 'Mỗi người nhận 1 số từ 1 đến 6. Đó là giờ mình được mở mắt.',
 		perNight: 'Mỗi người nhận 2 số riêng: một số dùng trong Đêm 1, một số dùng trong Đêm 2.',
 		noPeek: 'Bàn này không có quyền xem giờ của người khác, dù bạn mở mắt một mình.',
@@ -157,7 +157,7 @@ export const cheeseGuideEn: MessageTree = {
 	notAllowed: '{mode} plays with {min}–{max} players. This table is set to {count}.',
 	table: {
 		twoPick:
-			'Everyone gets 2 numbers. A Sleepyhead chooses 1 number to wake at. The Thief wakes at both and takes the object at the earlier one. Matching numbers mean one wake-up.',
+			'Everyone gets 2 numbers. A Sleepyhead chooses 1 number to wake at. The Thief wakes at both and chooses which of the two to take the object at. Matching numbers mean one wake-up.',
 		one: 'Everyone gets one number from 1 to 6. Open your eyes when that number is called.',
 		perNight: 'Everyone gets two separate numbers: one for Night 1 and one for Night 2.',
 		noPeek: 'At this table, nobody may learn another player’s number by waking alone.',

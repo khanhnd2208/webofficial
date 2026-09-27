@@ -41,7 +41,7 @@ export const cheeseVi: MessageTree = {
 		rule1:
 			'Đặt một vật nhỏ ở giữa bàn làm miếng phô mai. Mỗi người xem vai và số giờ bí mật trên máy riêng, nhớ kỹ rồi úp máy xuống.',
 		rule2:
-			'Ban đêm, chỉ máy chủ phòng đọc các số từ 1 đến 6. Đến số của mình thì mở mắt; khi máy bảo ngủ tiếp thì nhắm lại. Người trộm lén lấy vật ở giờ thức đầu tiên.',
+			'Ban đêm, chỉ máy chủ phòng đọc các số từ 1 đến 6. Đến số của mình thì mở mắt; khi máy bảo ngủ tiếp thì nhắm lại. Người trộm lén lấy vật ở giờ thức đầu tiên (bàn 4 người: ở giờ đã chọn).',
 		rule3:
 			'Khi trời sáng, cả bàn cùng cầm máy. Nhấn giữ “Việc của bạn” để biết mình cần chọn ai: đồng phạm, người muốn xem số giờ, hoặc người mình nghi là trộm.',
 		rule4:
@@ -116,6 +116,8 @@ export const cheeseVi: MessageTree = {
 		},
 		blurb: {
 			thief: 'Lấy cheese ở giờ thức đầu tiên, dù có người khác đang mở mắt.',
+			thiefTwoDice:
+				'Bạn mở mắt ở cả hai giờ. Chọn bên dưới giờ bạn sẽ lấy cheese, dù có người khác đang mở mắt.',
 			sleepyhead: 'Nhớ mình thức lúc mấy giờ, và nhớ ai đang thức cùng.',
 			scapegoat: 'Bạn thắng riêng nếu được bỏ phiếu nhiều nhất.',
 		},
@@ -150,10 +152,17 @@ export const cheeseVi: MessageTree = {
 	},
 	secret: {
 		title: 'Phút bí mật',
-		order: '① Follower    ② Xem trộm    ③ Linh cảm',
+		order: 'Nhấn giữ “Việc của bạn” để biết mỗi ô dùng làm gì, rồi chọn tên theo đúng thứ tự đó.',
 		done: 'Xong',
 		chosen: 'Đã ghi lựa chọn. Chờ cả bàn — vẫn đổi được.',
 		selected: 'Đã chọn {done}/{total}',
+		full: 'Đã đủ {total} ô. Bỏ chọn một người để đổi.',
+		slot: {
+			follower: 'Follower',
+			peek: 'Xem giờ',
+			hunch: 'Linh cảm',
+			filler: 'Chỉ cho đủ ô',
+		},
 		onlyYou: 'Chỉ nhìn màn hình của mình',
 		job: {
 			label: 'Việc của bạn',
@@ -274,7 +283,7 @@ export const cheeseEn: MessageTree = {
 		rule1:
 			'Put a small object in the middle as the cheese. Everyone checks their secret role and number on their own phone, memorises them, then puts the phone face down.',
 		rule2:
-			'At night, only the host phone calls numbers 1 to 6. Open your eyes at your number and close them again when told to sleep. The Thief secretly takes the object at their first wake-up.',
+			'At night, only the host phone calls numbers 1 to 6. Open your eyes at your number and close them again when told to sleep. The Thief secretly takes the object at their first wake-up (at 4 players: at the hour they chose).',
 		rule3:
 			'In the morning, everyone picks up their phone together. Press and hold “Your job” to learn whether you need to choose a Follower, someone whose number to see, or someone you suspect.',
 		rule4:
@@ -349,6 +358,8 @@ export const cheeseEn: MessageTree = {
 		},
 		blurb: {
 			thief: 'Take the cheese at your first wake hour, even if someone else is awake.',
+			thiefTwoDice:
+				'You open your eyes at both hours. Choose below the hour you will take the cheese, even if someone else is awake.',
 			sleepyhead: 'Remember your hour, and who else had their eyes open.',
 			scapegoat: 'You win alone if you receive the most votes.',
 		},
@@ -383,10 +394,17 @@ export const cheeseEn: MessageTree = {
 	},
 	secret: {
 		title: 'Secret minute',
-		order: '① Follower    ② Peek    ③ Hunch',
+		order: 'Press and hold “Your job” to see what each slot does, then choose names in that order.',
 		done: 'Done',
 		chosen: 'Your choice is in. Waiting for the table — you can still change it.',
 		selected: '{done}/{total} selected',
+		full: 'All {total} slots are filled. Unselect someone to change.',
+		slot: {
+			follower: 'Follower',
+			peek: 'See their hour',
+			hunch: 'Hunch',
+			filler: 'Only fills the slot',
+		},
 		onlyYou: 'Look only at your own screen',
 		job: {
 			label: 'Your job',

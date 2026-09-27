@@ -119,6 +119,7 @@ function blankPlayer(token: string, name: string, at: Date): ICheesePlayer {
 		dice2: [],
 		hasMemorizedRole: false,
 		secretPicks: [],
+		secretConfirmed: false,
 		hasSeenSecret: false,
 	};
 }
@@ -254,6 +255,7 @@ function resetToLobby(game: RoomDoc): void {
 		player.chosenHour = undefined;
 		player.hasMemorizedRole = false;
 		player.secretPicks = [];
+		player.secretConfirmed = false;
 		player.hasSeenSecret = false;
 		player.voteId = undefined;
 	}
@@ -302,7 +304,10 @@ function enterSecret(game: RoomDoc, at: Date, theftNight: NightNumber): void {
 	game.secretStartedAt = at;
 	game.theftNight = theftNight;
 	game.choiceCount = sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
-	for (const player of game.players) player.secretPicks = [];
+	for (const player of game.players) {
+		player.secretPicks = [];
+		player.secretConfirmed = false;
+	}
 }
 
 function advanceClock(game: RoomDoc, at: Date): boolean {
@@ -320,7 +325,9 @@ function advanceClock(game: RoomDoc, at: Date): boolean {
 	if (game.phase === 'secret' && game.secretStartedAt) {
 		const elapsed = at.getTime() - game.secretStartedAt.getTime();
 		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
-		const everyoneChose = game.players.every((player) => (player.secretPicks ?? []).length === choiceCount);
+		const everyoneChose = game.players.every(
+			(player) => player.secretConfirmed && (player.secretPicks ?? []).length === choiceCount,
+		);
 		const timedOut = elapsed >= CHEESE_SECRET_MAX_MS;
 		const minElapsed = elapsed >= CHEESE_SECRET_MIN_MS;
 		if (timedOut || (everyoneChose && minElapsed)) {
@@ -355,7 +362,7 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		...((player.dice2 ?? []).length > 0 ? { dice2: player.dice2 } : {}),
 		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 		hasMemorizedRole: player.hasMemorizedRole,
-		hasChosenSecret: (player.secretPicks ?? []).length > 0,
+		hasChosenSecret: Boolean(player.secretConfirmed),
 		hasSeenSecret: player.hasSeenSecret,
 		...(player.voteId ? { voteId: player.voteId } : {}),
 	}));
@@ -621,6 +628,7 @@ export async function startGame(code: string, hostToken: string): Promise<RoomSt
 			player.chosenHour = undefined;
 			player.hasMemorizedRole = false;
 			player.secretPicks = [];
+			player.secretConfirmed = false;
 			player.hasSeenSecret = false;
 			player.voteId = undefined;
 		}
@@ -675,17 +683,28 @@ export async function beginNight(code: string, hostToken: string): Promise<RoomS
 	});
 }
 
-export async function submitSecret(code: string, playerToken: string, picks: string[]): Promise<RoomStateDTO> {
+/**
+ * `draft` saves an unfinished selection on every tap, so a timeout still honours the first slots
+ * (a lone Sleepyhead's peek). Only a confirmed, full selection lets the minute end early.
+ */
+export async function submitSecret(
+	code: string,
+	playerToken: string,
+	picks: string[],
+	options: { draft?: boolean } = {},
+): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, 'secret', (game) => {
 		const player = assertPlayer(game, playerToken);
 		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
-		if (!Array.isArray(picks) || picks.length !== choiceCount) {
+		const draft = options.draft === true;
+		if (!Array.isArray(picks) || picks.length > choiceCount || (!draft && picks.length !== choiceCount)) {
 			throw new AppError('PICK_COUNT', 400, { count: choiceCount });
 		}
 		if (new Set(picks).size !== picks.length) throw new AppError('PICK_COUNT', 400, { count: choiceCount });
 		const others = new Set(game.players.filter((item) => item.id !== player.id).map((item) => item.id));
-		if (picks.some((id) => !others.has(id))) throw new AppError('PICK_UNKNOWN', 400);
+		if (picks.some((id) => typeof id !== 'string' || !others.has(id))) throw new AppError('PICK_UNKNOWN', 400);
 		player.secretPicks = picks;
+		player.secretConfirmed = !draft;
 	});
 }
 

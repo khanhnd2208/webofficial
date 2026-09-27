@@ -31,7 +31,9 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 	const blurb =
 		twoNight && self?.role === 'thief'
 			? t('cheese.deal.blurbTwoNight.thief')
-			: t(`cheese.deal.blurb.${self?.role ?? 'sleepyhead'}`);
+			: twoDice && self?.role === 'thief'
+				? t('cheese.deal.blurb.thiefTwoDice')
+				: t(`cheese.deal.blurb.${self?.role ?? 'sleepyhead'}`);
 
 	if (!self?.role) return null;
 
