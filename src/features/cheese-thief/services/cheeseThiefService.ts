@@ -385,6 +385,7 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		voteRound: game.voteRound ?? 0,
 		hostToken: game.hostToken,
 		...(game.nightStartedAt ? { nightStartedAt: game.nightStartedAt } : {}),
+		...(game.secretStartedAt ? { secretStartedAt: game.secretStartedAt } : {}),
 		...(game.dayStartedAt ? { dayStartedAt: game.dayStartedAt } : {}),
 		choiceCount: game.choiceCount || 1,
 		isRunoff: Boolean(game.isRunoff),

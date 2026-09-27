@@ -1,5 +1,6 @@
 import {
 	CHEESE_HOUR_SECONDS_DEFAULT,
+	CHEESE_SECRET_MAX_MS,
 	followersAreCustom,
 	resolveFollowers,
 	type CheeseMode,
@@ -61,6 +62,7 @@ export interface ProjectRoom {
 	voteRound?: number;
 	hostToken: string;
 	nightStartedAt?: Date;
+	secretStartedAt?: Date;
 	dayStartedAt?: Date;
 	choiceCount: number;
 	isRunoff: boolean;
@@ -232,7 +234,12 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 	if (room.phase === 'day' && room.dayStartedAt) {
 		dto.dayStartedAt = room.dayStartedAt.toISOString();
 	}
-	if (room.phase === 'secret') dto.choiceCount = room.choiceCount;
+	if (room.phase === 'secret') {
+		dto.choiceCount = room.choiceCount;
+		if (room.secretStartedAt) {
+			dto.secretEndsAt = new Date(room.secretStartedAt.getTime() + CHEESE_SECRET_MAX_MS).toISOString();
+		}
+	}
 	if (voting || room.phase === 'tie') {
 		dto.voteRound = room.voteRound ?? 1;
 		dto.isRunoff = room.isRunoff || room.phase === 'tie';

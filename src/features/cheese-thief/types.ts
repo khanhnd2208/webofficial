@@ -81,6 +81,8 @@ export interface RoomStateDTO {
 	/** ISO time the night clock started. Same for every phone; it does not say who wakes. */
 	nightStartedAt?: string;
 	dayStartedAt?: string;
+	/** Secret minute only. When unfinished picks are settled; the same clock on every phone. */
+	secretEndsAt?: string;
 	/** Shared tap count during the secret minute. Identical for every phone. */
 	choiceCount?: number;
 	nightNumber?: NightNumber;

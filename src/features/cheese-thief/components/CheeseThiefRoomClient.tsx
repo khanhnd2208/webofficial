@@ -163,26 +163,28 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						>
 							{state.code}
 						</Link>
-						<CheeseRulesButton
-							playerCount={state.maxPlayers}
-							mode={state.mode}
-							scapegoatEnabled={state.scapegoatEnabled}
-							followers={{ count: state.followers.count, knowledge: state.followers.knowledge }}
-							className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-						/>
-						<button
-							type="button"
-							className="inline-flex min-h-11 items-center text-sm text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-							onClick={() => {
-								if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
-								void api.leave().finally(() => {
-									clearPlayerToken(code);
-									router.push(routes.cheeseThief);
-								});
-							}}
-						>
-							{t('cheese.join.back')}
-						</button>
+						<div className="flex items-center gap-1">
+							<CheeseRulesButton
+								playerCount={state.maxPlayers}
+								mode={state.mode}
+								scapegoatEnabled={state.scapegoatEnabled}
+								followers={{ count: state.followers.count, knowledge: state.followers.knowledge }}
+								className="inline-flex min-h-10 items-center rounded-full border border-border bg-surface px-3 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+							/>
+							<button
+								type="button"
+								className="inline-flex min-h-11 items-center px-2 text-sm text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+								onClick={() => {
+									if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
+									void api.leave().finally(() => {
+										clearPlayerToken(code);
+										router.push(routes.cheeseThief);
+									});
+								}}
+							>
+								{phase === 'lobby' ? t('cheese.join.back') : t('cheese.join.leave')}
+							</button>
+						</div>
 					</header>
 				)}
 			<main className="mx-auto max-w-md px-5 py-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
@@ -230,6 +232,7 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 				{phase === 'secret' && (
 					<SecretPhase
 						state={state}
+						fetchedAt={fetchedAt}
 						busy={busy}
 						onSubmit={(picks) => void run(() => api.secret(picks))}
 						onDraft={api.secretDraft}

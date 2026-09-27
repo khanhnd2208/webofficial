@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
+import ActionBar, { WaitingForHost } from '@/features/cheese-thief/components/ActionBar';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
+import { formatClock, useTableClock } from '@/features/cheese-thief/components/hooks/useTableClock';
+import RoundSteps from '@/features/cheese-thief/components/RoundSteps';
+import { SCAPEGOAT_MIN_PLAYERS } from '@/features/cheese-thief/config/cheeseThief';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
-import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {
 	state: RoomStateDTO;
@@ -16,31 +18,77 @@ interface Props {
 
 export default function DayPhase({ state, fetchedAt, busy, onVote }: Props) {
 	const t = useT();
-	const [seconds, setSeconds] = useState(0);
-
-	useEffect(() => {
-		if (!state.dayStartedAt) return;
-		const started = new Date(state.dayStartedAt).getTime();
-		const skew = new Date(state.serverNow).getTime() - fetchedAt;
-		const tick = () => setSeconds(Math.max(0, Math.floor((Date.now() + skew - started) / 1000)));
-		tick();
-		const timer = window.setInterval(tick, 1000);
-		return () => window.clearInterval(timer);
-	}, [state.dayStartedAt, state.serverNow, fetchedAt]);
-
-	const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+	const now = useTableClock(state.serverNow, fetchedAt);
+	const elapsed = state.dayStartedAt ? (now - new Date(state.dayStartedAt).getTime()) / 1000 : 0;
+	const scapegoat = state.scapegoatEnabled && state.playerCount >= SCAPEGOAT_MIN_PLAYERS;
+	const table = [
+		t('cheese.day.tablePlayers', { count: state.playerCount }),
+		t('cheese.day.tableThief'),
+		state.followers.count > 0
+			? t('cheese.day.tableFollowers', { count: state.followers.count })
+			: t('cheese.day.tableNoFollowers'),
+		...(scapegoat ? [t('cheese.day.tableScapegoat')] : []),
+	];
 
 	return (
-		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-6 text-center">
-			<CheeseThiefArt scene="sunrise" size={96} />
-			<h1 className="max-w-md font-display text-4xl leading-tight font-medium">{t('cheese.day.title')}</h1>
-			<p className="max-w-md text-base leading-relaxed text-muted">{t('cheese.day.body')}</p>
-			<p className="font-mono text-sm tracking-[0.16em] text-muted">{clock}</p>
-			{state.isHost && (
-				<Button fullWidth disabled={busy} loading={busy} onClick={onVote}>
-					{t('cheese.day.vote')}
-				</Button>
-			)}
+		<div className="space-y-6 pb-40">
+			<RoundSteps current="day" />
+
+			<section className="flex flex-col items-center gap-3 text-center">
+				<CheeseThiefArt scene="sunrise" size={84} />
+				<h1 className="max-w-md font-display text-3xl leading-tight font-medium">
+					{t('cheese.day.title')}
+				</h1>
+				<p className="max-w-sm text-base leading-relaxed text-muted">{t('cheese.day.body')}</p>
+				<p
+					className="rounded-full border border-border bg-surface px-3 py-1 font-mono text-sm tabular-nums text-foreground-secondary"
+					role="timer"
+				>
+					{t('cheese.day.elapsed', { clock: formatClock(elapsed) })}
+				</p>
+			</section>
+
+			<section className="rounded-3xl border border-border bg-surface px-5 py-4">
+				<h2 className="text-sm font-semibold">{t('cheese.day.promptsTitle')}</h2>
+				<ul className="mt-3 space-y-2.5">
+					{(['prompt1', 'prompt2', 'prompt3'] as const).map((key) => (
+						<li key={key} className="flex gap-3 text-[0.95rem] leading-snug">
+							<span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+							<span>{t(`cheese.day.${key}`)}</span>
+						</li>
+					))}
+				</ul>
+			</section>
+
+			<section className="space-y-2">
+				<h2 className="text-sm font-semibold">{t('cheese.day.tableTitle')}</h2>
+				<ul className="flex flex-wrap gap-2">
+					{table.map((item) => (
+						<li
+							key={item}
+							className="rounded-full border border-border bg-surface px-3 py-1.5 text-sm"
+						>
+							{item}
+						</li>
+					))}
+				</ul>
+				{state.mode === 'two-night' && state.theftNight && (
+					<p className="text-sm text-muted">{t('cheese.day.theftNight', { night: state.theftNight })}</p>
+				)}
+			</section>
+
+			<ActionBar>
+				{state.isHost ? (
+					<>
+						<p className="text-center text-xs leading-snug text-muted">{t('cheese.day.hostHint')}</p>
+						<Button fullWidth disabled={busy} loading={busy} onClick={onVote}>
+							{t('cheese.day.vote')}
+						</Button>
+					</>
+				) : (
+					<WaitingForHost>{t('cheese.day.waitHost')}</WaitingForHost>
+				)}
+			</ActionBar>
 		</div>
 	);
 }

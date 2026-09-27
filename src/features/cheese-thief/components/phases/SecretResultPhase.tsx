@@ -16,6 +16,27 @@ interface Props {
 	onSeen: () => void;
 }
 
+function Label({ children }: { children: React.ReactNode }) {
+	return (
+		<p className="font-mono text-[0.68rem] tracking-[0.18em] text-[#e0a045] uppercase">{children}</p>
+	);
+}
+
+function Names({ names }: { names: string[] }) {
+	return (
+		<ul className="flex flex-wrap justify-center gap-2">
+			{names.map((name) => (
+				<li
+					key={name}
+					className="rounded-full border border-white/15! bg-white/10 px-3 py-1 text-base font-medium"
+				>
+					{name}
+				</li>
+			))}
+		</ul>
+	);
+}
+
 export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 	const t = useT();
 	const [revealed, setRevealed] = useState(false);
@@ -31,54 +52,81 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 
 	return (
 		<div className="fixed inset-0 z-50 overflow-y-auto bg-[#0c0b09] px-5 text-[#f4efe4]">
-			<div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center gap-6 py-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
-				<h1 className="text-center font-display text-3xl font-medium">
-					{t('cheese.result.title')}
-				</h1>
-				<CheeseThiefArt scene="secret" size={76} className="self-center" />
-				<HoldToReveal onFirstReveal={() => setRevealed(true)}>
-					{empty && <p className="text-lg leading-relaxed">{t('cheese.result.nothing')}</p>}
-					{card?.peek && (
-						<p className="text-lg leading-relaxed">
-							{card.peek.night
-								? t('cheese.result.peekNight', {
-										night: card.peek.night,
-										name: card.peek.name,
-										hours: card.peek.hours.join(', '),
-									})
-								: t('cheese.result.peek', {
-										name: card.peek.name,
-										hours: card.peek.hours.join(', '),
-									})}
-						</p>
-					)}
-					{card?.allies && (
-						<p className="text-lg leading-relaxed">
-							{t('cheese.result.allies', { names: card.allies.join(', ') })}
-						</p>
-					)}
-					{card?.recruited && (
-						<div className="space-y-2 text-lg leading-relaxed">
-							<p>{t('cheese.result.recruited')}</p>
-							{card.recruited.thiefName ? (
-								<p>{t('cheese.result.thiefIs', { name: card.recruited.thiefName })}</p>
-							) : (
-								<p>{t('cheese.result.thiefHidden')}</p>
-							)}
-							{card.recruited.allyNames.length > 0 && (
-								<p>
-									{t('cheese.result.alliesAre', { names: card.recruited.allyNames.join(', ') })}
+			<div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center gap-5 py-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
+				<div className="flex flex-col items-center gap-3 text-center">
+					<CheeseThiefArt scene="secret" size={64} />
+					<p className="font-mono text-[0.68rem] tracking-[0.18em] text-[#e0a045] uppercase">
+						{t('cheese.secret.onlyYou')}
+					</p>
+					<h1 className="font-display text-3xl font-medium">{t('cheese.result.title')}</h1>
+				</div>
+				<HoldToReveal
+					cover={t('cheese.result.cover')}
+					hint={t('cheese.secret.holdHint')}
+					onFirstReveal={() => setRevealed(true)}
+				>
+					<div className="flex w-full flex-col gap-5 divide-y divide-white/10!">
+						{empty && (
+							<div className="space-y-2">
+								<p className="font-display text-2xl leading-snug">{t('cheese.result.nothing')}</p>
+								<p className="text-sm leading-relaxed text-[#f4efe4]/65">
+									{t('cheese.result.nothingWhy')}
 								</p>
-							)}
-						</div>
-					)}
+							</div>
+						)}
+						{card?.peek && (
+							<div className="space-y-1">
+								<Label>
+									{card.peek.night
+										? t('cheese.result.peekLabelNight', {
+												name: card.peek.name,
+												night: card.peek.night,
+											})
+										: t('cheese.result.peekLabel', { name: card.peek.name })}
+								</Label>
+								<p className="font-display text-5xl leading-tight tabular-nums">
+									{t('cheese.result.hours', { hours: card.peek.hours.join(' · ') })}
+								</p>
+							</div>
+						)}
+						{card?.allies && (
+							<div className="space-y-3 pt-5 first:pt-0">
+								<Label>{t('cheese.result.alliesLabel')}</Label>
+								<Names names={card.allies} />
+							</div>
+						)}
+						{card?.recruited && (
+							<div className="space-y-3 pt-5 first:pt-0">
+								<Label>{t('cheese.result.recruitedLabel')}</Label>
+								<p className="text-lg leading-relaxed">
+									{card.recruited.thiefName
+										? t('cheese.result.thiefIs', { name: card.recruited.thiefName })
+										: t('cheese.result.thiefHidden')}
+								</p>
+								{card.recruited.allyNames.length > 0 && (
+									<p className="text-base leading-relaxed text-[#f4efe4]/85">
+										{t('cheese.result.alliesAre', {
+											names: card.recruited.allyNames.join(', '),
+										})}
+									</p>
+								)}
+							</div>
+						)}
+					</div>
 				</HoldToReveal>
 				{revealed ? (
-					<Button fullWidth disabled={busy} loading={busy} onClick={onSeen}>
-						{t('cheese.result.seen')}
-					</Button>
+					<div className="space-y-3">
+						<p className="text-center text-sm leading-relaxed text-[#f4efe4]/75">
+							{t('cheese.result.memorize')}
+						</p>
+						<Button fullWidth disabled={busy} loading={busy} onClick={onSeen}>
+							{t('cheese.result.seen')}
+						</Button>
+					</div>
 				) : (
-					<p className="text-center text-sm text-[#f4efe4]/70">{t('cheese.deal.holdFirst')}</p>
+					<p className="rounded-2xl border border-dashed border-white/20! px-4 py-3 text-center text-sm text-[#f4efe4]/70">
+						{t('cheese.deal.holdFirst')}
+					</p>
 				)}
 			</div>
 		</div>
