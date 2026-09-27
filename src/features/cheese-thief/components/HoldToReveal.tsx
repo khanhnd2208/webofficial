@@ -11,13 +11,23 @@ interface Props {
 	className?: string;
 	compact?: boolean;
 	cover?: string;
+	onFirstReveal?: () => void;
 }
 
 /** Same shell on every phone. The private line exists only while the finger is down. */
-export default function HoldToReveal({ children, className, compact = false, cover }: Props) {
+export default function HoldToReveal({
+	children,
+	className,
+	compact = false,
+	cover,
+	onFirstReveal,
+}: Props) {
 	const t = useT();
 	const [open, setOpen] = useState(false);
-	const show = useCallback(() => setOpen(true), []);
+	const show = useCallback(() => {
+		setOpen(true);
+		onFirstReveal?.();
+	}, [onFirstReveal]);
 	const hide = useCallback(() => setOpen(false), []);
 
 	return (
@@ -26,7 +36,10 @@ export default function HoldToReveal({ children, className, compact = false, cov
 				role="button"
 				tabIndex={0}
 				aria-label={cover ?? t('cheese.deal.holdFirst')}
-				className={cn('relative overflow-hidden rounded-3xl border border-white/10 bg-[#16140f]', compact ? 'min-h-28' : 'min-h-64')}
+				className={cn(
+					'relative overflow-hidden rounded-3xl border border-white/10 bg-[#16140f]',
+					compact ? 'min-h-28' : 'min-h-64',
+				)}
 				onPointerDown={show}
 				onPointerUp={hide}
 				onPointerLeave={hide}

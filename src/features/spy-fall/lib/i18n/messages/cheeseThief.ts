@@ -8,14 +8,17 @@ export const cheeseVi: MessageTree = {
 		posterAlt: 'Minh hoạ một bàn đêm với miếng cheese và những chú chuột đang ngủ',
 		yourName: 'Tên của bạn',
 		create: 'Tạo phòng',
+		createHint: 'Đặt tên bàn để bạn bè nhận ra khi quét mã.',
 		join: 'Vào bằng mã',
+		joinHint: 'Nhập mã 6 ký tự từ chủ phòng.',
+		codeInvalid: 'Mã phòng cần đủ 6 ký tự.',
 		back: 'Quay lại',
 		roomName: 'Tên phòng',
 		code: 'Mã phòng',
 		open: 'Mở phòng',
 		enter: 'Vào phòng',
 		scapegoat: 'Có Scapegoat',
-		scapegoatHint: 'Bàn từ 6 người. Scapegoat thắng riêng nếu bị vote nhiều nhất. Mặc định tắt.',
+		scapegoatHint: 'Từ 6 người. Vai này thắng riêng nếu được bỏ phiếu nhiều nhất.',
 		defaultRoom: 'Bàn của {name}',
 		players: '4–12 người',
 		noAccount: 'Không cần tài khoản',
@@ -25,15 +28,26 @@ export const cheeseVi: MessageTree = {
 		you: 'Bạn',
 		host: 'Chủ phòng',
 		start: 'Bắt đầu',
+		invite: 'Mời bạn vào bàn',
+		copyLink: 'Sao chép liên kết',
+		copied: 'Đã sao chép',
+		copyFailed: 'Không sao chép được. Hãy chia sẻ mã phòng.',
+		waitingHost: 'Chờ chủ phòng bắt đầu ván chơi.',
+		rulesHint: 'Mở tóm tắt luật cho bàn này',
 		need: 'Cổ điển 4–8 người · Hai Đêm 5–12 người. Đang có {count}.',
 		classicFull: 'Cổ điển tối đa 8 người. Chuyển sang Hai Đêm để chơi 9–12 người.',
 		kick: 'Mời {name} rời bàn',
 		rulesTitle: 'Trước khi chơi',
-		rule1: 'Điện thoại úp xuống gần như cả ván. Web chỉ chia bí mật, canh giờ, và tính phiếu.',
-		rule2: 'Đêm: chỉ máy chủ phòng đọc giờ. Ai thức thì mở mắt. Thief lấy cheese thật ở giờ thức đầu tiên của mình.',
-		rule3: 'Sau 6 giờ, cả bàn cầm máy cùng lúc. Mọi máy chọn cùng một thứ tự: ① Follower, ② xem trộm, ③ linh cảm.',
-		rule4: 'Nhấn giữ dòng “Việc của bạn” để biết ô nào là của mình. Những ô còn lại chỉ để màn hình giống nhau.',
-		rule5: 'Ban ngày nói gì cũng được, kể cả nói dối. Quên thì tự chịu — không có nút xem lại.',
+		rule1:
+			'Đặt một vật nhỏ ở giữa bàn làm miếng phô mai. Mỗi người xem vai và số giờ bí mật trên máy riêng, nhớ kỹ rồi úp máy xuống.',
+		rule2:
+			'Ban đêm, chỉ máy chủ phòng đọc các số từ 1 đến 6. Đến số của mình thì mở mắt; khi máy bảo ngủ tiếp thì nhắm lại. Người trộm lén lấy vật ở giờ thức đầu tiên.',
+		rule3:
+			'Khi trời sáng, cả bàn cùng cầm máy. Nhấn giữ “Việc của bạn” để biết mình cần chọn ai: đồng phạm, người muốn xem số giờ, hoặc người mình nghi là trộm.',
+		rule4:
+			'Mọi máy đều phải chọn cùng số tên. Hãy chọn đúng thứ tự màn hình yêu cầu; những lượt chọn thừa chỉ để không ai đoán được vai của bạn.',
+		rule5:
+			'Sau đó cả bàn nói chuyện và bỏ phiếu tìm người trộm. Được nói dối, nhưng không cho người khác xem màn hình. Cần chi tiết hơn thì mở “Cách chơi”.',
 		mode: {
 			label: 'Chế độ',
 			classic: 'Cổ điển',
@@ -54,18 +68,22 @@ export const cheeseVi: MessageTree = {
 		},
 		twoNight: {
 			need: 'Hai Đêm cần 5–12 người',
-			rule1: 'Hai đêm. Giờ thức của cả hai đêm được chia từ đầu, nên giữa hai đêm không ai cầm máy.',
-			rule2: 'Đêm 1, Thief lấy cheese ngay hoặc chờ. Hết đêm, mở mắt nhìn cheese. Còn thì chơi Đêm 2, và Thief bắt buộc lấy.',
-			rule3: 'Mọi lượt xem trộm dồn về Phút bí mật ở cuối. Mọi máy chọn cùng số người, cùng thứ tự: ① Follower, ② xem trộm, ③ linh cảm.',
-			rule4: 'Nhấn giữ “Việc của bạn”. Web tự tính việc của bạn, không cần nhớ.',
+			rule1:
+				'Mỗi người nhận hai số giờ từ đầu: một số cho Đêm 1, một số cho Đêm 2. Hãy nhớ cả hai; giữa hai đêm không ai cầm máy.',
+			rule2:
+				'Đêm 1, người trộm có thể lấy vật hoặc chờ. Hết đêm, cả bàn nhìn xem vật còn không. Nếu còn, chơi Đêm 2 và người trộm phải lấy vật ở giờ của mình.',
+			rule3:
+				'Sau đêm cuối, cả bàn cầm máy cùng lúc. Nhấn giữ “Việc của bạn” để biết mình cần chọn đồng phạm, người muốn xem số giờ, hay chỉ chọn cho đủ.',
+			rule4:
+				'Mọi máy chọn cùng số tên để giữ bí mật vai. Chọn theo thứ tự màn hình yêu cầu, rồi xem kết quả riêng và úp máy xuống.',
 		},
 	},
-	putDown: 'ÚP ĐIỆN THOẠI XUỐNG 👇',
+	putDown: 'Úp điện thoại xuống',
 	deal: {
 		title: 'Xem vai của bạn',
 		holdFirst: 'Nhấn giữ để xem',
 		remembered: 'Đã nhớ',
-		waiting: 'Đã úp máy. Chờ cả bàn.',
+		waiting: 'Giữ bí mật và chờ hiệu lệnh tiếp theo.',
 		ready: '{done}/{total} đã nhớ',
 		pickHour: 'Chọn một giờ',
 		yourHours: 'Giờ thức của bạn',
@@ -79,7 +97,7 @@ export const cheeseVi: MessageTree = {
 		blurb: {
 			thief: 'Lấy cheese ở giờ thức đầu tiên, dù có người khác đang mở mắt.',
 			sleepyhead: 'Nhớ mình thức lúc mấy giờ, và nhớ ai đang thức cùng.',
-			scapegoat: 'Bạn thắng riêng nếu bị vote nhiều nhất.',
+			scapegoat: 'Bạn thắng riêng nếu được bỏ phiếu nhiều nhất.',
 		},
 		night1: 'Đêm 1 · {hours}',
 		night2: 'Đêm 2 · {hours}',
@@ -115,6 +133,7 @@ export const cheeseVi: MessageTree = {
 		order: '① Follower    ② Xem trộm    ③ Linh cảm',
 		done: 'Xong',
 		chosen: 'Đã ghi lựa chọn. Chờ cả bàn — vẫn đổi được.',
+		selected: 'Đã chọn {done}/{total}',
 		onlyYou: 'Chỉ nhìn màn hình của mình',
 		job: {
 			label: 'Việc của bạn',
@@ -140,8 +159,8 @@ export const cheeseVi: MessageTree = {
 	},
 	day: {
 		title: 'Trời sáng. Cheese đã biến mất.',
-		body: 'Nói chuyện đi. Khai giờ, kể bạn thấy ai, bluff, cãi. Điện thoại không còn gì để xem.',
-		vote: 'Bắt đầu vote',
+		body: 'Kể mình thức giờ nào, đã thấy ai và cùng nhau tìm người lấy cheese. Bạn có thể đánh lạc hướng người khác.',
+		vote: 'Bắt đầu bỏ phiếu',
 	},
 	vote: {
 		title: 'Ai lấy cheese?',
@@ -155,9 +174,12 @@ export const cheeseVi: MessageTree = {
 		title: 'Hoà phiếu',
 		defend: 'Từng người tự bào chữa',
 		round: 'Vòng {n}',
-		revote: 'Vote lại',
+		revote: 'Bỏ phiếu lại',
 	},
 	reveal: {
+		winnerLabel: 'Kết quả ván chơi',
+		rosterTitle: 'Vai và giờ của cả bàn',
+		followerBadge: 'Được chọn làm Follower',
 		flipped: 'Bị lật',
 		thief: 'Cheese Thief là',
 		followers: 'Follower',
@@ -183,6 +205,7 @@ export const cheeseVi: MessageTree = {
 	},
 	join: {
 		title: 'Vào bàn',
+		hint: 'Nhập tên của bạn để tham gia cùng mọi người.',
 		missing: 'Nhập tên để ngồi vào bàn.',
 		back: 'Quay lại menu',
 		leaveConfirm: 'Rời bàn giữa ván sẽ đưa cả bàn về phòng chờ. Vẫn rời?',
@@ -197,14 +220,17 @@ export const cheeseEn: MessageTree = {
 		posterAlt: 'Illustration of a night table with a wedge of cheese and sleeping mice',
 		yourName: 'Your name',
 		create: 'Create a room',
+		createHint: 'Name your table so friends can recognise it when they scan.',
 		join: 'Join with a code',
+		joinHint: 'Enter the 6-character code from the host.',
+		codeInvalid: 'The room code needs 6 characters.',
 		back: 'Back',
 		roomName: 'Room name',
 		code: 'Room code',
 		open: 'Open room',
 		enter: 'Enter room',
 		scapegoat: 'Include Scapegoat',
-		scapegoatHint: 'Tables of 6 or more. The Scapegoat wins alone if they receive the most votes. Off by default.',
+		scapegoatHint: 'For 6+ players. This role wins alone if they receive the most votes.',
 		defaultRoom: "{name}'s table",
 		players: '4–12 players',
 		noAccount: 'No account needed',
@@ -214,15 +240,26 @@ export const cheeseEn: MessageTree = {
 		you: 'You',
 		host: 'Host',
 		start: 'Start',
+		invite: 'Invite friends to the table',
+		copyLink: 'Copy invite link',
+		copied: 'Copied',
+		copyFailed: 'Could not copy. Share the room code instead.',
+		waitingHost: 'Waiting for the host to start the game.',
+		rulesHint: 'Open the rules for this table',
 		need: 'Classic 4–8 players · Two Nights 5–12. {count} here.',
 		classicFull: 'Classic seats at most 8. Switch to Two Nights for 9–12 players.',
 		kick: 'Remove {name}',
 		rulesTitle: 'Before you play',
-		rule1: 'Phones stay face down for almost the whole game. The web only deals secrets, keeps time, and counts the vote.',
-		rule2: 'Night: only the host phone speaks the hours. If you are awake, open your eyes. The Thief takes the real cheese at their first wake hour.',
-		rule3: 'After 6 o’clock everyone picks up their phone together. Every phone chooses in the same order: ① Follower, ② peek, ③ hunch.',
-		rule4: 'Hold “Your job” to see which choices are yours. The other choices only keep every screen the same.',
-		rule5: 'By day you may say anything, including lies. If you forget, that is on you — there is no review button.',
+		rule1:
+			'Put a small object in the middle as the cheese. Everyone checks their secret role and number on their own phone, memorises them, then puts the phone face down.',
+		rule2:
+			'At night, only the host phone calls numbers 1 to 6. Open your eyes at your number and close them again when told to sleep. The Thief secretly takes the object at their first wake-up.',
+		rule3:
+			'In the morning, everyone picks up their phone together. Press and hold “Your job” to learn whether you need to choose a Follower, someone whose number to see, or someone you suspect.',
+		rule4:
+			'Every phone selects the same number of names. Choose in the order shown; extra selections keep your role secret from other players.',
+		rule5:
+			'Then discuss and vote to find the Thief. You may lie, but must not show anyone your screen. Open “How to play” for the full rules.',
 		mode: {
 			label: 'Mode',
 			classic: 'Classic',
@@ -243,18 +280,22 @@ export const cheeseEn: MessageTree = {
 		},
 		twoNight: {
 			need: 'Two Nights needs 5–12 players',
-			rule1: 'Two nights. Both wake hours are dealt at the start, so nobody picks up a phone between them.',
-			rule2: 'On Night 1 the Thief takes the cheese now, or waits. When the night ends, open your eyes and look at the cheese. If it is still there, play Night 2 — the Thief must take it.',
-			rule3: 'Every peek waits for the secret minute at the end. Every phone chooses the same number of people, in the same order: ① Follower, ② peek, ③ hunch.',
-			rule4: 'Hold “Your job”. The web works out your task, so you do not have to remember it.',
+			rule1:
+				'Everyone gets two numbers at the start: one for Night 1 and one for Night 2. Memorise both; nobody picks up a phone between nights.',
+			rule2:
+				'On Night 1, the Thief may take the object or wait. Afterward, check whether the object is still there. If it is, play Night 2 and the Thief must take it at their number.',
+			rule3:
+				'After the final night, everyone picks up their phone together. Press and hold “Your job” to learn whether to choose Followers, whose number to see, or just enough names to fill the screen.',
+			rule4:
+				'Every phone selects the same number of names to keep roles secret. Choose in the order shown, read your private result, then put your phone down.',
 		},
 	},
-	putDown: 'PUT THE PHONE DOWN 👇',
+	putDown: 'Put your phone down',
 	deal: {
 		title: 'Your role',
 		holdFirst: 'Hold to look',
 		remembered: 'I remember',
-		waiting: 'Phone down. Wait for the table.',
+		waiting: 'Keep your role private and wait for the next cue.',
 		ready: '{done}/{total} ready',
 		pickHour: 'Choose one hour',
 		yourHours: 'Your wake hour',
@@ -304,6 +345,7 @@ export const cheeseEn: MessageTree = {
 		order: '① Follower    ② Peek    ③ Hunch',
 		done: 'Done',
 		chosen: 'Your choice is in. Waiting for the table — you can still change it.',
+		selected: '{done}/{total} selected',
 		onlyYou: 'Look only at your own screen',
 		job: {
 			label: 'Your job',
@@ -347,6 +389,9 @@ export const cheeseEn: MessageTree = {
 		revote: 'Vote again',
 	},
 	reveal: {
+		winnerLabel: 'Game result',
+		rosterTitle: 'Everyone’s role and hour',
+		followerBadge: 'Chosen as a Follower',
 		flipped: 'Flipped',
 		thief: 'The Cheese Thief is',
 		followers: 'Followers',
@@ -372,6 +417,7 @@ export const cheeseEn: MessageTree = {
 	},
 	join: {
 		title: 'Sit down',
+		hint: 'Enter your name to join everyone at the table.',
 		missing: 'Enter your name to take a seat.',
 		back: 'Back to the menu',
 		leaveConfirm: 'Leaving mid-round sends the whole table back to the lobby. Leave anyway?',

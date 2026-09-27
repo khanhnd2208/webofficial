@@ -29,16 +29,23 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 	const twoNight = state.mode === 'two-night';
 	const remembered = Boolean(self?.hasMemorizedRole);
 	const blurb =
-		twoNight && self?.role === 'thief' ? t('cheese.deal.blurbTwoNight.thief') : t(`cheese.deal.blurb.${self?.role ?? 'sleepyhead'}`);
+		twoNight && self?.role === 'thief'
+			? t('cheese.deal.blurbTwoNight.thief')
+			: t(`cheese.deal.blurb.${self?.role ?? 'sleepyhead'}`);
 
 	if (!self?.role) return null;
 
 	return (
 		<div className="space-y-6">
 			<h1 className="text-center font-display text-3xl font-medium">{t('cheese.deal.title')}</h1>
-			<div onPointerDown={() => setHeld(true)}>
-				<HoldToReveal>
-					<CheeseThiefArt scene={self.role === 'thief' ? 'cheese' : self.role === 'scapegoat' ? 'reveal' : 'mouse'} size={54} />
+			<div>
+				<HoldToReveal onFirstReveal={() => setHeld(true)}>
+					<CheeseThiefArt
+						scene={
+							self.role === 'thief' ? 'cheese' : self.role === 'scapegoat' ? 'reveal' : 'mouse'
+						}
+						size={54}
+					/>
 					<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#e0a045] uppercase">
 						{t(`cheese.deal.role.${self.role}`)}
 					</p>
@@ -64,7 +71,9 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 										: (self.wakeHours ?? []).join(' · ')}
 							</p>
 							<p className="text-xs tracking-wide text-[#f4efe4]/60 uppercase">
-								{self.role === 'thief' && twoDice ? t('cheese.deal.bothHours') : t('cheese.deal.yourHours')}
+								{self.role === 'thief' && twoDice
+									? t('cheese.deal.bothHours')
+									: t('cheese.deal.yourHours')}
 							</p>
 						</>
 					)}
@@ -81,7 +90,9 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 								type="button"
 								className={cn(
 									'min-h-16 rounded-2xl border text-2xl font-medium',
-									hour === die ? 'border-foreground bg-foreground text-background' : 'border-border bg-surface',
+									hour === die
+										? 'border-foreground bg-foreground text-background'
+										: 'border-border bg-surface',
 								)}
 								onClick={() => setHour(die)}
 							>
@@ -94,10 +105,19 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 
 			{remembered ? (
 				<PutPhoneDown />
-			) : (
-				<Button fullWidth disabled={busy || !held || (twoDice && hour === undefined)} loading={busy} onClick={() => onRemember(hour)}>
-					{held ? t('cheese.deal.remembered') : t('cheese.deal.holdFirst')}
+			) : held ? (
+				<Button
+					fullWidth
+					disabled={busy || (twoDice && hour === undefined)}
+					loading={busy}
+					onClick={() => onRemember(hour)}
+				>
+					{t('cheese.deal.remembered')}
 				</Button>
+			) : (
+				<p className="rounded-2xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted">
+					{t('cheese.deal.holdFirst')}
+				</p>
 			)}
 
 			<p className="text-center font-mono text-xs tracking-[0.14em] text-muted uppercase">

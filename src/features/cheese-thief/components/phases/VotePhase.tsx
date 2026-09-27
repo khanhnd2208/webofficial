@@ -18,10 +18,12 @@ export default function VotePhase({ state, busy, onVote }: Props) {
 	const t = useT();
 	const [choice, setChoice] = useState<string | null>(state.self?.voteId ?? null);
 	const allowed = new Set(state.voteCandidateIds ?? state.players.map((player) => player.id));
-	const options = state.players.filter((player) => player.id !== state.self?.id && allowed.has(player.id));
+	const options = state.players.filter(
+		(player) => player.id !== state.self?.id && allowed.has(player.id),
+	);
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 pb-28">
 			<div className="space-y-2 text-center">
 				<CheeseThiefArt scene="ballot" size={52} className="mx-auto" />
 				<h1 className="font-display text-4xl font-medium">{t('cheese.vote.title')}</h1>
@@ -36,9 +38,12 @@ export default function VotePhase({ state, busy, onVote }: Props) {
 						key={player.id}
 						type="button"
 						disabled={busy || Boolean(state.self?.voteId)}
+						aria-pressed={choice === player.id}
 						className={cn(
-							'min-h-14 rounded-2xl border px-4 text-left text-lg',
-							choice === player.id ? 'border-foreground bg-foreground text-background' : 'border-border bg-surface',
+							'min-h-14 w-full break-words rounded-2xl border px-4 py-3 text-left text-lg',
+							choice === player.id
+								? 'border-foreground bg-foreground text-background'
+								: 'border-border bg-surface',
 						)}
 						onClick={() => setChoice(player.id)}
 					>
@@ -46,9 +51,18 @@ export default function VotePhase({ state, busy, onVote }: Props) {
 					</button>
 				))}
 			</div>
-			<Button fullWidth disabled={busy || !choice || Boolean(state.self?.voteId)} loading={busy} onClick={() => choice && onVote(choice)}>
-				{state.self?.voteId ? t('cheese.vote.done') : t('cheese.vote.cast')}
-			</Button>
+			<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+				<div className="mx-auto max-w-md">
+					<Button
+						fullWidth
+						disabled={busy || !choice || Boolean(state.self?.voteId)}
+						loading={busy}
+						onClick={() => choice && onVote(choice)}
+					>
+						{state.self?.voteId ? t('cheese.vote.done') : t('cheese.vote.cast')}
+					</Button>
+				</div>
+			</div>
 		</div>
 	);
 }

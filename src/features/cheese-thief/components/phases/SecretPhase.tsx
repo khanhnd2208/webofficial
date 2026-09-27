@@ -26,7 +26,12 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 		: job.followers > 0 && job.peek
 			? t('cheese.secret.job.followersPeek')
 			: job.followers > 0
-				? t(job.followers >= count ? 'cheese.secret.job.followers' : 'cheese.secret.job.followersCamo', { count: job.followers })
+				? t(
+						job.followers >= count
+							? 'cheese.secret.job.followers'
+							: 'cheese.secret.job.followersCamo',
+						{ count: job.followers },
+					)
 				: job.peek
 					? t(count > 1 ? 'cheese.secret.job.peek' : 'cheese.secret.job.peekOnly')
 					: t(count > 1 ? 'cheese.secret.job.hunch' : 'cheese.secret.job.hunchOnly');
@@ -40,14 +45,16 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 flex flex-col items-center bg-[#0c0b09] px-5 pt-10 pb-8 text-[#f4efe4]">
-			<div className="flex w-full max-w-md flex-1 flex-col">
+		<div className="fixed inset-0 z-50 overflow-y-auto bg-[#0c0b09] text-[#f4efe4]">
+			<div className="mx-auto flex min-h-full w-full max-w-md flex-col px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-32">
 				<div className="flex items-center justify-between">
-					<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">{t('cheese.secret.onlyYou')}</p>
+					<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">
+						{t('cheese.secret.onlyYou')}
+					</p>
 					<CheeseThiefArt scene="secret" size={38} />
 				</div>
 				<h1 className="mt-3 font-display text-4xl font-medium">{t('cheese.secret.title')}</h1>
-				<p className="mt-3 text-sm leading-relaxed text-[#f4efe4]/70">{t('cheese.secret.order')}</p>
+				<p className="mt-3 text-sm leading-relaxed text-[#f4efe4]/85">{t('cheese.secret.order')}</p>
 				{jobText && (
 					<HoldToReveal className="mt-4" compact cover={t('cheese.secret.job.label')}>
 						<p className="text-base leading-relaxed text-[#f4efe4]">{jobText}</p>
@@ -62,13 +69,19 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 								key={player.id}
 								type="button"
 								className={cn(
-									'flex min-h-14 items-center justify-between rounded-2xl border px-4 text-left text-lg',
+									'flex min-h-14 items-center justify-between gap-3 rounded-2xl border px-4 py-2 text-left text-lg',
 									selected ? 'border-[#e0a045] bg-[#e0a045]/15' : 'border-white/10 bg-white/5',
 								)}
+								aria-pressed={selected}
+								disabled={busy}
 								onClick={() => toggle(player.id)}
 							>
-								<span>{player.name}</span>
-								{selected && <span className="font-mono text-sm text-[#e0a045]">{order + 1}</span>}
+								<span className="min-w-0 break-words">{player.name}</span>
+								{selected && (
+									<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e0a045] font-mono text-sm font-semibold text-[#1a140c]">
+										{order + 1}
+									</span>
+								)}
 							</button>
 						);
 					})}
@@ -76,15 +89,24 @@ export default function SecretPhase({ state, busy, onSubmit }: Props) {
 				{state.self?.hasChosenSecret && (
 					<p className="mt-4 text-center text-sm text-[#e0a045]">{t('cheese.secret.chosen')}</p>
 				)}
-				<Button
-					fullWidth
-					className="mt-auto"
-					disabled={busy || picks.length !== count}
-					loading={busy}
-					onClick={() => onSubmit(picks)}
-				>
-					{t('cheese.secret.done')}
-				</Button>
+			</div>
+			<div className="fixed inset-x-0 bottom-0 z-10 border-t border-white/10 bg-[#0c0b09]/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+				<div className="mx-auto max-w-md">
+					<p
+						className="mb-2 text-center font-mono text-xs tracking-[0.12em] text-[#f4efe4]/80"
+						aria-live="polite"
+					>
+						{t('cheese.secret.selected', { done: picks.length, total: count })}
+					</p>
+					<Button
+						fullWidth
+						disabled={busy || picks.length !== count}
+						loading={busy}
+						onClick={() => onSubmit(picks)}
+					>
+						{t('cheese.secret.done')}
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

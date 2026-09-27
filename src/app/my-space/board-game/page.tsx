@@ -6,7 +6,8 @@ import { routes } from '@/config/routes';
 
 export const metadata: Metadata = {
 	title: 'Board Game | My Space',
-	description: 'Chơi Spy Fall, Ma Sói và Cheese Thief cùng bạn bè — tạo phòng, chia sẻ mã và bắt đầu.',
+	description:
+		'Chơi Spy Fall, Ma Sói và Cheese Thief cùng bạn bè — tạo phòng, chia sẻ mã và bắt đầu.',
 };
 
 export default function BoardGamePage() {
@@ -52,24 +53,24 @@ export default function BoardGamePage() {
 							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
 							sizes="(max-width: 640px) 100vw, 1024px"
 						/>
-						<div className="absolute inset-0 -z-0 bg-gradient-to-r from-[#11100e] via-[#11100e]/85 via-45% to-[#11100e]/15" />
+						<div className="board-game-cover-overlay absolute inset-0" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-vermilion uppercase">
+								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#f4bd9d] uppercase">
 									01 · Suy luận xã hội
 								</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">
+								<span className="font-mono text-xs tracking-[0.16em] text-[#f7f3ea]/90 uppercase">
 									4–12 người
 								</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
+								<h2 className="font-display text-4xl font-medium tracking-tight text-[#f7f3ea] sm:text-5xl">
 									Spy Fall
 								</h2>
-								<p className="mt-3 max-w-sm text-sm leading-relaxed text-ink/75 sm:text-base">
+								<p className="mt-3 max-w-sm text-sm leading-relaxed text-[#f7f3ea]/90 sm:text-base">
 									Tìm ra điệp viên giữa nhóm bạn. Mỗi người dùng điện thoại của mình.
 								</p>
-								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-vermilion uppercase">
+								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-[#f4bd9d] uppercase">
 									Vào game{' '}
 									<span className="transition-transform duration-300 group-hover:translate-x-1">
 										→
@@ -91,24 +92,24 @@ export default function BoardGamePage() {
 							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
 							sizes="(max-width: 640px) 100vw, 1024px"
 						/>
-						<div className="absolute inset-0 -z-0 bg-gradient-to-r from-[#11100e] via-[#11100e]/85 via-45% to-[#11100e]/15" />
+						<div className="board-game-cover-overlay absolute inset-0" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-vermilion uppercase">
+								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#f4bd9d] uppercase">
 									02 · Bàn làng dưới trăng
 								</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">
+								<span className="font-mono text-xs tracking-[0.16em] text-[#f7f3ea]/90 uppercase">
 									5–20 người
 								</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
+								<h2 className="font-display text-4xl font-medium tracking-tight text-[#f7f3ea] sm:text-5xl">
 									Ma Sói
 								</h2>
-								<p className="mt-3 max-w-sm text-sm leading-relaxed text-ink/75 sm:text-base">
+								<p className="mt-3 max-w-sm text-sm leading-relaxed text-[#f7f3ea]/90 sm:text-base">
 									Chia thẻ vai cho cả nhóm. Mỗi người xem thẻ bí mật trên điện thoại của mình.
 								</p>
-								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-vermilion uppercase">
+								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-[#f4bd9d] uppercase">
 									Vào game{' '}
 									<span className="transition-transform duration-300 group-hover:translate-x-1">
 										→
@@ -129,24 +130,24 @@ export default function BoardGamePage() {
 							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
 							sizes="(max-width: 640px) 100vw, 1024px"
 						/>
-						<div className="absolute inset-0 -z-0 bg-gradient-to-r from-[#11100e] via-[#11100e]/85 via-45% to-[#11100e]/15" />
+						<div className="board-game-cover-overlay absolute inset-0" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-vermilion uppercase">
+								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#f4bd9d] uppercase">
 									03 · Bàn ăn đêm
 								</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-ink/65 uppercase">
+								<span className="font-mono text-xs tracking-[0.16em] text-[#f7f3ea]/90 uppercase">
 									4–12 người
 								</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
+								<h2 className="font-display text-4xl font-medium tracking-tight text-[#f7f3ea] sm:text-5xl">
 									Cheese Thief
 								</h2>
-								<p className="mt-3 max-w-sm text-sm leading-relaxed text-ink/75 sm:text-base">
+								<p className="mt-3 max-w-sm text-sm leading-relaxed text-[#f7f3ea]/90 sm:text-base">
 									Ai lấy miếng cheese? Mở mắt, nhìn nhau, rồi cãi. Điện thoại chỉ giữ bí mật.
 								</p>
-								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-vermilion uppercase">
+								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-[#f4bd9d] uppercase">
 									Vào game{' '}
 									<span className="transition-transform duration-300 group-hover:translate-x-1">
 										→

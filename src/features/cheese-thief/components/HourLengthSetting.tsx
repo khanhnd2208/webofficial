@@ -48,7 +48,9 @@ export default function HourLengthSetting({ hourSeconds, isHost, busy, onChange 
 					<p className="mt-0.5 text-sm text-muted">{t('cheese.lobby.hour.explain')}</p>
 				</div>
 				{!isHost && (
-					<span className="shrink-0 font-mono text-sm tabular-nums">{t('cheese.lobby.hour.value', { seconds: hourSeconds })}</span>
+					<span className="shrink-0 font-mono text-sm tabular-nums">
+						{t('cheese.lobby.hour.value', { seconds: hourSeconds })}
+					</span>
 				)}
 			</div>
 
@@ -77,7 +79,11 @@ export default function HourLengthSetting({ hourSeconds, isHost, busy, onChange 
 							+
 						</button>
 					</div>
-					<div className="mt-3 grid grid-cols-6 gap-1.5" role="radiogroup" aria-label={t('cheese.lobby.hour.label')}>
+					<div
+						className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6"
+						role="radiogroup"
+						aria-label={t('cheese.lobby.hour.label')}
+					>
 						{CHEESE_HOUR_SECONDS_PRESETS.map((seconds) => (
 							<button
 								key={seconds}
@@ -86,8 +92,10 @@ export default function HourLengthSetting({ hourSeconds, isHost, busy, onChange 
 								aria-checked={hourSeconds === seconds}
 								disabled={busy}
 								className={cn(
-									'min-h-10 rounded-xl border text-sm tabular-nums',
-									hourSeconds === seconds ? 'border-foreground bg-foreground text-background' : 'border-border',
+									'min-h-11 rounded-xl border text-sm tabular-nums',
+									hourSeconds === seconds
+										? 'border-foreground bg-foreground text-background'
+										: 'border-border',
 								)}
 								onClick={() => set(seconds)}
 							>

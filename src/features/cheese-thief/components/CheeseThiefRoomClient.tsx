@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
 import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
+import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import { useCheeseThiefRoom } from '@/features/cheese-thief/components/hooks/useCheeseThiefRoom';
 import DayPhase from '@/features/cheese-thief/components/phases/DayPhase';
 import DealPhase from '@/features/cheese-thief/components/phases/DealPhase';
@@ -15,7 +16,11 @@ import RevealPhase from '@/features/cheese-thief/components/phases/RevealPhase';
 import SecretPhase from '@/features/cheese-thief/components/phases/SecretPhase';
 import SecretResultPhase from '@/features/cheese-thief/components/phases/SecretResultPhase';
 import VotePhase from '@/features/cheese-thief/components/phases/VotePhase';
-import { clearPlayerToken, getStoredPlayerToken, storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
+import {
+	clearPlayerToken,
+	getStoredPlayerToken,
+	storePlayerToken,
+} from '@/features/cheese-thief/lib/clientToken';
 import CheeseCheckPhase from '@/features/cheese-thief/components/phases/CheeseCheckPhase';
 import TiePhase from '@/features/cheese-thief/components/phases/TiePhase';
 import { startNightTrack, unlockTableAudio } from '@/features/cheese-thief/lib/narration';
@@ -23,7 +28,10 @@ import { prepareNightTrack } from '@/features/cheese-thief/lib/nightTrack';
 import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
 import { Button, Field, Spinner } from '@/features/spy-fall/components/ui';
-import { getRecentPlayerName, storeRecentPlayerName } from '@/features/spy-fall/lib/spy/clientToken';
+import {
+	getRecentPlayerName,
+	storeRecentPlayerName,
+} from '@/features/spy-fall/lib/spy/clientToken';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 
 interface Props {
@@ -54,8 +62,10 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 	const hourSeconds = state?.hourSeconds;
 	useEffect(() => {
 		if (hourSeconds === undefined) return;
-		if (hostPhase === 'deal') void prepareNightTrack({ locale, mode: tableMode, night: 1, hourSeconds });
-		if (hostPhase === 'cheese-check') void prepareNightTrack({ locale, mode: tableMode, night: 2, hourSeconds });
+		if (hostPhase === 'deal')
+			void prepareNightTrack({ locale, mode: tableMode, night: 1, hourSeconds });
+		if (hostPhase === 'cheese-check')
+			void prepareNightTrack({ locale, mode: tableMode, night: 2, hourSeconds });
 	}, [hostPhase, tableMode, hourSeconds, locale]);
 
 	useEffect(() => {
@@ -65,17 +75,20 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 		setHydrated(true);
 	}, [code, initialName]);
 
-	const run = useCallback(async (fn: () => Promise<unknown>) => {
-		setBusy(true);
-		setActionError(null);
-		try {
-			await fn();
-		} catch (caught) {
-			setActionError(caught instanceof Error ? caught.message : t('common.unknownError'));
-		} finally {
-			setBusy(false);
-		}
-	}, [t]);
+	const run = useCallback(
+		async (fn: () => Promise<unknown>) => {
+			setBusy(true);
+			setActionError(null);
+			try {
+				await fn();
+			} catch (caught) {
+				setActionError(caught instanceof Error ? caught.message : t('common.unknownError'));
+			} finally {
+				setBusy(false);
+			}
+		},
+		[t],
+	);
 
 	async function join(event: React.FormEvent) {
 		event.preventDefault();
@@ -102,26 +115,35 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 
 	if (!state?.self) {
 		return (
-			<div className="game-theme game-theme-cheese mx-auto flex min-h-svh max-w-md flex-col justify-center gap-4 px-5">
-				<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">{code}</p>
-				<h1 className="font-display text-4xl font-medium">{t('cheese.join.title')}</h1>
-				<form className="space-y-4" onSubmit={join}>
-					<Field label={t('cheese.menu.yourName')} htmlFor="cheese-seat">
-						<PlayerNameInput
-							id="cheese-seat"
-							value={joinName}
-							onChange={(event) => setJoinName(event.target.value)}
-							maxLength={24}
-						/>
-					</Field>
-					{(actionError || error) && <p className="text-sm text-danger">{actionError || error}</p>}
-					<Button fullWidth type="submit" loading={busy}>
-						{t('cheese.menu.enter')}
+			<div className="game-theme game-theme-cheese flex min-h-svh items-center px-5 py-8">
+				<div className="mx-auto w-full max-w-sm">
+					<CheeseThiefArt scene="mouse" size={76} className="mb-5" />
+					<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">{code}</p>
+					<h1 className="mt-2 font-display text-4xl font-medium">{t('cheese.join.title')}</h1>
+					<p className="mt-2 text-sm leading-relaxed text-muted">{t('cheese.join.hint')}</p>
+					<form
+						className="mt-6 space-y-4 rounded-3xl border border-border bg-surface p-5 shadow-sm"
+						onSubmit={join}
+					>
+						<Field label={t('cheese.menu.yourName')} htmlFor="cheese-seat">
+							<PlayerNameInput
+								id="cheese-seat"
+								value={joinName}
+								onChange={(event) => setJoinName(event.target.value)}
+								maxLength={24}
+							/>
+						</Field>
+						{(actionError || error) && (
+							<p className="text-sm text-danger">{actionError || error}</p>
+						)}
+						<Button fullWidth type="submit" loading={busy}>
+							{t('cheese.menu.enter')}
+						</Button>
+					</form>
+					<Button className="mt-3" variant="ghost" onClick={() => router.push(routes.cheeseThief)}>
+						{t('cheese.join.back')}
 					</Button>
-				</form>
-				<Button variant="ghost" onClick={() => router.push(routes.cheeseThief)}>
-					{t('cheese.join.back')}
-				</Button>
+				</div>
 			</div>
 		);
 	}
@@ -130,34 +152,42 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 
 	return (
 		<div className="game-theme game-theme-cheese min-h-svh">
-			{phase !== 'night' && phase !== 'cheese-check' && phase !== 'secret' && phase !== 'secret-result' && (
-				<header className="mx-auto flex max-w-md items-center justify-between px-5 pt-5">
-					<Link href={routes.cheeseThief} className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">
-						{state.code}
-					</Link>
-					<CheeseRulesButton
-						playerCount={state.playerCount}
-						mode={state.mode}
-						scapegoatEnabled={state.scapegoatEnabled}
-						className="text-sm text-muted underline-offset-2 hover:underline"
-					/>
-					<button
-						type="button"
-						className="text-sm text-muted"
-						onClick={() => {
-							if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
-							void api.leave().finally(() => {
-								clearPlayerToken(code);
-								router.push(routes.cheeseThief);
-							});
-						}}
-					>
-						{t('cheese.join.back')}
-					</button>
-				</header>
-			)}
+			{phase !== 'night' &&
+				phase !== 'cheese-check' &&
+				phase !== 'secret' &&
+				phase !== 'secret-result' && (
+					<header className="mx-auto flex max-w-md items-center justify-between gap-2 px-5 pt-3">
+						<Link
+							href={routes.cheeseThief}
+							className="inline-flex min-h-11 items-center font-mono text-[0.68rem] tracking-[0.08em] text-muted uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+						>
+							{state.code}
+						</Link>
+						<CheeseRulesButton
+							playerCount={state.playerCount}
+							mode={state.mode}
+							scapegoatEnabled={state.scapegoatEnabled}
+							className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+						/>
+						<button
+							type="button"
+							className="inline-flex min-h-11 items-center text-sm text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+							onClick={() => {
+								if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
+								void api.leave().finally(() => {
+									clearPlayerToken(code);
+									router.push(routes.cheeseThief);
+								});
+							}}
+						>
+							{t('cheese.join.back')}
+						</button>
+					</header>
+				)}
 			<main className="mx-auto max-w-md px-5 py-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
-				{actionError && phase !== 'night' && <p className="mb-4 text-sm text-danger">{actionError}</p>}
+				{actionError && phase !== 'night' && (
+					<p className="mb-4 text-sm text-danger">{actionError}</p>
+				)}
 				{phase === 'lobby' && (
 					<LobbyPhase
 						state={state}
@@ -175,16 +205,35 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						busy={busy}
 						onRemember={(hour) => void run(() => api.memorized(hour))}
 						onBeginNight={() => {
-							if (!startNightTrack({ locale, mode: state.mode, night: 1, hourSeconds: state.hourSeconds })) unlockTableAudio();
+							if (
+								!startNightTrack({
+									locale,
+									mode: state.mode,
+									night: 1,
+									hourSeconds: state.hourSeconds,
+								})
+							)
+								unlockTableAudio();
 							void run(api.beginNight);
 						}}
 					/>
 				)}
 				{phase === 'night' && <NightPhase state={state} fetchedAt={fetchedAt} />}
 				{phase === 'cheese-check' && (
-					<CheeseCheckPhase isHost={state.isHost} hourSeconds={state.hourSeconds} busy={busy} onConfirm={(present) => void run(() => api.cheese(present))} />
+					<CheeseCheckPhase
+						isHost={state.isHost}
+						hourSeconds={state.hourSeconds}
+						busy={busy}
+						onConfirm={(present) => void run(() => api.cheese(present))}
+					/>
 				)}
-				{phase === 'secret' && <SecretPhase state={state} busy={busy} onSubmit={(picks) => void run(() => api.secret(picks))} />}
+				{phase === 'secret' && (
+					<SecretPhase
+						state={state}
+						busy={busy}
+						onSubmit={(picks) => void run(() => api.secret(picks))}
+					/>
+				)}
 				{phase === 'secret-result' && (
 					<SecretResultPhase
 						card={state.self.secretCard}
@@ -193,12 +242,28 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						onSeen={() => void run(api.seen)}
 					/>
 				)}
-				{phase === 'day' && <DayPhase state={state} fetchedAt={fetchedAt} busy={busy} onVote={() => void run(api.startVote)} />}
-				{phase === 'vote' && (
-					<VotePhase key={`vote-${state.voteRound ?? 1}`} state={state} busy={busy} onVote={(id) => void run(() => api.vote(id))} />
+				{phase === 'day' && (
+					<DayPhase
+						state={state}
+						fetchedAt={fetchedAt}
+						busy={busy}
+						onVote={() => void run(api.startVote)}
+					/>
 				)}
-				{phase === 'tie' && <TiePhase state={state} busy={busy} onRevote={() => void run(api.revote)} />}
-				{phase === 'reveal' && <RevealPhase state={state} busy={busy} onAgain={() => void run(api.playAgain)} />}
+				{phase === 'vote' && (
+					<VotePhase
+						key={`vote-${state.voteRound ?? 1}`}
+						state={state}
+						busy={busy}
+						onVote={(id) => void run(() => api.vote(id))}
+					/>
+				)}
+				{phase === 'tie' && (
+					<TiePhase state={state} busy={busy} onRevote={() => void run(api.revote)} />
+				)}
+				{phase === 'reveal' && (
+					<RevealPhase state={state} busy={busy} onAgain={() => void run(api.playAgain)} />
+				)}
 			</main>
 		</div>
 	);

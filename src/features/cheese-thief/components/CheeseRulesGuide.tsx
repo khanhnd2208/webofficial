@@ -3,7 +3,12 @@
 import { useState } from 'react';
 
 import { playerRangeFor, type CheeseMode } from '@/features/cheese-thief/config/cheeseThief';
-import { allTableSizes, tableRulesFor, type FollowerKnowledge, type TableRules } from '@/features/cheese-thief/lib/tableRules';
+import {
+	allTableSizes,
+	tableRulesFor,
+	type FollowerKnowledge,
+	type TableRules,
+} from '@/features/cheese-thief/lib/tableRules';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Sheet } from '@/features/spy-fall/components/ui';
 import { cn } from '@/features/spy-fall/lib/cn';
@@ -17,15 +22,12 @@ interface TableProps {
 }
 
 const SECTIONS: { id: string; bullets: number }[] = [
-	{ id: 'goal', bullets: 4 },
-	{ id: 'setup', bullets: 5 },
-	{ id: 'night', bullets: 6 },
+	{ id: 'setup', bullets: 6 },
+	{ id: 'night', bullets: 7 },
 	{ id: 'secret', bullets: 5 },
-	{ id: 'day', bullets: 3 },
+	{ id: 'day', bullets: 4 },
 	{ id: 'vote', bullets: 3 },
 	{ id: 'win', bullets: 3 },
-	{ id: 'twoNight', bullets: 6 },
-	{ id: 'scapegoat', bullets: 3 },
 ];
 
 const KNOW_KEYS: Record<FollowerKnowledge, string> = {
@@ -41,10 +43,20 @@ function modeName(t: TranslateFn, mode: CheeseMode): string {
 }
 
 /** Plain-language rules for one table size, built from the same preset the game deals with. */
-export function tableRuleLines(t: TranslateFn, rules: TableRules, scapegoatEnabled: boolean): string[] {
+export function tableRuleLines(
+	t: TranslateFn,
+	rules: TableRules,
+	scapegoatEnabled: boolean,
+): string[] {
 	const lines: string[] = [];
 	lines.push(
-		t(rules.dice === 'two-pick' ? 'cheese.guide.table.twoPick' : rules.dice === 'per-night' ? 'cheese.guide.table.perNight' : 'cheese.guide.table.one'),
+		t(
+			rules.dice === 'two-pick'
+				? 'cheese.guide.table.twoPick'
+				: rules.dice === 'per-night'
+					? 'cheese.guide.table.perNight'
+					: 'cheese.guide.table.one',
+		),
 	);
 	lines.push(t(rules.peek ? 'cheese.guide.table.peek' : 'cheese.guide.table.noPeek'));
 	if (rules.thiefPeeksAfterWaiting) lines.push(t('cheese.guide.table.thiefPeek'));
@@ -59,14 +71,21 @@ export function tableRuleLines(t: TranslateFn, rules: TableRules, scapegoatEnabl
 	}
 	lines.push(t('cheese.guide.table.picks', { count: rules.choiceCount }));
 	if (rules.scapegoatAllowed) {
-		lines.push(t(scapegoatEnabled ? 'cheese.guide.table.scapegoatOn' : 'cheese.guide.table.scapegoatOff'));
+		lines.push(
+			t(scapegoatEnabled ? 'cheese.guide.table.scapegoatOn' : 'cheese.guide.table.scapegoatOff'),
+		);
 	} else if (scapegoatEnabled) {
 		lines.push(t('cheese.guide.table.scapegoatTooSmall'));
 	}
 	return lines;
 }
 
-export function TableRulesCard({ playerCount, mode = 'classic', scapegoatEnabled = false, className }: TableProps & { className?: string }) {
+export function TableRulesCard({
+	playerCount,
+	mode = 'classic',
+	scapegoatEnabled = false,
+	className,
+}: TableProps & { className?: string }) {
 	const t = useT();
 	if (playerCount === undefined) return null;
 	const rules = tableRulesFor(playerCount, mode);
@@ -75,7 +94,9 @@ export function TableRulesCard({ playerCount, mode = 'classic', scapegoatEnabled
 	return (
 		<section className={cn('rounded-2xl border border-border bg-surface px-4 py-3', className)}>
 			<div className="flex items-baseline justify-between gap-3">
-				<h3 className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">{t('cheese.guide.yourTable')}</h3>
+				<h3 className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">
+					{t('cheese.guide.yourTable')}
+				</h3>
 				<span className="text-xs text-muted">
 					{t('cheese.guide.yourTableMeta', { count: playerCount, mode: modeName(t, mode) })}
 				</span>
@@ -101,8 +122,7 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 
 	return (
 		<section>
-			<h3 className="font-display text-lg font-medium">{t('cheese.guide.overview.title')}</h3>
-			<div className="mt-2 overflow-x-auto">
+			<div className="overflow-x-auto">
 				<table className="w-full text-left text-sm">
 					<thead className="font-mono text-[0.62rem] tracking-[0.12em] text-muted uppercase">
 						<tr>
@@ -116,7 +136,10 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 						{rows.map(({ playerCount: count, modes, rules }) => (
 							<tr
 								key={count}
-								className={cn('border-t border-border align-top', count === playerCount && 'bg-foreground/5 font-medium')}
+								className={cn(
+									'border-t border-border align-top',
+									count === playerCount && 'bg-foreground/5 font-medium',
+								)}
 							>
 								<td className="py-2 pr-2 tabular-nums">{count}</td>
 								<td className="py-2 pr-2">
@@ -140,21 +163,54 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 				</table>
 			</div>
 			<p className="mt-2 text-xs leading-relaxed text-muted">{t('cheese.guide.overview.note4')}</p>
-			<p className="mt-1 text-xs leading-relaxed text-muted">{t('cheese.guide.overview.noteLarge')}</p>
+			<p className="mt-1 text-xs leading-relaxed text-muted">
+				{t('cheese.guide.overview.noteLarge')}
+			</p>
 		</section>
 	);
 }
 
-function GuideSection({ id, bullets }: { id: string; bullets: number }) {
+function GuideSection({
+	id,
+	bullets,
+	showTitle = true,
+}: {
+	id: string;
+	bullets: number;
+	showTitle?: boolean;
+}) {
 	const t = useT();
 	return (
 		<section>
-			<h3 className="font-display text-lg font-medium">{t(`cheese.guide.sections.${id}.title`)}</h3>
-			<ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-foreground/85">
+			{showTitle && (
+				<h3 className="font-display text-lg font-medium">
+					{t(`cheese.guide.sections.${id}.title`)}
+				</h3>
+			)}
+			<ul
+				className={cn(
+					'list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-foreground/85',
+					showTitle && 'mt-2',
+				)}
+			>
 				{Array.from({ length: bullets }, (_, index) => (
 					<li key={index}>{t(`cheese.guide.sections.${id}.b${index + 1}`)}</li>
 				))}
 			</ul>
+		</section>
+	);
+}
+
+function QuickStart() {
+	const t = useT();
+	return (
+		<section className="rounded-2xl border border-border bg-surface px-4 py-4">
+			<h3 className="font-display text-lg font-medium">{t('cheese.guide.quick.title')}</h3>
+			<ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-foreground/85">
+				{[1, 2, 3, 4].map((number) => (
+					<li key={number}>{t(`cheese.guide.quick.b${number}`)}</li>
+				))}
+			</ol>
 		</section>
 	);
 }
@@ -164,12 +220,52 @@ export default function CheeseRulesGuide({ playerCount, mode, scapegoatEnabled }
 	return (
 		<div className="space-y-6">
 			<p className="text-sm leading-relaxed text-muted">{t('cheese.guide.intro')}</p>
+			<QuickStart />
+			<GuideSection id="goal" bullets={5} />
 			<TableRulesCard playerCount={playerCount} mode={mode} scapegoatEnabled={scapegoatEnabled} />
 			{SECTIONS.map((section) => (
 				<GuideSection key={section.id} id={section.id} bullets={section.bullets} />
 			))}
-			<TableOverview playerCount={playerCount} />
-			<GuideSection id="houseRules" bullets={4} />
+			{mode === 'two-night' ? (
+				<GuideSection id="twoNight" bullets={6} />
+			) : (
+				<details className="rounded-2xl border border-border px-4 py-3">
+					<summary className="cursor-pointer font-display text-lg font-medium">
+						{t('cheese.guide.sections.twoNight.title')}
+					</summary>
+					<div className="mt-4">
+						<GuideSection id="twoNight" bullets={6} showTitle={false} />
+					</div>
+				</details>
+			)}
+			{scapegoatEnabled && (playerCount ?? 0) >= 6 ? (
+				<GuideSection id="scapegoat" bullets={3} />
+			) : (
+				<details className="rounded-2xl border border-border px-4 py-3">
+					<summary className="cursor-pointer font-display text-lg font-medium">
+						{t('cheese.guide.sections.scapegoat.title')}
+					</summary>
+					<div className="mt-4">
+						<GuideSection id="scapegoat" bullets={3} showTitle={false} />
+					</div>
+				</details>
+			)}
+			<details className="rounded-2xl border border-border px-4 py-3">
+				<summary className="cursor-pointer font-display text-lg font-medium">
+					{t('cheese.guide.overview.title')}
+				</summary>
+				<div className="mt-4">
+					<TableOverview playerCount={playerCount} />
+				</div>
+			</details>
+			<details className="rounded-2xl border border-border px-4 py-3">
+				<summary className="cursor-pointer font-display text-lg font-medium">
+					{t('cheese.guide.sections.houseRules.title')}
+				</summary>
+				<div className="mt-4">
+					<GuideSection id="houseRules" bullets={4} showTitle={false} />
+				</div>
+			</details>
 		</div>
 	);
 }

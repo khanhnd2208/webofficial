@@ -17,7 +17,10 @@ import { Button, Field, Input } from '@/features/spy-fall/components/ui';
 import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
-import { getRecentPlayerName, storeRecentPlayerName } from '@/features/spy-fall/lib/spy/clientToken';
+import {
+	getRecentPlayerName,
+	storeRecentPlayerName,
+} from '@/features/spy-fall/lib/spy/clientToken';
 import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
 
 type View = 'menu' | 'create' | 'join';
@@ -53,13 +56,16 @@ export default function CheeseThiefMenuClient() {
 		if (!hostName) return;
 		setBusy(true);
 		try {
-			const data = await postCheeseAction<{ state: RoomStateDTO; playerToken: string }>('/api/cheese-thief/rooms', {
-				name: roomName.trim() || t('cheese.menu.defaultRoom', { name: hostName }),
-				hostName,
-				scapegoat,
-				maxPlayers: CHEESE_MAX_PLAYERS,
-				isPublic: true,
-			});
+			const data = await postCheeseAction<{ state: RoomStateDTO; playerToken: string }>(
+				'/api/cheese-thief/rooms',
+				{
+					name: roomName.trim() || t('cheese.menu.defaultRoom', { name: hostName }),
+					hostName,
+					scapegoat,
+					maxPlayers: CHEESE_MAX_PLAYERS,
+					isPublic: true,
+				},
+			);
 			storePlayerToken(data.state.code, data.playerToken);
 			storeRecentPlayerName(hostName);
 			router.push(routes.cheeseThiefRoom(data.state.code));
@@ -75,9 +81,17 @@ export default function CheeseThiefMenuClient() {
 		const hostName = validatedName();
 		if (!hostName) return;
 		const code = joinCode.trim().toUpperCase();
-		if (!code) return;
+		if (code.length !== 6) {
+			setError(t('cheese.menu.codeInvalid'));
+			return;
+		}
 		storeRecentPlayerName(hostName);
 		router.push(`${routes.cheeseThiefRoom(code)}?name=${encodeURIComponent(hostName)}`);
+	}
+
+	function showView(next: View) {
+		setError(null);
+		setView(next);
 	}
 
 	return (
@@ -94,7 +108,9 @@ export default function CheeseThiefMenuClient() {
 					<PrefsToggleGroup />
 				</div>
 
-				<header className="game-theme-hero rounded-[1.25rem]">
+				<header
+					className={`game-theme-hero rounded-[1.25rem] ${view === 'menu' ? '' : 'game-theme-hero-compact'}`}
+				>
 					<Image
 						src="/board-game/cheese-thief/cover.webp"
 						alt={t('cheese.menu.posterAlt')}
@@ -103,13 +119,23 @@ export default function CheeseThiefMenuClient() {
 						className="game-theme-hero-image"
 						sizes="(max-width: 768px) 100vw, 720px"
 					/>
-					<div className="relative z-10 flex min-h-72 flex-col justify-end p-6 sm:min-h-80 sm:p-8">
+					<div
+						className={`relative z-10 flex flex-col justify-end p-6 sm:min-h-80 sm:p-8 ${view === 'menu' ? 'min-h-72' : 'min-h-48'}`}
+					>
 						<div className="absolute top-5 right-5 rounded-full border border-white/15 bg-black/20 p-2 backdrop-blur-sm sm:top-7 sm:right-7">
 							<CheeseThiefArt scene="mouse" size={60} />
 						</div>
 						<p className="game-theme-kicker">{t('cheese.menu.kicker')}</p>
-						<h1 className="mt-3 font-display text-5xl font-medium tracking-tight">{t('cheese.menu.title')}</h1>
-						<p className="mt-3 max-w-md text-sm leading-relaxed text-foreground/80 sm:text-base">{t('cheese.menu.tagline')}</p>
+						<h1
+							className={`mt-3 font-display font-medium tracking-tight sm:text-5xl ${view === 'menu' ? 'text-5xl' : 'text-4xl'}`}
+						>
+							{t('cheese.menu.title')}
+						</h1>
+						{view === 'menu' && (
+							<p className="mt-3 max-w-md text-sm leading-relaxed text-foreground/80 sm:text-base">
+								{t('cheese.menu.tagline')}
+							</p>
+						)}
 					</div>
 				</header>
 
@@ -121,7 +147,7 @@ export default function CheeseThiefMenuClient() {
 								event.preventDefault();
 								if (!validatedName()) return;
 								setRoomName(t('cheese.menu.defaultRoom', { name: normalizePlayerName(name) }));
-								setView('create');
+								showView('create');
 							}}
 						>
 							<Field label={t('cheese.menu.yourName')} htmlFor="cheese-name" error={error}>
@@ -135,7 +161,7 @@ export default function CheeseThiefMenuClient() {
 							<Button fullWidth type="submit">
 								{t('cheese.menu.create')}
 							</Button>
-							<Button fullWidth variant="secondary" onClick={() => setView('join')}>
+							<Button fullWidth variant="secondary" onClick={() => showView('join')}>
 								{t('cheese.menu.join')}
 							</Button>
 							<CheeseRulesButton className="block w-full py-2 text-center text-sm font-medium underline underline-offset-4" />
@@ -146,9 +172,22 @@ export default function CheeseThiefMenuClient() {
 					)}
 
 					{view === 'create' && (
-						<form className="space-y-4" onSubmit={handleCreate}>
+						<form
+							className="space-y-4 rounded-3xl border border-border bg-surface p-5 shadow-sm"
+							onSubmit={handleCreate}
+						>
+							<div>
+								<h2 className="font-display text-2xl font-medium">{t('cheese.menu.create')}</h2>
+								<p className="mt-1 text-sm leading-relaxed text-muted">
+									{t('cheese.menu.createHint')}
+								</p>
+							</div>
 							<Field label={t('cheese.menu.roomName')} htmlFor="cheese-room">
-								<Input id="cheese-room" value={roomName} onChange={(event) => setRoomName(event.target.value)} />
+								<Input
+									id="cheese-room"
+									value={roomName}
+									onChange={(event) => setRoomName(event.target.value)}
+								/>
 							</Field>
 							<label className="flex items-start gap-3 rounded-2xl border border-border px-4 py-3">
 								<input
@@ -159,21 +198,32 @@ export default function CheeseThiefMenuClient() {
 								/>
 								<span>
 									<span className="block text-sm font-medium">{t('cheese.menu.scapegoat')}</span>
-									<span className="mt-1 block text-sm text-muted">{t('cheese.menu.scapegoatHint')}</span>
+									<span className="mt-1 block text-sm text-muted">
+										{t('cheese.menu.scapegoatHint')}
+									</span>
 								</span>
 							</label>
 							{error && <p className="text-sm text-danger">{error}</p>}
 							<Button fullWidth type="submit" loading={busy}>
 								{t('cheese.menu.open')}
 							</Button>
-							<Button fullWidth variant="ghost" onClick={() => setView('menu')}>
+							<Button fullWidth variant="ghost" onClick={() => showView('menu')}>
 								{t('cheese.menu.back')}
 							</Button>
 						</form>
 					)}
 
 					{view === 'join' && (
-						<form className="space-y-4" onSubmit={handleJoin}>
+						<form
+							className="space-y-4 rounded-3xl border border-border bg-surface p-5 shadow-sm"
+							onSubmit={handleJoin}
+						>
+							<div>
+								<h2 className="font-display text-2xl font-medium">{t('cheese.menu.join')}</h2>
+								<p className="mt-1 text-sm leading-relaxed text-muted">
+									{t('cheese.menu.joinHint')}
+								</p>
+							</div>
 							<Field label={t('cheese.menu.yourName')} htmlFor="cheese-join-name">
 								<PlayerNameInput
 									id="cheese-join-name"
@@ -186,7 +236,11 @@ export default function CheeseThiefMenuClient() {
 								<Input
 									id="cheese-code"
 									value={joinCode}
+									maxLength={6}
+									className="font-mono text-lg tracking-[0.18em] uppercase"
+									autoComplete="off"
 									autoCapitalize="characters"
+									spellCheck={false}
 									onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
 								/>
 							</Field>
@@ -194,7 +248,7 @@ export default function CheeseThiefMenuClient() {
 							<Button fullWidth type="submit">
 								{t('cheese.menu.enter')}
 							</Button>
-							<Button fullWidth variant="ghost" onClick={() => setView('menu')}>
+							<Button fullWidth variant="ghost" onClick={() => showView('menu')}>
 								{t('cheese.menu.back')}
 							</Button>
 						</form>

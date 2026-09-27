@@ -21,10 +21,20 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 	const night2 = roster.some((row) => row.wakeHours2 !== null && row.wakeHours2 !== undefined);
 
 	return (
-		<div className="space-y-8">
+		<div className="space-y-6 pb-6">
 			<CheeseThiefArt scene="reveal" size={84} className="mx-auto" />
+			{state.winner && (
+				<section className="rounded-3xl border border-[color:var(--game-line)] bg-accent-subtle px-5 py-6 text-center">
+					<p className="game-theme-kicker">{t('cheese.reveal.winnerLabel')}</p>
+					<h1 className="mt-2 font-display text-3xl font-medium leading-tight">
+						{t(`cheese.reveal.winner.${state.winner}`)}
+					</h1>
+				</section>
+			)}
 			<section className="space-y-2 text-center">
-				<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">{t('cheese.reveal.flipped')}</p>
+				<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">
+					{t('cheese.reveal.flipped')}
+				</p>
 				{flipped.map((row) => (
 					<div key={row.id}>
 						<p className="font-display text-4xl font-medium">{row.name}</p>
@@ -39,7 +49,9 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 				<p className="pt-3 text-sm text-muted">
 					{followers.length > 0 ? t('cheese.reveal.followers') : t('cheese.reveal.noFollowers')}
 				</p>
-				{followers.length > 0 && <p className="text-lg">{followers.map((row) => row.name).join(', ')}</p>}
+				{followers.length > 0 && (
+					<p className="text-lg">{followers.map((row) => row.name).join(', ')}</p>
+				)}
 				{scapegoat && (
 					<p className="pt-3 text-sm text-muted">
 						{t('cheese.reveal.scapegoat')} {scapegoat.name}
@@ -55,44 +67,48 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 				</p>
 			)}
 
-			{state.winner && (
-				<p className="text-center font-display text-2xl font-medium">{t(`cheese.reveal.winner.${state.winner}`)}</p>
-			)}
-
-			<table className="w-full text-left text-sm">
-				<thead className="font-mono text-[0.65rem] tracking-[0.14em] text-muted uppercase">
-					<tr>
-						<th className="py-2 font-normal">{t('cheese.reveal.colName')}</th>
-						<th className="py-2 font-normal">{t('cheese.reveal.colRole')}</th>
-						{night2 ? (
-							<>
-								<th className="py-2 font-normal">{t('cheese.reveal.colNight1')}</th>
-								<th className="py-2 font-normal">{t('cheese.reveal.colNight2')}</th>
-							</>
-						) : (
-							<th className="py-2 font-normal">{t('cheese.reveal.colHour')}</th>
+			<section className="space-y-3">
+				<h2 className="font-display text-xl font-medium">{t('cheese.reveal.rosterTitle')}</h2>
+				{roster.map((row) => (
+					<article key={row.id} className="rounded-2xl border border-border bg-surface px-4 py-3">
+						<div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+							<h3 className="min-w-0 break-words font-display text-xl font-medium">{row.name}</h3>
+							<span className="text-sm text-muted">{t(`cheese.deal.role.${row.role}`)}</span>
+						</div>
+						{row.follower && (
+							<p className="mt-2 inline-flex rounded-full bg-accent-subtle px-3 py-1 text-xs font-medium text-foreground">
+								{t('cheese.reveal.followerBadge')}
+							</p>
 						)}
-						<th className="py-2 font-normal">{t('cheese.reveal.colHunch')}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{roster.map((row) => (
-						<tr key={row.id} className="border-t border-border">
-							<td className="py-2 pr-2">{row.name}</td>
-							<td className="py-2 pr-2">{t(`cheese.deal.role.${row.role}`)}</td>
-							<td className="py-2 pr-2">{row.wakeHours.join(', ')}</td>
-							{night2 && <td className="py-2 pr-2">{(row.wakeHours2 ?? []).join(', ')}</td>}
-							<td className="py-2">
-								{row.hunchCorrect === null
-									? t('cheese.reveal.hunchNone')
-									: row.hunchCorrect
-										? t('cheese.reveal.hunchYes')
-										: t('cheese.reveal.hunchNo')}
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
+						<dl className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3 text-sm">
+							<div>
+								<dt className="text-xs text-muted">
+									{t(night2 ? 'cheese.reveal.colNight1' : 'cheese.reveal.colHour')}
+								</dt>
+								<dd className="mt-1 font-medium tabular-nums">{row.wakeHours.join(', ')}</dd>
+							</div>
+							{night2 && (
+								<div>
+									<dt className="text-xs text-muted">{t('cheese.reveal.colNight2')}</dt>
+									<dd className="mt-1 font-medium tabular-nums">
+										{(row.wakeHours2 ?? []).join(', ')}
+									</dd>
+								</div>
+							)}
+							<div>
+								<dt className="text-xs text-muted">{t('cheese.reveal.colHunch')}</dt>
+								<dd className="mt-1 font-medium">
+									{row.hunchCorrect === null
+										? t('cheese.reveal.hunchNone')
+										: row.hunchCorrect
+											? t('cheese.reveal.hunchYes')
+											: t('cheese.reveal.hunchNo')}
+								</dd>
+							</div>
+						</dl>
+					</article>
+				))}
+			</section>
 
 			{state.isHost && (
 				<Button fullWidth disabled={busy} loading={busy} onClick={onAgain}>

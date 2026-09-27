@@ -20,7 +20,7 @@ export default function SpyGuidePage() {
 		<main className="game-theme game-theme-spy px-4 py-5 pb-16 sm:px-6 sm:py-8">
 			<div className="mx-auto max-w-3xl">
 				<div className="mb-6 flex items-center justify-between">
-					<nav className="flex items-center gap-4 text-xs uppercase tracking-[0.14em]">
+					<nav className="flex items-center gap-2 whitespace-nowrap text-[0.68rem] uppercase tracking-[0.08em] sm:gap-4 sm:text-xs sm:tracking-[0.14em]">
 						<Link href={routes.spyFall} className="text-muted hover:text-foreground">
 							<GameIcon name="arrow-left" size={15} className="mr-1 inline" /> {t('common.back')}
 						</Link>
