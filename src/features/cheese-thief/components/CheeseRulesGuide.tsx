@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { playerRangeFor, type CheeseMode } from '@/features/cheese-thief/config/cheeseThief';
+import { playerRangeFor, type CheeseMode, type FollowerSettings } from '@/features/cheese-thief/config/cheeseThief';
 import {
 	allTableSizes,
 	tableRulesFor,
@@ -19,6 +19,7 @@ interface TableProps {
 	playerCount?: number;
 	mode?: CheeseMode;
 	scapegoatEnabled?: boolean;
+	followers?: FollowerSettings;
 }
 
 const SECTIONS: { id: string; bullets: number }[] = [
@@ -32,7 +33,7 @@ const SECTIONS: { id: string; bullets: number }[] = [
 
 const KNOW_KEYS: Record<FollowerKnowledge, string> = {
 	none: 'knowNone',
-	witness: 'knowWitness',
+	blind: 'knowBlind',
 	pair: 'knowPair',
 	'followers-only': 'knowFollowersOnly',
 	all: 'knowAll',
@@ -61,13 +62,18 @@ export function tableRuleLines(
 	lines.push(t(rules.peek ? 'cheese.guide.table.peek' : 'cheese.guide.table.noPeek'));
 	if (rules.thiefPeeksAfterWaiting) lines.push(t('cheese.guide.table.thiefPeek'));
 	if (rules.followerMode === 'none') lines.push(t('cheese.guide.table.noFollower'));
-	if (rules.followerMode === 'witness') lines.push(t('cheese.guide.table.witness'));
 	if (rules.followerMode === 'pick') {
 		lines.push(t('cheese.guide.table.pick', { count: rules.followerCount }));
+		if (rules.knowledge === 'blind') lines.push(t('cheese.guide.table.knowBlind'));
 		if (rules.knowledge === 'pair') lines.push(t('cheese.guide.table.knowPair'));
 		if (rules.knowledge === 'followers-only') lines.push(t('cheese.guide.table.knowFollowersOnly'));
 		if (rules.knowledge === 'all') lines.push(t('cheese.guide.table.knowAll'));
 		lines.push(t('cheese.guide.table.witnessOnlyKnows'));
+	}
+	if (rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount) {
+		lines.push(
+			t('cheese.guide.table.custom', { count: rules.followerCount, default: rules.defaultFollowerCount }),
+		);
 	}
 	lines.push(t('cheese.guide.table.picks', { count: rules.choiceCount }));
 	if (rules.scapegoatAllowed) {
@@ -84,11 +90,12 @@ export function TableRulesCard({
 	playerCount,
 	mode = 'classic',
 	scapegoatEnabled = false,
+	followers,
 	className,
 }: TableProps & { className?: string }) {
 	const t = useT();
 	if (playerCount === undefined) return null;
-	const rules = tableRulesFor(playerCount, mode);
+	const rules = tableRulesFor(playerCount, mode, followers);
 	const { min, max } = playerRangeFor(mode);
 
 	return (
@@ -129,6 +136,7 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colPlayers')}</th>
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colMode')}</th>
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colFollowers')}</th>
+							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.maxFollowers')}</th>
 							<th className="py-2 font-normal">{t('cheese.guide.overview.colKnow')}</th>
 						</tr>
 					</thead>
@@ -145,17 +153,14 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 								<td className="py-2 pr-2">
 									{modes.length === 2
 										? t('cheese.guide.overview.modeBoth')
-										: modes[0] === 'two-night'
-											? t('cheese.guide.overview.modeTwoNight')
-											: t('cheese.guide.overview.modeClassic')}
+										: t('cheese.guide.overview.modeOne')}
 								</td>
 								<td className="py-2 pr-2">
-									{rules.followerMode === 'none'
+									{rules.followerCount === 0
 										? t('cheese.guide.overview.followersNone')
-										: rules.followerMode === 'witness'
-											? t('cheese.guide.overview.followersWitness')
-											: t('cheese.guide.overview.followersPick', { count: rules.followerCount })}
+										: t('cheese.guide.overview.followersPick', { count: rules.followerCount })}
 								</td>
+								<td className="py-2 pr-2 tabular-nums">{rules.maxFollowers}</td>
 								<td className="py-2">{t(`cheese.guide.overview.${KNOW_KEYS[rules.knowledge]}`)}</td>
 							</tr>
 						))}
@@ -163,9 +168,6 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 				</table>
 			</div>
 			<p className="mt-2 text-xs leading-relaxed text-muted">{t('cheese.guide.overview.note4')}</p>
-			<p className="mt-1 text-xs leading-relaxed text-muted">
-				{t('cheese.guide.overview.noteLarge')}
-			</p>
 		</section>
 	);
 }
@@ -215,14 +217,19 @@ function QuickStart() {
 	);
 }
 
-export default function CheeseRulesGuide({ playerCount, mode, scapegoatEnabled }: TableProps) {
+export default function CheeseRulesGuide({ playerCount, mode, scapegoatEnabled, followers }: TableProps) {
 	const t = useT();
 	return (
 		<div className="space-y-6">
 			<p className="text-sm leading-relaxed text-muted">{t('cheese.guide.intro')}</p>
 			<QuickStart />
 			<GuideSection id="goal" bullets={5} />
-			<TableRulesCard playerCount={playerCount} mode={mode} scapegoatEnabled={scapegoatEnabled} />
+			<TableRulesCard
+				playerCount={playerCount}
+				mode={mode}
+				scapegoatEnabled={scapegoatEnabled}
+				followers={followers}
+			/>
 			{SECTIONS.map((section) => (
 				<GuideSection key={section.id} id={section.id} bullets={section.bullets} />
 			))}

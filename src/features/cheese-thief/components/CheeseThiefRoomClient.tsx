@@ -164,9 +164,10 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 							{state.code}
 						</Link>
 						<CheeseRulesButton
-							playerCount={state.playerCount}
+							playerCount={state.maxPlayers}
 							mode={state.mode}
 							scapegoatEnabled={state.scapegoatEnabled}
+							followers={{ count: state.followers.count, knowledge: state.followers.knowledge }}
 							className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
 						/>
 						<button
@@ -193,8 +194,7 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 						state={state}
 						busy={busy}
 						onStart={() => void run(api.start)}
-						onScapegoat={(enabled) => void run(() => api.settings({ scapegoat: enabled }))}
-						onMode={(mode) => void run(() => api.settings({ mode }))}
+						onSettings={(input) => void run(() => api.settings(input))}
 						onHourSeconds={(hourSeconds) => void run(() => api.settings({ hourSeconds }))}
 						onKick={(id) => void run(() => api.kick(id))}
 					/>

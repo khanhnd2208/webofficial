@@ -34,6 +34,7 @@ async function openTable(
 		hostName: 'P0',
 		scapegoat: options.scapegoat,
 		mode: options.mode,
+		maxPlayers: playerCount,
 	});
 	const host = created.self!.token;
 	const tokens = [host];
@@ -279,27 +280,80 @@ describe('Cheese Thief table', () => {
 		expect((await getScopedState(table.code, table.host)).phase).toBe('secret');
 	});
 
-	it('refuses Two Nights with four players', async () => {
-		const table = await openTable(4, { mode: 'two-night' });
-		await expect(startGame(table.code, table.host)).rejects.toThrow('TWO_NIGHT_NEEDS_FIVE');
+	it('blocks 2 nights at 4 players from both create and settings', async () => {
+		await expect(
+			createRoom({ name: 'Bàn phô mai', hostName: 'P0', maxPlayers: 4, mode: 'two-night' }),
+		).rejects.toThrow('TWO_NIGHT_NEEDS_FIVE');
+
+		const classic = await openTable(4);
+		await expect(updateSettings(classic.code, classic.host, { mode: 'two-night' })).rejects.toThrow(
+			'TWO_NIGHT_NEEDS_FIVE',
+		);
+
+		const twoNight = await createRoom({
+			name: 'Bàn phô mai',
+			hostName: 'P0',
+			maxPlayers: 5,
+			mode: 'two-night',
+		});
+		await expect(updateSettings(twoNight.code, twoNight.self!.token, { maxPlayers: 4 })).rejects.toThrow(
+			'TWO_NIGHT_NEEDS_FIVE',
+		);
 	});
 
-	it('seats up to 12 for Two Nights, but stops Classic at 8', async () => {
+	it('starts only a full table, clamps followers when the table shrinks, and resets to the default', async () => {
+		const created = await createRoom({ name: 'Bàn phô mai', hostName: 'P0', maxPlayers: 6 });
+		const host = created.self!.token;
+		await expect(startGame(created.code, host)).rejects.toThrow('TABLE_NOT_FULL');
+		await expect(updateSettings(created.code, host, { followerCount: 2 })).rejects.toThrow('FOLLOWERS_INVALID');
+
+		const wide = await updateSettings(created.code, host, { maxPlayers: 8, followerCount: 2 });
+		expect(wide.followers.count).toBe(2);
+		const shrunk = await updateSettings(created.code, host, { maxPlayers: 6 });
+		expect(shrunk.maxPlayers).toBe(6);
+		expect(shrunk.followers.count).toBe(1);
+
+		const custom = await updateSettings(created.code, host, { followerCount: 0, followerKnowledge: 'team' });
+		expect(custom.followers).toMatchObject({ count: 0, customized: true, defaultCount: 1 });
+		const reset = await updateSettings(created.code, host, { followerCount: null, followerKnowledge: null });
+		expect(reset.followers).toMatchObject({ count: 1, knowledge: 'all', customized: false });
+	});
+
+	it('plays a 12-player one-night table whose four followers do not learn the thief', async () => {
 		const table = await openTable(12);
 		await expect(joinRoom(table.code, 'P12')).rejects.toThrow('ROOM_FULL');
-		await expect(startGame(table.code, table.host)).rejects.toThrow('CLASSIC_TOO_MANY');
+		const lobby = await updateSettings(table.code, table.host, { followerCount: 4, followerKnowledge: 'team' });
+		expect(lobby.followers).toMatchObject({ count: 4, knowledge: 'team', max: 4, customized: true });
 
-		await updateSettings(table.code, table.host, { mode: 'two-night' });
 		await startGame(table.code, table.host);
-		const roles = [...(await rolesOf(table.code)).values()];
-		expect(roles.filter((role) => role === 'thief')).toHaveLength(1);
 		for (const token of table.tokens) await confirmMemorized(table.code, token);
 		await beginNight(table.code, table.host);
 		await rewind(table.code, 'nightStartedAt', 80_000);
-		expect((await getScopedState(table.code, table.host)).phase).toBe('cheese-check');
-		await reportCheese(table.code, table.host, false);
 		const secret = await getScopedState(table.code, table.host);
 		expect(secret.phase).toBe('secret');
-		expect(secret.choiceCount).toBe(3);
+		expect(secret.choiceCount).toBe(4);
+
+		await rewind(table.code, 'secretStartedAt', 20_000);
+		const stored = (await CheeseThiefRoom.findOne({ code: table.code }).lean())!;
+		const thief = stored.players.find((player) => player.role === 'thief')!;
+		const others = stored.players.filter((player) => player.id !== thief.id);
+		await submitSecret(
+			table.code,
+			thief.token,
+			others.slice(0, 4).map((player) => player.id),
+		);
+		for (const player of stored.players) {
+			if (player.token === thief.token) continue;
+			const picks = stored.players
+				.filter((other) => other.id !== player.id)
+				.slice(0, 4)
+				.map((other) => other.id);
+			await submitSecret(table.code, player.token, picks);
+		}
+		const follower = await getScopedState(table.code, others[0]!.token);
+		expect(follower.phase).toBe('secret-result');
+		expect(follower.self?.secretCard?.recruited?.thiefName).toBeNull();
+		expect(follower.self?.secretCard?.recruited?.allyNames).toHaveLength(3);
+		expect(follower.self?.secretCard?.recruited?.allyNames).not.toContain(thief.name);
 	});
 });

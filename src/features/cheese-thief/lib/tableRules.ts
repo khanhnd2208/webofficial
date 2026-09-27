@@ -2,15 +2,19 @@ import {
 	CHEESE_MAX_PLAYERS,
 	CHEESE_MIN_PLAYERS,
 	SCAPEGOAT_MIN_PLAYERS,
+	followersAreCustom,
 	isPlayerCountAllowed,
 	presetFor,
+	resolveFollowers,
 	type CheeseMode,
+	type FollowerKnows,
 	type FollowerMode,
+	type FollowerSettings,
 } from '@/features/cheese-thief/config/cheeseThief';
 import { sharedChoiceCount } from '@/features/cheese-thief/lib/rules';
 
-/** Who learns whom once followers are set. `pair` is one follower who knows the Thief. */
-export type FollowerKnowledge = 'none' | 'witness' | 'pair' | 'followers-only' | 'all';
+/** Who learns whom once followers are set. `blind` is one follower who does not learn the Thief. */
+export type FollowerKnowledge = 'none' | 'blind' | 'pair' | 'followers-only' | 'all';
 
 export interface TableRules {
 	playerCount: number;
@@ -24,22 +28,26 @@ export interface TableRules {
 	knowledge: FollowerKnowledge;
 	choiceCount: number;
 	scapegoatAllowed: boolean;
+	followerCustomized: boolean;
+	defaultFollowerCount: number;
+	maxFollowers: number;
 }
 
-/** The how-to-play text reads from here, so it always matches the presets the game deals with. */
-export function tableRulesFor(playerCount: number, mode: CheeseMode): TableRules | null {
+function knowledgeOf(count: number, knows: FollowerKnows): FollowerKnowledge {
+	if (count <= 0) return 'none';
+	if (knows === 'team') return count === 1 ? 'blind' : 'followers-only';
+	return count === 1 ? 'pair' : 'all';
+}
+
+/** The how-to-play text reads from here, so it always matches the table the game deals. */
+export function tableRulesFor(
+	playerCount: number,
+	mode: CheeseMode,
+	followers?: FollowerSettings,
+): TableRules | null {
 	if (!isPlayerCountAllowed(playerCount, mode)) return null;
-	const preset = presetFor(playerCount, mode);
-	const knowledge: FollowerKnowledge =
-		preset.followerMode === 'none'
-			? 'none'
-			: preset.followerMode === 'witness'
-				? 'witness'
-				: !preset.followersKnowThief
-					? 'followers-only'
-					: preset.followerPickCount > 1
-						? 'all'
-						: 'pair';
+	const resolved = resolveFollowers(playerCount, followers);
+	const preset = presetFor(playerCount, mode, followers);
 	return {
 		playerCount,
 		mode,
@@ -47,14 +55,17 @@ export function tableRulesFor(playerCount: number, mode: CheeseMode): TableRules
 		peek: preset.peek,
 		thiefPeeksAfterWaiting: preset.thiefPeeksAfterWaiting,
 		followerMode: preset.followerMode,
-		followerCount: preset.followerMode === 'pick' ? preset.followerPickCount : preset.followerMode === 'witness' ? 1 : 0,
-		knowledge,
+		followerCount: resolved.count,
+		knowledge: knowledgeOf(resolved.count, resolved.knowledge),
 		choiceCount: sharedChoiceCount(preset, mode),
 		scapegoatAllowed: playerCount >= SCAPEGOAT_MIN_PLAYERS,
+		followerCustomized: followersAreCustom(resolved),
+		defaultFollowerCount: resolved.defaultCount,
+		maxFollowers: resolved.max,
 	};
 }
 
-/** One row per table size, with whichever mode that size can play. Classic wins where both can. */
+/** One row per table size. One night is always available; two nights joins from 5 players. */
 export function allTableSizes(): { playerCount: number; modes: CheeseMode[]; rules: TableRules }[] {
 	const rows: { playerCount: number; modes: CheeseMode[]; rules: TableRules }[] = [];
 	for (let count = CHEESE_MIN_PLAYERS; count <= CHEESE_MAX_PLAYERS; count++) {

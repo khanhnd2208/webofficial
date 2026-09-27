@@ -21,6 +21,7 @@ export const cheeseVi: MessageTree = {
 		scapegoatHint: 'Từ 6 người. Vai này thắng riêng nếu được bỏ phiếu nhiều nhất.',
 		defaultRoom: 'Bàn của {name}',
 		players: '4–12 người',
+		tableSize: 'Số người',
 		noAccount: 'Không cần tài khoản',
 	},
 	lobby: {
@@ -34,8 +35,7 @@ export const cheeseVi: MessageTree = {
 		copyFailed: 'Không sao chép được. Hãy chia sẻ mã phòng.',
 		waitingHost: 'Chờ chủ phòng bắt đầu ván chơi.',
 		rulesHint: 'Mở tóm tắt luật cho bàn này',
-		need: 'Cổ điển 4–8 người · Hai Đêm 5–12 người. Đang có {count}.',
-		classicFull: 'Cổ điển tối đa 8 người. Chuyển sang Hai Đêm để chơi 9–12 người.',
+		need: 'Còn thiếu {count} người — hoặc giảm số người của bàn.',
 		kick: 'Mời {name} rời bàn',
 		rulesTitle: 'Trước khi chơi',
 		rule1:
@@ -49,9 +49,29 @@ export const cheeseVi: MessageTree = {
 		rule5:
 			'Sau đó cả bàn nói chuyện và bỏ phiếu tìm người trộm. Được nói dối, nhưng không cho người khác xem màn hình. Cần chi tiết hơn thì mở “Cách chơi”.',
 		mode: {
-			label: 'Chế độ',
-			classic: 'Cổ điển',
-			twoNight: 'Hai Đêm',
+			label: 'Số đêm',
+			classic: '1 đêm',
+			twoNight: '2 đêm',
+		},
+		settings: {
+			size: 'Số người',
+			seated: 'Đã vào {count}/{size}',
+			followers: 'Follower',
+			default: 'Mặc định',
+			reset: 'Về mặc định ({count})',
+			customNote: 'Chủ bàn đã chỉnh (mặc định {count}).',
+			twoNightMin: '2 đêm cần ít nhất 5 người. Muốn chơi 4 người thì chọn 1 đêm.',
+			max: 'Tối đa {max} để phe trộm luôn ít hơn nửa bàn.',
+			knowledge: 'Follower biết gì',
+			knowTeam: 'Biết đồng đội, không biết Thief',
+			knowAll: 'Biết cả Thief và đồng đội',
+			knowTeamOne: 'Chỉ biết mình thuộc phe trộm, không biết Thief',
+			knowAllOne: 'Biết Thief',
+			thiefKnows: 'Thief luôn biết Follower của mình.',
+			lessPlayers: 'Bớt một người',
+			morePlayers: 'Thêm một người',
+			lessFollowers: 'Bớt một Follower',
+			moreFollowers: 'Thêm một Follower',
 		},
 		hour: {
 			label: 'Mỗi vòng giờ',
@@ -67,7 +87,7 @@ export const cheeseVi: MessageTree = {
 			hint: 'Chỉ máy này đọc giờ. Không nghe thấy thì tăng âm lượng.',
 		},
 		twoNight: {
-			need: 'Hai Đêm cần 5–12 người',
+			need: 'Bàn 4 người chỉ chơi 1 đêm.',
 			rule1:
 				'Mỗi người nhận hai số giờ từ đầu: một số cho Đêm 1, một số cho Đêm 2. Hãy nhớ cả hai; giữa hai đêm không ai cầm máy.',
 			rule2:
@@ -154,6 +174,7 @@ export const cheeseVi: MessageTree = {
 		allies: 'Follower của bạn: {names}',
 		recruited: 'Bạn được chọn.',
 		thiefIs: 'Thief là {name}.',
+		thiefHidden: 'Bạn giờ thuộc phe Thief, nhưng không được biết Thief là ai.',
 		alliesAre: 'Follower cùng bạn: {names}.',
 		seen: 'Đã xem',
 	},
@@ -233,6 +254,7 @@ export const cheeseEn: MessageTree = {
 		scapegoatHint: 'For 6+ players. This role wins alone if they receive the most votes.',
 		defaultRoom: "{name}'s table",
 		players: '4–12 players',
+		tableSize: 'Players',
 		noAccount: 'No account needed',
 	},
 	lobby: {
@@ -246,8 +268,7 @@ export const cheeseEn: MessageTree = {
 		copyFailed: 'Could not copy. Share the room code instead.',
 		waitingHost: 'Waiting for the host to start the game.',
 		rulesHint: 'Open the rules for this table',
-		need: 'Classic 4–8 players · Two Nights 5–12. {count} here.',
-		classicFull: 'Classic seats at most 8. Switch to Two Nights for 9–12 players.',
+		need: 'Still short {count} — or lower the table size.',
 		kick: 'Remove {name}',
 		rulesTitle: 'Before you play',
 		rule1:
@@ -261,9 +282,29 @@ export const cheeseEn: MessageTree = {
 		rule5:
 			'Then discuss and vote to find the Thief. You may lie, but must not show anyone your screen. Open “How to play” for the full rules.',
 		mode: {
-			label: 'Mode',
-			classic: 'Classic',
-			twoNight: 'Two Nights',
+			label: 'Nights',
+			classic: '1 night',
+			twoNight: '2 nights',
+		},
+		settings: {
+			size: 'Players',
+			seated: 'Seated {count}/{size}',
+			followers: 'Followers',
+			default: 'Default',
+			reset: 'Back to default ({count})',
+			customNote: 'Changed by the host (default {count}).',
+			twoNightMin: '2 nights needs at least 5 players. Pick 1 night to play with 4.',
+			max: 'At most {max}, so the thief side stays under half the table.',
+			knowledge: 'What Followers learn',
+			knowTeam: 'Learn teammates, not the Thief',
+			knowAll: 'Learn the Thief and teammates',
+			knowTeamOne: 'Only learns they joined the thief side, not who the Thief is',
+			knowAllOne: 'Learns who the Thief is',
+			thiefKnows: 'The Thief always learns their Followers.',
+			lessPlayers: 'One player fewer',
+			morePlayers: 'One player more',
+			lessFollowers: 'One Follower fewer',
+			moreFollowers: 'One Follower more',
 		},
 		hour: {
 			label: 'Each round',
@@ -279,7 +320,7 @@ export const cheeseEn: MessageTree = {
 			hint: 'Only this phone speaks the hours. Turn the volume up if you cannot hear it.',
 		},
 		twoNight: {
-			need: 'Two Nights needs 5–12 players',
+			need: 'A table of 4 plays 1 night only.',
 			rule1:
 				'Everyone gets two numbers at the start: one for Night 1 and one for Night 2. Memorise both; nobody picks up a phone between nights.',
 			rule2:
@@ -366,6 +407,7 @@ export const cheeseEn: MessageTree = {
 		allies: 'Your Followers: {names}',
 		recruited: 'You were chosen.',
 		thiefIs: 'The Thief is {name}.',
+		thiefHidden: 'You are on the Thief’s side now, but you are not told who the Thief is.',
 		alliesAre: 'Your fellow Follower: {names}.',
 		seen: 'Seen',
 	},

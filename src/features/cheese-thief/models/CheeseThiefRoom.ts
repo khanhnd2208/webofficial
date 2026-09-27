@@ -9,6 +9,7 @@ import {
 	CHEESE_MODES,
 	CHEESE_PHASES,
 	type CheeseMode,
+	type FollowerKnows,
 	type NightNumber,
 } from '@/features/cheese-thief/config/cheeseThief';
 import type { CheeseRole, CheeseWinner } from '@/features/cheese-thief/lib/rules';
@@ -38,6 +39,9 @@ export interface ICheeseRoom {
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
 	mode: CheeseMode;
+	/** Unset means the default for `maxPlayers`. */
+	followerCount?: number;
+	followerKnowledge?: FollowerKnows;
 	hourSeconds: number;
 	hostToken: string;
 	phase: (typeof CHEESE_PHASES)[number];
@@ -89,6 +93,8 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		maxPlayers: { type: Number, required: true, min: CHEESE_MIN_PLAYERS, max: CHEESE_MAX_PLAYERS },
 		scapegoatEnabled: { type: Boolean, default: false },
 		mode: { type: String, enum: CHEESE_MODES, default: 'classic' },
+		followerCount: { type: Number, min: 0, max: 4 },
+		followerKnowledge: { type: String, enum: ['team', 'all'] },
 		hourSeconds: {
 			type: Number,
 			default: CHEESE_HOUR_SECONDS_DEFAULT,

@@ -1,7 +1,11 @@
 import {
 	CHEESE_HOUR_SECONDS_DEFAULT,
+	followersAreCustom,
+	resolveFollowers,
 	type CheeseMode,
 	type CheesePhase,
+	type FollowerKnows,
+	type FollowerSettings,
 	type NightNumber,
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
@@ -49,6 +53,8 @@ export interface ProjectRoom {
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
 	mode?: CheeseMode;
+	followerCount?: number;
+	followerKnowledge?: FollowerKnows;
 	hourSeconds?: number;
 	nightNumber?: NightNumber;
 	theftNight?: NightNumber;
@@ -191,6 +197,11 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 			}
 		: null;
 
+	const followerSettings: FollowerSettings = {
+		...(room.followerCount !== undefined ? { count: room.followerCount } : {}),
+		...(room.followerKnowledge ? { knowledge: room.followerKnowledge } : {}),
+	};
+	const resolvedFollowers = resolveFollowers(room.maxPlayers, followerSettings);
 	const dto: RoomStateDTO = {
 		code: room.code,
 		name: room.name,
@@ -202,6 +213,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		maxPlayers: room.maxPlayers,
 		scapegoatEnabled: room.scapegoatEnabled,
 		mode,
+		followers: { ...resolvedFollowers, customized: followersAreCustom(resolvedFollowers) },
 		hourSeconds: room.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT,
 		playerCount: room.players.length,
 		players,

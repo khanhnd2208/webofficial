@@ -17,13 +17,19 @@ import {
 	CHEESE_ROUND_HOST_HANDOFF_MS,
 	CHEESE_SECRET_MAX_MS,
 	CHEESE_SECRET_MIN_MS,
+	CHEESE_TABLE_SIZE_DEFAULT,
 	isCheeseMode,
+	isFollowerCountAllowed,
+	isFollowerKnows,
 	isHourSeconds,
 	isPlayerCountAllowed,
+	maxFollowersFor,
 	nightTiming,
 	playerRangeFor,
 	presetFor,
+	type CheeseMode,
 	type CheesePhase,
+	type FollowerSettings,
 	type NightNumber,
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
@@ -126,14 +132,51 @@ function assertRoomName(name: string | undefined): string {
 	return trimmed;
 }
 
-function assertMaxPlayers(maxPlayers: unknown): asserts maxPlayers is number {
-	if (
-		typeof maxPlayers !== 'number' ||
-		!Number.isInteger(maxPlayers) ||
-		maxPlayers < CHEESE_MIN_PLAYERS ||
-		maxPlayers > CHEESE_MAX_PLAYERS
-	) {
+function assertTableSize(size: number, mode: CheeseMode, seated: number): void {
+	if (!Number.isInteger(size) || size < CHEESE_MIN_PLAYERS || size > CHEESE_MAX_PLAYERS) {
 		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: CHEESE_MIN_PLAYERS, max: CHEESE_MAX_PLAYERS });
+	}
+	if (size < seated) {
+		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: seated, max: CHEESE_MAX_PLAYERS });
+	}
+	if (!isPlayerCountAllowed(size, mode)) {
+		const range = playerRangeFor(mode);
+		if (mode === 'two-night') throw new AppError('TWO_NIGHT_NEEDS_FIVE', 400, { min: range.min, max: range.max });
+		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: range.min, max: range.max });
+	}
+}
+
+function followerSettingsOf(game: { followerCount?: number; followerKnowledge?: string }): FollowerSettings {
+	return {
+		...(typeof game.followerCount === 'number' ? { count: game.followerCount } : {}),
+		...(isFollowerKnows(game.followerKnowledge) ? { knowledge: game.followerKnowledge } : {}),
+	};
+}
+
+function applyFollowerInput(
+	game: RoomDoc,
+	input: { followerCount?: number | null; followerKnowledge?: FollowerSettings['knowledge'] | null },
+	size: number,
+): void {
+	const max = maxFollowersFor(size);
+	if (input.followerCount === null) {
+		game.set('followerCount', undefined);
+	} else if (input.followerCount !== undefined) {
+		if (!isFollowerCountAllowed(input.followerCount, size)) {
+			throw new AppError('FOLLOWERS_INVALID', 400, { max });
+		}
+		game.followerCount = input.followerCount;
+	} else if (typeof game.followerCount === 'number' && game.followerCount > max) {
+		game.followerCount = max;
+	}
+
+	if (input.followerKnowledge === null) {
+		game.set('followerKnowledge', undefined);
+	} else if (input.followerKnowledge !== undefined) {
+		if (!isFollowerKnows(input.followerKnowledge)) {
+			throw new AppError('FOLLOWERS_INVALID', 400, { max });
+		}
+		game.followerKnowledge = input.followerKnowledge;
 	}
 }
 
@@ -160,7 +203,7 @@ function seatsOf(game: RoomDoc): Seat[] {
 }
 
 function tablePreset(game: RoomDoc): TablePreset {
-	return presetFor(game.players.length, game.mode ?? 'classic');
+	return presetFor(game.players.length, game.mode ?? 'classic', followerSettingsOf(game));
 }
 
 function nightContext(game: RoomDoc): NightContext {
@@ -327,6 +370,8 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		maxPlayers: game.maxPlayers,
 		scapegoatEnabled: game.scapegoatEnabled,
 		mode: game.mode ?? 'classic',
+		...(typeof game.followerCount === 'number' ? { followerCount: game.followerCount } : {}),
+		...(isFollowerKnows(game.followerKnowledge) ? { followerKnowledge: game.followerKnowledge } : {}),
 		hourSeconds: game.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT,
 		nightNumber: game.nightNumber === 2 ? 2 : 1,
 		...(game.theftNight === 1 || game.theftNight === 2 ? { theftNight: game.theftNight } : {}),
@@ -414,11 +459,18 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 	const hostName = normalizePlayerName(input.hostName ?? '');
 	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
 	const roomName = assertRoomName(input.name);
-	const maxPlayers = input.maxPlayers ?? CHEESE_MAX_PLAYERS;
-	assertMaxPlayers(maxPlayers);
 	if (input.mode !== undefined && !isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
+	const mode = input.mode && isCheeseMode(input.mode) ? input.mode : 'classic';
+	const maxPlayers = input.maxPlayers ?? CHEESE_TABLE_SIZE_DEFAULT;
+	assertTableSize(maxPlayers, mode, 1);
 	const hourSeconds = input.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT;
 	assertHourSeconds(hourSeconds);
+	if (input.followerCount != null && !isFollowerCountAllowed(input.followerCount, maxPlayers)) {
+		throw new AppError('FOLLOWERS_INVALID', 400, { max: maxFollowersFor(maxPlayers) });
+	}
+	if (input.followerKnowledge != null && !isFollowerKnows(input.followerKnowledge)) {
+		throw new AppError('FOLLOWERS_INVALID', 400, { max: maxFollowersFor(maxPlayers) });
+	}
 
 	await dbConnect();
 	const hostToken = generateToken();
@@ -436,7 +488,9 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 		isPublic: input.isPublic !== false,
 		maxPlayers,
 		scapegoatEnabled: input.scapegoat === true,
-		mode: input.mode && isCheeseMode(input.mode) ? input.mode : 'classic',
+		mode,
+		...(typeof input.followerCount === 'number' ? { followerCount: input.followerCount } : {}),
+		...(isFollowerKnows(input.followerKnowledge) ? { followerKnowledge: input.followerKnowledge } : {}),
 		hourSeconds,
 		nightNumber: 1,
 		voteRound: 0,
@@ -523,16 +577,14 @@ export async function updateSettings(
 		assertHost(game, hostToken);
 		if (input.name !== undefined) game.name = assertRoomName(input.name);
 		if (input.isPublic !== undefined) game.isPublic = Boolean(input.isPublic);
-		if (input.maxPlayers !== undefined) {
-			assertMaxPlayers(input.maxPlayers);
-			if (input.maxPlayers < game.players.length) throw new AppError('MAX_PLAYERS_INVALID', 400, { min: game.players.length, max: CHEESE_MAX_PLAYERS });
-			game.maxPlayers = input.maxPlayers;
-		}
+		if (input.mode !== undefined && !isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
+		const nextMode = input.mode && isCheeseMode(input.mode) ? input.mode : (game.mode ?? 'classic');
+		const nextSize = input.maxPlayers !== undefined ? input.maxPlayers : game.maxPlayers;
+		assertTableSize(nextSize, nextMode, game.players.length);
+		applyFollowerInput(game, input, nextSize);
+		game.mode = nextMode;
+		game.maxPlayers = nextSize;
 		if (input.scapegoat !== undefined) game.scapegoatEnabled = Boolean(input.scapegoat);
-		if (input.mode !== undefined) {
-			if (!isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
-			game.mode = input.mode;
-		}
 		if (input.hourSeconds !== undefined) {
 			assertHourSeconds(input.hourSeconds);
 			game.hourSeconds = input.hourSeconds;
@@ -543,11 +595,13 @@ export async function updateSettings(
 export async function startGame(code: string, hostToken: string): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, 'lobby', (game) => {
 		assertHost(game, hostToken);
+		if (game.players.length !== game.maxPlayers) {
+			throw new AppError('TABLE_NOT_FULL', 400, { count: game.players.length, size: game.maxPlayers });
+		}
 		const mode = game.mode ?? 'classic';
 		if (!isPlayerCountAllowed(game.players.length, mode)) {
 			const { min, max } = playerRangeFor(mode);
 			if (mode === 'two-night') throw new AppError('TWO_NIGHT_NEEDS_FIVE', 400, { min, max });
-			if (game.players.length > max) throw new AppError('CLASSIC_TOO_MANY', 400, { max });
 			throw new AppError('NEED_MIN_PLAYERS', 400, { min });
 		}
 		const { seats } = deal(
@@ -555,6 +609,7 @@ export async function startGame(code: string, hostToken: string): Promise<RoomSt
 			game.scapegoatEnabled,
 			Math.random,
 			mode,
+			followerSettingsOf(game),
 		);
 		const byId = new Map(seats.map((seat) => [seat.id, seat]));
 		for (const player of game.players) {

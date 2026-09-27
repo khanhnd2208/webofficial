@@ -4,9 +4,10 @@
  */
 
 export const CHEESE_MIN_PLAYERS = 4;
-/** Room capacity. Classic stops at 8 (the boxed rules); Two Nights seats up to 12. */
+/** Room capacity. One night and two nights both seat up to 12. Four players stay on one night. */
 export const CHEESE_MAX_PLAYERS = 12;
-export const CLASSIC_MAX_PLAYERS = 8;
+/** Suggested size on the create-room form. The host can change it before the table fills. */
+export const CHEESE_TABLE_SIZE_DEFAULT = 6;
 export const CHEESE_ROOM_CODE_LENGTH = 6;
 export const CHEESE_PLAYER_TOKEN_LENGTH = 21;
 export const CHEESE_PLAYER_ID_LENGTH = 10;
@@ -45,14 +46,14 @@ export const CHEESE_MODES = ['classic', 'two-night'] as const;
 export type CheeseMode = (typeof CHEESE_MODES)[number];
 export type NightNumber = 1 | 2;
 
-/** Two Nights needs a second die, which collides with the 4-player double-die rule. */
+/** Two nights needs a second die, which collides with the 4-player double-die rule. */
 export const TWO_NIGHT_MIN_PLAYERS = 5;
 export const TWO_NIGHT_MAX_PLAYERS = 12;
 
 export function playerRangeFor(mode: CheeseMode): { min: number; max: number } {
 	return mode === 'two-night'
 		? { min: TWO_NIGHT_MIN_PLAYERS, max: TWO_NIGHT_MAX_PLAYERS }
-		: { min: CHEESE_MIN_PLAYERS, max: CLASSIC_MAX_PLAYERS };
+		: { min: CHEESE_MIN_PLAYERS, max: CHEESE_MAX_PLAYERS };
 }
 
 /** The Scapegoat (Fall Mouse) needs a table of 6 or more, in either mode. */
@@ -84,14 +85,31 @@ export function isCheeseMode(value: unknown): value is CheeseMode {
 	return value === 'classic' || value === 'two-night';
 }
 
-export type FollowerMode = 'none' | 'witness' | 'pick';
+export type FollowerMode = 'none' | 'pick';
+
+/** `team`: followers learn teammates, not the Thief. `all`: they learn the Thief as well. */
+export type FollowerKnows = 'team' | 'all';
+
+/** Omitted fields mean “use the default for this table size”. */
+export interface FollowerSettings {
+	count?: number;
+	knowledge?: FollowerKnows;
+}
+
+export interface ResolvedFollowers {
+	count: number;
+	knowledge: FollowerKnows;
+	defaultCount: number;
+	defaultKnowledge: FollowerKnows;
+	max: number;
+}
 
 export type PlayerCount = 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export interface TablePreset {
 	playerCount: PlayerCount;
 	dicePerPlayer: 1 | 2;
-	/** A Sleepyhead (or Scapegoat) awake alone may look at one die. The Thief never can in Classic. 4p cannot. */
+	/** A Sleepyhead (or Scapegoat) awake alone may look at one die. The Thief never can on one night. 4p cannot. */
 	peek: boolean;
 	followerMode: FollowerMode;
 	/** How many followers the Thief names when mode is `pick`. */
@@ -99,84 +117,92 @@ export interface TablePreset {
 	followersKnowThief: boolean;
 	thiefKnowsFollowers: boolean;
 	followersKnowEachOther: boolean;
-	/** Two Nights only: a Thief who waited out an alone Night 1 may peek. Off from 7 players. */
+	/** Two nights only: a Thief who waited out an alone Night 1 may peek. Off from 7 players. */
 	thiefPeeksAfterWaiting: boolean;
 }
 
-function pickPreset(playerCount: PlayerCount, followerPickCount: number, knowledge: 'all' | 'followers-only'): TablePreset {
+/**
+ * Defaults follow the boxed table, with two changes the host can override:
+ * every follower is named by the Thief (the 5-player witness rule is gone),
+ * and one night now seats up to 12. The thief side stays a minority.
+ */
+const DEFAULT_FOLLOWERS: Record<PlayerCount, { count: number; knowledge: FollowerKnows }> = {
+	4: { count: 0, knowledge: 'all' },
+	5: { count: 1, knowledge: 'all' },
+	6: { count: 1, knowledge: 'all' },
+	7: { count: 2, knowledge: 'team' },
+	8: { count: 2, knowledge: 'all' },
+	9: { count: 2, knowledge: 'all' },
+	10: { count: 3, knowledge: 'all' },
+	11: { count: 3, knowledge: 'all' },
+	12: { count: 3, knowledge: 'all' },
+};
+
+/** Thief side stays smaller than half the table: ceil(n/2) − 2, and never negative. */
+export function maxFollowersFor(playerCount: number): number {
+	if (!Number.isInteger(playerCount) || playerCount < 1) return 0;
+	return Math.max(0, Math.ceil(playerCount / 2) - 2);
+}
+
+export function isFollowerCountAllowed(count: number, playerCount: number): boolean {
+	return Number.isInteger(count) && count >= 0 && count <= maxFollowersFor(playerCount);
+}
+
+export function isFollowerKnows(value: unknown): value is FollowerKnows {
+	return value === 'team' || value === 'all';
+}
+
+export function resolveFollowers(playerCount: number, settings?: FollowerSettings): ResolvedFollowers {
+	const defaults = DEFAULT_FOLLOWERS[playerCount as PlayerCount] ?? { count: 0, knowledge: 'all' as const };
+	const max = maxFollowersFor(playerCount);
+	const requested = settings?.count;
+	const count =
+		requested === undefined ? Math.min(defaults.count, max) : Math.min(max, Math.max(0, Math.trunc(requested)));
+	const knowledge = isFollowerKnows(settings?.knowledge) ? settings.knowledge : defaults.knowledge;
 	return {
-		playerCount,
-		dicePerPlayer: 1,
-		peek: true,
-		followerMode: 'pick',
-		followerPickCount,
-		followersKnowThief: knowledge === 'all',
-		thiefKnowsFollowers: true,
-		followersKnowEachOther: followerPickCount > 1,
-		thiefPeeksAfterWaiting: false,
+		count,
+		knowledge,
+		defaultCount: defaults.count,
+		defaultKnowledge: defaults.knowledge,
+		max,
 	};
 }
 
-/**
- * 4–8 follow the English rulebook: the Thief names followers after 6 o'clock,
- * except 5p, where the person awake at the theft hour becomes the follower.
- * 6p: Thief and follower see each other. 7p: the two followers see each other, not the Thief.
- * 8p: the Thief and both followers open their eyes together, so all three know each other.
- */
-export const PRESETS: Record<4 | 5 | 6 | 7 | 8, TablePreset> = {
-	4: {
-		playerCount: 4,
-		dicePerPlayer: 2,
-		peek: false,
-		followerMode: 'none',
-		followerPickCount: 0,
-		followersKnowThief: false,
-		thiefKnowsFollowers: false,
-		followersKnowEachOther: false,
-		thiefPeeksAfterWaiting: false,
-	},
-	5: {
-		playerCount: 5,
-		dicePerPlayer: 1,
-		peek: true,
-		followerMode: 'witness',
-		followerPickCount: 1,
-		followersKnowThief: true,
-		thiefKnowsFollowers: true,
-		followersKnowEachOther: false,
-		thiefPeeksAfterWaiting: false,
-	},
-	6: pickPreset(6, 1, 'all'),
-	7: pickPreset(7, 2, 'followers-only'),
-	8: pickPreset(8, 2, 'all'),
-};
-
-/**
- * Two Nights only. The box stops at 8, so these extend the 8-player rule:
- * the Thief names followers, and Thief and followers all know each other.
- * About a third of the table sides with the Thief.
- */
-export const LARGE_TABLE_PRESETS: Record<9 | 10 | 11 | 12, TablePreset> = {
-	9: pickPreset(9, 2, 'all'),
-	10: pickPreset(10, 3, 'all'),
-	11: pickPreset(11, 3, 'all'),
-	12: pickPreset(12, 3, 'all'),
-};
+/** True when the resolved table differs from the size default. Hidden while there are no followers. */
+export function followersAreCustom(resolved: ResolvedFollowers): boolean {
+	return (
+		resolved.count !== resolved.defaultCount ||
+		(resolved.count > 0 && resolved.knowledge !== resolved.defaultKnowledge)
+	);
+}
 
 export function isPlayerCountAllowed(playerCount: number, mode: CheeseMode): boolean {
 	const { min, max } = playerRangeFor(mode);
 	return Number.isInteger(playerCount) && playerCount >= min && playerCount <= max;
 }
 
-export function presetFor(playerCount: number, mode: CheeseMode = 'classic'): TablePreset {
+export function presetFor(
+	playerCount: number,
+	mode: CheeseMode = 'classic',
+	followers?: FollowerSettings,
+): TablePreset {
 	if (!isPlayerCountAllowed(playerCount, mode)) {
 		const { min, max } = playerRangeFor(mode);
-		throw new Error(`${mode === 'two-night' ? 'Two Nights' : 'Classic'} needs ${min}–${max} players, received ${playerCount}`);
+		throw new Error(
+			`${mode === 'two-night' ? 'Two nights' : 'One night'} needs ${min}–${max} players, received ${playerCount}`,
+		);
 	}
-	const preset =
-		PRESETS[playerCount as keyof typeof PRESETS] ?? LARGE_TABLE_PRESETS[playerCount as keyof typeof LARGE_TABLE_PRESETS];
+	const resolved = resolveFollowers(playerCount, followers);
+	const count = resolved.count;
 	return {
-		...preset,
+		playerCount: playerCount as PlayerCount,
+		dicePerPlayer: playerCount === 4 ? 2 : 1,
+		peek: playerCount > 4,
+		followerMode: count > 0 ? 'pick' : 'none',
+		followerPickCount: count,
+		followersKnowThief: resolved.knowledge === 'all',
+		thiefKnowsFollowers: count > 0,
+		followersKnowEachOther: count > 1,
 		thiefPeeksAfterWaiting: mode === 'two-night' && playerCount <= 6,
 	};
 }

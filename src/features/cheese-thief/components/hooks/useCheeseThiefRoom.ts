@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CHEESE_POLL_INTERVAL_MS } from '@/features/cheese-thief/config/cheeseThief';
 import { fetchRoomState, patchCheeseAction, postCheeseAction } from '@/features/cheese-thief/lib/api';
 import { storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
-import type { RoomStateDTO } from '@/features/cheese-thief/types';
+import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 
 interface Options {
@@ -106,7 +106,7 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived }: Optio
 				setFetchedAt(Date.now());
 				return data;
 			}),
-		settings: (input: { scapegoat?: boolean; name?: string; mode?: 'classic' | 'two-night'; hourSeconds?: number }) =>
+		settings: (input: UpdateSettingsInput) =>
 			action(() =>
 				patchCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/settings`, {
 					token: tokenRef.current,

@@ -60,8 +60,10 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 					{card?.recruited && (
 						<div className="space-y-2 text-lg leading-relaxed">
 							<p>{t('cheese.result.recruited')}</p>
-							{card.recruited.thiefName && (
+							{card.recruited.thiefName ? (
 								<p>{t('cheese.result.thiefIs', { name: card.recruited.thiefName })}</p>
+							) : (
+								<p>{t('cheese.result.thiefHidden')}</p>
 							)}
 							{card.recruited.allyNames.length > 0 && (
 								<p>

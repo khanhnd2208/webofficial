@@ -42,6 +42,7 @@ test.describe('Mobile public smoke', () => {
 		await page.getByRole('textbox', { name: 'Tên của bạn' }).fill('Lan');
 		await create.click();
 		await expect(page.getByRole('textbox', { name: 'Tên phòng' })).toBeVisible();
+		await expect(page.getByText('Số người')).toBeVisible();
 		await expect(page.getByRole('checkbox', { name: /Có Scapegoat/ })).toBeVisible();
 		expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 

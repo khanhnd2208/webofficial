@@ -6,7 +6,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import { CHEESE_MAX_PLAYERS } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	CHEESE_MAX_PLAYERS,
+	CHEESE_MIN_PLAYERS,
+	CHEESE_TABLE_SIZE_DEFAULT,
+	SCAPEGOAT_MIN_PLAYERS,
+} from '@/features/cheese-thief/config/cheeseThief';
 import { postCheeseAction } from '@/features/cheese-thief/lib/api';
 import { storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
@@ -32,6 +37,7 @@ export default function CheeseThiefMenuClient() {
 	const [name, setName] = useState('');
 	const [roomName, setRoomName] = useState('');
 	const [joinCode, setJoinCode] = useState('');
+	const [tableSize, setTableSize] = useState(CHEESE_TABLE_SIZE_DEFAULT);
 	const [scapegoat, setScapegoat] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -61,8 +67,8 @@ export default function CheeseThiefMenuClient() {
 				{
 					name: roomName.trim() || t('cheese.menu.defaultRoom', { name: hostName }),
 					hostName,
-					scapegoat,
-					maxPlayers: CHEESE_MAX_PLAYERS,
+					scapegoat: tableSize >= SCAPEGOAT_MIN_PLAYERS && scapegoat,
+					maxPlayers: tableSize,
 					isPublic: true,
 				},
 			);
@@ -189,11 +195,42 @@ export default function CheeseThiefMenuClient() {
 									onChange={(event) => setRoomName(event.target.value)}
 								/>
 							</Field>
-							<label className="flex items-start gap-3 rounded-2xl border border-border px-4 py-3">
+							<div className="rounded-2xl border border-border px-4 py-3">
+								<p className="text-sm font-medium">{t('cheese.menu.tableSize')}</p>
+								<div className="mt-3 flex items-center justify-between gap-2">
+									<button
+										type="button"
+										aria-label={t('cheese.lobby.settings.lessPlayers')}
+										disabled={tableSize <= CHEESE_MIN_PLAYERS}
+										className="h-11 w-11 shrink-0 rounded-full border border-border text-xl disabled:opacity-40"
+										onClick={() => {
+											const next = tableSize - 1;
+											setTableSize(next);
+											if (next < SCAPEGOAT_MIN_PLAYERS) setScapegoat(false);
+										}}
+									>
+										−
+									</button>
+									<span className="font-display text-3xl font-medium tabular-nums">{tableSize}</span>
+									<button
+										type="button"
+										aria-label={t('cheese.lobby.settings.morePlayers')}
+										disabled={tableSize >= CHEESE_MAX_PLAYERS}
+										className="h-11 w-11 shrink-0 rounded-full border border-border text-xl disabled:opacity-40"
+										onClick={() => setTableSize(tableSize + 1)}
+									>
+										+
+									</button>
+								</div>
+							</div>
+							<label
+								className={`flex items-start gap-3 rounded-2xl border border-border px-4 py-3 ${tableSize < SCAPEGOAT_MIN_PLAYERS ? 'opacity-60' : ''}`}
+							>
 								<input
 									type="checkbox"
 									className="mt-1 h-5 w-5"
-									checked={scapegoat}
+									checked={scapegoat && tableSize >= SCAPEGOAT_MIN_PLAYERS}
+									disabled={tableSize < SCAPEGOAT_MIN_PLAYERS}
 									onChange={(event) => setScapegoat(event.target.checked)}
 								/>
 								<span>

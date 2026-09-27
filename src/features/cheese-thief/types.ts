@@ -1,4 +1,4 @@
-import type { CheeseMode, CheesePhase, NightNumber } from '@/features/cheese-thief/config/cheeseThief';
+import type { CheeseMode, CheesePhase, FollowerKnows, NightNumber } from '@/features/cheese-thief/config/cheeseThief';
 import type { CheeseRole, CheeseWinner, SecretCard } from '@/features/cheese-thief/lib/rules';
 
 export type { CheesePhase, CheeseRole, CheeseWinner, SecretCard, CheeseMode, NightNumber };
@@ -30,7 +30,7 @@ export interface PlayerSelfDTO {
 	role?: CheeseRole;
 	dice?: number[];
 	wakeHours?: number[];
-	/** Deal only, Two Nights. */
+	/** Deal only, two nights. */
 	wakeHours2?: number[];
 	/** Own vote, vote phase only. */
 	voteId?: string | null;
@@ -64,6 +64,15 @@ export interface RoomStateDTO {
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
 	mode: CheeseMode;
+	/** Follower rules for this table size. Public — everyone at the table may read them. */
+	followers: {
+		count: number;
+		knowledge: FollowerKnows;
+		defaultCount: number;
+		defaultKnowledge: FollowerKnows;
+		max: number;
+		customized: boolean;
+	};
 	/** Length of one night hour, set by the host in the lobby. */
 	hourSeconds: number;
 	playerCount: number;
@@ -75,7 +84,7 @@ export interface RoomStateDTO {
 	/** Shared tap count during the secret minute. Identical for every phone. */
 	choiceCount?: number;
 	nightNumber?: NightNumber;
-	/** Set once the table has seen whether the cheese is gone. Two Nights only. */
+	/** Set once the table has seen whether the cheese is gone. Two nights only. */
 	theftNight?: NightNumber;
 	/** The hour the cheese was taken. Reveal only. */
 	theftHour?: number;
@@ -106,6 +115,9 @@ export interface CreateRoomInput {
 	scapegoat?: boolean;
 	mode?: CheeseMode;
 	hourSeconds?: number;
+	/** `null` clears a host override and returns to the size default. */
+	followerCount?: number | null;
+	followerKnowledge?: FollowerKnows | null;
 }
 
 export interface UpdateSettingsInput {
@@ -115,4 +127,7 @@ export interface UpdateSettingsInput {
 	scapegoat?: boolean;
 	mode?: CheeseMode;
 	hourSeconds?: number;
+	/** `null` clears a host override and returns to the size default. */
+	followerCount?: number | null;
+	followerKnowledge?: FollowerKnows | null;
 }
