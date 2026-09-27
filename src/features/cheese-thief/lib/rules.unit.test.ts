@@ -559,16 +559,6 @@ describe('room projection does not leak', () => {
 		expect(serialized).not.toContain('sleepyhead');
 	});
 
-	it('gives every phone the same secret-minute deadline, and drops it afterwards', () => {
-		const started = new Date('2026-09-27T12:00:00Z');
-		const secret = projectRoom({ ...room('secret'), secretStartedAt: started }, 'tok-b', started);
-		expect(secret.secretEndsAt).toBe('2026-09-27T12:01:00.000Z');
-		expect(projectRoom({ ...room('secret'), secretStartedAt: started }, 'tok-a', started).secretEndsAt).toBe(
-			secret.secretEndsAt,
-		);
-		expect(projectRoom({ ...room('secret-result'), secretStartedAt: started }, 'tok-b', started).secretEndsAt).toBeUndefined();
-	});
-
 	it('shows a player only their own card after the secret minute', () => {
 		const dto = projectRoom(room('secret-result'), 'tok-b', new Date());
 		expect(dto.self?.secretCard?.recruited?.thiefName).toBeNull();

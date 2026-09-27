@@ -232,7 +232,6 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 				{phase === 'secret' && (
 					<SecretPhase
 						state={state}
-						fetchedAt={fetchedAt}
 						busy={busy}
 						onSubmit={(picks) => void run(() => api.secret(picks))}
 						onDraft={api.secretDraft}
@@ -249,7 +248,6 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 				{phase === 'day' && (
 					<DayPhase
 						state={state}
-						fetchedAt={fetchedAt}
 						busy={busy}
 						onVote={() => void run(api.startVote)}
 					/>

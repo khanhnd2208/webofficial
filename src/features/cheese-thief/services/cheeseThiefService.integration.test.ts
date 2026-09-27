@@ -50,7 +50,7 @@ async function rolesOf(code: string): Promise<Map<string, CheeseRole>> {
 	return new Map(game!.players.map((player) => [player.token, player.role!]));
 }
 
-async function rewind(code: string, field: 'nightStartedAt' | 'secretStartedAt', msAgo: number) {
+async function rewind(code: string, field: 'nightStartedAt', msAgo: number) {
 	await CheeseThiefRoom.updateOne({ code }, { $set: { [field]: new Date(Date.now() - msAgo) } });
 }
 
@@ -68,7 +68,6 @@ async function reachSecret(table: Table) {
 }
 
 async function finishSecret(table: Table) {
-	await rewind(table.code, 'secretStartedAt', 20_000);
 	const state = await getScopedState(table.code, table.host);
 	const choiceCount = state.choiceCount ?? 1;
 	const ids = state.players.map((player) => player.id);
@@ -124,7 +123,6 @@ describe('Cheese Thief table', () => {
 		expect(secret.choiceCount).toBe(2);
 		expect(secret.choiceCount).toBe((await getScopedState(table.code, table.host)).choiceCount);
 
-		await rewind(table.code, 'secretStartedAt', 20_000);
 		const roster = (await getScopedState(table.code, table.host)).players;
 		const stored = (await CheeseThiefRoom.findOne({ code: table.code }).lean())!;
 		const thiefToken = stored.players.find((player) => player.role === 'thief')!.token;
@@ -333,7 +331,6 @@ describe('Cheese Thief table', () => {
 		expect(secret.phase).toBe('secret');
 		expect(secret.choiceCount).toBe(4);
 
-		await rewind(table.code, 'secretStartedAt', 20_000);
 		const stored = (await CheeseThiefRoom.findOne({ code: table.code }).lean())!;
 		const thief = stored.players.find((player) => player.role === 'thief')!;
 		const others = stored.players.filter((player) => player.id !== thief.id);
@@ -357,7 +354,7 @@ describe('Cheese Thief table', () => {
 		expect(follower.self?.secretCard?.recruited?.allyNames).not.toContain(thief.name);
 	});
 
-	it('keeps a lone sleepyhead\'s peek when the minute runs out before they press Done', async () => {
+	it('waits for every Done however long it takes, and keeps a lone sleepyhead\'s peek', async () => {
 		const table = await openTable(10);
 		await startGame(table.code, table.host);
 		const dealt = (await CheeseThiefRoom.findOne({ code: table.code }))!;
@@ -380,16 +377,22 @@ describe('Cheese Thief table', () => {
 		expect(drafted.self?.hasChosenSecret).toBe(false);
 		await expect(submitSecret(table.code, lone.token, [target.id])).rejects.toMatchObject({ code: 'PICK_COUNT' });
 
-		// Full drafts from everyone do not end the minute early; only Done does.
+		// Full drafts from everyone never end the step; only Done does, and there is no clock.
+		const picksOf = (id: string) =>
+			dealt.players.filter((other) => other.id !== id).slice(0, 3).map((other) => other.id);
 		for (const player of dealt.players) {
 			if (player.id === lone.id) continue;
-			const picks = dealt.players.filter((other) => other.id !== player.id).slice(0, 3).map((other) => other.id);
-			await submitSecret(table.code, player.token, picks, { draft: true });
+			await submitSecret(table.code, player.token, picksOf(player.id), { draft: true });
 		}
-		await rewind(table.code, 'secretStartedAt', 20_000);
+		await submitSecret(table.code, lone.token, [target.id, ...picksOf(lone.id).filter((id) => id !== target.id)].slice(0, 3));
 		expect((await getScopedState(table.code, lone.token)).phase).toBe('secret');
 
-		await rewind(table.code, 'secretStartedAt', 61_000);
+		const lastSeat = dealt.players.filter((player) => player.id !== lone.id);
+		for (const player of lastSeat.slice(0, -1)) await submitSecret(table.code, player.token, picksOf(player.id));
+		expect((await getScopedState(table.code, lone.token)).phase).toBe('secret');
+
+		const last = lastSeat.at(-1)!;
+		await submitSecret(table.code, last.token, picksOf(last.id));
 		const result = await getScopedState(table.code, lone.token);
 		expect(result.phase).toBe('secret-result');
 		expect(result.self?.secretCard?.peek).toEqual({ name: target.name, hours: [...target.dice] });

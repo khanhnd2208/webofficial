@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ActionBar from '@/features/cheese-thief/components/ActionBar';
 import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
-import { formatClock, useTableClock } from '@/features/cheese-thief/components/hooks/useTableClock';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
 import { Button } from '@/features/spy-fall/components/ui';
@@ -13,7 +12,6 @@ import { cn } from '@/features/spy-fall/lib/cn';
 
 interface Props {
 	state: RoomStateDTO;
-	fetchedAt: number;
 	busy: boolean;
 	onSubmit: (picks: string[]) => void;
 	/** Saves an unfinished selection. Failures are ignored; the next tap or Done tries again. */
@@ -75,7 +73,7 @@ function useDraftSender(send: (picks: string[]) => Promise<unknown>) {
 	return { queue, settle };
 }
 
-export default function SecretPhase({ state, fetchedAt, busy, onSubmit, onDraft }: Props) {
+export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 	const t = useT();
 	const count = state.choiceCount ?? 1;
 	const [picks, setPicks] = useState<string[]>([]);
@@ -84,7 +82,6 @@ export default function SecretPhase({ state, fetchedAt, busy, onSubmit, onDraft 
 	const [settling, setSettling] = useState(false);
 	const locked = busy || settling;
 	const drafts = useDraftSender(onDraft);
-	const now = useTableClock(state.serverNow, fetchedAt);
 	const others = state.players.filter((player) => player.id !== state.self?.id);
 	const job = state.self?.secretJob;
 	const jobText = !job
@@ -102,10 +99,6 @@ export default function SecretPhase({ state, fetchedAt, busy, onSubmit, onDraft 
 					? t(count > 1 ? 'cheese.secret.job.peek' : 'cheese.secret.job.peekOnly')
 					: t(count > 1 ? 'cheese.secret.job.hunch' : 'cheese.secret.job.hunchOnly');
 
-	const secondsLeft = state.secretEndsAt
-		? Math.ceil((new Date(state.secretEndsAt).getTime() - now) / 1000)
-		: null;
-	const hurry = secondsLeft !== null && secondsLeft <= 10;
 	const sent =
 		Boolean(state.self?.hasChosenSecret) &&
 		sentPicks !== null &&
@@ -148,27 +141,11 @@ export default function SecretPhase({ state, fetchedAt, busy, onSubmit, onDraft 
 					<p className="font-mono text-[0.68rem] leading-snug tracking-[0.18em] text-[#e0a045] uppercase">
 						{t('cheese.secret.onlyYou')}
 					</p>
-					{secondsLeft !== null ? (
-						<p
-							className={cn(
-								'shrink-0 rounded-full border px-3 py-1 font-mono text-sm tabular-nums',
-								hurry
-									? 'border-[#f08a6c]! bg-[#f08a6c]/15 text-[#ffb59e]'
-									: 'border-white/15! bg-white/5 text-[#f4efe4]',
-							)}
-							role="timer"
-							aria-live={hurry ? 'polite' : 'off'}
-						>
-							{secondsLeft > 0
-								? t('cheese.secret.timeLeft', { clock: formatClock(secondsLeft) })
-								: t('cheese.secret.timeUp')}
-						</p>
-					) : (
-						<CheeseThiefArt scene="secret" size={38} />
-					)}
+					<CheeseThiefArt scene="secret" size={38} />
 				</div>
 				<h1 className="mt-3 font-display text-4xl font-medium">{t('cheese.secret.title')}</h1>
 
+				<p className="mt-2 text-sm leading-relaxed text-[#f4efe4]/70">{t('cheese.secret.noRush')}</p>
 				<ol className="mt-4 space-y-2" aria-label={t('cheese.secret.stepsLabel')}>
 					{(['step1', 'step2', 'step3'] as const).map((key, index) => (
 						<li key={key} className="flex gap-3 text-sm leading-snug text-[#f4efe4]/85">
@@ -249,7 +226,6 @@ export default function SecretPhase({ state, fetchedAt, busy, onSubmit, onDraft 
 						);
 					})}
 				</div>
-				<p className="mt-4 text-xs leading-relaxed text-[#f4efe4]/55">{t('cheese.secret.timeHint')}</p>
 			</div>
 
 			<ActionBar dark>

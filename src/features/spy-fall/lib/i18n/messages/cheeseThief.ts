@@ -159,6 +159,7 @@ export const cheeseVi: MessageTree = {
 	},
 	secret: {
 		title: 'Phút bí mật',
+		noRush: 'Không giới hạn thời gian. Cứ từ từ — cả bàn chỉ sang bước tiếp khi mọi người đã bấm “Xong”.',
 		step1: 'Giữ thẻ “Việc của bạn” để xem mỗi ô dùng làm gì.',
 		step2: 'Chạm tên theo đúng thứ tự: ô 1 trước, rồi ô 2.',
 		step3: 'Nhấn “Xong”. Vẫn đổi được cho đến khi cả bàn xong.',
@@ -173,9 +174,6 @@ export const cheeseVi: MessageTree = {
 		slotEmpty: 'Chưa chọn',
 		unpick: 'Bỏ {name} khỏi ô {n}',
 		namesLabel: 'Chạm để chọn',
-		timeLeft: 'Còn {clock}',
-		timeUp: 'Hết giờ · đang chốt',
-		timeHint: 'Hết giờ mà còn ô trống: ô xem giờ bị bỏ qua, ô Follower do máy chọn ngẫu nhiên.',
 		holdHint: 'Giữ ngón tay để xem · thả ra là ẩn',
 		slot: {
 			follower: 'Follower',
@@ -215,7 +213,6 @@ export const cheeseVi: MessageTree = {
 	day: {
 		title: 'Trời sáng. Cheese đã biến mất.',
 		body: 'Cả bàn cùng nói chuyện để tìm người lấy cheese. Được nói dối, nhưng không đưa màn hình cho ai xem.',
-		elapsed: 'Đã thảo luận {clock}',
 		promptsTitle: 'Gợi ý để hỏi nhau',
 		prompt1: 'Bạn thức lúc mấy giờ? Có thấy ai mở mắt cùng không?',
 		prompt2: 'Giờ và tên mọi người kể có khớp với nhau không?',
@@ -459,6 +456,7 @@ export const cheeseEn: MessageTree = {
 	},
 	secret: {
 		title: 'Secret minute',
+		noRush: 'No time limit. Take your time — the table only moves on once everyone has pressed “Done”.',
 		step1: 'Hold “Your job” to see what each slot is for.',
 		step2: 'Tap names in that order: slot 1 first, then slot 2.',
 		step3: 'Press “Done”. You can change it until the whole table is done.',
@@ -473,9 +471,6 @@ export const cheeseEn: MessageTree = {
 		slotEmpty: 'Empty',
 		unpick: 'Remove {name} from slot {n}',
 		namesLabel: 'Tap to choose',
-		timeLeft: '{clock} left',
-		timeUp: 'Time’s up · settling',
-		timeHint: 'Empty slots at the end: a peek is skipped, a Follower is picked at random.',
 		holdHint: 'Keep your finger down to see · let go to hide',
 		slot: {
 			follower: 'Follower',
@@ -515,7 +510,6 @@ export const cheeseEn: MessageTree = {
 	day: {
 		title: 'Morning. The cheese is gone.',
 		body: 'Talk it out and find who took the cheese. You may lie, but never show anyone your screen.',
-		elapsed: 'Talking for {clock}',
 		promptsTitle: 'Things to ask each other',
 		prompt1: 'What hour did you wake? Did you see anyone else awake?',
 		prompt2: 'Do everyone’s hours and names line up?',

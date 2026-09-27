@@ -15,8 +15,6 @@ import {
 	CHEESE_PLAYER_TOKEN_LENGTH,
 	CHEESE_ROOM_CODE_LENGTH,
 	CHEESE_ROUND_HOST_HANDOFF_MS,
-	CHEESE_SECRET_MAX_MS,
-	CHEESE_SECRET_MIN_MS,
 	CHEESE_TABLE_SIZE_DEFAULT,
 	isCheeseMode,
 	isFollowerCountAllowed,
@@ -235,7 +233,6 @@ function migrateHostIfNeeded(game: RoomDoc, at: Date): boolean {
 function resetToLobby(game: RoomDoc): void {
 	game.phase = 'lobby';
 	game.nightStartedAt = undefined;
-	game.secretStartedAt = undefined;
 	game.dayStartedAt = undefined;
 	game.choiceCount = 1;
 	game.nightNumber = 1;
@@ -278,7 +275,6 @@ function applySecretResolution(game: RoomDoc): void {
 	game.peekByPlayer = resolved.peekByPlayer;
 	game.hunchByPlayer = resolved.hunchByPlayer;
 	game.phase = 'secret-result';
-	game.secretStartedAt = undefined;
 	for (const player of game.players) player.hasSeenSecret = false;
 }
 
@@ -301,7 +297,6 @@ function settleVote(game: RoomDoc): void {
 
 function enterSecret(game: RoomDoc, at: Date, theftNight: NightNumber): void {
 	game.phase = 'secret';
-	game.secretStartedAt = at;
 	game.theftNight = theftNight;
 	game.choiceCount = sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
 	for (const player of game.players) {
@@ -322,15 +317,13 @@ function advanceClock(game: RoomDoc, at: Date): boolean {
 		}
 	}
 
-	if (game.phase === 'secret' && game.secretStartedAt) {
-		const elapsed = at.getTime() - game.secretStartedAt.getTime();
+	// No clock: the table takes as long as it needs, and moves on once every phone has pressed Done.
+	if (game.phase === 'secret') {
 		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
 		const everyoneChose = game.players.every(
 			(player) => player.secretConfirmed && (player.secretPicks ?? []).length === choiceCount,
 		);
-		const timedOut = elapsed >= CHEESE_SECRET_MAX_MS;
-		const minElapsed = elapsed >= CHEESE_SECRET_MIN_MS;
-		if (timedOut || (everyoneChose && minElapsed)) {
+		if (everyoneChose) {
 			applySecretResolution(game);
 			return true;
 		}
@@ -385,7 +378,6 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		voteRound: game.voteRound ?? 0,
 		hostToken: game.hostToken,
 		...(game.nightStartedAt ? { nightStartedAt: game.nightStartedAt } : {}),
-		...(game.secretStartedAt ? { secretStartedAt: game.secretStartedAt } : {}),
 		...(game.dayStartedAt ? { dayStartedAt: game.dayStartedAt } : {}),
 		choiceCount: game.choiceCount || 1,
 		isRunoff: Boolean(game.isRunoff),
@@ -635,7 +627,6 @@ export async function startGame(code: string, hostToken: string): Promise<RoomSt
 		}
 		game.phase = 'deal';
 		game.nightStartedAt = undefined;
-		game.secretStartedAt = undefined;
 		game.dayStartedAt = undefined;
 		game.choiceCount = sharedChoiceCount(tablePreset(game), mode);
 		game.nightNumber = 1;

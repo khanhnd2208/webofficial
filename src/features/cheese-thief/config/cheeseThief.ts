@@ -35,10 +35,6 @@ export const CHEESE_HOUR_SECONDS_PRESETS = [8, 10, 12, 15, 20, 30] as const;
 export const CHEESE_HOUR_MS = CHEESE_HOUR_SECONDS_DEFAULT * 1000;
 /** "Go back to sleep" stays short; a longer hour buys more eyes-open time. */
 export const CHEESE_SLEEP_MAX_MS = 4_000;
-/** Secret minute cannot end early, so a fast tap does not announce itself. */
-export const CHEESE_SECRET_MIN_MS = 15_000;
-/** Unfinished peeks are dropped; unfinished follower picks are filled at random. */
-export const CHEESE_SECRET_MAX_MS = 60_000;
 
 export const CHEESE_HOURS = [1, 2, 3, 4, 5, 6] as const;
 

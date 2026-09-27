@@ -75,7 +75,7 @@ export const cheeseGuideVi: MessageTree = {
 			b1: 'Khi đêm cuối cùng kết thúc, mọi người cùng cầm điện thoại nhưng chỉ nhìn máy của mình. Màn “Phút bí mật” yêu cầu tất cả chọn cùng số tên để người bên cạnh không biết bạn đang làm gì.',
 			b2: 'Nhấn giữ “Việc của bạn” để đọc việc thật của mình. Nếu là người trộm, bạn có thể phải chọn đồng phạm. Nếu được xem giờ, bạn chọn người muốn biết số. Những lựa chọn còn lại chỉ là đoán ai trộm hoặc chọn cho đủ số ô.',
 			b3: 'Chạm tên theo đúng thứ tự màn hình yêu cầu: đồng phạm trước, người muốn xem giờ tiếp theo, rồi mới đến người bạn nghi là trộm. Số 1, 2… cạnh tên cho biết thứ tự đã chọn. Mỗi tên chỉ chọn được một lần.',
-			b4: 'Bấm “Xong” sau khi chọn đủ. Màn này kéo dài ít nhất 15 giây và nhiều nhất 60 giây. Nếu người trộm chưa chọn đủ đồng phạm, máy chọn ngẫu nhiên phần còn thiếu; tên bạn đã chạm được máy giữ lại, nên người ở ô xem giờ vẫn được tính; chỉ khi chưa chạm tên nào thì bạn mất lượt xem.',
+			b4: 'Bấm “Xong” sau khi chọn đủ. Màn này không bấm giờ: nhanh hay chậm đều được, và cả bàn chỉ sang bước tiếp khi mọi người đã bấm “Xong”. Trước lúc đó, bạn vẫn đổi được lựa chọn của mình.',
 			b5: 'Tiếp theo, nhấn giữ để đọc kết quả riêng: chẳng hạn số giờ vừa xem được hoặc tin mình đã thành đồng phạm. Bấm “Đã xem” và úp máy xuống. Những lượt đoán ai trộm không quyết định thắng thua.',
 		},
 		day: {
@@ -214,7 +214,7 @@ export const cheeseGuideEn: MessageTree = {
 			b1: 'After the final night, everyone picks up their phone but looks only at their own screen. The Secret minute asks everyone to select the same number of names, so neighbors cannot tell who has a special job.',
 			b2: 'Press and hold “Your job” to read what your choices really do. The Thief may need to choose Followers. If you earned a peek, choose whose number to see. Other choices are guesses or fillers.',
 			b3: 'Tap names in the order shown: Followers first, then whose number to see, then your guess about the Thief. The 1, 2… beside each name shows the selection order. Each name can only be selected once.',
-			b4: 'Tap “Done” when you have selected enough names. This phase lasts at least 15 and at most 60 seconds. If the Thief runs out of time, missing Followers are chosen at random; names you already tapped are kept, so the player in your peek slot still counts. You lose the peek only if you tapped no name.',
+			b4: 'Tap “Done” when you have selected enough names. There is no timer: take as long as you need, and the table only moves on once everyone has pressed “Done”. Until then, you can still change your choice.',
 			b5: 'Next, press and hold to read your private result, such as a player’s number or the news that you became a Follower. Tap “Seen” and put your phone down. Guesses do not decide who wins.',
 		},
 		day: {

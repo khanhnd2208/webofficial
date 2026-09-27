@@ -2,7 +2,6 @@
 
 import ActionBar, { WaitingForHost } from '@/features/cheese-thief/components/ActionBar';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
-import { formatClock, useTableClock } from '@/features/cheese-thief/components/hooks/useTableClock';
 import RoundSteps from '@/features/cheese-thief/components/RoundSteps';
 import { SCAPEGOAT_MIN_PLAYERS } from '@/features/cheese-thief/config/cheeseThief';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
@@ -11,15 +10,12 @@ import { Button } from '@/features/spy-fall/components/ui';
 
 interface Props {
 	state: RoomStateDTO;
-	fetchedAt: number;
 	busy: boolean;
 	onVote: () => void;
 }
 
-export default function DayPhase({ state, fetchedAt, busy, onVote }: Props) {
+export default function DayPhase({ state, busy, onVote }: Props) {
 	const t = useT();
-	const now = useTableClock(state.serverNow, fetchedAt);
-	const elapsed = state.dayStartedAt ? (now - new Date(state.dayStartedAt).getTime()) / 1000 : 0;
 	const scapegoat = state.scapegoatEnabled && state.playerCount >= SCAPEGOAT_MIN_PLAYERS;
 	const table = [
 		t('cheese.day.tablePlayers', { count: state.playerCount }),
@@ -40,12 +36,6 @@ export default function DayPhase({ state, fetchedAt, busy, onVote }: Props) {
 					{t('cheese.day.title')}
 				</h1>
 				<p className="max-w-sm text-base leading-relaxed text-muted">{t('cheese.day.body')}</p>
-				<p
-					className="rounded-full border border-border bg-surface px-3 py-1 font-mono text-sm tabular-nums text-foreground-secondary"
-					role="timer"
-				>
-					{t('cheese.day.elapsed', { clock: formatClock(elapsed) })}
-				</p>
 			</section>
 
 			<section className="rounded-3xl border border-border bg-surface px-5 py-4">
