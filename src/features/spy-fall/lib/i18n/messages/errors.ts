@@ -43,6 +43,10 @@ export const errorsVi: MessageTree = {
 	ROLE_COUNT_MISMATCH: 'Tổng số thẻ ({total}) phải bằng số người chơi ({playerCount})',
 	NOT_LOBBY: 'Chỉ chỉnh bộ bài khi phòng đang chờ',
 	NOT_DEALT: 'Bài chưa được chia',
+	CHOOSE_HOUR: 'Hãy chọn một giờ thức trước khi úp máy',
+	NEED_ALL_MEMORIZED: 'Chờ mọi người xem xong vai rồi mới bắt đầu đêm',
+	PICK_COUNT: 'Hãy chọn đúng {count} người',
+	PICK_UNKNOWN: 'Chỉ chọn người đang ngồi trong bàn này',
 };
 
 export const errorsEn: MessageTree = {
@@ -88,4 +92,8 @@ export const errorsEn: MessageTree = {
 	ROLE_COUNT_MISMATCH: 'Card total ({total}) must equal the number of players ({playerCount})',
 	NOT_LOBBY: 'The deck can only be edited in the lobby',
 	NOT_DEALT: 'Cards have not been dealt yet',
+	CHOOSE_HOUR: 'Choose a wake hour before you put the phone down',
+	NEED_ALL_MEMORIZED: 'Wait until everyone has seen their role',
+	PICK_COUNT: 'Choose exactly {count} people',
+	PICK_UNKNOWN: 'Choose someone at this table',
 };

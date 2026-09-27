@@ -25,6 +25,8 @@ export const routes = {
 	spyFallGuide: '/my-space/board-game/spy-fall/guide',
 	maSoi: '/my-space/board-game/ma-soi',
 	maSoiRoom: (code: string) => `/my-space/board-game/ma-soi/room/${code}` as const,
+	cheeseThief: '/my-space/board-game/cheese-thief',
+	cheeseThiefRoom: (code: string) => `/my-space/board-game/cheese-thief/room/${code}` as const,
 	/** @deprecated Active Recall now lives inside Teaching class boards. */
 	activeRecall: '/my-space/active-recall',
 	/** @deprecated Use teachingPublicRecallDeck */

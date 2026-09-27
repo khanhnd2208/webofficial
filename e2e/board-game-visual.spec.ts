@@ -3,13 +3,14 @@ import { expect, test } from '@playwright/test';
 const gamePaths = [
 	'/my-space/board-game/spy-fall',
 	'/my-space/board-game/ma-soi',
+	'/my-space/board-game/cheese-thief',
 	'/my-space/board-game/spy-fall/guide',
 ] as const;
 
 test('board game gallery loads both covers and links to each game', async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await page.goto('/my-space/board-game');
-	for (const slug of ['spy-fall', 'ma-soi']) {
+	for (const slug of ['spy-fall', 'ma-soi', 'cheese-thief']) {
 		const card = page.locator(`a[href="/my-space/board-game/${slug}"]`);
 		await card.scrollIntoViewIfNeeded();
 		const cover = card.locator('img');
@@ -76,6 +77,21 @@ test('Spy Fall room entry keeps its artwork and a route back to the menu', async
 		.toBe(true);
 	await page.getByRole('button', { name: 'Quay lại menu' }).click();
 	await expect(page).toHaveURL(/\/my-space\/board-game\/spy-fall$/);
+});
+
+test('Cheese Thief menu keeps create, join, and translation', async ({ page }) => {
+	await page.goto('/my-space/board-game/cheese-thief');
+	await page.getByRole('textbox', { name: 'Tên của bạn' }).fill('Khánh');
+	await page.getByRole('button', { name: 'Tạo phòng' }).click();
+	await expect(page.getByRole('textbox', { name: 'Tên phòng' })).toBeVisible();
+	await expect(page.getByText('Có Scapegoat')).toBeVisible();
+	await page.getByRole('button', { name: 'Quay lại' }).click();
+	await page.getByRole('button', { name: 'Vào bằng mã' }).click();
+	await expect(page.getByRole('textbox', { name: 'Mã phòng' })).toBeVisible();
+	await page.getByRole('button', { name: 'Quay lại' }).click();
+	await page.getByRole('button', { name: 'Chuyển sang English' }).click();
+	await expect(page.getByRole('heading', { name: 'Cheese Thief' })).toBeVisible();
+	await expect(page.getByText('Late supper')).toBeVisible();
 });
 
 test('Ma Sói create and join forms keep their navigation and translation', async ({ page }) => {

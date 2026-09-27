@@ -1266,6 +1266,19 @@
 	--accent-foreground: var(--background);
 }
 
+.game-theme-cheese {
+	--game-accent: #e0a045;
+	--game-accent-deep: #8a5a12;
+	--accent: var(--game-accent);
+	--accent-hover: color-mix(in srgb, var(--game-accent) 82%, white);
+	--accent-subtle: color-mix(in srgb, var(--game-accent) 15%, var(--background));
+	--accent-muted: color-mix(in srgb, var(--game-accent) 22%, var(--background));
+	--accent-foreground: #1a140c;
+	background:
+		radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--game-accent) 16%, transparent), transparent 24rem),
+		var(--background);
+}
+
 .game-theme-werewolf {
 	--game-accent: #bd6264;
 	--game-accent-deep: #743d4a;
