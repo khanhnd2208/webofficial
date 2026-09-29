@@ -78,10 +78,10 @@ test.describe('Teaching group list UX', () => {
 			await page.getByRole('dialog').getByRole('button', { name: 'Lưu', exact: true }).click();
 			const g1 = page
 				.locator('.group-list-section')
-				.filter({ has: page.getByRole('heading', { name: /^Nhóm 1 ·/ }) });
+				.filter({ has: page.getByRole('heading', { name: 'Nhóm 1', exact: true }) });
 			const g2 = page
 				.locator('.group-list-section')
-				.filter({ has: page.getByRole('heading', { name: /^Nhóm 2 ·/ }) });
+				.filter({ has: page.getByRole('heading', { name: 'Nhóm 2', exact: true }) });
 			await g1.getByRole('button', { name: 'Thêm sinh viên' }).click();
 			await page.getByRole('button', { name: /dán nhiều mã cùng lúc/ }).click();
 			await page.getByRole('textbox', { name: /Mã sinh viên/ }).fill(`${codes[0]}\n${codes[2]}`);
@@ -95,9 +95,9 @@ test.describe('Teaching group list UX', () => {
 			await page.getByRole('button', { name: 'Kiểm tra mã' }).click();
 			await expect(page.getByText('2 mã hợp lệ · còn 2 chỗ')).toBeVisible();
 			await page.getByRole('dialog').getByRole('button', { name: 'Lưu', exact: true }).click();
-			await expect(g1.getByRole('heading')).toHaveText('Nhóm 1 · 2/2 sinh viên');
+			await expect(g1.getByLabel('2 trên 2 sinh viên')).toHaveText('2/2');
 			await page.getByRole('searchbox').fill('Bình');
-			await expect(g1.getByRole('heading')).toHaveText('Nhóm 1 · 2/2 sinh viên');
+			await expect(g1.getByLabel('2 trên 2 sinh viên')).toHaveText('2/2');
 			await page.getByRole('searchbox').clear();
 			await g1.getByRole('button', { name: 'Chuyển nhóm' }).first().click();
 			await page
@@ -106,18 +106,21 @@ test.describe('Teaching group list UX', () => {
 				.click();
 			await expect(g2.getByText('Kiểm thử An', { exact: true })).toBeVisible();
 			await g2.getByRole('button', { name: 'Bỏ khỏi nhóm' }).click();
-			await expect(g2.getByRole('heading')).toHaveText('Nhóm 2 · 0/2 sinh viên');
+			await expect(g2.getByLabel('0 trên 2 sinh viên')).toHaveText('0/2');
 			await g1.getByRole('button', { name: 'Sức chứa', exact: true }).click();
 			await page.getByRole('dialog').getByRole('spinbutton').fill('3');
 			await page.getByRole('dialog').getByRole('button', { name: 'Lưu', exact: true }).click();
-			await expect(g1.getByRole('heading')).toHaveText('Nhóm 1 · 1/3 sinh viên');
+			await expect(g1.getByLabel('1 trên 3 sinh viên')).toHaveText('1/3');
 			await page.setViewportSize({ width: 390, height: 844 });
 			await expect(g1.getByText('Kiểm thử Bình', { exact: true })).toBeVisible();
 			await expect(g1.getByRole('button', { name: 'Chuyển nhóm' })).toBeVisible();
 			expect(
 				await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
 			).toBeTruthy();
-			await page.screenshot({ path: `test-results/groups-admin-mobile-${test.info().project.name}.png`, fullPage: true });
+			await page.screenshot({
+				path: `test-results/groups-admin-mobile-${test.info().project.name}.png`,
+				fullPage: true,
+			});
 			await page.getByRole('button', { name: /Tutorial Class/ }).click();
 			await page.getByRole('option', { name: /^02 ·/ }).click();
 			await expect(page.getByText(/Chưa thiết lập nhóm cho tutorial này/)).toBeVisible();

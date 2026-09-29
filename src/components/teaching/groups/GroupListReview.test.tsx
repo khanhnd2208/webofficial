@@ -60,12 +60,13 @@ describe('Group list review regressions', () => {
 	it('keeps the actual group size when search matches only one member', () => {
 		render(<GroupListWorkspace classId="c1" tutorials={tutorials} initial={initial} admin />);
 		fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Binh' } });
-		expect(screen.getByRole('heading', { name: 'Nhóm 1 · 2/3 sinh viên' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Nhóm 1' })).toBeInTheDocument();
+		expect(screen.getByLabelText('2 trên 3 sinh viên')).toHaveTextContent('2/3');
 	});
 	it('loads a selected tutorial only once', async () => {
 		vi.mocked(teachingApi).mockResolvedValue(initial);
 		render(<GroupListWorkspace classId="c1" tutorials={tutorials} admin />);
-		await screen.findByText('Nhóm 1 · 2/3 sinh viên');
+		await screen.findByRole('heading', { name: 'Nhóm 1' });
 		await waitFor(() => expect(teachingApi).toHaveBeenCalledTimes(1));
 	});
 });
@@ -152,7 +153,9 @@ describe('Quick-add student picker', () => {
 			board: { ...withUnassigned, unassigned: [], assignedCount: 3 },
 			skipped: [],
 		});
-		render(<GroupListWorkspace classId="c1" tutorials={tutorials} initial={withUnassigned} admin />);
+		render(
+			<GroupListWorkspace classId="c1" tutorials={tutorials} initial={withUnassigned} admin />,
+		);
 		fireEvent.click(screen.getByRole('button', { name: 'Thêm sinh viên' }));
 
 		const search = screen.getByRole('textbox', { name: /Tìm sinh viên theo mã hoặc tên/ });

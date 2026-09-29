@@ -4785,6 +4785,9 @@ body::before {
 
 /* Tutorial group list — simplified admin/public roster */
 .group-list-workspace {
+	--mc-brand: #635b91;
+	--mc-ink: #263247;
+	--mc-paper: #fff;
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
@@ -4892,66 +4895,62 @@ body::before {
 	color: #a05a2c;
 }
 
+.group-list-table {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: left;
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
 .group-list-table thead th {
-	background: color-mix(in srgb, var(--mc-brand) 92%, black);
-	color: #fff;
-	font-size: 0.75rem;
-	font-weight: 700;
-	text-align: center;
-	padding: 0.55rem 0.65rem;
-	letter-spacing: 0.03em;
+	padding: 0.55rem 1rem;
+	background: #f7f8fb;
+	color: #64748b;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	text-align: left;
+	letter-spacing: 0.035em;
+	border-bottom: 1px solid #edf0f5;
+}
+
+.group-list-table th:first-child {
+	width: 1%;
 	white-space: nowrap;
 }
 
 .group-list-table tbody td {
-	padding: 0.5rem 0.65rem;
-	border-top: 1px solid var(--mc-rule);
+	padding: 0.7rem 1rem;
+	border-bottom: 1px solid #edf0f5;
 	vertical-align: middle;
+	color: #263247;
 }
 
-.group-list-table tbody tr:nth-child(even) {
-	background: color-mix(in srgb, var(--mc-brand) 6%, transparent);
+.group-list-table tbody tr:last-child td {
+	border-bottom: 0;
 }
 
-.group-list-table tbody td:nth-child(1),
-.group-list-table tbody td:nth-child(2),
-.group-list-table tbody td:nth-child(4) {
-	text-align: center;
+.group-list-table tbody tr:hover {
+	background: #f8f9fc;
 }
 
-.group-list-lx {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 0;
-	padding: 0.2rem 0.5rem;
-	border-radius: var(--mc-r-sm);
-	font-size: 0.72rem;
-	font-weight: 600;
+.group-list-table .group-list-student-code {
+	color: #758096;
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
 
-.group-list-lx-support {
-	background: #e2efda;
-	color: #1f4d1f;
-}
-
-.group-list-lx-challenge {
-	background: #fce4d6;
-	color: #7a2e1a;
-}
-
-.group-list-lx-neutral {
-	background: var(--mc-surface-sunken, #f3f4f6);
-	color: var(--mc-ink-secondary, #64748b);
+.group-list-student-name {
+	font-weight: 500;
+	overflow-wrap: anywhere;
 }
 
 .group-list-actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.25rem;
-	justify-content: flex-end;
-	white-space: nowrap;
+	margin-top: 0.35rem;
 }
 
 .group-list-grid {
@@ -4967,17 +4966,10 @@ body::before {
 
 .group-list-section {
 	min-width: 0;
-	border: 1px solid color-mix(in srgb, var(--mc-brand) 12%, var(--mc-rule));
-	border-radius: var(--mc-r-md, 0.9rem);
-	box-shadow: 0 8px 22px color-mix(in srgb, var(--mc-brand) 5%, transparent);
-	transition:
-		transform 160ms ease,
-		box-shadow 160ms ease;
-}
-
-.group-list-section:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 14px 30px color-mix(in srgb, var(--mc-brand) 10%, transparent);
+	border: 1px solid #e5e9f2;
+	border-radius: 1rem;
+	background: #fff;
+	box-shadow: 0 3px 12px rgb(35 46 75 / 3%);
 }
 
 .group-list-section-head {
@@ -4985,67 +4977,37 @@ body::before {
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 0.65rem;
-	border-bottom: 1px solid var(--mc-rule);
 	padding: 0.85rem 1rem;
-	background: linear-gradient(
-		135deg,
-		color-mix(in srgb, var(--mc-brand) 6%, var(--mc-paper, #fff)),
-		var(--mc-paper, #fff)
-	);
+	border-bottom: 1px solid #edf0f5;
+	background: #fff;
 }
 
 .group-list-section-title {
-	display: flex;
-	align-items: center;
-	gap: 0.7rem;
 	min-width: 0;
 	margin-right: auto;
 }
 
-.group-list-number {
-	display: grid;
-	flex: 0 0 auto;
-	width: 2rem;
-	height: 2rem;
-	place-items: center;
-	border-radius: 0.65rem;
-	background: var(--mc-brand);
-	color: #fff;
-	font-size: 0.72rem;
-	font-weight: 800;
-	letter-spacing: 0.04em;
-}
-
 .group-list-section-head h3 {
 	margin: 0;
-	color: var(--mc-ink);
-	font-size: 0.84rem;
-	font-weight: 800;
-	letter-spacing: 0.02em;
-}
-
-.group-list-section-head p {
-	margin: 0.18rem 0 0;
-	color: var(--mc-ink-secondary, #64748b);
-	font-size: 0.7rem;
+	color: #263247;
+	font-size: 0.875rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
 }
 
 .group-list-capacity {
+	margin-left: auto;
 	border-radius: 999px;
-	background: color-mix(in srgb, #2f6b48 12%, transparent);
-	padding: 0.3rem 0.55rem;
-	color: #2f6b48;
-	font-size: 0.72rem;
-	font-weight: 800;
-}
-
-.group-list-section[data-density='full'] .group-list-capacity {
-	background: color-mix(in srgb, var(--mc-brand) 12%, transparent);
-	color: var(--mc-brand);
+	padding: 0.2rem 0.55rem;
+	background: #f1f3f9;
+	color: #64748b;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
 }
 
 .group-list-table-wrap {
-	background: var(--mc-paper, #fff);
+	background: #fff;
 }
 
 @media (min-width: 900px) {
@@ -5057,11 +5019,6 @@ body::before {
 @media (min-width: 1280px) {
 	.group-list-grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
-
-	.group-list-table thead th:first-child,
-	.group-list-table tbody td:first-child {
-		display: none;
 	}
 }
 
@@ -5089,67 +5046,15 @@ body::before {
 	.group-list-metric strong {
 		font-size: 1.2rem;
 	}
-	.group-list-section-head {
-		align-items: flex-start;
-	}
 	.group-list-section-head > .flex {
 		width: 100%;
 	}
 	.group-list-section-head > .flex .mc-button {
 		flex: 1;
 	}
-	.group-list-table thead {
-		display: none;
-	}
-	.group-list-table,
-	.group-list-table tbody {
-		display: block;
-		width: 100%;
-	}
-	.group-list-table tbody tr {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		padding: 12px 16px;
-		border-bottom: 1px solid var(--mc-rule);
-	}
+	.group-list-table thead th,
 	.group-list-table tbody td {
-		display: block;
-		border: 0;
-		padding: 3px 0;
-		text-align: left;
-		overflow-wrap: anywhere;
-	}
-	.group-list-table tbody td:nth-child(1) {
-		display: none;
-	}
-	.group-list-table tbody td:nth-child(2) {
-		grid-row: 2;
-		font-size: 12px;
-		text-align: left;
-	}
-	.group-list-table tbody td:nth-child(3) {
-		grid-row: 1;
-		font-weight: 600;
-	}
-	.group-list-table tbody td:nth-child(4) {
-		text-align: left;
-	}
-	.group-list-table tbody td.group-list-actions {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-start;
-		white-space: normal;
-	}
-	.group-list-lx {
-		white-space: normal;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.group-list-section {
-		transition: none;
-	}
-	.group-list-section:hover {
-		transform: none;
+		padding-left: 0.8rem;
+		padding-right: 0.8rem;
 	}
 }

@@ -72,8 +72,12 @@ describe('GroupListWorkspace', () => {
 			/>,
 		);
 		expect(screen.getByText(/DANH SÁCH PHÂN CHIA NHÓM/i)).toBeInTheDocument();
-		expect(screen.getByText(/Nhóm 1 · 1\/5 sinh viên/i)).toBeInTheDocument();
-		expect(screen.getByText(/Hỗ trợ \(Support\)/i)).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Nhóm 1' })).toBeInTheDocument();
+		expect(screen.queryByText(/Hỗ trợ \(Support\)/i)).not.toBeInTheDocument();
+		expect(screen.getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual([
+			'MSV',
+			'Tên sinh viên',
+		]);
 		expect(document.querySelector('.group-list-grid')).toBeTruthy();
 	});
 });

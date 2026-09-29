@@ -37,12 +37,6 @@ function fullName(familyName: string, givenName: string) {
 	return `${familyName} ${givenName}`.trim();
 }
 
-function learningLabel(choice?: 'CHALLENGE' | 'SUPPORT' | null) {
-	if (choice === 'CHALLENGE') return { text: 'Thử thách (Challenge)', tone: 'challenge' as const };
-	if (choice === 'SUPPORT') return { text: 'Hỗ trợ (Support)', tone: 'support' as const };
-	return { text: 'Chưa chọn', tone: 'neutral' as const };
-}
-
 function groupTitle(group: TeachingGroupRecord) {
 	const count = group.assignments.length;
 	return `Nhóm ${group.displayOrder + 1} · ${count}/${group.effectiveMaxSize} sinh viên`;
@@ -165,18 +159,6 @@ export function GroupListWorkspace({
 			}))
 			.filter((group) => group.assignments.length > 0);
 	}, [board, query]);
-
-	const serialByEnrollment = useMemo(() => {
-		const map = new Map<string, number>();
-		let index = 0;
-		for (const group of filteredGroups) {
-			for (const member of group.assignments) {
-				index += 1;
-				map.set(member.enrollmentId, index);
-			}
-		}
-		return map;
-	}, [filteredGroups]);
 
 	const filteredUnassigned = useMemo(() => {
 		if (!board) return [];
@@ -507,17 +489,7 @@ export function GroupListWorkspace({
 							>
 								<div className="group-list-section-head">
 									<div className="group-list-section-title">
-										<span className="group-list-number">
-											{String(sourceGroup.displayOrder + 1).padStart(2, '0')}
-										</span>
-										<div>
-											<h3>{groupTitle(sourceGroup)}</h3>
-											<p>
-												{ratio >= 1
-													? 'Đã đủ thành viên'
-													: `${sourceGroup.effectiveMaxSize - sourceGroup.assignments.length} chỗ trống`}
-											</p>
-										</div>
+										<h3>Nhóm {sourceGroup.displayOrder + 1}</h3>
 									</div>
 									<span
 										className="group-list-capacity"
@@ -558,31 +530,26 @@ export function GroupListWorkspace({
 
 								{group.assignments.length ? (
 									<div className="group-list-table-wrap overflow-x-auto">
-										<table className="group-list-table w-full text-sm">
+										<table
+											className="group-list-table"
+											aria-label={`Danh sách nhóm ${sourceGroup.displayOrder + 1}`}
+										>
 											<thead>
 												<tr>
-													<th>STT</th>
-													<th>Mã sinh viên</th>
-													<th>Họ và tên</th>
-													<th>Trải nghiệm học tập</th>
-													{admin ? <th aria-label="Thao tác" /> : null}
+													<th scope="col">MSV</th>
+													<th scope="col">Tên sinh viên</th>
 												</tr>
 											</thead>
 											<tbody>
-												{group.assignments.map((member) => {
-													const lx = learningLabel(member.learningExperience);
-													return (
-														<tr key={member.enrollmentId}>
-															<td>{serialByEnrollment.get(member.enrollmentId) ?? '—'}</td>
-															<td>{member.studentCode}</td>
-															<td>{fullName(member.familyName, member.givenName)}</td>
-															<td>
-																<span className={`group-list-lx group-list-lx-${lx.tone}`}>
-																	{lx.text}
-																</span>
-															</td>
+												{group.assignments.map((member) => (
+													<tr key={member.enrollmentId}>
+														<td className="group-list-student-code">{member.studentCode}</td>
+														<td>
+															<span className="group-list-student-name">
+																{fullName(member.familyName, member.givenName)}
+															</span>
 															{admin ? (
-																<td className="group-list-actions">
+																<div className="group-list-actions">
 																	<button
 																		type="button"
 																		className="mc-button mc-button-ghost text-xs"
@@ -597,11 +564,11 @@ export function GroupListWorkspace({
 																	>
 																		Bỏ khỏi nhóm
 																	</button>
-																</td>
+																</div>
 															) : null}
-														</tr>
-													);
-												})}
+														</td>
+													</tr>
+												))}
 											</tbody>
 										</table>
 									</div>
@@ -614,40 +581,43 @@ export function GroupListWorkspace({
 						);
 					})}
 
-					<section className="group-list-section group-list-unassigned mc-surface overflow-hidden">
-						<div className="group-list-section-head border-b border-mc-rule bg-surface-sunken px-4 py-3">
-							<h3 className="text-sm font-semibold uppercase tracking-wide text-ink">
-								Chưa xếp nhóm · {filteredUnassigned.length} sinh viên
-							</h3>
-						</div>
-						{filteredUnassigned.length ? (
-							<ul className="divide-y divide-mc-rule">
-								{filteredUnassigned.map((student) => {
-									const lx = learningLabel(student.learningExperience);
-									return (
-										<li
-											key={student.enrollmentId}
-											className="group-list-mobile-row flex flex-wrap items-center justify-between gap-2 px-4 py-3"
-										>
-											<div>
-												<p className="font-medium text-ink">
+					{board.unassigned.length > 0 ? (
+						<section className="group-list-section group-list-unassigned mc-surface overflow-hidden">
+							<div className="group-list-section-head">
+								<h3>Chưa xếp nhóm</h3>
+								<span className="group-list-capacity">{filteredUnassigned.length} sinh viên</span>
+							</div>
+							{filteredUnassigned.length ? (
+								<table className="group-list-table" aria-label="Sinh viên chưa xếp nhóm">
+									<thead>
+										<tr>
+											<th scope="col">MSV</th>
+											<th scope="col">Tên sinh viên</th>
+										</tr>
+									</thead>
+									<tbody>
+										{filteredUnassigned.map((student) => (
+											<tr key={student.enrollmentId}>
+												<td className="group-list-student-code">{student.studentCode}</td>
+												<td className="group-list-student-name">
 													{fullName(student.familyName, student.givenName)}
-												</p>
-												<p className="text-xs text-ink-secondary">{student.studentCode}</p>
-											</div>
-											<span className={`group-list-lx group-list-lx-${lx.tone}`}>{lx.text}</span>
-										</li>
-									);
-								})}
-							</ul>
-						) : (
-							<p className="px-4 py-6 text-sm text-ink-secondary">
-								{query.trim()
-									? 'Không có sinh viên phù hợp với tìm kiếm.'
-									: 'Tất cả sinh viên đã được xếp nhóm.'}
-							</p>
-						)}
-					</section>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							) : (
+								<p className="px-4 py-5 text-sm text-ink-secondary">
+									Không có sinh viên phù hợp với tìm kiếm.
+								</p>
+							)}
+						</section>
+					) : null}
+					{query.trim() && !filteredGroups.length && !board.unassigned.length ? (
+						<p className="group-list-unassigned py-5 text-sm text-ink-secondary">
+							Không có sinh viên phù hợp với tìm kiếm.
+						</p>
+					) : null}
 				</div>
 			)}
 
@@ -787,9 +757,7 @@ export function GroupListWorkspace({
 						{bulkPasteOpen ? (
 							<div className="space-y-4 border-t border-mc-rule pt-4">
 								<label className="block text-sm">
-									<span className="mb-1 block font-medium">
-										Mã sinh viên (một hoặc nhiều dòng)
-									</span>
+									<span className="mb-1 block font-medium">Mã sinh viên (một hoặc nhiều dòng)</span>
 									<textarea
 										disabled={saving}
 										className="mc-input min-h-32 w-full font-mono text-sm"
@@ -822,8 +790,8 @@ export function GroupListWorkspace({
 								) : null}
 								{preview && preview.resolved.length > preview.remaining ? (
 									<p role="alert" className="text-sm text-danger">
-										Số sinh viên vượt {preview.remaining} chỗ còn lại. Hãy bớt mã hoặc tăng sức
-										chứa nhóm.
+										Số sinh viên vượt {preview.remaining} chỗ còn lại. Hãy bớt mã hoặc tăng sức chứa
+										nhóm.
 									</p>
 								) : null}
 								{preview?.errors.length ? (
