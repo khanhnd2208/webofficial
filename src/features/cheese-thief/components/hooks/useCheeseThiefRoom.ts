@@ -142,7 +142,7 @@ export function useCheeseThiefRoom({ code, playerToken, onTokenReceived, adminTe
 			),
 		/** Saves the selection as it stands, so running out of time keeps the first slots. */
 		secretDraft: (picks: string[]) =>
-			postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/secret`, {
+			adminTest ? sendAdminTestCommand('cheese-thief', code, { kind: 'secret', picks, draft: true }).then(room => room.state as RoomStateDTO) : postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/secret`, {
 				token: tokenRef.current,
 				picks,
 				draft: true,

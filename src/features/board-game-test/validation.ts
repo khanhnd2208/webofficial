@@ -19,7 +19,7 @@ const command = z.discriminatedUnion('kind', [
 	...(['seen', 'viewed', 'lobby', 'start-vote', 'step', 'tick', 'next', 'skip-time', 'close', 'revote'] as const).map(kind => z.object({ kind: z.literal(kind) })),
 	z.object({ kind: z.literal('roles'), roleCounts: z.array(z.object({ roleId: id, count: z.number().int().min(0).max(20) })).max(30) }),
 	z.object({ kind: z.literal('settings'), settings: z.record(z.string(), z.unknown()) }),
-	z.object({ kind: z.literal('secret'), picks: z.array(id).min(1).max(12) }),
+	z.object({ kind: z.literal('secret'), picks: z.array(id).max(12), draft: z.boolean().optional() }),
 	z.object({ kind: z.literal('reset'), sameSeed: z.boolean() }),
 	z.object({ kind: z.literal('cheese'), present: z.boolean() }),
 	z.object({ kind: z.literal('vote'), playerId: id, targetId: z.string().max(64) }),

@@ -41,7 +41,7 @@ export type TestCommand =
 	| { kind: 'lobby' }
 	| { kind: 'roles'; roleCounts: { roleId: string; count: number }[] }
 	| { kind: 'settings'; settings: object }
-	| { kind: 'secret'; picks: string[] }
+	| { kind: 'secret'; picks: string[]; draft?: boolean }
 	| { kind: 'start-vote' }
 	| { kind: 'step' }
 	| { kind: 'tick' }

@@ -348,7 +348,7 @@ async function executeCommand(ownerId: string, game: TestGame, code: string, com
 		if (!target) throw new AppError('Player not found', 404, 'PLAYER_NOT_FOUND');
 		await kickWerewolf(code, hostToken, target.token);
 	}
-	if (command.kind === 'secret' && game === 'cheese-thief') await (await import('@/features/cheese-thief/services/cheeseThiefService')).submitSecret(code, controlledToken, command.picks);
+	if (command.kind === 'secret' && game === 'cheese-thief') await (await import('@/features/cheese-thief/services/cheeseThiefService')).submitSecret(code, controlledToken, command.picks, { draft: command.draft });
 	if (command.kind === 'start-vote' && game === 'cheese-thief') await startVote(code, hostToken);
 	if (command.kind === 'cheese' && game === 'cheese-thief') await reportCheese(code, hostToken, command.present);
 	if (command.kind === 'revote' && game === 'cheese-thief') await revote(code, hostToken);
@@ -516,7 +516,7 @@ async function stepCheese(code: string, hostToken: string, raw: TestRoomDoc) {
 		return memorizeCheese(code, bot.token, chosenHour);
 	}
 	if (state.phase === 'secret') {
-		const player = bots.find((entry) => entry.secretPicks.length === 0);
+		const player = bots.find((entry) => !entry.secretConfirmed);
 		if (!player) return;
 		const candidates = state.players.filter((entry) => entry.id !== player.id);
 		const choices: string[] = [];

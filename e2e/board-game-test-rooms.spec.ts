@@ -67,5 +67,10 @@ test('Cheese four-player UI sends the chosen hour and controls remain above the 
 	await controls.getByRole('button', { name: 'Bỏ qua chờ', exact: true }).click();
 	await expect(controls.getByRole('alert')).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: 'Phút bí mật', exact: true })).toBeVisible();
+	const code = new URL(page.url()).searchParams.get('code');
+	const snapshot = await context.request.get(`/api/admin/board-game/test-rooms/cheese-thief/${code}`).then(r => r.json());
+	for (let i = 0; i < snapshot.data.state.choiceCount; i++) await page.getByRole('button', { name: new RegExp(`^Bot ${i + 1}$`) }).click();
+	await page.getByRole('button', { name: 'Xong', exact: true }).click();
+	await expect(page.getByText('Đã ghi lựa chọn. Chờ cả bàn — vẫn đổi được.')).toBeVisible();
 	await controls.getByRole('button', { name: 'Đóng phòng', exact: true }).click();
 });
