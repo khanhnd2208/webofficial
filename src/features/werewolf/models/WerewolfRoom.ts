@@ -11,6 +11,7 @@ export interface IWerewolfPlayer {
 	roleId: string | null;
 	viewedAt: Date | null;
 	leftAt: Date | null;
+	isBot?: boolean;
 }
 
 export interface IWerewolfRoleCount {
@@ -28,6 +29,7 @@ export interface IWerewolfRoom {
 	dealRound: number;
 	roleCounts: IWerewolfRoleCount[];
 	players: IWerewolfPlayer[];
+	adminTest?: { ownerUserId: string; seed: string; running: boolean; randomState: number; initialConfig: Record<string, unknown>; log: string[]; controlledSeatId?: string; hostPhaseAt?: Date; lastTickAt?: Date; clockMs?: number; commandVersion?: number; requestIds?: string[]; lockId?: string; lockUntil?: Date };
 	createdAt?: Date;
 	updatedAt?: Date;
 }
@@ -42,6 +44,7 @@ const PlayerSchema = new Schema<IWerewolfPlayer>(
 		roleId: { type: String, default: null },
 		viewedAt: { type: Date, default: null },
 		leftAt: { type: Date, default: null },
+		isBot: { type: Boolean, default: false },
 	},
 	{ _id: false },
 );
@@ -65,6 +68,22 @@ const WerewolfRoomSchema = new Schema<IWerewolfRoom>(
 		dealRound: { type: Number, default: 0 },
 		roleCounts: { type: [RoleCountSchema], default: [] },
 		players: { type: [PlayerSchema], default: [] },
+		adminTest: {
+			ownerUserId: String,
+			seed: String,
+			running: { type: Boolean, default: false },
+			randomState: Number,
+			initialConfig: { type: Schema.Types.Mixed },
+			log: { type: [String], default: [] },
+			controlledSeatId: String,
+			hostPhaseAt: Date,
+			lastTickAt: Date,
+			clockMs: Number,
+			commandVersion: Number,
+			requestIds: [String],
+			lockId: String,
+			lockUntil: Date,
+		},
 	},
 	{ timestamps: true, collection: 'werewolf_rooms' },
 );

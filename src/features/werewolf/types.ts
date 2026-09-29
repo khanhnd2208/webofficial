@@ -64,6 +64,7 @@ export interface WerewolfPlayerRecord {
 	roleId: string | null;
 	viewedAt: Date | null;
 	leftAt: Date | null;
+	isBot?: boolean;
 }
 
 /** Plain room snapshot used by the DTO mapper and unit tests. */
@@ -77,4 +78,5 @@ export interface WerewolfRoomSnapshot {
 	dealRound: number;
 	roleCounts: RoleCount[];
 	players: WerewolfPlayerRecord[];
+	isTestRoom?: boolean;
 }

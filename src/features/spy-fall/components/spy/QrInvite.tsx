@@ -1,4 +1,5 @@
 'use client';
+import { useTestRoom } from '@/features/board-game-test/context';
 
 import QRCode from 'react-qr-code';
 
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function QrInvite({ code, roomName }: Props) {
+	const testRoom = useTestRoom();
 	const t = useT();
 	const { toast } = useToast();
 	const url =
@@ -61,6 +63,8 @@ export default function QrInvite({ code, roomName }: Props) {
 		}
 		await copyLink();
 	}
+
+	if (testRoom) return null;
 
 	return (
 		<TicketCard title={roomName} code={code} subtitle={t('spy.invite.scan')}>

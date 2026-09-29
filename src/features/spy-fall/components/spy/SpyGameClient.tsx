@@ -33,15 +33,17 @@ import RevealPhase from './phases/RevealPhase';
 import RoleRevealPhase from './phases/RoleRevealPhase';
 import VotePhase from './phases/VotePhase';
 import { useSpyRoom } from './hooks/useSpyRoom';
+import { TEST_VIEWER_TOKEN } from '@/features/board-game-test/clientApi';
 
 const JOIN_TIMEOUT_MS = 8000;
 
 interface Props {
 	code: string;
 	initialName?: string;
+	adminTest?: boolean;
 }
 
-export default function SpyGameClient({ code, initialName }: Props) {
+export default function SpyGameClient({ code, initialName, adminTest = false }: Props) {
 	const t = useT();
 	const router = useRouter();
 	const { toast } = useToast();
@@ -59,16 +61,17 @@ export default function SpyGameClient({ code, initialName }: Props) {
 
 	const { state, error, loading, api, refresh } = useSpyRoom({
 		code,
-		playerToken,
+		playerToken: adminTest ? TEST_VIEWER_TOKEN : playerToken,
 		onTokenReceived: setPlayerToken,
+		adminTest,
 	});
 
 	useEffect(() => {
 		const stored = getStoredPlayerToken(code);
-		setPlayerToken(stored);
+		setPlayerToken(adminTest ? TEST_VIEWER_TOKEN : stored);
 		setJoinName((prev) => prev || initialName || getRecentPlayerName() || '');
 		setHydrated(true);
-	}, [code, initialName]);
+	}, [adminTest, code, initialName]);
 
 	const wrap = useCallback(
 		async (fn: () => Promise<unknown>) => {
@@ -152,6 +155,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 	}
 
 	const handleLeave = useCallback(async () => {
+		if (adminTest) return;
 		if (!playerToken) {
 			router.push(routes.spyFall);
 			return;
@@ -174,7 +178,7 @@ export default function SpyGameClient({ code, initialName }: Props) {
 		} finally {
 			setBusy(false);
 		}
-	}, [api, code, playerToken, router, state?.phase, t, toast]);
+	}, [adminTest, api, code, playerToken, router, state?.phase, t, toast]);
 
 	if (!hydrated) {
 		return (

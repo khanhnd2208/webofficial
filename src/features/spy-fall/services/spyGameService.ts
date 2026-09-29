@@ -1,3 +1,4 @@
+import { gameNow, gameRandom } from '@/features/board-game-test/runtime';
 import mongoose, { type HydratedDocument } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
@@ -89,7 +90,7 @@ async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
 }
 
 function now(): Date {
-	return new Date();
+	return gameNow();
 }
 
 function findPlayer(game: GameDoc, token: string): ISpyPlayer | undefined {
@@ -168,7 +169,8 @@ function isRecentlySeen(player: ISpyPlayer, at: Date): boolean {
 
 function updateConnectionStatus(game: GameDoc, at: Date): void {
 	for (const p of game.players) {
-		p.connected = isRecentlySeen(p, at);
+		const botSeat = game.adminTest?.ownerUserId && (p.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
+		p.connected = botSeat ? true : isRecentlySeen(p, at);
 	}
 }
 
@@ -309,10 +311,11 @@ function resolveVote(game: GameDoc, at: Date): void {
 	game.phase = 'reveal';
 }
 
-function beginNextRound(game: GameDoc): void {
+function beginNextRound(game: GameDoc, random: () => number = gameRandom): void {
 	game.round += 1;
 	game.firstSpeakerToken = pickFirstSpeaker(
 		game.players.map((p) => ({ token: p.token, role: p.role, isEliminated: p.isEliminated })),
+		random,
 	);
 	game.voteCandidates = [];
 	game.isRevote = false;
@@ -531,7 +534,7 @@ async function loadAndAdvance(
 			resolveVote(game, at);
 			changed = true;
 		}
-		if (migrateHostIfNeeded(game, at)) changed = true;
+		if (!game.adminTest?.ownerUserId && migrateHostIfNeeded(game, at)) changed = true;
 
 		if (changed || viewerToken) {
 			if (changed) game.version += 1;
@@ -579,7 +582,7 @@ async function mutateGame(
 	});
 }
 
-export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> {
+export async function createRoom(input: CreateRoomInput, testOwnerId?: string): Promise<RoomStateDTO> {
 	const hostName = normalizePlayerName(input.hostName ?? '');
 	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
 	const roomName = assertRoomName(input.name);
@@ -601,6 +604,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 
 	const at = now();
 	const game = await SpyGame.create({
+		...(testOwnerId ? { adminTest: { ownerUserId: testOwnerId } } : {}),
 		code,
 		name: roomName,
 		isPublic: Boolean(input.isPublic),
@@ -628,7 +632,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 
 export async function listPublicRooms(): Promise<PublicRoomListItemDTO[]> {
 	await dbConnect();
-	const games = (await SpyGame.find({ isPublic: true, phase: 'lobby' })
+	const games = (await SpyGame.find({ isPublic: true, phase: 'lobby', 'adminTest.ownerUserId': { $exists: false } })
 		.sort({ updatedAt: -1 })
 		.limit(50)
 		.lean()) as GameDoc[];
@@ -685,6 +689,7 @@ export async function startGame(
 	code: string,
 	playerToken: string,
 	locale: 'vi' | 'en' = 'vi',
+	random: () => number = gameRandom,
 ): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, (game) => {
 		if (game.hostToken !== playerToken) throw new AppError('HOST_ONLY_START', 403);
@@ -706,17 +711,18 @@ export async function startGame(
 		const pair = pickWordPair({
 			topic,
 			excludedTags,
-			recentIds: game.recentWordPairIds,
+			recentIds: game.adminTest?.ownerUserId ? [] : game.recentWordPairIds,
+			random,
 			locale,
 		});
 
-		game.wordPair = resolveWordPairForGame(pair);
+		game.wordPair = resolveWordPairForGame(pair, random);
 		game.recentWordPairIds = [pair.id, ...game.recentWordPairIds].slice(0, SPY_RECENT_WORD_PAIRS);
 
 		const assigned = assignRoles(
 			game.players.map((p) => ({ token: p.token, name: p.name })),
 			game.wordPair,
-			Math.random,
+			random,
 			spyCount,
 		);
 
@@ -738,6 +744,7 @@ export async function startGame(
 		game.isRevote = false;
 		game.firstSpeakerToken = pickFirstSpeaker(
 			assigned.map((p) => ({ token: p.token, role: p.role, isEliminated: false })),
+			random,
 		);
 		game.result = {};
 	});
@@ -824,6 +831,7 @@ export async function hostAdvancePhase(
 	code: string,
 	hostToken: string,
 	from: PhaseCursor,
+	random: () => number = gameRandom,
 ): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, (game) => {
 		if (game.hostToken !== hostToken) throw new AppError('HOST_ONLY', 403);
@@ -846,7 +854,7 @@ export async function hostAdvancePhase(
 			return;
 		}
 		if (game.phase === 'reveal') {
-			beginNextRound(game);
+			beginNextRound(game, random);
 			return;
 		}
 		throw new AppError('CANNOT_ADVANCE', 400);
@@ -993,4 +1001,12 @@ export async function leaveRoom(
 		await game.save();
 		return { roomClosed: false };
 	});
+}
+
+/** Projection only: no heartbeat, writes, or phase advancement. */
+export async function readTestState(code: string, token: string): Promise<RoomStateDTO> {
+	await dbConnect();
+	const game = await SpyGame.findOne({ code: code.toUpperCase() });
+	if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+	return toRoomStateDTO(game, token, now());
 }

@@ -32,6 +32,7 @@ export interface ICheesePlayer {
 	secretConfirmed: boolean;
 	hasSeenSecret: boolean;
 	voteId?: string;
+	isBot?: boolean;
 }
 
 export interface ICheeseRoom {
@@ -63,6 +64,7 @@ export interface ICheeseRoom {
 	peekByPlayer: Map<string, string> | Record<string, string>;
 	hunchByPlayer: Map<string, string> | Record<string, string>;
 	winner?: CheeseWinner;
+	adminTest?: { ownerUserId: string; seed: string; running: boolean; randomState: number; initialConfig: Record<string, unknown>; log: string[]; controlledSeatId?: string; hostPhaseAt?: Date; pausedNightElapsedMs?: number; pausedSecretElapsedMs?: number; lastTickAt?: Date; clockMs?: number; commandVersion?: number; requestIds?: string[]; lockId?: string; lockUntil?: Date };
 	createdAt?: Date;
 	updatedAt?: Date;
 }
@@ -84,6 +86,7 @@ const CheesePlayerSchema = new Schema<ICheesePlayer>(
 		secretConfirmed: { type: Boolean, default: false },
 		hasSeenSecret: { type: Boolean, default: false },
 		voteId: { type: String },
+		isBot: { type: Boolean, default: false },
 	},
 	{ _id: false, id: false },
 );
@@ -122,6 +125,24 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		peekByPlayer: { type: Map, of: String, default: {} },
 		hunchByPlayer: { type: Map, of: String, default: {} },
 		winner: { type: String, enum: ['sleepyheads', 'thief', 'scapegoat'] },
+		adminTest: {
+			ownerUserId: String,
+			seed: String,
+			running: { type: Boolean, default: false },
+			randomState: Number,
+			initialConfig: { type: Schema.Types.Mixed },
+			log: { type: [String], default: [] },
+			controlledSeatId: String,
+			hostPhaseAt: Date,
+			pausedNightElapsedMs: Number,
+			pausedSecretElapsedMs: Number,
+			lastTickAt: Date,
+			clockMs: Number,
+			commandVersion: Number,
+			requestIds: [String],
+			lockId: String,
+			lockUntil: Date,
+		},
 	},
 	{ timestamps: true },
 );

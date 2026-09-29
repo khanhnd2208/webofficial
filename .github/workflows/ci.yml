@@ -104,11 +104,14 @@ jobs:
         run: npm audit --audit-level=moderate
 
       - name: Release-critical end-to-end tests
+        env:
+          BOARD_GAME_ISOLATED_TEST: '1'
         run: >-
           npx playwright test
           e2e/active-recall-admin.spec.ts
           e2e/active-recall.spec.ts
           e2e/board-game-visual.spec.ts
+          e2e/board-game-test-rooms.spec.ts
           e2e/admin-workspace.spec.ts
           e2e/editorial-premium.spec.ts
           e2e/mobile-smoke.spec.ts

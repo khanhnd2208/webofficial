@@ -1,4 +1,5 @@
 'use client';
+import { useTestRoom } from '@/features/board-game-test/context';
 
 import { useEffect, useState } from 'react';
 
@@ -15,6 +16,8 @@ interface Props {
 }
 
 export default function DayPhase({ state, fetchedAt, busy, onVote }: Props) {
+	const testRoom = useTestRoom();
+	const paused = testRoom ? !testRoom.running : false;
 	const t = useT();
 	const [seconds, setSeconds] = useState(0);
 
@@ -22,11 +25,11 @@ export default function DayPhase({ state, fetchedAt, busy, onVote }: Props) {
 		if (!state.dayStartedAt) return;
 		const started = new Date(state.dayStartedAt).getTime();
 		const skew = new Date(state.serverNow).getTime() - fetchedAt;
-		const tick = () => setSeconds(Math.max(0, Math.floor((Date.now() + skew - started) / 1000)));
+		const tick = () => setSeconds(Math.max(0, Math.floor(((paused ? new Date(state.serverNow).getTime() : Date.now() + skew) - started) / 1000)));
 		tick();
 		const timer = window.setInterval(tick, 1000);
 		return () => window.clearInterval(timer);
-	}, [state.dayStartedAt, state.serverNow, fetchedAt]);
+	}, [state.dayStartedAt, state.serverNow, fetchedAt, paused]);
 
 	const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 

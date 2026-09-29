@@ -20,6 +20,7 @@ export const routes = {
 	/** Focused hub for Teaching. */
 	mySpace: '/my-space',
 	boardGame: '/my-space/board-game',
+	boardGameTest: '/my-space/board-game/test',
 	spyFall: '/my-space/board-game/spy-fall',
 	spyFallRoom: (code: string) => `/my-space/board-game/spy-fall/room/${code}` as const,
 	spyFallGuide: '/my-space/board-game/spy-fall/guide',

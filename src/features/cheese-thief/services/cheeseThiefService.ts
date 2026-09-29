@@ -1,3 +1,4 @@
+import { gameNow, gameRandom } from '@/features/board-game-test/runtime';
 import mongoose, { type HydratedDocument } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
@@ -85,7 +86,7 @@ async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
 }
 
 function now(): Date {
-	return new Date();
+	return gameNow();
 }
 
 function findPlayer(game: RoomDoc, token: string): ICheesePlayer | undefined {
@@ -218,7 +219,8 @@ function isRecentlySeen(player: ICheesePlayer, at: Date): boolean {
 
 function updateConnectionStatus(game: RoomDoc, at: Date): void {
 	for (const player of game.players) {
-		player.connected = isRecentlySeen(player, at);
+		const botSeat = game.adminTest?.ownerUserId && (player.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
+		player.connected = botSeat ? true : isRecentlySeen(player, at);
 	}
 }
 
@@ -269,11 +271,11 @@ function resolvedOf(game: RoomDoc): ResolvedSecret {
 	};
 }
 
-function applySecretResolution(game: RoomDoc): void {
+function applySecretResolution(game: RoomDoc, random: () => number = gameRandom): void {
 	const preset = tablePreset(game);
 	const picks: Record<string, string[]> = {};
 	for (const player of game.players) picks[player.id] = player.secretPicks ?? [];
-	const resolved = resolveSecret(seatsOf(game), preset, picks, Math.random, nightContext(game));
+	const resolved = resolveSecret(seatsOf(game), preset, picks, random, nightContext(game));
 	game.followerIds = resolved.followerIds;
 	game.peekByPlayer = resolved.peekByPlayer;
 	game.hunchByPlayer = resolved.hunchByPlayer;
@@ -310,7 +312,7 @@ function enterSecret(game: RoomDoc, at: Date, theftNight: NightNumber): void {
 	}
 }
 
-function advanceClock(game: RoomDoc, at: Date): boolean {
+function advanceClock(game: RoomDoc, at: Date, random: () => number = gameRandom): boolean {
 	if (game.phase === 'night' && game.nightStartedAt) {
 		if (at.getTime() >= nightEndsAt(game.nightStartedAt.getTime(), nightTiming(game.hourSeconds))) {
 			if ((game.mode ?? 'classic') === 'two-night' && (game.nightNumber ?? 1) === 1) {
@@ -331,7 +333,7 @@ function advanceClock(game: RoomDoc, at: Date): boolean {
 		const timedOut = elapsed >= CHEESE_SECRET_MAX_MS;
 		const minElapsed = elapsed >= CHEESE_SECRET_MIN_MS;
 		if (timedOut || (everyoneChose && minElapsed)) {
-			applySecretResolution(game);
+			applySecretResolution(game, random);
 			return true;
 		}
 	}
@@ -402,7 +404,7 @@ function toRoomStateDTO(game: RoomDoc, viewerToken: string | null, at: Date): Ro
 	return projectRoom(toProjectRoom(game), viewerToken, at);
 }
 
-async function loadAndAdvance(code: string, viewerToken: string | null): Promise<RoomStateDTO> {
+async function loadAndAdvance(code: string, viewerToken: string | null, random: () => number = gameRandom): Promise<RoomStateDTO> {
 	await dbConnect();
 	return withVersionRetry(async () => {
 		const at = now();
@@ -424,8 +426,8 @@ async function loadAndAdvance(code: string, viewerToken: string | null): Promise
 			}
 		}
 
-		if (advanceClock(game, at)) changed = true;
-		if (migrateHostIfNeeded(game, at)) changed = true;
+		if (advanceClock(game, at, random)) changed = true;
+		if (!game.adminTest?.ownerUserId && migrateHostIfNeeded(game, at)) changed = true;
 
 		if (changed) {
 			game.version += 1;
@@ -462,7 +464,7 @@ async function mutateGame(
 	});
 }
 
-export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> {
+export async function createRoom(input: CreateRoomInput, testOwnerId?: string): Promise<RoomStateDTO> {
 	const hostName = normalizePlayerName(input.hostName ?? '');
 	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
 	const roomName = assertRoomName(input.name);
@@ -490,6 +492,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 
 	const at = now();
 	const game = await CheeseThiefRoom.create({
+		...(testOwnerId ? { adminTest: { ownerUserId: testOwnerId } } : {}),
 		code,
 		name: roomName,
 		isPublic: input.isPublic !== false,
@@ -519,7 +522,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomStateDTO> 
 
 export async function listPublicRooms(): Promise<PublicRoomListItemDTO[]> {
 	await dbConnect();
-	const games = (await CheeseThiefRoom.find({ isPublic: true, phase: 'lobby' })
+	const games = (await CheeseThiefRoom.find({ isPublic: true, phase: 'lobby', 'adminTest.ownerUserId': { $exists: false } })
 		.sort({ updatedAt: -1 })
 		.limit(50)
 		.lean()) as ICheeseRoom[];
@@ -571,8 +574,8 @@ export async function joinRoom(
 	});
 }
 
-export async function getScopedState(code: string, playerToken: string | null): Promise<RoomStateDTO> {
-	return loadAndAdvance(code, playerToken);
+export async function getScopedState(code: string, playerToken: string | null, random: () => number = gameRandom): Promise<RoomStateDTO> {
+	return loadAndAdvance(code, playerToken, random);
 }
 
 export async function updateSettings(
@@ -599,7 +602,7 @@ export async function updateSettings(
 	});
 }
 
-export async function startGame(code: string, hostToken: string): Promise<RoomStateDTO> {
+export async function startGame(code: string, hostToken: string, random: () => number = gameRandom): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, 'lobby', (game) => {
 		assertHost(game, hostToken);
 		if (game.players.length !== game.maxPlayers) {
@@ -614,7 +617,7 @@ export async function startGame(code: string, hostToken: string): Promise<RoomSt
 		const { seats } = deal(
 			game.players.map((player) => player.id),
 			game.scapegoatEnabled,
-			Math.random,
+			random,
 			mode,
 			followerSettingsOf(game),
 		);
@@ -768,6 +771,15 @@ export async function playAgain(code: string, hostToken: string): Promise<RoomSt
 	});
 }
 
+/** Resets a private admin test room from any phase using the normal lobby cleanup rules. */
+export async function resetTestRoom(code: string, hostToken: string): Promise<RoomStateDTO> {
+	return mutateGame(code, hostToken, undefined, (game) => {
+		if (!game.adminTest?.ownerUserId) throw new AppError('ROOM_NOT_FOUND', 404);
+		assertHost(game, hostToken);
+		resetToLobby(game);
+	});
+}
+
 export async function kickPlayer(code: string, hostToken: string, targetId: string): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, 'lobby', (game) => {
 		assertHost(game, hostToken);
@@ -801,4 +813,12 @@ export async function leaveRoom(code: string, playerToken: string): Promise<{ ro
 		await game.save();
 		return { roomClosed: false };
 	});
+}
+
+/** Projection only: no heartbeat, writes, or phase advancement. */
+export async function readTestState(code: string, token: string): Promise<RoomStateDTO> {
+	await dbConnect();
+	const game = await CheeseThiefRoom.findOne({ code: code.toUpperCase() });
+	if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+	return toRoomStateDTO(game, token, now());
 }

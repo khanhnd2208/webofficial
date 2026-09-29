@@ -8,6 +8,7 @@ import { routes } from '@/config/routes';
 import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import { useCheeseThiefRoom } from '@/features/cheese-thief/components/hooks/useCheeseThiefRoom';
+import { TEST_VIEWER_TOKEN } from '@/features/board-game-test/clientApi';
 import DayPhase from '@/features/cheese-thief/components/phases/DayPhase';
 import DealPhase from '@/features/cheese-thief/components/phases/DealPhase';
 import LobbyPhase from '@/features/cheese-thief/components/phases/LobbyPhase';
@@ -37,9 +38,10 @@ import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/
 interface Props {
 	code: string;
 	initialName?: string;
+	adminTest?: boolean;
 }
 
-export default function CheeseThiefRoomClient({ code, initialName }: Props) {
+export default function CheeseThiefRoomClient({ code, initialName, adminTest = false }: Props) {
 	const t = useT();
 	const { locale } = useLocale();
 	const router = useRouter();
@@ -51,13 +53,14 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 
 	const { state, error, loading, fetchedAt, api } = useCheeseThiefRoom({
 		code,
-		playerToken,
+		playerToken: adminTest ? TEST_VIEWER_TOKEN : playerToken,
 		onTokenReceived: setPlayerToken,
+		adminTest,
 	});
 
 	// The host phone builds the recorded night while the table reads roles or looks at the cheese,
 	// so the tap that starts the night can also start the sound.
-	const hostPhase = state?.isHost ? state.phase : null;
+	const hostPhase = state?.isHost ? state?.phase : null;
 	const tableMode = state?.mode ?? 'classic';
 	const hourSeconds = state?.hourSeconds;
 	useEffect(() => {
@@ -70,10 +73,10 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 
 	useEffect(() => {
 		const stored = getStoredPlayerToken(code);
-		setPlayerToken(stored);
+		setPlayerToken(adminTest ? TEST_VIEWER_TOKEN : stored);
 		setJoinName((prev) => prev || initialName || getRecentPlayerName() || '');
 		setHydrated(true);
-	}, [code, initialName]);
+	}, [adminTest, code, initialName]);
 
 	const run = useCallback(
 		async (fn: () => Promise<unknown>) => {
@@ -176,6 +179,7 @@ export default function CheeseThiefRoomClient({ code, initialName }: Props) {
 							onClick={() => {
 								if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
 								void api.leave().finally(() => {
+									if (adminTest) return;
 									clearPlayerToken(code);
 									router.push(routes.cheeseThief);
 								});

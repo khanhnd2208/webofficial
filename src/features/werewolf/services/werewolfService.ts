@@ -1,3 +1,4 @@
+import { gameNow, gameRandom } from '@/features/board-game-test/runtime';
 import mongoose, { type HydratedDocument } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
@@ -50,7 +51,7 @@ async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
 }
 
 function now(): Date {
-	return new Date();
+	return gameNow();
 }
 
 function findPlayer(room: { players: IWerewolfPlayer[] }, token: string): IWerewolfPlayer | undefined {
@@ -71,6 +72,7 @@ function snapshotFromDoc(room: IWerewolfRoom): WerewolfRoomSnapshot {
 		version: room.version,
 		dealRound: room.dealRound,
 		roleCounts: room.roleCounts.map((entry) => ({ roleId: entry.roleId, count: entry.count })),
+		isTestRoom: Boolean(room.adminTest?.ownerUserId),
 		players: room.players.map((player) => ({
 			token: player.token,
 			name: player.name,
@@ -80,6 +82,7 @@ function snapshotFromDoc(room: IWerewolfRoom): WerewolfRoomSnapshot {
 			roleId: player.roleId ?? null,
 			viewedAt: player.viewedAt ?? null,
 			leftAt: player.leftAt ?? null,
+			isBot: player.isBot === true,
 		})),
 	};
 }
@@ -105,7 +108,7 @@ export function toRoomStateDTO(
 			token: player.token,
 			name: player.name,
 			avatarSeed: player.avatarSeed,
-			connected: isConnected(player.lastSeenAt, at),
+			connected: room.isTestRoom && player.isBot ? true : isConnected(player.lastSeenAt, at),
 			viewed: player.viewedAt != null,
 			left: player.leftAt != null,
 		};
@@ -211,7 +214,7 @@ function clearAssignments(room: RoomDoc): void {
 	}
 }
 
-export async function createRoom(hostNameInput: string): Promise<{ state: RoomStateDTO; hostToken: string }> {
+export async function createRoom(hostNameInput: string, testOwnerId?: string): Promise<{ state: RoomStateDTO; hostToken: string }> {
 	const hostName = normalizePlayerName(hostNameInput);
 	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
 
@@ -227,6 +230,7 @@ export async function createRoom(hostNameInput: string): Promise<{ state: RoomSt
 
 	const at = now();
 	const room = await WerewolfRoom.create({
+		...(testOwnerId ? { adminTest: { ownerUserId: testOwnerId } } : {}),
 		code,
 		hostToken,
 		hostName,
@@ -327,7 +331,7 @@ export async function setRoleCounts(
 	});
 }
 
-export async function deal(code: string, hostToken: string): Promise<RoomStateDTO> {
+export async function deal(code: string, hostToken: string, random: () => number = gameRandom): Promise<RoomStateDTO> {
 	return mutateRoom(code, hostToken, (room) => {
 		assertHost(room, hostToken);
 		const seated = activePlayers(room.players);
@@ -342,6 +346,7 @@ export async function deal(code: string, hostToken: string): Promise<RoomStateDT
 		const assigned = dealRoles(
 			seated.map((player) => player.token),
 			counts,
+			random,
 		);
 		for (const player of seated) {
 			player.roleId = assigned.get(player.token) ?? null;
@@ -399,4 +404,11 @@ export async function leaveRoom(
 		await room.save();
 		return { roomClosed: false };
 	});
+}
+
+/** Projection only: no heartbeat, writes, or phase advancement. */
+export async function readTestState(code: string, token: string): Promise<RoomStateDTO> {
+	await dbConnect();
+	const room = await loadRoom(code);
+	return toRoomStateDTO(snapshotFromDoc(room), token, now());
 }

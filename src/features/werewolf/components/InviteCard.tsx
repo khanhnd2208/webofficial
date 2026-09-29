@@ -1,4 +1,5 @@
 'use client';
+import { useTestRoom } from '@/features/board-game-test/context';
 
 import QRCode from 'react-qr-code';
 
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function InviteCard({ code }: Props) {
+	const testRoom = useTestRoom();
 	const t = useT();
 	const { toast } = useToast();
 	const url =
@@ -46,6 +48,8 @@ export default function InviteCard({ code }: Props) {
 		}
 		await copy(url, 'mafia.invite.copiedLink');
 	}
+
+	if (testRoom) return null;
 
 	return (
 		<TicketCard title={t('mafia.invite.title')} code={code} subtitle={t('mafia.invite.scan')}>

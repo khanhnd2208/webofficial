@@ -42,11 +42,12 @@ import { routes } from '@/config/routes';
 
 type View = 'menu' | 'create' | 'join' | 'public';
 
-export default function SpyMenuClient() {
+export default function SpyMenuClient({ isAdmin = false }: { isAdmin?: boolean }) {
 	const t = useT();
 	const router = useRouter();
 	const [view, setView] = useState<View>('menu');
 	const [name, setName] = useState('');
+	const [nameLoaded, setNameLoaded] = useState(false);
 	const [roomName, setRoomName] = useState('');
 	const [spyCount, setSpyCount] = useState<SpyCount>(SPY_DEFAULT_COUNT);
 	const [joinCode, setJoinCode] = useState('');
@@ -58,7 +59,8 @@ export default function SpyMenuClient() {
 	const roomNameEdited = useRef(false);
 
 	useEffect(() => {
-		setName(getRecentPlayerName() ?? '');
+		setName(current => current || getRecentPlayerName() || '');
+		setNameLoaded(true);
 	}, []);
 
 	function validateName(): string | null {
@@ -169,6 +171,7 @@ export default function SpyMenuClient() {
 						Board Game
 					</Link>
 					<PrefsToggleGroup />
+					{isAdmin ? <Link href={`${routes.boardGameTest}?game=spy-fall`} className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink">{t('testRoom.title')}</Link> : null}
 				</div>
 
 				<header className="game-theme-hero rounded-[1.25rem]">
@@ -217,6 +220,7 @@ export default function SpyMenuClient() {
 						<form onSubmit={handleMenuSubmit} className="space-y-4">
 							<Field label={t('spy.menu.yourName')} htmlFor="spy-name" error={nameError}>
 								<PlayerNameInput
+									disabled={!nameLoaded}
 									id="spy-name"
 									value={name}
 									onChange={(e) => {

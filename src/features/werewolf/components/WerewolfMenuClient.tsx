@@ -23,7 +23,7 @@ import type { RoomStateDTO } from '@/features/werewolf/types';
 
 type View = 'menu' | 'create' | 'join';
 
-export default function WerewolfMenuClient() {
+export default function WerewolfMenuClient({ isAdmin = false }: { isAdmin?: boolean }) {
 	const t = useT();
 	const router = useRouter();
 	const [view, setView] = useState<View>('menu');
@@ -102,6 +102,7 @@ export default function WerewolfMenuClient() {
 						{t('mafia.menu.backToHub')}
 					</Link>
 					<PrefsToggleGroup />
+					{isAdmin ? <Link href={`${routes.boardGameTest}?game=ma-soi`} className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink">{t('testRoom.title')}</Link> : null}
 				</div>
 				<header className="game-theme-hero rounded-[1.25rem]">
 					<Image

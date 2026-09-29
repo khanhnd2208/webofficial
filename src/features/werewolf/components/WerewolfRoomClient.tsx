@@ -28,13 +28,15 @@ import {
 	storeRecentPlayerName,
 } from '@/features/werewolf/lib/clientToken';
 import type { RoleCount } from '@/features/werewolf/types';
+import { TEST_VIEWER_TOKEN } from '@/features/board-game-test/clientApi';
 
 interface Props {
 	code: string;
 	initialName?: string;
+	adminTest?: boolean;
 }
 
-export default function WerewolfRoomClient({ code, initialName }: Props) {
+export default function WerewolfRoomClient({ code, initialName, adminTest = false }: Props) {
 	const t = useT();
 	const router = useRouter();
 	const [hydrated, setHydrated] = useState(false);
@@ -48,8 +50,9 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 
 	const { state, error, errorCode, loading, refresh, api } = useWerewolfRoom({
 		code,
-		playerToken,
+		playerToken: adminTest ? TEST_VIEWER_TOKEN : playerToken,
 		onTokenReceived: setPlayerToken,
+		adminTest,
 	});
 
 	const saveRoles = useCallback(
@@ -96,10 +99,10 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 	}, [keepAwake]);
 
 	useEffect(() => {
-		setPlayerToken(getStoredPlayerToken(code));
+		setPlayerToken(adminTest ? TEST_VIEWER_TOKEN : getStoredPlayerToken(code));
 		setJoinName((prev) => prev || initialName || getRecentPlayerName() || '');
 		setHydrated(true);
-	}, [code, initialName]);
+	}, [adminTest, code, initialName]);
 
 	const joinRoom = useCallback(
 		async (name: string, existingToken?: string) => {
@@ -130,6 +133,7 @@ export default function WerewolfRoomClient({ code, initialName }: Props) {
 	}, [hydrated, playerToken, initialName, joinRoom, removed, t]);
 
 	async function handleLeave() {
+		if (adminTest) return;
 		if (state?.isHost && !window.confirm(t('mafia.host.leaveConfirm'))) return;
 		setBusy(true);
 		try {

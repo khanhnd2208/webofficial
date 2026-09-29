@@ -30,11 +30,12 @@ import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/
 
 type View = 'menu' | 'create' | 'join';
 
-export default function CheeseThiefMenuClient() {
+export default function CheeseThiefMenuClient({ isAdmin = false }: { isAdmin?: boolean }) {
 	const t = useT();
 	const router = useRouter();
 	const [view, setView] = useState<View>('menu');
 	const [name, setName] = useState('');
+	const [nameLoaded, setNameLoaded] = useState(false);
 	const [roomName, setRoomName] = useState('');
 	const [joinCode, setJoinCode] = useState('');
 	const [tableSize, setTableSize] = useState(CHEESE_TABLE_SIZE_DEFAULT);
@@ -43,7 +44,8 @@ export default function CheeseThiefMenuClient() {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		setName(getRecentPlayerName() ?? '');
+		setName(current => current || getRecentPlayerName() || '');
+		setNameLoaded(true);
 	}, []);
 
 	function validatedName(): string | null {
@@ -112,6 +114,7 @@ export default function CheeseThiefMenuClient() {
 						Board Game
 					</Link>
 					<PrefsToggleGroup />
+					{isAdmin ? <Link href={`${routes.boardGameTest}?game=cheese-thief`} className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink">{t('testRoom.title')}</Link> : null}
 				</div>
 
 				<header
@@ -158,6 +161,7 @@ export default function CheeseThiefMenuClient() {
 						>
 							<Field label={t('cheese.menu.yourName')} htmlFor="cheese-name" error={error}>
 								<PlayerNameInput
+									disabled={!nameLoaded}
 									id="cheese-name"
 									value={name}
 									onChange={(event) => setName(event.target.value)}
@@ -263,6 +267,7 @@ export default function CheeseThiefMenuClient() {
 							</div>
 							<Field label={t('cheese.menu.yourName')} htmlFor="cheese-join-name">
 								<PlayerNameInput
+									disabled={!nameLoaded}
 									id="cheese-join-name"
 									value={name}
 									onChange={(event) => setName(event.target.value)}

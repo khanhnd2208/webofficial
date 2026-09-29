@@ -23,6 +23,7 @@ export interface ISpyPlayer {
 	/** Auth token of the player this person voted for. Mapped to a public id in the DTO. */
 	voteToken?: string;
 	isEliminated: boolean;
+	isBot?: boolean;
 }
 
 /** Stored ballot row. `token` is an auth token; the DTO replaces it with a public id. */
@@ -86,6 +87,7 @@ export interface ISpyGame {
 	players: ISpyPlayer[];
 	eliminatedTokens: string[];
 	result: ISpyResult;
+	adminTest?: { ownerUserId: string; seed: string; running: boolean; randomState: number; initialConfig: Record<string, unknown>; log: string[]; controlledSeatId?: string; hostPhaseAt?: Date; lastTickAt?: Date; clockMs?: number; commandVersion?: number; requestIds?: string[]; lockId?: string; lockUntil?: Date };
 	createdAt?: Date;
 	updatedAt?: Date;
 }
@@ -103,6 +105,7 @@ const SpyPlayerSchema = new Schema<ISpyPlayer>(
 		hasMemorizedRole: { type: Boolean, default: false },
 		voteToken: { type: String },
 		isEliminated: { type: Boolean, default: false },
+		isBot: { type: Boolean, default: false },
 	},
 	// `id: false` turns off Mongoose's virtual so the public `id` path is the real field.
 	{ _id: false, id: false },
@@ -167,6 +170,22 @@ const SpyGameSchema = new Schema<ISpyGame>(
 			},
 			revealedAt: Date,
 			durationSeconds: Number,
+		},
+		adminTest: {
+			ownerUserId: String,
+			seed: String,
+			running: { type: Boolean, default: false },
+			randomState: Number,
+			initialConfig: { type: Schema.Types.Mixed },
+			log: { type: [String], default: [] },
+			controlledSeatId: String,
+			hostPhaseAt: Date,
+			lastTickAt: Date,
+			clockMs: Number,
+			commandVersion: Number,
+			requestIds: [String],
+			lockId: String,
+			lockUntil: Date,
 		},
 	},
 	{ timestamps: true },

@@ -1,4 +1,5 @@
 'use client';
+import { useTestRoom } from '@/features/board-game-test/context';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -35,6 +36,8 @@ interface Props {
 type Voice = 'pending' | 'track' | 'blocked' | 'speech';
 
 export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mode, hourSeconds, night }: Props) {
+	const testRoom = useTestRoom();
+	const paused = testRoom ? !testRoom.running : false;
 	const t = useT();
 	const { locale } = useLocale();
 	const lastCue = useRef<string | null>(null);
@@ -61,6 +64,7 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 	useEffect(() => stopTableAudio, []);
 
 	useEffect(() => {
+		if (paused) { stopTableAudio(); return; }
 		let cancelled = false;
 		voiceRef.current = 'pending';
 		void prepareNightTrack(spec).then(async (url) => {
@@ -81,7 +85,7 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 		return () => {
 			cancelled = true;
 		};
-	}, [spec, started]);
+	}, [spec, started, paused]);
 
 	useEffect(() => {
 		skewRef.current = new Date(serverNow).getTime() - fetchedAt;
@@ -90,7 +94,7 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 		let lastTick = 0;
 
 		const tick = () => {
-			const now = Date.now() + skewRef.current;
+			const now = paused ? new Date(serverNow).getTime() : Date.now() + skewRef.current;
 			const segment = segmentAt(started, now, timing);
 			if (segment.kind === 'done') {
 				setLine('');
@@ -102,6 +106,7 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 			const text = t(`cheese.narrator.${spokenKey}`, { hour });
 			setLine(text);
 
+			if (paused) return;
 			if (voiceRef.current === 'track' && trackUrl.current) {
 				if (!syncNightTrack(trackUrl.current, spec, (now - started) / 1000)) changeVoice('blocked');
 			} else if (voiceRef.current === 'speech') {
@@ -128,9 +133,9 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 			window.clearTimeout(timer);
 			window.speechSynthesis?.removeEventListener('voiceschanged', onVoices);
 		};
-	}, [started, serverNow, fetchedAt, locale, t, mode, hourSeconds, night, spec]);
+	}, [started, serverNow, fetchedAt, locale, t, mode, hourSeconds, night, spec, paused]);
 
-	const showTap = voice === 'blocked' || (voice === 'speech' && needsTap);
+	const showTap = !paused && (voice === 'blocked' || (voice === 'speech' && needsTap));
 
 	return (
 		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-8 px-6 text-center text-[#f4efe4]">

@@ -1,4 +1,5 @@
 'use client';
+import { useTestRoom } from '@/features/board-game-test/context';
 
 import { useState } from 'react';
 import QRCode from 'react-qr-code';
@@ -33,6 +34,7 @@ export default function LobbyPhase({
 	onHourSeconds,
 	onKick,
 }: Props) {
+	const testRoom = useTestRoom();
 	const t = useT();
 	const [copyStatus, setCopyStatus] = useState<'copied' | 'failed' | null>(null);
 	const twoNight = state.mode === 'two-night';
@@ -67,11 +69,11 @@ export default function LobbyPhase({
 							{state.code}
 						</p>
 					</div>
-					<div className="shrink-0 rounded-2xl bg-white p-2" aria-label={t('cheese.lobby.invite')}>
+					{!testRoom && <div className="shrink-0 rounded-2xl bg-white p-2" aria-label={t('cheese.lobby.invite')}>
 						<QRCode value={url} size={88} />
-					</div>
+					</div>}
 				</div>
-				<div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
+				{!testRoom && <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
 					<p className="text-xs text-muted">{t('cheese.lobby.invite')}</p>
 					<button
 						type="button"
@@ -80,7 +82,7 @@ export default function LobbyPhase({
 					>
 						{copyStatus === 'copied' ? t('cheese.lobby.copied') : t('cheese.lobby.copyLink')}
 					</button>
-				</div>
+				</div>}
 				{copyStatus === 'failed' && (
 					<p className="mt-2 text-xs text-danger" role="status">
 						{t('cheese.lobby.copyFailed')}
