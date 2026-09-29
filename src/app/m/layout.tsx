@@ -1,8 +1,8 @@
+import localFont from 'next/font/local';
 import {
 	Be_Vietnam_Pro,
 	Inter,
 	Lora,
-	Source_Serif_4,
 } from 'next/font/google';
 
 /*
@@ -31,10 +31,15 @@ const lora = Lora({
 	display: 'block',
 });
 
-const sourceSerif = Source_Serif_4({
+const sourceSerif = localFont({
 	variable: '--font-source-serif',
-	subsets: ['latin', 'vietnamese'],
-	weight: ['300', '400', '600', '700'],
+	src: [
+		{ path: '../../assets/fonts/source-serif/SourceSerif4-Light.ttf', weight: '300', style: 'normal' },
+		{ path: '../../assets/fonts/source-serif/SourceSerif4-Regular.ttf', weight: '400', style: 'normal' },
+		{ path: '../../assets/fonts/source-serif/SourceSerif4-Semibold.ttf', weight: '600', style: 'normal' },
+		{ path: '../../assets/fonts/source-serif/SourceSerif4-Bold.ttf', weight: '700', style: 'normal' },
+	],
+	adjustFontFallback: 'Times New Roman',
 	display: 'block',
 });
 
