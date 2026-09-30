@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { TeachingSectionHeading } from '../ui/TeachingElements';
 import { McIcon } from '@/components/myclass/ui';
 import { routes } from '@/config/routes';
 import type { TeachingClassListItem, TeachingCourseListItem } from '@/features/teaching/types';
@@ -53,13 +54,16 @@ export function TeachingActiveClasses({ courses }: { courses: TeachingCourseList
 
 	return (
 		<section aria-labelledby="teaching-active-classes-title" data-testid="teaching-active-classes">
-			<div className="mb-3 flex items-baseline justify-between gap-3">
-				<h2 id="teaching-active-classes-title" className="text-base font-semibold text-ink">
-					Lớp đang dạy
-				</h2>
-				<p className="mc-meta text-xs text-ink-secondary">Bấm để mở điểm danh</p>
+			<div className="mb-4">
+				<TeachingSectionHeading
+					id="teaching-active-classes-title"
+					icon="class"
+					title="Lớp đang dạy"
+					description="Mở lớp để điểm danh hoặc chia sẻ cho sinh viên."
+					count={classes.length}
+				/>
 			</div>
-			<ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+			<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
 				{classes.map((row) => {
 					const classCode = row.classCode ?? row.groupNo;
 					const warnings = row.atRiskCount + row.bannedCount;
@@ -67,7 +71,7 @@ export function TeachingActiveClasses({ courses }: { courses: TeachingCourseList
 					return (
 						<li
 							key={row.id}
-							className="flex items-stretch rounded-2xl border border-border/80 bg-surface transition-colors hover:border-border-hover"
+							className="teaching-class-row flex items-stretch rounded-2xl border border-border/80 bg-surface transition-colors hover:border-border-hover"
 						>
 							<Link
 								href={routes.mySpaceTeachingClassTab(row.id, 'attendance')}

@@ -1,5 +1,7 @@
 'use client';
 
+import { useSurfaceTheme } from './SurfaceTheme';
+
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 function useBodyScrollLock(open: boolean) {
@@ -84,6 +86,7 @@ export function Dialog({
 	children,
 	className = '',
 }: DialogProps) {
+	const surface = useSurfaceTheme();
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const titleId = useId();
 	const descId = useId();
@@ -108,6 +111,7 @@ export function Dialog({
 
 	return (
 		<dialog
+			data-surface={surface}
 			ref={dialogRef}
 			aria-labelledby={titleId}
 			aria-describedby={description ? descId : undefined}
@@ -155,6 +159,7 @@ type SheetProps = {
 
 /** Mobile sheet using native dialog + bottom/right/full panel presentation. */
 export function Sheet({ open, onClose, title, children, side = 'bottom' }: SheetProps) {
+	const surface = useSurfaceTheme();
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const titleId = useId();
 
@@ -181,6 +186,7 @@ export function Sheet({ open, onClose, title, children, side = 'bottom' }: Sheet
 
 	return (
 		<dialog
+			data-surface={surface}
 			ref={dialogRef}
 			aria-labelledby={titleId}
 			className={`fixed inset-0 z-[70] m-0 h-dvh min-h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 open:flex open:flex-col [&::backdrop]:bg-black/40 [&::backdrop]:transition-opacity [&::backdrop]:duration-300 ${dialogAlign}`}

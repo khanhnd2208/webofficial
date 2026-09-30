@@ -6,6 +6,7 @@ import type { UserRole } from '@/types/user';
 export type MySpaceTileStatus = 'published' | 'coming-soon';
 
 export type MySpaceTileVisual =
+	| { kind: 'mark'; name: 'teaching'; alt: string }
 	| {
 			kind: 'image';
 			src: string;
@@ -44,8 +45,8 @@ export const mySpaceTiles: MySpaceTile[] = [
 		label: 'Teaching',
 		featured: true,
 		visual: {
-			kind: 'image',
-			src: '/brand/myspace/teaching-v2.png',
+			kind: 'mark',
+			name: 'teaching',
 			alt: 'Minh họa khu Teaching',
 		},
 		status: 'published',

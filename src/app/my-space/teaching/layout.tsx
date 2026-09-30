@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { SurfaceTheme } from '@/components/ui/SurfaceTheme';
 import { redirect } from 'next/navigation';
 
 import { TeachingPopoverRoot } from '@/components/teaching/TeachingPopover';
@@ -17,10 +18,10 @@ export default async function MySpaceTeachingLayout({ children }: { children: Re
 	}
 
 	return (
-		<div className="mc mc-studio min-h-svh bg-canvas text-ink">
+		<SurfaceTheme surface="teaching" className="mc mc-studio min-h-svh bg-canvas text-ink">
 			<TeachingPopoverRoot>
 				<main className="mx-auto w-full max-w-[92rem] px-4 sm:px-6">{children}</main>
 			</TeachingPopoverRoot>
-		</div>
+		</SurfaceTheme>
 	);
 }

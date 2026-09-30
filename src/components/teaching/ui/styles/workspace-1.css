@@ -1,0 +1,597 @@
+/* Teaching workspace styles, scoped to its destination and overlays. */
+[data-surface='teaching'] .mc-grid-wrap {
+	overflow: auto;
+	overflow-x: auto;
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+	overscroll-behavior-inline: contain;
+	max-height: calc(100svh - 16rem);
+	border: 1px solid color-mix(in srgb, var(--mc-rule) 40%, transparent);
+	border-radius: var(--mc-r-md);
+	background: var(--paper);
+	scrollbar-width: thin;
+	scrollbar-color: var(--mc-rule-strong) transparent;
+}
+
+[data-surface='teaching'] .mc-grid-wrap::-webkit-scrollbar {
+	width: 0.65rem;
+	height: 0.65rem;
+}
+
+[data-surface='teaching'] .mc-grid-wrap::-webkit-scrollbar-thumb {
+	border: 2px solid transparent;
+	border-radius: var(--mc-r-full);
+	background: var(--mc-rule-strong);
+	background-clip: padding-box;
+}
+
+[data-surface='teaching'] .mc-grid-wrap[data-scroll-mode='page'] {
+	max-height: none;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-inline: contain;
+}
+
+[data-surface='teaching'] .mc-grid {
+	--mc-grid-stt: 3rem;
+	--mc-grid-code: 7.25rem;
+	--mc-grid-name: 16rem;
+	--mc-grid-group: 4rem;
+	--mc-grid-home: 5.25rem;
+	--mc-grid-major: 11rem;
+	--mc-grid-dob: 6.5rem;
+	--mc-grid-week: 2.75rem;
+	--mc-grid-abs: 7rem;
+	--mc-grid-gift: 5.75rem;
+	--mc-grid-cp: 5.25rem;
+	--mc-grid-attendance-score: 7.5rem;
+	--mc-grid-total-score: 6.25rem;
+	--mc-grid-status: 8.5rem;
+	border-collapse: separate;
+	border-spacing: 0;
+	width: 100%;
+	min-width: max-content;
+	font-size: 0.8125rem;
+}
+
+[data-surface='teaching'] .mc-grid thead th {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	height: 3.25rem;
+	padding: 0.35rem 0.5rem;
+	border-bottom: 1px solid var(--mc-rule);
+	background: var(--surface-sunken);
+	color: var(--ink-secondary);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	vertical-align: bottom;
+}
+
+[data-surface='teaching'] .mc-grid thead th.mc-grid-summary-heading,
+[data-surface='teaching'] .mc-grid .mc-grid-summary-heading {
+	white-space: normal;
+}
+
+[data-surface='teaching'] .mc-grid-summary-heading {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: inherit;
+	gap: 0.08rem;
+	line-height: 1.15;
+}
+
+[data-surface='teaching'] .mc-grid-summary-heading > span + span:last-child {
+	color: var(--ink-tertiary);
+	font-size: 0.625rem;
+	letter-spacing: 0;
+	line-height: 1.15;
+}
+
+[data-surface='teaching'] .mc-grid tbody td {
+	height: 2.75rem;
+	padding: 0.2rem 0.5rem;
+	border-bottom: 1px solid color-mix(in srgb, var(--mc-rule) 45%, transparent);
+	background: var(--paper);
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+[data-surface='teaching'] .mc-grid tbody tr:nth-child(even) td {
+	background: color-mix(in srgb, var(--surface-sunken) 55%, var(--paper));
+}
+
+[data-surface='teaching'] .mc-grid tbody tr:hover td,
+[data-surface='teaching'] .mc-grid tbody tr[data-risk]:hover td {
+	background: var(--accent-subtle);
+}
+
+[data-surface='teaching'] .mc-grid tbody tr[data-risk='BANNED'] td,
+[data-surface='teaching'] .mc-grid tbody tr[data-risk='AT_RISK'] td {
+	background: var(--paper);
+}
+
+[data-surface='teaching'] .mc-grid tbody tr:nth-child(even)[data-risk='BANNED'] td,
+[data-surface='teaching'] .mc-grid tbody tr:nth-child(even)[data-risk='AT_RISK'] td {
+	background: color-mix(in srgb, var(--surface-sunken) 55%, var(--paper));
+}
+
+[data-surface='teaching'] .mc-grid tbody tr[data-risk]:hover td {
+	background: var(--accent-subtle);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-freeze-left,
+[data-surface='teaching'] .mc-grid .mc-grid-freeze-right {
+	position: sticky;
+	z-index: 2;
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-freeze-right {
+	background: var(--paper);
+}
+
+[data-surface='teaching'] .mc-grid thead .mc-grid-freeze-right {
+	background: var(--surface-sunken);
+}
+
+[data-surface='teaching'] .mc-grid tbody tr:nth-child(even) .mc-grid-freeze-right {
+	background: color-mix(in srgb, var(--surface-sunken) 55%, var(--paper));
+}
+
+[data-surface='teaching'] .mc-grid tbody tr:hover .mc-grid-freeze-right,
+[data-surface='teaching'] .mc-grid tbody tr[data-risk]:hover .mc-grid-freeze-right {
+	background: var(--accent-subtle);
+}
+
+[data-surface='teaching'] .mc-grid thead .mc-grid-freeze-left,
+[data-surface='teaching'] .mc-grid thead .mc-grid-freeze-right {
+	z-index: 4;
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-stt {
+	left: 0;
+	width: var(--mc-grid-stt);
+	min-width: var(--mc-grid-stt);
+	box-shadow: 1px 0 0 var(--mc-rule);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-code {
+	left: var(--mc-grid-stt);
+	width: var(--mc-grid-code);
+	min-width: var(--mc-grid-code);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-name {
+	left: calc(var(--mc-grid-stt) + var(--mc-grid-code));
+	width: var(--mc-grid-name);
+	min-width: var(--mc-grid-name);
+	box-shadow: 4px 0 8px -4px rgb(18 28 42 / 0.12);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-group {
+	left: calc(var(--mc-grid-stt) + var(--mc-grid-code) + var(--mc-grid-name));
+	width: var(--mc-grid-group);
+	min-width: var(--mc-grid-group);
+	border-inline-start: 1px solid color-mix(in srgb, var(--mc-rule) 55%, transparent);
+	border-inline-end: 1px solid color-mix(in srgb, var(--mc-rule) 35%, transparent);
+	text-align: center;
+}
+
+[data-surface='teaching'] .mc-grid[data-extra='true'] .mc-grid-name {
+	box-shadow: none;
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-home {
+	left: calc(
+		var(--mc-grid-stt) + var(--mc-grid-code) + var(--mc-grid-name) +
+			var(--mc-grid-group-offset, 0rem)
+	);
+	width: var(--mc-grid-home);
+	min-width: var(--mc-grid-home);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-major {
+	left: calc(
+		var(--mc-grid-stt) + var(--mc-grid-code) + var(--mc-grid-name) +
+			var(--mc-grid-group-offset, 0rem) + var(--mc-grid-home)
+	);
+	width: var(--mc-grid-major);
+	min-width: var(--mc-grid-major);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-dob {
+	left: calc(
+		var(--mc-grid-stt) + var(--mc-grid-code) + var(--mc-grid-name) +
+			var(--mc-grid-group-offset, 0rem) + var(--mc-grid-home) + var(--mc-grid-major)
+	);
+	width: var(--mc-grid-dob);
+	min-width: var(--mc-grid-dob);
+	box-shadow: 4px 0 8px -4px rgb(18 28 42 / 0.12);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-status {
+	right: 0;
+	width: var(--mc-grid-status);
+	min-width: var(--mc-grid-status);
+	border-inline-start: 1px solid var(--mc-rule);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-cp {
+	right: 0;
+	width: var(--mc-grid-cp);
+	min-width: var(--mc-grid-cp);
+}
+
+[data-surface='teaching'] .mc-grid-note-trigger {
+	position: absolute;
+	right: 0.15rem;
+	top: 0.15rem;
+	display: inline-flex;
+	width: 1.25rem;
+	height: 1.25rem;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	border-radius: 999px;
+	color: var(--ink-secondary);
+	background: var(--paper);
+	opacity: 0.85;
+	cursor: pointer;
+}
+
+[data-surface='teaching'] .mc-grid-week-bulk {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.625rem;
+	font-weight: 600;
+	color: var(--accent);
+	white-space: nowrap;
+}
+
+[data-surface='teaching'] .mc-grid-week-state {
+	display: block;
+	font-size: 0.625rem;
+	font-weight: 500;
+	color: var(--ink-tertiary);
+}
+
+[data-surface='teaching'] .mc-grid-note-trigger:hover,
+[data-surface='teaching'] .mc-grid-note-trigger:focus-visible {
+	opacity: 1;
+	color: var(--accent);
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+
+[data-surface='teaching'] .mc-grid-mobile-only {
+	display: none;
+}
+
+[data-surface='teaching'] .mc-grid-public-identity {
+	min-width: 14rem;
+	width: 14rem;
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-summary-start {
+	border-inline-start: 1px solid color-mix(in srgb, var(--mc-rule) 75%, transparent);
+	box-shadow: -4px 0 8px -6px rgb(18 28 42 / 0.2);
+}
+
+[data-surface='teaching'] .mc-grid-wrap[data-scroll-right='true'] .mc-grid .mc-grid-summary-start {
+	box-shadow: -8px 0 12px -8px rgb(18 28 42 / 0.32);
+}
+
+[data-surface='teaching'] .mc-grid-wrap[data-scroll-left='true'] .mc-grid .mc-grid-name,
+[data-surface='teaching'] .mc-grid-wrap[data-scroll-left='true'] .mc-grid .mc-grid-public-identity {
+	box-shadow: 6px 0 10px -8px rgb(18 28 42 / 0.3);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-abs {
+	right: var(--mc-grid-status);
+	width: var(--mc-grid-abs);
+	min-width: var(--mc-grid-abs);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-attendance-score {
+	right: calc(var(--mc-grid-status) + var(--mc-grid-abs));
+	width: var(--mc-grid-attendance-score);
+	min-width: var(--mc-grid-attendance-score);
+	text-align: right;
+}
+
+[data-surface='teaching'] .mc-grid[data-eligibility='false'] .mc-grid-abs {
+	right: 0;
+}
+
+[data-surface='teaching'] .mc-grid[data-eligibility='false'] .mc-grid-attendance-score {
+	right: var(--mc-grid-abs);
+}
+
+[data-surface='teaching'] .mc-grid[data-group='true'] {
+	--mc-grid-group-offset: var(--mc-grid-group);
+}
+
+[data-surface='teaching'] .mc-grid[data-eligibility='false'] .mc-grid-abs {
+	right: 0;
+}
+
+[data-surface='teaching'] .mc-grid-week {
+	width: var(--mc-grid-week);
+	min-width: var(--mc-grid-week);
+	text-align: center;
+}
+
+[data-surface='teaching'] .mc-grid-week-heading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.1rem;
+}
+
+[data-surface='teaching'] .mc-grid-week-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.1rem;
+}
+
+[data-surface='teaching'] .mc-grid-week-draft {
+	display: block;
+	width: 100%;
+	font-size: 0.55rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	line-height: 1.1;
+	color: var(--accent);
+}
+
+[data-surface='teaching'] .mc-grid-week-toggle {
+	display: inline-flex;
+	width: 1.35rem;
+	height: 1.2rem;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	border-radius: var(--mc-r-xs);
+	background: transparent;
+	color: var(--ink-tertiary);
+	cursor: pointer;
+}
+
+[data-surface='teaching'] .mc-grid-week-toggle[data-open='true'],
+[data-surface='teaching'] .mc-grid-week-toggle[data-finalized='true'] {
+	color: var(--accent);
+}
+
+[data-surface='teaching'] .mc-grid-week-toggle:hover:not(:disabled),
+[data-surface='teaching'] .mc-grid-week-toggle:focus-visible {
+	background: var(--accent-subtle);
+	color: var(--accent);
+	outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+	outline-offset: 1px;
+}
+
+[data-surface='teaching'] .mc-grid-week-toggle:disabled {
+	cursor: wait;
+	opacity: 0.55;
+}
+
+[data-surface='teaching'] .mc-grid-week-select {
+	min-width: 2.2rem;
+	padding: 0.1rem 0.2rem;
+	border: 0;
+	border-radius: var(--mc-r-xs);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-weight: 700;
+	letter-spacing: inherit;
+	cursor: pointer;
+}
+
+[data-surface='teaching'] .mc-grid-week-select:hover,
+[data-surface='teaching'] .mc-grid-week-select:focus-visible {
+	background: var(--accent-subtle);
+	color: var(--accent);
+	outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+	outline-offset: 1px;
+}
+
+[data-surface='teaching'] .mc-grid-week-date-input {
+	position: relative;
+	width: 3.75rem;
+	height: 1.55rem;
+	display: block;
+	margin-top: 0.15rem;
+	margin-inline: auto;
+	border: 1px solid transparent;
+	border-radius: var(--mc-r-xs);
+	background: transparent;
+	color: var(--ink-tertiary);
+	cursor: pointer;
+	user-select: none;
+}
+
+[data-surface='teaching'] .mc-grid-week-date-value {
+	display: block;
+	padding: 0 0.1rem;
+	font-size: 0.625rem;
+	font-weight: 600;
+	line-height: 1.5rem;
+	text-align: center;
+}
+
+[data-surface='teaching'] .mc-grid-week-date-input:hover,
+[data-surface='teaching'] .mc-grid-week-date-input:focus-within {
+	border-color: var(--accent);
+	background: var(--paper);
+	color: var(--accent);
+	outline: 2px solid color-mix(in srgb, var(--accent) 24%, transparent);
+	outline-offset: 1px;
+}
+
+[data-surface='teaching'] .mc-grid-week-date-input input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+}
+
+[data-surface='teaching'] .mc-session-date {
+	display: grid;
+	justify-items: center;
+	gap: 0.15rem;
+	margin-top: 0.2rem;
+	min-width: 7.5rem;
+}
+
+[data-surface='teaching'] .mc-session-date[data-invalid='true'] .mc-session-date-fields {
+	border-color: var(--error);
+}
+
+[data-surface='teaching'] .mc-session-date-fields {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.15rem;
+	min-height: 1.75rem;
+	padding: 0 0.2rem;
+	border: 1px solid var(--mc-rule);
+	border-radius: var(--mc-r-xs);
+	background: var(--paper);
+}
+
+[data-surface='teaching'] .mc-session-date-fields input {
+	width: 1.4rem;
+	border: 0;
+	background: transparent;
+	text-align: center;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: var(--ink);
+}
+
+[data-surface='teaching'] .mc-session-date-fields input:nth-of-type(3) {
+	width: 2.4rem;
+}
+
+[data-surface='teaching'] .mc-session-date-calendar,
+[data-surface='teaching'] .mc-session-date-clear {
+	display: inline-flex;
+	min-height: 1.5rem;
+	min-width: 1.5rem;
+	align-items: center;
+	justify-content: center;
+	color: var(--ink-secondary);
+}
+
+[data-surface='teaching'] .mc-session-date-status {
+	font-size: 0.625rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--ink-tertiary);
+}
+
+[data-surface='teaching'] .mc-session-date-status[data-tone='saving'] {
+	color: var(--accent);
+}
+
+[data-surface='teaching'] .mc-session-date-status[data-tone='error'] {
+	color: var(--error);
+}
+
+[data-surface='teaching'] .mc-session-date-status[data-tone='ok'] {
+	color: var(--ink-secondary);
+}
+
+[data-surface='teaching'] .mc-grid-cell {
+	position: relative;
+	display: inline-flex;
+	width: 2.25rem;
+	height: 2.25rem;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid color-mix(in srgb, var(--mc-rule) 55%, transparent);
+	border-radius: var(--mc-r-xs);
+	background: var(--paper);
+	color: var(--ink-secondary);
+	cursor: pointer;
+	transition:
+		background-color var(--mc-dur-1) var(--mc-ease-standard),
+		border-color var(--mc-dur-1) var(--mc-ease-standard),
+		color var(--mc-dur-1) var(--mc-ease-standard);
+}
+
+[data-surface='teaching'] .mc-grid-cell:hover:not(:disabled) {
+	border-color: var(--accent);
+}
+
+[data-surface='teaching'] .mc-grid-cell:focus-visible {
+	border-color: var(--accent);
+	outline: 2px solid color-mix(in srgb, var(--accent) 42%, transparent);
+	outline-offset: 1px;
+}
+
+[data-surface='teaching'] .mc-grid-cell:disabled {
+	cursor: not-allowed;
+}
+
+[data-surface='teaching'] .mc-grid-cell[data-status='PRESENT'] {
+	background: var(--mc-done-subtle);
+	border-color: color-mix(in srgb, var(--mc-done) 35%, transparent);
+	color: var(--mc-done);
+}
+
+[data-surface='teaching'] .mc-grid-cell[data-status='LATE'] {
+	background: var(--mc-vocab-subtle);
+	border-color: color-mix(in srgb, var(--mc-vocab) 35%, transparent);
+	color: var(--mc-vocab);
+}
+
+[data-surface='teaching'] .mc-grid-cell[data-status='ABSENT_UNEXCUSED'] {
+	background: var(--mc-error-subtle);
+	border-color: color-mix(in srgb, var(--mc-error) 30%, transparent);
+	color: var(--mc-error);
+}
+
+[data-surface='teaching'] .mc-grid-cell[data-status='ABSENT_EXCUSED'] {
+	background: var(--surface-sunken);
+	border-color: var(--mc-rule);
+	color: var(--ink-secondary);
+}
+
+[data-surface='teaching'] .mc-grid-cell[data-status='MAKEUP'] {
+	background: var(--accent-subtle);
+	border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+	color: var(--accent);
+}
+
+[data-surface='teaching'] .mc-grid-cell[data-flag='true']::after {
+	content: '';
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	width: 5px;
+	height: 5px;
+	border-radius: var(--mc-r-full);
+	background: var(--accent);
+}
+
+[data-surface='teaching'] .mc-grid-week-sub {
+	display: block;
+	margin-top: 0.15rem;
+	font-size: 0.625rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--ink-tertiary);
+}
+
+[data-surface='teaching'] .mc-grid .mc-grid-week[data-current='true'] {
+	box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--accent-subtle) 55%, transparent);
+}

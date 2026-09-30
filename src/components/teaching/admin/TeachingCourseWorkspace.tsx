@@ -12,6 +12,8 @@ import {
 	StudioSelect,
 } from '@/components/myclass/admin/studio';
 import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
+import { TeachingIcon } from '../ui/TeachingIcon';
+import { TeachingEmpty } from '../ui/TeachingElements';
 import { TeachingAppHeader } from '@/components/teaching/admin/TeachingAppHeader';
 import { TeachingClassCards } from '@/components/teaching/admin/TeachingClassCards';
 import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu';
@@ -144,14 +146,14 @@ export function TeachingCourseWorkspace({
 					archived ? null : tab === 'recall' ? (
 						<Link
 							href={routes.mySpaceTeachingRecallNew(course.id)}
-							className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-xs font-semibold text-paper"
+							className="teaching-primary-action"
 						>
 							Tạo bộ thẻ
 						</Link>
 					) : (
 						<Link
 							href={routes.mySpaceTeachingCourseNewClass(course.id)}
-							className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-xs font-semibold text-paper"
+							className="teaching-primary-action"
 						>
 							Tạo lớp
 						</Link>
@@ -167,14 +169,14 @@ export function TeachingCourseWorkspace({
 							aria-current={tab === 'classes' ? 'page' : undefined}
 							data-active={tab === 'classes'}
 						>
-							Lớp theo kỳ
+							<TeachingIcon name="class" size={18} /> Lớp theo kỳ
 						</Link>
 						<Link
 							href={routes.mySpaceTeachingCourseTab(course.id, 'recall')}
 							aria-current={tab === 'recall' ? 'page' : undefined}
 							data-active={tab === 'recall'}
 						>
-							Active Recall
+							<TeachingIcon name="recall" size={18} /> Active Recall
 						</Link>
 					</nav>
 				}
@@ -240,9 +242,11 @@ export function TeachingCourseWorkspace({
 								</div>
 							))
 						) : (
-							<div className="p-6 text-sm text-ink-secondary">
-								Chưa có bộ thẻ. Tạo bộ Active Recall đầu tiên cho môn này.
-							</div>
+							<TeachingEmpty
+								icon="recall"
+								title="Chưa có bộ thẻ"
+								description="Tạo bộ Active Recall đầu tiên cho môn này."
+							/>
 						)}
 					</div>
 				) : null}

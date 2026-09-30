@@ -1,5 +1,7 @@
 'use client';
 
+import { useSurfaceTheme } from '@/components/ui/SurfaceTheme';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { createPortal } from 'react-dom';
@@ -88,10 +90,11 @@ function ParticipationNoteEditor({
 	onPoints?: (points: 0 | 0.5 | 1 | 2) => void;
 	readOnly?: boolean;
 }) {
+	const surface = useSurfaceTheme();
 	const [note, setNote] = useState(initialNote);
 	const { rootRef, textareaRef } = useGridNotePopover(onClose);
 	return createPortal(
-		<div className="mc mc-studio">
+		<div className="mc mc-studio teaching-portal" data-surface={surface}>
 			<div
 				ref={rootRef}
 				role="dialog"

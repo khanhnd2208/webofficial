@@ -1,5 +1,7 @@
 'use client';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
+
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -313,7 +315,9 @@ export function ClassNotesAdminWorkspace({
 						<div className="mb-3 flex items-center justify-between gap-2">
 							<div>
 								<p className="mc-eyebrow">Notebook</p>
-								<h2 className="text-sm font-semibold text-ink">Class Notes</h2>
+								<h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+									<TeachingIcon name="notes" size={20} /> Class Notes
+								</h2>
 							</div>
 							<button
 								type="button"

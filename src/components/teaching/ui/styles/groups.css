@@ -1,0 +1,268 @@
+[data-surface='teaching'] .group-list-workspace {
+	--mc-brand: var(--accent);
+	--mc-ink: var(--ink);
+	--mc-paper: var(--paper);
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+[data-surface='teaching'] .group-list-header {
+	position: relative;
+	padding: clamp(1.25rem, 2vw, 1.8rem);
+	border: 1px solid color-mix(in srgb, var(--mc-brand) 16%, var(--mc-rule));
+	border-radius: var(--mc-r-md, 0.9rem);
+	background: var(--paper);
+	box-shadow: var(--mc-shadow-1);
+}
+
+[data-surface='teaching'] .group-list-heading-row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+[data-surface='teaching'] .group-list-eyebrow {
+	margin: 0 0 0.35rem;
+	color: var(--mc-ink-secondary, var(--ink-secondary));
+	font-size: 0.66rem;
+	font-weight: 800;
+	letter-spacing: 0.16em;
+}
+
+[data-surface='teaching'] .group-list-title {
+	margin: 0;
+	color: var(--mc-brand);
+	font-size: clamp(1.05rem, 2vw, 1.35rem);
+	font-weight: 800;
+	letter-spacing: -0.025em;
+}
+
+[data-surface='teaching'] .group-list-title span {
+	color: var(--mc-ink-secondary, var(--ink-secondary));
+	font-weight: 600;
+}
+
+[data-surface='teaching'] .group-list-subtitle {
+	margin: 0.4rem 0 0;
+	color: var(--mc-ink-secondary, var(--ink-secondary));
+	font-size: 0.84rem;
+}
+
+[data-surface='teaching'] .group-list-header-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+[data-surface='teaching'] .group-list-metrics {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	max-width: 34rem;
+	margin-top: 1.35rem;
+	border-top: 1px solid var(--mc-rule);
+	padding-top: 1rem;
+}
+
+[data-surface='teaching'] .group-list-metric {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	padding: 0 1rem;
+	border-left: 1px solid var(--mc-rule);
+}
+
+[data-surface='teaching'] .group-list-metric:first-child {
+	padding-left: 0;
+	border-left: 0;
+}
+[data-surface='teaching'] .group-list-metric span {
+	color: var(--mc-ink-secondary, var(--ink-secondary));
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+[data-surface='teaching'] .group-list-metric strong {
+	color: var(--mc-ink);
+	font-size: 1.45rem;
+	line-height: 1;
+}
+[data-surface='teaching'] .group-list-metric strong small {
+	color: var(--mc-ink-secondary, var(--ink-secondary));
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+[data-surface='teaching'] .group-list-metric.is-complete strong {
+	color: var(--success);
+}
+[data-surface='teaching'] .group-list-metric.is-warning strong {
+	color: var(--warning);
+}
+
+[data-surface='teaching'] .group-list-table {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: left;
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+[data-surface='teaching'] .group-list-table thead th {
+	padding: 0.55rem 1rem;
+	background: var(--surface-sunken);
+	color: var(--ink-secondary);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	text-align: left;
+	letter-spacing: 0.035em;
+	border-bottom: 1px solid var(--mc-rule);
+}
+
+[data-surface='teaching'] .group-list-table th:first-child {
+	width: 1%;
+	white-space: nowrap;
+}
+
+[data-surface='teaching'] .group-list-table tbody td {
+	padding: 0.7rem 1rem;
+	border-bottom: 1px solid var(--mc-rule);
+	vertical-align: middle;
+	color: var(--ink);
+}
+
+[data-surface='teaching'] .group-list-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+[data-surface='teaching'] .group-list-table tbody tr:hover {
+	background: var(--surface-hover);
+}
+
+[data-surface='teaching'] .group-list-table .group-list-student-code {
+	color: var(--ink-tertiary);
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+[data-surface='teaching'] .group-list-student-name {
+	font-weight: 500;
+	overflow-wrap: anywhere;
+}
+
+[data-surface='teaching'] .group-list-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	margin-top: 0.35rem;
+}
+
+[data-surface='teaching'] .group-list-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+	align-items: start;
+}
+
+[data-surface='teaching'] .group-list-unassigned {
+	grid-column: 1 / -1;
+}
+
+[data-surface='teaching'] .group-list-section {
+	min-width: 0;
+	border: 1px solid var(--mc-rule);
+	border-radius: 1rem;
+	background: var(--paper);
+	box-shadow: var(--mc-shadow-1);
+}
+
+[data-surface='teaching'] .group-list-section-head {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+	padding: 0.85rem 1rem;
+	border-bottom: 1px solid var(--mc-rule);
+	background: var(--paper);
+}
+
+[data-surface='teaching'] .group-list-section-title {
+	min-width: 0;
+	margin-right: auto;
+}
+
+[data-surface='teaching'] .group-list-section-head h3 {
+	margin: 0;
+	color: var(--ink);
+	font-size: 0.875rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+
+[data-surface='teaching'] .group-list-capacity {
+	margin-left: auto;
+	border-radius: 999px;
+	padding: 0.2rem 0.55rem;
+	background: var(--surface-sunken);
+	color: var(--ink-secondary);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+[data-surface='teaching'] .group-list-table-wrap {
+	background: var(--paper);
+}
+
+@media (min-width: 900px) {
+	[data-surface='teaching'] .group-list-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1280px) {
+	[data-surface='teaching'] .group-list-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767px) {
+	[data-surface='teaching'] .group-list-heading-row {
+		flex-direction: column;
+	}
+	[data-surface='teaching'] .group-list-header-actions {
+		width: 100%;
+		justify-content: flex-start;
+	}
+	[data-surface='teaching'] .group-list-header-actions fieldset {
+		flex: 1 1 12rem;
+	}
+	[data-surface='teaching'] .group-list-header-actions fieldset > div,
+	[data-surface='teaching'] .group-list-header-actions fieldset button {
+		width: 100%;
+	}
+	[data-surface='teaching'] .group-list-metrics {
+		max-width: none;
+	}
+	[data-surface='teaching'] .group-list-metric {
+		padding: 0 0.65rem;
+	}
+	[data-surface='teaching'] .group-list-metric strong {
+		font-size: 1.2rem;
+	}
+	[data-surface='teaching'] .group-list-section-head > .flex {
+		width: 100%;
+	}
+	[data-surface='teaching'] .group-list-section-head > .flex .mc-button {
+		flex: 1;
+	}
+	[data-surface='teaching'] .group-list-table thead th,
+	[data-surface='teaching'] .group-list-table tbody td {
+		padding-left: 0.8rem;
+		padding-right: 0.8rem;
+	}
+}

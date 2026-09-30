@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
+import { TeachingSectionHeading } from '../ui/TeachingElements';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import {
 	StudioButton,
@@ -173,13 +174,13 @@ export function TeachingClassCards({
 
 	return (
 		<section className="space-y-6" aria-label="Danh sách lớp học">
-			<div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-				<div className="min-w-0">
-					<h2 className="text-base font-semibold text-ink">Các lớp theo kỳ</h2>
-					<p className="mc-meta mt-0.5 text-xs text-ink-secondary">
-						Chọn lớp để vào điểm danh và học viên.
-					</p>
-				</div>
+			<div className="teaching-filter-bar">
+				<TeachingSectionHeading
+					icon="class"
+					title="Các lớp theo kỳ"
+					description="Chọn lớp để vào điểm danh và học viên."
+					count={filtered.length}
+				/>
 				<div className="flex items-center gap-2 sm:shrink-0">
 					<label className="min-w-0 flex-1 sm:w-64 sm:flex-none">
 						<span className="sr-only">Tìm lớp</span>
@@ -243,7 +244,7 @@ export function TeachingClassCards({
 						return (
 							<article
 								key={row.id}
-								className={`relative flex h-full flex-col rounded-2xl border bg-surface ${
+								className={`teaching-class-card relative flex h-full flex-col rounded-2xl border bg-surface ${
 									isArchived ? 'border-border/60 opacity-80' : 'border-border/80'
 								}`}
 							>

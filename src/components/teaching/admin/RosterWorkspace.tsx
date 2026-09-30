@@ -1,5 +1,7 @@
 'use client';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
+
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -177,7 +179,9 @@ export function RosterWorkspace({
 			<div className="mt-6 space-y-6">
 				<div className="mc-surface flex flex-wrap items-center justify-between gap-3 p-5">
 					<div>
-						<h2 className="font-semibold text-ink">Danh sách học viên</h2>
+						<h2 className="flex items-center gap-2 font-semibold text-ink">
+							<TeachingIcon name="students" size={20} /> Danh sách học viên
+						</h2>
 						<p className="mc-meta mt-1">
 							Bổ sung học viên bằng nhập tay, dán bảng, CSV mẫu hoặc Excel. Mọi khác biệt hồ sơ phải
 							được đối chiếu trước khi lưu.

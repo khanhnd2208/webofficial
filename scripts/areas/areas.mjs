@@ -40,6 +40,7 @@ export const AREAS = {
 		features: ['teaching', 'my-class', 'active-recall', 'myspace-tests'],
 		components: [
 			'teaching',
+			'teaching/ui',
 			'myclass',
 			'active-recall',
 			'knowledge',
@@ -78,6 +79,7 @@ export const AREAS = {
 			'e2e/active-recall.spec.ts',
 			'e2e/admin-workspace.spec.ts',
 			'e2e/teaching-admin-workspace.spec.ts',
+			'e2e/teaching-surface.spec.ts',
 			'e2e/teaching-attendance-board.spec.ts',
 			'e2e/teaching-learning-experience-mobile.spec.ts',
 			'e2e/teaching-learning-experience-multi-device.spec.ts',

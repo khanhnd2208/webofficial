@@ -1,5 +1,7 @@
 'use client';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
+
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useTeachingLeaveGuard } from './useTeachingLeaveGuard';
@@ -87,7 +89,9 @@ export function ClassRecallWorkspace({
 			{leaveDialog}
 			<div className="flex flex-wrap items-start justify-between gap-3">
 				<div>
-					<h2 className="text-base font-semibold text-ink">Active Recall của lớp</h2>
+					<h2 className="flex items-center gap-2 text-base font-semibold text-ink">
+						<TeachingIcon name="recall" size={20} /> Active Recall của lớp
+					</h2>
 					<p className="mt-1 text-sm text-ink-secondary">
 						{enabledCount} bộ đã xuất bản được bật trong cấu hình đã lưu. Sinh viên xem được khi lớp
 						mở chia sẻ.

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
 import { McIcon } from '@/components/myclass/ui';
 import { useTeachingDismissible } from '@/components/teaching/TeachingPopover';
 import type { TeachingTutorialRecord } from '@/features/teaching/types';
@@ -42,12 +43,12 @@ export function TutorialSwitcher({
 			<button
 				ref={triggerRef}
 				type="button"
-				className="inline-flex min-h-11 items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs font-semibold uppercase tracking-wide text-ink-secondary hover:bg-surface-sunken"
+				className="inline-flex min-h-11 items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm font-medium text-ink-secondary hover:bg-surface-sunken"
 				aria-haspopup="listbox"
 				aria-expanded={open}
 				onClick={() => setOpen((val) => !val)}
 			>
-				<McIcon name="groups" size={18} />
+				<TeachingIcon name="groups" size={18} />
 				Tutorial Class: {current?.code ?? 'Tất cả'}
 				<McIcon name="expand_more" size={16} />
 			</button>

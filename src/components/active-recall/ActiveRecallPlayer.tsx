@@ -83,11 +83,13 @@ export default function ActiveRecallPlayer({
 	backHref,
 	backLabel,
 	showViToggle = false,
+	surface,
 }: {
 	deck: ActiveRecallDeckDTO;
 	backHref?: string;
 	backLabel?: string;
 	showViToggle?: boolean;
+	surface?: 'teaching';
 }) {
 	const originalIds = useMemo(() => deck.cards.map((card) => card.id), [deck.cards]);
 	const [ids, setIds] = useState(originalIds);
@@ -381,6 +383,7 @@ export default function ActiveRecallPlayer({
 	return (
 		<main
 			ref={rootRef}
+			data-surface={surface}
 			className={`recall-player min-h-svh bg-canvas text-ink ${presentation ? 'recall-player-presentation' : ''}`}
 			data-reading-size={readingSize}
 			data-has-back={backHref && backLabel ? 'true' : 'false'}

@@ -27,10 +27,7 @@ export default async function MySpaceTeachingPage() {
 						>
 							Quản trị
 						</Link>
-						<Link
-							href={routes.mySpaceTeachingNew}
-							className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-xs font-semibold text-paper"
-						>
+						<Link href={routes.mySpaceTeachingNew} className="teaching-primary-action">
 							Tạo lớp
 						</Link>
 					</div>

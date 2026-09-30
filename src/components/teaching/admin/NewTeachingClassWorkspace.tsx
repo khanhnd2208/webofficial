@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { TeachingSectionHeading, TeachingEmpty } from '../ui/TeachingElements';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -83,11 +84,19 @@ export function NewTeachingClassWorkspace({
 			/>
 
 			{activeCourses.length === 0 ? (
-				<div className="mc-surface mt-6 p-5 text-sm text-ink-secondary">
-					Chưa có môn đang hoạt động. Hãy thêm môn trước khi tạo lớp.
-				</div>
+				<TeachingEmpty
+					icon="course"
+					title="Chưa có môn đang hoạt động"
+					description="Hãy thêm môn trước khi tạo lớp."
+					className="mt-6"
+				/>
 			) : (
-				<section className="mc-surface mt-6 grid gap-4 p-5">
+				<section className="mc-surface mt-6 grid gap-4 p-5" aria-label="Thông tin lớp mới">
+					<TeachingSectionHeading
+						icon="class"
+						title="Thông tin lớp"
+						description="Chọn môn học, mã lớp và học kỳ để bắt đầu."
+					/>
 					<StudioField label="Môn học" error={fieldErrors.courseId}>
 						<StudioSelect
 							required

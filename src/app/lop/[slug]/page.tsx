@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SurfaceTheme } from '@/components/ui/SurfaceTheme';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
@@ -48,7 +49,7 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 	}
 
 	return (
-		<div className="mc mc-studio min-h-screen bg-canvas text-ink">
+		<SurfaceTheme surface="teaching" className="mc mc-studio min-h-screen bg-canvas text-ink">
 			<main className="mx-auto w-[min(100%-2rem,74rem)] py-8 sm:w-[min(100%-3rem,74rem)] sm:py-10">
 				<StudentClassBoard
 					board={board}
@@ -58,6 +59,6 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 					initialTutorialId={tutorial}
 				/>
 			</main>
-		</div>
+		</SurfaceTheme>
 	);
 }

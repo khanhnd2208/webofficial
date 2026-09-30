@@ -13,9 +13,19 @@ import {
 	type ReactNode,
 } from 'react';
 
+import { TeachingIcon, type TeachingIconName } from '../ui/TeachingIcon';
 import { routes } from '@/config/routes';
 
 import type { TeachingWorkspaceTab } from './teachingWorkspaceTab';
+
+const TAB_ICONS: Record<string, TeachingIconName> = {
+	attendance: 'attendance',
+	cp: 'cp',
+	groups: 'groups',
+	notes: 'notes',
+	recall: 'recall',
+	students: 'students',
+};
 
 const CORE_TABS = [
 	['attendance', 'Điểm danh'],
@@ -31,7 +41,7 @@ type PendingContextValue = {
 	navigate: (href: string) => void;
 	holdUntil: (task: Promise<unknown>, key?: string) => void;
 	week?: number;
-	setWeek: (week: number) => void;
+	setWeek: (week: number | undefined) => void;
 };
 
 const TeachingWorkspacePendingContext = createContext<PendingContextValue | null>(null);
@@ -141,6 +151,7 @@ export function TeachingCoreTabs({
 									pending ? (event) => handleSoftNav(event, href, pending.navigate) : undefined
 								}
 							>
+								<TeachingIcon name={TAB_ICONS[value]} size={18} />
 								{label}
 							</Link>
 						);

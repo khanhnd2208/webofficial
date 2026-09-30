@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
+import { TeachingSectionHeading, TeachingEmpty } from '../ui/TeachingElements';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { StudioButton, StudioField, StudioInput } from '@/components/myclass/admin/studio';
 import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
@@ -150,13 +152,13 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 
 	return (
 		<section className="space-y-6" aria-label="Danh sách môn học">
-			<div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-				<div className="min-w-0">
-					<h2 className="text-base font-semibold text-ink">Các môn đang dạy</h2>
-					<p className="mc-meta mt-0.5 text-xs text-ink-secondary">
-						Sửa, lưu trữ hoặc thêm môn trực tiếp từ danh sách.
-					</p>
-				</div>
+			<div className="teaching-filter-bar">
+				<TeachingSectionHeading
+					icon="course"
+					title="Các môn đang dạy"
+					description="Nội dung và các lớp theo từng môn học."
+					count={filtered.length}
+				/>
 				<div className="flex flex-wrap items-center gap-2 sm:shrink-0">
 					<label className="min-w-0 flex-1 sm:w-56 sm:flex-none">
 						<span className="sr-only">Tìm môn</span>
@@ -182,7 +184,7 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 							<option value="all">Tất cả môn</option>
 						</select>
 					</label>
-					<StudioButton onClick={openCreate} disabled={busy}>
+					<StudioButton variant="secondary" onClick={openCreate} disabled={busy}>
 						Thêm môn
 					</StudioButton>
 				</div>
@@ -195,22 +197,20 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 			) : null}
 
 			{courses.length === 0 ? (
-				<div
-					className="mc-surface rounded-2xl p-8 text-center sm:p-12"
+				<TeachingEmpty
+					icon="course"
+					title="Chưa có môn học"
+					description="Thêm môn trước, rồi tạo lớp rỗng và nhập học viên sau."
 					data-testid="teaching-empty-all"
 				>
-					<p className="text-base font-semibold text-ink">Chưa có môn học</p>
-					<p className="mc-meta mx-auto mt-2 max-w-md text-sm text-ink-secondary">
-						Thêm môn trước, rồi tạo lớp rỗng và nhập học viên sau.
-					</p>
-					<div className="mt-6">
-						<StudioButton onClick={openCreate}>Thêm môn đầu tiên</StudioButton>
-					</div>
-				</div>
+					<StudioButton onClick={openCreate}>Thêm môn đầu tiên</StudioButton>
+				</TeachingEmpty>
 			) : filtered.length === 0 ? (
-				<div className="mc-surface rounded-2xl p-8 text-center">
-					<p className="text-sm font-semibold text-ink">Không có kết quả phù hợp</p>
-				</div>
+				<TeachingEmpty
+					icon="course"
+					title="Không có kết quả phù hợp"
+					description="Thử từ khóa khác hoặc thay đổi bộ lọc môn học."
+				/>
 			) : (
 				<div
 					className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -219,7 +219,7 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 					{filtered.map((course) => (
 						<article
 							key={course.id}
-							className={`relative flex h-full flex-col rounded-2xl border bg-surface ${
+							className={`teaching-course-card relative flex h-full flex-col border bg-surface ${
 								course.status === 'ARCHIVED' ? 'border-border/60 opacity-80' : 'border-border/80'
 							}`}
 						>
@@ -228,6 +228,9 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 								className="flex flex-1 flex-col p-5 pr-14 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
 								data-testid={`teaching-course-card-${course.id}`}
 							>
+								<span className="teaching-course-card-icon">
+									<TeachingIcon name="course" size={28} />
+								</span>
 								<p className="font-mono text-xs font-bold uppercase tracking-wider text-accent">
 									{course.courseCode}
 								</p>

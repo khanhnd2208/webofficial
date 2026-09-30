@@ -32,6 +32,7 @@ export default async function PublicClassRecallDeckPage({
 	if (!deck) notFound();
 	return (
 		<ActiveRecallPlayer
+			surface="teaching"
 			deck={deck}
 			backHref={routes.teachingPublicClassTab(slug, 'recall')}
 			backLabel="Active Recall của lớp"
