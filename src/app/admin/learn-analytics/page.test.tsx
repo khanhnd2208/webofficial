@@ -51,6 +51,14 @@ describe('admin course analytics', () => {
 		expect(screen.getByRole('option', { name: 'ITM — Nhập môn quản trị' })).toBeInTheDocument();
 		expect(screen.getByText('Chưa có thời gian học được ghi nhận.')).toBeInTheDocument();
 	});
+	it('disables filtering when no courses exist', async () => {
+		courses.mockResolvedValue([]);
+		render(await Page({ searchParams: Promise.resolve({}) }));
+		expect(screen.getByRole('combobox', { name: 'Khóa học' })).toBeDisabled();
+		expect(screen.getByRole('button', { name: 'Áp dụng' })).toBeDisabled();
+		expect(screen.getAllByText('Chưa có khóa học')).toHaveLength(2);
+		expect(report).not.toHaveBeenCalled();
+	});
 	it('does not query reports for a student', async () => {
 		auth.mockResolvedValue({ user: { role: 'student' } });
 		render(await Page({ searchParams: Promise.resolve({ course: 'hrm' }) }));

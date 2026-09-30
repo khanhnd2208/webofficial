@@ -13,8 +13,12 @@ describe('admin navigation', () => {
 	it('shows Website and course analytics in the main sidebar', () => {
 		const hrefs = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
 		const labels = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.label));
-		expect(hrefs).toEqual([routes.admin.website, routes.admin.learnAnalytics]);
-		expect(labels).toEqual(['Website', 'Thống kê học tập']);
+		expect(hrefs).toEqual([
+			routes.admin.website,
+			routes.admin.inquiries,
+			routes.admin.learnAnalytics,
+		]);
+		expect(labels).toEqual(['Website', 'Hộp thư liên hệ', 'Thống kê học tập']);
 		expect(hrefs).not.toContain(routes.admin.myClass);
 		expect(hrefs).not.toContain(routes.admin.posts);
 		expect(hrefs).not.toContain(routes.admin.users);
@@ -41,10 +45,11 @@ describe('admin navigation', () => {
 		expect(getAdminNavGroupsForPath(routes.admin.archive)).toBe(ARCHIVE_NAV_GROUPS);
 	});
 
-	it('marks Website active on the contact inbox', () => {
+	it('marks only the inbox active on contact detail pages', () => {
 		expect(isAdminNavActive(routes.admin.website, routes.admin.website)).toBe(true);
-		expect(isAdminNavActive(routes.admin.inquiries, routes.admin.website)).toBe(true);
-		expect(isAdminNavActive(`${routes.admin.inquiries}/abc`, routes.admin.website)).toBe(true);
+		expect(isAdminNavActive(`${routes.admin.inquiries}/abc`, routes.admin.inquiries)).toBe(true);
+		expect(isAdminNavActive(routes.admin.inquiries, routes.admin.website)).toBe(false);
+		expect(isAdminNavActive(`${routes.admin.inquiries}/abc`, routes.admin.website)).toBe(false);
 	});
 
 	it('does not highlight the archived tools hub on Active Recall', () => {
