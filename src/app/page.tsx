@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 			{
 				url: absoluteUrl('/og-editorial-premium.jpg'),
 				width: 1200,
-				height: 628,
+				height: 630,
 				alt: 'Duy Khánh — Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
 			},
 		],
