@@ -536,14 +536,27 @@ cd "$RELEASE_DIR"
 
 # The promoted release prunes devDependencies, so its node_modules cannot build
 # the next release. Keep one full install outside the release tree and copy it
-# when the lockfile and Node version are unchanged. Copy, do not hardlink:
+# when nothing that shapes `npm ci` changed. Copy, do not hardlink:
 # `npm prune` must not mutate the cache.
+
+# Everything that decides what `npm ci` installs or runs: the lockfile,
+# package.json (lifecycle scripts, overrides), any .npmrc, and the Node and npm
+# versions. A change to any of them forces a fresh install.
+dependency_stamp() {
+	local inputs=(package-lock.json package.json)
+	if [[ -f .npmrc ]]; then
+		inputs+=(.npmrc)
+	fi
+	local files_hash
+	files_hash="$(sha256sum "${inputs[@]}" | sha256sum | awk '{ print $1 }')"
+	printf '%s-node%s-npm%s\n' "$files_hash" "$(node -p 'process.version')" "$(npm --version)"
+}
+
 install_locked_dependencies() {
 	echo "Installing locked dependencies in $RELEASE_DIR"
 	HUSKY=0 npm ci --include=dev
-	local lock_hash node_stamp cache_root
-	lock_hash="$(sha256sum package-lock.json | awk '{ print $1 }')"
-	node_stamp="${lock_hash}-$(node -p 'process.version')"
+	local node_stamp cache_root
+	node_stamp="$(dependency_stamp)"
 	cache_root="$DEPLOY_ROOT/.build-cache"
 	rm -rf -- "$cache_root/node_modules" "$cache_root/node.stamp"
 	mkdir -p -- "$cache_root"
@@ -559,13 +572,13 @@ node_modules_are_complete() {
 	[[ -x node_modules/.bin/next && -x node_modules/.bin/prisma && -d node_modules/typescript ]]
 }
 
-LOCK_STAMP="$(sha256sum package-lock.json | awk '{ print $1 }')-$(node -p 'process.version')"
+LOCK_STAMP="$(dependency_stamp)"
 BUILD_CACHE="$DEPLOY_ROOT/.build-cache"
 REUSED_MODULES=0
 if [[ -f "$BUILD_CACHE/node.stamp" && -d "$BUILD_CACHE/node_modules" ]]; then
 	cached_stamp="$(tr -d '[:space:]' < "$BUILD_CACHE/node.stamp")"
 	if [[ "$cached_stamp" == "$LOCK_STAMP" ]]; then
-		echo "Reusing cached node_modules (lockfile and Node version unchanged)"
+		echo "Reusing cached node_modules (lockfile, package.json, npm config, Node, and npm unchanged)"
 		rm -rf -- node_modules
 		if cp -a "$BUILD_CACHE/node_modules" "$RELEASE_DIR/node_modules" && node_modules_are_complete; then
 			REUSED_MODULES=1

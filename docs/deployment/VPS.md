@@ -23,7 +23,7 @@ The release layout is:
 ├── .env.local                 # shared source of truth, mode 0600
 ├── current -> releases/<id>    # atomically replaced on promotion
 ├── releases/<id>/             # source + node_modules + .next
-├── .build-cache/              # full node_modules reused when the lockfile matches
+├── .build-cache/              # full node_modules reused when dependency inputs match
 ├── public/uploads/            # shared persistent uploads
 ├── public/music/uploads/      # shared persistent music uploads
 ├── backups/                   # operator data; never synced/deleted
@@ -124,13 +124,14 @@ The script performs these steps in order:
    build output, test output, and editor/temp files.
 4. Copies `.env.local` into the release with mode `0600`.
 5. Installs dependencies, runs `prisma generate`, and `next build` before any
-   migration. When `package-lock.json` and the Node version match the stored
-   build cache, it copies `/var/www/webofficial/.build-cache/node_modules`
-   instead of running `npm ci`. It also copies `.next/cache` from the current
-   release so the compiler can reuse work. The copy stays inside the new
-   release; mutable upload paths are linked only after the build, which keeps
-   Turbopack inside the release tree. The release ID is passed as
-   `NEXT_DEPLOYMENT_ID` for Next.js version-skew protection and cache busting.
+   migration. When `package-lock.json`, `package.json`, any `.npmrc`, and the
+   Node and npm versions all match the stored build cache, it copies
+   `/var/www/webofficial/.build-cache/node_modules` instead of running `npm ci`.
+   It also copies `.next/cache` from the current release so the compiler can
+   reuse work. The copy stays inside the new release; mutable upload paths are
+   linked only after the build, which keeps Turbopack inside the release tree.
+   The release ID is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew
+   protection and cache busting.
 6. Runs the database backup command, then `prisma migrate deploy`, then prunes
    build-only development dependencies before starting the runtime. Active Recall
    content is not reseeding during deploy; production decks stay as stored.
