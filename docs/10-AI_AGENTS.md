@@ -25,7 +25,7 @@ Chữ trong `AGENTS.md` là hướng dẫn: model thường làm theo nhưng kh�
 | Push lên `main`, `git push` không ghi nhánh, `gh pr merge` | `permissions.ask`: luôn hỏi người dùng, kể cả khi settings cá nhân cho phép `git *` (thứ tự áp dụng là deny → ask → allow) |
 | Deploy tay, SSH vào VPS, Prisma migrate hoặc `db push` | `permissions.ask` |
 | Force push | `permissions.deny` |
-| Đọc `.env`, `.env.local`, `.env.production*` | `permissions.deny` |
+| Đọc mọi file `.env*` (trừ `.env.example`) | `permissions.deny` với `Read(./.env*)` và ngoại lệ `Read(!.env.example)` |
 | Đọc file cồng kềnh (`package-lock.json` 526 KB, `.next/`, `coverage/`, báo cáo HTML 160 KB, PDF) | `permissions.deny` |
 | Sửa nhầm việc dở của người khác trong thư mục chính | Hook SessionStart báo khi thư mục chính có file chưa commit |
 | Code sai khu, file quá 800 dòng, sai format, bản đồ khu lệch | ESLint, Prettier, `areas:check` trong pre-commit và CI |
