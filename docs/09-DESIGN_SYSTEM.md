@@ -241,17 +241,26 @@ and inherit its tokens, including when displayed in the browser top layer.
   accent `#365CCE`, active surface `#EAF0FF`, border `#DFE5EE`.
 - Inter: page title 28/36, section title 18/26, body 14/22, metadata 12/18.
   Numbers use tabular figures. Controls 8px, panels 12px, dialogs 16px.
-- Desktop starts at 1024px. Sidebar 240px / collapsed 72px, top bar 64px.
-  Below 1024px use a drawer with focus trapping, Escape and focus restoration.
+- Desktop starts at 1024px. Sidebar 240px / collapsed 72px. The name "Admin Studio"
+  lives in the sidebar only. Below 1024px a 64px bar opens a drawer with focus trapping,
+  Escape and focus restoration. "Về Mục lục" is an in-app sidebar link.
 - Page measure 1200px; analytics 1440px. Gutters 16px mobile, 24px tablet, 32px desktop.
 - One primary action per task region. Use border separation and restrained elevation.
   Color supplements explicit status labels. Controls have visible keyboard focus.
-- AdminIcon maps semantic names to the existing McIcon system. Navigation 20px,
-  actions 18px, empty states 32px. Collapsed navigation exposes focus/hover labels.
+- AdminIcon owns the admin glyphs (including inbox, archive, logout and retry).
+  Do not add those names to McIcon. Navigation 20px, actions 18px, empty states 32px.
+  Collapsed navigation exposes focus/hover labels. The collapsed state is read from
+  a cookie so the sidebar does not flash open.
 - Shared primitives: buttons, links, badges, statistics, pagination, page headers,
   empty/error states and loading skeletons. Each field has an associated label.
-- Inbox filters live in the URL. Applying filters resets page; pagination and detail
-  navigation retain supported filters. Below 768px inbox records become stacked cards.
+- Overview is a work queue: new inquiries, a short excerpt, and a failed-notification
+  alert when one exists. Inbox status filters are counted links in the URL; search and
+  topic still submit together. A page past the end clamps back. Rows show the sender,
+  one excerpt line, and relative time. Below 768px records become stacked cards.
+- Inquiry detail leads with reply and copy. A new inquiry can be marked reviewing in
+  one step. Suggested statuses sit above the full selector. Unsaved notes block
+  navigation through the shared leave guard. Previous and next stay inside the same
+  filters.
 - Existing internal notes populate the editor. Saves are explicit, unchanged drafts
   cannot be submitted, failed saves preserve input, and refresh does not replace drafts.
   All writes are locked while a request runs. Deletion requires confirmation.
