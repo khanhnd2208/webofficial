@@ -8,7 +8,7 @@ Teaching is the first destination with an explicit surface identity. Shared acce
 
 - `SurfaceTheme` scopes pages with `data-surface="teaching"` and carries the identity through React context to menus, grid editors, dialogs and mobile sheets.
 - `components/teaching/ui/styles/tokens.css` owns ivory/teal colors, state colors, radii, motion and compatibility variables for existing studio primitives.
-- `styles/components.css` owns destination components and responsive refinements. `workspace-1.css` through `workspace-4.css` preserve the original Teaching rule order after extraction from global styles; `groups.css` owns group views. All selectors are scoped.
+- `styles/components.css` owns destination components and responsive refinements. The extracted workspace rules keep their original order in `grid-shell.css`, `grid-cells.css`, `workspace-chrome.css` and `workspace-actions.css`; `groups.css` owns group views. All selectors are scoped.
 - `TeachingMark` is the shared destination mark for the contents page and My Space. `TeachingIcon` supplies typed 24px round-stroke task icons. SVGs are code assets, with no icon dependency; meaningful controls require accessible names.
 - `TeachingSectionHeading`, `TeachingEmpty`, `TeachingStatus` and `TeachingToolbar` establish reusable hierarchy, state presentation and action grouping.
 - The student Learning Experience styles are split between access/layout and choices modules. Photographs remain content; decorative gradients and image backdrops were removed.
