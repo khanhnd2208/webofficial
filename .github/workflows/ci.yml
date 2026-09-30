@@ -184,20 +184,21 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Pack with tar: .next/node_modules holds relative symlinks
+      # (../../node_modules/<pkg>) to server externals such as mongoose and pg.
+      # upload-artifact drops symlinks, and the server then fails to load them.
       - name: Pack the production build
         run: |
           set -euo pipefail
-          mkdir -p "${RUNNER_TEMP}/next-build"
-          rsync -a --exclude cache .next/ "${RUNNER_TEMP}/next-build/"
-          test -s "${RUNNER_TEMP}/next-build/BUILD_ID"
+          tar --exclude=.next/cache -cf "${RUNNER_TEMP}/next-build.tar" .next
+          tar -tf "${RUNNER_TEMP}/next-build.tar" | grep -qx '.next/BUILD_ID'
 
       - name: Upload the production build
         uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: ${{ runner.temp }}/next-build
+          path: ${{ runner.temp }}/next-build.tar
           retention-days: 1
-          include-hidden-files: true
           if-no-files-found: error
 
   e2e:
@@ -246,10 +247,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .next
+          path: ${{ runner.temp }}/next-build
 
-      - name: Require a downloaded build
-        run: test -s .next/BUILD_ID
+      - name: Unpack the production build
+        run: |
+          set -euo pipefail
+          tar -xf "${RUNNER_TEMP}/next-build/next-build.tar"
+          test -s .next/BUILD_ID
+          broken="$(find .next -type l ! -exec test -e {} ';' -print)"
+          if [[ -n "$broken" ]]; then
+            echo "Broken symlinks in the unpacked build:" >&2
+            echo "$broken" >&2
+            exit 1
+          fi
 
       - name: Prisma migrate (test DB)
         run: npx prisma migrate deploy
