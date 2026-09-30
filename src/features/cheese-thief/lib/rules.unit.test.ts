@@ -38,11 +38,18 @@ function seat(partial: Seat): Seat {
 
 describe('Cheese Thief presets', () => {
 	it('keeps the thief side a minority at every table size', () => {
-		expect([4, 5, 6, 7, 8, 9, 10, 11, 12].map(maxFollowersFor)).toEqual([0, 1, 1, 2, 2, 3, 3, 4, 4]);
+		expect([4, 5, 6, 7, 8, 9, 10, 11, 12].map(maxFollowersFor)).toEqual([
+			0, 1, 1, 2, 2, 3, 3, 4, 4,
+		]);
 	});
 
 	it('uses the boxed defaults, and the thief now names every follower', () => {
-		expect(presetFor(4)).toMatchObject({ dicePerPlayer: 2, peek: false, followerMode: 'none', followerPickCount: 0 });
+		expect(presetFor(4)).toMatchObject({
+			dicePerPlayer: 2,
+			peek: false,
+			followerMode: 'none',
+			followerPickCount: 0,
+		});
 		expect(presetFor(5)).toMatchObject({
 			followerMode: 'pick',
 			followerPickCount: 1,
@@ -50,7 +57,11 @@ describe('Cheese Thief presets', () => {
 			followersKnowThief: true,
 			followersKnowEachOther: false,
 		});
-		expect(presetFor(6)).toMatchObject({ followerMode: 'pick', followerPickCount: 1, followersKnowThief: true });
+		expect(presetFor(6)).toMatchObject({
+			followerMode: 'pick',
+			followerPickCount: 1,
+			followersKnowThief: true,
+		});
 		expect(presetFor(7)).toMatchObject({
 			followerPickCount: 2,
 			followersKnowThief: false,
@@ -61,8 +72,16 @@ describe('Cheese Thief presets', () => {
 			followersKnowThief: true,
 			followersKnowEachOther: true,
 		});
-		expect(presetFor(9)).toMatchObject({ followerPickCount: 2, followersKnowThief: true, followersKnowEachOther: true });
-		expect(presetFor(12)).toMatchObject({ followerPickCount: 3, followersKnowThief: true, thiefKnowsFollowers: true });
+		expect(presetFor(9)).toMatchObject({
+			followerPickCount: 2,
+			followersKnowThief: true,
+			followersKnowEachOther: true,
+		});
+		expect(presetFor(12)).toMatchObject({
+			followerPickCount: 3,
+			followersKnowThief: true,
+			thiefKnowsFollowers: true,
+		});
 		expect(sharedChoiceCount(presetFor(7))).toBe(2);
 		expect(sharedChoiceCount(presetFor(4))).toBe(1);
 		expect(sharedChoiceCount(presetFor(5))).toBe(1);
@@ -82,7 +101,9 @@ describe('Cheese Thief presets', () => {
 			thiefKnowsFollowers: true,
 		});
 		expect(sharedChoiceCount(four)).toBe(4);
-		expect(sharedChoiceCount(presetFor(12, 'two-night', { count: 4 }), 'two-night')).toBeGreaterThanOrEqual(2);
+		expect(
+			sharedChoiceCount(presetFor(12, 'two-night', { count: 4 }), 'two-night'),
+		).toBeGreaterThanOrEqual(2);
 
 		expect(presetFor(6, 'classic', { count: 1, knowledge: 'team' })).toMatchObject({
 			followersKnowThief: false,
@@ -99,7 +120,12 @@ describe('Cheese Thief presets', () => {
 	it('seats one night from 4 to 12 and two nights from 5 to 12', () => {
 		expect(() => presetFor(3)).toThrow(/4–12/);
 		expect(() => presetFor(13, 'two-night')).toThrow(/5–12/);
-		expect(presetFor(9, 'two-night')).toMatchObject({ followerMode: 'pick', followerPickCount: 2, followersKnowThief: true, followersKnowEachOther: true });
+		expect(presetFor(9, 'two-night')).toMatchObject({
+			followerMode: 'pick',
+			followerPickCount: 2,
+			followersKnowThief: true,
+			followersKnowEachOther: true,
+		});
 		for (const count of [10, 11, 12]) {
 			expect(presetFor(count, 'two-night')).toMatchObject({
 				dicePerPlayer: 1,
@@ -185,8 +211,18 @@ describe('wake hours, witnesses, peek', () => {
 			seat({ id: 'thief', role: 'thief', dice: [1], dice2: [2] }),
 			seat({ id: 'goat', role: 'scapegoat', dice: [1], dice2: [6] }),
 		];
-		expect(canPeek(twoNight[1]!, twoNight, presetFor(6, 'two-night'), { mode: 'two-night', theftNight: 2 })).toBe(true);
-		expect(canPeek(twoNight[1]!, twoNight, presetFor(6, 'two-night'), { mode: 'two-night', theftNight: 1 })).toBe(false);
+		expect(
+			canPeek(twoNight[1]!, twoNight, presetFor(6, 'two-night'), {
+				mode: 'two-night',
+				theftNight: 2,
+			}),
+		).toBe(true);
+		expect(
+			canPeek(twoNight[1]!, twoNight, presetFor(6, 'two-night'), {
+				mode: 'two-night',
+				theftNight: 1,
+			}),
+		).toBe(false);
 	});
 });
 
@@ -222,12 +258,22 @@ describe('secret resolution', () => {
 	it('at 7 players followers learn each other and not the thief', () => {
 		const seats: Seat[] = [
 			seat({ id: 'thief', role: 'thief', dice: [1] }),
-			...['a', 'b', 'c', 'd', 'e', 'f'].map((id) => seat({ id, role: 'sleepyhead' as const, dice: [2] })),
+			...['a', 'b', 'c', 'd', 'e', 'f'].map((id) =>
+				seat({ id, role: 'sleepyhead' as const, dice: [2] }),
+			),
 		];
 		const resolved = resolveSecret(
 			seats,
 			presetFor(7),
-			{ thief: ['a', 'b'], a: ['thief', 'c'], b: ['thief', 'c'], c: ['thief', 'd'], d: ['x', 'thief'], e: ['thief', 'a'], f: ['thief', 'a'] },
+			{
+				thief: ['a', 'b'],
+				a: ['thief', 'c'],
+				b: ['thief', 'c'],
+				c: ['thief', 'd'],
+				d: ['x', 'thief'],
+				e: ['thief', 'a'],
+				f: ['thief', 'a'],
+			},
 			() => 0,
 		);
 		expect(resolved.followerIds).toEqual(['a', 'b']);
@@ -246,7 +292,11 @@ describe('secret resolution', () => {
 			),
 		];
 		const resolved = resolveSecret(seats, presetFor(8), { thief: ['a', 'b'] }, () => 0);
-		const names = new Map([['thief', 'Khánh'], ['a', 'Linh'], ['b', 'Minh']]);
+		const names = new Map([
+			['thief', 'Khánh'],
+			['a', 'Linh'],
+			['b', 'Minh'],
+		]);
 		expect(secretCardFor('a', seats, names, presetFor(8), resolved).recruited).toEqual({
 			thiefName: 'Khánh',
 			allyNames: ['Minh'],
@@ -256,22 +306,30 @@ describe('secret resolution', () => {
 	it('hides the thief from one follower on team knowledge, and from two who still know each other', () => {
 		const one: Seat[] = [
 			seat({ id: 'thief', role: 'thief', dice: [1] }),
-			...['a', 'b', 'c', 'd', 'e'].map((id) => seat({ id, role: 'sleepyhead' as const, dice: [2] })),
+			...['a', 'b', 'c', 'd', 'e'].map((id) =>
+				seat({ id, role: 'sleepyhead' as const, dice: [2] }),
+			),
 		];
 		const blind = presetFor(6, 'classic', { count: 1, knowledge: 'team' });
 		const picked = resolveSecret(one, blind, { thief: ['a'] }, () => 0);
-		expect(secretCardFor('a', one, new Map(one.map((s) => [s.id, s.id])), blind, picked).recruited).toEqual({
+		expect(
+			secretCardFor('a', one, new Map(one.map((s) => [s.id, s.id])), blind, picked).recruited,
+		).toEqual({
 			thiefName: null,
 			allyNames: [],
 		});
 
 		const two: Seat[] = [
 			seat({ id: 'thief', role: 'thief', dice: [1] }),
-			...['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((id) => seat({ id, role: 'sleepyhead' as const, dice: [2] })),
+			...['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((id) =>
+				seat({ id, role: 'sleepyhead' as const, dice: [2] }),
+			),
 		];
 		const team = presetFor(8, 'classic', { count: 2, knowledge: 'team' });
 		const paired = resolveSecret(two, team, { thief: ['a', 'b'] }, () => 0);
-		expect(secretCardFor('a', two, new Map(two.map((s) => [s.id, s.id])), team, paired).recruited).toEqual({
+		expect(
+			secretCardFor('a', two, new Map(two.map((s) => [s.id, s.id])), team, paired).recruited,
+		).toEqual({
 			thiefName: null,
 			allyNames: ['b'],
 		});
@@ -285,7 +343,13 @@ describe('secret resolution', () => {
 		const preset = presetFor(12, 'classic', { count: 4, knowledge: 'team' });
 		const resolved = resolveSecret(seats, preset, {}, () => 0);
 		expect(resolved.followerIds).toEqual(['a', 'b', 'c', 'd']);
-		const card = secretCardFor('a', seats, new Map(seats.map((s) => [s.id, s.id])), preset, resolved);
+		const card = secretCardFor(
+			'a',
+			seats,
+			new Map(seats.map((s) => [s.id, s.id])),
+			preset,
+			resolved,
+		);
 		expect(card.recruited?.thiefName).toBeNull();
 		expect(card.recruited?.allyNames).toEqual(['b', 'c', 'd']);
 	});
@@ -329,7 +393,10 @@ describe('votes', () => {
 			{ voterId: 'c', targetId: 'a' },
 			{ voterId: 'd', targetId: 'b' },
 		];
-		expect(resolveVote(ballots, ['a', 'b', 'c', 'd'])).toEqual({ kind: 'tie', candidateIds: ['a', 'b'] });
+		expect(resolveVote(ballots, ['a', 'b', 'c', 'd'])).toEqual({
+			kind: 'tie',
+			candidateIds: ['a', 'b'],
+		});
 		expect(resolveVote(ballots, ['a', 'b'])).toEqual({ kind: 'tie', candidateIds: ['a', 'b'] });
 	});
 
@@ -388,12 +455,23 @@ describe('night clock', () => {
 		const long = nightTiming(24);
 		expect(long.hourMs).toBe(24_000);
 		const wakeAt = start + long.introMs;
-		expect(segmentAt(start, wakeAt, long)).toMatchObject({ kind: 'hour-wake', hour: 1, endsAt: wakeAt + 20_000 });
-		expect(segmentAt(start, wakeAt + 20_000, long)).toMatchObject({ kind: 'hour-sleep', hour: 1, endsAt: wakeAt + 24_000 });
+		expect(segmentAt(start, wakeAt, long)).toMatchObject({
+			kind: 'hour-wake',
+			hour: 1,
+			endsAt: wakeAt + 20_000,
+		});
+		expect(segmentAt(start, wakeAt + 20_000, long)).toMatchObject({
+			kind: 'hour-sleep',
+			hour: 1,
+			endsAt: wakeAt + 24_000,
+		});
 		expect(nightEndsAt(start, long)).toBe(start + long.introMs + 6 * 24_000 + long.outroMs);
 
 		const short = nightTiming(8);
-		expect(segmentAt(start, start + short.introMs + 4_000, short)).toMatchObject({ kind: 'hour-sleep', hour: 1 });
+		expect(segmentAt(start, start + short.introMs + 4_000, short)).toMatchObject({
+			kind: 'hour-sleep',
+			hour: 1,
+		});
 	});
 
 	it('falls back to the default hour for an out-of-range value', () => {
@@ -446,13 +524,16 @@ describe('Two Nights', () => {
 			seat({ id: 'd', role: 'sleepyhead', dice: [5], dice2: [5] }),
 			seat({ id: 'e', role: 'sleepyhead', dice: [6], dice2: [6] }),
 		];
-		expect(canPeek(six[0]!, six, presetFor(6, 'two-night'), { mode: 'two-night', theftNight: 2 })).toBe(true);
-		expect(canPeek(six[0]!, six, presetFor(6, 'two-night'), { mode: 'two-night', theftNight: 1 })).toBe(false);
-		const seven = [
-			...six,
-			seat({ id: 'f', role: 'sleepyhead' as const, dice: [6], dice2: [6] }),
-		];
-		expect(canPeek(seven[0]!, seven, presetFor(7, 'two-night'), { mode: 'two-night', theftNight: 2 })).toBe(false);
+		expect(
+			canPeek(six[0]!, six, presetFor(6, 'two-night'), { mode: 'two-night', theftNight: 2 }),
+		).toBe(true);
+		expect(
+			canPeek(six[0]!, six, presetFor(6, 'two-night'), { mode: 'two-night', theftNight: 1 }),
+		).toBe(false);
+		const seven = [...six, seat({ id: 'f', role: 'sleepyhead' as const, dice: [6], dice2: [6] })];
+		expect(
+			canPeek(seven[0]!, seven, presetFor(7, 'two-night'), { mode: 'two-night', theftNight: 2 }),
+		).toBe(false);
 	});
 
 	it('spends two-night slots as follower, peek, then hunch', () => {
@@ -487,7 +568,12 @@ describe('Two Nights', () => {
 			const k = sharedChoiceCount(presetFor(count, 'two-night'), 'two-night');
 			expect(k).toBe(count >= 10 ? 3 : 2);
 			for (let round = 0; round < 500; round++) {
-				const { seats, preset } = deal(names.slice(0, count), count >= 6 && round % 2 === 0, Math.random, 'two-night');
+				const { seats, preset } = deal(
+					names.slice(0, count),
+					count >= 6 && round % 2 === 0,
+					Math.random,
+					'two-night',
+				);
 				for (const theftNight of [1, 2] as const) {
 					for (const player of seats) {
 						const job = secretJobFor(player, seats, preset, { mode: 'two-night', theftNight });
@@ -538,9 +624,39 @@ describe('room projection does not leak', () => {
 				hunchByPlayer: { e: 'a' },
 			},
 			players: [
-				{ token: 'tok-a', id: 'a', name: 'Khánh', avatarSeed: 'a', connected: true, role: 'thief', dice: [1], hasMemorizedRole: true, hasSeenSecret: false },
-				{ token: 'tok-b', id: 'b', name: 'Linh', avatarSeed: 'b', connected: true, role: 'sleepyhead', dice: [4], hasMemorizedRole: true, hasSeenSecret: false },
-				{ token: 'tok-c', id: 'c', name: 'Minh', avatarSeed: 'c', connected: true, role: 'sleepyhead', dice: [5], hasMemorizedRole: false, hasSeenSecret: false },
+				{
+					token: 'tok-a',
+					id: 'a',
+					name: 'Khánh',
+					avatarSeed: 'a',
+					connected: true,
+					role: 'thief',
+					dice: [1],
+					hasMemorizedRole: true,
+					hasSeenSecret: false,
+				},
+				{
+					token: 'tok-b',
+					id: 'b',
+					name: 'Linh',
+					avatarSeed: 'b',
+					connected: true,
+					role: 'sleepyhead',
+					dice: [4],
+					hasMemorizedRole: true,
+					hasSeenSecret: false,
+				},
+				{
+					token: 'tok-c',
+					id: 'c',
+					name: 'Minh',
+					avatarSeed: 'c',
+					connected: true,
+					role: 'sleepyhead',
+					dice: [5],
+					hasMemorizedRole: false,
+					hasSeenSecret: false,
+				},
 			],
 		};
 	}
@@ -548,8 +664,14 @@ describe('room projection does not leak', () => {
 	it('hides every other role, hour, and secret during the secret minute', () => {
 		const dto = projectRoom(room('secret'), 'tok-b', new Date('2026-09-27T12:00:00Z'));
 		expect(dto.choiceCount).toBe(2);
-		expect(dto.players.every((player) => player.role === undefined && player.wakeHours === undefined)).toBe(true);
-		expect(dto.players.every((player) => !('hasSecretPicks' in player) && player.hasMemorizedRole === undefined)).toBe(true);
+		expect(
+			dto.players.every((player) => player.role === undefined && player.wakeHours === undefined),
+		).toBe(true);
+		expect(
+			dto.players.every(
+				(player) => !('hasSecretPicks' in player) && player.hasMemorizedRole === undefined,
+			),
+		).toBe(true);
 		expect(dto.self?.role).toBeUndefined();
 		expect(dto.self?.secretCard).toBeUndefined();
 		expect(dto.self?.dice).toBeUndefined();
@@ -582,7 +704,12 @@ describe('room projection does not leak', () => {
 	it('hides roles and jobs through Night 2 and the cheese check', () => {
 		for (const phase of ['night', 'cheese-check'] as const) {
 			const dto = projectRoom(
-				{ ...room(phase), mode: 'two-night', nightNumber: phase === 'night' ? 2 : 1, nightStartedAt: new Date() },
+				{
+					...room(phase),
+					mode: 'two-night',
+					nightNumber: phase === 'night' ? 2 : 1,
+					nightStartedAt: new Date(),
+				},
 				'tok-b',
 				new Date(),
 			);
@@ -603,7 +730,10 @@ describe('room projection does not leak', () => {
 				...room('secret'),
 				mode: 'two-night',
 				theftNight: 2,
-				players: room('secret').players.map((player) => ({ ...player, dice2: player.id === 'a' ? [4] : [6] })),
+				players: room('secret').players.map((player) => ({
+					...player,
+					dice2: player.id === 'a' ? [4] : [6],
+				})),
 			},
 			'tok-b',
 			new Date(),
@@ -616,7 +746,10 @@ describe('room projection does not leak', () => {
 			{
 				...room('deal'),
 				mode: 'two-night',
-				players: room('deal').players.map((player) => ({ ...player, dice2: [player.id === 'b' ? 5 : 2] })),
+				players: room('deal').players.map((player) => ({
+					...player,
+					dice2: [player.id === 'b' ? 5 : 2],
+				})),
 			},
 			'tok-b',
 			new Date(),
@@ -627,7 +760,11 @@ describe('room projection does not leak', () => {
 	});
 
 	it('names the theft night and hour only once the cards are turned', () => {
-		const hidden = projectRoom({ ...room('secret'), mode: 'two-night', theftNight: 2 }, 'tok-b', new Date());
+		const hidden = projectRoom(
+			{ ...room('secret'), mode: 'two-night', theftNight: 2 },
+			'tok-b',
+			new Date(),
+		);
 		expect(hidden.theftNight).toBe(2);
 		expect(hidden.theftHour).toBeUndefined();
 		const revealed = projectRoom(

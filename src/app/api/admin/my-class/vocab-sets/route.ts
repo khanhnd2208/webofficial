@@ -1,4 +1,9 @@
-import { createAndAssignVocabSet, createMyClassVocabSetSchema, parseOptionalSortDir, parseWithAppError } from '@/features/my-class';
+import {
+	createAndAssignVocabSet,
+	createMyClassVocabSetSchema,
+	parseOptionalSortDir,
+	parseWithAppError,
+} from '@/features/my-class';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import { listAdminVocabCatalog } from '@/services/vocabSetService';
 import { type NextRequest } from 'next/server';

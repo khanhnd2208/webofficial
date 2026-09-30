@@ -75,15 +75,25 @@ export default function LearnPracticeRunner({
 	useEffect(() => {
 		if (!ready) return;
 		try {
-			window.localStorage.setItem(storageKey(sectionId), JSON.stringify({ index, picks, completed: marked }));
+			window.localStorage.setItem(
+				storageKey(sectionId),
+				JSON.stringify({ index, picks, completed: marked }),
+			);
 		} catch {
 			/* storage unavailable */
 		}
 	}, [ready, sectionId, index, picks, marked]);
 
 	const answered = questions.filter((question) => picks[question.id] !== undefined).length;
-	const correct = questions.filter((question) => picks[question.id] === question.correctIndex).length;
-	const wrongIds = questions.filter((question) => picks[question.id] !== undefined && picks[question.id] !== question.correctIndex).map((question) => question.id);
+	const correct = questions.filter(
+		(question) => picks[question.id] === question.correctIndex,
+	).length;
+	const wrongIds = questions
+		.filter(
+			(question) =>
+				picks[question.id] !== undefined && picks[question.id] !== question.correctIndex,
+		)
+		.map((question) => question.id);
 
 	useEffect(() => {
 		if (!ready || marked || !questions.length || answered < questions.length) return;
@@ -143,7 +153,8 @@ export default function LearnPracticeRunner({
 				<nav className="ln-quiz__nav" aria-label="Đi tới câu hỏi">
 					{questions.map((item, itemIndex) => {
 						const choice = picks[item.id];
-						const state = choice === undefined ? undefined : choice === item.correctIndex ? 'correct' : 'wrong';
+						const state =
+							choice === undefined ? undefined : choice === item.correctIndex ? 'correct' : 'wrong';
 						return (
 							<button
 								key={item.id}
@@ -164,12 +175,18 @@ export default function LearnPracticeRunner({
 			</div>
 
 			{showSummary ? (
-				<div className="ln-quiz__score" data-passed={wrongIds.length === 0 ? 'true' : 'false'} role="status">
+				<div
+					className="ln-quiz__score"
+					data-passed={wrongIds.length === 0 ? 'true' : 'false'}
+					role="status"
+				>
 					<p className="ln-quiz__percent tabular-nums">
 						{correct}/{questions.length}
 					</p>
 					<div>
-						<p className="font-medium">{wrongIds.length ? 'Xem lại các câu chưa đúng.' : 'Đã trả lời hết.'}</p>
+						<p className="font-medium">
+							{wrongIds.length ? 'Xem lại các câu chưa đúng.' : 'Đã trả lời hết.'}
+						</p>
 					</div>
 					{wrongIds.length ? (
 						<button
@@ -236,7 +253,9 @@ export default function LearnPracticeRunner({
 					{picked !== undefined ? (
 						<div className="ln-check__result">
 							<p className="font-medium">
-								{picked === question.correctIndex ? 'Chính xác.' : `Chưa đúng. Đáp án: ${LETTERS[question.correctIndex]}`}
+								{picked === question.correctIndex
+									? 'Chính xác.'
+									: `Chưa đúng. Đáp án: ${LETTERS[question.correctIndex]}`}
 							</p>
 							{question.explanation ? <LearnMarkdown markdown={question.explanation} /> : null}
 							<button
@@ -266,7 +285,12 @@ export default function LearnPracticeRunner({
 						{showSummary ? (
 							<span />
 						) : (
-							<button type="button" className="ln-btn" onClick={() => go(index - 1)} disabled={index === 0}>
+							<button
+								type="button"
+								className="ln-btn"
+								onClick={() => go(index - 1)}
+								disabled={index === 0}
+							>
 								← Câu trước
 							</button>
 						)}

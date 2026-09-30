@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createCourseSchema, enrollSchema, reorderSchema } from '@/features/courses/schemas';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 import { AppError } from '@/lib/appError';
 
 describe('course schemas', () => {

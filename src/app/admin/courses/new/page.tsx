@@ -17,7 +17,10 @@ export default function NewCoursePage() {
 				title="Tạo khóa học"
 				description="Khóa học Chương–Bài theo cấu trúc Chương → Bài học."
 				actions={
-					<Link href={routes.admin.courses} className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground">
+					<Link
+						href={routes.admin.courses}
+						className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground"
+					>
 						← Khóa học Chương–Bài
 					</Link>
 				}

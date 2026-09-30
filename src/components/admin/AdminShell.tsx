@@ -21,10 +21,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 			data-variant={archived ? 'archive' : 'main'}
 		>
 			<AdminSidebar />
-			<div
-				className="admin-content min-w-0 flex-1 overflow-auto"
-				data-width={meta.width}
-			>
+			<div className="admin-content min-w-0 flex-1 overflow-auto" data-width={meta.width}>
 				{archived ? <ArchiveBanner /> : null}
 				{meta.localNav?.length ? (
 					<AdminLocalNav items={meta.localNav} action={meta.localNavAction} />

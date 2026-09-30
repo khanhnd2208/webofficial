@@ -25,7 +25,10 @@ export function AdminComingSoon({
 				title={title}
 				description={description}
 				actions={
-					<Link href={backHref} className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground">
+					<Link
+						href={backHref}
+						className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground"
+					>
 						{backLabel}
 					</Link>
 				}

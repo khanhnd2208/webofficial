@@ -47,7 +47,11 @@ resilient,/rɪˈzɪliənt/,adjective,able to recover quickly from difficulties,c
 export function parseVocabCsv(csv: string): VocabCsvParseResult {
 	const text = csv.replace(/^\uFEFF/, '').trim();
 	if (!text) {
-		return { words: [], errors: [{ row: 1, missing: ['csv'], message: 'CSV trống' }], wordCount: 0 };
+		return {
+			words: [],
+			errors: [{ row: 1, missing: ['csv'], message: 'CSV trống' }],
+			wordCount: 0,
+		};
 	}
 	const delimiter = detectDelimiter(text);
 	let rawRows: Record<string, string>[];

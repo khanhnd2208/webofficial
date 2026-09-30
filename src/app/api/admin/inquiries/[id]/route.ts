@@ -3,7 +3,7 @@ import { type NextRequest } from 'next/server';
 import { updateInquirySchema } from '@/features/inquiries/schemas';
 import { apiError, apiSuccess, withAdmin } from '@/lib/apiUtils';
 import { deleteInquiry, getInquiry, updateInquiry } from '@/services/inquiryService';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const GET = withAdmin(async (_request: NextRequest, _user, context) => {
 	const { id } = await context!.params;

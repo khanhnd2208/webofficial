@@ -17,7 +17,9 @@ export function collectActiveClasses(courses: TeachingCourseListItem[]): Teachin
 }
 
 function studentPagePath(row: TeachingClassListItem) {
-	return row.publicSlug && row.attendanceVisible ? routes.teachingPublicClass(row.publicSlug) : null;
+	return row.publicSlug && row.attendanceVisible
+		? routes.teachingPublicClass(row.publicSlug)
+		: null;
 }
 
 function CopyStudentLink({ path, classCode }: { path: string; classCode: string }) {
@@ -26,7 +28,9 @@ function CopyStudentLink({ path, classCode }: { path: string; classCode: string 
 		<button
 			type="button"
 			className="teaching-icon-button min-h-11 min-w-11"
-			aria-label={copied ? `Đã sao chép link lớp ${classCode}` : `Sao chép link sinh viên lớp ${classCode}`}
+			aria-label={
+				copied ? `Đã sao chép link lớp ${classCode}` : `Sao chép link sinh viên lớp ${classCode}`
+			}
 			title={copied ? 'Đã sao chép' : 'Sao chép link sinh viên'}
 			onClick={async () => {
 				try {

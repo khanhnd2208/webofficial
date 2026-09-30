@@ -85,7 +85,10 @@ describe('ensureTeachingCourse', () => {
 		};
 
 		await expect(
-			ensureTeachingCourse(db as never, { courseCode: 'OB101', courseName: 'Organizational Behavior' }),
+			ensureTeachingCourse(db as never, {
+				courseCode: 'OB101',
+				courseName: 'Organizational Behavior',
+			}),
 		).resolves.toEqual(created);
 		expect(db.teachingCourse.create).toHaveBeenCalledWith({
 			data: { courseCode: 'OB101', courseName: 'Organizational Behavior' },

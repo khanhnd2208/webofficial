@@ -42,7 +42,11 @@ export const POST = withAdmin(async (request, user) => {
 
 		words = parsed;
 	} else {
-		const body = await request.json() as { title?: string; description?: string; words?: CreateWordInput[] };
+		const body = (await request.json()) as {
+			title?: string;
+			description?: string;
+			words?: CreateWordInput[];
+		};
 		title = body.title?.trim() ?? '';
 		description = body.description?.trim() ?? '';
 		words = body.words ?? [];

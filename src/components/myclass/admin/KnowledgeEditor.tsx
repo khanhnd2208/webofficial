@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import KnowledgeUnitFields, { type KnowledgeUnitLevelTab } from '@/components/myclass/admin/KnowledgeUnitFields';
+import KnowledgeUnitFields, {
+	type KnowledgeUnitLevelTab,
+} from '@/components/myclass/admin/KnowledgeUnitFields';
 import { Dialog } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
 import { myClassApi, myClassList } from './api';
@@ -25,7 +27,12 @@ type Unit = {
 		expertHtml: string;
 	}>;
 	related: Array<{ id: string; slug: string; title: string }>;
-	whereUsed: Array<{ courseTitle: string; lessonTitle: string; sectionTitle: string; href: string }>;
+	whereUsed: Array<{
+		courseTitle: string;
+		lessonTitle: string;
+		sectionTitle: string;
+		href: string;
+	}>;
 };
 
 export default function KnowledgeEditor({ initial }: { initial: Unit }) {
@@ -42,7 +49,12 @@ export default function KnowledgeEditor({ initial }: { initial: Unit }) {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [confirmArchive, setConfirmArchive] = useState(false);
-	const dirty = title !== (draft?.title ?? '') || summary !== (draft?.summary ?? '') || foundationHtml !== (draft?.foundationHtml ?? '') || academicHtml !== (draft?.academicHtml ?? '') || expertHtml !== (draft?.expertHtml ?? '');
+	const dirty =
+		title !== (draft?.title ?? '') ||
+		summary !== (draft?.summary ?? '') ||
+		foundationHtml !== (draft?.foundationHtml ?? '') ||
+		academicHtml !== (draft?.academicHtml ?? '') ||
+		expertHtml !== (draft?.expertHtml ?? '');
 
 	useEffect(() => {
 		function onBeforeUnload(event: BeforeUnloadEvent) {
@@ -76,7 +88,13 @@ export default function KnowledgeEditor({ initial }: { initial: Unit }) {
 		setBusy(true);
 		try {
 			const saved = await save();
-			await myClassApi(`/api/admin/my-class/knowledge/${initial.id}/publish`, { method: 'POST', body: JSON.stringify({ expectedUpdatedAt: new Date(saved.updatedAt).toISOString(), requireBoth: true }) });
+			await myClassApi(`/api/admin/my-class/knowledge/${initial.id}/publish`, {
+				method: 'POST',
+				body: JSON.stringify({
+					expectedUpdatedAt: new Date(saved.updatedAt).toISOString(),
+					requireBoth: true,
+				}),
+			});
 			router.refresh();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Không publish được');
@@ -107,9 +125,29 @@ export default function KnowledgeEditor({ initial }: { initial: Unit }) {
 				showSlug={false}
 			/>
 			<div className="flex flex-wrap gap-2">
-				<button type="button" disabled={busy} onClick={() => void save()} className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-sm font-semibold text-paper">Lưu nháp</button>
-				<button type="button" disabled={busy} onClick={() => void publish()} className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] border border-mc-rule px-4 text-sm font-semibold">Xuất bản</button>
-				<button type="button" onClick={() => setConfirmArchive(true)} className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] border border-mc-rule px-4 text-sm font-semibold">Lưu trữ</button>
+				<button
+					type="button"
+					disabled={busy}
+					onClick={() => void save()}
+					className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-sm font-semibold text-paper"
+				>
+					Lưu nháp
+				</button>
+				<button
+					type="button"
+					disabled={busy}
+					onClick={() => void publish()}
+					className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] border border-mc-rule px-4 text-sm font-semibold"
+				>
+					Xuất bản
+				</button>
+				<button
+					type="button"
+					onClick={() => setConfirmArchive(true)}
+					className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] border border-mc-rule px-4 text-sm font-semibold"
+				>
+					Lưu trữ
+				</button>
 			</div>
 			<section>
 				<h2 className="font-bold">Nội dung liên quan</h2>
@@ -117,18 +155,51 @@ export default function KnowledgeEditor({ initial }: { initial: Unit }) {
 					{initial.related.map((item) => (
 						<li key={item.id} className="flex justify-between">
 							<Link href={routes.admin.myClassKnowledgeEdit(item.id)}>{item.title}</Link>
-							<button type="button" onClick={() => void myClassApi(`/api/admin/my-class/knowledge/${initial.id}/related?toId=${item.id}`, { method: 'DELETE' }).then(() => router.refresh())}>Gỡ</button>
+							<button
+								type="button"
+								onClick={() =>
+									void myClassApi(
+										`/api/admin/my-class/knowledge/${initial.id}/related?toId=${item.id}`,
+										{ method: 'DELETE' },
+									).then(() => router.refresh())
+								}
+							>
+								Gỡ
+							</button>
 						</li>
 					))}
 				</ul>
 				<div className="mt-3 flex gap-2">
-					<input value={relatedQ} onChange={(e) => setRelatedQ(e.target.value)} placeholder="Tìm nội dung" className="min-h-11 flex-1 rounded-[var(--mc-r-sm)] border border-mc-rule px-3" />
-					<button type="button" onClick={() => void myClassList<{ id: string; title: string }>(`/api/admin/my-class/knowledge?q=${encodeURIComponent(relatedQ)}`).then(setRelatedHits)}>Tìm</button>
+					<input
+						value={relatedQ}
+						onChange={(e) => setRelatedQ(e.target.value)}
+						placeholder="Tìm nội dung"
+						className="min-h-11 flex-1 rounded-[var(--mc-r-sm)] border border-mc-rule px-3"
+					/>
+					<button
+						type="button"
+						onClick={() =>
+							void myClassList<{ id: string; title: string }>(
+								`/api/admin/my-class/knowledge?q=${encodeURIComponent(relatedQ)}`,
+							).then(setRelatedHits)
+						}
+					>
+						Tìm
+					</button>
 				</div>
 				<ul className="mt-2 space-y-1 text-sm">
 					{relatedHits.map((item) => (
 						<li key={item.id}>
-							<button type="button" className="underline" onClick={() => void myClassApi(`/api/admin/my-class/knowledge/${initial.id}/related`, { method: 'POST', body: JSON.stringify({ toId: item.id }) }).then(() => router.refresh())}>
+							<button
+								type="button"
+								className="underline"
+								onClick={() =>
+									void myClassApi(`/api/admin/my-class/knowledge/${initial.id}/related`, {
+										method: 'POST',
+										body: JSON.stringify({ toId: item.id }),
+									}).then(() => router.refresh())
+								}
+							>
 								{item.title}
 							</button>
 						</li>
@@ -139,24 +210,49 @@ export default function KnowledgeEditor({ initial }: { initial: Unit }) {
 				<h2 className="font-bold">Where used</h2>
 				<ul className="mt-2 space-y-1 text-sm">
 					{initial.whereUsed.map((item) => (
-						<li key={item.href}><Link href={item.href}>{item.courseTitle} · {item.lessonTitle} · {item.sectionTitle}</Link></li>
+						<li key={item.href}>
+							<Link href={item.href}>
+								{item.courseTitle} · {item.lessonTitle} · {item.sectionTitle}
+							</Link>
+						</li>
 					))}
-					{initial.whereUsed.length === 0 ? <li className="text-muted">Chưa gắn vào Section nào.</li> : null}
+					{initial.whereUsed.length === 0 ? (
+						<li className="text-muted">Chưa gắn vào Section nào.</li>
+					) : null}
 				</ul>
 			</section>
 			<section>
 				<h2 className="font-bold">Lịch sử version</h2>
 				<ul className="mt-2 space-y-1 text-sm">
 					{initial.revisions.map((item) => (
-						<li key={item.id}>v{item.version} · {item.status} · {item.title}</li>
+						<li key={item.id}>
+							v{item.version} · {item.status} · {item.title}
+						</li>
 					))}
 				</ul>
 			</section>
-			<Dialog open={confirmArchive} onClose={() => setConfirmArchive(false)} title="Lưu trữ đơn vị kiến thức?">
-				<p className="text-sm">Bản sửa và liên kết được giữ lại. Đơn vị kiến thức sẽ không còn hiện với học viên.</p>
+			<Dialog
+				open={confirmArchive}
+				onClose={() => setConfirmArchive(false)}
+				title="Lưu trữ đơn vị kiến thức?"
+			>
+				<p className="text-sm">
+					Bản sửa và liên kết được giữ lại. Đơn vị kiến thức sẽ không còn hiện với học viên.
+				</p>
 				<div className="mt-4 flex justify-end gap-2">
-					<button type="button" onClick={() => setConfirmArchive(false)}>Hủy</button>
-					<button type="button" onClick={() => void myClassApi(`/api/admin/my-class/knowledge/${initial.id}`, { method: 'DELETE' }).then(() => router.push(routes.admin.myClassKnowledge))}>Lưu trữ</button>
+					<button type="button" onClick={() => setConfirmArchive(false)}>
+						Hủy
+					</button>
+					<button
+						type="button"
+						onClick={() =>
+							void myClassApi(`/api/admin/my-class/knowledge/${initial.id}`, {
+								method: 'DELETE',
+							}).then(() => router.push(routes.admin.myClassKnowledge))
+						}
+					>
+						Lưu trữ
+					</button>
 				</div>
 			</Dialog>
 		</div>

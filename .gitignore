@@ -10,10 +10,6 @@
 !.yarn/releases
 !.yarn/versions
 
-# Archived nested apps (e.g. K'sTrip) — never commit install/build artefacts
-src/_archived/**/node_modules/
-src/_archived/**/.next/
-
 # testing
 /coverage
 /test-results/
@@ -62,3 +58,13 @@ public/music/uploads/*
 /test_two_pages.py
 /final_verified_page-*.png
 /single_p_page-*.png
+
+# AI agents: share project settings, rules, skills, and hooks; keep personal
+# files (settings.local.json, launch.json, worktrees, caches) on each machine.
+/.claude/*
+!/.claude/settings.json
+!/.claude/rules/
+!/.claude/skills/
+!/.claude/hooks/
+CLAUDE.local.md
+/.cursor/*.log

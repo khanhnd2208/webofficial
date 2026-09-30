@@ -32,9 +32,11 @@ function readSaved(sectionId: string): Saved {
 	try {
 		const raw = window.localStorage.getItem(storageKey(sectionId));
 		const parsed = raw ? (JSON.parse(raw) as unknown) : null;
-		const row = (Array.isArray(parsed) ? { opened: parsed } : parsed ?? {}) as Partial<Saved>;
+		const row = (Array.isArray(parsed) ? { opened: parsed } : (parsed ?? {})) as Partial<Saved>;
 		return {
-			opened: Array.isArray(row.opened) ? row.opened.filter((item) => typeof item === 'string') : [],
+			opened: Array.isArray(row.opened)
+				? row.opened.filter((item) => typeof item === 'string')
+				: [],
 			completed: Boolean(row.completed),
 		};
 	} catch {
@@ -110,7 +112,10 @@ export default function LearnDiscussionViewer({
 	useEffect(() => {
 		if (!ready) return;
 		try {
-			window.localStorage.setItem(storageKey(sectionId), JSON.stringify({ opened, completed: marked }));
+			window.localStorage.setItem(
+				storageKey(sectionId),
+				JSON.stringify({ opened, completed: marked }),
+			);
 		} catch {
 			/* storage unavailable */
 		}
@@ -151,11 +156,20 @@ export default function LearnDiscussionViewer({
 	/** The reveal and hide buttons unmount on click; keep focus here so ←/→ still switch questions. */
 	function toggle(id: string, open: boolean) {
 		touched.current = true;
-		setOpened((current) => (open ? (current.includes(id) ? current : [...current, id]) : current.filter((item) => item !== id)));
+		setOpened((current) =>
+			open
+				? current.includes(id)
+					? current
+					: [...current, id]
+				: current.filter((item) => item !== id),
+		);
 		focusStepper();
 	}
 
-	const views = useMemo(() => discussionQuestionViews(questions.map((item) => item.question)), [questions]);
+	const views = useMemo(
+		() => discussionQuestionViews(questions.map((item) => item.question)),
+		[questions],
+	);
 
 	const question = questions[index];
 	const view = views[index];
@@ -168,7 +182,8 @@ export default function LearnDiscussionViewer({
 		const rows: Array<{ part: string | null; items: number[] }> = [];
 		views.forEach((item, itemIndex) => {
 			const current = rows.at(-1);
-			if (!current || current.part !== item.part) rows.push({ part: item.part, items: [itemIndex] });
+			if (!current || current.part !== item.part)
+				rows.push({ part: item.part, items: [itemIndex] });
 			else current.items.push(itemIndex);
 		});
 		return rows;
@@ -194,7 +209,10 @@ export default function LearnDiscussionViewer({
 				} else if (event.key === 'ArrowRight') {
 					event.preventDefault();
 					go(index + 1);
-				} else if ((event.key === 'Enter' || event.key === ' ') && event.target === event.currentTarget) {
+				} else if (
+					(event.key === 'Enter' || event.key === ' ') &&
+					event.target === event.currentTarget
+				) {
 					event.preventDefault();
 					activatePrimary();
 				}
@@ -214,7 +232,9 @@ export default function LearnDiscussionViewer({
 					<div id={popoverId} popover="auto" className="ln-stepper__menu">
 						{groups.map((group) => (
 							<div key={group.part ?? 'all'} className="ln-stepper__menu-group">
-								{group.part ? <p className="ln-stepper__menu-part">{formatPart(group.part)}</p> : null}
+								{group.part ? (
+									<p className="ln-stepper__menu-part">{formatPart(group.part)}</p>
+								) : null}
 								{group.items.map((itemIndex) => {
 									const item = questions[itemIndex];
 									const itemView = views[itemIndex];
@@ -230,8 +250,12 @@ export default function LearnDiscussionViewer({
 											}}
 										>
 											<span className="tabular-nums">{itemIndex + 1}</span>
-											{itemView?.level ? <span className="ln-disc__level">{itemView.level}</span> : null}
-											<span className="ln-stepper__menu-title">{itemView?.title ?? `Câu ${itemIndex + 1}`}</span>
+											{itemView?.level ? (
+												<span className="ln-disc__level">{itemView.level}</span>
+											) : null}
+											<span className="ln-stepper__menu-title">
+												{itemView?.title ?? `Câu ${itemIndex + 1}`}
+											</span>
 											{opened.includes(item.id) ? <span aria-label="đã xem">✓</span> : null}
 										</button>
 									);
@@ -267,13 +291,21 @@ export default function LearnDiscussionViewer({
 						<div className="ln-disc__answer">
 							<div className="ln-disc__answer-head">
 								<p className="ln-disc__answer-title">Đáp án mẫu</p>
-								<button type="button" className="ln-link-btn" onClick={() => toggle(question.id, false)}>
+								<button
+									type="button"
+									className="ln-link-btn"
+									onClick={() => toggle(question.id, false)}
+								>
 									Ẩn đáp án
 								</button>
 							</div>
 							{question.answer.trim() ? (
 								splitLabelled(question.answer, ANSWER_LABELS).map((block, blockIndex) => (
-									<div key={blockIndex} className="ln-disc__block" data-kind={blockKind(block.label)}>
+									<div
+										key={blockIndex}
+										className="ln-disc__block"
+										data-kind={blockKind(block.label)}
+									>
 										{block.label ? <p className="ln-disc__label">{block.label}</p> : null}
 										{block.markdown ? <LearnMarkdown markdown={block.markdown} /> : null}
 									</div>
@@ -292,18 +324,33 @@ export default function LearnDiscussionViewer({
 				<div className="ln-stepper__dock">
 					<div className="ln-stepper__nav">
 						{questions.length > 1 ? (
-							<button type="button" className="ln-btn" onClick={() => go(index - 1)} disabled={index === 0}>
+							<button
+								type="button"
+								className="ln-btn"
+								onClick={() => go(index - 1)}
+								disabled={index === 0}
+							>
 								← Câu trước
 							</button>
 						) : (
 							<span />
 						)}
 						{!isOpen ? (
-							<button type="button" className="ln-btn ln-btn--primary" data-ln-primary="" onClick={() => toggle(question.id, true)}>
+							<button
+								type="button"
+								className="ln-btn ln-btn--primary"
+								data-ln-primary=""
+								onClick={() => toggle(question.id, true)}
+							>
 								Xem đáp án mẫu
 							</button>
 						) : !last ? (
-							<button type="button" className="ln-btn ln-btn--primary" data-ln-primary="" onClick={() => go(index + 1)}>
+							<button
+								type="button"
+								className="ln-btn ln-btn--primary"
+								data-ln-primary=""
+								onClick={() => go(index + 1)}
+							>
 								Câu tiếp →
 							</button>
 						) : (
@@ -317,7 +364,9 @@ export default function LearnDiscussionViewer({
 							/>
 						)}
 					</div>
-					{!isOpen ? <p className="ln-stepper__hint">Tự trả lời trước rồi hãy so với đáp án.</p> : null}
+					{!isOpen ? (
+						<p className="ln-stepper__hint">Tự trả lời trước rồi hãy so với đáp án.</p>
+					) : null}
 				</div>
 			) : null}
 		</div>

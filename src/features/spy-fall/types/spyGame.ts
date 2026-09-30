@@ -1,12 +1,6 @@
 import type { SpyCount, SpyTag, SpyTopic } from '@/features/spy-fall/config/spyGame';
 
-export type GamePhase =
-	| 'lobby'
-	| 'role-reveal'
-	| 'discussion'
-	| 'vote'
-	| 'reveal'
-	| 'result';
+export type GamePhase = 'lobby' | 'role-reveal' | 'discussion' | 'vote' | 'reveal' | 'result';
 
 export type PlayerRole = 'civilian' | 'spy';
 

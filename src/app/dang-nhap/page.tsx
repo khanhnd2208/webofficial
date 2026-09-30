@@ -7,7 +7,11 @@ import { routes } from '@/config/routes';
 import { SITE_NAME } from '@/config/site';
 import { auth } from '@/lib/auth';
 import { authErrorMessage } from '@/lib/auth/errors';
-import { destinationLabel, loginRedirectTarget, sanitizeAuthRedirect } from '@/lib/auth/safeRedirect';
+import {
+	destinationLabel,
+	loginRedirectTarget,
+	sanitizeAuthRedirect,
+} from '@/lib/auth/safeRedirect';
 
 export const metadata: Metadata = {
 	title: 'Đăng nhập',

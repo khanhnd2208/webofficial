@@ -54,7 +54,9 @@ export default async function AdminMessagesPage() {
 									{msg.coverImageUrl ? (
 										<img src={msg.coverImageUrl} alt="" className="h-full w-full object-cover" />
 									) : (
-										<div className="flex h-full w-full items-center justify-center text-2xl">💌</div>
+										<div className="flex h-full w-full items-center justify-center text-2xl">
+											💌
+										</div>
 									)}
 								</div>
 								<div className="min-w-0 flex-1">
@@ -65,7 +67,8 @@ export default async function AdminMessagesPage() {
 										</span>
 									</div>
 									<p className="mt-1 text-xs text-muted">
-										{formatDate(msg.createdAt)} · {msg.viewCount} lượt đọc · Gửi cho {msg.recipientName}
+										{formatDate(msg.createdAt)} · {msg.viewCount} lượt đọc · Gửi cho{' '}
+										{msg.recipientName}
 									</p>
 									<p className="mt-1 truncate text-xs text-foreground-secondary">/m/{msg.slug}</p>
 								</div>

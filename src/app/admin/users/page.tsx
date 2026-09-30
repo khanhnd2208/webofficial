@@ -40,21 +40,21 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 				title="Người dùng"
 				description={`${result.total} tài khoản trong hệ thống`}
 				actions={
-				<div className="flex gap-2 text-xs flex-wrap">
-					{(['all', 'student', 'admin'] as const).map((r) => (
-						<a
-							key={r}
-							href={`/admin/users?role=${r}&search=${search}&sortBy=${sortBy}&sortDir=${sortDir}`}
-							className={`px-3 py-1.5 rounded-full border font-semibold transition-colors ${
-								role === r
-									? 'bg-foreground text-background border-foreground'
-									: 'border-border text-muted hover:border-border-hover hover:text-foreground'
-							}`}
-						>
-							{r === 'all' ? 'Tất cả' : r === 'student' ? 'Người dùng' : 'Admin'}
-						</a>
-					))}
-				</div>
+					<div className="flex gap-2 text-xs flex-wrap">
+						{(['all', 'student', 'admin'] as const).map((r) => (
+							<a
+								key={r}
+								href={`/admin/users?role=${r}&search=${search}&sortBy=${sortBy}&sortDir=${sortDir}`}
+								className={`px-3 py-1.5 rounded-full border font-semibold transition-colors ${
+									role === r
+										? 'bg-foreground text-background border-foreground'
+										: 'border-border text-muted hover:border-border-hover hover:text-foreground'
+								}`}
+							>
+								{r === 'all' ? 'Tất cả' : r === 'student' ? 'Người dùng' : 'Admin'}
+							</a>
+						))}
+					</div>
 				}
 			/>
 

@@ -1,9 +1,9 @@
 'use client';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import { playTap } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
@@ -48,14 +48,17 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 		<>
 			<div className="space-y-4">
 				<StepGuide
-					stepsKey={out ? 'spy.steps.voteOut' : state.isRevote ? 'spy.steps.revote' : 'spy.steps.vote'}
+					stepsKey={
+						out ? 'spy.steps.voteOut' : state.isRevote ? 'spy.steps.revote' : 'spy.steps.vote'
+					}
 				/>
 
 				<StakesBanner state={state} />
 
 				{state.isRevote ? (
 					<div className="rounded-xl border border-warning/40 bg-warning-subtle px-4 py-3 text-center text-sm font-semibold text-warning">
-						<GameIcon name="target" size={15} className="mr-1 inline" /> {t('spy.vote.revote', { names: tiedNames })}
+						<GameIcon name="target" size={15} className="mr-1 inline" />{' '}
+						{t('spy.vote.revote', { names: tiedNames })}
 					</div>
 				) : null}
 

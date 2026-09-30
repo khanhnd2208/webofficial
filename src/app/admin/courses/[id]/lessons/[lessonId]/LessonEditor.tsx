@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import DOMPurify from 'isomorphic-dompurify';
 
-import TiptapEditor from '@/components/TiptapEditor';
+import TiptapEditor from '@/components/forms/TiptapEditor';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { FormField } from '@/components/ui/FormField';
@@ -93,7 +93,17 @@ export default function LessonEditor({
 				setBusy(false);
 			}
 		},
-		[courseId, contentHtml, initial.lesson.id, initial.moduleId, router, slug, status, title, videoUrl],
+		[
+			courseId,
+			contentHtml,
+			initial.lesson.id,
+			initial.moduleId,
+			router,
+			slug,
+			status,
+			title,
+			videoUrl,
+		],
 	);
 
 	useEffect(() => {
@@ -120,7 +130,9 @@ export default function LessonEditor({
 						← Quay lại khóa học
 					</Link>
 					<p className="mt-2 text-xs uppercase tracking-widest text-muted">{initial.moduleName}</p>
-					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Biên soạn bài học</h1>
+					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
+						Biên soạn bài học
+					</h1>
 				</div>
 				<div className="flex flex-wrap gap-2">
 					<Button type="button" variant="secondary" disabled={busy} onClick={() => void save()}>
@@ -131,7 +143,12 @@ export default function LessonEditor({
 							Xuất bản
 						</Button>
 					) : (
-						<Button type="button" variant="ghost" disabled={busy} onClick={() => void save('DRAFT')}>
+						<Button
+							type="button"
+							variant="ghost"
+							disabled={busy}
+							onClick={() => void save('DRAFT')}
+						>
 							Về nháp
 						</Button>
 					)}
@@ -139,7 +156,10 @@ export default function LessonEditor({
 			</div>
 
 			{error ? (
-				<p className="rounded-lg border border-error/40 bg-error-subtle px-3 py-2 text-sm text-error" role="alert">
+				<p
+					className="rounded-lg border border-error/40 bg-error-subtle px-3 py-2 text-sm text-error"
+					role="alert"
+				>
 					{error}
 				</p>
 			) : null}
@@ -170,7 +190,12 @@ export default function LessonEditor({
 					<FormField id="lesson-slug" label="Slug" error={fields.slug}>
 						<input id="lesson-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
 					</FormField>
-					<FormField id="lesson-video" label="Video URL" error={fields.videoUrl} hint="YouTube hoặc URL video hợp lệ (tuỳ chọn nếu có nội dung).">
+					<FormField
+						id="lesson-video"
+						label="Video URL"
+						error={fields.videoUrl}
+						hint="YouTube hoặc URL video hợp lệ (tuỳ chọn nếu có nội dung)."
+					>
 						<input
 							id="lesson-video"
 							type="url"
@@ -186,7 +211,11 @@ export default function LessonEditor({
 								{fields.contentHtml}
 							</p>
 						) : null}
-						<TiptapEditor content={contentHtml} onChange={setContentHtml} placeholder="Nội dung bài học..." />
+						<TiptapEditor
+							content={contentHtml}
+							onChange={setContentHtml}
+							placeholder="Nội dung bài học..."
+						/>
 					</div>
 					<label className="block max-w-xs">
 						<span className="text-sm font-semibold text-foreground">Trạng thái</span>

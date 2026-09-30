@@ -12,7 +12,9 @@ expand(config({ path: '.env.local' }));
 
 const [sourcePath, slug, title, lessonLabel, description] = process.argv.slice(2);
 if (!sourcePath || !slug || !title || !lessonLabel) {
-	throw new Error('Usage: create-active-recall-from-markdown.ts <source> <slug> <title> <lesson> [description]');
+	throw new Error(
+		'Usage: create-active-recall-from-markdown.ts <source> <slug> <title> <lesson> [description]',
+	);
 }
 
 const connectionString = process.env.DATABASE_URL;
@@ -30,7 +32,10 @@ function plainText(value: string) {
 }
 
 function parseCards(source: string) {
-	const parts = source.replace(/\r/g, '').split(/^\*\*(\d+)\. (.+?)\*\*\s*$/m).slice(1);
+	const parts = source
+		.replace(/\r/g, '')
+		.split(/^\*\*(\d+)\. (.+?)\*\*\s*$/m)
+		.slice(1);
 	const cards: Array<{ question: string; answer: string; position: number }> = [];
 	for (let index = 0; index < parts.length; index += 3) {
 		const number = Number(parts[index]);
@@ -49,7 +54,10 @@ function parseCards(source: string) {
 
 async function main() {
 	const cards = parseCards(readFileSync(sourcePath, 'utf8'));
-	const existing = await prisma.activeRecallDeck.findUnique({ where: { slug }, select: { id: true } });
+	const existing = await prisma.activeRecallDeck.findUnique({
+		where: { slug },
+		select: { id: true },
+	});
 	if (existing) throw new Error(`Deck ${slug} already exists; refusing to overwrite it.`);
 	const course = await prisma.teachingCourse.upsert({
 		where: { courseCode: HRM_COURSE_CODE },

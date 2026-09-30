@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { activeCourseUserKey, normalizeEmail, normalizeSlug } from '../domain/normalize';
 import { analyzeCurriculum } from '../imports/curriculum';
 import { assertTestScope } from '../domain/scope';
-import { validateCoursePublish, validateKnowledgeUnitPublish, validateTestPublish } from '../domain/publishValidation';
+import {
+	validateCoursePublish,
+	validateKnowledgeUnitPublish,
+	validateTestPublish,
+} from '../domain/publishValidation';
 import { comparePerformanceRows } from '../analytics/sort';
 import { formatEvidenceSummary } from '../domain/format';
 import { courseVocabScopeKey, lessonVocabScopeKey } from '../domain/vocabScope';
@@ -19,8 +23,22 @@ describe('normalization', () => {
 
 describe('publish validation', () => {
 	it('requires KU title and at least one level', () => {
-		expect(validateKnowledgeUnitPublish({ title: '', foundationHtml: '', academicHtml: '', expertHtml: '' })).toHaveLength(2);
-		expect(validateKnowledgeUnitPublish({ title: 'Reliability', foundationHtml: '<p>x</p>', academicHtml: '', expertHtml: '' })).toHaveLength(0);
+		expect(
+			validateKnowledgeUnitPublish({
+				title: '',
+				foundationHtml: '',
+				academicHtml: '',
+				expertHtml: '',
+			}),
+		).toHaveLength(2);
+		expect(
+			validateKnowledgeUnitPublish({
+				title: 'Reliability',
+				foundationHtml: '<p>x</p>',
+				academicHtml: '',
+				expertHtml: '',
+			}),
+		).toHaveLength(0);
 	});
 
 	it('warns when tests map KU outside the course', () => {
@@ -30,7 +48,11 @@ describe('publish validation', () => {
 			unpublishedKuTitles: [],
 			outOfCourseKuTitles: ['Validity'],
 		});
-		expect(issues.some((issue) => issue.code === 'TEST_KU_OUT_OF_COURSE' && issue.severity === 'warning')).toBe(true);
+		expect(
+			issues.some(
+				(issue) => issue.code === 'TEST_KU_OUT_OF_COURSE' && issue.severity === 'warning',
+			),
+		).toBe(true);
 	});
 
 	it('blocks a published lesson without a valid section', () => {
@@ -46,7 +68,9 @@ describe('publish validation', () => {
 
 describe('scope validation', () => {
 	it('rejects lesson/section ids on course-scoped tests', () => {
-		expect(() => assertTestScope({ scope: 'COURSE', courseId: 'c1', lessonId: 'l1' })).toThrow(/Course/);
+		expect(() => assertTestScope({ scope: 'COURSE', courseId: 'c1', lessonId: 'l1' })).toThrow(
+			/Course/,
+		);
 		expect(() =>
 			assertTestScope({ scope: 'LESSON', courseId: 'c1', lessonId: 'l1', lessonCourseId: 'c1' }),
 		).not.toThrow();
@@ -99,7 +123,12 @@ describe('analytics DTO', () => {
 			{ title: 'C', accuracy: 50, evidence: 4 },
 			{ title: 'D', accuracy: 80, evidence: 1 },
 		];
-		expect([...rows].sort(comparePerformanceRows).map((row) => row.title)).toEqual(['D', 'C', 'A', 'B']);
+		expect([...rows].sort(comparePerformanceRows).map((row) => row.title)).toEqual([
+			'D',
+			'C',
+			'A',
+			'B',
+		]);
 		expect(JSON.stringify(rows)).not.toMatch(/mastery|yếu|vững/i);
 		expect(formatEvidenceSummary(0.5, 1, 50)).toContain('evidence');
 	});

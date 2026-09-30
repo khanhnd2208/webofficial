@@ -60,7 +60,9 @@ export function GradebookWorkspace({
 		return groupNumbersByTutorial[tutorialId] ?? {};
 	}, [groupNumbersByTutorial, tutorialId]);
 	const [query, setQuery] = useState('');
-	const [selectedWeek, setSelectedWeek] = useState<number | null>(initialWeek ?? pending?.week ?? null);
+	const [selectedWeek, setSelectedWeek] = useState<number | null>(
+		initialWeek ?? pending?.week ?? null,
+	);
 	const view = initialView;
 
 	function selectWeek(weekNumber: number) {
@@ -79,12 +81,20 @@ export function GradebookWorkspace({
 		[gradebook.students, tutorialId],
 	);
 	const students = useMemo(() => {
-		const q = query.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+		const q = query
+			.trim()
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/đ/g, 'd');
 		return tutorialStudents.filter(
 			(student) =>
 				!q ||
 				`${student.studentCode} ${student.familyName} ${student.givenName}`
-					.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
+					.toLowerCase()
+					.normalize('NFD')
+					.replace(/[\u0300-\u036f]/g, '')
+					.replace(/đ/g, 'd')
 					.includes(q),
 		);
 	}, [query, tutorialStudents]);
@@ -152,152 +162,158 @@ export function GradebookWorkspace({
 
 	return (
 		<>
-		<div className="mc-gradebook-workspace flex min-h-0 flex-1 flex-col space-y-3">
-			<div className="mc-gradebook-toolbar">
-				{gradebook.tutorials.length > 1 ? (
-					<TutorialSwitcher
-						tutorials={gradebook.tutorials}
-						value={tutorialId}
+			<div className="mc-gradebook-workspace flex min-h-0 flex-1 flex-col space-y-3">
+				<div className="mc-gradebook-toolbar">
+					{gradebook.tutorials.length > 1 ? (
+						<TutorialSwitcher
+							tutorials={gradebook.tutorials}
+							value={tutorialId}
 							onChange={(id) => {
-							setTutorialId(id);
-							setSelectedWeek(null);
-							const params = new URLSearchParams(window.location.search);
-							if (id) params.set('tutorial', id);
-							else params.delete('tutorial');
-							window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
-						}}
-					/>
-				) : null}
-				<label className="relative">
-					<span className="sr-only">Tìm theo tên hoặc mã sinh viên</span>
-					<input
-						value={query}
-						onChange={(event) => setQuery(event.target.value)}
-						placeholder="Tìm tên hoặc MSV"
-						className="mc-student-code-search"
-					/>
-				</label>
-				{isSaving || hasSaveError ? (
-					<span
-						className="mc-save-status"
-						data-tone={hasSaveError ? 'error' : 'saving'}
-						aria-live="polite"
-					>
-						{hasSaveError ? 'Có lỗi cần thử lại' : 'Đang lưu…'}
-					</span>
-				) : null}
-				{unassignedCount > 0 ? (
-					<a className="mc-unassigned-hint" href="#teaching-students">
-						{unassignedCount} học viên chưa phân tutorial
-					</a>
-				) : null}
-			</div>
-
-			{unassignedCount > 0 ? (
-				<div id="teaching-students" className="mc-inline-warning" role="status">
-					<span>{unassignedCount} học viên chưa có tutorial.</span>
-					{gradebook.tutorials.length > 0
-						? gradebook.students
-								.filter((student) => student.status === 'ACTIVE' && !student.tutorialClassId)
-								.slice(0, 3)
-								.map((student) => (
-									<label key={student.enrollmentId} className="inline-flex items-center gap-1.5">
-										<span className="mc-num text-xs">{student.studentCode}</span>
-										<select
-											aria-label={`Phân tutorial cho ${student.studentCode}`}
-											className="h-7 rounded border border-mc-rule bg-paper px-1 text-xs"
-											defaultValue=""
-											onChange={(event) => {
-												if (event.target.value)
-													void assignTutorial(student.enrollmentId, event.target.value);
-											}}
-										>
-											<option value="" disabled>
-												Chọn nhóm
-											</option>
-											{gradebook.tutorials.map((tutorial) => (
-												<option key={tutorial.id} value={tutorial.id}>
-													{tutorial.code}
-												</option>
-											))}
-										</select>
-									</label>
-								))
-						: null}
+								setTutorialId(id);
+								setSelectedWeek(null);
+								const params = new URLSearchParams(window.location.search);
+								if (id) params.set('tutorial', id);
+								else params.delete('tutorial');
+								window.history.replaceState(
+									null,
+									'',
+									`${window.location.pathname}?${params.toString()}`,
+								);
+							}}
+						/>
+					) : null}
+					<label className="relative">
+						<span className="sr-only">Tìm theo tên hoặc mã sinh viên</span>
+						<input
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							placeholder="Tìm tên hoặc MSV"
+							className="mc-student-code-search"
+						/>
+					</label>
+					{isSaving || hasSaveError ? (
+						<span
+							className="mc-save-status"
+							data-tone={hasSaveError ? 'error' : 'saving'}
+							aria-live="polite"
+						>
+							{hasSaveError ? 'Có lỗi cần thử lại' : 'Đang lưu…'}
+						</span>
+					) : null}
+					{unassignedCount > 0 ? (
+						<a className="mc-unassigned-hint" href="#teaching-students">
+							{unassignedCount} học viên chưa phân tutorial
+						</a>
+					) : null}
 				</div>
-			) : null}
 
-			<div className="mc-gradebook-surface mc-surface flex min-h-0 flex-1 flex-col overflow-hidden">
-				{view === 'attendance' ? (
-					<AttendanceGrid
-						students={students}
-						sessions={tutorialSessions}
-						totalWeeks={gradebook.class.totalWeeks}
-						attendanceMaxPoints={gradebook.policy.attendanceMaxPoints}
-						selectedWeek={selectedWeek}
-						groupNumberByEnrollment={groupNumberByEnrollment}
-						publicCompact
-						scrollMode="contained"
-						showEligibilityColumn={false}
-						onWeekSelect={selectWeek}
-						onMarkChange={persistMark}
-						onSessionToggle={(sessionId, open) => {
-							void setAttendanceOpen(sessionId, open);
-						}}
-						onSessionLifecycle={(sessionId, action) => {
-							requestLifecycle('attendance', sessionId, action);
-						}}
-						onSessionDateChange={(session, heldOn) => {
-							selectWeek(session.weekNumber);
-							const task = updateSessionDate(session.id, heldOn);
-							pending?.holdUntil(task, `session-date:${session.id}`);
-							return task;
-						}}
-						sessionDateSaveState={(sessionId) => sessionDateStates[sessionId]}
-						togglingSessionId={togglingSessionId}
-						saveState={(enrollmentId, sessionId) =>
-							saveStates[mutationKey('attendance', enrollmentId, sessionId)]
-						}
-						onRetry={(enrollmentId, sessionId) => retryMark(enrollmentId, sessionId, 'attendance')}
-					/>
-				) : (
-					<ParticipationGrid
-						students={students}
-						sessions={tutorialSessions}
-						totalWeeks={gradebook.class.totalWeeks}
-						attendanceMaxPoints={gradebook.policy.attendanceMaxPoints}
-						cpMaxPoints={gradebook.policy.cpMaxPoints}
-						selectedWeek={selectedWeek}
-						publicCompact
-						scrollMode="contained"
-						onWeekSelect={selectWeek}
-						onParticipationChange={persistParticipation}
-						onGiftChange={(enrollmentId, delta) => persistGift({ enrollmentId, delta })}
-						onSessionToggle={(sessionId, open) => {
-							void setParticipationOpen(sessionId, open);
-						}}
-						onSessionLifecycle={(sessionId, action) => {
-							requestLifecycle('participation', sessionId, action);
-						}}
-						togglingSessionId={togglingSessionId}
-						saveState={(enrollmentId, sessionId) =>
-							saveStates[mutationKey('participation', enrollmentId, sessionId)]
-						}
-						onRetry={(enrollmentId, sessionId) =>
-							retryMark(enrollmentId, sessionId, 'participation')
-						}
-					/>
-				)}
+				{unassignedCount > 0 ? (
+					<div id="teaching-students" className="mc-inline-warning" role="status">
+						<span>{unassignedCount} học viên chưa có tutorial.</span>
+						{gradebook.tutorials.length > 0
+							? gradebook.students
+									.filter((student) => student.status === 'ACTIVE' && !student.tutorialClassId)
+									.slice(0, 3)
+									.map((student) => (
+										<label key={student.enrollmentId} className="inline-flex items-center gap-1.5">
+											<span className="mc-num text-xs">{student.studentCode}</span>
+											<select
+												aria-label={`Phân tutorial cho ${student.studentCode}`}
+												className="h-7 rounded border border-mc-rule bg-paper px-1 text-xs"
+												defaultValue=""
+												onChange={(event) => {
+													if (event.target.value)
+														void assignTutorial(student.enrollmentId, event.target.value);
+												}}
+											>
+												<option value="" disabled>
+													Chọn nhóm
+												</option>
+												{gradebook.tutorials.map((tutorial) => (
+													<option key={tutorial.id} value={tutorial.id}>
+														{tutorial.code}
+													</option>
+												))}
+											</select>
+										</label>
+									))
+							: null}
+					</div>
+				) : null}
+
+				<div className="mc-gradebook-surface mc-surface flex min-h-0 flex-1 flex-col overflow-hidden">
+					{view === 'attendance' ? (
+						<AttendanceGrid
+							students={students}
+							sessions={tutorialSessions}
+							totalWeeks={gradebook.class.totalWeeks}
+							attendanceMaxPoints={gradebook.policy.attendanceMaxPoints}
+							selectedWeek={selectedWeek}
+							groupNumberByEnrollment={groupNumberByEnrollment}
+							publicCompact
+							scrollMode="contained"
+							showEligibilityColumn={false}
+							onWeekSelect={selectWeek}
+							onMarkChange={persistMark}
+							onSessionToggle={(sessionId, open) => {
+								void setAttendanceOpen(sessionId, open);
+							}}
+							onSessionLifecycle={(sessionId, action) => {
+								requestLifecycle('attendance', sessionId, action);
+							}}
+							onSessionDateChange={(session, heldOn) => {
+								selectWeek(session.weekNumber);
+								const task = updateSessionDate(session.id, heldOn);
+								pending?.holdUntil(task, `session-date:${session.id}`);
+								return task;
+							}}
+							sessionDateSaveState={(sessionId) => sessionDateStates[sessionId]}
+							togglingSessionId={togglingSessionId}
+							saveState={(enrollmentId, sessionId) =>
+								saveStates[mutationKey('attendance', enrollmentId, sessionId)]
+							}
+							onRetry={(enrollmentId, sessionId) =>
+								retryMark(enrollmentId, sessionId, 'attendance')
+							}
+						/>
+					) : (
+						<ParticipationGrid
+							students={students}
+							sessions={tutorialSessions}
+							totalWeeks={gradebook.class.totalWeeks}
+							attendanceMaxPoints={gradebook.policy.attendanceMaxPoints}
+							cpMaxPoints={gradebook.policy.cpMaxPoints}
+							selectedWeek={selectedWeek}
+							publicCompact
+							scrollMode="contained"
+							onWeekSelect={selectWeek}
+							onParticipationChange={persistParticipation}
+							onGiftChange={(enrollmentId, delta) => persistGift({ enrollmentId, delta })}
+							onSessionToggle={(sessionId, open) => {
+								void setParticipationOpen(sessionId, open);
+							}}
+							onSessionLifecycle={(sessionId, action) => {
+								requestLifecycle('participation', sessionId, action);
+							}}
+							togglingSessionId={togglingSessionId}
+							saveState={(enrollmentId, sessionId) =>
+								saveStates[mutationKey('participation', enrollmentId, sessionId)]
+							}
+							onRetry={(enrollmentId, sessionId) =>
+								retryMark(enrollmentId, sessionId, 'participation')
+							}
+						/>
+					)}
+				</div>
+
+				<Toast
+					message={toast}
+					visible={Boolean(toast)}
+					onDismiss={() => setToast('')}
+					className="mc-toast"
+				/>
 			</div>
-
-			<Toast
-				message={toast}
-				visible={Boolean(toast)}
-				onDismiss={() => setToast('')}
-				className="mc-toast"
-			/>
-		</div>
-		{dialog}
+			{dialog}
 		</>
 	);
 }

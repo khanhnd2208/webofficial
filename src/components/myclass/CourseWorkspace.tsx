@@ -15,7 +15,10 @@ import EditToggle from '@/components/myclass/workspace/edit/EditToggle';
 import AttachPicker from '@/components/myclass/workspace/edit/AttachPicker';
 import VocabImportDialog from '@/components/myclass/workspace/edit/VocabImportDialog';
 import ReaderEditor from '@/components/myclass/workspace/edit/ReaderEditor';
-import { EditModeProvider, useOptionalEditMode } from '@/components/myclass/workspace/edit/EditModeContext';
+import {
+	EditModeProvider,
+	useOptionalEditMode,
+} from '@/components/myclass/workspace/edit/EditModeContext';
 import { routes } from '@/config/routes';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -101,7 +104,13 @@ function parseWorkspaceLocation(courseSlug: string) {
 	const pathname = window.location.pathname;
 	const params = new URLSearchParams(window.location.search);
 	if (!pathname.startsWith(prefix)) {
-		return { lessonSlug: null, unitSlug: null, sectionSlug: null, view: 'content' as const, edit: params.get('edit') === '1' };
+		return {
+			lessonSlug: null,
+			unitSlug: null,
+			sectionSlug: null,
+			view: 'content' as const,
+			edit: params.get('edit') === '1',
+		};
 	}
 	const rest = pathname.slice(prefix.length).replace(/^\//, '');
 	const parts = rest.split('/').filter(Boolean);
@@ -122,7 +131,6 @@ function parseWorkspaceLocation(courseSlug: string) {
 		edit: params.get('edit') === '1',
 	};
 }
-
 
 function cacheKeyFor(item: { knowledgeUnitId: string; sectionId: string }) {
 	return `${item.knowledgeUnitId}:${item.sectionId}`;
@@ -707,10 +715,9 @@ function CourseWorkspaceBody({
 		setTestScores((prev) => ({ ...prev, [slug]: result }));
 	}
 
-	const editActions =
-		isAdmin ? (
-			<EditToggle courseSlug={course.slug} courseId={course.id} editMode={editMode} />
-		) : null;
+	const editActions = isAdmin ? (
+		<EditToggle courseSlug={course.slug} courseId={course.id} editMode={editMode} />
+	) : null;
 
 	const sectionCount = course.lessons.reduce((count, lesson) => count + lesson.sections.length, 0);
 	const unitCount = course.lessons.reduce(
@@ -744,7 +751,9 @@ function CourseWorkspaceBody({
 		/>
 	);
 
-	const visibleVocab = (vocabSets.length ? vocabSets : course.vocabSets).filter((set) => !set.isArchived);
+	const visibleVocab = (vocabSets.length ? vocabSets : course.vocabSets).filter(
+		(set) => !set.isArchived,
+	);
 
 	if (view === 'vocab') {
 		return (
@@ -967,43 +976,43 @@ function CourseWorkspaceBody({
 			</div>
 
 			{editMode || !selected ? null : (
-			<div className="fixed inset-x-0 bottom-0 z-30 border-t border-mc-rule bg-paper px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
-				<div className="flex items-center gap-2">
-					<button
-						type="button"
-						onClick={() => setTocOpen(true)}
-						className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 py-1 text-ink-secondary"
-					>
-						<McIcon name="menu_book" size={24} />
-						<span className="text-[10px] font-medium leading-none">Mục lục</span>
-					</button>
-					{activeTest ? (
-						<McButton
-							size="md"
-							variant="secondary"
-							onClick={() => setActiveTest(null)}
-							className="min-h-0 flex-1 !rounded-xl py-3.5 whitespace-nowrap"
+				<div className="fixed inset-x-0 bottom-0 z-30 border-t border-mc-rule bg-paper px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={() => setTocOpen(true)}
+							className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 py-1 text-ink-secondary"
 						>
-							Đóng bài kiểm tra
-						</McButton>
-					) : selected.status === 'done' && !nextItem ? (
-						<p className="min-w-0 flex-1 px-2 text-sm font-semibold text-mc-done">
-							Bạn đã hoàn thành nội dung này.
-						</p>
-					) : (
-						<McButton
-							size="md"
-							onClick={() => void completeAndNext()}
-							disabled={loading || Boolean(loadError)}
-							loading={completeBusy}
-							className="min-h-0 flex-1 !rounded-xl py-3.5 whitespace-nowrap"
-						>
-							{selected.status === 'done' ? 'Tiếp tục' : 'Đã hiểu'}
-							{nextItem ? <McIcon name="arrow_forward" size={20} /> : null}
-						</McButton>
-					)}
+							<McIcon name="menu_book" size={24} />
+							<span className="text-[10px] font-medium leading-none">Mục lục</span>
+						</button>
+						{activeTest ? (
+							<McButton
+								size="md"
+								variant="secondary"
+								onClick={() => setActiveTest(null)}
+								className="min-h-0 flex-1 !rounded-xl py-3.5 whitespace-nowrap"
+							>
+								Đóng bài kiểm tra
+							</McButton>
+						) : selected.status === 'done' && !nextItem ? (
+							<p className="min-w-0 flex-1 px-2 text-sm font-semibold text-mc-done">
+								Bạn đã hoàn thành nội dung này.
+							</p>
+						) : (
+							<McButton
+								size="md"
+								onClick={() => void completeAndNext()}
+								disabled={loading || Boolean(loadError)}
+								loading={completeBusy}
+								className="min-h-0 flex-1 !rounded-xl py-3.5 whitespace-nowrap"
+							>
+								{selected.status === 'done' ? 'Tiếp tục' : 'Đã hiểu'}
+								{nextItem ? <McIcon name="arrow_forward" size={20} /> : null}
+							</McButton>
+						)}
+					</div>
 				</div>
-			</div>
 			)}
 
 			{jump}

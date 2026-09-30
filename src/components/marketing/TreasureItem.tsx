@@ -25,7 +25,9 @@ export function TreasureItem({ item }: TreasureItemProps) {
 					“{item.quote}”
 				</blockquote>
 			) : null}
-			<figcaption className="mt-4 text-sm leading-[1.65] text-ink-secondary">{item.caption}</figcaption>
+			<figcaption className="mt-4 text-sm leading-[1.65] text-ink-secondary">
+				{item.caption}
+			</figcaption>
 		</figure>
 	);
 }

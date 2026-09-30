@@ -68,9 +68,7 @@ export function AdminErrorState({
 		<div role="alert" className="rounded-xl border border-error/40 bg-error-subtle px-5 py-4">
 			<p className="font-semibold text-foreground">{title}</p>
 			{description ? <p className="mt-1 text-sm text-foreground-secondary">{description}</p> : null}
-			{requestId ? (
-				<p className="mt-2 text-xs text-muted">Mã đối chiếu: {requestId}</p>
-			) : null}
+			{requestId ? <p className="mt-2 text-xs text-muted">Mã đối chiếu: {requestId}</p> : null}
 			{onRetry ? (
 				<button
 					type="button"

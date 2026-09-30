@@ -79,10 +79,10 @@ export function hasAuthoredStudentPage(row: {
 }) {
 	return Boolean(
 		row.publicTitle?.trim() ||
-			row.publicSummary?.trim() ||
-			row.publicDescription?.trim() ||
-			row.publicAnnouncement?.trim() ||
-			row.classRules?.trim(),
+		row.publicSummary?.trim() ||
+		row.publicDescription?.trim() ||
+		row.publicAnnouncement?.trim() ||
+		row.classRules?.trim(),
 	);
 }
 
@@ -100,11 +100,11 @@ export function isCustomizedSession(session: {
 }) {
 	return Boolean(
 		session.heldOn ||
-			session.topic.trim() ||
-			session.method !== 'ROLL_CALL' ||
-			session.isCancelled ||
-			session.attendanceTakenAt ||
-			session.participationTakenAt,
+		session.topic.trim() ||
+		session.method !== 'ROLL_CALL' ||
+		session.isCancelled ||
+		session.attendanceTakenAt ||
+		session.participationTakenAt,
 	);
 }
 
@@ -116,7 +116,8 @@ export function summarizeClassDeleteBlockers(snapshot: ClassUserContentSnapshot)
 	if (snapshot.configuredGroupCount > 0) blockers.groups = snapshot.configuredGroupCount;
 	if (snapshot.noteCount > 0) blockers.notes = snapshot.noteCount;
 	if (snapshot.publicLinkCount > 0) blockers.publicLinks = snapshot.publicLinkCount;
-	if (snapshot.customizedSessionCount > 0) blockers.customizedSessions = snapshot.customizedSessionCount;
+	if (snapshot.customizedSessionCount > 0)
+		blockers.customizedSessions = snapshot.customizedSessionCount;
 	if (snapshot.studentPageCount > 0) blockers.studentPage = snapshot.studentPageCount;
 	if (snapshot.sharingCount > 0) blockers.sharing = snapshot.sharingCount;
 	return blockers;

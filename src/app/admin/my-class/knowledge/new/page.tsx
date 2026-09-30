@@ -31,7 +31,10 @@ export default function NewKnowledgePage() {
 
 	return (
 		<div className="mc-studio-container px-0 py-8">
-			<Link href={routes.admin.myClassKnowledge} className="text-xs uppercase tracking-widest text-muted">
+			<Link
+				href={routes.admin.myClassKnowledge}
+				className="text-xs uppercase tracking-widest text-muted"
+			>
 				← Thư viện nội dung
 			</Link>
 			<h1 className="mt-6 text-2xl font-black">Tạo đơn vị kiến thức</h1>

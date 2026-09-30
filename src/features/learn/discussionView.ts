@@ -23,7 +23,8 @@ export interface DiscussionQuestionView {
 }
 
 /** Accepts an optional `Câu N ·` prefix that the discussion prompts now carry. */
-const LEVEL_RE = /^(?:Câu\s+\d+\s*·\s*)?(Nhớ|Hiểu|Áp dụng|Vận dụng|Phân tích|Đánh giá|Sáng tạo)\s*(?:\(([^)]+)\))?\s+[—–]\s+(\S.*)$/i;
+const LEVEL_RE =
+	/^(?:Câu\s+\d+\s*·\s*)?(Nhớ|Hiểu|Áp dụng|Vận dụng|Phân tích|Đánh giá|Sáng tạo)\s*(?:\(([^)]+)\))?\s+[—–]\s+(\S.*)$/i;
 
 export const QUESTION_LABELS = ['Tình huống', 'Bối cảnh', 'Case', 'Câu hỏi', 'Yêu cầu'];
 export const ANSWER_LABELS = [
@@ -73,7 +74,8 @@ export function splitLabelled(markdown: string, labels: string[]): DiscussionBlo
 		const atParagraphStart = index === 0 || !lines[index - 1].trim();
 		const match = !fenced && atParagraphStart ? line.trim().match(labelRe) : null;
 		if (match) {
-			const label = labels.find((item) => item.toLowerCase() === match[2].toLowerCase()) ?? match[2];
+			const label =
+				labels.find((item) => item.toLowerCase() === match[2].toLowerCase()) ?? match[2];
 			quoted = Boolean(match[1]?.startsWith('>'));
 			blocks.push({ label, lines: match[3] ? [match[3]] : [] });
 			return;

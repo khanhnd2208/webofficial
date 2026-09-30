@@ -57,13 +57,27 @@ const lessons: LearnCurriculumLesson[] = [
 describe('LearnCurriculum', () => {
 	it('opens the lesson that contains the section the learner just moved to', () => {
 		const { rerender } = render(
-			<LearnCurriculum courseSlug="demo" lessons={lessons} openLessonId="lesson-a" currentId="a1" compact />,
+			<LearnCurriculum
+				courseSlug="demo"
+				lessons={lessons}
+				openLessonId="lesson-a"
+				currentId="a1"
+				compact
+			/>,
 		);
 
 		expect(screen.getByRole('link', { name: /Mục A1/ })).toBeVisible();
 		expect(screen.queryByRole('link', { name: /Mục B1/ })).not.toBeInTheDocument();
 
-		rerender(<LearnCurriculum courseSlug="demo" lessons={lessons} openLessonId="lesson-b" currentId="b1" compact />);
+		rerender(
+			<LearnCurriculum
+				courseSlug="demo"
+				lessons={lessons}
+				openLessonId="lesson-b"
+				currentId="b1"
+				compact
+			/>,
+		);
 
 		expect(screen.getByRole('link', { name: /Mục B1/ })).toBeVisible();
 	});

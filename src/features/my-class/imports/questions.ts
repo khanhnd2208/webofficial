@@ -26,7 +26,9 @@ function optionsFromRow(row: Record<string, string>): QuestionOption[] {
 	return options;
 }
 
-export function parseQuestionCsv(csv: string): Array<{ row: number; record: Record<string, string> }> {
+export function parseQuestionCsv(
+	csv: string,
+): Array<{ row: number; record: Record<string, string> }> {
 	const records = parse(csv, {
 		columns: true,
 		skip_empty_lines: true,
@@ -51,11 +53,15 @@ export async function previewQuestionCsv(csv: string): Promise<QuestionCsvPrevie
 		const optionsParsed = questionOptionsSchema.safeParse(options);
 		if (!optionsParsed.success) errors.push('Options không hợp lệ');
 		const correct = cell(record, 'correct_option').toUpperCase();
-		if (!optionKeySchema.safeParse(correct).success || !options.some((option) => option.key === correct)) {
+		if (
+			!optionKeySchema.safeParse(correct).success ||
+			!options.some((option) => option.key === correct)
+		) {
 			errors.push('correct_option không hợp lệ');
 		}
 		const difficulty = Number(cell(record, 'difficulty') || '2');
-		if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 6) errors.push('difficulty phải từ 1–6');
+		if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 6)
+			errors.push('difficulty phải từ 1–6');
 		const kuSlugs = cell(record, 'ku_slugs')
 			.split(/[|,]/)
 			.map((item) => normalizeSlug(item.trim(), ''))
@@ -73,10 +79,16 @@ export async function previewQuestionCsv(csv: string): Promise<QuestionCsvPrevie
 			if (test) {
 				const courseIds = test.placements.map((row) => row.courseId);
 				for (const slug of kuSlugs) {
-					const unit = await prisma.knowledgeUnit.findUnique({ where: { slug }, select: { id: true } });
+					const unit = await prisma.knowledgeUnit.findUnique({
+						where: { slug },
+						select: { id: true },
+					});
 					if (unit && courseIds.length) {
 						const mapped = await prisma.myClassSectionKnowledgeUnit.findFirst({
-							where: { knowledgeUnitId: unit.id, section: { lesson: { courseId: { in: courseIds } } } },
+							where: {
+								knowledgeUnitId: unit.id,
+								section: { lesson: { courseId: { in: courseIds } } },
+							},
 							select: { id: true },
 						});
 						if (!mapped) errors.push(`KU ngoài Course của Test: ${slug}`);
@@ -120,7 +132,10 @@ export async function importQuestionCsv(csv: string) {
 					type: 'MCQ_SINGLE',
 					stem: cell(record, 'stem'),
 					options: options as unknown as Prisma.InputJsonValue,
-					answer: { type: 'MCQ_SINGLE', correctKey: cell(record, 'correct_option').toUpperCase() } as unknown as Prisma.InputJsonValue,
+					answer: {
+						type: 'MCQ_SINGLE',
+						correctKey: cell(record, 'correct_option').toUpperCase(),
+					} as unknown as Prisma.InputJsonValue,
 					explanation: cell(record, 'explanation'),
 					difficulty: Number(cell(record, 'difficulty') || '2'),
 					knowledgeUnits: { create: units.map((unit) => ({ knowledgeUnitId: unit.id })) },
@@ -128,7 +143,10 @@ export async function importQuestionCsv(csv: string) {
 			});
 			const test = await tx.myClassTest.findUnique({ where: { slug: cell(record, 'test_slug') } });
 			if (!test) throw new AppError('Test không tồn tại', 422);
-			const max = await tx.myClassTestQuestion.aggregate({ where: { testId: test.id }, _max: { position: true } });
+			const max = await tx.myClassTestQuestion.aggregate({
+				where: { testId: test.id },
+				_max: { position: true },
+			});
 			await tx.myClassTestQuestion.create({
 				data: { testId: test.id, questionId: question.id, position: (max._max.position ?? -1) + 1 },
 			});

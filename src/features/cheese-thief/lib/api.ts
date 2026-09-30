@@ -1,12 +1,12 @@
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
-import { resolveErrorMessage } from '@/features/spy-fall/lib/i18n/tLocale';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { resolveErrorMessage } from '@/features/board-game-shared/lib/i18n/tLocale';
 import {
 	DEFAULT_LOCALE,
 	isLocale,
 	LOCALE_STORAGE_KEY,
 	type Locale,
 	type MessageParams,
-} from '@/features/spy-fall/lib/i18n/types';
+} from '@/features/board-game-shared/lib/i18n/types';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 
 type ApiEnvelope<T> = {
@@ -34,7 +34,9 @@ async function parseResponse<T>(res: Response): Promise<T> {
 
 export async function fetchRoomState(code: string, token: string | null): Promise<RoomStateDTO> {
 	const qs = token ? `?token=${encodeURIComponent(token)}` : '';
-	const res = await fetch(withBasePath(`/api/cheese-thief/rooms/${code}/state${qs}`), { cache: 'no-store' });
+	const res = await fetch(withBasePath(`/api/cheese-thief/rooms/${code}/state${qs}`), {
+		cache: 'no-store',
+	});
 	return parseResponse<RoomStateDTO>(res);
 }
 
@@ -47,7 +49,10 @@ export async function postCheeseAction<T>(path: string, body: Record<string, unk
 	return parseResponse<T>(res);
 }
 
-export async function patchCheeseAction<T>(path: string, body: Record<string, unknown>): Promise<T> {
+export async function patchCheeseAction<T>(
+	path: string,
+	body: Record<string, unknown>,
+): Promise<T> {
 	const res = await fetch(withBasePath(path), {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },

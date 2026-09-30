@@ -181,7 +181,11 @@ export function OutlineDnd({
 }) {
 	if (!enabled) return <>{children}</>;
 	return (
-		<OutlineDndActive onDragStart={onDragStart} onDragFinished={onDragFinished} onReorder={onReorder}>
+		<OutlineDndActive
+			onDragStart={onDragStart}
+			onDragFinished={onDragFinished}
+			onReorder={onReorder}
+		>
 			{children}
 		</OutlineDndActive>
 	);
@@ -268,7 +272,11 @@ function OutlineDndActive({
 				}}
 			>
 				{children}
-				<DragOverlay dropAnimation={reducedMotion ? null : { duration: 200, easing: 'cubic-bezier(0.2, 0, 0, 1)' }}>
+				<DragOverlay
+					dropAnimation={
+						reducedMotion ? null : { duration: 200, easing: 'cubic-bezier(0.2, 0, 0, 1)' }
+					}
+				>
 					{active ? (
 						<div className="mc mc-outline-overlay">
 							<McIcon name="drag_indicator" size={16} />

@@ -9,7 +9,11 @@ import { rethrowUnlessNotFound } from '@/lib/pageErrors';
 
 export const dynamic = 'force-dynamic';
 
-export default async function MyClassVocabSetPage({ params }: { params: Promise<{ courseSlug: string; setId: string }> }) {
+export default async function MyClassVocabSetPage({
+	params,
+}: {
+	params: Promise<{ courseSlug: string; setId: string }>;
+}) {
 	const { courseSlug, setId } = await params;
 	let data;
 	try {
@@ -26,7 +30,13 @@ export default async function MyClassVocabSetPage({ params }: { params: Promise<
 		{ href: `${base}/mcq`, title: 'Trắc nghiệm', detail: 'Chọn nghĩa đúng', icon: '☑' },
 		{ href: `${base}/fill-blank`, title: 'Điền từ', detail: 'Viết lại từ còn thiếu', icon: '␣' },
 		{ href: `${base}/matching`, title: 'Ghép cặp', detail: 'Nối từ với định nghĩa', icon: '⇄' },
-		{ href: `${base}/guess-who`, title: 'Guess Who', detail: 'Đoán từ từ gợi ý', icon: '?', show: guessWhoReady(data.set.words) },
+		{
+			href: `${base}/guess-who`,
+			title: 'Guess Who',
+			detail: 'Đoán từ từ gợi ý',
+			icon: '?',
+			show: guessWhoReady(data.set.words),
+		},
 	];
 	return (
 		<VocabPracticeShell courseSlug={courseSlug} courseTitle={data.course.title}>
@@ -43,24 +53,26 @@ export default async function MyClassVocabSetPage({ params }: { params: Promise<
 				/>
 			</div>
 			<div className="mt-8 divide-y divide-mc-rule border-y border-mc-rule">
-				{modes.filter((mode) => mode.show !== false).map((mode) => (
-					<Link
-						key={mode.href}
-						href={mode.href}
-						className="flex min-h-14 items-center gap-3 px-1 py-3 transition-colors hover:bg-surface-sunken"
-					>
-						<span
-							className="mc-num flex h-8 w-8 shrink-0 items-center justify-center border border-mc-rule text-sm font-semibold text-ink"
-							aria-hidden
+				{modes
+					.filter((mode) => mode.show !== false)
+					.map((mode) => (
+						<Link
+							key={mode.href}
+							href={mode.href}
+							className="flex min-h-14 items-center gap-3 px-1 py-3 transition-colors hover:bg-surface-sunken"
 						>
-							{mode.icon}
-						</span>
-						<span>
-							<p className="font-semibold text-ink">{mode.title}</p>
-							<p className="mc-meta mt-0.5">{mode.detail}</p>
-						</span>
-					</Link>
-				))}
+							<span
+								className="mc-num flex h-8 w-8 shrink-0 items-center justify-center border border-mc-rule text-sm font-semibold text-ink"
+								aria-hidden
+							>
+								{mode.icon}
+							</span>
+							<span>
+								<p className="font-semibold text-ink">{mode.title}</p>
+								<p className="mc-meta mt-0.5">{mode.detail}</p>
+							</span>
+						</Link>
+					))}
 			</div>
 			<ul className="mt-10 divide-y divide-mc-rule border-y border-mc-rule">
 				{data.set.words.map((word) => (

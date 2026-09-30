@@ -34,7 +34,15 @@ function normalizeSlug(value: string) {
 		.slice(0, 80);
 }
 
-export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: TeachingPublicPageConfig; savedClass?: TeachingClassRecord; onSaved?: (updated: TeachingPublicPageConfig) => void }) {
+export function PublicPageEditor({
+	initial,
+	savedClass,
+	onSaved,
+}: {
+	initial: TeachingPublicPageConfig;
+	savedClass?: TeachingClassRecord;
+	onSaved?: (updated: TeachingPublicPageConfig) => void;
+}) {
 	const formRef = useRef<HTMLFormElement>(null);
 	const [form, setForm] = useState({
 		publicSlug: initial.class.publicSlug ?? '',
@@ -104,17 +112,28 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 					description: link.description,
 				})),
 			);
-			setSavedSnapshot(JSON.stringify({
-				form: {
-					publicSlug: updated.class.publicSlug ?? '',
-					publicTitle: updated.class.publicTitle,
-					publicSummary: updated.class.publicSummary,
-					publicDescription: updated.class.publicDescription,
-					publicAnnouncement: updated.class.publicAnnouncement,
-				},
-				links: updated.links.map((link) => ({ key: link.id, label: link.label, url: link.url, description: link.description })),
-			}));
-			setMessage(updated.class.attendanceVisible ? 'Đã lưu nội dung trang sinh viên.' : 'Đã lưu nội dung. Lớp hiện chưa được chia sẻ.');
+			setSavedSnapshot(
+				JSON.stringify({
+					form: {
+						publicSlug: updated.class.publicSlug ?? '',
+						publicTitle: updated.class.publicTitle,
+						publicSummary: updated.class.publicSummary,
+						publicDescription: updated.class.publicDescription,
+						publicAnnouncement: updated.class.publicAnnouncement,
+					},
+					links: updated.links.map((link) => ({
+						key: link.id,
+						label: link.label,
+						url: link.url,
+						description: link.description,
+					})),
+				}),
+			);
+			setMessage(
+				updated.class.attendanceVisible
+					? 'Đã lưu nội dung trang sinh viên.'
+					: 'Đã lưu nội dung. Lớp hiện chưa được chia sẻ.',
+			);
 			return true;
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể lưu trang công khai');
@@ -131,7 +150,9 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 			setCopied(true);
 			window.setTimeout(() => setCopied(false), 1800);
 		} catch {
-			setError(`Không thể sao chép tự động. Hãy sao chép thủ công: ${window.location.origin}${savedPublicPath}`);
+			setError(
+				`Không thể sao chép tự động. Hãy sao chép thủ công: ${window.location.origin}${savedPublicPath}`,
+			);
 		}
 	}
 
@@ -167,7 +188,7 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 					) : null}
 					{isShared && savedPublicPath ? (
 						<Link
-						href={savedPublicPath}
+							href={savedPublicPath}
 							target="_blank"
 							className="inline-flex min-h-10 items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm font-semibold text-ink hover:bg-surface-sunken"
 						>
@@ -179,9 +200,10 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 			</section>
 
 			<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-				<form ref={formRef}
+				<form
+					ref={formRef}
 					className="space-y-6"
-					 onSubmit={(event) => {
+					onSubmit={(event) => {
 						event.preventDefault();
 						void save();
 					}}
@@ -193,14 +215,23 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 						</div>
 						<StudioField
 							label="Đường dẫn trang sinh viên"
-							hint={publicPath ? `toiladuykhanh.com${publicPath}` : 'Dùng chữ thường, số và dấu gạch ngang.'}
+							hint={
+								publicPath
+									? `toiladuykhanh.com${publicPath}`
+									: 'Dùng chữ thường, số và dấu gạch ngang.'
+							}
 						>
 							<StudioInput
 								required
 								minLength={3}
 								value={form.publicSlug}
 								onChange={(event) => setForm({ ...form, publicSlug: event.target.value })}
-								onBlur={() => setForm((current) => ({ ...current, publicSlug: normalizeSlug(current.publicSlug) }))}
+								onBlur={() =>
+									setForm((current) => ({
+										...current,
+										publicSlug: normalizeSlug(current.publicSlug),
+									}))
+								}
 							/>
 						</StudioField>
 						<StudioField label="Tiêu đề hiển thị" hint="Mặc định dùng tên học phần.">
@@ -253,7 +284,9 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 							<div>
 								<p className="mc-eyebrow">Tài nguyên</p>
 								<h2 className="mt-1 text-lg font-semibold text-ink">Liên kết quan trọng</h2>
-								<p className="mc-meta mt-1">Thêm tối đa 20 liên kết. Chỉ chấp nhận URL http:// và https://.</p>
+								<p className="mc-meta mt-1">
+									Thêm tối đa 20 liên kết. Chỉ chấp nhận URL http:// và https://.
+								</p>
 							</div>
 							<StudioButton
 								variant="secondary"
@@ -277,7 +310,7 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 										key={link.key}
 										className="grid gap-3 rounded-[var(--mc-r-sm)] border border-mc-rule p-4 md:grid-cols-2"
 									>
-												<StudioField label={`Nhãn liên kết ${index + 1}`}>
+										<StudioField label={`Nhãn liên kết ${index + 1}`}>
 											<StudioInput
 												required
 												value={link.label}
@@ -293,26 +326,30 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 												onChange={(event) => patchLink(link.key, { url: event.target.value })}
 											/>
 										</StudioField>
-												<StudioField label="Mô tả" className="md:col-span-2">
+										<StudioField label="Mô tả" className="md:col-span-2">
 											<StudioInput
 												value={link.description}
-												onChange={(event) => patchLink(link.key, { description: event.target.value })}
+												onChange={(event) =>
+													patchLink(link.key, { description: event.target.value })
+												}
 											/>
 										</StudioField>
 										<div className="md:col-span-2 flex justify-end">
 											<StudioButton
 												variant="quiet"
 												size="sm"
-												onClick={() => setLinks((current) => current.filter((item) => item.key !== link.key))}
+												onClick={() =>
+													setLinks((current) => current.filter((item) => item.key !== link.key))
+												}
 											>
-														Xóa
+												Xóa
 											</StudioButton>
 										</div>
 									</div>
 								))
 							) : (
 								<p className="rounded-[var(--mc-r-sm)] bg-surface-sunken p-4 text-sm text-ink-secondary">
-													Chưa có tài nguyên công khai.
+									Chưa có tài nguyên công khai.
 								</p>
 							)}
 						</div>
@@ -321,16 +358,36 @@ export function PublicPageEditor({ initial, savedClass, onSaved }: { initial: Te
 					<div className="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[var(--mc-r-md)] border border-mc-rule bg-paper/95 p-4 shadow-[var(--mc-shadow-2)] backdrop-blur">
 						<div>
 							{message ? <p className="text-sm font-semibold text-mc-done">{message}</p> : null}
-							{error ? <p role="alert" tabIndex={-1} ref={(node) => { node?.focus(); }} className="text-sm font-semibold text-error">{error}</p> : null}
+							{error ? (
+								<p
+									role="alert"
+									tabIndex={-1}
+									ref={(node) => {
+										node?.focus();
+									}}
+									className="text-sm font-semibold text-error"
+								>
+									{error}
+								</p>
+							) : null}
 						</div>
-						<StudioButton type="submit" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu nội dung'}</StudioButton>
+						<StudioButton type="submit" disabled={busy}>
+							{busy ? 'Đang lưu…' : 'Lưu nội dung'}
+						</StudioButton>
 					</div>
 				</form>
 
 				<aside className="xl:sticky xl:top-6 xl:self-start">
 					<p className="mc-eyebrow mb-2">Xem trước</p>
-					<h2 className="mb-3 text-xl font-semibold">{form.publicTitle || initial.class.courseName}</h2>
-					<StudentClassIntro summary={form.publicSummary} description={form.publicDescription} announcement={form.publicAnnouncement} links={links.map(link => ({ ...link, id: link.key }))} />
+					<h2 className="mb-3 text-xl font-semibold">
+						{form.publicTitle || initial.class.courseName}
+					</h2>
+					<StudentClassIntro
+						summary={form.publicSummary}
+						description={form.publicDescription}
+						announcement={form.publicAnnouncement}
+						links={links.map((link) => ({ ...link, id: link.key }))}
+					/>
 				</aside>
 			</div>
 		</div>

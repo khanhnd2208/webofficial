@@ -55,9 +55,10 @@ export function rosterCsvTemplateBody(): string {
 }
 
 export function rosterPasteSample(): string {
-	return [ROSTER_CSV_HEADERS.join('\t'), ...ROSTER_CSV_SAMPLE_ROWS.map((row) => row.join('\t'))].join(
-		'\n',
-	);
+	return [
+		ROSTER_CSV_HEADERS.join('\t'),
+		...ROSTER_CSV_SAMPLE_ROWS.map((row) => row.join('\t')),
+	].join('\n');
 }
 
 export const ROSTER_CSV_FILENAME = 'mau-danh-sach-sinh-vien.csv';

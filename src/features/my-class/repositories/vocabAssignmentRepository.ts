@@ -14,7 +14,11 @@ export async function listAssignments(courseId: string) {
 					words: {
 						where: {
 							isDeleted: false,
-							NOT: { hintsHard: { equals: [] }, hintsMedium: { equals: [] }, hintsEasy: { equals: [] } },
+							NOT: {
+								hintsHard: { equals: [] },
+								hintsMedium: { equals: [] },
+								hintsEasy: { equals: [] },
+							},
 						},
 						select: { id: true, hintsHard: true, hintsMedium: true, hintsEasy: true },
 						take: 1,

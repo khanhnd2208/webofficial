@@ -1,50 +1,49 @@
 ---
-description: Deploy teaching platform to VPS via SSH (no GitHub Actions)
+description: Production deploy rules for toiladuykhanh.com (GitHub Actions to the VPS)
+globs:
+  - scripts/deploy-vps.sh
+  - scripts/setup-vps-ssh.sh
+  - .github/workflows/**
+  - ecosystem.config.js
+  - docs/deployment/**
+# Claude Code reads `paths` (via .claude/rules/ symlink); Cursor reads `globs`. Keep both lists equal.
+paths:
+  - scripts/deploy-vps.sh
+  - scripts/setup-vps-ssh.sh
+  - .github/workflows/**
+  - ecosystem.config.js
+  - docs/deployment/**
 alwaysApply: false
 ---
 
-# VPS Deploy (webofficial)
+# Production deploy
 
-## Connection
+Runbook: `docs/deployment/VPS.md`. Read it before changing anything here.
 
-- **SSH alias:** `webofficial-vps` (in `~/.ssh/config`)
-- **Host:** `217.217.253.161`, user `root`, port `22`
-- **App path:** `/var/www/webofficial`
-- **PM2 process:** `nextjs-app` (port 4000, Nginx → HTTPS)
-- **Auth:** SSH key only — never commit or store VPS password in the repo
+## How releases happen
 
-## Deploy command
+- A push to `main` runs CI; when CI succeeds, `.github/workflows/deploy.yml`
+  runs `scripts/deploy-vps.sh` on the exact commit CI tested.
+- The script builds a new release in `/var/www/webofficial/releases/<id>`,
+  backs up both databases, runs `prisma migrate deploy`, tests a candidate on
+  port 4001, then switches the `current` symlink and reloads PM2 `nextjs-app`.
+- Deploying never happens from a dirty tree: the script exports the commit with
+  `git archive`.
 
-From project root:
+## Rules
 
-```bash
-chmod +x scripts/deploy-vps.sh
-./scripts/deploy-vps.sh          # full deploy
-./scripts/deploy-vps.sh --check  # verify SSH only
-```
-
-Or: `npm run deploy:vps`
-
-## What the script does
-
-1. `rsync` source to VPS (excludes `node_modules`, `.next`, `.git`, `.env*`, user uploads)
-2. Remote: `npm install`, `prisma generate`, `prisma migrate deploy`, `npm run build`
-3. `pm2 reload nextjs-app --update-env`
-
-## One-time SSH setup
-
-If key auth fails:
-
-```bash
-VPS_PASSWORD='...' ./scripts/setup-vps-ssh.sh
-```
-
-## Do NOT
-
-- Put VPS password in any tracked file
-- Use `rsync --delete` (would risk VPS-only uploads)
-- Overwrite `/var/www/webofficial/.env.local` on VPS
-
-## After deploy
-
-Hard refresh browser. Check: `ssh webofficial-vps 'pm2 logs nextjs-app --lines 30'`
+- Deploy only when the user asks. Normally that means merging to `main`, not
+  running the script by hand.
+- Manual fallback, only when the workflow fails and the user agrees:
+  `npm run deploy:vps -- --check` (read-only), then `npm run deploy:vps` from a
+  clean worktree of CI-green `main`. Never run it while the workflow is running.
+- Watch a deploy with `gh run list --workflow deploy.yml` and `gh run watch`.
+- Never print, copy, or commit `/var/www/webofficial/.env.local` or any secret.
+  SSH uses the `webofficial-vps` key alias; never store a password.
+- Never touch shared VPS data: `public/uploads/`, `public/music/uploads/`,
+  `backups/`, `theory/`.
+- A destructive migration (drop or rename a column or table) needs a
+  maintenance window and a restore plan agreed with the user first.
+- Changing the workflow or deploy script: keep the job names and
+  `workflow_run` trigger that `deploy.yml` relies on, and update
+  `docs/deployment/VPS.md` in the same pull request.

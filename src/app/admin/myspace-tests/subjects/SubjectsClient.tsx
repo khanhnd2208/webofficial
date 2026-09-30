@@ -77,105 +77,103 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 
 	return (
 		<>
-		<div className="mt-8 space-y-6">
-			{error ? (
-				<AdminErrorState title="Không cập nhật được môn học" description={error} />
-			) : null}
+			<div className="mt-8 space-y-6">
+				{error ? <AdminErrorState title="Không cập nhật được môn học" description={error} /> : null}
 
-			<form onSubmit={onCreate} className="flex flex-wrap items-end gap-3">
-				<label className="block min-w-[16rem] flex-1 text-xs">
-					<span className="font-bold uppercase tracking-widest text-muted">Tên môn mới</span>
-					<input
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						placeholder="Principles of Management"
-						className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
-					/>
-				</label>
-				<button
-					type="submit"
-					disabled={busy || !name.trim()}
-					className="rounded-full bg-foreground px-4 py-2 text-xs font-bold uppercase tracking-wider text-background disabled:opacity-50"
-				>
-					Tạo môn
-				</button>
-			</form>
+				<form onSubmit={onCreate} className="flex flex-wrap items-end gap-3">
+					<label className="block min-w-[16rem] flex-1 text-xs">
+						<span className="font-bold uppercase tracking-widest text-muted">Tên môn mới</span>
+						<input
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							placeholder="Principles of Management"
+							className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+						/>
+					</label>
+					<button
+						type="submit"
+						disabled={busy || !name.trim()}
+						className="rounded-full bg-foreground px-4 py-2 text-xs font-bold uppercase tracking-wider text-background disabled:opacity-50"
+					>
+						Tạo môn
+					</button>
+				</form>
 
-			<div className="divide-y divide-border border border-border">
-				{initial.length === 0 ? (
-					<div className="p-4">
-						<AdminEmptyState title="Chưa có môn học nào" description="Tạo môn mới ở form phía trên." />
-					</div>
-				) : (
-					initial.map((s) => (
-						<div
-							key={s.id}
-							className="flex flex-wrap items-center justify-between gap-3 p-4"
-						>
-							<div className="min-w-0 flex-1">
-								{editingId === s.id ? (
-									<input
-										value={editName}
-										onChange={(e) => setEditName(e.target.value)}
-										className="w-full max-w-md rounded-lg border border-border bg-surface px-3 py-1.5 text-sm"
-									/>
-								) : (
-									<>
-										<p className="text-sm font-bold text-foreground">{s.name}</p>
-										<p className="mt-0.5 text-xs text-muted">
-											/{s.slug} · {s.testCount} bài test · {s.questionCount} câu hỏi
-										</p>
-									</>
-								)}
-							</div>
-							<div className="flex flex-wrap gap-2">
-								{editingId === s.id ? (
-									<>
-										<button
-											type="button"
-											disabled={busy}
-											onClick={() => void onSaveEdit(s.id)}
-											className="rounded-full bg-foreground px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-background disabled:opacity-50"
-										>
-											Lưu
-										</button>
-										<button
-											type="button"
-											onClick={() => setEditingId(null)}
-											className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted"
-										>
-											Hủy
-										</button>
-									</>
-								) : (
-									<>
-										<button
-											type="button"
-											onClick={() => {
-												setEditingId(s.id);
-												setEditName(s.name);
-											}}
-											className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted"
-										>
-											Sửa
-										</button>
-										<button
-											type="button"
-											disabled={busy}
-											onClick={() => void onDelete(s)}
-											className="rounded-full border border-red-200 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-red-600 disabled:opacity-50"
-										>
-											Xóa
-										</button>
-									</>
-								)}
-							</div>
+				<div className="divide-y divide-border border border-border">
+					{initial.length === 0 ? (
+						<div className="p-4">
+							<AdminEmptyState
+								title="Chưa có môn học nào"
+								description="Tạo môn mới ở form phía trên."
+							/>
 						</div>
-					))
-				)}
+					) : (
+						initial.map((s) => (
+							<div key={s.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+								<div className="min-w-0 flex-1">
+									{editingId === s.id ? (
+										<input
+											value={editName}
+											onChange={(e) => setEditName(e.target.value)}
+											className="w-full max-w-md rounded-lg border border-border bg-surface px-3 py-1.5 text-sm"
+										/>
+									) : (
+										<>
+											<p className="text-sm font-bold text-foreground">{s.name}</p>
+											<p className="mt-0.5 text-xs text-muted">
+												/{s.slug} · {s.testCount} bài test · {s.questionCount} câu hỏi
+											</p>
+										</>
+									)}
+								</div>
+								<div className="flex flex-wrap gap-2">
+									{editingId === s.id ? (
+										<>
+											<button
+												type="button"
+												disabled={busy}
+												onClick={() => void onSaveEdit(s.id)}
+												className="rounded-full bg-foreground px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-background disabled:opacity-50"
+											>
+												Lưu
+											</button>
+											<button
+												type="button"
+												onClick={() => setEditingId(null)}
+												className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted"
+											>
+												Hủy
+											</button>
+										</>
+									) : (
+										<>
+											<button
+												type="button"
+												onClick={() => {
+													setEditingId(s.id);
+													setEditName(s.name);
+												}}
+												className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted"
+											>
+												Sửa
+											</button>
+											<button
+												type="button"
+												disabled={busy}
+												onClick={() => void onDelete(s)}
+												className="rounded-full border border-red-200 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-red-600 disabled:opacity-50"
+											>
+												Xóa
+											</button>
+										</>
+									)}
+								</div>
+							</div>
+						))
+					)}
+				</div>
 			</div>
-		</div>
-		{dialog}
+			{dialog}
 		</>
 	);
 }

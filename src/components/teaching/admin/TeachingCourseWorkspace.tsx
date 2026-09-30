@@ -18,7 +18,10 @@ import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu
 import { Dialog } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
 import type { ActiveRecallDeckListItem, ActiveRecallStatus } from '@/features/active-recall';
-import { collectTermSuggestions, formatDependencySummary } from '@/features/teaching/domain/adminLifecycle';
+import {
+	collectTermSuggestions,
+	formatDependencySummary,
+} from '@/features/teaching/domain/adminLifecycle';
 import type { TeachingCourseListItem } from '@/features/teaching/types';
 
 function statusLabel(status: ActiveRecallDeckListItem['status']) {
@@ -155,7 +158,10 @@ export function TeachingCourseWorkspace({
 					)
 				}
 				tabs={
-					<nav aria-label="Khu vực môn học" className="mc-tabbar teaching-core-tabs overflow-x-auto">
+					<nav
+						aria-label="Khu vực môn học"
+						className="mc-tabbar teaching-core-tabs overflow-x-auto"
+					>
 						<Link
 							href={routes.mySpaceTeachingCourseTab(course.id, 'classes')}
 							aria-current={tab === 'classes' ? 'page' : undefined}
@@ -191,7 +197,10 @@ export function TeachingCourseWorkspace({
 					<div className="overflow-hidden border border-border bg-surface">
 						{decks.length ? (
 							decks.map((deck) => (
-								<div key={deck.id} className="flex items-center gap-2 border-b border-border last:border-b-0">
+								<div
+									key={deck.id}
+									className="flex items-center gap-2 border-b border-border last:border-b-0"
+								>
 									<Link
 										href={routes.mySpaceTeachingRecallEdit(course.id, deck.id)}
 										className="min-w-0 flex-1 px-5 py-4 hover:bg-background"
@@ -245,7 +254,7 @@ export function TeachingCourseWorkspace({
 					if (!busy) setEditDeck(null);
 				}}
 				title="Sửa bộ thẻ"
-				>
+			>
 				<form
 					className="grid gap-4"
 					onSubmit={(event) => {
@@ -253,12 +262,25 @@ export function TeachingCourseWorkspace({
 						void saveDeck();
 					}}
 				>
-					{error ? <p role="alert" tabIndex={-1} ref={(node) => { node?.focus(); }} className="rounded-[var(--mc-r-sm)] bg-error/10 px-3 py-2 text-sm font-semibold text-error">{error}</p> : null}
+					{error ? (
+						<p
+							role="alert"
+							tabIndex={-1}
+							ref={(node) => {
+								node?.focus();
+							}}
+							className="rounded-[var(--mc-r-sm)] bg-error/10 px-3 py-2 text-sm font-semibold text-error"
+						>
+							{error}
+						</p>
+					) : null}
 					<StudioField label="Tên bộ">
 						<StudioInput
 							required
 							value={draft.title}
-							onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+							onChange={(event) =>
+								setDraft((current) => ({ ...current, title: event.target.value }))
+							}
 						/>
 					</StudioField>
 					<StudioField label="Nhãn bài">

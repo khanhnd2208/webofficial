@@ -1,6 +1,11 @@
 import type { NextRequest } from 'next/server';
 
-import { getGroupBoardVersion, getPublicClassIdBySlug, groupBoardTutorialQuerySchema, parseWithAppError } from '@/features/teaching';
+import {
+	getGroupBoardVersion,
+	getPublicClassIdBySlug,
+	groupBoardTutorialQuerySchema,
+	parseWithAppError,
+} from '@/features/teaching';
 import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
 import { apiError } from '@/lib/apiUtils';
 

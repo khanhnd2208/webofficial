@@ -34,7 +34,7 @@ export const PATCH = withAuth(async (request: NextRequest, user) => {
 			university: body.university,
 			major: body.major,
 			bio: body.bio,
-		}
+		},
 	);
 
 	return apiSuccess(profile);

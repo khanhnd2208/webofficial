@@ -2,9 +2,9 @@
 
 import { startTransition, useEffect, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
-import type { MessageParams } from '@/features/spy-fall/lib/i18n/types';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import type { MessageParams } from '@/features/board-game-shared/lib/i18n/types';
 
 const STORAGE_KEY = 'spy-fall-steps-hidden';
 
@@ -56,7 +56,10 @@ export default function StepGuide({ stepsKey, params, tipKey, className }: Props
 			<button
 				type="button"
 				onClick={toggle}
-				className={cn('text-xs font-medium text-accent underline-offset-2 hover:underline', className)}
+				className={cn(
+					'text-xs font-medium text-accent underline-offset-2 hover:underline',
+					className,
+				)}
 			>
 				{t('spy.steps.show')}
 			</button>

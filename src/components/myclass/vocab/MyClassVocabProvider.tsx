@@ -20,7 +20,10 @@ export default function MyClassVocabProvider({
 				backHref: routes.myClassVocabIndex(courseSlug),
 				backLabel: '← Từ vựng',
 				setHref: (id) => routes.myClassVocab(courseSlug, id),
-				modeHref: (id, mode) => (mode ? `${routes.myClassVocab(courseSlug, id)}/${mode}` : routes.myClassVocab(courseSlug, id)),
+				modeHref: (id, mode) =>
+					mode
+						? `${routes.myClassVocab(courseSlug, id)}/${mode}`
+						: routes.myClassVocab(courseSlug, id),
 			}}
 		>
 			{children}

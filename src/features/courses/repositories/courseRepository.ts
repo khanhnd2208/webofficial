@@ -30,9 +30,7 @@ export function mapLesson(lesson: Lesson): LessonDTO {
 	};
 }
 
-export function mapModule(
-	mod: CourseModule & { lessons: Lesson[] },
-): ModuleDTO {
+export function mapModule(mod: CourseModule & { lessons: Lesson[] }): ModuleDTO {
 	return {
 		id: mod.id,
 		courseId: mod.courseId,
@@ -63,9 +61,7 @@ export function mapCourseDetail(
 		publishedAt: toIso(course.publishedAt),
 		createdAt: course.createdAt.toISOString(),
 		updatedAt: course.updatedAt.toISOString(),
-		modules: [...course.modules]
-			.sort((a, b) => a.position - b.position)
-			.map(mapModule),
+		modules: [...course.modules].sort((a, b) => a.position - b.position).map(mapModule),
 	};
 }
 
@@ -243,10 +239,7 @@ export async function createModule(data: {
 	return prisma.courseModule.create({ data });
 }
 
-export async function updateModule(
-	id: string,
-	data: { title?: string; description?: string },
-) {
+export async function updateModule(id: string, data: { title?: string; description?: string }) {
 	return prisma.courseModule.update({ where: { id }, data });
 }
 

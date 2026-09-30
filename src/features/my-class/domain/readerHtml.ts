@@ -10,7 +10,10 @@ export type PreparedReaderHtml = {
 };
 
 function headingText(inner: string) {
-	return inner.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+	return inner
+		.replace(/<[^>]+>/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 const HEADING_NUM = /^(\d+(?:\.\d+)+|\d+[.)])\s+/;
@@ -51,16 +54,19 @@ export function prepareReaderHtml(value: string): PreparedReaderHtml {
 	const offset = ranks.length ? 2 - Math.min(...ranks) : 0;
 	const used = new Set<string>();
 	const headings: ReaderHeading[] = [];
-	const html = value.replace(/<(\/?)[hH]([1-6])(\b[^>]*)>([\s\S]*?)<\/[hH]\2>/g, (full, closing, rank, rest, inner) => {
-		if (closing) return full;
-		const normalizedRank = Math.min(6, Math.max(2, Number(rank) + offset));
-		const text = headingText(String(inner));
-		const withoutId = String(rest).replace(/\s+id=(['"]).*?\1/i, '');
-		const id = slugifyHeading(text || `muc-${headings.length + 1}`, used);
-		if (text && (normalizedRank === 2 || normalizedRank === 3)) {
-			headings.push({ id, text, rank: normalizedRank });
-		}
-		return `<h${normalizedRank}${withoutId} id="${id}">${wrapHeadingNumber(String(inner))}</h${normalizedRank}>`;
-	});
+	const html = value.replace(
+		/<(\/?)[hH]([1-6])(\b[^>]*)>([\s\S]*?)<\/[hH]\2>/g,
+		(full, closing, rank, rest, inner) => {
+			if (closing) return full;
+			const normalizedRank = Math.min(6, Math.max(2, Number(rank) + offset));
+			const text = headingText(String(inner));
+			const withoutId = String(rest).replace(/\s+id=(['"]).*?\1/i, '');
+			const id = slugifyHeading(text || `muc-${headings.length + 1}`, used);
+			if (text && (normalizedRank === 2 || normalizedRank === 3)) {
+				headings.push({ id, text, rank: normalizedRank });
+			}
+			return `<h${normalizedRank}${withoutId} id="${id}">${wrapHeadingNumber(String(inner))}</h${normalizedRank}>`;
+		},
+	);
 	return { html, headings };
 }

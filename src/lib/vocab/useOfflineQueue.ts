@@ -1,4 +1,4 @@
-"use client";
+'use client';
 /* ════════════════════════════════════════════════════════════════════════
    useOfflineQueue.ts — Offline-first action queue
    

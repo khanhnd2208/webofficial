@@ -138,10 +138,20 @@ export default function BankWorkspace({
 					bulkBar={
 						<div className="flex flex-wrap items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper p-3 text-sm">
 							<span className="mc-num font-semibold">{selected.length} đã chọn</span>
-							<StudioButton size="sm" variant="secondary" disabled={busy} onClick={() => void bulk('archive')}>
+							<StudioButton
+								size="sm"
+								variant="secondary"
+								disabled={busy}
+								onClick={() => void bulk('archive')}
+							>
 								Lưu trữ
 							</StudioButton>
-							<StudioButton size="sm" variant="secondary" disabled={busy} onClick={() => void bulk('restore')}>
+							<StudioButton
+								size="sm"
+								variant="secondary"
+								disabled={busy}
+								onClick={() => void bulk('restore')}
+							>
 								Khôi phục
 							</StudioButton>
 							<input
@@ -179,7 +189,9 @@ export default function BankWorkspace({
 								{TYPE_LABEL[inspected.type] ?? inspected.type} ·{' '}
 								{BLOOM_LABELS[inspected.difficulty] ?? inspected.difficulty}
 							</p>
-							<p className="mc-meta">{inspected.topicPath ?? inspected.subjectName ?? 'Chưa gán môn/chủ đề'}</p>
+							<p className="mc-meta">
+								{inspected.topicPath ?? inspected.subjectName ?? 'Chưa gán môn/chủ đề'}
+							</p>
 							<p className="mc-meta">{inspected.tags.join(', ') || 'Không có tag'}</p>
 							<Link
 								href={routes.admin.myClassQuestionEdit(inspected.id)}

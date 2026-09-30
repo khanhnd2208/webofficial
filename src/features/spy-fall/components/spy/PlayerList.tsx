@@ -2,16 +2,16 @@
 
 import type { PlayerPublicDTO } from '@/features/spy-fall/types/spyGame';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import Badge from '@/features/spy-fall/components/ui/Badge';
-import Stamp from '@/features/spy-fall/components/ui/Stamp';
-import { cn } from '@/features/spy-fall/lib/cn';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import Badge from '@/features/board-game-shared/components/ui/Badge';
+import Stamp from '@/features/board-game-shared/components/ui/Stamp';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
 import { getRoleLabel } from '@/features/spy-fall/lib/spy/i18n';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 
-import ConnectionDot from './ConnectionDot';
-import PassportAvatar from './PassportAvatar';
+import ConnectionDot from '@/features/board-game-shared/components/ConnectionDot';
+import PassportAvatar from '@/features/board-game-shared/components/PassportAvatar';
 
 interface Props {
 	players: PlayerPublicDTO[];
@@ -62,9 +62,17 @@ export default function PlayerList({
 								<div className="mt-0.5 flex flex-wrap items-center gap-1.5">
 									{isSelf ? <Badge variant="accent">{t('spy.player.you')}</Badge> : null}
 									{p.isHost ? <Badge variant="muted">{t('spy.player.host')}</Badge> : null}
-									{isFirst ? <Badge variant="warning"><GameIcon name="sound" size={13} /> {t('spy.player.speaksFirst')}</Badge> : null}
+									{isFirst ? (
+										<Badge variant="warning">
+											<GameIcon name="sound" size={13} /> {t('spy.player.speaksFirst')}
+										</Badge>
+									) : null}
 									{eliminated && p.role ? (
-										<Stamp label={getRoleLabel(t, p.role)} variant="suspect" className="text-[8px]" />
+										<Stamp
+											label={getRoleLabel(t, p.role)}
+											variant="suspect"
+											className="text-[8px]"
+										/>
 									) : null}
 								</div>
 							</div>

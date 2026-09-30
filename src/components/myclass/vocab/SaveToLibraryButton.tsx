@@ -32,7 +32,10 @@ export default function SaveToLibraryButton({
 
 	if (saved) {
 		return (
-			<p className="inline-flex min-h-11 items-center text-sm font-semibold text-ink-secondary" data-testid="vocab-saved">
+			<p
+				className="inline-flex min-h-11 items-center text-sm font-semibold text-ink-secondary"
+				data-testid="vocab-saved"
+			>
 				Đã lưu vào từ vựng của tôi
 			</p>
 		);
@@ -46,7 +49,9 @@ export default function SaveToLibraryButton({
 				onClick={() => {
 					setBusy(true);
 					setError(null);
-					void fetch(`/api/my-class/courses/${courseSlug}/vocab/${setId}/library`, { method: 'POST' })
+					void fetch(`/api/my-class/courses/${courseSlug}/vocab/${setId}/library`, {
+						method: 'POST',
+					})
 						.then(async (res) => {
 							const json = (await res.json()) as { ok: boolean; error?: string };
 							if (!json.ok) throw new Error(json.error ?? 'Không lưu được');

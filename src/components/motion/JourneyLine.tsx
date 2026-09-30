@@ -50,9 +50,7 @@ export default function JourneyLine({
 				initial={instant ? false : { pathLength: 0, opacity: 0.4 }}
 				animate={{ pathLength: 1, opacity: 1 }}
 				transition={
-					instant
-						? { duration: 0 }
-						: { duration: drawDuration, delay, ease: ease.reveal }
+					instant ? { duration: 0 } : { duration: drawDuration, delay, ease: ease.reveal }
 				}
 			/>
 		</svg>

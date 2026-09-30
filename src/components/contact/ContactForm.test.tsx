@@ -111,8 +111,7 @@ describe('ContactForm', () => {
 			name: 'Nguyễn Văn A',
 			email: 'a@example.com',
 			inquiryType: 'training',
-			context:
-				'Tôi muốn trao đổi về một lớp học.\n\nKết quả mong muốn: Hiểu rõ bước tiếp theo.',
+			context: 'Tôi muốn trao đổi về một lớp học.\n\nKết quả mong muốn: Hiểu rõ bước tiếp theo.',
 			sourcePage: '/gioi-thieu',
 			sourceCourseSlug: 'leadership-101',
 			campaignParams: { ref: 'about' },

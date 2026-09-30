@@ -20,7 +20,11 @@ test.describe('Mobile public smoke', () => {
 	test('public surfaces do not overflow horizontally', async ({ page }) => {
 		for (const path of ['/', '/muc-luc', '/gioi-thieu']) {
 			await page.goto(path);
-			expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+			expect(
+				await page.evaluate(
+					() => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+				),
+			).toBe(true);
 		}
 	});
 
@@ -28,14 +32,26 @@ test.describe('Mobile public smoke', () => {
 		await page.goto('/my-space/board-game/cheese-thief');
 		await expect(page.getByRole('heading', { level: 1, name: 'Cheese Thief' })).toBeVisible();
 		await expect
-			.poll(() => page.locator('.game-theme-hero img.game-theme-hero-image').evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0))
+			.poll(() =>
+				page
+					.locator('.game-theme-hero img.game-theme-hero-image')
+					.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+			)
 			.toBe(true);
 
 		const create = page.getByRole('button', { name: 'Tạo phòng' });
 		const join = page.getByRole('button', { name: 'Vào bằng mã' });
-		expect(await create.evaluate((button) => button.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
-		expect(await join.evaluate((button) => button.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
-		expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+		expect(
+			await create.evaluate((button) => button.getBoundingClientRect().height),
+		).toBeGreaterThanOrEqual(44);
+		expect(
+			await join.evaluate((button) => button.getBoundingClientRect().height),
+		).toBeGreaterThanOrEqual(44);
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+			),
+		).toBe(true);
 
 		await create.click();
 		await expect(page.getByText('Nhập tên để ngồi vào bàn.')).toBeVisible();
@@ -44,11 +60,19 @@ test.describe('Mobile public smoke', () => {
 		await expect(page.getByRole('textbox', { name: 'Tên phòng' })).toBeVisible();
 		await expect(page.getByText('Số người')).toBeVisible();
 		await expect(page.getByRole('checkbox', { name: /Có Scapegoat/ })).toBeVisible();
-		expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+			),
+		).toBe(true);
 
 		await page.getByRole('button', { name: 'Quay lại' }).click();
 		await page.getByRole('button', { name: 'Vào bằng mã' }).click();
 		await expect(page.getByRole('textbox', { name: 'Mã phòng' })).toBeVisible();
-		expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+			),
+		).toBe(true);
 	});
 });

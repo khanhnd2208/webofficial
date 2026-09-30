@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { createPost, getAdminPostById, deletePostById, getPostBySlug } from '@/services/postService';
+import {
+	createPost,
+	getAdminPostById,
+	deletePostById,
+	getPostBySlug,
+} from '@/services/postService';
 
 vi.mock('next/cache', () => ({
 	unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,

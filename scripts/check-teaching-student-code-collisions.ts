@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/prisma';
 
 async function main() {
-	const rows = await prisma.$queryRaw<Array<{ studentCode: string; normalized: string; count: bigint }>>`
+	const rows = await prisma.$queryRaw<
+		Array<{ studentCode: string; normalized: string; count: bigint }>
+	>`
 		SELECT "studentCode", upper(btrim("studentCode")) AS normalized, COUNT(*)::bigint AS count
 		FROM "TeachingStudent"
 		GROUP BY 1, 2

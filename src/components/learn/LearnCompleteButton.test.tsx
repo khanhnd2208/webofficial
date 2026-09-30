@@ -53,7 +53,10 @@ describe('LearnCompleteButton', () => {
 			/>,
 		);
 
-		expect(screen.getByRole('link', { name: 'Tiếp: Mục sau →' })).toHaveAttribute('href', '/my-space/courses/demo?s=s2');
+		expect(screen.getByRole('link', { name: 'Tiếp: Mục sau →' })).toHaveAttribute(
+			'href',
+			'/my-space/courses/demo?s=s2',
+		);
 		expect(screen.getByRole('button', { name: 'Bỏ đánh dấu' })).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Hoàn thành & tiếp →' })).not.toBeInTheDocument();
 	});

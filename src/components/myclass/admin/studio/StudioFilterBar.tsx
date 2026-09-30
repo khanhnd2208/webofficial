@@ -22,7 +22,10 @@ export function StudioFilterBar({
 	clearHref?: string;
 }) {
 	return (
-		<form action={action} className="mc-surface mt-7 grid gap-3 p-3 sm:grid-cols-[minmax(12rem,1fr)_repeat(auto-fit,minmax(10rem,12rem))_auto]">
+		<form
+			action={action}
+			className="mc-surface mt-7 grid gap-3 p-3 sm:grid-cols-[minmax(12rem,1fr)_repeat(auto-fit,minmax(10rem,12rem))_auto]"
+		>
 			{Object.entries(hidden ?? {}).map(([name, value]) =>
 				value ? <input key={name} type="hidden" name={name} value={value} /> : null,
 			)}

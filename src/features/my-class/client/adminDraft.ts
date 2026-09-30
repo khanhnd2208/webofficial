@@ -60,7 +60,9 @@ export function workspaceDraftDiffers(
 	return !workspaceFieldsEqual(draft, current, options);
 }
 
-function dismissKey(draft: Pick<WorkspaceDraftPayload, 'courseId' | 'nodeType' | 'nodeId' | 'savedAt'>) {
+function dismissKey(
+	draft: Pick<WorkspaceDraftPayload, 'courseId' | 'nodeType' | 'nodeId' | 'savedAt'>,
+) {
 	return `${DISMISS_PREFIX}${draft.courseId}:${draft.nodeType}:${draft.nodeId}:${draft.savedAt}`;
 }
 
@@ -96,11 +98,19 @@ export type WorkspaceDraftPayload = {
 
 const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
-export function workspaceDraftKey(courseId: string, nodeType: WorkspaceDraftPayload['nodeType'], nodeId: string) {
+export function workspaceDraftKey(
+	courseId: string,
+	nodeType: WorkspaceDraftPayload['nodeType'],
+	nodeId: string,
+) {
 	return `${PREFIX}${courseId}:${nodeType}:${nodeId}`;
 }
 
-export function readWorkspaceDraft(courseId: string, nodeType: WorkspaceDraftPayload['nodeType'], nodeId: string): WorkspaceDraftPayload | null {
+export function readWorkspaceDraft(
+	courseId: string,
+	nodeType: WorkspaceDraftPayload['nodeType'],
+	nodeId: string,
+): WorkspaceDraftPayload | null {
 	try {
 		const raw = localStorage.getItem(workspaceDraftKey(courseId, nodeType, nodeId));
 		if (!raw) return null;
@@ -117,13 +127,20 @@ export function readWorkspaceDraft(courseId: string, nodeType: WorkspaceDraftPay
 
 export function writeWorkspaceDraft(draft: Omit<WorkspaceDraftPayload, 'savedAt'>) {
 	try {
-		localStorage.setItem(workspaceDraftKey(draft.courseId, draft.nodeType, draft.nodeId), JSON.stringify({ ...draft, savedAt: Date.now() }));
+		localStorage.setItem(
+			workspaceDraftKey(draft.courseId, draft.nodeType, draft.nodeId),
+			JSON.stringify({ ...draft, savedAt: Date.now() }),
+		);
 	} catch {
 		/* private mode */
 	}
 }
 
-export function clearWorkspaceDraft(courseId: string, nodeType: WorkspaceDraftPayload['nodeType'], nodeId: string) {
+export function clearWorkspaceDraft(
+	courseId: string,
+	nodeType: WorkspaceDraftPayload['nodeType'],
+	nodeId: string,
+) {
 	try {
 		localStorage.removeItem(workspaceDraftKey(courseId, nodeType, nodeId));
 	} catch {

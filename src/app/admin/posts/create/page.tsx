@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import TagInput from '@/components/TagInput';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
-import DualLanguageEditor from '@/components/DualLanguageEditor';
-import { POST_CATEGORIES } from '@/constants/post';
+import TagInput from '@/components/forms/TagInput';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
+import DualLanguageEditor from '@/components/forms/DualLanguageEditor';
+import { POST_CATEGORIES } from '@/config/post';
 import { slugify } from '@/utils/slugify';
 import { adminFetch } from '@/lib/admin/client';
 
@@ -35,7 +35,10 @@ interface DraftData {
 
 /** Strip HTML tags to get plain text for word count */
 function htmlToPlainText(html: string): string {
-	return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+	return html
+		.replace(/<[^>]*>/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 async function uploadImage(file: File): Promise<string> {
@@ -87,11 +90,11 @@ export default function CreatePostPage() {
 			setTags(draft.tags || []);
 			setThumbnailUrl(draft.thumbnailUrl || '');
 			setChapterNumber(draft.chapterNumber || '');
-		setIsPinned(draft.isPinned || false);
-		setIsPublished(draft.isPublished || false);
-		setContent(draft.content || '');
-		setContentEn(draft.contentEn || '');
-		if (draft.slug) setSlugManuallyEdited(true);
+			setIsPinned(draft.isPinned || false);
+			setIsPublished(draft.isPublished || false);
+			setContent(draft.content || '');
+			setContentEn(draft.contentEn || '');
+			if (draft.slug) setSlugManuallyEdited(true);
 			setDraftRestored(true);
 		} catch {
 			/* ignore */
@@ -104,7 +107,17 @@ export default function CreatePostPage() {
 		const timer = setTimeout(() => {
 			if (!title.trim() && plainText.length < 20) return;
 			const draft: DraftData = {
-				title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content, contentEn,
+				title,
+				slug,
+				summary,
+				category,
+				tags,
+				thumbnailUrl,
+				chapterNumber,
+				isPinned,
+				isPublished,
+				content,
+				contentEn,
 				savedAt: Date.now(),
 			};
 			try {
@@ -114,7 +127,21 @@ export default function CreatePostPage() {
 			}
 		}, 5000);
 		return () => clearTimeout(timer);
-	}, [title, slug, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, content, contentEn, plainText, saveState.status]);
+	}, [
+		title,
+		slug,
+		summary,
+		category,
+		tags,
+		thumbnailUrl,
+		chapterNumber,
+		isPinned,
+		isPublished,
+		content,
+		contentEn,
+		plainText,
+		saveState.status,
+	]);
 
 	// ─── Unsaved changes warning ───
 	const hasContent = title.trim().length > 0 || plainText.length > 10;
@@ -136,7 +163,13 @@ export default function CreatePostPage() {
 			const created = await adminFetch<{ slug?: string }>('/api/posts', {
 				method: 'POST',
 				body: JSON.stringify({
-					title, slug, summary, content, contentEn, category, tags,
+					title,
+					slug,
+					summary,
+					content,
+					contentEn,
+					category,
+					tags,
 					contentFormat: 'html',
 					thumbnailUrl: thumbnailUrl || undefined,
 					chapterNumber: chapterNumber ? Number(chapterNumber) : undefined,
@@ -157,7 +190,19 @@ export default function CreatePostPage() {
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, contentEn, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished]);
+	}, [
+		title,
+		slug,
+		summary,
+		content,
+		contentEn,
+		category,
+		tags,
+		thumbnailUrl,
+		chapterNumber,
+		isPinned,
+		isPublished,
+	]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -215,10 +260,15 @@ export default function CreatePostPage() {
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Viết bài mới</h1>
-					<p className="mt-1 text-sm text-foreground-secondary">Soạn thảo WYSIWYG — tự động lưu nháp.</p>
+					<p className="mt-1 text-sm text-foreground-secondary">
+						Soạn thảo WYSIWYG — tự động lưu nháp.
+					</p>
 				</div>
 				<div className="flex items-center gap-3">
-					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/admin/posts">
+					<Link
+						className="text-sm text-muted underline underline-offset-4 hover:text-foreground"
+						href="/admin/posts"
+					>
 						← Danh sách
 					</Link>
 					<button
@@ -244,9 +294,28 @@ export default function CreatePostPage() {
 			{/* Draft restored notice */}
 			{draftRestored && saveState.status === 'idle' ? (
 				<div className="mt-4 flex items-center gap-3 rounded-lg border border-warning/30 bg-warning-subtle px-4 py-2.5 text-sm">
-					<svg className="h-4 w-4 shrink-0 text-warning" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><path d="M8 13h8M8 17h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+					<svg className="h-4 w-4 shrink-0 text-warning" viewBox="0 0 24 24" fill="none">
+						<path
+							d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
+							fill="currentColor"
+							opacity="0.15"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinejoin="round"
+						/>
+						<path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+						<path
+							d="M8 13h8M8 17h5"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+						/>
+					</svg>
 					<span className="text-foreground-secondary">Đã khôi phục bản nháp tự động.</span>
-					<button onClick={clearDraft} className="ml-auto text-xs font-medium text-warning underline underline-offset-2 hover:text-foreground">
+					<button
+						onClick={clearDraft}
+						className="ml-auto text-xs font-medium text-warning underline underline-offset-2 hover:text-foreground"
+					>
 						Xoá nháp, viết mới
 					</button>
 				</div>
@@ -263,10 +332,17 @@ export default function CreatePostPage() {
 					<Link className="font-medium underline underline-offset-2" href="/admin/posts">
 						Về danh sách
 					</Link>
-					<Link className="font-medium underline underline-offset-2" href={`/bai-viet/${saveState.slug}`} target="_blank">
+					<Link
+						className="font-medium underline underline-offset-2"
+						href={`/bai-viet/${saveState.slug}`}
+						target="_blank"
+					>
 						Xem bài viết ↗
 					</Link>
-					<button onClick={clearDraft} className="ml-auto text-xs font-medium underline underline-offset-2">
+					<button
+						onClick={clearDraft}
+						className="ml-auto text-xs font-medium underline underline-offset-2"
+					>
 						Viết bài mới
 					</button>
 				</div>
@@ -298,7 +374,9 @@ export default function CreatePostPage() {
 				</label>
 
 				<label className="block md:col-span-2">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Tóm tắt <span className="text-muted/60 normal-case tracking-normal">(tuỳ chọn)</span></div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Tóm tắt <span className="text-muted/60 normal-case tracking-normal">(tuỳ chọn)</span>
+					</div>
 					<textarea
 						value={summary}
 						onChange={(e) => setSummary(e.target.value)}
@@ -316,13 +394,17 @@ export default function CreatePostPage() {
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
 					>
 						{POST_CATEGORIES.map((c) => (
-							<option key={c} value={c}>{c}</option>
+							<option key={c} value={c}>
+								{c}
+							</option>
 						))}
 					</select>
 				</label>
 
 				<label className="block">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chapter Number</div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Chapter Number
+					</div>
 					<input
 						type="number"
 						min="1"
@@ -331,7 +413,9 @@ export default function CreatePostPage() {
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
 						placeholder="VD: 1, 2, 3..."
 					/>
-					<p className="mt-1 text-[11px] text-muted">Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…</p>
+					<p className="mt-1 text-[11px] text-muted">
+						Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…
+					</p>
 				</label>
 
 				<div className="block">
@@ -382,7 +466,10 @@ export default function CreatePostPage() {
 					<span>{charCount.toLocaleString()} ký tự</span>
 					<span>~{Math.max(1, Math.round(wordCount / 200))} phút đọc</span>
 					<span className="ml-auto text-[11px]">
-						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">⌘S</kbd> lưu nhanh · Nháp tự động lưu mỗi 5s
+						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
+							⌘S
+						</kbd>{' '}
+						lưu nhanh · Nháp tự động lưu mỗi 5s
 					</span>
 				</div>
 			</section>

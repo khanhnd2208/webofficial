@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { allTableSizes, tableRulesFor } from '@/features/cheese-thief/lib/tableRules';
-import { en, vi } from '@/features/spy-fall/lib/i18n/messages';
-import { translate, type MessageTree } from '@/features/spy-fall/lib/i18n/types';
+import { en, vi } from '@/features/board-game-shared/lib/i18n/messages';
+import { translate, type MessageTree } from '@/features/board-game-shared/lib/i18n/types';
 
 function leafKeys(tree: MessageTree, prefix = ''): string[] {
 	return Object.entries(tree).flatMap(([key, value]) =>
@@ -12,20 +12,56 @@ function leafKeys(tree: MessageTree, prefix = ''): string[] {
 
 describe('how-to-play table rules', () => {
 	it('matches the default follower table at each size', () => {
-		expect(tableRulesFor(4, 'classic')).toMatchObject({ dice: 'two-pick', peek: false, knowledge: 'none', choiceCount: 1, followerCustomized: false });
-		expect(tableRulesFor(5, 'classic')).toMatchObject({ dice: 'one', peek: true, knowledge: 'pair', choiceCount: 1, followerCount: 1 });
-		expect(tableRulesFor(6, 'classic')).toMatchObject({ followerCount: 1, knowledge: 'pair', scapegoatAllowed: true });
-		expect(tableRulesFor(7, 'classic')).toMatchObject({ followerCount: 2, knowledge: 'followers-only', choiceCount: 2 });
-		expect(tableRulesFor(8, 'classic')).toMatchObject({ followerCount: 2, knowledge: 'all', choiceCount: 2 });
-		expect(tableRulesFor(9, 'classic')).toMatchObject({ followerCount: 2, knowledge: 'all', maxFollowers: 3 });
+		expect(tableRulesFor(4, 'classic')).toMatchObject({
+			dice: 'two-pick',
+			peek: false,
+			knowledge: 'none',
+			choiceCount: 1,
+			followerCustomized: false,
+		});
+		expect(tableRulesFor(5, 'classic')).toMatchObject({
+			dice: 'one',
+			peek: true,
+			knowledge: 'pair',
+			choiceCount: 1,
+			followerCount: 1,
+		});
+		expect(tableRulesFor(6, 'classic')).toMatchObject({
+			followerCount: 1,
+			knowledge: 'pair',
+			scapegoatAllowed: true,
+		});
+		expect(tableRulesFor(7, 'classic')).toMatchObject({
+			followerCount: 2,
+			knowledge: 'followers-only',
+			choiceCount: 2,
+		});
+		expect(tableRulesFor(8, 'classic')).toMatchObject({
+			followerCount: 2,
+			knowledge: 'all',
+			choiceCount: 2,
+		});
+		expect(tableRulesFor(9, 'classic')).toMatchObject({
+			followerCount: 2,
+			knowledge: 'all',
+			maxFollowers: 3,
+		});
 	});
 
 	it('reports sizes a mode cannot play as null', () => {
 		expect(tableRulesFor(4, 'two-night')).toBeNull();
 		expect(tableRulesFor(13, 'two-night')).toBeNull();
 		expect(tableRulesFor(9, 'classic')).toMatchObject({ followerCount: 2 });
-		expect(tableRulesFor(12, 'classic')).toMatchObject({ dice: 'one', followerCount: 3, choiceCount: 3 });
-		expect(tableRulesFor(12, 'two-night')).toMatchObject({ dice: 'per-night', followerCount: 3, choiceCount: 3 });
+		expect(tableRulesFor(12, 'classic')).toMatchObject({
+			dice: 'one',
+			followerCount: 3,
+			choiceCount: 3,
+		});
+		expect(tableRulesFor(12, 'two-night')).toMatchObject({
+			dice: 'per-night',
+			followerCount: 3,
+			choiceCount: 3,
+		});
 		expect(tableRulesFor(6, 'two-night')).toMatchObject({ thiefPeeksAfterWaiting: true });
 	});
 

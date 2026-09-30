@@ -22,9 +22,11 @@ export function TutorialSwitcher({
 	const [open, setOpen] = useState(false);
 	const root = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
-	const current = allowAll && !value
-		? { id: '', code: 'Tất cả', name: allLabel }
-		: (tutorials.find((tutorial) => tutorial.id === value) ?? (allowAll ? { id: '', code: 'Tất cả', name: allLabel } : tutorials[0]));
+	const current =
+		allowAll && !value
+			? { id: '', code: 'Tất cả', name: allLabel }
+			: (tutorials.find((tutorial) => tutorial.id === value) ??
+				(allowAll ? { id: '', code: 'Tất cả', name: allLabel } : tutorials[0]));
 
 	useTeachingDismissible({
 		open,

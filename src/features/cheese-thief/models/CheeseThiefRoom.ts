@@ -64,7 +64,24 @@ export interface ICheeseRoom {
 	peekByPlayer: Map<string, string> | Record<string, string>;
 	hunchByPlayer: Map<string, string> | Record<string, string>;
 	winner?: CheeseWinner;
-	adminTest?: { ownerUserId: string; seed: string; running: boolean; randomState: number; initialConfig: Record<string, unknown>; log: string[]; controlledSeatId?: string; hostPhaseAt?: Date; pausedNightElapsedMs?: number; pausedSecretElapsedMs?: number; lastTickAt?: Date; clockMs?: number; commandVersion?: number; requestIds?: string[]; lockId?: string; lockUntil?: Date };
+	adminTest?: {
+		ownerUserId: string;
+		seed: string;
+		running: boolean;
+		randomState: number;
+		initialConfig: Record<string, unknown>;
+		log: string[];
+		controlledSeatId?: string;
+		hostPhaseAt?: Date;
+		pausedNightElapsedMs?: number;
+		pausedSecretElapsedMs?: number;
+		lastTickAt?: Date;
+		clockMs?: number;
+		commandVersion?: number;
+		requestIds?: string[];
+		lockId?: string;
+		lockUntil?: Date;
+	};
 	createdAt?: Date;
 	updatedAt?: Date;
 }

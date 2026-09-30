@@ -11,9 +11,8 @@ export function ArchiveBanner() {
 		>
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<p>
-					<strong className="font-semibold">Đã lưu trữ.</strong>{' '}
-					Module này không còn nằm trong luồng làm việc hằng ngày. Dữ liệu vẫn còn và có thể dùng
-					đầy đủ từ Kho lưu trữ.
+					<strong className="font-semibold">Đã lưu trữ.</strong> Module này không còn nằm trong
+					luồng làm việc hằng ngày. Dữ liệu vẫn còn và có thể dùng đầy đủ từ Kho lưu trữ.
 				</p>
 				<Link
 					href={routes.admin.home}

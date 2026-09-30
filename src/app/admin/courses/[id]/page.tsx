@@ -23,7 +23,10 @@ export default async function AdminCourseDetailPage({
 
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
-			<Link href={routes.admin.courses} className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground">
+			<Link
+				href={routes.admin.courses}
+				className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground"
+			>
 				← Khóa học
 			</Link>
 			<div className="mt-4 flex flex-wrap items-end justify-between gap-3">

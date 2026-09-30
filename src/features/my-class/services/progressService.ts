@@ -299,8 +299,7 @@ export async function getProgress(userId: string): Promise<MyClassProgressDashbo
 	const tests = new Map<string, MyClassProgressDashboard['tests'][number]>();
 	for (const attempt of attempts) {
 		const key = `${attempt.courseId ?? attempt.placement?.courseId ?? 'none'}:${attempt.testId}`;
-		const courseSlug =
-			attempt.course?.slug ?? attempt.placement?.course.slug ?? '';
+		const courseSlug = attempt.course?.slug ?? attempt.placement?.course.slug ?? '';
 		const current = tests.get(key) ?? {
 			courseSlug,
 			testSlug: attempt.test.slug,
@@ -369,7 +368,10 @@ export async function getProgress(userId: string): Promise<MyClassProgressDashbo
 
 /** Course-scoped review: keep best/latest scores, but wrong-item evidence comes from the latest attempt. */
 export async function getSubjectReview(userId: string, courseSlug: string) {
-	const [dashboard, attempts] = await Promise.all([getProgress(userId), progressRepo.listUserAttempts(userId)]);
+	const [dashboard, attempts] = await Promise.all([
+		getProgress(userId),
+		progressRepo.listUserAttempts(userId),
+	]);
 	const latest = new Map<string, (typeof attempts)[number]>();
 	for (const attempt of attempts) {
 		const slug = attempt.course?.slug ?? attempt.placement?.course.slug ?? '';
@@ -378,17 +380,31 @@ export async function getSubjectReview(userId: string, courseSlug: string) {
 		const current = latest.get(key);
 		if (!current || attempt.submittedAt > current.submittedAt) latest.set(key, attempt);
 	}
-	return dashboard.tests.filter((test) => test.courseSlug === courseSlug).map((test) => {
-		const attempt = latest.get(test.testSlug);
-		if (!attempt) return test;
-		return {
-			...test,
-			kuAccuracy: attempt.evidence.map((row) => {
-				const slug = row.knowledgeUnitSlugSnapshot ?? row.knowledgeUnit.slug;
-				const title = row.knowledgeUnitTitleSnapshot ?? row.knowledgeUnit.currentPublishedRevision?.title ?? slug;
-				const accuracy = weightedAccuracy(row.correctCount, row.questionCount);
-				return { slug, title, attempts: 1, questions: row.questionCount, correct: row.correctCount, accuracy, lastActivityAt: attempt.submittedAt.toISOString(), evidenceLabel: formatEvidenceSummary(row.correctCount, row.questionCount, accuracy) };
-			}),
-		};
-	});
+	return dashboard.tests
+		.filter((test) => test.courseSlug === courseSlug)
+		.map((test) => {
+			const attempt = latest.get(test.testSlug);
+			if (!attempt) return test;
+			return {
+				...test,
+				kuAccuracy: attempt.evidence.map((row) => {
+					const slug = row.knowledgeUnitSlugSnapshot ?? row.knowledgeUnit.slug;
+					const title =
+						row.knowledgeUnitTitleSnapshot ??
+						row.knowledgeUnit.currentPublishedRevision?.title ??
+						slug;
+					const accuracy = weightedAccuracy(row.correctCount, row.questionCount);
+					return {
+						slug,
+						title,
+						attempts: 1,
+						questions: row.questionCount,
+						correct: row.correctCount,
+						accuracy,
+						lastActivityAt: attempt.submittedAt.toISOString(),
+						evidenceLabel: formatEvidenceSummary(row.correctCount, row.questionCount, accuracy),
+					};
+				}),
+			};
+		});
 }

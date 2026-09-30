@@ -1,9 +1,6 @@
 /** Accent-insensitive, case-insensitive fold for catalogue search. */
 export function foldSearchText(value: string): string {
-	return value
-		.normalize('NFD')
-		.replace(/\p{M}/gu, '')
-		.toLocaleLowerCase('vi');
+	return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('vi');
 }
 
 export function matchesSearchQuery(

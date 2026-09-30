@@ -83,8 +83,8 @@ export default function TestCsvImport({
 				<section className="space-y-2">
 					<p className="text-sm font-semibold">Định dạng file</p>
 					<p className="mc-meta">
-						Mỗi dòng là một câu hỏi. Header không phân biệt hoa/thường; nhận CSV dấu phẩy, chấm
-						phẩy hoặc tab (Excel/Sheets). Không cần cột test_slug, question_slug hay ku_slugs.
+						Mỗi dòng là một câu hỏi. Header không phân biệt hoa/thường; nhận CSV dấu phẩy, chấm phẩy
+						hoặc tab (Excel/Sheets). Không cần cột test_slug, question_slug hay ku_slugs.
 					</p>
 					<div className="overflow-x-auto">
 						<table className="w-full text-left text-sm">
@@ -101,9 +101,7 @@ export default function TestCsvImport({
 									<tr key={column.key} className="border-b border-mc-rule/60 align-top">
 										<td className="py-2 pr-3">
 											<code className="text-xs">{column.key}</code>
-											{column.aliases ? (
-												<p className="mc-meta mt-1">{column.aliases}</p>
-											) : null}
+											{column.aliases ? <p className="mc-meta mt-1">{column.aliases}</p> : null}
 										</td>
 										<td className="py-2 pr-3">{column.required ? 'Có' : 'Không'}</td>
 										<td className="py-2 pr-3">{column.description}</td>
@@ -193,7 +191,8 @@ export default function TestCsvImport({
 										</p>
 										<p className="mt-1 text-ink-secondary">{row.stem.slice(0, 120) || '—'}</p>
 										<p className="mc-meta mt-1">
-											{row.optionCount} đáp án · {row.type} · đúng {row.correctKey || '—'} · Bloom {row.difficulty}
+											{row.optionCount} đáp án · {row.type} · đúng {row.correctKey || '—'} · Bloom{' '}
+											{row.difficulty}
 										</p>
 										{row.errors.length ? (
 											<ul className="mt-1 list-disc pl-4 text-error">

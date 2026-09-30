@@ -101,7 +101,9 @@ export default function RecallRichTextEditor({
 				}
 				if (/(\*\*|__|(^|[^\w])\*[^\s*]|\b_[^_\s]|<u>|<span\s+style=)/i.test(text)) {
 					event.preventDefault();
-					editorRef.current?.commands.insertContent(recallMarkdownToHtml(text) || escapePlain(text));
+					editorRef.current?.commands.insertContent(
+						recallMarkdownToHtml(text) || escapePlain(text),
+					);
 					return true;
 				}
 				return false;
@@ -197,8 +199,7 @@ export default function RecallRichTextEditor({
 						className="font-serif font-bold leading-none"
 						style={{
 							color:
-								(editor.getAttributes('textStyle').color as string | undefined) ??
-								'currentColor',
+								(editor.getAttributes('textStyle').color as string | undefined) ?? 'currentColor',
 						}}
 					>
 						A
@@ -206,7 +207,11 @@ export default function RecallRichTextEditor({
 				</ToolButton>
 			</div>
 			{openColors ? (
-				<div className="flex flex-wrap items-center gap-1.5 border-b border-border px-2 py-1.5" role="group" aria-label="Màu chữ">
+				<div
+					className="flex flex-wrap items-center gap-1.5 border-b border-border px-2 py-1.5"
+					role="group"
+					aria-label="Màu chữ"
+				>
 					{RECALL_TEXT_COLORS.map((color) => {
 						const current = (editor.getAttributes('textStyle').color as string | undefined) ?? null;
 						const selected = (current ?? null) === color.value;
@@ -238,8 +243,5 @@ export default function RecallRichTextEditor({
 }
 
 function escapePlain(value: string) {
-	return `<p>${value
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')}</p>`;
+	return `<p>${value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`;
 }

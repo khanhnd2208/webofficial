@@ -56,8 +56,18 @@ describe('delimited roster parsing', () => {
 
 	it('detects duplicate codes after normalization', () => {
 		const rows = markBatchDuplicates([
-			normalizeRawStudentInput({ sourceRow: 2, studentCode: 'sv01', familyName: 'A', givenName: 'B' }),
-			normalizeRawStudentInput({ sourceRow: 3, studentCode: ' SV01 ', familyName: 'C', givenName: 'D' }),
+			normalizeRawStudentInput({
+				sourceRow: 2,
+				studentCode: 'sv01',
+				familyName: 'A',
+				givenName: 'B',
+			}),
+			normalizeRawStudentInput({
+				sourceRow: 3,
+				studentCode: ' SV01 ',
+				familyName: 'C',
+				givenName: 'D',
+			}),
 		]);
 		expect(rows[1]?.fieldErrors.studentCode).toMatch(/trùng/i);
 	});

@@ -10,7 +10,11 @@ export function validateKnowledgeUnitPublish(input: {
 }): PublishIssue[] {
 	const issues: PublishIssue[] = [];
 	if (!input.title.trim()) {
-		issues.push({ code: 'KU_TITLE', message: 'Knowledge Unit cần tiêu đề trước khi publish', path: 'title' });
+		issues.push({
+			code: 'KU_TITLE',
+			message: 'Knowledge Unit cần tiêu đề trước khi publish',
+			path: 'title',
+		});
 	}
 	const hasLevel =
 		hasHtmlContent(input.foundationHtml) ||
@@ -24,10 +28,18 @@ export function validateKnowledgeUnitPublish(input: {
 		});
 	}
 	if (input.requireShortAndDeep && !hasHtmlContent(input.foundationHtml)) {
-		issues.push({ code: 'KU_SHORT_REQUIRED', message: 'Cần phần Giải thích ngắn gọn trước khi publish', path: 'foundationHtml' });
+		issues.push({
+			code: 'KU_SHORT_REQUIRED',
+			message: 'Cần phần Giải thích ngắn gọn trước khi publish',
+			path: 'foundationHtml',
+		});
 	}
 	if (input.requireShortAndDeep && !hasHtmlContent(input.expertHtml)) {
-		issues.push({ code: 'KU_DEEP_REQUIRED', message: 'Cần phần Giải thích sâu trước khi publish', path: 'expertHtml' });
+		issues.push({
+			code: 'KU_DEEP_REQUIRED',
+			message: 'Cần phần Giải thích sâu trước khi publish',
+			path: 'expertHtml',
+		});
 	}
 	return issues;
 }
@@ -40,7 +52,11 @@ export function validateTestPublish(input: {
 }): PublishIssue[] {
 	const issues: PublishIssue[] = [];
 	if (input.questionCount === 0) {
-		issues.push({ code: 'TEST_EMPTY', message: 'Test cần ít nhất một câu hỏi active', path: 'questions' });
+		issues.push({
+			code: 'TEST_EMPTY',
+			message: 'Test cần ít nhất một câu hỏi active',
+			path: 'questions',
+		});
 	}
 	if (input.inactiveQuestionCount > 0) {
 		issues.push({
@@ -67,9 +83,7 @@ export function validateTestPublish(input: {
 	return issues;
 }
 
-export function validatePlacementPublish(input: {
-	outOfCourseKuTitles: string[];
-}): PublishIssue[] {
+export function validatePlacementPublish(input: { outOfCourseKuTitles: string[] }): PublishIssue[] {
 	if (input.outOfCourseKuTitles.length === 0) return [];
 	return [
 		{

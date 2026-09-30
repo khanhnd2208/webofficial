@@ -2,7 +2,11 @@ import { getAdminCourse, listAdminCohortTable } from '@/features/my-class';
 import { currentTableParams, parsePublishStatus } from '@/features/my-class/domain/listQuery';
 import Link from 'next/link';
 import { routes } from '@/config/routes';
-import { StudioFilterBar, StudioFilterSelect, StudioPageHeader } from '@/components/myclass/admin/studio';
+import {
+	StudioFilterBar,
+	StudioFilterSelect,
+	StudioPageHeader,
+} from '@/components/myclass/admin/studio';
 import CohortsTable from '@/components/myclass/admin/tables/CohortsTable';
 
 export const dynamic = 'force-dynamic';

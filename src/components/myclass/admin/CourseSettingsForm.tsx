@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog } from '@/components/ui/Dialog';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
 import { routes } from '@/config/routes';
 import { myClassApi } from './api';
 import {

@@ -9,7 +9,9 @@ const actorWhere = (actor: MyClassActor): Prisma.MyClassKuProgressWhereInput =>
 
 export async function findProgress(courseId: string, knowledgeUnitId: string, actor: MyClassActor) {
 	return prisma.myClassKuProgress.findUnique({
-		where: { courseId_knowledgeUnitId_actorKey: { courseId, knowledgeUnitId, actorKey: actor.actorKey } },
+		where: {
+			courseId_knowledgeUnitId_actorKey: { courseId, knowledgeUnitId, actorKey: actor.actorKey },
+		},
 	});
 }
 
@@ -27,7 +29,10 @@ export async function listActorProgress(actor: MyClassActor, courseId?: string) 
 	});
 }
 
-export async function listCompletedUnitIds(actor: MyClassActor, courseId: string): Promise<string[]> {
+export async function listCompletedUnitIds(
+	actor: MyClassActor,
+	courseId: string,
+): Promise<string[]> {
 	const rows = await prisma.myClassKuProgress.findMany({
 		where: { courseId, actorKey: actor.actorKey, completedAt: { not: null } },
 		select: { knowledgeUnitId: true },
@@ -35,7 +40,10 @@ export async function listCompletedUnitIds(actor: MyClassActor, courseId: string
 	return rows.map((row) => row.knowledgeUnitId);
 }
 
-export async function findLatestViewedUnitId(actor: MyClassActor, courseId: string): Promise<string | null> {
+export async function findLatestViewedUnitId(
+	actor: MyClassActor,
+	courseId: string,
+): Promise<string | null> {
 	const row = await prisma.myClassKuProgress.findFirst({
 		where: { courseId, actorKey: actor.actorKey, lastViewedAt: { not: null } },
 		orderBy: { lastViewedAt: 'desc' },
@@ -84,7 +92,11 @@ export async function upsertViewed(courseId: string, knowledgeUnitId: string, ac
 	});
 }
 
-export async function markCompleted(courseId: string, knowledgeUnitId: string, actor: MyClassActor) {
+export async function markCompleted(
+	courseId: string,
+	knowledgeUnitId: string,
+	actor: MyClassActor,
+) {
 	const existing = await findProgress(courseId, knowledgeUnitId, actor);
 	const now = new Date();
 	if (!existing) {
@@ -133,7 +145,11 @@ export async function listUserAttempts(userId: string) {
 			test: true,
 			course: true,
 			placement: { include: { course: true } },
-			evidence: { include: { knowledgeUnit: { include: { currentPublishedRevision: { select: { title: true } } } } } },
+			evidence: {
+				include: {
+					knowledgeUnit: { include: { currentPublishedRevision: { select: { title: true } } } },
+				},
+			},
 		},
 		orderBy: { submittedAt: 'desc' },
 		take: 200,
@@ -177,7 +193,11 @@ export async function kuBelongsToContext(
 				},
 			},
 		},
-		select: { id: true, sectionId: true, section: { select: { lesson: { select: { slug: true } } } } },
+		select: {
+			id: true,
+			sectionId: true,
+			section: { select: { lesson: { select: { slug: true } } } },
+		},
 	});
 	return mapping;
 }

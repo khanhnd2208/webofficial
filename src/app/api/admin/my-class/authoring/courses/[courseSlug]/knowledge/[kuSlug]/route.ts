@@ -14,7 +14,11 @@ export const GET = withAdmin(async (request: NextRequest, user, context) => {
 		unit: detail.unit,
 		context: {
 			course: detail.course,
-			lesson: { id: detail.context.lessonId, slug: detail.context.lessonSlug, title: detail.context.lessonTitle },
+			lesson: {
+				id: detail.context.lessonId,
+				slug: detail.context.lessonSlug,
+				title: detail.context.lessonTitle,
+			},
 			section: { id: detail.context.sectionId, title: detail.context.sectionTitle },
 		},
 		previous: detail.previous,

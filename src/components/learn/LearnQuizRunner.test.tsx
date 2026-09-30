@@ -38,7 +38,9 @@ describe('LearnQuizRunner', () => {
 		window.sessionStorage.setItem('ln:quiz-draft:s1', JSON.stringify({ q1: 1 }));
 		const { unmount } = render(<LearnQuizRunner sectionId="s1" quiz={quiz} initialReview={null} />);
 
-		await waitFor(() => expect(screen.getByRole('radio', { name: /Sai/ })).toHaveAttribute('aria-checked', 'true'));
+		await waitFor(() =>
+			expect(screen.getByRole('radio', { name: /Sai/ })).toHaveAttribute('aria-checked', 'true'),
+		);
 		unmount();
 
 		render(
@@ -50,7 +52,10 @@ describe('LearnQuizRunner', () => {
 			/>,
 		);
 
-		expect(screen.getByRole('link', { name: 'Tiếp tục →' })).toHaveAttribute('href', '/my-space/courses/demo?s=s2');
+		expect(screen.getByRole('link', { name: 'Tiếp tục →' })).toHaveAttribute(
+			'href',
+			'/my-space/courses/demo?s=s2',
+		);
 		expect(screen.getByText(/Đạt/)).toBeInTheDocument();
 	});
 });

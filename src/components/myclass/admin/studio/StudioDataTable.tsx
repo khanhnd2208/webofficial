@@ -110,7 +110,9 @@ export function StudioDataTable<T>({
 }: StudioDataTableProps<T>) {
 	const initialVisibility = useMemo(
 		() =>
-			Object.fromEntries(columns.filter((column) => column.defaultHidden).map((column) => [column.id, false])),
+			Object.fromEntries(
+				columns.filter((column) => column.defaultHidden).map((column) => [column.id, false]),
+			),
 		[columns],
 	);
 	const [columnVisibility, setColumnVisibility] = useColumnVisibility(tableId, initialVisibility);
@@ -150,7 +152,9 @@ export function StudioDataTable<T>({
 				id: 'actions',
 				enableHiding: false,
 				header: () => <span className="sr-only">Thao tác</span>,
-				cell: ({ row }) => <div onClick={(event) => event.stopPropagation()}>{rowActions(row.original)}</div>,
+				cell: ({ row }) => (
+					<div onClick={(event) => event.stopPropagation()}>{rowActions(row.original)}</div>
+				),
 			});
 		}
 		return defs;
@@ -220,7 +224,9 @@ export function StudioDataTable<T>({
 											checked={column.getIsVisible()}
 											onChange={column.getToggleVisibilityHandler()}
 										/>
-										{typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}
+										{typeof column.columnDef.header === 'string'
+											? column.columnDef.header
+											: column.id}
 									</label>
 								))}
 							</div>
@@ -261,7 +267,13 @@ export function StudioDataTable<T>({
 													>
 														{flexRender(header.column.columnDef.header, header.getContext())}
 														<McIcon
-															name={active ? (sortDir === 'asc' ? 'expand_more' : 'unfold_less') : 'unfold_more'}
+															name={
+																active
+																	? sortDir === 'asc'
+																		? 'expand_more'
+																		: 'unfold_less'
+																	: 'unfold_more'
+															}
 															size={16}
 															className={active ? 'text-ink' : 'text-ink-tertiary'}
 														/>
@@ -278,7 +290,10 @@ export function StudioDataTable<T>({
 						<tbody>
 							{tableRows.length === 0 ? (
 								<tr>
-									<td colSpan={Math.max(table.getVisibleLeafColumns().length, 1)} className="px-5 py-10 text-center">
+									<td
+										colSpan={Math.max(table.getVisibleLeafColumns().length, 1)}
+										className="px-5 py-10 text-center"
+									>
 										<p className="font-semibold text-ink">{emptyTitle}</p>
 										<p className="mc-meta mt-2">{emptyDescription}</p>
 									</td>
@@ -299,14 +314,20 @@ export function StudioDataTable<T>({
 											{row.getVisibleCells().map((cell) => {
 												const meta = cell.column.columnDef.meta as StudioColumn<T> | undefined;
 												const content = flexRender(cell.column.columnDef.cell, cell.getContext());
-												const isPrimary = cell.column.id !== 'select' && cell.column.id !== 'actions' && !meta?.numeric;
+												const isPrimary =
+													cell.column.id !== 'select' &&
+													cell.column.id !== 'actions' &&
+													!meta?.numeric;
 												return (
 													<td
 														key={cell.id}
 														className={`${hideClass(meta?.hideBelow)} ${meta?.numeric || meta?.align === 'right' ? 'mc-num text-right' : ''} ${meta?.numeric ? 'tabular-nums' : ''}`}
 													>
 														{href && isPrimary && cell.column.id === columns[0]?.id ? (
-															<Link href={href} className="font-semibold text-ink hover:text-accent">
+															<Link
+																href={href}
+																className="font-semibold text-ink hover:text-accent"
+															>
 																{content}
 															</Link>
 														) : (

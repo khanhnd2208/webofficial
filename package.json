@@ -11,6 +11,10 @@
 		"prebuild": "npm run prisma:generate",
 		"start": "next start",
 		"lint": "eslint",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"areas:check": "node scripts/areas/sync.mjs",
+		"areas:sync": "node scripts/areas/sync.mjs --write",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:watch": "vitest",
@@ -22,7 +26,7 @@
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
 		"test:db:setup": "bash scripts/setup-test-db.sh",
-		"check": "npm run typecheck && npm run lint -- --max-warnings=0 && npm run test:all && npm audit --omit=dev --audit-level=moderate && npm run build",
+		"check": "npm run typecheck && npm run lint -- --max-warnings=0 && npm run format:check && npm run areas:check && npm run test:all && npm audit --omit=dev --audit-level=moderate && npm run build",
 		"prepare": "husky",
 		"db:seed": "npx tsx prisma/seed.ts",
 		"db:seed:my-class": "npx tsx scripts/seed-my-class.ts",
@@ -45,7 +49,6 @@
 		"@dnd-kit/modifiers": "^9.0.0",
 		"@dnd-kit/sortable": "^10.0.0",
 		"@dnd-kit/utilities": "^3.2.2",
-		"@next/env": "^16.2.4",
 		"@prisma/adapter-pg": "^7.7.0",
 		"@prisma/client": "^7.9.1",
 		"@tailwindcss/typography": "^0.5.19",
@@ -70,7 +73,6 @@
 		"@tiptap/pm": "^3.19.0",
 		"@tiptap/react": "^3.19.0",
 		"@tiptap/starter-kit": "^3.19.0",
-		"@types/canvas-confetti": "^1.9.0",
 		"bcryptjs": "^3.0.3",
 		"canvas-confetti": "^1.9.4",
 		"csv-parse": "^7.0.2",
@@ -95,7 +97,6 @@
 		"read-excel-file": "^9.3.10",
 		"remark-breaks": "^4.0.0",
 		"remark-gfm": "^4.0.1",
-		"resend": "^6.17.2",
 		"server-only": "^0.0.1",
 		"sharp": "^0.35.4",
 		"write-excel-file": "^4.1.1",
@@ -108,7 +109,7 @@
 		"@testing-library/react": "^16.3.2",
 		"@testing-library/user-event": "^14.6.1",
 		"@types/bcryptjs": "^2.4.6",
-		"@types/dompurify": "^3.0.5",
+		"@types/canvas-confetti": "^1.9.0",
 		"@types/node": "^25.2.3",
 		"@types/pg": "^8.20.0",
 		"@types/react": "^19",
@@ -121,7 +122,6 @@
 		"jsdom": "^29.1.1",
 		"lint-staged": "^17.0.8",
 		"mongodb-memory-server": "^11.2.0",
-		"pdf-parse": "^2.4.5",
 		"prettier": "^3.8.4",
 		"prisma": "^7.9.1",
 		"tailwindcss": "^4",
@@ -130,11 +130,11 @@
 		"vitest": "^4.1.11"
 	},
 	"lint-staged": {
-		"*.{ts,tsx}": [
+		"*.{ts,tsx,mjs}": [
 			"eslint --fix",
 			"prettier --write"
 		],
-		"*.{json,md,css}": [
+		"*.{json,css,yml}": [
 			"prettier --write"
 		]
 	},

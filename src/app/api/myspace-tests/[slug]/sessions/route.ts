@@ -3,7 +3,7 @@ import { type NextRequest } from 'next/server';
 import { myspaceTestsService, startSessionSchema } from '@/features/myspace-tests';
 import { resolvePlayActor } from '@/features/myspace-tests/resolvePlayActor';
 import { withErrorHandling, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const POST = withErrorHandling(async (request: NextRequest, context) => {
 	const { slug } = await context!.params;

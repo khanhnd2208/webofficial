@@ -50,7 +50,7 @@ const ALIASES: Record<string, CalloutKind> = {
 	INFO: 'note',
 	'LƯU Ý': 'note',
 	TIP: 'tip',
-	'MẸO': 'tip',
+	MẸO: 'tip',
 	'GỢI Ý': 'tip',
 	WARNING: 'warning',
 	CAUTION: 'warning',

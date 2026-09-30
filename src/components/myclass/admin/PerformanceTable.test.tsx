@@ -14,7 +14,10 @@ describe('PerformanceTable', () => {
 				]}
 			/>,
 		);
-		const titles = screen.getAllByRole('row').slice(1).map((row) => row.textContent);
+		const titles = screen
+			.getAllByRole('row')
+			.slice(1)
+			.map((row) => row.textContent);
 		expect(titles[0]).toContain('C');
 		expect(titles[1]).toContain('A');
 		expect(titles[2]).toContain('B');

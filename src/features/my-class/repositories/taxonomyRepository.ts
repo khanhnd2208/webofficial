@@ -61,7 +61,11 @@ export async function listTopics(subjectId?: string) {
 		take: 500,
 		include: {
 			knowledgeUnits: {
-				include: { knowledgeUnit: { select: { id: true, slug: true, currentPublishedRevision: { select: { title: true } } } } },
+				include: {
+					knowledgeUnit: {
+						select: { id: true, slug: true, currentPublishedRevision: { select: { title: true } } },
+					},
+				},
 			},
 			_count: { select: { questions: true, children: true } },
 		},
@@ -143,7 +147,10 @@ export async function rewriteTopicSubtree(oldPath: string, newPath: string, subj
 	const next = rewriteDescendantPaths(oldPath, newPath, rows);
 	await prisma.$transaction(
 		next.map((row) =>
-			prisma.myClassTopic.update({ where: { id: row.id }, data: { path: row.path, depth: row.depth } }),
+			prisma.myClassTopic.update({
+				where: { id: row.id },
+				data: { path: row.path, depth: row.depth },
+			}),
 		),
 	);
 }

@@ -7,7 +7,11 @@ import { rethrowUnlessNotFound } from '@/lib/pageErrors';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page({ params }: { params: Promise<{ courseSlug: string; setId: string }> }) {
+export default async function Page({
+	params,
+}: {
+	params: Promise<{ courseSlug: string; setId: string }>;
+}) {
 	const { courseSlug, setId } = await params;
 	let data;
 	try {
@@ -15,11 +19,17 @@ export default async function Page({ params }: { params: Promise<{ courseSlug: s
 	} catch (error) {
 		rethrowUnlessNotFound(error);
 	}
-	if (!data.set.words.some((word) => word.hintsHard.length + word.hintsMedium.length + word.hintsEasy.length > 0)) {
+	if (
+		!data.set.words.some(
+			(word) => word.hintsHard.length + word.hintsMedium.length + word.hintsEasy.length > 0,
+		)
+	) {
 		return (
 			<VocabPracticeShell courseSlug={courseSlug} courseTitle={data.course.title}>
 				<div className="border border-dashed border-mc-rule p-8 text-center">
-					<p className="mc-title text-[clamp(1.35rem,2vw,1.75rem)]">Bộ từ chưa có gợi ý cho Guess Who</p>
+					<p className="mc-title text-[clamp(1.35rem,2vw,1.75rem)]">
+						Bộ từ chưa có gợi ý cho Guess Who
+					</p>
 					<p className="mc-meta mt-2">Chọn chế độ luyện khác hoặc quay lại danh sách từ.</p>
 					<Link
 						href={routes.myClassVocab(courseSlug, setId)}

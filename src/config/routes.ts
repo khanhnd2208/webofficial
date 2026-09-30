@@ -42,7 +42,12 @@ export const routes = {
 	myClassCourseEdit: (courseSlug: string) => `/my-space/my-class/${courseSlug}?edit=1` as const,
 	myClassLesson: (courseSlug: string, lessonSlug: string) =>
 		`/my-space/my-class/${courseSlug}?lesson=${encodeURIComponent(lessonSlug)}` as const,
-	myClassUnit: (courseSlug: string, lessonSlug: string, unitSlug: string, options?: { sectionSlug?: string | null; level?: string | null }) => {
+	myClassUnit: (
+		courseSlug: string,
+		lessonSlug: string,
+		unitSlug: string,
+		options?: { sectionSlug?: string | null; level?: string | null },
+	) => {
 		const path = `/my-space/my-class/${courseSlug}/${lessonSlug}/${unitSlug}`;
 		const params = new URLSearchParams();
 		if (options?.sectionSlug) params.set('s', options.sectionSlug);
@@ -112,7 +117,7 @@ export const routes = {
 	postCollection: (slug: string) => `/bai-viet/bo-suu-tap/${slug}` as const,
 
 	// ─── Archived public surfaces (hubs redirect via PUBLIC_REDIRECTS) ─────────
-	// UI: src/_archived/marketing/routes-v1 · lab boardgames → features/kstrip-2026
+	// Retired UI is in git history; see docs/archive/src-archived.md
 	lab: '/goc-cua-khanh',
 	labBoardgame: '/goc-cua-khanh/boardgame',
 	labTools: '/goc-cua-khanh/cong-cu',
@@ -158,7 +163,7 @@ export const routes = {
 	teaching: '/giang-day',
 
 	// ─── Admin ────────────────────────────────────────────────────────────────
-		admin: {
+	admin: {
 		home: '/admin',
 		website: '/admin/website',
 		archive: '/admin/archive',

@@ -261,7 +261,7 @@ Do not invent placeholder testimonials, fake metrics, or social proof.
 
 **Active brand media:**
 - `/brand/portrait-journey.png` — temporary journey portrait / shared placeholder
-- `/og-editorial-premium.png` — social OG
+- `/og-editorial-premium.jpg` — social OG
 
 **Legacy / alternate brand art (available):**
 - `hero-figure.jpg`, `hero-journey.jpg`, `hero-landscape.jpg`, `hero-mobile.jpg`

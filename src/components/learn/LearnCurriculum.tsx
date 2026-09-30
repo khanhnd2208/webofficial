@@ -72,7 +72,9 @@ export default function LearnCurriculum({
 					<button
 						type="button"
 						className="ln-link-btn"
-						onClick={() => setOpen(allOpen ? new Set() : new Set(lessons.map((lesson) => lesson.id)))}
+						onClick={() =>
+							setOpen(allOpen ? new Set() : new Set(lessons.map((lesson) => lesson.id)))
+						}
 					>
 						{allOpen ? 'Thu gọn tất cả' : 'Mở tất cả'}
 					</button>
@@ -101,12 +103,16 @@ export default function LearnCurriculum({
 							<span className="ln-lesson__meta tabular-nums" data-done={done ? 'true' : undefined}>
 								{done ? <LearnIcon name="checkCircle" size={15} /> : null}
 								{lesson.completedCount}/{lesson.sections.length}
-								{compact ? null : <span className="ln-lesson__minutes"> · {formatMinutes(lesson.minutes)}</span>}
+								{compact ? null : (
+									<span className="ln-lesson__minutes"> · {formatMinutes(lesson.minutes)}</span>
+								)}
 							</span>
 						</button>
 						{isOpen ? (
 							<ol id={panelId} className="ln-lesson__items">
-								{!compact && lesson.description ? <li className="ln-lesson__desc">{lesson.description}</li> : null}
+								{!compact && lesson.description ? (
+									<li className="ln-lesson__desc">{lesson.description}</li>
+								) : null}
 								{lesson.sections.map((section) => {
 									const active = section.id === currentId;
 									const result = section.quizResult;
@@ -137,7 +143,10 @@ export default function LearnCurriculum({
 													</span>
 												</span>
 												{result ? (
-													<span className="ln-item__score tabular-nums" data-passed={result.passed ? 'true' : 'false'}>
+													<span
+														className="ln-item__score tabular-nums"
+														data-passed={result.passed ? 'true' : 'false'}
+													>
 														{result.percentage}%
 													</span>
 												) : null}

@@ -8,7 +8,8 @@ const RATE = 8_000;
 
 function loudness(samples: Float32Array, fromS: number, toS: number): number {
 	let peak = 0;
-	for (let i = Math.round(fromS * RATE); i < Math.round(toS * RATE); i++) peak = Math.max(peak, Math.abs(samples[i]!));
+	for (let i = Math.round(fromS * RATE); i < Math.round(toS * RATE); i++)
+		peak = Math.max(peak, Math.abs(samples[i]!));
 	return peak;
 }
 
@@ -16,16 +17,29 @@ describe('night mix', () => {
 	it('starts each line just after its bell, at the cue time', () => {
 		const voice = new Float32Array(RATE).fill(0.5);
 		const clips = new Map<VoiceClip, Float32Array>([['wake-3', voice]]);
-		const out = mixNight({ cues: [{ atMs: 2_000, clip: 'wake-3' }], clips, seconds: 5, rate: RATE, clock: false });
+		const out = mixNight({
+			cues: [{ atMs: 2_000, clip: 'wake-3' }],
+			clips,
+			seconds: 5,
+			rate: RATE,
+			clock: false,
+		});
 		expect(loudness(out, 0, 1.9)).toBe(0);
 		expect(loudness(out, 2, 2 + LINE_LEAD_S.wake - 0.01)).toBeGreaterThan(0);
-		expect(loudness(out, 2 + LINE_LEAD_S.wake + 0.1, 2 + LINE_LEAD_S.wake + 0.9)).toBeGreaterThan(0.45);
+		expect(loudness(out, 2 + LINE_LEAD_S.wake + 0.1, 2 + LINE_LEAD_S.wake + 0.9)).toBeGreaterThan(
+			0.45,
+		);
 	});
 
 	it('keeps the clock soft and never clips', () => {
 		const loud = new Float32Array(RATE).fill(0.99);
 		const clips = new Map<VoiceClip, Float32Array>([['night-start', loud]]);
-		const out = mixNight({ cues: [{ atMs: 0, clip: 'night-start' }], clips, seconds: 4, rate: RATE });
+		const out = mixNight({
+			cues: [{ atMs: 0, clip: 'night-start' }],
+			clips,
+			seconds: 4,
+			rate: RATE,
+		});
 		expect(Math.max(...out.map(Math.abs))).toBeLessThanOrEqual(1);
 		expect(loudness(out, 3.0, 3.05)).toBeLessThan(0.06);
 	});
@@ -39,13 +53,11 @@ describe('night mix', () => {
 	});
 
 	it('names every clip kind', () => {
-		expect(['night-start', 'wake-1', 'sleep', 'night-end', 'cheese-gone'].map((clip) => cueKind(clip as VoiceClip))).toEqual([
-			'intro',
-			'wake',
-			'sleep',
-			'outro',
-			'single',
-		]);
+		expect(
+			['night-start', 'wake-1', 'sleep', 'night-end', 'cheese-gone'].map((clip) =>
+				cueKind(clip as VoiceClip),
+			),
+		).toEqual(['intro', 'wake', 'sleep', 'outro', 'single']);
 	});
 });
 

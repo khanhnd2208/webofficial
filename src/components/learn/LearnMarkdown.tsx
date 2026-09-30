@@ -39,7 +39,11 @@ const components: Components = {
 	a: ({ node: _node, href, ...props }) => {
 		const external = typeof href === 'string' && /^https?:\/\//.test(href);
 		return (
-			<a href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} {...props} />
+			<a
+				href={href}
+				{...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+				{...props}
+			/>
 		);
 	},
 	pre: ({ node: _node, children }) => {
@@ -53,7 +57,10 @@ const components: Components = {
 export default function LearnMarkdown({ markdown }: { markdown: string }) {
 	return (
 		<div className="ln-prose">
-			<ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks, remarkLearnCallouts, remarkLearnFootnotes]} components={components}>
+			<ReactMarkdown
+				remarkPlugins={[remarkGfm, remarkBreaks, remarkLearnCallouts, remarkLearnFootnotes]}
+				components={components}
+			>
 				{markdown}
 			</ReactMarkdown>
 		</div>

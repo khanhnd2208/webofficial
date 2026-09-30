@@ -1,6 +1,10 @@
 'use client';
 
-import { StudioAdminTable, StudioStatus, type StudioColumn } from '@/components/myclass/admin/studio';
+import {
+	StudioAdminTable,
+	StudioStatus,
+	type StudioColumn,
+} from '@/components/myclass/admin/studio';
 import { routes } from '@/config/routes';
 import type { AdminCohortTablePage, AdminCohortTableRow } from '@/features/my-class';
 import { formatDate } from '@/utils/formatDate';
@@ -25,7 +29,9 @@ const columns: StudioColumn<AdminCohortTableRow>[] = [
 		header: 'Trạng thái',
 		sortable: true,
 		cell: (row) => (
-			<StudioStatus status={row.status}>{row.status === 'PUBLISHED' ? 'Đang hoạt động' : undefined}</StudioStatus>
+			<StudioStatus status={row.status}>
+				{row.status === 'PUBLISHED' ? 'Đang hoạt động' : undefined}
+			</StudioStatus>
 		),
 	},
 	{

@@ -444,9 +444,7 @@ describe('Spy Fall — a spy leaving mid-game', () => {
 		const state = await getScopedState(table.code, civilian!);
 		expect(state.phase).toBe('vote');
 		expect(state.spiesRemaining).toBe(1);
-		expect(state.departed).toEqual([
-			expect.objectContaining({ name: spyName, role: 'spy' }),
-		]);
+		expect(state.departed).toEqual([expect.objectContaining({ name: spyName, role: 'spy' })]);
 		expect(JSON.stringify(state.departed)).not.toContain(spy);
 	});
 

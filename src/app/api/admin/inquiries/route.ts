@@ -3,7 +3,7 @@ import { type NextRequest } from 'next/server';
 import { listInquiriesQuerySchema } from '@/features/inquiries/schemas';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import { listInquiries } from '@/services/inquiryService';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const GET = withAdmin(async (request: NextRequest) => {
 	const url = new URL(request.url);

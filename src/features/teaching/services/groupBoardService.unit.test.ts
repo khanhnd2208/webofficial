@@ -8,7 +8,6 @@ import {
 	resolveSessionLifecycleAction,
 } from '../schemas';
 
-
 describe('groupClaimSchema', () => {
 	it('only requires a roster enrollment selection', () => {
 		expect(groupClaimSchema.safeParse({ enrollmentId: 'enrollment-1' }).success).toBe(true);
@@ -16,8 +15,12 @@ describe('groupClaimSchema', () => {
 
 	it('rejects a missing enrollment id and extra identity fields', () => {
 		expect(groupClaimSchema.safeParse({}).success).toBe(false);
-		expect(groupClaimSchema.safeParse({ enrollmentId: 'enrollment-1', passcode: '29052006' }).success).toBe(false);
-		expect(groupClaimSchema.safeParse({ enrollmentId: 'enrollment-1', studentCode: 'SV01' }).success).toBe(false);
+		expect(
+			groupClaimSchema.safeParse({ enrollmentId: 'enrollment-1', passcode: '29052006' }).success,
+		).toBe(false);
+		expect(
+			groupClaimSchema.safeParse({ enrollmentId: 'enrollment-1', studentCode: 'SV01' }).success,
+		).toBe(false);
 	});
 });
 

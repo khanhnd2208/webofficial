@@ -1,5 +1,5 @@
 import { gameNow, gameRandom } from '@/features/board-game-test/runtime';
-import mongoose, { type HydratedDocument } from 'mongoose';
+import { type HydratedDocument } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
 import {
@@ -34,11 +34,16 @@ import {
 	type NightNumber,
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
-import { AppError } from '@/features/spy-fall/lib/appError';
-import dbConnect from '@/features/spy-fall/lib/dbConnect';
-import { normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+import { GameError } from '@/features/board-game-shared/lib/gameError';
+import { withVersionRetry } from '@/features/board-game-shared/lib/versionRetry';
+import dbConnect from '@/lib/dbConnect';
+import { normalizePlayerName } from '@/features/board-game-shared/lib/playerName';
 import { nightEndsAt } from '@/features/cheese-thief/lib/nightSchedule';
-import { projectRoom, type ProjectPlayer, type ProjectRoom } from '@/features/cheese-thief/lib/projectRoom';
+import {
+	projectRoom,
+	type ProjectPlayer,
+	type ProjectRoom,
+} from '@/features/cheese-thief/lib/projectRoom';
 import {
 	deal,
 	decideOutcome,
@@ -71,19 +76,8 @@ const generatePlayerId = customAlphabet(
 );
 
 const VALID_PHASES = new Set<string>(CHEESE_PHASES);
-const MAX_SAVE_ATTEMPTS = 3;
 
 type RoomDoc = HydratedDocument<ICheeseRoom>;
-
-async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
-	for (let attempt = 1; ; attempt++) {
-		try {
-			return await run();
-		} catch (error) {
-			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS) throw error;
-		}
-	}
-}
 
 function now(): Date {
 	return gameNow();
@@ -99,12 +93,12 @@ function findPlayerById(game: RoomDoc, id: string): ICheesePlayer | undefined {
 
 function assertPlayer(game: RoomDoc, token: string): ICheesePlayer {
 	const player = findPlayer(game, token);
-	if (!player) throw new AppError('PLAYER_NOT_FOUND', 404);
+	if (!player) throw new GameError('PLAYER_NOT_FOUND', 404);
 	return player;
 }
 
 function assertHost(game: RoomDoc, token: string): void {
-	if (game.hostToken !== token) throw new AppError('HOST_ONLY', 403);
+	if (game.hostToken !== token) throw new GameError('HOST_ONLY', 403);
 }
 
 function blankPlayer(token: string, name: string, at: Date): ICheesePlayer {
@@ -127,28 +121,35 @@ function blankPlayer(token: string, name: string, at: Date): ICheesePlayer {
 
 function assertRoomName(name: string | undefined): string {
 	const trimmed = name?.trim() ?? '';
-	if (!trimmed) throw new AppError('ROOM_NAME_REQUIRED', 400);
+	if (!trimmed) throw new GameError('ROOM_NAME_REQUIRED', 400);
 	if (trimmed.length > CHEESE_MAX_ROOM_NAME_LENGTH) {
-		throw new AppError('ROOM_NAME_TOO_LONG', 400, { max: CHEESE_MAX_ROOM_NAME_LENGTH });
+		throw new GameError('ROOM_NAME_TOO_LONG', 400, { max: CHEESE_MAX_ROOM_NAME_LENGTH });
 	}
 	return trimmed;
 }
 
 function assertTableSize(size: number, mode: CheeseMode, seated: number): void {
 	if (!Number.isInteger(size) || size < CHEESE_MIN_PLAYERS || size > CHEESE_MAX_PLAYERS) {
-		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: CHEESE_MIN_PLAYERS, max: CHEESE_MAX_PLAYERS });
+		throw new GameError('MAX_PLAYERS_INVALID', 400, {
+			min: CHEESE_MIN_PLAYERS,
+			max: CHEESE_MAX_PLAYERS,
+		});
 	}
 	if (size < seated) {
-		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: seated, max: CHEESE_MAX_PLAYERS });
+		throw new GameError('MAX_PLAYERS_INVALID', 400, { min: seated, max: CHEESE_MAX_PLAYERS });
 	}
 	if (!isPlayerCountAllowed(size, mode)) {
 		const range = playerRangeFor(mode);
-		if (mode === 'two-night') throw new AppError('TWO_NIGHT_NEEDS_FIVE', 400, { min: range.min, max: range.max });
-		throw new AppError('MAX_PLAYERS_INVALID', 400, { min: range.min, max: range.max });
+		if (mode === 'two-night')
+			throw new GameError('TWO_NIGHT_NEEDS_FIVE', 400, { min: range.min, max: range.max });
+		throw new GameError('MAX_PLAYERS_INVALID', 400, { min: range.min, max: range.max });
 	}
 }
 
-function followerSettingsOf(game: { followerCount?: number; followerKnowledge?: string }): FollowerSettings {
+function followerSettingsOf(game: {
+	followerCount?: number;
+	followerKnowledge?: string;
+}): FollowerSettings {
 	return {
 		...(typeof game.followerCount === 'number' ? { count: game.followerCount } : {}),
 		...(isFollowerKnows(game.followerKnowledge) ? { knowledge: game.followerKnowledge } : {}),
@@ -157,7 +158,10 @@ function followerSettingsOf(game: { followerCount?: number; followerKnowledge?: 
 
 function applyFollowerInput(
 	game: RoomDoc,
-	input: { followerCount?: number | null; followerKnowledge?: FollowerSettings['knowledge'] | null },
+	input: {
+		followerCount?: number | null;
+		followerKnowledge?: FollowerSettings['knowledge'] | null;
+	},
 	size: number,
 ): void {
 	const max = maxFollowersFor(size);
@@ -165,7 +169,7 @@ function applyFollowerInput(
 		game.set('followerCount', undefined);
 	} else if (input.followerCount !== undefined) {
 		if (!isFollowerCountAllowed(input.followerCount, size)) {
-			throw new AppError('FOLLOWERS_INVALID', 400, { max });
+			throw new GameError('FOLLOWERS_INVALID', 400, { max });
 		}
 		game.followerCount = input.followerCount;
 	} else if (typeof game.followerCount === 'number' && game.followerCount > max) {
@@ -176,7 +180,7 @@ function applyFollowerInput(
 		game.set('followerKnowledge', undefined);
 	} else if (input.followerKnowledge !== undefined) {
 		if (!isFollowerKnows(input.followerKnowledge)) {
-			throw new AppError('FOLLOWERS_INVALID', 400, { max });
+			throw new GameError('FOLLOWERS_INVALID', 400, { max });
 		}
 		game.followerKnowledge = input.followerKnowledge;
 	}
@@ -184,7 +188,10 @@ function applyFollowerInput(
 
 function assertHourSeconds(hourSeconds: unknown): asserts hourSeconds is number {
 	if (!isHourSeconds(hourSeconds)) {
-		throw new AppError('HOUR_SECONDS_INVALID', 400, { min: CHEESE_HOUR_SECONDS_MIN, max: CHEESE_HOUR_SECONDS_MAX });
+		throw new GameError('HOUR_SECONDS_INVALID', 400, {
+			min: CHEESE_HOUR_SECONDS_MIN,
+			max: CHEESE_HOUR_SECONDS_MAX,
+		});
 	}
 }
 
@@ -219,7 +226,9 @@ function isRecentlySeen(player: ICheesePlayer, at: Date): boolean {
 
 function updateConnectionStatus(game: RoomDoc, at: Date): void {
 	for (const player of game.players) {
-		const botSeat = game.adminTest?.ownerUserId && (player.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
+		const botSeat =
+			game.adminTest?.ownerUserId &&
+			(player.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
 		player.connected = botSeat ? true : isRecentlySeen(player, at);
 	}
 }
@@ -228,7 +237,9 @@ function migrateHostIfNeeded(game: RoomDoc, at: Date): boolean {
 	const host = findPlayer(game, game.hostToken);
 	const handoffMs = game.phase === 'lobby' ? CHEESE_HOST_HANDOFF_MS : CHEESE_ROUND_HOST_HANDOFF_MS;
 	if (host && host.lastSeenAt.getTime() >= at.getTime() - handoffMs) return false;
-	const replacement = game.players.find((player) => player.token !== game.hostToken && isRecentlySeen(player, at));
+	const replacement = game.players.find(
+		(player) => player.token !== game.hostToken && isRecentlySeen(player, at),
+	);
 	if (!replacement) return false;
 	game.hostToken = replacement.token;
 	return true;
@@ -326,7 +337,8 @@ function advanceClock(game: RoomDoc, at: Date, random: () => number = gameRandom
 
 	if (game.phase === 'secret' && game.secretStartedAt) {
 		const elapsed = at.getTime() - game.secretStartedAt.getTime();
-		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
+		const choiceCount =
+			game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
 		const everyoneChose = game.players.every(
 			(player) => player.secretConfirmed && (player.secretPicks ?? []).length === choiceCount,
 		);
@@ -338,7 +350,11 @@ function advanceClock(game: RoomDoc, at: Date, random: () => number = gameRandom
 		}
 	}
 
-	if (game.phase === 'secret-result' && game.players.length > 0 && game.players.every((player) => player.hasSeenSecret)) {
+	if (
+		game.phase === 'secret-result' &&
+		game.players.length > 0 &&
+		game.players.every((player) => player.hasSeenSecret)
+	) {
 		game.phase = 'day';
 		game.dayStartedAt = at;
 		return true;
@@ -380,7 +396,9 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		scapegoatEnabled: game.scapegoatEnabled,
 		mode: game.mode ?? 'classic',
 		...(typeof game.followerCount === 'number' ? { followerCount: game.followerCount } : {}),
-		...(isFollowerKnows(game.followerKnowledge) ? { followerKnowledge: game.followerKnowledge } : {}),
+		...(isFollowerKnows(game.followerKnowledge)
+			? { followerKnowledge: game.followerKnowledge }
+			: {}),
 		hourSeconds: game.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT,
 		nightNumber: game.nightNumber === 2 ? 2 : 1,
 		...(game.theftNight === 1 || game.theftNight === 2 ? { theftNight: game.theftNight } : {}),
@@ -404,12 +422,16 @@ function toRoomStateDTO(game: RoomDoc, viewerToken: string | null, at: Date): Ro
 	return projectRoom(toProjectRoom(game), viewerToken, at);
 }
 
-async function loadAndAdvance(code: string, viewerToken: string | null, random: () => number = gameRandom): Promise<RoomStateDTO> {
+async function loadAndAdvance(
+	code: string,
+	viewerToken: string | null,
+	random: () => number = gameRandom,
+): Promise<RoomStateDTO> {
 	await dbConnect();
 	return withVersionRetry(async () => {
 		const at = now();
 		const game = (await CheeseThiefRoom.findOne({ code: code.toUpperCase() })) as RoomDoc | null;
-		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 
 		let changed = false;
 		if (!VALID_PHASES.has(game.phase)) {
@@ -452,7 +474,7 @@ async function mutateGame(
 			code: code.toUpperCase(),
 			...(expectedPhase ? { phase: expectedPhase } : {}),
 		})) as RoomDoc | null;
-		if (!game) throw new AppError('ROOM_OR_PHASE_INVALID', 404);
+		if (!game) throw new GameError('ROOM_OR_PHASE_INVALID', 404);
 		if (!VALID_PHASES.has(game.phase)) resetToLobby(game);
 		assertPlayer(game, playerToken);
 		mutator(game, at);
@@ -464,21 +486,25 @@ async function mutateGame(
 	});
 }
 
-export async function createRoom(input: CreateRoomInput, testOwnerId?: string): Promise<RoomStateDTO> {
+export async function createRoom(
+	input: CreateRoomInput,
+	testOwnerId?: string,
+): Promise<RoomStateDTO> {
 	const hostName = normalizePlayerName(input.hostName ?? '');
-	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
+	if (!hostName) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 	const roomName = assertRoomName(input.name);
-	if (input.mode !== undefined && !isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
+	if (input.mode !== undefined && !isCheeseMode(input.mode))
+		throw new GameError('MODE_INVALID', 400);
 	const mode = input.mode && isCheeseMode(input.mode) ? input.mode : 'classic';
 	const maxPlayers = input.maxPlayers ?? CHEESE_TABLE_SIZE_DEFAULT;
 	assertTableSize(maxPlayers, mode, 1);
 	const hourSeconds = input.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT;
 	assertHourSeconds(hourSeconds);
 	if (input.followerCount != null && !isFollowerCountAllowed(input.followerCount, maxPlayers)) {
-		throw new AppError('FOLLOWERS_INVALID', 400, { max: maxFollowersFor(maxPlayers) });
+		throw new GameError('FOLLOWERS_INVALID', 400, { max: maxFollowersFor(maxPlayers) });
 	}
 	if (input.followerKnowledge != null && !isFollowerKnows(input.followerKnowledge)) {
-		throw new AppError('FOLLOWERS_INVALID', 400, { max: maxFollowersFor(maxPlayers) });
+		throw new GameError('FOLLOWERS_INVALID', 400, { max: maxFollowersFor(maxPlayers) });
 	}
 
 	await dbConnect();
@@ -500,7 +526,9 @@ export async function createRoom(input: CreateRoomInput, testOwnerId?: string): 
 		scapegoatEnabled: input.scapegoat === true,
 		mode,
 		...(typeof input.followerCount === 'number' ? { followerCount: input.followerCount } : {}),
-		...(isFollowerKnows(input.followerKnowledge) ? { followerKnowledge: input.followerKnowledge } : {}),
+		...(isFollowerKnows(input.followerKnowledge)
+			? { followerKnowledge: input.followerKnowledge }
+			: {}),
 		hourSeconds,
 		nightNumber: 1,
 		voteRound: 0,
@@ -522,7 +550,11 @@ export async function createRoom(input: CreateRoomInput, testOwnerId?: string): 
 
 export async function listPublicRooms(): Promise<PublicRoomListItemDTO[]> {
 	await dbConnect();
-	const games = (await CheeseThiefRoom.find({ isPublic: true, phase: 'lobby', 'adminTest.ownerUserId': { $exists: false } })
+	const games = (await CheeseThiefRoom.find({
+		isPublic: true,
+		phase: 'lobby',
+		'adminTest.ownerUserId': { $exists: false },
+	})
 		.sort({ updatedAt: -1 })
 		.limit(50)
 		.lean()) as ICheeseRoom[];
@@ -541,13 +573,13 @@ export async function joinRoom(
 	existingToken?: string,
 ): Promise<{ state: RoomStateDTO; playerToken: string }> {
 	const normalizedName = normalizePlayerName(name);
-	if (!normalizedName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
+	if (!normalizedName) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 
 	await dbConnect();
 	return withVersionRetry(async () => {
 		const game = (await CheeseThiefRoom.findOne({ code: code.toUpperCase() })) as RoomDoc | null;
-		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
-		if (game.phase !== 'lobby') throw new AppError('GAME_IN_PROGRESS', 400);
+		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
+		if (game.phase !== 'lobby') throw new GameError('GAME_IN_PROGRESS', 400);
 
 		if (existingToken) {
 			const existing = findPlayer(game, existingToken);
@@ -560,9 +592,9 @@ export async function joinRoom(
 			}
 		}
 
-		if (game.players.length >= game.maxPlayers) throw new AppError('ROOM_FULL', 400);
+		if (game.players.length >= game.maxPlayers) throw new GameError('ROOM_FULL', 400);
 		if (game.players.some((player) => player.name.toLowerCase() === normalizedName.toLowerCase())) {
-			throw new AppError('NAME_TAKEN', 400);
+			throw new GameError('NAME_TAKEN', 400);
 		}
 
 		const playerToken = generateToken();
@@ -574,7 +606,11 @@ export async function joinRoom(
 	});
 }
 
-export async function getScopedState(code: string, playerToken: string | null, random: () => number = gameRandom): Promise<RoomStateDTO> {
+export async function getScopedState(
+	code: string,
+	playerToken: string | null,
+	random: () => number = gameRandom,
+): Promise<RoomStateDTO> {
 	return loadAndAdvance(code, playerToken, random);
 }
 
@@ -587,7 +623,8 @@ export async function updateSettings(
 		assertHost(game, hostToken);
 		if (input.name !== undefined) game.name = assertRoomName(input.name);
 		if (input.isPublic !== undefined) game.isPublic = Boolean(input.isPublic);
-		if (input.mode !== undefined && !isCheeseMode(input.mode)) throw new AppError('MODE_INVALID', 400);
+		if (input.mode !== undefined && !isCheeseMode(input.mode))
+			throw new GameError('MODE_INVALID', 400);
 		const nextMode = input.mode && isCheeseMode(input.mode) ? input.mode : (game.mode ?? 'classic');
 		const nextSize = input.maxPlayers !== undefined ? input.maxPlayers : game.maxPlayers;
 		assertTableSize(nextSize, nextMode, game.players.length);
@@ -602,17 +639,24 @@ export async function updateSettings(
 	});
 }
 
-export async function startGame(code: string, hostToken: string, random: () => number = gameRandom): Promise<RoomStateDTO> {
+export async function startGame(
+	code: string,
+	hostToken: string,
+	random: () => number = gameRandom,
+): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, 'lobby', (game) => {
 		assertHost(game, hostToken);
 		if (game.players.length !== game.maxPlayers) {
-			throw new AppError('TABLE_NOT_FULL', 400, { count: game.players.length, size: game.maxPlayers });
+			throw new GameError('TABLE_NOT_FULL', 400, {
+				count: game.players.length,
+				size: game.maxPlayers,
+			});
 		}
 		const mode = game.mode ?? 'classic';
 		if (!isPlayerCountAllowed(game.players.length, mode)) {
 			const { min, max } = playerRangeFor(mode);
-			if (mode === 'two-night') throw new AppError('TWO_NIGHT_NEEDS_FIVE', 400, { min, max });
-			throw new AppError('NEED_MIN_PLAYERS', 400, { min });
+			if (mode === 'two-night') throw new GameError('TWO_NIGHT_NEEDS_FIVE', 400, { min, max });
+			throw new GameError('NEED_MIN_PLAYERS', 400, { min });
 		}
 		const { seats } = deal(
 			game.players.map((player) => player.id),
@@ -663,7 +707,7 @@ export async function confirmMemorized(
 		const twoDice = (player.dice ?? []).length === 2;
 		if (twoDice) {
 			if (chosenHour === undefined || !player.dice.includes(chosenHour)) {
-				throw new AppError('CHOOSE_HOUR', 400);
+				throw new GameError('CHOOSE_HOUR', 400);
 			}
 			player.chosenHour = chosenHour;
 		}
@@ -675,10 +719,17 @@ export async function beginNight(code: string, hostToken: string): Promise<RoomS
 	return mutateGame(code, hostToken, 'deal', (game, at) => {
 		assertHost(game, hostToken);
 		if (game.players.some((player) => !player.hasMemorizedRole)) {
-			throw new AppError('NEED_ALL_MEMORIZED', 400);
+			throw new GameError('NEED_ALL_MEMORIZED', 400);
 		}
-		if (game.players.some((player) => (player.dice ?? []).length === 2 && player.role !== 'thief' && player.chosenHour === undefined)) {
-			throw new AppError('CHOOSE_HOUR', 400);
+		if (
+			game.players.some(
+				(player) =>
+					(player.dice ?? []).length === 2 &&
+					player.role !== 'thief' &&
+					player.chosenHour === undefined,
+			)
+		) {
+			throw new GameError('CHOOSE_HOUR', 400);
 		}
 		game.phase = 'night';
 		game.nightNumber = 1;
@@ -698,14 +749,23 @@ export async function submitSecret(
 ): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, 'secret', (game) => {
 		const player = assertPlayer(game, playerToken);
-		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
+		const choiceCount =
+			game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
 		const draft = options.draft === true;
-		if (!Array.isArray(picks) || picks.length > choiceCount || (!draft && picks.length !== choiceCount)) {
-			throw new AppError('PICK_COUNT', 400, { count: choiceCount });
+		if (
+			!Array.isArray(picks) ||
+			picks.length > choiceCount ||
+			(!draft && picks.length !== choiceCount)
+		) {
+			throw new GameError('PICK_COUNT', 400, { count: choiceCount });
 		}
-		if (new Set(picks).size !== picks.length) throw new AppError('PICK_COUNT', 400, { count: choiceCount });
-		const others = new Set(game.players.filter((item) => item.id !== player.id).map((item) => item.id));
-		if (picks.some((id) => typeof id !== 'string' || !others.has(id))) throw new AppError('PICK_UNKNOWN', 400);
+		if (new Set(picks).size !== picks.length)
+			throw new GameError('PICK_COUNT', 400, { count: choiceCount });
+		const others = new Set(
+			game.players.filter((item) => item.id !== player.id).map((item) => item.id),
+		);
+		if (picks.some((id) => typeof id !== 'string' || !others.has(id)))
+			throw new GameError('PICK_UNKNOWN', 400);
 		player.secretPicks = picks;
 		player.secretConfirmed = !draft;
 	});
@@ -728,20 +788,28 @@ export async function startVote(code: string, hostToken: string): Promise<RoomSt
 	});
 }
 
-export async function submitVote(code: string, playerToken: string, targetId: string): Promise<RoomStateDTO> {
+export async function submitVote(
+	code: string,
+	playerToken: string,
+	targetId: string,
+): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, 'vote', (game) => {
 		const player = assertPlayer(game, playerToken);
-		if (!targetId || targetId === player.id) throw new AppError('VOTE_SELF', 400);
+		if (!targetId || targetId === player.id) throw new GameError('VOTE_SELF', 400);
 		const target = findPlayerById(game, targetId);
-		if (!target) throw new AppError('VOTE_NOT_CANDIDATE', 400);
+		if (!target) throw new GameError('VOTE_NOT_CANDIDATE', 400);
 		if (!(game.voteCandidateIds ?? []).includes(targetId)) {
-			throw new AppError('VOTE_NOT_CANDIDATE', 400);
+			throw new GameError('VOTE_NOT_CANDIDATE', 400);
 		}
 		player.voteId = targetId;
 	});
 }
 
-export async function reportCheese(code: string, hostToken: string, present: boolean): Promise<RoomStateDTO> {
+export async function reportCheese(
+	code: string,
+	hostToken: string,
+	present: boolean,
+): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, 'cheese-check', (game, at) => {
 		assertHost(game, hostToken);
 		if (present) {
@@ -774,27 +842,34 @@ export async function playAgain(code: string, hostToken: string): Promise<RoomSt
 /** Resets a private admin test room from any phase using the normal lobby cleanup rules. */
 export async function resetTestRoom(code: string, hostToken: string): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, undefined, (game) => {
-		if (!game.adminTest?.ownerUserId) throw new AppError('ROOM_NOT_FOUND', 404);
+		if (!game.adminTest?.ownerUserId) throw new GameError('ROOM_NOT_FOUND', 404);
 		assertHost(game, hostToken);
 		resetToLobby(game);
 	});
 }
 
-export async function kickPlayer(code: string, hostToken: string, targetId: string): Promise<RoomStateDTO> {
+export async function kickPlayer(
+	code: string,
+	hostToken: string,
+	targetId: string,
+): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, 'lobby', (game) => {
 		assertHost(game, hostToken);
 		const target = findPlayerById(game, targetId);
-		if (!target) throw new AppError('PLAYER_NOT_FOUND', 404);
-		if (target.token === hostToken) throw new AppError('CANNOT_KICK_SELF', 400);
+		if (!target) throw new GameError('PLAYER_NOT_FOUND', 404);
+		if (target.token === hostToken) throw new GameError('CANNOT_KICK_SELF', 400);
 		game.players = game.players.filter((player) => player.id !== targetId);
 	});
 }
 
-export async function leaveRoom(code: string, playerToken: string): Promise<{ roomClosed: boolean }> {
+export async function leaveRoom(
+	code: string,
+	playerToken: string,
+): Promise<{ roomClosed: boolean }> {
 	await dbConnect();
 	return withVersionRetry(async () => {
 		const game = (await CheeseThiefRoom.findOne({ code: code.toUpperCase() })) as RoomDoc | null;
-		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 		const player = findPlayer(game, playerToken);
 		if (!player) return { roomClosed: false };
 
@@ -819,6 +894,6 @@ export async function leaveRoom(code: string, playerToken: string): Promise<{ ro
 export async function readTestState(code: string, token: string): Promise<RoomStateDTO> {
 	await dbConnect();
 	const game = await CheeseThiefRoom.findOne({ code: code.toUpperCase() });
-	if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+	if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 	return toRoomStateDTO(game, token, now());
 }

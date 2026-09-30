@@ -48,9 +48,7 @@ describe('admin workspace drafts', () => {
 		expect(readWorkspaceDraft('course-a', 'unit', 'unit-1')?.title).toBe('Draft title');
 		expect(readWorkspaceDraft('course-b', 'unit', 'unit-1')).toBeNull();
 		expect(readWorkspaceDraft('course-a', 'section', 'unit-1')).toBeNull();
-		expect(workspaceDraftKey('course-a', 'unit', 'unit-1')).toContain(
-			'course-a:unit:unit-1',
-		);
+		expect(workspaceDraftKey('course-a', 'unit', 'unit-1')).toContain('course-a:unit:unit-1');
 
 		clearWorkspaceDraft('course-a', 'unit', 'unit-1');
 		expect(readWorkspaceDraft('course-a', 'unit', 'unit-1')).toBeNull();
@@ -102,9 +100,9 @@ describe('admin workspace drafts', () => {
 				{
 					title: 'Ví dụ',
 					summary: 'Tóm tắt',
-					foundationHtml:
-						'<ul><li><p>Điểm chính</p></li><li><p><strong>HRM</strong></p></li></ul>',
-					academicHtml: '<p><a href="https://example.com" class="text-accent" target="_blank" rel="noopener">Nguồn</a></p>',
+					foundationHtml: '<ul><li><p>Điểm chính</p></li><li><p><strong>HRM</strong></p></li></ul>',
+					academicHtml:
+						'<p><a href="https://example.com" class="text-accent" target="_blank" rel="noopener">Nguồn</a></p>',
 					expertHtml: '<p><em>Ghi chú</em></p>',
 				},
 				{

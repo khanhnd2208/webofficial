@@ -14,10 +14,6 @@ export const POST = withAdmin(async (request: NextRequest, user) => {
 		return apiError('Thiếu file nhạc', 400);
 	}
 
-	const created = await uploadMusicTrack(
-		user.id,
-		file,
-		label == null ? undefined : String(label),
-	);
+	const created = await uploadMusicTrack(user.id, file, label == null ? undefined : String(label));
 	return apiSuccess(created, 201);
 });

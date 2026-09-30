@@ -68,7 +68,9 @@ export default function CourseTopBar({
 					</span>
 				</Link>
 				<span aria-hidden />
-				{actions ? <div className="absolute right-2 top-1/2 -translate-y-1/2">{actions}</div> : null}
+				{actions ? (
+					<div className="absolute right-2 top-1/2 -translate-y-1/2">{actions}</div>
+				) : null}
 			</header>
 		);
 	}
@@ -95,7 +97,9 @@ export default function CourseTopBar({
 					aria-label={`${courseTitle}, ${completed}/${total} nội dung đã hoàn thành`}
 					className="min-h-11 min-w-0 rounded-[var(--mc-r-xs)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
 				>
-					<span className="block truncate text-xl font-semibold leading-7 text-ink">{courseTitle}</span>
+					<span className="block truncate text-xl font-semibold leading-7 text-ink">
+						{courseTitle}
+					</span>
 					{editMode ? (
 						<p className="mc-meta mt-1">{editSummary}</p>
 					) : (
@@ -111,7 +115,10 @@ export default function CourseTopBar({
 			<div className="flex shrink-0 items-center gap-4" data-testid="my-class-lesson-jump">
 				{lessons.length > 1 ? (
 					<label className="relative inline-flex min-w-0 max-w-[20rem] cursor-pointer items-center rounded-[var(--mc-r-sm)] border border-mc-rule bg-canvas pl-3 pr-8">
-						<span aria-hidden className="pointer-events-none mr-2 shrink-0 text-[14px] font-medium leading-5 text-ink-secondary">
+						<span
+							aria-hidden
+							className="pointer-events-none mr-2 shrink-0 text-[14px] font-medium leading-5 text-ink-secondary"
+						>
 							BÀI
 						</span>
 						<select

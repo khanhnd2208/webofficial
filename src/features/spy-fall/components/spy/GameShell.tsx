@@ -3,10 +3,10 @@
 import type { SpyCount } from '@/features/spy-fall/config/spyGame';
 import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 
-import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 
 import PhaseTracker from './PhaseTracker';
 
@@ -23,8 +23,7 @@ interface Props {
 	onOpenGuide?: () => void;
 }
 
-const iconButton =
-	'game-theme-icon-button shrink-0 disabled:opacity-40';
+const iconButton = 'game-theme-icon-button shrink-0 disabled:opacity-40';
 
 export default function GameShell({
 	phase,
@@ -59,7 +58,9 @@ export default function GameShell({
 								<GameIcon name="arrow-left" size={18} />
 							</button>
 						) : null}
-						<span className="game-theme-mark h-9 w-9 rounded-lg shadow-none"><GameIcon name="spy" size={17} /></span>
+						<span className="game-theme-mark h-9 w-9 rounded-lg shadow-none">
+							<GameIcon name="spy" size={17} />
+						</span>
 						<div className="min-w-0 flex-1">
 							<h1 className="font-display truncate text-base font-bold leading-tight text-ink">
 								{roomName}
@@ -82,7 +83,9 @@ export default function GameShell({
 						) : null}
 						<PrefsToggleGroup />
 					</div>
-					{inGame ? <PhaseTracker current={phase} showReveal={spyCount > 1} className="mt-2" /> : null}
+					{inGame ? (
+						<PhaseTracker current={phase} showReveal={spyCount > 1} className="mt-2" />
+					) : null}
 				</header>
 				<main className="flex flex-1 flex-col">{children}</main>
 			</div>

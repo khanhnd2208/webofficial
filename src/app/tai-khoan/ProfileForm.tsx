@@ -83,7 +83,10 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 	}
 
 	return (
-		<form onSubmit={onSubmit} className="space-y-6 rounded-[18px] border border-hairline bg-paper p-5 sm:p-8">
+		<form
+			onSubmit={onSubmit}
+			className="space-y-6 rounded-[18px] border border-hairline bg-paper p-5 sm:p-8"
+		>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div>
 					<label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
@@ -101,7 +104,10 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
 			<div className="grid gap-4 sm:grid-cols-3">
 				<div>
-					<label htmlFor="dob" className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+					<label
+						htmlFor="dob"
+						className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary"
+					>
 						Ngày sinh
 					</label>
 					<input
@@ -130,7 +136,10 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 					/>
 				</div>
 				<div>
-					<label htmlFor="major" className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+					<label
+						htmlFor="major"
+						className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary"
+					>
 						Chuyên ngành
 					</label>
 					<input
@@ -147,7 +156,10 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
 			<div>
 				<div className="mb-1.5 flex items-center justify-between">
-					<label htmlFor="bio" className="block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+					<label
+						htmlFor="bio"
+						className="block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary"
+					>
 						Bio
 					</label>
 					<span className="font-mono text-[11px] text-ink-secondary">{bioCount}/600</span>

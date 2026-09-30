@@ -1,13 +1,10 @@
 import { type NextRequest } from 'next/server';
 import { z } from 'zod';
 
-import {
-	importTestMetaSchema,
-	myspaceTestsService,
-} from '@/features/myspace-tests';
+import { importTestMetaSchema, myspaceTestsService } from '@/features/myspace-tests';
 import { AppError } from '@/lib/appError';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 const smartImportBodySchema = z.object({
 	text: z.string().min(1, 'Thiếu nội dung CSV'),
@@ -66,8 +63,7 @@ export const POST = withAdmin(async (request: NextRequest) => {
 		throw new AppError('Chỉ chấp nhận file .csv', 400);
 	}
 
-	const formDryRun =
-		dryRun || form.get('dryRun') === '1' || form.get('dryRun') === 'true';
+	const formDryRun = dryRun || form.get('dryRun') === '1' || form.get('dryRun') === 'true';
 
 	if (formDryRun) {
 		const preview = await myspaceTestsService.previewTestBundleFromFile(file);

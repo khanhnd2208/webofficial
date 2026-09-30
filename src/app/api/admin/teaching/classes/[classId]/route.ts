@@ -12,11 +12,16 @@ async function classId(context?: { params: Promise<{ classId: string }> }) {
 	return String((await context!.params).classId);
 }
 
-export const GET = withAdmin(async (_request, _user, context) => apiSuccess(await getTeachingClass(await classId(context))));
+export const GET = withAdmin(async (_request, _user, context) =>
+	apiSuccess(await getTeachingClass(await classId(context))),
+);
 
 export const PATCH = withAdmin(async (request: NextRequest, _user, context) =>
 	apiSuccess(
-		await updateTeachingClass(await classId(context), parseWithAppError(updateTeachingClassSchema, await request.json())),
+		await updateTeachingClass(
+			await classId(context),
+			parseWithAppError(updateTeachingClassSchema, await request.json()),
+		),
 	),
 );
 

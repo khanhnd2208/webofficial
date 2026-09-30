@@ -1,8 +1,16 @@
 import Link from 'next/link';
 import { listAdminCourses } from '@/features/my-class';
-import { currentTableParams, parseCourseLevel, parsePublishStatus } from '@/features/my-class/domain/listQuery';
+import {
+	currentTableParams,
+	parseCourseLevel,
+	parsePublishStatus,
+} from '@/features/my-class/domain/listQuery';
 import { routes } from '@/config/routes';
-import { StudioFilterBar, StudioFilterSelect, StudioPageHeader } from '@/components/myclass/admin/studio';
+import {
+	StudioFilterBar,
+	StudioFilterSelect,
+	StudioPageHeader,
+} from '@/components/myclass/admin/studio';
 import CoursesTable from '@/components/myclass/admin/tables/CoursesTable';
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +31,15 @@ export default async function AdminCoursesPage({
 	const params = searchParams ? await searchParams : {};
 	const status = parsePublishStatus(params.status);
 	const level = parseCourseLevel(params.level);
-	const current = currentTableParams(params, ['q', 'status', 'level', 'page', 'pageSize', 'sortBy', 'sortDir']);
+	const current = currentTableParams(params, [
+		'q',
+		'status',
+		'level',
+		'page',
+		'pageSize',
+		'sortBy',
+		'sortDir',
+	]);
 	const courses = await listAdminCourses({
 		q: params.q,
 		status,

@@ -2,7 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useVocabSetUrl, useVocabScoreUrl, useVocabChrome, VocabPracticeFrame, VocabBackLink } from '@/components/vocab/practice/VocabApiProvider';
+import {
+	useVocabSetUrl,
+	useVocabScoreUrl,
+	useVocabChrome,
+	VocabPracticeFrame,
+	VocabBackLink,
+} from '@/components/vocab/practice/VocabApiProvider';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
 
@@ -33,7 +39,9 @@ function playMatch() {
 			osc.start(ctx.currentTime + i * 0.08);
 			osc.stop(ctx.currentTime + i * 0.08 + 0.25);
 		});
-	} catch { /* silent */ }
+	} catch {
+		/* silent */
+	}
 }
 
 function playWrong() {
@@ -48,7 +56,9 @@ function playWrong() {
 		osc.connect(gain).connect(ctx.destination);
 		osc.start();
 		osc.stop(ctx.currentTime + 0.15);
-	} catch { /* silent */ }
+	} catch {
+		/* silent */
+	}
 }
 
 function playSuccess() {
@@ -67,11 +77,22 @@ function playSuccess() {
 			osc.start(ctx.currentTime + i * 0.1);
 			osc.stop(ctx.currentTime + i * 0.1 + 0.4);
 		});
-	} catch { /* silent */ }
+	} catch {
+		/* silent */
+	}
 }
 
 function burstConfetti(container: HTMLElement) {
-	const colors = ['#c44b28', '#e8714f', '#4a8c5c', '#6aad7c', '#c48a1a', '#d4a03a', '#f0ece4', '#1a1a1a'];
+	const colors = [
+		'#c44b28',
+		'#e8714f',
+		'#4a8c5c',
+		'#6aad7c',
+		'#c48a1a',
+		'#d4a03a',
+		'#f0ece4',
+		'#1a1a1a',
+	];
 	const count = 60;
 
 	for (let i = 0; i < count; i++) {
@@ -87,7 +108,7 @@ function burstConfetti(container: HTMLElement) {
 		`;
 		container.appendChild(el);
 
-		const angle = (Math.random() * 360) * (Math.PI / 180);
+		const angle = Math.random() * 360 * (Math.PI / 180);
 		const velocity = Math.random() * 400 + 200;
 		const vx = Math.cos(angle) * velocity;
 		const vy = Math.sin(angle) * velocity - 200;
@@ -98,7 +119,11 @@ function burstConfetti(container: HTMLElement) {
 				{ transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
 				{ transform: `translate(${vx}px, ${vy + 600}px) rotate(${rotation}deg)`, opacity: 0 },
 			],
-			{ duration: 1200 + Math.random() * 600, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards' }
+			{
+				duration: 1200 + Math.random() * 600,
+				easing: 'cubic-bezier(.25,.46,.45,.94)',
+				fill: 'forwards',
+			},
 		).onfinish = () => el.remove();
 	}
 }
@@ -124,14 +149,17 @@ function sparkleMatch(el1: HTMLElement, el2: HTMLElement) {
 			`;
 			document.body.appendChild(el);
 
-			const angle = (Math.random() * 360) * (Math.PI / 180);
+			const angle = Math.random() * 360 * (Math.PI / 180);
 			const v = Math.random() * 80 + 40;
 			el.animate(
 				[
 					{ transform: 'translate(0,0) scale(1)', opacity: 1 },
-					{ transform: `translate(${Math.cos(angle) * v}px, ${Math.sin(angle) * v}px) scale(0)`, opacity: 0 },
+					{
+						transform: `translate(${Math.cos(angle) * v}px, ${Math.sin(angle) * v}px) scale(0)`,
+						opacity: 0,
+					},
 				],
-				{ duration: 450, easing: 'ease-out', fill: 'forwards' }
+				{ duration: 450, easing: 'ease-out', fill: 'forwards' },
 			).onfinish = () => el.remove();
 		}
 	});
@@ -189,7 +217,10 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 			setId(paramId);
 			const res = await fetch(vocabUrl(paramId));
 			const json = await res.json();
-			if (!json.ok) { setError(json.error); return; }
+			if (!json.ok) {
+				setError(json.error);
+				return;
+			}
 			const t = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(t);
 			startGame(t);
@@ -207,55 +238,61 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 
 	const finished = cards.length > 0 && matched.size === cards.length;
 
-	const handleCardClick = useCallback((card: Card) => {
-		if (matched.has(card.id) || wrongPair) return;
+	const handleCardClick = useCallback(
+		(card: Card) => {
+			if (matched.has(card.id) || wrongPair) return;
 
-		if (!selectedId) {
-			setSelectedId(card.id);
-			return;
-		}
+			if (!selectedId) {
+				setSelectedId(card.id);
+				return;
+			}
 
-		if (selectedId === card.id) {
-			setSelectedId(null);
-			return;
-		}
-
-		const first = cards.find((c) => c.id === selectedId);
-		if (!first) { setSelectedId(null); return; }
-
-		setMoves((v) => v + 1);
-
-		if (first.wordId === card.wordId && first.type !== card.type) {
-			// Match!
-			playMatch();
-
-			// Sparkle effect
-			const el1 = cardRefs.current.get(first.id);
-			const el2 = cardRefs.current.get(card.id);
-			if (el1 && el2) sparkleMatch(el1, el2);
-
-			// Animate recent match
-			setRecentMatch(new Set([first.id, card.id]));
-			setTimeout(() => setRecentMatch(new Set()), 600);
-
-			setMatched((prev) => {
-				const next = new Set(prev);
-				next.add(first.id);
-				next.add(card.id);
-				return next;
-			});
-			setSelectedId(null);
-		} else {
-			// Wrong
-			playWrong();
-			wrongPairsRef.current += 1;
-			setWrongPair([first.id, card.id]);
-			setTimeout(() => {
-				setWrongPair(null);
+			if (selectedId === card.id) {
 				setSelectedId(null);
-			}, 600);
-		}
-	}, [selectedId, cards, matched, wrongPair]);
+				return;
+			}
+
+			const first = cards.find((c) => c.id === selectedId);
+			if (!first) {
+				setSelectedId(null);
+				return;
+			}
+
+			setMoves((v) => v + 1);
+
+			if (first.wordId === card.wordId && first.type !== card.type) {
+				// Match!
+				playMatch();
+
+				// Sparkle effect
+				const el1 = cardRefs.current.get(first.id);
+				const el2 = cardRefs.current.get(card.id);
+				if (el1 && el2) sparkleMatch(el1, el2);
+
+				// Animate recent match
+				setRecentMatch(new Set([first.id, card.id]));
+				setTimeout(() => setRecentMatch(new Set()), 600);
+
+				setMatched((prev) => {
+					const next = new Set(prev);
+					next.add(first.id);
+					next.add(card.id);
+					return next;
+				});
+				setSelectedId(null);
+			} else {
+				// Wrong
+				playWrong();
+				wrongPairsRef.current += 1;
+				setWrongPair([first.id, card.id]);
+				setTimeout(() => {
+					setWrongPair(null);
+					setSelectedId(null);
+				}, 600);
+			}
+		},
+		[selectedId, cards, matched, wrongPair],
+	);
 
 	/* ── Loading / Error ── */
 	if (error) {
@@ -284,18 +321,18 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 		return (
 			<VocabPracticeFrame className="min-h-screen">
 				<div ref={containerRef}>
-				<CompletionScreen
-					moves={moves}
-					elapsed={elapsed}
-					pairsCount={cards.length / 2}
-					id={id}
-					sessionStartTime={sessionStartTime}
-					wrongPairs={wrongPairsSnap}
-					containerRef={containerRef}
-					onRestart={() => {
-						startGame(allWords);
-					}}
-				/>
+					<CompletionScreen
+						moves={moves}
+						elapsed={elapsed}
+						pairsCount={cards.length / 2}
+						id={id}
+						sessionStartTime={sessionStartTime}
+						wrongPairs={wrongPairsSnap}
+						containerRef={containerRef}
+						onRestart={() => {
+							startGame(allWords);
+						}}
+					/>
 				</div>
 			</VocabPracticeFrame>
 		);
@@ -309,140 +346,179 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 	return (
 		<VocabPracticeFrame className="min-h-screen select-none">
 			<div ref={containerRef}>
-			{/* Top bar */}
-			<div className="border-b border-border">
-				<div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-				<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
-				<div className="flex items-center gap-4 text-xs text-muted">
-						<span className="flex items-center gap-1.5">
-							<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
-							</svg>
-							{moves}
-						</span>
-						<span className="flex items-center gap-1.5">
-							<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-							{formatTime(elapsed)}
-						</span>
-						<span className="font-bold text-success">{matchedPairs}/{totalPairs}</span>
+				{/* Top bar */}
+				<div className="border-b border-border">
+					<div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+						<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
+						<div className="flex items-center gap-4 text-xs text-muted">
+							<span className="flex items-center gap-1.5">
+								<svg
+									className="h-3.5 w-3.5"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									strokeWidth={2}
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59"
+									/>
+								</svg>
+								{moves}
+							</span>
+							<span className="flex items-center gap-1.5">
+								<svg
+									className="h-3.5 w-3.5"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									strokeWidth={2}
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+								{formatTime(elapsed)}
+							</span>
+							<span className="font-bold text-success">
+								{matchedPairs}/{totalPairs}
+							</span>
+						</div>
+					</div>
+					{/* Progress bar */}
+					<div className="h-1 bg-surface-hover overflow-hidden">
+						<div
+							className="h-full bg-success"
+							style={{
+								width: `${progress}%`,
+								transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+								boxShadow: '0 0 12px rgba(74, 140, 92, 0.4)',
+							}}
+						/>
 					</div>
 				</div>
-				{/* Progress bar */}
-				<div className="h-1 bg-surface-hover overflow-hidden">
-					<div
-						className="h-full bg-success"
-						style={{
-							width: `${progress}%`,
-							transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-							boxShadow: '0 0 12px rgba(74, 140, 92, 0.4)',
-						}}
-					/>
-				</div>
-			</div>
 
-			<div className="mx-auto max-w-4xl px-6 py-8 sm:py-12">
-				{/* Instruction */}
-				<div className="mb-6 flex items-center justify-between">
-					<span className="rounded-full bg-surface-hover px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-muted">
-						Nối từ với nghĩa
-					</span>
-					{matched.size > 0 && matched.size < cards.length && (
-						<span className="text-xs text-muted">
-							Còn <span className="font-bold text-foreground">{totalPairs - matchedPairs}</span> cặp
+				<div className="mx-auto max-w-4xl px-6 py-8 sm:py-12">
+					{/* Instruction */}
+					<div className="mb-6 flex items-center justify-between">
+						<span className="rounded-full bg-surface-hover px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+							Nối từ với nghĩa
 						</span>
-					)}
-				</div>
+						{matched.size > 0 && matched.size < cards.length && (
+							<span className="text-xs text-muted">
+								Còn <span className="font-bold text-foreground">{totalPairs - matchedPairs}</span>{' '}
+								cặp
+							</span>
+						)}
+					</div>
 
-				{/* Cards grid */}
-				<div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 sm:gap-3">
-					{cards.map((card, cardIndex) => {
-						const isMatched = matched.has(card.id);
-						const isSelected = selectedId === card.id;
-						const isWrong = wrongPair?.includes(card.id);
-						const isRecentlyMatched = recentMatch.has(card.id);
+					{/* Cards grid */}
+					<div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 sm:gap-3">
+						{cards.map((card, cardIndex) => {
+							const isMatched = matched.has(card.id);
+							const isSelected = selectedId === card.id;
+							const isWrong = wrongPair?.includes(card.id);
+							const isRecentlyMatched = recentMatch.has(card.id);
 
-						return (
-							<button
-								key={card.id}
-								ref={(el) => { if (el) cardRefs.current.set(card.id, el); }}
-								onClick={() => handleCardClick(card)}
-								disabled={isMatched}
-								className={`group relative rounded-xl border-2 p-3 text-left transition-all duration-200 sm:p-4 ${
-									isMatched
-										? 'border-success/30 bg-success-subtle cursor-default'
-										: isWrong
-											? 'border-error bg-error-subtle cursor-default'
-											: isSelected
-												? 'border-accent bg-accent-subtle cursor-pointer shadow-lg'
-												: 'border-border bg-surface hover:border-border-hover hover:bg-surface-hover hover:shadow-md cursor-pointer'
-								} ${!isMatched && !isWrong ? 'active:scale-[0.97]' : ''}`}
-								style={{
-									animation: gameReady
-										? isRecentlyMatched
-											? 'matchPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+							return (
+								<button
+									key={card.id}
+									ref={(el) => {
+										if (el) cardRefs.current.set(card.id, el);
+									}}
+									onClick={() => handleCardClick(card)}
+									disabled={isMatched}
+									className={`group relative rounded-xl border-2 p-3 text-left transition-all duration-200 sm:p-4 ${
+										isMatched
+											? 'border-success/30 bg-success-subtle cursor-default'
 											: isWrong
-												? 'wrongShake 0.5s ease'
-												: isMatched
-													? 'matchFadeOut 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards'
-													: `cardAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${cardIndex * 0.03}s both`
-										: undefined,
-									opacity: isMatched && !isRecentlyMatched ? 0.5 : 1,
-								}}
-							>
-								{/* Type indicator dot */}
-								<div className="mb-2 flex items-center gap-1.5">
-									<div
-										className={`h-2 w-2 rounded-full ${
-											card.type === 'word' ? 'bg-accent' : 'bg-blue-400'
-										}`}
-									/>
-									<span className={`text-[9px] font-bold uppercase tracking-widest ${
-										card.type === 'word' ? 'text-accent' : 'text-blue-400'
-									}`}>
-										{card.type === 'word' ? 'Từ' : 'Nghĩa'}
-									</span>
-								</div>
-
-								{/* Card text */}
-								<span className={`block text-sm font-medium leading-relaxed transition-colors ${
-									isMatched ? 'text-success' : 'text-foreground'
-								}`}>
-									{card.text}
-								</span>
-
-								{/* Matched checkmark */}
-								{isMatched && (
-									<div
-										className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-success text-white shadow-md"
-										style={{ animation: 'iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-									>
-										<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-											<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-										</svg>
+												? 'border-error bg-error-subtle cursor-default'
+												: isSelected
+													? 'border-accent bg-accent-subtle cursor-pointer shadow-lg'
+													: 'border-border bg-surface hover:border-border-hover hover:bg-surface-hover hover:shadow-md cursor-pointer'
+									} ${!isMatched && !isWrong ? 'active:scale-[0.97]' : ''}`}
+									style={{
+										animation: gameReady
+											? isRecentlyMatched
+												? 'matchPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+												: isWrong
+													? 'wrongShake 0.5s ease'
+													: isMatched
+														? 'matchFadeOut 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+														: `cardAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${cardIndex * 0.03}s both`
+											: undefined,
+										opacity: isMatched && !isRecentlyMatched ? 0.5 : 1,
+									}}
+								>
+									{/* Type indicator dot */}
+									<div className="mb-2 flex items-center gap-1.5">
+										<div
+											className={`h-2 w-2 rounded-full ${
+												card.type === 'word' ? 'bg-accent' : 'bg-blue-400'
+											}`}
+										/>
+										<span
+											className={`text-[9px] font-bold uppercase tracking-widest ${
+												card.type === 'word' ? 'text-accent' : 'text-blue-400'
+											}`}
+										>
+											{card.type === 'word' ? 'Từ' : 'Nghĩa'}
+										</span>
 									</div>
-								)}
 
-								{/* Selected ring effect */}
-								{isSelected && (
-									<div
-										className="absolute inset-0 rounded-xl border-2 border-accent"
-										style={{ animation: 'selectPulse 1.5s ease-in-out infinite' }}
-									/>
-								)}
-							</button>
-						);
-					})}
+									{/* Card text */}
+									<span
+										className={`block text-sm font-medium leading-relaxed transition-colors ${
+											isMatched ? 'text-success' : 'text-foreground'
+										}`}
+									>
+										{card.text}
+									</span>
+
+									{/* Matched checkmark */}
+									{isMatched && (
+										<div
+											className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-success text-white shadow-md"
+											style={{ animation: 'iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+										>
+											<svg
+												className="h-3.5 w-3.5"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+												strokeWidth={3}
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M4.5 12.75l6 6 9-13.5"
+												/>
+											</svg>
+										</div>
+									)}
+
+									{/* Selected ring effect */}
+									{isSelected && (
+										<div
+											className="absolute inset-0 rounded-xl border-2 border-accent"
+											style={{ animation: 'selectPulse 1.5s ease-in-out infinite' }}
+										/>
+									)}
+								</button>
+							);
+						})}
+					</div>
+
+					<p className="mt-8 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+						Chọn 1 thẻ từ và 1 thẻ nghĩa tương ứng để ghép cặp
+					</p>
 				</div>
 
-				<p className="mt-8 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
-					Chọn 1 thẻ từ và 1 thẻ nghĩa tương ứng để ghép cặp
-				</p>
-			</div>
-
-			{/* Animations */}
-			<style>{`
+				{/* Animations */}
+				<style>{`
 				@keyframes cardAppear {
 					0% { transform: translateY(20px) scale(0.9); opacity: 0; }
 					100% { transform: translateY(0) scale(1); opacity: 1; }
@@ -505,7 +581,11 @@ function CompletionScreen({
 	const scoreUrlFor = useVocabScoreUrl();
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
-	const [scoreData, setScoreData] = useState<{ score: number; isNewBest: boolean; previousBest: number } | null>(null);
+	const [scoreData, setScoreData] = useState<{
+		score: number;
+		isNewBest: boolean;
+		previousBest: number;
+	} | null>(null);
 	const scoreSubmittedRef = useRef(false);
 
 	// Rating based on moves efficiency
@@ -521,10 +601,18 @@ function CompletionScreen({
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ mode: 'MATCHING', sessionStartTime, sessionEndTime, penaltyMs }),
-		}).then((r) => r.json()).then((json) => {
-			if (json.ok) setScoreData({ score: Math.round(json.data.score), isNewBest: json.data.isNewBest, previousBest: Math.round(json.data.previousBest ?? 0) });
-		}).catch(() => {});
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		})
+			.then((r) => r.json())
+			.then((json) => {
+				if (json.ok)
+					setScoreData({
+						score: Math.round(json.data.score),
+						isNewBest: json.data.isNewBest,
+						previousBest: Math.round(json.data.previousBest ?? 0),
+					});
+			})
+			.catch(() => {});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	useEffect(() => {
@@ -572,7 +660,13 @@ function CompletionScreen({
 											<stop offset="100%" stopColor="#ff8800" />
 										</linearGradient>
 									</defs>
-									<path d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5 6.6 18.3l1.5-6-4.6-4 6.1-.5L12 2z" fill={`url(#star-${s})`} stroke="#ff9900" strokeWidth="0.5" strokeLinejoin="round" />
+									<path
+										d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5 6.6 18.3l1.5-6-4.6-4 6.1-.5L12 2z"
+										fill={`url(#star-${s})`}
+										stroke="#ff9900"
+										strokeWidth="0.5"
+										strokeLinejoin="round"
+									/>
 									<path d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5" fill="#fff" opacity="0.15" />
 								</svg>
 							</span>
@@ -592,7 +686,9 @@ function CompletionScreen({
 						<div className="h-8 w-px bg-border" />
 						<div className="text-center">
 							<p className="text-2xl font-black text-foreground">{formatTime(elapsed)}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Thời gian</p>
+							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+								Thời gian
+							</p>
 						</div>
 						<div className="h-8 w-px bg-border" />
 						<div className="text-center">
@@ -605,8 +701,12 @@ function CompletionScreen({
 					{scoreData && (
 						<div className="mx-auto mt-4 max-w-xs rounded-xl border border-border bg-surface px-4 py-3 text-center">
 							<p className="text-xs font-bold uppercase tracking-widest text-muted">Điểm số</p>
-							<p className="mt-1 text-3xl font-black tabular-nums text-foreground">{scoreData.score.toLocaleString()}</p>
-							<p className={`mt-1 text-xs font-bold ${scoreData.isNewBest ? 'text-success' : 'text-muted'}`}>
+							<p className="mt-1 text-3xl font-black tabular-nums text-foreground">
+								{scoreData.score.toLocaleString()}
+							</p>
+							<p
+								className={`mt-1 text-xs font-bold ${scoreData.isNewBest ? 'text-success' : 'text-muted'}`}
+							>
 								{scoreData.isNewBest
 									? `🏆 Kỷ lục mới! (Trước: ${scoreData.previousBest.toLocaleString()})`
 									: `Kỷ lục: ${scoreData.previousBest.toLocaleString()}`}
@@ -616,11 +716,24 @@ function CompletionScreen({
 
 					<div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
 						<button
-							onClick={() => { firedRef.current = false; onRestart(); }}
+							onClick={() => {
+								firedRef.current = false;
+								onRestart();
+							}}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
 						>
-							<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+							<svg
+								className="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
+								/>
 							</svg>
 							Chơi lại
 						</button>
@@ -634,10 +747,16 @@ function CompletionScreen({
 
 					{/* Try other modes */}
 					<div className="mt-6">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Thử chế độ khác</p>
+						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+							Thử chế độ khác
+						</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">
 							{[
-								{ href: chrome.modeHref(id, 'flashcards'), label: 'Flashcards', color: 'text-accent' },
+								{
+									href: chrome.modeHref(id, 'flashcards'),
+									label: 'Flashcards',
+									color: 'text-accent',
+								},
 								{ href: chrome.modeHref(id, 'mcq'), label: 'Trắc nghiệm', color: 'text-success' },
 								{ href: chrome.modeHref(id, 'fill-blank'), label: 'Điền từ', color: 'text-indigo' },
 							].map((link) => (

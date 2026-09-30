@@ -1,13 +1,22 @@
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
-import { nextUnfinishedAfter, resolveLearnerState, seedsFromCourseOutline } from '../domain/learnerState';
+import {
+	nextUnfinishedAfter,
+	resolveLearnerState,
+	seedsFromCourseOutline,
+} from '../domain/learnerState';
 import type { MyClassActor } from '../domain/actor';
 import * as courseRepo from '../repositories/courseRepository';
 import * as progressRepo from '../repositories/progressRepository';
 import * as vocabRepo from '../repositories/vocabAssignmentRepository';
 import type { MyClassCourseDetail, MyClassKnowledgeUnitDetail } from '../types';
-import { flattenCurriculum, mapAuthoringCourse, mapAuthoringUnit, mapVocabAssignment } from './mappers';
+import {
+	flattenCurriculum,
+	mapAuthoringCourse,
+	mapAuthoringUnit,
+	mapVocabAssignment,
+} from './mappers';
 
 function assertAdmin(role: string | null | undefined) {
 	if (role !== 'admin') throw new AppError('Forbidden', 403);

@@ -4,10 +4,8 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantClass: Record<ButtonVariant, string> = {
-	primary:
-		'bg-foreground text-background hover:bg-foreground-secondary border border-transparent',
-	secondary:
-		'bg-surface text-foreground border border-border-strong hover:bg-surface-hover',
+	primary: 'bg-foreground text-background hover:bg-foreground-secondary border border-transparent',
+	secondary: 'bg-surface text-foreground border border-border-strong hover:bg-surface-hover',
 	ghost: 'bg-transparent text-foreground border border-transparent hover:bg-surface-hover',
 	danger: 'bg-error text-accent-foreground border border-transparent hover:opacity-90',
 };

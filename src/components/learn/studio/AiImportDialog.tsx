@@ -5,7 +5,11 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import { estimateReadingMinutes, formatMinutes } from '@/features/learn/content';
 import { parseDiscussionPaste } from '@/features/learn/discussionImport';
-import { cleanAiPaste, parseCourseMarkdown, planContentReplace } from '@/features/learn/lessonImport';
+import {
+	cleanAiPaste,
+	parseCourseMarkdown,
+	planContentReplace,
+} from '@/features/learn/lessonImport';
 import { LEARN_FORMAT_PROMPTS } from '@/features/learn/prompts';
 import { parseQuizPaste } from '@/features/learn/quizImport';
 import { LEARN_MAX_MARKDOWN } from '@/features/learn/schemas';
@@ -95,14 +99,19 @@ export default function AiImportDialog({
 	const [lessonMode, setLessonMode] = useState<'create' | 'replace'>('create');
 	const [questionMode, setQuestionMode] = useState<'append' | 'replace'>('append');
 	const [lessonId, setLessonId] = useState(selectedLessonId ?? lessons[0]?.id ?? '');
-	const [sectionTitle, setSectionTitle] = useState(DEFAULT_SECTION_TITLE[initialKind === 'lesson' ? 'quiz' : initialKind]);
+	const [sectionTitle, setSectionTitle] = useState(
+		DEFAULT_SECTION_TITLE[initialKind === 'lesson' ? 'quiz' : initialKind],
+	);
 	const [titleTouched, setTitleTouched] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const deferredText = useDeferredValue(text);
 	const { copied, copy } = useCopy();
 
-	const cleaned = useMemo(() => (deferredText.trim() ? cleanAiPaste(deferredText) : null), [deferredText]);
+	const cleaned = useMemo(
+		() => (deferredText.trim() ? cleanAiPaste(deferredText) : null),
+		[deferredText],
+	);
 	const lessonParsed = useMemo(
 		() => (kind === 'lesson' && cleaned ? parseCourseMarkdown(cleaned.markdown) : null),
 		[kind, cleaned],
@@ -119,13 +128,17 @@ export default function AiImportDialog({
 	const lessonSections = lessonParsed?.lessons.flatMap((lesson) => lesson.sections) ?? [];
 	const oversized = lessonSections.some((section) => section.markdown.length > LEARN_MAX_MARKDOWN);
 	const questionCount =
-		kind === 'discussion' ? (discussionParsed?.questions.length ?? 0) : (quizParsed?.questions.length ?? 0);
+		kind === 'discussion'
+			? (discussionParsed?.questions.length ?? 0)
+			: (quizParsed?.questions.length ?? 0);
 	const missingAnswers = new Set(quizParsed?.missingAnswer ?? []);
 	const deletedCount = useMemo(() => {
 		if (kind !== 'lesson' || lessonMode !== 'replace' || !cleaned) return 0;
 		const current = lessons.find((lesson) => lesson.id === lessonId);
 		if (!current) return 0;
-		const incoming = parseCourseMarkdown(cleaned.markdown).lessons.flatMap((lesson) => lesson.sections);
+		const incoming = parseCourseMarkdown(cleaned.markdown).lessons.flatMap(
+			(lesson) => lesson.sections,
+		);
 		return planContentReplace(current.sections, incoming).deletes.length;
 	}, [kind, lessonMode, lessons, lessonId, cleaned]);
 
@@ -158,7 +171,13 @@ export default function AiImportDialog({
 				await onSave(
 					target
 						? { kind: 'discussion', mode: questionMode, sectionId: target.sectionId, questions }
-						: { kind: 'discussion', mode: 'create', lessonId, title: sectionTitle.trim(), questions },
+						: {
+								kind: 'discussion',
+								mode: 'create',
+								lessonId,
+								title: sectionTitle.trim(),
+								questions,
+							},
 				);
 				return;
 			}
@@ -197,7 +216,12 @@ export default function AiImportDialog({
 					<button type="button" className="ln-btn" onClick={onClose} disabled={busy}>
 						Hủy
 					</button>
-					<button type="button" className="ln-btn ln-btn--primary" disabled={busy || !canSave} onClick={() => void submit()}>
+					<button
+						type="button"
+						className="ln-btn ln-btn--primary"
+						disabled={busy || !canSave}
+						onClick={() => void submit()}
+					>
 						{busy ? 'Đang lưu…' : saveLabel}
 					</button>
 				</>
@@ -219,7 +243,11 @@ export default function AiImportDialog({
 						))}
 					</div>
 				)}
-				<button type="button" className="ln-link-btn self-start" onClick={() => void copy(LEARN_FORMAT_PROMPTS[promptKey(kind)])}>
+				<button
+					type="button"
+					className="ln-link-btn self-start"
+					onClick={() => void copy(LEARN_FORMAT_PROMPTS[promptKey(kind)])}
+				>
 					<StudioIcon name="copy" size={14} /> {copied ? 'Đã chép prompt' : 'Chép prompt định dạng'}
 				</button>
 				<p className="text-sm text-ink-secondary">
@@ -261,7 +289,10 @@ export default function AiImportDialog({
 							{warning}
 						</p>
 					))}
-					{kind === 'lesson' && lessonParsed && (lessonParsed.lessons.length ?? 0) > 1 && lessonMode === 'replace' ? (
+					{kind === 'lesson' &&
+					lessonParsed &&
+					(lessonParsed.lessons.length ?? 0) > 1 &&
+					lessonMode === 'replace' ? (
 						<p className="ln-warning">Có nhiều dòng # — chế độ này sẽ gộp nhiều bài vào một bài.</p>
 					) : null}
 					{deletedCount > 0 ? (
@@ -284,10 +315,16 @@ export default function AiImportDialog({
 											<span className="ln-preview__index tabular-nums">{index + 1}</span>
 											<span className="min-w-0 flex-1">
 												<span className="block font-medium">
-													{section.type !== 'READING' ? `${LEARN_SECTION_KIND_SHORT[section.type]} · ` : ''}
+													{section.type !== 'READING'
+														? `${LEARN_SECTION_KIND_SHORT[section.type]} · `
+														: ''}
 													{section.title}
 												</span>
-												{section.summary ? <span className="block text-sm text-ink-secondary">{section.summary}</span> : null}
+												{section.summary ? (
+													<span className="block text-sm text-ink-secondary">
+														{section.summary}
+													</span>
+												) : null}
 											</span>
 											<span className="text-xs text-ink-secondary tabular-nums">
 												{section.type === 'QUIZ' || section.type === 'PRACTICE'
@@ -301,7 +338,9 @@ export default function AiImportDialog({
 								</ol>
 							</>
 						) : (
-							<p className="text-sm text-ink-secondary">Các mục sẽ hiện ở đây khi bạn dán nội dung.</p>
+							<p className="text-sm text-ink-secondary">
+								Các mục sẽ hiện ở đây khi bạn dán nội dung.
+							</p>
 						)
 					) : kind === 'discussion' ? (
 						discussionParsed && discussionParsed.questions.length ? (
@@ -325,21 +364,32 @@ export default function AiImportDialog({
 								))}
 							</ol>
 						) : (
-							<p className="text-sm text-ink-secondary">Các câu sẽ hiện ở đây khi bạn dán nội dung.</p>
+							<p className="text-sm text-ink-secondary">
+								Các câu sẽ hiện ở đây khi bạn dán nội dung.
+							</p>
 						)
 					) : quizParsed && quizParsed.questions.length ? (
 						<ol className="ln-preview__list">
 							{quizParsed.questions.map((question, index) => (
-								<li key={question.id} data-missing={missingAnswers.has(question.id) ? 'true' : undefined}>
+								<li
+									key={question.id}
+									data-missing={missingAnswers.has(question.id) ? 'true' : undefined}
+								>
 									<p className="font-medium">
 										{index + 1}. {question.question || <em>(chưa có câu hỏi)</em>}
-										{missingAnswers.has(question.id) ? <span className="ln-warning"> · thiếu đáp án</span> : null}
+										{missingAnswers.has(question.id) ? (
+											<span className="ln-warning"> · thiếu đáp án</span>
+										) : null}
 									</p>
 									<ul>
 										{question.options.map((option, optionIndex) => (
 											<li
 												key={optionIndex}
-												data-correct={!missingAnswers.has(question.id) && optionIndex === question.correctIndex ? 'true' : undefined}
+												data-correct={
+													!missingAnswers.has(question.id) && optionIndex === question.correctIndex
+														? 'true'
+														: undefined
+												}
 											>
 												{'ABCDEFGH'[optionIndex]}. {option}
 											</li>
@@ -349,7 +399,9 @@ export default function AiImportDialog({
 							))}
 						</ol>
 					) : (
-						<p className="text-sm text-ink-secondary">Các câu sẽ hiện ở đây khi bạn dán nội dung.</p>
+						<p className="text-sm text-ink-secondary">
+							Các câu sẽ hiện ở đây khi bạn dán nội dung.
+						</p>
 					)}
 				</div>
 			</div>
@@ -395,7 +447,12 @@ function DestinationFields({
 					<option value="replace">Thay nội dung bài</option>
 				</select>
 				{lessonMode === 'replace' ? (
-					<select className="ln-input" value={lessonId} aria-label="Bài nhận nội dung" onChange={(event) => onLessonId(event.target.value)}>
+					<select
+						className="ln-input"
+						value={lessonId}
+						aria-label="Bài nhận nội dung"
+						onChange={(event) => onLessonId(event.target.value)}
+					>
 						{lessons.map((lesson) => (
 							<option key={lesson.id} value={lesson.id}>
 								{lesson.title}
@@ -425,7 +482,12 @@ function DestinationFields({
 		<div className="flex flex-wrap items-center gap-2">
 			<label className="flex items-center gap-2 text-sm">
 				Tạo mục mới trong bài
-				<select className="ln-input" value={lessonId} aria-label="Bài nhận mục" onChange={(event) => onLessonId(event.target.value)}>
+				<select
+					className="ln-input"
+					value={lessonId}
+					aria-label="Bài nhận mục"
+					onChange={(event) => onLessonId(event.target.value)}
+				>
 					{lessons.map((lesson) => (
 						<option key={lesson.id} value={lesson.id}>
 							{lesson.title}

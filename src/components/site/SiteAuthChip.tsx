@@ -12,10 +12,8 @@ type SiteAuthChipProps = {
 };
 
 const variantClass = {
-	chrome:
-		'text-[0.6875rem] tracking-[0.16em] text-ink/55 hover:text-ink focus-visible:text-ink',
-	intro:
-		'font-display text-sm tracking-[0.2em] text-ink/70 hover:text-ink focus-visible:text-ink',
+	chrome: 'text-[0.6875rem] tracking-[0.16em] text-ink/55 hover:text-ink focus-visible:text-ink',
+	intro: 'font-display text-sm tracking-[0.2em] text-ink/70 hover:text-ink focus-visible:text-ink',
 	introMobile:
 		'font-mono text-[0.8125rem] tracking-[0.18em] text-ink-secondary hover:text-ink focus-visible:text-ink',
 } as const;

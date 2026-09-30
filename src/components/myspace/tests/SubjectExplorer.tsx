@@ -7,10 +7,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Sheet } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
 import { foldSearchText, testMatchesSearch } from '@/features/myspace-tests/search';
-import type {
-	PublicSpaceTestListItem,
-	PublicSubjectGroup,
-} from '@/features/myspace-tests/types';
+import type { PublicSpaceTestListItem, PublicSubjectGroup } from '@/features/myspace-tests/types';
 
 import {
 	formatCompletedDate,
@@ -92,8 +89,7 @@ function HistoryPanel({ test }: { test: PublicSpaceTestListItem }) {
 			data-testid={`myspace-test-history-${test.slug}`}
 		>
 			{completions.map((item, index) => {
-				const pct =
-					item.total > 0 ? Math.round((item.score / item.total) * 1000) / 10 : null;
+				const pct = item.total > 0 ? Math.round((item.score / item.total) * 1000) / 10 : null;
 				return (
 					<li
 						key={`${item.submittedAt}-${index}`}
@@ -151,9 +147,7 @@ function TestRow({
 						{test.title}
 					</h3>
 					<div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-ink-secondary">
-						<span className="tabular-nums">
-							{test.questionCount} câu
-						</span>
+						<span className="tabular-nums">{test.questionCount} câu</span>
 						<span aria-hidden className="text-ink-secondary/45">
 							·
 						</span>
@@ -168,9 +162,7 @@ function TestRow({
 								<span aria-hidden className="text-ink-secondary/45">
 									·
 								</span>
-								<span className="tabular-nums text-ink">
-									Tốt nhất {bestScore}
-								</span>
+								<span className="tabular-nums text-ink">Tốt nhất {bestScore}</span>
 							</>
 						) : null}
 						{completed && progress.completedCount > 0 ? (
@@ -178,9 +170,7 @@ function TestRow({
 								<span aria-hidden className="text-ink-secondary/45">
 									·
 								</span>
-								<span className="tabular-nums">
-									{progress.completedCount} lượt
-								</span>
+								<span className="tabular-nums">{progress.completedCount} lượt</span>
 							</>
 						) : null}
 						{completed && lastDate ? (
@@ -334,7 +324,9 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 	const [query, setQuery] = useState('');
 	const [subjectQuery, setSubjectQuery] = useState('');
 	const [sheetOpen, setSheetOpen] = useState(false);
-	const [openPanel, setOpenPanel] = useState<{ slug: string; type: 'details' | 'history' } | null>(null);
+	const [openPanel, setOpenPanel] = useState<{ slug: string; type: 'details' | 'history' } | null>(
+		null,
+	);
 	const subjectButtonRef = useRef<HTMLButtonElement>(null);
 
 	const selectedSubjectId = searchParams.get('subject');
@@ -518,21 +510,25 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 									>
 										{group.tests.map((test, index) => (
 											<TestRow
-																	key={test.slug}
-																	test={test}
-																	index={index}
-																	detailsOpen={openPanel?.slug === test.slug && openPanel.type === 'details'}
-																historyOpen={openPanel?.slug === test.slug && openPanel.type === 'history'}
-																onToggleDetails={() => setOpenPanel((current) =>
-																	current?.slug === test.slug && current.type === 'details'
-																		? null
-																		: { slug: test.slug, type: 'details' },
-																)}
-																onToggleHistory={() => setOpenPanel((current) =>
-																	current?.slug === test.slug && current.type === 'history'
-																		? null
-																		: { slug: test.slug, type: 'history' },
-																)}
+												key={test.slug}
+												test={test}
+												index={index}
+												detailsOpen={openPanel?.slug === test.slug && openPanel.type === 'details'}
+												historyOpen={openPanel?.slug === test.slug && openPanel.type === 'history'}
+												onToggleDetails={() =>
+													setOpenPanel((current) =>
+														current?.slug === test.slug && current.type === 'details'
+															? null
+															: { slug: test.slug, type: 'details' },
+													)
+												}
+												onToggleHistory={() =>
+													setOpenPanel((current) =>
+														current?.slug === test.slug && current.type === 'history'
+															? null
+															: { slug: test.slug, type: 'history' },
+													)
+												}
 											/>
 										))}
 									</ul>

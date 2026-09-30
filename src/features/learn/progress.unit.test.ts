@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { courseHue, courseStatus, percentOf, summarizeCourse, toCurriculumLessons } from './progress';
+import {
+	courseHue,
+	courseStatus,
+	percentOf,
+	summarizeCourse,
+	toCurriculumLessons,
+} from './progress';
 import type { LearnCourseOutline } from './types';
 
 const outline: Pick<LearnCourseOutline, 'lessons'> = {
@@ -26,7 +32,14 @@ const outline: Pick<LearnCourseOutline, 'lessons'> = {
 	],
 };
 
-const passed = { score: 4, total: 5, percentage: 80, passed: true, answers: {}, completedAt: '2026-09-01T00:00:00.000Z' };
+const passed = {
+	score: 4,
+	total: 5,
+	percentage: 80,
+	passed: true,
+	answers: {},
+	completedAt: '2026-09-01T00:00:00.000Z',
+};
 
 describe('summarizeCourse', () => {
 	it('starts a fresh learner on the first section', () => {
@@ -49,12 +62,21 @@ describe('summarizeCourse', () => {
 		expect(summary.percent).toBe(50);
 		expect(summary.remainingMinutes).toBe(17);
 		expect(summary.lessons.map((lesson) => lesson.completedCount)).toEqual([1, 1]);
-		expect(summary.sections[2]).toMatchObject({ lessonIndex: 1, sectionIndex: 0, lessonTitle: 'Vận dụng' });
+		expect(summary.sections[2]).toMatchObject({
+			lessonIndex: 1,
+			sectionIndex: 0,
+			lessonTitle: 'Vận dụng',
+		});
 	});
 
 	it('reports completion and passed quizzes', () => {
 		const done = { completed: true, note: '', quizResult: null };
-		const summary = summarizeCourse(outline, { s1: done, s2: done, s3: done, s4: { ...done, quizResult: passed } });
+		const summary = summarizeCourse(outline, {
+			s1: done,
+			s2: done,
+			s3: done,
+			s4: { ...done, quizResult: passed },
+		});
 		expect(summary.status).toBe('completed');
 		expect(summary.nextSection).toBeNull();
 		expect(summary.percent).toBe(100);
@@ -62,7 +84,9 @@ describe('summarizeCourse', () => {
 	});
 
 	it('keeps note bodies out of the client curriculum', () => {
-		const summary = summarizeCourse(outline, { s2: { completed: false, note: '  ghi chú  ', quizResult: null } });
+		const summary = summarizeCourse(outline, {
+			s2: { completed: false, note: '  ghi chú  ', quizResult: null },
+		});
 		const lessons = toCurriculumLessons(summary.lessons);
 		expect(lessons[0].sections[1]).toMatchObject({ id: 's2', hasNote: true });
 		expect(lessons[0].sections[1]).not.toHaveProperty('note');

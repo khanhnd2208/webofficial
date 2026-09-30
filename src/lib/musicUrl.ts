@@ -1,4 +1,4 @@
-import { MESSAGE_MUSIC_TRACKS } from '@/constants/message';
+import { MESSAGE_MUSIC_TRACKS } from '@/config/message';
 
 /** Canonical URL for Gác Lại Âu Lo (renamed from Unicode filename). */
 export const GAC_LAI_AU_LO_URL = '/music/gac-lai-au-lo.mp3';
@@ -45,7 +45,10 @@ export function resolveMusicUrl(track?: string): string | undefined {
 	if (track.startsWith('/')) {
 		// Legacy Unicode filename URLs (NFD/NFC) → canonical slug
 		const normalized = normalizeMusicPath(track);
-		if (normalized.includes('Gác Lại Âu Lo') || normalized.toLowerCase().includes('gác lại âu lo')) {
+		if (
+			normalized.includes('Gác Lại Âu Lo') ||
+			normalized.toLowerCase().includes('gác lại âu lo')
+		) {
 			return GAC_LAI_AU_LO_URL;
 		}
 		return track;
@@ -58,7 +61,9 @@ export function resolveMusicUrl(track?: string): string | undefined {
 export function getMusicTrackLabel(trackId?: string): string {
 	if (!trackId) return 'Nhạc nền';
 	const url = resolveMusicUrl(trackId);
-	const preset = MESSAGE_MUSIC_TRACKS.find((t) => t.id === trackId || t.url === trackId || t.url === url);
+	const preset = MESSAGE_MUSIC_TRACKS.find(
+		(t) => t.id === trackId || t.url === trackId || t.url === url,
+	);
 	if (preset) return preset.label;
 	if (url === GAC_LAI_AU_LO_URL) return 'Gác Lại Âu Lo';
 	const parts = (url ?? trackId).split('/');

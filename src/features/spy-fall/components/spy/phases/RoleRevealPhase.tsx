@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button, Dossier } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button, Dossier } from '@/features/board-game-shared/components/ui';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 

@@ -31,8 +31,8 @@ export default function GlobalError({
 						>
 							Thử lại
 						</button>
-					{/* global-error replaces root layout — Link may be unavailable */}
-					{/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+						{/* global-error replaces root layout — Link may be unavailable */}
+						{/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
 						<a
 							href="/"
 							className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#d8d0c3] px-5 text-sm font-semibold"

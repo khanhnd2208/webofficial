@@ -51,7 +51,10 @@ function teachingClass(overrides: Partial<TeachingClassListItem> = {}): Teaching
 	};
 }
 
-function course(classes: TeachingClassListItem[], overrides: Partial<TeachingCourseListItem> = {}): TeachingCourseListItem {
+function course(
+	classes: TeachingClassListItem[],
+	overrides: Partial<TeachingCourseListItem> = {},
+): TeachingCourseListItem {
 	return {
 		id: 'course-1',
 		courseCode: '61MGT3HRM',
@@ -101,11 +104,15 @@ describe('TeachingActiveClasses', () => {
 			'href',
 			'/lop/hrm-01',
 		);
-		expect(screen.getByRole('button', { name: 'Sao chép link sinh viên lớp HRM01' })).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: 'Sao chép link sinh viên lớp HRM01' }),
+		).toBeInTheDocument();
 	});
 
 	it('points private classes to the share settings instead of a public link', () => {
-		render(<TeachingActiveClasses courses={[course([teachingClass({ attendanceVisible: false })])]} />);
+		render(
+			<TeachingActiveClasses courses={[course([teachingClass({ attendanceVisible: false })])]} />,
+		);
 		expect(screen.queryByRole('link', { name: /Mở trang sinh viên/ })).toBeNull();
 		expect(screen.getByRole('link', { name: /chưa chia sẻ/ })).toHaveAttribute(
 			'href',

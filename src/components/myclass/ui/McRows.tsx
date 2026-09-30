@@ -8,10 +8,7 @@ type McRowsProps = HTMLAttributes<HTMLElement> & {
 /** Hairline-divided list — the workhorse for scannable content. */
 export function McRows({ as: Tag = 'ul', className = '', children, ...props }: McRowsProps) {
 	return (
-		<Tag
-			className={`divide-y divide-mc-rule border-y border-mc-rule ${className}`}
-			{...props}
-		>
+		<Tag className={`divide-y divide-mc-rule border-y border-mc-rule ${className}`} {...props}>
 			{children}
 		</Tag>
 	);
@@ -34,7 +31,9 @@ export function McRow({
 	return (
 		<Tag
 			className={`relative flex min-h-10 items-center gap-3 px-3 py-2.5 transition-colors hover:bg-surface-sunken ${
-				active ? 'bg-surface-container-highest font-semibold before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-accent' : ''
+				active
+					? 'bg-surface-container-highest font-semibold before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-accent'
+					: ''
 			} ${className}`}
 			{...props}
 		>

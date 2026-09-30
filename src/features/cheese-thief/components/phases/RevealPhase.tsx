@@ -1,8 +1,8 @@
 'use client';
 
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {

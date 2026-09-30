@@ -25,7 +25,7 @@ export const GET = withAuth(async (_req, user, ctx) => {
 
 export const PUT = withAdmin(async (request, _user, ctx) => {
 	const { id } = await ctx!.params;
-	const body = await request.json() as UpdateVocabSetInput;
+	const body = (await request.json()) as UpdateVocabSetInput;
 	const set = await adminUpdateSet(id, body);
 	if (!set) return apiError('Not found', 404);
 	return apiSuccess({ set });

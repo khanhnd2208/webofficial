@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from 'react';
 
-import { useLocale } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Field, Select } from '@/features/spy-fall/components/ui';
+import { useLocale } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Field, Select } from '@/features/board-game-shared/components/ui';
 import { SPY_TAGS, SPY_TOPICS, type SpyTag } from '@/features/spy-fall/config/spyGame';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import { filterWordPairs, wordBankFor } from '@/features/spy-fall/lib/spy/wordBank';
 
 interface Props {

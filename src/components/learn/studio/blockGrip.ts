@@ -54,10 +54,25 @@ export const BlockGrip = Extension.create({
 						const menu = document.createElement('div');
 						menu.className = 'ln-blockmenu';
 						const actions: Array<[string, () => void]> = [
-							['Nhân bản', () => view.dispatch(view.state.tr.insert(blockPos! + node.nodeSize, node.copy(node.content)))],
-							['Xóa', () => view.dispatch(view.state.tr.delete(blockPos!, blockPos! + node.nodeSize))],
-							['Đổi thành tiêu đề', () => editor.chain().setNodeSelection(blockPos!).setHeading({ level: 2 }).run()],
-							['Đổi thành định nghĩa', () => editor.chain().setNodeSelection(blockPos!).setCallout('definition').run()],
+							[
+								'Nhân bản',
+								() =>
+									view.dispatch(
+										view.state.tr.insert(blockPos! + node.nodeSize, node.copy(node.content)),
+									),
+							],
+							[
+								'Xóa',
+								() => view.dispatch(view.state.tr.delete(blockPos!, blockPos! + node.nodeSize)),
+							],
+							[
+								'Đổi thành tiêu đề',
+								() => editor.chain().setNodeSelection(blockPos!).setHeading({ level: 2 }).run(),
+							],
+							[
+								'Đổi thành định nghĩa',
+								() => editor.chain().setNodeSelection(blockPos!).setCallout('definition').run(),
+							],
 						];
 						for (const [label, run] of actions) {
 							const item = document.createElement('button');

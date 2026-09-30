@@ -6,13 +6,7 @@ const LABEL: Record<string, string> = {
 	ARCHIVED: 'Lưu trữ',
 };
 
-export default function StatusChip({
-	status,
-	hasDraft,
-}: {
-	status?: string;
-	hasDraft?: boolean;
-}) {
+export default function StatusChip({ status, hasDraft }: { status?: string; hasDraft?: boolean }) {
 	if (!status && !hasDraft) return null;
 	if (hasDraft && status === 'PUBLISHED') {
 		return <McBadge variant="warning">Có bản nháp</McBadge>;

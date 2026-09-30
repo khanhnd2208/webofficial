@@ -13,7 +13,7 @@ vi.mock('@/features/werewolf/lib/api', () => ({
 	patchWerewolfAction: vi.fn(),
 }));
 
-vi.mock('@/features/spy-fall/components/i18n/LocaleProvider', () => {
+vi.mock('@/features/board-game-shared/components/i18n/LocaleProvider', () => {
 	const t = (key: string) => key;
 	return { useT: () => t };
 });
@@ -41,7 +41,14 @@ function roomState(version: number, selfToken: string | null): RoomStateDTO {
 		roleCounts: [],
 		players: [],
 		self: selfToken
-			? { token: selfToken, name: 'An', avatarSeed: 'seed', viewed: false, left: false, roleId: null }
+			? {
+					token: selfToken,
+					name: 'An',
+					avatarSeed: 'seed',
+					viewed: false,
+					left: false,
+					roleId: null,
+				}
 			: null,
 	};
 }

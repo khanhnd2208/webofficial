@@ -18,7 +18,8 @@ function textNode(value: string): MdNode {
 }
 
 function splitRefs(node: MdNode, notes: Map<string, string>): MdNode[] {
-	if (node.type !== 'text' || typeof node.value !== 'string' || !node.value.includes('[^')) return [node];
+	if (node.type !== 'text' || typeof node.value !== 'string' || !node.value.includes('[^'))
+		return [node];
 	const parts: MdNode[] = [];
 	let last = 0;
 	for (const match of node.value.matchAll(REF_RE)) {
@@ -50,7 +51,7 @@ function isDefinition(node: MdNode): { id: string; text: string } | null {
 	if (!match) return null;
 	const rest = node.children
 		.slice(1)
-		.map((child) => (child.type === 'text' ? child.value ?? '' : ''))
+		.map((child) => (child.type === 'text' ? (child.value ?? '') : ''))
 		.join('');
 	return { id: match[1], text: `${match[2]}${rest}`.trim() };
 }

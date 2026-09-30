@@ -13,8 +13,8 @@ import {
 } from '@/features/cheese-thief/config/cheeseThief';
 import { playRoundPreview } from '@/features/cheese-thief/lib/narration';
 import { prepareRoundPreview } from '@/features/cheese-thief/lib/nightTrack';
-import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useLocale, useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
 
 interface Props {
 	hourSeconds: number;

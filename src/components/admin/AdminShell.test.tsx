@@ -70,10 +70,7 @@ describe('AdminShell', () => {
 
 		expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'archive');
 		expect(screen.getByRole('navigation', { name: 'Điều hướng mục' })).toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Khóa học' })).toHaveAttribute(
-			'aria-current',
-			'page',
-		);
+		expect(screen.getByRole('link', { name: 'Khóa học' })).toHaveAttribute('aria-current', 'page');
 	});
 
 	it('keeps legacy Active Recall admin URLs on the main shell', () => {

@@ -10,15 +10,7 @@ export const metadata = {
 	title: 'Thống kê Tests | Admin',
 };
 
-function Stat({
-	label,
-	value,
-	sub,
-}: {
-	label: string;
-	value: string | number;
-	sub?: string;
-}) {
+function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
 	return (
 		<div className="border border-border bg-surface p-5">
 			<p className="text-xs font-bold uppercase tracking-widest text-muted">{label}</p>
@@ -40,9 +32,7 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 	const overview = await myspaceTestsService.getAnalyticsOverview(30);
 	const { totals, byTest, daily, recentCompletions } = overview;
 	const completionRate =
-		totals.engaged > 0
-			? Math.round((totals.completed / totals.engaged) * 1000) / 10
-			: null;
+		totals.engaged > 0 ? Math.round((totals.completed / totals.engaged) * 1000) / 10 : null;
 
 	const maxDaily = Math.max(1, ...daily.map((d) => Math.max(d.opened, d.engaged, d.completed)));
 
@@ -72,9 +62,7 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 				/>
 				<Stat
 					label="Điểm TB"
-					value={
-						totals.avgScorePercent != null ? `${totals.avgScorePercent}%` : '—'
-					}
+					value={totals.avgScorePercent != null ? `${totals.avgScorePercent}%` : '—'}
 					sub="trên bài đã nộp"
 				/>
 			</section>
@@ -88,14 +76,14 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 				<div className="mt-4 divide-y divide-border border border-border">
 					{byTest.length === 0 ? (
 						<div className="p-4">
-							<AdminEmptyState title="Chưa có dữ liệu" description="Chưa có lượt làm bài để thống kê." />
+							<AdminEmptyState
+								title="Chưa có dữ liệu"
+								description="Chưa có lượt làm bài để thống kê."
+							/>
 						</div>
 					) : (
 						byTest.map((t) => {
-							const rate =
-								t.engaged > 0
-									? Math.round((t.completed / t.engaged) * 1000) / 10
-									: null;
+							const rate = t.engaged > 0 ? Math.round((t.completed / t.engaged) * 1000) / 10 : null;
 							return (
 								<div
 									key={t.spaceTestId}
@@ -115,9 +103,7 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 											<p className="text-muted">Hoàn thành</p>
 										</div>
 										<div>
-											<p className="font-bold text-foreground">
-												{rate != null ? `${rate}%` : '—'}
-											</p>
+											<p className="font-bold text-foreground">{rate != null ? `${rate}%` : '—'}</p>
 											<p className="text-muted">Nộp</p>
 										</div>
 										<div>
@@ -174,9 +160,7 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 			</section>
 
 			<section className="mt-10">
-				<h2 className="text-sm font-bold uppercase tracking-widest text-muted">
-					Nộp bài gần đây
-				</h2>
+				<h2 className="text-sm font-bold uppercase tracking-widest text-muted">Nộp bài gần đây</h2>
 				<div className="mt-4 divide-y divide-border border border-border">
 					{recentCompletions.length === 0 ? (
 						<div className="p-4">
@@ -184,10 +168,7 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 						</div>
 					) : (
 						recentCompletions.map((r) => (
-							<div
-								key={r.id}
-								className="flex flex-wrap items-center justify-between gap-3 p-4"
-							>
+							<div key={r.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
 								<div>
 									<p className="text-sm font-bold text-foreground">{r.title}</p>
 									<p className="mt-0.5 text-xs text-muted">{formatWhen(r.submittedAt)}</p>

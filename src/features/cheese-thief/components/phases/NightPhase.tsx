@@ -2,7 +2,7 @@
 
 import NightNarrator from '@/features/cheese-thief/components/NightNarrator';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 
 interface Props {
 	state: RoomStateDTO;

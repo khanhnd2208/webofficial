@@ -71,7 +71,7 @@ export function withEditFlag(href: string, edit: boolean): string {
 	const params = new URLSearchParams(search);
 	params.set('edit', '1');
 	const qs = params.toString();
-	return qs ? `${path}?${qs}` : path ?? href;
+	return qs ? `${path}?${qs}` : (path ?? href);
 }
 
 export function courseHomePath(courseSlug: string): string {

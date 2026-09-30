@@ -12,7 +12,11 @@ import { learnEditorExtensions } from './editorExtensions';
 
 /** Markdown → studio editor → markdown, using the exact extension set the studio ships. */
 function roundTrip(markdown: string): string {
-	const editor = new Editor({ extensions: learnEditorExtensions(), content: markdown, contentType: 'markdown' });
+	const editor = new Editor({
+		extensions: learnEditorExtensions(),
+		content: markdown,
+		contentType: 'markdown',
+	});
 	const out = normalizeEditorMarkdown(editor.getMarkdown());
 	editor.destroy();
 	return out;
@@ -63,8 +67,13 @@ describe('studio editor markdown round-trip', () => {
 	});
 
 	it('keeps lecture words for each reading section of the sample lecture', () => {
-		const ai = readFileSync(path.join(import.meta.dirname, '../../../features/learn/__fixtures__/sample-lecture.ai.md'), 'utf8');
-		const reading = parseCourseMarkdown(ai).lessons[0].sections.filter((section) => section.type === 'READING');
+		const ai = readFileSync(
+			path.join(import.meta.dirname, '../../../features/learn/__fixtures__/sample-lecture.ai.md'),
+			'utf8',
+		);
+		const reading = parseCourseMarkdown(ai).lessons[0].sections.filter(
+			(section) => section.type === 'READING',
+		);
 		expect(reading.length).toBeGreaterThan(0);
 		for (const section of reading) {
 			expect(lectureWords(roundTrip(section.markdown))).toEqual(lectureWords(section.markdown));
@@ -76,7 +85,16 @@ describe('studio editor markdown round-trip', () => {
 	});
 
 	it('keeps a mermaid fence and an empty table cell', () => {
-		const md = ['```mermaid', 'flowchart TD', '    A["Kim tự tháp"] --> B["Cấp dưới"]', '```', '', '|  | B |', '| --- | --- |', '| một | hai |'].join('\n');
+		const md = [
+			'```mermaid',
+			'flowchart TD',
+			'    A["Kim tự tháp"] --> B["Cấp dưới"]',
+			'```',
+			'',
+			'|  | B |',
+			'| --- | --- |',
+			'| một | hai |',
+		].join('\n');
 		const once = roundTrip(md);
 		expect(once).toContain('```mermaid');
 		expect(once).toContain('flowchart TD');

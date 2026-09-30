@@ -22,7 +22,9 @@ export function useColumnVisibility(tableId: string, initial: Record<string, boo
 	);
 
 	function setVisibility(
-		updater: Record<string, boolean> | ((current: Record<string, boolean>) => Record<string, boolean>),
+		updater:
+			| Record<string, boolean>
+			| ((current: Record<string, boolean>) => Record<string, boolean>),
 	) {
 		setVisibilityState((current) => {
 			const next = typeof updater === 'function' ? updater(current) : updater;

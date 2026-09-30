@@ -150,12 +150,8 @@ describe('HRM course merge migration', () => {
 					await tx.$executeRaw`SELECT teaching_merge_hrm_courses()`;
 					await tx.$executeRaw`SELECT teaching_merge_hrm_courses()`;
 
-					expect(
-						await tx.teachingCourse.findUnique({ where: { id: hrm101.id } }),
-					).toBeNull();
-					expect(
-						await tx.teachingCourse.findUnique({ where: { id: leftover.id } }),
-					).toBeNull();
+					expect(await tx.teachingCourse.findUnique({ where: { id: hrm101.id } })).toBeNull();
+					expect(await tx.teachingCourse.findUnique({ where: { id: leftover.id } })).toBeNull();
 
 					const movedDecks = await tx.activeRecallDeck.findMany({
 						where: { slug: { in: [...published, ...archived].map((deck) => deck.slug) } },

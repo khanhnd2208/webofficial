@@ -115,7 +115,7 @@ the databases do not share foreign keys.
 - Public marketing navigation must not expose unfinished or internal tools.
 - `/admin`, `/vocabulary`, `/messages`, `/tai-khoan` and learner routes use
   internal chrome rather than public marketing chrome.
-- `src/_archived` and `docs/archive` describe retired products; they are not
+- `docs/archive` (and the retired `src/_archived` code in git history) describe retired products; they are not
   implementation guidance for new work.
 - Use `src/config/routes.ts` and `src/config/navigation.ts` as URL/navigation
   sources of truth.

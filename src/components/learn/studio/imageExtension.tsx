@@ -3,12 +3,22 @@
 import Image from '@tiptap/extension-image';
 import { NodeViewWrapper, ReactNodeViewRenderer, type ReactNodeViewProps } from '@tiptap/react';
 
-import { isExternalImageSrc, joinImageSrc, splitImageSrc, type ImageWidth } from '@/features/learn/images';
+import {
+	isExternalImageSrc,
+	joinImageSrc,
+	splitImageSrc,
+	type ImageWidth,
+} from '@/features/learn/images';
 
 declare module '@tiptap/core' {
 	interface Commands<ReturnType> {
 		learnImage: {
-			setLearnImage: (options: { src: string; alt?: string; title?: string; width?: ImageWidth | null }) => ReturnType;
+			setLearnImage: (options: {
+				src: string;
+				alt?: string;
+				title?: string;
+				width?: ImageWidth | null;
+			}) => ReturnType;
 		};
 	}
 }
@@ -30,7 +40,11 @@ function FigureView({ node, updateAttributes, deleteNode, editor, selected }: Re
 		input.accept = 'image/*';
 		input.onchange = () => {
 			const file = input.files?.[0];
-			const upload = (editor.storage as { image?: { upload?: (file: File, apply?: (url: string) => void) => void } }).image?.upload;
+			const upload = (
+				editor.storage as {
+					image?: { upload?: (file: File, apply?: (url: string) => void) => void };
+				}
+			).image?.upload;
 			if (file && upload) upload(file, (url) => updateAttributes({ src: url }));
 		};
 		input.click();
@@ -107,7 +121,8 @@ export const LearnImage = Image.extend({
 			width: {
 				default: null,
 				parseHTML: (element) => widthOf(Number((element as HTMLElement).dataset.width)),
-				renderHTML: (attributes) => (widthOf(attributes.width) ? { 'data-width': attributes.width } : {}),
+				renderHTML: (attributes) =>
+					widthOf(attributes.width) ? { 'data-width': attributes.width } : {},
 			},
 		};
 	},

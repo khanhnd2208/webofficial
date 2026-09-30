@@ -39,38 +39,38 @@ export default async function AdminMyspaceTestsPage() {
 				title="Bài kiểm tra My Space"
 				description="Import thông minh hoặc CSV để tạo bài test kèm câu hỏi."
 				actions={
-				<div className="flex flex-wrap gap-2">
-					<Link
-						href={routes.admin.myspaceTestAnalytics}
-						className="inline-flex min-h-11 items-center rounded-lg bg-foreground px-4 text-xs font-bold uppercase tracking-wider text-background"
-					>
-						Thống kê ({totals.completed} nộp)
-					</Link>
-					<Link
-						href={routes.admin.myspaceQuestionsImport}
-						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
-					>
-						Import thông minh
-					</Link>
-					<Link
-						href={routes.admin.myspaceSubjects}
-						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
-					>
-						Môn học
-					</Link>
-					<Link
-						href={routes.admin.myspaceQuestions}
-						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
-					>
-						Ngân hàng ({questions.total})
-					</Link>
-					<Link
-						href={routes.admin.myspaceTestNew}
-						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
-					>
-						Tạo thủ công
-					</Link>
-				</div>
+					<div className="flex flex-wrap gap-2">
+						<Link
+							href={routes.admin.myspaceTestAnalytics}
+							className="inline-flex min-h-11 items-center rounded-lg bg-foreground px-4 text-xs font-bold uppercase tracking-wider text-background"
+						>
+							Thống kê ({totals.completed} nộp)
+						</Link>
+						<Link
+							href={routes.admin.myspaceQuestionsImport}
+							className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
+						>
+							Import thông minh
+						</Link>
+						<Link
+							href={routes.admin.myspaceSubjects}
+							className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
+						>
+							Môn học
+						</Link>
+						<Link
+							href={routes.admin.myspaceQuestions}
+							className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
+						>
+							Ngân hàng ({questions.total})
+						</Link>
+						<Link
+							href={routes.admin.myspaceTestNew}
+							className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
+						>
+							Tạo thủ công
+						</Link>
+					</div>
 				}
 			/>
 
@@ -82,16 +82,12 @@ export default async function AdminMyspaceTestsPage() {
 						<p className="mt-0.5 text-xs text-muted">trả lời ≥ 1 câu</p>
 					</div>
 					<div className="border border-border bg-surface p-4">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
-							Hoàn thành
-						</p>
+						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Hoàn thành</p>
 						<p className="mt-1 text-2xl font-black text-foreground">{totals.completed}</p>
 						<p className="mt-0.5 text-xs text-muted">đã nộp bài</p>
 					</div>
 					<div className="border border-border bg-surface p-4 sm:col-span-1 col-span-2">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
-							Chi tiết
-						</p>
+						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Chi tiết</p>
 						<Link
 							href={routes.admin.myspaceTestAnalytics}
 							className="mt-2 inline-block text-sm font-bold text-foreground underline underline-offset-2"
@@ -132,9 +128,7 @@ export default async function AdminMyspaceTestsPage() {
 									{s ? (
 										<p className="mt-1 text-xs text-muted">
 											{s.engaged} đã làm · {s.completed} hoàn thành
-											{s.avgScorePercent != null
-												? ` · TB ${s.avgScorePercent}%`
-												: ''}
+											{s.avgScorePercent != null ? ` · TB ${s.avgScorePercent}%` : ''}
 										</p>
 									) : null}
 								</div>

@@ -1,9 +1,5 @@
 import localFont from 'next/font/local';
-import {
-	Be_Vietnam_Pro,
-	Inter,
-	Lora,
-} from 'next/font/google';
+import { Be_Vietnam_Pro, Inter, Lora } from 'next/font/google';
 
 /*
  * display: 'block' — hides text until font is ready → prevents FOUT (font jumping).
@@ -34,26 +30,35 @@ const lora = Lora({
 const sourceSerif = localFont({
 	variable: '--font-source-serif',
 	src: [
-		{ path: '../../assets/fonts/source-serif/SourceSerif4-Light.ttf', weight: '300', style: 'normal' },
-		{ path: '../../assets/fonts/source-serif/SourceSerif4-Regular.ttf', weight: '400', style: 'normal' },
-		{ path: '../../assets/fonts/source-serif/SourceSerif4-Semibold.ttf', weight: '600', style: 'normal' },
-		{ path: '../../assets/fonts/source-serif/SourceSerif4-Bold.ttf', weight: '700', style: 'normal' },
+		{
+			path: '../../assets/fonts/source-serif/SourceSerif4-Light.ttf',
+			weight: '300',
+			style: 'normal',
+		},
+		{
+			path: '../../assets/fonts/source-serif/SourceSerif4-Regular.ttf',
+			weight: '400',
+			style: 'normal',
+		},
+		{
+			path: '../../assets/fonts/source-serif/SourceSerif4-Semibold.ttf',
+			weight: '600',
+			style: 'normal',
+		},
+		{
+			path: '../../assets/fonts/source-serif/SourceSerif4-Bold.ttf',
+			weight: '700',
+			style: 'normal',
+		},
 	],
 	adjustFontFallback: 'Times New Roman',
 	display: 'block',
 });
 
-export default function MessagePublicLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
-	const vars = [
-		beVietnamPro.variable,
-		inter.variable,
-		lora.variable,
-		sourceSerif.variable,
-	].join(' ');
+export default function MessagePublicLayout({ children }: { children: React.ReactNode }) {
+	const vars = [beVietnamPro.variable, inter.variable, lora.variable, sourceSerif.variable].join(
+		' ',
+	);
 
 	return <div className={vars}>{children}</div>;
 }

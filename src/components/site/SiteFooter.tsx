@@ -7,14 +7,14 @@ import { SITE_NAME, SITE_POSITIONING, siteProfile } from '@/config/site';
 export default function SiteFooter() {
 	const email = siteProfile.contactEmail?.trim();
 	const social = siteProfile.socialLinks?.filter((item) => item.href && item.label) ?? [];
-	const footerLinks =
-		getPublishedFooterGroups()[0]?.links.filter((link) => link.href !== routes.home) ??
-		[
-			{ href: routes.about, label: 'Giới thiệu' },
-			{ href: routes.projects, label: 'Dự án' },
-			{ href: routes.services, label: 'Dịch vụ' },
-			{ href: routes.contact, label: 'Liên hệ' },
-		];
+	const footerLinks = getPublishedFooterGroups()[0]?.links.filter(
+		(link) => link.href !== routes.home,
+	) ?? [
+		{ href: routes.about, label: 'Giới thiệu' },
+		{ href: routes.projects, label: 'Dự án' },
+		{ href: routes.services, label: 'Dịch vụ' },
+		{ href: routes.contact, label: 'Liên hệ' },
+	];
 
 	return (
 		<footer className="border-t border-hairline bg-paper">

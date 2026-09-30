@@ -1,4 +1,9 @@
-import type { CheeseMode, CheesePhase, FollowerKnows, NightNumber } from '@/features/cheese-thief/config/cheeseThief';
+import type {
+	CheeseMode,
+	CheesePhase,
+	FollowerKnows,
+	NightNumber,
+} from '@/features/cheese-thief/config/cheeseThief';
 import type { CheeseRole, CheeseWinner, SecretCard } from '@/features/cheese-thief/lib/rules';
 
 export type { CheesePhase, CheeseRole, CheeseWinner, SecretCard, CheeseMode, NightNumber };

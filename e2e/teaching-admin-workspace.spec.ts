@@ -4,7 +4,10 @@ import { addAdminSession } from './helpers/adminSession';
 import { cleanupTeachingClass } from './helpers/teachingCleanup';
 
 test.describe('Teaching admin workspace', () => {
-	test('creates a course, empty class, then a recall deck with cards', async ({ page, context }) => {
+	test('creates a course, empty class, then a recall deck with cards', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		const suffix = Date.now().toString(36);
 		const courseCode = `E2E${suffix}`.slice(0, 10).toUpperCase();
@@ -20,9 +23,9 @@ test.describe('Teaching admin workspace', () => {
 
 		const courses = await page.request.get('/api/admin/teaching/courses');
 		expect(courses.ok()).toBe(true);
-		const course = ((await courses.json()) as { data: Array<{ id: string; courseCode: string }> }).data.find(
-			(item) => item.courseCode === courseCode,
-		);
+		const course = (
+			(await courses.json()) as { data: Array<{ id: string; courseCode: string }> }
+		).data.find((item) => item.courseCode === courseCode);
 		expect(course).toBeTruthy();
 		const courseId = course!.id;
 
@@ -46,7 +49,13 @@ test.describe('Teaching admin workspace', () => {
 			const classes = await page.request.get('/api/admin/teaching/classes');
 			const teachingClass = (
 				(await classes.json()) as {
-					data: Array<{ id: string; courseId: string; groupNo: string; totalWeeks: number; term: string }>;
+					data: Array<{
+						id: string;
+						courseId: string;
+						groupNo: string;
+						totalWeeks: number;
+						term: string;
+					}>;
 				}
 			).data.find((item) => item.courseId === courseId && item.groupNo === 'E2E-01');
 			expect(teachingClass).toMatchObject({ groupNo: 'E2E-01', totalWeeks: 10, term });
@@ -57,26 +66,37 @@ test.describe('Teaching admin workspace', () => {
 			await page.goto(`/my-space/teaching/courses/${courseId}`);
 			await expect(page.getByText('Lớp E2E-02')).toBeVisible();
 
-			const archivedClass = await page.request.patch(`/api/admin/teaching/classes/${teachingClass!.id}`, {
-				data: { status: 'ARCHIVED' },
-			});
+			const archivedClass = await page.request.patch(
+				`/api/admin/teaching/classes/${teachingClass!.id}`,
+				{
+					data: { status: 'ARCHIVED' },
+				},
+			);
 			expect(archivedClass.ok()).toBe(true);
-			const restoredClass = await page.request.patch(`/api/admin/teaching/classes/${teachingClass!.id}`, {
-				data: { status: 'ACTIVE' },
-			});
+			const restoredClass = await page.request.patch(
+				`/api/admin/teaching/classes/${teachingClass!.id}`,
+				{
+					data: { status: 'ACTIVE' },
+				},
+			);
 			expect(restoredClass.ok()).toBe(true);
 
-			const createdDeck = await page.request.post(`/api/admin/teaching/courses/${courseId}/recall`, {
-				data: {
-					title: `E2E Deck ${suffix}`,
-					status: 'DRAFT',
-					cards: [{ question: 'What is HRM?', answer: 'Human resource management' }],
+			const createdDeck = await page.request.post(
+				`/api/admin/teaching/courses/${courseId}/recall`,
+				{
+					data: {
+						title: `E2E Deck ${suffix}`,
+						status: 'DRAFT',
+						cards: [{ question: 'What is HRM?', answer: 'Human resource management' }],
+					},
 				},
-			});
+			);
 			expect(createdDeck.ok()).toBe(true);
-			const deck = ((await createdDeck.json()) as {
-				data: { id: string; cardCount: number; status: string; updatedAt: string };
-			}).data;
+			const deck = (
+				(await createdDeck.json()) as {
+					data: { id: string; cardCount: number; status: string; updatedAt: string };
+				}
+			).data;
 			expect(deck.cardCount).toBe(1);
 			expect(deck.status).toBe('DRAFT');
 

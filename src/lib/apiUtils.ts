@@ -65,17 +65,23 @@ export function getRequestId(request: Pick<Request, 'headers'>): string {
 }
 
 /** Add correlation metadata without changing the success response contract. */
-export async function withRequestId(response: NextResponse, requestId: string): Promise<NextResponse> {
+export async function withRequestId(
+	response: NextResponse,
+	requestId: string,
+): Promise<NextResponse> {
 	response.headers.set('x-request-id', requestId);
 	if (response.status < 400) return response;
 
 	try {
 		const body = await response.clone().json();
 		if (body && typeof body === 'object' && !Array.isArray(body)) {
-			return NextResponse.json({ ...body, requestId }, {
-				status: response.status,
-				headers: response.headers,
-			});
+			return NextResponse.json(
+				{ ...body, requestId },
+				{
+					status: response.status,
+					headers: response.headers,
+				},
+			);
 		}
 	} catch {
 		// Preserve non-JSON responses (for example framework-generated errors).
@@ -101,7 +107,13 @@ function handleCaughtError(error: unknown): NextResponse {
 	return apiError('Internal server error', 500);
 }
 
-function logApiFailure(request: NextRequest, error: unknown, response: NextResponse, requestId: string, startedAt: number) {
+function logApiFailure(
+	request: NextRequest,
+	error: unknown,
+	response: NextResponse,
+	requestId: string,
+	startedAt: number,
+) {
 	console.error(
 		JSON.stringify({
 			requestId,
@@ -120,19 +132,13 @@ function logApiFailure(request: NextRequest, error: unknown, response: NextRespo
 type AuthenticatedHandler = (
 	request: NextRequest,
 	user: ApiUser,
-	context?: RouteContext
+	context?: RouteContext,
 ) => Promise<NextResponse>;
 
 /** Handler that does NOT require authentication. */
-type PublicHandler = (
-	request: NextRequest,
-	context?: RouteContext
-) => Promise<NextResponse>;
+type PublicHandler = (request: NextRequest, context?: RouteContext) => Promise<NextResponse>;
 
-type ResponseHandler = (
-	request: NextRequest,
-	context?: RouteContext
-) => Promise<Response>;
+type ResponseHandler = (request: NextRequest, context?: RouteContext) => Promise<Response>;
 
 /**
  * Next.js App Router dynamic route context.
@@ -229,7 +235,10 @@ export function withTeachingGroupBoard(handler: ResponseHandler): ResponseHandle
 export function withTeachingGroupBoard(handler: ResponseHandler) {
 	return async (request: NextRequest, context?: RouteContext) => {
 		if (!isTeachingGroupBoardEnabled()) {
-			return withRequestId(apiError('Not found', 404, { code: 'NOT_FOUND' }), getRequestId(request));
+			return withRequestId(
+				apiError('Not found', 404, { code: 'NOT_FOUND' }),
+				getRequestId(request),
+			);
 		}
 		return handler(request, context);
 	};

@@ -16,7 +16,13 @@ const SAVE_LABEL: Record<SaveState, string> = {
 };
 
 /** Right-hand notes drawer. Autosaves, and flushes any pending text when it closes. */
-export default function LearnNotesDrawer({ sectionId, initialNote }: { sectionId: string; initialNote: string }) {
+export default function LearnNotesDrawer({
+	sectionId,
+	initialNote,
+}: {
+	sectionId: string;
+	initialNote: string;
+}) {
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const noteRef = useRef(initialNote);
 	const saved = useRef(initialNote);
@@ -96,7 +102,12 @@ export default function LearnNotesDrawer({ sectionId, initialNote }: { sectionId
 			>
 				<LearnIcon name="note" size={18} strokeWidth={1.6} />
 			</button>
-			<dialog ref={dialogRef} className="ln-notes-dialog" aria-label="Ghi chú của bạn" onClose={flush}>
+			<dialog
+				ref={dialogRef}
+				className="ln-notes-dialog"
+				aria-label="Ghi chú của bạn"
+				onClose={flush}
+			>
 				<div className="ln-notes-dialog__head">
 					<p>Ghi chú của bạn</p>
 					<span className="ln-notes-dialog__state">{SAVE_LABEL[state]}</span>

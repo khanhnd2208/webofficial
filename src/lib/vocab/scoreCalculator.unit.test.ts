@@ -20,27 +20,19 @@ describe('calcMCQScore', () => {
 	});
 
 	it('returns 0 for incorrect answers', () => {
-		expect(
-			calcMCQScore([{ startTime: NOW, endTime: NOW + 1000, correct: false }]),
-		).toBe(0);
+		expect(calcMCQScore([{ startTime: NOW, endTime: NOW + 1000, correct: false }])).toBe(0);
 	});
 
 	it('returns max score for instant correct answer', () => {
-		expect(
-			calcMCQScore([{ startTime: NOW, endTime: NOW, correct: true }]),
-		).toBe(3000);
+		expect(calcMCQScore([{ startTime: NOW, endTime: NOW, correct: true }])).toBe(3000);
 	});
 
 	it('deducts 100 points per second elapsed', () => {
-		expect(
-			calcMCQScore([{ startTime: NOW, endTime: NOW + 5000, correct: true }]),
-		).toBe(2500);
+		expect(calcMCQScore([{ startTime: NOW, endTime: NOW + 5000, correct: true }])).toBe(2500);
 	});
 
 	it('returns 0 when elapsed >= 30 seconds', () => {
-		expect(
-			calcMCQScore([{ startTime: NOW, endTime: NOW + 30_000, correct: true }]),
-		).toBe(0);
+		expect(calcMCQScore([{ startTime: NOW, endTime: NOW + 30_000, correct: true }])).toBe(0);
 	});
 
 	it('averages across multiple questions', () => {
@@ -52,9 +44,7 @@ describe('calcMCQScore', () => {
 	});
 
 	it('rounds to 1 decimal place', () => {
-		const score = calcMCQScore([
-			{ startTime: NOW, endTime: NOW + 3333, correct: true },
-		]);
+		const score = calcMCQScore([{ startTime: NOW, endTime: NOW + 3333, correct: true }]);
 		expect(String(score).split('.')[1]?.length ?? 0).toBeLessThanOrEqual(1);
 	});
 });
@@ -74,33 +64,27 @@ describe('validateMCQPayload', () => {
 	});
 
 	it('rejects non-positive timestamps', () => {
-		expect(
-			validateMCQPayload([{ startTime: 0, endTime: NOW, correct: true }], NOW),
-		).toBe('Timestamps must be positive');
+		expect(validateMCQPayload([{ startTime: 0, endTime: NOW, correct: true }], NOW)).toBe(
+			'Timestamps must be positive',
+		);
 	});
 
 	it('rejects startTime >= endTime', () => {
-		expect(
-			validateMCQPayload([{ startTime: NOW + 1000, endTime: NOW, correct: true }], NOW),
-		).toBe('startTime must be before endTime');
+		expect(validateMCQPayload([{ startTime: NOW + 1000, endTime: NOW, correct: true }], NOW)).toBe(
+			'startTime must be before endTime',
+		);
 	});
 
 	it('rejects clock skew beyond tolerance', () => {
 		const staleEnd = NOW - MAX_CLOCK_SKEW_MS - 5000;
 		expect(
-			validateMCQPayload(
-				[{ startTime: staleEnd - 5000, endTime: staleEnd, correct: true }],
-				NOW,
-			),
+			validateMCQPayload([{ startTime: staleEnd - 5000, endTime: staleEnd, correct: true }], NOW),
 		).toBe('Session timestamp too old or in the future');
 	});
 
 	it('accepts valid payload within skew window', () => {
 		expect(
-			validateMCQPayload(
-				[{ startTime: NOW - 5000, endTime: NOW - 1000, correct: true }],
-				NOW,
-			),
+			validateMCQPayload([{ startTime: NOW - 5000, endTime: NOW - 1000, correct: true }], NOW),
 		).toBeNull();
 	});
 });
@@ -137,9 +121,7 @@ describe('calcFillBlankScore', () => {
 
 	it('returns 0 for incorrect words', () => {
 		expect(
-			calcFillBlankScore([
-				{ startTime: NOW, endTime: NOW, penaltyMs: 0, correct: false },
-			]),
+			calcFillBlankScore([{ startTime: NOW, endTime: NOW, penaltyMs: 0, correct: false }]),
 		).toBe(0);
 	});
 });

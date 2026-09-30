@@ -263,7 +263,12 @@ async function seedGroupBoard(classId: string, tutorialClassId: string) {
 
 async function main() {
 	await prisma.teachingClass.deleteMany({
-		where: { OR: [{ publicSlug: 'hrm-fall-2026' }, { courseCode: HRM_COURSE_CODE, groupNo: GROUP_NO, term: TERM }] },
+		where: {
+			OR: [
+				{ publicSlug: 'hrm-fall-2026' },
+				{ courseCode: HRM_COURSE_CODE, groupNo: GROUP_NO, term: TERM },
+			],
+		},
 	});
 
 	const course = await prisma.teachingCourse.upsert({

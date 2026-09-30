@@ -19,7 +19,11 @@ export function descendantPathPrefix(path: string): string {
 	return `${path.replace(/\/+$/g, '')}/`;
 }
 
-export function isTopicPathMatch(candidate: string, ancestorPath: string, includeDescendants: boolean): boolean {
+export function isTopicPathMatch(
+	candidate: string,
+	ancestorPath: string,
+	includeDescendants: boolean,
+): boolean {
 	if (candidate === ancestorPath) return true;
 	if (!includeDescendants) return false;
 	return candidate.startsWith(descendantPathPrefix(ancestorPath));
@@ -34,7 +38,8 @@ export function rewriteDescendantPaths(
 	return rows
 		.filter((row) => row.path === oldPath || row.path.startsWith(prefix))
 		.map((row) => {
-			const nextPath = row.path === oldPath ? newPath : `${newPath}${row.path.slice(oldPath.length)}`;
+			const nextPath =
+				row.path === oldPath ? newPath : `${newPath}${row.path.slice(oldPath.length)}`;
 			return { id: row.id, path: nextPath, depth: topicDepthFromPath(nextPath) };
 		});
 }

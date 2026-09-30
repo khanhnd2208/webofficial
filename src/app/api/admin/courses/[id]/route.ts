@@ -2,7 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { courseService, updateCourseSchema } from '@/features/courses';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const GET = withAdmin(async (_request: NextRequest, _user, context) => {
 	const { id } = await context!.params;

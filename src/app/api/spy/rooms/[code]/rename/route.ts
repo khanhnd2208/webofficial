@@ -1,7 +1,12 @@
 import RoomModel from '@/features/spy-fall/models/SpyGame';
 import type { NextRequest } from 'next/server';
 
-import { apiError, apiSuccess, withErrorHandling, withPublicRoomGuard } from '@/features/spy-fall/lib/apiUtils';
+import {
+	apiError,
+	apiSuccess,
+	withErrorHandling,
+	withPublicRoomGuard,
+} from '@/features/board-game-shared/lib/apiUtils';
 import { renamePlayer } from '@/features/spy-fall/services/spyGameService';
 
 const PATCHBase = withErrorHandling(async (request: NextRequest, context) => {

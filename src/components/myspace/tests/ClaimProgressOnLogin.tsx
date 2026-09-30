@@ -30,15 +30,33 @@ export default function ClaimProgressOnLogin({ enabled }: { enabled: boolean }) 
 
 	if (!enabled) return null;
 	if (state === 'syncing') {
-		return <p className="text-sm text-ink-secondary" role="status" data-testid="myspace-tests-sync-status">Đang đồng bộ tiến độ…</p>;
+		return (
+			<p
+				className="text-sm text-ink-secondary"
+				role="status"
+				data-testid="myspace-tests-sync-status"
+			>
+				Đang đồng bộ tiến độ…
+			</p>
+		);
 	}
 	if (state === 'error') {
 		return (
 			<div className="flex items-center gap-3 text-sm text-ink-secondary" role="status">
 				<span>Chưa đồng bộ được tiến độ.</span>
-				<button type="button" onClick={() => void claim()} className="underline underline-offset-4 hover:text-ink">Thử lại</button>
+				<button
+					type="button"
+					onClick={() => void claim()}
+					className="underline underline-offset-4 hover:text-ink"
+				>
+					Thử lại
+				</button>
 			</div>
 		);
 	}
-	return <p className="text-sm text-ink-secondary" role="status" data-testid="myspace-tests-sync-status">Đã đồng bộ với tài khoản</p>;
+	return (
+		<p className="text-sm text-ink-secondary" role="status" data-testid="myspace-tests-sync-status">
+			Đã đồng bộ với tài khoản
+		</p>
+	);
 }

@@ -124,9 +124,10 @@ function toSession(enrollment: {
 	};
 	reselectionLocked?: boolean;
 }): LearningExperienceSession {
-	const locked = enrollment.reselectionLocked === true
-		? enrollment.learningExperience !== null
-		: enrollment.learningExperienceChangeCount >= LEARNING_EXPERIENCE_CHANGE_LIMIT;
+	const locked =
+		enrollment.reselectionLocked === true
+			? enrollment.learningExperience !== null
+			: enrollment.learningExperienceChangeCount >= LEARNING_EXPERIENCE_CHANGE_LIMIT;
 	return {
 		authenticated: true,
 		accessMode: accessModeFromDate(enrollment.student.dateOfBirth),

@@ -61,7 +61,10 @@ export default function RecallCardLanguageTabs({
 			{/* Cả 2 bộ editor luôn mount, chỉ ẩn bằng CSS — tránh mất nội dung khi tiptap bị hủy/tạo lại. */}
 			<div className={tab === 'original' ? 'contents' : 'hidden'}>
 				<div>
-					<p id={`${idPrefix}-question`} className="text-xs font-bold uppercase tracking-wide text-muted">
+					<p
+						id={`${idPrefix}-question`}
+						className="text-xs font-bold uppercase tracking-wide text-muted"
+					>
 						Câu hỏi
 					</p>
 					<RecallRichTextEditor
@@ -72,7 +75,10 @@ export default function RecallCardLanguageTabs({
 					/>
 				</div>
 				<div>
-					<p id={`${idPrefix}-answer`} className="text-xs font-bold uppercase tracking-wide text-muted">
+					<p
+						id={`${idPrefix}-answer`}
+						className="text-xs font-bold uppercase tracking-wide text-muted"
+					>
 						Đáp án
 					</p>
 					<RecallRichTextEditor
@@ -85,7 +91,10 @@ export default function RecallCardLanguageTabs({
 			</div>
 			<div className={tab === 'vi' ? 'contents' : 'hidden'}>
 				<div>
-					<p id={`${idPrefix}-question-vi`} className="text-xs font-bold uppercase tracking-wide text-muted">
+					<p
+						id={`${idPrefix}-question-vi`}
+						className="text-xs font-bold uppercase tracking-wide text-muted"
+					>
 						Câu hỏi (Tiếng Việt)
 					</p>
 					<RecallRichTextEditor
@@ -96,7 +105,10 @@ export default function RecallCardLanguageTabs({
 					/>
 				</div>
 				<div>
-					<p id={`${idPrefix}-answer-vi`} className="text-xs font-bold uppercase tracking-wide text-muted">
+					<p
+						id={`${idPrefix}-answer-vi`}
+						className="text-xs font-bold uppercase tracking-wide text-muted"
+					>
 						Đáp án (Tiếng Việt)
 					</p>
 					<RecallRichTextEditor

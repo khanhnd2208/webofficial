@@ -1,7 +1,12 @@
 import { AppError } from '@/lib/appError';
 import { routes } from '@/config/routes';
 
-import { computeCp, isAttendanceCounted, isParticipationCounted, sessionsForEnrollment } from '../domain/cp';
+import {
+	computeCp,
+	isAttendanceCounted,
+	isParticipationCounted,
+	sessionsForEnrollment,
+} from '../domain/cp';
 import { maskStudentCode } from '../domain/privacy';
 import { toNumber, withUniqueConflict } from '../domain/prismaErrors';
 import * as repo from '../repositories/teachingRepository';

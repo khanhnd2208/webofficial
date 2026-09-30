@@ -12,7 +12,12 @@ import {
 	type ReactNode,
 	type TransitionEvent,
 } from 'react';
-import type { MyClassCourseDetail, MyClassTestListItem, MyClassTestScope, MyClassVocabSetCard } from '@/features/my-class/types';
+import type {
+	MyClassCourseDetail,
+	MyClassTestListItem,
+	MyClassTestScope,
+	MyClassVocabSetCard,
+} from '@/features/my-class/types';
 import { routes } from '@/config/routes';
 import Link from 'next/link';
 import type { StoredTestScore } from '@/features/my-class/client/testScoreStore';
@@ -246,9 +251,7 @@ function OutlineBranch({
 
 function LearnerHiddenHint({ show }: { show: boolean }) {
 	if (!show) return null;
-	return (
-		<p className="mc-meta m-0 px-[var(--mc-out-pad)] py-1">Sẽ không hiện với học viên</p>
-	);
+	return <p className="mc-meta m-0 px-[var(--mc-out-pad)] py-1">Sẽ không hiện với học viên</p>;
 }
 
 function OutlineTests({
@@ -334,7 +337,9 @@ function OutlineVocab({
 						</span>
 						<span className="mc-meta ml-2 shrink-0">{set.wordCount} từ</span>
 					</Link>
-					{editing ? <OutlineVocabMenu assignmentId={set.assignmentId} vocabSetId={set.vocabSetId} /> : null}
+					{editing ? (
+						<OutlineVocabMenu assignmentId={set.assignmentId} vocabSetId={set.vocabSetId} />
+					) : null}
 				</div>
 			))}
 			<LearnerHiddenHint show={editing && hiddenFromLearners} />
@@ -494,7 +499,8 @@ export default function CourseOutline({
 			type === 'lesson'
 				? course.lessons.map((item) => item.id)
 				: type === 'section'
-					? (course.lessons.find((item) => item.id === parentId)?.sections.map((item) => item.id) ?? [])
+					? (course.lessons.find((item) => item.id === parentId)?.sections.map((item) => item.id) ??
+						[])
 					: (course.lessons
 							.flatMap((item) => item.sections)
 							.find((item) => item.id === parentId)
@@ -531,9 +537,7 @@ export default function CourseOutline({
 		edit.clearFocusOutline();
 		if (!focusCourseAssets) return;
 		const frame = window.requestAnimationFrame(() => {
-			document
-				.querySelector('[data-outline-course-assets]')
-				?.scrollIntoView({ block: 'nearest' });
+			document.querySelector('[data-outline-course-assets]')?.scrollIntoView({ block: 'nearest' });
 		});
 		return () => window.cancelAnimationFrame(frame);
 		// expand + clear are stable enough for a one-shot reveal after attach.
@@ -754,13 +758,11 @@ export default function CourseOutline({
 															Boolean(needle) ||
 															(dragFocus?.type !== 'lesson' &&
 																!(
-																	dragFocus?.type === 'section' &&
-																	dragFocus.parentId === lesson.id
+																	dragFocus?.type === 'section' && dragFocus.parentId === lesson.id
 																) &&
 																expand.isSectionOpen(section.id, sectionActive));
 														const sectionNumber = `${lessonIndex}.${section.position + 1}`;
-														const sectionInstant =
-															Boolean(needle) || !animateIds.has(section.id);
+														const sectionInstant = Boolean(needle) || !animateIds.has(section.id);
 														const unitIds = section.knowledgeUnits.map((unit) =>
 															sortableId('unit', unit.id, section.id),
 														);
@@ -898,13 +900,17 @@ export default function CourseOutline({
 																										<li
 																											ref={setNodeRef}
 																											style={style}
-																											data-dragging={isDragging ? 'true' : undefined}
+																											data-dragging={
+																												isDragging ? 'true' : undefined
+																											}
 																											data-drop={dropEdge ?? undefined}
 																										>
 																											<div
 																												className="mc-outline-row"
 																												data-kind="unit"
-																												data-dragging={isDragging ? 'true' : undefined}
+																												data-dragging={
+																													isDragging ? 'true' : undefined
+																												}
 																												data-drop={dropEdge ?? undefined}
 																											>
 																												{editing ? (
@@ -973,7 +979,10 @@ export default function CourseOutline({
 																					courseSlug={course.slug}
 																					testScores={testScores}
 																					onOpenTest={onOpenTest}
-																					hiddenFromLearners={!isPublishedAuthoring(section.authoring?.status) || !isPublishedAuthoring(lesson.authoring?.status)}
+																					hiddenFromLearners={
+																						!isPublishedAuthoring(section.authoring?.status) ||
+																						!isPublishedAuthoring(lesson.authoring?.status)
+																					}
 																				/>
 																			</div>
 																		</OutlineBranch>
@@ -1020,7 +1029,9 @@ export default function CourseOutline({
 			<div className="mc-outline-head">
 				<h2
 					id={outlineId}
-					className={filterOpen ? 'sr-only' : 'mc-eyebrow m-0 font-bold tracking-wider text-ink-tertiary'}
+					className={
+						filterOpen ? 'sr-only' : 'mc-eyebrow m-0 font-bold tracking-wider text-ink-tertiary'
+					}
 				>
 					Nội dung khóa học
 				</h2>
@@ -1102,7 +1113,8 @@ export default function CourseOutline({
 						enabled={editing}
 						onDragStart={(data) => {
 							if (data.type === 'lesson') setDragFocus({ type: 'lesson' });
-							if (data.type === 'section') setDragFocus({ type: 'section', parentId: data.parentId });
+							if (data.type === 'section')
+								setDragFocus({ type: 'section', parentId: data.parentId });
 						}}
 						onDragFinished={() => setDragFocus(null)}
 						onReorder={handleReorder}

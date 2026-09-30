@@ -61,7 +61,13 @@ function requestHeaders(init?: RequestInit): Headers {
 	const headers = new Headers(init?.headers);
 	const method = (init?.method ?? 'GET').toUpperCase();
 	const body = init?.body;
-	if (body && !isFormDataBody(body) && !headers.has('Content-Type') && method !== 'GET' && method !== 'HEAD') {
+	if (
+		body &&
+		!isFormDataBody(body) &&
+		!headers.has('Content-Type') &&
+		method !== 'GET' &&
+		method !== 'HEAD'
+	) {
 		headers.set('Content-Type', 'application/json');
 	}
 	return headers;

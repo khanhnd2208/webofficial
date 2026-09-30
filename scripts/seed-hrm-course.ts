@@ -28,7 +28,8 @@ async function main() {
 		const markdown = readFileSync(resolve(DIR, name), 'utf8');
 		const original = readFileSync(originalPath, 'utf8');
 		const fidelity = compareLectureText(original, markdown);
-		if (fidelity.hunks.length) throw new Error(`${name} changed ${fidelity.hunks.length} word hunks`);
+		if (fidelity.hunks.length)
+			throw new Error(`${name} changed ${fidelity.hunks.length} word hunks`);
 		const parsed = parseCourseMarkdown(markdown);
 		if (parsed.warnings.length) throw new Error(`${name}: ${parsed.warnings.join(' | ')}`);
 		const lesson = parsed.lessons[0];
@@ -38,16 +39,30 @@ async function main() {
 		try {
 			const extraMd = readFileSync(extrasPath, 'utf8');
 			const extraParsed = parseCourseMarkdown(extraMd);
-			if (extraParsed.warnings.length) throw new Error(`${stem}-them.md: ${extraParsed.warnings.join(' | ')}`);
+			if (extraParsed.warnings.length)
+				throw new Error(`${stem}-them.md: ${extraParsed.warnings.join(' | ')}`);
 			extras = extraParsed.lessons[0]?.sections ?? [];
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
 		}
-		return { title: lesson.lessonTitle, description: lesson.lessonDescription, sections: [...lesson.sections, ...extras] };
+		return {
+			title: lesson.lessonTitle,
+			description: lesson.lessonDescription,
+			sections: [...lesson.sections, ...extras],
+		};
 	});
 
 	if (process.argv.includes('--dry-run')) {
-		console.log(JSON.stringify(prepared.map((lesson) => ({ title: lesson.title, sections: lesson.sections.map((section) => section.title) })), null, 2));
+		console.log(
+			JSON.stringify(
+				prepared.map((lesson) => ({
+					title: lesson.title,
+					sections: lesson.sections.map((section) => section.title),
+				})),
+				null,
+				2,
+			),
+		);
 		return;
 	}
 
@@ -58,7 +73,8 @@ async function main() {
 			update: {
 				title: COURSE_TITLE,
 				subtitle: 'Human Resource Management · Quản trị nhân lực',
-				description: 'Khóa HRM giảng quản trị nguồn nhân lực bằng ví dụ đời thường: định nghĩa, xu hướng, phân tích công việc, hoạch định và tuyển mộ.',
+				description:
+					'Khóa HRM giảng quản trị nguồn nhân lực bằng ví dụ đời thường: định nghĩa, xu hướng, phân tích công việc, hoạch định và tuyển mộ.',
 				category: 'HRM',
 				level: LearnCourseLevel.BASIC,
 			},
@@ -66,21 +82,32 @@ async function main() {
 				slug: COURSE_SLUG,
 				title: COURSE_TITLE,
 				subtitle: 'Human Resource Management · Quản trị nhân lực',
-				description: 'Khóa HRM giảng quản trị nguồn nhân lực bằng ví dụ đời thường: định nghĩa, xu hướng, phân tích công việc, hoạch định và tuyển mộ.',
+				description:
+					'Khóa HRM giảng quản trị nguồn nhân lực bằng ví dụ đời thường: định nghĩa, xu hướng, phân tích công việc, hoạch định và tuyển mộ.',
 				category: 'HRM',
 				level: LearnCourseLevel.BASIC,
 				status: PublishStatus.PUBLISHED,
-				position: ((await prisma.learnCourse.aggregate({ _max: { position: true } }))._max.position ?? -1) + 1,
+				position:
+					((await prisma.learnCourse.aggregate({ _max: { position: true } }))._max.position ?? -1) +
+					1,
 				publishedAt: new Date(),
 			},
 		});
-		const existing = await prisma.learnLesson.findMany({ where: { courseId: course.id }, select: { id: true, title: true } });
+		const existing = await prisma.learnLesson.findMany({
+			where: { courseId: course.id },
+			select: { id: true, title: true },
+		});
 		const have = new Map(existing.map((lesson) => [lesson.title, lesson.id]));
 		const savedTitles: string[] = [];
 		for (const lesson of prepared) {
 			let lessonId = have.get(lesson.title);
 			if (!lessonId) {
-				const position = (await prisma.learnLesson.aggregate({ where: { courseId: course.id }, _max: { position: true } }))._max.position;
+				const position = (
+					await prisma.learnLesson.aggregate({
+						where: { courseId: course.id },
+						_max: { position: true },
+					})
+				)._max.position;
 				const created = await prisma.learnLesson.create({
 					data: {
 						courseId: course.id,
@@ -102,16 +129,29 @@ async function main() {
 						markdown: section.markdown,
 						durationMinutes: section.durationMinutes,
 						keyTakeaways: section.keyTakeaways,
-						checkpoint: section.checkpoint === null ? Prisma.DbNull : (section.checkpoint as Prisma.InputJsonValue),
+						checkpoint:
+							section.checkpoint === null
+								? Prisma.DbNull
+								: (section.checkpoint as Prisma.InputJsonValue),
 						quiz: section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
-						discussion: section.discussion === null ? Prisma.DbNull : (section.discussion as Prisma.InputJsonValue),
+						discussion:
+							section.discussion === null
+								? Prisma.DbNull
+								: (section.discussion as Prisma.InputJsonValue),
 						position: index,
 					},
 				});
 			}
 			savedTitles.push(lesson.title);
 		}
-		console.log(JSON.stringify({ status: 'ok', courseId: course.id, slug: course.slug, lessons: savedTitles }));
+		console.log(
+			JSON.stringify({
+				status: 'ok',
+				courseId: course.id,
+				slug: course.slug,
+				lessons: savedTitles,
+			}),
+		);
 	} finally {
 		await prisma.$disconnect();
 	}

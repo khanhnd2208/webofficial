@@ -5,7 +5,20 @@ import { TeachingPopover, TeachingPopoverRoot } from '@/components/teaching/Teac
 
 describe('TeachingPopover', () => {
 	it('portals outside clipping containers and supports keyboard navigation', () => {
-		render(<div data-testid="clipping" style={{ overflow: 'hidden' }}><TeachingPopover trigger={({ toggle, triggerRef, triggerProps }) => <button ref={triggerRef} {...triggerProps} onClick={toggle}>Menu</button>}><button>Sửa</button><button>Xóa</button></TeachingPopover></div>);
+		render(
+			<div data-testid="clipping" style={{ overflow: 'hidden' }}>
+				<TeachingPopover
+					trigger={({ toggle, triggerRef, triggerProps }) => (
+						<button ref={triggerRef} {...triggerProps} onClick={toggle}>
+							Menu
+						</button>
+					)}
+				>
+					<button>Sửa</button>
+					<button>Xóa</button>
+				</TeachingPopover>
+			</div>,
+		);
 		const trigger = screen.getByRole('button', { name: 'Menu' });
 		fireEvent.click(trigger);
 		expect(screen.getByTestId('clipping')).not.toContainElement(screen.getByRole('menu'));

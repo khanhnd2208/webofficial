@@ -73,7 +73,10 @@ export default async function PerformanceView({
 				/>
 				<div className="mt-6 grid gap-3 sm:grid-cols-3">
 					<Stat label="Lượt làm bài" value={data.stats.attempts} />
-					<Stat label="Độ chính xác" value={data.stats.accuracy == null ? '—' : `${data.stats.accuracy}%`} />
+					<Stat
+						label="Độ chính xác"
+						value={data.stats.accuracy == null ? '—' : `${data.stats.accuracy}%`}
+					/>
 					<Stat label="Nội dung có bằng chứng" value={data.stats.knowledgeUnits} />
 				</div>
 				<section className="mt-8">
@@ -175,7 +178,11 @@ export default async function PerformanceView({
 						>
 							← Kết quả
 						</Link>
-						<StudioPageHeader className="mt-3" eyebrow="Kết quả khóa học" title={data.course.title} />
+						<StudioPageHeader
+							className="mt-3"
+							eyebrow="Kết quả khóa học"
+							title={data.course.title}
+						/>
 					</>
 				)}
 				<div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -192,10 +199,16 @@ export default async function PerformanceView({
 						subtitle: `${cohort.members} học viên`,
 						href: performanceHref(data.course.id, cohort.id),
 					}))}
-					pathname={embedded ? `${routes.admin.myClassCourseResults(courseId)}` : routes.admin.myClassPerformance}
+					pathname={
+						embedded
+							? `${routes.admin.myClassCourseResults(courseId)}`
+							: routes.admin.myClassPerformance
+					}
 					current={current}
 					page={Array.isArray(data.cohorts) ? 1 : data.cohorts.page}
-					pageSize={Array.isArray(data.cohorts) ? Math.max(cohorts.length, 1) : data.cohorts.pageSize}
+					pageSize={
+						Array.isArray(data.cohorts) ? Math.max(cohorts.length, 1) : data.cohorts.pageSize
+					}
 					total={Array.isArray(data.cohorts) ? cohorts.length : data.cohorts.total}
 					totalPages={Array.isArray(data.cohorts) ? 1 : data.cohorts.totalPages}
 				/>

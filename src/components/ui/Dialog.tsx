@@ -76,7 +76,14 @@ type DialogProps = {
 /**
  * Native <dialog>-based modal: focus trap via showModal, Escape, restore focus, scroll lock.
  */
-export function Dialog({ open, onClose, title, description, children, className = '' }: DialogProps) {
+export function Dialog({
+	open,
+	onClose,
+	title,
+	description,
+	children,
+	className = '',
+}: DialogProps) {
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const titleId = useId();
 	const descId = useId();
@@ -170,9 +177,7 @@ export function Sheet({ open, onClose, title, children, side = 'bottom' }: Sheet
 				? 'm-0 h-full max-h-none w-full rounded-none border-0 sheet-panel-full'
 				: 'ml-auto mr-0 h-full max-h-none w-[min(100%,28rem)] rounded-none border-l sheet-panel-right';
 	const dialogAlign =
-		side === 'bottom'
-			? 'open:justify-end'
-			: 'open:justify-start open:items-stretch';
+		side === 'bottom' ? 'open:justify-end' : 'open:justify-start open:items-stretch';
 
 	return (
 		<dialog
@@ -204,7 +209,9 @@ export function Sheet({ open, onClose, title, children, side = 'bottom' }: Sheet
 						×
 					</button>
 				</div>
-				<div className={`overflow-y-auto px-4 py-4 ${side === 'full' ? 'mx-auto w-full max-w-3xl' : ''}`}>
+				<div
+					className={`overflow-y-auto px-4 py-4 ${side === 'full' ? 'mx-auto w-full max-w-3xl' : ''}`}
+				>
 					{children}
 				</div>
 			</div>

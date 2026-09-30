@@ -30,6 +30,9 @@ describe('GET /api/vocab-sets/store', () => {
 		const body = await response.json();
 		expect(getStore).toHaveBeenCalledWith(null, 1, 20);
 		expect(response.status).toBe(200);
-		expect(body).toMatchObject({ ok: true, data: { items: [{ id: 'set-1', alreadyOwned: false }] } });
+		expect(body).toMatchObject({
+			ok: true,
+			data: { items: [{ id: 'set-1', alreadyOwned: false }] },
+		});
 	});
 });

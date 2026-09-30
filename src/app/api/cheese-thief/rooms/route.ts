@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { apiSuccess, withErrorHandling } from '@/features/spy-fall/lib/apiUtils';
+import { apiSuccess, withErrorHandling } from '@/features/board-game-shared/lib/apiUtils';
 import { createRoom, listPublicRooms } from '@/features/cheese-thief/services/cheeseThiefService';
 import type { CreateRoomInput } from '@/features/cheese-thief/types';
 

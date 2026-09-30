@@ -8,12 +8,7 @@ import ReadingProgress from '@/components/motion/ReadingProgress';
 import SectionReveal from '@/components/motion/SectionReveal';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
-import {
-	CaseStudyViewTracker,
-	getProject,
-	projects,
-	type Project,
-} from '@/features/portfolio';
+import { CaseStudyViewTracker, getProject, projects, type Project } from '@/features/portfolio';
 
 type ProjectPageProps = { params: Promise<{ slug: string }> };
 
@@ -85,8 +80,7 @@ function Opening({ project }: { project: Project }) {
 }
 
 function OpeningQuestion({ project }: { project: Project }) {
-	const title =
-		project.template === 'inquiry' ? 'Câu hỏi tôi đang theo đuổi' : 'Câu hỏi khởi đầu';
+	const title = project.template === 'inquiry' ? 'Câu hỏi tôi đang theo đuổi' : 'Câu hỏi khởi đầu';
 	return (
 		<SectionReveal as="section" className="border-b border-hairline py-14 md:py-16">
 			<div className="shell grid gap-8 lg:grid-cols-12">
@@ -234,10 +228,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
 						<ul className="mt-8 space-y-6 border-t border-hairline pt-6">
 							{related.map((item) => (
 								<li key={item.slug}>
-									<Link
-										href={routes.project(item.slug)}
-										className="group inline-flex flex-col"
-									>
+									<Link href={routes.project(item.slug)} className="group inline-flex flex-col">
 										<span className="font-display text-lg font-medium text-ink transition-opacity group-hover:opacity-70">
 											{item.title}
 										</span>

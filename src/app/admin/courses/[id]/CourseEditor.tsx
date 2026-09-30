@@ -8,7 +8,12 @@ import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { routes } from '@/config/routes';
 import { adminFetch } from '@/lib/admin/client';
-import type { CourseDetail, CourseVisibility, LessonDTO, PublishStatus } from '@/features/courses/types';
+import type {
+	CourseDetail,
+	CourseVisibility,
+	LessonDTO,
+	PublishStatus,
+} from '@/features/courses/types';
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
 	return adminFetch<T>(url, init);
@@ -210,7 +215,10 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 	return (
 		<div className="mt-8 space-y-8">
 			{error ? (
-				<p className="rounded-lg border border-error/40 bg-error-subtle px-3 py-2 text-sm text-error" role="alert">
+				<p
+					className="rounded-lg border border-error/40 bg-error-subtle px-3 py-2 text-sm text-error"
+					role="alert"
+				>
 					{error}
 				</p>
 			) : null}
@@ -340,7 +348,9 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 
 			<section className="space-y-4">
 				<div className="flex flex-wrap items-end justify-between gap-3">
-					<h2 className="text-xs font-bold uppercase tracking-widest text-muted">Chương & bài học</h2>
+					<h2 className="text-xs font-bold uppercase tracking-widest text-muted">
+						Chương & bài học
+					</h2>
 					<div className="flex flex-wrap gap-2">
 						<input
 							value={moduleTitle}
@@ -479,7 +489,9 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 								<div className="mt-3 flex flex-wrap gap-2">
 									<input
 										value={lessonTitles[mod.id] ?? ''}
-										onChange={(e) => setLessonTitles((prev) => ({ ...prev, [mod.id]: e.target.value }))}
+										onChange={(e) =>
+											setLessonTitles((prev) => ({ ...prev, [mod.id]: e.target.value }))
+										}
 										placeholder="Tên bài học mới"
 										className="min-h-11 flex-1 rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm"
 									/>
@@ -514,7 +526,12 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 					<Button type="button" variant="secondary" onClick={() => setConfirm(null)}>
 						Hủy
 					</Button>
-					<Button type="button" variant="danger" disabled={!!rowBusy} onClick={() => void runConfirm()}>
+					<Button
+						type="button"
+						variant="danger"
+						disabled={!!rowBusy}
+						onClick={() => void runConfirm()}
+					>
 						Xóa
 					</Button>
 				</div>

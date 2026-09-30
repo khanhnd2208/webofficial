@@ -113,14 +113,26 @@ export default function LearnReaderFrame({
 				>
 					<div className="ln-frame__drawer-head">
 						<span>Nội dung khóa học</span>
-						<button type="button" className="ln-icon-btn" onClick={() => setDrawerOpen(false)} aria-label="Đóng mục lục">
+						<button
+							type="button"
+							className="ln-icon-btn"
+							onClick={() => setDrawerOpen(false)}
+							aria-label="Đóng mục lục"
+						>
 							<LearnIcon name="close" size={16} />
 						</button>
 					</div>
 					{outlineHead}
 					<div className="ln-frame__outline-scroll">{outline}</div>
 				</aside>
-				{drawerOpen ? <button type="button" className="ln-frame__scrim" aria-label="Đóng mục lục" onClick={() => setDrawerOpen(false)} /> : null}
+				{drawerOpen ? (
+					<button
+						type="button"
+						className="ln-frame__scrim"
+						aria-label="Đóng mục lục"
+						onClick={() => setDrawerOpen(false)}
+					/>
+				) : null}
 				<main className="ln-frame__main">{children}</main>
 			</div>
 		</div>

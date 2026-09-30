@@ -9,7 +9,11 @@ import {
 } from '@/features/my-class';
 import { currentTableParams } from '@/features/my-class/domain/listQuery';
 import { routes } from '@/config/routes';
-import { StudioFilterBar, StudioFilterSelect, StudioPageHeader } from '@/components/myclass/admin/studio';
+import {
+	StudioFilterBar,
+	StudioFilterSelect,
+	StudioPageHeader,
+} from '@/components/myclass/admin/studio';
 import TestsTable from '@/components/myclass/admin/tables/TestsTable';
 
 export const dynamic = 'force-dynamic';
@@ -53,7 +57,13 @@ export default async function AdminTestsPage({
 	]);
 	const courses = unwrapItems(courseOptions);
 	const hasFilters = Boolean(
-		params.q || params.status || params.courseId || params.subjectId || params.topicId || params.unplaced || params.hasAttempts,
+		params.q ||
+		params.status ||
+		params.courseId ||
+		params.subjectId ||
+		params.topicId ||
+		params.unplaced ||
+		params.hasAttempts,
 	);
 	return (
 		<div className="mc-studio-container px-0 py-8">

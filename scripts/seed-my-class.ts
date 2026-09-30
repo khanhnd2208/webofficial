@@ -52,7 +52,11 @@ const HRM_LESSONS = [
 	{ slug: 'dai-ngo-giu-chan', title: 'Đãi ngộ và giữ chân', blurb: 'Trả và giữ người.' },
 	{ slug: 'van-hoa-to-chuc', title: 'Văn hóa tổ chức', blurb: 'Cách mọi người làm việc với nhau.' },
 	{ slug: 'quan-he-lao-dong', title: 'Quan hệ lao động', blurb: 'Nội quy, đối thoại, kỷ luật.' },
-	{ slug: 'suc-khoe-an-toan', title: 'Sức khỏe và an toàn', blurb: 'Làm việc mà không bị tổn hại.' },
+	{
+		slug: 'suc-khoe-an-toan',
+		title: 'Sức khỏe và an toàn',
+		blurb: 'Làm việc mà không bị tổn hại.',
+	},
 	{ slug: 'du-lieu-nhan-su', title: 'Dữ liệu nhân sự', blurb: 'Số liệu để ra quyết định.' },
 	{ slug: 'lanh-dao-nhom', title: 'Lãnh đạo nhóm', blurb: 'Sếp, nhóm, và công việc hàng ngày.' },
 	{ slug: 'quan-ly-thay-doi', title: 'Quản lý thay đổi', blurb: 'Khi tổ chức đổi hướng.' },
@@ -60,10 +64,22 @@ const HRM_LESSONS = [
 
 const STRATEGY_LESSONS = [
 	{ slug: 'chien-luoc-la-gi', title: 'Chiến lược là gì?', blurb: 'Hướng đi dài hạn của tổ chức.' },
-	{ slug: 'phan-tich-moi-truong', title: 'Phân tích môi trường', blurb: 'Cơ hội và đe dọa bên ngoài.' },
-	{ slug: 'nang-luc-canh-tranh', title: 'Năng lực cạnh tranh', blurb: 'Việc tổ chức làm tốt hơn đối thủ.' },
+	{
+		slug: 'phan-tich-moi-truong',
+		title: 'Phân tích môi trường',
+		blurb: 'Cơ hội và đe dọa bên ngoài.',
+	},
+	{
+		slug: 'nang-luc-canh-tranh',
+		title: 'Năng lực cạnh tranh',
+		blurb: 'Việc tổ chức làm tốt hơn đối thủ.',
+	},
 	{ slug: 'lua-chon-chien-luoc', title: 'Lựa chọn chiến lược', blurb: 'Chọn hướng rồi cam kết.' },
-	{ slug: 'thuc-thi-chien-luoc', title: 'Thực thi chiến lược', blurb: 'Đưa kế hoạch vào việc hàng ngày.' },
+	{
+		slug: 'thuc-thi-chien-luoc',
+		title: 'Thực thi chiến lược',
+		blurb: 'Đưa kế hoạch vào việc hàng ngày.',
+	},
 ] as const;
 
 const PROJECT_LESSONS = [
@@ -78,7 +94,11 @@ const ETHICS_LESSONS = [
 	{ slug: 'dao-duc-la-gi', title: 'Đạo đức kinh doanh là gì?', blurb: 'Đúng–sai khi làm ăn.' },
 	{ slug: 'ben-lien-quan', title: 'Bên liên quan', blurb: 'Ai bị ảnh hưởng bởi quyết định.' },
 	{ slug: 'quyet-dinh-dao-duc', title: 'Quyết định đạo đức', blurb: 'Cách chọn khi có xung đột.' },
-	{ slug: 'van-hoa-liem-chinh', title: 'Văn hóa liêm chính', blurb: 'Thói quen trung thực trong tổ chức.' },
+	{
+		slug: 'van-hoa-liem-chinh',
+		title: 'Văn hóa liêm chính',
+		blurb: 'Thói quen trung thực trong tổ chức.',
+	},
 	{ slug: 'trach-nhiem-xa-hoi', title: 'Trách nhiệm xã hội', blurb: 'Tổ chức với cộng đồng.' },
 ] as const;
 
@@ -148,8 +168,7 @@ const COURSES: CourseSpec[] = [
 		slug: 'quan-ly-du-an',
 		title: 'Quản lý dự án',
 		summary: 'Sample clone từ HRM — phạm vi, lịch, rủi ro, nhóm.',
-		description:
-			'Khóa mẫu clone cấu trúc HRM. Nội dung placeholder để test catalog nhiều khóa.',
+		description: 'Khóa mẫu clone cấu trúc HRM. Nội dung placeholder để test catalog nhiều khóa.',
 		level: 'BEGINNER',
 		tags: ['Dự án', 'Quản trị'],
 		kuPrefix: 'qld-sample-',
@@ -162,8 +181,7 @@ const COURSES: CourseSpec[] = [
 		slug: 'dao-duc-kinh-doanh',
 		title: 'Đạo đức kinh doanh',
 		summary: 'Sample clone từ HRM — bên liên quan, quyết định, liêm chính.',
-		description:
-			'Khóa mẫu clone cấu trúc HRM. Nội dung placeholder để test catalog nhiều khóa.',
+		description: 'Khóa mẫu clone cấu trúc HRM. Nội dung placeholder để test catalog nhiều khóa.',
 		level: 'ADVANCED',
 		tags: ['Đạo đức', 'Quản trị'],
 		kuPrefix: 'ddkd-sample-',
@@ -510,7 +528,12 @@ async function seedCourse(spec: CourseSpec) {
 			lessonSections.push({ id: section.id, title: sectionTitle, unitSlugs });
 		}
 
-		createdLessons.push({ id: lesson.id, slug: lesson.slug, title: lesson.title, sections: lessonSections });
+		createdLessons.push({
+			id: lesson.id,
+			slug: lesson.slug,
+			title: lesson.title,
+			sections: lessonSections,
+		});
 	}
 
 	const vocabWords = [
@@ -568,7 +591,11 @@ async function seedCourse(spec: CourseSpec) {
 			: `course:${course.id}:set:${set.id}`;
 		await prisma.myClassVocabAssignment.upsert({
 			where: { scopeKey },
-			update: { courseId: course.id, lessonId: fixture.lessonId, position: fixture.lessonId ? 1 : 0 },
+			update: {
+				courseId: course.id,
+				lessonId: fixture.lessonId,
+				position: fixture.lessonId ? 1 : 0,
+			},
 			create: {
 				courseId: course.id,
 				lessonId: fixture.lessonId,
@@ -639,10 +666,15 @@ async function seedCourse(spec: CourseSpec) {
 		})),
 	});
 
-	const createdQuestions: Array<{ id: string; slug: string; lessonIndex: number; kuSlugs: string[] }> =
-		[];
+	const createdQuestions: Array<{
+		id: string;
+		slug: string;
+		lessonIndex: number;
+		kuSlugs: string[];
+	}> = [];
 	const lessonQuestionIds: string[][] = createdLessons.map(() => []);
-	const sectionQuestionIds: Array<{ lessonIndex: number; sectionIndex: number; ids: string[] }> = [];
+	const sectionQuestionIds: Array<{ lessonIndex: number; sectionIndex: number; ids: string[] }> =
+		[];
 
 	async function insertQuestion(input: {
 		slug: string;
@@ -793,7 +825,11 @@ async function seedCourse(spec: CourseSpec) {
 				status: 'PUBLISHED',
 				publishedAt: now,
 				questions: {
-					create: input.questionIds.map((questionId, position) => ({ questionId, position, points: 1 })),
+					create: input.questionIds.map((questionId, position) => ({
+						questionId,
+						position,
+						points: 1,
+					})),
 				},
 			},
 		});

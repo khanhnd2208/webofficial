@@ -6,7 +6,7 @@ import { apiSuccess, withErrorHandling } from '@/lib/apiUtils';
 import { assertInquiryAvailable } from '@/lib/inquiryAvailability';
 import { assertInquiryRateLimit } from '@/lib/inquiryRateLimit';
 import { createInquiry } from '@/services/inquiryService';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
 	const body: unknown = await request.json();

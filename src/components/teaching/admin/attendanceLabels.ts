@@ -11,7 +11,12 @@ export const STATUS_OPTIONS: Array<{
 	{ status: 'PRESENT', label: 'Có mặt', key: 'P', hint: 'Đúng giờ' },
 	{ status: 'LATE', label: 'Muộn', key: 'L', hint: 'Tính là vắng không phép' },
 	{ status: 'ABSENT_UNEXCUSED', label: 'Vắng', key: 'A', hint: 'Không phép' },
-	{ status: 'ABSENT_EXCUSED', label: 'Vắng có phép', key: 'E', hint: 'Không tính vào vắng không phép' },
+	{
+		status: 'ABSENT_EXCUSED',
+		label: 'Vắng có phép',
+		key: 'E',
+		hint: 'Không tính vào vắng không phép',
+	},
 	{ status: 'MAKEUP', label: 'Học bù', key: 'M', hint: 'Tính như có mặt' },
 ];
 
@@ -70,6 +75,8 @@ export function currentWeekNumber(sessions: TeachingSessionRecord[]): number | n
 	if (next) return next.weekNumber;
 	const lastTaken = [...sessions]
 		.reverse()
-		.find((session) => !session.isCancelled && session.attendanceTakenAt && !session.attendanceOpen);
+		.find(
+			(session) => !session.isCancelled && session.attendanceTakenAt && !session.attendanceOpen,
+		);
 	return lastTaken?.weekNumber ?? null;
 }

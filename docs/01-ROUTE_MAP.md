@@ -28,17 +28,17 @@ Sources of truth: `src/config/routes.ts`, `src/config/navigation.ts`, and
 | `/bai-viet/*`, `/phat-trien-ban-than/*`, `/archive` | `/` |
 | `/hoc`, `/hoc/chuong-trinh` | `/` |
 
-The corresponding UI implementations are stored under
-`src/_archived/marketing/routes-v1` and are not compiled by Next.js.
+The retired UI implementations (`src/_archived/marketing/routes-v1`) are in
+git history only.
 
 Standalone archived product modules (not mounted as live routes):
 
-| Module | Archive path |
+| Module | Former archive path (git history) |
 |--------|----------------|
 | Personality Test (research 2026) | `src/_archived/features/personality-test-research-2026` |
 | K'sTrip party games (spy, night-market, mafia) | `src/_archived/features/kstrip-2026` |
 
-See `src/_archived/README.md` for the full archive taxonomy.
+See `docs/archive/src-archived.md` for the archive taxonomy and restore steps.
 
 ## Internal/system routes
 

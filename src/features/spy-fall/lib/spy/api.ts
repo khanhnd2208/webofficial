@@ -1,12 +1,12 @@
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
-import { resolveErrorMessage } from '@/features/spy-fall/lib/i18n/tLocale';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { resolveErrorMessage } from '@/features/board-game-shared/lib/i18n/tLocale';
 import {
 	DEFAULT_LOCALE,
 	isLocale,
 	LOCALE_STORAGE_KEY,
 	type Locale,
 	type MessageParams,
-} from '@/features/spy-fall/lib/i18n/types';
+} from '@/features/board-game-shared/lib/i18n/types';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 
 type ApiEnvelope<T> = {
@@ -38,10 +38,7 @@ export async function fetchRoomState(code: string, token: string | null): Promis
 	return parseResponse<RoomStateDTO>(res);
 }
 
-export async function postSpyAction<T>(
-	path: string,
-	body: Record<string, unknown>,
-): Promise<T> {
+export async function postSpyAction<T>(path: string, body: Record<string, unknown>): Promise<T> {
 	const res = await fetch(withBasePath(path), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -50,10 +47,7 @@ export async function postSpyAction<T>(
 	return parseResponse<T>(res);
 }
 
-export async function patchSpyAction<T>(
-	path: string,
-	body: Record<string, unknown>,
-): Promise<T> {
+export async function patchSpyAction<T>(path: string, body: Record<string, unknown>): Promise<T> {
 	const res = await fetch(withBasePath(path), {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },

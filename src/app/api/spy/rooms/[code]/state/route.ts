@@ -1,7 +1,11 @@
 import RoomModel from '@/features/spy-fall/models/SpyGame';
 import type { NextRequest } from 'next/server';
 
-import { apiSuccess, withErrorHandling, withPublicRoomGuard } from '@/features/spy-fall/lib/apiUtils';
+import {
+	apiSuccess,
+	withErrorHandling,
+	withPublicRoomGuard,
+} from '@/features/board-game-shared/lib/apiUtils';
 import { getScopedState } from '@/features/spy-fall/services/spyGameService';
 
 const GETBase = withErrorHandling(async (request: NextRequest, context) => {

@@ -15,4 +15,7 @@ export function clearPlayerToken(roomCode: string): void {
 	localStorage.removeItem(`${STORAGE_PREFIX}${roomCode.toUpperCase()}`);
 }
 
-export { getRecentPlayerName, storeRecentPlayerName } from '@/features/spy-fall/lib/spy/clientToken';
+export {
+	getRecentPlayerName,
+	storeRecentPlayerName,
+} from '@/features/board-game-shared/lib/clientToken';

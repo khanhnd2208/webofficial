@@ -2,16 +2,20 @@
 
 import { useState } from 'react';
 
-import { playerRangeFor, type CheeseMode, type FollowerSettings } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	playerRangeFor,
+	type CheeseMode,
+	type FollowerSettings,
+} from '@/features/cheese-thief/config/cheeseThief';
 import {
 	allTableSizes,
 	tableRulesFor,
 	type FollowerKnowledge,
 	type TableRules,
 } from '@/features/cheese-thief/lib/tableRules';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Sheet } from '@/features/spy-fall/components/ui';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Sheet } from '@/features/board-game-shared/components/ui';
+import { cn } from '@/features/board-game-shared/lib/cn';
 
 type TranslateFn = ReturnType<typeof useT>;
 
@@ -72,7 +76,10 @@ export function tableRuleLines(
 	}
 	if (rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount) {
 		lines.push(
-			t('cheese.guide.table.custom', { count: rules.followerCount, default: rules.defaultFollowerCount }),
+			t('cheese.guide.table.custom', {
+				count: rules.followerCount,
+				default: rules.defaultFollowerCount,
+			}),
 		);
 	}
 	lines.push(t('cheese.guide.table.picks', { count: rules.choiceCount }));
@@ -217,7 +224,12 @@ function QuickStart() {
 	);
 }
 
-export default function CheeseRulesGuide({ playerCount, mode, scapegoatEnabled, followers }: TableProps) {
+export default function CheeseRulesGuide({
+	playerCount,
+	mode,
+	scapegoatEnabled,
+	followers,
+}: TableProps) {
 	const t = useT();
 	return (
 		<div className="space-y-6">

@@ -53,7 +53,10 @@ export type TestCommand =
 	| { kind: 'revote' }
 	| { kind: 'vote'; playerId: string; targetId: string }
 	| { kind: 'kick'; playerId: string }
-	| { kind: 'rename'; name: string }
-;
+	| { kind: 'rename'; name: string };
 
-export interface TestCommandCursor { requestId: string; expectedVersion: number; controlledSeatId: string }
+export interface TestCommandCursor {
+	requestId: string;
+	expectedVersion: number;
+	controlledSeatId: string;
+}

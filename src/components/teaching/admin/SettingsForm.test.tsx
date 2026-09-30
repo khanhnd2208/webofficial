@@ -70,7 +70,12 @@ describe('SettingsForm', () => {
 	});
 	it('guards internal navigation and keeps the form when save fails', async () => {
 		vi.mocked(teachingApi).mockRejectedValueOnce(new Error('offline'));
-		render(<><Link href="/my-space/teaching/class-1?tab=students">Sinh viên</Link><SettingsForm teachingClass={teachingClass} /></>);
+		render(
+			<>
+				<Link href="/my-space/teaching/class-1?tab=students">Sinh viên</Link>
+				<SettingsForm teachingClass={teachingClass} />
+			</>,
+		);
 		fireEvent.change(screen.getByLabelText('Mã lớp'), { target: { value: '02' } });
 		fireEvent.click(screen.getByRole('link', { name: 'Sinh viên' }));
 		expect(screen.getByRole('button', { name: 'Ở lại' })).toBeVisible();

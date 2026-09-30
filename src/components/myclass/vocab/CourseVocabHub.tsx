@@ -27,7 +27,9 @@ export default function CourseVocabHub({
 		<div className="mt-6 space-y-6" data-testid="my-class-vocab-hub">
 			{courseSets.length ? (
 				<section>
-					<p className="text-xs font-semibold uppercase tracking-[0.14em] text-mc-vocab">Toàn khóa</p>
+					<p className="text-xs font-semibold uppercase tracking-[0.14em] text-mc-vocab">
+						Toàn khóa
+					</p>
 					<div className="mt-3 grid gap-3 sm:grid-cols-2">
 						{courseSets.map((set) => (
 							<VocabRow key={set.assignmentId} courseSlug={courseSlug} set={set} />

@@ -66,15 +66,25 @@ export default function TestBuilder({
 	const [title, setTitle] = useState(initial.title);
 	const [slug, setSlug] = useState(initial.slug);
 	const [description, setDescription] = useState(initial.description);
-	const [passScore, setPassScore] = useState(initial.passScore == null ? '' : String(initial.passScore));
-	const [timeLimit, setTimeLimit] = useState(initial.timeLimitMinutes == null ? '' : String(initial.timeLimitMinutes));
-	const [maxAttempts, setMaxAttempts] = useState(initial.maxAttempts == null ? '' : String(initial.maxAttempts));
+	const [passScore, setPassScore] = useState(
+		initial.passScore == null ? '' : String(initial.passScore),
+	);
+	const [timeLimit, setTimeLimit] = useState(
+		initial.timeLimitMinutes == null ? '' : String(initial.timeLimitMinutes),
+	);
+	const [maxAttempts, setMaxAttempts] = useState(
+		initial.maxAttempts == null ? '' : String(initial.maxAttempts),
+	);
 	const [shuffleQuestions, setShuffleQuestions] = useState(Boolean(initial.shuffleQuestions));
 	const [shuffleOptions, setShuffleOptions] = useState(Boolean(initial.shuffleOptions));
-	const [revealPolicy, setRevealPolicy] = useState<MyClassTestRevealPolicy>(initial.revealPolicy ?? 'AFTER_SUBMIT');
+	const [revealPolicy, setRevealPolicy] = useState<MyClassTestRevealPolicy>(
+		initial.revealPolicy ?? 'AFTER_SUBMIT',
+	);
 	const [subjectId, setSubjectId] = useState(initial.subjectId ?? '');
 	const [tags, setTags] = useState((initial.tags ?? []).join(', '));
-	const [items, setItems] = useState(initial.questions.map((row) => ({ questionId: row.question.id, points: row.points ?? 1 })));
+	const [items, setItems] = useState(
+		initial.questions.map((row) => ({ questionId: row.question.id, points: row.points ?? 1 })),
+	);
 	const [placements, setPlacements] = useState(initial.placements ?? []);
 	const [issues, setIssues] = useState<Array<{ message: string; severity?: string }>>([]);
 	const [preview, setPreview] = useState<MyClassTestForPlay | null>(null);
@@ -121,7 +131,8 @@ export default function TestBuilder({
 			const question = questionById.get(item.questionId);
 			if (!question) continue;
 			for (const link of question.knowledgeUnits) {
-				const titleValue = link.knowledgeUnit.currentPublishedRevision?.title ?? link.knowledgeUnit.slug;
+				const titleValue =
+					link.knowledgeUnit.currentPublishedRevision?.title ?? link.knowledgeUnit.slug;
 				counts.set(titleValue, (counts.get(titleValue) ?? 0) + 1);
 			}
 		}
@@ -138,7 +149,10 @@ export default function TestBuilder({
 				slug,
 				description,
 				subjectId: subjectId || null,
-				tags: tags.split(/[|,]/).map((item) => item.trim()).filter(Boolean),
+				tags: tags
+					.split(/[|,]/)
+					.map((item) => item.trim())
+					.filter(Boolean),
 				passScore: passScore.trim() === '' ? null : Number(passScore),
 				timeLimitMinutes: timeLimit.trim() === '' ? null : Number(timeLimit),
 				maxAttempts: maxAttempts.trim() === '' ? null : Number(maxAttempts),
@@ -173,7 +187,9 @@ export default function TestBuilder({
 		setError(null);
 		try {
 			if (!(await save())) return;
-			const found = await myClassApi<Array<{ message: string; severity?: string }>>(`/api/admin/my-class/tests/${initial.id}/publish`);
+			const found = await myClassApi<Array<{ message: string; severity?: string }>>(
+				`/api/admin/my-class/tests/${initial.id}/publish`,
+			);
 			setIssues(found);
 			if (found.some((item) => item.severity !== 'warning')) return;
 			await myClassApi(`/api/admin/my-class/tests/${initial.id}/publish`, { method: 'POST' });
@@ -185,270 +201,346 @@ export default function TestBuilder({
 
 	return (
 		<>
-		<div className="space-y-5">
-			{error ? <p className="text-sm text-error">{error}</p> : null}
-			<div className="flex gap-2">
-				{(
-					[
-						['questions', 'Câu hỏi'],
-						['placements', 'Đã gắn'],
-						['settings', 'Cài đặt'],
-					] as const
-				).map(([id, label]) => (
-					<button
-						key={id}
-						type="button"
-						onClick={() => setTab(id)}
-						className={`min-h-11 rounded-[var(--mc-r-sm)] px-4 text-sm font-semibold ${tab === id ? 'bg-ink text-paper' : 'border border-mc-rule'}`}
-					>
-						{label}
-					</button>
-				))}
-			</div>
-			{tab === 'settings' ? (
-				<div className="space-y-4">
-					<StudioField label="Tên bài kiểm tra">
-						<StudioInput value={title} onChange={(event) => setTitle(event.target.value)} />
-					</StudioField>
-					<StudioField label="Slug">
-						<StudioInput value={slug} onChange={(event) => setSlug(event.target.value)} />
-					</StudioField>
-					<StudioField label="Mô tả">
-						<StudioTextarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} />
-					</StudioField>
-					<div className="grid gap-4 sm:grid-cols-2">
-						<StudioField label="Điểm đạt (%)">
-							<StudioInput value={passScore} onChange={(event) => setPassScore(event.target.value)} />
-						</StudioField>
-						<StudioField label="Thời gian (phút)">
-							<StudioInput value={timeLimit} onChange={(event) => setTimeLimit(event.target.value)} />
-						</StudioField>
-						<StudioField label="Số lần làm tối đa">
-							<StudioInput value={maxAttempts} onChange={(event) => setMaxAttempts(event.target.value)} />
-						</StudioField>
-						<StudioField label="Hiện đáp án">
-							<StudioSelect value={revealPolicy} onChange={(event) => setRevealPolicy(event.target.value as MyClassTestRevealPolicy)}>
-								<option value="AFTER_SUBMIT">Sau khi nộp</option>
-								<option value="IMMEDIATE">Ngay khi chọn</option>
-								<option value="NEVER">Không hiện</option>
-							</StudioSelect>
-						</StudioField>
-						<StudioField label="Môn">
-							<StudioSelect value={subjectId} onChange={(event) => setSubjectId(event.target.value)}>
-								<option value="">Chưa gán</option>
-								{subjects.map((subject) => (
-									<option key={subject.id} value={subject.id}>
-										{subject.name}
-									</option>
-								))}
-							</StudioSelect>
-						</StudioField>
-						<StudioField label="Tags">
-							<StudioInput value={tags} onChange={(event) => setTags(event.target.value)} />
-						</StudioField>
-					</div>
-					<label className="flex items-center gap-2 text-sm">
-						<input type="checkbox" checked={shuffleQuestions} onChange={(event) => setShuffleQuestions(event.target.checked)} />
-						Xáo câu hỏi
-					</label>
-					<label className="flex items-center gap-2 text-sm">
-						<input type="checkbox" checked={shuffleOptions} onChange={(event) => setShuffleOptions(event.target.checked)} />
-						Xáo đáp án
-					</label>
+			<div className="space-y-5">
+				{error ? <p className="text-sm text-error">{error}</p> : null}
+				<div className="flex gap-2">
+					{(
+						[
+							['questions', 'Câu hỏi'],
+							['placements', 'Đã gắn'],
+							['settings', 'Cài đặt'],
+						] as const
+					).map(([id, label]) => (
+						<button
+							key={id}
+							type="button"
+							onClick={() => setTab(id)}
+							className={`min-h-11 rounded-[var(--mc-r-sm)] px-4 text-sm font-semibold ${tab === id ? 'bg-ink text-paper' : 'border border-mc-rule'}`}
+						>
+							{label}
+						</button>
+					))}
 				</div>
-			) : null}
-			{tab === 'questions' ? (
-				<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
-					<div>
-						<ol className="space-y-2">
-							{items.map((item, index) => {
-								const question = bank.find((row) => row.id === item.questionId) ?? initial.questions.find((row) => row.question.id === item.questionId)?.question;
-								return (
-									<li key={item.questionId} className="flex items-start gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule p-3">
-										<span className="mc-num text-xs">{index + 1}</span>
-										<p className="min-w-0 flex-1 text-sm">{question?.stem ?? item.questionId}</p>
-										<input
-											type="number"
-											min={1}
-											value={item.points}
-											onChange={(event) =>
-												setItems((current) =>
-													current.map((row) => (row.questionId === item.questionId ? { ...row, points: Number(event.target.value) } : row)),
-												)
-											}
-											className="h-9 w-16 rounded border border-mc-rule px-2 text-sm"
-											aria-label="Điểm"
-										/>
-										<button type="button" className="text-xs text-error" onClick={() => setItems((current) => current.filter((row) => row.questionId !== item.questionId))}>
-											Gỡ
-										</button>
-									</li>
-								);
-							})}
-						</ol>
-						<div className="mt-4">
-							<input
-								value={bankQuery}
-								onChange={(event) => setBankQuery(event.target.value)}
-								placeholder="Tìm trong ngân hàng…"
-								className="min-h-11 w-full rounded-[var(--mc-r-sm)] border border-mc-rule px-3 text-sm"
+				{tab === 'settings' ? (
+					<div className="space-y-4">
+						<StudioField label="Tên bài kiểm tra">
+							<StudioInput value={title} onChange={(event) => setTitle(event.target.value)} />
+						</StudioField>
+						<StudioField label="Slug">
+							<StudioInput value={slug} onChange={(event) => setSlug(event.target.value)} />
+						</StudioField>
+						<StudioField label="Mô tả">
+							<StudioTextarea
+								value={description}
+								onChange={(event) => setDescription(event.target.value)}
+								rows={3}
 							/>
-							<div className="mt-2 flex gap-2">
-								<input
-									value={randomCount}
-									onChange={(event) => setRandomCount(event.target.value)}
-									className="h-9 w-16 rounded border border-mc-rule px-2 text-sm"
-									aria-label="Số câu ngẫu nhiên"
+						</StudioField>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<StudioField label="Điểm đạt (%)">
+								<StudioInput
+									value={passScore}
+									onChange={(event) => setPassScore(event.target.value)}
 								/>
-								<StudioButton
-									variant="secondary"
-									size="sm"
-									onClick={async () => {
-										setError(null);
-										try {
-											const updated = await myClassApi<{
-												questions: Array<{ question: { id: string }; points: number }>;
-											}>(`/api/admin/my-class/tests/${initial.id}/random?q=${encodeURIComponent(bankQuery)}`, {
-												method: 'POST',
-												body: JSON.stringify({ count: Number(randomCount) || 5 }),
-											});
-											setItems(
-												updated.questions.map((row) => ({
-													questionId: row.question.id,
-													points: row.points,
-												})),
-											);
-										} catch (err) {
-											setError(err instanceof Error ? err.message : 'Không lấy được câu ngẫu nhiên');
-										}
-									}}
+							</StudioField>
+							<StudioField label="Thời gian (phút)">
+								<StudioInput
+									value={timeLimit}
+									onChange={(event) => setTimeLimit(event.target.value)}
+								/>
+							</StudioField>
+							<StudioField label="Số lần làm tối đa">
+								<StudioInput
+									value={maxAttempts}
+									onChange={(event) => setMaxAttempts(event.target.value)}
+								/>
+							</StudioField>
+							<StudioField label="Hiện đáp án">
+								<StudioSelect
+									value={revealPolicy}
+									onChange={(event) =>
+										setRevealPolicy(event.target.value as MyClassTestRevealPolicy)
+									}
 								>
-									Thêm ngẫu nhiên
-								</StudioButton>
-							</div>
-							<ul className="mt-2 max-h-64 space-y-1 overflow-auto text-sm">
-								{filteredBank.map((item) => (
-									<li key={item.id}>
-										<button
-											type="button"
-											className="w-full rounded px-2 py-2 text-left hover:bg-surface-sunken"
-											onClick={() => setItems((current) => [...current, { questionId: item.id, points: 1 }])}
-										>
-											{item.stem}
-										</button>
-									</li>
-								))}
-							</ul>
+									<option value="AFTER_SUBMIT">Sau khi nộp</option>
+									<option value="IMMEDIATE">Ngay khi chọn</option>
+									<option value="NEVER">Không hiện</option>
+								</StudioSelect>
+							</StudioField>
+							<StudioField label="Môn">
+								<StudioSelect
+									value={subjectId}
+									onChange={(event) => setSubjectId(event.target.value)}
+								>
+									<option value="">Chưa gán</option>
+									{subjects.map((subject) => (
+										<option key={subject.id} value={subject.id}>
+											{subject.name}
+										</option>
+									))}
+								</StudioSelect>
+							</StudioField>
+							<StudioField label="Tags">
+								<StudioInput value={tags} onChange={(event) => setTags(event.target.value)} />
+							</StudioField>
 						</div>
+						<label className="flex items-center gap-2 text-sm">
+							<input
+								type="checkbox"
+								checked={shuffleQuestions}
+								onChange={(event) => setShuffleQuestions(event.target.checked)}
+							/>
+							Xáo câu hỏi
+						</label>
+						<label className="flex items-center gap-2 text-sm">
+							<input
+								type="checkbox"
+								checked={shuffleOptions}
+								onChange={(event) => setShuffleOptions(event.target.checked)}
+							/>
+							Xáo đáp án
+						</label>
 					</div>
-					<aside className="mc-surface p-3 text-sm" data-testid="coverage">
-						<section>
-							<h2 className="font-semibold">Độ phủ nội dung</h2>
-						<ul className="mt-2 space-y-1">
-							{coverage.map(([label, count]) => (
-								<li key={label} className="flex justify-between gap-2">
-									<span>{label}</span>
-									<span className="mc-num">{count}</span>
+				) : null}
+				{tab === 'questions' ? (
+					<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
+						<div>
+							<ol className="space-y-2">
+								{items.map((item, index) => {
+									const question =
+										bank.find((row) => row.id === item.questionId) ??
+										initial.questions.find((row) => row.question.id === item.questionId)?.question;
+									return (
+										<li
+											key={item.questionId}
+											className="flex items-start gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule p-3"
+										>
+											<span className="mc-num text-xs">{index + 1}</span>
+											<p className="min-w-0 flex-1 text-sm">{question?.stem ?? item.questionId}</p>
+											<input
+												type="number"
+												min={1}
+												value={item.points}
+												onChange={(event) =>
+													setItems((current) =>
+														current.map((row) =>
+															row.questionId === item.questionId
+																? { ...row, points: Number(event.target.value) }
+																: row,
+														),
+													)
+												}
+												className="h-9 w-16 rounded border border-mc-rule px-2 text-sm"
+												aria-label="Điểm"
+											/>
+											<button
+												type="button"
+												className="text-xs text-error"
+												onClick={() =>
+													setItems((current) =>
+														current.filter((row) => row.questionId !== item.questionId),
+													)
+												}
+											>
+												Gỡ
+											</button>
+										</li>
+									);
+								})}
+							</ol>
+							<div className="mt-4">
+								<input
+									value={bankQuery}
+									onChange={(event) => setBankQuery(event.target.value)}
+									placeholder="Tìm trong ngân hàng…"
+									className="min-h-11 w-full rounded-[var(--mc-r-sm)] border border-mc-rule px-3 text-sm"
+								/>
+								<div className="mt-2 flex gap-2">
+									<input
+										value={randomCount}
+										onChange={(event) => setRandomCount(event.target.value)}
+										className="h-9 w-16 rounded border border-mc-rule px-2 text-sm"
+										aria-label="Số câu ngẫu nhiên"
+									/>
+									<StudioButton
+										variant="secondary"
+										size="sm"
+										onClick={async () => {
+											setError(null);
+											try {
+												const updated = await myClassApi<{
+													questions: Array<{ question: { id: string }; points: number }>;
+												}>(
+													`/api/admin/my-class/tests/${initial.id}/random?q=${encodeURIComponent(bankQuery)}`,
+													{
+														method: 'POST',
+														body: JSON.stringify({ count: Number(randomCount) || 5 }),
+													},
+												);
+												setItems(
+													updated.questions.map((row) => ({
+														questionId: row.question.id,
+														points: row.points,
+													})),
+												);
+											} catch (err) {
+												setError(
+													err instanceof Error ? err.message : 'Không lấy được câu ngẫu nhiên',
+												);
+											}
+										}}
+									>
+										Thêm ngẫu nhiên
+									</StudioButton>
+								</div>
+								<ul className="mt-2 max-h-64 space-y-1 overflow-auto text-sm">
+									{filteredBank.map((item) => (
+										<li key={item.id}>
+											<button
+												type="button"
+												className="w-full rounded px-2 py-2 text-left hover:bg-surface-sunken"
+												onClick={() =>
+													setItems((current) => [...current, { questionId: item.id, points: 1 }])
+												}
+											>
+												{item.stem}
+											</button>
+										</li>
+									))}
+								</ul>
+							</div>
+						</div>
+						<aside className="mc-surface p-3 text-sm" data-testid="coverage">
+							<section>
+								<h2 className="font-semibold">Độ phủ nội dung</h2>
+								<ul className="mt-2 space-y-1">
+									{coverage.map(([label, count]) => (
+										<li key={label} className="flex justify-between gap-2">
+											<span>{label}</span>
+											<span className="mc-num">{count}</span>
+										</li>
+									))}
+									{!coverage.length ? <li className="mc-meta">Chưa có dữ liệu độ phủ.</li> : null}
+								</ul>
+							</section>
+						</aside>
+					</div>
+				) : null}
+				{tab === 'placements' ? (
+					<div className="space-y-4">
+						<div className="flex flex-wrap items-center justify-between gap-3">
+							<p className="mc-meta">
+								Gắn bài vào khóa học, bài hoặc phần. Học viên sẽ thấy bài ở đúng chỗ đó.
+							</p>
+							<StudioButton
+								variant="secondary"
+								size="sm"
+								onClick={() => setAttachOpen((open) => !open)}
+							>
+								{attachOpen ? 'Đóng form gắn' : 'Gắn vào khóa học'}
+							</StudioButton>
+						</div>
+						{attachOpen ? (
+							<TestPlacementForm
+								testId={initial.id}
+								onAttached={(placement) => {
+									setPlacements((current) => [...current, placement]);
+									setAttachOpen(false);
+								}}
+								onError={setError}
+							/>
+						) : null}
+						<ul className="divide-y divide-mc-rule rounded-[var(--mc-r-sm)] border border-mc-rule">
+							{placements.map((item) => (
+								<li key={item.id} className="flex items-center justify-between gap-3 p-3 text-sm">
+									<span>
+										{item.course.title}
+										{item.lesson ? ` · ${item.lesson.title}` : ''}
+										{item.section ? ` · ${item.section.title}` : ''}
+										<span className="mc-meta"> · {item.scope}</span>
+									</span>
+									<button
+										type="button"
+										className="text-error"
+										onClick={async () => {
+											await myClassApi(
+												`/api/admin/my-class/tests/${initial.id}/placements/${item.id}`,
+												{ method: 'DELETE' },
+											);
+											setPlacements((current) => current.filter((row) => row.id !== item.id));
+										}}
+									>
+										Gỡ
+									</button>
 								</li>
 							))}
-							{!coverage.length ? <li className="mc-meta">Chưa có dữ liệu độ phủ.</li> : null}
+							{!placements.length ? <li className="p-4 mc-meta">Chưa gắn vào khóa nào.</li> : null}
 						</ul>
-						</section>
-					</aside>
-				</div>
-			) : null}
-			{tab === 'placements' ? (
-				<div className="space-y-4">
-					<div className="flex flex-wrap items-center justify-between gap-3">
-						<p className="mc-meta">Gắn bài vào khóa học, bài hoặc phần. Học viên sẽ thấy bài ở đúng chỗ đó.</p>
-						<StudioButton variant="secondary" size="sm" onClick={() => setAttachOpen((open) => !open)}>
-							{attachOpen ? 'Đóng form gắn' : 'Gắn vào khóa học'}
-						</StudioButton>
 					</div>
-					{attachOpen ? (
-						<TestPlacementForm
-							testId={initial.id}
-							onAttached={(placement) => {
-								setPlacements((current) => [...current, placement]);
-								setAttachOpen(false);
-							}}
-							onError={setError}
-						/>
-					) : null}
-					<ul className="divide-y divide-mc-rule rounded-[var(--mc-r-sm)] border border-mc-rule">
-						{placements.map((item) => (
-							<li key={item.id} className="flex items-center justify-between gap-3 p-3 text-sm">
-								<span>
-									{item.course.title}
-									{item.lesson ? ` · ${item.lesson.title}` : ''}
-									{item.section ? ` · ${item.section.title}` : ''}
-									<span className="mc-meta"> · {item.scope}</span>
-								</span>
-								<button
-									type="button"
-									className="text-error"
-									onClick={async () => {
-										await myClassApi(`/api/admin/my-class/tests/${initial.id}/placements/${item.id}`, { method: 'DELETE' });
-										setPlacements((current) => current.filter((row) => row.id !== item.id));
-									}}
-								>
-									Gỡ
-								</button>
-							</li>
+				) : null}
+				{issues.length ? (
+					<ul className="text-sm text-warning" data-testid="publish-validation">
+						{issues.map((item) => (
+							<li key={item.message}>{item.message}</li>
 						))}
-						{!placements.length ? <li className="p-4 mc-meta">Chưa gắn vào khóa nào.</li> : null}
 					</ul>
+				) : null}
+				{preview ? (
+					<TestRunner
+						test={preview}
+						submitUrl={`/api/admin/my-class/tests/${initial.id}/preview/submit`}
+						embedded
+					/>
+				) : null}
+				<div className="flex flex-wrap gap-2">
+					<StudioButton variant="secondary" onClick={() => setCsvOpen(true)}>
+						Nhập CSV
+					</StudioButton>
+					<StudioButton
+						variant="secondary"
+						onClick={async () => {
+							const play = await myClassApi<MyClassTestForPlay>(
+								`/api/admin/my-class/tests/${initial.id}/preview`,
+							);
+							setPreview(play);
+						}}
+					>
+						Xem trước
+					</StudioButton>
+					<StudioButton variant="secondary" onClick={() => void save()}>
+						Lưu bản nháp
+					</StudioButton>
+					<StudioButton onClick={() => void publish()}>Xuất bản</StudioButton>
+					<StudioButton
+						variant="danger"
+						onClick={async () => {
+							const ok = await confirm({
+								title: 'Lưu trữ bài kiểm tra',
+								description: 'Lưu trữ bài kiểm tra này? Học viên sẽ không còn thấy bài.',
+								confirmLabel: 'Lưu trữ',
+							});
+							if (!ok) return;
+							setError(null);
+							try {
+								await myClassApi(`/api/admin/my-class/tests/${initial.id}`, { method: 'DELETE' });
+								router.push(routes.admin.myClassTests);
+							} catch (err) {
+								setError(err instanceof Error ? err.message : 'Không lưu trữ được');
+							}
+						}}
+					>
+						Lưu trữ
+					</StudioButton>
 				</div>
-			) : null}
-			{issues.length ? (
-				<ul className="text-sm text-warning" data-testid="publish-validation">
-					{issues.map((item) => (
-						<li key={item.message}>{item.message}</li>
-					))}
-				</ul>
-			) : null}
-			{preview ? <TestRunner test={preview} submitUrl={`/api/admin/my-class/tests/${initial.id}/preview/submit`} embedded /> : null}
-			<div className="flex flex-wrap gap-2">
-				<StudioButton variant="secondary" onClick={() => setCsvOpen(true)}>
-					Nhập CSV
-				</StudioButton>
-				<StudioButton
-					variant="secondary"
-					onClick={async () => {
-						const play = await myClassApi<MyClassTestForPlay>(`/api/admin/my-class/tests/${initial.id}/preview`);
-						setPreview(play);
-					}}
-				>
-					Xem trước
-				</StudioButton>
-				<StudioButton variant="secondary" onClick={() => void save()}>
-					Lưu bản nháp
-				</StudioButton>
-				<StudioButton onClick={() => void publish()}>Xuất bản</StudioButton>
-				<StudioButton
-					variant="danger"
-					onClick={async () => {
-						const ok = await confirm({
-							title: 'Lưu trữ bài kiểm tra',
-							description: 'Lưu trữ bài kiểm tra này? Học viên sẽ không còn thấy bài.',
-							confirmLabel: 'Lưu trữ',
-						});
-						if (!ok) return;
-						setError(null);
-						try {
-							await myClassApi(`/api/admin/my-class/tests/${initial.id}`, { method: 'DELETE' });
-							router.push(routes.admin.myClassTests);
-						} catch (err) {
-							setError(err instanceof Error ? err.message : 'Không lưu trữ được');
-						}
-					}}
-				>
-					Lưu trữ
-				</StudioButton>
+				<TestCsvImport
+					open={csvOpen}
+					testId={initial.id}
+					existingCount={items.length}
+					onImported={() => router.refresh()}
+					onClose={() => setCsvOpen(false)}
+				/>
 			</div>
-			<TestCsvImport open={csvOpen} testId={initial.id} existingCount={items.length} onImported={() => router.refresh()} onClose={() => setCsvOpen(false)} />
-		</div>
-		{dialog}
+			{dialog}
 		</>
 	);
 }
@@ -476,9 +568,13 @@ function TestPlacementForm({
 	const [busy, setBusy] = useState(false);
 
 	useEffect(() => {
-		void myClassApi<{ items: Array<{ id: string; title: string }> }>('/api/admin/my-class/courses?pageSize=100')
+		void myClassApi<{ items: Array<{ id: string; title: string }> }>(
+			'/api/admin/my-class/courses?pageSize=100',
+		)
 			.then((page) => setCourses(page?.items ?? []))
-			.catch((err: unknown) => onError(err instanceof Error ? err.message : 'Không tải được khóa học'));
+			.catch((err: unknown) =>
+				onError(err instanceof Error ? err.message : 'Không tải được khóa học'),
+			);
 	}, [onError]);
 
 	useEffect(() => {
@@ -494,7 +590,9 @@ function TestPlacementForm({
 				setLessonId('');
 				setSectionId('');
 			})
-			.catch((err: unknown) => onError(err instanceof Error ? err.message : 'Không tải được mục lục'));
+			.catch((err: unknown) =>
+				onError(err instanceof Error ? err.message : 'Không tải được mục lục'),
+			);
 	}, [courseId, onError]);
 
 	const lessons = outline?.lessons ?? [];
@@ -513,15 +611,18 @@ function TestPlacementForm({
 				setBusy(true);
 				onError(null);
 				try {
-					const created = await myClassApi<Placement>(`/api/admin/my-class/tests/${testId}/placements`, {
-						method: 'POST',
-						body: JSON.stringify({
-							courseId,
-							scope,
-							lessonId: lessonId || null,
-							sectionId: sectionId || null,
-						}),
-					});
+					const created = await myClassApi<Placement>(
+						`/api/admin/my-class/tests/${testId}/placements`,
+						{
+							method: 'POST',
+							body: JSON.stringify({
+								courseId,
+								scope,
+								lessonId: lessonId || null,
+								sectionId: sectionId || null,
+							}),
+						},
+					);
 					onAttached(created);
 				} catch (err) {
 					onError(err instanceof Error ? err.message : 'Không gắn được bài kiểm tra');
@@ -541,7 +642,14 @@ function TestPlacementForm({
 				</StudioSelect>
 			</StudioField>
 			<StudioField label="Bài (tuỳ chọn)">
-				<StudioSelect value={lessonId} onChange={(event) => { setLessonId(event.target.value); setSectionId(''); }} disabled={!lessons.length}>
+				<StudioSelect
+					value={lessonId}
+					onChange={(event) => {
+						setLessonId(event.target.value);
+						setSectionId('');
+					}}
+					disabled={!lessons.length}
+				>
 					<option value="">Cả khóa học</option>
 					{lessons.map((lesson) => (
 						<option key={lesson.id} value={lesson.id}>
@@ -551,7 +659,11 @@ function TestPlacementForm({
 				</StudioSelect>
 			</StudioField>
 			<StudioField label="Phần (tuỳ chọn)">
-				<StudioSelect value={sectionId} onChange={(event) => setSectionId(event.target.value)} disabled={!sections.length}>
+				<StudioSelect
+					value={sectionId}
+					onChange={(event) => setSectionId(event.target.value)}
+					disabled={!sections.length}
+				>
 					<option value="">Cả bài</option>
 					{sections.map((section) => (
 						<option key={section.id} value={section.id}>

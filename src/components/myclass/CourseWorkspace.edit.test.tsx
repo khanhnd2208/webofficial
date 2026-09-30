@@ -48,10 +48,7 @@ vi.mock('@/components/myclass/admin/KnowledgeUnitFields', () => ({
 		<div>
 			<label>
 				Tiêu đề
-				<input
-					value={props.title}
-					onChange={(event) => props.onTitleChange(event.target.value)}
-				/>
+				<input value={props.title} onChange={(event) => props.onTitleChange(event.target.value)} />
 			</label>
 			<label>
 				Học thuật
@@ -128,7 +125,10 @@ const initialState = resolveLearnerState({
 	completedUnitIds: [],
 });
 
-function contentFor(slug: string, overrides: Partial<MyClassKnowledgeUnit> = {}): MyClassKnowledgeUnit {
+function contentFor(
+	slug: string,
+	overrides: Partial<MyClassKnowledgeUnit> = {},
+): MyClassKnowledgeUnit {
 	return {
 		id: slug === 'a' ? 'k1' : 'k2',
 		slug,
@@ -232,13 +232,17 @@ describe('CourseWorkspace edit-mode cache', () => {
 			expect(screen.getByLabelText('Tiêu đề')).toHaveValue('Nội dung B');
 		});
 
-		fireEvent.click(within(outline).getByRole('button', { name: /Đang đọc: Nội dung A|Mở: Nội dung A/ }));
+		fireEvent.click(
+			within(outline).getByRole('button', { name: /Đang đọc: Nội dung A|Mở: Nội dung A/ }),
+		);
 		await waitFor(() => {
 			expect(screen.getByLabelText('Tiêu đề')).toHaveValue('Nội dung A đã lưu');
 		});
 		expect(screen.getByLabelText('Học thuật')).toHaveValue('');
 		expect(screen.getByText('Đã lưu')).toBeInTheDocument();
-		expect(screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' }),
+		).not.toBeInTheDocument();
 	});
 
 	it('lets authors collapse lessons and sections in edit mode', async () => {
@@ -258,7 +262,9 @@ describe('CourseWorkspace edit-mode cache', () => {
 		await screen.findByLabelText('Tiêu đề');
 		const outline = document.querySelector('aside [data-testid="my-class-outline"]') as HTMLElement;
 		expect(outline).toBeTruthy();
-		expect(within(outline).getByRole('button', { name: /Đang đọc: Nội dung A|Mở: Nội dung A/ })).toBeVisible();
+		expect(
+			within(outline).getByRole('button', { name: /Đang đọc: Nội dung A|Mở: Nội dung A/ }),
+		).toBeVisible();
 
 		fireEvent.click(within(outline).getByRole('button', { name: /Thu gọn phần 1\.1/ }));
 		expect(within(outline).getByRole('button', { name: /Mở phần 1\.1/ })).toHaveAttribute(
@@ -321,7 +327,9 @@ describe('CourseWorkspace edit-mode cache', () => {
 		);
 
 		await screen.findByLabelText('Tiêu đề');
-		const editOutline = document.querySelector('aside [data-testid="my-class-outline"]') as HTMLElement;
+		const editOutline = document.querySelector(
+			'aside [data-testid="my-class-outline"]',
+		) as HTMLElement;
 		expect(within(editOutline).getByRole('button', { name: /Progress Test/ })).toBeVisible();
 		expect(within(editOutline).getByRole('button', { name: /Test bài 1/ })).toBeVisible();
 		expect(within(editOutline).getByText('Bản nháp · chưa hiện với học viên')).toBeVisible();
@@ -339,10 +347,16 @@ describe('CourseWorkspace edit-mode cache', () => {
 				initialContent={{ unit: contentFor('a'), progress: initialState }}
 			/>,
 		);
-		const learnerOutline = document.querySelector('aside [data-testid="my-class-outline"]') as HTMLElement;
-		expect(within(learnerOutline).queryByRole('button', { name: /Progress Test/ })).not.toBeInTheDocument();
+		const learnerOutline = document.querySelector(
+			'aside [data-testid="my-class-outline"]',
+		) as HTMLElement;
+		expect(
+			within(learnerOutline).queryByRole('button', { name: /Progress Test/ }),
+		).not.toBeInTheDocument();
 		expect(within(learnerOutline).getByRole('button', { name: /Test bài 1/ })).toBeVisible();
-		expect(within(learnerOutline).queryByText('Bản nháp · chưa hiện với học viên')).not.toBeInTheDocument();
+		expect(
+			within(learnerOutline).queryByText('Bản nháp · chưa hiện với học viên'),
+		).not.toBeInTheDocument();
 		expect(within(learnerOutline).getByText('10 câu')).toBeVisible();
 	});
 

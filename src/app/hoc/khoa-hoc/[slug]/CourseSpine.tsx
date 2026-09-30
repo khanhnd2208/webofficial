@@ -23,7 +23,10 @@ export default function CourseSpine({ modules, nextLessonSlug }: CourseSpineProp
 	return (
 		<div className="relative max-w-2xl">
 			{/* Vertical spine — desktop only */}
-			<div aria-hidden className="absolute bottom-2 left-[11px] top-2 hidden w-px bg-hairline md:block" />
+			<div
+				aria-hidden
+				className="absolute bottom-2 left-[11px] top-2 hidden w-px bg-hairline md:block"
+			/>
 
 			<div className="space-y-2">
 				{modules.map((mod) => {

@@ -57,7 +57,12 @@ function questionNumber(line: string): { n: number; rest: string } | null {
 }
 
 /** A `##` heading sitting immediately above the next question belongs to that question. */
-function headingFor(lines: string[], mask: boolean[], index: number, expected: number): string | null {
+function headingFor(
+	lines: string[],
+	mask: boolean[],
+	index: number,
+	expected: number,
+): string | null {
 	const trimmed = lines[index].trim();
 	if (!/^##\s+\S/.test(trimmed)) return null;
 	let next = index + 1;
@@ -78,7 +83,10 @@ export function parseDiscussionPaste(raw: string): DiscussionPasteResult {
 	const flush = () => {
 		if (!draft) return;
 		const question = draft.question.join('\n').trim();
-		const answer = draft.answer.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+		const answer = draft.answer
+			.join('\n')
+			.replace(/\n{3,}/g, '\n\n')
+			.trim();
 		const label = `Câu ${questions.length + 1}`;
 		if (!question) warnings.push(`${label}: chưa có câu hỏi.`);
 		else {
@@ -101,7 +109,12 @@ export function parseDiscussionPaste(raw: string): DiscussionPasteResult {
 			draft = { question: [heading, ''], answer: [], stage: 'question' };
 			continue;
 		}
-		if (draft?.question[0]?.startsWith('## ') && !line.trim() && draft.stage === 'question' && draft.question.length <= 2) {
+		if (
+			draft?.question[0]?.startsWith('## ') &&
+			!line.trim() &&
+			draft.stage === 'question' &&
+			draft.question.length <= 2
+		) {
 			continue;
 		}
 

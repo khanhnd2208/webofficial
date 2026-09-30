@@ -27,7 +27,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context) => {
 	const updated = await Post.findOneAndUpdate(
 		{ slug: slug.trim().toLowerCase(), isPublished: true },
 		{ $inc: { [`reactions.${reactionType}`]: 1 } },
-		{ returnDocument: 'after', select: 'reactions' }
+		{ returnDocument: 'after', select: 'reactions' },
 	).lean();
 
 	if (!updated) {

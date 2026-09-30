@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	playPoolFiltersSchema,
-	startSessionSchema,
-} from '../schemas';
+import { playPoolFiltersSchema, startSessionSchema } from '../schemas';
 
 describe('startSessionSchema', () => {
 	it('defaults to default mode when body is empty', () => {
@@ -21,9 +18,7 @@ describe('startSessionSchema', () => {
 		const result = startSessionSchema.safeParse({ mode: 'custom' });
 		expect(result.success).toBe(false);
 		if (!result.success) {
-			expect(result.error.issues.some((i) => i.path.includes('questionCount'))).toBe(
-				true,
-			);
+			expect(result.error.issues.some((i) => i.path.includes('questionCount'))).toBe(true);
 		}
 	});
 
@@ -41,12 +36,10 @@ describe('startSessionSchema', () => {
 	});
 
 	it('rejects out-of-range questionCount', () => {
-		expect(
-			startSessionSchema.safeParse({ mode: 'custom', questionCount: 0 }).success,
-		).toBe(false);
-		expect(
-			startSessionSchema.safeParse({ mode: 'custom', questionCount: 201 }).success,
-		).toBe(false);
+		expect(startSessionSchema.safeParse({ mode: 'custom', questionCount: 0 }).success).toBe(false);
+		expect(startSessionSchema.safeParse({ mode: 'custom', questionCount: 201 }).success).toBe(
+			false,
+		);
 	});
 });
 

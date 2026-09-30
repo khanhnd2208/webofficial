@@ -1,1 +1,4 @@
-npm run typecheck && npm run lint && npm run test:unit
+# Local gate stays fast. Unit, integration, and end-to-end tests run in CI.
+set -e
+npx lint-staged
+npm run typecheck

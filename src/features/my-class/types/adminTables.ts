@@ -1,5 +1,10 @@
 import type { ListPage } from '../domain/listQuery';
-import type { MyClassCourseLevel, MyClassPublishStatus, MyClassQuestionStatus, MyClassQuestionType } from './index';
+import type {
+	MyClassCourseLevel,
+	MyClassPublishStatus,
+	MyClassQuestionStatus,
+	MyClassQuestionType,
+} from './index';
 
 export type AdminCourseOption = {
 	id: string;

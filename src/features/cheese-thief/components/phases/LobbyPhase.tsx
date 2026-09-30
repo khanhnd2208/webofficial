@@ -6,16 +6,16 @@ import QRCode from 'react-qr-code';
 
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
 import { routes } from '@/config/routes';
-import { BASE_PATH } from '@/features/spy-fall/lib/basePath';
+import { BASE_PATH } from '@/features/board-game-shared/lib/basePath';
 import HourLengthSetting from '@/features/cheese-thief/components/HourLengthSetting';
 import TableSettings from '@/features/cheese-thief/components/TableSettings';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
 import {
 	CheeseRulesButton,
 	TableRulesCard,
 } from '@/features/cheese-thief/components/CheeseRulesGuide';
-import PassportAvatar from '@/features/spy-fall/components/spy/PassportAvatar';
+import PassportAvatar from '@/features/board-game-shared/components/PassportAvatar';
 
 interface Props {
 	state: RoomStateDTO;
@@ -69,20 +69,27 @@ export default function LobbyPhase({
 							{state.code}
 						</p>
 					</div>
-					{!testRoom && <div className="shrink-0 rounded-2xl bg-white p-2" aria-label={t('cheese.lobby.invite')}>
-						<QRCode value={url} size={88} />
-					</div>}
+					{!testRoom && (
+						<div
+							className="shrink-0 rounded-2xl bg-white p-2"
+							aria-label={t('cheese.lobby.invite')}
+						>
+							<QRCode value={url} size={88} />
+						</div>
+					)}
 				</div>
-				{!testRoom && <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
-					<p className="text-xs text-muted">{t('cheese.lobby.invite')}</p>
-					<button
-						type="button"
-						onClick={() => void copyInvite()}
-						className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-					>
-						{copyStatus === 'copied' ? t('cheese.lobby.copied') : t('cheese.lobby.copyLink')}
-					</button>
-				</div>}
+				{!testRoom && (
+					<div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
+						<p className="text-xs text-muted">{t('cheese.lobby.invite')}</p>
+						<button
+							type="button"
+							onClick={() => void copyInvite()}
+							className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+						>
+							{copyStatus === 'copied' ? t('cheese.lobby.copied') : t('cheese.lobby.copyLink')}
+						</button>
+					</div>
+				)}
 				{copyStatus === 'failed' && (
 					<p className="mt-2 text-xs text-danger" role="status">
 						{t('cheese.lobby.copyFailed')}

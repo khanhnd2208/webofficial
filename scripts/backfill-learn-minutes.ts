@@ -33,18 +33,33 @@ async function main() {
 			});
 			before.set(slug, (before.get(slug) ?? 0) + minutes);
 			if (section.estimatedMinutes === minutes) continue;
-			await prisma.learnSection.update({ where: { id: section.id }, data: { estimatedMinutes: minutes } });
+			await prisma.learnSection.update({
+				where: { id: section.id },
+				data: { estimatedMinutes: minutes },
+			});
 			changed += 1;
 		}
 		const afterRows = await prisma.learnSection.findMany({
-			select: { estimatedMinutes: true, lesson: { select: { course: { select: { slug: true } } } } },
+			select: {
+				estimatedMinutes: true,
+				lesson: { select: { course: { select: { slug: true } } } },
+			},
 		});
 		const after = new Map<string, number>();
 		for (const row of afterRows) {
 			const slug = row.lesson.course.slug;
 			after.set(slug, (after.get(slug) ?? 0) + row.estimatedMinutes);
 		}
-		console.log(JSON.stringify({ changed, courses: [...before.keys()].map((slug) => ({ slug, before: before.get(slug), after: after.get(slug) })) }));
+		console.log(
+			JSON.stringify({
+				changed,
+				courses: [...before.keys()].map((slug) => ({
+					slug,
+					before: before.get(slug),
+					after: after.get(slug),
+				})),
+			}),
+		);
 	} finally {
 		await prisma.$disconnect();
 	}

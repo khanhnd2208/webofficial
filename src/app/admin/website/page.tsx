@@ -25,7 +25,9 @@ export default function AdminWebsitePage() {
 			/>
 
 			<section className="mt-8">
-				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Trang công khai</p>
+				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">
+					Trang công khai
+				</p>
 				<div className="grid gap-3 sm:grid-cols-2">
 					{PUBLIC_PAGES.map((page) => (
 						<a

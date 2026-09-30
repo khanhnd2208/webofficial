@@ -58,7 +58,9 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 		const summary = summarizeCourse(course, progress);
 		return (
 			<>
-				{!viewer.isAdmin ? <LearnStudyTracker userId={viewer.userId} courseSlug={course.slug} sectionId={null} /> : null}
+				{!viewer.isAdmin ? (
+					<LearnStudyTracker userId={viewer.userId} courseSlug={course.slug} sectionId={null} />
+				) : null}
 				<LearnCourseOverview course={course} summary={summary} isAdmin={viewer.isAdmin} />
 			</>
 		);
@@ -178,7 +180,11 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 	return (
 		<LearnReaderFrame header={header} outlineHead={outlineHead} outline={outline}>
 			{!viewer.isAdmin ? (
-				<LearnStudyTracker userId={viewer.userId} courseSlug={course.slug} sectionId={section?.id ?? null} />
+				<LearnStudyTracker
+					userId={viewer.userId}
+					courseSlug={course.slug}
+					sectionId={section?.id ?? null}
+				/>
 			) : null}
 			<LearnKeyboardNav
 				previousHref={previousHref}

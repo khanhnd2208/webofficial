@@ -16,7 +16,10 @@ export default async function KnowledgeUnitRedirectPage({
 	const query = await searchParams;
 	let data;
 	try {
-		data = await getKnowledgeUnit(courseSlug, kuSlug, { lessonSlug: query.lesson, sectionId: query.section });
+		data = await getKnowledgeUnit(courseSlug, kuSlug, {
+			lessonSlug: query.lesson,
+			sectionId: query.section,
+		});
 	} catch (error) {
 		rethrowUnlessNotFound(error);
 	}
@@ -25,7 +28,10 @@ export default async function KnowledgeUnitRedirectPage({
 			lesson: data.context.lessonSlug,
 			s: data.context.sectionSlug,
 			unit: data.unit.slug,
-			level: query.level === 'readable' || query.level === 'academic' || query.level === 'deep' ? query.level : undefined,
+			level:
+				query.level === 'readable' || query.level === 'academic' || query.level === 'deep'
+					? query.level
+					: undefined,
 		}),
 	);
 }

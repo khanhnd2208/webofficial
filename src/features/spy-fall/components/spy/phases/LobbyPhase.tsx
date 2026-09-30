@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import {
 	Button,
 	Card,
@@ -11,7 +11,7 @@ import {
 	Input,
 	Panel,
 	Select,
-} from '@/features/spy-fall/components/ui';
+} from '@/features/board-game-shared/components/ui';
 import {
 	SPY_COUNTS,
 	SPY_MAX_PLAYERS,
@@ -19,17 +19,20 @@ import {
 	SPY_MIN_PLAYERS,
 	minPlayersForSpies,
 } from '@/features/spy-fall/config/spyGame';
-import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+import {
+	isValidPlayerName,
+	normalizePlayerName,
+} from '@/features/board-game-shared/lib/playerName';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/spy-fall/types/spyGame';
 
 import ActionBar, { ActionBarNote } from '../ActionBar';
-import PlayerNameInput from '../PlayerNameInput';
+import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
 import PlayerList from '../PlayerList';
 import QrInvite from '../QrInvite';
 import StepGuide from '../StepGuide';
 import WordFilterSettings from '../WordFilterSettings';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 
 interface Props {
 	state: RoomStateDTO;
@@ -40,14 +43,7 @@ interface Props {
 	busy?: boolean;
 }
 
-export default function LobbyPhase({
-	state,
-	onStart,
-	onSettings,
-	onRename,
-	onKick,
-	busy,
-}: Props) {
+export default function LobbyPhase({ state, onStart, onSettings, onRename, onKick, busy }: Props) {
 	const t = useT();
 	const [showSettings, setShowSettings] = useState(false);
 	const [roomNameDraft, setRoomNameDraft] = useState(state.name);
@@ -170,7 +166,11 @@ export default function LobbyPhase({
 					</span>
 				</li>
 				<li className="flex items-start gap-2">
-					<GameIcon name={state.revealRoles ? 'eye' : 'lock'} size={15} className="mt-0.5 shrink-0 text-accent" />
+					<GameIcon
+						name={state.revealRoles ? 'eye' : 'lock'}
+						size={15}
+						className="mt-0.5 shrink-0 text-accent"
+					/>
 					<span>
 						{t(state.revealRoles ? 'spy.lobby.ruleRolesShown' : 'spy.lobby.ruleRolesHidden')}
 					</span>
@@ -207,7 +207,8 @@ export default function LobbyPhase({
 							aria-expanded={showSettings}
 							onClick={() => setShowSettings(!showSettings)}
 						>
-											<GameIcon name="settings" size={16} /> {showSettings ? t('spy.lobby.hideSettings') : t('spy.lobby.settings')}
+							<GameIcon name="settings" size={16} />{' '}
+							{showSettings ? t('spy.lobby.hideSettings') : t('spy.lobby.settings')}
 						</Button>
 						{showSettings ? (
 							<Card className="space-y-4 text-sm">

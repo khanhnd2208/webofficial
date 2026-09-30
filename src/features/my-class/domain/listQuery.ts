@@ -34,7 +34,11 @@ export function readSearchValue(search: SearchLike, key: string): string | undef
 	return firstValue(search[key]);
 }
 
-export function parsePositiveInt(value: string | undefined, fallback: number, max?: number): number {
+export function parsePositiveInt(
+	value: string | undefined,
+	fallback: number,
+	max?: number,
+): number {
 	const parsed = Number(value);
 	if (!Number.isInteger(parsed) || parsed < 1) return fallback;
 	return max ? Math.min(parsed, max) : parsed;
@@ -73,7 +77,11 @@ export function parseListQuery<T extends string>(
 		q: readSearchValue(search, 'q')?.trim() || undefined,
 		page: parsePositiveInt(readSearchValue(search, 'page'), 1),
 		pageSize: parsePageSize(readSearchValue(search, 'pageSize')),
-		sortBy: parseSortBy(readSearchValue(search, 'sortBy'), options.sortFields, options.defaultSortBy),
+		sortBy: parseSortBy(
+			readSearchValue(search, 'sortBy'),
+			options.sortFields,
+			options.defaultSortBy,
+		),
 		sortDir: parseSortDir(readSearchValue(search, 'sortDir'), options.defaultSortDir ?? 'desc'),
 	};
 }
@@ -82,7 +90,12 @@ export function listSkip(page: number, pageSize: number): number {
 	return (Math.max(page, 1) - 1) * pageSize;
 }
 
-export function toListPage<T>(items: T[], total: number, page: number, pageSize: number): ListPage<T> {
+export function toListPage<T>(
+	items: T[],
+	total: number,
+	page: number,
+	pageSize: number,
+): ListPage<T> {
 	const safePageSize = Math.max(pageSize, 1);
 	const totalPages = Math.max(1, Math.ceil(Math.max(total, 0) / safePageSize));
 	const safePage = Math.min(Math.max(page, 1), totalPages);
@@ -107,7 +120,12 @@ export function ensureListPage<T>(
 	pageSize = ADMIN_TABLE_DEFAULT_PAGE_SIZE,
 ): ListPage<T> {
 	if (value && !Array.isArray(value) && Array.isArray(value.items)) {
-		return toListPage(value.items, value.total ?? value.items.length, value.page ?? page, value.pageSize ?? pageSize);
+		return toListPage(
+			value.items,
+			value.total ?? value.items.length,
+			value.page ?? page,
+			value.pageSize ?? pageSize,
+		);
 	}
 	const items = Array.isArray(value) ? value : [];
 	return toListPage(items, items.length, page, pageSize);
@@ -138,7 +156,9 @@ export function parsePublishStatus(
 export function parseCourseLevel(
 	value?: string | null,
 ): 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | undefined {
-	return value === 'BEGINNER' || value === 'INTERMEDIATE' || value === 'ADVANCED' ? value : undefined;
+	return value === 'BEGINNER' || value === 'INTERMEDIATE' || value === 'ADVANCED'
+		? value
+		: undefined;
 }
 
 export function parseQuestionStatus(value?: string | null): 'ACTIVE' | 'ARCHIVED' | undefined {
@@ -151,7 +171,10 @@ export function parseOptionalBoolean(value?: string | null): boolean | undefined
 	return undefined;
 }
 
-export function currentTableParams(search: SearchLike, keys: readonly string[]): Record<string, string | undefined> {
+export function currentTableParams(
+	search: SearchLike,
+	keys: readonly string[],
+): Record<string, string | undefined> {
 	const next: Record<string, string | undefined> = {};
 	for (const key of keys) {
 		const value = readSearchValue(search, key)?.trim();

@@ -29,7 +29,10 @@ function plainText(value: string) {
 }
 
 function parseCards(source: string) {
-	const parts = source.replace(/\r/g, '').split(/^### (\d+)\. /m).slice(1);
+	const parts = source
+		.replace(/\r/g, '')
+		.split(/^### (\d+)\. /m)
+		.slice(1);
 	const cards: Array<{ question: string; answer: string; position: number }> = [];
 	for (let index = 0; index < parts.length; index += 2) {
 		const number = Number(parts[index]);
@@ -49,12 +52,17 @@ function parseCards(source: string) {
 
 async function main() {
 	const cards = parseCards(readFileSync(sourcePath, 'utf8'));
-	const deck = await prisma.activeRecallDeck.findUnique({ where: { slug: 'hrm-lesson-1' }, select: { id: true, title: true, status: true, _count: { select: { cards: true } } } });
+	const deck = await prisma.activeRecallDeck.findUnique({
+		where: { slug: 'hrm-lesson-1' },
+		select: { id: true, title: true, status: true, _count: { select: { cards: true } } },
+	});
 	if (!deck) throw new Error('Deck hrm-lesson-1 was not found.');
 
 	await prisma.$transaction(async (tx) => {
 		await tx.activeRecallCard.deleteMany({ where: { deckId: deck.id } });
-		await tx.activeRecallCard.createMany({ data: cards.map((card) => ({ ...card, deckId: deck.id })) });
+		await tx.activeRecallCard.createMany({
+			data: cards.map((card) => ({ ...card, deckId: deck.id })),
+		});
 		await tx.activeRecallDeck.update({ where: { id: deck.id }, data: { updatedAt: new Date() } });
 	});
 

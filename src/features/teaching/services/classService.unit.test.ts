@@ -107,7 +107,9 @@ describe('createTeachingClass identity', () => {
 				findMany: vi.fn(async () => []),
 			},
 		};
-		repo.prisma.$transaction.mockImplementation(async (fn: (client: typeof tx) => unknown) => fn(tx));
+		repo.prisma.$transaction.mockImplementation(async (fn: (client: typeof tx) => unknown) =>
+			fn(tx),
+		);
 		repo.getClass.mockResolvedValue(createdClass);
 
 		await expect(

@@ -2,7 +2,11 @@ import Link from 'next/link';
 import { listAdminCourseOptions, unwrapItems } from '@/features/my-class';
 import { currentTableParams, parseOptionalBoolean } from '@/features/my-class/domain/listQuery';
 import { routes } from '@/config/routes';
-import { StudioFilterBar, StudioFilterSelect, StudioPageHeader } from '@/components/myclass/admin/studio';
+import {
+	StudioFilterBar,
+	StudioFilterSelect,
+	StudioPageHeader,
+} from '@/components/myclass/admin/studio';
 import VocabularyTable from '@/components/myclass/admin/tables/VocabularyTable';
 import { listAdminVocabCatalog } from '@/services/vocabSetService';
 

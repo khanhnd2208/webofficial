@@ -59,10 +59,9 @@ describe('My Class learning chrome', () => {
 				}}
 			/>,
 		);
-		expect(screen.getByRole('link', { name: 'Progress Test, 3 câu, bản nháp. Làm bài' })).toHaveAttribute(
-			'data-draft',
-			'true',
-		);
+		expect(
+			screen.getByRole('link', { name: 'Progress Test, 3 câu, bản nháp. Làm bài' }),
+		).toHaveAttribute('data-draft', 'true');
 		expect(screen.getByText('Nháp')).toBeVisible();
 	});
 });

@@ -1,11 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import {
-	deleteMessage,
-	getMessageBySlugForOwner,
-	updateMessage,
-} from '@/services/messageService';
+import { deleteMessage, getMessageBySlugForOwner, updateMessage } from '@/services/messageService';
 import type { UpdateMessageInput } from '@/types/message';
 
 export const GET = withAdmin(async (_request: NextRequest, user, context) => {

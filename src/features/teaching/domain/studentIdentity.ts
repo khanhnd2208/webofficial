@@ -47,7 +47,11 @@ export function parseIsoDateOnly(value: string | null | undefined): Date | null 
 export function utcCalendarDate(year: number, month: number, day: number): Date | null {
 	if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
 	const date = new Date(Date.UTC(year, month - 1, day));
-	if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+	if (
+		date.getUTCFullYear() !== year ||
+		date.getUTCMonth() !== month - 1 ||
+		date.getUTCDate() !== day
+	) {
 		return null;
 	}
 	return date;

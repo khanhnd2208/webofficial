@@ -9,6 +9,8 @@
 
 All API route handlers **must** use one of the three wrappers below. Raw `async function GET(...)` declarations are forbidden.
 
+> Exception: board-game room APIs (`src/app/api/spy`, `cheese-thief`, `ma-soi`) use the wrappers in `src/features/board-game-shared/lib/apiUtils.ts`. They answer with an error **code** for the client to translate, and services throw `GameError` from `lib/gameError.ts`. Admin endpoints under `src/app/api/admin/board-game` use `AppError`; `features/board-game-test/service.ts` handles both by name. Never alias one class as the other.
+
 ### 1.1 Wrapper Reference
 
 | Wrapper | Auth Required | Admin Required | Use When |
@@ -289,10 +291,10 @@ import { routes } from '@/config/routes';
 // Use `routes` for URLs instead of hardcoding paths in components.
 ```
 
-### 5.3 `src/constants/post.ts` — Post Categories (client-safe)
+### 5.3 `src/config/post.ts` — Post Categories (client-safe)
 
 ```typescript
-import { POST_CATEGORIES, type PostCategory } from '@/constants/post';
+import { POST_CATEGORIES, type PostCategory } from '@/config/post';
 // Safe to use in Client Components — no server-side deps
 ```
 
@@ -432,3 +434,55 @@ npm run check              # typecheck + lint + test:all + build
 - Throw `AppError` from `@/lib/appError` in services — **not** from `@/lib/apiUtils` (avoids pulling auth into service imports).
 - Integration tests must clean up data in `beforeEach` using harness helpers.
 - Playwright starts a built app automatically in CI; local E2E runs require an app already listening at `PLAYWRIGHT_BASE_URL` (default `http://localhost:3000`).
+
+---
+
+## 11. Project Structure and Safe Changes
+
+### 11.1 Where new code goes
+
+| You are adding… | Put it in | Notes |
+|---|---|---|
+| A page or route handler | `src/app/<route>` | Keep it thin: parse input, call a service, render. |
+| Business logic for one product area | `src/features/<feature>/` (`services/`, `repositories/`, `domain/`, `schemas/`, `components/`) | Pick the area first; see `docs/areas.md`. |
+| UI used only by one area | `src/components/<area-folder>/` or the feature's `components/` | e.g. `components/myclass`, `features/cheese-thief/components`. |
+| UI used by several areas | `src/components/ui` (primitives), `forms` (inputs and editors), `site` (chrome), `admin` (admin shell), `motion` | Must not import an area. |
+| Code shared by the board games only | `src/features/board-game-shared/` | Not for the rest of the site. |
+| Helpers with no area knowledge | `src/lib` (server and infra), `src/utils` (pure formatting), `src/config` (constants, routes, navigation) | No `src/constants` or `src/shared` folders; they were folded into these. |
+| A Mongoose model | `src/models/` | Only for the MongoDB domains listed in `docs/02-ARCHITECTURE.md`. |
+| A relational model | `prisma/schema.prisma` plus a migration | **Default for new features.** |
+
+New persistent data goes to PostgreSQL with Prisma unless it extends an existing MongoDB domain (Auth.js users, posts, inquiries, messages, board-game rooms). Do not add a third store.
+
+### 11.2 Area boundaries
+
+The app has four areas (Boardgame, Classroom, Portfolio, Tools) plus shared code. `scripts/areas/areas.mjs` is the only list of which path belongs where.
+
+- A new top-level folder under `src/features`, `src/components`, or `src/app` must be added to `areas.mjs`, then `npm run areas:sync`. CI fails with `areas:check` otherwise.
+- ESLint rejects imports from one area into another. If two areas need the same code, move that code into shared code rather than silencing the rule.
+
+### 11.3 File size budget
+
+ESLint `max-lines` caps source files at **800 lines**, not counting blank lines and comments. Tests are exempt.
+
+- Files that were already larger are listed in `OVERSIZED_FILE_CAPS` in `eslint.config.mjs` with their size on 2026-09-30. They may shrink, not grow.
+- When you touch one of them, split out a coherent piece (a sub-component, a hook, a pure helper with a unit test), then lower its cap. Remove the entry once it is under 800.
+- Do not raise a cap to make a change fit. Split first.
+
+### 11.4 Formatting
+
+Prettier formats code (`.ts`, `.tsx`, `.mjs`, `.css`, `.json`, `.yml`). It does not format prose: docs, Markdown, and `content/` lecture sources are excluded in `.prettierignore`.
+
+- lint-staged formats staged files on commit; CI runs `npm run format:check`.
+- Run `npm run format` after a large move or generated change, and commit formatting separately from logic.
+- Formatting-only commits are listed in `.git-blame-ignore-revs`. Run `git config blame.ignoreRevsFile .git-blame-ignore-revs` once per clone so local `git blame` skips them.
+
+### 11.5 Making a change safely
+
+1. Work on a branch, not `main`. Pushing `main` deploys to production after CI passes.
+2. Keep each commit to one kind of change: move/rename, formatting, behaviour. A move with import updates should contain no logic edits.
+3. Before pushing, run `npm run check` (typecheck, lint, format, area map, all tests, audit, build), or at least `npm run typecheck && npm run lint && npm run areas:check && npm run test:unit`.
+4. Open a pull request. CI picks end-to-end specs by the areas you touched.
+5. Land it with a merge commit so the SHAs in `.git-blame-ignore-revs` stay valid.
+
+AI agents follow the same steps; `AGENTS.md` states them as rules, and Claude Code has them as the `ship-change` skill. A branch created before the repo-wide Prettier commit is brought up to date with `bash scripts/port-branch-past-format.sh origin/main`. See `docs/10-AI_AGENTS.md`.

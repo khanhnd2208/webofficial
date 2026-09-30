@@ -1,7 +1,12 @@
 import RoomModel from '@/features/werewolf/models/WerewolfRoom';
 import type { NextRequest } from 'next/server';
 
-import { apiError, apiSuccess, withErrorHandling, withPublicRoomGuard } from '@/features/spy-fall/lib/apiUtils';
+import {
+	apiError,
+	apiSuccess,
+	withErrorHandling,
+	withPublicRoomGuard,
+} from '@/features/board-game-shared/lib/apiUtils';
 import { setRoleCounts } from '@/features/werewolf/services/werewolfService';
 import type { RoleCount } from '@/features/werewolf/types';
 

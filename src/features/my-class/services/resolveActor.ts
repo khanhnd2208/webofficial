@@ -28,7 +28,9 @@ export async function resolveMyClassActor(
 	return { type: 'guest', guestId, actorKey: guestActorKey(guestId) };
 }
 
-export async function resolveMyClassActorOptional(request: NextRequest): Promise<MyClassActor | null> {
+export async function resolveMyClassActorOptional(
+	request: NextRequest,
+): Promise<MyClassActor | null> {
 	const user = await getApiUser(request);
 	if (user?.id) {
 		return {

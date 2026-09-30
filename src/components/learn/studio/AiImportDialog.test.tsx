@@ -15,7 +15,17 @@ const lessons: LearnStudioLesson[] = [
 	},
 ];
 
-const QUIZ = ['Câu 1: Một?', 'A. a', 'B. b', 'Đáp án: A', '', 'Câu 2: Hai?', 'A. c', 'B. d', 'Đáp án: B'].join('\n');
+const QUIZ = [
+	'Câu 1: Một?',
+	'A. a',
+	'B. b',
+	'Đáp án: A',
+	'',
+	'Câu 2: Hai?',
+	'A. c',
+	'B. d',
+	'Đáp án: B',
+].join('\n');
 
 describe('AiImportDialog', () => {
 	it('copies the format prompt for the selected type', async () => {
@@ -23,7 +33,13 @@ describe('AiImportDialog', () => {
 		vi.stubGlobal('navigator', { clipboard: { writeText } });
 
 		render(
-			<AiImportDialog kind="lesson" lessons={lessons} selectedLessonId="lesson-1" onClose={vi.fn()} onSave={vi.fn()} />,
+			<AiImportDialog
+				kind="lesson"
+				lessons={lessons}
+				selectedLessonId="lesson-1"
+				onClose={vi.fn()}
+				onSave={vi.fn()}
+			/>,
 		);
 
 		const copy = () => screen.getByRole('button', { name: /chép prompt/i });
@@ -37,16 +53,26 @@ describe('AiImportDialog', () => {
 
 		fireEvent.click(screen.getByRole('radio', { name: 'Phản biện' }));
 		fireEvent.click(copy());
-		await vi.waitFor(() => expect(writeText).toHaveBeenLastCalledWith(LEARN_FORMAT_PROMPTS.discussion));
+		await vi.waitFor(() =>
+			expect(writeText).toHaveBeenLastCalledWith(LEARN_FORMAT_PROMPTS.discussion),
+		);
 	});
 
 	it('saves two parsed quiz questions', async () => {
 		const onSave = vi.fn().mockResolvedValue(undefined);
 		render(
-			<AiImportDialog kind="quiz" lessons={lessons} selectedLessonId="lesson-1" onClose={vi.fn()} onSave={onSave} />,
+			<AiImportDialog
+				kind="quiz"
+				lessons={lessons}
+				selectedLessonId="lesson-1"
+				onClose={vi.fn()}
+				onSave={onSave}
+			/>,
 		);
 
-		fireEvent.change(screen.getByRole('textbox', { name: 'Kết quả AI' }), { target: { value: QUIZ } });
+		fireEvent.change(screen.getByRole('textbox', { name: 'Kết quả AI' }), {
+			target: { value: QUIZ },
+		});
 		const save = screen.getByRole('button', { name: 'Lưu 2 câu' });
 		expect(save).toBeEnabled();
 		fireEvent.click(save);

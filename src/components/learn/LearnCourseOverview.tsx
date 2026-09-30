@@ -28,10 +28,15 @@ export default function LearnCourseOverview({
 		summary.status === 'completed'
 			? { label: 'Ôn lại', href: first ? routes.learnCourse(course.slug, first.id) : null }
 			: summary.status === 'in-progress'
-				? { label: `Học tiếp: ${next?.title ?? ''}`, href: next ? routes.learnCourse(course.slug, next.id) : null }
+				? {
+						label: `Học tiếp: ${next?.title ?? ''}`,
+						href: next ? routes.learnCourse(course.slug, next.id) : null,
+					}
 				: { label: 'Bắt đầu học', href: first ? routes.learnCourse(course.slug, first.id) : null };
 	const notes = summary.sections.filter((section) => section.note.trim());
-	const quizzes = summary.sections.filter((section) => section.type === 'QUIZ' && section.quizResult);
+	const quizzes = summary.sections.filter(
+		(section) => section.type === 'QUIZ' && section.quizResult,
+	);
 	const eyebrow = [course.category, LEARN_LEVEL_LABELS[course.level]].filter(Boolean).join(' · ');
 	const aboutLong = course.description.length > ABOUT_FOLD;
 
@@ -41,7 +46,10 @@ export default function LearnCourseOverview({
 				crumbs={[{ label: course.title }]}
 				actions={
 					isAdmin ? (
-						<Link href={routes.learnStudio(course.slug)} className="ln-btn ln-btn--ghost ln-btn--sm">
+						<Link
+							href={routes.learnStudio(course.slug)}
+							className="ln-btn ln-btn--ghost ln-btn--sm"
+						>
 							<LearnIcon name="edit" size={14} /> Soạn bài
 						</Link>
 					) : null
@@ -55,7 +63,8 @@ export default function LearnCourseOverview({
 						<h1 className="ln-page__title">{course.title}</h1>
 						{course.subtitle ? <p className="ln-overview__subtitle">{course.subtitle}</p> : null}
 						<p className="ln-overview__meta">
-							{summary.lessons.length} bài · {summary.totalCount} mục · {formatMinutes(summary.totalMinutes)}
+							{summary.lessons.length} bài · {summary.totalCount} mục ·{' '}
+							{formatMinutes(summary.totalMinutes)}
 						</p>
 						<div className="ln-overview__progress">
 							<p className="tabular-nums">
@@ -68,7 +77,9 @@ export default function LearnCourseOverview({
 						{summary.status === 'completed' ? (
 							<p className="ln-status-line" role="status">
 								Đã hoàn thành khóa học
-								{summary.quizCount ? ` · ${summary.quizzesPassed}/${summary.quizCount} bài kiểm tra đạt` : ''}
+								{summary.quizCount
+									? ` · ${summary.quizzesPassed}/${summary.quizCount} bài kiểm tra đạt`
+									: ''}
 							</p>
 						) : null}
 						{cta.href ? (
@@ -83,7 +94,9 @@ export default function LearnCourseOverview({
 							<h2 id="ln-about">Giới thiệu</h2>
 							{aboutLong ? (
 								<div className="ln-overview__about">
-									<p className="ln-overview__description ln-overview__preview">{course.description.slice(0, ABOUT_FOLD).trim()}…</p>
+									<p className="ln-overview__description ln-overview__preview">
+										{course.description.slice(0, ABOUT_FOLD).trim()}…
+									</p>
 									<details className="ln-overview__more">
 										<summary>Xem thêm</summary>
 										<p className="ln-overview__description">{course.description}</p>
@@ -121,7 +134,10 @@ export default function LearnCourseOverview({
 													Bài {quiz.lessonIndex + 1} · {quiz.lessonTitle}
 												</span>
 											</span>
-											<span className="ln-result__score tabular-nums" data-passed={quiz.quizResult?.passed ? 'true' : 'false'}>
+											<span
+												className="ln-result__score tabular-nums"
+												data-passed={quiz.quizResult?.passed ? 'true' : 'false'}
+											>
 												{quiz.quizResult?.percentage}%
 											</span>
 										</Link>
@@ -137,7 +153,10 @@ export default function LearnCourseOverview({
 							<ul className="ln-note-list">
 								{notes.map((section) => (
 									<li key={section.id}>
-										<Link href={routes.learnCourse(course.slug, section.id)} className="ln-note-card">
+										<Link
+											href={routes.learnCourse(course.slug, section.id)}
+											className="ln-note-card"
+										>
 											<span className="ln-note-card__where">
 												Bài {section.lessonIndex + 1} · {section.title}
 											</span>

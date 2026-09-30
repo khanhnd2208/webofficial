@@ -1,0 +1,13 @@
+# Code is formatted; prose and generated or vendored files are not.
+node_modules/
+.next/
+coverage/
+test-results/
+playwright-report/
+src/generated/
+public/
+content/
+docs/
+prisma/migrations/
+package-lock.json
+*.md

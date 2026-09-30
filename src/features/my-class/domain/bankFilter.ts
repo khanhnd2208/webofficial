@@ -77,7 +77,9 @@ export function bankFilterFromSearch(search: URLSearchParams): BankFilter {
 		includeDescendants: search.get('includeDescendants') !== '0',
 		tags: splitCsvParam(search.get('tags')),
 		tagMode: search.get('tagMode') === 'OR' ? 'OR' : 'AND',
-		knowledgeUnitIds: splitCsvParam(search.get('knowledgeUnitIds') || search.get('knowledgeUnitId')),
+		knowledgeUnitIds: splitCsvParam(
+			search.get('knowledgeUnitIds') || search.get('knowledgeUnitId'),
+		),
 		courseId: search.get('courseId') ?? undefined,
 		status: statusParam === 'ARCHIVED' || statusParam === 'ACTIVE' ? statusParam : undefined,
 		usedInTestId: search.get('usedInTestId') ?? undefined,

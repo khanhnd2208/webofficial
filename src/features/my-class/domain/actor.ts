@@ -18,9 +18,17 @@ export function parseActorKey(actorKey: string): { type: MyClassActorType; id: s
 	return null;
 }
 
-export function actorFromIds(input: { userId?: string | null; guestId?: string | null }): MyClassActor | null {
+export function actorFromIds(input: {
+	userId?: string | null;
+	guestId?: string | null;
+}): MyClassActor | null {
 	if (input.userId) {
-		return { type: 'user', userId: input.userId, guestId: input.guestId ?? null, actorKey: userActorKey(input.userId) };
+		return {
+			type: 'user',
+			userId: input.userId,
+			guestId: input.guestId ?? null,
+			actorKey: userActorKey(input.userId),
+		};
 	}
 	if (input.guestId) {
 		return { type: 'guest', guestId: input.guestId, actorKey: guestActorKey(input.guestId) };

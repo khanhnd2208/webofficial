@@ -2,8 +2,8 @@
 
 import { isSoundsEnabled, setSoundsEnabled } from '@/features/spy-fall/lib/sounds';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Sheet } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Sheet } from '@/features/board-game-shared/components/ui';
 import { getGuideSections, getHonorRules } from '@/features/spy-fall/lib/spy/i18n';
 
 export function BriefingContent() {
@@ -44,13 +44,7 @@ export function BriefingContent() {
 	);
 }
 
-export function BriefingSheet({
-	open,
-	onClose,
-}: {
-	open: boolean;
-	onClose: () => void;
-}) {
+export function BriefingSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 	const t = useT();
 	return (
 		<Sheet open={open} onClose={onClose} title={t('spy.guide.title')}>

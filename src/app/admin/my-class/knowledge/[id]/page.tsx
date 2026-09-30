@@ -16,9 +16,16 @@ export default async function EditKnowledgePage({ params }: { params: Promise<{ 
 	}
 	return (
 		<div className="mc-studio-container px-0 py-8">
-			<Link href={routes.admin.myClassKnowledge} className="text-xs uppercase tracking-widest text-muted">← Thư viện nội dung</Link>
+			<Link
+				href={routes.admin.myClassKnowledge}
+				className="text-xs uppercase tracking-widest text-muted"
+			>
+				← Thư viện nội dung
+			</Link>
 			<h1 className="mt-6 text-2xl font-black">{unit.title}</h1>
-			<div className="mt-8"><KnowledgeEditor initial={unit} /></div>
+			<div className="mt-8">
+				<KnowledgeEditor initial={unit} />
+			</div>
 		</div>
 	);
 }

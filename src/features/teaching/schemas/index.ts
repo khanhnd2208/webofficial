@@ -90,8 +90,7 @@ export const updateTeachingClassRecallSchema = z
 			.max(200)
 			.refine(
 				(assignments) =>
-					new Set(assignments.map((assignment) => assignment.deckId)).size ===
-					assignments.length,
+					new Set(assignments.map((assignment) => assignment.deckId)).size === assignments.length,
 				'Mỗi bộ thẻ chỉ được xuất hiện một lần',
 			),
 	})
@@ -434,9 +433,7 @@ export const rosterImportCommitSchema = z
 				z.object({
 					key: z.string().min(1),
 					expectedUpdatedAt: z.string().nullable().optional(),
-					resolution: z
-						.record(z.string(), z.enum(['keep', 'use_new']))
-						.optional(),
+					resolution: z.record(z.string(), z.enum(['keep', 'use_new'])).optional(),
 					input: z.object({
 						sourceRow: z.number().int().min(1).optional(),
 						orderNo: z.number().int().min(1).nullable().optional(),

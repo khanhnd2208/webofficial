@@ -1,7 +1,11 @@
 import RoomModel from '@/features/cheese-thief/models/CheeseThiefRoom';
 import type { NextRequest } from 'next/server';
 
-import { apiSuccess, withErrorHandling, withPublicRoomGuard } from '@/features/spy-fall/lib/apiUtils';
+import {
+	apiSuccess,
+	withErrorHandling,
+	withPublicRoomGuard,
+} from '@/features/board-game-shared/lib/apiUtils';
 import { getScopedState } from '@/features/cheese-thief/services/cheeseThiefService';
 
 const GETBase = withErrorHandling(async (request: NextRequest, context) => {

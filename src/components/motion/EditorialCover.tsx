@@ -20,11 +20,7 @@ export default function EditorialCover({
 	tone = 'paper',
 }: EditorialCoverProps) {
 	const label =
-		kicker && kicker !== 'Uncategorized'
-			? kicker
-			: index != null
-				? `Chương ${index}`
-				: 'Bài viết';
+		kicker && kicker !== 'Uncategorized' ? kicker : index != null ? `Chương ${index}` : 'Bài viết';
 
 	const espresso = tone === 'espresso';
 

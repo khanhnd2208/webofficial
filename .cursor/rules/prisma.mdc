@@ -1,0 +1,32 @@
+---
+description: Rules for the PostgreSQL schema and Prisma migrations
+globs:
+  - prisma/**
+  - src/lib/prisma.ts
+  - prisma.config.ts
+# Claude Code reads `paths` (via .claude/rules/ symlink); Cursor reads `globs`. Keep both lists equal.
+paths:
+  - prisma/**
+  - src/lib/prisma.ts
+  - prisma.config.ts
+alwaysApply: false
+---
+
+# Prisma and migrations
+
+- Ask the user before adding or changing a migration.
+- Create migrations with `npx prisma migrate dev --name <snake_case>` against
+  the local database. Never edit a migration that is already on `main`; add a
+  new one instead.
+- Never run `prisma migrate reset`, `prisma db push`, or any command against a
+  production `DATABASE_URL`. Production applies migrations only through the
+  deploy script, right after a database backup.
+- Keep migrations backward compatible with the release still running: add
+  nullable columns or defaults first, backfill, then tighten in a later
+  release. Dropping or renaming needs a maintenance window (see
+  `docs/deployment/VPS.md`).
+- After a schema change run `npx prisma validate`, `npm run typecheck`, and
+  `npm run test:integration`; `scripts/setup-test-db.sh` applies migrations to
+  the local test database.
+- User IDs in PostgreSQL are MongoDB Auth.js user IDs stored as strings. There
+  is no cross-database foreign key; do not add one.

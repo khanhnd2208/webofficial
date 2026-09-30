@@ -466,7 +466,7 @@ trap on_exit EXIT
 [[ -f "$DEPLOY_ROOT/.env.local" ]] || { echo "Missing production .env.local" >&2; exit 1; }
 [[ -x "$BACKUP_COMMAND" ]] || { echo "Backup command is unavailable: $BACKUP_COMMAND" >&2; exit 1; }
 
-for command_name in node npm npx pm2 curl ss; do
+for command_name in node npm npx pm2 curl ss sha256sum; do
 	command -v "$command_name" >/dev/null || { echo "Missing command: $command_name" >&2; exit 1; }
 done
 if ss -ltnH | awk '{ print $4 }' | grep -Eq ":${CANDIDATE_PORT}$"; then
@@ -533,8 +533,64 @@ METADATA
 chmod 644 "$RELEASE_DIR/.deploy-metadata"
 
 cd "$RELEASE_DIR"
-echo "Installing locked dependencies in $RELEASE_DIR"
-HUSKY=0 npm ci --include=dev
+
+# The promoted release prunes devDependencies, so its node_modules cannot build
+# the next release. Keep one full install outside the release tree and copy it
+# when nothing that shapes `npm ci` changed. Copy, do not hardlink:
+# `npm prune` must not mutate the cache.
+
+# Everything that decides what `npm ci` installs or runs: the lockfile,
+# package.json (lifecycle scripts, overrides), any .npmrc, and the Node and npm
+# versions. A change to any of them forces a fresh install.
+dependency_stamp() {
+	local inputs=(package-lock.json package.json)
+	if [[ -f .npmrc ]]; then
+		inputs+=(.npmrc)
+	fi
+	local files_hash
+	files_hash="$(sha256sum "${inputs[@]}" | sha256sum | awk '{ print $1 }')"
+	printf '%s-node%s-npm%s\n' "$files_hash" "$(node -p 'process.version')" "$(npm --version)"
+}
+
+install_locked_dependencies() {
+	echo "Installing locked dependencies in $RELEASE_DIR"
+	HUSKY=0 npm ci --include=dev
+	local node_stamp cache_root
+	node_stamp="$(dependency_stamp)"
+	cache_root="$DEPLOY_ROOT/.build-cache"
+	rm -rf -- "$cache_root/node_modules" "$cache_root/node.stamp"
+	mkdir -p -- "$cache_root"
+	if ! cp -a node_modules "$cache_root/node_modules"; then
+		echo "WARNING: could not refresh the node_modules build cache; this deploy will continue" >&2
+		rm -rf -- "$cache_root/node_modules" "$cache_root/node.stamp"
+		return 0
+	fi
+	printf '%s\n' "$node_stamp" > "$cache_root/node.stamp"
+}
+
+node_modules_are_complete() {
+	[[ -x node_modules/.bin/next && -x node_modules/.bin/prisma && -d node_modules/typescript ]]
+}
+
+LOCK_STAMP="$(dependency_stamp)"
+BUILD_CACHE="$DEPLOY_ROOT/.build-cache"
+REUSED_MODULES=0
+if [[ -f "$BUILD_CACHE/node.stamp" && -d "$BUILD_CACHE/node_modules" ]]; then
+	cached_stamp="$(tr -d '[:space:]' < "$BUILD_CACHE/node.stamp")"
+	if [[ "$cached_stamp" == "$LOCK_STAMP" ]]; then
+		echo "Reusing cached node_modules (lockfile, package.json, npm config, Node, and npm unchanged)"
+		rm -rf -- node_modules
+		if cp -a "$BUILD_CACHE/node_modules" "$RELEASE_DIR/node_modules" && node_modules_are_complete; then
+			REUSED_MODULES=1
+		else
+			echo "Cached node_modules could not be reused; installing from the lockfile" >&2
+			rm -rf -- node_modules
+		fi
+	fi
+fi
+if [[ "$REUSED_MODULES" -ne 1 ]]; then
+	install_locked_dependencies
+fi
 node - "$RELEASE_DIR/.env.local" "$PUBLIC_URL" "$EXPECT_LOCKS" <<'NODE_ENV_CHECK'
 const fs = require('fs');
 const { parse } = require('dotenv');
@@ -571,6 +627,23 @@ NODE_ENV_CHECK
 ./node_modules/.bin/prisma generate
 
 echo "Building candidate before any database migration"
+NEXT_CACHE_SOURCE=""
+if [[ -d "$CURRENT_LINK/.next/cache" ]]; then
+	NEXT_CACHE_SOURCE="$CURRENT_LINK/.next/cache"
+elif [[ "$PREVIOUS_TARGET" == "." && -d "$DEPLOY_ROOT/.next/cache" ]]; then
+	NEXT_CACHE_SOURCE="$DEPLOY_ROOT/.next/cache"
+fi
+if [[ -n "$NEXT_CACHE_SOURCE" ]]; then
+	# Copy into the release. A symlink outside the release root makes Turbopack
+	# walk past the project boundary and fail the build.
+	echo "Reusing Next.js compiler cache from the current release"
+	mkdir -p "$RELEASE_DIR/.next"
+	rm -rf -- "$RELEASE_DIR/.next/cache"
+	if ! cp -a "$NEXT_CACHE_SOURCE" "$RELEASE_DIR/.next/cache"; then
+		echo "WARNING: could not reuse the Next.js compiler cache; building without it" >&2
+		rm -rf -- "$RELEASE_DIR/.next/cache"
+	fi
+fi
 NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
 test -s .next/BUILD_ID
 

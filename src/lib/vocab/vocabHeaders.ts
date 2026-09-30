@@ -60,7 +60,10 @@ export function canonicalVocabHeader(raw: string): string {
 		return 'explanation';
 	}
 	if (['example', 'vi du', 'vidu'].includes(folded) || compact === 'vidu') return 'example';
-	if (['hints hard', 'hintshard', 'goi y kho', 'goiykho'].includes(folded) || compact === 'goiykho') {
+	if (
+		['hints hard', 'hintshard', 'goi y kho', 'goiykho'].includes(folded) ||
+		compact === 'goiykho'
+	) {
 		return 'hints_hard';
 	}
 	if (

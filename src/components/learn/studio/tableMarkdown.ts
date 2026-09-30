@@ -48,7 +48,8 @@ export const LearnTable = Table.extend({
 			}
 		});
 
-		const pad = (value: string, width: number) => value + ' '.repeat(Math.max(0, width - value.length));
+		const pad = (value: string, width: number) =>
+			value + ' '.repeat(Math.max(0, width - value.length));
 		const headerRow = rows[0];
 		const hasHeader = headerRow.some((cell) => cell.isHeader);
 		const headerTexts = new Array(columnCount)
@@ -61,7 +62,10 @@ export const LearnTable = Table.extend({
 
 		const body = hasHeader ? rows.slice(1) : rows;
 		body.forEach((row) => {
-			out += `| ${new Array(columnCount).fill(0).map((_, i) => pad(row[i]?.text || '', colWidths[i])).join(' | ')} |\n`;
+			out += `| ${new Array(columnCount)
+				.fill(0)
+				.map((_, i) => pad(row[i]?.text || '', colWidths[i]))
+				.join(' | ')} |\n`;
 		});
 
 		return out;

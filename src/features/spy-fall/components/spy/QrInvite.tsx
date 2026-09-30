@@ -3,12 +3,12 @@ import { useTestRoom } from '@/features/board-game-test/context';
 
 import QRCode from 'react-qr-code';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { BASE_PATH, withBasePath } from '@/features/spy-fall/lib/basePath';
-import { Button } from '@/features/spy-fall/components/ui';
-import { useToast } from '@/features/spy-fall/components/ui/Toast';
-import TicketCard from '@/features/spy-fall/components/ui/TicketCard';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { BASE_PATH, withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { Button } from '@/features/board-game-shared/components/ui';
+import { useToast } from '@/features/board-game-shared/components/ui/Toast';
+import TicketCard from '@/features/board-game-shared/components/ui/TicketCard';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
 import { playTap } from '@/features/spy-fall/lib/sounds';
 import { routes } from '@/config/routes';
 
@@ -74,13 +74,31 @@ export default function QrInvite({ code, roomName }: Props) {
 				</div>
 				<p className="max-w-[240px] break-all text-center text-xs text-muted">{url}</p>
 				<div className="grid w-full grid-cols-3 gap-2">
-					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copyCode()}>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void copyCode()}
+					>
 						{t('spy.invite.copyCode')}
 					</Button>
-					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copyLink()}>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void copyLink()}
+					>
 						{t('spy.invite.copyLink')}
 					</Button>
-					<Button type="button" variant="tertiary" size="sm" className="whitespace-nowrap px-2" onClick={() => void shareInvite()}>
+					<Button
+						type="button"
+						variant="tertiary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void shareInvite()}
+					>
 						{t('spy.invite.share')}
 					</Button>
 				</div>

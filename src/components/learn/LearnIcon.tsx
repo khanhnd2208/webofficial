@@ -18,8 +18,10 @@ const PATHS = {
 	arrowLeft: 'M19 12H5M11 6l-6 6 6 6',
 	sidebar: 'M3.5 4.5h17v15h-17zM9.5 4.5v15',
 	note: 'M5 4h10l4 4v12H5zM15 4v4h4M8.5 12h7M8.5 16h5',
-	trophy: 'M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5a3.5 3.5 0 0 0 4 3.5M16 6h3.5a3.5 3.5 0 0 1-4 3.5M12 13v4M8.5 20h7M10 17h4v3h-4z',
-	target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM12 12h.01',
+	trophy:
+		'M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5a3.5 3.5 0 0 0 4 3.5M16 6h3.5a3.5 3.5 0 0 1-4 3.5M12 13v4M8.5 20h7M10 17h4v3h-4z',
+	target:
+		'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM12 12h.01',
 	edit: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
 	close: 'M6 6l12 12M18 6 6 18',
 	keyboard: 'M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10',
@@ -85,7 +87,14 @@ export function LearnProgressRing({
 			data-complete={value >= 100 ? 'true' : undefined}
 		>
 			<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-				<circle className="ln-ring__track" cx={size / 2} cy={size / 2} r={radius} strokeWidth={stroke} fill="none" />
+				<circle
+					className="ln-ring__track"
+					cx={size / 2}
+					cy={size / 2}
+					r={radius}
+					strokeWidth={stroke}
+					fill="none"
+				/>
 				<circle
 					className="ln-ring__value"
 					cx={size / 2}
@@ -101,7 +110,11 @@ export function LearnProgressRing({
 			</svg>
 			{showValue ? (
 				<span className="ln-ring__label tabular-nums">
-					{value >= 100 ? <LearnIcon name="check" size={Math.round(size * 0.38)} strokeWidth={2.4} /> : `${value}%`}
+					{value >= 100 ? (
+						<LearnIcon name="check" size={Math.round(size * 0.38)} strokeWidth={2.4} />
+					) : (
+						`${value}%`
+					)}
 				</span>
 			) : null}
 		</span>
@@ -127,7 +140,11 @@ export function LearnCourseCover({
 		.map((word) => word[0]?.toUpperCase())
 		.join('');
 	return (
-		<div className={`ln-cover ${className}`} style={{ ['--ln-hue' as string]: hue }} aria-hidden="true">
+		<div
+			className={`ln-cover ${className}`}
+			style={{ ['--ln-hue' as string]: hue }}
+			aria-hidden="true"
+		>
 			<span className="ln-cover__initials">{initials || '·'}</span>
 			{category ? <span className="ln-cover__tag">{category}</span> : null}
 		</div>

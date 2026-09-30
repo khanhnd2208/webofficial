@@ -61,7 +61,9 @@ export function normalizeRawStudentInput(
 	const tutorialCode = normalizeStudentCode(raw.tutorialCode ?? '');
 	const tutorialClassId = normalizeUnicode(raw.tutorialClassId ?? '');
 	const dobText = normalizeUnicode(raw.dateOfBirth ?? '');
-	const parsedDob = dobText ? parseDateOfBirth(dobText, options.now) : { iso: null as string | null };
+	const parsedDob = dobText
+		? parseDateOfBirth(dobText, options.now)
+		: { iso: null as string | null };
 
 	if (!studentCode) fieldErrors.studentCode = 'Mã sinh viên là bắt buộc';
 	else if (studentCode.length > 40) fieldErrors.studentCode = 'Mã sinh viên tối đa 40 ký tự';
@@ -79,7 +81,8 @@ export function normalizeRawStudentInput(
 	let orderNo: number | null = null;
 	if (raw.orderNo != null && String(raw.orderNo).trim() !== '') {
 		const parsed = Number.parseInt(String(raw.orderNo), 10);
-		if (!Number.isInteger(parsed) || parsed < 1) fieldErrors.orderNo = 'STT phải là số nguyên dương';
+		if (!Number.isInteger(parsed) || parsed < 1)
+			fieldErrors.orderNo = 'STT phải là số nguyên dương';
 		else orderNo = parsed;
 	}
 
@@ -94,10 +97,18 @@ export function normalizeRawStudentInput(
 
 	if (tutorialCode && tutorialCode.length > TUTORIAL_CODE_MAX) {
 		fieldErrors.tutorialCode = 'Mã tutorial tối đa 20 ký tự';
-	} else if (tutorialCode && options.knownTutorialCodes && !options.knownTutorialCodes.has(tutorialCode)) {
+	} else if (
+		tutorialCode &&
+		options.knownTutorialCodes &&
+		!options.knownTutorialCodes.has(tutorialCode)
+	) {
 		fieldErrors.tutorialCode = 'Tutorial không tồn tại trong lớp';
 	}
-	if (tutorialClassId && options.knownTutorialIds && !options.knownTutorialIds.has(tutorialClassId)) {
+	if (
+		tutorialClassId &&
+		options.knownTutorialIds &&
+		!options.knownTutorialIds.has(tutorialClassId)
+	) {
 		fieldErrors.tutorialCode = 'Tutorial không tồn tại trong lớp';
 	}
 
@@ -119,7 +130,9 @@ export function normalizeRawStudentInput(
 	};
 }
 
-export function markBatchDuplicates(rows: NormalizedTeachingStudentInput[]): NormalizedTeachingStudentInput[] {
+export function markBatchDuplicates(
+	rows: NormalizedTeachingStudentInput[],
+): NormalizedTeachingStudentInput[] {
 	const seen = new Map<string, number>();
 	const orderSeen = new Map<number, number>();
 	return rows.map((row) => {
@@ -141,7 +154,9 @@ export function markBatchDuplicates(rows: NormalizedTeachingStudentInput[]): Nor
 	});
 }
 
-export function enforceRowLimit(rows: NormalizedTeachingStudentInput[]): NormalizedTeachingStudentInput[] {
+export function enforceRowLimit(
+	rows: NormalizedTeachingStudentInput[],
+): NormalizedTeachingStudentInput[] {
 	if (rows.length <= ROSTER_IMPORT_MAX_ROWS) return rows;
 	return rows.slice(0, ROSTER_IMPORT_MAX_ROWS).concat(
 		rows.slice(ROSTER_IMPORT_MAX_ROWS).map((row) => ({

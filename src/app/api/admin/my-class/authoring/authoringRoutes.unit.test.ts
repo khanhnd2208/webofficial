@@ -46,7 +46,10 @@ describe('My Class authoring route contracts', () => {
 
 	it('returns authoring data only for an admin', async () => {
 		mocks.user = createAdminUser();
-		mocks.getAuthoringCourse.mockResolvedValue({ slug: 'course-1', authoring: { status: 'DRAFT' } });
+		mocks.getAuthoringCourse.mockResolvedValue({
+			slug: 'course-1',
+			authoring: { status: 'DRAFT' },
+		});
 
 		const response = await invokeRoute(getAuthoringCourseRoute, {
 			url: 'http://localhost/api/admin/my-class/authoring/courses/course-1',

@@ -3,9 +3,9 @@
 import { useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Badge, Button, Card } from '@/features/spy-fall/components/ui';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Badge, Button, Card } from '@/features/board-game-shared/components/ui';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import { getRoleLabel } from '@/features/spy-fall/lib/spy/i18n';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type {
@@ -16,7 +16,7 @@ import type {
 import type { TranslateFn } from '@/features/spy-fall/lib/spy/i18n';
 
 import ActionBar, { ActionBarNote } from '../ActionBar';
-import PassportAvatar from '../PassportAvatar';
+import PassportAvatar from '@/features/board-game-shared/components/PassportAvatar';
 import StepGuide from '../StepGuide';
 
 interface Props {
@@ -88,8 +88,7 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 		.filter((row) => row.votes > 0)
 		.sort((a, b) => b.votes - a.votes);
 	const selfRole = state.self?.role;
-	const selfWon =
-		selfRole != null && (selfRole === 'civilian') === civiliansWon;
+	const selfWon = selfRole != null && (selfRole === 'civilian') === civiliansWon;
 
 	useEffect(() => {
 		if (!selfWon) return;
@@ -184,11 +183,15 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 										className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2"
 									>
 										<span className="min-w-0 truncate">
-											<span className="text-muted">{t('spy.discussion.title', { round: entry.round })}</span>{' '}
+											<span className="text-muted">
+												{t('spy.discussion.title', { round: entry.round })}
+											</span>{' '}
 											· {who}
 										</span>
 										{entry.role ? (
-											<Badge variant={roleBadgeVariant(entry.role)}>{getRoleLabel(t, entry.role)}</Badge>
+											<Badge variant={roleBadgeVariant(entry.role)}>
+												{getRoleLabel(t, entry.role)}
+											</Badge>
 										) : null}
 									</li>
 								);
@@ -207,12 +210,19 @@ export default function ResultPhase({ state, busy, onPlayAgain }: Props) {
 								key={p.id}
 								className={cn(
 									'flex items-center justify-between gap-3 rounded-xl border px-4 py-3',
-									p.role === 'civilian' ? 'border-border bg-surface' : 'border-danger/30 bg-danger-subtle',
+									p.role === 'civilian'
+										? 'border-border bg-surface'
+										: 'border-danger/30 bg-danger-subtle',
 								)}
 							>
 								<div className="flex min-w-0 items-center gap-3">
 									<PassportAvatar name={p.name} avatarSeed={p.avatarSeed} size="sm" />
-									<span className={cn('truncate font-medium', p.isEliminated && 'line-through opacity-70')}>
+									<span
+										className={cn(
+											'truncate font-medium',
+											p.isEliminated && 'line-through opacity-70',
+										)}
+									>
 										{p.name}
 									</span>
 									{p.id === state.self?.id ? (

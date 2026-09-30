@@ -45,8 +45,14 @@ test.describe('archived public learning surfaces', () => {
 			'href',
 			'/my-space/teaching',
 		);
-		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute('href', '/my-space/courses');
-		await expect(page.getByTestId('myspace-tile-board-game')).toHaveAttribute('href', '/my-space/board-game');
+		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute(
+			'href',
+			'/my-space/courses',
+		);
+		await expect(page.getByTestId('myspace-tile-board-game')).toHaveAttribute(
+			'href',
+			'/my-space/board-game',
+		);
 		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-tests')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-my-class')).toHaveCount(0);

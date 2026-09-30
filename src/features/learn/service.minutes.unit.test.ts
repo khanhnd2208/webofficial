@@ -45,7 +45,11 @@ describe('stored estimatedMinutes', () => {
 		mocks.transaction.mockImplementation(async (run: (tx: unknown) => Promise<void>) => {
 			if (typeof run === 'function') {
 				await run({
-					learnSectionRevision: { create: vi.fn(), findMany: vi.fn().mockResolvedValue([]), deleteMany: vi.fn() },
+					learnSectionRevision: {
+						create: vi.fn(),
+						findMany: vi.fn().mockResolvedValue([]),
+						deleteMany: vi.fn(),
+					},
 					learnSection: { update: mocks.sectionUpdate, create: vi.fn(), deleteMany: vi.fn() },
 				});
 			}
@@ -60,11 +64,13 @@ describe('stored estimatedMinutes', () => {
 			quiz: null,
 			discussion: null,
 		});
-		mocks.sectionUpdate.mockImplementation(async ({ data }: { data: { estimatedMinutes: number } }) => ({
-			id: 's1',
-			updatedAt: now,
-			estimatedMinutes: data.estimatedMinutes,
-		}));
+		mocks.sectionUpdate.mockImplementation(
+			async ({ data }: { data: { estimatedMinutes: number } }) => ({
+				id: 's1',
+				updatedAt: now,
+				estimatedMinutes: data.estimatedMinutes,
+			}),
+		);
 
 		const reading = await updateLearnSection('s1', { markdown: 'một hai ba bốn năm' });
 		expect(reading).toMatchObject({ id: 's1', estimatedMinutes: 1 });
@@ -107,43 +113,49 @@ describe('stored estimatedMinutes', () => {
 	it('stores minutes from an imported section and a restored revision', async () => {
 		mocks.courseFindUnique.mockResolvedValue({ id: 'course-1' });
 		mocks.lessonAggregate.mockResolvedValue({ _max: { position: 0 } });
-		mocks.lessonCreate.mockImplementation(async ({ data }: { data: { sections: { create: { estimatedMinutes: number }[] } } }) => ({
-			id: 'lesson-1',
-			title: data && 'Bài',
-			description: '',
-			sections: data.sections.create.map((section, index) => ({
-				...section,
-				id: `sec-${index}`,
-				lessonId: 'lesson-1',
-				checkpoint: null,
-				quiz: null,
-				discussion: null,
-				updatedAt: now,
-			})),
-		}));
+		mocks.lessonCreate.mockImplementation(
+			async ({ data }: { data: { sections: { create: { estimatedMinutes: number }[] } } }) => ({
+				id: 'lesson-1',
+				title: data && 'Bài',
+				description: '',
+				sections: data.sections.create.map((section, index) => ({
+					...section,
+					id: `sec-${index}`,
+					lessonId: 'lesson-1',
+					checkpoint: null,
+					quiz: null,
+					discussion: null,
+					updatedAt: now,
+				})),
+			}),
+		);
 
 		const imported = await importLearnMarkdown('course-1', {
 			mode: 'create',
-			markdown: ['# Bài mới', '', '=== SECTION: Khái niệm | 6 phút ===', '', 'Nội dung.'].join('\n'),
+			markdown: ['# Bài mới', '', '=== SECTION: Khái niệm | 6 phút ===', '', 'Nội dung.'].join(
+				'\n',
+			),
 		});
 		expect(imported[0]?.sections[0]?.estimatedMinutes).toBe(6);
 
 		mocks.sectionFindUnique.mockResolvedValue({ type: 'READING', durationMinutes: null });
-		mocks.sectionUpdate.mockImplementation(async ({ data }: { data: { estimatedMinutes: number; markdown: string } }) => ({
-			id: 's1',
-			lessonId: 'lesson-1',
-			type: 'READING',
-			title: 'Khái niệm',
-			durationMinutes: null,
-			estimatedMinutes: data.estimatedMinutes,
-			summary: '',
-			keyTakeaways: [],
-			markdown: data.markdown,
-			checkpoint: null,
-			quiz: null,
-			discussion: null,
-			updatedAt: now,
-		}));
+		mocks.sectionUpdate.mockImplementation(
+			async ({ data }: { data: { estimatedMinutes: number; markdown: string } }) => ({
+				id: 's1',
+				lessonId: 'lesson-1',
+				type: 'READING',
+				title: 'Khái niệm',
+				durationMinutes: null,
+				estimatedMinutes: data.estimatedMinutes,
+				summary: '',
+				keyTakeaways: [],
+				markdown: data.markdown,
+				checkpoint: null,
+				quiz: null,
+				discussion: null,
+				updatedAt: now,
+			}),
+		);
 		const { prisma } = await import('@/lib/prisma');
 		vi.mocked(prisma.learnSectionRevision.findFirst).mockResolvedValue({
 			id: 'rev-1',

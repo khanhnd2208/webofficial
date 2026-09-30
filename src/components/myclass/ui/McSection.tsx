@@ -24,7 +24,10 @@ export function McSection({
 				<div className="min-w-0">
 					{eyebrow ? <p className="mc-eyebrow">{eyebrow}</p> : null}
 					{typeof title === 'string' ? (
-						<h2 id={titleId} className={`mc-title text-[clamp(1.35rem,2.2vw,1.75rem)] ${eyebrow ? 'mt-1' : ''}`}>
+						<h2
+							id={titleId}
+							className={`mc-title text-[clamp(1.35rem,2.2vw,1.75rem)] ${eyebrow ? 'mt-1' : ''}`}
+						>
 							{title}
 						</h2>
 					) : (

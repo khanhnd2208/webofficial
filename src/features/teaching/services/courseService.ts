@@ -167,10 +167,7 @@ export async function deleteTeachingCourse(id: string) {
 	]);
 	const deleteBlockers = summarizeCourseDeleteBlockers({ classCount, deckCount });
 	if (Object.keys(deleteBlockers).length > 0) {
-		throw dependencyConflict(
-			'Chỉ xóa được môn học khi chưa có lớp và bộ thẻ',
-			deleteBlockers,
-		);
+		throw dependencyConflict('Chỉ xóa được môn học khi chưa có lớp và bộ thẻ', deleteBlockers);
 	}
 	await repo.prisma.teachingCourse.delete({ where: { id } });
 	return { id };

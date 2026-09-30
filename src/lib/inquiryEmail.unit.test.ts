@@ -50,8 +50,8 @@ describe('inquiry email delivery', () => {
 		expect(timeoutSpy).toHaveBeenCalledTimes(2);
 		expect(timeoutSpy).toHaveBeenCalledWith(INQUIRY_EMAIL_TIMEOUT_MS);
 
-		const payloads = fetchMock.mock.calls.map(([, init]) =>
-			JSON.parse(String(init?.body)) as { to: string[]; reply_to?: string },
+		const payloads = fetchMock.mock.calls.map(
+			([, init]) => JSON.parse(String(init?.body)) as { to: string[]; reply_to?: string },
 		);
 		const adminPayload = payloads.find((payload) => payload.to[0] === 'admin@example.com');
 		const senderPayload = payloads.find((payload) => payload.to[0] === 'sender@example.com');

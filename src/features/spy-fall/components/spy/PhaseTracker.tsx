@@ -2,20 +2,20 @@
 
 import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
-import GameIcon, { type GameIconName } from '@/features/spy-fall/components/ui/GameIcon';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import GameIcon, { type GameIconName } from '@/features/board-game-shared/components/ui/GameIcon';
 
 const STEPS: GamePhase[] = ['role-reveal', 'discussion', 'vote', 'reveal'];
 /** With one Spy the vote ends the game, so there is no reveal between rounds. */
 const STEPS_WITHOUT_REVEAL: GamePhase[] = ['role-reveal', 'discussion', 'vote'];
 const STEP_ICONS: Record<GamePhase, GameIconName> = {
-	'lobby': 'users',
+	lobby: 'users',
 	'role-reveal': 'passport',
-	'discussion': 'users',
-	'vote': 'target',
-	'reveal': 'eye',
-	'result': 'check',
+	discussion: 'users',
+	vote: 'target',
+	reveal: 'eye',
+	result: 'check',
 };
 
 interface Props {
@@ -52,9 +52,14 @@ export default function PhaseTracker({ current, showReveal = true, className }: 
 								)}
 							>
 								{isActive ? (
-									<span className="flex min-w-0 items-center gap-1.5 truncate"><GameIcon name={STEP_ICONS[phase]} size={14} /><span className="truncate">{t(`spy.phases.${current}`)}</span></span>
+									<span className="flex min-w-0 items-center gap-1.5 truncate">
+										<GameIcon name={STEP_ICONS[phase]} size={14} />
+										<span className="truncate">{t(`spy.phases.${current}`)}</span>
+									</span>
 								) : (
-									<span className="flex items-center justify-center"><GameIcon name={isPast ? 'check' : STEP_ICONS[phase]} size={13} /></span>
+									<span className="flex items-center justify-center">
+										<GameIcon name={isPast ? 'check' : STEP_ICONS[phase]} size={13} />
+									</span>
 								)}
 							</span>
 						</li>

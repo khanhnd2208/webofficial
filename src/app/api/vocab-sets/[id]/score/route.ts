@@ -4,11 +4,7 @@
    from raw timestamps (anti-cheat). Only saves if new score > best.
    ════════════════════════════════════════════════════════════════════════ */
 import { withAuth, apiSuccess, apiError, AppError } from '@/lib/apiUtils';
-import {
-	ScoreValidationError,
-	submitGameScore,
-	type ScoreBody,
-} from '@/services/scoreService';
+import { ScoreValidationError, submitGameScore, type ScoreBody } from '@/services/scoreService';
 
 type Ctx = { params: Promise<{ id: string }> };
 

@@ -43,7 +43,7 @@ export async function recordLogin(userId: string): Promise<StreakDTO> {
 				lastLoginDate: today,
 			},
 		},
-		{ upsert: true, returnDocument: 'after' }
+		{ upsert: true, returnDocument: 'after' },
 	);
 
 	if (!doc) {
@@ -75,7 +75,7 @@ export async function recordLogin(userId: string): Promise<StreakDTO> {
 				lastLoginDate: today,
 			},
 		},
-		{ returnDocument: 'after' }
+		{ returnDocument: 'after' },
 	);
 
 	if (!updated) {

@@ -35,14 +35,17 @@ export default async function MySpaceTeachingClassPage({
 	const week = Number(query?.week || '') || null;
 	const tutorialId = query?.tutorial || undefined;
 	const groupBoardEnabled = isTeachingGroupBoardEnabled();
-	if (requestedTab === 'groups' && !groupBoardEnabled) redirect(routes.mySpaceTeachingClass(classId));
+	if (requestedTab === 'groups' && !groupBoardEnabled)
+		redirect(routes.mySpaceTeachingClass(classId));
 	const tab = resolveTeachingWorkspaceTab(requestedTab, groupBoardEnabled);
 	const [gradebook, board, roster, publicPage, , groupNumbersByTutorial, notes, recallAssignments] =
 		await Promise.all([
 			getGradebook(classId),
 			getAttendanceBoardConfig(classId),
 			teachingTabNeedsRoster(tab) ? listRoster(classId) : Promise.resolve(undefined),
-			teachingTabNeedsPublicPage(tab) ? ensureTeachingPublicDefaults(classId) : Promise.resolve(undefined),
+			teachingTabNeedsPublicPage(tab)
+				? ensureTeachingPublicDefaults(classId)
+				: Promise.resolve(undefined),
 			Promise.resolve(undefined as Awaited<ReturnType<typeof getGroupBoard>> | undefined),
 			teachingTabNeedsGroupBoard(tab, groupBoardEnabled) && tab !== 'groups'
 				? getGroupNumbersByEnrollment(classId)

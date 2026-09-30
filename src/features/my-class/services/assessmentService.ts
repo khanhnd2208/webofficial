@@ -2,9 +2,21 @@ import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@prisma/client';
 
-import { coerceLearnerResponse, displayChosen, displayCorrect, parseAnswerSpec } from '../domain/answerSpec';
+import {
+	coerceLearnerResponse,
+	displayChosen,
+	displayCorrect,
+	parseAnswerSpec,
+} from '../domain/answerSpec';
 import { normalizeBankFilter, splitCsvParam, type BankFilter } from '../domain/bankFilter';
-import { listSkip, parseListQuery, parseOptionalBoolean, parseOptionalSortDir, parsePublishStatus, toListPage } from '../domain/listQuery';
+import {
+	listSkip,
+	parseListQuery,
+	parseOptionalBoolean,
+	parseOptionalSortDir,
+	parsePublishStatus,
+	toListPage,
+} from '../domain/listQuery';
 import { gradeResponse, scalePoints } from '../domain/grading';
 import { formatEvidenceSummary } from '../domain/format';
 import { normalizeSlug } from '../domain/normalize';
@@ -44,7 +56,14 @@ import type {
 } from '../types';
 import { testReturnTo } from './mappers';
 
-const TEST_TABLE_SORT_FIELDS = ['title', 'status', 'updatedAt', 'questions', 'attempts', 'placements'] as const;
+const TEST_TABLE_SORT_FIELDS = [
+	'title',
+	'status',
+	'updatedAt',
+	'questions',
+	'attempts',
+	'placements',
+] as const;
 
 function questionWrite(input: QuestionBodyInput, slug: string) {
 	return {
@@ -65,9 +84,17 @@ function questionWrite(input: QuestionBodyInput, slug: string) {
 	};
 }
 
-function playQuestion(
-	item: { position: number; points?: number; question: { id: string; type: MyClassQuestionType; stem: string; options: unknown; answer: unknown } },
-): MyClassQuestionForPlay {
+function playQuestion(item: {
+	position: number;
+	points?: number;
+	question: {
+		id: string;
+		type: MyClassQuestionType;
+		stem: string;
+		options: unknown;
+		answer: unknown;
+	};
+}): MyClassQuestionForPlay {
 	const answer = parseAnswerSpec(item.question.answer);
 	return {
 		id: item.question.id,
@@ -105,7 +132,8 @@ export async function listAdminQuestionTable(
 		},
 		{ sortFields: ['updatedAt', 'difficulty', 'usage'] as const, defaultSortBy: 'updatedAt' },
 	);
-	const sort = query.sortBy === 'difficulty' || query.sortBy === 'usage' ? query.sortBy : 'updatedAt';
+	const sort =
+		query.sortBy === 'difficulty' || query.sortBy === 'usage' ? query.sortBy : 'updatedAt';
 	const { items, total } = await repo.listQuestionTable({
 		...filter,
 		sort,
@@ -180,7 +208,10 @@ export async function updateQuestion(id: string, input: QuestionBodyInput) {
 	const existing = await getAdminQuestion(id);
 	const updated = await withUniqueConflict('Question slug đã tồn tại', () =>
 		repo.updateQuestion(id, {
-			...questionWrite(input, input.slug ? normalizeSlug(input.slug, existing.slug) : existing.slug),
+			...questionWrite(
+				input,
+				input.slug ? normalizeSlug(input.slug, existing.slug) : existing.slug,
+			),
 			slug: input.slug ? normalizeSlug(input.slug, existing.slug) : undefined,
 		}),
 	);
@@ -215,7 +246,10 @@ export async function bulkBankAction(input: BankBulkInput) {
 	}
 	if (input.action === 'add-tags' || input.action === 'remove-tags') {
 		const tags = input.tags ?? [];
-		const rows = await prisma.myClassQuestion.findMany({ where: { id: { in: ids } }, select: { id: true, tags: true } });
+		const rows = await prisma.myClassQuestion.findMany({
+			where: { id: { in: ids } },
+			select: { id: true, tags: true },
+		});
 		await prisma.$transaction(
 			rows.map((row) => {
 				const next =
@@ -398,7 +432,9 @@ export async function updateTest(id: string, input: UpdateTestInput) {
 		await withUniqueConflict('Test slug đã tồn tại', () =>
 			repo.updateTest(id, { ...data, status: 'DRAFT', publishedAt: null }),
 		);
-		const issues = (await validateAdminTestPublish(id)).filter((item) => item.severity !== 'warning');
+		const issues = (await validateAdminTestPublish(id)).filter(
+			(item) => item.severity !== 'warning',
+		);
 		if (issues.length) throw new AppError(issues[0]!.message, 422, 'PUBLISH_BLOCKED');
 		return repo.updateTest(id, { status: 'PUBLISHED', publishedAt: new Date() });
 	}
@@ -410,9 +446,10 @@ export async function setTestQuestions(
 	questionIds: string[] | Array<{ questionId: string; points?: number }>,
 ) {
 	await getAdminTest(id);
-	const items = Array.isArray(questionIds) && typeof questionIds[0] === 'string'
-		? (questionIds as string[]).map((questionId) => ({ questionId }))
-		: (questionIds as Array<{ questionId: string; points?: number }>);
+	const items =
+		Array.isArray(questionIds) && typeof questionIds[0] === 'string'
+			? (questionIds as string[]).map((questionId) => ({ questionId }))
+			: (questionIds as Array<{ questionId: string; points?: number }>);
 	return repo.setTestQuestions(id, items);
 }
 
@@ -428,13 +465,25 @@ export async function addTestQuestion(testId: string, input: TestQuestionInput) 
 	return { question, test: await getAdminTest(testId) };
 }
 
-export async function randomFillTest(testId: string, filter: BankFilter, count: number, replace = false) {
+export async function randomFillTest(
+	testId: string,
+	filter: BankFilter,
+	count: number,
+	replace = false,
+) {
 	const test = await getAdminTest(testId);
 	const pool = await repo.listQuestions({
-		...normalizeBankFilter({ ...filter, excludeTestId: replace ? undefined : testId, status: 'ACTIVE', take: 200 }),
+		...normalizeBankFilter({
+			...filter,
+			excludeTestId: replace ? undefined : testId,
+			status: 'ACTIVE',
+			take: 200,
+		}),
 	});
 	const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, count);
-	const existing = replace ? [] : test.questions.map((item) => ({ questionId: item.question.id, points: item.points }));
+	const existing = replace
+		? []
+		: test.questions.map((item) => ({ questionId: item.question.id, points: item.points }));
 	const added = shuffled
 		.filter((item) => !existing.some((row) => row.questionId === item.id))
 		.map((item) => ({ questionId: item.id, points: 1 }));
@@ -489,7 +538,8 @@ export async function createTestPlacement(testId: string, input: TestPlacementIn
 
 export async function deleteTestPlacement(testId: string, placementId: string) {
 	const placement = await repo.findPlacement(placementId);
-	if (!placement || placement.testId !== testId) throw new AppError('Không tìm thấy vị trí gắn', 404);
+	if (!placement || placement.testId !== testId)
+		throw new AppError('Không tìm thấy vị trí gắn', 404);
 	return repo.deletePlacement(placementId);
 }
 
@@ -500,7 +550,9 @@ export async function validatePlacement(testId: string, courseId: string): Promi
 	for (const item of test.questions) {
 		for (const link of item.question.knowledgeUnits) {
 			if (!courseKuIds.has(link.knowledgeUnitId)) {
-				outOfCourse.push(link.knowledgeUnit.currentPublishedRevision?.title ?? link.knowledgeUnit.slug);
+				outOfCourse.push(
+					link.knowledgeUnit.currentPublishedRevision?.title ?? link.knowledgeUnit.slug,
+				);
 			}
 		}
 	}
@@ -515,7 +567,10 @@ export async function validateAdminTestPublish(id: string): Promise<PublishIssue
 		if (item.question.status !== 'ACTIVE') inactive += 1;
 		for (const link of item.question.knowledgeUnits) {
 			const title = link.knowledgeUnit.currentPublishedRevision?.title ?? link.knowledgeUnit.slug;
-			if (link.knowledgeUnit.status !== 'PUBLISHED' || !link.knowledgeUnit.currentPublishedRevision) {
+			if (
+				link.knowledgeUnit.status !== 'PUBLISHED' ||
+				!link.knowledgeUnit.currentPublishedRevision
+			) {
 				unpublished.push(title);
 			}
 		}
@@ -627,7 +682,11 @@ export async function previewPublicTest(id: string): Promise<MyClassTestForPlay>
 		shuffleOptions: test.shuffleOptions,
 		revealPolicy: test.revealPolicy,
 		returnTo: first
-			? testReturnTo(first.course.slug, { scope: first.scope, lesson: first.lesson, section: first.section })
+			? testReturnTo(first.course.slug, {
+					scope: first.scope,
+					lesson: first.lesson,
+					section: first.section,
+				})
 			: { href: '/my-space/my-class', label: 'My Class' },
 		questions: test.questions.filter((item) => item.question.status === 'ACTIVE').map(playQuestion),
 	};
@@ -657,7 +716,10 @@ function reviewFromQuestions(
 			options: unknown;
 			answer: unknown;
 			explanation: string;
-			knowledgeUnits: Array<{ knowledgeUnitId: string; knowledgeUnit: { slug: string; currentPublishedRevision: { title: string } | null } }>;
+			knowledgeUnits: Array<{
+				knowledgeUnitId: string;
+				knowledgeUnit: { slug: string; currentPublishedRevision: { title: string } | null };
+			}>;
 		};
 	}>,
 	input: SubmitTestInput,
@@ -675,7 +737,8 @@ function reviewFromQuestions(
 		throw new AppError('Phải trả lời đúng toàn bộ câu hỏi của Test', 422);
 	}
 	return questions.map((item) => {
-		const options = item.question.type === 'FILL_BLANK' ? [] : parseQuestionOptions(item.question.options);
+		const options =
+			item.question.type === 'FILL_BLANK' ? [] : parseQuestionOptions(item.question.options);
 		const answer = parseAnswerSpec(item.question.answer);
 		const raw = input.answers[item.question.id];
 		const missing = raw === undefined;
@@ -744,9 +807,7 @@ function resultPayload(
 		earnedPoints: review.reduce((sum, item) => sum + item.earned, 0),
 		totalPoints: review.reduce((sum, item) => sum + item.max, 0),
 		review:
-			revealPolicy === 'NEVER'
-				? []
-				: review.map(({ knowledgeUnitIds: _ids, ...item }) => item),
+			revealPolicy === 'NEVER' ? [] : review.map(({ knowledgeUnitIds: _ids, ...item }) => item),
 		kuBreakdown: evidence.map((row) => {
 			const meta = kuMeta.get(row.knowledgeUnitId);
 			const accuracy = weightedAccuracy(row.correctCount, row.questionCount);
@@ -865,7 +926,8 @@ export async function checkTestQuestion(
 	}
 	const item = placement.test.questions.find((row) => row.question.id === input.questionId);
 	if (!item) throw new AppError('Không tìm thấy câu hỏi', 404);
-	const options = item.question.type === 'FILL_BLANK' ? [] : parseQuestionOptions(item.question.options);
+	const options =
+		item.question.type === 'FILL_BLANK' ? [] : parseQuestionOptions(item.question.options);
 	const answer = parseAnswerSpec(item.question.answer);
 	const response = coerceLearnerResponse(input.answer);
 	const graded = gradeResponse(answer, response);

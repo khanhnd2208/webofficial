@@ -25,5 +25,7 @@ export default async function LearnStudioPage({ params, searchParams }: Props) {
 	const course = await getLearnStudioCourse(slug);
 	if (!course) notFound();
 
-	return <LearnStudio course={course} initialSectionId={typeof query.s === 'string' ? query.s : null} />;
+	return (
+		<LearnStudio course={course} initialSectionId={typeof query.s === 'string' ? query.s : null} />
+	);
 }

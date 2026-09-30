@@ -1,7 +1,7 @@
 'use client';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button, Card, Stamp } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button, Card, Stamp } from '@/features/board-game-shared/components/ui';
 import { getRoleLabel } from '@/features/spy-fall/lib/spy/i18n';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
@@ -20,7 +20,9 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 	const round = state.lastRound;
 	const eliminated = round?.id ? state.players.find((p) => p.id === round.id) : undefined;
 	const nameById = new Map(state.players.map((p) => [p.id, p.name]));
-	const counted = (round?.tally ?? []).filter((row) => row.votes > 0).sort((a, b) => b.votes - a.votes);
+	const counted = (round?.tally ?? [])
+		.filter((row) => row.votes > 0)
+		.sort((a, b) => b.votes - a.votes);
 	const spiesLeft = state.spiesRemaining;
 	const finalGuess = spiesLeft <= 1;
 
@@ -44,7 +46,9 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 							<Stamp label={getRoleLabel(t, round.role)} variant="suspect" animate />
 						</>
 					) : null}
-					<p className="px-4 pt-2 text-sm font-medium text-ink">{t('spy.reveal.spiesLeft', { count: spiesLeft })}</p>
+					<p className="px-4 pt-2 text-sm font-medium text-ink">
+						{t('spy.reveal.spiesLeft', { count: spiesLeft })}
+					</p>
 				</Card>
 
 				{counted.length > 0 ? (
@@ -85,7 +89,9 @@ export default function RevealPhase({ state, onNext, busy }: Props) {
 							onNext();
 						}}
 					>
-						{t(finalGuess ? 'spy.reveal.nextFinal' : 'spy.reveal.nextMore', { round: state.round + 1 })}
+						{t(finalGuess ? 'spy.reveal.nextFinal' : 'spy.reveal.nextMore', {
+							round: state.round + 1,
+						})}
 					</Button>
 				) : (
 					<ActionBarNote>{t('spy.reveal.waitHost')}</ActionBarNote>

@@ -42,7 +42,11 @@ export default function OptionListEditor({
 	return (
 		<div className="ln-optedit">
 			{options.map((option, index) => (
-				<div key={index} className="ln-optedit__row" data-correct={index === correctIndex ? 'true' : undefined}>
+				<div
+					key={index}
+					className="ln-optedit__row"
+					data-correct={index === correctIndex ? 'true' : undefined}
+				>
 					<label className="ln-optedit__radio" title="Đánh dấu là đáp án đúng">
 						<input
 							type="radio"

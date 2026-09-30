@@ -38,8 +38,12 @@ export default async function LearnCatalogPage() {
 				<div className="ln-container">
 					<header className="ln-welcome">
 						<p className="ln-eyebrow">Không gian tự học</p>
-						<h1 className="ln-page__title">{firstName ? `Chào ${firstName}, hôm nay học gì?` : 'Khóa học của bạn'}</h1>
-						<p className="ln-page__lead">Đọc từng mục, rồi làm bài kiểm tra. Tiến độ được lưu theo tài khoản của bạn.</p>
+						<h1 className="ln-page__title">
+							{firstName ? `Chào ${firstName}, hôm nay học gì?` : 'Khóa học của bạn'}
+						</h1>
+						<p className="ln-page__lead">
+							Đọc từng mục, rồi làm bài kiểm tra. Tiến độ được lưu theo tài khoản của bạn.
+						</p>
 					</header>
 
 					{resume ? (
@@ -56,7 +60,10 @@ export default async function LearnCatalogPage() {
 									</span>
 								</div>
 							</div>
-							<Link href={routes.learnCourse(resume.slug, resume.nextSectionId)} className="ln-btn ln-btn--primary">
+							<Link
+								href={routes.learnCourse(resume.slug, resume.nextSectionId)}
+								className="ln-btn ln-btn--primary"
+							>
 								Học tiếp
 							</Link>
 						</section>

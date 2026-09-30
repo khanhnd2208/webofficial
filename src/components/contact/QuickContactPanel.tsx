@@ -138,11 +138,7 @@ export default function QuickContactPanel({ open, onClose, sourcePage }: QuickCo
 					<p className="text-sm leading-relaxed text-ink-secondary">
 						Tôi sẽ đọc lời nhắn và phản hồi bằng một câu hỏi hoặc bước tiếp theo phù hợp.
 					</p>
-					<button
-						type="button"
-						onClick={onClose}
-						className="editorial-text-link mt-2"
-					>
+					<button type="button" onClick={onClose} className="editorial-text-link mt-2">
 						Đóng
 					</button>
 				</div>

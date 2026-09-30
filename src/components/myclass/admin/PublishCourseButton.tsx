@@ -22,7 +22,12 @@ export default function PublishCourseButton({ courseId }: { courseId: string }) 
 	}
 	return (
 		<div>
-			<button type="button" disabled={busy} onClick={() => void publish()} className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-sm font-semibold text-paper">
+			<button
+				type="button"
+				disabled={busy}
+				onClick={() => void publish()}
+				className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] bg-ink px-4 text-sm font-semibold text-paper"
+			>
 				Xuất bản
 			</button>
 			{error ? <p className="mt-2 text-xs text-error">{error}</p> : null}

@@ -25,7 +25,8 @@ export function StudioPagination({
 				{totalPages > 1 ? (
 					<>
 						{' '}
-						· trang <span className="mc-num">{page}</span> / <span className="mc-num">{totalPages}</span>
+						· trang <span className="mc-num">{page}</span> /{' '}
+						<span className="mc-num">{totalPages}</span>
 					</>
 				) : null}
 			</p>

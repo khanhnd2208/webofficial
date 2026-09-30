@@ -7,8 +7,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { compareLectureText } from '../src/features/learn/textFidelity';
 import { parseCourseMarkdown } from '../src/features/learn/lessonImport';
 
-const SECTION_RE =
-	/^(Mở đầu:.*|Phần \d+\..*|Góc đọc thêm|Tổng kết.*|Cách dùng bộ câu hỏi.*)$/;
+const SECTION_RE = /^(Mở đầu:.*|Phần \d+\..*|Góc đọc thêm|Tổng kết.*|Cách dùng bộ câu hỏi.*)$/;
 
 const SUBHEAD_RE =
 	/^(?:\d+\.\d+\..+|(?:Một hiểu lầm|Về cách tôi viết|Bản đồ bài học|Nhóm [A-Z]:|Câu hỏi tự kiểm tra|Bài tập thực hành|Bảng từ khóa|Từ khóa|Ghi nhớ trong \d+ dòng).*|(?:Thay đổi|Lý do) \d+[:.].*)$/;
@@ -16,7 +15,10 @@ const SUBHEAD_RE =
 const CALLOUT: Array<{ re: RegExp; kind: string }> = [
 	{ re: /^(Câu dễ nhớ)\s*:\s*(.*)$/, kind: 'TIP' },
 	{ re: /^(Mẹo nhớ)\s*:\s*(.*)$/, kind: 'TIP' },
-	{ re: /^(Liên hệ bản thân|Hãy tự hỏi|Câu hỏi nhanh cho bạn|Thử sức)\s*:\s*(.*)$/, kind: 'REFLECT' },
+	{
+		re: /^(Liên hệ bản thân|Hãy tự hỏi|Câu hỏi nhanh cho bạn|Thử sức)\s*:\s*(.*)$/,
+		kind: 'REFLECT',
+	},
 	{ re: /^(Lưu ý quan trọng|Lưu ý)\s*:\s*(.*)$/, kind: 'WARNING' },
 	{ re: /^(Lưu ý về từ ngữ|Đọc thêm)\s*:\s*(.*)$/, kind: 'NOTE' },
 	{ re: /^(Một hiểu lầm cần bỏ(?: ngay)?)\s*:\s*(.*)$/, kind: 'IMPORTANT' },
@@ -27,7 +29,8 @@ function isShort(line: string): boolean {
 	const t = line.trim();
 	if (!t || t.startsWith('flowchart') || t.startsWith('```') || t.endsWith(':')) return false;
 	if (/^\d+\.\s/.test(t)) return false;
-	if (/^(Mười |Trải nghiệm |Câu hỏi tự kiểm tra|Bài tập |Ghi nhớ |Bảng từ khóa|Từ khóa$)/.test(t)) return false;
+	if (/^(Mười |Trải nghiệm |Câu hỏi tự kiểm tra|Bài tập |Ghi nhớ |Bảng từ khóa|Từ khóa$)/.test(t))
+		return false;
 	if (t.length > 180) return false;
 	if (t.length > 90 && /[.!?…]$/.test(t)) return false;
 	return true;
@@ -49,7 +52,12 @@ function tableAt(lines: string[], i: number): { markdown: string; next: number }
 	if (!isShort(lines[i] ?? '')) return null;
 	const cells: string[] = [];
 	let j = i;
-	while (j < lines.length && isShort(lines[j]) && !SECTION_RE.test(lines[j].trim()) && !/^\d+\.\d+\./.test(lines[j].trim())) {
+	while (
+		j < lines.length &&
+		isShort(lines[j]) &&
+		!SECTION_RE.test(lines[j].trim()) &&
+		!/^\d+\.\d+\./.test(lines[j].trim())
+	) {
 		cells.push(lines[j].trim());
 		j += 1;
 		if (cells.length >= 80) break;
@@ -65,7 +73,10 @@ function tableAt(lines: string[], i: number): { markdown: string; next: number }
 		const md = [
 			`| ${header.join(' | ')} |`,
 			`| ${header.map(() => '---').join(' | ')} |`,
-			...Array.from({ length: rows - 1 }, (_, r) => `| ${body.slice(r * cols, (r + 1) * cols).join(' | ')} |`),
+			...Array.from(
+				{ length: rows - 1 },
+				(_, r) => `| ${body.slice(r * cols, (r + 1) * cols).join(' | ')} |`,
+			),
 		].join('\n');
 		return { markdown: md, next: j };
 	}
@@ -162,20 +173,32 @@ export function formatLecture(raw: string): string {
 }
 
 function quoteBlock(kind: string, title: string, body: string[]): string {
-	const lines = [`> [!${kind}] ${title}`, ...body.filter((line) => line.trim()).map((line) => `> ${line.trim()}`)];
+	const lines = [
+		`> [!${kind}] ${title}`,
+		...body.filter((line) => line.trim()).map((line) => `> ${line.trim()}`),
+	];
 	return lines.join('\n');
 }
 
 /** Discussion paste → NDK. "Đáp án mẫu:" and "Câu n:" are parser labels; word check uses questions mode. */
 export function formatDiscussion(raw: string): string {
-	const lines = raw.replace(/\r\n?/g, '\n').split('\n').map((line) => line.trim()).filter((line) => line.length > 0);
+	const lines = raw
+		.replace(/\r\n?/g, '\n')
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
 	const discTitle = lines.find((line) => /^Câu hỏi phản biện/.test(line)) ?? 'Câu hỏi phản biện';
 	const start = lines.findIndex((line) => /^Cách dùng bộ câu hỏi/.test(line));
 	const body = start >= 0 ? lines.slice(start) : lines.filter((line) => line !== discTitle);
 	const out: string[] = ['=== SECTION: Cách dùng bộ câu hỏi ===', ''];
 	const questionsAt = body.findIndex((line) => /^Câu \d+\s*·/.test(line));
-	const guideEnd = body.findIndex((line, index) => index > 0 && (/^Phần \d+/.test(line) || /^Câu \d+\s*·/.test(line)));
-	const guide = body.slice(1, guideEnd >= 0 ? guideEnd : questionsAt >= 0 ? questionsAt : body.length);
+	const guideEnd = body.findIndex(
+		(line, index) => index > 0 && (/^Phần \d+/.test(line) || /^Câu \d+\s*·/.test(line)),
+	);
+	const guide = body.slice(
+		1,
+		guideEnd >= 0 ? guideEnd : questionsAt >= 0 ? questionsAt : body.length,
+	);
 	for (let g = 0; g < guide.length; g += 1) {
 		const table = tableAt(guide, g);
 		if (table) {
@@ -198,17 +221,30 @@ export function formatDiscussion(raw: string): string {
 	while (q < questions.length) {
 		const head = questions[q].match(/^Câu (\d+)\s*·\s*(.*)$/);
 		if (!head) {
-			if (/^Phần /.test(questions[q]) || /^Câu tổng hợp$/.test(questions[q])) out.push(`## ${questions[q]}`, '');
+			if (/^Phần /.test(questions[q]) || /^Câu tổng hợp$/.test(questions[q]))
+				out.push(`## ${questions[q]}`, '');
 			q += 1;
 			continue;
 		}
 		const number = head[1];
 		out.push(`Câu ${number}:`, `### ${questions[q]}`, '');
 		q += 1;
-		const buckets: Record<string, string[]> = { situation: [], ask: [], recall: [], steps: [], takeaway: [], other: [] };
+		const buckets: Record<string, string[]> = {
+			situation: [],
+			ask: [],
+			recall: [],
+			steps: [],
+			takeaway: [],
+			other: [],
+		};
 		let bucket: keyof typeof buckets = 'other';
 		const stepHeads: string[] = [];
-		while (q < questions.length && !/^Câu \d+\s*·/.test(questions[q]) && !/^Phần \d+/.test(questions[q]) && !/^Câu tổng hợp$/.test(questions[q])) {
+		while (
+			q < questions.length &&
+			!/^Câu \d+\s*·/.test(questions[q]) &&
+			!/^Phần \d+/.test(questions[q]) &&
+			!/^Câu tổng hợp$/.test(questions[q])
+		) {
 			const line = questions[q];
 			if (/^Tình huống\s*:/.test(line)) {
 				bucket = 'situation';
@@ -241,7 +277,8 @@ export function formatDiscussion(raw: string): string {
 			}
 			q += 1;
 		}
-		if (buckets.situation.length) out.push(quoteBlock('EXAMPLE', 'Tình huống:', buckets.situation), '');
+		if (buckets.situation.length)
+			out.push(quoteBlock('EXAMPLE', 'Tình huống:', buckets.situation), '');
 		if (buckets.ask.length) out.push(quoteBlock('REFLECT', 'Câu hỏi:', buckets.ask), '');
 		out.push('Đáp án mẫu:', '');
 		if (buckets.recall.length) out.push('### Nhắc lại bài học:', ...buckets.recall, '');
@@ -253,7 +290,8 @@ export function formatDiscussion(raw: string): string {
 			}
 			out.push('');
 		}
-		if (buckets.takeaway.length) out.push(quoteBlock('IMPORTANT', 'Điều rút ra:', buckets.takeaway), '');
+		if (buckets.takeaway.length)
+			out.push(quoteBlock('IMPORTANT', 'Điều rút ra:', buckets.takeaway), '');
 		if (buckets.other.length) out.push(...buckets.other, '');
 	}
 	return `${out.join('\n').trim()}\n`;
@@ -262,7 +300,9 @@ export function formatDiscussion(raw: string): string {
 function main() {
 	const [input, output, flag] = process.argv.slice(2);
 	if (!input || !output) {
-		console.error('Usage: npx tsx scripts/format-ndk-paste.ts <original.txt> <out.md> [--discussion]');
+		console.error(
+			'Usage: npx tsx scripts/format-ndk-paste.ts <original.txt> <out.md> [--discussion]',
+		);
 		process.exitCode = 1;
 		return;
 	}
@@ -278,7 +318,11 @@ function main() {
 			firstHunk: fidelity.hunks[0] ?? null,
 			lessons: parsed.lessons.map((lesson) => ({
 				title: lesson.lessonTitle,
-				sections: lesson.sections.map((section) => ({ type: section.type, title: section.title, words: section.wordCount })),
+				sections: lesson.sections.map((section) => ({
+					type: section.type,
+					title: section.title,
+					words: section.wordCount,
+				})),
 			})),
 			warnings: parsed.warnings,
 		}),

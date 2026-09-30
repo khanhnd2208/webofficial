@@ -1,7 +1,14 @@
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@prisma/client';
 
-export const COHORT_TABLE_SORTS = ['name', 'status', 'createdAt', 'updatedAt', 'members', 'attempts'] as const;
+export const COHORT_TABLE_SORTS = [
+	'name',
+	'status',
+	'createdAt',
+	'updatedAt',
+	'members',
+	'attempts',
+] as const;
 export type CohortTableSort = (typeof COHORT_TABLE_SORTS)[number];
 
 function cohortWhere(

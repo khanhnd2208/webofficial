@@ -17,7 +17,8 @@ export function buildVocabSetPrompt(rawWords: string, ctx?: VocabPromptContext):
 	const trimmed = rawWords.trim();
 	const course = ctx?.courseTitle?.trim();
 	const lesson = ctx?.lessonTitle?.trim();
-	const domain = ctx?.domain?.trim() || [course, lesson].filter(Boolean).join(' / ') || 'khóa học hiện tại';
+	const domain =
+		ctx?.domain?.trim() || [course, lesson].filter(Boolean).join(' / ') || 'khóa học hiện tại';
 	const contextLines = [
 		course ? `- Khóa học: ${course}` : '',
 		lesson ? `- Bài học: ${lesson}` : '',

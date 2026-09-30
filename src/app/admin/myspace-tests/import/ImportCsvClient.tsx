@@ -87,8 +87,7 @@ export default function ImportCsvClient() {
 	}
 
 	const hasPreviewErrors = Boolean(
-		preview &&
-			(preview.errors.length > 0 || preview.metaErrors.length > 0 || !preview.canImport),
+		preview && (preview.errors.length > 0 || preview.metaErrors.length > 0 || !preview.canImport),
 	);
 
 	async function copyFixPrompt() {
@@ -124,9 +123,7 @@ export default function ImportCsvClient() {
 				setDescription(data.meta.description);
 			}
 			if (data.questionCount > 0) {
-				setQuestionCount(
-					data.meta.questionCount ?? Math.min(data.questionCount, 20),
-				);
+				setQuestionCount(data.meta.questionCount ?? Math.min(data.questionCount, 20));
 			}
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Không kết nối được server');
@@ -138,10 +135,13 @@ export default function ImportCsvClient() {
 	async function createSubjectQuick() {
 		if (!newSubjectName.trim()) return;
 		try {
-			const created = await adminFetch<{ id: string; name: string }>('/api/admin/myspace-subjects', {
-				method: 'POST',
-				body: JSON.stringify({ name: newSubjectName.trim() }),
-			});
+			const created = await adminFetch<{ id: string; name: string }>(
+				'/api/admin/myspace-subjects',
+				{
+					method: 'POST',
+					body: JSON.stringify({ name: newSubjectName.trim() }),
+				},
+			);
 			await loadSubjects();
 			setSubjectId(created.id);
 			setNewSubjectName('');
@@ -220,12 +220,10 @@ export default function ImportCsvClient() {
 	return (
 		<div className="mx-auto max-w-3xl px-6 py-8">
 			<p className="text-xs font-bold uppercase tracking-widest text-muted">My Space Tests</p>
-			<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
-				Import bài test
-			</h1>
+			<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">Import bài test</h1>
 			<p className="mt-2 text-sm text-muted">
-				Import thông minh: dán dữ liệu thô → copy prompt cho AI → dán CSV plain text từ
-				chat (không dùng file đính kèm) → chọn môn và lưu.
+				Import thông minh: dán dữ liệu thô → copy prompt cho AI → dán CSV plain text từ chat (không
+				dùng file đính kèm) → chọn môn và lưu.
 			</p>
 
 			<div className="mt-6 flex flex-wrap gap-2">
@@ -233,9 +231,7 @@ export default function ImportCsvClient() {
 					type="button"
 					onClick={() => setMode('smart')}
 					className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider ${
-						mode === 'smart'
-							? 'bg-foreground text-background'
-							: 'border border-border text-muted'
+						mode === 'smart' ? 'bg-foreground text-background' : 'border border-border text-muted'
 					}`}
 				>
 					Import thông minh
@@ -244,9 +240,7 @@ export default function ImportCsvClient() {
 					type="button"
 					onClick={() => setMode('file')}
 					className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider ${
-						mode === 'file'
-							? 'bg-foreground text-background'
-							: 'border border-border text-muted'
+						mode === 'file' ? 'bg-foreground text-background' : 'border border-border text-muted'
 					}`}
 				>
 					File CSV
@@ -320,9 +314,7 @@ export default function ImportCsvClient() {
 							<div className="mt-5 space-y-3">
 								<p className="text-sm text-foreground">
 									<span className="font-bold">{preview.questionCount}</span> câu hợp lệ
-									{preview.errors.length > 0
-										? ` · ${preview.errors.length} dòng lỗi`
-										: ''}
+									{preview.errors.length > 0 ? ` · ${preview.errors.length} dòng lỗi` : ''}
 								</p>
 								{preview.metaErrors.length > 0 ? (
 									<ul className="space-y-1 text-sm text-red-600">
@@ -338,8 +330,7 @@ export default function ImportCsvClient() {
 												key={`${err.row}-${err.missing.join(',')}`}
 												className="px-3 py-2 text-muted"
 											>
-												Dòng {err.row}:{' '}
-												{err.message ?? `thiếu ${err.missing.join(', ')}`}
+												Dòng {err.row}: {err.message ?? `thiếu ${err.missing.join(', ')}`}
 											</li>
 										))}
 									</ul>
@@ -347,8 +338,8 @@ export default function ImportCsvClient() {
 								{hasPreviewErrors ? (
 									<div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
 										<p className="text-sm text-foreground">
-											CSV chưa đạt. Copy prompt sửa lỗi gửi lại AI, rồi dán CSV
-											mới vào ô trên và kiểm tra lại.
+											CSV chưa đạt. Copy prompt sửa lỗi gửi lại AI, rồi dán CSV mới vào ô trên và
+											kiểm tra lại.
 										</p>
 										<button
 											type="button"
@@ -451,9 +442,7 @@ export default function ImportCsvClient() {
 										</span>
 										<select
 											value={status}
-											onChange={(e) =>
-												setStatus(e.target.value as 'DRAFT' | 'PUBLISHED')
-											}
+											onChange={(e) => setStatus(e.target.value as 'DRAFT' | 'PUBLISHED')}
 											className="mt-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
 										>
 											<option value="PUBLISHED">Xuất bản</option>
@@ -463,9 +452,7 @@ export default function ImportCsvClient() {
 								</div>
 								<button
 									type="button"
-									disabled={
-										importing || !subjectId || !title.trim() || !preview.canImport
-									}
+									disabled={importing || !subjectId || !title.trim() || !preview.canImport}
 									onClick={() => void saveSmartImport()}
 									className="inline-flex rounded-full bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background disabled:opacity-40"
 								>
@@ -483,11 +470,7 @@ export default function ImportCsvClient() {
 						</p>
 						<p className="mt-2 text-sm text-muted">
 							Một file = một bài test (có meta + câu hỏi).{' '}
-							<a
-								href="/sample-myspace-test.csv"
-								download
-								className="underline underline-offset-2"
-							>
+							<a href="/sample-myspace-test.csv" download className="underline underline-offset-2">
 								Tải sample
 							</a>
 						</p>
@@ -510,8 +493,8 @@ export default function ImportCsvClient() {
 									{filePreview.meta.title || '(thiếu tiêu đề)'}
 								</p>
 								<p className="text-muted">
-									{filePreview.meta.subject || '(thiếu môn)'} ·{' '}
-									{filePreview.questionCount} câu · {filePreview.meta.status}
+									{filePreview.meta.subject || '(thiếu môn)'} · {filePreview.questionCount} câu ·{' '}
+									{filePreview.meta.status}
 								</p>
 								<button
 									type="button"

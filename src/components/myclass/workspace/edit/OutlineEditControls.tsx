@@ -63,7 +63,8 @@ function OutlineMenuPopover({
 		const gap = 4;
 		const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8);
 		const below = rect.bottom + gap;
-		const top = below + height <= window.innerHeight - 8 ? below : Math.max(8, rect.top - gap - height);
+		const top =
+			below + height <= window.innerHeight - 8 ? below : Math.max(8, rect.top - gap - height);
 		setCoords({ top, left });
 	}, [triggerRef]);
 
@@ -188,128 +189,128 @@ export function OutlineRowMenu({
 				triggerRef={triggerRef}
 				label={`Thao tác ${title}`}
 			>
-					<div className="px-3 py-2">
-						<StatusChip status={status} hasDraft={hasDraft} />
-					</div>
+				<div className="px-3 py-2">
+					<StatusChip status={status} hasDraft={hasDraft} />
+				</div>
+				<button
+					type="button"
+					role="menuitem"
+					className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
+					onClick={() => {
+						setRenaming(true);
+						setOpen(false);
+					}}
+				>
+					Đổi tên
+				</button>
+				{kind === 'lesson' ? (
 					<button
 						type="button"
-						role="menuitem"
 						className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
 						onClick={() => {
-							setRenaming(true);
+							void edit.createSection(id);
 							setOpen(false);
 						}}
 					>
-						Đổi tên
+						Thêm chủ đề
 					</button>
-					{kind === 'lesson' ? (
+				) : null}
+				{kind === 'section' ? (
+					<>
 						<button
 							type="button"
 							className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
 							onClick={() => {
-								void edit.createSection(id);
+								void edit.createUnit(id);
 								setOpen(false);
 							}}
 						>
-							Thêm chủ đề
+							Thêm nội dung
 						</button>
-					) : null}
-					{kind === 'section' ? (
-						<>
-							<button
-								type="button"
-								className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
-								onClick={() => {
-									void edit.createUnit(id);
-									setOpen(false);
-								}}
-							>
-								Thêm nội dung
-							</button>
-							<button
-								type="button"
-								className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
-								onClick={() => {
-									edit.setPicker({ kind: 'knowledge', sectionId: id });
-									setOpen(false);
-								}}
-							>
-								Gắn nội dung có sẵn
-							</button>
-							<button
-								type="button"
-								className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
-								onClick={() => {
-									edit.setPicker({
-										kind: 'test',
-										lessonId: parentId,
-										sectionId: id,
-										scope: 'SECTION',
-									});
-									setOpen(false);
-								}}
-							>
-								Gắn bài kiểm tra
-							</button>
-						</>
-					) : null}
-					{kind === 'lesson' ? (
-						<>
-							<button
-								type="button"
-								className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
-								onClick={() => {
-									edit.setPicker({ kind: 'test', lessonId: id, scope: 'LESSON' });
-									setOpen(false);
-								}}
-							>
-								Gắn bài kiểm tra
-							</button>
-							<button
-								type="button"
-								className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
-								onClick={() => {
-									edit.setPicker({ kind: 'vocab', lessonId: id });
-									setOpen(false);
-								}}
-							>
-								Gắn bộ từ vựng có sẵn
-							</button>
-							<button
-								type="button"
-								className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
-								onClick={() => {
-									edit.setVocabImport({ lessonId: id });
-									setOpen(false);
-								}}
-							>
-								Tạo bộ từ từ CSV
-							</button>
-						</>
-					) : null}
-					{kind === 'unit' ? (
 						<button
 							type="button"
 							className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
 							onClick={() => {
-								void edit.detachUnit(parentId, id);
+								edit.setPicker({ kind: 'knowledge', sectionId: id });
 								setOpen(false);
 							}}
 						>
-							Gỡ khỏi chủ đề
+							Gắn nội dung có sẵn
 						</button>
-					) : (
 						<button
 							type="button"
-							className="block w-full rounded px-3 py-2 text-left text-sm text-error hover:bg-error-subtle"
+							className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
 							onClick={() => {
-								setConfirmArchive(true);
+								edit.setPicker({
+									kind: 'test',
+									lessonId: parentId,
+									sectionId: id,
+									scope: 'SECTION',
+								});
 								setOpen(false);
 							}}
 						>
-							Lưu trữ
+							Gắn bài kiểm tra
 						</button>
-					)}
+					</>
+				) : null}
+				{kind === 'lesson' ? (
+					<>
+						<button
+							type="button"
+							className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
+							onClick={() => {
+								edit.setPicker({ kind: 'test', lessonId: id, scope: 'LESSON' });
+								setOpen(false);
+							}}
+						>
+							Gắn bài kiểm tra
+						</button>
+						<button
+							type="button"
+							className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
+							onClick={() => {
+								edit.setPicker({ kind: 'vocab', lessonId: id });
+								setOpen(false);
+							}}
+						>
+							Gắn bộ từ vựng có sẵn
+						</button>
+						<button
+							type="button"
+							className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
+							onClick={() => {
+								edit.setVocabImport({ lessonId: id });
+								setOpen(false);
+							}}
+						>
+							Tạo bộ từ từ CSV
+						</button>
+					</>
+				) : null}
+				{kind === 'unit' ? (
+					<button
+						type="button"
+						className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
+						onClick={() => {
+							void edit.detachUnit(parentId, id);
+							setOpen(false);
+						}}
+					>
+						Gỡ khỏi chủ đề
+					</button>
+				) : (
+					<button
+						type="button"
+						className="block w-full rounded px-3 py-2 text-left text-sm text-error hover:bg-error-subtle"
+						onClick={() => {
+							setConfirmArchive(true);
+							setOpen(false);
+						}}
+					>
+						Lưu trữ
+					</button>
+				)}
 			</OutlineMenuPopover>
 			<Dialog open={renaming} onClose={() => setRenaming(false)} title="Đổi tên">
 				<label className="text-sm">
@@ -334,7 +335,11 @@ export function OutlineRowMenu({
 					</McButton>
 				</div>
 			</Dialog>
-			<Dialog open={confirmArchive} onClose={() => setConfirmArchive(false)} title="Lưu trữ mục này?">
+			<Dialog
+				open={confirmArchive}
+				onClose={() => setConfirmArchive(false)}
+				title="Lưu trữ mục này?"
+			>
 				<p className="text-sm">Mục sẽ biến mất khỏi nội dung công khai.</p>
 				<div className="mt-4 flex justify-end gap-2">
 					<McButton variant="quiet" onClick={() => setConfirmArchive(false)}>
@@ -411,7 +416,10 @@ export function OutlineVocabMenu({
 				</button>
 			</OutlineMenuPopover>
 			<Dialog open={confirm} onClose={() => setConfirm(false)} title="Gỡ bộ từ vựng?">
-				<p className="text-sm">Bộ từ sẽ được gỡ khỏi vị trí này. Bản ghi trong thư viện vẫn giữ nguyên nếu học viên đã lưu.</p>
+				<p className="text-sm">
+					Bộ từ sẽ được gỡ khỏi vị trí này. Bản ghi trong thư viện vẫn giữ nguyên nếu học viên đã
+					lưu.
+				</p>
 				<div className="mt-4 flex justify-end gap-2">
 					<McButton variant="quiet" onClick={() => setConfirm(false)}>
 						Hủy
@@ -430,13 +438,7 @@ export function OutlineVocabMenu({
 	);
 }
 
-export function OutlineTestMenu({
-	testId,
-	placementId,
-}: {
-	testId: string;
-	placementId?: string;
-}) {
+export function OutlineTestMenu({ testId, placementId }: { testId: string; placementId?: string }) {
 	const edit = useOptionalEditMode();
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const [open, setOpen] = useState(false);
@@ -466,28 +468,30 @@ export function OutlineTestMenu({
 				triggerRef={triggerRef}
 				label="Thao tác bài kiểm tra"
 			>
-					<Link
-						href={routes.admin.myClassTestEdit(testId)}
-						role="menuitem"
-						className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
-						onClick={() => setOpen(false)}
-					>
-						Sửa trong studio
-					</Link>
-					<button
-						type="button"
-						role="menuitem"
-						className="block w-full rounded px-3 py-2 text-left text-sm text-error hover:bg-error-subtle"
-						onClick={() => {
-							setConfirm(true);
-							setOpen(false);
-						}}
-					>
-						Gỡ khỏi mục lục
-					</button>
+				<Link
+					href={routes.admin.myClassTestEdit(testId)}
+					role="menuitem"
+					className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-surface-sunken"
+					onClick={() => setOpen(false)}
+				>
+					Sửa trong studio
+				</Link>
+				<button
+					type="button"
+					role="menuitem"
+					className="block w-full rounded px-3 py-2 text-left text-sm text-error hover:bg-error-subtle"
+					onClick={() => {
+						setConfirm(true);
+						setOpen(false);
+					}}
+				>
+					Gỡ khỏi mục lục
+				</button>
 			</OutlineMenuPopover>
 			<Dialog open={confirm} onClose={() => setConfirm(false)} title="Gỡ bài kiểm tra?">
-				<p className="text-sm">Bài kiểm tra sẽ được gỡ khỏi vị trí này. Bản ghi trong thư viện vẫn giữ nguyên.</p>
+				<p className="text-sm">
+					Bài kiểm tra sẽ được gỡ khỏi vị trí này. Bản ghi trong thư viện vẫn giữ nguyên.
+				</p>
 				<div className="mt-4 flex justify-end gap-2">
 					<McButton variant="quiet" onClick={() => setConfirm(false)}>
 						Hủy

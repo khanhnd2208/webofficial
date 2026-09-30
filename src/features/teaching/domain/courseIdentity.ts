@@ -8,8 +8,7 @@ export const UNASSIGNED_COURSE_CODE = 'UNASSIGNED';
 export const HRM_COURSE_CODE = '61MGT3HRM';
 export const HRM_COURSE_NAME = 'Quản trị nhân sự';
 export const COURSE_ARCHIVED_CODE = 'COURSE_ARCHIVED';
-export const COURSE_ARCHIVED_MESSAGE =
-	'Hãy khôi phục môn học trước khi tạo lớp hoặc bộ thẻ mới';
+export const COURSE_ARCHIVED_MESSAGE = 'Hãy khôi phục môn học trước khi tạo lớp hoặc bộ thẻ mới';
 
 const HRM_ALIAS_KEYS = new Set([
 	'hrm',
@@ -29,18 +28,15 @@ export type ResolvedCourseIdentity = {
 };
 
 export function normalizeCourseName(value: string) {
-	return value
-		.normalize('NFD')
-		.replace(/\p{M}/gu, '')
-		.replace(/\s+/g, ' ')
-		.trim()
-		.toLowerCase();
+	return value.normalize('NFD').replace(/\p{M}/gu, '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
 export function isHrmCourseKey(value: string) {
 	const trimmed = value.trim();
 	if (!trimmed) return false;
-	return HRM_ALIAS_KEYS.has(trimmed.toLowerCase()) || HRM_ALIAS_KEYS.has(normalizeCourseName(trimmed));
+	return (
+		HRM_ALIAS_KEYS.has(trimmed.toLowerCase()) || HRM_ALIAS_KEYS.has(normalizeCourseName(trimmed))
+	);
 }
 
 export function normalizeCourseCode(value: string) {
@@ -117,7 +113,14 @@ export async function ensureTeachingCourseFromSubject(db: TeachingDb, subject: s
 	}
 
 	const courses = await db.teachingCourse.findMany({
-		select: { id: true, courseCode: true, courseName: true, status: true, createdAt: true, updatedAt: true },
+		select: {
+			id: true,
+			courseCode: true,
+			courseName: true,
+			status: true,
+			createdAt: true,
+			updatedAt: true,
+		},
 	});
 	const code = derivedCourseCode(trimmed);
 	const nameKey = normalizeCourseName(trimmed);

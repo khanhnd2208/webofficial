@@ -8,8 +8,10 @@ import { formatDateTime, formatDistanceToNow } from '@/utils/formatDate';
 import { adminFetch } from '@/lib/admin/client';
 
 const ROLE_COLORS: Record<UserRole, string> = {
-	admin: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/40',
-	student: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
+	admin:
+		'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/40',
+	student:
+		'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
 };
 
 interface Props {
@@ -63,7 +65,12 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 						className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
 					>
 						<svg viewBox="0 0 16 16" className="h-4 w-4" fill="none">
-							<path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+							<path
+								d="M3 3l10 10M13 3L3 13"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								strokeLinecap="round"
+							/>
 						</svg>
 					</button>
 				</div>
@@ -143,14 +150,8 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 									value={activeEnrollments.length}
 									accent={activeEnrollments.length > 0}
 								/>
-								<StatCard
-									label="Tổng khóa"
-									value={detail.enrollments.length}
-								/>
-								<StatCard
-									label="Đã hủy"
-									value={revokedEnrollments.length}
-								/>
+								<StatCard label="Tổng khóa" value={detail.enrollments.length} />
+								<StatCard label="Đã hủy" value={revokedEnrollments.length} />
 							</div>
 
 							{/* Active enrollments */}
@@ -232,18 +233,12 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 	);
 }
 
-function StatCard({
-	label,
-	value,
-	accent,
-}: {
-	label: string;
-	value: number;
-	accent?: boolean;
-}) {
+function StatCard({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
 	return (
 		<div className="rounded-xl border border-border bg-surface p-3 text-center">
-			<p className={`text-xl font-black tabular-nums ${accent ? 'text-accent' : 'text-foreground'}`}>
+			<p
+				className={`text-xl font-black tabular-nums ${accent ? 'text-accent' : 'text-foreground'}`}
+			>
 				{value}
 			</p>
 			<p className="text-[10px] text-muted mt-0.5 font-semibold">{label}</p>

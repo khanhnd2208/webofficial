@@ -5,7 +5,7 @@ if (!process.env.DEBUG) {
 	vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
 		const msg = String(args[0] ?? '');
 		if (msg.includes('[API Error]')) return;
-		 
+
 		console.warn(...args);
 	});
 }

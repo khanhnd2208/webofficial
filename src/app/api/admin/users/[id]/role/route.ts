@@ -5,13 +5,9 @@ import type { UserRole } from '@/types/user';
 
 const VALID_ROLES: UserRole[] = ['student', 'admin'];
 
-export const PATCH = withAdmin(async (
-	req: NextRequest,
-	user,
-	context,
-) => {
+export const PATCH = withAdmin(async (req: NextRequest, user, context) => {
 	const { id } = await context!.params;
-	const body = await req.json() as { role?: string };
+	const body = (await req.json()) as { role?: string };
 	const role = body.role as UserRole;
 
 	if (!VALID_ROLES.includes(role)) {

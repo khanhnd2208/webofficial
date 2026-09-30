@@ -9,7 +9,14 @@ import { myClassApi } from './api';
 export default function CohortEditor({
 	cohort,
 }: {
-	cohort: { id: string; name: string; term: string; startsAt: string | null; endsAt: string | null; status: string };
+	cohort: {
+		id: string;
+		name: string;
+		term: string;
+		startsAt: string | null;
+		endsAt: string | null;
+		status: string;
+	};
 }) {
 	const router = useRouter();
 	const { confirm, dialog } = useAdminConfirm();

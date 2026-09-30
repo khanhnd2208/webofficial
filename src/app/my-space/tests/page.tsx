@@ -39,7 +39,9 @@ export default async function MySpaceTestsPage() {
 						</p>
 					</div>
 					{isAuthenticated ? (
-						guestId ? <ClaimProgressOnLogin enabled /> : (
+						guestId ? (
+							<ClaimProgressOnLogin enabled />
+						) : (
 							<p className="text-sm text-ink-secondary" data-testid="myspace-tests-sync-status">
 								Đã đồng bộ với tài khoản
 							</p>

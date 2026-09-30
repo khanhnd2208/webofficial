@@ -6,8 +6,8 @@ import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import PutPhoneDown from '@/features/cheese-thief/components/PutPhoneDown';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import type { SecretCard } from '@/features/cheese-thief/lib/rules';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
 
 interface Props {
 	card: SecretCard | undefined;

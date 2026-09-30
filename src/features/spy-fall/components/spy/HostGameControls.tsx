@@ -1,10 +1,10 @@
 'use client';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
 import { playConfirm, playTap } from '@/features/spy-fall/lib/sounds';
 import type { GamePhase } from '@/features/spy-fall/types/spyGame';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 
 interface Props {
 	phase: GamePhase;
@@ -14,18 +14,15 @@ interface Props {
 }
 
 /** Rarely needed host escape hatches, tucked away so they are not tapped by accident. */
-export default function HostGameControls({
-	phase,
-	busy,
-	onConfirmAll,
-	onRestart,
-}: Props) {
+export default function HostGameControls({ phase, busy, onConfirmAll, onRestart }: Props) {
 	const t = useT();
 
 	return (
 		<details className="group rounded-xl border border-dashed border-border px-4 py-2 text-sm">
 			<summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-muted">
-				<span className="inline-flex items-center gap-2"><GameIcon name="settings" size={15} /> {t('spy.actions.hostTools')}</span>
+				<span className="inline-flex items-center gap-2">
+					<GameIcon name="settings" size={15} /> {t('spy.actions.hostTools')}
+				</span>
 				<span aria-hidden className="transition-transform group-open:rotate-180">
 					<GameIcon name="chevron-down" size={16} />
 				</span>

@@ -1,10 +1,11 @@
 import dbConnect from '@/lib/dbConnect';
 import { AppError } from '@/lib/appError';
-import {
-	sendInquiryAdminNotification,
-	sendInquiryEmails,
-} from '@/lib/inquiryEmail';
-import type { CreateInquiryInput, ListInquiriesQuery, UpdateInquiryInput } from '@/features/inquiries/schemas';
+import { sendInquiryAdminNotification, sendInquiryEmails } from '@/lib/inquiryEmail';
+import type {
+	CreateInquiryInput,
+	ListInquiriesQuery,
+	UpdateInquiryInput,
+} from '@/features/inquiries/schemas';
 import Inquiry, {
 	type IInquiry,
 	type InquiryEmailStatus,
@@ -83,7 +84,9 @@ export interface ListInquiriesResult {
 	totalPages: number;
 }
 
-function mapCampaignParams(raw?: Map<string, string> | Record<string, string>): Record<string, string> | undefined {
+function mapCampaignParams(
+	raw?: Map<string, string> | Record<string, string>,
+): Record<string, string> | undefined {
 	if (!raw) return undefined;
 	if (raw instanceof Map) {
 		const out: Record<string, string> = {};

@@ -39,8 +39,7 @@ function mapSubject(s: Subject): SubjectDTO {
 }
 
 function mapQuestion(q: McqQuestionWithSubject | McqQuestion): McqQuestionDTO {
-	const subjectName =
-		'subject' in q && q.subject ? q.subject.name : null;
+	const subjectName = 'subject' in q && q.subject ? q.subject.name : null;
 	return {
 		id: q.id,
 		subjectId: q.subjectId,
@@ -140,10 +139,7 @@ export async function subjectSlugExists(slug: string, excludeId?: string): Promi
 	return Boolean(row);
 }
 
-export async function createSubject(input: {
-	name: string;
-	slug: string;
-}): Promise<SubjectDTO> {
+export async function createSubject(input: { name: string; slug: string }): Promise<SubjectDTO> {
 	const row = await prisma.subject.create({
 		data: { name: input.name.trim(), slug: input.slug },
 	});
@@ -382,9 +378,7 @@ const poolMetaSelect = {
 
 function poolWhereExtras(filters?: PoolQueryFilters) {
 	return {
-		...(filters?.topics && filters.topics.length > 0
-			? { topic: { in: filters.topics } }
-			: {}),
+		...(filters?.topics && filters.topics.length > 0 ? { topic: { in: filters.topics } } : {}),
 		...(filters?.difficulties && filters.difficulties.length > 0
 			? { difficulty: { in: filters.difficulties } }
 			: {}),
@@ -445,9 +439,7 @@ export async function findPoolMetaByBank(filters: {
 		where: {
 			isActive: true,
 			subjectId: filters.subjectId,
-			...(filters.topics && filters.topics.length > 0
-				? { topic: { in: filters.topics } }
-				: {}),
+			...(filters.topics && filters.topics.length > 0 ? { topic: { in: filters.topics } } : {}),
 			...(filters.difficulties && filters.difficulties.length > 0
 				? { difficulty: { in: filters.difficulties } }
 				: {}),
@@ -599,8 +591,7 @@ export async function createSpaceTest(
 	input: CreateSpaceTestInput & { slug: string; displayOrder?: number },
 ): Promise<SpaceTestDTO> {
 	const status = input.status ?? 'DRAFT';
-	const displayOrder =
-		input.displayOrder ?? (await nextDisplayOrderForSubject(input.subjectId));
+	const displayOrder = input.displayOrder ?? (await nextDisplayOrderForSubject(input.subjectId));
 	const row = await prisma.spaceTest.create({
 		data: {
 			slug: input.slug,
@@ -636,9 +627,7 @@ export async function updateSpaceTest(
 			...(input.subjectId !== undefined ? { subjectId: input.subjectId } : {}),
 			...(input.topics !== undefined ? { topics: input.topics } : {}),
 			...(input.difficulties !== undefined ? { difficulties: input.difficulties } : {}),
-			...(input.classifications !== undefined
-				? { classifications: input.classifications }
-				: {}),
+			...(input.classifications !== undefined ? { classifications: input.classifications } : {}),
 			...(input.questionCount !== undefined ? { questionCount: input.questionCount } : {}),
 			...(input.displayOrder !== undefined ? { displayOrder: input.displayOrder } : {}),
 			...(input.status !== undefined
@@ -738,10 +727,7 @@ export async function getPersonalProgressByTestIds(
 		orderBy: { submittedAt: 'desc' },
 	});
 
-	const buckets = new Map<
-		string,
-		Array<{ score: number; total: number; submittedAt: Date }>
-	>();
+	const buckets = new Map<string, Array<{ score: number; total: number; submittedAt: Date }>>();
 
 	for (const session of sessions) {
 		if (session.score == null || session.total == null || !session.submittedAt) continue;
@@ -800,11 +786,7 @@ export async function markSessionEngaged(id: string): Promise<void> {
 	});
 }
 
-export async function submitSession(
-	id: string,
-	score: number,
-	total: number,
-): Promise<void> {
+export async function submitSession(id: string, score: number, total: number): Promise<void> {
 	const now = new Date();
 	await prisma.spaceTestSession.update({
 		where: { id },
@@ -836,9 +818,7 @@ function avgScorePercent(
 	return Math.round((sum / scored.length) * 10) / 10;
 }
 
-export async function getAttemptStatsByTest(): Promise<
-	import('../types').SpaceTestAttemptStats[]
-> {
+export async function getAttemptStatsByTest(): Promise<import('../types').SpaceTestAttemptStats[]> {
 	const tests = await prisma.spaceTest.findMany({
 		select: { id: true, slug: true, title: true, status: true },
 		orderBy: { updatedAt: 'desc' },
@@ -967,16 +947,11 @@ export async function getAnalyticsOverview(
 				}),
 				{ sum: 0, n: 0 },
 			);
-			return weighted.n === 0
-				? null
-				: Math.round((weighted.sum / weighted.n) * 10) / 10;
+			return weighted.n === 0 ? null : Math.round((weighted.sum / weighted.n) * 10) / 10;
 		})(),
 	};
 
-	const dayMap = new Map<
-		string,
-		{ opened: number; engaged: number; completed: number }
-	>();
+	const dayMap = new Map<string, { opened: number; engaged: number; completed: number }>();
 	for (let i = 0; i < days; i++) {
 		const d = new Date(since);
 		d.setUTCDate(since.getUTCDate() + i);

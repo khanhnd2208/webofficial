@@ -21,7 +21,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
 
-import { LEARN_SECTION_KIND_SHORT, type LearnSectionKind, type LearnStudioLesson, type LearnStudioSection } from '@/features/learn/types';
+import {
+	LEARN_SECTION_KIND_SHORT,
+	type LearnSectionKind,
+	type LearnStudioLesson,
+	type LearnStudioSection,
+} from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
 
@@ -64,13 +69,21 @@ function SectionRow({
 			data-selected={selected ? 'true' : undefined}
 			data-dragging={isDragging ? 'true' : undefined}
 		>
-			<button type="button" className="ln-grip" aria-label={`Kéo để sắp xếp: ${section.title}`} {...attributes} {...listeners}>
+			<button
+				type="button"
+				className="ln-grip"
+				aria-label={`Kéo để sắp xếp: ${section.title}`}
+				{...attributes}
+				{...listeners}
+			>
 				<StudioIcon name="grip" size={14} />
 			</button>
 			<button type="button" className="ln-souter__section-btn" onClick={onSelect}>
 				<span className="ln-outline__mark" data-kind={section.type} aria-hidden="true" />
 				<span className="min-w-0 flex-1 truncate">{section.title || 'Chưa đặt tên'}</span>
-				{section.type !== 'READING' ? <span className="ln-souter__tag">{LEARN_SECTION_KIND_SHORT[section.type]}</span> : null}
+				{section.type !== 'READING' ? (
+					<span className="ln-souter__tag">{LEARN_SECTION_KIND_SHORT[section.type]}</span>
+				) : null}
 			</button>
 		</li>
 	);
@@ -108,11 +121,23 @@ function LessonBlock({
 			data-dragging={isDragging ? 'true' : undefined}
 		>
 			<div className="ln-souter__lesson-head">
-				<button type="button" className="ln-grip" aria-label={`Kéo để sắp xếp bài ${index + 1}`} {...attributes} {...listeners}>
+				<button
+					type="button"
+					className="ln-grip"
+					aria-label={`Kéo để sắp xếp bài ${index + 1}`}
+					{...attributes}
+					{...listeners}
+				>
 					<StudioIcon name="grip" size={14} />
 				</button>
 				<span className="ln-outline__lesson-label">Bài {index + 1}</span>
-				<button type="button" className="ln-icon-btn ln-icon-btn--danger ml-auto" onClick={onDelete} aria-label={`Xóa bài ${index + 1}`} title="Xóa bài">
+				<button
+					type="button"
+					className="ln-icon-btn ln-icon-btn--danger ml-auto"
+					onClick={onDelete}
+					aria-label={`Xóa bài ${index + 1}`}
+					title="Xóa bài"
+				>
 					<StudioIcon name="trash" size={13} />
 				</button>
 			</div>
@@ -213,11 +238,20 @@ export default function StudioOutline({
 					if (!toLesson) return;
 					if (toLesson === fromLesson && overType === 'section') {
 						const lesson = lessons.find((item) => item.id === fromLesson);
-						const next = lesson ? reorder(lesson.sections.map((section) => section.id), event) : null;
+						const next = lesson
+							? reorder(
+									lesson.sections.map((section) => section.id),
+									event,
+								)
+							: null;
 						if (next) onReorderSections(fromLesson, next);
 						return;
 					}
-					onPlaceSection(String(event.active.id), toLesson, overType === 'section' ? String(event.over.id) : null);
+					onPlaceSection(
+						String(event.active.id),
+						toLesson,
+						overType === 'section' ? String(event.over.id) : null,
+					);
 				}}
 			>
 				<SortableContext items={ids} strategy={verticalListSortingStrategy}>

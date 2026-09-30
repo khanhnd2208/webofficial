@@ -45,17 +45,23 @@ async function main() {
 	const missingPillar = rows.filter((r) => r.needsPillar);
 	const missingType = rows.filter((r) => r.needsContentType);
 
-	console.log(JSON.stringify({
-		totalPublished: rows.length,
-		missingPillar: missingPillar.length,
-		missingContentType: missingType.length,
-		taxonomyComplete: missingPillar.length === 0 && missingType.length === 0 && rows.length > 0,
-		suggestedMappings: missingPillar.map((r) => ({
-			slug: r.slug,
-			category: r.category,
-			suggestedPillar: r.suggestedPillar,
-		})),
-	}, null, 2));
+	console.log(
+		JSON.stringify(
+			{
+				totalPublished: rows.length,
+				missingPillar: missingPillar.length,
+				missingContentType: missingType.length,
+				taxonomyComplete: missingPillar.length === 0 && missingType.length === 0 && rows.length > 0,
+				suggestedMappings: missingPillar.map((r) => ({
+					slug: r.slug,
+					category: r.category,
+					suggestedPillar: r.suggestedPillar,
+				})),
+			},
+			null,
+			2,
+		),
+	);
 
 	await mongoose.disconnect();
 }

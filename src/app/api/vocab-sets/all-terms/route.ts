@@ -20,7 +20,7 @@ export const GET = withAdmin(async (_request: NextRequest, user) => {
 			example: w.example,
 			setId: set.id,
 			setTitle: set.title,
-		}))
+		})),
 	);
 
 	const totalWords = allWords.length;

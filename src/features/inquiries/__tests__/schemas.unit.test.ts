@@ -6,12 +6,8 @@ import {
 	listInquiriesQuerySchema,
 	updateInquirySchema,
 } from '@/features/inquiries/schemas';
-import {
-	hashClientIp,
-	isRateLimitBreached,
-	INQUIRY_RATE_LIMIT_MAX,
-} from '@/lib/inquiryRateLimit';
-import { parseSchema } from '@/shared/validation/parse';
+import { hashClientIp, isRateLimitBreached, INQUIRY_RATE_LIMIT_MAX } from '@/lib/inquiryRateLimit';
+import { parseSchema } from '@/lib/validation/parse';
 import { AppError } from '@/lib/appError';
 
 const validPayload = {
@@ -59,9 +55,9 @@ describe('createInquirySchema', () => {
 	});
 
 	it('rejects missing context', () => {
-		expect(() =>
-			parseSchema(createInquirySchema, { ...validPayload, context: '  ' }),
-		).toThrow(AppError);
+		expect(() => parseSchema(createInquirySchema, { ...validPayload, context: '  ' })).toThrow(
+			AppError,
+		);
 	});
 
 	it('rejects when privacy consent is false', () => {

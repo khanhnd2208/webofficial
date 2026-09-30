@@ -2,7 +2,12 @@
 
 import { useMemo, useRef, useState } from 'react';
 
-import { StudioButton, StudioField, StudioInput, StudioSelect } from '@/components/myclass/admin/studio';
+import {
+	StudioButton,
+	StudioField,
+	StudioInput,
+	StudioSelect,
+} from '@/components/myclass/admin/studio';
 import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
 import {
 	ROSTER_PROFILE_FIELDS,
@@ -70,7 +75,10 @@ export function StudentIntakeWorkspace({
 	classId?: string;
 	tutorials?: TeachingTutorialRecord[];
 	onCommitted?: (result: RosterImportCommitResult) => void;
-	onExternalCommit?: (preview: RosterImportPreview, resolutions: Record<string, RosterConflictResolution>) => Promise<void>;
+	onExternalCommit?: (
+		preview: RosterImportPreview,
+		resolutions: Record<string, RosterConflictResolution>,
+	) => Promise<void>;
 	commitLabel?: string;
 }) {
 	const fileRef = useRef<HTMLInputElement>(null);
@@ -120,9 +128,7 @@ export function StudentIntakeWorkspace({
 		try {
 			const data = await teachingApi<RosterImportPreview>(previewUrl, { method: 'POST', body });
 			setPreview(data);
-			setResolutions(
-				Object.fromEntries(data.rows.map((row) => [row.key, { ...row.resolution }])),
-			);
+			setResolutions(Object.fromEntries(data.rows.map((row) => [row.key, { ...row.resolution }])));
 			if (data.summary.invalidCount > 0) {
 				setFilter('invalid');
 			} else if (data.summary.conflictCount > 0) {
@@ -181,7 +187,9 @@ export function StudentIntakeWorkspace({
 			const next = { ...current };
 			for (const row of preview.rows) {
 				if (row.status !== 'conflict') continue;
-				next[row.key] = Object.fromEntries(row.conflicts.map((conflict) => [conflict.field, 'keep']));
+				next[row.key] = Object.fromEntries(
+					row.conflicts.map((conflict) => [conflict.field, 'keep']),
+				);
 			}
 			return next;
 		});
@@ -255,19 +263,39 @@ export function StudentIntakeWorkspace({
 				</div>
 
 				{mode === 'manual' ? (
-					<form className="mt-4 grid gap-3 md:grid-cols-3" onSubmit={(event) => void previewManual(event)}>
+					<form
+						className="mt-4 grid gap-3 md:grid-cols-3"
+						onSubmit={(event) => void previewManual(event)}
+					>
 						<StudioField label="Mã SV">
-							<StudioInput required value={manual.studentCode} onChange={(event) => setManual({ ...manual, studentCode: event.target.value })} />
+							<StudioInput
+								required
+								value={manual.studentCode}
+								onChange={(event) => setManual({ ...manual, studentCode: event.target.value })}
+							/>
 						</StudioField>
 						<StudioField label="Họ lót">
-							<StudioInput required value={manual.familyName} onChange={(event) => setManual({ ...manual, familyName: event.target.value })} />
+							<StudioInput
+								required
+								value={manual.familyName}
+								onChange={(event) => setManual({ ...manual, familyName: event.target.value })}
+							/>
 						</StudioField>
 						<StudioField label="Tên">
-							<StudioInput required value={manual.givenName} onChange={(event) => setManual({ ...manual, givenName: event.target.value })} />
+							<StudioInput
+								required
+								value={manual.givenName}
+								onChange={(event) => setManual({ ...manual, givenName: event.target.value })}
+							/>
 						</StudioField>
 						<StudioField label="Tutorial">
 							{tutorials.length > 0 ? (
-								<StudioSelect value={manual.tutorialClassId} onChange={(event) => setManual({ ...manual, tutorialClassId: event.target.value })}>
+								<StudioSelect
+									value={manual.tutorialClassId}
+									onChange={(event) =>
+										setManual({ ...manual, tutorialClassId: event.target.value })
+									}
+								>
 									<option value="">Chưa phân tutorial</option>
 									{tutorials.map((tutorial) => (
 										<option key={tutorial.id} value={tutorial.id}>
@@ -276,32 +304,70 @@ export function StudentIntakeWorkspace({
 									))}
 								</StudioSelect>
 							) : (
-								<StudioInput value={manual.tutorialCode} onChange={(event) => setManual({ ...manual, tutorialCode: event.target.value })} placeholder="Không bắt buộc" />
+								<StudioInput
+									value={manual.tutorialCode}
+									onChange={(event) => setManual({ ...manual, tutorialCode: event.target.value })}
+									placeholder="Không bắt buộc"
+								/>
 							)}
 						</StudioField>
 						<StudioField label="Học từ tuần">
-							<StudioInput type="number" min={1} value={manual.enrolledFromWeek} onChange={(event) => setManual({ ...manual, enrolledFromWeek: event.target.value })} />
+							<StudioInput
+								type="number"
+								min={1}
+								value={manual.enrolledFromWeek}
+								onChange={(event) => setManual({ ...manual, enrolledFromWeek: event.target.value })}
+							/>
 						</StudioField>
-<details className="md:col-span-3"><summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">Thông tin bổ sung</summary><div className="grid gap-3 md:grid-cols-3">
-						<StudioField label="STT">
-							<StudioInput type="number" min={1} value={manual.orderNo} onChange={(event) => setManual({ ...manual, orderNo: event.target.value })} />
-						</StudioField>
-						<StudioField label="Mã lớp">
-							<StudioInput value={manual.homeClassCode} onChange={(event) => setManual({ ...manual, homeClassCode: event.target.value })} />
-						</StudioField>
-						<StudioField label="Ngành">
-							<StudioInput value={manual.majorName} onChange={(event) => setManual({ ...manual, majorName: event.target.value })} />
-						</StudioField>
-						<StudioField label="Ngày sinh">
-							<StudioInput type="date" value={manual.dateOfBirth} onChange={(event) => setManual({ ...manual, dateOfBirth: event.target.value })} />
-						</StudioField>
-						<StudioField label="Điện thoại">
-							<StudioInput value={manual.phone} onChange={(event) => setManual({ ...manual, phone: event.target.value })} />
-						</StudioField>
-						<StudioField label="Email">
-							<StudioInput type="email" value={manual.email} onChange={(event) => setManual({ ...manual, email: event.target.value })} />
-						</StudioField>
-</div></details>
+						<details className="md:col-span-3">
+							<summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">
+								Thông tin bổ sung
+							</summary>
+							<div className="grid gap-3 md:grid-cols-3">
+								<StudioField label="STT">
+									<StudioInput
+										type="number"
+										min={1}
+										value={manual.orderNo}
+										onChange={(event) => setManual({ ...manual, orderNo: event.target.value })}
+									/>
+								</StudioField>
+								<StudioField label="Mã lớp">
+									<StudioInput
+										value={manual.homeClassCode}
+										onChange={(event) =>
+											setManual({ ...manual, homeClassCode: event.target.value })
+										}
+									/>
+								</StudioField>
+								<StudioField label="Ngành">
+									<StudioInput
+										value={manual.majorName}
+										onChange={(event) => setManual({ ...manual, majorName: event.target.value })}
+									/>
+								</StudioField>
+								<StudioField label="Ngày sinh">
+									<StudioInput
+										type="date"
+										value={manual.dateOfBirth}
+										onChange={(event) => setManual({ ...manual, dateOfBirth: event.target.value })}
+									/>
+								</StudioField>
+								<StudioField label="Điện thoại">
+									<StudioInput
+										value={manual.phone}
+										onChange={(event) => setManual({ ...manual, phone: event.target.value })}
+									/>
+								</StudioField>
+								<StudioField label="Email">
+									<StudioInput
+										type="email"
+										value={manual.email}
+										onChange={(event) => setManual({ ...manual, email: event.target.value })}
+									/>
+								</StudioField>
+							</div>
+						</details>
 						<div className="flex items-end">
 							<StudioButton type="submit" disabled={busy}>
 								Xem trước
@@ -313,9 +379,12 @@ export function StudentIntakeWorkspace({
 				{mode === 'paste' ? (
 					<div className="mt-4 space-y-3">
 						<p className="mc-meta">
-							Dán vùng ô từ Excel/Google Sheets, gồm hàng tiêu đề. Mã SV và điện thoại luôn được đọc như chữ để giữ số 0 đầu.
+							Dán vùng ô từ Excel/Google Sheets, gồm hàng tiêu đề. Mã SV và điện thoại luôn được đọc
+							như chữ để giữ số 0 đầu.
 						</p>
-						<pre className="overflow-auto rounded-[var(--mc-r-sm)] bg-surface-sunken p-3 text-xs">{rosterPasteSample()}</pre>
+						<pre className="overflow-auto rounded-[var(--mc-r-sm)] bg-surface-sunken p-3 text-xs">
+							{rosterPasteSample()}
+						</pre>
 						<div className="flex flex-wrap gap-2">
 							<StudioButton variant="secondary" onClick={() => setPasteText(rosterPasteSample())}>
 								Dán dữ liệu mẫu
@@ -342,7 +411,10 @@ export function StudentIntakeWorkspace({
 						</p>
 						<div className="flex flex-wrap gap-2">
 							{mode === 'csv' ? (
-								<a className="mc-button mc-button-secondary min-h-11" href="/api/admin/teaching/roster-template">
+								<a
+									className="mc-button mc-button-secondary min-h-11"
+									href="/api/admin/teaching/roster-template"
+								>
 									Tải CSV mẫu
 								</a>
 							) : null}
@@ -353,7 +425,11 @@ export function StudentIntakeWorkspace({
 								className="sr-only"
 								onChange={(event) => void previewFile(event.target.files?.[0] ?? null)}
 							/>
-							<StudioButton variant="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>
+							<StudioButton
+								variant="secondary"
+								disabled={busy}
+								onClick={() => fileRef.current?.click()}
+							>
 								Chọn file
 							</StudioButton>
 						</div>
@@ -367,11 +443,16 @@ export function StudentIntakeWorkspace({
 						<div>
 							<h2 className="text-base font-semibold text-ink">Đối chiếu trước khi lưu</h2>
 							<p className="mc-meta mt-1">
-								Hồ sơ sinh viên dùng chung giữa các lớp. Đổi họ tên, ngày sinh hoặc email sẽ ảnh hưởng mọi lớp có sinh viên đó.
+								Hồ sơ sinh viên dùng chung giữa các lớp. Đổi họ tên, ngày sinh hoặc email sẽ ảnh
+								hưởng mọi lớp có sinh viên đó.
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-2">
-							<select className="mc-input" value={filter} onChange={(event) => setFilter(event.target.value as StatusFilter)}>
+							<select
+								className="mc-input"
+								value={filter}
+								onChange={(event) => setFilter(event.target.value as StatusFilter)}
+							>
 								<option value="all">Tất cả ({preview.summary.total})</option>
 								<option value="new">Mới ({preview.summary.newCount})</option>
 								<option value="exact">Trùng hoàn toàn ({preview.summary.exactCount})</option>
@@ -385,8 +466,10 @@ export function StudentIntakeWorkspace({
 									Giữ toàn bộ dữ liệu hiện tại
 								</StudioButton>
 							) : null}
-							<StudioButton variant="secondary" disabled={busy} onClick={() => setPreview(null)}>Quay lại</StudioButton>
-<StudioButton disabled={busy || !canCommit} onClick={() => void commit()}>
+							<StudioButton variant="secondary" disabled={busy} onClick={() => setPreview(null)}>
+								Quay lại
+							</StudioButton>
+							<StudioButton disabled={busy || !canCommit} onClick={() => void commit()}>
 								{busy ? 'Đang lưu…' : commitLabel}
 							</StudioButton>
 						</div>
@@ -421,7 +504,12 @@ export function StudentIntakeWorkspace({
 											{row.input.familyName} {row.input.givenName}
 										</td>
 										<td>
-											<span className="mc-chip" data-tone={row.status === 'invalid' || row.status === 'conflict' ? 'error' : 'ok'}>
+											<span
+												className="mc-chip"
+												data-tone={
+													row.status === 'invalid' || row.status === 'conflict' ? 'error' : 'ok'
+												}
+											>
 												{STATUS_LABEL[row.status]}
 											</span>
 										</td>
@@ -445,11 +533,19 @@ export function StudentIntakeWorkspace({
 																className="mc-input"
 																value={resolutions[row.key]?.[conflict.field] ?? 'keep'}
 																onChange={(event) =>
-																	setDecision(row.key, conflict.field, event.target.value as RosterFieldDecision)
+																	setDecision(
+																		row.key,
+																		conflict.field,
+																		event.target.value as RosterFieldDecision,
+																	)
 																}
 															>
-																<option value="keep">Giữ đang lưu: {conflict.current || '—'}</option>
-																<option value="use_new">Dùng dữ liệu mới: {conflict.incoming || '—'}</option>
+																<option value="keep">
+																	Giữ đang lưu: {conflict.current || '—'}
+																</option>
+																<option value="use_new">
+																	Dùng dữ liệu mới: {conflict.incoming || '—'}
+																</option>
 															</select>
 														</label>
 													))}
@@ -457,7 +553,8 @@ export function StudentIntakeWorkspace({
 											) : null}
 											{row.status === 'fill_blank' ? (
 												<small className="text-ink-secondary">
-													Sẽ bổ sung: {row.fillBlankFields.map((field) => FIELD_LABEL[field]).join(', ')}
+													Sẽ bổ sung:{' '}
+													{row.fillBlankFields.map((field) => FIELD_LABEL[field]).join(', ')}
 												</small>
 											) : null}
 										</td>

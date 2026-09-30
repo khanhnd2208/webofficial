@@ -20,14 +20,14 @@ export const metadata: Metadata = {
 		type: 'website',
 		images: [
 			{
-				url: absoluteUrl('/og-editorial-premium.png'),
-				width: 1734,
-				height: 907,
+				url: absoluteUrl('/og-editorial-premium.jpg'),
+				width: 1200,
+				height: 630,
 				alt: 'Duy Khánh — Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
 			},
 		],
 	},
-	twitter: { card: 'summary_large_image', images: [absoluteUrl('/og-editorial-premium.png')] },
+	twitter: { card: 'summary_large_image', images: [absoluteUrl('/og-editorial-premium.jpg')] },
 };
 
 export default function HomePage() {

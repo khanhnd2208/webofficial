@@ -219,7 +219,10 @@ describe('My Class integrity', () => {
 	it('places a library test on another course without moving the original', async () => {
 		const graph = await publishedGraph();
 		const second = await createAdminCourse({ title: 'Second', slug: `${PREFIX}second` });
-		const placement = await createTestPlacement(graph.test.id, { courseId: second.id, scope: 'COURSE' });
+		const placement = await createTestPlacement(graph.test.id, {
+			courseId: second.id,
+			scope: 'COURSE',
+		});
 		expect(placement.courseId).toBe(second.id);
 		expect((await listTestPlacements(graph.test.id)).length).toBe(2);
 	});
@@ -383,7 +386,12 @@ describe('My Class integrity', () => {
 
 		const guestPlay = await getTest(course.slug, test.slug, { guestId: 'guest-max' });
 		expect(guestPlay.attemptsUsed).toBe(0);
-		await submitTest(course.slug, test.slug, { answers: allA(guestPlay) }, { guestId: 'guest-max' });
+		await submitTest(
+			course.slug,
+			test.slug,
+			{ answers: allA(guestPlay) },
+			{ guestId: 'guest-max' },
+		);
 		await expect(
 			submitTest(course.slug, test.slug, { answers: allA(guestPlay) }, { guestId: 'guest-max' }),
 		).rejects.toThrow(/hết lượt/);
@@ -735,12 +743,16 @@ describe('My Class integrity', () => {
 			data: { title: `${PREFIX}foreign`, ownerId: 'admin', ownerName: 'Admin' },
 		});
 		await expect(
-			importVocabSetForScope(course.id, { id: 'admin', name: 'Admin' }, {
-				csv: 'term,meaning_vi\nalpha,một',
-				mode: 'commit',
-				targetSetId: foreign.id,
-				strategy: 'replace',
-			}),
+			importVocabSetForScope(
+				course.id,
+				{ id: 'admin', name: 'Admin' },
+				{
+					csv: 'term,meaning_vi\nalpha,một',
+					mode: 'commit',
+					targetSetId: foreign.id,
+					strategy: 'replace',
+				},
+			),
 		).rejects.toThrow(/đã gắn/i);
 	});
 
@@ -781,7 +793,9 @@ describe('My Class integrity', () => {
 			data: { status: 'PUBLISHED', publishedAt: new Date() },
 		});
 		const publicCourse = await getCourse(course.slug);
-		const found = publicCourse.lessons[0]?.sections.find((section) => section.id === emptySection.id);
+		const found = publicCourse.lessons[0]?.sections.find(
+			(section) => section.id === emptySection.id,
+		);
 		expect(found?.tests.some((test) => test.slug === `${PREFIX}empty-section-quiz`)).toBe(true);
 	});
 
@@ -883,7 +897,9 @@ describe('My Class integrity', () => {
 			parentId: lesson.id,
 			orderedNodeIds: [sectionB.id, sectionA.id],
 		});
-		const afterSections = (await getAdminCourse(course.id)).lessons.find((item) => item.id === lesson.id)!;
+		const afterSections = (await getAdminCourse(course.id)).lessons.find(
+			(item) => item.id === lesson.id,
+		)!;
 		expect(afterSections.sections.map((item) => item.id)).toEqual([
 			sectionB.id,
 			sectionA.id,

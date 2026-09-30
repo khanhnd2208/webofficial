@@ -26,14 +26,17 @@ import CheeseCheckPhase from '@/features/cheese-thief/components/phases/CheeseCh
 import TiePhase from '@/features/cheese-thief/components/phases/TiePhase';
 import { startNightTrack, unlockTableAudio } from '@/features/cheese-thief/lib/narration';
 import { prepareNightTrack } from '@/features/cheese-thief/lib/nightTrack';
-import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
-import { Button, Field, Spinner } from '@/features/spy-fall/components/ui';
+import { useLocale, useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
+import { Button, Field, Spinner } from '@/features/board-game-shared/components/ui';
 import {
 	getRecentPlayerName,
 	storeRecentPlayerName,
-} from '@/features/spy-fall/lib/spy/clientToken';
-import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+} from '@/features/board-game-shared/lib/clientToken';
+import {
+	isValidPlayerName,
+	normalizePlayerName,
+} from '@/features/board-game-shared/lib/playerName';
 
 interface Props {
 	code: string;

@@ -43,7 +43,9 @@ export default function LearnCheckpointCard({ checkpoint }: { checkpoint: LearnC
 			</div>
 			{answered ? (
 				<div className="ln-check__result">
-					<p className="font-medium">{picked === checkpoint.correctIndex ? 'Chính xác.' : 'Chưa đúng.'}</p>
+					<p className="font-medium">
+						{picked === checkpoint.correctIndex ? 'Chính xác.' : 'Chưa đúng.'}
+					</p>
 					{checkpoint.explanation ? <p>{checkpoint.explanation}</p> : null}
 					<button type="button" className="ln-link-btn" onClick={() => setPicked(null)}>
 						Thử lại

@@ -117,10 +117,10 @@ describe('parseVocabRows', () => {
 
 	it('assigns correct 1-based row numbers in errors (row 1 = header)', () => {
 		const rows: Record<string, string>[] = [
-			{ word: 'ok', definition: 'def', ndk_explanation: 'ndk' },       // row 2 → ok
-			{ word: 'bad' },                                                 // row 3 → error (missing meaning)
-			{ word: 'ok2', definition: 'def2', ndk_explanation: 'ndk2' },    // row 4 → ok
-			{ word: '', definition: 'def', ndk_explanation: 'ndk' },         // row 5 → error (missing term)
+			{ word: 'ok', definition: 'def', ndk_explanation: 'ndk' }, // row 2 → ok
+			{ word: 'bad' }, // row 3 → error (missing meaning)
+			{ word: 'ok2', definition: 'def2', ndk_explanation: 'ndk2' }, // row 4 → ok
+			{ word: '', definition: 'def', ndk_explanation: 'ndk' }, // row 5 → error (missing term)
 		];
 		const { errors } = parseVocabRows(rows);
 		expect(errors.map((e) => e.row)).toEqual([3, 5]);

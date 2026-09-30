@@ -1,6 +1,10 @@
 'use client';
 
-import { StudioAdminTable, StudioStatus, type StudioColumn } from '@/components/myclass/admin/studio';
+import {
+	StudioAdminTable,
+	StudioStatus,
+	type StudioColumn,
+} from '@/components/myclass/admin/studio';
 import { routes } from '@/config/routes';
 import type { AdminKnowledgeTablePage, AdminKnowledgeTableRow } from '@/features/my-class';
 import { formatDate } from '@/utils/formatDate';

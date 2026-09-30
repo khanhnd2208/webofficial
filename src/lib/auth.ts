@@ -29,10 +29,10 @@ function withRoleOnCreate(adapter: Adapter): Adapter {
 			const correlationId = newAuthCorrelationId();
 			try {
 				const client = await mongoClientPromise;
-				await client.db().collection('users').updateOne(
-					{ _id: new ObjectId(created.id) },
-					{ $set: { role } },
-				);
+				await client
+					.db()
+					.collection('users')
+					.updateOne({ _id: new ObjectId(created.id) }, { $set: { role } });
 				logAuth({
 					event: 'auth.role_assigned',
 					stage: 'createUser',
@@ -56,13 +56,17 @@ function withRoleOnCreate(adapter: Adapter): Adapter {
 	};
 }
 
-async function persistRole(userId: string, role: 'admin' | 'student', correlationId: string): Promise<void> {
+async function persistRole(
+	userId: string,
+	role: 'admin' | 'student',
+	correlationId: string,
+): Promise<void> {
 	try {
 		const client = await mongoClientPromise;
-		await client.db().collection('users').updateOne(
-			{ _id: new ObjectId(userId) },
-			{ $set: { role } },
-		);
+		await client
+			.db()
+			.collection('users')
+			.updateOne({ _id: new ObjectId(userId) }, { $set: { role } });
 		logAuth({
 			event: 'auth.role_reconciled',
 			stage: 'role.reconcile',
@@ -109,10 +113,10 @@ const nextAuth = NextAuth({
 				let persisted: string | undefined;
 				try {
 					const client = await mongoClientPromise;
-					const dbUser = await client.db().collection('users').findOne(
-						{ _id: new ObjectId(user.id!) },
-						{ projection: { role: 1 } },
-					);
+					const dbUser = await client
+						.db()
+						.collection('users')
+						.findOne({ _id: new ObjectId(user.id!) }, { projection: { role: 1 } });
 					persisted = typeof dbUser?.role === 'string' ? dbUser.role : undefined;
 				} catch {
 					logAuth({
@@ -142,10 +146,10 @@ const nextAuth = NextAuth({
 			} else if (trigger === 'update') {
 				try {
 					const client = await mongoClientPromise;
-					const dbUser = await client.db().collection('users').findOne(
-						{ _id: new ObjectId(token.sub!) },
-						{ projection: { role: 1 } },
-					);
+					const dbUser = await client
+						.db()
+						.collection('users')
+						.findOne({ _id: new ObjectId(token.sub!) }, { projection: { role: 1 } });
 					if (dbUser?.role) token.role = dbUser.role === 'admin' ? 'admin' : 'student';
 				} catch {
 					// keep existing token.role

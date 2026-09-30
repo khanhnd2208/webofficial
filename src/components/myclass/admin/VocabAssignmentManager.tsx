@@ -42,7 +42,13 @@ export default function VocabAssignmentManager({
 
 	async function search(query = q) {
 		const items = await myClassApi<
-			Array<{ id: string; title: string; _count?: { words: number }; wordCount?: number; isArchived: boolean }>
+			Array<{
+				id: string;
+				title: string;
+				_count?: { words: number };
+				wordCount?: number;
+				isArchived: boolean;
+			}>
 		>(`/api/admin/my-class/courses/${courseId}/vocab-assignments?q=${encodeURIComponent(query)}`);
 		setResults(
 			items.map((item) => ({
@@ -222,7 +228,11 @@ export default function VocabAssignmentManager({
 										<span>
 											{item.title} · {item.wordCount} từ
 										</span>
-										<button type="button" onClick={() => void assign(item.id)} className="min-h-11 underline">
+										<button
+											type="button"
+											onClick={() => void assign(item.id)}
+											className="min-h-11 underline"
+										>
 											Gắn
 										</button>
 									</li>
@@ -282,7 +292,10 @@ function SetList({
 	return (
 		<ul className="mt-2 divide-y divide-mc-rule border border-mc-rule">
 			{items.map((item) => (
-				<li key={item.assignmentId} className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm">
+				<li
+					key={item.assignmentId}
+					className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm"
+				>
 					<div>
 						<p className="font-medium">{item.title}</p>
 						<p className="text-xs text-muted">
@@ -306,7 +319,10 @@ function SetList({
 								</option>
 							))}
 						</select>
-						<Link href={routes.admin.myClassVocabularyEdit(item.vocabSetId)} className="min-h-11 underline">
+						<Link
+							href={routes.admin.myClassVocabularyEdit(item.vocabSetId)}
+							className="min-h-11 underline"
+						>
 							Sửa
 						</Link>
 						<button

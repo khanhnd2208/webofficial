@@ -2,13 +2,14 @@ import { AppError } from '@/lib/appError';
 
 import { normalizeSlug } from '../domain/normalize';
 import { withUniqueConflict } from '../domain/prismaErrors';
-import {
-	joinTopicPath,
-	topicDepthFromPath,
-	topicSlugFromName,
-} from '../domain/topicPath';
+import { joinTopicPath, topicDepthFromPath, topicSlugFromName } from '../domain/topicPath';
 import * as repo from '../repositories/taxonomyRepository';
-import type { CreateSubjectInput, CreateTopicInput, UpdateSubjectInput, UpdateTopicInput } from '../schemas';
+import type {
+	CreateSubjectInput,
+	CreateTopicInput,
+	UpdateSubjectInput,
+	UpdateTopicInput,
+} from '../schemas';
 
 export async function listAdminSubjects() {
 	return repo.listSubjects();

@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import TagInput from '@/components/TagInput';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
-import DualLanguageEditor from '@/components/DualLanguageEditor';
-import { POST_CATEGORIES } from '@/constants/post';
+import TagInput from '@/components/forms/TagInput';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
+import DualLanguageEditor from '@/components/forms/DualLanguageEditor';
+import { POST_CATEGORIES } from '@/config/post';
 import { JOURNAL_COLLECTIONS, JOURNAL_CONTENT_TYPES, JOURNAL_PILLARS } from '@/content/journal';
 import { slugify } from '@/utils/slugify';
 import { adminFetch } from '@/lib/admin/client';
@@ -39,7 +39,10 @@ type SaveState =
 
 /** Strip HTML tags to get plain text for word count */
 function htmlToPlainText(html: string): string {
-	return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+	return html
+		.replace(/<[^>]*>/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 async function uploadImage(file: File): Promise<string> {
@@ -63,7 +66,9 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 	const [isFeatured, setIsFeatured] = useState(Boolean(initial.isFeatured));
 	const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 	const [thumbnailUrl, setThumbnailUrl] = useState(initial.thumbnailUrl ?? '');
-	const [chapterNumber, setChapterNumber] = useState(initial.chapterNumber != null ? String(initial.chapterNumber) : '');
+	const [chapterNumber, setChapterNumber] = useState(
+		initial.chapterNumber != null ? String(initial.chapterNumber) : '',
+	);
 	const [isPinned, setIsPinned] = useState(Boolean(initial.isPinned));
 	const [isPublished, setIsPublished] = useState(Boolean(initial.isPublished));
 	const [content, setContent] = useState(initial.content);
@@ -98,7 +103,20 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			isPinned !== Boolean(initial.isPinned) ||
 			isPublished !== Boolean(initial.isPublished)
 		);
-	}, [title, content, contentEn, summary, category, tags, thumbnailUrl, chapterNumber, isPinned, isPublished, saveState.status, initial]);
+	}, [
+		title,
+		content,
+		contentEn,
+		summary,
+		category,
+		tags,
+		thumbnailUrl,
+		chapterNumber,
+		isPinned,
+		isPublished,
+		saveState.status,
+		initial,
+	]);
 
 	useEffect(() => {
 		if (!isDirty) return;
@@ -118,7 +136,13 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			await adminFetch(`/api/admin/posts/${initial.id}`, {
 				method: 'PATCH',
 				body: JSON.stringify({
-					title, slug, summary, content, contentEn, category, tags,
+					title,
+					slug,
+					summary,
+					content,
+					contentEn,
+					category,
+					tags,
 					pillarSlug: pillarSlug || undefined,
 					contentType: contentType || undefined,
 					collectionSlugs,
@@ -132,13 +156,33 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			});
 			setSaveState({ status: 'saved' });
 			// Auto-clear saved status after 3s so user can edit & save again
-			setTimeout(() => setSaveState((prev) => (prev.status === 'saved' ? { status: 'idle' } : prev)), 3000);
+			setTimeout(
+				() => setSaveState((prev) => (prev.status === 'saved' ? { status: 'idle' } : prev)),
+				3000,
+			);
 		} catch (e) {
 			setSaveState({ status: 'error', message: e instanceof Error ? e.message : 'Unknown error' });
 		} finally {
 			isSavingRef.current = false;
 		}
-	}, [title, slug, summary, content, contentEn, category, tags, pillarSlug, contentType, collectionSlugs, isFeatured, thumbnailUrl, chapterNumber, isPinned, isPublished, initial.id]);
+	}, [
+		title,
+		slug,
+		summary,
+		content,
+		contentEn,
+		category,
+		tags,
+		pillarSlug,
+		contentType,
+		collectionSlugs,
+		isFeatured,
+		thumbnailUrl,
+		chapterNumber,
+		isPinned,
+		isPublished,
+		initial.id,
+	]);
 
 	// ─── Cmd+S / Ctrl+S keyboard shortcut ───
 	useEffect(() => {
@@ -177,14 +221,24 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 					<p className="mt-1 text-sm text-muted font-mono">ID: {initial.id}</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
-					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/admin/posts">
+					<Link
+						className="text-sm text-muted underline underline-offset-4 hover:text-foreground"
+						href="/admin/posts"
+					>
 						← Danh sách
 					</Link>
-					<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href="/admin/posts/create">
+					<Link
+						className="text-sm text-muted underline underline-offset-4 hover:text-foreground"
+						href="/admin/posts/create"
+					>
 						+ Viết mới
 					</Link>
 					{isPublished ? (
-						<Link className="text-sm text-muted underline underline-offset-4 hover:text-foreground" href={`/bai-viet/${slug}`} target="_blank">
+						<Link
+							className="text-sm text-muted underline underline-offset-4 hover:text-foreground"
+							href={`/bai-viet/${slug}`}
+							target="_blank"
+						>
 							Xem public ↗
 						</Link>
 					) : null}
@@ -227,7 +281,16 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			) : null}
 			{isLegacyMarkdown ? (
 				<div className="mt-3 flex items-center gap-2 rounded-lg border border-blue-300/30 bg-blue-50 px-4 py-2.5 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-950/30 dark:text-blue-300">
-					<svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" strokeLinecap="round" /></svg>
+					<svg
+						className="h-4 w-4 shrink-0"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+					>
+						<circle cx="12" cy="12" r="10" />
+						<path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+					</svg>
 					Bài viết này đang ở định dạng Markdown cũ. Khi lưu, nội dung sẽ được chuyển sang HTML.
 				</div>
 			) : null}
@@ -258,7 +321,9 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 				</label>
 
 				<label className="block md:col-span-2">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Tóm tắt <span className="text-muted/60 normal-case tracking-normal">(tuỳ chọn)</span></div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Tóm tắt <span className="text-muted/60 normal-case tracking-normal">(tuỳ chọn)</span>
+					</div>
 					<textarea
 						value={summary}
 						onChange={(e) => setSummary(e.target.value)}
@@ -269,14 +334,18 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 				</label>
 
 				<label className="block">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chủ đề (legacy)</div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Chủ đề (legacy)
+					</div>
 					<select
 						value={category}
 						onChange={(e) => setCategory(e.target.value)}
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
 					>
 						{POST_CATEGORIES.map((c) => (
-							<option key={c} value={c}>{c}</option>
+							<option key={c} value={c}>
+								{c}
+							</option>
 						))}
 					</select>
 				</label>
@@ -290,13 +359,17 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 					>
 						<option value="">— Chưa gán —</option>
 						{JOURNAL_PILLARS.map((p) => (
-							<option key={p.slug} value={p.slug}>{p.label}</option>
+							<option key={p.slug} value={p.slug}>
+								{p.label}
+							</option>
 						))}
 					</select>
 				</label>
 
 				<label className="block">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Content type</div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Content type
+					</div>
 					<select
 						value={contentType}
 						onChange={(e) => setContentType(e.target.value)}
@@ -304,13 +377,17 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 					>
 						<option value="">— Chưa gán —</option>
 						{JOURNAL_CONTENT_TYPES.map((t) => (
-							<option key={t.slug} value={t.slug}>{t.label}</option>
+							<option key={t.slug} value={t.slug}>
+								{t.label}
+							</option>
 						))}
 					</select>
 				</label>
 
 				<div className="block md:col-span-2">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Collections</div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Collections
+					</div>
 					<div className="mt-2 flex flex-wrap gap-3">
 						{JOURNAL_COLLECTIONS.map((c) => {
 							const checked = collectionSlugs.includes(c.slug);
@@ -333,7 +410,9 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 				</div>
 
 				<label className="block">
-					<div className="text-xs font-semibold uppercase tracking-wider text-muted">Chapter Number</div>
+					<div className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Chapter Number
+					</div>
 					<input
 						type="number"
 						min="1"
@@ -342,7 +421,9 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
 						placeholder="VD: 1, 2, 3..."
 					/>
-					<p className="mt-1 text-[11px] text-muted">Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…</p>
+					<p className="mt-1 text-[11px] text-muted">
+						Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…
+					</p>
 				</label>
 
 				<div className="block">
@@ -364,9 +445,13 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						/>
 						<span className="text-sm font-medium">Xuất bản</span>
 						{isPublished ? (
-							<span className="rounded-full bg-success-subtle px-2 py-0.5 text-[10px] font-bold text-success">LIVE</span>
+							<span className="rounded-full bg-success-subtle px-2 py-0.5 text-[10px] font-bold text-success">
+								LIVE
+							</span>
 						) : (
-							<span className="rounded-full bg-warning-subtle px-2 py-0.5 text-[10px] font-bold text-warning">DRAFT</span>
+							<span className="rounded-full bg-warning-subtle px-2 py-0.5 text-[10px] font-bold text-warning">
+								DRAFT
+							</span>
 						)}
 					</label>
 					<label className="flex items-center gap-2.5">
@@ -378,7 +463,9 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						/>
 						<span className="text-sm font-medium">📌 Ghim</span>
 						{isPinned ? (
-							<span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">PINNED</span>
+							<span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
+								PINNED
+							</span>
 						) : null}
 					</label>
 					<label className="flex items-center gap-2.5">
@@ -416,7 +503,10 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						<span className="text-success">✓ Đã lưu</span>
 					) : null}
 					<span className="ml-auto text-[11px]">
-						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">⌘S</kbd> lưu nhanh
+						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
+							⌘S
+						</kbd>{' '}
+						lưu nhanh
 					</span>
 				</div>
 			</section>

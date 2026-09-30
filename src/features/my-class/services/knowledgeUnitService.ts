@@ -3,7 +3,13 @@ import { prisma } from '@/lib/prisma';
 import { routes } from '@/config/routes';
 
 import { htmlLevels, normalizeSlug } from '../domain/normalize';
-import { listSkip, parseListQuery, parseOptionalSortDir, parsePublishStatus, toListPage } from '../domain/listQuery';
+import {
+	listSkip,
+	parseListQuery,
+	parseOptionalSortDir,
+	parsePublishStatus,
+	toListPage,
+} from '../domain/listQuery';
 import { validateKnowledgeUnitPublish } from '../domain/publishValidation';
 import { withUniqueConflict } from '../domain/prismaErrors';
 import { sanitizeMyClassHtml } from '../domain/sanitize';
@@ -62,7 +68,9 @@ export async function listAdminKnowledgeTable(
 			slug: item.slug,
 			title: displayTitle(item),
 			status: item.status,
-			levelCount: item.currentPublishedRevision ? htmlLevels(item.currentPublishedRevision).length : 0,
+			levelCount: item.currentPublishedRevision
+				? htmlLevels(item.currentPublishedRevision).length
+				: 0,
 			mappingCount: item._count.mappings,
 			questionCount: item._count.questionLinks,
 			updatedAt: item.updatedAt.toISOString(),
@@ -121,13 +129,26 @@ export async function getAdminKnowledgeUnit(id: string) {
 			href: `${routes.admin.myClassCourseContent(mapping.section.lesson.course.id)}?node=unit:${id}`,
 		})),
 		related: [
-			...unit.relatedFrom.map((rel) => ({ id: rel.to.id, slug: rel.to.slug, title: displayTitle(rel.to) })),
-			...unit.relatedTo.map((rel) => ({ id: rel.from.id, slug: rel.from.slug, title: displayTitle(rel.from) })),
-		].filter((item, index, array) => array.findIndex((candidate) => candidate.id === item.id) === index),
+			...unit.relatedFrom.map((rel) => ({
+				id: rel.to.id,
+				slug: rel.to.slug,
+				title: displayTitle(rel.to),
+			})),
+			...unit.relatedTo.map((rel) => ({
+				id: rel.from.id,
+				slug: rel.from.slug,
+				title: displayTitle(rel.from),
+			})),
+		].filter(
+			(item, index, array) => array.findIndex((candidate) => candidate.id === item.id) === index,
+		),
 	};
 }
 
-export async function createKnowledgeUnit(input: CreateKnowledgeUnitInput, attach?: { sectionId: string }) {
+export async function createKnowledgeUnit(
+	input: CreateKnowledgeUnitInput,
+	attach?: { sectionId: string },
+) {
 	const slug = normalizeSlug(input.slug ?? input.title, 'knowledge-unit');
 	if (await repo.findKnowledgeUnitBySlug(slug)) {
 		throw new AppError(`Knowledge Unit slug đã tồn tại: ${slug}`, 409, 'CONFLICT');
@@ -191,7 +212,9 @@ export async function saveDraftRevision(id: string, input: SaveDraftRevisionInpu
 	}
 	if (input.slug) {
 		const slug = normalizeSlug(input.slug, draft.title);
-		await withUniqueConflict('Knowledge Unit slug đã tồn tại', () => repo.updateKnowledgeUnit(id, { slug }));
+		await withUniqueConflict('Knowledge Unit slug đã tồn tại', () =>
+			repo.updateKnowledgeUnit(id, { slug }),
+		);
 	}
 	await repo.updateRevision(draft.id, {
 		title: input.title.trim(),
@@ -236,10 +259,25 @@ export async function publishRevision(id: string, expectedUpdatedAt?: string, re
 export async function archiveKnowledgeUnit(id: string) {
 	await getAdminKnowledgeUnit(id);
 	return prisma.$transaction(async (tx) => {
-		await tx.knowledgeUnit.update({ where: { id }, data: { status: 'ARCHIVED', currentPublishedRevisionId: null } });
-		const questions = await tx.myClassQuestion.findMany({ where: { knowledgeUnits: { some: { knowledgeUnitId: id } }, tests: { some: { test: { status: 'PUBLISHED' } } } }, select: { tests: { select: { testId: true } } } });
-		const testIds = [...new Set(questions.flatMap((item) => item.tests.map((link) => link.testId)))];
-		if (testIds.length) await tx.myClassTest.updateMany({ where: { id: { in: testIds } }, data: { status: 'DRAFT', publishedAt: null } });
+		await tx.knowledgeUnit.update({
+			where: { id },
+			data: { status: 'ARCHIVED', currentPublishedRevisionId: null },
+		});
+		const questions = await tx.myClassQuestion.findMany({
+			where: {
+				knowledgeUnits: { some: { knowledgeUnitId: id } },
+				tests: { some: { test: { status: 'PUBLISHED' } } },
+			},
+			select: { tests: { select: { testId: true } } },
+		});
+		const testIds = [
+			...new Set(questions.flatMap((item) => item.tests.map((link) => link.testId))),
+		];
+		if (testIds.length)
+			await tx.myClassTest.updateMany({
+				where: { id: { in: testIds } },
+				data: { status: 'DRAFT', publishedAt: null },
+			});
 		return tx.knowledgeUnit.findUnique({ where: { id } });
 	});
 }
@@ -257,7 +295,11 @@ export async function removeRelatedKnowledgeUnit(fromId: string, toId: string) {
 	return getAdminKnowledgeUnit(fromId);
 }
 
-export async function getKnowledgeUnit(courseSlug: string, kuSlug: string, requestedContext?: { lessonSlug?: string; sectionId?: string }): Promise<MyClassKnowledgeUnitDetail> {
+export async function getKnowledgeUnit(
+	courseSlug: string,
+	kuSlug: string,
+	requestedContext?: { lessonSlug?: string; sectionId?: string },
+): Promise<MyClassKnowledgeUnitDetail> {
 	const [course, unitRow] = await Promise.all([
 		courseRepo.findPublishedCourse(courseSlug),
 		repo.findPublishedUnitBySlug(kuSlug),
@@ -299,12 +341,17 @@ export async function getKnowledgeUnit(courseSlug: string, kuSlug: string, reque
 		.map((item) => mapPublishedUnit(item))
 		.filter((item): item is NonNullable<typeof item> => item !== null && inCourse.has(item.slug))
 		.map((item) => {
-			const relatedContext = flow.find((candidate) => candidate.slug === item.slug && candidate.sectionId === context.sectionId) ?? flow.find((candidate) => candidate.slug === item.slug);
+			const relatedContext =
+				flow.find(
+					(candidate) => candidate.slug === item.slug && candidate.sectionId === context.sectionId,
+				) ?? flow.find((candidate) => candidate.slug === item.slug);
 			return {
 				slug: item.slug,
 				title: item.title,
 				href: relatedContext
-					? routes.myClassUnit(course.slug, relatedContext.lessonSlug, item.slug, { sectionSlug: relatedContext.sectionSlug })
+					? routes.myClassUnit(course.slug, relatedContext.lessonSlug, item.slug, {
+							sectionSlug: relatedContext.sectionSlug,
+						})
 					: undefined,
 			};
 		});

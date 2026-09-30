@@ -9,7 +9,10 @@ export default async function MySpaceNewTeachingClassPage({
 	searchParams: Promise<{ courseId?: string }>;
 }) {
 	const { courseId } = await searchParams;
-	const [courses, termSuggestions] = await Promise.all([listTeachingCourses(), listTeachingTerms()]);
+	const [courses, termSuggestions] = await Promise.all([
+		listTeachingCourses(),
+		listTeachingTerms(),
+	]);
 	return (
 		<div className="py-6 sm:py-8">
 			<NewTeachingClassWorkspace

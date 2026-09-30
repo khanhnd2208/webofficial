@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { assertTeachingGroupBoardEnabled, isTeachingGroupBoardEnabled } from './groupBoardAvailability';
+import {
+	assertTeachingGroupBoardEnabled,
+	isTeachingGroupBoardEnabled,
+} from './groupBoardAvailability';
 
 describe('teaching group board availability', () => {
 	it('is disabled unless the flag is exactly true', () => {

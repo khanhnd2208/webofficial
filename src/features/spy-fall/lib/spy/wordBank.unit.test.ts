@@ -34,7 +34,11 @@ describe('word tags', () => {
 			expect(tagsOf(pair).some((tag) => excluded.includes(tag))).toBe(false);
 		}
 		expect(filterWordPairs('người nổi tiếng', WORD_BANK, excluded)).toHaveLength(0);
-		const fallback = pickWordPair({ topic: 'người nổi tiếng', excludedTags: excluded, random: () => 0 });
+		const fallback = pickWordPair({
+			topic: 'người nổi tiếng',
+			excludedTags: excluded,
+			random: () => 0,
+		});
 		expect(tagsOf(fallback)).not.toContain('real-people');
 	});
 

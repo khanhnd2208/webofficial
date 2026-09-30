@@ -70,9 +70,7 @@ export function wordWriteData(w: CreateWordInput) {
 	};
 }
 
-function setToDTO(
-set: VocabSet & { words: Word[] },
-): VocabSetDTO {
+function setToDTO(set: VocabSet & { words: Word[] }): VocabSetDTO {
 	const activeWords = set.words.filter((w) => !w.isDeleted);
 	return {
 		id: set.id,
@@ -89,9 +87,7 @@ set: VocabSet & { words: Word[] },
 	};
 }
 
-function setToListItem(
-set: VocabSet & { _count: { words: number } },
-): VocabSetListItemDTO {
+function setToListItem(set: VocabSet & { _count: { words: number } }): VocabSetListItemDTO {
 	return {
 		id: set.id,
 		title: set.title,
@@ -112,42 +108,39 @@ set: VocabSet & { _count: { words: number } },
  * Get user's active library — includes all non-deleted words.
  */
 export async function getUserLibrary(userId: string): Promise<UserLibrarySetDTO[]> {
-const entries = await prisma.userVocabSet.findMany({
-where: { userId, status: 'active' },
-include: {
-vocabSet: {
-include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
-},
-},
-orderBy: { addedAt: 'desc' },
-});
+	const entries = await prisma.userVocabSet.findMany({
+		where: { userId, status: 'active' },
+		include: {
+			vocabSet: {
+				include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+			},
+		},
+		orderBy: { addedAt: 'desc' },
+	});
 
-return entries.map((entry) => ({
-...setToDTO(entry.vocabSet),
-libraryEntryId: entry.id,
-status: entry.status as 'active',
-source: entry.source as UserVocabSetSource,
-sourceCourseId: entry.sourceCourseId,
-addedAt: entry.addedAt.toISOString(),
-}));
+	return entries.map((entry) => ({
+		...setToDTO(entry.vocabSet),
+		libraryEntryId: entry.id,
+		status: entry.status as 'active',
+		source: entry.source as UserVocabSetSource,
+		sourceCourseId: entry.sourceCourseId,
+		addedAt: entry.addedAt.toISOString(),
+	}));
 }
 
 /**
  * Soft-delete a set from user's library.
  * Entry is hidden from UI but can be restored via re-download.
  */
-export async function softDeleteFromLibrary(
-userId: string,
-vocabSetId: string,
-): Promise<void> {
+export async function softDeleteFromLibrary(userId: string, vocabSetId: string): Promise<void> {
 	const entry = await prisma.userVocabSet.findUnique({
-where: { userId_vocabSetId: { userId, vocabSetId } },
-});
+		where: { userId_vocabSetId: { userId, vocabSetId } },
+	});
 	if (!entry || entry.status === 'soft_deleted') return; // idempotent
 
 	await prisma.userVocabSet.update({
-where: { userId_vocabSetId: { userId, vocabSetId } },
-data: { status: 'soft_deleted', deletedAt: new Date() },
+		where: { userId_vocabSetId: { userId, vocabSetId } },
+		data: { status: 'soft_deleted', deletedAt: new Date() },
 	});
 }
 
@@ -158,36 +151,38 @@ data: { status: 'soft_deleted', deletedAt: new Date() },
  * - Otherwise → create new entry
  */
 export async function addToLibrary(
-userId: string,
-vocabSetId: string,
-provenance?: { source?: UserVocabSetSource; sourceCourseId?: string | null },
+	userId: string,
+	vocabSetId: string,
+	provenance?: { source?: UserVocabSetSource; sourceCourseId?: string | null },
 ): Promise<void> {
-const existing = await prisma.userVocabSet.findUnique({
-where: { userId_vocabSetId: { userId, vocabSetId } },
-});
+	const existing = await prisma.userVocabSet.findUnique({
+		where: { userId_vocabSetId: { userId, vocabSetId } },
+	});
 
-if (existing) {
-if (existing.status === 'active') throw new AlreadyOwnedError();
-await prisma.userVocabSet.update({
-where: { userId_vocabSetId: { userId, vocabSetId } },
-data: {
-	status: 'active',
-	deletedAt: null,
-	...(provenance?.source ? { source: provenance.source } : {}),
-	...(provenance?.sourceCourseId !== undefined ? { sourceCourseId: provenance.sourceCourseId } : {}),
-},
-});
-return;
-}
+	if (existing) {
+		if (existing.status === 'active') throw new AlreadyOwnedError();
+		await prisma.userVocabSet.update({
+			where: { userId_vocabSetId: { userId, vocabSetId } },
+			data: {
+				status: 'active',
+				deletedAt: null,
+				...(provenance?.source ? { source: provenance.source } : {}),
+				...(provenance?.sourceCourseId !== undefined
+					? { sourceCourseId: provenance.sourceCourseId }
+					: {}),
+			},
+		});
+		return;
+	}
 
-await prisma.userVocabSet.create({
-data: {
-	userId,
-	vocabSetId,
-	source: provenance?.source ?? 'STORE',
-	sourceCourseId: provenance?.sourceCourseId ?? null,
-},
-});
+	await prisma.userVocabSet.create({
+		data: {
+			userId,
+			vocabSetId,
+			source: provenance?.source ?? 'STORE',
+			sourceCourseId: provenance?.sourceCourseId ?? null,
+		},
+	});
 }
 
 export async function getActiveLibraryEntry(userId: string, vocabSetId: string) {
@@ -213,51 +208,51 @@ export async function canReadVocabSet(
  * Includes alreadyOwned flag for the requesting user.
  */
 export async function getStore(
-userId: string | null,
-page = 1,
-limit = 20,
+	userId: string | null,
+	page = 1,
+	limit = 20,
 ): Promise<StoreListResult> {
-const skip = (page - 1) * limit;
+	const skip = (page - 1) * limit;
 
-const [sets, total] = await prisma.$transaction([
-prisma.vocabSet.findMany({
-where: { isArchived: false, isCourseOnly: false },
-orderBy: { updatedAt: 'desc' },
-skip,
-take: limit,
-include: { _count: { select: { words: { where: { isDeleted: false } } } } },
-}),
-prisma.vocabSet.count({ where: { isArchived: false, isCourseOnly: false } }),
-]);
+	const [sets, total] = await prisma.$transaction([
+		prisma.vocabSet.findMany({
+			where: { isArchived: false, isCourseOnly: false },
+			orderBy: { updatedAt: 'desc' },
+			skip,
+			take: limit,
+			include: { _count: { select: { words: { where: { isDeleted: false } } } } },
+		}),
+		prisma.vocabSet.count({ where: { isArchived: false, isCourseOnly: false } }),
+	]);
 
-// Fetch ownership status for the current user in one query
-let ownedIds = new Set<string>();
-if (userId) {
-const owned = await prisma.userVocabSet.findMany({
-where: { userId, vocabSetId: { in: sets.map((s) => s.id) }, status: 'active' },
-select: { vocabSetId: true },
-});
-ownedIds = new Set(owned.map((o) => o.vocabSetId));
-}
+	// Fetch ownership status for the current user in one query
+	let ownedIds = new Set<string>();
+	if (userId) {
+		const owned = await prisma.userVocabSet.findMany({
+			where: { userId, vocabSetId: { in: sets.map((s) => s.id) }, status: 'active' },
+			select: { vocabSetId: true },
+		});
+		ownedIds = new Set(owned.map((o) => o.vocabSetId));
+	}
 
-const items: StoreSetDTO[] = sets.map((set) => ({
-...setToListItem(set),
-alreadyOwned: ownedIds.has(set.id),
-}));
+	const items: StoreSetDTO[] = sets.map((set) => ({
+		...setToListItem(set),
+		alreadyOwned: ownedIds.has(set.id),
+	}));
 
-return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+	return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 /**
  * Get a single VocabSet with all active words (public access).
  */
 export async function getVocabSetById(id: string): Promise<VocabSetDTO | null> {
-const set = await prisma.vocabSet.findUnique({
-where: { id },
-include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
-});
-if (!set) return null;
-return setToDTO(set);
+	const set = await prisma.vocabSet.findUnique({
+		where: { id },
+		include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+	});
+	if (!set) return null;
+	return setToDTO(set);
 }
 
 // ─── Admin mutations ──────────────────────────────────────────────────────────
@@ -267,28 +262,28 @@ return setToDTO(set);
  * If word creation fails, the VocabSet is also rolled back (no orphan data).
  */
 export async function createVocabSet(
-ownerId: string,
-ownerName: string,
-input: CreateVocabSetInput,
+	ownerId: string,
+	ownerName: string,
+	input: CreateVocabSetInput,
 ): Promise<VocabSetDTO> {
-const set = await prisma.$transaction(async (tx) => {
-const created = await tx.vocabSet.create({
-data: {
-			title: input.title.trim(),
-			description: input.description?.trim() ?? '',
-			ownerId,
-			ownerName,
-			isCourseOnly: input.isCourseOnly ?? false,
-			words: {
-				create: input.words.map((w) => wordWriteData(w)),
+	const set = await prisma.$transaction(async (tx) => {
+		const created = await tx.vocabSet.create({
+			data: {
+				title: input.title.trim(),
+				description: input.description?.trim() ?? '',
+				ownerId,
+				ownerName,
+				isCourseOnly: input.isCourseOnly ?? false,
+				words: {
+					create: input.words.map((w) => wordWriteData(w)),
+				},
 			},
-},
-include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
-});
-return created;
-});
+			include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+		});
+		return created;
+	});
 
-return setToDTO(set);
+	return setToDTO(set);
 }
 
 /**
@@ -297,62 +292,66 @@ return setToDTO(set);
  * - Soft-delete words via deleteWordIds (sets isDeleted=true)
  */
 export async function adminUpdateSet(
-setId: string,
-input: UpdateVocabSetInput,
+	setId: string,
+	input: UpdateVocabSetInput,
 ): Promise<VocabSetDTO | null> {
-const set = await prisma.$transaction(async (tx) => {
-// 1. Update set metadata
-if (input.title !== undefined || input.description !== undefined || input.isArchived !== undefined) {
-await tx.vocabSet.update({
-where: { id: setId },
-data: {
-...(input.title && { title: input.title.trim() }),
-...(input.description !== undefined && { description: input.description.trim() }),
-...(input.isArchived !== undefined && { isArchived: input.isArchived }),
-},
-});
-}
+	const set = await prisma.$transaction(async (tx) => {
+		// 1. Update set metadata
+		if (
+			input.title !== undefined ||
+			input.description !== undefined ||
+			input.isArchived !== undefined
+		) {
+			await tx.vocabSet.update({
+				where: { id: setId },
+				data: {
+					...(input.title && { title: input.title.trim() }),
+					...(input.description !== undefined && { description: input.description.trim() }),
+					...(input.isArchived !== undefined && { isArchived: input.isArchived }),
+				},
+			});
+		}
 
 		// 2. Soft-delete specified words
-if (input.deleteWordIds?.length) {
-await tx.word.updateMany({
-where: { id: { in: input.deleteWordIds }, vocabSetId: setId },
-data: { isDeleted: true },
-});
-}
+		if (input.deleteWordIds?.length) {
+			await tx.word.updateMany({
+				where: { id: { in: input.deleteWordIds }, vocabSetId: setId },
+				data: { isDeleted: true },
+			});
+		}
 
-// 3. Upsert words
-if (input.words?.length) {
-for (const w of input.words) {
-if (w.id) {
-// Update existing
-await tx.word.update({
-where: { id: w.id },
-				data: {
-					...wordWriteData(w),
-					isDeleted: false, // re-activate if it was soft-deleted
-				},
-});
-} else {
-// Create new
-await tx.word.create({
-				data: {
-					vocabSetId: setId,
-					...wordWriteData(w),
-				},
-});
-}
-}
-}
+		// 3. Upsert words
+		if (input.words?.length) {
+			for (const w of input.words) {
+				if (w.id) {
+					// Update existing
+					await tx.word.update({
+						where: { id: w.id },
+						data: {
+							...wordWriteData(w),
+							isDeleted: false, // re-activate if it was soft-deleted
+						},
+					});
+				} else {
+					// Create new
+					await tx.word.create({
+						data: {
+							vocabSetId: setId,
+							...wordWriteData(w),
+						},
+					});
+				}
+			}
+		}
 
-return tx.vocabSet.findUnique({
-where: { id: setId },
-include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
-});
-});
+		return tx.vocabSet.findUnique({
+			where: { id: setId },
+			include: { words: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } } },
+		});
+	});
 
-if (!set) return null;
-return setToDTO(set);
+	if (!set) return null;
+	return setToDTO(set);
 }
 
 /**
@@ -360,31 +359,31 @@ return setToDTO(set);
  * Users who already have it keep access.
  */
 export async function archiveVocabSet(setId: string): Promise<void> {
-await prisma.vocabSet.update({
-where: { id: setId },
-data: { isArchived: true },
-});
+	await prisma.vocabSet.update({
+		where: { id: setId },
+		data: { isArchived: true },
+	});
 }
 
 /**
  * Soft-delete a single word (sets isDeleted=true).
  */
 export async function adminSoftDeleteWord(wordId: string, setId: string): Promise<void> {
-await prisma.word.update({
-where: { id: wordId, vocabSetId: setId },
-data: { isDeleted: true },
-});
+	await prisma.word.update({
+		where: { id: wordId, vocabSetId: setId },
+		data: { isDeleted: true },
+	});
 }
 
 /**
  * Get all sets owned by an admin (for admin panel).
  */
 export async function listAdminOwnedSets(_adminId?: string): Promise<VocabSetListItemDTO[]> {
-const sets = await prisma.vocabSet.findMany({
-orderBy: { updatedAt: 'desc' },
-include: { _count: { select: { words: { where: { isDeleted: false } } } } },
-});
-return sets.map(setToListItem);
+	const sets = await prisma.vocabSet.findMany({
+		orderBy: { updatedAt: 'desc' },
+		include: { _count: { select: { words: { where: { isDeleted: false } } } } },
+	});
+	return sets.map(setToListItem);
 }
 
 export type AdminVocabCatalogItem = VocabSetListItemDTO & {
@@ -424,9 +423,7 @@ export async function listAdminVocabCatalog(filters?: {
 					],
 				}
 			: {}),
-		...(filters?.courseId
-			? { myClassAssignments: { some: { courseId: filters.courseId } } }
-			: {}),
+		...(filters?.courseId ? { myClassAssignments: { some: { courseId: filters.courseId } } } : {}),
 		...(filters?.archived === undefined ? {} : { isArchived: filters.archived }),
 	};
 	const sortDir = query.sortDir;

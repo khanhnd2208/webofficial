@@ -331,7 +331,10 @@ export function classSnapshotFromLifecycle(row: {
 	return {
 		enrollmentCount: row._count.enrollments,
 		attendanceCount: row.sessions.reduce((sum, session) => sum + session._count.attendance, 0),
-		participationCount: row.sessions.reduce((sum, session) => sum + session._count.participation, 0),
+		participationCount: row.sessions.reduce(
+			(sum, session) => sum + session._count.participation,
+			0,
+		),
 		configuredGroupCount: row.groupBoards.filter(
 			(board) => board.groupCount > 0 || board._count.assignments > 0,
 		).length,
