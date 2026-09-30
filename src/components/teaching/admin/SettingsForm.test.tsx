@@ -88,14 +88,14 @@ describe('SettingsForm', () => {
 	it('keeps advanced scoring fields closed by default without dropping values', () => {
 		render(<SettingsForm teachingClass={teachingClass} />);
 		expect(screen.getByLabelText('Mã lớp')).toHaveValue('01');
-		expect(screen.queryByLabelText('Attendance tối đa')).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('Chuyên cần tối đa')).not.toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Thiết lập nâng cao' }));
-		expect(screen.getByLabelText('Attendance tối đa')).toHaveValue(5);
-		fireEvent.change(screen.getByLabelText('Attendance tối đa'), { target: { value: '6' } });
+		expect(screen.getByLabelText('Chuyên cần tối đa')).toHaveValue(5);
+		fireEvent.change(screen.getByLabelText('Chuyên cần tối đa'), { target: { value: '6' } });
 		fireEvent.click(screen.getByRole('button', { name: 'Thu gọn thiết lập nâng cao' }));
-		expect(screen.queryByLabelText('Attendance tối đa')).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('Chuyên cần tối đa')).not.toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Thiết lập nâng cao' }));
-		expect(screen.getByLabelText('Attendance tối đa')).toHaveValue(6);
+		expect(screen.getByLabelText('Chuyên cần tối đa')).toHaveValue(6);
 		expect(screen.getByText('Hành động nguy hiểm')).toBeInTheDocument();
 	});
 });

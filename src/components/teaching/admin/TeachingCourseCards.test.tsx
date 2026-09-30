@@ -75,10 +75,49 @@ describe('TeachingCourseCards', () => {
 		);
 		expect(screen.getByText('61MGT3HRM')).toBeInTheDocument();
 		expect(screen.queryByText('OB101')).not.toBeInTheDocument();
-		fireEvent.change(screen.getByTestId('teaching-course-status-filter'), {
-			target: { value: 'archived' },
-		});
+		fireEvent.click(screen.getByRole('button', { name: 'Lưu trữ 1' }));
 		expect(screen.getByText('OB101')).toBeInTheDocument();
 		expect(screen.queryByText('61MGT3HRM')).not.toBeInTheDocument();
+	});
+
+	it('puts active classes first and collapses courses with no class or deck', () => {
+		render(
+			<TeachingPopoverRoot>
+				<TeachingCourseCards
+					courses={[
+						course({
+							id: 'empty',
+							courseCode: 'EMPTY',
+							courseName: 'Môn trống',
+							classCount: 0,
+							activeClassCount: 0,
+							deckCount: 0,
+							updatedAt: '2026-09-20T00:00:00.000Z',
+						}),
+						course({
+							id: 'quiet',
+							courseCode: 'QUIET',
+							courseName: 'Chưa mở lớp',
+							classCount: 1,
+							activeClassCount: 0,
+							updatedAt: '2026-09-20T00:00:00.000Z',
+						}),
+						course({
+							id: 'busy',
+							courseCode: 'BUSY',
+							courseName: 'Đang có lớp',
+							updatedAt: '2026-09-01T00:00:00.000Z',
+						}),
+					]}
+				/>
+			</TeachingPopoverRoot>,
+		);
+		const links = screen.getAllByTestId(/teaching-course-card-/);
+		expect(links.map((link) => link.getAttribute('data-testid'))).toEqual([
+			'teaching-course-card-busy',
+			'teaching-course-card-quiet',
+			'teaching-course-card-empty',
+		]);
+		expect(screen.getByText('Môn chưa có lớp (1)')).toBeInTheDocument();
 	});
 });

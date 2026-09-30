@@ -121,7 +121,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
-			await expect(page.getByRole('tab', { name: 'Class Notes' })).toHaveAttribute(
+			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveAttribute(
 				'aria-selected',
 				'true',
 			);

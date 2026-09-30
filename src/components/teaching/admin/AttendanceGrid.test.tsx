@@ -139,7 +139,7 @@ describe('AttendanceGrid', () => {
 			'page',
 		);
 		expect(screen.getByText('2406090045 · 0/10 vắng')).toBeInTheDocument();
-		expect(screen.getByText('Attendance 5,0/5 · Đủ điều kiện')).toBeInTheDocument();
+		expect(screen.getByText('Chuyên cần 5,0/5 · Đủ điều kiện')).toBeInTheDocument();
 	});
 
 	it('cycles attendance with three clicks: present, late, absent', () => {

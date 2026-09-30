@@ -102,8 +102,8 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Điểm CP' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Xếp nhóm' })).toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Learning Experience' })).toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Class Notes' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Trải nghiệm học tập' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Ghi chú lớp' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Active Recall' })).toBeInTheDocument();
 	});
 
@@ -178,7 +178,7 @@ describe('StudentClassBoard', () => {
 			{ id: 'note-2', title: 'Topic A', html: '<p>Nội dung topic A</p>', publishedAt: '2026-09-02T00:00:00.000Z' },
 		];
 		render(<StudentClassBoard board={contentBoard} initialTab="notes" />);
-		expect(screen.getByRole('tab', { name: 'Class Notes' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveAttribute('aria-selected', 'true');
 		expect(screen.getByRole('heading', { name: 'Tuần 1' })).toBeInTheDocument();
 		expect(screen.getByText('Nội dung tuần 1')).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Topic A' }));
@@ -238,7 +238,7 @@ describe('StudentClassBoard', () => {
 		fireEvent.change(search, { target: { value: '45' } });
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
 		expect(screen.getAllByText('Nguyễn An').length).toBeGreaterThan(0);
-		expect(screen.queryByText('Trần Bình')).not.toBeInTheDocument();
+		expect(grid.textContent).not.toContain('Trần Bình');
 		fireEvent.change(search, { target: { value: 'Nguyễn' } });
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
 		expect(screen.getAllByText('Nguyễn An').length).toBeGreaterThan(0);

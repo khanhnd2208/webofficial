@@ -158,6 +158,14 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 			}
 		}
 		if (!process.env.TEACHING_VISUAL_BASELINE) {
+			await page.setViewportSize({ width: 1280, height: 900 });
+			await page.goto('/my-space/teaching');
+			await expect(page.getByRole('button', { name: /Đang dạy/ })).toBeVisible();
+			await page.goto(`/lop/${slug}`);
+			await page.getByLabel('Đây là tôi').selectOption({ index: 1 });
+			await expect(page.getByText(/Bạn: vắng/)).toBeVisible();
+			await page.getByRole('button', { name: 'Bỏ chọn' }).click();
+			await expect(page.getByText(/Bạn: vắng/)).toHaveCount(0);
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await page.goto(`/lop/${slug}/active-recall/${deck.slug}`);
 			await expect(page.locator('.recall-lang-chip')).toHaveCSS('animation-name', 'none');
