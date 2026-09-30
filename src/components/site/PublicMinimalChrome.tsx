@@ -34,9 +34,13 @@ export default function PublicMinimalChrome() {
 	if (pathname === '/lop' || pathname.startsWith('/lop/')) return null;
 	if (!isMinimalChromePath(pathname) || isIntroPath(pathname)) return null;
 
-	const isBookPage = [routes.toc, routes.about, routes.projects, routes.services].some(
-		(route) => route === pathname,
-	);
+	const isBookPage = [
+		routes.toc,
+		routes.about,
+		routes.experiences,
+		routes.projects,
+		routes.services,
+	].some((route) => route === pathname);
 	const onToc = isTocPath(pathname);
 	const onQuizPlay = isMySpaceQuizPlayPath(pathname);
 	const onMySpaceNested = isMySpacePath(pathname) && !isMySpaceHubPath(pathname) && !onQuizPlay;

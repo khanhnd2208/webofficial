@@ -1,0 +1,4 @@
+Generated with the built-in GPT Image tool.
+Reference: public/brand/learning-as-becoming-desktop.jpg
+
+Use case: illustration-story. Asset type: full-width website navigation background. Reference image: match the provided homepage illustration's delicate black pencil and ink linework, warm ivory paper grain, muted ochre sun, quiet mountain journey mood. Create a new panoramic continuation of this landscape: distant layered mountains, an elegant winding path across the lower third, sparse grasses at lower corners, small ochre sun toward upper right. Keep the central and upper-middle 65 percent very light and spacious for readable navigation icons and typography overlaid in code. Landscape composition, restrained editorial illustration, subtle graphite detail mostly around bottom and edges, no people, no text, no letters, no UI, no watermark. Warm off-white background, no saturated colors.

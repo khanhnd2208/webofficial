@@ -7,10 +7,13 @@ export const dynamic = 'force-dynamic';
 
 const PUBLIC_PAGES = [
 	{ href: routes.home, label: 'Trang mở đầu', description: 'Màn hình “Trở thành” trước mục lục.' },
-	{ href: routes.toc, label: 'Mục lục', description: 'Cổng Giới thiệu, Dự án và Dịch vụ.' },
-	{ href: routes.about, label: 'Giới thiệu', description: 'Hành trình và công việc hiện tại.' },
-	{ href: routes.projects, label: 'Dự án', description: 'Các lớp học và thử nghiệm đã làm.' },
-	{ href: routes.services, label: 'Dịch vụ', description: 'Ba hướng làm việc cùng tôi.' },
+	{ href: routes.toc, label: 'Mục lục', description: 'Cổng Giới thiệu và Trải nghiệm.' },
+	{ href: routes.about, label: 'Giới thiệu', description: 'Học quản trị và tìm cố vấn.' },
+	{
+		href: routes.experiences,
+		label: 'Trải nghiệm',
+		description: 'Dự án, thử nghiệm và câu chuyện có ảnh.',
+	},
 	{ href: routes.contact, label: 'Liên hệ', description: 'Biểu mẫu gửi lời nhắn công khai.' },
 	{ href: routes.mySpace, label: 'My Space', description: 'Cổng vào Teaching.' },
 ] as const;
@@ -44,6 +47,14 @@ export default function AdminWebsitePage() {
 				</div>
 			</section>
 
+			<section className="mt-10">
+				<Link
+					href={routes.admin.posts}
+					className="text-sm font-semibold underline underline-offset-4"
+				>
+					Quản lý câu chuyện và ảnh trong Trải nghiệm →
+				</Link>
+			</section>
 			<section className="mt-10">
 				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Hộp thư</p>
 				<Link

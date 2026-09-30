@@ -1,0 +1,4 @@
+Generated with the built-in image_gen tool on 2026-09-30.
+Use case: stylized-concept.
+Asset type: decorative raster artwork for a Vietnamese lecturer's minimal personal website.
+Create an extremely restrained editorial illustration: delicate organic contour lines like paths through a landscape, a few softly overlapping paper-cut forms and a tiny warm sun. Hand-drawn graphite and muted bronze ink on warm ivory paper (#f7f4ee), faint tactile paper grain. Wide landscape composition with detail concentrated in the right third, the left two thirds almost empty warm ivory. Quiet, thoughtful, elegant, about learning and journeys. Very low contrast, ample negative space. No lettering, no logos, no UI, no people, no watermarks. This is a background accent, not a busy hero image.

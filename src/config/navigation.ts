@@ -68,7 +68,7 @@ export type { AdminNavGroup, AdminNavItem } from './adminNavigation';
 export { ADMIN_NAV_GROUPS } from './adminNavigation';
 
 /**
- * Mục lục gate — four centered destinations. Locked items stay visible but inert.
+ * Mục lục gate — introduction and experiences. Locked items stay visible but inert.
  */
 export const GATE_NAV_ITEMS: GateNavItem[] = [
 	{
@@ -76,28 +76,14 @@ export const GATE_NAV_ITEMS: GateNavItem[] = [
 		href: routes.about,
 		label: 'Giới thiệu',
 		status: 'published',
-		blurb: 'Lớp học và những thử nghiệm',
+		blurb: 'Học quản trị và tìm cố vấn.',
 	},
 	{
-		id: 'projects',
-		href: routes.projects,
-		label: 'Dự án',
+		id: 'experiences',
+		href: routes.experiences,
+		label: 'Trải nghiệm',
 		status: 'published',
-		blurb: 'Lớp học, chương trình và thử nghiệm',
-	},
-	{
-		id: 'services',
-		href: routes.services,
-		label: 'Dịch vụ',
-		status: 'published',
-		blurb: 'Ba hướng làm việc cùng tôi',
-	},
-	{
-		id: 'my-space',
-		href: routes.mySpace,
-		label: 'My Space',
-		status: 'published',
-		blurb: 'Teaching và lớp học',
+		blurb: 'Dự án, chuyến đi và những câu chuyện.',
 	},
 ];
 
@@ -115,14 +101,6 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 		mobile: true,
 	},
 	{
-		id: 'projects',
-		href: routes.projects,
-		label: 'Dự án',
-		status: 'published',
-		desktop: true,
-		mobile: true,
-	},
-	{
 		id: 'notes',
 		href: routes.notes,
 		label: 'Ghi chép',
@@ -131,9 +109,9 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
 		mobile: true,
 	},
 	{
-		id: 'services',
-		href: routes.services,
-		label: 'Dịch vụ',
+		id: 'experiences',
+		href: routes.experiences,
+		label: 'Trải nghiệm',
 		status: 'published',
 		desktop: true,
 		mobile: true,
@@ -155,10 +133,8 @@ export const FOOTER_GROUPS: FooterGroup[] = [
 		links: [
 			{ href: routes.home, label: 'Trang chủ', status: 'published' },
 			{ href: routes.about, label: 'Giới thiệu', status: 'published' },
-			{ href: routes.projects, label: 'Dự án', status: 'published' },
-			{ href: routes.services, label: 'Dịch vụ', status: 'published' },
 			{ href: routes.contact, label: 'Liên hệ', status: 'published' },
-			{ href: routes.mySpace, label: 'My Space', status: 'published' },
+			{ href: routes.experiences, label: 'Trải nghiệm', status: 'published' },
 		],
 	},
 ];

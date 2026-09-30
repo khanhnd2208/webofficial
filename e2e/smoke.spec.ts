@@ -25,21 +25,21 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
 	});
 
-	test('mục lục opens brand destinations and My Space', async ({ page }) => {
+	test('mục lục opens introduction and experiences', async ({ page }) => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(4);
+		await expect(gate.getByRole('link')).toHaveCount(2);
 		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
 			'href',
 			'/gioi-thieu',
 		);
-		await expect(gate.getByRole('link', { name: /Dự án/i })).toHaveAttribute('href', '/du-an');
-		await expect(gate.getByRole('link', { name: /Dịch vụ/i })).toHaveAttribute('href', '/dich-vu');
-		await expect(gate.getByRole('link', { name: /My Space/i })).toHaveAttribute(
+		await expect(gate.locator('a[href="/du-an"]')).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Dịch vụ/i })).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
 			'href',
-			'/my-space',
+			'/trai-nghiem',
 		);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
@@ -61,7 +61,7 @@ test.describe('Public pages smoke', () => {
 			.click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		await expect(page.getByTestId('gate-item-locked')).toHaveCount(0);
-		await expect(page.getByRole('link', { name: /My Space/i })).toBeVisible();
+		await expect(page.getByRole('link', { name: /Trải nghiệm/i })).toBeVisible();
 		await context.close();
 	});
 
@@ -105,17 +105,14 @@ test.describe('Public pages smoke', () => {
 	test('about page introduces Khánh and leads to programmes', async ({ page }) => {
 		await page.goto('/gioi-thieu');
 		await expect(page).toHaveURL(/\/gioi-thieu/);
+		await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toBeVisible();
+		await expect(page.getByText('Trường Đại học Hà Nội', { exact: false })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Trao đổi về việc học' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Cố vấn quản trị' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /^Nền tảng$/i })).toHaveCount(0);
 		await expect(
-			page.getByRole('heading', { level: 1, name: /^Nguyễn Duy Khánh$/i }),
+			page.getByText(/Tôi vẫn đang học cách trở thành một người thầy tốt hơn/i),
 		).toBeVisible();
-		await expect(page.getByText(/Giảng viên Quản trị · Trường Đại học Hà Nội/i)).toBeVisible();
-		await expect(page.getByRole('link', { name: /Xem chương trình/i })).toBeVisible();
-		await expect(
-			page.getByRole('heading', { name: /Chương trình tôi đang triển khai/i }),
-		).toBeVisible();
-		await expect(page.getByRole('heading', { name: /Dự án tiêu biểu/i })).toBeVisible();
-		await expect(page.getByRole('heading', { name: /^Nền tảng$/i })).toBeVisible();
-		await expect(page.getByText(/Hiểu đúng vấn đề trước khi tìm giải pháp/i)).toBeVisible();
 		await expect(page.getByText(/My Hanoicam/i)).toHaveCount(0);
 		await expect(page.getByTestId('gate-back')).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
@@ -123,18 +120,18 @@ test.describe('Public pages smoke', () => {
 
 	test('retired service URLs redirect to the current architecture', async ({ page }) => {
 		await page.goto('/dong-hanh');
-		await expect(page).toHaveURL(/\/dich-vu/);
+		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu/);
 		await page.goto('/dong-hanh/mentoring');
-		await expect(page).toHaveURL(/\/dich-vu/);
+		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu/);
 		await page.goto('/case-study');
-		await expect(page).toHaveURL(/\/du-an/);
+		await expect(page).toHaveURL(/\/trai-nghiem#du-an/);
 		await page.goto('/du-an/moonie-cafe-business-development');
 		await expect(page).toHaveURL(/\/du-an\/learning-at-moonie-cafe/);
 	});
 
 	test('lab and public learn hubs redirect home', async ({ page }) => {
 		await page.goto('/goc-cua-khanh');
-		await expect(page).toHaveURL(/\/du-an/);
+		await expect(page).toHaveURL(/\/trai-nghiem#du-an/);
 		await page.goto('/hoc');
 		await expect(page).toHaveURL(/\/$/);
 		await page.goto('/archive');
@@ -192,7 +189,7 @@ test.describe('Public pages smoke', () => {
 
 	test('giang day redirects to services', async ({ page }) => {
 		await page.goto('/giang-day');
-		await expect(page).toHaveURL(/\/dich-vu/);
+		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu/);
 	});
 
 	test('personality test is not a public product route', async ({ page }) => {
@@ -210,9 +207,9 @@ test.describe('Navigation', () => {
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(4);
+		await expect(gate.getByRole('link')).toHaveCount(2);
 		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
-		await expect(gate.getByRole('link', { name: /My Space/i })).toBeVisible();
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toBeVisible();
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 	});
 

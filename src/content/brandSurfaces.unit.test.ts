@@ -21,14 +21,14 @@ describe('about content', () => {
 	it('opens with who Khánh is, where he teaches, and what he offers', () => {
 		expect(aboutHero.fullName).toBe('Nguyễn Duy Khánh');
 		expect(aboutHero.organisation).toBe('Trường Đại học Hà Nội');
-		expect(aboutHero.promise).toContain('năng lực, chương trình và quy trình');
-		expect(aboutHero.pillars).toEqual(['Management Education', 'Learning Design', 'Applied AI']);
+		expect(aboutHero.promise).toContain('quản trị');
+		expect(aboutHero.pillars).toEqual(['Quản trị', 'Thiết kế học tập', 'AI ứng dụng']);
 		expect(corePositioning.full).toContain('Nguyễn Duy Khánh');
 	});
 
 	it('features only projects that have a public case page', () => {
-		expect(aboutProjects.featuredSlugs).toHaveLength(3);
-		for (const slug of aboutProjects.featuredSlugs) {
+		expect(aboutProjects.items).toHaveLength(3);
+		for (const { slug } of aboutProjects.items) {
 			expect(getProject(slug)).toBeDefined();
 		}
 	});
@@ -36,7 +36,7 @@ describe('about content', () => {
 	it('keeps background and credentials factual', () => {
 		expect(aboutBackground.places).toHaveLength(6);
 		expect(aboutBackground.places[0]).toBe('Đại học Hà Nội');
-		expect(aboutClosing.principle).toBe('Hiểu đúng vấn đề trước khi tìm giải pháp.');
+		expect(aboutClosing.title).toBe('Bắt đầu bằng một lời nhắn');
 		expect(aboutCredentials.items).toEqual([
 			'Giảng viên, Khoa Quản trị Kinh doanh và Du lịch',
 			'Trường Đại học Hà Nội · Hà Nội, Việt Nam',

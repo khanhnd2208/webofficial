@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import RouteEntrance from '@/components/motion/RouteEntrance';
+import JourneyTransition from './JourneyTransition';
 import { isFullBleedPublicPath, isInternalChromePath } from '@/config/navigation';
 
 /**
@@ -22,7 +23,13 @@ export default function MainContent({ children }: { children: ReactNode }) {
 
 	return (
 		<div id="main-content" className={fullBleed ? undefined : 'pt-14'}>
-			{isBookPage ? children : <RouteEntrance key={pathname}>{children}</RouteEntrance>}
+			{pathname === '/' || pathname === '/muc-luc' ? (
+				<JourneyTransition page={pathname}>{children}</JourneyTransition>
+			) : isBookPage ? (
+				children
+			) : (
+				<RouteEntrance key={pathname}>{children}</RouteEntrance>
+			)}
 		</div>
 	);
 }
