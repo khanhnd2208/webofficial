@@ -49,14 +49,14 @@ describe('courseService admin lifecycle', () => {
 		repo.prisma.$transaction.mockImplementation(async (fn: (tx: typeof repo.prisma) => unknown) =>
 			fn(repo.prisma),
 		);
-		repo.prisma.teachingCourse.update.mockImplementation(async ({ data }: { data: Record<string, unknown> }) =>
-			courseRow(data),
+		repo.prisma.teachingCourse.update.mockImplementation(
+			async ({ data }: { data: Record<string, unknown> }) => courseRow(data),
 		);
 	});
 
 	it('creates a course from code and name only', async () => {
-		repo.prisma.teachingCourse.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) =>
-			courseRow(data),
+		repo.prisma.teachingCourse.create.mockImplementation(
+			async ({ data }: { data: Record<string, unknown> }) => courseRow(data),
 		);
 		await expect(
 			createTeachingCourse({ courseCode: 'hrm101', courseName: 'Human Resource Management' }),

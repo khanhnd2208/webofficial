@@ -8,10 +8,9 @@ describe('SaveToLibraryButton', () => {
 		render(
 			<SaveToLibraryButton courseSlug="hrm" setId="set-1" initialSaved={false} signedIn={false} />,
 		);
-		expect(screen.getByRole('link', { name: 'Đăng nhập để lưu vào từ vựng của tôi' })).toHaveAttribute(
-			'href',
-			expect.stringContaining('/dang-nhap?callbackUrl='),
-		);
+		expect(
+			screen.getByRole('link', { name: 'Đăng nhập để lưu vào từ vựng của tôi' }),
+		).toHaveAttribute('href', expect.stringContaining('/dang-nhap?callbackUrl='));
 	});
 
 	it('saves a linked set for a signed-in learner', async () => {

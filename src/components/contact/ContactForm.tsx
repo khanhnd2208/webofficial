@@ -414,7 +414,9 @@ export default function ContactForm({
 			<div>
 				<label htmlFor={ids.desiredOutcome} className={labelClass}>
 					Kết quả bạn mong muốn{' '}
-					<span className="normal-case tracking-normal text-ink-secondary/70">(không bắt buộc)</span>
+					<span className="normal-case tracking-normal text-ink-secondary/70">
+						(không bắt buộc)
+					</span>
 				</label>
 				<textarea
 					id={ids.desiredOutcome}
@@ -428,7 +430,9 @@ export default function ContactForm({
 			<div>
 				<label htmlFor={ids.timeframe} className={labelClass}>
 					Thời gian dự kiến{' '}
-					<span className="normal-case tracking-normal text-ink-secondary/70">(không bắt buộc)</span>
+					<span className="normal-case tracking-normal text-ink-secondary/70">
+						(không bắt buộc)
+					</span>
 				</label>
 				<select
 					id={ids.timeframe}

@@ -98,19 +98,19 @@ export default async function AdminInquiriesPage({
 					/>
 				</div>
 			) : (
-			<div className="mt-6 overflow-x-auto rounded-xl border border-border">
-				<table className="min-w-full text-left text-sm">
-					<thead className="border-b border-border bg-surface text-xs uppercase tracking-wider text-muted">
-						<tr>
-							<th className="px-4 py-3">Người gửi</th>
-							<th className="px-4 py-3">Loại</th>
-							<th className="px-4 py-3">Trạng thái</th>
-							<th className="px-4 py-3">Thông báo admin</th>
-							<th className="px-4 py-3">Ngày</th>
-						</tr>
-					</thead>
-					<tbody>
-						{result.items.map((item) => (
+				<div className="mt-6 overflow-x-auto rounded-xl border border-border">
+					<table className="min-w-full text-left text-sm">
+						<thead className="border-b border-border bg-surface text-xs uppercase tracking-wider text-muted">
+							<tr>
+								<th className="px-4 py-3">Người gửi</th>
+								<th className="px-4 py-3">Loại</th>
+								<th className="px-4 py-3">Trạng thái</th>
+								<th className="px-4 py-3">Thông báo admin</th>
+								<th className="px-4 py-3">Ngày</th>
+							</tr>
+						</thead>
+						<tbody>
+							{result.items.map((item) => (
 								<tr key={item.id} className="border-b border-border last:border-0">
 									<td className="px-4 py-3">
 										<Link
@@ -137,10 +137,10 @@ export default async function AdminInquiriesPage({
 										{item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : '—'}
 									</td>
 								</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+							))}
+						</tbody>
+					</table>
+				</div>
 			)}
 
 			{result.totalPages > 1 ? (

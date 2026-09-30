@@ -16,10 +16,20 @@ import { NextResponse } from 'next/server';
 export const GET = withAdmin(async (request: NextRequest) => {
 	const template = new URL(request.url).searchParams.get('template');
 	if (template === 'curriculum') {
-		return new NextResponse(CURRICULUM_JSON_TEMPLATE, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': 'attachment; filename="my-class-curriculum.json"' } });
+		return new NextResponse(CURRICULUM_JSON_TEMPLATE, {
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+				'Content-Disposition': 'attachment; filename="my-class-curriculum.json"',
+			},
+		});
 	}
 	if (template === 'questions') {
-		return new NextResponse(QUESTION_CSV_TEMPLATE, { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="my-class-questions.csv"' } });
+		return new NextResponse(QUESTION_CSV_TEMPLATE, {
+			headers: {
+				'Content-Type': 'text/csv; charset=utf-8',
+				'Content-Disposition': 'attachment; filename="my-class-questions.csv"',
+			},
+		});
 	}
 	return apiSuccess({ templates: ['curriculum', 'questions'] });
 });

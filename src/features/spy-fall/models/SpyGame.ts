@@ -87,7 +87,22 @@ export interface ISpyGame {
 	players: ISpyPlayer[];
 	eliminatedTokens: string[];
 	result: ISpyResult;
-	adminTest?: { ownerUserId: string; seed: string; running: boolean; randomState: number; initialConfig: Record<string, unknown>; log: string[]; controlledSeatId?: string; hostPhaseAt?: Date; lastTickAt?: Date; clockMs?: number; commandVersion?: number; requestIds?: string[]; lockId?: string; lockUntil?: Date };
+	adminTest?: {
+		ownerUserId: string;
+		seed: string;
+		running: boolean;
+		randomState: number;
+		initialConfig: Record<string, unknown>;
+		log: string[];
+		controlledSeatId?: string;
+		hostPhaseAt?: Date;
+		lastTickAt?: Date;
+		clockMs?: number;
+		commandVersion?: number;
+		requestIds?: string[];
+		lockId?: string;
+		lockUntil?: Date;
+	};
 	createdAt?: Date;
 	updatedAt?: Date;
 }

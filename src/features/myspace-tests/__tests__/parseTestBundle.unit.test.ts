@@ -6,13 +6,9 @@ import {
 	SAMPLE_SMART_QUESTIONS_CSV,
 	SAMPLE_TEST_BUNDLE_CSV,
 } from '../parseTestBundleCsv';
-import {
-	buildCsvFixPrompt,
-	buildTestBundlePrompt,
-} from '../prompts/testBundlePrompt';
+import { buildCsvFixPrompt, buildTestBundlePrompt } from '../prompts/testBundlePrompt';
 
-const HEADER =
-	'test_title,subject,topic,stem,option_a,option_b,option_c,option_d,correct_option';
+const HEADER = 'test_title,subject,topic,stem,option_a,option_b,option_c,option_d,correct_option';
 
 function row(overrides: Partial<Record<string, string>> = {}): Record<string, string> {
 	return {
@@ -50,13 +46,8 @@ describe('parseTestBundleRows', () => {
 	});
 
 	it('rejects mixed subjects', () => {
-		const result = parseTestBundleRows([
-			row(),
-			row({ subject: 'Marketing', stem: 'Other?' }),
-		]);
-		expect(result.errors.some((e) => /subject không khớp/i.test(e.message ?? ''))).toBe(
-			true,
-		);
+		const result = parseTestBundleRows([row(), row({ subject: 'Marketing', stem: 'Other?' })]);
+		expect(result.errors.some((e) => /subject không khớp/i.test(e.message ?? ''))).toBe(true);
 	});
 
 	it('rejects invalid correct_option', () => {

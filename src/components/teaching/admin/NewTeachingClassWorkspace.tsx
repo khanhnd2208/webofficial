@@ -69,9 +69,7 @@ export function NewTeachingClassWorkspace({
 		<div className="mc-studio-container max-w-xl px-0 py-8">
 			<TeachingAppHeader
 				backHref={
-					lockedCourse
-						? routes.mySpaceTeachingCourse(lockedCourse.id)
-						: routes.mySpaceTeaching
+					lockedCourse ? routes.mySpaceTeachingCourse(lockedCourse.id) : routes.mySpaceTeaching
 				}
 				backLabel={lockedCourse ? lockedCourse.courseCode : 'Các môn'}
 				eyebrow="Teaching"
@@ -95,7 +93,9 @@ export function NewTeachingClassWorkspace({
 							required
 							disabled={courseLocked}
 							value={form.courseId}
-							onChange={(event) => setForm((current) => ({ ...current, courseId: event.target.value }))}
+							onChange={(event) =>
+								setForm((current) => ({ ...current, courseId: event.target.value }))
+							}
 						>
 							<option value="">Chọn môn</option>
 							{activeCourses.map((course) => (
@@ -105,15 +105,25 @@ export function NewTeachingClassWorkspace({
 							))}
 						</StudioSelect>
 					</StudioField>
-					<StudioField label="Mã lớp" error={fieldErrors.groupNo} hint="Sẽ được viết hoa và bỏ khoảng trắng thừa.">
+					<StudioField
+						label="Mã lớp"
+						error={fieldErrors.groupNo}
+						hint="Sẽ được viết hoa và bỏ khoảng trắng thừa."
+					>
 						<StudioInput
 							required
 							value={form.groupNo}
-							onChange={(event) => setForm((current) => ({ ...current, groupNo: event.target.value }))}
+							onChange={(event) =>
+								setForm((current) => ({ ...current, groupNo: event.target.value }))
+							}
 							placeholder="39-01"
 						/>
 					</StudioField>
-					<StudioField label="Học kỳ" error={fieldErrors.term} hint="Gợi ý từ các kỳ đã có, vẫn nhập tự do được.">
+					<StudioField
+						label="Học kỳ"
+						error={fieldErrors.term}
+						hint="Gợi ý từ các kỳ đã có, vẫn nhập tự do được."
+					>
 						<StudioInput
 							required
 							list="new-class-term-suggestions"

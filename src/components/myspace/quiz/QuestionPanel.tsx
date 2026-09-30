@@ -76,11 +76,7 @@ function NavRow({
 }) {
 	const nextDisabled = !canNext || phase === 'checking' || phase === 'submitting';
 	const nextLabel =
-		phase === 'submitting'
-			? 'Submitting…'
-			: index < total - 1
-				? 'Next →'
-				: 'Submit →';
+		phase === 'submitting' ? 'Submitting…' : index < total - 1 ? 'Next →' : 'Submit →';
 
 	return (
 		<div className={`flex flex-wrap items-center justify-between gap-3 ${className}`}>
@@ -148,10 +144,7 @@ export default function QuestionPanel({
 		}
 	}, [focusKey]);
 
-	function handleOptionKeyDown(
-		e: KeyboardEvent<HTMLButtonElement>,
-		key: McqCorrectOption,
-	) {
+	function handleOptionKeyDown(e: KeyboardEvent<HTMLButtonElement>, key: McqCorrectOption) {
 		const idx = optionKeys.indexOf(key);
 		if (idx < 0 || optionKeys.length === 0) return;
 		if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
@@ -232,10 +225,7 @@ export default function QuestionPanel({
 						</ul>
 
 						{reveal ? (
-							<AnswerFeedback
-								isCorrect={reveal.isCorrect}
-								correctOption={reveal.correctOption}
-							/>
+							<AnswerFeedback isCorrect={reveal.isCorrect} correctOption={reveal.correctOption} />
 						) : null}
 					</m.div>
 				</AnimatePresence>

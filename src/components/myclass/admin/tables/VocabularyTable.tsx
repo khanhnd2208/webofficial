@@ -1,6 +1,10 @@
 'use client';
 
-import { StudioAdminTable, StudioStatus, type StudioColumn } from '@/components/myclass/admin/studio';
+import {
+	StudioAdminTable,
+	StudioStatus,
+	type StudioColumn,
+} from '@/components/myclass/admin/studio';
 import { routes } from '@/config/routes';
 import { ensureListPage } from '@/features/my-class/domain/listQuery';
 import type { AdminVocabTableRow, ListPage } from '@/features/my-class';
@@ -15,7 +19,9 @@ const columns: StudioColumn<AdminVocabTableRow>[] = [
 			<div className="min-w-0">
 				<p className="truncate font-semibold">{row.title}</p>
 				<p className="mc-meta mt-0.5 truncate">
-					{row.courses.length ? row.courses.map((course) => course.title).join(' · ') : 'Chưa gắn vào khóa nào'}
+					{row.courses.length
+						? row.courses.map((course) => course.title).join(' · ')
+						: 'Chưa gắn vào khóa nào'}
 					{row.isCourseOnly ? ' · chỉ khóa học' : ''}
 				</p>
 			</div>

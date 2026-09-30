@@ -20,11 +20,6 @@ export default function OutlineStatusDot({
 	const tone = isArchived ? 'archived' : 'draft';
 
 	return (
-		<span
-			className="mc-outline-status-dot"
-			data-tone={tone}
-			title={label}
-			aria-label={label}
-		/>
+		<span className="mc-outline-status-dot" data-tone={tone} title={label} aria-label={label} />
 	);
 }

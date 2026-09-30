@@ -27,5 +27,8 @@ export const GET = withAdmin(async (request: NextRequest) => {
 });
 
 export const POST = withAdmin(async (request: NextRequest) =>
-	apiSuccess(await createKnowledgeUnit(parseWithAppError(createKnowledgeUnitSchema, await request.json())), 201),
+	apiSuccess(
+		await createKnowledgeUnit(parseWithAppError(createKnowledgeUnitSchema, await request.json())),
+		201,
+	),
 );

@@ -137,12 +137,23 @@ async function getAllPostsRaw(params: {
 	// Sort options for public pages
 	let sortObj: Record<string, 1 | -1> = { chapterNumber: 1, createdAt: -1 };
 	switch (params.sort) {
-		case 'chapter-asc': sortObj = { chapterNumber: 1, createdAt: -1 }; break;
-		case 'chapter-desc': sortObj = { chapterNumber: -1, createdAt: -1 }; break;
-		case 'newest': sortObj = { createdAt: -1 }; break;
-		case 'oldest': sortObj = { createdAt: 1 }; break;
-		case 'views': sortObj = { views: -1 }; break;
-		default: break;
+		case 'chapter-asc':
+			sortObj = { chapterNumber: 1, createdAt: -1 };
+			break;
+		case 'chapter-desc':
+			sortObj = { chapterNumber: -1, createdAt: -1 };
+			break;
+		case 'newest':
+			sortObj = { createdAt: -1 };
+			break;
+		case 'oldest':
+			sortObj = { createdAt: 1 };
+			break;
+		case 'views':
+			sortObj = { views: -1 };
+			break;
+		default:
+			break;
 	}
 
 	const [total, items] = await Promise.all([
@@ -169,7 +180,10 @@ async function getAllPostsRaw(params: {
 async function getAllCategoriesPublicRaw(): Promise<string[]> {
 	await dbConnect();
 	const cats = (await Post.distinct('category', { isPublished: true })) as unknown as string[];
-	return cats.filter((c) => c && c !== 'Uncategorized').map((c) => String(c)).sort((a, b) => a.localeCompare(b));
+	return cats
+		.filter((c) => c && c !== 'Uncategorized')
+		.map((c) => String(c))
+		.sort((a, b) => a.localeCompare(b));
 }
 
 async function getPostBySlugRaw(slug: string): Promise<PostDetailDTO | null> {
@@ -178,7 +192,10 @@ async function getPostBySlugRaw(slug: string): Promise<PostDetailDTO | null> {
 
 	await dbConnect();
 
-	const found = (await Post.findOne({ slug: normalized, isPublished: true }).lean()) as unknown as PostLean | null;
+	const found = (await Post.findOne({
+		slug: normalized,
+		isPublished: true,
+	}).lean()) as unknown as PostLean | null;
 	if (!found) return null;
 	return toDetailDTO(found);
 }
@@ -215,7 +232,10 @@ async function getRelatedPostsRaw(params: {
  */
 async function ensureUniqueSlug(base: string, excludeId?: string): Promise<string> {
 	const cleanedBase = base || 'post';
-	const candidates = [cleanedBase, ...Array.from({ length: 49 }, (_, i) => `${cleanedBase}-${i + 2}`)];
+	const candidates = [
+		cleanedBase,
+		...Array.from({ length: 49 }, (_, i) => `${cleanedBase}-${i + 2}`),
+	];
 
 	const filter: Record<string, unknown> = { slug: { $in: candidates } };
 	if (excludeId) filter._id = { $ne: excludeId };
@@ -251,7 +271,7 @@ export async function createPost(input: {
 	if (!content) throw new Error('Missing content');
 
 	const tags = Array.from(
-		new Set((input.tags ?? []).map((t) => String(t).trim()).filter(Boolean))
+		new Set((input.tags ?? []).map((t) => String(t).trim()).filter(Boolean)),
 	).slice(0, 20);
 
 	const slugBase = slugify(String(input.slug ?? title));
@@ -286,7 +306,7 @@ export async function getAdminPosts(
 		sort?: string;
 		dateFrom?: string;
 		dateTo?: string;
-	}
+	},
 ): Promise<GetAdminPostsResult> {
 	const page = Math.max(1, Math.floor(pageInput));
 	const limit = Math.min(50, Math.max(1, Math.floor(limitInput)));
@@ -321,11 +341,20 @@ export async function getAdminPosts(
 	// Sort
 	let sortObj: Record<string, 1 | -1> = { updatedAt: -1 };
 	switch (opts?.sort) {
-		case 'oldest': sortObj = { createdAt: 1 }; break;
-		case 'title': sortObj = { title: 1 }; break;
-		case 'views': sortObj = { views: -1 }; break;
-		case 'created': sortObj = { createdAt: -1 }; break;
-		default: break; // updatedAt desc
+		case 'oldest':
+			sortObj = { createdAt: 1 };
+			break;
+		case 'title':
+			sortObj = { title: 1 };
+			break;
+		case 'views':
+			sortObj = { views: -1 };
+			break;
+		case 'created':
+			sortObj = { createdAt: -1 };
+			break;
+		default:
+			break; // updatedAt desc
 	}
 
 	const [total, items] = await Promise.all([
@@ -362,7 +391,7 @@ export async function getAdminPostById(id: string): Promise<AdminPostDetailDTO |
 
 export async function updatePostById(
 	id: string,
-	input: Record<string, unknown>
+	input: Record<string, unknown>,
 ): Promise<AdminPostDetailDTO> {
 	const cleanedId = String(id ?? '').trim();
 	if (!cleanedId) throw new Error('Missing id');
@@ -409,7 +438,9 @@ export async function updatePostById(
 		update.isPublished = Boolean(input.isPublished);
 		// Auto-set publishedAt when first published (pre-validate hook is skipped by findByIdAndUpdate)
 		if (update.isPublished) {
-			const existing = (await Post.findById(cleanedId).select('publishedAt isPublished').lean()) as unknown as { publishedAt?: Date; isPublished?: boolean } | null;
+			const existing = (await Post.findById(cleanedId)
+				.select('publishedAt isPublished')
+				.lean()) as unknown as { publishedAt?: Date; isPublished?: boolean } | null;
 			if (existing && !existing.publishedAt) {
 				update.publishedAt = new Date();
 			}
@@ -453,7 +484,10 @@ async function getLatestPostsRaw(limit: number): Promise<PostListItemDTO[]> {
 async function getAllTagsRaw(): Promise<string[]> {
 	await dbConnect();
 	const tags = (await Post.distinct('tags', { isPublished: true })) as unknown as string[];
-	return tags.filter(Boolean).map((t) => String(t)).sort((a, b) => a.localeCompare(b));
+	return tags
+		.filter(Boolean)
+		.map((t) => String(t))
+		.sort((a, b) => a.localeCompare(b));
 }
 
 export const getAllPosts = unstable_cache(
@@ -476,7 +510,7 @@ export const getAllPosts = unstable_cache(
 			featuredOnly: opts?.featuredOnly,
 		}),
 	['posts:list'],
-	{ revalidate: 60 }
+	{ revalidate: 60 },
 );
 
 export async function countPublishedPostsMissingTaxonomy(): Promise<{
@@ -508,28 +542,30 @@ export async function isJournalTaxonomyComplete(): Promise<boolean> {
 export const getAllCategories = unstable_cache(
 	async () => getAllCategoriesPublicRaw(),
 	['posts:categories'],
-	{ revalidate: 60 }
+	{ revalidate: 60 },
 );
 
 export const getPostBySlug = unstable_cache(
 	async (slug: string) => getPostBySlugRaw(slug),
 	['posts:detail'],
-	{ revalidate: 60 }
+	{ revalidate: 60 },
 );
 
 export const getLatestPosts = unstable_cache(
 	async (limit: number) => getLatestPostsRaw(limit),
 	['posts:latest'],
-	{ revalidate: 60 }
+	{ revalidate: 60 },
 );
 
-export const getAllTags = unstable_cache(async () => getAllTagsRaw(), ['posts:tags'], { revalidate: 60 });
+export const getAllTags = unstable_cache(async () => getAllTagsRaw(), ['posts:tags'], {
+	revalidate: 60,
+});
 
 export const getRelatedPosts = unstable_cache(
 	async (tags: string[], excludeSlug?: string, limit: number = 3) =>
 		getRelatedPostsRaw({ tags, excludeSlug, limit }),
 	['posts:related'],
-	{ revalidate: 60 }
+	{ revalidate: 60 },
 );
 
 /* ──────────────────────────────────────────────────────
@@ -539,13 +575,19 @@ export const getRelatedPosts = unstable_cache(
 export async function getAllCategoriesAdmin(): Promise<string[]> {
 	await dbConnect();
 	const cats = (await Post.distinct('category')) as unknown as string[];
-	return cats.filter(Boolean).map((c) => String(c)).sort((a, b) => a.localeCompare(b));
+	return cats
+		.filter(Boolean)
+		.map((c) => String(c))
+		.sort((a, b) => a.localeCompare(b));
 }
 
 export async function getAllTagsAdmin(): Promise<string[]> {
 	await dbConnect();
 	const tags = (await Post.distinct('tags')) as unknown as string[];
-	return tags.filter(Boolean).map((t) => String(t)).sort((a, b) => a.localeCompare(b));
+	return tags
+		.filter(Boolean)
+		.map((t) => String(t))
+		.sort((a, b) => a.localeCompare(b));
 }
 
 export interface AdminDashboardStats {
@@ -589,7 +631,13 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
 		]),
 	]);
 
-	const s = statsAgg[0] ?? { totalPosts: 0, published: 0, drafts: 0, totalViews: 0, totalReactions: 0 };
+	const s = statsAgg[0] ?? {
+		totalPosts: 0,
+		published: 0,
+		drafts: 0,
+		totalViews: 0,
+		totalReactions: 0,
+	};
 
 	return {
 		totalPosts: s.totalPosts,

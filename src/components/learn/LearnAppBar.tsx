@@ -6,7 +6,13 @@ import { routes } from '@/config/routes';
 import { LearnIcon } from './LearnIcon';
 
 /** Top bar for the catalog and course overview (the player has its own focused bar). */
-export default function LearnAppBar({ crumbs = [], actions }: { crumbs?: Array<{ label: string; href?: string }>; actions?: ReactNode }) {
+export default function LearnAppBar({
+	crumbs = [],
+	actions,
+}: {
+	crumbs?: Array<{ label: string; href?: string }>;
+	actions?: ReactNode;
+}) {
 	return (
 		<header className="ln-appbar">
 			<div className="ln-appbar__inner">
@@ -20,7 +26,11 @@ export default function LearnAppBar({ crumbs = [], actions }: { crumbs?: Array<{
 					{crumbs.map((crumb) => (
 						<span key={crumb.label} className="ln-appbar__crumb">
 							<LearnIcon name="chevronRight" size={14} />
-							{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}
+							{crumb.href ? (
+								<Link href={crumb.href}>{crumb.label}</Link>
+							) : (
+								<span aria-current="page">{crumb.label}</span>
+							)}
 						</span>
 					))}
 				</nav>

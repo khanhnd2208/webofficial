@@ -49,6 +49,12 @@ export type RecallImportRow = {
 
 export type RecallImportPreview = {
 	rows: RecallImportRow[];
-	summary: { total: number; valid: number; invalid: number; duplicates: number; orphanAnswers: number };
+	summary: {
+		total: number;
+		valid: number;
+		invalid: number;
+		duplicates: number;
+		orphanAnswers: number;
+	};
 	format: 'csv' | 'paste' | 'tsv';
 };

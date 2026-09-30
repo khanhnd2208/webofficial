@@ -43,10 +43,13 @@ describe('TiptapEditor color tools', () => {
 	});
 
 	it('loads saved color and highlight HTML without dropping either mark', async () => {
-		const content = '<p><span style="color: #2563eb">Blue</span> <mark style="background-color: #bbf7d0">green</mark></p>';
+		const content =
+			'<p><span style="color: #2563eb">Blue</span> <mark style="background-color: #bbf7d0">green</mark></p>';
 		const onChange = vi.fn();
 		const { rerender } = render(<TiptapEditor content={content} onChange={onChange} />);
-		await waitFor(() => expect(screen.getByRole('button', { name: 'Màu chữ' })).toBeInTheDocument());
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Màu chữ' })).toBeInTheDocument(),
+		);
 		await waitFor(() => {
 			const html = document.querySelector('.tiptap-content')?.innerHTML ?? '';
 			expect(html).toMatch(/color:/i);

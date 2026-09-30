@@ -11,7 +11,15 @@ import type { TeachingAttendanceBoardConfig } from '@/features/teaching/types';
 import { teachingApi } from './api';
 import { useTeachingLeaveGuard } from './useTeachingLeaveGuard';
 
-export function AttendanceBoardPanel({ initial, publicPath, onSaved }: { initial: TeachingAttendanceBoardConfig; publicPath?: string | null; onSaved?: (updated: TeachingAttendanceBoardConfig) => void }) {
+export function AttendanceBoardPanel({
+	initial,
+	publicPath,
+	onSaved,
+}: {
+	initial: TeachingAttendanceBoardConfig;
+	publicPath?: string | null;
+	onSaved?: (updated: TeachingAttendanceBoardConfig) => void;
+}) {
 	const [config, setConfig] = useState(initial);
 	const [rules, setRules] = useState(initial.classRules);
 	const [busy, setBusy] = useState(false);
@@ -20,7 +28,10 @@ export function AttendanceBoardPanel({ initial, publicPath, onSaved }: { initial
 	const [copied, setCopied] = useState(false);
 
 	const sharePath = publicPath === undefined ? config.publicPath : publicPath;
-	const leaveDialog = useTeachingLeaveGuard({ dirty: () => rules !== config.classRules || busy, save: () => save({ shared: config.attendanceVisible, classRules: rules }) });
+	const leaveDialog = useTeachingLeaveGuard({
+		dirty: () => rules !== config.classRules || busy,
+		save: () => save({ shared: config.attendanceVisible, classRules: rules }),
+	});
 	const shareUrl = sharePath ? absoluteUrl(sharePath) : null;
 	async function save(next: { shared: boolean; classRules?: string }) {
 		if (busy) return false;
@@ -39,9 +50,11 @@ export function AttendanceBoardPanel({ initial, publicPath, onSaved }: { initial
 			onSaved?.(updated);
 			if (next.classRules !== undefined) setRules(updated.classRules);
 			setMessage(
-				next.classRules !== undefined ? 'Đã lưu nội quy.' : next.shared
-					? 'Đã chia sẻ. Ai có đường dẫn đều có thể theo dõi toàn bộ lớp.'
-					: 'Đã tắt chia sẻ.',
+				next.classRules !== undefined
+					? 'Đã lưu nội quy.'
+					: next.shared
+						? 'Đã chia sẻ. Ai có đường dẫn đều có thể theo dõi toàn bộ lớp.'
+						: 'Đã tắt chia sẻ.',
 			);
 			return true;
 		} catch (reason) {

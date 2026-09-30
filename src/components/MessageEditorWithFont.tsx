@@ -20,7 +20,8 @@ export default function MessageEditorWithFont({
 	onFontChange,
 	placeholder,
 }: MessageEditorWithFontProps) {
-	const activeFontDef = MESSAGE_DISPLAY_FONTS.find((f) => f.id === displayFont) ?? MESSAGE_DISPLAY_FONTS[0];
+	const activeFontDef =
+		MESSAGE_DISPLAY_FONTS.find((f) => f.id === displayFont) ?? MESSAGE_DISPLAY_FONTS[0];
 	const fontFamily = activeFontDef.fontStack;
 
 	return (

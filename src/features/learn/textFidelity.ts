@@ -33,10 +33,15 @@ export interface LectureComparison {
 }
 
 const MERMAID_FENCE_OPEN = /^\s*(`{3,}|~{3,})mermaid\s*$/i;
-const RAW_MERMAID_START = /^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
+const RAW_MERMAID_START =
+	/^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
 const DOC_BYLINE = /·\s*@\S/;
 
-function stripFormatting(markdown: string, side: 'original' | 'formatted', questions = false): string {
+function stripFormatting(
+	markdown: string,
+	side: 'original' | 'formatted',
+	questions = false,
+): string {
 	const normalized = markdown.normalize('NFC').replace(ZERO_WIDTH, '');
 	const lines = normalized.replace(/\r\n?/g, '\n').split('\n');
 	const out: string[] = [];
@@ -66,11 +71,19 @@ function stripFormatting(markdown: string, side: 'original' | 'formatted', quest
 		let line = rawLine;
 		const section = line
 			.trim()
-			.match(/^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ|PRACTICE|DISCUSSION|LUYỆN\s*TẬP|PHẢN\s*BIỆN|KIỂM\s*TRA)\s*:\s*(.+?)\s*(?:={3,}|-{3,})\s*$/i);
+			.match(
+				/^(?:={3,}|-{3,})\s*(?:SECTION|MỤC|PHẦN|QUIZ|PRACTICE|DISCUSSION|LUYỆN\s*TẬP|PHẢN\s*BIỆN|KIỂM\s*TRA)\s*:\s*(.+?)\s*(?:={3,}|-{3,})\s*$/i,
+			);
 		if (section) {
-			line = section[1].replace(/\|\s*\d{1,3}\s*(?:phút|phut|min(?:utes)?|giờ|gio|hours?|h)\b[^|]*$/i, '').trim();
+			line = section[1]
+				.replace(/\|\s*\d{1,3}\s*(?:phút|phut|min(?:utes)?|giờ|gio|hours?|h)\b[^|]*$/i, '')
+				.trim();
 		}
-		if (/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line) || /^\s*-{3,}\s*$/.test(line)) continue;
+		if (
+			/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line) ||
+			/^\s*-{3,}\s*$/.test(line)
+		)
+			continue;
 		line = line.replace(/\\([\\`*_{}[\]()#+.!|>~-])/g, '$1');
 		// Image alt text and captions are presentation metadata, not lecture prose.
 		// Ignore them so adding a teaching illustration does not look like a content edit.
@@ -217,11 +230,15 @@ function withoutBylineReplacement(original: string, formatted: string): string {
 	const head = original.replace(/\r\n?/g, '\n').split('\n').slice(0, 3);
 	if (!head.some((line) => DOC_BYLINE.test(line))) return formatted;
 	const lines = formatted.replace(/\r\n?/g, '\n').split('\n');
-	const index = lines.findIndex((line, i) => i < 5 && /^>\s+\S/.test(line) && !/^>\s*\[!/.test(line));
+	const index = lines.findIndex(
+		(line, i) => i < 5 && /^>\s+\S/.test(line) && !/^>\s*\[!/.test(line),
+	);
 	if (index < 0) return formatted;
 	const description = stripFormatting(lines[index], 'formatted').split(/\s+/).filter(Boolean);
 	const source = stripFormatting(original, 'original').split(/\s+/).filter(Boolean);
-	const found = source.some((_, start) => sameWordsIgnoreCase(source.slice(start, start + description.length), description));
+	const found = source.some((_, start) =>
+		sameWordsIgnoreCase(source.slice(start, start + description.length), description),
+	);
 	if (!found) return formatted;
 	lines.splice(index, 1);
 	return lines.join('\n');
@@ -237,7 +254,11 @@ export function compareLectureText(
 	const cleanedOriginal = cleanAiPaste(original).markdown;
 	const cleanedFormatted = cleanAiPaste(formatted).markdown;
 	const left = stripFormatting(cleanedOriginal, 'original', questions).split(/\s+/).filter(Boolean);
-	const right = stripFormatting(withoutBylineReplacement(cleanedOriginal, cleanedFormatted), 'formatted', questions)
+	const right = stripFormatting(
+		withoutBylineReplacement(cleanedOriginal, cleanedFormatted),
+		'formatted',
+		questions,
+	)
 		.split(/\s+/)
 		.filter(Boolean);
 	if (sameWords(left, right)) return { matchPercent: 100, hunks: [] };

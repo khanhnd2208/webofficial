@@ -141,7 +141,10 @@ export async function coursesWithUnpublishedDraft(ids: string[]) {
 		select: { courseId: true },
 		distinct: ['courseId'],
 	});
-	return new Set([...draftCourses.map((row) => row.id), ...draftLessons.map((row) => row.courseId)]);
+	return new Set([
+		...draftCourses.map((row) => row.id),
+		...draftLessons.map((row) => row.courseId),
+	]);
 }
 
 export async function findAdminCourse(id: string) {

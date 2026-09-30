@@ -16,16 +16,25 @@ const SAVE_LABEL: Record<SaveState, string> = {
 };
 
 /** Private per-section note; autosaves shortly after typing stops. */
-export default function LearnNotes({ sectionId, initialNote }: { sectionId: string; initialNote: string }) {
+export default function LearnNotes({
+	sectionId,
+	initialNote,
+}: {
+	sectionId: string;
+	initialNote: string;
+}) {
 	const [open, setOpen] = useState(Boolean(initialNote));
 	const [note, setNote] = useState(initialNote);
 	const [state, setState] = useState<SaveState>('idle');
 	const saved = useRef(initialNote);
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	useEffect(() => () => {
-		if (timer.current) clearTimeout(timer.current);
-	}, []);
+	useEffect(
+		() => () => {
+			if (timer.current) clearTimeout(timer.current);
+		},
+		[],
+	);
 
 	function schedule(value: string) {
 		setNote(value);
@@ -48,11 +57,18 @@ export default function LearnNotes({ sectionId, initialNote }: { sectionId: stri
 
 	return (
 		<section className="ln-notes" aria-label="Ghi chú của bạn">
-			<button type="button" className="ln-notes__toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+			<button
+				type="button"
+				className="ln-notes__toggle"
+				onClick={() => setOpen((value) => !value)}
+				aria-expanded={open}
+			>
 				<span>
 					<LearnIcon name="note" size={16} /> Ghi chú của bạn
 				</span>
-				<span className="ln-notes__state">{open ? SAVE_LABEL[state] : note ? 'Có ghi chú' : 'Chỉ bạn thấy'}</span>
+				<span className="ln-notes__state">
+					{open ? SAVE_LABEL[state] : note ? 'Có ghi chú' : 'Chỉ bạn thấy'}
+				</span>
 			</button>
 			{open ? (
 				<textarea

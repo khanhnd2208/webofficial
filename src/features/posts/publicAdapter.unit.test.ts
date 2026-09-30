@@ -9,7 +9,9 @@ import {
 } from '@/features/posts/publicAdapter';
 import type { PostListItemDTO } from '@/types/post';
 
-function post(partial: Partial<PostListItemDTO> & Pick<PostListItemDTO, 'id' | 'title' | 'slug'>): PostListItemDTO {
+function post(
+	partial: Partial<PostListItemDTO> & Pick<PostListItemDTO, 'id' | 'title' | 'slug'>,
+): PostListItemDTO {
 	return {
 		summary: '',
 		category: '',

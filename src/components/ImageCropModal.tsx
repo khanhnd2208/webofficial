@@ -11,11 +11,7 @@ interface ImageCropModalProps {
 	onCancel: () => void;
 }
 
-function getCroppedCanvas(
-	image: HTMLImageElement,
-	crop: PixelCrop,
-	quality = 0.9,
-): Promise<File> {
+function getCroppedCanvas(image: HTMLImageElement, crop: PixelCrop, quality = 0.9): Promise<File> {
 	const canvas = document.createElement('canvas');
 	const scaleX = image.naturalWidth / image.width;
 	const scaleY = image.naturalHeight / image.height;
@@ -122,7 +118,13 @@ export default function ImageCropModal({
 						onClick={onCancel}
 						className="flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
 					>
-						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+						<svg
+							className="h-4 w-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={2}
+						>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
 						</svg>
 					</button>
@@ -135,9 +137,13 @@ export default function ImageCropModal({
 						<div className="mb-3 flex items-center gap-3 rounded-lg bg-surface-secondary px-3 py-2 text-xs text-muted">
 							<span>📐 Kích thước xuất:</span>
 							<span className="font-mono font-bold text-foreground">
-								{Math.floor(completedCrop.width * (imgRef.current.naturalWidth / imgRef.current.width))}
+								{Math.floor(
+									completedCrop.width * (imgRef.current.naturalWidth / imgRef.current.width),
+								)}
 								{' × '}
-								{Math.floor(completedCrop.height * (imgRef.current.naturalHeight / imgRef.current.height))}
+								{Math.floor(
+									completedCrop.height * (imgRef.current.naturalHeight / imgRef.current.height),
+								)}
 								{' px'}
 							</span>
 							<span className="text-muted/60">·</span>

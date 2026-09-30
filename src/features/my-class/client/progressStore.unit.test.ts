@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { enqueueComplete, mergeLearnerState, pendingCount, readLocalCompleted, writeLocalCompleted } from './progressStore';
+import {
+	enqueueComplete,
+	mergeLearnerState,
+	pendingCount,
+	readLocalCompleted,
+	writeLocalCompleted,
+} from './progressStore';
 import { progressQueueKey } from '../domain/progressKeys';
 import type { MyClassCourseDetail } from '../types';
 
@@ -53,8 +59,22 @@ const course = {
 					position: 0,
 					tests: [],
 					knowledgeUnits: [
-						{ id: 'k1', slug: 'a', title: 'A', summary: '', position: 0, availableLevels: ['readable'] },
-						{ id: 'k2', slug: 'b', title: 'B', summary: '', position: 1, availableLevels: ['readable'] },
+						{
+							id: 'k1',
+							slug: 'a',
+							title: 'A',
+							summary: '',
+							position: 0,
+							availableLevels: ['readable'],
+						},
+						{
+							id: 'k2',
+							slug: 'b',
+							title: 'B',
+							summary: '',
+							position: 1,
+							availableLevels: ['readable'],
+						},
 					],
 				},
 			],

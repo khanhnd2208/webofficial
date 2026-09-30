@@ -91,7 +91,9 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 		audio.volume = 0.35;
 		audio.loop = true;
 
-		const onCanPlay = () => { void tryPlay(); };
+		const onCanPlay = () => {
+			void tryPlay();
+		};
 		const onTime = () => {
 			if (!seekingRef.current) setCurrentTime(audio.currentTime);
 		};
@@ -206,8 +208,14 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 							<div
 								ref={seekRef}
 								className="relative mx-4 mt-3 h-1.5 cursor-pointer touch-none select-none rounded-full bg-border/60"
-								onMouseDown={(e) => { setSeeking(true); seekToClientX(e.clientX); }}
-								onTouchStart={(e) => { setSeeking(true); seekToClientX(e.touches[0].clientX); }}
+								onMouseDown={(e) => {
+									setSeeking(true);
+									seekToClientX(e.clientX);
+								}}
+								onTouchStart={(e) => {
+									setSeeking(true);
+									seekToClientX(e.touches[0].clientX);
+								}}
 								role="slider"
 								aria-label="Tiến trình bài nhạc"
 								aria-valuenow={Math.round(currentTime)}
@@ -259,7 +267,11 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 											<rect x="14" y="4" width="4" height="16" rx="1.5" />
 										</svg>
 									) : (
-										<svg className="h-4 w-4 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
+										<svg
+											className="h-4 w-4 translate-x-0.5"
+											viewBox="0 0 24 24"
+											fill="currentColor"
+										>
 											<path d="M8 5.14v14l11-7-11-7z" />
 										</svg>
 									)}
@@ -272,7 +284,13 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 									aria-label="Ẩn thanh nhạc"
 									title="Ẩn"
 								>
-									<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+									<svg
+										className="h-3.5 w-3.5"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+									>
 										<path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
 									</svg>
 								</button>
@@ -290,7 +308,9 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 					aria-label="Hiện thanh nhạc"
 				>
 					<svg className="h-4.5 w-4.5 text-accent" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+						<path d="M9 18V5l12-2v13" />
+						<circle cx="6" cy="18" r="3" />
+						<circle cx="18" cy="16" r="3" />
 					</svg>
 				</button>
 			)}

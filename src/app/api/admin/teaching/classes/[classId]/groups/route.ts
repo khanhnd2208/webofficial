@@ -34,7 +34,10 @@ export const PATCH = withTeachingGroupBoard(
 			throw new AppError('Chức năng mở/khóa bảng đã được gỡ bỏ.', 410, 'GONE');
 		}
 		return apiSuccess(
-			await configureGroupBoard(id, { ...parseWithAppError(configureGroupBoardSchema, body), actorUserId: user.id }),
+			await configureGroupBoard(id, {
+				...parseWithAppError(configureGroupBoardSchema, body),
+				actorUserId: user.id,
+			}),
 		);
 	}),
 );

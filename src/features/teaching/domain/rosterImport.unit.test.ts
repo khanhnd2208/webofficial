@@ -11,7 +11,9 @@ import {
 	type RosterImportPreviewRow,
 } from './rosterImport';
 
-function input(overrides: Partial<NormalizedTeachingStudentInput> = {}): NormalizedTeachingStudentInput {
+function input(
+	overrides: Partial<NormalizedTeachingStudentInput> = {},
+): NormalizedTeachingStudentInput {
 	return {
 		sourceRow: 2,
 		orderNo: 1,
@@ -63,10 +65,7 @@ describe('roster import classification', () => {
 
 	it('fills blank profile fields without treating them as conflicts', () => {
 		expect(
-			classifyRosterRow(
-				input(),
-				existing({ dateOfBirth: null, phone: null, email: null }),
-			),
+			classifyRosterRow(input(), existing({ dateOfBirth: null, phone: null, email: null })),
 		).toMatchObject({
 			status: 'fill_blank',
 			fillBlankFields: ['dateOfBirth', 'phone', 'email'],
@@ -101,11 +100,11 @@ describe('roster import classification', () => {
 	});
 
 	it('blocks commit while invalid or unresolved conflict rows remain', () => {
-		const rows = [
-			{ status: 'new' },
-			{ status: 'conflict' },
-		] as RosterImportPreviewRow[];
+		const rows = [{ status: 'new' }, { status: 'conflict' }] as RosterImportPreviewRow[];
 		expect(rosterPreviewCanCommit(rows)).toBe(false);
-		expect(summarizeRosterPreview([{ status: 'new', accessMode: 'OPEN' }] as RosterImportPreviewRow[]).openAccessCount).toBe(1);
+		expect(
+			summarizeRosterPreview([{ status: 'new', accessMode: 'OPEN' }] as RosterImportPreviewRow[])
+				.openAccessCount,
+		).toBe(1);
 	});
 });

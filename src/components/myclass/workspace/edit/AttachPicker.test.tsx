@@ -126,7 +126,9 @@ describe('AttachPicker', () => {
 		await waitFor(() => expect(myClassList).toHaveBeenCalledTimes(1));
 
 		fireEvent.change(screen.getByPlaceholderText('Tìm theo tên…'), { target: { value: 'hrm' } });
-		fireEvent.change(screen.getByPlaceholderText('Tìm theo tên…'), { target: { value: 'hrm quiz' } });
+		fireEvent.change(screen.getByPlaceholderText('Tìm theo tên…'), {
+			target: { value: 'hrm quiz' },
+		});
 		expect(myClassList).toHaveBeenCalledTimes(1);
 
 		await waitFor(() => expect(myClassList).toHaveBeenCalledTimes(2));

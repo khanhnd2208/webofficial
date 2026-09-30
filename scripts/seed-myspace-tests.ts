@@ -39,8 +39,7 @@ const questions: Q[] = [
 		topic: CHAPTER1,
 		stem: "In today's workplace, ________.",
 		optionA: 'women are more likely than men to be promoted into management',
-		optionB:
-			'many employees perform work that in the past was considered managerial activities',
+		optionB: 'many employees perform work that in the past was considered managerial activities',
 		optionC: 'women tend to be more effective supervisors than men',
 		optionD: 'most organizations have eliminated the title of manager',
 		correctOption: 'B',

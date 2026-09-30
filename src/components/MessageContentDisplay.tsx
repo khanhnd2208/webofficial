@@ -34,12 +34,8 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 					<>
 						{/* Cover image — full-width with gradient fade */}
 						<div className="relative h-56 w-full overflow-hidden sm:h-72">
-							{ }
-							<img
-								src={message.coverImageUrl}
-								alt=""
-								className="h-full w-full object-cover"
-							/>
+							{}
+							<img src={message.coverImageUrl} alt="" className="h-full w-full object-cover" />
 							{/* Bottom gradient to blend with page bg */}
 							<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--background)]" />
 						</div>
@@ -58,10 +54,7 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 							>
 								{message.recipientName}
 							</h1>
-							<p
-								className="mt-2 text-base text-foreground-secondary"
-								style={{ fontFamily }}
-							>
+							<p className="mt-2 text-base text-foreground-secondary" style={{ fontFamily }}>
 								{message.title}
 							</p>
 						</div>
@@ -78,10 +71,7 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 						>
 							{message.recipientName}
 						</h1>
-						<p
-							className="mt-2 text-base text-foreground-secondary"
-							style={{ fontFamily }}
-						>
+						<p className="mt-2 text-base text-foreground-secondary" style={{ fontFamily }}>
 							{message.title}
 						</p>
 					</div>
@@ -94,7 +84,6 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 					<div
 						className="tiptap-content prose prose-base dark:prose-invert mx-auto max-w-prose rounded-2xl border border-border/50 bg-surface/80 px-5 py-6 shadow-sm backdrop-blur-sm sm:px-8 sm:py-8"
 						style={{ fontFamily }}
-						 
 						dangerouslySetInnerHTML={{ __html: message.content }}
 					/>
 				</div>

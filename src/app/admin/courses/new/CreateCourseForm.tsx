@@ -38,7 +38,9 @@ export default function CreateCourseForm() {
 	return (
 		<form onSubmit={onSubmit} className="mt-8 max-w-xl space-y-4">
 			{error ? (
-				<p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+				<p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+					{error}
+				</p>
 			) : null}
 			<label className="block">
 				<span className="text-xs font-bold uppercase tracking-widest text-muted">Tiêu đề</span>
@@ -50,7 +52,9 @@ export default function CreateCourseForm() {
 				/>
 			</label>
 			<label className="block">
-				<span className="text-xs font-bold uppercase tracking-widest text-muted">Slug (tuỳ chọn)</span>
+				<span className="text-xs font-bold uppercase tracking-widest text-muted">
+					Slug (tuỳ chọn)
+				</span>
 				<input
 					value={slug}
 					onChange={(e) => setSlug(e.target.value)}

@@ -1,8 +1,17 @@
 import Link from 'next/link';
-import { BLOOM_LABELS, listAdminQuestionTable, listAdminSubjects, listAdminTopics } from '@/features/my-class';
+import {
+	BLOOM_LABELS,
+	listAdminQuestionTable,
+	listAdminSubjects,
+	listAdminTopics,
+} from '@/features/my-class';
 import { currentTableParams, parseQuestionStatus } from '@/features/my-class/domain/listQuery';
 import { routes } from '@/config/routes';
-import { StudioFilterBar, StudioFilterSelect, StudioPageHeader } from '@/components/myclass/admin/studio';
+import {
+	StudioFilterBar,
+	StudioFilterSelect,
+	StudioPageHeader,
+} from '@/components/myclass/admin/studio';
 import BankWorkspace from '@/components/myclass/admin/BankWorkspace';
 
 export const dynamic = 'force-dynamic';
@@ -29,7 +38,10 @@ export default async function AdminBankPage({
 		params.type === 'MCQ_SINGLE' || params.type === 'MCQ_MULTI' || params.type === 'FILL_BLANK'
 			? params.type
 			: undefined;
-	const bloom = params.bloom && Number(params.bloom) >= 1 && Number(params.bloom) <= 6 ? Number(params.bloom) : undefined;
+	const bloom =
+		params.bloom && Number(params.bloom) >= 1 && Number(params.bloom) <= 6
+			? Number(params.bloom)
+			: undefined;
 	const current = currentTableParams(params, [
 		'q',
 		'status',
@@ -58,7 +70,9 @@ export default async function AdminBankPage({
 		listAdminSubjects(),
 		listAdminTopics(params.subjectId || undefined),
 	]);
-	const hasFilters = Boolean(params.q || status || type || bloom || params.subjectId || params.topicId);
+	const hasFilters = Boolean(
+		params.q || status || type || bloom || params.subjectId || params.topicId,
+	);
 	return (
 		<div className="mc-studio-container px-0 py-8">
 			<StudioPageHeader

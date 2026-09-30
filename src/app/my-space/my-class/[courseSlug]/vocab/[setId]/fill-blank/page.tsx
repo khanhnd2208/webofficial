@@ -5,7 +5,11 @@ import { rethrowUnlessNotFound } from '@/lib/pageErrors';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page({ params }: { params: Promise<{ courseSlug: string; setId: string }> }) {
+export default async function Page({
+	params,
+}: {
+	params: Promise<{ courseSlug: string; setId: string }>;
+}) {
 	const { courseSlug, setId } = await params;
 	let data;
 	try {

@@ -2,9 +2,20 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { TeachingGradebook } from '@/features/teaching/types';
 import { GradebookWorkspace } from './GradebookWorkspace';
-vi.mock('next/navigation', () => ({ useRouter: () => ({push: vi.fn()}), useSearchParams: () => new URLSearchParams() }));
-vi.mock('./AttendanceGrid', () => ({ AttendanceGrid: ({students,sessions}: Pick<TeachingGradebook,'students'|'sessions'>) => <output data-testid="scoped">{JSON.stringify({students,sessions})}</output> }));
-vi.mock('./ParticipationGrid', () => ({ ParticipationGrid: ({students,sessions}: Pick<TeachingGradebook,'students'|'sessions'>) => <output data-testid="scoped">{JSON.stringify({students,sessions})}</output> }));
+vi.mock('next/navigation', () => ({
+	useRouter: () => ({ push: vi.fn() }),
+	useSearchParams: () => new URLSearchParams(),
+}));
+vi.mock('./AttendanceGrid', () => ({
+	AttendanceGrid: ({ students, sessions }: Pick<TeachingGradebook, 'students' | 'sessions'>) => (
+		<output data-testid="scoped">{JSON.stringify({ students, sessions })}</output>
+	),
+}));
+vi.mock('./ParticipationGrid', () => ({
+	ParticipationGrid: ({ students, sessions }: Pick<TeachingGradebook, 'students' | 'sessions'>) => (
+		<output data-testid="scoped">{JSON.stringify({ students, sessions })}</output>
+	),
+}));
 function initialGradebook(): TeachingGradebook {
 	return {
 		class: {
@@ -107,25 +118,49 @@ function initialGradebook(): TeachingGradebook {
 }
 
 describe('tutorial isolation', () => {
- for (const view of ['attendance', 'participation'] as const) {
-  it('isolates same-week sessions and student marks in ' + view, () => {
-   const initial = initialGradebook();
-   initial.tutorials = ['t1','t2'].map((id,index) => ({id,classId:'c1',code:id,name:id,room:'',scheduleNote:'',displayOrder:index,studentCount:1}));
-   initial.sessions[0]!.heldOn = '2026-09-01';
-   initial.sessions.push({...initial.sessions[0]!,id:'s2',tutorialClassId:'t2',heldOn:'2026-09-03'});
-   initial.students.push({...initial.students[0]!,enrollmentId:'e2',studentId:'st2',studentCode:'SV02',tutorialClassId:'t2',marks:{s2:{status:'ABSENT_UNEXCUSED',note:''}},participation:{s2:{points:3,note:''}}});
-   render(<GradebookWorkspace initial={initial} initialView={view} />);
-   let scoped = JSON.parse(screen.getByTestId('scoped').textContent!);
-   expect(scoped.sessions.map((item: {id:string})=>item.id)).toEqual(['s1']);
-   expect(scoped.students.map((item: {enrollmentId:string})=>item.enrollmentId)).toEqual(['e1']);
-   fireEvent.click(screen.getByRole('button',{name:/Tutorial Class/}));
-   fireEvent.click(screen.getByRole('option',{name:'t2 · t2'}));
-   scoped = JSON.parse(screen.getByTestId('scoped').textContent!);
-   expect(scoped.sessions).toHaveLength(1);
-   expect(scoped.sessions[0]).toMatchObject({id:'s2',heldOn:'2026-09-03',weekNumber:1});
-   expect(scoped.students).toHaveLength(1);
-   expect(scoped.students[0].participation.s2.points).toBe(3);
-   expect(new URLSearchParams(window.location.search).get('tutorial')).toBe('t2');
-  });
- }
+	for (const view of ['attendance', 'participation'] as const) {
+		it('isolates same-week sessions and student marks in ' + view, () => {
+			const initial = initialGradebook();
+			initial.tutorials = ['t1', 't2'].map((id, index) => ({
+				id,
+				classId: 'c1',
+				code: id,
+				name: id,
+				room: '',
+				scheduleNote: '',
+				displayOrder: index,
+				studentCount: 1,
+			}));
+			initial.sessions[0]!.heldOn = '2026-09-01';
+			initial.sessions.push({
+				...initial.sessions[0]!,
+				id: 's2',
+				tutorialClassId: 't2',
+				heldOn: '2026-09-03',
+			});
+			initial.students.push({
+				...initial.students[0]!,
+				enrollmentId: 'e2',
+				studentId: 'st2',
+				studentCode: 'SV02',
+				tutorialClassId: 't2',
+				marks: { s2: { status: 'ABSENT_UNEXCUSED', note: '' } },
+				participation: { s2: { points: 3, note: '' } },
+			});
+			render(<GradebookWorkspace initial={initial} initialView={view} />);
+			let scoped = JSON.parse(screen.getByTestId('scoped').textContent!);
+			expect(scoped.sessions.map((item: { id: string }) => item.id)).toEqual(['s1']);
+			expect(scoped.students.map((item: { enrollmentId: string }) => item.enrollmentId)).toEqual([
+				'e1',
+			]);
+			fireEvent.click(screen.getByRole('button', { name: /Tutorial Class/ }));
+			fireEvent.click(screen.getByRole('option', { name: 't2 · t2' }));
+			scoped = JSON.parse(screen.getByTestId('scoped').textContent!);
+			expect(scoped.sessions).toHaveLength(1);
+			expect(scoped.sessions[0]).toMatchObject({ id: 's2', heldOn: '2026-09-03', weekNumber: 1 });
+			expect(scoped.students).toHaveLength(1);
+			expect(scoped.students[0].participation.s2.points).toBe(3);
+			expect(new URLSearchParams(window.location.search).get('tutorial')).toBe('t2');
+		});
+	}
 });

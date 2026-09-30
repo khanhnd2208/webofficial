@@ -29,7 +29,9 @@ export function learnEditorExtensions() {
 		FootnoteDef,
 		Placeholder.configure({
 			placeholder: ({ node }) =>
-				node.type.name === 'paragraph' ? 'Viết nội dung, hoặc gõ / để chèn định nghĩa, trích dẫn, bảng…' : '',
+				node.type.name === 'paragraph'
+					? 'Viết nội dung, hoặc gõ / để chèn định nghĩa, trích dẫn, bảng…'
+					: '',
 		}),
 		Callout,
 		BlockGrip,

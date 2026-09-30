@@ -15,7 +15,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 	return apiSuccess({
 		actorType: actor.type,
 		storageScope: scopeFor(actor.actorKey),
-		claimableGuestStorageScope: actor.type === 'user' && actor.guestId ? scopeFor(guestActorKey(actor.guestId)) : undefined,
+		claimableGuestStorageScope:
+			actor.type === 'user' && actor.guestId ? scopeFor(guestActorKey(actor.guestId)) : undefined,
 		// The client only receives opaque scopes; actor ids never leave the server.
 	});
 });

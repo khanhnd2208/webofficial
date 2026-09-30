@@ -17,13 +17,19 @@ type LessonChapterRailProps = {
 /**
  * Desktop chapter rail — sibling lessons in the current module.
  */
-export default function LessonChapterRail({ moduleTitle, currentSlug, lessons }: LessonChapterRailProps) {
+export default function LessonChapterRail({
+	moduleTitle,
+	currentSlug,
+	lessons,
+}: LessonChapterRailProps) {
 	return (
 		<nav
 			aria-label="Bài trong chương"
 			className="sticky top-24 hidden max-h-[calc(100svh-8rem)] overflow-y-auto lg:block"
 		>
-			<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">{moduleTitle}</p>
+			<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-secondary">
+				{moduleTitle}
+			</p>
 			<ul className="mt-4 space-y-0 border-l border-hairline">
 				{lessons.map((item) => {
 					const active = item.slug === currentSlug;
@@ -37,7 +43,9 @@ export default function LessonChapterRail({ moduleTitle, currentSlug, lessons }:
 										: 'border-transparent text-ink-secondary hover:border-hairline hover:text-ink'
 								}`}
 							>
-								<span className="font-mono text-[10px] text-ink-secondary/80">{item.position + 1}</span>
+								<span className="font-mono text-[10px] text-ink-secondary/80">
+									{item.position + 1}
+								</span>
 								<span className="min-w-0 flex-1">{item.title}</span>
 								{item.completed ? (
 									<span

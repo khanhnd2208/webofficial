@@ -29,7 +29,11 @@ export default function LearnDiscussionEditor({
 	}
 
 	function update(index: number, patch: Partial<LearnDiscussionQuestion>) {
-		setQuestions(discussion.questions.map((question, i) => (i === index ? { ...question, ...patch } : question)));
+		setQuestions(
+			discussion.questions.map((question, i) =>
+				i === index ? { ...question, ...patch } : question,
+			),
+		);
 	}
 
 	function move(index: number, step: number) {
@@ -42,7 +46,9 @@ export default function LearnDiscussionEditor({
 
 	return (
 		<div className="ln-quizedit">
-			<p className="text-sm text-ink-secondary">{discussion.questions.length} câu · đáp án mẫu hiện khi học viên bấm</p>
+			<p className="text-sm text-ink-secondary">
+				{discussion.questions.length} câu · đáp án mẫu hiện khi học viên bấm
+			</p>
 			{discussion.questions.length ? (
 				<ol className="ln-qlist">
 					{discussion.questions.map((question, index) => (
@@ -50,7 +56,13 @@ export default function LearnDiscussionEditor({
 							<div className="ln-qcard__head">
 								<span className="ln-qcard__number">Câu {index + 1}</span>
 								<span className="ml-auto flex gap-1">
-									<button type="button" className="ln-icon-btn" onClick={() => move(index, -1)} disabled={index === 0} aria-label="Lên">
+									<button
+										type="button"
+										className="ln-icon-btn"
+										onClick={() => move(index, -1)}
+										disabled={index === 0}
+										aria-label="Lên"
+									>
 										<StudioIcon name="up" size={14} />
 									</button>
 									<button
@@ -84,7 +96,13 @@ export default function LearnDiscussionEditor({
 								placeholder="Đáp án mẫu (markdown)"
 								onChange={(value) => update(index, { answer: value })}
 							/>
-							<button type="button" className="ln-link-btn" onClick={() => setPreviewId((current) => (current === question.id ? null : question.id))}>
+							<button
+								type="button"
+								className="ln-link-btn"
+								onClick={() =>
+									setPreviewId((current) => (current === question.id ? null : question.id))
+								}
+							>
 								{previewId === question.id ? 'Ẩn xem trước' : 'Xem trước'}
 							</button>
 							{previewId === question.id ? (
@@ -97,10 +115,16 @@ export default function LearnDiscussionEditor({
 					))}
 				</ol>
 			) : (
-				<p className="ln-empty-hint">Chưa có câu hỏi. Thêm từng câu hoặc dán cả loạt từ tài liệu / AI.</p>
+				<p className="ln-empty-hint">
+					Chưa có câu hỏi. Thêm từng câu hoặc dán cả loạt từ tài liệu / AI.
+				</p>
 			)}
 			<div className="flex flex-wrap gap-2">
-				<button type="button" className="ln-btn" onClick={() => setQuestions([...discussion.questions, emptyQuestion()])}>
+				<button
+					type="button"
+					className="ln-btn"
+					onClick={() => setQuestions([...discussion.questions, emptyQuestion()])}
+				>
 					<StudioIcon name="plus" size={14} /> Thêm câu hỏi
 				</button>
 				<button type="button" className="ln-btn" onClick={onOpenImport}>

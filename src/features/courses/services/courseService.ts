@@ -10,7 +10,13 @@ import type {
 	UpdateModuleInput,
 } from '../schemas';
 import * as repo from '../repositories/courseRepository';
-import type { CourseDetail, CourseListItem, LessonDTO, ModuleDTO, PublicCourseIntro } from '../types';
+import type {
+	CourseDetail,
+	CourseListItem,
+	LessonDTO,
+	ModuleDTO,
+	PublicCourseIntro,
+} from '../types';
 
 function normalizeOptionalUrl(value: string | null | undefined): string | null {
 	if (value === undefined) return null;
@@ -29,7 +35,11 @@ async function uniqueCourseSlug(base: string, excludeId?: string): Promise<strin
 	return candidate;
 }
 
-async function uniqueLessonSlug(moduleId: string, base: string, excludeId?: string): Promise<string> {
+async function uniqueLessonSlug(
+	moduleId: string,
+	base: string,
+	excludeId?: string,
+): Promise<string> {
 	const root = slugify(base) || 'bai-hoc';
 	let candidate = root;
 	let i = 2;
@@ -74,7 +84,10 @@ export async function createAdminCourse(input: CreateCourseInput): Promise<Cours
 	return repo.mapCourseDetail(full);
 }
 
-export async function updateAdminCourse(id: string, input: UpdateCourseInput): Promise<CourseDetail> {
+export async function updateAdminCourse(
+	id: string,
+	input: UpdateCourseInput,
+): Promise<CourseDetail> {
 	const existing = await repo.findCourseById(id);
 	if (!existing) throw new AppError('Không tìm thấy khóa học', 404);
 
@@ -91,7 +104,8 @@ export async function updateAdminCourse(id: string, input: UpdateCourseInput): P
 	if (input.title !== undefined) data.title = input.title.trim();
 	if (input.summary !== undefined) data.summary = input.summary.trim();
 	if (input.description !== undefined) data.description = input.description;
-	if (input.thumbnailUrl !== undefined) data.thumbnailUrl = normalizeOptionalUrl(input.thumbnailUrl);
+	if (input.thumbnailUrl !== undefined)
+		data.thumbnailUrl = normalizeOptionalUrl(input.thumbnailUrl);
 	if (input.visibility !== undefined) data.visibility = input.visibility;
 	if (input.audience !== undefined) data.audience = input.audience.trim();
 	if (input.learningOutcomes !== undefined) data.learningOutcomes = input.learningOutcomes;
@@ -158,7 +172,10 @@ export async function deleteAdminModule(moduleId: string): Promise<void> {
 	await repo.deleteModule(moduleId);
 }
 
-export async function reorderAdminModules(courseId: string, orderedIds: string[]): Promise<CourseDetail> {
+export async function reorderAdminModules(
+	courseId: string,
+	orderedIds: string[],
+): Promise<CourseDetail> {
 	const course = await repo.findCourseById(courseId);
 	if (!course) throw new AppError('Không tìm thấy khóa học', 404);
 	const existingIds = new Set(course.modules.map((m) => m.id));
@@ -245,7 +262,8 @@ export async function getAdminLessonForEditor(
 ): Promise<{ lesson: LessonDTO; moduleId: string; moduleName: string }> {
 	const lesson = await repo.findLessonById(lessonId);
 	if (!lesson) throw new AppError('Không tìm thấy bài học', 404);
-	if (lesson.module.courseId !== courseId) throw new AppError('Bài học không thuộc khóa học này', 404);
+	if (lesson.module.courseId !== courseId)
+		throw new AppError('Bài học không thuộc khóa học này', 404);
 	return {
 		lesson: repo.mapLesson(lesson),
 		moduleId: lesson.moduleId,
@@ -282,7 +300,10 @@ export async function validatePublishRequirements(
 	return { ok: true };
 }
 
-export async function reorderAdminLessons(moduleId: string, orderedIds: string[]): Promise<ModuleDTO> {
+export async function reorderAdminLessons(
+	moduleId: string,
+	orderedIds: string[],
+): Promise<ModuleDTO> {
 	const mod = await repo.findModuleById(moduleId);
 	if (!mod) throw new AppError('Không tìm thấy chương', 404);
 	const existingIds = new Set(mod.lessons.map((l) => l.id));

@@ -17,7 +17,9 @@ describe('LearnRichEditor mode guard', () => {
 		const onChange = vi.fn();
 		render(<LearnRichEditor value="Đoạn văn bình thường." onChange={onChange} />);
 
-		await waitFor(() => expect(screen.getByRole('toolbar', { name: 'Định dạng' })).toBeInTheDocument());
+		await waitFor(() =>
+			expect(screen.getByRole('toolbar', { name: 'Định dạng' })).toBeInTheDocument(),
+		);
 
 		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
 		const textarea = screen.getByPlaceholderText(/Tiêu đề/);
@@ -29,7 +31,10 @@ describe('LearnRichEditor mode guard', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /vẫn chuyển sang soạn trực quan/i }));
 		await waitFor(() =>
-			expect(screen.getByRole('tab', { name: 'Soạn trực quan' })).toHaveAttribute('aria-selected', 'true'),
+			expect(screen.getByRole('tab', { name: 'Soạn trực quan' })).toHaveAttribute(
+				'aria-selected',
+				'true',
+			),
 		);
 	});
 });

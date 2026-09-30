@@ -22,7 +22,9 @@ describe('assignRoles', () => {
 			const spies = assigned.filter((p) => p.role === 'spy');
 			expect(spies).toHaveLength(2);
 			expect(spies.every((p) => p.keyword === 'B')).toBe(true);
-			expect(assigned.filter((p) => p.role === 'civilian' && p.keyword === 'A')).toHaveLength(n - 2);
+			expect(assigned.filter((p) => p.role === 'civilian' && p.keyword === 'A')).toHaveLength(
+				n - 2,
+			);
 			expect(new Set(assigned.map((p) => p.token)).size).toBe(n);
 		}
 	});
@@ -33,7 +35,9 @@ describe('assignRoles', () => {
 			const spies = assigned.filter((p) => p.role === 'spy');
 			expect(spies).toHaveLength(3);
 			expect(spies.every((p) => p.keyword === 'B')).toBe(true);
-			expect(assigned.filter((p) => p.role === 'civilian' && p.keyword === 'A')).toHaveLength(n - 3);
+			expect(assigned.filter((p) => p.role === 'civilian' && p.keyword === 'A')).toHaveLength(
+				n - 3,
+			);
 		}
 	});
 

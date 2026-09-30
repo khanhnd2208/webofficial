@@ -96,14 +96,20 @@ function namesOf(room: ProjectRoom): Map<string, string> {
  * Before reveal, player X's payload has nobody else's role, hour, or secret card.
  */
 export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: Date): RoomStateDTO {
-	const viewer = viewerToken ? room.players.find((player) => player.token === viewerToken) : undefined;
+	const viewer = viewerToken
+		? room.players.find((player) => player.token === viewerToken)
+		: undefined;
 	const reveal = room.phase === 'reveal';
 	const deal = room.phase === 'deal';
 	const secretResult = room.phase === 'secret-result';
 	const voting = room.phase === 'vote';
 	const seats = room.preset ? seatsOf(room) : [];
 	const names = namesOf(room);
-	const resolved = room.resolved ?? { followerIds: room.followerIds, peekByPlayer: {}, hunchByPlayer: {} };
+	const resolved = room.resolved ?? {
+		followerIds: room.followerIds,
+		peekByPlayer: {},
+		hunchByPlayer: {},
+	};
 	const mode = room.mode ?? 'classic';
 	const ctx = nightContextOf(room);
 	const night2Played = mode === 'two-night' && room.theftNight === 2;
@@ -190,7 +196,9 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 								: {}),
 						}
 					: {}),
-				...(secretJob ? { secretJob: { followers: secretJob.followers?.count ?? 0, peek: secretJob.peek } } : {}),
+				...(secretJob
+					? { secretJob: { followers: secretJob.followers?.count ?? 0, peek: secretJob.peek } }
+					: {}),
 				...(room.phase === 'secret' ? { hasChosenSecret: Boolean(viewer.hasChosenSecret) } : {}),
 				...(voting ? { voteId: viewer.voteId ?? null } : {}),
 				...(secretCard ? { secretCard } : {}),
@@ -226,7 +234,11 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 	if (room.phase === 'night' && room.nightStartedAt) {
 		dto.nightStartedAt = room.nightStartedAt.toISOString();
 	}
-	if (mode === 'two-night' && room.theftNight && !['lobby', 'deal', 'night', 'cheese-check'].includes(room.phase)) {
+	if (
+		mode === 'two-night' &&
+		room.theftNight &&
+		!['lobby', 'deal', 'night', 'cheese-check'].includes(room.phase)
+	) {
 		dto.theftNight = room.theftNight;
 	}
 	if (room.phase === 'day' && room.dayStartedAt) {
@@ -237,7 +249,9 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		dto.voteRound = room.voteRound ?? 1;
 		dto.isRunoff = room.isRunoff || room.phase === 'tie';
 		dto.voteCandidateIds =
-			room.isRunoff || room.phase === 'tie' ? room.voteCandidateIds : room.players.map((player) => player.id);
+			room.isRunoff || room.phase === 'tie'
+				? room.voteCandidateIds
+				: room.players.map((player) => player.id);
 		if (voting) dto.votesCast = room.players.filter((player) => player.voteId).length;
 	}
 	if (reveal && room.preset) {
@@ -254,7 +268,13 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 				name: player.name,
 				role,
 				wakeHours: wakeHoursOf(
-					{ id: player.id, role, dice: player.dice, dice2: player.dice2, chosenHour: player.chosenHour },
+					{
+						id: player.id,
+						role,
+						dice: player.dice,
+						dice2: player.dice2,
+						chosenHour: player.chosenHour,
+					},
 					room.preset!.dicePerPlayer,
 				),
 				wakeHours2: night2Played

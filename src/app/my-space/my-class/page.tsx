@@ -29,6 +29,9 @@ export default async function MyClassPage() {
 	const loginHref = `${routes.login}?from=${encodeURIComponent(routes.myClass)}`;
 
 	return (
-		<><KnowledgeHeader user={session?.user ?? null} loginHref={loginHref} /><SubjectCatalog courses={courses} progress={progress.courses} /></>
+		<>
+			<KnowledgeHeader user={session?.user ?? null} loginHref={loginHref} />
+			<SubjectCatalog courses={courses} progress={progress.courses} />
+		</>
 	);
 }

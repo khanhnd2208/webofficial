@@ -24,7 +24,7 @@ const UserProfileSchema = new Schema<IUserProfile>(
 		major: { type: String, default: '', trim: true, maxlength: 120 },
 		bio: { type: String, default: '', trim: true, maxlength: 600 },
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 const UserProfile =

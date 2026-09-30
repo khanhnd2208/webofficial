@@ -171,16 +171,28 @@ export const questionBodySchema = z
 		const options = value.options ?? [];
 		if (value.type === 'FILL_BLANK') {
 			if (options.length > 0) {
-				ctx.addIssue({ code: 'custom', path: ['options'], message: 'Fill-in-the-blank không dùng options' });
+				ctx.addIssue({
+					code: 'custom',
+					path: ['options'],
+					message: 'Fill-in-the-blank không dùng options',
+				});
 			}
 			if (value.answer.type !== 'FILL_BLANK') {
-				ctx.addIssue({ code: 'custom', path: ['answer'], message: 'answer.type phải khớp type FILL_BLANK' });
+				ctx.addIssue({
+					code: 'custom',
+					path: ['answer'],
+					message: 'answer.type phải khớp type FILL_BLANK',
+				});
 				return;
 			}
 			const stemIds = extractBlankIds(value.stem);
 			const blankIds = value.answer.blanks.map((blank) => blank.id);
 			if (new Set(blankIds).size !== blankIds.length) {
-				ctx.addIssue({ code: 'custom', path: ['answer', 'blanks'], message: 'Blank id không được trùng' });
+				ctx.addIssue({
+					code: 'custom',
+					path: ['answer', 'blanks'],
+					message: 'Blank id không được trùng',
+				});
 			}
 			const stemSet = new Set(stemIds);
 			const blankSet = new Set(blankIds);
@@ -195,13 +207,21 @@ export const questionBodySchema = z
 		}
 		const parsedOptions = mcqOptionsSchema.safeParse(options);
 		if (!parsedOptions.success) {
-			ctx.addIssue({ code: 'custom', path: ['options'], message: 'Cần từ 2 đến 6 options không trùng key' });
+			ctx.addIssue({
+				code: 'custom',
+				path: ['options'],
+				message: 'Cần từ 2 đến 6 options không trùng key',
+			});
 			return;
 		}
 		const keys = new Set(parsedOptions.data.map((option) => option.key));
 		if (value.type === 'MCQ_SINGLE') {
 			if (value.answer.type !== 'MCQ_SINGLE') {
-				ctx.addIssue({ code: 'custom', path: ['answer'], message: 'answer.type phải khớp type MCQ_SINGLE' });
+				ctx.addIssue({
+					code: 'custom',
+					path: ['answer'],
+					message: 'answer.type phải khớp type MCQ_SINGLE',
+				});
 				return;
 			}
 			if (!keys.has(value.answer.correctKey)) {
@@ -214,7 +234,11 @@ export const questionBodySchema = z
 			return;
 		}
 		if (value.answer.type !== 'MCQ_MULTI') {
-			ctx.addIssue({ code: 'custom', path: ['answer'], message: 'answer.type phải khớp type MCQ_MULTI' });
+			ctx.addIssue({
+				code: 'custom',
+				path: ['answer'],
+				message: 'answer.type phải khớp type MCQ_MULTI',
+			});
 			return;
 		}
 		if (value.answer.correctKeys.some((key) => !keys.has(key))) {
@@ -225,7 +249,11 @@ export const questionBodySchema = z
 			});
 		}
 		if (new Set(value.answer.correctKeys).size !== value.answer.correctKeys.length) {
-			ctx.addIssue({ code: 'custom', path: ['answer', 'correctKeys'], message: 'correctKeys không được trùng' });
+			ctx.addIssue({
+				code: 'custom',
+				path: ['answer', 'correctKeys'],
+				message: 'correctKeys không được trùng',
+			});
 		}
 		if (value.answer.correctKeys.length >= keys.size) {
 			ctx.addIssue({
@@ -254,9 +282,12 @@ export const createTopicSchema = z.object({
 	status: publishStatusSchema.optional(),
 	knowledgeUnitIds: z.array(z.string().min(1)).optional(),
 });
-export const updateTopicSchema = createTopicSchema.partial().omit({ subjectId: true }).extend({
-	subjectId: z.string().min(1).optional(),
-});
+export const updateTopicSchema = createTopicSchema
+	.partial()
+	.omit({ subjectId: true })
+	.extend({
+		subjectId: z.string().min(1).optional(),
+	});
 
 export const createTestSchema = z.object({
 	title: z.string().trim().min(1).max(200),

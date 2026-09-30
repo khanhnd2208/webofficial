@@ -18,7 +18,9 @@ export const GET = withAdmin(async (request: NextRequest) => {
 					? search.status
 					: undefined,
 			level:
-				search.level === 'BEGINNER' || search.level === 'INTERMEDIATE' || search.level === 'ADVANCED'
+				search.level === 'BEGINNER' ||
+				search.level === 'INTERMEDIATE' ||
+				search.level === 'ADVANCED'
 					? search.level
 					: undefined,
 			page: search.page ? Number(search.page) : undefined,

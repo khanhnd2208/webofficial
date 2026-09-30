@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
-import {
-	StudioButton,
-	StudioField,
-	StudioInput,
-} from '@/components/myclass/admin/studio';
+import { StudioButton, StudioField, StudioInput } from '@/components/myclass/admin/studio';
 import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
 import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu';
 import { Dialog } from '@/components/ui/Dialog';
@@ -41,12 +37,20 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 	const [draft, setDraft] = useState({ courseCode: '', courseName: '' });
 
 	const filtered = useMemo(() => {
-		const value = query.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+		const value = query
+			.trim()
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/đ/g, 'd');
 		return courses.filter((course) => {
 			const matchesQuery =
 				!value ||
 				`${course.courseCode} ${course.courseName} ${course.classes.map((item) => `${item.term} ${item.classCode ?? item.groupNo}`).join(' ')}`
-					.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
+					.toLowerCase()
+					.normalize('NFD')
+					.replace(/[\u0300-\u036f]/g, '')
+					.replace(/đ/g, 'd')
 					.includes(value);
 			const matchesStatus =
 				statusFilter === 'all' ||
@@ -191,7 +195,10 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 			) : null}
 
 			{courses.length === 0 ? (
-				<div className="mc-surface rounded-2xl p-8 text-center sm:p-12" data-testid="teaching-empty-all">
+				<div
+					className="mc-surface rounded-2xl p-8 text-center sm:p-12"
+					data-testid="teaching-empty-all"
+				>
 					<p className="text-base font-semibold text-ink">Chưa có môn học</p>
 					<p className="mc-meta mx-auto mt-2 max-w-md text-sm text-ink-secondary">
 						Thêm môn trước, rồi tạo lớp rỗng và nhập học viên sau.
@@ -205,7 +212,10 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 					<p className="text-sm font-semibold text-ink">Không có kết quả phù hợp</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="teaching-course-cards-grid">
+				<div
+					className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+					data-testid="teaching-course-cards-grid"
+				>
 					{filtered.map((course) => (
 						<article
 							key={course.id}
@@ -221,7 +231,9 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 								<p className="font-mono text-xs font-bold uppercase tracking-wider text-accent">
 									{course.courseCode}
 								</p>
-								<h3 className="mt-2 text-base font-semibold leading-snug text-ink">{course.courseName}</h3>
+								<h3 className="mt-2 text-base font-semibold leading-snug text-ink">
+									{course.courseName}
+								</h3>
 								<div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-border/60 pt-3 text-xs text-ink-secondary">
 									<div>
 										<span className="font-semibold text-ink">{course.activeClassCount}</span> lớp
@@ -278,7 +290,7 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 				}}
 				title={editCourse ? 'Sửa môn học' : 'Thêm môn'}
 				description="Chỉ cần mã môn và tên môn."
-				>
+			>
 				<form
 					className="grid gap-4"
 					onSubmit={(event) => {
@@ -286,12 +298,25 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 						void saveCourse();
 					}}
 				>
-					{error ? <p role="alert" tabIndex={-1} ref={(node) => { node?.focus(); }} className="rounded-[var(--mc-r-sm)] bg-error/10 px-3 py-2 text-sm font-semibold text-error">{error}</p> : null}
+					{error ? (
+						<p
+							role="alert"
+							tabIndex={-1}
+							ref={(node) => {
+								node?.focus();
+							}}
+							className="rounded-[var(--mc-r-sm)] bg-error/10 px-3 py-2 text-sm font-semibold text-error"
+						>
+							{error}
+						</p>
+					) : null}
 					<StudioField label="Mã môn" error={!draft.courseCode.trim() ? 'Bắt buộc' : null}>
 						<StudioInput
 							required
 							value={draft.courseCode}
-							onChange={(event) => setDraft((current) => ({ ...current, courseCode: event.target.value }))}
+							onChange={(event) =>
+								setDraft((current) => ({ ...current, courseCode: event.target.value }))
+							}
 							autoFocus
 						/>
 					</StudioField>
@@ -299,7 +324,9 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 						<StudioInput
 							required
 							value={draft.courseName}
-							onChange={(event) => setDraft((current) => ({ ...current, courseName: event.target.value }))}
+							onChange={(event) =>
+								setDraft((current) => ({ ...current, courseName: event.target.value }))
+							}
 						/>
 					</StudioField>
 					<div className="flex justify-end gap-2">
@@ -313,7 +340,10 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 						>
 							Huỷ
 						</StudioButton>
-						<StudioButton type="submit" disabled={busy || !draft.courseCode.trim() || !draft.courseName.trim()}>
+						<StudioButton
+							type="submit"
+							disabled={busy || !draft.courseCode.trim() || !draft.courseName.trim()}
+						>
 							{busy ? 'Đang lưu…' : 'Lưu'}
 						</StudioButton>
 					</div>

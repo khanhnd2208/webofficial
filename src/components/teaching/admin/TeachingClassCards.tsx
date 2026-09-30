@@ -50,15 +50,27 @@ export function TeachingClassCards({
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 	const [editClass, setEditClass] = useState<TeachingClassListItem | null>(null);
-	const [draft, setDraft] = useState({ groupNo: '', term: '', status: 'ACTIVE' as TeachingClassStatus });
+	const [draft, setDraft] = useState({
+		groupNo: '',
+		term: '',
+		status: 'ACTIVE' as TeachingClassStatus,
+	});
 
 	const filtered = useMemo(() => {
-		const value = query.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+		const value = query
+			.trim()
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/đ/g, 'd');
 		return classes.filter((row) => {
 			const matchesQuery =
 				!value ||
 				`${row.courseCode} ${row.courseName} ${row.groupNo} ${row.classCode ?? ''} ${row.term}`
-					.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
+					.toLowerCase()
+					.normalize('NFD')
+					.replace(/[\u0300-\u036f]/g, '')
+					.replace(/đ/g, 'd')
 					.includes(value);
 			const matchesStatus =
 				statusFilter === 'all' ||
@@ -122,9 +134,7 @@ export function TeachingClassCards({
 
 	async function deleteClass(row: TeachingClassListItem) {
 		if (!row.canDelete) {
-			setError(
-				`Chỉ xóa được lớp trống. Hiện còn ${formatDependencySummary(row.deleteBlockers)}`,
-			);
+			setError(`Chỉ xóa được lớp trống. Hiện còn ${formatDependencySummary(row.deleteBlockers)}`);
 			return;
 		}
 		const ok = await confirm({
@@ -141,7 +151,10 @@ export function TeachingClassCards({
 
 	if (classes.length === 0) {
 		return (
-			<div className="mc-surface rounded-2xl p-8 text-center sm:p-12" data-testid="teaching-empty-all">
+			<div
+				className="mc-surface rounded-2xl p-8 text-center sm:p-12"
+				data-testid="teaching-empty-all"
+			>
 				<p className="text-base font-semibold text-ink">Chưa có lớp học</p>
 				<p className="mc-meta mx-auto mt-2 max-w-md text-sm text-ink-secondary">
 					Tạo lớp rỗng rồi thêm học viên bằng Excel hoặc nhập thủ công.
@@ -163,7 +176,9 @@ export function TeachingClassCards({
 			<div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
 				<div className="min-w-0">
 					<h2 className="text-base font-semibold text-ink">Các lớp theo kỳ</h2>
-					<p className="mc-meta mt-0.5 text-xs text-ink-secondary">Chọn lớp để vào điểm danh và học viên.</p>
+					<p className="mc-meta mt-0.5 text-xs text-ink-secondary">
+						Chọn lớp để vào điểm danh và học viên.
+					</p>
 				</div>
 				<div className="flex items-center gap-2 sm:shrink-0">
 					<label className="min-w-0 flex-1 sm:w-64 sm:flex-none">
@@ -200,7 +215,10 @@ export function TeachingClassCards({
 			) : null}
 
 			{filtered.length === 0 ? (
-				<div className="mc-surface rounded-2xl p-8 text-center" data-testid="teaching-empty-filtered">
+				<div
+					className="mc-surface rounded-2xl p-8 text-center"
+					data-testid="teaching-empty-filtered"
+				>
 					<p className="text-sm font-semibold text-ink">Không có kết quả phù hợp</p>
 					<button
 						type="button"
@@ -214,7 +232,10 @@ export function TeachingClassCards({
 					</button>
 				</div>
 			) : (
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="teaching-class-cards-grid">
+				<div
+					className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+					data-testid="teaching-class-cards-grid"
+				>
 					{filtered.map((row) => {
 						const warnings = row.atRiskCount + row.bannedCount;
 						const isArchived = row.status === 'ARCHIVED';
@@ -237,10 +258,15 @@ export function TeachingClassCards({
 									</p>
 									<p className="mt-2 text-sm font-medium text-ink">{row.term}</p>
 									<div className="mt-3 flex flex-wrap items-center gap-1.5">
-										<span className="teaching-status text-[0.625rem]" data-tone={isArchived ? 'muted' : 'ok'}>
+										<span
+											className="teaching-status text-[0.625rem]"
+											data-tone={isArchived ? 'muted' : 'ok'}
+										>
 											{isArchived ? 'Đã lưu trữ' : 'Đang dạy'}
 										</span>
-										<span className={`teaching-status text-[0.625rem] ${row.attendanceVisible ? 'teaching-status-ok' : ''}`}>
+										<span
+											className={`teaching-status text-[0.625rem] ${row.attendanceVisible ? 'teaching-status-ok' : ''}`}
+										>
 											{shareLabel(row)}
 										</span>
 									</div>
@@ -295,7 +321,7 @@ export function TeachingClassCards({
 				}}
 				title="Sửa lớp"
 				description="Mã lớp được chuẩn hóa chữ hoa. Học kỳ giữ nguyên cách viết hiện có."
-				>
+			>
 				<form
 					className="grid gap-4"
 					onSubmit={(event) => {
@@ -303,12 +329,25 @@ export function TeachingClassCards({
 						void saveClass();
 					}}
 				>
-					{error ? <p role="alert" tabIndex={-1} ref={(node) => { node?.focus(); }} className="rounded-[var(--mc-r-sm)] bg-error/10 px-3 py-2 text-sm font-semibold text-error">{error}</p> : null}
+					{error ? (
+						<p
+							role="alert"
+							tabIndex={-1}
+							ref={(node) => {
+								node?.focus();
+							}}
+							className="rounded-[var(--mc-r-sm)] bg-error/10 px-3 py-2 text-sm font-semibold text-error"
+						>
+							{error}
+						</p>
+					) : null}
 					<StudioField label="Mã lớp">
 						<StudioInput
 							required
 							value={draft.groupNo}
-							onChange={(event) => setDraft((current) => ({ ...current, groupNo: event.target.value }))}
+							onChange={(event) =>
+								setDraft((current) => ({ ...current, groupNo: event.target.value }))
+							}
 							autoFocus
 						/>
 					</StudioField>
@@ -317,14 +356,19 @@ export function TeachingClassCards({
 							required
 							list="teaching-term-suggestions"
 							value={draft.term}
-							onChange={(event) => setDraft((current) => ({ ...current, term: event.target.value }))}
+							onChange={(event) =>
+								setDraft((current) => ({ ...current, term: event.target.value }))
+							}
 						/>
 					</StudioField>
 					<StudioField label="Trạng thái">
 						<StudioSelect
 							value={draft.status}
 							onChange={(event) =>
-								setDraft((current) => ({ ...current, status: event.target.value as TeachingClassStatus }))
+								setDraft((current) => ({
+									...current,
+									status: event.target.value as TeachingClassStatus,
+								}))
 							}
 						>
 							<option value="ACTIVE">Đang dạy</option>
@@ -340,7 +384,10 @@ export function TeachingClassCards({
 						<StudioButton variant="quiet" onClick={() => setEditClass(null)} disabled={busy}>
 							Huỷ
 						</StudioButton>
-						<StudioButton type="submit" disabled={busy || !draft.groupNo.trim() || !draft.term.trim()}>
+						<StudioButton
+							type="submit"
+							disabled={busy || !draft.groupNo.trim() || !draft.term.trim()}
+						>
 							{busy ? 'Đang lưu…' : 'Lưu'}
 						</StudioButton>
 					</div>

@@ -1,6 +1,14 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
-type McBadgeVariant = 'neutral' | 'done' | 'test' | 'vocab' | 'level' | 'accent' | 'warning' | 'error';
+type McBadgeVariant =
+	| 'neutral'
+	| 'done'
+	| 'test'
+	| 'vocab'
+	| 'level'
+	| 'accent'
+	| 'warning'
+	| 'error';
 
 const variantClass: Record<McBadgeVariant, string> = {
 	neutral: 'border-mc-rule/40 text-ink-secondary',

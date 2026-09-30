@@ -5,8 +5,17 @@ import { useDeferredValue, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
-import { courseHue, courseStatus, percentOf, type LearnCourseStatus } from '@/features/learn/progress';
-import { LEARN_LEVEL_LABELS, type LearnCourseListItem, type LearnLevel } from '@/features/learn/types';
+import {
+	courseHue,
+	courseStatus,
+	percentOf,
+	type LearnCourseStatus,
+} from '@/features/learn/progress';
+import {
+	LEARN_LEVEL_LABELS,
+	type LearnCourseListItem,
+	type LearnLevel,
+} from '@/features/learn/types';
 
 import { LearnIcon } from './LearnIcon';
 
@@ -58,20 +67,30 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 				status: courseStatus(course.completedCount, course.sectionCount),
 				percent: percentOf(course.completedCount, course.sectionCount),
 				haystack: normalize(
-					[course.title, course.subtitle, course.description, course.category].filter(Boolean).join(' '),
+					[course.title, course.subtitle, course.description, course.category]
+						.filter(Boolean)
+						.join(' '),
 				),
 			})),
 		[courses],
 	);
 
 	const categories = useMemo(
-		() => [...new Set(courses.map((course) => course.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi')),
+		() =>
+			[...new Set(courses.map((course) => course.category).filter(Boolean))].sort((a, b) =>
+				a.localeCompare(b, 'vi'),
+			),
 		[courses],
 	);
 	const levels = useMemo(() => [...new Set(courses.map((course) => course.level))], [courses]);
 
 	const counts = useMemo(() => {
-		const result: Record<Tab, number> = { all: enriched.length, 'not-started': 0, 'in-progress': 0, completed: 0 };
+		const result: Record<Tab, number> = {
+			all: enriched.length,
+			'not-started': 0,
+			'in-progress': 0,
+			completed: 0,
+		};
 		for (const item of enriched) result[item.status] += 1;
 		return result;
 	}, [enriched]);
@@ -87,7 +106,9 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 		);
 		const sorted = [...filtered];
 		if (sort === 'recent') {
-			sorted.sort((a, b) => (b.course.lastActivityAt ?? '').localeCompare(a.course.lastActivityAt ?? ''));
+			sorted.sort((a, b) =>
+				(b.course.lastActivityAt ?? '').localeCompare(a.course.lastActivityAt ?? ''),
+			);
 		} else if (sort === 'progress') {
 			sorted.sort((a, b) => b.percent - a.percent);
 		} else if (sort === 'title') {
@@ -111,105 +132,105 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 	return (
 		<section aria-label="Danh sách khóa học" className="ln-browse">
 			{showBrowse ? (
-			<div className="ln-tabs" role="tablist" aria-label="Lọc theo trạng thái">
-				{TABS.map((item) => (
-					<button
-						key={item.id}
-						type="button"
-						role="tab"
-						aria-selected={tab === item.id}
-						className="ln-tab"
-						onClick={() => setTab(item.id)}
-					>
-						{item.label}
-						<span className="ln-tab__count tabular-nums">{counts[item.id]}</span>
-					</button>
-				))}
-			</div>
+				<div className="ln-tabs" role="tablist" aria-label="Lọc theo trạng thái">
+					{TABS.map((item) => (
+						<button
+							key={item.id}
+							type="button"
+							role="tab"
+							aria-selected={tab === item.id}
+							className="ln-tab"
+							onClick={() => setTab(item.id)}
+						>
+							{item.label}
+							<span className="ln-tab__count tabular-nums">{counts[item.id]}</span>
+						</button>
+					))}
+				</div>
 			) : null}
 
 			{showBrowse ? (
-			<div className="ln-filters">
-				<label className="ln-search">
-					<LearnIcon name="search" size={17} />
-					<span className="sr-only">Tìm khóa học</span>
-					<input
-						type="search"
-						value={query}
-						onChange={(event) => setQuery(event.target.value)}
-						placeholder="Tìm theo tên, chủ đề…"
-					/>
-				</label>
-				{categories.length > 1 ? (
-					<select
-						className="ln-select"
-						value={category}
-						onChange={(event) => setCategory(event.target.value)}
-						aria-label="Chủ đề"
-					>
-						<option value="">Mọi chủ đề</option>
-						{categories.map((item) => (
-							<option key={item} value={item}>
-								{item}
-							</option>
-						))}
-					</select>
-				) : null}
-				{courses.length >= 7 ? (
-					<div className="ln-filter-more">
-						<button
-							type="button"
-							className="ln-btn ln-btn--ghost ln-btn--sm"
-							aria-expanded={filtersOpen}
-							onClick={() => setFiltersOpen((value) => !value)}
+				<div className="ln-filters">
+					<label className="ln-search">
+						<LearnIcon name="search" size={17} />
+						<span className="sr-only">Tìm khóa học</span>
+						<input
+							type="search"
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							placeholder="Tìm theo tên, chủ đề…"
+						/>
+					</label>
+					{categories.length > 1 ? (
+						<select
+							className="ln-select"
+							value={category}
+							onChange={(event) => setCategory(event.target.value)}
+							aria-label="Chủ đề"
 						>
-							Lọc
-						</button>
-						{filtersOpen ? (
-							<div className="ln-filter-more__panel">
-								{levels.length > 1 ? (
+							<option value="">Mọi chủ đề</option>
+							{categories.map((item) => (
+								<option key={item} value={item}>
+									{item}
+								</option>
+							))}
+						</select>
+					) : null}
+					{courses.length >= 7 ? (
+						<div className="ln-filter-more">
+							<button
+								type="button"
+								className="ln-btn ln-btn--ghost ln-btn--sm"
+								aria-expanded={filtersOpen}
+								onClick={() => setFiltersOpen((value) => !value)}
+							>
+								Lọc
+							</button>
+							{filtersOpen ? (
+								<div className="ln-filter-more__panel">
+									{levels.length > 1 ? (
+										<select
+											className="ln-select"
+											value={level}
+											onChange={(event) => setLevel(event.target.value as LearnLevel | '')}
+											aria-label="Trình độ"
+										>
+											<option value="">Mọi trình độ</option>
+											{levels.map((item) => (
+												<option key={item} value={item}>
+													{LEARN_LEVEL_LABELS[item]}
+												</option>
+											))}
+										</select>
+									) : null}
 									<select
 										className="ln-select"
-										value={level}
-										onChange={(event) => setLevel(event.target.value as LearnLevel | '')}
-										aria-label="Trình độ"
+										value={sort}
+										onChange={(event) => setSort(event.target.value as Sort)}
+										aria-label="Sắp xếp"
 									>
-										<option value="">Mọi trình độ</option>
-										{levels.map((item) => (
-											<option key={item} value={item}>
-												{LEARN_LEVEL_LABELS[item]}
+										{SORTS.map((item) => (
+											<option key={item.id} value={item.id}>
+												{item.label}
 											</option>
 										))}
 									</select>
-								) : null}
-								<select
-									className="ln-select"
-									value={sort}
-									onChange={(event) => setSort(event.target.value as Sort)}
-									aria-label="Sắp xếp"
-								>
-									{SORTS.map((item) => (
-										<option key={item.id} value={item.id}>
-											{item.label}
-										</option>
-									))}
-								</select>
-							</div>
-						) : null}
-					</div>
-				) : null}
-			</div>
+								</div>
+							) : null}
+						</div>
+					) : null}
+				</div>
 			) : null}
 
 			{showBrowse ? (
-			<p className="ln-browse__summary" aria-live="polite">
-				{visible.length} khóa học
-				{filtersActive ? (
-					<button type="button" className="ln-link-btn" onClick={reset}>
-						Xóa bộ lọc
-					</button>
-				) : null}
-			</p>
+				<p className="ln-browse__summary" aria-live="polite">
+					{visible.length} khóa học
+					{filtersActive ? (
+						<button type="button" className="ln-link-btn" onClick={reset}>
+							Xóa bộ lọc
+						</button>
+					) : null}
+				</p>
 			) : null}
 
 			{visible.length ? (
@@ -226,8 +247,8 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 									<h2 className="ln-card__title">{course.title}</h2>
 									{course.subtitle ? <p className="ln-card__subtitle">{course.subtitle}</p> : null}
 									<p className="ln-card__meta">
-										{LEARN_LEVEL_LABELS[course.level]} · {course.lessonCount} bài · {course.sectionCount} mục ·{' '}
-										{formatMinutes(course.totalMinutes)}
+										{LEARN_LEVEL_LABELS[course.level]} · {course.lessonCount} bài ·{' '}
+										{course.sectionCount} mục · {formatMinutes(course.totalMinutes)}
 										{course.status !== 'PUBLISHED' ? ' · Bản nháp' : ''}
 										{status !== 'not-started' ? ` · ${STATUS_LABEL[status]}` : ''}
 									</p>

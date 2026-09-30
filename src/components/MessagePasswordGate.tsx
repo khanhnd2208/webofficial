@@ -110,11 +110,17 @@ export default function MessagePasswordGate({
 					aria-hidden
 				/>
 			) : (
-				<div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/10" aria-hidden />
+				<div
+					className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/10"
+					aria-hidden
+				/>
 			)}
 
 			<main className="relative z-10 w-full max-w-xs text-center">
-				<div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-accent/10 text-4xl shadow-inner ring-1 ring-accent/20" aria-hidden>
+				<div
+					className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-accent/10 text-4xl shadow-inner ring-1 ring-accent/20"
+					aria-hidden
+				>
 					💌
 				</div>
 
@@ -159,7 +165,12 @@ export default function MessagePasswordGate({
 					))}
 				</div>
 
-				<div id={`${liveId}-error`} className="mt-4 min-h-5" aria-live="assertive" aria-atomic="true">
+				<div
+					id={`${liveId}-error`}
+					className="mt-4 min-h-5"
+					aria-live="assertive"
+					aria-atomic="true"
+				>
 					{error ? <p className="text-sm font-medium text-error">{error}</p> : null}
 				</div>
 

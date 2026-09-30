@@ -3,10 +3,7 @@ import type { TeachingClassPublicLink } from '@prisma/client';
 import { withUniqueConflict } from '../domain/prismaErrors';
 import * as repo from '../repositories/teachingRepository';
 import type { UpdateTeachingPublicPageInput } from '../schemas';
-import type {
-	TeachingPublicLink,
-	TeachingPublicPageConfig,
-} from '../types';
+import type { TeachingPublicLink, TeachingPublicPageConfig } from '../types';
 import { getTeachingClass, notFound } from './classService';
 import { mapClass } from './mappers';
 
@@ -20,7 +17,9 @@ function mapPublicLink(link: TeachingClassPublicLink): TeachingPublicLink {
 	};
 }
 
-export async function getTeachingPublicPageConfig(classId: string): Promise<TeachingPublicPageConfig> {
+export async function getTeachingPublicPageConfig(
+	classId: string,
+): Promise<TeachingPublicPageConfig> {
 	const row = await repo.getPublicPageConfig(classId);
 	if (!row) notFound();
 	return {
@@ -57,7 +56,9 @@ export async function updateTeachingPublicPage(
 	};
 }
 
-export async function ensureTeachingPublicDefaults(classId: string): Promise<TeachingPublicPageConfig> {
+export async function ensureTeachingPublicDefaults(
+	classId: string,
+): Promise<TeachingPublicPageConfig> {
 	const config = await getTeachingPublicPageConfig(classId);
 	if (config.class.publicSlug) return config;
 	const teachingClass = await getTeachingClass(classId);

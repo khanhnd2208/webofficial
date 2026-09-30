@@ -36,9 +36,7 @@ export default function UnderlineDraw({
 			whileInView={{ scaleX: 1 }}
 			viewport={{ once: true, margin: '-5% 0px' }}
 			transition={
-				instant
-					? { duration: 0 }
-					: { duration: duration.underline, ease: ease.reveal, delay }
+				instant ? { duration: 0 } : { duration: duration.underline, ease: ease.reveal, delay }
 			}
 		/>
 	);

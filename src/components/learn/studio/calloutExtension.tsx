@@ -1,7 +1,12 @@
 'use client';
 
 import { mergeAttributes, Node } from '@tiptap/core';
-import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer, type ReactNodeViewProps } from '@tiptap/react';
+import {
+	NodeViewContent,
+	NodeViewWrapper,
+	ReactNodeViewRenderer,
+	type ReactNodeViewProps,
+} from '@tiptap/react';
 
 import {
 	CALLOUT_KINDS,
@@ -31,7 +36,12 @@ function CalloutView({ node, updateAttributes, editor, getPos }: ReactNodeViewPr
 	function unwrap() {
 		const pos = typeof getPos === 'function' ? getPos() : undefined;
 		if (typeof pos !== 'number') return;
-		editor.chain().focus().setTextSelection(pos + 2).lift('callout').run();
+		editor
+			.chain()
+			.focus()
+			.setTextSelection(pos + 2)
+			.lift('callout')
+			.run();
 	}
 
 	return (
@@ -58,11 +68,21 @@ function CalloutView({ node, updateAttributes, editor, getPos }: ReactNodeViewPr
 						if (event.key === 'Enter') {
 							event.preventDefault();
 							const pos = typeof getPos === 'function' ? getPos() : undefined;
-							if (typeof pos === 'number') editor.chain().focus().setTextSelection(pos + 2).run();
+							if (typeof pos === 'number')
+								editor
+									.chain()
+									.focus()
+									.setTextSelection(pos + 2)
+									.run();
 						}
 					}}
 				/>
-				<button type="button" className="ln-callout__remove" onClick={unwrap} title="Bỏ khối, giữ nội dung">
+				<button
+					type="button"
+					className="ln-callout__remove"
+					onClick={unwrap}
+					title="Bỏ khối, giữ nội dung"
+				>
 					Bỏ khối
 				</button>
 			</div>
@@ -103,7 +123,10 @@ export const Callout = Node.create({
 	renderHTML({ node, HTMLAttributes }) {
 		return [
 			'aside',
-			mergeAttributes(HTMLAttributes, { 'data-callout': node.attrs.kind, 'data-title': node.attrs.title }),
+			mergeAttributes(HTMLAttributes, {
+				'data-callout': node.attrs.kind,
+				'data-title': node.attrs.title,
+			}),
 			0,
 		];
 	},

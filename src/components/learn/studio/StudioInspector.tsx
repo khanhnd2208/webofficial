@@ -3,7 +3,11 @@
 import { useRef } from 'react';
 
 import { sectionMinutes } from '@/features/learn/content';
-import { type LearnCheckpoint, type LearnStudioLesson, type LearnStudioSection } from '@/features/learn/types';
+import {
+	type LearnCheckpoint,
+	type LearnStudioLesson,
+	type LearnStudioSection,
+} from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
 import OptionListEditor from './OptionListEditor';
@@ -11,11 +15,25 @@ import OptionListEditor from './OptionListEditor';
 export type SectionPatch = Partial<
 	Pick<
 		LearnStudioSection,
-		'title' | 'type' | 'durationMinutes' | 'summary' | 'keyTakeaways' | 'markdown' | 'checkpoint' | 'quiz' | 'discussion'
+		| 'title'
+		| 'type'
+		| 'durationMinutes'
+		| 'summary'
+		| 'keyTakeaways'
+		| 'markdown'
+		| 'checkpoint'
+		| 'quiz'
+		| 'discussion'
 	>
 >;
 
-function TakeawaysEditor({ items, onChange }: { items: string[]; onChange: (items: string[]) => void }) {
+function TakeawaysEditor({
+	items,
+	onChange,
+}: {
+	items: string[];
+	onChange: (items: string[]) => void;
+}) {
 	const inputs = useRef<Array<HTMLInputElement | null>>([]);
 	const rows = items.length ? items : [];
 
@@ -38,7 +56,9 @@ function TakeawaysEditor({ items, onChange }: { items: string[]; onChange: (item
 						value={item}
 						placeholder="Một ý chính ngắn gọn"
 						maxLength={500}
-						onChange={(event) => onChange(rows.map((value, i) => (i === index ? event.target.value : value)))}
+						onChange={(event) =>
+							onChange(rows.map((value, i) => (i === index ? event.target.value : value)))
+						}
 						onKeyDown={(event) => {
 							if (event.key === 'Enter') {
 								event.preventDefault();
@@ -74,7 +94,9 @@ function CheckpointEditor({
 			<button
 				type="button"
 				className="ln-link-btn"
-				onClick={() => onChange({ question: '', options: ['', '', ''], correctIndex: 0, explanation: '' })}
+				onClick={() =>
+					onChange({ question: '', options: ['', '', ''], correctIndex: 0, explanation: '' })
+				}
 			>
 				+ Thêm câu hỏi nhanh cuối mục
 			</button>
@@ -102,7 +124,11 @@ function CheckpointEditor({
 				placeholder="Giải thích (hiện sau khi chọn)"
 				onChange={(event) => onChange({ ...checkpoint, explanation: event.target.value })}
 			/>
-			<button type="button" className="ln-link-btn ln-link-btn--danger" onClick={() => onChange(null)}>
+			<button
+				type="button"
+				className="ln-link-btn ln-link-btn--danger"
+				onClick={() => onChange(null)}
+			>
 				Bỏ câu hỏi nhanh
 			</button>
 		</div>
@@ -167,7 +193,10 @@ export default function StudioInspector({
 
 			<div className="ln-inspector__group">
 				<p className="ln-inspector__label">Ý chính</p>
-				<TakeawaysEditor items={section.keyTakeaways} onChange={(keyTakeaways) => onPatch({ keyTakeaways })} />
+				<TakeawaysEditor
+					items={section.keyTakeaways}
+					onChange={(keyTakeaways) => onPatch({ keyTakeaways })}
+				/>
 			</div>
 
 			{section.type === 'READING' ? (
@@ -185,7 +214,12 @@ export default function StudioInspector({
 				<label className="ln-inspector__label" htmlFor="ln-move">
 					Thuộc bài
 				</label>
-				<select id="ln-move" className="ln-input" value={section.lessonId} onChange={(event) => onMove(event.target.value)}>
+				<select
+					id="ln-move"
+					className="ln-input"
+					value={section.lessonId}
+					onChange={(event) => onMove(event.target.value)}
+				>
 					{lessons.map((lesson, index) => (
 						<option key={lesson.id} value={lesson.id}>
 							Bài {index + 1}: {lesson.title}
@@ -198,7 +232,11 @@ export default function StudioInspector({
 				<a className="ln-btn ln-btn--block" href={previewHref} target="_blank" rel="noreferrer">
 					<StudioIcon name="eye" size={14} /> Xem như học viên
 				</a>
-				<button type="button" className="ln-btn ln-btn--block ln-btn--danger-quiet" onClick={onDelete}>
+				<button
+					type="button"
+					className="ln-btn ln-btn--block ln-btn--danger-quiet"
+					onClick={onDelete}
+				>
 					<StudioIcon name="trash" size={14} /> Xóa mục này
 				</button>
 			</div>

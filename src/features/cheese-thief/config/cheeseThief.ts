@@ -152,12 +152,20 @@ export function isFollowerKnows(value: unknown): value is FollowerKnows {
 	return value === 'team' || value === 'all';
 }
 
-export function resolveFollowers(playerCount: number, settings?: FollowerSettings): ResolvedFollowers {
-	const defaults = DEFAULT_FOLLOWERS[playerCount as PlayerCount] ?? { count: 0, knowledge: 'all' as const };
+export function resolveFollowers(
+	playerCount: number,
+	settings?: FollowerSettings,
+): ResolvedFollowers {
+	const defaults = DEFAULT_FOLLOWERS[playerCount as PlayerCount] ?? {
+		count: 0,
+		knowledge: 'all' as const,
+	};
 	const max = maxFollowersFor(playerCount);
 	const requested = settings?.count;
 	const count =
-		requested === undefined ? Math.min(defaults.count, max) : Math.min(max, Math.max(0, Math.trunc(requested)));
+		requested === undefined
+			? Math.min(defaults.count, max)
+			: Math.min(max, Math.max(0, Math.trunc(requested)));
 	const knowledge = isFollowerKnows(settings?.knowledge) ? settings.knowledge : defaults.knowledge;
 	return {
 		count,

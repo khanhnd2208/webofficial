@@ -71,7 +71,9 @@ export async function parseVocabFile(file: File): Promise<ParseResult> {
 	}
 	const isExcel = /\.xlsx$/i.test(file.name);
 	if (!isExcel && /\.xls$/i.test(file.name)) {
-		throw new Error('Định dạng .xls cũ không được hỗ trợ. Vui lòng lưu lại thành .xlsx rồi thử lại.');
+		throw new Error(
+			'Định dạng .xls cũ không được hỗ trợ. Vui lòng lưu lại thành .xlsx rồi thử lại.',
+		);
 	}
 
 	let rawRows: Record<string, string>[];
@@ -82,9 +84,14 @@ export async function parseVocabFile(file: File): Promise<ParseResult> {
 		const rows = await readSheet(file);
 		const [header, ...dataRows] = rows;
 		const headers = (header ?? []).map((cell) => canonicalVocabHeader(String(cell ?? '')));
-		rawRows = dataRows.slice(0, 2000).map((row) =>
-			Object.fromEntries(headers.map((key, index) => [key, String(row[index] ?? '')])) as Record<string, string>,
-		);
+		rawRows = dataRows
+			.slice(0, 2000)
+			.map(
+				(row) =>
+					Object.fromEntries(
+						headers.map((key, index) => [key, String(row[index] ?? '')]),
+					) as Record<string, string>,
+			);
 	} else {
 		const text = await file.text();
 		rawRows = parse(text, {

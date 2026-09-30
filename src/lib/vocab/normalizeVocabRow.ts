@@ -61,6 +61,8 @@ export function normalizeVocabRow(raw: Record<string, string>): NormalizedVocabR
 	return mapCanonicalVocabRow(canonicalizeVocabRow(raw));
 }
 
-export function isBlankVocabRow(word: Pick<CreateWordInput, 'term' | 'meaningEn' | 'meaningVi' | 'definition'>): boolean {
+export function isBlankVocabRow(
+	word: Pick<CreateWordInput, 'term' | 'meaningEn' | 'meaningVi' | 'definition'>,
+): boolean {
 	return !word.term && !word.meaningEn && !word.meaningVi && !word.definition;
 }

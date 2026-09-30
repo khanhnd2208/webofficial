@@ -7,7 +7,10 @@ import { studioTableHref, type SortDir } from '@/features/my-class/domain/listQu
 
 import { StudioDataTable, type StudioDataTableProps } from './StudioDataTable';
 
-type Props<T> = Omit<StudioDataTableProps<T>, 'onSort' | 'prevHref' | 'nextHref' | 'pageSizeHref'> & {
+type Props<T> = Omit<
+	StudioDataTableProps<T>,
+	'onSort' | 'prevHref' | 'nextHref' | 'pageSizeHref'
+> & {
 	pathname: string;
 	current: Record<string, string | undefined>;
 	sortBy: string;

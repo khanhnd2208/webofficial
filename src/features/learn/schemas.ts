@@ -76,7 +76,10 @@ export const createLearnLessonSchema = z.object({
 });
 
 export const importLearnLessonSchema = z.object({
-	markdown: z.string().min(1, 'Chưa có nội dung').max(LEARN_MAX_MARKDOWN * 5, 'Nội dung quá dài'),
+	markdown: z
+		.string()
+		.min(1, 'Chưa có nội dung')
+		.max(LEARN_MAX_MARKDOWN * 5, 'Nội dung quá dài'),
 	mode: z.enum(['create', 'append', 'replace']).default('create'),
 	lessonId: z.string().min(1).optional(),
 });
@@ -119,7 +122,10 @@ export const updateLearnProgressSchema = z
 		note: z.string().max(20_000).optional(),
 	})
 	.strict()
-	.refine((value) => value.completed !== undefined || value.note !== undefined, 'Không có thay đổi');
+	.refine(
+		(value) => value.completed !== undefined || value.note !== undefined,
+		'Không có thay đổi',
+	);
 
 export const submitLearnQuizSchema = z.object({
 	answers: z.record(z.string(), z.number().int().min(0)),

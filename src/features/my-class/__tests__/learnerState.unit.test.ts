@@ -10,7 +10,10 @@ import {
 } from '../domain/learnerState';
 import { legacyResolverKey, legacyUiDoneKey, progressQueueKey } from '../domain/progressKeys';
 
-function seed(partial: Partial<MyClassOutlineSeed> & Pick<MyClassOutlineSeed, 'knowledgeUnitId' | 'knowledgeUnitSlug' | 'title'>): MyClassOutlineSeed {
+function seed(
+	partial: Partial<MyClassOutlineSeed> &
+		Pick<MyClassOutlineSeed, 'knowledgeUnitId' | 'knowledgeUnitSlug' | 'title'>,
+): MyClassOutlineSeed {
 	return {
 		courseId: 'c1',
 		courseSlug: 'hrm',
@@ -89,9 +92,27 @@ describe('resolveLearnerState', () => {
 
 	it('counts a reused KU only once', () => {
 		const seeds = [
-			seed({ knowledgeUnitId: 'k1', knowledgeUnitSlug: 'reliability', title: 'Reliability', sectionId: 's1' }),
-			seed({ knowledgeUnitId: 'k1', knowledgeUnitSlug: 'reliability', title: 'Reliability', sectionId: 's2', sectionTitle: 'Methods' }),
-			seed({ knowledgeUnitId: 'k2', knowledgeUnitSlug: 'validity', title: 'Validity', lessonId: 'l2', lessonSlug: 'lesson-2', lessonTitle: 'Bài 2' }),
+			seed({
+				knowledgeUnitId: 'k1',
+				knowledgeUnitSlug: 'reliability',
+				title: 'Reliability',
+				sectionId: 's1',
+			}),
+			seed({
+				knowledgeUnitId: 'k1',
+				knowledgeUnitSlug: 'reliability',
+				title: 'Reliability',
+				sectionId: 's2',
+				sectionTitle: 'Methods',
+			}),
+			seed({
+				knowledgeUnitId: 'k2',
+				knowledgeUnitSlug: 'validity',
+				title: 'Validity',
+				lessonId: 'l2',
+				lessonSlug: 'lesson-2',
+				lessonTitle: 'Bài 2',
+			}),
 		];
 		const empty = resolveLearnerState({ seeds, completedUnitIds: [] });
 		expect(empty.totalItems).toBe(2);
@@ -120,7 +141,9 @@ describe('resolveLearnerState', () => {
 						{
 							id: 's1',
 							title: 'S',
-							knowledgeUnits: [{ id: 'k1', slug: 'a', title: 'A', availableLevels: ['readable' as const] }],
+							knowledgeUnits: [
+								{ id: 'k1', slug: 'a', title: 'A', availableLevels: ['readable' as const] },
+							],
 						},
 					],
 				},

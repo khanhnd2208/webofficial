@@ -86,7 +86,8 @@ export const SLASH_COMMANDS: SlashCommand[] = [
 		hint: '3 cột, có hàng tiêu đề',
 		group: 'Chèn',
 		keywords: 'table bang so sanh',
-		run: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+		run: (editor) =>
+			editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
 	},
 	{
 		id: 'image',

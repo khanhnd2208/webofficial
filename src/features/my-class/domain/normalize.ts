@@ -10,7 +10,12 @@ export function normalizeSlug(value: string, fallback = 'item'): string {
 
 export function hasHtmlContent(html: string | null | undefined): boolean {
 	if (!html) return false;
-	return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim().length > 0;
+	return (
+		html
+			.replace(/<[^>]*>/g, ' ')
+			.replace(/&nbsp;/g, ' ')
+			.trim().length > 0
+	);
 }
 
 export function htmlLevels(revision: {

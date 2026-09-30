@@ -2,7 +2,11 @@ import Link from 'next/link';
 import { listAdminCourseOptions, listAdminKnowledgeTable, unwrapItems } from '@/features/my-class';
 import { currentTableParams, parsePublishStatus } from '@/features/my-class/domain/listQuery';
 import { routes } from '@/config/routes';
-import { StudioFilterBar, StudioFilterSelect, StudioPageHeader } from '@/components/myclass/admin/studio';
+import {
+	StudioFilterBar,
+	StudioFilterSelect,
+	StudioPageHeader,
+} from '@/components/myclass/admin/studio';
 import KnowledgeTable from '@/components/myclass/admin/tables/KnowledgeTable';
 
 export const dynamic = 'force-dynamic';

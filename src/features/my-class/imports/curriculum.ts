@@ -8,7 +8,9 @@ import * as kuRepo from '../repositories/knowledgeUnitRepository';
 import type { CurriculumImportInput } from '../schemas';
 import type { CurriculumImportPreview } from '../types';
 
-export function analyzeCurriculum(input: CurriculumImportInput): Omit<CurriculumImportPreview, 'courseExists'> {
+export function analyzeCurriculum(
+	input: CurriculumImportInput,
+): Omit<CurriculumImportPreview, 'courseExists'> {
 	const errors: string[] = [];
 	const lessonSlugs = input.lessons.map((lesson) => lesson.slug);
 	if (new Set(lessonSlugs).size !== lessonSlugs.length) {
@@ -25,17 +27,34 @@ export function analyzeCurriculum(input: CurriculumImportInput): Omit<Curriculum
 		positions.set(`lesson:${lesson.slug}`, lessonPositions);
 		const sectionSlugs = new Set<string>();
 		for (const section of lesson.sections) {
-			if (sectionSlugs.has(section.title)) errors.push(`Section trùng trong Lesson: ${section.title}`);
+			if (sectionSlugs.has(section.title))
+				errors.push(`Section trùng trong Lesson: ${section.title}`);
 			sectionSlugs.add(section.title);
 			for (const unit of section.knowledgeUnits) {
 				const slug = normalizeSlug(unit.slug, unit.slug);
 				if (seen.has(slug)) {
-					const signature = JSON.stringify([unit.title, unit.summary ?? '', unit.foundationHtml ?? '', unit.academicHtml ?? '', unit.expertHtml ?? '']);
-					if (payloadContent.get(slug) !== signature) errors.push(`KU slug trùng nhưng nội dung khác: ${slug}`);
+					const signature = JSON.stringify([
+						unit.title,
+						unit.summary ?? '',
+						unit.foundationHtml ?? '',
+						unit.academicHtml ?? '',
+						unit.expertHtml ?? '',
+					]);
+					if (payloadContent.get(slug) !== signature)
+						errors.push(`KU slug trùng nhưng nội dung khác: ${slug}`);
 					knowledgeUnits.push({ slug, action: 'reuse-payload' });
 				} else {
 					seen.set(slug, 'create');
-					payloadContent.set(slug, JSON.stringify([unit.title, unit.summary ?? '', unit.foundationHtml ?? '', unit.academicHtml ?? '', unit.expertHtml ?? '']));
+					payloadContent.set(
+						slug,
+						JSON.stringify([
+							unit.title,
+							unit.summary ?? '',
+							unit.foundationHtml ?? '',
+							unit.academicHtml ?? '',
+							unit.expertHtml ?? '',
+						]),
+					);
 					knowledgeUnits.push({ slug, action: 'create' });
 				}
 				for (const relatedSlug of unit.relatedSlugs ?? []) {
@@ -56,7 +75,9 @@ export function analyzeCurriculum(input: CurriculumImportInput): Omit<Curriculum
 	};
 }
 
-export async function previewCurriculum(input: CurriculumImportInput): Promise<CurriculumImportPreview> {
+export async function previewCurriculum(
+	input: CurriculumImportInput,
+): Promise<CurriculumImportPreview> {
 	const analysis = analyzeCurriculum(input);
 	const existingCourse = await courseRepo.findCourseBySlug(input.course.slug);
 	if (existingCourse) analysis.errors.push(`Course slug đã tồn tại: ${input.course.slug}`);
@@ -70,8 +91,10 @@ export async function previewCurriculum(input: CurriculumImportInput): Promise<C
 	const payloadSlugs = new Set(knowledgeUnits.map((unit) => unit.slug));
 	const related = await Promise.all(
 		analysis.related.map(async (item) => {
-			const fromOk = payloadSlugs.has(item.from) || Boolean(await kuRepo.findKnowledgeUnitBySlug(item.from));
-			const toOk = payloadSlugs.has(item.to) || Boolean(await kuRepo.findKnowledgeUnitBySlug(item.to));
+			const fromOk =
+				payloadSlugs.has(item.from) || Boolean(await kuRepo.findKnowledgeUnitBySlug(item.from));
+			const toOk =
+				payloadSlugs.has(item.to) || Boolean(await kuRepo.findKnowledgeUnitBySlug(item.to));
 			return { ...item, resolvable: fromOk && toOk };
 		}),
 	);
@@ -85,7 +108,8 @@ export async function previewCurriculum(input: CurriculumImportInput): Promise<C
 
 export async function importCurriculum(input: CurriculumImportInput) {
 	const preview = await previewCurriculum(input);
-	if (preview.errors.length) throw new AppError(preview.errors[0]!, preview.courseExists ? 409 : 422);
+	if (preview.errors.length)
+		throw new AppError(preview.errors[0]!, preview.courseExists ? 409 : 422);
 	return prisma.$transaction(async (tx) => {
 		const course = await tx.myClassCourse.create({
 			data: {
@@ -187,21 +211,35 @@ export function curriculumHasContent(html?: string) {
 export function normalizeCurriculumPayload(payload: unknown): unknown {
 	if (!payload || typeof payload !== 'object') return payload;
 	const value = payload as Record<string, unknown>;
-	const subject = value.subject && typeof value.subject === 'object' ? value.subject as Record<string, unknown> : null;
+	const subject =
+		value.subject && typeof value.subject === 'object'
+			? (value.subject as Record<string, unknown>)
+			: null;
 	if (!subject || !Array.isArray(subject.units)) return payload;
 	const units = subject.units as Array<Record<string, unknown>>;
 	return {
-		course: { title: subject.title, slug: subject.slug, summary: subject.summary, description: subject.description },
+		course: {
+			title: subject.title,
+			slug: subject.slug,
+			summary: subject.summary,
+			description: subject.description,
+		},
 		lessons: units.map((unit, unitPosition) => ({
 			slug: unit.slug,
 			title: unit.title,
 			summary: unit.summary,
 			position: typeof unit.position === 'number' ? unit.position : unitPosition,
-			sections: (Array.isArray(unit.modules) ? unit.modules as Array<Record<string, unknown>> : []).map((module, modulePosition) => ({
+			sections: (Array.isArray(unit.modules)
+				? (unit.modules as Array<Record<string, unknown>>)
+				: []
+			).map((module, modulePosition) => ({
 				title: module.title,
 				summary: module.summary,
 				position: typeof module.position === 'number' ? module.position : modulePosition,
-				knowledgeUnits: (Array.isArray(module.items) ? module.items as Array<Record<string, unknown>> : []).map((item, itemPosition) => ({
+				knowledgeUnits: (Array.isArray(module.items)
+					? (module.items as Array<Record<string, unknown>>)
+					: []
+				).map((item, itemPosition) => ({
 					slug: item.slug,
 					title: item.title,
 					summary: item.summary,

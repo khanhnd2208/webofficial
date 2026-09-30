@@ -1,4 +1,8 @@
-import { completeKnowledgeSchema, completeKnowledgeUnit, parseWithAppError } from '@/features/my-class';
+import {
+	completeKnowledgeSchema,
+	completeKnowledgeUnit,
+	parseWithAppError,
+} from '@/features/my-class';
 import { resolveMyClassActor } from '@/features/my-class/services/resolveActor';
 import { apiSuccess, withErrorHandling } from '@/lib/apiUtils';
 import { type NextRequest } from 'next/server';

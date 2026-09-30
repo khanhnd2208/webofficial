@@ -60,7 +60,9 @@ describe('LearnStudio save button', () => {
 	it('shows Lưu after an edit, patches on click, then shows Đã lưu', async () => {
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
 
-		await waitFor(() => expect(screen.getByRole('toolbar', { name: 'Định dạng' })).toBeInTheDocument());
+		await waitFor(() =>
+			expect(screen.getByRole('toolbar', { name: 'Định dạng' })).toBeInTheDocument(),
+		);
 		expect(screen.getByRole('button', { name: 'Đã lưu ✓' })).toBeDisabled();
 
 		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));

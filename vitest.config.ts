@@ -57,10 +57,7 @@ export default defineConfig({
 					name: 'integration',
 					environment: 'node',
 					fileParallelism: false,
-					include: [
-						'src/**/*.integration.test.ts',
-						'src/services/__tests__/**/*.test.ts',
-					],
+					include: ['src/**/*.integration.test.ts', 'src/services/__tests__/**/*.test.ts'],
 					exclude: ['src/_archived/**'],
 					setupFiles: ['./src/test/setup.ts', './src/test/setup.integration.ts'],
 					testTimeout: 30_000,

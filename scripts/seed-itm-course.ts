@@ -25,16 +25,24 @@ const sectionTitles = [
 
 async function main() {
 	loadEnv({ path: resolve(process.cwd(), '.env.local') });
-	const original = readFileSync(resolve(process.cwd(), 'content/learn/itm/bai-1.original.txt'), 'utf8');
+	const original = readFileSync(
+		resolve(process.cwd(), 'content/learn/itm/bai-1.original.txt'),
+		'utf8',
+	);
 	const markdown = readFileSync(resolve(process.cwd(), 'content/learn/itm/bai-1.md'), 'utf8');
-	const extrasMarkdown = readFileSync(resolve(process.cwd(), 'content/learn/itm/bai-1-them.md'), 'utf8');
+	const extrasMarkdown = readFileSync(
+		resolve(process.cwd(), 'content/learn/itm/bai-1-them.md'),
+		'utf8',
+	);
 	const parsed = parseCourseMarkdown(markdown);
 	if (parsed.lessons.length !== 1 || parsed.lessons[0]?.lessonTitle !== LESSON_TITLE) {
 		throw new Error('ITM lesson normalization produced an unexpected lesson shape');
 	}
 	const lesson = parsed.lessons[0];
 	if (!lesson || lesson.sections.length !== sectionTitles.length) {
-		throw new Error(`Expected ${sectionTitles.length} sections, got ${lesson?.sections.length ?? 0}`);
+		throw new Error(
+			`Expected ${sectionTitles.length} sections, got ${lesson?.sections.length ?? 0}`,
+		);
 	}
 	if (lesson.sections.some((section, index) => section.title !== sectionTitles[index])) {
 		throw new Error('ITM section titles no longer match the published lesson');
@@ -48,13 +56,25 @@ async function main() {
 	}
 	const extras = parseCourseMarkdown(extrasMarkdown).lessons[0]?.sections ?? [];
 	if (extras.map((section) => section.type).join(',') !== 'QUIZ,READING,DISCUSSION') {
-		throw new Error(`Expected quiz, guide, and discussion sections, got ${extras.map((section) => section.type).join(',')}`);
+		throw new Error(
+			`Expected quiz, guide, and discussion sections, got ${extras.map((section) => section.type).join(',')}`,
+		);
 	}
 	if (extras[0]?.quiz?.questions.length !== 3) throw new Error('ITM quiz must have 3 questions');
-	if (extras[2]?.discussion?.questions.length !== 16) throw new Error('ITM discussion must have 16 questions');
+	if (extras[2]?.discussion?.questions.length !== 16)
+		throw new Error('ITM discussion must have 16 questions');
 	const sections = [...lesson.sections, ...extras];
 	if (process.argv.includes('--dry-run')) {
-		console.log(JSON.stringify({ status: 'valid', lessonTitle: lesson.lessonTitle, sectionCount: sections.length, quizQuestions: extras[0]?.quiz?.questions.length, discussionQuestions: extras[2]?.discussion?.questions.length, matchPercent: fidelity.matchPercent }));
+		console.log(
+			JSON.stringify({
+				status: 'valid',
+				lessonTitle: lesson.lessonTitle,
+				sectionCount: sections.length,
+				quizQuestions: extras[0]?.quiz?.questions.length,
+				discussionQuestions: extras[2]?.discussion?.questions.length,
+				matchPercent: fidelity.matchPercent,
+			}),
+		);
 		return;
 	}
 
@@ -66,14 +86,18 @@ async function main() {
 		});
 		if (existing) {
 			const alreadySeeded = existing.lessons.some(
-				(item) => item.title === LESSON_TITLE && item.sections.some((section) => section.markdown.includes('Nhà quản trị')),
+				(item) =>
+					item.title === LESSON_TITLE &&
+					item.sections.some((section) => section.markdown.includes('Nhà quản trị')),
 			);
 			if (alreadySeeded) {
 				const target = existing.lessons.find((item) => item.title === LESSON_TITLE);
 				const have = new Set(target?.sections.map((section) => section.title) ?? []);
 				const missing = extras.filter((section) => !have.has(section.title));
 				if (!target || !missing.length) {
-					console.log(JSON.stringify({ status: 'skipped', courseId: existing.id, slug: existing.slug }));
+					console.log(
+						JSON.stringify({ status: 'skipped', courseId: existing.id, slug: existing.slug }),
+					);
 					return;
 				}
 				const start = target.sections.length;
@@ -88,15 +112,28 @@ async function main() {
 								summary: section.summary,
 								keyTakeaways: section.keyTakeaways,
 								markdown: section.markdown,
-								checkpoint: section.checkpoint === null ? Prisma.DbNull : (section.checkpoint as Prisma.InputJsonValue),
-								quiz: section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
-								discussion: section.discussion === null ? Prisma.DbNull : (section.discussion as Prisma.InputJsonValue),
+								checkpoint:
+									section.checkpoint === null
+										? Prisma.DbNull
+										: (section.checkpoint as Prisma.InputJsonValue),
+								quiz:
+									section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
+								discussion:
+									section.discussion === null
+										? Prisma.DbNull
+										: (section.discussion as Prisma.InputJsonValue),
 								position: start + index,
 							},
 						}),
 					),
 				);
-				console.log(JSON.stringify({ status: 'appended', courseId: existing.id, added: missing.map((section) => section.title) }));
+				console.log(
+					JSON.stringify({
+						status: 'appended',
+						courseId: existing.id,
+						added: missing.map((section) => section.title),
+					}),
+				);
 				return;
 			}
 			const placeholderOnly =
@@ -120,7 +157,8 @@ async function main() {
 						data: {
 							title: COURSE_TITLE,
 							subtitle: 'Introduction to Management · Nhập môn quản trị',
-							description: 'Khóa ITM giúp bạn hiểu nhà quản trị, tổ chức, các chức năng quản trị và những kỹ năng cần thiết để làm việc hiệu quả trong bối cảnh mới.',
+							description:
+								'Khóa ITM giúp bạn hiểu nhà quản trị, tổ chức, các chức năng quản trị và những kỹ năng cần thiết để làm việc hiệu quả trong bối cảnh mới.',
 							category: 'ITM',
 							level: LearnCourseLevel.BASIC,
 							status: PublishStatus.PUBLISHED,
@@ -132,11 +170,14 @@ async function main() {
 							slug: COURSE_SLUG,
 							title: COURSE_TITLE,
 							subtitle: 'Introduction to Management · Nhập môn quản trị',
-							description: 'Khóa ITM giúp bạn hiểu nhà quản trị, tổ chức, các chức năng quản trị và những kỹ năng cần thiết để làm việc hiệu quả trong bối cảnh mới.',
+							description:
+								'Khóa ITM giúp bạn hiểu nhà quản trị, tổ chức, các chức năng quản trị và những kỹ năng cần thiết để làm việc hiệu quả trong bối cảnh mới.',
 							category: 'ITM',
 							level: LearnCourseLevel.BASIC,
 							status: PublishStatus.PUBLISHED,
-							position: ((await tx.learnCourse.aggregate({ _max: { position: true } }))._max.position ?? -1) + 1,
+							position:
+								((await tx.learnCourse.aggregate({ _max: { position: true } }))._max.position ??
+									-1) + 1,
 							publishedAt: new Date(),
 						},
 					});
@@ -162,9 +203,15 @@ async function main() {
 						summary: section.summary,
 						keyTakeaways: section.keyTakeaways,
 						markdown: section.markdown,
-						checkpoint: section.checkpoint === null ? Prisma.DbNull : (section.checkpoint as Prisma.InputJsonValue),
+						checkpoint:
+							section.checkpoint === null
+								? Prisma.DbNull
+								: (section.checkpoint as Prisma.InputJsonValue),
 						quiz: section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
-						discussion: section.discussion === null ? Prisma.DbNull : (section.discussion as Prisma.InputJsonValue),
+						discussion:
+							section.discussion === null
+								? Prisma.DbNull
+								: (section.discussion as Prisma.InputJsonValue),
 						position,
 					},
 				});

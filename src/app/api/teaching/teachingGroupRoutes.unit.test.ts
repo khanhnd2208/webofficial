@@ -3,8 +3,14 @@ import { NextRequest } from 'next/server';
 
 import { invokeRoute } from '@/test/helpers/apiRoute';
 
-import { GET as adminGet, PATCH as adminPatch } from '../admin/teaching/classes/[classId]/groups/route';
-import { PUT as adminAssignmentPut, DELETE as adminAssignmentDelete } from '../admin/teaching/classes/[classId]/groups/assignments/route';
+import {
+	GET as adminGet,
+	PATCH as adminPatch,
+} from '../admin/teaching/classes/[classId]/groups/route';
+import {
+	PUT as adminAssignmentPut,
+	DELETE as adminAssignmentDelete,
+} from '../admin/teaching/classes/[classId]/groups/assignments/route';
 import { POST as adminClear } from '../admin/teaching/classes/[classId]/groups/clear/route';
 import { POST as adminRandomize } from '../admin/teaching/classes/[classId]/groups/randomize/route';
 import { GET as publicGet } from './classes/[slug]/groups/route';
@@ -60,18 +66,117 @@ describe('Teaching group routes while hidden', () => {
 	});
 
 	it.each([
-		['admin GET', () => invokeRoute(adminGet, { url: 'http://localhost/api/admin/teaching/classes/c1/groups', params: { classId: 'c1' } })],
-		['admin PATCH', () => invokeRoute(adminPatch, { method: 'PATCH', url: 'http://localhost/api/admin/teaching/classes/c1/groups', params: { classId: 'c1' }, body: { open: true } })],
-		['admin assignment PUT', () => invokeRoute(adminAssignmentPut, { method: 'PUT', url: 'http://localhost/api/admin/teaching/classes/c1/groups/assignments', params: { classId: 'c1' }, body: {} })],
-		['admin assignment DELETE', () => invokeRoute(adminAssignmentDelete, { method: 'DELETE', url: 'http://localhost/api/admin/teaching/classes/c1/groups/assignments', params: { classId: 'c1' }, body: {} })],
-		['admin clear', () => invokeRoute(adminClear, { method: 'POST', url: 'http://localhost/api/admin/teaching/classes/c1/groups/clear', params: { classId: 'c1' }, body: {} })],
-		['admin randomize', () => invokeRoute(adminRandomize, { method: 'POST', url: 'http://localhost/api/admin/teaching/classes/c1/groups/randomize', params: { classId: 'c1' }, body: {} })],
-		['public GET', () => invokeRoute(publicGet, { url: 'http://localhost/api/teaching/classes/c1/groups', params: { slug: 'c1' } })],
-		['public claim', () => invokeRoute(publicClaim, { method: 'POST', url: 'http://localhost/api/teaching/classes/c1/groups/claim', params: { slug: 'c1' }, body: {} })],
-		['public move', () => invokeRoute(publicMove, { method: 'POST', url: 'http://localhost/api/teaching/classes/c1/groups/move', params: { slug: 'c1' }, body: {} })],
-		['public forget', () => invokeRoute(publicForget, { method: 'POST', url: 'http://localhost/api/teaching/classes/c1/groups/forget', params: { slug: 'c1' } })],
-		['public undo', () => invokeRoute(publicUndo, { method: 'POST', url: 'http://localhost/api/teaching/classes/c1/groups/undo', params: { slug: 'c1' } })],
-		['public events', () => publicEvents(new NextRequest('http://localhost/api/teaching/classes/c1/groups/events'), { params: Promise.resolve({ slug: 'c1' }) })],
+		[
+			'admin GET',
+			() =>
+				invokeRoute(adminGet, {
+					url: 'http://localhost/api/admin/teaching/classes/c1/groups',
+					params: { classId: 'c1' },
+				}),
+		],
+		[
+			'admin PATCH',
+			() =>
+				invokeRoute(adminPatch, {
+					method: 'PATCH',
+					url: 'http://localhost/api/admin/teaching/classes/c1/groups',
+					params: { classId: 'c1' },
+					body: { open: true },
+				}),
+		],
+		[
+			'admin assignment PUT',
+			() =>
+				invokeRoute(adminAssignmentPut, {
+					method: 'PUT',
+					url: 'http://localhost/api/admin/teaching/classes/c1/groups/assignments',
+					params: { classId: 'c1' },
+					body: {},
+				}),
+		],
+		[
+			'admin assignment DELETE',
+			() =>
+				invokeRoute(adminAssignmentDelete, {
+					method: 'DELETE',
+					url: 'http://localhost/api/admin/teaching/classes/c1/groups/assignments',
+					params: { classId: 'c1' },
+					body: {},
+				}),
+		],
+		[
+			'admin clear',
+			() =>
+				invokeRoute(adminClear, {
+					method: 'POST',
+					url: 'http://localhost/api/admin/teaching/classes/c1/groups/clear',
+					params: { classId: 'c1' },
+					body: {},
+				}),
+		],
+		[
+			'admin randomize',
+			() =>
+				invokeRoute(adminRandomize, {
+					method: 'POST',
+					url: 'http://localhost/api/admin/teaching/classes/c1/groups/randomize',
+					params: { classId: 'c1' },
+					body: {},
+				}),
+		],
+		[
+			'public GET',
+			() =>
+				invokeRoute(publicGet, {
+					url: 'http://localhost/api/teaching/classes/c1/groups',
+					params: { slug: 'c1' },
+				}),
+		],
+		[
+			'public claim',
+			() =>
+				invokeRoute(publicClaim, {
+					method: 'POST',
+					url: 'http://localhost/api/teaching/classes/c1/groups/claim',
+					params: { slug: 'c1' },
+					body: {},
+				}),
+		],
+		[
+			'public move',
+			() =>
+				invokeRoute(publicMove, {
+					method: 'POST',
+					url: 'http://localhost/api/teaching/classes/c1/groups/move',
+					params: { slug: 'c1' },
+					body: {},
+				}),
+		],
+		[
+			'public forget',
+			() =>
+				invokeRoute(publicForget, {
+					method: 'POST',
+					url: 'http://localhost/api/teaching/classes/c1/groups/forget',
+					params: { slug: 'c1' },
+				}),
+		],
+		[
+			'public undo',
+			() =>
+				invokeRoute(publicUndo, {
+					method: 'POST',
+					url: 'http://localhost/api/teaching/classes/c1/groups/undo',
+					params: { slug: 'c1' },
+				}),
+		],
+		[
+			'public events',
+			() =>
+				publicEvents(new NextRequest('http://localhost/api/teaching/classes/c1/groups/events'), {
+					params: Promise.resolve({ slug: 'c1' }),
+				}),
+		],
 	] as const)('%s returns 404 before any group work', async (_name, invoke) => {
 		const response = await invoke();
 

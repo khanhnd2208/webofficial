@@ -28,9 +28,9 @@ export default function ToolsPage() {
 		<div className="mx-auto max-w-5xl px-6 py-8">
 			<div className="space-y-8">
 				<AdminPageHeader
-				eyebrow="Kho lưu trữ"
-				title="Công cụ"
-				description="Hub công cụ cũ. Active Recall đã chuyển sang admin chính. Các tool còn lại vẫn dùng được từ Kho lưu trữ."
+					eyebrow="Kho lưu trữ"
+					title="Công cụ"
+					description="Hub công cụ cũ. Active Recall đã chuyển sang admin chính. Các tool còn lại vẫn dùng được từ Kho lưu trữ."
 				/>
 
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -45,8 +45,18 @@ export default function ToolsPage() {
 								<p className="mt-1.5 text-sm text-muted leading-relaxed">{tool.description}</p>
 								<div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-accent">
 									<span>Mở tool</span>
-									<svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none">
-										<path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+									<svg
+										className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+										viewBox="0 0 16 16"
+										fill="none"
+									>
+										<path
+											d="M6 4l4 4-4 4"
+											stroke="currentColor"
+											strokeWidth="1.5"
+											strokeLinecap="round"
+											strokeLinejoin="round"
+										/>
 									</svg>
 								</div>
 							</div>

@@ -10,11 +10,18 @@ import type {
 import type { PublicClassNote, TeachingClassNoteRecord } from '../types';
 import { notFound } from './classService';
 
-function statusFor(note: { publishedAt: Date | null; publishedTitle: string | null; publishedHtml: string | null; draftTitle: string; draftHtml: string }) {
-	if (note.publishedAt === null || note.publishedTitle === null || note.publishedHtml === null) return 'DRAFT' as const;
+function statusFor(note: {
+	publishedAt: Date | null;
+	publishedTitle: string | null;
+	publishedHtml: string | null;
+	draftTitle: string;
+	draftHtml: string;
+}) {
+	if (note.publishedAt === null || note.publishedTitle === null || note.publishedHtml === null)
+		return 'DRAFT' as const;
 	return note.publishedTitle === note.draftTitle && note.publishedHtml === note.draftHtml
-		? 'PUBLISHED' as const
-		: 'MODIFIED' as const;
+		? ('PUBLISHED' as const)
+		: ('MODIFIED' as const);
 }
 
 function mapNote(note: Awaited<ReturnType<typeof repo.getClassNote>>): TeachingClassNoteRecord {
@@ -75,11 +82,17 @@ export async function deleteClassNote(classId: string, noteId: string) {
 	if (!existing || existing.classId !== classId) notFound('Class note');
 	await repo.deleteClassNote(noteId);
 	const notes = await repo.listClassNotes(classId);
-	await repo.reorderClassNotes(classId, notes.map((note) => note.id));
+	await repo.reorderClassNotes(
+		classId,
+		notes.map((note) => note.id),
+	);
 	return { id: noteId };
 }
 
-export async function publishClassNote(classId: string, noteId: string): Promise<TeachingClassNoteRecord> {
+export async function publishClassNote(
+	classId: string,
+	noteId: string,
+): Promise<TeachingClassNoteRecord> {
 	const existing = await repo.getClassNote(noteId);
 	if (!existing || existing.classId !== classId) notFound('Class note');
 	if (!existing.draftTitle.trim() || !hasTeachingHtmlContent(existing.draftHtml)) {
@@ -93,7 +106,10 @@ export async function publishClassNote(classId: string, noteId: string): Promise
 	return mapNote(updated);
 }
 
-export async function unpublishClassNote(classId: string, noteId: string): Promise<TeachingClassNoteRecord> {
+export async function unpublishClassNote(
+	classId: string,
+	noteId: string,
+): Promise<TeachingClassNoteRecord> {
 	const existing = await repo.getClassNote(noteId);
 	if (!existing || existing.classId !== classId) notFound('Class note');
 	const updated = await repo.updateClassNote(noteId, {
@@ -111,7 +127,11 @@ export async function reorderClassNotes(
 	const notes = await repo.listClassNotes(classId);
 	const known = new Set(notes.map((note) => note.id));
 	const unique = new Set(input.ids);
-	if (input.ids.length !== notes.length || unique.size !== input.ids.length || input.ids.some((id) => !known.has(id))) {
+	if (
+		input.ids.length !== notes.length ||
+		unique.size !== input.ids.length ||
+		input.ids.some((id) => !known.has(id))
+	) {
 		throw new AppError('Danh sách sắp xếp không hợp lệ.', 422, 'VALIDATION');
 	}
 	await repo.reorderClassNotes(classId, input.ids);
@@ -124,7 +144,8 @@ export function mapPublicClassNote(note: {
 	publishedHtml: string | null;
 	publishedAt: Date | null;
 }): PublicClassNote | null {
-	if (note.publishedTitle === null || note.publishedHtml === null || note.publishedAt === null) return null;
+	if (note.publishedTitle === null || note.publishedHtml === null || note.publishedAt === null)
+		return null;
 	return {
 		id: note.id,
 		title: note.publishedTitle,

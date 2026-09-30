@@ -13,15 +13,27 @@ export default async function NewQuestionPage() {
 	]);
 	return (
 		<div className="mc-studio-container px-0 py-8">
-			<Link href={routes.admin.myClassBank} className="text-xs uppercase tracking-widest text-muted">
+			<Link
+				href={routes.admin.myClassBank}
+				className="text-xs uppercase tracking-widest text-muted"
+			>
 				← Ngân hàng câu hỏi
 			</Link>
 			<h1 className="mt-6 text-2xl font-black">Tạo câu hỏi</h1>
 			<div className="mt-8">
 				<QuestionForm
-					knowledgeUnits={units.map((item) => ({ id: item.id, title: item.title, slug: item.slug }))}
+					knowledgeUnits={units.map((item) => ({
+						id: item.id,
+						title: item.title,
+						slug: item.slug,
+					}))}
 					subjects={subjects.map((item) => ({ id: item.id, name: item.name }))}
-					topics={topics.map((item) => ({ id: item.id, name: item.name, path: item.path, subjectId: item.subjectId }))}
+					topics={topics.map((item) => ({
+						id: item.id,
+						name: item.name,
+						path: item.path,
+						subjectId: item.subjectId,
+					}))}
 				/>
 			</div>
 		</div>

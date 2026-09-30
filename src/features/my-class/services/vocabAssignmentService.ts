@@ -11,13 +11,20 @@ import {
 } from '@/services/vocabSetService';
 import type { CreateWordInput } from '@/types/vocab';
 
-import { courseVocabScopeKey, isLearnerVisibleVocabAssignment, lessonVocabScopeKey } from '../domain/vocabScope';
+import {
+	courseVocabScopeKey,
+	isLearnerVisibleVocabAssignment,
+	lessonVocabScopeKey,
+} from '../domain/vocabScope';
 import * as courseRepo from '../repositories/courseRepository';
 import * as vocabRepo from '../repositories/vocabAssignmentRepository';
 import type { VocabCsvImportInput } from '../schemas';
 import { mapVocabAssignment } from './mappers';
 
-export async function listCourseVocabAssignments(courseId: string, options?: { publicOnly?: boolean }) {
+export async function listCourseVocabAssignments(
+	courseId: string,
+	options?: { publicOnly?: boolean },
+) {
 	const rows = await vocabRepo.listAssignments(courseId);
 	return rows
 		.filter((row) => (options?.publicOnly ? isLearnerVisibleVocabAssignment(row) : true))
@@ -35,10 +42,17 @@ export async function getAssignedVocabSet(courseSlug: string, vocabSetId: string
 	}
 	const set = await getVocabSetById(vocabSetId);
 	if (!set || set.isArchived) throw new AppError('Bộ từ không còn khả dụng', 404);
-	return { course: { id: course.id, slug: course.slug, title: course.title }, assignment: mapVocabAssignment(assignment), set };
+	return {
+		course: { id: course.id, slug: course.slug, title: course.title },
+		assignment: mapVocabAssignment(assignment),
+		set,
+	};
 }
 
-export async function assignVocabSet(courseId: string, input: { vocabSetId: string; lessonId?: string | null; position?: number }) {
+export async function assignVocabSet(
+	courseId: string,
+	input: { vocabSetId: string; lessonId?: string | null; position?: number },
+) {
 	const course = await courseRepo.findAdminCourse(courseId);
 	if (!course) throw new AppError('Không tìm thấy Course', 404);
 	const set = await prisma.vocabSet.findUnique({ where: { id: input.vocabSetId } });
@@ -47,9 +61,12 @@ export async function assignVocabSet(courseId: string, input: { vocabSetId: stri
 	const lessonId: string | null = input.lessonId ?? null;
 	if (lessonId) {
 		const lesson = await courseRepo.findLesson(lessonId);
-		if (!lesson || lesson.courseId !== courseId) throw new AppError('Lesson không thuộc Course', 422);
+		if (!lesson || lesson.courseId !== courseId)
+			throw new AppError('Lesson không thuộc Course', 422);
 	}
-	const scopeKey = lessonId ? lessonVocabScopeKey(lessonId, input.vocabSetId) : courseVocabScopeKey(courseId, input.vocabSetId);
+	const scopeKey = lessonId
+		? lessonVocabScopeKey(lessonId, input.vocabSetId)
+		: courseVocabScopeKey(courseId, input.vocabSetId);
 	const existing = await prisma.myClassVocabAssignment.findUnique({ where: { scopeKey } });
 	if (existing) throw new AppError('Bộ từ đã được gắn vào phạm vi này', 409, 'CONFLICT');
 	const max = await prisma.myClassVocabAssignment.aggregate({
@@ -67,22 +84,30 @@ export async function assignVocabSet(courseId: string, input: { vocabSetId: stri
 	});
 }
 
-export async function updateVocabAssignment(courseId: string, id: string, input: { lessonId?: string | null; position?: number }) {
+export async function updateVocabAssignment(
+	courseId: string,
+	id: string,
+	input: { lessonId?: string | null; position?: number },
+) {
 	const row = await vocabRepo.findAssignmentById(id);
 	if (!row || row.courseId !== courseId) throw new AppError('Không tìm thấy gắn kết từ vựng', 404);
 	let lessonId = row.lessonId;
 	if (input.lessonId !== undefined) {
 		if (input.lessonId) {
 			const lesson = await courseRepo.findLesson(input.lessonId);
-			if (!lesson || lesson.courseId !== courseId) throw new AppError('Lesson không thuộc Course', 422);
+			if (!lesson || lesson.courseId !== courseId)
+				throw new AppError('Lesson không thuộc Course', 422);
 			lessonId = input.lessonId;
 		} else {
 			lessonId = null;
 		}
 	}
-	const scopeKey = lessonId ? lessonVocabScopeKey(lessonId, row.vocabSetId) : courseVocabScopeKey(courseId, row.vocabSetId);
+	const scopeKey = lessonId
+		? lessonVocabScopeKey(lessonId, row.vocabSetId)
+		: courseVocabScopeKey(courseId, row.vocabSetId);
 	const clash = await prisma.myClassVocabAssignment.findUnique({ where: { scopeKey } });
-	if (clash && clash.id !== id) throw new AppError('Bộ từ đã được gắn vào phạm vi này', 409, 'CONFLICT');
+	if (clash && clash.id !== id)
+		throw new AppError('Bộ từ đã được gắn vào phạm vi này', 409, 'CONFLICT');
 	return prisma.myClassVocabAssignment.update({
 		where: { id },
 		data: {
@@ -129,10 +154,7 @@ export async function searchVocabSets(q: string, options?: { courseId?: string }
 					: {},
 				courseId
 					? {
-							OR: [
-								{ isCourseOnly: false },
-								{ myClassAssignments: { some: { courseId } } },
-							],
+							OR: [{ isCourseOnly: false }, { myClassAssignments: { some: { courseId } } }],
 						}
 					: {},
 			],
@@ -213,9 +235,7 @@ export async function importVocabSetForScope(
 				where: { id: existing.id },
 				data: {
 					title,
-					...(input.description !== undefined
-						? { description: input.description.trim() }
-						: {}),
+					...(input.description !== undefined ? { description: input.description.trim() } : {}),
 				},
 			});
 			await tx.word.createMany({
@@ -291,7 +311,9 @@ export async function createAndAssignVocabSet(
 		lessonId?: string | null;
 	},
 ) {
-	const words = input.words.filter((word) => word.term.trim() && (word.meaningVi || word.meaningEn || word.definition));
+	const words = input.words.filter(
+		(word) => word.term.trim() && (word.meaningVi || word.meaningEn || word.definition),
+	);
 	if (!words.length) throw new AppError('Cần ít nhất một từ có nghĩa', 422);
 	if (input.courseId) {
 		const course = await courseRepo.findAdminCourse(input.courseId);

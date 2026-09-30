@@ -93,7 +93,8 @@ export function isAdminNavActive(pathname: string, href: string, exact?: boolean
 	if (href === routes.admin.posts) {
 		return (
 			pathname === routes.admin.posts ||
-			(pathname.startsWith(`${routes.admin.posts}/`) && !pathname.startsWith(routes.admin.postCreate))
+			(pathname.startsWith(`${routes.admin.posts}/`) &&
+				!pathname.startsWith(routes.admin.postCreate))
 		);
 	}
 	if (href === routes.admin.myClass) {

@@ -106,10 +106,7 @@ export async function searchUsersForEnrollment(query: string) {
 	await dbConnect();
 
 	const users = await User.find({
-		$or: [
-			{ email: { $regex: q, $options: 'i' } },
-			{ name: { $regex: q, $options: 'i' } },
-		],
+		$or: [{ email: { $regex: q, $options: 'i' } }, { name: { $regex: q, $options: 'i' } }],
 	})
 		.select('_id name email image role')
 		.limit(20)

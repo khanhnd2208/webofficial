@@ -164,14 +164,11 @@ export default function QuizPlayClient({
 			setAnswers((prev) => ({ ...prev, [current.id]: key }));
 			try {
 				const activeSessionId = await ensureEngagedSession();
-				const res = await fetch(
-					`/api/myspace-tests/${slug}/sessions/${activeSessionId}/check`,
-					{
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ questionId: current.id, chosen: key }),
-					},
-				);
+				const res = await fetch(`/api/myspace-tests/${slug}/sessions/${activeSessionId}/check`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ questionId: current.id, chosen: key }),
+				});
 				const json = (await res.json()) as {
 					ok: boolean;
 					data?: CheckAnswerResult;
@@ -213,14 +210,11 @@ export default function QuizPlayClient({
 					chosen: answers[q.id]!,
 				})),
 			};
-			const res = await fetch(
-				`/api/myspace-tests/${slug}/sessions/${activeSessionId}/submit`,
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-				},
-			);
+			const res = await fetch(`/api/myspace-tests/${slug}/sessions/${activeSessionId}/submit`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
 			const json = (await res.json()) as {
 				ok: boolean;
 				data?: SessionSubmitResult;
@@ -293,9 +287,7 @@ export default function QuizPlayClient({
 			const target = e.target as HTMLElement | null;
 			if (
 				target &&
-				(target.tagName === 'INPUT' ||
-					target.tagName === 'TEXTAREA' ||
-					target.isContentEditable)
+				(target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
 			) {
 				return;
 			}
@@ -342,10 +334,7 @@ export default function QuizPlayClient({
 				>
 					{busyRestart ? 'Preparing…' : 'Try again'}
 				</button>
-				<Link
-					href={routes.mySpaceTests}
-					className="mt-8 font-sans text-sm text-ink-secondary"
-				>
+				<Link href={routes.mySpaceTests} className="mt-8 font-sans text-sm text-ink-secondary">
 					← Tests
 				</Link>
 			</main>
@@ -371,9 +360,7 @@ export default function QuizPlayClient({
 	if (!current) {
 		return (
 			<main className="flex min-h-svh items-center justify-center bg-canvas px-6">
-				<p className="font-sans text-base text-ink-secondary">
-					No questions in this session.
-				</p>
+				<p className="font-sans text-base text-ink-secondary">No questions in this session.</p>
 			</main>
 		);
 	}

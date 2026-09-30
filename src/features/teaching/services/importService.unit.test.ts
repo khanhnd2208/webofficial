@@ -50,7 +50,12 @@ vi.mock('./classService', () => ({
 	getGradebook: vi.fn(),
 }));
 
-import { commitRosterImport, importStudentListIntoClass, previewRosterImport, setupTeachingClassFromRoster } from './importService';
+import {
+	commitRosterImport,
+	importStudentListIntoClass,
+	previewRosterImport,
+	setupTeachingClassFromRoster,
+} from './importService';
 
 const metadata = {
 	courseName: 'Human Resource Management',
@@ -160,10 +165,7 @@ describe('roster import preview and commit', () => {
 		expect(preview.existingClassId).toBe('class-existing');
 		expect(mocks.classFindMany).toHaveBeenCalledWith({
 			where: {
-				OR: [
-					{ course: { courseCode: '61MGT3HRM' } },
-					{ courseCode: ' hrm ' },
-				],
+				OR: [{ course: { courseCode: '61MGT3HRM' } }, { courseCode: ' hrm ' }],
 			},
 			select: { id: true, classCode: true, groupNo: true, term: true },
 		});
@@ -233,9 +235,9 @@ describe('roster import preview and commit', () => {
 						phone: '0901234567',
 						email: 'sv01@example.edu',
 						tutorialCode: null,
-							tutorialClassId: null,
-							enrolledFromWeek: 1,
-						},
+						tutorialClassId: null,
+						enrolledFromWeek: 1,
+					},
 				},
 			],
 		});
@@ -249,7 +251,11 @@ describe('setupTeachingClassFromRoster guards', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.findClassByIdentity.mockResolvedValue(null);
-		mocks.getTeachingClass.mockResolvedValue({ courseCode: 'AUDIT', groupNo: 'LOWER', totalWeeks: 10 });
+		mocks.getTeachingClass.mockResolvedValue({
+			courseCode: 'AUDIT',
+			groupNo: 'LOWER',
+			totalWeeks: 10,
+		});
 	});
 
 	it('blocks creating a class on an archived course', async () => {

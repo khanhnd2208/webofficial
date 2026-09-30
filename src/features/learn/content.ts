@@ -47,7 +47,9 @@ export function sectionMinutes(section: {
 	}
 	if (section.type === 'PRACTICE') return Math.max(1, section.quiz?.questions.length ?? 1);
 	if (section.type === 'DISCUSSION') {
-		const text = (section.discussion?.questions ?? []).map((item) => `${item.question}\n${item.answer}`).join('\n');
+		const text = (section.discussion?.questions ?? [])
+			.map((item) => `${item.question}\n${item.answer}`)
+			.join('\n');
 		return estimateReadingMinutes(text);
 	}
 	return estimateReadingMinutes(section.markdown);

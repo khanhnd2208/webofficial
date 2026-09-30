@@ -21,7 +21,10 @@ export default async function MySpaceTeachingPage() {
 				description="Mở lớp để điểm danh, chấm CP hoặc chia sẻ link cho sinh viên."
 				actions={
 					<div className="flex items-center gap-2">
-						<Link href={routes.admin.home} className="teaching-icon-button min-h-11 text-xs font-semibold">
+						<Link
+							href={routes.admin.home}
+							className="teaching-icon-button min-h-11 text-xs font-semibold"
+						>
 							Quản trị
 						</Link>
 						<Link

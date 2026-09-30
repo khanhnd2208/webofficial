@@ -43,10 +43,7 @@ describe('resolveRoundVote', () => {
 
 	it('eliminates nobody when there are no votes', () => {
 		const result = resolveRoundVote(
-			[
-				{ voterToken: 'a', targetToken: null },
-				{ voterToken: 'b' },
-			],
+			[{ voterToken: 'a', targetToken: null }, { voterToken: 'b' }],
 			candidates,
 		);
 		expect(result.eliminated).toBeNull();

@@ -30,10 +30,7 @@ export default async function MySpaceTestPlayPage({
 			return (
 				<main className="flex min-h-svh flex-col items-center justify-center bg-canvas px-6 text-center">
 					<p className="font-sans text-sm text-ink/70">{err.message}</p>
-					<Link
-						href={routes.mySpaceTests}
-						className="mt-8 font-sans text-sm text-ink-secondary"
-					>
+					<Link href={routes.mySpaceTests} className="mt-8 font-sans text-sm text-ink-secondary">
 						← Tests
 					</Link>
 				</main>

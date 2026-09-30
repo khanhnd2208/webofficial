@@ -44,7 +44,20 @@ const PostSchema = new Schema<IPost>(
 		contentEn: { type: String, default: '' },
 		contentFormat: { type: String, enum: ['markdown', 'html'], default: 'markdown' },
 		summary: { type: String, required: true, trim: true },
-		category: { type: String, default: 'Uncategorized', trim: true, enum: ['Uncategorized', 'Tech & Programming', 'English Learning', 'Tutorial', 'Life & Thoughts', 'Review', 'Tips & Tricks'] },
+		category: {
+			type: String,
+			default: 'Uncategorized',
+			trim: true,
+			enum: [
+				'Uncategorized',
+				'Tech & Programming',
+				'English Learning',
+				'Tutorial',
+				'Life & Thoughts',
+				'Review',
+				'Tips & Tricks',
+			],
+		},
 		tags: { type: [String], default: [], index: true },
 		pillarSlug: { type: String, trim: true, index: true },
 		contentType: { type: String, trim: true, index: true },
@@ -64,7 +77,7 @@ const PostSchema = new Schema<IPost>(
 			clap: { type: Number, default: 0 },
 		},
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 // Compound indexes for common query patterns
@@ -88,7 +101,6 @@ PostSchema.pre('validate', function preValidate(this: HydratedDocument<IPost>) {
 	}
 });
 
-const Post =
-	(mongoose.models.Post as Model<IPost>) ?? mongoose.model<IPost>('Post', PostSchema);
+const Post = (mongoose.models.Post as Model<IPost>) ?? mongoose.model<IPost>('Post', PostSchema);
 
 export default Post;

@@ -19,9 +19,8 @@ export default async function AdminEnrollmentsPage({
 }) {
 	const sp = searchParams ? await searchParams : undefined;
 	const courses = await courseService.listAdminCourses();
-	const selectedCourseId = sp?.courseId && courses.some((c) => c.id === sp.courseId)
-		? sp.courseId
-		: courses[0]?.id;
+	const selectedCourseId =
+		sp?.courseId && courses.some((c) => c.id === sp.courseId) ? sp.courseId : courses[0]?.id;
 
 	return (
 		<div className="mx-auto max-w-5xl px-6 py-8">
@@ -29,7 +28,10 @@ export default async function AdminEnrollmentsPage({
 				eyebrow="Giảng dạy"
 				title="Học viên và ghi danh"
 				actions={
-					<Link href={routes.admin.courses} className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground">
+					<Link
+						href={routes.admin.courses}
+						className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground"
+					>
 						← Khóa học Chương–Bài
 					</Link>
 				}

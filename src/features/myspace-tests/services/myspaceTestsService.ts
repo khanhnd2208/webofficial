@@ -168,14 +168,16 @@ export async function importQuestionsFromText(
 // ─── Bundle / smart import ──────────────────────────────────────────────────
 
 export type TestBundlePreview = {
-	meta: NonNullable<ParseTestBundleResult['meta']> | {
-		title: string;
-		slug: string | null;
-		description: string;
-		subject: string;
-		questionCount: number | null;
-		status: 'DRAFT' | 'PUBLISHED';
-	};
+	meta:
+		| NonNullable<ParseTestBundleResult['meta']>
+		| {
+				title: string;
+				slug: string | null;
+				description: string;
+				subject: string;
+				questionCount: number | null;
+				status: 'DRAFT' | 'PUBLISHED';
+		  };
 	questionCount: number;
 	sampleStems: string[];
 	errors: ParseTestBundleResult['errors'];
@@ -230,10 +232,7 @@ export async function importTestBundleFromFile(
 	const parsed = await parseTestBundleCsvFile(file, { requireMeta: true });
 	const preview = toBundlePreview(parsed, { requireMeta: true });
 	if (!preview.canImport || !parsed.meta) {
-		const detail =
-			parsed.metaErrors[0] ??
-			parsed.errors[0]?.message ??
-			'File CSV không hợp lệ';
+		const detail = parsed.metaErrors[0] ?? parsed.errors[0]?.message ?? 'File CSV không hợp lệ';
 		throw new AppError(detail, 422);
 	}
 
@@ -268,10 +267,7 @@ export async function importTestBundleWithMeta(input: {
 	const parsed = parseTestBundleCsvText(input.text, { requireMeta: false });
 	const preview = toBundlePreview(parsed, { requireMeta: false });
 	if (!preview.canImport || parsed.questions.length === 0) {
-		const detail =
-			parsed.metaErrors[0] ??
-			parsed.errors[0]?.message ??
-			'CSV câu hỏi không hợp lệ';
+		const detail = parsed.metaErrors[0] ?? parsed.errors[0]?.message ?? 'CSV câu hỏi không hợp lệ';
 		throw new AppError(detail, 422);
 	}
 
@@ -428,7 +424,10 @@ export async function createTest(input: CreateSpaceTestInput): Promise<SpaceTest
 		if ((input.status ?? 'DRAFT') === 'PUBLISHED') {
 			throw new AppError('Không có câu hỏi nào khớp môn học này', 422);
 		}
-	} else if (attachedHint.length < input.questionCount && (input.status ?? 'DRAFT') === 'PUBLISHED') {
+	} else if (
+		attachedHint.length < input.questionCount &&
+		(input.status ?? 'DRAFT') === 'PUBLISHED'
+	) {
 		throw new AppError(
 			`Pool chỉ có ${attachedHint.length} câu, cần ít nhất ${input.questionCount}`,
 			422,
@@ -476,10 +475,7 @@ export async function updateTest(id: string, input: UpdateSpaceTestInput): Promi
 						classifications,
 					});
 		if (pool.length < questionCount) {
-			throw new AppError(
-				`Pool chỉ có ${pool.length} câu, cần ít nhất ${questionCount}`,
-				422,
-			);
+			throw new AppError(`Pool chỉ có ${pool.length} câu, cần ít nhất ${questionCount}`, 422);
 		}
 	}
 
@@ -628,9 +624,7 @@ export async function startSession(
 		if (questions.length !== questionIds.length) {
 			throw new AppError('Danh sách câu hỏi không hợp lệ', 400);
 		}
-		const allowed = new Set(
-			(await resolveBasePool(test)).pool.map((q) => q.id),
-		);
+		const allowed = new Set((await resolveBasePool(test)).pool.map((q) => q.id));
 		if (questionIds.some((id) => !allowed.has(id))) {
 			throw new AppError('Câu hỏi không thuộc bài test này', 400);
 		}
@@ -672,10 +666,7 @@ export async function startSession(
 				: test.questionCount;
 
 		if (mode === 'custom' && questionCount > sampled.length) {
-			throw new AppError(
-				`Chỉ có ${sampled.length} câu phù hợp với bộ lọc đã chọn`,
-				422,
-			);
+			throw new AppError(`Chỉ có ${sampled.length} câu phù hợp với bộ lọc đã chọn`, 422);
 		}
 
 		sampled = sampleBalancedQuestions(sampled, questionCount);

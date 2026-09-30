@@ -34,10 +34,7 @@ export async function disconnectTestPrisma(): Promise<void> {
 }
 
 /** Remove test data for given user IDs and owner IDs. */
-export async function cleanupVocabTestData(
-	userIds: string[],
-	ownerIds: string[],
-): Promise<void> {
+export async function cleanupVocabTestData(userIds: string[], ownerIds: string[]): Promise<void> {
 	const db = getTestPrisma();
 	await db.userVocabSet.deleteMany({ where: { userId: { in: userIds } } });
 	await db.gameScore.deleteMany({ where: { userId: { in: userIds } } });

@@ -9,9 +9,7 @@ import {
 import { apiSuccess, AppError, withAdmin } from '@/lib/apiUtils';
 import { parseSchema } from '@/shared/validation/parse';
 
-async function params(context?: {
-	params: Promise<{ courseId: string; deckId: string }>;
-}) {
+async function params(context?: { params: Promise<{ courseId: string; deckId: string }> }) {
 	return context!.params;
 }
 

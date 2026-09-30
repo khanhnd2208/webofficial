@@ -59,7 +59,10 @@ export function useStudioSaver() {
 				} catch (err) {
 					failure = err instanceof Error ? err.message : 'Không lưu được';
 					const newer = pending.current.get(key);
-					pending.current.set(key, { url: item.url, body: { ...item.body, ...(newer?.body ?? {}) } });
+					pending.current.set(key, {
+						url: item.url,
+						body: { ...item.body, ...(newer?.body ?? {}) },
+					});
 				}
 			}
 		})();

@@ -1,4 +1,8 @@
-import { batchParticipationSchema, parseWithAppError, saveParticipation } from '@/features/teaching';
+import {
+	batchParticipationSchema,
+	parseWithAppError,
+	saveParticipation,
+} from '@/features/teaching';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import type { NextRequest } from 'next/server';
 

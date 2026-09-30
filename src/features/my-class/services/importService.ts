@@ -1,9 +1,6 @@
 import { previewCurriculum, importCurriculum } from '../imports/curriculum';
 import { importQuestionCsv, previewQuestionCsv, QUESTION_CSV_TEMPLATE } from '../imports/questions';
-import {
-	importTestQuestionCsv,
-	previewTestQuestionCsv,
-} from '../imports/testQuestions';
+import { importTestQuestionCsv, previewTestQuestionCsv } from '../imports/testQuestions';
 import type { CurriculumImportInput } from '../schemas';
 
 export async function previewCurriculumImport(input: CurriculumImportInput) {

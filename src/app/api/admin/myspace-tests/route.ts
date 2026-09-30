@@ -1,9 +1,6 @@
 import { type NextRequest } from 'next/server';
 
-import {
-	createSpaceTestSchema,
-	myspaceTestsService,
-} from '@/features/myspace-tests';
+import { createSpaceTestSchema, myspaceTestsService } from '@/features/myspace-tests';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
 import { parseSchema } from '@/shared/validation/parse';
 

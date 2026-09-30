@@ -113,138 +113,136 @@ export default function MusicTrackSelect({ value, onChange }: MusicTrackSelectPr
 
 	return (
 		<>
-		<div className="space-y-4 rounded-2xl border border-border bg-surface p-5">
-			<div className="flex items-center justify-between gap-3">
-				<label className="text-xs font-semibold uppercase tracking-wider text-muted">
-					Nhạc nền
-				</label>
-				<button
-					type="button"
-					onClick={() => void loadTracks()}
+			<div className="space-y-4 rounded-2xl border border-border bg-surface p-5">
+				<div className="flex items-center justify-between gap-3">
+					<label className="text-xs font-semibold uppercase tracking-wider text-muted">
+						Nhạc nền
+					</label>
+					<button
+						type="button"
+						onClick={() => void loadTracks()}
+						disabled={loading}
+						className="text-xs text-accent hover:underline disabled:opacity-50"
+					>
+						Làm mới
+					</button>
+				</div>
+
+				<select
+					value={value}
 					disabled={loading}
-					className="text-xs text-accent hover:underline disabled:opacity-50"
+					onChange={(e) => {
+						setError('');
+						setPlaying(false);
+						onChange(e.target.value);
+					}}
+					className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
 				>
-					Làm mới
-				</button>
-			</div>
+					<option value="">{loading ? 'Đang tải danh sách nhạc...' : 'Không dùng nhạc nền'}</option>
+					{presets.length > 0 && (
+						<optgroup label="Nhạc có sẵn">
+							{presets.map((t) => (
+								<option key={t.id} value={t.url}>
+									{t.label}
+								</option>
+							))}
+						</optgroup>
+					)}
+					{globals.length > 0 && (
+						<optgroup label="Thư viện nhạc (public/music)">
+							{globals.map((t) => (
+								<option key={t.id} value={t.url}>
+									{t.label}
+								</option>
+							))}
+						</optgroup>
+					)}
+					{uploads.length > 0 && (
+						<optgroup label="Nhạc của bạn">
+							{uploads.map((t) => (
+								<option key={t.id} value={t.url}>
+									{t.label}
+								</option>
+							))}
+						</optgroup>
+					)}
+				</select>
 
-			<select
-				value={value}
-				disabled={loading}
-				onChange={(e) => {
-					setError('');
-					setPlaying(false);
-					onChange(e.target.value);
-				}}
-				className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
-			>
-				<option value="">
-					{loading ? 'Đang tải danh sách nhạc...' : 'Không dùng nhạc nền'}
-				</option>
-				{presets.length > 0 && (
-					<optgroup label="Nhạc có sẵn">
-						{presets.map((t) => (
-							<option key={t.id} value={t.url}>
-								{t.label}
-							</option>
-						))}
-					</optgroup>
+				{!loading && tracks.length > 0 && (
+					<p className="text-xs text-muted">{tracks.length} bài trong thư viện</p>
 				)}
-				{globals.length > 0 && (
-					<optgroup label="Thư viện nhạc (public/music)">
-						{globals.map((t) => (
-							<option key={t.id} value={t.url}>
-								{t.label}
-							</option>
-						))}
-					</optgroup>
-				)}
-				{uploads.length > 0 && (
-					<optgroup label="Nhạc của bạn">
-						{uploads.map((t) => (
-							<option key={t.id} value={t.url}>
-								{t.label}
-							</option>
-						))}
-					</optgroup>
-				)}
-			</select>
 
-			{!loading && tracks.length > 0 && (
-				<p className="text-xs text-muted">{tracks.length} bài trong thư viện</p>
-			)}
-
-			{selected && (
-				<>
-					<audio
-						key={selected.url}
-						ref={audioRef}
-						src={selected.url}
-						preload="metadata"
-						onEnded={() => setPlaying(false)}
-						onError={() => setError(`Không tải được: ${selected.label}`)}
-					/>
-					<div className="flex flex-wrap items-center gap-2">
-						<button
-							type="button"
-							onClick={() => void handlePreview()}
-							className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-hover"
-						>
-							{playing ? 'Đang phát...' : 'Nghe thử'}
-						</button>
-						{selected.canDelete && (
+				{selected && (
+					<>
+						<audio
+							key={selected.url}
+							ref={audioRef}
+							src={selected.url}
+							preload="metadata"
+							onEnded={() => setPlaying(false)}
+							onError={() => setError(`Không tải được: ${selected.label}`)}
+						/>
+						<div className="flex flex-wrap items-center gap-2">
 							<button
 								type="button"
-								onClick={() => void handleDelete(selected)}
-								className="rounded-lg border border-error/30 px-3 py-2 text-sm text-error transition hover:bg-error/5"
+								onClick={() => void handlePreview()}
+								className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-hover"
 							>
-								Xóa
+								{playing ? 'Đang phát...' : 'Nghe thử'}
 							</button>
-						)}
-					</div>
-				</>
-			)}
+							{selected.canDelete && (
+								<button
+									type="button"
+									onClick={() => void handleDelete(selected)}
+									className="rounded-lg border border-error/30 px-3 py-2 text-sm text-error transition hover:bg-error/5"
+								>
+									Xóa
+								</button>
+							)}
+						</div>
+					</>
+				)}
 
-			<div className="rounded-xl border border-dashed border-accent/30 bg-accent/5 p-4">
-				<p className="text-sm font-medium text-foreground">Tải nhạc MP3 lên</p>
-				<p className="mt-1 text-xs text-muted">
-					File sẽ xuất hiện trong mục &quot;Nhạc của bạn&quot;. Tối đa 15MB.
-				</p>
-				<input
-					type="text"
-					value={label}
-					onChange={(e) => setLabel(e.target.value)}
-					placeholder="Tên hiển thị (tùy chọn)"
-					className="mt-3 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
-				/>
-				<input
-					ref={fileRef}
-					type="file"
-					accept="audio/mpeg,audio/mp3,.mp3"
-					className="hidden"
-					disabled={uploading}
-					onChange={(e) => {
-						const file = e.target.files?.[0];
-						if (file) void handleUpload(file);
-					}}
-				/>
-				<button
-					type="button"
-					disabled={uploading}
-					onClick={() => fileRef.current?.click()}
-					className="mt-3 w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-				>
-					{uploading ? 'Đang tải lên...' : 'Chọn file MP3 và tải lên'}
-				</button>
+				<div className="rounded-xl border border-dashed border-accent/30 bg-accent/5 p-4">
+					<p className="text-sm font-medium text-foreground">Tải nhạc MP3 lên</p>
+					<p className="mt-1 text-xs text-muted">
+						File sẽ xuất hiện trong mục &quot;Nhạc của bạn&quot;. Tối đa 15MB.
+					</p>
+					<input
+						type="text"
+						value={label}
+						onChange={(e) => setLabel(e.target.value)}
+						placeholder="Tên hiển thị (tùy chọn)"
+						className="mt-3 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+					/>
+					<input
+						ref={fileRef}
+						type="file"
+						accept="audio/mpeg,audio/mp3,.mp3"
+						className="hidden"
+						disabled={uploading}
+						onChange={(e) => {
+							const file = e.target.files?.[0];
+							if (file) void handleUpload(file);
+						}}
+					/>
+					<button
+						type="button"
+						disabled={uploading}
+						onClick={() => fileRef.current?.click()}
+						className="mt-3 w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+					>
+						{uploading ? 'Đang tải lên...' : 'Chọn file MP3 và tải lên'}
+					</button>
+				</div>
+
+				{error && (
+					<p className="rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-error">
+						{error}
+					</p>
+				)}
 			</div>
-
-			{error && (
-				<p className="rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-error">
-					{error}
-				</p>
-			)}
-		</div>
-		{dialog}
+			{dialog}
 		</>
 	);
 }

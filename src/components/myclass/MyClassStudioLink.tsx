@@ -7,7 +7,8 @@ type StudioLinkVariant = 'solid' | 'outline' | 'quiet' | 'inverse';
 const variantClass: Record<StudioLinkVariant, string> = {
 	solid: 'bg-ink text-paper hover:bg-inverse-surface',
 	outline: 'border border-mc-rule bg-paper text-ink hover:bg-surface-sunken',
-	quiet: 'border border-mc-rule bg-transparent text-ink-secondary hover:bg-surface-sunken hover:text-ink',
+	quiet:
+		'border border-mc-rule bg-transparent text-ink-secondary hover:bg-surface-sunken hover:text-ink',
 	inverse:
 		'border border-paper/20 bg-paper/10 text-paper hover:bg-paper/18 focus-visible:ring-offset-ink',
 };

@@ -12,7 +12,7 @@ export const POST = withErrorHandling(async (_request: NextRequest, context) => 
 	const updated = await Post.findOneAndUpdate(
 		{ slug: slug.trim().toLowerCase(), isPublished: true },
 		{ $inc: { views: 1 } },
-		{ returnDocument: 'after', select: 'views' }
+		{ returnDocument: 'after', select: 'views' },
 	).lean();
 
 	if (!updated) {

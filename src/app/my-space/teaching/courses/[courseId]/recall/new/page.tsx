@@ -22,5 +22,7 @@ export default async function NewCourseRecallPage({
 	if (course.status === 'ARCHIVED') {
 		redirect(routes.mySpaceTeachingCourseTab(course.id, 'recall'));
 	}
-	return <ActiveRecallEditor initialDeck={null} courseId={course.id} courseName={course.courseName} />;
+	return (
+		<ActiveRecallEditor initialDeck={null} courseId={course.id} courseName={course.courseName} />
+	);
 }

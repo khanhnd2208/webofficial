@@ -10,9 +10,7 @@ import {
 
 describe('sanitizeAuthRedirect', () => {
 	it('keeps internal admin destinations', () => {
-		expect(sanitizeAuthRedirect('/admin/website', { role: 'admin' })).toBe(
-			'/admin/website',
-		);
+		expect(sanitizeAuthRedirect('/admin/website', { role: 'admin' })).toBe('/admin/website');
 		expect(sanitizeAuthRedirect('/my-space/teaching?tab=cp', { role: 'admin' })).toBe(
 			'/my-space/teaching?tab=cp',
 		);
@@ -28,9 +26,9 @@ describe('sanitizeAuthRedirect', () => {
 		expect(resolveAuthJsRedirect('https://evil.example/admin', 'https://toiladuykhanh.com')).toBe(
 			'https://toiladuykhanh.com',
 		);
-		expect(resolveAuthJsRedirect('https://toiladuykhanh.com/admin/posts', 'https://toiladuykhanh.com')).toBe(
-			'https://toiladuykhanh.com/admin/posts',
-		);
+		expect(
+			resolveAuthJsRedirect('https://toiladuykhanh.com/admin/posts', 'https://toiladuykhanh.com'),
+		).toBe('https://toiladuykhanh.com/admin/posts');
 	});
 
 	it('does not loop back to the login page', () => {

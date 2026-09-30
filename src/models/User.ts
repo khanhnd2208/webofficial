@@ -14,14 +14,20 @@ export interface IUser {
 const UserSchema = new Schema<IUser>(
 	{
 		name: { type: String, required: true, trim: true },
-		email: { type: String, required: true, unique: true, lowercase: true, trim: true, match: /^\S+@\S+\.\S+$/ },
+		email: {
+			type: String,
+			required: true,
+			unique: true,
+			lowercase: true,
+			trim: true,
+			match: /^\S+@\S+\.\S+$/,
+		},
 		role: { type: String, enum: ['student', 'admin'], default: 'student', required: true },
 		image: { type: String },
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
-const User =
-	(mongoose.models.User as Model<IUser>) ?? mongoose.model<IUser>('User', UserSchema);
+const User = (mongoose.models.User as Model<IUser>) ?? mongoose.model<IUser>('User', UserSchema);
 
 export default User;

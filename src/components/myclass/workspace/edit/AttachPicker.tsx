@@ -74,7 +74,10 @@ function AttachPickerBody({
 }: {
 	target: AttachTarget;
 	courseId: string;
-	course: { title: string; lessons: Array<{ id: string; title: string; sections: Array<{ id: string; title: string }> }> };
+	course: {
+		title: string;
+		lessons: Array<{ id: string; title: string; sections: Array<{ id: string; title: string }> }>;
+	};
 	onClose: () => void;
 	onToast: (value: string) => void;
 	onChooseTest: (id: string) => Promise<boolean>;
@@ -171,10 +174,7 @@ function AttachPickerBody({
 								const disabled = attachedHere || empty;
 								const otherLabels = (item.placements ?? [])
 									.filter((placement) => placement.course?.id === courseId)
-									.filter(
-										(placement) =>
-											!isTestAttachedAt([placement], courseId, target),
-									)
+									.filter((placement) => !isTestAttachedAt([placement], courseId, target))
 									.map(formatPlacementLabel);
 								const reason = attachedHere
 									? 'Đã gắn ở đây'
@@ -194,7 +194,9 @@ function AttachPickerBody({
 											<span className="min-w-0 flex-1">
 												<span className="block truncate">{item.title}</span>
 												<span className="mc-meta block">
-													{item.status && item.status !== 'PUBLISHED' ? `${statusLabel(item.status)} · ` : ''}
+													{item.status && item.status !== 'PUBLISHED'
+														? `${statusLabel(item.status)} · `
+														: ''}
 													{reason}
 												</span>
 											</span>

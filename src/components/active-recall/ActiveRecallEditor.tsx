@@ -187,7 +187,9 @@ export default function ActiveRecallEditor({
 	const [title, setTitle] = useState(initialDeck?.title ?? '');
 	const [slug, setSlug] = useState(initialDeck?.slug ?? '');
 	const resolvedCourseId = courseId ?? initialDeck?.courseId ?? '';
-	const [subject, setSubject] = useState(courseName ?? initialDeck?.courseName ?? initialDeck?.subject ?? '');
+	const [subject, setSubject] = useState(
+		courseName ?? initialDeck?.courseName ?? initialDeck?.subject ?? '',
+	);
 	const listHref = resolvedCourseId
 		? routes.mySpaceTeachingCourseTab(resolvedCourseId, 'recall')
 		: routes.admin.activeRecall;
@@ -488,391 +490,394 @@ export default function ActiveRecallEditor({
 
 	return (
 		<>
-		<div className="mx-auto max-w-[88rem] px-6 py-8">
-			<div className="flex flex-wrap items-start justify-between gap-5 border-b border-border pb-6">
-				<div>
-					<p className="text-xs font-bold uppercase tracking-widest text-muted">
-						Teaching · Active Recall
-					</p>
-					<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
-						{deck ? 'Chỉnh sửa bộ thẻ' : 'Tạo bộ thẻ'}
-					</h1>
-					<p className="mt-2 text-sm text-muted">
-						{deck
-							? 'Sửa thẻ trực tiếp. Phím tắt: Cmd/Ctrl+S.'
-							: 'Nhập tên bộ và nội dung thẻ. Slug tự sinh, mặc định bản nháp.'}
-					</p>
-				</div>
-				<div className="flex flex-wrap gap-2">
-					<Link
-						href={listHref}
-						className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground"
-					>
-						Danh sách
-					</Link>
-					{deck ? (
+			<div className="mx-auto max-w-[88rem] px-6 py-8">
+				<div className="flex flex-wrap items-start justify-between gap-5 border-b border-border pb-6">
+					<div>
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
+							Teaching · Active Recall
+						</p>
+						<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
+							{deck ? 'Chỉnh sửa bộ thẻ' : 'Tạo bộ thẻ'}
+						</h1>
+						<p className="mt-2 text-sm text-muted">
+							{deck
+								? 'Sửa thẻ trực tiếp. Phím tắt: Cmd/Ctrl+S.'
+								: 'Nhập tên bộ và nội dung thẻ. Slug tự sinh, mặc định bản nháp.'}
+						</p>
+					</div>
+					<div className="flex flex-wrap gap-2">
+						<Link
+							href={listHref}
+							className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground"
+						>
+							Danh sách
+						</Link>
+						{deck ? (
+							<button
+								type="button"
+								onClick={() => void archive()}
+								className="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700"
+								disabled={busy}
+							>
+								Lưu trữ
+							</button>
+						) : null}
 						<button
 							type="button"
-							onClick={() => void archive()}
-							className="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700"
+							onClick={() => void saveDeck()}
+							className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background disabled:opacity-50"
 							disabled={busy}
 						>
-							Lưu trữ
+							{busy ? 'Đang lưu…' : deck ? 'Lưu thay đổi' : 'Tạo bộ thẻ'}
 						</button>
-					) : null}
-					<button
-						type="button"
-						onClick={() => void saveDeck()}
-						className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background disabled:opacity-50"
-						disabled={busy}
-					>
-						{busy ? 'Đang lưu…' : deck ? 'Lưu thay đổi' : 'Tạo bộ thẻ'}
-					</button>
-				</div>
-			</div>
-			{error ? (
-				<p role="alert" className="mt-4 text-sm text-red-700">
-					{error}
-				</p>
-			) : null}
-			{notice ? (
-				<div className="mt-4 flex items-center gap-3 text-sm text-emerald-700">
-					<span>{notice}</span>
-					{undoCard ? (
-						<button
-							type="button"
-							className="font-semibold underline"
-							onClick={() => {
-								setCards((items) => [...items, undoCard]);
-								setUndoCard(null);
-								setNotice(null);
-							}}
-						>
-							Hoàn tác
-						</button>
-					) : null}
-				</div>
-			) : null}
-
-			<section className="mt-7 grid gap-4 border border-border bg-surface p-5 md:grid-cols-2">
-				<label className="text-sm font-semibold">
-					Tên bộ thẻ
-					<input
-						value={title}
-						onChange={(event) => setTitle(event.target.value)}
-						className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-						placeholder="HRM · Lesson 1"
-					/>
-				</label>
-				{deck ? (
-					<label className="text-sm font-semibold">
-						Trạng thái
-						<select
-							value={status}
-							onChange={(event) => setStatus(event.target.value as ActiveRecallStatus)}
-							className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-						>
-							<option value="DRAFT">Bản nháp</option>
-							<option value="PUBLISHED">Công khai</option>
-							<option value="ARCHIVED">Lưu trữ</option>
-						</select>
-					</label>
-				) : (
-					<p className="self-end text-sm text-muted">Môn: {subject || 'đang kế thừa môn hiện tại'}</p>
-				)}
-			</section>
-
-			{deck ? (
-				<details
-					className="mt-4 border border-border bg-surface p-5"
-					open={detailsOpen}
-					onToggle={(event) => setDetailsOpen((event.target as HTMLDetailsElement).open)}
-				>
-					<summary className="cursor-pointer text-sm font-semibold text-ink">Chi tiết</summary>
-					<div className="mt-4 grid gap-4 md:grid-cols-2">
-						<label className="text-sm font-semibold">
-							Đường dẫn{' '}
-							{deck.status !== 'DRAFT' ? (
-								<span className="font-normal text-muted">(đã khóa sau xuất bản)</span>
-							) : null}
-							<input
-								value={slug}
-								onChange={(event) => setSlug(event.target.value)}
-								disabled={deck.status !== 'DRAFT'}
-								className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal disabled:opacity-60"
-								placeholder="hrm-lesson-1"
-							/>
-						</label>
-						<label className="text-sm font-semibold">
-							Nhãn bài
-							<input
-								value={lessonLabel}
-								onChange={(event) => setLessonLabel(event.target.value)}
-								className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-								placeholder="Lesson 1"
-							/>
-						</label>
-						<label className="text-sm font-semibold md:col-span-2">
-							Mô tả
-							<textarea
-								value={description}
-								onChange={(event) => setDescription(event.target.value)}
-								rows={2}
-								className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
-							/>
-						</label>
 					</div>
-				</details>
-			) : null}
-
-			{deck ? (
-				<details
-					className="mt-4 border border-border bg-surface p-5"
-					open={importOpen}
-					onToggle={(event) => setImportOpen((event.target as HTMLDetailsElement).open)}
-				>
-					<summary className="cursor-pointer text-sm font-semibold text-ink">Nhập nhiều</summary>
-					<div className="mt-4">
-						<div className="flex flex-wrap items-center justify-between gap-3">
-							<p className="text-sm text-muted">
-								Dán Q:/A: hoặc CSV. Có thể sao chép hướng dẫn cho AI.
-							</p>
-							<div className="flex flex-wrap gap-2">
+				</div>
+				{error ? (
+					<p role="alert" className="mt-4 text-sm text-red-700">
+						{error}
+					</p>
+				) : null}
+				{notice ? (
+					<div className="mt-4 flex items-center gap-3 text-sm text-emerald-700">
+						<span>{notice}</span>
+						{undoCard ? (
 							<button
 								type="button"
-								className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
-								onClick={() =>
-									void copyText(ACTIVE_RECALL_AI_FORMATTING_GUIDE)
-										.then(() => setNotice('Đã sao chép hướng dẫn định dạng cho AI.'))
-										.catch(() => setError('Không thể sao chép hướng dẫn. Hãy thử lại.'))
-								}
+								className="font-semibold underline"
+								onClick={() => {
+									setCards((items) => [...items, undoCard]);
+									setUndoCard(null);
+									setNotice(null);
+								}}
 							>
-								Sao chép hướng dẫn cho AI
-							</button>
-							<button
-								type="button"
-								className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
-								onClick={() =>
-									download(
-										`${deck.slug}.csv`,
-										toRecallCsv(
-											cards.map((card, index) => ({
-												id: card.id ?? '',
-												question: card.question,
-												answer: card.answer,
-												questionVi: card.questionVi,
-												answerVi: card.answerVi,
-												position: index,
-											})),
-										),
-									)
-								}
-							>
-								Xuất CSV
-							</button>
-							<button
-								type="button"
-								className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
-								onClick={() =>
-									void copyText(toRecallPaste(cards))
-										.then(() => setNotice('Đã sao chép dạng Q/A.'))
-										.catch(() => setError('Không thể sao chép Q/A. Hãy thử lại.'))
-								}
-							>
-								Sao chép Q/A
-							</button>
-						</div>
-					</div>
-					<textarea
-						value={importText}
-						onChange={(event) => {
-							setImportText(event.target.value);
-							setPreview(null);
-						}}
-						rows={8}
-						className="mt-4 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-						placeholder={
-							'Q: What is **HRM**?\nA: A *system* with <u>policies</u>\n---\nQuestion: ...\nAnswer: ...'
-						}
-					/>
-					<div className="mt-3 flex flex-wrap items-center gap-2">
-						<select
-							value={importMode}
-							onChange={(event) => {
-								setImportMode(event.target.value as 'append' | 'replace');
-								setPreview(null);
-							}}
-							className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-						>
-							<option value="append">Thêm vào bộ hiện có</option>
-							<option value="replace">Thay thế toàn bộ thẻ</option>
-						</select>
-						<button
-							type="button"
-							onClick={() => void runPreview()}
-							disabled={!importText.trim() || busy}
-							className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background disabled:opacity-50"
-						>
-							Kiểm tra dữ liệu
-						</button>
-						{preview && preview.summary.invalid === 0 ? (
-							<button
-								type="button"
-								onClick={() => void commitImport(importMode)}
-								disabled={busy}
-								className={`rounded-lg border px-4 py-2 text-sm font-semibold ${importMode === 'replace' ? 'border-red-200 text-red-700' : 'border-border'}`}
-							>
-								{importMode === 'replace'
-									? 'Thay thế bằng dữ liệu này'
-									: `Thêm ${preview.summary.valid} thẻ`}
+								Hoàn tác
 							</button>
 						) : null}
 					</div>
-					{preview ? (
-						<div className="mt-4 text-sm">
-							<p>
-								<strong>{preview.summary.valid}</strong> hợp lệ ·{' '}
-								<strong>{preview.summary.invalid}</strong> lỗi ·{' '}
-								<strong>{preview.summary.duplicates}</strong> trùng
-								{preview.summary.orphanAnswers
-									? ` · ${preview.summary.orphanAnswers} đáp án thiếu câu hỏi`
-									: ''}
-							</p>
-							<ul className="mt-2 list-disc pl-5 text-red-700">
-								{preview.rows
-									.filter((row) => row.errors.length)
-									.slice(0, 8)
-									.map((row) => (
-										<li key={row.row}>
-											Dòng {row.row}: {row.errors.join(', ')}
-										</li>
-									))}
-							</ul>
-						</div>
-					) : null}
-					</div>
-				</details>
-			) : null}
+				) : null}
 
-			<section className="mt-7">
-				<div className="flex items-center justify-between gap-4">
-					<div>
-						<h2 className="text-lg font-black text-foreground">
-							Thẻ <span className="text-muted">{cards.length}</span>
-						</h2>
-						<p className="mt-1 text-sm text-muted">
-							Kéo nút ⠿ để sắp thứ tự. Có thể chỉnh đậm, nghiêng, gạch chân và màu trên từng mặt thẻ.
+				<section className="mt-7 grid gap-4 border border-border bg-surface p-5 md:grid-cols-2">
+					<label className="text-sm font-semibold">
+						Tên bộ thẻ
+						<input
+							value={title}
+							onChange={(event) => setTitle(event.target.value)}
+							className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
+							placeholder="HRM · Lesson 1"
+						/>
+					</label>
+					{deck ? (
+						<label className="text-sm font-semibold">
+							Trạng thái
+							<select
+								value={status}
+								onChange={(event) => setStatus(event.target.value as ActiveRecallStatus)}
+								className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
+							>
+								<option value="DRAFT">Bản nháp</option>
+								<option value="PUBLISHED">Công khai</option>
+								<option value="ARCHIVED">Lưu trữ</option>
+							</select>
+						</label>
+					) : (
+						<p className="self-end text-sm text-muted">
+							Môn: {subject || 'đang kế thừa môn hiện tại'}
 						</p>
-					</div>
-					<button
-						type="button"
-						className="rounded-lg border border-border px-4 py-2 text-sm font-semibold"
-						onClick={() => setCards((items) => [...items, emptyCard()])}
+					)}
+				</section>
+
+				{deck ? (
+					<details
+						className="mt-4 border border-border bg-surface p-5"
+						open={detailsOpen}
+						onToggle={(event) => setDetailsOpen((event.target as HTMLDetailsElement).open)}
 					>
-						+ Thêm thẻ
-					</button>
-				</div>
-				<div className="mt-4 space-y-3">
-					{cards.map((card, index) => (
-						<article
-							key={card.localId}
-							onDragOver={(event) => event.preventDefault()}
-							onDrop={() => {
-								if (dragIndex !== null) moveCard(dragIndex, index);
-								setDragIndex(null);
-							}}
-							className={`grid gap-3 border bg-surface p-4 lg:grid-cols-[2.4rem_minmax(0,1fr)_auto] ${
-								cardErrors[card.localId] ? 'border-error' : 'border-border'
-							}`}
-						>
-							<div className="flex items-start gap-1 pt-1 text-sm text-muted">
-								<span
-									draggable
-									onDragStart={() => setDragIndex(index)}
-									className="cursor-grab select-none"
-									aria-label={`Kéo thẻ ${index + 1}`}
-								>
-									⠿
-								</span>
-								<span className="tabular-nums">{index + 1}</span>
-							</div>
-							<RecallCardLanguageTabs
-								idPrefix={`recall-${card.localId}`}
-								question={card.question}
-								answer={card.answer}
-								questionVi={card.questionVi}
-								answerVi={card.answerVi}
-								onChangeQuestion={(question) => updateCard(card.localId, { question })}
-								onChangeAnswer={(answer) => updateCard(card.localId, { answer })}
-								onChangeQuestionVi={(questionVi) => updateCard(card.localId, { questionVi })}
-								onChangeAnswerVi={(answerVi) => updateCard(card.localId, { answerVi })}
-							/>
-							<div className="flex items-start gap-1">
-								<button
-									type="button"
-									onClick={() => moveCard(index, index - 1)}
-									disabled={index === 0}
-									className="rounded p-2 text-sm hover:bg-background disabled:opacity-30"
-									aria-label="Di chuyển lên"
-								>
-									↑
-								</button>
-								<button
-									type="button"
-									onClick={() => moveCard(index, index + 1)}
-									disabled={index === cards.length - 1}
-									className="rounded p-2 text-sm hover:bg-background disabled:opacity-30"
-									aria-label="Di chuyển xuống"
-								>
-									↓
-								</button>
-								<button
-									type="button"
-									onClick={() =>
-										setCards((items) => [
-											...items.slice(0, index + 1),
-											{ ...card, id: undefined, localId: crypto.randomUUID() },
-											...items.slice(index + 1),
-										])
-									}
-									className="rounded p-2 text-sm hover:bg-background"
-									aria-label="Nhân bản thẻ"
-								>
-									⧉
-								</button>
-								<button
-									type="button"
-									onClick={() => removeCard(card.localId)}
-									className="rounded p-2 text-sm text-red-700 hover:bg-red-50"
-									aria-label="Xóa thẻ"
-								>
-									×
-								</button>
-							</div>
-							{cardErrors[card.localId] ? (
-								<p className="text-sm font-semibold text-error lg:col-span-3" role="alert">
-									{cardErrors[card.localId]}
+						<summary className="cursor-pointer text-sm font-semibold text-ink">Chi tiết</summary>
+						<div className="mt-4 grid gap-4 md:grid-cols-2">
+							<label className="text-sm font-semibold">
+								Đường dẫn{' '}
+								{deck.status !== 'DRAFT' ? (
+									<span className="font-normal text-muted">(đã khóa sau xuất bản)</span>
+								) : null}
+								<input
+									value={slug}
+									onChange={(event) => setSlug(event.target.value)}
+									disabled={deck.status !== 'DRAFT'}
+									className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal disabled:opacity-60"
+									placeholder="hrm-lesson-1"
+								/>
+							</label>
+							<label className="text-sm font-semibold">
+								Nhãn bài
+								<input
+									value={lessonLabel}
+									onChange={(event) => setLessonLabel(event.target.value)}
+									className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
+									placeholder="Lesson 1"
+								/>
+							</label>
+							<label className="text-sm font-semibold md:col-span-2">
+								Mô tả
+								<textarea
+									value={description}
+									onChange={(event) => setDescription(event.target.value)}
+									rows={2}
+									className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 font-normal"
+								/>
+							</label>
+						</div>
+					</details>
+				) : null}
+
+				{deck ? (
+					<details
+						className="mt-4 border border-border bg-surface p-5"
+						open={importOpen}
+						onToggle={(event) => setImportOpen((event.target as HTMLDetailsElement).open)}
+					>
+						<summary className="cursor-pointer text-sm font-semibold text-ink">Nhập nhiều</summary>
+						<div className="mt-4">
+							<div className="flex flex-wrap items-center justify-between gap-3">
+								<p className="text-sm text-muted">
+									Dán Q:/A: hoặc CSV. Có thể sao chép hướng dẫn cho AI.
 								</p>
+								<div className="flex flex-wrap gap-2">
+									<button
+										type="button"
+										className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
+										onClick={() =>
+											void copyText(ACTIVE_RECALL_AI_FORMATTING_GUIDE)
+												.then(() => setNotice('Đã sao chép hướng dẫn định dạng cho AI.'))
+												.catch(() => setError('Không thể sao chép hướng dẫn. Hãy thử lại.'))
+										}
+									>
+										Sao chép hướng dẫn cho AI
+									</button>
+									<button
+										type="button"
+										className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
+										onClick={() =>
+											download(
+												`${deck.slug}.csv`,
+												toRecallCsv(
+													cards.map((card, index) => ({
+														id: card.id ?? '',
+														question: card.question,
+														answer: card.answer,
+														questionVi: card.questionVi,
+														answerVi: card.answerVi,
+														position: index,
+													})),
+												),
+											)
+										}
+									>
+										Xuất CSV
+									</button>
+									<button
+										type="button"
+										className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
+										onClick={() =>
+											void copyText(toRecallPaste(cards))
+												.then(() => setNotice('Đã sao chép dạng Q/A.'))
+												.catch(() => setError('Không thể sao chép Q/A. Hãy thử lại.'))
+										}
+									>
+										Sao chép Q/A
+									</button>
+								</div>
+							</div>
+							<textarea
+								value={importText}
+								onChange={(event) => {
+									setImportText(event.target.value);
+									setPreview(null);
+								}}
+								rows={8}
+								className="mt-4 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+								placeholder={
+									'Q: What is **HRM**?\nA: A *system* with <u>policies</u>\n---\nQuestion: ...\nAnswer: ...'
+								}
+							/>
+							<div className="mt-3 flex flex-wrap items-center gap-2">
+								<select
+									value={importMode}
+									onChange={(event) => {
+										setImportMode(event.target.value as 'append' | 'replace');
+										setPreview(null);
+									}}
+									className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+								>
+									<option value="append">Thêm vào bộ hiện có</option>
+									<option value="replace">Thay thế toàn bộ thẻ</option>
+								</select>
+								<button
+									type="button"
+									onClick={() => void runPreview()}
+									disabled={!importText.trim() || busy}
+									className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background disabled:opacity-50"
+								>
+									Kiểm tra dữ liệu
+								</button>
+								{preview && preview.summary.invalid === 0 ? (
+									<button
+										type="button"
+										onClick={() => void commitImport(importMode)}
+										disabled={busy}
+										className={`rounded-lg border px-4 py-2 text-sm font-semibold ${importMode === 'replace' ? 'border-red-200 text-red-700' : 'border-border'}`}
+									>
+										{importMode === 'replace'
+											? 'Thay thế bằng dữ liệu này'
+											: `Thêm ${preview.summary.valid} thẻ`}
+									</button>
+								) : null}
+							</div>
+							{preview ? (
+								<div className="mt-4 text-sm">
+									<p>
+										<strong>{preview.summary.valid}</strong> hợp lệ ·{' '}
+										<strong>{preview.summary.invalid}</strong> lỗi ·{' '}
+										<strong>{preview.summary.duplicates}</strong> trùng
+										{preview.summary.orphanAnswers
+											? ` · ${preview.summary.orphanAnswers} đáp án thiếu câu hỏi`
+											: ''}
+									</p>
+									<ul className="mt-2 list-disc pl-5 text-red-700">
+										{preview.rows
+											.filter((row) => row.errors.length)
+											.slice(0, 8)
+											.map((row) => (
+												<li key={row.row}>
+													Dòng {row.row}: {row.errors.join(', ')}
+												</li>
+											))}
+									</ul>
+								</div>
 							) : null}
-						</article>
-					))}
-				</div>
-			</section>
-			{dirty ? (
-				<div className="sticky bottom-4 mt-6 flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-4 py-3 shadow-lg">
-					<span className="text-sm font-semibold">Bạn có thay đổi chưa lưu.</span>
-					<button
-						type="button"
-						onClick={() => void saveDeck()}
-						className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background disabled:opacity-50"
-						disabled={busy}
-					>
-						{busy ? 'Đang lưu…' : 'Lưu thay đổi'}
-					</button>
-				</div>
-			) : null}
-		</div>
-		{dialog}
+						</div>
+					</details>
+				) : null}
+
+				<section className="mt-7">
+					<div className="flex items-center justify-between gap-4">
+						<div>
+							<h2 className="text-lg font-black text-foreground">
+								Thẻ <span className="text-muted">{cards.length}</span>
+							</h2>
+							<p className="mt-1 text-sm text-muted">
+								Kéo nút ⠿ để sắp thứ tự. Có thể chỉnh đậm, nghiêng, gạch chân và màu trên từng mặt
+								thẻ.
+							</p>
+						</div>
+						<button
+							type="button"
+							className="rounded-lg border border-border px-4 py-2 text-sm font-semibold"
+							onClick={() => setCards((items) => [...items, emptyCard()])}
+						>
+							+ Thêm thẻ
+						</button>
+					</div>
+					<div className="mt-4 space-y-3">
+						{cards.map((card, index) => (
+							<article
+								key={card.localId}
+								onDragOver={(event) => event.preventDefault()}
+								onDrop={() => {
+									if (dragIndex !== null) moveCard(dragIndex, index);
+									setDragIndex(null);
+								}}
+								className={`grid gap-3 border bg-surface p-4 lg:grid-cols-[2.4rem_minmax(0,1fr)_auto] ${
+									cardErrors[card.localId] ? 'border-error' : 'border-border'
+								}`}
+							>
+								<div className="flex items-start gap-1 pt-1 text-sm text-muted">
+									<span
+										draggable
+										onDragStart={() => setDragIndex(index)}
+										className="cursor-grab select-none"
+										aria-label={`Kéo thẻ ${index + 1}`}
+									>
+										⠿
+									</span>
+									<span className="tabular-nums">{index + 1}</span>
+								</div>
+								<RecallCardLanguageTabs
+									idPrefix={`recall-${card.localId}`}
+									question={card.question}
+									answer={card.answer}
+									questionVi={card.questionVi}
+									answerVi={card.answerVi}
+									onChangeQuestion={(question) => updateCard(card.localId, { question })}
+									onChangeAnswer={(answer) => updateCard(card.localId, { answer })}
+									onChangeQuestionVi={(questionVi) => updateCard(card.localId, { questionVi })}
+									onChangeAnswerVi={(answerVi) => updateCard(card.localId, { answerVi })}
+								/>
+								<div className="flex items-start gap-1">
+									<button
+										type="button"
+										onClick={() => moveCard(index, index - 1)}
+										disabled={index === 0}
+										className="rounded p-2 text-sm hover:bg-background disabled:opacity-30"
+										aria-label="Di chuyển lên"
+									>
+										↑
+									</button>
+									<button
+										type="button"
+										onClick={() => moveCard(index, index + 1)}
+										disabled={index === cards.length - 1}
+										className="rounded p-2 text-sm hover:bg-background disabled:opacity-30"
+										aria-label="Di chuyển xuống"
+									>
+										↓
+									</button>
+									<button
+										type="button"
+										onClick={() =>
+											setCards((items) => [
+												...items.slice(0, index + 1),
+												{ ...card, id: undefined, localId: crypto.randomUUID() },
+												...items.slice(index + 1),
+											])
+										}
+										className="rounded p-2 text-sm hover:bg-background"
+										aria-label="Nhân bản thẻ"
+									>
+										⧉
+									</button>
+									<button
+										type="button"
+										onClick={() => removeCard(card.localId)}
+										className="rounded p-2 text-sm text-red-700 hover:bg-red-50"
+										aria-label="Xóa thẻ"
+									>
+										×
+									</button>
+								</div>
+								{cardErrors[card.localId] ? (
+									<p className="text-sm font-semibold text-error lg:col-span-3" role="alert">
+										{cardErrors[card.localId]}
+									</p>
+								) : null}
+							</article>
+						))}
+					</div>
+				</section>
+				{dirty ? (
+					<div className="sticky bottom-4 mt-6 flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-4 py-3 shadow-lg">
+						<span className="text-sm font-semibold">Bạn có thay đổi chưa lưu.</span>
+						<button
+							type="button"
+							onClick={() => void saveDeck()}
+							className="rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background disabled:opacity-50"
+							disabled={busy}
+						>
+							{busy ? 'Đang lưu…' : 'Lưu thay đổi'}
+						</button>
+					</div>
+				) : null}
+			</div>
+			{dialog}
 		</>
 	);
 }

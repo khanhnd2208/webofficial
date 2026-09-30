@@ -102,7 +102,10 @@ export default function QuizResultView({
 								}}
 								className="inline-flex min-h-11 shrink-0 items-center justify-center border border-ink bg-ink px-4 font-sans text-sm font-semibold text-canvas transition-colors hover:bg-transparent hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
 							>
-								Nhận lời chúc <span aria-hidden className="ml-2">✓</span>
+								Nhận lời chúc{' '}
+								<span aria-hidden className="ml-2">
+									✓
+								</span>
 							</button>
 						</aside>
 					) : null}
@@ -110,10 +113,7 @@ export default function QuizResultView({
 
 				<ol className="mt-10 space-y-5">
 					{result.review.map((item, i) => (
-						<li
-							key={item.questionId}
-							className="border-t border-hairline pt-5"
-						>
+						<li key={item.questionId} className="border-t border-hairline pt-5">
 							<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 								<span className="font-mono text-[0.8125rem] font-semibold text-ink-secondary">
 									Question {i + 1}
@@ -135,11 +135,7 @@ export default function QuizResultView({
 										key={opt.key}
 										optionKey={opt.key}
 										text={opt.text}
-										state={reviewOptionState(
-											opt.key,
-											item.chosen,
-											item.correctOption,
-										)}
+										state={reviewOptionState(opt.key, item.chosen, item.correctOption)}
 										readOnly
 									/>
 								))}

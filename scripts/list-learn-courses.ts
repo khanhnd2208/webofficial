@@ -9,7 +9,10 @@ async function main() {
 		select: {
 			slug: true,
 			title: true,
-			lessons: { orderBy: { position: 'asc' }, select: { title: true, sections: { select: { title: true, type: true } } } },
+			lessons: {
+				orderBy: { position: 'asc' },
+				select: { title: true, sections: { select: { title: true, type: true } } },
+			},
 		},
 	});
 	console.log(JSON.stringify(courses, null, 2));

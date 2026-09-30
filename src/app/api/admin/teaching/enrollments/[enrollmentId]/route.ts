@@ -13,7 +13,10 @@ async function enrollmentId(context?: { params: Promise<{ enrollmentId: string }
 
 export const PATCH = withAdmin(async (request: NextRequest, _user, context) =>
 	apiSuccess(
-		await updateEnrollment(await enrollmentId(context), parseWithAppError(updateEnrollmentSchema, await request.json())),
+		await updateEnrollment(
+			await enrollmentId(context),
+			parseWithAppError(updateEnrollmentSchema, await request.json()),
+		),
 	),
 );
 

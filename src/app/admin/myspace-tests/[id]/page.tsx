@@ -11,11 +11,7 @@ export const metadata = {
 	title: 'Sửa bài test | My Space Tests',
 };
 
-export default async function EditSpaceTestPage({
-	params,
-}: {
-	params: Promise<{ id: string }>;
-}) {
+export default async function EditSpaceTestPage({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
 	let test;
 	try {
@@ -34,10 +30,7 @@ export default async function EditSpaceTestPage({
 			{test.status === 'PUBLISHED' ? (
 				<p className="mt-1 text-sm text-muted">
 					Public:{' '}
-					<Link
-						href={routes.mySpaceTestPlay(test.slug)}
-						className="underline underline-offset-2"
-					>
+					<Link href={routes.mySpaceTestPlay(test.slug)} className="underline underline-offset-2">
 						{routes.mySpaceTestPlay(test.slug)}
 					</Link>
 				</p>

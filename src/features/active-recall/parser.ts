@@ -6,10 +6,7 @@ import {
 	recallImportToStoredHtml,
 	recallVisibleLength,
 } from './richText';
-import {
-	ACTIVE_RECALL_MAX_ANSWER_LENGTH,
-	ACTIVE_RECALL_MAX_QUESTION_LENGTH,
-} from './schemas';
+import { ACTIVE_RECALL_MAX_ANSWER_LENGTH, ACTIVE_RECALL_MAX_QUESTION_LENGTH } from './schemas';
 import type { RecallImportPreview, RecallImportRow } from './types';
 
 type ParsedImport = Omit<RecallImportPreview, 'summary'> & { orphanAnswers: number };
@@ -22,7 +19,12 @@ const SEPARATOR = /^---+\s*$/;
 const INLINE_ANSWER = /\s+(?:a|answer|đáp\s*án)\s*:\s*/i;
 
 function clean(value: string) {
-	return value.replace(/\r\n/g, '\n').split('\n').map((line) => line.replace(/[ \t]+$/g, '')).join('\n').trim();
+	return value
+		.replace(/\r\n/g, '\n')
+		.split('\n')
+		.map((line) => line.replace(/[ \t]+$/g, ''))
+		.join('\n')
+		.trim();
 }
 
 function normalizedHeader(value: string) {
@@ -39,7 +41,8 @@ function headerKey(value: string) {
 	if (['id', 'card id', 'ma'].includes(header)) return 'id';
 	if (['question', 'q', 'cau hoi', 'front'].includes(header)) return 'question';
 	if (['answer', 'a', 'dap an', 'back'].includes(header)) return 'answer';
-	if (['question vi', 'questionvi', 'qvi', 'cau hoi vi', 'front vi'].includes(header)) return 'questionVi';
+	if (['question vi', 'questionvi', 'qvi', 'cau hoi vi', 'front vi'].includes(header))
+		return 'questionVi';
 	if (['answer vi', 'answervi', 'avi', 'dap an vi', 'back vi'].includes(header)) return 'answerVi';
 	if (['order', 'position', 'thu tu'].includes(header)) return 'order';
 	return header;
@@ -48,7 +51,10 @@ function headerKey(value: string) {
 function detectDelimiter(text: string) {
 	const first = text.replace(/^\uFEFF/, '').split(/\r?\n/, 1)[0] ?? '';
 	const candidates: Array<',' | ';' | '\t'> = [',', ';', '\t'];
-	return candidates.reduce((best, value) => (first.split(value).length > first.split(best).length ? value : best), ',');
+	return candidates.reduce(
+		(best, value) => (first.split(value).length > first.split(best).length ? value : best),
+		',',
+	);
 }
 
 function firstLineHeaders(text: string) {
@@ -81,7 +87,11 @@ function rowErrors(question: string, answer: string, questionVi = '', answerVi =
 	return errors;
 }
 
-function preview(rows: RecallImportRow[], format: RecallImportPreview['format'], orphanAnswers = 0): RecallImportPreview {
+function preview(
+	rows: RecallImportRow[],
+	format: RecallImportPreview['format'],
+	orphanAnswers = 0,
+): RecallImportPreview {
 	for (const row of rows) {
 		row.question = recallImportToStoredHtml(row.question);
 		row.answer = recallImportToStoredHtml(row.answer);
@@ -155,60 +165,66 @@ function parsePaste(text: string): ParsedImport {
 		current = null;
 	};
 
-	text.replace(/\r\n/g, '\n').split('\n').forEach((rawLine, index) => {
-		const line = unescapePasteLine(rawLine);
-		const question = line.match(QUESTION);
-		const answer = line.match(ANSWER);
-		const questionVi = line.match(QUESTION_VI);
-		const answerVi = line.match(ANSWER_VI);
-		if (SEPARATOR.test(line) && line === rawLine) {
-			finish();
-			return;
-		}
-		if (question && line === rawLine) {
-			finish();
-			const inlineAnswer = splitInlineAnswer(unescapePasteLine(question[1] ?? ''));
-			current = {
-				row: index + 1,
-				question: [inlineAnswer?.question ?? unescapePasteLine(question[1] ?? '')],
-				answer: inlineAnswer ? [inlineAnswer.answer] : [],
-				questionVi: [],
-				answerVi: [],
-				field: inlineAnswer ? 'answer' : 'question',
-			};
-			return;
-		}
-		if (answer && line === rawLine) {
-			if (!current) {
-				orphanAnswers += 1;
+	text
+		.replace(/\r\n/g, '\n')
+		.split('\n')
+		.forEach((rawLine, index) => {
+			const line = unescapePasteLine(rawLine);
+			const question = line.match(QUESTION);
+			const answer = line.match(ANSWER);
+			const questionVi = line.match(QUESTION_VI);
+			const answerVi = line.match(ANSWER_VI);
+			if (SEPARATOR.test(line) && line === rawLine) {
+				finish();
 				return;
 			}
-			current.answer.push(unescapePasteLine(answer[1] ?? ''));
-			current.field = 'answer';
-			return;
-		}
-		if (questionVi && line === rawLine) {
-			if (!current) return;
-			current.questionVi.push(unescapePasteLine(questionVi[1] ?? ''));
-			current.field = 'questionVi';
-			return;
-		}
-		if (answerVi && line === rawLine) {
-			if (!current) return;
-			current.answerVi.push(unescapePasteLine(answerVi[1] ?? ''));
-			current.field = 'answerVi';
-			return;
-		}
-		if (!current || !current.field) return;
-		current[current.field].push(unescapePasteLine(rawLine));
-	});
+			if (question && line === rawLine) {
+				finish();
+				const inlineAnswer = splitInlineAnswer(unescapePasteLine(question[1] ?? ''));
+				current = {
+					row: index + 1,
+					question: [inlineAnswer?.question ?? unescapePasteLine(question[1] ?? '')],
+					answer: inlineAnswer ? [inlineAnswer.answer] : [],
+					questionVi: [],
+					answerVi: [],
+					field: inlineAnswer ? 'answer' : 'question',
+				};
+				return;
+			}
+			if (answer && line === rawLine) {
+				if (!current) {
+					orphanAnswers += 1;
+					return;
+				}
+				current.answer.push(unescapePasteLine(answer[1] ?? ''));
+				current.field = 'answer';
+				return;
+			}
+			if (questionVi && line === rawLine) {
+				if (!current) return;
+				current.questionVi.push(unescapePasteLine(questionVi[1] ?? ''));
+				current.field = 'questionVi';
+				return;
+			}
+			if (answerVi && line === rawLine) {
+				if (!current) return;
+				current.answerVi.push(unescapePasteLine(answerVi[1] ?? ''));
+				current.field = 'answerVi';
+				return;
+			}
+			if (!current || !current.field) return;
+			current[current.field].push(unescapePasteLine(rawLine));
+		});
 	finish();
 	return { rows, format: 'paste', orphanAnswers };
 }
 
 function parseTsv(text: string): ParsedImport {
 	const rows: RecallImportRow[] = [];
-	const lines = text.replace(/\r\n/g, '\n').split('\n').filter((line) => line.trim());
+	const lines = text
+		.replace(/\r\n/g, '\n')
+		.split('\n')
+		.filter((line) => line.trim());
 	const header = lines[0]?.split('\t').map(headerKey) ?? [];
 	const hasHeader = header.includes('question') && header.includes('answer');
 	const questionIndex = hasHeader ? header.indexOf('question') : 0;
@@ -223,7 +239,10 @@ function parseTsv(text: string): ParsedImport {
 		const answer = clean(cells[answerIndex] ?? '');
 		const questionVi = questionViIndex >= 0 ? clean(cells[questionViIndex] ?? '') : '';
 		const answerVi = answerViIndex >= 0 ? clean(cells[answerViIndex] ?? '') : '';
-		const order = orderIndex >= 0 && /^\d+$/.test(cells[orderIndex] ?? '') ? Number(cells[orderIndex]) : undefined;
+		const order =
+			orderIndex >= 0 && /^\d+$/.test(cells[orderIndex] ?? '')
+				? Number(cells[orderIndex])
+				: undefined;
 		rows.push({
 			row: index + (hasHeader ? 2 : 1),
 			id: cells[idIndex]?.trim() || undefined,
@@ -249,7 +268,11 @@ function parseCsv(text: string): ParsedImport {
 			delimiter: detectDelimiter(text),
 		}) as Record<string, string>[];
 	} catch {
-		return { rows: [{ row: 1, question: '', answer: '', errors: ['Không đọc được CSV'] }], format: 'csv', orphanAnswers: 0 };
+		return {
+			rows: [{ row: 1, question: '', answer: '', errors: ['Không đọc được CSV'] }],
+			format: 'csv',
+			orphanAnswers: 0,
+		};
 	}
 	const rows = records.map((record, index) => {
 		const question = clean(record.question ?? '');
@@ -274,7 +297,10 @@ function parseCsv(text: string): ParsedImport {
 }
 
 export function previewRecallImport(text: string): RecallImportPreview {
-	const likelyTsv = text.split(/\r?\n/).filter(Boolean).every((line) => line.includes('\t'));
+	const likelyTsv = text
+		.split(/\r?\n/)
+		.filter(Boolean)
+		.every((line) => line.includes('\t'));
 	const parsed = hasDelimitedHeaders(text)
 		? detectDelimiter(text) === '\t' || likelyTsv
 			? parseTsv(text)

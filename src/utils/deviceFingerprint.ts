@@ -87,7 +87,9 @@ export async function generateDeviceFingerprint(): Promise<string> {
 
 	// 6. Audio context (audio stack fingerprint)
 	try {
-		const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		const AudioCtx =
+			window.AudioContext ||
+			(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
 		if (AudioCtx) {
 			const ctx = new AudioCtx();
 			signals.push(`audio:${ctx.sampleRate}`);
@@ -112,12 +114,12 @@ async function sha256(input: string): Promise<string> {
 	try {
 		const hashBuffer = await crypto.subtle.digest('SHA-256', data);
 		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+		return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 	} catch {
 		// Fallback: simple djb2-based hash (not cryptographic, but deterministic)
 		let hash = 5381;
 		for (let i = 0; i < input.length; i++) {
-			hash = ((hash << 5) + hash + input.charCodeAt(i)) & 0xFFFFFFFF;
+			hash = ((hash << 5) + hash + input.charCodeAt(i)) & 0xffffffff;
 		}
 		return `fallback-${(hash >>> 0).toString(16).padStart(8, '0')}`;
 	}

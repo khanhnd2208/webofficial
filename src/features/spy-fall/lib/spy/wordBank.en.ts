@@ -165,6 +165,9 @@ export const WORD_BANK_EN: WordPairEntry[] = [
 	pair('en-131', 'tình huống', 'Phone dropped in water', 'Cracked phone screen'),
 	pair('en-132', 'tình huống', 'Texting the wrong person', "Liking an ex's old photo", ['romance']),
 	pair('en-133', 'tình huống', 'Missing a flight', 'Late for a job interview'),
-	pair('en-134', 'tình huống', 'Forgetting your speech', 'Mic dies mid-speech', ['school', 'office']),
+	pair('en-134', 'tình huống', 'Forgetting your speech', 'Mic dies mid-speech', [
+		'school',
+		'office',
+	]),
 	pair('en-135', 'tình huống', 'Winning the lottery', 'Finding a lost wallet'),
 ];

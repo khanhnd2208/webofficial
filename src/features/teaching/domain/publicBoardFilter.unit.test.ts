@@ -34,12 +34,12 @@ describe('public tutorial filter', () => {
 		expect(studentMatchesPublicTutorial({ tutorialClassId: null }, PUBLIC_TUTORIAL_ALL)).toBe(true);
 		expect(studentMatchesPublicTutorial({ tutorialClassId: 't1' }, PUBLIC_TUTORIAL_ALL)).toBe(true);
 		expect(studentMatchesPublicTutorial({ tutorialClassId: null }, 't1')).toBe(false);
-		expect(studentMatchesPublicTutorial({ tutorialClassId: null }, PUBLIC_TUTORIAL_UNASSIGNED)).toBe(
-			true,
-		);
-		expect(sessionMatchesPublicTutorial({ tutorialClassId: 't1' }, PUBLIC_TUTORIAL_UNASSIGNED)).toBe(
-			false,
-		);
+		expect(
+			studentMatchesPublicTutorial({ tutorialClassId: null }, PUBLIC_TUTORIAL_UNASSIGNED),
+		).toBe(true);
+		expect(
+			sessionMatchesPublicTutorial({ tutorialClassId: 't1' }, PUBLIC_TUTORIAL_UNASSIGNED),
+		).toBe(false);
 	});
 
 	it('shows the filter when the only extra group is unassigned students', () => {

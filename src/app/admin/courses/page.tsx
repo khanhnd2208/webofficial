@@ -53,7 +53,8 @@ export default async function AdminCoursesPage() {
 								<div className="min-w-0">
 									<p className="text-sm font-bold text-foreground">{course.title}</p>
 									<p className="mt-0.5 text-xs text-muted">
-										/{course.slug} · {course.moduleCount} chương · {course.lessonCount} bài · {course.enrollmentCount} học viên
+										/{course.slug} · {course.moduleCount} chương · {course.lessonCount} bài ·{' '}
+										{course.enrollmentCount} học viên
 									</p>
 								</div>
 								<span className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">

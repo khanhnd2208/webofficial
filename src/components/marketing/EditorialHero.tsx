@@ -8,7 +8,13 @@ type EditorialHeroProps = {
 	className?: string;
 };
 
-export function EditorialHero({ eyebrow, title, lead, children, className = '' }: EditorialHeroProps) {
+export function EditorialHero({
+	eyebrow,
+	title,
+	lead,
+	children,
+	className = '',
+}: EditorialHeroProps) {
 	return (
 		<section className={`editorial-section border-b border-hairline ${className}`}>
 			<div className="shell grid gap-8 lg:grid-cols-12 lg:items-end">

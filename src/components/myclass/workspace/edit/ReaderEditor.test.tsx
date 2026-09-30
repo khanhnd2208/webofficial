@@ -3,10 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MyClassCourseDetail, MyClassKnowledgeUnit } from '@/features/my-class/types';
-import {
-	readWorkspaceDraft,
-	writeWorkspaceDraft,
-} from '@/features/my-class/client/adminDraft';
+import { readWorkspaceDraft, writeWorkspaceDraft } from '@/features/my-class/client/adminDraft';
 import { EditModeProvider } from './EditModeContext';
 import ReaderEditor from './ReaderEditor';
 import { myClassApi } from '@/components/myclass/admin/api';
@@ -28,10 +25,7 @@ vi.mock('@/components/myclass/admin/KnowledgeUnitFields', () => ({
 		<div>
 			<label>
 				Tiêu đề
-				<input
-					value={props.title}
-					onChange={(event) => props.onTitleChange(event.target.value)}
-				/>
+				<input value={props.title} onChange={(event) => props.onTitleChange(event.target.value)} />
 			</label>
 			{props.showSlug !== false && props.onSlugChange ? (
 				<label>
@@ -123,7 +117,9 @@ describe('ReaderEditor', () => {
 		});
 
 		renderEditor();
-		expect(screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' }),
+		).not.toBeInTheDocument();
 		expect(readWorkspaceDraft(course.id, 'unit', unit.id)).toBeNull();
 	});
 
@@ -142,7 +138,9 @@ describe('ReaderEditor', () => {
 		});
 
 		renderEditor();
-		expect(screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' }),
+		).not.toBeInTheDocument();
 		expect(readWorkspaceDraft(course.id, 'unit', unit.id)).toBeNull();
 	});
 
@@ -232,19 +230,27 @@ describe('ReaderEditor', () => {
 		expect(screen.queryByLabelText('Đường dẫn')).not.toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Lưu nháp' }));
 		expect(await screen.findByText('Đã lưu')).toBeInTheDocument();
-		expect(screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' }),
+		).not.toBeInTheDocument();
 
-		const patchCall = vi.mocked(myClassApi).mock.calls.find(([url]) => String(url).includes('/nodes/unit/'));
+		const patchCall = vi
+			.mocked(myClassApi)
+			.mock.calls.find(([url]) => String(url).includes('/nodes/unit/'));
 		expect(patchCall).toBeTruthy();
 		const patchBody = JSON.parse(String(patchCall?.[1]?.body));
 		expect(patchBody.changes).not.toHaveProperty('slug');
 		expect(patchBody.changes.title).toBe('Saved title');
 		expect(await screen.findByText('Đã lưu')).toBeInTheDocument();
-		expect(screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' }),
+		).not.toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole('button', { name: 'Xuất bản' }));
 		expect(await screen.findByText('Đã lưu')).toBeInTheDocument();
-		expect(screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('dialog', { name: 'Khôi phục bản nháp cục bộ?' }),
+		).not.toBeInTheDocument();
 		expect(publishBodies).toEqual([{ expectedUpdatedAt: patchStamp }]);
 	});
 });

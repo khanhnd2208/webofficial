@@ -11,7 +11,9 @@ import ThumbnailUpload from '@/components/ThumbnailUpload';
 import { DEFAULT_DISPLAY_FONT } from '@/constants/message';
 import type { MessageDetailDTO } from '@/types/message';
 
-const MessageEditorWithFont = dynamic(() => import('@/components/MessageEditorWithFont'), { ssr: false });
+const MessageEditorWithFont = dynamic(() => import('@/components/MessageEditorWithFont'), {
+	ssr: false,
+});
 
 interface MessageManageClientProps {
 	message: MessageDetailDTO;
@@ -116,9 +118,7 @@ export default function MessageManageClient({ message, publicUrl }: MessageManag
 	return (
 		<div className="mx-auto max-w-4xl space-y-10 px-6 py-8">
 			<section className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
-				<h2 className="text-center text-sm font-bold uppercase tracking-wider text-muted">
-					Mã QR
-				</h2>
+				<h2 className="text-center text-sm font-bold uppercase tracking-wider text-muted">Mã QR</h2>
 				<div className="mt-6">
 					<QrCodePanel url={publicUrl} title={`message-${message.slug}`} />
 				</div>
@@ -230,7 +230,9 @@ export default function MessageManageClient({ message, publicUrl }: MessageManag
 									maxLength={8}
 									value={password}
 									onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 8))}
-									placeholder={message.hasPassword ? 'Nhập mã mới (để trống = giữ mã cũ)' : '12345678'}
+									placeholder={
+										message.hasPassword ? 'Nhập mã mới (để trống = giữ mã cũ)' : '12345678'
+									}
 									className="mt-3 w-full max-w-xs rounded-xl border border-border px-4 py-2.5 text-center text-lg font-bold tracking-[0.3em]"
 								/>
 							)}

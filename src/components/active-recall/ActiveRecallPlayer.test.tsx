@@ -49,7 +49,10 @@ const deck = {
 describe('ActiveRecallPlayer', () => {
 	const originalRequestFullscreen = HTMLElement.prototype.requestFullscreen;
 	const originalExitFullscreen = Document.prototype.exitFullscreen;
-	const fullscreenDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'fullscreenElement');
+	const fullscreenDescriptor = Object.getOwnPropertyDescriptor(
+		Document.prototype,
+		'fullscreenElement',
+	);
 
 	beforeEach(() => localStorage.clear());
 
@@ -123,7 +126,10 @@ describe('ActiveRecallPlayer', () => {
 
 		expect(screen.getByText('Question one')).toBeVisible();
 		expect(screen.getByText('1/2')).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute('aria-pressed', 'false');
+		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute(
+			'aria-pressed',
+			'false',
+		);
 
 		fireEvent.click(screen.getByRole('button', { name: 'Xáo câu' }));
 		expect(screen.getByText('Question two')).toBeVisible();
@@ -150,7 +156,10 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.getByText('Câu hỏi')).toBeVisible();
 		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
 		expect(screen.getByText('1/2')).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute('aria-pressed', 'false');
+		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute(
+			'aria-pressed',
+			'false',
+		);
 		await waitFor(() =>
 			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
 				currentId: 'a',
@@ -329,9 +338,7 @@ describe('ActiveRecallPlayer', () => {
 
 		render(<ActiveRecallPlayer deck={deck} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Trình chiếu' }));
-		await waitFor(() =>
-			expect(screen.getByRole('main')).toHaveClass('recall-player-presentation'),
-		);
+		await waitFor(() => expect(screen.getByRole('main')).toHaveClass('recall-player-presentation'));
 		expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible();
 		expect(screen.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
 		expect(screen.getByRole('button', { name: '← Trước' })).toBeVisible();
@@ -355,10 +362,9 @@ describe('ActiveRecallPlayer', () => {
 		);
 		expect(document.body.style.overflow).toBe('hidden');
 		expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible();
-		expect(screen.getByRole('dialog', { name: 'Chế độ trình chiếu Active Recall' })).toHaveAttribute(
-			'aria-modal',
-			'true',
-		);
+		expect(
+			screen.getByRole('dialog', { name: 'Chế độ trình chiếu Active Recall' }),
+		).toHaveAttribute('aria-modal', 'true');
 
 		fireEvent.keyDown(window, { key: 'Escape' });
 		await waitFor(() =>

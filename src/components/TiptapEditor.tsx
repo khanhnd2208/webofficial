@@ -43,13 +43,18 @@ function Btn({
 	return (
 		<button
 			type="button"
-			onMouseDown={(e) => { e.preventDefault(); onClick(); }}
+			onMouseDown={(e) => {
+				e.preventDefault();
+				onClick();
+			}}
 			disabled={disabled}
 			title={title}
 			aria-label={title}
 			aria-pressed={active}
 			className={`flex h-11 w-11 items-center justify-center rounded transition-colors sm:h-11 sm:w-11 ${
-				active ? 'bg-accent/15 text-accent' : 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
+				active
+					? 'bg-accent/15 text-accent'
+					: 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
 			} ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
 		>
 			{children}
@@ -100,7 +105,11 @@ function Palette({
 	onSelect: (color: string | null) => void;
 }) {
 	return (
-		<div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-secondary/70 px-3 py-2" role="group" aria-label={label}>
+		<div
+			className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-secondary/70 px-3 py-2"
+			role="group"
+			aria-label={label}
+		>
 			<span className="mr-1 text-xs font-medium text-foreground-secondary">{label}</span>
 			{colors.map((color) => {
 				const selected = (current ?? null) === color.value;
@@ -120,12 +129,21 @@ function Palette({
 						style={color.value ? { backgroundColor: color.value } : undefined}
 					>
 						{isClear ? (
-							<svg className="mx-auto h-4 w-4 text-foreground-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+							<svg
+								className="mx-auto h-4 w-4 text-foreground-secondary"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.8"
+								aria-hidden="true"
+							>
 								<circle cx="12" cy="12" r="8" />
 								<path d="M6.5 17.5l11-11" strokeLinecap="round" />
 							</svg>
 						) : label === 'Màu chữ' ? (
-							<span className="font-bold text-white drop-shadow-sm" aria-hidden="true">A</span>
+							<span className="font-bold text-white drop-shadow-sm" aria-hidden="true">
+								A
+							</span>
 						) : null}
 					</button>
 				);
@@ -158,7 +176,13 @@ function LinkDialog({
 				placeholder={placeholder}
 				className="w-56 rounded border border-border bg-surface px-2.5 py-1.5 text-sm outline-none focus:border-accent"
 				autoFocus
-				onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmit(url); } if (e.key === 'Escape') onClose(); }}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						onSubmit(url);
+					}
+					if (e.key === 'Escape') onClose();
+				}}
 			/>
 			<button
 				type="button"
@@ -198,7 +222,14 @@ function equivalentEditorHtml(left: string, right: string) {
 	return normalizeDraftHtml(left) === normalizeDraftHtml(right);
 }
 
-export default function TiptapEditor({ content, onChange, onImageUpload, onImageUploadError, placeholder = 'Bắt đầu viết bài...', fontFamily }: TiptapEditorProps) {
+export default function TiptapEditor({
+	content,
+	onChange,
+	onImageUpload,
+	onImageUploadError,
+	placeholder = 'Bắt đầu viết bài...',
+	fontFamily,
+}: TiptapEditorProps) {
 	const contentRef = useRef(content);
 	contentRef.current = content;
 	const [showLinkDialog, setShowLinkDialog] = useState(false);
@@ -226,17 +257,24 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 			TextStyle,
 			Color,
 			Highlight.configure({ multicolor: true }),
-			TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] }),
+			TextAlign.configure({
+				types: ['heading', 'paragraph'],
+				alignments: ['left', 'center', 'right', 'justify'],
+			}),
 			Link.configure({
 				openOnClick: false,
-				HTMLAttributes: { class: 'text-accent underline underline-offset-2 hover:text-accent-hover cursor-pointer' },
+				HTMLAttributes: {
+					class: 'text-accent underline underline-offset-2 hover:text-accent-hover cursor-pointer',
+				},
 			}),
 			Image.configure({
 				HTMLAttributes: { class: 'rounded-xl mx-auto max-w-full', loading: 'lazy' },
 				allowBase64: true,
 			}),
 			Youtube.configure({
-				HTMLAttributes: { class: 'not-prose my-6 aspect-video overflow-hidden border border-border w-full' },
+				HTMLAttributes: {
+					class: 'not-prose my-6 aspect-video overflow-hidden border border-border w-full',
+				},
 				width: 0,
 				height: 0,
 			}),
@@ -249,7 +287,8 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 		content,
 		editorProps: {
 			attributes: {
-				class: 'tiptap-content prose prose-lg dark:prose-invert max-w-none outline-none min-h-[480px] px-6 py-5',
+				class:
+					'tiptap-content prose prose-lg dark:prose-invert max-w-none outline-none min-h-[480px] px-6 py-5',
 				...(fontFamily ? { style: `font-family: ${fontFamily}` } : {}),
 			},
 			handleDrop: (view, event) => {
@@ -277,22 +316,27 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 			isInternalUpdate.current = true;
 			onChange(html);
 			// Reset the flag after React finishes processing
-			queueMicrotask(() => { isInternalUpdate.current = false; });
+			queueMicrotask(() => {
+				isInternalUpdate.current = false;
+			});
 		},
 	});
 
-	const handleImageFile = useCallback(async (file: File) => {
-		if (!editor || !onImageUpload) return;
-		setIsUploading(true);
-		try {
-			const url = await onImageUpload(file);
-			editor.chain().focus().setImage({ src: url }).run();
-		} catch (error) {
-			onImageUploadError?.(error instanceof Error ? error.message : 'Không tải ảnh lên được');
-		} finally {
-			setIsUploading(false);
-		}
-	}, [editor, onImageUpload, onImageUploadError]);
+	const handleImageFile = useCallback(
+		async (file: File) => {
+			if (!editor || !onImageUpload) return;
+			setIsUploading(true);
+			try {
+				const url = await onImageUpload(file);
+				editor.chain().focus().setImage({ src: url }).run();
+			} catch (error) {
+				onImageUploadError?.(error instanceof Error ? error.message : 'Không tải ảnh lên được');
+			} finally {
+				setIsUploading(false);
+			}
+		},
+		[editor, onImageUpload, onImageUploadError],
+	);
 
 	// Sync external content changes (e.g. draft load) into the editor.
 	// Only update if the editor content is truly different from the prop.
@@ -302,12 +346,12 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 		editor.setOptions({
 			editorProps: {
 				attributes: {
-					class: 'tiptap-content prose prose-lg dark:prose-invert max-w-none outline-none min-h-[480px] px-6 py-5',
+					class:
+						'tiptap-content prose prose-lg dark:prose-invert max-w-none outline-none min-h-[480px] px-6 py-5',
 					...(fontFamily ? { style: `font-family: ${fontFamily}` } : {}),
 				},
 			},
 		});
-	 
 	}, [fontFamily, editor]);
 
 	useEffect(() => {
@@ -323,42 +367,54 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 		fileInputRef.current?.click();
 	}, []);
 
-	const handleLinkSubmit = useCallback((url: string) => {
-		if (!editor) return;
-		setShowLinkDialog(false);
-		if (!url) {
-			editor.chain().focus().unsetLink().run();
-			return;
-		}
-		const href = url.startsWith('http') ? url : `https://${url}`;
-		editor.chain().focus().extendMarkRange('link').setLink({ href }).run();
-	}, [editor]);
+	const handleLinkSubmit = useCallback(
+		(url: string) => {
+			if (!editor) return;
+			setShowLinkDialog(false);
+			if (!url) {
+				editor.chain().focus().unsetLink().run();
+				return;
+			}
+			const href = url.startsWith('http') ? url : `https://${url}`;
+			editor.chain().focus().extendMarkRange('link').setLink({ href }).run();
+		},
+		[editor],
+	);
 
-	const addYoutube = useCallback((url: string) => {
-		if (!editor || !url.trim()) {
+	const addYoutube = useCallback(
+		(url: string) => {
+			if (!editor || !url.trim()) {
+				setShowYoutubeDialog(false);
+				return;
+			}
+			editor.commands.setYoutubeVideo({ src: url.trim() });
 			setShowYoutubeDialog(false);
-			return;
-		}
-		editor.commands.setYoutubeVideo({ src: url.trim() });
-		setShowYoutubeDialog(false);
-	}, [editor]);
+		},
+		[editor],
+	);
 
 	const addTable = useCallback(() => {
 		if (!editor) return;
 		editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
 	}, [editor]);
 
-	const applyTextColor = useCallback((color: string | null) => {
-		if (!editor) return;
-		if (color) editor.chain().focus().setColor(color).run();
-		else editor.chain().focus().unsetColor().run();
-	}, [editor]);
+	const applyTextColor = useCallback(
+		(color: string | null) => {
+			if (!editor) return;
+			if (color) editor.chain().focus().setColor(color).run();
+			else editor.chain().focus().unsetColor().run();
+		},
+		[editor],
+	);
 
-	const applyHighlight = useCallback((color: string | null) => {
-		if (!editor) return;
-		if (color) editor.chain().focus().toggleHighlight({ color }).run();
-		else editor.chain().focus().unsetHighlight().run();
-	}, [editor]);
+	const applyHighlight = useCallback(
+		(color: string | null) => {
+			if (!editor) return;
+			if (color) editor.chain().focus().toggleHighlight({ color }).run();
+			else editor.chain().focus().unsetHighlight().run();
+		},
+		[editor],
+	);
 
 	const toggleSourceView = useCallback(() => {
 		if (!editor) return;
@@ -378,105 +434,317 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 			{/* ═══ Toolbar ═══ */}
 			<div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-surface-secondary px-2 py-1.5">
 				{/* Text formatting */}
-				<Btn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold (⌘B)">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6V4zm0 8h9a4 4 0 014 4 4 4 0 01-4 4H6v-8z" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleBold().run()}
+					active={editor.isActive('bold')}
+					title="Bold (⌘B)"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6V4zm0 8h9a4 4 0 014 4 4 4 0 01-4 4H6v-8z" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic (⌘I)">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4h4l-2 16H8l2-16z" opacity=".2" /><path d="M10 4v2h2.58l-3.66 12H6v2h8v-2h-2.58l3.66-12H18V4h-8z" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleItalic().run()}
+					active={editor.isActive('italic')}
+					title="Italic (⌘I)"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M10 4h4l-2 16H8l2-16z" opacity=".2" />
+						<path d="M10 4v2h2.58l-3.66 12H6v2h8v-2h-2.58l3.66-12H18V4h-8z" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="Underline (⌘U)">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M6 3v7a6 6 0 0012 0V3h-2v7a4 4 0 01-8 0V3H6zM4 20h16v2H4v-2z" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleUnderline().run()}
+					active={editor.isActive('underline')}
+					title="Underline (⌘U)"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M6 3v7a6 6 0 0012 0V3h-2v7a4 4 0 01-8 0V3H6zM4 20h16v2H4v-2z" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 12h18v1H3v-1zm4.5-3.5C7.5 6.5 9.5 5 12 5c2 0 3.5.8 4 2h2c-.7-2.3-3-4-6-4-3.5 0-6 2-6 5h2.5zm5 7c-2 0-3.5-.8-4-2H7c.7 2.3 3 4 6 4 3.5 0 6-2 6-5h-2.5c0 2-2 3.5-4.5 3.5z" opacity=".8" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleStrike().run()}
+					active={editor.isActive('strike')}
+					title="Strikethrough"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<path
+							d="M3 12h18v1H3v-1zm4.5-3.5C7.5 6.5 9.5 5 12 5c2 0 3.5.8 4 2h2c-.7-2.3-3-4-6-4-3.5 0-6 2-6 5h2.5zm5 7c-2 0-3.5-.8-4-2H7c.7 2.3 3 4 6 4 3.5 0 6-2 6-5h-2.5c0 2-2 3.5-4.5 3.5z"
+							opacity=".8"
+						/>
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive('superscript')} title="Superscript">
-					<span className="text-[10px] font-bold">X<sup className="text-[8px]">²</sup></span>
+				<Btn
+					onClick={() => editor.chain().focus().toggleSuperscript().run()}
+					active={editor.isActive('superscript')}
+					title="Superscript"
+				>
+					<span className="text-[10px] font-bold">
+						X<sup className="text-[8px]">²</sup>
+					</span>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive('subscript')} title="Subscript">
-					<span className="text-[10px] font-bold">X<sub className="text-[8px]">₂</sub></span>
+				<Btn
+					onClick={() => editor.chain().focus().toggleSubscript().run()}
+					active={editor.isActive('subscript')}
+					title="Subscript"
+				>
+					<span className="text-[10px] font-bold">
+						X<sub className="text-[8px]">₂</sub>
+					</span>
 				</Btn>
-				<Btn onClick={() => setOpenPalette((value) => value === 'text' ? null : 'text')} active={openPalette === 'text'} title="Màu chữ">
-					<span className="relative font-serif text-sm font-bold leading-none" style={{ color: (editor.getAttributes('textStyle').color as string | undefined) ?? 'currentColor' }}>
+				<Btn
+					onClick={() => setOpenPalette((value) => (value === 'text' ? null : 'text'))}
+					active={openPalette === 'text'}
+					title="Màu chữ"
+				>
+					<span
+						className="relative font-serif text-sm font-bold leading-none"
+						style={{
+							color:
+								(editor.getAttributes('textStyle').color as string | undefined) ?? 'currentColor',
+						}}
+					>
 						A<span className="absolute -bottom-1 left-0 right-0 h-1 rounded-sm bg-current" />
 					</span>
 				</Btn>
-				<Btn onClick={() => setOpenPalette((value) => value === 'highlight' ? null : 'highlight')} active={openPalette === 'highlight' || editor.isActive('highlight')} title="Highlight">
+				<Btn
+					onClick={() => setOpenPalette((value) => (value === 'highlight' ? null : 'highlight'))}
+					active={openPalette === 'highlight' || editor.isActive('highlight')}
+					title="Highlight"
+				>
 					<span className="relative text-sm font-bold leading-none">
 						<span aria-hidden="true">A</span>
-						<span className="absolute -bottom-1 left-[-2px] right-[-2px] h-1 rounded-sm" style={{ backgroundColor: (editor.getAttributes('highlight').color as string | undefined) ?? 'var(--accent)' }} />
+						<span
+							className="absolute -bottom-1 left-[-2px] right-[-2px] h-1 rounded-sm"
+							style={{
+								backgroundColor:
+									(editor.getAttributes('highlight').color as string | undefined) ??
+									'var(--accent)',
+							}}
+						/>
 					</span>
 				</Btn>
 
 				<Sep />
 
 				{/* Headings */}
-				<Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="Heading 1">
+				<Btn
+					onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+					active={editor.isActive('heading', { level: 1 })}
+					title="Heading 1"
+				>
 					<span className="text-[10px] font-black">H1</span>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2">
+				<Btn
+					onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+					active={editor.isActive('heading', { level: 2 })}
+					title="Heading 2"
+				>
 					<span className="text-[10px] font-black">H2</span>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="Heading 3">
+				<Btn
+					onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+					active={editor.isActive('heading', { level: 3 })}
+					title="Heading 3"
+				>
 					<span className="text-[10px] font-black">H3</span>
 				</Btn>
 
 				<Sep />
 
 				{/* Lists */}
-				<Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="4" cy="7" r="1.5" /><circle cx="4" cy="12" r="1.5" /><circle cx="4" cy="17" r="1.5" /><rect x="8" y="6" width="13" height="2" rx="1" /><rect x="8" y="11" width="13" height="2" rx="1" /><rect x="8" y="16" width="13" height="2" rx="1" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleBulletList().run()}
+					active={editor.isActive('bulletList')}
+					title="Bullet list"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<circle cx="4" cy="7" r="1.5" />
+						<circle cx="4" cy="12" r="1.5" />
+						<circle cx="4" cy="17" r="1.5" />
+						<rect x="8" y="6" width="13" height="2" rx="1" />
+						<rect x="8" y="11" width="13" height="2" rx="1" />
+						<rect x="8" y="16" width="13" height="2" rx="1" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered list">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><text x="2" y="9" fontSize="7" fontWeight="700">1</text><text x="2" y="14.5" fontSize="7" fontWeight="700">2</text><text x="2" y="20" fontSize="7" fontWeight="700">3</text><rect x="8" y="6" width="13" height="2" rx="1" /><rect x="8" y="11" width="13" height="2" rx="1" /><rect x="8" y="16" width="13" height="2" rx="1" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleOrderedList().run()}
+					active={editor.isActive('orderedList')}
+					title="Numbered list"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<text x="2" y="9" fontSize="7" fontWeight="700">
+							1
+						</text>
+						<text x="2" y="14.5" fontSize="7" fontWeight="700">
+							2
+						</text>
+						<text x="2" y="20" fontSize="7" fontWeight="700">
+							3
+						</text>
+						<rect x="8" y="6" width="13" height="2" rx="1" />
+						<rect x="8" y="11" width="13" height="2" rx="1" />
+						<rect x="8" y="16" width="13" height="2" rx="1" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Blockquote">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C9.591 11.69 11 13.173 11 15c0 1.933-1.567 3.5-3.5 3.5-1.172 0-2.294-.555-2.917-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C19.591 11.69 21 13.173 21 15c0 1.933-1.567 3.5-3.5 3.5-1.172 0-2.294-.555-2.917-1.179z" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleBlockquote().run()}
+					active={editor.isActive('blockquote')}
+					title="Blockquote"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C9.591 11.69 11 13.173 11 15c0 1.933-1.567 3.5-3.5 3.5-1.172 0-2.294-.555-2.917-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C19.591 11.69 21 13.173 21 15c0 1.933-1.567 3.5-3.5 3.5-1.172 0-2.294-.555-2.917-1.179z" />
+					</svg>
 				</Btn>
 
 				<Sep />
 
 				{/* Alignment */}
-				<Btn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="Align left">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="2" rx="1" /><rect x="3" y="9" width="12" height="2" rx="1" /><rect x="3" y="14" width="16" height="2" rx="1" /><rect x="3" y="19" width="10" height="2" rx="1" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().setTextAlign('left').run()}
+					active={editor.isActive({ textAlign: 'left' })}
+					title="Align left"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<rect x="3" y="4" width="18" height="2" rx="1" />
+						<rect x="3" y="9" width="12" height="2" rx="1" />
+						<rect x="3" y="14" width="16" height="2" rx="1" />
+						<rect x="3" y="19" width="10" height="2" rx="1" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} title="Center">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="2" rx="1" /><rect x="6" y="9" width="12" height="2" rx="1" /><rect x="4" y="14" width="16" height="2" rx="1" /><rect x="7" y="19" width="10" height="2" rx="1" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().setTextAlign('center').run()}
+					active={editor.isActive({ textAlign: 'center' })}
+					title="Center"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<rect x="3" y="4" width="18" height="2" rx="1" />
+						<rect x="6" y="9" width="12" height="2" rx="1" />
+						<rect x="4" y="14" width="16" height="2" rx="1" />
+						<rect x="7" y="19" width="10" height="2" rx="1" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="Align right">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="2" rx="1" /><rect x="9" y="9" width="12" height="2" rx="1" /><rect x="5" y="14" width="16" height="2" rx="1" /><rect x="11" y="19" width="10" height="2" rx="1" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().setTextAlign('right').run()}
+					active={editor.isActive({ textAlign: 'right' })}
+					title="Align right"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<rect x="3" y="4" width="18" height="2" rx="1" />
+						<rect x="9" y="9" width="12" height="2" rx="1" />
+						<rect x="5" y="14" width="16" height="2" rx="1" />
+						<rect x="11" y="19" width="10" height="2" rx="1" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} title="Justify">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="2" rx="1" /><rect x="3" y="9" width="18" height="2" rx="1" /><rect x="3" y="14" width="18" height="2" rx="1" /><rect x="3" y="19" width="18" height="2" rx="1" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+					active={editor.isActive({ textAlign: 'justify' })}
+					title="Justify"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<rect x="3" y="4" width="18" height="2" rx="1" />
+						<rect x="3" y="9" width="18" height="2" rx="1" />
+						<rect x="3" y="14" width="18" height="2" rx="1" />
+						<rect x="3" y="19" width="18" height="2" rx="1" />
+					</svg>
 				</Btn>
 
 				<Sep />
 
 				{/* Insert */}
-				<Btn onClick={() => setShowLinkDialog(!showLinkDialog)} active={editor.isActive('link')} title="Link (⌘K)">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" strokeLinecap="round" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" strokeLinecap="round" /></svg>
+				<Btn
+					onClick={() => setShowLinkDialog(!showLinkDialog)}
+					active={editor.isActive('link')}
+					title="Link (⌘K)"
+				>
+					<svg
+						className="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<path
+							d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"
+							strokeLinecap="round"
+						/>
+						<path
+							d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"
+							strokeLinecap="round"
+						/>
+					</svg>
 				</Btn>
 				<Btn onClick={openFileDialog} title="Chèn ảnh" disabled={isUploading}>
 					{isUploading ? (
 						<span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-muted border-t-accent" />
 					) : (
-						<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" opacity=".4" /><path d="M21 15l-5-5L5 21" /></svg>
+						<svg
+							className="h-3.5 w-3.5"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+						>
+							<rect x="3" y="3" width="18" height="18" rx="2" />
+							<circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" opacity=".4" />
+							<path d="M21 15l-5-5L5 21" />
+						</svg>
 					)}
 				</Btn>
 				<Btn onClick={() => setShowYoutubeDialog((v) => !v)} title="Chèn YouTube">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z" /></svg>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z" />
+					</svg>
 				</Btn>
 				<Btn onClick={addTable} title="Chèn bảng">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></svg>
+					<svg
+						className="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+					>
+						<rect x="3" y="3" width="18" height="18" rx="2" />
+						<path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Đường kẻ ngang">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="11" width="20" height="2" rx="1" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().setHorizontalRule().run()}
+					title="Đường kẻ ngang"
+				>
+					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+						<rect x="2" y="11" width="20" height="2" rx="1" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="Code block">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+					active={editor.isActive('codeBlock')}
+					title="Code block"
+				>
+					<svg
+						className="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<path d="M16 18l6-6-6-6M8 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} title="Inline code">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 3l-4 18" strokeLinecap="round" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().toggleCode().run()}
+					active={editor.isActive('code')}
+					title="Inline code"
+				>
+					<svg
+						className="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<path d="M14 3l-4 18" strokeLinecap="round" />
+					</svg>
 				</Btn>
 
 				<Sep />
@@ -485,18 +753,54 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 				<div className="flex-1" />
 
 				{/* Undo / Redo */}
-				<Btn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo (⌘Z)">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 10h13a4 4 0 010 8H9" strokeLinecap="round" /><path d="M7 6L3 10l4 4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().undo().run()}
+					disabled={!editor.can().undo()}
+					title="Undo (⌘Z)"
+				>
+					<svg
+						className="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<path d="M3 10h13a4 4 0 010 8H9" strokeLinecap="round" />
+						<path d="M7 6L3 10l4 4" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
 				</Btn>
-				<Btn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo (⌘⇧Z)">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10H8a4 4 0 000 8h6" strokeLinecap="round" /><path d="M17 6l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+				<Btn
+					onClick={() => editor.chain().focus().redo().run()}
+					disabled={!editor.can().redo()}
+					title="Redo (⌘⇧Z)"
+				>
+					<svg
+						className="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<path d="M21 10H8a4 4 0 000 8h6" strokeLinecap="round" />
+						<path d="M17 6l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
 				</Btn>
 
 				<Sep />
 
 				{/* Source HTML view toggle */}
 				<Btn onClick={toggleSourceView} active={showSourceView} title="Xem/chỉnh HTML source">
-					<svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" /><path d="M14 2v6h6" /><path d="M9 13l-2 2 2 2M15 13l2 2-2 2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+					<svg
+						className="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+					>
+						<path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+						<path d="M14 2v6h6" />
+						<path d="M9 13l-2 2 2 2M15 13l2 2-2 2" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
 				</Btn>
 			</div>
 
@@ -567,11 +871,41 @@ export default function TiptapEditor({ content, onChange, onImageUpload, onImage
 			{editor.isActive('table') && (
 				<div className="flex flex-wrap items-center gap-1 border-t border-border bg-surface-secondary/50 px-3 py-1.5 text-[10px] font-medium text-muted">
 					<span className="mr-1 text-foreground-secondary">Bảng:</span>
-					<button type="button" onClick={() => editor.chain().focus().addColumnAfter().run()} className="rounded px-1.5 py-0.5 hover:bg-surface-hover hover:text-foreground">+ Cột</button>
-					<button type="button" onClick={() => editor.chain().focus().addRowAfter().run()} className="rounded px-1.5 py-0.5 hover:bg-surface-hover hover:text-foreground">+ Hàng</button>
-					<button type="button" onClick={() => editor.chain().focus().deleteColumn().run()} className="rounded px-1.5 py-0.5 hover:bg-surface-hover text-error">- Cột</button>
-					<button type="button" onClick={() => editor.chain().focus().deleteRow().run()} className="rounded px-1.5 py-0.5 hover:bg-surface-hover text-error">- Hàng</button>
-					<button type="button" onClick={() => editor.chain().focus().deleteTable().run()} className="rounded px-1.5 py-0.5 hover:bg-surface-hover text-error">Xoá bảng</button>
+					<button
+						type="button"
+						onClick={() => editor.chain().focus().addColumnAfter().run()}
+						className="rounded px-1.5 py-0.5 hover:bg-surface-hover hover:text-foreground"
+					>
+						+ Cột
+					</button>
+					<button
+						type="button"
+						onClick={() => editor.chain().focus().addRowAfter().run()}
+						className="rounded px-1.5 py-0.5 hover:bg-surface-hover hover:text-foreground"
+					>
+						+ Hàng
+					</button>
+					<button
+						type="button"
+						onClick={() => editor.chain().focus().deleteColumn().run()}
+						className="rounded px-1.5 py-0.5 hover:bg-surface-hover text-error"
+					>
+						- Cột
+					</button>
+					<button
+						type="button"
+						onClick={() => editor.chain().focus().deleteRow().run()}
+						className="rounded px-1.5 py-0.5 hover:bg-surface-hover text-error"
+					>
+						- Hàng
+					</button>
+					<button
+						type="button"
+						onClick={() => editor.chain().focus().deleteTable().run()}
+						className="rounded px-1.5 py-0.5 hover:bg-surface-hover text-error"
+					>
+						Xoá bảng
+					</button>
 				</div>
 			)}
 		</div>

@@ -69,7 +69,9 @@ export function tableRulesFor(
 export function allTableSizes(): { playerCount: number; modes: CheeseMode[]; rules: TableRules }[] {
 	const rows: { playerCount: number; modes: CheeseMode[]; rules: TableRules }[] = [];
 	for (let count = CHEESE_MIN_PLAYERS; count <= CHEESE_MAX_PLAYERS; count++) {
-		const modes = (['classic', 'two-night'] as const).filter((mode) => isPlayerCountAllowed(count, mode));
+		const modes = (['classic', 'two-night'] as const).filter((mode) =>
+			isPlayerCountAllowed(count, mode),
+		);
 		const rules = tableRulesFor(count, modes[0]!);
 		if (rules) rows.push({ playerCount: count, modes, rules });
 	}

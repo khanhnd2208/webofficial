@@ -51,8 +51,18 @@ type EditModeContextValue = {
 	createUnit: (sectionId: string) => Promise<boolean>;
 	attachExistingUnit: (sectionId: string, knowledgeUnitId: string) => Promise<boolean>;
 	detachUnit: (sectionId: string, knowledgeUnitId: string) => Promise<boolean>;
-	renameNode: (type: NodeType, id: string, title: string, expectedUpdatedAt: string, extra?: Record<string, unknown>) => Promise<boolean>;
-	archiveNode: (type: 'lesson' | 'section', id: string, expectedUpdatedAt: string) => Promise<boolean>;
+	renameNode: (
+		type: NodeType,
+		id: string,
+		title: string,
+		expectedUpdatedAt: string,
+		extra?: Record<string, unknown>,
+	) => Promise<boolean>;
+	archiveNode: (
+		type: 'lesson' | 'section',
+		id: string,
+		expectedUpdatedAt: string,
+	) => Promise<boolean>;
 	reorder: (parentType: ParentType, parentId: string, orderedNodeIds: string[]) => Promise<boolean>;
 	attachTest: (testId: string, target: AttachTarget) => Promise<boolean>;
 	detachTest: (testId: string, placementId?: string) => Promise<boolean>;
@@ -72,11 +82,7 @@ type EditModeContextValue = {
 
 const EditModeContext = createContext<EditModeContextValue | null>(null);
 
-function isoFromCourse(
-	course: MyClassCourseDetail,
-	type: NodeType,
-	id: string,
-): string {
+function isoFromCourse(course: MyClassCourseDetail, type: NodeType, id: string): string {
 	if (type === 'lesson') {
 		return course.lessons.find((item) => item.id === id)?.authoring?.updatedAt ?? '';
 	}
@@ -217,25 +223,33 @@ export function EditModeProvider({
 					'Đã gỡ nội dung',
 				),
 			renameNode: (type, id, title, expectedUpdatedAt, extra = {}) =>
-				run(`rename:${id}`, async () => {
-					await myClassApi(`/api/admin/my-class/courses/${course.id}/nodes/${type}/${id}`, {
-						method: 'PATCH',
-						body: JSON.stringify({
-							expectedUpdatedAt: expectedUpdatedAt || isoFromCourse(course, type, id),
-							changes: { title, ...extra },
-						}),
-					});
-				}, 'Đã đổi tên'),
+				run(
+					`rename:${id}`,
+					async () => {
+						await myClassApi(`/api/admin/my-class/courses/${course.id}/nodes/${type}/${id}`, {
+							method: 'PATCH',
+							body: JSON.stringify({
+								expectedUpdatedAt: expectedUpdatedAt || isoFromCourse(course, type, id),
+								changes: { title, ...extra },
+							}),
+						});
+					},
+					'Đã đổi tên',
+				),
 			archiveNode: (type, id, expectedUpdatedAt) =>
-				run(`archive:${id}`, async () => {
-					await myClassApi(`/api/admin/my-class/courses/${course.id}/nodes/${type}/${id}`, {
-						method: 'POST',
-						body: JSON.stringify({
-							expectedUpdatedAt: expectedUpdatedAt || isoFromCourse(course, type, id),
-							status: 'ARCHIVED',
-						}),
-					});
-				}, 'Đã lưu trữ'),
+				run(
+					`archive:${id}`,
+					async () => {
+						await myClassApi(`/api/admin/my-class/courses/${course.id}/nodes/${type}/${id}`, {
+							method: 'POST',
+							body: JSON.stringify({
+								expectedUpdatedAt: expectedUpdatedAt || isoFromCourse(course, type, id),
+								status: 'ARCHIVED',
+							}),
+						});
+					},
+					'Đã lưu trữ',
+				),
 			reorder: async (parentType, parentId, orderedNodeIds) => {
 				const snapshot = course;
 				setCourse(reorderCourseTree(course, parentType, parentId, orderedNodeIds));
@@ -262,55 +276,74 @@ export function EditModeProvider({
 				}
 			},
 			attachTest: (testId, target) =>
-				run(`attach-test:${testId}`, async () => {
-					const body = normalizeTestPlacementBody(course.id, target);
-					await myClassApi(`/api/admin/my-class/tests/${testId}/placements`, {
-						method: 'POST',
-						body: JSON.stringify(body),
-					});
-					setFocusOutline(
-						body.scope === 'COURSE'
-							? { focusCourseAssets: true }
-							: { lessonId: body.lessonId ?? undefined, sectionId: body.sectionId ?? undefined },
-					);
-				}, 'Đã gắn bài kiểm tra'),
+				run(
+					`attach-test:${testId}`,
+					async () => {
+						const body = normalizeTestPlacementBody(course.id, target);
+						await myClassApi(`/api/admin/my-class/tests/${testId}/placements`, {
+							method: 'POST',
+							body: JSON.stringify(body),
+						});
+						setFocusOutline(
+							body.scope === 'COURSE'
+								? { focusCourseAssets: true }
+								: { lessonId: body.lessonId ?? undefined, sectionId: body.sectionId ?? undefined },
+						);
+					},
+					'Đã gắn bài kiểm tra',
+				),
 			detachTest: (testId, placementId) =>
-				run(`detach-test:${testId}`, async () => {
-					if (placementId) {
-						await myClassApi(`/api/admin/my-class/tests/${testId}/placements/${placementId}`, {
+				run(
+					`detach-test:${testId}`,
+					async () => {
+						if (placementId) {
+							await myClassApi(`/api/admin/my-class/tests/${testId}/placements/${placementId}`, {
+								method: 'DELETE',
+							});
+							return;
+						}
+						const rows = await myClassApi<
+							Array<{
+								id: string;
+								scope?: 'COURSE' | 'LESSON' | 'SECTION';
+								course: { id: string };
+								lesson?: { id: string } | null;
+								section?: { id: string } | null;
+							}>
+						>(`/api/admin/my-class/tests/${testId}/placements`);
+						const match = findPlacementToDetach(rows, course.id);
+						if (!match) throw new Error('Không tìm thấy vị trí gắn cần gỡ');
+						await myClassApi(`/api/admin/my-class/tests/${testId}/placements/${match.id}`, {
 							method: 'DELETE',
 						});
-						return;
-					}
-					const rows = await myClassApi<
-						Array<{
-							id: string;
-							scope?: 'COURSE' | 'LESSON' | 'SECTION';
-							course: { id: string };
-							lesson?: { id: string } | null;
-							section?: { id: string } | null;
-						}>
-					>(`/api/admin/my-class/tests/${testId}/placements`);
-					const match = findPlacementToDetach(rows, course.id);
-					if (!match) throw new Error('Không tìm thấy vị trí gắn cần gỡ');
-					await myClassApi(`/api/admin/my-class/tests/${testId}/placements/${match.id}`, {
-						method: 'DELETE',
-					});
-				}, 'Đã gỡ bài kiểm tra'),
+					},
+					'Đã gỡ bài kiểm tra',
+				),
 			attachVocab: (vocabSetId, lessonId) =>
-				run(`attach-vocab:${vocabSetId}`, async () => {
-					await myClassApi(`/api/admin/my-class/courses/${course.id}/vocab-assignments`, {
-						method: 'POST',
-						body: JSON.stringify({ vocabSetId, lessonId }),
-					});
-					setFocusOutline(lessonId ? { lessonId } : { focusCourseAssets: true });
-				}, 'Đã gắn từ vựng'),
+				run(
+					`attach-vocab:${vocabSetId}`,
+					async () => {
+						await myClassApi(`/api/admin/my-class/courses/${course.id}/vocab-assignments`, {
+							method: 'POST',
+							body: JSON.stringify({ vocabSetId, lessonId }),
+						});
+						setFocusOutline(lessonId ? { lessonId } : { focusCourseAssets: true });
+					},
+					'Đã gắn từ vựng',
+				),
 			detachVocab: (assignmentId) =>
-				run(`detach-vocab:${assignmentId}`, async () => {
-					await myClassApi(`/api/admin/my-class/courses/${course.id}/vocab-assignments/${assignmentId}`, {
-						method: 'DELETE',
-					});
-				}, 'Đã gỡ từ vựng'),
+				run(
+					`detach-vocab:${assignmentId}`,
+					async () => {
+						await myClassApi(
+							`/api/admin/my-class/courses/${course.id}/vocab-assignments/${assignmentId}`,
+							{
+								method: 'DELETE',
+							},
+						);
+					},
+					'Đã gỡ từ vựng',
+				),
 			vocabImport,
 			setVocabImport,
 			importVocab: (payload) =>

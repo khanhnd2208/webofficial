@@ -70,7 +70,17 @@ export default function ReaderEditor({
 			});
 		}, 500);
 		return () => window.clearTimeout(timeout);
-	}, [academicHtml, dirty, edit, expectedUpdatedAt, expertHtml, foundationHtml, summary, title, unit.id]);
+	}, [
+		academicHtml,
+		dirty,
+		edit,
+		expectedUpdatedAt,
+		expertHtml,
+		foundationHtml,
+		summary,
+		title,
+		unit.id,
+	]);
 
 	useEffect(() => {
 		if (!edit) return;

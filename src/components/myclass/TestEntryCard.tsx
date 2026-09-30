@@ -26,7 +26,9 @@ export default function TestEntryCard({
 }) {
 	const done = Boolean(score);
 	const draft = Boolean(test.authoring && test.authoring.status !== 'PUBLISHED');
-	const meta = done ? `${test.questionCount} câu · ${score!.score}/${score!.total}` : `${test.questionCount} câu`;
+	const meta = done
+		? `${test.questionCount} câu · ${score!.score}/${score!.total}`
+		: `${test.questionCount} câu`;
 	const compactMeta = done ? `${score!.score}/${score!.total}` : `${test.questionCount} câu`;
 	const cta = done ? 'Xem lại' : 'Làm bài';
 	const draftLabel = draft ? ', bản nháp' : '';
@@ -49,7 +51,9 @@ export default function TestEntryCard({
 				<span className="min-w-0 flex-1 truncate text-[14px] font-semibold leading-5 text-ink-secondary">
 					{label}
 				</span>
-				{draft ? <StatusChip status={test.authoring?.status} hasDraft={test.authoring?.hasDraft} /> : null}
+				{draft ? (
+					<StatusChip status={test.authoring?.status} hasDraft={test.authoring?.hasDraft} />
+				) : null}
 				<span className="mc-num shrink-0 text-[12px] text-ink-secondary">{compactMeta}</span>
 			</>
 		);
@@ -82,15 +86,19 @@ export default function TestEntryCard({
 		);
 		if (!trailing) return control;
 		return (
-			<div className="mc-outline-row" data-kind="test" data-draft={draft ? 'true' : undefined} style={style}>
+			<div
+				className="mc-outline-row"
+				data-kind="test"
+				data-draft={draft ? 'true' : undefined}
+				style={style}
+			>
 				{control}
 				{trailing}
 			</div>
 		);
 	}
 
-	const className =
-		'group mc-test-widget mc-focus-ring block w-full p-4 text-left';
+	const className = 'group mc-test-widget mc-focus-ring block w-full p-4 text-left';
 
 	const inner = (
 		<>
@@ -115,14 +123,23 @@ export default function TestEntryCard({
 
 	if (onOpen) {
 		return (
-			<button type="button" onClick={() => onOpen(test)} className={className} aria-label={ariaLabel}>
+			<button
+				type="button"
+				onClick={() => onOpen(test)}
+				className={className}
+				aria-label={ariaLabel}
+			>
 				{inner}
 			</button>
 		);
 	}
 
 	return (
-		<Link href={routes.myClassTest(courseSlug, test.slug)} className={className} aria-label={ariaLabel}>
+		<Link
+			href={routes.myClassTest(courseSlug, test.slug)}
+			className={className}
+			aria-label={ariaLabel}
+		>
 			{inner}
 		</Link>
 	);

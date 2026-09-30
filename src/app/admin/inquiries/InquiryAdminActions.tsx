@@ -96,7 +96,9 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, adminEma
 			) : null}
 
 			<div>
-				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Trạng thái</label>
+				<label className="text-xs font-semibold uppercase tracking-wider text-muted">
+					Trạng thái
+				</label>
 				<div className="mt-2 flex flex-wrap gap-2">
 					<select
 						value={status}
@@ -127,7 +129,9 @@ export default function InquiryAdminActions({ inquiryId, currentStatus, adminEma
 			</div>
 
 			<div>
-				<label className="text-xs font-semibold uppercase tracking-wider text-muted">Ghi chú nội bộ</label>
+				<label className="text-xs font-semibold uppercase tracking-wider text-muted">
+					Ghi chú nội bộ
+				</label>
 				<textarea
 					value={internalNotes}
 					onChange={(e) => setInternalNotes(e.target.value)}

@@ -39,9 +39,7 @@ describe('ClassRecallWorkspace', () => {
 	});
 
 	it('saves toggles and the reordered display positions', async () => {
-		render(
-			<ClassRecallWorkspace classId="class-1" courseId="course-1" initial={assignments} />,
-		);
+		render(<ClassRecallWorkspace classId="class-1" courseId="course-1" initial={assignments} />);
 
 		fireEvent.click(screen.getByRole('button', { name: 'Đưa Lesson 2 lên' }));
 		fireEvent.click(screen.getByRole('checkbox', { name: /Lesson 1/ }));

@@ -19,8 +19,10 @@ const WORKSPACE_TABS: TeachingWorkspaceTab[] = [
 	'share',
 ];
 
-
-export function resolveTeachingWorkspaceTab(tab?: string, groupBoardEnabled = false): TeachingWorkspaceTab {
+export function resolveTeachingWorkspaceTab(
+	tab?: string,
+	groupBoardEnabled = false,
+): TeachingWorkspaceTab {
 	if (tab === 'groups' && !groupBoardEnabled) return 'attendance';
 	return WORKSPACE_TABS.includes(tab as TeachingWorkspaceTab)
 		? (tab as TeachingWorkspaceTab)

@@ -17,7 +17,13 @@ vi.mock('@/lib/admin/client', () => ({
 }));
 
 const questions: LearnQuizQuestion[] = [
-	{ id: 'q1', question: 'Câu **một**?', options: ['Đúng', 'Sai'], correctIndex: 0, explanation: 'Vì **đúng**.' },
+	{
+		id: 'q1',
+		question: 'Câu **một**?',
+		options: ['Đúng', 'Sai'],
+		correctIndex: 0,
+		explanation: 'Vì **đúng**.',
+	},
 	{ id: 'q2', question: 'Câu hai?', options: ['A', 'B'], correctIndex: 1, explanation: '' },
 ];
 
@@ -26,7 +32,14 @@ describe('LearnPracticeRunner', () => {
 		adminFetch.mockReset();
 		adminFetch.mockResolvedValue({});
 		const user = userEvent.setup();
-		render(<LearnPracticeRunner sectionId="s1" questions={questions} completed={false} nextHref="/my-space/courses/demo?s=s2" />);
+		render(
+			<LearnPracticeRunner
+				sectionId="s1"
+				questions={questions}
+				completed={false}
+				nextHref="/my-space/courses/demo?s=s2"
+			/>,
+		);
 
 		await user.click(await screen.findByRole('radio', { name: /Sai/ }));
 		expect(screen.getByText(/Chưa đúng/)).toBeInTheDocument();
@@ -44,7 +57,10 @@ describe('LearnPracticeRunner', () => {
 		await user.click(screen.getByRole('button', { name: 'Xem tổng kết' }));
 		expect(screen.getByText('1/2')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Làm lại câu sai' })).toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Sang mục tiếp →' })).toHaveAttribute('href', '/my-space/courses/demo?s=s2');
+		expect(screen.getByRole('link', { name: 'Sang mục tiếp →' })).toHaveAttribute(
+			'href',
+			'/my-space/courses/demo?s=s2',
+		);
 	});
 
 	it('keeps focus in the stepper after a pick, so the arrow key moves to the next question', async () => {

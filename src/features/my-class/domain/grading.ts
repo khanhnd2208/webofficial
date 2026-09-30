@@ -35,13 +35,19 @@ function sameSet(a: string[], b: string[]): boolean {
 	return left.every((item, index) => item === right[index]);
 }
 
-function gradeMcqSingle(answer: Extract<AnswerSpec, { type: 'MCQ_SINGLE' }>, response: LearnerResponse): GradedResult {
+function gradeMcqSingle(
+	answer: Extract<AnswerSpec, { type: 'MCQ_SINGLE' }>,
+	response: LearnerResponse,
+): GradedResult {
 	if (response.type !== 'MCQ_SINGLE') return empty();
 	const earned = response.key === answer.correctKey ? 1 : 0;
 	return { earned, max: 1, isCorrect: earned === 1 };
 }
 
-function gradeMcqMulti(answer: Extract<AnswerSpec, { type: 'MCQ_MULTI' }>, response: LearnerResponse): GradedResult {
+function gradeMcqMulti(
+	answer: Extract<AnswerSpec, { type: 'MCQ_MULTI' }>,
+	response: LearnerResponse,
+): GradedResult {
 	if (response.type !== 'MCQ_MULTI') return empty();
 	const correct = new Set(answer.correctKeys);
 	const chosen = new Set(response.keys);
@@ -59,7 +65,10 @@ function gradeMcqMulti(answer: Extract<AnswerSpec, { type: 'MCQ_MULTI' }>, respo
 	return { earned: ratio, max: 1, isCorrect: ratio === 1 };
 }
 
-function gradeFillBlank(answer: Extract<AnswerSpec, { type: 'FILL_BLANK' }>, response: LearnerResponse): GradedResult {
+function gradeFillBlank(
+	answer: Extract<AnswerSpec, { type: 'FILL_BLANK' }>,
+	response: LearnerResponse,
+): GradedResult {
 	if (response.type !== 'FILL_BLANK') return empty();
 	if (answer.blanks.length === 0) return empty();
 	let correctCount = 0;

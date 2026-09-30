@@ -60,11 +60,7 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 						href={archived ? routes.admin.archive : routes.admin.home}
 						label={archived ? 'Kho lưu trữ' : 'Tổng quan'}
 						collapsed={collapsed}
-						active={
-							archived
-								? pathname === routes.admin.archive
-								: pathname === routes.admin.home
-						}
+						active={archived ? pathname === routes.admin.archive : pathname === routes.admin.home}
 						icon="dashboard"
 						onNavigate={onNavigate}
 					/>

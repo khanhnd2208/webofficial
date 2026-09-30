@@ -58,7 +58,13 @@ export interface LearnerLessonDetail {
 	attachments: { id: string; fileName: string; mimeType: string; size: number }[];
 	course: { id: string; slug: string; title: string };
 	module: { id: string; title: string };
-	moduleLessons: { slug: string; title: string; position: number; completed: boolean; href: string }[];
+	moduleLessons: {
+		slug: string;
+		title: string;
+		position: number;
+		completed: boolean;
+		href: string;
+	}[];
 	prev: { slug: string; title: string } | null;
 	next: { slug: string; title: string } | null;
 }
@@ -90,7 +96,8 @@ export async function listLearnerCourses(userId: string): Promise<LearnerCourseC
 		const completedSet = new Set(completedIds);
 		const completedLessons = completedIds.length;
 		const totalLessons = lessons.length;
-		const progressPercent = totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
+		const progressPercent =
+			totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
 		const next = lessons.find((l) => !completedSet.has(l.id)) ?? null;
 
 		cards.push({
@@ -122,10 +129,16 @@ export async function getLearnerCourse(userId: string, slug: string): Promise<Le
 	}
 
 	const lessons = publishedLessons(course);
-	const completedIds = new Set(await progressRepo.listCompletedLessonIds(userId, lessons.map((l) => l.id)));
+	const completedIds = new Set(
+		await progressRepo.listCompletedLessonIds(
+			userId,
+			lessons.map((l) => l.id),
+		),
+	);
 	const completedLessons = completedIds.size;
 	const totalLessons = lessons.length;
-	const progressPercent = totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
+	const progressPercent =
+		totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
 
 	const modules: LearnerModuleSummary[] = [...course.modules]
 		.sort((a, b) => a.position - b.position)

@@ -11,7 +11,9 @@ export default function MyClassAdminStudio({ empty = false }: { empty?: boolean 
 				<p className="mc-eyebrow text-accent">Admin</p>
 				<p className="mc-h3 mt-1">Thiết kế lớp học</p>
 				<p className="mc-meta mt-0.5">
-					{empty ? 'Tạo lớp mới rồi soạn bài trước khi xuất bản.' : 'Soạn nội dung và xem trước đúng như học viên thấy.'}
+					{empty
+						? 'Tạo lớp mới rồi soạn bài trước khi xuất bản.'
+						: 'Soạn nội dung và xem trước đúng như học viên thấy.'}
 				</p>
 			</div>
 			<div className="flex flex-wrap gap-2">

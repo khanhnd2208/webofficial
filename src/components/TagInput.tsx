@@ -34,7 +34,12 @@ interface TagInputProps {
 	suggestions?: string[];
 }
 
-export default function TagInput({ tags, onChange, placeholder = 'Nhập tag rồi ấn Tab / Enter…', suggestions = [] }: TagInputProps) {
+export default function TagInput({
+	tags,
+	onChange,
+	placeholder = 'Nhập tag rồi ấn Tab / Enter…',
+	suggestions = [],
+}: TagInputProps) {
 	const [input, setInput] = useState('');
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -48,14 +53,14 @@ export default function TagInput({ tags, onChange, placeholder = 'Nhập tag r�
 			setInput('');
 			setShowSuggestions(false);
 		},
-		[tags, onChange]
+		[tags, onChange],
 	);
 
 	const removeTag = useCallback(
 		(index: number) => {
 			onChange(tags.filter((_, i) => i !== index));
 		},
-		[tags, onChange]
+		[tags, onChange],
 	);
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -74,7 +79,7 @@ export default function TagInput({ tags, onChange, placeholder = 'Nhập tag r�
 	const filtered = suggestions.filter(
 		(s) =>
 			s.toLowerCase().includes(input.toLowerCase()) &&
-			!tags.some((t) => t.toLowerCase() === s.toLowerCase())
+			!tags.some((t) => t.toLowerCase() === s.toLowerCase()),
 	);
 
 	return (
@@ -100,7 +105,13 @@ export default function TagInput({ tags, onChange, placeholder = 'Nhập tag r�
 								className="ml-0.5 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
 								aria-label={`Remove ${tag}`}
 							>
-								<svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+								<svg
+									className="h-3 w-3"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									strokeWidth={2.5}
+								>
 									<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
 								</svg>
 							</button>
@@ -140,7 +151,9 @@ export default function TagInput({ tags, onChange, placeholder = 'Nhập tag r�
 								}}
 								className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-sm transition-colors hover:bg-surface-hover"
 							>
-								<span className={`inline-block h-2 w-2 rounded-full ${color.bg} ${color.border} border`} />
+								<span
+									className={`inline-block h-2 w-2 rounded-full ${color.bg} ${color.border} border`}
+								/>
 								{s}
 							</button>
 						);
@@ -149,8 +162,11 @@ export default function TagInput({ tags, onChange, placeholder = 'Nhập tag r�
 			) : null}
 
 			<p className="mt-1 text-xs text-muted">
-				Nhấn <kbd className="rounded border border-border px-1 py-0.5 text-[10px] font-mono">Tab</kbd> hoặc{' '}
-				<kbd className="rounded border border-border px-1 py-0.5 text-[10px] font-mono">Enter</kbd> để thêm tag.
+				Nhấn{' '}
+				<kbd className="rounded border border-border px-1 py-0.5 text-[10px] font-mono">Tab</kbd>{' '}
+				hoặc{' '}
+				<kbd className="rounded border border-border px-1 py-0.5 text-[10px] font-mono">Enter</kbd>{' '}
+				để thêm tag.
 			</p>
 		</div>
 	);

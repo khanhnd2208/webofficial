@@ -42,9 +42,7 @@ export function McSegmented<T extends string = string>({
 						title={option.hint}
 						onClick={() => onChange(option.value)}
 						className={`min-h-10 shrink-0 touch-manipulation whitespace-nowrap rounded-[var(--mc-r-xs)] px-6 py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-							active
-								? 'bg-ink text-paper shadow-sm'
-								: 'text-ink-secondary hover:text-ink'
+							active ? 'bg-ink text-paper shadow-sm' : 'text-ink-secondary hover:text-ink'
 						}`}
 					>
 						{option.label}

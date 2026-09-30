@@ -91,11 +91,11 @@ export function getDisplayFontById(id: string | undefined): MessageDisplayFont {
 	if (!id) return fallback;
 	// Legacy font IDs from previous version — map to new ones
 	const legacyMap: Record<string, string> = {
-		'caveat': 'arial',
+		caveat: 'arial',
 		'patrick-hand': 'arial',
-		'mali': 'arial',
-		'nunito': 'be-vietnam-pro',
-		'playfair': 'lora',
+		mali: 'arial',
+		nunito: 'be-vietnam-pro',
+		playfair: 'lora',
 		'dancing-script': 'lora',
 	};
 	const resolvedId = legacyMap[id] ?? id;

@@ -9,11 +9,7 @@ import MessageManageClient from './MessageManageClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function MessageManagePage({
-	params,
-}: {
-	params: Promise<{ slug: string }>;
-}) {
+export default async function MessageManagePage({ params }: { params: Promise<{ slug: string }> }) {
 	const session = await auth();
 	if (!session?.user) redirect(`${routes.login}?from=${encodeURIComponent(routes.admin.messages)}`);
 

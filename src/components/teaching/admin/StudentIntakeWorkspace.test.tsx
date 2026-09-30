@@ -92,7 +92,10 @@ describe('StudentIntakeWorkspace', () => {
 			'/api/admin/teaching/classes/class-1/roster-import?mode=preview',
 			expect.objectContaining({ method: 'POST' }),
 		);
-		const body = JSON.parse(String(apiMock.mock.calls[0]?.[1]?.body)) as { source: string; text: string };
+		const body = JSON.parse(String(apiMock.mock.calls[0]?.[1]?.body)) as {
+			source: string;
+			text: string;
+		};
 		expect(body.source).toBe('paste');
 		expect(body.text).toContain('Mã SV');
 	});

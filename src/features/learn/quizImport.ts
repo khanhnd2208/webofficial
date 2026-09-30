@@ -18,11 +18,14 @@ export interface QuizPasteResult {
 	missingAnswer: string[];
 }
 
-const QUESTION_RE = /^(?:\*\*)?(?:câu(?:\s+hỏi)?\s*\d+|question\s*\d+|q\d*|\d+)\s*[:.)]\s*(?:\*\*)?\s*(.*)$/i;
+const QUESTION_RE =
+	/^(?:\*\*)?(?:câu(?:\s+hỏi)?\s*\d+|question\s*\d+|q\d*|\d+)\s*[:.)]\s*(?:\*\*)?\s*(.*)$/i;
 const LABELLED_QUESTION_RE = /^(?:\*\*)?(?:câu(?:\s+hỏi)?|question)\s*\d+\s*[:.)]/i;
 const OPTION_RE = /^([*✓✔]\s*)?([A-Ha-h])\s*[.)]\s+(.*)$/;
-const ANSWER_RE = /^(?:\*\*)?(?:đáp\s*án(?:\s*đúng)?|answer|correct)\s*[:：]\s*(?:\*\*)?\s*([A-Ha-h]|\?)\b/i;
-const EXPLANATION_RE = /^(?:\*\*)?(?:giải\s*thích|explanation|lý\s*do)\s*[:：]\s*(?:\*\*)?\s*(.*)$/i;
+const ANSWER_RE =
+	/^(?:\*\*)?(?:đáp\s*án(?:\s*đúng)?|answer|correct)\s*[:：]\s*(?:\*\*)?\s*([A-Ha-h]|\?)\b/i;
+const EXPLANATION_RE =
+	/^(?:\*\*)?(?:giải\s*thích|explanation|lý\s*do)\s*[:：]\s*(?:\*\*)?\s*(.*)$/i;
 const CORRECT_SUFFIX_RE = /\s*(?:\((?:đúng|correct)\)|✓|✔)\s*$/i;
 
 interface Draft {
@@ -81,7 +84,10 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 				question,
 				options: draft.options,
 				correctIndex,
-				explanation: draft.explanation.join('\n').replace(/\n{3,}/g, '\n\n').trim(),
+				explanation: draft.explanation
+					.join('\n')
+					.replace(/\n{3,}/g, '\n\n')
+					.trim(),
 			});
 		}
 		draft = null;
@@ -117,8 +123,12 @@ export function parseQuizPaste(raw: string): QuizPasteResult {
 		const option = line.match(OPTION_RE);
 		if (option && draft && draft.stage !== 'explanation') {
 			let text = option[3].trim();
-			const markedCorrect = Boolean(option[1]) || CORRECT_SUFFIX_RE.test(text) || /^\*\*.*\*\*$/.test(text);
-			text = text.replace(CORRECT_SUFFIX_RE, '').replace(/^\*\*(.*)\*\*$/, '$1').trim();
+			const markedCorrect =
+				Boolean(option[1]) || CORRECT_SUFFIX_RE.test(text) || /^\*\*.*\*\*$/.test(text);
+			text = text
+				.replace(CORRECT_SUFFIX_RE, '')
+				.replace(/^\*\*(.*)\*\*$/, '$1')
+				.trim();
 			if (markedCorrect) draft.correctIndex = draft.options.length;
 			draft.options.push(text);
 			draft.stage = 'options';

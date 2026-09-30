@@ -50,12 +50,7 @@ describe('publication gates', () => {
 	it('opens brand destinations and My Space from the mục lục', () => {
 		const items = getGateNavItems();
 		expect(items).toEqual(GATE_NAV_ITEMS);
-		expect(items.map((item) => item.label)).toEqual([
-			'Giới thiệu',
-			'Dự án',
-			'Dịch vụ',
-			'My Space',
-		]);
+		expect(items.map((item) => item.label)).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ', 'My Space']);
 		expect(items.map((item) => item.href)).toEqual([
 			routes.about,
 			routes.projects,

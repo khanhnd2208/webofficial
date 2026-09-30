@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { createContext, useCallback, useContext, forwardRef, type ReactNode, type HTMLAttributes } from 'react';
+import {
+	createContext,
+	useCallback,
+	useContext,
+	forwardRef,
+	type ReactNode,
+	type HTMLAttributes,
+} from 'react';
 
 export type VocabPracticeMode = 'flashcards' | 'mcq' | 'fill-blank' | 'matching' | 'guess-who';
 
@@ -39,7 +46,9 @@ export function VocabApiProvider({
 	return (
 		<VocabApiContext.Provider value={endpointFor}>
 			<VocabScoreContext.Provider value={scoreEndpointFor ?? null}>
-				<VocabChromeContext.Provider value={chrome ?? DEFAULT_CHROME}>{children}</VocabChromeContext.Provider>
+				<VocabChromeContext.Provider value={chrome ?? DEFAULT_CHROME}>
+					{children}
+				</VocabChromeContext.Provider>
 			</VocabScoreContext.Provider>
 		</VocabApiContext.Provider>
 	);
@@ -63,19 +72,23 @@ export function useVocabChrome(): VocabChrome {
 	return useContext(VocabChromeContext) ?? DEFAULT_CHROME;
 }
 
-export const VocabPracticeFrame = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(function VocabPracticeFrame(
-	{ children, className = '', ...props },
-	ref,
-) {
-	const { embedded } = useVocabChrome();
-	const Tag = embedded ? 'div' : 'main';
-	const resolved = embedded ? className.replace(/\bmin-h-screen\b/g, '').replace(/\s+/g, ' ').trim() : className;
-	return (
-		<Tag ref={ref as never} className={resolved} {...props}>
-			{children}
-		</Tag>
-	);
-});
+export const VocabPracticeFrame = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(
+	function VocabPracticeFrame({ children, className = '', ...props }, ref) {
+		const { embedded } = useVocabChrome();
+		const Tag = embedded ? 'div' : 'main';
+		const resolved = embedded
+			? className
+					.replace(/\bmin-h-screen\b/g, '')
+					.replace(/\s+/g, ' ')
+					.trim()
+			: className;
+		return (
+			<Tag ref={ref as never} className={resolved} {...props}>
+				{children}
+			</Tag>
+		);
+	},
+);
 
 export function VocabBackLink({ className }: { className?: string }) {
 	const chrome = useVocabChrome();

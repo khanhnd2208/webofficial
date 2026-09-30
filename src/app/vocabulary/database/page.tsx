@@ -26,7 +26,17 @@ function speak(text: string) {
 	window.speechSynthesis.speak(u);
 }
 
-const POS_OPTIONS = ['All', 'noun', 'verb', 'adjective', 'adverb', 'preposition', 'conjunction', 'pronoun', 'other'];
+const POS_OPTIONS = [
+	'All',
+	'noun',
+	'verb',
+	'adjective',
+	'adverb',
+	'preposition',
+	'conjunction',
+	'pronoun',
+	'other',
+];
 
 export default function WordDatabasePage() {
 	const [allTerms, setAllTerms] = useState<TermWithSet[]>([]);
@@ -165,7 +175,9 @@ export default function WordDatabasePage() {
 							Từ vựng
 						</Link>
 						<span className="text-xs text-muted">/</span>
-						<span className="text-xs font-bold uppercase tracking-widest text-foreground">Database</span>
+						<span className="text-xs font-bold uppercase tracking-widest text-foreground">
+							Database
+						</span>
 					</div>
 					<h1 className="mt-4 text-2xl font-black uppercase tracking-tight text-foreground sm:text-3xl lg:text-4xl">
 						Kho từ vựng
@@ -184,9 +196,16 @@ export default function WordDatabasePage() {
 							{ value: totalSets, label: 'Bộ từ', color: 'text-purple' },
 							{ value: filtered.length, label: 'Đang hiển thị', color: 'text-teal' },
 						].map((stat, i) => (
-							<div key={stat.label} className={`py-5 ${i > 0 ? 'border-l border-border pl-4 sm:pl-8' : ''}`}>
-								<div className={`text-xl font-black tracking-tight sm:text-2xl ${stat.color}`}>{stat.value}</div>
-								<div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">{stat.label}</div>
+							<div
+								key={stat.label}
+								className={`py-5 ${i > 0 ? 'border-l border-border pl-4 sm:pl-8' : ''}`}
+							>
+								<div className={`text-xl font-black tracking-tight sm:text-2xl ${stat.color}`}>
+									{stat.value}
+								</div>
+								<div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+									{stat.label}
+								</div>
 							</div>
 						))}
 					</div>
@@ -300,14 +319,20 @@ export default function WordDatabasePage() {
 									key={`${term.setId}-${term.id}-${idx}`}
 									className="group flex items-start gap-3 p-4 transition-colors hover:bg-surface-hover sm:gap-4 sm:p-5"
 								>
-									<span className="shrink-0 pt-0.5 text-xs font-bold tabular-nums text-muted">{idx + 1}</span>
+									<span className="shrink-0 pt-0.5 text-xs font-bold tabular-nums text-muted">
+										{idx + 1}
+									</span>
 
 									<div className="min-w-0 flex-1">
 										<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-											<span className="text-sm font-black uppercase tracking-tight text-foreground">{term.term}</span>
+											<span className="text-sm font-black uppercase tracking-tight text-foreground">
+												{term.term}
+											</span>
 
 											{term.partOfSpeech && (
-												<span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${posColor(term.partOfSpeech)}`}>
+												<span
+													className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${posColor(term.partOfSpeech)}`}
+												>
 													{term.partOfSpeech}
 												</span>
 											)}
@@ -333,7 +358,14 @@ export default function WordDatabasePage() {
 										aria-label={`Phát âm ${term.term}`}
 										className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition-all hover:bg-accent hover:text-accent-foreground sm:h-8 sm:w-8 sm:opacity-0 sm:group-hover:opacity-100"
 									>
-										<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden>
+										<svg
+											className="h-4 w-4"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											strokeWidth={1.5}
+											aria-hidden
+										>
 											<path
 												strokeLinecap="round"
 												strokeLinejoin="round"

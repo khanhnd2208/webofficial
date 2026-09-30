@@ -49,19 +49,13 @@ function LetterGlyph({
 	}
 	if (state === 'other') {
 		return (
-			<span
-				className={`${base} border border-hairline bg-canvas text-ink-secondary`}
-				aria-hidden
-			>
+			<span className={`${base} border border-hairline bg-canvas text-ink-secondary`} aria-hidden>
 				{optionKey}
 			</span>
 		);
 	}
 	return (
-		<span
-			className={`${base} border border-hairline bg-canvas text-ink-secondary`}
-			aria-hidden
-		>
+		<span className={`${base} border border-hairline bg-canvas text-ink-secondary`} aria-hidden>
 			{optionKey}
 		</span>
 	);
@@ -104,10 +98,7 @@ export default function AnswerOption({
 	reduceMotion = false,
 }: AnswerOptionProps) {
 	const checked =
-		state === 'selected' ||
-		state === 'checking' ||
-		state === 'correct' ||
-		state === 'wrongPick';
+		state === 'selected' || state === 'checking' || state === 'correct' || state === 'wrongPick';
 	const pulse =
 		!reduceMotion && (state === 'correct' || state === 'wrongPick')
 			? 'animate-[quiz-pulse_0.4s_ease-out]'

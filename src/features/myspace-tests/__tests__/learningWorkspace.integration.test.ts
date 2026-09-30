@@ -2,10 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
 import * as repo from '@/features/myspace-tests/repositories/myspaceTestsRepository';
 import * as service from '@/features/myspace-tests/services/myspaceTestsService';
-import {
-	disconnectTestPrisma,
-	getTestPrisma,
-} from '@/test/helpers/db.postgres';
+import { disconnectTestPrisma, getTestPrisma } from '@/test/helpers/db.postgres';
 
 const db = getTestPrisma();
 

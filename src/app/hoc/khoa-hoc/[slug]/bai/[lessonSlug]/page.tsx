@@ -39,7 +39,9 @@ export default async function LearnerLessonPage({
 			return (
 				<main className="shell py-16 text-center">
 					<h1 className="font-display text-2xl font-medium text-ink">Không có quyền truy cập</h1>
-					<p className="mt-3 text-sm text-ink-secondary">Bạn chưa được ghi danh vào khóa học này.</p>
+					<p className="mt-3 text-sm text-ink-secondary">
+						Bạn chưa được ghi danh vào khóa học này.
+					</p>
 					<Link
 						href={routes.accountLearning}
 						className="mt-6 inline-flex text-xs font-semibold uppercase tracking-widest text-vermilion hover:underline"
@@ -155,7 +157,10 @@ export default async function LearnerLessonPage({
 									<span aria-hidden>→</span>
 								</Link>
 							) : (
-								<Link href={routes.course(slug)} className="font-semibold text-vermilion hover:underline">
+								<Link
+									href={routes.course(slug)}
+									className="font-semibold text-vermilion hover:underline"
+								>
 									Về khóa học →
 								</Link>
 							)}

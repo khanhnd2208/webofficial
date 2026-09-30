@@ -1,9 +1,7 @@
 export const PUBLIC_TUTORIAL_ALL = '';
 export const PUBLIC_TUTORIAL_UNASSIGNED = '__unassigned__';
 
-export function hasUnassignedPublicStudents(
-	students: Array<{ tutorialClassId: string | null }>,
-) {
+export function hasUnassignedPublicStudents(students: Array<{ tutorialClassId: string | null }>) {
 	return students.some((student) => !student.tutorialClassId);
 }
 
@@ -16,7 +14,10 @@ export function resolvePublicTutorialId(input: {
 	if (input.initialTutorialId === PUBLIC_TUTORIAL_UNASSIGNED) {
 		return hasUnassigned ? PUBLIC_TUTORIAL_UNASSIGNED : PUBLIC_TUTORIAL_ALL;
 	}
-	if (input.initialTutorialId && input.tutorials.some((tutorial) => tutorial.id === input.initialTutorialId)) {
+	if (
+		input.initialTutorialId &&
+		input.tutorials.some((tutorial) => tutorial.id === input.initialTutorialId)
+	) {
 		return input.initialTutorialId;
 	}
 	if (hasUnassigned) return PUBLIC_TUTORIAL_ALL;

@@ -41,10 +41,20 @@ function questionBody(
 ): { quiz: LearnQuiz } | { discussion: LearnDiscussion } {
 	if (input.kind === 'discussion') {
 		const existing = current?.discussion?.questions ?? [];
-		return { discussion: { questions: input.mode === 'append' ? [...existing, ...input.questions] : input.questions } };
+		return {
+			discussion: {
+				questions: input.mode === 'append' ? [...existing, ...input.questions] : input.questions,
+			},
+		};
 	}
 	const quiz = current?.quiz ?? { passingScorePercent: 70, timeLimitMinutes: null, questions: [] };
-	return { quiz: { ...quiz, questions: input.mode === 'append' ? [...quiz.questions, ...input.questions] : input.questions } };
+	return {
+		quiz: {
+			...quiz,
+			questions:
+				input.mode === 'append' ? [...quiz.questions, ...input.questions] : input.questions,
+		},
+	};
 }
 
 function networkPatch(patch: SectionPatch): Record<string, unknown> {
@@ -53,7 +63,8 @@ function networkPatch(patch: SectionPatch): Record<string, unknown> {
 		if (patch.title.trim()) body.title = patch.title.trim();
 		else delete body.title;
 	}
-	if (patch.keyTakeaways) body.keyTakeaways = patch.keyTakeaways.map((item) => item.trim()).filter(Boolean);
+	if (patch.keyTakeaways)
+		body.keyTakeaways = patch.keyTakeaways.map((item) => item.trim()).filter(Boolean);
 	return body;
 }
 
@@ -136,7 +147,9 @@ export default function LearnStudio({
 	}
 
 	function renameLesson(id: string, title: string) {
-		setLessons((current) => current.map((lesson) => (lesson.id === id ? { ...lesson, title } : lesson)));
+		setLessons((current) =>
+			current.map((lesson) => (lesson.id === id ? { ...lesson, title } : lesson)),
+		);
 		queue(`lesson:${id}`, `/api/admin/learn/lessons/${id}`, { title });
 	}
 
@@ -148,7 +161,10 @@ export default function LearnStudio({
 			adminFetch(`/api/admin/learn/courses/${meta.id}/outline`, {
 				method: 'PUT',
 				body: JSON.stringify({
-					lessons: next.map((lesson) => ({ id: lesson.id, sectionIds: lesson.sections.map((item) => item.id) })),
+					lessons: next.map((lesson) => ({
+						id: lesson.id,
+						sectionIds: lesson.sections.map((item) => item.id),
+					})),
 				}),
 			}),
 		);
@@ -178,7 +194,8 @@ export default function LearnStudio({
 				if (lesson.id === moving.lessonId) {
 					return { ...lesson, sections: lesson.sections.filter((item) => item.id !== sectionId) };
 				}
-				if (lesson.id === lessonId) return { ...lesson, sections: [...lesson.sections, { ...moving, lessonId }] };
+				if (lesson.id === lessonId)
+					return { ...lesson, sections: [...lesson.sections, { ...moving, lessonId }] };
 				return lesson;
 			}),
 		);
@@ -231,25 +248,40 @@ export default function LearnStudio({
 		}
 
 		if (input.mode === 'create') {
-			const type: LearnSectionKind = input.kind === 'discussion' ? 'DISCUSSION' : input.kind === 'practice' ? 'PRACTICE' : 'QUIZ';
-			const created = await adminFetch<LearnStudioSection>(`/api/admin/learn/lessons/${input.lessonId}/sections`, {
-				method: 'POST',
-				body: JSON.stringify({ type, title: input.title }),
-			});
+			const type: LearnSectionKind =
+				input.kind === 'discussion'
+					? 'DISCUSSION'
+					: input.kind === 'practice'
+						? 'PRACTICE'
+						: 'QUIZ';
+			const created = await adminFetch<LearnStudioSection>(
+				`/api/admin/learn/lessons/${input.lessonId}/sections`,
+				{
+					method: 'POST',
+					body: JSON.stringify({ type, title: input.title }),
+				},
+			);
 			try {
-				const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${created.id}?full=1`, {
-					method: 'PATCH',
-					body: JSON.stringify(questionBody(input, null)),
-				});
+				const updated = await adminFetch<LearnStudioSection>(
+					`/api/admin/learn/sections/${created.id}?full=1`,
+					{
+						method: 'PATCH',
+						body: JSON.stringify(questionBody(input, null)),
+					},
+				);
 				setLessons((current) =>
 					current.map((lesson) =>
-						lesson.id === input.lessonId ? { ...lesson, sections: [...lesson.sections, updated] } : lesson,
+						lesson.id === input.lessonId
+							? { ...lesson, sections: [...lesson.sections, updated] }
+							: lesson,
 					),
 				);
 				select(updated.id);
 				setImportRequest(null);
 			} catch (err) {
-				await adminFetch(`/api/admin/learn/sections/${created.id}`, { method: 'DELETE' }).catch(() => undefined);
+				await adminFetch(`/api/admin/learn/sections/${created.id}`, { method: 'DELETE' }).catch(
+					() => undefined,
+				);
 				throw err;
 			}
 			return;
@@ -258,10 +290,13 @@ export default function LearnStudio({
 		await flush();
 		const current = findSection(lessons, input.sectionId);
 		if (!current) throw new Error('Không tìm thấy mục');
-		const updated = await adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${input.sectionId}?full=1`, {
-			method: 'PATCH',
-			body: JSON.stringify(questionBody(input, current)),
-		});
+		const updated = await adminFetch<LearnStudioSection>(
+			`/api/admin/learn/sections/${input.sectionId}?full=1`,
+			{
+				method: 'PATCH',
+				body: JSON.stringify(questionBody(input, current)),
+			},
+		);
 		replaceSection(updated);
 		select(updated.id);
 		setImportRequest(null);
@@ -271,12 +306,16 @@ export default function LearnStudio({
 		const lesson = lessons.find((item) => item.id === id);
 		if (!lesson) return;
 		const count = lesson.sections.length;
-		if (!window.confirm(`Xóa "${lesson.title}" cùng ${count} mục bên trong? Không thể hoàn tác.`)) return;
-		const done = await act(() => adminFetch(`/api/admin/learn/lessons/${id}`, { method: 'DELETE' }));
+		if (!window.confirm(`Xóa "${lesson.title}" cùng ${count} mục bên trong? Không thể hoàn tác.`))
+			return;
+		const done = await act(() =>
+			adminFetch(`/api/admin/learn/lessons/${id}`, { method: 'DELETE' }),
+		);
 		if (done === undefined) return;
 		const next = lessons.filter((item) => item.id !== id);
 		setLessons(next);
-		if (lesson.sections.some((item) => item.id === selectedId)) select(next[0]?.sections[0]?.id ?? null);
+		if (lesson.sections.some((item) => item.id === selectedId))
+			select(next[0]?.sections[0]?.id ?? null);
 	}
 
 	async function addSection(lessonId: string, type: LearnSectionKind) {
@@ -288,7 +327,9 @@ export default function LearnStudio({
 		);
 		if (!created) return;
 		setLessons((current) =>
-			current.map((lesson) => (lesson.id === lessonId ? { ...lesson, sections: [...lesson.sections, created] } : lesson)),
+			current.map((lesson) =>
+				lesson.id === lessonId ? { ...lesson, sections: [...lesson.sections, created] } : lesson,
+			),
 		);
 		select(created.id);
 	}
@@ -296,13 +337,18 @@ export default function LearnStudio({
 	async function deleteSection(id: string) {
 		const target = findSection(lessons, id);
 		if (!target || !window.confirm(`Xóa mục "${target.title}"? Không thể hoàn tác.`)) return;
-		const done = await act(() => adminFetch(`/api/admin/learn/sections/${id}`, { method: 'DELETE' }));
+		const done = await act(() =>
+			adminFetch(`/api/admin/learn/sections/${id}`, { method: 'DELETE' }),
+		);
 		if (done === undefined) return;
 		const flat = lessons.flatMap((lesson) => lesson.sections);
 		const index = flat.findIndex((item) => item.id === id);
 		const neighbour = flat[index + 1] ?? flat[index - 1] ?? null;
 		setLessons((current) =>
-			current.map((lesson) => ({ ...lesson, sections: lesson.sections.filter((item) => item.id !== id) })),
+			current.map((lesson) => ({
+				...lesson,
+				sections: lesson.sections.filter((item) => item.id !== id),
+			})),
 		);
 		select(neighbour && neighbour.id !== id ? neighbour.id : null);
 	}
@@ -339,10 +385,19 @@ export default function LearnStudio({
 	return (
 		<div className="ln-studio">
 			<header className="ln-studio__bar">
-				<Link href={routes.learnCourse(meta.slug, selectedId)} className="ln-backlink" onClick={() => void flush()}>
+				<Link
+					href={routes.learnCourse(meta.slug, selectedId)}
+					className="ln-backlink"
+					onClick={() => void flush()}
+				>
 					← Về trang học
 				</Link>
-				<button type="button" className="ln-studio__course" onClick={() => setDialog('settings')} title="Sửa thông tin khóa học">
+				<button
+					type="button"
+					className="ln-studio__course"
+					onClick={() => setDialog('settings')}
+					title="Sửa thông tin khóa học"
+				>
 					<span className="truncate">{meta.title}</span>
 					<StudioIcon name="settings" size={14} />
 				</button>
@@ -357,11 +412,25 @@ export default function LearnStudio({
 					<span className="ln-save__dot" aria-hidden="true" />
 					{SAVE_LABEL[saver.status]}
 				</button>
-				<div className="ln-segmented ln-studio__status" role="radiogroup" aria-label="Trạng thái khóa học">
-					<button type="button" role="radio" aria-checked={!published} onClick={() => published && void setStatus('DRAFT')}>
+				<div
+					className="ln-segmented ln-studio__status"
+					role="radiogroup"
+					aria-label="Trạng thái khóa học"
+				>
+					<button
+						type="button"
+						role="radio"
+						aria-checked={!published}
+						onClick={() => published && void setStatus('DRAFT')}
+					>
 						Bản nháp
 					</button>
-					<button type="button" role="radio" aria-checked={published} onClick={() => !published && void setStatus('PUBLISHED')}>
+					<button
+						type="button"
+						role="radio"
+						aria-checked={published}
+						onClick={() => !published && void setStatus('PUBLISHED')}
+					>
 						Xuất bản
 					</button>
 				</div>
@@ -392,7 +461,9 @@ export default function LearnStudio({
 							stripped.map((lesson) => {
 								if (lesson.id !== lessonId) return lesson;
 								const sections = [...lesson.sections];
-								const index = beforeId ? sections.findIndex((item) => item.id === beforeId) : sections.length;
+								const index = beforeId
+									? sections.findIndex((item) => item.id === beforeId)
+									: sections.length;
 								sections.splice(index < 0 ? sections.length : index, 0, { ...moving, lessonId });
 								return { ...lesson, sections };
 							}),
@@ -418,14 +489,22 @@ export default function LearnStudio({
 								maxLength={200}
 								placeholder="Tên mục"
 								aria-label="Tên mục"
-								onChange={(event) => patchSection(section.id, { title: event.target.value.replace(/\n/g, ' ') })}
+								onChange={(event) =>
+									patchSection(section.id, { title: event.target.value.replace(/\n/g, ' ') })
+								}
 								style={{ fieldSizing: 'content' } as React.CSSProperties}
 							/>
 							{section.type === 'QUIZ' || section.type === 'PRACTICE' ? (
 								<LearnQuizEditor
 									sectionId={section.id}
 									variant={section.type === 'PRACTICE' ? 'practice' : 'quiz'}
-									quiz={section.quiz ?? { passingScorePercent: 70, timeLimitMinutes: null, questions: [] }}
+									quiz={
+										section.quiz ?? {
+											passingScorePercent: 70,
+											timeLimitMinutes: null,
+											questions: [],
+										}
+									}
 									onChange={(quiz) => patchSection(section.id, { quiz })}
 									onOpenImport={() =>
 										setImportRequest({
@@ -446,12 +525,18 @@ export default function LearnStudio({
 										setImportRequest({
 											kind: 'discussion',
 											locked: true,
-											target: { sectionId: section.id, count: section.discussion?.questions.length ?? 0 },
+											target: {
+												sectionId: section.id,
+												count: section.discussion?.questions.length ?? 0,
+											},
 										})
 									}
 								/>
 							) : (
-								<LearnRichEditor value={section.markdown} onChange={(markdown) => patchSection(section.id, { markdown })} />
+								<LearnRichEditor
+									value={section.markdown}
+									onChange={(markdown) => patchSection(section.id, { markdown })}
+								/>
 							)}
 						</div>
 					) : (
@@ -488,7 +573,12 @@ export default function LearnStudio({
 				/>
 			) : null}
 			{dialog === 'settings' ? (
-				<CourseSettingsDialog course={meta} onClose={() => setDialog(null)} onSave={saveSettings} onDelete={deleteCourse} />
+				<CourseSettingsDialog
+					course={meta}
+					onClose={() => setDialog(null)}
+					onSave={saveSettings}
+					onDelete={deleteCourse}
+				/>
 			) : null}
 		</div>
 	);

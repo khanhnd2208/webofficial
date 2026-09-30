@@ -337,7 +337,10 @@ export default function ActiveRecallPlayer({
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
-			if (event.key === 'Escape' && (presentation || document.fullscreenElement === rootRef.current)) {
+			if (
+				event.key === 'Escape' &&
+				(presentation || document.fullscreenElement === rootRef.current)
+			) {
 				event.preventDefault();
 				void leavePresentation();
 				return;
@@ -474,15 +477,13 @@ export default function ActiveRecallPlayer({
 					<span style={{ width: `${((currentIndex + 1) / ids.length) * 100}%` }} />
 				</div>
 
-				<section
-					className="recall-card-shell"
-					aria-live="polite"
-					aria-atomic="true"
-				>
+				<section className="recall-card-shell" aria-live="polite" aria-atomic="true">
 					<article
 						role="button"
 						tabIndex={0}
-						aria-label={revealed ? 'Thẻ đáp án. Chạm để xem câu hỏi' : 'Thẻ câu hỏi. Chạm để hiện đáp án'}
+						aria-label={
+							revealed ? 'Thẻ đáp án. Chạm để xem câu hỏi' : 'Thẻ câu hỏi. Chạm để hiện đáp án'
+						}
 						onPointerDown={onCardPointerDown}
 						onPointerMove={onCardPointerMove}
 						onPointerUp={onCardPointerUp}
@@ -543,7 +544,10 @@ export default function ActiveRecallPlayer({
 				<p className="recall-player-hint recall-player-chrome">
 					Space để lật · ← → để chuyển · F để trình chiếu
 				</p>
-				<nav className="recall-controls" aria-label={presentation ? 'Điều khiển trình chiếu' : 'Điều hướng thẻ'}>
+				<nav
+					className="recall-controls"
+					aria-label={presentation ? 'Điều khiển trình chiếu' : 'Điều hướng thẻ'}
+				>
 					<button
 						type="button"
 						className="recall-nav-button"

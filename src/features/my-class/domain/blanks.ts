@@ -21,6 +21,7 @@ export function nextBlankId(existing: string[]): string {
 
 export function insertBlankToken(stem: string, id: string, at?: number): string {
 	const token = `[[${id}]]`;
-	if (at == null || at < 0 || at > stem.length) return `${stem}${stem && !stem.endsWith(' ') ? ' ' : ''}${token}`;
+	if (at == null || at < 0 || at > stem.length)
+		return `${stem}${stem && !stem.endsWith(' ') ? ' ' : ''}${token}`;
 	return `${stem.slice(0, at)}${token}${stem.slice(at)}`;
 }

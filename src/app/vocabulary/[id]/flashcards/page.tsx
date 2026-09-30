@@ -4,8 +4,17 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import FlashcardPrism from '@/components/vocab/FlashcardPrism';
 import type { FlashcardWord } from '@/components/vocab/FlashcardPrism';
-import { useVocabSetUrl, useVocabChrome, VocabPracticeFrame, VocabBackLink } from '@/components/vocab/practice/VocabApiProvider';
-import { clearPracticeDraft, readPracticeDraft, writePracticeDraft } from '@/features/my-class/client/practiceDraft';
+import {
+	useVocabSetUrl,
+	useVocabChrome,
+	VocabPracticeFrame,
+	VocabBackLink,
+} from '@/components/vocab/practice/VocabApiProvider';
+import {
+	clearPracticeDraft,
+	readPracticeDraft,
+	writePracticeDraft,
+} from '@/features/my-class/client/practiceDraft';
 
 type Word = FlashcardWord;
 
@@ -43,12 +52,23 @@ function playSuccess() {
 			osc.start(ctx.currentTime + i * 0.08);
 			osc.stop(ctx.currentTime + i * 0.08 + 0.25);
 		});
-	} catch { /* silent */ }
+	} catch {
+		/* silent */
+	}
 }
 
 /* ── Confetti burst ── */
 function burstConfetti(container: HTMLElement) {
-	const colors = ['#c44b28', '#e8714f', '#4a8c5c', '#6aad7c', '#c48a1a', '#d4a03a', '#f0ece4', '#1a1a1a'];
+	const colors = [
+		'#c44b28',
+		'#e8714f',
+		'#4a8c5c',
+		'#6aad7c',
+		'#c48a1a',
+		'#d4a03a',
+		'#f0ece4',
+		'#1a1a1a',
+	];
 	const count = 60;
 
 	for (let i = 0; i < count; i++) {
@@ -65,7 +85,7 @@ function burstConfetti(container: HTMLElement) {
 		`;
 		container.appendChild(el);
 
-		const angle = (Math.random() * 360) * (Math.PI / 180);
+		const angle = Math.random() * 360 * (Math.PI / 180);
 		const velocity = Math.random() * 400 + 200;
 		const vx = Math.cos(angle) * velocity;
 		const vy = Math.sin(angle) * velocity - 200;
@@ -76,7 +96,11 @@ function burstConfetti(container: HTMLElement) {
 				{ transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
 				{ transform: `translate(${vx}px, ${vy + 600}px) rotate(${rotation}deg)`, opacity: 0 },
 			],
-			{ duration: 1200 + Math.random() * 600, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards' }
+			{
+				duration: 1200 + Math.random() * 600,
+				easing: 'cubic-bezier(.25,.46,.45,.94)',
+				fill: 'forwards',
+			},
 		).onfinish = () => el.remove();
 	}
 }
@@ -99,14 +123,25 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 			setId(paramId);
 			const res = await fetch(vocabUrl(paramId));
 			const json = await res.json();
-			if (!json.ok) { setError(json.error); return; }
+			if (!json.ok) {
+				setError(json.error);
+				return;
+			}
 			const words = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(words);
-			const draft = readPracticeDraft<{ remainingIds: string[]; masteredIds: string[]; index: number }>(`flashcards:${paramId}`);
+			const draft = readPracticeDraft<{
+				remainingIds: string[];
+				masteredIds: string[];
+				index: number;
+			}>(`flashcards:${paramId}`);
 			if (draft) {
 				const byId = new Map(words.map((word) => [word.id, word]));
-				const remainingRestored = draft.remainingIds.map((wordId) => byId.get(wordId)).filter((word): word is Word => Boolean(word));
-				const masteredRestored = draft.masteredIds.map((wordId) => byId.get(wordId)).filter((word): word is Word => Boolean(word));
+				const remainingRestored = draft.remainingIds
+					.map((wordId) => byId.get(wordId))
+					.filter((word): word is Word => Boolean(word));
+				const masteredRestored = draft.masteredIds
+					.map((wordId) => byId.get(wordId))
+					.filter((word): word is Word => Boolean(word));
 				if (remainingRestored.length) {
 					setRemaining(remainingRestored);
 					setMastered(masteredRestored);
@@ -138,20 +173,23 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 
 	/* ── Card actions ── */
 
-	const advanceCard = useCallback((dir: 'left' | 'right') => {
-		if (!card) return;
-		setTimeout(() => {
-			if (dir === 'right') {
-				setMastered((prev) => [...prev, card]);
-				setRemaining((prev) => prev.filter((_, i) => i !== index));
-				setIndex((prev) => (prev >= remaining.length - 1 ? 0 : prev));
-			} else {
-				setStillLearning((prev) => [...prev, card]);
-				setIndex((prev) => (prev + 1) % remaining.length);
-			}
-			setAnimKey((k) => k + 1);
-		}, 50);
-	}, [card, index, remaining.length]);
+	const advanceCard = useCallback(
+		(dir: 'left' | 'right') => {
+			if (!card) return;
+			setTimeout(() => {
+				if (dir === 'right') {
+					setMastered((prev) => [...prev, card]);
+					setRemaining((prev) => prev.filter((_, i) => i !== index));
+					setIndex((prev) => (prev >= remaining.length - 1 ? 0 : prev));
+				} else {
+					setStillLearning((prev) => [...prev, card]);
+					setIndex((prev) => (prev + 1) % remaining.length);
+				}
+				setAnimKey((k) => k + 1);
+			}, 50);
+		},
+		[card, index, remaining.length],
+	);
 
 	const markMastered = useCallback(() => advanceCard('right'), [advanceCard]);
 	const markStillLearning = useCallback(() => advanceCard('left'), [advanceCard]);
@@ -199,10 +237,10 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 		return (
 			<VocabPracticeFrame className="min-h-screen">
 				<div ref={containerRef}>
-				<CompletionScreen
-					total={total}
-					id={id}
-					containerRef={containerRef}
+					<CompletionScreen
+						total={total}
+						id={id}
+						containerRef={containerRef}
 						onRestart={() => {
 							setRemaining(shuffle(allWords));
 							setMastered([]);
@@ -210,7 +248,7 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 							setIndex(0);
 							setAnimKey(0);
 						}}
-				/>
+					/>
 				</div>
 			</VocabPracticeFrame>
 		);
@@ -221,75 +259,89 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 	return (
 		<VocabPracticeFrame className="min-h-screen select-none">
 			<div ref={containerRef}>
-			{/* Top bar */}
-			<div className="border-b border-border">
-				<div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-					<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
-					<div className="flex items-center gap-3 text-xs text-muted">
-						<span className="font-bold text-success">{mastered.length}</span>
-						<span>/</span>
-						<span>{total}</span>
-						{mastered.length > 0 ? (
-							<button onClick={undo} className="ml-1 text-accent hover:underline">Hoàn tác</button>
-						) : null}
+				{/* Top bar */}
+				<div className="border-b border-border">
+					<div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+						<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
+						<div className="flex items-center gap-3 text-xs text-muted">
+							<span className="font-bold text-success">{mastered.length}</span>
+							<span>/</span>
+							<span>{total}</span>
+							{mastered.length > 0 ? (
+								<button onClick={undo} className="ml-1 text-accent hover:underline">
+									Hoàn tác
+								</button>
+							) : null}
+						</div>
+					</div>
+					{/* Progress bar */}
+					<div className="h-1 bg-surface-hover overflow-hidden">
+						<div
+							className="h-full bg-success"
+							style={{
+								width: `${progress}%`,
+								transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+							}}
+						/>
 					</div>
 				</div>
-				{/* Progress bar */}
-				<div className="h-1 bg-surface-hover overflow-hidden">
-					<div
-						className="h-full bg-success"
-						style={{
-							width: `${progress}%`,
-							transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-						}}
+
+				{/* Card area */}
+				<div className="mx-auto max-w-2xl px-6 py-10 sm:py-14">
+					{/* Counter chip */}
+					<div className="mb-6 flex items-center justify-center">
+						<span className="rounded-full bg-surface-hover px-4 py-1.5 text-xs font-bold tracking-wider text-muted">
+							{index + 1} / {remaining.length} còn lại
+						</span>
+					</div>
+
+					{/* Prism card */}
+					<FlashcardPrism
+						word={card!}
+						animKey={animKey}
+						onSwipeLeft={markStillLearning}
+						onSwipeRight={markMastered}
+						onSpeak={(text) => speak(text)}
 					/>
+
+					{/* Controls */}
+					<div className="mt-8 flex items-center justify-center gap-4">
+						<button
+							onClick={markStillLearning}
+							className="group flex h-14 w-14 items-center justify-center rounded-full border-2 border-error/30 text-error transition-all hover:border-error hover:bg-error hover:text-white hover:scale-110 hover:shadow-lg active:scale-95"
+							title="Chưa thuộc"
+						>
+							<svg
+								className="h-6 w-6"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2.5}
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+						<button
+							onClick={markMastered}
+							className="group flex h-14 w-14 items-center justify-center rounded-full border-2 border-success/30 text-success transition-all hover:border-success hover:bg-success hover:text-white hover:scale-110 hover:shadow-lg active:scale-95"
+							title="Đã thuộc"
+						>
+							<svg
+								className="h-6 w-6"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2.5}
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+							</svg>
+						</button>
+					</div>
+
+					<p className="mt-5 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+						Tap để xoay · ← Chưa thuộc · → Đã thuộc · ⌘Z Hoàn tác
+					</p>
 				</div>
-			</div>
-
-			{/* Card area */}
-			<div className="mx-auto max-w-2xl px-6 py-10 sm:py-14">
-				{/* Counter chip */}
-				<div className="mb-6 flex items-center justify-center">
-					<span className="rounded-full bg-surface-hover px-4 py-1.5 text-xs font-bold tracking-wider text-muted">
-						{index + 1} / {remaining.length} còn lại
-					</span>
-				</div>
-
-				{/* Prism card */}
-				<FlashcardPrism
-					word={card!}
-					animKey={animKey}
-					onSwipeLeft={markStillLearning}
-					onSwipeRight={markMastered}
-					onSpeak={(text) => speak(text)}
-				/>
-
-				{/* Controls */}
-				<div className="mt-8 flex items-center justify-center gap-4">
-					<button
-						onClick={markStillLearning}
-						className="group flex h-14 w-14 items-center justify-center rounded-full border-2 border-error/30 text-error transition-all hover:border-error hover:bg-error hover:text-white hover:scale-110 hover:shadow-lg active:scale-95"
-						title="Chưa thuộc"
-					>
-						<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
-					</button>
-					<button
-						onClick={markMastered}
-						className="group flex h-14 w-14 items-center justify-center rounded-full border-2 border-success/30 text-success transition-all hover:border-success hover:bg-success hover:text-white hover:scale-110 hover:shadow-lg active:scale-95"
-						title="Đã thuộc"
-					>
-						<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-						</svg>
-					</button>
-				</div>
-
-				<p className="mt-5 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
-					Tap để xoay · ← Chưa thuộc · → Đã thuộc · ⌘Z Hoàn tác
-				</p>
-			</div>
 			</div>
 		</VocabPracticeFrame>
 	);
@@ -337,10 +389,25 @@ function CompletionScreen({
 					<div
 						className="text-7xl"
 						style={{
-							animation: show ? 'celebrateBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both' : undefined,
+							animation: show
+								? 'celebrateBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both'
+								: undefined,
 						}}
 					>
-						<svg className="mx-auto h-16 w-16" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="fc-party" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stopColor="#ff5500" /><stop offset="50%" stopColor="#ffcc00" /><stop offset="100%" stopColor="#4a8c5c" /></linearGradient></defs><path d="M12 2l2.5 6.5L21 12l-6.5 2.5L12 22l-2.5-7.5L3 12l6.5-3.5L12 2z" fill="url(#fc-party)" /><circle cx="12" cy="12" r="3" fill="#fff" opacity="0.4" /></svg>
+						<svg className="mx-auto h-16 w-16" viewBox="0 0 24 24" fill="none">
+							<defs>
+								<linearGradient id="fc-party" x1="0" y1="1" x2="1" y2="0">
+									<stop offset="0%" stopColor="#ff5500" />
+									<stop offset="50%" stopColor="#ffcc00" />
+									<stop offset="100%" stopColor="#4a8c5c" />
+								</linearGradient>
+							</defs>
+							<path
+								d="M12 2l2.5 6.5L21 12l-6.5 2.5L12 22l-2.5-7.5L3 12l6.5-3.5L12 2z"
+								fill="url(#fc-party)"
+							/>
+							<circle cx="12" cy="12" r="3" fill="#fff" opacity="0.4" />
+						</svg>
 					</div>
 					<h1 className="mt-6 text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl">
 						Xuất sắc!
@@ -350,11 +417,24 @@ function CompletionScreen({
 					</p>
 					<div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
 						<button
-							onClick={() => { firedRef.current = false; onRestart(); }}
+							onClick={() => {
+								firedRef.current = false;
+								onRestart();
+							}}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
 						>
-							<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+							<svg
+								className="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
+								/>
 							</svg>
 							Học lại
 						</button>
@@ -368,7 +448,9 @@ function CompletionScreen({
 
 					{/* Try other modes */}
 					<div className="mt-6">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Thử chế độ khác</p>
+						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+							Thử chế độ khác
+						</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">
 							{[
 								{ href: chrome.modeHref(id, 'mcq'), label: 'Trắc nghiệm', color: 'text-success' },

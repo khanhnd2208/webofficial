@@ -1,4 +1,9 @@
-import type { LearnCourseOutline, LearnQuizResult, LearnSectionKind, LearnSectionProgressState } from './types';
+import type {
+	LearnCourseOutline,
+	LearnQuizResult,
+	LearnSectionKind,
+	LearnSectionProgressState,
+} from './types';
 
 export type LearnCourseStatus = 'not-started' | 'in-progress' | 'completed';
 
@@ -90,7 +95,9 @@ export function summarizeCourse(
 		totalCount: sections.length,
 		percent: percentOf(completedCount, sections.length),
 		totalMinutes: sections.reduce((sum, section) => sum + section.minutes, 0),
-		remainingMinutes: sections.filter((section) => !section.completed).reduce((sum, section) => sum + section.minutes, 0),
+		remainingMinutes: sections
+			.filter((section) => !section.completed)
+			.reduce((sum, section) => sum + section.minutes, 0),
 		quizCount: quizzes.length,
 		quizzesPassed: quizzes.filter((section) => section.quizResult?.passed).length,
 		status: courseStatus(completedCount, sections.length),
@@ -119,6 +126,9 @@ export type LearnCurriculumLesson = Omit<LearnLessonSummary, 'sections'> & {
 export function toCurriculumLessons(lessons: LearnLessonSummary[]): LearnCurriculumLesson[] {
 	return lessons.map((lesson) => ({
 		...lesson,
-		sections: lesson.sections.map(({ note, ...section }) => ({ ...section, hasNote: Boolean(note.trim()) })),
+		sections: lesson.sections.map(({ note, ...section }) => ({
+			...section,
+			hasNote: Boolean(note.trim()),
+		})),
 	}));
 }

@@ -34,7 +34,9 @@ describe('computeStreak', () => {
 
 describe('workspaceUrl', () => {
 	it('builds clean path URLs without cuid section ids', () => {
-		expect(courseUnitPath('hrm', 'bai-1', 'khai-niem')).toBe('/my-space/my-class/hrm/bai-1/khai-niem');
+		expect(courseUnitPath('hrm', 'bai-1', 'khai-niem')).toBe(
+			'/my-space/my-class/hrm/bai-1/khai-niem',
+		);
 		expect(courseWorkspacePath('hrm', { lesson: 'bai-1', unit: 'khai-niem' })).toBe(
 			'/my-space/my-class/hrm/bai-1/khai-niem',
 		);

@@ -70,7 +70,9 @@ describe('class-scoped Active Recall queries', () => {
 				},
 			}),
 		);
-		expect(decks).toEqual([expect.objectContaining({ slug: 'hrm-lesson-1', courseId: 'course-1' })]);
+		expect(decks).toEqual([
+			expect.objectContaining({ slug: 'hrm-lesson-1', courseId: 'course-1' }),
+		]);
 	});
 
 	it('does not return a draft or disabled deck on the public class player', async () => {

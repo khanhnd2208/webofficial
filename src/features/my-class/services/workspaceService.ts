@@ -40,7 +40,9 @@ export async function patchCourseNode(
 		});
 	}
 	if (nodeType === 'section') {
-		const section = course.lessons.flatMap((lesson) => lesson.sections).find((item) => item.id === nodeId);
+		const section = course.lessons
+			.flatMap((lesson) => lesson.sections)
+			.find((item) => item.id === nodeId);
 		if (!section) throw new AppError('Node không thuộc Course', 404);
 		assertFresh(section.updatedAt, input.expectedUpdatedAt);
 		return updateSection(nodeId, {
@@ -60,9 +62,16 @@ export async function patchCourseNode(
 		return saveDraftRevision(nodeId, {
 			title: String(input.changes.title ?? draft?.title ?? unit.slug),
 			summary: typeof input.changes.summary === 'string' ? input.changes.summary : draft?.summary,
-			foundationHtml: typeof input.changes.foundationHtml === 'string' ? input.changes.foundationHtml : draft?.foundationHtml,
-			academicHtml: typeof input.changes.academicHtml === 'string' ? input.changes.academicHtml : draft?.academicHtml,
-			expertHtml: typeof input.changes.expertHtml === 'string' ? input.changes.expertHtml : draft?.expertHtml,
+			foundationHtml:
+				typeof input.changes.foundationHtml === 'string'
+					? input.changes.foundationHtml
+					: draft?.foundationHtml,
+			academicHtml:
+				typeof input.changes.academicHtml === 'string'
+					? input.changes.academicHtml
+					: draft?.academicHtml,
+			expertHtml:
+				typeof input.changes.expertHtml === 'string' ? input.changes.expertHtml : draft?.expertHtml,
 			slug: typeof input.changes.slug === 'string' ? input.changes.slug : undefined,
 			expectedUpdatedAt: input.expectedUpdatedAt,
 		} as SaveDraftRevisionInput);
@@ -86,14 +95,17 @@ export async function updateCourseNodeStatus(
 			title: section.title,
 			status: nodeType === 'section' && section.id === nodeId ? input.status : section.status,
 			publishedKuCount: section.knowledge.filter(
-				(item) => item.knowledgeUnit.status === 'PUBLISHED' && item.knowledgeUnit.currentPublishedRevision,
+				(item) =>
+					item.knowledgeUnit.status === 'PUBLISHED' && item.knowledgeUnit.currentPublishedRevision,
 			).length,
 		})),
 	}));
 	const target =
 		nodeType === 'lesson'
 			? course.lessons.find((lesson) => lesson.id === nodeId)
-			: course.lessons.flatMap((lesson) => lesson.sections).find((section) => section.id === nodeId);
+			: course.lessons
+					.flatMap((lesson) => lesson.sections)
+					.find((section) => section.id === nodeId);
 	if (!target) throw new AppError('Node không thuộc Course', 404);
 	assertFresh(target.updatedAt, input.expectedUpdatedAt);
 	if (course.status === 'PUBLISHED') {
@@ -123,7 +135,10 @@ function reconcileOrderedIds(
 	nodes: Array<{ id: string; status: string }>,
 	mismatchMessage: string,
 ) {
-	if (new Set(requested).size !== requested.length || requested.some((id) => !nodes.some((node) => node.id === id))) {
+	if (
+		new Set(requested).size !== requested.length ||
+		requested.some((id) => !nodes.some((node) => node.id === id))
+	) {
 		throw new AppError(mismatchMessage, 422);
 	}
 	const all = nodes.map((node) => node.id);
@@ -136,7 +151,11 @@ function reconcileOrderedIds(
 
 export async function reorderCourseNodes(
 	courseId: string,
-	input: { parentType: 'course' | 'lesson' | 'section'; parentId: string; orderedNodeIds: string[] },
+	input: {
+		parentType: 'course' | 'lesson' | 'section';
+		parentId: string;
+		orderedNodeIds: string[];
+	},
 ) {
 	const course = await getAdminCourse(courseId);
 	if (input.parentType === 'course') {
@@ -160,11 +179,16 @@ export async function reorderCourseNodes(
 		await reorderSections(lesson.id, orderedNodeIds);
 		return { tree: await getAdminCourse(courseId), revision: new Date().toISOString() };
 	}
-	const section = course.lessons.flatMap((lesson) => lesson.sections).find((item) => item.id === input.parentId);
+	const section = course.lessons
+		.flatMap((lesson) => lesson.sections)
+		.find((item) => item.id === input.parentId);
 	if (!section) throw new AppError('Section không thuộc Course', 404);
 	const orderedNodeIds = reconcileOrderedIds(
 		input.orderedNodeIds,
-		section.knowledge.map((item) => ({ id: item.knowledgeUnit.id, status: item.knowledgeUnit.status })),
+		section.knowledge.map((item) => ({
+			id: item.knowledgeUnit.id,
+			status: item.knowledgeUnit.status,
+		})),
 		'Danh sách nội dung không khớp Section',
 	);
 	await reorderSectionKnowledge(section.id, orderedNodeIds);

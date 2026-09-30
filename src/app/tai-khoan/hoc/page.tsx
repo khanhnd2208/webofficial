@@ -90,13 +90,16 @@ export default async function AccountLearningPage() {
 							<p className="font-display type-section font-medium text-ink">
 								Bạn đã hoàn thành các khóa hiện có
 							</p>
-							<p className="mt-2 text-sm text-ink-secondary">Khóa mới sẽ xuất hiện khi bạn được ghi danh.</p>
+							<p className="mt-2 text-sm text-ink-secondary">
+								Khóa mới sẽ xuất hiện khi bạn được ghi danh.
+							</p>
 						</div>
 					) : (
 						<div className="rounded-[18px] border border-hairline bg-paper px-8 py-16 text-center">
 							<p className="font-display type-section font-medium text-ink">Chưa có khóa học</p>
 							<p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-secondary">
-								Khi được ghi danh, lộ trình học sẽ hiện tại đây. Liên hệ để yêu cầu tham gia hoặc xem chương trình công khai.
+								Khi được ghi danh, lộ trình học sẽ hiện tại đây. Liên hệ để yêu cầu tham gia hoặc
+								xem chương trình công khai.
 							</p>
 							<div className="mt-8 flex flex-wrap justify-center gap-3">
 								<Link
@@ -134,10 +137,13 @@ export default async function AccountLearningPage() {
 												{course.title}
 											</Link>
 											{course.summary ? (
-												<p className="mt-1 line-clamp-2 text-sm text-ink-secondary">{course.summary}</p>
+												<p className="mt-1 line-clamp-2 text-sm text-ink-secondary">
+													{course.summary}
+												</p>
 											) : null}
 											<p className="mt-2 font-mono text-[11px] text-ink-secondary">
-												{course.completedLessons}/{course.totalLessons} bài · {course.progressPercent}%
+												{course.completedLessons}/{course.totalLessons} bài ·{' '}
+												{course.progressPercent}%
 											</p>
 											<div
 												className="mt-2 h-1 max-w-xs overflow-hidden rounded-full bg-surface-hover"

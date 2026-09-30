@@ -58,7 +58,11 @@ export function useTeachingDismissible({
 		}
 
 		function onPointerDown(event: PointerEvent) {
-			if (!rootRef.current?.contains(event.target as Node) && !panelRef?.current?.contains(event.target as Node)) onClose();
+			if (
+				!rootRef.current?.contains(event.target as Node) &&
+				!panelRef?.current?.contains(event.target as Node)
+			)
+				onClose();
 		}
 
 		document.addEventListener('keydown', onKeyDown);
@@ -132,7 +136,9 @@ export function TeachingPopover({
 			panelRef.current.style.right = 'auto';
 		};
 		update();
-		panelRef.current.querySelector<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled)')?.focus();
+		panelRef.current
+			.querySelector<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled)')
+			?.focus();
 		window.addEventListener('resize', update);
 		window.addEventListener('scroll', update, true);
 		return () => {
@@ -153,31 +159,54 @@ export function TeachingPopover({
 					'aria-haspopup': closeOnInsideClick ? 'menu' : 'dialog',
 				},
 			})}
-			{open && typeof document !== 'undefined' ? createPortal(
-				<div
-					ref={panelRef}
-					role={closeOnInsideClick ? 'menu' : 'dialog'}
-					aria-label={ariaLabel}
-					className="fixed z-[90] max-h-[min(70dvh,32rem)] min-w-56 max-w-[calc(100vw-1rem)] overflow-auto rounded-[var(--mc-r-md)] border border-mc-rule bg-paper p-2 shadow-lg"
-					style={{ top: 0, left: 0 }}
-					onKeyDown={(event) => {
-						if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); triggerRef.current?.focus(); return; }
-						const items = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]') ?? []);
-						if (event.key === 'Tab') { close(); triggerRef.current?.focus(); return; }
-						if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !items.length) return;
-						event.preventDefault();
-						const current = items.indexOf(document.activeElement as HTMLElement);
-						const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
-						items[next]?.focus();
-					}}
-					onClick={() => {
-						if (closeOnInsideClick) close();
-					}}
-				>
-					{children}
-				</div>,
-				document.body,
-			) : null}
+			{open && typeof document !== 'undefined'
+				? createPortal(
+						<div
+							ref={panelRef}
+							role={closeOnInsideClick ? 'menu' : 'dialog'}
+							aria-label={ariaLabel}
+							className="fixed z-[90] max-h-[min(70dvh,32rem)] min-w-56 max-w-[calc(100vw-1rem)] overflow-auto rounded-[var(--mc-r-md)] border border-mc-rule bg-paper p-2 shadow-lg"
+							style={{ top: 0, left: 0 }}
+							onKeyDown={(event) => {
+								if (event.key === 'Escape') {
+									event.preventDefault();
+									event.stopPropagation();
+									close();
+									triggerRef.current?.focus();
+									return;
+								}
+								const items = Array.from(
+									panelRef.current?.querySelectorAll<HTMLElement>(
+										'button:not(:disabled), a[href]',
+									) ?? [],
+								);
+								if (event.key === 'Tab') {
+									close();
+									triggerRef.current?.focus();
+									return;
+								}
+								if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !items.length)
+									return;
+								event.preventDefault();
+								const current = items.indexOf(document.activeElement as HTMLElement);
+								const next =
+									event.key === 'Home'
+										? 0
+										: event.key === 'End'
+											? items.length - 1
+											: (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) %
+												items.length;
+								items[next]?.focus();
+							}}
+							onClick={() => {
+								if (closeOnInsideClick) close();
+							}}
+						>
+							{children}
+						</div>,
+						document.body,
+					)
+				: null}
 		</div>
 	);
 }

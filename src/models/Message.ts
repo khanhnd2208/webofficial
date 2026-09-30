@@ -39,6 +39,7 @@ MessageSchema.index({ createdBy: 1, createdAt: -1 });
 MessageSchema.index({ isPublished: 1, slug: 1 });
 
 const Message =
-	(mongoose.models.Message as Model<IMessage>) ?? mongoose.model<IMessage>('Message', MessageSchema);
+	(mongoose.models.Message as Model<IMessage>) ??
+	mongoose.model<IMessage>('Message', MessageSchema);
 
 export default Message;

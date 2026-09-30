@@ -12,7 +12,14 @@ export default async function MyClassLessonRedirectPage({
 	try {
 		const data = await getLesson(courseSlug, lessonSlug);
 		const first = data.lesson.sections.flatMap((section) => section.knowledgeUnits)[0];
-		if (first) redirect(routes.myClassUnit(courseSlug, lessonSlug, first.slug, { sectionSlug: data.lesson.sections.find((section) => section.knowledgeUnits.some((unit) => unit.slug === first.slug))?.slug }));
+		if (first)
+			redirect(
+				routes.myClassUnit(courseSlug, lessonSlug, first.slug, {
+					sectionSlug: data.lesson.sections.find((section) =>
+						section.knowledgeUnits.some((unit) => unit.slug === first.slug),
+					)?.slug,
+				}),
+			);
 	} catch (error) {
 		rethrowUnlessNotFound(error);
 	}

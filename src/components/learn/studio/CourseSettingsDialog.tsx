@@ -6,7 +6,10 @@ import { LEARN_LEVEL_LABELS, type LearnCourseMeta, type LearnLevel } from '@/fea
 
 import StudioDialog from './StudioDialog';
 
-export type CourseSettingsPatch = Pick<LearnCourseMeta, 'title' | 'subtitle' | 'description' | 'category' | 'level' | 'slug'>;
+export type CourseSettingsPatch = Pick<
+	LearnCourseMeta,
+	'title' | 'subtitle' | 'description' | 'category' | 'level' | 'slug'
+>;
 
 export default function CourseSettingsDialog({
 	course,
@@ -70,11 +73,21 @@ export default function CourseSettingsDialog({
 			<div className="ln-form">
 				<label>
 					<span>Tên khóa học</span>
-					<input className="ln-input" value={draft.title} maxLength={200} onChange={(event) => set('title', event.target.value)} />
+					<input
+						className="ln-input"
+						value={draft.title}
+						maxLength={200}
+						onChange={(event) => set('title', event.target.value)}
+					/>
 				</label>
 				<label>
 					<span>Dòng giới thiệu ngắn</span>
-					<input className="ln-input" value={draft.subtitle} maxLength={500} onChange={(event) => set('subtitle', event.target.value)} />
+					<input
+						className="ln-input"
+						value={draft.subtitle}
+						maxLength={500}
+						onChange={(event) => set('subtitle', event.target.value)}
+					/>
 				</label>
 				<label>
 					<span>Mô tả (hiện ở đầu mục đầu tiên)</span>
@@ -99,7 +112,11 @@ export default function CourseSettingsDialog({
 					</label>
 					<label>
 						<span>Cấp độ</span>
-						<select className="ln-input" value={draft.level} onChange={(event) => set('level', event.target.value as LearnLevel)}>
+						<select
+							className="ln-input"
+							value={draft.level}
+							onChange={(event) => set('level', event.target.value as LearnLevel)}
+						>
 							{Object.entries(LEARN_LEVEL_LABELS).map(([value, label]) => (
 								<option key={value} value={value}>
 									{label}
@@ -112,7 +129,11 @@ export default function CourseSettingsDialog({
 					<span>Đường dẫn</span>
 					<span className="ln-affix ln-affix--wide">
 						/my-space/courses/
-						<input value={draft.slug} maxLength={180} onChange={(event) => set('slug', event.target.value)} />
+						<input
+							value={draft.slug}
+							maxLength={180}
+							onChange={(event) => set('slug', event.target.value)}
+						/>
 					</span>
 				</label>
 

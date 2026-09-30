@@ -50,9 +50,7 @@ export default function QuizSidebar({
 			</Link>
 
 			<div>
-				<p className="font-mono text-[0.7rem] tracking-[0.14em] text-accent uppercase">
-					{subject}
-				</p>
+				<p className="font-mono text-[0.7rem] tracking-[0.14em] text-accent uppercase">{subject}</p>
 				<p className="mt-2 font-display text-lg font-medium leading-snug tracking-tight text-ink text-balance">
 					{title}
 				</p>

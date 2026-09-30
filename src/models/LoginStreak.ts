@@ -29,7 +29,7 @@ const LoginStreakSchema = new Schema<ILoginStreak>(
 		longestStreak: { type: Number, default: 0, min: 0 },
 		lastLoginDate: { type: String, default: '' },
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 const LoginStreak =

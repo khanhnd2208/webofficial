@@ -146,9 +146,7 @@ export async function getAdminUserList({
 		const uid = (u._id as mongoose.Types.ObjectId).toString();
 		const oid = u._id as mongoose.Types.ObjectId;
 		const streak = streakMap.get(uid);
-		const lastActive = streak?.updatedAt
-			? toISO(streak.updatedAt)
-			: toISO(u.updatedAt, oid);
+		const lastActive = streak?.updatedAt ? toISO(streak.updatedAt) : toISO(u.updatedAt, oid);
 		const rawRole = u.role as string;
 		return {
 			id: uid,
@@ -207,18 +205,19 @@ export async function getAdminUserDetail(userId: string): Promise<UserDetail | n
 
 	// Count completed lessons per course for this user in one query.
 	const courseIds = enrollmentRows.map((e) => e.courseId);
-	const progressRows = courseIds.length > 0
-		? await prisma.lessonProgress.findMany({
-			where: {
-				userId,
-				lesson: { module: { courseId: { in: courseIds } } },
-			},
-			select: {
-				lessonId: true,
-				lesson: { select: { module: { select: { courseId: true } } } },
-			},
-		})
-		: [];
+	const progressRows =
+		courseIds.length > 0
+			? await prisma.lessonProgress.findMany({
+					where: {
+						userId,
+						lesson: { module: { courseId: { in: courseIds } } },
+					},
+					select: {
+						lessonId: true,
+						lesson: { select: { module: { select: { courseId: true } } } },
+					},
+				})
+			: [];
 
 	// Build a map: courseId → completed lesson count.
 	const completedByCourse = new Map<string, number>();
@@ -259,6 +258,9 @@ export async function getAdminUserDetail(userId: string): Promise<UserDetail | n
 
 export async function setUserRole(userId: string, role: UserRole): Promise<boolean> {
 	await dbConnect();
-	const result = await User.updateOne({ _id: new mongoose.Types.ObjectId(userId) }, { $set: { role } });
+	const result = await User.updateOne(
+		{ _id: new mongoose.Types.ObjectId(userId) },
+		{ $set: { role } },
+	);
 	return result.modifiedCount > 0;
 }

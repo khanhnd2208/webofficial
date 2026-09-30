@@ -12,13 +12,7 @@ function initials(name?: string | null) {
 	return trimmed.slice(0, 1).toLocaleUpperCase('vi');
 }
 
-export function McAuthCorner({
-	user,
-	loginHref,
-}: {
-	user: McAuthUser;
-	loginHref: string;
-}) {
+export function McAuthCorner({ user, loginHref }: { user: McAuthUser; loginHref: string }) {
 	const progressLink = (
 		<Link
 			href={routes.myClassProgress}

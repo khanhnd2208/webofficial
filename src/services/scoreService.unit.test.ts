@@ -28,15 +28,15 @@ describe('computeScoreFromBody', () => {
 	});
 
 	it('throws ScoreValidationError for invalid MCQ payload', () => {
-		expect(() =>
-			computeScoreFromBody({ mode: 'MCQ', questions: [] }, NOW),
-		).toThrow(ScoreValidationError);
+		expect(() => computeScoreFromBody({ mode: 'MCQ', questions: [] }, NOW)).toThrow(
+			ScoreValidationError,
+		);
 	});
 
 	it('throws for unknown game mode', () => {
-		expect(() =>
-			computeScoreFromBody({ mode: 'UNKNOWN' as 'MCQ', questions: [] }, NOW),
-		).toThrow('Unknown game mode');
+		expect(() => computeScoreFromBody({ mode: 'UNKNOWN' as 'MCQ', questions: [] }, NOW)).toThrow(
+			'Unknown game mode',
+		);
 	});
 });
 

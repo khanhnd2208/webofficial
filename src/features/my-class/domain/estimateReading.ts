@@ -1,5 +1,8 @@
 /** Estimate reading time from HTML. Vietnamese ~200 wpm. */
-export function estimateReadingMinutes(html: string | null | undefined, wordsPerMinute = 200): number {
+export function estimateReadingMinutes(
+	html: string | null | undefined,
+	wordsPerMinute = 200,
+): number {
 	if (!html) return 1;
 	const text = html
 		.replace(/<script[\s\S]*?<\/script>/gi, ' ')

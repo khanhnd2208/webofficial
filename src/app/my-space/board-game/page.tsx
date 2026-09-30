@@ -42,8 +42,14 @@ export default async function BoardGamePage() {
 					</p>
 				</header>
 				{isAdmin ? (
-					<Link href={routes.boardGameTest} className="mt-7 inline-flex min-h-11 items-center rounded-full border border-vermilion/40 bg-vermilion/5 px-5 text-sm font-medium text-ink hover:bg-vermilion/10">
-						Phòng test với bot <span className="ml-2" aria-hidden="true">→</span>
+					<Link
+						href={routes.boardGameTest}
+						className="mt-7 inline-flex min-h-11 items-center rounded-full border border-vermilion/40 bg-vermilion/5 px-5 text-sm font-medium text-ink hover:bg-vermilion/10"
+					>
+						Phòng test với bot{' '}
+						<span className="ml-2" aria-hidden="true">
+							→
+						</span>
 					</Link>
 				) : null}
 

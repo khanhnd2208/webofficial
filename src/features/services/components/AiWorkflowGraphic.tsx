@@ -54,7 +54,9 @@ export function AiWorkflowGraphic({ className = '' }: { className?: string }) {
 	const prefersReduced = useReducedMotion();
 	const instant = !allowsReveal || reduced || prefersReduced;
 
-	const pathTransition = instant ? { duration: 0 } : { duration: duration.pathDraw, ease: ease.reveal };
+	const pathTransition = instant
+		? { duration: 0 }
+		: { duration: duration.pathDraw, ease: ease.reveal };
 
 	return (
 		<svg
@@ -132,7 +134,10 @@ export function AiWorkflowGraphic({ className = '' }: { className?: string }) {
 								initial={instant ? false : { pathLength: 0 }}
 								whileInView={{ pathLength: 1 }}
 								viewport={{ once: true }}
-								transition={{ duration: instant ? 0 : duration.ui, delay: instant ? 0 : 0.4 + i * 0.12 }}
+								transition={{
+									duration: instant ? 0 : duration.ui,
+									delay: instant ? 0 : 0.4 + i * 0.12,
+								}}
 							/>
 						) : null}
 
@@ -159,7 +164,10 @@ export function AiWorkflowGraphic({ className = '' }: { className?: string }) {
 							initial={instant ? false : { opacity: 1 }}
 							whileInView={{ opacity: 1 }}
 							viewport={{ once: true }}
-							transition={{ duration: instant ? 0 : duration.ui, delay: instant ? 0 : 0.3 + i * 0.12 }}
+							transition={{
+								duration: instant ? 0 : duration.ui,
+								delay: instant ? 0 : 0.3 + i * 0.12,
+							}}
 						>
 							<StepIcon index={i} />
 						</m.g>
@@ -171,7 +179,10 @@ export function AiWorkflowGraphic({ className = '' }: { className?: string }) {
 							initial={instant ? false : { opacity: 1 }}
 							whileInView={{ opacity: 1 }}
 							viewport={{ once: true }}
-							transition={{ duration: instant ? 0 : duration.ui, delay: instant ? 0 : 0.32 + i * 0.12 }}
+							transition={{
+								duration: instant ? 0 : duration.ui,
+								delay: instant ? 0 : 0.32 + i * 0.12,
+							}}
 						>
 							{step.label}
 						</m.text>

@@ -8,11 +8,26 @@ import type { NightCue, VoiceClip } from '@/features/cheese-thief/lib/nightSched
 export const MIX_RATE = 44_100;
 
 /** How long each kind of line waits for its bell before the voice starts. */
-export const LINE_LEAD_S = { intro: 1.6, wake: 0.35, sleep: 0.3, outro: 0.6, single: 0.35 } as const;
+export const LINE_LEAD_S = {
+	intro: 1.6,
+	wake: 0.35,
+	sleep: 0.3,
+	outro: 0.6,
+	single: 0.35,
+} as const;
 
 type CueKind = keyof typeof LINE_LEAD_S;
 
-const NOTE = { E4: 329.63, G4: 392, C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, C6: 1046.5 };
+const NOTE = {
+	E4: 329.63,
+	G4: 392,
+	C5: 523.25,
+	D5: 587.33,
+	E5: 659.25,
+	G5: 783.99,
+	A5: 880,
+	C6: 1046.5,
+};
 /** One pentatonic step per hour, so 1 o'clock through 6 o'clock climb like a music box. */
 const HOUR_NOTES = [NOTE.C5, NOTE.D5, NOTE.E5, NOTE.G5, NOTE.A5, NOTE.C6];
 const LULLABY: [number, number][] = [
@@ -85,17 +100,27 @@ export interface MixInput {
 	clock?: boolean;
 }
 
-export function mixNight({ cues, clips, seconds, rate = MIX_RATE, clock = true }: MixInput): Float32Array {
+export function mixNight({
+	cues,
+	clips,
+	seconds,
+	rate = MIX_RATE,
+	clock = true,
+}: MixInput): Float32Array {
 	const out = new Float32Array(Math.ceil(seconds * rate));
 	if (clock) {
-		for (let second = 0; second < seconds; second++) tick(out, rate, second, second % 2 === 1, 0.05);
+		for (let second = 0; second < seconds; second++)
+			tick(out, rate, second, second % 2 === 1, 0.05);
 	}
 	for (const cue of cues) {
 		const at = cue.atMs / 1000;
 		const kind = cueKind(cue.clip);
-		if (kind === 'intro') for (const [offset, note] of LULLABY) bell(out, rate, at + offset, note, 0.09);
-		if (kind === 'outro') for (const [offset, note] of DAWN) bell(out, rate, at + offset, note, 0.08);
-		if (kind === 'wake') bell(out, rate, at, HOUR_NOTES[Number(cue.clip.slice(5)) - 1] ?? NOTE.C5, 0.13);
+		if (kind === 'intro')
+			for (const [offset, note] of LULLABY) bell(out, rate, at + offset, note, 0.09);
+		if (kind === 'outro')
+			for (const [offset, note] of DAWN) bell(out, rate, at + offset, note, 0.08);
+		if (kind === 'wake')
+			bell(out, rate, at, HOUR_NOTES[Number(cue.clip.slice(5)) - 1] ?? NOTE.C5, 0.13);
 		if (kind === 'sleep') bell(out, rate, at, NOTE.G4, 0.07);
 		const samples = clips.get(cue.clip);
 		if (samples) addClip(out, rate, at + LINE_LEAD_S[kind], samples);

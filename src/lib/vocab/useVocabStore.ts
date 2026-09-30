@@ -1,4 +1,4 @@
-"use client";
+'use client';
 /* ════════════════════════════════════════════════════════════════════════
    useVocabStore.ts — Public store page state management
    
@@ -21,7 +21,10 @@ export function useVocabStore({ initialPage = 1, pageSize = 20 }: UseVocabStoreO
 	const [result, setResult] = useState<StoreListResult | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+	const [toast, setToast] = useState<{
+		message: string;
+		type: 'success' | 'error' | 'info';
+	} | null>(null);
 
 	const { enqueue, isOnline } = useOfflineQueue();
 
@@ -30,27 +33,30 @@ export function useVocabStore({ initialPage = 1, pageSize = 20 }: UseVocabStoreO
 		setTimeout(() => setToast(null), 3500);
 	}, []);
 
-	const fetchPage = useCallback(async (p: number) => {
-		setIsLoading(true);
-		setError(null);
-		try {
-			const res = await fetch(`/api/vocab-sets/store?page=${p}&limit=${pageSize}`);
-			const json = await res.json() as { ok: boolean; data?: StoreListResult; error?: string };
-			if (!json.ok) throw new Error(json.error ?? 'Unknown error');
-			setResult(json.data ?? null);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to load store');
-		} finally {
-			setIsLoading(false);
-		}
-	}, [pageSize]);
+	const fetchPage = useCallback(
+		async (p: number) => {
+			setIsLoading(true);
+			setError(null);
+			try {
+				const res = await fetch(`/api/vocab-sets/store?page=${p}&limit=${pageSize}`);
+				const json = (await res.json()) as { ok: boolean; data?: StoreListResult; error?: string };
+				if (!json.ok) throw new Error(json.error ?? 'Unknown error');
+				setResult(json.data ?? null);
+			} catch (err) {
+				setError(err instanceof Error ? err.message : 'Failed to load store');
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		[pageSize],
+	);
 
 	useEffect(() => {
 		fetchPage(page);
 	}, [page, fetchPage]);
 
 	const addToLibrary = useCallback(
-async (set: StoreSetDTO) => {
+		async (set: StoreSetDTO) => {
 			// Optimistic UI: mark as owned immediately
 			setResult((prev) => {
 				if (!prev) return prev;
@@ -70,10 +76,10 @@ async (set: StoreSetDTO) => {
 
 			try {
 				const res = await fetch('/api/vocab-sets/store', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ vocabSetId: set.id }),
-});
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ vocabSetId: set.id }),
+				});
 				if (res.status === 409) {
 					showToast('Bạn đã sở hữu bộ từ này', 'info');
 					return;

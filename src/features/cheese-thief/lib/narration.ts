@@ -64,7 +64,8 @@ export function syncNightTrack(url: string, spec: NightTrackSpec, expectedSec: n
 	if (!el || el.src !== url) return false;
 	if (expectedSec >= nightTrackSeconds(spec)) return true;
 	if (el.paused) return false;
-	if (el.readyState >= 1 && Math.abs(el.currentTime - expectedSec) > 0.75) el.currentTime = expectedSec;
+	if (el.readyState >= 1 && Math.abs(el.currentTime - expectedSec) > 0.75)
+		el.currentTime = expectedSec;
 	return true;
 }
 
@@ -76,13 +77,18 @@ export function stopTableAudio(): void {
  * Call inside a tap: one round at the chosen length, bell, voice and clock.
  * Plays at once when it is already built; otherwise unlocks the element and plays when ready.
  */
-export function playRoundPreview(locale: NightTrackSpec['locale'], hourSeconds: number): Promise<boolean> {
+export function playRoundPreview(
+	locale: NightTrackSpec['locale'],
+	hourSeconds: number,
+): Promise<boolean> {
 	const el = tableAudio();
 	if (!el) return Promise.resolve(false);
 	const url = readyRoundPreview(locale, hourSeconds);
 	if (url) return playFrom(el, url, 0);
 	void playFrom(el, silentClipUrl(), 0);
-	return prepareRoundPreview(locale, hourSeconds).then((built) => (built ? playFrom(el, built, 0) : false));
+	return prepareRoundPreview(locale, hourSeconds).then((built) =>
+		built ? playFrom(el, built, 0) : false,
+	);
 }
 
 /** One recorded line, e.g. "the cheese is gone". Call inside a tap. */
@@ -94,7 +100,9 @@ export function playVoiceClip(locale: NightTrackSpec['locale'], clip: VoiceClip)
 function context(): AudioContext | null {
 	if (typeof window === 'undefined') return null;
 	if (!audioCtx) {
-		const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+		const Ctx =
+			window.AudioContext ||
+			(window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 		if (!Ctx) return null;
 		audioCtx = new Ctx();
 	}

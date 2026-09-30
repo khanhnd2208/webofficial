@@ -51,7 +51,12 @@ export default function LearnReaderPrefs() {
 
 	return (
 		<div className="ln-font">
-			<button type="button" className="ln-font__trigger" popoverTarget="ln-font-size" aria-label="Cỡ chữ">
+			<button
+				type="button"
+				className="ln-font__trigger"
+				popoverTarget="ln-font-size"
+				aria-label="Cỡ chữ"
+			>
 				Aa
 			</button>
 			<div id="ln-font-size" popover="auto" className="ln-font__popover">

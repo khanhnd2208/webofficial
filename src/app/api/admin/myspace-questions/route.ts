@@ -12,8 +12,7 @@ export const GET = withAdmin(async (request: NextRequest) => {
 	const take = Number(searchParams.get('take') ?? 50);
 	const skip = Number(searchParams.get('skip') ?? 0);
 
-	const isActive =
-		isActiveParam === 'true' ? true : isActiveParam === 'false' ? false : undefined;
+	const isActive = isActiveParam === 'true' ? true : isActiveParam === 'false' ? false : undefined;
 
 	const result = await myspaceTestsService.listQuestions({
 		subjectId,

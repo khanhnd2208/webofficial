@@ -76,7 +76,7 @@ export async function ensureUserProfile(identity: ProfileIdentity): Promise<User
 				image: identity.image ?? null,
 			},
 		},
-		{ returnDocument: 'after', upsert: true }
+		{ returnDocument: 'after', upsert: true },
 	).lean<ProfileLean>();
 
 	if (!profile) throw new Error('Không thể tạo hồ sơ người dùng.');
@@ -87,7 +87,10 @@ export async function getMyProfile(identity: ProfileIdentity): Promise<UserProfi
 	return ensureUserProfile(identity);
 }
 
-export async function updateMyProfile(identity: ProfileIdentity, input: UpdateUserProfileInput): Promise<UserProfileDTO> {
+export async function updateMyProfile(
+	identity: ProfileIdentity,
+	input: UpdateUserProfileInput,
+): Promise<UserProfileDTO> {
 	await dbConnect();
 
 	const profileUpdate: Partial<IUserProfile> = {
@@ -110,7 +113,7 @@ export async function updateMyProfile(identity: ProfileIdentity, input: UpdateUs
 				...profileUpdate,
 			},
 		},
-		{ returnDocument: 'after', upsert: true }
+		{ returnDocument: 'after', upsert: true },
 	).lean<ProfileLean>();
 
 	if (!profile) throw new Error('Không thể cập nhật hồ sơ người dùng.');

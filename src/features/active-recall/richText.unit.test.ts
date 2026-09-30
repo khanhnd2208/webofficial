@@ -39,9 +39,7 @@ describe('Active Recall rich text', () => {
 
 	it('round-trips every supported nested inline mark combination', () => {
 		const wrap = (tag: string, value: string) =>
-			tag === 'span'
-				? `<span style="color: #dc2626">${value}</span>`
-				: `<${tag}>${value}</${tag}>`;
+			tag === 'span' ? `<span style="color: #dc2626">${value}</span>` : `<${tag}>${value}</${tag}>`;
 		const marks = ['strong', 'em', 'u', 'span'];
 
 		for (let mask = 0; mask < 2 ** marks.length; mask += 1) {
@@ -95,7 +93,9 @@ describe('Active Recall rich text', () => {
 		const stored = recallToStoredHtml('See file_name_test and 2 * 3 * 4');
 		expect(stored).toBe('<p>See file_name_test and 2 * 3 * 4</p>');
 		const exported = recallHtmlToMarkdown(stored);
-		expect(recallVisibleText(recallImportToStoredHtml(exported))).toBe('See file_name_test and 2 * 3 * 4');
+		expect(recallVisibleText(recallImportToStoredHtml(exported))).toBe(
+			'See file_name_test and 2 * 3 * 4',
+		);
 	});
 
 	it('keeps legacy plain text readable and treats formatting-only markup as empty', () => {

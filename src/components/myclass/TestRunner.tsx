@@ -58,7 +58,10 @@ function asStringArray(value: DraftValue | undefined): string[] {
 	return [];
 }
 
-function toResponse(question: MyClassQuestionForPlay, value: DraftValue | undefined): LearnerResponse {
+function toResponse(
+	question: MyClassQuestionForPlay,
+	value: DraftValue | undefined,
+): LearnerResponse {
 	if (question.type === 'MCQ_MULTI') {
 		return { type: 'MCQ_MULTI', keys: asStringArray(value) as QuestionOptionKey[] };
 	}
@@ -66,7 +69,10 @@ function toResponse(question: MyClassQuestionForPlay, value: DraftValue | undefi
 		const blanks = typeof value === 'object' && value && !Array.isArray(value) ? value : {};
 		return { type: 'FILL_BLANK', blanks };
 	}
-	return { type: 'MCQ_SINGLE', key: (typeof value === 'string' ? value : 'A') as QuestionOptionKey };
+	return {
+		type: 'MCQ_SINGLE',
+		key: (typeof value === 'string' ? value : 'A') as QuestionOptionKey,
+	};
 }
 
 function createSeed() {
@@ -135,7 +141,8 @@ function CharacterBoxes({
 							const next = event.target.value.slice(-1);
 							const letters = chars.map((item, itemIndex) => (itemIndex === index ? next : item));
 							onChange(letters.join(''));
-							const sibling = event.currentTarget.parentElement?.querySelectorAll('input')[index + 1];
+							const sibling =
+								event.currentTarget.parentElement?.querySelectorAll('input')[index + 1];
 							if (next && sibling instanceof HTMLInputElement) sibling.focus();
 						}}
 						onKeyDown={(event) => {
@@ -179,7 +186,9 @@ export default function TestRunner({
 		if (test.timeLimitMinutes) return Date.now() + test.timeLimitMinutes * 60_000;
 		return null;
 	});
-	const [remainingMs, setRemainingMs] = useState(() => (deadline ? Math.max(0, deadline - Date.now()) : null));
+	const [remainingMs, setRemainingMs] = useState(() =>
+		deadline ? Math.max(0, deadline - Date.now()) : null,
+	);
 	const [result, setResult] = useState<MyClassTestResult | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -188,7 +197,9 @@ export default function TestRunner({
 	const submittingRef = useRef(false);
 
 	const playQuestions = useMemo(() => {
-		const ordered = test.shuffleQuestions ? seededShuffle(test.questions, `${seed}:q`) : test.questions;
+		const ordered = test.shuffleQuestions
+			? seededShuffle(test.questions, `${seed}:q`)
+			: test.questions;
 		if (!test.shuffleOptions) return ordered;
 		return ordered.map((question) => ({
 			...question,
@@ -256,20 +267,30 @@ export default function TestRunner({
 						.filter((item) => isAnswered(item, answers[item.id]))
 						.map((item) => [item.id, toResponse(item, answers[item.id])]),
 				);
-				const response = await fetch(submitUrl ?? `/api/my-class/tests/${test.courseSlug}/${test.slug}/submit`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						answers: payload,
-						timedOut,
-						durationSeconds: Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
-					}),
-				});
-				const json = (await response.json()) as { ok: boolean; data?: MyClassTestResult; error?: string };
+				const response = await fetch(
+					submitUrl ?? `/api/my-class/tests/${test.courseSlug}/${test.slug}/submit`,
+					{
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							answers: payload,
+							timedOut,
+							durationSeconds: Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
+						}),
+					},
+				);
+				const json = (await response.json()) as {
+					ok: boolean;
+					data?: MyClassTestResult;
+					error?: string;
+				};
 				if (!json.ok || !json.data) throw new Error(json.error ?? 'Không thể nộp bài');
 				setResult(json.data);
 				if (json.data.saved) setAttemptsUsed((used) => used + 1);
-				writeTestScore(test.courseSlug, test.slug, { score: json.data.score, total: json.data.total });
+				writeTestScore(test.courseSlug, test.slug, {
+					score: json.data.score,
+					total: json.data.total,
+				});
 				onResult?.({ score: json.data.score, total: json.data.total });
 				try {
 					localStorage.removeItem(storageKey);
@@ -283,7 +304,17 @@ export default function TestRunner({
 				submittingRef.current = false;
 			}
 		},
-		[answers, onResult, playQuestions, startedAt, storageKey, submitUrl, test.courseSlug, test.slug, unanswered],
+		[
+			answers,
+			onResult,
+			playQuestions,
+			startedAt,
+			storageKey,
+			submitUrl,
+			test.courseSlug,
+			test.slug,
+			unanswered,
+		],
 	);
 
 	useEffect(() => {
@@ -305,7 +336,10 @@ export default function TestRunner({
 		void fetch(checkUrl, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ questionId: question.id, answer: toResponse(question, answers[question.id]) }),
+			body: JSON.stringify({
+				questionId: question.id,
+				answer: toResponse(question, answers[question.id]),
+			}),
 		})
 			.then((response) => response.json())
 			.then((json: { ok: boolean; data?: MyClassQuestionCheck }) => {
@@ -345,7 +379,9 @@ export default function TestRunner({
 	function setBlank(blankId: string, text: string) {
 		const currentValue = answers[question.id];
 		const blanks =
-			typeof currentValue === 'object' && currentValue && !Array.isArray(currentValue) ? currentValue : {};
+			typeof currentValue === 'object' && currentValue && !Array.isArray(currentValue)
+				? currentValue
+				: {};
 		setDraft({ ...blanks, [blankId]: text });
 	}
 
@@ -403,7 +439,9 @@ export default function TestRunner({
 						<p className="mc-num mt-1 text-[2.5rem] font-bold leading-none text-ink">
 							{result.score}/{result.total}
 						</p>
-						{result.earnedPoints != null && result.totalPoints != null && result.totalPoints !== result.total ? (
+						{result.earnedPoints != null &&
+						result.totalPoints != null &&
+						result.totalPoints !== result.total ? (
 							<p className="mc-meta mt-1">
 								Điểm phần <span className="mc-num">{result.earnedPoints}</span>/
 								<span className="mc-num">{result.totalPoints}</span>
@@ -454,7 +492,10 @@ export default function TestRunner({
 						<h2 className="mc-h3">Nên ôn lại</h2>
 						<McRows as="ul" className="mt-3 border-t-0">
 							{weak.map((item) => (
-								<li key={item.slug} className="flex flex-wrap items-center justify-between gap-3 px-0 py-3">
+								<li
+									key={item.slug}
+									className="flex flex-wrap items-center justify-between gap-3 px-0 py-3"
+								>
 									<div>
 										<p className="font-semibold text-ink">{item.title}</p>
 										<p className="mc-meta">
@@ -478,7 +519,11 @@ export default function TestRunner({
 				{showReview ? (
 					<details className="group" open>
 						<summary className="flex cursor-pointer list-none items-center gap-2 text-ink marker:content-none [&::-webkit-details-marker]:hidden">
-							<McIcon name="arrow_drop_down" size={24} className="transition-transform group-open:rotate-0 -rotate-90" />
+							<McIcon
+								name="arrow_drop_down"
+								size={24}
+								className="transition-transform group-open:rotate-0 -rotate-90"
+							/>
 							<h3 className="mc-h3">Xem câu trả lời</h3>
 						</summary>
 						<div className="mt-4 space-y-4">
@@ -535,7 +580,9 @@ export default function TestRunner({
 	const lastQuestion = safeCurrent === playQuestions.length - 1;
 	const selectedMulti = asStringArray(answers[question.id]);
 	const blankDraft =
-		typeof answers[question.id] === 'object' && answers[question.id] && !Array.isArray(answers[question.id])
+		typeof answers[question.id] === 'object' &&
+		answers[question.id] &&
+		!Array.isArray(answers[question.id])
 			? (answers[question.id] as Record<string, string>)
 			: {};
 	const locked = Boolean(checks[question.id]);

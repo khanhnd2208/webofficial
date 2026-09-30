@@ -44,9 +44,7 @@ function parseArgs(argv: string[]) {
 	return { reportPath, dryRun };
 }
 
-function parseChiaNhomWorkbook(
-	sheets: Array<{ sheet: string; data: unknown[][] }>,
-): SourceRow[] {
+function parseChiaNhomWorkbook(sheets: Array<{ sheet: string; data: unknown[][] }>): SourceRow[] {
 	const missingSheets = Object.keys(SHEET_TO_GROUP_NO).filter(
 		(name) => !sheets.some((sheet) => sheet.sheet === name),
 	);
@@ -143,9 +141,7 @@ async function main() {
 				include: { student: { select: { studentCode: true, studentCodeNormalized: true } } },
 				orderBy: { orderNo: 'asc' },
 			});
-			const byCode = new Map(
-				enrollments.map((item) => [item.student.studentCodeNormalized, item]),
-			);
+			const byCode = new Map(enrollments.map((item) => [item.student.studentCodeNormalized, item]));
 			const sourceRows = source.filter((row) => row.groupNo === groupNo);
 			const missingInDb = sourceRows.filter(
 				(row) => !byCode.has(normalizeStudentCode(row.studentCode)),

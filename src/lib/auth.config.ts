@@ -63,11 +63,11 @@ export const authConfig: NextAuthConfig = {
 	providers:
 		googleClientId && googleClientSecret
 			? [
-				Google({
-					clientId: googleClientId,
-					clientSecret: googleClientSecret,
-				}),
-			]
+					Google({
+						clientId: googleClientId,
+						clientSecret: googleClientSecret,
+					}),
+				]
 			: [],
 	callbacks: {
 		async redirect({ url, baseUrl }) {

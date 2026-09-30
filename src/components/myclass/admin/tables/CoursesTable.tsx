@@ -1,7 +1,11 @@
 'use client';
 
 import CourseListActions from '@/components/myclass/admin/CourseListActions';
-import { StudioAdminTable, StudioStatus, type StudioColumn } from '@/components/myclass/admin/studio';
+import {
+	StudioAdminTable,
+	StudioStatus,
+	type StudioColumn,
+} from '@/components/myclass/admin/studio';
 import { routes } from '@/config/routes';
 import { ensureListPage } from '@/features/my-class/domain/listQuery';
 import type { AdminCourseTablePage, AdminCourseTableRow } from '@/features/my-class';
@@ -110,7 +114,11 @@ export default function CoursesTable({
 						? `${routes.admin.myClassPerformance}?courseId=${row.id}`
 						: routes.admin.myClassCourseOverview(row.id))
 			}
-			rowActions={performanceLinks || rowHref ? undefined : (row) => <CourseListActions courseId={row.id} courseSlug={row.slug} />}
+			rowActions={
+				performanceLinks || rowHref
+					? undefined
+					: (row) => <CourseListActions courseId={row.id} courseSlug={row.slug} />
+			}
 			emptyTitle="Không có khóa học phù hợp"
 			emptyDescription="Thử thay đổi từ khóa hoặc bộ lọc."
 		/>

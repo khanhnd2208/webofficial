@@ -26,7 +26,10 @@ export default function AdminError({
 				onRetry={reset}
 			/>
 			<p className="mt-6 text-center">
-				<Link href={routes.admin.home} className="text-sm font-semibold underline underline-offset-4">
+				<Link
+					href={routes.admin.home}
+					className="text-sm font-semibold underline underline-offset-4"
+				>
 					Tổng quan
 				</Link>
 			</p>

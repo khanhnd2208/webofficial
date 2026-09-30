@@ -8,9 +8,7 @@ interface AnswerFeedbackProps {
 }
 
 export default function AnswerFeedback({ isCorrect, correctOption }: AnswerFeedbackProps) {
-	const label = isCorrect
-		? 'Correct.'
-		: `Incorrect — the answer is ${correctOption}.`;
+	const label = isCorrect ? 'Correct.' : `Incorrect — the answer is ${correctOption}.`;
 
 	return (
 		<p

@@ -4,7 +4,12 @@
    ════════════════════════════════════════════════════════════════════════ */
 import { withAuth, withErrorHandling, apiSuccess, apiError } from '@/lib/apiUtils';
 import { getApiUser } from '@/lib/apiAuth';
-import { getStore, addToLibrary, AlreadyOwnedError, getVocabSetById } from '@/services/vocabSetService';
+import {
+	getStore,
+	addToLibrary,
+	AlreadyOwnedError,
+	getVocabSetById,
+} from '@/services/vocabSetService';
 
 export const GET = withErrorHandling(async (request) => {
 	const user = await getApiUser(request);
@@ -17,7 +22,7 @@ export const GET = withErrorHandling(async (request) => {
 });
 
 export const POST = withAuth(async (request, user) => {
-	const body = await request.json() as { vocabSetId?: string };
+	const body = (await request.json()) as { vocabSetId?: string };
 	const { vocabSetId } = body;
 	if (!vocabSetId) return apiError('vocabSetId is required', 400);
 	const set = await getVocabSetById(vocabSetId);

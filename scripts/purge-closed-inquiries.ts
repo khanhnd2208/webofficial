@@ -27,7 +27,9 @@ async function main() {
 	};
 
 	const count = await db.collection('inquiries').countDocuments(filter);
-	console.log(JSON.stringify({ dryRun: !apply, cutoff: cutoff.toISOString(), matched: count }, null, 2));
+	console.log(
+		JSON.stringify({ dryRun: !apply, cutoff: cutoff.toISOString(), matched: count }, null, 2),
+	);
 
 	if (apply && count > 0) {
 		const result = await db.collection('inquiries').deleteMany(filter);

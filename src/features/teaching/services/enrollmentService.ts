@@ -104,7 +104,11 @@ export async function addEnrollment(classId: string, input: AddEnrollmentInput) 
 			);
 		}
 		if (classified.conflicts.some((conflict) => !input.conflictResolution?.[conflict.field])) {
-			throw new AppError('Hãy chọn giữ dữ liệu hiện tại hoặc dùng dữ liệu mới cho từng trường khác nhau.', 422, 'VALIDATION');
+			throw new AppError(
+				'Hãy chọn giữ dữ liệu hiện tại hoặc dùng dữ liệu mới cho từng trường khác nhau.',
+				422,
+				'VALIDATION',
+			);
 		}
 		const profile = applyConflictResolution(
 			normalized,

@@ -1,4 +1,9 @@
-import { createTopic, createTopicSchema, listAdminTopics, parseWithAppError } from '@/features/my-class';
+import {
+	createTopic,
+	createTopicSchema,
+	listAdminTopics,
+	parseWithAppError,
+} from '@/features/my-class';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import { type NextRequest } from 'next/server';
 

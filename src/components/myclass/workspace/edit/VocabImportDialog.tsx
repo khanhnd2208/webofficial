@@ -5,7 +5,10 @@ import { useEffect, useState } from 'react';
 import { myClassApi } from '@/components/myclass/admin/api';
 import { McButton } from '@/components/myclass/ui';
 import { Dialog } from '@/components/ui/Dialog';
-import { buildVocabCsvFixPrompt, buildVocabSetPrompt } from '@/features/my-class/prompts/vocabSetPrompt';
+import {
+	buildVocabCsvFixPrompt,
+	buildVocabSetPrompt,
+} from '@/features/my-class/prompts/vocabSetPrompt';
 import type { VocabCsvParseResult } from '@/lib/vocab/parseVocabCsv';
 import { VOCAB_CSV_COLUMNS } from '@/lib/vocab/parseVocabCsv';
 
@@ -189,7 +192,12 @@ export default function VocabImportDialog({
 						className="mt-2 w-full rounded-[var(--mc-r-sm)] border border-mc-rule px-3 py-2 text-sm"
 					/>
 					<div className="mt-2">
-						<McButton variant="secondary" size="sm" onClick={buildPrompt} disabled={!rawWords.trim()}>
+						<McButton
+							variant="secondary"
+							size="sm"
+							onClick={buildPrompt}
+							disabled={!rawWords.trim()}
+						>
 							Sinh prompt
 						</McButton>
 					</div>
@@ -207,7 +215,12 @@ export default function VocabImportDialog({
 						<p className="mc-meta mt-2">Có thể bỏ qua và dán CSV thủ công ở bước 3.</p>
 					)}
 					<div className="mt-2 flex flex-wrap gap-2">
-						<McButton variant="secondary" size="sm" onClick={() => void copyPrompt()} disabled={!prompt}>
+						<McButton
+							variant="secondary"
+							size="sm"
+							onClick={() => void copyPrompt()}
+							disabled={!prompt}
+						>
 							{copied ? 'Đã copy!' : 'Copy prompt'}
 						</McButton>
 						<a
@@ -235,7 +248,13 @@ export default function VocabImportDialog({
 						className="mt-2 w-full rounded-[var(--mc-r-sm)] border border-mc-rule px-3 py-2 font-mono text-xs"
 					/>
 					<div className="mt-2 flex flex-wrap gap-2">
-						<McButton variant="secondary" size="sm" onClick={() => void check()} loading={busy} disabled={!csv.trim()}>
+						<McButton
+							variant="secondary"
+							size="sm"
+							onClick={() => void check()}
+							loading={busy}
+							disabled={!csv.trim()}
+						>
 							Xem trước
 						</McButton>
 						{preview && !preview.canImport ? (
@@ -279,7 +298,10 @@ export default function VocabImportDialog({
 									</thead>
 									<tbody>
 										{sampleRows.map((word, index) => (
-											<tr key={`${word.term}-${index}`} className="border-b border-mc-rule last:border-0">
+											<tr
+												key={`${word.term}-${index}`}
+												className="border-b border-mc-rule last:border-0"
+											>
 												<td className="px-2 py-2 font-medium">{word.term}</td>
 												<td className="px-2 py-2 text-ink-secondary">{word.pronunciation}</td>
 												<td className="px-2 py-2">{word.meaningEn}</td>

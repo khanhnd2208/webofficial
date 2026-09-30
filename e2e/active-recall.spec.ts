@@ -18,9 +18,9 @@ test.describe('Active Recall', () => {
 		const card = page.locator('article.recall-card');
 		const question = (await card.locator('.recall-text').textContent())?.trim();
 		expect(question).toBeTruthy();
-		const questionSize = await card.locator('.recall-text').evaluate((node) =>
-			parseFloat(getComputedStyle(node).fontSize),
-		);
+		const questionSize = await card
+			.locator('.recall-text')
+			.evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
 		expect(questionSize).toBeGreaterThanOrEqual(16);
 		expect(questionSize).toBeLessThanOrEqual(32);
 		await page.screenshot({
@@ -54,9 +54,9 @@ test.describe('Active Recall', () => {
 		const card = page.locator('article.recall-card');
 		const question = (await card.locator('.recall-text').textContent())?.trim();
 		expect(question).toBeTruthy();
-		const questionSize = await card.locator('.recall-text').evaluate((node) =>
-			parseFloat(getComputedStyle(node).fontSize),
-		);
+		const questionSize = await card
+			.locator('.recall-text')
+			.evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
 		expect(questionSize).toBeGreaterThanOrEqual(16);
 		expect(questionSize).toBeLessThanOrEqual(32);
 		await page.screenshot({

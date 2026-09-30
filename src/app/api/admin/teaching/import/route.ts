@@ -20,7 +20,8 @@ export const POST = withAdmin(async (request: NextRequest) => {
 	if (mode === 'commit' && contentType.includes('multipart/form-data')) {
 		const form = await request.formData();
 		const file = form.get('file');
-		if (!(file instanceof File)) throw new AppError('Upload an Excel student list (.xlsx)', 422, 'VALIDATION');
+		if (!(file instanceof File))
+			throw new AppError('Upload an Excel student list (.xlsx)', 422, 'VALIDATION');
 		return apiSuccess(await commitStudentListImport(Buffer.from(await file.arrayBuffer())), 201);
 	}
 	return apiSuccess(await previewRosterImport({ source: await readRosterImportSource(request) }));

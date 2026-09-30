@@ -21,8 +21,7 @@ export default async function ActiveRecallIndexPage() {
 						Active Recall
 					</h1>
 					<p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-secondary">
-						Tự trả lời trước khi lật thẻ để đối chiếu. Mỗi bộ tập trung vào một bài học hoặc
-						chủ đề.
+						Tự trả lời trước khi lật thẻ để đối chiếu. Mỗi bộ tập trung vào một bài học hoặc chủ đề.
 					</p>
 				</header>
 				<section className="mt-10 border-t border-hairline" aria-label="Các bộ thẻ công khai">
@@ -40,8 +39,7 @@ export default async function ActiveRecallIndexPage() {
 								</div>
 								<div className="min-w-0 flex-1">
 									<p className="text-sm text-ink-secondary">
-										{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ') ||
-											'Bộ thẻ'}
+										{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ') || 'Bộ thẻ'}
 									</p>
 									<h2 className="mt-1 font-display text-2xl font-medium tracking-tight text-ink transition-colors group-hover:text-[#765625]">
 										{deck.title}
@@ -58,9 +56,7 @@ export default async function ActiveRecallIndexPage() {
 							</Link>
 						))
 					) : (
-						<p className="py-12 text-sm text-ink-secondary">
-							Chưa có bộ thẻ nào được xuất bản.
-						</p>
+						<p className="py-12 text-sm text-ink-secondary">Chưa có bộ thẻ nào được xuất bản.</p>
 					)}
 				</section>
 			</div>

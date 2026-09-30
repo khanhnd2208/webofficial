@@ -45,7 +45,10 @@ function EnrolledCourseView({ course }: { course: LearnerCourseDetail }) {
 								aria-valuemin={0}
 								aria-valuemax={100}
 							>
-								<div className="h-full bg-vermilion" style={{ width: `${course.progressPercent}%` }} />
+								<div
+									className="h-full bg-vermilion"
+									style={{ width: `${course.progressPercent}%` }}
+								/>
 							</div>
 						</div>
 						{course.nextLesson ? (
@@ -74,7 +77,11 @@ function EnrolledCourseView({ course }: { course: LearnerCourseDetail }) {
 					</div>
 				) : null}
 
-				<CourseSpine courseSlug={course.slug} modules={course.modules} nextLessonSlug={course.nextLesson?.slug} />
+				<CourseSpine
+					courseSlug={course.slug}
+					modules={course.modules}
+					nextLessonSlug={course.nextLesson?.slug}
+				/>
 			</div>
 
 			{course.nextLesson ? (
@@ -95,7 +102,9 @@ function ForbiddenView() {
 	return (
 		<main className="shell py-16 text-center">
 			<h1 className="font-display text-2xl font-medium text-ink">Không có quyền truy cập</h1>
-			<p className="mt-3 text-sm text-ink-secondary">Khóa học này không công khai và bạn chưa được ghi danh.</p>
+			<p className="mt-3 text-sm text-ink-secondary">
+				Khóa học này không công khai và bạn chưa được ghi danh.
+			</p>
 			<div className="mt-6 flex flex-wrap justify-center gap-4">
 				<Link
 					href={routes.learnPrograms}

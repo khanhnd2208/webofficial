@@ -24,9 +24,14 @@ export default async function AdminMyClassPage() {
 			/>
 
 			<section aria-label="Tổng quan vận hành" className="mt-7 grid gap-3 md:grid-cols-3">
-				<Link href={routes.admin.myClassKnowledge} className="mc-surface mc-surface-interactive p-5">
+				<Link
+					href={routes.admin.myClassKnowledge}
+					className="mc-surface mc-surface-interactive p-5"
+				>
 					<p className="text-sm font-semibold text-ink-secondary">Nội dung cần xử lý</p>
-					<p className="mc-num mt-3 text-3xl font-bold text-ink">{stats.knowledgeUnitsMissingPublished}</p>
+					<p className="mc-num mt-3 text-3xl font-bold text-ink">
+						{stats.knowledgeUnitsMissingPublished}
+					</p>
 					<p className="mc-meta mt-2">Thiếu bản xuất bản</p>
 				</Link>
 				<Link href={routes.admin.myClassCohorts} className="mc-surface mc-surface-interactive p-5">
@@ -34,7 +39,10 @@ export default async function AdminMyClassPage() {
 					<p className="mc-num mt-3 text-3xl font-bold text-ink">{stats.cohortsActive}</p>
 					<p className="mc-meta mt-2">{stats.memberships.active} học viên đang tham gia</p>
 				</Link>
-				<Link href={routes.admin.myClassPerformance} className="mc-surface mc-surface-interactive p-5">
+				<Link
+					href={routes.admin.myClassPerformance}
+					className="mc-surface mc-surface-interactive p-5"
+				>
 					<p className="text-sm font-semibold text-ink-secondary">Lượt làm bài</p>
 					<p className="mc-num mt-3 text-3xl font-bold text-ink">{stats.attemptsLast7Days}</p>
 					<p className="mc-meta mt-2">Trong 7 ngày gần nhất</p>

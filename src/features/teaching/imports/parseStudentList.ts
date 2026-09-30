@@ -99,12 +99,7 @@ function cellText(value: unknown): string {
 }
 
 function normalizeLabel(value: string): string {
-	return value
-		.normalize('NFC')
-		.toLowerCase()
-		.replace(/[_-]+/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim();
+	return value.normalize('NFC').toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function parseOrderNo(value: string, fallback: number): number {

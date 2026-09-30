@@ -8,7 +8,9 @@ function missingClass(): never {
 	throw new AppError('Class not found', 404, 'NOT_FOUND');
 }
 
-export async function listClassRecallAssignments(classId: string): Promise<TeachingClassRecallAssignment[]> {
+export async function listClassRecallAssignments(
+	classId: string,
+): Promise<TeachingClassRecallAssignment[]> {
 	const teachingClass = await repo.getClass(classId);
 	if (!teachingClass) missingClass();
 	const decks = await repo.prisma.activeRecallDeck.findMany({
@@ -79,7 +81,11 @@ export async function enablePublishedDecksForClass(classId: string, courseId: st
 	await repo.enablePublishedDecksForClass(classId, courseId);
 }
 
-export async function enableDeckForCourseClasses(courseId: string, deckId: string, displayOrder = 0) {
+export async function enableDeckForCourseClasses(
+	courseId: string,
+	deckId: string,
+	displayOrder = 0,
+) {
 	const classes = await repo.prisma.teachingClass.findMany({
 		where: { courseId },
 		select: { id: true },

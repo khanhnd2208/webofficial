@@ -28,12 +28,19 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
 								</span>
 							) : null}
 							{item.href && !isLast ? (
-								<Link href={item.href} className="uppercase tracking-wider transition-colors hover:text-ink">
+								<Link
+									href={item.href}
+									className="uppercase tracking-wider transition-colors hover:text-ink"
+								>
 									{item.label}
 								</Link>
 							) : (
 								<span
-									className={isLast ? 'font-semibold uppercase tracking-wider text-ink' : 'uppercase tracking-wider'}
+									className={
+										isLast
+											? 'font-semibold uppercase tracking-wider text-ink'
+											: 'uppercase tracking-wider'
+									}
 									aria-current={isLast ? 'page' : undefined}
 								>
 									{item.label}

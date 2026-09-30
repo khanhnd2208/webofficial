@@ -61,7 +61,12 @@ export function wordsFromSet(set: VocabSetDTO): EditableWord[] {
 
 export function toCreateWords(words: EditableWord[]): CreateWordInput[] {
 	return words
-		.filter((word) => !word._deleted && word.term.trim() && (word.meaningVi || word.definition || word.meaningEn).trim())
+		.filter(
+			(word) =>
+				!word._deleted &&
+				word.term.trim() &&
+				(word.meaningVi || word.definition || word.meaningEn).trim(),
+		)
 		.map((word) => ({
 			term: word.term.trim(),
 			definition: (word.meaningVi || word.definition).trim(),
@@ -162,7 +167,11 @@ export default function VocabSetEditor({
 	);
 }
 
-export function useVocabSetDraft(initial?: { title?: string; description?: string; words?: EditableWord[] }) {
+export function useVocabSetDraft(initial?: {
+	title?: string;
+	description?: string;
+	words?: EditableWord[];
+}) {
 	const [title, setTitle] = useState(initial?.title ?? '');
 	const [description, setDescription] = useState(initial?.description ?? '');
 	const [words, setWords] = useState<EditableWord[]>(initial?.words ?? [{ ...EMPTY_WORD }]);
@@ -182,7 +191,11 @@ export function useLoadedVocabSet(setId: string | null) {
 		void (async () => {
 			try {
 				const res = await fetch(`/api/vocab-sets/${setId}`);
-				const json = (await res.json()) as { ok: boolean; data?: { set: VocabSetDTO }; error?: string };
+				const json = (await res.json()) as {
+					ok: boolean;
+					data?: { set: VocabSetDTO };
+					error?: string;
+				};
 				if (!json.ok || !json.data?.set) throw new Error(json.error ?? 'Không tải được bộ từ');
 				if (cancelled) return;
 				setTitle(json.data.set.title);
@@ -199,7 +212,17 @@ export function useLoadedVocabSet(setId: string | null) {
 		};
 	}, [setId]);
 
-	return { title, setTitle, description, setDescription, words, setWords, loading, error, setError };
+	return {
+		title,
+		setTitle,
+		description,
+		setDescription,
+		words,
+		setWords,
+		loading,
+		error,
+		setError,
+	};
 }
 
 function WordEditorCard({
@@ -221,7 +244,11 @@ function WordEditorCard({
 				<p className="flex-1 text-sm text-error line-through">
 					{word.term || '(từ mới)'} — {word.meaningVi || word.definition}
 				</p>
-				<button type="button" onClick={onToggleDelete} className="text-xs font-semibold text-ink-secondary">
+				<button
+					type="button"
+					onClick={onToggleDelete}
+					className="text-xs font-semibold text-ink-secondary"
+				>
 					Hoàn tác
 				</button>
 			</div>
@@ -237,11 +264,17 @@ function WordEditorCard({
 						{word.term || <span className="italic text-ink-tertiary">chưa nhập</span>}
 						<span className="mx-2 font-normal text-ink-tertiary">—</span>
 						<span className="font-normal text-ink-secondary">
-							{word.meaningVi || word.definition || <span className="italic text-ink-tertiary">chưa nhập</span>}
+							{word.meaningVi || word.definition || (
+								<span className="italic text-ink-tertiary">chưa nhập</span>
+							)}
 						</span>
 					</p>
 				</div>
-				<button type="button" onClick={onToggleExpand} className="text-xs font-semibold text-ink-secondary">
+				<button
+					type="button"
+					onClick={onToggleExpand}
+					className="text-xs font-semibold text-ink-secondary"
+				>
 					{word._expanded ? 'Thu gọn' : 'Sửa'}
 				</button>
 				<button type="button" onClick={onToggleDelete} className="text-xs font-semibold text-error">
@@ -319,7 +352,10 @@ function WordEditorCard({
 						</div>
 						<div>
 							<p className="mb-1 text-xs font-semibold text-ink-secondary">Gợi ý vừa</p>
-							<TagInput tags={word.hintsMedium} onChange={(value) => onUpdate('hintsMedium', value)} />
+							<TagInput
+								tags={word.hintsMedium}
+								onChange={(value) => onUpdate('hintsMedium', value)}
+							/>
 						</div>
 						<div>
 							<p className="mb-1 text-xs font-semibold text-ink-secondary">Gợi ý dễ</p>

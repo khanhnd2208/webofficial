@@ -45,7 +45,12 @@ export const publicCourseInclude = {
 				orderBy: { position: 'asc' as const },
 				include: {
 					knowledge: {
-						where: { knowledgeUnit: { status: 'PUBLISHED' as const, currentPublishedRevisionId: { not: null } } },
+						where: {
+							knowledgeUnit: {
+								status: 'PUBLISHED' as const,
+								currentPublishedRevisionId: { not: null },
+							},
+						},
 						orderBy: { position: 'asc' as const },
 						include: {
 							knowledgeUnit: {

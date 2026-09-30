@@ -109,7 +109,10 @@ describe('reorderCourseTree', () => {
 
 	it('reorders units under a section', () => {
 		const next = reorderCourseTree(course(), 'section', 's1', ['k2', 'k1']);
-		expect(next.lessons[0]?.sections[0]?.knowledgeUnits.map((unit) => unit.id)).toEqual(['k2', 'k1']);
+		expect(next.lessons[0]?.sections[0]?.knowledgeUnits.map((unit) => unit.id)).toEqual([
+			'k2',
+			'k1',
+		]);
 	});
 
 	it('returns the original course when ids do not match', () => {

@@ -46,21 +46,21 @@ export default async function AdminInquiryDetailPage({
 					</Link>
 				}
 			/>
-				<div className="mt-4 flex flex-wrap items-center gap-3">
-					<span className="rounded-full border border-border px-3 py-1 text-xs font-semibold">
-						{inquiry.submitterType === 'account'
-							? 'Tài khoản'
-							: inquiry.submitterType === 'guest'
-								? 'Khách'
-								: 'Không xác định'}
-					</span>
-					<a
-						href={replyHref}
-						className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
-					>
-						Trả lời qua email
-					</a>
-				</div>
+			<div className="mt-4 flex flex-wrap items-center gap-3">
+				<span className="rounded-full border border-border px-3 py-1 text-xs font-semibold">
+					{inquiry.submitterType === 'account'
+						? 'Tài khoản'
+						: inquiry.submitterType === 'guest'
+							? 'Khách'
+							: 'Không xác định'}
+				</span>
+				<a
+					href={replyHref}
+					className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
+				>
+					Trả lời qua email
+				</a>
+			</div>
 
 			<section className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
 				<div className="space-y-6">
@@ -76,7 +76,9 @@ export default async function AdminInquiryDetailPage({
 					) : null}
 					{inquiry.desiredOutcome ? (
 						<div className="rounded-xl border border-border p-4">
-							<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Kết quả mong muốn</h2>
+							<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
+								Kết quả mong muốn
+							</h2>
 							<p className="mt-3 whitespace-pre-wrap text-sm">{inquiry.desiredOutcome}</p>
 						</div>
 					) : null}
@@ -135,7 +137,9 @@ export default async function AdminInquiryDetailPage({
 						</div>
 					</dl>
 					<div className="rounded-xl border border-border p-4">
-						<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Lịch sử trạng thái</h2>
+						<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
+							Lịch sử trạng thái
+						</h2>
 						<ul className="mt-3 space-y-2 text-sm">
 							{inquiry.statusHistory.map((h, idx) => (
 								<li key={`${h.status}-${idx}`}>

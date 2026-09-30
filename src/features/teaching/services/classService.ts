@@ -2,8 +2,17 @@ import type { Prisma } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
 
-import { dependencyConflict, isEmptyClassScaffold, normalizeClassCode, normalizeTerm } from '../domain/adminLifecycle';
-import { ensureTeachingCourse, lockActiveCourse, throwIfCourseArchived } from '../domain/courseIdentity';
+import {
+	dependencyConflict,
+	isEmptyClassScaffold,
+	normalizeClassCode,
+	normalizeTerm,
+} from '../domain/adminLifecycle';
+import {
+	ensureTeachingCourse,
+	lockActiveCourse,
+	throwIfCourseArchived,
+} from '../domain/courseIdentity';
 import { withUniqueConflict } from '../domain/prismaErrors';
 import * as repo from '../repositories/teachingRepository';
 import { DEFAULT_TUTORIAL_CODE, DEFAULT_TUTORIAL_NAME } from '../repositories/teachingRepository';
@@ -127,47 +136,41 @@ export async function createTeachingClass(input: CreateTeachingClassInput) {
 	const term = normalizeTerm(input.term);
 	const course = await resolveCourse(input);
 	await assertClassIdentityAvailable({ courseId: course.id, classCode: groupNo, term });
-	const classId = await withUniqueConflict(
-		'Lớp với mã này đã tồn tại trong học kỳ đã chọn',
-		() =>
-			repo.prisma.$transaction(async (transaction) => {
-				await lockActiveCourse(transaction, course.id);
-				const teachingClass = await transaction.teachingClass.create({
-					data: {
-						courseId: course.id,
-						courseCode: course.courseCode,
-						courseName: course.courseName,
-						groupNo,
-						classCode: groupNo,
-						term,
-						credits: input.credits ?? null,
-						lecturerName: input.lecturerName ?? '',
-						lecturerCode: input.lecturerCode ?? '',
-						totalWeeks,
-					},
-				});
-				const tutorial = await transaction.teachingTutorialClass.create({
-					data: {
-						classId: teachingClass.id,
-						code: DEFAULT_TUTORIAL_CODE,
-						name: DEFAULT_TUTORIAL_NAME,
-						displayOrder: 0,
-					},
-				});
-				await transaction.teachingSession.createMany({
-					data: Array.from({ length: totalWeeks }, (_, index) => ({
-						classId: teachingClass.id,
-						tutorialClassId: tutorial.id,
-						weekNumber: index + 1,
-					})),
-				});
-				await enablePublishedDecksInTransaction(
-					transaction,
-					teachingClass.id,
-					course.id,
-				);
-				return teachingClass.id;
-			}),
+	const classId = await withUniqueConflict('Lớp với mã này đã tồn tại trong học kỳ đã chọn', () =>
+		repo.prisma.$transaction(async (transaction) => {
+			await lockActiveCourse(transaction, course.id);
+			const teachingClass = await transaction.teachingClass.create({
+				data: {
+					courseId: course.id,
+					courseCode: course.courseCode,
+					courseName: course.courseName,
+					groupNo,
+					classCode: groupNo,
+					term,
+					credits: input.credits ?? null,
+					lecturerName: input.lecturerName ?? '',
+					lecturerCode: input.lecturerCode ?? '',
+					totalWeeks,
+				},
+			});
+			const tutorial = await transaction.teachingTutorialClass.create({
+				data: {
+					classId: teachingClass.id,
+					code: DEFAULT_TUTORIAL_CODE,
+					name: DEFAULT_TUTORIAL_NAME,
+					displayOrder: 0,
+				},
+			});
+			await transaction.teachingSession.createMany({
+				data: Array.from({ length: totalWeeks }, (_, index) => ({
+					classId: teachingClass.id,
+					tutorialClassId: tutorial.id,
+					weekNumber: index + 1,
+				})),
+			});
+			await enablePublishedDecksInTransaction(transaction, teachingClass.id, course.id);
+			return teachingClass.id;
+		}),
 	);
 	return getTeachingClass(classId);
 }
@@ -270,11 +273,7 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 						},
 					});
 				}
-				await enablePublishedDecksInTransaction(
-					transaction,
-					teachingClass.id,
-					course.id,
-				);
+				await enablePublishedDecksInTransaction(transaction, teachingClass.id, course.id);
 				return teachingClass.id;
 			}),
 	);
@@ -304,7 +303,11 @@ export async function updateTeachingClass(id: string, input: UpdateTeachingClass
 			: { id: existing.courseId, courseCode: existing.courseCode, courseName: existing.courseName };
 	const nextGroupNo = input.groupNo != null ? normalizeClassCode(input.groupNo) : existing.groupNo;
 	const nextTerm = input.term != null ? normalizeTerm(input.term) : existing.term;
-	if (nextGroupNo !== existing.groupNo || nextTerm !== existing.term || nextCourse.id !== existing.courseId) {
+	if (
+		nextGroupNo !== existing.groupNo ||
+		nextTerm !== existing.term ||
+		nextCourse.id !== existing.courseId
+	) {
 		await assertClassIdentityAvailable({
 			courseId: nextCourse.id,
 			classCode: nextGroupNo,
@@ -313,50 +316,48 @@ export async function updateTeachingClass(id: string, input: UpdateTeachingClass
 		});
 	}
 	const nextStatus = input.status ?? existing.status;
-	const updated = await withUniqueConflict(
-		'Lớp với mã này đã tồn tại trong học kỳ đã chọn',
-		() =>
-			repo.prisma.$transaction(async (transaction) => {
-				if (nextStatus === 'ACTIVE') {
-					await lockActiveCourse(transaction, nextCourse.id);
-				}
-				return transaction.teachingClass.update({
-					where: { id },
-					data: {
-						course: { connect: { id: nextCourse.id } },
-						courseCode: nextCourse.courseCode,
-						courseName: nextCourse.courseName,
-						groupNo: nextGroupNo,
-						classCode: nextGroupNo,
-						term: nextTerm,
-						credits: input.credits === undefined ? undefined : input.credits,
-						lecturerName: input.lecturerName,
-						lecturerCode: input.lecturerCode,
-						totalWeeks: input.totalWeeks,
-						attendanceMaxPoints: input.attendanceMaxPoints,
-						cpMaxPoints: input.cpMaxPoints,
-						absenceDeductionPoints: input.absenceDeductionPoints,
-						lateDeductionPoints: input.lateDeductionPoints,
-						lateCountsTowardAbsenceThreshold: input.lateCountsTowardAbsenceThreshold,
-						giftDeductionPoints: input.giftDeductionPoints,
-						absenceThresholdPercent: input.absenceThresholdPercent,
-						lateGraceMinutes: input.lateGraceMinutes,
-						status: input.status,
-					},
-					include: {
-						tutorials: { orderBy: [{ displayOrder: 'asc' as const }, { code: 'asc' as const }] },
-						_count: {
-							select: {
-								enrollments: true,
-								sessions: true,
-								tutorials: true,
-								notes: true,
-								publicLinks: true,
-							},
+	const updated = await withUniqueConflict('Lớp với mã này đã tồn tại trong học kỳ đã chọn', () =>
+		repo.prisma.$transaction(async (transaction) => {
+			if (nextStatus === 'ACTIVE') {
+				await lockActiveCourse(transaction, nextCourse.id);
+			}
+			return transaction.teachingClass.update({
+				where: { id },
+				data: {
+					course: { connect: { id: nextCourse.id } },
+					courseCode: nextCourse.courseCode,
+					courseName: nextCourse.courseName,
+					groupNo: nextGroupNo,
+					classCode: nextGroupNo,
+					term: nextTerm,
+					credits: input.credits === undefined ? undefined : input.credits,
+					lecturerName: input.lecturerName,
+					lecturerCode: input.lecturerCode,
+					totalWeeks: input.totalWeeks,
+					attendanceMaxPoints: input.attendanceMaxPoints,
+					cpMaxPoints: input.cpMaxPoints,
+					absenceDeductionPoints: input.absenceDeductionPoints,
+					lateDeductionPoints: input.lateDeductionPoints,
+					lateCountsTowardAbsenceThreshold: input.lateCountsTowardAbsenceThreshold,
+					giftDeductionPoints: input.giftDeductionPoints,
+					absenceThresholdPercent: input.absenceThresholdPercent,
+					lateGraceMinutes: input.lateGraceMinutes,
+					status: input.status,
+				},
+				include: {
+					tutorials: { orderBy: [{ displayOrder: 'asc' as const }, { code: 'asc' as const }] },
+					_count: {
+						select: {
+							enrollments: true,
+							sessions: true,
+							tutorials: true,
+							notes: true,
+							publicLinks: true,
 						},
 					},
-				});
-			}),
+				},
+			});
+		}),
 	);
 	if (totalWeeks > existing.totalWeeks) {
 		for (const tutorial of updated.tutorials) {

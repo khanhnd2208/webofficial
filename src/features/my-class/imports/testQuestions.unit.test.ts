@@ -2,13 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { parseTestQuestionCsv, allocateQuestionSlugs } from './testQuestions';
 
-const HEADER = 'stem,option_a,option_b,option_c,option_d,correct_option,explanation,difficulty,level';
+const HEADER =
+	'stem,option_a,option_b,option_c,option_d,correct_option,explanation,difficulty,level';
 
 describe('parseTestQuestionCsv', () => {
 	it('parses a standard row and applies defaults', () => {
-		const [row] = parseTestQuestionCsv(
-			`${HEADER}\nCâu hỏi mẫu,Đúng,Sai,Nhiễu,,B,Giải thích,,`,
-		);
+		const [row] = parseTestQuestionCsv(`${HEADER}\nCâu hỏi mẫu,Đúng,Sai,Nhiễu,,B,Giải thích,,`);
 		expect(row).toMatchObject({
 			stem: 'Câu hỏi mẫu',
 			explanation: 'Giải thích',
@@ -21,7 +20,8 @@ describe('parseTestQuestionCsv', () => {
 	});
 
 	it('accepts Vietnamese header aliases', () => {
-		const csv = 'Câu hỏi,A,B,Đáp án,Giải thích,Độ khó,Mức độ\nHRM là gì?,Đúng,Sai,A,Ổn,2,FOUNDATION';
+		const csv =
+			'Câu hỏi,A,B,Đáp án,Giải thích,Độ khó,Mức độ\nHRM là gì?,Đúng,Sai,A,Ổn,2,FOUNDATION';
 		const [row] = parseTestQuestionCsv(csv);
 		expect(row?.errors).toEqual([]);
 		expect(row?.stem).toBe('HRM là gì?');
@@ -56,7 +56,9 @@ describe('parseTestQuestionCsv', () => {
 	});
 
 	it('allocates unique slugs for duplicate stems', () => {
-		const rows = parseTestQuestionCsv(`${HEADER}\nSame stem,Yes,No,,,A,,,\nSame stem,Yes,No,,,B,,,`);
+		const rows = parseTestQuestionCsv(
+			`${HEADER}\nSame stem,Yes,No,,,A,,,\nSame stem,Yes,No,,,B,,,`,
+		);
 		expect(rows.map((row) => row.slug)).toEqual(['same-stem', 'same-stem-2']);
 		expect(allocateQuestionSlugs(['Hello', 'Hello'], ['hello'])).toEqual(['hello-2', 'hello-3']);
 	});

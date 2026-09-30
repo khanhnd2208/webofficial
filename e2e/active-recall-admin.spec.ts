@@ -107,9 +107,12 @@ test.describe('Active Recall admin API', () => {
 		let deckId: string | undefined;
 
 		try {
-			const createdDeck = await page.request.post(`/api/admin/teaching/courses/${courseId}/recall`, {
-				data: { title: 'Course Recall E2E', slug: `course-recall-${suffix}`, status: 'DRAFT' },
-			});
+			const createdDeck = await page.request.post(
+				`/api/admin/teaching/courses/${courseId}/recall`,
+				{
+					data: { title: 'Course Recall E2E', slug: `course-recall-${suffix}`, status: 'DRAFT' },
+				},
+			);
 			expect(createdDeck.ok()).toBe(true);
 			const deck = ((await createdDeck.json()) as { data: Deck }).data;
 			deckId = deck.id;
@@ -146,8 +149,9 @@ test.describe('Active Recall admin API', () => {
 
 			const listed = await page.request.get(`/api/admin/teaching/classes/${classId}/recall`);
 			expect(listed.ok()).toBe(true);
-			const assignments = ((await listed.json()) as { data: Array<{ deckId: string; enabled: boolean }> })
-				.data;
+			const assignments = (
+				(await listed.json()) as { data: Array<{ deckId: string; enabled: boolean }> }
+			).data;
 			expect(assignments).toEqual([expect.objectContaining({ deckId: deck.id, enabled: true })]);
 
 			const disabled = await page.request.put(`/api/admin/teaching/classes/${classId}/recall`, {
@@ -177,10 +181,7 @@ test.describe('Active Recall admin API', () => {
 			]);
 		} finally {
 			if (deckId) {
-				await archiveDeck(
-					page.request,
-					`/api/admin/teaching/courses/${courseId}/recall/${deckId}`,
-				);
+				await archiveDeck(page.request, `/api/admin/teaching/courses/${courseId}/recall/${deckId}`);
 			}
 			await cleanupTeachingClass(page.request, classId);
 		}

@@ -69,9 +69,7 @@ test.describe('Editorial premium public experience', () => {
 		).toBeVisible();
 		await expect(page.getByRole('heading', { name: /Có thể chưa phù hợp nếu/i })).toHaveCount(0);
 		await expect(page.getByText('Nhìn lại công việc')).toHaveCount(0);
-		await expect(
-			page.getByRole('heading', { name: /Một vài câu hỏi thường gặp/i }),
-		).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Một vài câu hỏi thường gặp/i })).toBeVisible();
 		await expect(page.getByRole('link', { name: /Gửi lời nhắn/i }).first()).toBeVisible();
 		await expect(page.getByRole('heading', { name: /^Dự án$/i })).toHaveCount(0);
 	});
@@ -86,11 +84,11 @@ test.describe('Editorial premium public experience', () => {
 		await expect(page.getByText(/giới hạn của bằng chứng/i)).toHaveCount(0);
 		await page.goto('/du-an/ai50-ai-cho-moi-nguoi');
 		await expect(page.getByText('Visual tạm thời')).toHaveCount(0);
-		await expect(page.getByText(/Hình minh họa tạm thời/i )).toHaveCount(0);
-		await expect(page.getByText(/Minh họa đang chờ được thay/i )).toHaveCount(0);
+		await expect(page.getByText(/Hình minh họa tạm thời/i)).toHaveCount(0);
+		await expect(page.getByText(/Minh họa đang chờ được thay/i)).toHaveCount(0);
 		await expect(page.getByText('Điều tôi học được')).toBeVisible();
 		await expect(page.getByText('Giả định làm việc hiện tại')).toHaveCount(0);
-		await expect(page.getByText(/Trao đổi với tôi về dự án này/i )).toBeVisible();
+		await expect(page.getByText(/Trao đổi với tôi về dự án này/i)).toBeVisible();
 		await page.goto('/du-an/ai-in-recruitment-research');
 		await expect(page.getByRole('heading', { name: 'Giả định làm việc' })).toBeVisible();
 		await expect(page.getByText('Điều dự án chứng minh')).toHaveCount(0);
@@ -104,6 +102,6 @@ test.describe('Editorial premium public experience', () => {
 		await expect(page.getByLabel('Tên')).toHaveValue('');
 		await expect(page.getByLabel('Email')).toHaveValue('');
 		await expect(page.getByLabel(/Thời gian dự kiến/)).toBeVisible();
-		await expect(page.getByText(/Đang kiểm tra thông tin tài khoản/i )).toHaveCount(0);
+		await expect(page.getByText(/Đang kiểm tra thông tin tài khoản/i)).toHaveCount(0);
 	});
 });

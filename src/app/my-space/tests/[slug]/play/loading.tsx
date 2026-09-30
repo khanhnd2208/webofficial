@@ -40,10 +40,7 @@ export default function MySpaceQuizPlayLoading() {
 						</div>
 						<div className="mt-6 space-y-0 border-t border-hairline">
 							{Array.from({ length: 4 }, (_, i) => (
-								<div
-									key={i}
-									className="flex gap-3 border-b border-hairline px-3 py-4"
-								>
+								<div key={i} className="flex gap-3 border-b border-hairline px-3 py-4">
 									<div className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-hairline" />
 									<div className="h-4 flex-1 animate-pulse rounded bg-hairline" />
 								</div>

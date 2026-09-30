@@ -39,7 +39,8 @@ export async function runSignInSideEffects(user: SignInIdentity): Promise<void> 
 	});
 
 	await runIsolated('membership.reconcile', 'auth.side_effect', correlationId, async () => {
-		const { reconcilePendingMemberships } = await import('@/features/my-class/services/cohortService');
+		const { reconcilePendingMemberships } =
+			await import('@/features/my-class/services/cohortService');
 		await reconcilePendingMemberships(user.id, user.email);
 	});
 }

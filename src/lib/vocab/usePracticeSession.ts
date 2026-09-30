@@ -1,4 +1,4 @@
-"use client";
+'use client';
 /* ════════════════════════════════════════════════════════════════════════
    usePracticeSession.ts — Practice session lifecycle manager
    
@@ -10,12 +10,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { VocabSetDTO } from '@/types/vocab';
 
 interface UsePracticeSessionOptions {
-setId: string;
-initialSet: VocabSetDTO;
-/** Polling interval in ms (default: 30s) */
-pollInterval?: number;
-/** Callback to show a toast notification */
-onUpdateAvailable?: () => void;
+	setId: string;
+	initialSet: VocabSetDTO;
+	/** Polling interval in ms (default: 30s) */
+	pollInterval?: number;
+	/** Callback to show a toast notification */
+	onUpdateAvailable?: () => void;
 }
 
 export function usePracticeSession({
@@ -34,7 +34,7 @@ export function usePracticeSession({
 		try {
 			const res = await fetch(`/api/vocab-sets/${setId}`);
 			if (!res.ok) return;
-			const data = await res.json() as { data?: { set?: VocabSetDTO } };
+			const data = (await res.json()) as { data?: { set?: VocabSetDTO } };
 			const updated = data?.data?.set;
 			if (!updated) return;
 
@@ -42,7 +42,7 @@ export function usePracticeSession({
 			if (updated.updatedAt !== currentSet.updatedAt) {
 				if (isSessionActive) {
 					// Don't disrupt the session — queue the update
-pendingSetRef.current = updated;
+					pendingSetRef.current = updated;
 					setHasPendingUpdate(true);
 				} else {
 					setCurrentSet(updated);

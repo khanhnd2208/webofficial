@@ -40,6 +40,9 @@ describe('CourseVocabHub', () => {
 		);
 		expect(screen.getByText('Toàn khóa')).toBeVisible();
 		expect(screen.getByText('Giới thiệu')).toBeVisible();
-		expect(screen.getByRole('link', { name: /Bài 1/ })).toHaveAttribute('href', '/my-space/my-class/hrm/vocab/s2');
+		expect(screen.getByRole('link', { name: /Bài 1/ })).toHaveAttribute(
+			'href',
+			'/my-space/my-class/hrm/vocab/s2',
+		);
 	});
 });

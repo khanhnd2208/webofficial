@@ -22,5 +22,7 @@ export default async function EditCourseRecallPage({
 	}
 	const deck = await getAdminRecallDeck(deckId);
 	if (!deck || deck.courseId !== course.id) notFound();
-	return <ActiveRecallEditor initialDeck={deck} courseId={course.id} courseName={course.courseName} />;
+	return (
+		<ActiveRecallEditor initialDeck={deck} courseId={course.id} courseName={course.courseName} />
+	);
 }

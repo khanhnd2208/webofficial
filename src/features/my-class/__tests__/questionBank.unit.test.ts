@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
 import { gradeResponse, normalizeBlankText, scalePoints } from '../domain/grading';
-import { parseAnswerSpec, coerceLearnerResponse, displayCorrect, displayChosen } from '../domain/answerSpec';
-import { joinTopicPath, topicDepthFromPath, isTopicPathMatch, rewriteDescendantPaths } from '../domain/topicPath';
+import {
+	parseAnswerSpec,
+	coerceLearnerResponse,
+	displayCorrect,
+	displayChosen,
+} from '../domain/answerSpec';
+import {
+	joinTopicPath,
+	topicDepthFromPath,
+	isTopicPathMatch,
+	rewriteDescendantPaths,
+} from '../domain/topicPath';
 import { placementKey } from '../domain/placementKey';
 import { normalizeBankFilter, bankFilterFromSearch } from '../domain/bankFilter';
 import { questionBodySchema } from '../schemas';
@@ -20,7 +30,9 @@ describe('answer spec', () => {
 			parseAnswerSpec({
 				type: 'FILL_BLANK',
 				scoring: 'ALL_OR_NOTHING',
-				blanks: [{ id: '1', length: 3, accepted: ['HRM'], caseSensitive: false, ignoreDiacritics: true }],
+				blanks: [
+					{ id: '1', length: 3, accepted: ['HRM'], caseSensitive: false, ignoreDiacritics: true },
+				],
 			}).type,
 		).toBe('FILL_BLANK');
 	});
@@ -38,12 +50,20 @@ describe('answer spec', () => {
 describe('grading', () => {
 	it('grades MCQ single', () => {
 		const answer = { type: 'MCQ_SINGLE' as const, correctKey: 'A' as const };
-		expect(gradeResponse(answer, { type: 'MCQ_SINGLE', key: 'A' })).toEqual({ earned: 1, max: 1, isCorrect: true });
+		expect(gradeResponse(answer, { type: 'MCQ_SINGLE', key: 'A' })).toEqual({
+			earned: 1,
+			max: 1,
+			isCorrect: true,
+		});
 		expect(gradeResponse(answer, { type: 'MCQ_SINGLE', key: 'B' }).isCorrect).toBe(false);
 	});
 
 	it('grades MCQ multi all-or-nothing and partial', () => {
-		const answer = { type: 'MCQ_MULTI' as const, correctKeys: ['A' as const, 'C' as const], scoring: 'ALL_OR_NOTHING' as const };
+		const answer = {
+			type: 'MCQ_MULTI' as const,
+			correctKeys: ['A' as const, 'C' as const],
+			scoring: 'ALL_OR_NOTHING' as const,
+		};
 		expect(gradeResponse(answer, { type: 'MCQ_MULTI', keys: ['A', 'C'] }).isCorrect).toBe(true);
 		expect(gradeResponse(answer, { type: 'MCQ_MULTI', keys: ['A'] }).earned).toBe(0);
 		const partial = { ...answer, scoring: 'PARTIAL' as const };
@@ -55,13 +75,20 @@ describe('grading', () => {
 		const answer = {
 			type: 'FILL_BLANK' as const,
 			scoring: 'ALL_OR_NOTHING' as const,
-			blanks: [{ id: '1', length: 3, accepted: ['Đúng'], caseSensitive: false, ignoreDiacritics: true }],
+			blanks: [
+				{ id: '1', length: 3, accepted: ['Đúng'], caseSensitive: false, ignoreDiacritics: true },
+			],
 		};
 		expect(normalizeBlankText('dung', { caseSensitive: false, ignoreDiacritics: true })).toBe(
 			normalizeBlankText('Đúng', { caseSensitive: false, ignoreDiacritics: true }),
 		);
-		expect(gradeResponse(answer, { type: 'FILL_BLANK', blanks: { '1': 'dung' } }).isCorrect).toBe(true);
-		expect(scalePoints({ earned: 0.5, max: 1, isCorrect: false }, 4)).toEqual({ earned: 2, max: 4 });
+		expect(gradeResponse(answer, { type: 'FILL_BLANK', blanks: { '1': 'dung' } }).isCorrect).toBe(
+			true,
+		);
+		expect(scalePoints({ earned: 0.5, max: 1, isCorrect: false }, 4)).toEqual({
+			earned: 2,
+			max: 4,
+		});
 	});
 });
 
@@ -78,7 +105,9 @@ describe('topic path', () => {
 describe('placement key', () => {
 	it('uses dashes for missing lesson and section', () => {
 		expect(placementKey({ testId: 't', courseId: 'c' })).toBe('t:c:-:-');
-		expect(placementKey({ testId: 't', courseId: 'c', lessonId: 'l', sectionId: 's' })).toBe('t:c:l:s');
+		expect(placementKey({ testId: 't', courseId: 'c', lessonId: 'l', sectionId: 's' })).toBe(
+			't:c:l:s',
+		);
 	});
 });
 
@@ -116,13 +145,25 @@ describe('question body schema', () => {
 	it('requires answer.correctKey to exist and Bloom 1-6', () => {
 		const base = { stem: 'Q?', options, explanation: '', knowledgeUnitIds: ['ku1'] };
 		expect(
-			questionBodySchema.safeParse({ ...base, answer: { type: 'MCQ_SINGLE', correctKey: 'C' }, difficulty: 3 }).success,
+			questionBodySchema.safeParse({
+				...base,
+				answer: { type: 'MCQ_SINGLE', correctKey: 'C' },
+				difficulty: 3,
+			}).success,
 		).toBe(false);
 		expect(
-			questionBodySchema.safeParse({ ...base, answer: { type: 'MCQ_SINGLE', correctKey: 'A' }, difficulty: 0 }).success,
+			questionBodySchema.safeParse({
+				...base,
+				answer: { type: 'MCQ_SINGLE', correctKey: 'A' },
+				difficulty: 0,
+			}).success,
 		).toBe(false);
 		expect(
-			questionBodySchema.safeParse({ ...base, answer: { type: 'MCQ_SINGLE', correctKey: 'A' }, difficulty: 6 }).success,
+			questionBodySchema.safeParse({
+				...base,
+				answer: { type: 'MCQ_SINGLE', correctKey: 'A' },
+				difficulty: 6,
+			}).success,
 		).toBe(true);
 	});
 });

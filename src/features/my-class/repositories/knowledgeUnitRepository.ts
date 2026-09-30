@@ -2,7 +2,13 @@ import { prisma } from '@/lib/prisma';
 
 import type { Prisma } from '@prisma/client';
 
-export const KNOWLEDGE_TABLE_SORTS = ['title', 'status', 'updatedAt', 'mappings', 'questions'] as const;
+export const KNOWLEDGE_TABLE_SORTS = [
+	'title',
+	'status',
+	'updatedAt',
+	'mappings',
+	'questions',
+] as const;
 export type KnowledgeTableSort = (typeof KNOWLEDGE_TABLE_SORTS)[number];
 
 function knowledgeWhere(filter: {
@@ -73,7 +79,9 @@ export async function listKnowledgeUnitTable(
 				slug: true,
 				status: true,
 				updatedAt: true,
-				currentPublishedRevision: { select: { title: true, foundationHtml: true, academicHtml: true, expertHtml: true } },
+				currentPublishedRevision: {
+					select: { title: true, foundationHtml: true, academicHtml: true, expertHtml: true },
+				},
 				revisions: { where: { status: 'DRAFT' }, take: 1, select: { title: true } },
 				_count: { select: { mappings: true, questionLinks: true } },
 			},
@@ -157,14 +165,29 @@ export async function updateKnowledgeUnit(
 
 export async function addRelation(fromId: string, toId: string) {
 	return prisma.$transaction(async (tx) => {
-		await tx.knowledgeUnitRelation.upsert({ where: { fromId_toId: { fromId, toId } }, create: { fromId, toId }, update: {} });
-		return tx.knowledgeUnitRelation.upsert({ where: { fromId_toId: { fromId: toId, toId: fromId } }, create: { fromId: toId, toId: fromId }, update: {} });
+		await tx.knowledgeUnitRelation.upsert({
+			where: { fromId_toId: { fromId, toId } },
+			create: { fromId, toId },
+			update: {},
+		});
+		return tx.knowledgeUnitRelation.upsert({
+			where: { fromId_toId: { fromId: toId, toId: fromId } },
+			create: { fromId: toId, toId: fromId },
+			update: {},
+		});
 	});
 }
 
 export async function removeRelation(fromId: string, toId: string) {
 	return prisma.$transaction(async (tx) => {
-		await tx.knowledgeUnitRelation.deleteMany({ where: { OR: [{ fromId, toId }, { fromId: toId, toId: fromId }] } });
+		await tx.knowledgeUnitRelation.deleteMany({
+			where: {
+				OR: [
+					{ fromId, toId },
+					{ fromId: toId, toId: fromId },
+				],
+			},
+		});
 	});
 }
 

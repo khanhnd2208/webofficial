@@ -32,7 +32,9 @@ const testQuestionInclude = {
 	},
 };
 
-export async function buildQuestionWhere(filter: BankFilter): Promise<Prisma.MyClassQuestionWhereInput> {
+export async function buildQuestionWhere(
+	filter: BankFilter,
+): Promise<Prisma.MyClassQuestionWhereInput> {
 	const normalized = normalizeBankFilter(filter);
 	const and: Prisma.MyClassQuestionWhereInput[] = [];
 	if (normalized.status) and.push({ status: normalized.status });
@@ -102,10 +104,7 @@ export async function buildQuestionWhere(filter: BankFilter): Promise<Prisma.MyC
 	if (normalized.cursor) {
 		const updatedAt = new Date(normalized.cursor.updatedAt);
 		and.push({
-			OR: [
-				{ updatedAt: { lt: updatedAt } },
-				{ updatedAt, id: { lt: normalized.cursor.id } },
-			],
+			OR: [{ updatedAt: { lt: updatedAt } }, { updatedAt, id: { lt: normalized.cursor.id } }],
 		});
 	}
 	return and.length ? { AND: and } : {};
@@ -170,7 +169,14 @@ export async function listQuestionTable(
 }
 
 export async function listQuestionFacets(filter: BankFilter = {}) {
-	const base = await buildQuestionWhere({ ...filter, cursor: undefined, types: undefined, bloom: undefined, status: undefined, topicId: undefined });
+	const base = await buildQuestionWhere({
+		...filter,
+		cursor: undefined,
+		types: undefined,
+		bloom: undefined,
+		status: undefined,
+		topicId: undefined,
+	});
 	const [typeRows, bloomRows, statusRows, topicRows, tagRows] = await Promise.all([
 		prisma.myClassQuestion.groupBy({ by: ['type'], where: base, _count: true }),
 		prisma.myClassQuestion.groupBy({ by: ['difficulty'], where: base, _count: true }),
@@ -311,7 +317,14 @@ export async function bulkUpdateQuestions(
 	return prisma.myClassQuestion.updateMany({ where: { id: { in: ids } }, data });
 }
 
-export const TEST_TABLE_SORTS = ['title', 'status', 'updatedAt', 'questions', 'attempts', 'placements'] as const;
+export const TEST_TABLE_SORTS = [
+	'title',
+	'status',
+	'updatedAt',
+	'questions',
+	'attempts',
+	'placements',
+] as const;
 export type TestTableSort = (typeof TEST_TABLE_SORTS)[number];
 
 /** Slim row query for admin tables; keep sort fields aligned with TEST_TABLE_SORTS. */

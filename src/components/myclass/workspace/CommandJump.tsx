@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { routes } from '@/config/routes';
-import type { MyClassCourseDetail, MyClassTestListItem, MyClassVocabSetCard } from '@/features/my-class/types';
+import type {
+	MyClassCourseDetail,
+	MyClassTestListItem,
+	MyClassVocabSetCard,
+} from '@/features/my-class/types';
 import type { MyClassOutlineItem } from '@/features/my-class/domain/learnerState';
 import { toOutlineItemLink } from '@/features/my-class/domain/learnerState';
 import { isLearnerVisibleTest, outlineTestKey } from '@/features/my-class/domain/outlineTests';
@@ -107,14 +111,18 @@ export default function CommandJump({
 		if (!q) return catalog.slice(0, 12);
 		return catalog
 			.filter(
-				(item) =>
-					item.title.toLowerCase().includes(q) || item.subtitle.toLowerCase().includes(q),
+				(item) => item.title.toLowerCase().includes(q) || item.subtitle.toLowerCase().includes(q),
 			)
 			.slice(0, 20);
 	}, [catalog, query]);
 
 	return (
-		<McDialog open={open} onClose={onClose} title="Tìm trong khóa học" description="Gõ để nhảy tới nội dung, test hoặc từ vựng.">
+		<McDialog
+			open={open}
+			onClose={onClose}
+			title="Tìm trong khóa học"
+			description="Gõ để nhảy tới nội dung, test hoặc từ vựng."
+		>
 			<input
 				ref={inputRef}
 				value={query}

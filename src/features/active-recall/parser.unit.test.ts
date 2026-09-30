@@ -61,8 +61,12 @@ describe('Active Recall import parser', () => {
 		expect(copied).toContain('**HRM**');
 		expect(copied).toContain('*system*');
 		const again = previewRecallImport(copied);
-		expect(recallVisibleText(again.rows[0]?.question)).toBe(recallVisibleText(preview.rows[0]?.question));
-		expect(recallVisibleText(again.rows[0]?.answer)).toBe(recallVisibleText(preview.rows[0]?.answer));
+		expect(recallVisibleText(again.rows[0]?.question)).toBe(
+			recallVisibleText(preview.rows[0]?.question),
+		);
+		expect(recallVisibleText(again.rows[0]?.answer)).toBe(
+			recallVisibleText(preview.rows[0]?.answer),
+		);
 	});
 
 	it('accepts TSV copied from a spreadsheet', () => {
@@ -84,10 +88,7 @@ describe('Active Recall import parser', () => {
 
 		expect(preview.summary).toMatchObject({ total: 1, valid: 0, invalid: 1 });
 		expect(preview.rows[0]?.errors).toEqual(
-			expect.arrayContaining([
-				'Câu hỏi vượt quá 2000 ký tự',
-				'Đáp án vượt quá 10000 ký tự',
-			]),
+			expect.arrayContaining(['Câu hỏi vượt quá 2000 ký tự', 'Đáp án vượt quá 10000 ký tự']),
 		);
 	});
 
@@ -107,8 +108,7 @@ describe('Active Recall import parser', () => {
 	});
 
 	it('round-trips nested underline and color through CSV and Q/A paste', () => {
-		const question =
-			'<p>What is <u><span style="color: #dc2626">HRM</span></u>?</p>';
+		const question = '<p>What is <u><span style="color: #dc2626">HRM</span></u>?</p>';
 		const answer =
 			'<p><span style="color: #dc2626"><u>risk</u></span> and <strong>Human</strong> <em>resources</em></p>';
 		const csv = toRecallCsv([{ id: 'card-1', question, answer, position: 0 }]);

@@ -41,7 +41,8 @@ export default function LearnMermaid({ source }: { source: string }) {
 		void (async () => {
 			try {
 				const mermaid = (await import('mermaid')).default;
-				const probe = hostRef.current?.closest('.ln') ?? hostRef.current ?? document.documentElement;
+				const probe =
+					hostRef.current?.closest('.ln') ?? hostRef.current ?? document.documentElement;
 				const { ink, paper, accent, line, fontFamily } = themeFrom(probe as HTMLElement);
 				mermaid.initialize({
 					startOnLoad: false,

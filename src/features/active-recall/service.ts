@@ -188,7 +188,10 @@ export async function listPublishedRecallDecks() {
 	const rows = await prisma.activeRecallDeck.findMany({
 		where: { status: 'PUBLISHED', cards: { some: {} } },
 		orderBy: [{ position: 'asc' }, { title: 'asc' }],
-		include: { course: { select: courseSelect }, _count: { select: { cards: true, classLinks: true } } },
+		include: {
+			course: { select: courseSelect },
+			_count: { select: { cards: true, classLinks: true } },
+		},
 	});
 	return rows.map(mapList);
 }
@@ -197,7 +200,10 @@ export async function listPublishedRecallDecksForCourse(courseId: string) {
 	const rows = await prisma.activeRecallDeck.findMany({
 		where: { courseId, status: 'PUBLISHED', cards: { some: {} } },
 		orderBy: [{ position: 'asc' }, { title: 'asc' }],
-		include: { course: { select: courseSelect }, _count: { select: { cards: true, classLinks: true } } },
+		include: {
+			course: { select: courseSelect },
+			_count: { select: { cards: true, classLinks: true } },
+		},
 	});
 	return rows.map(mapList);
 }
@@ -212,7 +218,10 @@ export async function listPublishedRecallDecksForClass(classId: string) {
 		orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
 		include: {
 			deck: {
-				include: { course: { select: courseSelect }, _count: { select: { cards: true, classLinks: true } } },
+				include: {
+					course: { select: courseSelect },
+					_count: { select: { cards: true, classLinks: true } },
+				},
 			},
 		},
 	});
@@ -270,7 +279,10 @@ export async function resolvePublicClassSlugForDeck(deckSlug: string) {
 export async function listAdminRecallDecks() {
 	const rows = await prisma.activeRecallDeck.findMany({
 		orderBy: [{ updatedAt: 'desc' }],
-		include: { course: { select: courseSelect }, _count: { select: { cards: true, classLinks: true } } },
+		include: {
+			course: { select: courseSelect },
+			_count: { select: { cards: true, classLinks: true } },
+		},
 	});
 	return rows.map(mapList);
 }
@@ -279,7 +291,10 @@ export async function listAdminRecallDecksForCourse(courseId: string) {
 	const rows = await prisma.activeRecallDeck.findMany({
 		where: { courseId },
 		orderBy: [{ updatedAt: 'desc' }],
-		include: { course: { select: courseSelect }, _count: { select: { cards: true, classLinks: true } } },
+		include: {
+			course: { select: courseSelect },
+			_count: { select: { cards: true, classLinks: true } },
+		},
 	});
 	return rows.map(mapList);
 }
@@ -410,7 +425,10 @@ export async function updateAdminRecallDeck(id: string, input: UpdateActiveRecal
 	return (await getAdminRecallDeck(id))!;
 }
 
-export async function updateAdminRecallDeckMeta(id: string, input: UpdateActiveRecallDeckMetaInput) {
+export async function updateAdminRecallDeckMeta(
+	id: string,
+	input: UpdateActiveRecallDeckMetaInput,
+) {
 	const existing = await findDeckRecord(id);
 	if (!existing) throw new AppError('Không tìm thấy bộ thẻ', 404);
 	assertCurrent(input.expectedUpdatedAt, existing.updatedAt);
@@ -497,7 +515,9 @@ function applyImportActions(
 	mode: 'append' | 'replace' = 'append',
 ) {
 	const existingById = new Map(existing.cards.map((card) => [card.id, card]));
-	const duplicate = new Set(existing.cards.map((card) => cardFingerprint(card.question, card.answer)));
+	const duplicate = new Set(
+		existing.cards.map((card) => cardFingerprint(card.question, card.answer)),
+	);
 	for (const row of preview.rows) {
 		if (row.errors.length) continue;
 		if (row.id && !existingById.has(row.id)) {

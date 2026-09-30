@@ -1,4 +1,9 @@
-import { bankFilterFromSearch, parseWithAppError, randomFillSchema, randomFillTest } from '@/features/my-class';
+import {
+	bankFilterFromSearch,
+	parseWithAppError,
+	randomFillSchema,
+	randomFillTest,
+} from '@/features/my-class';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import { type NextRequest } from 'next/server';
 

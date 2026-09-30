@@ -1,4 +1,8 @@
-import { createActiveRecallDeckSchema, listAdminRecallDecks, createAdminRecallDeck } from '@/features/active-recall';
+import {
+	createActiveRecallDeckSchema,
+	listAdminRecallDecks,
+	createAdminRecallDeck,
+} from '@/features/active-recall';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import { parseSchema } from '@/shared/validation/parse';
 

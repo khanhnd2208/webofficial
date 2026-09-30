@@ -9,7 +9,10 @@ const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: f
 
 export type KnowledgeUnitLevelTab = 'foundation' | 'academic' | 'expert';
 
-const LEVEL_OPTIONS: Array<{ id: KnowledgeUnitLevelTab; reading: 'readable' | 'academic' | 'deep' }> = [
+const LEVEL_OPTIONS: Array<{
+	id: KnowledgeUnitLevelTab;
+	reading: 'readable' | 'academic' | 'deep';
+}> = [
 	{ id: 'foundation', reading: 'readable' },
 	{ id: 'academic', reading: 'academic' },
 	{ id: 'expert', reading: 'deep' },
@@ -95,11 +98,17 @@ export default function KnowledgeUnitFields({
 					const next = LEVEL_OPTIONS.find((item) => item.reading === value);
 					if (next) onTabChange(next.id);
 				}}
-				options={LEVEL_OPTIONS.filter((item) => !productMode || item.id !== 'academic').map((item) => ({
-					value: item.reading,
-					label: productMode ? (item.id === 'foundation' ? 'Giải thích ngắn gọn' : 'Giải thích sâu') : READING_LEVEL_LABEL[item.reading],
-					hint: READING_LEVEL_HINT[item.reading],
-				}))}
+				options={LEVEL_OPTIONS.filter((item) => !productMode || item.id !== 'academic').map(
+					(item) => ({
+						value: item.reading,
+						label: productMode
+							? item.id === 'foundation'
+								? 'Giải thích ngắn gọn'
+								: 'Giải thích sâu'
+							: READING_LEVEL_LABEL[item.reading],
+						hint: READING_LEVEL_HINT[item.reading],
+					}),
+				)}
 			/>
 			<div hidden={tab !== 'foundation'}>
 				<TiptapEditor

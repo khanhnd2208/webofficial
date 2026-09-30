@@ -44,7 +44,10 @@ export default function NewVocabSetPage() {
 
 	return (
 		<div className="mc-studio-container px-0 py-8">
-			<Link href={routes.admin.myClassVocabulary} className="text-xs uppercase tracking-widest text-muted">
+			<Link
+				href={routes.admin.myClassVocabulary}
+				className="text-xs uppercase tracking-widest text-muted"
+			>
 				← Thư viện từ vựng
 			</Link>
 			<h1 className="mt-6 text-2xl font-black">Tạo bộ từ vựng</h1>

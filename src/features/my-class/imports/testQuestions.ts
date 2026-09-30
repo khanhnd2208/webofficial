@@ -7,7 +7,12 @@ import { prisma } from '@/lib/prisma';
 import { normalizeSlug } from '../domain/normalize';
 import { sanitizeMyClassHtml } from '../domain/sanitize';
 import { optionKeySchema, mcqOptionsSchema, questionTypeSchema } from '../schemas';
-import type { AnswerSpec, MyClassQuestionType, QuestionOption, TestQuestionCsvPreview } from '../types';
+import type {
+	AnswerSpec,
+	MyClassQuestionType,
+	QuestionOption,
+	TestQuestionCsvPreview,
+} from '../types';
 import * as repo from '../repositories/assessmentRepository';
 import { TEST_QUESTION_CSV_TEMPLATE } from './testQuestionCsvTemplate';
 
@@ -44,19 +49,34 @@ function foldHeader(value: string): string {
 function canonicalHeader(raw: string): string {
 	const folded = foldHeader(raw);
 	const compact = folded.replace(/\s+/g, '');
-	if (['stem', 'cauhoi', 'cau hoi', 'question'].includes(folded) || compact === 'cauhoi') return 'stem';
+	if (['stem', 'cauhoi', 'cau hoi', 'question'].includes(folded) || compact === 'cauhoi')
+		return 'stem';
 	for (const key of OPTION_KEYS) {
-		if (folded === key || folded === `option ${key}` || compact === `option${key}`) return `option_${key}`;
+		if (folded === key || folded === `option ${key}` || compact === `option${key}`)
+			return `option_${key}`;
 		if (folded === `feedback ${key}` || compact === `feedback${key}`) return `feedback_${key}`;
 	}
-	if (['correct option', 'correctoption', 'correct', 'answer', 'dap an', 'dapan', 'correct options'].includes(folded)) {
+	if (
+		[
+			'correct option',
+			'correctoption',
+			'correct',
+			'answer',
+			'dap an',
+			'dapan',
+			'correct options',
+		].includes(folded)
+	) {
 		return 'correct_option';
 	}
-	if (['explanation', 'giai thich', 'giaithich'].includes(folded) || compact === 'giaithich') return 'explanation';
-	if (['difficulty', 'do kho', 'dokho', 'bloom'].includes(folded) || compact === 'dokho') return 'difficulty';
+	if (['explanation', 'giai thich', 'giaithich'].includes(folded) || compact === 'giaithich')
+		return 'explanation';
+	if (['difficulty', 'do kho', 'dokho', 'bloom'].includes(folded) || compact === 'dokho')
+		return 'difficulty';
 	if (folded === 'type' || folded === 'loai') return 'type';
 	if (folded === 'tags' || folded === 'nhan') return 'tags';
-	if (folded.startsWith('blank ') || compact.startsWith('blank')) return folded.replace(/\s+/g, '_');
+	if (folded.startsWith('blank ') || compact.startsWith('blank'))
+		return folded.replace(/\s+/g, '_');
 	return folded.replace(/\s+/g, '_');
 }
 
@@ -115,7 +135,10 @@ export function allocateQuestionSlugs(stems: string[], reserved: Iterable<string
 }
 
 function parseType(raw: string): MyClassQuestionType {
-	const value = raw.trim().toUpperCase().replace(/[\s-]+/g, '_');
+	const value = raw
+		.trim()
+		.toUpperCase()
+		.replace(/[\s-]+/g, '_');
 	if (value === 'MCQ' || value === 'SINGLE' || !value) return 'MCQ_SINGLE';
 	if (value === 'MULTI' || value === 'MULTIPLE') return 'MCQ_MULTI';
 	if (value === 'FILL' || value === 'BLANK' || value === 'FILL_IN_THE_BLANK') return 'FILL_BLANK';
@@ -123,7 +146,10 @@ function parseType(raw: string): MyClassQuestionType {
 	return parsed.success ? parsed.data : 'MCQ_SINGLE';
 }
 
-export function parseTestQuestionCsv(csv: string, reservedSlugs: Iterable<string> = []): ParsedTestQuestionRow[] {
+export function parseTestQuestionCsv(
+	csv: string,
+	reservedSlugs: Iterable<string> = [],
+): ParsedTestQuestionRow[] {
 	const delimiter = detectDelimiter(csv);
 	const records = parse(csv, {
 		columns: true,
@@ -166,11 +192,16 @@ export function parseTestQuestionCsv(csv: string, reservedSlugs: Iterable<string
 			for (let n = 1; n <= 12; n += 1) {
 				const acceptedRaw = cell(record, `blank_${n}_answers`) || cell(record, `blank_${n}`);
 				if (!acceptedRaw) continue;
-				const length = Number(cell(record, `blank_${n}_length`) || acceptedRaw.split('|')[0]?.length || 4);
+				const length = Number(
+					cell(record, `blank_${n}_length`) || acceptedRaw.split('|')[0]?.length || 4,
+				);
 				blanks.push({
 					id: String(n),
 					length: Number.isInteger(length) && length > 0 ? length : 4,
-					accepted: acceptedRaw.split('|').map((item) => item.trim()).filter(Boolean),
+					accepted: acceptedRaw
+						.split('|')
+						.map((item) => item.trim())
+						.filter(Boolean),
 					caseSensitive: false,
 					ignoreDiacritics: true,
 				});
@@ -181,16 +212,32 @@ export function parseTestQuestionCsv(csv: string, reservedSlugs: Iterable<string
 			const optionsParsed = mcqOptionsSchema.safeParse(options);
 			if (!optionsParsed.success) errors.push('Cần từ 2 đến 6 đáp án');
 			const correctRaw = cell(record, 'correct_option').toUpperCase();
-			const keys = correctRaw.split(/[|,]/).map((item) => item.trim()).filter(Boolean);
+			const keys = correctRaw
+				.split(/[|,]/)
+				.map((item) => item.trim())
+				.filter(Boolean);
 			if (type === 'MCQ_MULTI') {
 				if (keys.length < 2) errors.push('MCQ nhiều đáp án cần ít nhất 2 correct_option');
-				answer = { type: 'MCQ_MULTI', correctKeys: keys as AnswerSpec extends { type: 'MCQ_MULTI' } ? never : never, scoring: 'ALL_OR_NOTHING' } as AnswerSpec;
+				answer = {
+					type: 'MCQ_MULTI',
+					correctKeys: keys as AnswerSpec extends { type: 'MCQ_MULTI' } ? never : never,
+					scoring: 'ALL_OR_NOTHING',
+				} as AnswerSpec;
 				if (answer.type === 'MCQ_MULTI') {
-					answer = { type: 'MCQ_MULTI', correctKeys: keys.filter((key) => optionKeySchema.safeParse(key).success) as Array<'A' | 'B' | 'C' | 'D' | 'E' | 'F'>, scoring: 'ALL_OR_NOTHING' };
+					answer = {
+						type: 'MCQ_MULTI',
+						correctKeys: keys.filter((key) => optionKeySchema.safeParse(key).success) as Array<
+							'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+						>,
+						scoring: 'ALL_OR_NOTHING',
+					};
 				}
 			} else {
 				const correct = keys[0] ?? '';
-				if (!optionKeySchema.safeParse(correct).success || !options.some((option) => option.key === correct)) {
+				if (
+					!optionKeySchema.safeParse(correct).success ||
+					!options.some((option) => option.key === correct)
+				) {
 					errors.push('correct_option không hợp lệ');
 				}
 				answer = { type: 'MCQ_SINGLE', correctKey: (correct || 'A') as 'A' };
@@ -217,7 +264,12 @@ function toPreview(rows: ParsedTestQuestionRow[]): TestQuestionCsvPreview {
 		stem: item.stem,
 		type: item.type,
 		optionCount: item.options.length,
-		correctKey: item.answer.type === 'MCQ_SINGLE' ? item.answer.correctKey : item.answer.type === 'MCQ_MULTI' ? item.answer.correctKeys.join('|') : '',
+		correctKey:
+			item.answer.type === 'MCQ_SINGLE'
+				? item.answer.correctKey
+				: item.answer.type === 'MCQ_MULTI'
+					? item.answer.correctKeys.join('|')
+					: '',
 		difficulty: item.difficulty,
 		ok: item.errors.length === 0,
 		errors: item.errors,
@@ -232,7 +284,9 @@ function toPreview(rows: ParsedTestQuestionRow[]): TestQuestionCsvPreview {
 	};
 }
 
-async function allocateSlugsAgainstDb(rows: ParsedTestQuestionRow[]): Promise<ParsedTestQuestionRow[]> {
+async function allocateSlugsAgainstDb(
+	rows: ParsedTestQuestionRow[],
+): Promise<ParsedTestQuestionRow[]> {
 	const reserved = new Set<string>();
 	let slugs = rows.map((row) => row.slug);
 	for (let attempt = 0; attempt < 6; attempt += 1) {
@@ -247,7 +301,10 @@ async function allocateSlugsAgainstDb(rows: ParsedTestQuestionRow[]): Promise<Pa
 	return rows.map((row, index) => ({ ...row, slug: slugs[index] ?? row.slug }));
 }
 
-export async function previewTestQuestionCsv(testId: string, csv: string): Promise<TestQuestionCsvPreview> {
+export async function previewTestQuestionCsv(
+	testId: string,
+	csv: string,
+): Promise<TestQuestionCsvPreview> {
 	const test = await repo.findAdminTest(testId);
 	if (!test) throw new AppError('Không tìm thấy Test', 404);
 	const parsed = await allocateSlugsAgainstDb(parseTestQuestionCsv(csv));

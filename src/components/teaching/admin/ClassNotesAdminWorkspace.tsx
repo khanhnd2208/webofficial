@@ -113,11 +113,10 @@ export function ClassNotesAdminWorkspace({
 					},
 				);
 				setNotes((current) => current.map((note) => (note.id === updated.id ? updated : note)));
-				const savedLatest = (
+				const savedLatest =
 					selectedId === noteId &&
 					latestDraft.current.title === nextTitle &&
-					latestDraft.current.html === nextHtml
-				);
+					latestDraft.current.html === nextHtml;
 				setSaveState(savedLatest ? 'saved' : 'idle');
 				if (savedLatest) dirtyRef.current = false;
 				return updated;
@@ -168,7 +167,9 @@ export function ClassNotesAdminWorkspace({
 				await trackPersist(selectedId, latestDraft.current.title, latestDraft.current.html);
 			}
 			return true;
-		} catch { return false; }
+		} catch {
+			return false;
+		}
 	}
 	const leaveDialog = useTeachingLeaveGuard({
 		dirty: () => dirtyRef.current || Boolean(pendingPersist.current),
@@ -306,140 +307,150 @@ export function ClassNotesAdminWorkspace({
 
 	return (
 		<>
-		<section className="mc-surface overflow-hidden" aria-label="Class Notes admin">
-			<div className="grid min-h-[min(70vh,720px)] md:grid-cols-[260px_minmax(0,1fr)]">
-				<aside className="border-b border-mc-rule bg-canvas/50 p-3 md:border-b-0 md:border-r">
-					<div className="mb-3 flex items-center justify-between gap-2">
-						<div>
-							<p className="mc-eyebrow">Notebook</p>
-							<h2 className="text-sm font-semibold text-ink">Class Notes</h2>
-						</div>
-						<button
-							type="button"
-							className="mc-button mc-button-primary px-3 py-2 text-xs"
-							onClick={() => void addNote()}
-							disabled={busy}
-						>
-							+ Thêm
-						</button>
-					</div>
-					{notes.length ? (
-						<DndContext
-							sensors={sensors}
-							collisionDetection={closestCenter}
-							onDragEnd={(event) => void reorder(event)}
-						>
-							<SortableContext
-								items={notes.map((note) => note.id)}
-								strategy={verticalListSortingStrategy}
+			<section className="mc-surface overflow-hidden" aria-label="Class Notes admin">
+				<div className="grid min-h-[min(70vh,720px)] md:grid-cols-[260px_minmax(0,1fr)]">
+					<aside className="border-b border-mc-rule bg-canvas/50 p-3 md:border-b-0 md:border-r">
+						<div className="mb-3 flex items-center justify-between gap-2">
+							<div>
+								<p className="mc-eyebrow">Notebook</p>
+								<h2 className="text-sm font-semibold text-ink">Class Notes</h2>
+							</div>
+							<button
+								type="button"
+								className="mc-button mc-button-primary px-3 py-2 text-xs"
+								onClick={() => void addNote()}
+								disabled={busy}
 							>
-								<div className="space-y-1">
-									{notes.map((note) => (
-										<SortableNote
-											key={note.id}
-											note={note}
-											selected={note.id === selectedId}
-											onSelect={() => selectNote(note)}
-										/>
-									))}
-								</div>
-							</SortableContext>
-						</DndContext>
-					) : (
-						<p className="px-2 py-6 text-xs leading-5 text-ink-secondary">
-							Tạo mục đầu tiên để bắt đầu notebook.
-						</p>
-					)}
-				</aside>
-				<div className="min-w-0 bg-paper p-4 sm:p-6">
-					{selected ? (
-						<div className="flex h-full min-h-[520px] flex-col">
-							<div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-mc-rule pb-3">
-								<div className="flex items-center gap-2 text-xs text-ink-secondary">
-									<span>
-										{saveState === 'saving'
-											? 'Đang lưu…'
-											: saveState === 'error'
-												? 'Lưu lỗi'
-												: saveState === 'idle' ? 'Chưa lưu' : 'Đã lưu'}
-									</span>
-									{saveState === 'error' ? <button type="button" className="mc-button min-h-11" onClick={() => void flushDraft()}>Thử lại</button> : null}
-									{selected.status === 'MODIFIED' ? (
-										<span className="mc-chip">Có thay đổi chưa xuất bản</span>
-									) : null}
-									{selected.publishedAt ? (
-										<span className="text-[11px] text-ink-secondary">
-											Xuất bản {new Date(selected.publishedAt).toLocaleDateString('vi-VN')}
+								+ Thêm
+							</button>
+						</div>
+						{notes.length ? (
+							<DndContext
+								sensors={sensors}
+								collisionDetection={closestCenter}
+								onDragEnd={(event) => void reorder(event)}
+							>
+								<SortableContext
+									items={notes.map((note) => note.id)}
+									strategy={verticalListSortingStrategy}
+								>
+									<div className="space-y-1">
+										{notes.map((note) => (
+											<SortableNote
+												key={note.id}
+												note={note}
+												selected={note.id === selectedId}
+												onSelect={() => selectNote(note)}
+											/>
+										))}
+									</div>
+								</SortableContext>
+							</DndContext>
+						) : (
+							<p className="px-2 py-6 text-xs leading-5 text-ink-secondary">
+								Tạo mục đầu tiên để bắt đầu notebook.
+							</p>
+						)}
+					</aside>
+					<div className="min-w-0 bg-paper p-4 sm:p-6">
+						{selected ? (
+							<div className="flex h-full min-h-[520px] flex-col">
+								<div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-mc-rule pb-3">
+									<div className="flex items-center gap-2 text-xs text-ink-secondary">
+										<span>
+											{saveState === 'saving'
+												? 'Đang lưu…'
+												: saveState === 'error'
+													? 'Lưu lỗi'
+													: saveState === 'idle'
+														? 'Chưa lưu'
+														: 'Đã lưu'}
 										</span>
-									) : null}
-								</div>
-								<div className="flex flex-wrap gap-2">
-									{selected.publishedAt ? (
+										{saveState === 'error' ? (
+											<button
+												type="button"
+												className="mc-button min-h-11"
+												onClick={() => void flushDraft()}
+											>
+												Thử lại
+											</button>
+										) : null}
+										{selected.status === 'MODIFIED' ? (
+											<span className="mc-chip">Có thay đổi chưa xuất bản</span>
+										) : null}
+										{selected.publishedAt ? (
+											<span className="text-[11px] text-ink-secondary">
+												Xuất bản {new Date(selected.publishedAt).toLocaleDateString('vi-VN')}
+											</span>
+										) : null}
+									</div>
+									<div className="flex flex-wrap gap-2">
+										{selected.publishedAt ? (
+											<button
+												type="button"
+												className="mc-button mc-button-secondary px-3 py-2 text-xs"
+												onClick={() => void unpublish()}
+												disabled={busy}
+											>
+												Gỡ xuất bản
+											</button>
+										) : null}
 										<button
 											type="button"
-											className="mc-button mc-button-secondary px-3 py-2 text-xs"
-											onClick={() => void unpublish()}
+											className="mc-button mc-button-primary px-3 py-2 text-xs"
+											onClick={() => void publish()}
+											disabled={busy || !title.trim() || !html.trim()}
+										>
+											Xuất bản
+										</button>
+										<button
+											type="button"
+											className="mc-button px-3 py-2 text-xs text-error"
+											onClick={() => void deleteNote()}
 											disabled={busy}
 										>
-											Gỡ xuất bản
+											Xóa
 										</button>
-									) : null}
-									<button
-										type="button"
-										className="mc-button mc-button-primary px-3 py-2 text-xs"
-										onClick={() => void publish()}
-										disabled={busy || !title.trim() || !html.trim()}
-									>
-										Xuất bản
-									</button>
-									<button
-										type="button"
-										className="mc-button px-3 py-2 text-xs text-error"
-										onClick={() => void deleteNote()}
-										disabled={busy}
-									>
-										Xóa
-									</button>
+									</div>
 								</div>
-							</div>
-							<input
-								value={title}
-								onChange={(event) => {
-									const value = event.target.value;
-									setTitle(value);
-									latestDraft.current.title = value;
-									dirtyRef.current = true;
-									setSaveState('idle');
-								}}
-								maxLength={160}
-								placeholder="Tiêu đề tuần / topic / phần"
-								className="mb-3 w-full border-0 bg-transparent px-1 text-2xl font-semibold tracking-tight text-ink outline-none placeholder:text-ink-secondary/50"
-							/>
-							<div className="min-h-0 flex-1 overflow-hidden rounded-[var(--mc-r-sm)] border border-mc-rule">
-								<TiptapEditor
-									content={html}
-									onChange={(value) => {
-										setHtml(value);
-										latestDraft.current.html = value;
+								<input
+									value={title}
+									onChange={(event) => {
+										const value = event.target.value;
+										setTitle(value);
+										latestDraft.current.title = value;
 										dirtyRef.current = true;
 										setSaveState('idle');
 									}}
-									onImageUpload={uploadMyClassImage}
-									onImageUploadError={() => setSaveState('error')}
-									placeholder="Bắt đầu viết nội dung note…"
+									maxLength={160}
+									placeholder="Tiêu đề tuần / topic / phần"
+									className="mb-3 w-full border-0 bg-transparent px-1 text-2xl font-semibold tracking-tight text-ink outline-none placeholder:text-ink-secondary/50"
 								/>
+								<div className="min-h-0 flex-1 overflow-hidden rounded-[var(--mc-r-sm)] border border-mc-rule">
+									<TiptapEditor
+										content={html}
+										onChange={(value) => {
+											setHtml(value);
+											latestDraft.current.html = value;
+											dirtyRef.current = true;
+											setSaveState('idle');
+										}}
+										onImageUpload={uploadMyClassImage}
+										onImageUploadError={() => setSaveState('error')}
+										placeholder="Bắt đầu viết nội dung note…"
+									/>
+								</div>
 							</div>
-						</div>
-					) : (
-						<div className="flex min-h-[520px] items-center justify-center text-center text-sm text-ink-secondary">
-							<p>Chọn hoặc thêm một mục trong notebook.</p>
-						</div>
-					)}
+						) : (
+							<div className="flex min-h-[520px] items-center justify-center text-center text-sm text-ink-secondary">
+								<p>Chọn hoặc thêm một mục trong notebook.</p>
+							</div>
+						)}
+					</div>
 				</div>
-			</div>
-		</section>
-		{dialog}
-		{leaveDialog}
+			</section>
+			{dialog}
+			{leaveDialog}
 		</>
 	);
 }

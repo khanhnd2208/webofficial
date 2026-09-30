@@ -74,9 +74,7 @@ export function getVerifiedGallery(project: Project): ProjectMedia[] {
 }
 
 export function getVerifiedArtefacts(project: Project): ProjectArtefact[] {
-	return project.artefacts.filter(
-		(artefact) => !artefact.media || isVerifiedMedia(artefact.media),
-	);
+	return project.artefacts.filter((artefact) => !artefact.media || isVerifiedMedia(artefact.media));
 }
 
 export const projects: Project[] = [
@@ -337,7 +335,8 @@ export const projects: Project[] = [
 		template: 'inquiry',
 		category: 'AI và nghiên cứu',
 		kicker: 'Ongoing Inquiry · Human Resource Management',
-		subtitle: 'Nghiên cứu đang diễn ra về lợi ích, rủi ro và trách nhiệm khi AI tham gia tuyển dụng.',
+		subtitle:
+			'Nghiên cứu đang diễn ra về lợi ích, rủi ro và trách nhiệm khi AI tham gia tuyển dụng.',
 		year: 'Hiện tại',
 		status: 'Nghiên cứu đang diễn ra',
 		summary:
@@ -419,5 +418,7 @@ export function getFeaturedProjects(): Project[] {
 }
 
 export function getFlagshipProject(): Project | undefined {
-	return projects.find((project) => project.flagship) ?? projects.find((project) => project.featured);
+	return (
+		projects.find((project) => project.flagship) ?? projects.find((project) => project.featured)
+	);
 }

@@ -6,8 +6,12 @@ export function lessonVocabScopeKey(lessonId: string, vocabSetId: string) {
 	return `lesson:${lessonId}:set:${vocabSetId}`;
 }
 
-export function guessWhoReady(words: Array<{ hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] }>) {
-	return words.some((word) => word.hintsHard.length + word.hintsMedium.length + word.hintsEasy.length > 0);
+export function guessWhoReady(
+	words: Array<{ hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] }>,
+) {
+	return words.some(
+		(word) => word.hintsHard.length + word.hintsMedium.length + word.hintsEasy.length > 0,
+	);
 }
 
 export function isLearnerVisibleVocabAssignment(row: {

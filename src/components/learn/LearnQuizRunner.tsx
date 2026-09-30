@@ -78,7 +78,9 @@ export default function LearnQuizRunner({
 		}
 	}, [answers, draftReady, review, sectionId]);
 
-	const answeredCount = quiz.questions.filter((question) => answers[question.id] !== undefined).length;
+	const answeredCount = quiz.questions.filter(
+		(question) => answers[question.id] !== undefined,
+	).length;
 
 	const submit = useCallback(async () => {
 		setBusy(true);
@@ -115,7 +117,10 @@ export default function LearnQuizRunner({
 			void submit();
 			return;
 		}
-		const timer = setTimeout(() => setSecondsLeft((value) => (value === null ? null : value - 1)), 1000);
+		const timer = setTimeout(
+			() => setSecondsLeft((value) => (value === null ? null : value - 1)),
+			1000,
+		);
 		return () => clearTimeout(timer);
 	}, [secondsLeft, review, submit]);
 
@@ -130,7 +135,12 @@ export default function LearnQuizRunner({
 		}
 	}
 
-	function moveOption(questionId: string, optionIndex: number, optionCount: number, direction: 1 | -1) {
+	function moveOption(
+		questionId: string,
+		optionIndex: number,
+		optionCount: number,
+		direction: 1 | -1,
+	) {
 		const next = (optionIndex + direction + optionCount) % optionCount;
 		setAnswers((current) => ({ ...current, [questionId]: next }));
 		const group = document.getElementById(`ln-q-${questionId}`);
@@ -145,11 +155,16 @@ export default function LearnQuizRunner({
 	return (
 		<div className="ln-quiz">
 			{review ? (
-				<div className="ln-quiz__score" data-passed={review.result.passed ? 'true' : 'false'} role="status">
+				<div
+					className="ln-quiz__score"
+					data-passed={review.result.passed ? 'true' : 'false'}
+					role="status"
+				>
 					<p className="ln-quiz__percent tabular-nums">{review.result.percentage}%</p>
 					<div>
 						<p className="font-medium">
-							{review.result.passed ? 'Đạt' : 'Chưa đạt'} · {review.result.score}/{review.result.total}
+							{review.result.passed ? 'Đạt' : 'Chưa đạt'} · {review.result.score}/
+							{review.result.total}
 						</p>
 						<p className="text-sm text-ink-secondary">Cần {quiz.passingScorePercent}% để đạt.</p>
 					</div>
@@ -166,7 +181,8 @@ export default function LearnQuizRunner({
 				<div className="ln-quiz__bar">
 					<div className="ln-quiz__bar-row">
 						<span>
-							{quiz.questions.length} câu · cần {quiz.passingScorePercent}% · đã làm {answeredCount}/{quiz.questions.length}
+							{quiz.questions.length} câu · cần {quiz.passingScorePercent}% · đã làm {answeredCount}
+							/{quiz.questions.length}
 						</span>
 						{secondsLeft !== null ? (
 							<span className="tabular-nums" data-urgent={secondsLeft < 60 ? 'true' : undefined}>
@@ -239,7 +255,9 @@ export default function LearnQuizRunner({
 											className="ln-option"
 											data-state={state}
 											disabled={Boolean(review) || busy}
-											onClick={() => setAnswers((current) => ({ ...current, [question.id]: optionIndex }))}
+											onClick={() =>
+												setAnswers((current) => ({ ...current, [question.id]: optionIndex }))
+											}
 											onKeyDown={(event) => {
 												if (review || busy) return;
 												if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
@@ -260,8 +278,12 @@ export default function LearnQuizRunner({
 							{key ? (
 								<div className="ln-quiz__explain">
 									<p className="font-medium">
-										{picked === undefined ? 'Bỏ trống.' : picked === key.correctIndex ? 'Đúng.' : 'Chưa đúng.'} Đáp án:{' '}
-										{LETTERS[key.correctIndex]}
+										{picked === undefined
+											? 'Bỏ trống.'
+											: picked === key.correctIndex
+												? 'Đúng.'
+												: 'Chưa đúng.'}{' '}
+										Đáp án: {LETTERS[key.correctIndex]}
 									</p>
 									{key.explanation ? <p>{key.explanation}</p> : null}
 								</div>
@@ -282,7 +304,12 @@ export default function LearnQuizRunner({
 								<button type="button" className="ln-btn" onClick={() => setConfirming(false)}>
 									Làm tiếp
 								</button>
-								<button type="button" className="ln-btn ln-btn--primary" onClick={() => void submit()} disabled={busy}>
+								<button
+									type="button"
+									className="ln-btn ln-btn--primary"
+									onClick={() => void submit()}
+									disabled={busy}
+								>
 									Nộp bài
 								</button>
 							</div>
@@ -296,7 +323,9 @@ export default function LearnQuizRunner({
 								type="button"
 								className="ln-btn ln-btn--primary"
 								disabled={busy || answeredCount === 0}
-								onClick={() => (answeredCount < quiz.questions.length ? setConfirming(true) : void submit())}
+								onClick={() =>
+									answeredCount < quiz.questions.length ? setConfirming(true) : void submit()
+								}
 							>
 								{busy ? 'Đang chấm…' : 'Nộp bài'}
 							</button>

@@ -66,8 +66,7 @@ export default function TestSheet({
 	const title = test
 		? `${test.title.trim() || 'Kiểm tra'} · ${test.questionCount} câu`
 		: 'Kiểm tra';
-	const currentResult =
-		test && result.slug === test.slug ? result : { play: null, error: null };
+	const currentResult = test && result.slug === test.slug ? result : { play: null, error: null };
 	const { play, error } = currentResult;
 	const ready = Boolean(play && test && play.slug === test.slug && play.questions.length);
 
@@ -106,9 +105,7 @@ export default function TestSheet({
 				<header className="mb-4 flex items-center justify-between gap-3">
 					<div className="flex min-w-0 items-center gap-2">
 						<McBadge variant="test">TEST</McBadge>
-						<p className="mc-meta mc-num truncate">
-							{test.questionCount} câu
-						</p>
+						<p className="mc-meta mc-num truncate">{test.questionCount} câu</p>
 					</div>
 					<McButton variant="quiet" onClick={onClose}>
 						Đóng

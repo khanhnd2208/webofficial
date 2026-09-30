@@ -13,7 +13,9 @@ describe('public teaching page validation', () => {
 	};
 
 	it('allows saving content independently from the share state', () => {
-		expect(updateTeachingPublicPageSchema.safeParse({ ...valid, publicSummary: '' }).success).toBe(true);
+		expect(updateTeachingPublicPageSchema.safeParse({ ...valid, publicSummary: '' }).success).toBe(
+			true,
+		);
 	});
 
 	it('rejects non-web resource URL schemes', () => {

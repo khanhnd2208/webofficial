@@ -10,7 +10,15 @@ import { isReservedLessonSlug } from '../domain/workspaceUrl';
 import * as repo from '../repositories/courseRepository';
 import * as kuRepo from '../repositories/knowledgeUnitRepository';
 import type { CreateCourseInput, LessonInput, SectionInput, UpdateCourseInput } from '../schemas';
-import { listSkip, parseCourseLevel, parseListQuery, parseOptionalSortDir, parsePublishStatus, toListPage, unwrapItems } from '../domain/listQuery';
+import {
+	listSkip,
+	parseCourseLevel,
+	parseListQuery,
+	parseOptionalSortDir,
+	parsePublishStatus,
+	toListPage,
+	unwrapItems,
+} from '../domain/listQuery';
 import { COURSE_TABLE_SORTS } from '../repositories/courseRepository';
 import type {
 	AdminCourseOption,

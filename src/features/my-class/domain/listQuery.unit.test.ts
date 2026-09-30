@@ -18,10 +18,13 @@ import {
 
 describe('listQuery', () => {
 	it('parses page, pageSize and allow-listed sort fields', () => {
-		const query = parseListQuery(new URLSearchParams('q=hrm&page=2&pageSize=50&sortBy=title&sortDir=asc'), {
-			sortFields: ['updatedAt', 'title'] as const,
-			defaultSortBy: 'updatedAt',
-		});
+		const query = parseListQuery(
+			new URLSearchParams('q=hrm&page=2&pageSize=50&sortBy=title&sortDir=asc'),
+			{
+				sortFields: ['updatedAt', 'title'] as const,
+				defaultSortBy: 'updatedAt',
+			},
+		);
 		expect(query).toEqual({
 			q: 'hrm',
 			page: 2,
@@ -52,15 +55,23 @@ describe('listQuery', () => {
 			totalPages: 3,
 		});
 		expect(toListPage([], 0, 4, 20).page).toBe(1);
-		expect(unwrapItems({ items: ['a'], total: 1, page: 1, pageSize: 20, totalPages: 1 })).toEqual(['a']);
+		expect(unwrapItems({ items: ['a'], total: 1, page: 1, pageSize: 20, totalPages: 1 })).toEqual([
+			'a',
+		]);
 		expect(unwrapItems(['b'])).toEqual(['b']);
 		expect(ensureListPage(['x', 'y']).total).toBe(2);
 	});
 
 	it('omits default page and pageSize from shareable URLs', () => {
 		expect(
-			studioTableHref('/admin/my-class', { q: 'hrm', page: '1', pageSize: '20', status: 'DRAFT' }, { page: '2' }),
+			studioTableHref(
+				'/admin/my-class',
+				{ q: 'hrm', page: '1', pageSize: '20', status: 'DRAFT' },
+				{ page: '2' },
+			),
 		).toBe('/admin/my-class?q=hrm&page=2&status=DRAFT');
-		expect(currentTableParams({ q: '  a ', empty: '' }, ['q', 'empty', 'missing'])).toEqual({ q: 'a' });
+		expect(currentTableParams({ q: '  a ', empty: '' }, ['q', 'empty', 'missing'])).toEqual({
+			q: 'a',
+		});
 	});
 });

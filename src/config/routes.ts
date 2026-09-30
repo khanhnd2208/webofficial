@@ -42,7 +42,12 @@ export const routes = {
 	myClassCourseEdit: (courseSlug: string) => `/my-space/my-class/${courseSlug}?edit=1` as const,
 	myClassLesson: (courseSlug: string, lessonSlug: string) =>
 		`/my-space/my-class/${courseSlug}?lesson=${encodeURIComponent(lessonSlug)}` as const,
-	myClassUnit: (courseSlug: string, lessonSlug: string, unitSlug: string, options?: { sectionSlug?: string | null; level?: string | null }) => {
+	myClassUnit: (
+		courseSlug: string,
+		lessonSlug: string,
+		unitSlug: string,
+		options?: { sectionSlug?: string | null; level?: string | null },
+	) => {
 		const path = `/my-space/my-class/${courseSlug}/${lessonSlug}/${unitSlug}`;
 		const params = new URLSearchParams();
 		if (options?.sectionSlug) params.set('s', options.sectionSlug);
@@ -158,7 +163,7 @@ export const routes = {
 	teaching: '/giang-day',
 
 	// ─── Admin ────────────────────────────────────────────────────────────────
-		admin: {
+	admin: {
 		home: '/admin',
 		website: '/admin/website',
 		archive: '/admin/archive',

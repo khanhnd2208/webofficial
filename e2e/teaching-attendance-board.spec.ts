@@ -259,9 +259,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await page.getByLabel('Mật khẩu ngày sinh').fill('29052006');
 			await page.getByRole('button', { name: 'Enter experience' }).click();
 
-			await expect(
-				page.getByRole('heading', { name: 'Choose your learning style' }),
-			).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Choose your learning style' })).toBeVisible();
 			await page.getByRole('button', { name: 'Chọn thử thách' }).click();
 			await expect(page.getByRole('button', { name: 'Đã chọn' })).toBeVisible();
 			await expect(page.getByText(/Challenge accepted/)).toBeVisible();
@@ -273,9 +271,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByText('Có thể vào ngay')).toBeVisible();
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
-			await expect(
-				page.getByRole('heading', { name: 'Choose your learning style' }),
-			).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Choose your learning style' })).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
@@ -637,14 +633,17 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				data: { shared: true },
 			});
 			expect(shared.ok()).toBe(true);
-			const enrolled = await page.request.post(`/api/admin/teaching/classes/${classId}/enrollments`, {
-				data: {
-					studentCode: `27${suffix}`.slice(-10),
-					familyName: 'E2E',
-					givenName: `Unassigned ${suffix}`,
-					tutorialClassId: null,
+			const enrolled = await page.request.post(
+				`/api/admin/teaching/classes/${classId}/enrollments`,
+				{
+					data: {
+						studentCode: `27${suffix}`.slice(-10),
+						familyName: 'E2E',
+						givenName: `Unassigned ${suffix}`,
+						tutorialClassId: null,
+					},
 				},
-			});
+			);
 			expect(enrolled.ok()).toBe(true);
 
 			await context.clearCookies();

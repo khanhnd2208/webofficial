@@ -21,10 +21,9 @@ async function main() {
 	await mongoose.connect(uri);
 	console.log('Connected to MongoDB');
 
-	const result = await mongoose.connection.collection('users').updateMany(
-		{ role: 'teacher' },
-		{ $set: { role: 'student' } },
-	);
+	const result = await mongoose.connection
+		.collection('users')
+		.updateMany({ role: 'teacher' }, { $set: { role: 'student' } });
 
 	console.log(
 		`Migration complete: ${result.matchedCount} matched, ${result.modifiedCount} updated`,

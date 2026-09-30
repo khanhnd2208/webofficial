@@ -62,7 +62,10 @@ export function TeachingWorkspaceShell({
 
 	return (
 		<TeachingWorkspacePending initialWeek={week}>
-			<div className={`teaching-workspace-shell py-2 sm:py-3 ${isGradebookTab ? 'teaching-workspace-shell-gradebook' : ''}`} data-teaching-shell>
+			<div
+				className={`teaching-workspace-shell py-2 sm:py-3 ${isGradebookTab ? 'teaching-workspace-shell-gradebook' : ''}`}
+				data-teaching-shell
+			>
 				<TeachingAppHeader
 					backHref={routes.mySpaceTeaching}
 					backLabel="Các lớp"
@@ -82,19 +85,42 @@ export function TeachingWorkspaceShell({
 					description={
 						<div className="teaching-class-meta flex flex-wrap items-center gap-1.5">
 							<span className="mc-meta">{gradebook.stats.studentCount} học viên</span>
-							<span className="teaching-status" data-tone={gradebook.class.status === 'ACTIVE' ? 'ok' : 'muted'}>{gradebook.class.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã lưu trữ'}</span>
-							<span className="teaching-status" data-tone={board.attendanceVisible ? 'ok' : 'muted'}>{board.attendanceVisible ? 'Đang chia sẻ' : 'Chưa chia sẻ'}</span>
+							<span
+								className="teaching-status"
+								data-tone={gradebook.class.status === 'ACTIVE' ? 'ok' : 'muted'}
+							>
+								{gradebook.class.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã lưu trữ'}
+							</span>
+							<span
+								className="teaching-status"
+								data-tone={board.attendanceVisible ? 'ok' : 'muted'}
+							>
+								{board.attendanceVisible ? 'Đang chia sẻ' : 'Chưa chia sẻ'}
+							</span>
 						</div>
 					}
-					actions={<TeachingManagementMenu classId={gradebook.class.id} activeTab={activeTab} publicPath={board.publicPath} />}
+					actions={
+						<TeachingManagementMenu
+							classId={gradebook.class.id}
+							activeTab={activeTab}
+							publicPath={board.publicPath}
+						/>
+					}
 					tabs={
 						<Suspense>
-							<TeachingCoreTabs classId={gradebook.class.id} activeTab={activeTab} groupBoardEnabled={groupBoardEnabled} tutorialId={tutorialId} />
+							<TeachingCoreTabs
+								classId={gradebook.class.id}
+								activeTab={activeTab}
+								groupBoardEnabled={groupBoardEnabled}
+								tutorialId={tutorialId}
+							/>
 						</Suspense>
 					}
 				/>
 
-				<TeachingPendingBody className={`mt-4 ${isGradebookTab ? 'teaching-workspace-content' : ''}`}>
+				<TeachingPendingBody
+					className={`mt-4 ${isGradebookTab ? 'teaching-workspace-content' : ''}`}
+				>
 					{isGradebookTab ? (
 						<GradebookWorkspace
 							initial={gradebook}
@@ -113,7 +139,9 @@ export function TeachingWorkspaceShell({
 							admin
 						/>
 					) : null}
-					{activeTab === 'notes' ? <ClassNotesAdminWorkspace classId={gradebook.class.id} initial={notes ?? []} /> : null}
+					{activeTab === 'notes' ? (
+						<ClassNotesAdminWorkspace classId={gradebook.class.id} initial={notes ?? []} />
+					) : null}
 					{activeTab === 'recall' ? (
 						<ClassRecallWorkspace
 							classId={gradebook.class.id}
@@ -121,16 +149,20 @@ export function TeachingWorkspaceShell({
 							initial={recallAssignments ?? []}
 						/>
 					) : null}
-					{activeTab === 'students' ? <RosterWorkspace classId={gradebook.class.id} tutorials={gradebook.tutorials} students={roster?.students ?? []} /> : null}
+					{activeTab === 'students' ? (
+						<RosterWorkspace
+							classId={gradebook.class.id}
+							tutorials={gradebook.tutorials}
+							students={roster?.students ?? []}
+						/>
+					) : null}
 					{activeTab === 'setup' ? (
 						<div className="space-y-4">
 							<SettingsForm teachingClass={gradebook.class} />
 							<SessionsWorkspace classId={gradebook.class.id} tutorials={gradebook.tutorials} />
 						</div>
 					) : null}
-					{activeTab === 'share' ? (
-						<StudentPageWorkspace page={publicPage} board={board} />
-					) : null}
+					{activeTab === 'share' ? <StudentPageWorkspace page={publicPage} board={board} /> : null}
 				</TeachingPendingBody>
 			</div>
 		</TeachingWorkspacePending>

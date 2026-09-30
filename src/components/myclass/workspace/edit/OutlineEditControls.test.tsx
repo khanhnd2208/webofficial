@@ -19,7 +19,11 @@ describe('OutlineTestMenu', () => {
 	it('renders the full action menu outside the clipped outline branch', () => {
 		render(
 			<div className="mc">
-				<div className="mc-outline-branch-clip" data-testid="outline-clip" style={{ overflow: 'hidden', height: 40 }}>
+				<div
+					className="mc-outline-branch-clip"
+					data-testid="outline-clip"
+					style={{ overflow: 'hidden', height: 40 }}
+				>
 					<OutlineTestMenu testId="test-1" placementId="place-1" />
 				</div>
 			</div>,

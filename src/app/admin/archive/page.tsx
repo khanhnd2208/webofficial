@@ -21,7 +21,9 @@ export default function AdminArchivePage() {
 			<div className="mt-8 space-y-8">
 				{groups.map(({ group, modules }) => (
 					<section key={group}>
-						<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">{group}</p>
+						<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">
+							{group}
+						</p>
 						<div className="grid gap-3 sm:grid-cols-2">
 							{modules.map((module) => (
 								<Link

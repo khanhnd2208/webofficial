@@ -13,8 +13,26 @@ const test: MyClassTestForPlay = {
 	courseSlug: 'hrm',
 	returnTo: { href: '/my-space/my-class/hrm', label: 'Course' },
 	questions: [
-		{ id: 'q1', type: 'MCQ_SINGLE', stem: 'One?', options: [{ key: 'A', text: 'Yes' }, { key: 'B', text: 'No' }], position: 0 },
-		{ id: 'q2', type: 'MCQ_SINGLE', stem: 'Two?', options: [{ key: 'A', text: 'Yes' }, { key: 'B', text: 'No' }], position: 1 },
+		{
+			id: 'q1',
+			type: 'MCQ_SINGLE',
+			stem: 'One?',
+			options: [
+				{ key: 'A', text: 'Yes' },
+				{ key: 'B', text: 'No' },
+			],
+			position: 0,
+		},
+		{
+			id: 'q2',
+			type: 'MCQ_SINGLE',
+			stem: 'Two?',
+			options: [
+				{ key: 'A', text: 'Yes' },
+				{ key: 'B', text: 'No' },
+			],
+			position: 1,
+		},
 	],
 };
 
@@ -32,22 +50,51 @@ describe('TestRunner', () => {
 
 	it('shows review cards after submit and dismisses with onDismiss', async () => {
 		const onDismiss = vi.fn();
-		vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-			json: async () => ({
-				ok: true,
-				data: {
-					attemptId: 'r1',
-					saved: true,
-					score: 1,
-					total: 2,
-					review: [
-						{ questionId: 'q1', type: 'MCQ_SINGLE', stem: 'One?', options: test.questions[0]!.options, chosenKey: 'A', correctKey: 'A', explanation: '<p>Because</p>', isCorrect: true, response: { type: 'MCQ_SINGLE', key: 'A' }, answer: { type: 'MCQ_SINGLE', correctKey: 'A' }, earned: 1, max: 1 },
-						{ questionId: 'q2', type: 'MCQ_SINGLE', stem: 'Two?', options: test.questions[1]!.options, chosenKey: 'A', correctKey: 'B', explanation: '', isCorrect: false, response: { type: 'MCQ_SINGLE', key: 'A' }, answer: { type: 'MCQ_SINGLE', correctKey: 'B' }, earned: 0, max: 1 },
-					],
-					kuBreakdown: [],
-				},
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				json: async () => ({
+					ok: true,
+					data: {
+						attemptId: 'r1',
+						saved: true,
+						score: 1,
+						total: 2,
+						review: [
+							{
+								questionId: 'q1',
+								type: 'MCQ_SINGLE',
+								stem: 'One?',
+								options: test.questions[0]!.options,
+								chosenKey: 'A',
+								correctKey: 'A',
+								explanation: '<p>Because</p>',
+								isCorrect: true,
+								response: { type: 'MCQ_SINGLE', key: 'A' },
+								answer: { type: 'MCQ_SINGLE', correctKey: 'A' },
+								earned: 1,
+								max: 1,
+							},
+							{
+								questionId: 'q2',
+								type: 'MCQ_SINGLE',
+								stem: 'Two?',
+								options: test.questions[1]!.options,
+								chosenKey: 'A',
+								correctKey: 'B',
+								explanation: '',
+								isCorrect: false,
+								response: { type: 'MCQ_SINGLE', key: 'A' },
+								answer: { type: 'MCQ_SINGLE', correctKey: 'B' },
+								earned: 0,
+								max: 1,
+							},
+						],
+						kuBreakdown: [],
+					},
+				}),
 			}),
-		}));
+		);
 		render(<TestRunner test={test} embedded onDismiss={onDismiss} />);
 		fireEvent.click(screen.getByLabelText(/A\. Yes/));
 		fireEvent.click(screen.getByRole('button', { name: /Tiếp/ }));
@@ -89,56 +136,123 @@ describe('TestRunner', () => {
 	});
 
 	it('saves guest attempts without asking for login', async () => {
-		vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-			json: async () => ({
-				ok: true,
-				data: {
-					attemptId: 'g1',
-					saved: true,
-					score: 2,
-					total: 2,
-					review: [
-						{ questionId: 'q1', type: 'MCQ_SINGLE', stem: 'One?', options: test.questions[0]!.options, chosenKey: 'A', correctKey: 'A', explanation: 'Because', isCorrect: true, response: { type: 'MCQ_SINGLE', key: 'A' }, answer: { type: 'MCQ_SINGLE', correctKey: 'A' }, earned: 1, max: 1 },
-						{ questionId: 'q2', type: 'MCQ_SINGLE', stem: 'Two?', options: test.questions[1]!.options, chosenKey: 'A', correctKey: 'A', explanation: '', isCorrect: true, response: { type: 'MCQ_SINGLE', key: 'A' }, answer: { type: 'MCQ_SINGLE', correctKey: 'A' }, earned: 1, max: 1 },
-					],
-					kuBreakdown: [{ slug: 'r', title: 'Reliability', questions: 1, correct: 1, accuracy: 100, evidenceLabel: 'Đúng 1 / 1 evidence (100%)' }],
-				},
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				json: async () => ({
+					ok: true,
+					data: {
+						attemptId: 'g1',
+						saved: true,
+						score: 2,
+						total: 2,
+						review: [
+							{
+								questionId: 'q1',
+								type: 'MCQ_SINGLE',
+								stem: 'One?',
+								options: test.questions[0]!.options,
+								chosenKey: 'A',
+								correctKey: 'A',
+								explanation: 'Because',
+								isCorrect: true,
+								response: { type: 'MCQ_SINGLE', key: 'A' },
+								answer: { type: 'MCQ_SINGLE', correctKey: 'A' },
+								earned: 1,
+								max: 1,
+							},
+							{
+								questionId: 'q2',
+								type: 'MCQ_SINGLE',
+								stem: 'Two?',
+								options: test.questions[1]!.options,
+								chosenKey: 'A',
+								correctKey: 'A',
+								explanation: '',
+								isCorrect: true,
+								response: { type: 'MCQ_SINGLE', key: 'A' },
+								answer: { type: 'MCQ_SINGLE', correctKey: 'A' },
+								earned: 1,
+								max: 1,
+							},
+						],
+						kuBreakdown: [
+							{
+								slug: 'r',
+								title: 'Reliability',
+								questions: 1,
+								correct: 1,
+								accuracy: 100,
+								evidenceLabel: 'Đúng 1 / 1 evidence (100%)',
+							},
+						],
+					},
+				}),
 			}),
-		}));
+		);
 		render(<TestRunner test={test} authenticated={false} />);
 		fireEvent.click(screen.getByLabelText(/A\. Yes/));
 		fireEvent.click(screen.getByRole('button', { name: /Tiếp/ }));
 		fireEvent.click(screen.getByLabelText(/A\. Yes/));
 		fireEvent.click(screen.getByRole('button', { name: 'Nộp bài' }));
 		expect(await screen.findByTestId('my-class-test-result')).toBeVisible();
-		 expect(screen.getByText(/Đã lưu kết quả/)).toBeVisible();
+		expect(screen.getByText(/Đã lưu kết quả/)).toBeVisible();
 		expect(screen.queryByText(/Đăng nhập/)).not.toBeInTheDocument();
 		vi.unstubAllGlobals();
 	});
 
 	it('confirms saved state for authenticated users', async () => {
-		vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-			json: async () => ({
-				ok: true,
-				data: {
-					attemptId: 'a1',
-					saved: true,
-					score: 1,
-					total: 2,
-					review: [
-						{ questionId: 'q1', type: 'MCQ_SINGLE', stem: 'One?', options: test.questions[0]!.options, chosenKey: 'A', correctKey: 'A', explanation: '', isCorrect: true, response: { type: 'MCQ_SINGLE', key: 'A' }, answer: { type: 'MCQ_SINGLE', correctKey: 'A' }, earned: 1, max: 1 },
-						{ questionId: 'q2', type: 'MCQ_SINGLE', stem: 'Two?', options: test.questions[1]!.options, chosenKey: 'A', correctKey: 'B', explanation: '', isCorrect: false, response: { type: 'MCQ_SINGLE', key: 'A' }, answer: { type: 'MCQ_SINGLE', correctKey: 'B' }, earned: 0, max: 1 },
-					],
-					kuBreakdown: [],
-				},
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				json: async () => ({
+					ok: true,
+					data: {
+						attemptId: 'a1',
+						saved: true,
+						score: 1,
+						total: 2,
+						review: [
+							{
+								questionId: 'q1',
+								type: 'MCQ_SINGLE',
+								stem: 'One?',
+								options: test.questions[0]!.options,
+								chosenKey: 'A',
+								correctKey: 'A',
+								explanation: '',
+								isCorrect: true,
+								response: { type: 'MCQ_SINGLE', key: 'A' },
+								answer: { type: 'MCQ_SINGLE', correctKey: 'A' },
+								earned: 1,
+								max: 1,
+							},
+							{
+								questionId: 'q2',
+								type: 'MCQ_SINGLE',
+								stem: 'Two?',
+								options: test.questions[1]!.options,
+								chosenKey: 'A',
+								correctKey: 'B',
+								explanation: '',
+								isCorrect: false,
+								response: { type: 'MCQ_SINGLE', key: 'A' },
+								answer: { type: 'MCQ_SINGLE', correctKey: 'B' },
+								earned: 0,
+								max: 1,
+							},
+						],
+						kuBreakdown: [],
+					},
+				}),
 			}),
-		}));
+		);
 		render(<TestRunner test={test} authenticated />);
 		fireEvent.click(screen.getByLabelText(/A\. Yes/));
 		fireEvent.click(screen.getByRole('button', { name: /Tiếp/ }));
 		fireEvent.click(screen.getByLabelText(/A\. Yes/));
 		fireEvent.click(screen.getByRole('button', { name: 'Nộp bài' }));
-		 expect(await screen.findByText(/Đã lưu kết quả/)).toBeVisible();
+		expect(await screen.findByText(/Đã lưu kết quả/)).toBeVisible();
 		vi.unstubAllGlobals();
 	});
 
@@ -192,19 +306,22 @@ describe('TestRunner', () => {
 	});
 
 	it('hides the answer review when revealPolicy is NEVER', async () => {
-		vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-			json: async () => ({
-				ok: true,
-				data: {
-					attemptId: 'n1',
-					saved: true,
-					score: 1,
-					total: 2,
-					review: [],
-					kuBreakdown: [],
-				},
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				json: async () => ({
+					ok: true,
+					data: {
+						attemptId: 'n1',
+						saved: true,
+						score: 1,
+						total: 2,
+						review: [],
+						kuBreakdown: [],
+					},
+				}),
 			}),
-		}));
+		);
 		render(<TestRunner test={{ ...test, revealPolicy: 'NEVER' }} />);
 		fireEvent.click(screen.getByLabelText(/A\. Yes/));
 		fireEvent.click(screen.getByRole('button', { name: /Tiếp/ }));
@@ -225,7 +342,16 @@ describe('TestRunner', () => {
 			shuffleQuestions: true,
 			questions: [
 				...test.questions,
-				{ id: 'q3', type: 'MCQ_SINGLE' as const, stem: 'Three?', options: [{ key: 'A' as const, text: 'Yes' }, { key: 'B' as const, text: 'No' }], position: 2 },
+				{
+					id: 'q3',
+					type: 'MCQ_SINGLE' as const,
+					stem: 'Three?',
+					options: [
+						{ key: 'A' as const, text: 'Yes' },
+						{ key: 'B' as const, text: 'No' },
+					],
+					position: 2,
+				},
 			],
 			questionCount: 3,
 		};

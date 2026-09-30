@@ -1,4 +1,11 @@
-import { bankBulkSchema, bankFilterFromSearch, bulkBankAction, listAdminQuestionTable, parseOptionalSortDir, parseWithAppError } from '@/features/my-class';
+import {
+	bankBulkSchema,
+	bankFilterFromSearch,
+	bulkBankAction,
+	listAdminQuestionTable,
+	parseOptionalSortDir,
+	parseWithAppError,
+} from '@/features/my-class';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
 import { type NextRequest } from 'next/server';
 

@@ -61,9 +61,7 @@ function authoringMeta(
 	};
 }
 
-function pickAuthoringRevision(
-	unit: MappedUnit,
-): (PublishedRevision & { status?: string }) | null {
+function pickAuthoringRevision(unit: MappedUnit): (PublishedRevision & { status?: string }) | null {
 	const latest = unit.revisions?.[0];
 	if (latest) return latest;
 	return unit.currentPublishedRevision;
@@ -71,7 +69,13 @@ function pickAuthoringRevision(
 
 export function mapAuthoringUnit(unit: MappedUnit): MyClassKnowledgeUnit {
 	const revision = pickAuthoringRevision(unit);
-	const html = revision ?? { title: unit.slug, summary: '', foundationHtml: '', academicHtml: '', expertHtml: '' };
+	const html = revision ?? {
+		title: unit.slug,
+		summary: '',
+		foundationHtml: '',
+		academicHtml: '',
+		expertHtml: '',
+	};
 	const body = revisionHtml(html);
 	const hasDraft =
 		unit.revisions?.[0]?.status === 'DRAFT' ||
@@ -151,8 +155,7 @@ export function mapAuthoringLesson(lesson: AuthoringLessonInput): MyClassLesson 
 		.map(mapAuthoringSection);
 	const autoMinutes = sections.reduce(
 		(sum, section) =>
-			sum +
-			section.knowledgeUnits.reduce((inner, unit) => inner + (unit.estimatedMinutes ?? 3), 0),
+			sum + section.knowledgeUnits.reduce((inner, unit) => inner + (unit.estimatedMinutes ?? 3), 0),
 		0,
 	);
 	return {
@@ -186,7 +189,8 @@ export function mapAuthoringCourse(course: {
 		.filter((lesson) => lesson.status !== 'ARCHIVED')
 		.map(mapAuthoringLesson);
 	const unitCount = lessons.reduce(
-		(sum, lesson) => sum + lesson.sections.reduce((s, section) => s + section.knowledgeUnits.length, 0),
+		(sum, lesson) =>
+			sum + lesson.sections.reduce((s, section) => s + section.knowledgeUnits.length, 0),
 		0,
 	);
 	const estimatedMinutes = lessons.reduce((sum, lesson) => sum + (lesson.estimatedMinutes ?? 0), 0);
@@ -329,13 +333,14 @@ export function mapPublicLesson(lesson: {
 	sections: Array<Parameters<typeof mapPublicSection>[0]>;
 	placements?: PlacementInput[];
 }): MyClassLesson | null {
-	const sections = lesson.sections.map(mapPublicSection).filter((item): item is MyClassSection => Boolean(item));
+	const sections = lesson.sections
+		.map(mapPublicSection)
+		.filter((item): item is MyClassSection => Boolean(item));
 	const tests = (lesson.placements ?? []).map(mapTestListItem);
 	if (sections.length === 0 && tests.length === 0) return null;
 	const autoMinutes = sections.reduce(
 		(sum, section) =>
-			sum +
-			section.knowledgeUnits.reduce((inner, unit) => inner + (unit.estimatedMinutes ?? 3), 0),
+			sum + section.knowledgeUnits.reduce((inner, unit) => inner + (unit.estimatedMinutes ?? 3), 0),
 		0,
 	);
 	return {
@@ -362,9 +367,12 @@ export function mapPublicCourse(course: {
 	lessons: Array<Parameters<typeof mapPublicLesson>[0]>;
 	placements?: PlacementInput[];
 }): MyClassCourseDetail {
-	const lessons = course.lessons.map(mapPublicLesson).filter((item): item is MyClassLesson => Boolean(item));
+	const lessons = course.lessons
+		.map(mapPublicLesson)
+		.filter((item): item is MyClassLesson => Boolean(item));
 	const unitCount = lessons.reduce(
-		(sum, lesson) => sum + lesson.sections.reduce((s, section) => s + section.knowledgeUnits.length, 0),
+		(sum, lesson) =>
+			sum + lesson.sections.reduce((s, section) => s + section.knowledgeUnits.length, 0),
 		0,
 	);
 	const estimatedMinutes = lessons.reduce((sum, lesson) => sum + (lesson.estimatedMinutes ?? 0), 0);
@@ -390,7 +398,13 @@ export function mapVocabAssignment(row: {
 	id: string;
 	position: number;
 	lessonId: string | null;
-	vocabSet: { id: string; title: string; isArchived: boolean; words: Array<{ hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] }>; _count?: { words: number } };
+	vocabSet: {
+		id: string;
+		title: string;
+		isArchived: boolean;
+		words: Array<{ hintsHard: string[]; hintsMedium: string[]; hintsEasy: string[] }>;
+		_count?: { words: number };
+	};
 	lesson: { id: string; slug: string; title: string } | null;
 }): MyClassVocabSetCard {
 	const wordCount = row.vocabSet._count?.words ?? row.vocabSet.words.length;

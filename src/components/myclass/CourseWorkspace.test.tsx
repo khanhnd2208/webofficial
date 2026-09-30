@@ -271,7 +271,9 @@ describe('CourseWorkspace interactions', () => {
 		expect(
 			screen.queryByRole('heading', { name: 'Luyện tập có chủ đích' }),
 		).not.toBeInTheDocument();
-		expect(screen.queryByRole('link', { name: /Kiểm tra toàn khóa|Kiểm tra nền tảng/ })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('link', { name: /Kiểm tra toàn khóa|Kiểm tra nền tảng/ }),
+		).not.toBeInTheDocument();
 	});
 
 	it('restores the Reader from path props', async () => {
@@ -353,7 +355,9 @@ describe('CourseWorkspace interactions', () => {
 			expect(document.querySelector('aside [data-testid="my-class-outline"]')).toBeTruthy(),
 		);
 		const outline = document.querySelector('aside [data-testid="my-class-outline"]')!;
-		fireEvent.click(within(outline as HTMLElement).getAllByRole('button', { name: /Kiểm tra nền tảng/ })[0]!);
+		fireEvent.click(
+			within(outline as HTMLElement).getAllByRole('button', { name: /Kiểm tra nền tảng/ })[0]!,
+		);
 		expect(await screen.findByTestId('my-class-test-runner')).toBeVisible();
 		expect(document.querySelector('aside [data-testid="my-class-outline"]')).toBeTruthy();
 		expect(screen.queryByRole('dialog', { name: /Kiểm tra/ })).not.toBeInTheDocument();

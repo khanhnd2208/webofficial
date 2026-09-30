@@ -56,10 +56,7 @@ export default function QrCodePanel({ url, title = 'message-qr' }: QrCodePanelPr
 
 	return (
 		<div className="flex flex-col items-center gap-4">
-			<div
-				ref={containerRef}
-				className="rounded-2xl border border-border bg-white p-6 shadow-sm"
-			>
+			<div ref={containerRef} className="rounded-2xl border border-border bg-white p-6 shadow-sm">
 				<QRCode value={url} size={200} level="M" />
 			</div>
 

@@ -59,7 +59,9 @@ export function TeachingQuickMenu({
 							disabled={item.disabled}
 							onClick={item.onSelect}
 							className={`flex min-h-11 w-full items-center rounded-[var(--mc-r-sm)] px-3 text-left text-sm font-semibold disabled:opacity-50 ${
-								item.tone === 'danger' ? 'text-error hover:bg-error/10' : 'text-ink hover:bg-surface-hover'
+								item.tone === 'danger'
+									? 'text-error hover:bg-error/10'
+									: 'text-ink hover:bg-surface-hover'
 							}`}
 						>
 							{item.label}

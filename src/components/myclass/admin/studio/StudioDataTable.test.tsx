@@ -12,7 +12,7 @@ describe('StudioDataTable', () => {
 	it('renders headers, empty state and selection', () => {
 		const onSort = vi.fn();
 		const onSelectionChange = vi.fn();
-		const { rerender } = 		render(
+		const { rerender } = render(
 			<StudioDataTable<{ id: string; title: string; count: number }>
 				tableId="test-empty"
 				caption="Bảng kiểm thử"
@@ -51,7 +51,10 @@ describe('StudioDataTable', () => {
 		expect(onSort).toHaveBeenCalledWith('title');
 		fireEvent.click(screen.getByRole('checkbox', { name: 'Chọn: HRM' }));
 		expect(onSelectionChange).toHaveBeenCalledWith(['1']);
-		expect(screen.getByRole('columnheader', { name: /Tên/ })).toHaveAttribute('aria-sort', 'ascending');
+		expect(screen.getByRole('columnheader', { name: /Tên/ })).toHaveAttribute(
+			'aria-sort',
+			'ascending',
+		);
 	});
 
 	it('toggles column visibility, pagination and keyboard row activation', () => {

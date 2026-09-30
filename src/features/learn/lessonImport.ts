@@ -104,7 +104,10 @@ function escapeYearLikeListMarkers(lines: string[], mask: boolean[]): string[] {
 	});
 }
 
-function splitTitleAndDuration(titleLine: string): { title: string; durationMinutes: number | null } {
+function splitTitleAndDuration(titleLine: string): {
+	title: string;
+	durationMinutes: number | null;
+} {
 	let title = titleLine;
 	let durationMinutes: number | null = null;
 	if (title.includes('|')) {
@@ -132,18 +135,25 @@ function pullCallout(markdown: string, tag: string): { body: string | null; rest
 	const start = lines.findIndex((line) => new RegExp(`^>\\s*\\[!${tag}\\]`, 'i').test(line.trim()));
 	if (start < 0) return { body: null, rest: markdown };
 	let end = start + 1;
-	while (end < lines.length && /^>\s?/.test(lines[end]) && !/^>\s*\[!/.test(lines[end].trim())) end += 1;
+	while (end < lines.length && /^>\s?/.test(lines[end]) && !/^>\s*\[!/.test(lines[end].trim()))
+		end += 1;
 	const body = lines
 		.slice(start + 1, end)
 		.map((line) => line.replace(/^>\s?/, '').trim())
 		.filter(Boolean)
 		.join('\n');
-	const rest = [...lines.slice(0, start), ...lines.slice(end)].join('\n').replace(/\n{3,}/g, '\n\n').trim();
+	const rest = [...lines.slice(0, start), ...lines.slice(end)]
+		.join('\n')
+		.replace(/\n{3,}/g, '\n\n')
+		.trim();
 	return { body, rest };
 }
 
 function parseCheckpoint(body: string): LearnCheckpoint | null {
-	const lines = body.split('\n').map((line) => line.trim()).filter(Boolean);
+	const lines = body
+		.split('\n')
+		.map((line) => line.trim())
+		.filter(Boolean);
 	if (!lines.length) return null;
 	const options: string[] = [];
 	let question = '';
@@ -180,7 +190,12 @@ function takeawayItems(body: string): string[] {
 		.filter(Boolean);
 }
 
-function readingSection(title: string, durationMinutes: number | null, summary: string, markdown: string): ImportedSection {
+function readingSection(
+	title: string,
+	durationMinutes: number | null,
+	summary: string,
+	markdown: string,
+): ImportedSection {
 	const takeaways = pullCallout(markdown, 'TAKEAWAYS');
 	const checkpoint = pullCallout(takeaways.rest, 'CHECKPOINT');
 	const body = checkpoint.rest;
@@ -231,14 +246,23 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 	lines.forEach((line, index) => {
 		if (fenceMask[index]) return;
 		const match = line.trim().match(SECTION_DELIMITER_RE);
-		if (match) slices.push({ titleLine: match[3].trim(), kind: sliceKind(match[1] ?? match[2]), start: index });
+		if (match)
+			slices.push({
+				titleLine: match[3].trim(),
+				kind: sliceKind(match[1] ?? match[2]),
+				start: index,
+			});
 	});
 
 	if (!slices.length) {
 		lines.forEach((line, index) => {
 			if (fenceMask[index]) return;
 			if (index !== titleIndex && /^##\s+/.test(line.trim())) {
-				slices.push({ titleLine: line.trim().replace(/^##\s+/, ''), kind: 'READING', start: index });
+				slices.push({
+					titleLine: line.trim().replace(/^##\s+/, ''),
+					kind: 'READING',
+					start: index,
+				});
 			}
 		});
 		if (slices.length) {
@@ -269,11 +293,14 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		warnings.push('Không tìm thấy dấu phân mục. Toàn bộ nội dung được gom thành 1 mục.');
 		if (markdown) checkOversized(lessonTitle || 'Nội dung bài học', markdown);
 		const external = findExternalImages(markdown);
-		if (external.length) warnings.push(`Ảnh ngoài sẽ không hiển thị, hãy tải lên: ${external.join(', ')}`);
+		if (external.length)
+			warnings.push(`Ảnh ngoài sẽ không hiển thị, hãy tải lên: ${external.join(', ')}`);
 		return {
 			lessonTitle: lessonTitle || 'Bài học mới',
 			lessonDescription,
-			sections: markdown ? [readingSection(lessonTitle || 'Nội dung bài học', null, '', markdown)] : [],
+			sections: markdown
+				? [readingSection(lessonTitle || 'Nội dung bài học', null, '', markdown)]
+				: [],
 			warnings,
 		};
 	}
@@ -320,7 +347,10 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 				durationMinutes,
 				summary,
 				markdown: '',
-				wordCount: pasted.questions.reduce((sum, question) => sum + countWords(question.question), 0),
+				wordCount: pasted.questions.reduce(
+					(sum, question) => sum + countWords(question.question),
+					0,
+				),
 				type: slice.kind,
 				keyTakeaways: [],
 				checkpoint: null,
@@ -341,7 +371,10 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 				durationMinutes,
 				summary,
 				markdown: '',
-				wordCount: pasted.questions.reduce((sum, question) => sum + countWords(`${question.question}\n${question.answer}`), 0),
+				wordCount: pasted.questions.reduce(
+					(sum, question) => sum + countWords(`${question.question}\n${question.answer}`),
+					0,
+				),
 				type: 'DISCUSSION',
 				keyTakeaways: [],
 				checkpoint: null,
@@ -352,12 +385,19 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		}
 		if (markdown) checkOversized(sectionTitle, markdown);
 		const external = findExternalImages(markdown);
-		if (external.length) warnings.push(`"${sectionTitle}": ảnh ngoài sẽ không hiển thị, hãy tải lên (${external.length}).`);
+		if (external.length)
+			warnings.push(
+				`"${sectionTitle}": ảnh ngoài sẽ không hiển thị, hãy tải lên (${external.length}).`,
+			);
 		sections.push(readingSection(sectionTitle, durationMinutes, summary, markdown));
 	});
 
 	const empty = sections.filter(
-		(section) => section.type === 'READING' && !section.markdown && !section.keyTakeaways.length && !section.checkpoint,
+		(section) =>
+			section.type === 'READING' &&
+			!section.markdown &&
+			!section.keyTakeaways.length &&
+			!section.checkpoint,
 	).length;
 	if (empty) warnings.push(`${empty} mục chưa có nội dung.`);
 
@@ -404,14 +444,21 @@ export function cleanAiPaste(raw: string): { markdown: string; warnings: string[
 	const warnings: string[] = [];
 	const lastRaw = [...lines].reverse().find((line) => line.trim());
 	const lastContent = [...source].reverse().find((line) => line.trim());
-	if ((lastRaw && CONTINUATION.test(lastRaw.trim())) || (lastContent && CONTINUATION.test(lastContent.trim()))) {
+	if (
+		(lastRaw && CONTINUATION.test(lastRaw.trim())) ||
+		(lastContent && CONTINUATION.test(lastContent.trim()))
+	) {
 		warnings.push("AI chưa trả hết bài, nhắn 'tiếp' và dán phần còn lại");
 	}
-	const markdown = source.filter((line) => !CONTINUATION.test(line.trim())).join('\n').trim();
+	const markdown = source
+		.filter((line) => !CONTINUATION.test(line.trim()))
+		.join('\n')
+		.trim();
 	return { markdown, warnings };
 }
 
-const RAW_MERMAID_LINE = /^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
+const RAW_MERMAID_LINE =
+	/^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
 const DOC_BYLINE = /·\s*@\S/;
 
 function looksLikeFlatTable(body: string[]): boolean {
@@ -471,7 +518,15 @@ export function parseCourseMarkdown(raw: string): ImportedCourse {
 		DOC_BYLINE.test(description) ? ['Dòng mô tả là tên tác giả/ngày, không phải mô tả'] : [];
 	if (starts.length <= 1) {
 		const lesson = parseLessonMarkdown(source);
-		return { lessons: [lesson], warnings: [...cleaned.warnings, ...structural, ...byline(lesson.lessonDescription), ...lesson.warnings] };
+		return {
+			lessons: [lesson],
+			warnings: [
+				...cleaned.warnings,
+				...structural,
+				...byline(lesson.lessonDescription),
+				...lesson.warnings,
+			],
+		};
 	}
 	const lessons = starts.map((start, index) => {
 		const end = index + 1 < starts.length ? starts[index + 1] : lines.length;
@@ -479,7 +534,11 @@ export function parseCourseMarkdown(raw: string): ImportedCourse {
 	});
 	return {
 		lessons,
-		warnings: [...cleaned.warnings, ...structural, ...lessons.flatMap((lesson) => [...byline(lesson.lessonDescription), ...lesson.warnings])],
+		warnings: [
+			...cleaned.warnings,
+			...structural,
+			...lessons.flatMap((lesson) => [...byline(lesson.lessonDescription), ...lesson.warnings]),
+		],
 	};
 }
 
@@ -488,19 +547,27 @@ function durationLabel(minutes: number | null): string {
 }
 
 function checkpointMarkdown(checkpoint: LearnCheckpoint): string {
-	const letters = checkpoint.options.map((option, index) => `> ${String.fromCharCode(65 + index)}. ${option}`);
+	const letters = checkpoint.options.map(
+		(option, index) => `> ${String.fromCharCode(65 + index)}. ${option}`,
+	);
 	const answer = `> Đáp án: ${String.fromCharCode(65 + checkpoint.correctIndex)}`;
 	const explanation = checkpoint.explanation ? `> Giải thích: ${checkpoint.explanation}` : '';
-	return ['> [!CHECKPOINT]', `> ${checkpoint.question}`, ...letters, answer, explanation].filter(Boolean).join('\n');
+	return ['> [!CHECKPOINT]', `> ${checkpoint.question}`, ...letters, answer, explanation]
+		.filter(Boolean)
+		.join('\n');
 }
 
 function quizMarkdown(quiz: LearnQuiz): string {
 	return quiz.questions
 		.map((question, index) => {
-			const options = question.options.map((option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`);
+			const options = question.options.map(
+				(option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`,
+			);
 			const answer = `Đáp án: ${String.fromCharCode(65 + question.correctIndex)}`;
 			const explanation = question.explanation ? `Giải thích: ${question.explanation}` : '';
-			return [`Câu ${index + 1}: ${question.question}`, ...options, answer, explanation].filter(Boolean).join('\n');
+			return [`Câu ${index + 1}: ${question.question}`, ...options, answer, explanation]
+				.filter(Boolean)
+				.join('\n');
 		})
 		.join('\n\n');
 }
@@ -529,7 +596,10 @@ export function exportLessonMarkdown(lesson: ExportableLesson): string {
 	for (const section of lesson.sections) {
 		lines.push('');
 		const kind = section.type === 'READING' ? 'SECTION' : section.type;
-		const minutes = section.type === 'QUIZ' ? section.quiz?.timeLimitMinutes ?? section.durationMinutes : section.durationMinutes;
+		const minutes =
+			section.type === 'QUIZ'
+				? (section.quiz?.timeLimitMinutes ?? section.durationMinutes)
+				: section.durationMinutes;
 		lines.push(`=== ${kind}: ${section.title}${durationLabel(minutes)} ===`);
 		if (section.summary.trim()) lines.push(`> ${section.summary.trim()}`);
 		if ((section.type === 'QUIZ' || section.type === 'PRACTICE') && section.quiz) {
@@ -569,14 +639,19 @@ function sameTitle(left: string, right: string): boolean {
 }
 
 /** Match by title first, then by leftover position. Callers update rows in place and never recreate them. */
-export function planContentReplace(existing: ExistingSectionRef[], incoming: ImportedSection[]): ReplacePlan {
+export function planContentReplace(
+	existing: ExistingSectionRef[],
+	incoming: ImportedSection[],
+): ReplacePlan {
 	const used = new Set<string>();
 	const updates: ReplacePlan['updates'] = [];
 	const creates: ImportedSection[] = [];
 	const unmatched: ImportedSection[] = [];
 
 	for (const section of incoming) {
-		const match = existing.find((item) => !used.has(item.id) && sameTitle(item.title, section.title));
+		const match = existing.find(
+			(item) => !used.has(item.id) && sameTitle(item.title, section.title),
+		);
 		if (match) {
 			used.add(match.id);
 			updates.push({ id: match.id, section });
@@ -592,4 +667,3 @@ export function planContentReplace(existing: ExistingSectionRef[], incoming: Imp
 	});
 	return { updates, creates, deletes: existing.filter((item) => !used.has(item.id)) };
 }
-

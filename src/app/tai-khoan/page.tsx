@@ -33,9 +33,12 @@ export default async function ProfilePage() {
 					<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
 						Tài khoản
 					</p>
-					<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">Hồ sơ học viên</h1>
+					<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">
+						Hồ sơ học viên
+					</h1>
 					<p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-secondary">
-						Thông tin Google được đồng bộ tự động. Bạn có thể bổ sung ngày sinh, trường, chuyên ngành và bio.
+						Thông tin Google được đồng bộ tự động. Bạn có thể bổ sung ngày sinh, trường, chuyên
+						ngành và bio.
 					</p>
 				</div>
 			</section>
@@ -58,7 +61,9 @@ export default async function ProfilePage() {
 						</div>
 					)}
 					<div className="min-w-0">
-						<p className="truncate font-display text-xl font-medium text-ink">{session.user.name}</p>
+						<p className="truncate font-display text-xl font-medium text-ink">
+							{session.user.name}
+						</p>
 						<p className="truncate text-sm text-ink-secondary">{session.user.email}</p>
 					</div>
 				</div>

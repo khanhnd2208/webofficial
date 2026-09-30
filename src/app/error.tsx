@@ -27,7 +27,8 @@ export default function Error({
 					Không tải được trang này
 				</h1>
 				<p className="mt-3 text-sm leading-relaxed text-foreground-secondary">
-					Vui lòng thử lại. Nếu lỗi vẫn tiếp diễn, bạn có thể quay về trang chủ hoặc gửi Khánh một lời nhắn.
+					Vui lòng thử lại. Nếu lỗi vẫn tiếp diễn, bạn có thể quay về trang chủ hoặc gửi Khánh một
+					lời nhắn.
 				</p>
 				<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
 					<button
@@ -44,7 +45,10 @@ export default function Error({
 					>
 						Gửi lời nhắn
 					</ContactLink>
-					<Link href={routes.home} className="text-sm font-semibold text-foreground-secondary hover:text-foreground">
+					<Link
+						href={routes.home}
+						className="text-sm font-semibold text-foreground-secondary hover:text-foreground"
+					>
 						Về trang chủ
 					</Link>
 				</div>

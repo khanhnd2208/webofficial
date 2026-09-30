@@ -16,10 +16,10 @@ import type { TeachingClassRecord } from '@/features/teaching/types';
 export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRecord }) {
 	const router = useRouter();
 	const [form, setForm] = useState(teachingClass);
- const [status, setStatus] = useState(teachingClass.status);
- const [savedStatus, setSavedStatus] = useState(teachingClass.status);
- const [statusBusy, setStatusBusy] = useState(false);
- const [statusMessage, setStatusMessage] = useState('');
+	const [status, setStatus] = useState(teachingClass.status);
+	const [savedStatus, setSavedStatus] = useState(teachingClass.status);
+	const [statusBusy, setStatusBusy] = useState(false);
+	const [statusMessage, setStatusMessage] = useState('');
 	const [advancedOpen, setAdvancedOpen] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -227,8 +227,8 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 							Đi muộn tính vào ngưỡng vắng
 						</label>
 						<div className="rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-3 text-sm text-ink-secondary md:col-span-2">
-							<strong className="text-ink">Preview:</strong> Attendance {form.attendanceMaxPoints} + CP{' '}
-							{form.cpMaxPoints} = {form.attendanceMaxPoints + form.cpMaxPoints}.
+							<strong className="text-ink">Preview:</strong> Attendance {form.attendanceMaxPoints} +
+							CP {form.cpMaxPoints} = {form.attendanceMaxPoints + form.cpMaxPoints}.
 						</div>
 					</>
 				) : null}
@@ -254,9 +254,7 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 				<StudioField label="Trạng thái lớp">
 					<StudioSelect
 						value={status}
-						onChange={(event) =>
-							setStatus(event.target.value as 'ACTIVE' | 'ARCHIVED')
-						}
+						onChange={(event) => setStatus(event.target.value as 'ACTIVE' | 'ARCHIVED')}
 					>
 						<option value="ACTIVE">Đang hoạt động</option>
 						<option value="ARCHIVED">Đã lưu trữ</option>
@@ -267,26 +265,32 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 						variant="danger"
 						disabled={statusBusy || status === savedStatus}
 						onClick={() => {
- setStatusBusy(true); setStatusMessage('');
- void teachingApi(`/api/admin/teaching/classes/${teachingClass.id}`, {
+							setStatusBusy(true);
+							setStatusMessage('');
+							void teachingApi(`/api/admin/teaching/classes/${teachingClass.id}`, {
 								method: 'PATCH',
 								body: JSON.stringify({ status: status }),
 							})
 								.then(() => {
-									setSavedStatus(status); setStatusMessage('Đã cập nhật trạng thái');
+									setSavedStatus(status);
+									setStatusMessage('Đã cập nhật trạng thái');
 									router.refresh();
 								})
 								.catch((err: unknown) => {
 									setStatusMessage(err instanceof Error ? err.message : 'Không thể đổi trạng thái');
-								}).finally(() => setStatusBusy(false));
- }
-						}
+								})
+								.finally(() => setStatusBusy(false));
+						}}
 					>
 						{statusBusy ? 'Đang cập nhật…' : 'Cập nhật trạng thái'}
 					</StudioButton>
 				</div>
-			{statusMessage ? <p role="status" className="text-sm">{statusMessage}</p> : null}
-</section>
+				{statusMessage ? (
+					<p role="status" className="text-sm">
+						{statusMessage}
+					</p>
+				) : null}
+			</section>
 		</div>
 	);
 }

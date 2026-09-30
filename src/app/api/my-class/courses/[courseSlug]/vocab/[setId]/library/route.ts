@@ -1,4 +1,8 @@
-import { addAssignedVocabToLibrary, getAssignedVocabLibraryState, getAssignedVocabSet } from '@/features/my-class';
+import {
+	addAssignedVocabToLibrary,
+	getAssignedVocabLibraryState,
+	getAssignedVocabSet,
+} from '@/features/my-class';
 import { apiSuccess, withAuth, withErrorHandling } from '@/lib/apiUtils';
 import { getApiUser } from '@/lib/apiAuth';
 
@@ -13,5 +17,8 @@ export const GET = withErrorHandling(async (request, context) => {
 
 export const POST = withAuth(async (_request, user, context) => {
 	const { courseSlug, setId } = await (context as Ctx).params;
-	return apiSuccess(await addAssignedVocabToLibrary(user.id, String(courseSlug), String(setId)), 201);
+	return apiSuccess(
+		await addAssignedVocabToLibrary(user.id, String(courseSlug), String(setId)),
+		201,
+	);
 });

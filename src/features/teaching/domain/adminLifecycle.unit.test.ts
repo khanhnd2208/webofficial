@@ -43,13 +43,7 @@ describe('class identity normalization', () => {
 
 	it('collects unique term suggestions from existing values', () => {
 		expect(
-			collectTermSuggestions([
-				'HK1',
-				' hk1 ',
-				'HỌC KỲ 2 - NĂM HỌC 2025 - 2026',
-				'',
-				'  ',
-			]),
+			collectTermSuggestions(['HK1', ' hk1 ', 'HỌC KỲ 2 - NĂM HỌC 2025 - 2026', '', '  ']),
 		).toEqual(['HK1', 'HỌC KỲ 2 - NĂM HỌC 2025 - 2026']);
 	});
 });
@@ -84,14 +78,16 @@ describe('class scaffold detection', () => {
 
 	it('treats generated tutorials/sessions as empty when no user data exists', () => {
 		expect(isEmptyClassScaffold(empty)).toBe(true);
-		expect(isCustomizedSession({
-			heldOn: null,
-			topic: '',
-			method: 'ROLL_CALL',
-			isCancelled: false,
-			attendanceTakenAt: null,
-			participationTakenAt: null,
-		})).toBe(false);
+		expect(
+			isCustomizedSession({
+				heldOn: null,
+				topic: '',
+				method: 'ROLL_CALL',
+				isCancelled: false,
+				attendanceTakenAt: null,
+				participationTakenAt: null,
+			}),
+		).toBe(false);
 	});
 
 	it('counts customized sessions, students and public resources as blockers', () => {

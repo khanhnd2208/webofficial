@@ -104,7 +104,12 @@ export async function consumeRateLimitBucket(
  * Only a window-scoped HMAC is persisted; the raw IP never leaves this module.
  */
 export async function assertInquiryRateLimit(request: NextRequest): Promise<void> {
-	return assertScopedRateLimit(request, 'inquiry', INQUIRY_RATE_LIMIT_MAX, INQUIRY_RATE_LIMIT_WINDOW_MS);
+	return assertScopedRateLimit(
+		request,
+		'inquiry',
+		INQUIRY_RATE_LIMIT_MAX,
+		INQUIRY_RATE_LIMIT_WINDOW_MS,
+	);
 }
 
 /** Generic Mongo-backed limiter for anonymous mutation endpoints. */
@@ -137,7 +142,7 @@ export async function assertScopedRateLimit(
 	// `count` already includes this request; the sixth request is the first denied one.
 	if (isRateLimitBreached(count - 1, max)) {
 		throw new AppError(
-			 scope === 'inquiry'
+			scope === 'inquiry'
 				? 'Bạn đã gửi quá nhiều lời nhắn. Vui lòng thử lại sau khoảng 15 phút.'
 				: 'Bạn đã thao tác quá nhiều lần. Vui lòng thử lại sau ít phút.',
 			429,

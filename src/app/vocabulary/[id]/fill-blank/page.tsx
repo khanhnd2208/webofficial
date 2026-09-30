@@ -2,7 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useVocabSetUrl, useVocabScoreUrl, useVocabChrome, VocabPracticeFrame, VocabBackLink } from '@/components/vocab/practice/VocabApiProvider';
+import {
+	useVocabSetUrl,
+	useVocabScoreUrl,
+	useVocabChrome,
+	VocabPracticeFrame,
+	VocabBackLink,
+} from '@/components/vocab/practice/VocabApiProvider';
 
 type Word = { id: string; term: string; definition: string; partOfSpeech: string; example: string };
 type WordRecord = { startTime: number; endTime: number; penaltyMs: number; correct: boolean };
@@ -18,7 +24,9 @@ async function submitScore(scoreUrl: string, records: WordRecord[]) {
 		});
 		const json = await res.json();
 		return json.ok ? json.data : null;
-	} catch { return null; }
+	} catch {
+		return null;
+	}
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -55,7 +63,9 @@ function playCorrect() {
 			osc.start(ctx.currentTime + i * 0.08);
 			osc.stop(ctx.currentTime + i * 0.08 + 0.3);
 		});
-	} catch { /* silent */ }
+	} catch {
+		/* silent */
+	}
 }
 
 function playWrong() {
@@ -70,7 +80,9 @@ function playWrong() {
 		osc.connect(gain).connect(ctx.destination);
 		osc.start();
 		osc.stop(ctx.currentTime + 0.2);
-	} catch { /* silent */ }
+	} catch {
+		/* silent */
+	}
 }
 
 function playSuccess() {
@@ -89,11 +101,24 @@ function playSuccess() {
 			osc.start(ctx.currentTime + i * 0.1);
 			osc.stop(ctx.currentTime + i * 0.1 + 0.4);
 		});
-	} catch { /* silent */ }
+	} catch {
+		/* silent */
+	}
 }
 
 function burstConfetti(container: HTMLElement) {
-	const colors = ['#c44b28', '#e8714f', '#4a8c5c', '#6aad7c', '#c48a1a', '#d4a03a', '#5b7fb5', '#8b6fb0', '#f0ece4', '#1a1a1a'];
+	const colors = [
+		'#c44b28',
+		'#e8714f',
+		'#4a8c5c',
+		'#6aad7c',
+		'#c48a1a',
+		'#d4a03a',
+		'#5b7fb5',
+		'#8b6fb0',
+		'#f0ece4',
+		'#1a1a1a',
+	];
 	const count = 60;
 	for (let i = 0; i < count; i++) {
 		const el = document.createElement('div');
@@ -107,7 +132,7 @@ function burstConfetti(container: HTMLElement) {
 			left:50%;top:45%;opacity:1;
 		`;
 		container.appendChild(el);
-		const angle = (Math.random() * 360) * (Math.PI / 180);
+		const angle = Math.random() * 360 * (Math.PI / 180);
 		const velocity = Math.random() * 400 + 200;
 		const vx = Math.cos(angle) * velocity;
 		const vy = Math.sin(angle) * velocity - 200;
@@ -117,7 +142,11 @@ function burstConfetti(container: HTMLElement) {
 				{ transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
 				{ transform: `translate(${vx}px, ${vy + 600}px) rotate(${rotation}deg)`, opacity: 0 },
 			],
-			{ duration: 1200 + Math.random() * 600, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards' }
+			{
+				duration: 1200 + Math.random() * 600,
+				easing: 'cubic-bezier(.25,.46,.45,.94)',
+				fill: 'forwards',
+			},
 		).onfinish = () => el.remove();
 	}
 }
@@ -133,7 +162,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	const [letters, setLetters] = useState<string[]>([]);
 	const [revealed, setRevealed] = useState(false);
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-	const [hintUsed, setHintUsed] = useState(false);  // max 1 per word
+	const [hintUsed, setHintUsed] = useState(false); // max 1 per word
 	const [correct, setCorrect] = useState(0);
 	const [wrong, setWrong] = useState(0);
 	const [timeLeft, setTimeLeft] = useState(WORD_TIME);
@@ -152,7 +181,10 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 			setId(paramId);
 			const res = await fetch(vocabUrl(paramId));
 			const json = await res.json();
-			if (!json.ok) { setError(json.error); return; }
+			if (!json.ok) {
+				setError(json.error);
+				return;
+			}
 			const words = (json.data.set?.words ?? json.data.words ?? []) as Word[];
 			setAllWords(words);
 			const q = shuffle(words);
@@ -169,7 +201,10 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		setHintUsed(false);
 		setAnimKey((k) => k + 1);
 		// Reset timer refs
-		if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+			timerRef.current = null;
+		}
 		wordStartTimeRef.current = Date.now();
 		wordPenaltyMsRef.current = 0;
 		setTimeLeft(WORD_TIME);
@@ -182,7 +217,12 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	}
 
 	// Cleanup timer on unmount
-	useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+	useEffect(
+		() => () => {
+			if (timerRef.current) clearInterval(timerRef.current);
+		},
+		[],
+	);
 
 	const question = questions[qIndex] ?? null;
 	const total = questions.length;
@@ -193,28 +233,35 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		// Responsive: compute size based on word length
 		// On mobile (320px viewport), we have about 280px usable width
 		// On desktop, we have about 600px usable width
-		if (wordLen <= 6) return { box: 'h-12 w-10 sm:h-14 sm:w-12 text-lg sm:text-xl', gap: 'gap-1.5 sm:gap-2.5' };
-		if (wordLen <= 8) return { box: 'h-11 w-9 sm:h-13 sm:w-11 text-base sm:text-lg', gap: 'gap-1 sm:gap-2' };
-		if (wordLen <= 10) return { box: 'h-10 w-8 sm:h-12 sm:w-10 text-sm sm:text-base', gap: 'gap-1 sm:gap-1.5' };
-		if (wordLen <= 13) return { box: 'h-9 w-7 sm:h-11 sm:w-9 text-xs sm:text-sm', gap: 'gap-0.5 sm:gap-1' };
+		if (wordLen <= 6)
+			return { box: 'h-12 w-10 sm:h-14 sm:w-12 text-lg sm:text-xl', gap: 'gap-1.5 sm:gap-2.5' };
+		if (wordLen <= 8)
+			return { box: 'h-11 w-9 sm:h-13 sm:w-11 text-base sm:text-lg', gap: 'gap-1 sm:gap-2' };
+		if (wordLen <= 10)
+			return { box: 'h-10 w-8 sm:h-12 sm:w-10 text-sm sm:text-base', gap: 'gap-1 sm:gap-1.5' };
+		if (wordLen <= 13)
+			return { box: 'h-9 w-7 sm:h-11 sm:w-9 text-xs sm:text-sm', gap: 'gap-0.5 sm:gap-1' };
 		return { box: 'h-8 w-6 sm:h-10 sm:w-8 text-[11px] sm:text-xs', gap: 'gap-0.5 sm:gap-1' };
 	}, [wordLen]);
 
-	const handleLetterChange = useCallback((idx: number, value: string) => {
-		if (revealed) return;
-		const char = value.slice(-1).toUpperCase();
-		setLetters((prev) => {
-			const next = [...prev];
-			next[idx] = char;
-			return next;
-		});
-		// Auto-advance to next empty input
-		if (char && idx < wordLen - 1) {
-			const nextEmpty = inputRefs.current.findIndex((el, i) => i > idx && el && !letters[i]);
-			const target = nextEmpty >= 0 ? nextEmpty : idx + 1;
-			inputRefs.current[target]?.focus();
-		}
-	}, [revealed, wordLen, letters]);
+	const handleLetterChange = useCallback(
+		(idx: number, value: string) => {
+			if (revealed) return;
+			const char = value.slice(-1).toUpperCase();
+			setLetters((prev) => {
+				const next = [...prev];
+				next[idx] = char;
+				return next;
+			});
+			// Auto-advance to next empty input
+			if (char && idx < wordLen - 1) {
+				const nextEmpty = inputRefs.current.findIndex((el, i) => i > idx && el && !letters[i]);
+				const target = nextEmpty >= 0 ? nextEmpty : idx + 1;
+				inputRefs.current[target]?.focus();
+			}
+		},
+		[revealed, wordLen, letters],
+	);
 
 	const handleCheck = useCallback(() => {
 		if (!question || revealed) return;
@@ -227,62 +274,76 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		if (wasCorrect) {
 			const endTime = Date.now();
 			wordRecordsRef.current.push({
-				startTime: wordStartTimeRef.current, endTime,
-				penaltyMs: wordPenaltyMsRef.current, correct: true,
+				startTime: wordStartTimeRef.current,
+				endTime,
+				penaltyMs: wordPenaltyMsRef.current,
+				correct: true,
 			});
 			setIsCorrect(true);
 			setCorrect((v) => v + 1);
 			playCorrect();
 			speak(question.term);
 			setRevealed(true);
-			if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+			if (timerRef.current) {
+				clearInterval(timerRef.current);
+				timerRef.current = null;
+			}
 		} else {
 			// Wrong answer: -10s penalty
 			wordPenaltyMsRef.current += 10_000;
-			const effectiveElapsed = (Date.now() - wordStartTimeRef.current + wordPenaltyMsRef.current) / 1000;
+			const effectiveElapsed =
+				(Date.now() - wordStartTimeRef.current + wordPenaltyMsRef.current) / 1000;
 			playWrong();
 			if (effectiveElapsed >= WORD_TIME) {
 				// Time exhausted → reveal answer
 				const endTime = Date.now();
 				wordRecordsRef.current.push({
-					startTime: wordStartTimeRef.current, endTime,
-					penaltyMs: wordPenaltyMsRef.current, correct: false,
+					startTime: wordStartTimeRef.current,
+					endTime,
+					penaltyMs: wordPenaltyMsRef.current,
+					correct: false,
 				});
 				setIsCorrect(false);
 				setWrong((v) => v + 1);
 				setRevealed(true);
-				if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+				if (timerRef.current) {
+					clearInterval(timerRef.current);
+					timerRef.current = null;
+				}
 			}
 			// If still time left, just play wrong and keep going (don't reveal)
 		}
 	}, [question, letters, revealed]);
 
-	const handleKeyDown = useCallback((idx: number, e: React.KeyboardEvent) => {
-		if (revealed) return;
-		if (e.key === 'Backspace') {
-			if (!letters[idx] && idx > 0) {
-				setLetters((prev) => {
-					const next = [...prev];
-					next[idx - 1] = '';
-					return next;
-				});
+	const handleKeyDown = useCallback(
+		(idx: number, e: React.KeyboardEvent) => {
+			if (revealed) return;
+			if (e.key === 'Backspace') {
+				if (!letters[idx] && idx > 0) {
+					setLetters((prev) => {
+						const next = [...prev];
+						next[idx - 1] = '';
+						return next;
+					});
+					inputRefs.current[idx - 1]?.focus();
+				} else {
+					setLetters((prev) => {
+						const next = [...prev];
+						next[idx] = '';
+						return next;
+					});
+				}
+				e.preventDefault();
+			} else if (e.key === 'ArrowLeft' && idx > 0) {
 				inputRefs.current[idx - 1]?.focus();
-			} else {
-				setLetters((prev) => {
-					const next = [...prev];
-					next[idx] = '';
-					return next;
-				});
+			} else if (e.key === 'ArrowRight' && idx < wordLen - 1) {
+				inputRefs.current[idx + 1]?.focus();
+			} else if (e.key === 'Enter') {
+				handleCheck();
 			}
-			e.preventDefault();
-		} else if (e.key === 'ArrowLeft' && idx > 0) {
-			inputRefs.current[idx - 1]?.focus();
-		} else if (e.key === 'ArrowRight' && idx < wordLen - 1) {
-			inputRefs.current[idx + 1]?.focus();
-		} else if (e.key === 'Enter') {
-			handleCheck();
-		}
-	}, [revealed, letters, wordLen, handleCheck]);
+		},
+		[revealed, letters, wordLen, handleCheck],
+	);
 
 	const handleHint = useCallback(() => {
 		if (!question || revealed || hintUsed) return;
@@ -330,15 +391,20 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		if (revealed || !question || finished || timeLeft > 0) return;
 		const endTime = Date.now();
 		wordRecordsRef.current.push({
-			startTime: wordStartTimeRef.current, endTime,
-			penaltyMs: wordPenaltyMsRef.current, correct: false,
+			startTime: wordStartTimeRef.current,
+			endTime,
+			penaltyMs: wordPenaltyMsRef.current,
+			correct: false,
 		});
 		setIsCorrect(false);
 		setWrong((v) => v + 1);
 		setRevealed(true);
 		playWrong();
-		if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+			timerRef.current = null;
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [timeLeft, revealed, finished]);
 
 	/* ── Loading / Error ── */
@@ -363,24 +429,24 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 		return (
 			<VocabPracticeFrame className="min-h-screen">
 				<div ref={containerRef}>
-				<CompletionScreen
-					correct={correct}
-					wrong={wrong}
-					total={total}
-					id={id}
-					wordRecords={wordRecordsRef.current}
-					containerRef={containerRef}
-					onRestart={() => {
-						wordRecordsRef.current = [];
-						const q = shuffle(allWords);
-						setQuestions(q);
-						setQIndex(0);
-						setCorrect(0);
-						setWrong(0);
-						setFinished(false);
-						resetForQuestion(q[0]);
-					}}
-				/>
+					<CompletionScreen
+						correct={correct}
+						wrong={wrong}
+						total={total}
+						id={id}
+						wordRecords={wordRecordsRef.current}
+						containerRef={containerRef}
+						onRestart={() => {
+							wordRecordsRef.current = [];
+							const q = shuffle(allWords);
+							setQuestions(q);
+							setQIndex(0);
+							setCorrect(0);
+							setWrong(0);
+							setFinished(false);
+							resetForQuestion(q[0]);
+						}}
+					/>
 				</div>
 			</VocabPracticeFrame>
 		);
@@ -391,207 +457,254 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 	return (
 		<VocabPracticeFrame className="min-h-screen select-none">
 			<div ref={containerRef}>
-			{/* Top bar */}
-			<div className="border-b border-border">
-				<div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-				<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
-				<div className="flex items-center gap-3 text-xs text-muted">
-						<span>{qIndex + 1}/{total}</span>
-						<span className="font-bold text-success">✓ {correct}</span>
-						{wrong > 0 && <span className="font-bold text-error">✗ {wrong}</span>}
-					</div>
-				</div>
-				{/* Progress bar */}
-				<div className="h-1 bg-surface-hover overflow-hidden">
-					<div
-						className="h-full bg-indigo"
-						style={{
-							width: `${progress}%`,
-							transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-						}}
-					/>
-				</div>
-			</div>
-
-			{question && (
-				<div
-					key={animKey}
-					className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-14"
-					style={{
-						animation: 'slideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
-					}}
-				>
-					{/* Question prompt */}
-					<div className="text-center">
-						<div className="flex items-center justify-center gap-2">
-							<span className="inline-block rounded-full bg-indigo-subtle px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-indigo">
-								Điền từ vựng
+				{/* Top bar */}
+				<div className="border-b border-border">
+					<div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
+						<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
+						<div className="flex items-center gap-3 text-xs text-muted">
+							<span>
+								{qIndex + 1}/{total}
 							</span>
-							{!revealed && (() => {
-								const frac = timeLeft / WORD_TIME;
-								const color = frac > 0.5 ? '#5b7fb5' : frac > 0.25 ? '#c48a1a' : '#c44b28';
-								return (
-									<div className="flex items-center gap-1.5">
-										<svg className="h-8 w-8 -rotate-90" viewBox="0 0 36 36">
-											<circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="3" className="text-surface-hover" />
-											<circle cx="18" cy="18" r="15" fill="none" strokeWidth="3" stroke={color}
-												strokeDasharray={`${frac * 94.25} 94.25`}
-												style={{ transition: 'stroke-dasharray 0.2s linear, stroke 0.3s' }}
-												strokeLinecap="round" />
-										</svg>
-										<span className="w-5 text-center text-sm font-black tabular-nums" style={{ color }}>{timeLeft}</span>
-									</div>
-								);
-							})()}
+							<span className="font-bold text-success">✓ {correct}</span>
+							{wrong > 0 && <span className="font-bold text-error">✗ {wrong}</span>}
 						</div>
-
-						<h2 className="mt-5 text-xl font-bold leading-relaxed text-foreground sm:text-2xl">
-							{question.definition}
-						</h2>
-
-						{question.partOfSpeech && (
-							<p className="mt-2 text-sm italic text-muted">({question.partOfSpeech})</p>
-						)}
-
-						{question.example && (
-							<p className="mt-3 text-sm italic text-muted-foreground">
-								&ldquo;{question.example.replace(new RegExp(question.term, 'gi'), '_____')}&rdquo;
-							</p>
-						)}
 					</div>
+					{/* Progress bar */}
+					<div className="h-1 bg-surface-hover overflow-hidden">
+						<div
+							className="h-full bg-indigo"
+							style={{
+								width: `${progress}%`,
+								transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+							}}
+						/>
+					</div>
+				</div>
 
-					{/* ── Letter inputs — fully responsive ── */}
-					<div className="mt-8">
-						{/* Scrollable wrapper for very long words on mobile */}
-						<div className="flex justify-center overflow-x-auto pb-2">
-							<div className={`flex flex-nowrap ${letterSize.gap}`}>
-								{letters.map((letter, idx) => {
-									const correctChar = question.term[idx]?.toUpperCase() ?? '';
-									const isLetterCorrect = revealed && letter === correctChar;
-									const isLetterWrong = revealed && letter !== correctChar;
-									const isHinted = letter === correctChar && !revealed;
-
-									return (
-										<input
-											key={idx}
-											ref={(el) => { inputRefs.current[idx] = el; }}
-											type="text"
-											inputMode="text"
-											autoCapitalize="characters"
-											maxLength={1}
-											value={revealed && !isCorrect ? correctChar : letter}
-											onChange={(e) => handleLetterChange(idx, e.target.value)}
-											onKeyDown={(e) => handleKeyDown(idx, e)}
-											readOnly={revealed}
-											className={`${letterSize.box} shrink-0 rounded-lg border-2 text-center font-mono font-black uppercase transition-all duration-200 focus:outline-none ${
-												isLetterCorrect
-													? 'border-success bg-success-subtle text-success'
-													: isLetterWrong
-														? 'border-error bg-error-subtle text-error'
-														: isHinted
-															? 'border-warning bg-warning-subtle text-warning'
-															: letter
-																? 'border-indigo bg-indigo-subtle text-foreground'
-																: 'border-border bg-surface text-foreground focus:border-indigo focus:bg-indigo-subtle/50'
-											}`}
-											style={{
-												animation: revealed
-													? `letterReveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 0.04}s both`
-													: `letterBoxIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 0.03}s both`,
-											}}
-										/>
-									);
-								})}
+				{question && (
+					<div
+						key={animKey}
+						className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-14"
+						style={{
+							animation: 'slideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+						}}
+					>
+						{/* Question prompt */}
+						<div className="text-center">
+							<div className="flex items-center justify-center gap-2">
+								<span className="inline-block rounded-full bg-indigo-subtle px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-indigo">
+									Điền từ vựng
+								</span>
+								{!revealed &&
+									(() => {
+										const frac = timeLeft / WORD_TIME;
+										const color = frac > 0.5 ? '#5b7fb5' : frac > 0.25 ? '#c48a1a' : '#c44b28';
+										return (
+											<div className="flex items-center gap-1.5">
+												<svg className="h-8 w-8 -rotate-90" viewBox="0 0 36 36">
+													<circle
+														cx="18"
+														cy="18"
+														r="15"
+														fill="none"
+														stroke="currentColor"
+														strokeWidth="3"
+														className="text-surface-hover"
+													/>
+													<circle
+														cx="18"
+														cy="18"
+														r="15"
+														fill="none"
+														strokeWidth="3"
+														stroke={color}
+														strokeDasharray={`${frac * 94.25} 94.25`}
+														style={{ transition: 'stroke-dasharray 0.2s linear, stroke 0.3s' }}
+														strokeLinecap="round"
+													/>
+												</svg>
+												<span
+													className="w-5 text-center text-sm font-black tabular-nums"
+													style={{ color }}
+												>
+													{timeLeft}
+												</span>
+											</div>
+										);
+									})()}
 							</div>
+
+							<h2 className="mt-5 text-xl font-bold leading-relaxed text-foreground sm:text-2xl">
+								{question.definition}
+							</h2>
+
+							{question.partOfSpeech && (
+								<p className="mt-2 text-sm italic text-muted">({question.partOfSpeech})</p>
+							)}
+
+							{question.example && (
+								<p className="mt-3 text-sm italic text-muted-foreground">
+									&ldquo;{question.example.replace(new RegExp(question.term, 'gi'), '_____')}&rdquo;
+								</p>
+							)}
 						</div>
 
-						{/* Word length indicator for mobile */}
-						<p className="mt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted/50">
-							{wordLen} ký tự
+						{/* ── Letter inputs — fully responsive ── */}
+						<div className="mt-8">
+							{/* Scrollable wrapper for very long words on mobile */}
+							<div className="flex justify-center overflow-x-auto pb-2">
+								<div className={`flex flex-nowrap ${letterSize.gap}`}>
+									{letters.map((letter, idx) => {
+										const correctChar = question.term[idx]?.toUpperCase() ?? '';
+										const isLetterCorrect = revealed && letter === correctChar;
+										const isLetterWrong = revealed && letter !== correctChar;
+										const isHinted = letter === correctChar && !revealed;
+
+										return (
+											<input
+												key={idx}
+												ref={(el) => {
+													inputRefs.current[idx] = el;
+												}}
+												type="text"
+												inputMode="text"
+												autoCapitalize="characters"
+												maxLength={1}
+												value={revealed && !isCorrect ? correctChar : letter}
+												onChange={(e) => handleLetterChange(idx, e.target.value)}
+												onKeyDown={(e) => handleKeyDown(idx, e)}
+												readOnly={revealed}
+												className={`${letterSize.box} shrink-0 rounded-lg border-2 text-center font-mono font-black uppercase transition-all duration-200 focus:outline-none ${
+													isLetterCorrect
+														? 'border-success bg-success-subtle text-success'
+														: isLetterWrong
+															? 'border-error bg-error-subtle text-error'
+															: isHinted
+																? 'border-warning bg-warning-subtle text-warning'
+																: letter
+																	? 'border-indigo bg-indigo-subtle text-foreground'
+																	: 'border-border bg-surface text-foreground focus:border-indigo focus:bg-indigo-subtle/50'
+												}`}
+												style={{
+													animation: revealed
+														? `letterReveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 0.04}s both`
+														: `letterBoxIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 0.03}s both`,
+												}}
+											/>
+										);
+									})}
+								</div>
+							</div>
+
+							{/* Word length indicator for mobile */}
+							<p className="mt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted/50">
+								{wordLen} ký tự
+							</p>
+						</div>
+
+						{/* Actions */}
+						{!revealed ? (
+							<div className="mt-8 flex items-center justify-center gap-3">
+								<button
+									onClick={handleHint}
+									disabled={hintUsed}
+									className={`inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${
+										hintUsed
+											? 'border-warning/20 text-warning/40 opacity-40 cursor-not-allowed'
+											: 'border-warning/40 text-warning hover:border-warning hover:bg-warning-subtle'
+									}`}
+								>
+									<svg
+										className="h-3.5 w-3.5"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										strokeWidth={2}
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+										/>
+									</svg>
+									{hintUsed ? 'Đã dùng gợi ý' : 'Gợi ý (−10s)'}
+								</button>
+								<button
+									onClick={handleCheck}
+									disabled={letters.some((l) => !l)}
+									className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+								>
+									Kiểm tra
+								</button>
+							</div>
+						) : (
+							<div
+								className="mt-8"
+								style={{ animation: 'fadeUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both' }}
+							>
+								{/* Result */}
+								<div
+									className={`mx-auto max-w-md rounded-xl border-2 p-4 text-center ${
+										isCorrect
+											? 'border-success/40 bg-success-subtle'
+											: 'border-error/40 bg-error-subtle'
+									}`}
+								>
+									<div className="flex items-center justify-center gap-2">
+										{isCorrect ? (
+											<>
+												<span className="text-lg">✓</span>
+												<span className="text-sm font-bold text-success">Chính xác!</span>
+											</>
+										) : (
+											<>
+												<span className="text-lg">✗</span>
+												<span className="text-sm font-bold text-error">
+													Đáp án: <span className="font-black">{question.term}</span>
+												</span>
+											</>
+										)}
+									</div>
+									<button
+										onClick={() => speak(question.term)}
+										className="mt-2 inline-flex items-center gap-1 text-xs text-muted hover:text-foreground transition-colors"
+									>
+										<svg
+											className="h-3.5 w-3.5"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											strokeWidth={1.5}
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-3.14a.75.75 0 011.28.53v12.72a.75.75 0 01-1.28.53l-4.72-3.14H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
+											/>
+										</svg>
+										Nghe phát âm
+									</button>
+								</div>
+
+								<div className="mt-6 flex items-center justify-center">
+									<button
+										onClick={handleNext}
+										className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
+									>
+										{qIndex + 1 >= total ? 'Xem kết quả' : 'Tiếp theo →'}
+									</button>
+								</div>
+							</div>
+						)}
+
+						<p className="mt-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+							Enter để kiểm tra · ← → di chuyển · Backspace xóa
 						</p>
 					</div>
+				)}
 
-					{/* Actions */}
-					{!revealed ? (
-						<div className="mt-8 flex items-center justify-center gap-3">
-							<button
-								onClick={handleHint}
-								disabled={hintUsed}
-								className={`inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${
-									hintUsed
-										? 'border-warning/20 text-warning/40 opacity-40 cursor-not-allowed'
-										: 'border-warning/40 text-warning hover:border-warning hover:bg-warning-subtle'
-								}`}
-							>
-								<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-								</svg>
-								{hintUsed ? 'Đã dùng gợi ý' : 'Gợi ý (−10s)'}
-							</button>
-							<button
-								onClick={handleCheck}
-								disabled={letters.some((l) => !l)}
-								className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
-							>
-								Kiểm tra
-							</button>
-						</div>
-					) : (
-						<div
-							className="mt-8"
-							style={{ animation: 'fadeUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both' }}
-						>
-							{/* Result */}
-							<div className={`mx-auto max-w-md rounded-xl border-2 p-4 text-center ${
-								isCorrect
-									? 'border-success/40 bg-success-subtle'
-									: 'border-error/40 bg-error-subtle'
-							}`}>
-								<div className="flex items-center justify-center gap-2">
-									{isCorrect ? (
-										<>
-											<span className="text-lg">✓</span>
-											<span className="text-sm font-bold text-success">Chính xác!</span>
-										</>
-									) : (
-										<>
-											<span className="text-lg">✗</span>
-											<span className="text-sm font-bold text-error">
-												Đáp án: <span className="font-black">{question.term}</span>
-											</span>
-										</>
-									)}
-								</div>
-								<button
-										onClick={() => speak(question.term)}
-									className="mt-2 inline-flex items-center gap-1 text-xs text-muted hover:text-foreground transition-colors"
-								>
-									<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-3.14a.75.75 0 011.28.53v12.72a.75.75 0 01-1.28.53l-4.72-3.14H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-									</svg>
-									Nghe phát âm
-								</button>
-							</div>
-
-							<div className="mt-6 flex items-center justify-center">
-								<button
-									onClick={handleNext}
-									className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
-								>
-									{qIndex + 1 >= total ? 'Xem kết quả' : 'Tiếp theo →'}
-								</button>
-							</div>
-						</div>
-					)}
-
-					<p className="mt-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
-						Enter để kiểm tra · ← → di chuyển · Backspace xóa
-					</p>
-				</div>
-			)}
-
-			{/* Animations */}
-			<style>{`
+				{/* Animations */}
+				<style>{`
 				@keyframes slideIn {
 					0% { transform: translateX(30px); opacity: 0; }
 					100% { transform: translateX(0); opacity: 1; }
@@ -638,7 +751,10 @@ function CompletionScreen({
 	const [show, setShow] = useState(false);
 	const firedRef = useRef(false);
 	const [avgScore, setAvgScore] = useState<number | null>(null);
-	const [scoreResult, setScoreResult] = useState<{ isNewBest: boolean; previousBest: number } | null>(null);
+	const [scoreResult, setScoreResult] = useState<{
+		isNewBest: boolean;
+		previousBest: number;
+	} | null>(null);
 	const scoreSubmittedRef = useRef(false);
 	const score = total > 0 ? Math.round((correct / total) * 100) : 0;
 
@@ -648,7 +764,10 @@ function CompletionScreen({
 		submitScore(scoreUrlFor(id), wordRecords).then((data) => {
 			if (data) {
 				setAvgScore(Math.round(data.score));
-				setScoreResult({ isNewBest: data.isNewBest, previousBest: Math.round(data.previousBest ?? 0) });
+				setScoreResult({
+					isNewBest: data.isNewBest,
+					previousBest: Math.round(data.previousBest ?? 0),
+				});
 			}
 		});
 	}, [id, scoreUrlFor, wordRecords]);
@@ -666,16 +785,83 @@ function CompletionScreen({
 		}
 	}, [show, containerRef, score]);
 
-	const resultIcon = score >= 90 ? (
-		<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="fb-trophy" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ffcc00" /><stop offset="100%" stopColor="#ff8800" /></linearGradient></defs><path d="M6 2h12v4a6 6 0 01-12 0V2z" fill="url(#fb-trophy)" /><path d="M6 4H3a1 1 0 00-1 1v1a4 4 0 004 4" stroke="#ffcc00" strokeWidth="1.5" /><path d="M18 4h3a1 1 0 011 1v1a4 4 0 01-4 4" stroke="#ffcc00" strokeWidth="1.5" /><rect x="9" y="12" width="6" height="3" rx="1" fill="url(#fb-trophy)" opacity="0.6" /><rect x="7" y="15" width="10" height="2" rx="1" fill="url(#fb-trophy)" opacity="0.8" /></svg>
-	) : score >= 70 ? (
-		<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="fb-party" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stopColor="#ff5500" /><stop offset="50%" stopColor="#ffcc00" /><stop offset="100%" stopColor="#4a8c5c" /></linearGradient></defs><path d="M12 2l2.5 6.5L21 12l-6.5 2.5L12 22l-2.5-7.5L3 12l6.5-3.5L12 2z" fill="url(#fb-party)" /><circle cx="12" cy="12" r="3" fill="#fff" opacity="0.4" /></svg>
-	) : score >= 50 ? (
-		<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#4a8c5c" opacity="0.2" stroke="#4a8c5c" strokeWidth="1.5" /><path d="M8 12.5l2.5 3L16 9" stroke="#4a8c5c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-	) : (
-		<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="fb-flame" x1=".5" y1="1" x2=".5" y2="0"><stop offset="0%" stopColor="var(--accent)" /><stop offset="100%" stopColor="var(--warning)" /></linearGradient></defs><path d="M12 2C9 7 4 11 4 16c0 5 3.5 7 8 7s8-2 8-7c0-6-5-10-8-15z" fill="url(#fb-flame)" opacity="0.7" /><path d="M12 10c-2 3-4 5-4 8 0 2.5 1.8 4 4 4s4-1.5 4-4c0-3-2-5-4-8z" fill="#fff" opacity="0.2" /></svg>
-	);
-	const message = score >= 90 ? 'Xuất sắc!' : score >= 70 ? 'Tuyệt vời!' : score >= 50 ? 'Khá tốt!' : 'Cần luyện thêm!';
+	const resultIcon =
+		score >= 90 ? (
+			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
+				<defs>
+					<linearGradient id="fb-trophy" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0%" stopColor="#ffcc00" />
+						<stop offset="100%" stopColor="#ff8800" />
+					</linearGradient>
+				</defs>
+				<path d="M6 2h12v4a6 6 0 01-12 0V2z" fill="url(#fb-trophy)" />
+				<path d="M6 4H3a1 1 0 00-1 1v1a4 4 0 004 4" stroke="#ffcc00" strokeWidth="1.5" />
+				<path d="M18 4h3a1 1 0 011 1v1a4 4 0 01-4 4" stroke="#ffcc00" strokeWidth="1.5" />
+				<rect x="9" y="12" width="6" height="3" rx="1" fill="url(#fb-trophy)" opacity="0.6" />
+				<rect x="7" y="15" width="10" height="2" rx="1" fill="url(#fb-trophy)" opacity="0.8" />
+			</svg>
+		) : score >= 70 ? (
+			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
+				<defs>
+					<linearGradient id="fb-party" x1="0" y1="1" x2="1" y2="0">
+						<stop offset="0%" stopColor="#ff5500" />
+						<stop offset="50%" stopColor="#ffcc00" />
+						<stop offset="100%" stopColor="#4a8c5c" />
+					</linearGradient>
+				</defs>
+				<path
+					d="M12 2l2.5 6.5L21 12l-6.5 2.5L12 22l-2.5-7.5L3 12l6.5-3.5L12 2z"
+					fill="url(#fb-party)"
+				/>
+				<circle cx="12" cy="12" r="3" fill="#fff" opacity="0.4" />
+			</svg>
+		) : score >= 50 ? (
+			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
+				<circle
+					cx="12"
+					cy="12"
+					r="10"
+					fill="#4a8c5c"
+					opacity="0.2"
+					stroke="#4a8c5c"
+					strokeWidth="1.5"
+				/>
+				<path
+					d="M8 12.5l2.5 3L16 9"
+					stroke="#4a8c5c"
+					strokeWidth="2.5"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				/>
+			</svg>
+		) : (
+			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
+				<defs>
+					<linearGradient id="fb-flame" x1=".5" y1="1" x2=".5" y2="0">
+						<stop offset="0%" stopColor="var(--accent)" />
+						<stop offset="100%" stopColor="var(--warning)" />
+					</linearGradient>
+				</defs>
+				<path
+					d="M12 2C9 7 4 11 4 16c0 5 3.5 7 8 7s8-2 8-7c0-6-5-10-8-15z"
+					fill="url(#fb-flame)"
+					opacity="0.7"
+				/>
+				<path
+					d="M12 10c-2 3-4 5-4 8 0 2.5 1.8 4 4 4s4-1.5 4-4c0-3-2-5-4-8z"
+					fill="#fff"
+					opacity="0.2"
+				/>
+			</svg>
+		);
+	const message =
+		score >= 90
+			? 'Xuất sắc!'
+			: score >= 70
+				? 'Tuyệt vời!'
+				: score >= 50
+					? 'Khá tốt!'
+					: 'Cần luyện thêm!';
 
 	const practiceLinks = [
 		{ href: chrome.modeHref(id, 'flashcards'), label: 'Flashcards', color: 'text-accent' },
@@ -695,23 +881,43 @@ function CompletionScreen({
 				<div className="text-center">
 					<div
 						className="text-7xl"
-						style={{ animation: show ? 'celebrateBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both' : undefined }}
+						style={{
+							animation: show
+								? 'celebrateBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both'
+								: undefined,
+						}}
 					>
 						{resultIcon}
 					</div>
-					<h1 className="mt-6 text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl">{message}</h1>
+					<h1 className="mt-6 text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl">
+						{message}
+					</h1>
 
 					{/* Score ring */}
 					<div className="mx-auto mt-6 flex items-center justify-center">
 						<div className="relative flex h-24 w-24 items-center justify-center">
 							<svg className="h-24 w-24 -rotate-90" viewBox="0 0 100 100">
-								<circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="6" className="text-surface-hover" />
 								<circle
-									cx="50" cy="50" r="42" fill="none" strokeWidth="6"
+									cx="50"
+									cy="50"
+									r="42"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="6"
+									className="text-surface-hover"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="42"
+									fill="none"
+									strokeWidth="6"
 									stroke={score >= 70 ? '#4a8c5c' : score >= 50 ? '#c48a1a' : '#c44b28'}
 									strokeLinecap="round"
 									strokeDasharray={`${score * 2.64} 264`}
-									style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s' }}
+									style={{
+										transition: 'stroke-dasharray 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s',
+									}}
 								/>
 							</svg>
 							<span className="absolute text-2xl font-black text-foreground">{score}%</span>
@@ -733,12 +939,20 @@ function CompletionScreen({
 
 					{/* Score from API */}
 					{avgScore !== null && (
-						<div className="mx-auto mt-4 max-w-xs rounded-xl border border-border bg-surface px-4 py-3 text-center"
-							style={{ animation: 'fadeUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both' }}>
-							<p className="text-xs font-bold uppercase tracking-widest text-muted">Điểm trung bình</p>
-							<p className="mt-1 text-3xl font-black tabular-nums text-foreground">{avgScore.toLocaleString()}</p>
+						<div
+							className="mx-auto mt-4 max-w-xs rounded-xl border border-border bg-surface px-4 py-3 text-center"
+							style={{ animation: 'fadeUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both' }}
+						>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">
+								Điểm trung bình
+							</p>
+							<p className="mt-1 text-3xl font-black tabular-nums text-foreground">
+								{avgScore.toLocaleString()}
+							</p>
 							{scoreResult && (
-								<p className={`mt-1 text-xs font-bold ${scoreResult.isNewBest ? 'text-success' : 'text-muted'}`}>
+								<p
+									className={`mt-1 text-xs font-bold ${scoreResult.isNewBest ? 'text-success' : 'text-muted'}`}
+								>
 									{scoreResult.isNewBest
 										? `🏆 Kỷ lục mới! (Trước: ${scoreResult.previousBest.toLocaleString()})`
 										: `Kỷ lục: ${scoreResult.previousBest.toLocaleString()}`}
@@ -750,7 +964,10 @@ function CompletionScreen({
 					{/* Actions */}
 					<div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
 						<button
-							onClick={() => { firedRef.current = false; onRestart(); }}
+							onClick={() => {
+								firedRef.current = false;
+								onRestart();
+							}}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
 						>
 							Làm lại
@@ -765,7 +982,9 @@ function CompletionScreen({
 
 					{/* Try other modes */}
 					<div className="mt-6">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Thử chế độ khác</p>
+						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+							Thử chế độ khác
+						</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">
 							{practiceLinks.map((link) => (
 								<Link

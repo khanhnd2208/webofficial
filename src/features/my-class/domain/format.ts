@@ -3,6 +3,10 @@ export function formatEvidenceCount(value: number): string {
 	return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
-export function formatEvidenceSummary(correctCount: number, questionCount: number, accuracy: number): string {
+export function formatEvidenceSummary(
+	correctCount: number,
+	questionCount: number,
+	accuracy: number,
+): string {
 	return `Đúng ${formatEvidenceCount(correctCount)} / ${formatEvidenceCount(questionCount)} evidence (${accuracy}%)`;
 }

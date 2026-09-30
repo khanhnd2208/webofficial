@@ -110,7 +110,9 @@ test.describe('Public pages smoke', () => {
 		).toBeVisible();
 		await expect(page.getByText(/Giảng viên Quản trị · Trường Đại học Hà Nội/i)).toBeVisible();
 		await expect(page.getByRole('link', { name: /Xem chương trình/i })).toBeVisible();
-		await expect(page.getByRole('heading', { name: /Chương trình tôi đang triển khai/i })).toBeVisible();
+		await expect(
+			page.getByRole('heading', { name: /Chương trình tôi đang triển khai/i }),
+		).toBeVisible();
 		await expect(page.getByRole('heading', { name: /Dự án tiêu biểu/i })).toBeVisible();
 		await expect(page.getByRole('heading', { name: /^Nền tảng$/i })).toBeVisible();
 		await expect(page.getByText(/Hiểu đúng vấn đề trước khi tìm giải pháp/i)).toBeVisible();

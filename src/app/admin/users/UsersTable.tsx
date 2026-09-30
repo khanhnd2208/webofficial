@@ -18,11 +18,21 @@ interface Props {
 }
 
 const ROLE_COLORS: Record<UserRole, string> = {
-	admin: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/40',
-	student: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
+	admin:
+		'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/40',
+	student:
+		'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40',
 };
 
-function SortIcon({ field, currentSortBy, currentSortDir }: { field: string; currentSortBy: string; currentSortDir: string }) {
+function SortIcon({
+	field,
+	currentSortBy,
+	currentSortDir,
+}: {
+	field: string;
+	currentSortBy: string;
+	currentSortDir: string;
+}) {
 	if (currentSortBy !== field) return <span className="text-muted opacity-40">↕</span>;
 	return <span className="text-foreground">{currentSortDir === 'desc' ? '↓' : '↑'}</span>;
 }
@@ -66,22 +76,34 @@ export default function UsersTable({
 		navigate({ sortBy: field, sortDir: newDir });
 	}
 
-	const handleRoleChange = useCallback(async (userId: string, newRole: UserRole) => {
-		await adminFetch(`/api/admin/users/${userId}/role`, {
-			method: 'PATCH',
-			body: JSON.stringify({ role: newRole }),
-		});
-		startTransition(() => router.refresh());
-	}, [router]);
+	const handleRoleChange = useCallback(
+		async (userId: string, newRole: UserRole) => {
+			await adminFetch(`/api/admin/users/${userId}/role`, {
+				method: 'PATCH',
+				body: JSON.stringify({ role: newRole }),
+			});
+			startTransition(() => router.refresh());
+		},
+		[router],
+	);
 
 	return (
 		<div className="space-y-4">
 			{/* Search bar */}
 			<form onSubmit={handleSearchSubmit} className="flex gap-2">
 				<div className="relative flex-1">
-					<svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" viewBox="0 0 20 20" fill="none">
+					<svg
+						className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted"
+						viewBox="0 0 20 20"
+						fill="none"
+					>
 						<circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-						<path d="M13.5 13.5L17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+						<path
+							d="M13.5 13.5L17 17"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+						/>
 					</svg>
 					<input
 						type="text"
@@ -114,40 +136,58 @@ export default function UsersTable({
 					description="Thử đổi bộ lọc hoặc từ khoá tìm kiếm."
 				/>
 			) : (
-			<div className={`rounded-xl border border-border overflow-hidden transition-opacity ${isPending ? 'opacity-60' : ''}`}>
-				<div className="overflow-x-auto">
-					<table className="w-full text-sm">
-						<thead>
-							<tr className="border-b border-border bg-surface-hover">
-								<th className="px-4 py-3 text-left">
-									<button
-										onClick={() => toggleSort('name')}
-										className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-widest text-muted hover:text-foreground"
-									>
-										Người dùng <SortIcon field="name" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
-									</button>
-								</th>
-							<th className="px-4 py-3 text-left">
-								<span className="font-bold text-xs uppercase tracking-widest text-muted">Role</span>
-							</th>
-							<th className="px-4 py-3 text-right hidden sm:table-cell">
-								<span className="font-bold text-xs uppercase tracking-widest text-muted">Từ vựng</span>
-							</th>
-								<th className="px-4 py-3 text-right hidden md:table-cell">
-									<span className="font-bold text-xs uppercase tracking-widest text-muted">🔥 Streak</span>
-								</th>
-								<th className="px-4 py-3 text-right hidden lg:table-cell">
-									<button
-										onClick={() => toggleSort('createdAt')}
-										className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-widest text-muted hover:text-foreground ml-auto"
-									>
-										Ngày đăng ký <SortIcon field="createdAt" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
-									</button>
-								</th>
-								<th className="px-4 py-3" />
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-border">
+				<div
+					className={`rounded-xl border border-border overflow-hidden transition-opacity ${isPending ? 'opacity-60' : ''}`}
+				>
+					<div className="overflow-x-auto">
+						<table className="w-full text-sm">
+							<thead>
+								<tr className="border-b border-border bg-surface-hover">
+									<th className="px-4 py-3 text-left">
+										<button
+											onClick={() => toggleSort('name')}
+											className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-widest text-muted hover:text-foreground"
+										>
+											Người dùng{' '}
+											<SortIcon
+												field="name"
+												currentSortBy={currentSortBy}
+												currentSortDir={currentSortDir}
+											/>
+										</button>
+									</th>
+									<th className="px-4 py-3 text-left">
+										<span className="font-bold text-xs uppercase tracking-widest text-muted">
+											Role
+										</span>
+									</th>
+									<th className="px-4 py-3 text-right hidden sm:table-cell">
+										<span className="font-bold text-xs uppercase tracking-widest text-muted">
+											Từ vựng
+										</span>
+									</th>
+									<th className="px-4 py-3 text-right hidden md:table-cell">
+										<span className="font-bold text-xs uppercase tracking-widest text-muted">
+											🔥 Streak
+										</span>
+									</th>
+									<th className="px-4 py-3 text-right hidden lg:table-cell">
+										<button
+											onClick={() => toggleSort('createdAt')}
+											className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-widest text-muted hover:text-foreground ml-auto"
+										>
+											Ngày đăng ký{' '}
+											<SortIcon
+												field="createdAt"
+												currentSortBy={currentSortBy}
+												currentSortDir={currentSortDir}
+											/>
+										</button>
+									</th>
+									<th className="px-4 py-3" />
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-border">
 								{result.users.map((u) => (
 									<UserRow
 										key={u.id}
@@ -157,10 +197,10 @@ export default function UsersTable({
 										onRoleChange={handleRoleChange}
 									/>
 								))}
-						</tbody>
-					</table>
+							</tbody>
+						</table>
+					</div>
 				</div>
-			</div>
 			)}
 
 			{/* Pagination */}
@@ -279,7 +319,9 @@ function UserRow({
 					className={`rounded-full border px-2.5 py-1 text-xs font-semibold cursor-pointer focus:outline-none disabled:opacity-60 ${ROLE_COLORS[user.role]}`}
 				>
 					{(['student', 'admin'] as UserRole[]).map((r) => (
-						<option key={r} value={r}>{r === 'admin' ? 'Admin' : 'Người dùng'}</option>
+						<option key={r} value={r}>
+							{r === 'admin' ? 'Admin' : 'Người dùng'}
+						</option>
 					))}
 				</select>
 			</td>
@@ -289,7 +331,9 @@ function UserRow({
 			</td>
 			{/* Streak */}
 			<td className="px-4 py-3 text-right hidden md:table-cell">
-				<span className={`font-medium tabular-nums ${user.currentStreak > 0 ? 'text-orange-500' : 'text-muted'}`}>
+				<span
+					className={`font-medium tabular-nums ${user.currentStreak > 0 ? 'text-orange-500' : 'text-muted'}`}
+				>
 					{user.currentStreak > 0 ? `🔥 ${user.currentStreak}` : '—'}
 				</span>
 			</td>
@@ -299,9 +343,17 @@ function UserRow({
 			</td>
 			{/* Detail arrow */}
 			<td className="px-3 py-3 text-right">
-				<span className={`text-muted transition-transform inline-block ${isSelected ? 'rotate-180' : ''}`}>
+				<span
+					className={`text-muted transition-transform inline-block ${isSelected ? 'rotate-180' : ''}`}
+				>
 					<svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none">
-						<path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+						<path
+							d="M3 6l5 5 5-5"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
 					</svg>
 				</span>
 			</td>

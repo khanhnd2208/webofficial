@@ -404,9 +404,7 @@ export function recallMarkdownToHtml(markdown: string) {
 			paragraph.push(lines[index] ?? '');
 			index += 1;
 		}
-		blocks.push(
-			`<p>${paragraph.map((line) => inlineToHtml(parseInlines(line))).join('<br>')}</p>`,
-		);
+		blocks.push(`<p>${paragraph.map((line) => inlineToHtml(parseInlines(line))).join('<br>')}</p>`);
 	}
 	return sanitizeRecallHtml(blocks.join(''));
 }

@@ -4,18 +4,43 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { resolveCalloutKind } from './callouts';
-import { estimateReadingMinutes, gradeQuiz, normalizeEditorMarkdown, quizForLearner, readQuiz, sectionMinutes } from './content';
+import {
+	estimateReadingMinutes,
+	gradeQuiz,
+	normalizeEditorMarkdown,
+	quizForLearner,
+	readQuiz,
+	sectionMinutes,
+} from './content';
 import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
-import { ANSWER_LABELS, discussionQuestionView, discussionQuestionViews, splitLabelled } from './discussionView';
-import { cleanAiPaste, exportCourseMarkdown, exportLessonMarkdown, parseCourseMarkdown, parseLessonMarkdown, planContentReplace } from './lessonImport';
+import {
+	ANSWER_LABELS,
+	discussionQuestionView,
+	discussionQuestionViews,
+	splitLabelled,
+} from './discussionView';
+import {
+	cleanAiPaste,
+	exportCourseMarkdown,
+	exportLessonMarkdown,
+	parseCourseMarkdown,
+	parseLessonMarkdown,
+	planContentReplace,
+} from './lessonImport';
 import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
 import { readingOutline } from './outline';
 import { compareLectureText, lectureWords } from './textFidelity';
 import type { LearnQuiz } from './types';
 
-const originalLecture = readFileSync(path.join(import.meta.dirname, '__fixtures__/sample-lecture.original.txt'), 'utf8');
-const aiLecture = readFileSync(path.join(import.meta.dirname, '__fixtures__/sample-lecture.ai.md'), 'utf8');
+const originalLecture = readFileSync(
+	path.join(import.meta.dirname, '__fixtures__/sample-lecture.original.txt'),
+	'utf8',
+);
+const aiLecture = readFileSync(
+	path.join(import.meta.dirname, '__fixtures__/sample-lecture.ai.md'),
+	'utf8',
+);
 
 describe('parseLessonMarkdown', () => {
 	it('splits NDK sections with title, duration and summary', () => {
@@ -46,12 +71,18 @@ describe('parseLessonMarkdown', () => {
 			summary: 'Mâu thuẫn là nguồn gốc của vận động.',
 		});
 		expect(parsed.sections[0].markdown).toContain('> [!DEFINITION] Mâu thuẫn biện chứng');
-		expect(parsed.sections[1]).toMatchObject({ title: '2. Ý nghĩa', durationMinutes: null, summary: '' });
+		expect(parsed.sections[1]).toMatchObject({
+			title: '2. Ý nghĩa',
+			durationMinutes: null,
+			summary: '',
+		});
 		expect(parsed.warnings).toEqual([]);
 	});
 
 	it('only treats a leading quote as the section summary', () => {
-		const parsed = parseLessonMarkdown('# T\n\n=== SECTION: A ===\nĐoạn mở đầu.\n\n> Trích giữa bài');
+		const parsed = parseLessonMarkdown(
+			'# T\n\n=== SECTION: A ===\nĐoạn mở đầu.\n\n> Trích giữa bài',
+		);
 		expect(parsed.sections[0].summary).toBe('');
 		expect(parsed.sections[0].markdown).toContain('> Trích giữa bài');
 	});
@@ -92,7 +123,9 @@ describe('parseLessonMarkdown', () => {
 		expect(parsed.lessonDescription).toBe('Mô tả');
 		expect(parsed.sections.map((section) => section.title)).toEqual(['Giới thiệu', 'A']);
 		expect(parsed.sections[0].markdown).toBe('Đoạn mở đầu dài.');
-		expect(parsed.warnings).not.toContain('Có đoạn văn trước mục đầu tiên. Đoạn này không được nhập.');
+		expect(parsed.warnings).not.toContain(
+			'Có đoạn văn trước mục đầu tiên. Đoạn này không được nhập.',
+		);
 	});
 
 	it('warns when an imported section is too long to ever be saved', () => {
@@ -128,20 +161,27 @@ describe('parseLessonMarkdown', () => {
 			keyTakeaways: ['Nắm khái niệm'],
 			markdown: 'Thân bài.',
 		});
-		expect(parsed.sections[0].checkpoint).toMatchObject({ question: 'Mâu thuẫn là gì?', correctIndex: 1 });
+		expect(parsed.sections[0].checkpoint).toMatchObject({
+			question: 'Mâu thuẫn là gì?',
+			correctIndex: 1,
+		});
 		expect(parsed.sections[1].type).toBe('QUIZ');
 		expect(parsed.sections[1].quiz?.questions[0].correctIndex).toBe(0);
 		expect(parsed.sections[1].quiz?.timeLimitMinutes).toBe(10);
 	});
 	it('escapes a year-like line so it is not parsed as an ordered list start', () => {
-		const parsed = parseLessonMarkdown('# T\n\n=== SECTION: A ===\n1945. Năm lịch sử\n\n2. Không phải list?');
+		const parsed = parseLessonMarkdown(
+			'# T\n\n=== SECTION: A ===\n1945. Năm lịch sử\n\n2. Không phải list?',
+		);
 		expect(parsed.sections[0].markdown).toContain('1945\\. Năm lịch sử');
 	});
 });
 
 describe('course markdown exchange', () => {
 	it('splits a file into one lesson per top-level heading', () => {
-		const parsed = parseCourseMarkdown('# Một\n\n=== SECTION: A ===\nna\n\n# Hai\n\n=== SECTION: B ===\nbb');
+		const parsed = parseCourseMarkdown(
+			'# Một\n\n=== SECTION: A ===\nna\n\n# Hai\n\n=== SECTION: B ===\nbb',
+		);
 		expect(parsed.lessons.map((lesson) => lesson.lessonTitle)).toEqual(['Một', 'Hai']);
 		expect(parsed.lessons[1].sections[0].title).toBe('B');
 	});
@@ -191,7 +231,9 @@ describe('course markdown exchange', () => {
 	});
 
 	it('updates matched sections in place and only deletes the ones left over', () => {
-		const incoming = parseLessonMarkdown('# Bài\n\n=== SECTION: Giữ ===\nx\n\n=== SECTION: Mới ===\ny').sections;
+		const incoming = parseLessonMarkdown(
+			'# Bài\n\n=== SECTION: Giữ ===\nx\n\n=== SECTION: Mới ===\ny',
+		).sections;
 		const plan = planContentReplace(
 			[
 				{ id: 'a', title: 'Giữ' },
@@ -234,7 +276,9 @@ describe('parseQuizPaste', () => {
 	});
 
 	it('warns about missing answers and skips questions without options', () => {
-		const { questions, warnings } = parseQuizPaste('Câu 1: Hỏi?\nA. X\nB. Y\n\nCâu 2: Không có phương án');
+		const { questions, warnings } = parseQuizPaste(
+			'Câu 1: Hỏi?\nA. X\nB. Y\n\nCâu 2: Không có phương án',
+		);
 		expect(questions).toHaveLength(1);
 		expect(questions[0].correctIndex).toBe(0);
 		expect(warnings).toHaveLength(2);
@@ -260,7 +304,13 @@ describe('quiz grading', () => {
 
 	it('scores answers, drops out-of-range ones and applies the pass mark', () => {
 		const result = gradeQuiz(quiz, { a: 1, b: 7 }, new Date('2026-01-01T00:00:00Z'));
-		expect(result).toMatchObject({ score: 1, total: 2, percentage: 50, passed: false, answers: { a: 1 } });
+		expect(result).toMatchObject({
+			score: 1,
+			total: 2,
+			percentage: 50,
+			passed: false,
+			answers: { a: 1 },
+		});
 		expect(gradeQuiz(quiz, { a: 1, b: 0 }).passed).toBe(true);
 	});
 
@@ -311,7 +361,9 @@ describe('helpers', () => {
 		expect(cleaned.markdown).not.toContain('CÒN TIẾP');
 		expect(cleaned.warnings).toEqual([]);
 
-		const unfinished = cleanAiPaste('````markdown\n# Bài\n\n=== SECTION: A ===\nx\n````\n<<<CÒN TIẾP>>>');
+		const unfinished = cleanAiPaste(
+			'````markdown\n# Bài\n\n=== SECTION: A ===\nx\n````\n<<<CÒN TIẾP>>>',
+		);
 		expect(unfinished.warnings[0]).toMatch(/chưa trả hết bài/);
 		expect(unfinished.markdown).not.toContain('CÒN TIẾP');
 	});
@@ -344,7 +396,9 @@ describe('helpers', () => {
 		const parsed = parseCourseMarkdown(aiLecture);
 		expect(parsed.lessons).toHaveLength(1);
 		expect(parsed.lessons[0].sections.map((section) => section.type)).toEqual(['READING', 'QUIZ']);
-		expect(parsed.lessons[0].sections[0].markdown).toContain('> [!DEFINITION] Mâu thuẫn biện chứng');
+		expect(parsed.lessons[0].sections[0].markdown).toContain(
+			'> [!DEFINITION] Mâu thuẫn biện chứng',
+		);
 		expect(parsed.lessons[0].sections[0].markdown).toContain('[^1]:');
 		expect(parsed.lessons[0].sections[1].quiz?.questions).toHaveLength(1);
 		const exported = exportLessonMarkdown({
@@ -362,17 +416,52 @@ describe('helpers', () => {
 	});
 
 	it('ignores mermaid diagrams and a Docs byline when the description repeats the lecture', () => {
-		const original = ['Bài', '24 thg 9, 2026 · @Nguyen Duy Khanh', 'flowchart TD', '    A["Nút"] --> B["Nút hai"]', 'Đoạn văn.'].join('\n');
-		const formatted = ['# Bài', '> Đoạn văn.', '', 'Đoạn văn.', '', '```mermaid', 'flowchart TD', '    A["Sơ đồ mới"] --> B["Không tính"]', '```'].join('\n');
+		const original = [
+			'Bài',
+			'24 thg 9, 2026 · @Nguyen Duy Khanh',
+			'flowchart TD',
+			'    A["Nút"] --> B["Nút hai"]',
+			'Đoạn văn.',
+		].join('\n');
+		const formatted = [
+			'# Bài',
+			'> Đoạn văn.',
+			'',
+			'Đoạn văn.',
+			'',
+			'```mermaid',
+			'flowchart TD',
+			'    A["Sơ đồ mới"] --> B["Không tính"]',
+			'```',
+		].join('\n');
 		expect(compareLectureText(original, formatted).hunks).toEqual([]);
-		expect(compareLectureText(original, formatted.replace('> Đoạn văn.', '> Câu AI tự viết thêm.')).hunks.length).toBeGreaterThan(0);
+		expect(
+			compareLectureText(original, formatted.replace('> Đoạn văn.', '> Câu AI tự viết thêm.')).hunks
+				.length,
+		).toBeGreaterThan(0);
 	});
 
 	it('warns about an unfenced diagram, a flattened table, and a byline description', () => {
-		const raw = ['# Bài', '> 24 thg 9, 2026 · @Ten', '', '=== SECTION: A ===', 'flowchart TD', '    A --> B', '', '```text', 'Cột', 'Một', 'Hai', 'Ba', '```'].join('\n');
+		const raw = [
+			'# Bài',
+			'> 24 thg 9, 2026 · @Ten',
+			'',
+			'=== SECTION: A ===',
+			'flowchart TD',
+			'    A --> B',
+			'',
+			'```text',
+			'Cột',
+			'Một',
+			'Hai',
+			'Ba',
+			'```',
+		].join('\n');
 		const warnings = parseCourseMarkdown(raw).warnings;
 		expect(warnings).toContain('Có sơ đồ chưa bọc trong khối ```mermaid');
-		expect(warnings).toContain('Có khối mã trông như bảng bị dàn phẳng. Hãy để AI dựng lại thành bảng');
+		expect(warnings).toContain(
+			'Có khối mã trông như bảng bị dàn phẳng. Hãy để AI dựng lại thành bảng',
+		);
 		expect(warnings).toContain('Dòng mô tả là tên tác giả/ngày, không phải mô tả');
 	});
 
@@ -396,14 +485,21 @@ describe('helpers', () => {
 		expect(parsed.lessons[0].lessonDescription).toBe(
 			'Cách một nhóm người được điều phối quyết định rất nhiều đến việc nhóm đó thành công hay thất bại.',
 		);
-		expect(parsed.lessons[0].sections.find((section) => section.title === 'Góc đọc thêm')?.summary).toMatch(/không bắt buộc/);
+		expect(
+			parsed.lessons[0].sections.find((section) => section.title === 'Góc đọc thêm')?.summary,
+		).toMatch(/không bắt buộc/);
 		expect(compareLectureText(original, markdown)).toEqual({ matchPercent: 100, hunks: [] });
 		expect(markdown.match(/^\| ---/gm)).toHaveLength(7);
 		expect(markdown.match(/```mermaid/g)).toHaveLength(3);
 		expect(markdown).not.toContain('```text');
-		const byTitle = (title: string) => parsed.lessons[0].sections.find((section) => section.title === title)?.markdown ?? '';
-		expect(readingOutline(byTitle('Phần 4. Điều gì đang thay đổi công việc của nhà quản trị?')).length).toBeGreaterThanOrEqual(3);
-		expect(readingOutline(byTitle('Phần 6. Không định làm sếp, có cần học quản trị không?')).length).toBeGreaterThanOrEqual(3);
+		const byTitle = (title: string) =>
+			parsed.lessons[0].sections.find((section) => section.title === title)?.markdown ?? '';
+		expect(
+			readingOutline(byTitle('Phần 4. Điều gì đang thay đổi công việc của nhà quản trị?')).length,
+		).toBeGreaterThanOrEqual(3);
+		expect(
+			readingOutline(byTitle('Phần 6. Không định làm sếp, có cần học quản trị không?')).length,
+		).toBeGreaterThanOrEqual(3);
 	});
 
 	it('imports practice and discussion sections and round-trips them', () => {
@@ -448,7 +544,9 @@ describe('helpers', () => {
 		});
 		expect(parsed.sections[1].discussion?.questions[0].question).toContain('## Nhóm A');
 		expect(parsed.sections[1].discussion?.questions[0].question).toContain('Vì sao?');
-		expect(parsed.sections[1].discussion?.questions[0].answer).toContain('Nhắc lại Câu 1: không tách.');
+		expect(parsed.sections[1].discussion?.questions[0].answer).toContain(
+			'Nhắc lại Câu 1: không tách.',
+		);
 		expect(parsed.sections[1].discussion?.questions[1].answer).toContain('| 1 | 2 |');
 		expect(parsed.sections[1].discussion?.questions).toHaveLength(2);
 		const exported = exportLessonMarkdown({
@@ -457,21 +555,43 @@ describe('helpers', () => {
 			sections: parsed.sections,
 		});
 		const again = parseLessonMarkdown(exported);
-		expect(again.sections[0].quiz?.questions[0].question).toBe(parsed.sections[0].quiz?.questions[0].question);
+		expect(again.sections[0].quiz?.questions[0].question).toBe(
+			parsed.sections[0].quiz?.questions[0].question,
+		);
 		expect(again.sections[1].discussion?.questions[1].answer).toContain('| 1 | 2 |');
-		expect(sectionMinutes({ type: 'PRACTICE', durationMinutes: null, markdown: '', quiz: parsed.sections[0].quiz, discussion: null })).toBe(1);
-		expect(sectionMinutes({ type: 'DISCUSSION', durationMinutes: null, markdown: '', quiz: null, discussion: parsed.sections[1].discussion })).toBeGreaterThan(0);
+		expect(
+			sectionMinutes({
+				type: 'PRACTICE',
+				durationMinutes: null,
+				markdown: '',
+				quiz: parsed.sections[0].quiz,
+				discussion: null,
+			}),
+		).toBe(1);
+		expect(
+			sectionMinutes({
+				type: 'DISCUSSION',
+				durationMinutes: null,
+				markdown: '',
+				quiz: null,
+				discussion: parsed.sections[1].discussion,
+			}),
+		).toBeGreaterThan(0);
 	});
 
 	it('flags a missing quiz answer instead of pretending A is correct', () => {
-		const { questions, warnings, missingAnswer } = parseQuizPaste('Câu 1: Hỏi?\nA. a\nB. b\nĐáp án: ?');
+		const { questions, warnings, missingAnswer } = parseQuizPaste(
+			'Câu 1: Hỏi?\nA. a\nB. b\nĐáp án: ?',
+		);
 		expect(questions).toHaveLength(1);
 		expect(missingAnswer).toEqual([questions[0].id]);
 		expect(warnings[0]).toMatch(/thiếu đáp án/);
 	});
 
 	it('keeps a discussion answer that mentions an earlier question number', () => {
-		const { questions, warnings } = parseDiscussionPaste('Câu 1: Hỏi?\n\nĐáp án:\nXem lại Câu 1: trong thân.\n\nCâu 2: Tiếp?\n\nTrả lời:');
+		const { questions, warnings } = parseDiscussionPaste(
+			'Câu 1: Hỏi?\n\nĐáp án:\nXem lại Câu 1: trong thân.\n\nCâu 2: Tiếp?\n\nTrả lời:',
+		);
 		expect(questions).toHaveLength(2);
 		expect(questions[0].answer).toContain('Câu 1: trong thân.');
 		expect(warnings.some((warning) => warning.includes('Câu 2'))).toBe(true);
@@ -482,7 +602,9 @@ describe('helpers', () => {
 		const original = '1) Hỏi gì\na) Một\nb) Hai\nĐáp án: B';
 		const formatted = 'Câu 1: Hỏi gì\nA. Một\nB. Hai\nĐáp án: B';
 		expect(compareLectureText(original, formatted, { questions: true }).hunks).toEqual([]);
-		expect(compareLectureText(original, formatted.replace('Hai', 'Ba'), { questions: true }).hunks).toEqual([
+		expect(
+			compareLectureText(original, formatted.replace('Hai', 'Ba'), { questions: true }).hunks,
+		).toEqual([
 			expect.objectContaining({ kind: 'removed', words: ['Hai'] }),
 			expect.objectContaining({ kind: 'added', words: ['Ba'] }),
 		]);
@@ -510,7 +632,9 @@ describe('helpers', () => {
 		);
 		expect(warnings).toEqual([]);
 		expect(questions).toHaveLength(2);
-		expect(questions[0].question).toBe('Cho các nhận định sau:\n1. Vật chất có trước\n2. Ý thức có sau\nSố nhận định đúng là:');
+		expect(questions[0].question).toBe(
+			'Cho các nhận định sau:\n1. Vật chất có trước\n2. Ý thức có sau\nSố nhận định đúng là:',
+		);
 		expect(questions[0].explanation).toBe('A. sai vì thiếu một ý.\nB. đúng.');
 	});
 
@@ -518,7 +642,9 @@ describe('helpers', () => {
 		const { questions } = parseDiscussionPaste(
 			'Câu 1: Phân tích.\n\nĐáp án mẫu:\nÝ một.\n\nHướng dẫn: nêu ví dụ cụ thể.\n\nTrả lời: đây là trích dẫn.',
 		);
-		expect(questions[0].answer).toBe('Ý một.\n\nHướng dẫn: nêu ví dụ cụ thể.\n\nTrả lời: đây là trích dẫn.');
+		expect(questions[0].answer).toBe(
+			'Ý một.\n\nHướng dẫn: nêu ví dụ cụ thể.\n\nTrả lời: đây là trích dẫn.',
+		);
 	});
 
 	it('keeps "## Luyện tập:" and "### Kiểm tra:" subheadings inside a reading section', () => {
@@ -530,10 +656,16 @@ describe('helpers', () => {
 	});
 
 	it('does not count renamed answer labels or a key letter glued to a word as edits', () => {
-		const original = 'Câu 1: Vì sao?\nTrả lời: Bởi vì A.\n\n**Câu 2.** Ra sao?\nGợi ý đáp án: Được.';
-		const formatted = 'Câu 1: Vì sao?\n\nĐáp án mẫu:\nBởi vì A.\n\nCâu 2: Ra sao?\n\nĐáp án mẫu:\nĐược.';
+		const original =
+			'Câu 1: Vì sao?\nTrả lời: Bởi vì A.\n\n**Câu 2.** Ra sao?\nGợi ý đáp án: Được.';
+		const formatted =
+			'Câu 1: Vì sao?\n\nĐáp án mẫu:\nBởi vì A.\n\nCâu 2: Ra sao?\n\nĐáp án mẫu:\nĐược.';
 		expect(compareLectureText(original, formatted, { questions: true }).hunks).toEqual([]);
-		expect(compareLectureText('Câu 1: X?\nĐáp án: Bởi Y.', 'Câu 1: X?\n\nĐáp án mẫu:\nBởi Y.', { questions: true }).hunks).toEqual([]);
+		expect(
+			compareLectureText('Câu 1: X?\nĐáp án: Bởi Y.', 'Câu 1: X?\n\nĐáp án mẫu:\nBởi Y.', {
+				questions: true,
+			}).hunks,
+		).toEqual([]);
 	});
 
 	it('estimates reading time with a one-minute floor', () => {
@@ -556,15 +688,23 @@ describe('discussionQuestionView', () => {
 				{ label: 'Câu hỏi', markdown: 'Đã là tổ chức chưa?' },
 			],
 		});
-		expect(discussionQuestionView('Đánh giá (đọc thêm) — Đừng dạy hết nghề\n\nCâu hỏi: Vì sao?').level).toBe('Đánh giá · đọc thêm');
-		expect(discussionQuestionView('### Câu 1 · Hiểu — Nhân sự chỉ là giấy tờ\n\nCâu hỏi: Vì sao?')).toMatchObject({
+		expect(
+			discussionQuestionView('Đánh giá (đọc thêm) — Đừng dạy hết nghề\n\nCâu hỏi: Vì sao?').level,
+		).toBe('Đánh giá · đọc thêm');
+		expect(
+			discussionQuestionView('### Câu 1 · Hiểu — Nhân sự chỉ là giấy tờ\n\nCâu hỏi: Vì sao?'),
+		).toMatchObject({
 			level: 'Hiểu',
 			title: 'Nhân sự chỉ là giấy tờ',
 		});
 	});
 
 	it('carries a part heading to the questions that follow it', () => {
-		const parts = discussionQuestionViews(['## Phần 1\n\nCâu hỏi: A?', 'Câu hỏi: B?', '## Phần 2\n\nCâu hỏi: C?']).map((view) => view.part);
+		const parts = discussionQuestionViews([
+			'## Phần 1\n\nCâu hỏi: A?',
+			'Câu hỏi: B?',
+			'## Phần 2\n\nCâu hỏi: C?',
+		]).map((view) => view.part);
 		expect(parts).toEqual(['Phần 1', 'Phần 1', 'Phần 2']);
 	});
 
@@ -603,7 +743,11 @@ describe('discussionQuestionView', () => {
 			'Nhắc lại bài học: Định nghĩa.\n\nCùng suy nghĩ từng bước:\n\nBước 1 — Điều rút ra: chưa phải nhãn.\n\n```\nĐiều rút ra: trong code\n```\n\nĐiều rút ra: Một câu.',
 			ANSWER_LABELS,
 		);
-		expect(blocks.map((block) => block.label)).toEqual(['Nhắc lại bài học', 'Cùng suy nghĩ từng bước', 'Điều rút ra']);
+		expect(blocks.map((block) => block.label)).toEqual([
+			'Nhắc lại bài học',
+			'Cùng suy nghĩ từng bước',
+			'Điều rút ra',
+		]);
 		expect(blocks[1].markdown).toContain('Điều rút ra: trong code');
 	});
 });

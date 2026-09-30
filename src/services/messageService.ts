@@ -136,14 +136,20 @@ export async function getMessagesByUser(userId: string): Promise<MessageListItem
 	return docs.map(toListItemDTO);
 }
 
-export async function getMessageBySlugForOwner(slug: string, userId: string): Promise<MessageDetailDTO> {
+export async function getMessageBySlugForOwner(
+	slug: string,
+	userId: string,
+): Promise<MessageDetailDTO> {
 	const doc = await getMessageDocBySlug(slug);
 	if (!doc) throw new AppError('Không tìm thấy lời nhắn', 404);
 	assertOwner(doc, userId);
 	return toDetailDTO(doc);
 }
 
-export async function createMessage(userId: string, input: CreateMessageInput): Promise<MessageDetailDTO> {
+export async function createMessage(
+	userId: string,
+	input: CreateMessageInput,
+): Promise<MessageDetailDTO> {
 	if (!input.title.trim()) throw new AppError('Tiêu đề là bắt buộc', 400);
 	if (!input.recipientName.trim()) throw new AppError('Tên người nhận là bắt buộc', 400);
 	if (!input.content.trim()) throw new AppError('Nội dung là bắt buộc', 400);

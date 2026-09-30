@@ -178,7 +178,11 @@ export function classifyRosterRow(
 	if (conflicts.length > 0) {
 		return { status: 'conflict', conflicts, fillBlankFields, accessMode };
 	}
-	if (existing.enrollmentId && existing.enrollmentStatus === 'ACTIVE' && fillBlankFields.length === 0) {
+	if (
+		existing.enrollmentId &&
+		existing.enrollmentStatus === 'ACTIVE' &&
+		fillBlankFields.length === 0
+	) {
 		return { status: 'exact', conflicts, fillBlankFields, accessMode };
 	}
 	if (fillBlankFields.length > 0) {
@@ -199,8 +203,12 @@ export function summarizeRosterPreview(rows: RosterImportPreviewRow[]): RosterIm
 	};
 }
 
-export function defaultConflictResolution(conflicts: RosterFieldConflict[]): RosterConflictResolution {
-	return Object.fromEntries(conflicts.map((conflict) => [conflict.field, 'keep'])) as RosterConflictResolution;
+export function defaultConflictResolution(
+	conflicts: RosterFieldConflict[],
+): RosterConflictResolution {
+	return Object.fromEntries(
+		conflicts.map((conflict) => [conflict.field, 'keep']),
+	) as RosterConflictResolution;
 }
 
 export function applyConflictResolution(
@@ -231,5 +239,7 @@ export function applyConflictResolution(
 }
 
 export function rosterPreviewCanCommit(rows: RosterImportPreviewRow[]): boolean {
-	return rows.length > 0 && rows.every((row) => row.status !== 'invalid' && row.status !== 'conflict');
+	return (
+		rows.length > 0 && rows.every((row) => row.status !== 'invalid' && row.status !== 'conflict')
+	);
 }

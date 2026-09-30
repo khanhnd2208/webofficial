@@ -37,7 +37,11 @@ describe('NewTeachingClassWorkspace', () => {
 	it('locks the preselected course and creates an empty class with three required fields', async () => {
 		apiMock.mockResolvedValueOnce({ id: 'class-1' });
 		render(
-			<NewTeachingClassWorkspace initialCourseId="course-1" courses={[course]} termSuggestions={['HK1']} />,
+			<NewTeachingClassWorkspace
+				initialCourseId="course-1"
+				courses={[course]}
+				termSuggestions={['HK1']}
+			/>,
 		);
 
 		expect(screen.getByLabelText('Môn học')).toHaveValue('course-1');
@@ -53,7 +57,9 @@ describe('NewTeachingClassWorkspace', () => {
 			method: 'POST',
 			body: JSON.stringify({ courseId: 'course-1', groupNo: ' 39-01 ', term: 'HK1' }),
 		});
-		expect(navigation.push).toHaveBeenCalledWith(routes.mySpaceTeachingClassTab('class-1', 'students'));
+		expect(navigation.push).toHaveBeenCalledWith(
+			routes.mySpaceTeachingClassTab('class-1', 'students'),
+		);
 	});
 
 	it('requires a course, class code and term before submitting', () => {

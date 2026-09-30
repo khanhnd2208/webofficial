@@ -114,8 +114,8 @@ export default function EnrollmentsClient({
 
 	const pendingItem = pendingAction ? items.find((i) => i.id === pendingAction.id) : null;
 	const pendingLabel = pendingItem?.user
-		? (pendingItem.user.name || pendingItem.user.email)
-		: pendingItem?.userId ?? '';
+		? pendingItem.user.name || pendingItem.user.email
+		: (pendingItem?.userId ?? '');
 	const actionLabel = pendingAction?.action === 'revoke' ? 'hủy ghi danh' : 'khôi phục ghi danh';
 
 	return (
@@ -180,9 +180,7 @@ export default function EnrollmentsClient({
 						{items.map((item) => {
 							const busy = rowBusy[item.id] ?? false;
 							const rowErr = rowError[item.id] ?? '';
-							const displayName = item.user
-								? item.user.name || item.user.email
-								: item.userId;
+							const displayName = item.user ? item.user.name || item.user.email : item.userId;
 							const displayEmail = item.user?.email;
 
 							return (
@@ -199,9 +197,7 @@ export default function EnrollmentsClient({
 											{item.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã hủy'} ·{' '}
 											{new Date(item.enrolledAt).toLocaleDateString('vi-VN')}
 										</p>
-										{rowErr ? (
-											<p className="mt-1 text-xs text-error">{rowErr}</p>
-										) : null}
+										{rowErr ? <p className="mt-1 text-xs text-error">{rowErr}</p> : null}
 									</div>
 									<div className="shrink-0">
 										{item.status === 'ACTIVE' ? (

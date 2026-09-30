@@ -17,14 +17,23 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 	// Use MongoDB text index for fast search (indexes on title, summary, tags)
 	const items = await Post.find(
 		{ isPublished: true, $text: { $search: q } },
-		{ score: { $meta: 'textScore' } }
+		{ score: { $meta: 'textScore' } },
 	)
 		.select('title slug summary tags chapterNumber')
 		.sort({ score: { $meta: 'textScore' } })
 		.limit(10)
 		.lean();
 
-	const results = (items as unknown as { _id: unknown; title: string; slug: string; summary: string; tags: string[]; chapterNumber?: number }[]).map((doc) => ({
+	const results = (
+		items as unknown as {
+			_id: unknown;
+			title: string;
+			slug: string;
+			summary: string;
+			tags: string[];
+			chapterNumber?: number;
+		}[]
+	).map((doc) => ({
 		id: String(doc._id),
 		title: doc.title,
 		slug: doc.slug,

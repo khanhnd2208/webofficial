@@ -28,7 +28,10 @@ export async function listByCourse(courseId: string): Promise<EnrollmentDTO[]> {
 	return rows.map(mapEnrollment);
 }
 
-export async function listByUser(userId: string, status?: EnrollmentStatus): Promise<EnrollmentDTO[]> {
+export async function listByUser(
+	userId: string,
+	status?: EnrollmentStatus,
+): Promise<EnrollmentDTO[]> {
 	const rows = await prisma.enrollment.findMany({
 		where: { userId, ...(status ? { status } : {}) },
 		include: { course: { select: { title: true, slug: true } } },

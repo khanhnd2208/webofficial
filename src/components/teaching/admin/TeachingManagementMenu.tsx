@@ -17,10 +17,19 @@ const ITEMS: ManagementItem[] = [
 	{ value: 'share', label: 'Trang sinh viên', description: 'Nội dung, đường dẫn và quyền xem' },
 ];
 
-export function TeachingManagementMenu({ classId, activeTab, publicPath }: { classId: string; activeTab?: string; publicPath?: string | null }) {
+export function TeachingManagementMenu({
+	classId,
+	activeTab,
+	publicPath,
+}: {
+	classId: string;
+	activeTab?: string;
+	publicPath?: string | null;
+}) {
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const pending = useTeachingWorkspacePending();
-	const hrefFor = (value: ManagementItem['value']) => routes.mySpaceTeachingClassTab(classId, value);
+	const hrefFor = (value: ManagementItem['value']) =>
+		routes.mySpaceTeachingClassTab(classId, value);
 
 	const items = (
 		<>
@@ -36,10 +45,17 @@ export function TeachingManagementMenu({ classId, activeTab, publicPath }: { cla
 						<span className="block text-sm font-semibold text-ink">{item.label}</span>
 						<span className="mt-0.5 block text-xs text-ink-secondary">{item.description}</span>
 					</span>
-					{activeTab === item.value ? <span className="text-accent" aria-hidden>✓</span> : null}
+					{activeTab === item.value ? (
+						<span className="text-accent" aria-hidden>
+							✓
+						</span>
+					) : null}
 				</Link>
 			))}
-			<a href={`/api/admin/teaching/classes/${classId}/export`} className="teaching-management-item min-h-11">
+			<a
+				href={`/api/admin/teaching/classes/${classId}/export`}
+				className="teaching-management-item min-h-11"
+			>
 				<span>
 					<span className="block text-sm font-semibold text-ink">Xuất Excel</span>
 					<span className="mt-0.5 block text-xs text-ink-secondary">Tải roster và điểm về máy</span>
@@ -91,7 +107,12 @@ export function TeachingManagementMenu({ classId, activeTab, publicPath }: { cla
 					<span className="sr-only">Quản lý</span>
 				</button>
 			</div>
-			<Sheet open={mobileOpen} onClose={() => setMobileOpen(false)} title="Quản lý lớp" side="bottom">
+			<Sheet
+				open={mobileOpen}
+				onClose={() => setMobileOpen(false)}
+				title="Quản lý lớp"
+				side="bottom"
+			>
 				<div className="grid gap-1">
 					{ITEMS.map((item) => (
 						<Link
@@ -108,10 +129,17 @@ export function TeachingManagementMenu({ classId, activeTab, publicPath }: { cla
 								<span className="block text-sm font-semibold text-ink">{item.label}</span>
 								<span className="mt-0.5 block text-xs text-ink-secondary">{item.description}</span>
 							</span>
-							{activeTab === item.value ? <span className="text-accent" aria-hidden>✓</span> : null}
+							{activeTab === item.value ? (
+								<span className="text-accent" aria-hidden>
+									✓
+								</span>
+							) : null}
 						</Link>
 					))}
-					<a href={`/api/admin/teaching/classes/${classId}/export`} className="teaching-management-item teaching-management-item-mobile min-h-11">
+					<a
+						href={`/api/admin/teaching/classes/${classId}/export`}
+						className="teaching-management-item teaching-management-item-mobile min-h-11"
+					>
 						<span>
 							<span className="block text-sm font-semibold text-ink">Xuất Excel</span>
 							<span className="mt-0.5 block text-xs text-ink-secondary">Tải dữ liệu lớp</span>
@@ -119,7 +147,11 @@ export function TeachingManagementMenu({ classId, activeTab, publicPath }: { cla
 						<span aria-hidden>↓</span>
 					</a>
 					{publicPath ? (
-						<Link href={publicPath} target="_blank" className="teaching-management-item teaching-management-item-mobile min-h-11">
+						<Link
+							href={publicPath}
+							target="_blank"
+							className="teaching-management-item teaching-management-item-mobile min-h-11"
+						>
 							<span>
 								<span className="block text-sm font-semibold text-ink">Mở trang công khai</span>
 								<span className="mt-0.5 block text-xs text-ink-secondary">Xem như sinh viên</span>

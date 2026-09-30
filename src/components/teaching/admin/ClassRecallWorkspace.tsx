@@ -24,7 +24,10 @@ export function ClassRecallWorkspace({
 	const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(initial));
 
 	const enabledCount = useMemo(
-		() => (JSON.parse(savedSnapshot) as TeachingClassRecallAssignment[]).filter((item) => item.enabled && item.status === 'PUBLISHED').length,
+		() =>
+			(JSON.parse(savedSnapshot) as TeachingClassRecallAssignment[]).filter(
+				(item) => item.enabled && item.status === 'PUBLISHED',
+			).length,
 		[savedSnapshot],
 	);
 	const isDirty = JSON.stringify(assignments) !== savedSnapshot;
@@ -86,7 +89,8 @@ export function ClassRecallWorkspace({
 				<div>
 					<h2 className="text-base font-semibold text-ink">Active Recall của lớp</h2>
 					<p className="mt-1 text-sm text-ink-secondary">
-						{enabledCount} bộ đã xuất bản được bật trong cấu hình đã lưu. Sinh viên xem được khi lớp mở chia sẻ.
+						{enabledCount} bộ đã xuất bản được bật trong cấu hình đã lưu. Sinh viên xem được khi lớp
+						mở chia sẻ.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -108,7 +112,11 @@ export function ClassRecallWorkspace({
 			</div>
 			{error ? <p className="text-sm font-semibold text-error">{error}</p> : null}
 			{notice ? <p className="text-sm text-emerald-700">{notice}</p> : null}
-			{isDirty ? <p role="status" className="text-sm text-ink-secondary">Có thay đổi chưa lưu</p> : null}
+			{isDirty ? (
+				<p role="status" className="text-sm text-ink-secondary">
+					Có thay đổi chưa lưu
+				</p>
+			) : null}
 			{assignments.length === 0 ? (
 				<p className="text-sm text-ink-secondary">
 					Môn này chưa có bộ thẻ. Hãy tạo bộ Active Recall trong thư viện môn trước.
@@ -128,7 +136,15 @@ export function ClassRecallWorkspace({
 								<span>
 									<span className="block font-semibold text-ink">{item.title}</span>
 									<span className="mt-0.5 block text-xs text-ink-secondary">
-										{[item.lessonLabel, `${item.cardCount} thẻ`, item.status === 'PUBLISHED' ? 'Công khai' : item.status === 'ARCHIVED' ? 'Lưu trữ' : 'Bản nháp']
+										{[
+											item.lessonLabel,
+											`${item.cardCount} thẻ`,
+											item.status === 'PUBLISHED'
+												? 'Công khai'
+												: item.status === 'ARCHIVED'
+													? 'Lưu trữ'
+													: 'Bản nháp',
+										]
 											.filter(Boolean)
 											.join(' · ')}
 									</span>

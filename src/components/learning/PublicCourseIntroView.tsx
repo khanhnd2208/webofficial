@@ -59,7 +59,9 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 								{intro.title}
 							</h1>
 							{intro.summary ? (
-								<p className="mt-7 max-w-2xl text-base font-light leading-[1.85] text-ink-secondary sm:text-lg">{intro.summary}</p>
+								<p className="mt-7 max-w-2xl text-base font-light leading-[1.85] text-ink-secondary sm:text-lg">
+									{intro.summary}
+								</p>
 							) : null}
 							<div className="mt-8 flex flex-wrap gap-3">
 								<MarketingCta href={interestHref}>Quan tâm khóa học</MarketingCta>
@@ -102,7 +104,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 
 			<div className="shell">
 				{(intro.audience || intro.format || intro.durationText) && (
-				<section className="grid gap-6 border-b border-hairline py-10 sm:grid-cols-3 sm:gap-10 sm:py-12">
+					<section className="grid gap-6 border-b border-hairline py-10 sm:grid-cols-3 sm:gap-10 sm:py-12">
 						<MetaItem label="Đối tượng" value={intro.audience} />
 						<MetaItem label="Hình thức" value={intro.format} />
 						<MetaItem label="Thời lượng" value={intro.durationText} />
@@ -167,7 +169,10 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 								<ol className="relative mt-8 ml-3 border-l border-hairline">
 									{intro.modules.map((mod) => (
 										<li key={mod.id} className="relative border-b border-hairline py-6 pl-8">
-											<span className="absolute -left-[5px] top-8 h-[9px] w-[9px] rounded-full border border-accent bg-canvas" aria-hidden />
+											<span
+												className="absolute -left-[5px] top-8 h-[9px] w-[9px] rounded-full border border-accent bg-canvas"
+												aria-hidden
+											/>
 											<div className="flex gap-4">
 												<span className="font-mono text-[10px] text-accent">
 													{String(mod.position + 1).padStart(2, '0')}
