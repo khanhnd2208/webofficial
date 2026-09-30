@@ -1,18 +1,38 @@
 # 09 — Design System
 
 **Status:** active
-**Last updated:** 2026-08-16
+**Last updated:** 2026-09-30
 
-This site has **two named surfaces** with separate visual grammars. They do not
-share a layout language or a product palette.
+This site has **three named surfaces** with separate visual grammars. Each owns its layout language and palette; accessibility and interaction contracts are shared.
 
-| Surface                 | Routes                                              | Grammar                                                                              |
-| ----------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Editorial**           | `/`, `/muc-luc`, `/gioi-thieu`, `/du-an`, marketing | Hairline bands, serif display, generous whitespace, rare cards                       |
-| **My Class Product UI** | `/my-space/my-class/**`, `/admin/my-class/**`       | Material 3 Indigo surfaces, Inter throughout, efficient learning and studio work     |
+| Surface                 | Routes                                              | Grammar                                                                          |
+| ----------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **Editorial**           | `/`, `/muc-luc`, `/gioi-thieu`, `/du-an`, marketing | Hairline bands, serif display, generous whitespace, rare cards                   |
+| **My Class Product UI** | `/my-space/my-class/**`, `/admin/my-class/**`       | Material 3 Indigo surfaces, Inter throughout, efficient learning and studio work |
+| **Teaching**            | `/my-space/teaching/**`, `/lop/**`                  | Academic paper and teal, Inter, compact classroom tools, dedicated SVG icons     |
 
 Do not force My Class to look like the editorial marketing pages. Do not soft-card
 the public site to look like a product UI.
+
+---
+
+## Teaching surface
+
+Teaching owns its light palette through `data-surface="teaching"`; do not set theme variables on `body` or recolor another destination. It stays light when the surrounding site is dark. The shared `SurfaceTheme` provider carries the destination identity to React portals and native dialogs. Teaching SVG icons are an explicit exception to the Material-only My Class icon rule below.
+
+- Canvas `#F7F8F4`, paper `#FFFFFF`, ink `#19332F`, secondary text `#52645E`.
+- Accent `#176B63`, hover `#12564F`, selected fill `#E5F1ED`; status colors convey state with text or symbols.
+- Inter; page headings 24–32px, workspace headings 18–24px, body 14–16px, metadata 12px. Numbers use tabular figures.
+- Spacing 4/8/12/16/24/32px; controls 8px radius, panels 12px, dialogs 16px. Coarse-pointer targets are at least 44px.
+- The contents page and My Space use `TeachingMark`; task icons come from the typed `TeachingIcon` set. Label meaningful controls; decorative icons remain hidden from assistive technology.
+- Active classes precede courses. One primary action per task; administrative actions use secondary controls and the management menu.
+- Gradebook toolbar groups tutorial, week, search, result count and saving/error feedback. Sticky identity columns and headers live inside the scrollable table; page overflow is never used to expose columns.
+- Mobile class headers stay compact, tabs scroll, and management opens a bottom sheet. Full metadata remains available in the eyebrow title and accessible text.
+- Teaching styles live in `src/components/teaching/ui/styles/`; experience access and choice styles are separate CSS Modules. Shared studio primitives still provide controls and typography.
+- Paper rulings are reserved for empty states. Tables and form surfaces remain flat; transitions use 120–200ms and respect reduced motion.
+- Active Recall receives the optional `surface="teaching"` only for a class player. Standalone Active Recall and My Class retain their palettes.
+
+See [Teaching implementation and verification](./teaching-ui-standardization.md) for the route checklist and acceptance checks.
 
 ---
 
@@ -57,12 +77,12 @@ Active unit row = 2px indigo left bar + `surface-container-highest` + primary te
 Every content level owns one visual register. Never reuse the same size/case/weight
 for two different levels.
 
-| Level                   | Where                      | Register                                                                                                      |
-| ----------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Khóa học**            | Top bar (64px)             | Inter semibold 20/28 + 4px meter (`w-48`) + `completed/total`                                                 |
-| **Bài (lesson)**        | Outline + reader eyebrow   | Expand icon + `01 Title` (14/20/700) + counter `1/22`. Open lesson has `bg-surface-container`. Hairline between lessons |
-| **Phần (section)**      | Outline + reader eyebrow   | `1.1 TITLE` uppercase tracked (12/16/600). Uppercase is exclusive to this level in the outline. Check when complete |
-| **Nội dung (unit)**     | Outline leaf + reader `h1` | 14/20 regular on a container guide rail; active = highest container + 2px primary bar; only outline rows that navigate |
+| Level                   | Where                      | Register                                                                                                                                                                                                                                             |
+| ----------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Khóa học**            | Top bar (64px)             | Inter semibold 20/28 + 4px meter (`w-48`) + `completed/total`                                                                                                                                                                                        |
+| **Bài (lesson)**        | Outline + reader eyebrow   | Expand icon + `01 Title` (14/20/700) + counter `1/22`. Open lesson has `bg-surface-container`. Hairline between lessons                                                                                                                              |
+| **Phần (section)**      | Outline + reader eyebrow   | `1.1 TITLE` uppercase tracked (12/16/600). Uppercase is exclusive to this level in the outline. Check when complete                                                                                                                                  |
+| **Nội dung (unit)**     | Outline leaf + reader `h1` | 14/20 regular on a container guide rail; active = highest container + 2px primary bar; only outline rows that navigate                                                                                                                               |
 | **In-content headings** | `.mc-prose`                | Inter throughout. h2 24/32/600 with a chapter hairline on subsequent h2s; h3 20/28/600; h4 small uppercase. Circular ul markers, decimal ol. Callout `blockquote` is a left-ruled surface-container-low box. `strong` is 600 so it never outranks h3 |
 
 Reader header ladder (above the unit body):
@@ -107,27 +127,27 @@ Icons: Material Symbols Outlined via `McIcon`. Do not add inline SVG icons.
 Defined in `src/app/my-class-theme.css`, registered for Tailwind in
 `src/app/globals.css` `@theme inline`.
 
-| Token                                          | Role                                        |
-| ---------------------------------------------- | ------------------------------------------- |
-| `--canvas` `#f8f9ff`                           | Page background                             |
-| `--paper` `#ffffff`                            | Raised / panel fill                         |
-| `--surface-sunken` / `--surface-container-low` `#eff4ff` | Inputs, tracks, hover             |
-| `--surface-container` `#e6eeff`                | Open lesson, segmented track                |
-| `--surface-container-high` `#dee9fc`           | Meter track                                 |
-| `--surface-container-highest` `#d9e3f6`        | Active unit row                             |
-| `--inverse-surface` `#27313f`                  | Ink CTA hover                               |
-| `--accent` `#3525cd` / `--accent-hover` `#4f46e5` | Position, progress, TEST, links          |
-| `--mc-rule` `#c7c4d8`                          | Outline-variant divider                     |
-| `--mc-rule-strong` `#777587`                   | Section boundary / outline                  |
-| `--ink` `#121c2a` / `--ink-secondary` `#464555` / `--ink-tertiary` `#777587` | Text ladder |
-| `--mc-done` `#006c49`                          | Complete                                    |
-| `--mc-vocab` `#684000`                         | Vocabulary                                  |
-| `--mc-r-xs/sm/md/lg`                           | 4 / 8 / 12 / 16 px                          |
-| `--mc-measure`                                 | 800px reader measure                        |
-| `--mc-sidebar` / `--mc-rail`                   | 320px / 256px; edit mode sidebar 360px      |
-| `--mc-topbar-height`                           | 4rem                                        |
-| `--mc-dur-1/2/3`                               | 120 / 200 / 280 ms                          |
-| `--mc-ease-standard` / `--mc-ease-emphasized`  | Motion curves for hover, expand, overlay    |
+| Token                                                                        | Role                                     |
+| ---------------------------------------------------------------------------- | ---------------------------------------- |
+| `--canvas` `#f8f9ff`                                                         | Page background                          |
+| `--paper` `#ffffff`                                                          | Raised / panel fill                      |
+| `--surface-sunken` / `--surface-container-low` `#eff4ff`                     | Inputs, tracks, hover                    |
+| `--surface-container` `#e6eeff`                                              | Open lesson, segmented track             |
+| `--surface-container-high` `#dee9fc`                                         | Meter track                              |
+| `--surface-container-highest` `#d9e3f6`                                      | Active unit row                          |
+| `--inverse-surface` `#27313f`                                                | Ink CTA hover                            |
+| `--accent` `#3525cd` / `--accent-hover` `#4f46e5`                            | Position, progress, TEST, links          |
+| `--mc-rule` `#c7c4d8`                                                        | Outline-variant divider                  |
+| `--mc-rule-strong` `#777587`                                                 | Section boundary / outline               |
+| `--ink` `#121c2a` / `--ink-secondary` `#464555` / `--ink-tertiary` `#777587` | Text ladder                              |
+| `--mc-done` `#006c49`                                                        | Complete                                 |
+| `--mc-vocab` `#684000`                                                       | Vocabulary                               |
+| `--mc-r-xs/sm/md/lg`                                                         | 4 / 8 / 12 / 16 px                       |
+| `--mc-measure`                                                               | 800px reader measure                     |
+| `--mc-sidebar` / `--mc-rail`                                                 | 320px / 256px; edit mode sidebar 360px   |
+| `--mc-topbar-height`                                                         | 4rem                                     |
+| `--mc-dur-1/2/3`                                                             | 120 / 200 / 280 ms                       |
+| `--mc-ease-standard` / `--mc-ease-emphasized`                                | Motion curves for hover, expand, overlay |
 
 Typography classes: `.mc-title`, `.mc-dek`, `.mc-eyebrow`, `.mc-h3`, `.mc-meta`, `.mc-num`, `.mc-prose`.
 
@@ -141,27 +161,27 @@ label-sm 12/16/600.
 
 ### Learner (`src/components/myclass/ui/`)
 
-| Primitive          | Use                                                          |
-| ------------------ | ------------------------------------------------------------ |
-| `McIcon`           | Material Symbols Outlined                                    |
-| `McRows` / `McRow` | Hairline lists (default for scannable content)               |
-| `McSection`        | Eyebrow + title band, no box                                 |
-| `McPanel`          | Only static bordered container (12px, hairline)              |
-| `McButton`         | 8px radius; primary / secondary / quiet                      |
-| `McBadge`          | 4px; TEST/accent use `bg-accent/10`; done keeps green fill   |
-| `McMeter`          | 4px rounded-full track, indigo fill                          |
-| `McSegmented`      | Level switcher — ink active chip on surface-container        |
-| `McProgressRing`   | One focal progress display per view                          |
+| Primitive          | Use                                                        |
+| ------------------ | ---------------------------------------------------------- |
+| `McIcon`           | Material Symbols Outlined                                  |
+| `McRows` / `McRow` | Hairline lists (default for scannable content)             |
+| `McSection`        | Eyebrow + title band, no box                               |
+| `McPanel`          | Only static bordered container (12px, hairline)            |
+| `McButton`         | 8px radius; primary / secondary / quiet                    |
+| `McBadge`          | 4px; TEST/accent use `bg-accent/10`; done keeps green fill |
+| `McMeter`          | 4px rounded-full track, indigo fill                        |
+| `McSegmented`      | Level switcher — ink active chip on surface-container      |
+| `McProgressRing`   | One focal progress display per view                        |
 
 `McCard` is a deprecated alias of `McPanel`. Prefer `McRows` for lists.
 
 ### Admin studio (`src/components/myclass/admin/studio/`)
 
-| Primitive                                                         | Use                                  |
-| ----------------------------------------------------------------- | ------------------------------------ |
-| `StudioPageHeader`                                                | Title + actions + bottom rule        |
-| `StudioField` / `StudioInput` / `StudioTextarea` / `StudioSelect` | Form controls                        |
-| `StudioButton`                                                    | primary / secondary / danger / quiet |
+| Primitive                                                           | Use                                       |
+| ------------------------------------------------------------------- | ----------------------------------------- |
+| `StudioPageHeader`                                                  | Title + actions + bottom rule             |
+| `StudioField` / `StudioInput` / `StudioTextarea` / `StudioSelect`   | Form controls                             |
+| `StudioButton`                                                      | primary / secondary / danger / quiet      |
 | `StudioPanel` / `StudioToolbar` / `StudioTable` / `StudioDataTable` | Studio chrome and Jira-style admin tables |
 
 Admin My Class routes wrap in `.mc.mc-studio` via
@@ -173,13 +193,13 @@ Admin My Class routes wrap in `.mc.mc-studio` via
 
 Defined on `.mc` in `src/app/my-class-theme.css`. Prefer these over ad-hoc durations.
 
-| Token | Use |
-| ----- | --- |
-| `--mc-dur-1` 120ms | Hover / color |
-| `--mc-dur-2` 200ms | Caret rotate, overlay, toast |
-| `--mc-dur-3` 280ms | Outline branch open |
-| `--mc-ease-standard` | Close, hover |
-| `--mc-ease-emphasized` | Open, overlay |
+| Token                  | Use                          |
+| ---------------------- | ---------------------------- |
+| `--mc-dur-1` 120ms     | Hover / color                |
+| `--mc-dur-2` 200ms     | Caret rotate, overlay, toast |
+| `--mc-dur-3` 280ms     | Outline branch open          |
+| `--mc-ease-standard`   | Close, hover                 |
+| `--mc-ease-emphasized` | Open, overlay                |
 
 Outline branches open with grid-template-rows 260ms + fade/slide; close in 160ms.
 Chevrons are a single `chevron_right` glyph rotated 90°. `prefers-reduced-motion`
