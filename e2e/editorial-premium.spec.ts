@@ -39,12 +39,9 @@ test.describe('Editorial premium public experience', () => {
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		const about = page.getByRole('region', { name: 'About Me' });
-		await expect(about.getByRole('link')).toHaveCount(2);
+		await expect(about.getByRole('link')).toHaveCount(1);
 
-		await page.getByTestId('gate-item-experiences').click();
-		await expect(page).toHaveURL(/\/trai-nghiem$/);
-		await page.getByRole('link', { name: /Góc học tập/i }).click();
-		await expect(page).toHaveURL(/\/my-space$/);
+		await expect(page.getByTestId('gate-item-experiences')).toHaveCount(0);
 		await page.getByTestId('myspace-tile-teaching').click();
 		await expect(page).toHaveURL(/\/dang-nhap|\/my-space\/teaching/);
 	});

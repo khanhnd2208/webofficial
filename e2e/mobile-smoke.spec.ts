@@ -14,7 +14,7 @@ test.describe('Mobile public smoke', () => {
 		await expect(page.getByRole('heading', { level: 1, name: 'Bạn muốn ghé đâu?' })).toBeVisible();
 		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
 		const about = page.getByRole('region', { name: 'About Me' });
-		await expect(about.getByRole('link')).toHaveCount(2);
+		await expect(about.getByRole('link')).toHaveCount(1);
 	});
 
 	test('public surfaces do not overflow horizontally', async ({ page }) => {

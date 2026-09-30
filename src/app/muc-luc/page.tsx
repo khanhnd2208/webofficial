@@ -10,7 +10,7 @@ import styles from './toc.module.css';
 
 export const metadata: Metadata = {
 	title: 'Mục lục',
-	description: 'Ghé My Space để học, dạy và chơi — hoặc tìm hiểu thêm về Duy Khánh.',
+	description: 'Tìm hiểu về Duy Khánh, rồi ghé My Space để học, dạy và chơi.',
 	alternates: { canonical: absoluteUrl(routes.toc) },
 };
 
@@ -36,13 +36,6 @@ const aboutTiles = [
 		description: 'Người thầy, và hành trình trở thành.',
 		icon: '/brand/toc/about-v1.webp',
 	},
-	{
-		id: 'experiences',
-		href: routes.experiences,
-		label: 'Trải nghiệm',
-		description: 'Dự án, chuyến đi và những câu chuyện.',
-		icon: '/brand/toc/experiences-v1.webp',
-	},
 ] as const;
 
 export default async function TocPage() {
@@ -66,7 +59,40 @@ export default async function TocPage() {
 					<h1>Bạn muốn ghé đâu?</h1>
 					<p>Một chút về tôi. Một không gian để học và chơi.</p>
 				</header>
-				<nav aria-label="My Space và About Me" className={styles.navigation}>
+				<nav aria-label="About Me và My Space" className={styles.navigation}>
+					<section className={styles.about} aria-labelledby="toc-about">
+						<div className={styles.sectionLabel}>
+							<h2 id="toc-about">About Me</h2>
+							<span>Về tôi</span>
+						</div>
+						<div className={styles.tiles}>
+							{aboutTiles.map((tile) => (
+								<Link
+									key={tile.id}
+									href={tile.href}
+									className={styles.tile}
+									data-testid={`gate-item-${tile.id}`}
+								>
+									<span className={styles.icon}>
+										<Image
+											src={tile.icon}
+											alt=""
+											width={112}
+											height={112}
+											sizes="(max-width: 760px) 88px, 112px"
+										/>
+									</span>
+									<span className={styles.tileTitle}>
+										{tile.label}
+										<span className={styles.arrow} aria-hidden="true">
+											↗
+										</span>
+									</span>
+									<span className={styles.description}>{tile.description}</span>
+								</Link>
+							))}
+						</div>
+					</section>
 					<section className={styles.space} aria-labelledby="toc-myspace">
 						<div className={styles.sectionLabel}>
 							<h2 id="toc-myspace">My Space</h2>
@@ -98,39 +124,6 @@ export default async function TocPage() {
 										</span>
 									</span>
 									<span className={styles.description}>{descriptions[tile.id]}</span>
-								</Link>
-							))}
-						</div>
-					</section>
-					<section className={styles.about} aria-labelledby="toc-about">
-						<div className={styles.sectionLabel}>
-							<h2 id="toc-about">About Me</h2>
-							<span>Về tôi</span>
-						</div>
-						<div className={styles.tiles}>
-							{aboutTiles.map((tile) => (
-								<Link
-									key={tile.id}
-									href={tile.href}
-									className={styles.tile}
-									data-testid={`gate-item-${tile.id}`}
-								>
-									<span className={styles.icon}>
-										<Image
-											src={tile.icon}
-											alt=""
-											width={112}
-											height={112}
-											sizes="(max-width: 760px) 88px, 112px"
-										/>
-									</span>
-									<span className={styles.tileTitle}>
-										{tile.label}
-										<span className={styles.arrow} aria-hidden="true">
-											↗
-										</span>
-									</span>
-									<span className={styles.description}>{tile.description}</span>
 								</Link>
 							))}
 						</div>

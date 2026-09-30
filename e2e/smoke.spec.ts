@@ -25,20 +25,18 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
 	});
 
-	test('mục lục opens introduction and experiences', async ({ page }) => {
+	test('mục lục shows About Me before My Space without experiences', async ({ page }) => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
-		const gate = page.getByRole('navigation', { name: 'My Space và About Me' });
+		const gate = page.getByRole('navigation', { name: 'About Me và My Space' });
 		const about = gate.getByRole('region', { name: 'About Me' });
-		await expect(about.getByRole('link')).toHaveCount(2);
+		await expect(gate.getByRole('heading', { level: 2 })).toHaveText(['About Me', 'My Space']);
+		await expect(about.getByRole('link')).toHaveCount(1);
 		await expect(about.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
 			'href',
 			'/gioi-thieu',
 		);
-		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
-			'href',
-			'/trai-nghiem',
-		);
+		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
@@ -60,7 +58,7 @@ test.describe('Public pages smoke', () => {
 			.click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		await expect(page.getByTestId('gate-item-locked')).toHaveCount(0);
-		await expect(page.getByRole('link', { name: /Trải nghiệm/i })).toBeVisible();
+		await expect(page.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await context.close();
 	});
 
@@ -206,8 +204,8 @@ test.describe('Navigation', () => {
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		const about = page.getByRole('region', { name: 'About Me' });
-		await expect(about.getByRole('link')).toHaveCount(2);
-		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toBeVisible();
+		await expect(about.getByRole('link')).toHaveCount(1);
+		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(page.getByTestId('contact-rail')).toBeVisible();
 	});
 

@@ -3,20 +3,17 @@ import { expect, test } from '@playwright/test';
 import { addAdminSession } from './helpers/adminSession';
 
 test.describe('Focused operating mode', () => {
-	test('mục lục lists introduction and experiences', async ({ page }) => {
+	test('mục lục lists introduction without experiences', async ({ page }) => {
 		await page.goto('/muc-luc');
-		const gate = page.getByRole('navigation', { name: 'My Space và About Me' });
+		const gate = page.getByRole('navigation', { name: 'About Me và My Space' });
 		const about = gate.getByRole('region', { name: 'About Me' });
 		await expect(about.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
 			'href',
 			'/gioi-thieu',
 		);
-		await expect(about.getByRole('link')).toHaveCount(2);
+		await expect(about.getByRole('link')).toHaveCount(1);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
-		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
-			'href',
-			'/trai-nghiem',
-		);
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 	});
 
