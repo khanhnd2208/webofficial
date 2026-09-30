@@ -38,9 +38,8 @@ test.describe('Editorial premium public experience', () => {
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(2);
-		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
+		const about = page.getByRole('region', { name: 'About Me' });
+		await expect(about.getByRole('link')).toHaveCount(2);
 
 		await page.getByTestId('gate-item-experiences').click();
 		await expect(page).toHaveURL(/\/trai-nghiem$/);
