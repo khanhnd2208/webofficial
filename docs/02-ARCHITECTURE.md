@@ -18,13 +18,13 @@ Next.js App Router (`src/app`)
 
 The application uses a hybrid data strategy:
 
-| Domain | Storage | Main access layer |
-|---|---|---|
-| Auth.js users/accounts, profiles, posts, inquiries, messages, streaks | MongoDB | Native MongoClient, Mongoose models and `src/services` |
-| Vocabulary sets, words, library entries, game scores | PostgreSQL | Prisma 7 + `@prisma/adapter-pg` |
-| Courses, modules, lessons, enrollments, lesson progress | PostgreSQL | Prisma-backed repositories/services in `src/features` |
-| My Space subjects, MCQ questions, tests, sessions, personal progress | PostgreSQL | Prisma-backed repositories/services in `src/features/myspace-tests` |
-| My Class courses, knowledge units, question bank, test library, placements, cohorts, attempts | PostgreSQL | Prisma-backed repositories/services in `src/features/my-class` |
+| Domain                                                                                        | Storage    | Main access layer                                                   |
+| --------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------- |
+| Auth.js users/accounts, profiles, posts, inquiries, messages, streaks                         | MongoDB    | Native MongoClient, Mongoose models and `src/services`              |
+| Vocabulary sets, words, library entries, game scores                                          | PostgreSQL | Prisma 7 + `@prisma/adapter-pg`                                     |
+| Courses, modules, lessons, enrollments, lesson progress                                       | PostgreSQL | Prisma-backed repositories/services in `src/features`               |
+| My Space subjects, MCQ questions, tests, sessions, personal progress                          | PostgreSQL | Prisma-backed repositories/services in `src/features/myspace-tests` |
+| My Class courses, knowledge units, question bank, test library, placements, cohorts, attempts | PostgreSQL | Prisma-backed repositories/services in `src/features/my-class`      |
 
 User IDs in PostgreSQL are strings that reference the MongoDB Auth.js user ID;
 there is no cross-database foreign key.
@@ -137,11 +137,11 @@ Run migrations with `npm run db:migrate` locally or
 
 Vitest has three projects configured in `vitest.config.ts`:
 
-| Project | Environment | Scope |
-|---|---|---|
-| `unit` | Node | pure utilities, schemas, scoring and validation |
-| `integration` | Node | MongoDB Memory Server plus PostgreSQL test database |
-| `component` | jsdom | React components/hooks and Testing Library |
+| Project       | Environment | Scope                                               |
+| ------------- | ----------- | --------------------------------------------------- |
+| `unit`        | Node        | pure utilities, schemas, scoring and validation     |
+| `integration` | Node        | MongoDB Memory Server plus PostgreSQL test database |
+| `component`   | jsdom       | React components/hooks and Testing Library          |
 
 Integration setup loads `.env.test` then `.env.local`, starts an in-memory
 MongoDB instance, and requires an explicit `TEST_DATABASE_URL` for PostgreSQL;
@@ -149,10 +149,11 @@ it never falls back to a development or production `DATABASE_URL`.
 `scripts/setup-test-db.sh` creates/applies migrations to the local PostgreSQL
 test database.
 
-Playwright tests live in `e2e/`. The GitHub Actions quality job invokes
-Playwright after the production build. When run with `CI=true`, its config
-starts the already-built app; locally, `npm run test:e2e` expects an
-already-running app at the configured base URL.
+Playwright tests live in `e2e/`. The GitHub Actions end-to-end job downloads
+the production build from the build job and then invokes Playwright. When run
+with `CI=true`, its config starts that already-built app; locally,
+`npm run test:e2e` expects an already-running app at the configured base URL.
+Area ownership is documented in `docs/areas.md`.
 
 ## 7. Source-of-truth files
 
