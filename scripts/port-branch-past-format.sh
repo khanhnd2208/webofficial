@@ -34,14 +34,23 @@ if git show-ref --verify --quiet "refs/heads/$ported"; then
 	exit 1
 fi
 
+# Files to format in both snapshots. A renamed file contributes both paths: the
+# old one exists at the merge base, the new one at the tip. Without both, the
+# patch would carry the unformatted base blob into the rename.
 # Plain while-read loop: macOS ships bash 3.2, which has no mapfile.
+is_formatted_type() {
+	case "$1" in
+	package-lock.json) return 1 ;;
+	*.ts | *.tsx | *.mjs | *.css | *.json | *.yml) return 0 ;;
+	*) return 1 ;;
+	esac
+}
 files=()
-while IFS= read -r file; do
-	if [[ -n "$file" && "$file" != "package-lock.json" ]]; then files+=("$file"); fi
-done < <(
-	git diff --name-only --diff-filter=AM "$base" "$tip" -- \
-		'*.ts' '*.tsx' '*.mjs' '*.css' '*.json' '*.yml'
-)
+while IFS=$'\t' read -r _status first second; do
+	for path in "$first" "${second:-}"; do
+		if [[ -n "$path" ]] && is_formatted_type "$path"; then files+=("$path"); fi
+	done
+done < <(git diff --name-status -M --diff-filter=AMR "$base" "$tip")
 
 scratch="$(mktemp -d)"
 cleanup() {
