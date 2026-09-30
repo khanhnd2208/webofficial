@@ -15,18 +15,21 @@ import {
 import { postCheeseAction } from '@/features/cheese-thief/lib/api';
 import { storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
-import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
-import { Button, Field, Input } from '@/features/spy-fall/components/ui';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
+import { Button, Field, Input } from '@/features/board-game-shared/components/ui';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
 import {
 	getRecentPlayerName,
 	storeRecentPlayerName,
-} from '@/features/spy-fall/lib/spy/clientToken';
-import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+} from '@/features/board-game-shared/lib/clientToken';
+import {
+	isValidPlayerName,
+	normalizePlayerName,
+} from '@/features/board-game-shared/lib/playerName';
 
 type View = 'menu' | 'create' | 'join';
 

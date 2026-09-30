@@ -16,7 +16,7 @@ import {
 	type NightCue,
 	type VoiceClip,
 } from '@/features/cheese-thief/lib/nightSchedule';
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
 
 type Locale = 'vi' | 'en';
 

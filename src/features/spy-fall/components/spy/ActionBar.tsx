@@ -2,9 +2,9 @@
 
 import { createContext, useContext } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 
 /** Opens the "my word" sheet; null when there is no word to show in this phase. */
 export const WordPeekContext = createContext<(() => void) | null>(null);

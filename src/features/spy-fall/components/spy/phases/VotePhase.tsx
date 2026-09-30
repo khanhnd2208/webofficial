@@ -1,9 +1,9 @@
 'use client';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import { playTap } from '@/features/spy-fall/lib/sounds';
 import type { RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 

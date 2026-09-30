@@ -5,7 +5,7 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
+} from '@/features/board-game-shared/lib/apiUtils';
 import { getScopedState } from '@/features/spy-fall/services/spyGameService';
 
 const GETBase = withErrorHandling(async (request: NextRequest, context) => {

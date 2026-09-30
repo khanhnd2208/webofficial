@@ -1,8 +1,8 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import type { Model } from 'mongoose';
 import { AppError } from '@/lib/appError';
-import { AppError as GameError } from '@/features/spy-fall/lib/appError';
-import dbConnect from '@/features/spy-fall/lib/dbConnect';
+import { GameError } from '@/features/board-game-shared/lib/gameError';
+import dbConnect from '@/lib/dbConnect';
 import { gameNow, withTestEnvironment } from './runtime';
 
 import {

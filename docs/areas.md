@@ -12,6 +12,7 @@ Sửa danh sách này thì sửa cùng lúc:
 
 Game đang có: Cheese Thief, Ma sói, Spyfall, và phòng test.
 
+- `src/features/board-game-shared` (code dùng chung của các game)
 - `src/features/cheese-thief`
 - `src/features/werewolf`
 - `src/features/spy-fall`
@@ -23,7 +24,7 @@ Game đang có: Cheese Thief, Ma sói, Spyfall, và phòng test.
 - `src/app/api/admin/board-game`
 - `public/board-game` (ảnh và âm thanh của game)
 
-Các game dùng chung helper nội bộ của Spyfall (`src/features/spy-fall/lib/cn`, `components/ui`, `lib/appError`). Đó vẫn là code của khu boardgame, chưa phải phần dùng chung của cả web.
+Code dùng chung giữa các game nằm ở `src/features/board-game-shared`: khung API (`lib/apiUtils`, `lib/gameError`), i18n, theme, UI (`components/ui`), và các component người chơi. Đây là phần chung của khu boardgame, không phải phần chung của cả web. `GameError` mang mã lỗi cho client; đừng nhầm với `AppError` trong `src/lib`.
 
 ## Giới thiệu và khóa học
 
@@ -82,7 +83,7 @@ ESLint (`no-restricted-imports`) cấm import chéo:
 - quản lý lớp không import boardgame hay khóa học
 - khóa học không import boardgame hay quản lý lớp
 
-Import trong cùng một khu vẫn hợp lệ. Ví dụ Cheese Thief import UI của Spyfall.
+Import trong cùng một khu vẫn hợp lệ. Ví dụ Cheese Thief import UI trong `board-game-shared`.
 
 ## End-to-end theo khu
 

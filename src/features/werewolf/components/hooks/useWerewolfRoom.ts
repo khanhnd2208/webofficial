@@ -3,7 +3,7 @@ import { useTestRoom } from '@/features/board-game-test/context';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { WEREWOLF_POLL_INTERVAL_MS } from '@/features/werewolf/config/roles';
 import {
 	fetchRoomState,

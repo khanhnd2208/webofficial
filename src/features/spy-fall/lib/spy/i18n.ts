@@ -1,4 +1,4 @@
-import type { MessageParams } from '@/features/spy-fall/lib/i18n/types';
+import type { MessageParams } from '@/features/board-game-shared/lib/i18n/types';
 import type { PlayerRole } from '@/features/spy-fall/types/spyGame';
 
 export type TranslateFn = (key: string, params?: MessageParams) => string;

@@ -4,12 +4,12 @@ import { useTestRoom } from '@/features/board-game-test/context';
 import QRCode from 'react-qr-code';
 
 import { routes } from '@/config/routes';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
-import TicketCard from '@/features/spy-fall/components/ui/TicketCard';
-import { useToast } from '@/features/spy-fall/components/ui/Toast';
-import { BASE_PATH, withBasePath } from '@/features/spy-fall/lib/basePath';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
+import TicketCard from '@/features/board-game-shared/components/ui/TicketCard';
+import { useToast } from '@/features/board-game-shared/components/ui/Toast';
+import { BASE_PATH, withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
 
 interface Props {
 	code: string;

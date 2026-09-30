@@ -14,6 +14,7 @@ outside:
   - '!docs/**'
   - '!.cursor/**'
   - '!src/_archived/**'
+  - '!src/features/board-game-shared/**'
   - '!src/features/cheese-thief/**'
   - '!src/features/werewolf/**'
   - '!src/features/spy-fall/**'

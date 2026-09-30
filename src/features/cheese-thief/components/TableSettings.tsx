@@ -9,8 +9,8 @@ import {
 } from '@/features/cheese-thief/config/cheeseThief';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
 
 interface Props {
 	state: RoomStateDTO;

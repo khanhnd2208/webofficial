@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
 import {
 	MIN_PLAYERS,
 	getEnabledRoles,
@@ -11,11 +11,11 @@ import {
 	getTotalRoleCount,
 	getWerewolfWarning,
 } from '@/features/werewolf/config/roles';
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import { canonicalRoleCounts, reconcileRoleDraft } from '@/features/werewolf/lib/roleDraft';
 import type { Faction, RoleCount } from '@/features/werewolf/types';
-import GameIcon, { type GameIconName } from '@/features/spy-fall/components/ui/GameIcon';
+import GameIcon, { type GameIconName } from '@/features/board-game-shared/components/ui/GameIcon';
 
 const FACTION_ORDER: Faction[] = ['villager', 'werewolf', 'solo'];
 const FACTION_ICONS: Record<Faction, GameIconName> = {

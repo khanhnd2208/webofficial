@@ -13,9 +13,9 @@ import {
 	type FollowerKnowledge,
 	type TableRules,
 } from '@/features/cheese-thief/lib/tableRules';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Sheet } from '@/features/spy-fall/components/ui';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Sheet } from '@/features/board-game-shared/components/ui';
+import { cn } from '@/features/board-game-shared/lib/cn';
 
 type TranslateFn = ReturnType<typeof useT>;
 

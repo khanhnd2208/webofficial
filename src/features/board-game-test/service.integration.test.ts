@@ -14,7 +14,7 @@ import {
 } from '@/features/cheese-thief/services/cheeseThiefService';
 import { commandTestRoom, createTestRoom, readTestRoom } from './service';
 import type { TestRoomEnvelope } from './types';
-import { withPublicRoomGuard } from '@/features/spy-fall/lib/apiUtils';
+import { withPublicRoomGuard } from '@/features/board-game-shared/lib/apiUtils';
 
 afterEach(async () => {
 	await Promise.all([

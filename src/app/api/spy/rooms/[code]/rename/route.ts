@@ -6,7 +6,7 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
+} from '@/features/board-game-shared/lib/apiUtils';
 import { renamePlayer } from '@/features/spy-fall/services/spyGameService';
 
 const PATCHBase = withErrorHandling(async (request: NextRequest, context) => {

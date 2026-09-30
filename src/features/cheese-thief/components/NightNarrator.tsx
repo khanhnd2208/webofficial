@@ -17,7 +17,7 @@ import {
 import { narrationKey, segmentAt } from '@/features/cheese-thief/lib/nightSchedule';
 import { prepareNightTrack, type NightTrackSpec } from '@/features/cheese-thief/lib/nightTrack';
 import type { CheeseMode, NightNumber } from '@/features/cheese-thief/config/cheeseThief';
-import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useLocale, useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {

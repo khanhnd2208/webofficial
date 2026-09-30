@@ -6,7 +6,7 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
+} from '@/features/board-game-shared/lib/apiUtils';
 import { setRoleCounts } from '@/features/werewolf/services/werewolfService';
 import type { RoleCount } from '@/features/werewolf/types';
 

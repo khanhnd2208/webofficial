@@ -6,7 +6,7 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
+} from '@/features/board-game-shared/lib/apiUtils';
 import { kickPlayer } from '@/features/werewolf/services/werewolfService';
 
 const POSTBase = withErrorHandling(async (request: NextRequest, context) => {

@@ -1,5 +1,5 @@
 import { SPY_TOPICS, type SpyTag, type SpyTopic } from '@/features/spy-fall/config/spyGame';
-import type { Locale } from '@/features/spy-fall/lib/i18n/types';
+import type { Locale } from '@/features/board-game-shared/lib/i18n/types';
 
 import { WORD_BANK_EN } from './wordBank.en';
 

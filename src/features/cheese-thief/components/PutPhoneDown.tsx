@@ -1,6 +1,6 @@
 'use client';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 export default function PutPhoneDown() {

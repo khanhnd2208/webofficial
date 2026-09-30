@@ -8,9 +8,9 @@ import {
 	startNightTrack,
 	unlockTableAudio,
 } from '@/features/cheese-thief/lib/narration';
-import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useLocale, useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {

@@ -4,16 +4,19 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import ConnectionBanner from '@/features/spy-fall/components/spy/ConnectionBanner';
-import ConnectionDot from '@/features/spy-fall/components/spy/ConnectionDot';
-import PassportAvatar from '@/features/spy-fall/components/spy/PassportAvatar';
-import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
-import { Button, Field, Spinner } from '@/features/spy-fall/components/ui';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
-import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import ConnectionBanner from '@/features/board-game-shared/components/ConnectionBanner';
+import ConnectionDot from '@/features/board-game-shared/components/ConnectionDot';
+import PassportAvatar from '@/features/board-game-shared/components/PassportAvatar';
+import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
+import { Button, Field, Spinner } from '@/features/board-game-shared/components/ui';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
+import {
+	isValidPlayerName,
+	normalizePlayerName,
+} from '@/features/board-game-shared/lib/playerName';
 import HostBoard from '@/features/werewolf/components/HostBoard';
 import InviteCard from '@/features/werewolf/components/InviteCard';
 import RoleCard from '@/features/werewolf/components/RoleCard';

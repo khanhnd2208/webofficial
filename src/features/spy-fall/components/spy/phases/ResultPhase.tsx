@@ -3,9 +3,9 @@
 import { useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Badge, Button, Card } from '@/features/spy-fall/components/ui';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Badge, Button, Card } from '@/features/board-game-shared/components/ui';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import { getRoleLabel } from '@/features/spy-fall/lib/spy/i18n';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import type {
@@ -16,7 +16,7 @@ import type {
 import type { TranslateFn } from '@/features/spy-fall/lib/spy/i18n';
 
 import ActionBar, { ActionBarNote } from '../ActionBar';
-import PassportAvatar from '../PassportAvatar';
+import PassportAvatar from '@/features/board-game-shared/components/PassportAvatar';
 import StepGuide from '../StepGuide';
 
 interface Props {

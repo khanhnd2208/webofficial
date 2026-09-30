@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { AppError } from '@/features/spy-fall/lib/appError';
+import { GameError } from '@/features/board-game-shared/lib/gameError';
 import { buildRolePool, dealRoles, validateRoleCounts } from '@/features/werewolf/lib/deal';
 import type { RoleCount } from '@/features/werewolf/types';
 
@@ -39,9 +39,9 @@ describe('dealRoles', () => {
 
 describe('validateRoleCounts', () => {
 	it('rejects a mismatched total, an unknown role, and a negative count', () => {
-		expect(() => validateRoleCounts(counts, 5)).toThrow(AppError);
-		expect(() => validateRoleCounts([{ roleId: 'not-a-role', count: 1 }], 1)).toThrow(AppError);
-		expect(() => validateRoleCounts([{ roleId: 'villager', count: -1 }], -1)).toThrow(AppError);
+		expect(() => validateRoleCounts(counts, 5)).toThrow(GameError);
+		expect(() => validateRoleCounts([{ roleId: 'not-a-role', count: 1 }], 1)).toThrow(GameError);
+		expect(() => validateRoleCounts([{ roleId: 'villager', count: -1 }], -1)).toThrow(GameError);
 		expect(() => validateRoleCounts(counts, 6)).not.toThrow();
 	});
 });

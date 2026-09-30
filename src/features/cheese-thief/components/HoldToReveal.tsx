@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from 'react';
 
-import { cn } from '@/features/spy-fall/lib/cn';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
 interface Props {

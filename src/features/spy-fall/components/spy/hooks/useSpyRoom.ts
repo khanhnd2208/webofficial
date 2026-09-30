@@ -3,10 +3,10 @@ import { useTestRoom } from '@/features/board-game-test/context';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useLocale, useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { SPY_POLL_INTERVAL_MS } from '@/features/spy-fall/config/spyGame';
 import { fetchRoomState, patchSpyAction, postSpyAction } from '@/features/spy-fall/lib/spy/api';
-import { storePlayerToken } from '@/features/spy-fall/lib/spy/clientToken';
+import { storePlayerToken } from '@/features/board-game-shared/lib/clientToken';
 import type {
 	PhaseCursor,
 	RoomStateDTO,

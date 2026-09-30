@@ -2,9 +2,9 @@
 
 import { startTransition, useEffect, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
-import type { MessageParams } from '@/features/spy-fall/lib/i18n/types';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import type { MessageParams } from '@/features/board-game-shared/lib/i18n/types';
 
 const STORAGE_KEY = 'spy-fall-steps-hidden';
 

@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import PassportAvatar from '@/features/spy-fall/components/spy/PassportAvatar';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import PassportAvatar from '@/features/board-game-shared/components/PassportAvatar';
+import { Button } from '@/features/board-game-shared/components/ui';
 import { getRoleById } from '@/features/werewolf/config/roles';
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { cn } from '@/features/board-game-shared/lib/cn';
 import type { Faction, WerewolfPlayerView } from '@/features/werewolf/types';
 
 const FACTION_TEXT: Record<Faction, string> = {

@@ -2,8 +2,8 @@
 
 import { startTransition, useCallback, useEffect, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Dossier, Sheet } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Dossier, Sheet } from '@/features/board-game-shared/components/ui';
 import type { SpyCount } from '@/features/spy-fall/config/spyGame';
 import type { PlayerSelfDTO } from '@/features/spy-fall/types/spyGame';
 

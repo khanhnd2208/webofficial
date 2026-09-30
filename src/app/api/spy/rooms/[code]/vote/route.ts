@@ -6,7 +6,7 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
+} from '@/features/board-game-shared/lib/apiUtils';
 import { submitVote } from '@/features/spy-fall/services/spyGameService';
 const POSTBase = withErrorHandling(async (request: NextRequest, context) => {
 	const { code } = await context!.params;

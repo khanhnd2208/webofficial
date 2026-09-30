@@ -4,24 +4,33 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
-import { Button, ErrorState, Field, Spinner, useToast } from '@/features/spy-fall/components/ui';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
+import {
+	Button,
+	ErrorState,
+	Field,
+	Spinner,
+	useToast,
+} from '@/features/board-game-shared/components/ui';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 import {
 	clearPlayerToken,
 	getRecentPlayerName,
 	getStoredPlayerToken,
 	storePlayerToken,
 	storeRecentPlayerName,
-} from '@/features/spy-fall/lib/spy/clientToken';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
-import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+} from '@/features/board-game-shared/lib/clientToken';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
+import {
+	isValidPlayerName,
+	normalizePlayerName,
+} from '@/features/board-game-shared/lib/playerName';
 import { playConfirm } from '@/features/spy-fall/lib/sounds';
 import { routes } from '@/config/routes';
 
 import GameShell from './GameShell';
-import ConnectionBanner from './ConnectionBanner';
+import ConnectionBanner from '@/features/board-game-shared/components/ConnectionBanner';
 import HostGameControls from './HostGameControls';
 import { HostToolsContext, WordPeekContext } from './ActionBar';
 import { BriefingSheet } from './MissionBriefing';

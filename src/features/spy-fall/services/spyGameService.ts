@@ -20,7 +20,7 @@ import {
 	normalizeSpyCount,
 	type SpyCount,
 } from '@/features/spy-fall/config/spyGame';
-import { AppError } from '@/features/spy-fall/lib/appError';
+import { GameError } from '@/features/board-game-shared/lib/gameError';
 import { assignRoles, pickFirstSpeaker } from '@/features/spy-fall/lib/spy/roleAssignment';
 import {
 	allPlayersMemorized,
@@ -39,8 +39,8 @@ import {
 	resolveVoteOutcome,
 	type GameOutcome,
 } from '@/features/spy-fall/lib/spy/winConditions';
-import { normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
-import dbConnect from '@/features/spy-fall/lib/dbConnect';
+import { normalizePlayerName } from '@/features/board-game-shared/lib/playerName';
+import dbConnect from '@/lib/dbConnect';
 import SpyGame, {
 	type ISpyDeparted,
 	type ISpyElimination,
@@ -131,7 +131,7 @@ function idOf(game: GameDoc, token: string | null | undefined): string | null {
 
 function assertPlayer(game: GameDoc, token: string): ISpyPlayer {
 	const player = findPlayer(game, token);
-	if (!player) throw new AppError('PLAYER_NOT_FOUND', 404);
+	if (!player) throw new GameError('PLAYER_NOT_FOUND', 404);
 	return player;
 }
 
@@ -140,7 +140,7 @@ function assertUniquePlayerName(game: GameDoc, name: string, excludeToken?: stri
 	const duplicate = game.players.some(
 		(p) => p.token !== excludeToken && p.name.toLowerCase() === normalized,
 	);
-	if (duplicate) throw new AppError('NAME_TAKEN', 400);
+	if (duplicate) throw new GameError('NAME_TAKEN', 400);
 }
 
 function isInGamePhase(phase: GamePhase): boolean {
@@ -345,9 +345,9 @@ function spiesRemaining(game: GameDoc): number {
 
 function assertRoomName(name: string | undefined): string {
 	const trimmed = name?.trim() ?? '';
-	if (!trimmed) throw new AppError('ROOM_NAME_REQUIRED', 400);
+	if (!trimmed) throw new GameError('ROOM_NAME_REQUIRED', 400);
 	if (trimmed.length > SPY_MAX_ROOM_NAME_LENGTH) {
-		throw new AppError('ROOM_NAME_TOO_LONG', 400, { max: SPY_MAX_ROOM_NAME_LENGTH });
+		throw new GameError('ROOM_NAME_TOO_LONG', 400, { max: SPY_MAX_ROOM_NAME_LENGTH });
 	}
 	return trimmed;
 }
@@ -357,7 +357,7 @@ function assertPhaseCursor(game: GameDoc, from: PhaseCursor): void {
 		from.phase === game.phase &&
 		from.round === (game.round ?? 1) &&
 		Boolean(from.isRevote) === Boolean(game.isRevote);
-	if (!matches) throw new AppError('PHASE_CHANGED', 409);
+	if (!matches) throw new GameError('PHASE_CHANGED', 409);
 }
 
 function toPublicLog(game: GameDoc, entry: ISpyElimination): EliminationLogEntry {
@@ -385,11 +385,11 @@ function toPublicDeparted(entry: ISpyDeparted): DepartedPlayerDTO {
 
 function assertSpyCountFitsRoom(spyCount: SpyCount, maxPlayers: number): void {
 	const min = minPlayersForSpies(spyCount);
-	if (maxPlayers < min) throw new AppError('SPY_COUNT_NEEDS_ROOM', 400, { min, spies: spyCount });
+	if (maxPlayers < min) throw new GameError('SPY_COUNT_NEEDS_ROOM', 400, { min, spies: spyCount });
 }
 
 function parseSpyCount(value: unknown): SpyCount {
-	if (!isSpyCount(value)) throw new AppError('SPY_COUNT_INVALID', 400, { max: SPY_MAX_COUNT });
+	if (!isSpyCount(value)) throw new GameError('SPY_COUNT_INVALID', 400, { max: SPY_MAX_COUNT });
 	return value;
 }
 
@@ -404,7 +404,7 @@ function assertMaxPlayers(
 		maxPlayers < min ||
 		maxPlayers > SPY_MAX_PLAYERS
 	) {
-		throw new AppError('MAX_PLAYERS_INVALID', 400, { min, max: SPY_MAX_PLAYERS });
+		throw new GameError('MAX_PLAYERS_INVALID', 400, { min, max: SPY_MAX_PLAYERS });
 	}
 }
 
@@ -514,7 +514,7 @@ async function loadAndAdvance(
 		const at = now();
 
 		let game = (await SpyGame.findOne({ code: code.toUpperCase() })) as GameDoc | null;
-		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 
 		let changed = ensurePlayerIds(game);
 
@@ -567,7 +567,7 @@ async function mutateGame(
 			...(expectedPhase ? { phase: expectedPhase } : {}),
 		})) as GameDoc | null;
 
-		if (!game) throw new AppError('ROOM_OR_PHASE_INVALID', 404);
+		if (!game) throw new GameError('ROOM_OR_PHASE_INVALID', 404);
 		if (!VALID_PHASES.has(game.phase)) {
 			resetGameToLobby(game);
 		}
@@ -590,7 +590,7 @@ export async function createRoom(
 	testOwnerId?: string,
 ): Promise<RoomStateDTO> {
 	const hostName = normalizePlayerName(input.hostName ?? '');
-	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
+	if (!hostName) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 	const roomName = assertRoomName(input.name);
 
 	const maxPlayers = input.maxPlayers ?? SPY_MAX_PLAYERS;
@@ -656,13 +656,13 @@ export async function joinRoom(
 	existingToken?: string,
 ): Promise<{ state: RoomStateDTO; playerToken: string }> {
 	const normalizedName = normalizePlayerName(name);
-	if (!normalizedName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
+	if (!normalizedName) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 
 	await dbConnect();
 	return withVersionRetry(async () => {
 		const game = (await SpyGame.findOne({ code: code.toUpperCase() })) as GameDoc | null;
-		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
-		if (isInGamePhase(game.phase)) throw new AppError('GAME_IN_PROGRESS', 400);
+		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
+		if (isInGamePhase(game.phase)) throw new GameError('GAME_IN_PROGRESS', 400);
 		ensurePlayerIds(game);
 
 		if (existingToken) {
@@ -676,9 +676,9 @@ export async function joinRoom(
 			}
 		}
 
-		if (game.players.length >= game.maxPlayers) throw new AppError('ROOM_FULL', 400);
+		if (game.players.length >= game.maxPlayers) throw new GameError('ROOM_FULL', 400);
 		if (game.players.some((p) => p.name.toLowerCase() === normalizedName.toLowerCase())) {
-			throw new AppError('NAME_TAKEN', 400);
+			throw new GameError('NAME_TAKEN', 400);
 		}
 
 		const playerToken = generateToken();
@@ -706,20 +706,20 @@ export async function startGame(
 	random: () => number = gameRandom,
 ): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, (game) => {
-		if (game.hostToken !== playerToken) throw new AppError('HOST_ONLY_START', 403);
-		if (game.phase !== 'lobby') throw new AppError('GAME_ALREADY_STARTED', 400);
+		if (game.hostToken !== playerToken) throw new GameError('HOST_ONLY_START', 403);
+		if (game.phase !== 'lobby') throw new GameError('GAME_ALREADY_STARTED', 400);
 		const spyCount = normalizeSpyCount(game.spyCount);
 		const minPlayers = minPlayersForSpies(spyCount);
 		if (game.players.length < minPlayers) {
 			throw spyCount === 1
-				? new AppError('NEED_MIN_PLAYERS', 400, { min: minPlayers })
-				: new AppError('NEED_MIN_PLAYERS_FOR_SPIES', 400, { min: minPlayers, spies: spyCount });
+				? new GameError('NEED_MIN_PLAYERS', 400, { min: minPlayers })
+				: new GameError('NEED_MIN_PLAYERS_FOR_SPIES', 400, { min: minPlayers, spies: spyCount });
 		}
 
 		const topic = game.topic === 'any' ? undefined : game.topic;
 		const excludedTags = normalizeExcludedTags(game.excludedTags);
 		if (filterWordPairs(topic, wordBankFor(locale), excludedTags).length === 0) {
-			throw new AppError('NO_WORD_PAIRS', 400);
+			throw new GameError('NO_WORD_PAIRS', 400);
 		}
 
 		const pair = pickWordPair({
@@ -769,7 +769,7 @@ export async function confirmMemorized(code: string, playerToken: string): Promi
 		code,
 		playerToken,
 		(game) => {
-			if (game.phase !== 'role-reveal') throw new AppError('NOT_ROLE_REVEAL', 400);
+			if (game.phase !== 'role-reveal') throw new GameError('NOT_ROLE_REVEAL', 400);
 			assertPlayer(game, playerToken).hasMemorizedRole = true;
 			if (allPlayersMemorized(phasePlayers(game))) {
 				game.phase = 'discussion';
@@ -788,9 +788,9 @@ export async function submitVote(
 		code,
 		playerToken,
 		(game) => {
-			if (game.phase !== 'vote') throw new AppError('NOT_VOTE', 400);
+			if (game.phase !== 'vote') throw new GameError('NOT_VOTE', 400);
 			const player = assertPlayer(game, playerToken);
-			if (player.isEliminated) throw new AppError('VOTE_ELIMINATED', 400);
+			if (player.isEliminated) throw new GameError('VOTE_ELIMINATED', 400);
 
 			if (!targetId) {
 				player.voteToken = undefined;
@@ -798,10 +798,10 @@ export async function submitVote(
 			}
 
 			const target = findPlayerById(game, targetId);
-			if (!target || target.isEliminated) throw new AppError('VOTE_NOT_CANDIDATE', 400);
-			if (target.token === playerToken) throw new AppError('VOTE_SELF', 400);
+			if (!target || target.isEliminated) throw new GameError('VOTE_NOT_CANDIDATE', 400);
+			if (target.token === playerToken) throw new GameError('VOTE_SELF', 400);
 			const pool = votePool(game);
-			if (!pool.includes(target.token)) throw new AppError('VOTE_NOT_CANDIDATE', 400);
+			if (!pool.includes(target.token)) throw new GameError('VOTE_NOT_CANDIDATE', 400);
 
 			player.voteToken = target.token;
 
@@ -820,8 +820,8 @@ export async function updateSettings(
 	input: UpdateSettingsInput,
 ): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, (game) => {
-		if (game.hostToken !== playerToken) throw new AppError('HOST_ONLY_SETTINGS', 403);
-		if (game.phase !== 'lobby') throw new AppError('SETTINGS_LOBBY_ONLY', 400);
+		if (game.hostToken !== playerToken) throw new GameError('HOST_ONLY_SETTINGS', 403);
+		if (game.phase !== 'lobby') throw new GameError('SETTINGS_LOBBY_ONLY', 400);
 
 		const maxPlayers = input.maxPlayers ?? game.maxPlayers;
 		assertMaxPlayers(maxPlayers, game.players.length);
@@ -850,7 +850,7 @@ export async function hostAdvancePhase(
 	random: () => number = gameRandom,
 ): Promise<RoomStateDTO> {
 	return mutateGame(code, hostToken, (game) => {
-		if (game.hostToken !== hostToken) throw new AppError('HOST_ONLY', 403);
+		if (game.hostToken !== hostToken) throw new GameError('HOST_ONLY', 403);
 		assertPhaseCursor(game, from);
 		const at = now();
 
@@ -873,7 +873,7 @@ export async function hostAdvancePhase(
 			beginNextRound(game, random);
 			return;
 		}
-		throw new AppError('CANNOT_ADVANCE', 400);
+		throw new GameError('CANNOT_ADVANCE', 400);
 	});
 }
 
@@ -882,8 +882,8 @@ export async function playAgain(code: string, hostToken: string): Promise<RoomSt
 		code,
 		hostToken,
 		(game) => {
-			if (game.hostToken !== hostToken) throw new AppError('HOST_ONLY_PLAY_AGAIN', 403);
-			if (game.phase !== 'result') throw new AppError('PLAY_AGAIN_RESULT_ONLY', 400);
+			if (game.hostToken !== hostToken) throw new GameError('HOST_ONLY_PLAY_AGAIN', 403);
+			if (game.phase !== 'result') throw new GameError('PLAY_AGAIN_RESULT_ONLY', 400);
 			resetGameToLobby(game);
 		},
 		'result',
@@ -894,8 +894,8 @@ export async function playAgain(code: string, hostToken: string): Promise<RoomSt
 
 export async function restartRoom(code: string, hostToken: string): Promise<RoomStateDTO> {
 	await mutateGame(code, hostToken, (game) => {
-		if (game.hostToken !== hostToken) throw new AppError('HOST_ONLY_RESTART', 403);
-		if (game.phase === 'lobby') throw new AppError('RESTART_NOT_LOBBY', 400);
+		if (game.hostToken !== hostToken) throw new GameError('HOST_ONLY_RESTART', 403);
+		if (game.phase === 'lobby') throw new GameError('RESTART_NOT_LOBBY', 400);
 		resetGameToLobby(game);
 	});
 	await unsetResetArtifacts(code);
@@ -911,11 +911,11 @@ export async function kickPlayer(
 		code,
 		hostToken,
 		(game) => {
-			if (game.hostToken !== hostToken) throw new AppError('HOST_ONLY', 403);
-			if (game.phase !== 'lobby') throw new AppError('KICK_LOBBY_ONLY', 400);
+			if (game.hostToken !== hostToken) throw new GameError('HOST_ONLY', 403);
+			if (game.phase !== 'lobby') throw new GameError('KICK_LOBBY_ONLY', 400);
 			const target = findPlayerById(game, targetId);
-			if (!target) throw new AppError('PLAYER_NOT_FOUND', 404);
-			if (target.token === hostToken) throw new AppError('CANNOT_KICK_SELF', 400);
+			if (!target) throw new GameError('PLAYER_NOT_FOUND', 404);
+			if (target.token === hostToken) throw new GameError('CANNOT_KICK_SELF', 400);
 			game.players = game.players.filter((p) => p.id !== targetId);
 		},
 		'lobby',
@@ -928,10 +928,10 @@ export async function renamePlayer(
 	name: string,
 ): Promise<RoomStateDTO> {
 	const normalizedName = normalizePlayerName(name);
-	if (!normalizedName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
+	if (!normalizedName) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 
 	return mutateGame(code, playerToken, (game) => {
-		if (game.phase !== 'lobby') throw new AppError('RENAME_LOBBY_ONLY', 400);
+		if (game.phase !== 'lobby') throw new GameError('RENAME_LOBBY_ONLY', 400);
 		const player = assertPlayer(game, playerToken);
 		if (player.name === normalizedName) return;
 		assertUniquePlayerName(game, normalizedName, playerToken);
@@ -980,7 +980,7 @@ export async function leaveRoom(
 	return withVersionRetry(async () => {
 		const at = now();
 		const game = (await SpyGame.findOne({ code: code.toUpperCase() })) as GameDoc | null;
-		if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 
 		const leaving = assertPlayer(game, playerToken);
 		ensurePlayerIds(game);
@@ -1023,6 +1023,6 @@ export async function leaveRoom(
 export async function readTestState(code: string, token: string): Promise<RoomStateDTO> {
 	await dbConnect();
 	const game = await SpyGame.findOne({ code: code.toUpperCase() });
-	if (!game) throw new AppError('ROOM_NOT_FOUND', 404);
+	if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 	return toRoomStateDTO(game, token, now());
 }

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import { cn } from '@/features/spy-fall/lib/cn';
+import { cn } from '@/features/board-game-shared/lib/cn';
 
 export type CheeseThiefArtScene =
 	| 'mouse'

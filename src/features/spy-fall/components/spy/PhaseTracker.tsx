@@ -2,9 +2,9 @@
 
 import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { cn } from '@/features/spy-fall/lib/cn';
-import GameIcon, { type GameIconName } from '@/features/spy-fall/components/ui/GameIcon';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import GameIcon, { type GameIconName } from '@/features/board-game-shared/components/ui/GameIcon';
 
 const STEPS: GamePhase[] = ['role-reveal', 'discussion', 'vote', 'reveal'];
 /** With one Spy the vote ends the game, so there is no reveal between rounds. */

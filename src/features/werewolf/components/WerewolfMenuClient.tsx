@@ -6,13 +6,16 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
-import { Button, Card, Field } from '@/features/spy-fall/components/ui';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
-import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
+import { Button, Card, Field } from '@/features/board-game-shared/components/ui';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
+import {
+	isValidPlayerName,
+	normalizePlayerName,
+} from '@/features/board-game-shared/lib/playerName';
 import { postWerewolfAction } from '@/features/werewolf/lib/api';
 import {
 	getRecentPlayerName,

@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { CARD_BACK_IMAGE, getRoleById } from '@/features/werewolf/config/roles';
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
-import { cn } from '@/features/spy-fall/lib/cn';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
 import type { Faction } from '@/features/werewolf/types';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 
 const FACTION_CHIP: Record<Faction, string> = {
 	villager: 'bg-emerald-700/90 text-white',

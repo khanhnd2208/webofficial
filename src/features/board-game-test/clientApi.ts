@@ -1,6 +1,6 @@
 'use client';
 
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
 import type { TestCommand, TestGame, TestRoomEnvelope } from './types';
 
 export const TEST_VIEWER_TOKEN = 'admin-test-viewer';

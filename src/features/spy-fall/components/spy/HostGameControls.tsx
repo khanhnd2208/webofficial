@@ -1,10 +1,10 @@
 'use client';
 
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
 import { playConfirm, playTap } from '@/features/spy-fall/lib/sounds';
 import type { GamePhase } from '@/features/spy-fall/types/spyGame';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 
 interface Props {
 	phase: GamePhase;

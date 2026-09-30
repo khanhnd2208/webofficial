@@ -1,12 +1,12 @@
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
-import { resolveErrorMessage } from '@/features/spy-fall/lib/i18n/tLocale';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
+import { resolveErrorMessage } from '@/features/board-game-shared/lib/i18n/tLocale';
 import {
 	DEFAULT_LOCALE,
 	isLocale,
 	LOCALE_STORAGE_KEY,
 	type Locale,
 	type MessageParams,
-} from '@/features/spy-fall/lib/i18n/types';
+} from '@/features/board-game-shared/lib/i18n/types';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
 
 type ApiEnvelope<T> = {

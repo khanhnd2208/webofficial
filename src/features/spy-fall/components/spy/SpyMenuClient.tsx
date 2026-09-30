@@ -5,8 +5,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import {
 	Button,
 	Card,
@@ -15,8 +15,8 @@ import {
 	Field,
 	Input,
 	Skeleton,
-} from '@/features/spy-fall/components/ui';
-import GameIcon from '@/features/spy-fall/components/ui/GameIcon';
+} from '@/features/board-game-shared/components/ui';
+import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 import {
 	SPY_COUNTS,
 	SPY_DEFAULT_COUNT,
@@ -25,18 +25,21 @@ import {
 	minPlayersForSpies,
 	type SpyCount,
 } from '@/features/spy-fall/config/spyGame';
-import { cn } from '@/features/spy-fall/lib/cn';
-import { withBasePath } from '@/features/spy-fall/lib/basePath';
+import { cn } from '@/features/board-game-shared/lib/cn';
+import { withBasePath } from '@/features/board-game-shared/lib/basePath';
 import { postSpyAction } from '@/features/spy-fall/lib/spy/api';
 import {
 	getRecentPlayerName,
 	storePlayerToken,
 	storeRecentPlayerName,
-} from '@/features/spy-fall/lib/spy/clientToken';
-import { hapticLight } from '@/features/spy-fall/lib/haptics';
-import { isValidPlayerName, normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+} from '@/features/board-game-shared/lib/clientToken';
+import { hapticLight } from '@/features/board-game-shared/lib/haptics';
+import {
+	isValidPlayerName,
+	normalizePlayerName,
+} from '@/features/board-game-shared/lib/playerName';
 import { playConfirm, playTap } from '@/features/spy-fall/lib/sounds';
-import PlayerNameInput from '@/features/spy-fall/components/spy/PlayerNameInput';
+import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
 import type { PublicRoomListItemDTO, RoomStateDTO } from '@/features/spy-fall/types/spyGame';
 import { routes } from '@/config/routes';
 

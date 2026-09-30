@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import LanguageToggle from '@/features/spy-fall/components/i18n/LanguageToggle';
+import LanguageToggle from '@/features/board-game-shared/components/i18n/LanguageToggle';
 import { routes } from '@/config/routes';
-import { useLocale } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { resolveErrorMessage } from '@/features/spy-fall/lib/i18n/tLocale';
+import { useLocale } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { resolveErrorMessage } from '@/features/board-game-shared/lib/i18n/tLocale';
 import SpyGameClient from '@/features/spy-fall/components/spy/SpyGameClient';
 import CheeseThiefRoomClient from '@/features/cheese-thief/components/CheeseThiefRoomClient';
 import WerewolfRoomClient from '@/features/werewolf/components/WerewolfRoomClient';

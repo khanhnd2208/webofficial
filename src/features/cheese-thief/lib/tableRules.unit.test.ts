@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { allTableSizes, tableRulesFor } from '@/features/cheese-thief/lib/tableRules';
-import { en, vi } from '@/features/spy-fall/lib/i18n/messages';
-import { translate, type MessageTree } from '@/features/spy-fall/lib/i18n/types';
+import { en, vi } from '@/features/board-game-shared/lib/i18n/messages';
+import { translate, type MessageTree } from '@/features/board-game-shared/lib/i18n/types';
 
 function leafKeys(tree: MessageTree, prefix = ''): string[] {
 	return Object.entries(tree).flatMap(([key, value]) =>

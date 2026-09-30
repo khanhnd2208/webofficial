@@ -6,16 +6,16 @@ import QRCode from 'react-qr-code';
 
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
 import { routes } from '@/config/routes';
-import { BASE_PATH } from '@/features/spy-fall/lib/basePath';
+import { BASE_PATH } from '@/features/board-game-shared/lib/basePath';
 import HourLengthSetting from '@/features/cheese-thief/components/HourLengthSetting';
 import TableSettings from '@/features/cheese-thief/components/TableSettings';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
 import {
 	CheeseRulesButton,
 	TableRulesCard,
 } from '@/features/cheese-thief/components/CheeseRulesGuide';
-import PassportAvatar from '@/features/spy-fall/components/spy/PassportAvatar';
+import PassportAvatar from '@/features/board-game-shared/components/PassportAvatar';
 
 interface Props {
 	state: RoomStateDTO;

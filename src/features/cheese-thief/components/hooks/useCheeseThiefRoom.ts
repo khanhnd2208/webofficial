@@ -11,7 +11,7 @@ import {
 } from '@/features/cheese-thief/lib/api';
 import { storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import {
 	readAdminTestRoom,
 	sendAdminTestCommand,

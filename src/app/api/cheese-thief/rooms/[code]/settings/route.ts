@@ -6,7 +6,7 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
+} from '@/features/board-game-shared/lib/apiUtils';
 import { updateSettings } from '@/features/cheese-thief/services/cheeseThiefService';
 import type { UpdateSettingsInput } from '@/features/cheese-thief/types';
 

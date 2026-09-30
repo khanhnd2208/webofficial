@@ -11,9 +11,9 @@ import {
 	getSuggestedRoleSet,
 } from '@/features/werewolf/config/roles';
 import { dealRoles, validateRoleCounts } from '@/features/werewolf/lib/deal';
-import { AppError } from '@/features/spy-fall/lib/appError';
-import dbConnect from '@/features/spy-fall/lib/dbConnect';
-import { normalizePlayerName } from '@/features/spy-fall/lib/spy/playerName';
+import { GameError } from '@/features/board-game-shared/lib/gameError';
+import dbConnect from '@/lib/dbConnect';
+import { normalizePlayerName } from '@/features/board-game-shared/lib/playerName';
 import WerewolfRoom, {
 	type IWerewolfPlayer,
 	type IWerewolfRoom,
@@ -63,7 +63,7 @@ function findPlayer(
 }
 
 function assertHost(room: { hostToken: string }, token: string): void {
-	if (room.hostToken !== token) throw new AppError('HOST_ONLY', 403);
+	if (room.hostToken !== token) throw new GameError('HOST_ONLY', 403);
 }
 
 function snapshotFromDoc(room: IWerewolfRoom): WerewolfRoomSnapshot {
@@ -161,7 +161,7 @@ function touchViewer(room: RoomDoc, token: string | null, at: Date): void {
 async function loadRoom(code: string): Promise<RoomDoc> {
 	await dbConnect();
 	const room = (await WerewolfRoom.findOne({ code: code.toUpperCase() })) as RoomDoc | null;
-	if (!room) throw new AppError('ROOM_NOT_FOUND', 404);
+	if (!room) throw new GameError('ROOM_NOT_FOUND', 404);
 	return room;
 }
 
@@ -183,9 +183,9 @@ async function mutateRoom(
 
 function assertUniqueName(room: RoomDoc, name: string): void {
 	const normalized = name.toLowerCase();
-	if (room.hostName.toLowerCase() === normalized) throw new AppError('NAME_TAKEN', 400);
+	if (room.hostName.toLowerCase() === normalized) throw new GameError('NAME_TAKEN', 400);
 	if (room.players.some((player) => player.name.toLowerCase() === normalized)) {
-		throw new AppError('NAME_TAKEN', 400);
+		throw new GameError('NAME_TAKEN', 400);
 	}
 }
 
@@ -204,7 +204,7 @@ function blankPlayer(token: string, name: string, at: Date): WerewolfPlayerRecor
 
 function departPlayer(room: RoomDoc, token: string): void {
 	const player = findPlayer(room, token);
-	if (!player) throw new AppError('PLAYER_NOT_FOUND', 404);
+	if (!player) throw new GameError('PLAYER_NOT_FOUND', 404);
 	if (room.phase === 'dealt') {
 		player.leftAt = player.leftAt ?? now();
 		return;
@@ -225,7 +225,7 @@ export async function createRoom(
 	testOwnerId?: string,
 ): Promise<{ state: RoomStateDTO; hostToken: string }> {
 	const hostName = normalizePlayerName(hostNameInput);
-	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
+	if (!hostName) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 
 	await dbConnect();
 	const hostToken = generateToken();
@@ -234,7 +234,7 @@ export async function createRoom(
 		const exists = await WerewolfRoom.findOne({ code }).select('_id').lean();
 		if (!exists) break;
 		code = generateCode();
-		if (attempt === 9) throw new AppError('INTERNAL', 500);
+		if (attempt === 9) throw new GameError('INTERNAL', 500);
 	}
 
 	const at = now();
@@ -263,7 +263,7 @@ export async function joinRoom(
 	existingToken?: string,
 ): Promise<{ state: RoomStateDTO; playerToken: string }> {
 	const name = normalizePlayerName(nameInput);
-	if (!name) throw new AppError('PLAYER_NAME_REQUIRED', 400);
+	if (!name) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 
 	return withVersionRetry(async () => {
 		const room = await loadRoom(code);
@@ -292,8 +292,8 @@ export async function joinRoom(
 			}
 		}
 
-		if (room.phase !== 'lobby') throw new AppError('GAME_IN_PROGRESS', 400);
-		if (activePlayers(room.players).length >= MAX_PLAYERS) throw new AppError('ROOM_FULL', 400);
+		if (room.phase !== 'lobby') throw new GameError('GAME_IN_PROGRESS', 400);
+		if (activePlayers(room.players).length >= MAX_PLAYERS) throw new GameError('ROOM_FULL', 400);
 		assertUniqueName(room, name);
 
 		const playerToken = generateToken();
@@ -333,7 +333,7 @@ export async function setRoleCounts(
 ): Promise<RoomStateDTO> {
 	return mutateRoom(code, hostToken, (room) => {
 		assertHost(room, hostToken);
-		if (room.phase !== 'lobby') throw new AppError('NOT_LOBBY', 400);
+		if (room.phase !== 'lobby') throw new GameError('NOT_LOBBY', 400);
 		for (const entry of counts) {
 			validateRoleCounts([entry], entry.count);
 		}
@@ -352,10 +352,10 @@ export async function deal(
 		assertHost(room, hostToken);
 		const seated = activePlayers(room.players);
 		if (seated.length < MIN_PLAYERS) {
-			throw new AppError('NEED_MIN_PLAYERS', 400, { min: MIN_PLAYERS });
+			throw new GameError('NEED_MIN_PLAYERS', 400, { min: MIN_PLAYERS });
 		}
 		if (seated.length > MAX_PLAYERS) {
-			throw new AppError('ROOM_FULL', 400);
+			throw new GameError('ROOM_FULL', 400);
 		}
 		const counts = room.roleCounts.map((entry) => ({ roleId: entry.roleId, count: entry.count }));
 		validateRoleCounts(counts, seated.length);
@@ -387,8 +387,8 @@ export async function backToLobby(code: string, hostToken: string): Promise<Room
 export async function markViewed(code: string, token: string): Promise<RoomStateDTO> {
 	return mutateRoom(code, token, (room) => {
 		const player = findPlayer(room, token);
-		if (!player || player.leftAt) throw new AppError('PLAYER_NOT_FOUND', 404);
-		if (room.phase !== 'dealt' || !player.roleId) throw new AppError('NOT_DEALT', 400);
+		if (!player || player.leftAt) throw new GameError('PLAYER_NOT_FOUND', 404);
+		if (room.phase !== 'dealt' || !player.roleId) throw new GameError('NOT_DEALT', 400);
 		if (!player.viewedAt) player.viewedAt = now();
 	});
 }
@@ -400,7 +400,7 @@ export async function kickPlayer(
 ): Promise<RoomStateDTO> {
 	return mutateRoom(code, hostToken, (room) => {
 		assertHost(room, hostToken);
-		if (targetToken === hostToken) throw new AppError('CANNOT_KICK_SELF', 400);
+		if (targetToken === hostToken) throw new GameError('CANNOT_KICK_SELF', 400);
 		departPlayer(room, targetToken);
 	});
 }

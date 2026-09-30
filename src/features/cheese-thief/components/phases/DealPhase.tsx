@@ -6,9 +6,9 @@ import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import PutPhoneDown from '@/features/cheese-thief/components/PutPhoneDown';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Button } from '@/features/spy-fall/components/ui';
-import { cn } from '@/features/spy-fall/lib/cn';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Button } from '@/features/board-game-shared/components/ui';
+import { cn } from '@/features/board-game-shared/lib/cn';
 
 interface Props {
 	state: RoomStateDTO;

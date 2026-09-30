@@ -6,8 +6,8 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
-import { isLocale } from '@/features/spy-fall/lib/i18n/types';
+} from '@/features/board-game-shared/lib/apiUtils';
+import { isLocale } from '@/features/board-game-shared/lib/i18n/types';
 import { startGame } from '@/features/spy-fall/services/spyGameService';
 
 const POSTBase = withErrorHandling(async (request: NextRequest, context) => {

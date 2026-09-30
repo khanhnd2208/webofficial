@@ -19,8 +19,11 @@ import {
 } from '../src/features/cheese-thief/config/cheeseThief';
 import { LINE_LEAD_S, cueKind } from '../src/features/cheese-thief/lib/nightMix';
 import { CHEESE_VOICE_CLIPS, type VoiceClip } from '../src/features/cheese-thief/lib/nightSchedule';
-import { cheeseEn, cheeseVi } from '../src/features/spy-fall/lib/i18n/messages/cheeseThief';
-import type { MessageTree } from '../src/features/spy-fall/lib/i18n/types';
+import {
+	cheeseEn,
+	cheeseVi,
+} from '../src/features/board-game-shared/lib/i18n/messages/cheeseThief';
+import type { MessageTree } from '../src/features/board-game-shared/lib/i18n/types';
 
 /** Slower than the default rate, with breaths at punctuation, so the lines sound told rather than read. */
 const VOICES = {

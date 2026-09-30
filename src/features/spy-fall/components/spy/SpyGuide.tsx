@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-import PrefsToggleGroup from '@/features/spy-fall/components/i18n/PrefsToggleGroup';
-import { useT } from '@/features/spy-fall/components/i18n/LocaleProvider';
-import { Stamp } from '@/features/spy-fall/components/ui';
-import GameIcon, { type GameIconName } from '@/features/spy-fall/components/ui/GameIcon';
+import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
+import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
+import { Stamp } from '@/features/board-game-shared/components/ui';
+import GameIcon, { type GameIconName } from '@/features/board-game-shared/components/ui/GameIcon';
 import { getGuideSections, getHonorRules } from '@/features/spy-fall/lib/spy/i18n';
 import { routes } from '@/config/routes';
 

@@ -26,7 +26,7 @@ const portfolioImports = areaImportPatterns(
   ["learn", "marketing", "contact"],
 );
 const boardgameImports = areaImportPatterns(
-  ["cheese-thief", "werewolf", "spy-fall", "board-game-test"],
+  ["board-game-shared", "cheese-thief", "werewolf", "spy-fall", "board-game-test"],
   [],
 );
 
@@ -78,6 +78,7 @@ const eslintConfig = defineConfig([
   },
   areaBoundary(
     [
+      "src/features/board-game-shared/**/*.{ts,tsx}",
       "src/features/cheese-thief/**/*.{ts,tsx}",
       "src/features/werewolf/**/*.{ts,tsx}",
       "src/features/spy-fall/**/*.{ts,tsx}",

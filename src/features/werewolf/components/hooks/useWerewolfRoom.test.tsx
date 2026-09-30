@@ -13,7 +13,7 @@ vi.mock('@/features/werewolf/lib/api', () => ({
 	patchWerewolfAction: vi.fn(),
 }));
 
-vi.mock('@/features/spy-fall/components/i18n/LocaleProvider', () => {
+vi.mock('@/features/board-game-shared/components/i18n/LocaleProvider', () => {
 	const t = (key: string) => key;
 	return { useT: () => t };
 });

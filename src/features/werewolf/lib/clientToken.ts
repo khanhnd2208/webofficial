@@ -18,4 +18,4 @@ export function clearPlayerToken(roomCode: string): void {
 export {
 	getRecentPlayerName,
 	storeRecentPlayerName,
-} from '@/features/spy-fall/lib/spy/clientToken';
+} from '@/features/board-game-shared/lib/clientToken';

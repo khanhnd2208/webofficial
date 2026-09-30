@@ -6,7 +6,7 @@ import {
 	apiSuccess,
 	withErrorHandling,
 	withPublicRoomGuard,
-} from '@/features/spy-fall/lib/apiUtils';
+} from '@/features/board-game-shared/lib/apiUtils';
 import { hostAdvancePhase } from '@/features/spy-fall/services/spyGameService';
 import type { PhaseCursor } from '@/features/spy-fall/types/spyGame';
 
