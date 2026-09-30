@@ -1,0 +1,53 @@
+---
+description: Rules for self-study lecture content and publishing it to production
+globs:
+  - content/learn/**
+  - scripts/seed-*-course.ts
+  - src/features/learn/**
+  - src/app/my-space/courses/**
+  - src/app/api/admin/learn/**
+# Claude Code reads `paths` (via .claude/rules/ symlink); Cursor reads `globs`. Keep both lists equal.
+paths:
+  - content/learn/**
+  - scripts/seed-*-course.ts
+  - src/features/learn/**
+  - src/app/my-space/courses/**
+  - src/app/api/admin/learn/**
+alwaysApply: false
+---
+
+# Lecture content (Learn courses)
+
+## Writing
+
+- The lecture (`bai-N.md`) must stand alone: approachable, engaging, every
+  concept fully explained. Never defer an explanation to the question bank
+  ("xem Câu 9").
+- `bai-N-them.md` (quiz, guide, "Câu hỏi phản biện") is an optional advanced
+  layer. Questions may go deeper but must not introduce concepts the lecture
+  skipped.
+
+## Source fidelity
+
+- `bai-N.original.txt` is the word-for-word source the seed validates against.
+  If you change lecture wording, regenerate the matching `.original.txt` (the
+  `>` subtitle line under the H1 is excluded), then run
+  `npx tsx scripts/seed-<course>-course.ts --dry-run` and confirm
+  `matchPercent` is 100.
+
+## Publishing to production
+
+- Seed scripts create a course once and skip it if it exists. They never update
+  production content.
+- Edit live content in Learn Studio (`/my-space/courses/<slug>/studio`) or
+  through the admin API with an admin session:
+  `PATCH /api/admin/learn/sections/[id]`, `POST /api/admin/learn/lessons/[id]/sections`,
+  `PUT /api/admin/learn/courses/[id]/outline`. Save a manual revision
+  (`POST /api/admin/learn/sections/[id]/revisions`) before changing a live
+  section; autosave keeps at most one snapshot per 10 minutes.
+- Production may differ from local files (Studio edits). Read the live section
+  first and patch the difference instead of overwriting it.
+- Replacing content can delete learner progress. Confirm with the user before a
+  replace or delete on a published course.
+- Images referenced from lectures must exist in `public/learn/<course>/` and be
+  deployed before the text that uses them; otherwise remove the image lines.

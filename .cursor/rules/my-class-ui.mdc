@@ -5,6 +5,12 @@ globs:
   - src/app/my-space/my-class/**
   - src/app/admin/my-class/**
   - src/app/my-class-theme.css
+# Claude Code reads `paths` (via .claude/rules/ symlink); Cursor reads `globs`. Keep both lists equal.
+paths:
+  - src/components/myclass/**
+  - src/app/my-space/my-class/**
+  - src/app/admin/my-class/**
+  - src/app/my-class-theme.css
 alwaysApply: false
 ---
 

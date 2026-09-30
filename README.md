@@ -18,6 +18,9 @@
 | [docs/05-BRAND_BRIEF.md](./docs/05-BRAND_BRIEF.md)             | Current editorial brand and visual direction                                       |
 | [docs/09-DESIGN_SYSTEM.md](./docs/09-DESIGN_SYSTEM.md)         | Editorial vs My Class Study Tool visual grammars                                   |
 | [docs/06-CONTENT_INVENTORY.md](./docs/06-CONTENT_INVENTORY.md) | Current public content and preserved internal domains                              |
+| [docs/areas.md](./docs/areas.md) | Area map (Boardgame, Classroom, Portfolio, Tools) and import rules |
+| [docs/10-AI_AGENTS.md](./docs/10-AI_AGENTS.md) | How AI agents are guided here: AGENTS.md, rules, skills, permissions |
+| [AGENTS.md](./AGENTS.md) | Rules every AI agent follows in this repo |
 
 ---
 
@@ -101,7 +104,11 @@ openssl rand -base64 32
 | `npm run test:coverage`    | All tests with coverage report                     |
 | `npm run test:e2e`         | Playwright end-to-end smoke tests                  |
 | `npm run test:db:setup`    | Create and migrate local test Postgres DB          |
-| `npm run check`            | Full quality gate: typecheck + lint + test + build |
+| `npm run check`            | Full gate: typecheck, lint, format, areas, tests, audit, build |
+| `npm run format` | Format code with Prettier |
+| `npm run format:check` | Check formatting (CI) |
+| `npm run areas:sync` | Regenerate CI area filters from `scripts/areas/areas.mjs` |
+| `npm run areas:check` | Verify the area map (CI) |
 
 ### Testing prerequisites
 

@@ -1,0 +1,46 @@
+---
+description: Rules for the board games (Spyfall, Cheese Thief, Ma soi, admin test rooms)
+globs:
+  - src/features/board-game-shared/**
+  - src/features/spy-fall/**
+  - src/features/cheese-thief/**
+  - src/features/werewolf/**
+  - src/features/board-game-test/**
+  - src/app/api/spy/**
+  - src/app/api/cheese-thief/**
+  - src/app/api/ma-soi/**
+  - src/app/my-space/board-game/**
+# Claude Code reads `paths` (via .claude/rules/ symlink); Cursor reads `globs`. Keep both lists equal.
+paths:
+  - src/features/board-game-shared/**
+  - src/features/spy-fall/**
+  - src/features/cheese-thief/**
+  - src/features/werewolf/**
+  - src/features/board-game-test/**
+  - src/app/api/spy/**
+  - src/app/api/cheese-thief/**
+  - src/app/api/ma-soi/**
+  - src/app/my-space/board-game/**
+alwaysApply: false
+---
+
+# Board games
+
+- Code used by more than one game lives in `src/features/board-game-shared/`
+  (API wrappers, `GameError`, i18n, theme, UI, player components). One game
+  must not import another game's folder; move shared code there instead.
+- Room APIs (`/api/spy`, `/api/cheese-thief`, `/api/ma-soi`) use
+  `board-game-shared/lib/apiUtils.ts`. Services throw
+  `new GameError('CODE', status, params)`; the client translates the code.
+  Admin test-room APIs use `@/lib/apiUtils` and `AppError`. Import each class
+  by its own name; never alias one as the other.
+- Every user-facing string has Vietnamese and English entries in
+  `board-game-shared/lib/i18n/messages/`. Add both.
+- Wrap public room routes that take a room code with `withPublicRoomGuard`, so
+  admin test rooms stay private.
+- Rooms are MongoDB documents (`models/`) that several players change at once.
+  Change a room through the service helper (`mutateGame` or `mutateRoom`): it
+  bumps `version` and retries on a version conflict. Do not add another
+  `save()` path that skips it.
+- Tests: rules in `*.unit.test.ts`, services in `*.integration.test.ts`
+  (MongoDB Memory Server), and `e2e/board-game-*.spec.ts` in CI.

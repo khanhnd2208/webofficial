@@ -484,3 +484,5 @@ Prettier formats code (`.ts`, `.tsx`, `.mjs`, `.css`, `.json`, `.yml`). It does 
 3. Before pushing, run `npm run check` (typecheck, lint, format, area map, all tests, audit, build), or at least `npm run typecheck && npm run lint && npm run areas:check && npm run test:unit`.
 4. Open a pull request. CI picks end-to-end specs by the areas you touched.
 5. Land it with a merge commit so the SHAs in `.git-blame-ignore-revs` stay valid.
+
+AI agents follow the same steps; `AGENTS.md` states them as rules, and Claude Code has them as the `ship-change` skill. A branch created before the repo-wide Prettier commit is brought up to date with `bash scripts/port-branch-past-format.sh origin/main`. See `docs/10-AI_AGENTS.md`.
