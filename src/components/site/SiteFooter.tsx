@@ -11,8 +11,7 @@ export default function SiteFooter() {
 		(link) => link.href !== routes.home,
 	) ?? [
 		{ href: routes.about, label: 'Giới thiệu' },
-		{ href: routes.projects, label: 'Dự án' },
-		{ href: routes.services, label: 'Dịch vụ' },
+		{ href: routes.experiences, label: 'Trải nghiệm' },
 		{ href: routes.contact, label: 'Liên hệ' },
 	];
 

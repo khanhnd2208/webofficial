@@ -1,0 +1,33 @@
+::view-transition-group(.journey-crossfade) {
+	animation-duration: 650ms;
+	animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-old(.journey-crossfade) {
+	animation: journey-out 400ms ease both;
+}
+::view-transition-new(.journey-crossfade) {
+	animation: journey-in 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes journey-out {
+	to {
+		opacity: 0;
+		transform: scale(1.015);
+	}
+}
+@keyframes journey-in {
+	from {
+		opacity: 0;
+		transform: translateY(12px) scale(0.99);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-group(.journey-crossfade),
+	::view-transition-old(.journey-crossfade),
+	::view-transition-new(.journey-crossfade) {
+		animation: none;
+	}
+}

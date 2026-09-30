@@ -50,15 +50,10 @@ describe('publication gates', () => {
 	it('opens brand destinations and My Space from the mục lục', () => {
 		const items = getGateNavItems();
 		expect(items).toEqual(GATE_NAV_ITEMS);
-		expect(items.map((item) => item.label)).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ', 'My Space']);
-		expect(items.map((item) => item.href)).toEqual([
-			routes.about,
-			routes.projects,
-			routes.services,
-			routes.mySpace,
-		]);
+		expect(items.map((item) => item.label)).toEqual(['Giới thiệu', 'Trải nghiệm']);
+		expect(items.map((item) => item.href)).toEqual([routes.about, routes.experiences]);
 		expect(items.every((item) => !isGateItemLocked(item))).toBe(true);
-		expect(items.filter((item) => item.status === 'published')).toHaveLength(4);
+		expect(items.filter((item) => item.status === 'published')).toHaveLength(2);
 		expect(items.some((item) => item.href === routes.activeRecall)).toBe(false);
 	});
 
@@ -88,7 +83,7 @@ describe('publication gates', () => {
 		const links = getDesktopNavLinks();
 		const labels = links.map((l) => l.label);
 		expect(labels).not.toContain('Trang chủ');
-		expect(labels).toEqual(['Giới thiệu', 'Dự án', 'Dịch vụ']);
+		expect(labels).toEqual(['Giới thiệu', 'Trải nghiệm']);
 		expect(labels).not.toContain('Ghi chép');
 		expect(labels).not.toContain('Liên hệ');
 		expect(labels).not.toContain('Bài viết');
@@ -116,10 +111,11 @@ describe('publication gates', () => {
 		const groups = getPublishedFooterGroups();
 		expect(groups.length).toBeGreaterThanOrEqual(1);
 		const allHrefs = groups.flatMap((g) => g.links.map((l) => l.href));
-		expect(allHrefs).toContain(routes.projects);
-		expect(allHrefs).toContain(routes.services);
+		expect(allHrefs).toContain(routes.about);
+		expect(allHrefs).not.toContain(routes.projects);
+		expect(allHrefs).not.toContain(routes.services);
 		expect(allHrefs).toContain(routes.contact);
-		expect(allHrefs).toContain(routes.mySpace);
+		expect(allHrefs).toContain(routes.experiences);
 		expect(allHrefs).not.toContain(routes.notes);
 		expect(allHrefs).not.toContain(routes.posts);
 		expect(allHrefs).not.toContain(routes.archive);
@@ -143,14 +139,17 @@ describe('content gates', () => {
 describe('redirect map', () => {
 	it('maps retired public UI to the new portfolio architecture', () => {
 		const bySource = Object.fromEntries(PUBLIC_REDIRECTS.map((r) => [r.source, r.destination]));
-		expect(bySource['/dong-hanh']).toBe('/dich-vu');
-		expect(bySource['/dong-hanh/mentoring']).toBe('/dich-vu');
-		expect(bySource['/dong-hanh/co-van-doanh-nghiep']).toBe('/dich-vu');
-		expect(bySource['/dong-hanh/dao-tao-workshop']).toBe('/dich-vu');
-		expect(bySource['/dong-hanh/ai-ung-dung']).toBe('/dich-vu');
-		expect(bySource['/case-study']).toBe('/du-an');
-		expect(bySource['/giang-day']).toBe('/dich-vu');
-		expect(bySource['/goc-cua-khanh']).toBe('/du-an');
+		expect(bySource['/du-an']).toBe(routes.aboutProjects);
+		expect(bySource['/dich-vu']).toBe(routes.aboutServices);
+		expect(bySource['/du-an/:path*']).toBeUndefined();
+		expect(bySource['/dong-hanh']).toBe(routes.aboutServices);
+		expect(bySource['/dong-hanh/mentoring']).toBe(routes.aboutServices);
+		expect(bySource['/dong-hanh/co-van-doanh-nghiep']).toBe(routes.aboutServices);
+		expect(bySource['/dong-hanh/dao-tao-workshop']).toBe(routes.aboutServices);
+		expect(bySource['/dong-hanh/ai-ung-dung']).toBe('/trai-nghiem#thu-nghiem');
+		expect(bySource['/case-study']).toBe(routes.aboutProjects);
+		expect(bySource['/giang-day']).toBe(routes.aboutServices);
+		expect(bySource['/goc-cua-khanh']).toBe(routes.aboutProjects);
 		expect(bySource['/bai-viet']).toBe('/ghi-chep');
 		expect(bySource['/du-an/moonie-cafe-business-development']).toBe(
 			'/du-an/learning-at-moonie-cafe',
@@ -188,6 +187,8 @@ describe('route map', () => {
 		expect(routes.about).toBe('/gioi-thieu');
 		expect(routes.projects).toBe('/du-an');
 		expect(routes.services).toBe('/dich-vu');
+		expect(routes.aboutProjects).toBe('/trai-nghiem#du-an');
+		expect(routes.aboutServices).toBe('/gioi-thieu#dich-vu');
 		expect(routes.toc).toBe('/muc-luc');
 		expect(routes.mySpace).toBe('/my-space');
 		expect(routes.notes).toBe('/ghi-chep');

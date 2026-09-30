@@ -1,0 +1,226 @@
+.page {
+	position: relative;
+	isolation: isolate;
+	min-height: 100svh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 88px 64px 40px;
+	background: #f8f7f4;
+	overflow: hidden;
+}
+.landscape {
+	z-index: -2;
+	object-fit: cover;
+	object-position: center bottom;
+}
+.page::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: linear-gradient(
+		180deg,
+		rgba(248, 247, 244, 0.12),
+		rgba(248, 247, 244, 0.45) 55%,
+		transparent
+	);
+	pointer-events: none;
+}
+.content {
+	width: min(100%, 1056px);
+}
+.header {
+	text-align: center;
+	margin-bottom: 40px;
+}
+.eyebrow {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	color: #786b58;
+	margin-bottom: 18px;
+}
+.header h1 {
+	font-size: clamp(2.4rem, 4.5vw, 4rem);
+	line-height: 1.2;
+	letter-spacing: -0.045em;
+	margin-bottom: 18px;
+}
+.header > p:last-child {
+	font-size: 14px;
+	color: #6b655c;
+}
+.navigation {
+	display: grid;
+	grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+	gap: 34px;
+	padding: 24px 28px;
+	background: rgba(255, 253, 247, 0.72);
+	border: 1px solid rgba(134, 115, 82, 0.18);
+	border-radius: 10px;
+	box-shadow: 0 16px 60px rgba(75, 58, 33, 0.035);
+	backdrop-filter: blur(8px);
+}
+.sectionLabel {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 0 12px 18px;
+}
+.sectionLabel h2 {
+	font-family: var(--font-inter), sans-serif;
+	font-size: 11px;
+	line-height: 1.5;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	font-weight: 500;
+}
+.sectionLabel > span {
+	font-size: 10px;
+	color: #82786b;
+}
+.tiles {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 22px 8px;
+}
+.tile {
+	flex: 1 1 140px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	padding: 10px 8px 16px;
+	border-radius: 6px;
+	text-decoration: none;
+	transition:
+		background 250ms,
+		transform 350ms;
+}
+.tile:hover {
+	background: rgba(255, 253, 247, 0.85);
+	transform: translateY(-5px);
+}
+.tile:focus-visible {
+	outline: 2px solid #987340;
+	outline-offset: 4px;
+}
+.icon {
+	width: 112px;
+	height: 112px;
+	display: block;
+	margin-bottom: 18px;
+}
+.icon img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	transition: transform 400ms;
+}
+.tile:hover .icon img {
+	transform: rotate(-3deg) scale(1.04);
+}
+.tileTitle {
+	font-family: var(--font-serif-display), serif;
+	font-size: 23px;
+	line-height: 1.4;
+}
+.arrow {
+	display: inline-block;
+	margin-left: 8px;
+	font-size: 14px;
+	color: #917344;
+	transition: transform 250ms;
+}
+.tile:hover .arrow {
+	transform: translate(2px, -2px);
+}
+.description {
+	font-size: 11px;
+	color: #746b5f;
+	margin-top: 8px;
+	max-width: 180px;
+}
+.about {
+	border-left: 1px solid rgba(134, 115, 82, 0.2);
+	padding-left: 24px;
+}
+.footer {
+	display: flex;
+	justify-content: space-between;
+	gap: 24px;
+	margin-top: 24px;
+	font-size: 11px;
+	color: #655d51;
+}
+.footer a {
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+}
+.footer > span {
+	display: inline-flex;
+	align-items: center;
+}
+@media (max-width: 760px) {
+	.page {
+		padding: 96px 24px 48px;
+		align-items: flex-start;
+	}
+	.header {
+		margin-bottom: 32px;
+	}
+	.header h1 {
+		font-size: 36px;
+	}
+	.navigation {
+		grid-template-columns: 1fr;
+		padding: 24px 12px;
+		gap: 24px;
+	}
+	.sectionLabel {
+		margin-bottom: 16px;
+	}
+	.tiles {
+		gap: 12px 0;
+	}
+	.tile {
+		flex-basis: 120px;
+	}
+	.icon {
+		width: 88px;
+		height: 88px;
+		margin-bottom: 12px;
+	}
+	.tileTitle {
+		font-size: 21px;
+	}
+	.about {
+		border-left: 0;
+		border-top: 1px solid rgba(134, 115, 82, 0.2);
+		padding: 24px 0 0;
+	}
+	.footer {
+		margin-top: 20px;
+		font-size: 10px;
+		gap: 12px;
+	}
+	.landscape {
+		object-position: 62% bottom;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.tile,
+	.icon img,
+	.arrow {
+		transition: none;
+	}
+	.tile:hover,
+	.tile:hover .icon img,
+	.tile:hover .arrow {
+		transform: none;
+	}
+}

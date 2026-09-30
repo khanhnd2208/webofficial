@@ -11,10 +11,10 @@ test.describe('Mobile public smoke', () => {
 	test('table of contents keeps touch navigation available', async ({ page }) => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
-		await expect(page.getByRole('heading', { level: 1, name: 'Mục lục' })).toBeVisible();
-		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link')).toHaveCount(4);
-		await expect(gate.getByTestId('gate-item-locked')).toHaveCount(0);
+		await expect(page.getByRole('heading', { level: 1, name: 'Bạn muốn ghé đâu?' })).toBeVisible();
+		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
+		const about = page.getByRole('region', { name: 'About Me' });
+		await expect(about.getByRole('link')).toHaveCount(2);
 	});
 
 	test('public surfaces do not overflow horizontally', async ({ page }) => {

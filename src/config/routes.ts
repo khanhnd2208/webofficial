@@ -9,13 +9,18 @@ export const routes = {
 	// ─── Public marketing ─────────────────────────────────────────────────────
 	/** Cover / entry — "Trở thành" intro before the destination menu. */
 	home: '/',
-	/** Table of contents — destination gate (Giới thiệu / Dự án / Dịch vụ / …). */
+	/** Table of contents — introduction and experiences. */
 	toc: '/muc-luc',
-	/** @deprecated Home no longer has an in-page classroom section; prefer routes.projects. */
-	homeLearningExperiences: '/du-an',
+	/** @deprecated Prefer routes.aboutProjects. */
+	homeLearningExperiences: '/trai-nghiem#du-an',
 	about: '/gioi-thieu',
+	experiences: '/trai-nghiem',
+	experienceStory: (slug: string) => `/trai-nghiem/${slug}` as const,
+	aboutProjects: '/trai-nghiem#du-an',
+	/** @deprecated The project index is now part of routes.aboutProjects. */
 	projects: '/du-an',
 	project: (slug: string) => `/du-an/${slug}` as const,
+	/** @deprecated Service offers now live at routes.aboutServices. */
 	services: '/dich-vu',
 	/** Focused hub for Teaching. */
 	mySpace: '/my-space',
@@ -266,7 +271,7 @@ export const legacyRoutes = {
 
 /**
  * Permanent redirect map for retired marketing URLs.
- * Hashes are not sent in HTTP redirects — use `?section=` and scroll on /gioi-thieu.
+ * Legacy hubs point directly to their replacement sections.
  * Lab/course detail URLs stay reachable (noindex) via /archive; only hubs redirect.
  */
 export const PUBLIC_REDIRECTS: ReadonlyArray<{
@@ -274,29 +279,31 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	destination: string;
 	permanent: boolean;
 }> = [
-	{ source: '/dong-hanh', destination: '/dich-vu', permanent: true },
+	{ source: routes.projects, destination: routes.aboutProjects, permanent: true },
+	{ source: routes.services, destination: routes.aboutServices, permanent: true },
+	{ source: '/dong-hanh', destination: routes.aboutServices, permanent: true },
 	{
 		source: '/dong-hanh/mentoring',
-		destination: '/dich-vu',
+		destination: routes.aboutServices,
 		permanent: true,
 	},
 	{
 		source: '/dong-hanh/co-van-doanh-nghiep',
-		destination: '/dich-vu',
+		destination: routes.aboutServices,
 		permanent: true,
 	},
 	{
 		source: '/dong-hanh/dao-tao-workshop',
-		destination: '/dich-vu',
+		destination: routes.aboutServices,
 		permanent: true,
 	},
-	{ source: '/dong-hanh/ai-ung-dung', destination: '/dich-vu', permanent: true },
-	{ source: '/dong-hanh/:path*', destination: '/dich-vu', permanent: true },
-	{ source: '/case-study', destination: '/du-an', permanent: true },
-	{ source: '/case-study/:path*', destination: '/du-an', permanent: true },
-	{ source: '/giang-day', destination: '/dich-vu', permanent: true },
-	{ source: '/goc-cua-khanh', destination: '/du-an', permanent: true },
-	{ source: '/goc-cua-khanh/:path*', destination: '/du-an', permanent: true },
+	{ source: '/dong-hanh/ai-ung-dung', destination: '/trai-nghiem#thu-nghiem', permanent: true },
+	{ source: '/dong-hanh/:path*', destination: routes.aboutServices, permanent: true },
+	{ source: '/case-study', destination: routes.aboutProjects, permanent: true },
+	{ source: '/case-study/:path*', destination: routes.aboutProjects, permanent: true },
+	{ source: '/giang-day', destination: routes.aboutServices, permanent: true },
+	{ source: '/goc-cua-khanh', destination: routes.aboutProjects, permanent: true },
+	{ source: '/goc-cua-khanh/:path*', destination: routes.aboutProjects, permanent: true },
 	{ source: '/bai-viet', destination: '/ghi-chep', permanent: true },
 	{ source: '/bai-viet/:path*', destination: '/ghi-chep', permanent: true },
 	{

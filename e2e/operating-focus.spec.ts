@@ -3,18 +3,19 @@ import { expect, test } from '@playwright/test';
 import { addAdminSession } from './helpers/adminSession';
 
 test.describe('Focused operating mode', () => {
-	test('mục lục lists brand pages and My Space', async ({ page }) => {
+	test('mục lục lists introduction and experiences', async ({ page }) => {
 		await page.goto('/muc-luc');
-		const gate = page.getByRole('navigation', { name: 'Cổng trang' });
-		await expect(gate.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
+		const gate = page.getByRole('navigation', { name: 'My Space và About Me' });
+		const about = gate.getByRole('region', { name: 'About Me' });
+		await expect(about.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
 			'href',
 			'/gioi-thieu',
 		);
-		await expect(gate.getByRole('link', { name: /Dự án/i })).toHaveAttribute('href', '/du-an');
-		await expect(gate.getByRole('link', { name: /Dịch vụ/i })).toHaveAttribute('href', '/dich-vu');
-		await expect(gate.getByRole('link', { name: /My Space/i })).toHaveAttribute(
+		await expect(about.getByRole('link')).toHaveCount(2);
+		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
 			'href',
-			'/my-space',
+			'/trai-nghiem',
 		);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 	});
@@ -24,8 +25,9 @@ test.describe('Focused operating mode', () => {
 		expect(response.ok()).toBeTruthy();
 		const xml = await response.text();
 		expect(xml).toContain('/gioi-thieu');
-		expect(xml).toContain('/du-an');
-		expect(xml).toContain('/dich-vu');
+		expect(xml).toMatch(/<loc>[^<]*\/du-an\/ai50-ai-cho-moi-nguoi<\/loc>/);
+		expect(xml).not.toMatch(/<loc>[^<]*\/du-an<\/loc>/);
+		expect(xml).not.toContain('/dich-vu');
 		expect(xml).toContain('/lien-he');
 		expect(xml).toMatch(/<loc>[^<]*\/my-space<\/loc>/);
 		expect(xml).not.toContain('/my-space/active-recall');

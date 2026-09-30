@@ -37,7 +37,14 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		archiveGroup: 'Website',
 		adminHref: routes.admin.website,
 		adminPrefixes: [routes.admin.website, routes.admin.inquiries],
-		publicPrefixes: [routes.about, routes.projects, routes.services, routes.contact, routes.toc],
+		publicPrefixes: [
+			routes.about,
+			routes.experiences,
+			routes.projects,
+			routes.services,
+			routes.contact,
+			routes.toc,
+		],
 	},
 	{
 		id: 'learning-analytics',

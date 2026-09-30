@@ -1,27 +1,145 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
-import GateNav from '@/components/site/GateNav';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
+import { getMySpaceTiles } from '@/content/mySpace';
+import { auth } from '@/lib/auth';
+import styles from './toc.module.css';
 
 export const metadata: Metadata = {
 	title: 'Mục lục',
-	description: 'Chọn hướng đi: Giới thiệu, Dự án, Dịch vụ, và My Space.',
+	description: 'Ghé My Space để học, dạy và chơi — hoặc tìm hiểu thêm về Duy Khánh.',
 	alternates: { canonical: absoluteUrl(routes.toc) },
 };
 
-/**
- * Mục lục — destination gate formerly at `/`.
- * Entered from the intro cover via "Mở mục lục".
- */
-export default function TocPage() {
+const descriptions: Record<string, string> = {
+	teaching: 'Một góc dành cho lớp học.',
+	courses: 'Học thêm một điều mới.',
+	'board-game': 'Cùng chơi, cùng khám phá.',
+	admin: 'Quản lý không gian của bạn.',
+};
+
+// This page has its own illustration set; destination pages keep their own assets.
+const tocIcons: Record<string, string> = {
+	teaching: '/brand/toc/teaching-v1.webp',
+	courses: '/brand/toc/courses-v1.webp',
+	'board-game': '/brand/toc/board-game-v1.webp',
+};
+
+const aboutTiles = [
+	{
+		id: 'about',
+		href: routes.about,
+		label: 'Giới thiệu',
+		description: 'Người thầy, và hành trình trở thành.',
+		icon: '/brand/toc/about-v1.webp',
+	},
+	{
+		id: 'experiences',
+		href: routes.experiences,
+		label: 'Trải nghiệm',
+		description: 'Dự án, chuyến đi và những câu chuyện.',
+		icon: '/brand/toc/experiences-v1.webp',
+	},
+] as const;
+
+export default async function TocPage() {
+	const session = await auth();
+	const tiles = getMySpaceTiles(session?.user?.role);
+
 	return (
-		<main className="personal-book book-toc-page" data-testid="gate-home">
-			<h1 className="book-caption book-toc-label">Mục lục</h1>
-			<GateNav />
-			<div className="book-page-end">
-				<Link href={routes.contact}>Gửi lời nhắn ↗</Link>
+		<main className={`personal-book ${styles.page}`} data-testid="gate-home">
+			<Image
+				src="/brand/toc-journey.webp"
+				alt=""
+				fill
+				sizes="100vw"
+				preload
+				className={styles.landscape}
+				aria-hidden="true"
+			/>
+			<div className={styles.content}>
+				<header className={styles.header}>
+					<p className={styles.eyebrow}>Nguyễn Duy Khánh · Mục lục</p>
+					<h1>Bạn muốn ghé đâu?</h1>
+					<p>Một chút về tôi. Một không gian để học và chơi.</p>
+				</header>
+				<nav aria-label="My Space và About Me" className={styles.navigation}>
+					<section className={styles.space} aria-labelledby="toc-myspace">
+						<div className={styles.sectionLabel}>
+							<h2 id="toc-myspace">My Space</h2>
+							<span>Học · Dạy · Chơi</span>
+						</div>
+						<div className={styles.tiles}>
+							{tiles.map((tile) => (
+								<Link
+									key={tile.id}
+									href={tile.href!}
+									className={styles.tile}
+									data-testid={`myspace-tile-${tile.id}`}
+								>
+									<span className={styles.icon}>
+										{tile.visual.kind === 'image' ? (
+											<Image
+												src={tocIcons[tile.id] ?? tile.visual.src}
+												alt=""
+												width={112}
+												height={112}
+												sizes="(max-width: 760px) 88px, 112px"
+											/>
+										) : null}
+									</span>
+									<span className={styles.tileTitle}>
+										{tile.label}
+										<span className={styles.arrow} aria-hidden="true">
+											↗
+										</span>
+									</span>
+									<span className={styles.description}>{descriptions[tile.id]}</span>
+								</Link>
+							))}
+						</div>
+					</section>
+					<section className={styles.about} aria-labelledby="toc-about">
+						<div className={styles.sectionLabel}>
+							<h2 id="toc-about">About Me</h2>
+							<span>Về tôi</span>
+						</div>
+						<div className={styles.tiles}>
+							{aboutTiles.map((tile) => (
+								<Link
+									key={tile.id}
+									href={tile.href}
+									className={styles.tile}
+									data-testid={`gate-item-${tile.id}`}
+								>
+									<span className={styles.icon}>
+										<Image
+											src={tile.icon}
+											alt=""
+											width={112}
+											height={112}
+											sizes="(max-width: 760px) 88px, 112px"
+										/>
+									</span>
+									<span className={styles.tileTitle}>
+										{tile.label}
+										<span className={styles.arrow} aria-hidden="true">
+											↗
+										</span>
+									</span>
+									<span className={styles.description}>{tile.description}</span>
+								</Link>
+							))}
+						</div>
+					</section>
+				</nav>
+				<footer className={styles.footer}>
+					<span>Chưa xong. Và vẫn đang tiếp tục.</span>
+					<Link href={routes.contact}>Gửi lời nhắn ↗</Link>
+				</footer>
 			</div>
 		</main>
 	);

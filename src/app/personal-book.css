@@ -807,3 +807,702 @@ body:has(.personal-book) .book-chrome {
 	font-size: 16px;
 	line-height: 1.7;
 }
+
+/* Unified introduction — a short portrait, with depth available on demand. */
+.book-about .book-profile {
+	grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.25fr);
+	gap: clamp(40px, 6vw, 80px);
+	padding-block: 64px 72px;
+}
+.book-about .book-portrait {
+	max-width: 320px;
+	margin-inline: auto;
+}
+.book-about .book-profile h1 {
+	font-size: clamp(2.3rem, 4.3vw, 3.75rem);
+	font-weight: 500;
+	margin-block: 16px 12px;
+}
+.book-about .book-profile-intro {
+	max-width: 48ch;
+}
+.book-about .book-about-pillars {
+	font-size: 13px;
+	letter-spacing: 0;
+}
+.about-principles,
+.about-work,
+.about-collaboration {
+	border-top: 1px solid var(--hairline);
+	padding-block: clamp(36px, 5vw, 64px);
+	scroll-margin-top: 80px;
+}
+.book-about .about-section-label {
+	font-family: var(--font-inter), sans-serif;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0;
+	color: var(--bronze);
+}
+.about-principles blockquote {
+	max-width: 24ch;
+	margin-block: 22px 28px;
+	font-size: clamp(1.9rem, 3.5vw, 3rem);
+	font-weight: 400;
+	line-height: 1.3;
+	letter-spacing: -0.025em;
+	color: var(--bronze);
+}
+.about-principles > p {
+	max-width: 68ch;
+	color: var(--ink-secondary);
+}
+.about-project-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 24px;
+	margin-top: 32px;
+	list-style: none;
+}
+.about-project-grid > li {
+	min-width: 0;
+}
+.about-project-card {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	color: inherit;
+	text-decoration: none;
+}
+:is(.book-about, .book-experiences) .about-project-cover {
+	grid-column: auto;
+	grid-row: auto;
+	justify-content: center;
+	min-height: 0;
+	margin: 0;
+	padding: 20px 28px;
+	aspect-ratio: 1.9;
+	width: 100%;
+	transition: border-color 180ms ease;
+}
+:is(.book-about, .book-experiences) .about-project-cover svg {
+	height: auto;
+	max-height: 145px;
+}
+.about-project-copy {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	padding-top: 18px;
+}
+.about-project-status {
+	margin-bottom: 8px;
+	font-size: 12px;
+}
+:is(.book-about, .book-experiences) .about-project-copy h3 {
+	font-size: clamp(1.35rem, 1.9vw, 1.65rem);
+	font-weight: 500;
+	line-height: 1.35;
+	margin-bottom: 12px;
+	transition: color 180ms ease;
+}
+.about-project-summary {
+	font-size: 15px;
+	line-height: 1.7;
+	color: var(--ink-secondary);
+	margin-bottom: 20px;
+}
+.about-project-read {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-block: 12px;
+	border-bottom: 1px solid var(--hairline);
+	font-size: 14px;
+	color: var(--bronze);
+}
+.about-project-read > span {
+	transition: transform 180ms ease;
+}
+.about-project-card:hover h3,
+.about-project-card:focus-visible h3 {
+	color: var(--bronze);
+}
+.about-project-card:hover .about-project-cover {
+	border-color: var(--bronze);
+}
+.about-project-card:hover .about-project-read > span {
+	transform: translate(2px, -2px);
+}
+.about-research-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	margin-top: 22px;
+	font-size: 14px;
+	line-height: 1.6;
+	color: var(--ink-secondary);
+	text-decoration: underline;
+	text-decoration-color: var(--hairline);
+	text-underline-offset: 5px;
+}
+.about-research-link:hover {
+	color: var(--bronze);
+	text-decoration-color: currentColor;
+}
+.about-offers {
+	margin-top: 28px;
+}
+.about-offer {
+	display: grid;
+	grid-template-columns: 48px minmax(0, 1fr);
+	gap: 24px;
+	padding-block: 26px;
+	border-top: 1px solid var(--hairline);
+	scroll-margin-top: 80px;
+}
+.about-offer:last-child {
+	border-bottom: 1px solid var(--hairline);
+}
+.about-offer-number {
+	padding-top: 5px;
+	color: var(--bronze);
+}
+:is(.book-about, .book-experiences) .about-offer h3 {
+	font-size: clamp(1.35rem, 2vw, 1.6rem);
+	font-weight: 500;
+	margin-bottom: 8px;
+}
+.about-offer-description {
+	max-width: 68ch;
+	color: var(--ink-secondary);
+}
+.about-offer-details {
+	margin-top: 8px;
+}
+.about-offer-details > summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	width: fit-content;
+	min-height: 44px;
+	cursor: pointer;
+	list-style: none;
+	font-size: 14px;
+	color: var(--bronze);
+}
+.about-offer-details > summary::-webkit-details-marker {
+	display: none;
+}
+.about-disclosure-mark {
+	font-size: 22px;
+	line-height: 1;
+	transition: transform 180ms ease;
+}
+.about-offer-details[open] .about-disclosure-mark {
+	transform: rotate(45deg);
+}
+.about-offer-expanded {
+	margin-top: 12px;
+	padding: 24px;
+	border-left: 2px solid var(--hairline);
+	background: var(--paper);
+	font-size: 15px;
+	color: var(--ink-secondary);
+}
+.about-offer-audience {
+	margin-bottom: 12px;
+}
+.about-offer-topics {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 24px 32px;
+	margin-block: 28px;
+}
+:is(.book-about, .book-experiences) .about-offer-topics h4 {
+	font-family: var(--font-inter), sans-serif;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--ink);
+	margin-bottom: 8px;
+}
+.about-offer-topics ul {
+	list-style: disc;
+	padding-left: 18px;
+}
+.about-offer-topics li + li {
+	margin-top: 4px;
+}
+.about-offer-note {
+	border-top: 1px solid var(--hairline);
+	padding-top: 16px;
+	margin-bottom: 20px;
+	font-size: 14px;
+}
+.about-offer-deliverables {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+.about-offer-deliverables dt {
+	font-weight: 600;
+	color: var(--ink);
+}
+.about-working-principle {
+	max-width: 58ch;
+	margin-top: 28px;
+	color: var(--bronze);
+	font-family: var(--font-serif-display), serif;
+	font-size: 21px;
+	line-height: 1.5;
+}
+.book-about .about-closing {
+	max-width: none;
+	border-top: 1px solid var(--hairline);
+	padding-block: 56px 64px;
+}
+.about-closing h2 {
+	margin-bottom: 20px;
+}
+.about-closing .book-about-closing-lead {
+	max-width: 56ch;
+}
+@media (max-width: 767px) {
+	.book-about .book-profile {
+		grid-template-columns: minmax(0, 1fr);
+		padding-block: 24px 40px;
+		gap: 28px;
+	}
+	.book-about .book-portrait {
+		max-width: 200px;
+	}
+	.book-about .book-profile h1 {
+		font-size: clamp(2rem, 7.5vw, 3rem);
+	}
+	.book-about .book-about-role {
+		font-size: 15px;
+	}
+	.book-about .book-about-pillars {
+		font-size: 12px;
+	}
+	.book-about .book-profile-intro {
+		font-size: 17px;
+	}
+	.book-about .book-about-actions {
+		gap: 12px 24px;
+		margin-top: 24px;
+	}
+	.book-about .book-button {
+		padding: 12px 18px;
+		line-height: 1.5;
+	}
+	.about-project-grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 28px;
+		margin-top: 24px;
+	}
+	:is(.book-about, .book-experiences) .about-project-cover {
+		aspect-ratio: 2.2;
+	}
+	.about-offer {
+		grid-template-columns: 24px minmax(0, 1fr);
+		gap: 12px;
+		padding-block: 22px;
+	}
+	.about-offer-expanded {
+		padding: 18px 14px;
+	}
+	.about-offer-topics,
+	.about-offer-deliverables {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.about-offer-expanded .book-link {
+		font-size: 14px;
+		gap: 8px;
+	}
+	.book-about .about-closing {
+		padding-block: 36px 48px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.book-about *,
+	.book-about *::before,
+	.book-about *::after {
+		transition: none !important;
+	}
+}
+
+/* A short letter: two clear invitations, with a quiet illustrated margin. */
+.about-letter {
+	position: relative;
+	width: min(100%, 820px);
+	margin-inline: auto;
+	padding: 42px 32px 56px;
+}
+.about-intro {
+	position: relative;
+	padding: 16px 0 32px;
+}
+.about-landscape {
+	position: absolute;
+	inset: -40px -32px auto auto;
+	width: 500px;
+	height: 300px;
+	opacity: 0.35;
+	pointer-events: none;
+	mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+}
+.about-landscape img {
+	object-fit: cover;
+	object-position: right center;
+}
+.about-identity {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 28px;
+}
+.about-avatar {
+	position: relative;
+	flex-shrink: 0;
+	overflow: hidden;
+	width: 124px;
+	height: 140px;
+	object-fit: cover;
+	border-radius: 48% 48% 4px 4px;
+	mix-blend-mode: multiply;
+}
+.about-fullname {
+	font-size: 13px;
+	color: var(--ink-secondary);
+	margin-bottom: 6px;
+}
+.book-about .about-identity h1 {
+	font-size: clamp(2.5rem, 5vw, 4rem);
+	line-height: 1.15;
+	letter-spacing: -0.04em;
+	font-weight: 500;
+	margin-bottom: 12px;
+}
+.about-role {
+	font-size: 15px;
+	line-height: 1.65;
+	color: var(--ink-secondary);
+}
+.about-teacher-line {
+	position: relative;
+	margin-top: 28px;
+	font-family: var(--font-serif-display), serif;
+	font-size: 20px;
+	font-style: italic;
+	color: var(--bronze);
+}
+.about-paths {
+	scroll-margin-top: 80px;
+}
+.about-path {
+	display: grid;
+	grid-template-columns: 30px minmax(0, 1fr);
+	gap: 18px;
+	border-top: 1px solid var(--hairline);
+	padding: 26px 0;
+	scroll-margin-top: 80px;
+}
+.about-path-number {
+	font-size: 12px;
+	padding-top: 6px;
+	color: var(--bronze);
+}
+.book-about .about-path h2 {
+	font-size: clamp(1.5rem, 2.5vw, 1.9rem);
+	font-weight: 500;
+	margin-bottom: 8px;
+}
+.about-path p {
+	max-width: 60ch;
+	color: var(--ink-secondary);
+	font-size: 16px;
+	line-height: 1.7;
+}
+.about-text-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
+	min-height: 44px;
+	font-size: 14px;
+	color: var(--bronze);
+	text-decoration: underline;
+	text-decoration-color: transparent;
+	text-underline-offset: 5px;
+	transition: text-decoration-color 180ms ease;
+}
+.about-text-link span {
+	display: inline-block;
+	transition: transform 180ms ease;
+}
+.about-text-link:hover {
+	text-decoration-color: currentColor;
+}
+.about-text-link:hover span {
+	transform: translateX(3px);
+}
+.about-path .about-text-link {
+	margin-top: 6px;
+}
+.about-experience-note {
+	border-top: 1px solid var(--hairline);
+	padding-top: 24px;
+	scroll-margin-top: 80px;
+}
+.about-experience-note p {
+	max-width: 54ch;
+	color: var(--ink-secondary);
+	font-size: 14px;
+}
+.about-experience-note .about-text-link {
+	margin-top: 4px;
+}
+@keyframes about-appear {
+	from {
+		transform: translateY(8px);
+		opacity: 0.15;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+.about-identity,
+.about-teacher-line,
+.about-path,
+.about-experience-note {
+	animation: about-appear 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.about-teacher-line {
+	animation-delay: 60ms;
+}
+.about-path:nth-child(1) {
+	animation-delay: 100ms;
+}
+.about-path:nth-child(2) {
+	animation-delay: 150ms;
+}
+.about-experience-note {
+	animation-delay: 190ms;
+}
+.experience-shell {
+	max-width: 1040px;
+	margin-inline: auto;
+	padding: 48px 32px 56px;
+}
+.experience-heading {
+	padding: 24px 0 40px;
+}
+.experience-heading h1 {
+	margin: 10px 0 16px;
+}
+.experience-heading > p:last-child {
+	max-width: 54ch;
+	color: var(--ink-secondary);
+}
+.experience-section {
+	border-top: 1px solid var(--hairline);
+	padding-block: 36px;
+	scroll-margin-top: 80px;
+}
+.book-experiences .experience-section > h2 {
+	font-size: 26px;
+	font-weight: 500;
+}
+.book-experiences .about-project-grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 32px;
+}
+.experience-quiet {
+	margin-top: 16px;
+	font-size: 15px;
+	color: var(--ink-secondary);
+}
+.experience-story-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 28px;
+	list-style: none;
+	margin-top: 24px;
+}
+.experience-story-card {
+	display: block;
+	color: inherit;
+}
+.experience-story-card > .experience-photo {
+	width: 100%;
+	aspect-ratio: 1.5;
+	height: auto;
+	object-fit: cover;
+	margin-bottom: 16px;
+}
+.experience-story-card h3 {
+	font-size: 22px;
+}
+.experience-story-card p {
+	font-size: 14px;
+	line-height: 1.7;
+	color: var(--ink-secondary);
+	margin-top: 8px;
+}
+.experience-story-card:hover h3 {
+	color: var(--bronze);
+}
+.experience-footer,
+.experience-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 12px 24px;
+	border-top: 1px solid var(--hairline);
+	padding-top: 20px;
+}
+.experience-pagination {
+	margin-top: 32px;
+	font-size: 14px;
+}
+.experience-article {
+	max-width: 800px;
+	margin-inline: auto;
+	padding: 40px 24px 80px;
+}
+.experience-article header {
+	margin-block: 28px;
+}
+.experience-article header > p {
+	margin-top: 20px;
+	color: var(--ink-secondary);
+}
+.experience-article-cover {
+	width: 100%;
+	height: auto;
+	margin-bottom: 28px;
+}
+.experience-prose {
+	font-size: 18px;
+	line-height: 1.85;
+	overflow-wrap: anywhere;
+}
+.experience-prose :is(p, ul, ol, blockquote, figure, table, pre) {
+	margin-block: 20px;
+}
+.experience-prose :is(ul, ol) {
+	padding-left: 24px;
+}
+.experience-prose ul {
+	list-style: disc;
+}
+.experience-prose ol {
+	list-style: decimal;
+}
+.experience-prose img {
+	max-width: 100%;
+	height: auto;
+}
+.experience-prose :is(h2, h3) {
+	margin-block: 32px 12px;
+}
+.experience-prose a {
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	color: var(--bronze);
+}
+.experience-prose blockquote {
+	padding-left: 20px;
+	border-left: 2px solid var(--bronze);
+}
+.experience-prose :is(table, pre) {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+}
+@media (max-width: 600px) {
+	.about-letter {
+		padding: 20px 24px 36px;
+	}
+	.about-identity {
+		gap: 18px;
+	}
+	.about-avatar {
+		position: relative;
+		flex-shrink: 0;
+		overflow: hidden;
+		width: 80px;
+		height: 108px;
+		flex-shrink: 0;
+	}
+	.about-fullname {
+		font-size: 11px;
+	}
+	.book-about .about-identity h1 {
+		font-size: clamp(1.8rem, 7vw, 2.6rem);
+		margin-bottom: 8px;
+	}
+	.about-role {
+		font-size: 13px;
+	}
+	.about-landscape {
+		right: -24px;
+		width: 320px;
+		height: 250px;
+		opacity: 0.25;
+	}
+	.about-teacher-line {
+		font-size: 18px;
+		margin-top: 24px;
+		max-width: 29ch;
+	}
+	.about-intro {
+		padding-bottom: 26px;
+	}
+	.about-path {
+		gap: 12px;
+		grid-template-columns: 20px minmax(0, 1fr);
+		padding-block: 22px;
+	}
+	.about-path p {
+		font-size: 15px;
+	}
+	.experience-shell {
+		padding: 20px 24px 40px;
+	}
+	.book-experiences .about-project-grid,
+	.experience-story-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.experience-heading {
+		padding-top: 12px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.book-about *,
+	.book-experiences * {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
+.about-avatar img {
+	object-fit: cover;
+}
+
+.experience-photo {
+	position: relative;
+	aspect-ratio: 3 / 2;
+	overflow: hidden;
+	background: var(--paper) url('/brand/learning-landscape.webp') center right / cover no-repeat;
+}
+.experience-photo img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}

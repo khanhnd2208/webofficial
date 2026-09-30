@@ -26,7 +26,13 @@ const covers: Record<string, { mark: string; title: string; steps: string[]; sha
 		shape: 'research',
 	},
 };
-export default function ProjectCover({ project }: { project: Project }) {
+export default function ProjectCover({
+	project,
+	compact = false,
+}: {
+	project: Project;
+	compact?: boolean;
+}) {
 	const c = covers[project.slug] ?? {
 		mark: project.kicker,
 		title: project.title,
@@ -34,8 +40,11 @@ export default function ProjectCover({ project }: { project: Project }) {
 		shape: 'research',
 	};
 	return (
-		<figure className={`book-project-cover cover-${c.shape}`}>
-			<span className="book-caption">{c.mark}</span>
+		<figure
+			className={`book-project-cover cover-${c.shape}${compact ? ' about-project-cover' : ''}`}
+			aria-hidden={compact || undefined}
+		>
+			{!compact ? <span className="book-caption">{c.mark}</span> : null}
 			<svg viewBox="0 0 320 160" fill="none" aria-hidden="true">
 				{c.shape === 'strategy' ? (
 					<>
@@ -71,13 +80,15 @@ export default function ProjectCover({ project }: { project: Project }) {
 					</>
 				)}
 			</svg>
-			<p className="book-cover-thesis">{c.title}</p>
-			<div className="book-cover-steps">
-				{c.steps.map((s) => (
-					<span key={s}>{s}</span>
-				))}
-			</div>
-			<figcaption className="book-caption">Minh họa ý tưởng dự án</figcaption>
+			{!compact ? <p className="book-cover-thesis">{c.title}</p> : null}
+			{!compact ? (
+				<div className="book-cover-steps">
+					{c.steps.map((s) => (
+						<span key={s}>{s}</span>
+					))}
+				</div>
+			) : null}
+			{!compact ? <figcaption className="book-caption">Minh họa ý tưởng dự án</figcaption> : null}
 		</figure>
 	);
 }

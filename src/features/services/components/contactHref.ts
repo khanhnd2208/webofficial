@@ -1,5 +1,5 @@
 import { routes } from '@/config/routes';
 
-export function contactHref(inquiryType: string) {
-	return `${routes.contact}?type=${inquiryType}&sourcePage=${encodeURIComponent(routes.services)}`;
+export function contactHref(inquiryType: string, sourcePage: string = routes.about) {
+	return `${routes.contact}?type=${encodeURIComponent(inquiryType)}&sourcePage=${encodeURIComponent(sourcePage)}`;
 }

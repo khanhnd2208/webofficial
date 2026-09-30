@@ -334,7 +334,7 @@ export default function CreatePostPage() {
 					</Link>
 					<Link
 						className="font-medium underline underline-offset-2"
-						href={`/bai-viet/${saveState.slug}`}
+						href={`/trai-nghiem/${saveState.slug}`}
 						target="_blank"
 					>
 						Xem bài viết ↗

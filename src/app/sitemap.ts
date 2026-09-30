@@ -17,10 +17,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			priority: 0.9,
 		},
 		{
-			url: absoluteUrl(routes.projects),
+			url: absoluteUrl(routes.experiences),
 			lastModified: now,
-			changeFrequency: 'monthly',
-			priority: 0.9,
+			changeFrequency: 'weekly',
+			priority: 0.85,
 		},
 		...projects.map((project) => ({
 			url: absoluteUrl(routes.project(project.slug)),
@@ -28,12 +28,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			changeFrequency: 'monthly' as const,
 			priority: 0.8,
 		})),
-		{
-			url: absoluteUrl(routes.services),
-			lastModified: now,
-			changeFrequency: 'monthly',
-			priority: 0.9,
-		},
 		{
 			url: absoluteUrl(routes.mySpace),
 			lastModified: now,
