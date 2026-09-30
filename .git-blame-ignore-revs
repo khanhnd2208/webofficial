@@ -1,0 +1,9 @@
+# Formatting-only commits. GitHub blame skips these automatically.
+# Locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+# Keep these SHAs valid: land the branch with a merge commit or fast-forward.
+# Squash or rebase merges create new SHAs; update this file if that happens.
+
+# style: format the codebase with prettier
+6ff320b4d0e963866bd80e25bdd99c318f16139d
+# style(board-games): apply prettier to board-game files before the move
+74a93c6996cde0a0eafe1dc15fe2d2309114f5a3

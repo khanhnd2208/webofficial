@@ -11,6 +11,8 @@
 		"prebuild": "npm run prisma:generate",
 		"start": "next start",
 		"lint": "eslint",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:watch": "vitest",
@@ -22,7 +24,7 @@
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
 		"test:db:setup": "bash scripts/setup-test-db.sh",
-		"check": "npm run typecheck && npm run lint -- --max-warnings=0 && npm run test:all && npm audit --omit=dev --audit-level=moderate && npm run build",
+		"check": "npm run typecheck && npm run lint -- --max-warnings=0 && npm run format:check && npm run test:all && npm audit --omit=dev --audit-level=moderate && npm run build",
 		"prepare": "husky",
 		"db:seed": "npx tsx prisma/seed.ts",
 		"db:seed:my-class": "npx tsx scripts/seed-my-class.ts",
@@ -126,11 +128,11 @@
 		"vitest": "^4.1.11"
 	},
 	"lint-staged": {
-		"*.{ts,tsx}": [
+		"*.{ts,tsx,mjs}": [
 			"eslint --fix",
 			"prettier --write"
 		],
-		"*.{json,md,css}": [
+		"*.{json,css,yml}": [
 			"prettier --write"
 		]
 	},
