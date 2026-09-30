@@ -1,0 +1,1 @@
+../../.cursor/rules/my-class-ui.mdc

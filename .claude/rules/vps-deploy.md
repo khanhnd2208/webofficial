@@ -1,0 +1,1 @@
+../../.cursor/rules/vps-deploy.mdc
