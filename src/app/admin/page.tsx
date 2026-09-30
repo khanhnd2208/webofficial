@@ -1,79 +1,83 @@
 import Link from 'next/link';
+
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { AdminIcon, type AdminIconName } from '@/components/admin/AdminIcon';
+import { AdminIcon } from '@/components/admin/AdminIcon';
 import { AdminLink } from '@/components/admin/AdminPrimitives';
+import { adminDate, excerpt, relativeTime } from '@/components/admin/inquiryNavigation';
 import styles from '@/components/admin/AdminStudio.module.css';
-import { getAdminOverviewStats } from '@/services/adminDashboardService';
 import { routes } from '@/config/routes';
+import { INQUIRY_TYPE_LABELS } from '@/features/inquiries/constants';
+import { countFailedNotifications, getAdminOverviewStats } from '@/services/adminDashboardService';
+import { listInquiries } from '@/services/inquiryService';
+
 export const dynamic = 'force-dynamic';
-const shortcuts: { href: string; label: string; description: string; icon: AdminIconName }[] = [
-	{
-		href: routes.admin.website,
-		label: 'Website',
-		description: 'Xem các trang và mở công cụ quản lý nội dung.',
-		icon: 'website',
-	},
-	{
-		href: routes.admin.inquiries,
-		label: 'Hộp thư liên hệ',
-		description: 'Đọc lời nhắn và theo dõi quá trình trao đổi.',
-		icon: 'inbox',
-	},
-	{
-		href: routes.admin.learnAnalytics,
-		label: 'Thống kê học tập',
-		description: 'Xem lượt học, tiến độ và thời gian tương tác.',
-		icon: 'analytics',
-	},
-];
+
 export default async function AdminHomePage() {
-	const stats = await getAdminOverviewStats();
+	const [stats, recent, failedNotifications] = await Promise.all([
+		getAdminOverviewStats(),
+		listInquiries({ status: 'NEW', page: 1, limit: 5 }),
+		countFailedNotifications(),
+	]);
+	const waiting = stats.website.newInquiries;
+
 	return (
 		<div className={styles.page}>
 			<AdminPageHeader
-				eyebrow="Admin Studio"
 				title="Tổng quan"
-				description="Quản lý website, theo dõi liên hệ và hoạt động học tập."
+				description="Việc cần xử lý trên website và lối vào không gian giảng dạy."
 			/>
 			<div className={styles.stack}>
-				<section className={`${styles.panel} ${styles.hero}`} aria-labelledby="new-inquiries">
-					<div>
-						<p className={styles.meta}>Cần xem</p>
-						<h2 id="new-inquiries" className="mt-1 font-semibold">
-							Liên hệ mới
-						</h2>
-						<p className={styles.statValue}>{stats.website.newInquiries.toLocaleString('vi-VN')}</p>
-						<p className={styles.meta}>
-							{stats.website.newInquiries
-								? 'Lời nhắn đang chờ bạn xem trong hộp thư.'
-								: 'Không có liên hệ mới cần xem.'}
+				{failedNotifications > 0 ? (
+					<section className={styles.alert}>
+						<p className="inline-flex items-center gap-2 font-semibold">
+							<AdminIcon name="warning" size={18} />
+							{failedNotifications.toLocaleString('vi-VN')} thông báo liên hệ gửi thất bại
 						</p>
+						<AdminLink href={`${routes.admin.inquiries}?notice=failed`} tone="secondary">
+							Xem thông báo lỗi
+						</AdminLink>
+					</section>
+				) : null}
+				<section className={styles.panel} aria-labelledby="waiting-inquiries">
+					<div className="flex flex-wrap items-start justify-between gap-4">
+						<div>
+							<h2 id="waiting-inquiries" className={styles.sectionTitle}>
+								Liên hệ chờ xử lý
+							</h2>
+							<p className={styles.statValue}>{waiting.toLocaleString('vi-VN')}</p>
+							<p className={styles.meta}>
+								{waiting ? 'Lời nhắn mới nhất đang chờ xem.' : 'Không có liên hệ mới cần xem.'}
+							</p>
+						</div>
+						<AdminLink href={`${routes.admin.inquiries}?status=NEW`} tone="primary" icon="inbox">
+							Xem tất cả ({waiting.toLocaleString('vi-VN')})
+						</AdminLink>
 					</div>
-					<AdminLink href={`${routes.admin.inquiries}?status=NEW`} tone="primary" icon="inbox">
-						Xem liên hệ mới
-					</AdminLink>
-				</section>
-				<section aria-labelledby="shortcuts">
-					<h2 id="shortcuts" className={styles.sectionTitle}>
-						Thao tác nhanh
-					</h2>
-					<div className={styles.grid}>
-						{shortcuts.map((item) => (
-							<Link
-								key={item.href}
-								href={item.href}
-								className={`${styles.panel} transition-colors hover:border-accent`}
-							>
-								<span className={styles.iconTile}>
-									<AdminIcon name={item.icon} />
-								</span>
-								<h3 className="mt-4 font-semibold">
-									{item.label} <span aria-hidden="true">→</span>
-								</h3>
-								<p className={`${styles.meta} mt-2`}>{item.description}</p>
-							</Link>
-						))}
-					</div>
+					{recent.items.length ? (
+						<div className={styles.queue}>
+							{recent.items.map((item) => (
+								<Link key={item.id} href={`${routes.admin.inquiries}/${item.id}`}>
+									<span className="font-semibold">
+										{item.name}
+										<span className={styles.meta}>
+											{' · '}
+											{INQUIRY_TYPE_LABELS[item.inquiryType]}
+										</span>
+									</span>
+									<span className={`${styles.meta} ${styles.excerpt}`}>
+										{excerpt(item.context)}
+									</span>
+									<time
+										dateTime={item.createdAt}
+										title={adminDate(item.createdAt)}
+										className={styles.meta}
+									>
+										{relativeTime(item.createdAt)}
+									</time>
+								</Link>
+							))}
+						</div>
+					) : null}
 				</section>
 				<section className={styles.panel}>
 					<div className="flex flex-wrap items-center justify-between gap-4">

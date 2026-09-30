@@ -32,3 +32,12 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 		activeRecall: { decks, published },
 	};
 }
+
+export async function countFailedNotifications(): Promise<number> {
+	await dbConnect();
+	// Same rule as failedNotificationFilter in inquiryService: a dedicated failed
+	// flag wins, and a missing flag falls back to the legacy emailStatus.
+	return Inquiry.countDocuments({
+		$or: [{ adminEmailStatus: 'failed' }, { adminEmailStatus: null, emailStatus: 'failed' }],
+	});
+}

@@ -15,7 +15,6 @@ export default function AdminArchivePage() {
 	return (
 		<div className={styles.page}>
 			<AdminPageHeader
-				eyebrow="Kho lưu trữ"
 				title="Kho lưu trữ"
 				description="Các module tạm dừng. Mở một mục để dùng đầy đủ — luôn trong giao diện lưu trữ, không xuất hiện lại trên menu admin chính."
 			/>

@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 import dbConnect from '@/lib/dbConnect';
 import { AppError } from '@/lib/appError';
 import { sendInquiryAdminNotification, sendInquiryEmails } from '@/lib/inquiryEmail';
@@ -67,6 +69,7 @@ export interface InquiryListItemDTO {
 	email: string;
 	submitterType?: 'account' | 'guest';
 	inquiryType: IInquiry['inquiryType'];
+	organization?: string;
 	context: string;
 	status: InquiryStatus;
 	adminEmailStatus: InquiryEmailStatus;
@@ -168,6 +171,7 @@ function toListItemDTO(doc: InquiryLean): InquiryListItemDTO {
 		email: doc.email,
 		submitterType: doc.submitterType,
 		inquiryType: doc.inquiryType,
+		organization: doc.organization,
 		context: doc.context,
 		status: doc.status,
 		adminEmailStatus: delivery.adminEmailStatus,
@@ -251,26 +255,31 @@ export async function createInquiry(
 	return toDTO(refreshed);
 }
 
-export async function listInquiries(query: ListInquiriesQuery): Promise<ListInquiriesResult> {
-	const page = Math.max(1, Math.floor(query.page));
-	const limit = Math.min(50, Math.max(1, Math.floor(query.limit)));
+type InquiryListOptions = ListInquiriesQuery & { failedNotification?: boolean };
 
-	await dbConnect();
+/** Matches resolveEmailDelivery: a dedicated failed flag, or a legacy emailStatus when the new field is absent. */
+export function failedNotificationFilter(): Record<string, unknown> {
+	return {
+		$or: [{ adminEmailStatus: 'failed' }, { adminEmailStatus: null, emailStatus: 'failed' }],
+	};
+}
 
+function inquiryMatch(query: Partial<InquiryListOptions>): Record<string, unknown> {
 	const filter: Record<string, unknown> = {};
+	const clauses: Record<string, unknown>[] = [];
 	if (query.status) filter.status = query.status;
 	if (query.inquiryType) filter.inquiryType = query.inquiryType;
-
 	if (query.search) {
 		const escaped = query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-		filter.$or = [
-			{ name: { $regex: escaped, $options: 'i' } },
-			{ email: { $regex: escaped, $options: 'i' } },
-			{ context: { $regex: escaped, $options: 'i' } },
-			{ organization: { $regex: escaped, $options: 'i' } },
-		];
+		clauses.push({
+			$or: [
+				{ name: { $regex: escaped, $options: 'i' } },
+				{ email: { $regex: escaped, $options: 'i' } },
+				{ context: { $regex: escaped, $options: 'i' } },
+				{ organization: { $regex: escaped, $options: 'i' } },
+			],
+		});
 	}
-
 	if (query.dateFrom || query.dateTo) {
 		const dateFilter: Record<string, Date> = {};
 		if (query.dateFrom) dateFilter.$gte = new Date(query.dateFrom);
@@ -281,11 +290,93 @@ export async function listInquiries(query: ListInquiriesQuery): Promise<ListInqu
 		}
 		filter.createdAt = dateFilter;
 	}
+	if (query.failedNotification) clauses.push(failedNotificationFilter());
+	if (clauses.length === 1) Object.assign(filter, clauses[0]);
+	else if (clauses.length > 1) filter.$and = clauses;
+	return filter;
+}
+
+export async function countInquiriesByStatus(query: {
+	search?: string;
+	inquiryType?: IInquiry['inquiryType'];
+}): Promise<{ all: number; byStatus: Record<InquiryStatus, number> }> {
+	await dbConnect();
+	const rows = await Inquiry.aggregate<{ _id: InquiryStatus; count: number }>([
+		{ $match: inquiryMatch({ search: query.search, inquiryType: query.inquiryType }) },
+		{ $group: { _id: '$status', count: { $sum: 1 } } },
+	]);
+	const byStatus = {
+		NEW: 0,
+		REVIEWING: 0,
+		NEED_MORE_INFO: 0,
+		QUALIFIED: 0,
+		CALL_SCHEDULED: 0,
+		PROPOSAL_SENT: 0,
+		WON: 0,
+		CLOSED: 0,
+	};
+	let all = 0;
+	for (const row of rows) {
+		all += row.count;
+		if (row._id in byStatus) byStatus[row._id] = row.count;
+	}
+	return { all, byStatus };
+}
+
+export async function getAdjacentInquiryIds(
+	id: string,
+	query: {
+		status?: InquiryStatus;
+		inquiryType?: IInquiry['inquiryType'];
+		search?: string;
+		failedNotification?: boolean;
+	},
+): Promise<{ previousId: string | null; nextId: string | null }> {
+	const cleaned = String(id ?? '').trim();
+	if (!mongoose.Types.ObjectId.isValid(cleaned)) return { previousId: null, nextId: null };
+	await dbConnect();
+	const current = await Inquiry.findById(cleaned).select({ createdAt: 1 }).lean();
+	if (!current?.createdAt) return { previousId: null, nextId: null };
+	const match = inquiryMatch(query);
+	const createdAt = current.createdAt;
+	const objectId = new mongoose.Types.ObjectId(cleaned);
+	const [previous, next] = await Promise.all([
+		Inquiry.findOne({
+			$and: [
+				match,
+				{ $or: [{ createdAt: { $gt: createdAt } }, { createdAt, _id: { $gt: objectId } }] },
+			],
+		})
+			.sort({ createdAt: 1, _id: 1 })
+			.select({ _id: 1 })
+			.lean(),
+		Inquiry.findOne({
+			$and: [
+				match,
+				{ $or: [{ createdAt: { $lt: createdAt } }, { createdAt, _id: { $lt: objectId } }] },
+			],
+		})
+			.sort({ createdAt: -1, _id: -1 })
+			.select({ _id: 1 })
+			.lean(),
+	]);
+	return {
+		previousId: previous ? String(previous._id) : null,
+		nextId: next ? String(next._id) : null,
+	};
+}
+
+export async function listInquiries(query: InquiryListOptions): Promise<ListInquiriesResult> {
+	const page = Math.max(1, Math.floor(query.page));
+	const limit = Math.min(50, Math.max(1, Math.floor(query.limit)));
+
+	await dbConnect();
+	const filter = inquiryMatch(query);
 
 	const [total, items] = await Promise.all([
 		Inquiry.countDocuments(filter),
 		Inquiry.find(filter)
-			.sort({ createdAt: -1 })
+			.sort({ createdAt: -1, _id: -1 })
 			.skip((page - 1) * limit)
 			.limit(limit)
 			.lean(),

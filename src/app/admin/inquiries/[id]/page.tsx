@@ -1,22 +1,27 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminLink } from '@/components/admin/AdminPrimitives';
 import { InquiryBadge } from '@/components/admin/InquiryBadges';
 import {
 	adminDate,
 	inquiryListHref,
+	inquiryQuery,
+	relativeTime,
 	type InquiryQuery,
 } from '@/components/admin/inquiryNavigation';
 import styles from '@/components/admin/AdminStudio.module.css';
-import { notFound } from 'next/navigation';
-
-import InquiryAdminActions from '../InquiryAdminActions';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { getInquiry } from '@/services/inquiryService';
 import { routes } from '@/config/routes';
 import {
-	INQUIRY_STATUS_LABELS,
-	INQUIRY_EMAIL_STATUS_LABELS,
+	INQUIRY_STATUSES,
+	INQUIRY_TYPES,
 	INQUIRY_TYPE_LABELS,
+	type InquiryStatus,
+	type InquiryType,
 } from '@/features/inquiries/constants';
+import { getAdjacentInquiryIds, getInquiry } from '@/services/inquiryService';
+import InquiryAdminActions, { CopyEmailButton } from '../InquiryAdminActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,146 +33,109 @@ export default async function AdminInquiryDetailPage({
 	searchParams?: Promise<InquiryQuery>;
 }) {
 	const { id } = await params;
-	const returnHref = inquiryListHref((await searchParams) ?? {});
+	const query = (await searchParams) ?? {};
+	const returnHref = inquiryListHref(query);
 	const inquiry = await getInquiry(id);
 	if (!inquiry) notFound();
+	const adjacent = await getAdjacentInquiryIds(id, {
+		status: INQUIRY_STATUSES.includes(query.status as InquiryStatus)
+			? (query.status as InquiryStatus)
+			: undefined,
+		inquiryType: INQUIRY_TYPES.includes(query.inquiryType as InquiryType)
+			? (query.inquiryType as InquiryType)
+			: undefined,
+		search: query.search,
+		failedNotification: query.notice === 'failed',
+	});
+	const detailHref = (target: string) =>
+		`${routes.admin.inquiries}/${encodeURIComponent(target)}${inquiryQuery(query)}`;
 	const typeLabel = INQUIRY_TYPE_LABELS[inquiry.inquiryType];
 	const replyHref = `mailto:${inquiry.email}?subject=${encodeURIComponent(
 		`Phản hồi lời nhắn: ${typeLabel}`,
 	)}`;
+	const sentAt = adminDate(inquiry.createdAt);
 
 	return (
 		<div className={styles.page}>
 			<AdminPageHeader
-				eyebrow="Hộp thư liên hệ"
-				breadcrumbs={[
-					{ label: 'Tổng quan', href: routes.admin.home },
-					{ label: 'Hộp thư liên hệ', href: returnHref },
-				]}
+				breadcrumbs={[{ label: 'Hộp thư liên hệ', href: returnHref }]}
 				title={inquiry.name}
 				description={
 					<>
 						<a href={`mailto:${inquiry.email}`} className="underline">
 							{inquiry.email}
 						</a>
+						{inquiry.organization ? ` · ${inquiry.organization}` : ''}
 						{' · '}
-						{typeLabel} · <InquiryBadge status={inquiry.status} />
+						<time dateTime={inquiry.createdAt} title={sentAt}>
+							{relativeTime(inquiry.createdAt)}
+						</time>
+						{' · '}
+						{sentAt}
+						{' · '}
+						<InquiryBadge status={inquiry.status} />
 					</>
 				}
 				actions={
-					<AdminLink href={returnHref} icon="back">
-						Danh sách
-					</AdminLink>
+					<>
+						<a href={replyHref} className={`${styles.button} ${styles.primary}`}>
+							Trả lời qua email
+						</a>
+						<CopyEmailButton email={inquiry.email} />
+					</>
 				}
 			/>
-			<div className="mt-4 flex flex-wrap items-center gap-3">
-				<span className="rounded-full border border-border px-3 py-1 text-xs font-semibold">
-					{inquiry.submitterType === 'account'
-						? 'Tài khoản'
-						: inquiry.submitterType === 'guest'
-							? 'Khách'
-							: 'Không xác định'}
-				</span>
-				<a href={replyHref} className={`${styles.button} ${styles.primary}`}>
-					Trả lời qua email
-				</a>
-			</div>
-
-			<section className={`${styles.detail} mt-8`}>
-				<div className="space-y-6">
-					<div className={styles.panel}>
-						<h2 className={styles.sectionTitle}>Bối cảnh</h2>
-						<p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{inquiry.context}</p>
-					</div>
-					{inquiry.problem ? (
-						<div className={styles.panel}>
-							<h2 className={styles.sectionTitle}>Vấn đề</h2>
-							<p className="mt-3 whitespace-pre-wrap text-sm">{inquiry.problem}</p>
-						</div>
-					) : null}
-					{inquiry.desiredOutcome ? (
-						<div className={styles.panel}>
-							<h2 className={styles.sectionTitle}>Kết quả mong muốn</h2>
-							<p className="mt-3 whitespace-pre-wrap text-sm">{inquiry.desiredOutcome}</p>
-						</div>
-					) : null}
-					<dl className={`${styles.panel} grid gap-4 sm:grid-cols-2`}>
-						<div>
-							<dt className="text-xs uppercase text-muted">Chủ đề</dt>
-							<dd className="mt-1">{typeLabel}</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Người gửi</dt>
-							<dd className="mt-1">
-								{inquiry.submitterType === 'account'
-									? 'Tài khoản'
-									: inquiry.submitterType === 'guest'
-										? 'Khách'
-										: 'Không xác định'}
-							</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Vai trò / giai đoạn</dt>
-							<dd className="mt-1">{inquiry.roleOrStage || '—'}</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Tổ chức</dt>
-							<dd className="mt-1">{inquiry.organization || '—'}</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Hình thức</dt>
-							<dd className="mt-1">{inquiry.preferredFormat || '—'}</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Thời gian</dt>
-							<dd className="mt-1">{inquiry.timeframe || '—'}</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Trang nguồn</dt>
-							<dd className="mt-1 break-all">{inquiry.sourcePage || '—'}</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Khóa học nguồn</dt>
-							<dd className="mt-1 break-all">{inquiry.sourceCourseSlug || '—'}</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Thông báo admin</dt>
-							<dd className="mt-1">
-								{INQUIRY_EMAIL_STATUS_LABELS[inquiry.adminEmailStatus]}
-								{inquiry.adminEmailError ? ` — ${inquiry.adminEmailError}` : ''}
-							</dd>
-						</div>
-						<div>
-							<dt className="text-xs uppercase text-muted">Xác nhận người gửi</dt>
-							<dd className="mt-1">
-								{INQUIRY_EMAIL_STATUS_LABELS[inquiry.senderEmailStatus]}
-								{inquiry.senderEmailError ? ` — ${inquiry.senderEmailError}` : ''}
-							</dd>
-						</div>
-					</dl>
-					<div className={styles.panel}>
-						<h2 className={styles.sectionTitle}>Lịch sử trạng thái</h2>
-						<ul className="mt-3 space-y-2 text-sm">
-							{inquiry.statusHistory.map((h, idx) => (
-								<li key={`${h.status}-${idx}`}>
-									{INQUIRY_STATUS_LABELS[h.status]} · {adminDate(h.at)}
-									{h.note ? ` — ${h.note}` : ''}
-								</li>
-							))}
-						</ul>
-					</div>
-				</div>
-				<div>
-					<InquiryAdminActions
-						key={inquiry.id}
-						inquiryId={inquiry.id}
-						initialNotes={inquiry.internalNotes ?? ''}
-						returnHref={returnHref}
-						currentStatus={inquiry.status}
-						adminEmailStatus={inquiry.adminEmailStatus}
-					/>
-				</div>
-			</section>
+			<nav aria-label="Liên hệ liền kề" className={styles.adjacent}>
+				{adjacent.previousId ? (
+					<AdminLink href={detailHref(adjacent.previousId)} icon="back" tone="quiet">
+						Trước
+					</AdminLink>
+				) : (
+					<span className={`${styles.button} ${styles.quiet}`} aria-disabled="true">
+						Trước
+					</span>
+				)}
+				{adjacent.nextId ? (
+					<Link href={detailHref(adjacent.nextId)} className={`${styles.button} ${styles.quiet}`}>
+						Sau
+					</Link>
+				) : (
+					<span className={`${styles.button} ${styles.quiet}`} aria-disabled="true">
+						Sau
+					</span>
+				)}
+			</nav>
+			<InquiryAdminActions
+				key={inquiry.id}
+				inquiryId={inquiry.id}
+				initialNotes={inquiry.internalNotes ?? ''}
+				returnHref={returnHref}
+				nextHref={adjacent.nextId ? detailHref(adjacent.nextId) : undefined}
+				currentStatus={inquiry.status}
+				adminEmailStatus={inquiry.adminEmailStatus}
+				adminEmailError={inquiry.adminEmailError}
+				message={{
+					context: inquiry.context,
+					problem: inquiry.problem,
+					desiredOutcome: inquiry.desiredOutcome,
+				}}
+				extras={[
+					{ label: 'Chủ đề', value: typeLabel },
+					{ label: 'Vai trò / giai đoạn', value: inquiry.roleOrStage },
+					{ label: 'Tổ chức', value: inquiry.organization },
+					{ label: 'Quy mô', value: inquiry.orgSize },
+					{ label: 'Ngành', value: inquiry.industry },
+					{ label: 'Hình thức', value: inquiry.preferredFormat },
+					{ label: 'Thời gian', value: inquiry.timeframe },
+					{ label: 'Mức độ khẩn', value: inquiry.urgency },
+					{ label: 'Ngân sách', value: inquiry.budgetOptional },
+					{ label: 'Hệ quả', value: inquiry.consequence },
+					{ label: 'Đã thử', value: inquiry.tried },
+					{ label: 'Trang nguồn', value: inquiry.sourcePage },
+					{ label: 'Khóa học nguồn', value: inquiry.sourceCourseSlug },
+				]}
+				history={inquiry.statusHistory}
+			/>
 		</div>
 	);
 }

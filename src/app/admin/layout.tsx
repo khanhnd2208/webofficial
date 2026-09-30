@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { AdminForbidden } from '@/components/admin/AdminForbidden';
@@ -16,5 +17,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 		return <AdminForbidden />;
 	}
 
-	return <AdminShell>{children}</AdminShell>;
+	const sidebarCollapsed = (await cookies()).get('admin-sidebar-collapsed')?.value === '1';
+	return <AdminShell sidebarCollapsed={sidebarCollapsed}>{children}</AdminShell>;
 }

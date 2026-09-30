@@ -305,6 +305,12 @@
 	text-align: left;
 	font-variant-numeric: tabular-nums;
 }
+.tableMedium {
+	min-width: 34rem;
+}
+.tableWide {
+	min-width: 48rem;
+}
 .table th {
 	padding: 14px 16px;
 	color: var(--muted);
@@ -538,9 +544,6 @@
 	.drawerLayer {
 		display: none;
 	}
-	.topbar {
-		display: flex;
-	}
 	.page {
 		padding: 32px;
 	}
@@ -568,7 +571,130 @@
 	outline-offset: 3px;
 }
 
-.table .numeric {
+.table .numeric,
+.numeric {
 	text-align: right;
 	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.wrap {
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+.chips {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	padding-bottom: 4px;
+}
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 8px 12px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface);
+	color: var(--foreground);
+	white-space: nowrap;
+}
+.chip[aria-current='true'] {
+	background: var(--accent-subtle);
+	color: var(--accent);
+	border-color: transparent;
+	font-weight: 600;
+}
+.chipCount {
+	font-variant-numeric: tabular-nums;
+	color: var(--muted);
+}
+.chip[aria-current='true'] .chipCount {
+	color: var(--accent);
+}
+.dot {
+	width: 8px;
+	height: 8px;
+	flex: none;
+	border-radius: 50%;
+	background: var(--accent);
+}
+.sender {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 650;
+	color: var(--foreground);
+}
+.sender:hover {
+	color: var(--accent);
+}
+.excerpt {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.warningLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--error);
+	font-weight: 600;
+}
+.callout {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 16px;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	background: var(--accent-subtle);
+}
+.alert {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 16px;
+	border: 1px solid var(--error);
+	border-radius: 12px;
+	background: var(--error-subtle);
+}
+.timeline {
+	display: grid;
+	gap: 16px;
+	margin: 16px 0 0;
+	padding: 0;
+	list-style: none;
+}
+.timeline li {
+	padding-left: 16px;
+	border-left: 2px solid var(--border);
+}
+.queue {
+	display: grid;
+}
+.queue a {
+	display: grid;
+	gap: 2px;
+	padding: 12px 0;
+	border-top: 1px solid var(--border);
+	color: inherit;
+}
+.queue a:hover {
+	color: var(--accent);
+}
+.adjacent {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: -12px;
+	margin-bottom: 24px;
+}
+.subheading {
+	margin-top: 16px;
+	font-weight: 650;
 }

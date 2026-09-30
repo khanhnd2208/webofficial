@@ -5,17 +5,30 @@ import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
-import { AdminIcon } from '@/components/admin/AdminIcon';
+import { AdminIcon, type AdminIconName } from '@/components/admin/AdminIcon';
 import styles from '@/components/admin/AdminStudio.module.css';
-import { McIcon } from '@/components/myclass/ui/McIcon';
+import { McIcon, type McIconName } from '@/components/myclass/ui/McIcon';
 import { getAdminNavGroupsForPath, isAdminNavActive } from '@/config/adminNavigation';
 import { isArchivedAdminPath } from '@/config/moduleRegistry';
 import { routes } from '@/config/routes';
+
+const SIDEBAR_COOKIE = 'admin-sidebar-collapsed';
+
+const ADMIN_NAV_ICONS: Record<string, AdminIconName> = {
+	[routes.admin.home]: 'overview',
+	[routes.admin.archive]: 'archive',
+	[routes.admin.website]: 'website',
+	[routes.admin.inquiries]: 'inbox',
+	[routes.admin.learnAnalytics]: 'analytics',
+	[routes.mySpaceTeaching]: 'teaching',
+	[routes.toc]: 'toc',
+};
 
 function NavItem({
 	href,
 	label,
 	icon,
+	mark,
 	collapsed,
 	active,
 	onNavigate,
@@ -23,12 +36,14 @@ function NavItem({
 }: {
 	href: string;
 	label: string;
-	icon: Parameters<typeof McIcon>[0]['name'];
+	icon: McIconName;
+	mark?: AdminIconName;
 	collapsed: boolean;
 	active?: boolean;
 	onNavigate?: () => void;
 	testId?: string;
 }) {
+	const adminIcon = mark ?? ADMIN_NAV_ICONS[href];
 	return (
 		<Link
 			href={href}
@@ -39,7 +54,7 @@ function NavItem({
 			data-collapsed={collapsed}
 			className={styles.navItem}
 		>
-			<McIcon name={icon} size={20} />
+			{adminIcon ? <AdminIcon name={adminIcon} size={20} /> : <McIcon name={icon} size={20} />}
 			<span className={collapsed ? styles.tooltip : 'truncate'}>{label}</span>
 		</Link>
 	);
@@ -78,7 +93,8 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 					<NavItem
 						href={archived ? routes.admin.home : routes.admin.archive}
 						label={archived ? 'Về admin chính' : 'Kho lưu trữ'}
-						icon={archived ? 'arrow_back' : 'archive'}
+						icon="arrow_back"
+						mark={archived ? 'back' : 'archive'}
 						collapsed={collapsed}
 						onNavigate={onNavigate}
 						testId={archived ? 'archive-sidebar-back' : 'admin-archive-link'}
@@ -135,9 +151,9 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 	);
 }
 
-/** Responsive admin chrome: drawer below md, fixed sidebar from md. */
-export default function AdminSidebar() {
-	const [collapsed, setCollapsed] = useState(false);
+/** Responsive admin chrome: drawer below 1024px, fixed sidebar from 1024px. */
+export default function AdminSidebar({ initialCollapsed = false }: { initialCollapsed?: boolean }) {
+	const [collapsed, setCollapsed] = useState(initialCollapsed);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const drawerId = useId();
 	const pathname = usePathname();
@@ -145,22 +161,10 @@ export default function AdminSidebar() {
 	const drawerRef = useRef<HTMLElement>(null);
 
 	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-	useEffect(() => {
-		try {
-			// eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate a browser-only preference after SSR
-			setCollapsed(localStorage.getItem('admin-sidebar-collapsed') === 'true');
-		} catch {
-			/* Storage may be unavailable in a private browser. */
-		}
-	}, []);
 	function toggleCollapsed() {
 		const next = !collapsed;
 		setCollapsed(next);
-		try {
-			localStorage.setItem('admin-sidebar-collapsed', String(next));
-		} catch {
-			/* Keep the in-memory preference. */
-		}
+		document.cookie = `${SIDEBAR_COOKIE}=${next ? '1' : '0'}; Path=/admin; Max-Age=31536000; SameSite=Lax`;
 	}
 
 	const archived = isArchivedAdminPath(pathname);

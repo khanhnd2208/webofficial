@@ -46,14 +46,7 @@ export const MY_CLASS_LOCAL_NAV: AdminNavItem[] = [
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 	{
 		group: 'Đang dùng',
-		items: getActiveAdminNavItems().flatMap((item) =>
-			item.href === routes.admin.website
-				? [
-						{ ...item, icon: 'view_column' as const },
-						{ href: routes.admin.inquiries, label: 'Hộp thư liên hệ', icon: 'inbox' as const },
-					]
-				: [item],
-		),
+		items: getActiveAdminNavItems(),
 	},
 ];
 
