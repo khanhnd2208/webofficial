@@ -3,12 +3,13 @@
 **Status:** active
 **Last updated:** 2026-08-16
 
-This site has **two named surfaces** with separate visual grammars. They do not
+This site has **three named surfaces** with separate visual grammars. They do not
 share a layout language or a product palette.
 
 | Surface                 | Routes                                              | Grammar                                                                              |
 | ----------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | **Editorial**           | `/`, `/muc-luc`, `/gioi-thieu`, `/du-an`, marketing | Hairline bands, serif display, generous whitespace, rare cards                       |
+| **Admin Studio** | `/admin/**` shell and active admin pages | Light blue-gray canvas, white panels, Inter, task-focused data controls |
 | **My Class Product UI** | `/my-space/my-class/**`, `/admin/my-class/**`       | Material 3 Indigo surfaces, Inter throughout, efficient learning and studio work     |
 
 Do not force My Class to look like the editorial marketing pages. Do not soft-card
@@ -227,3 +228,33 @@ Authoring (`?edit=1`) uses the same outline as the learner, plus:
 
 Enforcement: `.cursor/rules/my-class-ui.mdc` and
 `src/components/myclass/__tests__/designSystem.unit.test.ts`.
+
+
+## Admin Studio
+
+Admin is a light-only workspace. Its CSS Module (`src/components/admin/AdminStudio.module.css`)
+scopes tokens to the shell; it never toggles the document theme. Nested My Class studios
+retain their `.mc` palette. Native confirmation dialogs remain in the Admin DOM subtree
+and inherit its tokens, including when displayed in the browser top layer.
+
+- Canvas `#F4F6FA`, paper `#FFFFFF`, ink `#172033`, secondary ink `#596579`,
+  accent `#365CCE`, active surface `#EAF0FF`, border `#DFE5EE`.
+- Inter: page title 28/36, section title 18/26, body 14/22, metadata 12/18.
+  Numbers use tabular figures. Controls 8px, panels 12px, dialogs 16px.
+- Desktop starts at 1024px. Sidebar 240px / collapsed 72px, top bar 64px.
+  Below 1024px use a drawer with focus trapping, Escape and focus restoration.
+- Page measure 1200px; analytics 1440px. Gutters 16px mobile, 24px tablet, 32px desktop.
+- One primary action per task region. Use border separation and restrained elevation.
+  Color supplements explicit status labels. Controls have visible keyboard focus.
+- AdminIcon maps semantic names to the existing McIcon system. Navigation 20px,
+  actions 18px, empty states 32px. Collapsed navigation exposes focus/hover labels.
+- Shared primitives: buttons, links, badges, statistics, pagination, page headers,
+  empty/error states and loading skeletons. Each field has an associated label.
+- Inbox filters live in the URL. Applying filters resets page; pagination and detail
+  navigation retain supported filters. Below 768px inbox records become stacked cards.
+- Existing internal notes populate the editor. Saves are explicit, unchanged drafts
+  cannot be submitted, failed saves preserve input, and refresh does not replace drafts.
+  All writes are locked while a request runs. Deletion requires confirmation.
+- Archive modules keep their status and task layouts; only the shell and archive hub
+  adopt Admin Studio. Teaching remains a separate workspace in My Space.
+- Hover feedback 120ms; sidebar/drawer 200ms. Reduced motion disables animation.
