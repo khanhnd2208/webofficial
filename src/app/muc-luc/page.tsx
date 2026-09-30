@@ -28,6 +28,23 @@ const tocIcons: Record<string, string> = {
 	'board-game': '/brand/toc/board-game-v1.webp',
 };
 
+const aboutTiles = [
+	{
+		id: 'about',
+		href: routes.about,
+		label: 'Giới thiệu',
+		description: 'Người thầy, và hành trình trở thành.',
+		icon: '/brand/toc/about-v1.webp',
+	},
+	{
+		id: 'experiences',
+		href: routes.experiences,
+		label: 'Trải nghiệm',
+		description: 'Dự án, chuyến đi và những câu chuyện.',
+		icon: '/brand/toc/experiences-v1.webp',
+	},
+] as const;
+
 export default async function TocPage() {
 	const session = await auth();
 	const tiles = getMySpaceTiles(session?.user?.role);
@@ -90,24 +107,33 @@ export default async function TocPage() {
 							<h2 id="toc-about">About Me</h2>
 							<span>Về tôi</span>
 						</div>
-						<Link href={routes.about} className={styles.tile} data-testid="gate-item-about">
-							<span className={styles.icon}>
-								<Image
-									src="/brand/toc/about-v1.webp"
-									alt=""
-									width={112}
-									height={112}
-									sizes="(max-width: 760px) 88px, 112px"
-								/>
-							</span>
-							<span className={styles.tileTitle}>
-								Giới thiệu
-								<span className={styles.arrow} aria-hidden="true">
-									↗
-								</span>
-							</span>
-							<span className={styles.description}>Người thầy, và hành trình trở thành.</span>
-						</Link>
+						<div className={styles.tiles}>
+							{aboutTiles.map((tile) => (
+								<Link
+									key={tile.id}
+									href={tile.href}
+									className={styles.tile}
+									data-testid={`gate-item-${tile.id}`}
+								>
+									<span className={styles.icon}>
+										<Image
+											src={tile.icon}
+											alt=""
+											width={112}
+											height={112}
+											sizes="(max-width: 760px) 88px, 112px"
+										/>
+									</span>
+									<span className={styles.tileTitle}>
+										{tile.label}
+										<span className={styles.arrow} aria-hidden="true">
+											↗
+										</span>
+									</span>
+									<span className={styles.description}>{tile.description}</span>
+								</Link>
+							))}
+						</div>
 					</section>
 				</nav>
 				<footer className={styles.footer}>
