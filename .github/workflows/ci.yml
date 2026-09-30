@@ -344,13 +344,20 @@ jobs:
           if is_true "$RUN_ALL_E2E" || is_true "$AREA_SHARED" || is_true "$AREA_OUTSIDE"; then
             run_all=1
           fi
+          # Specs each area owns but CI does not run yet, because one test in each
+          # already fails on main (2026-09-30): e2e/operating-focus.spec.ts
+          # ("My Space contains only Teaching") and e2e/my-class.admin.spec.ts
+          # (vocabulary CSV: headless clipboard). Add them once those pass.
           specs=(
             e2e/smoke.spec.ts
             e2e/public-feature-locks.spec.ts
             e2e/mobile-smoke.spec.ts
           )
           if [[ "$run_all" -eq 1 ]] || is_true "$AREA_PORTFOLIO"; then
-            specs+=(e2e/editorial-premium.spec.ts)
+            specs+=(
+              e2e/editorial-premium.spec.ts
+              e2e/personal-book.spec.ts
+            )
           fi
           if [[ "$run_all" -eq 1 ]] || is_true "$AREA_BOARDGAME"; then
             specs+=(
@@ -367,6 +374,8 @@ jobs:
               e2e/teaching-attendance-board.spec.ts
               e2e/teaching-learning-experience-mobile.spec.ts
               e2e/teaching-learning-experience-multi-device.spec.ts
+              e2e/my-class.spec.ts
+              e2e/myspace-tests.spec.ts
             )
           fi
           echo "E2E selection full=${RUN_ALL_E2E} boardgame=${AREA_BOARDGAME} classroom=${AREA_CLASSROOM} portfolio=${AREA_PORTFOLIO} shared=${AREA_SHARED} outside=${AREA_OUTSIDE}"

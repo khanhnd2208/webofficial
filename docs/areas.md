@@ -110,12 +110,12 @@ ESLint (`no-restricted-imports`) cấm file của một khu import module của 
 | Khu vừa sửa                                   | Spec chạy thêm                                                                        |
 | --------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Boardgame                                     | `board-game-visual`, `board-game-test-rooms`                                          |
-| Giới thiệu và khóa học                        | `editorial-premium`                                                                   |
-| Quản lý lớp                                   | `active-recall*`, `teaching-*`, `admin-workspace`, và `teaching-groups` (bật cờ nhóm) |
+| Giới thiệu và khóa học                        | `editorial-premium`, `personal-book` |
+| Quản lý lớp                                   | `active-recall*`, `teaching-*`, `admin-workspace`, `my-class`, `myspace-tests`, và `teaching-groups` (bật cờ nhóm) |
 | Công cụ riêng                                 | không có (chỉ smoke)                                                                  |
 | Phần dùng chung, hoặc file chưa thuộc khu nào | toàn bộ spec ở trên                                                                   |
 
-Danh sách spec được chạy nằm trong `.github/workflows/ci.yml` (bước "Release-critical end-to-end tests"). Danh sách `e2e` trong `areas.mjs` chỉ quyết định việc sửa một spec sẽ kéo theo khu nào.
+Danh sách spec được chạy nằm trong `.github/workflows/ci.yml` (bước "Release-critical end-to-end tests"). Danh sách `e2e` trong `areas.mjs` chỉ quyết định việc sửa một spec sẽ kéo theo khu nào. `operating-focus` và `my-class.admin` chưa chạy trong CI vì mỗi file còn một test hỏng sẵn trên `main`; ghi chú nằm ngay trong `ci.yml`.
 
 Sửa `docs/` hoặc file Markdown không kéo theo spec của khu nào. Smoke vẫn chạy.
 
