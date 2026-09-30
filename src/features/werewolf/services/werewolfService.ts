@@ -1,5 +1,5 @@
 import { gameNow, gameRandom } from '@/features/board-game-test/runtime';
-import mongoose, { type HydratedDocument } from 'mongoose';
+import { type HydratedDocument } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/features/werewolf/config/roles';
 import { dealRoles, validateRoleCounts } from '@/features/werewolf/lib/deal';
 import { GameError } from '@/features/board-game-shared/lib/gameError';
+import { withVersionRetry } from '@/features/board-game-shared/lib/versionRetry';
 import dbConnect from '@/lib/dbConnect';
 import { normalizePlayerName } from '@/features/board-game-shared/lib/playerName';
 import WerewolfRoom, {
@@ -33,23 +34,6 @@ const generateToken = customAlphabet(
 );
 
 type RoomDoc = HydratedDocument<IWerewolfRoom>;
-
-const MAX_SAVE_ATTEMPTS = 3;
-
-/**
- * Array edits by index (roleId, viewedAt, leftAt) are version-checked by Mongoose,
- * so a join landing at the same moment makes the save fail. Reload and try again.
- */
-async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
-	for (let attempt = 1; ; attempt++) {
-		try {
-			return await run();
-		} catch (error) {
-			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS)
-				throw error;
-		}
-	}
-}
 
 function now(): Date {
 	return gameNow();

@@ -1,5 +1,5 @@
 import { gameNow, gameRandom } from '@/features/board-game-test/runtime';
-import mongoose, { type HydratedDocument } from 'mongoose';
+import { type HydratedDocument } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
 import {
@@ -21,6 +21,7 @@ import {
 	type SpyCount,
 } from '@/features/spy-fall/config/spyGame';
 import { GameError } from '@/features/board-game-shared/lib/gameError';
+import { withVersionRetry } from '@/features/board-game-shared/lib/versionRetry';
 import { assignRoles, pickFirstSpeaker } from '@/features/spy-fall/lib/spy/roleAssignment';
 import {
 	allPlayersMemorized,
@@ -72,23 +73,6 @@ const generatePlayerId = customAlphabet(
 const VALID_PHASES = new Set<string>(SPY_PHASES);
 
 type GameDoc = HydratedDocument<ISpyGame>;
-
-const MAX_SAVE_ATTEMPTS = 3;
-
-/**
- * Array edits by index (lastSeenAt, voteToken, ...) are version-checked by Mongoose,
- * so a join or kick landing at the same moment makes the save fail. Reload and try again.
- */
-async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
-	for (let attempt = 1; ; attempt++) {
-		try {
-			return await run();
-		} catch (error) {
-			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS)
-				throw error;
-		}
-	}
-}
 
 function now(): Date {
 	return gameNow();

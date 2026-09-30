@@ -61,11 +61,11 @@ const OVERSIZED_FILE_CAPS = {
 	'src/features/myspace-tests/repositories/myspaceTestsRepository.ts': 918,
 	'src/features/my-class/services/assessmentService.ts': 903,
 	'src/components/teaching/groups/GroupListWorkspace.tsx': 893,
-	'src/features/spy-fall/services/spyGameService.ts': 893,
+	'src/features/spy-fall/services/spyGameService.ts': 883,
 	'src/features/learn/service.ts': 875,
 	'src/components/forms/TiptapEditor.tsx': 854,
 	'src/components/active-recall/ActiveRecallEditor.tsx': 837,
-	'src/features/cheese-thief/services/cheeseThiefService.ts': 832,
+	'src/features/cheese-thief/services/cheeseThiefService.ts': 822,
 };
 /** Data tables, not logic. */
 const SIZE_EXEMPT_FILES = ['src/features/spy-fall/lib/spy/wordBank.ts'];

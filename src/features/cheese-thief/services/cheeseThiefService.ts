@@ -1,5 +1,5 @@
 import { gameNow, gameRandom } from '@/features/board-game-test/runtime';
-import mongoose, { type HydratedDocument } from 'mongoose';
+import { type HydratedDocument } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
 import {
@@ -35,6 +35,7 @@ import {
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
 import { GameError } from '@/features/board-game-shared/lib/gameError';
+import { withVersionRetry } from '@/features/board-game-shared/lib/versionRetry';
 import dbConnect from '@/lib/dbConnect';
 import { normalizePlayerName } from '@/features/board-game-shared/lib/playerName';
 import { nightEndsAt } from '@/features/cheese-thief/lib/nightSchedule';
@@ -75,20 +76,8 @@ const generatePlayerId = customAlphabet(
 );
 
 const VALID_PHASES = new Set<string>(CHEESE_PHASES);
-const MAX_SAVE_ATTEMPTS = 3;
 
 type RoomDoc = HydratedDocument<ICheeseRoom>;
-
-async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
-	for (let attempt = 1; ; attempt++) {
-		try {
-			return await run();
-		} catch (error) {
-			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS)
-				throw error;
-		}
-	}
-}
 
 function now(): Date {
 	return gameNow();
