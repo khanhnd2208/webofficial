@@ -49,7 +49,9 @@ describe('admin course analytics', () => {
 		expect(screen.getByRole('combobox', { name: 'Khóa học' })).toHaveValue(slug);
 		expect(screen.getByRole('option', { name: 'HRM' })).toBeInTheDocument();
 		expect(screen.getByRole('option', { name: 'ITM — Nhập môn quản trị' })).toBeInTheDocument();
-		expect(screen.getByText('Chưa có thời gian học được ghi nhận.')).toBeInTheDocument();
+		expect(screen.getByText('Chưa có tương tác trong khoảng đã chọn')).toBeInTheDocument();
+		expect(screen.queryByText('Tài khoản đã vào')).not.toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Xem 90 ngày' })).toBeInTheDocument();
 	});
 	it('disables filtering when no courses exist', async () => {
 		courses.mockResolvedValue([]);

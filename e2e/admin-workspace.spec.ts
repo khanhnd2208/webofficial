@@ -199,9 +199,11 @@ test.describe('Admin Studio navigation', () => {
 	});
 	test('carries inbox filters through paging and detail navigation', async ({ page }) => {
 		await page.goto('/admin/inquiries?status=NEW&page=2');
-		await expect(page.getByRole('combobox', { name: 'Trạng thái', exact: true })).toHaveValue(
-			'NEW',
-		);
+		await expect(
+			page
+				.getByRole('navigation', { name: 'Lọc theo trạng thái' })
+				.getByRole('link', { name: /Mới/ }),
+		).toHaveAttribute('aria-current', 'true');
 		const filter = page.getByRole('button', { name: 'Áp dụng', exact: true });
 		await filter.click();
 		await expect(page).not.toHaveURL(/page=2/);

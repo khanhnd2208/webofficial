@@ -2,11 +2,36 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Page from './page';
 const list = vi.hoisted(() => vi.fn());
-vi.mock('@/services/inquiryService', () => ({ listInquiries: list }));
+const counts = vi.hoisted(() => vi.fn());
+const redirect = vi.hoisted(() =>
+	vi.fn((url: string) => {
+		throw new Error(`redirect:${url}`);
+	}),
+);
+vi.mock('next/navigation', () => ({ redirect }));
+vi.mock('@/services/inquiryService', () => ({
+	listInquiries: list,
+	countInquiriesByStatus: counts,
+}));
 describe('inbox page', () => {
 	beforeEach(() => {
 		list.mockReset();
-		list.mockResolvedValue({ items: [], total: 0, totalPages: 1 });
+		counts.mockReset();
+		redirect.mockClear();
+		list.mockResolvedValue({ items: [], total: 0, totalPages: 1, page: 1, limit: 20 });
+		counts.mockResolvedValue({
+			all: 0,
+			byStatus: {
+				NEW: 0,
+				REVIEWING: 0,
+				NEED_MORE_INFO: 0,
+				QUALIFIED: 0,
+				CALL_SCHEDULED: 0,
+				PROPOSAL_SENT: 0,
+				WON: 0,
+				CLOSED: 0,
+			},
+		});
 	});
 	it('distinguishes an empty inbox from filtered results', async () => {
 		render(await Page({ searchParams: Promise.resolve({}) }));
@@ -21,9 +46,15 @@ describe('inbox page', () => {
 				.every((link) => link.getAttribute('href') === '/admin/inquiries'),
 		).toBe(true);
 	});
-	it('offers the first page without dropping filters when a page is exhausted', async () => {
-		list.mockResolvedValue({ items: [], total: 24, totalPages: 2 });
-		render(await Page({ searchParams: Promise.resolve({ page: '99', status: 'NEW' }) }));
+	it('clamps a page past the end back into the filtered list', async () => {
+		list.mockResolvedValue({ items: [], total: 24, totalPages: 2, page: 99, limit: 20 });
+		await expect(
+			Page({ searchParams: Promise.resolve({ page: '99', status: 'NEW' }) }),
+		).rejects.toThrow('redirect:/admin/inquiries?page=2&status=NEW');
+	});
+	it('offers the first page without dropping filters when the current page is empty', async () => {
+		list.mockResolvedValue({ items: [], total: 24, totalPages: 2, page: 2, limit: 20 });
+		render(await Page({ searchParams: Promise.resolve({ page: '2', status: 'NEW' }) }));
 		expect(screen.getByText('Trang này không còn liên hệ')).toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Về trang đầu' })).toHaveAttribute(
 			'href',
@@ -39,12 +70,15 @@ describe('inbox page', () => {
 					email: 'test@example.test',
 					status: 'NEW',
 					inquiryType: 'ai',
+					context: 'Cần trao đổi về chương trình.',
 					adminEmailStatus: 'sent',
 					createdAt: '2026-09-30T00:00:00Z',
 				},
 			],
 			total: 21,
 			totalPages: 2,
+			page: 2,
+			limit: 20,
 		});
 		render(
 			await Page({ searchParams: Promise.resolve({ page: '2', status: 'NEW', search: 'A&B' }) }),
@@ -56,9 +90,8 @@ describe('inbox page', () => {
 				'href',
 				'/admin/inquiries/contact-1?page=2&status=NEW&search=A%26B',
 			);
-		expect(
-			screen.getByText('Hiển thị 21–21 trong 21 liên hệ · 1 mới trên trang này'),
-		).toBeInTheDocument();
+		expect(screen.getByText('Hiển thị 21–21 trong 21 liên hệ')).toBeInTheDocument();
+		expect(screen.getByText('Cần trao đổi về chương trình.')).toBeInTheDocument();
 	});
 	it('rejects unsupported filters and invalid page values before querying', async () => {
 		render(

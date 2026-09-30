@@ -67,11 +67,14 @@ test.describe('Focused operating mode', () => {
 		await page.goto('/admin/website');
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		await expect(page.getByRole('heading', { name: 'Website' })).toBeVisible();
-		await page.getByRole('link', { name: /Yêu cầu liên hệ/ }).click();
+		await page
+			.getByRole('navigation', { name: 'Quản trị' })
+			.getByRole('link', { name: 'Hộp thư liên hệ' })
+			.click();
 		await expect(page).toHaveURL(/\/admin\/inquiries/);
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		await expect(page.getByTestId('archive-banner')).toHaveCount(0);
-		await expect(page.getByRole('heading', { name: 'Yêu cầu liên hệ' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Hộp thư liên hệ' })).toBeVisible();
 	});
 
 	test('opening a paused module from the archive keeps the archive warning', async ({
