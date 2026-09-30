@@ -18,7 +18,7 @@
 | Public proof approval gate   | ready — empty until evidence is approved                          | `src/content/publicProof.ts`              |
 | Proof collection template    | ready                                                             | `docs/08-PROOF_COLLECTION_TEMPLATE.md`    |
 | Sitemap / robots             | ready                                                             | `src/app/sitemap.ts`, `src/app/robots.ts` |
-| Social preview               | ready                                                             | `public/og.png`                           |
+| Social preview               | ready                                                             | `public/og-editorial-premium.jpg`                           |
 
 ## Project records
 

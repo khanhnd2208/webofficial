@@ -54,9 +54,9 @@ export const metadata: Metadata = {
 		url: SITE_ORIGIN,
 		images: [
 			{
-				url: absoluteUrl('/og-editorial-premium.png'),
-				width: 1734,
-				height: 907,
+				url: absoluteUrl('/og-editorial-premium.jpg'),
+				width: 1200,
+				height: 628,
 				alt: 'Duy Khánh — Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
 			},
 		],
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
 		card: 'summary_large_image',
 		title: 'Duy Khánh — Giảng viên và người thiết kế trải nghiệm học tập',
 		description: SITE_DESCRIPTION,
-		images: [absoluteUrl('/og-editorial-premium.png')],
+		images: [absoluteUrl('/og-editorial-premium.jpg')],
 	},
 };
 
