@@ -18,19 +18,27 @@ export default function RoleDossierContent({ self, spyCount }: Props) {
 
 	let hint: string;
 	const many = spyCount > 1;
-	if (role === 'spy') hint = t(many ? 'spy.roleReveal.spyHintMany' : 'spy.roleReveal.spyHint', { count: spyCount });
+	if (role === 'spy')
+		hint = t(many ? 'spy.roleReveal.spyHintMany' : 'spy.roleReveal.spyHint', { count: spyCount });
 	else if (role === 'civilian') hint = t('spy.roleReveal.civilianHint');
-	else hint = t(many ? 'spy.roleReveal.unknownSideMany' : 'spy.roleReveal.unknownSide', { count: spyCount });
+	else
+		hint = t(many ? 'spy.roleReveal.unknownSideMany' : 'spy.roleReveal.unknownSide', {
+			count: spyCount,
+		});
 
 	return (
 		<>
-			<p className="font-mono text-xs uppercase tracking-wide text-muted">{t('spy.roleReveal.keyword')}</p>
+			<p className="font-mono text-xs uppercase tracking-wide text-muted">
+				{t('spy.roleReveal.keyword')}
+			</p>
 			<p className="mt-3 break-words text-center font-display text-4xl font-bold leading-tight text-ink">
 				{self.keyword ?? '???'}
 			</p>
 			{role ? (
 				<div className="mt-4 flex flex-col items-center gap-2">
-					<p className="font-mono text-xs uppercase tracking-wide text-muted">{t('spy.roleReveal.yourRole')}</p>
+					<p className="font-mono text-xs uppercase tracking-wide text-muted">
+						{t('spy.roleReveal.yourRole')}
+					</p>
 					<Stamp
 						label={getRoleLabel(t, role)}
 						variant={role === 'spy' ? 'classified' : 'declassified'}

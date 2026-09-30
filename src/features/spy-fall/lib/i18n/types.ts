@@ -13,11 +13,7 @@ export function isLocale(value: string | null | undefined): value is Locale {
 	return value === 'vi' || value === 'en';
 }
 
-export function translate(
-	tree: MessageTree,
-	key: string,
-	params?: MessageParams,
-): string {
+export function translate(tree: MessageTree, key: string, params?: MessageParams): string {
 	const parts = key.split('.');
 	let cur: string | MessageTree | undefined = tree;
 	for (const part of parts) {

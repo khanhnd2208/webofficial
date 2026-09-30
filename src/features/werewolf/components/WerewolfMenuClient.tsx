@@ -102,7 +102,14 @@ export default function WerewolfMenuClient({ isAdmin = false }: { isAdmin?: bool
 						{t('mafia.menu.backToHub')}
 					</Link>
 					<PrefsToggleGroup />
-					{isAdmin ? <Link href={`${routes.boardGameTest}?game=ma-soi`} className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink">{t('testRoom.title')}</Link> : null}
+					{isAdmin ? (
+						<Link
+							href={`${routes.boardGameTest}?game=ma-soi`}
+							className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink"
+						>
+							{t('testRoom.title')}
+						</Link>
+					) : null}
 				</div>
 				<header className="game-theme-hero rounded-[1.25rem]">
 					<Image

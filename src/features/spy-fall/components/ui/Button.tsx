@@ -7,7 +7,8 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantClasses: Record<ButtonVariant, string> = {
 	primary: 'bg-accent text-accent-foreground hover:bg-accent-hover active:scale-[0.98]',
-	secondary: 'border border-border bg-surface text-foreground hover:bg-surface-hover active:scale-[0.98]',
+	secondary:
+		'border border-border bg-surface text-foreground hover:bg-surface-hover active:scale-[0.98]',
 	tertiary: 'bg-surface-secondary text-foreground hover:bg-surface-hover',
 	destructive: 'bg-danger text-danger-foreground hover:opacity-90 active:scale-[0.98]',
 	ghost: 'text-foreground-secondary hover:bg-surface-hover',

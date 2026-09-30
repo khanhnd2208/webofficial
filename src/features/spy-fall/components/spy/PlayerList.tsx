@@ -62,9 +62,17 @@ export default function PlayerList({
 								<div className="mt-0.5 flex flex-wrap items-center gap-1.5">
 									{isSelf ? <Badge variant="accent">{t('spy.player.you')}</Badge> : null}
 									{p.isHost ? <Badge variant="muted">{t('spy.player.host')}</Badge> : null}
-									{isFirst ? <Badge variant="warning"><GameIcon name="sound" size={13} /> {t('spy.player.speaksFirst')}</Badge> : null}
+									{isFirst ? (
+										<Badge variant="warning">
+											<GameIcon name="sound" size={13} /> {t('spy.player.speaksFirst')}
+										</Badge>
+									) : null}
 									{eliminated && p.role ? (
-										<Stamp label={getRoleLabel(t, p.role)} variant="suspect" className="text-[8px]" />
+										<Stamp
+											label={getRoleLabel(t, p.role)}
+											variant="suspect"
+											className="text-[8px]"
+										/>
 									) : null}
 								</div>
 							</div>

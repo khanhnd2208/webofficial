@@ -8,11 +8,7 @@ export function tLocale(locale: Locale, key: string, params?: MessageParams): st
 	return translate(CATALOGS[locale], key, params);
 }
 
-export function resolveErrorMessage(
-	locale: Locale,
-	code: string,
-	params?: MessageParams,
-): string {
+export function resolveErrorMessage(locale: Locale, code: string, params?: MessageParams): string {
 	const key = `errors.${code}`;
 	const msg = tLocale(locale, key, params);
 	if (msg === key) return tLocale(locale, 'errors.UNKNOWN');

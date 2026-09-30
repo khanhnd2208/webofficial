@@ -22,7 +22,13 @@ export default function ErrorState({
 }: ErrorStateProps) {
 	const t = useT();
 	return (
-		<div className={cn('rounded-xl border border-danger/30 bg-danger-subtle px-4 py-4 text-center', className)} role="alert">
+		<div
+			className={cn(
+				'rounded-xl border border-danger/30 bg-danger-subtle px-4 py-4 text-center',
+				className,
+			)}
+			role="alert"
+		>
 			<p className="font-semibold text-danger">{title ?? t('common.errorTitle')}</p>
 			<p className="mt-1 text-sm text-foreground-secondary">{message}</p>
 			{onRetry ? (

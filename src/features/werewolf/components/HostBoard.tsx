@@ -28,7 +28,15 @@ interface Props {
 
 const hideKey = (code: string) => `werewolf-hide-board:${code}`;
 
-export default function HostBoard({ code, players, busy, canRedeal, onRedeal, onBackToLobby, onKick }: Props) {
+export default function HostBoard({
+	code,
+	players,
+	busy,
+	canRedeal,
+	onRedeal,
+	onBackToLobby,
+	onKick,
+}: Props) {
 	const t = useT();
 	const [hidden, setHidden] = useState(false);
 
@@ -71,11 +79,19 @@ export default function HostBoard({ code, players, busy, canRedeal, onRedeal, on
 					{players.map((player) => {
 						const role = player.roleId ? getRoleById(player.roleId) : undefined;
 						return (
-							<li key={player.token} className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
+							<li
+								key={player.token}
+								className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2"
+							>
 								<PassportAvatar name={player.name} avatarSeed={player.avatarSeed} size="sm" />
 								<div className="min-w-0 flex-1">
 									<p className="truncate text-sm font-medium text-ink">{player.name}</p>
-									<p className={cn('truncate text-xs', role ? FACTION_TEXT[role.faction] : 'text-muted')}>
+									<p
+										className={cn(
+											'truncate text-xs',
+											role ? FACTION_TEXT[role.faction] : 'text-muted',
+										)}
+									>
 										{role ? t(`mafia.role.${role.roleId}.name`) : t('mafia.host.noRole')}
 										{' · '}
 										{player.left
@@ -86,10 +102,20 @@ export default function HostBoard({ code, players, busy, canRedeal, onRedeal, on
 									</p>
 								</div>
 								{role ? (
-									<img src={withBasePath(role.image)} alt="" className="h-12 w-9 rounded object-cover" />
+									<img
+										src={withBasePath(role.image)}
+										alt=""
+										className="h-12 w-9 rounded object-cover"
+									/>
 								) : null}
 								{player.left ? null : (
-									<Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => onKick(player.token, player.name)}>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										disabled={busy}
+										onClick={() => onKick(player.token, player.name)}
+									>
 										{t('mafia.host.kick')}
 									</Button>
 								)}
@@ -102,7 +128,9 @@ export default function HostBoard({ code, players, busy, canRedeal, onRedeal, on
 			{summary.length > 0 ? (
 				<p className={cn('text-sm text-muted-foreground', hidden && 'blur-md')}>
 					{t('mafia.host.summary')}:{' '}
-					{summary.map(([faction, count]) => `${count} ${t(`mafia.faction.${faction}`)}`).join(' · ')}
+					{summary
+						.map(([faction, count]) => `${count} ${t(`mafia.faction.${faction}`)}`)
+						.join(' · ')}
 				</p>
 			) : null}
 

@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 
-import { playerRangeFor, type CheeseMode, type FollowerSettings } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	playerRangeFor,
+	type CheeseMode,
+	type FollowerSettings,
+} from '@/features/cheese-thief/config/cheeseThief';
 import {
 	allTableSizes,
 	tableRulesFor,
@@ -72,7 +76,10 @@ export function tableRuleLines(
 	}
 	if (rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount) {
 		lines.push(
-			t('cheese.guide.table.custom', { count: rules.followerCount, default: rules.defaultFollowerCount }),
+			t('cheese.guide.table.custom', {
+				count: rules.followerCount,
+				default: rules.defaultFollowerCount,
+			}),
 		);
 	}
 	lines.push(t('cheese.guide.table.picks', { count: rules.choiceCount }));
@@ -217,7 +224,12 @@ function QuickStart() {
 	);
 }
 
-export default function CheeseRulesGuide({ playerCount, mode, scapegoatEnabled, followers }: TableProps) {
+export default function CheeseRulesGuide({
+	playerCount,
+	mode,
+	scapegoatEnabled,
+	followers,
+}: TableProps) {
 	const t = useT();
 	return (
 		<div className="space-y-6">

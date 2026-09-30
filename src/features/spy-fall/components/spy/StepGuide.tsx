@@ -56,7 +56,10 @@ export default function StepGuide({ stepsKey, params, tipKey, className }: Props
 			<button
 				type="button"
 				onClick={toggle}
-				className={cn('text-xs font-medium text-accent underline-offset-2 hover:underline', className)}
+				className={cn(
+					'text-xs font-medium text-accent underline-offset-2 hover:underline',
+					className,
+				)}
 			>
 				{t('spy.steps.show')}
 			</button>

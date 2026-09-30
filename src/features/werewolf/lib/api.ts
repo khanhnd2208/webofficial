@@ -44,11 +44,16 @@ async function parseResponse<T>(res: Response): Promise<T> {
 
 export async function fetchRoomState(code: string, token: string | null): Promise<RoomStateDTO> {
 	const qs = token ? `?token=${encodeURIComponent(token)}` : '';
-	const res = await fetch(withBasePath(`/api/ma-soi/rooms/${code}/state${qs}`), { cache: 'no-store' });
+	const res = await fetch(withBasePath(`/api/ma-soi/rooms/${code}/state${qs}`), {
+		cache: 'no-store',
+	});
 	return parseResponse<RoomStateDTO>(res);
 }
 
-export async function postWerewolfAction<T>(path: string, body: Record<string, unknown>): Promise<T> {
+export async function postWerewolfAction<T>(
+	path: string,
+	body: Record<string, unknown>,
+): Promise<T> {
 	const res = await fetch(withBasePath(path), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -57,7 +62,10 @@ export async function postWerewolfAction<T>(path: string, body: Record<string, u
 	return parseResponse<T>(res);
 }
 
-export async function patchWerewolfAction<T>(path: string, body: Record<string, unknown>): Promise<T> {
+export async function patchWerewolfAction<T>(
+	path: string,
+	body: Record<string, unknown>,
+): Promise<T> {
 	const res = await fetch(withBasePath(path), {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },

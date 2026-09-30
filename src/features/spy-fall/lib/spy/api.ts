@@ -38,10 +38,7 @@ export async function fetchRoomState(code: string, token: string | null): Promis
 	return parseResponse<RoomStateDTO>(res);
 }
 
-export async function postSpyAction<T>(
-	path: string,
-	body: Record<string, unknown>,
-): Promise<T> {
+export async function postSpyAction<T>(path: string, body: Record<string, unknown>): Promise<T> {
 	const res = await fetch(withBasePath(path), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -50,10 +47,7 @@ export async function postSpyAction<T>(
 	return parseResponse<T>(res);
 }
 
-export async function patchSpyAction<T>(
-	path: string,
-	body: Record<string, unknown>,
-): Promise<T> {
+export async function patchSpyAction<T>(path: string, body: Record<string, unknown>): Promise<T> {
 	const res = await fetch(withBasePath(path), {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },

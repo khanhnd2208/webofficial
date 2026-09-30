@@ -59,7 +59,7 @@ export default function SpyMenuClient({ isAdmin = false }: { isAdmin?: boolean }
 	const roomNameEdited = useRef(false);
 
 	useEffect(() => {
-		setName(current => current || getRecentPlayerName() || '');
+		setName((current) => current || getRecentPlayerName() || '');
 		setNameLoaded(true);
 	}, []);
 
@@ -171,7 +171,14 @@ export default function SpyMenuClient({ isAdmin = false }: { isAdmin?: boolean }
 						Board Game
 					</Link>
 					<PrefsToggleGroup />
-					{isAdmin ? <Link href={`${routes.boardGameTest}?game=spy-fall`} className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink">{t('testRoom.title')}</Link> : null}
+					{isAdmin ? (
+						<Link
+							href={`${routes.boardGameTest}?game=spy-fall`}
+							className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink"
+						>
+							{t('testRoom.title')}
+						</Link>
+					) : null}
 				</div>
 
 				<header className="game-theme-hero rounded-[1.25rem]">
@@ -304,7 +311,11 @@ export default function SpyMenuClient({ isAdmin = false }: { isAdmin?: boolean }
 										: t('spy.lobby.spyCountHintOne')
 								}
 							>
-								<div role="radiogroup" aria-label={t('spy.lobby.spyCount')} className="grid grid-cols-3 gap-2">
+								<div
+									role="radiogroup"
+									aria-label={t('spy.lobby.spyCount')}
+									className="grid grid-cols-3 gap-2"
+								>
 									{SPY_COUNTS.map((count) => {
 										const selected = count === spyCount;
 										return (

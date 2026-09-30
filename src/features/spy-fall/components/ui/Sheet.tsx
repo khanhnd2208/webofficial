@@ -52,7 +52,12 @@ export default function Sheet({ open, onClose, title, children, className }: She
 	if (!open) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+		<div
+			className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="sheet-title"
+		>
 			<button
 				type="button"
 				className="absolute inset-0 bg-[var(--overlay)]"

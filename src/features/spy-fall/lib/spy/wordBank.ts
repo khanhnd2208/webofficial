@@ -185,7 +185,11 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-161', 'địa điểm', 'Chợ nổi', 'Làng chài', ['vietnam']),
 	pair('vi-162', 'địa điểm', 'Phòng thi', 'Phòng họp', ['school', 'office']),
 	pair('vi-163', 'địa điểm', 'Phòng cấp cứu', 'Phòng mổ'),
-	pair('vi-164', 'địa điểm', 'Căng tin trường', 'Quán cóc cổng trường', ['vietnam', 'school', 'childhood']),
+	pair('vi-164', 'địa điểm', 'Căng tin trường', 'Quán cóc cổng trường', [
+		'vietnam',
+		'school',
+		'childhood',
+	]),
 	pair('vi-165', 'địa điểm', 'Tiệm game thùng', 'Khu trò chơi xu', ['childhood', 'gaming']),
 	pair('vi-477', 'địa điểm', 'Đảo hoang', 'Rừng Amazon'),
 	pair('vi-478', 'địa điểm', 'Nhà tù', 'Trại hè quân đội', ['school']),
@@ -392,7 +396,10 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-559', 'hoạt động', 'Tập thiền', 'Tập hít thở'),
 	pair('vi-560', 'hoạt động', 'Trồng cây', 'Nuôi cá cảnh'),
 	pair('vi-561', 'hoạt động', 'Làm gốm', 'Vẽ tranh'),
-	pair('vi-562', 'hoạt động', 'Xem bóng đá ở sân', 'Xem bóng đá ở quán cà phê', ['vietnam', 'football']),
+	pair('vi-562', 'hoạt động', 'Xem bóng đá ở sân', 'Xem bóng đá ở quán cà phê', [
+		'vietnam',
+		'football',
+	]),
 	pair('vi-563', 'hoạt động', 'Quay trend TikTok', 'Tập nhảy hiện đại', ['genz']),
 	pair('vi-564', 'hoạt động', 'Chơi Uno', 'Chơi Cờ tỷ phú'),
 	pair('vi-565', 'hoạt động', 'Đi câu cá', 'Đi hái nấm'),
@@ -448,7 +455,10 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-243', 'công nghệ', 'Slack', 'Microsoft Teams', ['office']),
 	pair('vi-244', 'công nghệ', 'Bluetooth', 'AirDrop'),
 	pair('vi-245', 'công nghệ', 'Drone', 'Máy bay điều khiển'),
-	pair('vi-246', 'công nghệ', 'Rắn săn mồi Nokia', 'Trò khủng long Chrome', ['childhood', 'gaming']),
+	pair('vi-246', 'công nghệ', 'Rắn săn mồi Nokia', 'Trò khủng long Chrome', [
+		'childhood',
+		'gaming',
+	]),
 	pair('vi-247', 'công nghệ', 'Nokia cục gạch', 'BlackBerry', ['childhood']),
 	pair('vi-248', 'công nghệ', 'Yahoo Messenger', 'Zing Me', ['vietnam', 'childhood']),
 	pair('vi-249', 'công nghệ', 'Google Dịch', 'Từ điển giấy'),
@@ -569,7 +579,10 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-306', 'nhân vật', 'Gấu Pooh', 'Heo Peppa', ['childhood']),
 	pair('vi-307', 'nhân vật', 'Sơn Tinh', 'Thủy Tinh', ['vietnam', 'childhood']),
 	pair('vi-637', 'nhân vật', 'Captain America', 'Black Panther', ['pop-culture']),
-	pair('vi-638', 'nhân vật', 'Thủy thủ Mặt Trăng', 'Sakura – Thủ lĩnh thẻ bài', ['anime-kpop', 'childhood']),
+	pair('vi-638', 'nhân vật', 'Thủy thủ Mặt Trăng', 'Sakura – Thủ lĩnh thẻ bài', [
+		'anime-kpop',
+		'childhood',
+	]),
 	pair('vi-639', 'nhân vật', 'Mị Châu', 'Trọng Thủy', ['vietnam', 'history']),
 	pair('vi-640', 'nhân vật', 'Lạc Long Quân', 'Âu Cơ', ['vietnam']),
 	pair('vi-641', 'nhân vật', 'Chaien', 'Xeko', ['childhood', 'anime-kpop']),
@@ -693,7 +706,10 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-350', 'giải trí', 'Squid Game', 'Hunger Games', ['pop-culture']),
 	pair('vi-351', 'giải trí', 'Táo Quân', 'Gặp nhau cuối tuần', ['vietnam', 'childhood']),
 	pair('vi-352', 'giải trí', 'Running Man', '2 Ngày 1 Đêm', ['anime-kpop']),
-	pair('vi-353', 'giải trí', 'Anh Trai Say Hi', 'Anh Trai Vượt Ngàn Chông Gai', ['vietnam', 'genz']),
+	pair('vi-353', 'giải trí', 'Anh Trai Say Hi', 'Anh Trai Vượt Ngàn Chông Gai', [
+		'vietnam',
+		'genz',
+	]),
 	pair('vi-354', 'giải trí', 'Rap Việt', 'Giọng hát Việt', ['vietnam']),
 	pair('vi-355', 'giải trí', 'Chúa tể những chiếc nhẫn', 'Game of Thrones', ['pop-culture']),
 	pair('vi-356', 'giải trí', 'Tây Du Ký', 'Tam Quốc Diễn Nghĩa', ['childhood']),
@@ -711,7 +727,10 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-711', 'giải trí', 'Twilight', 'Vampire Diaries', ['romance', 'spooky']),
 	pair('vi-712', 'giải trí', 'Nhà Bà Nữ', 'Bố Già', ['vietnam', 'pop-culture']),
 	pair('vi-713', 'giải trí', 'Mắt Biếc', 'Tôi thấy hoa vàng trên cỏ xanh', ['vietnam', 'romance']),
-	pair('vi-714', 'giải trí', 'Kính Vạn Hoa', 'Cho tôi xin một vé đi tuổi thơ', ['vietnam', 'childhood']),
+	pair('vi-714', 'giải trí', 'Kính Vạn Hoa', 'Cho tôi xin một vé đi tuổi thơ', [
+		'vietnam',
+		'childhood',
+	]),
 	pair('vi-715', 'giải trí', 'One Piece', 'Dragon Ball', ['anime-kpop']),
 	pair('vi-716', 'giải trí', 'Attack on Titan', 'Demon Slayer', ['anime-kpop']),
 	pair('vi-717', 'giải trí', 'Vùng đất linh hồn', 'Totoro', ['anime-kpop']),
@@ -755,7 +774,10 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-383', 'lễ hội', 'Tết Đoan ngọ', 'Tết Thanh minh', ['vietnam']),
 	pair('vi-384', 'lễ hội', 'Lễ Vu Lan', 'Ngày của Mẹ', ['vietnam']),
 	pair('vi-737', 'lễ hội', 'Ngày Nhà giáo 20/11', 'Ngày Phụ nữ 20/10', ['vietnam']),
-	pair('vi-738', 'lễ hội', 'Quốc tế Thiếu nhi 1/6', 'Ngày Gia đình Việt Nam', ['vietnam', 'childhood']),
+	pair('vi-738', 'lễ hội', 'Quốc tế Thiếu nhi 1/6', 'Ngày Gia đình Việt Nam', [
+		'vietnam',
+		'childhood',
+	]),
 	pair('vi-739', 'lễ hội', 'Lễ Tạ ơn', 'Tất niên', ['vietnam']),
 	pair('vi-740', 'lễ hội', 'Lễ đính hôn', 'Tiệc độc thân', ['romance']),
 	pair('vi-741', 'lễ hội', 'Lễ hội chọi trâu', 'Lễ hội đua bò', ['vietnam']),
@@ -935,22 +957,34 @@ export const WORD_BANK: WordPairEntry[] = [
 	pair('vi-863', 'tình huống', 'Quên ví khi đi ăn', 'Tài khoản hết tiền lúc thanh toán'),
 	pair('vi-864', 'tình huống', 'Điện thoại rơi vào nước', 'Điện thoại vỡ màn hình'),
 	pair('vi-865', 'tình huống', 'Gửi nhầm tin nhắn', 'Lỡ tay thả tim story cũ', ['genz', 'romance']),
-	pair('vi-866', 'tình huống', 'Sếp nhắn tin cuối tuần', 'Mẹ gọi video lúc đang đi chơi', ['office']),
+	pair('vi-866', 'tình huống', 'Sếp nhắn tin cuối tuần', 'Mẹ gọi video lúc đang đi chơi', [
+		'office',
+	]),
 	pair('vi-867', 'tình huống', 'Ngủ quên lỡ chuyến bay', 'Đến muộn buổi phỏng vấn'),
 	pair('vi-868', 'tình huống', 'Mất điện giữa trưa hè', 'Mất nước khi đang tắm', ['vietnam']),
-	pair('vi-869', 'tình huống', 'Gặp người yêu cũ ở đám cưới', 'Gặp sếp ở quán nhậu', ['romance', 'office']),
+	pair('vi-869', 'tình huống', 'Gặp người yêu cũ ở đám cưới', 'Gặp sếp ở quán nhậu', [
+		'romance',
+		'office',
+	]),
 	pair('vi-870', 'tình huống', 'Bị hỏi bao giờ lấy chồng', 'Bị hỏi lương bao nhiêu', ['vietnam']),
 	pair('vi-871', 'tình huống', 'Bị seen không rep', 'Thấy đang nhập mãi không gửi', ['genz']),
 	pair('vi-872', 'tình huống', 'Lạc đường ở nước ngoài', 'Lỡ chuyến tàu cuối'),
-	pair('vi-873', 'tình huống', 'Quên bài khi thuyết trình', 'Micro hỏng giữa bài phát biểu', ['school', 'office']),
+	pair('vi-873', 'tình huống', 'Quên bài khi thuyết trình', 'Micro hỏng giữa bài phát biểu', [
+		'school',
+		'office',
+	]),
 	pair('vi-874', 'tình huống', 'Trúng số', 'Nhặt được ví tiền'),
 	pair('vi-875', 'tình huống', 'Đi thi quên thẻ dự thi', 'Đi thi quên máy tính', ['school']),
 	pair('vi-876', 'tình huống', 'Cắn trúng ớt', 'Hóc xương cá'),
 	pair('vi-877', 'tình huống', 'Vấp ngã trước đám đông', 'Hắt xì giữa buổi họp'),
 	pair('vi-878', 'tình huống', 'Chờ đơn hàng', 'Chờ kết quả thi'),
 	pair('vi-879', 'tình huống', 'Bị bỏ bom hẹn', 'Bị crush từ chối', ['romance']),
-	pair('vi-880', 'tình huống', 'Nghe gõ cửa lúc 3 giờ sáng', 'Thấy bóng người trong gương', ['spooky']),
-	pair('vi-881', 'tình huống', 'Hết giấy trong nhà vệ sinh', 'Nhà vệ sinh không khóa được', ['icky']),
+	pair('vi-880', 'tình huống', 'Nghe gõ cửa lúc 3 giờ sáng', 'Thấy bóng người trong gương', [
+		'spooky',
+	]),
+	pair('vi-881', 'tình huống', 'Hết giấy trong nhà vệ sinh', 'Nhà vệ sinh không khóa được', [
+		'icky',
+	]),
 	pair('vi-882', 'tình huống', 'Cày phim thâu đêm', 'Đói lúc nửa đêm'),
 	pair('vi-883', 'tình huống', 'Săn vé concert', 'Săn vé máy bay giá rẻ', ['genz']),
 	pair('vi-884', 'tình huống', 'Họp phụ huynh', 'Họp tổ dân phố', ['vietnam', 'school']),
@@ -1017,8 +1051,7 @@ export function pickWordPair(options: {
 	const bank = wordBankFor(locale);
 	const scoped = filterWordPairs(topic, bank, excludedTags);
 	// Callers check `filterWordPairs(...).length` first; the fallbacks only keep this total.
-	const candidates =
-		scoped.length > 0 ? scoped : filterWordPairs('any', bank, excludedTags);
+	const candidates = scoped.length > 0 ? scoped : filterWordPairs('any', bank, excludedTags);
 	const pool0 = candidates.length > 0 ? candidates : [...bank];
 	const recent = new Set(recentIds);
 	const fresh = pool0.filter((entry) => !recent.has(entry.id));

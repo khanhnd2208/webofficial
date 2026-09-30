@@ -71,7 +71,17 @@ function withBreaths(text: string): string {
 
 function secondsOf(file: string): number {
 	return Number(
-		execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file]).toString().trim(),
+		execFileSync('ffprobe', [
+			'-v',
+			'error',
+			'-show_entries',
+			'format=duration',
+			'-of',
+			'csv=p=0',
+			file,
+		])
+			.toString()
+			.trim(),
 	);
 }
 
@@ -87,7 +97,24 @@ try {
 			const aiff = path.join(scratch, `${locale}-${clip}.aiff`);
 			const out = path.join(dir, `${clip}.m4a`);
 			execFileSync('say', ['-v', voice, '-r', String(rate), '-o', aiff, withBreaths(text)]);
-			execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', aiff, '-af', WARM, '-ar', '44100', '-ac', '1', '-c:a', 'aac', '-b:a', '64k', out]);
+			execFileSync('ffmpeg', [
+				'-loglevel',
+				'error',
+				'-y',
+				'-i',
+				aiff,
+				'-af',
+				WARM,
+				'-ar',
+				'44100',
+				'-ac',
+				'1',
+				'-c:a',
+				'aac',
+				'-b:a',
+				'64k',
+				out,
+			]);
 			const seconds = secondsOf(out);
 			const budget = budgetFor(clip);
 			const flag = seconds > budget ? `  ← longer than ${budget.toFixed(2)}s` : '';

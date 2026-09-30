@@ -44,7 +44,7 @@ export default function CheeseThiefMenuClient({ isAdmin = false }: { isAdmin?: b
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		setName(current => current || getRecentPlayerName() || '');
+		setName((current) => current || getRecentPlayerName() || '');
 		setNameLoaded(true);
 	}, []);
 
@@ -114,7 +114,14 @@ export default function CheeseThiefMenuClient({ isAdmin = false }: { isAdmin?: b
 						Board Game
 					</Link>
 					<PrefsToggleGroup />
-					{isAdmin ? <Link href={`${routes.boardGameTest}?game=cheese-thief`} className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink">{t('testRoom.title')}</Link> : null}
+					{isAdmin ? (
+						<Link
+							href={`${routes.boardGameTest}?game=cheese-thief`}
+							className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink"
+						>
+							{t('testRoom.title')}
+						</Link>
+					) : null}
 				</div>
 
 				<header
@@ -215,7 +222,9 @@ export default function CheeseThiefMenuClient({ isAdmin = false }: { isAdmin?: b
 									>
 										−
 									</button>
-									<span className="font-display text-3xl font-medium tabular-nums">{tableSize}</span>
+									<span className="font-display text-3xl font-medium tabular-nums">
+										{tableSize}
+									</span>
 									<button
 										type="button"
 										aria-label={t('cheese.lobby.settings.morePlayers')}

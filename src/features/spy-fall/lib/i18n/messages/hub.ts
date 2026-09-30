@@ -1,7 +1,7 @@
 import type { MessageTree } from '@/features/spy-fall/lib/i18n/types';
 
 export const hubVi: MessageTree = {
-	brand: "Spy Fall",
+	brand: 'Spy Fall',
 	tagline: 'Hub du lịch & giải trí',
 	startMission: 'Bắt đầu nhiệm vụ',
 	tabs: {
@@ -74,7 +74,7 @@ export const hubVi: MessageTree = {
 };
 
 export const hubEn: MessageTree = {
-	brand: "Spy Fall",
+	brand: 'Spy Fall',
 	tagline: 'Travel & entertainment hub',
 	startMission: 'Start mission',
 	tabs: {

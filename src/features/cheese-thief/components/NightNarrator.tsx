@@ -35,7 +35,14 @@ interface Props {
  */
 type Voice = 'pending' | 'track' | 'blocked' | 'speech';
 
-export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mode, hourSeconds, night }: Props) {
+export default function NightNarrator({
+	nightStartedAt,
+	serverNow,
+	fetchedAt,
+	mode,
+	hourSeconds,
+	night,
+}: Props) {
 	const testRoom = useTestRoom();
 	const paused = testRoom ? !testRoom.running : false;
 	const t = useT();
@@ -47,7 +54,10 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 	const [needsTap, setNeedsTap] = useState(false);
 	const [voice, setVoice] = useState<Voice>('pending');
 	const voiceRef = useRef<Voice>('pending');
-	const spec = useMemo<NightTrackSpec>(() => ({ locale, mode, night, hourSeconds }), [locale, mode, night, hourSeconds]);
+	const spec = useMemo<NightTrackSpec>(
+		() => ({ locale, mode, night, hourSeconds }),
+		[locale, mode, night, hourSeconds],
+	);
 	const started = new Date(nightStartedAt).getTime();
 
 	function changeVoice(next: Voice) {
@@ -64,7 +74,10 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 	useEffect(() => stopTableAudio, []);
 
 	useEffect(() => {
-		if (paused) { stopTableAudio(); return; }
+		if (paused) {
+			stopTableAudio();
+			return;
+		}
 		let cancelled = false;
 		voiceRef.current = 'pending';
 		void prepareNightTrack(spec).then(async (url) => {
@@ -101,7 +114,10 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 				return;
 			}
 			const spokenKey = narrationKey(segment, mode, night);
-			const cueKey = segment.kind === 'hour-wake' || segment.kind === 'hour-sleep' ? `${spokenKey}-${segment.hour}` : spokenKey;
+			const cueKey =
+				segment.kind === 'hour-wake' || segment.kind === 'hour-sleep'
+					? `${spokenKey}-${segment.hour}`
+					: spokenKey;
 			const hour = 'hour' in segment ? segment.hour : '';
 			const text = t(`cheese.narrator.${spokenKey}`, { hour });
 			setLine(text);
@@ -139,8 +155,13 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 
 	return (
 		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-8 px-6 text-center text-[#f4efe4]">
-			<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">{t('cheese.night.hostHint')}</p>
-			<CheeseThiefArt scene={mode === 'two-night' && night === 2 ? 'two-moons' : 'moon'} size={112} />
+			<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">
+				{t('cheese.night.hostHint')}
+			</p>
+			<CheeseThiefArt
+				scene={mode === 'two-night' && night === 2 ? 'two-moons' : 'moon'}
+				size={112}
+			/>
 			<p className="max-w-md font-display text-4xl leading-tight font-medium sm:text-5xl">{line}</p>
 			{showTap && (
 				<button
@@ -148,7 +169,9 @@ export default function NightNarrator({ nightStartedAt, serverNow, fetchedAt, mo
 					className="min-h-12 rounded-full border border-[#e0a045] px-5 text-sm text-[#e0a045]"
 					onClick={() => {
 						if (voice === 'blocked' && trackUrl.current) {
-							void playNightTrack(trackUrl.current, elapsedSec()).then((ok) => changeVoice(ok ? 'track' : 'blocked'));
+							void playNightTrack(trackUrl.current, elapsedSec()).then((ok) =>
+								changeVoice(ok ? 'track' : 'blocked'),
+							);
 							return;
 						}
 						unlockTableAudio();

@@ -84,7 +84,8 @@ async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
 		try {
 			return await run();
 		} catch (error) {
-			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS) throw error;
+			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS)
+				throw error;
 		}
 	}
 }
@@ -169,7 +170,9 @@ function isRecentlySeen(player: ISpyPlayer, at: Date): boolean {
 
 function updateConnectionStatus(game: GameDoc, at: Date): void {
 	for (const p of game.players) {
-		const botSeat = game.adminTest?.ownerUserId && (p.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
+		const botSeat =
+			game.adminTest?.ownerUserId &&
+			(p.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
 		p.connected = botSeat ? true : isRecentlySeen(p, at);
 	}
 }
@@ -181,9 +184,7 @@ function updateConnectionStatus(game: GameDoc, at: Date): void {
 function migrateHostIfNeeded(game: GameDoc, at: Date): boolean {
 	const host = findPlayer(game, game.hostToken);
 	if (host && host.lastSeenAt.getTime() >= at.getTime() - SPY_HOST_HANDOFF_MS) return false;
-	const replacement = game.players.find(
-		(p) => p.token !== game.hostToken && isRecentlySeen(p, at),
-	);
+	const replacement = game.players.find((p) => p.token !== game.hostToken && isRecentlySeen(p, at));
 	if (!replacement) return false;
 	game.hostToken = replacement.token;
 	return true;
@@ -392,7 +393,10 @@ function parseSpyCount(value: unknown): SpyCount {
 	return value;
 }
 
-function assertMaxPlayers(maxPlayers: unknown, floor = SPY_MIN_PLAYERS): asserts maxPlayers is number {
+function assertMaxPlayers(
+	maxPlayers: unknown,
+	floor = SPY_MIN_PLAYERS,
+): asserts maxPlayers is number {
 	const min = Math.max(SPY_MIN_PLAYERS, floor);
 	if (
 		typeof maxPlayers !== 'number' ||
@@ -498,7 +502,6 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 		dto.wordPair = game.wordPair;
 	}
 
-
 	return dto;
 }
 
@@ -582,14 +585,18 @@ async function mutateGame(
 	});
 }
 
-export async function createRoom(input: CreateRoomInput, testOwnerId?: string): Promise<RoomStateDTO> {
+export async function createRoom(
+	input: CreateRoomInput,
+	testOwnerId?: string,
+): Promise<RoomStateDTO> {
 	const hostName = normalizePlayerName(input.hostName ?? '');
 	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
 	const roomName = assertRoomName(input.name);
 
 	const maxPlayers = input.maxPlayers ?? SPY_MAX_PLAYERS;
 	assertMaxPlayers(maxPlayers);
-	const spyCount = input.spyCount === undefined ? normalizeSpyCount(undefined) : parseSpyCount(input.spyCount);
+	const spyCount =
+		input.spyCount === undefined ? normalizeSpyCount(undefined) : parseSpyCount(input.spyCount);
 	assertSpyCountFitsRoom(spyCount, maxPlayers);
 
 	await dbConnect();
@@ -632,7 +639,11 @@ export async function createRoom(input: CreateRoomInput, testOwnerId?: string): 
 
 export async function listPublicRooms(): Promise<PublicRoomListItemDTO[]> {
 	await dbConnect();
-	const games = (await SpyGame.find({ isPublic: true, phase: 'lobby', 'adminTest.ownerUserId': { $exists: false } })
+	const games = (await SpyGame.find({
+		isPublic: true,
+		phase: 'lobby',
+		'adminTest.ownerUserId': { $exists: false },
+	})
 		.sort({ updatedAt: -1 })
 		.limit(50)
 		.lean()) as GameDoc[];
@@ -680,7 +691,10 @@ export async function joinRoom(
 	});
 }
 
-export async function getScopedState(code: string, playerToken: string | null): Promise<RoomStateDTO> {
+export async function getScopedState(
+	code: string,
+	playerToken: string | null,
+): Promise<RoomStateDTO> {
 	const { dto } = await loadAndAdvance(code, playerToken);
 	return dto;
 }
@@ -812,7 +826,9 @@ export async function updateSettings(
 		const maxPlayers = input.maxPlayers ?? game.maxPlayers;
 		assertMaxPlayers(maxPlayers, game.players.length);
 		const spyCount =
-			input.spyCount === undefined ? normalizeSpyCount(game.spyCount) : parseSpyCount(input.spyCount);
+			input.spyCount === undefined
+				? normalizeSpyCount(game.spyCount)
+				: parseSpyCount(input.spyCount);
 		assertSpyCountFitsRoom(spyCount, maxPlayers);
 
 		if (input.name !== undefined) game.name = assertRoomName(input.name);

@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+	createContext,
+	startTransition,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 
 import { tLocale } from '@/features/spy-fall/lib/i18n/tLocale';
 import {

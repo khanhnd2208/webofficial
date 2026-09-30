@@ -7,8 +7,16 @@ import { useLocale, useT } from '@/features/spy-fall/components/i18n/LocaleProvi
 import { SPY_POLL_INTERVAL_MS } from '@/features/spy-fall/config/spyGame';
 import { fetchRoomState, patchSpyAction, postSpyAction } from '@/features/spy-fall/lib/spy/api';
 import { storePlayerToken } from '@/features/spy-fall/lib/spy/clientToken';
-import type { PhaseCursor, RoomStateDTO, UpdateSettingsInput } from '@/features/spy-fall/types/spyGame';
-import { readAdminTestRoom, sendAdminTestCommand, TEST_VIEWER_TOKEN } from '@/features/board-game-test/clientApi';
+import type {
+	PhaseCursor,
+	RoomStateDTO,
+	UpdateSettingsInput,
+} from '@/features/spy-fall/types/spyGame';
+import {
+	readAdminTestRoom,
+	sendAdminTestCommand,
+	TEST_VIEWER_TOKEN,
+} from '@/features/board-game-test/clientApi';
 
 interface UseSpyRoomOptions {
 	code: string;
@@ -17,7 +25,12 @@ interface UseSpyRoomOptions {
 	onTokenReceived?: (token: string) => void;
 }
 
-export function useSpyRoom({ code, playerToken, onTokenReceived, adminTest = false }: UseSpyRoomOptions) {
+export function useSpyRoom({
+	code,
+	playerToken,
+	onTokenReceived,
+	adminTest = false,
+}: UseSpyRoomOptions) {
 	const testRoom = useTestRoom();
 	const t = useT();
 	const { locale } = useLocale();
@@ -32,10 +45,15 @@ export function useSpyRoom({ code, playerToken, onTokenReceived, adminTest = fal
 	const tokenRef = useRef(playerToken);
 
 	const refresh = useCallback(async () => {
-		if (adminTest) { setLoading(false); return; }
+		if (adminTest) {
+			setLoading(false);
+			return;
+		}
 		const requestToken = tokenRef.current;
 		try {
-			const data = adminTest ? (await readAdminTestRoom('spy-fall', code)).state as RoomStateDTO : await fetchRoomState(code, requestToken);
+			const data = adminTest
+				? ((await readAdminTestRoom('spy-fall', code)).state as RoomStateDTO)
+				: await fetchRoomState(code, requestToken);
 			// A poll sent before join (or before the stored token loaded) describes a different viewer.
 			if (requestToken !== tokenRef.current) return;
 			setState((prev) => (prev && data.version < prev.version ? prev : data));
@@ -92,7 +110,7 @@ export function useSpyRoom({ code, playerToken, onTokenReceived, adminTest = fal
 	}, [state?.phase]);
 
 	const action = useCallback(
-		async <T,>(fn: () => Promise<T>): Promise<T> => {
+		async <T>(fn: () => Promise<T>): Promise<T> => {
 			const result = await fn();
 			await refresh();
 			return result;
@@ -103,7 +121,11 @@ export function useSpyRoom({ code, playerToken, onTokenReceived, adminTest = fal
 	const api = {
 		join: (name: string, existingToken?: string) =>
 			action(async () => {
-				if (adminTest) return { state: (await readAdminTestRoom('spy-fall', code)).state as RoomStateDTO, playerToken: TEST_VIEWER_TOKEN };
+				if (adminTest)
+					return {
+						state: (await readAdminTestRoom('spy-fall', code)).state as RoomStateDTO,
+						playerToken: TEST_VIEWER_TOKEN,
+					};
 				const data = await postSpyAction<{ state: RoomStateDTO; playerToken: string }>(
 					`/api/spy/rooms/${code}/join`,
 					{ name, playerToken: existingToken },
@@ -115,35 +137,54 @@ export function useSpyRoom({ code, playerToken, onTokenReceived, adminTest = fal
 				return data;
 			}),
 		start: () =>
-				action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'start', locale: localeRef.current }) as Promise<RoomStateDTO> :
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/start`, {
-					token: tokenRef.current,
-					locale: localeRef.current,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, {
+							kind: 'start',
+							locale: localeRef.current,
+						}) as Promise<RoomStateDTO>)
+					: postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/start`, {
+							token: tokenRef.current,
+							locale: localeRef.current,
+						}),
 			),
 		memorized: () =>
-			action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'remember' }) as Promise<RoomStateDTO> :
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/memorized`, {
-					token: tokenRef.current,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, { kind: 'remember' }) as Promise<RoomStateDTO>)
+					: postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/memorized`, {
+							token: tokenRef.current,
+						}),
 			),
 		vote: (targetId: string | null) =>
-			action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'vote', playerId: 'controlled', targetId: targetId ?? '' }) as Promise<RoomStateDTO> :
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/vote`, {
-					token: tokenRef.current,
-					targetId,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, {
+							kind: 'vote',
+							playerId: 'controlled',
+							targetId: targetId ?? '',
+						}) as Promise<RoomStateDTO>)
+					: postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/vote`, {
+							token: tokenRef.current,
+							targetId,
+						}),
 			),
 		settings: (input: UpdateSettingsInput) =>
-			action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'settings', settings: input }) as Promise<RoomStateDTO> :
-				patchSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/settings`, {
-					token: tokenRef.current,
-					...input,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, {
+							kind: 'settings',
+							settings: input,
+						}) as Promise<RoomStateDTO>)
+					: patchSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/settings`, {
+							token: tokenRef.current,
+							...input,
+						}),
 			),
 		next: (from: PhaseCursor) =>
 			action(async () => {
-				if (adminTest) return sendAdminTestCommand('spy-fall', code, { kind: 'next' }) as Promise<RoomStateDTO>;
+				if (adminTest)
+					return sendAdminTestCommand('spy-fall', code, { kind: 'next' }) as Promise<RoomStateDTO>;
 				try {
 					return await postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/next`, {
 						token: tokenRef.current,
@@ -155,39 +196,61 @@ export function useSpyRoom({ code, playerToken, onTokenReceived, adminTest = fal
 				}
 			}),
 		playAgain: () =>
-			action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'reset', sameSeed: false }) as Promise<RoomStateDTO> :
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/play-again`, {
-					token: tokenRef.current,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, {
+							kind: 'reset',
+							sameSeed: false,
+						}) as Promise<RoomStateDTO>)
+					: postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/play-again`, {
+							token: tokenRef.current,
+						}),
 			),
 		restart: () =>
-			action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'reset', sameSeed: true }) as Promise<RoomStateDTO> :
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/restart`, {
-					token: tokenRef.current,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, {
+							kind: 'reset',
+							sameSeed: true,
+						}) as Promise<RoomStateDTO>)
+					: postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/restart`, {
+							token: tokenRef.current,
+						}),
 			),
 		rename: (name: string) =>
-			action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'rename', name }) as Promise<RoomStateDTO> :
-				patchSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/rename`, {
-					token: tokenRef.current,
-					name,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, {
+							kind: 'rename',
+							name,
+						}) as Promise<RoomStateDTO>)
+					: patchSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/rename`, {
+							token: tokenRef.current,
+							name,
+						}),
 			),
 		kick: (targetId: string) =>
-			action(() => adminTest ? sendAdminTestCommand('spy-fall', code, { kind: 'kick', playerId: targetId }) as Promise<RoomStateDTO> :
-				postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/kick`, {
-					token: tokenRef.current,
-					targetId,
-				}),
+			action(() =>
+				adminTest
+					? (sendAdminTestCommand('spy-fall', code, {
+							kind: 'kick',
+							playerId: targetId,
+						}) as Promise<RoomStateDTO>)
+					: postSpyAction<RoomStateDTO>(`/api/spy/rooms/${code}/kick`, {
+							token: tokenRef.current,
+							targetId,
+						}),
 			),
 		leave: () =>
-			adminTest ? Promise.resolve({ roomClosed: false }) : postSpyAction<{ roomClosed: boolean }>(`/api/spy/rooms/${code}/leave`, {
-				token: tokenRef.current,
-			}),
+			adminTest
+				? Promise.resolve({ roomClosed: false })
+				: postSpyAction<{ roomClosed: boolean }>(`/api/spy/rooms/${code}/leave`, {
+						token: tokenRef.current,
+					}),
 	};
 
 	return {
-		state: testRoom ? testRoom.state as RoomStateDTO : state,
+		state: testRoom ? (testRoom.state as RoomStateDTO) : state,
 		error,
 		loading: testRoom ? false : loading,
 		refresh,

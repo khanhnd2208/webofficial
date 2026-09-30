@@ -35,11 +35,7 @@ export function RoleSheet({
 			<p className="mb-4 text-center text-sm text-muted-foreground">
 				{t('spy.roleReveal.peekHint')}
 			</p>
-			<Dossier
-				revealed={revealed}
-				onRevealStart={handlePointerDown}
-				onRevealEnd={handlePointerUp}
-			>
+			<Dossier revealed={revealed} onRevealStart={handlePointerDown} onRevealEnd={handlePointerUp}>
 				<RoleDossierContent self={self} spyCount={spyCount} />
 			</Dossier>
 		</Sheet>

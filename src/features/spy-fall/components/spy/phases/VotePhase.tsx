@@ -48,14 +48,17 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 		<>
 			<div className="space-y-4">
 				<StepGuide
-					stepsKey={out ? 'spy.steps.voteOut' : state.isRevote ? 'spy.steps.revote' : 'spy.steps.vote'}
+					stepsKey={
+						out ? 'spy.steps.voteOut' : state.isRevote ? 'spy.steps.revote' : 'spy.steps.vote'
+					}
 				/>
 
 				<StakesBanner state={state} />
 
 				{state.isRevote ? (
 					<div className="rounded-xl border border-warning/40 bg-warning-subtle px-4 py-3 text-center text-sm font-semibold text-warning">
-						<GameIcon name="target" size={15} className="mr-1 inline" /> {t('spy.vote.revote', { names: tiedNames })}
+						<GameIcon name="target" size={15} className="mr-1 inline" />{' '}
+						{t('spy.vote.revote', { names: tiedNames })}
 					</div>
 				) : null}
 

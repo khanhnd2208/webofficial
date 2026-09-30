@@ -45,7 +45,8 @@ async function withVersionRetry<T>(run: () => Promise<T>): Promise<T> {
 		try {
 			return await run();
 		} catch (error) {
-			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS) throw error;
+			if (!(error instanceof mongoose.Error.VersionError) || attempt >= MAX_SAVE_ATTEMPTS)
+				throw error;
 		}
 	}
 }
@@ -54,7 +55,10 @@ function now(): Date {
 	return gameNow();
 }
 
-function findPlayer(room: { players: IWerewolfPlayer[] }, token: string): IWerewolfPlayer | undefined {
+function findPlayer(
+	room: { players: IWerewolfPlayer[] },
+	token: string,
+): IWerewolfPlayer | undefined {
 	return room.players.find((player) => player.token === token);
 }
 
@@ -101,7 +105,9 @@ export function toRoomStateDTO(
 	at: Date = new Date(),
 ): RoomStateDTO {
 	const isHost = viewerToken != null && viewerToken === room.hostToken;
-	const selfPlayer = viewerToken ? room.players.find((player) => player.token === viewerToken) : undefined;
+	const selfPlayer = viewerToken
+		? room.players.find((player) => player.token === viewerToken)
+		: undefined;
 
 	const players: WerewolfPlayerView[] = room.players.map((player) => {
 		const view: WerewolfPlayerView = {
@@ -214,7 +220,10 @@ function clearAssignments(room: RoomDoc): void {
 	}
 }
 
-export async function createRoom(hostNameInput: string, testOwnerId?: string): Promise<{ state: RoomStateDTO; hostToken: string }> {
+export async function createRoom(
+	hostNameInput: string,
+	testOwnerId?: string,
+): Promise<{ state: RoomStateDTO; hostToken: string }> {
 	const hostName = normalizePlayerName(hostNameInput);
 	if (!hostName) throw new AppError('PLAYER_NAME_REQUIRED', 400);
 
@@ -264,7 +273,10 @@ export async function joinRoom(
 			room.hostLastSeenAt = at;
 			room.version += 1;
 			await room.save();
-			return { state: toRoomStateDTO(snapshotFromDoc(room), existingToken, at), playerToken: existingToken };
+			return {
+				state: toRoomStateDTO(snapshotFromDoc(room), existingToken, at),
+				playerToken: existingToken,
+			};
 		}
 
 		if (existingToken) {
@@ -331,7 +343,11 @@ export async function setRoleCounts(
 	});
 }
 
-export async function deal(code: string, hostToken: string, random: () => number = gameRandom): Promise<RoomStateDTO> {
+export async function deal(
+	code: string,
+	hostToken: string,
+	random: () => number = gameRandom,
+): Promise<RoomStateDTO> {
 	return mutateRoom(code, hostToken, (room) => {
 		assertHost(room, hostToken);
 		const seated = activePlayers(room.players);
@@ -389,10 +405,7 @@ export async function kickPlayer(
 	});
 }
 
-export async function leaveRoom(
-	code: string,
-	token: string,
-): Promise<{ roomClosed: boolean }> {
+export async function leaveRoom(code: string, token: string): Promise<{ roomClosed: boolean }> {
 	return withVersionRetry(async () => {
 		const room = await loadRoom(code);
 		if (room.hostToken === token) {

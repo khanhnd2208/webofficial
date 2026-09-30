@@ -160,7 +160,9 @@ export default function TableSettings({ state, busy, onSettings }: Props) {
 							: t('cheese.lobby.mode.classic')}
 					</p>
 				)}
-				{twoNightLocked && <p className="mt-2 text-sm text-muted">{t('cheese.lobby.twoNight.need')}</p>}
+				{twoNightLocked && (
+					<p className="mt-2 text-sm text-muted">{t('cheese.lobby.twoNight.need')}</p>
+				)}
 			</div>
 
 			<div className="px-4 py-3">
@@ -172,7 +174,9 @@ export default function TableSettings({ state, busy, onSettings }: Props) {
 						</p>
 					</div>
 					{!host && (
-						<span className="font-display text-3xl font-medium tabular-nums">{followers.count}</span>
+						<span className="font-display text-3xl font-medium tabular-nums">
+							{followers.count}
+						</span>
 					)}
 				</div>
 				{host && (
@@ -250,7 +254,8 @@ export default function TableSettings({ state, busy, onSettings }: Props) {
 									)}
 									onClick={() =>
 										onSettings({
-											followerKnowledge: knowledge === followers.defaultKnowledge ? null : knowledge,
+											followerKnowledge:
+												knowledge === followers.defaultKnowledge ? null : knowledge,
 										})
 									}
 								>
@@ -263,7 +268,12 @@ export default function TableSettings({ state, busy, onSettings }: Props) {
 				</div>
 			)}
 
-			<label className={cn('flex items-start gap-3 px-4 py-3', (scapegoatLocked || !host) && 'opacity-80')}>
+			<label
+				className={cn(
+					'flex items-start gap-3 px-4 py-3',
+					(scapegoatLocked || !host) && 'opacity-80',
+				)}
+			>
 				<input
 					type="checkbox"
 					className="mt-1 h-5 w-5"

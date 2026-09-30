@@ -3,9 +3,19 @@
  * A plain <audio> element keeps playing with the screen locked and (on iPhone) with the
  * silent switch on — speech synthesis and Web Audio do neither.
  */
-import { nightDurationMs, nightTiming, type CheeseMode, type NightNumber } from '@/features/cheese-thief/config/cheeseThief';
+import {
+	nightDurationMs,
+	nightTiming,
+	type CheeseMode,
+	type NightNumber,
+} from '@/features/cheese-thief/config/cheeseThief';
 import { MIX_RATE, encodeWav, mixNight } from '@/features/cheese-thief/lib/nightMix';
-import { nightCues, roundPreviewCues, type NightCue, type VoiceClip } from '@/features/cheese-thief/lib/nightSchedule';
+import {
+	nightCues,
+	roundPreviewCues,
+	type NightCue,
+	type VoiceClip,
+} from '@/features/cheese-thief/lib/nightSchedule';
 import { withBasePath } from '@/features/spy-fall/lib/basePath';
 
 type Locale = 'vi' | 'en';
@@ -49,7 +59,11 @@ export function readyRoundPreview(locale: Locale, hourSeconds: number): string |
 /** Builds once per spec. Resolves to null when this browser cannot build it; the host then falls back to speech. */
 export function prepareNightTrack(spec: NightTrackSpec): Promise<string | null> {
 	return prepare(nightTrackKey(spec), () =>
-		buildTrack(spec.locale, nightCues(spec.mode, spec.night, nightTiming(spec.hourSeconds)), nightTrackSeconds(spec)),
+		buildTrack(
+			spec.locale,
+			nightCues(spec.mode, spec.night, nightTiming(spec.hourSeconds)),
+			nightTrackSeconds(spec),
+		),
 	);
 }
 
@@ -100,7 +114,9 @@ async function buildTrack(locale: Locale, cues: NightCue[], seconds: number): Pr
 		throw new Error('No OfflineAudioContext');
 	}
 	const names = [...new Set(cues.map((cue) => cue.clip))];
-	const clips = new Map(await Promise.all(names.map(async (clip) => [clip, await decodeClip(locale, clip)] as const)));
+	const clips = new Map(
+		await Promise.all(names.map(async (clip) => [clip, await decodeClip(locale, clip)] as const)),
+	);
 	const samples = mixNight({ cues, clips, seconds });
 	return URL.createObjectURL(new Blob([encodeWav(samples, MIX_RATE)], { type: 'audio/wav' }));
 }
@@ -109,6 +125,8 @@ let silence: string | null = null;
 
 /** A tenth of a second of nothing, for unlocking the <audio> element inside a tap. */
 export function silentClipUrl(): string {
-	silence ??= URL.createObjectURL(new Blob([encodeWav(new Float32Array(1_600), 16_000)], { type: 'audio/wav' }));
+	silence ??= URL.createObjectURL(
+		new Blob([encodeWav(new Float32Array(1_600), 16_000)], { type: 'audio/wav' }),
+	);
 	return silence;
 }

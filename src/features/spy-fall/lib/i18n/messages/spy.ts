@@ -112,7 +112,8 @@ export const spyVi: MessageTree = {
 			'Tắt (mặc định): mỗi người chỉ thấy từ, không biết mình là Dân hay Spy. Bật: thẻ bí mật hiện thêm vai.',
 		rulesTitle: 'Luật ván này',
 		ruleOneSpy: '1 Spy — chỉ một lượt bầu: trúng Spy thì Dân thắng, trượt thì Spy thắng',
-		ruleManySpies: '{count} Spy — mỗi lượt bầu phải trúng một Spy; bắt đủ {count} Spy thì Dân thắng, trượt một lần là Spy thắng',
+		ruleManySpies:
+			'{count} Spy — mỗi lượt bầu phải trúng một Spy; bắt đủ {count} Spy thì Dân thắng, trượt một lần là Spy thắng',
 		ruleRolesHidden: 'Không ai biết mình là Dân hay Spy',
 		ruleRolesShown: 'Mỗi người được biết vai của mình',
 		kick: 'Mời rời',
@@ -144,13 +145,13 @@ export const spyVi: MessageTree = {
 	stakes: {
 		one: 'Chỉ có một lượt bầu: trúng Spy thì Dân thắng, trượt thì Spy thắng.',
 		first: 'Ván có {total} Spy. Bầu trúng Spy thì được thêm một lượt đoán; trượt là Spy thắng.',
-		middle: 'Đã bắt được {caught}/{total} Spy. Trúng tiếp thì được thêm một lượt đoán; trượt là Spy thắng.',
+		middle:
+			'Đã bắt được {caught}/{total} Spy. Trúng tiếp thì được thêm một lượt đoán; trượt là Spy thắng.',
 		last: 'Đã bắt được {caught}/{total} Spy. Lượt đoán cuối: trúng Spy còn lại thì Dân thắng.',
 	},
 	vote: {
 		lockConfirmNone: 'Chưa ai bầu. Chốt bây giờ thì không ai bị loại — Spy thắng. Chắc chắn?',
-		lockConfirmSome:
-			'Còn {missing} người chưa bầu; phiếu của họ không được tính. {tie} Chốt ngay?',
+		lockConfirmSome: 'Còn {missing} người chưa bầu; phiếu của họ không được tính. {tie} Chốt ngay?',
 		lockTieEnds: 'Nếu hòa thì Spy thắng.',
 		lockTieRevote: 'Nếu hòa sẽ bầu lại một lần.',
 		waitOthers: 'Đã bầu — chờ mọi người…',
@@ -445,7 +446,8 @@ export const spyEn: MessageTree = {
 			'Off (default): everyone only sees a word and does not know if they are Civilian or Spy. On: the secret card also shows your role.',
 		rulesTitle: 'Rules for this game',
 		ruleOneSpy: '1 spy — a single vote: hit the Spy and Civilians win, miss and the Spy wins',
-		ruleManySpies: '{count} spies — every vote must hit a Spy; catch all {count} to win, one miss and the Spies win',
+		ruleManySpies:
+			'{count} spies — every vote must hit a Spy; catch all {count} to win, one miss and the Spies win',
 		ruleRolesHidden: 'Nobody knows if they are Civilian or Spy',
 		ruleRolesShown: 'Everyone is told their own role',
 		kick: 'Remove',
@@ -476,7 +478,8 @@ export const spyEn: MessageTree = {
 	stakes: {
 		one: 'There is only one vote: hit the Spy and Civilians win, miss and the Spy wins.',
 		first: '{total} spies this game. Catch one to earn another guess; a miss means the Spies win.',
-		middle: '{caught} of {total} spies caught. Hit another to earn one more guess; a miss means the Spies win.',
+		middle:
+			'{caught} of {total} spies caught. Hit another to earn one more guess; a miss means the Spies win.',
 		last: '{caught} of {total} spies caught. Final guess: find the last Spy and the Civilians win.',
 	},
 	vote: {
@@ -538,7 +541,8 @@ export const spyEn: MessageTree = {
 		readyCount: '{done}/{total} players have seen their word',
 		holdFirst: 'Hold the card to see your word first',
 		unknownSide: 'You don’t know if you are Civilian or Spy.',
-		unknownSideMany: 'You don’t know if you are Civilian or Spy. There are {count} spies this game.',
+		unknownSideMany:
+			'You don’t know if you are Civilian or Spy. There are {count} spies this game.',
 		yourRole: 'Your role',
 		civilianHint: 'You are a Civilian: find the Spy without giving your word away.',
 		spyHint: 'You are the Spy: blend in and work out what the Civilians are describing.',

@@ -53,7 +53,10 @@ export default function RoleCard({ roleId, onViewed }: Props) {
 
 	return (
 		<div className="flex flex-col items-center gap-3">
-			<p className="flex items-center gap-2 text-center text-sm text-muted-foreground"><GameIcon name="lock" size={15} />{t('mafia.card.privacy')}</p>
+			<p className="flex items-center gap-2 text-center text-sm text-muted-foreground">
+				<GameIcon name="lock" size={15} />
+				{t('mafia.card.privacy')}
+			</p>
 			<div
 				role="button"
 				tabIndex={0}
@@ -72,7 +75,10 @@ export default function RoleCard({ roleId, onViewed }: Props) {
 					src={withBasePath(CARD_BACK_IMAGE)}
 					alt=""
 					draggable={false}
-					className={cn('pointer-events-none h-full w-full object-cover', showFace && 'invisible absolute')}
+					className={cn(
+						'pointer-events-none h-full w-full object-cover',
+						showFace && 'invisible absolute',
+					)}
 				/>
 				{faceSrc ? (
 					<img
@@ -87,17 +93,27 @@ export default function RoleCard({ roleId, onViewed }: Props) {
 				) : null}
 				{showFace ? (
 					<div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/50 to-transparent p-4 text-white">
-						<span className={cn('mx-auto mb-2 rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider', FACTION_CHIP[role.faction])}>
+						<span
+							className={cn(
+								'mx-auto mb-2 rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider',
+								FACTION_CHIP[role.faction],
+							)}
+						>
 							{t(`mafia.faction.${role.faction}`)}
 						</span>
-						<h2 className="font-display text-center text-2xl font-bold">{t(`mafia.role.${role.roleId}.name`)}</h2>
+						<h2 className="font-display text-center text-2xl font-bold">
+							{t(`mafia.role.${role.roleId}.name`)}
+						</h2>
 						<p className="mt-2 text-center text-xs leading-relaxed text-white/90 sm:text-sm">
 							{t(`mafia.role.${role.roleId}.desc`)}
 						</p>
 					</div>
 				) : null}
 			</div>
-			<p className="flex items-center gap-2 text-center text-xs text-muted-foreground"><GameIcon name="eye" size={14} />{t('mafia.card.hold')}</p>
+			<p className="flex items-center gap-2 text-center text-xs text-muted-foreground">
+				<GameIcon name="eye" size={14} />
+				{t('mafia.card.hold')}
+			</p>
 		</div>
 	);
 }

@@ -6,9 +6,6 @@ interface SkeletonProps {
 
 export default function Skeleton({ className }: SkeletonProps) {
 	return (
-		<div
-			className={cn('animate-pulse rounded-lg bg-surface-secondary', className)}
-			aria-hidden
-		/>
+		<div className={cn('animate-pulse rounded-lg bg-surface-secondary', className)} aria-hidden />
 	);
 }

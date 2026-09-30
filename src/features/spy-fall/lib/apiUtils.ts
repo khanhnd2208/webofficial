@@ -56,9 +56,19 @@ export function withPublicRoomGuard<T>(model: Model<T>, handler: PublicHandler) 
 		const params = context ? await context.params : {};
 		if (params.code) {
 			await dbConnect();
-			const room = await model.findOne({ code: params.code.toUpperCase() }).select('adminTest.ownerUserId').lean();
-			if (room && typeof room === 'object' && 'adminTest' in room && room.adminTest &&
-				typeof room.adminTest === 'object' && 'ownerUserId' in room.adminTest && room.adminTest.ownerUserId) {
+			const room = await model
+				.findOne({ code: params.code.toUpperCase() })
+				.select('adminTest.ownerUserId')
+				.lean();
+			if (
+				room &&
+				typeof room === 'object' &&
+				'adminTest' in room &&
+				room.adminTest &&
+				typeof room.adminTest === 'object' &&
+				'ownerUserId' in room.adminTest &&
+				room.adminTest.ownerUserId
+			) {
 				return apiError('TEST_ROOM_PRIVATE', 404);
 			}
 		}

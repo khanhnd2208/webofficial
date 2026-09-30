@@ -36,7 +36,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 							'pointer-events-auto animate-fade-in rounded-xl border px-4 py-3 text-sm font-medium shadow-lg',
 							t.variant === 'success' && 'border-success/30 bg-success-subtle text-success',
 							t.variant === 'error' && 'border-danger/30 bg-danger-subtle text-danger',
-							(!t.variant || t.variant === 'default') && 'border-border bg-surface-elevated text-foreground',
+							(!t.variant || t.variant === 'default') &&
+								'border-border bg-surface-elevated text-foreground',
 						)}
 						role="status"
 					>

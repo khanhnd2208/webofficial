@@ -44,13 +44,7 @@ export function BriefingContent() {
 	);
 }
 
-export function BriefingSheet({
-	open,
-	onClose,
-}: {
-	open: boolean;
-	onClose: () => void;
-}) {
+export function BriefingSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 	const t = useT();
 	return (
 		<Sheet open={open} onClose={onClose} title={t('spy.guide.title')}>

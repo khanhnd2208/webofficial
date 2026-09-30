@@ -74,13 +74,31 @@ export default function QrInvite({ code, roomName }: Props) {
 				</div>
 				<p className="max-w-[240px] break-all text-center text-xs text-muted">{url}</p>
 				<div className="grid w-full grid-cols-3 gap-2">
-					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copyCode()}>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void copyCode()}
+					>
 						{t('spy.invite.copyCode')}
 					</Button>
-					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copyLink()}>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void copyLink()}
+					>
 						{t('spy.invite.copyLink')}
 					</Button>
-					<Button type="button" variant="tertiary" size="sm" className="whitespace-nowrap px-2" onClick={() => void shareInvite()}>
+					<Button
+						type="button"
+						variant="tertiary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void shareInvite()}
+					>
 						{t('spy.invite.share')}
 					</Button>
 				</div>

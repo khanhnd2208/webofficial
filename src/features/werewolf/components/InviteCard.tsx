@@ -59,13 +59,31 @@ export default function InviteCard({ code }: Props) {
 				</div>
 				<p className="max-w-[240px] break-all text-center text-xs text-muted">{url}</p>
 				<div className="grid w-full grid-cols-3 gap-2">
-					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copy(code, 'mafia.invite.copiedCode')}>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void copy(code, 'mafia.invite.copiedCode')}
+					>
 						{t('mafia.invite.copyCode')}
 					</Button>
-					<Button type="button" variant="secondary" size="sm" className="whitespace-nowrap px-2" onClick={() => void copy(url, 'mafia.invite.copiedLink')}>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void copy(url, 'mafia.invite.copiedLink')}
+					>
 						{t('mafia.invite.copyLink')}
 					</Button>
-					<Button type="button" variant="tertiary" size="sm" className="whitespace-nowrap px-2" onClick={() => void shareInvite()}>
+					<Button
+						type="button"
+						variant="tertiary"
+						size="sm"
+						className="whitespace-nowrap px-2"
+						onClick={() => void shareInvite()}
+					>
 						{t('mafia.invite.share')}
 					</Button>
 				</div>
