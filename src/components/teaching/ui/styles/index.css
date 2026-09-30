@@ -1,7 +1,7 @@
-@import './workspace-1.css';
-@import './workspace-2.css';
-@import './workspace-3.css';
-@import './workspace-4.css';
+@import './grid-shell.css';
+@import './grid-cells.css';
+@import './workspace-chrome.css';
+@import './workspace-actions.css';
 @import './groups.css';
 @import './tokens.css';
 @import './components.css';
