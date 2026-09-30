@@ -16,7 +16,11 @@ Teaching is the first destination with an explicit surface identity. Shared acce
 
 ## Screen behavior
 
-Active classes precede courses. Create class is the primary entry action; course actions are secondary. Course and class headings use the same identity, status and icon language. The management menu retains setup, student-page and export actions, with a native sheet on mobile.
+Active classes precede courses. The course list is compact: a row shows the code, name, class count, deck count and menu. Courses with an active class sort first, then by latest update. Courses with neither a class nor a deck sit in a collapsed group. Status chips count active, archived and all courses; "Đang dạy" counts `ACTIVE` courses. Create class stays the primary entry action. Learner-facing copy says "sinh viên". The management menu retains setup, student-page and export actions; on a phone the trigger shows the word "Quản lý" and opens a bottom sheet.
+
+The attendance score column reads "Chuyên cần" and is wide enough that the heading and score are not clipped. Only the current week shows "Chưa chốt" and the full date control. A future week without a date is `W4` plus a control labelled "Thêm ngày W4".
+
+The public class header is one line of course, class and term. Tabs use the same Vietnamese names as the instructor workspace. "Đây là tôi" stores the chosen enrollment id in localStorage for that class slug and that browser, pins the row, and can be cleared. Blocked storage does not break the page. The table still scrolls the current week into the gap between the sticky name and score columns.
 
 The gradebook toolbar groups tutorial, week, search and saving feedback. The week selector uses the existing selection and URL contracts, including clearing a week; tab changes retain the current week. Identity columns and headers remain sticky inside the table scroll area. Student cards allow long names without widening the mobile page. Import steps describe the existing source, reconciliation and result states without introducing another workflow.
 

@@ -24,9 +24,10 @@ Teaching owns its light palette through `data-surface="teaching"`; do not set th
 - Accent `#176B63`, hover `#12564F`, selected fill `#E5F1ED`; status colors convey state with text or symbols.
 - Inter; page headings 24–32px, workspace headings 18–24px, body 14–16px, metadata 12px. Numbers use tabular figures.
 - Spacing 4/8/12/16/24/32px; controls 8px radius, panels 12px, dialogs 16px. Coarse-pointer targets are at least 44px.
-- The contents page and My Space use `TeachingMark`; task icons come from the typed `TeachingIcon` set. Label meaningful controls; decorative icons remain hidden from assistive technology.
-- Active classes precede courses. One primary action per task; administrative actions use secondary controls and the management menu.
-- Gradebook toolbar groups tutorial, week, search, result count and saving/error feedback. Sticky identity columns and headers live inside the scrollable table; page overflow is never used to expose columns.
+- The contents Teaching tile uses the hand-drawn illustration, with a light teal wash from `--teaching-accent`. My Space keeps `TeachingMark` and those tokens. Task icons come from the typed `TeachingIcon` set. Label meaningful controls; decorative icons remain hidden from assistive technology.
+- Active classes precede courses. Courses are a compact list: classes in progress first, courses with no class and no deck collapsed, and status chips that count active courses only. One primary action per task; administrative actions use secondary controls and the management menu. Learner-facing copy says "sinh viên".
+- Gradebook toolbar groups tutorial, week, search, result count and saving/error feedback. Sticky identity columns and headers live inside the scrollable table; page overflow is never used to expose columns. The attendance score column is wide enough for "Chuyên cần". Only the current week spells out "Chưa chốt"; a future week without a date is a small add control.
+- A public class page can pin "Đây là tôi" in localStorage for that browser only. The choice is not sent to the server, and blocked storage leaves the page usable.
 - Mobile class headers stay compact, tabs scroll, and management opens a bottom sheet. Full metadata remains available in the eyebrow title and accessible text.
 - Teaching styles live in `src/components/teaching/ui/styles/`; experience access and choice styles are separate CSS Modules. Shared studio primitives still provide controls and typography.
 - Paper rulings are reserved for empty states. Tables and form surfaces remain flat; transitions use 120–200ms and respect reduced motion.
