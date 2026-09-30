@@ -5,21 +5,27 @@ import {
 	isSafeInternalPath,
 	loginRedirectTarget,
 	resolveAuthJsRedirect,
+	sameSiteReferrerPath,
 	sanitizeAuthRedirect,
 } from './safeRedirect';
 
 describe('sanitizeAuthRedirect', () => {
 	it('keeps internal admin destinations', () => {
-		expect(sanitizeAuthRedirect('/admin/website', { role: 'admin' })).toBe('/admin/website');
-		expect(sanitizeAuthRedirect('/my-space/teaching?tab=cp', { role: 'admin' })).toBe(
-			'/my-space/teaching?tab=cp',
+		expect(sanitizeAuthRedirect('/admin/website')).toBe('/admin/website');
+		expect(sanitizeAuthRedirect('/my-space/teaching?tab=cp')).toBe('/my-space/teaching?tab=cp');
+	});
+
+	it('keeps the #section so the page opens where sign-in started', () => {
+		expect(sanitizeAuthRedirect('/gioi-thieu?view=full#du-an')).toBe('/gioi-thieu?view=full#du-an');
+		expect(sanitizeAuthRedirect('https://toiladuykhanh.com/muc-luc#trai-nghiem')).toBe(
+			'/muc-luc#trai-nghiem',
 		);
 	});
 
 	it('rejects protocol-relative URLs and only keeps the path of absolute URLs', () => {
 		expect(sanitizeAuthRedirect('https://evil.example/phish')).toBe('/phish');
-		expect(sanitizeAuthRedirect('//evil.example')).toBe('/tai-khoan');
-		expect(sanitizeAuthRedirect('/\\evil')).toBe('/tai-khoan');
+		expect(sanitizeAuthRedirect('//evil.example')).toBe('/');
+		expect(sanitizeAuthRedirect('/\\evil')).toBe('/');
 	});
 
 	it('extracts the path from a same-looking absolute URL then still rejects other origins via Auth.js helper', () => {
@@ -29,12 +35,14 @@ describe('sanitizeAuthRedirect', () => {
 		expect(
 			resolveAuthJsRedirect('https://toiladuykhanh.com/admin/posts', 'https://toiladuykhanh.com'),
 		).toBe('https://toiladuykhanh.com/admin/posts');
+		expect(
+			resolveAuthJsRedirect('https://toiladuykhanh.com/muc-luc#du-an', 'https://toiladuykhanh.com'),
+		).toBe('https://toiladuykhanh.com/muc-luc#du-an');
 	});
 
 	it('does not loop back to the login page', () => {
-		expect(sanitizeAuthRedirect('/dang-nhap?error=CallbackRouteError', { role: 'admin' })).toBe(
-			'/my-space/teaching',
-		);
+		expect(sanitizeAuthRedirect('/dang-nhap?error=CallbackRouteError')).toBe('/');
+		expect(sanitizeAuthRedirect('/dang-nhap#top')).toBe('/');
 	});
 
 	it('rewrites retired account aliases', () => {
@@ -45,19 +53,14 @@ describe('sanitizeAuthRedirect', () => {
 			'/my-space/teaching/class-1?tab=cp&week=2',
 		);
 		expect(sanitizeAuthRedirect('/profile')).toBe('/tai-khoan');
-		expect(sanitizeAuthRedirect('/my-space/teaching?tab=cp', { role: 'admin' })).toBe(
-			'/my-space/teaching?tab=cp',
-		);
-		expect(sanitizeAuthRedirect('/my-space/teaching/class-1?tab=cp', { role: 'admin' })).toBe(
+		expect(sanitizeAuthRedirect('/my-space/teaching/class-1?tab=cp')).toBe(
 			'/my-space/teaching/class-1?tab=cp',
 		);
-		expect(sanitizeAuthRedirect('/messages/hello', { role: 'admin' })).toBe(
-			'/admin/tools/messages/hello',
-		);
+		expect(sanitizeAuthRedirect('/messages/hello')).toBe('/admin/tools/messages/hello');
 	});
 
-	it('lands admins in Teaching when no destination exists', () => {
-		expect(sanitizeAuthRedirect(undefined, { role: 'admin' })).toBe('/my-space/teaching');
+	it('falls back to the homepage, for admins and students alike', () => {
+		expect(sanitizeAuthRedirect(undefined)).toBe('/');
 	});
 });
 
@@ -75,17 +78,33 @@ describe('loginRedirectTarget', () => {
 			'/my-space/teaching/class-1?tab=cp',
 		);
 		expect(loginRedirectTarget('/admin/posts')).toBe('/admin/posts');
-	});
-
-	it('returns to the homepage when sign-in started there', () => {
 		expect(loginRedirectTarget('/')).toBe('/');
 	});
 
-	it('routes missing and unsafe destinations through the role-aware landing', () => {
-		expect(loginRedirectTarget(undefined)).toBe('/dang-nhap/tiep-tuc');
-		expect(loginRedirectTarget('/dang-nhap')).toBe('/dang-nhap/tiep-tuc');
-		expect(loginRedirectTarget('https://evil.example/x')).toBe('/x');
-		expect(loginRedirectTarget('//evil.example')).toBe('/dang-nhap/tiep-tuc');
+	it('uses the first usable candidate', () => {
+		expect(loginRedirectTarget(undefined, '/ghi-chep/bai-1#y-chinh', '/muc-luc')).toBe(
+			'/ghi-chep/bai-1#y-chinh',
+		);
+		expect(loginRedirectTarget(null, null, 'https://toiladuykhanh.com/admin/posts?tab=draft')).toBe(
+			'/admin/posts?tab=draft',
+		);
+		expect(loginRedirectTarget('/dang-nhap', '//evil.example', '/gioi-thieu')).toBe('/gioi-thieu');
+	});
+
+	it('returns to the homepage when no candidate is usable', () => {
+		expect(loginRedirectTarget()).toBe('/');
+		expect(loginRedirectTarget(undefined, '/dang-nhap', '//evil.example')).toBe('/');
+	});
+});
+
+describe('sameSiteReferrerPath', () => {
+	it('keeps the path of a referrer on this site only', () => {
+		expect(sameSiteReferrerPath('https://toiladuykhanh.com/muc-luc?x=1', 'toiladuykhanh.com')).toBe(
+			'/muc-luc?x=1',
+		);
+		expect(sameSiteReferrerPath('https://accounts.google.com/o', 'toiladuykhanh.com')).toBeNull();
+		expect(sameSiteReferrerPath(null, 'toiladuykhanh.com')).toBeNull();
+		expect(sameSiteReferrerPath('not a url', 'toiladuykhanh.com')).toBeNull();
 	});
 });
 
@@ -95,6 +114,5 @@ describe('destinationLabel', () => {
 		expect(destinationLabel('/admin/posts')).toBe('khu quản trị');
 		expect(destinationLabel('/tai-khoan')).toBe('tài khoản');
 		expect(destinationLabel('/')).toBeNull();
-		expect(destinationLabel('/dang-nhap/tiep-tuc')).toBeNull();
 	});
 });

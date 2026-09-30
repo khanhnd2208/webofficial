@@ -13,7 +13,7 @@ export async function incomingProtectedPath(fallback: string): Promise<string> {
 	for (const raw of candidates) {
 		if (!raw) continue;
 		const path = raw.startsWith('http') ? new URL(raw).pathname + new URL(raw).search : raw;
-		const safe = sanitizeAuthRedirect(path, { role: 'admin', fallback: '' });
+		const safe = sanitizeAuthRedirect(path, { fallback: '' });
 		if (safe) return safe;
 	}
 	return fallback;

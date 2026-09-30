@@ -6,6 +6,7 @@ import {
 	AnalyticsScript,
 	ConditionalFooter,
 	DeploymentRefresh,
+	LoginReturnTracker,
 	MainContent,
 	Navbar,
 	PublicMinimalChrome,
@@ -87,6 +88,7 @@ export default function RootLayout({
 					<ConditionalFooter />
 					<AnalyticsScript />
 					<DeploymentRefresh />
+					<LoginReturnTracker />
 				</Providers>
 			</body>
 		</html>

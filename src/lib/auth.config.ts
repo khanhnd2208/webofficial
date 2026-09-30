@@ -16,6 +16,8 @@ import { resolveAuthJsRedirect } from '@/lib/auth/safeRedirect';
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+/** Auth.js stores the post-sign-in destination here while Google is open. */
+export const AUTH_CALLBACK_URL_COOKIE = 'authjs.callback-url';
 
 // Detect local dev: secure cookies break on http://localhost
 const isLocalDev = process.env.AUTH_URL?.startsWith('http://');
@@ -54,7 +56,7 @@ export const authConfig: NextAuthConfig = {
 	// can read the session cookie set by the full auth handler.
 	cookies: {
 		sessionToken: { name: 'authjs.session-token', options: sessionTokenCookieOptions },
-		callbackUrl: { name: 'authjs.callback-url', options: secureCookieOptions },
+		callbackUrl: { name: AUTH_CALLBACK_URL_COOKIE, options: secureCookieOptions },
 		csrfToken: { name: 'authjs.csrf-token', options: secureCookieOptions },
 		pkceCodeVerifier: { name: 'authjs.pkce.code_verifier', options: secureCookieOptions },
 		state: { name: 'authjs.state', options: secureCookieOptions },
