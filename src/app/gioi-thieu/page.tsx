@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 		locale: 'vi_VN',
 		images: [
 			{
-				url: absoluteUrl('/og-editorial-premium.png'),
-				width: 1734,
-				height: 907,
+				url: absoluteUrl('/og-editorial-premium.jpg'),
+				width: 1200,
+				height: 630,
 				alt: aboutHero.manifesto,
 			},
 		],
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 		card: 'summary_large_image',
 		title: `Giới thiệu — ${aboutHero.fullName}`,
 		description,
-		images: [absoluteUrl('/og-editorial-premium.png')],
+		images: [absoluteUrl('/og-editorial-premium.jpg')],
 	},
 };
 
