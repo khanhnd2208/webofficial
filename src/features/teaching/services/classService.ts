@@ -377,7 +377,7 @@ export async function deleteTeachingClass(id: string) {
 	const snapshot = classSnapshotFromLifecycle(existing);
 	if (!isEmptyClassScaffold(snapshot)) {
 		throw dependencyConflict(
-			'Chỉ xóa được lớp còn trống, chưa có học viên hay nội dung tùy chỉnh',
+			'Chỉ xóa được lớp còn trống, chưa có sinh viên hay nội dung tùy chỉnh',
 			{
 				students: snapshot.enrollmentCount || undefined,
 				attendance: snapshot.attendanceCount || undefined,

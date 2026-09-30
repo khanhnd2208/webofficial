@@ -1119,6 +1119,11 @@ li[data-dragging='true'] {
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
 	}
+
+	.mc-button {
+		transition: none;
+		animation: none;
+	}
 }
 
 /* ── Attendance grid ─────────────────────────────────── */

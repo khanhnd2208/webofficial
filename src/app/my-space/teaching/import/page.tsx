@@ -12,7 +12,7 @@ export default function MySpaceTeachingImportPage() {
 				backLabel="Các lớp"
 				eyebrow="Teaching"
 				title="Nhập danh sách"
-				description="Tải CSV mẫu, dán bảng, hoặc import Excel danh sách học viên."
+				description="Tải CSV mẫu, dán bảng, hoặc import Excel danh sách sinh viên."
 			/>
 			<div className="mt-4 sm:mt-5">
 				<ImportWorkspace />

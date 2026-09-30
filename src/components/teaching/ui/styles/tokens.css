@@ -1,4 +1,13 @@
-/* Teaching — academic paper and teal. Light by design, including portalled UI. */
+/* Teaching — academic paper and teal. Light by design, including portalled UI.
+   Identity colours are on :root so My Space and the table of contents can
+   use them without adopting the whole Teaching surface. */
+:root {
+	--teaching-accent: #176b63;
+	--teaching-accent-hover: #12564f;
+	--teaching-selected: #e5f1ed;
+	--teaching-selected-hover: #d4e6dd;
+}
+
 [data-surface='teaching'] {
 	--teaching-canvas: #f7f8f4;
 	--teaching-paper: #ffffff;

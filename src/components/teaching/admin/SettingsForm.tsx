@@ -139,7 +139,7 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 
 				{advancedOpen ? (
 					<>
-						<StudioField label="Attendance tối đa">
+						<StudioField label="Chuyên cần tối đa">
 							<StudioInput
 								type="number"
 								min={0}
@@ -227,7 +227,7 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 							Đi muộn tính vào ngưỡng vắng
 						</label>
 						<div className="rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-3 text-sm text-ink-secondary md:col-span-2">
-							<strong className="text-ink">Preview:</strong> Attendance {form.attendanceMaxPoints} +
+							<strong className="text-ink">Preview:</strong> Chuyên cần {form.attendanceMaxPoints} +
 							CP {form.cpMaxPoints} = {form.attendanceMaxPoints + form.cpMaxPoints}.
 						</div>
 					</>

@@ -270,7 +270,7 @@ export function ClassNotesAdminWorkspace({
 			!selected ||
 			!(await confirm({
 				title: 'Gỡ xuất bản',
-				description: 'Gỡ mục này khỏi trang học viên?',
+				description: 'Gỡ mục này khỏi trang sinh viên?',
 				confirmLabel: 'Gỡ',
 			}))
 		)

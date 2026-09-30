@@ -94,6 +94,7 @@ export function GridPopover({
 				type="button"
 				className="mc-grid-popover-trigger"
 				aria-label={label}
+				title={label}
 				aria-haspopup={menu ? 'menu' : 'dialog'}
 				aria-expanded={open}
 				aria-controls={open ? id : undefined}

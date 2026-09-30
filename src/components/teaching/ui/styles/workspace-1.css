@@ -44,7 +44,7 @@
 	--mc-grid-abs: 7rem;
 	--mc-grid-gift: 5.75rem;
 	--mc-grid-cp: 5.25rem;
-	--mc-grid-attendance-score: 7.5rem;
+	--mc-grid-attendance-score: 9.25rem;
 	--mc-grid-total-score: 6.25rem;
 	--mc-grid-status: 8.5rem;
 	border-collapse: separate;
@@ -102,6 +102,10 @@
 
 [data-surface='teaching'] .mc-grid tbody tr:nth-child(even) td {
 	background: color-mix(in srgb, var(--surface-sunken) 55%, var(--paper));
+}
+
+[data-surface='teaching'] .mc-grid tbody tr[data-me='true'] td {
+	background: var(--teaching-selected);
 }
 
 [data-surface='teaching'] .mc-grid tbody tr:hover td,

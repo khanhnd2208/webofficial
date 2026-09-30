@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { TeachingMark } from '@/components/site/TeachingMark';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -24,6 +23,7 @@ const descriptions: Record<string, string> = {
 
 // This page has its own illustration set; destination pages keep their own assets.
 const tocIcons: Record<string, string> = {
+	teaching: '/brand/toc/teaching-v1.webp',
 	courses: '/brand/toc/courses-v1.webp',
 	'board-game': '/brand/toc/board-game-v1.webp',
 };
@@ -107,11 +107,11 @@ export default async function TocPage() {
 									data-testid={`myspace-tile-${tile.id}`}
 								>
 									<span className={styles.icon}>
-										{tile.id === 'teaching' ? (
-											<TeachingMark className={styles.teachingMark} />
-										) : tile.visual.kind === 'image' ? (
+										{tocIcons[tile.id] || tile.visual.kind === 'image' ? (
 											<Image
-												src={tocIcons[tile.id] ?? tile.visual.src}
+												src={
+													tocIcons[tile.id] ?? (tile.visual.kind === 'image' ? tile.visual.src : '')
+												}
 												alt=""
 												width={112}
 												height={112}

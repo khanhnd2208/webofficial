@@ -85,8 +85,8 @@ export function TeachingWorkspaceShell({
 					eyebrowTitle={`${gradebook.class.courseCode} · Mã lớp ${gradebook.class.classCode ?? gradebook.class.groupNo} · ${gradebook.class.term}`}
 					title={gradebook.class.courseName}
 					description={
-						<div className="teaching-class-meta flex flex-wrap items-center gap-1.5">
-							<span className="mc-meta">{gradebook.stats.studentCount} học viên</span>
+						<div className="teaching-class-meta flex flex-nowrap items-center gap-1.5 overflow-x-auto">
+							<span className="mc-meta">{gradebook.stats.studentCount} sinh viên</span>
 							<TeachingStatus tone={gradebook.class.status === 'ACTIVE' ? 'ok' : 'muted'}>
 								{gradebook.class.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã lưu trữ'}
 							</TeachingStatus>

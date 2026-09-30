@@ -226,31 +226,9 @@
 }
 
 .teachingTile {
-	--destination-accent: #176b63;
+	--destination-accent: var(--teaching-accent, #176b63);
+	background: color-mix(in srgb, var(--teaching-accent, #176b63) 8%, transparent);
 }
 .teachingTile:hover .tileTitle {
 	color: var(--destination-accent);
-}
-.teachingMark {
-	width: 112px;
-	height: 112px;
-	color: #176b63;
-	transition: transform 200ms ease;
-}
-.teachingTile:hover .teachingMark {
-	transform: translateY(-3px);
-}
-@media (max-width: 760px) {
-	.teachingMark {
-		width: 88px;
-		height: 88px;
-	}
-}
-@media (prefers-reduced-motion: reduce) {
-	.teachingMark {
-		transition: none;
-	}
-	.teachingTile:hover .teachingMark {
-		transform: none;
-	}
 }

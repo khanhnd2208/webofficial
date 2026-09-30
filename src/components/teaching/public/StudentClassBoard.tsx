@@ -4,9 +4,15 @@ import { TeachingIcon } from '../ui/TeachingIcon';
 import { StudentClassIntro } from './StudentClassIntro';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
 
 import { AttendanceGrid } from '../admin/AttendanceGrid';
+import {
+	pinStudent,
+	readStudentIdentity,
+	studentIdentitySummary,
+	writeStudentIdentity,
+} from './studentIdentity';
 import { ParticipationGrid } from '../admin/ParticipationGrid';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
 import { LearningExperienceWorkspace } from './LearningExperienceWorkspace';
@@ -82,6 +88,13 @@ export function StudentClassBoard({
 		() => resolvePublicTab(initialTab) === 'learning',
 	);
 	const [query, setQuery] = useState('');
+	const [chosenMe, setChosenMe] = useState<{ slug: string; id: string | null } | null>(null);
+	const storedMeId = useSyncExternalStore(
+		() => () => {},
+		() => readStudentIdentity(board.slug),
+		() => null,
+	);
+	const meId = chosenMe?.slug === board.slug ? chosenMe.id : storedMeId;
 	const [rulesOpen, setRulesOpen] = useState(false);
 	const gridWrapRef = useRef<HTMLDivElement>(null);
 	const tabBarRef = useRef<HTMLElement>(null);
@@ -96,6 +109,12 @@ export function StudentClassBoard({
 		window.addEventListener('popstate', sync);
 		return () => window.removeEventListener('popstate', sync);
 	}, [groupBoardEnabled]);
+
+	function chooseMe(enrollmentId: string) {
+		const next = enrollmentId || null;
+		setChosenMe({ slug: board.slug, id: next });
+		writeStudentIdentity(board.slug, next);
+	}
 
 	useEffect(() => {
 		const tabBar = tabBarRef.current;
@@ -183,9 +202,15 @@ export function StudentClassBoard({
 				.includes(value),
 		);
 	}, [query, students]);
+	const visibleStudents = useMemo(() => pinStudent(filteredStudents, meId), [filteredStudents, meId]);
+	const me = visibleStudents.find((student) => student.enrollmentId === meId) ?? null;
 	const classRules = board.rules.trim();
 	const commonRules = getCpPolicyText(board.policy);
 	const summary = board.summary.trim();
+	const classToken = (board.classCode ?? board.groupNo).trim().toLowerCase();
+	const repeatedSummary = [`nhóm ${classToken}`, `lớp ${classToken}`, classToken].includes(
+		summary.toLowerCase(),
+	);
 	const description = board.description.trim();
 	const announcement = board.announcement.trim();
 
@@ -214,7 +239,7 @@ export function StudentClassBoard({
 			</header>
 
 			<StudentClassIntro
-				summary={summary}
+				summary={repeatedSummary ? '' : summary}
 				description={description}
 				announcement={announcement}
 				links={board.links}
@@ -328,7 +353,7 @@ export function StudentClassBoard({
 					data-active={tab === 'learning'}
 					onClick={() => changeTab('learning')}
 				>
-					<TeachingIcon name="students" size={18} /> Learning Experience
+					<TeachingIcon name="students" size={18} /> Trải nghiệm học tập
 				</button>
 				<button
 					type="button"
@@ -340,7 +365,7 @@ export function StudentClassBoard({
 					data-active={tab === 'notes'}
 					onClick={() => changeTab('notes')}
 				>
-					<TeachingIcon name="notes" size={18} /> Class Notes
+					<TeachingIcon name="notes" size={18} /> Ghi chú lớp
 				</button>
 				<button
 					type="button"
@@ -479,12 +504,35 @@ export function StudentClassBoard({
 								className="mc-public-grid-search min-h-10 w-44 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs sm:min-h-8 sm:w-56"
 							/>
 						</label>
+						<label>
+							<span className="sr-only">Đây là tôi</span>
+							<select
+								value={meId ?? ''}
+								onChange={(event) => chooseMe(event.target.value)}
+								className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs text-ink sm:min-h-8"
+							>
+								<option value="">Đây là tôi</option>
+								{students.map((student) => (
+									<option key={student.enrollmentId} value={student.enrollmentId}>
+										{student.familyName} {student.givenName}
+									</option>
+								))}
+							</select>
+						</label>
 					</div>
+					{me ? (
+						<p className="flex flex-wrap items-center gap-2 border-b border-mc-rule px-4 py-2 text-sm text-ink">
+							<span>{studentIdentitySummary(me, board.policy.totalWeeks, board.policy.attendanceMaxPoints ?? 5)}</span>
+							<button type="button" className="mc-button min-h-11 px-3 text-xs" onClick={() => chooseMe('')}>
+								Bỏ chọn
+							</button>
+						</p>
+					) : null}
 					{filteredStudents.length === 0 ? (
 						<p role="status" className="p-4 text-sm text-ink-secondary">
 							{students.length === 0
 								? tutorialId === PUBLIC_TUTORIAL_UNASSIGNED
-									? 'Chưa có học viên chưa phân tutorial.'
+									? 'Chưa có sinh viên chưa phân tutorial.'
 									: tutorialId
 										? 'Tutorial này chưa có sinh viên.'
 										: 'Lớp này chưa có sinh viên.'
@@ -494,7 +542,8 @@ export function StudentClassBoard({
 					{tab === 'attendance' ? (
 						<div ref={gridWrapRef}>
 							<AttendanceGrid
-								students={filteredStudents}
+								students={visibleStudents}
+								highlightedEnrollmentId={meId}
 								sessions={scopedSessions}
 								totalWeeks={board.policy.totalWeeks}
 								attendanceMaxPoints={board.policy.attendanceMaxPoints}
@@ -506,7 +555,8 @@ export function StudentClassBoard({
 					) : (
 						<div ref={gridWrapRef}>
 							<ParticipationGrid
-								students={filteredStudents}
+								students={visibleStudents}
+								highlightedEnrollmentId={meId}
 								sessions={scopedSessions}
 								totalWeeks={board.policy.totalWeeks}
 								attendanceMaxPoints={board.policy.attendanceMaxPoints}

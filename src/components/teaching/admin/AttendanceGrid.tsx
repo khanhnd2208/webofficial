@@ -44,6 +44,7 @@ export interface AttendanceGridProps {
 	scrollMode?: GridScrollMode;
 	groupNumberByEnrollment?: Record<string, number>;
 	showEligibilityColumn?: boolean;
+	highlightedEnrollmentId?: string | null;
 	onMarkChange?: (payload: {
 		enrollmentId: string;
 		sessionId: string;
@@ -186,6 +187,7 @@ export function AttendanceGrid({
 	scrollMode = 'contained',
 	groupNumberByEnrollment,
 	showEligibilityColumn = true,
+	highlightedEnrollmentId = null,
 	onMarkChange,
 	onSessionToggle,
 	onSessionLifecycle,
@@ -377,6 +379,7 @@ export function AttendanceGrid({
 													open={isOpen}
 													finalized={isFinalized}
 													cancelled={session.isCancelled}
+													compact={currentWeek !== weekNumber}
 													busy={togglingSessionId === session.id}
 													onLifecycle={
 														!readOnly && onSessionLifecycle
@@ -406,6 +409,7 @@ export function AttendanceGrid({
 										{session && onSessionDateChange && !readOnly && !session.isCancelled ? (
 											<SessionDateInput
 												weekNumber={weekNumber}
+												compact={currentWeek != null && weekNumber > currentWeek && !session.heldOn}
 												disabled={togglingSessionId === session.id}
 												value={session.heldOn}
 												saveState={sessionDateSaveState?.(session.id)}
@@ -430,12 +434,12 @@ export function AttendanceGrid({
 								</span>
 							</th>
 							<th
-								aria-label={`Attendance /${attendanceMaxPoints}`}
+								aria-label={`Chuyên cần /${attendanceMaxPoints}`}
 								title={`Điểm chuyên cần tối đa ${attendanceMaxPoints}; mức trừ được cấu hình theo lớp`}
 								className={`mc-grid-freeze-right mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 							>
 								<span className="mc-grid-summary-heading">
-									<span>Attendance</span>
+									<span>Chuyên cần</span>
 									<span>/{attendanceMaxPoints}</span>
 								</span>
 							</th>
@@ -471,7 +475,11 @@ export function AttendanceGrid({
 							</tr>
 						) : (
 							students.map((student) => (
-								<tr key={student.enrollmentId} data-risk={student.cp.riskLevel}>
+								<tr
+									key={student.enrollmentId}
+									data-risk={student.cp.riskLevel}
+									data-me={student.enrollmentId === highlightedEnrollmentId ? 'true' : undefined}
+								>
 									<td
 										className={`mc-grid-freeze-left mc-grid-stt mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 									>
@@ -526,7 +534,7 @@ export function AttendanceGrid({
 															vắng
 														</span>
 														<span className="mc-grid-public-meta-line">
-															Attendance {formatTeachingScore(student.cp.attendanceScore)}/
+															Chuyên cần {formatTeachingScore(student.cp.attendanceScore)}/
 															{attendanceMaxPoints}
 															{showEligibilityColumn
 																? ` · ${student.cp.riskLevel === 'BANNED' ? 'Cấm thi' : student.cp.riskLevel === 'AT_RISK' ? 'Có nguy cơ' : 'Đủ điều kiện'}`

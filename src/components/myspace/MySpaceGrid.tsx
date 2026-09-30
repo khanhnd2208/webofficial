@@ -47,7 +47,11 @@ function TileImage({
 	className: string;
 }) {
 	if (tile.visual.kind === 'mark')
-		return <TeachingMark className={`teaching-destination-mark text-[#176b63] ${className}`} />;
+		return (
+			<TeachingMark
+				className={`teaching-destination-mark text-[var(--teaching-accent)] ${className}`}
+			/>
+		);
 	if (tile.visual.kind === 'cards') {
 		return (
 			<span className={`relative block ${className}`} aria-hidden="true">
@@ -106,7 +110,7 @@ function FeaturedTile({ tile, locked }: { tile: MySpaceTile; locked?: boolean })
 			<span
 				className={`flex h-40 w-40 flex-col items-center justify-center gap-2 rounded-3xl bg-surface-secondary transition-colors duration-300 sm:h-44 sm:w-44 ${
 					tile.id === 'teaching'
-						? 'bg-[#e5f1ed] group-hover:bg-[#d4e6dd]'
+						? 'bg-[var(--teaching-selected)] group-hover:bg-[var(--teaching-selected-hover)]'
 						: locked
 							? ''
 							: 'group-hover:bg-surface-hover'

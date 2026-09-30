@@ -88,7 +88,7 @@ export function TeachingActiveClasses({ courses }: { courses: TeachingCourseList
 									<span>{row.term}</span>
 									<span aria-hidden>·</span>
 									<span>
-										<span className="font-semibold text-ink">{row.studentCount}</span> học viên
+										<span className="font-semibold text-ink">{row.studentCount}</span> sinh viên
 									</span>
 									{warnings > 0 ? (
 										<span className="rounded-full bg-error/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-error">

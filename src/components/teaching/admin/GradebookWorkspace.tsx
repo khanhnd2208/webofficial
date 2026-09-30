@@ -223,7 +223,7 @@ export function GradebookWorkspace({
 						/>
 					</label>
 					<div className="teaching-toolbar-summary">
-						<span>{students.length} học viên</span>
+						<span>{students.length} sinh viên</span>
 						{isSaving || hasSaveError ? (
 							<span
 								className="mc-save-status"
@@ -235,7 +235,7 @@ export function GradebookWorkspace({
 						) : null}
 						{unassignedCount > 0 ? (
 							<a className="mc-unassigned-hint" href="#teaching-students">
-								{unassignedCount} học viên chưa phân tutorial
+								{unassignedCount} sinh viên chưa phân tutorial
 							</a>
 						) : null}
 					</div>
@@ -243,7 +243,7 @@ export function GradebookWorkspace({
 
 				{unassignedCount > 0 ? (
 					<div id="teaching-students" className="mc-inline-warning" role="status">
-						<span>{unassignedCount} học viên chưa có tutorial.</span>
+						<span>{unassignedCount} sinh viên chưa có tutorial.</span>
 						{gradebook.tutorials.length > 0
 							? gradebook.students
 									.filter((student) => student.status === 'ACTIVE' && !student.tutorialClassId)
