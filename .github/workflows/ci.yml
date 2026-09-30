@@ -191,7 +191,7 @@ jobs:
         run: |
           set -euo pipefail
           tar --exclude=.next/cache -cf "${RUNNER_TEMP}/next-build.tar" .next
-          tar -tf "${RUNNER_TEMP}/next-build.tar" | grep -qx '.next/BUILD_ID'
+          tar -tf "${RUNNER_TEMP}/next-build.tar" .next/BUILD_ID > /dev/null
 
       - name: Upload the production build
         uses: actions/upload-artifact@v4
