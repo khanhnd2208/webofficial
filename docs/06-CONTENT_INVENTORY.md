@@ -46,10 +46,9 @@ artefact that should replace it.
 ## Archived public domains
 
 Blog, podcast, lab/resources, former service hubs, case studies, prior
-homepage iterations, and standalone experiments are stored under
-`src/_archived` (see that README for the `homepage/` · `marketing/` ·
-`features/` layout). They are excluded from the TypeScript program and are
-not public navigation destinations.
+homepage iterations, and standalone experiments are no longer in
+the working tree. `docs/archive/src-archived.md` lists them and shows how to
+restore them from git history. They are not public navigation destinations.
 
 Notable feature archives:
 

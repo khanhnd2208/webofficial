@@ -32,8 +32,8 @@ evidence-gated rather than shipping empty product routes.
   remain operational.
 - Internal surfaces are excluded from public navigation, sitemap, and public
   footer.
-- Archived public UI and retired product modules live under `src/_archived`
-  (`homepage/`, `marketing/`, `features/`) and are excluded by TypeScript.
+- Archived public UI and retired product modules were removed from the tree;
+  `docs/archive/src-archived.md` explains how to restore them from git history.
 
 ## Product principles
 

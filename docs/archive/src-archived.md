@@ -1,12 +1,31 @@
-# Public UI & feature archive
+# Retired source code (`src/_archived`)
 
-Retired public UI and standalone product experiments live here so they can be
-reviewed or restored without shipping in the live marketing site.
+Until 2026-09-30 the repo kept retired UI and product experiments under
+`src/_archived/` (355 files, about 47 MB, mostly K'sTrip card art). Nothing in
+the live app imported it; TypeScript, Vitest, and ESLint excluded it.
 
-TypeScript, Vitest, and Next.js exclude this tree (`tsconfig.json`,
-`vitest.config.ts`). Nothing under `_archived` is imported by the live app.
+It was removed from `main` to keep the working tree and code search focused on
+the live app. The files stay in git history.
 
-## Layout
+## Restoring
+
+Commit `4e3e2ff` on `main` is the last commit that has the folder.
+
+```bash
+# Browse it without touching your branch
+git show 4e3e2ff:src/_archived/README.md
+git ls-tree -r --name-only 4e3e2ff -- src/_archived
+
+# Bring one part back into the working tree
+git checkout 4e3e2ff -- src/_archived/features/personality-test-research-2026
+```
+
+After restoring, re-add the exclusions it needs (`tsconfig.json`,
+`vitest.config.ts`, `eslint.config.mjs`) or move the code into the live tree
+deliberately: routes, imports, navigation, and an area in
+`scripts/areas/areas.mjs`.
+
+## What was there
 
 ```
 src/_archived/
@@ -32,21 +51,3 @@ src/_archived/
 | `features/personality-test-research-2026` | Full personality-test research feature (UI, API, scoring, docs) |
 | `features/kstrip-2026` | K'sTrip / MyTrip boardgame hub (standalone Next app) |
 
-## Scope boundary
-
-Archiving here means **source preservation**, not live routes.
-
-- Live marketing redirects for retired hubs live in `src/config/routes.ts`
-  (`PUBLIC_REDIRECTS`).
-- Admin pages, main-site APIs, auth, courses, vocabulary, and messages stay in
-  the active tree when still operational.
-- Feature archives (personality test, K'sTrip) keep their own app/API/layout
-  snapshots; they are not mounted under `src/app`.
-
-## Restoring
-
-1. Copy the archived implementation back to its original active path (or mount
-   a feature under `src/app` / a workspace package).
-2. Restore imports, route constants, and navigation entries deliberately.
-3. For `features/kstrip-2026`, see that folder’s README — it is a nested
-   Next.js app (historically port `3001`), not a route slice of the main site.

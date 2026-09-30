@@ -1,7 +1,7 @@
 # 02 — Architecture
 
 > Current architecture of the active application. Historical designs and retired
-> routes live under `docs/archive/` and `src/_archived/`.
+> routes live under `docs/archive/` (retired source: `docs/archive/src-archived.md`).
 
 ## 1. High-level architecture
 
@@ -51,7 +51,6 @@ src/
 ├── services/            established business services shared by routes/components
 ├── types/               DTOs and shared TypeScript declarations
 ├── utils/               side-effect-free formatting and URL helpers
-└── _archived/           retired code; excluded from tsconfig and active routing
 
 prisma/
 ├── schema.prisma        PostgreSQL models and enums

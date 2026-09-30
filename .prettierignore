@@ -4,7 +4,6 @@ node_modules/
 coverage/
 test-results/
 playwright-report/
-src/_archived/
 src/generated/
 public/
 content/

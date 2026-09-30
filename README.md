@@ -189,7 +189,7 @@ API routes enforce auth independently via `withAuth` / `withAdmin` wrappers — 
 - `src/services/`: established cross-route business services.
 - `src/models/`: Mongoose models for Mongo-backed domains.
 - `prisma/schema.prisma` and `prisma/migrations/`: PostgreSQL schema and migrations.
-- `src/_archived/`: retired implementations excluded from TypeScript and active routing; do not import from it.
+- Retired code that used to live in `src/_archived/` is in git history; see [docs/archive/src-archived.md](./docs/archive/src-archived.md).
 
 ---
 

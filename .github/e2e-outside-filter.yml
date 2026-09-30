@@ -13,7 +13,6 @@ outside:
   - '!**/*.md'
   - '!docs/**'
   - '!.cursor/**'
-  - '!src/_archived/**'
   - '!src/features/board-game-shared/**'
   - '!src/features/cheese-thief/**'
   - '!src/features/werewolf/**'

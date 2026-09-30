@@ -181,13 +181,6 @@ const eslintConfig = defineConfig([
 		'Portfolio cannot import the boardgame or classroom areas. See docs/areas.md.',
 		[...boardgameImports, ...classroomImports],
 	),
-	{
-		// Archived research code is not under LazyMotion site shell
-		files: ['src/_archived/**'],
-		rules: {
-			'no-restricted-imports': 'off',
-		},
-	},
 	// Override default ignores of eslint-config-next.
 	globalIgnores([
 		// Default ignores of eslint-config-next:
@@ -200,8 +193,6 @@ const eslintConfig = defineConfig([
 		'.cursor/**',
 		// CommonJS PM2 config — require() is intentional
 		'ecosystem.config.js',
-		// Archived snapshots — not shipped; keep lint focused on live app
-		'src/_archived/**',
 	]),
 ]);
 

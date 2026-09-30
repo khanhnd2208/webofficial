@@ -117,7 +117,7 @@ export const routes = {
 	postCollection: (slug: string) => `/bai-viet/bo-suu-tap/${slug}` as const,
 
 	// ─── Archived public surfaces (hubs redirect via PUBLIC_REDIRECTS) ─────────
-	// UI: src/_archived/marketing/routes-v1 · lab boardgames → features/kstrip-2026
+	// Retired UI is in git history; see docs/archive/src-archived.md
 	lab: '/goc-cua-khanh',
 	labBoardgame: '/goc-cua-khanh/boardgame',
 	labTools: '/goc-cua-khanh/cong-cu',

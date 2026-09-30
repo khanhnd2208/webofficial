@@ -3,7 +3,7 @@
  *
  * Navigation, admin shells, sitemap, and public-surface locks all read from
  * this file. Restoring a module later is a status change here plus tests,
- * not a source move into `src/_archived`.
+ * not a source move.
  */
 
 import type { McIconName } from '@/components/myclass/ui/McIcon';
