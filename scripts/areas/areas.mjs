@@ -71,7 +71,6 @@ export const AREAS = {
 			'src/app/admin/myspace-tests',
 			'src/app/admin/tools/active-recall',
 			'src/app/admin/tools/vocabulary',
-			'src/app/my-class-theme.css',
 			'content/active-recall',
 		],
 		e2e: [
@@ -178,6 +177,8 @@ export const SHARED = [
 	// App shell, metadata, and account
 	'src/app/layout.tsx',
 	'src/app/globals.css',
+	// Imported by globals.css: the product UI theme for /admin, /lop, /my-space, and /vocabulary.
+	'src/app/my-class-theme.css',
 	'src/app/error.tsx',
 	'src/app/global-error.tsx',
 	'src/app/not-found.tsx',

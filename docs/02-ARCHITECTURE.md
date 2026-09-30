@@ -131,6 +131,11 @@ Run migrations with `npm run db:migrate` locally or
   single-server VPS deployment but not for horizontal scaling.
 - Editorial/marketing content is primarily composed from `src/content` and
   feature data; it is not equivalent to the archived `/blog` application.
+- Global CSS: `src/app/layout.tsx` loads `globals.css`, which imports the
+  `.mc` product theme (`my-class-theme.css`, about 10 KB gzipped). The theme
+  stays global on purpose: `/admin`, `/lop`, `/my-space`, `/vocabulary`, and
+  shared form components use it, so per-layout imports would save little and
+  risk unstyled screens. `learn.css` is route-scoped to `/my-space/courses`.
 
 ## 6. Testing harness
 

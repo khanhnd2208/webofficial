@@ -43,7 +43,7 @@ Lớp dạy, My Class, Active Recall, bài test trong My Space, và kho từ v�
 - `src/components/teaching`, `myclass`, `active-recall`, `knowledge`, `vocab`, `myspace/quiz`, `myspace/tests`
 - `src/app/my-space/teaching`, `my-class`, `active-recall`, `tests`, và `src/app/lop`, `progress`, `vocabulary`
 - API và admin tương ứng, gồm `vocab-sets`, `admin/tools/active-recall`, `admin/tools/vocabulary`
-- `src/app/my-class-theme.css`, `content/active-recall`
+- `content/active-recall`
 
 Vocabulary thuộc khu này vì bài từ vựng trong My Class dùng lại trang của `src/app/vocabulary` và `src/components/vocab`. `src/components/knowledge` là giao diện bài học của My Class. Tiến độ trong lớp nằm ở `src/features/my-class`, không ở `src/features/progress`.
 
@@ -77,7 +77,7 @@ Mọi khu được import những chỗ này. Danh sách đầy đủ nằm tron
 
 - `src/lib`, `config`, `models`, `services`, `types`, `utils`, `test`, `assets`
 - `src/components/ui`, `site`, `motion`, `admin`, `forms`, `myspace/MySpaceGrid.tsx`
-- shell app (`layout.tsx`, `globals.css`, trang lỗi, `robots`, `sitemap`), đăng nhập, tài khoản, shell `/my-space` và shell `/admin` (users, settings, media, website, archive)
+- shell app (`layout.tsx`, `globals.css`, `my-class-theme.css`, trang lỗi, `robots`, `sitemap`), đăng nhập, tài khoản, shell `/my-space` và shell `/admin` (users, settings, media, website, archive)
 - API nền tảng: `auth`, `health`, `profile`, `streak`, `uploads`, `admin/users`
 - `src/proxy.ts` (Next 16 đổi tên từ `middleware.ts`), `prisma/`, `scripts/`, file cấu hình ở thư mục gốc
 
