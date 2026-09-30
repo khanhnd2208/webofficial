@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import { AdminButton, AdminLink, AdminStat } from '@/components/admin/AdminPrimitives';
+import styles from '@/components/admin/AdminStudio.module.css';
 import { redirect } from 'next/navigation';
 
 import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminForbidden } from '@/components/admin/AdminForbidden';
+import { resolveAdminRoute } from '@/config/adminNavigation';
 import { routes } from '@/config/routes';
 import { getLearnStudyReport } from '@/features/learn';
 import { prisma } from '@/lib/prisma';
@@ -29,16 +32,6 @@ function formatDate(value: string | null) {
 	});
 }
 
-function Stat({ label, value, note }: { label: string; value: string | number; note: string }) {
-	return (
-		<div className="rounded-xl border border-border bg-surface p-5">
-			<p className="text-xs font-bold uppercase tracking-widest text-muted">{label}</p>
-			<p className="mt-2 text-2xl font-black tracking-tight text-foreground">{value}</p>
-			<p className="mt-1 text-xs text-muted">{note}</p>
-		</div>
-	);
-}
-
 export default async function LearnAnalyticsPage({ searchParams }: Props) {
 	const session = await auth();
 	if (!session?.user)
@@ -60,32 +53,29 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 		: null;
 
 	return (
-		<div className="mx-auto max-w-6xl px-6 py-8">
+		<div className={`${styles.page} ${styles.wide}`}>
 			<AdminPageHeader
-				eyebrow="My Space · Học tập"
+				eyebrow="Admin Studio"
+				breadcrumbs={resolveAdminRoute(routes.admin.learnAnalytics).breadcrumbs}
 				title="Thống kê tương tác khóa học"
 				description="Thời gian ghi nhận khi mục học đang mở, tab hiển thị và có hoạt động gần đây."
 				actions={
-					<Link
-						href={routes.admin.home}
-						className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-xs font-bold uppercase tracking-wider text-foreground"
-					>
-						← Tổng quan
-					</Link>
+					<AdminLink href={routes.admin.home} icon="back">
+						Tổng quan
+					</AdminLink>
 				}
 			/>
 
-			<form
-				method="get"
-				className="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface p-4"
-			>
-				<label className="grid gap-1 text-xs font-semibold text-muted">
+			<form method="get" className={styles.toolbar}>
+				<label className={styles.field}>
 					Khóa học
 					<select
 						name="course"
+						disabled={!courses.length}
 						defaultValue={courseSlug ?? ''}
-						className="min-h-10 min-w-56 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+						className={styles.control}
 					>
+						{!courses.length && <option value="">Chưa có khóa học</option>}
 						{courses.map((course) => (
 							<option key={course.id} value={course.slug}>
 								{course.title}
@@ -93,57 +83,60 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 						))}
 					</select>
 				</label>
-				<label className="grid gap-1 text-xs font-semibold text-muted">
+				<label className={styles.field}>
 					Khoảng thời gian
-					<select
-						name="days"
-						defaultValue={String(days)}
-						className="min-h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
-					>
+					<select name="days" defaultValue={String(days)} className={styles.control}>
 						<option value="7">7 ngày</option>
 						<option value="30">30 ngày</option>
 						<option value="90">90 ngày</option>
 						<option value="365">365 ngày</option>
 					</select>
 				</label>
-				<button
-					className="min-h-10 rounded-lg bg-foreground px-4 text-sm font-semibold text-background"
-					type="submit"
-				>
-					Lọc
-				</button>
+				<AdminButton type="submit" icon="filter" disabled={!courses.length}>
+					Áp dụng
+				</AdminButton>
 			</form>
 
 			{!report ? (
 				<div className="mt-8">
 					<AdminEmptyState
+						icon="analytics"
 						title="Chưa có khóa học"
 						description="Khi có khóa học, thống kê tương tác sẽ xuất hiện tại đây."
 					/>
 				</div>
 			) : (
 				<>
+					{report.totals.visits === 0 && (
+						<div className="mt-6">
+							<AdminEmptyState
+								icon="analytics"
+								title="Chưa có tương tác trong khoảng đã chọn"
+								description="Thử chọn khoảng thời gian khác để xem hoạt động học tập."
+							/>
+						</div>
+					)}
 					<p className="mt-5 text-sm text-muted">
 						{report.course.title} · ghi nhận từ {formatDate(report.trackingSince)} · số liệu thời
 						gian tính theo ngày Việt Nam.
 					</p>
 					<section className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-						<Stat
+						<AdminStat
 							label="Tài khoản đã vào"
 							value={report.totals.visitors.toLocaleString('vi-VN')}
 							note={`${report.totals.visits.toLocaleString('vi-VN')} phiên trong ${days} ngày`}
 						/>
-						<Stat
+						<AdminStat
 							label="Đã tương tác học"
 							value={report.totals.activeLearners.toLocaleString('vi-VN')}
 							note="Có thời gian tại ít nhất một mục học"
 						/>
-						<Stat
+						<AdminStat
 							label="Tổng thời gian"
 							value={formatDuration(report.totals.totalSeconds)}
 							note="Cộng từ thời gian theo từng mục"
 						/>
-						<Stat
+						<AdminStat
 							label="TB / người học"
 							value={
 								report.totals.activeLearners
@@ -155,14 +148,14 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 					</section>
 
 					<section className="mt-9">
-						<h2 className="text-sm font-bold uppercase tracking-widest text-muted">Theo mục học</h2>
-						<div className="mt-3 overflow-x-auto rounded-xl border border-border">
-							<table className="w-full min-w-[34rem] text-left text-sm">
+						<h2 className={styles.sectionTitle}>Theo mục học</h2>
+						<div className={`${styles.tableWrap} mt-3`}>
+							<table className={`${styles.table} min-w-[34rem]`}>
 								<thead className="bg-surface text-xs uppercase tracking-wide text-muted">
 									<tr>
 										<th className="px-4 py-3">Mục</th>
-										<th className="px-4 py-3 text-right">Người học</th>
-										<th className="px-4 py-3 text-right">Thời gian</th>
+										<th className={`px-4 py-3 ${styles.numeric}`}>Người học</th>
+										<th className={`px-4 py-3 ${styles.numeric}`}>Thời gian</th>
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-border">
@@ -170,8 +163,10 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 										report.sections.map((section) => (
 											<tr key={section.sectionId}>
 												<td className="px-4 py-3 font-medium text-foreground">{section.title}</td>
-												<td className="px-4 py-3 text-right tabular-nums">{section.learners}</td>
-												<td className="px-4 py-3 text-right tabular-nums">
+												<td className={`px-4 py-3 ${styles.numeric} tabular-nums`}>
+													{section.learners}
+												</td>
+												<td className={`px-4 py-3 ${styles.numeric} tabular-nums`}>
 													{formatDuration(section.seconds)}
 												</td>
 											</tr>
@@ -189,18 +184,18 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 					</section>
 
 					<section className="mt-9">
-						<h2 className="text-sm font-bold uppercase tracking-widest text-muted">
+						<h2 className={styles.sectionTitle}>
 							Học viên · trang {report.page}/{report.totalPages}
 						</h2>
-						<div className="mt-3 overflow-x-auto rounded-xl border border-border">
-							<table className="w-full min-w-[48rem] text-left text-sm">
+						<div className={`${styles.tableWrap} mt-3`}>
+							<table className={`${styles.table} min-w-[48rem]`}>
 								<thead className="bg-surface text-xs uppercase tracking-wide text-muted">
 									<tr>
 										<th className="px-4 py-3">Tài khoản</th>
-										<th className="px-4 py-3 text-right">Phiên</th>
-										<th className="px-4 py-3 text-right">Thời gian</th>
-										<th className="px-4 py-3 text-right">Tiến độ hiện tại</th>
-										<th className="px-4 py-3 text-right">Hoạt động gần nhất</th>
+										<th className={`px-4 py-3 ${styles.numeric}`}>Phiên</th>
+										<th className={`px-4 py-3 ${styles.numeric}`}>Thời gian</th>
+										<th className={`px-4 py-3 ${styles.numeric}`}>Tiến độ hiện tại</th>
+										<th className={`px-4 py-3 ${styles.numeric}`}>Hoạt động gần nhất</th>
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-border">
@@ -211,14 +206,16 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 													<p className="font-semibold text-foreground">{learner.name}</p>
 													<p className="text-xs text-muted">{learner.email || learner.userId}</p>
 												</td>
-												<td className="px-4 py-3 text-right tabular-nums">{learner.sessions}</td>
-												<td className="px-4 py-3 text-right tabular-nums">
+												<td className={`px-4 py-3 ${styles.numeric} tabular-nums`}>
+													{learner.sessions}
+												</td>
+												<td className={`px-4 py-3 ${styles.numeric} tabular-nums`}>
 													{formatDuration(learner.seconds)}
 												</td>
-												<td className="px-4 py-3 text-right tabular-nums">
+												<td className={`px-4 py-3 ${styles.numeric} tabular-nums`}>
 													{learner.completedSections}/{learner.sectionCount}
 												</td>
-												<td className="px-4 py-3 text-right text-muted">
+												<td className={`px-4 py-3 ${styles.numeric} text-muted`}>
 													{formatDate(learner.lastActivityAt)}
 												</td>
 											</tr>
@@ -235,9 +232,10 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 						</div>
 					</section>
 
-					<nav aria-label="Trang danh sách học viên" className="mt-3 flex gap-4 text-sm">
+					<nav aria-label="Trang danh sách học viên" className={styles.pagination}>
 						{report.page > 1 ? (
 							<Link
+								className={`${styles.button} ${styles.secondary}`}
 								href={`${routes.admin.learnAnalytics}?course=${encodeURIComponent(report.course.slug)}&days=${days}&page=${report.page - 1}`}
 							>
 								← Trang trước
@@ -245,6 +243,7 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 						) : null}
 						{report.page < report.totalPages ? (
 							<Link
+								className={`${styles.button} ${styles.secondary}`}
 								href={`${routes.admin.learnAnalytics}?course=${encodeURIComponent(report.course.slug)}&days=${days}&page=${report.page + 1}`}
 							>
 								Trang sau →
@@ -252,8 +251,8 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 						) : null}
 					</nav>
 					<section className="mt-9">
-						<h2 className="text-sm font-bold uppercase tracking-widest text-muted">Theo ngày</h2>
-						<div className="mt-3 divide-y divide-border rounded-xl border border-border">
+						<h2 className={styles.sectionTitle}>Theo ngày</h2>
+						<div className={`${styles.list} mt-3`}>
 							{report.daily.length ? (
 								report.daily.map((day) => (
 									<div
@@ -261,7 +260,9 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 										className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
 									>
 										<time className="text-muted">
-											{new Date(`${day.day}T12:00:00+07:00`).toLocaleDateString('vi-VN')}
+											{new Date(`${day.day}T12:00:00+07:00`).toLocaleDateString('vi-VN', {
+												timeZone: 'Asia/Ho_Chi_Minh',
+											})}
 										</time>
 										<span className="text-foreground">
 											{day.learners} người · {formatDuration(day.seconds)}

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { AdminIcon, type AdminIconName } from './AdminIcon';
+import styles from './AdminStudio.module.css';
 import type { ReactNode } from 'react';
 
 export function AdminPageHeader({
@@ -6,22 +8,31 @@ export function AdminPageHeader({
 	title,
 	description,
 	actions,
+	breadcrumbs,
 }: {
 	eyebrow?: string;
 	title: string;
 	description?: ReactNode;
 	actions?: ReactNode;
+	breadcrumbs?: { label: string; href: string }[];
 }) {
 	return (
-		<header className="flex flex-wrap items-start justify-between gap-4">
+		<header className={styles.header}>
 			<div className="min-w-0">
-				{eyebrow ? (
-					<p className="text-xs font-bold uppercase tracking-widest text-muted">{eyebrow}</p>
+				{breadcrumbs?.length ? (
+					<nav aria-label="Đường dẫn" className={styles.breadcrumb}>
+						{breadcrumbs.map((item) => (
+							<span key={item.href}>
+								<Link href={item.href}>{item.label}</Link>
+								<span aria-hidden="true"> / </span>
+							</span>
+						))}
+						<span aria-current="page">{title}</span>
+					</nav>
 				) : null}
-				<h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">{title}</h1>
-				{description ? (
-					<div className="mt-1.5 text-sm text-foreground-secondary">{description}</div>
-				) : null}
+				{eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
+				<h1 className={styles.title}>{title}</h1>
+				{description ? <div className={styles.description}>{description}</div> : null}
 			</div>
 			{actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
 		</header>
@@ -32,20 +43,20 @@ export function AdminEmptyState({
 	title,
 	description,
 	action,
+	icon = 'inbox',
 }: {
 	title: string;
 	description?: string;
 	action?: { href: string; label: string };
+	icon?: AdminIconName;
 }) {
 	return (
-		<div className="rounded-xl border border-dashed border-border px-6 py-16 text-center">
+		<div className={styles.empty}>
+			<AdminIcon name={icon} size={32} />
 			<p className="text-lg font-semibold text-foreground">{title}</p>
 			{description ? <p className="mt-2 text-sm text-foreground-secondary">{description}</p> : null}
 			{action ? (
-				<Link
-					href={action.href}
-					className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background"
-				>
+				<Link href={action.href} className={`${styles.button} ${styles.primary} mt-6`}>
 					{action.label}
 				</Link>
 			) : null}

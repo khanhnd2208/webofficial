@@ -1,6 +1,8 @@
 import type { SVGProps } from 'react';
 
 export type McIconName =
+	| 'inbox'
+	| 'archive'
 	| 'add'
 	| 'arrow_back'
 	| 'arrow_drop_down'
@@ -74,6 +76,8 @@ export type McIconName =
 	| 'workspace_premium';
 
 const PATHS: Record<McIconName, string> = {
+	inbox: 'M4 4h16v16H4zM4 14h5l1 3h4l1-3h5',
+	archive: 'M3 4h18v4H3zM5 8v12h14V8M9 12h6',
 	add: 'M12 5v14M5 12h14',
 	arrow_back: 'M15 5l-7 7 7 7M8 12h11',
 	arrow_drop_down: 'M6 9l6 6 6-6',

@@ -1,4 +1,11 @@
-import Link from 'next/link';
+import { AdminLink } from '@/components/admin/AdminPrimitives';
+import { InquiryBadge } from '@/components/admin/InquiryBadges';
+import {
+	adminDate,
+	inquiryListHref,
+	type InquiryQuery,
+} from '@/components/admin/inquiryNavigation';
+import styles from '@/components/admin/AdminStudio.module.css';
 import { notFound } from 'next/navigation';
 
 import InquiryAdminActions from '../InquiryAdminActions';
@@ -6,8 +13,8 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getInquiry } from '@/services/inquiryService';
 import { routes } from '@/config/routes';
 import {
-	INQUIRY_EMAIL_STATUS_LABELS,
 	INQUIRY_STATUS_LABELS,
+	INQUIRY_EMAIL_STATUS_LABELS,
 	INQUIRY_TYPE_LABELS,
 } from '@/features/inquiries/constants';
 
@@ -15,10 +22,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminInquiryDetailPage({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ id: string }>;
+	searchParams?: Promise<InquiryQuery>;
 }) {
 	const { id } = await params;
+	const returnHref = inquiryListHref((await searchParams) ?? {});
 	const inquiry = await getInquiry(id);
 	if (!inquiry) notFound();
 	const typeLabel = INQUIRY_TYPE_LABELS[inquiry.inquiryType];
@@ -27,9 +37,13 @@ export default async function AdminInquiryDetailPage({
 	)}`;
 
 	return (
-		<div className="mx-auto max-w-4xl px-6 py-8">
+		<div className={styles.page}>
 			<AdminPageHeader
-				eyebrow="Website"
+				eyebrow="Hộp thư liên hệ"
+				breadcrumbs={[
+					{ label: 'Tổng quan', href: routes.admin.home },
+					{ label: 'Hộp thư liên hệ', href: returnHref },
+				]}
 				title={inquiry.name}
 				description={
 					<>
@@ -37,13 +51,13 @@ export default async function AdminInquiryDetailPage({
 							{inquiry.email}
 						</a>
 						{' · '}
-						{typeLabel} · {INQUIRY_STATUS_LABELS[inquiry.status]}
+						{typeLabel} · <InquiryBadge status={inquiry.status} />
 					</>
 				}
 				actions={
-					<Link href={routes.admin.inquiries} className="text-sm underline">
-						← Danh sách
-					</Link>
+					<AdminLink href={returnHref} icon="back">
+						Danh sách
+					</AdminLink>
 				}
 			/>
 			<div className="mt-4 flex flex-wrap items-center gap-3">
@@ -54,35 +68,30 @@ export default async function AdminInquiryDetailPage({
 							? 'Khách'
 							: 'Không xác định'}
 				</span>
-				<a
-					href={replyHref}
-					className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
-				>
+				<a href={replyHref} className={`${styles.button} ${styles.primary}`}>
 					Trả lời qua email
 				</a>
 			</div>
 
-			<section className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
+			<section className={`${styles.detail} mt-8`}>
 				<div className="space-y-6">
-					<div className="rounded-xl border border-border p-4">
-						<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Bối cảnh</h2>
+					<div className={styles.panel}>
+						<h2 className={styles.sectionTitle}>Bối cảnh</h2>
 						<p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{inquiry.context}</p>
 					</div>
 					{inquiry.problem ? (
-						<div className="rounded-xl border border-border p-4">
-							<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Vấn đề</h2>
+						<div className={styles.panel}>
+							<h2 className={styles.sectionTitle}>Vấn đề</h2>
 							<p className="mt-3 whitespace-pre-wrap text-sm">{inquiry.problem}</p>
 						</div>
 					) : null}
 					{inquiry.desiredOutcome ? (
-						<div className="rounded-xl border border-border p-4">
-							<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
-								Kết quả mong muốn
-							</h2>
+						<div className={styles.panel}>
+							<h2 className={styles.sectionTitle}>Kết quả mong muốn</h2>
 							<p className="mt-3 whitespace-pre-wrap text-sm">{inquiry.desiredOutcome}</p>
 						</div>
 					) : null}
-					<dl className="grid gap-3 rounded-xl border border-border p-4 text-sm sm:grid-cols-2">
+					<dl className={`${styles.panel} grid gap-4 sm:grid-cols-2`}>
 						<div>
 							<dt className="text-xs uppercase text-muted">Chủ đề</dt>
 							<dd className="mt-1">{typeLabel}</dd>
@@ -136,14 +145,12 @@ export default async function AdminInquiryDetailPage({
 							</dd>
 						</div>
 					</dl>
-					<div className="rounded-xl border border-border p-4">
-						<h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
-							Lịch sử trạng thái
-						</h2>
+					<div className={styles.panel}>
+						<h2 className={styles.sectionTitle}>Lịch sử trạng thái</h2>
 						<ul className="mt-3 space-y-2 text-sm">
 							{inquiry.statusHistory.map((h, idx) => (
 								<li key={`${h.status}-${idx}`}>
-									{INQUIRY_STATUS_LABELS[h.status]} · {new Date(h.at).toLocaleString('vi-VN')}
+									{INQUIRY_STATUS_LABELS[h.status]} · {adminDate(h.at)}
 									{h.note ? ` — ${h.note}` : ''}
 								</li>
 							))}
@@ -152,15 +159,13 @@ export default async function AdminInquiryDetailPage({
 				</div>
 				<div>
 					<InquiryAdminActions
+						key={inquiry.id}
 						inquiryId={inquiry.id}
+						initialNotes={inquiry.internalNotes ?? ''}
+						returnHref={returnHref}
 						currentStatus={inquiry.status}
 						adminEmailStatus={inquiry.adminEmailStatus}
 					/>
-					{inquiry.internalNotes ? (
-						<p className="mt-4 whitespace-pre-wrap rounded-xl border border-border p-4 text-sm text-muted">
-							{inquiry.internalNotes}
-						</p>
-					) : null}
 				</div>
 			</section>
 		</div>

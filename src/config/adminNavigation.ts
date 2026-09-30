@@ -25,6 +25,7 @@ export type AdminRouteMeta = {
 	href: string;
 	label: string;
 	width: AdminWorkspaceWidth;
+	breadcrumbs?: { label: string; href: string }[];
 	localNav?: AdminNavItem[];
 	localNavAction?: { href: string; label: string; external?: boolean };
 };
@@ -45,7 +46,14 @@ export const MY_CLASS_LOCAL_NAV: AdminNavItem[] = [
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 	{
 		group: 'Đang dùng',
-		items: getActiveAdminNavItems(),
+		items: getActiveAdminNavItems().flatMap((item) =>
+			item.href === routes.admin.website
+				? [
+						{ ...item, icon: 'view_column' as const },
+						{ href: routes.admin.inquiries, label: 'Hộp thư liên hệ', icon: 'inbox' as const },
+					]
+				: [item],
+		),
 	},
 ];
 
@@ -68,10 +76,25 @@ const ROUTE_META: AdminRouteMeta[] = [
 		width: 'wide',
 		localNav: MY_CLASS_LOCAL_NAV,
 	},
-	{ href: routes.admin.website, label: 'Website', width: 'standard' },
-	{ href: routes.admin.inquiries, label: 'Yêu cầu liên hệ', width: 'standard' },
+	{
+		href: routes.admin.website,
+		label: 'Website',
+		width: 'standard',
+		breadcrumbs: [{ label: 'Tổng quan', href: routes.admin.home }],
+	},
+	{
+		href: routes.admin.inquiries,
+		label: 'Hộp thư liên hệ',
+		width: 'standard',
+		breadcrumbs: [{ label: 'Tổng quan', href: routes.admin.home }],
+	},
 	{ href: routes.admin.activeRecall, label: 'Teaching', width: 'standard' },
-	{ href: routes.admin.learnAnalytics, label: 'Thống kê học tập', width: 'wide' },
+	{
+		href: routes.admin.learnAnalytics,
+		label: 'Thống kê học tập',
+		width: 'wide',
+		breadcrumbs: [{ label: 'Tổng quan', href: routes.admin.home }],
+	},
 	{ href: routes.admin.archive, label: 'Kho lưu trữ', width: 'standard' },
 	{ href: routes.admin.posts, label: 'Bài viết', width: 'standard' },
 	{ href: routes.admin.courses, label: 'Khóa học Chương–Bài', width: 'standard' },
@@ -83,13 +106,6 @@ const ROUTE_META: AdminRouteMeta[] = [
 
 export function isAdminNavActive(pathname: string, href: string, exact?: boolean): boolean {
 	if (exact || href === routes.admin.home) return pathname === href;
-	if (href === routes.admin.website) {
-		return (
-			pathname === routes.admin.website ||
-			pathname === routes.admin.inquiries ||
-			pathname.startsWith(`${routes.admin.inquiries}/`)
-		);
-	}
 	if (href === routes.admin.posts) {
 		return (
 			pathname === routes.admin.posts ||

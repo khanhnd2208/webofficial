@@ -1,6 +1,9 @@
-import Link from 'next/link';
+import { AdminIcon } from '@/components/admin/AdminIcon';
+import { AdminBadge, AdminLink } from '@/components/admin/AdminPrimitives';
+import styles from '@/components/admin/AdminStudio.module.css';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { resolveAdminRoute } from '@/config/adminNavigation';
 import { routes } from '@/config/routes';
 
 export const dynamic = 'force-dynamic';
@@ -20,56 +23,56 @@ const PUBLIC_PAGES = [
 
 export default function AdminWebsitePage() {
 	return (
-		<div className="mx-auto max-w-6xl px-6 py-8">
+		<div className={styles.page}>
 			<AdminPageHeader
-				eyebrow="Website"
+				eyebrow="Admin Studio"
 				title="Website"
-				description="Xem các trang thương hiệu đang chạy. Nội dung giới thiệu chưa có trình sửa trong admin ở giai đoạn này."
+				description="Xem các trang đang hoạt động và mở công cụ quản lý nội dung."
+				breadcrumbs={resolveAdminRoute(routes.admin.website).breadcrumbs}
 			/>
-
-			<section className="mt-8">
-				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">
-					Trang công khai
-				</p>
-				<div className="grid gap-3 sm:grid-cols-2">
-					{PUBLIC_PAGES.map((page) => (
-						<a
-							key={page.href}
-							href={page.href}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="rounded-xl border border-border bg-surface p-5 transition-colors hover:border-border-hover"
-						>
-							<p className="text-sm font-bold text-foreground">{page.label} ↗</p>
-							<p className="mt-1 text-sm text-muted">{page.description}</p>
-						</a>
-					))}
-				</div>
-			</section>
-
-			<section className="mt-10">
-				<Link
-					href={routes.admin.posts}
-					className="text-sm font-semibold underline underline-offset-4"
-				>
-					Quản lý câu chuyện và ảnh trong Trải nghiệm →
-				</Link>
-			</section>
-			<section className="mt-10">
-				<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Hộp thư</p>
-				<Link
-					href={routes.admin.inquiries}
-					className="flex items-start justify-between gap-4 rounded-xl border border-foreground bg-foreground p-5 text-background transition-colors hover:bg-foreground/90"
-				>
-					<div>
-						<p className="text-sm font-bold">Yêu cầu liên hệ</p>
-						<p className="mt-1 text-sm text-background/70">
-							Lời nhắn từ biểu mẫu /lien-he — giữ nguyên hộp thư hiện có.
-						</p>
+			<div className={styles.stack}>
+				<section>
+					<h2 className={styles.sectionTitle}>Trang công khai</h2>
+					<p className="mb-4 text-sm text-muted">
+						Các trang dưới đây hỗ trợ xem. Nội dung giới thiệu hiện chưa có trình sửa trong Admin.
+					</p>
+					<div className={styles.list}>
+						{PUBLIC_PAGES.map((page) => (
+							<div key={page.href} className={`${styles.row} flex-wrap`}>
+								<span className={styles.iconTile}>
+									<AdminIcon name="website" />
+								</span>
+								<div className={styles.rowBody}>
+									<h3 className="font-semibold">{page.label}</h3>
+									<p className={`${styles.meta} mt-1`}>{page.description}</p>
+								</div>
+								<AdminLink href={page.href} external icon="external">
+									Xem trang
+								</AdminLink>
+							</div>
+						))}
 					</div>
-					<span className="text-sm font-semibold">Mở hộp thư →</span>
-				</Link>
-			</section>
+				</section>
+				<section>
+					<h2 className={styles.sectionTitle}>Quản lý nội dung</h2>
+					<div className={styles.panel}>
+						<div className="flex flex-wrap items-center justify-between gap-4">
+							<div>
+								<h3 className="font-semibold">Câu chuyện và ảnh trong Trải nghiệm</h3>
+								<div className="mt-2">
+									<AdminBadge>Trong Kho lưu trữ</AdminBadge>
+								</div>
+								<p className={`${styles.meta} mt-2`}>
+									Trình quản lý bài viết hiện có mở trong không gian lưu trữ.
+								</p>
+							</div>
+							<AdminLink href={routes.admin.posts} icon="archive">
+								Quản lý nội dung
+							</AdminLink>
+						</div>
+					</div>
+				</section>
+			</div>
 		</div>
 	);
 }
