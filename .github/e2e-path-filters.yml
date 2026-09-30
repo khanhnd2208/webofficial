@@ -72,6 +72,7 @@ portfolio:
   - src/features/courses/**
   - src/features/learn/**
   - src/features/services/**
+  - src/features/experiences/**
   - src/features/inquiries/**
   - src/features/enrollments/**
   - src/features/progress/**
@@ -82,6 +83,7 @@ portfolio:
   - src/app/gioi-thieu/**
   - src/app/muc-luc/**
   - src/app/du-an/**
+  - src/app/trai-nghiem/**
   - src/app/dich-vu/**
   - src/app/ghi-chep/**
   - src/app/lien-he/**
