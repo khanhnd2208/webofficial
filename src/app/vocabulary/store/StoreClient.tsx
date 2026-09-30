@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import TagInput from '@/components/TagInput';
+import TagInput from '@/components/forms/TagInput';
 import { routes } from '@/config/routes';
 import { clientLoginHref } from '@/lib/admin/client';
 

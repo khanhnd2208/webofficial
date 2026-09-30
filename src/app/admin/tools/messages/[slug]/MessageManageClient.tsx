@@ -7,14 +7,14 @@ import { useCallback, useState } from 'react';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { adminFetch } from '@/lib/admin/client';
-import MusicTrackSelect from '@/components/MusicTrackSelect';
-import QrCodePanel from '@/components/QrCodePanel';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
+import MusicTrackSelect from '@/components/messages/MusicTrackSelect';
+import QrCodePanel from '@/components/messages/QrCodePanel';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
 import { routes } from '@/config/routes';
-import { DEFAULT_DISPLAY_FONT } from '@/constants/message';
+import { DEFAULT_DISPLAY_FONT } from '@/config/message';
 import type { MessageDetailDTO } from '@/types/message';
 
-const MessageEditorWithFont = dynamic(() => import('@/components/MessageEditorWithFont'), {
+const MessageEditorWithFont = dynamic(() => import('@/components/messages/MessageEditorWithFont'), {
 	ssr: false,
 });
 

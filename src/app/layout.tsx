@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Source_Serif_4 } from 'next/font/google';
 
-import Providers from '@/components/Providers';
+import Providers from '@/components/site/Providers';
 import {
 	AnalyticsScript,
 	ConditionalFooter,

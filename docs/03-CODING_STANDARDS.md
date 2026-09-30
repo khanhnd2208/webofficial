@@ -289,10 +289,10 @@ import { routes } from '@/config/routes';
 // Use `routes` for URLs instead of hardcoding paths in components.
 ```
 
-### 5.3 `src/constants/post.ts` — Post Categories (client-safe)
+### 5.3 `src/config/post.ts` — Post Categories (client-safe)
 
 ```typescript
-import { POST_CATEGORIES, type PostCategory } from '@/constants/post';
+import { POST_CATEGORIES, type PostCategory } from '@/config/post';
 // Safe to use in Client Components — no server-side deps
 ```
 

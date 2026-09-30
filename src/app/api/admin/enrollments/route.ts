@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { enrollSchema } from '@/features/courses/schemas';
 import { enrollmentService } from '@/features/enrollments';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 const listQuerySchema = z.object({
 	courseId: z.string().min(1),

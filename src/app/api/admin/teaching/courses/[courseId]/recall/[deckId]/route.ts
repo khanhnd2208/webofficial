@@ -7,7 +7,7 @@ import {
 	updateAdminRecallDeckMeta,
 } from '@/features/active-recall';
 import { apiSuccess, AppError, withAdmin } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 async function params(context?: { params: Promise<{ courseId: string; deckId: string }> }) {
 	return context!.params;

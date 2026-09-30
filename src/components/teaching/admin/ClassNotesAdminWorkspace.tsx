@@ -25,7 +25,7 @@ import { teachingApi } from './api';
 import { useTeachingLeaveGuard } from './useTeachingLeaveGuard';
 import { uploadMyClassImage } from '@/components/myclass/admin/uploadImage';
 
-const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: false });
+const TiptapEditor = dynamic(() => import('@/components/forms/TiptapEditor'), { ssr: false });
 
 function SortableNote({
 	note,

@@ -3,7 +3,7 @@
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import TiptapEditor from '@/components/TiptapEditor';
+import TiptapEditor from '@/components/forms/TiptapEditor';
 import { routes } from '@/config/routes';
 import type {
 	AnswerSpec,

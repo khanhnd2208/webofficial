@@ -5,7 +5,7 @@ import {
 	previewAdminRecallImport,
 } from '@/features/active-recall';
 import { apiSuccess, AppError, withAdmin } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const POST = withAdmin(async (request, _user, context) => {
 	const { courseId, deckId } = await context!.params;

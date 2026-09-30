@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { resolveMusicUrl } from '@/constants/message';
+import { resolveMusicUrl } from '@/config/message';
 
 interface MessageMusicPlayerProps {
 	trackId?: string;

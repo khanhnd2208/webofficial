@@ -5,7 +5,7 @@ import {
 	importLearnMarkdown,
 } from '@/features/learn';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 /** `{ markdown }` imports NDK lessons; anything else creates an empty lesson. */
 export const POST = withAdmin(async (request, _user, context) => {

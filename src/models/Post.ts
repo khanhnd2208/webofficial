@@ -34,7 +34,7 @@ export interface IPost {
 }
 
 /** Re-export from shared constants (safe for client components too) */
-export { POST_CATEGORIES, type PostCategory } from '@/constants/post';
+export { POST_CATEGORIES, type PostCategory } from '@/config/post';
 
 const PostSchema = new Schema<IPost>(
 	{

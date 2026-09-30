@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
 import { routes } from '@/config/routes';
 import { adminFetch } from '@/lib/admin/client';
 import {

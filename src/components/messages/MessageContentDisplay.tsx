@@ -1,8 +1,8 @@
 'use client';
 
-import { getDisplayFontFamily } from '@/constants/message';
+import { getDisplayFontFamily } from '@/config/message';
 import { getMusicTrackLabel } from '@/lib/musicUrl';
-import MessageMusicPlayer from '@/components/MessageMusicPlayer';
+import MessageMusicPlayer from '@/components/messages/MessageMusicPlayer';
 import type { PublicMessageDTO } from '@/types/message';
 
 interface MessageContentDisplayProps {

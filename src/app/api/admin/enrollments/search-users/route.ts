@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { enrollmentService } from '@/features/enrollments';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 const querySchema = z.object({
 	q: z.string().trim().min(2, 'Nhập ít nhất 2 ký tự'),

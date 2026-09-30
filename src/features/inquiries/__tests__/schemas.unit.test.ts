@@ -7,7 +7,7 @@ import {
 	updateInquirySchema,
 } from '@/features/inquiries/schemas';
 import { hashClientIp, isRateLimitBreached, INQUIRY_RATE_LIMIT_MAX } from '@/lib/inquiryRateLimit';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 import { AppError } from '@/lib/appError';
 
 const validPayload = {

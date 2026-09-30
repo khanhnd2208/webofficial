@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import TagInput from '@/components/TagInput';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
-import DualLanguageEditor from '@/components/DualLanguageEditor';
-import { POST_CATEGORIES } from '@/constants/post';
+import TagInput from '@/components/forms/TagInput';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
+import DualLanguageEditor from '@/components/forms/DualLanguageEditor';
+import { POST_CATEGORIES } from '@/config/post';
 import { slugify } from '@/utils/slugify';
 import { adminFetch } from '@/lib/admin/client';
 

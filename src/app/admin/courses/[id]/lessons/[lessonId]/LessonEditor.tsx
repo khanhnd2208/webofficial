@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import DOMPurify from 'isomorphic-dompurify';
 
-import TiptapEditor from '@/components/TiptapEditor';
+import TiptapEditor from '@/components/forms/TiptapEditor';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { FormField } from '@/components/ui/FormField';

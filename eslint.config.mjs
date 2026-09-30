@@ -71,7 +71,7 @@ const eslintConfig = defineConfig([
 			'src/components/teaching/admin/**/*.{ts,tsx}',
 			'src/components/myclass/admin/**/*.{ts,tsx}',
 			'src/components/active-recall/ActiveRecallEditor.tsx',
-			'src/components/MusicTrackSelect.tsx',
+			'src/components/messages/MusicTrackSelect.tsx',
 		],
 		rules: {
 			'no-restricted-globals': [

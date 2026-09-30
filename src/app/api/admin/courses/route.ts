@@ -2,7 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { courseService, createCourseSchema } from '@/features/courses';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const GET = withAdmin(async () => {
 	const items = await courseService.listAdminCourses();

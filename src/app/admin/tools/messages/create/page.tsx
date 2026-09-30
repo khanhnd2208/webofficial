@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import MusicTrackSelect from '@/components/MusicTrackSelect';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
+import MusicTrackSelect from '@/components/messages/MusicTrackSelect';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
 import { routes } from '@/config/routes';
-import { DEFAULT_DISPLAY_FONT } from '@/constants/message';
+import { DEFAULT_DISPLAY_FONT } from '@/config/message';
 import { adminFetch } from '@/lib/admin/client';
 
-const MessageEditorWithFont = dynamic(() => import('@/components/MessageEditorWithFont'), {
+const MessageEditorWithFont = dynamic(() => import('@/components/messages/MessageEditorWithFont'), {
 	ssr: false,
 });
 

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { importTestMetaSchema, myspaceTestsService } from '@/features/myspace-tests';
 import { AppError } from '@/lib/appError';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 const smartImportBodySchema = z.object({
 	text: z.string().min(1, 'Thiếu nội dung CSV'),

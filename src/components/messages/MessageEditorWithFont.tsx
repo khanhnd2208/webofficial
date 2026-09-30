@@ -1,7 +1,7 @@
 'use client';
 
-import TiptapEditor from '@/components/TiptapEditor';
-import { MESSAGE_DISPLAY_FONTS } from '@/constants/message';
+import TiptapEditor from '@/components/forms/TiptapEditor';
+import { MESSAGE_DISPLAY_FONTS } from '@/config/message';
 
 interface MessageEditorWithFontProps {
 	content: string;

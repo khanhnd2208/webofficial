@@ -4,7 +4,7 @@ import {
 	createAdminRecallDeck,
 } from '@/features/active-recall';
 import { apiSuccess, withAdmin } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 export const GET = withAdmin(async () => apiSuccess(await listAdminRecallDecks()));
 

@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import MessageContentDisplay from '@/components/MessageContentDisplay';
+import MessageContentDisplay from '@/components/messages/MessageContentDisplay';
 import MessagePasswordGate, {
 	getStoredMessageContent,
 	isMessageUnlocked,
-} from '@/components/MessagePasswordGate';
+} from '@/components/messages/MessagePasswordGate';
 import type { PublicMessageDTO } from '@/types/message';
 
 interface PublicMessageViewProps {

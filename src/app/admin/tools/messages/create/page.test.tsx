@@ -21,11 +21,11 @@ vi.mock('next/dynamic', () => ({
 		)) as ComponentType,
 }));
 
-vi.mock('@/components/MusicTrackSelect', () => ({
+vi.mock('@/components/messages/MusicTrackSelect', () => ({
 	default: () => <div data-testid="music-select" />,
 }));
 
-vi.mock('@/components/ThumbnailUpload', () => ({
+vi.mock('@/components/forms/ThumbnailUpload', () => ({
 	default: () => <div data-testid="thumbnail-upload" />,
 }));
 

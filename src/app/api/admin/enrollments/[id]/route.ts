@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { enrollmentService } from '@/features/enrollments';
 import { withAdmin, apiSuccess } from '@/lib/apiUtils';
-import { parseSchema } from '@/shared/validation/parse';
+import { parseSchema } from '@/lib/validation/parse';
 
 const actionSchema = z.object({
 	action: z.enum(['revoke', 'restore']),

@@ -5,7 +5,7 @@ import { McSegmented } from '@/components/myclass/ui';
 import { READING_LEVEL_HINT, READING_LEVEL_LABEL } from '@/features/my-class/domain/readingLevel';
 import { uploadMyClassImage } from './uploadImage';
 
-const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: false });
+const TiptapEditor = dynamic(() => import('@/components/forms/TiptapEditor'), { ssr: false });
 
 export type KnowledgeUnitLevelTab = 'foundation' | 'academic' | 'expert';
 

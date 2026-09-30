@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-import MusicTrackSelect from '@/components/MusicTrackSelect';
-import QrCodePanel from '@/components/QrCodePanel';
-import ThumbnailUpload from '@/components/ThumbnailUpload';
-import { DEFAULT_DISPLAY_FONT } from '@/constants/message';
+import MusicTrackSelect from '@/components/messages/MusicTrackSelect';
+import QrCodePanel from '@/components/messages/QrCodePanel';
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
+import { DEFAULT_DISPLAY_FONT } from '@/config/message';
 import type { MessageDetailDTO } from '@/types/message';
 
-const MessageEditorWithFont = dynamic(() => import('@/components/MessageEditorWithFont'), {
+const MessageEditorWithFont = dynamic(() => import('@/components/messages/MessageEditorWithFont'), {
 	ssr: false,
 });
 

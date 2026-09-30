@@ -1,4 +1,4 @@
-import { MESSAGE_MUSIC_TRACKS } from '@/constants/message';
+import { MESSAGE_MUSIC_TRACKS } from '@/config/message';
 
 /** Canonical URL for Gác Lại Âu Lo (renamed from Unicode filename). */
 export const GAC_LAI_AU_LO_URL = '/music/gac-lai-au-lo.mp3';

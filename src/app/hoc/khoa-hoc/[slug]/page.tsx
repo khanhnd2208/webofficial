@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import PublicCourseIntroView from '@/components/learning/PublicCourseIntroView';
+import PublicCourseIntroView from '@/components/learn/PublicCourseIntroView';
 import { routes } from '@/config/routes';
 import * as courseRepo from '@/features/courses/repositories/courseRepository';
 import { isPublicCatalogCourse } from '@/features/courses';

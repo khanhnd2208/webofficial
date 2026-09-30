@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import TagInput from '@/components/TagInput';
+import TagInput from '@/components/forms/TagInput';
 import type { CreateWordInput, VocabSetDTO } from '@/types/vocab';
 
 export type EditableWord = {

@@ -4,7 +4,7 @@ import path from 'node:path';
 import dbConnect from '@/lib/dbConnect';
 import { AppError } from '@/lib/appError';
 import { readMp3Upload } from '@/lib/uploadValidation';
-import { MESSAGE_MUSIC_TRACKS } from '@/constants/message';
+import { MESSAGE_MUSIC_TRACKS } from '@/config/message';
 import { musicFilenameToUrl } from '@/lib/musicUrl';
 import MessageMusic from '@/models/MessageMusic';
 import type { MusicTrackDTO } from '@/types/messageMusic';
