@@ -41,11 +41,14 @@ src/
 │   ├── my-space/        personal experiments and MCQ tests
 │   ├── messages/, m/    private message management and public unlock view
 │   └── public routes     marketing, notes, projects, services, policies, contact
-├── components/          reusable UI, site chrome, marketing and learning components
+├── components/          UI by area (myclass, teaching, learn, vocab, messages…)
+│                        and shared UI: ui/, forms/, site/, admin/, motion/
 ├── config/              routes, navigation, site metadata and shared constants
 ├── content/             editorial and marketing content kept separate from UI
 ├── features/            vertical slices: courses, enrollments, progress,
-│                        myspace-tests, my-class, portfolio, posts and services
+│                        myspace-tests, my-class, teaching, active-recall,
+│                        portfolio, posts, services, and the board games
+│                        (board-game-shared, spy-fall, cheese-thief, werewolf)
 ├── lib/                 auth, database clients, API wrappers, validation and utilities
 ├── models/              Mongoose schemas for MongoDB-backed domains
 ├── services/            established business services shared by routes/components
@@ -58,6 +61,7 @@ prisma/
 
 src/test/                Vitest setup, database helpers, mocks and fixtures
 e2e/                     Playwright tests
+scripts/areas/           area map (areas.mjs) and its CI filter generator
 ```
 
 ## 3. Request and data flow
