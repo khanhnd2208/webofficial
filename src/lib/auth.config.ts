@@ -2,6 +2,7 @@ import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
 
 import { resolveAuthJsRedirect } from '@/lib/auth/safeRedirect';
+import { SESSION_MAX_AGE_SECONDS, withinSessionLimit } from '@/lib/auth/sessionLifetime';
 
 /**
  * Edge-safe Auth.js config — NO Node.js-only imports (no MongoDB, no mongoose).
@@ -15,7 +16,6 @@ import { resolveAuthJsRedirect } from '@/lib/auth/safeRedirect';
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 /** Auth.js stores the post-sign-in destination here while Google is open. */
 export const AUTH_CALLBACK_URL_COOKIE = 'authjs.callback-url';
 
@@ -78,6 +78,7 @@ export const authConfig: NextAuthConfig = {
 		// Edge-safe jwt: propagate role from user object into token.
 		// The full server-side auth.ts overrides this to also fetch from DB.
 		async jwt({ token, user }) {
+			if (!withinSessionLimit(token, Boolean(user))) return null;
 			if (user) {
 				const userRole = (user as { role?: string }).role;
 				// 'teacher' was a legacy role; normalize to 'student'.
