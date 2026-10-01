@@ -5,22 +5,23 @@ import { customAlphabet } from 'nanoid';
 import {
 	SPY_DISCONNECT_THRESHOLD_MS,
 	SPY_HOST_HANDOFF_MS,
-	SPY_MAX_COUNT,
 	SPY_MAX_PLAYERS,
-	SPY_MAX_ROOM_NAME_LENGTH,
-	SPY_MIN_PLAYERS,
 	SPY_PHASES,
 	SPY_PLAYER_ID_LENGTH,
 	SPY_PLAYER_TOKEN_LENGTH,
 	SPY_RECENT_WORD_PAIRS,
 	SPY_ROOM_CODE_LENGTH,
-	isSpyCount,
 	minPlayersForSpies,
 	normalizeExcludedTags,
 	normalizeSpyCount,
-	type SpyCount,
 } from '@/features/spy-fall/config/spyGame';
 import { GameError } from '@/features/board-game-shared/lib/gameError';
+import {
+	assertMaxPlayers,
+	assertRoomName,
+	assertSpyCountFitsRoom,
+	parseSpyCount,
+} from '@/features/spy-fall/services/spyRoomRules';
 import { withVersionRetry } from '@/features/board-game-shared/lib/versionRetry';
 import { assignRoles, pickFirstSpeaker } from '@/features/spy-fall/lib/spy/roleAssignment';
 import {
@@ -327,15 +328,6 @@ function spiesRemaining(game: GameDoc): number {
 	return game.players.filter((p) => p.role === 'spy' && !p.isEliminated).length;
 }
 
-function assertRoomName(name: string | undefined): string {
-	const trimmed = name?.trim() ?? '';
-	if (!trimmed) throw new GameError('ROOM_NAME_REQUIRED', 400);
-	if (trimmed.length > SPY_MAX_ROOM_NAME_LENGTH) {
-		throw new GameError('ROOM_NAME_TOO_LONG', 400, { max: SPY_MAX_ROOM_NAME_LENGTH });
-	}
-	return trimmed;
-}
-
 function assertPhaseCursor(game: GameDoc, from: PhaseCursor): void {
 	const matches =
 		from.phase === game.phase &&
@@ -365,31 +357,6 @@ function toPublicDeparted(entry: ISpyDeparted): DepartedPlayerDTO {
 		...(entry.role ? { role: entry.role } : {}),
 		round: entry.round,
 	};
-}
-
-function assertSpyCountFitsRoom(spyCount: SpyCount, maxPlayers: number): void {
-	const min = minPlayersForSpies(spyCount);
-	if (maxPlayers < min) throw new GameError('SPY_COUNT_NEEDS_ROOM', 400, { min, spies: spyCount });
-}
-
-function parseSpyCount(value: unknown): SpyCount {
-	if (!isSpyCount(value)) throw new GameError('SPY_COUNT_INVALID', 400, { max: SPY_MAX_COUNT });
-	return value;
-}
-
-function assertMaxPlayers(
-	maxPlayers: unknown,
-	floor = SPY_MIN_PLAYERS,
-): asserts maxPlayers is number {
-	const min = Math.max(SPY_MIN_PLAYERS, floor);
-	if (
-		typeof maxPlayers !== 'number' ||
-		!Number.isInteger(maxPlayers) ||
-		maxPlayers < min ||
-		maxPlayers > SPY_MAX_PLAYERS
-	) {
-		throw new GameError('MAX_PLAYERS_INVALID', 400, { min, max: SPY_MAX_PLAYERS });
-	}
 }
 
 function toPublicRoomDTO(game: GameDoc): PublicRoomListItemDTO {
