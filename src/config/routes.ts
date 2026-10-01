@@ -69,12 +69,16 @@ export const routes = {
 	myClassTest: (courseSlug: string, testSlug: string) =>
 		`/my-space/my-class/${courseSlug}/tests/${testSlug}` as const,
 	myClassProgress: '/my-space/my-class/progress',
-	/** Self-paced courses: catalog, reader and admin studio. */
-	learnCourses: '/my-space/courses',
+	/**
+	 * Self-paced courses: catalog, reader and admin studio. `/khoa-hoc/*` is served by the
+	 * `/my-space/courses/*` pages (see LEARN_COURSE_ALIASES), so links shared before the rename
+	 * keep opening the same, current course.
+	 */
+	learnCourses: '/khoa-hoc',
 	learnCourse: (slug: string, sectionId?: string | null) =>
-		`/my-space/courses/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
+		`/khoa-hoc/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	learnStudio: (slug: string, sectionId?: string | null) =>
-		`/my-space/courses/${slug}/studio${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
+		`/khoa-hoc/${slug}/studio${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	mySpaceTeaching: '/my-space/teaching',
 	mySpaceTeachingNew: '/my-space/teaching/new',
 	mySpaceTeachingCourseNewClass: (courseId: string) =>
@@ -257,6 +261,16 @@ export const routes = {
 		settings: '/admin/settings',
 	},
 } as const;
+
+/**
+ * Short course URLs. Both spellings render the same pages: `/khoa-hoc/...` is rewritten to the
+ * `/my-space/courses/...` route files, and the old `/my-space/courses/...` links keep working
+ * untouched, so links already handed to students never break.
+ */
+export const LEARN_COURSE_ALIASES: ReadonlyArray<{ source: string; destination: string }> = [
+	{ source: '/khoa-hoc', destination: '/my-space/courses' },
+	{ source: '/khoa-hoc/:path*', destination: '/my-space/courses/:path*' },
+];
 
 /** Legacy paths kept only for permanent redirects in next.config. */
 export const legacyRoutes = {

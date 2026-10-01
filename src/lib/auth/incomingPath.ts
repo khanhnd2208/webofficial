@@ -28,5 +28,5 @@ export async function incomingTeachingPath(): Promise<string> {
 }
 
 export async function incomingLearnPath(): Promise<string> {
-	return incomingProtectedPath('/my-space/courses');
+	return incomingProtectedPath('/khoa-hoc');
 }
