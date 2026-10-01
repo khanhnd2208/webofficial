@@ -10,9 +10,9 @@ export function AdminForbidden({
 	/** What the person tried to open, e.g. "Teaching". */
 	area?: string;
 	/** The page to come back to after switching to the admin Google account. */
-	from?: string;
+	from: string;
 }) {
-	const loginHref = from ? `${routes.login}?from=${encodeURIComponent(from)}` : routes.login;
+	const loginHref = `${routes.login}?from=${encodeURIComponent(from)}`;
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-6 py-16">
 			<p className="text-xs font-bold uppercase tracking-widest text-muted">Chỉ dành cho admin</p>

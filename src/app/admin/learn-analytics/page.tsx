@@ -42,8 +42,8 @@ function Stat({ label, value, note }: { label: string; value: string | number; n
 export default async function LearnAnalyticsPage({ searchParams }: Props) {
 	const session = await auth();
 	if (!session?.user)
-		redirect(`${routes.login}?from=${encodeURIComponent('/admin/learn-analytics')}`);
-	if (session.user.role !== 'admin') return <AdminForbidden />;
+		redirect(`${routes.login}?from=${encodeURIComponent(routes.admin.learnAnalytics)}`);
+	if (session.user.role !== 'admin') return <AdminForbidden from={routes.admin.learnAnalytics} />;
 	const query = await searchParams;
 	const courses = await prisma.learnCourse.findMany({
 		select: { id: true, slug: true, title: true },
