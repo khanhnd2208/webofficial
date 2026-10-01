@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	afterSignOutPath,
 	CONTACT_CTA,
 	GATE_NAV_ITEMS,
 	getDesktopNavLinks,
@@ -15,6 +16,7 @@ import {
 	isInternalChromePath,
 	isIntroPath,
 	isPublished,
+	isSignInRequiredPath,
 	isTocPath,
 	PUBLIC_NAV_ITEMS,
 } from '@/config/navigation';
@@ -133,6 +135,33 @@ describe('content gates', () => {
 			'business',
 			'other',
 		]);
+	});
+});
+
+describe('sign-in gates', () => {
+	it('knows every path that sends a signed-out visitor to the login page', () => {
+		for (const path of [
+			'/admin/inquiries',
+			'/messages',
+			'/tai-khoan/hoc',
+			'/vocabulary/abc',
+			'/my-space/teaching/123?tab=cp',
+			'/my-space/courses/itm',
+			'/my-space/my-class',
+			'/khoa-hoc/hrm?s=1',
+			'/my-space/board-game/test?game=spy-fall',
+			'/hoc/khoa-hoc/quan-tri/bai/bai-1',
+		]) {
+			expect(isSignInRequiredPath(path), path).toBe(true);
+		}
+		for (const path of ['/', '/muc-luc', '/lop/hrm-1', '/hoc/khoa-hoc/quan-tri', '/my-space']) {
+			expect(isSignInRequiredPath(path), path).toBe(false);
+		}
+	});
+
+	it('signs out onto Mục lục only when the page would demand sign-in again', () => {
+		expect(afterSignOutPath('/khoa-hoc/itm#bai-2')).toBe(routes.toc);
+		expect(afterSignOutPath('/gioi-thieu#dich-vu')).toBe('/gioi-thieu#dich-vu');
 	});
 });
 

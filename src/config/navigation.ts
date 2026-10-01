@@ -171,15 +171,24 @@ export function isInternalChromePath(pathname: string): boolean {
 	return INTERNAL_CHROME_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-/** Pages that send a signed-out visitor to the login page. */
+/**
+ * Pages that send a signed-out visitor to the login page: every `redirect(...login...)` in
+ * src/app. Keep in step when a page starts requiring an account.
+ */
 const SIGN_IN_REQUIRED_PREFIXES = [
 	'/admin',
+	'/messages',
 	'/tai-khoan',
+	'/vocabulary',
 	'/my-space/teaching',
 	'/my-space/courses',
+	'/my-space/my-class',
 	'/khoa-hoc',
 	routes.boardGameTest,
 ] as const;
+
+/** Old lesson reader: the course page is public, its lessons need an account. */
+const SIGN_IN_REQUIRED_PATTERNS = [/^\/hoc\/khoa-hoc\/[^/]+\/bai\//] as const;
 
 function matchesPrefix(pathname: string, prefix: string): boolean {
 	return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -196,7 +205,10 @@ export function afterSignOutPath(location: string): string {
 /** True when a signed-out visitor opening this path would be sent to the login page. */
 export function isSignInRequiredPath(location: string): boolean {
 	const pathname = location.split(/[?#]/)[0] || routes.home;
-	return SIGN_IN_REQUIRED_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix));
+	return (
+		SIGN_IN_REQUIRED_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix)) ||
+		SIGN_IN_REQUIRED_PATTERNS.some((pattern) => pattern.test(pathname))
+	);
 }
 
 /** Public marketing / utility surfaces that use minimal chrome instead of Navbar. */
