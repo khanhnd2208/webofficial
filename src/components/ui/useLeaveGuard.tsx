@@ -63,6 +63,8 @@ export function useLeaveGuard({
 			const link = (event.target as Element)?.closest?.('a[href]') as HTMLAnchorElement | null;
 			if (
 				!link ||
+				// mailto:, tel: and similar open another app; the page stays put.
+				(link.protocol !== 'http:' && link.protocol !== 'https:') ||
 				link.target === '_blank' ||
 				link.hasAttribute('download') ||
 				link.pathname.includes('/api/')
