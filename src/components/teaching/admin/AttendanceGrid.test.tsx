@@ -141,6 +141,15 @@ describe('AttendanceGrid', () => {
 		expect(screen.queryByText('Đủ điều kiện')).not.toBeInTheDocument();
 	});
 
+	it('lays out the sticky score columns for the status column the public page still shows', () => {
+		const { container } = render(
+			<AttendanceGrid students={[student()]} sessions={sessions()} totalWeeks={10} publicCompact />,
+		);
+		// The desktop public grid renders "Trạng thái"; the sticky offsets must make room for it.
+		expect(screen.getByRole('columnheader', { name: 'Trạng thái' })).toBeInTheDocument();
+		expect(container.querySelector('table.mc-grid')).toHaveAttribute('data-eligibility', 'true');
+	});
+
 	it('exposes page scrolling and a compact mobile student summary', () => {
 		render(
 			<AttendanceGrid

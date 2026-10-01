@@ -294,7 +294,7 @@ export function AttendanceGrid({
 					className="mc-grid"
 					data-extra={showExtraColumns}
 					data-group={hasGroupColumn}
-					data-eligibility={showEligibilityColumn && !publicCompact}
+					data-eligibility={showEligibilityColumn}
 					data-testid="attendance-grid"
 				>
 					<caption className="sr-only">Bảng điểm danh</caption>
