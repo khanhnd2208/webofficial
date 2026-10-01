@@ -424,23 +424,23 @@ export function AttendanceGrid({
 								);
 							})}
 							<th
-								aria-label="Số buổi vắng"
-								title="Tổng số buổi vắng không phép; đi muộn cũng được tính là một buổi vắng"
-								className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-abs ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
-							>
-								<span className="mc-grid-summary-heading">
-									<span>Số buổi</span>
-									<span>vắng</span>
-								</span>
-							</th>
-							<th
 								aria-label={`Chuyên cần /${attendanceMaxPoints}`}
 								title={`Điểm chuyên cần tối đa ${attendanceMaxPoints}; mức trừ được cấu hình theo lớp`}
-								className={`mc-grid-freeze-right mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+								className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 							>
 								<span className="mc-grid-summary-heading">
 									<span>Chuyên cần</span>
 									<span>/{attendanceMaxPoints}</span>
+								</span>
+							</th>
+							<th
+								aria-label="Số buổi vắng"
+								title="Tổng số buổi vắng không phép; đi muộn cũng được tính là một buổi vắng"
+								className={`mc-grid-freeze-right mc-grid-abs ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+							>
+								<span className="mc-grid-summary-heading">
+									<span>Số buổi</span>
+									<span>vắng</span>
 								</span>
 							</th>
 							{showEligibilityColumn ? (
@@ -729,14 +729,14 @@ export function AttendanceGrid({
 										);
 									})}
 									<td
-										className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-abs mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
-									>
-										{student.cp.unexcusedAbsences}/{totalWeeks}
-									</td>
-									<td
-										className={`mc-grid-freeze-right mc-grid-attendance-score mc-num font-semibold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+										className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-attendance-score mc-num font-semibold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 									>
 										{formatTeachingScore(student.cp.attendanceScore)} / {attendanceMaxPoints}
+									</td>
+									<td
+										className={`mc-grid-freeze-right mc-grid-abs mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+									>
+										{student.cp.unexcusedAbsences}/{totalWeeks}
 									</td>
 									{showEligibilityColumn ? (
 										<td
