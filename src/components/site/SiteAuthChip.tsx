@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { afterSignOutPath } from '@/config/navigation';
 import { routes } from '@/config/routes';
+import { signOutTo } from '@/lib/auth/signOutTo';
 
 type SiteAuthChipProps = {
 	/**
@@ -181,7 +182,7 @@ export default function SiteAuthChip({
 							<button
 								type="button"
 								data-testid="site-sign-out"
-								onClick={() => signOut({ redirectTo: afterSignOutPath(currentLocation(pathname)) })}
+								onClick={() => void signOutTo(afterSignOutPath(currentLocation(pathname)))}
 								className="block w-full px-4 py-2.5 text-left hover:bg-paper focus-visible:bg-paper focus-visible:outline-none"
 							>
 								Đăng xuất

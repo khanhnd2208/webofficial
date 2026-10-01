@@ -43,8 +43,10 @@ export default async function LoginPage({
 	);
 	const from = loginRedirectTarget(sp?.callbackUrl, sp?.from, pendingCallback, referrer);
 
-	// Retrying after a failed Google round trip that did sign in: finish the trip.
-	if (session?.user && sp?.error) {
+	// Signed in and sent here with a destination (a gate, a retry after a Google error): go on.
+	// Without one (the page opened directly or from history) say who is signed in instead of
+	// bouncing them somewhere they did not ask for.
+	if (session?.user && (sp?.from || sp?.callbackUrl || sp?.error)) {
 		redirect(from);
 	}
 
