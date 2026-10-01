@@ -31,7 +31,7 @@ const CORE_TABS = [
 	['attendance', 'Điểm danh'],
 	['cp', 'Điểm CP'],
 	['groups', 'Xếp nhóm'],
-	['notes', 'Class Notes'],
+	['notes', 'Ghi chú lớp'],
 	['recall', 'Active Recall'],
 	['students', 'Sinh viên'],
 ] as const;

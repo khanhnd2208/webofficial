@@ -309,14 +309,14 @@ export function ClassNotesAdminWorkspace({
 
 	return (
 		<>
-			<section className="mc-surface overflow-hidden" aria-label="Class Notes admin">
+			<section className="mc-surface overflow-hidden" aria-label="Quản lý ghi chú lớp">
 				<div className="grid min-h-[min(70vh,720px)] md:grid-cols-[260px_minmax(0,1fr)]">
 					<aside className="border-b border-mc-rule bg-canvas/50 p-3 md:border-b-0 md:border-r">
 						<div className="mb-3 flex items-center justify-between gap-2">
 							<div>
 								<p className="mc-eyebrow">Notebook</p>
 								<h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-									<TeachingIcon name="notes" size={20} /> Class Notes
+									<TeachingIcon name="notes" size={20} /> Ghi chú lớp
 								</h2>
 							</div>
 							<button
