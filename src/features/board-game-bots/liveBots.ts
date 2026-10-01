@@ -64,7 +64,6 @@ type RawRoom = {
 	phase: string;
 	hostToken: string;
 	players: BotSeat[];
-	choiceCount?: number;
 	voteCandidateIds?: string[];
 	adminTest?: { ownerUserId?: string };
 };
@@ -86,6 +85,12 @@ function pick<T>(items: T[], random: () => number): T | undefined {
 	return items.length ? items[Math.floor(random() * items.length)] : undefined;
 }
 
+function leaveAs(game: LiveBotGame, code: string, token: string) {
+	if (game === 'spy-fall') return spy.leaveRoom(code, token);
+	if (game === 'cheese-thief') return cheese.leaveRoom(code, token);
+	return werewolf.leaveRoom(code, token);
+}
+
 /** Seat one more bot. Only the host may do it, only in the lobby, never in an admin test room. */
 export async function addLiveBot(game: LiveBotGame, code: string, hostToken: string) {
 	const room = await readRoom(game, code);
@@ -105,10 +110,19 @@ export async function addLiveBot(game: LiveBotGame, code: string, hostToken: str
 			: game === 'cheese-thief'
 				? await cheese.joinRoom(code, name)
 				: await werewolf.joinRoom(code, name);
-	await modelFor(game).updateOne(
-		{ code: code.toUpperCase(), 'players.token': joined.playerToken },
-		{ $set: { 'players.$.isBot': true } },
-	);
+	// Joining and flagging are two writes. If the flag does not land, take the seat back out so
+	// the room never keeps a player whose token nobody holds.
+	let flagged = false;
+	try {
+		const result = await modelFor(game).updateOne(
+			{ code: code.toUpperCase(), 'players.token': joined.playerToken },
+			{ $set: { 'players.$.isBot': true } },
+		);
+		flagged = result.matchedCount === 1;
+	} finally {
+		if (!flagged) await leaveAs(game, code, joined.playerToken).catch(() => undefined);
+	}
+	if (!flagged) throw new GameError('BOT_NOT_SEATED', 409);
 	return name;
 }
 
@@ -148,9 +162,11 @@ async function stepCheese(room: RawRoom, bots: BotSeat[], random: () => number):
 	if (phase === 'secret') {
 		const bot = bots.find((entry) => !entry.secretConfirmed);
 		if (!bot) return false;
+		// The room's own view knows the pick count even when the stored field is unset.
+		const choiceCount = (await cheese.getScopedState(code, bot.token)).choiceCount ?? 1;
 		const others = room.players.filter((entry) => entry.id !== bot.id).map((entry) => entry.id!);
 		const picks: string[] = [];
-		while (picks.length < (room.choiceCount || 1) && others.length) {
+		while (picks.length < choiceCount && others.length) {
 			picks.push(others.splice(Math.floor(random() * others.length), 1)[0]!);
 		}
 		await cheese.submitSecret(code, bot.token, picks);

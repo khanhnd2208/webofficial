@@ -104,21 +104,59 @@ describe('live bots in a real Ma Sói room', () => {
 });
 
 describe('live bots in a real Cheese Thief room', () => {
-	it('bots read their roles in the deal, leaving the host to start the night', async () => {
+	async function rewind(code: string, field: 'nightStartedAt' | 'secretStartedAt', msAgo: number) {
+		await CheeseRoom.updateOne({ code }, { $set: { [field]: new Date(Date.now() - msAgo) } });
+	}
+
+	async function botsWaitingOn(
+		code: string,
+		field: 'hasMemorizedRole' | 'secretConfirmed' | 'hasSeenSecret' | 'voteId',
+	) {
+		const room = await CheeseRoom.findOne({ code }).lean();
+		return room!.players.filter((player) => player.isBot && !player[field]).map((p) => p.name);
+	}
+
+	it('bots play a whole round: read roles, pick secrets, see the result and vote', async () => {
 		const created = await cheese.createRoom({
 			name: 'Bàn phô mai',
 			hostName: 'Khánh',
 			maxPlayers: 4,
 		});
+		const { code } = created;
 		const host = created.self!.token;
-		for (let i = 0; i < 3; i++) await addLiveBot('cheese-thief', created.code, host);
-		await cheese.startGame(created.code, host);
+		for (let i = 0; i < 3; i++) await addLiveBot('cheese-thief', code, host);
+		await cheese.startGame(code, host);
 
-		await settleBots('cheese-thief', created.code);
+		await settleBots('cheese-thief', code);
+		expect(await botsWaitingOn(code, 'hasMemorizedRole')).toEqual([]);
+		expect((await cheese.getScopedState(code, host)).phase).toBe('deal');
 
-		const room = await CheeseRoom.findOne({ code: created.code }).lean();
-		const waiting = room!.players.filter((player) => !player.hasMemorizedRole);
-		expect(waiting.map((player) => player.name)).toEqual(['Khánh']);
-		expect(room!.phase).toBe('deal');
+		const hostDice = (await CheeseRoom.findOne({ code }).lean())!.players.find(
+			(player) => player.token === host,
+		)!.dice;
+		await cheese.confirmMemorized(code, host, hostDice.length === 2 ? hostDice[0] : undefined);
+		await cheese.beginNight(code, host);
+		await rewind(code, 'nightStartedAt', 80_000);
+		expect((await cheese.getScopedState(code, host)).phase).toBe('secret');
+
+		await rewind(code, 'secretStartedAt', 20_000);
+		await settleBots('cheese-thief', code);
+		expect(await botsWaitingOn(code, 'secretConfirmed')).toEqual([]);
+		const mine = (await cheese.getScopedState(code, host)).self!.id;
+		const others = (await CheeseRoom.findOne({ code }).lean())!.players
+			.map((player) => player.id)
+			.filter((id) => id !== mine);
+		const choiceCount = (await cheese.getScopedState(code, host)).choiceCount ?? 1;
+		await cheese.submitSecret(code, host, others.slice(0, choiceCount));
+		expect((await cheese.getScopedState(code, host)).phase).toBe('secret-result');
+
+		await settleBots('cheese-thief', code);
+		expect(await botsWaitingOn(code, 'hasSeenSecret')).toEqual([]);
+		await cheese.markSecretSeen(code, host);
+		expect((await cheese.getScopedState(code, host)).phase).toBe('day');
+
+		await cheese.startVote(code, host);
+		await settleBots('cheese-thief', code);
+		expect(await botsWaitingOn(code, 'voteId')).toEqual([]);
 	});
 });

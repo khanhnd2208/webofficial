@@ -60,6 +60,7 @@ export const errorsVi: MessageTree = {
 	TEST_ROOM_PRIVATE: 'Đây là phòng test với bot, chỉ admin tạo phòng mới mở được.',
 	BOT_ADMIN_ONLY: 'Chỉ admin đang đăng nhập mới thêm hoặc bớt bot được.',
 	BOT_LOBBY_ONLY: 'Chỉ thêm hoặc bớt bot khi phòng đang chờ, trước khi bắt đầu.',
+	BOT_NOT_SEATED: 'Chưa thêm được bot vì phòng vừa thay đổi. Hãy thử lại.',
 };
 
 export const errorsEn: MessageTree = {
@@ -76,6 +77,7 @@ export const errorsEn: MessageTree = {
 	TEST_ROOM_PRIVATE: 'This is a bot test room; only the admin who made it can open it.',
 	BOT_ADMIN_ONLY: 'Only a signed-in admin can add or remove bots.',
 	BOT_LOBBY_ONLY: 'Bots can only be added or removed in the lobby, before the game starts.',
+	BOT_NOT_SEATED: 'The room changed before the bot could sit down. Try again.',
 	PLAYER_NAME_REQUIRED: 'Player name is required',
 	ROOM_NAME_REQUIRED: 'Room name is required',
 	ROOM_NAME_TOO_LONG: 'Room name must be at most {max} characters',
