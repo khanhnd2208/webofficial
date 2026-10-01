@@ -86,16 +86,22 @@ describe('public learning proxy', () => {
 		expect(proxy(request(pathname)).headers.get('x-middleware-next')).toBe('1');
 	});
 
-	it.each(['/admin/my-class', '/admin/teaching', '/messages', '/my-space/teaching'])(
-		'passes admin chrome path %s through and records the pathname',
-		(pathname) => {
-			productionFlags('false', 'false');
+	it.each([
+		'/admin/my-class',
+		'/admin/teaching',
+		'/messages',
+		'/my-space/teaching',
+		'/my-space/courses/itm',
+		'/khoa-hoc/hrm',
+	])('passes signed-in path %s through and hands the pathname to the page', (pathname) => {
+		productionFlags('false', 'false');
 
-			expect(matches(pathname)).toBe(true);
-			expect(getLockedPublicLearningFeature(pathname)).toBeNull();
-			const response = proxy(request(pathname));
-			expect(response.headers.get('x-middleware-next')).toBe('1');
-			expect(response.headers.get('x-pathname')).toBe(pathname);
-		},
-	);
+		expect(matches(pathname)).toBe(true);
+		expect(getLockedPublicLearningFeature(pathname)).toBeNull();
+		const response = proxy(request(pathname));
+		expect(response.headers.get('x-middleware-next')).toBe('1');
+		// A request header (not a response one), so layouts can read it with headers().
+		expect(response.headers.get('x-middleware-request-x-pathname')).toBe(pathname);
+		expect(response.headers.get('x-middleware-override-headers')).toContain('x-pathname');
+	});
 });

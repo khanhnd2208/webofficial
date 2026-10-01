@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
+import SiteAuthChip from '@/components/site/SiteAuthChip';
+import LiveBotControls from '@/features/board-game-bots/LiveBotControls';
 import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import ConnectionBanner from '@/features/board-game-shared/components/ConnectionBanner';
@@ -272,6 +274,7 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 						<p className="font-mono text-[11px] tracking-widest text-muted">{state.code}</p>
 					</div>
 					<PrefsToggleGroup />
+					<SiteAuthChip variant="badge" showSignIn={false} />
 				</header>
 
 				<ConnectionBanner error={error ?? joinError} onRetry={() => void refresh()} />
@@ -279,6 +282,15 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 				{state.isHost && state.phase === 'lobby' ? (
 					<div className="space-y-8">
 						<InviteCard code={state.code} />
+						{adminTest ? null : (
+							<LiveBotControls
+								game="ma-soi"
+								code={state.code}
+								hostToken={playerToken}
+								full={state.playerCount >= state.maxPlayers}
+								onChanged={refresh}
+							/>
+						)}
 						<PlayerList
 							state={state}
 							selfToken={null}

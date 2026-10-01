@@ -47,6 +47,8 @@ export interface PlayerPublicDTO {
 	hasMemorizedRole: boolean;
 	isHost: boolean;
 	isEliminated: boolean;
+	/** A seat an admin filled with a bot; it acts on its own and never becomes host. */
+	isBot?: boolean;
 	/** Set during vote: whether this player has cast a ballot. Never who they voted for. */
 	hasVoted?: boolean;
 	/** Visible once eliminated, and for everyone on the result screen. */

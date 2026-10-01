@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import SiteAuthChip from '@/components/site/SiteAuthChip';
 import { routes } from '@/config/routes';
+import LiveBotControls from '@/features/board-game-bots/LiveBotControls';
 import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import { useCheeseThiefRoom } from '@/features/cheese-thief/components/hooks/useCheeseThiefRoom';
@@ -54,7 +56,7 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 	const [busy, setBusy] = useState(false);
 	const [actionError, setActionError] = useState<string | null>(null);
 
-	const { state, error, loading, fetchedAt, api } = useCheeseThiefRoom({
+	const { state, error, loading, fetchedAt, api, refresh } = useCheeseThiefRoom({
 		code,
 		playerToken: adminTest ? TEST_VIEWER_TOKEN : playerToken,
 		onTokenReceived: setPlayerToken,
@@ -190,12 +192,24 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 						>
 							{t('cheese.join.back')}
 						</button>
+						<SiteAuthChip variant="badge" showSignIn={false} />
 					</header>
 				)}
 			<main className="mx-auto max-w-md px-5 py-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
 				{actionError && phase !== 'night' && (
 					<p className="mb-4 text-sm text-danger">{actionError}</p>
 				)}
+				{phase === 'lobby' && state.isHost && !adminTest ? (
+					<div className="mb-4">
+						<LiveBotControls
+							game="cheese-thief"
+							code={state.code}
+							hostToken={playerToken}
+							full={state.players.length >= state.maxPlayers}
+							onChanged={refresh}
+						/>
+					</div>
+				) : null}
 				{phase === 'lobby' && (
 					<LobbyPhase
 						state={state}

@@ -3,6 +3,7 @@
 import type { SpyCount } from '@/features/spy-fall/config/spyGame';
 import type { GamePhase } from '@/features/spy-fall/types/spyGame';
 
+import SiteAuthChip from '@/components/site/SiteAuthChip';
 import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { cn } from '@/features/board-game-shared/lib/cn';
@@ -82,6 +83,7 @@ export default function GameShell({
 							</button>
 						) : null}
 						<PrefsToggleGroup />
+						<SiteAuthChip variant="badge" showSignIn={false} />
 					</div>
 					{inGame ? (
 						<PhaseTracker current={phase} showReveal={spyCount > 1} className="mt-2" />

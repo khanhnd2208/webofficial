@@ -33,7 +33,7 @@ test.describe('Editorial premium public experience', () => {
 		expect(introBox!.x + introBox!.width / 2).toBeLessThan(250);
 	});
 
-	test('routes visitors from intro through My Space to Teaching', async ({ page }) => {
+	test('routes visitors from intro through My Space to Courses', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
@@ -42,8 +42,9 @@ test.describe('Editorial premium public experience', () => {
 		await expect(about.getByRole('link')).toHaveCount(1);
 
 		await expect(page.getByTestId('gate-item-experiences')).toHaveCount(0);
-		await page.getByTestId('myspace-tile-teaching').click();
-		await expect(page).toHaveURL(/\/dang-nhap|\/my-space\/teaching/);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
+		await page.getByTestId('myspace-tile-courses').click();
+		await expect(page).toHaveURL(/\/dang-nhap\?from=%2Fkhoa-hoc/);
 	});
 
 	test('collaboration remains condensed with details available on demand', async ({ page }) => {

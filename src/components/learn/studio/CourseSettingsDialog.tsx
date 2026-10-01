@@ -128,7 +128,7 @@ export default function CourseSettingsDialog({
 				<label>
 					<span>Đường dẫn</span>
 					<span className="ln-affix ln-affix--wide">
-						/my-space/courses/
+						/khoa-hoc/
 						<input
 							value={draft.slug}
 							maxLength={180}

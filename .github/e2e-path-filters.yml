@@ -11,6 +11,7 @@ boardgame:
   - src/features/werewolf/**
   - src/features/spy-fall/**
   - src/features/board-game-test/**
+  - src/features/board-game-bots/**
   - src/app/my-space/board-game/**
   - src/app/api/cheese-thief/**
   - src/app/api/ma-soi/**

@@ -39,18 +39,56 @@ test.describe('Sign-in returns to where it started', () => {
 		// Google's round trip ends with a full load of the `from` page, now signed in.
 		await addAdminSession(context);
 		await page.goto(PAGE);
-		await expect(page.getByTestId('site-auth-chip')).toHaveText('Teaching');
+		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute('data-auth-state', 'admin');
+		await expect(page.getByTestId('site-auth-chip')).toContainText('Admin');
 		await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(y);
 		expect(await page.evaluate(() => sessionStorage.getItem('auth:return-position'))).toBeNull();
 	});
 
-	test('a signed-in admin is never pushed to Teaching without a reason', async ({
+	test('opening the login page directly while signed in says so instead of bouncing away', async ({
 		page,
 		context,
 	}) => {
 		await addAdminSession(context);
 		await page.goto('/dang-nhap');
-		await expect(page).toHaveURL(/\/$/);
+		await expect(page).toHaveURL(/\/dang-nhap$/);
+		await expect(page.getByTestId('login-signed-in')).toContainText('quyền admin');
+		await expect(page.getByTestId('login-continue')).toHaveAttribute('href', '/muc-luc');
+
+		// With a destination (a gate or a retry) it goes straight on.
+		await page.goto('/dang-nhap?from=%2Fgioi-thieu');
+		await expect(page).toHaveURL(/\/gioi-thieu$/);
+	});
+
+	test('pages from before sign-in show the account when reached with Back', async ({
+		page,
+		context,
+	}) => {
+		await page.goto('/gioi-thieu');
+		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute(
+			'data-auth-state',
+			'signed-out',
+		);
+		await page.goto('/lien-he');
+		await addStudentSession(context);
+		await page.goBack();
+		await expect(page).toHaveURL(/\/gioi-thieu$/);
+		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute(
+			'data-auth-state',
+			'signed-in',
+		);
+	});
+
+	test('the account menu signs out and stays on a public page', async ({ page, context }) => {
+		await addStudentSession(context);
+		await page.goto('/gioi-thieu');
+		await page.getByTestId('site-auth-chip').click();
+		await page.getByTestId('site-sign-out').click();
+		await expect(page).toHaveURL(/\/gioi-thieu$/);
+		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute(
+			'data-auth-state',
+			'signed-out',
+		);
 	});
 
 	test('a retry after a failed sign-in keeps the original destination', async ({

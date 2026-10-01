@@ -1,4 +1,4 @@
-/** My Space hub — the two learning workspaces currently in operation. */
+/** My Space hub — Teaching (admins), Courses and Board Game. */
 
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/types/user';
@@ -29,6 +29,8 @@ export interface MySpaceTile {
 	visual: MySpaceTileVisual;
 	status: MySpaceTileStatus;
 	href?: string;
+	/** Only admins can open it, so nobody else sees it (they would only hit a wall). */
+	adminOnly?: boolean;
 }
 
 export const mySpacePage = {
@@ -50,6 +52,7 @@ export const mySpaceTiles: MySpaceTile[] = [
 		},
 		status: 'published',
 		href: routes.mySpaceTeaching,
+		adminOnly: true,
 	},
 	{
 		id: 'courses',
@@ -91,5 +94,5 @@ export function getMySpaceTiles(role?: UserRole | null): MySpaceTile[] {
 	if (role === 'admin') {
 		return [...mySpaceTiles, mySpaceAdminTile];
 	}
-	return mySpaceTiles;
+	return mySpaceTiles.filter((tile) => !tile.adminOnly);
 }

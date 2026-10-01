@@ -37,18 +37,12 @@ test.describe('archived public learning surfaces', () => {
 		}
 	});
 
-	test('keeps a focused My Space hub with Teaching', async ({ page }) => {
+	test('keeps a focused My Space hub of Courses and Board Game', async ({ page }) => {
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(3);
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
-			'href',
-			'/my-space/teaching',
-		);
-		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute(
-			'href',
-			'/my-space/courses',
-		);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
+		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute('href', '/khoa-hoc');
 		await expect(page.getByTestId('myspace-tile-board-game')).toHaveAttribute(
 			'href',
 			'/my-space/board-game',

@@ -1,7 +1,7 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function GoogleIcon({ className }: { className?: string }) {
 	return (
@@ -36,6 +36,15 @@ export default function SignInWithGoogleButton({
 }) {
 	const [loading, setLoading] = useState(false);
 	const destination = redirectTo ?? callbackUrl ?? '/tai-khoan';
+
+	// Coming Back from Google restores this page from memory with the button still waiting.
+	useEffect(() => {
+		const reset = (event: PageTransitionEvent) => {
+			if (event.persisted) setLoading(false);
+		};
+		window.addEventListener('pageshow', reset);
+		return () => window.removeEventListener('pageshow', reset);
+	}, []);
 
 	const handleSignIn = async () => {
 		setLoading(true);

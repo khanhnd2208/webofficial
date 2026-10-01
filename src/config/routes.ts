@@ -69,12 +69,16 @@ export const routes = {
 	myClassTest: (courseSlug: string, testSlug: string) =>
 		`/my-space/my-class/${courseSlug}/tests/${testSlug}` as const,
 	myClassProgress: '/my-space/my-class/progress',
-	/** Self-paced courses: catalog, reader and admin studio. */
-	learnCourses: '/my-space/courses',
+	/**
+	 * Self-paced courses: catalog, reader and admin studio. `/khoa-hoc/*` is served by the
+	 * `/my-space/courses/*` pages (see LEARN_COURSE_ALIASES), so links shared before the rename
+	 * keep opening the same, current course.
+	 */
+	learnCourses: '/khoa-hoc',
 	learnCourse: (slug: string, sectionId?: string | null) =>
-		`/my-space/courses/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
+		`/khoa-hoc/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	learnStudio: (slug: string, sectionId?: string | null) =>
-		`/my-space/courses/${slug}/studio${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
+		`/khoa-hoc/${slug}/studio${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	mySpaceTeaching: '/my-space/teaching',
 	mySpaceTeachingNew: '/my-space/teaching/new',
 	mySpaceTeachingCourseNewClass: (courseId: string) =>
@@ -258,6 +262,16 @@ export const routes = {
 	},
 } as const;
 
+/**
+ * Short course URLs. Both spellings render the same pages: `/khoa-hoc/...` is rewritten to the
+ * `/my-space/courses/...` route files, and the old `/my-space/courses/...` links keep working
+ * untouched, so links already handed to students never break.
+ */
+export const LEARN_COURSE_ALIASES: ReadonlyArray<{ source: string; destination: string }> = [
+	{ source: '/khoa-hoc', destination: '/my-space/courses' },
+	{ source: '/khoa-hoc/:path*', destination: '/my-space/courses/:path*' },
+];
+
 /** Legacy paths kept only for permanent redirects in next.config. */
 export const legacyRoutes = {
 	blog: '/blog',
@@ -271,7 +285,8 @@ export const legacyRoutes = {
 
 /**
  * Permanent redirect map for retired marketing URLs.
- * Legacy hubs point directly to their replacement sections.
+ * Legacy hubs point directly to their replacement sections; hubs with no replacement land on
+ * Mục lục (the site map), not the intro cover, so an old link never strands a visitor.
  * Lab/course detail URLs stay reachable (noindex) via /archive; only hubs redirect.
  */
 export const PUBLIC_REDIRECTS: ReadonlyArray<{
@@ -304,18 +319,18 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	{ source: '/giang-day', destination: routes.aboutServices, permanent: true },
 	{ source: '/goc-cua-khanh', destination: routes.aboutProjects, permanent: true },
 	{ source: '/goc-cua-khanh/:path*', destination: routes.aboutProjects, permanent: true },
-	{ source: '/bai-viet', destination: '/ghi-chep', permanent: true },
-	{ source: '/bai-viet/:path*', destination: '/ghi-chep', permanent: true },
+	{ source: '/bai-viet', destination: routes.toc, permanent: true },
+	{ source: '/bai-viet/:path*', destination: routes.toc, permanent: true },
 	{
 		source: '/du-an/moonie-cafe-business-development',
 		destination: '/du-an/learning-at-moonie-cafe',
 		permanent: true,
 	},
-	{ source: '/phat-trien-ban-than', destination: '/', permanent: true },
-	{ source: '/phat-trien-ban-than/:path*', destination: '/', permanent: true },
-	{ source: '/archive', destination: '/', permanent: true },
-	{ source: '/hoc', destination: '/', permanent: true },
-	{ source: '/hoc/chuong-trinh', destination: '/', permanent: true },
+	{ source: '/phat-trien-ban-than', destination: routes.toc, permanent: true },
+	{ source: '/phat-trien-ban-than/:path*', destination: routes.toc, permanent: true },
+	{ source: '/archive', destination: routes.toc, permanent: true },
+	{ source: '/hoc', destination: routes.toc, permanent: true },
+	{ source: '/hoc/chuong-trinh', destination: routes.toc, permanent: true },
 ];
 
 export type PublicRoute =

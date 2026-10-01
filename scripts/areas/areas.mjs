@@ -23,7 +23,14 @@
 export const AREAS = {
 	boardgame: {
 		title: 'Boardgame',
-		features: ['board-game-shared', 'cheese-thief', 'werewolf', 'spy-fall', 'board-game-test'],
+		features: [
+			'board-game-shared',
+			'cheese-thief',
+			'werewolf',
+			'spy-fall',
+			'board-game-test',
+			'board-game-bots',
+		],
 		components: [],
 		paths: [
 			'src/app/my-space/board-game',

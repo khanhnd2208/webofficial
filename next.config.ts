@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 import { buildContentSecurityPolicy } from './src/config/contentSecurityPolicy';
-import { PUBLIC_REDIRECTS } from './src/config/routes';
+import { LEARN_COURSE_ALIASES, PUBLIC_REDIRECTS } from './src/config/routes';
 
 const nextConfig: NextConfig = {
 	poweredByHeader: false,
@@ -64,11 +64,14 @@ const nextConfig: NextConfig = {
 			},
 		],
 	},
+	async rewrites() {
+		return [...LEARN_COURSE_ALIASES];
+	},
 	async redirects() {
 		return [
-			// Blog → Bài viết (permanent, SEO)
-			{ source: '/blog', destination: '/', permanent: true },
-			{ source: '/blog/:path*', destination: '/', permanent: true },
+			// Blog is retired; old links land on Mục lục.
+			{ source: '/blog', destination: '/muc-luc', permanent: true },
+			{ source: '/blog/:path*', destination: '/muc-luc', permanent: true },
 
 			// Auth & account renames
 			{ source: '/login', destination: '/dang-nhap', permanent: true },
