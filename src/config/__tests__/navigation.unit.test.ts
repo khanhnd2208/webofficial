@@ -150,12 +150,12 @@ describe('redirect map', () => {
 		expect(bySource['/case-study']).toBe(routes.aboutProjects);
 		expect(bySource['/giang-day']).toBe(routes.aboutServices);
 		expect(bySource['/goc-cua-khanh']).toBe(routes.aboutProjects);
-		expect(bySource['/bai-viet']).toBe('/ghi-chep');
+		expect(bySource['/bai-viet']).toBe(routes.toc);
 		expect(bySource['/du-an/moonie-cafe-business-development']).toBe(
 			'/du-an/learning-at-moonie-cafe',
 		);
-		expect(bySource['/hoc']).toBe('/');
-		expect(bySource['/hoc/chuong-trinh']).toBe('/');
+		expect(bySource['/hoc']).toBe(routes.toc);
+		expect(bySource['/hoc/chuong-trinh']).toBe(routes.toc);
 	});
 });
 

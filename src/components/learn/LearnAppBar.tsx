@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import SiteAuthChip from '@/components/site/SiteAuthChip';
 import { routes } from '@/config/routes';
 
 import { LearnIcon } from './LearnIcon';
@@ -36,9 +37,10 @@ export default function LearnAppBar({
 				</nav>
 				<div className="ln-appbar__actions">
 					{actions}
-					<Link href={routes.mySpace} className="ln-btn ln-btn--ghost ln-btn--sm">
-						My Space
+					<Link href={routes.toc} className="ln-btn ln-btn--ghost ln-btn--sm">
+						Mục lục
 					</Link>
+					<SiteAuthChip variant="bar" />
 				</div>
 			</div>
 		</header>

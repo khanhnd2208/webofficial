@@ -69,9 +69,9 @@ const nextConfig: NextConfig = {
 	},
 	async redirects() {
 		return [
-			// Blog → Bài viết (permanent, SEO)
-			{ source: '/blog', destination: '/', permanent: true },
-			{ source: '/blog/:path*', destination: '/', permanent: true },
+			// Blog is retired; old links land on Mục lục.
+			{ source: '/blog', destination: '/muc-luc', permanent: true },
+			{ source: '/blog/:path*', destination: '/muc-luc', permanent: true },
 
 			// Auth & account renames
 			{ source: '/login', destination: '/dang-nhap', permanent: true },

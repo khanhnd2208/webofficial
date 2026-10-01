@@ -285,7 +285,8 @@ export const legacyRoutes = {
 
 /**
  * Permanent redirect map for retired marketing URLs.
- * Legacy hubs point directly to their replacement sections.
+ * Legacy hubs point directly to their replacement sections; hubs with no replacement land on
+ * Mục lục (the site map), not the intro cover, so an old link never strands a visitor.
  * Lab/course detail URLs stay reachable (noindex) via /archive; only hubs redirect.
  */
 export const PUBLIC_REDIRECTS: ReadonlyArray<{
@@ -318,18 +319,18 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	{ source: '/giang-day', destination: routes.aboutServices, permanent: true },
 	{ source: '/goc-cua-khanh', destination: routes.aboutProjects, permanent: true },
 	{ source: '/goc-cua-khanh/:path*', destination: routes.aboutProjects, permanent: true },
-	{ source: '/bai-viet', destination: '/ghi-chep', permanent: true },
-	{ source: '/bai-viet/:path*', destination: '/ghi-chep', permanent: true },
+	{ source: '/bai-viet', destination: routes.toc, permanent: true },
+	{ source: '/bai-viet/:path*', destination: routes.toc, permanent: true },
 	{
 		source: '/du-an/moonie-cafe-business-development',
 		destination: '/du-an/learning-at-moonie-cafe',
 		permanent: true,
 	},
-	{ source: '/phat-trien-ban-than', destination: '/', permanent: true },
-	{ source: '/phat-trien-ban-than/:path*', destination: '/', permanent: true },
-	{ source: '/archive', destination: '/', permanent: true },
-	{ source: '/hoc', destination: '/', permanent: true },
-	{ source: '/hoc/chuong-trinh', destination: '/', permanent: true },
+	{ source: '/phat-trien-ban-than', destination: routes.toc, permanent: true },
+	{ source: '/phat-trien-ban-than/:path*', destination: routes.toc, permanent: true },
+	{ source: '/archive', destination: routes.toc, permanent: true },
+	{ source: '/hoc', destination: routes.toc, permanent: true },
+	{ source: '/hoc/chuong-trinh', destination: routes.toc, permanent: true },
 ];
 
 export type PublicRoute =
