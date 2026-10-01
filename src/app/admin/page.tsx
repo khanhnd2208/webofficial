@@ -56,7 +56,7 @@ export default async function AdminHomePage() {
 					{recent.items.length ? (
 						<div className={styles.queue}>
 							{recent.items.map((item) => (
-								<Link key={item.id} href={`${routes.admin.inquiries}/${item.id}`}>
+								<Link key={item.id} href={`${routes.admin.inquiries}/${item.id}?status=NEW`}>
 									<span className="font-semibold">
 										{item.name}
 										<span className={styles.meta}>

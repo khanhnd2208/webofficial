@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 import dbConnect from '@/lib/dbConnect';
 import { AppError } from '@/lib/appError';
+import { failedNotificationFilter } from '@/services/inquiryFilters';
 import { sendInquiryAdminNotification, sendInquiryEmails } from '@/lib/inquiryEmail';
 import type {
 	CreateInquiryInput,
@@ -257,13 +258,6 @@ export async function createInquiry(
 
 type InquiryListOptions = ListInquiriesQuery & { failedNotification?: boolean };
 
-/** Matches resolveEmailDelivery: a dedicated failed flag, or a legacy emailStatus when the new field is absent. */
-export function failedNotificationFilter(): Record<string, unknown> {
-	return {
-		$or: [{ adminEmailStatus: 'failed' }, { adminEmailStatus: null, emailStatus: 'failed' }],
-	};
-}
-
 function inquiryMatch(query: Partial<InquiryListOptions>): Record<string, unknown> {
 	const filter: Record<string, unknown> = {};
 	const clauses: Record<string, unknown>[] = [];
@@ -299,10 +293,17 @@ function inquiryMatch(query: Partial<InquiryListOptions>): Record<string, unknow
 export async function countInquiriesByStatus(query: {
 	search?: string;
 	inquiryType?: IInquiry['inquiryType'];
+	failedNotification?: boolean;
 }): Promise<{ all: number; byStatus: Record<InquiryStatus, number> }> {
 	await dbConnect();
 	const rows = await Inquiry.aggregate<{ _id: InquiryStatus; count: number }>([
-		{ $match: inquiryMatch({ search: query.search, inquiryType: query.inquiryType }) },
+		{
+			$match: inquiryMatch({
+				search: query.search,
+				inquiryType: query.inquiryType,
+				failedNotification: query.failedNotification,
+			}),
+		},
 		{ $group: { _id: '$status', count: { $sum: 1 } } },
 	]);
 	const byStatus = {

@@ -46,7 +46,7 @@ export default async function AdminInquiriesPage({
 	};
 	const [result, counts] = await Promise.all([
 		listInquiries({ page: requestedPage, limit: 20, ...filter }),
-		countInquiriesByStatus({ search, inquiryType }),
+		countInquiriesByStatus({ search, inquiryType, failedNotification }),
 	]);
 	if (requestedPage > result.totalPages) {
 		redirect(inquiryListHref(sp, result.totalPages));
@@ -74,6 +74,14 @@ export default async function AdminInquiriesPage({
 			/>
 			<div className={styles.stack}>
 				<InquiryStatusChips query={sp} counts={counts} />
+				{failedNotification ? (
+					<p className={styles.alert} role="status">
+						<span className="font-semibold">Chỉ hiện liên hệ có thông báo gửi lỗi</span>
+						<AdminLink href={inquiryListHref({ ...sp, notice: undefined }, 1)} tone="secondary">
+							Bỏ lọc này
+						</AdminLink>
+					</p>
+				) : null}
 				<form className={styles.toolbar} method="get" action={routes.admin.inquiries}>
 					{status ? <input type="hidden" name="status" value={status} /> : null}
 					{failedNotification ? <input type="hidden" name="notice" value="failed" /> : null}

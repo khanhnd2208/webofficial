@@ -142,6 +142,19 @@ describe('inquiryService delivery compatibility', () => {
 		expect(counts.byStatus.CLOSED).toBe(0);
 	});
 
+	it('counts only failed notifications, including legacy rows, when that filter is on', async () => {
+		await Inquiry.collection.insertMany([
+			baseDocument({ email: 'failed@example.com', status: 'NEW', adminEmailStatus: 'failed' }),
+			baseDocument({ email: 'legacy@example.com', status: 'CLOSED', emailStatus: 'failed' }),
+			baseDocument({ email: 'sent@example.com', status: 'NEW', adminEmailStatus: 'sent' }),
+		]);
+
+		const counts = await countInquiriesByStatus({ failedNotification: true });
+		expect(counts.all).toBe(2);
+		expect(counts.byStatus.NEW).toBe(1);
+		expect(counts.byStatus.CLOSED).toBe(1);
+	});
+
 	it('finds the newer and older inquiry inside the same filter, including the ends', async () => {
 		const older = await Inquiry.collection.insertOne(
 			baseDocument({

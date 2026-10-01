@@ -164,4 +164,52 @@ describe('inquiry actions', () => {
 		fireEvent.click(screen.getByRole('link', { name: 'Rời trang' }));
 		expect(screen.getByRole('dialog', { name: 'Thay đổi chưa lưu' })).toBeInTheDocument();
 	});
+	it('does not intercept mailto links while notes are unsaved', () => {
+		render(
+			<>
+				<a href="mailto:a@example.test">Trả lời</a>
+				<InquiryAdminActions {...props} />
+			</>,
+		);
+		fireEvent.change(screen.getByRole('textbox', { name: 'Ghi chú nội bộ' }), {
+			target: { value: 'Chưa lưu' },
+		});
+		fireEvent.click(screen.getByRole('link', { name: 'Trả lời' }));
+		expect(screen.queryByRole('dialog', { name: 'Thay đổi chưa lưu' })).not.toBeInTheDocument();
+	});
+	it('reports a retry that still failed instead of claiming success', async () => {
+		mocks.fetch.mockResolvedValueOnce({ adminEmailStatus: 'failed' });
+		render(<InquiryAdminActions {...props} adminEmailStatus="failed" />);
+		fireEvent.click(screen.getByRole('button', { name: 'Gửi lại thông báo' }));
+		expect(await screen.findByRole('alert')).toHaveTextContent('Gửi lại vẫn chưa thành công');
+		expect(screen.queryByText('Đã gửi lại thông báo.')).not.toBeInTheDocument();
+	});
+	it('confirms a successful retry', async () => {
+		mocks.fetch.mockResolvedValueOnce({ adminEmailStatus: 'sent' });
+		render(<InquiryAdminActions {...props} adminEmailStatus="failed" />);
+		fireEvent.click(screen.getByRole('button', { name: 'Gửi lại thông báo' }));
+		await screen.findByText('Đã gửi lại thông báo.');
+	});
+	it('keeps a typed history note when a suggested status is chosen', async () => {
+		render(<InquiryAdminActions {...props} currentStatus="REVIEWING" />);
+		fireEvent.change(screen.getByRole('textbox', { name: 'Ghi chú lịch sử (tùy chọn)' }), {
+			target: { value: 'Đã gọi điện' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Phù hợp' }));
+		await screen.findByText('Đã chuyển sang Phù hợp.');
+		expect(mocks.fetch).toHaveBeenCalledWith('/api/admin/inquiries/contact-1', {
+			method: 'PATCH',
+			body: JSON.stringify({ status: 'QUALIFIED', statusNote: 'Đã gọi điện' }),
+		});
+	});
+	it('shows a notes save failure next to the notes field', async () => {
+		mocks.fetch.mockRejectedValueOnce(new Error('Mất kết nối'));
+		render(<InquiryAdminActions {...props} />);
+		fireEvent.change(screen.getByRole('textbox', { name: 'Ghi chú nội bộ' }), {
+			target: { value: 'Bản nháp' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Lưu ghi chú' }));
+		expect(await screen.findByRole('alert')).toHaveTextContent('Mất kết nối');
+		expect(screen.getByRole('textbox', { name: 'Ghi chú nội bộ' })).toHaveValue('Bản nháp');
+	});
 });

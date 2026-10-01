@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -44,7 +43,7 @@ export default async function AdminInquiryDetailPage({
 		inquiryType: INQUIRY_TYPES.includes(query.inquiryType as InquiryType)
 			? (query.inquiryType as InquiryType)
 			: undefined,
-		search: query.search,
+		search: query.search?.trim() || undefined,
 		failedNotification: query.notice === 'failed',
 	});
 	const detailHref = (target: string) =>
@@ -96,9 +95,9 @@ export default async function AdminInquiryDetailPage({
 					</span>
 				)}
 				{adjacent.nextId ? (
-					<Link href={detailHref(adjacent.nextId)} className={`${styles.button} ${styles.quiet}`}>
-						Sau
-					</Link>
+					<AdminLink href={detailHref(adjacent.nextId)} tone="quiet">
+						Sau <span aria-hidden="true">→</span>
+					</AdminLink>
 				) : (
 					<span className={`${styles.button} ${styles.quiet}`} aria-disabled="true">
 						Sau

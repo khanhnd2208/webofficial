@@ -7,6 +7,7 @@
 import { prisma } from '@/lib/prisma';
 import dbConnect from '@/lib/dbConnect';
 import Inquiry from '@/models/Inquiry';
+import { failedNotificationFilter } from '@/services/inquiryFilters';
 
 export interface AdminOverviewStats {
 	website: {
@@ -35,9 +36,5 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 
 export async function countFailedNotifications(): Promise<number> {
 	await dbConnect();
-	// Same rule as failedNotificationFilter in inquiryService: a dedicated failed
-	// flag wins, and a missing flag falls back to the legacy emailStatus.
-	return Inquiry.countDocuments({
-		$or: [{ adminEmailStatus: 'failed' }, { adminEmailStatus: null, emailStatus: 'failed' }],
-	});
+	return Inquiry.countDocuments(failedNotificationFilter());
 }

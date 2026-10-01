@@ -44,7 +44,13 @@ type Props = {
 };
 
 export function CopyEmailButton({ email }: { email: string }) {
-	const [copied, setCopied] = useState(false);
+	const [result, setResult] = useState<'copied' | 'failed' | null>(null);
+	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	function show(next: 'copied' | 'failed') {
+		setResult(next);
+		if (timer.current) clearTimeout(timer.current);
+		timer.current = setTimeout(() => setResult(null), 2500);
+	}
 	return (
 		<span className="inline-flex items-center gap-2">
 			<AdminButton
@@ -52,14 +58,24 @@ export function CopyEmailButton({ email }: { email: string }) {
 				tone="secondary"
 				icon="copy"
 				onClick={() => {
-					void navigator.clipboard.writeText(email).then(() => {
-						setCopied(true);
-					});
+					// Clipboard access can be denied (insecure origin, browser policy).
+					Promise.resolve()
+						.then(() => navigator.clipboard.writeText(email))
+						.then(
+							() => show('copied'),
+							() => show('failed'),
+						);
 				}}
 			>
 				Sao chép email
 			</AdminButton>
-			{copied ? <span role="status">Đã sao chép</span> : null}
+			<span role="status" className={styles.meta}>
+				{result === 'copied'
+					? 'Đã sao chép'
+					: result === 'failed'
+						? 'Không sao chép được, hãy chọn email ở trên'
+						: ''}
+			</span>
 		</span>
 	);
 }
@@ -84,6 +100,7 @@ export default function InquiryAdminActions({
 	const [savedNotes, setSavedNotes] = useState(initialNotes);
 	const [error, setError] = useState<string | null>(null);
 	const [messageText, setMessageText] = useState<string | null>(null);
+	const [notesFeedback, setNotesFeedback] = useState<{ error: boolean; text: string } | null>(null);
 	const [pending, setPending] = useState<string | null>(null);
 	const lock = useRef(false);
 	const { confirm, dialog } = useAdminConfirm();
@@ -92,47 +109,41 @@ export default function InquiryAdminActions({
 	const filledExtras = extras.filter((item) => item.value?.trim());
 	const suggestions = SUGGESTED[savedStatus] ?? [];
 
-	const saveChanges = useCallback(async () => {
+	// The leave guard only protects the notes draft; a status draft is not applied on leave.
+	const saveNotes = useCallback(async () => {
 		if (lock.current) return false;
-		const notesChanged = internalNotes !== savedNotes;
-		const statusChanged = status !== savedStatus || Boolean(note.trim());
-		if (!notesChanged && !statusChanged) return true;
+		if (internalNotes === savedNotes) return true;
 		lock.current = true;
-		setPending(notesChanged ? 'notes' : 'status');
-		setError(null);
+		setPending('notes');
+		setNotesFeedback(null);
 		try {
-			const body: Record<string, unknown> = {};
-			if (notesChanged) body.internalNotes = internalNotes;
-			if (statusChanged) {
-				body.status = status;
-				if (note.trim()) body.statusNote = note.trim();
-			}
 			await adminFetch(`/api/admin/inquiries/${inquiryId}`, {
 				method: 'PATCH',
-				body: JSON.stringify(body),
+				body: JSON.stringify({ internalNotes }),
 			});
-			if (notesChanged) setSavedNotes(internalNotes);
-			if (statusChanged) {
-				setSavedStatus(status);
-				setNote('');
-			}
-			setMessageText('Đã lưu thay đổi.');
+			setSavedNotes(internalNotes);
+			setNotesFeedback({ error: false, text: 'Đã lưu ghi chú.' });
 			router.refresh();
 			return true;
 		} catch (cause) {
-			setError(
-				cause instanceof Error ? cause.message : 'Không thực hiện được thao tác. Hãy thử lại.',
-			);
+			setNotesFeedback({
+				error: true,
+				text:
+					cause instanceof Error
+						? cause.message
+						: 'Không lưu được ghi chú. Nội dung vẫn được giữ lại.',
+			});
 			return false;
 		} finally {
 			lock.current = false;
 			setPending(null);
 		}
-	}, [inquiryId, internalNotes, note, router, savedNotes, savedStatus, status]);
+	}, [inquiryId, internalNotes, router, savedNotes]);
 
+	const isNotesDirty = useCallback(() => internalNotes !== savedNotes, [internalNotes, savedNotes]);
 	const leaveDialog = useLeaveGuard({
-		dirty: () => internalNotes !== savedNotes,
-		save: saveChanges,
+		dirty: isNotesDirty,
+		save: saveNotes,
 		buttonClassName: `${styles.button} ${styles.secondary}`,
 		primaryButtonClassName: `${styles.button} ${styles.primary}`,
 	});
@@ -158,26 +169,30 @@ export default function InquiryAdminActions({
 				router.refresh();
 				return;
 			}
-			await adminFetch(`/api/admin/inquiries/${inquiryId}`, {
-				method: 'PATCH',
-				body: JSON.stringify(body),
-			});
-			if (operation === 'notes') setSavedNotes(internalNotes);
+			const updated = await adminFetch<{ adminEmailStatus?: string }>(
+				`/api/admin/inquiries/${inquiryId}`,
+				{
+					method: 'PATCH',
+					body: JSON.stringify(body),
+				},
+			);
 			if (operation === 'status' || INQUIRY_STATUSES.includes(operation as InquiryStatus)) {
 				const next = (body.status as InquiryStatus) ?? status;
 				setStatus(next);
 				setSavedStatus(next);
 				setNote('');
 			}
-			setMessageText(
-				operation === 'notes'
-					? 'Đã lưu ghi chú.'
-					: operation === 'retry'
+			if (operation === 'retry' && updated?.adminEmailStatus !== 'sent') {
+				setError('Gửi lại vẫn chưa thành công. Lý do mới nhất hiển thị ở mục thông báo.');
+			} else {
+				setMessageText(
+					operation === 'retry'
 						? 'Đã gửi lại thông báo.'
 						: operation === 'status'
 							? 'Đã cập nhật trạng thái.'
 							: `Đã chuyển sang ${INQUIRY_STATUS_LABELS[body.status as InquiryStatus]}.`,
-			);
+				);
+			}
 			router.refresh();
 		} catch (cause) {
 			setError(
@@ -301,7 +316,9 @@ export default function InquiryAdminActions({
 										tone={target === 'CLOSED' ? 'secondary' : 'primary'}
 										pending={pending === target}
 										disabled={Boolean(pending)}
-										onClick={() => void run(target, { status: target })}
+										onClick={() =>
+											void run(target, { status: target, statusNote: note.trim() || undefined })
+										}
 									>
 										{pending === target ? 'Đang chuyển…' : INQUIRY_STATUS_LABELS[target]}
 									</AdminButton>
@@ -361,24 +378,34 @@ export default function InquiryAdminActions({
 								onKeyDown={(event) => {
 									if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
 										event.preventDefault();
-										void run('notes', { internalNotes });
+										if (dirtyNotes) void saveNotes();
 									}
 								}}
 								disabled={Boolean(pending)}
 								rows={5}
 								className={styles.control}
+								aria-describedby={`notes-state-${inquiryId}`}
 							/>
 						</label>
-						<p className={`${styles.meta} my-3`} role="status">
-							{dirtyNotes ? 'Có thay đổi chưa lưu' : 'Ghi chú đã đồng bộ'}
+						<p id={`notes-state-${inquiryId}`} className={`${styles.meta} my-3`}>
+							{dirtyNotes ? 'Có thay đổi chưa lưu · Ctrl/⌘+Enter để lưu' : 'Ghi chú đã lưu'}
 						</p>
+						{notesFeedback ? (
+							<p
+								role={notesFeedback.error ? 'alert' : 'status'}
+								className={`${styles.feedback} mb-3`}
+								data-error={notesFeedback.error ? 'true' : undefined}
+							>
+								{notesFeedback.text}
+							</p>
+						) : null}
 						<AdminButton
 							type="button"
 							tone="secondary"
 							icon="save"
 							pending={pending === 'notes'}
 							disabled={Boolean(pending) || !dirtyNotes}
-							onClick={() => void run('notes', { internalNotes })}
+							onClick={() => void saveNotes()}
 						>
 							{pending === 'notes' ? 'Đang lưu…' : 'Lưu ghi chú'}
 						</AdminButton>

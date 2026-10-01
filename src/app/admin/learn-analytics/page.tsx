@@ -117,22 +117,17 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 								description="Thời gian chỉ được ghi khi một mục học đang mở, tab hiển thị và có hoạt động gần đây."
 							/>
 							<div className={`${styles.chips} mt-4`}>
-								{days !== 90 ? (
-									<Link
-										className={styles.chip}
-										href={`${routes.admin.learnAnalytics}?course=${encodeURIComponent(report.course.slug)}&days=90`}
-									>
-										Xem 90 ngày
-									</Link>
-								) : null}
-								{days !== 365 ? (
-									<Link
-										className={styles.chip}
-										href={`${routes.admin.learnAnalytics}?course=${encodeURIComponent(report.course.slug)}&days=365`}
-									>
-										Xem 365 ngày
-									</Link>
-								) : null}
+								{[90, 365]
+									.filter((value) => value > days)
+									.map((value) => (
+										<Link
+											key={value}
+											className={styles.chip}
+											href={`${routes.admin.learnAnalytics}?course=${encodeURIComponent(report.course.slug)}&days=${value}`}
+										>
+											Xem {value} ngày
+										</Link>
+									))}
 							</div>
 						</div>
 					) : (
