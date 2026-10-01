@@ -54,7 +54,8 @@ export default function SiteAuthChip({
 	const { data: session, status } = useSession();
 	const [open, setOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
-	const menuId = useId();
+	const buttonRef = useRef<HTMLButtonElement>(null);
+	const panelId = useId();
 
 	useEffect(() => {
 		if (!open) return;
@@ -62,7 +63,9 @@ export default function SiteAuthChip({
 			if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
 		}
 		function onKey(event: KeyboardEvent) {
-			if (event.key === 'Escape') setOpen(false);
+			if (event.key !== 'Escape') return;
+			setOpen(false);
+			buttonRef.current?.focus();
 		}
 		document.addEventListener('pointerdown', onPointer);
 		document.addEventListener('keydown', onKey);
@@ -112,14 +115,21 @@ export default function SiteAuthChip({
 	];
 
 	return (
-		<div ref={rootRef} className="relative">
+		<div
+			ref={rootRef}
+			className="relative"
+			onBlur={(event) => {
+				// Tabbing past the last link closes the panel, like any disclosure.
+				if (!rootRef.current?.contains(event.relatedTarget as Node | null)) setOpen(false);
+			}}
+		>
 			<button
+				ref={buttonRef}
 				type="button"
 				data-testid="site-auth-chip"
 				data-auth-state={isAdmin ? 'admin' : 'signed-in'}
-				aria-haspopup="menu"
 				aria-expanded={open}
-				aria-controls={menuId}
+				aria-controls={panelId}
 				aria-label={`Tài khoản ${session.user.name ?? name}${isAdmin ? ' (admin)' : ''}`}
 				onClick={() => setOpen((value) => !value)}
 				className={`${base} gap-2`}
@@ -144,9 +154,9 @@ export default function SiteAuthChip({
 
 			{open ? (
 				<div
-					id={menuId}
-					role="menu"
+					id={panelId}
 					aria-label="Tài khoản"
+					role="group"
 					className="absolute top-full right-0 z-[60] mt-2 w-60 overflow-hidden rounded-xl border border-hairline bg-canvas text-left text-sm tracking-normal text-ink normal-case shadow-[0_12px_32px_rgba(20,18,15,0.14)]"
 				>
 					<div className="border-b border-hairline px-4 py-3">
@@ -160,7 +170,6 @@ export default function SiteAuthChip({
 						{items.map((item) => (
 							<li key={item.href}>
 								<Link
-									role="menuitem"
 									href={item.href}
 									className="block px-4 py-2.5 hover:bg-paper focus-visible:bg-paper focus-visible:outline-none"
 								>
@@ -171,7 +180,6 @@ export default function SiteAuthChip({
 						<li className="border-t border-hairline">
 							<button
 								type="button"
-								role="menuitem"
 								data-testid="site-sign-out"
 								onClick={() => signOut({ redirectTo: afterSignOutPath(currentLocation(pathname)) })}
 								className="block w-full px-4 py-2.5 text-left hover:bg-paper focus-visible:bg-paper focus-visible:outline-none"
