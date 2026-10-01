@@ -18,7 +18,7 @@ test.describe('Teaching admin workspace', () => {
 		await page.getByRole('button', { name: 'Thêm môn' }).click();
 		await page.getByLabel('Mã môn').fill(courseCode);
 		await page.getByLabel('Tên môn').fill(courseName);
-		await page.getByRole('button', { name: 'Lưu' }).click();
+		await page.getByRole('button', { name: 'Lưu', exact: true }).click();
 		await expect(page.getByText(courseCode)).toBeVisible();
 
 		const courses = await page.request.get('/api/admin/teaching/courses');
