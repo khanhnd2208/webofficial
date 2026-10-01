@@ -12,7 +12,7 @@ test.describe('Mobile public smoke', () => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 		await expect(page.getByRole('heading', { level: 1, name: 'Bạn muốn ghé đâu?' })).toBeVisible();
-		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
+		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
 		const about = page.getByRole('region', { name: 'About Me' });
 		await expect(about.getByRole('link')).toHaveCount(1);
 	});
