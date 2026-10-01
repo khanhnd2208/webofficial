@@ -163,11 +163,40 @@ export const INTERNAL_CHROME_PREFIXES = [
 	'/my-space/my-class',
 	'/my-space/teaching',
 	'/my-space/courses',
+	'/khoa-hoc',
 	'/my-space/board-game',
 ] as const;
 
 export function isInternalChromePath(pathname: string): boolean {
 	return INTERNAL_CHROME_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+/** Pages that send a signed-out visitor to the login page. */
+const SIGN_IN_REQUIRED_PREFIXES = [
+	'/admin',
+	'/tai-khoan',
+	'/my-space/teaching',
+	'/my-space/courses',
+	'/khoa-hoc',
+	routes.boardGameTest,
+] as const;
+
+function matchesPrefix(pathname: string, prefix: string): boolean {
+	return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+/**
+ * Where "Đăng xuất" lands: the same page when it stays readable signed out, otherwise Mục lục so
+ * nobody is bounced straight into the login page they just left.
+ */
+export function afterSignOutPath(location: string): string {
+	return isSignInRequiredPath(location) ? routes.toc : location;
+}
+
+/** True when a signed-out visitor opening this path would be sent to the login page. */
+export function isSignInRequiredPath(location: string): boolean {
+	const pathname = location.split(/[?#]/)[0] || routes.home;
+	return SIGN_IN_REQUIRED_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix));
 }
 
 /** Public marketing / utility surfaces that use minimal chrome instead of Navbar. */

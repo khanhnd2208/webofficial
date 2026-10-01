@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 
+import { AdminForbidden } from '@/components/admin/AdminForbidden';
 import { TeachingPopoverRoot } from '@/components/teaching/TeachingPopover';
 import { routes } from '@/config/routes';
 import { auth } from '@/lib/auth';
@@ -8,12 +9,12 @@ import { incomingTeachingPath } from '@/lib/auth/incomingPath';
 
 export default async function MySpaceTeachingLayout({ children }: { children: ReactNode }) {
 	const session = await auth();
+	const from = await incomingTeachingPath();
 	if (!session?.user) {
-		const from = await incomingTeachingPath();
 		redirect(`${routes.login}?from=${encodeURIComponent(from)}`);
 	}
 	if (session.user.role !== 'admin') {
-		redirect(routes.mySpace);
+		return <AdminForbidden area="Teaching" from={from} />;
 	}
 
 	return (

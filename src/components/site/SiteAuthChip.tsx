@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
+import { useEffect, useId, useRef, useState } from 'react';
 
+import { afterSignOutPath } from '@/config/navigation';
 import { routes } from '@/config/routes';
 
 type SiteAuthChipProps = {
-	variant?: 'chrome' | 'intro' | 'introMobile';
+	/**
+	 * `bar` sits inside an app header (courses, games, account), `badge` is the narrow form for
+	 * game rooms; the others float on public pages.
+	 */
+	variant?: 'chrome' | 'intro' | 'introMobile' | 'bar' | 'badge';
 	className?: string;
+	/** False inside a game room: signing in there is never needed, so only show who is signed in. */
+	showSignIn?: boolean;
 };
 
 const variantClass = {
@@ -16,28 +24,164 @@ const variantClass = {
 	intro: 'font-display text-sm tracking-[0.2em] text-ink/70 hover:text-ink focus-visible:text-ink',
 	introMobile:
 		'font-mono text-[0.8125rem] tracking-[0.18em] text-ink-secondary hover:text-ink focus-visible:text-ink',
+	bar: 'text-sm text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
+	badge: 'text-xs text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
 } as const;
 
-export default function SiteAuthChip({ variant = 'chrome', className = '' }: SiteAuthChipProps) {
-	const pathname = usePathname();
-	const { data: session } = useSession();
+/** Vietnamese names end with the given name: "Nguyễn Duy Khánh" → "Khánh". */
+function shortName(name: string | null | undefined, email: string | null | undefined): string {
+	const words = (name ?? '').trim().split(/\s+/).filter(Boolean);
+	if (words.length) return words[words.length - 1]!;
+	return (email ?? 'Tài khoản').split('@')[0]!;
+}
 
-	const signedIn = Boolean(session?.user);
-	const isAdmin = session?.user?.role === 'admin';
-	const href = !signedIn
-		? `${routes.login}?from=${encodeURIComponent(pathname || '/')}`
-		: isAdmin
-			? routes.mySpaceTeaching
-			: routes.account;
-	const label = !signedIn ? 'Đăng nhập' : isAdmin ? 'Teaching' : 'Tài khoản';
+function currentLocation(pathname: string): string {
+	if (typeof window === 'undefined') return pathname || routes.home;
+	return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+}
+
+/**
+ * The one sign-in indicator on the site. Signed out it is a "Đăng nhập" link that returns here;
+ * signed in it names the account, marks admins, and opens a menu with the places an account
+ * unlocks and "Đăng xuất".
+ */
+export default function SiteAuthChip({
+	variant = 'chrome',
+	className = '',
+	showSignIn = true,
+}: SiteAuthChipProps) {
+	const pathname = usePathname() || routes.home;
+	const { data: session, status } = useSession();
+	const [open, setOpen] = useState(false);
+	const rootRef = useRef<HTMLDivElement>(null);
+	const menuId = useId();
+
+	useEffect(() => {
+		if (!open) return;
+		function onPointer(event: PointerEvent) {
+			if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+		}
+		function onKey(event: KeyboardEvent) {
+			if (event.key === 'Escape') setOpen(false);
+		}
+		document.addEventListener('pointerdown', onPointer);
+		document.addEventListener('keydown', onKey);
+		return () => {
+			document.removeEventListener('pointerdown', onPointer);
+			document.removeEventListener('keydown', onKey);
+		};
+	}, [open]);
+
+	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- close on pathname change
+		setOpen(false);
+	}, [pathname]);
+
+	const base = `inline-flex min-h-10 items-center transition-colors duration-300 focus-visible:outline-none ${variantClass[variant]} ${className}`;
+
+	if (status === 'loading') {
+		// Hold the space without flashing "Đăng nhập" at someone who is signed in.
+		return <span aria-hidden="true" className={`${base} invisible`} data-auth-state="loading" />;
+	}
+
+	if (!session?.user) {
+		if (!showSignIn) return null;
+		return (
+			<Link
+				href={`${routes.login}?from=${encodeURIComponent(pathname)}`}
+				data-testid="site-auth-chip"
+				data-auth-state="signed-out"
+				className={base}
+			>
+				Đăng nhập
+			</Link>
+		);
+	}
+
+	const isAdmin = session.user.role === 'admin';
+	const name = shortName(session.user.name, session.user.email);
+	const items: Array<{ href: string; label: string }> = [
+		...(isAdmin
+			? [
+					{ href: routes.mySpaceTeaching, label: 'Teaching' },
+					{ href: routes.admin.home, label: 'Admin Studio' },
+				]
+			: []),
+		{ href: routes.learnCourses, label: 'Khóa học' },
+		{ href: routes.account, label: 'Tài khoản' },
+	];
 
 	return (
-		<Link
-			href={href}
-			data-testid="site-auth-chip"
-			className={`inline-flex min-h-10 items-center transition-colors duration-300 focus-visible:outline-none ${variantClass[variant]} ${className}`}
-		>
-			{label}
-		</Link>
+		<div ref={rootRef} className="relative">
+			<button
+				type="button"
+				data-testid="site-auth-chip"
+				data-auth-state={isAdmin ? 'admin' : 'signed-in'}
+				aria-haspopup="menu"
+				aria-expanded={open}
+				aria-controls={menuId}
+				aria-label={`Tài khoản ${session.user.name ?? name}${isAdmin ? ' (admin)' : ''}`}
+				onClick={() => setOpen((value) => !value)}
+				className={`${base} gap-2`}
+			>
+				<span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#2f8f5b]" />
+				{variant === 'badge' && isAdmin ? null : (
+					<span
+						className={`truncate tracking-normal normal-case ${variant === 'badge' ? 'max-w-[4.5rem]' : 'max-w-[9rem]'}`}
+					>
+						{name}
+					</span>
+				)}
+				{isAdmin ? (
+					<span className="rounded-full border border-current px-1.5 py-px text-[0.625rem] leading-none tracking-[0.08em] uppercase">
+						Admin
+					</span>
+				) : null}
+				<span aria-hidden="true" className="text-[0.625rem]">
+					▾
+				</span>
+			</button>
+
+			{open ? (
+				<div
+					id={menuId}
+					role="menu"
+					aria-label="Tài khoản"
+					className="absolute top-full right-0 z-[60] mt-2 w-60 overflow-hidden rounded-xl border border-hairline bg-canvas text-left text-sm tracking-normal text-ink normal-case shadow-[0_12px_32px_rgba(20,18,15,0.14)]"
+				>
+					<div className="border-b border-hairline px-4 py-3">
+						<p className="truncate font-medium">{session.user.name ?? name}</p>
+						<p className="truncate text-xs text-ink-secondary">{session.user.email}</p>
+						<p className="mt-1 text-xs text-ink-secondary">
+							{isAdmin ? 'Đang đăng nhập với quyền admin' : 'Đang đăng nhập'}
+						</p>
+					</div>
+					<ul className="py-1">
+						{items.map((item) => (
+							<li key={item.href}>
+								<Link
+									role="menuitem"
+									href={item.href}
+									className="block px-4 py-2.5 hover:bg-paper focus-visible:bg-paper focus-visible:outline-none"
+								>
+									{item.label}
+								</Link>
+							</li>
+						))}
+						<li className="border-t border-hairline">
+							<button
+								type="button"
+								role="menuitem"
+								data-testid="site-sign-out"
+								onClick={() => signOut({ redirectTo: afterSignOutPath(currentLocation(pathname)) })}
+								className="block w-full px-4 py-2.5 text-left hover:bg-paper focus-visible:bg-paper focus-visible:outline-none"
+							>
+								Đăng xuất
+							</button>
+						</li>
+					</ul>
+				</div>
+			) : null}
+		</div>
 	);
 }

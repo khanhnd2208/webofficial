@@ -136,11 +136,17 @@ export function resolveAuthJsRedirect(url: string, baseUrl: string): string {
 
 export function destinationLabel(from: string): string | null {
 	if (!from || from === '/' || from.startsWith('http')) return null;
-	if (from.startsWith('/my-space/teaching')) return 'lớp học';
-	if (from.startsWith('/my-space/courses')) return 'khóa học';
-	if (from.startsWith('/admin')) return 'khu quản trị';
-	if (from.startsWith('/ghi-chep') || from.startsWith('/bai-viet')) return 'ghi chép';
-	if (from.startsWith('/tai-khoan')) return 'tài khoản';
-	if (from.startsWith('/my-space')) return 'My Space';
+	const pathname = pathnameOf(from);
+	if (pathname.startsWith('/my-space/teaching')) return 'Teaching';
+	if (pathname.startsWith('/my-space/courses') || pathname.startsWith('/khoa-hoc')) {
+		return 'khóa học';
+	}
+	if (pathname.startsWith('/my-space/board-game')) return 'Board Game';
+	if (pathname.startsWith('/lop/')) return 'trang lớp';
+	if (pathname.startsWith('/admin')) return 'khu quản trị';
+	if (pathname.startsWith('/ghi-chep') || pathname.startsWith('/bai-viet')) return 'ghi chép';
+	if (pathname.startsWith('/tai-khoan')) return 'tài khoản';
+	if (pathname === '/muc-luc') return 'Mục lục';
+	if (pathname.startsWith('/my-space')) return 'My Space';
 	return 'trang bạn vừa mở';
 }

@@ -110,7 +110,10 @@ describe('sameSiteReferrerPath', () => {
 
 describe('destinationLabel', () => {
 	it('names common destinations in Vietnamese', () => {
-		expect(destinationLabel('/my-space/teaching')).toBe('lớp học');
+		expect(destinationLabel('/my-space/teaching')).toBe('Teaching');
+		expect(destinationLabel('/khoa-hoc/itm?s=1')).toBe('khóa học');
+		expect(destinationLabel('/my-space/courses/hrm')).toBe('khóa học');
+		expect(destinationLabel('/my-space/board-game/spy-fall/room/AB12')).toBe('Board Game');
 		expect(destinationLabel('/admin/posts')).toBe('khu quản trị');
 		expect(destinationLabel('/tai-khoan')).toBe('tài khoản');
 		expect(destinationLabel('/')).toBeNull();
