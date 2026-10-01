@@ -227,7 +227,6 @@
 
 .teachingTile {
 	--destination-accent: var(--teaching-accent, #176b63);
-	background: color-mix(in srgb, var(--teaching-accent, #176b63) 8%, transparent);
 }
 .teachingTile:hover .tileTitle {
 	color: var(--destination-accent);

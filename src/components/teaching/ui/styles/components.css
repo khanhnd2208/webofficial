@@ -346,6 +346,11 @@
 [data-surface='teaching'] .teaching-public-board .mc-tabbar {
 	margin: 0.75rem 0;
 }
+/* Outranks the uppercase My Class tab rule; Vietnamese reads better in sentence case. */
+[data-surface='teaching'] .teaching-public-board .mc-tabbar :is(a, button) {
+	text-transform: none;
+	letter-spacing: 0;
+}
 [data-surface='teaching'] .teaching-public-empty {
 	padding: 1.5rem;
 	font-size: 0.875rem;
