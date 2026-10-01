@@ -21,6 +21,9 @@ import {
 } from '@/features/board-game-shared/lib/playerName';
 import HostBoard from '@/features/werewolf/components/HostBoard';
 import InviteCard from '@/features/werewolf/components/InviteCard';
+import CardDeckSelector from '@/features/werewolf/components/CardDeckSelector';
+import { getCardDeck } from '@/features/werewolf/config/cardDecks';
+import type { CardDeck } from '@/features/werewolf/types';
 import RoleCard from '@/features/werewolf/components/RoleCard';
 import RoleSetupPanel, {
 	useDebouncedRoleCounts,
@@ -145,6 +148,18 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 			if (playerToken) await api.leave();
 			clearPlayerToken(code);
 			router.push(routes.maSoi);
+		} catch (cause) {
+			setJoinError(cause instanceof Error ? cause.message : t('common.unknownError'));
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	async function handleCardDeck(cardDeck: CardDeck) {
+		setBusy(true);
+		setJoinError(null);
+		try {
+			await api.setCardDeck(cardDeck);
 		} catch (cause) {
 			setJoinError(cause instanceof Error ? cause.message : t('common.unknownError'));
 		} finally {
@@ -301,7 +316,13 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 								void api.kick(token).finally(() => setBusy(false));
 							}}
 						/>
+						<CardDeckSelector
+							value={getCardDeck(state.cardDeck)}
+							disabled={busy || saving}
+							onChange={(deck) => void handleCardDeck(deck)}
+						/>
 						<RoleSetupPanel
+							cardDeck={getCardDeck(state.cardDeck)}
 							playerCount={state.playerCount}
 							roleCounts={counts}
 							saving={saving}
@@ -324,6 +345,7 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 
 				{state.isHost && state.phase === 'dealt' ? (
 					<HostBoard
+						cardDeck={getCardDeck(state.cardDeck)}
 						code={state.code}
 						players={state.players}
 						busy={busy}
@@ -343,7 +365,8 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 
 				{!state.isHost && state.phase === 'dealt' && state.self ? (
 					<RoleCard
-						key={state.dealRound}
+						key={`${state.dealRound}:${getCardDeck(state.cardDeck)}`}
+						cardDeck={getCardDeck(state.cardDeck)}
 						roleId={state.self.roleId}
 						onViewed={() => api.viewed()}
 					/>

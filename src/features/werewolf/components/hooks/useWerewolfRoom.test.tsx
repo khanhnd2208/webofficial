@@ -28,6 +28,7 @@ function useRoomWithToken(initialToken: string | null) {
 
 function roomState(version: number, selfToken: string | null): RoomStateDTO {
 	return {
+		cardDeck: 'classic',
 		code: 'ABC234',
 		phase: 'lobby',
 		version,

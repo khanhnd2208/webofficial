@@ -14,7 +14,8 @@ import {
 import { withBasePath } from '@/features/board-game-shared/lib/basePath';
 import { cn } from '@/features/board-game-shared/lib/cn';
 import { canonicalRoleCounts, reconcileRoleDraft } from '@/features/werewolf/lib/roleDraft';
-import type { Faction, RoleCount } from '@/features/werewolf/types';
+import { getRoleImage } from '@/features/werewolf/config/cardDecks';
+import type { CardDeck, Faction, RoleCount } from '@/features/werewolf/types';
 import GameIcon, { type GameIconName } from '@/features/board-game-shared/components/ui/GameIcon';
 
 const FACTION_ORDER: Faction[] = ['villager', 'werewolf', 'solo'];
@@ -25,6 +26,7 @@ const FACTION_ICONS: Record<Faction, GameIconName> = {
 };
 
 interface Props {
+	cardDeck: CardDeck;
 	playerCount: number;
 	roleCounts: RoleCount[];
 	saving: boolean;
@@ -44,6 +46,7 @@ function withCount(counts: RoleCount[], roleId: string, count: number): RoleCoun
 }
 
 export default function RoleSetupPanel({
+	cardDeck,
 	playerCount,
 	roleCounts,
 	saving,
@@ -102,7 +105,7 @@ export default function RoleSetupPanel({
 										className="flex items-center gap-3 rounded-xl border border-border bg-surface p-2"
 									>
 										<img
-											src={withBasePath(role.image)}
+											src={withBasePath(getRoleImage(role, cardDeck))}
 											alt=""
 											className="h-12 w-9 rounded-md object-cover"
 										/>
