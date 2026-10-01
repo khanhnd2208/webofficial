@@ -8,7 +8,8 @@ import { Button } from '@/features/board-game-shared/components/ui';
 import { getRoleById } from '@/features/werewolf/config/roles';
 import { withBasePath } from '@/features/board-game-shared/lib/basePath';
 import { cn } from '@/features/board-game-shared/lib/cn';
-import type { Faction, WerewolfPlayerView } from '@/features/werewolf/types';
+import { getRoleImage } from '@/features/werewolf/config/cardDecks';
+import type { CardDeck, Faction, WerewolfPlayerView } from '@/features/werewolf/types';
 
 const FACTION_TEXT: Record<Faction, string> = {
 	villager: 'text-emerald-700 dark:text-emerald-300',
@@ -17,6 +18,7 @@ const FACTION_TEXT: Record<Faction, string> = {
 };
 
 interface Props {
+	cardDeck: CardDeck;
 	code: string;
 	players: WerewolfPlayerView[];
 	busy: boolean;
@@ -29,6 +31,7 @@ interface Props {
 const hideKey = (code: string) => `werewolf-hide-board:${code}`;
 
 export default function HostBoard({
+	cardDeck,
 	code,
 	players,
 	busy,
@@ -103,7 +106,7 @@ export default function HostBoard({
 								</div>
 								{role ? (
 									<img
-										src={withBasePath(role.image)}
+										src={withBasePath(getRoleImage(role, cardDeck))}
 										alt=""
 										className="h-12 w-9 rounded object-cover"
 									/>

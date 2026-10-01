@@ -57,7 +57,7 @@ const OVERSIZED_FILE_CAPS = {
 	'src/app/vocabulary/[id]/mcq/page.tsx': 1055,
 	'src/components/myclass/CourseWorkspace.tsx': 985,
 	'src/app/vocabulary/[id]/fill-blank/page.tsx': 931,
-	'src/features/board-game-test/service.ts': 931,
+	'src/features/board-game-test/service.ts': 927,
 	'src/features/myspace-tests/repositories/myspaceTestsRepository.ts': 918,
 	'src/features/my-class/services/assessmentService.ts': 903,
 	'src/components/teaching/groups/GroupListWorkspace.tsx': 893,

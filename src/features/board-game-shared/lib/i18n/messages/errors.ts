@@ -39,6 +39,7 @@ export const errorsVi: MessageTree = {
 	RENAME_LOBBY_ONLY: 'Chỉ có thể đổi tên ở sảnh chờ',
 	NO_WORD_PAIRS:
 		'Chủ đề này không còn cặp từ nào sau khi loại nhãn — hãy bỏ bớt nhãn hoặc đổi chủ đề',
+	INVALID_CARD_DECK: 'Bộ thẻ không hợp lệ',
 	INVALID_ROLE: 'Có vai không hợp lệ trong bộ bài',
 	ROLE_COUNT_NEGATIVE: 'Số lượng vai không được âm',
 	ROLE_COUNT_MISMATCH: 'Tổng số thẻ ({total}) phải bằng số người chơi ({playerCount})',
@@ -95,6 +96,7 @@ export const errorsEn: MessageTree = {
 	RENAME_LOBBY_ONLY: 'You can only rename in the lobby',
 	NO_WORD_PAIRS:
 		'No word pairs left for this topic after excluding tags — include some tags or pick another topic',
+	INVALID_CARD_DECK: 'Invalid card artwork selection',
 	INVALID_ROLE: 'The role set includes an unknown role',
 	ROLE_COUNT_NEGATIVE: 'Role counts cannot be negative',
 	ROLE_COUNT_MISMATCH: 'Card total ({total}) must equal the number of players ({playerCount})',

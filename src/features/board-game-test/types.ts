@@ -39,7 +39,7 @@ export type TestCommand =
 	| { kind: 'seen' }
 	| { kind: 'viewed' }
 	| { kind: 'lobby' }
-	| { kind: 'roles'; roleCounts: { roleId: string; count: number }[] }
+	| { kind: 'roles'; roleCounts?: { roleId: string; count: number }[]; cardDeck?: string }
 	| { kind: 'settings'; settings: object }
 	| { kind: 'secret'; picks: string[]; draft?: boolean }
 	| { kind: 'start-vote' }
