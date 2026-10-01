@@ -91,7 +91,8 @@ describe('inbox page', () => {
 				'/admin/inquiries/contact-1?page=2&status=NEW&search=A%26B',
 			);
 		expect(screen.getByText('Hiển thị 21–21 trong 21 liên hệ')).toBeInTheDocument();
-		expect(screen.getByText('Cần trao đổi về chương trình.')).toBeInTheDocument();
+		// One excerpt in the desktop table, one in the mobile card.
+		expect(screen.getAllByText('Cần trao đổi về chương trình.')).toHaveLength(2);
 	});
 	it('rejects unsupported filters and invalid page values before querying', async () => {
 		render(
