@@ -630,6 +630,8 @@
 	color: var(--accent);
 }
 .excerpt {
+	display: block;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -676,6 +678,7 @@
 }
 .queue {
 	display: grid;
+	margin-top: 16px;
 }
 .queue a {
 	display: grid;
@@ -693,6 +696,11 @@
 	gap: 8px;
 	margin-top: -12px;
 	margin-bottom: 24px;
+}
+.adjacent [aria-disabled='true'] {
+	opacity: 0.45;
+	cursor: default;
+	pointer-events: none;
 }
 .subheading {
 	margin-top: 16px;

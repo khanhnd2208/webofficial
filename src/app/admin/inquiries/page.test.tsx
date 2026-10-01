@@ -111,4 +111,36 @@ describe('inbox page', () => {
 			search: undefined,
 		});
 	});
+	it('lists only stages that have inquiries, plus Mới and the selected stage', async () => {
+		counts.mockResolvedValue({
+			all: 5,
+			byStatus: {
+				NEW: 0,
+				REVIEWING: 3,
+				NEED_MORE_INFO: 0,
+				QUALIFIED: 0,
+				CALL_SCHEDULED: 0,
+				PROPOSAL_SENT: 0,
+				WON: 0,
+				CLOSED: 2,
+			},
+		});
+		render(await Page({ searchParams: Promise.resolve({ status: 'WON' }) }));
+		const chips = screen.getByRole('navigation', { name: 'Lọc theo trạng thái' });
+		const names = Array.from(chips.querySelectorAll('a')).map((link) => link.textContent);
+		expect(names).toEqual(['Tất cả5', 'Mới0', 'Đang xem3', 'Đã nhận công việc0', 'Đã đóng2']);
+	});
+	it('shows and lets the admin remove the failed-notification filter', async () => {
+		render(await Page({ searchParams: Promise.resolve({ notice: 'failed', status: 'NEW' }) }));
+		expect(screen.getByText('Chỉ hiện liên hệ có thông báo gửi lỗi')).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Bỏ lọc này' })).toHaveAttribute(
+			'href',
+			'/admin/inquiries?status=NEW',
+		);
+		expect(counts).toHaveBeenCalledWith({
+			search: undefined,
+			inquiryType: undefined,
+			failedNotification: true,
+		});
+	});
 });

@@ -198,13 +198,8 @@ export default async function AdminInquiriesPage({
 										) : null}
 										{item.name}
 									</Link>
-									<p className="mt-2">
-										{INQUIRY_TYPE_LABELS[item.inquiryType]}
-										<span className={`${styles.meta} ${styles.excerpt}`}>
-											{' · '}
-											{excerpt(item.context)}
-										</span>
-									</p>
+									<p className="mt-2">{INQUIRY_TYPE_LABELS[item.inquiryType]}</p>
+									<p className={`${styles.meta} ${styles.excerpt}`}>{excerpt(item.context)}</p>
 									<div className="mt-3 flex flex-wrap items-center gap-2">
 										<time
 											dateTime={item.createdAt}

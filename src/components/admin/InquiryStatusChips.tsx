@@ -18,7 +18,10 @@ export function InquiryStatusChips({
 	const current = INQUIRY_STATUSES.includes(query.status as InquiryStatus) ? query.status : '';
 	const items = [
 		{ status: '', label: 'Tất cả', count: counts.all },
-		...INQUIRY_STATUSES.map((status) => ({
+		// Empty stages add noise; "Mới" and the selected stage always stay reachable.
+		...INQUIRY_STATUSES.filter(
+			(status) => status === 'NEW' || status === current || counts.byStatus[status] > 0,
+		).map((status) => ({
 			status,
 			label: INQUIRY_STATUS_LABELS[status],
 			count: counts.byStatus[status],
