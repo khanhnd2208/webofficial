@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
 import { TeachingSectionHeading, TeachingEmpty } from '../ui/TeachingElements';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
@@ -30,6 +30,53 @@ function compareCourses(a: TeachingCourseListItem, b: TeachingCourseListItem) {
 
 function courseIsUnused(course: TeachingCourseListItem) {
 	return course.classCount === 0 && course.deckCount === 0;
+}
+
+function CourseRow({
+	course,
+	showCounts = false,
+	children,
+}: {
+	course: TeachingCourseListItem;
+	showCounts?: boolean;
+	children: ReactNode;
+}) {
+	return (
+		<article
+			className={`flex min-h-11 items-center gap-2 ${showCounts ? '' : 'px-3'} ${course.status === 'ARCHIVED' ? 'opacity-80' : ''}`}
+		>
+			<Link
+				href={routes.mySpaceTeachingCourse(course.id)}
+				className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+				data-testid={`teaching-course-card-${course.id}`}
+			>
+				<span className="w-28 shrink-0 font-mono text-xs font-bold uppercase tracking-wide text-accent">
+					{course.courseCode}
+				</span>
+				<span
+					className={`min-w-0 flex-1 truncate text-sm text-ink ${showCounts ? 'font-semibold' : ''}`}
+				>
+					{course.courseName}
+				</span>
+				{showCounts ? (
+					<>
+						<span className="hidden shrink-0 text-xs text-ink-secondary sm:inline">
+							<span className="font-semibold text-ink">{course.activeClassCount}</span> lớp
+						</span>
+						<span className="hidden shrink-0 text-xs text-ink-secondary sm:inline">
+							<span className="font-semibold text-ink">{course.deckCount}</span> bộ thẻ
+						</span>
+					</>
+				) : null}
+				{course.status === 'ARCHIVED' ? (
+					<span className="teaching-status shrink-0 text-[0.625rem]" data-tone="muted">
+						Đã lưu trữ
+					</span>
+				) : null}
+			</Link>
+			{children}
+		</article>
+	);
 }
 
 function mutationError(reason: unknown, fallback: string) {
@@ -91,6 +138,36 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 			unused: sorted.filter(courseIsUnused),
 		};
 	}, [filtered]);
+
+	function courseMenu(course: TeachingCourseListItem) {
+		const archived = course.status === 'ARCHIVED';
+		return {
+			label: `Thao tác môn ${course.courseCode}`,
+			disabled: busy,
+			items: [
+				{ id: 'edit', label: 'Sửa', onSelect: () => openEdit(course) },
+				archived
+					? {
+							id: 'restore',
+							label: 'Khôi phục',
+							onSelect: () => void archiveCourse(course, 'ACTIVE'),
+						}
+					: {
+							id: 'archive',
+							label: 'Lưu trữ',
+							disabled: !course.canArchive,
+							onSelect: () => void archiveCourse(course, 'ARCHIVED'),
+						},
+				{
+					id: 'delete',
+					label: 'Xóa vĩnh viễn',
+					tone: 'danger' as const,
+					disabled: !course.canDelete,
+					onSelect: () => void deleteCourse(course),
+				},
+			],
+		};
+	}
 
 	function openCreate() {
 		setError('');
@@ -250,60 +327,9 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 						data-testid="teaching-course-list"
 					>
 						{arranged.listed.map((course) => (
-							<article
-								key={course.id}
-								className={`flex min-h-11 items-center gap-2 ${course.status === 'ARCHIVED' ? 'opacity-80' : ''}`}
-							>
-								<Link
-									href={routes.mySpaceTeachingCourse(course.id)}
-									className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-									data-testid={`teaching-course-card-${course.id}`}
-								>
-									<span className="w-28 shrink-0 font-mono text-xs font-bold uppercase tracking-wide text-accent">
-										{course.courseCode}
-									</span>
-									<span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
-										{course.courseName}
-									</span>
-									<span className="hidden shrink-0 text-xs text-ink-secondary sm:inline">
-										<span className="font-semibold text-ink">{course.activeClassCount}</span> lớp
-									</span>
-									<span className="hidden shrink-0 text-xs text-ink-secondary sm:inline">
-										<span className="font-semibold text-ink">{course.deckCount}</span> bộ thẻ
-									</span>
-									{course.status === 'ARCHIVED' ? (
-										<span className="teaching-status shrink-0 text-[0.625rem]" data-tone="muted">
-											Đã lưu trữ
-										</span>
-									) : null}
-								</Link>
-								<TeachingQuickMenu
-									label={`Thao tác môn ${course.courseCode}`}
-									disabled={busy}
-									items={[
-										{ id: 'edit', label: 'Sửa', onSelect: () => openEdit(course) },
-										course.status === 'ARCHIVED'
-											? {
-													id: 'restore',
-													label: 'Khôi phục',
-													onSelect: () => void archiveCourse(course, 'ACTIVE'),
-												}
-											: {
-													id: 'archive',
-													label: 'Lưu trữ',
-													disabled: !course.canArchive,
-													onSelect: () => void archiveCourse(course, 'ARCHIVED'),
-												},
-										{
-											id: 'delete',
-											label: 'Xóa vĩnh viễn',
-											tone: 'danger',
-											disabled: !course.canDelete,
-											onSelect: () => void deleteCourse(course),
-										},
-									]}
-								/>
-							</article>
+							<CourseRow key={course.id} course={course} showCounts>
+								<TeachingQuickMenu {...courseMenu(course)} />
+							</CourseRow>
 						))}
 					</div>
 					{arranged.unused.length > 0 ? (
@@ -313,44 +339,9 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 							</summary>
 							<div className="divide-y divide-border/70 border-t border-border/70">
 								{arranged.unused.map((course) => (
-									<article key={course.id} className="flex min-h-11 items-center gap-2 px-3">
-										<Link
-											href={routes.mySpaceTeachingCourse(course.id)}
-											className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2"
-											data-testid={`teaching-course-card-${course.id}`}
-										>
-											<span className="w-28 shrink-0 font-mono text-xs font-bold uppercase tracking-wide text-accent">
-												{course.courseCode}
-											</span>
-											<span className="min-w-0 flex-1 truncate text-sm text-ink">
-												{course.courseName}
-											</span>
-										</Link>
-										<TeachingQuickMenu
-											label={`Thao tác môn ${course.courseCode}`}
-											disabled={busy}
-											items={[
-												{ id: 'edit', label: 'Sửa', onSelect: () => openEdit(course) },
-												{
-													id: 'archive',
-													label: course.status === 'ARCHIVED' ? 'Khôi phục' : 'Lưu trữ',
-													disabled: course.status === 'ACTIVE' && !course.canArchive,
-													onSelect: () =>
-														void archiveCourse(
-															course,
-															course.status === 'ARCHIVED' ? 'ACTIVE' : 'ARCHIVED',
-														),
-												},
-												{
-													id: 'delete',
-													label: 'Xóa vĩnh viễn',
-													tone: 'danger',
-													disabled: !course.canDelete,
-													onSelect: () => void deleteCourse(course),
-												},
-											]}
-										/>
-									</article>
+									<CourseRow key={course.id} course={course}>
+										<TeachingQuickMenu {...courseMenu(course)} />
+									</CourseRow>
 								))}
 							</div>
 						</details>
