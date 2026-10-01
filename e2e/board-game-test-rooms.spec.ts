@@ -57,7 +57,12 @@ test('guest and non-admin cannot access the test API', async ({ request, context
 	expect(guest.status()).toBe(401);
 	await addStudentSession(context);
 	await page.goto(base);
-	await expect(page).toHaveURL(/\/board-game$/);
+	await expect(page).toHaveURL(/\/board-game\/test$/);
+	await expect(page.getByText('Chỉ dành cho admin')).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Đổi tài khoản' })).toHaveAttribute(
+		'href',
+		`/dang-nhap?from=${encodeURIComponent(base)}`,
+	);
 	const nonAdmin = await context.request.post('/api/admin/board-game/test-rooms', {
 		data: { game: 'spy-fall', hostName: 'Student' },
 	});

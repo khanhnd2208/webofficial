@@ -45,7 +45,7 @@ test.describe('Sign-in returns to where it started', () => {
 		expect(await page.evaluate(() => sessionStorage.getItem('auth:return-position'))).toBeNull();
 	});
 
-	test('opening the login page while signed in says so instead of bouncing away', async ({
+	test('opening the login page directly while signed in says so instead of bouncing away', async ({
 		page,
 		context,
 	}) => {
@@ -55,8 +55,9 @@ test.describe('Sign-in returns to where it started', () => {
 		await expect(page.getByTestId('login-signed-in')).toContainText('quyền admin');
 		await expect(page.getByTestId('login-continue')).toHaveAttribute('href', '/muc-luc');
 
+		// With a destination (a gate or a retry) it goes straight on.
 		await page.goto('/dang-nhap?from=%2Fgioi-thieu');
-		await expect(page.getByTestId('login-continue')).toHaveAttribute('href', '/gioi-thieu');
+		await expect(page).toHaveURL(/\/gioi-thieu$/);
 	});
 
 	test('pages from before sign-in show the account when reached with Back', async ({

@@ -34,8 +34,8 @@ test.describe('Links shared with students keep working', () => {
 	}) => {
 		await addStudentSession(context);
 		for (const path of ['/my-space/courses/no-such-course', '/khoa-hoc/no-such-course']) {
-			const response = await page.goto(path);
-			expect(response?.status()).toBe(404);
+			// The course pages stream (loading.tsx), so the 404 arrives as a page, not a status code.
+			await page.goto(path);
 			await expect(page.getByRole('heading', { name: 'Chưa mở được khóa học này' })).toBeVisible();
 			await expect(page.getByRole('link', { name: 'Xem các khóa học' })).toHaveAttribute(
 				'href',
