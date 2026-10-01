@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function VocabularyPage() {
 	const session = await auth();
-	if (!session?.user) redirect('/dang-nhap');
+	if (!session?.user) redirect(`/dang-nhap?from=${encodeURIComponent('/vocabulary')}`);
 
 	const user = session.user;
 	const sets = await getUserLibrary(user.id);

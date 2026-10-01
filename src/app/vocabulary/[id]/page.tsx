@@ -10,7 +10,7 @@ export default async function VocabSetDetailPage({ params }: { params: Promise<{
 	const { id } = await params;
 	const [session, set] = await Promise.all([auth(), getVocabSetById(id)]);
 	if (!set) notFound();
-	if (!session?.user) redirect('/dang-nhap');
+	if (!session?.user) redirect(`/dang-nhap?from=${encodeURIComponent(`/vocabulary/${id}`)}`);
 
 	const practiceCards = [
 		{

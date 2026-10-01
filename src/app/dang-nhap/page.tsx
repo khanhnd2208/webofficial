@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies, headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -6,11 +7,12 @@ import SignInWithGoogleButton from './sign-in-with-google-button';
 import { routes } from '@/config/routes';
 import { SITE_NAME } from '@/config/site';
 import { auth } from '@/lib/auth';
+import { AUTH_CALLBACK_URL_COOKIE } from '@/lib/auth.config';
 import { authErrorMessage } from '@/lib/auth/errors';
 import {
 	destinationLabel,
 	loginRedirectTarget,
-	sanitizeAuthRedirect,
+	sameSiteReferrerPath,
 } from '@/lib/auth/safeRedirect';
 
 export const metadata: Metadata = {
@@ -24,15 +26,24 @@ export default async function LoginPage({
 }: {
 	searchParams?: Promise<{ from?: string; error?: string; callbackUrl?: string }>;
 }) {
-	const sp = await searchParams;
-	const session = await auth();
-	const requested = sp?.callbackUrl ?? sp?.from;
+	const [sp, session, headerList, cookieStore] = await Promise.all([
+		searchParams,
+		auth(),
+		headers(),
+		cookies(),
+	]);
+	// A failed Google round trip lands here with only `?error=`; the destination it was heading
+	// to is still in the Auth.js callback cookie, so retrying keeps the original page.
+	const pendingCallback = sp?.error ? cookieStore.get(AUTH_CALLBACK_URL_COOKIE)?.value : null;
+	const referrer = sameSiteReferrerPath(
+		headerList.get('referer'),
+		headerList.get('x-forwarded-host') ?? headerList.get('host'),
+	);
+	const from = loginRedirectTarget(sp?.callbackUrl, sp?.from, pendingCallback, referrer);
 
 	if (session?.user) {
-		redirect(sanitizeAuthRedirect(requested, { role: session.user.role }));
+		redirect(from);
 	}
-
-	const from = loginRedirectTarget(requested);
 
 	const errorMessage = authErrorMessage(sp?.error);
 	const backLabel = destinationLabel(from);
