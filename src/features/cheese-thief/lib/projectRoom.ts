@@ -34,6 +34,7 @@ export interface ProjectPlayer {
 	name: string;
 	avatarSeed: string;
 	connected: boolean;
+	isBot?: boolean;
 	role?: CheeseRole;
 	dice: number[];
 	dice2?: number[];
@@ -121,6 +122,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 			avatarSeed: player.avatarSeed,
 			connected: player.connected,
 			isHost: player.token === room.hostToken,
+			...(player.isBot ? { isBot: true } : {}),
 		};
 		if (deal) row.hasMemorizedRole = player.hasMemorizedRole;
 		if (reveal && player.role && room.preset) {

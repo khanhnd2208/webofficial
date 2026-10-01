@@ -182,7 +182,7 @@ function updateConnectionStatus(game: RoomDoc, at: Date): void {
 		const botSeat =
 			game.adminTest?.ownerUserId &&
 			(player.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
-		player.connected = botSeat ? true : isRecentlySeen(player, at);
+		player.connected = botSeat || player.isBot ? true : isRecentlySeen(player, at);
 	}
 }
 
@@ -191,7 +191,7 @@ function migrateHostIfNeeded(game: RoomDoc, at: Date): boolean {
 	const handoffMs = game.phase === 'lobby' ? CHEESE_HOST_HANDOFF_MS : CHEESE_ROUND_HOST_HANDOFF_MS;
 	if (host && host.lastSeenAt.getTime() >= at.getTime() - handoffMs) return false;
 	const replacement = game.players.find(
-		(player) => player.token !== game.hostToken && isRecentlySeen(player, at),
+		(player) => player.token !== game.hostToken && !player.isBot && isRecentlySeen(player, at),
 	);
 	if (!replacement) return false;
 	game.hostToken = replacement.token;
@@ -328,6 +328,7 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		name: player.name,
 		avatarSeed: player.avatarSeed,
 		connected: player.connected,
+		...(player.isBot ? { isBot: true } : {}),
 		...(player.role ? { role: player.role } : {}),
 		dice: player.dice ?? [],
 		...((player.dice2 ?? []).length > 0 ? { dice2: player.dice2 } : {}),

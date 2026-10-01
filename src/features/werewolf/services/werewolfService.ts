@@ -98,9 +98,10 @@ export function toRoomStateDTO(
 			token: player.token,
 			name: player.name,
 			avatarSeed: player.avatarSeed,
-			connected: room.isTestRoom && player.isBot ? true : isConnected(player.lastSeenAt, at),
+			connected: player.isBot ? true : isConnected(player.lastSeenAt, at),
 			viewed: player.viewedAt != null,
 			left: player.leftAt != null,
+			...(player.isBot ? { isBot: true } : {}),
 		};
 		if (isHost) view.roleId = player.roleId;
 		return view;

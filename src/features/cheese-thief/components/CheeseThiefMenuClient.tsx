@@ -1,11 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
+import GameMenuBar from '@/features/board-game-shared/components/GameMenuBar';
 import {
 	CHEESE_MAX_PLAYERS,
 	CHEESE_MIN_PLAYERS,
@@ -15,11 +15,9 @@ import {
 import { postCheeseAction } from '@/features/cheese-thief/lib/api';
 import { storePlayerToken } from '@/features/cheese-thief/lib/clientToken';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
-import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
 import { Button, Field, Input } from '@/features/board-game-shared/components/ui';
-import GameIcon from '@/features/board-game-shared/components/ui/GameIcon';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import { CheeseRulesButton } from '@/features/cheese-thief/components/CheeseRulesGuide';
 import {
@@ -108,24 +106,7 @@ export default function CheeseThiefMenuClient({ isAdmin = false }: { isAdmin?: b
 	return (
 		<div className="game-theme game-theme-cheese">
 			<div className="relative mx-auto max-w-3xl px-4 py-5 pb-[max(4rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8">
-				<div className="mb-5 flex items-center justify-between gap-4">
-					<Link
-						href={routes.boardGame}
-						className="inline-flex items-center gap-2 text-xs tracking-[0.16em] text-muted uppercase hover:text-foreground"
-					>
-						<GameIcon name="arrow-left" size={15} />
-						Board Game
-					</Link>
-					<PrefsToggleGroup />
-					{isAdmin ? (
-						<Link
-							href={`${routes.boardGameTest}?game=cheese-thief`}
-							className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink"
-						>
-							{t('testRoom.title')}
-						</Link>
-					) : null}
-				</div>
+				<GameMenuBar backLabel={'Board Game'} testGame="cheese-thief" isAdmin={isAdmin} />
 
 				<header
 					className={`game-theme-hero rounded-[1.25rem] ${view === 'menu' ? '' : 'game-theme-hero-compact'}`}

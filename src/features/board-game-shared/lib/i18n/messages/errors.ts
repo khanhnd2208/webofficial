@@ -54,6 +54,12 @@ export const errorsVi: MessageTree = {
 	MODE_INVALID: 'Chế độ chơi không hợp lệ',
 	HOUR_SECONDS_INVALID: 'Mỗi giờ phải dài từ {min} đến {max} giây',
 	CHEESE_REPORT_INVALID: 'Hãy báo cheese còn hay đã mất',
+	Unauthorized: 'Phiên đăng nhập đã hết. Hãy đăng nhập lại bằng tài khoản admin.',
+	Forbidden: 'Tài khoản đang đăng nhập không có quyền admin.',
+	TEST_ROOM_NOT_FOUND: 'Phòng test không còn nữa. Hãy tạo phòng mới.',
+	TEST_ROOM_PRIVATE: 'Đây là phòng test với bot, chỉ admin tạo phòng mới mở được.',
+	BOT_ADMIN_ONLY: 'Chỉ admin đang đăng nhập mới thêm hoặc bớt bot được.',
+	BOT_LOBBY_ONLY: 'Chỉ thêm hoặc bớt bot khi phòng đang chờ, trước khi bắt đầu.',
 };
 
 export const errorsEn: MessageTree = {
@@ -64,6 +70,12 @@ export const errorsEn: MessageTree = {
 	NAME_TAKEN: 'That name is already used in this room',
 	ROOM_NOT_FOUND: 'Room not found',
 	ROOM_OR_PHASE_INVALID: 'Room not found or invalid phase',
+	Unauthorized: 'Your sign-in has expired. Sign in again with the admin account.',
+	Forbidden: 'The signed-in account is not an admin.',
+	TEST_ROOM_NOT_FOUND: 'This test room is gone. Create a new one.',
+	TEST_ROOM_PRIVATE: 'This is a bot test room; only the admin who made it can open it.',
+	BOT_ADMIN_ONLY: 'Only a signed-in admin can add or remove bots.',
+	BOT_LOBBY_ONLY: 'Bots can only be added or removed in the lobby, before the game starts.',
 	PLAYER_NAME_REQUIRED: 'Player name is required',
 	ROOM_NAME_REQUIRED: 'Room name is required',
 	ROOM_NAME_TOO_LONG: 'Room name must be at most {max} characters',

@@ -28,6 +28,8 @@ export interface WerewolfPlayerView {
 	viewed: boolean;
 	left: boolean;
 	roleId?: string | null;
+	/** A seat an admin filled with a bot; it marks its card viewed on its own. */
+	isBot?: boolean;
 }
 
 export interface WerewolfSelfView {

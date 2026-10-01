@@ -158,7 +158,7 @@ function updateConnectionStatus(game: GameDoc, at: Date): void {
 		const botSeat =
 			game.adminTest?.ownerUserId &&
 			(p.token !== game.hostToken || game.adminTest.controlledSeatId !== 'admin');
-		p.connected = botSeat ? true : isRecentlySeen(p, at);
+		p.connected = botSeat || p.isBot ? true : isRecentlySeen(p, at);
 	}
 }
 
@@ -169,7 +169,9 @@ function updateConnectionStatus(game: GameDoc, at: Date): void {
 function migrateHostIfNeeded(game: GameDoc, at: Date): boolean {
 	const host = findPlayer(game, game.hostToken);
 	if (host && host.lastSeenAt.getTime() >= at.getTime() - SPY_HOST_HANDOFF_MS) return false;
-	const replacement = game.players.find((p) => p.token !== game.hostToken && isRecentlySeen(p, at));
+	const replacement = game.players.find(
+		(p) => p.token !== game.hostToken && !p.isBot && isRecentlySeen(p, at),
+	);
 	if (!replacement) return false;
 	game.hostToken = replacement.token;
 	return true;
@@ -385,6 +387,7 @@ function toRoomStateDTO(game: GameDoc, viewerToken: string | null, at: Date): Ro
 		hasMemorizedRole: p.hasMemorizedRole,
 		isHost: p.token === game.hostToken,
 		isEliminated: p.isEliminated,
+		...(p.isBot ? { isBot: true } : {}),
 		...(game.phase === 'vote' ? { hasVoted: Boolean(p.voteToken) } : {}),
 		...(showRole(p.role, p.isEliminated, game.phase) ? { role: p.role } : {}),
 	}));
