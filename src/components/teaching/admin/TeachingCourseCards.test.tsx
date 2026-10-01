@@ -80,7 +80,7 @@ describe('TeachingCourseCards', () => {
 		expect(screen.queryByText('61MGT3HRM')).not.toBeInTheDocument();
 	});
 
-	it('puts active classes first and collapses courses with no class or deck', () => {
+	it('puts active classes first and collapses courses with no class being taught or deck', () => {
 		render(
 			<TeachingPopoverRoot>
 				<TeachingCourseCards
@@ -103,6 +103,15 @@ describe('TeachingCourseCards', () => {
 							updatedAt: '2026-09-20T00:00:00.000Z',
 						}),
 						course({
+							id: 'past',
+							courseCode: 'PAST',
+							courseName: 'Chỉ còn lớp đã lưu trữ',
+							classCount: 2,
+							activeClassCount: 0,
+							deckCount: 0,
+							updatedAt: '2026-09-10T00:00:00.000Z',
+						}),
+						course({
 							id: 'busy',
 							courseCode: 'BUSY',
 							courseName: 'Đang có lớp',
@@ -117,7 +126,9 @@ describe('TeachingCourseCards', () => {
 			'teaching-course-card-busy',
 			'teaching-course-card-quiet',
 			'teaching-course-card-empty',
+			'teaching-course-card-past',
 		]);
-		expect(screen.getByText('Môn chưa có lớp (1)')).toBeInTheDocument();
+		// A course whose classes are all archived shows "0 lớp", so it belongs with the unused ones.
+		expect(screen.getByText('Môn chưa có lớp đang dạy (2)')).toBeInTheDocument();
 	});
 });

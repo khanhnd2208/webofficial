@@ -28,8 +28,9 @@ function compareCourses(a: TeachingCourseListItem, b: TeachingCourseListItem) {
 	return b.updatedAt.localeCompare(a.updatedAt);
 }
 
+/** Matches the counts on each row: no class being taught now and no card deck. */
 function courseIsUnused(course: TeachingCourseListItem) {
-	return course.classCount === 0 && course.deckCount === 0;
+	return course.activeClassCount === 0 && course.deckCount === 0;
 }
 
 function CourseRow({
@@ -335,7 +336,7 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 					{arranged.unused.length > 0 ? (
 						<details className="rounded-[var(--mc-r)] border border-border/70">
 							<summary className="min-h-11 cursor-pointer px-3 py-3 text-sm font-semibold text-ink-secondary">
-								Môn chưa có lớp ({arranged.unused.length})
+								Môn chưa có lớp đang dạy ({arranged.unused.length})
 							</summary>
 							<div className="divide-y divide-border/70 border-t border-border/70">
 								{arranged.unused.map((course) => (
