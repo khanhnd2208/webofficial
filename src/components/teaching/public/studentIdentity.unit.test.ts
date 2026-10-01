@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+	isRepeatedClassSummary,
 	pinStudent,
 	readStudentIdentity,
 	studentIdentitySummary,
@@ -43,3 +44,18 @@ describe('student identity', () => {
 		vi.unstubAllGlobals();
 	});
 });
+
+describe('isRepeatedClassSummary', () => {
+	const board = { courseCode: '61MGT3HRM', groupNo: '39-01', term: 'HỌC KỲ 1 - NĂM HỌC 2026 - 2027' };
+	it('treats the summary filled in on sharing as a repeat of the header', () => {
+		expect(
+			isRepeatedClassSummary('61MGT3HRM · Nhóm 39-01 · HỌC KỲ 1 - NĂM HỌC 2026 - 2027', board),
+		).toBe(true);
+		expect(isRepeatedClassSummary('  nhóm   39-01 ', board)).toBe(true);
+	});
+	it('keeps a summary the lecturer actually wrote', () => {
+		expect(isRepeatedClassSummary('Lớp học thứ Ba, phòng A2', board)).toBe(false);
+		expect(isRepeatedClassSummary('', board)).toBe(false);
+	});
+});
+

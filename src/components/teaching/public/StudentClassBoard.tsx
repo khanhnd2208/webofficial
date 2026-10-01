@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type Keyboa
 
 import { AttendanceGrid } from '../admin/AttendanceGrid';
 import {
+	isRepeatedClassSummary,
 	pinStudent,
 	readStudentIdentity,
 	studentIdentitySummary,
@@ -207,10 +208,7 @@ export function StudentClassBoard({
 	const classRules = board.rules.trim();
 	const commonRules = getCpPolicyText(board.policy);
 	const summary = board.summary.trim();
-	const classToken = (board.classCode ?? board.groupNo).trim().toLowerCase();
-	const repeatedSummary = [`nhóm ${classToken}`, `lớp ${classToken}`, classToken].includes(
-		summary.toLowerCase(),
-	);
+	const repeatedSummary = isRepeatedClassSummary(summary, board);
 	const description = board.description.trim();
 	const announcement = board.announcement.trim();
 

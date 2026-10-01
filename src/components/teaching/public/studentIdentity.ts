@@ -51,3 +51,28 @@ export function studentIdentitySummary(
 				: 'Đủ điều kiện';
 	return `Bạn: vắng ${student.cp.unexcusedAbsences}/${totalWeeks} · Chuyên cần ${formatTeachingScore(student.cp.attendanceScore)}/${attendanceMax} · ${eligibility}`;
 }
+
+function normalizeHeading(value: string) {
+	return value.replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+/**
+ * Sharing a class fills the public summary with "CODE · Nhóm N · TERM" when it is empty.
+ * The header already shows that line, so such a summary (or a bare class label) adds nothing.
+ */
+export function isRepeatedClassSummary(
+	summary: string,
+	board: { courseCode: string; groupNo: string; classCode?: string | null; term: string },
+) {
+	const value = normalizeHeading(summary);
+	if (!value) return false;
+	const labels = [board.classCode, board.groupNo].filter(Boolean) as string[];
+	const repeats = labels.flatMap((label) => [
+		label,
+		`nhóm ${label}`,
+		`lớp ${label}`,
+		`${board.courseCode} · Nhóm ${label} · ${board.term}`,
+		`${board.courseCode} · Lớp ${label} · ${board.term}`,
+	]);
+	return repeats.map(normalizeHeading).includes(value);
+}

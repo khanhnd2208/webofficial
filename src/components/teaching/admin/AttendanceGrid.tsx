@@ -379,7 +379,7 @@ export function AttendanceGrid({
 													open={isOpen}
 													finalized={isFinalized}
 													cancelled={session.isCancelled}
-													compact={currentWeek !== weekNumber}
+													compact={currentWeek != null && weekNumber > currentWeek}
 													busy={togglingSessionId === session.id}
 													onLifecycle={
 														!readOnly && onSessionLifecycle
