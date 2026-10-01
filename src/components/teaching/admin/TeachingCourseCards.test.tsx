@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { TeachingPopoverRoot } from '@/components/teaching/TeachingPopover';
@@ -8,6 +9,21 @@ import { TeachingCourseCards } from './TeachingCourseCards';
 
 vi.mock('next/navigation', () => ({
 	useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
+}));
+
+vi.mock('@/components/ui/Dialog', () => ({
+	Dialog: ({ open, title, children }: { open: boolean; title: string; children: ReactNode }) =>
+		open ? (
+			<div role="dialog" aria-label={title}>
+				{children}
+			</div>
+		) : null,
+}));
+
+const api = vi.hoisted(() => ({ teachingApi: vi.fn() }));
+vi.mock('@/components/teaching/admin/api', async (importOriginal) => ({
+	...(await importOriginal<typeof import('@/components/teaching/admin/api')>()),
+	teachingApi: api.teachingApi,
 }));
 
 function course(overrides: Partial<TeachingCourseListItem> = {}): TeachingCourseListItem {
@@ -130,5 +146,37 @@ describe('TeachingCourseCards', () => {
 		]);
 		// A course whose classes are all archived shows "0 lớp", so it belongs with the unused ones.
 		expect(screen.getByText('Môn chưa có lớp đang dạy (2)')).toBeInTheDocument();
+	});
+
+	it('keeps a course created just now in the main list instead of the collapsed group', async () => {
+		api.teachingApi.mockResolvedValueOnce({ id: 'fresh' });
+		const fresh = course({
+			id: 'fresh',
+			courseCode: 'FRESH',
+			courseName: 'Môn vừa tạo',
+			classCount: 0,
+			activeClassCount: 0,
+			deckCount: 0,
+		});
+		const { rerender } = render(
+			<TeachingPopoverRoot>
+				<TeachingCourseCards courses={[course()]} />
+			</TeachingPopoverRoot>,
+		);
+		fireEvent.click(screen.getByRole('button', { name: 'Thêm môn' }));
+		fireEvent.change(screen.getByLabelText(/Mã môn/), { target: { value: 'FRESH' } });
+		fireEvent.change(screen.getByLabelText(/Tên môn/), { target: { value: 'Môn vừa tạo' } });
+		fireEvent.click(screen.getByRole('button', { name: /^Lưu$/ }));
+		await waitFor(() => expect(api.teachingApi).toHaveBeenCalled());
+		// The server refresh brings the new course back with no class and no deck.
+		rerender(
+			<TeachingPopoverRoot>
+				<TeachingCourseCards courses={[course(), fresh]} />
+			</TeachingPopoverRoot>,
+		);
+		await waitFor(() =>
+			expect(screen.getByTestId('teaching-course-card-fresh').closest('details')).toBeNull(),
+		);
+		expect(screen.queryByText(/Môn chưa có lớp đang dạy/)).not.toBeInTheDocument();
 	});
 });

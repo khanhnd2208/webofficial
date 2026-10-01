@@ -98,6 +98,9 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 	const [createOpen, setCreateOpen] = useState(false);
+	// A course created in this visit stays in the main list so it does not vanish into
+	// the collapsed "unused" group right after "Lưu".
+	const [createdId, setCreatedId] = useState<string | null>(null);
 	const [editCourse, setEditCourse] = useState<TeachingCourseListItem | null>(null);
 	const [draft, setDraft] = useState({ courseCode: '', courseName: '' });
 
@@ -134,11 +137,15 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 	);
 	const arranged = useMemo(() => {
 		const sorted = [...filtered].sort(compareCourses);
+		const created = sorted.find((course) => course.id === createdId && courseIsUnused(course));
 		return {
-			listed: sorted.filter((course) => !courseIsUnused(course)),
-			unused: sorted.filter(courseIsUnused),
+			listed: [
+				...(created ? [created] : []),
+				...sorted.filter((course) => !courseIsUnused(course)),
+			],
+			unused: sorted.filter((course) => courseIsUnused(course) && course !== created),
 		};
-	}, [filtered]);
+	}, [filtered, createdId]);
 
 	function courseMenu(course: TeachingCourseListItem) {
 		const archived = course.status === 'ARCHIVED';
@@ -204,10 +211,11 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 				});
 				setEditCourse(null);
 			} else {
-				await teachingApi<TeachingCourseRecord>('/api/admin/teaching/courses', {
+				const created = await teachingApi<TeachingCourseRecord>('/api/admin/teaching/courses', {
 					method: 'POST',
 					body: JSON.stringify(draft),
 				});
+				setCreatedId(created?.id ?? null);
 				setCreateOpen(false);
 			}
 		});
