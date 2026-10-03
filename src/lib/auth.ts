@@ -7,7 +7,6 @@ import { mongoClientPromise } from '@/lib/mongodbClient';
 import { authConfig } from '@/lib/auth.config';
 import { describeAuthError, logAuth, newAuthCorrelationId } from '@/lib/auth/log';
 import { reconciledRole, roleForNewUser } from '@/lib/auth/roles';
-import { withinSessionLimit } from '@/lib/auth/sessionLifetime';
 import { runSignInSideEffects } from '@/lib/auth/sideEffects';
 
 // ────────────────────────────────────────────────────────────────────────
@@ -109,7 +108,6 @@ const nextAuth = NextAuth({
 		...authConfig.callbacks,
 
 		async jwt({ token, user, trigger }) {
-			if (!withinSessionLimit(token, Boolean(user))) return null;
 			if (user) {
 				const correlationId = newAuthCorrelationId();
 				let persisted: string | undefined;

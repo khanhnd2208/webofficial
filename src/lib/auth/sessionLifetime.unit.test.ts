@@ -1,32 +1,63 @@
+import { Auth } from '@auth/core';
+import { decode, encode } from 'next-auth/jwt';
 import { describe, expect, it } from 'vitest';
 
-import { SESSION_MAX_AGE_SECONDS, withinSessionLimit } from './sessionLifetime';
+import { authConfig } from '@/lib/auth.config';
+import { SESSION_MAX_AGE_SECONDS } from './sessionLifetime';
 
-const NOW = 1_800_000_000;
-const DAY = 24 * 60 * 60;
+const secret = 'session-renewal-test-secret';
+const salt = 'authjs.session-token';
 
-describe('withinSessionLimit', () => {
-	it('lasts one week', () => {
-		expect(SESSION_MAX_AGE_SECONDS).toBe(7 * DAY);
+async function fetchSession(token: string) {
+	return Auth(
+		new Request('http://localhost/api/auth/session', {
+			headers: { cookie: `${salt}=${token}` },
+		}),
+		{
+			...authConfig,
+			secret,
+			basePath: '/api/auth',
+			logger: { error() {} },
+			providers: [],
+			cookies: {
+				...authConfig.cookies,
+				sessionToken: {
+					name: salt,
+					options: { ...authConfig.cookies?.sessionToken?.options, secure: false },
+				},
+			},
+		},
+	);
+}
+
+describe('rolling Google sessions', () => {
+	it('renews an unexpired legacy token even when sign-in was more than seven days ago', async () => {
+		const now = Math.floor(Date.now() / 1000);
+		const token = await encode({
+			secret,
+			salt,
+			maxAge: 3600,
+			token: {
+				sub: 'student',
+				email: 'student@example.com',
+				role: 'student',
+				signedInAt: now - 30 * 86400,
+			},
+		});
+		const response = await fetchSession(token);
+		expect((await response.json()).user.id).toBe('student');
+		const cookie = response.headers.get('set-cookie') ?? '';
+		expect(cookie).toContain(`Max-Age=${365 * 86400}`);
+		const renewed = cookie.match(/authjs.session-token=([^;]+)/)?.[1];
+		expect(renewed).toBeTruthy();
+		const payload = await decode({ secret, salt, token: renewed });
+		expect(payload?.exp).toBeGreaterThanOrEqual(now + SESSION_MAX_AGE_SECONDS);
 	});
 
-	it('stamps a fresh sign-in', () => {
-		const token: { signedInAt?: number } = { signedInAt: NOW - 30 * DAY };
-		expect(withinSessionLimit(token, true, NOW)).toBe(true);
-		expect(token.signedInAt).toBe(NOW);
-	});
-
-	it('keeps a session within the week, however often it is refreshed', () => {
-		expect(withinSessionLimit({ signedInAt: NOW - 6 * DAY }, false, NOW)).toBe(true);
-	});
-
-	it('ends a session a week after sign-in', () => {
-		expect(withinSessionLimit({ signedInAt: NOW - 7 * DAY }, false, NOW)).toBe(false);
-	});
-
-	it('gives tokens from before the limit a fresh week instead of signing them out', () => {
-		const token: { signedInAt?: number } = {};
-		expect(withinSessionLimit(token, false, NOW)).toBe(true);
-		expect(token.signedInAt).toBe(NOW);
+	it('does not revive an expired JWT', async () => {
+		const token = await encode({ secret, salt, maxAge: -60, token: { sub: 'student' } });
+		const response = await fetchSession(token);
+		expect(await response.json()).toBeNull();
+		expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
 	});
 });
