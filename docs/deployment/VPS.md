@@ -223,6 +223,8 @@ verified backup and a stable observation period.
 
 ## Nginx and TLS baseline
 
+Next.js redirects `www.toiladuykhanh.com` to `https://toiladuykhanh.com` with HTTP 308, preserving paths and queries so Google sessions use one host. This can move to a dedicated nginx redirect server later; keep TLS coverage for both hosts.
+
 The active HTTPS server must include these proxy and security settings:
 
 ```nginx
