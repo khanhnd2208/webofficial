@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export default async function LoginPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ from?: string; error?: string; callbackUrl?: string }>;
+	searchParams?: Promise<{ from?: string; error?: string; callbackUrl?: string; chon?: string }>;
 }) {
 	const [sp, session, headerList, cookieStore] = await Promise.all([
 		searchParams,
@@ -142,7 +142,7 @@ export default async function LoginPage({
 								</p>
 
 								<div className="mt-6 sm:mt-8">
-									<SignInWithGoogleButton redirectTo={from} />
+									<SignInWithGoogleButton redirectTo={from} chooseAccount={sp?.chon === '1'} />
 								</div>
 
 								{errorMessage ? (

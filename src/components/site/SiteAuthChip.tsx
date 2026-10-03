@@ -1,13 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { afterSignOutPath } from '@/config/navigation';
 import { routes } from '@/config/routes';
 import { signOutTo } from '@/lib/auth/signOutTo';
+import { inAppBrowserName } from '@/lib/auth/inAppBrowser';
+import { rememberReturnPosition } from '@/lib/auth/returnPosition';
+import { startGoogleSignIn } from '@/lib/auth/startGoogleSignIn';
 
 type SiteAuthChipProps = {
 	/**
@@ -42,7 +45,7 @@ function currentLocation(pathname: string): string {
 }
 
 /**
- * The one sign-in indicator on the site. Signed out it is a "Đăng nhập" link that returns here;
+ * The one sign-in indicator on the site. Signed out it starts Google sign-in and returns here;
  * signed in it names the account, marks admins, and opens a menu with the places an account
  * unlocks and "Đăng xuất".
  */
@@ -53,6 +56,8 @@ export default function SiteAuthChip({
 }: SiteAuthChipProps) {
 	const pathname = usePathname() || routes.home;
 	const { data: session, status } = useSession();
+	const router = useRouter();
+	const [signingIn, setSigningIn] = useState(false);
 	const [open, setOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
@@ -81,6 +86,38 @@ export default function SiteAuthChip({
 		setOpen(false);
 	}, [pathname]);
 
+	useEffect(() => {
+		const reset = (event: PageTransitionEvent) => {
+			if (event.persisted) setSigningIn(false);
+		};
+		window.addEventListener('pageshow', reset);
+		return () => window.removeEventListener('pageshow', reset);
+	}, []);
+
+	async function handleSignIn() {
+		const destination = currentLocation(pathname);
+		const loginHref = `${routes.login}?from=${encodeURIComponent(destination)}`;
+		try {
+			rememberReturnPosition(window.sessionStorage, {
+				path: `${window.location.pathname}${window.location.search}`,
+				y: Math.round(window.scrollY),
+			});
+		} catch {
+			// Blocked storage still permits sign-in and a return to the page.
+		}
+		if (inAppBrowserName(navigator.userAgent)) {
+			router.push(loginHref);
+			return;
+		}
+		setSigningIn(true);
+		try {
+			await startGoogleSignIn(destination);
+		} catch {
+			setSigningIn(false);
+			router.push(loginHref);
+		}
+	}
+
 	const base = `inline-flex min-h-10 items-center transition-colors duration-300 focus-visible:outline-none ${variantClass[variant]} ${className}`;
 
 	if (status === 'loading') {
@@ -91,14 +128,16 @@ export default function SiteAuthChip({
 	if (!session?.user) {
 		if (!showSignIn) return null;
 		return (
-			<Link
-				href={`${routes.login}?from=${encodeURIComponent(pathname)}`}
+			<button
+				type="button"
+				disabled={signingIn}
+				onClick={() => void handleSignIn()}
 				data-testid="site-auth-chip"
 				data-auth-state="signed-out"
-				className={base}
+				className={`${base} disabled:cursor-wait`}
 			>
-				Đăng nhập
-			</Link>
+				{signingIn ? 'Đang mở Google…' : 'Đăng nhập'}
+			</button>
 		);
 	}
 

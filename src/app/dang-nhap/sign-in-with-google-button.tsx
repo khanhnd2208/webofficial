@@ -1,7 +1,8 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+
+import { startGoogleSignIn } from '@/lib/auth/startGoogleSignIn';
 
 function GoogleIcon({ className }: { className?: string }) {
 	return (
@@ -29,8 +30,10 @@ function GoogleIcon({ className }: { className?: string }) {
 export default function SignInWithGoogleButton({
 	redirectTo,
 	callbackUrl,
+	chooseAccount = false,
 }: {
 	redirectTo?: string;
+	chooseAccount?: boolean;
 	/** @deprecated Auth.js v5 uses redirectTo; kept for existing call sites. */
 	callbackUrl?: string;
 }) {
@@ -49,7 +52,7 @@ export default function SignInWithGoogleButton({
 	const handleSignIn = async () => {
 		setLoading(true);
 		try {
-			await signIn('google', { redirectTo: destination }, { prompt: 'select_account' });
+			await startGoogleSignIn(destination, { chooseAccount });
 		} catch {
 			setLoading(false);
 		}

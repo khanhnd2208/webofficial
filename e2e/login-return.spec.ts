@@ -17,24 +17,37 @@ async function scrollHalfway(page: Page): Promise<number> {
 }
 
 test.describe('Sign-in returns to where it started', () => {
-	test('the login link carries the live page, query and #section', async ({ page }) => {
+	test('one click opens Google with the live page, query and #section', async ({
+		page,
+		context,
+	}) => {
+		await page.route('https://accounts.google.com/**', (route) =>
+			route.fulfill({ body: '<h1>Google sign-in test</h1>', contentType: 'text/html' }),
+		);
 		await page.goto(`${PAGE}#form`);
 		const y = await scrollHalfway(page);
 		await page.getByTestId('site-auth-chip').click();
 
-		await expect(page).toHaveURL(/\/dang-nhap\?/);
-		expect(new URL(page.url()).searchParams.get('from')).toBe(`${PAGE}#form`);
-		await expect(page.getByText(/Sau khi đăng nhập, bạn sẽ quay lại/)).toBeVisible();
+		await expect(page).toHaveURL(/^https:\/\/accounts\.google\.com\//);
+		expect(new URL(page.url()).searchParams.has('prompt')).toBe(false);
+		const callback = (await context.cookies()).find(
+			(cookie) => cookie.name === 'authjs.callback-url',
+		);
+		expect(decodeURIComponent(callback?.value ?? '')).toContain(`${PAGE}#form`);
+		await page.goto('/dang-nhap');
 
 		const saved = await page.evaluate(() => sessionStorage.getItem('auth:return-position'));
 		expect(JSON.parse(saved ?? '{}')).toMatchObject({ path: PAGE, y });
 	});
 
 	test('an admin lands back on the same page and scroll position', async ({ page, context }) => {
+		await page.route('https://accounts.google.com/**', (route) =>
+			route.fulfill({ body: '<h1>Google sign-in test</h1>', contentType: 'text/html' }),
+		);
 		await page.goto(PAGE);
 		const y = await scrollHalfway(page);
 		await page.getByTestId('site-auth-chip').click();
-		await expect(page).toHaveURL(/\/dang-nhap\?/);
+		await expect(page).toHaveURL(/^https:\/\/accounts\.google\.com\//);
 
 		// Google's round trip ends with a full load of the `from` page, now signed in.
 		await addAdminSession(context);
