@@ -134,6 +134,11 @@ const eslintConfig = defineConfig([
 	},
 	...areaBoundaries,
 	...fileSizeBudget,
+	{
+		// Next's CommonJS ESLint plugin loads this adapter with require().
+		files: ['scripts/vendor/next-eslint-glob/*.cjs'],
+		rules: { '@typescript-eslint/no-require-imports': 'off' },
+	},
 	// Override default ignores of eslint-config-next.
 	globalIgnores([
 		// Default ignores of eslint-config-next:
