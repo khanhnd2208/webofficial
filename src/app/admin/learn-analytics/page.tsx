@@ -4,30 +4,25 @@ import { redirect } from 'next/navigation';
 import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminForbidden } from '@/components/admin/AdminForbidden';
 import { routes } from '@/config/routes';
-import { getLearnStudyReport } from '@/features/learn';
+import { getLearnStudyLearnerReport, getLearnStudyReport } from '@/features/learn';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
+import { DailyStudyReport } from './DailyStudyReport';
+import { LearnerStudyReport } from './LearnerStudyReport';
+import { formatDate, formatDuration, reportHref } from './reportPresentation';
+
 export const dynamic = 'force-dynamic';
 
-type Props = { searchParams: Promise<{ course?: string; days?: string; page?: string }> };
-
-function formatDuration(seconds: number) {
-	const minutes = Math.floor(seconds / 60);
-	const hours = Math.floor(minutes / 60);
-	if (hours) return `${hours} giờ ${minutes % 60} phút`;
-	if (minutes) return `${minutes} phút`;
-	return `${seconds} giây`;
-}
-
-function formatDate(value: string | null) {
-	if (!value) return '—';
-	return new Date(value).toLocaleString('vi-VN', {
-		timeZone: 'Asia/Ho_Chi_Minh',
-		dateStyle: 'short',
-		timeStyle: 'short',
-	});
-}
+type Props = {
+	searchParams: Promise<{
+		course?: string;
+		days?: string;
+		page?: string;
+		user?: string;
+		sessionPage?: string;
+	}>;
+};
 
 function Stat({ label, value, note }: { label: string; value: string | number; note: string }) {
 	return (
@@ -58,6 +53,18 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 	const report = courseSlug
 		? await getLearnStudyReport(courseSlug, days, Number(query.page ?? 1))
 		: null;
+
+	const selectedUser =
+		typeof query.user === 'string' && query.user.length <= 128 ? query.user : undefined;
+	const learnerReport =
+		report && selectedUser
+			? await getLearnStudyLearnerReport(
+					report.course.slug,
+					days,
+					selectedUser,
+					Number(query.sessionPage ?? 1),
+				)
+			: null;
 
 	return (
 		<div className="mx-auto max-w-6xl px-6 py-8">
@@ -154,6 +161,20 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 						/>
 					</section>
 
+					<DailyStudyReport daily={report.daily} />
+					{selectedUser ? (
+						<LearnerStudyReport
+							report={learnerReport}
+							course={report.course.slug}
+							days={days}
+							page={report.page}
+						/>
+					) : (
+						<p className="mt-5 text-sm text-muted">
+							Chọn tên học viên trong bảng để xem thời lượng từng ngày và các phiên truy cập.
+						</p>
+					)}
+
 					<section className="mt-9">
 						<h2 className="text-sm font-bold uppercase tracking-widest text-muted">Theo mục học</h2>
 						<div className="mt-3 overflow-x-auto rounded-xl border border-border">
@@ -208,7 +229,12 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 										report.learners.map((learner) => (
 											<tr key={learner.userId}>
 												<td className="px-4 py-3">
-													<p className="font-semibold text-foreground">{learner.name}</p>
+													<Link
+														href={reportHref(report.course.slug, days, report.page, learner.userId)}
+														className="font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+													>
+														{learner.name}
+													</Link>
 													<p className="text-xs text-muted">{learner.email || learner.userId}</p>
 												</td>
 												<td className="px-4 py-3 text-right tabular-nums">{learner.sessions}</td>
@@ -251,30 +277,6 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 							</Link>
 						) : null}
 					</nav>
-					<section className="mt-9">
-						<h2 className="text-sm font-bold uppercase tracking-widest text-muted">Theo ngày</h2>
-						<div className="mt-3 divide-y divide-border rounded-xl border border-border">
-							{report.daily.length ? (
-								report.daily.map((day) => (
-									<div
-										key={day.day}
-										className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
-									>
-										<time className="text-muted">
-											{new Date(`${day.day}T12:00:00+07:00`).toLocaleDateString('vi-VN')}
-										</time>
-										<span className="text-foreground">
-											{day.learners} người · {formatDuration(day.seconds)}
-										</span>
-									</div>
-								))
-							) : (
-								<p className="px-4 py-8 text-center text-sm text-muted">
-									Chưa có hoạt động trong khoảng thời gian này.
-								</p>
-							)}
-						</div>
-					</section>
 					<p className="mt-5 text-xs leading-relaxed text-muted">
 						Một phiên được tính từ lúc mở khóa học; thời gian học chỉ cộng khi đang ở trong một mục
 						học. Thời gian là ước tính: bộ đếm tạm dừng khi chuyển cửa sổ, tab bị ẩn hoặc không có

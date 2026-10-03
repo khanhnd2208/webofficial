@@ -124,8 +124,9 @@ The script performs these steps in order:
    build output, test output, and editor/temp files.
 4. Copies `.env.local` into the release with mode `0600`.
 5. Installs dependencies, runs `prisma generate`, and `next build` before any
-   migration. When `package-lock.json`, `package.json`, any `.npmrc`, and the
-   Node and npm versions all match the stored build cache, it copies
+   migration. When `package-lock.json`, `package.json`, any `.npmrc`, local dependency
+   sources under `scripts/vendor/`, and the Node and npm versions all match
+   the stored build cache, it copies
    `/var/www/webofficial/.build-cache/node_modules` instead of running `npm ci`.
    It also copies `.next/cache` from the current release so the compiler can
    reuse work. The copy stays inside the new release; mutable upload paths are
