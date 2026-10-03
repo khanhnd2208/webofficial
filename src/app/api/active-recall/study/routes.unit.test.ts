@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
 	report: vi.fn(),
 	hash: vi.fn(),
 }));
+vi.mock('@/config/site', () => ({ SITE_ORIGIN: 'https://toiladuykhanh.com' }));
 vi.mock('next/headers', () => ({ cookies: async () => mocks.jar }));
 vi.mock('@/lib/apiAuth', () => ({ getApiUser: mocks.user }));
 vi.mock('@/lib/inquiryRateLimit', () => ({ assertScopedRateLimit: mocks.limiter }));
@@ -79,6 +80,26 @@ describe('Recall telemetry route boundaries', () => {
 			413,
 		);
 		expect(mocks.begin).not.toHaveBeenCalled();
+	});
+	it('accepts the configured public origin behind a loopback reverse proxy', async () => {
+		const proxied = (origin: string, host: string) =>
+			new NextRequest('https://127.0.0.1:4000/api/active-recall/study/begin', {
+				method: 'POST',
+				headers: { origin, host, 'x-forwarded-host': host, 'content-type': 'application/json' },
+				body: JSON.stringify(input),
+			});
+		expect((await begin(proxied('https://toiladuykhanh.com', 'toiladuykhanh.com'))).status).toBe(
+			200,
+		);
+		expect((await begin(proxied('https://foreign.example', 'foreign.example'))).status).toBe(403);
+	});
+	it('supports local production browser tests without trusting arbitrary host headers', async () => {
+		const local = new NextRequest('http://127.0.0.1:3107/api/active-recall/study/begin', {
+			method: 'POST',
+			headers: { origin: 'http://localhost:3107', host: 'localhost:3107' },
+			body: JSON.stringify(input),
+		});
+		expect((await begin(local)).status).toBe(200);
 	});
 	it('cannot submit time without a valid ownership cookie', async () => {
 		const data = {

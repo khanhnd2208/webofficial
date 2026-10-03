@@ -70,6 +70,21 @@ test('anonymous Recall study, return visit, admin report and mobile history', as
 			data: { assignments: [{ deckId, enabled: true }] },
 		});
 		expect(assigned.ok()).toBeTruthy();
+		// Exercise the production Nginx shape: public HTTPS origin with a local Next listener.
+		const proxyCheck = await guest.request.post('/api/active-recall/study/begin', {
+			headers: {
+				Origin: 'https://toiladuykhanh.com',
+				Host: 'toiladuykhanh.com',
+				'X-Forwarded-Proto': 'https',
+			},
+			data: {
+				deckId: 'missing-proxy-fixture',
+				visitId: randomUUID(),
+				clientId: randomUUID(),
+				claimLease: true,
+			},
+		});
+		expect(proxyCheck.status(), await proxyCheck.text()).toBe(404);
 		const began = page.waitForResponse(
 			(r) => r.url().endsWith('/api/active-recall/study/begin') && r.request().method() === 'POST',
 			responseTimeout,
