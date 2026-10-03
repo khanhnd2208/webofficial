@@ -90,6 +90,21 @@ describe('anonymous Recall browser tracker', () => {
 		await vi.advanceTimersByTimeAsync(60_000);
 		expect(beats().reduce((n, x) => n + x.seconds, 0)).toBe(60);
 	});
+	it('keeps batches of study actions separate across Vietnam midnight', async () => {
+		vi.setSystemTime(new Date('2026-10-02T16:59:40Z'));
+		await start();
+		tracker.study();
+		await vi.advanceTimersByTimeAsync(0);
+		tracker.study(true);
+		await vi.advanceTimersByTimeAsync(30_000);
+		tracker.study();
+		await vi.advanceTimersByTimeAsync(30_000);
+		expect(
+			beats()
+				.filter((row) => row.interactions)
+				.map((row) => row.interactionDay),
+		).toEqual(['2026-10-02', '2026-10-02', '2026-10-03']);
+	});
 	it('pauses on blur, releases timer ownership and resumes on focus', async () => {
 		await start();
 		tracker.study();

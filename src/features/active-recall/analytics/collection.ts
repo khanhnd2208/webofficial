@@ -217,8 +217,19 @@ export async function heartbeatRecallStudy(visitorId: string, input: RecallHeart
 		for (const row of splitRecallSeconds(timingEnd, seconds)) {
 			if (row.seconds) await bucket(tx, visit.id, row.day, { activeSeconds: row.seconds });
 		}
+		const currentDay = recallDay(now);
+		// A batch crossing Vietnam midnight retains the day of its study actions.
+		// Accept only days within the session inactivity window; stale offline data
+		// remains bounded to the current collection window.
+		const earliestDay = recallDay(new Date(now.getTime() - RECALL_SESSION_GAP_MS));
+		const actionDay =
+			input.interactionDay &&
+			input.interactionDay >= earliestDay &&
+			input.interactionDay <= currentDay
+				? input.interactionDay
+				: currentDay;
 		if (input.interactions)
-			await bucket(tx, visit.id, recallDay(now), {
+			await bucket(tx, visit.id, actionDay, {
 				interactions: input.interactions,
 				answerReveals: input.answerReveals,
 			});

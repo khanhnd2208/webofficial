@@ -180,6 +180,19 @@ describe('anonymous Recall analytics with PostgreSQL', () => {
 		).rejects.toMatchObject({ status: 409 });
 		expect((await report(f.course.id)).totals.seconds).toBe(120);
 	});
+	it('attributes delayed pre-midnight actions to their study day', async () => {
+		now = new Date('2026-10-02T16:59:40Z');
+		vi.setSystemTime(now);
+		const f = await fixture(),
+			v = actor(),
+			i = input(f.deck.id),
+			a = await beginRecallStudy(v, i);
+		advance(30);
+		await beat(v, a, i, 0, { interactions: 1, interactionDay: '2026-10-02' });
+		const r = await report(f.course.id, { start: '2026-10-02' });
+		expect(r.daily.map((row) => row.sessions)).toEqual([1, 0]);
+		expect(r.totals.sessions).toBe(1);
+	});
 	it('splits midnight time and counts returning browsers without splitting the session', async () => {
 		vi.setSystemTime(new Date('2026-10-02T16:59:40Z'));
 		now = new Date('2026-10-02T16:59:40Z');

@@ -27,6 +27,8 @@ export function createRecallTracker(
 	let lastTick = performance.now();
 	let seconds = 0;
 	let interactions = 0;
+	const studyDay = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+	let interactionDay = studyDay();
 	let reveals = 0;
 	let startBarrier = false;
 	const queue: RecallHeartbeatInput[] = [];
@@ -111,6 +113,7 @@ export function createRecallTracker(
 						reveals + queue.reduce((sum, row) => sum + row.answerReveals, 0),
 					);
 					queue.length = 0;
+					interactionDay = studyDay();
 					visitId = crypto.randomUUID();
 					sessionId = '';
 					sequence = -1;
@@ -164,6 +167,7 @@ export function createRecallTracker(
 				sequence: ++sequence,
 				seconds: count,
 				interactions,
+				interactionDay,
 				answerReveals: reveals,
 				activityAgeSeconds: Math.min(
 					86_400,
@@ -215,6 +219,14 @@ export function createRecallTracker(
 	return {
 		study(answerReveal = false) {
 			if (excluded || stopped) return;
+			const day = studyDay();
+			if (interactions && interactionDay !== day) {
+				flush();
+				// Do not merge days when the offline queue is full.
+				interactions = 0;
+				reveals = 0;
+			}
+			interactionDay = day;
 			sample();
 			if (!engaged) {
 				startBarrier = true;

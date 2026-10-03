@@ -8,7 +8,7 @@ Admins open `/my-space/teaching/recall-analytics` from Teaching or a course's wo
 - A session includes all Recall decks used by that browser until 30 minutes without activity. Midnight does not create another session.
 - Each player mount is an open. Retrying its begin request is idempotent; reloading creates another open in the same session.
 - Flipping, successfully navigating a card or enabling side-by-side EN/VI text establishes study engagement. Restoring saved state does not establish engagement. Answer-to-question flips do not increase answer reveals.
-- Time starts after the first engagement acknowledgement, while the document is visible and focused and interaction occurred in the last five minutes. Browser timing is approximate and server-bounded. A two-minute server lease grants one tab timer ownership; hide/blur releases it.
+- Time starts after the first engagement acknowledgement, while the document is visible and focused and interaction occurred in the last five minutes. Browser timing is approximate and server-bounded. Batches retain the Vietnam date of qualifying actions across midnight within the session window. A two-minute server lease grants one tab timer ownership; hide/blur releases it.
 - Engaged days and sessions require qualifying study actions within the selected range and filters. A session with actions on two dates counts on both daily rows, but once in the range total.
 - Returning visitors have qualifying actions before the range and again inside it, under the same content filters. Visitor first/last timestamps refer to the browser's complete recorded history. Counts and duration use the selected range.
 - Class source comes from the actual class route. It does not prove membership. Direct access has the “Không qua link lớp” source.
@@ -43,8 +43,8 @@ The production build and its generated TypeScript checks pass. The analytics Chr
 ## Implementation verification results
 
 - Full unit suite: 119 files / 764 tests passed; updated route boundary tests were rerun after route typing changes.
-- Final full component suite: 77 files / 323 tests passed, including early interaction buffering, StrictMode, focus-claim queue draining, EN/VI reveal semantics and idle tracking.
-- Full integration suite: 22 files / 180 tests passed; all eight Recall database scenarios were rerun after the final server changes.
+- Final full component suite: 77 files / 324 tests passed, including early interaction buffering, StrictMode, focus-claim queue draining, EN/VI reveal semantics and idle tracking.
+- Full integration suite: 22 files / 181 tests passed; all nine Recall database scenarios were rerun after the final server changes.
 - Browser E2E: two consecutive Chromium runs passed, including cookie reuse, one browser/session across direct and class routes, actual elapsed time, class attribution, admin exclusion, guest denial, visitor history and a 390px viewport. Desktop/mobile screenshots were inspected.
 - Lint with zero warnings, format check, area check and diff whitespace check passed.
 - Final typecheck (including generated route validators), production build and dependency audit (zero vulnerabilities) passed.

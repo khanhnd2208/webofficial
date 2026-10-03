@@ -21,6 +21,10 @@ export const heartbeatRecallSchema = z
 		sequence: z.number().int().min(0).max(2_147_483_647),
 		seconds: z.number().int().min(0).max(75),
 		interactions: z.number().int().min(0).max(120),
+		interactionDay: z
+			.string()
+			.regex(/^\d{4}-\d{2}-\d{2}$/)
+			.optional(),
 		answerReveals: z.number().int().min(0).max(120),
 		activityAgeSeconds: z.number().int().min(0).max(86_400),
 		active: z.boolean(),
