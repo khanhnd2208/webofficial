@@ -8,17 +8,34 @@ export type RecallRouteHandler = (
 ) => Promise<NextResponse>;
 import type { ZodType } from 'zod';
 import { AppError } from '@/lib/appError';
+import { SITE_ORIGIN } from '@/config/site';
 import { getApiUser } from '@/lib/apiAuth';
 import { assertScopedRateLimit } from '@/lib/inquiryRateLimit';
 import { parseSchema } from '@/lib/validation/parse';
 import { recallVisitorHash } from './collection';
 
 export const RECALL_COOKIE = 'recall_visitor';
+function sameOrigin(request: NextRequest) {
+	const origin = request.headers.get('origin');
+	// The canonical public origin is configured, never inferred from forwarded
+	// headers: Next.js behind Nginx constructs its URL with the internal listener.
+	if (origin === SITE_ORIGIN || origin === request.nextUrl.origin) return true;
+	if (!origin) return false;
+	try {
+		const parsed = new URL(origin);
+		const loopback = ['localhost', '127.0.0.1', '[::1]'];
+		return (
+			loopback.includes(request.nextUrl.hostname) &&
+			loopback.includes(parsed.hostname) &&
+			parsed.origin === origin &&
+			parsed.host === request.headers.get('host')
+		);
+	} catch {
+		return false;
+	}
+}
 export async function recallRequest<T>(request: NextRequest, schema: ZodType<T>, begin: boolean) {
-	if (
-		request.headers.get('origin') !== request.nextUrl.origin ||
-		request.headers.get('sec-fetch-site') === 'cross-site'
-	)
+	if (!sameOrigin(request) || request.headers.get('sec-fetch-site') === 'cross-site')
 		throw new AppError('Nguồn yêu cầu không hợp lệ', 403);
 	if (Number(request.headers.get('content-length') || 0) > 4096)
 		throw new AppError('Yêu cầu quá lớn', 413);
