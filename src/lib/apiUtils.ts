@@ -147,6 +147,12 @@ type ResponseHandler = (request: NextRequest, context?: RouteContext) => Promise
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RouteContext = { params: Promise<any> };
 
+/** Both standalone callers and Next.js route context are supported. */
+type WrappedHandler<T extends Response = NextResponse> = {
+	(request: NextRequest): Promise<T>;
+	(request: NextRequest, context: RouteContext): Promise<T>;
+};
+
 // ─── Wrapper Functions ─────────────────────────────────────────────────────────
 
 /**
@@ -160,7 +166,7 @@ type RouteContext = { params: Promise<any> };
  *   export const GET = withAuth(async (req, user) => { ... });
  *   export const GET = withAuth(async (req, user, ctx) => { ... });
  */
-export function withAuth(handler: AuthenticatedHandler) {
+export function withAuth(handler: AuthenticatedHandler): WrappedHandler {
 	return async (request: NextRequest, context?: RouteContext): Promise<NextResponse> => {
 		const requestId = getRequestId(request);
 		const startedAt = Date.now();
@@ -185,7 +191,7 @@ export function withAuth(handler: AuthenticatedHandler) {
  * - Returns 401 if unauthenticated, 403 if not admin.
  * - Catches errors and returns a standardized error response.
  */
-export function withAdmin(handler: AuthenticatedHandler) {
+export function withAdmin(handler: AuthenticatedHandler): WrappedHandler {
 	return async (request: NextRequest, context?: RouteContext): Promise<NextResponse> => {
 		const requestId = getRequestId(request);
 		const startedAt = Date.now();
@@ -211,7 +217,7 @@ export function withAdmin(handler: AuthenticatedHandler) {
  *
  * Useful for routes like GET /api/posts that are accessible to everyone.
  */
-export function withErrorHandling(handler: PublicHandler) {
+export function withErrorHandling(handler: PublicHandler): WrappedHandler {
 	return async (request: NextRequest, context?: RouteContext): Promise<NextResponse> => {
 		const requestId = getRequestId(request);
 		const startedAt = Date.now();
@@ -230,9 +236,9 @@ export function withErrorHandling(handler: PublicHandler) {
  * request-body wrappers so disabled routes do not authenticate, rate-limit,
  * parse input, query the database, or start a stream.
  */
-export function withTeachingGroupBoard(handler: PublicHandler): PublicHandler;
-export function withTeachingGroupBoard(handler: ResponseHandler): ResponseHandler;
-export function withTeachingGroupBoard(handler: ResponseHandler) {
+export function withTeachingGroupBoard(handler: PublicHandler): WrappedHandler;
+export function withTeachingGroupBoard(handler: ResponseHandler): WrappedHandler<Response>;
+export function withTeachingGroupBoard(handler: ResponseHandler): WrappedHandler<Response> {
 	return async (request: NextRequest, context?: RouteContext) => {
 		if (!isTeachingGroupBoardEnabled()) {
 			return withRequestId(
