@@ -8,3 +8,4 @@ export * from './schemas';
 export * from './service';
 export * from './studyAnalytics';
 export * from './types';
+export * from './studyLearnerReport';
