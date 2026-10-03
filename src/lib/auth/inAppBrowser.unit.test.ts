@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { inAppBrowserName } from './inAppBrowser';
+import { chromeIntentHref, inAppBrowserName } from './inAppBrowser';
 
 describe('inAppBrowserName', () => {
 	it.each([
@@ -15,4 +15,21 @@ describe('inAppBrowserName', () => {
 		'Mozilla/5.0 Chrome/123 Safari/537.36',
 		'',
 	])('leaves ordinary browsers alone: %s', (ua) => expect(inAppBrowserName(ua)).toBeNull());
+});
+
+describe('Chrome intent links', () => {
+	it('preserves the destination and account choice on HTTPS Android', () => {
+		expect(
+			chromeIntentHref(
+				'https://toiladuykhanh.com/dang-nhap?from=%2Fkhoa-hoc&chon=1#ignored',
+				'Android Zalo',
+			),
+		).toBe(
+			'intent://toiladuykhanh.com/dang-nhap?from=%2Fkhoa-hoc&chon=1#Intent;scheme=https;package=com.android.chrome;end',
+		);
+	});
+	it('does not offer an intent for iOS or HTTP', () => {
+		expect(chromeIntentHref('https://toiladuykhanh.com/dang-nhap', 'iPhone Zalo')).toBeNull();
+		expect(chromeIntentHref('http://localhost/dang-nhap', 'Android Zalo')).toBeNull();
+	});
 });

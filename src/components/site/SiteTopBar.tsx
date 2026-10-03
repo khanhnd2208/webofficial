@@ -13,9 +13,12 @@ export type SiteCrumb = { label: string; href?: string };
 export default function SiteTopBar({
 	crumbs,
 	className = '',
+	showSignIn = true,
 }: {
 	crumbs: SiteCrumb[];
 	className?: string;
+	/** Hide the redundant sign-in action on the login page itself. */
+	showSignIn?: boolean;
 }) {
 	return (
 		<header
@@ -49,7 +52,7 @@ export default function SiteTopBar({
 					</span>
 				))}
 			</nav>
-			<SiteAuthChip variant="bar" className="tracking-normal normal-case" />
+			<SiteAuthChip variant="bar" className="tracking-normal normal-case" showSignIn={showSignIn} />
 		</header>
 	);
 }

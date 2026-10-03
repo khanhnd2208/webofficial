@@ -4,25 +4,27 @@ import { useEffect, useState } from 'react';
 
 import { startGoogleSignIn } from '@/lib/auth/startGoogleSignIn';
 
+// Google’s HTML button configurator: https://developers.google.com/identity/branding-guidelines
 function GoogleIcon({ className }: { className?: string }) {
 	return (
 		<svg viewBox="0 0 48 48" aria-hidden="true" className={className} focusable="false">
 			<path
-				fill="#FFC107"
-				d="M43.611 20.083H42V20H24v8h11.303C33.682 32.657 29.188 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+				fill="#EA4335"
+				d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
 			/>
 			<path
-				fill="#FF3D00"
-				d="M6.306 14.691 12.88 19.51C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
+				fill="#4285F4"
+				d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
 			/>
 			<path
-				fill="#4CAF50"
-				d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.166 0-9.65-3.319-11.168-7.946l-6.53 5.03C9.612 39.556 16.227 44 24 44z"
+				fill="#FBBC05"
+				d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
 			/>
 			<path
-				fill="#1976D2"
-				d="M43.611 20.083H42V20H24v8h11.303a11.98 11.98 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
+				fill="#34A853"
+				d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
 			/>
+			<path fill="none" d="M0 0h48v48H0z" />
 		</svg>
 	);
 }
@@ -38,6 +40,7 @@ export default function SignInWithGoogleButton({
 	callbackUrl?: string;
 }) {
 	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState(false);
 	const destination = redirectTo ?? callbackUrl ?? '/tai-khoan';
 
 	// Coming Back from Google restores this page from memory with the button still waiting.
@@ -51,22 +54,33 @@ export default function SignInWithGoogleButton({
 
 	const handleSignIn = async () => {
 		setLoading(true);
+		setError(false);
 		try {
 			await startGoogleSignIn(destination, { chooseAccount });
 		} catch {
+			setError(true);
 			setLoading(false);
 		}
 	};
 
 	return (
-		<button
-			type="button"
-			disabled={loading}
-			onClick={handleSignIn}
-			className="inline-flex w-full min-h-11 items-center justify-center gap-2.5 rounded-[10px] border-2 border-ink bg-ink px-5 py-3 text-sm font-semibold uppercase tracking-wider text-paper transition duration-200 hover:bg-transparent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			<GoogleIcon className="h-5 w-5" />
-			<span>{loading ? 'Đang chuyển hướng...' : 'Tiếp tục với Google'}</span>
-		</button>
+		<>
+			<button
+				type="button"
+				disabled={loading}
+				onClick={handleSignIn}
+				className="inline-flex min-h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-[#747775]! bg-white px-3 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#f2f2f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-wait disabled:opacity-60 dark:border-[#8e918f]! dark:bg-[#131314] dark:text-[#e3e3e3] dark:hover:bg-[#252526]"
+			>
+				<span className="rounded-full bg-white p-0.5">
+					<GoogleIcon className="h-5 w-5" />
+				</span>
+				<span>{loading ? 'Đang mở Google…' : 'Tiếp tục với Google'}</span>
+			</button>
+			{error ? (
+				<p role="alert" className="mt-3 text-sm text-ink-secondary">
+					Không mở được Google. Kiểm tra kết nối rồi thử lại.
+				</p>
+			) : null}
+		</>
 	);
 }
