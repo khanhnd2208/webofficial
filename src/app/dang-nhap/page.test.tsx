@@ -9,7 +9,9 @@ const mocks = vi.hoisted(() => ({
 	start: vi.fn(),
 	signOut: vi.fn(),
 	redirect: vi.fn(),
+	session: vi.fn(),
 }));
+vi.mock('next-auth/react', () => ({ useSession: mocks.session }));
 vi.mock('@/lib/auth', () => ({ auth: mocks.auth }));
 vi.mock('@/lib/auth/startGoogleSignIn', () => ({ startGoogleSignIn: mocks.start }));
 vi.mock('@/lib/auth/signOutTo', () => ({ signOutTo: mocks.signOut }));
@@ -25,6 +27,7 @@ vi.mock('@/components/site/SiteTopBar', () => ({
 beforeEach(() => {
 	vi.clearAllMocks();
 	mocks.auth.mockResolvedValue(null);
+	mocks.session.mockReturnValue({ status: 'authenticated' });
 	mocks.start.mockResolvedValue(undefined);
 	vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Chrome/123');
 });
@@ -93,6 +96,11 @@ describe('login page', () => {
 		Object.defineProperty(event, 'persisted', { value: true });
 		fireEvent(window, event);
 		expect(screen.getByRole('button', { name: 'Tiếp tục với Google' })).toBeEnabled();
+	});
+	it('waits for the browser session to initialize before allowing account switching', () => {
+		mocks.session.mockReturnValue({ status: 'loading' });
+		render(<SwitchAccountButton loginHref="/dang-nhap" />);
+		expect(screen.getByRole('button')).toBeDisabled();
 	});
 	it('can add the account choice to a bare login URL', () => {
 		render(<SwitchAccountButton loginHref="/dang-nhap" />);
