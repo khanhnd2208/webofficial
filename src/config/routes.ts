@@ -80,6 +80,7 @@ export const routes = {
 	learnStudio: (slug: string, sectionId?: string | null) =>
 		`/khoa-hoc/${slug}/studio${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	mySpaceTeaching: '/my-space/teaching',
+	mySpaceTeachingRecallAnalytics: '/my-space/teaching/recall-analytics',
 	mySpaceTeachingNew: '/my-space/teaching/new',
 	mySpaceTeachingCourseNewClass: (courseId: string) =>
 		`/my-space/teaching/new?courseId=${encodeURIComponent(courseId)}` as const,

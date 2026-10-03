@@ -11,6 +11,8 @@ import {
 	type PointerEvent as ReactPointerEvent,
 } from 'react';
 
+import { useRecallStudy } from './useRecallStudy';
+
 import type { ActiveRecallDeckDTO } from '@/features/active-recall';
 import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/richText';
 
@@ -83,12 +85,15 @@ export default function ActiveRecallPlayer({
 	backHref,
 	backLabel,
 	showViToggle = false,
+	classSlug,
 }: {
 	deck: ActiveRecallDeckDTO;
 	backHref?: string;
 	backLabel?: string;
 	showViToggle?: boolean;
+	classSlug?: string;
 }) {
+	const recordStudy = useRecallStudy(deck.id, classSlug);
 	const originalIds = useMemo(() => deck.cards.map((card) => card.id), [deck.cards]);
 	const [ids, setIds] = useState(originalIds);
 	const [currentId, setCurrentId] = useState(deck.cards[0]?.id ?? '');
@@ -181,16 +186,19 @@ export default function ActiveRecallPlayer({
 
 	const move = useCallback(
 		(direction: -1 | 1) => {
-			setCurrentId((current) => {
-				const index = ids.indexOf(current);
-				const next = Math.min(Math.max(0, index + direction), ids.length - 1);
-				return ids[next] ?? current;
-			});
+			const next = Math.min(Math.max(0, currentIndex + direction), ids.length - 1);
+			if (ids[next] && ids[next] !== currentId) {
+				recordStudy(false);
+				setCurrentId(ids[next]);
+			}
 			setRevealed(false);
 		},
-		[ids],
+		[currentId, currentIndex, ids, recordStudy],
 	);
-	const flip = useCallback(() => setRevealed((value) => !value), []);
+	const flip = useCallback(() => {
+		recordStudy(!revealed);
+		setRevealed((value) => !value);
+	}, [recordStudy, revealed]);
 
 	const onCardPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
 		cardGesture.current = {
@@ -237,8 +245,9 @@ export default function ActiveRecallPlayer({
 	}, []);
 
 	const toggleSplitView = useCallback(() => {
+		if (!splitView) recordStudy(false);
 		setSplitView((value) => !value);
-	}, []);
+	}, [recordStudy, splitView]);
 
 	const chooseReadingSize = useCallback((size: (typeof READING_SIZES)[number]) => {
 		writeStoredReadingSize(size);
@@ -355,7 +364,7 @@ export default function ActiveRecallPlayer({
 				return;
 			if (event.key === ' ' || event.key === 'Enter') {
 				event.preventDefault();
-				setRevealed((value) => !value);
+				flip();
 			} else if (event.key === 'ArrowLeft') {
 				event.preventDefault();
 				move(-1);
@@ -369,7 +378,7 @@ export default function ActiveRecallPlayer({
 		};
 		window.addEventListener('keydown', onKey);
 		return () => window.removeEventListener('keydown', onKey);
-	}, [leavePresentation, move, presentation, togglePresentation]);
+	}, [flip, leavePresentation, move, presentation, togglePresentation]);
 
 	if (!card) return null;
 	const first = currentIndex === 0;
@@ -391,6 +400,9 @@ export default function ActiveRecallPlayer({
 			aria-modal={fallbackPresentation ? true : undefined}
 		>
 			<div className="recall-player-inner">
+				<p className="recall-player-chrome text-xs text-ink-secondary">
+					Lượt học được thống kê bằng mã trình duyệt ẩn danh, không cần đăng nhập.
+				</p>
 				{backHref && backLabel ? (
 					<Link href={backHref} className="recall-player-back recall-player-chrome">
 						← {backLabel}
@@ -533,6 +545,7 @@ export default function ActiveRecallPlayer({
 						type="button"
 						className="recall-quiet-button recall-player-chrome mb-3 min-h-11 self-center"
 						onClick={() => {
+							if (ids[0] !== currentId) recordStudy(false);
 							setCurrentId(ids[0]!);
 							setRevealed(false);
 						}}
