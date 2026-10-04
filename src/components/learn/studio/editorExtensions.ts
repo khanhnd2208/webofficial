@@ -24,7 +24,7 @@ export function learnEditorExtensions() {
 		TableRow,
 		TableHeader,
 		TableCell,
-		LearnImage.configure({ inline: false, allowBase64: false }),
+		LearnImage.configure({ inline: false, allowBase64: true }),
 		FootnoteRef,
 		FootnoteDef,
 		Placeholder.configure({
