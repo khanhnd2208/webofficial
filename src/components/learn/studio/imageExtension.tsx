@@ -71,13 +71,13 @@ function FigureView({ node, updateAttributes, deleteNode, editor, selected }: Re
 				<div
 					className="ln-figure__missing"
 					contentEditable={false}
-					onDragOver={(event) => {
+					onDragOverCapture={(event) => {
 						if (editor.isEditable) {
 							event.preventDefault();
 							event.stopPropagation();
 						}
 					}}
-					onDrop={(event) => {
+					onDropCapture={(event) => {
 						if (!editor.isEditable) return;
 						event.preventDefault();
 						event.stopPropagation();

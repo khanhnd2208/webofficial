@@ -3,7 +3,26 @@ import { describe, expect, it, vi } from 'vitest';
 
 import LearnRichEditor from './LearnRichEditor';
 
+const { adminFetch } = vi.hoisted(() => ({ adminFetch: vi.fn() }));
+vi.mock('@/lib/admin/client', () => ({ adminFetch }));
+
 describe('LearnRichEditor mode guard', () => {
+	it('uploads a file dropped on a placeholder once and replaces that image', async () => {
+		adminFetch.mockReset();
+		adminFetch.mockResolvedValue({ url: '/uploads/replaced.webp' });
+		render(<LearnRichEditor value="![x](hinh-1.png)" onChange={vi.fn()} />);
+		const placeholder = await screen.findByText('Chưa có ảnh: hinh-1.png');
+		fireEvent.drop(placeholder.closest('div')!, {
+			dataTransfer: { files: [new File(['x'], 'hinh-1.png', { type: 'image/png' })] },
+		});
+		await waitFor(() =>
+			expect(screen.getByRole('img', { name: 'x' })).toHaveAttribute(
+				'src',
+				'/uploads/replaced.webp',
+			),
+		);
+		expect(adminFetch).toHaveBeenCalledTimes(1);
+	});
 	it('renders unresolved image placeholders with an upload action', async () => {
 		render(<LearnRichEditor value='![x](hinh-1.png "Hình 1")' onChange={vi.fn()} />);
 		await waitFor(() => expect(screen.getByText('Chưa có ảnh: hinh-1.png')).toBeInTheDocument());
