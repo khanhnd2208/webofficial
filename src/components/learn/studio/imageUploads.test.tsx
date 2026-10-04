@@ -2,8 +2,15 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { Editor } from '@tiptap/core';
 import { describe, expect, it, vi } from 'vitest';
 
+import { findImageRefs } from '@/features/learn/images';
 import { learnEditorExtensions } from './editorExtensions';
-import { insertImageFiles, preparePastedImages, resolvePastedImages } from './imageUploadUtils';
+import {
+	droppedImageFiles,
+	matchImageFiles,
+	insertImageFiles,
+	preparePastedImages,
+	resolvePastedImages,
+} from './imageUploadUtils';
 import { useImageUploads } from './useImageUploads';
 
 const { adminFetch } = vi.hoisted(() => ({ adminFetch: vi.fn() }));
@@ -18,6 +25,38 @@ function editor() {
 }
 
 describe('image uploads', () => {
+	it('attaches all matching references, rejects ambiguous duplicate files and reports unmatched files', async () => {
+		const upload = vi.fn().mockResolvedValue('/uploads/hinh.webp');
+		const refs = findImageRefs('![a](folder/hinh-1.png#w=50)\n![b](hinh-1.jpg "caption")');
+		const files = ['HINH-1.jpeg', 'hinh-1.webp', 'other.png'].map(
+			(name) => new File(['x'], name, { type: 'image/png' }),
+		);
+		const result = await matchImageFiles(refs, files, upload);
+		expect(upload).toHaveBeenCalledTimes(1);
+		expect(result.replacements.size).toBe(2);
+		expect(result.unmatched).toEqual(['hinh-1.webp', 'other.png']);
+	});
+	it('reads all directory pages recursively instead of stopping at the first page', async () => {
+		const file = new File(['x'], 'hinh-1.png', { type: 'image/png' });
+		const entry = {
+			isFile: true,
+			isDirectory: false,
+			file: (resolve: (value: File) => void) => resolve(file),
+		};
+		const pages = [[entry], [entry], []];
+		const directory = {
+			isDirectory: true,
+			isFile: false,
+			createReader: () => ({
+				readEntries: (resolve: (value: unknown[]) => void) => resolve(pages.shift() ?? []),
+			}),
+		};
+		const transfer = {
+			items: [{ webkitGetAsEntry: () => directory }],
+			files: [],
+		} as unknown as DataTransfer;
+		expect(await droppedImageFiles(transfer)).toEqual([file, file]);
+	});
 	it('limits requests to three and continues after a named failure', async () => {
 		const finishes: Array<(value: { url: string }) => void> = [];
 		adminFetch.mockImplementation(() => new Promise((resolve) => finishes.push(resolve)));

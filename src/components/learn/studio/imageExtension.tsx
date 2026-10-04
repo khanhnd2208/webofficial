@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
+
 import Image from '@tiptap/extension-image';
 import { NodeViewWrapper, ReactNodeViewRenderer, type ReactNodeViewProps } from '@tiptap/react';
 
 import {
 	isExternalImageSrc,
+	imageSrcStatus,
 	joinImageSrc,
 	splitImageSrc,
 	type ImageWidth,
@@ -33,19 +36,26 @@ function FigureView({ node, updateAttributes, deleteNode, editor, selected }: Re
 	const title = typeof node.attrs.title === 'string' ? node.attrs.title : '';
 	const width = widthOf(node.attrs.width);
 	const external = isExternalImageSrc(src);
+	const [failedSrc, setFailedSrc] = useState<string | null>(null);
+	const missing = imageSrcStatus(src) === 'missing' || failedSrc === src;
 
+	function uploadReplacement(file: File) {
+		const upload = (
+			editor.storage as { image?: { upload?: (file: File, apply?: (url: string) => void) => void } }
+		).image?.upload;
+		if (upload)
+			upload(file, (url) => {
+				setFailedSrc(null);
+				updateAttributes({ src: url });
+			});
+	}
 	function replace() {
 		const input = document.createElement('input');
 		input.type = 'file';
 		input.accept = 'image/*';
 		input.onchange = () => {
 			const file = input.files?.[0];
-			const upload = (
-				editor.storage as {
-					image?: { upload?: (file: File, apply?: (url: string) => void) => void };
-				}
-			).image?.upload;
-			if (file && upload) upload(file, (url) => updateAttributes({ src: url }));
+			if (file) uploadReplacement(file);
 		};
 		input.click();
 	}
@@ -57,10 +67,42 @@ function FigureView({ node, updateAttributes, deleteNode, editor, selected }: Re
 			data-width={width ?? 100}
 			data-selected={selected ? 'true' : undefined}
 		>
-			<img src={src} alt={alt} draggable={false} />
+			{missing ? (
+				<div
+					className="ln-figure__missing"
+					contentEditable={false}
+					onDragOver={(event) => {
+						if (editor.isEditable) {
+							event.preventDefault();
+							event.stopPropagation();
+						}
+					}}
+					onDrop={(event) => {
+						if (!editor.isEditable) return;
+						event.preventDefault();
+						event.stopPropagation();
+						const file = [...event.dataTransfer.files].find((item) =>
+							item.type.startsWith('image/'),
+						);
+						if (file) uploadReplacement(file);
+					}}
+				>
+					<p>Chưa có ảnh: {src || '(chưa có tên)'}</p>
+					{editor.isEditable ? (
+						<button type="button" className="ln-link-btn" onClick={replace}>
+							Tải ảnh lên
+						</button>
+					) : null}
+				</div>
+			) : (
+				<img src={src} alt={alt} draggable={false} onError={() => setFailedSrc(src)} />
+			)}
 			{external ? (
 				<p className="ln-figure__warn" contentEditable={false}>
-					Ảnh ngoài sẽ không hiển thị trên trang học viên. Hãy tải lên.
+					Ảnh ngoài có thể không hiển thị trên trang học viên.{' '}
+					<button type="button" className="ln-link-btn" onClick={replace}>
+						Tải ảnh lên thay thế
+					</button>
 				</p>
 			) : null}
 			<figcaption contentEditable={false}>
@@ -161,7 +203,8 @@ export const LearnImage = Image.extend({
 	},
 
 	renderMarkdown: (node) => {
-		const src = joinImageSrc(String(node.attrs?.src ?? ''), widthOf(node.attrs?.width));
+		const raw = String(node.attrs?.src ?? '');
+		const src = joinImageSrc(/^(data:|blob:)/i.test(raw) ? '' : raw, widthOf(node.attrs?.width));
 		const alt = String(node.attrs?.alt ?? '');
 		const title = String(node.attrs?.title ?? '').trim();
 		const escaped = title.replace(/"/g, '\\"');

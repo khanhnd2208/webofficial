@@ -2,25 +2,44 @@
 
 import { useState } from 'react';
 
-import { splitImageSrc } from '@/features/learn/images';
+import { imageSrcStatus, splitImageSrc } from '@/features/learn/images';
 
 export default function LearnFigure({
 	src,
 	alt,
 	title,
+	showMissingImages = false,
 }: {
 	src?: string;
 	alt?: string;
 	title?: string;
+	showMissingImages?: boolean;
 }) {
 	const parsed = splitImageSrc(src ?? '');
 	const [open, setOpen] = useState(false);
-	if (!parsed.url) return null;
+	const [failedSrc, setFailedSrc] = useState<string | null>(null);
+	const missing = imageSrcStatus(src ?? '') === 'missing' || failedSrc === src;
+	if (missing)
+		return showMissingImages ? (
+			<figure className="ln-figure">
+				<div className="ln-figure__missing">Chưa có ảnh: {parsed.url || '(chưa có tên)'}</div>
+				{title ? <figcaption>{title}</figcaption> : null}
+			</figure>
+		) : null;
 	return (
 		<>
 			<figure className="ln-figure" data-width={parsed.width ?? 100}>
 				<button type="button" className="ln-figure__zoom" onClick={() => setOpen(true)}>
-					<img src={parsed.url} alt={alt ?? ''} title={title} loading="lazy" />
+					<img
+						src={parsed.url}
+						alt={alt ?? ''}
+						title={title}
+						loading="lazy"
+						onError={() => {
+							setFailedSrc(src ?? '');
+							setOpen(false);
+						}}
+					/>
 				</button>
 				{title ? <figcaption>{title}</figcaption> : null}
 			</figure>

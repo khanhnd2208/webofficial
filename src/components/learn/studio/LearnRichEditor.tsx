@@ -10,10 +10,27 @@ import {
 	estimateReadingMinutes,
 	normalizeEditorMarkdown,
 } from '@/features/learn/content';
+import {
+	findImageRefs,
+	imageFileKey,
+	splitImageSrc,
+	replaceImageSrcs,
+} from '@/features/learn/images';
 import { findUnsupportedMarkdown } from '@/features/learn/markdownFidelity';
 import { compareLectureText, type TextHunk } from '@/features/learn/textFidelity';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
-import { adminFetch } from '@/lib/admin/client';
+import { useImageUploads } from './useImageUploads';
+import ImageUploadStatus from './ImageUploadStatus';
+import MissingImagesBar from './MissingImagesBar';
+import {
+	droppedImageFiles,
+	matchImageFiles,
+	replaceEditorImages,
+	insertImageFiles,
+	pastedHtmlHasText,
+	preparePastedImages,
+	resolvePastedImages,
+} from './imageUploadUtils';
 
 import { learnEditorExtensions } from './editorExtensions';
 import { registerEditorFlush } from './useStudioSaver';
@@ -46,7 +63,19 @@ export default function LearnRichEditor({
 		return unsupported.length ? unsupported : null;
 	});
 	const [lossHunks, setLossHunks] = useState<TextHunk[] | null>(null);
-	const [uploadNote, setUploadNote] = useState<string | null>(null);
+	const uploads = useImageUploads();
+	const [attachmentNote, setAttachmentNote] = useState('');
+	const [readingFiles, setReadingFiles] = useState(false);
+	const [processingPaste, setProcessingPaste] = useState(false);
+	const pasteJobs = useRef(0);
+	const attachRef = useRef<(files: File[]) => void>(() => {});
+	const pastedImages = useRef(new Map<string, string>());
+	const insertRef = useRef<(files: File[], position?: number) => void>(() => {});
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const sourceRef = useRef(source);
+	useEffect(() => {
+		sourceRef.current = source;
+	}, [source]);
 	const [slash, setSlash] = useState<SlashState | null>(null);
 	const fileRef = useRef<HTMLInputElement>(null);
 	const uploadRef = useRef<(file: File, apply?: (url: string) => void) => void>(() => {});
@@ -153,22 +182,37 @@ export default function LearnRichEditor({
 		},
 		editorProps: {
 			attributes: { class: 'ln-prose ln-editor__content', spellcheck: 'false' },
-			handleDrop: (_view, event) => {
-				const file = [...(event.dataTransfer?.files ?? [])].find((item) =>
-					item.type.startsWith('image/'),
+			transformPastedHTML: (html) => preparePastedImages(html, pastedImages.current),
+			handleDrop: (view, event, _slice, moved) => {
+				if (moved) return false;
+				const files = [...(event.dataTransfer?.files ?? [])].filter((file) =>
+					file.type.startsWith('image/'),
 				);
-				if (!file) return false;
+				if (!files.length) return false;
 				event.preventDefault();
-				uploadRef.current(file);
+				const position =
+					view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos ??
+					view.state.selection.from;
+				const md = editorRef.current?.getMarkdown() ?? '';
+				if (
+					files.some((file) =>
+						findImageRefs(md).some(
+							(ref) => ref.status !== 'ready' && imageFileKey(ref.url) === imageFileKey(file.name),
+						),
+					)
+				)
+					attachRef.current(files);
+				else insertRef.current(files, position);
 				return true;
 			},
 			handlePaste: (_view, event) => {
-				const file = [...(event.clipboardData?.files ?? [])].find((item) =>
-					item.type.startsWith('image/'),
+				if (pastedHtmlHasText(event.clipboardData?.getData('text/html') ?? '')) return false;
+				const files = [...(event.clipboardData?.files ?? [])].filter((file) =>
+					file.type.startsWith('image/'),
 				);
-				if (!file) return false;
+				if (!files.length) return false;
 				event.preventDefault();
-				uploadRef.current(file);
+				insertRef.current(files);
 				return true;
 			},
 			handleKeyDown: (_view, event) => {
@@ -194,6 +238,14 @@ export default function LearnRichEditor({
 		},
 		onUpdate: ({ editor: current }) => {
 			detectSlash(current);
+			if (pastedImages.current.size) {
+				pasteJobs.current++;
+				setProcessingPaste(true);
+				void resolvePastedImages(current, pastedImages.current, uploads.uploadFile).finally(() => {
+					pasteJobs.current--;
+					if (!current.isDestroyed) setProcessingPaste(pasteJobs.current > 0);
+				});
+			}
 			scheduleChange(() => normalizeEditorMarkdown(current.getMarkdown()));
 		},
 		onSelectionUpdate: ({ editor: current }) => detectSlash(current),
@@ -211,29 +263,77 @@ export default function LearnRichEditor({
 
 	useEffect(() => () => flushPending(), [flushPending]);
 
-	async function uploadImage(file: File, apply?: (url: string) => void) {
-		setUploadNote('Đang tải ảnh…');
-		try {
-			const form = new FormData();
-			form.append('file', file);
-			const payload = await adminFetch<{ url: string }>('/api/uploads', {
-				method: 'POST',
-				body: form,
-			});
-			if (apply) apply(payload.url);
-			else
-				editorRef.current
-					?.chain()
-					.focus()
-					.setLearnImage({ src: payload.url, alt: file.name.replace(/\.[^.]+$/, '') })
-					.run();
-			setUploadNote(null);
-		} catch (err) {
-			setUploadNote(err instanceof Error ? err.message : 'Không tải ảnh lên được');
+	function changeSource(next: string) {
+		sourceRef.current = next;
+		setSource(next);
+		onChangeRef.current(next);
+	}
+
+	async function insertFiles(files: File[], position?: number) {
+		if (mode === 'visual' && editorRef.current) {
+			await insertImageFiles(
+				editorRef.current,
+				files,
+				position ?? editorRef.current.state.selection.from,
+				uploads.uploadFile,
+			);
+			return;
 		}
+		const placeholders = files.map((file) => ({
+			file,
+			src: `anh-dan-${crypto.randomUUID()}-${encodeURIComponent(file.name)}`,
+		}));
+		const current = sourceRef.current;
+		const start = textareaRef.current?.selectionStart ?? current.length;
+		const end = textareaRef.current?.selectionEnd ?? start;
+		changeSource(
+			current.slice(0, start) +
+				'\n' +
+				placeholders.map(({ src }) => `![](${src})`).join('\n') +
+				'\n' +
+				current.slice(end),
+		);
+		await Promise.all(
+			placeholders.map(async ({ file, src }) => {
+				const url = await uploads.uploadFile(file);
+				if (url) changeSource(replaceImageSrcs(sourceRef.current, new Map([[src, url]])));
+			}),
+		);
 	}
 	useEffect(() => {
-		uploadRef.current = (file, apply) => void uploadImage(file, apply);
+		insertRef.current = (files, position) => {
+			void insertFiles(files, position);
+		};
+		uploadRef.current = (file, apply) => {
+			if (apply)
+				void uploads.uploadFile(file).then((url) => {
+					if (url && !editorRef.current?.isDestroyed) apply(url);
+				});
+			else void insertFiles([file]);
+		};
+	});
+
+	async function attachFiles(files: File[]) {
+		const current =
+			mode === 'markdown' ? sourceRef.current : (editorRef.current?.getMarkdown() ?? value);
+		const { replacements, unmatched, count } = await matchImageFiles(
+			findImageRefs(current),
+			files,
+			uploads.uploadFile,
+		);
+		if (mode === 'markdown') changeSource(replaceImageSrcs(sourceRef.current, replacements));
+		else if (editorRef.current) {
+			const nodeReplacements = new Map(
+				[...replacements].map(([src, url]) => [splitImageSrc(src).url, url]),
+			);
+			replaceEditorImages(editorRef.current, nodeReplacements);
+		}
+		setAttachmentNote(
+			`Đã gắn ${count} ảnh${unmatched.length ? ` · ${unmatched.length} file không khớp: ${unmatched.join(', ')}` : ''}`,
+		);
+	}
+	useEffect(() => {
+		attachRef.current = (files) => void attachFiles(files);
 	});
 
 	function switchMode(next: Mode, force = false) {
@@ -268,11 +368,37 @@ export default function LearnRichEditor({
 	const items = slash ? filterSlashCommands(slash.query) : [];
 
 	return (
-		<div className="ln-editor">
+		<div
+			className="ln-editor"
+			onDragOverCapture={(event) => {
+				if (
+					[...(event.dataTransfer.items ?? [])].some(
+						(item) => item.webkitGetAsEntry?.()?.isDirectory,
+					)
+				)
+					event.preventDefault();
+			}}
+			onDropCapture={(event) => {
+				if (
+					![...(event.dataTransfer.items ?? [])].some(
+						(item) => item.webkitGetAsEntry?.()?.isDirectory,
+					)
+				)
+					return;
+				event.preventDefault();
+				event.stopPropagation();
+				setReadingFiles(true);
+				void droppedImageFiles(event.dataTransfer)
+					.then((files) => attachFiles(files))
+					.catch(() => setAttachmentNote('Không đọc được thư mục ảnh. Hãy chọn các file ảnh.'))
+					.finally(() => setReadingFiles(false));
+			}}
+		>
 			<div className="ln-editor__modes" role="tablist" aria-label="Chế độ soạn">
 				<button
 					type="button"
 					role="tab"
+					disabled={uploads.uploading || readingFiles || processingPaste}
 					aria-selected={mode === 'visual'}
 					onClick={() => switchMode('visual')}
 				>
@@ -281,6 +407,7 @@ export default function LearnRichEditor({
 				<button
 					type="button"
 					role="tab"
+					disabled={uploads.uploading || readingFiles || processingPaste}
 					aria-selected={mode === 'markdown'}
 					onClick={() => switchMode('markdown')}
 				>
@@ -290,16 +417,23 @@ export default function LearnRichEditor({
 					{words.toLocaleString('vi-VN')} từ · ~{estimateReadingMinutes(markdownNow)} phút đọc
 				</span>
 			</div>
+			<MissingImagesBar
+				markdown={markdownNow}
+				disabled={readingFiles || uploads.uploading}
+				onFiles={(files) => void attachFiles(files)}
+			/>
+			<ImageUploadStatus uploads={uploads} />
+			{attachmentNote ? (
+				<p className="ln-editor__upload" role="status">
+					{attachmentNote}
+				</p>
+			) : null}
 			{mode === 'visual' ? (
 				<>
 					{editor ? (
 						<EditorToolbar editor={editor} onPickImage={() => fileRef.current?.click()} />
 					) : null}
-					{uploadNote ? (
-						<p className="ln-editor__upload" role="status">
-							{uploadNote}
-						</p>
-					) : null}
+
 					<div ref={wrapperRef} className="ln-editor__surface">
 						{editor ? (
 							<BubbleMenu editor={editor} className="ln-bubble">
@@ -373,18 +507,50 @@ export default function LearnRichEditor({
 					) : null}
 					<div className="ln-editor__split">
 						<textarea
+							ref={textareaRef}
+							onPaste={(event) => {
+								const files = [...event.clipboardData.files].filter((file) =>
+									file.type.startsWith('image/'),
+								);
+								if (files.length && !pastedHtmlHasText(event.clipboardData.getData('text/html'))) {
+									event.preventDefault();
+									void insertFiles(files);
+								}
+							}}
+							onDragOver={(event) => {
+								if (event.dataTransfer.types.includes('Files')) event.preventDefault();
+							}}
+							onDrop={(event) => {
+								const files = [...event.dataTransfer.files].filter((file) =>
+									file.type.startsWith('image/'),
+								);
+								if (files.length) {
+									event.preventDefault();
+									const refs = findImageRefs(sourceRef.current);
+									if (
+										files.some((file) =>
+											refs.some(
+												(ref) =>
+													ref.status !== 'ready' &&
+													imageFileKey(ref.url) === imageFileKey(file.name),
+											),
+										)
+									)
+										void attachFiles(files);
+									else void insertFiles(files);
+								}
+							}}
 							className="ln-editor__source"
 							value={source}
 							spellCheck={false}
 							onChange={(event) => {
-								setSource(event.target.value);
-								onChangeRef.current(event.target.value);
+								changeSource(event.target.value);
 							}}
 							onBlur={() => flushPending()}
 							placeholder={'## Tiêu đề\n\nNội dung…\n\n> [!DEFINITION] Khái niệm\n> Định nghĩa…'}
 						/>
 						<div className="ln-editor__preview" aria-label="Xem trước">
-							<LearnMarkdown markdown={source} />
+							<LearnMarkdown markdown={source} showMissingImages />
 						</div>
 					</div>
 				</div>
@@ -393,11 +559,12 @@ export default function LearnRichEditor({
 				ref={fileRef}
 				type="file"
 				accept="image/*"
+				multiple
 				hidden
 				onChange={(event) => {
-					const file = event.target.files?.[0];
+					const files = [...(event.target.files ?? [])];
 					event.target.value = '';
-					if (file) void uploadImage(file);
+					if (files.length) void insertFiles(files);
 				}}
 			/>
 		</div>

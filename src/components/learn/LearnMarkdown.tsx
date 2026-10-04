@@ -54,12 +54,29 @@ const components: Components = {
 };
 
 /** NDK markdown → reader prose. Raw HTML is never rendered. */
-export default function LearnMarkdown({ markdown }: { markdown: string }) {
+export default function LearnMarkdown({
+	markdown,
+	showMissingImages = false,
+}: {
+	markdown: string;
+	showMissingImages?: boolean;
+}) {
+	const renderComponents: Components = {
+		...components,
+		img: ({ src, alt, title }) => (
+			<LearnFigure
+				src={typeof src === 'string' ? src : undefined}
+				alt={alt}
+				title={title}
+				showMissingImages={showMissingImages}
+			/>
+		),
+	};
 	return (
 		<div className="ln-prose">
 			<ReactMarkdown
 				remarkPlugins={[remarkGfm, remarkBreaks, remarkLearnCallouts, remarkLearnFootnotes]}
-				components={components}
+				components={renderComponents}
 			>
 				{markdown}
 			</ReactMarkdown>

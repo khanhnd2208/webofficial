@@ -22,6 +22,7 @@ import {
 
 import { StudioIcon } from './icons';
 import StudioDialog from './StudioDialog';
+import ImportImagePicker from './ImportImagePicker';
 import { useCopy } from './useCopy';
 
 export type AiImportKind = 'lesson' | 'quiz' | 'practice' | 'discussion';
@@ -103,6 +104,7 @@ export default function AiImportDialog({
 		DEFAULT_SECTION_TITLE[initialKind === 'lesson' ? 'quiz' : initialKind],
 	);
 	const [titleTouched, setTitleTouched] = useState(false);
+	const [uploadBusy, setUploadBusy] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const deferredText = useDeferredValue(text);
@@ -154,6 +156,7 @@ export default function AiImportDialog({
 	}
 
 	async function submit() {
+		if (uploadBusy || busy) return;
 		setBusy(true);
 		setError(null);
 		try {
@@ -219,7 +222,7 @@ export default function AiImportDialog({
 					<button
 						type="button"
 						className="ln-btn ln-btn--primary"
-						disabled={busy || !canSave}
+						disabled={busy || uploadBusy || !canSave}
 						onClick={() => void submit()}
 					>
 						{busy ? 'Đang lưu…' : saveLabel}
@@ -284,6 +287,7 @@ export default function AiImportDialog({
 				</div>
 				<div className="ln-preview">
 					<p className="ln-preview__label">Xem trước</p>
+					<ImportImagePicker markdown={text} onChange={setText} onBusyChange={setUploadBusy} />
 					{warnings.map((warning) => (
 						<p key={warning} className="ln-warning">
 							{warning}
@@ -307,6 +311,12 @@ export default function AiImportDialog({
 										{lesson.lessonDescription ? (
 											<p className="mt-1 text-sm text-ink-secondary">{lesson.lessonDescription}</p>
 										) : null}
+									</div>
+								))}
+								{lessonSections.map((item, index) => (
+									<div key={index}>
+										<p className="font-medium">{item.title}</p>
+										<LearnMarkdown markdown={item.markdown} showMissingImages />
 									</div>
 								))}
 								<ol className="ln-preview__sections">
@@ -349,14 +359,14 @@ export default function AiImportDialog({
 									<li key={question.id}>
 										<p className="font-medium">Câu {index + 1}</p>
 										{question.question ? (
-											<LearnMarkdown markdown={question.question} />
+											<LearnMarkdown markdown={question.question} showMissingImages />
 										) : (
 											<p>
 												<em>(chưa có câu hỏi)</em>
 											</p>
 										)}
 										{question.answer ? (
-											<LearnMarkdown markdown={question.answer} />
+											<LearnMarkdown markdown={question.answer} showMissingImages />
 										) : (
 											<p className="ln-warning">Thiếu đáp án mẫu</p>
 										)}

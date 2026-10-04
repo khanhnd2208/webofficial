@@ -164,5 +164,5 @@ export async function matchImageFiles(
 			if (url) for (const ref of matching) replacements.set(ref.src, url);
 		}),
 	);
-	return { replacements, unmatched };
+	return { replacements, unmatched, count: refs.filter((ref) => replacements.has(ref.src)).length };
 }
