@@ -2,7 +2,7 @@
 
 import type { Editor } from '@tiptap/core';
 import { useEditorState } from '@tiptap/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CALLOUT_KINDS, CALLOUT_LABELS } from '@/features/learn/callouts';
 import { StudioIcon, type StudioIconName } from './icons';
 
@@ -68,6 +68,29 @@ export default function EditorToolbar({
 	const [calloutOpen, setCalloutOpen] = useState(false);
 	const [linkOpen, setLinkOpen] = useState(false);
 	const [href, setHref] = useState('');
+	const linkRef = useRef<HTMLDivElement>(null);
+	const calloutRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		if (!linkOpen && !calloutOpen) return;
+		const onPointer = (event: PointerEvent) => {
+			if (!(event.target instanceof Node)) return;
+			if (!linkRef.current?.contains(event.target)) setLinkOpen(false);
+			if (!calloutRef.current?.contains(event.target)) setCalloutOpen(false);
+		};
+		const onKey = (event: KeyboardEvent) => {
+			if (event.key !== 'Escape') return;
+			event.preventDefault();
+			setLinkOpen(false);
+			setCalloutOpen(false);
+			editor.commands.focus();
+		};
+		document.addEventListener('pointerdown', onPointer);
+		document.addEventListener('keydown', onKey);
+		return () => {
+			document.removeEventListener('pointerdown', onPointer);
+			document.removeEventListener('keydown', onKey);
+		};
+	}, [linkOpen, calloutOpen, editor]);
 
 	function setBlock(value: string) {
 		const chain = editor.chain().focus();
@@ -125,30 +148,41 @@ export default function EditorToolbar({
 				active={state.strike}
 				onClick={() => editor.chain().focus().toggleStrike().run()}
 			/>
-			<ToolButton
-				icon="link"
-				label={state.link ? 'Bỏ liên kết' : 'Chèn liên kết'}
-				active={state.link || linkOpen}
-				onClick={toggleLink}
-			/>
-			{linkOpen ? (
-				<form
-					className="ln-linkpop"
-					onSubmit={(event) => {
-						event.preventDefault();
-						applyLink();
-					}}
-				>
-					<input
-						autoFocus
-						value={href}
-						placeholder="https://"
-						aria-label="Đường dẫn"
-						onChange={(event) => setHref(event.target.value)}
-					/>
-					<button type="submit">Gắn</button>
-				</form>
-			) : null}
+			<div ref={linkRef} className="relative">
+				<ToolButton
+					icon="link"
+					label={state.link ? 'Bỏ liên kết' : 'Chèn liên kết'}
+					active={state.link || linkOpen}
+					onClick={toggleLink}
+				/>
+				{linkOpen ? (
+					<form
+						className="ln-linkpop"
+						onSubmit={(event) => {
+							event.preventDefault();
+							applyLink();
+						}}
+					>
+						<input
+							autoFocus
+							value={href}
+							placeholder="https://"
+							aria-label="Đường dẫn"
+							onChange={(event) => setHref(event.target.value)}
+						/>
+						<button type="submit">Gắn</button>
+						<button
+							type="button"
+							onClick={() => {
+								setLinkOpen(false);
+								editor.commands.focus();
+							}}
+						>
+							Hủy
+						</button>
+					</form>
+				) : null}
+			</div>
 			<span className="ln-toolbar__sep" />
 			<ToolButton
 				icon="list"
@@ -168,7 +202,7 @@ export default function EditorToolbar({
 				active={state.quote}
 				onClick={() => editor.chain().focus().toggleBlockquote().run()}
 			/>
-			<div className="relative">
+			<div ref={calloutRef} className="relative">
 				<ToolButton
 					icon="callout"
 					label="Khối học thuật"
@@ -176,7 +210,7 @@ export default function EditorToolbar({
 					onClick={() => setCalloutOpen((value) => !value)}
 				/>
 				{calloutOpen ? (
-					<div className="ln-popover" onMouseLeave={() => setCalloutOpen(false)}>
+					<div className="ln-popover" role="group" aria-label="Chọn khối học thuật">
 						{CALLOUT_KINDS.map((kind) => (
 							<button
 								key={kind}
