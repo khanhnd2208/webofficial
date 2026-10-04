@@ -29,7 +29,12 @@ export default function LearnFigure({
 	return (
 		<>
 			<figure className="ln-figure" data-width={parsed.width ?? 100}>
-				<button type="button" className="ln-figure__zoom" onClick={() => setOpen(true)}>
+				<button
+					type="button"
+					className="ln-figure__zoom"
+					aria-label={alt ? `Phóng to ảnh: ${alt}` : 'Phóng to ảnh'}
+					onClick={() => setOpen(true)}
+				>
 					<img
 						src={parsed.url}
 						alt={alt ?? ''}

@@ -25,6 +25,13 @@ function textOf(children: ReactNode): string {
 }
 
 const components: Components = {
+	p: ({ node, children }) => {
+		// LearnFigure is a block element: keep server HTML valid for hydration.
+		const hasImage = node?.children.some(
+			(child) => child.type === 'element' && child.tagName === 'img',
+		);
+		return hasImage ? <div>{children}</div> : <p>{children}</p>;
+	},
 	table: ({ node: _node, ...props }) => (
 		<div className="ln-table">
 			<table {...props} />
