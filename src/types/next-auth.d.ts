@@ -13,5 +13,7 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
 	interface JWT {
 		role?: UserRole;
+		/** Seconds since epoch when the role was last read from the database. */
+		roleCheckedAt?: number;
 	}
 }
