@@ -176,6 +176,11 @@ export function TeachingCourseWorkspace({
 						>
 							Active Recall
 						</Link>
+						<Link
+							href={`${routes.mySpaceTeachingRecallAnalytics}?course=${encodeURIComponent(course.id)}`}
+						>
+							Thống kê Active Recall
+						</Link>
 					</nav>
 				}
 			/>

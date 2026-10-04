@@ -32,7 +32,14 @@ const nextConfig: NextConfig = {
 	// Keep the generated Prisma client on the Node side. Turbopack bundling it
 	// can freeze a client from before `prisma generate`, so new models such as
 	// myClassVocabAssignment appear as undefined at runtime.
-	serverExternalPackages: ['@prisma/client', '.prisma/client', '@prisma/adapter-pg', 'pg'],
+	serverExternalPackages: [
+		'@prisma/client',
+		'.prisma/client',
+		'@prisma/adapter-pg',
+		'pg',
+		// DOMPurify's server DOM reads jsdom resources from its installed package.
+		'isomorphic-dompurify',
+	],
 	turbopack: {
 		root: process.cwd(),
 	},
