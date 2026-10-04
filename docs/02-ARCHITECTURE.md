@@ -108,7 +108,7 @@ database role is the source used by normal authorization checks.
 ### MongoDB
 
 - `src/lib/dbConnect.ts`: cached Mongoose connection for application models.
-- `src/lib/mongodbClient.ts`: cached native `MongoClient` for Auth.js adapter.
+- `src/lib/mongodbClient.ts`: `getMongoClient()`, the cached native `MongoClient` for the Auth.js adapter; a failed connect is retried on the next call.
 - `src/models/*.ts`: schemas and model registration guards.
 - `src/services/*.ts`: business operations; services return plain serializable data.
 
