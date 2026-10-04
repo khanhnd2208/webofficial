@@ -19,6 +19,8 @@ LIVE_PORT="${LIVE_PORT:-4000}"
 CANDIDATE_PORT="${CANDIDATE_PORT:-4001}"
 DB_BACKUP_COMMAND="${DB_BACKUP_COMMAND:-/opt/scripts/backup-databases.sh}"
 EXPECT_PUBLIC_LEARNING_LOCKS="${EXPECT_PUBLIC_LEARNING_LOCKS:-true}"
+DEPLOY_KEEP_RELEASES="${DEPLOY_KEEP_RELEASES:-4}"
+DEPLOY_MIN_FREE_GB="${DEPLOY_MIN_FREE_GB:-8}"
 
 SOURCE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MODE="deploy"
@@ -38,7 +40,7 @@ Usage: scripts/deploy-vps.sh [--check|--dry-run|--help]
 Optional environment variables:
   VPS_HOST, VPS_PORT, VPS_DIR, DEPLOY_KEY, DEPLOY_RELEASE_ID, PUBLIC_URL,
   PM2_APP_NAME, LIVE_PORT, CANDIDATE_PORT, DB_BACKUP_COMMAND,
-  EXPECT_PUBLIC_LEARNING_LOCKS
+  EXPECT_PUBLIC_LEARNING_LOCKS, DEPLOY_KEEP_RELEASES, DEPLOY_MIN_FREE_GB
 EOF
 }
 
@@ -64,6 +66,8 @@ esac
 [[ "$PM2_APP_NAME" =~ ^[A-Za-z0-9._-]+$ ]] || die "Unsafe PM2_APP_NAME"
 [[ "$DB_BACKUP_COMMAND" =~ ^/[A-Za-z0-9._/-]+$ ]] || die "DB_BACKUP_COMMAND must be an absolute executable path"
 [[ "$EXPECT_PUBLIC_LEARNING_LOCKS" == "true" || "$EXPECT_PUBLIC_LEARNING_LOCKS" == "false" ]] || die "EXPECT_PUBLIC_LEARNING_LOCKS must be true or false"
+[[ "$DEPLOY_KEEP_RELEASES" =~ ^[1-9][0-9]*$ ]] || die "DEPLOY_KEEP_RELEASES must be a positive integer"
+[[ "$DEPLOY_MIN_FREE_GB" =~ ^[0-9]+$ ]] || die "DEPLOY_MIN_FREE_GB must be a whole number"
 
 SSH_ARGS=(-o BatchMode=yes -o ConnectTimeout=10 -p "$VPS_PORT")
 if [[ -n "$DEPLOY_KEY" ]]; then
@@ -98,6 +102,8 @@ printf 'node='; node --version
 printf 'nginx='; systemctl is-active nginx
 printf 'postgresql='; systemctl is-active postgresql
 printf 'mongodb='; systemctl is-active mongod
+printf 'disk_free='; df -Ph "$deploy_root" | awk 'NR == 2 { print $4 " (" $5 " used)" }'
+printf 'releases='; { find "$deploy_root/releases" -mindepth 1 -maxdepth 1 -type d 2>/dev/null || true; } | wc -l
 pm2 status "$app_name" --no-color | sed -n '1,8p'
 test -f "$deploy_root/.env.local"
 printf 'env_mode='; stat -c '%a' "$deploy_root/.env.local"
@@ -183,6 +189,13 @@ fi
 RELEASES_DIR="$VPS_DIR/releases"
 REMOTE_RELEASE_DIR="$RELEASES_DIR/$DEPLOY_RELEASE_ID"
 
+# Each release holds its own node_modules and .next. Without pruning they filled
+# the disk and MongoDB aborted when it could no longer write its log.
+log "Pruning old releases (keeping current + $DEPLOY_KEEP_RELEASES) and checking for ${DEPLOY_MIN_FREE_GB} GB free"
+run_ssh "flock -n '$VPS_DIR/.deploy.lock' bash -s -- '$VPS_DIR' '$DEPLOY_KEEP_RELEASES' '$DEPLOY_MIN_FREE_GB'" \
+	<"$LOCAL_EXPORT_DIR/scripts/deploy-prune-releases.sh" \
+	|| die "Release pruning or the free-space check failed, or another deploy holds $VPS_DIR/.deploy.lock"
+
 log "Preparing empty release $VPS_HOST:$REMOTE_RELEASE_DIR"
 run_ssh "bash -s -- '$VPS_DIR' '$DEPLOY_RELEASE_ID'" <<'REMOTE_PREPARE'
 set -Eeuo pipefail
@@ -227,6 +240,7 @@ SWAPPED=0
 PREVIOUS_TARGET=""
 BACKUP_COMPLETED="no"
 ROLLBACK_SMOKE_SAFE=0
+NEXT_CACHE_MAX_MB=1536
 
 atomic_current_link() {
 	local target="$1"
@@ -647,6 +661,19 @@ if [[ -n "$NEXT_CACHE_SOURCE" ]]; then
 	rm -rf -- "$RELEASE_DIR/.next/cache"
 	if ! cp -a "$NEXT_CACHE_SOURCE" "$RELEASE_DIR/.next/cache"; then
 		echo "WARNING: could not reuse the Next.js compiler cache; building without it" >&2
+		rm -rf -- "$RELEASE_DIR/.next/cache"
+	fi
+	# Only the bundler `npm run build` uses reads its cache; the other one would
+	# otherwise ride along in every release. Every copy also inherits the last
+	# one's growth, so start cold once the cache passes the cap.
+	if grep -Eq '"build": *"[^"]*--webpack' package.json; then
+		rm -rf -- "$RELEASE_DIR/.next/cache/turbopack"
+	else
+		rm -rf -- "$RELEASE_DIR/.next/cache/webpack"
+	fi
+	next_cache_mb="$(du -sm "$RELEASE_DIR/.next/cache" 2>/dev/null | awk '{ print $1 }')"
+	if ((${next_cache_mb:-0} > NEXT_CACHE_MAX_MB)); then
+		echo "Next.js compiler cache is ${next_cache_mb} MB (cap ${NEXT_CACHE_MAX_MB} MB); building cold"
 		rm -rf -- "$RELEASE_DIR/.next/cache"
 	fi
 fi

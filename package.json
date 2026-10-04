@@ -18,7 +18,7 @@
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:unit": "vitest run --project unit && npm run test:lint-tooling",
+		"test:unit": "vitest run --project unit && npm run test:lint-tooling && npm run test:deploy-tooling",
 		"test:integration": "vitest run --project integration",
 		"test:component": "vitest run --project component",
 		"test:all": "vitest run",
@@ -39,7 +39,8 @@
 		"db:migrate:deploy": "npx prisma migrate deploy",
 		"db:studio": "npx prisma studio",
 		"deploy:vps": "bash scripts/deploy-vps.sh",
-		"test:lint-tooling": "node --test scripts/vendor/next-eslint-glob/*.test.mjs"
+		"test:lint-tooling": "node --test scripts/vendor/next-eslint-glob/*.test.mjs",
+		"test:deploy-tooling": "node --test scripts/deploy-prune-releases.test.mjs"
 	},
 	"prisma": {
 		"seed": "npx tsx prisma/seed.ts"
