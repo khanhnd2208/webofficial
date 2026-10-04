@@ -4,9 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { unresolvedSectionImages } from '@/features/learn/sectionImages';
-import StudioDialog from './StudioDialog';
-
 import { routes } from '@/config/routes';
 import {
 	LEARN_SECTION_KIND_LABELS,
@@ -18,6 +15,7 @@ import {
 	type LearnStudioLesson,
 	type LearnStudioSection,
 } from '@/features/learn/types';
+import { unresolvedSectionImages } from '@/features/learn/sectionImages';
 import { adminFetch } from '@/lib/admin/client';
 
 import AiImportDialog, { type AiImportInput, type AiImportKind } from './AiImportDialog';
@@ -27,6 +25,7 @@ import LearnDiscussionEditor from './LearnDiscussionEditor';
 import LearnQuizEditor from './LearnQuizEditor';
 import LearnRichEditor from './LearnRichEditor';
 import StudioInspector, { type SectionPatch } from './StudioInspector';
+import StudioDialog from './StudioDialog';
 import StudioOutline from './StudioOutline';
 import { useStudioSaver, type SaveStatus } from './useStudioSaver';
 
@@ -100,15 +99,21 @@ export default function LearnStudio({
 	}, [lessons]);
 	const [statusRequest, setStatusRequest] = useState<LearnCourseMeta['status'] | null>(null);
 	const [statusBusy, setStatusBusy] = useState(false);
-	const unresolvedSections = lessons
-		.flatMap((lesson) =>
-			lesson.sections.map((section) => ({
-				section,
-				lessonTitle: lesson.title,
-				count: unresolvedSectionImages(section).length,
-			})),
-		)
-		.filter((item) => item.count > 0);
+	const unresolvedSections = useMemo(
+		() =>
+			statusRequest === 'PUBLISHED'
+				? lessons
+						.flatMap((lesson) =>
+							lesson.sections.map((section) => ({
+								section,
+								lessonTitle: lesson.title,
+								count: unresolvedSectionImages(section).length,
+							})),
+						)
+						.filter((item) => item.count > 0)
+				: [],
+		[lessons, statusRequest],
+	);
 	const [dialog, setDialog] = useState<'settings' | null>(null);
 	const [importRequest, setImportRequest] = useState<{
 		kind: AiImportKind;

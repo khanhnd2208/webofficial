@@ -313,12 +313,6 @@ export default function AiImportDialog({
 										) : null}
 									</div>
 								))}
-								{lessonSections.map((item, index) => (
-									<div key={index}>
-										<p className="font-medium">{item.title}</p>
-										<LearnMarkdown markdown={item.markdown} showMissingImages />
-									</div>
-								))}
 								<ol className="ln-preview__sections">
 									{lessonSections.map((section, index) => (
 										<li key={index}>

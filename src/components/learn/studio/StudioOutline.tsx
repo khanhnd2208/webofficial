@@ -19,7 +19,7 @@ import {
 	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
 	LEARN_SECTION_KIND_SHORT,
@@ -27,7 +27,6 @@ import {
 	type LearnStudioLesson,
 	type LearnStudioSection,
 } from '@/features/learn/types';
-
 import { unresolvedSectionImages } from '@/features/learn/sectionImages';
 
 import { StudioIcon } from './icons';
@@ -59,7 +58,7 @@ function SectionRow({
 	selected: boolean;
 	onSelect: () => void;
 }) {
-	const missingCount = unresolvedSectionImages(section).length;
+	const missingCount = useMemo(() => unresolvedSectionImages(section).length, [section]);
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
 		id: section.id,
 		data: { type: 'section', lessonId },
@@ -86,12 +85,11 @@ function SectionRow({
 				<span className="min-w-0 flex-1 truncate">{section.title || 'Chưa đặt tên'}</span>
 				{missingCount ? (
 					<span
-						className="ln-warning"
+						className="ln-souter__warn"
+						role="img"
 						title={`${missingCount} ảnh chưa tải lên`}
 						aria-label={`${missingCount} ảnh chưa tải lên`}
-					>
-						●
-					</span>
+					/>
 				) : null}
 				{section.type !== 'READING' ? (
 					<span className="ln-souter__tag">{LEARN_SECTION_KIND_SHORT[section.type]}</span>

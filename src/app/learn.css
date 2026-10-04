@@ -2904,6 +2904,13 @@ button.ln-save.ln-btn--primary {
 .ln-souter__section-btn:hover {
 	color: var(--ink);
 }
+.ln-souter__warn {
+	flex: 0 0 auto;
+	width: 0.45rem;
+	height: 0.45rem;
+	border-radius: 9999px;
+	background: var(--warning);
+}
 .ln-souter__tag {
 	flex: 0 0 auto;
 	padding: 0 0.35rem;
