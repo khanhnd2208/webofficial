@@ -103,6 +103,18 @@ describe('image uploads', () => {
 		expect(md).toContain('![](/uploads/first.webp)');
 		current.destroy();
 	});
+	it('hands a late upload to the fallback when the editor closed mid-upload', async () => {
+		const current = editor();
+		let finish: (url: string) => void = () => {};
+		const upload = vi.fn(() => new Promise<string>((resolve) => (finish = resolve)));
+		const detached = vi.fn();
+		const task = insertImageFiles(current, [new File(['a'], 'shot.png')], 8, upload, detached);
+		const placeholder = findImageRefs(current.getMarkdown())[0].src;
+		current.destroy();
+		finish('/uploads/late.webp');
+		await task;
+		expect(detached).toHaveBeenCalledWith(new Map([[placeholder, '/uploads/late.webp']]));
+	});
 	it('retains pasted text and local-file placeholders without persisting base64', async () => {
 		const current = editor();
 		const pending = new Map<string, string>();

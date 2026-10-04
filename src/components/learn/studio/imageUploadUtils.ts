@@ -13,8 +13,14 @@ export function imageAlt(file: File) {
 		: file.name.replace(/\.[^.]+$/, '');
 }
 
-export function replaceEditorImages(editor: Editor, replacements: ReadonlyMap<string, string>) {
-	if (editor.isDestroyed) return;
+export type DetachedReplace = (replacements: ReadonlyMap<string, string>) => void;
+
+/** Returns false when the editor is gone (section switched mid-upload), so callers can fall back. */
+export function replaceEditorImages(
+	editor: Editor,
+	replacements: ReadonlyMap<string, string>,
+): boolean {
+	if (editor.isDestroyed) return false;
 	const tr = editor.state.tr;
 	editor.state.doc.descendants((node, pos) => {
 		if (node.type.name !== 'image') return;
@@ -22,6 +28,15 @@ export function replaceEditorImages(editor: Editor, replacements: ReadonlyMap<st
 		if (src) tr.setNodeMarkup(pos, undefined, { ...node.attrs, src });
 	});
 	if (tr.docChanged) editor.view.dispatch(tr);
+	return true;
+}
+
+function replaceOrFallback(
+	editor: Editor,
+	replacements: ReadonlyMap<string, string>,
+	detached?: DetachedReplace,
+) {
+	if (!replaceEditorImages(editor, replacements)) detached?.(replacements);
 }
 
 /** Reserve each position immediately; subsequent editing and uploads cannot move it. */
@@ -30,6 +45,7 @@ export async function insertImageFiles(
 	files: File[],
 	position: number,
 	upload: (file: File) => Promise<string | null>,
+	detached?: DetachedReplace,
 ) {
 	const items = files.map((file) => ({ file, src: imagePlaceholder(file.name) }));
 	editor
@@ -43,7 +59,7 @@ export async function insertImageFiles(
 	await Promise.all(
 		items.map(async ({ file, src }) => {
 			const url = await upload(file);
-			if (url) replaceEditorImages(editor, new Map([[src, url]]));
+			if (url) replaceOrFallback(editor, new Map([[src, url]]), detached);
 		}),
 	);
 }
@@ -70,6 +86,7 @@ export async function resolvePastedImages(
 	editor: Editor,
 	pending: Map<string, string>,
 	upload: (file: File) => Promise<string | null>,
+	detached?: DetachedReplace,
 ) {
 	const inserted: string[] = [];
 	editor.state.doc.descendants((node) => {
@@ -102,7 +119,7 @@ export async function resolvePastedImages(
 				}
 				if (!blob.type.startsWith('image/')) throw new Error('Nội dung không phải ảnh');
 				const url = await upload(new File([blob], placeholder, { type: blob.type }));
-				if (url) replaceEditorImages(editor, new Map([[placeholder, url]]));
+				if (url) replaceOrFallback(editor, new Map([[placeholder, url]]), detached);
 				else if (imageSrcStatus(original) === 'external')
 					replaceEditorImages(editor, new Map([[placeholder, original]]));
 			} catch {

@@ -82,6 +82,7 @@ export default function LearnRichEditor({
 	const slashRef = useRef<SlashState | null>(null);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const onChangeRef = useRef(onChange);
+	const latestMarkdown = useRef(value);
 	const editorRef = useRef<Editor | null>(null);
 	const dirtyRef = useRef(false);
 	const dirtyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -96,6 +97,7 @@ export default function LearnRichEditor({
 		}
 		const markdown = readPending.current();
 		readPending.current = null;
+		latestMarkdown.current = markdown;
 		onChangeRef.current(markdown);
 	}, []);
 
@@ -115,6 +117,14 @@ export default function LearnRichEditor({
 	useEffect(() => {
 		onChangeRef.current = onChange;
 	}, [onChange]);
+
+	/** An upload that finishes after the editor closed still lands in the saved markdown. */
+	const applyDetached = useCallback((replacements: ReadonlyMap<string, string>) => {
+		const next = replaceImageSrcs(latestMarkdown.current, replacements);
+		if (next === latestMarkdown.current) return;
+		latestMarkdown.current = next;
+		onChangeRef.current(next);
+	}, []);
 
 	const updateSlash = useCallback((next: SlashState | null) => {
 		slashRef.current = next;
@@ -241,7 +251,12 @@ export default function LearnRichEditor({
 			if (pastedImages.current.size) {
 				pasteJobs.current++;
 				setProcessingPaste(true);
-				void resolvePastedImages(current, pastedImages.current, uploads.uploadFile).finally(() => {
+				void resolvePastedImages(
+					current,
+					pastedImages.current,
+					uploads.uploadFile,
+					applyDetached,
+				).finally(() => {
 					pasteJobs.current--;
 					if (!current.isDestroyed) setProcessingPaste(pasteJobs.current > 0);
 				});
@@ -265,6 +280,7 @@ export default function LearnRichEditor({
 
 	function changeSource(next: string) {
 		sourceRef.current = next;
+		latestMarkdown.current = next;
 		setSource(next);
 		onChangeRef.current(next);
 	}
@@ -276,6 +292,7 @@ export default function LearnRichEditor({
 				files,
 				position ?? editorRef.current.state.selection.from,
 				uploads.uploadFile,
+				applyDetached,
 			);
 			return;
 		}
