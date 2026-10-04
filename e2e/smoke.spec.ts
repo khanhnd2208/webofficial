@@ -14,9 +14,9 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByTestId('gate-home')).toHaveCount(0);
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
 		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toBeVisible();
-		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toHaveAttribute(
-			'href',
-			'/dang-nhap?from=%2F',
+		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toHaveJSProperty(
+			'tagName',
+			'BUTTON',
 		);
 		await expect(
 			page.getByRole('heading', { name: /Tôi làm giáo dục để tiếp tục học/i }),

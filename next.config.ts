@@ -76,6 +76,14 @@ const nextConfig: NextConfig = {
 	},
 	async redirects() {
 		return [
+			// One host for host-only session cookies and Google's callback URL.
+			{
+				source: '/:path*',
+				has: [{ type: 'host', value: 'www.toiladuykhanh.com' }],
+				destination: 'https://toiladuykhanh.com/:path*',
+				permanent: true,
+			},
+
 			// Blog is retired; old links land on Mục lục.
 			{ source: '/blog', destination: '/muc-luc', permanent: true },
 			{ source: '/blog/:path*', destination: '/muc-luc', permanent: true },
