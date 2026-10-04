@@ -21,6 +21,7 @@ DB_BACKUP_COMMAND="${DB_BACKUP_COMMAND:-/opt/scripts/backup-databases.sh}"
 EXPECT_PUBLIC_LEARNING_LOCKS="${EXPECT_PUBLIC_LEARNING_LOCKS:-true}"
 DEPLOY_KEEP_RELEASES="${DEPLOY_KEEP_RELEASES:-4}"
 DEPLOY_MIN_FREE_GB="${DEPLOY_MIN_FREE_GB:-8}"
+CHECK_MAX_DISK_USED_PERCENT="${CHECK_MAX_DISK_USED_PERCENT:-80}"
 
 SOURCE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MODE="deploy"
@@ -40,7 +41,8 @@ Usage: scripts/deploy-vps.sh [--check|--dry-run|--help]
 Optional environment variables:
   VPS_HOST, VPS_PORT, VPS_DIR, DEPLOY_KEY, DEPLOY_RELEASE_ID, PUBLIC_URL,
   PM2_APP_NAME, LIVE_PORT, CANDIDATE_PORT, DB_BACKUP_COMMAND,
-  EXPECT_PUBLIC_LEARNING_LOCKS, DEPLOY_KEEP_RELEASES, DEPLOY_MIN_FREE_GB
+  EXPECT_PUBLIC_LEARNING_LOCKS, DEPLOY_KEEP_RELEASES, DEPLOY_MIN_FREE_GB,
+  CHECK_MAX_DISK_USED_PERCENT
 EOF
 }
 
@@ -68,6 +70,7 @@ esac
 [[ "$EXPECT_PUBLIC_LEARNING_LOCKS" == "true" || "$EXPECT_PUBLIC_LEARNING_LOCKS" == "false" ]] || die "EXPECT_PUBLIC_LEARNING_LOCKS must be true or false"
 [[ "$DEPLOY_KEEP_RELEASES" =~ ^[1-9][0-9]*$ ]] || die "DEPLOY_KEEP_RELEASES must be a positive integer"
 [[ "$DEPLOY_MIN_FREE_GB" =~ ^[0-9]+$ ]] || die "DEPLOY_MIN_FREE_GB must be a whole number"
+[[ "$CHECK_MAX_DISK_USED_PERCENT" =~ ^[0-9]+$ ]] || die "CHECK_MAX_DISK_USED_PERCENT must be a whole number"
 
 SSH_ARGS=(-o BatchMode=yes -o ConnectTimeout=10 -p "$VPS_PORT")
 if [[ -n "$DEPLOY_KEY" ]]; then
@@ -90,11 +93,12 @@ run_ssh() {
 
 if [[ "$MODE" == "check" ]]; then
 	log "Checking SSH and production status (read-only)"
-	run_ssh "bash -s -- '$VPS_DIR' '$PM2_APP_NAME' '$LIVE_PORT'" <<'REMOTE_CHECK'
+	run_ssh "bash -s -- '$VPS_DIR' '$PM2_APP_NAME' '$LIVE_PORT' '$CHECK_MAX_DISK_USED_PERCENT'" <<'REMOTE_CHECK'
 set -Eeuo pipefail
 deploy_root="$1"
 app_name="$2"
 live_port="$3"
+max_disk_used="$4"
 
 printf 'host='; hostname
 printf 'utc='; date -u +%FT%TZ
@@ -125,6 +129,11 @@ if [[ -L "$deploy_root/current" ]]; then
 	printf 'current='; readlink "$deploy_root/current"
 else
 	printf 'current=legacy-root\n'
+fi
+disk_used="$(df -P "$deploy_root" | awk 'NR == 2 { sub("%", "", $5); print $5 }')"
+if ((disk_used > max_disk_used)); then
+	echo "Disk is ${disk_used}% used, above ${max_disk_used}%; see docs/deployment/VPS.md, Disk space" >&2
+	exit 1
 fi
 REMOTE_CHECK
 	exit 0

@@ -251,6 +251,28 @@ ssh webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- /var/
 The server side also caps what grows outside the deploy (see
 [Server guards](#server-guards)).
 
+## Server guards
+
+Configured on the VPS by hand on 2026-10-04 as drop-in files, so package
+upgrades keep them. Recreate them on a new server:
+
+| File | Setting | Why |
+| --- | --- | --- |
+| `/etc/systemd/journald.conf.d/50-webofficial-size.conf` | `SystemMaxUse=1G`, `SystemKeepFree=10G` | The journal had reached 3.2 GB. |
+| `/etc/logrotate.d/mongod` | weekly or past 100 MB, keep 4, `copytruncate` | `mongod.log` was never rotated. mongod opens it with `O_APPEND`, so truncating needs no restart. |
+| `/etc/systemd/system/mongod.service.d/50-restart.conf` | `Restart=on-failure`, `RestartSec=10s`, at most 5 starts in 10 min | mongod stayed down after it aborted. |
+| `/etc/systemd/system/postgresql@.service.d/50-restart.conf` | same as mongod | PostgreSQL had no restart policy either. |
+
+PM2 logs rotate through the `pm2-logrotate` module (10 MB, keep 7). Run
+`systemctl daemon-reload` after editing a unit drop-in, and
+`systemctl restart systemd-journald` after editing the journald one.
+
+`.github/workflows/vps-health.yml` runs `scripts/deploy-vps.sh --check` every
+three hours. It fails when nginx, PostgreSQL or MongoDB is down, the app is not
+ready, or the disk is more than `CHECK_MAX_DISK_USED_PERCENT` (default 80) full;
+GitHub emails the failed run. GitHub pauses scheduled workflows after 60 days
+without repository activity; re-enable it from the Actions tab if that happens.
+
 ## Nginx and TLS baseline
 
 Next.js redirects `www.toiladuykhanh.com` to `https://toiladuykhanh.com` with HTTP 308, preserving paths and queries so Google sessions use one host. This can move to a dedicated nginx redirect server later; keep TLS coverage for both hosts. Session cookies are host-only, so anyone signed in only on `www` signs in once more on the main host after this redirect; this was accepted rather than copying cookies across hosts.
