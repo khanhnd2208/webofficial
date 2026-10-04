@@ -16,6 +16,23 @@ beforeEach(() => {
 });
 
 describe('native sign-out redirect', () => {
+	it('leaves non-form bodies intact for Auth.js to handle', async () => {
+		const body = { callbackUrl: destination };
+		authPost.mockImplementation(async (incoming: NextRequest) => {
+			expect(await incoming.json()).toEqual(body);
+			return new Response('Unsupported body', { status: 400 });
+		});
+		const response = await POST(
+			new NextRequest('http://localhost:3100/api/auth/signout', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(body),
+			}),
+		);
+		expect(authPost).toHaveBeenCalledOnce();
+		expect(response.status).toBe(400);
+		expect(await response.text()).toBe('Unsupported body');
+	});
 	it('keeps the local origin and account-switch destination, preserving cookie deletion', async () => {
 		authPost.mockResolvedValue(
 			new Response(null, {

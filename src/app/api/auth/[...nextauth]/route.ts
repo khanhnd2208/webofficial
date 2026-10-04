@@ -13,7 +13,12 @@ export const POST = withErrorHandling(async (request) => {
 	const nativeSignOut =
 		request.nextUrl.pathname === '/api/auth/signout' &&
 		!request.headers.has('x-auth-return-redirect');
-	const fields = nativeSignOut ? await request.clone().formData() : null;
+	const fields = nativeSignOut
+		? await request
+				.clone()
+				.formData()
+				.catch(() => null)
+		: null;
 	const authResponse = await authPost(request);
 	const response = new NextResponse(authResponse.body, {
 		status: authResponse.status,
