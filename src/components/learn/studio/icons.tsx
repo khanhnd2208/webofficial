@@ -29,6 +29,18 @@ const PATHS = {
 	close: 'M6 6l12 12M18 6 6 18',
 	markdown: 'M3 6h18v12H3zM6.5 15V9l2.5 3 2.5-3v6M16.5 9v6M14.5 13l2 2 2-2',
 	image: 'M4 5h16v14H4zM8.5 10.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM4 16l4.5-5 3.5 4 2.5-3L20 16',
+	more: 'M5.5 12h.01M12 12h.01M18.5 12h.01',
+	chevron: 'M9 6l6 6-6 6',
+	pencil: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
+	move: 'M5 12h14M13 6l6 6-6 6',
+	help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01',
+	reading:
+		'M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5V19c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5zM12 6v13.5',
+	quiz: 'M9 11.5l2 2 4-4.5M5 4h14v16H5z',
+	practice: 'M5 19l4.5-4.5M14 5l5 5-7.5 7.5-5-5zM16.5 2.5l5 5',
+	discussion: 'M4 5h12v8H9l-4 3v-3H4zM16 9h4v8h-1v3l-4-3h-5v-2',
+	collapse: 'M7 4l5 5 5-5M7 20l5-5 5 5',
+	expand: 'M7 9l5-5 5 5M7 15l5 5 5-5',
 } as const;
 
 export type StudioIconName = keyof typeof PATHS;
