@@ -1,7 +1,7 @@
 # 09 — Design System
 
 **Status:** active
-**Last updated:** 2026-09-30
+**Last updated:** 2026-10-05
 
 This site has **four named surfaces** with separate visual grammars. Each owns its layout language and palette; accessibility and interaction contracts are shared.
 
@@ -24,21 +24,21 @@ Teaching owns its light palette through `data-surface="teaching"`; do not set th
 - Canvas `#F7F8F4`, paper `#FFFFFF`, ink `#19332F`, secondary text `#52645E`.
 - Accent `#176B63`, hover `#12564F`, selected fill `#E5F1ED`; status colors convey state with text or symbols.
 - Inter; page headings 24–32px, workspace headings 18–24px, body 14–16px, metadata 12px. Numbers use tabular figures.
-- Spacing 4/8/12/16/24/32px; controls 8px radius, panels 12px, dialogs 16px. Coarse-pointer targets are at least 44px.
+- Spacing 4/8/12/16/24/32px; shared radius tokens are 8/12/20px. Component-specific shapes remain explicit in Teaching styles. Coarse-pointer targets are at least 44px.
 - The contents Teaching tile uses the hand-drawn illustration, with a light teal wash from `--teaching-accent`. My Space keeps `TeachingMark` and those tokens. Task icons come from the typed `TeachingIcon` set. Label meaningful controls; decorative icons remain hidden from assistive technology.
 - Active classes precede courses. Courses are a compact list: classes in progress first, courses with no class and no deck collapsed, and status chips that count active courses only. One primary action per task; administrative actions use secondary controls and the management menu. Learner-facing copy says "sinh viên".
 - Gradebook toolbar groups tutorial, week, search, result count and saving/error feedback. Sticky identity columns and headers live inside the scrollable table; page overflow is never used to expose columns. The attendance score column is wide enough for "Chuyên cần". Only the current week spells out "Chưa chốt"; a future week without a date is a small add control.
 - A public class page can pin "Đây là tôi" in localStorage for that browser only. The choice is not sent to the server, and blocked storage leaves the page usable.
 - Mobile class headers stay compact, tabs scroll, and management opens a bottom sheet. Full metadata remains available in the eyebrow title and accessible text.
 - Teaching styles live in `src/components/teaching/ui/styles/`; experience access and choice styles are separate CSS Modules. Shared studio primitives still provide controls and typography.
-- Paper rulings are reserved for empty states. Tables and form surfaces remain flat; transitions use 120–200ms and respect reduced motion.
+- Paper rulings are reserved for empty states. Tables and form surfaces remain flat; shared hover/control transitions use 150/250ms and respect reduced motion.
 - Active Recall receives the optional `surface="teaching"` only for a class player. Standalone Active Recall and My Class retain their palettes.
 
 See [Teaching implementation and verification](./teaching-ui-standardization.md) for the route checklist and acceptance checks.
 
 ---
 
-## Editorial surface (unchanged)
+## Editorial surface
 
 Source of truth: [05-BRAND_BRIEF.md](./05-BRAND_BRIEF.md) and
 `src/app/globals.css` (`.editorial-*`, `.premium-*`).
@@ -144,11 +144,11 @@ Defined in `src/app/my-class-theme.css`, registered for Tailwind in
 | `--ink` `#121c2a` / `--ink-secondary` `#464555` / `--ink-tertiary` `#777587` | Text ladder                              |
 | `--mc-done` `#006c49`                                                        | Complete                                 |
 | `--mc-vocab` `#684000`                                                       | Vocabulary                               |
-| `--mc-r-xs/sm/md/lg`                                                         | 4 / 8 / 12 / 16 px                       |
+| `--mc-r-xs/sm/md/lg`                                                         | 8 / 8 / 12 / 20 px                       |
 | `--mc-measure`                                                               | 800px reader measure                     |
 | `--mc-sidebar` / `--mc-rail`                                                 | 320px / 256px; edit mode sidebar 360px   |
 | `--mc-topbar-height`                                                         | 4rem                                     |
-| `--mc-dur-1/2/3`                                                             | 120 / 200 / 280 ms                       |
+| `--mc-dur-1/2/3`                                                             | 150 / 250 / 400 ms                       |
 | `--mc-ease-standard` / `--mc-ease-emphasized`                                | Motion curves for hover, expand, overlay |
 
 Typography classes: `.mc-title`, `.mc-dek`, `.mc-eyebrow`, `.mc-h3`, `.mc-meta`, `.mc-num`, `.mc-prose`.
@@ -197,13 +197,13 @@ Defined on `.mc` in `src/app/my-class-theme.css`. Prefer these over ad-hoc durat
 
 | Token                  | Use                          |
 | ---------------------- | ---------------------------- |
-| `--mc-dur-1` 120ms     | Hover / color                |
-| `--mc-dur-2` 200ms     | Caret rotate, overlay, toast |
-| `--mc-dur-3` 280ms     | Outline branch open          |
+| `--mc-dur-1` 150ms     | Hover / color                |
+| `--mc-dur-2` 250ms     | Caret rotate, overlay, toast |
+| `--mc-dur-3` 400ms     | Reserved page-level timing   |
 | `--mc-ease-standard`   | Close, hover                 |
 | `--mc-ease-emphasized` | Open, overlay                |
 
-Outline branches open with grid-template-rows 260ms + fade/slide; close in 160ms.
+Outline branches keep their specific 260ms opening choreography; closing uses 150ms, with the rail opacity/slide at 250ms.
 Chevrons are a single `chevron_right` glyph rotated 90°. `prefers-reduced-motion`
 already collapses animation under `.mc`.
 
@@ -287,4 +287,13 @@ and inherit its tokens, including when displayed in the browser top layer.
   All writes are locked while a request runs. Deletion requires confirmation.
 - Archive modules keep their status and task layouts; only the shell and archive hub
   adopt Admin Studio. Teaching remains a separate workspace in My Space.
-- Hover feedback 120ms; sidebar/drawer 200ms. Reduced motion disables animation.
+- Shared hover/control feedback uses 150/250ms. Reduced motion disables animation.
+
+
+## Public UI polish
+
+Public editorial typography opts into named Tailwind utilities: text-caption (12px), text-label (13px), text-control (15px), text-body (17px), text-lead (20px), text-title (24px), text-heading (32px), and text-display (48px), each with a line-height token. Tailwind’s built-in sizes remain unchanged. My Class and Admin keep their existing text density.
+
+Shared interface timings are 150ms hover, 250ms control, and 400ms public page movement. Incoming motion uses --ui-ease; outgoing easing preserves acceleration. Internal workspaces render without a pathname-keyed transition so persistent layouts keep their state. Teaching keeps the palette, visual mark, portals, tables, and workspaces introduced in PR #21.
+
+Interface controls use the shared Icon renderer, with compatibility adapters for existing areas. New editorial raster artwork follows public/brand/prompts.json. Shared radius tiers are 8, 12, and 20px; focus rings and graphic geometry retain their distinct roles.
