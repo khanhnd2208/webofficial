@@ -34,7 +34,8 @@ test.describe('Focused operating mode', () => {
 		expect(xml).not.toContain('/vocabulary');
 	});
 
-	test('My Space leads to Teaching and hides retired spaces', async ({ page }) => {
+	test('admin My Space leads to Teaching and hides retired spaces', async ({ page, context }) => {
+		await addAdminSession(context);
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.getByTestId('my-space')).toBeVisible();

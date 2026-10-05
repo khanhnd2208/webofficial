@@ -67,6 +67,33 @@ describe('admin course analytics', () => {
 		expect(report).not.toHaveBeenCalled();
 	});
 
+	it('keeps the daily report and encoded learner links in the studio overview', async () => {
+		const empty = await report('itm', 7);
+		report.mockResolvedValue({
+			...empty,
+			totals: { ...empty.totals, visits: 1, visitors: 1, activeLearners: 1, totalSeconds: 120 },
+			daily: [{ day: '2026-10-03', seconds: 120, learners: 1, sessions: 1, averageSeconds: 120 }],
+			learners: [
+				{
+					userId: 'student&one',
+					name: 'Nguyễn An',
+					email: 'an@example.test',
+					sessions: 1,
+					seconds: 120,
+					completedSections: 1,
+					sectionCount: 2,
+					lastActivityAt: '2026-10-03T14:00:00Z',
+				},
+			],
+		});
+		render(await Page({ searchParams: Promise.resolve({ course: 'itm', days: '7' }) }));
+		expect(screen.getByRole('heading', { name: 'Thời lượng học theo ngày' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Nguyễn An' })).toHaveAttribute(
+			'href',
+			'/admin/learn-analytics?course=itm&days=7&page=1&user=student%26one&sessionPage=1#learner-study-title',
+		);
+	});
+
 	it('shows a selected learner and keeps course/day filters in session pagination links', async () => {
 		learnerReport.mockResolvedValue({
 			userId: 'student&one',
