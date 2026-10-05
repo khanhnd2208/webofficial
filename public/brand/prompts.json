@@ -162,7 +162,7 @@
 			"frame": "identity",
 			"createdAt": "2026-10-05",
 			"generator": "Code drawn vector",
-			"sourceMaster": "public/brand/monogram.svg",
+			"sourceMaster": "../brand-masters/ui-ux-polish/monogram.svg",
 			"design": "D and K share a vertical stem; warm charcoal, 1.4/24 stroke. Raster exports: src/app/icon.png 512px, apple-icon.png 180px, favicon.ico 32px."
 		},
 		"hero-journey-cutout-v1.webp": {
