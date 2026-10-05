@@ -39,7 +39,7 @@ test.describe('Editorial premium public experience', () => {
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		const about = page.getByRole('region', { name: 'About Me' });
+		const about = page.getByRole('region', { name: 'Về tôi' });
 		await expect(about.getByRole('link')).toHaveCount(1);
 
 		await expect(page.getByTestId('gate-item-experiences')).toHaveCount(0);

@@ -6,7 +6,7 @@ import { routes } from '@/config/routes';
 import { auth } from '@/lib/auth';
 
 export const metadata: Metadata = {
-	title: 'Board Game | My Space',
+	title: 'Board Game | Không gian của tôi',
 	description:
 		'Chơi Spy Fall, Ma Sói và Cheese Thief cùng bạn bè — tạo phòng, chia sẻ mã và bắt đầu.',
 };
@@ -20,7 +20,7 @@ export default async function BoardGamePage() {
 			<div className="mx-auto max-w-5xl">
 				<header className="mt-10 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
 					<div>
-						<p className="eyebrow">My Space · Board Game</p>
+						<p className="eyebrow">Không gian của tôi · Board Game</p>
 						<h1 className="mt-4 max-w-2xl font-display text-display font-medium tracking-tight text-ink">
 							Chơi cùng nhau
 						</h1>

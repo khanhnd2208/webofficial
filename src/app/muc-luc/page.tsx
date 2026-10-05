@@ -11,7 +11,7 @@ import styles from './toc.module.css';
 
 export const metadata: Metadata = {
 	title: 'Mục lục',
-	description: 'Tìm hiểu về Duy Khánh, rồi ghé My Space để học, dạy và chơi.',
+	description: 'Tìm hiểu về Duy Khánh, rồi ghé Không gian của tôi để học, dạy và chơi.',
 	alternates: { canonical: absoluteUrl(routes.toc) },
 };
 
@@ -77,11 +77,10 @@ export default async function TocPage() {
 					<h1>Bạn muốn ghé đâu?</h1>
 					<p>Một chút về tôi. Một không gian để học và chơi.</p>
 				</header>
-				<nav aria-label="About Me và My Space" className={styles.navigation}>
+				<nav aria-label="Về tôi và Không gian của tôi" className={styles.navigation}>
 					<section className={styles.about} aria-labelledby="toc-about">
 						<div className={styles.sectionLabel}>
-							<h2 id="toc-about">About Me</h2>
-							<span>Về tôi</span>
+							<h2 id="toc-about">Về tôi</h2>
 						</div>
 						<div className={styles.tiles}>
 							{aboutTiles.map((tile) => (
@@ -108,7 +107,7 @@ export default async function TocPage() {
 					</section>
 					<section className={styles.space} aria-labelledby="toc-myspace">
 						<div className={styles.sectionLabel}>
-							<h2 id="toc-myspace">My Space</h2>
+							<h2 id="toc-myspace">Không gian của tôi</h2>
 							<span>Học · Dạy · Chơi</span>
 						</div>
 						<div className={styles.tiles}>

@@ -25,12 +25,15 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
 	});
 
-	test('mục lục shows About Me before My Space without experiences', async ({ page }) => {
+	test('mục lục shows Về tôi before Không gian của tôi without experiences', async ({ page }) => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
-		const gate = page.getByRole('navigation', { name: 'About Me và My Space' });
-		const about = gate.getByRole('region', { name: 'About Me' });
-		await expect(gate.getByRole('heading', { level: 2 })).toHaveText(['About Me', 'My Space']);
+		const gate = page.getByRole('navigation', { name: 'Về tôi và Không gian của tôi' });
+		const about = gate.getByRole('region', { name: 'Về tôi' });
+		await expect(gate.getByRole('heading', { level: 2 })).toHaveText([
+			'Về tôi',
+			'Không gian của tôi',
+		]);
 		await expect(about.getByRole('link')).toHaveCount(1);
 		await expect(about.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
 			'href',
@@ -196,7 +199,7 @@ test.describe('Navigation', () => {
 		await expect(page.getByRole('button', { name: 'Mở menu' })).toHaveCount(0);
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		const about = page.getByRole('region', { name: 'About Me' });
+		const about = page.getByRole('region', { name: 'Về tôi' });
 		await expect(about.getByRole('link')).toHaveCount(1);
 		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();

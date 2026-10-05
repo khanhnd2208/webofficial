@@ -34,7 +34,7 @@ export interface MySpaceTile {
 }
 
 export const mySpacePage = {
-	title: 'My Space',
+	title: 'Không gian của tôi',
 	lead: 'Teaching, khóa học và những trải nghiệm chơi cùng nhau.',
 	comingSoonLabel: 'Đang phát triển',
 	comingSoonNote: 'Góc này đang được hoàn thiện.',
