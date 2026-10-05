@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useTransition, useCallback } from 'react';
 import type { UserListResult, UserListItem } from '@/services/userManagementService';
@@ -92,19 +93,10 @@ export default function UsersTable({
 			{/* Search bar */}
 			<form onSubmit={handleSearchSubmit} className="flex gap-2">
 				<div className="relative flex-1">
-					<svg
+					<Icon
+						name="search"
 						className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted"
-						viewBox="0 0 20 20"
-						fill="none"
-					>
-						<circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-						<path
-							d="M13.5 13.5L17 17"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							strokeLinecap="round"
-						/>
-					</svg>
+					/>
 					<input
 						type="text"
 						value={search}
@@ -346,15 +338,7 @@ function UserRow({
 				<span
 					className={`text-muted transition-transform inline-block ${isSelected ? 'rotate-180' : ''}`}
 				>
-					<svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none">
-						<path
-							d="M3 6l5 5 5-5"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						/>
-					</svg>
+					<Icon name="expand_more" className="h-3.5 w-3.5" />
 				</span>
 			</td>
 		</tr>

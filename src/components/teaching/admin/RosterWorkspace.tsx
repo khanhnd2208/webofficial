@@ -97,7 +97,7 @@ export function RosterWorkspace({
 						size="sm"
 						index={student.orderNo}
 					/>
-					<small className="text-[11px] text-ink-secondary">
+					<small className="text-xs text-ink-secondary">
 						{usedChange ? 'đã đổi 1/1' : 'còn 1 lần đổi'}
 					</small>
 				</span>
@@ -105,7 +105,7 @@ export function RosterWorkspace({
 					{usedChange ? (
 						<button
 							type="button"
-							className="mc-button mc-button-ghost min-h-8 px-2 text-[11px]"
+							className="mc-button mc-button-ghost min-h-8 px-2 text-xs"
 							onClick={() => void updateLearningExperience(student.enrollmentId, 'unlock')}
 						>
 							Mở khóa
@@ -113,7 +113,7 @@ export function RosterWorkspace({
 					) : null}
 					<button
 						type="button"
-						className="mc-button mc-button-ghost min-h-8 px-2 text-[11px]"
+						className="mc-button mc-button-ghost min-h-8 px-2 text-xs"
 						onClick={async () => {
 							const ok = await confirm({
 								title: 'Xóa lựa chọn',
@@ -360,7 +360,7 @@ export function RosterWorkspace({
 											) : (
 												<>
 													{formatDob(student.dateOfBirth)}
-													<small className="mt-0.5 block text-[11px] text-ink-secondary">
+													<small className="mt-0.5 block text-xs text-ink-secondary">
 														{student.dateOfBirth ? 'Mật khẩu LE: ddmmyyyy' : 'Vào LE trực tiếp'}
 													</small>
 												</>

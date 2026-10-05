@@ -54,7 +54,7 @@ function SortableNote({
 			<span className="block truncate text-sm font-semibold text-ink">
 				{note.draftTitle || 'Chưa đặt tiêu đề'}
 			</span>
-			<span className="mt-1 block text-[11px] text-ink-secondary">
+			<span className="mt-1 block text-xs text-ink-secondary">
 				{note.status === 'DRAFT'
 					? 'Nháp'
 					: note.status === 'MODIFIED'
@@ -383,7 +383,7 @@ export function ClassNotesAdminWorkspace({
 											<span className="mc-chip">Có thay đổi chưa xuất bản</span>
 										) : null}
 										{selected.publishedAt ? (
-											<span className="text-[11px] text-ink-secondary">
+											<span className="text-xs text-ink-secondary">
 												Xuất bản {new Date(selected.publishedAt).toLocaleDateString('vi-VN')}
 											</span>
 										) : null}

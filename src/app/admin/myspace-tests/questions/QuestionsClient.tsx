@@ -233,7 +233,7 @@ export default function QuestionsClient({
 										type="button"
 										disabled={busyId === item.id}
 										onClick={() => openEdit(item)}
-										className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted disabled:opacity-50"
+										className="rounded-full border border-border px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted disabled:opacity-50"
 									>
 										Sửa
 									</button>
@@ -241,7 +241,7 @@ export default function QuestionsClient({
 										type="button"
 										disabled={busyId === item.id}
 										onClick={() => toggleActive(item)}
-										className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted disabled:opacity-50"
+										className="rounded-full border border-border px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted disabled:opacity-50"
 									>
 										{item.isActive ? 'Ẩn' : 'Hiện'}
 									</button>
@@ -249,7 +249,7 @@ export default function QuestionsClient({
 										type="button"
 										disabled={busyId === item.id}
 										onClick={() => void onDelete(item)}
-										className="rounded-full border border-red-200 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-red-600 disabled:opacity-50"
+										className="rounded-full border border-red-200 px-3 py-1 text-xs font-bold uppercase tracking-wider text-red-600 disabled:opacity-50"
 									>
 										Xóa
 									</button>

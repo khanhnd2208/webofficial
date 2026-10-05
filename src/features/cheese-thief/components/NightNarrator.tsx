@@ -154,8 +154,8 @@ export default function NightNarrator({
 	const showTap = !paused && (voice === 'blocked' || (voice === 'speech' && needsTap));
 
 	return (
-		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-8 px-6 text-center text-[#f4efe4]">
-			<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">
+		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-8 px-6 text-center text-game-ink">
+			<p className="font-mono text-xs tracking-[0.22em] text-game-bronze uppercase">
 				{t('cheese.night.hostHint')}
 			</p>
 			<CheeseThiefArt
@@ -166,7 +166,7 @@ export default function NightNarrator({
 			{showTap && (
 				<button
 					type="button"
-					className="min-h-12 rounded-full border border-[#e0a045] px-5 text-sm text-[#e0a045]"
+					className="min-h-12 rounded-full border border-game-bronze px-5 text-sm text-game-bronze"
 					onClick={() => {
 						if (voice === 'blocked' && trackUrl.current) {
 							void playNightTrack(trackUrl.current, elapsedSec()).then((ok) =>

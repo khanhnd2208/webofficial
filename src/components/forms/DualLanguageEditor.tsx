@@ -52,7 +52,7 @@ export default function DualLanguageEditor({
 				>
 					🇬🇧 English
 				</button>
-				<div className="ml-auto text-[10px] text-muted">
+				<div className="ml-auto text-xs text-muted">
 					{activeTab === 'vi' ? 'Đang chỉnh sửa bản tiếng Việt' : 'Editing English version'}
 				</div>
 			</div>

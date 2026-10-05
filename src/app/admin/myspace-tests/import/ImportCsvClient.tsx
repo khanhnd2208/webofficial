@@ -252,7 +252,7 @@ export default function ImportCsvClient() {
 			{mode === 'smart' ? (
 				<>
 					<section className="mt-6 border border-border p-5">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Bước 1 · Dán dữ liệu thô
 						</p>
 						<textarea
@@ -274,10 +274,10 @@ export default function ImportCsvClient() {
 
 					{prompt ? (
 						<section className="mt-6 border border-border p-5">
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">
 								Bước 2 · Copy prompt đưa vào AI
 							</p>
-							<pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-surface p-3 font-mono text-[11px] text-foreground">
+							<pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-surface p-3 font-mono text-xs text-foreground">
 								{prompt}
 							</pre>
 							<button
@@ -291,7 +291,7 @@ export default function ImportCsvClient() {
 					) : null}
 
 					<section className="mt-6 border border-border p-5">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Bước 3 · Dán CSV từ AI &amp; kiểm tra
 						</p>
 						<textarea
@@ -363,7 +363,7 @@ export default function ImportCsvClient() {
 
 					{preview?.canImport ? (
 						<section className="mt-6 border border-border p-5">
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">
 								Bước 4 · Chọn môn &amp; đặt tên · Lưu
 							</p>
 							<div className="mt-4 space-y-4">
@@ -465,7 +465,7 @@ export default function ImportCsvClient() {
 			) : (
 				<>
 					<section className="mt-6 border border-border p-5">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Nâng cao · Import file CSV bundle
 						</p>
 						<p className="mt-2 text-sm text-muted">

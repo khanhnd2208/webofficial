@@ -53,7 +53,7 @@ export default function CheeseCheckPhase({ isHost, hourSeconds, busy, onConfirm 
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 overflow-y-auto bg-[#0c0b09] px-6 text-[#f4efe4]">
+		<div className="fixed inset-0 z-50 overflow-y-auto bg-game-canvas px-6 text-game-ink">
 			<div className="mx-auto flex min-h-full max-w-sm flex-col items-center justify-center gap-6 py-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
 				<CheeseThiefArt scene={choice === false ? 'stolen' : 'cheese'} size={104} />
 				<p className="text-center font-display text-4xl leading-tight font-medium">
@@ -64,7 +64,7 @@ export default function CheeseCheckPhase({ isHost, hourSeconds, busy, onConfirm 
 						type="button"
 						className={cn(
 							'min-h-20 rounded-2xl border text-lg',
-							choice === true ? 'border-[#e0a045] bg-[#e0a045]/15' : 'border-white/15',
+							choice === true ? 'border-game-bronze bg-game-bronze/15' : 'border-white/15',
 						)}
 						aria-pressed={choice === true}
 						onClick={() => setChoice(true)}
@@ -78,7 +78,7 @@ export default function CheeseCheckPhase({ isHost, hourSeconds, busy, onConfirm 
 						type="button"
 						className={cn(
 							'min-h-20 rounded-2xl border text-lg',
-							choice === false ? 'border-[#e0a045] bg-[#e0a045]/15' : 'border-white/15',
+							choice === false ? 'border-game-bronze bg-game-bronze/15' : 'border-white/15',
 						)}
 						aria-pressed={choice === false}
 						onClick={() => setChoice(false)}
@@ -96,7 +96,7 @@ export default function CheeseCheckPhase({ isHost, hourSeconds, busy, onConfirm 
 						</Button>
 						<button
 							type="button"
-							className="min-h-11 text-sm text-[#f4efe4]/85"
+							className="min-h-11 text-sm text-game-ink/85"
 							onClick={() => setChoice(null)}
 						>
 							{t('cheese.check.change')}

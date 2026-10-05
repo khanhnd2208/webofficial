@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { resolveMusicUrl } from '@/config/message';
@@ -234,10 +235,10 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 
 							<div className="flex items-center gap-3 px-4 py-2.5">
 								<div className="min-w-0 flex-1">
-									<p className="truncate text-[11px] font-medium text-foreground">
+									<p className="truncate text-xs font-medium text-foreground">
 										{trackLabel ?? 'Nhạc nền'}
 									</p>
-									<p className="mt-0.5 tabular-nums text-[10px] text-muted">
+									<p className="mt-0.5 tabular-nums text-xs text-muted">
 										{loadError ? (
 											<span className="text-error">{loadError}</span>
 										) : (
@@ -250,7 +251,7 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 									</p>
 								</div>
 
-								<div title="Lặp lại tự động" className="text-[10px] text-muted opacity-60">
+								<div title="Lặp lại tự động" className="text-xs text-muted opacity-60">
 									↺
 								</div>
 
@@ -262,18 +263,9 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 									aria-label={playing ? 'Tạm dừng' : 'Phát nhạc'}
 								>
 									{playing ? (
-										<svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-											<rect x="6" y="4" width="4" height="16" rx="1.5" />
-											<rect x="14" y="4" width="4" height="16" rx="1.5" />
-										</svg>
+										<Icon name="pause" className="h-4 w-4" />
 									) : (
-										<svg
-											className="h-4 w-4 translate-x-0.5"
-											viewBox="0 0 24 24"
-											fill="currentColor"
-										>
-											<path d="M8 5.14v14l11-7-11-7z" />
-										</svg>
+										<Icon name="play_arrow" className="h-4 w-4 translate-x-0.5" filled />
 									)}
 								</button>
 
@@ -284,15 +276,7 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 									aria-label="Ẩn thanh nhạc"
 									title="Ẩn"
 								>
-									<svg
-										className="h-3.5 w-3.5"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-									>
-										<path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-									</svg>
+									<Icon name="close" className="h-3.5 w-3.5" />
 								</button>
 							</div>
 						</div>
@@ -307,11 +291,7 @@ function MessageMusicPlayerInner({ url, trackLabel }: InnerProps) {
 					className="fixed bottom-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface/90 shadow-lg backdrop-blur transition active:scale-95"
 					aria-label="Hiện thanh nhạc"
 				>
-					<svg className="h-4.5 w-4.5 text-accent" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M9 18V5l12-2v13" />
-						<circle cx="6" cy="18" r="3" />
-						<circle cx="18" cy="16" r="3" />
-					</svg>
+					<Icon name="music" className="h-4.5 w-4.5 text-accent" />
 				</button>
 			)}
 		</>

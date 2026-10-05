@@ -87,7 +87,7 @@ export default function StepGuide({ stepsKey, params, tipKey, className }: Props
 				{steps.map((step, i) => (
 					<li key={step} className="flex gap-2.5 text-sm leading-snug text-foreground">
 						{steps.length > 1 ? (
-							<span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-accent-foreground">
+							<span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
 								{i + 1}
 							</span>
 						) : null}

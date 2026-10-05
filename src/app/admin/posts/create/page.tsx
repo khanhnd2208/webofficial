@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -294,23 +295,7 @@ export default function CreatePostPage() {
 			{/* Draft restored notice */}
 			{draftRestored && saveState.status === 'idle' ? (
 				<div className="mt-4 flex items-center gap-3 rounded-lg border border-warning/30 bg-warning-subtle px-4 py-2.5 text-sm">
-					<svg className="h-4 w-4 shrink-0 text-warning" viewBox="0 0 24 24" fill="none">
-						<path
-							d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
-							fill="currentColor"
-							opacity="0.15"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							strokeLinejoin="round"
-						/>
-						<path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-						<path
-							d="M8 13h8M8 17h5"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							strokeLinecap="round"
-						/>
-					</svg>
+					<Icon name="note" className="h-4 w-4 shrink-0 text-warning" />
 					<span className="text-foreground-secondary">Đã khôi phục bản nháp tự động.</span>
 					<button
 						onClick={clearDraft}
@@ -370,7 +355,7 @@ export default function CreatePostPage() {
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-sm outline-none transition-colors focus:border-accent"
 						placeholder="tieu-de-bai-viet"
 					/>
-					<p className="mt-1 text-[11px] text-muted">Tự động từ tiêu đề. Chỉnh để tuỳ chỉnh URL.</p>
+					<p className="mt-1 text-xs text-muted">Tự động từ tiêu đề. Chỉnh để tuỳ chỉnh URL.</p>
 				</label>
 
 				<label className="block md:col-span-2">
@@ -413,7 +398,7 @@ export default function CreatePostPage() {
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
 						placeholder="VD: 1, 2, 3..."
 					/>
-					<p className="mt-1 text-[11px] text-muted">
+					<p className="mt-1 text-xs text-muted">
 						Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…
 					</p>
 				</label>
@@ -465,10 +450,8 @@ export default function CreatePostPage() {
 					<span>{wordCount.toLocaleString()} từ</span>
 					<span>{charCount.toLocaleString()} ký tự</span>
 					<span>~{Math.max(1, Math.round(wordCount / 200))} phút đọc</span>
-					<span className="ml-auto text-[11px]">
-						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
-							⌘S
-						</kbd>{' '}
+					<span className="ml-auto text-xs">
+						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-xs">⌘S</kbd>{' '}
 						lưu nhanh · Nháp tự động lưu mỗi 5s
 					</span>
 				</div>

@@ -43,13 +43,13 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 						{/* Recipient + Title overlapping the image bottom */}
 						<div className="-mt-14 px-6 pb-2 text-center">
 							<p
-								className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted/80"
+								className="text-xs font-bold uppercase tracking-[0.22em] text-muted/80"
 								style={{ fontFamily: 'inherit' }}
 							>
 								Lời nhắn dành cho
 							</p>
 							<h1
-								className="mt-1 text-[2rem] font-black leading-tight tracking-tight text-foreground sm:text-4xl"
+								className="mt-1 text-[32px] font-black leading-tight tracking-tight text-foreground sm:text-4xl"
 								style={{ fontFamily }}
 							>
 								{message.recipientName}
@@ -62,11 +62,11 @@ export default function MessageContentDisplay({ message }: MessageContentDisplay
 				) : (
 					/* No cover — minimal header */
 					<div className="px-6 pt-14 pb-6 text-center">
-						<p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted">
+						<p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">
 							Lời nhắn dành cho
 						</p>
 						<h1
-							className="mt-2 text-[2rem] font-black leading-tight tracking-tight text-foreground sm:text-4xl"
+							className="mt-2 text-[32px] font-black leading-tight tracking-tight text-foreground sm:text-4xl"
 							style={{ fontFamily }}
 						>
 							{message.recipientName}

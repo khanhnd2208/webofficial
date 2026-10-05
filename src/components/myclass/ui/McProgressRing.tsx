@@ -58,7 +58,7 @@ export function McProgressRing({
 					strokeLinecap="round"
 					strokeDasharray={circumference}
 					strokeDashoffset={offset}
-					className={`transition-[stroke-dashoffset] duration-500 motion-reduce:transition-none ${toneStroke[tone]}`}
+					className={`transition-[stroke-dashoffset] duration-400 motion-reduce:transition-none ${toneStroke[tone]}`}
 				/>
 			</svg>
 			<div className="absolute inset-0 flex items-center justify-center text-sm font-bold tabular-nums text-ink">

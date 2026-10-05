@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import { useEffect, useState } from 'react';
 import type { UserDetail } from '@/services/userManagementService';
 import type { UserListItem } from '@/services/userManagementService';
@@ -64,14 +65,7 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 						onClick={onClose}
 						className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
 					>
-						<svg viewBox="0 0 16 16" className="h-4 w-4" fill="none">
-							<path
-								d="M3 3l10 10M13 3L3 13"
-								stroke="currentColor"
-								strokeWidth="1.5"
-								strokeLinecap="round"
-							/>
-						</svg>
+						<Icon name="close" className="h-4 w-4" />
 					</button>
 				</div>
 
@@ -171,7 +165,7 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 													<p className="text-sm font-semibold text-foreground truncate">
 														{e.courseTitle}
 													</p>
-													<span className="shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5 border bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40">
+													<span className="shrink-0 text-xs font-bold rounded-full px-2 py-0.5 border bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/40">
 														Active
 													</span>
 												</div>
@@ -184,12 +178,12 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 													</div>
 													<div className="h-1 overflow-hidden rounded-full bg-surface-hover">
 														<div
-															className="h-full bg-accent transition-[width] duration-500"
+															className="h-full bg-accent transition-[width] duration-400"
 															style={{ width: `${pct}%` }}
 														/>
 													</div>
 												</div>
-												<p className="text-[10px] text-muted">
+												<p className="text-xs text-muted">
 													Ghi danh {formatDistanceToNow(e.enrolledAt)}
 												</p>
 											</div>
@@ -207,7 +201,7 @@ export default function UserDetailPanel({ userId, userSummary, onClose, onRoleCh
 											className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5"
 										>
 											<p className="text-sm text-foreground truncate">{e.courseTitle}</p>
-											<span className="shrink-0 ml-3 text-[10px] font-bold rounded-full px-2 py-0.5 border bg-surface-hover text-muted border-border">
+											<span className="shrink-0 ml-3 text-xs font-bold rounded-full px-2 py-0.5 border bg-surface-hover text-muted border-border">
 												Đã hủy
 											</span>
 										</div>
@@ -241,7 +235,7 @@ function StatCard({ label, value, accent }: { label: string; value: number; acce
 			>
 				{value}
 			</p>
-			<p className="text-[10px] text-muted mt-0.5 font-semibold">{label}</p>
+			<p className="text-xs text-muted mt-0.5 font-semibold">{label}</p>
 		</div>
 	);
 }

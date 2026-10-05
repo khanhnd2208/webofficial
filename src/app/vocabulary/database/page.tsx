@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 
@@ -203,7 +204,7 @@ export default function WordDatabasePage() {
 								<div className={`text-xl font-black tracking-tight sm:text-2xl ${stat.color}`}>
 									{stat.value}
 								</div>
-								<div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+								<div className="mt-0.5 text-xs font-bold uppercase tracking-widest text-muted">
 									{stat.label}
 								</div>
 							</div>
@@ -216,20 +217,11 @@ export default function WordDatabasePage() {
 				<div className="mx-auto max-w-5xl px-6 py-4">
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
 						<div className="relative flex-1">
-							<svg
+							<Icon
+								name="search"
 								className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
 								aria-hidden
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-								/>
-							</svg>
+							/>
 							<input
 								type="search"
 								value={search}
@@ -331,7 +323,7 @@ export default function WordDatabasePage() {
 
 											{term.partOfSpeech && (
 												<span
-													className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${posColor(term.partOfSpeech)}`}
+													className={`rounded-full px-2 py-0.5 text-xs font-bold ${posColor(term.partOfSpeech)}`}
 												>
 													{term.partOfSpeech}
 												</span>
@@ -339,7 +331,7 @@ export default function WordDatabasePage() {
 
 											<Link
 												href={`/vocabulary/${term.setId}`}
-												className="rounded-full bg-surface-hover px-2 py-0.5 text-[10px] font-bold text-muted transition-colors hover:text-foreground"
+												className="rounded-full bg-surface-hover px-2 py-0.5 text-xs font-bold text-muted transition-colors hover:text-foreground"
 											>
 												{term.setTitle}
 											</Link>
@@ -358,20 +350,7 @@ export default function WordDatabasePage() {
 										aria-label={`Phát âm ${term.term}`}
 										className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition-all hover:bg-accent hover:text-accent-foreground sm:h-8 sm:w-8 sm:opacity-0 sm:group-hover:opacity-100"
 									>
-										<svg
-											className="h-4 w-4"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-											strokeWidth={1.5}
-											aria-hidden
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-3.14a.75.75 0 011.28.53v12.72a.75.75 0 01-1.28.53l-4.72-3.14H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
-											/>
-										</svg>
+										<Icon name="volume_up" className="h-4 w-4" aria-hidden />
 									</button>
 								</div>
 							))}

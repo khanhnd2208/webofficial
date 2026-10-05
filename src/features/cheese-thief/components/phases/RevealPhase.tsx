@@ -32,7 +32,7 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 				</section>
 			)}
 			<section className="space-y-2 text-center">
-				<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">
+				<p className="font-mono text-xs tracking-[0.18em] text-muted uppercase">
 					{t('cheese.reveal.flipped')}
 				</p>
 				{flipped.map((row) => (

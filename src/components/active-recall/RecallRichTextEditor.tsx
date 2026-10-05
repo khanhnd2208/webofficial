@@ -229,9 +229,7 @@ export default function RecallRichTextEditor({
 								className={`h-5 w-5 rounded-full border ${selected ? 'ring-2 ring-foreground ring-offset-1' : 'border-border'}`}
 								style={color.value ? { backgroundColor: color.value } : undefined}
 							>
-								{color.value ? null : (
-									<span className="block text-[10px] leading-5 text-muted">×</span>
-								)}
+								{color.value ? null : <span className="block text-xs leading-5 text-muted">×</span>}
 							</button>
 						);
 					})}

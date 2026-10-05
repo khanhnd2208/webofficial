@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import { useCallback, useRef, useState } from 'react';
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -111,22 +112,14 @@ export default function ImageCropModal({
 							Chỉnh sửa ảnh
 						</h3>
 						{aspectRatio ? (
-							<p className="mt-0.5 text-[11px] text-muted">Tỉ lệ cố định: {aspectRatio}:1</p>
+							<p className="mt-0.5 text-xs text-muted">Tỉ lệ cố định: {aspectRatio}:1</p>
 						) : null}
 					</div>
 					<button
 						onClick={onCancel}
 						className="flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
 					>
-						<svg
-							className="h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							strokeWidth={2}
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
+						<Icon name="close" className="h-4 w-4" />
 					</button>
 				</div>
 
@@ -174,7 +167,7 @@ export default function ImageCropModal({
 					{/* Adjustments */}
 					<div className="mt-4 grid grid-cols-2 gap-4">
 						<label className="block">
-							<span className="text-[11px] font-bold uppercase tracking-wider text-muted">
+							<span className="text-xs font-bold uppercase tracking-wider text-muted">
 								Độ sáng: {brightness}%
 							</span>
 							<input
@@ -187,7 +180,7 @@ export default function ImageCropModal({
 							/>
 						</label>
 						<label className="block">
-							<span className="text-[11px] font-bold uppercase tracking-wider text-muted">
+							<span className="text-xs font-bold uppercase tracking-wider text-muted">
 								Tương phản: {contrast}%
 							</span>
 							<input

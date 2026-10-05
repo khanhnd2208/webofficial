@@ -65,7 +65,7 @@ export default function RoleCard({ roleId, onViewed, cardDeck = DEFAULT_CARD_DEC
 				tabIndex={0}
 				aria-label={t('mafia.card.hold')}
 				className={cn(
-					'relative aspect-[2/3] w-[min(88vw,340px,46.6667vh)] touch-none select-none overflow-hidden rounded-2xl border-2 border-[color:var(--game-line)] shadow-[0_18px_50px_rgb(0_0_0_/_0.28)]',
+					'relative aspect-[2/3] w-[min(88vw,340px,46.6667vh)] touch-none select-none overflow-hidden rounded-2xl border-2 border-[color:var(--game-line)] shadow-lg',
 					showFace ? '' : 'cursor-pointer',
 				)}
 				onKeyDown={(event) => {
@@ -118,7 +118,7 @@ export default function RoleCard({ roleId, onViewed, cardDeck = DEFAULT_CARD_DEC
 					>
 						<span
 							className={cn(
-								'mx-auto mb-2 rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider',
+								'mx-auto mb-2 rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider',
 								FACTION_CHIP[role.faction],
 							)}
 						>

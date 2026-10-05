@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import TagInput from '@/components/forms/TagInput';
@@ -109,15 +110,7 @@ function Toast({
 		>
 			{message}
 			<button onClick={onClose} className="ml-1 opacity-60 hover:opacity-100">
-				<svg
-					className="h-4 w-4"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					strokeWidth={2}
-				>
-					<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
+				<Icon name="close" className="h-4 w-4" />
 			</button>
 		</div>
 	);
@@ -273,32 +266,21 @@ function UserStoreView() {
 				<div className="flex items-center gap-6">
 					<div>
 						<div className="text-xl font-black text-rose">{items.length}</div>
-						<div className="text-[10px] font-bold uppercase tracking-widest text-muted">Bộ từ</div>
+						<div className="text-xs font-bold uppercase tracking-widest text-muted">Bộ từ</div>
 					</div>
 					<div className="h-6 w-px bg-border" />
 					<div>
 						<div className="text-xl font-black text-teal">
 							{items.reduce((s, i) => s + i.wordCount, 0)}
 						</div>
-						<div className="text-[10px] font-bold uppercase tracking-widest text-muted">
-							Tổng từ
-						</div>
+						<div className="text-xs font-bold uppercase tracking-widest text-muted">Tổng từ</div>
 					</div>
 				</div>
 				<div className="relative sm:w-72">
-					<svg
+					<Icon
+						name="search"
 						className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						strokeWidth={2}
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-						/>
-					</svg>
+					/>
 					<input
 						type="text"
 						value={search}
@@ -327,10 +309,10 @@ function UserStoreView() {
 								className="group border border-border p-5 transition-all hover:bg-surface-hover"
 							>
 								<div className="mb-3 flex items-center gap-2">
-									<span className="rounded-full bg-rose-subtle px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-rose">
+									<span className="rounded-full bg-rose-subtle px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-rose">
 										Cửa hàng
 									</span>
-									<span className="text-[10px] font-bold text-muted">{set.wordCount} từ</span>
+									<span className="text-xs font-bold text-muted">{set.wordCount} từ</span>
 								</div>
 								<h3 className="text-sm font-bold uppercase tracking-tight text-foreground">
 									{set.title}
@@ -340,7 +322,7 @@ function UserStoreView() {
 										{set.description}
 									</p>
 								)}
-								<div className="mt-3 flex items-center gap-2 text-[10px] text-muted">
+								<div className="mt-3 flex items-center gap-2 text-xs text-muted">
 									<span>Bởi {set.ownerName}</span>
 									<span>·</span>
 									<time>
@@ -354,19 +336,7 @@ function UserStoreView() {
 								<div className="mt-4">
 									{owned ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-bold text-success">
-											<svg
-												className="h-4 w-4"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke="currentColor"
-												strokeWidth={2.5}
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													d="M4.5 12.75l6 6 9-13.5"
-												/>
-											</svg>
+											<Icon name="check" className="h-4 w-4" />
 											Đã có trong thư viện
 										</span>
 									) : (
@@ -382,19 +352,7 @@ function UserStoreView() {
 												</>
 											) : (
 												<>
-													<svg
-														className="h-3.5 w-3.5"
-														fill="none"
-														viewBox="0 0 24 24"
-														stroke="currentColor"
-														strokeWidth={2}
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-														/>
-													</svg>
+													<Icon name="add" className="h-3.5 w-3.5" />
 													Thêm vào thư viện
 												</>
 											)}
@@ -610,28 +568,12 @@ export function AdminStoreView() {
 				>
 					{showCreate ? (
 						<>
-							<svg
-								className="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-							</svg>
+							<Icon name="close" className="h-4 w-4" />
 							Hủy
 						</>
 					) : (
 						<>
-							<svg
-								className="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2.5}
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-							</svg>
+							<Icon name="add" className="h-4 w-4" />
 							Thêm bộ từ mới
 						</>
 					)}
@@ -711,7 +653,7 @@ export function AdminStoreView() {
 								{csvFile && <span className="text-xs text-muted">{csvFile.name}</span>}
 							</div>
 							<div className="mt-1.5 flex flex-wrap items-start gap-x-4 gap-y-1">
-								<p className="text-[11px] text-muted">
+								<p className="text-xs text-muted">
 									Bắt buộc:{' '}
 									<code className="text-foreground">word/term, definition, ndk_explanation</code>
 									{' · '}
@@ -720,7 +662,7 @@ export function AdminStoreView() {
 								<a
 									href="/api/vocab-sets/sample"
 									download="sample-vocab.xlsx"
-									className="shrink-0 text-[11px] font-bold underline underline-offset-2 text-foreground-secondary hover:text-foreground transition-colors"
+									className="shrink-0 text-xs font-bold underline underline-offset-2 text-foreground-secondary hover:text-foreground transition-colors"
 								>
 									↓ Tải file mẫu (.xlsx)
 								</a>
@@ -789,26 +731,14 @@ export function AdminStoreView() {
 														onClick={() => setManualTerms((prev) => prev.filter((_, j) => j !== i))}
 														className="flex h-10 w-10 shrink-0 items-center justify-center border border-border text-muted hover:border-error hover:text-error transition-colors"
 													>
-														<svg
-															className="h-4 w-4"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke="currentColor"
-															strokeWidth={2}
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																d="M6 18L18 6M6 6l12 12"
-															/>
-														</svg>
+														<Icon name="delete" className="h-4 w-4" />
 													</button>
 												)}
 											</div>
 										</div>
 										{/* NDK & Hints (Guess Who) */}
 										<div className="border-t border-border pt-2 space-y-2">
-											<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+											<p className="text-xs font-bold uppercase tracking-widest text-muted">
 												Guess Who (tùy chọn)
 											</p>
 											<textarea
@@ -820,7 +750,7 @@ export function AdminStoreView() {
 											/>
 											<div className="grid gap-2 sm:grid-cols-3">
 												<div>
-													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-error">
+													<p className="mb-1 text-xs font-bold uppercase tracking-wider text-error">
 														Khó
 													</p>
 													<TagInput
@@ -830,7 +760,7 @@ export function AdminStoreView() {
 													/>
 												</div>
 												<div>
-													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-warning">
+													<p className="mb-1 text-xs font-bold uppercase tracking-wider text-warning">
 														Trung bình
 													</p>
 													<TagInput
@@ -840,7 +770,7 @@ export function AdminStoreView() {
 													/>
 												</div>
 												<div>
-													<p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-success">
+													<p className="mb-1 text-xs font-bold uppercase tracking-wider text-success">
 														Dễ
 													</p>
 													<TagInput
@@ -886,14 +816,14 @@ export function AdminStoreView() {
 			<div className="mb-6 flex items-center gap-6">
 				<div>
 					<span className="text-xl font-black text-success">{publicSets.length}</span>
-					<span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+					<span className="ml-2 text-xs font-bold uppercase tracking-widest text-muted">
 						Đang hiện
 					</span>
 				</div>
 				<div className="h-5 w-px bg-border" />
 				<div>
 					<span className="text-xl font-black text-muted">{privateSets.length}</span>
-					<span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+					<span className="ml-2 text-xs font-bold uppercase tracking-widest text-muted">
 						Đang ẩn
 					</span>
 				</div>
@@ -909,7 +839,7 @@ export function AdminStoreView() {
 					{/* Public sets */}
 					{publicSets.length > 0 && (
 						<div>
-							<p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-success">
+							<p className="mb-2 text-xs font-bold uppercase tracking-widest text-success">
 								Đang hiện trong cửa hàng ({publicSets.length})
 							</p>
 							{publicSets.map((set) => (
@@ -928,7 +858,7 @@ export function AdminStoreView() {
 					{/* Private sets */}
 					{privateSets.length > 0 && (
 						<div className="mt-6">
-							<p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+							<p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted">
 								Đang ẩn ({privateSets.length})
 							</p>
 							{privateSets.map((set) => (
@@ -987,7 +917,7 @@ function AdminSetRow({
 				<div className="flex items-center gap-2">
 					<h3 className="truncate text-sm font-bold text-foreground">{set.title}</h3>
 					<span
-						className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
+						className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-widest ${
 							set.isArchived ? 'bg-surface-hover text-muted' : 'bg-success-subtle text-success'
 						}`}
 					>
@@ -995,7 +925,7 @@ function AdminSetRow({
 					</span>
 				</div>
 				{set.description && <p className="mt-0.5 truncate text-xs text-muted">{set.description}</p>}
-				<p className="mt-1 text-[11px] text-muted">
+				<p className="mt-1 text-xs text-muted">
 					{set.wordCount} từ · Cập nhật {new Date(set.updatedAt).toLocaleDateString('vi-VN')}
 				</p>
 			</div>
@@ -1005,24 +935,12 @@ function AdminSetRow({
 					className="flex h-8 w-8 items-center justify-center border border-border text-muted hover:border-foreground hover:text-foreground transition-colors"
 					title="Chỉnh sửa"
 				>
-					<svg
-						className="h-4 w-4"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						strokeWidth={2}
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"
-						/>
-					</svg>
+					<Icon name="edit" className="h-4 w-4" />
 				</button>
 				<button
 					onClick={() => onToggle(set)}
 					disabled={isToggling}
-					className={`flex h-8 items-center gap-1.5 border px-3 text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${
+					className={`flex h-8 items-center gap-1.5 border px-3 text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${
 						set.isArchived
 							? 'border-success bg-success text-white hover:bg-transparent hover:text-success'
 							: 'border-border text-muted hover:border-foreground hover:text-foreground'
@@ -1033,41 +951,12 @@ function AdminSetRow({
 						<div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
 					) : set.isArchived ? (
 						<>
-							<svg
-								className="h-3.5 w-3.5"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-								/>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-								/>
-							</svg>
+							<Icon name="visibility" className="h-3.5 w-3.5" />
 							Hiện
 						</>
 					) : (
 						<>
-							<svg
-								className="h-3.5 w-3.5"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-								/>
-							</svg>
+							<Icon name="visibility_off" className="h-3.5 w-3.5" />
 							Ẩn
 						</>
 					)}
@@ -1081,19 +970,7 @@ function AdminSetRow({
 					{isDeleting ? (
 						<div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
 					) : (
-						<svg
-							className="h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							strokeWidth={2}
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-							/>
-						</svg>
+						<Icon name="delete" className="h-4 w-4" />
 					)}
 				</button>
 			</div>
@@ -1258,19 +1135,7 @@ function AdminSetEditor({
 					onClick={onClose}
 					className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground transition-colors"
 				>
-					<svg
-						className="h-4 w-4"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						strokeWidth={2}
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-						/>
-					</svg>
+					<Icon name="arrow_back" className="h-4 w-4" />
 					Quay lại
 				</button>
 				<div className="flex-1">
@@ -1300,15 +1165,7 @@ function AdminSetEditor({
 								</>
 							) : (
 								<>
-									<svg
-										className="h-3.5 w-3.5"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-										strokeWidth={2.5}
-									>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-									</svg>
+									<Icon name="save" className="h-3.5 w-3.5" />
 									Lưu tất cả
 								</>
 							)}
@@ -1329,7 +1186,7 @@ function AdminSetEditor({
 							{/* Metadata */}
 							<div className="grid gap-4 sm:grid-cols-2 border border-border bg-surface p-5">
 								<div>
-									<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">
+									<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
 										Tiêu đề <span className="text-error">*</span>
 									</label>
 									<input
@@ -1341,7 +1198,7 @@ function AdminSetEditor({
 									/>
 								</div>
 								<div>
-									<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">
+									<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
 										Mô tả
 									</label>
 									<input
@@ -1356,7 +1213,7 @@ function AdminSetEditor({
 							{/* Word list */}
 							<div>
 								<div className="mb-3 flex items-center justify-between">
-									<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+									<p className="text-xs font-bold uppercase tracking-widest text-muted">
 										{activeWords.length} từ vựng
 										{willDeleteCount > 0 && (
 											<span className="ml-2 text-error">· {willDeleteCount} sẽ bị xóa</span>
@@ -1365,7 +1222,7 @@ function AdminSetEditor({
 									<button
 										type="button"
 										onClick={() => setWords((prev) => prev.map((w) => ({ ...w, _expanded: true })))}
-										className="text-[10px] font-bold uppercase tracking-wider text-muted hover:text-foreground transition-colors"
+										className="text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground transition-colors"
 									>
 										Mở rộng tất cả
 									</button>
@@ -1387,15 +1244,7 @@ function AdminSetEditor({
 									onClick={addWord}
 									className="mt-4 flex w-full items-center justify-center gap-2 border-2 border-dashed border-border py-4 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:border-foreground hover:text-foreground"
 								>
-									<svg
-										className="h-4 w-4"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-										strokeWidth={2}
-									>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-									</svg>
+									<Icon name="add" className="h-4 w-4" />
 									Thêm từ mới
 								</button>
 							</div>
@@ -1452,9 +1301,7 @@ function WordEditorCard({
 		<div className={`border ${word._isNew ? 'border-accent' : 'border-border'} bg-background`}>
 			{/* Collapsed row */}
 			<div className="flex items-center gap-3 px-4 py-3">
-				<span className="w-6 shrink-0 text-[10px] font-bold tabular-nums text-muted">
-					{index + 1}
-				</span>
+				<span className="w-6 shrink-0 text-xs font-bold tabular-nums text-muted">{index + 1}</span>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-baseline gap-3">
 						<span className="truncate text-sm font-bold text-foreground">
@@ -1468,7 +1315,7 @@ function WordEditorCard({
 						</span>
 					</div>
 					{(word.partOfSpeech || word.example) && (
-						<p className="mt-0.5 truncate text-[11px] text-muted">
+						<p className="mt-0.5 truncate text-xs text-muted">
 							{word.partOfSpeech && <span className="mr-2 font-bold">{word.partOfSpeech}</span>}
 							{word.example}
 						</p>
@@ -1476,12 +1323,12 @@ function WordEditorCard({
 				</div>
 				<div className="flex shrink-0 items-center gap-1">
 					{word._isNew && (
-						<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent">
+						<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-accent">
 							Mới
 						</span>
 					)}
 					{hasGuessWho && (
-						<span className="rounded-full bg-surface-hover px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted">
+						<span className="rounded-full bg-surface-hover px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-muted">
 							GW
 						</span>
 					)}
@@ -1491,15 +1338,10 @@ function WordEditorCard({
 						className="flex h-7 w-7 items-center justify-center text-muted hover:text-foreground transition-colors"
 						title={word._expanded ? 'Thu gọn' : 'Chỉnh sửa'}
 					>
-						<svg
+						<Icon
+							name="expand_more"
 							className={`h-4 w-4 transition-transform ${word._expanded ? 'rotate-180' : ''}`}
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							strokeWidth={2}
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-						</svg>
+						/>
 					</button>
 					<button
 						type="button"
@@ -1507,19 +1349,7 @@ function WordEditorCard({
 						className="flex h-7 w-7 items-center justify-center text-muted hover:text-error transition-colors"
 						title="Xóa từ này"
 					>
-						<svg
-							className="h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							strokeWidth={2}
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-							/>
-						</svg>
+						<Icon name="delete" className="h-4 w-4" />
 					</button>
 				</div>
 			</div>
@@ -1529,7 +1359,7 @@ function WordEditorCard({
 					{/* Core fields */}
 					<div className="grid gap-3 sm:grid-cols-2">
 						<div>
-							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
 								Từ <span className="text-error">*</span>
 							</label>
 							<input
@@ -1541,7 +1371,7 @@ function WordEditorCard({
 							/>
 						</div>
 						<div>
-							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
 								Phiên âm
 							</label>
 							<input
@@ -1553,7 +1383,7 @@ function WordEditorCard({
 							/>
 						</div>
 						<div>
-							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
 								Nghĩa tiếng Anh
 							</label>
 							<input
@@ -1565,7 +1395,7 @@ function WordEditorCard({
 							/>
 						</div>
 						<div>
-							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
 								Nghĩa tiếng Việt <span className="text-error">*</span>
 							</label>
 							<input
@@ -1580,7 +1410,7 @@ function WordEditorCard({
 							/>
 						</div>
 						<div>
-							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
 								Từ loại
 							</label>
 							<input
@@ -1592,7 +1422,7 @@ function WordEditorCard({
 							/>
 						</div>
 						<div>
-							<label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+							<label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
 								Ví dụ
 							</label>
 							<input
@@ -1606,7 +1436,7 @@ function WordEditorCard({
 					</div>
 					{/* Guess Who section */}
 					<div className="border-t border-border pt-3 space-y-3">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Guess Who (tùy chọn)
 						</p>
 						<textarea
@@ -1618,7 +1448,7 @@ function WordEditorCard({
 						/>
 						<div className="grid gap-3 sm:grid-cols-3">
 							<div>
-								<p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-error">
+								<p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-error">
 									Gợi ý Khó
 								</p>
 								<TagInput
@@ -1628,7 +1458,7 @@ function WordEditorCard({
 								/>
 							</div>
 							<div>
-								<p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-warning">
+								<p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-warning">
 									Gợi ý Trung bình
 								</p>
 								<TagInput
@@ -1638,7 +1468,7 @@ function WordEditorCard({
 								/>
 							</div>
 							<div>
-								<p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-success">
+								<p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-success">
 									Gợi ý Dễ
 								</p>
 								<TagInput

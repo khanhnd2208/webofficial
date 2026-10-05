@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -32,214 +34,19 @@ const FONT_DISPLAY = 'var(--font-cinzel), serif'; // Only for pure Latin text
 
 // ─── SVG Icon set — no emojis in UI chrome ───────────────
 const Icons = {
-	SoundOn: () => (
-		<svg
-			width="16"
-			height="16"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-			<path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-			<path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-		</svg>
-	),
-	SoundOff: () => (
-		<svg
-			width="16"
-			height="16"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-			<line x1="23" y1="9" x2="17" y2="15" />
-			<line x1="17" y1="9" x2="23" y2="15" />
-		</svg>
-	),
-	Expand: () => (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M8 3H5a2 2 0 0 0-2 2v3" />
-			<path d="M21 8V5a2 2 0 0 0-2-2h-3" />
-			<path d="M3 16v3a2 2 0 0 0 2 2h3" />
-			<path d="M16 21h3a2 2 0 0 0 2-2v-3" />
-		</svg>
-	),
-	Compress: () => (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M8 3v3a2 2 0 0 1-2 2H3" />
-			<path d="M21 8h-3a2 2 0 0 1-2-2V3" />
-			<path d="M3 16h3a2 2 0 0 1 2 2v3" />
-			<path d="M16 21v-3a2 2 0 0 1 2-2h3" />
-		</svg>
-	),
-	Shuffle: () => (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<polyline points="16 3 21 3 21 8" />
-			<line x1="4" y1="20" x2="21" y2="3" />
-			<polyline points="21 16 21 21 16 21" />
-			<line x1="15" y1="15" x2="21" y2="21" />
-			<line x1="4" y1="4" x2="9" y2="9" />
-		</svg>
-	),
-	FlipAll: () => (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<rect x="2" y="7" width="16" height="13" rx="2" />
-			<path d="M22 5V4a2 2 0 0 0-2-2H6" />
-			<path d="M6 12h8" />
-			<path d="M10 16H6" />
-		</svg>
-	),
-	Trash: () => (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<polyline points="3 6 5 6 21 6" />
-			<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-			<path d="M10 11v6" />
-			<path d="M14 11v6" />
-			<path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-		</svg>
-	),
-	Plus: () => (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<circle cx="12" cy="12" r="10" />
-			<line x1="12" y1="8" x2="12" y2="16" />
-			<line x1="8" y1="12" x2="16" y2="12" />
-		</svg>
-	),
-	Upload: () => (
-		<svg
-			width="14"
-			height="14"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-			<polyline points="17 8 12 3 7 8" />
-			<line x1="12" y1="3" x2="12" y2="15" />
-		</svg>
-	),
-	Pencil: () => (
-		<svg
-			width="14"
-			height="14"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M12 20h9" />
-			<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-		</svg>
-	),
-	Check: () => (
-		<svg
-			width="18"
-			height="18"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2.2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<polyline points="20 6 9 17 4 12" />
-		</svg>
-	),
-	File: () => (
-		<svg
-			width="28"
-			height="28"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.5"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-			<polyline points="13 2 13 9 20 9" />
-		</svg>
-	),
-	Spinner: () => (
-		<svg
-			width="28"
-			height="28"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.8"
-			strokeLinecap="round"
-		>
-			<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-		</svg>
-	),
+	SoundOn: () => <Icon name="volume_up" size={16} />,
+	SoundOff: () => <Icon name="volume_off" size={16} />,
+	Expand: () => <Icon name="fullscreen" size={16} />,
+	Compress: () => <Icon name="fullscreen_exit" size={16} />,
+	Shuffle: () => <Icon name="shuffle" size={16} />,
+	FlipAll: () => <Icon name="layers" size={16} />,
+	Trash: () => <Icon name="delete" size={16} />,
+	Plus: () => <Icon name="add" size={16} />,
+	Upload: () => <Icon name="upload" size={16} />,
+	Pencil: () => <Icon name="edit" size={16} />,
+	Check: () => <Icon name="check" size={16} />,
+	File: () => <Icon name="note" size={28} />,
+	Spinner: () => <Icon name="retry" size={16} className="animate-spin" />,
 };
 
 // ─── Web Audio API Sound Engine ──────────────────────────
@@ -364,14 +171,14 @@ function CardFlipSparkles({ count = 20 }: { count?: number }) {
 				const duration = 0.55 + ((i * 0.04) % 0.35);
 				const delay = (i * 0.012) % 0.12;
 				const colors = [
-					'#FFD700',
-					'#FFA500',
-					'#FF6B35',
-					'#c8973a',
-					'#f0d080',
-					'#e8c878',
-					'#d4a830',
-					'#fff8e0',
+					GRAPHIC_COLORS['ffd700'],
+					GRAPHIC_COLORS['ffa500'],
+					GRAPHIC_COLORS['ff6b35'],
+					GRAPHIC_COLORS['c8973a'],
+					GRAPHIC_COLORS['f0d080'],
+					GRAPHIC_COLORS['e8c878'],
+					GRAPHIC_COLORS['d4a830'],
+					GRAPHIC_COLORS['fff8e0'],
 				];
 				const color = colors[i % colors.length];
 				return (
@@ -484,7 +291,14 @@ function CardFlipGeoBurst() {
 				const angle = (360 / 10) * i + ((i * 13) % 22);
 				const distance = 75 + ((i * 17) % 55);
 				const shape = shapes[i % shapes.length];
-				const colors = ['#FFD700', '#f0d080', '#c8973a', '#d4a830', '#fff8e0', '#FFA500'];
+				const colors = [
+					GRAPHIC_COLORS['ffd700'],
+					GRAPHIC_COLORS['f0d080'],
+					GRAPHIC_COLORS['c8973a'],
+					GRAPHIC_COLORS['d4a830'],
+					GRAPHIC_COLORS['fff8e0'],
+					GRAPHIC_COLORS['ffa500'],
+				];
 				const color = colors[i % colors.length];
 				return (
 					<m.div
@@ -603,7 +417,12 @@ function LuckyCardItem({
 				<m.div
 					className="absolute -inset-4 rounded-3xl blur-2xl"
 					style={{
-						background: 'radial-gradient(ellipse, #d4a830 0%, #c8973a 40%, transparent 70%)',
+						background:
+							'radial-gradient(ellipse, ' +
+							GRAPHIC_COLORS['d4a830'] +
+							' 0%, ' +
+							GRAPHIC_COLORS['c8973a'] +
+							' 40%, transparent 70%)',
 					}}
 					initial={{ opacity: 0.85 }}
 					animate={{ opacity: [0.85, 0.4, 0] }}
@@ -676,10 +495,10 @@ function LuckyCardItem({
 							{/* Card number badge */}
 							<div className="absolute bottom-4 left-0 right-0 flex justify-center">
 								<span
-									className="rounded-full px-3 py-0.5 text-[10px] font-bold tracking-[0.25em]"
+									className="rounded-full px-3 py-0.5 text-xs font-bold tracking-[0.25em]"
 									style={{
 										background: 'rgba(20,12,4,0.65)',
-										color: '#f0d080',
+										color: GRAPHIC_COLORS['f0d080'],
 										backdropFilter: 'blur(6px)',
 										border: '1px solid rgba(212,168,48,0.35)',
 										fontFamily: FONT_UI,
@@ -736,7 +555,12 @@ function LuckyCardItem({
 								<div
 									className="flex h-8 w-8 items-center justify-center rounded-full"
 									style={{
-										background: 'linear-gradient(135deg, #d4a830, #a87820)',
+										background:
+											'linear-gradient(135deg, ' +
+											GRAPHIC_COLORS['d4a830'] +
+											', ' +
+											GRAPHIC_COLORS['a87820'] +
+											')',
 										boxShadow: '0 2px 12px rgba(168,120,32,0.5)',
 									}}
 								>
@@ -752,9 +576,9 @@ function LuckyCardItem({
 							{/* Card number — bottom */}
 							<div className="absolute bottom-[14px] left-0 right-0 text-center z-20">
 								<span
-									className="text-[10px] tracking-[0.3em] font-bold uppercase"
+									className="text-xs tracking-[0.3em] font-bold uppercase"
 									style={{
-										color: '#7a5c1e',
+										color: GRAPHIC_COLORS['7a5c1e'],
 										fontFamily: FONT_UI,
 										textShadow: '0 1px 3px rgba(255,255,255,0.5)',
 									}}
@@ -774,7 +598,7 @@ function LuckyCardItem({
 								<p
 									className="text-center whitespace-pre-wrap break-words"
 									style={{
-										color: '#1a0e04',
+										color: GRAPHIC_COLORS['1a0e04'],
 										fontFamily: FONT_CARD,
 										textShadow: '0 1px 3px rgba(255,255,255,0.6)',
 										fontSize: fontStyle.fontSize,
@@ -906,9 +730,16 @@ function SetupModal({
 			exit={{ opacity: 0 }}
 		>
 			<m.div
-				className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[#c8973a]/25 p-6 shadow-2xl"
+				className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-game-bronze/25 p-6 shadow-2xl"
 				style={{
-					background: 'linear-gradient(150deg, #1c1509 0%, #201608 50%, #1a1208 100%)',
+					background:
+						'linear-gradient(150deg, ' +
+						GRAPHIC_COLORS['1c1509'] +
+						' 0%, ' +
+						GRAPHIC_COLORS['201608'] +
+						' 50%, ' +
+						GRAPHIC_COLORS['1a1208'] +
+						' 100%)',
 					boxShadow: '0 0 60px rgba(200,151,58,0.12), 0 25px 60px rgba(0,0,0,0.7)',
 				}}
 				initial={{ scale: 0.92, y: 20 }}
@@ -919,7 +750,7 @@ function SetupModal({
 				<button
 					onClick={onClose}
 					className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-lg transition-all hover:bg-white/10"
-					style={{ color: '#c8a060' }}
+					style={{ color: GRAPHIC_COLORS['c8a060'] }}
 				>
 					<svg
 						width="13"
@@ -950,7 +781,7 @@ function SetupModal({
 								height="18"
 								viewBox="0 0 24 24"
 								fill="none"
-								stroke="#c8973a"
+								stroke={GRAPHIC_COLORS['c8973a']}
 								strokeWidth="1.6"
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -962,12 +793,15 @@ function SetupModal({
 						</div>
 						<h2
 							className="text-lg font-semibold tracking-wide"
-							style={{ color: '#f5e0a0', fontFamily: FONT_DISPLAY }}
+							style={{ color: GRAPHIC_COLORS['f5e0a0'], fontFamily: FONT_DISPLAY }}
 						>
 							Lucky Card
 						</h2>
 					</div>
-					<p className="text-sm ml-12" style={{ color: '#b8a060', fontFamily: FONT_UI }}>
+					<p
+						className="text-sm ml-12"
+						style={{ color: GRAPHIC_COLORS['b8a060'], fontFamily: FONT_UI }}
+					>
 						Mỗi thẻ ẩn một nội dung bí mật
 					</p>
 				</div>
@@ -975,8 +809,8 @@ function SetupModal({
 				{/* Title input */}
 				<div className="mb-5">
 					<label
-						className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5"
-						style={{ color: '#b8a060', fontFamily: FONT_UI }}
+						className="block text-xs font-semibold uppercase tracking-[0.18em] mb-1.5"
+						style={{ color: GRAPHIC_COLORS['b8a060'], fontFamily: FONT_UI }}
 					>
 						Tiêu đề
 					</label>
@@ -989,7 +823,7 @@ function SetupModal({
 						style={{
 							background: 'rgba(255,255,255,0.06)',
 							border: '1px solid rgba(200,151,58,0.25)',
-							color: '#f5e0a0',
+							color: GRAPHIC_COLORS['f5e0a0'],
 							fontFamily: FONT_UI,
 						}}
 					/>
@@ -1006,11 +840,16 @@ function SetupModal({
 								style={
 									mode === m
 										? {
-												background: 'linear-gradient(135deg, #c8973a, #a87820)',
-												color: '#1a1208',
+												background:
+													'linear-gradient(135deg, ' +
+													GRAPHIC_COLORS['c8973a'] +
+													', ' +
+													GRAPHIC_COLORS['a87820'] +
+													')',
+												color: GRAPHIC_COLORS['1a1208'],
 												fontFamily: FONT_UI,
 											}
-										: { color: '#b8a060', fontFamily: FONT_UI }
+										: { color: GRAPHIC_COLORS['b8a060'], fontFamily: FONT_UI }
 								}
 							>
 								{m === 'upload' ? (
@@ -1031,7 +870,7 @@ function SetupModal({
 					<div className="space-y-4">
 						<div
 							onClick={() => fileInputRef.current?.click()}
-							className="cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all hover:border-[#c8973a]/50"
+							className="cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all hover:border-game-bronze/50"
 							style={{ borderColor: 'rgba(200,151,58,0.3)' }}
 						>
 							<input
@@ -1044,7 +883,11 @@ function SetupModal({
 							<div
 								className="flex justify-center mb-3"
 								style={{
-									color: uploading ? '#c8973a' : uploadedCards.length > 0 ? '#6aad7c' : '#b8a060',
+									color: uploading
+										? GRAPHIC_COLORS['c8973a']
+										: uploadedCards.length > 0
+											? GRAPHIC_COLORS['6aad7c']
+											: GRAPHIC_COLORS['b8a060'],
 								}}
 							>
 								{uploading ? (
@@ -1060,24 +903,27 @@ function SetupModal({
 									<Icons.File />
 								)}
 							</div>
-							<p className="text-sm font-medium" style={{ color: '#f0d080', fontFamily: FONT_UI }}>
+							<p
+								className="text-sm font-medium"
+								style={{ color: GRAPHIC_COLORS['f0d080'], fontFamily: FONT_UI }}
+							>
 								{uploading
 									? 'Đang đọc file...'
 									: uploadedCards.length > 0
 										? `${uploadedCards.length} thẻ đã tải`
 										: 'Chọn file'}
 							</p>
-							<p className="mt-1 text-[10px]" style={{ color: '#907848' }}>
+							<p className="mt-1 text-xs" style={{ color: GRAPHIC_COLORS['907848'] }}>
 								.csv · .txt · .xlsx
 							</p>
-							<p className="mt-2 text-[10px]" style={{ color: '#907848' }}>
+							<p className="mt-2 text-xs" style={{ color: GRAPHIC_COLORS['907848'] }}>
 								Chưa có file?{' '}
 								<a
 									href="/sample-lucky-card.csv"
 									download
 									onClick={(e) => e.stopPropagation()}
-									className="underline underline-offset-2 transition-colors hover:text-[#d4a830]"
-									style={{ color: '#c8973a', fontFamily: FONT_UI }}
+									className="underline underline-offset-2 transition-colors hover:text-sunlight"
+									style={{ color: GRAPHIC_COLORS['c8973a'], fontFamily: FONT_UI }}
 								>
 									Tải file mẫu
 								</a>
@@ -1092,8 +938,8 @@ function SetupModal({
 								}}
 							>
 								<p
-									className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2"
-									style={{ color: '#b8a060', fontFamily: FONT_UI }}
+									className="text-xs font-semibold uppercase tracking-[0.18em] mb-2"
+									style={{ color: GRAPHIC_COLORS['b8a060'], fontFamily: FONT_UI }}
 								>
 									Xem trước — {uploadedCards.length} thẻ
 								</p>
@@ -1105,12 +951,15 @@ function SetupModal({
 											style={{ background: 'rgba(255,255,255,0.03)' }}
 										>
 											<span
-												className="text-[9px] font-bold w-5 shrink-0 tracking-widest"
-												style={{ color: '#d4a830', fontFamily: FONT_UI }}
+												className="text-xs font-bold w-5 shrink-0 tracking-widest"
+												style={{ color: GRAPHIC_COLORS['d4a830'], fontFamily: FONT_UI }}
 											>
 												{i + 1}
 											</span>
-											<span className="truncate text-xs" style={{ color: '#e8c878' }}>
+											<span
+												className="truncate text-xs"
+												style={{ color: GRAPHIC_COLORS['e8c878'] }}
+											>
 												{c}
 											</span>
 										</div>
@@ -1125,8 +974,8 @@ function SetupModal({
 					<div className="space-y-4">
 						<div>
 							<label
-								className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5"
-								style={{ color: '#b8a060', fontFamily: FONT_UI }}
+								className="block text-xs font-semibold uppercase tracking-[0.18em] mb-1.5"
+								style={{ color: GRAPHIC_COLORS['b8a060'], fontFamily: FONT_UI }}
 							>
 								Số lượng thẻ
 							</label>
@@ -1140,7 +989,7 @@ function SetupModal({
 								style={{
 									background: 'rgba(255,255,255,0.06)',
 									border: '1px solid rgba(200,151,58,0.25)',
-									color: '#f5e0a0',
+									color: GRAPHIC_COLORS['f5e0a0'],
 								}}
 							/>
 						</div>
@@ -1148,8 +997,8 @@ function SetupModal({
 							{manualCards.map((val, i) => (
 								<div key={i} className="flex items-center gap-2">
 									<span
-										className="text-[9px] font-bold w-7 shrink-0 tracking-widest"
-										style={{ color: '#d4a830', fontFamily: FONT_UI }}
+										className="text-xs font-bold w-7 shrink-0 tracking-widest"
+										style={{ color: GRAPHIC_COLORS['d4a830'], fontFamily: FONT_UI }}
 									>
 										{i + 1}
 									</span>
@@ -1166,7 +1015,7 @@ function SetupModal({
 										style={{
 											background: 'rgba(255,255,255,0.05)',
 											border: '1px solid rgba(200,151,58,0.18)',
-											color: '#f5e0a0',
+											color: GRAPHIC_COLORS['f5e0a0'],
 											fontFamily: FONT_UI,
 										}}
 									/>
@@ -1182,7 +1031,7 @@ function SetupModal({
 						style={{
 							background: 'rgba(220,50,50,0.08)',
 							border: '1px solid rgba(220,50,50,0.25)',
-							color: '#ff8080',
+							color: GRAPHIC_COLORS['ff8080'],
 							fontFamily: FONT_UI,
 						}}
 					>
@@ -1196,7 +1045,7 @@ function SetupModal({
 						className="flex-1 rounded-xl py-2.5 text-xs font-semibold tracking-widest uppercase transition-all hover:bg-white/5"
 						style={{
 							border: '1px solid rgba(200,151,58,0.2)',
-							color: '#b8a060',
+							color: GRAPHIC_COLORS['b8a060'],
 							fontFamily: FONT_UI,
 						}}
 					>
@@ -1206,8 +1055,13 @@ function SetupModal({
 						onClick={handleSubmit}
 						className="flex-1 rounded-xl py-2.5 text-xs font-bold tracking-widest uppercase transition-all hover:brightness-110"
 						style={{
-							background: 'linear-gradient(135deg, #c8973a, #a87820)',
-							color: '#1a1208',
+							background:
+								'linear-gradient(135deg, ' +
+								GRAPHIC_COLORS['c8973a'] +
+								', ' +
+								GRAPHIC_COLORS['a87820'] +
+								')',
+							color: GRAPHIC_COLORS['1a1208'],
 							boxShadow: '0 4px 20px rgba(200,151,58,0.25)',
 							fontFamily: FONT_UI,
 						}}
@@ -1359,8 +1213,8 @@ export default function LuckyCardPage() {
 						width: 48,
 						height: 48,
 						border: '2px solid transparent',
-						borderTopColor: '#c8973a',
-						borderRightColor: '#d4a830',
+						borderTopColor: GRAPHIC_COLORS['c8973a'],
+						borderRightColor: GRAPHIC_COLORS['d4a830'],
 					}}
 					animate={{ rotate: 360 }}
 					transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
@@ -1397,8 +1251,12 @@ export default function LuckyCardPage() {
 							height: 1 + ((i * 7) % 3),
 							left: `${(i * 9.3 + 5) % 100}%`,
 							top: `${(i * 13.7 + 10) % 100}%`,
-							background: ['#c8973a', '#d4a830', '#e8c878'][i % 3],
-							boxShadow: `0 0 5px ${['#c8973a', '#d4a830', '#e8c878'][i % 3]}`,
+							background: [
+								GRAPHIC_COLORS['c8973a'],
+								GRAPHIC_COLORS['d4a830'],
+								GRAPHIC_COLORS['e8c878'],
+							][i % 3],
+							boxShadow: `0 0 5px ${[GRAPHIC_COLORS['c8973a'], GRAPHIC_COLORS['d4a830'], GRAPHIC_COLORS['e8c878']][i % 3]}`,
 						}}
 						animate={{ y: [0, -25, 0], opacity: [0.15, 0.6, 0.15], scale: [1, 1.4, 1] }}
 						transition={{
@@ -1425,10 +1283,13 @@ export default function LuckyCardPage() {
 				<div className={isFullscreen ? 'mb-4' : 'mb-8'}>
 					{/* Breadcrumb */}
 					{!isFullscreen && (
-						<div className="flex items-center gap-2 text-xs mb-4" style={{ color: '#b8a060' }}>
+						<div
+							className="flex items-center gap-2 text-xs mb-4"
+							style={{ color: GRAPHIC_COLORS['b8a060'] }}
+						>
 							<Link
 								href="/admin/tools"
-								className="transition-colors hover:text-[#e8c878]"
+								className="transition-colors hover:text-sunlight"
 								style={{ fontFamily: FONT_UI, letterSpacing: '0.04em' }}
 							>
 								Magical Tools
@@ -1442,7 +1303,13 @@ export default function LuckyCardPage() {
 									strokeLinejoin="round"
 								/>
 							</svg>
-							<span style={{ color: '#e8c878', fontFamily: FONT_UI, letterSpacing: '0.04em' }}>
+							<span
+								style={{
+									color: GRAPHIC_COLORS['e8c878'],
+									fontFamily: FONT_UI,
+									letterSpacing: '0.04em',
+								}}
+							>
 								Lucky Card
 							</span>
 						</div>
@@ -1466,7 +1333,7 @@ export default function LuckyCardPage() {
 									height="20"
 									viewBox="0 0 24 24"
 									fill="none"
-									stroke="#d4a830"
+									stroke={GRAPHIC_COLORS['d4a830']}
 									strokeWidth="1.5"
 									strokeLinecap="round"
 									strokeLinejoin="round"
@@ -1478,11 +1345,18 @@ export default function LuckyCardPage() {
 							<div>
 								<h1
 									className={`font-semibold tracking-wide ${isFullscreen ? 'text-lg' : 'text-xl'}`}
-									style={{ color: '#f5e0a0', fontFamily: FONT_UI, letterSpacing: '0.04em' }}
+									style={{
+										color: GRAPHIC_COLORS['f5e0a0'],
+										fontFamily: FONT_UI,
+										letterSpacing: '0.04em',
+									}}
 								>
 									{state?.title || 'Lucky Card'}
 								</h1>
-								<p className="text-xs mt-0.5" style={{ color: '#b8a060', fontFamily: FONT_UI }}>
+								<p
+									className="text-xs mt-0.5"
+									style={{ color: GRAPHIC_COLORS['b8a060'], fontFamily: FONT_UI }}
+								>
 									{state ? `${flippedCount} / ${totalCount} thẻ đã lật` : 'Tạo bộ thẻ để bắt đầu'}
 								</p>
 							</div>
@@ -1499,7 +1373,7 @@ export default function LuckyCardPage() {
 											width: 36,
 											height: 36,
 											border: '1px solid rgba(200,151,58,0.3)',
-											color: soundEnabled ? '#d4a830' : '#8a7040',
+											color: soundEnabled ? GRAPHIC_COLORS['d4a830'] : GRAPHIC_COLORS['8a7040'],
 											background: 'rgba(200,151,58,0.08)',
 										}}
 										title={soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
@@ -1514,7 +1388,7 @@ export default function LuckyCardPage() {
 											width: 36,
 											height: 36,
 											border: '1px solid rgba(200,151,58,0.3)',
-											color: '#d4a830',
+											color: GRAPHIC_COLORS['d4a830'],
 											background: 'rgba(200,151,58,0.08)',
 										}}
 										title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
@@ -1526,10 +1400,10 @@ export default function LuckyCardPage() {
 
 									<button
 										onClick={handleShuffle}
-										className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all hover:bg-white/10"
+										className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold tracking-widest uppercase transition-all hover:bg-white/10"
 										style={{
 											border: '1px solid rgba(200,151,58,0.3)',
-											color: '#d4a830',
+											color: GRAPHIC_COLORS['d4a830'],
 											background: 'rgba(200,151,58,0.08)',
 											fontFamily: FONT_UI,
 										}}
@@ -1541,10 +1415,10 @@ export default function LuckyCardPage() {
 									<button
 										onClick={handleFlipAll}
 										disabled={flippedCount === totalCount}
-										className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+										className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold tracking-widest uppercase transition-all hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
 										style={{
 											border: '1px solid rgba(200,151,58,0.3)',
-											color: '#d4a830',
+											color: GRAPHIC_COLORS['d4a830'],
 											background: 'rgba(200,151,58,0.08)',
 											fontFamily: FONT_UI,
 										}}
@@ -1555,10 +1429,10 @@ export default function LuckyCardPage() {
 
 									<button
 										onClick={handleReset}
-										className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all hover:bg-white/10"
+										className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold tracking-widest uppercase transition-all hover:bg-white/10"
 										style={{
 											border: '1px solid rgba(160,60,60,0.35)',
-											color: '#e08080',
+											color: GRAPHIC_COLORS['e08080'],
 											background: 'rgba(160,60,60,0.08)',
 											fontFamily: FONT_UI,
 										}}
@@ -1571,10 +1445,15 @@ export default function LuckyCardPage() {
 							{!state && (
 								<button
 									onClick={() => setShowSetup(true)}
-									className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-all hover:brightness-110 hover:-translate-y-0.5"
+									className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-widest uppercase transition-all hover:brightness-110 hover:-translate-y-0.5"
 									style={{
-										background: 'linear-gradient(135deg, #c8973a, #a87820)',
-										color: '#1a1208',
+										background:
+											'linear-gradient(135deg, ' +
+											GRAPHIC_COLORS['c8973a'] +
+											', ' +
+											GRAPHIC_COLORS['a87820'] +
+											')',
+										color: GRAPHIC_COLORS['1a1208'],
 										boxShadow: '0 4px 20px rgba(200,151,58,0.3)',
 										fontFamily: FONT_UI,
 									}}
@@ -1597,7 +1476,16 @@ export default function LuckyCardPage() {
 						>
 							<m.div
 								className="h-full rounded-full"
-								style={{ background: 'linear-gradient(90deg, #6b4010, #c8973a, #f0c040)' }}
+								style={{
+									background:
+										'linear-gradient(90deg, ' +
+										GRAPHIC_COLORS['6b4010'] +
+										', ' +
+										GRAPHIC_COLORS['c8973a'] +
+										', ' +
+										GRAPHIC_COLORS['f0c040'] +
+										')',
+								}}
 								initial={{ width: 0 }}
 								animate={{ width: `${totalCount > 0 ? (flippedCount / totalCount) * 100 : 0}%` }}
 								transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -1622,20 +1510,20 @@ export default function LuckyCardPage() {
 								<svg width="14" height="14" viewBox="0 0 14 14">
 									<path
 										d="M7,0 L9,5 L14,7 L9,9 L7,14 L5,9 L0,7 L5,5 Z"
-										fill="#d4a830"
+										fill={GRAPHIC_COLORS['d4a830']}
 										opacity="0.8"
 									/>
 								</svg>
 								<span
 									className="text-xs font-semibold tracking-[0.12em] uppercase"
-									style={{ color: '#f0d080', fontFamily: FONT_UI }}
+									style={{ color: GRAPHIC_COLORS['f0d080'], fontFamily: FONT_UI }}
 								>
 									Tất cả lá bài đã được lật
 								</span>
 								<svg width="14" height="14" viewBox="0 0 14 14">
 									<path
 										d="M7,0 L9,5 L14,7 L9,9 L7,14 L5,9 L0,7 L5,5 Z"
-										fill="#d4a830"
+										fill={GRAPHIC_COLORS['d4a830']}
 										opacity="0.8"
 									/>
 								</svg>
@@ -1677,7 +1565,10 @@ export default function LuckyCardPage() {
 						<div className="relative mb-10">
 							<m.div
 								className="absolute -inset-10 rounded-full opacity-15"
-								style={{ background: 'radial-gradient(circle, #c8973a, transparent 70%)' }}
+								style={{
+									background:
+										'radial-gradient(circle, ' + GRAPHIC_COLORS['c8973a'] + ', transparent 70%)',
+								}}
 								animate={{ scale: [1, 1.2, 1], opacity: [0.12, 0.22, 0.12] }}
 								transition={{ duration: 3.5, repeat: Infinity }}
 							/>
@@ -1698,7 +1589,7 @@ export default function LuckyCardPage() {
 									height="40"
 									viewBox="0 0 24 24"
 									fill="none"
-									stroke="#d4a830"
+									stroke={GRAPHIC_COLORS['d4a830']}
 									strokeWidth="1.2"
 									strokeLinecap="round"
 									strokeLinejoin="round"
@@ -1715,8 +1606,8 @@ export default function LuckyCardPage() {
 									style={{
 										width: 5,
 										height: 5,
-										background: '#d4a830',
-										boxShadow: '0 0 6px #d4a830',
+										background: GRAPHIC_COLORS['d4a830'],
+										boxShadow: '0 0 6px ' + GRAPHIC_COLORS['d4a830'],
 										top: '50%',
 										left: '50%',
 									}}
@@ -1737,13 +1628,17 @@ export default function LuckyCardPage() {
 
 						<h2
 							className="text-xl font-semibold mb-2 tracking-wide"
-							style={{ color: '#f5e0a0', fontFamily: FONT_DISPLAY, letterSpacing: '0.08em' }}
+							style={{
+								color: GRAPHIC_COLORS['f5e0a0'],
+								fontFamily: FONT_DISPLAY,
+								letterSpacing: '0.08em',
+							}}
 						>
 							Lucky Card
 						</h2>
 						<p
 							className="text-sm mb-10 text-center max-w-xs leading-relaxed"
-							style={{ color: '#b8a060', fontFamily: FONT_UI }}
+							style={{ color: GRAPHIC_COLORS['b8a060'], fontFamily: FONT_UI }}
 						>
 							Tạo bộ thẻ bằng cách nhập nội dung thủ công hoặc upload file Excel / CSV
 						</p>
@@ -1754,7 +1649,11 @@ export default function LuckyCardPage() {
 								style={{ background: 'linear-gradient(90deg, transparent, rgba(200,151,58,0.35))' }}
 							/>
 							<svg width="8" height="8" viewBox="0 0 8 8">
-								<path d="M4,0 L5,3 L8,4 L5,5 L4,8 L3,5 L0,4 L3,3 Z" fill="#c8973a" opacity="0.6" />
+								<path
+									d="M4,0 L5,3 L8,4 L5,5 L4,8 L3,5 L0,4 L3,3 Z"
+									fill={GRAPHIC_COLORS['c8973a']}
+									opacity="0.6"
+								/>
 							</svg>
 							<div
 								className="flex-1 h-px"
@@ -1764,10 +1663,15 @@ export default function LuckyCardPage() {
 
 						<button
 							onClick={() => setShowSetup(true)}
-							className="flex items-center gap-2 rounded-xl px-7 py-3 text-[11px] font-bold tracking-[0.15em] uppercase transition-all hover:brightness-110 hover:-translate-y-1"
+							className="flex items-center gap-2 rounded-xl px-7 py-3 text-xs font-bold tracking-[0.15em] uppercase transition-all hover:brightness-110 hover:-translate-y-1"
 							style={{
-								background: 'linear-gradient(135deg, #c8973a, #a87820)',
-								color: '#1a1208',
+								background:
+									'linear-gradient(135deg, ' +
+									GRAPHIC_COLORS['c8973a'] +
+									', ' +
+									GRAPHIC_COLORS['a87820'] +
+									')',
+								color: GRAPHIC_COLORS['1a1208'],
 								boxShadow: '0 6px 30px rgba(200,151,58,0.35)',
 								fontFamily: FONT_UI,
 							}}

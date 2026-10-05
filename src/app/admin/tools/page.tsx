@@ -1,3 +1,4 @@
+import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -38,26 +39,17 @@ export default function ToolsPage() {
 						<Link
 							key={tool.href}
 							href={tool.href}
-							className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border-hover"
+							className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 transition-all duration-250 hover:-translate-y-1 hover:shadow-lg hover:border-border-hover"
 						>
 							<div className="relative">
 								<h3 className="text-lg font-black text-foreground">{tool.label}</h3>
 								<p className="mt-1.5 text-sm text-muted leading-relaxed">{tool.description}</p>
 								<div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-accent">
 									<span>Mở tool</span>
-									<svg
+									<Icon
+										name="arrow_forward"
 										className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
-										viewBox="0 0 16 16"
-										fill="none"
-									>
-										<path
-											d="M6 4l4 4-4 4"
-											stroke="currentColor"
-											strokeWidth="1.5"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-										/>
-									</svg>
+									/>
 								</div>
 							</div>
 						</Link>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
@@ -132,19 +133,10 @@ export default function PostFilters({
 				{/* Search */}
 				<form onSubmit={handleSearchSubmit} className="flex flex-1 items-center gap-1">
 					<div className="relative flex-1 max-w-xs">
-						<svg
+						<Icon
+							name="search"
 							className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							strokeWidth={2}
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-							/>
-						</svg>
+						/>
 						<input
 							type="text"
 							value={search}
@@ -184,19 +176,7 @@ export default function PostFilters({
 							: 'border-border bg-surface text-muted hover:text-foreground'
 					}`}
 				>
-					<svg
-						className="h-3.5 w-3.5"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						strokeWidth={2}
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-						/>
-					</svg>
+					<Icon name="expand_more" className="h-3.5 w-3.5" />
 					Bộ lọc
 				</button>
 			</div>
@@ -206,9 +186,7 @@ export default function PostFilters({
 				<div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface p-4">
 					{/* Category */}
 					<label className="block min-w-35">
-						<span className="text-[11px] font-medium uppercase tracking-wider text-muted">
-							Chủ đề
-						</span>
+						<span className="text-xs font-medium uppercase tracking-wider text-muted">Chủ đề</span>
 						<select
 							value={currentCategory || 'all'}
 							onChange={(e) =>
@@ -229,7 +207,7 @@ export default function PostFilters({
 
 					{/* Tag */}
 					<label className="block min-w-35">
-						<span className="text-[11px] font-medium uppercase tracking-wider text-muted">Tag</span>
+						<span className="text-xs font-medium uppercase tracking-wider text-muted">Tag</span>
 						<select
 							value={currentTag || ''}
 							onChange={(e) => navigateWithFilters({ tag: e.target.value || undefined })}
@@ -246,9 +224,7 @@ export default function PostFilters({
 
 					{/* Date from */}
 					<label className="block">
-						<span className="text-[11px] font-medium uppercase tracking-wider text-muted">
-							Từ ngày
-						</span>
+						<span className="text-xs font-medium uppercase tracking-wider text-muted">Từ ngày</span>
 						<input
 							type="date"
 							value={currentDateFrom || ''}
@@ -259,7 +235,7 @@ export default function PostFilters({
 
 					{/* Date to */}
 					<label className="block">
-						<span className="text-[11px] font-medium uppercase tracking-wider text-muted">
+						<span className="text-xs font-medium uppercase tracking-wider text-muted">
 							Đến ngày
 						</span>
 						<input

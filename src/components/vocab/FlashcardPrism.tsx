@@ -13,6 +13,7 @@
    • Safari/iOS: -webkit-backface-visibility hardened
    ════════════════════════════════════════════════════════════════════════ */
 
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import { m } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
@@ -135,8 +136,8 @@ export default function FlashcardPrism({
 						style={{
 							...faceBase,
 							transform: `rotateY(0deg) translateZ(${apothem}px)`,
-							background: 'var(--color-surface, #fff)',
-							border: '1px solid var(--color-border, #e2e8f0)',
+							background: 'var(--color-surface, ' + GRAPHIC_COLORS['fff'] + ')',
+							border: '1px solid var(--color-border, ' + GRAPHIC_COLORS['e2e8f0'] + ')',
 							boxShadow: '0 8px 32px -4px rgba(0,0,0,0.08)',
 						}}
 					>
@@ -180,8 +181,8 @@ export default function FlashcardPrism({
 						style={{
 							...faceBase,
 							transform: `rotateY(120deg) translateZ(${apothem}px)`,
-							background: 'var(--color-surface, #fff)',
-							border: '1px solid var(--color-border, #e2e8f0)',
+							background: 'var(--color-surface, ' + GRAPHIC_COLORS['fff'] + ')',
+							border: '1px solid var(--color-border, ' + GRAPHIC_COLORS['e2e8f0'] + ')',
 							boxShadow: '0 8px 32px -4px rgba(0,0,0,0.08)',
 						}}
 					>
@@ -206,8 +207,15 @@ export default function FlashcardPrism({
 						style={{
 							...faceBase,
 							transform: `rotateY(240deg) translateZ(${apothem}px)`,
-							background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fde68a 100%)',
-							border: '2px solid #f59e0b',
+							background:
+								'linear-gradient(135deg, ' +
+								GRAPHIC_COLORS['fffbeb'] +
+								' 0%, ' +
+								GRAPHIC_COLORS['fef3c7'] +
+								' 50%, ' +
+								GRAPHIC_COLORS['fde68a'] +
+								' 100%)',
+							border: '2px solid ' + GRAPHIC_COLORS['f59e0b'],
 							boxShadow: '0 8px 32px -4px rgba(245,158,11,0.25)',
 						}}
 					>
@@ -237,7 +245,7 @@ export default function FlashcardPrism({
 					<button
 						key={i}
 						onClick={() => setFaceIndex(i)}
-						className={`h-2 rounded-full transition-all duration-300 ${
+						className={`h-2 rounded-full transition-all duration-250 ${
 							faceIndex === i
 								? i === 2
 									? 'w-6 bg-amber-500'
@@ -249,7 +257,7 @@ export default function FlashcardPrism({
 			</div>
 
 			{/* Hint text */}
-			<p className="mt-3 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+			<p className="mt-3 text-center text-xs font-bold uppercase tracking-widest text-muted/40">
 				Tap để xoay · Vuốt ← Chưa thuộc · Vuốt → Đã thuộc
 			</p>
 		</div>
@@ -262,7 +270,7 @@ function FaceLabel({ index, current }: { index: number; current: number }) {
 	const colors = ['text-muted/40', 'text-muted/40', 'text-amber-500/60'];
 	return (
 		<p
-			className={`absolute bottom-4 text-[9px] font-bold uppercase tracking-widest ${colors[index]} ${current === index ? 'opacity-100' : 'opacity-0'}`}
+			className={`absolute bottom-4 text-xs font-bold uppercase tracking-widest ${colors[index]} ${current === index ? 'opacity-100' : 'opacity-0'}`}
 		>
 			{labels[index]}
 		</p>

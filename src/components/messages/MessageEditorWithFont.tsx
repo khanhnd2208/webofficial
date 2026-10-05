@@ -28,7 +28,7 @@ export default function MessageEditorWithFont({
 		<div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
 			{/* Font picker strip */}
 			<div className="flex items-center border-b border-border bg-surface-secondary/60 px-3 py-2">
-				<span className="mr-3 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted">
+				<span className="mr-3 shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">
 					Font
 				</span>
 				<div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
@@ -53,7 +53,7 @@ export default function MessageEditorWithFont({
 							>
 								{font.previewText}
 								<span
-									className={`ml-1.5 text-[10px] opacity-60 ${isActive ? 'text-white' : 'text-muted'}`}
+									className={`ml-1.5 text-xs opacity-60 ${isActive ? 'text-white' : 'text-muted'}`}
 									style={{ fontFamily: 'inherit' }}
 								>
 									— {font.label}

@@ -59,7 +59,7 @@ export default function LobbyPhase({
 			<div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
 				<div className="flex items-start justify-between gap-3">
 					<div className="min-w-0">
-						<p className="game-theme-kicker font-mono text-[0.68rem] tracking-[0.18em] uppercase">
+						<p className="game-theme-kicker font-mono text-xs tracking-[0.18em] uppercase">
 							{t('cheese.lobby.title')}
 						</p>
 						<h1 className="mt-1 break-words font-display text-3xl font-medium leading-tight">
@@ -109,7 +109,7 @@ export default function LobbyPhase({
 							{player.id === state.self?.id ? ` · ${t('cheese.lobby.you')}` : ''}
 						</span>
 						{player.isHost && (
-							<span className="font-mono text-[0.65rem] tracking-[0.14em] text-muted uppercase">
+							<span className="font-mono text-xs tracking-[0.14em] text-muted uppercase">
 								{t('cheese.lobby.host')}
 							</span>
 						)}
@@ -146,7 +146,7 @@ export default function LobbyPhase({
 						scapegoatEnabled={state.scapegoatEnabled}
 						followers={tableFollowers}
 					/>
-					<h2 className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">
+					<h2 className="font-mono text-xs tracking-[0.16em] text-muted uppercase">
 						{t('cheese.lobby.rulesTitle')}
 					</h2>
 					<p>{t('cheese.lobby.rule1')}</p>
@@ -180,7 +180,7 @@ export default function LobbyPhase({
 			)}
 
 			{state.isHost && (
-				<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-12px_30px_rgb(0_0_0_/_0.08)] backdrop-blur">
+				<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg backdrop-blur">
 					<div className="mx-auto max-w-md">
 						{missing > 0 && (
 							<p className="mb-2 text-center text-xs text-muted">

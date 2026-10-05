@@ -48,22 +48,22 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 						}
 						size={54}
 					/>
-					<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#e0a045] uppercase">
+					<p className="font-mono text-xs tracking-[0.2em] text-game-bronze uppercase">
 						{t(`cheese.deal.role.${self.role}`)}
 					</p>
-					<p className="max-w-xs text-sm leading-relaxed text-[#f4efe4]/80">{blurb}</p>
+					<p className="max-w-xs text-sm leading-relaxed text-game-ink/80">{blurb}</p>
 					{twoNight ? (
 						<div className="space-y-1 text-center">
-							<p className="font-display text-3xl text-[#f4efe4]">
+							<p className="font-display text-3xl text-game-ink">
 								{t('cheese.deal.night1', { hours: (self.wakeHours ?? []).join(' · ') })}
 							</p>
-							<p className="font-display text-3xl text-[#f4efe4]">
+							<p className="font-display text-3xl text-game-ink">
 								{t('cheese.deal.night2', { hours: (self.wakeHours2 ?? []).join(' · ') })}
 							</p>
 						</div>
 					) : (
 						<>
-							<p className="font-display text-4xl text-[#f4efe4]">
+							<p className="font-display text-4xl text-game-ink">
 								{self.role === 'thief' && twoDice
 									? dice.join(' · ')
 									: twoDice
@@ -72,7 +72,7 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 											: '—'
 										: (self.wakeHours ?? []).join(' · ')}
 							</p>
-							<p className="text-xs tracking-wide text-[#f4efe4]/60 uppercase">
+							<p className="text-xs tracking-wide text-game-ink/60 uppercase">
 								{self.role === 'thief' && twoDice
 									? t('cheese.deal.bothHours')
 									: t('cheese.deal.yourHours')}

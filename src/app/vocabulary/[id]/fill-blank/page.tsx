@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
@@ -108,16 +110,16 @@ function playSuccess() {
 
 function burstConfetti(container: HTMLElement) {
 	const colors = [
-		'#c44b28',
-		'#e8714f',
-		'#4a8c5c',
-		'#6aad7c',
-		'#c48a1a',
-		'#d4a03a',
-		'#5b7fb5',
-		'#8b6fb0',
-		'#f0ece4',
-		'#1a1a1a',
+		GRAPHIC_COLORS['c44b28'],
+		GRAPHIC_COLORS['e8714f'],
+		GRAPHIC_COLORS['4a8c5c'],
+		GRAPHIC_COLORS['6aad7c'],
+		GRAPHIC_COLORS['c48a1a'],
+		GRAPHIC_COLORS['d4a03a'],
+		GRAPHIC_COLORS['5b7fb5'],
+		GRAPHIC_COLORS['8b6fb0'],
+		GRAPHIC_COLORS['f0ece4'],
+		GRAPHIC_COLORS['1a1a1a'],
 	];
 	const count = 60;
 	for (let i = 0; i < count; i++) {
@@ -241,7 +243,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 			return { box: 'h-10 w-8 sm:h-12 sm:w-10 text-sm sm:text-base', gap: 'gap-1 sm:gap-1.5' };
 		if (wordLen <= 13)
 			return { box: 'h-9 w-7 sm:h-11 sm:w-9 text-xs sm:text-sm', gap: 'gap-0.5 sm:gap-1' };
-		return { box: 'h-8 w-6 sm:h-10 sm:w-8 text-[11px] sm:text-xs', gap: 'gap-0.5 sm:gap-1' };
+		return { box: 'h-8 w-6 sm:h-10 sm:w-8 text-xs sm:text-xs', gap: 'gap-0.5 sm:gap-1' };
 	}, [wordLen]);
 
 	const handleLetterChange = useCallback(
@@ -492,37 +494,21 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 						{/* Question prompt */}
 						<div className="text-center">
 							<div className="flex items-center justify-center gap-2">
-								<span className="inline-block rounded-full bg-indigo-subtle px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-indigo">
+								<span className="inline-block rounded-full bg-indigo-subtle px-3 py-1 text-xs font-bold uppercase tracking-widest text-indigo">
 									Điền từ vựng
 								</span>
 								{!revealed &&
 									(() => {
 										const frac = timeLeft / WORD_TIME;
-										const color = frac > 0.5 ? '#5b7fb5' : frac > 0.25 ? '#c48a1a' : '#c44b28';
+										const color =
+											frac > 0.5
+												? GRAPHIC_COLORS['5b7fb5']
+												: frac > 0.25
+													? GRAPHIC_COLORS['c48a1a']
+													: GRAPHIC_COLORS['c44b28'];
 										return (
 											<div className="flex items-center gap-1.5">
-												<svg className="h-8 w-8 -rotate-90" viewBox="0 0 36 36">
-													<circle
-														cx="18"
-														cy="18"
-														r="15"
-														fill="none"
-														stroke="currentColor"
-														strokeWidth="3"
-														className="text-surface-hover"
-													/>
-													<circle
-														cx="18"
-														cy="18"
-														r="15"
-														fill="none"
-														strokeWidth="3"
-														stroke={color}
-														strokeDasharray={`${frac * 94.25} 94.25`}
-														style={{ transition: 'stroke-dasharray 0.2s linear, stroke 0.3s' }}
-														strokeLinecap="round"
-													/>
-												</svg>
+												<Icon name="schedule" className="h-8 w-8 -rotate-90" />
 												<span
 													className="w-5 text-center text-sm font-black tabular-nums"
 													style={{ color }}
@@ -574,7 +560,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 												onChange={(e) => handleLetterChange(idx, e.target.value)}
 												onKeyDown={(e) => handleKeyDown(idx, e)}
 												readOnly={revealed}
-												className={`${letterSize.box} shrink-0 rounded-lg border-2 text-center font-mono font-black uppercase transition-all duration-200 focus:outline-none ${
+												className={`${letterSize.box} shrink-0 rounded-lg border-2 text-center font-mono font-black uppercase transition-all duration-250 focus:outline-none ${
 													isLetterCorrect
 														? 'border-success bg-success-subtle text-success'
 														: isLetterWrong
@@ -597,7 +583,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 							</div>
 
 							{/* Word length indicator for mobile */}
-							<p className="mt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted/50">
+							<p className="mt-2 text-center text-xs font-bold uppercase tracking-widest text-muted/50">
 								{wordLen} ký tự
 							</p>
 						</div>
@@ -614,19 +600,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 											: 'border-warning/40 text-warning hover:border-warning hover:bg-warning-subtle'
 									}`}
 								>
-									<svg
-										className="h-3.5 w-3.5"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-										strokeWidth={2}
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
-										/>
-									</svg>
+									<Icon name="help" className="h-3.5 w-3.5" />
 									{hintUsed ? 'Đã dùng gợi ý' : 'Gợi ý (−10s)'}
 								</button>
 								<button
@@ -669,19 +643,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 										onClick={() => speak(question.term)}
 										className="mt-2 inline-flex items-center gap-1 text-xs text-muted hover:text-foreground transition-colors"
 									>
-										<svg
-											className="h-3.5 w-3.5"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-											strokeWidth={1.5}
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-3.14a.75.75 0 011.28.53v12.72a.75.75 0 01-1.28.53l-4.72-3.14H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
-											/>
-										</svg>
+										<Icon name="volume_up" className="h-3.5 w-3.5" />
 										Nghe phát âm
 									</button>
 								</div>
@@ -697,7 +659,7 @@ export default function FillBlankPage({ params }: { params: Promise<{ id: string
 							</div>
 						)}
 
-						<p className="mt-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+						<p className="mt-6 text-center text-xs font-bold uppercase tracking-widest text-muted/40">
 							Enter để kiểm tra · ← → di chuyển · Backspace xóa
 						</p>
 					</div>
@@ -785,75 +747,20 @@ function CompletionScreen({
 		}
 	}, [show, containerRef, score]);
 
-	const resultIcon =
-		score >= 90 ? (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<defs>
-					<linearGradient id="fb-trophy" x1="0" y1="0" x2="1" y2="1">
-						<stop offset="0%" stopColor="#ffcc00" />
-						<stop offset="100%" stopColor="#ff8800" />
-					</linearGradient>
-				</defs>
-				<path d="M6 2h12v4a6 6 0 01-12 0V2z" fill="url(#fb-trophy)" />
-				<path d="M6 4H3a1 1 0 00-1 1v1a4 4 0 004 4" stroke="#ffcc00" strokeWidth="1.5" />
-				<path d="M18 4h3a1 1 0 011 1v1a4 4 0 01-4 4" stroke="#ffcc00" strokeWidth="1.5" />
-				<rect x="9" y="12" width="6" height="3" rx="1" fill="url(#fb-trophy)" opacity="0.6" />
-				<rect x="7" y="15" width="10" height="2" rx="1" fill="url(#fb-trophy)" opacity="0.8" />
-			</svg>
-		) : score >= 70 ? (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<defs>
-					<linearGradient id="fb-party" x1="0" y1="1" x2="1" y2="0">
-						<stop offset="0%" stopColor="#ff5500" />
-						<stop offset="50%" stopColor="#ffcc00" />
-						<stop offset="100%" stopColor="#4a8c5c" />
-					</linearGradient>
-				</defs>
-				<path
-					d="M12 2l2.5 6.5L21 12l-6.5 2.5L12 22l-2.5-7.5L3 12l6.5-3.5L12 2z"
-					fill="url(#fb-party)"
-				/>
-				<circle cx="12" cy="12" r="3" fill="#fff" opacity="0.4" />
-			</svg>
-		) : score >= 50 ? (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<circle
-					cx="12"
-					cy="12"
-					r="10"
-					fill="#4a8c5c"
-					opacity="0.2"
-					stroke="#4a8c5c"
-					strokeWidth="1.5"
-				/>
-				<path
-					d="M8 12.5l2.5 3L16 9"
-					stroke="#4a8c5c"
-					strokeWidth="2.5"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
-			</svg>
-		) : (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<defs>
-					<linearGradient id="fb-flame" x1=".5" y1="1" x2=".5" y2="0">
-						<stop offset="0%" stopColor="var(--accent)" />
-						<stop offset="100%" stopColor="var(--warning)" />
-					</linearGradient>
-				</defs>
-				<path
-					d="M12 2C9 7 4 11 4 16c0 5 3.5 7 8 7s8-2 8-7c0-6-5-10-8-15z"
-					fill="url(#fb-flame)"
-					opacity="0.7"
-				/>
-				<path
-					d="M12 10c-2 3-4 5-4 8 0 2.5 1.8 4 4 4s4-1.5 4-4c0-3-2-5-4-8z"
-					fill="#fff"
-					opacity="0.2"
-				/>
-			</svg>
-		);
+	const resultIcon = (
+		<Icon
+			name={
+				score >= 90
+					? 'trophy'
+					: score >= 70
+						? 'verified'
+						: score >= 50
+							? 'check_circle'
+							: 'track_changes'
+			}
+			className="h-[1em] w-[1em] text-accent"
+		/>
+	);
 	const message =
 		score >= 90
 			? 'Xuất sắc!'
@@ -912,7 +819,13 @@ function CompletionScreen({
 									r="42"
 									fill="none"
 									strokeWidth="6"
-									stroke={score >= 70 ? '#4a8c5c' : score >= 50 ? '#c48a1a' : '#c44b28'}
+									stroke={
+										score >= 70
+											? GRAPHIC_COLORS['4a8c5c']
+											: score >= 50
+												? GRAPHIC_COLORS['c48a1a']
+												: GRAPHIC_COLORS['c44b28']
+									}
 									strokeLinecap="round"
 									strokeDasharray={`${score * 2.64} 264`}
 									style={{
@@ -928,12 +841,12 @@ function CompletionScreen({
 					<div className="mx-auto mt-6 flex max-w-xs items-center justify-center gap-6">
 						<div className="text-center">
 							<p className="text-2xl font-black text-success">{correct}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Đúng</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Đúng</p>
 						</div>
 						<div className="h-8 w-px bg-border" />
 						<div className="text-center">
 							<p className="text-2xl font-black text-error">{wrong}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Sai</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Sai</p>
 						</div>
 					</div>
 
@@ -982,7 +895,7 @@ function CompletionScreen({
 
 					{/* Try other modes */}
 					<div className="mt-6">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Thử chế độ khác
 						</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">

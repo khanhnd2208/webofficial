@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react';
 
-export type McIconName =
+export type IconName =
 	| 'add'
 	| 'arrow_back'
 	| 'arrow_drop_down'
@@ -71,9 +71,101 @@ export type McIconName =
 	| 'visibility'
 	| 'visibility_off'
 	| 'warning'
-	| 'workspace_premium';
+	| 'workspace_premium'
+	| 'layers'
+	| 'sidebar'
+	| 'note'
+	| 'trophy'
+	| 'keyboard'
+	| 'grid'
+	| 'list'
+	| 'flag'
+	| 'globe'
+	| 'inbox'
+	| 'archive'
+	| 'retry'
+	| 'toc'
+	| 'logout'
+	| 'person'
+	| 'mail'
+	| 'bold'
+	| 'italic'
+	| 'strike'
+	| 'ordered'
+	| 'quote'
+	| 'callout'
+	| 'table'
+	| 'undo'
+	| 'redo'
+	| 'arrow_up'
+	| 'arrow_down'
+	| 'duplicate'
+	| 'markdown'
+	| 'image'
+	| 'volume_up'
+	| 'volume_off'
+	| 'fullscreen'
+	| 'fullscreen_exit'
+	| 'shuffle'
+	| 'underline'
+	| 'align_left'
+	| 'align_center'
+	| 'align_right'
+	| 'align_justify'
+	| 'code'
+	| 'pause'
+	| 'music'
+	| 'star';
 
-const PATHS: Record<McIconName, string> = {
+const PATHS: Record<IconName, string> = {
+	underline: 'M6 4v6a6 6 0 0 0 12 0V4M4 21h16',
+	align_left: 'M4 5h16M4 10h10M4 15h16M4 20h10',
+	align_center: 'M4 5h16M7 10h10M4 15h16M7 20h10',
+	align_right: 'M4 5h16M10 10h10M4 15h16M10 20h10',
+	align_justify: 'M4 5h16M4 10h16M4 15h16M4 20h16',
+	code: 'M8 6l-6 6 6 6M16 6l6 6-6 6M14 3l-4 18',
+	pause: 'M8 5v14M16 5v14',
+	music:
+		'M9 18V5l11-2v13M9 8l11-2M5.5 21a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM16.5 19a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+	star: 'M12 3l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6z',
+	volume_up: 'M11 5 6 9H3v6h3l5 4V5zM15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14',
+	volume_off: 'M11 5 6 9H3v6h3l5 4V5zM16 9l6 6M22 9l-6 6',
+	fullscreen: 'M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5',
+	fullscreen_exit: 'M4 9h5V4M15 4v5h5M9 20v-5H4M20 15h-5v5',
+	shuffle: 'M4 4l5 5M4 20 20 4M15 4h5v5M15 15l5 5M15 20h5v-5',
+	layers: 'M12 3 3 8l9 5 9-5zM3 13l9 5 9-5',
+	sidebar: 'M3.5 4.5h17v15h-17zM9.5 4.5v15',
+	note: 'M7 4h8l4 4v12H7zM15 4v4h4M9 12h6M9 16h4',
+	trophy:
+		'M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5a3.5 3.5 0 0 0 4 3.5M16 6h3.5a3.5 3.5 0 0 1-4 3.5M12 13v4M8.5 20h7M10 17h4v3h-4z',
+	keyboard: 'M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10',
+	grid: 'M5 5h6v6H5zM13 5h6v6h-6zM5 13h6v6H5zM13 13h6v6h-6z',
+	list: 'M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01',
+	flag: 'M5 21V4M5 4h11l-2 4 2 4H5',
+	globe:
+		'M12 4a8 8 0 100 16 8 8 0 000-16zM4 12h16M12 4c2.2 2.4 3.3 5.2 3.3 8s-1.1 5.6-3.3 8c-2.2-2.4-3.3-5.2-3.3-8s1.1-5.6 3.3-8z',
+	inbox: 'M4 4h16v16H4zM4 13h5l1 3h4l1-3h5',
+	archive: 'M3 5h18v4H3zM5 9v10h14V9M9 13h6',
+	retry: 'M20 12a8 8 0 01-13.5 5.8M4 12a8 8 0 0113.5-5.8M18 4v4h-4M6 20v-4h4',
+	toc: 'M5 5h6v6H5zM13 6h6M13 9h6M5 13h6v6H5zM13 15h6M13 18h6',
+	logout: 'M10 5H5v14h5M10 12h9M16 9l3 3-3 3',
+	person: 'M12 12a3 3 0 100-6 3 3 0 000 6zM6 19c1-3 3.2-4 6-4s5 1 6 4',
+	mail: 'M4 7h16v10H4zM4 7l8 6 8-6',
+	bold: 'M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z',
+	italic: 'M14 5h-4M14 19h-4M14.5 5l-5 14',
+	strike:
+		'M5 12h14M16 7.5C15.4 6 13.9 5 12 5c-2.5 0-4 1.3-4 3 0 3.8 8 2.7 8 7 0 1.8-1.7 4-4.5 4-2 0-3.6-1-4.3-2.5',
+	ordered: 'M10 6h10M10 12h10M10 18h10M4 5l1.5-1v5M3.5 14h2.5l-2.5 3.5h2.5',
+	quote: 'M6 17c1.7 0 3-1.3 3-3V9H4v5h3M15 17c1.7 0 3-1.3 3-3V9h-5v5h3',
+	callout: 'M4 5h16v11H9l-4 3.5V16H4zM8 9h8M8 12.5h5',
+	table: 'M4 5h16v14H4zM4 10h16M4 14.5h16M10 5v14',
+	undo: 'M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',
+	redo: 'M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3',
+	arrow_up: 'M12 19V5M6 11l6-6 6 6',
+	arrow_down: 'M12 5v14M6 13l6 6 6-6',
+	duplicate: 'M9 9h10v11H9zM5 15V4h10M14 12v5M11.5 14.5h5',
+	markdown: 'M3 6h18v12H3zM6.5 15V9l2.5 3 2.5-3v6M16.5 9v6M14.5 13l2 2 2-2',
+	image: 'M4 5h16v14H4zM8.5 10.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM4 16l4.5-5 3.5 4 2.5-3L20 16',
 	add: 'M12 5v14M5 12h14',
 	arrow_back: 'M15 5l-7 7 7 7M8 12h11',
 	arrow_drop_down: 'M6 9l6 6 6-6',
@@ -160,7 +252,7 @@ const PATHS: Record<McIconName, string> = {
 		'M12 2.8l1.7 4.9H19l-4.2 3.1 1.6 5-4.4-3.2-4.4 3.2 1.6-5L5 7.7h5.3L12 2.8zM8 20h8',
 };
 
-const DOT_ICONS: Partial<Record<McIconName, ReadonlyArray<readonly [number, number]>>> = {
+const DOT_ICONS: Partial<Record<IconName, ReadonlyArray<readonly [number, number]>>> = {
 	drag_indicator: [
 		[9, 6],
 		[15, 6],
@@ -181,27 +273,27 @@ const DOT_ICONS: Partial<Record<McIconName, ReadonlyArray<readonly [number, numb
 	],
 };
 
-export const MC_ICON_NAMES = Object.keys(PATHS) as McIconName[];
+export const ICON_NAMES = Object.keys(PATHS) as IconName[];
 
-export function isMcIconName(name: string): name is McIconName {
+export function isIconName(name: string): name is IconName {
 	return Object.prototype.hasOwnProperty.call(PATHS, name);
 }
 
-type McIconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & {
-	name: McIconName;
+type IconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & {
+	name: IconName;
 	size?: number;
 	filled?: boolean;
 };
 
-export function McIcon({
+export function Icon({
 	name,
 	size = 24,
 	filled = false,
 	className = '',
 	'aria-hidden': ariaHidden = true,
 	...props
-}: McIconProps) {
-	const resolved = isMcIconName(name) ? name : 'help';
+}: IconProps) {
+	const resolved = isIconName(name) ? name : 'help';
 	const dots = DOT_ICONS[resolved];
 	const path = dots ? undefined : PATHS[resolved];
 	return (

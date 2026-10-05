@@ -66,7 +66,7 @@ export default function GameShell({
 							<h1 className="font-display truncate text-base font-bold leading-tight text-ink">
 								{roomName}
 							</h1>
-							<p className="font-mono text-[11px] tracking-widest text-muted">
+							<p className="font-mono text-xs tracking-widest text-muted">
 								{code}
 								{inGame && round ? ` · ${t('spy.discussion.title', { round })}` : ''}
 							</p>

@@ -984,7 +984,7 @@ function CourseWorkspaceBody({
 							className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 py-1 text-ink-secondary"
 						>
 							<McIcon name="menu_book" size={24} />
-							<span className="text-[10px] font-medium leading-none">Mục lục</span>
+							<span className="text-xs font-medium leading-none">Mục lục</span>
 						</button>
 						{activeTest ? (
 							<McButton

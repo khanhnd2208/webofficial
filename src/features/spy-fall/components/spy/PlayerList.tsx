@@ -68,11 +68,7 @@ export default function PlayerList({
 										</Badge>
 									) : null}
 									{eliminated && p.role ? (
-										<Stamp
-											label={getRoleLabel(t, p.role)}
-											variant="suspect"
-											className="text-[8px]"
-										/>
+										<Stamp label={getRoleLabel(t, p.role)} variant="suspect" className="text-xs" />
 									) : null}
 								</div>
 							</div>

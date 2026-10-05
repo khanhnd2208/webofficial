@@ -23,7 +23,7 @@ function toDateInputValue(iso: string | null): string {
 }
 
 const fieldClass =
-	'w-full min-h-11 rounded-[10px] border border-hairline bg-canvas px-3 py-2.5 text-sm text-ink outline-none transition-colors duration-200 focus:border-ink disabled:text-ink-secondary';
+	'w-full min-h-11 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-sm text-ink outline-none transition-colors duration-250 focus:border-ink disabled:text-ink-secondary';
 
 export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 	const [form, setForm] = useState<ProfileFormState>({
@@ -85,17 +85,17 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 	return (
 		<form
 			onSubmit={onSubmit}
-			className="space-y-6 rounded-[18px] border border-hairline bg-paper p-5 sm:p-8"
+			className="space-y-6 rounded-2xl border border-hairline bg-paper p-5 sm:p-8"
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div>
-					<label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+					<label className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary">
 						Họ tên (Google)
 					</label>
 					<input type="text" value={initialProfile.name} disabled className={fieldClass} />
 				</div>
 				<div>
-					<label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+					<label className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary">
 						Email
 					</label>
 					<input type="email" value={initialProfile.email} disabled className={fieldClass} />
@@ -106,7 +106,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 				<div>
 					<label
 						htmlFor="dob"
-						className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary"
+						className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
 					>
 						Ngày sinh
 					</label>
@@ -121,7 +121,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 				<div>
 					<label
 						htmlFor="university"
-						className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary"
+						className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
 					>
 						Trường đại học
 					</label>
@@ -138,7 +138,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 				<div>
 					<label
 						htmlFor="major"
-						className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary"
+						className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
 					>
 						Chuyên ngành
 					</label>
@@ -158,11 +158,11 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 				<div className="mb-1.5 flex items-center justify-between">
 					<label
 						htmlFor="bio"
-						className="block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary"
+						className="block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
 					>
 						Bio
 					</label>
-					<span className="font-mono text-[11px] text-ink-secondary">{bioCount}/600</span>
+					<span className="font-mono text-xs text-ink-secondary">{bioCount}/600</span>
 				</div>
 				<textarea
 					id="bio"
@@ -184,7 +184,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 				<button
 					type="submit"
 					disabled={isSaving}
-					className="inline-flex min-h-11 items-center rounded-[10px] bg-ink px-5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-200 hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
+					className="inline-flex min-h-11 items-center rounded-lg bg-ink px-5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-250 hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					{isSaving ? 'Đang lưu…' : 'Lưu hồ sơ'}
 				</button>

@@ -286,7 +286,7 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 					</span>
 					<div className="min-w-0 flex-1 text-center">
 						<p className="font-display text-sm font-semibold text-ink">{state.hostName}</p>
-						<p className="font-mono text-[11px] tracking-widest text-muted">{state.code}</p>
+						<p className="font-mono text-xs tracking-widest text-muted">{state.code}</p>
 					</div>
 					<PrefsToggleGroup />
 					<SiteAuthChip variant="badge" showSignIn={false} />

@@ -77,17 +77,17 @@ export default async function AdminMyspaceTestsPage() {
 			{tests.length > 0 ? (
 				<section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
 					<div className="border border-border bg-surface p-4">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Đã làm</p>
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">Đã làm</p>
 						<p className="mt-1 text-2xl font-black text-foreground">{totals.engaged}</p>
 						<p className="mt-0.5 text-xs text-muted">trả lời ≥ 1 câu</p>
 					</div>
 					<div className="border border-border bg-surface p-4">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Hoàn thành</p>
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">Hoàn thành</p>
 						<p className="mt-1 text-2xl font-black text-foreground">{totals.completed}</p>
 						<p className="mt-0.5 text-xs text-muted">đã nộp bài</p>
 					</div>
 					<div className="border border-border bg-surface p-4 sm:col-span-1 col-span-2">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Chi tiết</p>
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">Chi tiết</p>
 						<Link
 							href={routes.admin.myspaceTestAnalytics}
 							className="mt-2 inline-block text-sm font-bold text-foreground underline underline-offset-2"
@@ -132,7 +132,7 @@ export default async function AdminMyspaceTestsPage() {
 										</p>
 									) : null}
 								</div>
-								<span className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+								<span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-muted">
 									{STATUS_LABEL[test.status] ?? test.status}
 								</span>
 							</Link>

@@ -64,7 +64,7 @@ export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCard
 						<summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-ink [&::-webkit-details-marker]:hidden">
 							<span>Xem nội dung có thể triển khai</span>
 							<span
-								className="text-lg font-light text-accent transition-transform duration-200 group-open/acc:rotate-45"
+								className="text-lg font-light text-accent transition-transform duration-250 group-open/acc:rotate-45"
 								aria-hidden
 							>
 								+
@@ -87,7 +87,7 @@ export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCard
 								</div>
 							))}
 							{offer.principleStrip ? (
-								<p className="border-t border-hairline pt-3 text-[0.8125rem] tracking-[0.04em] text-ink-secondary">
+								<p className="border-t border-hairline pt-3 text-[13px] tracking-[0.04em] text-ink-secondary">
 									{offer.principleStrip.join(' · ')}
 								</p>
 							) : null}
@@ -96,7 +96,7 @@ export function ServiceCard({ offer, graphic, variant = 'primary' }: ServiceCard
 									{offer.deliverables.map((item) => (
 										<li key={item.label} className="border border-hairline bg-canvas p-3">
 											<p className="text-sm font-semibold text-ink">{item.label}</p>
-											<p className="mt-1 text-[0.8125rem] leading-snug text-ink-secondary">
+											<p className="mt-1 text-[13px] leading-snug text-ink-secondary">
 												{item.description}
 											</p>
 										</li>

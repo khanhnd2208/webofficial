@@ -126,7 +126,7 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 			<div className="game-theme game-theme-cheese flex min-h-svh items-center px-5 py-8">
 				<div className="mx-auto w-full max-w-sm">
 					<CheeseThiefArt scene="mouse" size={76} className="mb-5" />
-					<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">{code}</p>
+					<p className="font-mono text-xs tracking-[0.18em] text-muted uppercase">{code}</p>
 					<h1 className="mt-2 font-display text-4xl font-medium">{t('cheese.join.title')}</h1>
 					<p className="mt-2 text-sm leading-relaxed text-muted">{t('cheese.join.hint')}</p>
 					<form
@@ -167,7 +167,7 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 					<header className="mx-auto flex max-w-md items-center justify-between gap-2 px-5 pt-3">
 						<Link
 							href={routes.cheeseThief}
-							className="inline-flex min-h-11 items-center font-mono text-[0.68rem] tracking-[0.08em] text-muted uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+							className="inline-flex min-h-11 items-center font-mono text-xs tracking-[0.08em] text-muted uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
 						>
 							{state.code}
 						</Link>

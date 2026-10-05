@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
@@ -92,14 +94,14 @@ function playSuccess() {
 /* ── Confetti burst ── */
 function burstConfetti(container: HTMLElement) {
 	const colors = [
-		'#c44b28',
-		'#e8714f',
-		'#4a8c5c',
-		'#6aad7c',
-		'#c48a1a',
-		'#d4a03a',
-		'#f0ece4',
-		'#1a1a1a',
+		GRAPHIC_COLORS['c44b28'],
+		GRAPHIC_COLORS['e8714f'],
+		GRAPHIC_COLORS['4a8c5c'],
+		GRAPHIC_COLORS['6aad7c'],
+		GRAPHIC_COLORS['c48a1a'],
+		GRAPHIC_COLORS['d4a03a'],
+		GRAPHIC_COLORS['f0ece4'],
+		GRAPHIC_COLORS['1a1a1a'],
 	];
 	const count = 60;
 
@@ -142,7 +144,7 @@ function burstSmallParticles(button: HTMLElement) {
 	const rect = button.getBoundingClientRect();
 	const cx = rect.left + rect.width / 2;
 	const cy = rect.top + rect.height / 2;
-	const colors = ['#4a8c5c', '#6aad7c', '#a7d9b3'];
+	const colors = [GRAPHIC_COLORS['4a8c5c'], GRAPHIC_COLORS['6aad7c'], GRAPHIC_COLORS['a7d9b3']];
 
 	for (let i = 0; i < 12; i++) {
 		const el = document.createElement('div');
@@ -473,19 +475,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 									className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 font-bold text-accent"
 									style={{ animation: 'streakPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
 								>
-									<svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
-										<defs>
-											<linearGradient id="mcq-streak" x1=".5" y1="1" x2=".5" y2="0">
-												<stop offset="0%" stopColor="#ff5500" />
-												<stop offset="100%" stopColor="#ffbb33" />
-											</linearGradient>
-										</defs>
-										<path
-											d="M12 2C9 7 4 11 4 16c0 5 3.5 7 8 7s8-2 8-7c0-6-5-10-8-15z"
-											fill="url(#mcq-streak)"
-										/>
-									</svg>{' '}
-									{streak}
+									<Icon name="bolt" className="h-3 w-3" /> {streak}
 								</span>
 							)}
 						</div>
@@ -523,37 +513,21 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 					>
 						{/* Question type badge + timer */}
 						<div className="mb-3 flex items-center justify-between gap-2">
-							<span className="rounded-full bg-surface-hover px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+							<span className="rounded-full bg-surface-hover px-3 py-1 text-xs font-bold uppercase tracking-widest text-muted">
 								{question.mode === 'word-to-def' ? 'Chọn nghĩa đúng' : 'Chọn từ đúng'}
 							</span>
 							{!answered &&
 								(() => {
 									const frac = timeLeft / QUESTION_TIME;
-									const color = frac > 0.5 ? '#4a8c5c' : frac > 0.25 ? '#c48a1a' : '#c44b28';
+									const color =
+										frac > 0.5
+											? GRAPHIC_COLORS['4a8c5c']
+											: frac > 0.25
+												? GRAPHIC_COLORS['c48a1a']
+												: GRAPHIC_COLORS['c44b28'];
 									return (
 										<div className="flex items-center gap-1.5">
-											<svg className="h-8 w-8 -rotate-90" viewBox="0 0 36 36">
-												<circle
-													cx="18"
-													cy="18"
-													r="15"
-													fill="none"
-													stroke="currentColor"
-													strokeWidth="3"
-													className="text-surface-hover"
-												/>
-												<circle
-													cx="18"
-													cy="18"
-													r="15"
-													fill="none"
-													strokeWidth="3"
-													stroke={color}
-													strokeDasharray={`${frac * 94.25} 94.25`}
-													style={{ transition: 'stroke-dasharray 0.2s linear, stroke 0.3s' }}
-													strokeLinecap="round"
-												/>
-											</svg>
+											<Icon name="schedule" className="h-8 w-8 -rotate-90" />
 											<span
 												className="w-5 text-center text-sm font-black tabular-nums"
 												style={{ color }}
@@ -574,19 +548,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 									onClick={() => speak(question.word.term)}
 									className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-hover text-muted transition-all hover:bg-accent hover:text-accent-foreground hover:scale-110 active:scale-95"
 								>
-									<svg
-										className="h-4 w-4"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-										strokeWidth={1.5}
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-3.14a.75.75 0 011.28.53v12.72a.75.75 0 01-1.28.53l-4.72-3.14H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
-										/>
-									</svg>
+									<Icon name="volume_up" className="h-4 w-4" />
 								</button>
 							)}
 						</div>
@@ -635,7 +597,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 										}}
 										onClick={() => handleSelect(idx)}
 										disabled={answered}
-										className={`group relative flex w-full items-center gap-4 rounded-xl border-2 px-5 py-4 text-left transition-all duration-200 ${borderClass} ${bgClass} ${
+										className={`group relative flex w-full items-center gap-4 rounded-xl border-2 px-5 py-4 text-left transition-all duration-250 ${borderClass} ${bgClass} ${
 											!answered ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
 										}`}
 										style={{
@@ -648,7 +610,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 									>
 										{/* Label badge */}
 										<span
-											className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-all duration-200 ${labelBg} ${
+											className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-all duration-250 ${labelBg} ${
 												!answered ? 'group-hover:bg-accent group-hover:text-accent-foreground' : ''
 											}`}
 										>
@@ -657,7 +619,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 
 										{/* Option text */}
 										<span
-											className={`text-sm font-medium leading-relaxed transition-colors duration-200 ${textClass}`}
+											className={`text-sm font-medium leading-relaxed transition-colors duration-250 ${textClass}`}
 										>
 											{opt}
 										</span>
@@ -670,19 +632,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 													animation: 'iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both',
 												}}
 											>
-												<svg
-													className="h-4 w-4"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke="currentColor"
-													strokeWidth={3}
-												>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														d="M4.5 12.75l6 6 9-13.5"
-													/>
-												</svg>
+												<Icon name="check" className="h-4 w-4" />
 											</span>
 										)}
 										{isWrongSelected && (
@@ -692,19 +642,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 													animation: 'iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both',
 												}}
 											>
-												<svg
-													className="h-4 w-4"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke="currentColor"
-													strokeWidth={3}
-												>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														d="M6 18L18 6M6 6l12 12"
-													/>
-												</svg>
+												<Icon name="close" className="h-4 w-4" />
 											</span>
 										)}
 									</button>
@@ -728,7 +666,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 									</div>
 								)}
 								<div className="mt-5 flex items-center justify-between">
-									<p className="text-[10px] font-bold uppercase tracking-widest text-muted/50">
+									<p className="text-xs font-bold uppercase tracking-widest text-muted/50">
 										Enter hoặc Space để tiếp tục
 									</p>
 									<button
@@ -746,7 +684,7 @@ export default function MCQPage({ params }: { params: Promise<{ id: string }> })
 				{/* Keyboard hint */}
 				{!answered && (
 					<div className="fixed bottom-6 left-1/2 -translate-x-1/2">
-						<div className="rounded-full bg-surface/80 backdrop-blur-sm border border-border px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted/50 shadow-lg">
+						<div className="rounded-full bg-surface/80 backdrop-blur-sm border border-border px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted/50 shadow-lg">
 							Phím 1–4 để chọn đáp án
 						</div>
 					</div>
@@ -877,75 +815,20 @@ function CompletionScreen({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	const resultIcon =
-		score >= 90 ? (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<defs>
-					<linearGradient id="trophy-g" x1="0" y1="0" x2="1" y2="1">
-						<stop offset="0%" stopColor="#ffcc00" />
-						<stop offset="100%" stopColor="#ff8800" />
-					</linearGradient>
-				</defs>
-				<path d="M6 2h12v4a6 6 0 01-12 0V2z" fill="url(#trophy-g)" />
-				<path d="M6 4H3a1 1 0 00-1 1v1a4 4 0 004 4" stroke="#ffcc00" strokeWidth="1.5" />
-				<path d="M18 4h3a1 1 0 011 1v1a4 4 0 01-4 4" stroke="#ffcc00" strokeWidth="1.5" />
-				<rect x="9" y="12" width="6" height="3" rx="1" fill="url(#trophy-g)" opacity="0.6" />
-				<rect x="7" y="15" width="10" height="2" rx="1" fill="url(#trophy-g)" opacity="0.8" />
-			</svg>
-		) : score >= 70 ? (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<defs>
-					<linearGradient id="party-g" x1="0" y1="1" x2="1" y2="0">
-						<stop offset="0%" stopColor="#ff5500" />
-						<stop offset="50%" stopColor="#ffcc00" />
-						<stop offset="100%" stopColor="#4a8c5c" />
-					</linearGradient>
-				</defs>
-				<path
-					d="M12 2l2.5 6.5L21 12l-6.5 2.5L12 22l-2.5-7.5L3 12l6.5-3.5L12 2z"
-					fill="url(#party-g)"
-				/>
-				<circle cx="12" cy="12" r="3" fill="#fff" opacity="0.4" />
-			</svg>
-		) : score >= 50 ? (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<circle
-					cx="12"
-					cy="12"
-					r="10"
-					fill="#4a8c5c"
-					opacity="0.2"
-					stroke="#4a8c5c"
-					strokeWidth="1.5"
-				/>
-				<path
-					d="M8 12.5l2.5 3L16 9"
-					stroke="#4a8c5c"
-					strokeWidth="2.5"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
-			</svg>
-		) : (
-			<svg className="h-[1em] w-[1em]" viewBox="0 0 24 24" fill="none">
-				<defs>
-					<linearGradient id="muscle-g" x1="0" y1="1" x2="1" y2="0">
-						<stop offset="0%" stopColor="var(--accent)" />
-						<stop offset="100%" stopColor="var(--warning)" />
-					</linearGradient>
-				</defs>
-				<path
-					d="M12 2C9 7 4 11 4 16c0 5 3.5 7 8 7s8-2 8-7c0-6-5-10-8-15z"
-					fill="url(#muscle-g)"
-					opacity="0.7"
-				/>
-				<path
-					d="M12 10c-2 3-4 5-4 8 0 2.5 1.8 4 4 4s4-1.5 4-4c0-3-2-5-4-8z"
-					fill="#fff"
-					opacity="0.2"
-				/>
-			</svg>
-		);
+	const resultIcon = (
+		<Icon
+			name={
+				score >= 90
+					? 'trophy'
+					: score >= 70
+						? 'verified'
+						: score >= 50
+							? 'check_circle'
+							: 'track_changes'
+			}
+			className="h-[1em] w-[1em] text-accent"
+		/>
+	);
 	const message =
 		score >= 90
 			? 'Xuất sắc!'
@@ -998,7 +881,13 @@ function CompletionScreen({
 									r="42"
 									fill="none"
 									strokeWidth="6"
-									stroke={score >= 70 ? '#4a8c5c' : score >= 50 ? '#c48a1a' : '#c44b28'}
+									stroke={
+										score >= 70
+											? GRAPHIC_COLORS['4a8c5c']
+											: score >= 50
+												? GRAPHIC_COLORS['c48a1a']
+												: GRAPHIC_COLORS['c44b28']
+									}
 									strokeLinecap="round"
 									strokeDasharray={`${score * 2.64} 264`}
 									style={{
@@ -1014,31 +903,19 @@ function CompletionScreen({
 					<div className="mx-auto mt-6 flex max-w-xs items-center justify-center gap-6">
 						<div className="text-center">
 							<p className="text-2xl font-black text-success">{correct}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Đúng</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Đúng</p>
 						</div>
 						<div className="h-8 w-px bg-border" />
 						<div className="text-center">
 							<p className="text-2xl font-black text-error">{wrong}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Sai</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Sai</p>
 						</div>
 						<div className="h-8 w-px bg-border" />
 						<div className="text-center">
 							<p className="inline-flex items-center gap-1 text-2xl font-black text-accent">
-								<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-									<defs>
-										<linearGradient id="res-streak" x1=".5" y1="1" x2=".5" y2="0">
-											<stop offset="0%" stopColor="#ff5500" />
-											<stop offset="100%" stopColor="#ffbb33" />
-										</linearGradient>
-									</defs>
-									<path
-										d="M12 2C9 7 4 11 4 16c0 5 3.5 7 8 7s8-2 8-7c0-6-5-10-8-15z"
-										fill="url(#res-streak)"
-									/>
-								</svg>{' '}
-								{bestStreak}
+								<Icon name="trending_up" className="h-5 w-5" /> {bestStreak}
 							</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Streak</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Streak</p>
 						</div>
 					</div>
 
@@ -1079,19 +956,7 @@ function CompletionScreen({
 							}}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
 						>
-							<svg
-								className="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
-								/>
-							</svg>
+							<Icon name="retry" className="h-4 w-4" />
 							Làm lại
 						</button>
 						<Link
@@ -1104,7 +969,7 @@ function CompletionScreen({
 
 					{/* Try other modes */}
 					<div className="mt-6">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Thử chế độ khác
 						</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">

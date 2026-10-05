@@ -133,14 +133,14 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 												type="button"
 												disabled={busy}
 												onClick={() => void onSaveEdit(s.id)}
-												className="rounded-full bg-foreground px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-background disabled:opacity-50"
+												className="rounded-full bg-foreground px-3 py-1 text-xs font-bold uppercase tracking-wider text-background disabled:opacity-50"
 											>
 												Lưu
 											</button>
 											<button
 												type="button"
 												onClick={() => setEditingId(null)}
-												className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted"
+												className="rounded-full border border-border px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted"
 											>
 												Hủy
 											</button>
@@ -153,7 +153,7 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 													setEditingId(s.id);
 													setEditName(s.name);
 												}}
-												className="rounded-full border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted"
+												className="rounded-full border border-border px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted"
 											>
 												Sửa
 											</button>
@@ -161,7 +161,7 @@ export default function SubjectsClient({ initial }: { initial: SubjectWithCounts
 												type="button"
 												disabled={busy}
 												onClick={() => void onDelete(s)}
-												className="rounded-full border border-red-200 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-red-600 disabled:opacity-50"
+												className="rounded-full border border-red-200 px-3 py-1 text-xs font-bold uppercase tracking-wider text-red-600 disabled:opacity-50"
 											>
 												Xóa
 											</button>

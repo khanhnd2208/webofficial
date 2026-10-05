@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import dynamic from 'next/dynamic';
 import { useCallback, useRef, useState } from 'react';
 
@@ -176,21 +177,7 @@ export default function ThumbnailUpload({
 					/>
 					{uploading ? (
 						<div className="flex items-center gap-2 text-sm text-muted">
-							<svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-								<circle
-									className="opacity-25"
-									cx="12"
-									cy="12"
-									r="10"
-									stroke="currentColor"
-									strokeWidth="4"
-								/>
-								<path
-									className="opacity-75"
-									fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-								/>
-							</svg>
+							<Icon name="retry" className="h-4 w-4 animate-spin" />
 							Đang upload…
 						</div>
 					) : (
@@ -198,19 +185,7 @@ export default function ThumbnailUpload({
 							<div
 								className={`flex h-12 w-12 items-center justify-center bg-surface-hover text-muted ${product ? 'rounded-[var(--mc-r-sm)]' : 'rounded-xl'}`}
 							>
-								<svg
-									className="h-6 w-6"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									strokeWidth={1.5}
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
-									/>
-								</svg>
+								<Icon name="upload" className="h-6 w-6" />
 							</div>
 							<p className="mt-3 text-sm font-medium text-foreground-secondary">
 								Kéo thả hoặc click để upload
@@ -218,7 +193,7 @@ export default function ThumbnailUpload({
 							<p className="mt-1 text-xs text-muted">
 								PNG, JPG, WebP — tối đa 10MB · Hỗ trợ cắt &amp; chỉnh sửa
 							</p>
-							<p className="mt-1 font-mono text-[10px] text-muted/60">
+							<p className="mt-1 font-mono text-xs text-muted/60">
 								Kích thước đề xuất:{' '}
 								{product ? '1280 × 720 px (tỉ lệ 16:9)' : '1200 × 600 px (tỉ lệ 2:1)'}
 							</p>

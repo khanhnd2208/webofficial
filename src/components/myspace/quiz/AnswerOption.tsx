@@ -24,7 +24,7 @@ function LetterGlyph({
 	state: AnswerOptionState;
 }) {
 	const base =
-		'flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-[0.75rem] font-semibold tracking-[0.04em]';
+		'flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-[12px] font-semibold tracking-[0.04em]';
 
 	if (state === 'correct') {
 		return (
@@ -112,7 +112,7 @@ export default function AnswerOption({
 			<span className={`min-w-0 font-sans text-base leading-[1.6] ${textTone(state)}`}>
 				<span className="break-words">{text}</span>
 				{state === 'checking' ? (
-					<span className="ml-2 inline-flex items-center gap-1.5 align-middle font-mono text-[0.6875rem] tracking-[0.06em] text-ink-secondary">
+					<span className="ml-2 inline-flex items-center gap-1.5 align-middle font-mono text-xs tracking-[0.06em] text-ink-secondary">
 						<span
 							className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-hairline border-t-ink-secondary"
 							aria-hidden
@@ -124,7 +124,7 @@ export default function AnswerOption({
 		</>
 	);
 
-	const baseClass = `grid w-full min-h-12 grid-cols-[2.5rem_1fr] gap-3 border-b border-hairline px-3 py-3.5 text-left transition-[background-color,color] duration-300 sm:gap-4 sm:px-4 sm:py-4 ${rowTone(state)} ${pulse}`;
+	const baseClass = `grid w-full min-h-12 grid-cols-[2.5rem_1fr] gap-3 border-b border-hairline px-3 py-3.5 text-left transition-[background-color,color] duration-250 sm:gap-4 sm:px-4 sm:py-4 ${rowTone(state)} ${pulse}`;
 
 	if (readOnly) {
 		return (

@@ -109,7 +109,7 @@ export default function CheeseThiefMenuClient({ isAdmin = false }: { isAdmin?: b
 				<GameMenuBar backLabel={'Board Game'} testGame="cheese-thief" isAdmin={isAdmin} />
 
 				<header
-					className={`game-theme-hero rounded-[1.25rem] ${view === 'menu' ? '' : 'game-theme-hero-compact'}`}
+					className={`game-theme-hero rounded-2xl ${view === 'menu' ? '' : 'game-theme-hero-compact'}`}
 				>
 					<Image
 						src="/board-game/cheese-thief/cover.webp"
@@ -166,7 +166,7 @@ export default function CheeseThiefMenuClient({ isAdmin = false }: { isAdmin?: b
 								{t('cheese.menu.join')}
 							</Button>
 							<CheeseRulesButton className="block w-full py-2 text-center text-sm font-medium underline underline-offset-4" />
-							<p className="text-center font-mono text-[0.68rem] tracking-[0.14em] text-muted uppercase">
+							<p className="text-center font-mono text-xs tracking-[0.14em] text-muted uppercase">
 								{t('cheese.menu.players')} · {t('cheese.menu.noAccount')}
 							</p>
 						</form>

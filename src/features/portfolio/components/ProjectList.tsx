@@ -125,7 +125,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 	return (
 		<div className="book-project-index relative">
 			<div className="shell mb-4 flex items-center justify-between gap-4">
-				<p className="font-mono text-[0.75rem] tracking-[0.08em] text-ink-secondary">
+				<p className="font-mono text-[12px] tracking-[0.08em] text-ink-secondary">
 					{formatIndex(0)} — {formatIndex(projects.length - 1)}
 					<span className="mx-2 text-hairline" aria-hidden>
 						/
@@ -134,7 +134,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 				</p>
 				{scrollable ? (
 					<div className="flex items-center gap-3">
-						<p className="hidden font-mono text-[0.75rem] tracking-[0.06em] text-ink-secondary sm:block">
+						<p className="hidden font-mono text-[12px] tracking-[0.06em] text-ink-secondary sm:block">
 							Kéo để xem thêm
 						</p>
 						<div className="flex gap-1">
@@ -218,10 +218,10 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 							>
 								<div>
 									<span className="book-project-number">{formatIndex(index)}</span>
-									<h2 className="font-display text-[clamp(1.25rem,1.5vw,1.75rem)] font-medium leading-tight tracking-[-0.02em] text-ink transition-colors duration-300 group-hover:text-accent">
+									<h2 className="font-display text-[clamp(1.25rem,1.5vw,1.75rem)] font-medium leading-tight tracking-[-0.02em] text-ink transition-colors duration-250 group-hover:text-accent">
 										{project.title}
 									</h2>
-									<p className="mt-2 text-[0.75rem] font-semibold tracking-[0.04em] text-ink-secondary">
+									<p className="mt-2 text-[12px] font-semibold tracking-[0.04em] text-ink-secondary">
 										{project.role}
 									</p>
 								</div>
@@ -246,7 +246,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
 				<div className="shell mt-5" aria-hidden>
 					<div className="h-px w-full bg-hairline">
 						<div
-							className="h-px bg-ink transition-[width] duration-200 ease-out"
+							className="h-px bg-ink transition-[width] duration-250 ease-out"
 							style={{ width: `${Math.max(8, progress * 100)}%` }}
 						/>
 					</div>

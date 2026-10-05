@@ -2,6 +2,7 @@
    Identity colours are on :root so My Space and the table of contents can
    use them without adopting the whole Teaching surface. */
 :root {
+	--teaching-mark-paper: #ffffff;
 	--teaching-accent: #176b63;
 	--teaching-accent-hover: #12564f;
 	--teaching-selected: #e5f1ed;

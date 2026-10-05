@@ -100,7 +100,7 @@ export function ManagementSystemGraphic({ className = '' }: { className?: string
 				y="155"
 				textAnchor="middle"
 				className="fill-ink-secondary"
-				style={{ fontSize: 8.5, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.08em' }}
+				style={{ fontSize: 12, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.08em' }}
 			>
 				HỆ THỐNG
 			</text>
