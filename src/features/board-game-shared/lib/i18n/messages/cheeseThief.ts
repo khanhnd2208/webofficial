@@ -4,7 +4,7 @@ export const cheeseVi: MessageTree = {
 	menu: {
 		kicker: '03 · Bàn ăn đêm',
 		title: 'Cheese Thief',
-		tagline: 'Thief (kẻ trộm) lấy phô mai. Mở mắt, nhìn nhau, rồi cãi.',
+		tagline: 'Ai lấy phô mai? Mở mắt, nhìn nhau, rồi cãi.',
 		posterAlt: 'Minh hoạ một bàn đêm với miếng phô mai và những chú chuột ngủ',
 		yourName: 'Tên của bạn',
 		create: 'Tạo phòng',
@@ -46,7 +46,7 @@ export const cheeseVi: MessageTree = {
 			badgeDefault: 'mặc định',
 			badgeCustom: 'đã chỉnh',
 			advanced: 'Tuỳ chỉnh nâng cao',
-			guestSummary: '{size} người · {scapegoat} · {hour} · {followers}',
+			guestSummary: '{count}/{size} người · {scapegoat} · {hour} · {followers}',
 			scapegoatOn: 'Scapegoat',
 			scapegoatOff: 'Không Scapegoat',
 			scapegoatNeeds: 'Cần ít nhất 6 người',
@@ -144,6 +144,7 @@ export const cheeseVi: MessageTree = {
 		thiefHidden: 'Bạn giờ thuộc phe Thief, nhưng không được biết Thief là ai.',
 		alliesAre: 'Đồng phạm cùng bạn: {names}.',
 		seen: 'Đã xem',
+		waiting: 'Úp máy và chờ cả bàn xem xong.',
 	},
 	day: {
 		title: 'Trời sáng. Phô mai đã biến mất.',
@@ -243,7 +244,7 @@ export const cheeseEn: MessageTree = {
 			badgeDefault: 'default',
 			badgeCustom: 'changed',
 			advanced: 'Advanced',
-			guestSummary: '{size} players · {scapegoat} · {hour} · {followers}',
+			guestSummary: '{count}/{size} players · {scapegoat} · {hour} · {followers}',
 			scapegoatOn: 'Scapegoat',
 			scapegoatOff: 'No Scapegoat',
 			scapegoatNeeds: 'Needs at least 6 players',
@@ -341,6 +342,7 @@ export const cheeseEn: MessageTree = {
 		thiefHidden: 'You are on the Thief’s side now, but you are not told who the Thief is.',
 		alliesAre: 'Your fellow Follower: {names}.',
 		seen: 'Seen',
+		waiting: 'Put the phone face down and wait for everyone to finish.',
 	},
 	day: {
 		title: 'Morning. The cheese is gone.',

@@ -116,6 +116,7 @@ export default function TableSettings({ state, busy, onSettings, onHourSeconds }
 		return (
 			<p className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm leading-relaxed">
 				{t('cheese.lobby.settings.guestSummary', {
+					count: state.playerCount,
 					size,
 					scapegoat,
 					hour: hourPhrase(t, state.hourSeconds),

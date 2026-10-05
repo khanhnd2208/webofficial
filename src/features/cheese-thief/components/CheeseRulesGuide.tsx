@@ -23,7 +23,7 @@ interface TableProps {
 	playerCount?: number;
 	scapegoatEnabled?: boolean;
 	followers?: FollowerSettings;
-	/** Lobby card skips the follower line, which the settings already show. */
+	/** Host lobby skips the follower line, which the settings already show. */
 	compact?: boolean;
 }
 

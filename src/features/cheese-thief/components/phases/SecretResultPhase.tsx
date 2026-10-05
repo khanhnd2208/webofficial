@@ -24,7 +24,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 	if (seen) {
 		return (
 			<div className="flex min-h-[70svh] items-center justify-center">
-				<PutPhoneDown />
+				<PutPhoneDown hint={t('cheese.result.waiting')} />
 			</div>
 		);
 	}

@@ -129,7 +129,8 @@ test('Cheese lobby keeps follower tuning closed and the short guide matches the 
 	await controls.getByRole('button', { name: 'Tạm dừng', exact: true }).click();
 	await expect(page.getByText('Đã vào 6/6')).toBeVisible();
 	await controls.getByRole('combobox', { name: 'Đang chơi là' }).selectOption({ label: 'Bot 1' });
-	await expect(page.getByText('6 người · Không Scapegoat · Vừa 10s · 1 đồng phạm')).toBeVisible();
+	await expect(page.getByText('6/6 người · Không Scapegoat · Vừa 10s · 1 đồng phạm')).toBeVisible();
+	await expect(page.getByText('1 đồng phạm · biết Thief')).toBeVisible();
 	await expect(page.getByRole('radio', { name: /Nhanh/ })).toHaveCount(0);
 	await page.screenshot({ path: 'test-results/cheese-guest-vi.png', fullPage: true });
 	await controls.getByRole('combobox', { name: 'Đang chơi là' }).selectOption({ label: 'Admin' });

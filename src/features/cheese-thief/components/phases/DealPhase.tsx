@@ -52,7 +52,7 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 			</div>
 
 			{remembered ? (
-				<PutPhoneDown />
+				<PutPhoneDown hint={t('cheese.deal.waiting')} />
 			) : held ? (
 				<Button fullWidth disabled={busy} loading={busy} onClick={onRemember}>
 					{t('cheese.deal.remembered')}

@@ -136,7 +136,7 @@ export default function LobbyPhase({
 			/>
 
 			<TableRulesCard
-				compact
+				compact={state.isHost}
 				playerCount={state.maxPlayers}
 				scapegoatEnabled={state.scapegoatEnabled}
 				followers={tableFollowers}
