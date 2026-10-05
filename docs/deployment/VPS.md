@@ -118,7 +118,12 @@ npm run deploy:vps
 The script performs these steps in order:
 
 1. Exports the exact Git commit to a temporary local directory.
-2. Creates a unique `/var/www/webofficial/releases/<id>` directory.
+2. Runs `scripts/deploy-prune-releases.sh` under the deploy lock: keeps
+   `current` and the four newest other releases, deletes older ones, drops
+   `.next/cache` from every release except `current`, and clears the npm cache
+   above 4 GB. It stops the deploy when less than 8 GB stays free (see
+   [Disk space](#disk-space)). Then it creates a unique
+   `/var/www/webofficial/releases/<id>` directory.
 3. Uses rsync with `--delete` only inside that new release. It excludes `.env*`,
    uploads, `backups/`, `theory/`, `.venv/`, `*.tsbuildinfo`, dependencies,
    build output, test output, and editor/temp files.
@@ -129,7 +134,8 @@ The script performs these steps in order:
    the stored build cache, it copies
    `/var/www/webofficial/.build-cache/node_modules` instead of running `npm ci`.
    It also copies `.next/cache` from the current release so the compiler can
-   reuse work. The copy stays inside the new release; mutable upload paths are
+   reuse work, minus the cache of the bundler the build script does not use,
+   and starts cold once that cache passes 1.5 GB. The copy stays inside the new release; mutable upload paths are
    linked only after the build, which keeps Turbopack inside the release tree.
    The release ID is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew
    protection and cache busting.
@@ -218,8 +224,54 @@ curl --fail --max-time 10 http://127.0.0.1:4000/api/health/ready
 pm2 save --force
 ```
 
-Do not delete old releases during the same change window. Prune only after a
-verified backup and a stable observation period.
+Rollback targets are `current` and the four newest other releases; the deploy
+prunes anything older. Rolled-back releases have no `.next/cache`, which only
+slows the next build.
+
+## Disk space
+
+Every release carries its own `node_modules` and `.next` (about 1.5–2 GB). In
+October 2026, 41 unpruned releases plus a 15 GB npm cache filled the 145 GB
+disk; MongoDB aborted when it could not write its log, and the app kept failing
+Mongo requests until it restarted. The deploy now prunes before staging and
+refuses to start with less than `DEPLOY_MIN_FREE_GB` (default 8) free.
+`DEPLOY_KEEP_RELEASES` (default 4) sets how many releases besides `current`
+stay.
+
+Check and prune by hand (read the dry run before the real run):
+
+```bash
+ssh webofficial-vps 'df -h / && du -sh /var/www/webofficial/releases /root/.npm /var/log/journal'
+ssh webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- --dry-run /var/www/webofficial 4 0' \
+  < scripts/deploy-prune-releases.sh
+ssh webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- /var/www/webofficial 4 0' \
+  < scripts/deploy-prune-releases.sh
+```
+
+The server side also caps what grows outside the deploy (see
+[Server guards](#server-guards)).
+
+## Server guards
+
+Configured on the VPS by hand on 2026-10-04 as drop-in files, so package
+upgrades keep them. Recreate them on a new server:
+
+| File | Setting | Why |
+| --- | --- | --- |
+| `/etc/systemd/journald.conf.d/50-webofficial-size.conf` | `SystemMaxUse=1G`, `SystemKeepFree=10G` | The journal had reached 3.2 GB. |
+| `/etc/logrotate.d/mongod` | weekly or past 100 MB, keep 4, `copytruncate` | `mongod.log` was never rotated. mongod opens it with `O_APPEND`, so truncating needs no restart. |
+| `/etc/systemd/system/mongod.service.d/50-restart.conf` | `Restart=on-failure`, `RestartSec=10s`, at most 5 starts in 10 min | mongod stayed down after it aborted. |
+| `/etc/systemd/system/postgresql@.service.d/50-restart.conf` | same as mongod | PostgreSQL had no restart policy either. |
+
+PM2 logs rotate through the `pm2-logrotate` module (10 MB, keep 7). Run
+`systemctl daemon-reload` after editing a unit drop-in, and
+`systemctl restart systemd-journald` after editing the journald one.
+
+`.github/workflows/vps-health.yml` runs `scripts/deploy-vps.sh --check` every
+three hours. It fails when nginx, PostgreSQL or MongoDB is down, the app is not
+ready, or the disk is more than `CHECK_MAX_DISK_USED_PERCENT` (default 80) full;
+GitHub emails the failed run. GitHub pauses scheduled workflows after 60 days
+without repository activity; re-enable it from the Actions tab if that happens.
 
 ## Nginx and TLS baseline
 

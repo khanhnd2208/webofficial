@@ -5,164 +5,156 @@ import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
-import { McIcon } from '@/components/myclass/ui/McIcon';
+import { AdminIcon, type AdminIconName } from '@/components/admin/AdminIcon';
+import styles from '@/components/admin/AdminStudio.module.css';
+import { McIcon, type McIconName } from '@/components/myclass/ui/McIcon';
 import { getAdminNavGroupsForPath, isAdminNavActive } from '@/config/adminNavigation';
 import { isArchivedAdminPath } from '@/config/moduleRegistry';
 import { routes } from '@/config/routes';
 import { signOutTo } from '@/lib/auth/signOutTo';
 
+const SIDEBAR_COOKIE = 'admin-sidebar-collapsed';
+
+const ADMIN_NAV_ICONS: Record<string, AdminIconName> = {
+	[routes.admin.home]: 'overview',
+	[routes.admin.archive]: 'archive',
+	[routes.admin.website]: 'website',
+	[routes.admin.inquiries]: 'inbox',
+	[routes.admin.learnAnalytics]: 'analytics',
+	[routes.mySpaceTeaching]: 'teaching',
+	[routes.toc]: 'toc',
+};
+
 function NavItem({
 	href,
 	label,
 	icon,
+	mark,
 	collapsed,
 	active,
 	onNavigate,
+	testId,
 }: {
 	href: string;
 	label: string;
-	icon: Parameters<typeof McIcon>[0]['name'];
+	icon: McIconName;
+	mark?: AdminIconName;
 	collapsed: boolean;
-	active: boolean;
+	active?: boolean;
 	onNavigate?: () => void;
+	testId?: string;
 }) {
+	const adminIcon = mark ?? ADMIN_NAV_ICONS[href];
 	return (
 		<Link
 			href={href}
-			title={collapsed ? label : undefined}
+			aria-label={collapsed ? label : undefined}
 			aria-current={active ? 'page' : undefined}
 			onClick={onNavigate}
-			className={`relative flex min-h-11 items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors ${
-				active
-					? 'bg-foreground font-semibold text-background'
-					: 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
-			} ${collapsed ? 'justify-center' : ''}`}
+			data-testid={testId}
+			data-collapsed={collapsed}
+			className={styles.navItem}
 		>
-			<McIcon name={icon} size={16} className="shrink-0" />
-			{!collapsed && <span className="truncate">{label}</span>}
+			{adminIcon ? <AdminIcon name={adminIcon} size={20} /> : <McIcon name={icon} size={20} />}
+			<span className={collapsed ? styles.tooltip : 'truncate'}>{label}</span>
 		</Link>
 	);
 }
-
 function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
 	const pathname = usePathname();
 	const { data: session } = useSession();
 	const archived = isArchivedAdminPath(pathname);
 	const groups = getAdminNavGroupsForPath(pathname);
-
 	return (
 		<>
-			<nav
-				className="flex-1 space-y-5 overflow-y-auto px-2 py-4"
-				aria-label={archived ? 'Kho lưu trữ' : 'Quản trị'}
-			>
-				<div>
+			<nav className={styles.nav} aria-label={archived ? 'Kho lưu trữ' : 'Quản trị'}>
+				<NavItem
+					href={archived ? routes.admin.archive : routes.admin.home}
+					label={archived ? 'Kho lưu trữ' : 'Tổng quan'}
+					icon="dashboard"
+					collapsed={collapsed}
+					active={pathname === (archived ? routes.admin.archive : routes.admin.home)}
+					onNavigate={onNavigate}
+				/>
+				{groups.map(({ group, items }) => (
+					<div key={group} className="mt-5">
+						{!collapsed && <p className={`${styles.meta} mb-2 px-3`}>{group}</p>}
+						{items.map((item) => (
+							<NavItem
+								key={item.href}
+								{...item}
+								collapsed={collapsed}
+								active={isAdminNavActive(pathname, item.href, item.exact)}
+								onNavigate={onNavigate}
+							/>
+						))}
+					</div>
+				))}
+				<div className="mt-6 border-t border-border pt-4">
 					<NavItem
-						href={archived ? routes.admin.archive : routes.admin.home}
-						label={archived ? 'Kho lưu trữ' : 'Tổng quan'}
+						href={archived ? routes.admin.home : routes.admin.archive}
+						label={archived ? 'Về admin chính' : 'Kho lưu trữ'}
+						icon="arrow_back"
+						mark={archived ? 'back' : 'archive'}
 						collapsed={collapsed}
-						active={archived ? pathname === routes.admin.archive : pathname === routes.admin.home}
-						icon="dashboard"
+						onNavigate={onNavigate}
+						testId={archived ? 'archive-sidebar-back' : 'admin-archive-link'}
+					/>
+					<NavItem
+						href={routes.mySpaceTeaching}
+						label="Mở Teaching"
+						icon="school"
+						collapsed={collapsed}
+						onNavigate={onNavigate}
+					/>
+					<NavItem
+						href={routes.toc}
+						label="Về Mục lục"
+						icon="menu_book"
+						collapsed={collapsed}
 						onNavigate={onNavigate}
 					/>
 				</div>
-
-				{groups.map(({ group, items }) =>
-					items.length === 0 ? null : (
-						<div key={group}>
-							{!collapsed && (
-								<p className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-muted/70">
-									{group}
-								</p>
-							)}
-							<div className="space-y-0.5">
-								{items.map((item) => (
-									<NavItem
-										key={item.href}
-										href={item.href}
-										label={item.label}
-										collapsed={collapsed}
-										active={isAdminNavActive(pathname, item.href, item.exact)}
-										icon={item.icon}
-										onNavigate={onNavigate}
-									/>
-								))}
-							</div>
-						</div>
-					),
-				)}
 			</nav>
-
-			<div className="space-y-1 border-t border-border p-2">
-				{!collapsed && (
-					<div className="flex flex-col gap-1 px-2 pb-2">
-						{archived ? (
-							<Link
-								href={routes.admin.home}
-								className="text-[11px] font-semibold text-foreground-secondary transition-colors hover:text-foreground"
-								data-testid="archive-sidebar-back"
-							>
-								← Về admin chính
-							</Link>
-						) : (
-							<Link
-								href={routes.admin.archive}
-								className="text-[11px] text-muted/80 transition-colors hover:text-muted"
-								data-testid="admin-archive-link"
-							>
-								Kho lưu trữ
-							</Link>
-						)}
-						<a
-							href={routes.home}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-[11px] text-muted transition-colors hover:text-foreground"
-						>
-							Trang chủ ↗
-						</a>
-					</div>
-				)}
-
+			<div className={styles.account}>
 				{session?.user && (
-					<div
-						className={`flex items-center gap-2 rounded-lg px-2 py-2 ${collapsed ? 'justify-center' : ''}`}
-					>
-						{session.user.image ? (
-							<img
-								src={session.user.image}
-								alt=""
-								className="h-7 w-7 shrink-0 rounded-full object-cover"
-							/>
-						) : (
-							<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground text-[11px] font-black text-background">
+					<>
+						<div
+							className={`flex items-center gap-3 px-2 py-2 ${collapsed ? 'justify-center' : ''}`}
+							title={session.user.name ?? 'Admin'}
+						>
+							<span className={styles.iconTile} aria-hidden="true">
 								{(session.user.name ?? 'A')[0].toUpperCase()}
-							</div>
-						)}
-						{!collapsed && (
-							<div className="min-w-0 flex-1">
-								<p className="truncate text-xs font-bold text-foreground">
-									{session.user.name ?? 'Admin'}
-								</p>
-								<button
-									type="button"
-									onClick={() => void signOutTo(routes.home)}
-									className="min-h-10 text-[10px] text-muted transition-colors hover:text-error"
-								>
-									Đăng xuất
-								</button>
-							</div>
-						)}
-					</div>
+							</span>
+							{!collapsed && (
+								<div className="min-w-0">
+									<p className="truncate font-semibold">{session.user.name ?? 'Admin'}</p>
+									<p className={styles.meta}>Quản trị viên</p>
+								</div>
+							)}
+						</div>
+						<button
+							type="button"
+							aria-label="Đăng xuất"
+							title="Đăng xuất"
+							onClick={() => void signOutTo(routes.home)}
+							className={`${styles.navItem} w-full`}
+							data-collapsed={collapsed}
+						>
+							<AdminIcon name="logout" />
+							{!collapsed && <span>Đăng xuất</span>}
+							{collapsed && <span className={styles.tooltip}>Đăng xuất</span>}
+						</button>
+					</>
 				)}
 			</div>
 		</>
 	);
 }
 
-/** Responsive admin chrome: drawer below md, fixed sidebar from md. */
-export default function AdminSidebar() {
-	const [collapsed, setCollapsed] = useState(false);
+/** Responsive admin chrome: drawer below 1024px, fixed sidebar from 1024px. */
+export default function AdminSidebar({ initialCollapsed = false }: { initialCollapsed?: boolean }) {
+	const [collapsed, setCollapsed] = useState(initialCollapsed);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const drawerId = useId();
 	const pathname = usePathname();
@@ -170,6 +162,12 @@ export default function AdminSidebar() {
 	const drawerRef = useRef<HTMLElement>(null);
 
 	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+	function toggleCollapsed() {
+		const next = !collapsed;
+		setCollapsed(next);
+		document.cookie = `${SIDEBAR_COOKIE}=${next ? '1' : '0'}; Path=/admin; Max-Age=31536000; SameSite=Lax`;
+	}
+
 	const archived = isArchivedAdminPath(pathname);
 	const brandHref = archived ? routes.admin.archive : routes.admin.home;
 	const brandLabel = archived ? 'Kho lưu trữ' : 'Admin';
@@ -223,7 +221,7 @@ export default function AdminSidebar() {
 		}
 
 		function onResize() {
-			if (window.matchMedia('(min-width: 768px)').matches) closeDrawer();
+			if (window.matchMedia('(min-width: 1024px)').matches) closeDrawer();
 		}
 
 		document.addEventListener('keydown', onKey);
@@ -238,32 +236,28 @@ export default function AdminSidebar() {
 
 	return (
 		<>
-			<header className="sticky top-0 z-40 flex h-[var(--header-height)] items-center gap-3 border-b border-border bg-surface px-3 md:hidden">
+			<header className={styles.mobileBar}>
 				<button
 					ref={menuButtonRef}
 					type="button"
-					className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-hover"
+					className={`${styles.button} ${styles.quiet} !px-3`}
 					aria-label={drawerOpen ? 'Đóng menu' : 'Mở menu'}
 					aria-expanded={drawerOpen}
 					aria-controls={drawerId}
 					data-testid="admin-menu-button"
 					onClick={() => setDrawerOpen((v) => !v)}
 				>
-					<McIcon name={drawerOpen ? 'close' : 'menu'} size={20} />
+					<McIcon name="menu" size={20} />
 				</button>
-				<Link
-					href={brandHref}
-					className="inline-flex min-h-11 items-center px-2 font-display text-base font-semibold tracking-wide text-foreground"
-				>
-					{brandLabel}
+				<Link href={brandHref} className="font-semibold">
+					{brandLabel} Studio
 				</Link>
 			</header>
-
-			{drawerOpen ? (
-				<div className="fixed inset-0 z-50 md:hidden" role="presentation">
+			{drawerOpen && (
+				<div className={styles.drawerLayer} role="presentation">
 					<button
 						type="button"
-						className="absolute inset-0 bg-ink/40"
+						className={styles.scrim}
 						aria-label="Đóng menu"
 						onClick={closeDrawer}
 					/>
@@ -275,54 +269,38 @@ export default function AdminSidebar() {
 						aria-label={archived ? 'Menu kho lưu trữ' : 'Menu quản trị'}
 						tabIndex={-1}
 						data-testid="admin-mobile-drawer"
-						className="absolute inset-y-0 left-0 flex w-[min(100%,18rem)] flex-col border-r border-border bg-surface shadow-lg"
+						className={styles.drawer}
 					>
-						<div className="flex h-14 items-center justify-between border-b border-border px-3">
-							<span className="text-sm font-black uppercase tracking-wider">{brandLabel}</span>
+						<div className={styles.brand}>
+							<span className="font-semibold">{brandLabel} Studio</span>
 							<button
 								type="button"
 								onClick={closeDrawer}
-								className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-hover"
+								className={`${styles.button} ${styles.quiet} !px-3`}
 								aria-label="Đóng"
 							>
-								<McIcon name="close" size={18} />
+								<McIcon name="close" size={20} />
 							</button>
 						</div>
 						<NavBody collapsed={false} onNavigate={closeDrawer} />
 					</aside>
 				</div>
-			) : null}
-
-			<aside
-				className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-surface transition-all duration-200 md:flex ${
-					collapsed ? 'w-14' : 'w-56'
-				}`}
-			>
-				<div className="flex h-14 items-center justify-between border-b border-border px-3">
-					{!collapsed ? (
-						<Link
-							href={brandHref}
-							className="flex items-center gap-2.5 text-sm font-black uppercase tracking-wider text-foreground"
-						>
-							<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground">
-								<span className="text-[11px] font-black text-background">H</span>
-							</div>
-							{brandLabel}
-						</Link>
-					) : (
-						<Link href={brandHref} className="mx-auto" aria-label={brandLabel}>
-							<div className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground">
-								<span className="text-[11px] font-black text-background">H</span>
-							</div>
+			)}
+			<aside className={styles.sidebar} data-collapsed={collapsed}>
+				<div className={styles.brand}>
+					{!collapsed && (
+						<Link href={brandHref} className="font-semibold">
+							{brandLabel} Studio
 						</Link>
 					)}
 					<button
 						type="button"
-						onClick={() => setCollapsed((v) => !v)}
-						className={`flex h-10 w-10 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-hover hover:text-foreground ${collapsed ? 'mx-auto' : ''}`}
+						onClick={toggleCollapsed}
+						className={`${styles.button} ${styles.quiet} !px-3 ${collapsed ? 'mx-auto' : ''}`}
 						aria-label={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+						title={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
 					>
-						<McIcon name={collapsed ? 'chevron_right' : 'chevron_left'} size={16} />
+						<McIcon name={collapsed ? 'chevron_right' : 'chevron_left'} size={20} />
 					</button>
 				</div>
 				<NavBody collapsed={collapsed} />

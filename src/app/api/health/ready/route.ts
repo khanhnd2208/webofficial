@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { getRequestId, withRequestId } from '@/lib/apiUtils';
-import { mongoClientPromise } from '@/lib/mongodbClient';
+import { getMongoClient } from '@/lib/mongodbClient';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
 	const requestId = getRequestId(request);
 	try {
-		const client = await mongoClientPromise;
+		const client = await getMongoClient();
 		await Promise.all([client.db().command({ ping: 1 }), prisma.$queryRaw`SELECT 1`]);
 		return withRequestId(
 			NextResponse.json(

@@ -1,5 +1,6 @@
 'use client';
 
+import styles from './AdminStudio.module.css';
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 
@@ -9,18 +10,24 @@ import { ArchiveBanner } from '@/components/admin/ArchiveBanner';
 import { resolveAdminRoute } from '@/config/adminNavigation';
 import { isArchivedAdminPath } from '@/config/moduleRegistry';
 
-export default function AdminShell({ children }: { children: ReactNode }) {
+export default function AdminShell({
+	children,
+	sidebarCollapsed = false,
+}: {
+	children: ReactNode;
+	sidebarCollapsed?: boolean;
+}) {
 	const pathname = usePathname();
 	const meta = resolveAdminRoute(pathname);
 	const archived = isArchivedAdminPath(pathname);
 
 	return (
 		<div
-			className="flex min-h-screen flex-col bg-background md:flex-row"
+			className={`${styles.theme} ${styles.shell}`}
 			data-testid="admin-shell"
 			data-variant={archived ? 'archive' : 'main'}
 		>
-			<AdminSidebar />
+			<AdminSidebar initialCollapsed={sidebarCollapsed} />
 			<div className="admin-content min-w-0 flex-1 overflow-auto" data-width={meta.width}>
 				{archived ? <ArchiveBanner /> : null}
 				{meta.localNav?.length ? (

@@ -34,11 +34,12 @@ test.describe('Focused operating mode', () => {
 		expect(xml).not.toContain('/vocabulary');
 	});
 
-	test('My Space contains only Teaching', async ({ page }) => {
+	test('admin My Space leads to Teaching and hides retired spaces', async ({ page, context }) => {
+		await addAdminSession(context);
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.getByTestId('my-space')).toBeVisible();
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(1);
+		// Courses and Board Game joined Teaching in My Space; retired spaces stay out.
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
 			'href',
 			'/my-space/teaching',
@@ -53,13 +54,14 @@ test.describe('Focused operating mode', () => {
 		const nav = page.getByRole('navigation', { name: 'Quản trị' });
 		await expect(nav.getByRole('link', { name: 'Website' })).toBeVisible();
 		await expect(nav.getByRole('link', { name: 'Active Recall' })).toHaveCount(0);
-		await expect(nav.getByRole('link', { name: 'Teaching' })).toHaveCount(0);
+		// "Mở Teaching" is a shortcut out of Admin, not a Teaching module in the menu.
+		await expect(nav.getByRole('link', { name: 'Teaching', exact: true })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'My Class' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Bài viết' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Người dùng' })).toHaveCount(0);
 		await expect(page.getByTestId('admin-archive-link')).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Tổng quan' })).toBeVisible();
-		await expect(page.getByRole('link', { name: 'Mở Teaching' })).toBeVisible();
+		await expect(page.getByRole('main').getByRole('link', { name: 'Mở Teaching' })).toBeVisible();
 	});
 
 	test('Website hub and contact inbox stay on the main shell', async ({ page, context }) => {
@@ -67,11 +69,14 @@ test.describe('Focused operating mode', () => {
 		await page.goto('/admin/website');
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		await expect(page.getByRole('heading', { name: 'Website' })).toBeVisible();
-		await page.getByRole('link', { name: /Yêu cầu liên hệ/ }).click();
+		await page
+			.getByRole('navigation', { name: 'Quản trị' })
+			.getByRole('link', { name: 'Hộp thư liên hệ' })
+			.click();
 		await expect(page).toHaveURL(/\/admin\/inquiries/);
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		await expect(page.getByTestId('archive-banner')).toHaveCount(0);
-		await expect(page.getByRole('heading', { name: 'Yêu cầu liên hệ' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Hộp thư liên hệ' })).toBeVisible();
 	});
 
 	test('opening a paused module from the archive keeps the archive warning', async ({
