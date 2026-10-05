@@ -1,12 +1,13 @@
 ---
 name: ship-change
-description: Take a code change in this repo from start to production safely - own worktree and branch, one-kind-per-commit history, local checks, pull request, CI, merge on the user's word, deploy watch. Use when starting a task, committing, pushing, opening a PR, merging, or deploying.
+description: Take a code change in this repo from start to production safely - own worktree and branch, one-kind-per-commit history, local checks, pull request, CI, merge when green, deploy watch. Use when starting a task, committing, pushing, opening a PR, merging, or deploying.
 ---
 
 # Ship a change
 
-`main` deploys to production when CI passes. Every step that reaches `main` needs
-the user's go-ahead in this conversation.
+`main` deploys to production when CI passes. When the task is done, run steps
+3-7 straight through without asking: the user wants "code done → live" with no
+extra confirmations. Stop and ask only in the cases listed under step 6.
 
 ## 1. Start clean
 
@@ -57,11 +58,14 @@ git push -u origin <branch>
 gh pr create --base main --fill   # then edit the body to follow .github/pull_request_template.md
 ```
 
-Pushing a branch and opening a PR is outward-facing: confirm with the user
-unless they already asked for it. Read CI with `gh pr checks <number>`; fix
-failures with new commits on the branch.
+No confirmation needed, unless the user said to hold. Wait for CI and fix
+failures with new commits on the branch:
 
-## 6. Merge and deploy (only when the user says so)
+```bash
+gh pr checks <number> --watch
+```
+
+## 6. Merge and deploy (when every check is green)
 
 ```bash
 gh pr merge <number> --merge      # merge commit: keeps .git-blame-ignore-revs valid
@@ -70,8 +74,16 @@ gh run list --workflow deploy.yml --limit 1
 gh run watch <run-id>
 ```
 
+Never `--auto`: `main` has no required checks, so it merges before CI ends.
 Do not start `npm run deploy:vps` while the workflow runs. If the deploy fails,
 read `docs/deployment/VPS.md` and ask before any manual step.
+
+Stop and ask instead of merging when:
+
+- the change adds a Prisma migration;
+- CI fails for a reason outside your task;
+- the PR also carries someone else's commits;
+- a deploy for another branch is still running (wait for it, or ask).
 
 ## 7. Clean up
 
