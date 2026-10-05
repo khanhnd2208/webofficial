@@ -24,7 +24,6 @@ import {
 	getStoredPlayerToken,
 	storePlayerToken,
 } from '@/features/cheese-thief/lib/clientToken';
-import CheeseCheckPhase from '@/features/cheese-thief/components/phases/CheeseCheckPhase';
 import TiePhase from '@/features/cheese-thief/components/phases/TiePhase';
 import { startNightTrack, unlockTableAudio } from '@/features/cheese-thief/lib/narration';
 import { prepareNightTrack } from '@/features/cheese-thief/lib/nightTrack';
@@ -66,15 +65,11 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 	// The host phone builds the recorded night while the table reads roles or looks at the cheese,
 	// so the tap that starts the night can also start the sound.
 	const hostPhase = state?.isHost ? state?.phase : null;
-	const tableMode = state?.mode ?? 'classic';
 	const hourSeconds = state?.hourSeconds;
 	useEffect(() => {
 		if (hourSeconds === undefined) return;
-		if (hostPhase === 'deal')
-			void prepareNightTrack({ locale, mode: tableMode, night: 1, hourSeconds });
-		if (hostPhase === 'cheese-check')
-			void prepareNightTrack({ locale, mode: tableMode, night: 2, hourSeconds });
-	}, [hostPhase, tableMode, hourSeconds, locale]);
+		if (hostPhase === 'deal') void prepareNightTrack({ locale, hourSeconds });
+	}, [hostPhase, hourSeconds, locale]);
 
 	useEffect(() => {
 		const stored = getStoredPlayerToken(code);
@@ -160,41 +155,37 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 
 	return (
 		<div className="game-theme game-theme-cheese min-h-svh">
-			{phase !== 'night' &&
-				phase !== 'cheese-check' &&
-				phase !== 'secret' &&
-				phase !== 'secret-result' && (
-					<header className="mx-auto flex max-w-md items-center justify-between gap-2 px-5 pt-3">
-						<Link
-							href={routes.cheeseThief}
-							className="inline-flex min-h-11 items-center font-mono text-[0.68rem] tracking-[0.08em] text-muted uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-						>
-							{state.code}
-						</Link>
-						<CheeseRulesButton
-							playerCount={state.maxPlayers}
-							mode={state.mode}
-							scapegoatEnabled={state.scapegoatEnabled}
-							followers={{ count: state.followers.count, knowledge: state.followers.knowledge }}
-							className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-						/>
-						<button
-							type="button"
-							className="inline-flex min-h-11 items-center text-sm text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-							onClick={() => {
-								if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
-								void api.leave().finally(() => {
-									if (adminTest) return;
-									clearPlayerToken(code);
-									router.push(routes.cheeseThief);
-								});
-							}}
-						>
-							{t('cheese.join.back')}
-						</button>
-						<SiteAuthChip variant="badge" showSignIn={false} />
-					</header>
-				)}
+			{phase !== 'night' && phase !== 'secret' && phase !== 'secret-result' && (
+				<header className="mx-auto flex max-w-md items-center justify-between gap-2 px-5 pt-3">
+					<Link
+						href={routes.cheeseThief}
+						className="inline-flex min-h-11 items-center font-mono text-[0.68rem] tracking-[0.08em] text-muted uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+					>
+						{state.code}
+					</Link>
+					<CheeseRulesButton
+						playerCount={state.maxPlayers}
+						scapegoatEnabled={state.scapegoatEnabled}
+						followers={{ count: state.followers.count, knowledge: state.followers.knowledge }}
+						className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+					/>
+					<button
+						type="button"
+						className="inline-flex min-h-11 items-center text-sm text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+						onClick={() => {
+							if (phase !== 'lobby' && !window.confirm(t('cheese.join.leaveConfirm'))) return;
+							void api.leave().finally(() => {
+								if (adminTest) return;
+								clearPlayerToken(code);
+								router.push(routes.cheeseThief);
+							});
+						}}
+					>
+						{t('cheese.join.back')}
+					</button>
+					<SiteAuthChip variant="badge" showSignIn={false} />
+				</header>
+			)}
 			<main className="mx-auto max-w-md px-5 py-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
 				{actionError && phase !== 'night' && (
 					<p className="mb-4 text-sm text-danger">{actionError}</p>
@@ -224,30 +215,14 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 					<DealPhase
 						state={state}
 						busy={busy}
-						onRemember={(hour) => void run(() => api.memorized(hour))}
+						onRemember={() => void run(api.memorized)}
 						onBeginNight={() => {
-							if (
-								!startNightTrack({
-									locale,
-									mode: state.mode,
-									night: 1,
-									hourSeconds: state.hourSeconds,
-								})
-							)
-								unlockTableAudio();
+							if (!startNightTrack({ locale, hourSeconds: state.hourSeconds })) unlockTableAudio();
 							void run(api.beginNight);
 						}}
 					/>
 				)}
 				{phase === 'night' && <NightPhase state={state} fetchedAt={fetchedAt} />}
-				{phase === 'cheese-check' && (
-					<CheeseCheckPhase
-						isHost={state.isHost}
-						hourSeconds={state.hourSeconds}
-						busy={busy}
-						onConfirm={(present) => void run(() => api.cheese(present))}
-					/>
-				)}
 				{phase === 'secret' && (
 					<SecretPhase
 						state={state}

@@ -11,9 +11,9 @@ import { confirmMemorized } from '@/features/cheese-thief/services/cheeseThiefSe
 
 const POSTBase = withErrorHandling(async (request: NextRequest, context) => {
 	const { code } = await context!.params;
-	const body = (await request.json()) as { token?: string; chosenHour?: number };
+	const body = (await request.json()) as { token?: string };
 	if (!body.token) return apiError('TOKEN_REQUIRED', 400);
-	return apiSuccess(await confirmMemorized(code, body.token, body.chosenHour));
+	return apiSuccess(await confirmMemorized(code, body.token));
 });
 
 export const POST = withPublicRoomGuard(RoomModel, POSTBase);

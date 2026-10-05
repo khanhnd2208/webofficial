@@ -6,11 +6,8 @@ import {
 	CHEESE_HOUR_SECONDS_MIN,
 	CHEESE_MAX_PLAYERS,
 	CHEESE_MIN_PLAYERS,
-	CHEESE_MODES,
 	CHEESE_PHASES,
-	type CheeseMode,
 	type FollowerKnows,
-	type NightNumber,
 } from '@/features/cheese-thief/config/cheeseThief';
 import type { CheeseRole, CheeseWinner } from '@/features/cheese-thief/lib/rules';
 
@@ -23,8 +20,6 @@ export interface ICheesePlayer {
 	lastSeenAt: Date;
 	role?: CheeseRole;
 	dice: number[];
-	dice2: number[];
-	chosenHour?: number;
 	hasMemorizedRole: boolean;
 	/** Public ids, in tap order. Saved as a draft on every tap, so a timeout keeps a partial peek. */
 	secretPicks: string[];
@@ -41,15 +36,12 @@ export interface ICheeseRoom {
 	isPublic: boolean;
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
-	mode: CheeseMode;
 	/** Unset means the default for `maxPlayers`. */
 	followerCount?: number;
 	followerKnowledge?: FollowerKnows;
 	hourSeconds: number;
 	hostToken: string;
 	phase: (typeof CHEESE_PHASES)[number];
-	nightNumber: NightNumber;
-	theftNight?: NightNumber;
 	voteRound: number;
 	version: number;
 	players: ICheesePlayer[];
@@ -96,8 +88,6 @@ const CheesePlayerSchema = new Schema<ICheesePlayer>(
 		lastSeenAt: { type: Date, default: Date.now },
 		role: { type: String, enum: ['thief', 'sleepyhead', 'scapegoat'] },
 		dice: { type: [Number], default: [] },
-		dice2: { type: [Number], default: [] },
-		chosenHour: { type: Number },
 		hasMemorizedRole: { type: Boolean, default: false },
 		secretPicks: { type: [String], default: [] },
 		secretConfirmed: { type: Boolean, default: false },
@@ -115,7 +105,6 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		isPublic: { type: Boolean, default: true, index: true },
 		maxPlayers: { type: Number, required: true, min: CHEESE_MIN_PLAYERS, max: CHEESE_MAX_PLAYERS },
 		scapegoatEnabled: { type: Boolean, default: false },
-		mode: { type: String, enum: CHEESE_MODES, default: 'classic' },
 		followerCount: { type: Number, min: 0, max: 4 },
 		followerKnowledge: { type: String, enum: ['team', 'all'] },
 		hourSeconds: {
@@ -131,8 +120,6 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		nightStartedAt: { type: Date },
 		secretStartedAt: { type: Date },
 		dayStartedAt: { type: Date },
-		nightNumber: { type: Number, default: 1 },
-		theftNight: { type: Number },
 		voteRound: { type: Number, default: 0 },
 		choiceCount: { type: Number, default: 1 },
 		isRunoff: { type: Boolean, default: false },
@@ -163,6 +150,17 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 	},
 	{ timestamps: true },
 );
+
+/**
+ * A two-night round left in Mongo cannot finish under one-night rules.
+ * Strict mode would drop `nightNumber`, so catch it here, before casting.
+ * The next load sends that room back to the lobby. Rooms expire after a day.
+ */
+CheeseRoomSchema.pre('init', function (raw: { phase?: string; nightNumber?: number }) {
+	if (raw.phase === 'cheese-check' || raw.nightNumber === 2) {
+		this.$locals.legacyTwoNight = true;
+	}
+});
 
 CheeseRoomSchema.index({ isPublic: 1, phase: 1, updatedAt: -1 });
 CheeseRoomSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 });

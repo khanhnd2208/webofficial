@@ -85,8 +85,7 @@ export function useCheeseThiefRoom({
 		const phase = state?.phase;
 		// The host keeps polling through the day talk too, so the host seat does not drift to another phone.
 		const hostHolds = Boolean(
-			state?.isHost &&
-			(phase === 'night' || phase === 'cheese-check' || phase === 'day' || phase === 'tie'),
+			state?.isHost && (phase === 'night' || phase === 'day' || phase === 'tie'),
 		);
 		const tableLooking =
 			phase === 'deal' || phase === 'secret' || phase === 'secret-result' || phase === 'vote';
@@ -157,16 +156,14 @@ export function useCheeseThiefRoom({
 							token: tokenRef.current,
 						}),
 			),
-		memorized: (chosenHour?: number) =>
+		memorized: () =>
 			action(() =>
 				adminTest
 					? (sendAdminTestCommand('cheese-thief', code, {
 							kind: 'remember',
-							chosenHour,
 						}) as Promise<RoomStateDTO>)
 					: postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/memorized`, {
 							token: tokenRef.current,
-							...(chosenHour !== undefined ? { chosenHour } : {}),
 						}),
 			),
 		beginNight: () =>
@@ -229,18 +226,6 @@ export function useCheeseThiefRoom({
 					: postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/vote`, {
 							token: tokenRef.current,
 							targetId,
-						}),
-			),
-		cheese: (present: boolean) =>
-			action(() =>
-				adminTest
-					? (sendAdminTestCommand('cheese-thief', code, {
-							kind: 'cheese',
-							present,
-						}) as Promise<RoomStateDTO>)
-					: postCheeseAction<RoomStateDTO>(`/api/cheese-thief/rooms/${code}/cheese`, {
-							token: tokenRef.current,
-							present,
 						}),
 			),
 		revote: () =>

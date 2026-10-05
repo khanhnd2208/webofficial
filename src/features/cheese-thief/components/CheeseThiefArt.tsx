@@ -5,7 +5,6 @@ import { cn } from '@/features/board-game-shared/lib/cn';
 export type CheeseThiefArtScene =
 	| 'mouse'
 	| 'moon'
-	| 'two-moons'
 	| 'cheese'
 	| 'stolen'
 	| 'secret'

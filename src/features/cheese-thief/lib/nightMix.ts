@@ -13,7 +13,6 @@ export const LINE_LEAD_S = {
 	wake: 0.35,
 	sleep: 0.3,
 	outro: 0.6,
-	single: 0.35,
 } as const;
 
 type CueKind = keyof typeof LINE_LEAD_S;
@@ -47,8 +46,7 @@ const DAWN: [number, number][] = [
 export function cueKind(clip: VoiceClip): CueKind {
 	if (clip.startsWith('wake-')) return 'wake';
 	if (clip === 'sleep') return 'sleep';
-	if (clip === 'night-end' || clip === 'night1-end') return 'outro';
-	if (clip === 'cheese-gone') return 'single';
+	if (clip === 'night-end') return 'outro';
 	return 'intro';
 }
 
