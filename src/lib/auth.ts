@@ -3,7 +3,7 @@ import { MongoDBAdapter } from '@auth/mongodb-adapter';
 import type { Adapter } from 'next-auth/adapters';
 import { ObjectId } from 'mongodb';
 
-import { mongoClientPromise } from '@/lib/mongodbClient';
+import { getMongoClient } from '@/lib/mongodbClient';
 import { authConfig } from '@/lib/auth.config';
 import { describeAuthError, logAuth, newAuthCorrelationId } from '@/lib/auth/log';
 import { applyStoredRole, needsRoleRecheck, type StoredRoleLookup } from '@/lib/auth/roleFreshness';
@@ -29,7 +29,7 @@ function withRoleOnCreate(adapter: Adapter): Adapter {
 			const role = roleForNewUser(created.email);
 			const correlationId = newAuthCorrelationId();
 			try {
-				const client = await mongoClientPromise;
+				const client = await getMongoClient();
 				await client
 					.db()
 					.collection('users')
@@ -63,7 +63,7 @@ async function persistRole(
 	correlationId: string,
 ): Promise<void> {
 	try {
-		const client = await mongoClientPromise;
+		const client = await getMongoClient();
 		await client
 			.db()
 			.collection('users')
@@ -91,7 +91,7 @@ async function persistRole(
 async function lookupStoredRole(userId: string | undefined): Promise<StoredRoleLookup> {
 	if (!userId || !ObjectId.isValid(userId)) return { status: 'found', role: undefined };
 	try {
-		const client = await mongoClientPromise;
+		const client = await getMongoClient();
 		const dbUser = await client
 			.db()
 			.collection('users')
@@ -112,7 +112,7 @@ async function lookupStoredRole(userId: string | undefined): Promise<StoredRoleL
 
 const nextAuth = NextAuth({
 	...authConfig,
-	adapter: withRoleOnCreate(MongoDBAdapter(mongoClientPromise)),
+	adapter: withRoleOnCreate(MongoDBAdapter(getMongoClient)),
 	logger: {
 		error(error) {
 			const described = describeAuthError(error);
@@ -135,7 +135,7 @@ const nextAuth = NextAuth({
 				const correlationId = newAuthCorrelationId();
 				let persisted: string | undefined;
 				try {
-					const client = await mongoClientPromise;
+					const client = await getMongoClient();
 					const dbUser = await client
 						.db()
 						.collection('users')

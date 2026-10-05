@@ -1,6 +1,6 @@
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
-import { mongoClientPromise } from '@/lib/mongodbClient';
+import { getMongoClient } from '@/lib/mongodbClient';
 
 import {
 	listSkip,
@@ -169,7 +169,7 @@ export async function previewRoster(
 		}) => Promise<{ _id: { toString(): string }; email?: string } | null>;
 	} | null = null;
 	try {
-		const mongo = await mongoClientPromise;
+		const mongo = await getMongoClient();
 		users = mongo.db().collection<{ _id: { toString(): string }; email?: string }>('users');
 	} catch {
 		users = null;

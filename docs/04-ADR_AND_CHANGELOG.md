@@ -44,7 +44,7 @@ ADR conflicts with active code, current code and the architecture document win.
 
 **Rationale:** Forcing Mongoose to share its internal connection with the adapter would require extracting the underlying driver connection — a fragile coupling. Keeping two pools (max 10 connections each) is simpler and avoids cross-framework interference. On a free-tier Atlas cluster this is acceptable; revisit if pool count becomes a concern.
 
-**Consequences:** Two connection pools to monitor. Both use the global cache pattern (`global._mongoClientPromise`, `global.mongoose`) to prevent exhausting connections during Next.js hot-reload in development.
+**Consequences:** Two connection pools to monitor. Both use the global cache pattern (`global._mongoClientCache`, `global.mongoose`) to prevent exhausting connections during Next.js hot-reload in development.
 
 ---
 

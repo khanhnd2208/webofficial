@@ -1,0 +1,66 @@
+name: 🩺 VPS health
+
+# Read-only production check every 3 hours. A failed run emails the repository
+# owner: MongoDB, PostgreSQL or nginx down, app not ready, or disk above 80%.
+# The 2026-10-04 full disk took MongoDB down unnoticed; this would have caught it.
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: vps-health
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: 🩺 Production status and disk space
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The VPS secrets live in the production environment.
+    environment: production
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Configure pinned SSH trust
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          : "${VPS_SSH_KEY:?Missing VPS_SSH_KEY production secret}"
+          : "${VPS_KNOWN_HOSTS:?Missing VPS_KNOWN_HOSTS production secret}"
+          install -d -m 700 "$HOME/.ssh"
+          install -m 600 /dev/null "$HOME/.ssh/webofficial_deploy"
+          printf '%s\n' "$VPS_SSH_KEY" > "$HOME/.ssh/webofficial_deploy"
+          install -m 600 /dev/null "$HOME/.ssh/known_hosts"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+
+      - name: Run the read-only production check
+        env:
+          VPS_HOSTNAME: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          set -euo pipefail
+          : "${VPS_HOSTNAME:?Missing VPS_HOST production secret}"
+          : "${VPS_USER:?Missing VPS_USER production secret}"
+          # A deploy briefly reloads the app; check again before raising an alarm.
+          for attempt in 1 2; do
+            if VPS_HOST="${VPS_USER}@${VPS_HOSTNAME}" \
+              VPS_PORT="${VPS_PORT:-22}" \
+              DEPLOY_KEY="$HOME/.ssh/webofficial_deploy" \
+              bash scripts/deploy-vps.sh --check; then
+              exit 0
+            fi
+            [[ "$attempt" -eq 2 ]] || sleep 180
+          done
+          exit 1
