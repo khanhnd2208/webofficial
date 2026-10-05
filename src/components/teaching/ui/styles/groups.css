@@ -26,7 +26,7 @@
 [data-surface='teaching'] .group-list-eyebrow {
 	margin: 0 0 0.35rem;
 	color: var(--mc-ink-secondary, var(--ink-secondary));
-	font-size: 0.66rem;
+	font-size: var(--type-caption);
 	font-weight: 800;
 	letter-spacing: 0.16em;
 }
@@ -81,7 +81,7 @@
 }
 [data-surface='teaching'] .group-list-metric span {
 	color: var(--mc-ink-secondary, var(--ink-secondary));
-	font-size: 0.7rem;
+	font-size: var(--type-caption);
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -115,7 +115,7 @@
 	padding: 0.55rem 1rem;
 	background: var(--surface-sunken);
 	color: var(--ink-secondary);
-	font-size: 0.6875rem;
+	font-size: var(--type-caption);
 	font-weight: 600;
 	text-align: left;
 	letter-spacing: 0.035em;
@@ -209,7 +209,7 @@
 	padding: 0.2rem 0.55rem;
 	background: var(--surface-sunken);
 	color: var(--ink-secondary);
-	font-size: 0.6875rem;
+	font-size: var(--type-caption);
 	font-weight: 600;
 	font-variant-numeric: tabular-nums;
 }

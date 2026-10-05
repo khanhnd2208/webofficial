@@ -67,16 +67,16 @@
 	--mc-shadow-1: 0 1px 0 0 rgb(18 28 42 / 0.05);
 	--mc-shadow-2: 0 4px 12px -4px rgb(18 28 42 / 0.12);
 	--mc-shadow-3: 0 16px 40px -16px rgb(18 28 42 / 0.2);
-	--mc-r-xs: 4px;
+	--mc-r-xs: 8px;
 	--mc-r-sm: 8px;
 	--mc-r-md: 12px;
-	--mc-r-lg: 16px;
+	--mc-r-lg: 20px;
 	--mc-r-full: 9999px;
-	--mc-dur-1: 120ms;
-	--mc-dur-2: 200ms;
-	--mc-dur-3: 280ms;
-	--mc-ease-standard: cubic-bezier(0.2, 0, 0, 1);
-	--mc-ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+	--mc-dur-1: var(--ui-duration-hover);
+	--mc-dur-2: var(--ui-duration-control);
+	--mc-dur-3: var(--ui-duration-page);
+	--mc-ease-standard: var(--ui-ease);
+	--mc-ease-emphasized: var(--ui-ease);
 	--mc-toast-offset: 1rem;
 
 	--shadow-sm: var(--mc-shadow-1);
@@ -402,7 +402,7 @@
 .mc-outline-branch {
 	display: grid;
 	grid-template-rows: 0fr;
-	transition: grid-template-rows 160ms var(--mc-ease-standard);
+	transition: grid-template-rows var(--ui-duration-hover) var(--mc-ease-standard);
 }
 
 .mc-outline-branch[data-open='true'] {
@@ -753,8 +753,8 @@ li[data-dragging='true'] {
 
 .mc .mc-surface-interactive {
 	transition:
-		border-color 160ms ease,
-		box-shadow 160ms ease;
+		border-color var(--ui-duration-hover) var(--ui-ease),
+		box-shadow var(--ui-duration-hover) var(--ui-ease);
 }
 
 .mc .mc-surface-interactive:hover {
@@ -767,8 +767,8 @@ li[data-dragging='true'] {
 	border: 1px solid color-mix(in srgb, var(--mc-rule) 30%, transparent);
 	background: var(--surface-container-low);
 	transition:
-		border-color 200ms ease,
-		box-shadow 200ms ease;
+		border-color var(--ui-duration-control) var(--ui-ease),
+		box-shadow var(--ui-duration-control) var(--ui-ease);
 }
 
 .mc .mc-test-widget:hover {
@@ -1175,7 +1175,7 @@ li[data-dragging='true'] {
 	border-radius: var(--mc-r-full);
 	background: var(--surface-container);
 	color: var(--ink-secondary);
-	font-size: 0.625rem;
+	font-size: 0.75rem;
 	font-weight: 700;
 	letter-spacing: 0.02em;
 }
@@ -1204,7 +1204,7 @@ li[data-dragging='true'] {
 	flex-wrap: wrap;
 	gap: 0.85rem;
 	color: var(--ink-secondary);
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -1349,7 +1349,7 @@ li[data-dragging='true'] {
 
 .mc-studio .mc-stat-tile dt {
 	color: var(--ink-tertiary);
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -1390,7 +1390,7 @@ li[data-dragging='true'] {
 	border-radius: var(--mc-r-sm);
 	background: var(--accent-subtle);
 	color: var(--ink);
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 }
 

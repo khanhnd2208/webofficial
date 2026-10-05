@@ -2,8 +2,13 @@
 .personal-book {
 	color: var(--ink);
 	background: var(--canvas);
-	font-size: 16px;
+	font-size: 0.9375rem;
 	line-height: 1.7;
+}
+@media (max-width: 760px) {
+	.personal-book {
+		font-size: 1.0625rem;
+	}
 }
 .personal-book :is(a, button, summary):focus-visible,
 .book-chrome:focus-visible,
@@ -40,12 +45,12 @@
 	gap: 16px;
 	min-height: 44px;
 	border-bottom: 1px solid var(--bronze);
-	font-size: 16px;
+	font-size: 0.9375rem;
 	color: var(--ink);
 	text-decoration: none;
 }
 .book-link span {
-	transition: transform 180ms ease;
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 .book-link:hover {
 	color: var(--bronze);
@@ -65,12 +70,25 @@
 	flex-direction: column;
 }
 .cover-meta {
-	display: flex;
-	justify-content: space-between;
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
 	align-items: center;
-	padding: 24px 40px;
-	font-size: 13px;
+	min-height: 64px;
+	padding: 0 40px;
+	border-bottom: 1px solid var(--hairline);
+	font-size: 0.8125rem;
 	color: var(--ink-secondary);
+}
+.cover-meta .cover-brand {
+	width: fit-content;
+	font-family: var(--font-serif-display), serif;
+	font-size: 1.0625rem;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	color: var(--ink);
+}
+.cover-meta > :last-child {
+	justify-self: end;
 }
 .cover-composition {
 	flex: 1;
@@ -100,7 +118,7 @@
 	font-family: var(--font-serif-display), serif;
 	font-style: italic;
 	color: var(--bronze);
-	font-size: 23px;
+	font-size: 1.5rem;
 	margin-top: 12px;
 }
 .cover-narrative {
@@ -118,7 +136,7 @@
 	margin-left: -155px;
 	height: min(76svh, 780px);
 	min-height: 520px;
-	box-shadow: 0 12px 30px -22px #17171755;
+	box-shadow: var(--shadow-lg);
 }
 .cover-desktop-art {
 	width: 100%;
@@ -176,8 +194,8 @@
 .book-cover .cover-cta {
 	animation-delay: 680ms;
 	transition:
-		color 250ms ease,
-		border-color 250ms ease;
+		color var(--ui-duration-control) var(--ui-ease),
+		border-color var(--ui-duration-control) var(--ui-ease);
 }
 .book-cover .cover-art {
 	animation: cover-art-enter 1400ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
@@ -192,7 +210,7 @@
 }
 @media (hover: hover) and (pointer: fine) {
 	.book-cover .book-responsive-art {
-		transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+		transition: transform var(--ui-duration-page) var(--ui-ease);
 	}
 }
 .book-cover .cover-cta:focus-visible span {
@@ -240,13 +258,13 @@
 	line-height: 1.4;
 }
 .book-toc-row p {
-	font-size: 14px;
+	font-size: 0.8125rem;
 	color: var(--ink-secondary);
 	margin-top: 7px;
 }
 .book-toc-arrow {
 	color: var(--bronze);
-	transition: transform 180ms;
+	transition: transform var(--ui-duration-hover);
 }
 .book-toc-row:hover .book-toc-title {
 	color: var(--bronze);
@@ -288,7 +306,7 @@
 }
 .book-profile-intro {
 	max-width: 40ch;
-	font-size: 18px;
+	font-size: 1.0625rem;
 	line-height: 1.75;
 }
 .book-chapter {
@@ -301,12 +319,12 @@
 .book-chapter-number {
 	display: block;
 	font-family: var(--font-serif-display), serif;
-	font-size: 26px;
+	font-size: 1.5rem;
 	color: var(--bronze);
 	margin-bottom: 12px;
 }
 .book-lead {
-	font-size: 18px;
+	font-size: 1.0625rem;
 	line-height: 1.75;
 	margin-bottom: 24px;
 }
@@ -317,13 +335,13 @@
 	color: var(--ink-secondary);
 }
 .book-about-pillars {
-	font-size: 12px;
+	font-size: 0.75rem;
 	font-weight: 600;
 	letter-spacing: 0.04em;
 	color: var(--bronze);
 }
 .book-about-role {
-	font-size: 17px;
+	font-size: 1.0625rem;
 	color: var(--ink-secondary);
 	margin-bottom: 20px;
 }
@@ -341,10 +359,10 @@
 	padding-inline: 24px;
 	background: var(--ink);
 	color: var(--canvas);
-	font-size: 15px;
+	font-size: 0.9375rem;
 	font-weight: 500;
 	text-decoration: none;
-	transition: background-color 180ms ease;
+	transition: background-color var(--ui-duration-hover) var(--ui-ease);
 }
 .book-button:hover {
 	background: var(--bronze);
@@ -364,7 +382,7 @@
 	padding-top: 6px;
 }
 .book-about-rows h3 {
-	font-size: 21px;
+	font-size: 1.25rem;
 	line-height: 1.4;
 	margin-bottom: 6px;
 }
@@ -380,7 +398,7 @@
 .book-about-project h3 span {
 	display: inline-block;
 	color: var(--bronze);
-	transition: transform 180ms ease;
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 .book-about-project:hover h3 {
 	color: var(--bronze);
@@ -435,16 +453,16 @@
 .book-project-number {
 	display: block;
 	font-family: var(--font-serif-display);
-	font-size: 26px;
+	font-size: 1.5rem;
 	color: var(--bronze);
 	margin-bottom: 16px;
 }
 .book-project-link h2 {
-	font-size: 24px;
+	font-size: 1.5rem;
 }
 .book-project-summary {
 	color: var(--ink-secondary);
-	font-size: 16px;
+	font-size: 0.9375rem;
 	line-height: 1.7;
 }
 .book-project-cover {
@@ -471,7 +489,7 @@
 }
 .book-cover-thesis {
 	font-family: var(--font-serif-display);
-	font-size: 27px;
+	font-size: 1.5rem;
 	line-height: 1.25;
 	letter-spacing: -0.02em;
 }
@@ -479,7 +497,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px 14px;
-	font-size: 13px;
+	font-size: 0.8125rem;
 	color: var(--ink-secondary);
 }
 .cover-ai {
@@ -531,7 +549,7 @@
 .book-service-label {
 	display: block;
 	color: var(--ink-secondary);
-	font-size: 13px;
+	font-size: 0.8125rem;
 	margin-bottom: 4px;
 }
 .book-service-graphic {
@@ -543,7 +561,7 @@
 	height: auto;
 }
 .book-service-related {
-	font-size: 14px;
+	font-size: 0.8125rem;
 	color: var(--bronze);
 	text-decoration: underline;
 	text-underline-offset: 5px;
@@ -553,20 +571,20 @@
 	align-items: center;
 }
 .book-services :is(.editorial-label, .editorial-button, .editorial-text-link) {
-	font-size: 13px;
+	font-size: 0.8125rem;
 }
 .book-services :is(.editorial-button, .editorial-text-link, summary) {
 	min-height: 44px;
 }
 .book-chrome {
 	color: var(--ink-secondary);
-	font-size: 13px;
+	font-size: 0.8125rem;
 	min-height: 44px;
 	letter-spacing: 0.03em;
 }
 .book-chrome :is(a, button) {
 	color: var(--ink-secondary);
-	font-size: 13px;
+	font-size: 0.8125rem;
 	min-height: 44px;
 	letter-spacing: 0.03em;
 }
@@ -581,7 +599,7 @@ body:has(.personal-book) .book-chrome {
 		gap: 32px;
 	}
 	.cover-meta {
-		padding: 20px 24px;
+		padding: 0 16px;
 	}
 	.cover-art {
 		grid-row: 1;
@@ -590,6 +608,8 @@ body:has(.personal-book) .book-chrome {
 		height: auto;
 		min-height: 0;
 		aspect-ratio: 4/5;
+		box-shadow: none;
+		mix-blend-mode: multiply;
 	}
 	.cover-desktop-art {
 		display: none;
@@ -611,11 +631,11 @@ body:has(.personal-book) .book-chrome {
 	}
 	.cover-pos {
 		margin-top: 10px;
-		font-size: 20px;
+		font-size: 1.25rem;
 	}
 	.cover-narrative {
 		margin-top: 20px;
-		font-size: 20px;
+		font-size: 1.25rem;
 	}
 	.cover-cta {
 		margin-top: 24px;
@@ -707,7 +727,7 @@ body:has(.personal-book) .book-chrome {
 		display: none;
 	}
 	.book-service-body .book-lead {
-		font-size: 17px;
+		font-size: 1.0625rem;
 	}
 	.book-services .shell {
 		padding-block: 36px;
@@ -734,7 +754,7 @@ body:has(.personal-book) .book-chrome {
 
 /* The cover's utilities follow the same quiet, readable editorial scale. */
 .cover-meta :is(a, button) {
-	font-size: 13px;
+	font-size: 0.8125rem;
 	min-height: 44px;
 	letter-spacing: 0.03em;
 	color: var(--ink-secondary);
@@ -743,11 +763,11 @@ body:has(.personal-book) .book-chrome {
 	color: var(--bronze);
 }
 .book-services #program-design-title ~ div .font-mono {
-	font-size: 13px;
+	font-size: 0.8125rem;
 	color: var(--ink-secondary);
 }
 .book-project-link > div:first-child > p {
-	font-size: 13px;
+	font-size: 0.8125rem;
 }
 @media (min-width: 1024px) and (max-width: 1199px) {
 	.cover-art {
@@ -763,7 +783,7 @@ body:has(.personal-book) .book-chrome {
 	object-fit: cover;
 	object-position: left;
 	transform: none;
-	transition: transform 180ms ease-out;
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 @media (max-width: 1023px) {
 	.book-responsive-art {
@@ -791,7 +811,7 @@ body:has(.personal-book) .book-chrome {
 }
 .book-page-end a {
 	color: var(--ink-secondary);
-	font-size: 14px;
+	font-size: 0.8125rem;
 	min-height: 44px;
 	display: inline-flex;
 	align-items: center;
@@ -804,7 +824,7 @@ body:has(.personal-book) .book-chrome {
 	padding-bottom: 0;
 }
 .book-services .book-service-body details :is(p, li) {
-	font-size: 16px;
+	font-size: 0.9375rem;
 	line-height: 1.7;
 }
 
@@ -827,7 +847,7 @@ body:has(.personal-book) .book-chrome {
 	max-width: 48ch;
 }
 .book-about .book-about-pillars {
-	font-size: 13px;
+	font-size: 0.8125rem;
 	letter-spacing: 0;
 }
 .about-principles,
@@ -839,7 +859,7 @@ body:has(.personal-book) .book-chrome {
 }
 .book-about .about-section-label {
 	font-family: var(--font-inter), sans-serif;
-	font-size: 13px;
+	font-size: 0.8125rem;
 	font-weight: 500;
 	letter-spacing: 0;
 	color: var(--bronze);
@@ -883,7 +903,7 @@ body:has(.personal-book) .book-chrome {
 	padding: 20px 28px;
 	aspect-ratio: 1.9;
 	width: 100%;
-	transition: border-color 180ms ease;
+	transition: border-color var(--ui-duration-hover) var(--ui-ease);
 }
 :is(.book-about, .book-experiences) .about-project-cover svg {
 	height: auto;
@@ -897,17 +917,17 @@ body:has(.personal-book) .book-chrome {
 }
 .about-project-status {
 	margin-bottom: 8px;
-	font-size: 12px;
+	font-size: 0.75rem;
 }
 :is(.book-about, .book-experiences) .about-project-copy h3 {
 	font-size: clamp(1.35rem, 1.9vw, 1.65rem);
 	font-weight: 500;
 	line-height: 1.35;
 	margin-bottom: 12px;
-	transition: color 180ms ease;
+	transition: color var(--ui-duration-hover) var(--ui-ease);
 }
 .about-project-summary {
-	font-size: 15px;
+	font-size: 0.9375rem;
 	line-height: 1.7;
 	color: var(--ink-secondary);
 	margin-bottom: 20px;
@@ -919,11 +939,11 @@ body:has(.personal-book) .book-chrome {
 	margin-top: auto;
 	padding-block: 12px;
 	border-bottom: 1px solid var(--hairline);
-	font-size: 14px;
+	font-size: 0.8125rem;
 	color: var(--bronze);
 }
 .about-project-read > span {
-	transition: transform 180ms ease;
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 .about-project-card:hover h3,
 .about-project-card:focus-visible h3 {
@@ -941,7 +961,7 @@ body:has(.personal-book) .book-chrome {
 	gap: 8px;
 	min-height: 44px;
 	margin-top: 22px;
-	font-size: 14px;
+	font-size: 0.8125rem;
 	line-height: 1.6;
 	color: var(--ink-secondary);
 	text-decoration: underline;
@@ -991,16 +1011,16 @@ body:has(.personal-book) .book-chrome {
 	min-height: 44px;
 	cursor: pointer;
 	list-style: none;
-	font-size: 14px;
+	font-size: 0.8125rem;
 	color: var(--bronze);
 }
 .about-offer-details > summary::-webkit-details-marker {
 	display: none;
 }
 .about-disclosure-mark {
-	font-size: 22px;
+	font-size: 1.25rem;
 	line-height: 1;
-	transition: transform 180ms ease;
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 .about-offer-details[open] .about-disclosure-mark {
 	transform: rotate(45deg);
@@ -1010,7 +1030,7 @@ body:has(.personal-book) .book-chrome {
 	padding: 24px;
 	border-left: 2px solid var(--hairline);
 	background: var(--paper);
-	font-size: 15px;
+	font-size: 0.9375rem;
 	color: var(--ink-secondary);
 }
 .about-offer-audience {
@@ -1024,7 +1044,7 @@ body:has(.personal-book) .book-chrome {
 }
 :is(.book-about, .book-experiences) .about-offer-topics h4 {
 	font-family: var(--font-inter), sans-serif;
-	font-size: 15px;
+	font-size: 0.9375rem;
 	font-weight: 600;
 	color: var(--ink);
 	margin-bottom: 8px;
@@ -1040,7 +1060,7 @@ body:has(.personal-book) .book-chrome {
 	border-top: 1px solid var(--hairline);
 	padding-top: 16px;
 	margin-bottom: 20px;
-	font-size: 14px;
+	font-size: 0.8125rem;
 }
 .about-offer-deliverables {
 	display: grid;
@@ -1057,7 +1077,7 @@ body:has(.personal-book) .book-chrome {
 	margin-top: 28px;
 	color: var(--bronze);
 	font-family: var(--font-serif-display), serif;
-	font-size: 21px;
+	font-size: 1.25rem;
 	line-height: 1.5;
 }
 .book-about .about-closing {
@@ -1084,13 +1104,13 @@ body:has(.personal-book) .book-chrome {
 		font-size: clamp(2rem, 7.5vw, 3rem);
 	}
 	.book-about .book-about-role {
-		font-size: 15px;
+		font-size: 0.9375rem;
 	}
 	.book-about .book-about-pillars {
-		font-size: 12px;
+		font-size: 0.75rem;
 	}
 	.book-about .book-profile-intro {
-		font-size: 17px;
+		font-size: 1.0625rem;
 	}
 	.book-about .book-about-actions {
 		gap: 12px 24px;
@@ -1121,7 +1141,7 @@ body:has(.personal-book) .book-chrome {
 		grid-template-columns: minmax(0, 1fr);
 	}
 	.about-offer-expanded .book-link {
-		font-size: 14px;
+		font-size: 0.8125rem;
 		gap: 8px;
 	}
 	.book-about .about-closing {
@@ -1173,11 +1193,11 @@ body:has(.personal-book) .book-chrome {
 	width: 124px;
 	height: 140px;
 	object-fit: cover;
-	border-radius: 48% 48% 4px 4px;
+	border-radius: 48% 48% 8px 8px;
 	mix-blend-mode: multiply;
 }
 .about-fullname {
-	font-size: 13px;
+	font-size: 0.8125rem;
 	color: var(--ink-secondary);
 	margin-bottom: 6px;
 }
@@ -1189,7 +1209,7 @@ body:has(.personal-book) .book-chrome {
 	margin-bottom: 12px;
 }
 .about-role {
-	font-size: 15px;
+	font-size: 0.9375rem;
 	line-height: 1.65;
 	color: var(--ink-secondary);
 }
@@ -1197,7 +1217,7 @@ body:has(.personal-book) .book-chrome {
 	position: relative;
 	margin-top: 28px;
 	font-family: var(--font-serif-display), serif;
-	font-size: 20px;
+	font-size: 1.25rem;
 	font-style: italic;
 	color: var(--bronze);
 }
@@ -1213,7 +1233,7 @@ body:has(.personal-book) .book-chrome {
 	scroll-margin-top: 80px;
 }
 .about-path-number {
-	font-size: 12px;
+	font-size: 0.75rem;
 	padding-top: 6px;
 	color: var(--bronze);
 }
@@ -1225,7 +1245,7 @@ body:has(.personal-book) .book-chrome {
 .about-path p {
 	max-width: 60ch;
 	color: var(--ink-secondary);
-	font-size: 16px;
+	font-size: 0.9375rem;
 	line-height: 1.7;
 }
 .about-text-link {
@@ -1233,16 +1253,16 @@ body:has(.personal-book) .book-chrome {
 	align-items: center;
 	gap: 14px;
 	min-height: 44px;
-	font-size: 14px;
+	font-size: 0.8125rem;
 	color: var(--bronze);
 	text-decoration: underline;
 	text-decoration-color: transparent;
 	text-underline-offset: 5px;
-	transition: text-decoration-color 180ms ease;
+	transition: text-decoration-color var(--ui-duration-hover) var(--ui-ease);
 }
 .about-text-link span {
 	display: inline-block;
-	transition: transform 180ms ease;
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 .about-text-link:hover {
 	text-decoration-color: currentColor;
@@ -1261,7 +1281,7 @@ body:has(.personal-book) .book-chrome {
 .about-experience-note p {
 	max-width: 54ch;
 	color: var(--ink-secondary);
-	font-size: 14px;
+	font-size: 0.8125rem;
 }
 .about-experience-note .about-text-link {
 	margin-top: 4px;
@@ -1315,7 +1335,7 @@ body:has(.personal-book) .book-chrome {
 	scroll-margin-top: 80px;
 }
 .book-experiences .experience-section > h2 {
-	font-size: 26px;
+	font-size: 1.5rem;
 	font-weight: 500;
 }
 .book-experiences .about-project-grid {
@@ -1324,7 +1344,7 @@ body:has(.personal-book) .book-chrome {
 }
 .experience-quiet {
 	margin-top: 16px;
-	font-size: 15px;
+	font-size: 0.9375rem;
 	color: var(--ink-secondary);
 }
 .experience-story-grid {
@@ -1346,10 +1366,10 @@ body:has(.personal-book) .book-chrome {
 	margin-bottom: 16px;
 }
 .experience-story-card h3 {
-	font-size: 22px;
+	font-size: 1.25rem;
 }
 .experience-story-card p {
-	font-size: 14px;
+	font-size: 0.8125rem;
 	line-height: 1.7;
 	color: var(--ink-secondary);
 	margin-top: 8px;
@@ -1368,7 +1388,7 @@ body:has(.personal-book) .book-chrome {
 }
 .experience-pagination {
 	margin-top: 32px;
-	font-size: 14px;
+	font-size: 0.8125rem;
 }
 .experience-article {
 	max-width: 800px;
@@ -1388,7 +1408,7 @@ body:has(.personal-book) .book-chrome {
 	margin-bottom: 28px;
 }
 .experience-prose {
-	font-size: 18px;
+	font-size: 1.0625rem;
 	line-height: 1.85;
 	overflow-wrap: anywhere;
 }
@@ -1441,14 +1461,14 @@ body:has(.personal-book) .book-chrome {
 		flex-shrink: 0;
 	}
 	.about-fullname {
-		font-size: 11px;
+		font-size: 0.75rem;
 	}
 	.book-about .about-identity h1 {
 		font-size: clamp(1.8rem, 7vw, 2.6rem);
 		margin-bottom: 8px;
 	}
 	.about-role {
-		font-size: 13px;
+		font-size: 0.8125rem;
 	}
 	.about-landscape {
 		right: -24px;
@@ -1457,7 +1477,7 @@ body:has(.personal-book) .book-chrome {
 		opacity: 0.25;
 	}
 	.about-teacher-line {
-		font-size: 18px;
+		font-size: 1.0625rem;
 		margin-top: 24px;
 		max-width: 29ch;
 	}
@@ -1470,7 +1490,7 @@ body:has(.personal-book) .book-chrome {
 		padding-block: 22px;
 	}
 	.about-path p {
-		font-size: 15px;
+		font-size: 0.9375rem;
 	}
 	.experience-shell {
 		padding: 20px 24px 40px;
