@@ -3414,8 +3414,13 @@
    Base Styles
    ═══════════════════════════════════════════════════════ */
 
-* {
-	border-color: var(--border);
+/* Default border color. In @layer base so Tailwind border-* utilities can override it. */
+@layer base {
+	*,
+	::before,
+	::after {
+		border-color: var(--border);
+	}
 }
 
 body {
