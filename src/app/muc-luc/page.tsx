@@ -68,7 +68,7 @@ export default async function TocPage() {
 				<header className={styles.header}>
 					<p className={styles.eyebrow}>Nguyễn Duy Khánh · Mục lục</p>
 					<h1>Bạn muốn ghé đâu?</h1>
-					<p>Một chút về tôi. Một không gian để học và chơi.</p>
+					<p className="text-body">Một chút về tôi. Một không gian để học và chơi.</p>
 				</header>
 				<nav aria-label="Giới thiệu và không gian học tập" className={styles.navigation}>
 					<section className={styles.about} aria-labelledby="toc-about">
