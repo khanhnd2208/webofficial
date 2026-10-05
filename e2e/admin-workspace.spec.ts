@@ -144,3 +144,80 @@ test.describe('Admin workspace release gates', () => {
 		}
 	});
 });
+
+test.describe('Admin Studio navigation', () => {
+	test.beforeEach(async ({ context }) => {
+		await addAdminSession(context);
+	});
+	test('shows the inbox as its own destination and preserves collapsed utilities', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto('/admin/website');
+		const nav = page.getByRole('navigation', { name: 'Quản trị', exact: true });
+		await expect(nav.getByRole('link', { name: 'Website', exact: true })).toHaveAttribute(
+			'aria-current',
+			'page',
+		);
+		await expect(
+			nav.getByRole('link', { name: 'Hộp thư liên hệ', exact: true }),
+		).not.toHaveAttribute('aria-current', 'page');
+		await page.getByRole('button', { name: 'Thu gọn sidebar' }).click();
+		await expect(nav.getByRole('link', { name: 'Kho lưu trữ', exact: true })).toBeVisible();
+		await expect(nav.getByRole('link', { name: 'Mở Teaching', exact: true })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
+		await page.reload();
+		await expect(page.getByRole('button', { name: 'Mở rộng sidebar' })).toBeVisible();
+	});
+	test('uses a drawer on tablet and restores keyboard focus', async ({ page }) => {
+		await page.setViewportSize({ width: 768, height: 1024 });
+		await page.goto('/admin/website');
+		const button = page.getByTestId('admin-menu-button');
+		await button.click();
+		const drawer = page.getByTestId('admin-mobile-drawer');
+		await expect(drawer).toBeVisible();
+		const links = drawer.getByRole('link');
+		await links.first().focus();
+		await page.keyboard.press('Shift+Tab');
+		expect(await drawer.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+		await page.keyboard.press('Escape');
+		await expect(drawer).toHaveCount(0);
+		await expect(button).toBeFocused();
+	});
+	test('keeps Admin light after a dark document theme', async ({ page }) => {
+		await page.addInitScript(() =>
+			document.addEventListener('DOMContentLoaded', () =>
+				document.documentElement.classList.add('dark'),
+			),
+		);
+		await page.goto('/admin/website');
+		await expect(page.getByTestId('admin-shell')).toHaveCSS(
+			'background-color',
+			'rgb(244, 246, 250)',
+		);
+		await expect(page.getByTestId('admin-shell')).toHaveCSS('color-scheme', 'light');
+	});
+	test('carries inbox filters through paging and detail navigation', async ({ page }) => {
+		await page.goto('/admin/inquiries?status=NEW&page=2');
+		await expect(
+			page
+				.getByRole('navigation', { name: 'Lọc theo trạng thái' })
+				.getByRole('link', { name: /Mới/ }),
+		).toHaveAttribute('aria-current', 'true');
+		const filter = page.getByRole('button', { name: 'Áp dụng', exact: true });
+		await filter.click();
+		await expect(page).not.toHaveURL(/page=2/);
+		await expect(page).toHaveURL(/status=NEW/);
+		const next = page
+			.getByRole('navigation', { name: 'Phân trang' })
+			.getByRole('link', { name: 'Sau' });
+		if (await next.count()) {
+			await expect(next).toHaveAttribute('href', /page=2.*status=NEW/);
+		}
+		await expect(
+			page
+				.getByRole('navigation', { name: 'Quản trị', exact: true })
+				.getByRole('link', { name: 'Hộp thư liên hệ', exact: true }),
+		).toHaveAttribute('aria-current', 'page');
+	});
+});

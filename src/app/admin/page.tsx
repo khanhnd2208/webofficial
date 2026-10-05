@@ -1,124 +1,99 @@
 import Link from 'next/link';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { getAdminOverviewStats } from '@/services/adminDashboardService';
+import { AdminIcon } from '@/components/admin/AdminIcon';
+import { AdminLink } from '@/components/admin/AdminPrimitives';
+import { adminDate, excerpt, relativeTime } from '@/components/admin/inquiryNavigation';
+import styles from '@/components/admin/AdminStudio.module.css';
 import { routes } from '@/config/routes';
+import { INQUIRY_TYPE_LABELS } from '@/features/inquiries/constants';
+import { countFailedNotifications, getAdminOverviewStats } from '@/services/adminDashboardService';
+import { listInquiries } from '@/services/inquiryService';
 
 export const dynamic = 'force-dynamic';
 
-function Stat({
-	label,
-	value,
-	sub,
-	accent,
-}: {
-	label: string;
-	value: string | number;
-	sub?: string;
-	accent?: boolean;
-}) {
-	return (
-		<div className="rounded-xl border border-border bg-surface p-5">
-			<p className="text-xs font-bold uppercase tracking-widest text-muted">{label}</p>
-			<p
-				className={`mt-2 text-3xl font-black tracking-tight ${accent ? 'text-accent' : 'text-foreground'}`}
-			>
-				{value}
-			</p>
-			{sub && <p className="mt-1 text-xs text-muted">{sub}</p>}
-		</div>
-	);
-}
-
-function QuickAction({
-	href,
-	label,
-	description,
-	primary,
-}: {
-	href: string;
-	label: string;
-	description: string;
-	primary?: boolean;
-}) {
-	return (
-		<Link
-			href={href}
-			className={`group flex items-start gap-4 rounded-xl border p-5 transition-all hover:-translate-y-0.5 hover:shadow-sm ${
-				primary
-					? 'border-foreground bg-foreground text-background hover:bg-foreground/90'
-					: 'border-border bg-surface hover:border-border-hover'
-			}`}
-		>
-			<div className="min-w-0">
-				<p className={`text-sm font-bold ${primary ? 'text-background' : 'text-foreground'}`}>
-					{label}
-				</p>
-				<p
-					className={`mt-0.5 text-xs leading-relaxed ${primary ? 'text-background/60' : 'text-muted'}`}
-				>
-					{description}
-				</p>
-			</div>
-		</Link>
-	);
-}
-
 export default async function AdminHomePage() {
-	const stats = await getAdminOverviewStats();
+	const [stats, recent, failedNotifications] = await Promise.all([
+		getAdminOverviewStats(),
+		listInquiries({ status: 'NEW', page: 1, limit: 5 }),
+		countFailedNotifications(),
+	]);
+	const waiting = stats.website.newInquiries;
 
 	return (
-		<div className="mx-auto max-w-6xl px-6 py-8">
-			<div className="space-y-8">
-				<AdminPageHeader
-					eyebrow="Quản trị"
-					title="Tổng quan"
-					description="Website là khu quản trị chính. Teaching và Active Recall nằm trong My Space."
-				/>
-
-				<section>
-					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">Số liệu</p>
-					<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-						<Stat
-							label="Inquiry mới"
-							value={stats.website.newInquiries}
-							accent
-							sub="hộp thư Website"
-						/>
-						<Stat
-							label="Bộ Active Recall"
-							value={stats.activeRecall.decks}
-							sub={`${stats.activeRecall.published} đang công khai`}
-						/>
+		<div className={styles.page}>
+			<AdminPageHeader
+				title="Tổng quan"
+				description="Việc cần xử lý trên website và lối vào không gian giảng dạy."
+			/>
+			<div className={styles.stack}>
+				{failedNotifications > 0 ? (
+					<section className={styles.alert}>
+						<p className="inline-flex items-center gap-2 font-semibold">
+							<AdminIcon name="warning" size={18} />
+							{failedNotifications.toLocaleString('vi-VN')} thông báo liên hệ gửi thất bại
+						</p>
+						<AdminLink href={`${routes.admin.inquiries}?notice=failed`} tone="secondary">
+							Xem thông báo lỗi
+						</AdminLink>
+					</section>
+				) : null}
+				<section className={styles.panel} aria-labelledby="waiting-inquiries">
+					<div className="flex flex-wrap items-start justify-between gap-4">
+						<div>
+							<h2 id="waiting-inquiries" className={styles.sectionTitle}>
+								Liên hệ chờ xử lý
+							</h2>
+							<p className={styles.statValue}>{waiting.toLocaleString('vi-VN')}</p>
+							<p className={styles.meta}>
+								{waiting ? 'Lời nhắn mới nhất đang chờ xem.' : 'Không có liên hệ mới cần xem.'}
+							</p>
+						</div>
+						<AdminLink href={`${routes.admin.inquiries}?status=NEW`} tone="primary" icon="inbox">
+							Xem tất cả ({waiting.toLocaleString('vi-VN')})
+						</AdminLink>
 					</div>
+					{recent.items.length ? (
+						<div className={styles.queue}>
+							{recent.items.map((item) => (
+								<Link key={item.id} href={`${routes.admin.inquiries}/${item.id}?status=NEW`}>
+									<span className="font-semibold">
+										{item.name}
+										<span className={styles.meta}>
+											{' · '}
+											{INQUIRY_TYPE_LABELS[item.inquiryType]}
+										</span>
+									</span>
+									<span className={`${styles.meta} ${styles.excerpt}`}>
+										{excerpt(item.context)}
+									</span>
+									<time
+										dateTime={item.createdAt}
+										title={adminDate(item.createdAt)}
+										className={styles.meta}
+									>
+										{relativeTime(item.createdAt)}
+									</time>
+								</Link>
+							))}
+						</div>
+					) : null}
 				</section>
-
-				<section>
-					<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">
-						Thao tác nhanh
-					</p>
-					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-						<QuickAction
-							href={routes.mySpaceTeaching}
-							label="Mở Teaching"
-							description="Quản lý môn học, lớp và Active Recall."
-							primary
-						/>
-						<QuickAction
-							href={routes.admin.website}
-							label="Website"
-							description="Xem trang thương hiệu và hộp thư liên hệ."
-						/>
-						<QuickAction
-							href={routes.admin.inquiries}
-							label="Hộp thư liên hệ"
-							description="Đọc lời nhắn gửi từ trang Liên hệ."
-						/>
-						<QuickAction
-							href={routes.admin.learnAnalytics}
-							label="Thống kê học tập"
-							description="Xem học viên và thời gian tương tác theo khóa học."
-						/>
+				<section className={styles.panel}>
+					<div className="flex flex-wrap items-center justify-between gap-4">
+						<div>
+							<h2 className={styles.sectionTitle}>Không gian giảng dạy</h2>
+							<p className="text-muted">
+								{stats.activeRecall.decks.toLocaleString('vi-VN')} bộ Active Recall ·{' '}
+								{stats.activeRecall.published.toLocaleString('vi-VN')} đang công khai
+							</p>
+							<p className={`${styles.meta} mt-2`}>
+								Quản lý môn học, lớp và nội dung ôn tập trong Teaching.
+							</p>
+						</div>
+						<AdminLink href={routes.mySpaceTeaching} icon="teaching">
+							Mở Teaching
+						</AdminLink>
 					</div>
 				</section>
 			</div>

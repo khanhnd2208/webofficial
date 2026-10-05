@@ -17,9 +17,12 @@ describe('operating module registry', () => {
 	it('keeps Teaching active while allowing it to live outside Admin navigation', () => {
 		expect(getActiveModules().map((module) => module.id)).toEqual([
 			'website',
+			'inquiries',
 			'learning-analytics',
 			'teaching',
 		]);
+		expect(resolveModuleByAdminPath(routes.admin.inquiries)?.id).toBe('inquiries');
+		expect(resolveModuleByAdminPath(`${routes.admin.inquiries}/abc`)?.id).toBe('inquiries');
 		expect(resolveModuleByAdminPath(routes.admin.teaching)?.showInAdminNavigation).toBe(false);
 	});
 

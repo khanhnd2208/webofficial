@@ -1,171 +1,241 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { listInquiries } from '@/services/inquiryService';
+import { AdminButton, AdminLink } from '@/components/admin/AdminPrimitives';
+import { InquiryBadge } from '@/components/admin/InquiryBadges';
+import { InquiryStatusChips } from '@/components/admin/InquiryStatusChips';
 import {
-	INQUIRY_STATUSES,
-	INQUIRY_EMAIL_STATUS_LABELS,
-	INQUIRY_STATUS_LABELS,
+	adminDate,
+	excerpt,
+	inquiryListHref,
+	inquiryQuery,
+	relativeTime,
+	type InquiryQuery,
+} from '@/components/admin/inquiryNavigation';
+import styles from '@/components/admin/AdminStudio.module.css';
+import { resolveAdminRoute } from '@/config/adminNavigation';
+import { routes } from '@/config/routes';
+import {
 	INQUIRY_TYPES,
 	INQUIRY_TYPE_LABELS,
 	type InquiryStatus,
 	type InquiryType,
 } from '@/features/inquiries/constants';
-import { routes } from '@/config/routes';
+import { countInquiriesByStatus, listInquiries } from '@/services/inquiryService';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminInquiriesPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{
-		page?: string;
-		status?: string;
-		inquiryType?: string;
-		search?: string;
-	}>;
+	searchParams?: Promise<InquiryQuery>;
 }) {
-	const sp = searchParams ? await searchParams : undefined;
-	const page = Math.max(1, Number(sp?.page ?? '1') || 1);
-	const status = INQUIRY_STATUSES.includes(sp?.status as InquiryStatus)
-		? (sp?.status as InquiryStatus)
-		: undefined;
-	const inquiryType = INQUIRY_TYPES.includes(sp?.inquiryType as InquiryType)
-		? (sp?.inquiryType as InquiryType)
-		: undefined;
-	const search = sp?.search?.trim() || undefined;
-
-	const result = await listInquiries({ page, limit: 20, status, inquiryType, search });
-	const newCount = result.items.filter((i) => i.status === 'NEW').length;
+	const sp = (await searchParams) ?? {};
+	const normalized = new URLSearchParams(inquiryQuery(sp).slice(1));
+	const requestedPage = Number(normalized.get('page') ?? 1);
+	const status = (normalized.get('status') as InquiryStatus | null) ?? undefined;
+	const inquiryType = (normalized.get('inquiryType') as InquiryType | null) ?? undefined;
+	const search = normalized.get('search') ?? undefined;
+	const failedNotification = normalized.get('notice') === 'failed';
+	const filter = {
+		status,
+		inquiryType,
+		search,
+		...(failedNotification ? { failedNotification: true as const } : {}),
+	};
+	const [result, counts] = await Promise.all([
+		listInquiries({ page: requestedPage, limit: 20, ...filter }),
+		countInquiriesByStatus({ search, inquiryType, failedNotification }),
+	]);
+	if (requestedPage > result.totalPages) {
+		redirect(inquiryListHref(sp, result.totalPages));
+	}
+	const page = requestedPage;
+	const filtered = Boolean(status || inquiryType || search || failedNotification);
+	const detailHref = (id: string) =>
+		`${routes.admin.inquiries}/${encodeURIComponent(id)}${inquiryQuery(sp)}`;
+	const emptyTitle =
+		result.total > 0
+			? 'Trang này không còn liên hệ'
+			: filtered
+				? 'Không tìm thấy liên hệ phù hợp'
+				: 'Chưa có lời nhắn nào';
+	const rangeStart = result.items.length ? (page - 1) * 20 + 1 : 0;
+	const rangeEnd = result.items.length ? rangeStart + result.items.length - 1 : 0;
+	const showNoticeColumn = result.items.some((item) => item.adminEmailStatus === 'failed');
 
 	return (
-		<div className="mx-auto max-w-6xl px-6 py-8">
+		<div className={styles.page}>
 			<AdminPageHeader
-				eyebrow="Website"
-				title="Yêu cầu liên hệ"
-				description="Lời nhắn từ biểu mẫu công khai — không ghi nội dung nhạy cảm vào nhật ký hệ thống."
-				actions={
-					<p className="text-sm text-muted">
-						Trang này: {result.items.length} · Mới: {newCount} · Tổng: {result.total}
-					</p>
-				}
+				title="Hộp thư liên hệ"
+				description="Đọc lời nhắn và xử lý ngay trên danh sách."
+				breadcrumbs={resolveAdminRoute(routes.admin.inquiries).breadcrumbs}
 			/>
-
-			<form className="mt-6 flex flex-wrap gap-3" method="get">
-				<input
-					name="search"
-					defaultValue={search ?? ''}
-					placeholder="Tên, email, tổ chức"
-					className="min-w-[200px] flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
-				/>
-				<select
-					name="status"
-					defaultValue={status ?? ''}
-					className="rounded-lg border border-border bg-surface px-3 py-2 text-sm"
-				>
-					<option value="">Mọi trạng thái</option>
-					{INQUIRY_STATUSES.map((s) => (
-						<option key={s} value={s}>
-							{INQUIRY_STATUS_LABELS[s]}
-						</option>
-					))}
-				</select>
-				<select
-					name="inquiryType"
-					defaultValue={inquiryType ?? ''}
-					className="rounded-lg border border-border bg-surface px-3 py-2 text-sm"
-				>
-					<option value="">Mọi chủ đề</option>
-					{INQUIRY_TYPES.map((t) => (
-						<option key={t} value={t}>
-							{INQUIRY_TYPE_LABELS[t]}
-						</option>
-					))}
-				</select>
-				<button
-					type="submit"
-					className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
-				>
-					Lọc
-				</button>
-			</form>
-
-			{result.items.length === 0 ? (
-				<div className="mt-6">
-					<AdminEmptyState
-						title="Chưa có lời nhắn nào"
-						description="Các yêu cầu từ biểu mẫu công khai sẽ xuất hiện ở đây."
-					/>
-				</div>
-			) : (
-				<div className="mt-6 overflow-x-auto rounded-xl border border-border">
-					<table className="min-w-full text-left text-sm">
-						<thead className="border-b border-border bg-surface text-xs uppercase tracking-wider text-muted">
-							<tr>
-								<th className="px-4 py-3">Người gửi</th>
-								<th className="px-4 py-3">Loại</th>
-								<th className="px-4 py-3">Trạng thái</th>
-								<th className="px-4 py-3">Thông báo admin</th>
-								<th className="px-4 py-3">Ngày</th>
-							</tr>
-						</thead>
-						<tbody>
-							{result.items.map((item) => (
-								<tr key={item.id} className="border-b border-border last:border-0">
-									<td className="px-4 py-3">
-										<Link
-											href={`${routes.admin.inquiries}/${item.id}`}
-											className="font-semibold hover:underline"
-										>
-											{item.name}
-										</Link>
-										<p className="text-xs text-muted">{item.email}</p>
-										<p className="text-xs text-muted">
-											{item.submitterType === 'account'
-												? 'Tài khoản'
-												: item.submitterType === 'guest'
-													? 'Khách'
-													: 'Không xác định'}
-										</p>
-									</td>
-									<td className="px-4 py-3">{INQUIRY_TYPE_LABELS[item.inquiryType]}</td>
-									<td className="px-4 py-3">{INQUIRY_STATUS_LABELS[item.status]}</td>
-									<td className="px-4 py-3">
-										{INQUIRY_EMAIL_STATUS_LABELS[item.adminEmailStatus]}
-									</td>
-									<td className="px-4 py-3 text-xs text-muted">
-										{item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : '—'}
-									</td>
-								</tr>
+			<div className={styles.stack}>
+				<InquiryStatusChips query={sp} counts={counts} />
+				{failedNotification ? (
+					<p className={styles.alert} role="status">
+						<span className="font-semibold">Chỉ hiện liên hệ có thông báo gửi lỗi</span>
+						<AdminLink href={inquiryListHref({ ...sp, notice: undefined }, 1)} tone="secondary">
+							Bỏ lọc này
+						</AdminLink>
+					</p>
+				) : null}
+				<form className={styles.toolbar} method="get" action={routes.admin.inquiries}>
+					{status ? <input type="hidden" name="status" value={status} /> : null}
+					{failedNotification ? <input type="hidden" name="notice" value="failed" /> : null}
+					<label className={styles.field}>
+						Tìm kiếm
+						<input
+							name="search"
+							defaultValue={search ?? ''}
+							placeholder="Tên, email, tổ chức, nội dung"
+							className={styles.control}
+						/>
+					</label>
+					<label className={styles.field}>
+						Chủ đề
+						<select name="inquiryType" defaultValue={inquiryType ?? ''} className={styles.control}>
+							<option value="">Mọi chủ đề</option>
+							{INQUIRY_TYPES.map((type) => (
+								<option key={type} value={type}>
+									{INQUIRY_TYPE_LABELS[type]}
+								</option>
 							))}
-						</tbody>
-					</table>
-				</div>
-			)}
-
-			{result.totalPages > 1 ? (
-				<div className="mt-4 flex gap-2">
-					{page > 1 ? (
-						<Link
-							href={`?page=${page - 1}${status ? `&status=${status}` : ''}${inquiryType ? `&inquiryType=${inquiryType}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
-							className="text-sm underline"
-						>
-							Trước
-						</Link>
-					) : null}
-					<span className="text-sm text-muted">
-						Trang {page}/{result.totalPages}
-					</span>
-					{page < result.totalPages ? (
-						<Link
-							href={`?page=${page + 1}${status ? `&status=${status}` : ''}${inquiryType ? `&inquiryType=${inquiryType}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
-							className="text-sm underline"
-						>
-							Sau
-						</Link>
-					) : null}
-				</div>
-			) : null}
+						</select>
+					</label>
+					<AdminButton type="submit" icon="filter">
+						Áp dụng
+					</AdminButton>
+					<AdminLink href={routes.admin.inquiries} tone="quiet">
+						Xóa bộ lọc
+					</AdminLink>
+				</form>
+				{result.items.length ? (
+					<p className={styles.meta} role="status">
+						Hiển thị {rangeStart}–{rangeEnd} trong {result.total} liên hệ
+					</p>
+				) : null}
+				{!result.items.length ? (
+					<AdminEmptyState
+						title={emptyTitle}
+						description={
+							result.total > 0
+								? 'Về trang đầu để tiếp tục xem danh sách.'
+								: filtered
+									? 'Thử thay đổi hoặc xóa bộ lọc.'
+									: 'Lời nhắn từ biểu mẫu liên hệ sẽ xuất hiện ở đây.'
+						}
+						action={
+							result.total > 0
+								? { href: inquiryListHref(sp, 1), label: 'Về trang đầu' }
+								: filtered
+									? { href: routes.admin.inquiries, label: 'Xóa bộ lọc' }
+									: undefined
+						}
+					/>
+				) : (
+					<>
+						<div className={styles.desktopInbox}>
+							<div className={styles.tableWrap}>
+								<table className={styles.table}>
+									<caption className="sr-only">Danh sách liên hệ</caption>
+									<thead>
+										<tr>
+											<th scope="col">Người gửi</th>
+											<th scope="col">Lời nhắn</th>
+											<th scope="col">Trạng thái</th>
+											{showNoticeColumn ? <th scope="col">Thông báo</th> : null}
+											<th scope="col">Ngày gửi</th>
+										</tr>
+									</thead>
+									<tbody>
+										{result.items.map((item) => (
+											<tr key={item.id}>
+												<td>
+													<Link className={styles.sender} href={detailHref(item.id)}>
+														{item.status === 'NEW' ? (
+															<span className={styles.dot} aria-hidden="true" />
+														) : null}
+														{item.name}
+													</Link>
+													<p className={styles.meta}>{item.organization || item.email}</p>
+												</td>
+												<td>
+													<p>{INQUIRY_TYPE_LABELS[item.inquiryType]}</p>
+													<p className={`${styles.meta} ${styles.excerpt}`}>
+														{excerpt(item.context)}
+													</p>
+												</td>
+												<td>
+													<InquiryBadge status={item.status} />
+												</td>
+												{showNoticeColumn ? (
+													<td>
+														{item.adminEmailStatus === 'failed' ? (
+															<span className={styles.warningLabel}>Thông báo lỗi</span>
+														) : null}
+													</td>
+												) : null}
+												<td>
+													<time dateTime={item.createdAt} title={adminDate(item.createdAt)}>
+														{relativeTime(item.createdAt)}
+													</time>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div className={styles.mobileInbox}>
+							{result.items.map((item) => (
+								<article key={item.id} className={styles.panel}>
+									<Link className={styles.sender} href={detailHref(item.id)}>
+										{item.status === 'NEW' ? (
+											<span className={styles.dot} aria-hidden="true" />
+										) : null}
+										{item.name}
+									</Link>
+									<p className="mt-2">{INQUIRY_TYPE_LABELS[item.inquiryType]}</p>
+									<p className={`${styles.meta} ${styles.excerpt}`}>{excerpt(item.context)}</p>
+									<div className="mt-3 flex flex-wrap items-center gap-2">
+										<time
+											dateTime={item.createdAt}
+											title={adminDate(item.createdAt)}
+											className={styles.meta}
+										>
+											{relativeTime(item.createdAt)}
+										</time>
+										<InquiryBadge status={item.status} />
+										{item.adminEmailStatus === 'failed' ? (
+											<span className={styles.warningLabel}>Thông báo lỗi</span>
+										) : null}
+									</div>
+								</article>
+							))}
+						</div>
+					</>
+				)}
+				{result.totalPages > 1 && result.items.length > 0 ? (
+					<nav aria-label="Phân trang" className={styles.pagination}>
+						<span className={styles.meta}>
+							Trang {page}/{result.totalPages}
+						</span>
+						<div className="flex gap-2">
+							{page > 1 ? (
+								<AdminLink href={inquiryListHref(sp, page - 1)} icon="back">
+									Trước
+								</AdminLink>
+							) : null}
+							{page < result.totalPages ? (
+								<AdminLink href={inquiryListHref(sp, page + 1)}>Sau</AdminLink>
+							) : null}
+						</div>
+					</nav>
+				) : null}
+			</div>
 		</div>
 	);
 }

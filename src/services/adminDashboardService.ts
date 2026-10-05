@@ -7,6 +7,7 @@
 import { prisma } from '@/lib/prisma';
 import dbConnect from '@/lib/dbConnect';
 import Inquiry from '@/models/Inquiry';
+import { failedNotificationFilter } from '@/services/inquiryFilters';
 
 export interface AdminOverviewStats {
 	website: {
@@ -31,4 +32,9 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 		website: { newInquiries },
 		activeRecall: { decks, published },
 	};
+}
+
+export async function countFailedNotifications(): Promise<number> {
+	await dbConnect();
+	return Inquiry.countDocuments(failedNotificationFilter());
 }

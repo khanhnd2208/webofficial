@@ -1,3 +1,5 @@
+import { AdminBadge } from '@/components/admin/AdminPrimitives';
+import styles from '@/components/admin/AdminStudio.module.css';
 import Link from 'next/link';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -11,9 +13,8 @@ export default function AdminArchivePage() {
 	const groups = getArchivedModulesByGroup();
 
 	return (
-		<div className="mx-auto max-w-6xl px-6 py-8">
+		<div className={styles.page}>
 			<AdminPageHeader
-				eyebrow="Kho lưu trữ"
 				title="Kho lưu trữ"
 				description="Các module tạm dừng. Mở một mục để dùng đầy đủ — luôn trong giao diện lưu trữ, không xuất hiện lại trên menu admin chính."
 			/>
@@ -21,21 +22,22 @@ export default function AdminArchivePage() {
 			<div className="mt-8 space-y-8">
 				{groups.map(({ group, modules }) => (
 					<section key={group}>
-						<p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted/70">
-							{group}
-						</p>
-						<div className="grid gap-3 sm:grid-cols-2">
+						<h2 className={styles.sectionTitle}>{group}</h2>
+						<div className={styles.list}>
 							{modules.map((module) => (
 								<Link
 									key={module.id}
 									href={module.adminHref}
-									className="flex items-start gap-3 rounded-xl border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+									className={`${styles.row} hover:bg-surface-hover`}
 								>
-									<span className="mt-0.5 text-muted">
+									<span className={styles.iconTile}>
 										<McIcon name={module.icon} size={18} />
 									</span>
 									<div className="min-w-0">
-										<p className="text-sm font-bold text-foreground">{module.label}</p>
+										<div className="flex flex-wrap items-center gap-2">
+											<p className="font-semibold">{module.label}</p>
+											<AdminBadge>Đã lưu trữ</AdminBadge>
+										</div>
 										<p className="mt-1 text-sm text-muted">{module.description}</p>
 									</div>
 								</Link>
