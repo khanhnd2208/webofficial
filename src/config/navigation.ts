@@ -307,3 +307,67 @@ export const USER_MENU_LINKS: NavLink[] = [
 
 /** @deprecated Use PUBLIC_NAV_LINKS / getDesktopNavLinks() */
 export const NAV_LINKS = PUBLIC_NAV_LINKS;
+
+export type SiteCrumb = { label: string; href?: string };
+
+function barePath(pathname: string): string {
+	return pathname.split(/[?#]/)[0] || routes.home;
+}
+
+/**
+ * Breadcrumb after the "Duy Khánh" wordmark. Detail pages name their parent only,
+ * because the header does not know the page title.
+ */
+export function getSiteTrail(pathname: string): SiteCrumb[] {
+	const path = barePath(pathname);
+	if (path === routes.toc) return [];
+	if (path === routes.about) return [{ label: 'Giới thiệu' }];
+	if (path === routes.experiences) return [{ label: 'Trải nghiệm' }];
+	if (path.startsWith(`${routes.experiences}/`)) {
+		return [{ label: 'Trải nghiệm', href: routes.experiences }];
+	}
+	if (path === routes.projects) return [{ label: 'Dự án' }];
+	if (path.startsWith(`${routes.projects}/`)) {
+		return [{ label: 'Dự án', href: routes.projects }];
+	}
+	if (path === routes.services) return [{ label: 'Dịch vụ' }];
+	if (path === routes.contact) return [{ label: 'Liên hệ' }];
+	if (path === routes.login) return [{ label: 'Đăng nhập' }];
+	if (path === routes.account) return [{ label: 'Tài khoản' }];
+	if (path === routes.accountLearning) {
+		return [{ label: 'Tài khoản', href: routes.account }, { label: 'Khu học' }];
+	}
+	if (path.startsWith(`${routes.account}/`)) {
+		return [{ label: 'Tài khoản', href: routes.account }];
+	}
+	if (path === '/chinh-sach' || path.startsWith('/chinh-sach/')) {
+		return [{ label: 'Chính sách' }];
+	}
+	if (path === routes.mySpace) return [{ label: 'Không gian của tôi' }];
+	if (path === routes.boardGame) {
+		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Board Game' }];
+	}
+	return [];
+}
+
+/**
+ * Sticky public header. Absent on the intro, teaching, admin, courses, game rooms and quiz play.
+ */
+export function isSiteHeaderPath(pathname: string): boolean {
+	const path = barePath(pathname);
+	if (path === routes.home) return false;
+	if (isLopPath(path)) return false;
+	if (path.startsWith('/admin')) return false;
+	if (path.startsWith('/my-space/my-class')) return false;
+	if (path.startsWith('/my-space/teaching')) return false;
+	if (path.startsWith('/my-space/courses')) return false;
+	if (path === '/hoc' || path.startsWith('/hoc/')) return false;
+	if (path === routes.learnCourses || path.startsWith(`${routes.learnCourses}/`)) return false;
+	if (path.startsWith(`${routes.boardGame}/`)) return false;
+	if (isMySpaceQuizPlayPath(path)) return false;
+	if (path.startsWith('/messages')) return false;
+	if (path.startsWith('/vocabulary')) return false;
+	if (path.startsWith('/m/')) return false;
+	if (path.startsWith('/progress')) return false;
+	return true;
+}

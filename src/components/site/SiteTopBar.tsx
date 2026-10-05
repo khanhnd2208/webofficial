@@ -1,10 +1,11 @@
 import Link from 'next/link';
 
+import type { SiteCrumb } from '@/config/navigation';
 import { routes } from '@/config/routes';
 
 import SiteAuthChip from './SiteAuthChip';
 
-export type SiteCrumb = { label: string; href?: string };
+export type { SiteCrumb };
 
 /**
  * Wayfinding bar for pages outside the public book (account, Board Game): where you are, measured
