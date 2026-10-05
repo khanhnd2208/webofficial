@@ -43,7 +43,7 @@ export default function RecentClasses({ className = '' }: { className?: string }
 	if (!classes.length) return null;
 	return (
 		<section aria-label="Lớp bạn đã mở" className={className} data-testid="recent-classes">
-			<p className="text-[0.6875rem] tracking-[0.16em] text-ink/55 uppercase">Lớp bạn đã mở</p>
+			<p className="text-xs tracking-[0.16em] text-ink/55 uppercase">Lớp bạn đã mở</p>
 			<ul className="mt-2 flex flex-wrap gap-2">
 				{classes.map((entry) => (
 					<li key={entry.slug}>

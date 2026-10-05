@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import type { StaticImageData } from 'next/image';
 import Link from 'next/link';
 
+import aboutArt from '../../../public/brand/toc/about-v1.webp';
+import boardGameArt from '../../../public/brand/toc/board-game-v1.webp';
+import coursesArt from '../../../public/brand/toc/courses-v1.webp';
+import teachingArt from '../../../public/brand/toc/teaching-v1.webp';
+import journeyArt from '../../../public/brand/toc-journey.webp';
+import adminArt from '../../../public/brand/myspace/admin-v3.webp';
+import SharedArtwork from '@/components/site/SharedArtwork';
 import RecentClasses from '@/components/site/RecentClasses';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
@@ -22,11 +30,12 @@ const descriptions: Record<string, string> = {
 	admin: 'Quản lý không gian của bạn.',
 };
 
-// This page has its own illustration set; destination pages keep their own assets.
-const tocIcons: Record<string, string> = {
-	teaching: '/brand/toc/teaching-v1.webp',
-	courses: '/brand/toc/courses-v1.webp',
-	'board-game': '/brand/toc/board-game-v1.webp',
+// Public destinations reuse these illustrations for shared element navigation.
+const tocIcons: Record<string, StaticImageData> = {
+	teaching: teachingArt,
+	courses: coursesArt,
+	'board-game': boardGameArt,
+	admin: adminArt,
 };
 
 const aboutTiles = [
@@ -35,7 +44,7 @@ const aboutTiles = [
 		href: routes.about,
 		label: 'Giới thiệu',
 		description: 'Người thầy, và hành trình trở thành.',
-		icon: '/brand/toc/about-v1.webp',
+		icon: aboutArt,
 	},
 ] as const;
 
@@ -46,9 +55,10 @@ export default async function TocPage() {
 	return (
 		<main className={`personal-book ${styles.page}`} data-testid="gate-home">
 			<Image
-				src="/brand/toc-journey.webp"
+				src={journeyArt}
 				alt=""
 				fill
+				placeholder="blur"
 				sizes="100vw"
 				preload
 				className={styles.landscape}
@@ -60,11 +70,11 @@ export default async function TocPage() {
 					<h1>Bạn muốn ghé đâu?</h1>
 					<p>Một chút về tôi. Một không gian để học và chơi.</p>
 				</header>
-				<nav aria-label="About Me và My Space" className={styles.navigation}>
+				<nav aria-label="Giới thiệu và không gian học tập" className={styles.navigation}>
 					<section className={styles.about} aria-labelledby="toc-about">
 						<div className={styles.sectionLabel}>
-							<h2 id="toc-about">About Me</h2>
-							<span>Về tôi</span>
+							<h2 id="toc-about">Về tôi</h2>
+							<span>Hành trình</span>
 						</div>
 						<div className={styles.tiles}>
 							{aboutTiles.map((tile) => (
@@ -74,15 +84,16 @@ export default async function TocPage() {
 									className={styles.tile}
 									data-testid={`gate-item-${tile.id}`}
 								>
-									<span className={styles.icon}>
+									<SharedArtwork name={tile.id} className={styles.icon}>
 										<Image
 											src={tile.icon}
 											alt=""
 											width={112}
 											height={112}
+											placeholder="blur"
 											sizes="(max-width: 760px) 88px, 112px"
 										/>
-									</span>
+									</SharedArtwork>
 									<span className={styles.tileTitle}>
 										{tile.label}
 										<span className={styles.arrow} aria-hidden="true">
@@ -96,7 +107,7 @@ export default async function TocPage() {
 					</section>
 					<section className={styles.space} aria-labelledby="toc-myspace">
 						<div className={styles.sectionLabel}>
-							<h2 id="toc-myspace">My Space</h2>
+							<h2 id="toc-myspace">Không gian của tôi</h2>
 							<span>Học · Dạy · Chơi</span>
 						</div>
 						<div className={styles.tiles}>
@@ -107,7 +118,7 @@ export default async function TocPage() {
 									className={`${styles.tile} ${tile.id === 'teaching' ? styles.teachingTile : ''}`}
 									data-testid={`myspace-tile-${tile.id}`}
 								>
-									<span className={styles.icon}>
+									<SharedArtwork name={tile.id} className={styles.icon}>
 										{tocIcons[tile.id] || tile.visual.kind === 'image' ? (
 											<Image
 												src={
@@ -116,10 +127,11 @@ export default async function TocPage() {
 												alt=""
 												width={112}
 												height={112}
+												placeholder="blur"
 												sizes="(max-width: 760px) 88px, 112px"
 											/>
 										) : null}
-									</span>
+									</SharedArtwork>
 									<span className={styles.tileTitle}>
 										{tile.label}
 										<span className={styles.arrow} aria-hidden="true">

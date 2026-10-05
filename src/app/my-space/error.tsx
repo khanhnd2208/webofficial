@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 
 import { routes } from '@/config/routes';
+import SpotIllustration from '@/components/site/SpotIllustration';
 
 export default function MySpaceError({
 	error,
@@ -18,14 +19,15 @@ export default function MySpaceError({
 
 	return (
 		<main className="flex min-h-svh flex-col items-center justify-center bg-canvas px-6 text-center">
-			<p className="font-mono text-[0.75rem] tracking-[0.14em] text-ink-secondary uppercase">
-				My Space
+			<SpotIllustration variant="error" className="mb-5" />
+			<p className="font-mono text-[12px] tracking-[0.14em] text-ink-secondary uppercase">
+				Không gian của tôi
 			</p>
 			<h1 className="mt-4 font-display text-2xl font-medium tracking-tight text-ink">
 				Có lỗi xảy ra
 			</h1>
 			<p className="mt-3 max-w-sm font-sans text-base text-ink-secondary">
-				Không tải được nội dung. Thử lại, hoặc quay về My Space.
+				Không tải được nội dung. Thử lại, hoặc quay về không gian của tôi.
 			</p>
 			<div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
 				<button
@@ -39,7 +41,7 @@ export default function MySpaceError({
 					href={routes.mySpace}
 					className="font-sans text-sm text-ink-secondary transition-colors hover:text-ink"
 				>
-					← My Space
+					← Không gian của tôi
 				</Link>
 			</div>
 		</main>

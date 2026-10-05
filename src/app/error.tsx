@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 
-import ContactLink from '@/components/contact/ContactLink';
+import SpotIllustration from '@/components/site/SpotIllustration';
 import { routes } from '@/config/routes';
 
 export default function Error({
@@ -20,15 +20,15 @@ export default function Error({
 	return (
 		<main className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16">
 			<div className="mx-auto max-w-md text-center">
-				<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+				<SpotIllustration variant="error" className="mx-auto mb-5" />
+				<p className="text-xs font-semibold uppercase tracking-[0.12em] text-accent">
 					Đã xảy ra lỗi
 				</p>
 				<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">
 					Không tải được trang này
 				</h1>
-				<p className="mt-3 text-sm leading-relaxed text-foreground-secondary">
-					Vui lòng thử lại. Nếu lỗi vẫn tiếp diễn, bạn có thể mở mục lục hoặc gửi Khánh một lời
-					nhắn.
+				<p className="mt-3 text-[17px] leading-relaxed text-foreground-secondary">
+					Vui lòng thử lại. Nếu lỗi vẫn tiếp diễn, bạn có thể mở mục lục để chọn một trang khác.
 				</p>
 				<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
 					<button
@@ -38,13 +38,6 @@ export default function Error({
 					>
 						Thử lại
 					</button>
-					<ContactLink
-						href={routes.contact}
-						contactContext={{ campaignParams: { ref: 'error-page' } }}
-						className="inline-flex min-h-11 items-center justify-center rounded-full border border-border-strong px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-hover"
-					>
-						Gửi lời nhắn
-					</ContactLink>
 					<Link
 						href={routes.toc}
 						className="text-sm font-semibold text-foreground-secondary hover:text-foreground"
@@ -53,7 +46,7 @@ export default function Error({
 					</Link>
 				</div>
 				{error.digest ? (
-					<p className="mt-6 text-[11px] text-muted">Mã tham chiếu: {error.digest}</p>
+					<p className="mt-6 text-xs text-muted">Mã tham chiếu: {error.digest}</p>
 				) : null}
 			</div>
 		</main>

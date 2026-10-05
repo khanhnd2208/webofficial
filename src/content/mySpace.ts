@@ -35,8 +35,8 @@ export interface MySpaceTile {
 }
 
 export const mySpacePage = {
-	title: 'My Space',
-	lead: 'Teaching, khóa học và những trải nghiệm chơi cùng nhau.',
+	title: 'Không gian của tôi',
+	lead: 'Lớp học, khóa học và những trải nghiệm chơi cùng nhau.',
 	comingSoonLabel: 'Đang phát triển',
 	comingSoonNote: 'Góc này đang được hoàn thiện.',
 } as const;
@@ -44,7 +44,7 @@ export const mySpacePage = {
 export const mySpaceTiles: MySpaceTile[] = [
 	{
 		id: 'teaching',
-		label: 'Teaching',
+		label: 'Lớp học',
 		featured: true,
 		visual: {
 			kind: 'mark',
@@ -60,19 +60,19 @@ export const mySpaceTiles: MySpaceTile[] = [
 		label: 'Khóa học',
 		visual: {
 			kind: 'image',
-			src: '/brand/myspace/courses-v2.png',
+			src: '/brand/myspace/courses-v3.webp',
 			alt: 'Minh họa chồng tài liệu khóa học',
 		},
 		status: 'published',
-		href: routes.learnCourses,
+		href: routes.discoverCourses,
 	},
 	{
 		id: 'board-game',
-		label: 'Board Game',
+		label: 'Trò chơi',
 		visual: {
 			kind: 'image',
-			src: '/brand/myspace/board-game-v2.png',
-			alt: 'Minh họa bộ bài Board Game',
+			src: '/brand/myspace/board-game-v3.webp',
+			alt: 'Minh họa bộ bài trò chơi',
 		},
 		status: 'published',
 		href: routes.boardGame,
@@ -81,10 +81,10 @@ export const mySpaceTiles: MySpaceTile[] = [
 
 export const mySpaceAdminTile: MySpaceTile = {
 	id: 'admin',
-	label: 'Admin',
+	label: 'Quản trị',
 	visual: {
 		kind: 'image',
-		src: '/brand/myspace/admin-v2.png',
+			src: '/brand/myspace/admin-v3.webp',
 		alt: 'Biểu tượng khu quản trị Admin',
 	},
 	status: 'published',

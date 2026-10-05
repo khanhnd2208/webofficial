@@ -1,3 +1,4 @@
+import BrandWordmark from './BrandWordmark';
 import Link from 'next/link';
 
 import { routes } from '@/config/routes';
@@ -22,18 +23,24 @@ export default function SiteTopBar({
 }) {
 	return (
 		<header
-			className={`flex min-h-14 items-center justify-between gap-4 text-xs tracking-[0.14em] uppercase ${className}`}
+			className={`grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 text-label tracking-[0.02em] ${className}`}
 		>
-			<nav aria-label="Đường dẫn" className="flex min-w-0 items-center gap-2">
+			<Link
+				href={routes.home}
+				className="shrink-0 whitespace-nowrap font-display text-body font-semibold tracking-tight text-current transition-opacity duration-150 hover:opacity-70"
+			>
+				<BrandWordmark />
+			</Link>
+			<nav aria-label="Đường dẫn" className="flex min-w-0 items-center justify-center gap-1.5">
 				<Link
 					href={routes.toc}
-					className="inline-flex min-h-10 shrink-0 items-center opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+					className="inline-flex min-h-10 shrink-0 items-center opacity-60 transition-opacity duration-150 hover:opacity-100 focus-visible:opacity-100"
 					data-testid="site-trail-toc"
 				>
 					Mục lục
 				</Link>
 				{crumbs.map((crumb) => (
-					<span key={crumb.label} className="flex min-w-0 items-center gap-2">
+					<span key={crumb.label} className="hidden min-w-0 items-center gap-1.5 sm:flex">
 						<span aria-hidden="true" className="opacity-40">
 							/
 						</span>
@@ -52,7 +59,9 @@ export default function SiteTopBar({
 					</span>
 				))}
 			</nav>
-			<SiteAuthChip variant="bar" className="tracking-normal normal-case" showSignIn={showSignIn} />
+			<div className="flex justify-end whitespace-nowrap">
+				<SiteAuthChip variant="bar" showSignIn={showSignIn} />
+			</div>
 		</header>
 	);
 }
