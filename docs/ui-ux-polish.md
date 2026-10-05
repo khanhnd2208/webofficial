@@ -82,7 +82,7 @@ Utility được khai báo theo cú pháp Tailwind v4: `--text-body` và `--text
 | `itm` | `business-systems-v1.webp` |
 | Slug chưa khai báo | `human-growth-v1.webp` |
 
-Map chỉ khai báo slug đã có trong các seed Learn hiện tại. Bốn loại artwork `ai`, `business`, `growth`, `project` sẵn sàng để bổ sung slug thật sau này. Không tạo slug mới hoặc migration.
+Map chỉ khai báo slug đã có trong các seed Learn hiện tại; chủ website xác nhận `hrm` và `itm` là slug thật. `courseArtworkKey` chỉ đọc khóa riêng của map (`Object.hasOwn`), nên slug như `constructor` cũng rơi về fallback. Bốn loại artwork `ai`, `business`, `growth`, `project` sẵn sàng để bổ sung slug thật sau này. Không tạo slug mới hoặc migration.
 
 Component chỉ nhận slug và className; không còn regex trên tiêu đề/category, nên đại từ tiếng Việt “ai” không thể quyết định artwork. LearnCourseCover giữ props tương thích và chuyển slug xuống component mới. Khóa chưa có trong map vẫn dùng fallback chung; cần bổ sung config khi một khóa mới có bìa riêng.
 
@@ -106,7 +106,7 @@ Các thay đổi nghiệp vụ/auth/deployment đi cùng main là thay đổi k�
 
 ## 6. Những phần UI/UX được giữ lại
 
-- Header công khai: wordmark DK + Duy Khánh, đường dẫn và tài khoản; giảm liên hệ trùng trên Mục lục, khám phá và 404.
+- Header công khai: chữ Duy Khánh (bỏ biểu tượng DK theo quyết định của chủ website; monogram chỉ còn ở favicon và app icon), đường dẫn và tài khoản; giảm liên hệ trùng trên Mục lục, khám phá và 404.
 - `/kham-pha-khoa-hoc` và alias `/khoa-hoc` là danh mục công khai. URL khóa cụ thể vẫn đi qua khu học và yêu cầu tài khoản.
 - `src/features/learn/publicCatalog.ts` chỉ query `PUBLISHED`, chọn metadata, tên bài và số phút; không select markdown, câu hỏi, đáp án hoặc tiến độ. Integration test tạo cả draft và published fixture để xác nhận ranh giới dữ liệu.
 - Hệ điều khiển SVG chung ở `src/components/ui/Icon.tsx`; adapter McIcon, LearnIcon, AdminIcon, StudioIcon giữ API ở từng khu. TeachingIcon, biểu đồ và hình game chuyên biệt giữ hệ riêng.
@@ -127,7 +127,7 @@ Các thay đổi nghiệp vụ/auth/deployment đi cùng main là thay đổi k�
 
 Chữ tiếng Việt trên OG dựng bằng font/code, không nhờ ảnh AI viết chữ. Mỗi OG dưới 150 KB.
 
-**Chưa xóa chín asset cũ:** bốn `public/brand/myspace/*-v2.png`, ba `hero-figure.jpg`, `hero-landscape.jpg`, `hero-journey.jpg`, `myspace/my-class.svg`, `toc/experiences-v1.webp`. Đã hỏi chủ website theo bước 7 và AGENTS.md; chưa nhận phê duyệt. Ba hero JPG còn được liệt kê trong script export review cũ, nên phải cập nhật danh sách đó cùng commit cleanup nếu được đồng ý. Các asset không còn được giao diện sử dụng.
+**Đã xóa mười asset cũ sau phê duyệt** (commit `chore(brand)`): bốn `public/brand/myspace/*-v2.png`, ba `hero-figure.jpg`, `hero-landscape.jpg`, `hero-journey.jpg`, `myspace/my-class.svg`, `toc/experiences-v1.webp` và `public/brand/monogram.svg`. Bản vector monogram chuyển ra `../brand-masters/ui-ux-polish/monogram.svg`. Script export review và `DESIGN.md` đã bỏ các file này. `docs/ui-ux-expert-review.html` là bản export lịch sử nên được giữ nguyên.
 
 ## 8. Kiểm chứng sau merge
 
@@ -190,7 +190,6 @@ Snapshot an toàn `f15a0c3` trước merge vẫn được giữ trong Git stash;
 
 ## 11. Giới hạn còn lại
 
-- Chín asset cũ chờ phê duyệt xóa; không thuộc commit cleanup nào hiện tại.
 - Chưa thể đi qua ba unit My Class thật do archive ở main. Regression component xác nhận MainContent không gây remount; chưa xác nhận toàn bộ logic scroll/outline của learner trên browser.
 - Chưa đăng nhập Google thật, gửi lời nhắn ra ngoài, kiểm tra tải nhiều người chơi hoặc chạy toàn bộ tất cả E2E trong repository. Bộ chọn ở trên bao phủ các phần được yêu cầu rà trong lượt sửa này; CI của shared code vẫn cần chạy khi sau này mở PR.
 - Không tuyên bố đã chứng nhận WCAG hay “chuẩn quốc tế” bằng một bộ test tự động. Ảnh review và kiểm tra tương tác là bằng chứng để expert đánh giá tiếp.
