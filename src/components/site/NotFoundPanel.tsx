@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { routes } from '@/config/routes';
 
 import HistoryBackButton from './HistoryBackButton';
-import SpotIllustration from './SpotIllustration';
 
 /**
  * Body of every 404: says what was missing in plain words and always offers Mục lục (the site's
@@ -28,12 +27,12 @@ export default function NotFoundPanel({
 					{eyebrow}
 				</p>
 				<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">{title}</h1>
-				<div className="mt-3 text-body leading-relaxed text-foreground-secondary">{children}</div>
+				<div className="mt-3 text-sm leading-relaxed text-foreground-secondary">{children}</div>
 				<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
 					{primary ? (
 						<Link
 							href={primary.href}
-							className="inline-flex min-h-11 items-center justify-center rounded-full bg-foreground px-5 text-control font-semibold text-background transition-colors hover:bg-foreground-secondary"
+							className="inline-flex min-h-11 items-center justify-center rounded-full bg-foreground px-5 text-sm font-semibold text-background transition-colors hover:bg-foreground-secondary"
 						>
 							{primary.label}
 						</Link>
@@ -42,14 +41,14 @@ export default function NotFoundPanel({
 						href={routes.toc}
 						className={
 							primary
-								? 'inline-flex min-h-11 items-center justify-center rounded-full border border-border-strong px-5 text-control font-semibold text-foreground transition-colors hover:bg-surface-hover'
-								: 'inline-flex min-h-11 items-center justify-center rounded-full bg-foreground px-5 text-control font-semibold text-background transition-colors hover:bg-foreground-secondary'
+								? 'inline-flex min-h-11 items-center justify-center rounded-full border border-border-strong px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-hover'
+								: 'inline-flex min-h-11 items-center justify-center rounded-full bg-foreground px-5 text-sm font-semibold text-background transition-colors hover:bg-foreground-secondary'
 						}
 					>
 						Mở mục lục
 					</Link>
 				</div>
-				<HistoryBackButton className="mt-5 text-control font-semibold text-foreground-secondary hover:text-foreground" />
+				<HistoryBackButton className="mt-5 text-sm font-semibold text-foreground-secondary hover:text-foreground" />
 			</div>
 		</main>
 	);

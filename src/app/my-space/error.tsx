@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 
 import { routes } from '@/config/routes';
-import SpotIllustration from '@/components/site/SpotIllustration';
 
 export default function MySpaceError({
 	error,

@@ -1,6 +1,5 @@
 'use client';
 
-import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import { useEffect, useState } from 'react';
 
 import { startGoogleSignIn } from '@/lib/auth/startGoogleSignIn';
