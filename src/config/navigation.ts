@@ -347,6 +347,13 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 	if (path === routes.boardGame) {
 		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Board Game' }];
 	}
+	if (path === routes.activeRecall || path.startsWith(`${routes.activeRecall}/`)) {
+		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Ôn tập' }];
+	}
+	if (isMySpaceQuizPlayPath(path)) return [];
+	if (path === routes.mySpaceTests || path.startsWith(`${routes.mySpaceTests}/`)) {
+		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Bài kiểm tra' }];
+	}
 	return [];
 }
 

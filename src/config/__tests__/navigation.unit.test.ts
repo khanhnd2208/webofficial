@@ -255,6 +255,23 @@ describe('site header trail', () => {
 			{ label: 'Không gian của tôi', href: '/my-space' },
 			{ label: 'Board Game' },
 		]);
+		expect(getSiteTrail('/my-space/active-recall')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Ôn tập' },
+		]);
+		expect(getSiteTrail('/my-space/active-recall/hrm')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Ôn tập' },
+		]);
+		expect(getSiteTrail('/my-space/tests')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Bài kiểm tra' },
+		]);
+		expect(getSiteTrail('/my-space/tests/hrm')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Bài kiểm tra' },
+		]);
+		expect(getSiteTrail('/my-space/tests/hrm/play')).toEqual([]);
 		expect(getSiteTrail('/khong-co-trang')).toEqual([]);
 	});
 
@@ -271,6 +288,10 @@ describe('site header trail', () => {
 			'/tai-khoan',
 			'/my-space',
 			'/my-space/board-game',
+			'/my-space/active-recall',
+			'/my-space/active-recall/hrm',
+			'/my-space/tests',
+			'/my-space/tests/hrm',
 			'/khong-co-trang',
 		]) {
 			expect(isSiteHeaderPath(path), path).toBe(true);
