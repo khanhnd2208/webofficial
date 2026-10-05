@@ -74,13 +74,13 @@ export default function SiteHeader() {
 			<header
 				data-testid="site-header"
 				data-scrolled={scrolled ? 'true' : 'false'}
-				className={`${onToc ? 'fixed inset-x-0 top-0' : 'sticky top-0 -mt-2'} z-50 border-b pt-[env(safe-area-inset-top)] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] transition-[background-color,border-color,backdrop-filter] duration-(--dur-2) ease-(--ease-out) motion-reduce:transition-none ${
+				className={`${onToc ? 'fixed inset-x-0 top-0' : 'sticky top-0 -mt-2'} z-50 border-b pt-[env(safe-area-inset-top)] transition-[background-color,border-color,backdrop-filter] duration-(--dur-2) ease-(--ease-out) motion-reduce:transition-none ${
 					scrolled
 						? 'border-hairline bg-canvas/72 backdrop-blur-xl backdrop-saturate-150'
 						: 'border-transparent bg-transparent'
 				}`}
 			>
-				<div className="flex h-(--site-header-height) items-center justify-between gap-3">
+				<div className="shell flex h-(--site-header-height) items-center justify-between gap-3">
 					<nav aria-label="Đường dẫn" className="flex min-w-0 items-center gap-2">
 						<Link
 							href={routes.toc}
