@@ -37,7 +37,6 @@ const ROOTS = [
  * Google's sign-in mark keeps its brand colors in CSS, not in these files.
  */
 const ALLOWLIST: Record<string, string> = {
-	'src/app/my-space/board-game/page.tsx': 'Lobby still uses mono labels and 3xl cards',
 	'src/components/site/PublicMinimalChrome.tsx': 'Replaced by the shared header',
 };
 
