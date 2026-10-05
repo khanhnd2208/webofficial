@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { COURSE_ARTWORK_BY_SLUG, DEFAULT_COURSE_ARTWORK } from '@/config/courseArtwork';
+import { courseArtworkKey } from '@/config/courseArtwork';
 
 import aiArt from '../../../public/brand/courses/ai-foundations-v1.webp';
 import businessArt from '../../../public/brand/courses/business-systems-v1.webp';
@@ -15,7 +15,7 @@ export default function CourseArtwork({
 	className?: string;
 }) {
 	const artwork = { ai: aiArt, business: businessArt, growth: growthArt, project: projectArt };
-	const art = artwork[(slug && COURSE_ARTWORK_BY_SLUG[slug]) || DEFAULT_COURSE_ARTWORK];
+	const art = artwork[courseArtworkKey(slug)];
 	return (
 		<span className={`relative block aspect-[16/10] overflow-hidden ${className}`}>
 			<Image
