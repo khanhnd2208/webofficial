@@ -35,7 +35,7 @@ export default async function ProfilePage() {
 			</div>
 			<section className="border-b border-hairline">
 				<div className="shell max-w-3xl py-10 sm:py-12">
-					<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+					<p className="text-caption font-semibold uppercase tracking-[0.08em] text-accent">
 						Tài khoản
 					</p>
 					<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">
@@ -50,7 +50,7 @@ export default async function ProfilePage() {
 
 			<section className="shell max-w-3xl pt-8 sm:pt-10">
 				{/* Identity strip — no parallax */}
-				<div className="mb-8 flex items-center gap-4 rounded-[18px] border border-hairline bg-paper p-5">
+				<div className="mb-8 flex items-center gap-4 rounded-lg border border-hairline bg-paper p-5">
 					{session.user.image ? (
 						<img
 							src={session.user.image}

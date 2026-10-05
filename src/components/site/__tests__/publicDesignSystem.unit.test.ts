@@ -37,13 +37,6 @@ const ROOTS = [
  * Google's sign-in mark keeps its brand colors in CSS, not in these files.
  */
 const ALLOWLIST: Record<string, string> = {
-	'src/app/dang-nhap/sign-in-with-google-button.tsx': 'Google button still inlines brand hex',
-	'src/app/dang-nhap/switch-account-button.tsx': 'Sign-in still uses a hand-set radius',
-	'src/app/tai-khoan/ProfileForm.tsx': 'Account form still uses 10px mono labels',
-	'src/app/tai-khoan/hoc/page.tsx': 'Learning home still uses 10px mono labels',
-	'src/app/tai-khoan/page.tsx': 'Account page still uses an 11px eyebrow',
-	'src/components/site/NotFoundPanel.tsx': '404 eyebrow is still 11px',
-	'src/components/site/SiteAuthChip.tsx': 'Account chip still uses 10px and a hand-set shadow',
 	'src/app/my-space/board-game/page.tsx': 'Lobby still uses mono labels and 3xl cards',
 	'src/components/site/PublicMinimalChrome.tsx': 'Replaced by the shared header',
 };
