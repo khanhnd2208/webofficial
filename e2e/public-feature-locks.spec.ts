@@ -39,10 +39,14 @@ test.describe('archived public learning surfaces', () => {
 
 	test('keeps a focused My Space hub of Courses and Board Game', async ({ page }) => {
 		await page.goto('/my-space');
+		await expect(page.getByTestId('my-space')).toHaveCount(1);
 		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute('href', '/khoa-hoc');
+		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute(
+			'href',
+			'/kham-pha-khoa-hoc',
+		);
 		await expect(page.getByTestId('myspace-tile-board-game')).toHaveAttribute(
 			'href',
 			'/my-space/board-game',

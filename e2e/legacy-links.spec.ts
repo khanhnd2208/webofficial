@@ -18,7 +18,10 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
-	test('both course spellings open the same catalog once signed in', async ({ page, context }) => {
+	test('public course catalog and learner catalog remain accessible once signed in', async ({
+		page,
+		context,
+	}) => {
 		await addStudentSession(context);
 		for (const path of ['/my-space/courses', '/khoa-hoc']) {
 			const response = await page.goto(path);
