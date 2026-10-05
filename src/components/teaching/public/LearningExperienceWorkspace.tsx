@@ -1,5 +1,6 @@
 'use client';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
 import Image from 'next/image';
 import {
 	useEffect,
@@ -21,7 +22,9 @@ import type {
 	LearningExperienceStudentOption,
 } from '@/features/teaching/types';
 
-import styles from './LearningExperienceWorkspace.module.css';
+import accessStyles from './LearningExperienceWorkspace.module.css';
+import choiceStyles from './LearningExperienceChoices.module.css';
+const styles = { ...accessStyles, ...choiceStyles };
 
 const EXPERIENCE_IMAGES = {
 	CHALLENGE: '/brand/teaching/teach-you-a-lesson.png',
@@ -262,7 +265,11 @@ export function LearningExperienceWorkspace({
 	}
 
 	function tilt(event: PointerEvent<HTMLElement>) {
-		if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (
+			event.pointerType === 'touch' ||
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		)
+			return;
 		const rect = event.currentTarget.getBoundingClientRect();
 		const x = (event.clientX - rect.left) / rect.width - 0.5;
 		const y = (event.clientY - rect.top) / rect.height - 0.5;
@@ -287,14 +294,9 @@ export function LearningExperienceWorkspace({
 	if (!session.authenticated) {
 		return (
 			<section className={styles.authStage} aria-labelledby="learning-login-title">
-				<div className={styles.authBackdrop} aria-hidden="true">
-					<Image src={EXPERIENCE_IMAGES.CHALLENGE} alt="" fill loading="eager" sizes="50vw" />
-					<Image src={EXPERIENCE_IMAGES.SUPPORT} alt="" fill loading="eager" sizes="50vw" />
-				</div>
-				<div className={styles.authScrim} />
 				<div className={styles.authPanel}>
 					<div className={styles.authCrest} aria-hidden="true">
-						<McIcon name="school" size={32} />
+						<TeachingIcon name="teaching" size={32} />
 					</div>
 					<p className={styles.kicker}>{courseName} · Player access</p>
 					<h2 id="learning-login-title">Mở trải nghiệm học tập của bạn</h2>
@@ -483,7 +485,6 @@ export function LearningExperienceWorkspace({
 
 	return (
 		<section className={styles.experience} aria-labelledby="learning-experience-title">
-			<div className={styles.sparkles} aria-hidden="true" />
 			<div className={styles.playerBar}>
 				<div>
 					<span className={styles.playerLabel}>Learning Experience access</span>
@@ -586,7 +587,9 @@ export function LearningExperienceWorkspace({
 
 			<div className={styles.statusBar} aria-live="polite" data-error={Boolean(error)}>
 				<McIcon
-					name={error ? 'error' : session.locked ? 'lock' : session.choice ? 'auto_awesome' : 'explore'}
+					name={
+						error ? 'error' : session.locked ? 'lock' : session.choice ? 'auto_awesome' : 'explore'
+					}
 					size={18}
 				/>
 				<p>

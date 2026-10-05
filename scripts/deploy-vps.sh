@@ -249,7 +249,6 @@ SWAPPED=0
 PREVIOUS_TARGET=""
 BACKUP_COMPLETED="no"
 ROLLBACK_SMOKE_SAFE=0
-NEXT_CACHE_MAX_MB=1536
 
 atomic_current_link() {
 	local target="$1"
@@ -656,36 +655,10 @@ NODE_ENV_CHECK
 ./node_modules/.bin/prisma generate
 
 echo "Building candidate before any database migration"
-NEXT_CACHE_SOURCE=""
-if [[ -d "$CURRENT_LINK/.next/cache" ]]; then
-	NEXT_CACHE_SOURCE="$CURRENT_LINK/.next/cache"
-elif [[ "$PREVIOUS_TARGET" == "." && -d "$DEPLOY_ROOT/.next/cache" ]]; then
-	NEXT_CACHE_SOURCE="$DEPLOY_ROOT/.next/cache"
-fi
-if [[ -n "$NEXT_CACHE_SOURCE" ]]; then
-	# Copy into the release. A symlink outside the release root makes Turbopack
-	# walk past the project boundary and fail the build.
-	echo "Reusing Next.js compiler cache from the current release"
-	mkdir -p "$RELEASE_DIR/.next"
-	rm -rf -- "$RELEASE_DIR/.next/cache"
-	if ! cp -a "$NEXT_CACHE_SOURCE" "$RELEASE_DIR/.next/cache"; then
-		echo "WARNING: could not reuse the Next.js compiler cache; building without it" >&2
-		rm -rf -- "$RELEASE_DIR/.next/cache"
-	fi
-	# Only the bundler `npm run build` uses reads its cache; the other one would
-	# otherwise ride along in every release. Every copy also inherits the last
-	# one's growth, so start cold once the cache passes the cap.
-	if grep -Eq '"build": *"[^"]*--webpack' package.json; then
-		rm -rf -- "$RELEASE_DIR/.next/cache/turbopack"
-	else
-		rm -rf -- "$RELEASE_DIR/.next/cache/webpack"
-	fi
-	next_cache_mb="$(du -sm "$RELEASE_DIR/.next/cache" 2>/dev/null | awk '{ print $1 }')"
-	if ((${next_cache_mb:-0} > NEXT_CACHE_MAX_MB)); then
-		echo "Next.js compiler cache is ${next_cache_mb} MB (cap ${NEXT_CACHE_MAX_MB} MB); building cold"
-		rm -rf -- "$RELEASE_DIR/.next/cache"
-	fi
-fi
+# A cache from another source tree retained old compiled CSS after Teaching
+# styles moved into imports. Always compile a release from its own source.
+echo "Building with a fresh Next.js compiler cache"
+rm -rf -- "$RELEASE_DIR/.next/cache"
 NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
 test -s .next/BUILD_ID
 

@@ -238,6 +238,13 @@ export function StudentIntakeWorkspace({
 
 	return (
 		<div className="space-y-4">
+			<nav className="teaching-form-step" aria-label="Tiến trình nhập danh sách">
+				<span aria-current={!preview && !message ? 'step' : undefined}>1 · Chọn nguồn</span>
+				<span aria-hidden="true">→</span>
+				<span aria-current={preview && !message ? 'step' : undefined}>2 · Đối chiếu</span>
+				<span aria-hidden="true">→</span>
+				<span aria-current={message ? 'step' : undefined}>3 · Kết quả</span>
+			</nav>
 			<div className="mc-surface p-4">
 				<div className="flex flex-wrap gap-2" role="tablist" aria-label="Cách bổ sung sinh viên">
 					{(

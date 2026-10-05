@@ -145,7 +145,7 @@ export function formatDependencySummary(counts: TeachingDependencyCounts) {
 	if (counts.activeDecks) parts.push(`${counts.activeDecks} bộ thẻ đang dùng`);
 	if (counts.decks) parts.push(`${counts.decks} bộ thẻ`);
 	if (counts.classLinks) parts.push(`${counts.classLinks} lớp đang gắn bộ thẻ`);
-	if (counts.students) parts.push(`${counts.students} học viên`);
+	if (counts.students) parts.push(`${counts.students} sinh viên`);
 	if (counts.attendance) parts.push(`${counts.attendance} điểm danh`);
 	if (counts.participation) parts.push(`${counts.participation} điểm CP`);
 	if (counts.groups) parts.push(`${counts.groups} nhóm`);

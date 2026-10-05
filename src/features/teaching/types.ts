@@ -423,11 +423,11 @@ export function getCpPolicyText(
 	const lateRule = policy.lateCountsTowardAbsenceThreshold ?? true;
 	const giftDeduction = policy.giftDeductionPoints ?? 1;
 	return [
-		`Attendance tối đa ${attendanceMax} điểm; vắng không phép trừ ${absenceDeduction.toString().replace('.', ',')} điểm, đi muộn trừ ${lateDeduction.toString().replace('.', ',')} điểm.`,
+		`Chuyên cần tối đa ${attendanceMax} điểm; vắng không phép trừ ${absenceDeduction.toString().replace('.', ',')} điểm, đi muộn trừ ${lateDeduction.toString().replace('.', ',')} điểm.`,
 		`CP hoạt động tối đa ${cpMax} điểm; mỗi tuần có thể chấm 0,5; 1 hoặc 2 điểm. Gift trừ ${giftDeduction.toString().replace('.', ',')} điểm CP.`,
-		`Tổng điểm học phần từ Attendance và CP, tối đa ${TOTAL_MAX_POINTS} điểm.`,
+		`Tổng điểm học phần từ Chuyên cần và CP, tối đa ${TOTAL_MAX_POINTS} điểm.`,
 		`${lateRule ? 'Đi muộn được tính vào' : 'Đi muộn không tính vào'} ngưỡng vắng ${policy.absenceThresholdPercent}% để xét điều kiện thi.`,
 		`Vắng không phép vượt quá ${policy.absenceThresholdPercent}% tổng số buổi sẽ khiến sinh viên không đủ điều kiện thi.`,
-		'Vắng có phép không bị trừ điểm Attendance.',
+		'Vắng có phép không bị trừ điểm chuyên cần.',
 	];
 }

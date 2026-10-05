@@ -1,5 +1,7 @@
 'use client';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
+
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -134,7 +136,7 @@ export function RosterWorkspace({
 			await teachingApi(`/api/admin/teaching/enrollments/${enrollmentId}`, { method: 'DELETE' });
 			router.refresh();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Không thể xoá học viên khỏi lớp');
+			setError(err instanceof Error ? err.message : 'Không thể xoá sinh viên khỏi lớp');
 		}
 	}
 
@@ -168,7 +170,7 @@ export function RosterWorkspace({
 			setEditing(null);
 			router.refresh();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Không thể lưu thông tin học viên');
+			setError(err instanceof Error ? err.message : 'Không thể lưu thông tin sinh viên');
 		}
 	}
 
@@ -177,10 +179,12 @@ export function RosterWorkspace({
 			<div className="mt-6 space-y-6">
 				<div className="mc-surface flex flex-wrap items-center justify-between gap-3 p-5">
 					<div>
-						<h2 className="font-semibold text-ink">Danh sách học viên</h2>
+						<h2 className="flex items-center gap-2 font-semibold text-ink">
+							<TeachingIcon name="students" size={20} /> Danh sách sinh viên
+						</h2>
 						<p className="mc-meta mt-1">
-							Bổ sung học viên bằng nhập tay, dán bảng, CSV mẫu hoặc Excel. Mọi khác biệt hồ sơ phải
-							được đối chiếu trước khi lưu.
+							Bổ sung sinh viên bằng nhập tay, dán bảng, CSV mẫu hoặc Excel. Mọi khác biệt hồ sơ
+							phải được đối chiếu trước khi lưu.
 						</p>
 					</div>
 					<StudioButton onClick={() => setAddOpen(true)}>Bổ sung sinh viên</StudioButton>
@@ -212,7 +216,7 @@ export function RosterWorkspace({
 				) : null}
 				<div className="teaching-roster-toolbar mc-surface flex flex-wrap gap-2 p-3">
 					<label className="min-w-52 flex-1">
-						<span className="sr-only">Tìm học viên</span>
+						<span className="sr-only">Tìm sinh viên</span>
 						<input
 							className="mc-input w-full"
 							value={query}
@@ -248,7 +252,7 @@ export function RosterWorkspace({
 						</select>
 					</label>
 					<span className="mc-meta self-center">
-						{filteredStudents.length}/{students.length} học viên
+						{filteredStudents.length}/{students.length} sinh viên
 					</span>
 				</div>
 
@@ -505,14 +509,14 @@ export function RosterWorkspace({
 					))}
 					{filteredStudents.length === 0 ? (
 						<p className="mc-surface p-6 text-center text-sm text-ink-secondary">
-							Không tìm thấy học viên phù hợp.
+							Không tìm thấy sinh viên phù hợp.
 						</p>
 					) : null}
 				</div>
 				<Sheet
 					open={Boolean(editing)}
 					onClose={() => setEditing(null)}
-					title="Sửa thông tin học viên"
+					title="Sửa thông tin sinh viên"
 				>
 					{editing ? (
 						<form

@@ -1,5 +1,7 @@
 'use client';
 
+import { useSurfaceTheme } from '@/components/ui/SurfaceTheme';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { createPortal } from 'react-dom';
@@ -36,6 +38,7 @@ export interface ParticipationGridProps {
 	showExtraColumns?: boolean;
 	readOnly?: boolean;
 	publicCompact?: boolean;
+	highlightedEnrollmentId?: string | null;
 	scrollMode?: GridScrollMode;
 	onParticipationChange?: (payload: {
 		enrollmentId: string;
@@ -88,10 +91,11 @@ function ParticipationNoteEditor({
 	onPoints?: (points: 0 | 0.5 | 1 | 2) => void;
 	readOnly?: boolean;
 }) {
+	const surface = useSurfaceTheme();
 	const [note, setNote] = useState(initialNote);
 	const { rootRef, textareaRef } = useGridNotePopover(onClose);
 	return createPortal(
-		<div className="mc mc-studio">
+		<div className="mc mc-studio teaching-portal" data-surface={surface}>
 			<div
 				ref={rootRef}
 				role="dialog"
@@ -162,6 +166,7 @@ export function ParticipationGrid({
 	showExtraColumns = false,
 	readOnly = false,
 	publicCompact = false,
+	highlightedEnrollmentId = null,
 	scrollMode = 'contained',
 	onParticipationChange,
 	onGiftChange,
@@ -334,6 +339,7 @@ export function ParticipationGrid({
 													open={isOpen}
 													finalized={isFinalized}
 													cancelled={session.isCancelled}
+													compact={currentWeek != null && weekNumber > currentWeek}
 													busy={togglingSessionId === session.id}
 													onLifecycle={
 														!readOnly && onSessionLifecycle
@@ -374,12 +380,12 @@ export function ParticipationGrid({
 								<span className="mc-grid-summary-heading">Gift</span>
 							</th>
 							<th
-								aria-label={`Attendance /${attendanceMaxPoints}`}
+								aria-label={`Chuyên cần /${attendanceMaxPoints}`}
 								title={`Điểm chuyên cần tối đa ${attendanceMaxPoints}, được tính từ bảng Điểm danh`}
 								className={`mc-grid-freeze-right mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 							>
 								<span className="mc-grid-summary-heading">
-									<span>Attendance</span>
+									<span>Chuyên cần</span>
 									<span>/{attendanceMaxPoints}</span>
 								</span>
 							</th>
@@ -395,7 +401,7 @@ export function ParticipationGrid({
 							</th>
 							<th
 								aria-label={`Tổng /${TOTAL_MAX_POINTS}`}
-								title={`Tổng điểm = Attendance + CP, tối đa ${TOTAL_MAX_POINTS}`}
+								title={`Tổng điểm = Chuyên cần + CP, tối đa ${TOTAL_MAX_POINTS}`}
 								className={`mc-grid-freeze-right mc-grid-total-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 							>
 								<span className="mc-grid-summary-heading">
@@ -417,7 +423,11 @@ export function ParticipationGrid({
 							</tr>
 						) : (
 							students.map((student) => (
-								<tr key={student.enrollmentId} data-risk={student.cp.riskLevel}>
+								<tr
+									key={student.enrollmentId}
+									data-risk={student.cp.riskLevel}
+									data-me={student.enrollmentId === highlightedEnrollmentId ? 'true' : undefined}
+								>
 									<td
 										className={`mc-grid-freeze-left mc-grid-stt mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 									>
@@ -455,7 +465,7 @@ export function ParticipationGrid({
 															{student.studentCode} · Gift −{student.cp.giftDeduction}
 														</span>
 														<span className="mc-grid-public-meta-line">
-															Attendance {formatTeachingScore(student.cp.attendanceScore)}/
+															Chuyên cần {formatTeachingScore(student.cp.attendanceScore)}/
 															{attendanceMaxPoints} · CP {formatTeachingScore(student.cp.cp)}/
 															{cpMaxPoints} · Tổng {formatTeachingScore(student.cp.totalScore)}/
 															{TOTAL_MAX_POINTS}

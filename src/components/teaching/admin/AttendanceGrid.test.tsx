@@ -70,6 +70,24 @@ function sessions(): TeachingSessionRecord[] {
 }
 
 describe('AttendanceGrid', () => {
+	it('keeps "Chưa chốt" on past and current weeks and drops it only for future weeks', () => {
+		const rows = sessions().map((session) => ({
+			...session,
+			attendanceTakenAt: null,
+			attendanceOpen: session.weekNumber === 3,
+		}));
+		// Weeks 1–2 were never finalized; week 3 is open. Only weeks 4+ are in the future.
+		rows[0] = { ...rows[0], attendanceOpen: false };
+		render(<AttendanceGrid students={[student()]} sessions={rows} totalWeeks={10} />);
+		const state = (week: number) =>
+			screen.getByRole('columnheader', { name: `W${week}` }).querySelector('.mc-grid-week-state')
+				?.textContent;
+		expect(state(1)).toBe('Chưa chốt');
+		expect(state(2)).toBe('Chưa chốt');
+		expect(state(3)).toBe('Đang nhập');
+		expect(state(4)).toBeUndefined();
+	});
+
 	it('renders frozen identity columns, ten week columns and attendance eligibility', () => {
 		render(
 			<AttendanceGrid
@@ -123,6 +141,15 @@ describe('AttendanceGrid', () => {
 		expect(screen.queryByText('Đủ điều kiện')).not.toBeInTheDocument();
 	});
 
+	it('lays out the sticky score columns for the status column the public page still shows', () => {
+		const { container } = render(
+			<AttendanceGrid students={[student()]} sessions={sessions()} totalWeeks={10} publicCompact />,
+		);
+		// The desktop public grid renders "Trạng thái"; the sticky offsets must make room for it.
+		expect(screen.getByRole('columnheader', { name: 'Trạng thái' })).toBeInTheDocument();
+		expect(container.querySelector('table.mc-grid')).toHaveAttribute('data-eligibility', 'true');
+	});
+
 	it('exposes page scrolling and a compact mobile student summary', () => {
 		render(
 			<AttendanceGrid
@@ -139,7 +166,7 @@ describe('AttendanceGrid', () => {
 			'page',
 		);
 		expect(screen.getByText('2406090045 · 0/10 vắng')).toBeInTheDocument();
-		expect(screen.getByText('Attendance 5,0/5 · Đủ điều kiện')).toBeInTheDocument();
+		expect(screen.getByText('Chuyên cần 5,0/5 · Đủ điều kiện')).toBeInTheDocument();
 	});
 
 	it('cycles attendance with three clicks: present, late, absent', () => {

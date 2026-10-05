@@ -85,12 +85,14 @@ export default function ActiveRecallPlayer({
 	backHref,
 	backLabel,
 	showViToggle = false,
+	surface,
 	classSlug,
 }: {
 	deck: ActiveRecallDeckDTO;
 	backHref?: string;
 	backLabel?: string;
 	showViToggle?: boolean;
+	surface?: 'teaching';
 	classSlug?: string;
 }) {
 	const recordStudy = useRecallStudy(deck.id, classSlug);
@@ -390,6 +392,7 @@ export default function ActiveRecallPlayer({
 	return (
 		<main
 			ref={rootRef}
+			data-surface={surface}
 			className={`recall-player min-h-svh bg-canvas text-ink ${presentation ? 'recall-player-presentation' : ''}`}
 			data-reading-size={readingSize}
 			data-has-back={backHref && backLabel ? 'true' : 'false'}

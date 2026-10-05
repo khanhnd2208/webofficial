@@ -1,3 +1,4 @@
+import { TeachingStatus } from '../ui/TeachingElements';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
@@ -81,22 +82,17 @@ export function TeachingWorkspaceShell({
 							{` · Mã lớp ${gradebook.class.classCode ?? gradebook.class.groupNo} · ${gradebook.class.term}`}
 						</>
 					}
+					eyebrowTitle={`${gradebook.class.courseCode} · Mã lớp ${gradebook.class.classCode ?? gradebook.class.groupNo} · ${gradebook.class.term}`}
 					title={gradebook.class.courseName}
 					description={
-						<div className="teaching-class-meta flex flex-wrap items-center gap-1.5">
-							<span className="mc-meta">{gradebook.stats.studentCount} học viên</span>
-							<span
-								className="teaching-status"
-								data-tone={gradebook.class.status === 'ACTIVE' ? 'ok' : 'muted'}
-							>
+						<div className="teaching-class-meta flex flex-nowrap items-center gap-1.5 overflow-x-auto">
+							<span className="mc-meta">{gradebook.stats.studentCount} sinh viên</span>
+							<TeachingStatus tone={gradebook.class.status === 'ACTIVE' ? 'ok' : 'muted'}>
 								{gradebook.class.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã lưu trữ'}
-							</span>
-							<span
-								className="teaching-status"
-								data-tone={board.attendanceVisible ? 'ok' : 'muted'}
-							>
+							</TeachingStatus>
+							<TeachingStatus tone={board.attendanceVisible ? 'info' : 'muted'}>
 								{board.attendanceVisible ? 'Đang chia sẻ' : 'Chưa chia sẻ'}
-							</span>
+							</TeachingStatus>
 						</div>
 					}
 					actions={

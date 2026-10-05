@@ -104,13 +104,15 @@ export default async function TocPage() {
 								<Link
 									key={tile.id}
 									href={tile.href!}
-									className={styles.tile}
+									className={`${styles.tile} ${tile.id === 'teaching' ? styles.teachingTile : ''}`}
 									data-testid={`myspace-tile-${tile.id}`}
 								>
 									<span className={styles.icon}>
-										{tile.visual.kind === 'image' ? (
+										{tocIcons[tile.id] || tile.visual.kind === 'image' ? (
 											<Image
-												src={tocIcons[tile.id] ?? tile.visual.src}
+												src={
+													tocIcons[tile.id] ?? (tile.visual.kind === 'image' ? tile.visual.src : '')
+												}
 												alt=""
 												width={112}
 												height={112}

@@ -1,5 +1,7 @@
 'use client';
 
+import { useSurfaceTheme } from '@/components/ui/SurfaceTheme';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { createPortal } from 'react-dom';
@@ -42,6 +44,7 @@ export interface AttendanceGridProps {
 	scrollMode?: GridScrollMode;
 	groupNumberByEnrollment?: Record<string, number>;
 	showEligibilityColumn?: boolean;
+	highlightedEnrollmentId?: string | null;
 	onMarkChange?: (payload: {
 		enrollmentId: string;
 		sessionId: string;
@@ -106,10 +109,11 @@ function AttendanceNoteEditor({
 	onStatus: (status: AttendanceStatus, note: string) => void;
 	readOnly?: boolean;
 }) {
+	const surface = useSurfaceTheme();
 	const [note, setNote] = useState(mark?.note ?? '');
 	const { rootRef, textareaRef } = useGridNotePopover(onClose);
 	return createPortal(
-		<div className="mc mc-studio">
+		<div className="mc mc-studio teaching-portal" data-surface={surface}>
 			<div
 				ref={rootRef}
 				role="dialog"
@@ -183,6 +187,7 @@ export function AttendanceGrid({
 	scrollMode = 'contained',
 	groupNumberByEnrollment,
 	showEligibilityColumn = true,
+	highlightedEnrollmentId = null,
 	onMarkChange,
 	onSessionToggle,
 	onSessionLifecycle,
@@ -289,7 +294,7 @@ export function AttendanceGrid({
 					className="mc-grid"
 					data-extra={showExtraColumns}
 					data-group={hasGroupColumn}
-					data-eligibility={showEligibilityColumn && !publicCompact}
+					data-eligibility={showEligibilityColumn}
 					data-testid="attendance-grid"
 				>
 					<caption className="sr-only">Bảng điểm danh</caption>
@@ -374,6 +379,7 @@ export function AttendanceGrid({
 													open={isOpen}
 													finalized={isFinalized}
 													cancelled={session.isCancelled}
+													compact={currentWeek != null && weekNumber > currentWeek}
 													busy={togglingSessionId === session.id}
 													onLifecycle={
 														!readOnly && onSessionLifecycle
@@ -403,6 +409,7 @@ export function AttendanceGrid({
 										{session && onSessionDateChange && !readOnly && !session.isCancelled ? (
 											<SessionDateInput
 												weekNumber={weekNumber}
+												compact={currentWeek != null && weekNumber > currentWeek && !session.heldOn}
 												disabled={togglingSessionId === session.id}
 												value={session.heldOn}
 												saveState={sessionDateSaveState?.(session.id)}
@@ -417,23 +424,23 @@ export function AttendanceGrid({
 								);
 							})}
 							<th
+								aria-label={`Chuyên cần /${attendanceMaxPoints}`}
+								title={`Điểm chuyên cần tối đa ${attendanceMaxPoints}; mức trừ được cấu hình theo lớp`}
+								className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+							>
+								<span className="mc-grid-summary-heading">
+									<span>Chuyên cần</span>
+									<span>/{attendanceMaxPoints}</span>
+								</span>
+							</th>
+							<th
 								aria-label="Số buổi vắng"
 								title="Tổng số buổi vắng không phép; đi muộn cũng được tính là một buổi vắng"
-								className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-abs ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+								className={`mc-grid-freeze-right mc-grid-abs ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 							>
 								<span className="mc-grid-summary-heading">
 									<span>Số buổi</span>
 									<span>vắng</span>
-								</span>
-							</th>
-							<th
-								aria-label={`Attendance /${attendanceMaxPoints}`}
-								title={`Điểm chuyên cần tối đa ${attendanceMaxPoints}; mức trừ được cấu hình theo lớp`}
-								className={`mc-grid-freeze-right mc-grid-attendance-score ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
-							>
-								<span className="mc-grid-summary-heading">
-									<span>Attendance</span>
-									<span>/{attendanceMaxPoints}</span>
 								</span>
 							</th>
 							{showEligibilityColumn ? (
@@ -468,7 +475,11 @@ export function AttendanceGrid({
 							</tr>
 						) : (
 							students.map((student) => (
-								<tr key={student.enrollmentId} data-risk={student.cp.riskLevel}>
+								<tr
+									key={student.enrollmentId}
+									data-risk={student.cp.riskLevel}
+									data-me={student.enrollmentId === highlightedEnrollmentId ? 'true' : undefined}
+								>
 									<td
 										className={`mc-grid-freeze-left mc-grid-stt mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 									>
@@ -523,7 +534,7 @@ export function AttendanceGrid({
 															vắng
 														</span>
 														<span className="mc-grid-public-meta-line">
-															Attendance {formatTeachingScore(student.cp.attendanceScore)}/
+															Chuyên cần {formatTeachingScore(student.cp.attendanceScore)}/
 															{attendanceMaxPoints}
 															{showEligibilityColumn
 																? ` · ${student.cp.riskLevel === 'BANNED' ? 'Cấm thi' : student.cp.riskLevel === 'AT_RISK' ? 'Có nguy cơ' : 'Đủ điều kiện'}`
@@ -718,14 +729,14 @@ export function AttendanceGrid({
 										);
 									})}
 									<td
-										className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-abs mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
-									>
-										{student.cp.unexcusedAbsences}/{totalWeeks}
-									</td>
-									<td
-										className={`mc-grid-freeze-right mc-grid-attendance-score mc-num font-semibold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+										className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-attendance-score mc-num font-semibold ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 									>
 										{formatTeachingScore(student.cp.attendanceScore)} / {attendanceMaxPoints}
+									</td>
+									<td
+										className={`mc-grid-freeze-right mc-grid-abs mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
+									>
+										{student.cp.unexcusedAbsences}/{totalWeeks}
 									</td>
 									{showEligibilityColumn ? (
 										<td

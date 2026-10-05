@@ -9,6 +9,7 @@ import type { SessionLifecycleAction } from '@/features/teaching/schemas';
 
 import { AttendanceGrid } from './AttendanceGrid';
 import { ParticipationGrid } from './ParticipationGrid';
+import { TeachingToolbar } from '../ui/TeachingElements';
 import { TutorialSwitcher } from './TutorialSwitcher';
 import { mutationKey, useGradebookMutations } from './useGradebookMutations';
 import { useTeachingWorkspacePending } from './TeachingWorkspacePending';
@@ -163,7 +164,7 @@ export function GradebookWorkspace({
 	return (
 		<>
 			<div className="mc-gradebook-workspace flex min-h-0 flex-1 flex-col space-y-3">
-				<div className="mc-gradebook-toolbar">
+				<TeachingToolbar>
 					{gradebook.tutorials.length > 1 ? (
 						<TutorialSwitcher
 							tutorials={gradebook.tutorials}
@@ -182,7 +183,37 @@ export function GradebookWorkspace({
 							}}
 						/>
 					) : null}
-					<label className="relative">
+					<label className="inline-flex items-center gap-2 text-xs text-ink-secondary">
+						<span>Tuần</span>
+						<select
+							aria-label="Chọn tuần trên bảng"
+							className="mc-input"
+							value={selectedWeek ?? ''}
+							onChange={(event) => {
+								const value = event.target.value ? Number(event.target.value) : null;
+								if (value === null) {
+									setSelectedWeek(null);
+									pending?.setWeek(undefined);
+								} else selectWeek(value);
+								const params = new URLSearchParams(window.location.search);
+								if (value === null) params.delete('week');
+								else params.set('week', String(value));
+								window.history.replaceState(
+									null,
+									'',
+									`${window.location.pathname}?${params.toString()}`,
+								);
+							}}
+						>
+							<option value="">Tất cả</option>
+							{Array.from({ length: gradebook.class.totalWeeks }, (_, index) => (
+								<option key={index + 1} value={index + 1}>
+									Tuần {index + 1}
+								</option>
+							))}
+						</select>
+					</label>
+					<label className="teaching-toolbar-search">
 						<span className="sr-only">Tìm theo tên hoặc mã sinh viên</span>
 						<input
 							value={query}
@@ -191,25 +222,28 @@ export function GradebookWorkspace({
 							className="mc-student-code-search"
 						/>
 					</label>
-					{isSaving || hasSaveError ? (
-						<span
-							className="mc-save-status"
-							data-tone={hasSaveError ? 'error' : 'saving'}
-							aria-live="polite"
-						>
-							{hasSaveError ? 'Có lỗi cần thử lại' : 'Đang lưu…'}
-						</span>
-					) : null}
-					{unassignedCount > 0 ? (
-						<a className="mc-unassigned-hint" href="#teaching-students">
-							{unassignedCount} học viên chưa phân tutorial
-						</a>
-					) : null}
-				</div>
+					<div className="teaching-toolbar-summary">
+						<span>{students.length} sinh viên</span>
+						{isSaving || hasSaveError ? (
+							<span
+								className="mc-save-status"
+								data-tone={hasSaveError ? 'error' : 'saving'}
+								aria-live="polite"
+							>
+								{hasSaveError ? 'Có lỗi cần thử lại' : 'Đang lưu…'}
+							</span>
+						) : null}
+						{unassignedCount > 0 ? (
+							<a className="mc-unassigned-hint" href="#teaching-students">
+								{unassignedCount} sinh viên chưa phân tutorial
+							</a>
+						) : null}
+					</div>
+				</TeachingToolbar>
 
 				{unassignedCount > 0 ? (
 					<div id="teaching-students" className="mc-inline-warning" role="status">
-						<span>{unassignedCount} học viên chưa có tutorial.</span>
+						<span>{unassignedCount} sinh viên chưa có tutorial.</span>
 						{gradebook.tutorials.length > 0
 							? gradebook.students
 									.filter((student) => student.status === 'ACTIVE' && !student.tutorialClassId)

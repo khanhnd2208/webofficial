@@ -32,6 +32,7 @@ export default async function PublicClassRecallDeckPage({
 	if (!deck) notFound();
 	return (
 		<ActiveRecallPlayer
+			surface="teaching"
 			deck={deck}
 			classSlug={slug}
 			backHref={routes.teachingPublicClassTab(slug, 'recall')}

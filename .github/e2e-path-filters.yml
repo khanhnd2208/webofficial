@@ -26,6 +26,7 @@ classroom:
   - src/features/active-recall/**
   - src/features/myspace-tests/**
   - src/components/teaching/**
+  - src/components/teaching/ui/**
   - src/components/myclass/**
   - src/components/active-recall/**
   - src/components/knowledge/**
@@ -62,6 +63,7 @@ classroom:
   - e2e/active-recall-analytics.spec.ts
   - e2e/admin-workspace.spec.ts
   - e2e/teaching-admin-workspace.spec.ts
+  - e2e/teaching-surface.spec.ts
   - e2e/teaching-attendance-board.spec.ts
   - e2e/teaching-learning-experience-mobile.spec.ts
   - e2e/teaching-learning-experience-multi-device.spec.ts

@@ -116,7 +116,7 @@ describe('ParticipationGrid', () => {
 			'page',
 		);
 		expect(screen.getByText('SV01 · Gift −0')).toBeInTheDocument();
-		expect(screen.getByText('Attendance 5,0/5 · CP 0,0/5 · Tổng 5,0/10')).toBeInTheDocument();
+		expect(screen.getByText('Chuyên cần 5,0/5 · CP 0,0/5 · Tổng 5,0/10')).toBeInTheDocument();
 	});
 
 	it('renders the 5 + 5 score columns without repeating attendance absences', () => {
@@ -134,7 +134,7 @@ describe('ParticipationGrid', () => {
 		render(<ParticipationGrid students={[marked]} sessions={sessions()} totalWeeks={1} />);
 
 		expect(screen.queryByRole('columnheader', { name: 'Số buổi vắng' })).not.toBeInTheDocument();
-		expect(screen.getByRole('columnheader', { name: 'Attendance /5' })).toBeInTheDocument();
+		expect(screen.getByRole('columnheader', { name: 'Chuyên cần /5' })).toBeInTheDocument();
 		expect(screen.getByRole('columnheader', { name: 'CP /5' })).toBeInTheDocument();
 		expect(screen.getByRole('columnheader', { name: 'Tổng /10' })).toBeInTheDocument();
 		expect(screen.getByText('4,5 / 5')).toBeInTheDocument();

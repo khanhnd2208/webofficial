@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { SurfaceTheme } from '@/components/ui/SurfaceTheme';
 import { redirect } from 'next/navigation';
 
 import { AdminForbidden } from '@/components/admin/AdminForbidden';
@@ -19,7 +20,7 @@ export default async function MySpaceTeachingLayout({ children }: { children: Re
 	}
 
 	return (
-		<div className="mc mc-studio min-h-svh bg-canvas text-ink">
+		<SurfaceTheme surface="teaching" className="mc mc-studio min-h-svh bg-canvas text-ink">
 			<TeachingPopoverRoot>
 				{/* The shared account menu (name, Admin badge, sign-out) above every Teaching screen. */}
 				<div className="mx-auto flex w-full max-w-[92rem] justify-end px-4 pt-2 sm:px-6">
@@ -27,6 +28,6 @@ export default async function MySpaceTeachingLayout({ children }: { children: Re
 				</div>
 				<main className="mx-auto w-full max-w-[92rem] px-4 sm:px-6">{children}</main>
 			</TeachingPopoverRoot>
-		</div>
+		</SurfaceTheme>
 	);
 }
