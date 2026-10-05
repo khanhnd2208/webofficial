@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 
 import InAppBrowserNotice from './in-app-browser-notice';
 import SignInWithGoogleButton from './sign-in-with-google-button';
-import SiteTopBar from '@/components/site/SiteTopBar';
 import SwitchAccountButton from './switch-account-button';
 import { isSignInRequiredPath } from '@/config/navigation';
 import { routes } from '@/config/routes';
@@ -62,8 +61,7 @@ export default async function LoginPage({
 
 	return (
 		<div className="mx-auto min-h-svh max-w-6xl px-5 sm:px-8">
-			<SiteTopBar crumbs={[{ label: 'Đăng nhập' }]} showSignIn={false} />
-			<main className="flex min-h-[calc(100svh-3.5rem)] items-start justify-center pb-12 pt-10 sm:items-center sm:py-16">
+			<main className="flex min-h-[calc(100svh-var(--site-header-height))] items-start justify-center pb-12 pt-10 sm:items-center sm:py-16">
 				<div className="w-full max-w-sm rounded-xl border border-hairline bg-canvas p-6 sm:p-8">
 					<Link href={routes.toc} className="text-xs font-medium text-ink-secondary hover:text-ink">
 						{SITE_NAME}

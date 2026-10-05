@@ -41,7 +41,7 @@ function Opening({ project }: { project: Project }) {
 					<p className="editorial-label">
 						{project.category} · {project.year}
 					</p>
-					<h1 className="mt-5 font-display text-[clamp(1.875rem,4vw,3rem)] font-medium leading-[1.15] tracking-[-0.02em] text-ink text-balance">
+					<h1 className="mt-5 font-display type-page-title font-medium text-ink text-balance">
 						{project.title}
 					</h1>
 					<p className="mt-6 max-w-2xl text-base leading-[1.75] text-ink-secondary md:text-lg">
@@ -140,7 +140,7 @@ function HowIWorked({ project }: { project: Project }) {
 							key={step.label}
 							className="grid grid-cols-[3rem_1fr] gap-5 border-b border-hairline py-6"
 						>
-							<span className="font-mono text-xs text-ink/40">
+							<span className="text-caption tabular-nums text-ink-secondary">
 								{String(index + 1).padStart(2, '0')}
 							</span>
 							<div>

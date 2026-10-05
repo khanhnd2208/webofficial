@@ -20,9 +20,6 @@ vi.mock('next/headers', () => ({
 	cookies: async () => ({ get: () => undefined }),
 }));
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
-vi.mock('@/components/site/SiteTopBar', () => ({
-	default: () => <nav aria-label="Đường dẫn">Mục lục / Đăng nhập</nav>,
-}));
 
 beforeEach(() => {
 	vi.clearAllMocks();

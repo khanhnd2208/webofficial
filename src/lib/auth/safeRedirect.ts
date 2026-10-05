@@ -147,6 +147,6 @@ export function destinationLabel(from: string): string | null {
 	if (pathname.startsWith('/ghi-chep') || pathname.startsWith('/bai-viet')) return 'ghi chép';
 	if (pathname.startsWith('/tai-khoan')) return 'tài khoản';
 	if (pathname === '/muc-luc') return 'Mục lục';
-	if (pathname.startsWith('/my-space')) return 'My Space';
+	if (pathname.startsWith('/my-space')) return 'Không gian của tôi';
 	return 'trang bạn vừa mở';
 }

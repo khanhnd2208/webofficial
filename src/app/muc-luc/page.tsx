@@ -11,7 +11,7 @@ import styles from './toc.module.css';
 
 export const metadata: Metadata = {
 	title: 'Mục lục',
-	description: 'Tìm hiểu về Duy Khánh, rồi ghé My Space để học, dạy và chơi.',
+	description: 'Tìm hiểu về Duy Khánh, rồi ghé Không gian của tôi để học, dạy và chơi.',
 	alternates: { canonical: absoluteUrl(routes.toc) },
 };
 
@@ -28,6 +28,23 @@ const tocIcons: Record<string, string> = {
 	courses: '/brand/toc/courses-v1.webp',
 	'board-game': '/brand/toc/board-game-v1.webp',
 };
+
+function TileTitle({ label }: { label: string }) {
+	const words = label.trim().split(/\s+/);
+	const last = words.pop() ?? label;
+	const rest = words.join(' ');
+	return (
+		<span className={styles.tileTitle}>
+			{rest ? <>{rest} </> : null}
+			<span className={styles.nowrap}>
+				{last}
+				<span className={styles.arrow} aria-hidden="true">
+					↗
+				</span>
+			</span>
+		</span>
+	);
+}
 
 const aboutTiles = [
 	{
@@ -60,11 +77,10 @@ export default async function TocPage() {
 					<h1>Bạn muốn ghé đâu?</h1>
 					<p>Một chút về tôi. Một không gian để học và chơi.</p>
 				</header>
-				<nav aria-label="About Me và My Space" className={styles.navigation}>
+				<nav aria-label="Về tôi và Không gian của tôi" className={styles.navigation}>
 					<section className={styles.about} aria-labelledby="toc-about">
 						<div className={styles.sectionLabel}>
-							<h2 id="toc-about">About Me</h2>
-							<span>Về tôi</span>
+							<h2 id="toc-about">Về tôi</h2>
 						</div>
 						<div className={styles.tiles}>
 							{aboutTiles.map((tile) => (
@@ -83,12 +99,7 @@ export default async function TocPage() {
 											sizes="(max-width: 760px) 88px, 112px"
 										/>
 									</span>
-									<span className={styles.tileTitle}>
-										{tile.label}
-										<span className={styles.arrow} aria-hidden="true">
-											↗
-										</span>
-									</span>
+									<TileTitle label={tile.label} />
 									<span className={styles.description}>{tile.description}</span>
 								</Link>
 							))}
@@ -96,7 +107,7 @@ export default async function TocPage() {
 					</section>
 					<section className={styles.space} aria-labelledby="toc-myspace">
 						<div className={styles.sectionLabel}>
-							<h2 id="toc-myspace">My Space</h2>
+							<h2 id="toc-myspace">Không gian của tôi</h2>
 							<span>Học · Dạy · Chơi</span>
 						</div>
 						<div className={styles.tiles}>
@@ -120,12 +131,7 @@ export default async function TocPage() {
 											/>
 										) : null}
 									</span>
-									<span className={styles.tileTitle}>
-										{tile.label}
-										<span className={styles.arrow} aria-hidden="true">
-											↗
-										</span>
-									</span>
+									<TileTitle label={tile.label} />
 									<span className={styles.description}>{descriptions[tile.id]}</span>
 								</Link>
 							))}
@@ -135,7 +141,6 @@ export default async function TocPage() {
 				</nav>
 				<footer className={styles.footer}>
 					<span>Chưa xong. Và vẫn đang tiếp tục.</span>
-					<Link href={routes.contact}>Gửi lời nhắn ↗</Link>
 				</footer>
 			</div>
 		</main>

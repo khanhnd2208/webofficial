@@ -24,12 +24,14 @@ type SiteAuthChipProps = {
 };
 
 const variantClass = {
-	chrome: 'text-[0.6875rem] tracking-[0.16em] text-ink/55 hover:text-ink focus-visible:text-ink',
-	intro: 'font-display text-sm tracking-[0.2em] text-ink/70 hover:text-ink focus-visible:text-ink',
+	chrome: 'text-caption tracking-[0.08em] text-ink-secondary hover:text-ink focus-visible:text-ink',
+	intro:
+		'font-display text-subhead tracking-[0.08em] text-ink/70 hover:text-ink focus-visible:text-ink',
 	introMobile:
-		'font-mono text-[0.8125rem] tracking-[0.18em] text-ink-secondary hover:text-ink focus-visible:text-ink',
-	bar: 'text-sm text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
-	badge: 'text-xs text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
+		'text-footnote tracking-[0.08em] text-ink-secondary hover:text-ink focus-visible:text-ink',
+	bar: 'text-subhead whitespace-nowrap text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
+	badge:
+		'text-caption whitespace-nowrap text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
 } as const;
 
 /** Vietnamese names end with the given name: "Nguyễn Duy Khánh" → "Khánh". */
@@ -118,7 +120,7 @@ export default function SiteAuthChip({
 		}
 	}
 
-	const base = `inline-flex min-h-10 items-center transition-colors duration-300 focus-visible:outline-none ${variantClass[variant]} ${className}`;
+	const base = `inline-flex min-h-11 items-center whitespace-nowrap transition-colors duration-(--dur-2) ease-(--ease-out) focus-visible:outline-none ${variantClass[variant]} ${className}`;
 
 	if (status === 'loading') {
 		// Hold the space without flashing "Đăng nhập" at someone who is signed in.
@@ -174,7 +176,7 @@ export default function SiteAuthChip({
 				onClick={() => setOpen((value) => !value)}
 				className={`${base} gap-2`}
 			>
-				<span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#2f8f5b]" />
+				<span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-success" />
 				{variant === 'badge' && isAdmin ? null : (
 					<span
 						className={`truncate tracking-normal normal-case ${variant === 'badge' ? 'max-w-[4.5rem]' : 'max-w-[9rem]'}`}
@@ -183,11 +185,11 @@ export default function SiteAuthChip({
 					</span>
 				)}
 				{isAdmin ? (
-					<span className="rounded-full border border-current px-1.5 py-px text-[0.625rem] leading-none tracking-[0.08em] uppercase">
+					<span className="rounded-full border border-current px-1.5 py-px text-caption leading-none tracking-[0.08em] uppercase">
 						Admin
 					</span>
 				) : null}
-				<span aria-hidden="true" className="text-[0.625rem]">
+				<span aria-hidden="true" className="text-caption">
 					▾
 				</span>
 			</button>
@@ -197,7 +199,7 @@ export default function SiteAuthChip({
 					id={panelId}
 					aria-label="Tài khoản"
 					role="group"
-					className="absolute top-full right-0 z-[60] mt-2 w-60 overflow-hidden rounded-xl border border-hairline bg-canvas text-left text-sm tracking-normal text-ink normal-case shadow-[0_12px_32px_rgba(20,18,15,0.14)]"
+					className="absolute top-full right-0 z-[60] mt-2 w-60 overflow-hidden rounded-lg border border-hairline bg-canvas text-left text-subhead tracking-normal text-ink normal-case shadow-lg"
 				>
 					<div className="border-b border-hairline px-4 py-3">
 						<p className="truncate font-medium">{session.user.name ?? name}</p>

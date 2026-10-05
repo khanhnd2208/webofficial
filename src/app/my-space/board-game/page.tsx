@@ -2,12 +2,11 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import SiteTopBar from '@/components/site/SiteTopBar';
 import { routes } from '@/config/routes';
 import { auth } from '@/lib/auth';
 
 export const metadata: Metadata = {
-	title: 'Board Game | My Space',
+	title: 'Board Game | Không gian của tôi',
 	description:
 		'Chơi Spy Fall, Ma Sói và Cheese Thief cùng bạn bè — tạo phòng, chia sẻ mã và bắt đầu.',
 };
@@ -19,25 +18,23 @@ export default async function BoardGamePage() {
 		<main className="relative min-h-svh overflow-hidden bg-canvas px-6 pt-4 pb-20 sm:px-8 sm:pt-8 sm:pb-28">
 			<div className="pointer-events-none absolute -right-48 top-24 h-96 w-96 rounded-full bg-vermilion/5 blur-3xl" />
 			<div className="mx-auto max-w-5xl">
-				<SiteTopBar
-					crumbs={[{ label: 'My Space', href: routes.mySpace }, { label: 'Board Game' }]}
-					className="text-ink"
-				/>
 				<header className="mt-10 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
 					<div>
-						<p className="font-mono text-xs tracking-[0.22em] text-ink/45 uppercase">
-							My Space · Board Game
-						</p>
-						<h1 className="mt-4 max-w-2xl font-display text-5xl font-medium tracking-tight text-ink sm:text-6xl">
+						<p className="eyebrow">Không gian của tôi · Board Game</p>
+						<h1 className="mt-4 max-w-2xl font-display text-display font-medium tracking-tight text-ink">
 							Chơi cùng nhau
 						</h1>
-						<p className="mt-5 max-w-xl text-base leading-relaxed text-ink-secondary sm:text-lg">
+						<p className="mt-5 max-w-xl text-body text-ink-secondary">
 							Một góc nhỏ để mở game, tạo phòng và mời mọi người cùng tham gia — không cần tài
 							khoản.
 						</p>
 					</div>
-					<p className="max-w-[16rem] border-l border-vermilion/60 pl-4 font-mono text-[0.68rem] leading-relaxed tracking-[0.14em] text-ink-secondary uppercase">
-						Mở phòng · Chia sẻ mã · Bắt đầu chơi
+					<p className="eyebrow max-w-[16rem] border-l border-vermilion/60 pl-4">
+						<span className="whitespace-nowrap">Mở phòng</span>
+						{' · '}
+						<span className="whitespace-nowrap">Chia sẻ mã</span>
+						{' · '}
+						<span className="whitespace-nowrap">Bắt đầu chơi</span>
 					</p>
 				</header>
 				{isAdmin ? (
@@ -55,7 +52,7 @@ export default async function BoardGamePage() {
 				<div className="mt-10 space-y-6">
 					<Link
 						href={routes.spyFall}
-						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-3xl border border-hairline bg-paper transition duration-500 hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
+						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-lg border border-hairline bg-paper transition duration-(--dur-3) ease-(--ease-out) hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
 					>
 						<Image
 							src="/brand/myspace/spy-fall-editorial.webp"
@@ -63,29 +60,25 @@ export default async function BoardGamePage() {
 							alt="Minh hoạ screen-print của một nhà ga đêm với vali và ghim đỏ cho Spy Fall"
 							fill
 							priority
-							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
+							className="object-cover object-center transition duration-(--dur-3) ease-(--ease-out) group-hover:scale-[1.03]"
 							sizes="(max-width: 640px) 100vw, 1024px"
 						/>
 						<div className="board-game-cover-overlay absolute inset-0" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#f4bd9d] uppercase">
-									01 · Suy luận xã hội
-								</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-[#f7f3ea]/90 uppercase">
-									4–12 người
-								</span>
+								<p className="eyebrow !text-sunlight">01 · Suy luận xã hội</p>
+								<span className="eyebrow tabular-nums !text-paper/90">4–12 người</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-[#f7f3ea] sm:text-5xl">
+								<h2 className="font-display text-title-1 font-medium tracking-tight text-paper">
 									Spy Fall
 								</h2>
-								<p className="mt-3 max-w-sm text-sm leading-relaxed text-[#f7f3ea]/90 sm:text-base">
+								<p className="mt-3 max-w-sm text-subhead text-paper/90 sm:text-body">
 									Tìm ra điệp viên giữa nhóm bạn. Mỗi người dùng điện thoại của mình.
 								</p>
-								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-[#f4bd9d] uppercase">
+								<span className="mt-7 inline-flex items-center gap-2 eyebrow !text-sunlight">
 									Vào game{' '}
-									<span className="transition-transform duration-300 group-hover:translate-x-1">
+									<span className="transition-transform duration-(--dur-2) ease-(--ease-out) group-hover:translate-x-1">
 										→
 									</span>
 								</span>
@@ -95,36 +88,32 @@ export default async function BoardGamePage() {
 
 					<Link
 						href={routes.maSoi}
-						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-3xl border border-hairline bg-paper transition duration-500 hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
+						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-lg border border-hairline bg-paper transition duration-(--dur-3) ease-(--ease-out) hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
 					>
 						<Image
 							src="/brand/myspace/ma-soi-editorial.webp"
 							unoptimized
 							alt="Minh hoạ screen-print của một bàn chơi làng quê dưới trăng cho Ma Sói"
 							fill
-							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
+							className="object-cover object-center transition duration-(--dur-3) ease-(--ease-out) group-hover:scale-[1.03]"
 							sizes="(max-width: 640px) 100vw, 1024px"
 						/>
 						<div className="board-game-cover-overlay absolute inset-0" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#f4bd9d] uppercase">
-									02 · Bàn làng dưới trăng
-								</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-[#f7f3ea]/90 uppercase">
-									5–20 người
-								</span>
+								<p className="eyebrow !text-sunlight">02 · Bàn làng dưới trăng</p>
+								<span className="eyebrow tabular-nums !text-paper/90">5–20 người</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-[#f7f3ea] sm:text-5xl">
+								<h2 className="font-display text-title-1 font-medium tracking-tight text-paper">
 									Ma Sói
 								</h2>
-								<p className="mt-3 max-w-sm text-sm leading-relaxed text-[#f7f3ea]/90 sm:text-base">
+								<p className="mt-3 max-w-sm text-subhead text-paper/90 sm:text-body">
 									Chia thẻ vai cho cả nhóm. Mỗi người xem thẻ bí mật trên điện thoại của mình.
 								</p>
-								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-[#f4bd9d] uppercase">
+								<span className="mt-7 inline-flex items-center gap-2 eyebrow !text-sunlight">
 									Vào game{' '}
-									<span className="transition-transform duration-300 group-hover:translate-x-1">
+									<span className="transition-transform duration-(--dur-2) ease-(--ease-out) group-hover:translate-x-1">
 										→
 									</span>
 								</span>
@@ -134,35 +123,31 @@ export default async function BoardGamePage() {
 
 					<Link
 						href={routes.cheeseThief}
-						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-3xl border border-hairline bg-paper transition duration-500 hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
+						className="group relative isolate block min-h-[25rem] overflow-hidden rounded-lg border border-hairline bg-paper transition duration-(--dur-3) ease-(--ease-out) hover:-translate-y-1 hover:border-vermilion/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[29rem]"
 					>
 						<Image
 							src="/board-game/cheese-thief/cover.webp"
 							alt="Tranh minh họa Cheese Thief: chú chuột lén lấy miếng cheese dưới ánh đèn đêm"
 							fill
-							className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
+							className="object-cover object-center transition duration-(--dur-3) ease-(--ease-out) group-hover:scale-[1.03]"
 							sizes="(max-width: 640px) 100vw, 1024px"
 						/>
 						<div className="board-game-cover-overlay absolute inset-0" />
 						<div className="relative flex min-h-[25rem] flex-col justify-between p-7 sm:min-h-[29rem] sm:p-10">
 							<div className="flex items-center justify-between gap-4">
-								<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#f4bd9d] uppercase">
-									03 · Bàn ăn đêm
-								</p>
-								<span className="font-mono text-xs tracking-[0.16em] text-[#f7f3ea]/90 uppercase">
-									4–12 người
-								</span>
+								<p className="eyebrow !text-sunlight">03 · Bàn ăn đêm</p>
+								<span className="eyebrow tabular-nums !text-paper/90">4–12 người</span>
 							</div>
 							<div className="max-w-md">
-								<h2 className="font-display text-4xl font-medium tracking-tight text-[#f7f3ea] sm:text-5xl">
+								<h2 className="font-display text-title-1 font-medium tracking-tight text-paper">
 									Cheese Thief
 								</h2>
-								<p className="mt-3 max-w-sm text-sm leading-relaxed text-[#f7f3ea]/90 sm:text-base">
+								<p className="mt-3 max-w-sm text-subhead text-paper/90 sm:text-body">
 									Ai lấy miếng cheese? Mở mắt, nhìn nhau, rồi cãi. Điện thoại chỉ giữ bí mật.
 								</p>
-								<span className="mt-7 inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-[#f4bd9d] uppercase">
+								<span className="mt-7 inline-flex items-center gap-2 eyebrow !text-sunlight">
 									Vào game{' '}
-									<span className="transition-transform duration-300 group-hover:translate-x-1">
+									<span className="transition-transform duration-(--dur-2) ease-(--ease-out) group-hover:translate-x-1">
 										→
 									</span>
 								</span>
@@ -171,7 +156,7 @@ export default async function BoardGamePage() {
 					</Link>
 				</div>
 
-				<footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-5 font-mono text-[0.68rem] tracking-[0.14em] text-ink-secondary uppercase">
+				<footer className="eyebrow mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-5">
 					<span>Không cần tài khoản</span>
 					<span>Chơi ngay trên điện thoại</span>
 				</footer>

@@ -9,7 +9,7 @@ import {
 	LoginReturnTracker,
 	MainContent,
 	Navbar,
-	PublicMinimalChrome,
+	SiteHeader,
 	SessionFreshness,
 	SkipLink,
 } from '@/components/site';
@@ -84,7 +84,7 @@ export default function RootLayout({
 				<Providers inquiryAvailability={inquiryAvailability}>
 					<SkipLink />
 					<Navbar />
-					<PublicMinimalChrome />
+					<SiteHeader />
 					<MainContent>{children}</MainContent>
 					<ConditionalFooter />
 					<AnalyticsScript />
