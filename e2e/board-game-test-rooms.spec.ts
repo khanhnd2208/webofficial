@@ -82,7 +82,7 @@ test('Cheese four-player night goes straight to the secret minute', async ({ pag
 	await expect(page.getByRole('radio', { name: /Nhanh/ })).toBeVisible();
 	await expect(page.getByRole('radio', { name: /Vừa/ })).toHaveAttribute('aria-checked', 'true');
 	await expect(page.getByRole('radio', { name: /Chậm/ })).toBeVisible();
-	await expect(page.getByText('Không có Follower', { exact: true })).toBeVisible();
+	await expect(page.getByText('Không có đồng phạm', { exact: true })).toBeVisible();
 	await expect(page.getByText('Tuỳ chỉnh nâng cao')).toHaveCount(0);
 	const preview = page.getByRole('button', { name: 'Nghe thử một vòng' });
 	await preview.click();
@@ -122,10 +122,10 @@ test('Cheese lobby keeps follower tuning closed and the short guide matches the 
 	const controls = page.getByRole('complementary');
 	await controls.getByRole('button', { name: 'Tạm dừng', exact: true }).click();
 	await expect(page.getByText('Đã vào 6/6')).toBeVisible();
-	await expect(page.getByText(/Follower: 1/)).toBeVisible();
-	await expect(page.getByRole('button', { name: 'Bớt một Follower' })).toHaveCount(0);
+	await expect(page.getByText(/Đồng phạm: 1/)).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Bớt một đồng phạm' })).toHaveCount(0);
 	await page.getByText('Tuỳ chỉnh nâng cao').click();
-	await expect(page.getByRole('button', { name: 'Bớt một Follower' })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Bớt một đồng phạm' })).toBeVisible();
 	await page.screenshot({ path: 'test-results/cheese-lobby-vi.png', fullPage: true });
 	await page.getByRole('main').getByRole('button', { name: 'Cách chơi', exact: true }).click();
 	const guide = page.getByRole('dialog', { name: 'Cách chơi Cheese Thief' });
