@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 
+import { TeachingMark } from '@/components/site/TeachingMark';
 import { McIcon } from '@/components/myclass/ui';
 
 export function TeachingAppHeader({
 	backHref,
 	backLabel,
 	eyebrow,
+	eyebrowTitle,
 	title,
 	description,
 	actions,
@@ -15,6 +17,7 @@ export function TeachingAppHeader({
 	backHref: string;
 	backLabel: string;
 	eyebrow?: ReactNode;
+	eyebrowTitle?: string;
 	title: ReactNode;
 	description?: ReactNode;
 	actions?: ReactNode;
@@ -32,13 +35,25 @@ export function TeachingAppHeader({
 					<span className="teaching-app-header-back-label">{backLabel}</span>
 				</Link>
 				<div className="teaching-app-header-identity">
-					{eyebrow ? <p className="teaching-app-header-eyebrow">{eyebrow}</p> : null}
-					<h1
-						className="teaching-app-header-title"
-						title={typeof title === 'string' ? title : undefined}
-					>
-						{title}
-					</h1>
+					<div className="teaching-header-title-row">
+						<TeachingMark className="teaching-header-mark" />
+						<div className="min-w-0">
+							{eyebrow ? (
+								<p
+									className="teaching-app-header-eyebrow"
+									title={eyebrowTitle ?? (typeof eyebrow === 'string' ? eyebrow : undefined)}
+								>
+									{eyebrow}
+								</p>
+							) : null}
+							<h1
+								className="teaching-app-header-title"
+								title={typeof title === 'string' ? title : undefined}
+							>
+								{title}
+							</h1>
+						</div>
+					</div>
 					{description ? (
 						<div className="teaching-app-header-description">{description}</div>
 					) : null}

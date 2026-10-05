@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
 import { RememberClassVisit } from '@/components/site/RecentClasses';
+import { SurfaceTheme } from '@/components/ui/SurfaceTheme';
 import { StudentClassBoard } from '@/components/teaching/public/StudentClassBoard';
 import { getClassIdBySlug, getPublicClassBoard } from '@/features/teaching';
 import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
@@ -50,7 +51,7 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 	}
 
 	return (
-		<div className="mc mc-studio min-h-screen bg-canvas text-ink">
+		<SurfaceTheme surface="teaching" className="mc mc-studio min-h-screen bg-canvas text-ink">
 			<RememberClassVisit slug={slug} title={board.title} code={board.courseCode} />
 			<main className="mx-auto w-[min(100%-2rem,74rem)] py-8 sm:w-[min(100%-3rem,74rem)] sm:py-10">
 				<StudentClassBoard
@@ -66,6 +67,6 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 					toiladuykhanh.com · Mục lục
 				</Link>
 			</footer>
-		</div>
+		</SurfaceTheme>
 	);
 }

@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
+import { TeachingSectionHeading, TeachingEmpty } from '../ui/TeachingElements';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { StudioButton, StudioField, StudioInput } from '@/components/myclass/admin/studio';
 import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
@@ -14,6 +15,70 @@ import { formatDependencySummary } from '@/features/teaching/domain/adminLifecyc
 import type { TeachingCourseListItem, TeachingCourseRecord } from '@/features/teaching/types';
 
 type StatusFilter = 'active' | 'archived' | 'all';
+
+const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
+	{ id: 'active', label: 'Đang dạy' },
+	{ id: 'archived', label: 'Lưu trữ' },
+	{ id: 'all', label: 'Tất cả' },
+];
+
+function compareCourses(a: TeachingCourseListItem, b: TeachingCourseListItem) {
+	const activity = Number(b.activeClassCount > 0) - Number(a.activeClassCount > 0);
+	if (activity !== 0) return activity;
+	return b.updatedAt.localeCompare(a.updatedAt);
+}
+
+/** Matches the counts on each row: no class being taught now and no card deck. */
+function courseIsUnused(course: TeachingCourseListItem) {
+	return course.activeClassCount === 0 && course.deckCount === 0;
+}
+
+function CourseRow({
+	course,
+	showCounts = false,
+	children,
+}: {
+	course: TeachingCourseListItem;
+	showCounts?: boolean;
+	children: ReactNode;
+}) {
+	return (
+		<article
+			className={`flex min-h-11 items-center gap-2 ${showCounts ? '' : 'px-3'} ${course.status === 'ARCHIVED' ? 'opacity-80' : ''}`}
+		>
+			<Link
+				href={routes.mySpaceTeachingCourse(course.id)}
+				className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+				data-testid={`teaching-course-card-${course.id}`}
+			>
+				<span className="w-28 shrink-0 font-mono text-xs font-bold uppercase tracking-wide text-accent">
+					{course.courseCode}
+				</span>
+				<span
+					className={`min-w-0 flex-1 truncate text-sm text-ink ${showCounts ? 'font-semibold' : ''}`}
+				>
+					{course.courseName}
+				</span>
+				{showCounts ? (
+					<>
+						<span className="hidden shrink-0 text-xs text-ink-secondary sm:inline">
+							<span className="font-semibold text-ink">{course.activeClassCount}</span> lớp
+						</span>
+						<span className="hidden shrink-0 text-xs text-ink-secondary sm:inline">
+							<span className="font-semibold text-ink">{course.deckCount}</span> bộ thẻ
+						</span>
+					</>
+				) : null}
+				{course.status === 'ARCHIVED' ? (
+					<span className="teaching-status shrink-0 text-[0.625rem]" data-tone="muted">
+						Đã lưu trữ
+					</span>
+				) : null}
+			</Link>
+			{children}
+		</article>
+	);
+}
 
 function mutationError(reason: unknown, fallback: string) {
 	if (reason instanceof AdminApiError) {
@@ -33,6 +98,9 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 	const [createOpen, setCreateOpen] = useState(false);
+	// A course created in this visit stays in the main list so it does not vanish into
+	// the collapsed "unused" group right after "Lưu".
+	const [createdId, setCreatedId] = useState<string | null>(null);
 	const [editCourse, setEditCourse] = useState<TeachingCourseListItem | null>(null);
 	const [draft, setDraft] = useState({ courseCode: '', courseName: '' });
 
@@ -58,6 +126,56 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 			return matchesQuery && matchesStatus;
 		});
 	}, [courses, query, statusFilter]);
+
+	const statusCounts = useMemo(
+		() => ({
+			active: courses.filter((course) => course.status === 'ACTIVE').length,
+			archived: courses.filter((course) => course.status === 'ARCHIVED').length,
+			all: courses.length,
+		}),
+		[courses],
+	);
+	const arranged = useMemo(() => {
+		const sorted = [...filtered].sort(compareCourses);
+		const created = sorted.find((course) => course.id === createdId && courseIsUnused(course));
+		return {
+			listed: [
+				...(created ? [created] : []),
+				...sorted.filter((course) => !courseIsUnused(course)),
+			],
+			unused: sorted.filter((course) => courseIsUnused(course) && course !== created),
+		};
+	}, [filtered, createdId]);
+
+	function courseMenu(course: TeachingCourseListItem) {
+		const archived = course.status === 'ARCHIVED';
+		return {
+			label: `Thao tác môn ${course.courseCode}`,
+			disabled: busy,
+			items: [
+				{ id: 'edit', label: 'Sửa', onSelect: () => openEdit(course) },
+				archived
+					? {
+							id: 'restore',
+							label: 'Khôi phục',
+							onSelect: () => void archiveCourse(course, 'ACTIVE'),
+						}
+					: {
+							id: 'archive',
+							label: 'Lưu trữ',
+							disabled: !course.canArchive,
+							onSelect: () => void archiveCourse(course, 'ARCHIVED'),
+						},
+				{
+					id: 'delete',
+					label: 'Xóa vĩnh viễn',
+					tone: 'danger' as const,
+					disabled: !course.canDelete,
+					onSelect: () => void deleteCourse(course),
+				},
+			],
+		};
+	}
 
 	function openCreate() {
 		setError('');
@@ -93,10 +211,11 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 				});
 				setEditCourse(null);
 			} else {
-				await teachingApi<TeachingCourseRecord>('/api/admin/teaching/courses', {
+				const created = await teachingApi<TeachingCourseRecord>('/api/admin/teaching/courses', {
 					method: 'POST',
 					body: JSON.stringify(draft),
 				});
+				setCreatedId(created?.id ?? null);
 				setCreateOpen(false);
 			}
 		});
@@ -150,13 +269,13 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 
 	return (
 		<section className="space-y-6" aria-label="Danh sách môn học">
-			<div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-				<div className="min-w-0">
-					<h2 className="text-base font-semibold text-ink">Các môn đang dạy</h2>
-					<p className="mc-meta mt-0.5 text-xs text-ink-secondary">
-						Sửa, lưu trữ hoặc thêm môn trực tiếp từ danh sách.
-					</p>
-				</div>
+			<div className="teaching-filter-bar">
+				<TeachingSectionHeading
+					icon="course"
+					title="Các môn đang dạy"
+					description="Nội dung và các lớp theo từng môn học."
+					count={filtered.length}
+				/>
 				<div className="flex flex-wrap items-center gap-2 sm:shrink-0">
 					<label className="min-w-0 flex-1 sm:w-56 sm:flex-none">
 						<span className="sr-only">Tìm môn</span>
@@ -169,20 +288,21 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 							data-testid="teaching-search-input"
 						/>
 					</label>
-					<label>
-						<span className="sr-only">Lọc môn</span>
-						<select
-							value={statusFilter}
-							onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-							className="mc-input min-h-11 text-xs font-medium"
-							data-testid="teaching-course-status-filter"
-						>
-							<option value="active">Đang dạy</option>
-							<option value="archived">Đã lưu trữ</option>
-							<option value="all">Tất cả môn</option>
-						</select>
-					</label>
-					<StudioButton onClick={openCreate} disabled={busy}>
+					<div className="flex gap-1 overflow-x-auto" role="group" aria-label="Lọc môn">
+						{STATUS_FILTERS.map((filter) => (
+							<button
+								key={filter.id}
+								type="button"
+								aria-pressed={statusFilter === filter.id}
+								className="mc-button min-h-11 shrink-0 px-3 text-xs font-semibold"
+								data-active={statusFilter === filter.id}
+								onClick={() => setStatusFilter(filter.id)}
+							>
+								{filter.label} {statusCounts[filter.id]}
+							</button>
+						))}
+					</div>
+					<StudioButton variant="secondary" onClick={openCreate} disabled={busy}>
 						Thêm môn
 					</StudioButton>
 				</div>
@@ -195,90 +315,47 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 			) : null}
 
 			{courses.length === 0 ? (
-				<div
-					className="mc-surface rounded-2xl p-8 text-center sm:p-12"
+				<TeachingEmpty
+					icon="course"
+					title="Chưa có môn học"
+					description="Thêm môn trước, rồi tạo lớp rỗng và nhập sinh viên sau."
 					data-testid="teaching-empty-all"
 				>
-					<p className="text-base font-semibold text-ink">Chưa có môn học</p>
-					<p className="mc-meta mx-auto mt-2 max-w-md text-sm text-ink-secondary">
-						Thêm môn trước, rồi tạo lớp rỗng và nhập học viên sau.
-					</p>
-					<div className="mt-6">
-						<StudioButton onClick={openCreate}>Thêm môn đầu tiên</StudioButton>
-					</div>
-				</div>
+					<StudioButton onClick={openCreate}>Thêm môn đầu tiên</StudioButton>
+				</TeachingEmpty>
 			) : filtered.length === 0 ? (
-				<div className="mc-surface rounded-2xl p-8 text-center">
-					<p className="text-sm font-semibold text-ink">Không có kết quả phù hợp</p>
-				</div>
+				<TeachingEmpty
+					icon="course"
+					title="Không có kết quả phù hợp"
+					description="Thử từ khóa khác hoặc thay đổi bộ lọc môn học."
+				/>
 			) : (
-				<div
-					className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-					data-testid="teaching-course-cards-grid"
-				>
-					{filtered.map((course) => (
-						<article
-							key={course.id}
-							className={`relative flex h-full flex-col rounded-2xl border bg-surface ${
-								course.status === 'ARCHIVED' ? 'border-border/60 opacity-80' : 'border-border/80'
-							}`}
-						>
-							<Link
-								href={routes.mySpaceTeachingCourse(course.id)}
-								className="flex flex-1 flex-col p-5 pr-14 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-								data-testid={`teaching-course-card-${course.id}`}
-							>
-								<p className="font-mono text-xs font-bold uppercase tracking-wider text-accent">
-									{course.courseCode}
-								</p>
-								<h3 className="mt-2 text-base font-semibold leading-snug text-ink">
-									{course.courseName}
-								</h3>
-								<div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-border/60 pt-3 text-xs text-ink-secondary">
-									<div>
-										<span className="font-semibold text-ink">{course.activeClassCount}</span> lớp
-									</div>
-									<div>
-										<span className="font-semibold text-ink">{course.deckCount}</span> bộ thẻ
-									</div>
-									{course.status === 'ARCHIVED' ? (
-										<span className="teaching-status text-[0.625rem]" data-tone="muted">
-											Đã lưu trữ
-										</span>
-									) : null}
-								</div>
-							</Link>
-							<div className="absolute right-2 top-2">
-								<TeachingQuickMenu
-									label={`Thao tác môn ${course.courseCode}`}
-									disabled={busy}
-									items={[
-										{ id: 'edit', label: 'Sửa', onSelect: () => openEdit(course) },
-										course.status === 'ARCHIVED'
-											? {
-													id: 'restore',
-													label: 'Khôi phục',
-													onSelect: () => void archiveCourse(course, 'ACTIVE'),
-												}
-											: {
-													id: 'archive',
-													label: 'Lưu trữ',
-													disabled: !course.canArchive,
-													onSelect: () => void archiveCourse(course, 'ARCHIVED'),
-												},
-										{
-											id: 'delete',
-											label: 'Xóa vĩnh viễn',
-											tone: 'danger',
-											disabled: !course.canDelete,
-											onSelect: () => void deleteCourse(course),
-										},
-									]}
-								/>
+				<>
+					<div
+						className="divide-y divide-border/70 border-y border-border/70"
+						data-testid="teaching-course-list"
+					>
+						{arranged.listed.map((course) => (
+							<CourseRow key={course.id} course={course} showCounts>
+								<TeachingQuickMenu {...courseMenu(course)} />
+							</CourseRow>
+						))}
+					</div>
+					{arranged.unused.length > 0 ? (
+						<details className="rounded-[var(--mc-r)] border border-border/70">
+							<summary className="min-h-11 cursor-pointer px-3 py-3 text-sm font-semibold text-ink-secondary">
+								Môn chưa có lớp đang dạy ({arranged.unused.length})
+							</summary>
+							<div className="divide-y divide-border/70 border-t border-border/70">
+								{arranged.unused.map((course) => (
+									<CourseRow key={course.id} course={course}>
+										<TeachingQuickMenu {...courseMenu(course)} />
+									</CourseRow>
+								))}
 							</div>
-						</article>
-					))}
-				</div>
+						</details>
+					) : null}
+				</>
 			)}
 
 			<Dialog

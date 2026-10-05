@@ -1,5 +1,7 @@
 'use client';
 
+import { TeachingIcon } from '../ui/TeachingIcon';
+
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -268,7 +270,7 @@ export function ClassNotesAdminWorkspace({
 			!selected ||
 			!(await confirm({
 				title: 'Gỡ xuất bản',
-				description: 'Gỡ mục này khỏi trang học viên?',
+				description: 'Gỡ mục này khỏi trang sinh viên?',
 				confirmLabel: 'Gỡ',
 			}))
 		)
@@ -307,13 +309,15 @@ export function ClassNotesAdminWorkspace({
 
 	return (
 		<>
-			<section className="mc-surface overflow-hidden" aria-label="Class Notes admin">
+			<section className="mc-surface overflow-hidden" aria-label="Quản lý ghi chú lớp">
 				<div className="grid min-h-[min(70vh,720px)] md:grid-cols-[260px_minmax(0,1fr)]">
 					<aside className="border-b border-mc-rule bg-canvas/50 p-3 md:border-b-0 md:border-r">
 						<div className="mb-3 flex items-center justify-between gap-2">
 							<div>
 								<p className="mc-eyebrow">Notebook</p>
-								<h2 className="text-sm font-semibold text-ink">Class Notes</h2>
+								<h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+									<TeachingIcon name="notes" size={20} /> Ghi chú lớp
+								</h2>
 							</div>
 							<button
 								type="button"

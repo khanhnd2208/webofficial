@@ -1,5 +1,7 @@
 'use client';
 
+import { useSurfaceTheme } from '@/components/ui/SurfaceTheme';
+
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -17,6 +19,7 @@ export function GridPopover({
 	menu?: boolean;
 	disabled?: boolean;
 }) {
+	const surface = useSurfaceTheme();
 	const id = useId();
 	const [open, setOpen] = useState(false);
 	const [returnFocus, setReturnFocus] = useState(false);
@@ -91,6 +94,7 @@ export function GridPopover({
 				type="button"
 				className="mc-grid-popover-trigger"
 				aria-label={label}
+				title={label}
 				aria-haspopup={menu ? 'menu' : 'dialog'}
 				aria-expanded={open}
 				aria-controls={open ? id : undefined}
@@ -104,7 +108,7 @@ export function GridPopover({
 			</button>
 			{open &&
 				createPortal(
-					<div className="mc mc-studio">
+					<div className="mc mc-studio teaching-portal" data-surface={surface}>
 						<div
 							ref={panel}
 							id={id}

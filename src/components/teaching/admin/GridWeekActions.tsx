@@ -10,6 +10,7 @@ export function GridWeekActions({
 	finalized,
 	cancelled,
 	busy,
+	compact = false,
 	onLifecycle,
 	onToggle,
 }: {
@@ -19,18 +20,21 @@ export function GridWeekActions({
 	finalized: boolean;
 	cancelled: boolean;
 	busy: boolean;
+	compact?: boolean;
 	onLifecycle?: (action: SessionLifecycleAction) => void;
 	onToggle?: (open: boolean) => void;
 }) {
 	const state = cancelled ? 'Đã hủy' : finalized ? 'Đã chốt' : open ? 'Đang nhập' : 'Chưa chốt';
 	return (
 		<span className="mc-grid-week-controls">
-			<span
-				className="mc-grid-week-state"
-				data-state={cancelled ? 'cancelled' : finalized ? 'finalized' : open ? 'open' : 'draft'}
-			>
-				{state}
-			</span>
+			{compact && state === 'Chưa chốt' ? null : (
+				<span
+					className="mc-grid-week-state"
+					data-state={cancelled ? 'cancelled' : finalized ? 'finalized' : open ? 'open' : 'draft'}
+				>
+					{state}
+				</span>
+			)}
 			{!cancelled && (onLifecycle || onToggle) ? (
 				<span className="mc-grid-week-buttons">
 					<button

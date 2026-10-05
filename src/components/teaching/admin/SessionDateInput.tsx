@@ -178,16 +178,21 @@ function SessionCalendar({
 	);
 }
 
-export function SessionDateInput(props: Props) {
+export function SessionDateInput({ compact = false, ...props }: Props & { compact?: boolean }) {
+	const adding = compact && !props.value;
 	return (
 		<GridPopover
-			label={`Sửa ngày tuần ${props.weekNumber}`}
+			label={adding ? `Thêm ngày W${props.weekNumber}` : `Sửa ngày tuần ${props.weekNumber}`}
 			disabled={props.disabled || props.saveState === 'saving'}
 			trigger={
-				<>
-					<McIcon name="calendar_month" size={16} />
-					<span>{props.value ? sessionDateLabel(props.value) : 'Thêm ngày'}</span>
-				</>
+				adding ? (
+					<span aria-hidden="true">+</span>
+				) : (
+					<>
+						<McIcon name="calendar_month" size={16} />
+						<span>{props.value ? sessionDateLabel(props.value) : 'Thêm ngày'}</span>
+					</>
+				)
 			}
 		>
 			{(close) => <SessionCalendar {...props} close={close} />}

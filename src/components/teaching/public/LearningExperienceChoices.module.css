@@ -1,0 +1,525 @@
+.experience {
+	--learning-navy: var(--ink);
+	--learning-navy-soft: var(--accent-hover);
+	--learning-gold: var(--accent);
+	--learning-gold-light: var(--accent-subtle);
+	--learning-cream: var(--paper);
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	border: 1px solid var(--mc-rule);
+	border-radius: 1rem;
+	box-shadow: var(--mc-shadow-1);
+}
+
+.experience::after {
+	content: '';
+	position: absolute;
+	inset: 0.75rem;
+	z-index: 8;
+	pointer-events: none;
+	border: 1px solid rgb(220 172 94 / 58%);
+	border-radius: 0.55rem;
+	box-shadow: var(--mc-shadow-1);
+	display: none;
+}
+
+.choiceButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.65rem;
+	min-height: 3.35rem;
+	border-radius: 0.5rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	transition:
+		transform 160ms ease,
+		background 160ms ease,
+		opacity 160ms ease;
+}
+
+.choiceButton:hover:not(:disabled) {
+	transform: translateY(-2px);
+}
+
+.choiceButton:disabled {
+	cursor: not-allowed;
+	opacity: 0.65;
+}
+
+.experience {
+	padding: clamp(1.4rem, 4vw, 3.1rem);
+	background: var(--paper);
+	color: var(--learning-navy);
+}
+
+.playerBar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 0.1rem 0 1.7rem;
+	padding: 0.65rem 0.9rem;
+	border: 1px solid rgb(152 107 39 / 32%);
+	border-radius: 0.55rem;
+	background: rgb(255 255 255 / 50%);
+}
+
+.playerBar > div {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.playerLabel {
+	color: var(--accent);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.playerBar strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 0.82rem;
+}
+
+.playerBar > div > span:last-child {
+	color: var(--ink-secondary);
+	font-size: 0.75rem;
+}
+
+.playerBar button {
+	flex: none;
+	color: var(--accent);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 0.2rem;
+}
+
+.heroHeader {
+	position: relative;
+	z-index: 2;
+	margin: 0 auto clamp(1.6rem, 4vw, 2.8rem);
+	text-align: center;
+}
+
+.heroHeader h2 {
+	max-width: 58rem;
+	margin: 0.45rem auto 0;
+	font-family: inherit;
+	font-size: clamp(1.5rem, 4vw, 2rem);
+	font-weight: 650;
+	line-height: 1.25;
+	letter-spacing: -0.045em;
+	text-wrap: balance;
+	background: none;
+	background-size: 220% auto;
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: var(--ink);
+	animation: none;
+}
+
+.titleRule {
+	display: grid;
+	grid-template-columns: minmax(1rem, 8rem) auto minmax(1rem, 8rem);
+	align-items: center;
+	justify-content: center;
+	gap: 0.9rem;
+	margin-top: 1rem;
+}
+
+.titleRule span {
+	height: 1px;
+	background: var(--mc-rule);
+}
+
+.titleRule span:last-child {
+	background: var(--mc-rule);
+}
+
+.titleRule p {
+	color: var(--ink-secondary);
+	font-family: inherit;
+	font-size: clamp(0.72rem, 1.5vw, 0.95rem);
+	font-style: italic;
+}
+
+.choiceGrid {
+	position: relative;
+	z-index: 2;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: clamp(0.85rem, 2vw, 1.35rem);
+	perspective: 1200px;
+}
+
+.orBadge {
+	position: absolute;
+	left: 50%;
+	top: 38%;
+	z-index: 5;
+	display: grid;
+	place-items: center;
+	width: 4.4rem;
+	aspect-ratio: 1;
+	border: 5px solid var(--paper);
+	border-radius: 999px;
+	background: var(--paper);
+	box-shadow: var(--mc-shadow-1);
+	color: var(--learning-navy);
+	font-family: inherit;
+	font-size: 1.25rem;
+	font-weight: 600;
+	transform: translate(-50%, -50%);
+}
+
+.choiceCard {
+	--learning-rx: 0deg;
+	--learning-ry: 0deg;
+	position: relative;
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr);
+	min-width: 0;
+	overflow: hidden;
+	border: 1px solid var(--mc-rule);
+	border-radius: 12px;
+	background: #fff;
+	box-shadow: var(--mc-shadow-1);
+	transform: none;
+	transform-style: preserve-3d;
+	transition:
+		border-color 160ms ease,
+		box-shadow 160ms ease;
+}
+
+.choiceCard:hover {
+	box-shadow: var(--mc-shadow-1);
+}
+
+.choiceCard[data-dimmed='true'] {
+	filter: grayscale(1) saturate(0.2);
+	opacity: 0.55;
+}
+
+.choiceCard[data-dimmed='true']:hover {
+	opacity: 0.72;
+}
+
+.choiceCard[data-selected='true'] {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 2px var(--accent);
+}
+
+.cardVisual {
+	position: relative;
+	height: clamp(14rem, 28vw, 22rem);
+	overflow: hidden;
+	background: #0b1b2b;
+}
+
+.cardImage {
+	object-fit: cover;
+	transition:
+		transform 700ms cubic-bezier(0.2, 0, 0, 1),
+		filter 300ms ease;
+}
+
+.choiceCard:hover .cardImage {
+	transform: scale(1.035);
+}
+
+.choiceCard[data-tone='challenge'] .cardImage {
+	filter: saturate(0.86) contrast(1.07);
+}
+
+.choiceCard[data-tone='support'] .cardImage {
+	filter: saturate(0.86) sepia(0.08);
+}
+
+.imageShade {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		to bottom,
+		transparent 34%,
+		rgb(4 15 27 / 14%) 55%,
+		rgb(4 15 27 / 94%) 100%
+	);
+}
+
+.choiceCard[data-tone='support'] .imageShade {
+	background: linear-gradient(
+		to bottom,
+		transparent 38%,
+		rgb(45 25 7 / 10%) 58%,
+		rgb(43 24 8 / 88%) 100%
+	);
+}
+
+.modePill,
+.selectedBadge {
+	position: absolute;
+	top: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	border: 1px solid rgb(255 255 255 / 45%);
+	border-radius: 999px;
+	backdrop-filter: blur(12px);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.11em;
+	text-transform: uppercase;
+}
+
+.modePill {
+	left: 1rem;
+	padding: 0.45rem 0.65rem;
+	background: rgb(5 22 39 / 64%);
+	color: #fff5dd;
+}
+
+.selectedBadge {
+	right: 1rem;
+	padding: 0.35rem 0.55rem;
+	background: rgb(255 248 232 / 92%);
+	color: #6a4510;
+}
+
+.selectedBadge svg {
+	width: 1rem;
+	height: 1rem;
+}
+
+.cardBody h3 {
+	min-height: 2em;
+	font-size: clamp(1.25rem, 2.7vw, 2rem);
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: -0.04em;
+	text-transform: uppercase;
+	text-wrap: balance;
+}
+
+.cardBody h3 span {
+	color: var(--accent);
+}
+
+.choiceCard[data-tone='support'] .cardBody h3 span {
+	color: var(--accent);
+}
+
+.cardBody {
+	display: grid;
+	grid-template-rows: auto minmax(2.75rem, auto) auto auto;
+	align-content: start;
+	gap: 1.05rem;
+	padding: clamp(1rem, 2.3vw, 1.45rem);
+}
+
+.choiceCard[data-tone='challenge'] .cardBody {
+	background: var(--paper);
+	color: var(--ink);
+}
+
+.choiceCard[data-tone='support'] .cardBody {
+	background: var(--paper);
+	color: var(--ink);
+}
+
+.cardSubtitle {
+	min-height: 2.75rem;
+	font-size: 0.76rem;
+	line-height: 1.55;
+	opacity: 0.83;
+}
+
+.featureGrid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	border-block: 1px solid currentcolor;
+	border-color: var(--mc-rule);
+}
+
+.featureGrid > div {
+	display: grid;
+	place-items: center;
+	align-content: center;
+	gap: 0.45rem;
+	min-width: 0;
+	min-height: 5.2rem;
+	padding: 0.7rem 0.35rem;
+	text-align: center;
+}
+
+.featureGrid > div + div {
+	border-left: 1px solid var(--mc-rule);
+}
+
+.featureGrid :global(svg) {
+	color: var(--accent);
+	width: 1.55rem;
+	height: 1.55rem;
+}
+
+.choiceCard[data-tone='support'] .featureGrid :global(svg) {
+	color: var(--accent);
+}
+
+.featureGrid > div > span:last-child {
+	font-size: 0.75rem;
+	font-weight: 650;
+	line-height: 1.2;
+}
+
+.choiceButton {
+	width: 100%;
+	min-height: 3.55rem;
+	padding: 0.8rem 1rem;
+	border: 1px solid transparent;
+	line-height: 1.1;
+	background: var(--accent);
+	color: #fff;
+	font-size: 0.875rem;
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+.choiceCard[data-tone='challenge'] .choiceButton {
+	background: var(--accent);
+	color: #fff;
+}
+
+.choiceCard[data-tone='support'] .choiceButton {
+	background: var(--accent);
+	color: #fff;
+}
+
+.choiceCard[data-selected='true'] .choiceButton {
+	border-color: #f2ca7c;
+}
+
+.choiceButton svg {
+	width: 1.1rem;
+	height: 1.1rem;
+	flex-shrink: 0;
+}
+
+.statusBar {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.55rem;
+	min-height: 3rem;
+	margin-top: 1.35rem;
+	padding: 0.65rem 1rem;
+	border: 1px solid rgb(139 95 32 / 34%);
+	border-radius: 0.5rem;
+	background: rgb(255 255 255 / 48%);
+	color: #664717;
+	font-size: 0.75rem;
+	font-weight: 650;
+	text-align: center;
+}
+
+.statusBar svg {
+	width: 1.1rem;
+	height: 1.1rem;
+	flex-shrink: 0;
+}
+
+.statusBar[data-error='true'] {
+	border-color: #d58b84;
+	background: #fff0ee;
+	color: var(--error);
+}
+
+@media (max-width: 767px) {
+	.experience {
+		border-radius: 0.75rem;
+	}
+
+	.experience::after {
+		inset: 0.45rem;
+	}
+
+	.playerBar > div {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0.1rem;
+	}
+
+	.playerLabel {
+		display: none;
+	}
+
+	.choiceGrid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 2.7rem;
+	}
+
+	.orBadge {
+		top: 50%;
+		width: 3.65rem;
+	}
+
+	.cardVisual {
+		height: clamp(20rem, 110vw, 29rem);
+	}
+
+	.featureGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.featureGrid > div:nth-child(3) {
+		border-left: 0;
+		border-top: 1px solid var(--mc-rule);
+	}
+
+	.featureGrid > div:nth-child(4) {
+		border-top: 1px solid var(--mc-rule);
+	}
+
+	.cardSubtitle {
+		min-height: 0;
+	}
+
+	.cardBody {
+		grid-template-rows: auto;
+	}
+
+	.cardBody h3 {
+		min-height: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.heroHeader h2 {
+		animation: none;
+	}
+
+	.choiceCard,
+	.cardImage,
+	.choiceButton {
+		transition: none;
+	}
+
+	.choiceCard {
+		transform: none;
+		transition:
+			border-color 160ms ease,
+			box-shadow 160ms ease;
+		border-radius: 12px;
+	}
+}

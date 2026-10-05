@@ -133,10 +133,10 @@ The script performs these steps in order:
    sources under `scripts/vendor/`, and the Node and npm versions all match
    the stored build cache, it copies
    `/var/www/webofficial/.build-cache/node_modules` instead of running `npm ci`.
-   It also copies `.next/cache` from the current release so the compiler can
-   reuse work, minus the cache of the bundler the build script does not use,
-   and starts cold once that cache passes 1.5 GB. The copy stays inside the new release; mutable upload paths are
-   linked only after the build, which keeps Turbopack inside the release tree.
+   Each release builds with a fresh `.next/cache`: reusing another source tree's
+   compiler cache can retain old CSS after styles move into imports. Mutable
+   upload paths are linked only after the build, which keeps the compiler inside
+   the release tree.
    The release ID is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew
    protection and cache busting.
 6. Runs the database backup command, then `prisma migrate deploy`, then prunes

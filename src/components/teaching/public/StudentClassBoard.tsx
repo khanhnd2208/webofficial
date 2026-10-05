@@ -1,10 +1,19 @@
 'use client';
+import { TeachingMark } from '@/components/site/TeachingMark';
+import { TeachingIcon } from '../ui/TeachingIcon';
 import { StudentClassIntro } from './StudentClassIntro';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
 
 import { AttendanceGrid } from '../admin/AttendanceGrid';
+import {
+	isRepeatedClassSummary,
+	pinStudent,
+	readStudentIdentity,
+	studentIdentitySummary,
+	writeStudentIdentity,
+} from './studentIdentity';
 import { ParticipationGrid } from '../admin/ParticipationGrid';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
 import { LearningExperienceWorkspace } from './LearningExperienceWorkspace';
@@ -80,6 +89,13 @@ export function StudentClassBoard({
 		() => resolvePublicTab(initialTab) === 'learning',
 	);
 	const [query, setQuery] = useState('');
+	const [chosenMe, setChosenMe] = useState<{ slug: string; id: string | null } | null>(null);
+	const storedMeId = useSyncExternalStore(
+		() => () => {},
+		() => readStudentIdentity(board.slug),
+		() => null,
+	);
+	const meId = chosenMe?.slug === board.slug ? chosenMe.id : storedMeId;
 	const [rulesOpen, setRulesOpen] = useState(false);
 	const gridWrapRef = useRef<HTMLDivElement>(null);
 	const tabBarRef = useRef<HTMLElement>(null);
@@ -95,13 +111,19 @@ export function StudentClassBoard({
 		return () => window.removeEventListener('popstate', sync);
 	}, [groupBoardEnabled]);
 
+	function chooseMe(enrollmentId: string) {
+		const next = enrollmentId || null;
+		setChosenMe({ slug: board.slug, id: next });
+		writeStudentIdentity(board.slug, next);
+	}
+
 	useEffect(() => {
 		const tabBar = tabBarRef.current;
 		const active = tabBar?.querySelector<HTMLElement>("[data-active='true']");
 		if (!tabBar || !active || typeof tabBar.scrollTo !== 'function') return;
 		tabBar.scrollTo({
 			left: active.offsetLeft - (tabBar.clientWidth - active.clientWidth) / 2,
-			behavior: 'smooth',
+			behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
 		});
 	}, [tab]);
 
@@ -128,7 +150,11 @@ export function StudentClassBoard({
 		const params = new URLSearchParams(window.location.search);
 		if (next && next !== PUBLIC_TUTORIAL_ALL) params.set('tutorial', next);
 		else params.delete('tutorial');
-		window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`);
+		window.history.replaceState(
+			null,
+			'',
+			`${window.location.pathname}${params.toString() ? `?${params}` : ''}`,
+		);
 	}
 
 	function handleTabKeyDown(event: KeyboardEvent<HTMLElement>) {
@@ -161,30 +187,44 @@ export function StudentClassBoard({
 	);
 	const students = useMemo(() => scopedStudents.map(toGridStudent), [scopedStudents]);
 	const filteredStudents = useMemo(() => {
-		const value = query.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+		const value = query
+			.trim()
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/đ/g, 'd');
 		if (!value) return students;
 		return students.filter((student) =>
 			`${student.studentCode} ${student.familyName} ${student.givenName}`
-				.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
+				.toLowerCase()
+				.normalize('NFD')
+				.replace(/[\u0300-\u036f]/g, '')
+				.replace(/đ/g, 'd')
 				.includes(value),
 		);
 	}, [query, students]);
+	const visibleStudents = useMemo(() => pinStudent(filteredStudents, meId), [filteredStudents, meId]);
+	const me = visibleStudents.find((student) => student.enrollmentId === meId) ?? null;
 	const classRules = board.rules.trim();
 	const commonRules = getCpPolicyText(board.policy);
 	const summary = board.summary.trim();
+	const repeatedSummary = isRepeatedClassSummary(summary, board);
 	const description = board.description.trim();
 	const announcement = board.announcement.trim();
 
 	return (
 		<div className="teaching-public-board min-w-0 space-y-3">
-			<header className="flex flex-wrap items-end justify-between gap-3 border-b border-mc-rule pb-3">
-				<div className="min-w-0">
-					<p className="mc-eyebrow">
-						{board.courseCode} · Lớp {board.classCode ?? board.groupNo} · {board.term}
-					</p>
-					<h1 className="mt-1 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-						{board.title}
-					</h1>
+			<header className="teaching-public-header flex flex-wrap items-end justify-between gap-3 border-b border-mc-rule pb-3">
+				<div className="flex min-w-0 items-center gap-3">
+					<TeachingMark className="teaching-header-mark" />
+					<div className="min-w-0">
+						<p className="mc-eyebrow">
+							{board.courseCode} · Lớp {board.classCode ?? board.groupNo} · {board.term}
+						</p>
+						<h1 className="mt-1 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+							{board.title}
+						</h1>
+					</div>
 				</div>
 				{manageHref ? (
 					<Link
@@ -196,7 +236,12 @@ export function StudentClassBoard({
 				) : null}
 			</header>
 
-			<StudentClassIntro summary={summary} description={description} announcement={announcement} links={board.links} />
+			<StudentClassIntro
+				summary={repeatedSummary ? '' : summary}
+				description={description}
+				announcement={announcement}
+				links={board.links}
+			/>
 
 			<details className="mc-surface hidden md:block">
 				<summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-ink">
@@ -268,7 +313,7 @@ export function StudentClassBoard({
 					data-active={tab === 'attendance'}
 					onClick={() => changeTab('attendance')}
 				>
-					Điểm danh
+					<TeachingIcon name="attendance" size={18} /> Điểm danh
 				</button>
 				<button
 					type="button"
@@ -280,7 +325,7 @@ export function StudentClassBoard({
 					data-active={tab === 'cp'}
 					onClick={() => changeTab('cp')}
 				>
-					Điểm CP
+					<TeachingIcon name="cp" size={18} /> Điểm CP
 				</button>
 				{groupBoardEnabled ? (
 					<button
@@ -293,7 +338,7 @@ export function StudentClassBoard({
 						data-active={tab === 'groups'}
 						onClick={() => changeTab('groups')}
 					>
-						Xếp nhóm
+						<TeachingIcon name="groups" size={18} /> Xếp nhóm
 					</button>
 				) : null}
 				<button
@@ -306,7 +351,7 @@ export function StudentClassBoard({
 					data-active={tab === 'learning'}
 					onClick={() => changeTab('learning')}
 				>
-					Learning Experience
+					<TeachingIcon name="students" size={18} /> Trải nghiệm học tập
 				</button>
 				<button
 					type="button"
@@ -318,7 +363,7 @@ export function StudentClassBoard({
 					data-active={tab === 'notes'}
 					onClick={() => changeTab('notes')}
 				>
-					Class Notes
+					<TeachingIcon name="notes" size={18} /> Ghi chú lớp
 				</button>
 				<button
 					type="button"
@@ -330,21 +375,33 @@ export function StudentClassBoard({
 					data-active={tab === 'recall'}
 					onClick={() => changeTab('recall')}
 				>
-					Active Recall
+					<TeachingIcon name="recall" size={18} /> Active Recall
 				</button>
 			</nav>
 			{shouldShowPublicTutorialFilter({
 				tutorialCount: board.tutorials.length,
 				hasUnassigned,
-			}) && (tab === 'attendance' || tab === 'cp') ? (
+			}) &&
+			(tab === 'attendance' || tab === 'cp') ? (
 				<div className="flex flex-wrap items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 py-2">
-					<label htmlFor="public-tutorial" className="text-xs font-semibold text-ink-secondary">Tutorial</label>
-					<select id="public-tutorial" value={tutorialId} onChange={(event) => changeTutorial(event.target.value)} className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink">
+					<label htmlFor="public-tutorial" className="text-xs font-semibold text-ink-secondary">
+						Tutorial
+					</label>
+					<select
+						id="public-tutorial"
+						value={tutorialId}
+						onChange={(event) => changeTutorial(event.target.value)}
+						className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink"
+					>
 						<option value={PUBLIC_TUTORIAL_ALL}>Toàn lớp</option>
 						{hasUnassigned ? (
 							<option value={PUBLIC_TUTORIAL_UNASSIGNED}>Chưa phân tutorial</option>
 						) : null}
-						{board.tutorials.map((tutorial) => <option key={tutorial.id} value={tutorial.id}>{tutorial.code} · {tutorial.name}</option>)}
+						{board.tutorials.map((tutorial) => (
+							<option key={tutorial.id} value={tutorial.id}>
+								{tutorial.code} · {tutorial.name}
+							</option>
+						))}
 					</select>
 				</div>
 			) : null}
@@ -399,7 +456,9 @@ export function StudentClassBoard({
 										{deck.description ? (
 											<p className="mt-1 text-sm text-ink-secondary">{deck.description}</p>
 										) : null}
-										<p className="mt-2 text-xs tabular-nums text-ink-secondary">{deck.cardCount} thẻ →</p>
+										<p className="mt-2 text-xs tabular-nums text-ink-secondary">
+											{deck.cardCount} thẻ →
+										</p>
 									</Link>
 								</li>
 							))}
@@ -443,12 +502,46 @@ export function StudentClassBoard({
 								className="mc-public-grid-search min-h-10 w-44 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs sm:min-h-8 sm:w-56"
 							/>
 						</label>
+						<label>
+							<span className="sr-only">Đây là tôi</span>
+							<select
+								value={meId ?? ''}
+								onChange={(event) => chooseMe(event.target.value)}
+								className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs text-ink sm:min-h-8"
+							>
+								<option value="">Đây là tôi</option>
+								{students.map((student) => (
+									<option key={student.enrollmentId} value={student.enrollmentId}>
+										{student.familyName} {student.givenName}
+									</option>
+								))}
+							</select>
+						</label>
 					</div>
-					{filteredStudents.length === 0 ? <p role="status" className="p-4 text-sm text-ink-secondary">{students.length === 0 ? (tutorialId === PUBLIC_TUTORIAL_UNASSIGNED ? 'Chưa có học viên chưa phân tutorial.' : tutorialId ? 'Tutorial này chưa có sinh viên.' : 'Lớp này chưa có sinh viên.') : 'Không tìm thấy sinh viên phù hợp. Hãy thử tên hoặc mã khác.'}</p> : null}
+					{me ? (
+						<p className="flex flex-wrap items-center gap-2 border-b border-mc-rule px-4 py-2 text-sm text-ink">
+							<span>{studentIdentitySummary(me, board.policy.totalWeeks, board.policy.attendanceMaxPoints ?? 5)}</span>
+							<button type="button" className="mc-button min-h-11 px-3 text-xs" onClick={() => chooseMe('')}>
+								Bỏ chọn
+							</button>
+						</p>
+					) : null}
+					{filteredStudents.length === 0 ? (
+						<p role="status" className="p-4 text-sm text-ink-secondary">
+							{students.length === 0
+								? tutorialId === PUBLIC_TUTORIAL_UNASSIGNED
+									? 'Chưa có sinh viên chưa phân tutorial.'
+									: tutorialId
+										? 'Tutorial này chưa có sinh viên.'
+										: 'Lớp này chưa có sinh viên.'
+								: 'Không tìm thấy sinh viên phù hợp. Hãy thử tên hoặc mã khác.'}
+						</p>
+					) : null}
 					{tab === 'attendance' ? (
 						<div ref={gridWrapRef}>
 							<AttendanceGrid
-								students={filteredStudents}
+								students={visibleStudents}
+								highlightedEnrollmentId={meId}
 								sessions={scopedSessions}
 								totalWeeks={board.policy.totalWeeks}
 								attendanceMaxPoints={board.policy.attendanceMaxPoints}
@@ -460,7 +553,8 @@ export function StudentClassBoard({
 					) : (
 						<div ref={gridWrapRef}>
 							<ParticipationGrid
-								students={filteredStudents}
+								students={visibleStudents}
+								highlightedEnrollmentId={meId}
 								sessions={scopedSessions}
 								totalWeeks={board.policy.totalWeeks}
 								attendanceMaxPoints={board.policy.attendanceMaxPoints}

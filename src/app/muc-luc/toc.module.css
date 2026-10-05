@@ -224,3 +224,10 @@
 		transform: none;
 	}
 }
+
+.teachingTile {
+	--destination-accent: var(--teaching-accent, #176b63);
+}
+.teachingTile:hover .tileTitle {
+	color: var(--destination-accent);
+}

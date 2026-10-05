@@ -1,0 +1,114 @@
+/* Teaching — academic paper and teal. Light by design, including portalled UI.
+   Identity colours are on :root so My Space and the table of contents can
+   use them without adopting the whole Teaching surface. */
+:root {
+	--teaching-accent: #176b63;
+	--teaching-accent-hover: #12564f;
+	--teaching-selected: #e5f1ed;
+	--teaching-selected-hover: #d4e6dd;
+}
+
+[data-surface='teaching'] {
+	--teaching-canvas: #f7f8f4;
+	--teaching-paper: #ffffff;
+	--teaching-accent: #176b63;
+	--teaching-accent-hover: #12564f;
+	--teaching-selected: #e5f1ed;
+	--teaching-ink: #19332f;
+	--teaching-secondary: #52645e;
+	--canvas: var(--teaching-canvas);
+	--paper: var(--teaching-paper);
+	--ink: var(--teaching-ink);
+	--ink-secondary: var(--teaching-secondary);
+	--ink-tertiary: #64766e;
+	--accent: var(--teaching-accent);
+	--accent-hover: var(--teaching-accent-hover);
+	--accent-subtle: var(--teaching-selected);
+	--accent-muted: #adcfc5;
+	--accent-foreground: #ffffff;
+	--hairline: #d7e0d9;
+	--background: var(--canvas);
+	--background-secondary: #eef2ed;
+	--surface: var(--paper);
+	--surface-sunken: #f0f4ef;
+	--surface-secondary: var(--surface-sunken);
+	--surface-elevated: var(--paper);
+	--surface-hover: #f0f5f1;
+	--surface-active: var(--teaching-selected);
+	--surface-container-low: #f0f4ef;
+	--surface-container: #e9f0e9;
+	--surface-container-high: #deebe3;
+	--surface-container-highest: #d4e6dd;
+	--section-tint: var(--teaching-selected);
+	--inverse-surface: #12564f;
+	--foreground: var(--ink);
+	--foreground-secondary: var(--ink-secondary);
+	--muted: var(--ink-secondary);
+	--muted-foreground: var(--ink-tertiary);
+	--border: var(--hairline);
+	--border-hover: #72988a;
+	--border-strong: #70887b;
+	--mc-rule: var(--hairline);
+	--mc-rule-strong: #70887b;
+	--success: #236741;
+	--success-subtle: #e7f3e9;
+	--warning: #805712;
+	--warning-subtle: #fff3d9;
+	--error: #b33030;
+	--error-subtle: #fceaea;
+	--mc-done: var(--success);
+	--mc-done-subtle: var(--success-subtle);
+	--mc-test: var(--accent);
+	--mc-test-subtle: var(--accent-subtle);
+	--mc-vocab: var(--warning);
+	--mc-vocab-subtle: var(--warning-subtle);
+	--mc-error: var(--error);
+	--mc-error-subtle: var(--error-subtle);
+	--mc-error-on-subtle: #8a2222;
+	--mc-r-xs: 4px;
+	--mc-r-sm: 8px;
+	--mc-r-md: 12px;
+	--mc-r-lg: 16px;
+	--mc-dur-1: 120ms;
+	--mc-dur-2: 200ms;
+	--mc-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+	--mc-shadow-1: 0 1px 2px rgb(25 51 47 / 0.04);
+	--mc-shadow-2: 0 4px 16px -6px rgb(25 51 47 / 0.12);
+	--mc-shadow-3: 0 16px 40px -16px rgb(25 51 47 / 0.2);
+	color-scheme: light;
+	font-family: var(--font-inter), Inter, system-ui, sans-serif;
+	color: var(--ink);
+	background-color: var(--canvas);
+}
+/* The scope can itself be the overlay panel, or a portal wrapper. */
+[data-surface='teaching'][role='menu'],
+[data-surface='teaching'][role='dialog'],
+dialog[data-surface='teaching'] {
+	background-color: var(--paper);
+}
+[data-surface='teaching']:where(.teaching-portal) {
+	background: transparent;
+}
+[data-surface='teaching'] :where(button, a, input, select, textarea, summary):focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+}
+[data-surface='teaching'] :where(input, select, textarea) {
+	font-family: inherit;
+}
+[data-surface='teaching'] :where(svg) {
+	flex-shrink: 0;
+}
+[data-surface='teaching'] .mc-num {
+	font-family: inherit;
+	font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+	[data-surface='teaching'],
+	[data-surface='teaching'] *,
+	.teaching-destination-mark {
+		animation: none !important;
+		transition: none !important;
+		scroll-behavior: auto !important;
+	}
+}

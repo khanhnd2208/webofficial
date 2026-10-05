@@ -18,7 +18,7 @@ test.describe('Teaching admin workspace', () => {
 		await page.getByRole('button', { name: 'Thêm môn' }).click();
 		await page.getByLabel('Mã môn').fill(courseCode);
 		await page.getByLabel('Tên môn').fill(courseName);
-		await page.getByRole('button', { name: 'Lưu' }).click();
+		await page.getByRole('button', { name: 'Lưu', exact: true }).click();
 		await expect(page.getByText(courseCode)).toBeVisible();
 
 		const courses = await page.request.get('/api/admin/teaching/courses');
@@ -42,7 +42,7 @@ test.describe('Teaching admin workspace', () => {
 			await page.getByPlaceholder('HỌC KỲ 1 - NĂM HỌC 2026 - 2027').fill(term);
 			await page.getByRole('button', { name: 'Tạo lớp trống' }).click();
 			await expect(page).toHaveURL(new RegExp(`/my-space/teaching/.+\\?tab=students`));
-			await expect(page.getByRole('heading', { name: 'Danh sách học viên' })).toBeVisible({
+			await expect(page.getByRole('heading', { name: 'Danh sách sinh viên' })).toBeVisible({
 				timeout: 15_000,
 			});
 

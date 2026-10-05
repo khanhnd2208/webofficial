@@ -104,7 +104,7 @@ export function TeachingManagementMenu({
 					title="Quản lý"
 				>
 					<McIcon name="settings" size={17} />
-					<span className="sr-only">Quản lý</span>
+					<span>Quản lý</span>
 				</button>
 			</div>
 			<Sheet

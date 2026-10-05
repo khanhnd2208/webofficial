@@ -4,6 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ActiveRecallPlayer from './ActiveRecallPlayer';
 import { DEFAULT_READING_SIZE, READING_SIZE_STORAGE_KEY } from './readingSize';
 
+const { createRecallTracker, study, stop } = vi.hoisted(() => ({
+	createRecallTracker: vi.fn(),
+	study: vi.fn(),
+	stop: vi.fn(),
+}));
+vi.mock('./recallTracker', () => ({ createRecallTracker }));
+
 const deck = {
 	id: 'deck-1',
 	slug: 'demo',
@@ -54,7 +61,12 @@ describe('ActiveRecallPlayer', () => {
 		'fullscreenElement',
 	);
 
-	beforeEach(() => localStorage.clear());
+	beforeEach(() => {
+		localStorage.clear();
+		createRecallTracker.mockReset().mockReturnValue({ study, stop });
+		study.mockClear();
+		stop.mockClear();
+	});
 
 	afterEach(() => {
 		HTMLElement.prototype.requestFullscreen = originalRequestFullscreen;
@@ -85,6 +97,25 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.getByText('Question two')).toBeVisible();
 		expect(screen.queryByText('Answer two')).not.toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
+	});
+
+	it('records class study and answer reveals while using the Teaching theme', async () => {
+		const { container, unmount } = render(
+			<ActiveRecallPlayer deck={deck} classSlug="hrm-class" surface="teaching" />,
+		);
+		await waitFor(() =>
+			expect(createRecallTracker).toHaveBeenCalledWith(
+				'deck-1',
+				'hrm-class',
+				expect.any(String),
+				expect.any(String),
+			),
+		);
+		expect(container.querySelector('[data-surface="teaching"]')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
+		expect(study).toHaveBeenCalledWith(true);
+		unmount();
+		expect(stop).toHaveBeenCalledOnce();
 	});
 
 	it('supports keyboard flip and navigation', () => {

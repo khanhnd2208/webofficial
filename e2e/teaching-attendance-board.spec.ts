@@ -115,7 +115,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
-			await expect(page.getByRole('tab', { name: 'Class Notes' })).toHaveAttribute(
+			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveAttribute(
 				'aria-selected',
 				'true',
 			);
@@ -131,7 +131,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(unpublished.ok()).toBe(true);
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
-			await expect(page.getByText('Chưa có Class Notes được xuất bản.')).toBeVisible();
+			await expect(page.getByText('Chưa có ghi chú lớp nào được xuất bản.')).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
