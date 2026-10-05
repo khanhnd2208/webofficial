@@ -30,7 +30,11 @@ export default async function BoardGamePage() {
 						</p>
 					</div>
 					<p className="eyebrow max-w-[16rem] border-l border-vermilion/60 pl-4">
-						Mở phòng · Chia sẻ mã · Bắt đầu chơi
+						<span className="whitespace-nowrap">Mở phòng</span>
+						{' · '}
+						<span className="whitespace-nowrap">Chia sẻ mã</span>
+						{' · '}
+						<span className="whitespace-nowrap">Bắt đầu chơi</span>
 					</p>
 				</header>
 				{isAdmin ? (
