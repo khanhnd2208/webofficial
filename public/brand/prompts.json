@@ -1,0 +1,190 @@
+{
+	"version": 1,
+	"styleLock": {
+		"useCase": "illustration-story",
+		"medium": "Minimal editorial ink and watercolor on warm ivory paper",
+		"line": "Fine, consistent warm charcoal contours with subtle handmade variation",
+		"palette": {
+			"paper": "#F8F7F4",
+			"ink": "#171717",
+			"bronze": "#765625",
+			"ochre": "#C89D4B",
+			"sage": "#879281"
+		},
+		"composition": "One clear subject, generous quiet space, restrained ochre and sage washes",
+		"avoid": [
+			"text or lettering inside the image",
+			"interface icons or controls",
+			"gradients, glossy 3D, plastic texture",
+			"sparkles, ornamental badges, hard drop shadows"
+		]
+	},
+	"frames": {
+		"spot": "Square composition, isolated motif, transparent background",
+		"cover": "16:10 horizontal composition, ivory paper background, room for live text outside the image",
+		"scene": "Hero or social scene with open space for responsive cropping; no embedded text"
+	},
+	"assets": {
+		"learning-as-becoming-mobile-ochre.webp": {
+			"frame": "scene",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/mobile-hero-ochre.png",
+			"reference": "public/brand/portrait-journey.png",
+			"prompt": "Edit only the sun in this vertical mobile website illustration: fill the existing outlined sun disk with muted warm ochre watercolor texture, matching the desktop illustration. Preserve the person, line work and composition. No text or new objects."
+		},
+		"myspace/teaching-v3.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/myspace-watercolor-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four isolated motifs in a 2 by 2 transparent asset sheet. Fine warm charcoal contours, muted ochre and sage, delicate handmade watercolor, matching the open book reference. Top left teaching chalkboard; top right open book with sage ribbon; bottom left playing cards, wooden pawn and dice; bottom right clipboard, pencil and sage leaf. Generous margins; no lettering, no glossy 3D, no sparkles.",
+			"processing": "Quadrant crop, 512px WebP with alpha; replaces legacy 3D artwork"
+		},
+		"myspace/courses-v3.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/myspace-watercolor-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four isolated motifs in a 2 by 2 transparent asset sheet. Fine warm charcoal contours, muted ochre and sage, delicate handmade watercolor, matching the open book reference. Top left teaching chalkboard; top right open book with sage ribbon; bottom left playing cards, wooden pawn and dice; bottom right clipboard, pencil and sage leaf. Generous margins; no lettering, no glossy 3D, no sparkles.",
+			"processing": "Quadrant crop, 512px WebP with alpha; replaces legacy 3D artwork"
+		},
+		"myspace/board-game-v3.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/myspace-watercolor-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four isolated motifs in a 2 by 2 transparent asset sheet. Fine warm charcoal contours, muted ochre and sage, delicate handmade watercolor, matching the open book reference. Top left teaching chalkboard; top right open book with sage ribbon; bottom left playing cards, wooden pawn and dice; bottom right clipboard, pencil and sage leaf. Generous margins; no lettering, no glossy 3D, no sparkles.",
+			"processing": "Quadrant crop, 512px WebP with alpha; replaces legacy 3D artwork"
+		},
+		"myspace/admin-v3.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/myspace-watercolor-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four isolated motifs in a 2 by 2 transparent asset sheet. Fine warm charcoal contours, muted ochre and sage, delicate handmade watercolor, matching the open book reference. Top left teaching chalkboard; top right open book with sage ribbon; bottom left playing cards, wooden pawn and dice; bottom right clipboard, pencil and sage leaf. Generous margins; no lettering, no glossy 3D, no sparkles.",
+			"processing": "Quadrant crop, 512px WebP with alpha; replaces legacy 3D artwork"
+		},
+		"spots/not-found-v1.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/not-found-v1.png",
+			"promptType": "Reproduction prompt with shared style lock",
+			"prompt": "Minimal editorial ink and watercolor on warm ivory paper. A quiet path splitting around a small ochre signpost, finding a way forward. Fine warm charcoal line, restrained ochre and sage wash. Square, transparent background, no lettering, no UI icons, generous negative space.",
+			"processing": "512px WebP, alpha preserved, responsive delivery through Next Image"
+		},
+		"spots/error-v1.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/error-v1.png",
+			"promptType": "Reproduction prompt with shared style lock",
+			"prompt": "Minimal editorial ink and watercolor on warm ivory paper. A gently torn ivory page, small sage leaf, repair and trying again. Fine warm charcoal line, restrained ochre and sage wash. Square, transparent background, no lettering, no UI icons, generous negative space.",
+			"processing": "512px WebP, alpha preserved, responsive delivery through Next Image"
+		},
+		"spots/login-v1.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/login-v1.png",
+			"promptType": "Reproduction prompt with shared style lock",
+			"prompt": "Minimal editorial ink and watercolor on warm ivory paper. A wooden door slightly open, a warm ochre welcome behind it. Fine warm charcoal line, restrained ochre and sage wash. Square, transparent background, no lettering, no UI icons, generous negative space.",
+			"processing": "512px WebP, alpha preserved, responsive delivery through Next Image"
+		},
+		"spots/empty-v1.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/empty-v1.png",
+			"promptType": "Reproduction prompt with shared style lock",
+			"prompt": "Minimal editorial ink and watercolor on warm ivory paper. An empty study desk, a closed notebook and pencil, ready to begin. Fine warm charcoal line, restrained ochre and sage wash. Square, transparent background, no lettering, no UI icons, generous negative space.",
+			"processing": "512px WebP, alpha preserved, responsive delivery through Next Image"
+		},
+		"spots/complete-v1.webp": {
+			"frame": "spot",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/complete-v1.png",
+			"promptType": "Reproduction prompt with shared style lock",
+			"prompt": "Minimal editorial ink and watercolor on warm ivory paper. An understated milestone stone beside a sage shoot, a completed step. Fine warm charcoal line, restrained ochre and sage wash. Square, transparent background, no lettering, no UI icons, generous negative space.",
+			"processing": "512px WebP, alpha preserved, responsive delivery through Next Image"
+		},
+		"courses/ai-foundations-v1.webp": {
+			"frame": "cover",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/course-covers-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four landscape course covers in a 2 by 2 sheet. Minimal editorial ink and watercolor on warm ivory paper. Subject: Connected geometric watercolor shapes and an ink pencil. Warm ivory, ochre and sage, quiet space, no letters or separators.",
+			"processing": "Quadrant crop, 768×480 WebP; Next Image serves responsive sizes"
+		},
+		"courses/project-management-v1.webp": {
+			"frame": "cover",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/course-covers-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four landscape course covers in a 2 by 2 sheet. Minimal editorial ink and watercolor on warm ivory paper. Subject: Ochre compass and folded sage map. Warm ivory, ochre and sage, quiet space, no letters or separators.",
+			"processing": "Quadrant crop, 768×480 WebP; Next Image serves responsive sizes"
+		},
+		"courses/human-growth-v1.webp": {
+			"frame": "cover",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/course-covers-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four landscape course covers in a 2 by 2 sheet. Minimal editorial ink and watercolor on warm ivory paper. Subject: Open notebook, sprouting plant and pen. Warm ivory, ochre and sage, quiet space, no letters or separators.",
+			"processing": "Quadrant crop, 768×480 WebP; Next Image serves responsive sizes"
+		},
+		"courses/business-systems-v1.webp": {
+			"frame": "cover",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"sourceMaster": "../brand-masters/ui-ux-polish/course-covers-sheet.png",
+			"reference": "public/brand/toc/courses-v1.webp",
+			"promptType": "Normalized generation prompt",
+			"prompt": "Four landscape course covers in a 2 by 2 sheet. Minimal editorial ink and watercolor on warm ivory paper. Subject: Balanced blocks supporting a small ochre bridge. Warm ivory, ochre and sage, quiet space, no letters or separators.",
+			"processing": "Quadrant crop, 768×480 WebP; Next Image serves responsive sizes"
+		},
+		"monogram.svg": {
+			"frame": "identity",
+			"createdAt": "2026-10-05",
+			"generator": "Code drawn vector",
+			"sourceMaster": "public/brand/monogram.svg",
+			"design": "D and K share a vertical stem; warm charcoal, 1.4/24 stroke. Raster exports: src/app/icon.png 512px, apple-icon.png 180px, favicon.ico 32px."
+		},
+		"hero-journey-cutout-v1.webp": {
+			"frame": "scene",
+			"createdAt": "2026-10-05",
+			"generator": "Built-in GPT Image",
+			"reference": "../brand-masters/ui-ux-polish/mobile-hero-ochre.png",
+			"sourceMaster": "../brand-masters/ui-ux-polish/hero-journey-cutout-v1.png",
+			"prompt": "Remove the white paper background from the journey illustration. Preserve the person, cliff, mountains, path, fine ink lines and ochre sun. Keep enclosed clothing highlights. Transparent background; no text or new objects.",
+			"processing": "900px tall WebP with alpha; social scene only"
+		}
+	},
+	"socialImages": {
+		"size": "1200×630",
+		"format": "JPEG",
+		"maxBytes": 150000,
+		"typography": "Source Serif 4; live Vietnamese text rendered by Next ImageResponse",
+		"routes": [
+			"/opengraph-image",
+			"/gioi-thieu/opengraph-image",
+			"/kham-pha-khoa-hoc/opengraph-image",
+			"/my-space/board-game/opengraph-image"
+		]
+	}
+}
