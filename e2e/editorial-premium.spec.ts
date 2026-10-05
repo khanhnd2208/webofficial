@@ -26,6 +26,7 @@ test.describe('Editorial premium public experience', () => {
 		const intro = page.getByTestId('intro-home');
 		await expect(intro).toBeVisible();
 		await expect(page.getByRole('heading', { level: 1, name: /Trở thành/i })).toBeVisible();
+		await expect(page.getByTestId('site-header')).toHaveCount(0);
 		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 		const introBox = await intro.boundingBox();
 		expect(introBox).not.toBeNull();

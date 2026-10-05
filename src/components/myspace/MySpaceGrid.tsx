@@ -137,7 +137,7 @@ const lockedFeaturedTileClassName =
 /**
  * My Space hub — centered flex-wrap composition of quiet icon tiles with one
  * featured rounded card. Reuses site canvas / display type; chrome stays in
- * PublicMinimalChrome.
+ * the shared site header.
  */
 export default function MySpaceGrid({ tiles }: { tiles: MySpaceTile[] }) {
 	const [openId, setOpenId] = useState<string | null>(null);

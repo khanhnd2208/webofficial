@@ -23,7 +23,7 @@ function toDateInputValue(iso: string | null): string {
 }
 
 const fieldClass =
-	'w-full min-h-11 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-sm text-ink outline-none transition-colors duration-250 focus:border-ink disabled:text-ink-secondary';
+	'w-full min-h-11 rounded-sm border border-hairline bg-canvas px-3 py-2.5 text-subhead text-ink outline-none transition-colors duration-(--dur-1) ease-(--ease-out) focus:border-ink disabled:text-ink-secondary';
 
 export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 	const [form, setForm] = useState<ProfileFormState>({
@@ -85,29 +85,22 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 	return (
 		<form
 			onSubmit={onSubmit}
-			className="space-y-6 rounded-2xl border border-hairline bg-paper p-5 sm:p-8"
+			className="space-y-6 rounded-lg border border-hairline bg-paper p-5 sm:p-8"
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div>
-					<label className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary">
-						Họ tên (Google)
-					</label>
+					<label className="mb-1.5 block eyebrow">Họ tên (Google)</label>
 					<input type="text" value={initialProfile.name} disabled className={fieldClass} />
 				</div>
 				<div>
-					<label className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary">
-						Email
-					</label>
+					<label className="mb-1.5 block eyebrow">Email</label>
 					<input type="email" value={initialProfile.email} disabled className={fieldClass} />
 				</div>
 			</div>
 
 			<div className="grid gap-4 sm:grid-cols-3">
 				<div>
-					<label
-						htmlFor="dob"
-						className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
-					>
+					<label htmlFor="dob" className="mb-1.5 block eyebrow">
 						Ngày sinh
 					</label>
 					<input
@@ -119,10 +112,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 					/>
 				</div>
 				<div>
-					<label
-						htmlFor="university"
-						className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
-					>
+					<label htmlFor="university" className="mb-1.5 block eyebrow">
 						Trường đại học
 					</label>
 					<input
@@ -136,10 +126,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 					/>
 				</div>
 				<div>
-					<label
-						htmlFor="major"
-						className="mb-1.5 block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
-					>
+					<label htmlFor="major" className="mb-1.5 block eyebrow">
 						Chuyên ngành
 					</label>
 					<input
@@ -156,13 +143,10 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
 			<div>
 				<div className="mb-1.5 flex items-center justify-between">
-					<label
-						htmlFor="bio"
-						className="block font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary"
-					>
+					<label htmlFor="bio" className="block eyebrow">
 						Bio
 					</label>
-					<span className="font-mono text-xs text-ink-secondary">{bioCount}/600</span>
+					<span className="text-footnote tabular-nums text-ink-secondary">{bioCount}/600</span>
 				</div>
 				<textarea
 					id="bio"
@@ -184,7 +168,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 				<button
 					type="submit"
 					disabled={isSaving}
-					className="inline-flex min-h-11 items-center rounded-lg bg-ink px-5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-250 hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
+					className="inline-flex min-h-11 items-center rounded-sm bg-ink px-5 text-caption font-semibold uppercase tracking-[0.08em] text-paper transition duration-(--dur-1) ease-(--ease-out) hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					{isSaving ? 'Đang lưu…' : 'Lưu hồ sơ'}
 				</button>

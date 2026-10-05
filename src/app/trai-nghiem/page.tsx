@@ -125,7 +125,7 @@ export default async function ExperiencesPage({
 						← Về tôi
 					</Link>
 					<Link href={routes.mySpace} className="about-text-link">
-						Góc học tập · My Space <span aria-hidden="true">↗</span>
+						Góc học tập · Không gian của tôi <span aria-hidden="true">↗</span>
 					</Link>
 				</footer>
 			</div>

@@ -24,13 +24,14 @@ type SiteAuthChipProps = {
 };
 
 const variantClass = {
-	chrome: 'text-label tracking-[0.02em] text-ink/70 hover:text-ink focus-visible:text-ink',
+	chrome: 'text-caption tracking-[0.08em] text-ink-secondary hover:text-ink focus-visible:text-ink',
 	intro:
-		'font-display text-control tracking-[0.2em] text-ink/70 hover:text-ink focus-visible:text-ink',
+		'font-display text-subhead tracking-[0.08em] text-ink/70 hover:text-ink focus-visible:text-ink',
 	introMobile:
-		'font-mono text-label tracking-[0.18em] text-ink-secondary hover:text-ink focus-visible:text-ink',
-	bar: 'text-control text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
-	badge: 'text-caption text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
+		'text-footnote tracking-[0.08em] text-ink-secondary hover:text-ink focus-visible:text-ink',
+	bar: 'text-subhead whitespace-nowrap text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
+	badge:
+		'text-caption whitespace-nowrap text-current opacity-80 hover:opacity-100 focus-visible:opacity-100',
 } as const;
 
 /** Vietnamese names end with the given name: "Nguyễn Duy Khánh" → "Khánh". */
@@ -119,7 +120,7 @@ export default function SiteAuthChip({
 		}
 	}
 
-	const base = `inline-flex min-h-10 items-center transition-colors duration-250 focus-visible:outline-none ${variantClass[variant]} ${className}`;
+	const base = `inline-flex min-h-11 items-center whitespace-nowrap transition-colors duration-(--dur-2) ease-(--ease-out) focus-visible:outline-none ${variantClass[variant]} ${className}`;
 
 	if (status === 'loading') {
 		// Hold the space without flashing "Đăng nhập" at someone who is signed in.
@@ -198,7 +199,7 @@ export default function SiteAuthChip({
 					id={panelId}
 					aria-label="Tài khoản"
 					role="group"
-					className="absolute top-full right-0 z-[60] mt-2 w-60 overflow-hidden rounded-xl border border-hairline bg-canvas text-left text-control tracking-normal text-ink normal-case shadow-lg"
+					className="absolute top-full right-0 z-[60] mt-2 w-60 overflow-hidden rounded-lg border border-hairline bg-canvas text-left text-subhead tracking-normal text-ink normal-case shadow-lg"
 				>
 					<div className="border-b border-hairline px-4 py-3">
 						<p className="truncate font-medium">{session.user.name ?? name}</p>

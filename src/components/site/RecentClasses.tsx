@@ -43,15 +43,15 @@ export default function RecentClasses({ className = '' }: { className?: string }
 	if (!classes.length) return null;
 	return (
 		<section aria-label="Lớp bạn đã mở" className={className} data-testid="recent-classes">
-			<p className="text-xs tracking-[0.16em] text-ink/55 uppercase">Lớp bạn đã mở</p>
+			<p className="eyebrow">Lớp bạn đã mở</p>
 			<ul className="mt-2 flex flex-wrap gap-2">
 				{classes.map((entry) => (
 					<li key={entry.slug}>
 						<Link
 							href={routes.teachingPublicClass(entry.slug)}
-							className="inline-flex min-h-10 max-w-[22rem] items-center gap-2 rounded-full border border-hairline bg-canvas/80 px-4 text-sm text-ink transition-colors hover:border-ink/30 hover:bg-paper"
+							className="inline-flex min-h-11 max-w-[22rem] items-center gap-2 rounded-full border border-hairline bg-canvas/80 px-4 text-subhead text-ink transition-colors duration-(--dur-1) ease-(--ease-out) hover:border-ink/30 hover:bg-paper"
 						>
-							<span className="font-mono text-xs text-ink-secondary">{entry.code}</span>
+							<span className="text-footnote tabular-nums text-ink-secondary">{entry.code}</span>
 							<span className="truncate">{entry.title}</span>
 						</Link>
 					</li>

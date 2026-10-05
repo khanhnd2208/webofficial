@@ -47,7 +47,7 @@ export function ProgramDesignGraphic() {
 								+
 							</span>
 						) : null}
-						<p className="font-mono text-xs tracking-[0.12em] text-ink/40">
+						<p className="step-index text-caption tabular-nums tracking-[0.08em] text-ink-secondary">
 							{String(index + 1).padStart(2, '0')}
 						</p>
 						<h3 className="mt-3 font-display text-lg font-medium tracking-[-0.01em] text-ink md:text-xl">

@@ -65,9 +65,14 @@
 	--stamp: var(--vermilion);
 	--classified: #8b2942;
 	--overlay: rgb(26 26 26 / 0.5);
-	--dur-fast: 150ms;
-	--dur-standard: var(--ui-duration-control);
-	--ease-enter: var(--ui-ease);
+	/* Three rhythms for every public surface. Older names point here. */
+	--dur-1: 150ms;
+	--dur-2: 250ms;
+	--dur-3: 400ms;
+	--ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+	--dur-fast: var(--dur-1);
+	--dur-standard: var(--dur-2);
+	--ease-enter: var(--ease-out);
 
 	--indigo: #5b7fb5;
 	--indigo-subtle: #edf1f8;
@@ -82,7 +87,7 @@
 	--shadow-md: 0 4px 6px -1px rgb(24 32 39 / 0.06), 0 2px 4px -2px rgb(24 32 39 / 0.04);
 	--shadow-lg: 0 10px 15px -3px rgb(24 32 39 / 0.07), 0 4px 6px -4px rgb(24 32 39 / 0.04);
 
-	/* Radius tiers — media cards use --radius-media */
+	/* Radius tiers — 8 / 12 / 20. Media cards use --radius-media. */
 	--radius-sm: 8px;
 	--radius-media: 12px;
 	--radius-md: 12px;
@@ -98,23 +103,30 @@
 	/* Article measure 680–780px */
 	--measure: 42rem;
 	--measure-wide: 72ch;
-	--motion-fast: var(--ui-duration-hover);
-	--motion-base: var(--ui-duration-control);
-	--motion-gate: var(--ui-duration-page);
-	--motion-slow: var(--ui-duration-page);
-	--ease-editorial: var(--ui-ease);
-	--type-caption: 12px;
-	--type-label: 13px;
-	--type-control: 15px;
-	--type-body: 17px;
-	--type-lead: 20px;
-	--type-title: 24px;
-	--type-heading: 32px;
-	--type-display: 48px;
-	--ui-duration-hover: 150ms;
-	--ui-duration-control: 250ms;
-	--ui-duration-page: 400ms;
-	--ui-ease: cubic-bezier(0.32, 0.72, 0, 1);
+	--motion-fast: var(--dur-1);
+	--motion-base: var(--dur-2);
+	--motion-gate: var(--dur-3);
+	--motion-slow: var(--dur-3);
+	--ease-editorial: var(--ease-out);
+
+	/* Type scale. title-1 grows from 28/34 to 32/40 from 640px. */
+	--type-caption: 0.75rem;
+	--type-caption-leading: 1rem;
+	--type-footnote: 0.8125rem;
+	--type-footnote-leading: 1.125rem;
+	--type-subhead: 0.9375rem;
+	--type-subhead-leading: 1.375rem;
+	--type-body: 1.0625rem;
+	--type-body-leading: 1.6875rem;
+	--type-title-3: 1.25rem;
+	--type-title-3-leading: 1.75rem;
+	--type-title-2: 1.5rem;
+	--type-title-2-leading: 2rem;
+	--type-title-1: 1.75rem;
+	--type-title-1-leading: 2.125rem;
+	--type-display: clamp(2.75rem, 6vw, 4.5rem);
+	--type-display-leading: 1.05;
+	--site-header-height: 52px;
 }
 
 /* ── Active Recall study + presentation ──────────────────────────────────── */
@@ -1137,9 +1149,9 @@
 	--stamp: var(--vermilion);
 	--classified: var(--rose);
 	--overlay: rgb(0 0 0 / 0.65);
-	--dur-fast: 150ms;
-	--dur-standard: var(--ui-duration-control);
-	--ease-enter: var(--ui-ease);
+	--dur-fast: var(--dur-1);
+	--dur-standard: var(--dur-2);
+	--ease-enter: var(--ease-out);
 
 	--indigo: #7a9fd4;
 	--indigo-subtle: #1a2030;
@@ -1153,6 +1165,13 @@
 	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
 	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
 	--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+@media (min-width: 640px) {
+	:root {
+		--type-title-1: 2rem;
+		--type-title-1-leading: 2.5rem;
+	}
 }
 
 @media (min-width: 768px) {
@@ -1251,46 +1270,23 @@
 	--font-mono: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 	--radius-sm: 8px;
 	--radius-md: 12px;
-	--radius-lg: 8px;
+	--radius-lg: 20px;
 	--text-caption: var(--type-caption);
-	--text-caption--line-height: 1rem;
-	--text-label: var(--type-label);
-	--text-label--line-height: 1.25rem;
-	--text-control: var(--type-control);
-	--text-control--line-height: 1.375rem;
+	--text-caption--line-height: var(--type-caption-leading);
+	--text-footnote: var(--type-footnote);
+	--text-footnote--line-height: var(--type-footnote-leading);
+	--text-subhead: var(--type-subhead);
+	--text-subhead--line-height: var(--type-subhead-leading);
 	--text-body: var(--type-body);
-	--text-body--line-height: 1.75rem;
-	--text-lead: var(--type-lead);
-	--text-lead--line-height: 1.875rem;
-	--text-title: var(--type-title);
-	--text-title--line-height: 2rem;
-	--text-heading: var(--type-heading);
-	--text-heading--line-height: 2.5rem;
+	--text-body--line-height: var(--type-body-leading);
+	--text-title-3: var(--type-title-3);
+	--text-title-3--line-height: var(--type-title-3-leading);
+	--text-title-2: var(--type-title-2);
+	--text-title-2--line-height: var(--type-title-2-leading);
+	--text-title-1: var(--type-title-1);
+	--text-title-1--line-height: var(--type-title-1-leading);
 	--text-display: var(--type-display);
-	--text-display--line-height: 1.08;
-
-	--color-game-canvas: #0c0b09;
-	--color-game-surface: #16140f;
-	--color-game-ink: #f7f3ea;
-	--color-game-bronze: #d9b679;
-	--color-espresso-paper: #1a1815;
-	--color-espresso-ink: #f2ece1;
-	--color-espresso-rule: #35312b;
-	--color-google-border: #747775;
-	--color-google-ink: #1f1f1f;
-	--color-google-hover: #f2f2f2;
-	--color-google-dark-border: #8e918f;
-	--color-google-dark-paper: #131314;
-	--color-google-dark-ink: #e3e3e3;
-	--color-google-dark-hover: #252526;
-	--radius-xl: 12px;
-	--radius-2xl: 20px;
-	--radius-3xl: 20px;
-	--default-transition-duration: 250ms;
-	--default-transition-timing-function: var(--ui-ease);
-	--ease-in: cubic-bezier(0.4, 0, 1, 1);
-	--ease-out: var(--ui-ease);
-	--ease-in-out: var(--ui-ease);
+	--text-display--line-height: var(--type-display-leading);
 }
 
 /* ── Board-game visual language ─────────────────────────────────────────── */
@@ -3011,8 +3007,13 @@
    Base Styles
    ═══════════════════════════════════════════════════════ */
 
-* {
-	border-color: var(--border);
+/* Default border color. In @layer base so Tailwind border-* utilities can override it. */
+@layer base {
+	*,
+	::before,
+	::after {
+		border-color: var(--border);
+	}
 }
 
 body {
@@ -3072,6 +3073,17 @@ body::before {
 
 .section-space-sm {
 	padding-block: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+/* Small uppercase label. One tracking, one size, Inter — not a monospace face. */
+.eyebrow {
+	font-family: var(--font-inter), sans-serif;
+	font-size: var(--type-caption);
+	line-height: var(--type-caption-leading);
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ink-secondary);
 }
 
 .type-wordmark {
@@ -4301,25 +4313,6 @@ body::before {
 	}
 }
 
-/* Public chrome fade-in */
-@keyframes chrome-fade-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
-.chrome-fade-in {
-	opacity: 0;
-	animation: chrome-fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-}
-
-.chrome-fade-in-delay {
-	animation-delay: 0.4s;
-}
-
 /* Sheet panel entrance */
 @keyframes sheet-slide-up {
 	from {
@@ -4361,7 +4354,6 @@ body::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.chrome-fade-in,
 	.sheet-panel-bottom,
 	.sheet-panel-right,
 	.sheet-panel-full {

@@ -33,7 +33,7 @@ export default async function AccountLearningPage() {
 					>
 						← Tài khoản
 					</Link>
-					<p className="mt-4 text-xs font-semibold uppercase tracking-[0.12em] text-accent">
+					<p className="mt-4 text-caption font-semibold uppercase tracking-[0.08em] text-accent">
 						Học tập
 					</p>
 					<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">
@@ -45,8 +45,8 @@ export default async function AccountLearningPage() {
 			<div className="shell space-y-14 pt-10">
 				<section>
 					{continueCourse?.nextLesson ? (
-						<div className="rounded-2xl border border-hairline bg-paper p-6 sm:p-10">
-							<p className="text-xs font-semibold uppercase tracking-[0.12em] text-accent">
+						<div className="rounded-lg border border-hairline bg-paper p-6 sm:p-10">
+							<p className="text-caption font-semibold uppercase tracking-[0.08em] text-accent">
 								Tiếp tục học
 							</p>
 							<h2 className="mt-2.5 font-display type-section font-medium text-ink">
@@ -61,7 +61,7 @@ export default async function AccountLearningPage() {
 										<span>
 											{continueCourse.completedLessons}/{continueCourse.totalLessons} bài
 										</span>
-										<span className="font-mono">{continueCourse.progressPercent}%</span>
+										<span className="tabular-nums">{continueCourse.progressPercent}%</span>
 									</div>
 									<div
 										className="mt-2 h-1 overflow-hidden rounded-full bg-surface-hover"
@@ -72,21 +72,21 @@ export default async function AccountLearningPage() {
 										aria-label={`Tiến độ ${continueCourse.progressPercent} phần trăm`}
 									>
 										<div
-											className="h-full bg-vermilion transition-[width] duration-400"
+											className="h-full bg-vermilion transition-[width] duration-(--dur-3) ease-(--ease-out)"
 											style={{ width: `${continueCourse.progressPercent}%` }}
 										/>
 									</div>
 								</div>
 								<Link
 									href={routes.lesson(continueCourse.slug, continueCourse.nextLesson.slug)}
-									className="inline-flex min-h-11 items-center rounded-lg bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-250 hover:bg-ink/90"
+									className="inline-flex min-h-11 items-center rounded-sm bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-(--dur-1) ease-(--ease-out) hover:bg-ink/90"
 								>
 									Mở bài tiếp theo
 								</Link>
 							</div>
 						</div>
 					) : courses.length > 0 ? (
-						<div className="rounded-2xl border border-hairline bg-paper p-8 text-center sm:p-12">
+						<div className="rounded-lg border border-hairline bg-paper p-8 text-center sm:p-12">
 							<p className="font-display type-section font-medium text-ink">
 								Bạn đã hoàn thành các khóa hiện có
 							</p>
@@ -95,7 +95,7 @@ export default async function AccountLearningPage() {
 							</p>
 						</div>
 					) : (
-						<div className="rounded-2xl border border-hairline bg-paper px-8 py-16 text-center">
+						<div className="rounded-lg border border-hairline bg-paper px-8 py-16 text-center">
 							<p className="font-display type-section font-medium text-ink">Chưa có khóa học</p>
 							<p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-secondary">
 								Khi được ghi danh, lộ trình học sẽ hiện tại đây. Liên hệ để yêu cầu tham gia hoặc
@@ -104,14 +104,14 @@ export default async function AccountLearningPage() {
 							<div className="mt-8 flex flex-wrap justify-center gap-3">
 								<Link
 									href={routes.learnCourses}
-									className="inline-flex min-h-11 items-center rounded-lg border border-hairline px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition duration-250 hover:border-ink"
+									className="inline-flex min-h-11 items-center rounded-sm border border-hairline px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition duration-(--dur-1) ease-(--ease-out) hover:border-ink"
 								>
 									Xem các khóa học
 								</Link>
 								<ContactLink
 									href={`${routes.contact}?type=course`}
 									contactContext={{ inquiryType: 'course', sourcePage: routes.accountLearning }}
-									className="inline-flex min-h-11 items-center rounded-lg bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-250 hover:bg-ink/90"
+									className="inline-flex min-h-11 items-center rounded-sm bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-(--dur-1) ease-(--ease-out) hover:bg-ink/90"
 								>
 									Gửi yêu cầu ghi danh
 								</ContactLink>
@@ -122,9 +122,7 @@ export default async function AccountLearningPage() {
 
 				{courses.length > 0 ? (
 					<section>
-						<p className="font-mono text-xs uppercase tracking-[0.28em] text-ink-secondary">
-							Tất cả khóa học
-						</p>
+						<p className="eyebrow">Tất cả khóa học</p>
 						<ul className="mt-6 divide-y divide-hairline border-y border-hairline">
 							{courses.map((course) => (
 								<li key={course.id} className="py-6">
@@ -141,7 +139,7 @@ export default async function AccountLearningPage() {
 													{course.summary}
 												</p>
 											) : null}
-											<p className="mt-2 font-mono text-xs text-ink-secondary">
+											<p className="mt-2 text-footnote tabular-nums text-ink-secondary">
 												{course.completedLessons}/{course.totalLessons} bài ·{' '}
 												{course.progressPercent}%
 											</p>
