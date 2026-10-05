@@ -5,11 +5,11 @@ import type { ReactNode } from 'react';
 
 import RouteEntrance from '@/components/motion/RouteEntrance';
 import JourneyTransition from './JourneyTransition';
-import { isFullBleedPublicPath, isInternalChromePath } from '@/config/navigation';
+import { isInternalChromePath } from '@/config/navigation';
 
 /**
- * Light entrance on public routes. Modest top inset on inner pages so GateBack
- * does not collide with titles. Intro, mục lục, My Space, and /lop stay full-bleed.
+ * Light entrance on public routes. The sticky header already occupies its own
+ * space. Intro, mục lục, My Space, and /lop stay full-bleed.
  */
 export default function MainContent({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
@@ -19,10 +19,9 @@ export default function MainContent({ children }: { children: ReactNode }) {
 	}
 
 	const isBookPage = ['/', '/muc-luc', '/gioi-thieu', '/du-an', '/dich-vu'].includes(pathname);
-	const fullBleed = isFullBleedPublicPath(pathname);
 
 	return (
-		<div id="main-content" className={fullBleed ? undefined : 'pt-14'}>
+		<div id="main-content">
 			{pathname === '/' || pathname === '/muc-luc' ? (
 				<JourneyTransition page={pathname}>{children}</JourneyTransition>
 			) : isBookPage ? (

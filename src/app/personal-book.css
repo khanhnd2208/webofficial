@@ -5,9 +5,7 @@
 	font-size: 16px;
 	line-height: 1.7;
 }
-.personal-book :is(a, button, summary):focus-visible,
-.book-chrome:focus-visible,
-.book-chrome :is(a, button):focus-visible {
+.personal-book :is(a, button, summary):focus-visible {
 	outline: 2px solid var(--bronze);
 	outline-offset: 5px;
 }
@@ -235,9 +233,10 @@
 	border-bottom: 1px solid var(--hairline);
 }
 .book-toc-title {
-	font-family: var(--font-mono);
+	font-family: var(--font-inter), sans-serif;
 	font-size: clamp(1.5rem, 3vw, 2rem);
 	line-height: 1.4;
+	letter-spacing: 0.02em;
 }
 .book-toc-row p {
 	font-size: 14px;
@@ -558,21 +557,6 @@
 .book-services :is(.editorial-button, .editorial-text-link, summary) {
 	min-height: 44px;
 }
-.book-chrome {
-	color: var(--ink-secondary);
-	font-size: 13px;
-	min-height: 44px;
-	letter-spacing: 0.03em;
-}
-.book-chrome :is(a, button) {
-	color: var(--ink-secondary);
-	font-size: 13px;
-	min-height: 44px;
-	letter-spacing: 0.03em;
-}
-body:has(.personal-book) .book-chrome {
-	background: var(--canvas);
-}
 @media (max-width: 1023px) {
 	.cover-composition {
 		grid-template-columns: 1fr;
@@ -742,8 +726,9 @@ body:has(.personal-book) .book-chrome {
 .personal-book .editorial-label {
 	color: var(--bronze);
 }
-.book-services #program-design-title ~ div .font-mono {
-	font-size: 13px;
+.book-services #program-design-title ~ div .step-index {
+	font-size: var(--type-footnote);
+	line-height: var(--type-footnote-leading);
 	color: var(--ink-secondary);
 }
 .book-project-link > div:first-child > p {
@@ -777,9 +762,6 @@ body:has(.personal-book) .book-chrome {
 	height: 102% !important;
 	left: -1% !important;
 	top: -1% !important;
-}
-.book-chrome:not([data-testid='contact-rail']) {
-	position: absolute;
 }
 .book-page-end {
 	display: flex;
@@ -1441,7 +1423,8 @@ body:has(.personal-book) .book-chrome {
 		flex-shrink: 0;
 	}
 	.about-fullname {
-		font-size: 11px;
+		font-size: var(--type-caption);
+		line-height: var(--type-caption-leading);
 	}
 	.book-about .about-identity h1 {
 		font-size: clamp(1.8rem, 7vw, 2.6rem);

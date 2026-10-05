@@ -12,7 +12,7 @@ export default function SwitchAccountButton({ loginHref }: { loginHref: string }
 			type="button"
 			disabled={status === 'loading'}
 			onClick={() => void signOutTo(`${loginHref}${loginHref.includes('?') ? '&' : '?'}chon=1`)}
-			className="inline-flex w-full min-h-11 items-center justify-center rounded-[10px] border border-hairline px-5 py-3 text-sm font-medium text-ink transition-colors hover:border-ink/40 hover:bg-paper"
+			className="inline-flex w-full min-h-11 items-center justify-center rounded-sm border border-hairline px-5 py-3 text-subhead font-medium text-ink transition-colors duration-(--dur-1) ease-(--ease-out) hover:border-ink/40 hover:bg-paper"
 		>
 			Đăng xuất để dùng tài khoản khác
 		</button>

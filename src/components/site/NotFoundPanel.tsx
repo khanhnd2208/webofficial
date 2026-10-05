@@ -23,7 +23,7 @@ export default function NotFoundPanel({
 	return (
 		<main className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16">
 			<div className="mx-auto max-w-md text-center">
-				<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+				<p className="text-caption font-semibold uppercase tracking-[0.08em] text-accent">
 					{eyebrow}
 				</p>
 				<h1 className="mt-2.5 font-display type-page-title font-medium text-ink">{title}</h1>

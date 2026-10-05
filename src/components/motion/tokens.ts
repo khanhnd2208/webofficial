@@ -5,33 +5,36 @@
 
 export type MotionTier = 'full' | 'lite' | 'reduced';
 
+/** Shared spring: cubic-bezier(0.32, 0.72, 0, 1), matching --ease-out. */
+const easeOut = [0.32, 0.72, 0, 1] as const;
+
 export const ease = {
-	/** Primary signature easing — reveals, masks, journey */
-	reveal: [0.16, 1, 0.3, 1] as const,
+	/** Reveals, masks, journey */
+	reveal: easeOut,
 	/** UI transitions, nav, buttons */
-	transition: [0.65, 0, 0.35, 1] as const,
+	transition: easeOut,
 } as const;
 
 export const duration = {
-	/** Hover / micro UI feedback */
-	hover: 0.18,
-	ui: 0.22,
-	button: 0.2,
-	/** HorizonReveal */
-	horizon: 0.6,
+	/** Hover / micro UI feedback — --dur-1 */
+	hover: 0.15,
+	ui: 0.25,
+	button: 0.15,
+	/** HorizonReveal — --dur-3 */
+	horizon: 0.4,
 	/** Route entrance fade + soft rise */
-	page: 0.38,
+	page: 0.4,
 	/** Gate item exit before navigation */
-	gate: 0.32,
+	gate: 0.25,
 	/** Section narrative */
-	section: 0.35,
-	textMask: 0.45,
-	underline: 0.55,
-	image: 0.55,
-	/** Full hero sequence budget */
+	section: 0.4,
+	textMask: 0.4,
+	underline: 0.4,
+	image: 0.4,
+	/** Full hero sequence budget — choreography, not a single UI beat */
 	hero: 1.6,
-	pathDraw: 0.8,
-	seal: 0.22,
+	pathDraw: 0.4,
+	seal: 0.25,
 	reducedCrossfade: 0.15,
 } as const;
 
@@ -91,5 +94,5 @@ export const introTimeline = {
 export const gateTimeline = {
 	itemBase: 0.12,
 	itemStep: 0.08,
-	exit: 0.32,
+	exit: 0.25,
 } as const;

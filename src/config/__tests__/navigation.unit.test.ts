@@ -9,8 +9,10 @@ import {
 	getMobileNavLinks,
 	getPublishedContactCta,
 	getPublishedFooterGroups,
+	getSiteTrail,
 	isFullBleedPublicPath,
 	isLopPath,
+	isSiteHeaderPath,
 	isActiveRecallPath,
 	isGateItemLocked,
 	isInternalChromePath,
@@ -226,5 +228,91 @@ describe('route map', () => {
 		expect(routes.accountLearning).toBe('/tai-khoan/hoc');
 		expect(routes.admin.website).toBe('/admin/website');
 		expect(routes.admin.archive).toBe('/admin/archive');
+	});
+});
+
+describe('site header trail', () => {
+	it('names the page after Mục lục, and only the parent on a detail page', () => {
+		expect(getSiteTrail('/muc-luc')).toEqual([]);
+		expect(getSiteTrail('/gioi-thieu')).toEqual([{ label: 'Giới thiệu' }]);
+		expect(getSiteTrail('/trai-nghiem')).toEqual([{ label: 'Trải nghiệm' }]);
+		expect(getSiteTrail('/trai-nghiem/mot-chuyen')).toEqual([
+			{ label: 'Trải nghiệm', href: '/trai-nghiem' },
+		]);
+		expect(getSiteTrail('/du-an')).toEqual([{ label: 'Dự án' }]);
+		expect(getSiteTrail('/du-an/moonie')).toEqual([{ label: 'Dự án', href: '/du-an' }]);
+		expect(getSiteTrail('/dich-vu')).toEqual([{ label: 'Dịch vụ' }]);
+		expect(getSiteTrail('/lien-he')).toEqual([{ label: 'Liên hệ' }]);
+		expect(getSiteTrail('/dang-nhap')).toEqual([{ label: 'Đăng nhập' }]);
+		expect(getSiteTrail('/tai-khoan')).toEqual([{ label: 'Tài khoản' }]);
+		expect(getSiteTrail('/tai-khoan/hoc')).toEqual([
+			{ label: 'Tài khoản', href: '/tai-khoan' },
+			{ label: 'Khu học' },
+		]);
+		expect(getSiteTrail('/chinh-sach/bao-mat')).toEqual([{ label: 'Chính sách' }]);
+		expect(getSiteTrail('/my-space')).toEqual([{ label: 'Không gian của tôi' }]);
+		expect(getSiteTrail('/my-space/board-game')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Board Game' },
+		]);
+		expect(getSiteTrail('/my-space/active-recall')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Ôn tập' },
+		]);
+		expect(getSiteTrail('/my-space/active-recall/hrm')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Ôn tập' },
+		]);
+		expect(getSiteTrail('/my-space/tests')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Bài kiểm tra' },
+		]);
+		expect(getSiteTrail('/my-space/tests/hrm')).toEqual([
+			{ label: 'Không gian của tôi', href: '/my-space' },
+			{ label: 'Bài kiểm tra' },
+		]);
+		expect(getSiteTrail('/my-space/tests/hrm/play')).toEqual([]);
+		expect(getSiteTrail('/khong-co-trang')).toEqual([]);
+	});
+
+	it('shows the header on public pages and hides it on intro, teaching, courses and rooms', () => {
+		for (const path of [
+			'/muc-luc',
+			'/gioi-thieu',
+			'/trai-nghiem/mot-chuyen',
+			'/du-an',
+			'/dich-vu',
+			'/lien-he',
+			'/chinh-sach/dieu-khoan',
+			'/dang-nhap',
+			'/tai-khoan',
+			'/my-space',
+			'/my-space/board-game',
+			'/my-space/active-recall',
+			'/my-space/active-recall/hrm',
+			'/my-space/tests',
+			'/my-space/tests/hrm',
+			'/khong-co-trang',
+		]) {
+			expect(isSiteHeaderPath(path), path).toBe(true);
+		}
+		for (const path of [
+			'/',
+			'/lop/hrm-101',
+			'/admin',
+			'/my-space/my-class/ai50',
+			'/my-space/teaching/class-1',
+			'/my-space/courses/ai50',
+			'/hoc/khoa-hoc/ai50',
+			'/khoa-hoc',
+			'/khoa-hoc/ai50',
+			'/my-space/board-game/spy-fall',
+			'/my-space/board-game/ma-soi/room/ABCD',
+			'/my-space/tests/hrm/play',
+			'/messages',
+			'/vocabulary',
+		]) {
+			expect(isSiteHeaderPath(path), path).toBe(false);
+		}
 	});
 });

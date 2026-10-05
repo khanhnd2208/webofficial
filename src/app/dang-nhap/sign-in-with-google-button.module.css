@@ -1,0 +1,33 @@
+/* Google Identity branding colors. They are not site tokens. */
+.button {
+	border-color: #747775;
+	background: #fff;
+	color: #1f1f1f;
+}
+
+.button:hover {
+	background: #f2f2f2;
+}
+
+:global(.dark) .button {
+	border-color: #8e918f;
+	background: #131314;
+	color: #e3e3e3;
+}
+
+:global(.dark) .button:hover {
+	background: #252526;
+}
+
+.red {
+	fill: #ea4335;
+}
+.blue {
+	fill: #4285f4;
+}
+.yellow {
+	fill: #fbbc05;
+}
+.green {
+	fill: #34a853;
+}

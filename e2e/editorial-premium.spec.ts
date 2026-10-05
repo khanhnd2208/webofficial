@@ -26,6 +26,7 @@ test.describe('Editorial premium public experience', () => {
 		const intro = page.getByTestId('intro-home');
 		await expect(intro).toBeVisible();
 		await expect(page.getByRole('heading', { level: 1, name: /Trở thành/i })).toBeVisible();
+		await expect(page.getByTestId('site-header')).toHaveCount(0);
 		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 		const introBox = await intro.boundingBox();
 		expect(introBox).not.toBeNull();
@@ -38,7 +39,7 @@ test.describe('Editorial premium public experience', () => {
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		const about = page.getByRole('region', { name: 'About Me' });
+		const about = page.getByRole('region', { name: 'Về tôi' });
 		await expect(about.getByRole('link')).toHaveCount(1);
 
 		await expect(page.getByTestId('gate-item-experiences')).toHaveCount(0);
