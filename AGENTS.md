@@ -16,7 +16,7 @@ toiladuykhanh.com: personal site plus teaching platform. One Next.js 16 app, Mon
 
 ## Hard rules
 
-1. `main` is production: a push to `main` deploys automatically once CI passes. Do not push to `main`, merge a pull request, or deploy unless the user asked for that step in this conversation.
+1. `main` is production: a push to `main` deploys automatically once CI passes. Finishing a task means shipping it: push the branch, open a pull request, merge it when CI is green, and watch the deploy (see Shipping). No extra go-ahead is needed. Never push straight to `main` or merge a pull request whose CI is red or still running. If the user says to hold, stop before pushing.
 2. Never force-push, `git reset --hard`, `git clean -f`, rebase pushed commits, or skip hooks with `--no-verify`.
 3. Never commit or print secrets: `.env*` (except `.env.example`), passwords, tokens, keys, database dumps. Read variable names from `.env.example`.
 4. Production data changes only through the running app (Studio pages or admin APIs with an admin session). Never write to the production database directly or over SSH. Seed scripts skip existing rows, so they do not update production.
@@ -56,6 +56,8 @@ The user directs agents in plain language and does not read diffs. A short reque
 
 ## Before pushing
 
+Run these once your commits are done; CI repeats them on the pull request.
+
 ```bash
 npm run typecheck && npm run lint -- --max-warnings=0 && npm run format:check \
   && npm run areas:check && npm run test:unit && npm run test:component
@@ -67,10 +69,15 @@ npm run typecheck && npm run lint -- --max-warnings=0 && npm run format:check \
 
 ## Shipping
 
+Do these steps yourself, without asking, as soon as the task is done (`ship-change` skill has the commands):
+
 1. Push your branch and open a pull request to `main`; fill in `.github/pull_request_template.md`.
-2. CI runs static checks, unit/integration, component, build, and end-to-end specs for the areas you touched. Fix failures on the branch.
-3. Merge only when the user says so, with a merge commit. Squash or rebase merges break `.git-blame-ignore-revs`.
-4. The merge deploys. Follow it with `gh run list --workflow deploy.yml`. Never start a local deploy while one is running. Runbook: `docs/deployment/VPS.md`.
+2. Wait for CI: `gh pr checks <number> --watch`. CI runs static checks, unit/integration, component, build, and end-to-end specs for the areas you touched. Fix failures on the branch and wait again.
+3. When every check is green, merge with a merge commit: `gh pr merge <number> --merge`. Squash or rebase merges break `.git-blame-ignore-revs`. Do not use `--auto`: `main` has no required checks, so it merges at once.
+4. The merge deploys. Watch it with `gh run watch` on the latest `deploy.yml` run and report the result. Never start a local deploy while one is running. Runbook: `docs/deployment/VPS.md`.
+5. Remove the worktree and the local branch.
+
+Stop and ask instead of merging when: the change adds a Prisma migration, CI fails for a reason outside your task, the pull request also carries someone else's commits, or a deploy is already running for another branch.
 
 ## Uploads and assets
 
