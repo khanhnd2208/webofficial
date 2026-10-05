@@ -107,6 +107,8 @@ export const updateLearnSectionSchema = z
 		checkpoint: learnCheckpointSchema.nullable().optional(),
 		quiz: learnQuizSchema.nullable().optional(),
 		discussion: learnDiscussionSchema.nullable().optional(),
+		/** Client copy of `updatedAt`. When set, a mismatch returns 409 instead of overwriting. */
+		baseUpdatedAt: z.iso.datetime().optional(),
 	})
 	.strict();
 
