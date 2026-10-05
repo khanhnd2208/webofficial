@@ -38,11 +38,11 @@ test.describe('Editorial premium public experience', () => {
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		const about = page.getByRole('region', { name: 'About Me' });
-		await expect(about.getByRole('link')).toHaveCount(1);
+		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
 
 		await expect(page.getByTestId('gate-item-experiences')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
+		await page.getByTestId('toc-open-myspace').click();
 		await page.getByTestId('myspace-tile-courses').click();
 		await expect(page).toHaveURL(/\/dang-nhap\?from=%2Fkhoa-hoc/);
 	});
