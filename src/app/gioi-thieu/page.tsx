@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import portraitArt from '../../../public/brand/portrait-journey.png';
 import aboutArt from '../../../public/brand/toc/about-v1.webp';
 import SharedArtwork from '@/components/site/SharedArtwork';
 import Link from 'next/link';
@@ -70,8 +69,7 @@ export default function AboutPage() {
 					<div className="about-identity">
 						<div className="about-avatar">
 							<Image
-								src={portraitArt}
-								placeholder="blur"
+								src="/brand/portrait-journey.png"
 								alt={`Chân dung minh họa ${aboutHero.fullName}`}
 								fill
 								sizes="(max-width: 600px) 80px, 124px"
