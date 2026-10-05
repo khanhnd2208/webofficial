@@ -27,7 +27,9 @@ for (const game of ['spy-fall', 'cheese-thief', 'ma-soi']) {
 		);
 		await expect(page.getByRole('button', { name: startName })).toHaveCount(0);
 		await controls.getByRole('button', { name: 'Một bước', exact: true }).click();
+		await expect(controls.getByRole('button', { name: 'Một bước', exact: true })).toBeEnabled();
 		await expect(controls.getByRole('alert')).toHaveCount(0);
+		if (game === 'ma-soi') await expect(controls).toContainText('· dealt ·');
 		if (game === 'ma-soi' && process.env.UI_UX_SCREENSHOT_DIR) {
 			await mkdir(process.env.UI_UX_SCREENSHOT_DIR, { recursive: true });
 			await page.screenshot({
