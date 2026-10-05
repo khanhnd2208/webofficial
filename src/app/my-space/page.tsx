@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 /**
  * My Space — focused hub for Teaching and Admin for privileged accounts.
- * Full-bleed centered composition; back + contact live in PublicMinimalChrome.
+ * Full-bleed centered composition. Wayfinding lives in the shared site header.
  */
 export default async function MySpacePage() {
 	const session = await auth();

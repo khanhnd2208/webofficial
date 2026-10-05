@@ -4,8 +4,6 @@ import { auth } from '@/lib/auth';
 import { getMyProfile } from '@/services/userProfileService';
 import { routes } from '@/config/routes';
 
-import SiteTopBar from '@/components/site/SiteTopBar';
-
 import ProfileForm from './ProfileForm';
 
 export const dynamic = 'force-dynamic';
@@ -30,9 +28,6 @@ export default async function ProfilePage() {
 
 	return (
 		<main className="min-h-screen pb-16">
-			<div className="shell max-w-3xl text-ink">
-				<SiteTopBar crumbs={[{ label: 'Tài khoản' }]} />
-			</div>
 			<section className="border-b border-hairline">
 				<div className="shell max-w-3xl py-10 sm:py-12">
 					<p className="text-caption font-semibold uppercase tracking-[0.08em] text-accent">

@@ -4715,25 +4715,6 @@ body::before {
 	}
 }
 
-/* Public chrome fade-in */
-@keyframes chrome-fade-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
-.chrome-fade-in {
-	opacity: 0;
-	animation: chrome-fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-}
-
-.chrome-fade-in-delay {
-	animation-delay: 0.4s;
-}
-
 /* Sheet panel entrance */
 @keyframes sheet-slide-up {
 	from {
@@ -4775,7 +4756,6 @@ body::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.chrome-fade-in,
 	.sheet-panel-bottom,
 	.sheet-panel-right,
 	.sheet-panel-full {

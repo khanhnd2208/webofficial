@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import SiteTopBar from '@/components/site/SiteTopBar';
 import { routes } from '@/config/routes';
 import { auth } from '@/lib/auth';
 
@@ -19,10 +18,6 @@ export default async function BoardGamePage() {
 		<main className="relative min-h-svh overflow-hidden bg-canvas px-6 pt-4 pb-20 sm:px-8 sm:pt-8 sm:pb-28">
 			<div className="pointer-events-none absolute -right-48 top-24 h-96 w-96 rounded-full bg-vermilion/5 blur-3xl" />
 			<div className="mx-auto max-w-5xl">
-				<SiteTopBar
-					crumbs={[{ label: 'My Space', href: routes.mySpace }, { label: 'Board Game' }]}
-					className="text-ink"
-				/>
 				<header className="mt-10 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
 					<div>
 						<p className="eyebrow">My Space · Board Game</p>

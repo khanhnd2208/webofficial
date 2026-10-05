@@ -9,8 +9,8 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByText('[động từ]').locator('visible=true')).toBeVisible();
 		await expect(page.getByText(/Chưa xong/i).locator('visible=true')).toBeVisible();
 		await expect(page.locator('a[href="/muc-luc"]').last()).toBeVisible();
-		await expect(page.getByTestId('contact-rail')).toHaveCount(0);
-		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
+		await expect(page.getByTestId('site-header')).toHaveCount(0);
+		await expect(page.getByTestId('site-header-contact')).toHaveCount(0);
 		await expect(page.getByTestId('gate-home')).toHaveCount(0);
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
 		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toBeVisible();
@@ -39,9 +39,9 @@ test.describe('Public pages smoke', () => {
 		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
-		await expect(page.getByTestId('contact-rail')).toBeVisible();
-		await expect(page.getByTestId('contact-rail')).toHaveText('Gửi lời nhắn');
-		await expect(page.getByTestId('intro-back')).toBeVisible();
+		await expect(page.getByTestId('site-header-contact')).toBeVisible();
+		await expect(page.getByTestId('site-header-contact')).toHaveText('Gửi lời nhắn');
+		await expect(page.getByTestId('site-header-home')).toBeVisible();
 		await expect(page.getByTestId('site-auth-chip')).toBeVisible();
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
 	});
@@ -113,8 +113,8 @@ test.describe('Public pages smoke', () => {
 			page.getByText(/Tôi vẫn đang học cách trở thành một người thầy tốt hơn/i),
 		).toBeVisible();
 		await expect(page.getByText(/My Hanoicam/i)).toHaveCount(0);
-		await expect(page.getByTestId('gate-back')).toBeVisible();
-		await expect(page.getByTestId('contact-rail')).toBeVisible();
+		await expect(page.getByTestId('site-header-home')).toBeVisible();
+		await expect(page.getByTestId('site-header-contact')).toBeVisible();
 	});
 
 	test('retired service URLs redirect to the current architecture', async ({ page }) => {
@@ -151,8 +151,8 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByLabel('Tên')).toBeVisible();
 		await expect(page.getByLabel('Email')).toBeVisible();
 		await expect(page.getByLabel(/Bối cảnh hoặc điều đang khiến bạn băn khoăn/i)).toBeVisible();
-		await expect(page.getByTestId('contact-rail')).toHaveCount(0);
-		await expect(page.getByTestId('gate-back')).toBeVisible();
+		await expect(page.getByTestId('site-header-contact')).toHaveCount(0);
+		await expect(page.getByTestId('site-header')).toBeVisible();
 	});
 
 	test('privacy policy loads', async ({ page }) => {
@@ -199,13 +199,13 @@ test.describe('Navigation', () => {
 		const about = page.getByRole('region', { name: 'About Me' });
 		await expect(about.getByRole('link')).toHaveCount(1);
 		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
-		await expect(page.getByTestId('contact-rail')).toBeVisible();
+		await expect(page.getByTestId('site-header-contact')).toBeVisible();
 	});
 
 	test('contact rail opens a quick message panel', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/gioi-thieu');
-		const trigger = page.getByTestId('contact-rail');
+		const trigger = page.getByTestId('site-header-contact');
 		await expect(trigger).toHaveText('Gửi lời nhắn');
 		await trigger.click();
 		await expect(page.getByRole('dialog', { name: 'Gửi lời nhắn' })).toBeVisible();
@@ -216,31 +216,30 @@ test.describe('Navigation', () => {
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 	});
 
-	test('mobile contact FAB stays off book pages and remains available from contact', async ({
-		page,
-	}) => {
+	test('mobile header keeps one contact action, except on the contact page', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/muc-luc');
-		await expect(page.getByTestId('contact-rail')).toBeHidden();
+		await expect(page.getByTestId('site-header-contact')).toBeVisible();
+		await expect(page.getByTestId('site-header-contact')).toHaveText('Nhắn tin');
 		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 		await page.goto('/lien-he');
 		await expect(
 			page.getByRole('heading', { level: 1, name: /Gửi tôi một lời nhắn/i }),
 		).toBeVisible();
+		await expect(page.getByTestId('site-header-contact')).toHaveCount(0);
 	});
 
-	test('gate back returns to the mục lục', async ({ page }) => {
+	test('the wordmark returns to the mục lục', async ({ page }) => {
 		await page.goto('/dich-vu');
-		await page.getByTestId('gate-back').click();
+		await page.getByTestId('site-header-home').click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 	});
 
-	test('mục lục can return to the intro cover', async ({ page }) => {
+	test('mục lục wordmark stays on the mục lục', async ({ page }) => {
 		await page.goto('/muc-luc');
-		await page.getByTestId('intro-back').click();
-		await expect(page).toHaveURL(/\/$/);
-		await expect(page.getByTestId('intro-home')).toBeVisible();
+		await expect(page.getByTestId('site-header-home')).toHaveAttribute('href', '/muc-luc');
+		await expect(page.getByTestId('intro-back')).toHaveCount(0);
 	});
 });
 

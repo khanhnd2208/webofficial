@@ -712,6 +712,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 				0,
 			);
 			await expect(page.getByTestId('myspace-back')).toHaveCount(0);
+			await expect(page.getByTestId('site-header')).toHaveCount(0);
 			await expect(page.getByTestId('contact-rail')).toHaveCount(0);
 			expect(await page.locator('.teaching-icon-button svg').count()).toBeGreaterThan(0);
 			await expect(page.getByTestId('week-navigator')).toHaveCount(0);

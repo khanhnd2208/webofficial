@@ -140,7 +140,6 @@ export default async function TocPage() {
 				</nav>
 				<footer className={styles.footer}>
 					<span>Chưa xong. Và vẫn đang tiếp tục.</span>
-					<Link href={routes.contact}>Gửi lời nhắn ↗</Link>
 				</footer>
 			</div>
 		</main>

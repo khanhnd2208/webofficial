@@ -26,8 +26,6 @@ const ROOTS = [
 	'src/components/site/RecentClasses.tsx',
 	'src/components/site/SiteAuthChip.tsx',
 	'src/components/site/SiteHeader.tsx',
-	'src/components/site/PublicMinimalChrome.tsx',
-	'src/components/site/SiteTopBar.tsx',
 	'src/components/site/MainContent.tsx',
 	'src/components/contact',
 ];
@@ -36,9 +34,7 @@ const ROOTS = [
  * Still off the scale, with why. Empty once each surface has moved.
  * Google's sign-in mark keeps its brand colors in CSS, not in these files.
  */
-const ALLOWLIST: Record<string, string> = {
-	'src/components/site/PublicMinimalChrome.tsx': 'Replaced by the shared header',
-};
+const ALLOWLIST: Record<string, string> = {};
 
 function walk(path: string, out: string[] = []): string[] {
 	if (!existsSync(path)) return out;
