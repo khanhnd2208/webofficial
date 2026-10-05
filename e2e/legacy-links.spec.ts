@@ -27,7 +27,7 @@ test.describe('Links shared with students keep working', () => {
 			const response = await page.goto(path);
 			expect(response?.status()).toBe(200);
 			await expect(page).toHaveURL(new RegExp(`${path}$`));
-			await expect(page.getByRole('link', { name: 'Mục lục' })).toBeVisible();
+			await expect(page.getByRole('link', { name: 'Mục lục', exact: true })).toBeVisible();
 		}
 	});
 
