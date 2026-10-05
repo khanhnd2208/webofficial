@@ -1,6 +1,7 @@
 'use client';
 
 import {
+	CHEESE_HOUR_LEVELS,
 	CHEESE_MAX_PLAYERS,
 	CHEESE_MIN_PLAYERS,
 	SCAPEGOAT_MIN_PLAYERS,
@@ -46,7 +47,9 @@ function Stepper({
 			>
 				−
 			</button>
-			<span className="font-display text-3xl font-medium tabular-nums">{value}</span>
+			<span aria-live="polite" className="font-display text-3xl font-medium tabular-nums">
+				{value}
+			</span>
 			<button
 				type="button"
 				aria-label={moreLabel}
@@ -65,7 +68,20 @@ function knowsKey(count: number, knowledge: FollowerKnows): string {
 	return knowledge === 'all' ? 'knowAll' : 'knowTeam';
 }
 
-/** Host edits the table. Everyone else sees the same numbers, without the controls. */
+function hourPhrase(t: ReturnType<typeof useT>, seconds: number): string {
+	const level = CHEESE_HOUR_LEVELS.find((item) => item.seconds === seconds);
+	const preset = t('cheese.lobby.hour.preset', { seconds });
+	if (!level) return preset;
+	return `${t(`cheese.lobby.hour.${level.id}`)} ${preset}`;
+}
+
+function followerPhrase(t: ReturnType<typeof useT>, count: number): string {
+	if (count <= 0) return t('cheese.lobby.settings.followerNone');
+	const key = count === 1 ? 'followerShortOne' : 'followerShort';
+	return t(`cheese.lobby.settings.${key}`, { count });
+}
+
+/** Host edits the table. Everyone else sees one line. */
 export default function TableSettings({ state, busy, onSettings, onHourSeconds }: Props) {
 	const t = useT();
 	const host = state.isHost;
@@ -90,6 +106,24 @@ export default function TableSettings({ state, busy, onSettings, onHourSeconds }
 					knows: t(`cheese.lobby.settings.${knowsKey(followers.count, followers.knowledge)}`),
 				})
 			: t('cheese.lobby.settings.followerNone');
+
+	if (!host) {
+		const scapegoat = t(
+			state.scapegoatEnabled && !scapegoatLocked
+				? 'cheese.lobby.settings.scapegoatOn'
+				: 'cheese.lobby.settings.scapegoatOff',
+		);
+		return (
+			<p className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm leading-relaxed">
+				{t('cheese.lobby.settings.guestSummary', {
+					size,
+					scapegoat,
+					hour: hourPhrase(t, state.hourSeconds),
+					followers: followerPhrase(t, followers.count),
+				})}
+			</p>
+		);
+	}
 
 	return (
 		<div className="divide-y divide-border rounded-2xl border border-border bg-surface">
@@ -118,24 +152,37 @@ export default function TableSettings({ state, busy, onSettings, onHourSeconds }
 				)}
 			</div>
 
-			<label
-				className={cn(
-					'flex items-start gap-3 px-4 py-3',
-					(scapegoatLocked || !host) && 'opacity-80',
-				)}
+			<button
+				type="button"
+				role="switch"
+				aria-checked={state.scapegoatEnabled && !scapegoatLocked}
+				disabled={busy || scapegoatLocked}
+				className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left disabled:opacity-80"
+				onClick={() => onSettings({ scapegoat: !state.scapegoatEnabled })}
 			>
-				<input
-					type="checkbox"
-					className="mt-1 h-5 w-5"
-					checked={state.scapegoatEnabled && !scapegoatLocked}
-					disabled={!host || busy || scapegoatLocked}
-					onChange={(event) => onSettings({ scapegoat: event.target.checked })}
-				/>
 				<span>
 					<span className="block text-sm font-medium">{t('cheese.menu.scapegoat')}</span>
-					<span className="mt-1 block text-sm text-muted">{t('cheese.menu.scapegoatHint')}</span>
+					<span className="mt-1 block text-sm text-muted">
+						{scapegoatLocked
+							? t('cheese.lobby.settings.scapegoatNeeds')
+							: t('cheese.menu.scapegoatHint')}
+					</span>
 				</span>
-			</label>
+				<span
+					aria-hidden
+					className={cn(
+						'relative h-7 w-12 shrink-0 rounded-full',
+						state.scapegoatEnabled && !scapegoatLocked ? 'bg-foreground' : 'bg-border',
+					)}
+				>
+					<span
+						className={cn(
+							'absolute top-0.5 h-6 w-6 rounded-full bg-background',
+							state.scapegoatEnabled && !scapegoatLocked ? 'left-5' : 'left-0.5',
+						)}
+					/>
+				</span>
+			</button>
 
 			<HourLengthSetting
 				hourSeconds={state.hourSeconds}

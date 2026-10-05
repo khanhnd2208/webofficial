@@ -7,6 +7,10 @@ import QRCode from 'react-qr-code';
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
 import { routes } from '@/config/routes';
 import { BASE_PATH } from '@/features/board-game-shared/lib/basePath';
+import {
+	CHEESE_MIN_PLAYERS,
+	SCAPEGOAT_MIN_PLAYERS,
+} from '@/features/cheese-thief/config/cheeseThief';
 import TableSettings from '@/features/cheese-thief/components/TableSettings';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { Button } from '@/features/board-game-shared/components/ui';
@@ -132,6 +136,7 @@ export default function LobbyPhase({
 			/>
 
 			<TableRulesCard
+				compact
 				playerCount={state.maxPlayers}
 				scapegoatEnabled={state.scapegoatEnabled}
 				followers={tableFollowers}
@@ -149,11 +154,28 @@ export default function LobbyPhase({
 
 			{state.isHost && (
 				<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-12px_30px_rgb(0_0_0_/_0.08)] backdrop-blur">
-					<div className="mx-auto max-w-md">
+					<div className="mx-auto flex max-w-md flex-col gap-2">
 						{missing > 0 && (
-							<p className="mb-2 text-center text-xs text-muted">
+							<p className="text-center text-xs text-muted">
 								{t('cheese.lobby.need', { count: missing })}
 							</p>
+						)}
+						{missing > 0 && state.playerCount >= CHEESE_MIN_PLAYERS && (
+							<Button
+								variant="secondary"
+								fullWidth
+								disabled={busy}
+								onClick={() =>
+									onSettings({
+										maxPlayers: state.playerCount,
+										...(state.playerCount < SCAPEGOAT_MIN_PLAYERS && state.scapegoatEnabled
+											? { scapegoat: false }
+											: {}),
+									})
+								}
+							>
+								{t('cheese.lobby.playWith', { count: state.playerCount })}
+							</Button>
 						)}
 						<Button fullWidth disabled={!ready || busy} loading={busy} onClick={onStart}>
 							{t('cheese.lobby.start')}

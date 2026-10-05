@@ -23,6 +23,8 @@ interface TableProps {
 	playerCount?: number;
 	scapegoatEnabled?: boolean;
 	followers?: FollowerSettings;
+	/** Lobby card skips the follower line, which the settings already show. */
+	compact?: boolean;
 }
 
 const PLAY: { id: string; bullets: number }[] = [
@@ -50,23 +52,26 @@ export function tableRuleLines(
 	t: TranslateFn,
 	rules: TableRules,
 	scapegoatEnabled: boolean,
+	compact = false,
 ): string[] {
 	const lines = [t('cheese.guide.table.one')];
 	lines.push(t(rules.peek ? 'cheese.guide.table.peek' : 'cheese.guide.table.noPeek'));
-	if (rules.followerMode === 'none') {
-		lines.push(t('cheese.guide.table.noFollower'));
-	} else {
-		const know = t(`cheese.guide.table.know.${rules.knowledge}`);
-		const customized =
-			rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount;
-		const followerKey = followerLineKey(rules.followerCount, customized);
-		lines.push(
-			t(`cheese.guide.table.${followerKey}`, {
-				count: rules.followerCount,
-				know,
-				default: rules.defaultFollowerCount,
-			}),
-		);
+	if (!compact) {
+		if (rules.followerMode === 'none') {
+			lines.push(t('cheese.guide.table.noFollower'));
+		} else {
+			const know = t(`cheese.guide.table.know.${rules.knowledge}`);
+			const customized =
+				rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount;
+			const followerKey = followerLineKey(rules.followerCount, customized);
+			lines.push(
+				t(`cheese.guide.table.${followerKey}`, {
+					count: rules.followerCount,
+					know,
+					default: rules.defaultFollowerCount,
+				}),
+			);
+		}
 	}
 	lines.push(t('cheese.guide.table.picks', { count: rules.choiceCount }));
 	if (rules.scapegoatAllowed) {
@@ -83,6 +88,7 @@ export function TableRulesCard({
 	playerCount,
 	scapegoatEnabled = false,
 	followers,
+	compact = false,
 	className,
 }: TableProps & { className?: string }) {
 	const t = useT();
@@ -101,7 +107,7 @@ export function TableRulesCard({
 			</div>
 			{rules ? (
 				<ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed">
-					{tableRuleLines(t, rules, scapegoatEnabled).map((line) => (
+					{tableRuleLines(t, rules, scapegoatEnabled, compact).map((line) => (
 						<li key={line}>{line}</li>
 					))}
 				</ul>
