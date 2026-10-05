@@ -16,18 +16,6 @@ import {
 import { routes } from '@/config/routes';
 import { SITE_NAME } from '@/config/site';
 
-function useNarrowHeader(): boolean {
-	const [narrow, setNarrow] = useState(false);
-	useEffect(() => {
-		const media = window.matchMedia('(max-width: 639px)');
-		const sync = () => setNarrow(media.matches);
-		sync();
-		media.addEventListener('change', sync);
-		return () => media.removeEventListener('change', sync);
-	}, []);
-	return narrow;
-}
-
 function Crumb({ crumb, current }: { crumb: SiteCrumb; current: boolean }) {
 	const className =
 		'inline-flex min-h-11 max-w-[10rem] items-center truncate text-footnote sm:max-w-[16rem]';
@@ -55,7 +43,6 @@ function Crumb({ crumb, current }: { crumb: SiteCrumb; current: boolean }) {
  */
 export default function SiteHeader() {
 	const pathname = usePathname() || routes.home;
-	const narrow = useNarrowHeader();
 	const [panelOpen, setPanelOpen] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
 	const show = isSiteHeaderPath(pathname);
@@ -102,14 +89,11 @@ export default function SiteHeader() {
 						>
 							{SITE_NAME}
 						</Link>
-						<ol className="flex min-w-0 items-center">
+						<ol className="hidden min-w-0 items-center sm:flex">
 							{trail.map((crumb, index) => {
 								const last = index === trail.length - 1;
 								return (
-									<li
-										key={`${crumb.label}-${index}`}
-										className={`${last ? 'flex' : 'hidden sm:flex'} min-w-0 items-center gap-2`}
-									>
+									<li key={`${crumb.label}-${index}`} className="flex min-w-0 items-center gap-2">
 										<span aria-hidden="true" className="text-footnote text-ink-secondary/40">
 											/
 										</span>
@@ -127,7 +111,8 @@ export default function SiteHeader() {
 								className="inline-flex min-h-11 items-center px-2 text-subhead text-ink-secondary transition-colors duration-(--dur-1) ease-(--ease-out) hover:text-ink"
 								onClick={() => setPanelOpen(true)}
 							>
-								{narrow ? 'Nhắn tin' : CONTACT_CTA.label}
+								<span className="sm:hidden">Nhắn tin</span>
+								<span className="hidden sm:inline">{CONTACT_CTA.label}</span>
 							</button>
 						) : null}
 						<SiteAuthChip variant="bar" showSignIn={pathname !== routes.login} />

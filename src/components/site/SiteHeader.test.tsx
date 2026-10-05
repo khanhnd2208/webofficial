@@ -42,7 +42,9 @@ describe('SiteHeader', () => {
 		expect(screen.getByTestId('site-header-home')).toHaveAttribute('href', '/muc-luc');
 		expect(screen.getByRole('navigation', { name: 'Đường dẫn' })).toBeVisible();
 		expect(screen.getByText('Giới thiệu')).toHaveAttribute('aria-current', 'page');
-		expect(screen.getByTestId('site-header-contact')).toHaveTextContent('Gửi lời nhắn');
+		const contact = screen.getByTestId('site-header-contact');
+		expect(contact).toHaveTextContent('Nhắn tin');
+		expect(contact).toHaveTextContent('Gửi lời nhắn');
 	});
 
 	it('links a detail page back to its parent and does not mark that parent as current', () => {

@@ -43,7 +43,9 @@ test.describe('Public pages smoke', () => {
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();
-		await expect(page.getByTestId('site-header-contact')).toHaveText('Gửi lời nhắn');
+		await expect(page.getByTestId('site-header-contact')).toHaveText('Gửi lời nhắn', {
+			useInnerText: true,
+		});
 		await expect(page.getByTestId('site-header-home')).toBeVisible();
 		await expect(page.getByTestId('site-auth-chip')).toBeVisible();
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
@@ -209,7 +211,7 @@ test.describe('Navigation', () => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/gioi-thieu');
 		const trigger = page.getByTestId('site-header-contact');
-		await expect(trigger).toHaveText('Gửi lời nhắn');
+		await expect(trigger).toHaveText('Gửi lời nhắn', { useInnerText: true });
 		await trigger.click();
 		await expect(page.getByRole('dialog', { name: 'Gửi lời nhắn' })).toBeVisible();
 		await expect(page.getByLabel('Tên')).toBeVisible();
@@ -223,7 +225,9 @@ test.describe('Navigation', () => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();
-		await expect(page.getByTestId('site-header-contact')).toHaveText('Nhắn tin');
+		await expect(page.getByTestId('site-header-contact')).toHaveText('Nhắn tin', {
+			useInnerText: true,
+		});
 		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 		await page.goto('/lien-he');
 		await expect(
