@@ -118,6 +118,14 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 						page.getByRole('heading', { name: 'Mở trải nghiệm học tập của bạn' }),
 					).toBeVisible();
 				if (!process.env.TEACHING_VISUAL_BASELINE) {
+					if (!['public', 'learning', 'player'].includes(name)) {
+						// A stale compiler cache once shipped the new markup without these styles.
+						await expect(page.locator('.teaching-header-title-row')).toHaveCSS('display', 'flex');
+						await expect(page.locator('.teaching-header-mark')).toHaveCSS(
+							'height',
+							width < 768 ? '40px' : '48px',
+						);
+					}
 					await expect(page.locator('[data-surface="teaching"]').first()).toHaveCSS(
 						'background-color',
 						'rgb(247, 248, 244)',
