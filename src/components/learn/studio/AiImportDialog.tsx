@@ -23,7 +23,7 @@ import {
 import { StudioIcon } from './icons';
 import StudioDialog from './StudioDialog';
 import ImportImagePicker from './ImportImagePicker';
-import { useCopy } from './useCopy';
+import { ManualCopyField, useCopy } from './useCopy';
 
 export type AiImportKind = 'lesson' | 'quiz' | 'practice' | 'discussion';
 
@@ -108,7 +108,7 @@ export default function AiImportDialog({
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const deferredText = useDeferredValue(text);
-	const { copied, copy } = useCopy();
+	const { copied, copy, manual } = useCopy();
 
 	const cleaned = useMemo(
 		() => (deferredText.trim() ? cleanAiPaste(deferredText) : null),
@@ -253,6 +253,7 @@ export default function AiImportDialog({
 				>
 					<StudioIcon name="copy" size={14} /> {copied ? 'Đã chép prompt' : 'Chép prompt định dạng'}
 				</button>
+				{manual ? <ManualCopyField text={manual} /> : null}
 				<p className="text-sm text-ink-secondary">
 					Dán vào ChatGPT, Claude hoặc Gemini, thêm tài liệu, gửi, rồi dán câu trả lời vào đây.
 				</p>
