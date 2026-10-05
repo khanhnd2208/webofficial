@@ -48,10 +48,10 @@ export default function CompletionSeal({
 							transition={{ duration: duration.seal, ease: ease.reveal }}
 						/>
 					) : null}
-					<span className="relative inline-flex items-center gap-2 rounded-[10px] border-2 border-vermilion px-4 py-2 font-display text-sm font-semibold tracking-wide text-vermilion">
+					<span className="relative inline-flex items-center gap-2 rounded-lg border-2 border-vermilion px-4 py-2 font-display text-sm font-semibold tracking-wide text-vermilion">
 						<span
 							aria-hidden
-							className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-[10px] font-bold text-paper"
+							className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-xs font-bold text-paper"
 						>
 							✓
 						</span>

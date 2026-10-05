@@ -189,7 +189,7 @@ export function Sheet({ open, onClose, title, children, side = 'bottom' }: Sheet
 			data-surface={surface}
 			ref={dialogRef}
 			aria-labelledby={titleId}
-			className={`fixed inset-0 z-[70] m-0 h-dvh min-h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 open:flex open:flex-col [&::backdrop]:bg-black/40 [&::backdrop]:transition-opacity [&::backdrop]:duration-300 ${dialogAlign}`}
+			className={`fixed inset-0 z-[70] m-0 h-dvh min-h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 open:flex open:flex-col [&::backdrop]:bg-black/40 [&::backdrop]:transition-opacity [&::backdrop]:duration-250 ${dialogAlign}`}
 			onClick={(e) => {
 				if (e.target === dialogRef.current) onClose();
 			}}

@@ -4,7 +4,7 @@
 import { ViewTransition, type ReactNode } from 'react';
 import './journey-transition.css';
 
-/** The intro and index share a quiet crossfade during Next.js navigation. */
+/** A single quiet rhythm for public page changes. */
 export default function JourneyTransition({
 	children,
 	page,

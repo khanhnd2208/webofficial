@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-import RouteEntrance from '@/components/motion/RouteEntrance';
 import JourneyTransition from './JourneyTransition';
 import { isFullBleedPublicPath, isInternalChromePath } from '@/config/navigation';
 
@@ -18,18 +17,11 @@ export default function MainContent({ children }: { children: ReactNode }) {
 		return <div id="main-content">{children}</div>;
 	}
 
-	const isBookPage = ['/', '/muc-luc', '/gioi-thieu', '/du-an', '/dich-vu'].includes(pathname);
 	const fullBleed = isFullBleedPublicPath(pathname);
 
 	return (
 		<div id="main-content" className={fullBleed ? undefined : 'pt-14'}>
-			{pathname === '/' || pathname === '/muc-luc' ? (
-				<JourneyTransition page={pathname}>{children}</JourneyTransition>
-			) : isBookPage ? (
-				children
-			) : (
-				<RouteEntrance key={pathname}>{children}</RouteEntrance>
-			)}
+			<JourneyTransition page={pathname}>{children}</JourneyTransition>
 		</div>
 	);
 }
