@@ -598,6 +598,15 @@ describe('helpers', () => {
 		expect(discussionMarkdown({ questions }).includes('Đáp án mẫu:')).toBe(true);
 	});
 
+	it('warns when a pasted question number skips ahead', () => {
+		const { questions, warnings } = parseDiscussionPaste(
+			'Câu 1: Một\n\nĐáp án mẫu: A\n\nCâu 3: Ba\n\nĐáp án mẫu: C',
+		);
+		expect(questions).toHaveLength(2);
+		expect(questions[0].question).not.toContain('Câu 3');
+		expect(warnings.some((warning) => warning.includes('không nối tiếp'))).toBe(true);
+	});
+
 	it('ignores question labels when comparing a formatted quiz to its source', () => {
 		const original = '1) Hỏi gì\na) Một\nb) Hai\nĐáp án: B';
 		const formatted = 'Câu 1: Hỏi gì\nA. Một\nB. Hai\nĐáp án: B';

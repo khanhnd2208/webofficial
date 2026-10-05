@@ -1,11 +1,16 @@
 'use client';
 
+import { useState } from 'react';
+
 import { newQuestionId } from '@/features/learn/content';
+import { quizIssues } from '@/features/learn/questionHealth';
 import type { LearnQuiz, LearnQuizQuestion } from '@/features/learn/types';
 
-import AutoTextarea from './AutoTextarea';
 import { StudioIcon } from './icons';
-import OptionListEditor from './OptionListEditor';
+import QuestionNavigator from './QuestionNavigator';
+import QuizQuestionEditor, { QuizQuestionPreview } from './QuizQuestionEditor';
+import { useWideStudio } from './StudioTabs';
+import { useQuestionDelete } from './useDeferredDeletes';
 
 function emptyQuestion(): LearnQuizQuestion {
 	return {
@@ -30,35 +35,37 @@ export default function LearnQuizEditor({
 	onOpenImport: () => void;
 	variant?: 'quiz' | 'practice';
 }) {
+	const [activeId, setActiveId] = useState<string | null>(quiz.questions[0]?.id ?? null);
+	const [pane, setPane] = useState<'edit' | 'preview'>('edit');
+	const wide = useWideStudio();
+
 	function setQuestions(questions: LearnQuizQuestion[]) {
 		onChange({ ...quiz, questions });
 	}
+	const questions = useQuestionDelete(quiz.questions, setQuestions);
+	const visible = questions.visible;
+	const activeIndex = Math.max(
+		0,
+		visible.findIndex((item) => item.id === activeId),
+	);
+	const active = visible[activeIndex] ?? null;
 
-	function update(index: number, patch: Partial<LearnQuizQuestion>) {
-		setQuestions(
-			quiz.questions.map((question, i) => (i === index ? { ...question, ...patch } : question)),
-		);
+	function update(id: string, patch: Partial<LearnQuizQuestion>) {
+		setQuestions(quiz.questions.map((item) => (item.id === id ? { ...item, ...patch } : item)));
 	}
 
-	function move(index: number, step: number) {
-		const target = index + step;
-		if (target < 0 || target >= quiz.questions.length) return;
+	function duplicate(id: string) {
+		const index = quiz.questions.findIndex((item) => item.id === id);
+		if (index < 0) return;
+		const copy = { ...quiz.questions[index], id: newQuestionId() };
 		const next = [...quiz.questions];
-		[next[index], next[target]] = [next[target], next[index]];
+		next.splice(index + 1, 0, copy);
 		setQuestions(next);
-	}
-
-	function addQuestion() {
-		setQuestions([...quiz.questions, emptyQuestion()]);
-		requestAnimationFrame(() =>
-			document
-				.querySelector<HTMLTextAreaElement>('.ln-qcard:last-of-type .ln-qcard__question')
-				?.focus(),
-		);
+		setActiveId(copy.id);
 	}
 
 	return (
-		<div className="ln-quizedit">
+		<div className="ln-qsplit" data-pane={pane}>
 			{variant === 'quiz' ? (
 				<div className="ln-quizedit__settings">
 					<label>
@@ -68,6 +75,7 @@ export default function LearnQuizEditor({
 								type="number"
 								min={0}
 								max={100}
+								aria-label="Điểm đạt"
 								value={quiz.passingScorePercent}
 								onChange={(event) =>
 									onChange({
@@ -89,6 +97,7 @@ export default function LearnQuizEditor({
 								type="number"
 								min={0}
 								max={600}
+								aria-label="Giới hạn thời gian"
 								placeholder="Không"
 								value={quiz.timeLimitMinutes ?? ''}
 								onChange={(event) => {
@@ -102,90 +111,86 @@ export default function LearnQuizEditor({
 							phút
 						</span>
 					</label>
-					<span className="ml-auto text-sm text-ink-secondary tabular-nums">
-						{quiz.questions.length} câu hỏi
-					</span>
 				</div>
-			) : (
-				<p className="text-sm text-ink-secondary">
-					{quiz.questions.length} câu · học viên thấy đáp án ngay khi chọn
-				</p>
-			)}
+			) : null}
 
-			{quiz.questions.length ? (
-				<ol className="ln-qlist">
-					{quiz.questions.map((question, index) => (
-						<li key={question.id} className="ln-qcard">
-							<div className="ln-qcard__head">
-								<span className="ln-qcard__number">Câu {index + 1}</span>
-								<span className="ml-auto flex gap-1">
-									<button
-										type="button"
-										className="ln-icon-btn"
-										onClick={() => move(index, -1)}
-										disabled={index === 0}
-										aria-label="Lên"
-									>
-										<StudioIcon name="up" size={14} />
-									</button>
-									<button
-										type="button"
-										className="ln-icon-btn"
-										onClick={() => move(index, 1)}
-										disabled={index === quiz.questions.length - 1}
-										aria-label="Xuống"
-									>
-										<StudioIcon name="down" size={14} />
-									</button>
-									<button
-										type="button"
-										className="ln-icon-btn ln-icon-btn--danger"
-										aria-label="Xóa câu hỏi"
-										onClick={() => setQuestions(quiz.questions.filter((_, i) => i !== index))}
-									>
-										<StudioIcon name="trash" size={14} />
-									</button>
-								</span>
-							</div>
-							<AutoTextarea
-								className="ln-qcard__question"
-								value={question.question}
-								placeholder="Nội dung câu hỏi"
-								onChange={(value) => update(index, { question: value })}
-							/>
-							<OptionListEditor
-								name={`${sectionId}-${question.id}`}
-								options={question.options}
-								correctIndex={question.correctIndex}
-								onChange={(next) => update(index, next)}
-							/>
-							<AutoTextarea
-								className="ln-qcard__explain"
-								value={question.explanation}
-								placeholder={
-									variant === 'practice'
-										? 'Giải thích (hiện ngay khi học viên chọn)'
-										: 'Giải thích đáp án (hiện sau khi nộp bài)'
-								}
-								onChange={(value) => update(index, { explanation: value })}
-							/>
-						</li>
-					))}
-				</ol>
+			<details className="ln-qsplit__nav" open={wide || undefined}>
+				<summary>Danh sách câu ({visible.length})</summary>
+				<QuestionNavigator
+					items={visible.map((item, index) => ({
+						id: item.id,
+						title: item.question.trim().slice(0, 80) || `Câu ${index + 1}`,
+						issues: quizIssues(item),
+						group: null,
+					}))}
+					activeId={active?.id ?? null}
+					onSelect={setActiveId}
+					onReorder={(ids) => {
+						const byId = new Map(quiz.questions.map((item) => [item.id, item]));
+						setQuestions(ids.map((id) => byId.get(id)!).filter(Boolean));
+					}}
+					onDuplicate={duplicate}
+					onDelete={(id) => {
+						const index = visible.findIndex((item) => item.id === id);
+						if (index >= 0) questions.removeAt(index);
+					}}
+				/>
+			</details>
+
+			<div className="ln-qsplit__switch" role="tablist" aria-label="Vùng soạn">
+				<button
+					type="button"
+					role="tab"
+					aria-selected={pane === 'edit'}
+					onClick={() => setPane('edit')}
+				>
+					Soạn
+				</button>
+				<button
+					type="button"
+					role="tab"
+					aria-selected={pane === 'preview'}
+					onClick={() => setPane('preview')}
+				>
+					Xem trước
+				</button>
+			</div>
+
+			{active ? (
+				<QuizQuestionEditor
+					sectionId={sectionId}
+					question={active}
+					variant={variant}
+					onChange={(patch) => update(active.id, patch)}
+				/>
 			) : (
 				<p className="ln-empty-hint">
-					Chưa có câu hỏi. Thêm từng câu hoặc dán cả loạt từ tài liệu / AI.
+					Chưa có câu hỏi. Thêm từng câu hoặc dán cả loạt từ tài liệu.
 				</p>
 			)}
 
-			<div className="flex flex-wrap gap-2">
-				<button type="button" className="ln-btn" onClick={addQuestion}>
+			<div className="ln-qsplit__preview">
+				<p className="ln-eyebrow">Xem như học viên</p>
+				{active ? <QuizQuestionPreview question={active} index={activeIndex} /> : null}
+			</div>
+
+			<div className="ln-qsplit__actions">
+				<button
+					type="button"
+					className="ln-btn"
+					onClick={() => {
+						const created = emptyQuestion();
+						setQuestions([...quiz.questions, created]);
+						setActiveId(created.id);
+					}}
+				>
 					<StudioIcon name="plus" size={14} /> Thêm câu hỏi
 				</button>
 				<button type="button" className="ln-btn" onClick={onOpenImport}>
 					<StudioIcon name="import" size={14} /> Nhập bằng AI
 				</button>
 			</div>
+			{questions.toast}
 		</div>
 	);
 }

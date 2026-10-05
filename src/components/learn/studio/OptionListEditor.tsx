@@ -51,6 +51,7 @@ export default function OptionListEditor({
 						<input
 							type="radio"
 							name={name}
+							aria-label={`Đáp án đúng ${LETTERS[index]}`}
 							checked={index === correctIndex}
 							onChange={() => onChange({ options, correctIndex: index })}
 						/>
@@ -61,6 +62,7 @@ export default function OptionListEditor({
 							inputs.current[index] = element;
 						}}
 						className="ln-optedit__input"
+						aria-label={`Phương án ${LETTERS[index]}`}
 						value={option}
 						placeholder={`Phương án ${LETTERS[index]}`}
 						onChange={(event) => setOption(index, event.target.value)}
