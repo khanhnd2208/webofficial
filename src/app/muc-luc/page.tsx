@@ -29,6 +29,23 @@ const tocIcons: Record<string, string> = {
 	'board-game': '/brand/toc/board-game-v1.webp',
 };
 
+function TileTitle({ label }: { label: string }) {
+	const words = label.trim().split(/\s+/);
+	const last = words.pop() ?? label;
+	const rest = words.join(' ');
+	return (
+		<span className={styles.tileTitle}>
+			{rest ? <>{rest} </> : null}
+			<span className={styles.nowrap}>
+				{last}
+				<span className={styles.arrow} aria-hidden="true">
+					↗
+				</span>
+			</span>
+		</span>
+	);
+}
+
 const aboutTiles = [
 	{
 		id: 'about',
@@ -83,12 +100,7 @@ export default async function TocPage() {
 											sizes="(max-width: 760px) 88px, 112px"
 										/>
 									</span>
-									<span className={styles.tileTitle}>
-										{tile.label}
-										<span className={styles.arrow} aria-hidden="true">
-											↗
-										</span>
-									</span>
+									<TileTitle label={tile.label} />
 									<span className={styles.description}>{tile.description}</span>
 								</Link>
 							))}
@@ -118,12 +130,7 @@ export default async function TocPage() {
 											/>
 										) : null}
 									</span>
-									<span className={styles.tileTitle}>
-										{tile.label}
-										<span className={styles.arrow} aria-hidden="true">
-											↗
-										</span>
-									</span>
+									<TileTitle label={tile.label} />
 									<span className={styles.description}>{descriptions[tile.id]}</span>
 								</Link>
 							))}

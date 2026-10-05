@@ -37,11 +37,6 @@ const ROOTS = [
  * Google's sign-in mark keeps its brand colors in CSS, not in these files.
  */
 const ALLOWLIST: Record<string, string> = {
-	'src/app/muc-luc/toc.module.css': 'Mục lục type scale is the next commit',
-	'src/app/personal-book.css': 'Book pages still use 11px and a mono title',
-	'src/app/du-an/[slug]/page.tsx':
-		'Project story still uses an arbitrary title size and mono index',
-	'src/components/site/RecentClasses.tsx': 'Class shortcuts on Mục lục are still 11px mono',
 	'src/app/dang-nhap/sign-in-with-google-button.tsx': 'Google button still inlines brand hex',
 	'src/app/dang-nhap/switch-account-button.tsx': 'Sign-in still uses a hand-set radius',
 	'src/app/tai-khoan/ProfileForm.tsx': 'Account form still uses 10px mono labels',
