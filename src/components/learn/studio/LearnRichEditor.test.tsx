@@ -39,9 +39,13 @@ describe('LearnRichEditor mode guard', () => {
 		fireEvent.keyDown(document, { key: 'Escape' });
 		expect(screen.queryByRole('textbox', { name: 'Đường dẫn' })).not.toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Khối học thuật' }));
-		expect(screen.getByRole('group', { name: 'Chọn khối học thuật' })).toBeInTheDocument();
-		fireEvent.pointerDown(document.body);
+		const callout = screen.getByRole('button', { name: 'Khối học thuật' });
+		expect(callout).toHaveAttribute('aria-expanded', 'true');
+		const menu = screen.getByRole('group', { name: 'Chọn khối học thuật' });
+		await waitFor(() => expect(menu.querySelector('button')).toHaveFocus());
+		fireEvent.keyDown(document, { key: 'Escape' });
 		expect(screen.queryByRole('group', { name: 'Chọn khối học thuật' })).not.toBeInTheDocument();
+		expect(callout).toHaveAttribute('aria-expanded', 'false');
 	});
 	it('opens in Markdown mode with a warning when the stored content has raw HTML', async () => {
 		render(<LearnRichEditor value={'Chữ <u>gạch chân</u>.'} onChange={vi.fn()} />);
