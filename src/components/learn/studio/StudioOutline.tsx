@@ -1,42 +1,62 @@
 'use client';
 
-import {
-	closestCenter,
-	DndContext,
-	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensor,
-	useSensors,
-	type DragEndEvent,
-} from '@dnd-kit/core';
+import { closestCenter, DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
 	arrayMove,
 	SortableContext,
-	sortableKeyboardCoordinates,
 	useSortable,
 	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useMemo, useState } from 'react';
 
+import { sectionHint } from '@/features/learn/questionHealth';
+import { unresolvedSectionImages } from '@/features/learn/sectionImages';
 import {
 	LEARN_SECTION_KIND_SHORT,
 	type LearnSectionKind,
 	type LearnStudioLesson,
 	type LearnStudioSection,
 } from '@/features/learn/types';
-import { unresolvedSectionImages } from '@/features/learn/sectionImages';
 
-import { StudioIcon } from './icons';
+import { useStudioSensors } from './dndSensors';
+import { StudioIcon, type StudioIconName } from './icons';
+import StudioMenu, { type StudioMenuEntry } from './StudioMenu';
+import { useOutlineOpen } from './useOutlineOpen';
 
-function useOutlineSensors() {
-	return useSensors(
-		useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
-		useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
-		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-	);
+export const SECTION_KINDS: {
+	type: LearnSectionKind;
+	label: string;
+	hint: string;
+	icon: StudioIconName;
+}[] = [
+	{ type: 'READING', label: 'Mục đọc', hint: 'Bài giảng có callout, bảng, hình', icon: 'reading' },
+	{ type: 'QUIZ', label: 'Bài kiểm tra', hint: 'Trắc nghiệm có chấm điểm', icon: 'quiz' },
+	{ type: 'PRACTICE', label: 'Luyện tập', hint: 'Câu hỏi để học viên tự ôn', icon: 'practice' },
+	{
+		type: 'DISCUSSION',
+		label: 'Phản biện',
+		hint: 'Tình huống mở kèm đáp án mẫu',
+		icon: 'discussion',
+	},
+];
+
+export interface OutlineActions {
+	onSelect: (sectionId: string) => void;
+	onRenameLesson: (lessonId: string, title: string) => void;
+	onReorderLessons: (ids: string[]) => void;
+	onReorderSections: (lessonId: string, ids: string[]) => void;
+	onPlaceSection: (sectionId: string, lessonId: string, beforeId: string | null) => void;
+	onAddSection: (lessonId: string, type: LearnSectionKind) => void;
+	onDeleteLesson: (lessonId: string) => void;
+	onDuplicateLesson: (lessonId: string) => void;
+	onExportLesson: (lessonId: string) => void;
+	onDuplicateSection: (sectionId: string) => void;
+	onPreviewSection: (sectionId: string) => void;
+	onDeleteSection: (sectionId: string) => void;
+	onAddLesson: () => void;
+	onImport: () => void;
 }
 
 function reorder(ids: string[], event: DragEndEvent): string[] | null {
@@ -47,22 +67,87 @@ function reorder(ids: string[], event: DragEndEvent): string[] | null {
 	return from < 0 || to < 0 ? null : arrayMove(ids, from, to);
 }
 
+function step(ids: string[], id: string, by: -1 | 1): string[] | null {
+	const from = ids.indexOf(id);
+	const to = from + by;
+	return from < 0 || to < 0 || to >= ids.length ? null : arrayMove(ids, from, to);
+}
+
+function needsAttention(section: LearnStudioSection): boolean {
+	return Boolean(sectionHint(section)?.warn) || unresolvedSectionImages(section).length > 0;
+}
+
 function SectionRow({
 	section,
 	lessonId,
 	selected,
-	onSelect,
+	lessons,
+	actions,
 }: {
 	section: LearnStudioSection;
 	lessonId: string;
 	selected: boolean;
-	onSelect: () => void;
+	lessons: LearnStudioLesson[];
+	actions: OutlineActions;
 }) {
 	const missingCount = useMemo(() => unresolvedSectionImages(section).length, [section]);
+	const hint = sectionHint(section);
+	const hintId = hint ? `ln-hint-${section.id}` : undefined;
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
 		id: section.id,
 		data: { type: 'section', lessonId },
 	});
+	const lesson = lessons.find((item) => item.id === lessonId);
+	const siblings = lesson?.sections.map((item) => item.id) ?? [];
+	const at = siblings.indexOf(section.id);
+	const menu: StudioMenuEntry[] = [
+		{
+			label: 'Xem như học viên',
+			icon: 'eye',
+			onSelect: () => actions.onPreviewSection(section.id),
+		},
+		{
+			label: 'Nhân bản mục',
+			icon: 'duplicate',
+			onSelect: () => actions.onDuplicateSection(section.id),
+		},
+		{
+			label: 'Lên trên',
+			icon: 'up',
+			disabled: at <= 0,
+			onSelect: () => {
+				const next = step(siblings, section.id, -1);
+				if (next) actions.onReorderSections(lessonId, next);
+			},
+		},
+		{
+			label: 'Xuống dưới',
+			icon: 'down',
+			disabled: at < 0 || at >= siblings.length - 1,
+			onSelect: () => {
+				const next = step(siblings, section.id, 1);
+				if (next) actions.onReorderSections(lessonId, next);
+			},
+		},
+		...lessons
+			.map((target, index) => ({ target, index }))
+			.filter(({ target }) => target.id !== lessonId)
+			.map(
+				({ target, index }): StudioMenuEntry => ({
+					label: `Chuyển sang Bài ${index + 1}`,
+					hint: target.title,
+					icon: 'move',
+					onSelect: () => actions.onPlaceSection(section.id, target.id, null),
+				}),
+			),
+		'divider',
+		{
+			label: 'Xóa mục',
+			icon: 'trash',
+			danger: true,
+			onSelect: () => actions.onDeleteSection(section.id),
+		},
+	];
 	return (
 		<li
 			ref={setNodeRef}
@@ -75,14 +160,30 @@ function SectionRow({
 				type="button"
 				className="ln-grip"
 				aria-label={`Kéo để sắp xếp: ${section.title}`}
+				title="Kéo để sắp xếp"
 				{...attributes}
 				{...listeners}
 			>
 				<StudioIcon name="grip" size={14} />
 			</button>
-			<button type="button" className="ln-souter__section-btn" onClick={onSelect}>
+			<button
+				type="button"
+				className="ln-souter__section-btn"
+				aria-current={selected ? 'true' : undefined}
+				aria-describedby={hintId}
+				onClick={() => actions.onSelect(section.id)}
+			>
 				<span className="ln-outline__mark" data-kind={section.type} aria-hidden="true" />
 				<span className="min-w-0 flex-1 truncate">{section.title || 'Chưa đặt tên'}</span>
+				{hint ? (
+					<span
+						id={hintId}
+						className="ln-souter__hint tabular-nums"
+						data-warn={hint.warn || undefined}
+					>
+						{hint.text}
+					</span>
+				) : null}
 				{missingCount ? (
 					<span
 						className="ln-souter__warn"
@@ -95,6 +196,13 @@ function SectionRow({
 					<span className="ln-souter__tag">{LEARN_SECTION_KIND_SHORT[section.type]}</span>
 				) : null}
 			</button>
+			<div className="ln-souter__row-menu">
+				<StudioMenu
+					label={`Thao tác mục: ${section.title || 'Chưa đặt tên'}`}
+					items={menu}
+					align="end"
+				/>
+			</div>
 		</li>
 	);
 }
@@ -102,32 +210,91 @@ function SectionRow({
 function LessonBlock({
 	lesson,
 	index,
+	count,
+	open,
 	selectedId,
-	onSelect,
-	onRename,
-	onAddSection,
-	onDelete,
+	lessons,
+	actions,
+	onToggle,
 }: {
 	lesson: LearnStudioLesson;
 	index: number;
+	count: number;
+	open: boolean;
 	selectedId: string | null;
-	onSelect: (sectionId: string) => void;
-	onRename: (title: string) => void;
-	onAddSection: (type: LearnSectionKind) => void;
-	onDelete: () => void;
+	lessons: LearnStudioLesson[];
+	actions: OutlineActions;
+	onToggle: () => void;
 }) {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
 		id: lesson.id,
 		data: { type: 'lesson', lessonId: lesson.id },
 	});
 	const ids = lesson.sections.map((section) => section.id);
-	const [title, setTitle] = useState(lesson.title);
+	const [draft, setDraft] = useState<string | null>(null);
+	const attention = lesson.sections.filter(needsAttention).length;
+	const bodyId = `ln-lesson-${lesson.id}`;
+	const lessonIds = lessons.map((item) => item.id);
+
+	function commitRename() {
+		const next = draft?.trim();
+		setDraft(null);
+		if (next && next !== lesson.title) actions.onRenameLesson(lesson.id, next);
+	}
+
+	const menu: StudioMenuEntry[] = [
+		{ label: 'Đổi tên', icon: 'pencil', onSelect: () => setDraft(lesson.title) },
+		...SECTION_KINDS.map(
+			(kind): StudioMenuEntry => ({
+				label: `Thêm ${kind.label.toLowerCase()}`,
+				icon: kind.icon,
+				onSelect: () => actions.onAddSection(lesson.id, kind.type),
+			}),
+		),
+		'divider',
+		{
+			label: 'Nhân bản bài',
+			icon: 'duplicate',
+			onSelect: () => actions.onDuplicateLesson(lesson.id),
+		},
+		{
+			label: 'Lên trên',
+			icon: 'up',
+			disabled: index === 0,
+			onSelect: () => {
+				const next = step(lessonIds, lesson.id, -1);
+				if (next) actions.onReorderLessons(next);
+			},
+		},
+		{
+			label: 'Xuống dưới',
+			icon: 'down',
+			disabled: index === count - 1,
+			onSelect: () => {
+				const next = step(lessonIds, lesson.id, 1);
+				if (next) actions.onReorderLessons(next);
+			},
+		},
+		{
+			label: 'Xuất Markdown bài này',
+			icon: 'download',
+			onSelect: () => actions.onExportLesson(lesson.id),
+		},
+		'divider',
+		{
+			label: 'Xóa bài…',
+			icon: 'trash',
+			danger: true,
+			onSelect: () => actions.onDeleteLesson(lesson.id),
+		},
+	];
 
 	return (
 		<div
 			ref={setNodeRef}
 			style={{ transform: CSS.Transform.toString(transform), transition }}
 			className="ln-souter__lesson"
+			data-open={open ? 'true' : undefined}
 			data-dragging={isDragging ? 'true' : undefined}
 		>
 			<div className="ln-souter__lesson-head">
@@ -135,95 +302,134 @@ function LessonBlock({
 					type="button"
 					className="ln-grip"
 					aria-label={`Kéo để sắp xếp bài ${index + 1}`}
+					title="Kéo để sắp xếp"
 					{...attributes}
 					{...listeners}
 				>
 					<StudioIcon name="grip" size={14} />
 				</button>
-				<span className="ln-outline__lesson-label">Bài {index + 1}</span>
-				<button
-					type="button"
-					className="ln-icon-btn ln-icon-btn--danger ml-auto"
-					onClick={onDelete}
-					aria-label={`Xóa bài ${index + 1}`}
-					title="Xóa bài"
-				>
-					<StudioIcon name="trash" size={13} />
-				</button>
+				{draft === null ? (
+					<button
+						type="button"
+						className="ln-souter__lesson-toggle"
+						aria-expanded={open}
+						aria-controls={bodyId}
+						aria-label={`Bài ${index + 1}: ${lesson.title}, ${lesson.sections.length} mục${
+							attention ? `, ${attention} cần xem` : ''
+						}`}
+						onClick={onToggle}
+						onDoubleClick={() => setDraft(lesson.title)}
+						title={open ? 'Thu gọn bài' : 'Mở bài'}
+					>
+						<span className="ln-souter__chevron" aria-hidden="true">
+							<StudioIcon name="chevron" size={13} />
+						</span>
+						<span className="ln-souter__lesson-text">
+							<span className="ln-outline__lesson-label">Bài {index + 1}</span>
+							<span className="ln-souter__lesson-name">{lesson.title}</span>
+							<span className="ln-souter__lesson-meta tabular-nums">
+								{lesson.sections.length} mục
+								{attention ? (
+									<span className="ln-souter__lesson-warn"> · {attention} cần xem</span>
+								) : null}
+							</span>
+						</span>
+					</button>
+				) : (
+					<input
+						className="ln-souter__lesson-title"
+						value={draft}
+						autoFocus
+						maxLength={200}
+						aria-label={`Tên bài ${index + 1}`}
+						onChange={(event) => setDraft(event.target.value)}
+						onBlur={commitRename}
+						onKeyDown={(event) => {
+							if (event.key === 'Enter') event.currentTarget.blur();
+							if (event.key === 'Escape') {
+								event.preventDefault();
+								setDraft(null);
+							}
+						}}
+					/>
+				)}
+				<StudioMenu label={`Thao tác bài ${index + 1}`} items={menu} align="end" />
 			</div>
-			<input
-				className="ln-souter__lesson-title"
-				value={title}
-				aria-label={`Tên bài ${index + 1}`}
-				onChange={(event) => setTitle(event.target.value)}
-				onBlur={() => {
-					const next = title.trim();
-					if (next && next !== lesson.title) onRename(next);
-					else setTitle(lesson.title);
-				}}
-				onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()}
-			/>
-			<SortableContext id={lesson.id} items={ids} strategy={verticalListSortingStrategy}>
-				<ol className="ln-souter__sections">
-					{lesson.sections.map((section) => (
-						<SectionRow
-							key={section.id}
-							section={section}
-							lessonId={lesson.id}
-							selected={section.id === selectedId}
-							onSelect={() => onSelect(section.id)}
+			{open ? (
+				<div id={bodyId}>
+					<SortableContext id={lesson.id} items={ids} strategy={verticalListSortingStrategy}>
+						<ol className="ln-souter__sections">
+							{lesson.sections.map((section) => (
+								<SectionRow
+									key={section.id}
+									section={section}
+									lessonId={lesson.id}
+									selected={section.id === selectedId}
+									lessons={lessons}
+									actions={actions}
+								/>
+							))}
+						</ol>
+					</SortableContext>
+					<div className="ln-souter__add">
+						<StudioMenu
+							label={`Thêm mục vào bài ${index + 1}`}
+							triggerClassName="ln-link-btn"
+							trigger={
+								<>
+									<StudioIcon name="plus" size={13} /> Thêm mục
+								</>
+							}
+							items={SECTION_KINDS.map((kind) => ({
+								label: kind.label,
+								hint: kind.hint,
+								icon: kind.icon,
+								onSelect: () => actions.onAddSection(lesson.id, kind.type),
+							}))}
 						/>
-					))}
-				</ol>
-			</SortableContext>
-			<div className="ln-souter__add">
-				<button type="button" className="ln-link-btn" onClick={() => onAddSection('READING')}>
-					+ Mục đọc
-				</button>
-				<button type="button" className="ln-link-btn" onClick={() => onAddSection('QUIZ')}>
-					+ Bài kiểm tra
-				</button>
-				<button type="button" className="ln-link-btn" onClick={() => onAddSection('PRACTICE')}>
-					+ Luyện tập
-				</button>
-				<button type="button" className="ln-link-btn" onClick={() => onAddSection('DISCUSSION')}>
-					+ Phản biện
-				</button>
-			</div>
+					</div>
+				</div>
+			) : null}
 		</div>
 	);
 }
 
 export default function StudioOutline({
+	courseId,
 	lessons,
 	selectedId,
-	onSelect,
-	onRenameLesson,
-	onReorderLessons,
-	onReorderSections,
-	onPlaceSection,
-	onAddSection,
-	onDeleteLesson,
-	onAddLesson,
-	onImport,
+	actions,
 }: {
+	courseId: string;
 	lessons: LearnStudioLesson[];
 	selectedId: string | null;
-	onSelect: (sectionId: string) => void;
-	onRenameLesson: (lessonId: string, title: string) => void;
-	onReorderLessons: (ids: string[]) => void;
-	onReorderSections: (lessonId: string, ids: string[]) => void;
-	onPlaceSection: (sectionId: string, lessonId: string, beforeId: string | null) => void;
-	onAddSection: (lessonId: string, type: LearnSectionKind) => void;
-	onDeleteLesson: (lessonId: string) => void;
-	onAddLesson: () => void;
-	onImport: () => void;
+	actions: OutlineActions;
 }) {
-	const sensors = useOutlineSensors();
+	const sensors = useStudioSensors();
 	const ids = lessons.map((lesson) => lesson.id);
+	const activeLessonId =
+		lessons.find((lesson) => lesson.sections.some((section) => section.id === selectedId))?.id ??
+		null;
+	const { open, toggle, setAll } = useOutlineOpen(courseId, activeLessonId);
+	const allOpen = lessons.length > 0 && lessons.every((lesson) => open.has(lesson.id));
 
 	return (
 		<nav className="ln-souter" aria-label="Mục lục khóa học">
+			<div className="ln-souter__top">
+				<span className="ln-souter__heading">
+					Mục lục <span className="tabular-nums">· {lessons.length} bài</span>
+				</span>
+				{lessons.length > 1 ? (
+					<button
+						type="button"
+						className="ln-link-btn"
+						onClick={() => setAll(allOpen ? (activeLessonId ? [activeLessonId] : []) : ids)}
+					>
+						<StudioIcon name={allOpen ? 'collapse' : 'expand'} size={13} />
+						{allOpen ? 'Thu gọn' : 'Mở tất cả'}
+					</button>
+				) : null}
+			</div>
 			<DndContext
 				id="ln-lessons"
 				sensors={sensors}
@@ -233,7 +439,7 @@ export default function StudioOutline({
 					const activeType = event.active.data.current?.type;
 					if (activeType === 'lesson') {
 						const next = reorder(ids, event);
-						if (next) onReorderLessons(next);
+						if (next) actions.onReorderLessons(next);
 						return;
 					}
 					if (activeType !== 'section' || !event.over) return;
@@ -254,10 +460,10 @@ export default function StudioOutline({
 									event,
 								)
 							: null;
-						if (next) onReorderSections(fromLesson, next);
+						if (next) actions.onReorderSections(fromLesson, next);
 						return;
 					}
-					onPlaceSection(
+					actions.onPlaceSection(
 						String(event.active.id),
 						toLesson,
 						overType === 'section' ? String(event.over.id) : null,
@@ -270,20 +476,21 @@ export default function StudioOutline({
 							key={lesson.id}
 							lesson={lesson}
 							index={index}
+							count={lessons.length}
+							open={open.has(lesson.id)}
 							selectedId={selectedId}
-							onSelect={onSelect}
-							onRename={(title) => onRenameLesson(lesson.id, title)}
-							onAddSection={(type) => onAddSection(lesson.id, type)}
-							onDelete={() => onDeleteLesson(lesson.id)}
+							lessons={lessons}
+							actions={actions}
+							onToggle={() => toggle(lesson.id)}
 						/>
 					))}
 				</SortableContext>
 			</DndContext>
 			<div className="ln-souter__footer">
-				<button type="button" className="ln-btn ln-btn--block" onClick={onAddLesson}>
+				<button type="button" className="ln-btn ln-btn--block" onClick={actions.onAddLesson}>
 					<StudioIcon name="plus" size={14} /> Thêm bài
 				</button>
-				<button type="button" className="ln-btn ln-btn--block" onClick={onImport}>
+				<button type="button" className="ln-btn ln-btn--block" onClick={actions.onImport}>
 					<StudioIcon name="import" size={14} /> Nhập bằng AI
 				</button>
 			</div>
