@@ -130,6 +130,12 @@ export const mafiaVi: MessageTree = {
 		passPreview: 'Điện thoại sẽ được chuyền:',
 		continue: 'Tiếp tục chọn vai',
 	},
+	deck: {
+		title: 'Bộ thẻ',
+		classic: 'Ma Sói - Cổ điển',
+		description:
+			'Bộ thẻ áp dụng cho cả phòng. Bộ Vân Sơn gồm 17 thẻ sketch có luật bằng tiếng Việt.',
+	},
 	roles: {
 		title: 'Chọn các vai cho ván này',
 		suggest: 'Dùng bộ vai đề xuất',
@@ -453,6 +459,12 @@ export const mafiaEn: MessageTree = {
 		counterClockwise: 'Counter-clockwise',
 		passPreview: 'Phone will be passed:',
 		continue: 'Continue to roles',
+	},
+	deck: {
+		title: 'Card artwork',
+		classic: 'Werewolf - Classic',
+		description:
+			'Applies to everyone in the room. The Vân Sơn deck has 17 sketch cards with Vietnamese rules.',
 	},
 	roles: {
 		title: 'Choose roles for this game',

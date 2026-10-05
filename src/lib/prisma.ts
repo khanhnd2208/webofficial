@@ -20,6 +20,8 @@ import { Prisma, PrismaClient } from '@prisma/client';
 const PRISMA_GENERATION = [
 	Prisma.ModelName.ActiveRecallDeck,
 	Prisma.ModelName.ActiveRecallCard,
+	Prisma.ModelName.RecallVisitor,
+	Prisma.ModelName.RecallStudyBucket,
 	Prisma.ModelName.MyClassVocabAssignment,
 	Prisma.ModelName.MyClassKuProgress,
 	Prisma.ModelName.MyClassCourse,
@@ -74,6 +76,8 @@ function assertGeneratedClient(client: PrismaClient): void {
 	if (
 		typeof client.activeRecallDeck?.findMany === 'function' &&
 		typeof client.activeRecallCard?.findMany === 'function' &&
+		typeof client.recallVisitor?.findMany === 'function' &&
+		typeof client.recallStudyBucket?.findMany === 'function' &&
 		typeof client.myClassVocabAssignment?.findMany === 'function' &&
 		typeof client.teachingGroupBoard?.findMany === 'function' &&
 		typeof client.teachingClassNote?.findMany === 'function' &&

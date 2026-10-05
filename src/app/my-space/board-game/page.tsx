@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import SiteTopBar from '@/components/site/SiteTopBar';
 import { routes } from '@/config/routes';
 import { auth } from '@/lib/auth';
 
@@ -15,16 +16,14 @@ export default async function BoardGamePage() {
 	const session = await auth();
 	const isAdmin = session?.user?.role === 'admin';
 	return (
-		<main className="relative min-h-svh overflow-hidden bg-canvas px-6 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">
+		<main className="relative min-h-svh overflow-hidden bg-canvas px-6 pt-4 pb-20 sm:px-8 sm:pt-8 sm:pb-28">
 			<div className="pointer-events-none absolute -right-48 top-24 h-96 w-96 rounded-full bg-vermilion/5 blur-3xl" />
 			<div className="mx-auto max-w-5xl">
-				<Link
-					href={routes.mySpace}
-					className="inline-flex min-h-10 items-center text-xs tracking-[0.16em] text-ink/55 uppercase transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-				>
-					← My Space
-				</Link>
-				<header className="mt-14 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
+				<SiteTopBar
+					crumbs={[{ label: 'My Space', href: routes.mySpace }, { label: 'Board Game' }]}
+					className="text-ink"
+				/>
+				<header className="mt-10 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
 					<div>
 						<p className="font-mono text-xs tracking-[0.22em] text-ink/45 uppercase">
 							My Space · Board Game

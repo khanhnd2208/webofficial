@@ -12,6 +12,14 @@ Admins open `/admin/learn-analytics` from the admin sidebar or dashboard. The co
 - Reports aggregate a consistent PostgreSQL snapshot. Current completion progress is all-time; time and visit figures use the chosen date filter. The learner table is paginated in groups of 50; totals include all accounts.
 - No historical activity can be reconstructed before tracking was deployed. Network failure, abrupt shutdown and browser scheduling can undercount time, particularly the last heartbeat (normally every 60 seconds). These figures do not prove attention or learning outcomes.
 
+## Daily and learner drill-down
+
+The daily report includes every Vietnam calendar day in the selected range, including days with no recorded time. It shows distinct active accounts, distinct sessions with study time, total seconds and the average per active account. A session touching multiple sections counts once per day; a session crossing midnight may count on both days. Zero means no recorded time, including dates before tracking began.
+
+Select a learner name to open the `user` drill-down on the same admin page. It shows daily time, sections studied that day, active days, average time per active day and paginated visits (20 per page via `sessionPage`). Both totals and visit durations use only buckets within the selected course, account and date range. Overview-only visits remain visible with zero time. Session timestamps describe the entire visit and may start before the selected range; their elapsed span must not be presented as active study time. Missing history returns an empty state. Student and guest authorization is checked before either report query.
+
+Existing storage cannot reconstruct hourly active durations or precise first/last study timestamps per day. No hourly distribution is inferred from visit starts. This drill-down requires no database migration.
+
 ## Storage and deployment
 
 `LearnStudySession` stores one row per visit. `LearnStudyBucket` stores one aggregate per session/section/Vietnam day; heartbeats update these rows, rather than adding event logs. `LearnStudyLease` is a reusable ownership row per account. No mouse coordinates, keystroke contents, IP addresses or detailed event stream are stored. The admin report resolves names/emails from the existing user directory.

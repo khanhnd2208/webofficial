@@ -540,12 +540,18 @@ cd "$RELEASE_DIR"
 # `npm prune` must not mutate the cache.
 
 # Everything that decides what `npm ci` installs or runs: the lockfile,
-# package.json (lifecycle scripts, overrides), any .npmrc, and the Node and npm
-# versions. A change to any of them forces a fresh install.
+# package.json (lifecycle scripts, overrides), local dependency sources, any
+# .npmrc, and the Node and npm versions. A change forces a fresh install.
 dependency_stamp() {
 	local inputs=(package-lock.json package.json)
 	if [[ -f .npmrc ]]; then
 		inputs+=(.npmrc)
+	fi
+	if [[ -d scripts/vendor ]]; then
+		local vendor_file
+		while IFS= read -r -d '' vendor_file; do
+			inputs+=("$vendor_file")
+		done < <(find scripts/vendor -type f -print0 | sort -z)
 	fi
 	local files_hash
 	files_hash="$(sha256sum "${inputs[@]}" | sha256sum | awk '{ print $1 }')"

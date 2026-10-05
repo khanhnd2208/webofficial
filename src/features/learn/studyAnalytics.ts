@@ -4,6 +4,7 @@ import { AppError } from '@/lib/appError';
 import dbConnect from '@/lib/dbConnect';
 import { prisma } from '@/lib/prisma';
 import User from '@/models/User';
+import { fillStudyDays, studyReportPage, studyReportRange } from './studyReportTime';
 
 const LEASE_MS = 2 * 60_000;
 const SESSION_GAP_MS = 30 * 60_000;
@@ -223,19 +224,14 @@ export async function heartbeatLearnStudy(input: {
 }
 
 export async function getLearnStudyReport(courseSlug: string, days: number, requestedPage = 1) {
-	const page = Number.isFinite(requestedPage)
-		? Math.min(100_000, Math.max(1, Math.floor(requestedPage)))
-		: 1;
+	const page = studyReportPage(requestedPage);
 	const pageSize = 50;
-	const rangeDays = Math.min(365, Math.max(1, Math.floor(days)));
+	const { rangeDays, startDay, start } = studyReportRange(days);
 	const course = await prisma.learnCourse.findUnique({
 		where: { slug: courseSlug },
 		select: { id: true, slug: true, title: true },
 	});
 	if (!course) throw new AppError('Không tìm thấy khóa học', 404);
-	const today = vietnamDay(new Date());
-	const startDay = new Date(today.getTime() - (rangeDays - 1) * 24 * 60 * 60_000);
-	const start = new Date(startDay.getTime() - 7 * 60 * 60_000);
 	const [visits, activeUsers, firstTracked, daily, sections, learners, completed, sectionCount] =
 		await prisma.$transaction(
 			async (tx) =>
@@ -256,9 +252,11 @@ export async function getLearnStudyReport(courseSlug: string, days: number, requ
 					tx.$queryRaw<Array<{ firstTrackedAt: Date | null }>>`
 			SELECT MIN("startedAt") AS "firstTrackedAt" FROM "LearnStudySession" WHERE "courseId" = ${course.id}
 		`,
-					tx.$queryRaw<Array<{ day: Date; seconds: bigint; learnerCount: bigint }>>`
+					tx.$queryRaw<
+						Array<{ day: Date; seconds: bigint; learnerCount: bigint; sessionCount: bigint }>
+					>`
 			SELECT b."day" AS day, SUM(b."seconds") AS seconds,
-				COUNT(DISTINCT s."userId") AS "learnerCount"
+				COUNT(DISTINCT s."userId") AS "learnerCount", COUNT(DISTINCT s.id) AS "sessionCount"
 			FROM "LearnStudyBucket" b JOIN "LearnStudySession" s ON s."id" = b."sessionId"
 			WHERE s."courseId" = ${course.id} AND b."day" >= ${startDay}
 			GROUP BY b."day" ORDER BY b."day"
@@ -319,11 +317,18 @@ export async function getLearnStudyReport(courseSlug: string, days: number, requ
 				? Math.round(totalSeconds / activeLearnerCount)
 				: 0,
 		},
-		daily: daily.map((row) => ({
-			day: row.day.toISOString().slice(0, 10),
-			seconds: Number(row.seconds),
-			learners: Number(row.learnerCount),
-		})),
+		daily: fillStudyDays(
+			startDay,
+			rangeDays,
+			daily.map((row) => ({
+				day: row.day.toISOString().slice(0, 10),
+				seconds: Number(row.seconds),
+				learners: Number(row.learnerCount),
+				sessions: Number(row.sessionCount),
+				averageSeconds: Math.round(Number(row.seconds) / Number(row.learnerCount)),
+			})),
+			{ seconds: 0, learners: 0, sessions: 0, averageSeconds: 0 },
+		),
 		sections: sections.map((row) => ({
 			sectionId: row.sectionId,
 			title: row.title,

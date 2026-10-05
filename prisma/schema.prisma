@@ -1457,3 +1457,78 @@ model LearnStudyLease {
 
   @@index([expiresAt])
 }
+
+/// Anonymous browser identity; id is a hash, never the raw cookie.
+model RecallVisitor {
+  id               String   @id
+  publicId         String   @unique @default(uuid())
+  firstSeenAt      DateTime @default(now())
+  lastSeenAt       DateTime @default(now())
+  currentSessionId String?
+  sessions         RecallStudySession[]
+  lease            RecallStudyLease?
+}
+
+model RecallStudySession {
+  id             String   @id @default(uuid())
+  visitorId      String
+  startedAt      DateTime @default(now())
+  lastActivityAt DateTime @default(now())
+  visitor        RecallVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  visits         RecallStudyVisit[]
+
+  @@index([visitorId, startedAt])
+}
+
+/// Content identifiers and names are historical snapshots, without content cascades.
+model RecallStudyVisit {
+  id              String   @id
+  sessionId       String
+  clientId        String
+  deckId          String
+  deckTitle       String
+  courseId        String
+  courseName      String
+  classId         String   @default("")
+  className       String   @default("")
+  classSlug       String   @default("")
+  openedAt        DateTime @default(now())
+  lastActivityAt  DateTime @default(now())
+  lastHeartbeatAt DateTime @default(now())
+  engagedAt       DateTime?
+  lastSequence    Int      @default(-1)
+  session         RecallStudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  buckets         RecallStudyBucket[]
+
+  @@index([sessionId, openedAt])
+  @@index([courseId, classId, deckId])
+  @@index([deckId])
+}
+
+model RecallStudyBucket {
+  id            String   @id @default(uuid())
+  visitId       String
+  day           DateTime @db.Date
+  opens         Int      @default(0)
+  interactions  Int      @default(0)
+  answerReveals Int      @default(0)
+  activeSeconds Int      @default(0)
+  visit         RecallStudyVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@unique([visitId, day])
+  @@index([day])
+}
+
+/// Only one visible tab per anonymous browser can accumulate time.
+model RecallStudyLease {
+  visitorId       String   @id
+  sessionId       String
+  visitId         String
+  clientId        String
+  expiresAt       DateTime
+  timedAt         DateTime
+  lastInteraction DateTime?
+  visitor         RecallVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}

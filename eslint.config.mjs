@@ -57,15 +57,14 @@ const OVERSIZED_FILE_CAPS = {
 	'src/app/vocabulary/[id]/mcq/page.tsx': 1055,
 	'src/components/myclass/CourseWorkspace.tsx': 985,
 	'src/app/vocabulary/[id]/fill-blank/page.tsx': 931,
-	'src/features/board-game-test/service.ts': 931,
+	'src/features/board-game-test/service.ts': 927,
 	'src/features/myspace-tests/repositories/myspaceTestsRepository.ts': 918,
 	'src/features/my-class/services/assessmentService.ts': 903,
 	'src/components/teaching/groups/GroupListWorkspace.tsx': 893,
-	'src/features/spy-fall/services/spyGameService.ts': 883,
+	'src/features/spy-fall/services/spyGameService.ts': 857,
 	'src/features/learn/service.ts': 875,
 	'src/components/forms/TiptapEditor.tsx': 854,
 	'src/components/active-recall/ActiveRecallEditor.tsx': 837,
-	'src/features/cheese-thief/services/cheeseThiefService.ts': 822,
 };
 /** Data tables, not logic. */
 const SIZE_EXEMPT_FILES = ['src/features/spy-fall/lib/spy/wordBank.ts'];
@@ -135,6 +134,11 @@ const eslintConfig = defineConfig([
 	},
 	...areaBoundaries,
 	...fileSizeBudget,
+	{
+		// Next's CommonJS ESLint plugin loads this adapter with require().
+		files: ['scripts/vendor/next-eslint-glob/*.cjs'],
+		rules: { '@typescript-eslint/no-require-imports': 'off' },
+	},
 	// Override default ignores of eslint-config-next.
 	globalIgnores([
 		// Default ignores of eslint-config-next:

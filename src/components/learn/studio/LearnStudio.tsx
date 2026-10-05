@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
 import {
@@ -15,6 +15,7 @@ import {
 	type LearnStudioLesson,
 	type LearnStudioSection,
 } from '@/features/learn/types';
+import { unresolvedSectionImages } from '@/features/learn/sectionImages';
 import { adminFetch } from '@/lib/admin/client';
 
 import AiImportDialog, { type AiImportInput, type AiImportKind } from './AiImportDialog';
@@ -24,6 +25,7 @@ import LearnDiscussionEditor from './LearnDiscussionEditor';
 import LearnQuizEditor from './LearnQuizEditor';
 import LearnRichEditor from './LearnRichEditor';
 import StudioInspector, { type SectionPatch } from './StudioInspector';
+import StudioDialog from './StudioDialog';
 import StudioOutline from './StudioOutline';
 import { useStudioSaver, type SaveStatus } from './useStudioSaver';
 
@@ -90,6 +92,27 @@ export default function LearnStudio({
 	const [lessons, setLessons] = useState<LearnStudioLesson[]>(initialLessons);
 	const [selectedId, setSelectedId] = useState<string | null>(
 		findSection(initialLessons, initialSectionId)?.id ?? initialLessons[0]?.sections[0]?.id ?? null,
+	);
+	const lessonsRef = useRef(lessons);
+	useEffect(() => {
+		lessonsRef.current = lessons;
+	}, [lessons]);
+	const [statusRequest, setStatusRequest] = useState<LearnCourseMeta['status'] | null>(null);
+	const [statusBusy, setStatusBusy] = useState(false);
+	const unresolvedSections = useMemo(
+		() =>
+			statusRequest === 'PUBLISHED'
+				? lessons
+						.flatMap((lesson) =>
+							lesson.sections.map((section) => ({
+								section,
+								lessonTitle: lesson.title,
+								count: unresolvedSectionImages(section).length,
+							})),
+						)
+						.filter((item) => item.count > 0)
+				: [],
+		[lessons, statusRequest],
 	);
 	const [dialog, setDialog] = useState<'settings' | null>(null);
 	const [importRequest, setImportRequest] = useState<{
@@ -354,14 +377,34 @@ export default function LearnStudio({
 	}
 
 	// ─── Course ──────────────────────────────────────────────────────────────
+	async function requestStatus(status: LearnCourseMeta['status']) {
+		setStatusBusy(true);
+		try {
+			await flush();
+			const missing = lessonsRef.current.some((lesson) =>
+				lesson.sections.some((section) => unresolvedSectionImages(section).length),
+			);
+			if (status === 'DRAFT' || missing) setStatusRequest(status);
+			else await setStatus(status);
+		} catch (error) {
+			setActionError(error instanceof Error ? error.message : 'Không lưu được nội dung');
+		} finally {
+			setStatusBusy(false);
+		}
+	}
 	async function setStatus(status: LearnCourseMeta['status']) {
+		setStatusBusy(true);
 		const updated = await act(() =>
 			adminFetch<LearnCourseMeta>(`/api/admin/learn/courses/${meta.id}`, {
 				method: 'PATCH',
 				body: JSON.stringify({ status }),
 			}),
 		);
-		if (updated) setMeta(updated);
+		if (updated) {
+			setMeta(updated);
+			setStatusRequest(null);
+		}
+		setStatusBusy(false);
 	}
 
 	async function saveSettings(patch: CourseSettingsPatch) {
@@ -421,7 +464,8 @@ export default function LearnStudio({
 						type="button"
 						role="radio"
 						aria-checked={!published}
-						onClick={() => published && void setStatus('DRAFT')}
+						disabled={statusBusy}
+						onClick={() => published && void requestStatus('DRAFT')}
 					>
 						Bản nháp
 					</button>
@@ -429,7 +473,8 @@ export default function LearnStudio({
 						type="button"
 						role="radio"
 						aria-checked={published}
-						onClick={() => !published && void setStatus('PUBLISHED')}
+						disabled={statusBusy}
+						onClick={() => !published && void requestStatus('PUBLISHED')}
 					>
 						Xuất bản
 					</button>
@@ -571,6 +616,74 @@ export default function LearnStudio({
 					onClose={() => setImportRequest(null)}
 					onSave={saveImport}
 				/>
+			) : null}
+			{statusRequest ? (
+				<StudioDialog
+					title={statusRequest === 'PUBLISHED' ? 'Còn ảnh chưa tải lên' : 'Chuyển về bản nháp?'}
+					size="narrow"
+					onClose={() => {
+						if (!statusBusy) setStatusRequest(null);
+					}}
+					footer={
+						<>
+							<button
+								type="button"
+								className="ln-btn"
+								disabled={statusBusy}
+								onClick={() => setStatusRequest(null)}
+							>
+								Hủy
+							</button>
+							<button
+								type="button"
+								className="ln-btn ln-btn--primary"
+								disabled={statusBusy}
+								onClick={() => void setStatus(statusRequest)}
+							>
+								{statusBusy
+									? 'Đang lưu…'
+									: statusRequest === 'PUBLISHED'
+										? 'Vẫn xuất bản'
+										: 'Chuyển về bản nháp'}
+							</button>
+						</>
+					}
+				>
+					{statusRequest === 'DRAFT' ? (
+						<p>Khóa học sẽ được ẩn với học viên khi chuyển về bản nháp.</p>
+					) : (
+						<>
+							<p>
+								Các mục sau còn ảnh thiếu hoặc ảnh ngoài. Học viên có thể không thấy các ảnh này.
+							</p>
+							<ul className="ln-preview__list">
+								{unresolvedSections.map(({ section: item, lessonTitle, count }) => (
+									<li key={item.id}>
+										<p>
+											{lessonTitle} · {item.title}: {count} ảnh chưa tải lên
+										</p>
+										<button
+											type="button"
+											className="ln-link-btn"
+											disabled={statusBusy}
+											onClick={() => {
+												select(item.id);
+												setStatusRequest(null);
+											}}
+										>
+											Đi tới mục
+										</button>
+									</li>
+								))}
+							</ul>
+						</>
+					)}
+					{actionError ? (
+						<p role="alert" className="ln-warning">
+							{actionError}
+						</p>
+					) : null}
+				</StudioDialog>
 			) : null}
 			{dialog === 'settings' ? (
 				<CourseSettingsDialog

@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { McIcon } from '@/components/myclass/ui/McIcon';
 import { getAdminNavGroupsForPath, isAdminNavActive } from '@/config/adminNavigation';
 import { isArchivedAdminPath } from '@/config/moduleRegistry';
 import { routes } from '@/config/routes';
+import { signOutTo } from '@/lib/auth/signOutTo';
 
 function NavItem({
 	href,
@@ -145,7 +146,7 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 								</p>
 								<button
 									type="button"
-									onClick={() => void signOut({ callbackUrl: routes.home })}
+									onClick={() => void signOutTo(routes.home)}
 									className="min-h-10 text-[10px] text-muted transition-colors hover:text-error"
 								>
 									Đăng xuất

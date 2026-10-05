@@ -55,7 +55,7 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		archiveGroup: 'My Space',
 		adminHref: routes.admin.learnAnalytics,
 		adminPrefixes: [routes.admin.learnAnalytics],
-		publicPrefixes: ['/my-space/courses'],
+		publicPrefixes: ['/my-space/courses', '/khoa-hoc'],
 	},
 	{
 		id: 'teaching',

@@ -6,9 +6,11 @@ import {
 	AnalyticsScript,
 	ConditionalFooter,
 	DeploymentRefresh,
+	LoginReturnTracker,
 	MainContent,
 	Navbar,
 	PublicMinimalChrome,
+	SessionFreshness,
 	SkipLink,
 } from '@/components/site';
 import { SITE_CREATOR, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
@@ -87,6 +89,8 @@ export default function RootLayout({
 					<ConditionalFooter />
 					<AnalyticsScript />
 					<DeploymentRefresh />
+					<LoginReturnTracker />
+					<SessionFreshness />
 				</Providers>
 			</body>
 		</html>

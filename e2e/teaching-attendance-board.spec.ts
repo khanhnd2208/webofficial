@@ -41,16 +41,10 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		await expect(page).toHaveURL(/\/dang-nhap/);
 	});
 
-	test('My Space links to protected Teaching and adds Admin only for administrators', async ({
-		page,
-		context,
-	}) => {
+	test('My Space shows Teaching and Admin only to administrators', async ({ page, context }) => {
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
-			'href',
-			'/my-space/teaching',
-		);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await addAdminSession(context);
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);

@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
+import SiteAuthChip from '@/components/site/SiteAuthChip';
+import LiveBotControls from '@/features/board-game-bots/LiveBotControls';
 import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import ConnectionBanner from '@/features/board-game-shared/components/ConnectionBanner';
@@ -19,6 +21,9 @@ import {
 } from '@/features/board-game-shared/lib/playerName';
 import HostBoard from '@/features/werewolf/components/HostBoard';
 import InviteCard from '@/features/werewolf/components/InviteCard';
+import CardDeckSelector from '@/features/werewolf/components/CardDeckSelector';
+import { getCardDeck } from '@/features/werewolf/config/cardDecks';
+import type { CardDeck } from '@/features/werewolf/types';
 import RoleCard from '@/features/werewolf/components/RoleCard';
 import RoleSetupPanel, {
 	useDebouncedRoleCounts,
@@ -150,6 +155,18 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 		}
 	}
 
+	async function handleCardDeck(cardDeck: CardDeck) {
+		setBusy(true);
+		setJoinError(null);
+		try {
+			await api.setCardDeck(cardDeck);
+		} catch (cause) {
+			setJoinError(cause instanceof Error ? cause.message : t('common.unknownError'));
+		} finally {
+			setBusy(false);
+		}
+	}
+
 	async function handleDeal() {
 		setBusy(true);
 		setJoinError(null);
@@ -272,6 +289,7 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 						<p className="font-mono text-[11px] tracking-widest text-muted">{state.code}</p>
 					</div>
 					<PrefsToggleGroup />
+					<SiteAuthChip variant="badge" showSignIn={false} />
 				</header>
 
 				<ConnectionBanner error={error ?? joinError} onRetry={() => void refresh()} />
@@ -279,6 +297,15 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 				{state.isHost && state.phase === 'lobby' ? (
 					<div className="space-y-8">
 						<InviteCard code={state.code} />
+						{adminTest ? null : (
+							<LiveBotControls
+								game="ma-soi"
+								code={state.code}
+								hostToken={playerToken}
+								full={state.playerCount >= state.maxPlayers}
+								onChanged={refresh}
+							/>
+						)}
 						<PlayerList
 							state={state}
 							selfToken={null}
@@ -289,7 +316,13 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 								void api.kick(token).finally(() => setBusy(false));
 							}}
 						/>
+						<CardDeckSelector
+							value={getCardDeck(state.cardDeck)}
+							disabled={busy || saving}
+							onChange={(deck) => void handleCardDeck(deck)}
+						/>
 						<RoleSetupPanel
+							cardDeck={getCardDeck(state.cardDeck)}
 							playerCount={state.playerCount}
 							roleCounts={counts}
 							saving={saving}
@@ -312,6 +345,7 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 
 				{state.isHost && state.phase === 'dealt' ? (
 					<HostBoard
+						cardDeck={getCardDeck(state.cardDeck)}
 						code={state.code}
 						players={state.players}
 						busy={busy}
@@ -331,7 +365,8 @@ export default function WerewolfRoomClient({ code, initialName, adminTest = fals
 
 				{!state.isHost && state.phase === 'dealt' && state.self ? (
 					<RoleCard
-						key={state.dealRound}
+						key={`${state.dealRound}:${getCardDeck(state.cardDeck)}`}
+						cardDeck={getCardDeck(state.cardDeck)}
 						roleId={state.self.roleId}
 						onViewed={() => api.viewed()}
 					/>

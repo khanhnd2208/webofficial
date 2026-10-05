@@ -178,6 +178,11 @@ export function TeachingCourseWorkspace({
 						>
 							<TeachingIcon name="recall" size={18} /> Active Recall
 						</Link>
+						<Link
+							href={`${routes.mySpaceTeachingRecallAnalytics}?course=${encodeURIComponent(course.id)}`}
+						>
+							Thống kê Active Recall
+						</Link>
 					</nav>
 				}
 			/>

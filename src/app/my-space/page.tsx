@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import MySpaceGrid from '@/components/myspace/MySpaceGrid';
+import RecentClasses from '@/components/site/RecentClasses';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 import { getMySpaceTiles, mySpacePage } from '@/content/mySpace';
@@ -30,6 +31,7 @@ export default async function MySpacePage() {
 				<p>{mySpacePage.lead}</p>
 			</header>
 			<MySpaceGrid tiles={tiles} />
+			<RecentClasses className="mt-10 text-center" />
 		</main>
 	);
 }

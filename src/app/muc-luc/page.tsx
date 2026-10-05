@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import RecentClasses from '@/components/site/RecentClasses';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
 import { getMySpaceTiles } from '@/content/mySpace';
@@ -129,6 +130,7 @@ export default async function TocPage() {
 								</Link>
 							))}
 						</div>
+						<RecentClasses className="mt-5" />
 					</section>
 				</nav>
 				<footer className={styles.footer}>

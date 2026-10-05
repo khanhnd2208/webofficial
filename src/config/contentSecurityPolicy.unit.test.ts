@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { buildContentSecurityPolicy } from './contentSecurityPolicy';
 
 describe('buildContentSecurityPolicy', () => {
+	it('permits local blob image reads while keeping network connections restricted', () => {
+		const policy = buildContentSecurityPolicy('production');
+		expect(policy).toContain("connect-src 'self' blob: https://analytics.toiladuykhanh.com;");
+		expect(policy).not.toContain('connect-src *');
+	});
 	it('allows React development diagnostics without weakening production', () => {
 		expect(buildContentSecurityPolicy('development')).toContain(
 			"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://analytics.toiladuykhanh.com",

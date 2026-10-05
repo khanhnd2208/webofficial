@@ -1,23 +1,19 @@
 /**
  * Internal-only redirect sanitization for Auth.js v5 (`redirectTo`) and login pages.
  * Edge-safe: no Node-only APIs.
+ *
+ * Signing in only adds a session, so everyone (admin or student) returns to the page where they
+ * pressed "Đăng nhập", including its query and #section. The homepage is the fallback only when
+ * the sign-in has no origin at all.
  */
 
 const LOGIN_PATHS = new Set(['/dang-nhap', '/login']);
 
-export const AUTH_DEFAULT_AFTER_LOGIN = '/tai-khoan';
-/** Admins spend most of their time in Teaching, so land there instead of the admin overview. */
-export const AUTH_DEFAULT_AFTER_LOGIN_ADMIN = '/my-space/teaching';
-/**
- * Role-aware landing used when the login has no meaningful destination (direct visit or the
- * homepage). The role is only known after Google returns, so this page resolves it server-side.
- */
-export const AUTH_CONTINUE_PATH = '/dang-nhap/tiep-tuc';
+export const AUTH_DEFAULT_AFTER_LOGIN = '/';
 
-export type AuthRedirectRole = 'admin' | 'student';
-
-function fallbackFor(role?: AuthRedirectRole): string {
-	return role === 'admin' ? AUTH_DEFAULT_AFTER_LOGIN_ADMIN : AUTH_DEFAULT_AFTER_LOGIN;
+/** Path part of an in-app URL, without query or hash. */
+function pathnameOf(path: string): string {
+	return path.split(/[?#]/)[0] ?? path;
 }
 
 function stripOrigin(raw: string): string | null {
@@ -28,7 +24,7 @@ function stripOrigin(raw: string): string | null {
 	if (/^https?:\/\//i.test(trimmed)) {
 		try {
 			const url = new URL(trimmed);
-			return `${url.pathname}${url.search}`;
+			return `${url.pathname}${url.search}${url.hash}`;
 		} catch {
 			return null;
 		}
@@ -47,7 +43,7 @@ export function isSafeInternalPath(value: string): boolean {
 }
 
 function applyLegacyAliases(path: string): string {
-	const pathname = path.split('?')[0] ?? path;
+	const pathname = pathnameOf(path);
 	const search = path.slice(pathname.length);
 	if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
 		return `/tai-khoan/hoc${search}`;
@@ -72,26 +68,44 @@ function applyLegacyAliases(path: string): string {
  */
 export function sanitizeAuthRedirect(
 	raw: string | null | undefined,
-	options?: { role?: AuthRedirectRole; fallback?: string },
+	options?: { fallback?: string },
 ): string {
-	const fallback = options?.fallback ?? fallbackFor(options?.role);
+	const fallback = options?.fallback ?? AUTH_DEFAULT_AFTER_LOGIN;
 	const extracted = stripOrigin(raw ?? '');
 	if (!extracted || !isSafeInternalPath(extracted)) return fallback;
 
 	const aliased = applyLegacyAliases(extracted);
-	const pathname = aliased.split('?')[0] ?? aliased;
+	const pathname = pathnameOf(aliased);
 	if (LOGIN_PATHS.has(pathname) || pathname.startsWith('/api/auth')) return fallback;
 
 	return aliased;
 }
 
 /**
- * Where Google should send the browser after a fresh sign-in. Signing in only adds the session,
- * so the page the person came from (homepage included) is kept. Only a direct visit to the
- * login page, with no origin, goes through the role-aware continue page.
+ * Where to go after signing in, from the first usable candidate: the explicit `from` /
+ * `callbackUrl`, then fallbacks such as the Auth.js callback cookie or a same-site referrer.
  */
-export function loginRedirectTarget(raw: string | null | undefined): string {
-	return sanitizeAuthRedirect(raw, { fallback: AUTH_CONTINUE_PATH });
+export function loginRedirectTarget(...candidates: Array<string | null | undefined>): string {
+	for (const candidate of candidates) {
+		const safe = sanitizeAuthRedirect(candidate, { fallback: '' });
+		if (safe) return safe;
+	}
+	return AUTH_DEFAULT_AFTER_LOGIN;
+}
+
+/** The referrer's in-app path, or null when it came from another site. */
+export function sameSiteReferrerPath(
+	referrer: string | null | undefined,
+	host: string | null | undefined,
+): string | null {
+	if (!referrer || !host) return null;
+	try {
+		const url = new URL(referrer);
+		if (url.host !== host) return null;
+		return `${url.pathname}${url.search}${url.hash}`;
+	} catch {
+		return null;
+	}
 }
 
 /** Auth.js `redirect` callback: always return an absolute URL on this origin. */
@@ -110,7 +124,7 @@ export function resolveAuthJsRedirect(url: string, baseUrl: string): string {
 		} else {
 			const parsed = new URL(url);
 			if (parsed.origin !== origin.origin) return origin.origin;
-			candidate = `${parsed.pathname}${parsed.search}`;
+			candidate = `${parsed.pathname}${parsed.search}${parsed.hash}`;
 		}
 	} catch {
 		return origin.origin;
@@ -121,12 +135,18 @@ export function resolveAuthJsRedirect(url: string, baseUrl: string): string {
 }
 
 export function destinationLabel(from: string): string | null {
-	if (!from || from === '/' || from === AUTH_CONTINUE_PATH || from.startsWith('http')) return null;
-	if (from.startsWith('/my-space/teaching')) return 'lớp học';
-	if (from.startsWith('/my-space/courses')) return 'khóa học';
-	if (from.startsWith('/admin')) return 'khu quản trị';
-	if (from.startsWith('/ghi-chep') || from.startsWith('/bai-viet')) return 'ghi chép';
-	if (from.startsWith('/tai-khoan')) return 'tài khoản';
-	if (from.startsWith('/my-space')) return 'My Space';
+	if (!from || from === '/' || from.startsWith('http')) return null;
+	const pathname = pathnameOf(from);
+	if (pathname.startsWith('/my-space/teaching')) return 'Teaching';
+	if (pathname.startsWith('/my-space/courses') || pathname.startsWith('/khoa-hoc')) {
+		return 'khóa học';
+	}
+	if (pathname.startsWith('/my-space/board-game')) return 'Board Game';
+	if (pathname.startsWith('/lop/')) return 'trang lớp';
+	if (pathname.startsWith('/admin')) return 'khu quản trị';
+	if (pathname.startsWith('/ghi-chep') || pathname.startsWith('/bai-viet')) return 'ghi chép';
+	if (pathname.startsWith('/tai-khoan')) return 'tài khoản';
+	if (pathname === '/muc-luc') return 'Mục lục';
+	if (pathname.startsWith('/my-space')) return 'My Space';
 	return 'trang bạn vừa mở';
 }

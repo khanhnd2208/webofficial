@@ -2,6 +2,8 @@ export type Faction = 'villager' | 'werewolf' | 'solo';
 
 export type WerewolfPhase = 'lobby' | 'dealt';
 
+export type CardDeck = 'classic' | 'van-son-2026';
+
 export interface RoleDefinition {
 	roleId: string;
 	name: string;
@@ -28,6 +30,8 @@ export interface WerewolfPlayerView {
 	viewed: boolean;
 	left: boolean;
 	roleId?: string | null;
+	/** A seat an admin filled with a bot; it marks its card viewed on its own. */
+	isBot?: boolean;
 }
 
 export interface WerewolfSelfView {
@@ -40,6 +44,7 @@ export interface WerewolfSelfView {
 }
 
 export interface RoomStateDTO {
+	cardDeck: CardDeck;
 	code: string;
 	phase: WerewolfPhase;
 	version: number;
@@ -69,6 +74,7 @@ export interface WerewolfPlayerRecord {
 
 /** Plain room snapshot used by the DTO mapper and unit tests. */
 export interface WerewolfRoomSnapshot {
+	cardDeck?: CardDeck;
 	code: string;
 	hostToken: string;
 	hostName: string;

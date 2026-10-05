@@ -14,6 +14,8 @@ export interface PlayerPublicDTO {
 	avatarSeed: string;
 	connected: boolean;
 	isHost: boolean;
+	/** A seat an admin filled with a bot; it acts on its own and never becomes host. */
+	isBot?: boolean;
 	/** Deal only. Secret minute never reports who has already chosen. */
 	hasMemorizedRole?: boolean;
 	/** Reveal only. */

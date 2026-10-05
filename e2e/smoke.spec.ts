@@ -14,9 +14,9 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByTestId('gate-home')).toHaveCount(0);
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
 		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toBeVisible();
-		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toHaveAttribute(
-			'href',
-			'/dang-nhap?from=%2F',
+		await expect(page.getByTestId('site-auth-chip').filter({ visible: true })).toHaveJSProperty(
+			'tagName',
+			'BUTTON',
 		);
 		await expect(
 			page.getByRole('heading', { name: /Tôi làm giáo dục để tiếp tục học/i }),
@@ -62,17 +62,19 @@ test.describe('Public pages smoke', () => {
 		await context.close();
 	});
 
-	test('My Space hub contains Teaching, Courses and Board Game', async ({ page }) => {
+	test('My Space hub shows visitors Courses and Board Game, not admin-only Teaching', async ({
+		page,
+	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/my-space$/);
 		await expect(page.getByTestId('my-space')).toBeVisible();
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(3);
-		await expect(page.getByTestId('myspace-tile-teaching')).toBeVisible();
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
 		await expect(page.getByTestId('myspace-tile-board-game')).toBeVisible();
-		await page.getByTestId('myspace-tile-teaching').click();
-		await expect(page).toHaveURL(/\/dang-nhap|\/my-space\/teaching/);
+		await page.getByTestId('myspace-tile-courses').click();
+		await expect(page).toHaveURL(/\/dang-nhap\?from=%2Fkhoa-hoc/);
 	});
 
 	test('intro and mục lục stay without horizontal overflow at critical widths', async ({
@@ -130,9 +132,9 @@ test.describe('Public pages smoke', () => {
 		await page.goto('/goc-cua-khanh');
 		await expect(page).toHaveURL(/\/trai-nghiem#du-an/);
 		await page.goto('/hoc');
-		await expect(page).toHaveURL(/\/$/);
+		await expect(page).toHaveURL(/\/muc-luc$/);
 		await page.goto('/archive');
-		await expect(page).toHaveURL(/\/$/);
+		await expect(page).toHaveURL(/\/muc-luc$/);
 	});
 
 	test('contact page offers a quiet single message flow', async ({ page }) => {
@@ -158,20 +160,11 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByRole('heading', { name: 'Chính sách bảo mật' })).toBeVisible();
 	});
 
-	test('bai viet redirects to ghi chep gate', async ({ page }) => {
-		await page.goto('/bai-viet');
-		await expect(page).toHaveURL(/\/ghi-chep/);
-		await expect(page.getByRole('heading', { name: 'Không tìm thấy trang' })).toBeVisible();
-	});
-
-	test('growth page redirects home when unpublished', async ({ page }) => {
-		await page.goto('/phat-trien-ban-than');
-		await expect(page).toHaveURL(/\/$/);
-	});
-
-	test('blog redirects home', async ({ page }) => {
-		await page.goto('/blog');
-		await expect(page).toHaveURL(/\/$/);
+	test('retired writing, growth and blog links land on mục lục', async ({ page }) => {
+		for (const path of ['/bai-viet', '/phat-trien-ban-than', '/blog']) {
+			await page.goto(path);
+			await expect(page).toHaveURL(/\/muc-luc$/);
+		}
 	});
 
 	test('login page loads', async ({ page }) => {

@@ -26,6 +26,14 @@ type PublicHandler = (
 	context?: { params: Promise<Record<string, string>> },
 ) => Promise<NextResponse>;
 
+type WrappedHandler = {
+	(request: NextRequest): Promise<NextResponse>;
+	(
+		request: NextRequest,
+		context: { params: Promise<Record<string, string>> },
+	): Promise<NextResponse>;
+};
+
 function handleCaughtError(error: unknown): NextResponse {
 	if (error instanceof GameError) {
 		return apiError(error.code, error.status, error.params);
@@ -34,7 +42,7 @@ function handleCaughtError(error: unknown): NextResponse {
 	return apiError('INTERNAL', 500);
 }
 
-export function withErrorHandling(handler: PublicHandler) {
+export function withErrorHandling(handler: PublicHandler): WrappedHandler {
 	return async (
 		request: NextRequest,
 		context?: { params: Promise<Record<string, string>> },
@@ -48,7 +56,7 @@ export function withErrorHandling(handler: PublicHandler) {
 }
 
 /** Prevent room-token endpoints from exposing or changing admin test rooms. */
-export function withPublicRoomGuard<T>(model: Model<T>, handler: PublicHandler) {
+export function withPublicRoomGuard<T>(model: Model<T>, handler: PublicHandler): WrappedHandler {
 	return async (
 		request: NextRequest,
 		context?: { params: Promise<Record<string, string>> },

@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { getMyProfile } from '@/services/userProfileService';
 import { routes } from '@/config/routes';
 
+import SiteTopBar from '@/components/site/SiteTopBar';
+
 import ProfileForm from './ProfileForm';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +18,7 @@ export const metadata = {
 export default async function ProfilePage() {
 	const session = await auth();
 	if (!session?.user?.id || !session.user.email) {
-		redirect(`${routes.login}?from=${routes.account}`);
+		redirect(`${routes.login}?from=${encodeURIComponent(routes.account)}`);
 	}
 
 	const profile = await getMyProfile({
@@ -28,6 +30,9 @@ export default async function ProfilePage() {
 
 	return (
 		<main className="min-h-screen pb-16">
+			<div className="shell max-w-3xl text-ink">
+				<SiteTopBar crumbs={[{ label: 'Tài khoản' }]} />
+			</div>
 			<section className="border-b border-hairline">
 				<div className="shell max-w-3xl py-10 sm:py-12">
 					<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">

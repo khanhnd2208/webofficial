@@ -8,12 +8,12 @@ import { incomingAdminPath } from '@/lib/auth/incomingPath';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
 	const session = await auth();
+	const from = await incomingAdminPath();
 	if (!session?.user) {
-		const from = await incomingAdminPath();
 		redirect(`${routes.login}?from=${encodeURIComponent(from)}`);
 	}
 	if (session.user.role !== 'admin') {
-		return <AdminForbidden />;
+		return <AdminForbidden from={from} />;
 	}
 
 	return <AdminShell>{children}</AdminShell>;

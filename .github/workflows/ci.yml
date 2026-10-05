@@ -362,6 +362,8 @@ jobs:
             e2e/smoke.spec.ts
             e2e/public-feature-locks.spec.ts
             e2e/mobile-smoke.spec.ts
+            e2e/login-return.spec.ts
+            e2e/legacy-links.spec.ts
           )
           if [[ "$run_all" -eq 1 ]] || is_true "$AREA_PORTFOLIO"; then
             specs+=(

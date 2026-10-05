@@ -25,7 +25,7 @@ export default function MySpaceError({
 				Có lỗi xảy ra
 			</h1>
 			<p className="mt-3 max-w-sm font-sans text-base text-ink-secondary">
-				Không tải được nội dung. Thử lại hoặc quay về danh sách bài test.
+				Không tải được nội dung. Thử lại, hoặc quay về My Space.
 			</p>
 			<div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
 				<button
@@ -36,10 +36,10 @@ export default function MySpaceError({
 					Thử lại
 				</button>
 				<Link
-					href={routes.mySpaceTests}
+					href={routes.mySpace}
 					className="font-sans text-sm text-ink-secondary transition-colors hover:text-ink"
 				>
-					← Tests
+					← My Space
 				</Link>
 			</div>
 		</main>

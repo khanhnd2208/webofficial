@@ -5,7 +5,7 @@ import { routes } from '@/config/routes';
 import { getMySpaceTiles, mySpaceAdminTile, mySpaceTiles } from './mySpace';
 
 describe('My Space operating hub', () => {
-	it('contains Teaching, Courses and Board Game for guests and students', () => {
+	it('shows Courses and Board Game to guests and students, Teaching only to admins', () => {
 		expect(mySpaceTiles.map((tile) => tile.id)).toEqual(['teaching', 'courses', 'board-game']);
 		expect(mySpaceTiles.map((tile) => tile.href)).toEqual([
 			routes.mySpaceTeaching,
@@ -13,8 +13,8 @@ describe('My Space operating hub', () => {
 			routes.boardGame,
 		]);
 		expect(mySpaceTiles.every((tile) => tile.status === 'published')).toBe(true);
-		expect(getMySpaceTiles(null).map((tile) => tile.id)).toEqual(['teaching', 'courses', 'board-game']);
-		expect(getMySpaceTiles('student').map((tile) => tile.id)).toEqual(['teaching', 'courses', 'board-game']);
+		expect(getMySpaceTiles(null).map((tile) => tile.id)).toEqual(['courses', 'board-game']);
+		expect(getMySpaceTiles('student').map((tile) => tile.id)).toEqual(['courses', 'board-game']);
 	});
 
 	it('appends Admin tile for admin users', () => {
