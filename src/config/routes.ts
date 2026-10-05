@@ -75,6 +75,7 @@ export const routes = {
 	 * keep opening the same, current course.
 	 */
 	learnCourses: '/khoa-hoc',
+	discoverCourses: '/kham-pha-khoa-hoc',
 	learnCourse: (slug: string, sectionId?: string | null) =>
 		`/khoa-hoc/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	learnStudio: (slug: string, sectionId?: string | null) =>
@@ -264,12 +265,12 @@ export const routes = {
 } as const;
 
 /**
- * Short course URLs. Both spellings render the same pages: `/khoa-hoc/...` is rewritten to the
+ * The catalog is public; course reader aliases keep existing student links working. `/khoa-hoc/<slug>` is rewritten to the
  * `/my-space/courses/...` route files, and the old `/my-space/courses/...` links keep working
  * untouched, so links already handed to students never break.
  */
 export const LEARN_COURSE_ALIASES: ReadonlyArray<{ source: string; destination: string }> = [
-	{ source: '/khoa-hoc', destination: '/my-space/courses' },
+	{ source: '/khoa-hoc', destination: '/kham-pha-khoa-hoc' },
 	{ source: '/khoa-hoc/:path*', destination: '/my-space/courses/:path*' },
 ];
 

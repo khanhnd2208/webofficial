@@ -154,7 +154,15 @@ describe('sign-in gates', () => {
 		]) {
 			expect(isSignInRequiredPath(path), path).toBe(true);
 		}
-		for (const path of ['/', '/muc-luc', '/lop/hrm-1', '/hoc/khoa-hoc/quan-tri', '/my-space']) {
+		for (const path of [
+			'/',
+			'/muc-luc',
+			'/lop/hrm-1',
+			'/hoc/khoa-hoc/quan-tri',
+			'/my-space',
+			'/khoa-hoc',
+			'/kham-pha-khoa-hoc',
+		]) {
 			expect(isSignInRequiredPath(path), path).toBe(false);
 		}
 	});

@@ -48,7 +48,7 @@ export default function CourseSpine({ modules, nextLessonSlug }: CourseSpineProp
 									aria-hidden
 								/>
 								<span className="min-w-0 flex-1">
-									<span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-secondary">
+									<span className="font-mono text-xs uppercase tracking-[0.2em] text-ink-secondary">
 										Chương {mod.position + 1}
 									</span>
 									<span className="mt-0.5 block font-display text-xl font-medium text-ink group-hover:text-vermilion">
@@ -76,13 +76,13 @@ export default function CourseSpine({ modules, nextLessonSlug }: CourseSpineProp
 													{lesson.completed ? (
 														<span className="inline-flex items-center gap-1.5 shrink-0">
 															<span
-																className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-[9px] font-bold text-paper"
+																className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-xs font-bold text-paper"
 																aria-hidden
 															>
 																✓
 															</span>
 															<span className="sr-only">Hoàn thành</span>
-															<span className="hidden text-[10px] font-semibold uppercase tracking-wider text-vermilion sm:inline">
+															<span className="hidden text-xs font-semibold uppercase tracking-wider text-vermilion sm:inline">
 																Xong
 															</span>
 														</span>

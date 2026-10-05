@@ -41,7 +41,7 @@ export default function CompleteLessonButton({
 	if (completed) {
 		if (compact) {
 			return (
-				<span className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-vermilion text-xs font-semibold text-vermilion">
+				<span className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-vermilion text-xs font-semibold text-vermilion">
 					✓ Hoàn thành
 				</span>
 			);
@@ -53,7 +53,7 @@ export default function CompleteLessonButton({
 				) : (
 					<span className="inline-flex items-center gap-2 text-sm font-semibold text-vermilion">
 						<span
-							className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-[10px] text-paper"
+							className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-xs text-paper"
 							aria-hidden
 						>
 							✓
@@ -78,8 +78,8 @@ export default function CompleteLessonButton({
 				onClick={() => void markComplete()}
 				className={
 					compact
-						? 'min-h-11 w-full rounded-[10px] bg-ink px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-paper disabled:opacity-50'
-						: 'min-h-11 rounded-[10px] bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-200 hover:bg-ink/90 disabled:opacity-50'
+						? 'min-h-11 w-full rounded-lg bg-ink px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-paper disabled:opacity-50'
+						: 'min-h-11 rounded-lg bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition duration-250 hover:bg-ink/90 disabled:opacity-50'
 				}
 			>
 				{busy ? 'Đang lưu…' : compact ? 'Hoàn thành' : 'Đánh dấu hoàn thành'}

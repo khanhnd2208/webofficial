@@ -1,5 +1,6 @@
 'use client';
 
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import { useEffect, useId, useRef, useState } from 'react';
 
 type Phase = 'loading' | 'ready' | 'error';
@@ -7,10 +8,10 @@ type Phase = 'loading' | 'ready' | 'error';
 function themeFrom(root: HTMLElement) {
 	const style = getComputedStyle(root);
 	const read = (name: string, fallback: string) => style.getPropertyValue(name).trim() || fallback;
-	const ink = read('--ink', '#111827');
-	const paper = read('--paper', '#f4f4f5');
+	const ink = read('--ink', GRAPHIC_COLORS['111827']);
+	const paper = read('--paper', GRAPHIC_COLORS['f4f4f5']);
 	const accent = read('--bronze', ink);
-	const line = read('--hairline', '#e5e7eb');
+	const line = read('--hairline', GRAPHIC_COLORS['e5e7eb']);
 	const token = read('--ln-ui', '');
 	const fontFamily = token.includes('var(') ? style.fontFamily : token || style.fontFamily;
 	return { ink, paper, accent, line, fontFamily };

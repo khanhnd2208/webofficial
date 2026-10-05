@@ -114,8 +114,10 @@ export const AREAS = {
 		components: ['learn', 'marketing', 'contact'],
 		paths: [
 			'src/app/page.tsx',
+			'src/app/opengraph-image.tsx',
 			'src/app/gioi-thieu',
 			'src/app/muc-luc',
+			'src/app/kham-pha-khoa-hoc',
 			'src/app/du-an',
 			'src/app/trai-nghiem',
 			'src/app/dich-vu',
@@ -204,6 +206,7 @@ export const SHARED = [
 	'src/app/tai-khoan/page.tsx',
 	'src/app/tai-khoan/ProfileForm.tsx',
 	'src/app/my-space/page.tsx',
+	'src/app/my-space/loading.tsx',
 	'src/app/my-space/error.tsx',
 	// Admin shell
 	'src/app/admin/layout.tsx',

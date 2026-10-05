@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import BrandWordmark from '@/components/site/BrandWordmark';
 import SiteAuthChip from '@/components/site/SiteAuthChip';
 import { routes } from '@/config/routes';
 
@@ -17,13 +18,11 @@ export default function LearnAppBar({
 	return (
 		<header className="ln-appbar">
 			<div className="ln-appbar__inner">
-				<Link href={routes.learnCourses} className="ln-appbar__brand">
-					<span className="ln-appbar__logo">
-						<LearnIcon name="book" size={17} />
-					</span>
-					<span>Khóa học</span>
+				<Link href={routes.home} className="ln-appbar__brand">
+					<BrandWordmark />
 				</Link>
 				<nav aria-label="Đường dẫn" className="ln-appbar__crumbs">
+					<Link href="/my-space/courses">Khóa học</Link>
 					{crumbs.map((crumb) => (
 						<span key={crumb.label} className="ln-appbar__crumb">
 							<LearnIcon name="chevronRight" size={14} />

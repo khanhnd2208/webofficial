@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import SpotIllustration from '@/components/site/SpotIllustration';
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
 import { toCurriculumLessons, type LearnCourseSummary } from '@/features/learn/progress';
@@ -75,12 +76,15 @@ export default function LearnCourseOverview({
 							</div>
 						</div>
 						{summary.status === 'completed' ? (
-							<p className="ln-status-line" role="status">
-								Đã hoàn thành khóa học
-								{summary.quizCount
-									? ` · ${summary.quizzesPassed}/${summary.quizCount} bài kiểm tra đạt`
-									: ''}
-							</p>
+							<div className="mt-5 flex items-center gap-4">
+								<SpotIllustration variant="complete" size={72} />
+								<p className="ln-status-line" role="status">
+									Đã hoàn thành khóa học
+									{summary.quizCount
+										? ` · ${summary.quizzesPassed}/${summary.quizCount} bài kiểm tra đạt`
+										: ''}
+								</p>
+							</div>
 						) : null}
 						{cta.href ? (
 							<Link href={cta.href} className="ln-btn ln-btn--primary">

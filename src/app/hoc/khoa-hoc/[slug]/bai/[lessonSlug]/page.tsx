@@ -68,7 +68,7 @@ export default async function LearnerLessonPage({
 					>
 						← {lesson.course.title}
 					</Link>
-					<p className="mt-3 font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">
+					<p className="mt-3 font-mono text-xs uppercase tracking-[0.28em] text-ink-secondary">
 						{lesson.module.title}
 					</p>
 					<h1 className="mt-2 max-w-3xl font-display text-2xl font-medium tracking-tight text-ink sm:text-3xl">
@@ -87,7 +87,7 @@ export default async function LearnerLessonPage({
 
 					<article className="min-w-0 max-w-[720px]">
 						{lesson.videoUrl ? (
-							<div className="mb-10 overflow-hidden rounded-[18px] bg-[#0c0b09]">
+							<div className="mb-10 overflow-hidden rounded-2xl bg-game-canvas">
 								<div className="aspect-video">
 									<iframe
 										src={lesson.videoUrl}
@@ -111,7 +111,7 @@ export default async function LearnerLessonPage({
 
 						{lesson.attachments.length > 0 ? (
 							<section className="mt-10 border-t border-hairline pt-8">
-								<p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-secondary">
+								<p className="font-mono text-xs uppercase tracking-[0.28em] text-ink-secondary">
 									Tệp đính kèm
 								</p>
 								<ul className="mt-4 space-y-2">
