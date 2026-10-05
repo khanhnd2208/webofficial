@@ -64,9 +64,14 @@
 	--stamp: var(--vermilion);
 	--classified: #8b2942;
 	--overlay: rgb(26 26 26 / 0.5);
-	--dur-fast: 150ms;
-	--dur-standard: 220ms;
-	--ease-enter: cubic-bezier(0, 0, 0.2, 1);
+	/* Three rhythms for every public surface. Older names point here. */
+	--dur-1: 150ms;
+	--dur-2: 250ms;
+	--dur-3: 400ms;
+	--ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+	--dur-fast: var(--dur-1);
+	--dur-standard: var(--dur-2);
+	--ease-enter: var(--ease-out);
 
 	--indigo: #5b7fb5;
 	--indigo-subtle: #edf1f8;
@@ -81,10 +86,10 @@
 	--shadow-md: 0 4px 6px -1px rgb(24 32 39 / 0.06), 0 2px 4px -2px rgb(24 32 39 / 0.04);
 	--shadow-lg: 0 10px 15px -3px rgb(24 32 39 / 0.07), 0 4px 6px -4px rgb(24 32 39 / 0.04);
 
-	/* Radius tiers — media cards use --radius-media */
-	--radius-sm: 10px;
+	/* Radius tiers — 8 / 12 / 20. Media cards use --radius-media. */
+	--radius-sm: 8px;
 	--radius-media: 12px;
-	--radius-md: 14px;
+	--radius-md: 12px;
 	--radius-lg: 20px;
 	--radius-xl: 20px;
 	--radius-full: 9999px;
@@ -97,11 +102,30 @@
 	/* Article measure 680–780px */
 	--measure: 42rem;
 	--measure-wide: 72ch;
-	--motion-fast: 180ms;
-	--motion-base: 280ms;
-	--motion-gate: 320ms;
-	--motion-slow: 700ms;
-	--ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+	--motion-fast: var(--dur-1);
+	--motion-base: var(--dur-2);
+	--motion-gate: var(--dur-3);
+	--motion-slow: var(--dur-3);
+	--ease-editorial: var(--ease-out);
+
+	/* Type scale. title-1 grows from 28/34 to 32/40 from 640px. */
+	--type-caption: 0.75rem;
+	--type-caption-leading: 1rem;
+	--type-footnote: 0.8125rem;
+	--type-footnote-leading: 1.125rem;
+	--type-subhead: 0.9375rem;
+	--type-subhead-leading: 1.375rem;
+	--type-body: 1.0625rem;
+	--type-body-leading: 1.6875rem;
+	--type-title-3: 1.25rem;
+	--type-title-3-leading: 1.75rem;
+	--type-title-2: 1.5rem;
+	--type-title-2-leading: 2rem;
+	--type-title-1: 1.75rem;
+	--type-title-1-leading: 2.125rem;
+	--type-display: clamp(2.75rem, 6vw, 4.5rem);
+	--type-display-leading: 1.05;
+	--site-header-height: 52px;
 }
 
 /* ── Active Recall study + presentation ──────────────────────────────────── */
@@ -1124,9 +1148,9 @@
 	--stamp: var(--vermilion);
 	--classified: var(--rose);
 	--overlay: rgb(0 0 0 / 0.65);
-	--dur-fast: 150ms;
-	--dur-standard: 220ms;
-	--ease-enter: cubic-bezier(0, 0, 0.2, 1);
+	--dur-fast: var(--dur-1);
+	--dur-standard: var(--dur-2);
+	--ease-enter: var(--ease-out);
 
 	--indigo: #7a9fd4;
 	--indigo-subtle: #1a2030;
@@ -1140,6 +1164,13 @@
 	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
 	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
 	--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+@media (min-width: 640px) {
+	:root {
+		--type-title-1: 2rem;
+		--type-title-1-leading: 2.5rem;
+	}
 }
 
 @media (min-width: 768px) {
@@ -1236,9 +1267,25 @@
 	--font-serif: var(--font-serif-display);
 	--font-display: var(--font-serif-display);
 	--font-mono: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-	--radius-sm: 10px;
-	--radius-md: 14px;
+	--radius-sm: 8px;
+	--radius-md: 12px;
 	--radius-lg: 20px;
+	--text-caption: var(--type-caption);
+	--text-caption--line-height: var(--type-caption-leading);
+	--text-footnote: var(--type-footnote);
+	--text-footnote--line-height: var(--type-footnote-leading);
+	--text-subhead: var(--type-subhead);
+	--text-subhead--line-height: var(--type-subhead-leading);
+	--text-body: var(--type-body);
+	--text-body--line-height: var(--type-body-leading);
+	--text-title-3: var(--type-title-3);
+	--text-title-3--line-height: var(--type-title-3-leading);
+	--text-title-2: var(--type-title-2);
+	--text-title-2--line-height: var(--type-title-2-leading);
+	--text-title-1: var(--type-title-1);
+	--text-title-1--line-height: var(--type-title-1-leading);
+	--text-display: var(--type-display);
+	--text-display--line-height: var(--type-display-leading);
 }
 
 /* ── Board-game visual language ─────────────────────────────────────────── */
@@ -3428,6 +3475,17 @@ body::before {
 
 .section-space-sm {
 	padding-block: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+/* Small uppercase label. One tracking, one size, Inter — not a monospace face. */
+.eyebrow {
+	font-family: var(--font-inter), sans-serif;
+	font-size: var(--type-caption);
+	line-height: var(--type-caption-leading);
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ink-secondary);
 }
 
 .type-wordmark {
