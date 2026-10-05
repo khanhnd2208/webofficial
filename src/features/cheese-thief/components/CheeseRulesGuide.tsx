@@ -41,6 +41,11 @@ const KNOW_KEYS: Record<FollowerKnowledge, string> = {
 };
 
 /** Plain-language rules for one table size, built from the same preset the game deals with. */
+function followerLineKey(count: number, customized: boolean): string {
+	if (count === 1) return customized ? 'followerCustomOne' : 'followerOne';
+	return customized ? 'followerCustom' : 'follower';
+}
+
 export function tableRuleLines(
 	t: TranslateFn,
 	rules: TableRules,
@@ -54,8 +59,9 @@ export function tableRuleLines(
 		const know = t(`cheese.guide.table.know.${rules.knowledge}`);
 		const customized =
 			rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount;
+		const followerKey = followerLineKey(rules.followerCount, customized);
 		lines.push(
-			t(customized ? 'cheese.guide.table.followerCustom' : 'cheese.guide.table.follower', {
+			t(`cheese.guide.table.${followerKey}`, {
 				count: rules.followerCount,
 				know,
 				default: rules.defaultFollowerCount,

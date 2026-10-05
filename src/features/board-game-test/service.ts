@@ -107,7 +107,6 @@ interface TestRoomDoc {
 		lockId?: string;
 		lockUntil?: Date;
 	};
-	nightNumber?: number;
 	hourSeconds?: number;
 	save(): Promise<unknown>;
 }

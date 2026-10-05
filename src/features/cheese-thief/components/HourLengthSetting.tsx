@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 
 import {
 	CHEESE_HOUR_LEVELS,
-	CHEESE_SLEEP_MAX_MS,
 	nightDurationMs,
 	nightTiming,
 } from '@/features/cheese-thief/config/cheeseThief';
 import { playRoundPreview } from '@/features/cheese-thief/lib/narration';
+import { roundPreviewCues } from '@/features/cheese-thief/lib/nightSchedule';
 import { prepareRoundPreview } from '@/features/cheese-thief/lib/nightTrack';
 import { useLocale, useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { cn } from '@/features/board-game-shared/lib/cn';
@@ -32,6 +32,7 @@ export default function HourLengthSetting({ hourSeconds, isHost, busy, onChange 
 	const [playing, setPlaying] = useState(false);
 	const timing = nightTiming(hourSeconds);
 	const selected = CHEESE_HOUR_LEVELS.find((level) => level.seconds === hourSeconds);
+	const previewMs = Math.round(roundPreviewCues(timing).seconds * 1000);
 
 	useEffect(() => {
 		if (isHost) void prepareRoundPreview(locale, hourSeconds);
@@ -83,10 +84,7 @@ export default function HourLengthSetting({ hourSeconds, isHost, busy, onChange 
 					onClick={() => {
 						setPlaying(true);
 						void playRoundPreview(locale, hourSeconds).finally(() =>
-							window.setTimeout(
-								() => setPlaying(false),
-								timing.hourMs + Math.min(CHEESE_SLEEP_MAX_MS, Math.floor(timing.hourMs / 2)),
-							),
+							window.setTimeout(() => setPlaying(false), previewMs),
 						);
 					}}
 				>

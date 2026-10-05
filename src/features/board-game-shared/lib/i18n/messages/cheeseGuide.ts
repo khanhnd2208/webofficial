@@ -21,7 +21,9 @@ export const cheeseGuideVi: MessageTree = {
 		noPeek: 'Bàn này không xem giờ của người khác.',
 		peek: 'Sleepyhead hoặc Scapegoat thức một mình được xem số của 1 người.',
 		noFollower: 'Không có Follower.',
+		followerOne: '{count} Follower · {know}',
 		follower: '{count} Follower · {know}',
+		followerCustomOne: '{count} Follower (mặc định {default}) · {know}',
 		followerCustom: '{count} Follower (mặc định {default}) · {know}',
 		know: {
 			blind: 'chỉ biết mình thuộc phe trộm',
@@ -124,7 +126,9 @@ export const cheeseGuideEn: MessageTree = {
 		noPeek: 'Nobody at this table learns another player’s number.',
 		peek: 'A Sleepyhead or Scapegoat who wakes alone may learn one player’s number.',
 		noFollower: 'There are no Followers.',
+		followerOne: '{count} Follower · {know}',
 		follower: '{count} Followers · {know}',
+		followerCustomOne: '{count} Follower (default {default}) · {know}',
 		followerCustom: '{count} Followers (default {default}) · {know}',
 		know: {
 			blind: 'only learns they joined the thief side',
