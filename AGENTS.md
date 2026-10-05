@@ -30,6 +30,15 @@ toiladuykhanh.com: personal site plus teaching platform. One Next.js 16 app, Mon
 - Branch prefix by tool: `claude/`, `codex/`, `cursor/`, or `agent/`, then a short kebab-case topic.
 - Remove the worktree after the branch merges: `git worktree remove ../wt-<topic>`.
 
+## Working with the user
+
+The user directs agents in plain language and does not read diffs. A short request like "do X" still means the full workflow below.
+
+- One task per branch and pull request. If a request mixes unrelated changes, say so and propose splitting them before you start.
+- Stay inside the task. Mention anything else you notice instead of fixing it.
+- When the work is done, stop before pushing and report: one line per commit, anything changed outside the requested task, the checks you ran or skipped, and a screenshot for any visible change.
+- Push, open the pull request, and merge only when the user asks for that step.
+
 ## Where code goes
 
 - Four areas plus shared code. `scripts/areas/areas.mjs` is the map and `docs/areas.md` explains it; ESLint rejects imports across areas.
