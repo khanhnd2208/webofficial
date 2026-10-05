@@ -4,6 +4,7 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readFileSync,
 	rmSync,
 	symlinkSync,
 	utimesSync,
@@ -188,4 +189,47 @@ test('works on the first release-based deploy, before current exists', () => {
 	assert.equal(result.status, 0, result.stderr);
 	assert.equal(present('r1'), true);
 	assert.equal(present('r2'), false);
+});
+
+test('candidate compilation cannot inherit stale CSS from a previous release', () => {
+	const current = release('old', 10);
+	const candidate = release('candidate', 0);
+	setCurrent('old');
+	const staleCss = join(current, '.next/cache/old.css');
+	writeFileSync(staleCss, '.old-header { height: 1000px }');
+	writeFileSync(join(candidate, '.next/cache/old.css'), 'stale candidate cache');
+	const source = readFileSync(new URL('./deploy-vps.sh', import.meta.url), 'utf8');
+	const build = source.match(
+		/^echo "Building candidate before any database migration"[\s\S]*?^test -s \.next\/BUILD_ID/m,
+	)?.[0];
+	assert.ok(build);
+	const result = spawnSync(
+		'bash',
+		[
+			'-c',
+			`set -euo pipefail
+npm() {
+	[[ "$*" == "run build" ]]
+	[[ ! -e .next/cache/old.css ]]
+	[[ "$NEXT_DEPLOYMENT_ID" == candidate ]]
+	printf 'new-build' > .next/BUILD_ID
+}
+${build}`,
+		],
+		{
+			cwd: candidate,
+			encoding: 'utf8',
+			env: {
+				...process.env,
+				RELEASE_DIR: candidate,
+				RELEASE_ID: 'candidate',
+				CURRENT_LINK: join(root, 'current'),
+				DEPLOY_ROOT: root,
+				PREVIOUS_TARGET: 'releases/old',
+			},
+		},
+	);
+	assert.equal(result.status, 0, result.stderr);
+	assert.equal(readFileSync(staleCss, 'utf8'), '.old-header { height: 1000px }');
+	assert.equal(readFileSync(join(candidate, '.next/BUILD_ID'), 'utf8'), 'new-build');
 });
