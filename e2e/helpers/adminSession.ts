@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'node:crypto';
 import { encode } from 'next-auth/jwt';
 import type { BrowserContext } from '@playwright/test';
 import { config } from 'dotenv';
@@ -25,7 +26,17 @@ async function addSession(
 			role,
 		},
 	});
+	// Google sign-in already creates this cookie; fixtures must model that browser state too.
+	const csrfToken = randomBytes(32).toString('hex');
+	const csrfHash = createHash('sha256').update(`${csrfToken}${secret}`).digest('hex');
 	await context.addCookies([
+		{
+			name: 'authjs.csrf-token',
+			value: `${csrfToken}|${csrfHash}`,
+			url: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
+			httpOnly: true,
+			sameSite: 'Lax',
+		},
 		{
 			name: COOKIE_NAME,
 			value,

@@ -11,6 +11,7 @@ boardgame:
   - src/features/werewolf/**
   - src/features/spy-fall/**
   - src/features/board-game-test/**
+  - src/features/board-game-bots/**
   - src/app/my-space/board-game/**
   - src/app/api/cheese-thief/**
   - src/app/api/ma-soi/**
@@ -45,6 +46,7 @@ classroom:
   - src/app/api/admin/teaching/**
   - src/app/api/admin/my-class/**
   - src/app/api/admin/active-recall/**
+  - src/app/api/active-recall/**
   - src/app/api/admin/myspace-tests/**
   - src/app/api/admin/myspace-questions/**
   - src/app/api/admin/myspace-subjects/**
@@ -57,6 +59,7 @@ classroom:
   - content/active-recall/**
   - e2e/active-recall-admin.spec.ts
   - e2e/active-recall.spec.ts
+  - e2e/active-recall-analytics.spec.ts
   - e2e/admin-workspace.spec.ts
   - e2e/teaching-admin-workspace.spec.ts
   - e2e/teaching-attendance-board.spec.ts

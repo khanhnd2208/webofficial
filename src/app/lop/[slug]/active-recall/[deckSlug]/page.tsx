@@ -33,6 +33,7 @@ export default async function PublicClassRecallDeckPage({
 	return (
 		<ActiveRecallPlayer
 			deck={deck}
+			classSlug={slug}
 			backHref={routes.teachingPublicClassTab(slug, 'recall')}
 			backLabel="Active Recall của lớp"
 			showViToggle

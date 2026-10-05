@@ -52,6 +52,29 @@ const course: LearnStudioCourse = {
 };
 
 describe('LearnStudio save button', () => {
+	it('asks before publishing unresolved images and can navigate to the affected section', async () => {
+		const draft = structuredClone(course);
+		draft.lessons[0].sections[0].markdown = '![x](hinh-1.png)';
+		render(<LearnStudio course={draft} initialSectionId="section-1" />);
+		fireEvent.click(screen.getByRole('radio', { name: 'Xuất bản' }));
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Vẫn xuất bản' })).toBeInTheDocument(),
+		);
+		expect(screen.getByText('Bài 1 · Mục 1: 1 ảnh chưa tải lên')).toBeInTheDocument();
+		expect(adminFetch).not.toHaveBeenCalled();
+		fireEvent.click(screen.getByRole('button', { name: 'Đi tới mục' }));
+		expect(screen.queryByRole('button', { name: 'Vẫn xuất bản' })).not.toBeInTheDocument();
+	});
+	it('requires explicit confirmation before hiding a published course', async () => {
+		render(
+			<LearnStudio course={{ ...course, status: 'PUBLISHED' }} initialSectionId="section-1" />,
+		);
+		fireEvent.click(screen.getByRole('radio', { name: 'Bản nháp' }));
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Chuyển về bản nháp' })).toBeInTheDocument(),
+		);
+		expect(adminFetch).not.toHaveBeenCalled();
+	});
 	beforeEach(() => {
 		adminFetch.mockReset();
 		adminFetch.mockResolvedValue(undefined);

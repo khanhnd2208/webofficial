@@ -1,3 +1,4 @@
+import { applyWerewolfCommand } from './werewolfCommands';
 import { randomInt, randomUUID } from 'node:crypto';
 import type { Model } from 'mongoose';
 import { AppError } from '@/lib/appError';
@@ -43,7 +44,6 @@ import {
 	setRoleCounts,
 	deal,
 	markViewed,
-	backToLobby as werewolfBackToLobby,
 	kickPlayer as kickWerewolf,
 } from '@/features/werewolf/services/werewolfService';
 import WerewolfRoom from '@/features/werewolf/models/WerewolfRoom';
@@ -602,8 +602,8 @@ async function executeCommand(
 		await startCheese(code, hostToken, seededRandom(room));
 		await applySelectedAdminRole(game, code, room);
 	}
-	if (command.kind === 'start' && game === 'ma-soi')
-		await deal(code, hostToken, seededRandom(room));
+	if (game === 'ma-soi')
+		await applyWerewolfCommand(code, hostToken, controlledToken, command, seededRandom(room));
 	if (command.kind === 'remember' && game === 'spy-fall') await memorizeSpy(code, controlledToken);
 	if (command.kind === 'remember' && game === 'cheese-thief')
 		await memorizeCheese(code, controlledToken, command.chosenHour);
@@ -611,10 +611,6 @@ async function executeCommand(
 		await (
 			await import('@/features/cheese-thief/services/cheeseThiefService')
 		).markSecretSeen(code, controlledToken);
-	if (command.kind === 'viewed' && game === 'ma-soi') await markViewed(code, controlledToken);
-	if (command.kind === 'lobby' && game === 'ma-soi') await werewolfBackToLobby(code, hostToken);
-	if (command.kind === 'roles' && game === 'ma-soi')
-		await setRoleCounts(code, hostToken, command.roleCounts);
 	if (command.kind === 'settings' && game === 'spy-fall')
 		await updateSpySettings(code, hostToken, { ...command.settings, isPublic: false } as Parameters<
 			typeof updateSpySettings

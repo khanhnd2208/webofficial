@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import LiveBotControls from '@/features/board-game-bots/LiveBotControls';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
 import {
@@ -335,6 +336,17 @@ export default function SpyGameClient({ code, initialName, adminTest = false }: 
 			<WordPeekContext.Provider value={canReviewRole ? openRole : null}>
 				<HostToolsContext.Provider value={hostTools}>
 					<div key={state.phase} className="flex flex-1 flex-col animate-fade-in">
+						{state.phase === 'lobby' && state.isHost && !adminTest ? (
+							<div className="mb-4">
+								<LiveBotControls
+									game="spy-fall"
+									code={state.code}
+									hostToken={playerToken}
+									full={state.players.length >= state.maxPlayers}
+									onChanged={refresh}
+								/>
+							</div>
+						) : null}
 						{state.phase === 'lobby' && (
 							<LobbyPhase
 								state={state}

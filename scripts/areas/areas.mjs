@@ -23,7 +23,14 @@
 export const AREAS = {
 	boardgame: {
 		title: 'Boardgame',
-		features: ['board-game-shared', 'cheese-thief', 'werewolf', 'spy-fall', 'board-game-test'],
+		features: [
+			'board-game-shared',
+			'cheese-thief',
+			'werewolf',
+			'spy-fall',
+			'board-game-test',
+			'board-game-bots',
+		],
 		components: [],
 		paths: [
 			'src/app/my-space/board-game',
@@ -62,6 +69,7 @@ export const AREAS = {
 			'src/app/api/admin/teaching',
 			'src/app/api/admin/my-class',
 			'src/app/api/admin/active-recall',
+			'src/app/api/active-recall',
 			'src/app/api/admin/myspace-tests',
 			'src/app/api/admin/myspace-questions',
 			'src/app/api/admin/myspace-subjects',
@@ -76,6 +84,7 @@ export const AREAS = {
 		e2e: [
 			'e2e/active-recall-admin.spec.ts',
 			'e2e/active-recall.spec.ts',
+			'e2e/active-recall-analytics.spec.ts',
 			'e2e/admin-workspace.spec.ts',
 			'e2e/teaching-admin-workspace.spec.ts',
 			'e2e/teaching-attendance-board.spec.ts',

@@ -11,6 +11,7 @@ import {
 	getSuggestedRoleSet,
 } from '@/features/werewolf/config/roles';
 import { dealRoles, validateRoleCounts } from '@/features/werewolf/lib/deal';
+import { getCardDeck, isCardDeck } from '@/features/werewolf/config/cardDecks';
 import { GameError } from '@/features/board-game-shared/lib/gameError';
 import { withVersionRetry } from '@/features/board-game-shared/lib/versionRetry';
 import dbConnect from '@/lib/dbConnect';
@@ -52,6 +53,7 @@ function assertHost(room: { hostToken: string }, token: string): void {
 
 function snapshotFromDoc(room: IWerewolfRoom): WerewolfRoomSnapshot {
 	return {
+		cardDeck: getCardDeck(room.cardDeck),
 		code: room.code,
 		hostToken: room.hostToken,
 		hostName: room.hostName,
@@ -98,9 +100,10 @@ export function toRoomStateDTO(
 			token: player.token,
 			name: player.name,
 			avatarSeed: player.avatarSeed,
-			connected: room.isTestRoom && player.isBot ? true : isConnected(player.lastSeenAt, at),
+			connected: player.isBot ? true : isConnected(player.lastSeenAt, at),
 			viewed: player.viewedAt != null,
 			left: player.leftAt != null,
+			...(player.isBot ? { isBot: true } : {}),
 		};
 		if (isHost) view.roleId = player.roleId;
 		return view;
@@ -112,6 +115,7 @@ export function toRoomStateDTO(
 		version: room.version,
 		dealRound: room.dealRound,
 		serverNow: at.toISOString(),
+		cardDeck: getCardDeck(room.cardDeck),
 		isHost,
 		hostName: room.hostName,
 		hostConnected: isConnected(room.hostLastSeenAt, at),
@@ -313,17 +317,24 @@ export async function getScopedState(code: string, token: string | null): Promis
 export async function setRoleCounts(
 	code: string,
 	hostToken: string,
-	counts: RoleCount[],
+	counts?: RoleCount[],
+	cardDeck?: unknown,
 ): Promise<RoomStateDTO> {
 	return mutateRoom(code, hostToken, (room) => {
 		assertHost(room, hostToken);
 		if (room.phase !== 'lobby') throw new GameError('NOT_LOBBY', 400);
-		for (const entry of counts) {
-			validateRoleCounts([entry], entry.count);
+		if (cardDeck !== undefined) {
+			if (!isCardDeck(cardDeck)) throw new GameError('INVALID_CARD_DECK', 400);
+			room.cardDeck = cardDeck;
 		}
-		room.roleCounts = counts
-			.filter((entry) => entry.count > 0)
-			.map((entry) => ({ roleId: entry.roleId, count: entry.count }));
+		if (counts !== undefined) {
+			for (const entry of counts) {
+				validateRoleCounts([entry], entry.count);
+			}
+			room.roleCounts = counts
+				.filter((entry) => entry.count > 0)
+				.map((entry) => ({ roleId: entry.roleId, count: entry.count }));
+		}
 	});
 }
 

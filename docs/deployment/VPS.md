@@ -124,8 +124,9 @@ The script performs these steps in order:
    build output, test output, and editor/temp files.
 4. Copies `.env.local` into the release with mode `0600`.
 5. Installs dependencies, runs `prisma generate`, and `next build` before any
-   migration. When `package-lock.json`, `package.json`, any `.npmrc`, and the
-   Node and npm versions all match the stored build cache, it copies
+   migration. When `package-lock.json`, `package.json`, any `.npmrc`, local dependency
+   sources under `scripts/vendor/`, and the Node and npm versions all match
+   the stored build cache, it copies
    `/var/www/webofficial/.build-cache/node_modules` instead of running `npm ci`.
    It also copies `.next/cache` from the current release so the compiler can
    reuse work. The copy stays inside the new release; mutable upload paths are
@@ -221,6 +222,8 @@ Do not delete old releases during the same change window. Prune only after a
 verified backup and a stable observation period.
 
 ## Nginx and TLS baseline
+
+Next.js redirects `www.toiladuykhanh.com` to `https://toiladuykhanh.com` with HTTP 308, preserving paths and queries so Google sessions use one host. This can move to a dedicated nginx redirect server later; keep TLS coverage for both hosts. Session cookies are host-only, so anyone signed in only on `www` signs in once more on the main host after this redirect; this was accepted rather than copying cookies across hosts.
 
 The active HTTPS server must include these proxy and security settings:
 

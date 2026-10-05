@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	afterSignOutPath,
 	CONTACT_CTA,
 	GATE_NAV_ITEMS,
 	getDesktopNavLinks,
@@ -15,6 +16,7 @@ import {
 	isInternalChromePath,
 	isIntroPath,
 	isPublished,
+	isSignInRequiredPath,
 	isTocPath,
 	PUBLIC_NAV_ITEMS,
 } from '@/config/navigation';
@@ -136,6 +138,33 @@ describe('content gates', () => {
 	});
 });
 
+describe('sign-in gates', () => {
+	it('knows every path that sends a signed-out visitor to the login page', () => {
+		for (const path of [
+			'/admin/inquiries',
+			'/messages',
+			'/tai-khoan/hoc',
+			'/vocabulary/abc',
+			'/my-space/teaching/123?tab=cp',
+			'/my-space/courses/itm',
+			'/my-space/my-class',
+			'/khoa-hoc/hrm?s=1',
+			'/my-space/board-game/test?game=spy-fall',
+			'/hoc/khoa-hoc/quan-tri/bai/bai-1',
+		]) {
+			expect(isSignInRequiredPath(path), path).toBe(true);
+		}
+		for (const path of ['/', '/muc-luc', '/lop/hrm-1', '/hoc/khoa-hoc/quan-tri', '/my-space']) {
+			expect(isSignInRequiredPath(path), path).toBe(false);
+		}
+	});
+
+	it('signs out onto Mục lục only when the page would demand sign-in again', () => {
+		expect(afterSignOutPath('/khoa-hoc/itm#bai-2')).toBe(routes.toc);
+		expect(afterSignOutPath('/gioi-thieu#dich-vu')).toBe('/gioi-thieu#dich-vu');
+	});
+});
+
 describe('redirect map', () => {
 	it('maps retired public UI to the new portfolio architecture', () => {
 		const bySource = Object.fromEntries(PUBLIC_REDIRECTS.map((r) => [r.source, r.destination]));
@@ -150,12 +179,12 @@ describe('redirect map', () => {
 		expect(bySource['/case-study']).toBe(routes.aboutProjects);
 		expect(bySource['/giang-day']).toBe(routes.aboutServices);
 		expect(bySource['/goc-cua-khanh']).toBe(routes.aboutProjects);
-		expect(bySource['/bai-viet']).toBe('/ghi-chep');
+		expect(bySource['/bai-viet']).toBe(routes.toc);
 		expect(bySource['/du-an/moonie-cafe-business-development']).toBe(
 			'/du-an/learning-at-moonie-cafe',
 		);
-		expect(bySource['/hoc']).toBe('/');
-		expect(bySource['/hoc/chuong-trinh']).toBe('/');
+		expect(bySource['/hoc']).toBe(routes.toc);
+		expect(bySource['/hoc/chuong-trinh']).toBe(routes.toc);
 	});
 });
 

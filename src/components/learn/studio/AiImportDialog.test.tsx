@@ -6,6 +6,9 @@ import type { LearnStudioLesson } from '@/features/learn/types';
 
 import AiImportDialog from './AiImportDialog';
 
+const { adminFetch } = vi.hoisted(() => ({ adminFetch: vi.fn() }));
+vi.mock('@/lib/admin/client', () => ({ adminFetch }));
+
 const lessons: LearnStudioLesson[] = [
 	{
 		id: 'lesson-1',
@@ -28,6 +31,41 @@ const QUIZ = [
 ].join('\n');
 
 describe('AiImportDialog', () => {
+	it('uploads matching images and preserves title and width in saved markdown', async () => {
+		adminFetch.mockResolvedValue({ url: '/uploads/hinh.webp' });
+		const onSave = vi.fn().mockResolvedValue(undefined);
+		render(
+			<AiImportDialog
+				kind="lesson"
+				lessons={lessons}
+				selectedLessonId="lesson-1"
+				onClose={vi.fn()}
+				onSave={onSave}
+			/>,
+		);
+		fireEvent.change(screen.getByRole('textbox', { name: 'Kết quả AI' }), {
+			target: { value: '# Bài\n\n## Mục\n\n![Sơ đồ](hinh-1.png#w=50 "Hình 1")' },
+		});
+		await vi.waitFor(() =>
+			expect(screen.getByLabelText('Chọn ảnh khớp tên file')).toBeInTheDocument(),
+		);
+		fireEvent.change(screen.getByLabelText('Chọn ảnh khớp tên file'), {
+			target: { files: [new File(['x'], 'HINH-1.jpg', { type: 'image/jpeg' })] },
+		});
+		await vi.waitFor(() =>
+			expect(screen.getByRole('textbox', { name: 'Kết quả AI' })).toHaveValue(
+				'# Bài\n\n## Mục\n\n![Sơ đồ](/uploads/hinh.webp#w=50 "Hình 1")',
+			),
+		);
+		fireEvent.click(screen.getByRole('button', { name: 'Lưu 1 mục' }));
+		await vi.waitFor(() =>
+			expect(onSave).toHaveBeenCalledWith(
+				expect.objectContaining({
+					markdown: expect.stringContaining('/uploads/hinh.webp#w=50 "Hình 1"'),
+				}),
+			),
+		);
+	});
 	it('copies the format prompt for the selected type', async () => {
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		vi.stubGlobal('navigator', { clipboard: { writeText } });

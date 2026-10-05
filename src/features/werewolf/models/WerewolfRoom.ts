@@ -1,6 +1,7 @@
 import mongoose, { Schema, type Model } from 'mongoose';
 
-import type { WerewolfPhase } from '@/features/werewolf/types';
+import type { CardDeck, WerewolfPhase } from '@/features/werewolf/types';
+import { CARD_DECKS, DEFAULT_CARD_DECK } from '@/features/werewolf/config/cardDecks';
 
 export interface IWerewolfPlayer {
 	token: string;
@@ -20,6 +21,7 @@ export interface IWerewolfRoleCount {
 }
 
 export interface IWerewolfRoom {
+	cardDeck?: CardDeck;
 	code: string;
 	hostToken: string;
 	hostName: string;
@@ -79,6 +81,7 @@ const WerewolfRoomSchema = new Schema<IWerewolfRoom>(
 		hostName: { type: String, required: true, trim: true },
 		hostLastSeenAt: { type: Date, required: true },
 		phase: { type: String, enum: ['lobby', 'dealt'], default: 'lobby' },
+		cardDeck: { type: String, enum: CARD_DECKS, default: DEFAULT_CARD_DECK },
 		version: { type: Number, default: 0 },
 		dealRound: { type: Number, default: 0 },
 		roleCounts: { type: [RoleCountSchema], default: [] },

@@ -6,6 +6,7 @@ import { ObjectId } from 'mongodb';
 import { mongoClientPromise } from '@/lib/mongodbClient';
 import { authConfig } from '@/lib/auth.config';
 import { describeAuthError, logAuth, newAuthCorrelationId } from '@/lib/auth/log';
+import { applyStoredRole, needsRoleRecheck, type StoredRoleLookup } from '@/lib/auth/roleFreshness';
 import { reconciledRole, roleForNewUser } from '@/lib/auth/roles';
 import { runSignInSideEffects } from '@/lib/auth/sideEffects';
 
@@ -87,6 +88,28 @@ async function persistRole(
 	}
 }
 
+async function lookupStoredRole(userId: string | undefined): Promise<StoredRoleLookup> {
+	if (!userId || !ObjectId.isValid(userId)) return { status: 'found', role: undefined };
+	try {
+		const client = await mongoClientPromise;
+		const dbUser = await client
+			.db()
+			.collection('users')
+			.findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+		return { status: 'found', role: typeof dbUser?.role === 'string' ? dbUser.role : undefined };
+	} catch {
+		logAuth({
+			event: 'auth.role_lookup',
+			stage: 'jwt',
+			ok: false,
+			correlationId: newAuthCorrelationId(),
+			provider: 'google',
+			code: 'ROLE_LOOKUP_FAILED',
+		});
+		return { status: 'failed' };
+	}
+}
+
 const nextAuth = NextAuth({
 	...authConfig,
 	adapter: withRoleOnCreate(MongoDBAdapter(mongoClientPromise)),
@@ -131,6 +154,7 @@ const nextAuth = NextAuth({
 
 				const nextRole = reconciledRole(user.email, persisted);
 				token.role = nextRole;
+				token.roleCheckedAt = Math.floor(Date.now() / 1000);
 				if (user.id && nextRole === 'admin' && persisted !== 'admin') {
 					await persistRole(user.id, 'admin', correlationId);
 				}
@@ -143,17 +167,9 @@ const nextAuth = NextAuth({
 						image: user.image,
 					});
 				}
-			} else if (trigger === 'update') {
-				try {
-					const client = await mongoClientPromise;
-					const dbUser = await client
-						.db()
-						.collection('users')
-						.findOne({ _id: new ObjectId(token.sub!) }, { projection: { role: 1 } });
-					if (dbUser?.role) token.role = dbUser.role === 'admin' ? 'admin' : 'student';
-				} catch {
-					// keep existing token.role
-				}
+			} else if (trigger === 'update' || needsRoleRecheck(token)) {
+				// Sessions renew for a year; a demoted admin must not keep admin until sign-out.
+				applyStoredRole(token, await lookupStoredRole(token.sub));
 			}
 			if (!token.role) token.role = 'student';
 			return token;

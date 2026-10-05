@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { AdminIcon, type AdminIconName } from '@/components/admin/AdminIcon';
@@ -11,6 +11,7 @@ import { McIcon, type McIconName } from '@/components/myclass/ui/McIcon';
 import { getAdminNavGroupsForPath, isAdminNavActive } from '@/config/adminNavigation';
 import { isArchivedAdminPath } from '@/config/moduleRegistry';
 import { routes } from '@/config/routes';
+import { signOutTo } from '@/lib/auth/signOutTo';
 
 const SIDEBAR_COOKIE = 'admin-sidebar-collapsed';
 
@@ -136,7 +137,7 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 							type="button"
 							aria-label="Đăng xuất"
 							title="Đăng xuất"
-							onClick={() => void signOut({ callbackUrl: routes.home })}
+							onClick={() => void signOutTo(routes.home)}
 							className={`${styles.navItem} w-full`}
 							data-collapsed={collapsed}
 						>

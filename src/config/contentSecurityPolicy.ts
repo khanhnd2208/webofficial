@@ -17,7 +17,7 @@ export function buildContentSecurityPolicy(environment: string | undefined): str
 			"img-src 'self' data: blob: https://*.googleusercontent.com https://toiladuykhanh.com https://www.toiladuykhanh.com",
 			"media-src 'self' blob:",
 			`font-src 'self' data: ${GOOGLE_FONTS_FILES_ORIGIN}`,
-			`connect-src 'self' ${ANALYTICS_ORIGIN}`,
+			`connect-src 'self' blob: ${ANALYTICS_ORIGIN}`,
 			`script-src ${scriptSources.join(' ')}`,
 			`style-src 'self' 'unsafe-inline' ${GOOGLE_FONTS_STYLES_ORIGIN}`,
 		].join('; ') + ';'

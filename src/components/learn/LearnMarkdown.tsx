@@ -25,6 +25,13 @@ function textOf(children: ReactNode): string {
 }
 
 const components: Components = {
+	p: ({ node, children }) => {
+		// LearnFigure is a block element: keep server HTML valid for hydration.
+		const hasImage = node?.children.some(
+			(child) => child.type === 'element' && child.tagName === 'img',
+		);
+		return hasImage ? <div>{children}</div> : <p>{children}</p>;
+	},
 	table: ({ node: _node, ...props }) => (
 		<div className="ln-table">
 			<table {...props} />
@@ -54,12 +61,29 @@ const components: Components = {
 };
 
 /** NDK markdown → reader prose. Raw HTML is never rendered. */
-export default function LearnMarkdown({ markdown }: { markdown: string }) {
+export default function LearnMarkdown({
+	markdown,
+	showMissingImages = false,
+}: {
+	markdown: string;
+	showMissingImages?: boolean;
+}) {
+	const renderComponents: Components = {
+		...components,
+		img: ({ src, alt, title }) => (
+			<LearnFigure
+				src={typeof src === 'string' ? src : undefined}
+				alt={alt}
+				title={title}
+				showMissingImages={showMissingImages}
+			/>
+		),
+	};
 	return (
 		<div className="ln-prose">
 			<ReactMarkdown
 				remarkPlugins={[remarkGfm, remarkBreaks, remarkLearnCallouts, remarkLearnFootnotes]}
-				components={components}
+				components={renderComponents}
 			>
 				{markdown}
 			</ReactMarkdown>

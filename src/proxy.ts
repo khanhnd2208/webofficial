@@ -31,16 +31,20 @@ export function proxy(request: NextRequest) {
 		});
 	}
 
-	const response = NextResponse.next();
 	if (
 		pathname.startsWith('/admin') ||
 		pathname.startsWith('/messages') ||
 		pathname.startsWith('/my-space/teaching') ||
-		pathname.startsWith('/my-space/courses')
+		pathname.startsWith('/my-space/courses') ||
+		pathname.startsWith('/khoa-hoc')
 	) {
-		response.headers.set('x-pathname', `${pathname}${request.nextUrl.search}`);
+		// Layouts read this to send a signed-out visitor back to the exact page (and the URL
+		// spelling) they opened. It has to be a request header for `headers()` to see it.
+		const requestHeaders = new Headers(request.headers);
+		requestHeaders.set('x-pathname', `${pathname}${request.nextUrl.search}`);
+		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
-	return response;
+	return NextResponse.next();
 }
 
 export const config = {
@@ -63,5 +67,7 @@ export const config = {
 		'/my-space/teaching/:path*',
 		'/my-space/courses',
 		'/my-space/courses/:path*',
+		'/khoa-hoc',
+		'/khoa-hoc/:path*',
 	],
 };

@@ -1,12 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import PrefsToggleGroup from '@/features/board-game-shared/components/i18n/PrefsToggleGroup';
+import GameMenuBar from '@/features/board-game-shared/components/GameMenuBar';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import PlayerNameInput from '@/features/board-game-shared/components/PlayerNameInput';
 import { Button, Card, Field } from '@/features/board-game-shared/components/ui';
@@ -96,24 +95,7 @@ export default function WerewolfMenuClient({ isAdmin = false }: { isAdmin?: bool
 	return (
 		<div className="game-theme game-theme-werewolf">
 			<div className="relative mx-auto max-w-3xl px-4 py-5 pb-[max(4rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8">
-				<div className="mb-5 flex items-center justify-between gap-4">
-					<Link
-						href={routes.boardGame}
-						className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted transition hover:text-foreground"
-					>
-						<GameIcon name="arrow-left" size={15} />
-						{t('mafia.menu.backToHub')}
-					</Link>
-					<PrefsToggleGroup />
-					{isAdmin ? (
-						<Link
-							href={`${routes.boardGameTest}?game=ma-soi`}
-							className="rounded-full border border-vermilion/40 px-3 py-2 text-xs text-ink"
-						>
-							{t('testRoom.title')}
-						</Link>
-					) : null}
-				</div>
+				<GameMenuBar backLabel={t('mafia.menu.backToHub')} testGame="ma-soi" isAdmin={isAdmin} />
 				<header className="game-theme-hero rounded-[1.25rem]">
 					<Image
 						src="/brand/myspace/ma-soi-menu-poster.webp"

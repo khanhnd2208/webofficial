@@ -11,7 +11,7 @@ import {
 	postWerewolfAction,
 } from '@/features/werewolf/lib/api';
 import { storePlayerToken } from '@/features/werewolf/lib/clientToken';
-import type { RoleCount, RoomStateDTO } from '@/features/werewolf/types';
+import type { CardDeck, RoleCount, RoomStateDTO } from '@/features/werewolf/types';
 import {
 	readAdminTestRoom,
 	sendAdminTestCommand,
@@ -125,6 +125,19 @@ export function useWerewolfRoom({
 					}),
 		[adminTest, code],
 	);
+	const setCardDeck = useCallback(
+		(cardDeck: CardDeck) =>
+			action(async () => {
+				if (adminTest) return sendAdminTestCommand('ma-soi', code, { kind: 'roles', cardDeck });
+				const data = await patchWerewolfAction<RoomStateDTO>(`/api/ma-soi/rooms/${code}/roles`, {
+					token: tokenRef.current,
+					cardDeck,
+				});
+				setState((prev) => (prev && data.version < prev.version ? prev : data));
+				return data;
+			}),
+		[action, adminTest, code],
+	);
 	const deal = useCallback(
 		() =>
 			action(() =>
@@ -181,7 +194,7 @@ export function useWerewolfRoom({
 		[adminTest, code],
 	);
 
-	const api = { join, setRoles, deal, lobby, viewed, kick, leave };
+	const api = { join, setRoles, setCardDeck, deal, lobby, viewed, kick, leave };
 
 	return {
 		state: testRoom ? (testRoom.state as RoomStateDTO) : state,
