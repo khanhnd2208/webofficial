@@ -152,15 +152,22 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 );
 
 /**
- * A two-night round left in Mongo cannot finish under one-night rules.
- * Strict mode would drop `nightNumber`, so catch it here, before casting.
- * The next load sends that room back to the lobby. Rooms expire after a day.
+ * A round saved before one wake-up number cannot finish under the current rules.
+ * Strict mode drops unknown fields on the way in, so this runs on the raw document.
+ * The service clears those fields when it sends the room back to the lobby; otherwise
+ * the next load would flag the room again.
  */
-CheeseRoomSchema.pre('init', function (raw: { phase?: string; nightNumber?: number }) {
-	if (raw.phase === 'cheese-check' || raw.nightNumber === 2) {
-		this.$locals.legacyTwoNight = true;
-	}
-});
+CheeseRoomSchema.pre(
+	'init',
+	function (raw: { phase?: string; nightNumber?: number; players?: { dice?: number[] }[] }) {
+		const midRound = raw.phase != null && raw.phase !== 'lobby';
+		const twoNumbers =
+			midRound && (raw.players ?? []).some((player) => (player.dice?.length ?? 0) > 1);
+		if (raw.phase === 'cheese-check' || raw.nightNumber === 2 || twoNumbers) {
+			this.$locals.legacyTwoNight = true;
+		}
+	},
+);
 
 CheeseRoomSchema.index({ isPublic: 1, phase: 1, updatedAt: -1 });
 CheeseRoomSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 });

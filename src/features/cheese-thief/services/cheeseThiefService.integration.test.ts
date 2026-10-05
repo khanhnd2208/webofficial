@@ -207,11 +207,37 @@ describe('Cheese Thief table', () => {
 		await startGame(second.code, second.host);
 		await CheeseThiefRoom.collection.updateOne(
 			{ code: second.code },
-			{ $set: { phase: 'night', nightNumber: 2 } },
+			{ $set: { phase: 'night', nightNumber: 2, theftNight: 1, mode: 'two-night' } },
 		);
 		const lobby = await getScopedState(second.code, second.host);
 		expect(lobby.phase).toBe('lobby');
 		expect(lobby.self?.role).toBeUndefined();
+		const cleared = await CheeseThiefRoom.collection.findOne({ code: second.code });
+		expect(cleared).not.toHaveProperty('nightNumber');
+		expect(cleared).not.toHaveProperty('theftNight');
+		expect(cleared).not.toHaveProperty('mode');
+
+		const dealt = await startGame(second.code, second.host);
+		expect(dealt.phase).toBe('deal');
+		expect((await getScopedState(second.code, second.host)).phase).toBe('deal');
+	});
+
+	it('sends a four-player round that still has two numbers back to the lobby once', async () => {
+		const table = await openTable(4);
+		await startGame(table.code, table.host);
+		await CheeseThiefRoom.collection.updateOne(
+			{ code: table.code },
+			{ $set: { 'players.$[].dice': [2, 5] } },
+		);
+
+		const lobby = await getScopedState(table.code, table.host);
+		expect(lobby.phase).toBe('lobby');
+		expect(lobby.self?.role).toBeUndefined();
+
+		const dealt = await startGame(table.code, table.host);
+		expect(dealt.phase).toBe('deal');
+		expect(dealt.self?.wakeHours).toHaveLength(1);
+		expect((await getScopedState(table.code, table.host)).phase).toBe('deal');
 	});
 
 	it('tells only the viewer that their secret picks are in', async () => {

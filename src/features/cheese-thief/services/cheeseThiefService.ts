@@ -187,6 +187,20 @@ function migrateHostIfNeeded(game: RoomDoc, at: Date): boolean {
 	return true;
 }
 
+/** Fields removed from the schema. `set` alone does not mark them, so save would leave them in Mongo. */
+const LEGACY_ROUND_FIELDS = ['nightNumber', 'theftNight', 'mode'] as const;
+
+function clearLegacyTwoNight(game: RoomDoc): boolean {
+	if (VALID_PHASES.has(game.phase) && game.$locals.legacyTwoNight !== true) return false;
+	resetToLobby(game);
+	for (const field of LEGACY_ROUND_FIELDS) {
+		game.set(field, undefined, { strict: false });
+		game.markModified(field);
+	}
+	game.$locals.legacyTwoNight = false;
+	return true;
+}
+
 function resetToLobby(game: RoomDoc): void {
 	game.phase = 'lobby';
 	game.nightStartedAt = undefined;
@@ -362,11 +376,7 @@ async function loadAndAdvance(
 		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 
 		let changed = false;
-		// cheese-check is no longer a phase. nightNumber 2 is flagged in the model init hook.
-		if (!VALID_PHASES.has(game.phase) || game.$locals.legacyTwoNight === true) {
-			resetToLobby(game);
-			changed = true;
-		}
+		if (clearLegacyTwoNight(game)) changed = true;
 
 		if (viewerToken) {
 			const player = findPlayer(game, viewerToken);
@@ -404,7 +414,7 @@ async function mutateGame(
 			...(expectedPhase ? { phase: expectedPhase } : {}),
 		})) as RoomDoc | null;
 		if (!game) throw new GameError('ROOM_OR_PHASE_INVALID', 404);
-		if (!VALID_PHASES.has(game.phase) || game.$locals.legacyTwoNight === true) resetToLobby(game);
+		clearLegacyTwoNight(game);
 		assertPlayer(game, playerToken);
 		mutator(game, at);
 		advanceClock(game, at);
