@@ -214,6 +214,20 @@
 		object-position: 62% bottom;
 	}
 }
+@media (max-width: 480px) {
+	.tile {
+		min-width: 0;
+		padding-inline: 4px;
+	}
+	.tileTitle {
+		font-size: var(--type-title-3);
+		line-height: var(--type-title-3-leading);
+		white-space: nowrap;
+	}
+	.arrow {
+		margin-left: 4px;
+	}
+}
 @media (prefers-reduced-motion: reduce) {
 	.tile,
 	.icon img,
