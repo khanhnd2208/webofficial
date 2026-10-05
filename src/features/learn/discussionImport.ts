@@ -124,6 +124,13 @@ export function parseDiscussionPaste(raw: string): DiscussionPasteResult {
 			draft?.stage === 'question' &&
 			draft.question[0]?.startsWith('## ') &&
 			draft.question.every((item) => !item.trim() || item.startsWith('## '));
+		if (question && question.n !== expected && atParagraphStart && !headingWaiting) {
+			warnings.push(`Câu ${question.n} không nối tiếp Câu ${expected}.`);
+			flush();
+			draft = { question: question.rest ? [question.rest] : [], answer: [], stage: 'question' };
+			expected = question.n + 1;
+			continue;
+		}
 		if (question && question.n === expected && (atParagraphStart || !draft || headingWaiting)) {
 			if (!headingWaiting) flush();
 			if (!draft) draft = { question: [], answer: [], stage: 'question' };

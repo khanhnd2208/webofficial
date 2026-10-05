@@ -1,19 +1,21 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AdminApiError } from '@/lib/admin/client';
 import type { LearnStudioCourse } from '@/features/learn/types';
 
 import LearnStudio from './LearnStudio';
 
-const { adminFetch } = vi.hoisted(() => ({ adminFetch: vi.fn() }));
+const { adminFetch, push } = vi.hoisted(() => ({ adminFetch: vi.fn(), push: vi.fn() }));
 
 vi.mock('next/navigation', () => ({
-	useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+	useRouter: () => ({ push, replace: vi.fn(), refresh: vi.fn() }),
 }));
 
-vi.mock('@/lib/admin/client', () => ({
-	adminFetch,
-}));
+vi.mock('@/lib/admin/client', async () => {
+	const actual = await vi.importActual<typeof import('@/lib/admin/client')>('@/lib/admin/client');
+	return { ...actual, adminFetch };
+});
 
 const course: LearnStudioCourse = {
 	id: 'course-1',
@@ -56,7 +58,7 @@ describe('LearnStudio save button', () => {
 		const draft = structuredClone(course);
 		draft.lessons[0].sections[0].markdown = '![x](hinh-1.png)';
 		render(<LearnStudio course={draft} initialSectionId="section-1" />);
-		fireEvent.click(screen.getByRole('radio', { name: 'Xuất bản' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xuất bản…' }));
 		await waitFor(() =>
 			expect(screen.getByRole('button', { name: 'Vẫn xuất bản' })).toBeInTheDocument(),
 		);
@@ -69,7 +71,8 @@ describe('LearnStudio save button', () => {
 		render(
 			<LearnStudio course={{ ...course, status: 'PUBLISHED' }} initialSectionId="section-1" />,
 		);
-		fireEvent.click(screen.getByRole('radio', { name: 'Bản nháp' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Thêm thao tác với khóa học' }));
+		fireEvent.click(screen.getByRole('menuitem', { name: 'Chuyển về bản nháp…' }));
 		await waitFor(() =>
 			expect(screen.getByRole('button', { name: 'Chuyển về bản nháp' })).toBeInTheDocument(),
 		);
@@ -78,6 +81,7 @@ describe('LearnStudio save button', () => {
 	beforeEach(() => {
 		adminFetch.mockReset();
 		adminFetch.mockResolvedValue(undefined);
+		push.mockReset();
 	});
 
 	it('shows Lưu after an edit, patches on click, then shows Đã lưu', async () => {
@@ -100,6 +104,72 @@ describe('LearnStudio save button', () => {
 			'/api/admin/learn/sections/section-1',
 			expect.objectContaining({ method: 'PATCH' }),
 		);
-		await waitFor(() => expect(screen.getByRole('button', { name: 'Đã lưu ✓' })).toBeDisabled());
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: /^Đã lưu · \d{2}:\d{2}$/ })).toBeDisabled(),
+		);
+	});
+
+	it('keeps a blank section title local, then restores it on blur', async () => {
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		const title = screen.getByRole('textbox', { name: 'Tên mục' });
+
+		fireEvent.change(title, { target: { value: '   ' } });
+
+		expect(screen.getByText('Tên mục không được để trống')).toBeInTheDocument();
+		expect(title).toHaveAttribute('aria-invalid', 'true');
+		expect(screen.getByRole('button', { name: 'Chưa lưu · 1 lỗi cần sửa' })).toHaveAttribute(
+			'title',
+			'Bấm để tới chỗ cần sửa',
+		);
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 1_000));
+		});
+		expect(adminFetch).not.toHaveBeenCalled();
+
+		fireEvent.blur(title);
+		expect(screen.getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục 1');
+		expect(screen.getByText('Đã giữ lại tên cũ')).toBeInTheDocument();
+	});
+
+	it('waits for a save before leaving, and asks again when the save fails', async () => {
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		fireEvent.click(screen.getByRole('link', { name: '← Về trang học' }));
+		await waitFor(() => expect(push).toHaveBeenCalledWith('/khoa-hoc/demo?s=section-1'));
+
+		push.mockReset();
+		adminFetch.mockRejectedValueOnce(new AdminApiError('Mất mạng', { status: 500 }));
+		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
+		fireEvent.change(screen.getByPlaceholderText(/Tiêu đề/), {
+			target: { value: 'Chưa lên máy chủ' },
+		});
+		fireEvent.click(screen.getByRole('link', { name: '← Về trang học' }));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Ở lại' })).toBeInTheDocument());
+		fireEvent.click(screen.getByRole('button', { name: 'Ở lại' }));
+		expect(push).not.toHaveBeenCalled();
+	});
+
+	it('hides a deleted section and restores it without sending DELETE', () => {
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
+		expect(screen.getByText('Đã xóa mục "Mục 1"')).toBeInTheDocument();
+		expect(screen.queryByRole('textbox', { name: 'Tên mục' })).not.toBeInTheDocument();
+		expect(adminFetch).not.toHaveBeenCalled();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Hoàn tác' }));
+		expect(screen.getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục 1');
+		expect(screen.queryByText('Đã xóa mục "Mục 1"')).not.toBeInTheDocument();
+		expect(adminFetch).not.toHaveBeenCalled();
+	});
+
+	it('opens the learner preview in a tab created during the click', async () => {
+		const popup = { closed: false, location: { href: '' } };
+		const open = vi.spyOn(window, 'open').mockReturnValue(popup as unknown as Window);
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+
+		fireEvent.click(screen.getByRole('button', { name: /Xem như học viên/ }));
+
+		expect(open).toHaveBeenCalledWith('', '_blank');
+		await waitFor(() => expect(popup.location.href).toBe('/khoa-hoc/demo?s=section-1'));
+		open.mockRestore();
 	});
 });

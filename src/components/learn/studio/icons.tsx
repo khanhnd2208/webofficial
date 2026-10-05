@@ -27,6 +27,17 @@ const ICON_MAP = {
 	close: 'close',
 	markdown: 'markdown',
 	image: 'image',
+	more: 'more_horiz',
+	chevron: 'chevron_right',
+	pencil: 'edit',
+	move: 'arrow_forward',
+	help: 'help',
+	reading: 'menu_book',
+	quiz: 'quiz',
+	practice: 'assignment',
+	discussion: 'forum',
+	collapse: 'unfold_less',
+	expand: 'unfold_more',
 } as const satisfies Record<string, IconName>;
 export type StudioIconName = keyof typeof ICON_MAP;
 export function StudioIcon({ name, size = 16 }: { name: StudioIconName; size?: number }) {

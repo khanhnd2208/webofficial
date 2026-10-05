@@ -11,21 +11,9 @@ import {
 
 import { StudioIcon } from './icons';
 import OptionListEditor from './OptionListEditor';
+import type { SectionPatch } from './sectionPatch';
 
-export type SectionPatch = Partial<
-	Pick<
-		LearnStudioSection,
-		| 'title'
-		| 'type'
-		| 'durationMinutes'
-		| 'summary'
-		| 'keyTakeaways'
-		| 'markdown'
-		| 'checkpoint'
-		| 'quiz'
-		| 'discussion'
-	>
->;
+export type { SectionPatch };
 
 function TakeawaysEditor({
 	items,
@@ -107,6 +95,7 @@ function CheckpointEditor({
 			<textarea
 				className="ln-input"
 				rows={2}
+				aria-label="Câu hỏi tự kiểm tra"
 				value={checkpoint.question}
 				placeholder="Câu hỏi tự kiểm tra"
 				onChange={(event) => onChange({ ...checkpoint, question: event.target.value })}
@@ -120,6 +109,7 @@ function CheckpointEditor({
 			<textarea
 				className="ln-input"
 				rows={2}
+				aria-label="Giải thích câu hỏi nhanh"
 				value={checkpoint.explanation}
 				placeholder="Giải thích (hiện sau khi chọn)"
 				onChange={(event) => onChange({ ...checkpoint, explanation: event.target.value })}
@@ -141,14 +131,16 @@ export default function StudioInspector({
 	onPatch,
 	onMove,
 	onDelete,
-	previewHref,
+	onHistory,
+	onPreview,
 }: {
 	section: LearnStudioSection;
 	lessons: LearnStudioLesson[];
 	onPatch: (patch: SectionPatch) => void;
 	onMove: (lessonId: string) => void;
 	onDelete: () => void;
-	previewHref: string;
+	onHistory: () => void;
+	onPreview: () => void;
 }) {
 	const autoMinutes = sectionMinutes({ ...section, durationMinutes: null });
 
@@ -228,10 +220,17 @@ export default function StudioInspector({
 				</select>
 			</div>
 
+			<div className="ln-inspector__group">
+				<p className="ln-inspector__label">Lịch sử</p>
+				<button type="button" className="ln-btn ln-btn--block" onClick={onHistory}>
+					Xem các phiên bản
+				</button>
+			</div>
+
 			<div className="ln-inspector__actions">
-				<a className="ln-btn ln-btn--block" href={previewHref} target="_blank" rel="noreferrer">
+				<button type="button" className="ln-btn ln-btn--block" onClick={onPreview}>
 					<StudioIcon name="eye" size={14} /> Xem như học viên
-				</a>
+				</button>
 				<button
 					type="button"
 					className="ln-btn ln-btn--block ln-btn--danger-quiet"

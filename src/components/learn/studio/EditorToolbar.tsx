@@ -11,12 +11,14 @@ function ToolButton({
 	label,
 	active,
 	disabled,
+	expanded,
 	onClick,
 }: {
 	icon: StudioIconName;
 	label: string;
 	active?: boolean;
 	disabled?: boolean;
+	expanded?: boolean;
 	onClick: () => void;
 }) {
 	return (
@@ -26,6 +28,8 @@ function ToolButton({
 			aria-label={label}
 			title={label}
 			aria-pressed={active}
+			aria-expanded={expanded}
+			aria-haspopup={expanded === undefined ? undefined : 'menu'}
 			disabled={disabled}
 			onMouseDown={(event) => event.preventDefault()}
 			onClick={onClick}
@@ -70,6 +74,7 @@ export default function EditorToolbar({
 	const [href, setHref] = useState('');
 	const linkRef = useRef<HTMLDivElement>(null);
 	const calloutRef = useRef<HTMLDivElement>(null);
+	const firstCalloutRef = useRef<HTMLButtonElement>(null);
 	useEffect(() => {
 		if (!linkOpen && !calloutOpen) return;
 		const onPointer = (event: PointerEvent) => {
@@ -82,7 +87,7 @@ export default function EditorToolbar({
 			event.preventDefault();
 			setLinkOpen(false);
 			setCalloutOpen(false);
-			editor.commands.focus();
+			editor.commands.focus(undefined, { scrollIntoView: false });
 		};
 		document.addEventListener('pointerdown', onPointer);
 		document.addEventListener('keydown', onKey);
@@ -91,6 +96,9 @@ export default function EditorToolbar({
 			document.removeEventListener('keydown', onKey);
 		};
 	}, [linkOpen, calloutOpen, editor]);
+	useEffect(() => {
+		if (calloutOpen) firstCalloutRef.current?.focus();
+	}, [calloutOpen]);
 
 	function setBlock(value: string) {
 		const chain = editor.chain().focus();
@@ -207,13 +215,15 @@ export default function EditorToolbar({
 					icon="callout"
 					label="Khối học thuật"
 					active={state.callout || calloutOpen}
+					expanded={calloutOpen}
 					onClick={() => setCalloutOpen((value) => !value)}
 				/>
 				{calloutOpen ? (
 					<div className="ln-popover" role="group" aria-label="Chọn khối học thuật">
-						{CALLOUT_KINDS.map((kind) => (
+						{CALLOUT_KINDS.map((kind, index) => (
 							<button
 								key={kind}
+								ref={index === 0 ? firstCalloutRef : undefined}
 								type="button"
 								className="ln-popover__item"
 								onMouseDown={(event) => event.preventDefault()}
