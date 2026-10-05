@@ -176,10 +176,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .next/cache
-          key: next-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'content/**', 'prisma/**', 'next.config.ts', 'tsconfig.json') }}
-          restore-keys: |
-            next-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
-            next-cache-${{ runner.os }}-
+          # Reusing a different source tree's cache can retain old compiled CSS after
+          # Teaching styles move into imports. Restore only an identical build input.
+          key: next-cache-v2-${{ runner.os }}-${{ hashFiles('package-lock.json', 'postcss.config.mjs', 'package.json', 'prisma.config.ts', '.github/workflows/ci.yml') }}-${{ hashFiles('src/**', 'content/**', 'prisma/**', 'next.config.ts', 'tsconfig.json') }}
 
       - name: Build
         run: npm run build
@@ -383,6 +382,7 @@ jobs:
               e2e/active-recall.spec.ts
               e2e/admin-workspace.spec.ts
               e2e/teaching-admin-workspace.spec.ts
+              e2e/teaching-surface.spec.ts
               e2e/teaching-attendance-board.spec.ts
               e2e/teaching-learning-experience-mobile.spec.ts
               e2e/teaching-learning-experience-multi-device.spec.ts
