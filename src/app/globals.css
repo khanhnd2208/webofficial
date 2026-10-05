@@ -73,6 +73,12 @@
 	--dur-fast: var(--dur-1);
 	--dur-standard: var(--dur-2);
 	--ease-enter: var(--ease-out);
+	--ease-in: cubic-bezier(0.4, 0, 1, 1);
+	/* Interface timing names used by this pass; they follow the three rhythms. */
+	--ui-duration-hover: var(--dur-1);
+	--ui-duration-control: var(--dur-2);
+	--ui-duration-page: var(--dur-3);
+	--ui-ease: var(--ease-out);
 
 	--indigo: #5b7fb5;
 	--indigo-subtle: #edf1f8;
