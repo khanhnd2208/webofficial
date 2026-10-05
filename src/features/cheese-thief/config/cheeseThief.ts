@@ -4,7 +4,7 @@
  */
 
 export const CHEESE_MIN_PLAYERS = 4;
-/** Room capacity. One night and two nights both seat up to 12. Four players stay on one night. */
+/** Room capacity. Every table plays one night, from 4 to 12 players. */
 export const CHEESE_MAX_PLAYERS = 12;
 /** Suggested size on the create-room form. The host can change it before the table fills. */
 export const CHEESE_TABLE_SIZE_DEFAULT = 6;
@@ -29,9 +29,13 @@ export const CHEESE_HOUR_SECONDS_DEFAULT = 10;
 /** Below 8s the recorded wake line (≈3.5s in English) would run into "go back to sleep". */
 export const CHEESE_HOUR_SECONDS_MIN = 8;
 export const CHEESE_HOUR_SECONDS_MAX = 30;
-export const CHEESE_HOUR_SECONDS_STEP = 1;
-/** One-tap choices in the lobby; the −/+ buttons reach any second in between. */
-export const CHEESE_HOUR_SECONDS_PRESETS = [8, 10, 12, 15, 20, 30] as const;
+/** One-tap lengths in the lobby. A saved room may still use any whole second from 8 to 30. */
+export const CHEESE_HOUR_LEVELS = [
+	{ id: 'fast', seconds: 8 },
+	{ id: 'medium', seconds: 10 },
+	{ id: 'slow', seconds: 15 },
+] as const;
+export const CHEESE_HOUR_SECONDS_PRESETS = CHEESE_HOUR_LEVELS.map((level) => level.seconds);
 export const CHEESE_HOUR_MS = CHEESE_HOUR_SECONDS_DEFAULT * 1000;
 /** "Go back to sleep" stays short; a longer hour buys more eyes-open time. */
 export const CHEESE_SLEEP_MAX_MS = 4_000;
@@ -42,35 +46,13 @@ export const CHEESE_SECRET_MAX_MS = 60_000;
 
 export const CHEESE_HOURS = [1, 2, 3, 4, 5, 6] as const;
 
-export const CHEESE_MODES = ['classic', 'two-night'] as const;
-export type CheeseMode = (typeof CHEESE_MODES)[number];
-export type NightNumber = 1 | 2;
-
-/** Two nights needs a second die, which collides with the 4-player double-die rule. */
-export const TWO_NIGHT_MIN_PLAYERS = 5;
-export const TWO_NIGHT_MAX_PLAYERS = 12;
-
-export function playerRangeFor(mode: CheeseMode): { min: number; max: number } {
-	return mode === 'two-night'
-		? { min: TWO_NIGHT_MIN_PLAYERS, max: TWO_NIGHT_MAX_PLAYERS }
-		: { min: CHEESE_MIN_PLAYERS, max: CHEESE_MAX_PLAYERS };
-}
-
-/** The Scapegoat (Fall Mouse) needs a table of 6 or more, in either mode. */
+/** The Scapegoat needs a table of 6 or more. */
 export const SCAPEGOAT_MIN_PLAYERS = 6;
-
-/**
- * Which nights an alone Sleepyhead may peek.
- * `any-played` is the cost of the Thief waiting: more people get a look.
- * Switch this one line if a real table feels too open.
- */
-export const TWO_NIGHT_PEEK_NIGHTS = 'any-played' as 'any-played' | 'theft-night';
 
 export const CHEESE_PHASES = [
 	'lobby',
 	'deal',
 	'night',
-	'cheese-check',
 	'secret',
 	'secret-result',
 	'day',
@@ -80,10 +62,6 @@ export const CHEESE_PHASES = [
 ] as const;
 
 export type CheesePhase = (typeof CHEESE_PHASES)[number];
-
-export function isCheeseMode(value: unknown): value is CheeseMode {
-	return value === 'classic' || value === 'two-night';
-}
 
 export type FollowerMode = 'none' | 'pick';
 
@@ -108,8 +86,7 @@ export type PlayerCount = 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export interface TablePreset {
 	playerCount: PlayerCount;
-	dicePerPlayer: 1 | 2;
-	/** A Sleepyhead (or Scapegoat) awake alone may look at one die. The Thief never can on one night. 4p cannot. */
+	/** A Sleepyhead (or Scapegoat) awake alone may look at one number. The Thief never can. 4 players cannot. */
 	peek: boolean;
 	followerMode: FollowerMode;
 	/** How many followers the Thief names when mode is `pick`. */
@@ -117,8 +94,6 @@ export interface TablePreset {
 	followersKnowThief: boolean;
 	thiefKnowsFollowers: boolean;
 	followersKnowEachOther: boolean;
-	/** Two nights only: a Thief who waited out an alone Night 1 may peek. Off from 7 players. */
-	thiefPeeksAfterWaiting: boolean;
 }
 
 /**
@@ -184,34 +159,30 @@ export function followersAreCustom(resolved: ResolvedFollowers): boolean {
 	);
 }
 
-export function isPlayerCountAllowed(playerCount: number, mode: CheeseMode): boolean {
-	const { min, max } = playerRangeFor(mode);
-	return Number.isInteger(playerCount) && playerCount >= min && playerCount <= max;
+export function isPlayerCountAllowed(playerCount: number): boolean {
+	return (
+		Number.isInteger(playerCount) &&
+		playerCount >= CHEESE_MIN_PLAYERS &&
+		playerCount <= CHEESE_MAX_PLAYERS
+	);
 }
 
-export function presetFor(
-	playerCount: number,
-	mode: CheeseMode = 'classic',
-	followers?: FollowerSettings,
-): TablePreset {
-	if (!isPlayerCountAllowed(playerCount, mode)) {
-		const { min, max } = playerRangeFor(mode);
+export function presetFor(playerCount: number, followers?: FollowerSettings): TablePreset {
+	if (!isPlayerCountAllowed(playerCount)) {
 		throw new Error(
-			`${mode === 'two-night' ? 'Two nights' : 'One night'} needs ${min}–${max} players, received ${playerCount}`,
+			`Cheese Thief needs ${CHEESE_MIN_PLAYERS}–${CHEESE_MAX_PLAYERS} players, received ${playerCount}`,
 		);
 	}
 	const resolved = resolveFollowers(playerCount, followers);
 	const count = resolved.count;
 	return {
 		playerCount: playerCount as PlayerCount,
-		dicePerPlayer: playerCount === 4 ? 2 : 1,
 		peek: playerCount > 4,
 		followerMode: count > 0 ? 'pick' : 'none',
 		followerPickCount: count,
 		followersKnowThief: resolved.knowledge === 'all',
 		thiefKnowsFollowers: count > 0,
 		followersKnowEachOther: count > 1,
-		thiefPeeksAfterWaiting: mode === 'two-night' && playerCount <= 6,
 	};
 }
 

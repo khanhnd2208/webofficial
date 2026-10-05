@@ -18,7 +18,6 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 	const thief = roster.find((row) => row.role === 'thief');
 	const followers = roster.filter((row) => row.follower);
 	const scapegoat = roster.find((row) => row.role === 'scapegoat');
-	const night2 = roster.some((row) => row.wakeHours2 !== null && row.wakeHours2 !== undefined);
 
 	return (
 		<div className="space-y-6 pb-6">
@@ -61,9 +60,7 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 
 			{state.theftHour !== undefined && (
 				<p className="text-center text-sm text-muted">
-					{state.mode === 'two-night' && state.theftNight
-						? t('cheese.reveal.theftNight', { night: state.theftNight, hour: state.theftHour })
-						: t('cheese.reveal.theft', { hour: state.theftHour })}
+					{t('cheese.reveal.theft', { hour: state.theftHour })}
 				</p>
 			)}
 
@@ -82,19 +79,9 @@ export default function RevealPhase({ state, busy, onAgain }: Props) {
 						)}
 						<dl className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3 text-sm">
 							<div>
-								<dt className="text-xs text-muted">
-									{t(night2 ? 'cheese.reveal.colNight1' : 'cheese.reveal.colHour')}
-								</dt>
+								<dt className="text-xs text-muted">{t('cheese.reveal.colHour')}</dt>
 								<dd className="mt-1 font-medium tabular-nums">{row.wakeHours.join(', ')}</dd>
 							</div>
-							{night2 && (
-								<div>
-									<dt className="text-xs text-muted">{t('cheese.reveal.colNight2')}</dt>
-									<dd className="mt-1 font-medium tabular-nums">
-										{(row.wakeHours2 ?? []).join(', ')}
-									</dd>
-								</div>
-							)}
 							<div>
 								<dt className="text-xs text-muted">{t('cheese.reveal.colHunch')}</dt>
 								<dd className="mt-1 font-medium">

@@ -7,7 +7,10 @@ import QRCode from 'react-qr-code';
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
 import { routes } from '@/config/routes';
 import { BASE_PATH } from '@/features/board-game-shared/lib/basePath';
-import HourLengthSetting from '@/features/cheese-thief/components/HourLengthSetting';
+import {
+	CHEESE_MIN_PLAYERS,
+	SCAPEGOAT_MIN_PLAYERS,
+} from '@/features/cheese-thief/config/cheeseThief';
 import TableSettings from '@/features/cheese-thief/components/TableSettings';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { Button } from '@/features/board-game-shared/components/ui';
@@ -37,7 +40,6 @@ export default function LobbyPhase({
 	const testRoom = useTestRoom();
 	const t = useT();
 	const [copyStatus, setCopyStatus] = useState<'copied' | 'failed' | null>(null);
-	const twoNight = state.mode === 'two-night';
 	const missing = state.maxPlayers - state.playerCount;
 	const ready = missing === 0;
 	const tableFollowers = { count: state.followers.count, knowledge: state.followers.knowledge };
@@ -126,54 +128,25 @@ export default function LobbyPhase({
 				))}
 			</ul>
 
-			<TableSettings state={state} busy={busy} onSettings={onSettings} />
-
-			<HourLengthSetting
-				hourSeconds={state.hourSeconds}
-				isHost={state.isHost}
+			<TableSettings
+				state={state}
 				busy={busy}
-				onChange={onHourSeconds}
+				onSettings={onSettings}
+				onHourSeconds={onHourSeconds}
 			/>
 
-			<details className="rounded-2xl border border-border bg-surface px-4 py-3">
-				<summary className="min-h-11 cursor-pointer py-2 font-medium text-foreground">
-					{t('cheese.lobby.rulesHint')}
-				</summary>
-				<div className="space-y-4 border-t border-border pt-4 text-sm leading-relaxed text-foreground/80">
-					<TableRulesCard
-						playerCount={state.maxPlayers}
-						mode={state.mode}
-						scapegoatEnabled={state.scapegoatEnabled}
-						followers={tableFollowers}
-					/>
-					<h2 className="font-mono text-xs tracking-[0.16em] text-muted uppercase">
-						{t('cheese.lobby.rulesTitle')}
-					</h2>
-					<p>{t('cheese.lobby.rule1')}</p>
-					{twoNight ? (
-						<>
-							<p>{t('cheese.lobby.twoNight.rule1')}</p>
-							<p>{t('cheese.lobby.twoNight.rule2')}</p>
-							<p>{t('cheese.lobby.twoNight.rule3')}</p>
-							<p>{t('cheese.lobby.twoNight.rule4')}</p>
-						</>
-					) : (
-						<>
-							<p>{t('cheese.lobby.rule2')}</p>
-							<p>{t('cheese.lobby.rule3')}</p>
-							<p>{t('cheese.lobby.rule4')}</p>
-						</>
-					)}
-					<p>{t('cheese.lobby.rule5')}</p>
-					<CheeseRulesButton
-						playerCount={state.maxPlayers}
-						mode={state.mode}
-						scapegoatEnabled={state.scapegoatEnabled}
-						followers={tableFollowers}
-						className="inline-flex min-h-11 items-center font-medium text-foreground underline underline-offset-4"
-					/>
-				</div>
-			</details>
+			<TableRulesCard
+				compact={state.isHost}
+				playerCount={state.maxPlayers}
+				scapegoatEnabled={state.scapegoatEnabled}
+				followers={tableFollowers}
+			/>
+			<CheeseRulesButton
+				playerCount={state.maxPlayers}
+				scapegoatEnabled={state.scapegoatEnabled}
+				followers={tableFollowers}
+				className="inline-flex min-h-11 items-center font-medium text-foreground underline underline-offset-4"
+			/>
 
 			{!state.isHost && (
 				<p className="text-center text-sm text-muted">{t('cheese.lobby.waitingHost')}</p>
@@ -181,11 +154,28 @@ export default function LobbyPhase({
 
 			{state.isHost && (
 				<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg backdrop-blur">
-					<div className="mx-auto max-w-md">
+					<div className="mx-auto flex max-w-md flex-col gap-2">
 						{missing > 0 && (
-							<p className="mb-2 text-center text-xs text-muted">
+							<p className="text-center text-xs text-muted">
 								{t('cheese.lobby.need', { count: missing })}
 							</p>
+						)}
+						{missing > 0 && state.playerCount >= CHEESE_MIN_PLAYERS && (
+							<Button
+								variant="secondary"
+								fullWidth
+								disabled={busy}
+								onClick={() =>
+									onSettings({
+										maxPlayers: state.playerCount,
+										...(state.playerCount < SCAPEGOAT_MIN_PLAYERS && state.scapegoatEnabled
+											? { scapegoat: false }
+											: {}),
+									})
+								}
+							>
+								{t('cheese.lobby.playWith', { count: state.playerCount })}
+							</Button>
 						)}
 						<Button fullWidth disabled={!ready || busy} loading={busy} onClick={onStart}>
 							{t('cheese.lobby.start')}

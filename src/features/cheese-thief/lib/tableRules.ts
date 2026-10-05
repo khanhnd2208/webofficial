@@ -6,7 +6,6 @@ import {
 	isPlayerCountAllowed,
 	presetFor,
 	resolveFollowers,
-	type CheeseMode,
 	type FollowerKnows,
 	type FollowerMode,
 	type FollowerSettings,
@@ -18,11 +17,7 @@ export type FollowerKnowledge = 'none' | 'blind' | 'pair' | 'followers-only' | '
 
 export interface TableRules {
 	playerCount: number;
-	mode: CheeseMode;
-	/** `two-pick`: 4 players, two dice each. `per-night`: one hour for each night. */
-	dice: 'two-pick' | 'one' | 'per-night';
 	peek: boolean;
-	thiefPeeksAfterWaiting: boolean;
 	followerMode: FollowerMode;
 	followerCount: number;
 	knowledge: FollowerKnowledge;
@@ -42,22 +37,18 @@ function knowledgeOf(count: number, knows: FollowerKnows): FollowerKnowledge {
 /** The how-to-play text reads from here, so it always matches the table the game deals. */
 export function tableRulesFor(
 	playerCount: number,
-	mode: CheeseMode,
 	followers?: FollowerSettings,
 ): TableRules | null {
-	if (!isPlayerCountAllowed(playerCount, mode)) return null;
+	if (!isPlayerCountAllowed(playerCount)) return null;
 	const resolved = resolveFollowers(playerCount, followers);
-	const preset = presetFor(playerCount, mode, followers);
+	const preset = presetFor(playerCount, followers);
 	return {
 		playerCount,
-		mode,
-		dice: preset.dicePerPlayer === 2 ? 'two-pick' : mode === 'two-night' ? 'per-night' : 'one',
 		peek: preset.peek,
-		thiefPeeksAfterWaiting: preset.thiefPeeksAfterWaiting,
 		followerMode: preset.followerMode,
 		followerCount: resolved.count,
 		knowledge: knowledgeOf(resolved.count, resolved.knowledge),
-		choiceCount: sharedChoiceCount(preset, mode),
+		choiceCount: sharedChoiceCount(preset),
 		scapegoatAllowed: playerCount >= SCAPEGOAT_MIN_PLAYERS,
 		followerCustomized: followersAreCustom(resolved),
 		defaultFollowerCount: resolved.defaultCount,
@@ -65,15 +56,12 @@ export function tableRulesFor(
 	};
 }
 
-/** One row per table size. One night is always available; two nights joins from 5 players. */
-export function allTableSizes(): { playerCount: number; modes: CheeseMode[]; rules: TableRules }[] {
-	const rows: { playerCount: number; modes: CheeseMode[]; rules: TableRules }[] = [];
+/** One row per table size, from 4 to 12. */
+export function allTableSizes(): { playerCount: number; rules: TableRules }[] {
+	const rows: { playerCount: number; rules: TableRules }[] = [];
 	for (let count = CHEESE_MIN_PLAYERS; count <= CHEESE_MAX_PLAYERS; count++) {
-		const modes = (['classic', 'two-night'] as const).filter((mode) =>
-			isPlayerCountAllowed(count, mode),
-		);
-		const rules = tableRulesFor(count, modes[0]!);
-		if (rules) rows.push({ playerCount: count, modes, rules });
+		const rules = tableRulesFor(count);
+		if (rules) rows.push({ playerCount: count, rules });
 	}
 	return rows;
 }

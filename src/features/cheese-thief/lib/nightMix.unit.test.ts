@@ -54,10 +54,8 @@ describe('night mix', () => {
 
 	it('names every clip kind', () => {
 		expect(
-			['night-start', 'wake-1', 'sleep', 'night-end', 'cheese-gone'].map((clip) =>
-				cueKind(clip as VoiceClip),
-			),
-		).toEqual(['intro', 'wake', 'sleep', 'outro', 'single']);
+			['night-start', 'wake-1', 'sleep', 'night-end'].map((clip) => cueKind(clip as VoiceClip)),
+		).toEqual(['intro', 'wake', 'sleep', 'outro']);
 	});
 });
 

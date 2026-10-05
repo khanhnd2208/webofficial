@@ -12,68 +12,59 @@ function leafKeys(tree: MessageTree, prefix = ''): string[] {
 
 describe('how-to-play table rules', () => {
 	it('matches the default follower table at each size', () => {
-		expect(tableRulesFor(4, 'classic')).toMatchObject({
-			dice: 'two-pick',
+		expect(tableRulesFor(4)).toMatchObject({
 			peek: false,
 			knowledge: 'none',
 			choiceCount: 1,
 			followerCustomized: false,
+			followerCount: 0,
 		});
-		expect(tableRulesFor(5, 'classic')).toMatchObject({
-			dice: 'one',
+		expect(tableRulesFor(5)).toMatchObject({
 			peek: true,
 			knowledge: 'pair',
 			choiceCount: 1,
 			followerCount: 1,
 		});
-		expect(tableRulesFor(6, 'classic')).toMatchObject({
+		expect(tableRulesFor(6)).toMatchObject({
 			followerCount: 1,
 			knowledge: 'pair',
 			scapegoatAllowed: true,
 		});
-		expect(tableRulesFor(7, 'classic')).toMatchObject({
+		expect(tableRulesFor(7)).toMatchObject({
 			followerCount: 2,
 			knowledge: 'followers-only',
 			choiceCount: 2,
 		});
-		expect(tableRulesFor(8, 'classic')).toMatchObject({
+		expect(tableRulesFor(8)).toMatchObject({
 			followerCount: 2,
 			knowledge: 'all',
 			choiceCount: 2,
 		});
-		expect(tableRulesFor(9, 'classic')).toMatchObject({
+		expect(tableRulesFor(9)).toMatchObject({
 			followerCount: 2,
 			knowledge: 'all',
 			maxFollowers: 3,
 		});
 	});
 
-	it('reports sizes a mode cannot play as null', () => {
-		expect(tableRulesFor(4, 'two-night')).toBeNull();
-		expect(tableRulesFor(13, 'two-night')).toBeNull();
-		expect(tableRulesFor(9, 'classic')).toMatchObject({ followerCount: 2 });
-		expect(tableRulesFor(12, 'classic')).toMatchObject({
-			dice: 'one',
+	it('rejects a size the table cannot play', () => {
+		expect(tableRulesFor(3)).toBeNull();
+		expect(tableRulesFor(13)).toBeNull();
+		expect(tableRulesFor(12)).toMatchObject({
 			followerCount: 3,
 			choiceCount: 3,
 		});
-		expect(tableRulesFor(12, 'two-night')).toMatchObject({
-			dice: 'per-night',
-			followerCount: 3,
-			choiceCount: 3,
-		});
-		expect(tableRulesFor(6, 'two-night')).toMatchObject({ thiefPeeksAfterWaiting: true });
 	});
 
 	it('marks a host override, including one follower who does not learn the thief', () => {
-		expect(tableRulesFor(6, 'classic', { count: 1, knowledge: 'team' })).toMatchObject({
+		expect(tableRulesFor(6, { count: 1, knowledge: 'team' })).toMatchObject({
 			knowledge: 'blind',
 			followerCustomized: true,
 			defaultFollowerCount: 1,
 			maxFollowers: 1,
 			choiceCount: 1,
 		});
-		expect(tableRulesFor(8, 'classic', { count: 0 })).toMatchObject({
+		expect(tableRulesFor(8, { count: 0 })).toMatchObject({
 			knowledge: 'none',
 			followerCustomized: true,
 			defaultFollowerCount: 2,
@@ -84,9 +75,8 @@ describe('how-to-play table rules', () => {
 	it('lists every size from 4 to 12 once', () => {
 		const rows = allTableSizes();
 		expect(rows.map((row) => row.playerCount)).toEqual([4, 5, 6, 7, 8, 9, 10, 11, 12]);
-		expect(rows.find((row) => row.playerCount === 4)?.modes).toEqual(['classic']);
-		expect(rows.find((row) => row.playerCount === 5)?.modes).toEqual(['classic', 'two-night']);
-		expect(rows.find((row) => row.playerCount === 12)?.modes).toEqual(['classic', 'two-night']);
+		expect(rows.find((row) => row.playerCount === 4)?.rules.peek).toBe(false);
+		expect(rows.find((row) => row.playerCount === 4)?.rules.followerCount).toBe(0);
 	});
 
 	it('has every guide line in both languages', () => {

@@ -16,7 +16,6 @@ import {
 } from '@/features/cheese-thief/lib/narration';
 import { narrationKey, segmentAt } from '@/features/cheese-thief/lib/nightSchedule';
 import { prepareNightTrack, type NightTrackSpec } from '@/features/cheese-thief/lib/nightTrack';
-import type { CheeseMode, NightNumber } from '@/features/cheese-thief/config/cheeseThief';
 import { useLocale, useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
@@ -24,9 +23,7 @@ interface Props {
 	nightStartedAt: string;
 	serverNow: string;
 	fetchedAt: number;
-	mode: CheeseMode;
 	hourSeconds: number;
-	night: NightNumber;
 }
 
 /**
@@ -39,9 +36,7 @@ export default function NightNarrator({
 	nightStartedAt,
 	serverNow,
 	fetchedAt,
-	mode,
 	hourSeconds,
-	night,
 }: Props) {
 	const testRoom = useTestRoom();
 	const paused = testRoom ? !testRoom.running : false;
@@ -54,10 +49,7 @@ export default function NightNarrator({
 	const [needsTap, setNeedsTap] = useState(false);
 	const [voice, setVoice] = useState<Voice>('pending');
 	const voiceRef = useRef<Voice>('pending');
-	const spec = useMemo<NightTrackSpec>(
-		() => ({ locale, mode, night, hourSeconds }),
-		[locale, mode, night, hourSeconds],
-	);
+	const spec = useMemo<NightTrackSpec>(() => ({ locale, hourSeconds }), [locale, hourSeconds]);
 	const started = new Date(nightStartedAt).getTime();
 
 	function changeVoice(next: Voice) {
@@ -113,7 +105,7 @@ export default function NightNarrator({
 				setLine('');
 				return;
 			}
-			const spokenKey = narrationKey(segment, mode, night);
+			const spokenKey = narrationKey(segment);
 			const cueKey =
 				segment.kind === 'hour-wake' || segment.kind === 'hour-sleep'
 					? `${spokenKey}-${segment.hour}`
@@ -149,7 +141,7 @@ export default function NightNarrator({
 			window.clearTimeout(timer);
 			window.speechSynthesis?.removeEventListener('voiceschanged', onVoices);
 		};
-	}, [started, serverNow, fetchedAt, locale, t, mode, hourSeconds, night, spec, paused]);
+	}, [started, serverNow, fetchedAt, locale, t, hourSeconds, spec, paused]);
 
 	const showTap = !paused && (voice === 'blocked' || (voice === 'speech' && needsTap));
 
@@ -158,10 +150,7 @@ export default function NightNarrator({
 			<p className="font-mono text-xs tracking-[0.22em] text-game-bronze uppercase">
 				{t('cheese.night.hostHint')}
 			</p>
-			<CheeseThiefArt
-				scene={mode === 'two-night' && night === 2 ? 'two-moons' : 'moon'}
-				size={112}
-			/>
+			<CheeseThiefArt scene="moon" size={112} />
 			<p className="max-w-md font-display text-4xl leading-tight font-medium sm:text-5xl">{line}</p>
 			{showTap && (
 				<button

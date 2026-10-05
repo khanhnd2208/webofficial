@@ -24,7 +24,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 	if (seen) {
 		return (
 			<div className="flex min-h-[70svh] items-center justify-center">
-				<PutPhoneDown />
+				<PutPhoneDown hint={t('cheese.result.waiting')} />
 			</div>
 		);
 	}
@@ -40,16 +40,10 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 					{empty && <p className="text-lg leading-relaxed">{t('cheese.result.nothing')}</p>}
 					{card?.peek && (
 						<p className="text-lg leading-relaxed">
-							{card.peek.night
-								? t('cheese.result.peekNight', {
-										night: card.peek.night,
-										name: card.peek.name,
-										hours: card.peek.hours.join(', '),
-									})
-								: t('cheese.result.peek', {
-										name: card.peek.name,
-										hours: card.peek.hours.join(', '),
-									})}
+							{t('cheese.result.peek', {
+								name: card.peek.name,
+								hours: card.peek.hours.join(', '),
+							})}
 						</p>
 					)}
 					{card?.allies && (

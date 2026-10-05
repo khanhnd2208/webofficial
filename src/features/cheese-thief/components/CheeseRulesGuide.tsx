@@ -3,8 +3,8 @@
 import { useState } from 'react';
 
 import {
-	playerRangeFor,
-	type CheeseMode,
+	CHEESE_MAX_PLAYERS,
+	CHEESE_MIN_PLAYERS,
 	type FollowerSettings,
 } from '@/features/cheese-thief/config/cheeseThief';
 import {
@@ -21,18 +21,17 @@ type TranslateFn = ReturnType<typeof useT>;
 
 interface TableProps {
 	playerCount?: number;
-	mode?: CheeseMode;
 	scapegoatEnabled?: boolean;
 	followers?: FollowerSettings;
+	/** Host lobby skips the follower line, which the settings already show. */
+	compact?: boolean;
 }
 
-const SECTIONS: { id: string; bullets: number }[] = [
-	{ id: 'setup', bullets: 6 },
-	{ id: 'night', bullets: 7 },
-	{ id: 'secret', bullets: 5 },
-	{ id: 'day', bullets: 4 },
-	{ id: 'vote', bullets: 3 },
-	{ id: 'win', bullets: 3 },
+const PLAY: { id: string; bullets: number }[] = [
+	{ id: 'setup', bullets: 3 },
+	{ id: 'night', bullets: 4 },
+	{ id: 'secret', bullets: 3 },
+	{ id: 'talk', bullets: 4 },
 ];
 
 const KNOW_KEYS: Record<FollowerKnowledge, string> = {
@@ -43,44 +42,36 @@ const KNOW_KEYS: Record<FollowerKnowledge, string> = {
 	all: 'knowAll',
 };
 
-function modeName(t: TranslateFn, mode: CheeseMode): string {
-	return mode === 'two-night' ? t('cheese.lobby.mode.twoNight') : t('cheese.lobby.mode.classic');
+/** Plain-language rules for one table size, built from the same preset the game deals with. */
+function followerLineKey(count: number, customized: boolean): string {
+	if (count === 1) return customized ? 'followerCustomOne' : 'followerOne';
+	return customized ? 'followerCustom' : 'follower';
 }
 
-/** Plain-language rules for one table size, built from the same preset the game deals with. */
 export function tableRuleLines(
 	t: TranslateFn,
 	rules: TableRules,
 	scapegoatEnabled: boolean,
+	compact = false,
 ): string[] {
-	const lines: string[] = [];
-	lines.push(
-		t(
-			rules.dice === 'two-pick'
-				? 'cheese.guide.table.twoPick'
-				: rules.dice === 'per-night'
-					? 'cheese.guide.table.perNight'
-					: 'cheese.guide.table.one',
-		),
-	);
+	const lines = [t('cheese.guide.table.one')];
 	lines.push(t(rules.peek ? 'cheese.guide.table.peek' : 'cheese.guide.table.noPeek'));
-	if (rules.thiefPeeksAfterWaiting) lines.push(t('cheese.guide.table.thiefPeek'));
-	if (rules.followerMode === 'none') lines.push(t('cheese.guide.table.noFollower'));
-	if (rules.followerMode === 'pick') {
-		lines.push(t('cheese.guide.table.pick', { count: rules.followerCount }));
-		if (rules.knowledge === 'blind') lines.push(t('cheese.guide.table.knowBlind'));
-		if (rules.knowledge === 'pair') lines.push(t('cheese.guide.table.knowPair'));
-		if (rules.knowledge === 'followers-only') lines.push(t('cheese.guide.table.knowFollowersOnly'));
-		if (rules.knowledge === 'all') lines.push(t('cheese.guide.table.knowAll'));
-		lines.push(t('cheese.guide.table.witnessOnlyKnows'));
-	}
-	if (rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount) {
-		lines.push(
-			t('cheese.guide.table.custom', {
-				count: rules.followerCount,
-				default: rules.defaultFollowerCount,
-			}),
-		);
+	if (!compact) {
+		if (rules.followerMode === 'none') {
+			lines.push(t('cheese.guide.table.noFollower'));
+		} else {
+			const know = t(`cheese.guide.table.know.${rules.knowledge}`);
+			const customized =
+				rules.followerCustomized && rules.followerCount !== rules.defaultFollowerCount;
+			const followerKey = followerLineKey(rules.followerCount, customized);
+			lines.push(
+				t(`cheese.guide.table.${followerKey}`, {
+					count: rules.followerCount,
+					know,
+					default: rules.defaultFollowerCount,
+				}),
+			);
+		}
 	}
 	lines.push(t('cheese.guide.table.picks', { count: rules.choiceCount }));
 	if (rules.scapegoatAllowed) {
@@ -95,15 +86,14 @@ export function tableRuleLines(
 
 export function TableRulesCard({
 	playerCount,
-	mode = 'classic',
 	scapegoatEnabled = false,
 	followers,
+	compact = false,
 	className,
 }: TableProps & { className?: string }) {
 	const t = useT();
 	if (playerCount === undefined) return null;
-	const rules = tableRulesFor(playerCount, mode, followers);
-	const { min, max } = playerRangeFor(mode);
+	const rules = tableRulesFor(playerCount, followers);
 
 	return (
 		<section className={cn('rounded-2xl border border-border bg-surface px-4 py-3', className)}>
@@ -112,18 +102,22 @@ export function TableRulesCard({
 					{t('cheese.guide.yourTable')}
 				</h3>
 				<span className="text-xs text-muted">
-					{t('cheese.guide.yourTableMeta', { count: playerCount, mode: modeName(t, mode) })}
+					{t('cheese.guide.yourTableMeta', { count: playerCount })}
 				</span>
 			</div>
 			{rules ? (
 				<ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed">
-					{tableRuleLines(t, rules, scapegoatEnabled).map((line) => (
+					{tableRuleLines(t, rules, scapegoatEnabled, compact).map((line) => (
 						<li key={line}>{line}</li>
 					))}
 				</ul>
 			) : (
 				<p className="mt-2 text-sm leading-relaxed text-muted">
-					{t('cheese.guide.notAllowed', { mode: modeName(t, mode), min, max, count: playerCount })}
+					{t('cheese.guide.notAllowed', {
+						min: CHEESE_MIN_PLAYERS,
+						max: CHEESE_MAX_PLAYERS,
+						count: playerCount,
+					})}
 				</p>
 			)}
 		</section>
@@ -141,14 +135,13 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 					<thead className="font-mono text-xs tracking-[0.12em] text-muted uppercase">
 						<tr>
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colPlayers')}</th>
-							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colMode')}</th>
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colFollowers')}</th>
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.maxFollowers')}</th>
 							<th className="py-2 font-normal">{t('cheese.guide.overview.colKnow')}</th>
 						</tr>
 					</thead>
 					<tbody>
-						{rows.map(({ playerCount: count, modes, rules }) => (
+						{rows.map(({ playerCount: count, rules }) => (
 							<tr
 								key={count}
 								className={cn(
@@ -157,11 +150,6 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 								)}
 							>
 								<td className="py-2 pr-2 tabular-nums">{count}</td>
-								<td className="py-2 pr-2">
-									{modes.length === 2
-										? t('cheese.guide.overview.modeBoth')
-										: t('cheese.guide.overview.modeOne')}
-								</td>
 								<td className="py-2 pr-2">
 									{rules.followerCount === 0
 										? t('cheese.guide.overview.followersNone')
@@ -224,40 +212,24 @@ function QuickStart() {
 	);
 }
 
-export default function CheeseRulesGuide({
-	playerCount,
-	mode,
-	scapegoatEnabled,
-	followers,
-}: TableProps) {
+export default function CheeseRulesGuide({ playerCount, scapegoatEnabled, followers }: TableProps) {
 	const t = useT();
+	const scapegoatOpen = Boolean(scapegoatEnabled) && (playerCount ?? 0) >= 6;
 	return (
 		<div className="space-y-6">
 			<p className="text-sm leading-relaxed text-muted">{t('cheese.guide.intro')}</p>
 			<QuickStart />
-			<GuideSection id="goal" bullets={5} />
+			<GuideSection id="roles" bullets={3} />
 			<TableRulesCard
 				playerCount={playerCount}
-				mode={mode}
 				scapegoatEnabled={scapegoatEnabled}
 				followers={followers}
 			/>
-			{SECTIONS.map((section) => (
+			{PLAY.map((section) => (
 				<GuideSection key={section.id} id={section.id} bullets={section.bullets} />
 			))}
-			{mode === 'two-night' ? (
-				<GuideSection id="twoNight" bullets={6} />
-			) : (
-				<details className="rounded-2xl border border-border px-4 py-3">
-					<summary className="cursor-pointer font-display text-lg font-medium">
-						{t('cheese.guide.sections.twoNight.title')}
-					</summary>
-					<div className="mt-4">
-						<GuideSection id="twoNight" bullets={6} showTitle={false} />
-					</div>
-				</details>
-			)}
-			{scapegoatEnabled && (playerCount ?? 0) >= 6 ? (
+			<GuideSection id="win" bullets={3} />
+			{scapegoatOpen ? (
 				<GuideSection id="scapegoat" bullets={3} />
 			) : (
 				<details className="rounded-2xl border border-border px-4 py-3">

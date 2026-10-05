@@ -155,8 +155,7 @@ async function stepCheese(room: RawRoom, bots: BotSeat[], random: () => number):
 	if (phase === 'deal') {
 		const bot = bots.find((entry) => !entry.hasMemorizedRole);
 		if (!bot) return false;
-		const hour = bot.dice?.length === 2 ? pick(bot.dice, random) : undefined;
-		await cheese.confirmMemorized(code, bot.token, hour);
+		await cheese.confirmMemorized(code, bot.token);
 		return true;
 	}
 	if (phase === 'secret') {

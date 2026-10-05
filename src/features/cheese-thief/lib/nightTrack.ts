@@ -3,12 +3,7 @@
  * A plain <audio> element keeps playing with the screen locked and (on iPhone) with the
  * silent switch on — speech synthesis and Web Audio do neither.
  */
-import {
-	nightDurationMs,
-	nightTiming,
-	type CheeseMode,
-	type NightNumber,
-} from '@/features/cheese-thief/config/cheeseThief';
+import { nightDurationMs, nightTiming } from '@/features/cheese-thief/config/cheeseThief';
 import { MIX_RATE, encodeWav, mixNight } from '@/features/cheese-thief/lib/nightMix';
 import {
 	nightCues,
@@ -22,8 +17,6 @@ type Locale = 'vi' | 'en';
 
 export interface NightTrackSpec {
 	locale: Locale;
-	mode: CheeseMode;
-	night: NightNumber;
 	hourSeconds: number;
 }
 
@@ -36,7 +29,7 @@ export function clipUrl(locale: Locale, clip: VoiceClip): string {
 }
 
 export function nightTrackKey(spec: NightTrackSpec): string {
-	return `night|${spec.locale}|${spec.mode}|${spec.night}|${spec.hourSeconds}`;
+	return `night|${spec.locale}|${spec.hourSeconds}`;
 }
 
 function previewKey(locale: Locale, hourSeconds: number): string {
@@ -59,11 +52,7 @@ export function readyRoundPreview(locale: Locale, hourSeconds: number): string |
 /** Builds once per spec. Resolves to null when this browser cannot build it; the host then falls back to speech. */
 export function prepareNightTrack(spec: NightTrackSpec): Promise<string | null> {
 	return prepare(nightTrackKey(spec), () =>
-		buildTrack(
-			spec.locale,
-			nightCues(spec.mode, spec.night, nightTiming(spec.hourSeconds)),
-			nightTrackSeconds(spec),
-		),
+		buildTrack(spec.locale, nightCues(nightTiming(spec.hourSeconds)), nightTrackSeconds(spec)),
 	);
 }
 

@@ -131,10 +131,7 @@ describe('live bots in a real Cheese Thief room', () => {
 		expect(await botsWaitingOn(code, 'hasMemorizedRole')).toEqual([]);
 		expect((await cheese.getScopedState(code, host)).phase).toBe('deal');
 
-		const hostDice = (await CheeseRoom.findOne({ code }).lean())!.players.find(
-			(player) => player.token === host,
-		)!.dice;
-		await cheese.confirmMemorized(code, host, hostDice.length === 2 ? hostDice[0] : undefined);
+		await cheese.confirmMemorized(code, host);
 		await cheese.beginNight(code, host);
 		await rewind(code, 'nightStartedAt', 80_000);
 		expect((await cheese.getScopedState(code, host)).phase).toBe('secret');

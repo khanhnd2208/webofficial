@@ -28,7 +28,6 @@ import {
 	startGame as startCheese,
 	confirmMemorized as memorizeCheese,
 	beginNight,
-	reportCheese,
 	submitVote as voteCheese,
 	startVote,
 	revote,
@@ -74,7 +73,6 @@ interface TestPlayer {
 	hasMemorizedRole?: boolean;
 	viewedAt?: Date | null;
 	dice?: number[];
-	dice2?: number[];
 	secretPicks: string[];
 	hasSeenSecret?: boolean;
 	voteId?: string;
@@ -109,7 +107,6 @@ interface TestRoomDoc {
 		lockId?: string;
 		lockUntil?: Date;
 	};
-	nightNumber?: number;
 	hourSeconds?: number;
 	save(): Promise<unknown>;
 }
@@ -276,10 +273,7 @@ export async function createTestRoom(ownerId: string, input: CreateTestRoomInput
 			'INVALID_PLAYER_COUNT',
 		);
 	}
-	if (
-		input.game === 'cheese-thief' &&
-		(playerCount < (input.cheeseMode === 'two-night' ? 5 : 4) || playerCount > 12)
-	) {
+	if (input.game === 'cheese-thief' && (playerCount < 4 || playerCount > 12)) {
 		throw new AppError(
 			'Player count is invalid for this Cheese Thief setup',
 			400,
@@ -354,7 +348,6 @@ export async function createTestRoom(ownerId: string, input: CreateTestRoomInput
 				hostName: input.hostName,
 				maxPlayers: playerCount,
 				isPublic: false,
-				mode: input.cheeseMode ?? 'classic',
 				scapegoat: input.scapegoat ?? false,
 				hourSeconds: CHEESE_HOUR_SECONDS_DEFAULT,
 			},
@@ -375,7 +368,6 @@ export async function createTestRoom(ownerId: string, input: CreateTestRoomInput
 			initialConfig: {
 				game: input.game,
 				playerCount,
-				mode: input.cheeseMode ?? 'classic',
 				adminRole: input.adminRole,
 			},
 			log: [`Tạo phòng · seed ${seed}`],
@@ -424,7 +416,6 @@ export async function inspectTestRoom(ownerId: string, game: TestGame, code: str
 			role: player.role ?? player.roleId ?? null,
 			keyword: player.keyword ?? null,
 			dice: player.dice ?? [],
-			dice2: player.dice2 ?? [],
 			hasMemorizedRole: player.hasMemorizedRole ?? player.viewedAt != null,
 			vote: player.voteId ? 'Đã bỏ phiếu' : player.voteToken ? 'Đã bỏ phiếu' : 'Chưa bỏ phiếu',
 			secretPicks: player.secretPicks ?? [],
@@ -461,7 +452,6 @@ export async function commandTestRoom(
 			'settings',
 			'secret',
 			'start-vote',
-			'cheese',
 			'revote',
 			'next',
 			'skip-time',
@@ -606,7 +596,7 @@ async function executeCommand(
 		await applyWerewolfCommand(code, hostToken, controlledToken, command, seededRandom(room));
 	if (command.kind === 'remember' && game === 'spy-fall') await memorizeSpy(code, controlledToken);
 	if (command.kind === 'remember' && game === 'cheese-thief')
-		await memorizeCheese(code, controlledToken, command.chosenHour);
+		await memorizeCheese(code, controlledToken);
 	if (command.kind === 'seen' && game === 'cheese-thief')
 		await (
 			await import('@/features/cheese-thief/services/cheeseThiefService')
@@ -645,8 +635,6 @@ async function executeCommand(
 			await import('@/features/cheese-thief/services/cheeseThiefService')
 		).submitSecret(code, controlledToken, command.picks, { draft: command.draft });
 	if (command.kind === 'start-vote' && game === 'cheese-thief') await startVote(code, hostToken);
-	if (command.kind === 'cheese' && game === 'cheese-thief')
-		await reportCheese(code, hostToken, command.present);
 	if (command.kind === 'revote' && game === 'cheese-thief') await revote(code, hostToken);
 	if (command.kind === 'vote' && game !== 'ma-soi') {
 		const actor =
@@ -907,13 +895,7 @@ async function stepCheese(code: string, hostToken: string, raw: TestRoomDoc) {
 	);
 	const bots = room.players.filter((player) => player.token !== controlledToken);
 	const bot = bots.find((player) => !player.hasMemorizedRole && state.phase === 'deal');
-	if (bot) {
-		const chosenHour =
-			bot.dice?.length === 2
-				? bot.dice[Math.floor(seededRandom(raw)() * bot.dice.length)]
-				: undefined;
-		return memorizeCheese(code, bot.token, chosenHour);
-	}
+	if (bot) return memorizeCheese(code, bot.token);
 	if (state.phase === 'secret') {
 		const player = bots.find((entry) => !entry.secretConfirmed);
 		if (!player) return;

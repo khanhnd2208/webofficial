@@ -29,9 +29,7 @@ export default function NightPhase({ state, fetchedAt }: Props) {
 				nightStartedAt={state.nightStartedAt}
 				serverNow={state.serverNow}
 				fetchedAt={fetchedAt}
-				mode={state.mode}
 				hourSeconds={state.hourSeconds}
-				night={state.nightNumber ?? 1}
 			/>
 		</div>
 	);

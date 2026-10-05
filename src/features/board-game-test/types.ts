@@ -14,7 +14,6 @@ export interface CreateTestRoomInput {
 	seed?: string;
 	spyCount?: 1 | 2 | 3;
 	adminRole?: string;
-	cheeseMode?: 'classic' | 'two-night';
 	scapegoat?: boolean;
 }
 
@@ -35,7 +34,7 @@ export type TestCommand =
 	| { kind: 'run'; running: boolean }
 	| { kind: 'set-seat'; seatId: string }
 	| { kind: 'start'; locale?: 'vi' | 'en' }
-	| { kind: 'remember'; chosenHour?: number }
+	| { kind: 'remember' }
 	| { kind: 'seen' }
 	| { kind: 'viewed' }
 	| { kind: 'lobby' }
@@ -49,7 +48,6 @@ export type TestCommand =
 	| { kind: 'skip-time' }
 	| { kind: 'reset'; sameSeed: boolean }
 	| { kind: 'close' }
-	| { kind: 'cheese'; present: boolean }
 	| { kind: 'revote' }
 	| { kind: 'vote'; playerId: string; targetId: string }
 	| { kind: 'kick'; playerId: string }
