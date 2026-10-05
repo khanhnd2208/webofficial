@@ -8,8 +8,6 @@ import {
 	isFollowerKnows,
 	isHourSeconds,
 	isPlayerCountAllowed,
-	playerRangeFor,
-	type CheeseMode,
 	type FollowerSettings,
 } from '@/features/cheese-thief/config/cheeseThief';
 import { GameError } from '@/features/board-game-shared/lib/gameError';
@@ -23,7 +21,7 @@ export function assertRoomName(name: string | undefined): string {
 	return trimmed;
 }
 
-export function assertTableSize(size: number, mode: CheeseMode, seated: number): void {
+export function assertTableSize(size: number, seated: number): void {
 	if (!Number.isInteger(size) || size < CHEESE_MIN_PLAYERS || size > CHEESE_MAX_PLAYERS) {
 		throw new GameError('MAX_PLAYERS_INVALID', 400, {
 			min: CHEESE_MIN_PLAYERS,
@@ -33,11 +31,11 @@ export function assertTableSize(size: number, mode: CheeseMode, seated: number):
 	if (size < seated) {
 		throw new GameError('MAX_PLAYERS_INVALID', 400, { min: seated, max: CHEESE_MAX_PLAYERS });
 	}
-	if (!isPlayerCountAllowed(size, mode)) {
-		const range = playerRangeFor(mode);
-		if (mode === 'two-night')
-			throw new GameError('TWO_NIGHT_NEEDS_FIVE', 400, { min: range.min, max: range.max });
-		throw new GameError('MAX_PLAYERS_INVALID', 400, { min: range.min, max: range.max });
+	if (!isPlayerCountAllowed(size)) {
+		throw new GameError('MAX_PLAYERS_INVALID', 400, {
+			min: CHEESE_MIN_PLAYERS,
+			max: CHEESE_MAX_PLAYERS,
+		});
 	}
 }
 

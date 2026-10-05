@@ -3,7 +3,11 @@
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 
-export default function PutPhoneDown() {
+interface Props {
+	hint: string;
+}
+
+export default function PutPhoneDown({ hint }: Props) {
 	const t = useT();
 	return (
 		<div className="flex w-full flex-col items-center gap-3 rounded-3xl border border-border bg-surface px-5 py-6 text-center">
@@ -11,7 +15,7 @@ export default function PutPhoneDown() {
 			<p className="font-display text-2xl leading-tight font-medium tracking-tight text-foreground sm:text-3xl">
 				{t('cheese.putDown')}
 			</p>
-			<p className="text-sm text-muted">{t('cheese.deal.waiting')}</p>
+			<p className="text-sm text-muted">{hint}</p>
 		</div>
 	);
 }

@@ -221,72 +221,52 @@ describe('real game logic with controlled seats', () => {
 		expect(room.state.phase).not.toBe('vote');
 	});
 
-	it.each([
-		['classic', 4, false],
-		['two-night', 6, true],
-		['two-night', 6, false],
-	] as const)(
-		'plays Cheese %s / %i / cheese present %s to a result',
-		async (mode, count, present) => {
-			let room = await make('cheese-thief', count, {
-				cheeseMode: mode,
-				startingSeat: 'player',
-				scapegoat: count >= 6,
-			});
-			room = await act(room, { kind: 'step' }); // Host bot deals.
-			expect(room.state.phase).toBe('deal');
-			room = await steps(room, count + 1);
-			expect((room.state as CheeseState).self?.hasMemorizedRole).toBe(false);
-			const dice = (room.state as CheeseState).self!.dice;
+	it.each([4, 6] as const)('plays Cheese with %i players to a result', async (count) => {
+		let room = await make('cheese-thief', count, {
+			startingSeat: 'player',
+			scapegoat: count >= 6,
+		});
+		room = await act(room, { kind: 'step' });
+		expect(room.state.phase).toBe('deal');
+		room = await steps(room, count + 1);
+		expect((room.state as CheeseState).self?.hasMemorizedRole).toBe(false);
+		room = await act(room, { kind: 'remember' });
+		room = await act(room, { kind: 'step' });
+		expect(room.state.phase).toBe('night');
+		room = await act(room, { kind: 'run', running: false });
+		const before = await CheeseRoom.findOne({ code: room.state.code }).lean();
+		await new Promise((resolve) => setTimeout(resolve, 20));
+		await readTestRoom(owner, room.game, room.state.code);
+		const after = await CheeseRoom.findOne({ code: room.state.code }).lean();
+		expect(after!.updatedAt).toEqual(before!.updatedAt);
+		expect(after!.nightStartedAt).toEqual(before!.nightStartedAt);
+		room = await act(room, { kind: 'skip-time' });
+		expect(room.state.phase).toBe('secret');
+		const state = room.state as CheeseState;
+		room = await act(room, {
+			kind: 'secret',
+			picks: state.players
+				.filter((p) => p.id !== state.self!.id)
+				.slice(0, state.choiceCount)
+				.map((p) => p.id),
+		});
+		room = await steps(room, count);
+		room = await act(room, { kind: 'skip-time' });
+		expect(room.state.phase).toBe('secret-result');
+		room = await steps(room, count);
+		room = await act(room, { kind: 'seen' });
+		expect(room.state.phase).toBe('day');
+		room = await act(room, { kind: 'set-seat', seatId: 'admin' });
+		room = await act(room, { kind: 'start-vote' });
+		const voters = (room.state as CheeseState).players;
+		for (let i = 0; i < count; i++)
 			room = await act(room, {
-				kind: 'remember',
-				chosenHour: dice?.length === 2 ? dice[0] : undefined,
+				kind: 'vote',
+				playerId: voters[i].id,
+				targetId: voters[i === 0 ? 1 : 0].id,
 			});
-			room = await act(room, { kind: 'step' });
-			expect(room.state.phase).toBe('night');
-			room = await act(room, { kind: 'run', running: false });
-			const before = await CheeseRoom.findOne({ code: room.state.code }).lean();
-			await new Promise((resolve) => setTimeout(resolve, 20));
-			await readTestRoom(owner, room.game, room.state.code);
-			const after = await CheeseRoom.findOne({ code: room.state.code }).lean();
-			expect(after!.updatedAt).toEqual(before!.updatedAt);
-			expect(after!.nightStartedAt).toEqual(before!.nightStartedAt);
-			room = await act(room, { kind: 'skip-time' });
-			if (mode === 'two-night') {
-				expect(room.state.phase).toBe('cheese-check');
-				room = await act(room, { kind: 'cheese', present });
-				if (present) {
-					expect(room.state.phase).toBe('night');
-					room = await act(room, { kind: 'skip-time' });
-				}
-			}
-			expect(room.state.phase).toBe('secret');
-			const state = room.state as CheeseState;
-			room = await act(room, {
-				kind: 'secret',
-				picks: state.players
-					.filter((p) => p.id !== state.self!.id)
-					.slice(0, state.choiceCount)
-					.map((p) => p.id),
-			});
-			room = await steps(room, count);
-			room = await act(room, { kind: 'skip-time' });
-			expect(room.state.phase).toBe('secret-result');
-			room = await steps(room, count);
-			room = await act(room, { kind: 'seen' });
-			expect(room.state.phase).toBe('day');
-			room = await act(room, { kind: 'set-seat', seatId: 'admin' });
-			room = await act(room, { kind: 'start-vote' });
-			const voters = (room.state as CheeseState).players;
-			for (let i = 0; i < count; i++)
-				room = await act(room, {
-					kind: 'vote',
-					playerId: voters[i].id,
-					targetId: voters[i === 0 ? 1 : 0].id,
-				});
-			expect(room.state.phase).toBe('reveal');
-		},
-	);
+		expect(room.state.phase).toBe('reveal');
+	});
 
 	it('Ma Sói host bot deals but leaves the selected player card for the user', async () => {
 		let room = await make('ma-soi', 5, { startingSeat: 'player' });
@@ -394,10 +374,7 @@ describe('additional game branches', () => {
 		// Set up a tied vote using the normal game path, then exercise the runner.
 		room = await act(room, { kind: 'step' });
 		room = await steps(room, 3);
-		room = await act(room, {
-			kind: 'remember',
-			chosenHour: (room.state as CheeseState).self!.dice![0],
-		});
+		room = await act(room, { kind: 'remember' });
 		room = await act(room, { kind: 'step' });
 		room = await act(room, { kind: 'skip-time' });
 		room = await act(room, { kind: 'skip-time' });

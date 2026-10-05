@@ -45,7 +45,6 @@ export default function TestRoomClient({
 	const [hostName, setHostName] = useState('Admin');
 	const [playerCount, setPlayerCount] = useState(6);
 	const [spyCount, setSpyCount] = useState<1 | 2 | 3>(1);
-	const [cheeseMode, setCheeseMode] = useState<'classic' | 'two-night'>('classic');
 	const [startingSeat, setStartingSeat] = useState<'host' | 'player'>('host');
 	const [scapegoat, setScapegoat] = useState(false);
 	const [seed, setSeed] = useState('');
@@ -110,7 +109,6 @@ export default function TestRoomClient({
 				playerCount,
 				seed,
 				spyCount,
-				cheeseMode,
 				startingSeat,
 				scapegoat: playerCount >= 6 && scapegoat,
 			};
@@ -226,12 +224,6 @@ export default function TestRoomClient({
 									{room.game === 'cheese-thief' &&
 										['night', 'secret'].includes(room.state.phase) &&
 										action('skip', { kind: 'skip-time' })}
-									{room.game === 'cheese-thief' && room.state.phase === 'cheese-check' && (
-										<>
-											{action('present', { kind: 'cheese', present: true })}
-											{action('missing', { kind: 'cheese', present: false })}
-										</>
-									)}
 									{action('newGame', { kind: 'reset', sameSeed: false })}
 									{action('close', { kind: 'close' })}
 									<details className="w-full text-xs">
@@ -314,9 +306,7 @@ export default function TestRoomClient({
 						{label('players')}
 						<input
 							type="number"
-							min={
-								game === 'ma-soi' || (cheeseMode === 'two-night' && game === 'cheese-thief') ? 5 : 4
-							}
+							min={game === 'ma-soi' ? 5 : 4}
 							max={game === 'ma-soi' ? 20 : 12}
 							value={playerCount}
 							onChange={(e) => setPlayerCount(Number(e.target.value))}
@@ -350,30 +340,15 @@ export default function TestRoomClient({
 							</select>
 						</label>
 					)}
-					{game === 'cheese-thief' && (
-						<>
-							<label className="grid gap-2 text-sm">
-								{label('mode')}
-								<select
-									value={cheeseMode}
-									onChange={(e) => setCheeseMode(e.target.value as 'classic' | 'two-night')}
-									className={field}
-								>
-									<option value="classic">{label('classic')}</option>
-									<option value="two-night">{label('twoNight')}</option>
-								</select>
-							</label>
-							{playerCount >= 6 && (
-								<label className="flex items-center gap-2 text-sm">
-									<input
-										type="checkbox"
-										checked={scapegoat}
-										onChange={(e) => setScapegoat(e.target.checked)}
-									/>
-									Scapegoat
-								</label>
-							)}
-						</>
+					{game === 'cheese-thief' && playerCount >= 6 && (
+						<label className="flex items-center gap-2 text-sm">
+							<input
+								type="checkbox"
+								checked={scapegoat}
+								onChange={(e) => setScapegoat(e.target.checked)}
+							/>
+							Scapegoat
+						</label>
 					)}
 					<label className="grid gap-2 text-sm">
 						{label('seed')}

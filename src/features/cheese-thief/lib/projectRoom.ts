@@ -2,22 +2,18 @@ import {
 	CHEESE_HOUR_SECONDS_DEFAULT,
 	followersAreCustom,
 	resolveFollowers,
-	type CheeseMode,
 	type CheesePhase,
 	type FollowerKnows,
 	type FollowerSettings,
-	type NightNumber,
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
 import {
 	cardIsEmpty,
-	hoursInNight,
 	secretCardFor,
 	secretJobFor,
 	theftHourOf,
 	wakeHoursOf,
 	type CheeseRole,
-	type NightContext,
 	type ResolvedSecret,
 	type Seat,
 } from '@/features/cheese-thief/lib/rules';
@@ -37,8 +33,6 @@ export interface ProjectPlayer {
 	isBot?: boolean;
 	role?: CheeseRole;
 	dice: number[];
-	dice2?: number[];
-	chosenHour?: number;
 	hasMemorizedRole: boolean;
 	hasChosenSecret?: boolean;
 	hasSeenSecret: boolean;
@@ -53,12 +47,9 @@ export interface ProjectRoom {
 	isPublic: boolean;
 	maxPlayers: number;
 	scapegoatEnabled: boolean;
-	mode?: CheeseMode;
 	followerCount?: number;
 	followerKnowledge?: FollowerKnows;
 	hourSeconds?: number;
-	nightNumber?: NightNumber;
-	theftNight?: NightNumber;
 	voteRound?: number;
 	hostToken: string;
 	nightStartedAt?: Date;
@@ -79,13 +70,7 @@ function seatsOf(room: ProjectRoom): Seat[] {
 		id: player.id,
 		role: player.role ?? 'sleepyhead',
 		dice: player.dice,
-		...(player.dice2 ? { dice2: player.dice2 } : {}),
-		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 	}));
-}
-
-function nightContextOf(room: ProjectRoom): NightContext {
-	return { mode: room.mode ?? 'classic', theftNight: room.theftNight ?? 1 };
 }
 
 function namesOf(room: ProjectRoom): Map<string, string> {
@@ -111,9 +96,6 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		peekByPlayer: {},
 		hunchByPlayer: {},
 	};
-	const mode = room.mode ?? 'classic';
-	const ctx = nightContextOf(room);
-	const night2Played = mode === 'two-night' && room.theftNight === 2;
 
 	const players: PlayerPublicDTO[] = room.players.map((player) => {
 		const row: PlayerPublicDTO = {
@@ -127,10 +109,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		if (deal) row.hasMemorizedRole = player.hasMemorizedRole;
 		if (reveal && player.role && room.preset) {
 			row.role = player.role;
-			row.wakeHours = wakeHoursOf(
-				{ id: player.id, role: player.role, dice: player.dice, chosenHour: player.chosenHour },
-				room.preset.dicePerPlayer,
-			);
+			row.wakeHours = wakeHoursOf({ id: player.id, role: player.role, dice: player.dice });
 			const hunch = resolved.hunchByPlayer[player.id];
 			row.hunchCorrect = hunch ? seats.find((seat) => seat.id === hunch)?.role === 'thief' : null;
 		}
@@ -139,7 +118,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 
 	let secretCard: PlayerSelfDTO['secretCard'];
 	if (secretResult && viewer && room.preset && viewer.role) {
-		const card = secretCardFor(viewer.id, seats, names, room.preset, resolved, ctx);
+		const card = secretCardFor(viewer.id, seats, names, room.preset, resolved);
 		secretCard = cardIsEmpty(card) ? { peek: null, allies: null, recruited: null } : card;
 	}
 	const secretJob =
@@ -149,11 +128,9 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 						id: viewer.id,
 						role: viewer.role,
 						dice: viewer.dice,
-						dice2: viewer.dice2,
 					},
 					seats,
 					room.preset,
-					ctx,
 				)
 			: undefined;
 
@@ -171,31 +148,12 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 							role: viewer.role,
 							dice: viewer.dice,
 							wakeHours: room.preset
-								? wakeHoursOf(
-										{
-											id: viewer.id,
-											role: viewer.role,
-											dice: viewer.dice,
-											dice2: viewer.dice2,
-											chosenHour: viewer.chosenHour,
-										},
-										room.preset.dicePerPlayer,
-									)
+								? wakeHoursOf({
+										id: viewer.id,
+										role: viewer.role,
+										dice: viewer.dice,
+									})
 								: [],
-							...(mode === 'two-night' && room.preset
-								? {
-										wakeHours2: hoursInNight(
-											{
-												id: viewer.id,
-												role: viewer.role,
-												dice: viewer.dice,
-												dice2: viewer.dice2,
-											},
-											2,
-											room.preset.dicePerPlayer,
-										),
-									}
-								: {}),
 						}
 					: {}),
 				...(secretJob
@@ -222,7 +180,6 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		isPublic: room.isPublic,
 		maxPlayers: room.maxPlayers,
 		scapegoatEnabled: room.scapegoatEnabled,
-		mode,
 		followers: { ...resolvedFollowers, customized: followersAreCustom(resolvedFollowers) },
 		hourSeconds: room.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT,
 		playerCount: room.players.length,
@@ -230,18 +187,8 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		self,
 	};
 
-	if ((room.phase === 'night' || room.phase === 'cheese-check') && room.nightNumber) {
-		dto.nightNumber = room.nightNumber;
-	}
 	if (room.phase === 'night' && room.nightStartedAt) {
 		dto.nightStartedAt = room.nightStartedAt.toISOString();
-	}
-	if (
-		mode === 'two-night' &&
-		room.theftNight &&
-		!['lobby', 'deal', 'night', 'cheese-check'].includes(room.phase)
-	) {
-		dto.theftNight = room.theftNight;
 	}
 	if (room.phase === 'day' && room.dayStartedAt) {
 		dto.dayStartedAt = room.dayStartedAt.toISOString();
@@ -261,7 +208,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 		dto.followerIds = room.followerIds;
 		dto.winner = room.winner;
 		const thief = seats.find((seat) => seat.role === 'thief');
-		if (thief) dto.theftHour = theftHourOf(thief, room.preset.dicePerPlayer, room.theftNight ?? 1);
+		if (thief) dto.theftHour = theftHourOf(thief);
 		dto.roster = room.players.map((player): RevealRowDTO => {
 			const role = player.role ?? 'sleepyhead';
 			const hunch = resolved.hunchByPlayer[player.id];
@@ -269,23 +216,7 @@ export function projectRoom(room: ProjectRoom, viewerToken: string | null, at: D
 				id: player.id,
 				name: player.name,
 				role,
-				wakeHours: wakeHoursOf(
-					{
-						id: player.id,
-						role,
-						dice: player.dice,
-						dice2: player.dice2,
-						chosenHour: player.chosenHour,
-					},
-					room.preset!.dicePerPlayer,
-				),
-				wakeHours2: night2Played
-					? hoursInNight(
-							{ id: player.id, role, dice: player.dice, dice2: player.dice2 },
-							2,
-							room.preset!.dicePerPlayer,
-						)
-					: null,
+				wakeHours: wakeHoursOf({ id: player.id, role, dice: player.dice }),
 				hunchCorrect: hunch ? seats.find((seat) => seat.id === hunch)?.role === 'thief' : null,
 				flipped: room.flippedIds.includes(player.id),
 				follower: room.followerIds.includes(player.id),

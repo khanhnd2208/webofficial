@@ -10,7 +10,6 @@ export const createSchema = z.object({
 	seed: z.string().max(64).optional(),
 	spyCount: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
 	adminRole: z.enum(['', 'spy', 'civilian', 'thief', 'sleepyhead', 'scapegoat']).optional(),
-	cheeseMode: z.enum(['classic', 'two-night']).optional(),
 	scapegoat: z.boolean().optional(),
 	startingSeat: z.enum(['host', 'player']).optional(),
 });
@@ -19,7 +18,7 @@ const command = z.discriminatedUnion('kind', [
 	z.object({ kind: z.literal('run'), running: z.boolean() }),
 	z.object({ kind: z.literal('set-seat'), seatId: id }),
 	z.object({ kind: z.literal('start'), locale: z.enum(['vi', 'en']).optional() }),
-	z.object({ kind: z.literal('remember'), chosenHour: z.number().int().min(1).max(6).optional() }),
+	z.object({ kind: z.literal('remember') }),
 	...(
 		[
 			'seen',
@@ -45,7 +44,6 @@ const command = z.discriminatedUnion('kind', [
 		draft: z.boolean().optional(),
 	}),
 	z.object({ kind: z.literal('reset'), sameSeed: z.boolean() }),
-	z.object({ kind: z.literal('cheese'), present: z.boolean() }),
 	z.object({ kind: z.literal('vote'), playerId: id, targetId: z.string().max(64) }),
 	z.object({ kind: z.literal('kick'), playerId: id }),
 	z.object({ kind: z.literal('rename'), name: z.string().trim().min(1).max(24) }),

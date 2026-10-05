@@ -6,6 +6,7 @@ import {
 	CHEESE_DISCONNECT_THRESHOLD_MS,
 	CHEESE_HOST_HANDOFF_MS,
 	CHEESE_HOUR_SECONDS_DEFAULT,
+	CHEESE_MIN_PLAYERS,
 	CHEESE_PHASES,
 	CHEESE_PLAYER_ID_LENGTH,
 	CHEESE_PLAYER_TOKEN_LENGTH,
@@ -14,17 +15,14 @@ import {
 	CHEESE_SECRET_MAX_MS,
 	CHEESE_SECRET_MIN_MS,
 	CHEESE_TABLE_SIZE_DEFAULT,
-	isCheeseMode,
 	isFollowerCountAllowed,
 	isFollowerKnows,
 	isPlayerCountAllowed,
 	maxFollowersFor,
 	nightTiming,
-	playerRangeFor,
 	presetFor,
 	type CheesePhase,
 	type FollowerSettings,
-	type NightNumber,
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
 import { GameError } from '@/features/board-game-shared/lib/gameError';
@@ -49,7 +47,6 @@ import {
 	resolveSecret,
 	resolveVote,
 	sharedChoiceCount,
-	type NightContext,
 	type ResolvedSecret,
 	type Seat,
 } from '@/features/cheese-thief/lib/rules';
@@ -110,7 +107,6 @@ function blankPlayer(token: string, name: string, at: Date): ICheesePlayer {
 		connected: true,
 		lastSeenAt: at,
 		dice: [],
-		dice2: [],
 		hasMemorizedRole: false,
 		secretPicks: [],
 		secretConfirmed: false,
@@ -159,18 +155,11 @@ function seatsOf(game: RoomDoc): Seat[] {
 		id: player.id,
 		role: player.role ?? 'sleepyhead',
 		dice: player.dice ?? [],
-		...((player.dice2 ?? []).length > 0 ? { dice2: player.dice2 } : {}),
-		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 	}));
 }
 
 function tablePreset(game: RoomDoc): TablePreset {
-	return presetFor(game.players.length, game.mode ?? 'classic', followerSettingsOf(game));
-}
-
-function nightContext(game: RoomDoc): NightContext {
-	const theftNight: NightNumber = game.theftNight === 2 ? 2 : 1;
-	return { mode: game.mode ?? 'classic', theftNight };
+	return presetFor(game.players.length, followerSettingsOf(game));
 }
 
 function isRecentlySeen(player: ICheesePlayer, at: Date): boolean {
@@ -198,14 +187,26 @@ function migrateHostIfNeeded(game: RoomDoc, at: Date): boolean {
 	return true;
 }
 
+/** Fields removed from the schema. `set` alone does not mark them, so save would leave them in Mongo. */
+const LEGACY_ROUND_FIELDS = ['nightNumber', 'theftNight', 'mode'] as const;
+
+function clearLegacyTwoNight(game: RoomDoc): boolean {
+	if (VALID_PHASES.has(game.phase) && game.$locals.legacyTwoNight !== true) return false;
+	resetToLobby(game);
+	for (const field of LEGACY_ROUND_FIELDS) {
+		game.set(field, undefined, { strict: false });
+		game.markModified(field);
+	}
+	game.$locals.legacyTwoNight = false;
+	return true;
+}
+
 function resetToLobby(game: RoomDoc): void {
 	game.phase = 'lobby';
 	game.nightStartedAt = undefined;
 	game.secretStartedAt = undefined;
 	game.dayStartedAt = undefined;
 	game.choiceCount = 1;
-	game.nightNumber = 1;
-	game.theftNight = undefined;
 	game.voteRound = 0;
 	game.isRunoff = false;
 	game.voteCandidateIds = [];
@@ -217,8 +218,6 @@ function resetToLobby(game: RoomDoc): void {
 	for (const player of game.players) {
 		player.role = undefined;
 		player.dice = [];
-		player.dice2 = [];
-		player.chosenHour = undefined;
 		player.hasMemorizedRole = false;
 		player.secretPicks = [];
 		player.secretConfirmed = false;
@@ -239,7 +238,7 @@ function applySecretResolution(game: RoomDoc, random: () => number = gameRandom)
 	const preset = tablePreset(game);
 	const picks: Record<string, string[]> = {};
 	for (const player of game.players) picks[player.id] = player.secretPicks ?? [];
-	const resolved = resolveSecret(seatsOf(game), preset, picks, random, nightContext(game));
+	const resolved = resolveSecret(seatsOf(game), preset, picks, random);
 	game.followerIds = resolved.followerIds;
 	game.peekByPlayer = resolved.peekByPlayer;
 	game.hunchByPlayer = resolved.hunchByPlayer;
@@ -265,11 +264,10 @@ function settleVote(game: RoomDoc): void {
 	game.phase = 'reveal';
 }
 
-function enterSecret(game: RoomDoc, at: Date, theftNight: NightNumber): void {
+function enterSecret(game: RoomDoc, at: Date): void {
 	game.phase = 'secret';
 	game.secretStartedAt = at;
-	game.theftNight = theftNight;
-	game.choiceCount = sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
+	game.choiceCount = sharedChoiceCount(tablePreset(game));
 	for (const player of game.players) {
 		player.secretPicks = [];
 		player.secretConfirmed = false;
@@ -279,19 +277,14 @@ function enterSecret(game: RoomDoc, at: Date, theftNight: NightNumber): void {
 function advanceClock(game: RoomDoc, at: Date, random: () => number = gameRandom): boolean {
 	if (game.phase === 'night' && game.nightStartedAt) {
 		if (at.getTime() >= nightEndsAt(game.nightStartedAt.getTime(), nightTiming(game.hourSeconds))) {
-			if ((game.mode ?? 'classic') === 'two-night' && (game.nightNumber ?? 1) === 1) {
-				game.phase = 'cheese-check';
-				return true;
-			}
-			enterSecret(game, at, (game.mode ?? 'classic') === 'two-night' ? 2 : 1);
+			enterSecret(game, at);
 			return true;
 		}
 	}
 
 	if (game.phase === 'secret' && game.secretStartedAt) {
 		const elapsed = at.getTime() - game.secretStartedAt.getTime();
-		const choiceCount =
-			game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
+		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game));
 		const everyoneChose = game.players.every(
 			(player) => player.secretConfirmed && (player.secretPicks ?? []).length === choiceCount,
 		);
@@ -331,8 +324,6 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		...(player.isBot ? { isBot: true } : {}),
 		...(player.role ? { role: player.role } : {}),
 		dice: player.dice ?? [],
-		...((player.dice2 ?? []).length > 0 ? { dice2: player.dice2 } : {}),
-		...(player.chosenHour !== undefined ? { chosenHour: player.chosenHour } : {}),
 		hasMemorizedRole: player.hasMemorizedRole,
 		hasChosenSecret: Boolean(player.secretConfirmed),
 		hasSeenSecret: player.hasSeenSecret,
@@ -348,14 +339,11 @@ function toProjectRoom(game: RoomDoc): ProjectRoom {
 		isPublic: game.isPublic,
 		maxPlayers: game.maxPlayers,
 		scapegoatEnabled: game.scapegoatEnabled,
-		mode: game.mode ?? 'classic',
 		...(typeof game.followerCount === 'number' ? { followerCount: game.followerCount } : {}),
 		...(isFollowerKnows(game.followerKnowledge)
 			? { followerKnowledge: game.followerKnowledge }
 			: {}),
 		hourSeconds: game.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT,
-		nightNumber: game.nightNumber === 2 ? 2 : 1,
-		...(game.theftNight === 1 || game.theftNight === 2 ? { theftNight: game.theftNight } : {}),
 		voteRound: game.voteRound ?? 0,
 		hostToken: game.hostToken,
 		...(game.nightStartedAt ? { nightStartedAt: game.nightStartedAt } : {}),
@@ -388,10 +376,7 @@ async function loadAndAdvance(
 		if (!game) throw new GameError('ROOM_NOT_FOUND', 404);
 
 		let changed = false;
-		if (!VALID_PHASES.has(game.phase)) {
-			resetToLobby(game);
-			changed = true;
-		}
+		if (clearLegacyTwoNight(game)) changed = true;
 
 		if (viewerToken) {
 			const player = findPlayer(game, viewerToken);
@@ -429,7 +414,7 @@ async function mutateGame(
 			...(expectedPhase ? { phase: expectedPhase } : {}),
 		})) as RoomDoc | null;
 		if (!game) throw new GameError('ROOM_OR_PHASE_INVALID', 404);
-		if (!VALID_PHASES.has(game.phase)) resetToLobby(game);
+		clearLegacyTwoNight(game);
 		assertPlayer(game, playerToken);
 		mutator(game, at);
 		advanceClock(game, at);
@@ -447,11 +432,8 @@ export async function createRoom(
 	const hostName = normalizePlayerName(input.hostName ?? '');
 	if (!hostName) throw new GameError('PLAYER_NAME_REQUIRED', 400);
 	const roomName = assertRoomName(input.name);
-	if (input.mode !== undefined && !isCheeseMode(input.mode))
-		throw new GameError('MODE_INVALID', 400);
-	const mode = input.mode && isCheeseMode(input.mode) ? input.mode : 'classic';
 	const maxPlayers = input.maxPlayers ?? CHEESE_TABLE_SIZE_DEFAULT;
-	assertTableSize(maxPlayers, mode, 1);
+	assertTableSize(maxPlayers, 1);
 	const hourSeconds = input.hourSeconds ?? CHEESE_HOUR_SECONDS_DEFAULT;
 	assertHourSeconds(hourSeconds);
 	if (input.followerCount != null && !isFollowerCountAllowed(input.followerCount, maxPlayers)) {
@@ -478,13 +460,11 @@ export async function createRoom(
 		isPublic: input.isPublic !== false,
 		maxPlayers,
 		scapegoatEnabled: input.scapegoat === true,
-		mode,
 		...(typeof input.followerCount === 'number' ? { followerCount: input.followerCount } : {}),
 		...(isFollowerKnows(input.followerKnowledge)
 			? { followerKnowledge: input.followerKnowledge }
 			: {}),
 		hourSeconds,
-		nightNumber: 1,
 		voteRound: 0,
 		hostToken,
 		phase: 'lobby',
@@ -577,13 +557,9 @@ export async function updateSettings(
 		assertHost(game, hostToken);
 		if (input.name !== undefined) game.name = assertRoomName(input.name);
 		if (input.isPublic !== undefined) game.isPublic = Boolean(input.isPublic);
-		if (input.mode !== undefined && !isCheeseMode(input.mode))
-			throw new GameError('MODE_INVALID', 400);
-		const nextMode = input.mode && isCheeseMode(input.mode) ? input.mode : (game.mode ?? 'classic');
 		const nextSize = input.maxPlayers !== undefined ? input.maxPlayers : game.maxPlayers;
-		assertTableSize(nextSize, nextMode, game.players.length);
+		assertTableSize(nextSize, game.players.length);
 		applyFollowerInput(game, input, nextSize);
-		game.mode = nextMode;
 		game.maxPlayers = nextSize;
 		if (input.scapegoat !== undefined) game.scapegoatEnabled = Boolean(input.scapegoat);
 		if (input.hourSeconds !== undefined) {
@@ -606,17 +582,13 @@ export async function startGame(
 				size: game.maxPlayers,
 			});
 		}
-		const mode = game.mode ?? 'classic';
-		if (!isPlayerCountAllowed(game.players.length, mode)) {
-			const { min, max } = playerRangeFor(mode);
-			if (mode === 'two-night') throw new GameError('TWO_NIGHT_NEEDS_FIVE', 400, { min, max });
-			throw new GameError('NEED_MIN_PLAYERS', 400, { min });
+		if (!isPlayerCountAllowed(game.players.length)) {
+			throw new GameError('NEED_MIN_PLAYERS', 400, { min: CHEESE_MIN_PLAYERS });
 		}
 		const { seats } = deal(
 			game.players.map((player) => player.id),
 			game.scapegoatEnabled,
 			random,
-			mode,
 			followerSettingsOf(game),
 		);
 		const byId = new Map(seats.map((seat) => [seat.id, seat]));
@@ -625,8 +597,6 @@ export async function startGame(
 			if (!seat) continue;
 			player.role = seat.role;
 			player.dice = seat.dice;
-			player.dice2 = seat.dice2 ?? [];
-			player.chosenHour = undefined;
 			player.hasMemorizedRole = false;
 			player.secretPicks = [];
 			player.secretConfirmed = false;
@@ -637,9 +607,7 @@ export async function startGame(
 		game.nightStartedAt = undefined;
 		game.secretStartedAt = undefined;
 		game.dayStartedAt = undefined;
-		game.choiceCount = sharedChoiceCount(tablePreset(game), mode);
-		game.nightNumber = 1;
-		game.theftNight = undefined;
+		game.choiceCount = sharedChoiceCount(tablePreset(game));
 		game.voteRound = 0;
 		game.isRunoff = false;
 		game.voteCandidateIds = [];
@@ -651,20 +619,9 @@ export async function startGame(
 	});
 }
 
-export async function confirmMemorized(
-	code: string,
-	playerToken: string,
-	chosenHour?: number,
-): Promise<RoomStateDTO> {
+export async function confirmMemorized(code: string, playerToken: string): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, 'deal', (game) => {
 		const player = assertPlayer(game, playerToken);
-		const twoDice = (player.dice ?? []).length === 2;
-		if (twoDice) {
-			if (chosenHour === undefined || !player.dice.includes(chosenHour)) {
-				throw new GameError('CHOOSE_HOUR', 400);
-			}
-			player.chosenHour = chosenHour;
-		}
 		player.hasMemorizedRole = true;
 	});
 }
@@ -675,18 +632,7 @@ export async function beginNight(code: string, hostToken: string): Promise<RoomS
 		if (game.players.some((player) => !player.hasMemorizedRole)) {
 			throw new GameError('NEED_ALL_MEMORIZED', 400);
 		}
-		if (
-			game.players.some(
-				(player) =>
-					(player.dice ?? []).length === 2 &&
-					player.role !== 'thief' &&
-					player.chosenHour === undefined,
-			)
-		) {
-			throw new GameError('CHOOSE_HOUR', 400);
-		}
 		game.phase = 'night';
-		game.nightNumber = 1;
 		game.nightStartedAt = at;
 	});
 }
@@ -703,8 +649,7 @@ export async function submitSecret(
 ): Promise<RoomStateDTO> {
 	return mutateGame(code, playerToken, 'secret', (game) => {
 		const player = assertPlayer(game, playerToken);
-		const choiceCount =
-			game.choiceCount || sharedChoiceCount(tablePreset(game), game.mode ?? 'classic');
+		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game));
 		const draft = options.draft === true;
 		if (
 			!Array.isArray(picks) ||
@@ -756,23 +701,6 @@ export async function submitVote(
 			throw new GameError('VOTE_NOT_CANDIDATE', 400);
 		}
 		player.voteId = targetId;
-	});
-}
-
-export async function reportCheese(
-	code: string,
-	hostToken: string,
-	present: boolean,
-): Promise<RoomStateDTO> {
-	return mutateGame(code, hostToken, 'cheese-check', (game, at) => {
-		assertHost(game, hostToken);
-		if (present) {
-			game.nightNumber = 2;
-			game.nightStartedAt = at;
-			game.phase = 'night';
-			return;
-		}
-		enterSecret(game, at, 1);
 	});
 }
 

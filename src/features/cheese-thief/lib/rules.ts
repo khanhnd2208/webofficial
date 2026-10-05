@@ -1,10 +1,7 @@
 import {
 	SCAPEGOAT_MIN_PLAYERS,
-	TWO_NIGHT_PEEK_NIGHTS,
 	presetFor,
-	type CheeseMode,
 	type FollowerSettings,
-	type NightNumber,
 	type TablePreset,
 } from '@/features/cheese-thief/config/cheeseThief';
 
@@ -14,24 +11,13 @@ export type CheeseWinner = 'sleepyheads' | 'thief' | 'scapegoat';
 export interface Seat {
 	id: string;
 	role: CheeseRole;
-	/** One die, or two at a 4-player table. Values are 1–6. Night 1. */
+	/** The one wake-up number, 1–6. */
 	dice: number[];
-	/** Night 2 die. Two nights only. */
-	dice2?: number[];
-	/** Sleepyhead's chosen die at 4 players. Ignored for the Thief, who wakes at both. */
-	chosenHour?: number;
 }
-
-export interface NightContext {
-	mode: CheeseMode;
-	theftNight: NightNumber;
-}
-
-export const CLASSIC_NIGHT: NightContext = { mode: 'classic', theftNight: 1 };
 
 export interface ResolvedSecret {
 	followerIds: string[];
-	/** Player id → the id whose die they looked at. */
+	/** Player id → the id whose number they looked at. */
 	peekByPlayer: Record<string, string>;
 	/** Player id → who they think the Thief is. */
 	hunchByPlayer: Record<string, string>;
@@ -44,7 +30,7 @@ export interface SecretJob {
 }
 
 export interface SecretCard {
-	peek: { name: string; hours: number[]; night?: NightNumber } | null;
+	peek: { name: string; hours: number[] } | null;
 	/** Set on the Thief's card when they have followers. */
 	allies: string[] | null;
 	/** Set on anyone the Thief recruited, including a Scapegoat who keeps their own win. */
@@ -75,75 +61,35 @@ function rollDie(rng: () => number): number {
 	return 1 + Math.floor(rng() * 6);
 }
 
-function uniqueSorted(hours: number[]): number[] {
-	return [...new Set(hours)].sort((a, b) => a - b);
-}
-
 export function deal(
 	ids: string[],
 	scapegoat: boolean,
 	rng: () => number,
-	mode: CheeseMode = 'classic',
 	followers?: FollowerSettings,
 ): { seats: Seat[]; preset: TablePreset } {
-	const preset = presetFor(ids.length, mode, followers);
+	const preset = presetFor(ids.length, followers);
 	const order = shuffle(ids, rng);
 	const useScapegoat = scapegoat && ids.length >= SCAPEGOAT_MIN_PLAYERS;
 	const seats = order.map((id, index) => {
 		const role: CheeseRole =
 			index === 0 ? 'thief' : useScapegoat && index === 1 ? 'scapegoat' : 'sleepyhead';
-		const dice = Array.from({ length: preset.dicePerPlayer }, () => rollDie(rng));
-		const dice2 = mode === 'two-night' ? [rollDie(rng)] : undefined;
-		return { id, role, dice, ...(dice2 ? { dice2 } : {}) };
+		return { id, role, dice: [rollDie(rng)] };
 	});
 	return { seats, preset };
 }
 
-export function playedNights(theftNight: NightNumber): NightNumber[] {
-	return theftNight === 2 ? [1, 2] : [1];
-}
-
-export function hoursInNight(seat: Seat, night: NightNumber, dicePerPlayer: 1 | 2): number[] {
-	if (night === 2) return seat.dice2?.[0] === undefined ? [] : [seat.dice2[0]];
-	return wakeHoursOf(seat, dicePerPlayer);
-}
-
-export function wakeHoursOf(seat: Seat, dicePerPlayer: 1 | 2): number[] {
-	if (dicePerPlayer === 2 && seat.role === 'thief') return uniqueSorted(seat.dice);
-	if (dicePerPlayer === 2) {
-		const chosen =
-			seat.chosenHour !== undefined && seat.dice.includes(seat.chosenHour)
-				? seat.chosenHour
-				: seat.dice[0];
-		return chosen === undefined ? [] : [chosen];
-	}
+/** The hour this seat opens their eyes. Every player has exactly one. */
+export function wakeHoursOf(seat: Seat): number[] {
 	return seat.dice[0] === undefined ? [] : [seat.dice[0]];
 }
 
-/**
- * At 4 players the Thief wakes at both hours but takes the cheese at the one they chose.
- * Always taking the earlier die would push the theft toward 1 o'clock (min of 2d6).
- */
-export function theftHourOf(seat: Seat, dicePerPlayer: 1 | 2, night: NightNumber = 1): number {
-	const hours = hoursInNight(seat, night, dicePerPlayer);
-	if (
-		night === 1 &&
-		dicePerPlayer === 2 &&
-		seat.chosenHour !== undefined &&
-		hours.includes(seat.chosenHour)
-	) {
-		return seat.chosenHour;
-	}
-	return Math.min(...hours);
+/** The Thief takes the cheese at their only wake hour. */
+export function theftHourOf(seat: Seat): number {
+	return Math.min(...wakeHoursOf(seat));
 }
 
-export function awakeAt(
-	seats: Seat[],
-	hour: number,
-	dicePerPlayer: 1 | 2,
-	night: NightNumber = 1,
-): Seat[] {
-	return seats.filter((seat) => hoursInNight(seat, night, dicePerPlayer).includes(hour));
+export function awakeAt(seats: Seat[], hour: number): Seat[] {
+	return seats.filter((seat) => wakeHoursOf(seat).includes(hour));
 }
 
 export function findThief(seats: Seat[]): Seat {
@@ -152,66 +98,36 @@ export function findThief(seats: Seat[]): Seat {
 	return thief;
 }
 
-export function wasAlone(
-	seat: Seat,
-	seats: Seat[],
-	preset: TablePreset,
-	night: NightNumber,
-): boolean {
-	const hours = hoursInNight(seat, night, preset.dicePerPlayer);
+export function wasAlone(seat: Seat, seats: Seat[]): boolean {
+	const hours = wakeHoursOf(seat);
 	if (hours.length !== 1) return false;
-	return awakeAt(seats, hours[0]!, preset.dicePerPlayer, night).length === 1;
+	return awakeAt(seats, hours[0]!).length === 1;
 }
 
 /**
- * One night: a Sleepyhead awake with nobody else. The Thief never peeks.
- * The Scapegoat plays as a Sleepyhead does, so it peeks too.
- * Two nights: a Sleepyhead alone on a played night, or a Thief who waited out an alone Night 1 (5–6 players).
+ * A Sleepyhead or Scapegoat awake with nobody else may peek.
+ * The Thief never peeks. A table of 4 has no peek at all.
  */
-export function canPeek(
-	seat: Seat,
-	seats: Seat[],
-	preset: TablePreset,
-	ctx: NightContext = CLASSIC_NIGHT,
-): boolean {
+export function canPeek(seat: Seat, seats: Seat[], preset: TablePreset): boolean {
 	if (!preset.peek) return false;
-	const sleeper = seat.role !== 'thief';
-	if (ctx.mode === 'classic') return sleeper && wasAlone(seat, seats, preset, 1);
-	const nights: NightNumber[] =
-		TWO_NIGHT_PEEK_NIGHTS === 'theft-night' ? [ctx.theftNight] : playedNights(ctx.theftNight);
-	if (sleeper) return nights.some((night) => wasAlone(seat, seats, preset, night));
-	if (seat.role === 'thief') {
-		return (
-			preset.thiefPeeksAfterWaiting && ctx.theftNight === 2 && wasAlone(seat, seats, preset, 1)
-		);
-	}
-	return false;
+	return seat.role !== 'thief' && wasAlone(seat, seats);
 }
 
 /**
  * Same number of taps for every phone, fixed by the table settings alone.
- * Two nights never drops below 2, so the count cannot reveal whether the Thief waited.
- * It grows with the number of followers the Thief names.
+ * It grows with the number of followers the Thief names, and never drops below 1.
  */
-export function sharedChoiceCount(preset: TablePreset, mode: CheeseMode = 'classic'): number {
-	const followerSlots = preset.followerMode === 'pick' ? preset.followerPickCount : 1;
-	if (mode === 'two-night')
-		return Math.max(2, followerSlots + (preset.thiefPeeksAfterWaiting ? 1 : 0));
-	return Math.max(1, followerSlots);
+export function sharedChoiceCount(preset: TablePreset): number {
+	return Math.max(1, preset.followerPickCount);
 }
 
-export function secretJobFor(
-	seat: Seat,
-	seats: Seat[],
-	preset: TablePreset,
-	ctx: NightContext = CLASSIC_NIGHT,
-): SecretJob {
+export function secretJobFor(seat: Seat, seats: Seat[], preset: TablePreset): SecretJob {
 	const others = seats.filter((other) => other.id !== seat.id).map((other) => other.id);
 	let followers: SecretJob['followers'] = null;
 	if (seat.role === 'thief' && preset.followerMode === 'pick') {
 		followers = { count: preset.followerPickCount, pool: others };
 	}
-	return { followers, peek: canPeek(seat, seats, preset, ctx) };
+	return { followers, peek: canPeek(seat, seats, preset) };
 }
 
 function takeFromPool(picks: string[], pool: string[], count: number): string[] {
@@ -252,16 +168,12 @@ export function resolveSecret(
 	preset: TablePreset,
 	picksByPlayer: Record<string, string[]>,
 	rng: () => number,
-	ctx: NightContext = CLASSIC_NIGHT,
 ): ResolvedSecret {
 	const peekByPlayer: Record<string, string> = {};
 	const hunchByPlayer: Record<string, string> = {};
 	let followerIds: string[] = [];
 	const thief = findThief(seats);
-	const thiefSlots = slotsOf(
-		picksByPlayer[thief.id] ?? [],
-		secretJobFor(thief, seats, preset, ctx),
-	);
+	const thiefSlots = slotsOf(picksByPlayer[thief.id] ?? [], secretJobFor(thief, seats, preset));
 
 	if (preset.followerMode === 'pick') {
 		const pool = seats.filter((seat) => seat.id !== thief.id).map((seat) => seat.id);
@@ -276,7 +188,7 @@ export function resolveSecret(
 	}
 
 	for (const seat of seats) {
-		const job = secretJobFor(seat, seats, preset, ctx);
+		const job = secretJobFor(seat, seats, preset);
 		const others = new Set(seats.filter((other) => other.id !== seat.id).map((other) => other.id));
 		const slots = seat.id === thief.id ? thiefSlots : slotsOf(picksByPlayer[seat.id] ?? [], job);
 		if (job.peek && slots.peekPick && others.has(slots.peekPick))
@@ -294,7 +206,6 @@ export function secretCardFor(
 	names: ReadonlyMap<string, string>,
 	preset: TablePreset,
 	resolved: ResolvedSecret,
-	ctx: NightContext = CLASSIC_NIGHT,
 ): SecretCard {
 	const seat = seats.find((item) => item.id === playerId);
 	const peekTarget = resolved.peekByPlayer[playerId];
@@ -302,8 +213,7 @@ export function secretCardFor(
 	const peek = peekSeat
 		? {
 				name: names.get(peekSeat.id) ?? peekSeat.id,
-				hours: hoursInNight(peekSeat, ctx.theftNight, preset.dicePerPlayer),
-				...(ctx.mode === 'two-night' ? { night: ctx.theftNight } : {}),
+				hours: wakeHoursOf(peekSeat),
 			}
 		: null;
 

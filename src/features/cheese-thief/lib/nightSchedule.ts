@@ -1,9 +1,4 @@
-import {
-	CHEESE_HOURS,
-	CHEESE_SLEEP_MAX_MS,
-	type CheeseMode,
-	type NightNumber,
-} from '@/features/cheese-thief/config/cheeseThief';
+import { CHEESE_HOURS, CHEESE_SLEEP_MAX_MS } from '@/features/cheese-thief/config/cheeseThief';
 
 export interface NightTiming {
 	introMs: number;
@@ -63,8 +58,6 @@ export function nightEndsAt(startedAt: number, timing: NightTiming): number {
 /** Recorded narration, one file per line. `wake-N` bakes the hour into the clip. */
 export const CHEESE_VOICE_CLIPS = [
 	'night-start',
-	'night1-start',
-	'night2-start',
 	'wake-1',
 	'wake-2',
 	'wake-3',
@@ -73,8 +66,6 @@ export const CHEESE_VOICE_CLIPS = [
 	'wake-6',
 	'sleep',
 	'night-end',
-	'night1-end',
-	'cheese-gone',
 ] as const;
 
 export type VoiceClip = (typeof CHEESE_VOICE_CLIPS)[number];
@@ -85,13 +76,13 @@ export interface NightCue {
 }
 
 /** Every line of one night, in order, with its offset from the night start. Feeds the recorded night track. */
-export function nightCues(mode: CheeseMode, night: NightNumber, timing: NightTiming): NightCue[] {
+export function nightCues(timing: NightTiming): NightCue[] {
 	const cues: NightCue[] = [];
 	let at = 0;
 	for (;;) {
 		const segment = segmentAt(0, at, timing);
 		if (segment.kind === 'done') return cues;
-		const key = narrationKey(segment, mode, night);
+		const key = narrationKey(segment);
 		const clip = (segment.kind === 'hour-wake' ? `wake-${segment.hour}` : key) as VoiceClip;
 		cues.push({ atMs: at, clip });
 		at = segment.endsAt;
@@ -108,17 +99,13 @@ export const ROUND_PREVIEW_TAIL_MS = 4_500;
 export function roundPreviewCues(timing: NightTiming): { cues: NightCue[]; seconds: number } {
 	const from = timing.introMs;
 	const to = timing.introMs + timing.hourMs;
-	const cues = nightCues('classic', 1, timing)
+	const cues = nightCues(timing)
 		.filter((cue) => cue.atMs >= from && cue.atMs <= to)
 		.map((cue) => ({ ...cue, atMs: cue.atMs - from }));
 	return { cues, seconds: (timing.hourMs + ROUND_PREVIEW_TAIL_MS) / 1000 };
 }
 
-/** Which spoken line this slice of the night is. Hour cues stay the same in every mode. */
-export function narrationKey(segment: NightSegment, mode: CheeseMode, night: NightNumber): string {
-	if (segment.cueId === 'wake' || segment.cueId === 'sleep' || segment.cueId === 'done')
-		return segment.cueId;
-	if (mode === 'classic') return segment.cueId;
-	if (segment.kind === 'intro') return night === 1 ? 'night1-start' : 'night2-start';
-	return night === 1 ? 'night1-end' : 'night-end';
+/** Which spoken line this slice of the night is. */
+export function narrationKey(segment: NightSegment): string {
+	return segment.cueId;
 }

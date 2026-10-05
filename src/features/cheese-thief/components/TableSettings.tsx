@@ -1,13 +1,13 @@
 'use client';
 
 import {
+	CHEESE_HOUR_LEVELS,
 	CHEESE_MAX_PLAYERS,
+	CHEESE_MIN_PLAYERS,
 	SCAPEGOAT_MIN_PLAYERS,
-	TWO_NIGHT_MIN_PLAYERS,
-	playerRangeFor,
-	type CheeseMode,
 } from '@/features/cheese-thief/config/cheeseThief';
-import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
+import HourLengthSetting from '@/features/cheese-thief/components/HourLengthSetting';
+import type { FollowerKnows } from '@/features/cheese-thief/config/cheeseThief';
 import type { RoomStateDTO, UpdateSettingsInput } from '@/features/cheese-thief/types';
 import { useT } from '@/features/board-game-shared/components/i18n/LocaleProvider';
 import { cn } from '@/features/board-game-shared/lib/cn';
@@ -16,6 +16,7 @@ interface Props {
 	state: RoomStateDTO;
 	busy: boolean;
 	onSettings: (input: UpdateSettingsInput) => void;
+	onHourSeconds: (seconds: number) => void;
 }
 
 function Stepper({
@@ -46,7 +47,9 @@ function Stepper({
 			>
 				−
 			</button>
-			<span className="font-display text-3xl font-medium tabular-nums">{value}</span>
+			<span aria-live="polite" className="font-display text-3xl font-medium tabular-nums">
+				{value}
+			</span>
 			<button
 				type="button"
 				aria-label={moreLabel}
@@ -60,17 +63,33 @@ function Stepper({
 	);
 }
 
-/** Host edits the table. Everyone else sees the same numbers, without the controls. */
-export default function TableSettings({ state, busy, onSettings }: Props) {
+function knowsKey(count: number, knowledge: FollowerKnows): string {
+	if (count <= 1) return knowledge === 'all' ? 'knowAllOne' : 'knowTeamOne';
+	return knowledge === 'all' ? 'knowAll' : 'knowTeam';
+}
+
+function hourPhrase(t: ReturnType<typeof useT>, seconds: number): string {
+	const level = CHEESE_HOUR_LEVELS.find((item) => item.seconds === seconds);
+	const preset = t('cheese.lobby.hour.preset', { seconds });
+	if (!level) return preset;
+	return `${t(`cheese.lobby.hour.${level.id}`)} ${preset}`;
+}
+
+function followerPhrase(t: ReturnType<typeof useT>, count: number): string {
+	if (count <= 0) return t('cheese.lobby.settings.followerNone');
+	const key = count === 1 ? 'followerShortOne' : 'followerShort';
+	return t(`cheese.lobby.settings.${key}`, { count });
+}
+
+/** Host edits the table. Everyone else sees one line. */
+export default function TableSettings({ state, busy, onSettings, onHourSeconds }: Props) {
 	const t = useT();
 	const host = state.isHost;
 	const size = state.maxPlayers;
 	const followers = state.followers;
-	const range = playerRangeFor(state.mode);
-	const sizeMin = Math.max(range.min, state.playerCount);
-	const twoNightLocked = size < TWO_NIGHT_MIN_PLAYERS;
+	const sizeMin = Math.max(CHEESE_MIN_PLAYERS, state.playerCount);
 	const scapegoatLocked = size < SCAPEGOAT_MIN_PLAYERS;
-	const oneFollower = followers.count === 1;
+	const canTuneFollowers = followers.max > 0;
 
 	function setSize(next: number) {
 		const clamped = Math.min(CHEESE_MAX_PLAYERS, Math.max(sizeMin, next));
@@ -80,9 +99,31 @@ export default function TableSettings({ state, busy, onSettings }: Props) {
 		});
 	}
 
-	function setMode(mode: CheeseMode) {
-		if (mode === 'two-night' && twoNightLocked) return;
-		onSettings({ mode });
+	const followerLine =
+		followers.count > 0
+			? t('cheese.lobby.settings.followerSummary', {
+					count: followers.count,
+					knows: t(`cheese.lobby.settings.${knowsKey(followers.count, followers.knowledge)}`),
+				})
+			: t('cheese.lobby.settings.followerNone');
+
+	if (!host) {
+		const scapegoat = t(
+			state.scapegoatEnabled && !scapegoatLocked
+				? 'cheese.lobby.settings.scapegoatOn'
+				: 'cheese.lobby.settings.scapegoatOff',
+		);
+		return (
+			<p className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm leading-relaxed">
+				{t('cheese.lobby.settings.guestSummary', {
+					count: state.playerCount,
+					size,
+					scapegoat,
+					hour: hourPhrase(t, state.hourSeconds),
+					followers: followerPhrase(t, followers.count),
+				})}
+			</p>
+		);
 	}
 
 	return (
@@ -108,184 +149,139 @@ export default function TableSettings({ state, busy, onSettings }: Props) {
 							moreLabel={t('cheese.lobby.settings.morePlayers')}
 							onChange={setSize}
 						/>
-						{state.mode === 'two-night' && size <= TWO_NIGHT_MIN_PLAYERS && (
-							<p className="mt-2 text-sm text-muted">{t('cheese.lobby.settings.twoNightMin')}</p>
-						)}
 					</div>
 				)}
 			</div>
 
-			<div className="px-4 py-3">
-				<p className="text-sm font-medium">{t('cheese.lobby.mode.label')}</p>
-				{host ? (
-					<div
-						className="mt-3 grid grid-cols-2 gap-2"
-						role="radiogroup"
-						aria-label={t('cheese.lobby.mode.label')}
-					>
-						{(['classic', 'two-night'] as const).map((mode) => {
-							const locked = mode === 'two-night' && twoNightLocked;
-							const selected = state.mode === mode;
-							return (
-								<button
-									key={mode}
-									type="button"
-									role="radio"
-									aria-checked={selected}
-									disabled={busy || locked}
-									className={cn(
-										'min-h-16 rounded-2xl border px-3 py-2 text-sm font-medium disabled:opacity-40',
-										selected
-											? 'border-foreground bg-foreground text-background'
-											: 'border-border bg-surface',
-									)}
-									onClick={() => setMode(mode)}
-								>
-									<span className="flex flex-col items-center gap-1">
-										<CheeseThiefArt scene={mode === 'classic' ? 'moon' : 'two-moons'} size={32} />
-										<span>
-											{mode === 'classic'
-												? t('cheese.lobby.mode.classic')
-												: t('cheese.lobby.mode.twoNight')}
-										</span>
-									</span>
-								</button>
-							);
-						})}
-					</div>
-				) : (
-					<p className="mt-1 text-sm text-muted">
-						{state.mode === 'two-night'
-							? t('cheese.lobby.mode.twoNight')
-							: t('cheese.lobby.mode.classic')}
-					</p>
-				)}
-				{twoNightLocked && (
-					<p className="mt-2 text-sm text-muted">{t('cheese.lobby.twoNight.need')}</p>
-				)}
-			</div>
+			<button
+				type="button"
+				role="switch"
+				aria-checked={state.scapegoatEnabled && !scapegoatLocked}
+				disabled={busy || scapegoatLocked}
+				className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left disabled:opacity-80"
+				onClick={() => onSettings({ scapegoat: !state.scapegoatEnabled })}
+			>
+				<span>
+					<span className="block text-sm font-medium">{t('cheese.menu.scapegoat')}</span>
+					<span className="mt-1 block text-sm text-muted">
+						{scapegoatLocked
+							? t('cheese.lobby.settings.scapegoatNeeds')
+							: t('cheese.menu.scapegoatHint')}
+					</span>
+				</span>
+				<span
+					aria-hidden
+					className={cn(
+						'relative h-7 w-12 shrink-0 rounded-full',
+						state.scapegoatEnabled && !scapegoatLocked ? 'bg-foreground' : 'bg-border',
+					)}
+				>
+					<span
+						className={cn(
+							'absolute top-0.5 h-6 w-6 rounded-full bg-background',
+							state.scapegoatEnabled && !scapegoatLocked ? 'left-5' : 'left-0.5',
+						)}
+					/>
+				</span>
+			</button>
+
+			<HourLengthSetting
+				hourSeconds={state.hourSeconds}
+				isHost={host}
+				busy={busy}
+				onChange={onHourSeconds}
+			/>
 
 			<div className="px-4 py-3">
 				<div className="flex items-start justify-between gap-3">
-					<div className="min-w-0">
-						<p className="text-sm font-medium">{t('cheese.lobby.settings.followers')}</p>
-						<p className="mt-0.5 text-sm text-muted">
-							{t('cheese.lobby.settings.max', { max: followers.max })}
-						</p>
-					</div>
-					{!host && (
-						<span className="font-display text-3xl font-medium tabular-nums">
-							{followers.count}
+					<p className="text-sm leading-relaxed">{followerLine}</p>
+					{canTuneFollowers && (
+						<span className="shrink-0 rounded-full border border-border px-2 py-1 font-mono text-[0.62rem] tracking-[0.08em] text-muted uppercase">
+							{followers.customized
+								? t('cheese.lobby.settings.badgeCustom')
+								: t('cheese.lobby.settings.badgeDefault')}
 						</span>
 					)}
 				</div>
-				{host && (
-					<div className="mt-3">
-						<Stepper
-							value={followers.count}
-							min={0}
-							max={followers.max}
-							busy={busy}
-							lessLabel={t('cheese.lobby.settings.lessFollowers')}
-							moreLabel={t('cheese.lobby.settings.moreFollowers')}
-							// Landing back on the default clears the override, so a later size change follows the new default.
-							onChange={(count) =>
-								onSettings({ followerCount: count === followers.defaultCount ? null : count })
-							}
-						/>
-					</div>
-				)}
-				<div className="mt-2">
-					{followers.customized && host ? (
-						<button
-							type="button"
-							disabled={busy}
-							className="text-sm font-medium underline underline-offset-4 disabled:opacity-40"
-							onClick={() => onSettings({ followerCount: null, followerKnowledge: null })}
-						>
-							{t('cheese.lobby.settings.reset', { count: followers.defaultCount })}
-						</button>
-					) : (
-						<p className="text-sm text-muted">
-							{followers.customized
-								? t('cheese.lobby.settings.customNote', { count: followers.defaultCount })
-								: t('cheese.lobby.settings.default')}
-						</p>
-					)}
-				</div>
-			</div>
-
-			{followers.count > 0 && (
-				<div className="px-4 py-3">
-					<p className="text-sm font-medium">{t('cheese.lobby.settings.knowledge')}</p>
-					<div
-						className="mt-3 space-y-2"
-						role="radiogroup"
-						aria-label={t('cheese.lobby.settings.knowledge')}
-					>
-						{(['team', 'all'] as const).map((knowledge) => {
-							const selected = followers.knowledge === knowledge;
-							const label = t(
-								oneFollower
-									? knowledge === 'team'
-										? 'cheese.lobby.settings.knowTeamOne'
-										: 'cheese.lobby.settings.knowAllOne'
-									: knowledge === 'team'
-										? 'cheese.lobby.settings.knowTeam'
-										: 'cheese.lobby.settings.knowAll',
-							);
-							if (!host) {
-								return selected ? (
-									<p key={knowledge} className="text-sm leading-relaxed">
-										{label}
-									</p>
-								) : null;
-							}
-							return (
-								<button
-									key={knowledge}
-									type="button"
-									role="radio"
-									aria-checked={selected}
-									disabled={busy}
-									className={cn(
-										'min-h-11 w-full rounded-2xl border px-3 py-2 text-left text-sm leading-snug',
-										selected ? 'border-foreground bg-foreground text-background' : 'border-border',
-									)}
-									onClick={() =>
-										onSettings({
-											followerKnowledge:
-												knowledge === followers.defaultKnowledge ? null : knowledge,
-										})
-									}
+				{host && canTuneFollowers && (
+					<details className="mt-3">
+						<summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">
+							{t('cheese.lobby.settings.advanced')}
+						</summary>
+						<div className="space-y-4 border-t border-border pt-3">
+							<div>
+								<p className="text-sm text-muted">
+									{t('cheese.lobby.settings.max', { max: followers.max })}
+								</p>
+								<div className="mt-3">
+									<Stepper
+										value={followers.count}
+										min={0}
+										max={followers.max}
+										busy={busy}
+										lessLabel={t('cheese.lobby.settings.lessFollowers')}
+										moreLabel={t('cheese.lobby.settings.moreFollowers')}
+										onChange={(count) =>
+											onSettings({
+												followerCount: count === followers.defaultCount ? null : count,
+											})
+										}
+									/>
+								</div>
+							</div>
+							{followers.count > 0 && (
+								<div
+									className="space-y-2"
+									role="radiogroup"
+									aria-label={t('cheese.lobby.settings.knowledge')}
 								>
-									{label}
+									<p className="text-sm font-medium">{t('cheese.lobby.settings.knowledge')}</p>
+									{(['team', 'all'] as const).map((knowledge) => {
+										const selected = followers.knowledge === knowledge;
+										const label = t(
+											`cheese.lobby.settings.${knowsKey(followers.count, knowledge)}`,
+										);
+										return (
+											<button
+												key={knowledge}
+												type="button"
+												role="radio"
+												aria-checked={selected}
+												disabled={busy}
+												className={cn(
+													'min-h-11 w-full rounded-2xl border px-3 py-2 text-left text-sm leading-snug',
+													selected
+														? 'border-foreground bg-foreground text-background'
+														: 'border-border',
+												)}
+												onClick={() =>
+													onSettings({
+														followerKnowledge:
+															knowledge === followers.defaultKnowledge ? null : knowledge,
+													})
+												}
+											>
+												{label}
+											</button>
+										);
+									})}
+									<p className="text-sm text-muted">{t('cheese.lobby.settings.thiefKnows')}</p>
+								</div>
+							)}
+							{followers.customized && (
+								<button
+									type="button"
+									disabled={busy}
+									className="text-sm font-medium underline underline-offset-4 disabled:opacity-40"
+									onClick={() => onSettings({ followerCount: null, followerKnowledge: null })}
+								>
+									{t('cheese.lobby.settings.reset')}
 								</button>
-							);
-						})}
-					</div>
-					<p className="mt-2 text-sm text-muted">{t('cheese.lobby.settings.thiefKnows')}</p>
-				</div>
-			)}
-
-			<label
-				className={cn(
-					'flex items-start gap-3 px-4 py-3',
-					(scapegoatLocked || !host) && 'opacity-80',
+							)}
+						</div>
+					</details>
 				)}
-			>
-				<input
-					type="checkbox"
-					className="mt-1 h-5 w-5"
-					checked={state.scapegoatEnabled && !scapegoatLocked}
-					disabled={!host || busy || scapegoatLocked}
-					onChange={(event) => onSettings({ scapegoat: event.target.checked })}
-				/>
-				<span>
-					<span className="block text-sm font-medium">{t('cheese.menu.scapegoat')}</span>
-					<span className="mt-1 block text-sm text-muted">{t('cheese.menu.scapegoatHint')}</span>
-				</span>
-			</label>
+			</div>
 		</div>
 	);
 }
