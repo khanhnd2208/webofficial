@@ -9,6 +9,7 @@
 // 0600 into each immutable release. This file has no hardcoded secrets.
 // ────────────────────────────────────────────────────────────────
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { parse: parseDotenv } = require('dotenv');
 
@@ -17,6 +18,8 @@ const currentDir = path.join(deployRoot, 'current');
 const appDir = fs.existsSync(currentDir) ? currentDir : deployRoot;
 const appName = process.env.PM2_APP_NAME || 'nextjs-app';
 const livePort = process.env.PM2_LIVE_PORT || '4000';
+// PM2 runs as the `deploy` user; keep logs in that user's PM2 home.
+const logDir = path.join(process.env.PM2_HOME || path.join(os.homedir(), '.pm2'), 'logs');
 
 // Parse the release-local environment snapshot. The canonical deploy copies it
 // from the protected shared .env.local with mode 0600 before every build.
@@ -47,8 +50,8 @@ module.exports = {
 			kill_timeout: 30000, // Let Next.js drain in-flight work on SIGTERM
 
 			// ── Logging ───────────────────────────────────────────────
-			error_file: '/root/.pm2/logs/nextjs-app-error.log',
-			out_file: '/root/.pm2/logs/nextjs-app-out.log',
+			error_file: path.join(logDir, `${appName}-error.log`),
+			out_file: path.join(logDir, `${appName}-out.log`),
 			merge_logs: true,
 			log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
 
