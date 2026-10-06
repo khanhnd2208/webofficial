@@ -1,6 +1,6 @@
 ---
 name: publish-lecture
-description: Upload a new or edited Learn lecture (content/learn/<course>/bai-N.md and bai-N-them.md) to production at toiladuykhanh.com through Learn Studio or the admin API. Use when the user wants to upload, publish, update, or sync lecture, quiz, or discussion content.
+description: Upload a new or edited Learn lecture (content/learn/<course>/bai-N.md and bai-N-them.md) to production at toiladuykhanh.com through Learn Studio or the admin API. Use when the user wants to upload, publish, update, or sync lecture or critical-question (discussion) content.
 ---
 
 # Publish a lecture to production
@@ -10,8 +10,9 @@ rules this procedure relies on.
 
 ## 1. Prepare locally
 
-1. Edit `content/learn/<course>/bai-N.md` (lecture) and `bai-N-them.md` (quiz,
-   guide, "Câu hỏi phản biện").
+1. Edit `content/learn/<course>/bai-N.md` (lecture) and `bai-N-them.md` ("Cách
+   dùng bộ câu hỏi" intro and "Câu hỏi phản biện"; the intro is stored as the
+   discussion section's markdown).
 2. If the lecture wording changed, regenerate `bai-N.original.txt` and confirm
    fidelity:
    ```bash
@@ -54,7 +55,7 @@ Production can differ from the files: authors also edit in Studio.
 ## 4. Verify
 
 - Open the public lesson page and check the changed sections render, including
-  headings, lists, and quiz or discussion blocks.
+  headings, lists, and discussion blocks.
 - Tell the user what changed on production, what you left untouched, and any
   follow-up (for example images waiting for a deploy).
 

@@ -23,8 +23,9 @@ alwaysApply: false
 - The lecture (`bai-N.md`) must stand alone: approachable, engaging, every
   concept fully explained. Never defer an explanation to the question bank
   ("xem Câu 9").
-- `bai-N-them.md` (quiz, guide, "Câu hỏi phản biện") is an optional advanced
-  layer. Questions may go deeper but must not introduce concepts the lecture
+- `bai-N-them.md` ("Cách dùng bộ câu hỏi" intro, then "Câu hỏi phản biện") is an
+  optional advanced layer. Courses hold only lectures and critical questions:
+  no quiz or practice blocks (the import skips them). Questions may go deeper but must not introduce concepts the lecture
   skipped.
 
 ## Source fidelity
