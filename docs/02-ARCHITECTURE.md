@@ -37,7 +37,7 @@ src/
 │   ├── admin/           server-guarded Admin Studio
 │   ├── api/             HTTP boundary; auth and response wrappers
 │   ├── vocabulary/      learner vocabulary UI and game modes
-│   ├── hoc/             course/lesson learner surfaces
+│   ├── kham-pha-khoa-hoc/ public course catalog (/khoa-hoc)
 │   ├── my-space/        personal experiments and MCQ tests
 │   ├── messages/, m/    private message management and public unlock view
 │   └── public routes     marketing, notes, projects, services, policies, contact

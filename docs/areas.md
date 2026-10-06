@@ -45,20 +45,20 @@ Lớp dạy, My Class, Active Recall, bài test trong My Space, và kho từ v�
 - API và admin tương ứng, gồm `vocab-sets`, `admin/tools/active-recall`, `admin/tools/vocabulary`
 - `content/active-recall`
 
-Vocabulary thuộc khu này vì bài từ vựng trong My Class dùng lại trang của `src/app/vocabulary` và `src/components/vocab`. `src/components/knowledge` là giao diện bài học của My Class. Tiến độ trong lớp nằm ở `src/features/my-class`, không ở `src/features/progress`.
+Vocabulary thuộc khu này vì bài từ vựng trong My Class dùng lại trang của `src/app/vocabulary` và `src/components/vocab`. `src/components/knowledge` là giao diện bài học của My Class. Tiến độ trong lớp nằm ở `src/features/my-class`.
 
 ## Giới thiệu và khóa học (portfolio)
 
 Trang công khai, bài viết, dịch vụ, và khóa học tự học.
 
-- `src/app/page.tsx`, `gioi-thieu`, `muc-luc`, `du-an`, `trai-nghiem`, `dich-vu`, `ghi-chep`, `lien-he`, `hoc`, `chinh-sach`
-- `src/app/my-space/courses`, `src/app/tai-khoan/hoc`
-- `src/features/portfolio`, `posts`, `courses`, `learn`, `services`, `experiences`, `inquiries`, `enrollments`, `progress`
+- `src/app/page.tsx`, `gioi-thieu`, `muc-luc`, `du-an`, `trai-nghiem`, `dich-vu`, `ghi-chep`, `lien-he`, `chinh-sach`, `kham-pha-khoa-hoc`
+- `src/app/my-space/courses` (phục vụ `/khoa-hoc/*`)
+- `src/features/portfolio`, `posts`, `learn`, `services`, `experiences`, `inquiries`
 - `src/components/learn`, `marketing`, `contact`
 - `src/content`, `content/learn`, `public/learn`, `src/app/learn.css`, `src/app/personal-book.css`
 - API và admin tương ứng
 
-`src/features/progress` là tiến độ học của khóa học (học viên xem bài, hoàn thành bài). Nó đi cùng khóa học, không phải sổ điểm của lớp.
+Tiến độ học của khóa học tự học nằm trong `src/features/learn` (bảng `LearnSectionProgress`). Hệ khóa học "Chương–Bài" cũ (`/hoc/khoa-hoc`, `/tai-khoan/hoc`) đã gỡ; các đường dẫn cũ chuyển 301 về `/khoa-hoc`.
 
 ## Công cụ riêng (tools)
 
