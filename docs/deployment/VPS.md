@@ -3,6 +3,8 @@
 This document is the production runbook for `https://toiladuykhanh.com`.
 The only supported deploy entry point is `scripts/deploy-vps.sh`; GitHub Actions
 calls the same script. Do not build over the directory currently serving users.
+Server access, security controls, and the change log live in
+[`SECURITY.md`](./SECURITY.md).
 
 ## Production topology
 
