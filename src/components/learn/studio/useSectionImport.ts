@@ -4,8 +4,6 @@ import { useState, type Dispatch, type RefObject, type SetStateAction } from 're
 
 import type {
 	LearnDiscussion,
-	LearnQuiz,
-	LearnSectionKind,
 	LearnStudioLesson,
 	LearnStudioSection,
 } from '@/features/learn/types';
@@ -24,29 +22,13 @@ export interface ImportRequest {
 function questionBody(
 	input: Exclude<AiImportInput, { kind: 'lesson' }>,
 	current: LearnStudioSection | null,
-): { quiz: LearnQuiz } | { discussion: LearnDiscussion } {
-	if (input.kind === 'discussion') {
-		const existing = current?.discussion?.questions ?? [];
-		return {
-			discussion: {
-				questions: input.mode === 'append' ? [...existing, ...input.questions] : input.questions,
-			},
-		};
-	}
-	const quiz = current?.quiz ?? { passingScorePercent: 70, timeLimitMinutes: null, questions: [] };
+): { discussion: LearnDiscussion } {
+	const existing = current?.discussion?.questions ?? [];
 	return {
-		quiz: {
-			...quiz,
-			questions:
-				input.mode === 'append' ? [...quiz.questions, ...input.questions] : input.questions,
+		discussion: {
+			questions: input.mode === 'append' ? [...existing, ...input.questions] : input.questions,
 		},
 	};
-}
-
-function kindType(kind: Exclude<AiImportInput, { kind: 'lesson' }>['kind']): LearnSectionKind {
-	if (kind === 'discussion') return 'DISCUSSION';
-	if (kind === 'practice') return 'PRACTICE';
-	return 'QUIZ';
 }
 
 /**
@@ -115,7 +97,7 @@ export function useSectionImport({
 				`/api/admin/learn/lessons/${input.lessonId}/sections`,
 				{
 					method: 'POST',
-					body: JSON.stringify({ type: kindType(input.kind), title: input.title }),
+					body: JSON.stringify({ type: 'DISCUSSION', title: input.title }),
 				},
 			);
 			try {

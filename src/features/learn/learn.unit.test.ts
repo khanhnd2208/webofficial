@@ -4,14 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { resolveCalloutKind } from './callouts';
-import {
-	estimateReadingMinutes,
-	gradeQuiz,
-	normalizeEditorMarkdown,
-	quizForLearner,
-	readQuiz,
-	sectionMinutes,
-} from './content';
+import { estimateReadingMinutes, normalizeEditorMarkdown, sectionMinutes } from './content';
 import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
 import {
 	ANSWER_LABELS,
@@ -27,11 +20,9 @@ import {
 	parseLessonMarkdown,
 	planContentReplace,
 } from './lessonImport';
-import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
 import { readingOutline } from './outline';
 import { compareLectureText, lectureWords } from './textFidelity';
-import type { LearnQuiz } from './types';
 
 const originalLecture = readFileSync(
 	path.join(import.meta.dirname, '__fixtures__/sample-lecture.original.txt'),
@@ -134,7 +125,7 @@ describe('parseLessonMarkdown', () => {
 		expect(parsed.warnings.some((warning) => warning.includes('vượt giới hạn'))).toBe(true);
 	});
 
-	it('reads a quiz section, takeaways, a checkpoint and an hour-long duration', () => {
+	it('skips a retired quiz block but keeps takeaways, a checkpoint and an hour-long duration', () => {
 		const parsed = parseLessonMarkdown(
 			[
 				'# Bài',
@@ -165,9 +156,9 @@ describe('parseLessonMarkdown', () => {
 			question: 'Mâu thuẫn là gì?',
 			correctIndex: 1,
 		});
-		expect(parsed.sections[1].type).toBe('QUIZ');
-		expect(parsed.sections[1].quiz?.questions[0].correctIndex).toBe(0);
-		expect(parsed.sections[1].quiz?.timeLimitMinutes).toBe(10);
+		// The quiz block ends the reading section, then is dropped with a warning.
+		expect(parsed.sections).toHaveLength(1);
+		expect(parsed.warnings.some((warning) => warning.includes('"Kiểm tra": đã bỏ qua'))).toBe(true);
 	});
 	it('escapes a year-like line so it is not parsed as an ordered list start', () => {
 		const parsed = parseLessonMarkdown(
@@ -186,7 +177,7 @@ describe('course markdown exchange', () => {
 		expect(parsed.lessons[1].sections[0].title).toBe('B');
 	});
 
-	it('round-trips a lesson that has a quiz, takeaways and a checkpoint', () => {
+	it('round-trips a lesson with takeaways, a checkpoint and a discussion intro', () => {
 		const source = [
 			'# Bài',
 			'> Mô tả',
@@ -205,12 +196,19 @@ describe('course markdown exchange', () => {
 			'',
 			'Thân.',
 			'',
-			'=== QUIZ: Kiểm tra | 10 phút ===',
+			'=== SECTION: Cách dùng bộ câu hỏi ===',
 			'',
-			'Câu 1: Hỏi?',
-			'A. a',
-			'B. b',
-			'Đáp án: A',
+			'Tự trả lời trước.',
+			'',
+			'=== DISCUSSION: Câu hỏi phản biện ===',
+			'',
+			'Câu 1:',
+			'### Hiểu — Một',
+			'> [!REFLECT] Câu hỏi:',
+			'> Hỏi?',
+			'',
+			'Đáp án mẫu:',
+			'Đáp.',
 			'',
 		].join('\n');
 		const lesson = parseLessonMarkdown(source);
@@ -227,7 +225,11 @@ describe('course markdown exchange', () => {
 		expect(again.sections[0].keyTakeaways).toEqual(['Ý một']);
 		expect(again.sections[0].checkpoint?.correctIndex).toBe(1);
 		expect(again.sections[0].markdown).toBe('Thân.');
-		expect(again.sections[1].quiz?.questions[0].question).toBe('Hỏi?');
+		// The how-to section folds into the discussion, both on import and after an export.
+		expect(lesson.sections.map((section) => section.type)).toEqual(['READING', 'DISCUSSION']);
+		expect(again.sections).toHaveLength(2);
+		expect(again.sections[1].markdown).toBe('Tự trả lời trước.');
+		expect(again.sections[1].discussion?.questions[0].answer).toContain('Đáp.');
 	});
 
 	it('updates matched sections in place and only deletes the ones left over', () => {
@@ -245,84 +247,6 @@ describe('course markdown exchange', () => {
 		expect(plan.updates[1].section.title).toBe('Mới');
 		expect(plan.deletes).toEqual([]);
 		expect(plan.creates).toEqual([]);
-	});
-});
-
-describe('parseQuizPaste', () => {
-	it('reads options, answer lines, star markers and explanations', () => {
-		const { questions, warnings } = parseQuizPaste(
-			[
-				'Câu 1: Mâu thuẫn biện chứng là gì?',
-				'A. Sai sót tư duy',
-				'B. Động lực phát triển',
-				'Đáp án: B',
-				'Giải thích: Đây là nguồn gốc vận động.',
-				'',
-				'Câu 2: Chọn ý đúng',
-				'A. Một',
-				'*B. Hai',
-				'C. Ba',
-			].join('\n'),
-		);
-		expect(warnings).toEqual([]);
-		expect(questions).toHaveLength(2);
-		expect(questions[0]).toMatchObject({
-			question: 'Mâu thuẫn biện chứng là gì?',
-			options: ['Sai sót tư duy', 'Động lực phát triển'],
-			correctIndex: 1,
-			explanation: 'Đây là nguồn gốc vận động.',
-		});
-		expect(questions[1]).toMatchObject({ options: ['Một', 'Hai', 'Ba'], correctIndex: 1 });
-	});
-
-	it('warns about missing answers and skips questions without options', () => {
-		const { questions, warnings } = parseQuizPaste(
-			'Câu 1: Hỏi?\nA. X\nB. Y\n\nCâu 2: Không có phương án',
-		);
-		expect(questions).toHaveLength(1);
-		expect(questions[0].correctIndex).toBe(0);
-		expect(warnings).toHaveLength(2);
-	});
-
-	it('falls back to A and warns when the marked answer letter has no matching option', () => {
-		const { questions, warnings } = parseQuizPaste('Câu 1: Hỏi?\nA. a\nB. b\nC. c\nĐáp án: E');
-		expect(questions).toHaveLength(1);
-		expect(questions[0].correctIndex).toBe(0);
-		expect(warnings.some((warning) => warning.includes('không khớp phương án'))).toBe(true);
-	});
-});
-
-describe('quiz grading', () => {
-	const quiz: LearnQuiz = {
-		passingScorePercent: 60,
-		timeLimitMinutes: null,
-		questions: [
-			{ id: 'a', question: 'A?', options: ['x', 'y'], correctIndex: 1, explanation: '' },
-			{ id: 'b', question: 'B?', options: ['x', 'y'], correctIndex: 0, explanation: 'vì x' },
-		],
-	};
-
-	it('scores answers, drops out-of-range ones and applies the pass mark', () => {
-		const result = gradeQuiz(quiz, { a: 1, b: 7 }, new Date('2026-01-01T00:00:00Z'));
-		expect(result).toMatchObject({
-			score: 1,
-			total: 2,
-			percentage: 50,
-			passed: false,
-			answers: { a: 1 },
-		});
-		expect(gradeQuiz(quiz, { a: 1, b: 0 }).passed).toBe(true);
-	});
-
-	it('never sends the answer key to the learner view', () => {
-		const learner = quizForLearner(quiz);
-		expect(JSON.stringify(learner)).not.toContain('correctIndex');
-		expect(JSON.stringify(learner)).not.toContain('vì x');
-	});
-
-	it('rejects malformed stored quizzes', () => {
-		expect(readQuiz({ questions: [{ id: 'a', options: ['x'], correctIndex: 0 }] })).toBeNull();
-		expect(readQuiz(quiz)).not.toBeNull();
 	});
 });
 
@@ -395,12 +319,12 @@ describe('helpers', () => {
 	it('parses the sample lecture and round-trips the export', () => {
 		const parsed = parseCourseMarkdown(aiLecture);
 		expect(parsed.lessons).toHaveLength(1);
-		expect(parsed.lessons[0].sections.map((section) => section.type)).toEqual(['READING', 'QUIZ']);
+		// The fixture still ends with a quiz block, which the import now skips.
+		expect(parsed.lessons[0].sections.map((section) => section.type)).toEqual(['READING']);
 		expect(parsed.lessons[0].sections[0].markdown).toContain(
 			'> [!DEFINITION] Mâu thuẫn biện chứng',
 		);
 		expect(parsed.lessons[0].sections[0].markdown).toContain('[^1]:');
-		expect(parsed.lessons[0].sections[1].quiz?.questions).toHaveLength(1);
 		const exported = exportLessonMarkdown({
 			title: parsed.lessons[0].lessonTitle,
 			description: parsed.lessons[0].lessonDescription,
@@ -502,7 +426,7 @@ describe('helpers', () => {
 		).toBeGreaterThanOrEqual(3);
 	});
 
-	it('imports practice and discussion sections and round-trips them', () => {
+	it('skips a practice block, imports a discussion and round-trips it', () => {
 		const source = [
 			'# Bài',
 			'',
@@ -536,56 +460,28 @@ describe('helpers', () => {
 			'| 1 | 2 |',
 		].join('\n');
 		const parsed = parseLessonMarkdown(source);
-		expect(parsed.sections.map((section) => section.type)).toEqual(['PRACTICE', 'DISCUSSION']);
-		expect(parsed.sections[0].quiz?.questions[0]).toMatchObject({
-			question: 'Dòng một\ntiếp',
-			correctIndex: 1,
-			explanation: 'Vì đúng.\n\nĐoạn hai.',
-		});
-		expect(parsed.sections[1].discussion?.questions[0].question).toContain('## Nhóm A');
-		expect(parsed.sections[1].discussion?.questions[0].question).toContain('Vì sao?');
-		expect(parsed.sections[1].discussion?.questions[0].answer).toContain(
-			'Nhắc lại Câu 1: không tách.',
-		);
-		expect(parsed.sections[1].discussion?.questions[1].answer).toContain('| 1 | 2 |');
-		expect(parsed.sections[1].discussion?.questions).toHaveLength(2);
+		expect(parsed.sections.map((section) => section.type)).toEqual(['DISCUSSION']);
+		const [discussion] = parsed.sections;
+		expect(discussion.discussion?.questions[0].question).toContain('## Nhóm A');
+		expect(discussion.discussion?.questions[0].question).toContain('Vì sao?');
+		expect(discussion.discussion?.questions[0].answer).toContain('Nhắc lại Câu 1: không tách.');
+		expect(discussion.discussion?.questions[1].answer).toContain('| 1 | 2 |');
+		expect(discussion.discussion?.questions).toHaveLength(2);
 		const exported = exportLessonMarkdown({
 			title: parsed.lessonTitle,
 			description: parsed.lessonDescription,
 			sections: parsed.sections,
 		});
 		const again = parseLessonMarkdown(exported);
-		expect(again.sections[0].quiz?.questions[0].question).toBe(
-			parsed.sections[0].quiz?.questions[0].question,
-		);
-		expect(again.sections[1].discussion?.questions[1].answer).toContain('| 1 | 2 |');
-		expect(
-			sectionMinutes({
-				type: 'PRACTICE',
-				durationMinutes: null,
-				markdown: '',
-				quiz: parsed.sections[0].quiz,
-				discussion: null,
-			}),
-		).toBe(1);
+		expect(again.sections[0].discussion?.questions[1].answer).toContain('| 1 | 2 |');
 		expect(
 			sectionMinutes({
 				type: 'DISCUSSION',
 				durationMinutes: null,
 				markdown: '',
-				quiz: null,
-				discussion: parsed.sections[1].discussion,
+				discussion: discussion.discussion,
 			}),
 		).toBeGreaterThan(0);
-	});
-
-	it('flags a missing quiz answer instead of pretending A is correct', () => {
-		const { questions, warnings, missingAnswer } = parseQuizPaste(
-			'Câu 1: Hỏi?\nA. a\nB. b\nĐáp án: ?',
-		);
-		expect(questions).toHaveLength(1);
-		expect(missingAnswer).toEqual([questions[0].id]);
-		expect(warnings[0]).toMatch(/thiếu đáp án/);
 	});
 
 	it('keeps a discussion answer that mentions an earlier question number', () => {
@@ -619,34 +515,6 @@ describe('helpers', () => {
 		]);
 	});
 
-	it('keeps numbered statements in a stem and option-like lines in an explanation', () => {
-		const { questions, warnings } = parseQuizPaste(
-			[
-				'Câu 1: Cho các nhận định sau:',
-				'1. Vật chất có trước',
-				'2. Ý thức có sau',
-				'Số nhận định đúng là:',
-				'A. 1',
-				'B. 2',
-				'Đáp án: B',
-				'Giải thích:',
-				'A. sai vì thiếu một ý.',
-				'B. đúng.',
-				'',
-				'Câu 2: Tiếp?',
-				'A. Có',
-				'B. Không',
-				'Đáp án: A',
-			].join('\n'),
-		);
-		expect(warnings).toEqual([]);
-		expect(questions).toHaveLength(2);
-		expect(questions[0].question).toBe(
-			'Cho các nhận định sau:\n1. Vật chất có trước\n2. Ý thức có sau\nSố nhận định đúng là:',
-		);
-		expect(questions[0].explanation).toBe('A. sai vì thiếu một ý.\nB. đúng.');
-	});
-
 	it('keeps later answer-like labels inside a discussion answer', () => {
 		const { questions } = parseDiscussionPaste(
 			'Câu 1: Phân tích.\n\nĐáp án mẫu:\nÝ một.\n\nHướng dẫn: nêu ví dụ cụ thể.\n\nTrả lời: đây là trích dẫn.',
@@ -660,8 +528,9 @@ describe('helpers', () => {
 		const parsed = parseLessonMarkdown(
 			'# Bài\n\n=== SECTION: I. Mở đầu ===\nĐoạn.\n\n## Luyện tập: Vận dụng\nĐoạn.\n\n### Kiểm tra: hiểu bài\nĐoạn.\n\n=== LUYỆN TẬP: Ôn ===\nCâu 1: Hỏi?\nA. a\nB. b\nĐáp án: A',
 		);
-		expect(parsed.sections.map((section) => section.type)).toEqual(['READING', 'PRACTICE']);
+		expect(parsed.sections.map((section) => section.type)).toEqual(['READING']);
 		expect(parsed.sections[0].markdown).toContain('## Luyện tập: Vận dụng');
+		expect(parsed.sections[0].markdown).not.toContain('Câu 1: Hỏi?');
 	});
 
 	it('does not count renamed answer labels or a key letter glued to a word as edits', () => {

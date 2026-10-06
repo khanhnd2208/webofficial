@@ -21,7 +21,6 @@ const section: LearnStudioSection = {
 	keyTakeaways: [],
 	markdown: 'Nội dung mới',
 	checkpoint: null,
-	quiz: null,
 	discussion: null,
 	estimatedMinutes: 1,
 	updatedAt: '2026-10-05T10:00:00.000Z',
@@ -47,7 +46,6 @@ describe('RevisionDialog', () => {
 				markdown: 'Nội dung cũ',
 				keyTakeaways: [],
 				checkpoint: null,
-				quiz: null,
 				discussion: null,
 			};
 		});

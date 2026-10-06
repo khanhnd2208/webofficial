@@ -16,7 +16,6 @@ function section(id: string, lessonId: string, patch: Partial<LearnStudioSection
 		keyTakeaways: [],
 		markdown: 'Nội dung',
 		checkpoint: null,
-		quiz: null,
 		discussion: null,
 		estimatedMinutes: 1,
 		updatedAt: '2026-10-05T00:00:00.000Z',

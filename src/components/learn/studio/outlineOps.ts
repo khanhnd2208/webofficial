@@ -66,15 +66,6 @@ export function sectionCopyBody(section: LearnStudioSection, title = section.tit
 		keyTakeaways: section.keyTakeaways.map((item) => item.trim()).filter(Boolean),
 		markdown: section.markdown,
 		checkpoint: section.checkpoint,
-		quiz: section.quiz
-			? {
-					...section.quiz,
-					questions: section.quiz.questions.map((question) => ({
-						...question,
-						id: newQuestionId(),
-					})),
-				}
-			: null,
 		discussion: section.discussion
 			? {
 					questions: section.discussion.questions.map((question) => ({

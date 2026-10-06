@@ -1,15 +1,18 @@
-import type {
-	LearnCourseOutline,
-	LearnQuizResult,
-	LearnSectionKind,
-	LearnSectionProgressState,
-} from './types';
+import type { LearnCourseOutline, LearnSectionKind, LearnSectionProgressState } from './types';
 
 export type LearnCourseStatus = 'not-started' | 'in-progress' | 'completed';
 
 export function courseStatus(completed: number, total: number): LearnCourseStatus {
 	if (total > 0 && completed >= total) return 'completed';
 	return completed > 0 ? 'in-progress' : 'not-started';
+}
+
+/**
+ * Lectures make up the course. Critical questions are an optional advanced layer, so they never
+ * count towards completion, the progress bar or "Học tiếp".
+ */
+export function isRequiredSection(type: LearnSectionKind): boolean {
+	return type === 'READING';
 }
 
 export function percentOf(completed: number, total: number): number {
@@ -27,7 +30,6 @@ export interface LearnFlatSection {
 	sectionIndex: number;
 	completed: boolean;
 	note: string;
-	quizResult: LearnQuizResult | null;
 }
 
 export interface LearnLessonSummary {
@@ -36,12 +38,15 @@ export interface LearnLessonSummary {
 	description: string;
 	index: number;
 	sections: LearnFlatSection[];
+	/** Lectures only, like the course totals. */
 	completedCount: number;
+	requiredCount: number;
 	minutes: number;
 }
 
 /** Everything the overview and the player derive from an outline plus one learner's progress. */
 export interface LearnCourseSummary {
+	/** Every section in course order, lectures and critical questions, for prev/next. */
 	sections: LearnFlatSection[];
 	lessons: LearnLessonSummary[];
 	completedCount: number;
@@ -49,10 +54,8 @@ export interface LearnCourseSummary {
 	percent: number;
 	totalMinutes: number;
 	remainingMinutes: number;
-	quizCount: number;
-	quizzesPassed: number;
 	status: LearnCourseStatus;
-	/** First section not yet completed, in course order; null once everything is done. */
+	/** First lecture not yet completed, in course order; null once every lecture is done. */
 	nextSection: LearnFlatSection | null;
 }
 
@@ -71,7 +74,6 @@ export function summarizeCourse(
 				sectionIndex,
 				completed: Boolean(state?.completed),
 				note: state?.note ?? '',
-				quizResult: state?.quizResult ?? null,
 			};
 		});
 		return {
@@ -80,28 +82,29 @@ export function summarizeCourse(
 			description: lesson.description,
 			index: lessonIndex,
 			sections,
-			completedCount: sections.filter((section) => section.completed).length,
+			completedCount: sections.filter(
+				(section) => isRequiredSection(section.type) && section.completed,
+			).length,
+			requiredCount: sections.filter((section) => isRequiredSection(section.type)).length,
 			minutes: sections.reduce((sum, section) => sum + section.minutes, 0),
 		};
 	});
 	const sections = lessons.flatMap((lesson) => lesson.sections);
-	const completedCount = sections.filter((section) => section.completed).length;
-	const quizzes = sections.filter((section) => section.type === 'QUIZ');
+	const required = sections.filter((section) => isRequiredSection(section.type));
+	const completedCount = required.filter((section) => section.completed).length;
 
 	return {
 		sections,
 		lessons,
 		completedCount,
-		totalCount: sections.length,
-		percent: percentOf(completedCount, sections.length),
-		totalMinutes: sections.reduce((sum, section) => sum + section.minutes, 0),
-		remainingMinutes: sections
+		totalCount: required.length,
+		percent: percentOf(completedCount, required.length),
+		totalMinutes: required.reduce((sum, section) => sum + section.minutes, 0),
+		remainingMinutes: required
 			.filter((section) => !section.completed)
 			.reduce((sum, section) => sum + section.minutes, 0),
-		quizCount: quizzes.length,
-		quizzesPassed: quizzes.filter((section) => section.quizResult?.passed).length,
-		status: courseStatus(completedCount, sections.length),
-		nextSection: sections.find((section) => !section.completed) ?? null,
+		status: courseStatus(completedCount, required.length),
+		nextSection: required.find((section) => !section.completed) ?? null,
 	};
 }
 

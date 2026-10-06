@@ -1,11 +1,11 @@
-import { Prisma, type LearnSection } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
-import { readCheckpoint, readDiscussion, readQuiz, sectionMinutes } from './content';
+import { readCheckpoint, readDiscussion, sectionMinutes } from './content';
 import { mapStudioSection } from './studioSection';
-import type { LearnStudioSection } from './types';
+import type { LearnSectionKind, LearnStudioSection } from './types';
 
 const REVISION_GAP_MS = 10 * 60 * 1000;
 const REVISION_KEEP = 50;
@@ -98,7 +98,6 @@ export async function getSectionRevision(sectionId: string, revisionId: string) 
 		markdown: revision.markdown,
 		keyTakeaways: revision.keyTakeaways,
 		checkpoint: readCheckpoint(revision.checkpoint),
-		quiz: readQuiz(revision.quiz),
 		discussion: readDiscussion(revision.discussion),
 		reason: revision.reason,
 		createdAt: revision.createdAt.toISOString(),
@@ -146,10 +145,9 @@ export async function restoreSectionRevision(
 					? Prisma.DbNull
 					: (revision.discussion as Prisma.InputJsonValue),
 			estimatedMinutes: sectionMinutes({
-				type: current.type as LearnSection['type'],
+				type: current.type as LearnSectionKind,
 				durationMinutes: current.durationMinutes,
 				markdown: revision.markdown,
-				quiz: readQuiz(revision.quiz),
 				discussion: readDiscussion(revision.discussion),
 			}),
 		},

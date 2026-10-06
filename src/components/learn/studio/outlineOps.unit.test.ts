@@ -15,7 +15,6 @@ function section(id: string, lessonId: string, patch: Partial<LearnStudioSection
 		keyTakeaways: [],
 		markdown: '',
 		checkpoint: null,
-		quiz: null,
 		discussion: null,
 		estimatedMinutes: 1,
 		updatedAt: '2026-10-05T00:00:00.000Z',
@@ -54,21 +53,15 @@ describe('applyOrder', () => {
 describe('copies', () => {
 	it('gives copied questions new ids and drops blank takeaways', () => {
 		const source = section('q', 'l1', {
-			type: 'QUIZ',
+			type: 'DISCUSSION',
 			keyTakeaways: ['Ý chính', '  '],
-			quiz: {
-				passingScorePercent: 70,
-				timeLimitMinutes: null,
-				questions: [
-					{ id: 'q_old', question: 'Hỏi?', options: ['A', 'B'], correctIndex: 0, explanation: '' },
-				],
-			},
+			discussion: { questions: [{ id: 'q_old', question: 'Hỏi?', answer: 'Đáp' }] },
 		});
 		const body = sectionCopyBody(source, copyTitle(source.title));
 		expect(body.title).toBe('q (bản sao)');
 		expect(body.keyTakeaways).toEqual(['Ý chính']);
-		expect(body.quiz?.questions[0].id).not.toBe('q_old');
-		expect(body.quiz?.questions[0].question).toBe('Hỏi?');
+		expect(body.discussion?.questions[0].id).not.toBe('q_old');
+		expect(body.discussion?.questions[0].question).toBe('Hỏi?');
 	});
 
 	it('inserts right after the original', () => {

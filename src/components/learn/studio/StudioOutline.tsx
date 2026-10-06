@@ -31,9 +31,12 @@ export const SECTION_KINDS: {
 	hint: string;
 	icon: StudioIconName;
 }[] = [
-	{ type: 'READING', label: 'Mục đọc', hint: 'Bài giảng có callout, bảng, hình', icon: 'reading' },
-	{ type: 'QUIZ', label: 'Bài kiểm tra', hint: 'Trắc nghiệm có chấm điểm', icon: 'quiz' },
-	{ type: 'PRACTICE', label: 'Luyện tập', hint: 'Câu hỏi để học viên tự ôn', icon: 'practice' },
+	{
+		type: 'READING',
+		label: 'Bài giảng',
+		hint: 'Một phần bài giảng: callout, bảng, hình',
+		icon: 'reading',
+	},
 	{
 		type: 'DISCUSSION',
 		label: 'Phản biện',

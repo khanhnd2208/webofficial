@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
 	title: 'Khóa học',
-	description: 'Bài đọc và bài kiểm tra tự học, đi theo từng bài một.',
+	description: 'Bài giảng tự học kèm câu hỏi phản biện, đi theo từng bài một.',
 	robots: { index: false },
 };
 
@@ -79,7 +79,8 @@ export default async function LearnCatalogPage({
 									{firstName ? `Chào ${firstName}, hôm nay học gì?` : 'Khóa học của bạn'}
 								</h1>
 								<p className="ln-page__lead">
-									Đọc từng mục, rồi làm bài kiểm tra. Tiến độ được lưu theo tài khoản của bạn.
+									Đọc bài giảng theo từng phần. Câu hỏi phản biện cuối mỗi bài là phần nâng cao, tùy
+									chọn. Tiến độ được lưu theo tài khoản của bạn.
 								</p>
 							</header>
 

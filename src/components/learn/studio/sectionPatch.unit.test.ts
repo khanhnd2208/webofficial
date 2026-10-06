@@ -20,7 +20,6 @@ const lessons: LearnStudioLesson[] = [
 				keyTakeaways: [],
 				markdown: '',
 				checkpoint: null,
-				quiz: null,
 				discussion: null,
 				estimatedMinutes: 1,
 				updatedAt: '2026-09-25T00:00:00.000Z',
@@ -47,16 +46,10 @@ describe('validateSectionPatch', () => {
 	});
 
 	it('sends the valid fields when one field fails the schema', () => {
-		const quiz = {
-			passingScorePercent: 70,
-			timeLimitMinutes: null,
-			questions: [
-				{ id: 'q', question: 'Câu', options: ['chỉ một'], correctIndex: 0, explanation: '' },
-			],
-		};
-		const result = validateSectionPatch({ markdown: 'Nội dung', quiz });
+		const checkpoint = { question: 'Câu', options: ['chỉ một'], correctIndex: 0, explanation: '' };
+		const result = validateSectionPatch({ markdown: 'Nội dung', checkpoint });
 		expect(result.body).toEqual({ markdown: 'Nội dung' });
-		expect(result.errors.quiz).toBe('Cần ít nhất 2 phương án');
+		expect(result.errors.checkpoint).toBe('Cần ít nhất 2 phương án');
 	});
 
 	it('reports markdown that is too long and omits it', () => {

@@ -14,7 +14,6 @@ function reading(patch: Partial<LearnStudioSection> = {}): LearnStudioSection {
 		keyTakeaways: [],
 		markdown: 'Nội dung',
 		checkpoint: null,
-		quiz: null,
 		discussion: null,
 		estimatedMinutes: 1,
 		updatedAt: '2026-10-05T00:00:00.000Z',
@@ -27,18 +26,20 @@ function lesson(sections: LearnStudioSection[], title = 'Bài 1'): LearnStudioLe
 }
 
 describe('publishChecklist', () => {
-	it('blocks an empty course and a quiz with no questions', () => {
+	it('blocks an empty course and a discussion with no questions', () => {
 		expect(
 			publishChecklist({ description: 'Có', lessons: [] }).blockers.map((item) => item.id),
 		).toEqual(['empty-course']);
-		const quiz = reading({
-			id: 'quiz',
-			type: 'QUIZ',
-			title: 'Bài kiểm tra',
-			quiz: { passingScorePercent: 70, timeLimitMinutes: null, questions: [] },
+		const empty = reading({
+			id: 'disc',
+			type: 'DISCUSSION',
+			title: 'Câu hỏi phản biện',
+			discussion: { questions: [] },
 		});
-		const result = publishChecklist({ description: '', lessons: [lesson([quiz])] });
-		expect(result.blockers.some((item) => item.message.includes('chưa có câu hỏi'))).toBe(true);
+		const result = publishChecklist({ description: '', lessons: [lesson([empty])] });
+		expect(result.blockers.some((item) => item.message.includes('chưa có câu phản biện'))).toBe(
+			true,
+		);
 		expect(result.warnings.some((item) => item.message === 'Khóa thiếu mô tả')).toBe(true);
 		expect(result.warnings.some((item) => item.message.includes('tên mặc định'))).toBe(true);
 	});

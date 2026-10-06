@@ -4,8 +4,6 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 const ICON_MAP = {
 	book: 'book',
 	reading: 'menu_book',
-	quiz: 'quiz',
-	practice: 'assignment',
 	discussion: 'forum',
 	clock: 'schedule',
 	layers: 'layers',

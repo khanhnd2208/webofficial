@@ -32,7 +32,6 @@ interface RevisionBody extends RevisionMeta {
 	markdown: string;
 	keyTakeaways: string[];
 	checkpoint: LearnStudioSection['checkpoint'];
-	quiz: LearnStudioSection['quiz'];
 	discussion: LearnStudioSection['discussion'];
 }
 
@@ -95,7 +94,6 @@ export default function RevisionDialog({
 					markdown: body.markdown,
 					keyTakeaways: body.keyTakeaways,
 					checkpoint: body.checkpoint,
-					quiz: body.quiz,
 					discussion: body.discussion,
 				}),
 				sectionPlainText(section),

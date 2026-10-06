@@ -1,17 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { discussionQuestionView } from './discussionView';
-import { discussionIssues, quizIssues, sectionHint } from './questionHealth';
-import type { LearnQuizQuestion, LearnStudioSection } from './types';
-
-const quiz = (patch: Partial<LearnQuizQuestion> = {}): LearnQuizQuestion => ({
-	id: 'q1',
-	question: 'Hỏi?',
-	options: ['Đúng', 'Sai'],
-	correctIndex: 0,
-	explanation: '',
-	...patch,
-});
+import { discussionIssues, sectionHint } from './questionHealth';
+import type { LearnStudioSection } from './types';
 
 function section(patch: Partial<LearnStudioSection>): LearnStudioSection {
 	return {
@@ -24,7 +15,6 @@ function section(patch: Partial<LearnStudioSection>): LearnStudioSection {
 		keyTakeaways: [],
 		markdown: 'Có chữ',
 		checkpoint: null,
-		quiz: null,
 		discussion: null,
 		estimatedMinutes: 1,
 		updatedAt: '2026-10-05T00:00:00.000Z',
@@ -33,16 +23,6 @@ function section(patch: Partial<LearnStudioSection>): LearnStudioSection {
 }
 
 describe('question health', () => {
-	it('flags an empty correct option separately from a blank distractor', () => {
-		expect(quizIssues(quiz({ options: ['', 'Sai'], correctIndex: 0 }))).toEqual([
-			'Đáp án đúng đang trống',
-		]);
-		expect(quizIssues(quiz({ options: ['Đúng', ''], correctIndex: 0 }))).toEqual([
-			'Phương án trống',
-		]);
-		expect(quizIssues(quiz({ options: ['Chỉ một'] }))).toContain('Cần ít nhất 2 phương án');
-	});
-
 	it('flags a discussion prompt that has no question block', () => {
 		const prompt = '### Áp dụng — Tên\n\nMột đoạn.';
 		const view = discussionQuestionView(prompt);
@@ -53,18 +33,14 @@ describe('question health', () => {
 		expect(discussionIssues({ question: '', answer: 'Có' }, view)).toContain('Thiếu đề bài');
 	});
 
-	it('describes an empty reading and a quiz that needs work', () => {
+	it('describes an empty reading and a discussion that needs work', () => {
 		expect(sectionHint(section({ markdown: '   ' }))).toEqual({ text: 'Trống', warn: true });
 		expect(sectionHint(section({ markdown: 'Có chữ' }))).toBeNull();
 		expect(
 			sectionHint(
 				section({
-					type: 'QUIZ',
-					quiz: {
-						passingScorePercent: 70,
-						timeLimitMinutes: null,
-						questions: [quiz({ options: ['', ''] })],
-					},
+					type: 'DISCUSSION',
+					discussion: { questions: [{ id: 'd1', question: '', answer: '' }] },
 				}),
 			),
 		).toEqual({ text: '1 câu', warn: true });

@@ -26,19 +26,10 @@ const outline: Pick<LearnCourseOutline, 'lessons'> = {
 			description: '',
 			sections: [
 				{ id: 's3', title: 'Tình huống', type: 'READING', minutes: 8 },
-				{ id: 's4', title: 'Kiểm tra', type: 'QUIZ', minutes: 10 },
+				{ id: 's4', title: 'Câu hỏi phản biện', type: 'DISCUSSION', minutes: 10 },
 			],
 		},
 	],
-};
-
-const passed = {
-	score: 4,
-	total: 5,
-	percentage: 80,
-	passed: true,
-	answers: {},
-	completedAt: '2026-09-01T00:00:00.000Z',
 };
 
 describe('summarizeCourse', () => {
@@ -46,21 +37,23 @@ describe('summarizeCourse', () => {
 		const summary = summarizeCourse(outline, {});
 		expect(summary.status).toBe('not-started');
 		expect(summary.nextSection?.id).toBe('s1');
-		expect(summary.totalMinutes).toBe(30);
-		expect(summary.remainingMinutes).toBe(30);
-		expect(summary.quizCount).toBe(1);
+		// Critical questions are optional: neither their minutes nor the section count towards the course.
+		expect(summary.totalCount).toBe(3);
+		expect(summary.totalMinutes).toBe(20);
+		expect(summary.remainingMinutes).toBe(20);
+		expect(summary.sections).toHaveLength(4);
 	});
 
 	it('resumes at the first unfinished section, even past a gap', () => {
 		const summary = summarizeCourse(outline, {
-			s1: { completed: true, note: '', quizResult: null },
-			s3: { completed: true, note: 'nhớ', quizResult: null },
+			s1: { completed: true, note: '' },
+			s3: { completed: true, note: 'nhớ' },
 		});
 		expect(summary.status).toBe('in-progress');
 		expect(summary.nextSection?.id).toBe('s2');
 		expect(summary.completedCount).toBe(2);
-		expect(summary.percent).toBe(50);
-		expect(summary.remainingMinutes).toBe(17);
+		expect(summary.percent).toBe(67);
+		expect(summary.remainingMinutes).toBe(7);
 		expect(summary.lessons.map((lesson) => lesson.completedCount)).toEqual([1, 1]);
 		expect(summary.sections[2]).toMatchObject({
 			lessonIndex: 1,
@@ -69,23 +62,18 @@ describe('summarizeCourse', () => {
 		});
 	});
 
-	it('reports completion and passed quizzes', () => {
-		const done = { completed: true, note: '', quizResult: null };
-		const summary = summarizeCourse(outline, {
-			s1: done,
-			s2: done,
-			s3: done,
-			s4: { ...done, quizResult: passed },
-		});
+	it('completes the course once every lecture is done, critical questions or not', () => {
+		const done = { completed: true, note: '' };
+		const summary = summarizeCourse(outline, { s1: done, s2: done, s3: done });
 		expect(summary.status).toBe('completed');
 		expect(summary.nextSection).toBeNull();
 		expect(summary.percent).toBe(100);
-		expect(summary.quizzesPassed).toBe(1);
+		expect(summary.lessons[1]).toMatchObject({ completedCount: 1, requiredCount: 1 });
 	});
 
 	it('keeps note bodies out of the client curriculum', () => {
 		const summary = summarizeCourse(outline, {
-			s2: { completed: false, note: '  ghi chú  ', quizResult: null },
+			s2: { completed: false, note: '  ghi chú  ' },
 		});
 		const lessons = toCurriculumLessons(summary.lessons);
 		expect(lessons[0].sections[1]).toMatchObject({ id: 's2', hasNote: true });

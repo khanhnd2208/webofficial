@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import LearnCompleteButton from './LearnCompleteButton';
 
-/** Last step of a practice or discussion stepper: a link once the section is done, otherwise the complete button. */
+/** Last step of the discussion stepper: a link once the section is done, otherwise the complete button. */
 export default function LearnStepperFinish({
 	sectionId,
 	completed,

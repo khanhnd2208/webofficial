@@ -1,5 +1,5 @@
 import { unresolvedSectionImages } from './sectionImages';
-import { discussionIssues, quizIssues } from './questionHealth';
+import { discussionIssues } from './questionHealth';
 import { discussionQuestionViews } from './discussionView';
 import type { LearnStudioLesson } from './types';
 
@@ -9,13 +9,7 @@ export interface CheckItem {
 	message: string;
 }
 
-const DEFAULT_TITLES = new Set([
-	'Mục mới',
-	'Bài học mới',
-	'Bài kiểm tra',
-	'Luyện tập',
-	'Câu hỏi phản biện',
-]);
+const DEFAULT_TITLES = new Set(['Mục mới', 'Bài học mới', 'Câu hỏi phản biện']);
 
 export function publishChecklist(input: { description: string; lessons: LearnStudioLesson[] }): {
 	blockers: CheckItem[];
@@ -66,25 +60,6 @@ export function publishChecklist(input: { description: string; lessons: LearnStu
 				id: `empty-${section.id}`,
 				sectionId: section.id,
 				message: `${where}: mục đọc trống`,
-			});
-		}
-		if (section.type === 'QUIZ' || section.type === 'PRACTICE') {
-			const questions = section.quiz?.questions ?? [];
-			if (!questions.length) {
-				blockers.push({
-					id: `quiz-empty-${section.id}`,
-					sectionId: section.id,
-					message: `${where}: chưa có câu hỏi`,
-				});
-			}
-			questions.forEach((question, index) => {
-				for (const issue of quizIssues(question)) {
-					blockers.push({
-						id: `quiz-${section.id}-${question.id}-${issue}`,
-						sectionId: section.id,
-						message: `${where}: câu ${index + 1} — ${issue}`,
-					});
-				}
 			});
 		}
 		if (section.type === 'DISCUSSION') {

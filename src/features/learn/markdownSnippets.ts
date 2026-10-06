@@ -57,21 +57,8 @@ export const CALLOUT_SNIPPETS: MarkdownSnippet[] = CALLOUT_KINDS.map(calloutSnip
 export const IMPORT_SNIPPETS: MarkdownSnippet[] = [
 	{
 		id: 'import-section',
-		label: 'Mục đọc',
+		label: 'Bài giảng',
 		text: `=== SECTION: Tên mục ===\n\n${CARET}Nội dung mục…`,
-	},
-	{
-		id: 'import-quiz',
-		label: 'Bài kiểm tra',
-		text: [
-			'=== QUIZ: Kiểm tra cuối bài ===',
-			'',
-			'Câu 1: Câu hỏi?',
-			'A. Phương án một',
-			'B. Phương án hai',
-			'Đáp án: A',
-			'Giải thích: Vì sao A đúng.',
-		].join('\n'),
 	},
 	{
 		id: 'import-discussion',

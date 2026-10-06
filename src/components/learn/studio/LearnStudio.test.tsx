@@ -43,7 +43,6 @@ const course: LearnStudioCourse = {
 					keyTakeaways: [],
 					markdown: 'Bản lúc mở',
 					checkpoint: null,
-					quiz: null,
 					discussion: null,
 					estimatedMinutes: 1,
 					updatedAt: '2026-09-25T00:00:00.000Z',

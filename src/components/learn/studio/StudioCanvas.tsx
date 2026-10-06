@@ -4,12 +4,9 @@ import { LiveRegion } from '@/components/ui/Dialog';
 import { LEARN_SECTION_KIND_LABELS, type LearnStudioSection } from '@/features/learn/types';
 
 import LearnDiscussionEditor from './LearnDiscussionEditor';
-import LearnQuizEditor from './LearnQuizEditor';
 import LearnRichEditor from './LearnRichEditor';
 import type { SectionPatch } from './sectionPatch';
 import type { ImportRequest } from './useSectionImport';
-
-const EMPTY_QUIZ = { passingScorePercent: 70, timeLimitMinutes: null, questions: [] };
 
 /** The section being edited: its title, then the editor that fits its kind. */
 export default function StudioCanvas({
@@ -73,32 +70,31 @@ export default function StudioCanvas({
 					</p>
 				) : null}
 				<LiveRegion message={keptTitle ?? ''} />
-				{section.type === 'QUIZ' || section.type === 'PRACTICE' ? (
-					<LearnQuizEditor
-						sectionId={section.id}
-						variant={section.type === 'PRACTICE' ? 'practice' : 'quiz'}
-						quiz={section.quiz ?? EMPTY_QUIZ}
-						onChange={(quiz) => onPatch({ quiz })}
-						onOpenImport={() =>
-							onOpenImport({
-								kind: section.type === 'PRACTICE' ? 'practice' : 'quiz',
-								locked: true,
-								target: target(section.quiz?.questions.length ?? 0),
-							})
-						}
-					/>
-				) : section.type === 'DISCUSSION' ? (
-					<LearnDiscussionEditor
-						discussion={section.discussion ?? { questions: [] }}
-						onChange={(discussion) => onPatch({ discussion })}
-						onOpenImport={() =>
-							onOpenImport({
-								kind: 'discussion',
-								locked: true,
-								target: target(section.discussion?.questions.length ?? 0),
-							})
-						}
-					/>
+				{section.type === 'DISCUSSION' ? (
+					<>
+						<details className="ln-studio__intro" open={Boolean(section.markdown.trim())}>
+							<summary>Lời dẫn: cách dùng bộ câu hỏi</summary>
+							<p className="ln-studio__intro-hint">
+								Hiện ở đầu trang phản biện, thu gọn được. Để trống nếu không cần.
+							</p>
+							<LearnRichEditor
+								value={section.markdown}
+								onChange={(markdown) => onPatch({ markdown })}
+								onOpenHelp={onOpenHelp}
+							/>
+						</details>
+						<LearnDiscussionEditor
+							discussion={section.discussion ?? { questions: [] }}
+							onChange={(discussion) => onPatch({ discussion })}
+							onOpenImport={() =>
+								onOpenImport({
+									kind: 'discussion',
+									locked: true,
+									target: target(section.discussion?.questions.length ?? 0),
+								})
+							}
+						/>
+					</>
 				) : (
 					<LearnRichEditor
 						value={section.markdown}

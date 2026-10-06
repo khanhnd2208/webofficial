@@ -26,8 +26,7 @@ KHỐI HỌC THUẬT — chỉ bọc, không đổi chữ. Mỗi dòng trong kh�
 - "Ví dụ…", "Ví dụ tổng hợp" → [!EXAMPLE], gồm cả danh sách đi kèm
 Tiêu đề sau [!KIND] chỉ khi gốc có một dòng nhãn riêng cho khối đó (ví dụ "Ví dụ 3: Toyota") → chuyển nguyên dòng đó lên làm tiêu đề, không lặp lại trong thân. Không có thì để trống.
 - > [!TAKEAWAYS] chỉ cho "Mục tiêu" hoặc "Bạn sẽ nắm được" ở đầu mục. "Ghi nhớ" hoặc "Tổng kết" ở cuối bài → > [!IMPORTANT] rồi nhãn nguyên văn, vì [!TAKEAWAYS] hiện ở đầu mục với nhãn "Bạn sẽ nắm được".
-- === QUIZ: <tên nguyên văn> === chỉ khi gốc gọi khối đó là bài kiểm tra. Định dạng: Câu n: / A. … / Đáp án: X / Giải thích: (chỉ khi gốc có).
-- === PRACTICE: <tên nguyên văn> === cho bộ trắc nghiệm luyện tập có đáp án (không phải bài kiểm tra). Cùng định dạng với QUIZ. Không có đáp án → Đáp án: ?, không tự chọn.
+- Khóa học chỉ gồm bài giảng và câu hỏi phản biện. Bộ trắc nghiệm (bài kiểm tra, luyện tập có phương án A/B/C) không đưa vào kết quả; ghi tên khối đó bên ngoài khối kết quả để tác giả biết.
 - === DISCUSSION: <tên nguyên văn> === cho câu hỏi có đáp án mẫu hoặc gợi ý trả lời. Mỗi câu: Câu n: đứng riêng, tiêu đề thành ###, tình huống thành [!EXAMPLE], câu hỏi thành [!REFLECT], rồi một dòng Đáp án mẫu:. Trong đáp án, nhãn phần thành ###, mỗi bước thành ####, câu kết ngắn thành [!IMPORTANT]. Không dùng ## bên trong câu. Câu hỏi không có đáp án vẫn là [!REFLECT] trong bài đọc, không đưa vào DISCUSSION.
 
 CẢNH BÁO: BẢN GỐC CHÉP TỪ DOCS/WORD
@@ -61,33 +60,6 @@ const STRUCTURE_GUIDE = `- Bảng bị dàn phẳng (mỗi ô một dòng): nh�
 - Danh sách: - cho gạch đầu dòng. Giữ số thứ tự gốc.
 - In đậm chỉ khi gốc đã in đậm, hoặc nhãn luận điểm đứng riêng.
 - Sơ đồ Mermaid có sẵn thì bọc trong ${CODE_FENCE}mermaid, không đổi chữ.`;
-
-export const LEARN_QUIZ_FORMAT_PROMPT = `Bạn là công cụ chỉ gắn định dạng cho bộ trắc nghiệm. Mọi chữ của câu hỏi, phương án và giải thích phải giữ nguyên từng ký tự. Không sửa chính tả, không dịch, không rút gọn, không thêm câu, phương án hay giải thích, không tự chọn đáp án.
-
-MẪU MỖI CÂU
-Câu 1: …
-A. …
-B. …
-Đáp án: B
-Giải thích: …
-(Giải thích chỉ khi gốc có, được nhiều dòng. Một dòng trống giữa các câu.)
-
-CHỈ ĐƯỢC ĐỔI NHÃN
-- Đánh số lại thành Câu 1, Câu 2, …
-- a) hoặc 1) thành A. B. C.
-- Đáp án lấy từ dấu trong gốc (in đậm, ✓, "(đúng)") hoặc bảng đáp án cuối ("1-B, 2-C") rồi gắn vào đúng câu.
-- Gốc không có đáp án → Đáp án: ?
-- Câu nhiều đáp án đúng hoặc câu tự luận: không chuyển. Liệt kê nguyên văn bên ngoài khối kết quả.
-
-${STRUCTURE_GUIDE}
-
-CÁCH TRẢ KẾT QUẢ
-- Toàn bộ kết quả nằm trong MỘT khối ${FENCE}markdown. Không chữ nào ngoài khối, trừ danh sách câu không chuyển được.
-- Bài dài: dừng ở hết một câu, đóng khối, viết <<<CÒN TIẾP>>>. Khi tôi nhắn "tiếp", tiếp tục từ câu kế, không lặp.
-- Tự kiểm: số câu trắc nghiệm bằng số câu một đáp án trong gốc.
-
---- BỘ CÂU GỐC ---
-[DÁN VÀO ĐÂY]`;
 
 export const LEARN_DISCUSSION_FORMAT_PROMPT = `Bạn là công cụ chỉ gắn định dạng cho câu hỏi phản biện và đáp án mẫu. Mọi chữ, số, dấu câu và thứ tự phải giữ nguyên. Không sửa chính tả, không dịch, không rút gọn, không thêm câu, bước, tình huống hay đáp án. Chỉ được thêm ký hiệu Markdown liệt kê bên dưới, và chỉ được đổi đúng một nhãn: nhãn mở đáp án thành "Đáp án mẫu:".
 
@@ -156,9 +128,7 @@ CÁCH TRẢ KẾT QUẢ
 --- CÂU HỎI GỐC ---
 [DÁN VÀO ĐÂY]`;
 
-/** Quizzes and practice share one paste format. */
 export const LEARN_FORMAT_PROMPTS = {
 	lesson: LEARN_LESSON_FORMAT_PROMPT,
-	quiz: LEARN_QUIZ_FORMAT_PROMPT,
 	discussion: LEARN_DISCUSSION_FORMAT_PROMPT,
 } as const;
