@@ -5,7 +5,9 @@ import sharp from 'sharp';
 // Check assets introduced by this branch; older originals are retained for review.
 const files = new Set(
 	[
-		execFileSync('git', ['diff', '--name-only', 'origin/main'], { encoding: 'utf8' }),
+		execFileSync('git', ['diff', '--name-only', '--diff-filter=d', 'origin/main'], {
+			encoding: 'utf8',
+		}),
 		execFileSync('git', ['ls-files', '--others', '--exclude-standard'], { encoding: 'utf8' }),
 	]
 		.join('\n')
