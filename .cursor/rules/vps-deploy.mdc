@@ -19,6 +19,9 @@ alwaysApply: false
 # Production deploy
 
 Runbook: `docs/deployment/VPS.md`. Read it before changing anything here.
+Server access, keys, controls, and the change log: `docs/deployment/SECURITY.md`.
+Any change on the VPS or in GitHub settings follows its rules and gets a
+change-log line.
 
 ## How releases happen
 

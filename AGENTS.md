@@ -21,6 +21,7 @@ toiladuykhanh.com: personal site plus teaching platform. One Next.js 16 app, Mon
 3. Never commit or print secrets: `.env*` (except `.env.example`), passwords, tokens, keys, database dumps. Read variable names from `.env.example`.
 4. Production data changes only through the running app (Studio pages or admin APIs with an admin session). Never write to the production database directly or over SSH. Seed scripts skip existing rows, so they do not update production.
 5. Ask the user first before: a Prisma migration, deleting data or tracked files outside your task, adding a dependency or a major upgrade, force-updating anything shared, or posting anything outside the repo.
+6. Server and GitHub-settings changes (SSH, firewall, users, keys, Nginx, packages, secrets, branch rules) follow `docs/deployment/SECURITY.md`: back up first, keep a rollback, ask the user before anything that can lock them out or take sites down, and add a change-log line.
 
 ## Workspace
 
@@ -73,7 +74,7 @@ Do these steps yourself, without asking, as soon as the task is done (`ship-chan
 
 1. Push your branch and open a pull request to `main`; fill in `.github/pull_request_template.md`.
 2. Wait for CI: `gh pr checks <number> --watch`. CI runs static checks, unit/integration, component, build, and end-to-end specs for the areas you touched. Fix failures on the branch and wait again.
-3. When every check is green, merge with a merge commit: `gh pr merge <number> --merge`. Squash or rebase merges break `.git-blame-ignore-revs`. Do not use `--auto`: `main` has no required checks, so it merges at once.
+3. When every check is green, merge with a merge commit: `gh pr merge <number> --merge`. Squash or rebase merges break `.git-blame-ignore-revs`. `main` requires the five CI checks, so `gh pr merge <number> --auto --merge` also waits for green.
 4. The merge deploys. Watch it with `gh run watch` on the latest `deploy.yml` run and report the result. Never start a local deploy while one is running. Runbook: `docs/deployment/VPS.md`.
 5. Remove the worktree and the local branch.
 
