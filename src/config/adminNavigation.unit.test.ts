@@ -30,7 +30,6 @@ describe('admin navigation', () => {
 		const hrefs = ARCHIVE_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
 		expect(hrefs).toContain(routes.admin.posts);
 		expect(hrefs).toContain(routes.admin.myClass);
-		expect(hrefs).toContain(routes.admin.courses);
 		expect(hrefs).toContain(routes.admin.vocabulary);
 		expect(hrefs).toContain(routes.admin.messages);
 		expect(hrefs).not.toContain(routes.admin.teaching);

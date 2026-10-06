@@ -93,7 +93,7 @@ const nextConfig: NextConfig = {
 			{ source: '/profile', destination: '/tai-khoan', permanent: true },
 
 			// Learning account alias
-			{ source: '/dashboard', destination: '/tai-khoan/hoc', permanent: true },
+			{ source: '/dashboard', destination: '/khoa-hoc', permanent: true },
 
 			// Admin vocabulary alias
 			{ source: '/admin/vocabulary', destination: '/admin/tools/vocabulary', permanent: true },

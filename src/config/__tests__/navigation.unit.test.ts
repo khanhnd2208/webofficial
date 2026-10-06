@@ -95,7 +95,7 @@ describe('publication gates', () => {
 		expect(
 			links.every((l) => PUBLIC_NAV_ITEMS.find((i) => i.href === l.href)?.status === 'published'),
 		).toBe(true);
-		expect(links.some((l) => l.href === routes.learn)).toBe(false);
+		expect(links.some((l) => l.href === '/hoc')).toBe(false);
 		expect(links.some((l) => l.href === routes.accompany)).toBe(false);
 	});
 
@@ -123,7 +123,7 @@ describe('publication gates', () => {
 		expect(allHrefs).not.toContain(routes.notes);
 		expect(allHrefs).not.toContain(routes.posts);
 		expect(allHrefs).not.toContain(routes.archive);
-		expect(allHrefs).not.toContain(routes.learn);
+		expect(allHrefs).not.toContain('/hoc');
 		expect(allHrefs).not.toContain(routes.accompany);
 	});
 });
@@ -152,7 +152,6 @@ describe('sign-in gates', () => {
 			'/my-space/my-class',
 			'/khoa-hoc/hrm?s=1',
 			'/my-space/board-game/test?game=spy-fall',
-			'/hoc/khoa-hoc/quan-tri/bai/bai-1',
 		]) {
 			expect(isSignInRequiredPath(path), path).toBe(true);
 		}
@@ -195,6 +194,8 @@ describe('redirect map', () => {
 		);
 		expect(bySource['/hoc']).toBe(routes.toc);
 		expect(bySource['/hoc/chuong-trinh']).toBe(routes.toc);
+		expect(bySource['/hoc/khoa-hoc/:path*']).toBe(routes.learnCourses);
+		expect(bySource['/tai-khoan/hoc']).toBe(routes.learnCourses);
 	});
 });
 
@@ -233,7 +234,6 @@ describe('route map', () => {
 		expect(routes.notes).toBe('/ghi-chep');
 		expect(routes.growth).toBe('/phat-trien-ban-than');
 		expect(routes.archive).toBe('/archive');
-		expect(routes.accountLearning).toBe('/tai-khoan/hoc');
 		expect(routes.admin.website).toBe('/admin/website');
 		expect(routes.admin.archive).toBe('/admin/archive');
 	});
@@ -253,10 +253,7 @@ describe('site header trail', () => {
 		expect(getSiteTrail('/lien-he')).toEqual([{ label: 'Liên hệ' }]);
 		expect(getSiteTrail('/dang-nhap')).toEqual([{ label: 'Đăng nhập' }]);
 		expect(getSiteTrail('/tai-khoan')).toEqual([{ label: 'Tài khoản' }]);
-		expect(getSiteTrail('/tai-khoan/hoc')).toEqual([
-			{ label: 'Tài khoản', href: '/tai-khoan' },
-			{ label: 'Khu học' },
-		]);
+		expect(getSiteTrail('/tai-khoan/ho-so')).toEqual([{ label: 'Tài khoản', href: '/tai-khoan' }]);
 		expect(getSiteTrail('/chinh-sach/bao-mat')).toEqual([{ label: 'Chính sách' }]);
 		expect(getSiteTrail('/my-space')).toEqual([{ label: 'Không gian của tôi' }]);
 		expect(getSiteTrail('/my-space/board-game')).toEqual([
@@ -311,7 +308,6 @@ describe('site header trail', () => {
 			'/my-space/my-class/ai50',
 			'/my-space/teaching/class-1',
 			'/my-space/courses/ai50',
-			'/hoc/khoa-hoc/ai50',
 			'/khoa-hoc',
 			'/khoa-hoc/ai50',
 			'/my-space/board-game/spy-fall',

@@ -26,7 +26,6 @@ export default function robots(): MetadataRoute.Robots {
 					'/my-space/my-class/',
 					'/vocabulary',
 					'/vocabulary/',
-					'/hoc/khoa-hoc/*/bai/',
 					'/dashboard',
 					'/archive',
 					'/archive/',

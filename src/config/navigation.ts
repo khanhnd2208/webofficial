@@ -159,7 +159,6 @@ export const INTERNAL_CHROME_PREFIXES = [
 	'/vocabulary',
 	'/tai-khoan',
 	'/dang-nhap',
-	'/hoc/',
 	'/my-space/my-class',
 	'/my-space/teaching',
 	'/my-space/courses',
@@ -188,9 +187,6 @@ const SIGN_IN_REQUIRED_PREFIXES = [
 	routes.boardGameTest,
 ] as const;
 
-/** Old lesson reader: the course page is public, its lessons need an account. */
-const SIGN_IN_REQUIRED_PATTERNS = [/^\/hoc\/khoa-hoc\/[^/]+\/bai\//] as const;
-
 function matchesPrefix(pathname: string, prefix: string): boolean {
 	return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
@@ -207,10 +203,7 @@ export function afterSignOutPath(location: string): string {
 export function isSignInRequiredPath(location: string): boolean {
 	const pathname = location.split(/[?#]/)[0] || routes.home;
 	if (pathname === routes.learnCourses) return false;
-	return (
-		SIGN_IN_REQUIRED_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix)) ||
-		SIGN_IN_REQUIRED_PATTERNS.some((pattern) => pattern.test(pathname))
-	);
+	return SIGN_IN_REQUIRED_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix));
 }
 
 /** Public marketing / utility surfaces that use minimal chrome instead of Navbar. */
@@ -303,7 +296,7 @@ export const PUBLIC_NAV_LINKS: NavLink[] = getDesktopNavLinks();
 
 /** Authenticated user menu */
 export const USER_MENU_LINKS: NavLink[] = [
-	{ href: routes.accountLearning, label: 'Khu học' },
+	{ href: routes.learnCourses, label: 'Khóa học của tôi' },
 	{ href: routes.account, label: 'Tài khoản' },
 ];
 
@@ -336,9 +329,6 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 	if (path === routes.contact) return [{ label: 'Liên hệ' }];
 	if (path === routes.login) return [{ label: 'Đăng nhập' }];
 	if (path === routes.account) return [{ label: 'Tài khoản' }];
-	if (path === routes.accountLearning) {
-		return [{ label: 'Tài khoản', href: routes.account }, { label: 'Khu học' }];
-	}
 	if (path.startsWith(`${routes.account}/`)) {
 		return [{ label: 'Tài khoản', href: routes.account }];
 	}
@@ -370,7 +360,6 @@ export function isSiteHeaderPath(pathname: string): boolean {
 	if (path.startsWith('/my-space/my-class')) return false;
 	if (path.startsWith('/my-space/teaching')) return false;
 	if (path.startsWith('/my-space/courses')) return false;
-	if (path === '/hoc' || path.startsWith('/hoc/')) return false;
 	if (path === routes.learnCourses || path.startsWith(`${routes.learnCourses}/`)) return false;
 	if (path.startsWith(`${routes.boardGame}/`)) return false;
 	if (isMySpaceQuizPlayPath(path)) return false;

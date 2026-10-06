@@ -46,7 +46,7 @@ function applyLegacyAliases(path: string): string {
 	const pathname = pathnameOf(path);
 	const search = path.slice(pathname.length);
 	if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
-		return `/tai-khoan/hoc${search}`;
+		return `/khoa-hoc${search}`;
 	}
 	if (pathname === '/giang-day' || pathname.startsWith('/giang-day/')) {
 		return `/my-space/teaching${search}`;

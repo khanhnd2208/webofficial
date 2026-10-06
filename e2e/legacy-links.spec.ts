@@ -18,6 +18,14 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
+	test('the retired Chương–Bài course links land on the course catalog', async ({ request }) => {
+		for (const path of ['/hoc/khoa-hoc/quan-tri/bai/bai-1', '/tai-khoan/hoc', '/dashboard']) {
+			const response = await request.get(path, { maxRedirects: 0 });
+			expect(response.status(), path).toBe(308);
+			expect(new URL(response.headers().location, 'http://x').pathname, path).toBe('/khoa-hoc');
+		}
+	});
+
 	test('public course catalog and learner catalog remain accessible once signed in', async ({
 		page,
 		context,

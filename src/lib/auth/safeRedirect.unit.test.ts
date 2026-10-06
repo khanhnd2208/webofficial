@@ -46,7 +46,7 @@ describe('sanitizeAuthRedirect', () => {
 	});
 
 	it('rewrites retired account aliases', () => {
-		expect(sanitizeAuthRedirect('/dashboard')).toBe('/tai-khoan/hoc');
+		expect(sanitizeAuthRedirect('/dashboard')).toBe('/khoa-hoc');
 		expect(sanitizeAuthRedirect('/giang-day')).toBe('/my-space/teaching');
 		expect(sanitizeAuthRedirect('/admin/teaching')).toBe('/my-space/teaching');
 		expect(sanitizeAuthRedirect('/admin/teaching/class-1?tab=cp&week=2')).toBe(
