@@ -703,7 +703,11 @@ echo "Removing build-only development dependencies from the runtime release"
 if ! HUSKY=0 npm prune --omit=dev --ignore-scripts --no-package-lock; then
 	echo "npm prune failed on the installed tree; reinstalling production dependencies from the lockfile"
 	rm -rf node_modules
-	HUSKY=0 npm ci --omit=dev
+	# Skip the root `prepare` script: husky is a devDependency, so it is absent
+	# here. It used to resolve from a stray node_modules in the deploy root.
+	# Prisma's own install scripts still run through `npm rebuild`.
+	HUSKY=0 npm ci --omit=dev --ignore-scripts
+	npm rebuild prisma @prisma/engines
 	./node_modules/.bin/prisma generate
 fi
 test -x ./node_modules/.bin/next
