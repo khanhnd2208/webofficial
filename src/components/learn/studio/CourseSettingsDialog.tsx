@@ -143,7 +143,11 @@ export default function CourseSettingsDialog({
 						Xóa toàn bộ bài, mục và tiến độ của người học. Gõ tên khóa học để xác nhận.
 					</p>
 					<div className="mt-2 flex gap-2">
+						<label className="sr-only" htmlFor="ln-delete-course">
+							Gõ tên khóa học để xác nhận xóa
+						</label>
 						<input
+							id="ln-delete-course"
 							className="ln-input min-w-0 flex-1"
 							value={confirmDelete}
 							onChange={(event) => setConfirmDelete(event.target.value)}

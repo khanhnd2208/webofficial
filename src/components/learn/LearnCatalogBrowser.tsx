@@ -5,6 +5,7 @@ import { useDeferredValue, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
+import { normalizeSearch as normalize } from '@/features/learn/search';
 import {
 	courseHue,
 	courseStatus,
@@ -41,15 +42,6 @@ const STATUS_LABEL: Record<LearnCourseStatus, string> = {
 	'in-progress': 'Đang học',
 	completed: 'Đã hoàn thành',
 };
-
-function normalize(value: string) {
-	return value
-		.normalize('NFD')
-		.replace(/[̀-ͯ]/g, '')
-		.replace(/đ/g, 'd')
-		.replace(/Đ/g, 'D')
-		.toLowerCase();
-}
 
 export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseListItem[] }) {
 	const [tab, setTab] = useState<Tab>('all');

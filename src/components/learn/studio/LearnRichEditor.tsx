@@ -39,6 +39,7 @@ import { StudioIcon } from './icons';
 import { filterSlashCommands, type SlashCommand } from './slashCommands';
 
 import EditorToolbar from './EditorToolbar';
+import MarkdownInsertBar from './MarkdownInsertBar';
 import SlashMenu, { type SlashState } from './SlashMenu';
 
 type Mode = 'visual' | 'markdown';
@@ -47,13 +48,49 @@ type Mode = 'visual' | 'markdown';
  * WYSIWYG section editor that reads and writes NDK markdown. A Markdown tab exposes the
  * raw source for pasting AI output; both views stay in sync.
  */
+const PREVIEW_KEY = 'ln-md-preview';
+
+function readPreviewShown(): boolean {
+	try {
+		return window.localStorage.getItem(PREVIEW_KEY) !== 'off';
+	} catch {
+		return true;
+	}
+}
+
 export default function LearnRichEditor({
 	value,
 	onChange,
+	onOpenHelp,
 }: {
 	value: string;
 	onChange: (markdown: string) => void;
+	onOpenHelp?: () => void;
 }) {
+	const [previewShown, setPreviewShown] = useState(true);
+	const previewRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		// The remembered choice is only readable after hydration.
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setPreviewShown(readPreviewShown());
+	}, []);
+	function togglePreview() {
+		const next = !previewShown;
+		setPreviewShown(next);
+		try {
+			window.localStorage.setItem(PREVIEW_KEY, next ? 'on' : 'off');
+		} catch {
+			// Storage blocked: the toggle still works for this visit.
+		}
+	}
+	/** Keep the preview at the same relative position as the source while typing or scrolling. */
+	function syncPreview(area: HTMLTextAreaElement) {
+		const preview = previewRef.current;
+		if (!preview) return;
+		const range = area.scrollHeight - area.clientHeight;
+		const ratio = range > 0 ? area.scrollTop / range : 0;
+		preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
+	}
 	const [mode, setMode] = useState<Mode>(() =>
 		findUnsupportedMarkdown(value).length ? 'markdown' : 'visual',
 	);
@@ -522,8 +559,18 @@ export default function LearnRichEditor({
 							</div>
 						</div>
 					) : null}
-					<div className="ln-editor__split">
+					<MarkdownInsertBar
+						textareaRef={textareaRef}
+						value={source}
+						onChange={changeSource}
+						previewShown={previewShown}
+						onTogglePreview={togglePreview}
+						onOpenHelp={onOpenHelp}
+					/>
+					<div className="ln-editor__split" data-preview={previewShown ? 'true' : 'false'}>
 						<textarea
+							aria-label="Nội dung Markdown"
+							onScroll={(event) => syncPreview(event.currentTarget)}
 							ref={textareaRef}
 							onPaste={(event) => {
 								const files = [...event.clipboardData.files].filter((file) =>
@@ -566,9 +613,17 @@ export default function LearnRichEditor({
 							onBlur={() => flushPending()}
 							placeholder={'## Tiêu đề\n\nNội dung…\n\n> [!DEFINITION] Khái niệm\n> Định nghĩa…'}
 						/>
-						<div className="ln-editor__preview" aria-label="Xem trước">
-							<LearnMarkdown markdown={source} showMissingImages />
-						</div>
+						{previewShown ? (
+							<div
+								ref={previewRef}
+								className="ln-editor__preview"
+								role="region"
+								aria-label="Xem trước như học viên"
+							>
+								<p className="ln-editor__preview-label">Xem trước như học viên</p>
+								<LearnMarkdown markdown={source} showMissingImages />
+							</div>
+						) : null}
 					</div>
 				</div>
 			)}

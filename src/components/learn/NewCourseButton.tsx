@@ -42,7 +42,11 @@ export default function NewCourseButton() {
 	return (
 		<form onSubmit={create} className="flex w-full max-w-md flex-col gap-2 sm:w-auto">
 			<div className="flex gap-2">
+				<label className="sr-only" htmlFor="ln-new-course">
+					Tên khóa học
+				</label>
 				<input
+					id="ln-new-course"
 					autoFocus
 					value={title}
 					onChange={(event) => setTitle(event.target.value)}
@@ -54,6 +58,9 @@ export default function NewCourseButton() {
 				/>
 				<button type="submit" className="ln-btn ln-btn--primary" disabled={busy || !title.trim()}>
 					{busy ? 'Đang tạo…' : 'Tạo'}
+				</button>
+				<button type="button" className="ln-btn" disabled={busy} onClick={() => setOpen(false)}>
+					Hủy
 				</button>
 			</div>
 			{error ? <p className="text-sm text-error">{error}</p> : null}
