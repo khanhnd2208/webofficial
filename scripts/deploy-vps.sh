@@ -8,7 +8,7 @@
 
 set -Eeuo pipefail
 
-VPS_HOST="${VPS_HOST:-webofficial-vps}"
+VPS_HOST="${VPS_HOST:-deploy@webofficial-vps}"
 VPS_PORT="${VPS_PORT:-22}"
 VPS_DIR="${VPS_DIR:-/var/www/webofficial}"
 DEPLOY_KEY="${DEPLOY_KEY:-}"
@@ -95,6 +95,10 @@ if [[ "$MODE" == "check" ]]; then
 	log "Checking SSH and production status (read-only)"
 	run_ssh "bash -s -- '$VPS_DIR' '$PM2_APP_NAME' '$LIVE_PORT' '$CHECK_MAX_DISK_USED_PERCENT'" <<'REMOTE_CHECK'
 set -Eeuo pipefail
+if [[ "$(id -u)" -eq 0 ]]; then
+	echo "Connect as the deploy user, not root: PM2 and the app files belong to deploy." >&2
+	exit 1
+fi
 deploy_root="$1"
 app_name="$2"
 live_port="$3"
@@ -208,6 +212,10 @@ run_ssh "flock -n '$VPS_DIR/.deploy.lock' bash -s -- '$VPS_DIR' '$DEPLOY_KEEP_RE
 log "Preparing empty release $VPS_HOST:$REMOTE_RELEASE_DIR"
 run_ssh "bash -s -- '$VPS_DIR' '$DEPLOY_RELEASE_ID'" <<'REMOTE_PREPARE'
 set -Eeuo pipefail
+if [[ "$(id -u)" -eq 0 ]]; then
+	echo "Connect as the deploy user, not root: PM2 and the app files belong to deploy." >&2
+	exit 1
+fi
 deploy_root="$1"
 release_id="$2"
 release_dir="$deploy_root/releases/$release_id"
@@ -231,6 +239,10 @@ rsync -avz --delete --delete-delay --itemize-changes --no-owner --no-group \
 log "Building, migrating, validating, and promoting release"
 run_ssh "flock -n '$VPS_DIR/.deploy.lock' bash -s -- '$VPS_DIR' '$DEPLOY_RELEASE_ID' '$SOURCE_SHA' '$PM2_APP_NAME' '$LIVE_PORT' '$CANDIDATE_PORT' '$PUBLIC_URL' '$DB_BACKUP_COMMAND' '$EXPECT_PUBLIC_LEARNING_LOCKS'" <<'REMOTE_DEPLOY'
 set -Eeuo pipefail
+if [[ "$(id -u)" -eq 0 ]]; then
+	echo "Connect as the deploy user, not root: PM2 and the app files belong to deploy." >&2
+	exit 1
+fi
 
 DEPLOY_ROOT="$1"
 RELEASE_ID="$2"
@@ -486,7 +498,8 @@ trap on_exit EXIT
 [[ -d "$RELEASE_DIR" ]] || { echo "Missing staged release: $RELEASE_DIR" >&2; exit 1; }
 [[ -f "$RELEASE_DIR/package-lock.json" ]] || { echo "Release has no package-lock.json" >&2; exit 1; }
 [[ -f "$DEPLOY_ROOT/.env.local" ]] || { echo "Missing production .env.local" >&2; exit 1; }
-[[ -x "$BACKUP_COMMAND" ]] || { echo "Backup command is unavailable: $BACKUP_COMMAND" >&2; exit 1; }
+# The backup script is root-only; sudoers lets deploy run exactly that path.
+sudo -n -l "$BACKUP_COMMAND" >/dev/null 2>&1 || { echo "deploy may not run the backup command via sudo: $BACKUP_COMMAND" >&2; exit 1; }
 
 for command_name in node npm npx pm2 curl ss sha256sum; do
 	command -v "$command_name" >/dev/null || { echo "Missing command: $command_name" >&2; exit 1; }
@@ -679,7 +692,7 @@ for relative_path in public/uploads public/music/uploads backups theory; do
 done
 
 echo "Creating a fresh pre-migration database backup"
-"$BACKUP_COMMAND"
+sudo -n "$BACKUP_COMMAND"
 BACKUP_COMPLETED="yes"
 printf 'backup_completed_at=%s\n' "$(date -u +%FT%TZ)" >>"$RELEASE_DIR/.deploy-metadata"
 

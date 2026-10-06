@@ -2,14 +2,12 @@
 description: Production deploy rules for toiladuykhanh.com (GitHub Actions to the VPS)
 globs:
   - scripts/deploy-vps.sh
-  - scripts/setup-vps-ssh.sh
   - .github/workflows/**
   - ecosystem.config.js
   - docs/deployment/**
 # Claude Code reads `paths` (via .claude/rules/ symlink); Cursor reads `globs`. Keep both lists equal.
 paths:
   - scripts/deploy-vps.sh
-  - scripts/setup-vps-ssh.sh
   - .github/workflows/**
   - ecosystem.config.js
   - docs/deployment/**

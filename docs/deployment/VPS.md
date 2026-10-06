@@ -169,7 +169,8 @@ The deploy workflow is manual, production-environment gated, restricted to
 production secrets:
 
 - `VPS_HOST`: hostname or IP only.
-- `VPS_USER`: SSH user.
+- `VPS_USER`: `deploy`. The deploy script refuses root: PM2 and every app file
+  belong to the `deploy` user, and `deploy` may `sudo` only the backup script.
 - `VPS_PORT`: actual SSH port; omit to use 22.
 - `VPS_SSH_KEY`: private deploy key. Do not also pass an SSH password.
 - `VPS_KNOWN_HOSTS`: pinned known-hosts line obtained through a trusted channel.
@@ -212,7 +213,7 @@ PostgreSQL and MongoDB archives under `/var/backups/db/`.
 Manual code rollback, when the database remains compatible:
 
 ```bash
-ssh webofficial-vps
+ssh deploy@webofficial-vps
 cd /var/www/webofficial
 readlink current
 ls -1 releases
@@ -243,10 +244,10 @@ stay.
 Check and prune by hand (read the dry run before the real run):
 
 ```bash
-ssh webofficial-vps 'df -h / && du -sh /var/www/webofficial/releases /root/.npm /var/log/journal'
-ssh webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- --dry-run /var/www/webofficial 4 0' \
+ssh webofficial-vps 'df -h / && du -sh /var/www/webofficial/releases /home/deploy/.npm /var/log/journal'
+ssh deploy@webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- --dry-run /var/www/webofficial 4 0' \
   < scripts/deploy-prune-releases.sh
-ssh webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- /var/www/webofficial 4 0' \
+ssh deploy@webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- /var/www/webofficial 4 0' \
   < scripts/deploy-prune-releases.sh
 ```
 
@@ -323,7 +324,7 @@ Post-deploy verification:
 curl -fsS https://toiladuykhanh.com/api/health/live
 curl -fsS https://toiladuykhanh.com/api/health/ready
 curl -fsS https://toiladuykhanh.com/api/auth/providers
-pm2 status nextjs-app
+ssh deploy@webofficial-vps pm2 status nextjs-app
 ```
 
 Then complete the signed-in browser smoke test in a fresh private window:
