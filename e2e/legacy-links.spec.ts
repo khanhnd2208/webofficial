@@ -23,11 +23,15 @@ test.describe('Links shared with students keep working', () => {
 		context,
 	}) => {
 		await addStudentSession(context);
-		for (const path of ['/my-space/courses', '/khoa-hoc']) {
+		// The learner catalog keeps its app bar; /khoa-hoc is now the public catalog.
+		for (const [path, tocLink] of [
+			['/my-space/courses', 'Mục lục'],
+			['/khoa-hoc', 'Trở về mục lục'],
+		] as const) {
 			const response = await page.goto(path);
 			expect(response?.status()).toBe(200);
 			await expect(page).toHaveURL(new RegExp(`${path}$`));
-			await expect(page.getByRole('link', { name: 'Mục lục', exact: true })).toBeVisible();
+			await expect(page.getByRole('link', { name: tocLink }).first()).toBeVisible();
 		}
 	});
 

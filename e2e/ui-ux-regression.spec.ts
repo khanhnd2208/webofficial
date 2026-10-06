@@ -20,7 +20,8 @@ for (const width of [375, 1440]) {
 					{ exact: true },
 				)
 				.filter({ visible: true });
-			await expect(intro).toHaveCSS('font-size', '17px');
+			// Mục lục sets its lead in --type-subhead (public design tokens, #22).
+			await expect(intro).toHaveCSS('font-size', name === 'toc' ? '15px' : '17px');
 			expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
 				true,
 			);
