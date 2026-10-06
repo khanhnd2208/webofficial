@@ -27,7 +27,7 @@
 		"test:e2e:ui": "playwright test --ui",
 		"test:db:setup": "bash scripts/setup-test-db.sh",
 		"check": "npm run typecheck && npm run lint -- --max-warnings=0 && npm run format:check && npm run areas:check && npm run test:all && npm audit --omit=dev --audit-level=moderate && npm run build",
-		"prepare": "husky",
+		"prepare": "node .husky/install.mjs",
 		"db:seed": "npx tsx prisma/seed.ts",
 		"db:seed:my-class": "npx tsx scripts/seed-my-class.ts",
 		"db:sync:active-recall": "npx tsx scripts/replace-active-recall-revisions.ts",

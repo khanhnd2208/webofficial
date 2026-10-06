@@ -571,8 +571,8 @@ cd "$RELEASE_DIR"
 
 # The promoted release prunes devDependencies, so its node_modules cannot build
 # the next release. Keep one full install outside the release tree and copy it
-# when nothing that shapes `npm ci` changed. Copy, do not hardlink:
-# `npm prune` must not mutate the cache.
+# when nothing that shapes `npm ci` changed. Copy, do not hardlink: the
+# runtime install below replaces node_modules and must not touch the cache.
 
 # Everything that decides what `npm ci` installs or runs: the lockfile,
 # package.json (lifecycle scripts, overrides), local dependency sources, any
@@ -699,13 +699,13 @@ printf 'backup_completed_at=%s\n' "$(date -u +%FT%TZ)" >>"$RELEASE_DIR/.deploy-m
 echo "Applying committed migrations"
 ./node_modules/.bin/prisma migrate deploy
 
-echo "Removing build-only development dependencies from the runtime release"
-if ! HUSKY=0 npm prune --omit=dev --ignore-scripts --no-package-lock; then
-	echo "npm prune failed on the installed tree; reinstalling production dependencies from the lockfile"
-	rm -rf node_modules
-	HUSKY=0 npm ci --omit=dev
-	./node_modules/.bin/prisma generate
-fi
+echo "Installing production-only dependencies for the runtime release"
+# `npm prune --omit=dev` failed on this tree on every deploy (npm: "Cannot read
+# properties of null (reading 'edgesOut')"), so install the production set from
+# the lockfile directly. HUSKY=0 makes `prepare` skip the dev-only git hooks.
+rm -rf node_modules
+HUSKY=0 npm ci --omit=dev
+./node_modules/.bin/prisma generate
 test -x ./node_modules/.bin/next
 
 if ss -ltnH | awk '{ print $4 }' | grep -Eq ":${CANDIDATE_PORT}$"; then
