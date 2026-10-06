@@ -163,7 +163,6 @@ outside:
   - '!src/app/tai-khoan/page.tsx'
   - '!src/app/tai-khoan/ProfileForm.tsx'
   - '!src/app/my-space/page.tsx'
-  - '!src/app/my-space/loading.tsx'
   - '!src/app/my-space/error.tsx'
   - '!src/app/admin/layout.tsx'
   - '!src/app/admin/page.tsx'
