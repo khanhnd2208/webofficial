@@ -100,7 +100,7 @@
 		"remark-breaks": "^4.0.0",
 		"remark-gfm": "^4.0.1",
 		"server-only": "^0.0.1",
-		"sharp": "^0.35.4",
+		"sharp": "^0.35.5",
 		"write-excel-file": "^4.1.1",
 		"zod": "^4.4.3"
 	},
