@@ -65,7 +65,7 @@ Chijuly and Learn Chinese deploy with `/opt/vps/bin/app-deploy` (root-owned,
 installed from `vps-infra` with `vps install`); their PM2 configs live in
 `/opt/vps/apps/<app>/`, their `.env` in `<dir>/shared/.env`, and a `pg_dump`
 from before each deploy in `<dir>/shared/db-backups/`. The old in-place files
-in `/var/www/chijuly` and `/var/www/learn-chinese` stay as the fallback for now.
+of all three apps sit in `<dir>/_legacy-20261006/` (mode 700) until 2026-10-20.
 
 PM2 runs as `deploy` (`systemctl status pm2-deploy`, home `/home/deploy/.pm2`)
 with `pm2-logrotate` (10 MB per file, 14 kept). Root's PM2 (`pm2-root`) is
@@ -290,3 +290,4 @@ user per app, auditd/AIDE/CrowdSec, Livepatch.
 | 2026-10-06 | Nginx `chijuly`, `thh`: static aliases read `<dir>/current/`                                                  | `hardening-backup-20261006/nginx/`                            |
 | 2026-10-06 | Learn Chinese, then Chijuly moved to `releases/` + `current` + `shared/`; Learn Chinese binds 127.0.0.1       | `app-deploy` falls back to the in-place dir (`current -> .`)  |
 | 2026-10-06 | New key `ci-chijuly-deploy-2026-10` (`restrict`) for deploy; chijuly env `production` limited to `main`       | `authorized_keys.deploy` in `hardening-backup-20261006-vps-infra` |
+| 2026-10-06 | Old in-place app files moved to `/var/www/<app>/_legacy-20261006/` (~5.4 GB); delete from 2026-10-20          | `mv` the item back; list in `MANIFEST-before.txt`             |
