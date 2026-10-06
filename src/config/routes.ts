@@ -146,15 +146,9 @@ export const routes = {
 	// ─── Auth & account ───────────────────────────────────────────────────────
 	login: '/dang-nhap',
 	account: '/tai-khoan',
-	accountLearning: '/tai-khoan/hoc',
 	messagePublic: (slug: string) => `/m/${slug}` as const,
 
 	// ─── Learning (learner surfaces; not marketing chrome) ────────────────────
-	learn: '/hoc',
-	learnPrograms: '/hoc/chuong-trinh',
-	course: (slug: string) => `/hoc/khoa-hoc/${slug}` as const,
-	lesson: (courseSlug: string, lessonSlug: string) =>
-		`/hoc/khoa-hoc/${courseSlug}/bai/${lessonSlug}` as const,
 	teachingPublicClass: (slug: string) => `/lop/${slug}` as const,
 	teachingPublicClassTab: (
 		slug: string,
@@ -181,11 +175,6 @@ export const routes = {
 		posts: '/admin/posts',
 		postCreate: '/admin/posts/create',
 		postEdit: (id: string) => `/admin/posts/${id}/edit` as const,
-		courses: '/admin/courses',
-		courseEdit: (courseId: string) => `/admin/courses/${courseId}` as const,
-		lessonEdit: (courseId: string, lessonId: string) =>
-			`/admin/courses/${courseId}/lessons/${lessonId}` as const,
-		enrollments: '/admin/enrollments',
 		inquiries: '/admin/inquiries',
 		tools: '/admin/tools',
 		vocabulary: '/admin/tools/vocabulary',
@@ -333,6 +322,12 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	{ source: '/archive', destination: routes.toc, permanent: true },
 	{ source: '/hoc', destination: routes.toc, permanent: true },
 	{ source: '/hoc/chuong-trinh', destination: routes.toc, permanent: true },
+	// The retired Chương–Bài course system: its readers now use the self-paced courses.
+	{ source: '/hoc/khoa-hoc', destination: routes.learnCourses, permanent: true },
+	{ source: '/hoc/khoa-hoc/:path*', destination: routes.learnCourses, permanent: true },
+	{ source: '/tai-khoan/hoc', destination: routes.learnCourses, permanent: true },
+	{ source: '/admin/courses/:path*', destination: routes.learnCourses, permanent: true },
+	{ source: '/admin/enrollments', destination: routes.learnCourses, permanent: true },
 ];
 
 export type PublicRoute =

@@ -90,8 +90,6 @@ const ROUTE_META: AdminRouteMeta[] = [
 	},
 	{ href: routes.admin.archive, label: 'Kho lưu trữ', width: 'standard' },
 	{ href: routes.admin.posts, label: 'Bài viết', width: 'standard' },
-	{ href: routes.admin.courses, label: 'Khóa học Chương–Bài', width: 'standard' },
-	{ href: routes.admin.enrollments, label: 'Học viên và ghi danh', width: 'standard' },
 	{ href: routes.admin.vocabulary, label: 'Từ vựng', width: 'wide' },
 	{ href: routes.admin.messages, label: 'Lời nhắn', width: 'standard' },
 	{ href: routes.admin.home, label: 'Tổng quan', width: 'standard' },

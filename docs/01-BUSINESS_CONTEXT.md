@@ -33,7 +33,7 @@ enrollments, vocabulary, inquiries, messages, My Space tests, My Class and users
 ### Authenticated learner
 
 Any authenticated user has the `student` role by default. Learners use
-`/tai-khoan`, `/vocabulary`, `/hoc/khoa-hoc/*`, `/my-space/tests/*`,
+`/tai-khoan`, `/vocabulary`, `/khoa-hoc/*`, `/my-space/tests/*`,
 `/my-space/my-class/*` and `/messages/*`. The current active role model is `student | admin`; legacy
 `teacher` values are normalized to `student`.
 
@@ -103,7 +103,7 @@ an unlock/password flow.
 |---|---|---|
 | Auth.js users, profiles, posts, inquiries, messages, streaks | MongoDB | `src/models`, `src/lib/dbConnect.ts`, `src/services` |
 | Vocabulary sets, words, library, scores | PostgreSQL | `prisma/schema.prisma`, `vocabSetService`, `scoreService` |
-| Courses, lessons, enrollment, progress | PostgreSQL | `src/features/courses`, `enrollments`, `progress` |
+| Self-paced courses, sections, progress | PostgreSQL | `src/features/learn` |
 | My Space subjects, questions, tests, sessions, personal progress | PostgreSQL | `src/features/myspace-tests` |
 | Public marketing/editorial composition | Source files + Mongo-backed notes | `src/content`, `src/features/portfolio`, `src/features/services` |
 

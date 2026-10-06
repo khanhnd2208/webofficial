@@ -31,8 +31,6 @@ describe('operating module registry', () => {
 		expect(ids).toEqual(
 			expect.arrayContaining([
 				'posts',
-				'courses',
-				'enrollments',
 				'my-class',
 				'myspace-tests',
 				'vocabulary',
@@ -53,7 +51,6 @@ describe('operating module registry', () => {
 		expect(groups).toEqual(
 			expect.arrayContaining([
 				'Bài viết / Ghi chép',
-				'Courses / Enrollments',
 				'My Class',
 				'My Space Tests',
 				'Vocabulary',

@@ -27,6 +27,7 @@ Sources of truth: `src/config/routes.ts`, `src/config/navigation.ts`, and
 | `/case-study/*`, `/goc-cua-khanh/*` | `/du-an` |
 | `/bai-viet/*`, `/phat-trien-ban-than/*`, `/archive` | `/` |
 | `/hoc`, `/hoc/chuong-trinh` | `/` |
+| `/hoc/khoa-hoc/*`, `/tai-khoan/hoc`, `/dashboard` | `/khoa-hoc` |
 
 The retired UI implementations (`src/_archived/marketing/routes-v1`) are in
 git history only.
@@ -46,7 +47,7 @@ See `docs/archive/src-archived.md` for the archive taxonomy and restore steps.
 |------|---------|
 | `/dang-nhap` | Authentication |
 | `/tai-khoan/*` | Account and learner hub |
-| `/hoc/khoa-hoc/*` | Course and lesson surfaces |
+| `/khoa-hoc`, `/khoa-hoc/*` | Course catalog and self-paced course reader |
 | `/vocabulary/*` | Vocabulary tools |
 | `/messages/*`, `/m/[slug]` | Message tools and recipient view |
 | `/admin/*` | Administration (incl. `/admin/myspace-tests`, `/admin/myspace-tests/subjects`, smart import) |
