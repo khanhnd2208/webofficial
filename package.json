@@ -39,7 +39,7 @@
 		"db:migrate:deploy": "npx prisma migrate deploy",
 		"db:studio": "npx prisma studio",
 		"deploy:vps": "bash scripts/deploy-vps.sh",
-		"test:lint-tooling": "node --test scripts/vendor/next-eslint-glob/*.test.mjs",
+		"test:lint-tooling": "node --test scripts/vendor/next-eslint-glob/*.test.mjs scripts/design-lint.test.mjs",
 		"test:deploy-tooling": "node --test scripts/deploy-prune-releases.test.mjs"
 	},
 	"prisma": {

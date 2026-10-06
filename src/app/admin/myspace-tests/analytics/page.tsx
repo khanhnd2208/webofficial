@@ -153,7 +153,7 @@ export default async function AdminMyspaceTestAnalyticsPage() {
 							</div>
 						))}
 					</div>
-					<p className="mt-3 text-[10px] text-muted">
+					<p className="mt-3 text-xs text-muted">
 						Cột: mở (nhạt) · đã làm (vừa) · hoàn thành (đậm). Hover để xem số.
 					</p>
 				</div>

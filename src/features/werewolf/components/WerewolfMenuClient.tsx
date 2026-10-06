@@ -96,7 +96,7 @@ export default function WerewolfMenuClient({ isAdmin = false }: { isAdmin?: bool
 		<div className="game-theme game-theme-werewolf">
 			<div className="relative mx-auto max-w-3xl px-4 py-5 pb-[max(4rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8">
 				<GameMenuBar backLabel={t('mafia.menu.backToHub')} testGame="ma-soi" isAdmin={isAdmin} />
-				<header className="game-theme-hero rounded-[1.25rem]">
+				<header className="game-theme-hero rounded-2xl">
 					<Image
 						src="/brand/myspace/ma-soi-menu-poster.webp"
 						unoptimized
@@ -120,7 +120,7 @@ export default function WerewolfMenuClient({ isAdmin = false }: { isAdmin?: bool
 							<p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground-secondary sm:text-base">
 								{t('mafia.menu.subtitle')}
 							</p>
-							<div className="mt-5 flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+							<div className="mt-5 flex flex-wrap gap-2 font-mono text-xs uppercase tracking-[0.16em] text-muted">
 								<span className="rounded-full border border-border/80 bg-background/40 px-3 py-1.5">
 									<GameIcon name="users" size={13} className="mr-1.5 inline" />
 									{t('mafia.menu.playerCount')}
@@ -136,7 +136,7 @@ export default function WerewolfMenuClient({ isAdmin = false }: { isAdmin?: bool
 
 				<Card
 					elevated
-					className="game-theme-panel relative z-20 mx-auto -mt-6 max-w-xl space-y-4 rounded-[1.15rem] p-5 sm:p-7"
+					className="game-theme-panel relative z-20 mx-auto -mt-6 max-w-xl space-y-4 rounded-2xl p-5 sm:p-7"
 				>
 					{view === 'menu' ? (
 						<div className="space-y-3">

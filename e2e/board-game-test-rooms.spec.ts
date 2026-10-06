@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import { addAdminSession, addStudentSession } from './helpers/adminSession';
 
 // Run only against scripts/board-game-test-server.mjs (ephemeral MongoDB).
@@ -25,7 +27,16 @@ for (const game of ['spy-fall', 'cheese-thief', 'ma-soi']) {
 		);
 		await expect(page.getByRole('button', { name: startName })).toHaveCount(0);
 		await controls.getByRole('button', { name: 'Một bước', exact: true }).click();
+		await expect(controls.getByRole('button', { name: 'Một bước', exact: true })).toBeEnabled();
 		await expect(controls.getByRole('alert')).toHaveCount(0);
+		if (game === 'ma-soi') await expect(controls).toContainText('· dealt ·');
+		if (game === 'ma-soi' && process.env.UI_UX_SCREENSHOT_DIR) {
+			await mkdir(process.env.UI_UX_SCREENSHOT_DIR, { recursive: true });
+			await page.screenshot({
+				path: join(process.env.UI_UX_SCREENSHOT_DIR, 'ma-soi-after-phase.jpg'),
+				fullPage: true,
+			});
+		}
 		await page.reload();
 		await expect(controls.getByRole('combobox')).not.toHaveValue(
 			game === 'ma-soi' ? 'host' : 'admin',
@@ -58,7 +69,8 @@ test('guest and non-admin cannot access the test API', async ({ request, context
 	await addStudentSession(context);
 	await page.goto(base);
 	await expect(page).toHaveURL(/\/board-game\/test$/);
-	await expect(page.getByText('Chỉ dành cho admin')).toBeVisible();
+	await expect(page.getByText('Chỉ dành cho admin').filter({ visible: true })).toHaveCount(1);
+	await expect(page.getByText('Chỉ dành cho admin').filter({ visible: true })).toBeVisible();
 	await expect(page.getByRole('link', { name: 'Đổi tài khoản' })).toHaveAttribute(
 		'href',
 		`/dang-nhap?from=${encodeURIComponent(base)}`,

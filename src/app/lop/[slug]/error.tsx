@@ -15,7 +15,7 @@ export default function PublicClassError({
 
 	return (
 		<main className="flex min-h-svh flex-col items-center justify-center bg-canvas px-6 text-center">
-			<p className="font-mono text-[0.75rem] tracking-[0.14em] text-ink-secondary uppercase">
+			<p className="font-mono text-[12px] tracking-[0.14em] text-ink-secondary uppercase">
 				Bảng lớp
 			</p>
 			<h1 className="mt-4 font-display text-2xl font-medium tracking-tight text-ink">

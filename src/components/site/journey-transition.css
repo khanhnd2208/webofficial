@@ -1,12 +1,12 @@
 ::view-transition-group(.journey-crossfade) {
-	animation-duration: 650ms;
-	animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+	animation-duration: var(--ui-duration-page);
+	animation-timing-function: var(--ui-ease);
 }
 ::view-transition-old(.journey-crossfade) {
-	animation: journey-out 400ms ease both;
+	animation: journey-out var(--ui-duration-control) var(--ease-in) both;
 }
 ::view-transition-new(.journey-crossfade) {
-	animation: journey-in 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation: journey-in var(--ui-duration-page) var(--ui-ease) both;
 }
 @keyframes journey-out {
 	to {
@@ -28,6 +28,18 @@
 	::view-transition-group(.journey-crossfade),
 	::view-transition-old(.journey-crossfade),
 	::view-transition-new(.journey-crossfade) {
+		animation: none;
+	}
+}
+
+::view-transition-group(.artwork-morph) {
+	animation-duration: var(--ui-duration-page);
+	animation-timing-function: var(--ui-ease);
+}
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-group(.artwork-morph),
+	::view-transition-old(.artwork-morph),
+	::view-transition-new(.artwork-morph) {
 		animation: none;
 	}
 }

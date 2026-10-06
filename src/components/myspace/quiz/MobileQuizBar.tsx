@@ -68,7 +68,7 @@ export default function MobileQuizBar({
 				aria-label="Completion percent"
 			>
 				<div
-					className="h-full bg-ink transition-[width] duration-300"
+					className="h-full bg-ink transition-[width] duration-250"
 					style={{ width: `${pct}%` }}
 				/>
 			</div>

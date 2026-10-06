@@ -1,3 +1,4 @@
+import BrandWordmark from './BrandWordmark';
 import Link from 'next/link';
 import IntroParallaxImage from './IntroParallaxImage';
 import SiteAuthChip from './SiteAuthChip';
@@ -8,10 +9,11 @@ export default function IntroLanding() {
 	return (
 		<div className="personal-book book-cover" data-testid="intro-home">
 			<header className="cover-meta">
-				<span>
-					{introPage.location} · {introPage.year}
-				</span>
-				<SiteAuthChip variant="intro" />
+				<Link href={routes.home} className="cover-brand">
+					<BrandWordmark />
+				</Link>
+				<span aria-current="page">Trang chủ</span>
+				<SiteAuthChip variant="chrome" />
 			</header>
 			<main className="cover-composition">
 				<div className="cover-copy">

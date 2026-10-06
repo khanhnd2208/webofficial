@@ -443,7 +443,7 @@ test.describe('My Class admin authoring surfaces', () => {
 		context,
 	}) => {
 		await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-			origin: 'http://localhost:3000',
+			origin: new URL(process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000').origin,
 		});
 		const course = await fetchAdminCourse(page.request);
 		expect(course).toBeTruthy();

@@ -35,7 +35,7 @@ export function McMeter({
 				aria-valuenow={percent}
 			>
 				<div
-					className={`h-full rounded-full transition-[width] duration-300 motion-reduce:transition-none ${toneClass[tone]}`}
+					className={`h-full rounded-full transition-[width] duration-250 motion-reduce:transition-none ${toneClass[tone]}`}
 					style={{ width: `${percent}%` }}
 				/>
 			</div>

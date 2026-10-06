@@ -351,9 +351,6 @@ const assetPaths = [
 	'public/og-editorial-premium.jpg',
 	'public/brand/learning-as-becoming-mobile.jpg',
 	'public/brand/learning-as-becoming-desktop.jpg',
-	'public/brand/hero-figure.jpg',
-	'public/brand/hero-journey.jpg',
-	'public/brand/hero-landscape.jpg',
 ];
 
 function escapeHtml(value) {

@@ -181,7 +181,7 @@ export default function MessagePasswordGate({
 					</div>
 				) : null}
 
-				<p className="mt-6 text-[11px] text-muted/60">Mã được cung cấp bởi người gửi</p>
+				<p className="mt-6 text-xs text-muted/60">Mã được cung cấp bởi người gửi</p>
 			</main>
 		</div>
 	);

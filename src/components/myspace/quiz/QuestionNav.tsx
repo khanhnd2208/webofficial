@@ -92,7 +92,7 @@ export default function QuestionNav({
 							aria-current={i === currentIndex ? 'step' : undefined}
 							aria-disabled={locked}
 							onClick={() => onJump(i)}
-							className={`flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] border font-mono text-[0.8125rem] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${cellClass(status)}`}
+							className={`flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] border font-mono text-[13px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${cellClass(status)}`}
 							data-testid={`myspace-progress-${i + 1}`}
 						>
 							{i + 1}

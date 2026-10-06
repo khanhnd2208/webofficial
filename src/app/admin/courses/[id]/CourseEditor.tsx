@@ -291,7 +291,7 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 						<option value="PRIVATE">Riêng tư (chỉ học viên ghi danh)</option>
 						<option value="CATALOG">Danh mục (hiện trên trang công khai)</option>
 					</select>
-					<p className="mt-1 text-[11px] text-muted">
+					<p className="mt-1 text-xs text-muted">
 						Chỉ khóa PUBLISHED + CATALOG mới xuất hiện trong danh mục công khai.
 					</p>
 				</label>
@@ -419,7 +419,7 @@ export default function CourseEditor({ initial }: { initial: CourseDetail }) {
 													<p className="font-medium text-foreground">
 														{lesson.position + 1}. {lesson.title}
 													</p>
-													<p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted">
+													<p className="mt-0.5 text-xs uppercase tracking-wider text-muted">
 														/{lesson.slug} · {lesson.status} · {READY_LABEL[ready]}
 													</p>
 												</div>

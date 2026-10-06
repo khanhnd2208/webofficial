@@ -50,7 +50,7 @@ export default function QuizSidebar({
 			</Link>
 
 			<div>
-				<p className="font-mono text-[0.7rem] tracking-[0.14em] text-accent uppercase">{subject}</p>
+				<p className="font-mono text-xs tracking-[0.14em] text-accent uppercase">{subject}</p>
 				<p className="mt-2 font-display text-lg font-medium leading-snug tracking-tight text-ink text-balance">
 					{title}
 				</p>
@@ -76,7 +76,7 @@ export default function QuizSidebar({
 					aria-label="Completion percent"
 				>
 					<div
-						className="h-full rounded-full bg-ink transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+						className="h-full rounded-full bg-ink transition-[width] duration-250 ease-[cubic-bezier(0.22,1,0.36,1)]"
 						style={{ width: `${pct}%` }}
 					/>
 				</div>
@@ -94,7 +94,7 @@ export default function QuizSidebar({
 					{navOpen ? 'Hide questions' : 'All questions'}
 					<span
 						aria-hidden
-						className={`inline-block text-ink-secondary transition-transform duration-200 ${
+						className={`inline-block text-ink-secondary transition-transform duration-250 ${
 							navOpen ? 'rotate-180' : ''
 						}`}
 					>

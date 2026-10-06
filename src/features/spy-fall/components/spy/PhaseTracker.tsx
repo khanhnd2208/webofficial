@@ -43,7 +43,7 @@ export default function PhaseTracker({ current, showReveal = true, className }: 
 							<span
 								aria-current={isActive ? 'step' : undefined}
 								className={cn(
-									'flex h-7 items-center justify-center gap-1 truncate rounded-full px-2 text-[11px] font-semibold transition-colors',
+									'flex h-7 items-center justify-center gap-1 truncate rounded-full px-2 text-xs font-semibold transition-colors',
 									isActive
 										? 'bg-accent text-accent-foreground'
 										: isPast

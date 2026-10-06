@@ -4,7 +4,7 @@ import Link from 'next/link';
 import LearnAppBar from '@/components/learn/LearnAppBar';
 import LearnCatalogBrowser from '@/components/learn/LearnCatalogBrowser';
 import LearnCourseAdminList from '@/components/learn/LearnCourseAdminList';
-import { LearnIcon } from '@/components/learn/LearnIcon';
+import SpotIllustration from '@/components/site/SpotIllustration';
 import NewCourseButton from '@/components/learn/NewCourseButton';
 import { routes } from '@/config/routes';
 import { listLearnCoursesForAdmin } from '@/features/learn/adminCatalog';
@@ -110,7 +110,7 @@ export default async function LearnCatalogPage({
 								<LearnCatalogBrowser courses={courses} />
 							) : (
 								<div className="ln-empty ln-empty--page">
-									<LearnIcon name="book" size={32} />
+									<SpotIllustration variant="empty" size={112} className="mx-auto" />
 									<p className="font-medium">Chưa có khóa học nào</p>
 									<p className="text-sm text-ink-secondary">
 										{viewer.isAdmin

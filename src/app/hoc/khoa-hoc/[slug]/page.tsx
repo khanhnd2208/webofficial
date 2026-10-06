@@ -54,13 +54,13 @@ function EnrolledCourseView({ course }: { course: LearnerCourseDetail }) {
 						{course.nextLesson ? (
 							<Link
 								href={routes.lesson(course.slug, course.nextLesson.slug)}
-								className="inline-flex min-h-11 items-center rounded-[10px] bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper"
+								className="inline-flex min-h-11 items-center rounded-lg bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper"
 							>
 								Tiếp: {course.nextLesson.title}
 							</Link>
 						) : (
 							<span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-vermilion">
-								<span className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-[10px] text-paper">
+								<span className="flex h-5 w-5 items-center justify-center rounded-full bg-vermilion text-xs text-paper">
 									✓
 								</span>
 								Hoàn thành khóa
@@ -88,7 +88,7 @@ function EnrolledCourseView({ course }: { course: LearnerCourseDetail }) {
 				<div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 p-3 backdrop-blur-md sm:hidden">
 					<Link
 						href={routes.lesson(course.slug, course.nextLesson.slug)}
-						className="flex min-h-11 w-full items-center justify-center rounded-[10px] bg-ink text-xs font-semibold uppercase tracking-wider text-paper"
+						className="flex min-h-11 w-full items-center justify-center rounded-lg bg-ink text-xs font-semibold uppercase tracking-wider text-paper"
 					>
 						Bài tiếp theo
 					</Link>

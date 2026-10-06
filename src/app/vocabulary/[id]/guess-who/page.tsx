@@ -96,7 +96,7 @@ function SessionSummary({
 						<span className="shrink-0 text-xs font-bold text-muted">{i + 1}</span>
 						<div className="flex-1 min-w-0">
 							<p className="text-sm font-bold text-foreground truncate">{r.term}</p>
-							<p className="text-[11px] text-muted">
+							<p className="text-xs text-muted">
 								{r.wrongGuesses === 0 ? 'Đúng ngay' : `${r.wrongGuesses} lần sai`}
 							</p>
 						</div>
@@ -202,7 +202,7 @@ function GuessWhoGame({ words, setId }: { words: GuessWhoWord[]; setId: string }
 		<div className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
 			<div className="mb-6 h-1 w-full overflow-hidden rounded-full bg-surface-hover">
 				<div
-					className="h-full bg-accent transition-all duration-500"
+					className="h-full bg-accent transition-all duration-400"
 					style={{ width: `${progress}%` }}
 				/>
 			</div>
@@ -222,7 +222,7 @@ function GuessWhoGame({ words, setId }: { words: GuessWhoWord[]; setId: string }
 			</div>
 
 			<div className="rounded-2xl border border-border bg-surface p-6 mb-8">
-				<p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">💡 Gợi ý</p>
+				<p className="text-xs font-bold uppercase tracking-widest text-muted mb-3">💡 Gợi ý</p>
 				<p className="text-base leading-relaxed text-foreground font-medium">{currentHint}</p>
 			</div>
 
@@ -274,7 +274,7 @@ function GuessWhoGame({ words, setId }: { words: GuessWhoWord[]; setId: string }
 			</div>
 
 			{!isDone && (
-				<p className="mt-4 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+				<p className="mt-4 text-center text-xs font-bold uppercase tracking-widest text-muted/40">
 					Enter để xác nhận · Sai −5s mỗi lần
 				</p>
 			)}
@@ -335,10 +335,10 @@ export default function GuessWhoPage({ params }: { params: Promise<{ id: string 
 						</Link>
 					)}
 					<div className="flex items-center gap-2">
-						<span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+						<span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
 							🎮 Guess Who I Am
 						</span>
-						<span className="rounded-full bg-surface-hover px-2 py-0.5 text-[10px] font-bold text-muted">
+						<span className="rounded-full bg-surface-hover px-2 py-0.5 text-xs font-bold text-muted">
 							{eligibleCount} từ
 						</span>
 					</div>

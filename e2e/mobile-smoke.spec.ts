@@ -10,7 +10,7 @@ test.describe('Mobile public smoke', () => {
 
 	test('table of contents keeps touch navigation available', async ({ page }) => {
 		await page.goto('/muc-luc');
-		await expect(page.getByTestId('gate-home')).toBeVisible();
+		await expect(page.getByTestId('gate-home').filter({ visible: true })).toBeVisible();
 		await expect(page.getByRole('heading', { level: 1, name: 'Bạn muốn ghé đâu?' })).toBeVisible();
 		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
 		const about = page.getByRole('region', { name: 'Về tôi' });
@@ -35,6 +35,7 @@ test.describe('Mobile public smoke', () => {
 			.poll(() =>
 				page
 					.locator('.game-theme-hero img.game-theme-hero-image')
+					.filter({ visible: true })
 					.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
 			)
 			.toBe(true);

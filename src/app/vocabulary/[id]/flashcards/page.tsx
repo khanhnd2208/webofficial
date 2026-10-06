@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import FlashcardPrism from '@/components/vocab/FlashcardPrism';
@@ -60,14 +62,14 @@ function playSuccess() {
 /* ── Confetti burst ── */
 function burstConfetti(container: HTMLElement) {
 	const colors = [
-		'#c44b28',
-		'#e8714f',
-		'#4a8c5c',
-		'#6aad7c',
-		'#c48a1a',
-		'#d4a03a',
-		'#f0ece4',
-		'#1a1a1a',
+		GRAPHIC_COLORS['c44b28'],
+		GRAPHIC_COLORS['e8714f'],
+		GRAPHIC_COLORS['4a8c5c'],
+		GRAPHIC_COLORS['6aad7c'],
+		GRAPHIC_COLORS['c48a1a'],
+		GRAPHIC_COLORS['d4a03a'],
+		GRAPHIC_COLORS['f0ece4'],
+		GRAPHIC_COLORS['1a1a1a'],
 	];
 	const count = 60;
 
@@ -311,34 +313,18 @@ export default function FlashcardsPage({ params }: { params: Promise<{ id: strin
 							className="group flex h-14 w-14 items-center justify-center rounded-full border-2 border-error/30 text-error transition-all hover:border-error hover:bg-error hover:text-white hover:scale-110 hover:shadow-lg active:scale-95"
 							title="Chưa thuộc"
 						>
-							<svg
-								className="h-6 w-6"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2.5}
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-							</svg>
+							<Icon name="close" className="h-6 w-6" />
 						</button>
 						<button
 							onClick={markMastered}
 							className="group flex h-14 w-14 items-center justify-center rounded-full border-2 border-success/30 text-success transition-all hover:border-success hover:bg-success hover:text-white hover:scale-110 hover:shadow-lg active:scale-95"
 							title="Đã thuộc"
 						>
-							<svg
-								className="h-6 w-6"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2.5}
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
+							<Icon name="check" className="h-6 w-6" />
 						</button>
 					</div>
 
-					<p className="mt-5 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+					<p className="mt-5 text-center text-xs font-bold uppercase tracking-widest text-muted/40">
 						Tap để xoay · ← Chưa thuộc · → Đã thuộc · ⌘Z Hoàn tác
 					</p>
 				</div>
@@ -397,16 +383,16 @@ function CompletionScreen({
 						<svg className="mx-auto h-16 w-16" viewBox="0 0 24 24" fill="none">
 							<defs>
 								<linearGradient id="fc-party" x1="0" y1="1" x2="1" y2="0">
-									<stop offset="0%" stopColor="#ff5500" />
-									<stop offset="50%" stopColor="#ffcc00" />
-									<stop offset="100%" stopColor="#4a8c5c" />
+									<stop offset="0%" stopColor={GRAPHIC_COLORS['ff5500']} />
+									<stop offset="50%" stopColor={GRAPHIC_COLORS['ffcc00']} />
+									<stop offset="100%" stopColor={GRAPHIC_COLORS['4a8c5c']} />
 								</linearGradient>
 							</defs>
 							<path
 								d="M12 2l2.5 6.5L21 12l-6.5 2.5L12 22l-2.5-7.5L3 12l6.5-3.5L12 2z"
 								fill="url(#fc-party)"
 							/>
-							<circle cx="12" cy="12" r="3" fill="#fff" opacity="0.4" />
+							<circle cx="12" cy="12" r="3" fill={GRAPHIC_COLORS['fff']} opacity="0.4" />
 						</svg>
 					</div>
 					<h1 className="mt-6 text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl">
@@ -423,19 +409,7 @@ function CompletionScreen({
 							}}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
 						>
-							<svg
-								className="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
-								/>
-							</svg>
+							<Icon name="retry" className="h-4 w-4" />
 							Học lại
 						</button>
 						<Link
@@ -448,7 +422,7 @@ function CompletionScreen({
 
 					{/* Try other modes */}
 					<div className="mt-6">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Thử chế độ khác
 						</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">

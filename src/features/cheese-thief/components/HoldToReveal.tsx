@@ -37,7 +37,7 @@ export default function HoldToReveal({
 				tabIndex={0}
 				aria-label={cover ?? t('cheese.deal.holdFirst')}
 				className={cn(
-					'relative overflow-hidden rounded-3xl border border-white/10 bg-[#16140f]',
+					'relative overflow-hidden rounded-3xl border border-white/10 bg-game-surface',
 					compact ? 'min-h-28' : 'min-h-64',
 				)}
 				onPointerDown={show}
@@ -53,8 +53,8 @@ export default function HoldToReveal({
 				onContextMenu={(event) => event.preventDefault()}
 			>
 				{!open && (
-					<div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#16140f] px-6 text-center">
-						<p className="font-mono text-[0.68rem] tracking-[0.22em] text-[#e0a045] uppercase">
+					<div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-game-surface px-6 text-center">
+						<p className="font-mono text-xs tracking-[0.22em] text-game-bronze uppercase">
 							{cover ?? t('cheese.deal.holdFirst')}
 						</p>
 						<CheeseThiefArt scene={compact ? 'secret' : 'cheese'} size={compact ? 48 : 68} />

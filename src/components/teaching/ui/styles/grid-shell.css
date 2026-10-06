@@ -63,7 +63,7 @@
 	border-bottom: 1px solid var(--mc-rule);
 	background: var(--surface-sunken);
 	color: var(--ink-secondary);
-	font-size: 0.6875rem;
+	font-size: var(--type-caption);
 	font-weight: 600;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -86,7 +86,7 @@
 
 [data-surface='teaching'] .mc-grid-summary-heading > span + span:last-child {
 	color: var(--ink-tertiary);
-	font-size: 0.625rem;
+	font-size: var(--type-caption);
 	letter-spacing: 0;
 	line-height: 1.15;
 }
@@ -249,7 +249,7 @@
 [data-surface='teaching'] .mc-grid-week-bulk {
 	display: block;
 	margin-top: 0.2rem;
-	font-size: 0.625rem;
+	font-size: var(--type-caption);
 	font-weight: 600;
 	color: var(--accent);
 	white-space: nowrap;
@@ -257,7 +257,7 @@
 
 [data-surface='teaching'] .mc-grid-week-state {
 	display: block;
-	font-size: 0.625rem;
+	font-size: var(--type-caption);
 	font-weight: 500;
 	color: var(--ink-tertiary);
 }
@@ -346,7 +346,7 @@
 [data-surface='teaching'] .mc-grid-week-draft {
 	display: block;
 	width: 100%;
-	font-size: 0.55rem;
+	font-size: var(--type-caption);
 	font-weight: 600;
 	letter-spacing: 0.02em;
 	line-height: 1.1;
@@ -423,7 +423,7 @@
 [data-surface='teaching'] .mc-grid-week-date-value {
 	display: block;
 	padding: 0 0.1rem;
-	font-size: 0.625rem;
+	font-size: var(--type-caption);
 	font-weight: 600;
 	line-height: 1.5rem;
 	text-align: center;
@@ -475,7 +475,7 @@
 	border: 0;
 	background: transparent;
 	text-align: center;
-	font-size: 0.7rem;
+	font-size: var(--type-caption);
 	font-weight: 700;
 	color: var(--ink);
 }
@@ -495,7 +495,7 @@
 }
 
 [data-surface='teaching'] .mc-session-date-status {
-	font-size: 0.625rem;
+	font-size: var(--type-caption);
 	font-weight: 600;
 	line-height: 1;
 	color: var(--ink-tertiary);
@@ -589,7 +589,7 @@
 [data-surface='teaching'] .mc-grid-week-sub {
 	display: block;
 	margin-top: 0.15rem;
-	font-size: 0.625rem;
+	font-size: var(--type-caption);
 	font-weight: 500;
 	letter-spacing: 0;
 	text-transform: none;

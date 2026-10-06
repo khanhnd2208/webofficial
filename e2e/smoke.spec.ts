@@ -72,14 +72,15 @@ test.describe('Public pages smoke', () => {
 	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.goto('/my-space');
+		await expect(page.getByTestId('my-space').filter({ visible: true })).toHaveCount(1);
 		await expect(page).toHaveURL(/\/my-space$/);
-		await expect(page.getByTestId('my-space')).toBeVisible();
+		await expect(page.getByTestId('my-space').filter({ visible: true })).toBeVisible();
 		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
 		await expect(page.getByTestId('myspace-tile-board-game')).toBeVisible();
 		await page.getByTestId('myspace-tile-courses').click();
-		await expect(page).toHaveURL(/\/dang-nhap\?from=%2Fkhoa-hoc/);
+		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
 	});
 
 	test('intro and mục lục stay without horizontal overflow at critical widths', async ({
@@ -94,9 +95,9 @@ test.describe('Public pages smoke', () => {
 				if (path === '/') {
 					await expect(page.getByTestId('intro-home')).toBeVisible();
 				} else if (path === '/muc-luc') {
-					await expect(page.getByTestId('gate-home')).toBeVisible();
+					await expect(page.getByTestId('gate-home').filter({ visible: true })).toBeVisible();
 				} else {
-					await expect(page.getByTestId('my-space')).toBeVisible();
+					await expect(page.getByTestId('my-space').filter({ visible: true })).toBeVisible();
 				}
 				const hasOverflow = await page.evaluate(
 					() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -110,12 +111,16 @@ test.describe('Public pages smoke', () => {
 		await page.goto('/gioi-thieu');
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 		await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toBeVisible();
-		await expect(page.getByText('Trường Đại học Hà Nội', { exact: false })).toBeVisible();
+		await expect(
+			page.getByText('Trường Đại học Hà Nội', { exact: false }).filter({ visible: true }),
+		).toBeVisible();
 		await expect(page.getByRole('link', { name: 'Trao đổi về việc học' })).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Cố vấn quản trị' })).toBeVisible();
 		await expect(page.getByRole('heading', { name: /^Nền tảng$/i })).toHaveCount(0);
 		await expect(
-			page.getByText(/Tôi vẫn đang học cách trở thành một người thầy tốt hơn/i),
+			page
+				.getByText(/Tôi vẫn đang học cách trở thành một người thầy tốt hơn/i)
+				.filter({ visible: true }),
 		).toBeVisible();
 		await expect(page.getByText(/My Hanoicam/i)).toHaveCount(0);
 		await expect(page.getByTestId('site-header-home')).toBeVisible();
@@ -170,6 +175,22 @@ test.describe('Public pages smoke', () => {
 			await page.goto(path);
 			await expect(page).toHaveURL(/\/muc-luc$/);
 		}
+	});
+
+	test('course catalogs are readable before signing in', async ({ page }) => {
+		for (const path of ['/khoa-hoc', '/kham-pha-khoa-hoc']) {
+			await page.goto(path);
+			await expect(
+				page.getByRole('heading', { name: 'Một điều mới bắt đầu từ đây.' }),
+			).toBeVisible();
+			await expect(page).not.toHaveURL(/dang-nhap/);
+		}
+	});
+
+	test('unknown pages identify the error in the browser title', async ({ page }) => {
+		await page.goto('/this-page-does-not-exist');
+		await expect(page).toHaveTitle(/Không tìm thấy trang/);
+		await expect(page.getByTestId('contact-fab')).toHaveCount(0);
 	});
 
 	test('login page loads', async ({ page }) => {
@@ -240,7 +261,7 @@ test.describe('Navigation', () => {
 		await page.goto('/dich-vu');
 		await page.getByTestId('site-header-home').click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByTestId('gate-home')).toBeVisible();
+		await expect(page.getByTestId('gate-home').filter({ visible: true })).toBeVisible();
 	});
 
 	test('mục lục wordmark stays on the mục lục', async ({ page }) => {

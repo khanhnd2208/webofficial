@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import SpotIllustration from '@/components/site/SpotIllustration';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
@@ -259,7 +260,7 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 				</ul>
 			) : (
 				<div className="ln-empty">
-					<LearnIcon name="search" size={28} />
+					<SpotIllustration variant="empty" size={96} className="mx-auto" />
 					<p className="font-medium">Không có khóa học phù hợp</p>
 					<p className="text-sm text-ink-secondary">Thử từ khóa khác hoặc bỏ bớt bộ lọc.</p>
 					{filtersActive ? (

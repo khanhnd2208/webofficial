@@ -57,7 +57,7 @@ export default async function AdminCoursesPage() {
 										{course.enrollmentCount} học viên
 									</p>
 								</div>
-								<span className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+								<span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-muted">
 									{STATUS_LABEL[course.status] ?? course.status}
 								</span>
 							</Link>

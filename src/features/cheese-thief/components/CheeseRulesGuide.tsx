@@ -98,7 +98,7 @@ export function TableRulesCard({
 	return (
 		<section className={cn('rounded-2xl border border-border bg-surface px-4 py-3', className)}>
 			<div className="flex items-baseline justify-between gap-3">
-				<h3 className="font-mono text-[0.68rem] tracking-[0.16em] text-muted uppercase">
+				<h3 className="font-mono text-xs tracking-[0.16em] text-muted uppercase">
 					{t('cheese.guide.yourTable')}
 				</h3>
 				<span className="text-xs text-muted">
@@ -132,7 +132,7 @@ function TableOverview({ playerCount }: { playerCount?: number }) {
 		<section>
 			<div className="overflow-x-auto">
 				<table className="w-full text-left text-sm">
-					<thead className="font-mono text-[0.62rem] tracking-[0.12em] text-muted uppercase">
+					<thead className="font-mono text-xs tracking-[0.12em] text-muted uppercase">
 						<tr>
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colPlayers')}</th>
 							<th className="py-2 pr-2 font-normal">{t('cheese.guide.overview.colFollowers')}</th>

@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
@@ -84,14 +86,14 @@ function playSuccess() {
 
 function burstConfetti(container: HTMLElement) {
 	const colors = [
-		'#c44b28',
-		'#e8714f',
-		'#4a8c5c',
-		'#6aad7c',
-		'#c48a1a',
-		'#d4a03a',
-		'#f0ece4',
-		'#1a1a1a',
+		GRAPHIC_COLORS['c44b28'],
+		GRAPHIC_COLORS['e8714f'],
+		GRAPHIC_COLORS['4a8c5c'],
+		GRAPHIC_COLORS['6aad7c'],
+		GRAPHIC_COLORS['c48a1a'],
+		GRAPHIC_COLORS['d4a03a'],
+		GRAPHIC_COLORS['f0ece4'],
+		GRAPHIC_COLORS['1a1a1a'],
 	];
 	const count = 60;
 
@@ -131,7 +133,12 @@ function burstConfetti(container: HTMLElement) {
 /* ── Match sparkle particles ── */
 function sparkleMatch(el1: HTMLElement, el2: HTMLElement) {
 	const rects = [el1.getBoundingClientRect(), el2.getBoundingClientRect()];
-	const colors = ['#4a8c5c', '#6aad7c', '#a7d9b3', '#d4f0de'];
+	const colors = [
+		GRAPHIC_COLORS['4a8c5c'],
+		GRAPHIC_COLORS['6aad7c'],
+		GRAPHIC_COLORS['a7d9b3'],
+		GRAPHIC_COLORS['d4f0de'],
+	];
 
 	rects.forEach((rect) => {
 		const cx = rect.left + rect.width / 2;
@@ -352,35 +359,11 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 						<VocabBackLink className="text-xs font-bold uppercase tracking-widest text-muted hover:text-foreground transition-colors" />
 						<div className="flex items-center gap-4 text-xs text-muted">
 							<span className="flex items-center gap-1.5">
-								<svg
-									className="h-3.5 w-3.5"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									strokeWidth={2}
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59"
-									/>
-								</svg>
+								<Icon name="schedule" className="h-3.5 w-3.5" />
 								{moves}
 							</span>
 							<span className="flex items-center gap-1.5">
-								<svg
-									className="h-3.5 w-3.5"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									strokeWidth={2}
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
+								<Icon name="check" className="h-3.5 w-3.5" />
 								{formatTime(elapsed)}
 							</span>
 							<span className="font-bold text-success">
@@ -404,7 +387,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 				<div className="mx-auto max-w-4xl px-6 py-8 sm:py-12">
 					{/* Instruction */}
 					<div className="mb-6 flex items-center justify-between">
-						<span className="rounded-full bg-surface-hover px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+						<span className="rounded-full bg-surface-hover px-3 py-1 text-xs font-bold uppercase tracking-widest text-muted">
 							Nối từ với nghĩa
 						</span>
 						{matched.size > 0 && matched.size < cards.length && (
@@ -431,7 +414,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 									}}
 									onClick={() => handleCardClick(card)}
 									disabled={isMatched}
-									className={`group relative rounded-xl border-2 p-3 text-left transition-all duration-200 sm:p-4 ${
+									className={`group relative rounded-xl border-2 p-3 text-left transition-all duration-250 sm:p-4 ${
 										isMatched
 											? 'border-success/30 bg-success-subtle cursor-default'
 											: isWrong
@@ -461,7 +444,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 											}`}
 										/>
 										<span
-											className={`text-[9px] font-bold uppercase tracking-widest ${
+											className={`text-xs font-bold uppercase tracking-widest ${
 												card.type === 'word' ? 'text-accent' : 'text-blue-400'
 											}`}
 										>
@@ -484,19 +467,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 											className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-success text-white shadow-md"
 											style={{ animation: 'iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
 										>
-											<svg
-												className="h-3.5 w-3.5"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke="currentColor"
-												strokeWidth={3}
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													d="M4.5 12.75l6 6 9-13.5"
-												/>
-											</svg>
+											<Icon name="check" className="h-3.5 w-3.5" />
 										</div>
 									)}
 
@@ -512,7 +483,7 @@ export default function MatchingPage({ params }: { params: Promise<{ id: string 
 						})}
 					</div>
 
-					<p className="mt-8 text-center text-[10px] font-bold uppercase tracking-widest text-muted/40">
+					<p className="mt-8 text-center text-xs font-bold uppercase tracking-widest text-muted/40">
 						Chọn 1 thẻ từ và 1 thẻ nghĩa tương ứng để ghép cặp
 					</p>
 				</div>
@@ -656,18 +627,22 @@ function CompletionScreen({
 								<svg className="h-10 w-10" viewBox="0 0 24 24" fill="none">
 									<defs>
 										<linearGradient id={`star-${s}`} x1="0.5" y1="0" x2="0.5" y2="1">
-											<stop offset="0%" stopColor="#ffcc00" />
-											<stop offset="100%" stopColor="#ff8800" />
+											<stop offset="0%" stopColor={GRAPHIC_COLORS['ffcc00']} />
+											<stop offset="100%" stopColor={GRAPHIC_COLORS['ff8800']} />
 										</linearGradient>
 									</defs>
 									<path
 										d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5 6.6 18.3l1.5-6-4.6-4 6.1-.5L12 2z"
 										fill={`url(#star-${s})`}
-										stroke="#ff9900"
+										stroke={GRAPHIC_COLORS['ff9900']}
 										strokeWidth="0.5"
 										strokeLinejoin="round"
 									/>
-									<path d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5" fill="#fff" opacity="0.15" />
+									<path
+										d="M12 2l2.4 5.8 6.1.5-4.6 4 1.5 6L12 15.5"
+										fill={GRAPHIC_COLORS['fff']}
+										opacity="0.15"
+									/>
 								</svg>
 							</span>
 						))}
@@ -681,19 +656,17 @@ function CompletionScreen({
 					<div className="mx-auto mt-6 flex max-w-xs items-center justify-center gap-6">
 						<div className="text-center">
 							<p className="text-2xl font-black text-foreground">{moves}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Lượt</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Lượt</p>
 						</div>
 						<div className="h-8 w-px bg-border" />
 						<div className="text-center">
 							<p className="text-2xl font-black text-foreground">{formatTime(elapsed)}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
-								Thời gian
-							</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Thời gian</p>
 						</div>
 						<div className="h-8 w-px bg-border" />
 						<div className="text-center">
 							<p className="text-2xl font-black text-success">{pairsCount}</p>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted">Cặp</p>
+							<p className="text-xs font-bold uppercase tracking-widest text-muted">Cặp</p>
 						</div>
 					</div>
 
@@ -722,19 +695,7 @@ function CompletionScreen({
 							}}
 							className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-foreground px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-transparent hover:text-foreground active:scale-95"
 						>
-							<svg
-								className="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
-								/>
-							</svg>
+							<Icon name="retry" className="h-4 w-4" />
 							Chơi lại
 						</button>
 						<Link
@@ -747,7 +708,7 @@ function CompletionScreen({
 
 					{/* Try other modes */}
 					<div className="mt-6">
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+						<p className="text-xs font-bold uppercase tracking-widest text-muted">
 							Thử chế độ khác
 						</p>
 						<div className="mt-2 flex flex-wrap items-center justify-center gap-2">

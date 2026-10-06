@@ -16,10 +16,10 @@ test.describe('Teaching admin workspace', () => {
 
 		await page.goto('/my-space/teaching');
 		await page.getByRole('button', { name: 'Thêm môn' }).click();
-		await page.getByLabel('Mã môn').fill(courseCode);
-		await page.getByLabel('Tên môn').fill(courseName);
+		await page.getByLabel('Mã môn').filter({ visible: true }).fill(courseCode);
+		await page.getByLabel('Tên môn').filter({ visible: true }).fill(courseName);
 		await page.getByRole('button', { name: 'Lưu', exact: true }).click();
-		await expect(page.getByText(courseCode)).toBeVisible();
+		await expect(page.getByText(courseCode).filter({ visible: true })).toBeVisible();
 
 		const courses = await page.request.get('/api/admin/teaching/courses');
 		expect(courses.ok()).toBe(true);
@@ -37,7 +37,9 @@ test.describe('Teaching admin workspace', () => {
 
 			await page.goto(`/my-space/teaching/courses/${courseId}`);
 			await page.getByRole('link', { name: 'Tạo lớp', exact: true }).click();
-			await expect(page.getByLabel('Môn học')).toBeDisabled();
+			const selectedCourse = page.getByRole('combobox', { name: /Môn học/ });
+			await expect(selectedCourse).toBeDisabled();
+			await expect(selectedCourse).toHaveValue(courseId);
 			await page.getByPlaceholder('39-01').fill('e2e-01');
 			await page.getByPlaceholder('HỌC KỲ 1 - NĂM HỌC 2026 - 2027').fill(term);
 			await page.getByRole('button', { name: 'Tạo lớp trống' }).click();
@@ -64,7 +66,7 @@ test.describe('Teaching admin workspace', () => {
 				data: { groupNo: 'E2E-02', term, status: 'ACTIVE' },
 			});
 			await page.goto(`/my-space/teaching/courses/${courseId}`);
-			await expect(page.getByText('Lớp E2E-02')).toBeVisible();
+			await expect(page.getByText('Lớp E2E-02').filter({ visible: true })).toBeVisible();
 
 			const archivedClass = await page.request.patch(
 				`/api/admin/teaching/classes/${teachingClass!.id}`,
@@ -101,8 +103,9 @@ test.describe('Teaching admin workspace', () => {
 			expect(deck.status).toBe('DRAFT');
 
 			await page.goto(`/my-space/teaching/courses/${courseId}?tab=recall`);
-			await expect(page.getByText(`E2E Deck ${suffix}`)).toBeVisible();
-			await expect(page.getByText('1 thẻ · Bản nháp')).toBeVisible();
+			await expect(page.getByText(`E2E Deck ${suffix}`).filter({ visible: true })).toHaveCount(1);
+			await expect(page.getByText(`E2E Deck ${suffix}`).filter({ visible: true })).toBeVisible();
+			await expect(page.getByText('1 thẻ · Bản nháp').filter({ visible: true })).toBeVisible();
 
 			const archivedDeck = await page.request.patch(
 				`/api/admin/teaching/courses/${courseId}/recall/${deck.id}`,

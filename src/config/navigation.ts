@@ -168,6 +168,7 @@ export const INTERNAL_CHROME_PREFIXES = [
 ] as const;
 
 export function isInternalChromePath(pathname: string): boolean {
+	if (pathname === routes.learnCourses) return false;
 	return INTERNAL_CHROME_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
@@ -205,6 +206,7 @@ export function afterSignOutPath(location: string): string {
 /** True when a signed-out visitor opening this path would be sent to the login page. */
 export function isSignInRequiredPath(location: string): boolean {
 	const pathname = location.split(/[?#]/)[0] || routes.home;
+	if (pathname === routes.learnCourses) return false;
 	return (
 		SIGN_IN_REQUIRED_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix)) ||
 		SIGN_IN_REQUIRED_PATTERNS.some((pattern) => pattern.test(pathname))

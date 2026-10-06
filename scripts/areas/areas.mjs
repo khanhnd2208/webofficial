@@ -114,8 +114,10 @@ export const AREAS = {
 		components: ['learn', 'marketing', 'contact'],
 		paths: [
 			'src/app/page.tsx',
+			'src/app/opengraph-image.tsx',
 			'src/app/gioi-thieu',
 			'src/app/muc-luc',
+			'src/app/kham-pha-khoa-hoc',
 			'src/app/du-an',
 			'src/app/trai-nghiem',
 			'src/app/dich-vu',

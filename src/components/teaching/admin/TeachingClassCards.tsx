@@ -260,13 +260,13 @@ export function TeachingClassCards({
 									<p className="mt-2 text-sm font-medium text-ink">{row.term}</p>
 									<div className="mt-3 flex flex-wrap items-center gap-1.5">
 										<span
-											className="teaching-status text-[0.625rem]"
+											className="teaching-status text-xs"
 											data-tone={isArchived ? 'muted' : 'ok'}
 										>
 											{isArchived ? 'Đã lưu trữ' : 'Đang dạy'}
 										</span>
 										<span
-											className={`teaching-status text-[0.625rem] ${row.attendanceVisible ? 'teaching-status-ok' : ''}`}
+											className={`teaching-status text-xs ${row.attendanceVisible ? 'teaching-status-ok' : ''}`}
 										>
 											{shareLabel(row)}
 										</span>
@@ -276,7 +276,7 @@ export function TeachingClassCards({
 											<span className="font-semibold text-ink">{row.studentCount}</span> sinh viên
 										</div>
 										{warnings > 0 ? (
-											<span className="rounded-full bg-error/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-error">
+											<span className="rounded-full bg-error/10 px-2 py-0.5 text-xs font-semibold text-error">
 												{warnings} cảnh báo
 											</span>
 										) : null}

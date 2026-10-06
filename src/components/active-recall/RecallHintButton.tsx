@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import { useId, type ButtonHTMLAttributes, type PointerEvent, type ReactNode } from 'react';
 
 function isMousePointer(event: Pick<PointerEvent<HTMLElement>, 'pointerType'>) {
@@ -15,21 +16,7 @@ export function RecallSizeGlyph({ size }: { size: 'small' | 'large' }) {
 }
 
 export function RecallPresentIcon() {
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			width="20"
-			height="20"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<path d="M9 4H5v4M15 4h4v4M9 20H5v-4M19 16v4h-4" />
-		</svg>
-	);
+	return <Icon name="fullscreen" size={20} aria-hidden="true" />;
 }
 
 export default function RecallHintButton({

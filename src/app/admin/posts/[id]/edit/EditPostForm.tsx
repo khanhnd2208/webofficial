@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -281,16 +282,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 			) : null}
 			{isLegacyMarkdown ? (
 				<div className="mt-3 flex items-center gap-2 rounded-lg border border-blue-300/30 bg-blue-50 px-4 py-2.5 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-950/30 dark:text-blue-300">
-					<svg
-						className="h-4 w-4 shrink-0"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="1.5"
-					>
-						<circle cx="12" cy="12" r="10" />
-						<path d="M12 8v4M12 16h.01" strokeLinecap="round" />
-					</svg>
+					<Icon name="info" className="h-4 w-4 shrink-0" />
 					Bài viết này đang ở định dạng Markdown cũ. Khi lưu, nội dung sẽ được chuyển sang HTML.
 				</div>
 			) : null}
@@ -317,7 +309,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-sm outline-none transition-colors focus:border-accent"
 						placeholder="tieu-de-bai-viet"
 					/>
-					<p className="mt-1 text-[11px] text-muted">Tự động từ tiêu đề. Chỉnh để tuỳ chỉnh URL.</p>
+					<p className="mt-1 text-xs text-muted">Tự động từ tiêu đề. Chỉnh để tuỳ chỉnh URL.</p>
 				</label>
 
 				<label className="block md:col-span-2">
@@ -421,7 +413,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
 						placeholder="VD: 1, 2, 3..."
 					/>
-					<p className="mt-1 text-[11px] text-muted">
+					<p className="mt-1 text-xs text-muted">
 						Số thứ tự chapter. Hiển thị dạng &quot;Chapter 1&quot;, &quot;Chapter 2&quot;…
 					</p>
 				</label>
@@ -445,11 +437,11 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						/>
 						<span className="text-sm font-medium">Xuất bản</span>
 						{isPublished ? (
-							<span className="rounded-full bg-success-subtle px-2 py-0.5 text-[10px] font-bold text-success">
+							<span className="rounded-full bg-success-subtle px-2 py-0.5 text-xs font-bold text-success">
 								LIVE
 							</span>
 						) : (
-							<span className="rounded-full bg-warning-subtle px-2 py-0.5 text-[10px] font-bold text-warning">
+							<span className="rounded-full bg-warning-subtle px-2 py-0.5 text-xs font-bold text-warning">
 								DRAFT
 							</span>
 						)}
@@ -463,7 +455,7 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 						/>
 						<span className="text-sm font-medium">📌 Ghim</span>
 						{isPinned ? (
-							<span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
+							<span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-bold text-accent">
 								PINNED
 							</span>
 						) : null}
@@ -502,10 +494,8 @@ export default function EditPostForm({ initial }: { initial: AdminPost }) {
 					) : saveState.status === 'saved' ? (
 						<span className="text-success">✓ Đã lưu</span>
 					) : null}
-					<span className="ml-auto text-[11px]">
-						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
-							⌘S
-						</kbd>{' '}
+					<span className="ml-auto text-xs">
+						<kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-xs">⌘S</kbd>{' '}
 						lưu nhanh
 					</span>
 				</div>

@@ -2,6 +2,7 @@
    Identity colours are on :root so My Space and the table of contents can
    use them without adopting the whole Teaching surface. */
 :root {
+	--teaching-mark-paper: #ffffff;
 	--teaching-accent: #176b63;
 	--teaching-accent-hover: #12564f;
 	--teaching-selected: #e5f1ed;
@@ -65,13 +66,13 @@
 	--mc-error: var(--error);
 	--mc-error-subtle: var(--error-subtle);
 	--mc-error-on-subtle: #8a2222;
-	--mc-r-xs: 4px;
+	--mc-r-xs: 8px;
 	--mc-r-sm: 8px;
 	--mc-r-md: 12px;
-	--mc-r-lg: 16px;
-	--mc-dur-1: 120ms;
-	--mc-dur-2: 200ms;
-	--mc-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+	--mc-r-lg: 20px;
+	--mc-dur-1: var(--ui-duration-hover);
+	--mc-dur-2: var(--ui-duration-control);
+	--mc-ease-standard: var(--ui-ease);
 	--mc-shadow-1: 0 1px 2px rgb(25 51 47 / 0.04);
 	--mc-shadow-2: 0 4px 16px -6px rgb(25 51 47 / 0.12);
 	--mc-shadow-3: 0 16px 40px -16px rgb(25 51 47 / 0.2);

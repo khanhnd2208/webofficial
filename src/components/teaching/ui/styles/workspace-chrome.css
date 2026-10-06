@@ -42,7 +42,7 @@
 }
 
 [data-surface='teaching'] .mc-grid-week-state {
-	font-size: 10px;
+	font-size: var(--type-caption);
 	text-transform: none;
 	letter-spacing: 0;
 	white-space: nowrap;
@@ -336,7 +336,7 @@
 	gap: 0.3rem;
 	border-radius: var(--mc-r-sm);
 	color: var(--ink-secondary);
-	font-size: 0.72rem;
+	font-size: var(--type-caption);
 	font-weight: 700;
 	text-decoration: none;
 	white-space: nowrap;
@@ -358,7 +358,7 @@
 [data-surface='teaching'] .teaching-app-header-eyebrow {
 	overflow: hidden;
 	color: var(--ink-tertiary);
-	font-size: 0.61rem;
+	font-size: var(--type-caption);
 	font-weight: 750;
 	letter-spacing: 0.08em;
 	line-height: 1.2;
@@ -384,7 +384,7 @@
 	margin-top: 0.2rem;
 	overflow: hidden;
 	color: var(--ink-secondary);
-	font-size: 0.72rem;
+	font-size: var(--type-caption);
 	line-height: 1.2;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -426,7 +426,7 @@
 }
 
 [data-surface='teaching'] .teaching-workspace-pending {
-	transition: opacity var(--mc-dur-2, 200ms) var(--mc-ease-standard, ease);
+	transition: opacity var(--mc-dur-2, 250ms) var(--mc-ease-standard, ease);
 }
 
 [data-surface='teaching'] .teaching-workspace-pending[data-pending='true'] {
@@ -471,13 +471,13 @@
 [data-surface='teaching'] .teaching-app-header .mc-tabbar button {
 	min-height: 2.35rem;
 	padding-inline: 0.7rem;
-	font-size: 0.68rem;
+	font-size: var(--type-caption);
 }
 
 [data-surface='teaching'] .teaching-app-header .teaching-status {
 	min-height: 1.5rem;
 	padding-inline: 0.5rem;
-	font-size: 0.625rem;
+	font-size: var(--type-caption);
 }
 
 [data-surface='teaching'] .teaching-management-mobile-trigger {
@@ -551,7 +551,7 @@
 	background: var(--surface-sunken);
 	padding: 0 0.6rem;
 	color: var(--ink-secondary);
-	font-size: 0.6875rem;
+	font-size: var(--type-caption);
 	font-weight: 700;
 	white-space: nowrap;
 }

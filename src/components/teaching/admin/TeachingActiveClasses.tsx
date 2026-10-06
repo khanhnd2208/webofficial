@@ -78,7 +78,7 @@ export function TeachingActiveClasses({ courses }: { courses: TeachingCourseList
 								className="min-w-0 flex-1 rounded-l-2xl px-4 py-3 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
 								data-testid={`teaching-active-class-${row.id}`}
 							>
-								<p className="font-mono text-[0.6875rem] font-bold uppercase tracking-wider text-accent">
+								<p className="font-mono text-xs font-bold uppercase tracking-wider text-accent">
 									{row.courseCode} · Lớp {classCode}
 								</p>
 								<p className="mt-1 truncate text-sm font-semibold text-ink" title={row.courseName}>
@@ -91,7 +91,7 @@ export function TeachingActiveClasses({ courses }: { courses: TeachingCourseList
 										<span className="font-semibold text-ink">{row.studentCount}</span> sinh viên
 									</span>
 									{warnings > 0 ? (
-										<span className="rounded-full bg-error/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-error">
+										<span className="rounded-full bg-error/10 px-2 py-0.5 text-xs font-semibold text-error">
 											{warnings} cảnh báo
 										</span>
 									) : null}

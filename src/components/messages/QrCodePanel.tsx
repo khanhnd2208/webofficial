@@ -1,5 +1,6 @@
 'use client';
 
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import { useRef } from 'react';
 import QRCode from 'react-qr-code';
 
@@ -28,7 +29,7 @@ export default function QrCodePanel({ url, title = 'message-qr' }: QrCodePanelPr
 			const padding = 32;
 			canvas.width = img.width + padding * 2;
 			canvas.height = img.height + padding * 2;
-			ctx.fillStyle = '#ffffff';
+			ctx.fillStyle = GRAPHIC_COLORS['ffffff'];
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 			ctx.drawImage(img, padding, padding);
 			URL.revokeObjectURL(objectUrl);

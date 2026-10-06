@@ -38,16 +38,16 @@ export default function DealPhase({ state, busy, onRemember, onBeginNight }: Pro
 						}
 						size={54}
 					/>
-					<p className="font-mono text-[0.68rem] tracking-[0.2em] text-[#e0a045] uppercase">
+					<p className="font-mono text-xs tracking-[0.2em] text-game-bronze uppercase">
 						{t(`cheese.deal.role.${self.role}`)}
 					</p>
-					<p className="max-w-xs text-sm leading-relaxed text-[#f4efe4]/80">
+					<p className="max-w-xs text-sm leading-relaxed text-game-ink/80">
 						{t(`cheese.deal.blurb.${self.role}`)}
 					</p>
-					<p className="text-xs tracking-wide text-[#f4efe4]/60 uppercase">
+					<p className="text-xs tracking-wide text-game-ink/60 uppercase">
 						{t('cheese.deal.yourHours')}
 					</p>
-					<p className="font-display text-4xl text-[#f4efe4]">{hour}</p>
+					<p className="font-display text-4xl text-game-ink">{hour}</p>
 				</HoldToReveal>
 			</div>
 

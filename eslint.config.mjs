@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
+import designPlugin from './scripts/design-lint.mjs';
 
 import { AREAS, eslintFiles, importPatterns } from './scripts/areas/areas.mjs';
 
@@ -131,6 +132,12 @@ const eslintConfig = defineConfig([
 				},
 			],
 		},
+	},
+	{
+		files: ['src/**/*.tsx'],
+		ignores: ['src/**/*.test.tsx'],
+		plugins: { design: designPlugin },
+		rules: { 'design/design-values': 'error' },
 	},
 	...areaBoundaries,
 	...fileSizeBudget,

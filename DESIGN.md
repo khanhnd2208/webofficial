@@ -264,7 +264,7 @@ Do not invent placeholder testimonials, fake metrics, or social proof.
 - `/og-editorial-premium.jpg` — social OG
 
 **Legacy / alternate brand art (available):**
-- `hero-figure.jpg`, `hero-journey.jpg`, `hero-landscape.jpg`, `hero-mobile.jpg`
+- `hero-mobile.jpg`
 - `learning-as-becoming-{desktop,tablet,mobile,mobile-480,og}.{jpg,webp,avif}`
 
 **Missing for fidelity (owner must supply):**

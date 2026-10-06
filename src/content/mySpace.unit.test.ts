@@ -9,7 +9,7 @@ describe('My Space operating hub', () => {
 		expect(mySpaceTiles.map((tile) => tile.id)).toEqual(['teaching', 'courses', 'board-game']);
 		expect(mySpaceTiles.map((tile) => tile.href)).toEqual([
 			routes.mySpaceTeaching,
-			routes.learnCourses,
+			routes.discoverCourses,
 			routes.boardGame,
 		]);
 		expect(mySpaceTiles.every((tile) => tile.status === 'published')).toBe(true);
@@ -24,7 +24,7 @@ describe('My Space operating hub', () => {
 		expect(mySpaceAdminTile.href).toBe(routes.admin.home);
 		expect(mySpaceAdminTile.visual).toEqual({
 			kind: 'image',
-			src: '/brand/myspace/admin-v2.png',
+			src: '/brand/myspace/admin-v3.webp',
 			alt: 'Biểu tượng khu quản trị Admin',
 		});
 	});

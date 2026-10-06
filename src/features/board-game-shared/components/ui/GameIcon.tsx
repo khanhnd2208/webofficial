@@ -1,3 +1,4 @@
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { cn } from '@/features/board-game-shared/lib/cn';
 
 export type GameIconName =
@@ -202,7 +203,36 @@ function IconArtwork({ name }: { name: GameIconName }) {
 	}
 }
 
+const SHARED_ICONS: Partial<Record<GameIconName, IconName>> = {
+	'arrow-left': 'arrow_back',
+	book: 'menu_book',
+	check: 'check',
+	'chevron-down': 'expand_more',
+	compass: 'explore',
+	eye: 'visibility',
+	help: 'help',
+	lock: 'lock',
+	minus: 'remove',
+	settings: 'settings',
+	shield: 'shield',
+	target: 'track_changes',
+	plus: 'add',
+	users: 'groups',
+};
+
 export default function GameIcon({ name, size = 20, className, label }: Props) {
+	const shared = SHARED_ICONS[name];
+	if (shared)
+		return (
+			<Icon
+				name={shared}
+				size={size}
+				className={cn('shrink-0', className)}
+				aria-hidden={label ? undefined : true}
+				aria-label={label}
+				role={label ? 'img' : undefined}
+			/>
+		);
 	return (
 		<svg
 			aria-hidden={label ? undefined : true}

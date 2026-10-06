@@ -218,7 +218,7 @@ export default function SpyGameClient({ code, initialName, adminTest = false }: 
 		return (
 			<div className="game-theme game-theme-spy">
 				<div className="relative mx-auto max-w-xl px-4 py-8 pb-[max(4rem,env(safe-area-inset-bottom))]">
-					<header className="game-theme-hero rounded-[1.25rem]">
+					<header className="game-theme-hero rounded-2xl">
 						<Image
 							src="/brand/myspace/spy-fall-menu-poster.webp"
 							unoptimized

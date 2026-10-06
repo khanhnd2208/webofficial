@@ -20,7 +20,7 @@ export default function TiePhase({ state, busy, onRevote }: Props) {
 	return (
 		<div className="flex min-h-[70svh] flex-col items-center justify-center gap-6 text-center">
 			<CheeseThiefArt scene="tie" size={96} />
-			<p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">
+			<p className="font-mono text-xs tracking-[0.18em] text-muted uppercase">
 				{t('cheese.tie.title')}
 			</p>
 			<ul className="space-y-2">

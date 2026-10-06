@@ -20,9 +20,7 @@ function MetaItem({ label, value }: { label: string; value?: string | null }) {
 	if (!value) return null;
 	return (
 		<div className="border-t border-hairline pt-4">
-			<p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-secondary">
-				{label}
-			</p>
+			<p className="font-mono text-xs uppercase tracking-[0.25em] text-ink-secondary">{label}</p>
 			<p className="mt-2 text-sm leading-relaxed text-ink">{value}</p>
 		</div>
 	);
@@ -52,7 +50,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 
 					<div className="mt-10 grid items-center gap-12 lg:grid-cols-12 lg:gap-20">
 						<div className="lg:col-span-7">
-							<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-accent">
+							<p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
 								Khóa học · Duy Khánh
 							</p>
 							<h1 className="mt-4 max-w-3xl text-balance font-display text-[clamp(3rem,6vw,6rem)] font-normal leading-[0.96] tracking-[-0.04em] text-ink">
@@ -68,14 +66,14 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 								{isLoggedIn ? (
 									<Link
 										href={routes.accountLearning}
-										className="inline-flex min-h-11 items-center rounded-[4px] border border-hairline px-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition duration-200 hover:border-ink"
+										className="inline-flex min-h-11 items-center rounded-[4px] border border-hairline px-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition duration-250 hover:border-ink"
 									>
 										Khu học của tôi
 									</Link>
 								) : (
 									<Link
 										href={`${routes.login}?from=${routes.course(intro.slug)}`}
-										className="inline-flex min-h-11 items-center rounded-[4px] border border-hairline px-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition duration-200 hover:border-ink"
+										className="inline-flex min-h-11 items-center rounded-[4px] border border-hairline px-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition duration-250 hover:border-ink"
 									>
 										Đã được mời? Đăng nhập
 									</Link>
@@ -115,7 +113,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 					<div className="space-y-12 lg:col-span-7">
 						{intro.description ? (
 							<section>
-								<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-accent">
+								<p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
 									Giới thiệu
 								</p>
 								<div className="prose prose-sm dark:prose-invert mt-4 max-w-2xl whitespace-pre-wrap text-ink-secondary">
@@ -126,7 +124,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 
 						{outcomes.length > 0 ? (
 							<section>
-								<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-accent">
+								<p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
 									Kết quả học tập
 								</p>
 								<ul className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -135,7 +133,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 											key={line}
 											className="border border-hairline bg-paper p-6 text-sm leading-relaxed text-ink-secondary"
 										>
-											<span className="block font-mono text-[10px] text-accent">0{index + 1}</span>
+											<span className="block font-mono text-xs text-accent">0{index + 1}</span>
 											<span className="mt-4 block">{line}</span>
 										</li>
 									))}
@@ -145,7 +143,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 
 						{prereqs.length > 0 ? (
 							<section>
-								<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-accent">
+								<p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
 									Điều kiện tiên quyết
 								</p>
 								<ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-secondary">
@@ -160,7 +158,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 					{intro.modules.length > 0 ? (
 						<aside className="lg:col-span-5">
 							<div className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
-								<p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-accent">
+								<p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
 									Nội dung khóa học
 								</p>
 								<p className="mt-3 text-sm leading-relaxed text-ink-secondary">
@@ -174,7 +172,7 @@ export default function PublicCourseIntroView({ intro, isLoggedIn }: PublicCours
 												aria-hidden
 											/>
 											<div className="flex gap-4">
-												<span className="font-mono text-[10px] text-accent">
+												<span className="font-mono text-xs text-accent">
 													{String(mod.position + 1).padStart(2, '0')}
 												</span>
 												<div className="min-w-0">

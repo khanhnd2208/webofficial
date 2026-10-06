@@ -148,11 +148,11 @@ export default function SiteAuthChip({
 	const items: Array<{ href: string; label: string }> = [
 		...(isAdmin
 			? [
-					{ href: routes.mySpaceTeaching, label: 'Teaching' },
-					{ href: routes.admin.home, label: 'Admin Studio' },
+					{ href: routes.mySpaceTeaching, label: 'Lớp học' },
+					{ href: routes.admin.home, label: 'Quản trị' },
 				]
 			: []),
-		{ href: routes.learnCourses, label: 'Khóa học' },
+		{ href: '/my-space/courses', label: 'Khóa học của tôi' },
 		{ href: routes.account, label: 'Tài khoản' },
 	];
 
@@ -203,8 +203,8 @@ export default function SiteAuthChip({
 				>
 					<div className="border-b border-hairline px-4 py-3">
 						<p className="truncate font-medium">{session.user.name ?? name}</p>
-						<p className="truncate text-xs text-ink-secondary">{session.user.email}</p>
-						<p className="mt-1 text-xs text-ink-secondary">
+						<p className="truncate text-caption text-ink-secondary">{session.user.email}</p>
+						<p className="mt-1 text-caption text-ink-secondary">
 							{isAdmin ? 'Đang đăng nhập với quyền admin' : 'Đang đăng nhập'}
 						</p>
 					</div>

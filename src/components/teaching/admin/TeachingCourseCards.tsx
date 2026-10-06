@@ -70,7 +70,7 @@ function CourseRow({
 					</>
 				) : null}
 				{course.status === 'ARCHIVED' ? (
-					<span className="teaching-status shrink-0 text-[0.625rem]" data-tone="muted">
+					<span className="teaching-status shrink-0 text-xs" data-tone="muted">
 						Đã lưu trữ
 					</span>
 				) : null}

@@ -172,7 +172,7 @@ export function McCourseRow({
 					</p>
 				</div>
 				<div className="mt-2">
-					<div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] text-ink-secondary">
+					<div className="mb-1.5 flex items-center justify-between gap-3 text-xs text-ink-secondary">
 						<span className={`font-medium ${done ? 'text-mc-done' : ''}`}>
 							{progressLoading ? 'Đang tải' : `${percent}% Hoàn thành`}
 						</span>

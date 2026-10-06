@@ -41,7 +41,7 @@ export default async function ActiveRecallIndexPage() {
 									<p className="text-sm text-ink-secondary">
 										{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ') || 'Bộ thẻ'}
 									</p>
-									<h2 className="mt-1 font-display text-2xl font-medium tracking-tight text-ink transition-colors group-hover:text-[#765625]">
+									<h2 className="mt-1 font-display text-2xl font-medium tracking-tight text-ink transition-colors group-hover:text-bronze">
 										{deck.title}
 									</h2>
 									{deck.description ? (

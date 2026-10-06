@@ -25,7 +25,7 @@ export function ServicesFaq() {
 					<summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 text-left text-base font-semibold tracking-[-0.01em] text-ink [&::-webkit-details-marker]:hidden md:text-lg">
 						<span className="font-display font-medium">{item.question}</span>
 						<span
-							className="shrink-0 text-xl font-light text-accent transition-transform duration-200 group-open:rotate-45"
+							className="shrink-0 text-xl font-light text-accent transition-transform duration-250 group-open:rotate-45"
 							aria-hidden
 						>
 							+

@@ -627,7 +627,7 @@ export function AttendanceGrid({
 														{status ? (
 															<McIcon name={STATUS_ICON[status]} size={16} />
 														) : (
-															<span className="text-[10px]">—</span>
+															<span className="text-xs">—</span>
 														)}
 													</span>
 												) : (
@@ -672,7 +672,7 @@ export function AttendanceGrid({
 														{status ? (
 															<McIcon name={STATUS_ICON[status]} size={16} />
 														) : (
-															<span className="text-[10px]">—</span>
+															<span className="text-xs">—</span>
 														)}
 													</button>
 												)}
@@ -743,7 +743,7 @@ export function AttendanceGrid({
 											className={`mc-grid-freeze-right mc-grid-status ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 										>
 											<span
-												className={`inline-flex min-h-6 items-center rounded-[var(--mc-r-sm)] border px-2 text-[11px] font-semibold ${student.cp.riskLevel === 'BANNED' ? 'border-error/30 bg-error-subtle text-error' : student.cp.riskLevel === 'AT_RISK' ? 'border-mc-rule bg-mc-vocab-subtle text-mc-vocab' : 'border-mc-done/30 bg-mc-done-subtle text-mc-done'}`}
+												className={`inline-flex min-h-6 items-center rounded-[var(--mc-r-sm)] border px-2 text-xs font-semibold ${student.cp.riskLevel === 'BANNED' ? 'border-error/30 bg-error-subtle text-error' : student.cp.riskLevel === 'AT_RISK' ? 'border-mc-rule bg-mc-vocab-subtle text-mc-vocab' : 'border-mc-done/30 bg-mc-done-subtle text-mc-done'}`}
 											>
 												{student.cp.riskLevel === 'BANNED'
 													? 'Cấm thi'

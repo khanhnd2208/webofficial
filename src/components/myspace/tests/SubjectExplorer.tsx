@@ -46,7 +46,7 @@ function TestDetails({ test, id }: { test: PublicSpaceTestListItem; id: string }
 			<dl className="mt-3 grid max-w-2xl gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
 				{topics ? (
 					<div>
-						<dt className="font-mono text-[0.65rem] tracking-[0.1em] text-ink-secondary uppercase">
+						<dt className="font-mono text-xs tracking-[0.1em] text-ink-secondary uppercase">
 							Ôn tập
 						</dt>
 						<dd className="mt-1 leading-relaxed text-ink">{topics}</dd>
@@ -54,7 +54,7 @@ function TestDetails({ test, id }: { test: PublicSpaceTestListItem; id: string }
 				) : null}
 				{classifications ? (
 					<div>
-						<dt className="font-mono text-[0.65rem] tracking-[0.1em] text-ink-secondary uppercase">
+						<dt className="font-mono text-xs tracking-[0.1em] text-ink-secondary uppercase">
 							Loại bài
 						</dt>
 						<dd className="mt-1 leading-relaxed text-ink">{classifications}</dd>
@@ -62,7 +62,7 @@ function TestDetails({ test, id }: { test: PublicSpaceTestListItem; id: string }
 				) : null}
 				{difficulties ? (
 					<div>
-						<dt className="font-mono text-[0.65rem] tracking-[0.1em] text-ink-secondary uppercase">
+						<dt className="font-mono text-xs tracking-[0.1em] text-ink-secondary uppercase">
 							Mức độ
 						</dt>
 						<dd className="mt-1 leading-relaxed text-ink">{difficulties}</dd>
@@ -138,7 +138,7 @@ function TestRow({
 	return (
 		<li className="py-3.5" data-testid={`myspace-test-${test.slug}`}>
 			<div className="flex flex-col gap-3 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_auto] sm:items-start sm:gap-4">
-				<span className="shrink-0 pt-1 font-mono text-[0.7rem] tracking-[0.12em] text-accent">
+				<span className="shrink-0 pt-1 font-mono text-xs tracking-[0.12em] text-accent">
 					{formatIndex(index + 1)}
 				</span>
 
@@ -410,7 +410,7 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 		>
 			<div className="lg:grid lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)] lg:items-start lg:gap-8">
 				<aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
-					<p className="font-mono text-[0.65rem] tracking-[0.12em] text-ink-secondary uppercase">
+					<p className="font-mono text-xs tracking-[0.12em] text-ink-secondary uppercase">
 						Môn học
 					</p>
 					<div className="mt-2 border-t border-hairline pt-3">
@@ -491,11 +491,11 @@ export default function SubjectExplorer({ groups }: { groups: PublicSubjectGroup
 										<header className="flex items-baseline justify-between gap-4 border-t border-hairline pt-2.5">
 											<h2
 												id={`subject-${group.subjectId}`}
-												className="font-mono text-[0.7rem] tracking-[0.14em] text-ink-secondary uppercase"
+												className="font-mono text-xs tracking-[0.14em] text-ink-secondary uppercase"
 											>
 												{group.subject}
 											</h2>
-											<span className="font-mono text-[0.65rem] tracking-[0.08em] text-ink-secondary">
+											<span className="font-mono text-xs tracking-[0.08em] text-ink-secondary">
 												{testCountLabel(group.tests.length)}
 											</span>
 										</header>

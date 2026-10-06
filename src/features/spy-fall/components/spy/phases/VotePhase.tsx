@@ -75,7 +75,7 @@ export default function VotePhase({ state, onVote, onNext, busy }: Props) {
 					</div>
 					<div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-secondary">
 						<div
-							className={cn('h-full rounded-full bg-accent transition-[width] duration-300')}
+							className={cn('h-full rounded-full bg-accent transition-[width] duration-250')}
 							style={{ width: `${progress}%` }}
 						/>
 					</div>

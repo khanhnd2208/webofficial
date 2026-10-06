@@ -92,7 +92,7 @@ function NavRow({
 			</button>
 
 			{showCounter ? (
-				<p className="font-mono text-[0.875rem] font-semibold tracking-[0.04em] text-ink">
+				<p className="font-mono text-[13px] font-semibold tracking-[0.04em] text-ink">
 					Question {index + 1} / {total}
 				</p>
 			) : (

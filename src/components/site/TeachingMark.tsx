@@ -4,10 +4,10 @@ import type { SVGProps } from 'react';
 export function TeachingMark(props: SVGProps<SVGSVGElement>) {
 	return (
 		<svg viewBox="0 0 48 48" fill="none" aria-hidden="true" {...props}>
-			<rect x="5" y="4" width="38" height="40" rx="12" fill="#E5F1ED" />
+			<rect x="5" y="4" width="38" height="40" rx="12" fill="var(--teaching-selected)" />
 			<path
 				d="M12 15c4-2 8-2 12 0 4-2 8-2 12 0v20c-4-2-8-2-12 0-4-2-8-2-12 0V15Z"
-				fill="#fff"
+				fill="var(--teaching-mark-paper)"
 				stroke="currentColor"
 				strokeWidth="1.8"
 				strokeLinejoin="round"

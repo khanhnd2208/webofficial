@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
 import { useCallback, useRef, useState } from 'react';
 
 /* ──────────────────────────────────────────────
@@ -105,15 +106,7 @@ export default function TagInput({
 								className="ml-0.5 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
 								aria-label={`Remove ${tag}`}
 							>
-								<svg
-									className="h-3 w-3"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									strokeWidth={2.5}
-								>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-								</svg>
+								<Icon name="close" className="h-3 w-3" />
 							</button>
 						</span>
 					);
@@ -162,10 +155,8 @@ export default function TagInput({
 			) : null}
 
 			<p className="mt-1 text-xs text-muted">
-				Nhấn{' '}
-				<kbd className="rounded border border-border px-1 py-0.5 text-[10px] font-mono">Tab</kbd>{' '}
-				hoặc{' '}
-				<kbd className="rounded border border-border px-1 py-0.5 text-[10px] font-mono">Enter</kbd>{' '}
+				Nhấn <kbd className="rounded border border-border px-1 py-0.5 text-xs font-mono">Tab</kbd>{' '}
+				hoặc <kbd className="rounded border border-border px-1 py-0.5 text-xs font-mono">Enter</kbd>{' '}
 				để thêm tag.
 			</p>
 		</div>

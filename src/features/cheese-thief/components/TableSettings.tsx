@@ -196,7 +196,7 @@ export default function TableSettings({ state, busy, onSettings, onHourSeconds }
 				<div className="flex items-start justify-between gap-3">
 					<p className="text-sm leading-relaxed">{followerLine}</p>
 					{canTuneFollowers && (
-						<span className="shrink-0 rounded-full border border-border px-2 py-1 font-mono text-[0.62rem] tracking-[0.08em] text-muted uppercase">
+						<span className="shrink-0 rounded-full border border-border px-2 py-1 font-mono text-xs tracking-[0.08em] text-muted uppercase">
 							{followers.customized
 								? t('cheese.lobby.settings.badgeCustom')
 								: t('cheese.lobby.settings.badgeDefault')}

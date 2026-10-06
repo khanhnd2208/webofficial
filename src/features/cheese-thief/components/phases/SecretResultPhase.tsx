@@ -30,7 +30,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 overflow-y-auto bg-[#0c0b09] px-5 text-[#f4efe4]">
+		<div className="fixed inset-0 z-50 overflow-y-auto bg-game-canvas px-5 text-game-ink">
 			<div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center gap-6 py-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
 				<h1 className="text-center font-display text-3xl font-medium">
 					{t('cheese.result.title')}
@@ -72,7 +72,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 						{t('cheese.result.seen')}
 					</Button>
 				) : (
-					<p className="text-center text-sm text-[#f4efe4]/70">{t('cheese.deal.holdFirst')}</p>
+					<p className="text-center text-sm text-game-ink/70">{t('cheese.deal.holdFirst')}</p>
 				)}
 			</div>
 		</div>

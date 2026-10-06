@@ -1,3 +1,4 @@
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import type { Metadata, Viewport } from 'next';
 import { Inter, Source_Serif_4 } from 'next/font/google';
 
@@ -35,7 +36,7 @@ export const viewport: Viewport = {
 	width: 'device-width',
 	initialScale: 1,
 	maximumScale: 5,
-	themeColor: '#F8F7F4',
+	themeColor: GRAPHIC_COLORS['f8f7f4'],
 };
 
 export const metadata: Metadata = {
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
 		url: SITE_ORIGIN,
 		images: [
 			{
-				url: absoluteUrl('/og-editorial-premium.jpg'),
+				url: absoluteUrl('/opengraph-image'),
 				width: 1200,
 				height: 630,
 				alt: 'Duy Khánh — Tôi vẫn đang học cách trở thành một người thầy tốt hơn.',
@@ -67,7 +68,7 @@ export const metadata: Metadata = {
 		card: 'summary_large_image',
 		title: 'Duy Khánh — Giảng viên và người thiết kế trải nghiệm học tập',
 		description: SITE_DESCRIPTION,
-		images: [absoluteUrl('/og-editorial-premium.jpg')],
+		images: [absoluteUrl('/opengraph-image')],
 	},
 };
 

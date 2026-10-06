@@ -78,12 +78,12 @@ export default function Reader({
 			) : null}
 			<header className="mb-6">
 				{position ? (
-					<p className="mc-eyebrow text-[11px] lg:text-xs">
+					<p className="mc-eyebrow text-xs lg:text-xs">
 						Bài {position.lessonNumber} • {position.lessonTitle}
 					</p>
 				) : null}
 				{position ? (
-					<p className="mc-eyebrow mt-1 text-[11px] lg:mt-4 lg:text-xs">
+					<p className="mc-eyebrow mt-1 text-xs lg:mt-4 lg:text-xs">
 						{position.sectionTitle}
 						{position.sectionTotal > 0 ? (
 							<>

@@ -1,3 +1,4 @@
+import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 
 import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -208,12 +209,12 @@ export default async function AdminPostsPage({
 																{p.title}
 															</span>
 															{p.isPinned ? (
-																<span className="inline-flex shrink-0 rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold text-accent">
+																<span className="inline-flex shrink-0 rounded-full bg-accent/10 px-1.5 py-0.5 text-xs font-bold text-accent">
 																	📌
 																</span>
 															) : null}
 															<span
-																className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+																className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-xs font-bold uppercase ${
 																	p.isPublished
 																		? 'bg-success-subtle text-success'
 																		: 'bg-warning-subtle text-warning'
@@ -230,13 +231,13 @@ export default async function AdminPostsPage({
 														{p.tags.slice(0, 4).map((t) => (
 															<span
 																key={t}
-																className="rounded bg-surface-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground"
+																className="rounded bg-surface-secondary px-1.5 py-0.5 text-xs text-muted-foreground"
 															>
 																{t}
 															</span>
 														))}
 														{p.tags.length > 4 && (
-															<span className="text-[10px] text-muted">+{p.tags.length - 4}</span>
+															<span className="text-xs text-muted">+{p.tags.length - 4}</span>
 														)}
 													</div>
 												)}
@@ -253,57 +254,16 @@ export default async function AdminPostsPage({
 											<td className="hidden px-4 py-3 lg:table-cell">
 												<div className="flex items-center gap-3 text-xs text-muted">
 													<span title="Lượt xem" className="inline-flex items-center gap-0.5">
-														<svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
-															<path
-																d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"
-																stroke="currentColor"
-																strokeWidth="1.5"
-															/>
-															<circle
-																cx="12"
-																cy="12"
-																r="3"
-																fill="currentColor"
-																opacity="0.3"
-																stroke="currentColor"
-																strokeWidth="1.5"
-															/>
-														</svg>{' '}
+														<Icon name="visibility" className="h-3 w-3" />{' '}
 														{(p.views || 0).toLocaleString()}
 													</span>
 													{totalReactions > 0 && (
 														<span title="Reactions" className="inline-flex items-center gap-0.5">
-															<svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
-																<path
-																	d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"
-																	fill="currentColor"
-																	opacity="0.2"
-																	stroke="currentColor"
-																	strokeWidth="1.5"
-																	strokeLinejoin="round"
-																/>
-															</svg>{' '}
-															{totalReactions}
+															<Icon name="favorite" className="h-3 w-3" /> {totalReactions}
 														</span>
 													)}
 													<span title="Thời gian đọc" className="inline-flex items-center gap-0.5">
-														<svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
-															<circle
-																cx="12"
-																cy="12"
-																r="9"
-																stroke="currentColor"
-																strokeWidth="1.5"
-															/>
-															<path
-																d="M12 7v5l3 3"
-																stroke="currentColor"
-																strokeWidth="1.5"
-																strokeLinecap="round"
-																strokeLinejoin="round"
-															/>
-														</svg>{' '}
-														{readingTime}p
+														<Icon name="schedule" className="h-3 w-3" /> {readingTime}p
 													</span>
 												</div>
 											</td>
@@ -313,7 +273,7 @@ export default async function AdminPostsPage({
 												<div className="text-xs text-muted">
 													<div>{new Date(p.updatedAt).toLocaleDateString('vi-VN')}</div>
 													{p.publishedAt && (
-														<div className="text-[10px] text-success">
+														<div className="text-xs text-success">
 															Xuất bản: {new Date(p.publishedAt).toLocaleDateString('vi-VN')}
 														</div>
 													)}

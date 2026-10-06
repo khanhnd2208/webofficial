@@ -1,5 +1,6 @@
 'use client';
 
+import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -30,7 +31,12 @@ function celebrateCompletion() {
 	if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 
 	void import('canvas-confetti').then(({ default: fireConfetti }) => {
-		const colors = ['#9A6B2B', '#D4A34E', '#F5E6C5', '#1C1B1A'];
+		const colors = [
+			GRAPHIC_COLORS['9a6b2b'],
+			GRAPHIC_COLORS['d4a34e'],
+			GRAPHIC_COLORS['f5e6c5'],
+			GRAPHIC_COLORS['1c1b1a'],
+		];
 		const shared = {
 			colors,
 			decay: 0.92,
@@ -68,7 +74,7 @@ export default function QuizResultView({
 		>
 			<div className="shell">
 				<header className="border-t border-hairline pt-6">
-					<p className="font-mono text-[0.75rem] font-semibold tracking-[0.1em] text-accent uppercase">
+					<p className="font-mono text-[12px] font-semibold tracking-[0.1em] text-accent uppercase">
 						Results
 					</p>
 					<h1
@@ -115,7 +121,7 @@ export default function QuizResultView({
 					{result.review.map((item, i) => (
 						<li key={item.questionId} className="border-t border-hairline pt-5">
 							<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-								<span className="font-mono text-[0.8125rem] font-semibold text-ink-secondary">
+								<span className="font-mono text-[13px] font-semibold text-ink-secondary">
 									Question {i + 1}
 								</span>
 								<span

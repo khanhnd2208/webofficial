@@ -24,13 +24,13 @@ const accessLabel: Record<ResourceBadgeProps['access'], string> = {
 export function ResourceBadge({ productStatus, access }: ResourceBadgeProps) {
 	return (
 		<div className="flex flex-wrap gap-2">
-			<span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+			<span className="font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary">
 				{statusLabel[productStatus]}
 			</span>
 			<span aria-hidden className="text-ink-secondary/40">
 				·
 			</span>
-			<span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-secondary">
+			<span className="font-mono text-xs uppercase tracking-[0.18em] text-ink-secondary">
 				{accessLabel[access]}
 			</span>
 		</div>

@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import aboutArt from '../../../public/brand/toc/about-v1.webp';
+import SharedArtwork from '@/components/site/SharedArtwork';
 import Link from 'next/link';
 
 import { StructuredData, TrackedLink } from '@/components/marketing';
 import { routes } from '@/config/routes';
-import { absoluteUrl, siteProfile, BRAND_PLACEHOLDER_IMAGE, SITE_NAME } from '@/config/site';
+import { absoluteUrl, SITE_NAME } from '@/config/site';
 import { aboutFocus, aboutHero } from '@/content/about';
 import { contactHref } from '@/features/services/components/contactHref';
 
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
 		locale: 'vi_VN',
 		images: [
 			{
-				url: absoluteUrl('/og-editorial-premium.jpg'),
+				url: absoluteUrl('/gioi-thieu/opengraph-image'),
 				width: 1200,
 				height: 630,
 				alt: aboutHero.manifesto,
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
 		card: 'summary_large_image',
 		title: `Giới thiệu — ${aboutHero.fullName}`,
 		description,
-		images: [absoluteUrl('/og-editorial-premium.jpg')],
+		images: [absoluteUrl('/gioi-thieu/opengraph-image')],
 	},
 };
 
@@ -54,19 +56,20 @@ export default function AboutPage() {
 			/>
 			<article className="about-letter">
 				<header className="about-intro">
-					<div className="about-landscape" aria-hidden="true">
+					<SharedArtwork name="about" className="about-landscape">
 						<Image
-							src="/brand/learning-landscape.webp"
+							src={aboutArt}
+							placeholder="blur"
 							alt=""
 							fill
 							loading="eager"
 							sizes="(max-width: 600px) 320px, 500px"
 						/>
-					</div>
+					</SharedArtwork>
 					<div className="about-identity">
 						<div className="about-avatar">
 							<Image
-								src={siteProfile.portraitSrc ?? BRAND_PLACEHOLDER_IMAGE}
+								src="/brand/portrait-journey.png"
 								alt={`Chân dung minh họa ${aboutHero.fullName}`}
 								fill
 								sizes="(max-width: 600px) 80px, 124px"

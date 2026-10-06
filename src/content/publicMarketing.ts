@@ -49,7 +49,7 @@ export const introPage = {
 		alt: 'Minh họa người đứng trên vách đá nhìn ra hành trình phía trước',
 	},
 	mobileImage: {
-		src: '/brand/portrait-journey.png',
+		src: '/brand/learning-as-becoming-mobile-ochre.webp',
 		alt: 'Chân dung minh họa Nguyễn Duy Khánh trên hành trình',
 	},
 } as const;
