@@ -133,7 +133,6 @@ async function main() {
 							section.checkpoint === null
 								? Prisma.DbNull
 								: (section.checkpoint as Prisma.InputJsonValue),
-						quiz: section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
 						discussion:
 							section.discussion === null
 								? Prisma.DbNull

@@ -55,13 +55,14 @@ async function main() {
 		throw new Error(`ITM formatting changed ${fidelity.hunks.length} word hunks`);
 	}
 	const extras = parseCourseMarkdown(extrasMarkdown).lessons[0]?.sections ?? [];
-	if (extras.map((section) => section.type).join(',') !== 'QUIZ,READING,DISCUSSION') {
+	if (extras.map((section) => section.type).join(',') !== 'DISCUSSION') {
 		throw new Error(
-			`Expected quiz, guide, and discussion sections, got ${extras.map((section) => section.type).join(',')}`,
+			`Expected one discussion section, got ${extras.map((section) => section.type).join(',')}`,
 		);
 	}
-	if (extras[0]?.quiz?.questions.length !== 3) throw new Error('ITM quiz must have 3 questions');
-	if (extras[2]?.discussion?.questions.length !== 16)
+	if (!extras[0]?.markdown.includes('Cách dùng bộ câu hỏi'))
+		throw new Error('ITM discussion must carry its how-to intro');
+	if (extras[0]?.discussion?.questions.length !== 16)
 		throw new Error('ITM discussion must have 16 questions');
 	const sections = [...lesson.sections, ...extras];
 	if (process.argv.includes('--dry-run')) {
@@ -70,8 +71,7 @@ async function main() {
 				status: 'valid',
 				lessonTitle: lesson.lessonTitle,
 				sectionCount: sections.length,
-				quizQuestions: extras[0]?.quiz?.questions.length,
-				discussionQuestions: extras[2]?.discussion?.questions.length,
+				discussionQuestions: extras[0]?.discussion?.questions.length,
 				matchPercent: fidelity.matchPercent,
 			}),
 		);
@@ -116,8 +116,6 @@ async function main() {
 									section.checkpoint === null
 										? Prisma.DbNull
 										: (section.checkpoint as Prisma.InputJsonValue),
-								quiz:
-									section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
 								discussion:
 									section.discussion === null
 										? Prisma.DbNull
@@ -207,7 +205,6 @@ async function main() {
 							section.checkpoint === null
 								? Prisma.DbNull
 								: (section.checkpoint as Prisma.InputJsonValue),
-						quiz: section.quiz === null ? Prisma.DbNull : (section.quiz as Prisma.InputJsonValue),
 						discussion:
 							section.discussion === null
 								? Prisma.DbNull

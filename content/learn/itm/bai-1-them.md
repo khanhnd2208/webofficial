@@ -1,28 +1,3 @@
-=== QUIZ: Kiểm tra nhanh ===
-Câu 1: Theo bài học, ai được coi là nhà quản trị?
-A. Người có chức danh "trưởng" trên danh thiếp
-B. Người điều phối và giám sát công việc của người khác để tổ chức đạt mục tiêu
-C. Người có lương cao hơn những người còn lại trong nhóm
-D. Người làm lâu năm nhất trong tổ chức
-Đáp án: B
-Giải thích: Bài định nghĩa nhà quản trị theo việc người đó làm, không theo chức danh. Điểm mấu chốt là chữ "của người khác": thành công ngày càng nằm ở việc cả nhóm làm tốt, không chỉ ở việc bản thân làm tốt.
-
-Câu 2: Một tiệm bánh làm rất nhanh, ít hao bột, nhưng chỉ làm loại bánh khách quanh đó không cần. Tiệm này đang ở tình trạng nào?
-A. Hiệu suất cao, hiệu quả thấp
-B. Hiệu suất thấp, hiệu quả cao
-C. Cả hiệu suất lẫn hiệu quả đều cao
-D. Không có hiệu suất, cũng không có hiệu quả
-Đáp án: A
-Giải thích: Làm nhanh và ít lãng phí nguồn lực là hiệu suất cao (làm đúng cách). Không bán được thứ khách cần là hiệu quả thấp (chưa làm đúng việc). Bài học nói phải có cả hai, và sai việc thì làm càng giỏi càng phí.
-
-Câu 3: Theo Robert Katz, nhóm kỹ năng nào quan trọng như nhau ở mọi cấp quản trị?
-A. Kỹ năng chuyên môn
-B. Kỹ năng tư duy
-C. Kỹ năng quan hệ con người
-D. Kỹ năng đại diện và phát ngôn
-Đáp án: C
-Giải thích: Kỹ năng chuyên môn quan trọng nhất ở cấp cơ sở, kỹ năng tư duy càng lên cao càng quan trọng. Kỹ năng quan hệ con người cần ở mọi cấp, vì nhà quản trị nào cũng làm việc với người khác.
-
 === SECTION: Cách dùng bộ câu hỏi phản biện ===
 
 Đây là phần nâng cao, không bắt buộc. Bài giảng đã đủ để bạn nắm toàn bộ kiến thức của Bài 1; bộ câu hỏi này dành cho bạn nào tò mò, muốn thử nghĩ như một nhà quản trị trước những tình huống khó hơn. Câu nào cũng có lời giải từng bước.
