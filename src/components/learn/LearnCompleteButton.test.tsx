@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import LearnCompleteButton from './LearnCompleteButton';
@@ -8,6 +8,11 @@ const { push, refresh, adminFetch } = vi.hoisted(() => ({
 	refresh: vi.fn(),
 	adminFetch: vi.fn(),
 }));
+
+vi.mock('next/link', async () => {
+	const actual = await vi.importActual<typeof import('next/link')>('next/link');
+	return { ...actual, useLinkStatus: () => ({ pending: false }) };
+});
 
 vi.mock('next/navigation', () => ({
 	useRouter: () => ({ push, refresh }),
@@ -73,5 +78,26 @@ describe('LearnCompleteButton', () => {
 		);
 
 		expect(screen.getByRole('button', { name: 'Hoàn thành khóa học' })).toBeInTheDocument();
+	});
+	it('locks completion until the save finishes and recovers after failure', async () => {
+		let reject!: (error: Error) => void;
+		adminFetch.mockReturnValue(
+			new Promise((_resolve, fail) => {
+				reject = fail;
+			}),
+		);
+		render(
+			<LearnCompleteButton sectionId="slow" completed={false} nextHref="/khoa-hoc/demo?s=next" />,
+		);
+		fireEvent.click(screen.getByRole('button', { name: 'Hoàn thành & tiếp →' }));
+		const saving = screen.getByRole('button', { name: 'Đang lưu…' });
+		expect(saving).toBeDisabled();
+		fireEvent.click(saving);
+		expect(adminFetch).toHaveBeenCalledTimes(1);
+		expect(screen.queryByRole('link')).not.toBeInTheDocument();
+		await act(async () => reject(new Error('Mất kết nối')));
+		expect(screen.getByRole('button', { name: 'Hoàn thành & tiếp →' })).toBeEnabled();
+		expect(screen.getByText('Mất kết nối')).toBeVisible();
+		expect(push).not.toHaveBeenCalled();
 	});
 });

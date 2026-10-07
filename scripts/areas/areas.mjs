@@ -133,6 +133,7 @@ export const AREAS = {
 		e2e: [
 			'e2e/editorial-premium.spec.ts',
 			'e2e/personal-book.spec.ts',
+			'e2e/learn-reader.spec.ts',
 			'e2e/operating-focus.spec.ts',
 		],
 	},

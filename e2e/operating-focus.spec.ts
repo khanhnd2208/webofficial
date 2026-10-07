@@ -5,13 +5,8 @@ import { addAdminSession } from './helpers/adminSession';
 test.describe('Focused operating mode', () => {
 	test('mục lục lists introduction without experiences', async ({ page }) => {
 		await page.goto('/muc-luc');
-		const gate = page.getByRole('navigation', { name: 'Về tôi và Không gian của tôi' });
-		const about = gate.getByRole('region', { name: 'Về tôi' });
-		await expect(about.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
-			'href',
-			'/gioi-thieu',
-		);
-		await expect(about.getByRole('link')).toHaveCount(1);
+		const gate = page.getByRole('navigation', { name: 'Về tôi và My Space' });
+		await expect(gate.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);

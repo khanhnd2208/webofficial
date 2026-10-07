@@ -25,21 +25,16 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByText('PODCAST', { exact: true })).toHaveCount(0);
 	});
 
-	test('mục lục shows Về tôi before Không gian của tôi without experiences', async ({ page }) => {
+	test('mục lục opens with two doors, Về tôi and a closed My Space', async ({ page }) => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
-		const gate = page.getByRole('navigation', { name: 'Về tôi và Không gian của tôi' });
-		const about = gate.getByRole('region', { name: 'Về tôi' });
-		await expect(gate.getByRole('heading', { level: 2 })).toHaveText([
-			'Về tôi',
-			'Không gian của tôi',
-		]);
-		await expect(about.getByRole('link')).toHaveCount(1);
-		await expect(about.getByRole('link', { name: /Giới thiệu/i })).toHaveAttribute(
-			'href',
-			'/gioi-thieu',
-		);
-		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		const gate = page.getByRole('navigation', { name: 'Về tôi và My Space' });
+		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
+		await expect(page.getByTestId('gate-item-about')).toContainText('Về tôi');
+		const mySpace = page.getByTestId('toc-open-myspace');
+		await expect(mySpace).toHaveAttribute('aria-expanded', 'false');
+		await expect(page.locator('#toc-myspace-panel')).toHaveAttribute('aria-hidden', 'true');
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();
@@ -49,6 +44,15 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByTestId('site-header-home')).toBeVisible();
 		await expect(page.getByTestId('site-auth-chip')).toBeVisible();
 		await expect(page.locator('header nav[aria-label="Chính"]')).toHaveCount(0);
+
+		await mySpace.click();
+		await expect(page).toHaveURL(/\/muc-luc#my-space$/);
+		await expect(mySpace).toHaveAttribute('aria-expanded', 'true');
+		await expect(page.getByTestId('myspace-tile-courses')).toBeFocused();
+		await page.keyboard.press('Escape');
+		await expect(mySpace).toHaveAttribute('aria-expanded', 'false');
+		await expect(page).toHaveURL(/\/muc-luc$/);
+		await expect(mySpace).toBeFocused();
 	});
 
 	test('intro opens the mục lục without JavaScript', async ({ browser }) => {
@@ -64,6 +68,9 @@ test.describe('Public pages smoke', () => {
 		await expect(page).toHaveURL(/\/muc-luc/);
 		await expect(page.getByTestId('gate-item-locked')).toHaveCount(0);
 		await expect(page.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		// Without JavaScript the My Space door is a plain link to the hub.
+		await page.getByTestId('toc-open-myspace').click();
+		await expect(page).toHaveURL(/\/my-space$/);
 		await context.close();
 	});
 
@@ -222,9 +229,8 @@ test.describe('Navigation', () => {
 		await expect(page.getByRole('button', { name: 'Mở menu' })).toHaveCount(0);
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		const about = page.getByRole('region', { name: 'Về tôi' });
-		await expect(about.getByRole('link')).toHaveCount(1);
-		await expect(about.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
+		await expect(page.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();
 	});
 

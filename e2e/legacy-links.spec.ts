@@ -32,14 +32,17 @@ test.describe('Links shared with students keep working', () => {
 	}) => {
 		await addStudentSession(context);
 		// The learner catalog keeps its app bar; /khoa-hoc is now the public catalog.
-		for (const [path, tocLink] of [
-			['/my-space/courses', 'Mục lục'],
-			['/khoa-hoc', 'Trở về mục lục'],
-		] as const) {
+		for (const path of ['/my-space/courses', '/khoa-hoc', '/kham-pha-khoa-hoc']) {
 			const response = await page.goto(path);
 			expect(response?.status()).toBe(200);
 			await expect(page).toHaveURL(new RegExp(`${path}$`));
-			await expect(page.getByRole('link', { name: tocLink }).first()).toBeVisible();
+			// The public header works for both empty and populated catalogs.
+			const tocLink =
+				path === '/my-space/courses'
+					? page.getByRole('link', { name: 'Mục lục', exact: true })
+					: page.getByTestId('site-header-home');
+			await expect(tocLink).toBeVisible();
+			await expect(tocLink).toHaveAttribute('href', '/muc-luc');
 		}
 	});
 
@@ -100,7 +103,8 @@ test.describe('Links shared with students keep working', () => {
 			expect(board?.status()).toBe(200);
 			await expect(page.getByRole('link', { name: /Mục lục/ })).toBeVisible();
 
-			await page.goto('/muc-luc');
+			// Classes opened before live inside My Space on Mục lục.
+			await page.goto('/muc-luc#my-space');
 			await expect(
 				page.getByTestId('recent-classes').getByRole('link', { name: /Legacy link E2E/ }),
 			).toHaveAttribute('href', `/lop/${slug}`);

@@ -46,7 +46,6 @@ export interface ICheeseRoom {
 	version: number;
 	players: ICheesePlayer[];
 	nightStartedAt?: Date;
-	secretStartedAt?: Date;
 	dayStartedAt?: Date;
 	choiceCount: number;
 	isRunoff: boolean;
@@ -118,7 +117,6 @@ const CheeseRoomSchema = new Schema<ICheeseRoom>(
 		version: { type: Number, default: 0 },
 		players: { type: [CheesePlayerSchema], default: [] },
 		nightStartedAt: { type: Date },
-		secretStartedAt: { type: Date },
 		dayStartedAt: { type: Date },
 		voteRound: { type: Number, default: 0 },
 		choiceCount: { type: Number, default: 1 },

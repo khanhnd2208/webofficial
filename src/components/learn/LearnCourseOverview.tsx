@@ -1,8 +1,9 @@
+import LearnLinkPending from './LearnLinkPending';
 import Link from 'next/link';
 
 import SpotIllustration from '@/components/site/SpotIllustration';
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/content';
+import { formatMinutes } from '@/features/learn/format';
 import { toCurriculumLessons, type LearnCourseSummary } from '@/features/learn/progress';
 import { LEARN_LEVEL_LABELS, type LearnCourseOutline } from '@/features/learn/types';
 
@@ -49,6 +50,7 @@ export default function LearnCourseOverview({
 							className="ln-btn ln-btn--ghost ln-btn--sm"
 						>
 							<LearnIcon name="edit" size={14} /> Soạn bài
+							<LearnLinkPending />
 						</Link>
 					) : null
 				}
@@ -83,6 +85,7 @@ export default function LearnCourseOverview({
 						{cta.href ? (
 							<Link href={cta.href} className="ln-btn ln-btn--primary">
 								{cta.label}
+								<LearnLinkPending />
 							</Link>
 						) : null}
 					</header>
@@ -133,6 +136,7 @@ export default function LearnCourseOverview({
 												Bài {section.lessonIndex + 1} · {section.title}
 											</span>
 											<span className="ln-note-card__text">{section.note}</span>
+											<LearnLinkPending />
 										</Link>
 									</li>
 								))}

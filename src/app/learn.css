@@ -4107,3 +4107,65 @@ button.ln-save.ln-btn--primary {
 	max-height: 60vh;
 	overflow: auto;
 }
+
+/* Navigation feedback. Every section renders on the server, so a click waits for one round
+   trip. A pending marker (LearnLinkPending) inside the clicked link dims that link and runs an
+   indeterminate bar under the top bar. Both wait 120ms so fast navigations never flicker. */
+.ln-pending-mark {
+	display: none;
+}
+:where(a, button):has(> .ln-pending-mark[data-pending]) {
+	cursor: progress;
+	animation: ln-nav-dim 700ms ease-in-out 120ms infinite alternate both;
+}
+@keyframes ln-nav-dim {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0.55;
+	}
+}
+.ln-nav-progress {
+	position: absolute;
+	right: 0;
+	bottom: -1px;
+	left: 0;
+	height: 2px;
+	overflow: hidden;
+	opacity: 0;
+	pointer-events: none;
+}
+.ln-nav-progress::before {
+	content: '';
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: 35%;
+	background: var(--bronze);
+}
+.ln-frame:has(.ln-pending-mark[data-pending]) .ln-nav-progress {
+	opacity: 1;
+	transition: opacity 0s linear 120ms;
+}
+.ln-frame:has(.ln-pending-mark[data-pending]) .ln-nav-progress::before {
+	animation: ln-nav-slide 1s ease-in-out infinite;
+}
+@keyframes ln-nav-slide {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(300%);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	:where(a, button):has(> .ln-pending-mark[data-pending]) {
+		animation: none;
+		opacity: 0.6;
+	}
+	.ln-nav-progress::before,
+	.ln-frame:has(.ln-pending-mark[data-pending]) .ln-nav-progress::before {
+		width: 100%;
+		animation: none;
+	}
+}

@@ -5,7 +5,7 @@ import SpotIllustration from '@/components/site/SpotIllustration';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/content';
+import { formatMinutes } from '@/features/learn/format';
 import { normalizeSearch as normalize } from '@/features/learn/search';
 import {
 	courseHue,

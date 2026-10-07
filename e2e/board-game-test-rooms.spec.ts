@@ -118,6 +118,7 @@ test('Cheese four-player night goes straight to the secret minute', async ({ pag
 	await controls.getByRole('button', { name: 'Bỏ qua chờ', exact: true }).click();
 	await expect(controls.getByRole('alert')).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: 'Phút bí mật', exact: true })).toBeVisible();
+	await expect(controls.getByRole('button', { name: 'Bỏ qua chờ', exact: true })).toHaveCount(0);
 	const code = new URL(page.url()).searchParams.get('code');
 	const snapshot = await context.request
 		.get(`/api/admin/board-game/test-rooms/cheese-thief/${code}`)
@@ -125,7 +126,9 @@ test('Cheese four-player night goes straight to the secret minute', async ({ pag
 	for (let i = 0; i < snapshot.data.state.choiceCount; i++)
 		await page.getByRole('button', { name: new RegExp(`^Bot ${i + 1}$`) }).click();
 	await page.getByRole('button', { name: 'Xong', exact: true }).click();
-	await expect(page.getByText('Đã ghi lựa chọn. Chờ cả bàn — vẫn đổi được.')).toBeVisible();
+	await expect(
+		page.getByText('Đã ghi lựa chọn. Chạm tên khác nếu muốn đổi, rồi gửi lại.'),
+	).toBeVisible();
 	await controls.getByRole('button', { name: 'Đóng phòng', exact: true }).click();
 });
 

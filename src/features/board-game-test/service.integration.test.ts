@@ -377,7 +377,16 @@ describe('additional game branches', () => {
 		room = await act(room, { kind: 'remember' });
 		room = await act(room, { kind: 'step' });
 		room = await act(room, { kind: 'skip-time' });
-		room = await act(room, { kind: 'skip-time' });
+		const secret = room.state as CheeseState;
+		room = await act(room, {
+			kind: 'secret',
+			picks: secret.players
+				.filter((player) => player.id !== secret.self?.id)
+				.slice(0, secret.choiceCount ?? 1)
+				.map((player) => player.id),
+		});
+		room = await steps(room, 3);
+		expect(room.state.phase).toBe('secret-result');
 		room = await steps(room, 3);
 		room = await act(room, { kind: 'seen' });
 		room = await act(room, { kind: 'set-seat', seatId: 'admin' });
