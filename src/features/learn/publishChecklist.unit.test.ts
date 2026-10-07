@@ -13,7 +13,6 @@ function reading(patch: Partial<LearnStudioSection> = {}): LearnStudioSection {
 		summary: '',
 		keyTakeaways: [],
 		markdown: 'Nội dung',
-		checkpoint: null,
 		discussion: null,
 		estimatedMinutes: 1,
 		updatedAt: '2026-10-05T00:00:00.000Z',

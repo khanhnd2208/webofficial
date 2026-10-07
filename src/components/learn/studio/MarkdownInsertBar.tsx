@@ -22,6 +22,7 @@ export default function MarkdownInsertBar({
 	onChange,
 	previewShown,
 	onTogglePreview,
+	showPreviewToggle = true,
 	onOpenHelp,
 }: {
 	textareaRef: RefObject<HTMLTextAreaElement | null>;
@@ -29,6 +30,7 @@ export default function MarkdownInsertBar({
 	onChange: (next: string) => void;
 	previewShown: boolean;
 	onTogglePreview: () => void;
+	showPreviewToggle?: boolean;
 	onOpenHelp?: () => void;
 }) {
 	function insert(snippet: MarkdownSnippet) {
@@ -78,14 +80,16 @@ export default function MarkdownInsertBar({
 					<StudioIcon name="help" size={14} /> Cú pháp
 				</button>
 			) : null}
-			<button
-				type="button"
-				className="ln-mdbar__btn"
-				aria-pressed={previewShown}
-				onClick={onTogglePreview}
-			>
-				<StudioIcon name="eye" size={14} /> {previewShown ? 'Ẩn xem trước' : 'Xem trước'}
-			</button>
+			{showPreviewToggle ? (
+				<button
+					type="button"
+					className="ln-mdbar__btn"
+					aria-pressed={previewShown}
+					onClick={onTogglePreview}
+				>
+					<StudioIcon name="eye" size={14} /> {previewShown ? 'Ẩn xem trước' : 'Xem trước'}
+				</button>
+			) : null}
 		</div>
 	);
 }

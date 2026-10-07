@@ -53,6 +53,11 @@ function flushEditors() {
 	for (const flush of editorFlushes) flush();
 }
 
+/** Flush editors that have not yet reported their latest markdown. */
+export function flushRegisteredEditors() {
+	flushEditors();
+}
+
 function sameValue(left: unknown, right: unknown): boolean {
 	return JSON.stringify(left) === JSON.stringify(right);
 }

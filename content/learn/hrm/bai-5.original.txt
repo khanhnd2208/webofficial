@@ -648,23 +648,3 @@ Chi phí dùng một nguồn chia cho số người được tuyển từ nguồ
 Giới thiệu công việc thực tế
 Realistic job preview
 Thông tin về cả mặt tốt lẫn mặt chưa tốt của công việc
-Câu hỏi tự kiểm tra
-1. Hoạch định nhân lực trả lời những câu hỏi nào? Kể tên ba giai đoạn của quy trình.
-2. Vì sao dự báo bằng thống kê cần được bổ sung bằng phán đoán của người có kinh nghiệm?
-3. Chỉ báo dẫn dắt là gì? Cho hai ví dụ với một quán ăn.
-4. Ma trận chuyển đổi trả lời hai câu hỏi nào? Đọc theo hàng và theo cột khác nhau thế nào?
-5. Vì sao tuyển mới từ bên ngoài được xếp vào nhóm "chậm và khó rút lại"?
-6. Nêu bốn lý do tổ chức cắt giảm nhân sự, và ba lý do cắt giảm hay không đạt kỳ vọng.
-7. Tuyển mộ khác tuyển chọn ở điểm nào?
-8. Nêu ba ưu điểm của nguồn nội bộ và hai lý do vẫn cần tuyển bên ngoài.
-9. Điểm mạnh chung của ứng viên tự nộp và ứng viên được giới thiệu là gì? Điểm yếu của giới thiệu là gì?
-10. Tỷ lệ qua vòng và chi phí mỗi người được tuyển đo điều gì khác nhau?
-11. Vì sao ảnh hưởng của người tuyển dụng thường hạn chế? Nêu ba cách tăng ảnh hưởng đó.
-Bài tập thực hành
-1. Dự báo cho một nơi quen thuộc. Chọn một quán ăn, cửa hàng, hay câu lạc bộ bạn biết rõ. Liệt kê ba nhóm vị trí, ba chỉ báo dẫn dắt, và dự đoán thời điểm nào trong năm sẽ thiếu hoặc thừa người.
-2. Đọc ma trận. Dùng ma trận của chuỗi Gió Chiều ở Phần 2: vị trí nào có tỷ lệ rời chuỗi cao nhất? Chuỗi nên làm gì để giảm con số đó? Vị trí nào dựa nhiều nhất vào nguồn nội bộ, vị trí nào dựa nhiều nhất vào tuyển ngoài?
-3. Sắp thiếu người lâu dài. Giả sử một doanh nghiệp dự báo sẽ thiếu người ở các vị trí then chốt trong vài năm tới. Hãy đề xuất hướng xử lý ở ba mảng: tuyển mộ, đào tạo, và lương thưởng.
-4. Chính sách nhân sự. Cho một ví dụ chính sách giúp thu hút nhiều ứng viên hơn, và một ví dụ chính sách làm giảm số ứng viên. Chúng có ảnh hưởng đến chất lượng ứng viên không?
-5. Nhìn lại chính mình. Liệt kê những công việc bạn từng làm (kể cả làm thêm, tình nguyện). Bạn được tuyển qua nguồn nào? Từ góc nhìn của nơi tuyển, nguồn đó có ưu và nhược điểm gì?
-6. Tổ chức nhỏ, lương không cao. Một nhóm tình nguyện hoặc một cơ sở xã hội không thể trả lương cao. Họ nên tập trung vào những nguồn ứng viên nào, và dùng mạng xã hội thế nào để thu hút người?
-Bộ câu hỏi tình huống có lời giải nằm ở tab Câu hỏi phản biện. Hãy tự viết câu trả lời trước khi xem lời giải.

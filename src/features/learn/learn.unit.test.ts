@@ -125,7 +125,7 @@ describe('parseLessonMarkdown', () => {
 		expect(parsed.warnings.some((warning) => warning.includes('vượt giới hạn'))).toBe(true);
 	});
 
-	it('skips a retired quiz block but keeps takeaways, a checkpoint and an hour-long duration', () => {
+	it('skips a retired quiz block and a checkpoint but keeps takeaways and duration', () => {
 		const parsed = parseLessonMarkdown(
 			[
 				'# Bài',
@@ -152,12 +152,9 @@ describe('parseLessonMarkdown', () => {
 			keyTakeaways: ['Nắm khái niệm'],
 			markdown: 'Thân bài.',
 		});
-		expect(parsed.sections[0].checkpoint).toMatchObject({
-			question: 'Mâu thuẫn là gì?',
-			correctIndex: 1,
-		});
-		// The quiz block ends the reading section, then is dropped with a warning.
+		expect(parsed.sections[0].checkpoint).toBeNull();
 		expect(parsed.sections).toHaveLength(1);
+		expect(parsed.warnings.some((warning) => warning.includes('câu hỏi nhanh'))).toBe(true);
 		expect(parsed.warnings.some((warning) => warning.includes('"Kiểm tra": đã bỏ qua'))).toBe(true);
 	});
 	it('escapes a year-like line so it is not parsed as an ordered list start', () => {
@@ -177,7 +174,7 @@ describe('course markdown exchange', () => {
 		expect(parsed.lessons[1].sections[0].title).toBe('B');
 	});
 
-	it('round-trips a lesson with takeaways, a checkpoint and a discussion intro', () => {
+	it('round-trips a lesson with takeaways and a discussion intro, dropping a checkpoint', () => {
 		const source = [
 			'# Bài',
 			'> Mô tả',
@@ -223,8 +220,17 @@ describe('course markdown exchange', () => {
 		);
 		expect(again.lessonTitle).toBe('Bài');
 		expect(again.sections[0].keyTakeaways).toEqual(['Ý một']);
-		expect(again.sections[0].checkpoint?.correctIndex).toBe(1);
+		expect(again.sections[0].checkpoint).toBeNull();
 		expect(again.sections[0].markdown).toBe('Thân.');
+		expect(
+			exportCourseMarkdown([
+				{
+					title: lesson.lessonTitle,
+					description: lesson.lessonDescription,
+					sections: lesson.sections,
+				},
+			]),
+		).not.toContain('CHECKPOINT');
 		// The how-to section folds into the discussion, both on import and after an export.
 		expect(lesson.sections.map((section) => section.type)).toEqual(['READING', 'DISCUSSION']);
 		expect(again.sections).toHaveLength(2);

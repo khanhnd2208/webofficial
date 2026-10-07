@@ -3,9 +3,21 @@ import { Prisma } from '@prisma/client';
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
-import { readCheckpoint, readDiscussion, sectionMinutes } from './content';
+import { readDiscussion, sectionMinutes } from './content';
+import { stripRetiredPracticeBlocks } from './retiredBlocks';
 import { mapStudioSection } from './studioSection';
-import type { LearnSectionKind, LearnStudioSection } from './types';
+import { LEARN_SECTION_KINDS, type LearnSectionKind, type LearnStudioSection } from './types';
+
+async function requireLiveSection(sectionId: string) {
+	const section = await prisma.learnSection.findUnique({
+		where: { id: sectionId },
+		select: { id: true, type: true },
+	});
+	if (!section || !LEARN_SECTION_KINDS.includes(section.type as LearnSectionKind)) {
+		throw new AppError('Không tìm thấy mục học', 404);
+	}
+	return section;
+}
 
 const REVISION_GAP_MS = 10 * 60 * 1000;
 const REVISION_KEEP = 50;
@@ -71,22 +83,20 @@ export async function createSectionRevision(
 	sectionId: string,
 	reason: 'manual' | 'conflict' = 'manual',
 ) {
-	const current = await prisma.learnSection.findUnique({
-		where: { id: sectionId },
-		select: { id: true },
-	});
-	if (!current) throw new AppError('Không tìm thấy mục học', 404);
+	await requireLiveSection(sectionId);
 	await snapshotSection(sectionId, reason, true);
 	return listSectionRevisions(sectionId);
 }
 
 export async function getLearnStudioSection(id: string): Promise<LearnStudioSection> {
+	await requireLiveSection(id);
 	const section = await prisma.learnSection.findUnique({ where: { id } });
 	if (!section) throw new AppError('Không tìm thấy mục học', 404);
 	return mapStudioSection(section);
 }
 
 export async function getSectionRevision(sectionId: string, revisionId: string) {
+	await requireLiveSection(sectionId);
 	const revision = await prisma.learnSectionRevision.findFirst({
 		where: { id: revisionId, sectionId },
 	});
@@ -97,7 +107,6 @@ export async function getSectionRevision(sectionId: string, revisionId: string) 
 		summary: revision.summary,
 		markdown: revision.markdown,
 		keyTakeaways: revision.keyTakeaways,
-		checkpoint: readCheckpoint(revision.checkpoint),
 		discussion: readDiscussion(revision.discussion),
 		reason: revision.reason,
 		createdAt: revision.createdAt.toISOString(),
@@ -105,6 +114,7 @@ export async function getSectionRevision(sectionId: string, revisionId: string) 
 }
 
 export async function listSectionRevisions(sectionId: string) {
+	await requireLiveSection(sectionId);
 	const rows = await prisma.learnSectionRevision.findMany({
 		where: { sectionId },
 		orderBy: { createdAt: 'desc' },
@@ -121,6 +131,7 @@ export async function restoreSectionRevision(
 	const revision = await prisma.learnSectionRevision.findFirst({
 		where: { id: revisionId, sectionId },
 	});
+	await requireLiveSection(sectionId);
 	if (!revision) throw new AppError('Không tìm thấy bản lưu', 404);
 	await snapshotSection(sectionId, 'restore', true);
 	const current = await prisma.learnSection.findUnique({
@@ -133,13 +144,13 @@ export async function restoreSectionRevision(
 		data: {
 			title: revision.title,
 			summary: revision.summary,
-			markdown: revision.markdown,
+			markdown:
+				current.type === 'READING'
+					? stripRetiredPracticeBlocks(revision.markdown).markdown
+					: revision.markdown,
 			keyTakeaways: revision.keyTakeaways,
-			checkpoint:
-				revision.checkpoint === null
-					? Prisma.DbNull
-					: (revision.checkpoint as Prisma.InputJsonValue),
-			quiz: revision.quiz === null ? Prisma.DbNull : (revision.quiz as Prisma.InputJsonValue),
+			checkpoint: Prisma.DbNull,
+			quiz: Prisma.DbNull,
 			discussion:
 				revision.discussion === null
 					? Prisma.DbNull
@@ -147,7 +158,10 @@ export async function restoreSectionRevision(
 			estimatedMinutes: sectionMinutes({
 				type: current.type as LearnSectionKind,
 				durationMinutes: current.durationMinutes,
-				markdown: revision.markdown,
+				markdown:
+					current.type === 'READING'
+						? stripRetiredPracticeBlocks(revision.markdown).markdown
+						: revision.markdown,
 				discussion: readDiscussion(revision.discussion),
 			}),
 		},

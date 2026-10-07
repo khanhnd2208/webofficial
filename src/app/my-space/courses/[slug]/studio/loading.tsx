@@ -5,7 +5,6 @@ export default function StudioLoading() {
 			<div className="ln-studio__grid">
 				<div className="ln-skeleton" />
 				<div className="ln-skeleton" />
-				<div className="ln-skeleton" />
 			</div>
 		</div>
 	);

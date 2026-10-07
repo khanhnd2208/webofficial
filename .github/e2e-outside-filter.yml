@@ -113,6 +113,7 @@ outside:
   - '!e2e/editorial-premium.spec.ts'
   - '!e2e/personal-book.spec.ts'
   - '!e2e/learn-reader.spec.ts'
+  - '!e2e/learn-studio.spec.ts'
   - '!e2e/operating-focus.spec.ts'
   - '!src/components/messages/**'
   - '!src/app/messages/**'

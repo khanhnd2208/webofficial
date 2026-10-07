@@ -101,7 +101,6 @@ export interface LearnReaderSection {
 	summary: string;
 	keyTakeaways: string[];
 	markdown: string;
-	checkpoint: LearnCheckpoint | null;
 	discussion: LearnDiscussion | null;
 }
 
@@ -115,7 +114,6 @@ export interface LearnStudioSection {
 	summary: string;
 	keyTakeaways: string[];
 	markdown: string;
-	checkpoint: LearnCheckpoint | null;
 	discussion: LearnDiscussion | null;
 	estimatedMinutes: number;
 	updatedAt: string;

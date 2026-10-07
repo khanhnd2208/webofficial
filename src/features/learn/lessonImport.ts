@@ -15,7 +15,8 @@ import { countWords } from './content';
 import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
 import { findExternalImages } from './images';
 import { LEARN_MAX_MARKDOWN } from './schemas';
-import type { LearnCheckpoint, LearnDiscussion, LearnSectionKind } from './types';
+import { isRetiredPracticeHeading, stripRetiredPracticeBlocks } from './retiredBlocks';
+import type { LearnDiscussion, LearnSectionKind } from './types';
 
 export interface ImportedSection {
 	title: string;
@@ -25,7 +26,7 @@ export interface ImportedSection {
 	wordCount: number;
 	type: LearnSectionKind;
 	keyTakeaways: string[];
-	checkpoint: LearnCheckpoint | null;
+	checkpoint: null;
 	discussion: LearnDiscussion | null;
 }
 
@@ -151,40 +152,6 @@ function pullCallout(markdown: string, tag: string): { body: string | null; rest
 	return { body, rest };
 }
 
-function parseCheckpoint(body: string): LearnCheckpoint | null {
-	const lines = body
-		.split('\n')
-		.map((line) => line.trim())
-		.filter(Boolean);
-	if (!lines.length) return null;
-	const options: string[] = [];
-	let question = '';
-	let correctIndex = 0;
-	let explanation = '';
-	for (const line of lines) {
-		const option = line.match(/^([A-Ha-h])\s*[.)]\s+(.*)$/);
-		const answer = line.match(/^(?:đáp\s*án|answer)\s*[:：]\s*([A-Ha-h])/i);
-		const explain = line.match(/^(?:giải\s*thích|explanation)\s*[:：]\s*(.*)$/i);
-		if (option && !explanation) {
-			options.push(option[2].trim());
-			continue;
-		}
-		if (answer) {
-			correctIndex = answer[1].toUpperCase().charCodeAt(0) - 65;
-			continue;
-		}
-		if (explain) {
-			explanation = explain[1].trim();
-			continue;
-		}
-		if (!options.length) question = question ? `${question} ${line}` : line;
-		else explanation = explanation ? `${explanation} ${line}` : line;
-	}
-	if (!question || options.length < 2) return null;
-	if (correctIndex < 0 || correctIndex >= options.length) correctIndex = 0;
-	return { question, options, correctIndex, explanation };
-}
-
 function takeawayItems(body: string): string[] {
 	return body
 		.split('\n')
@@ -197,10 +164,22 @@ function readingSection(
 	durationMinutes: number | null,
 	summary: string,
 	markdown: string,
+	warnings: string[],
 ): ImportedSection {
 	const takeaways = pullCallout(markdown, 'TAKEAWAYS');
 	const checkpoint = pullCallout(takeaways.rest, 'CHECKPOINT');
-	const body = checkpoint.rest;
+	if (checkpoint.body) {
+		warnings.push(
+			`"${title}": đã bỏ câu hỏi nhanh. Khóa học không còn câu trắc nghiệm gắn trong bài giảng.`,
+		);
+	}
+	const stripped = stripRetiredPracticeBlocks(checkpoint.rest);
+	for (const heading of stripped.removed) {
+		warnings.push(
+			`"${title}": đã bỏ phần "${heading}". Phần ôn tập hoặc thực hành riêng không còn được nhập.`,
+		);
+	}
+	const body = stripped.markdown;
 	return {
 		title,
 		durationMinutes,
@@ -209,7 +188,7 @@ function readingSection(
 		wordCount: countWords(body),
 		type: 'READING',
 		keyTakeaways: takeaways.body ? takeawayItems(takeaways.body) : [],
-		checkpoint: checkpoint.body ? parseCheckpoint(checkpoint.body) : null,
+		checkpoint: null,
 		discussion: null,
 	};
 }
@@ -317,7 +296,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 			lessonTitle: lessonTitle || 'Bài học mới',
 			lessonDescription,
 			sections: markdown
-				? [readingSection(lessonTitle || 'Nội dung bài học', null, '', markdown)]
+				? [readingSection(lessonTitle || 'Nội dung bài học', null, '', markdown, warnings)]
 				: [],
 			warnings,
 		};
@@ -336,7 +315,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 		const introMarkdown = buildMarkdown(introStart, slices[0].start);
 		if (introMarkdown) {
 			checkOversized('Giới thiệu', introMarkdown);
-			sections.push(readingSection('Giới thiệu', null, '', introMarkdown));
+			sections.push(readingSection('Giới thiệu', null, '', introMarkdown, warnings));
 		}
 	}
 
@@ -357,9 +336,9 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 
 		const markdown = escapeYearLikeListMarkers(body, bodyMask).join('\n').trim();
 		const sectionTitle = title || `Mục ${sections.length + 1}`;
-		if (slice.kind === 'RETIRED') {
+		if (slice.kind === 'RETIRED' || isRetiredPracticeHeading(sectionTitle)) {
 			warnings.push(
-				`"${sectionTitle}": đã bỏ qua. Khóa học chỉ còn bài giảng và câu hỏi phản biện, không nhập bài kiểm tra hay luyện tập.`,
+				`"${sectionTitle}": đã bỏ qua. Khóa học chỉ còn bài giảng và câu hỏi phản biện, không nhập bài kiểm tra, luyện tập hay phần ôn tập riêng.`,
 			);
 			return;
 		}
@@ -391,7 +370,7 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 			warnings.push(
 				`"${sectionTitle}": ảnh ngoài sẽ không hiển thị, hãy tải lên (${external.length}).`,
 			);
-		sections.push(readingSection(sectionTitle, durationMinutes, summary, markdown));
+		sections.push(readingSection(sectionTitle, durationMinutes, summary, markdown, warnings));
 	});
 
 	const empty = sections.filter(
@@ -548,17 +527,6 @@ function durationLabel(minutes: number | null): string {
 	return minutes ? ` | ${minutes} phút` : '';
 }
 
-function checkpointMarkdown(checkpoint: LearnCheckpoint): string {
-	const letters = checkpoint.options.map(
-		(option, index) => `> ${String.fromCharCode(65 + index)}. ${option}`,
-	);
-	const answer = `> Đáp án: ${String.fromCharCode(65 + checkpoint.correctIndex)}`;
-	const explanation = checkpoint.explanation ? `> Giải thích: ${checkpoint.explanation}` : '';
-	return ['> [!CHECKPOINT]', `> ${checkpoint.question}`, ...letters, answer, explanation]
-		.filter(Boolean)
-		.join('\n');
-}
-
 export interface ExportableSection {
 	type: LearnSectionKind;
 	title: string;
@@ -566,7 +534,6 @@ export interface ExportableSection {
 	summary: string;
 	markdown: string;
 	keyTakeaways: string[];
-	checkpoint: LearnCheckpoint | null;
 	discussion: LearnDiscussion | null;
 }
 
@@ -595,7 +562,6 @@ export function exportLessonMarkdown(lesson: ExportableLesson): string {
 		if (section.keyTakeaways.length) {
 			lines.push('', '> [!TAKEAWAYS]', ...section.keyTakeaways.map((item) => `> - ${item}`));
 		}
-		if (section.checkpoint) lines.push('', checkpointMarkdown(section.checkpoint));
 		if (section.markdown.trim()) lines.push('', section.markdown.trim());
 	}
 	return `${lines.join('\n').trim()}\n`;

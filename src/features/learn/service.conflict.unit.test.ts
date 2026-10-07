@@ -45,7 +45,7 @@ describe('updateLearnSection conflicts', () => {
 
 	it('returns 409 when baseUpdatedAt does not match, and 404 when the section is gone', async () => {
 		mocks.sectionUpdateMany.mockResolvedValue({ count: 0 });
-		mocks.sectionFindUnique.mockResolvedValue({ id: 's1' });
+		mocks.sectionFindUnique.mockResolvedValue({ id: 's1', type: 'READING' });
 		await expect(
 			updateLearnSection('s1', { title: 'Mới', baseUpdatedAt: stamp }),
 		).rejects.toMatchObject({
@@ -64,6 +64,7 @@ describe('updateLearnSection conflicts', () => {
 
 	it('writes when the timestamp matches and returns the new version', async () => {
 		mocks.sectionFindUnique
+			.mockResolvedValueOnce({ type: 'READING' })
 			.mockResolvedValueOnce({
 				type: 'READING',
 				durationMinutes: null,

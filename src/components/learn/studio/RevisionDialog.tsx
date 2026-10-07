@@ -31,7 +31,6 @@ interface RevisionBody extends RevisionMeta {
 	summary: string;
 	markdown: string;
 	keyTakeaways: string[];
-	checkpoint: LearnStudioSection['checkpoint'];
 	discussion: LearnStudioSection['discussion'];
 }
 
@@ -93,7 +92,6 @@ export default function RevisionDialog({
 					summary: body.summary,
 					markdown: body.markdown,
 					keyTakeaways: body.keyTakeaways,
-					checkpoint: body.checkpoint,
 					discussion: body.discussion,
 				}),
 				sectionPlainText(section),
@@ -149,7 +147,10 @@ export default function RevisionDialog({
 		<>
 			<StudioDialog
 				title="Lịch sử"
-				onClose={onClose}
+				busy={busy}
+				onClose={() => {
+					if (!busy) onClose();
+				}}
 				footer={
 					<div className="ln-confirm">
 						<button

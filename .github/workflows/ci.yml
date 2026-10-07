@@ -368,6 +368,7 @@ jobs:
               e2e/personal-book.spec.ts
               e2e/operating-focus.spec.ts
               e2e/learn-reader.spec.ts
+              e2e/learn-studio.spec.ts
             )
           fi
           if [[ "$run_all" -eq 1 ]] || is_true "$AREA_BOARDGAME"; then

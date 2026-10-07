@@ -25,7 +25,7 @@ alwaysApply: false
   ("xem Câu 9").
 - `bai-N-them.md` ("Cách dùng bộ câu hỏi" intro, then "Câu hỏi phản biện") is an
   optional advanced layer. Courses hold only lectures and critical questions:
-  no quiz or practice blocks (the import skips them). Questions may go deeper but must not introduce concepts the lecture
+  no quiz, practice, checkpoint, or standalone "Câu hỏi tự kiểm tra" / "Bài tập thực hành" sections (the import skips them). Questions may go deeper but must not introduce concepts the lecture
   skipped.
 
 ## Source fidelity

@@ -37,16 +37,11 @@ export async function listLearnCoursesForAdmin(): Promise<AdminLearnCourse[]> {
 					FROM "LearnSection" s
 					JOIN "LearnLesson" l ON l.id = s."lessonId"
 					WHERE l."courseId" = c.id
+						AND s.type IN ('READING', 'DISCUSSION')
 				) AS "sectionCount",
 				(
 					SELECT COALESCE(SUM(
 						COALESCE(jsonb_array_length(
-							CASE
-								WHEN jsonb_typeof(s.quiz -> 'questions') = 'array' THEN s.quiz -> 'questions'
-								ELSE '[]'::jsonb
-							END
-						), 0)
-						+ COALESCE(jsonb_array_length(
 							CASE
 								WHEN jsonb_typeof(s.discussion -> 'questions') = 'array' THEN s.discussion -> 'questions'
 								ELSE '[]'::jsonb
@@ -56,6 +51,7 @@ export async function listLearnCoursesForAdmin(): Promise<AdminLearnCourse[]> {
 					FROM "LearnSection" s
 					JOIN "LearnLesson" l ON l.id = s."lessonId"
 					WHERE l."courseId" = c.id
+						AND s.type = 'DISCUSSION'
 				) AS "questionCount",
 				GREATEST(
 					c."updatedAt",

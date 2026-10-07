@@ -4,14 +4,7 @@ import type { LearnStudioLesson, LearnStudioSection } from '@/features/learn/typ
 export type SectionPatch = Partial<
 	Pick<
 		LearnStudioSection,
-		| 'title'
-		| 'type'
-		| 'durationMinutes'
-		| 'summary'
-		| 'keyTakeaways'
-		| 'markdown'
-		| 'checkpoint'
-		| 'discussion'
+		'title' | 'type' | 'durationMinutes' | 'summary' | 'keyTakeaways' | 'markdown' | 'discussion'
 	>
 >;
 

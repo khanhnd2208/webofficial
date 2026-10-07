@@ -55,6 +55,7 @@ export default function PublishDialog({
 		<StudioDialog
 			title={`Xuất bản "${title}"?`}
 			size="narrow"
+			busy={busy}
 			onClose={onClose}
 			footer={
 				<div className="ln-confirm">

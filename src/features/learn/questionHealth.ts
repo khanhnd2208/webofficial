@@ -7,7 +7,9 @@ export function discussionIssues(
 ): string[] {
 	const issues: string[] = [];
 	if (!question.question.trim()) issues.push('Thiếu đề bài');
+	else if (question.question.length > 8_000) issues.push('Đề bài dài hơn 8.000 ký tự');
 	if (!question.answer.trim()) issues.push('Thiếu đáp án mẫu');
+	else if (question.answer.length > 30_000) issues.push('Đáp án dài hơn 30.000 ký tự');
 	const hasAsk = view.blocks.some(
 		(block) => block.label === 'Câu hỏi' || block.label === 'Yêu cầu',
 	);

@@ -19,7 +19,6 @@ const lessons: LearnStudioLesson[] = [
 				summary: '',
 				keyTakeaways: [],
 				markdown: '',
-				checkpoint: null,
 				discussion: null,
 				estimatedMinutes: 1,
 				updatedAt: '2026-09-25T00:00:00.000Z',
@@ -47,9 +46,12 @@ describe('validateSectionPatch', () => {
 
 	it('sends the valid fields when one field fails the schema', () => {
 		const checkpoint = { question: 'Câu', options: ['chỉ một'], correctIndex: 0, explanation: '' };
-		const result = validateSectionPatch({ markdown: 'Nội dung', checkpoint });
+		const result = validateSectionPatch({
+			markdown: 'Nội dung',
+			checkpoint,
+		} as Parameters<typeof validateSectionPatch>[0]);
 		expect(result.body).toEqual({ markdown: 'Nội dung' });
-		expect(result.errors.checkpoint).toBe('Cần ít nhất 2 phương án');
+		expect(result.errors.checkpoint).toBe('Câu hỏi nhanh không còn được hỗ trợ');
 	});
 
 	it('reports markdown that is too long and omits it', () => {
