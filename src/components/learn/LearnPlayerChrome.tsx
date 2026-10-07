@@ -1,7 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+
+import { LearnPendingMark } from './LearnLinkPending';
 
 /** Thin bar under the player's top bar showing how far the learner has scrolled. */
 export function LearnScrollProgress() {
@@ -61,6 +63,7 @@ export function LearnKeyboardNav({
 	overviewHref: string;
 }) {
 	const router = useRouter();
+	const [pending, startTransition] = useTransition();
 
 	useEffect(() => {
 		function onKey(event: KeyboardEvent) {
@@ -75,18 +78,18 @@ export function LearnKeyboardNav({
 			const key = event.key.toLowerCase();
 			if ((key === 'arrowleft' || key === 'k') && previousHref) {
 				event.preventDefault();
-				router.push(previousHref);
+				startTransition(() => router.push(previousHref));
 			} else if ((key === 'arrowright' || key === 'j') && nextHref) {
 				event.preventDefault();
-				router.push(nextHref);
+				startTransition(() => router.push(nextHref));
 			} else if (key === 'o') {
 				event.preventDefault();
-				router.push(overviewHref);
+				startTransition(() => router.push(overviewHref));
 			}
 		}
 		window.addEventListener('keydown', onKey);
 		return () => window.removeEventListener('keydown', onKey);
 	}, [router, previousHref, nextHref, overviewHref]);
 
-	return null;
+	return <LearnPendingMark pending={pending} />;
 }

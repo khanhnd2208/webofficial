@@ -10,7 +10,9 @@ import {
 	type DiscussionQuestionView,
 } from '@/features/learn/discussionView';
 
-import LearnMarkdown from './LearnMarkdown';
+import dynamic from 'next/dynamic';
+
+const LearnMarkdown = dynamic(() => import('./LearnMarkdown'));
 
 function blockKind(label: string | null) {
 	if (!label) return undefined;
