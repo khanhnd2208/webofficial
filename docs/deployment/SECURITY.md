@@ -20,15 +20,20 @@ Deploy steps live in [`VPS.md`](./VPS.md).
 
 ## Everyday use
 
+All apps are managed with the `vps` command from the private repo
+[`khanhnd2208/vps-infra`](https://github.com/khanhnd2208/vps-infra) (checked
+out at `~/Workspace/Active/vps`; `vps help` lists every command).
+
 | I want to…                         | Run (on the Mac)                                                                 |
 | ---------------------------------- | -------------------------------------------------------------------------------- |
-| See if everything is healthy       | `npm run deploy:vps -- --check` (from this repo)                                 |
-| See the apps and their memory      | `ssh deploy@webofficial-vps pm2 ls`                                              |
-| Read an app's recent errors        | `ssh deploy@webofficial-vps pm2 logs nextjs-app --err --lines 50 --nostream`     |
-| Restart one app                    | `ssh deploy@webofficial-vps pm2 restart chijuly`                                 |
+| See if everything is healthy       | `vps status` (apps, releases, server, HTTPS)                                     |
+| Check this site in depth           | `npm run deploy:vps -- --check` (from this repo)                                 |
+| Read an app's recent errors        | `vps logs <app> 50 --err` (app: `webofficial`, `chijuly`, `learn-chinese`)       |
+| Restart one app                    | `vps restart <app>`                                                              |
+| Roll back Chijuly or Learn Chinese | `vps rollback <app>`                                                             |
 | Deploy this site                   | Merge a pull request to `main`; GitHub deploys it                                |
-| Deploy Chijuly                     | `./deploy.sh` in the chijuly repo                                                |
-| Deploy Learn Chinese               | Merge to `main` in the learn-chinese repo                                        |
+| Deploy Chijuly                     | `vps deploy chijuly` (manual only)                                               |
+| Deploy Learn Chinese               | Merge to `main` in the learn-chinese repo (deploys after Quality passes)         |
 | Administer the server (root)       | `ssh webofficial-vps` (root, Mac key only)                                       |
 | Run a backup now                   | `ssh webofficial-vps /opt/scripts/backup-databases.sh`                           |
 | See the last backup                | `ssh webofficial-vps 'tail -5 /var/log/db-backup/cron.log'`                      |
@@ -53,7 +58,14 @@ owner when it fails. That email is the signal to look.
 | ------------- | --------------------------- | ---------------- | ------------------------ | --------------- | ------- |
 | This site     | `toiladuykhanh.com`, `www.` | 4000             | `/var/www/webofficial`   | `nextjs-app`    | deploy  |
 | Chijuly ERP   | `chijuly.toiladuykhanh.com` | 3000             | `/var/www/chijuly`       | `chijuly`       | deploy  |
-| Learn Chinese | `thh.toiladuykhanh.com`     | 3001 (all IPs)   | `/var/www/learn-chinese` | `learn-chinese` | deploy  |
+| Learn Chinese | `thh.toiladuykhanh.com`     | 3001             | `/var/www/learn-chinese` | `learn-chinese` | deploy  |
+
+Every app runs from `<dir>/current`, a link to one of `<dir>/releases/`.
+Chijuly and Learn Chinese deploy with `/opt/vps/bin/app-deploy` (root-owned,
+installed from `vps-infra` with `vps install`); their PM2 configs live in
+`/opt/vps/apps/<app>/`, their `.env` in `<dir>/shared/.env`, and a `pg_dump`
+from before each deploy in `<dir>/shared/db-backups/`. The old in-place files
+of all three apps sit in `<dir>/_legacy-20261006/` (mode 700) until 2026-10-20.
 
 PM2 runs as `deploy` (`systemctl status pm2-deploy`, home `/home/deploy/.pm2`)
 with `pm2-logrotate` (10 MB per file, 14 kept). Root's PM2 (`pm2-root`) is
@@ -77,6 +89,7 @@ Databases listen on localhost only and require a password.
 | deploy | `duykhanh@mac`                    | `7CxqWXIXUWvYglBQltKuJMWogSC9oK5/kqSqPOWnuGM` | Owner's Mac                             |
 | deploy | `ci-webofficial-deploy-2026-10`   | `GJJJkS2o8y3f7me2QRDALAi/iQkbdEbnlXCd84m3Sls` | GitHub `webofficial` env `production`   |
 | deploy | `ci-learn-chinese-deploy-2026-10` | `amLqUjWtKT4geQxi5EP4JVK9v+z014DRISRY7XuH4fk` | GitHub `learn-chinese` env `production` |
+| deploy | `ci-chijuly-deploy-2026-10`       | `4o48f1LJaj7eRh5tlaoe7zDvtd3TKAAv6iGqfGnSQwo` | GitHub `chijuly` env `production`       |
 
 CI keys carry the `restrict` option: no forwarding, no terminal. Check the live
 lists with
@@ -87,7 +100,7 @@ lists with
 `/etc/sudoers.d/deploy`, nothing else:
 
 - run `/opt/scripts/backup-databases.sh` as root (the deploy backs up before migrating);
-- run `/usr/bin/test` as `www-data` (Chijuly's deploy checks Nginx can read static files).
+- run `/usr/bin/test` as `www-data` (Chijuly's `verify.sh` checks Nginx can read static files).
 
 ### Passwords and secrets
 
@@ -107,8 +120,12 @@ lists with
   may use it. No repository-level secrets. `main` requires a pull request and
   the five CI checks; force-push and deletion are blocked.
 - `khanhnd2208/learn-chinese`: environment `production` (main only) holds
-  `VPS_HOST`, `VPS_USER=deploy`, `VPS_SSH_KEY`.
-- `khanhnd2208/chijuly`: deploys from the Mac with `./deploy.sh` as `deploy`.
+  `VPS_HOST`, `VPS_USER=deploy`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS`.
+- `khanhnd2208/chijuly`: environment `production` (main only) holds
+  `VPS_HOST`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS`; the deploy workflow only runs
+  when started by hand.
+- `khanhnd2208/vps-infra` (private): the `vps` command, `app-deploy`, PM2 and
+  Nginx config. No secrets.
 
 ## Controls in place
 
@@ -167,10 +184,10 @@ systemctl stop sshd-rollback.timer
 ### An app is down
 
 ```bash
-ssh deploy@webofficial-vps
-pm2 ls                                   # status, restarts, memory
-pm2 logs <name> --err --lines 80 --nostream
-pm2 restart <name>                       # names: nextjs-app, chijuly, learn-chinese
+vps status                               # status, restarts, memory, release
+vps logs <app> 80 --err
+vps rollback <app>                       # chijuly, learn-chinese: back to the previous release
+vps restart <app>
 ```
 
 If PM2 itself is gone (after a reboot, `pm2 ls` is empty), as root:
@@ -239,7 +256,7 @@ Older copies are on Google Drive under `VPS-Backups/databases`.
 ### Phase 2: finishing touches
 
 - [ ] Nginx: `server_tokens off`, TLS 1.2+ everywhere, one HSTS policy, rate limit on sign-in.
-- [ ] Learn Chinese listens on `127.0.0.1` only.
+- [x] Learn Chinese listens on `127.0.0.1` only (2026-10-06, with the move to `app-deploy`).
 - [ ] fail2ban `recidive` jail.
 - [ ] `vps-health` also checks SSH config drift, failed units, pending security updates, certificate expiry.
 - [ ] Dependabot security updates.
@@ -269,3 +286,8 @@ user per app, auditd/AIDE/CrowdSec, Livepatch.
 | 2026-10-06 | Restore drill: `khanhwebsite` (72 tables) and `my_teaching_platform` (25 collections) matched                 | —                                                             |
 | 2026-10-06 | Old `.env` backups moved to `/root/env-archive`; unattended reboot at 04:30                                   | Move back; delete `52unattended-reboot`                       |
 | 2026-10-06 | chijuly: dead repo secrets `VPS_PASSWORD`, `VPS_HOST`, `VPS_USER` deleted; `deploy.sh` uses `deploy`          | —                                                             |
+| 2026-10-06 | `/opt/vps` (root-owned) from `vps-infra`: `app-deploy` and per-app PM2/build config                           | Delete `/opt/vps`                                             |
+| 2026-10-06 | Nginx `chijuly`, `thh`: static aliases read `<dir>/current/`                                                  | `hardening-backup-20261006/nginx/`                            |
+| 2026-10-06 | Learn Chinese, then Chijuly moved to `releases/` + `current` + `shared/`; Learn Chinese binds 127.0.0.1       | `app-deploy` falls back to the in-place dir (`current -> .`)  |
+| 2026-10-06 | New key `ci-chijuly-deploy-2026-10` (`restrict`) for deploy; chijuly env `production` limited to `main`       | `authorized_keys.deploy` in `hardening-backup-20261006-vps-infra` |
+| 2026-10-06 | Old in-place app files moved to `/var/www/<app>/_legacy-20261006/` (~5.4 GB); delete from 2026-10-20          | `mv` the item back; list in `MANIFEST-before.txt`             |
