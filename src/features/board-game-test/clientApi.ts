@@ -21,12 +21,25 @@ export function publishTestRoom(room: TestRoomEnvelope) {
 	listeners.forEach((listener) => listener(room));
 }
 export const testCommandPending = (game: TestGame, code: string) => pending.has(`${game}/${code}`);
-export async function readAdminTestRoom(game: TestGame, code: string) {
+async function readRoom(game: TestGame, code: string) {
 	const room = await testRequest<TestRoomEnvelope>(
 		`/api/admin/board-game/test-rooms/${game}/${code}`,
 	);
 	publishTestRoom(room);
 	return room;
+}
+// Reads and writes share a queue: a hydration/poll read must not hit the server's command lock.
+async function queueRoomRequest<T>(key: string, run: () => Promise<T>): Promise<T> {
+	const operation = (pending.get(key) ?? Promise.resolve()).catch(() => undefined).then(run);
+	pending.set(key, operation);
+	try {
+		return await operation;
+	} finally {
+		if (pending.get(key) === operation) pending.delete(key);
+	}
+}
+export function readAdminTestRoom(game: TestGame, code: string) {
+	return queueRoomRequest(`${game}/${code}`, () => readRoom(game, code));
 }
 export async function sendAdminTestCommand<T = TestRoomEnvelope>(
 	game: TestGame,
@@ -35,40 +48,34 @@ export async function sendAdminTestCommand<T = TestRoomEnvelope>(
 ): Promise<T> {
 	const key = `${game}/${code}`;
 	const seatAtClick = rooms.get(key)?.controlledSeatId;
-	const operation = (pending.get(key) ?? Promise.resolve())
-		.catch(() => undefined)
-		.then(async () => {
-			try {
-				const room = rooms.get(key) ?? (await readAdminTestRoom(game, code));
-				if (seatAtClick && room.controlledSeatId !== seatAtClick)
-					throw Object.assign(new Error('TEST_STATE_CONFLICT'), { code: 'TEST_STATE_CONFLICT' });
-				const result = await testRequest<TestRoomEnvelope | { closed: boolean }>(
-					`/api/admin/board-game/test-rooms/${key}/commands`,
-					{
-						method: 'POST',
-						body: JSON.stringify({
-							command,
-							requestId: crypto.randomUUID(),
-							expectedVersion: room.version,
-							controlledSeatId: room.controlledSeatId,
-						}),
-					},
-				);
-				if ('state' in result) publishTestRoom(result);
-				else rooms.delete(key);
-				return result as T;
-			} catch (error) {
-				await readAdminTestRoom(game, code).catch(() => undefined);
-				throw error;
-			}
-		});
-	pending.set(key, operation);
-	try {
-		return await operation;
-	} finally {
-		if (pending.get(key) === operation) pending.delete(key);
-	}
+	return queueRoomRequest(key, async () => {
+		try {
+			const room = rooms.get(key) ?? (await readRoom(game, code));
+			if (seatAtClick && room.controlledSeatId !== seatAtClick)
+				throw Object.assign(new Error('TEST_STATE_CONFLICT'), { code: 'TEST_STATE_CONFLICT' });
+			const result = await testRequest<TestRoomEnvelope | { closed: boolean }>(
+				`/api/admin/board-game/test-rooms/${key}/commands`,
+				{
+					method: 'POST',
+					body: JSON.stringify({
+						command,
+						requestId: crypto.randomUUID(),
+						expectedVersion: room.version,
+						controlledSeatId: room.controlledSeatId,
+					}),
+				},
+			);
+			if ('state' in result) publishTestRoom(result);
+			else rooms.delete(key);
+			return result as T;
+		} catch (error) {
+			// Already inside the queue: recovery reads bypass it to avoid waiting on ourselves.
+			await readRoom(game, code).catch(() => undefined);
+			throw error;
+		}
+	});
 }
+
 export async function testRequest<T>(url: string, init?: RequestInit): Promise<T> {
 	const response = await fetch(withBasePath(url), {
 		...init,
