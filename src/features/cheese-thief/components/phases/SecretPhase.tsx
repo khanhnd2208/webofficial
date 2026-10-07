@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import ActionBar from '@/features/cheese-thief/components/ActionBar';
 import HoldToReveal from '@/features/cheese-thief/components/HoldToReveal';
 import CheeseThiefArt from '@/features/cheese-thief/components/CheeseThiefArt';
 import type { RoomStateDTO } from '@/features/cheese-thief/types';
@@ -76,6 +77,7 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 	const t = useT();
 	const count = state.choiceCount ?? 1;
 	const [picks, setPicks] = useState<string[]>([]);
+	const [sentPicks, setSentPicks] = useState<string[] | null>(null);
 	const [full, setFull] = useState(false);
 	const [settling, setSettling] = useState(false);
 	const locked = busy || settling;
@@ -97,6 +99,13 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 					? t(count > 1 ? 'cheese.secret.job.peek' : 'cheese.secret.job.peekOnly')
 					: t(count > 1 ? 'cheese.secret.job.hunch' : 'cheese.secret.job.hunchOnly');
 
+	const sent =
+		Boolean(state.self?.hasChosenSecret) &&
+		sentPicks !== null &&
+		sentPicks.length === picks.length &&
+		sentPicks.every((id, index) => picks[index] === id);
+	const resending = sentPicks !== null && !sent;
+
 	// Tapping past the last slot used to drop slot ① silently — often the player to peek at.
 	function toggle(id: string) {
 		if (locked) return;
@@ -116,6 +125,7 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 		setSettling(true);
 		try {
 			await drafts.settle();
+			setSentPicks(picks);
 			onSubmit(picks);
 		} finally {
 			setSettling(false);
@@ -126,36 +136,62 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 
 	return (
 		<div className="fixed inset-0 z-50 overflow-y-auto bg-game-canvas text-game-ink">
-			<div className="mx-auto flex min-h-full w-full max-w-md flex-col px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-32">
-				<div className="flex items-center justify-between">
-					<p className="font-mono text-xs tracking-[0.22em] text-game-bronze uppercase">
+			<div className="mx-auto flex min-h-full w-full max-w-md flex-col px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-56">
+				<div className="flex items-center justify-between gap-3">
+					<p className="font-mono text-xs leading-snug tracking-[0.18em] text-game-bronze uppercase">
 						{t('cheese.secret.onlyYou')}
 					</p>
 					<CheeseThiefArt scene="secret" size={38} />
 				</div>
 				<h1 className="mt-3 font-display text-4xl font-medium">{t('cheese.secret.title')}</h1>
-				<p className="mt-3 text-sm leading-relaxed text-game-ink/85">{t('cheese.secret.order')}</p>
+
+				<p className="mt-2 text-sm leading-relaxed text-game-ink/70">{t('cheese.secret.noRush')}</p>
+				<ol className="mt-4 space-y-2" aria-label={t('cheese.secret.stepsLabel')}>
+					{(['step1', 'step2', 'step3'] as const).map((key, index) => (
+						<li key={key} className="flex gap-3 text-sm leading-snug text-game-ink/85">
+							<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-game-bronze/60! font-mono text-xs text-game-bronze">
+								{index + 1}
+							</span>
+							<span className="pt-0.5">{t(`cheese.secret.${key}`)}</span>
+						</li>
+					))}
+				</ol>
+
 				{jobText && (
-					<HoldToReveal className="mt-4" compact cover={t('cheese.secret.job.label')}>
+					<HoldToReveal
+						className="mt-5"
+						compact
+						cover={t('cheese.secret.job.label')}
+						hint={t('cheese.secret.holdHint')}
+					>
 						<p className="text-base leading-relaxed text-game-ink">{jobText}</p>
 						{job && (
-							<ol className="mt-3 w-full space-y-1 text-left text-sm text-game-ink/85">
+							<ol className="mt-2 w-full space-y-1.5 text-left text-sm">
 								{Array.from({ length: count }, (_, index) => (
-									<li key={index} className="flex gap-2">
-										<span className="font-mono text-game-bronze">{index + 1}.</span>
-										<span className="min-w-0 break-words">
-											{t(`cheese.secret.slot.${slotRoleAt(index, job)}`)}:{' '}
-											<strong className="font-medium text-game-ink">
-												{nameOf(picks[index]) ?? '—'}
-											</strong>
+									<li
+										key={index}
+										className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2"
+									>
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-game-bronze font-mono text-xs font-semibold text-game-canvas">
+											{index + 1}
 										</span>
+										<span className="min-w-0 flex-1 break-words text-game-ink/80">
+											{t(`cheese.secret.slot.${slotRoleAt(index, job)}`)}
+										</span>
+										<strong className="min-w-0 break-words text-right font-medium text-game-ink">
+											{nameOf(picks[index]) ?? '—'}
+										</strong>
 									</li>
 								))}
 							</ol>
 						)}
 					</HoldToReveal>
 				)}
-				<div className="mt-6 grid gap-2">
+
+				<p className="mt-6 mb-2 font-mono text-xs tracking-[0.18em] text-game-ink/60 uppercase">
+					{t('cheese.secret.namesLabel')}
+				</p>
+				<div className="grid gap-2">
 					{others.map((player) => {
 						const order = picks.indexOf(player.id);
 						const selected = order >= 0;
@@ -164,47 +200,90 @@ export default function SecretPhase({ state, busy, onSubmit, onDraft }: Props) {
 								key={player.id}
 								type="button"
 								className={cn(
-									'flex min-h-14 items-center justify-between gap-3 rounded-2xl border px-4 py-2 text-left text-lg',
-									selected ? 'border-game-bronze bg-game-bronze/15' : 'border-white/10 bg-white/5',
+									'flex min-h-14 items-center gap-3 rounded-2xl border px-3 py-2 text-left text-lg transition-colors',
+									selected
+										? 'border-game-bronze! bg-game-bronze/15'
+										: 'border-white/10! bg-white/5 active:bg-white/10',
+									!selected && picks.length >= count && 'opacity-55',
 								)}
 								aria-pressed={selected}
 								disabled={locked}
 								onClick={() => toggle(player.id)}
 							>
-								<span className="min-w-0 break-words">{player.name}</span>
-								{selected && (
-									<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-game-bronze font-mono text-sm font-semibold text-game-canvas">
-										{order + 1}
-									</span>
-								)}
+								<span
+									className={cn(
+										'flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold',
+										selected
+											? 'bg-game-bronze text-game-canvas'
+											: 'border-2 border-dashed border-white/25!',
+									)}
+									aria-hidden
+								>
+									{selected ? order + 1 : ''}
+								</span>
+								<span className="min-w-0 flex-1 break-words">{player.name}</span>
 							</button>
 						);
 					})}
 				</div>
-				{state.self?.hasChosenSecret && (
-					<p className="mt-4 text-center text-sm text-game-bronze">{t('cheese.secret.chosen')}</p>
-				)}
 			</div>
-			<div className="fixed inset-x-0 bottom-0 z-10 border-t border-white/10 bg-game-canvas/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
-				<div className="mx-auto max-w-md">
-					<p
-						className="mb-2 text-center font-mono text-xs tracking-[0.12em] text-game-ink/80"
-						aria-live="polite"
-					>
-						{full
-							? t('cheese.secret.full', { total: count })
+
+			<ActionBar dark>
+				<ol className="flex gap-2">
+					{Array.from({ length: count }, (_, index) => {
+						const name = nameOf(picks[index]);
+						return (
+							<li key={index} className="min-w-0 flex-1">
+								{name ? (
+									<button
+										type="button"
+										disabled={locked}
+										className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-game-bronze/70! bg-game-bronze/15 px-2.5 text-left text-sm"
+										aria-label={t('cheese.secret.unpick', { name, n: index + 1 })}
+										onClick={() => toggle(picks[index]!)}
+									>
+										<span className="font-mono text-xs text-game-bronze">{index + 1}</span>
+										<span className="min-w-0 flex-1 truncate">{name}</span>
+										<span aria-hidden className="text-base leading-none text-game-ink/60">
+											×
+										</span>
+									</button>
+								) : (
+									<p className="flex min-h-11 items-center gap-2 rounded-xl border border-dashed border-white/20! px-2.5 text-sm text-game-ink/50">
+										<span className="font-mono text-xs">{index + 1}</span>
+										<span className="truncate">{t('cheese.secret.slotEmpty')}</span>
+									</p>
+								)}
+							</li>
+						);
+					})}
+				</ol>
+				<p
+					className={cn(
+						'text-center text-xs leading-snug',
+						full ? 'text-game-danger' : sent ? 'text-game-bronze' : 'text-game-ink/75',
+					)}
+					aria-live="polite"
+				>
+					{full
+						? t('cheese.secret.full', { total: count })
+						: sent
+							? t('cheese.secret.chosen')
 							: t('cheese.secret.selected', { done: picks.length, total: count })}
-					</p>
-					<Button
-						fullWidth
-						disabled={locked || picks.length !== count}
-						loading={locked}
-						onClick={() => void submit()}
-					>
-						{t('cheese.secret.done')}
-					</Button>
-				</div>
-			</div>
+				</p>
+				<Button
+					fullWidth
+					disabled={locked || sent || picks.length !== count}
+					loading={locked}
+					onClick={() => void submit()}
+				>
+					{sent
+						? t('cheese.secret.sent')
+						: resending
+							? t('cheese.secret.saveAgain')
+							: t('cheese.secret.done')}
+				</Button>
+			</ActionBar>
 		</div>
 	);
 }

@@ -240,12 +240,7 @@ export default function CheeseThiefRoomClient({ code, initialName, adminTest = f
 					/>
 				)}
 				{phase === 'day' && (
-					<DayPhase
-						state={state}
-						fetchedAt={fetchedAt}
-						busy={busy}
-						onVote={() => void run(api.startVote)}
-					/>
+					<DayPhase state={state} busy={busy} onVote={() => void run(api.startVote)} />
 				)}
 				{phase === 'vote' && (
 					<VotePhase

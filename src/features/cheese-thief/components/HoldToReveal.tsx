@@ -11,6 +11,8 @@ interface Props {
 	className?: string;
 	compact?: boolean;
 	cover?: string;
+	/** A second line under the cover, e.g. how the hold works. */
+	hint?: string;
 	onFirstReveal?: () => void;
 }
 
@@ -20,6 +22,7 @@ export default function HoldToReveal({
 	className,
 	compact = false,
 	cover,
+	hint,
 	onFirstReveal,
 }: Props) {
 	const t = useT();
@@ -37,7 +40,7 @@ export default function HoldToReveal({
 				tabIndex={0}
 				aria-label={cover ?? t('cheese.deal.holdFirst')}
 				className={cn(
-					'relative overflow-hidden rounded-3xl border border-white/10 bg-game-surface',
+					'relative overflow-hidden rounded-3xl border border-white/10! bg-game-card',
 					compact ? 'min-h-28' : 'min-h-64',
 				)}
 				onPointerDown={show}
@@ -58,6 +61,7 @@ export default function HoldToReveal({
 							{cover ?? t('cheese.deal.holdFirst')}
 						</p>
 						<CheeseThiefArt scene={compact ? 'secret' : 'cheese'} size={compact ? 48 : 68} />
+						{hint && <p className="text-xs leading-snug text-game-ink/65">{hint}</p>}
 					</div>
 				)}
 				<div

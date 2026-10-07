@@ -12,8 +12,6 @@ import {
 	CHEESE_PLAYER_TOKEN_LENGTH,
 	CHEESE_ROOM_CODE_LENGTH,
 	CHEESE_ROUND_HOST_HANDOFF_MS,
-	CHEESE_SECRET_MAX_MS,
-	CHEESE_SECRET_MIN_MS,
 	CHEESE_TABLE_SIZE_DEFAULT,
 	isFollowerCountAllowed,
 	isFollowerKnows,
@@ -204,7 +202,6 @@ function clearLegacyTwoNight(game: RoomDoc): boolean {
 function resetToLobby(game: RoomDoc): void {
 	game.phase = 'lobby';
 	game.nightStartedAt = undefined;
-	game.secretStartedAt = undefined;
 	game.dayStartedAt = undefined;
 	game.choiceCount = 1;
 	game.voteRound = 0;
@@ -243,7 +240,6 @@ function applySecretResolution(game: RoomDoc, random: () => number = gameRandom)
 	game.peekByPlayer = resolved.peekByPlayer;
 	game.hunchByPlayer = resolved.hunchByPlayer;
 	game.phase = 'secret-result';
-	game.secretStartedAt = undefined;
 	for (const player of game.players) player.hasSeenSecret = false;
 }
 
@@ -264,9 +260,8 @@ function settleVote(game: RoomDoc): void {
 	game.phase = 'reveal';
 }
 
-function enterSecret(game: RoomDoc, at: Date): void {
+function enterSecret(game: RoomDoc): void {
 	game.phase = 'secret';
-	game.secretStartedAt = at;
 	game.choiceCount = sharedChoiceCount(tablePreset(game));
 	for (const player of game.players) {
 		player.secretPicks = [];
@@ -277,20 +272,18 @@ function enterSecret(game: RoomDoc, at: Date): void {
 function advanceClock(game: RoomDoc, at: Date, random: () => number = gameRandom): boolean {
 	if (game.phase === 'night' && game.nightStartedAt) {
 		if (at.getTime() >= nightEndsAt(game.nightStartedAt.getTime(), nightTiming(game.hourSeconds))) {
-			enterSecret(game, at);
+			enterSecret(game);
 			return true;
 		}
 	}
 
-	if (game.phase === 'secret' && game.secretStartedAt) {
-		const elapsed = at.getTime() - game.secretStartedAt.getTime();
+	// No clock: the table takes as long as it needs, and moves on once every phone has pressed Done.
+	if (game.phase === 'secret') {
 		const choiceCount = game.choiceCount || sharedChoiceCount(tablePreset(game));
 		const everyoneChose = game.players.every(
 			(player) => player.secretConfirmed && (player.secretPicks ?? []).length === choiceCount,
 		);
-		const timedOut = elapsed >= CHEESE_SECRET_MAX_MS;
-		const minElapsed = elapsed >= CHEESE_SECRET_MIN_MS;
-		if (timedOut || (everyoneChose && minElapsed)) {
+		if (everyoneChose) {
 			applySecretResolution(game, random);
 			return true;
 		}
@@ -605,7 +598,6 @@ export async function startGame(
 		}
 		game.phase = 'deal';
 		game.nightStartedAt = undefined;
-		game.secretStartedAt = undefined;
 		game.dayStartedAt = undefined;
 		game.choiceCount = sharedChoiceCount(tablePreset(game));
 		game.voteRound = 0;
