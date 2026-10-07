@@ -88,7 +88,6 @@ interface TestRoomDoc {
 	winner?: unknown;
 	result?: unknown;
 	nightStartedAt?: Date;
-	secretStartedAt?: Date;
 	adminTest: {
 		ownerUserId: string;
 		seed: string;
@@ -507,8 +506,6 @@ export async function commandTestRoom(
 			if (room.phase === 'night' && room.nightStartedAt)
 				room.adminTest.clockMs =
 					room.nightStartedAt.getTime() + nightDurationMs(nightTiming(room.hourSeconds));
-			if (room.phase === 'secret' && room.secretStartedAt)
-				room.adminTest.clockMs = room.secretStartedAt.getTime() + 61_000;
 		}
 		room.adminTest.lastTickAt = new Date();
 		await room.save();

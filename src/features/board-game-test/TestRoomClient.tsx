@@ -222,7 +222,7 @@ export default function TestRoomClient({
 								<>
 									{action('step', { kind: 'step' })}
 									{room.game === 'cheese-thief' &&
-										['night', 'secret'].includes(room.state.phase) &&
+										room.state.phase === 'night' &&
 										action('skip', { kind: 'skip-time' })}
 									{action('newGame', { kind: 'reset', sameSeed: false })}
 									{action('close', { kind: 'close' })}
