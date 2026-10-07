@@ -6,7 +6,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 88px 64px 40px;
-	background: var(--canvas);
+	background: #f8f7f4;
 	overflow: hidden;
 }
 .landscape {
@@ -21,8 +21,8 @@
 	z-index: -1;
 	background: linear-gradient(
 		180deg,
-		color-mix(in srgb, var(--canvas) 12%, transparent),
-		color-mix(in srgb, var(--canvas) 45%, transparent) 55%,
+		rgba(248, 247, 244, 0.12),
+		rgba(248, 247, 244, 0.45) 55%,
 		transparent
 	);
 	pointer-events: none;
@@ -35,135 +35,373 @@
 	margin-bottom: 40px;
 }
 .eyebrow {
-	font-size: var(--type-caption);
-	line-height: var(--type-caption-leading);
+	font-size: var(--type-footnote);
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: var(--ink-secondary);
+	letter-spacing: 0.2em;
+	color: #786b58;
 	margin-bottom: 18px;
 }
 .header h1 {
-	font-size: var(--type-display);
-	line-height: var(--type-display-leading);
+	font-size: clamp(2.4rem, 4.5vw, 4rem);
+	line-height: 1.2;
 	letter-spacing: -0.045em;
 	margin-bottom: 18px;
 }
 .header > p:last-child {
 	font-size: var(--type-subhead);
-	line-height: var(--type-subhead-leading);
 	color: var(--ink-secondary);
 }
+/* Two doors: "Về tôi" links away, "My Space" opens in place (data-open on .navigation). */
 .navigation {
+	--ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+	--card: color-mix(in srgb, var(--surface-elevated) 74%, transparent);
+	--line: var(--hairline);
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
-	gap: 34px;
-	padding: 24px 28px;
-	background: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
-	border: 1px solid var(--hairline);
-	border-radius: var(--radius-md);
-	box-shadow: var(--shadow-md);
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 20px;
+	max-width: 860px;
+	margin: 0 auto;
+	transition:
+		grid-template-columns 520ms var(--ease),
+		max-width 520ms var(--ease);
+}
+.navigation[data-open] {
+	grid-template-columns: minmax(168px, 0.28fr) minmax(0, 1fr);
+	max-width: 1056px;
+}
+.aboutDoor,
+.spaceDoor {
+	position: relative;
+	min-width: 0;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 16px;
+	box-shadow: 0 16px 60px rgba(75, 58, 33, 0.04);
 	backdrop-filter: blur(8px);
+	transition:
+		border-color 250ms,
+		box-shadow 350ms,
+		transform 350ms var(--ease);
 }
-.sectionLabel {
+.aboutDoor,
+.trigger {
 	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 12px;
-	margin: 0 12px 18px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	min-height: 320px;
+	padding: 28px 24px 32px;
+	text-decoration: none;
+	color: inherit;
 }
-.sectionLabel h2 {
+.aboutDoor:hover,
+.spaceDoor:not(:has([aria-expanded='true'])):hover {
+	border-color: rgba(134, 115, 82, 0.32);
+	box-shadow: 0 22px 60px rgba(75, 58, 33, 0.08);
+	transform: translateY(-4px);
+}
+.aboutDoor:focus-visible,
+.trigger:focus-visible,
+.tile:focus-visible,
+.close:focus-visible {
+	outline: 2px solid var(--bronze);
+	outline-offset: 4px;
+}
+.trigger {
+	border-radius: 16px;
+}
+.doorEyebrow {
+	position: absolute;
+	top: 18px;
+	left: 22px;
 	font-family: var(--font-inter), sans-serif;
 	font-size: var(--type-caption);
-	line-height: var(--type-caption-leading);
-	letter-spacing: 0.08em;
+	letter-spacing: 0.16em;
 	text-transform: uppercase;
-	font-weight: 500;
+	color: var(--ink-secondary);
+	transition: opacity 250ms;
 }
-.sectionLabel > span {
+.doorIcon {
+	width: 112px;
+	height: 112px;
+	display: block;
+	margin-bottom: 20px;
+	transition:
+		width 520ms var(--ease),
+		height 520ms var(--ease),
+		margin 520ms var(--ease);
+}
+.doorIcon img,
+.icon img,
+.stackCard img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+.doorIcon img {
+	transition: transform 400ms;
+}
+.aboutDoor:hover .doorIcon img {
+	transform: rotate(-3deg) scale(1.04);
+}
+.doorText {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.doorTitle {
+	font-family: var(--font-serif-display), serif;
+	font-size: 30px;
+	line-height: 1.3;
+	transition: font-size 520ms var(--ease);
+}
+.doorDescription {
+	max-height: 4.5em;
+	overflow: hidden;
 	font-size: var(--type-footnote);
-	line-height: var(--type-footnote-leading);
+	color: var(--ink-secondary);
+	margin-top: 8px;
+	max-width: 220px;
+	transition:
+		opacity 300ms,
+		max-height 520ms var(--ease),
+		margin 520ms var(--ease);
+}
+.arrow,
+.chevron {
+	display: inline-block;
+	margin-left: 8px;
+	font-size: 15px;
+	color: #917344;
+	transition: transform 300ms var(--ease);
+}
+.aboutDoor:hover .arrow,
+.tile:hover .arrow {
+	transform: translate(2px, -2px);
+}
+.chevron {
+	font-size: 18px;
+	transform: translateY(-4px);
+}
+.trigger:hover .chevron {
+	transform: translateY(-1px);
+}
+
+/* Stacked icons of the spaces inside; they fan out on hover and give way to the grid on open. */
+.stack {
+	position: relative;
+	width: 176px;
+	height: 112px;
+	margin-bottom: 20px;
+}
+.stackCard {
+	position: absolute;
+	top: 12px;
+	left: calc(50% - 44px);
+	width: 88px;
+	height: 88px;
+	padding: 10px;
+	background: var(--surface-elevated);
+	border: 1px solid var(--line);
+	border-radius: 18px;
+	box-shadow: 0 10px 24px rgba(75, 58, 33, 0.08);
+	transform: translateX(calc(var(--offset) * 30px)) rotate(calc(var(--offset) * 9deg));
+	transition: transform 450ms var(--ease);
+}
+.trigger:hover .stackCard {
+	transform: translate(calc(var(--offset) * 46px), -4px) rotate(calc(var(--offset) * 13deg));
+}
+
+/* The panel row grows from 0fr to 1fr; on desktop the trigger leaves the flow while open. */
+.spaceDoor {
+	display: grid;
+	min-height: 320px;
+	grid-template-rows: auto 0fr;
+	transition:
+		grid-template-rows 520ms var(--ease),
+		border-color 250ms,
+		box-shadow 350ms,
+		transform 350ms var(--ease);
+}
+.triggerRow,
+.panelRow {
+	min-height: 0;
+	overflow: hidden;
+}
+.triggerRow {
+	transition:
+		opacity 260ms,
+		visibility 0s linear 0s;
+}
+.panel {
+	display: none;
+	flex-direction: column;
+	height: 100%;
+	padding: 22px 24px 26px;
+}
+.panelHead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 18px;
+}
+.panelTitle {
+	font-family: var(--font-inter), sans-serif;
+	font-size: var(--type-footnote);
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+.panelTitle span {
+	margin-left: 12px;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	text-transform: none;
 	color: var(--ink-secondary);
 }
-.tiles {
+.close {
+	width: 36px;
+	height: 36px;
+	display: grid;
+	place-items: center;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	font-size: var(--type-footnote);
+	color: var(--ink-secondary);
+	transition:
+		background 200ms,
+		transform 300ms var(--ease);
+}
+.close:hover {
+	background: var(--surface-elevated);
+	transform: rotate(90deg);
+}
+.grid {
+	--mid: 1;
+	flex: 1;
 	display: flex;
 	flex-wrap: wrap;
+	align-content: center;
 	justify-content: center;
-	gap: 22px 8px;
+	gap: 12px 8px;
+}
+.grid > li {
+	flex: 0 1 172px;
 }
 .tile {
-	flex: 1 1 140px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	text-align: center;
-	padding: 10px 8px 16px;
-	border-radius: var(--radius-sm);
+	height: 100%;
+	padding: 12px 8px 16px;
+	border-radius: 10px;
 	text-decoration: none;
 	transition:
-		background-color var(--dur-2) var(--ease-out),
-		transform var(--dur-3) var(--ease-out);
+		background 250ms,
+		transform 350ms var(--ease);
 }
 .tile:hover {
-	background: color-mix(in srgb, var(--surface-elevated) 85%, transparent);
-	transform: translateY(-5px);
-}
-.tile:focus-visible {
-	outline: 2px solid var(--bronze);
-	outline-offset: 4px;
+	background: rgba(255, 253, 247, 0.9);
+	transform: translateY(-4px);
 }
 .icon {
-	width: 112px;
-	height: 112px;
+	width: 96px;
+	height: 96px;
 	display: block;
-	margin-bottom: 18px;
+	margin-bottom: 14px;
 }
 .icon img {
-	width: 100%;
-	height: 100%;
-	object-fit: contain;
-	transition: transform var(--dur-3) var(--ease-out);
+	transition: transform 400ms;
 }
 .tile:hover .icon img {
-	transform: rotate(-3deg) scale(1.04);
+	transform: rotate(-3deg) scale(1.05);
+}
+.tileText {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 .tileTitle {
 	font-family: var(--font-serif-display), serif;
 	font-size: var(--type-title-3);
-	line-height: var(--type-title-3-leading);
-}
-.nowrap {
-	white-space: nowrap;
-}
-.arrow {
-	display: inline-block;
-	margin-left: 8px;
-	font-size: var(--type-subhead);
-	line-height: 1;
-	color: var(--bronze);
-	transition: transform var(--dur-2) var(--ease-out);
-}
-.tile:hover .arrow {
-	transform: translate(2px, -2px);
+	line-height: 1.35;
 }
 .description {
 	font-size: var(--type-footnote);
-	line-height: var(--type-footnote-leading);
 	color: var(--ink-secondary);
-	margin-top: 8px;
+	margin-top: 6px;
 	max-width: 180px;
 }
-.space {
-	border-left: 1px solid var(--hairline);
-	padding-left: 24px;
+.recent {
+	margin-top: 18px;
+	padding-top: 16px;
+	border-top: 1px solid var(--line);
 }
+.teachingTile {
+	--destination-accent: var(--teaching-accent, #176b63);
+}
+.teachingTile:hover .tileTitle {
+	color: var(--destination-accent);
+}
+
+/* Open */
+.navigation[data-open] .spaceDoor {
+	grid-template-rows: auto 1fr;
+}
+.navigation[data-open] .triggerRow {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		opacity 200ms,
+		visibility 0s linear 200ms;
+}
+.navigation[data-open] .panel {
+	display: flex;
+}
+.navigation[data-open] .grid > li {
+	transition:
+		opacity 420ms calc(140ms + var(--i) * 55ms),
+		transform 620ms var(--ease) calc(140ms + var(--i) * 55ms);
+}
+/* Spaces fly out from the stacked icons the moment the panel is shown. */
+@starting-style {
+	.navigation[data-open] .grid > li {
+		opacity: 0;
+		transform: translate(calc((var(--mid) - var(--i)) * 70%), -28px) scale(0.7);
+	}
+}
+.navigation[data-open] .doorIcon {
+	width: 72px;
+	height: 72px;
+	margin-bottom: 14px;
+}
+.navigation[data-open] .doorTitle {
+	font-size: var(--type-title-3);
+}
+.navigation[data-open] .aboutDoor .doorDescription {
+	opacity: 0;
+	max-height: 0;
+	margin-top: 0;
+}
+.navigation[data-open] .aboutDoor .doorEyebrow {
+	opacity: 0;
+}
+.navigation[data-open] .aboutDoor {
+	min-height: 0;
+}
+
 .footer {
 	display: flex;
 	justify-content: space-between;
 	gap: 24px;
 	margin-top: 24px;
 	font-size: var(--type-footnote);
-	line-height: var(--type-footnote-leading);
-	color: var(--ink-secondary);
+	color: #655d51;
 }
 .footer a {
 	min-height: 44px;
@@ -176,74 +414,167 @@
 }
 @media (max-width: 760px) {
 	.page {
-		padding: 96px 24px 48px;
+		padding: 96px 20px 48px;
 		align-items: flex-start;
 	}
 	.header {
-		margin-bottom: 32px;
+		margin-bottom: 28px;
 	}
-	.navigation {
-		grid-template-columns: 1fr;
-		padding: 24px 12px;
-		gap: 24px;
+	.header h1 {
+		font-size: 36px;
 	}
-	.sectionLabel {
-		margin-bottom: 16px;
+	.navigation,
+	.navigation[data-open] {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 12px;
 	}
-	.tiles {
-		gap: 12px 0;
+	.aboutDoor,
+	.trigger {
+		flex-direction: row;
+		justify-content: flex-start;
+		gap: 16px;
+		min-height: 0;
+		padding: 14px 18px 14px 14px;
+		text-align: left;
+	}
+	.doorEyebrow,
+	.navigation[data-open] .aboutDoor .doorEyebrow {
+		display: none;
+	}
+	.doorIcon,
+	.navigation[data-open] .doorIcon {
+		flex: none;
+		width: 64px;
+		height: 64px;
+		margin: 0;
+	}
+	.doorText {
+		flex: 1;
+		align-items: flex-start;
+	}
+	.doorTitle,
+	.navigation[data-open] .doorTitle {
+		font-size: 23px;
+	}
+	.doorDescription,
+	.navigation[data-open] .aboutDoor .doorDescription {
+		opacity: 1;
+		max-height: none;
+		margin-top: 2px;
+		max-width: none;
+	}
+	.aboutDoor:hover,
+	.spaceDoor:not(:has([aria-expanded='true'])):hover {
+		transform: none;
+	}
+	.stack {
+		flex: none;
+		width: 64px;
+		height: 64px;
+		margin: 0;
+	}
+	.stackCard,
+	.trigger:hover .stackCard {
+		top: 12px;
+		left: calc(50% - 20px);
+		width: 40px;
+		height: 40px;
+		padding: 4px;
+		border-radius: 10px;
+		transform: translateX(calc(var(--offset) * 10px)) rotate(calc(var(--offset) * 9deg));
+	}
+	.chevron {
+		transform: none;
+	}
+	.trigger:hover .chevron {
+		transform: none;
+	}
+	/* The trigger stays as the toggle on phones; the panel drops down under it. */
+	.spaceDoor {
+		min-height: 0;
+	}
+	.navigation[data-open] .triggerRow {
+		position: static;
+		opacity: 1;
+		visibility: visible;
+	}
+	.navigation[data-open] .chevron {
+		transform: rotate(180deg);
+	}
+	.panel {
+		margin: 0 14px;
+		padding: 6px 0 12px;
+		border-top: 1px solid var(--line);
+	}
+	.panelHead {
+		display: none;
+	}
+	.grid {
+		flex-direction: column;
+		flex-wrap: nowrap;
+		gap: 0;
+	}
+	.grid > li {
+		flex: none;
+	}
+	@starting-style {
+		.navigation[data-open] .grid > li {
+			transform: translateY(-10px);
+		}
+	}
+	.grid > li + li {
+		border-top: 1px dashed var(--line);
 	}
 	.tile {
-		flex-basis: 120px;
+		flex-direction: row;
+		gap: 14px;
+		min-height: 60px;
+		padding: 8px 4px;
+		text-align: left;
+	}
+	.tile:hover {
+		transform: none;
 	}
 	.icon {
-		width: 88px;
-		height: 88px;
-		margin-bottom: 12px;
+		flex: none;
+		width: 44px;
+		height: 44px;
+		margin: 0;
 	}
-	.space {
-		border-left: 0;
-		border-top: 1px solid var(--hairline);
-		padding: 24px 0 0;
+	.tileText {
+		flex: 1;
+		align-items: flex-start;
+	}
+	.tileTitle {
+		font-size: var(--type-title-3);
+	}
+	.description {
+		margin-top: 0;
+		max-width: none;
+	}
+	.recent {
+		margin-top: 8px;
+		padding-top: 12px;
 	}
 	.footer {
 		margin-top: 20px;
+		font-size: var(--type-caption);
 		gap: 12px;
 	}
 	.landscape {
 		object-position: 62% bottom;
 	}
 }
-@media (max-width: 480px) {
-	.tile {
-		min-width: 0;
-		padding-inline: 4px;
-	}
-	.tileTitle {
-		font-size: var(--type-title-3);
-		line-height: var(--type-title-3-leading);
-		white-space: nowrap;
-	}
-	.arrow {
-		margin-left: 4px;
-	}
-}
 @media (prefers-reduced-motion: reduce) {
-	.tile,
-	.icon img,
-	.arrow {
-		transition: none;
+	.navigation,
+	.navigation * {
+		transition-duration: 0s !important;
+		transition-delay: 0s !important;
 	}
+	.aboutDoor:hover,
+	.spaceDoor:hover,
 	.tile:hover,
-	.tile:hover .icon img,
-	.tile:hover .arrow {
+	.trigger:hover .stackCard {
 		transform: none;
 	}
-}
-
-.teachingTile {
-	--destination-accent: var(--teaching-accent, #176b63);
-}
-.teachingTile:hover .tileTitle {
-	color: var(--destination-accent);
 }

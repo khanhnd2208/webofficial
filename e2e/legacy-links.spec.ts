@@ -100,7 +100,8 @@ test.describe('Links shared with students keep working', () => {
 			expect(board?.status()).toBe(200);
 			await expect(page.getByRole('link', { name: /Mục lục/ })).toBeVisible();
 
-			await page.goto('/muc-luc');
+			// Classes opened before live inside My Space on Mục lục.
+			await page.goto('/muc-luc#my-space');
 			await expect(
 				page.getByTestId('recent-classes').getByRole('link', { name: /Legacy link E2E/ }),
 			).toHaveAttribute('href', `/lop/${slug}`);
