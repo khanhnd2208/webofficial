@@ -279,7 +279,8 @@
 		background-color var(--ui-duration-hover) var(--ui-ease),
 		color var(--ui-duration-hover) var(--ui-ease);
 }
-.ln-segmented button[aria-checked='true'] {
+.ln-segmented button[aria-checked='true'],
+.ln-segmented button[aria-selected='true'] {
 	background: var(--surface-elevated);
 	color: var(--ink);
 	box-shadow: var(--shadow-sm);
@@ -3952,23 +3953,126 @@ button.ln-save.ln-btn--primary {
 	color: var(--bronze);
 	font-weight: 600;
 }
-.ln-steps {
-	display: flex;
-	gap: 0.75rem;
-	margin: 0.5rem 0 0;
+.ln-import-todo {
+	display: grid;
+	gap: 0.35rem;
+	margin: 0;
 	padding: 0;
 	list-style: none;
-	color: var(--ink-secondary);
-	font-size: 0.8125rem;
+	counter-reset: todo;
+	font-size: 0.875rem;
 }
-.ln-steps [aria-current='step'] {
-	color: var(--bronze);
+.ln-import-todo > li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.25rem;
+	counter-increment: todo;
+}
+.ln-import-todo > li::before {
+	content: counter(todo);
+	display: inline-grid;
+	width: 1.25rem;
+	height: 1.25rem;
+	flex: none;
+	place-items: center;
+	margin-right: 0.35rem;
+	border: 1px solid var(--hairline);
+	border-radius: 9999px;
+	color: var(--ink-secondary);
+	font-size: 0.75rem;
 	font-weight: 600;
 }
-.ln-split[data-step='0'] .ln-preview,
-.ln-split[data-step='1'] > :first-child,
-.ln-split[data-step='2'] > :first-child {
-	display: none;
+.ln-import-todo > li[data-done]::before {
+	content: '✓';
+	border-color: var(--bronze);
+	background: var(--bronze);
+	color: var(--canvas);
+}
+.ln-import-summary[data-level='error'] {
+	color: var(--error);
+}
+.ln-import-summary[data-level='ok'] {
+	color: var(--success);
+}
+.ln-issues {
+	display: grid;
+	gap: 0.4rem;
+	margin: 0.5rem 0 0.9rem;
+	padding: 0;
+	list-style: none;
+}
+.ln-issue {
+	display: flex;
+	gap: 0.6rem;
+	padding: 0.5rem 0.7rem;
+	border-left: 2px solid var(--warning);
+	background: color-mix(in srgb, var(--warning) 8%, var(--canvas));
+	font-size: 0.8125rem;
+}
+.ln-issue[data-level='error'] {
+	border-left-color: var(--error);
+	background: color-mix(in srgb, var(--error) 8%, var(--canvas));
+}
+.ln-issue__level {
+	flex: none;
+	font-weight: 600;
+}
+.ln-issue[data-level='error'] .ln-issue__level {
+	color: var(--error);
+}
+.ln-issue__fix {
+	display: block;
+	margin-top: 0.15rem;
+	color: var(--ink-secondary);
+}
+.ln-import-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem;
+	margin-bottom: 0.75rem;
+}
+.ln-import-chips .ln-chip {
+	border: 1px solid transparent;
+	cursor: pointer;
+}
+.ln-import-chips .ln-chip[data-level='warn'] {
+	border-color: var(--warning);
+}
+.ln-import-chips .ln-chip[data-level='error'] {
+	border-color: var(--error);
+	color: var(--error);
+}
+.ln-import-cards > li {
+	scroll-margin-top: 0.5rem;
+}
+.ln-import-section > summary {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	cursor: pointer;
+	list-style: none;
+}
+.ln-import-section[open] > summary {
+	margin-bottom: 0.6rem;
+}
+@media (min-width: 56rem) {
+	.ln-split__switch {
+		display: none;
+	}
+	/* Paste and preview scroll on their own, so the check list stays in view beside a long paste. */
+	.ln-split[data-pane] {
+		height: clamp(26rem, 62svh, 48rem);
+	}
+}
+@media (max-width: 55.99rem) {
+	.ln-split[data-pane] {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ln-split[data-pane='paste'] > .ln-preview,
+	.ln-split[data-pane='preview'] > :first-child {
+		display: none;
+	}
 }
 @media (max-width: 63.99rem) {
 	.ln-revs {
