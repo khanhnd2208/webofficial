@@ -20,7 +20,7 @@ test.describe('Links shared with students keep working', () => {
 
 	test('old board-game links go to fun.toiladuykhanh.com', async ({ request }) => {
 		const cases = [
-			['/my-space/board-game', 'https://fun.toiladuykhanh.com'],
+			['/my-space/board-game', 'https://fun.toiladuykhanh.com/'],
 			['/my-space/board-game/spy-fall', 'https://fun.toiladuykhanh.com/spy-fall'],
 			[
 				'/my-space/board-game/ma-soi/room/AB12CD',
