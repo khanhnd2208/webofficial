@@ -83,6 +83,31 @@ async function finishSecret(table: Table) {
 }
 
 describe('Cheese Thief table', () => {
+	it('retains both last confirmations when two phones press Done together', async () => {
+		const table = await openTable(4);
+		await reachSecret(table);
+		const stored = (await CheeseThiefRoom.findOne({ code: table.code }).lean())!;
+		const picksOf = (id: string) =>
+			stored.players
+				.filter((other) => other.id !== id)
+				.slice(0, 1)
+				.map((other) => other.id);
+		for (const player of stored.players.slice(0, 2))
+			await submitSecret(table.code, player.token, picksOf(player.id));
+		await Promise.all(
+			stored.players
+				.slice(2)
+				.map((player) => submitSecret(table.code, player.token, picksOf(player.id))),
+		);
+		const result = await getScopedState(table.code, table.host);
+		expect(result.phase).toBe('secret-result');
+		const saved = (await CheeseThiefRoom.findOne({ code: table.code }).lean())!;
+		expect(
+			saved.players.every((player) => player.secretConfirmed && player.secretPicks.length === 1),
+		).toBe(true);
+		expect(result.players.every((player) => player.role === undefined)).toBe(true);
+	});
+
 	it('plays a 5-player round and catches the thief', async () => {
 		const table = await openTable(5);
 		await reachSecret(table);
