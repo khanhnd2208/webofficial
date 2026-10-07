@@ -228,7 +228,7 @@ test('workspace fits supported widths with Admin theme and a separate learner pr
 	}
 });
 
-test('imports discussion content through review and apply, then persists it', async ({
+test('imports discussion content from one screen with a learner preview, then persists it', async ({
 	page,
 	context,
 }) => {
@@ -242,8 +242,9 @@ test('imports discussion content through review and apply, then persists it', as
 			.fill(
 				'Câu 1:\n### Hiểu — Tình huống nhập thử\n> [!REFLECT] Câu hỏi:\n> Vì sao cần kiểm tra?\n\nĐáp án mẫu:\nĐể xác nhận nội dung trước khi áp dụng.',
 			);
-		await page.getByRole('button', { name: 'Kiểm tra', exact: true }).click();
-		await page.getByRole('button', { name: 'Áp dụng', exact: true }).click();
+		await expect(
+			page.getByRole('dialog', { name: 'Nhập nội dung' }).getByRole('region', { name: 'Câu 1' }),
+		).toContainText('Vì sao cần kiểm tra?');
 		await page.getByRole('button', { name: 'Lưu 1 câu', exact: true }).click();
 		await expect(page.getByRole('dialog', { name: 'Nhập nội dung' })).toHaveCount(0);
 		await expect(page.locator('.ln-qnav__main')).toHaveCount(2);
