@@ -92,6 +92,14 @@ function FlatTile({ tile, locked }: { tile: MySpaceTile; locked?: boolean }) {
 				className="h-20 w-20 transition-transform duration-150 group-hover:scale-105"
 			/>
 			<span className={nameClass}>{tile.label}</span>
+			{tile.note ? (
+				<span
+					className="mt-1 font-sans text-caption leading-snug text-ink/70"
+					data-testid={`myspace-note-${tile.id}`}
+				>
+					{tile.note}
+				</span>
+			) : null}
 			{locked ? <ComingSoonBadge /> : null}
 		</>
 	);
@@ -123,7 +131,7 @@ function FeaturedTile({ tile, locked }: { tile: MySpaceTile; locked?: boolean })
 }
 
 const tileClassName =
-	'group flex w-32 flex-col items-center text-center transition-transform duration-150 ease-[var(--ui-ease)] hover:-translate-y-1 active:scale-[0.98] focus-visible:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent';
+	'group flex flex-col items-center text-center transition-transform duration-150 ease-[var(--ui-ease)] hover:-translate-y-1 active:scale-[0.98] focus-visible:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent';
 
 const featuredTileClassName =
 	'group flex flex-col items-center text-center transition-transform duration-150 ease-[var(--ui-ease)] hover:-translate-y-1 active:scale-[0.98] focus-visible:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent';
@@ -157,7 +165,11 @@ export default function MySpaceGrid({ tiles }: { tiles: MySpaceTile[] }) {
 						{published ? (
 							<Link
 								href={tile.href!}
-								className={tile.featured ? featuredTileClassName : tileClassName}
+								className={
+									tile.featured
+										? featuredTileClassName
+										: `${tileClassName} ${tile.note ? 'w-48' : 'w-32'}`
+								}
 								data-testid={`myspace-tile-${tile.id}`}
 							>
 								<TileBody tile={tile} />

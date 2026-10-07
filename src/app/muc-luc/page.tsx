@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 const descriptions: Record<string, string> = {
 	teaching: 'Một góc dành cho lớp học.',
 	courses: 'Học thêm một điều mới.',
-	'board-game': 'Cùng chơi, cùng khám phá.',
+	'board-game': 'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com.',
 	admin: 'Quản lý không gian của bạn.',
 };
 

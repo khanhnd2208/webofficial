@@ -30,6 +30,8 @@ export interface MySpaceTile {
 	visual: MySpaceTileVisual;
 	status: MySpaceTileStatus;
 	href?: string;
+	/** Shown under the label, for a tile that stays on this site only as a pointer. */
+	note?: string;
 	/** Only admins can open it, so nobody else sees it (they would only hit a wall). */
 	adminOnly?: boolean;
 }
@@ -75,7 +77,8 @@ export const mySpaceTiles: MySpaceTile[] = [
 			alt: 'Minh họa bộ bài trò chơi',
 		},
 		status: 'published',
-		href: routes.boardGame,
+		href: routes.funGames,
+		note: 'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
 	},
 ];
 

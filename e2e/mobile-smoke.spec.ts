@@ -30,48 +30,13 @@ test.describe('Mobile public smoke', () => {
 		}
 	});
 
-	test('Cheese Thief forms stay readable and easy to tap on phones', async ({ page }) => {
-		await page.goto('/my-space/board-game/cheese-thief');
-		await expect(page.getByRole('heading', { level: 1, name: 'Cheese Thief' })).toBeVisible();
-		await expect
-			.poll(() =>
-				page
-					.locator('.game-theme-hero img.game-theme-hero-image')
-					.filter({ visible: true })
-					.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
-			)
-			.toBe(true);
-
-		const create = page.getByRole('button', { name: 'Tạo phòng' });
-		const join = page.getByRole('button', { name: 'Vào bằng mã' });
-		expect(
-			await create.evaluate((button) => button.getBoundingClientRect().height),
-		).toBeGreaterThanOrEqual(44);
-		expect(
-			await join.evaluate((button) => button.getBoundingClientRect().height),
-		).toBeGreaterThanOrEqual(44);
-		expect(
-			await page.evaluate(
-				() => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-			),
-		).toBe(true);
-
-		await create.click();
-		await expect(page.getByText('Nhập tên để ngồi vào bàn.')).toBeVisible();
-		await page.getByRole('textbox', { name: 'Tên của bạn' }).fill('Lan');
-		await create.click();
-		await expect(page.getByRole('textbox', { name: 'Tên phòng' })).toBeVisible();
-		await expect(page.getByText('Số người')).toBeVisible();
-		await expect(page.getByRole('checkbox', { name: /Có Scapegoat/ })).toBeVisible();
-		expect(
-			await page.evaluate(
-				() => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-			),
-		).toBe(true);
-
-		await page.getByRole('button', { name: 'Quay lại' }).click();
-		await page.getByRole('button', { name: 'Vào bằng mã' }).click();
-		await expect(page.getByRole('textbox', { name: 'Mã phòng' })).toBeVisible();
+	test('the board-game tile names the new address without overflowing a phone', async ({
+		page,
+	}) => {
+		await page.goto('/my-space');
+		await expect(page.getByTestId('myspace-note-board-game')).toHaveText(
+			'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
+		);
 		expect(
 			await page.evaluate(
 				() => document.documentElement.scrollWidth <= document.documentElement.clientWidth,

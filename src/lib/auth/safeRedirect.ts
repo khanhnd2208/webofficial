@@ -141,7 +141,7 @@ export function destinationLabel(from: string): string | null {
 	if (pathname.startsWith('/my-space/courses') || pathname.startsWith('/khoa-hoc')) {
 		return 'khóa học';
 	}
-	if (pathname.startsWith('/my-space/board-game')) return 'Board Game';
+	if (pathname.startsWith('/my-space/board-game')) return 'Fun';
 	if (pathname.startsWith('/lop/')) return 'trang lớp';
 	if (pathname.startsWith('/admin')) return 'khu quản trị';
 	if (pathname.startsWith('/ghi-chep') || pathname.startsWith('/bai-viet')) return 'ghi chép';

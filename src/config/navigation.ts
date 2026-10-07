@@ -163,7 +163,6 @@ export const INTERNAL_CHROME_PREFIXES = [
 	'/my-space/teaching',
 	'/my-space/courses',
 	'/khoa-hoc',
-	'/my-space/board-game',
 ] as const;
 
 export function isInternalChromePath(pathname: string): boolean {
@@ -184,7 +183,6 @@ const SIGN_IN_REQUIRED_PREFIXES = [
 	'/my-space/courses',
 	'/my-space/my-class',
 	'/khoa-hoc',
-	routes.boardGameTest,
 ] as const;
 
 function matchesPrefix(pathname: string, prefix: string): boolean {
@@ -339,9 +337,6 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 		return [{ label: 'Chính sách' }];
 	}
 	if (path === routes.mySpace) return [{ label: 'Không gian của tôi' }];
-	if (path === routes.boardGame) {
-		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Board Game' }];
-	}
 	if (path === routes.activeRecall || path.startsWith(`${routes.activeRecall}/`)) {
 		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Ôn tập' }];
 	}
@@ -365,7 +360,6 @@ export function isSiteHeaderPath(pathname: string): boolean {
 	if (path.startsWith('/my-space/courses')) return false;
 	// The catalog alias rewrites to the public discovery page; only readers hide this header.
 	if (path.startsWith(`${routes.learnCourses}/`)) return false;
-	if (path.startsWith(`${routes.boardGame}/`)) return false;
 	if (isMySpaceQuizPlayPath(path)) return false;
 	if (path.startsWith('/messages')) return false;
 	if (path.startsWith('/vocabulary')) return false;
