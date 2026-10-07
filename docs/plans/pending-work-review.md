@@ -29,6 +29,7 @@ Các nhánh backup và worktree của phiên làm việc khác được giữ ng
 ## Những lỗi tích hợp đã sửa
 
 - Các screen Cheese Thief cũ tham chiếu trường hai đêm và module shared đã chuyển chỗ. Chỉ dùng DTO một đêm hiện hành; không phục hồi trường legacy.
+- CI PR #38 lần đầu xanh nhưng có một ca game retry do GET hydration/poll đụng khóa POST. Sửa `clientApi.ts` để đọc/ghi cùng hàng đợi theo phòng; recovery GET nội bộ tránh deadlock, giữ version/seat guards và không replay lệnh lỗi. Thêm 5 unit regressions và chạy 18 E2E game không retry.
 - Secret không còn timer nhưng phòng test vẫn thử bỏ qua 61 giây. Bỏ thao tác đó, chỉ hiện nút skip ở pha night; test runoff gửi lựa chọn và xác nhận thật.
 - Giao diện bí mật có class màu không còn khai báo. Thay bằng token có hiệu lực và kiểm tra ảnh mobile.
 - Nút hoàn thành Learn từng đổi thành link trước khi lưu tiến độ xong. Giữ trạng thái busy, chặn gửi lặp, khôi phục trạng thái trước đó khi lỗi và điều hướng sau khi lưu. Làm mới dữ liệu tiến độ đã tải trước; reset control theo mục và trạng thái hoàn thành để desktop/mobile không giữ trạng thái của bài trước hoặc bản ẩn chưa cập nhật.
@@ -45,14 +46,14 @@ Các nhánh backup và worktree của phiên làm việc khác được giữ ng
 | `npm run typecheck` | Qua, bao gồm các hooks commit |
 | `npm run lint -- --max-warnings=0` | Qua |
 | `npm run format:check` | Qua |
-| `npm run areas:check` | Qua: 4 areas, 1496 source files |
-| `npm run test:unit` | Qua: 134 files / 821 tests; lint tooling 8 tests và deploy tooling 12 tests cũng qua |
+| `npm run areas:check` | Qua: 4 areas, 1497 source files |
+| `npm run test:unit` | Qua: 135 files / 826 tests; lint tooling 8 tests và deploy tooling 12 tests cũng qua |
 | `npm run test:component` | Qua: 98 files / 445 tests |
 | `npm run test:integration` | Qua toàn bộ: 23 files / 186 tests, PostgreSQL và MongoDB test riêng; có kiểm tra hai người xác nhận bí mật đồng thời |
 | `npm run build` | Qua: Next.js 16.3.6, Webpack, 118 trang static; không bỏ typecheck |
 | Public/menu/game/operating-focus/Learn E2E | Qua đủ 69 tests trên bản production cuối `ac2c651`, Desktop Chromium + Android + Safari mobile; gồm cả 6 ca cần PostgreSQL trước đó và 3 ca Learn mới |
 | Learn reader E2E | Qua 3/3 trên production: API chậm ở desktop/mobile, tiến độ sau chuyển bài và bỏ đánh dấu, đổi bố cục, Mermaid thật gần viewport; đã tính trong 69 ca phía trên |
-| E2E phòng game trên `scripts/board-game-test-server.mjs` | Qua: 6 tests, MongoDB ephemeral riêng, thực hiện chuyển ghế, reload, quyền truy cập, vòng một đêm, pha bí mật và hướng dẫn hai ngôn ngữ |
+| E2E phòng game trên `scripts/board-game-test-server.mjs` | Qua: 18 tests (6 ca × 3 lượt, không retry) sau bản sửa race, MongoDB ephemeral riêng, thực hiện chuyển ghế, reload, quyền truy cập, vòng một đêm, pha bí mật và hướng dẫn hai ngôn ngữ |
 | `git diff --check`, `git ls-files -u`, tìm conflict markers | Qua, không còn conflict chưa resolve |
 | `git merge-tree --write-tree --no-messages origin/main HEAD` | Qua với main `e9e4b4f`; merge thử không đổi checkout |
 
@@ -60,7 +61,7 @@ Các nhánh backup và worktree của phiên làm việc khác được giữ ng
 
 Đã đóng khoảng trống PostgreSQL: khởi tạo PostgreSQL 18.3 ở loopback `127.0.0.1:55439`, tách database integration và trình duyệt. Database test dùng đủ 60 file SQL migration hiện có, bao gồm constraint/trigger; không tạo hay sửa migration. Toàn bộ integration đã qua. Sáu ca E2E trước đó lỗi `DatabaseNotReachable`/`P1001` đã chạy lại thành công trong bộ 69 ca trên bản production local cuối. Không còn bỏ qua ca database vì thiếu PostgreSQL.
 
-GitHub CI chưa chạy tại thời điểm kiểm chứng local; shipping phải đợi các checks của PR và main thành công. CI dùng PostgreSQL 16, local dùng 18.3; trước merge vẫn cần CI xanh trên đúng commit. Các dịch vụ/database test là môi trường tạm riêng, không dùng database production.
+CI đầu tiên của [PR #38](https://github.com/khanhnd2208/webofficial/pull/38) đạt đủ 5 gates nhưng có một E2E game retry; đã sửa race phía client và yêu cầu CI kiểm chứng lại đúng commit mới trước merge. Shipping phải đợi checks của PR và main thành công. CI dùng PostgreSQL 16, local dùng 18.3; trước merge vẫn cần CI xanh trên đúng commit. Các dịch vụ/database test là môi trường tạm riêng, không dùng database production.
 
 Không thay Prisma schema/migration, dependency, nội dung nguồn Learn đã audit hoặc seed production. Không ghi database production. Merge không conflict Git là kết quả tại revision được ghi trong báo cáo; nếu main đổi cần fetch và kiểm tra lại.
 
