@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
