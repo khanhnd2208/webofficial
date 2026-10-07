@@ -17,9 +17,7 @@ interface Props {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-	return (
-		<p className="font-mono text-xs tracking-[0.18em] text-game-bronze uppercase">{children}</p>
-	);
+	return <p className="font-mono text-xs tracking-[0.18em] text-accent uppercase">{children}</p>;
 }
 
 function Names({ names }: { names: string[] }) {
@@ -51,11 +49,11 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 overflow-y-auto bg-game-canvas px-5 text-game-ink">
+		<div className="dark fixed inset-0 z-50 overflow-y-auto bg-background px-5 text-foreground">
 			<div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center gap-5 py-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
 				<div className="flex flex-col items-center gap-3 text-center">
 					<CheeseThiefArt scene="secret" size={64} />
-					<p className="font-mono text-xs tracking-[0.18em] text-game-bronze uppercase">
+					<p className="font-mono text-xs tracking-[0.18em] text-accent uppercase">
 						{t('cheese.secret.onlyYou')}
 					</p>
 					<h1 className="font-display text-3xl font-medium">{t('cheese.result.title')}</h1>
@@ -69,7 +67,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 						{empty && (
 							<div className="space-y-2">
 								<p className="font-display text-2xl leading-snug">{t('cheese.result.nothing')}</p>
-								<p className="text-sm leading-relaxed text-game-ink/65">
+								<p className="text-sm leading-relaxed text-foreground/65">
 									{t('cheese.result.nothingWhy')}
 								</p>
 							</div>
@@ -97,7 +95,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 										: t('cheese.result.thiefHidden')}
 								</p>
 								{card.recruited.allyNames.length > 0 && (
-									<p className="text-base leading-relaxed text-game-ink/85">
+									<p className="text-base leading-relaxed text-foreground/85">
 										{t('cheese.result.alliesAre', {
 											names: card.recruited.allyNames.join(', '),
 										})}
@@ -109,7 +107,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 				</HoldToReveal>
 				{revealed ? (
 					<div className="space-y-3">
-						<p className="text-center text-sm leading-relaxed text-game-ink/75">
+						<p className="text-center text-sm leading-relaxed text-foreground/75">
 							{t('cheese.result.memorize')}
 						</p>
 						<Button fullWidth disabled={busy} loading={busy} onClick={onSeen}>
@@ -117,7 +115,7 @@ export default function SecretResultPhase({ card, seen, busy, onSeen }: Props) {
 						</Button>
 					</div>
 				) : (
-					<p className="rounded-2xl border border-dashed border-white/20! px-4 py-3 text-center text-sm text-game-ink/70">
+					<p className="rounded-2xl border border-dashed border-white/20! px-4 py-3 text-center text-sm text-foreground/70">
 						{t('cheese.deal.holdFirst')}
 					</p>
 				)}

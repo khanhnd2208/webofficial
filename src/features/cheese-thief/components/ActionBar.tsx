@@ -17,7 +17,7 @@ export default function ActionBar({
 		<div
 			className={cn(
 				'fixed inset-x-0 bottom-0 z-30 border-t px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur',
-				dark ? 'border-white/10! bg-game-canvas/95' : 'border-border bg-background/95',
+				dark ? 'dark border-border bg-background/95' : 'border-border bg-background/95',
 			)}
 		>
 			<div className="mx-auto max-w-md space-y-2">{children}</div>
