@@ -233,3 +233,42 @@ ${build}`,
 	assert.equal(readFileSync(staleCss, 'utf8'), '.old-header { height: 1000px }');
 	assert.equal(readFileSync(join(candidate, '.next/BUILD_ID'), 'utf8'), 'new-build');
 });
+
+test('the build skips its TypeScript pass only when CI typechecked the commit', () => {
+	release('candidate', 0);
+	const source = readFileSync(new URL('./deploy-vps.sh', import.meta.url), 'utf8');
+	const build = source.match(
+		/^echo "Building candidate before any database migration"[\s\S]*?^test -s \.next\/BUILD_ID/m,
+	)?.[0];
+	assert.ok(build);
+	for (const [skip, expected] of [
+		[undefined, ''],
+		['false', ''],
+		['true', '1'],
+	]) {
+		const env = {
+			...process.env,
+			RELEASE_DIR: join(root, 'releases/candidate'),
+			RELEASE_ID: 'candidate',
+			SOURCE_SHA: 'abc123',
+			EXPECTED_SKIP: expected,
+		};
+		delete env.NEXT_SKIP_BUILD_TYPECHECK;
+		delete env.SKIP_BUILD_TYPECHECK;
+		if (skip !== undefined) env.SKIP_BUILD_TYPECHECK = skip;
+		const result = spawnSync(
+			'bash',
+			[
+				'-c',
+				`set -euo pipefail
+npm() {
+	[[ "\${NEXT_SKIP_BUILD_TYPECHECK:-}" == "$EXPECTED_SKIP" ]]
+	printf 'new-build' > .next/BUILD_ID
+}
+${build}`,
+			],
+			{ cwd: join(root, 'releases/candidate'), encoding: 'utf8', env },
+		);
+		assert.equal(result.status, 0, `${skip}: ${result.stderr}`);
+	}
+});
