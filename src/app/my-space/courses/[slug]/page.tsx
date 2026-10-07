@@ -120,6 +120,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 		if (!section || !current || section.type !== 'READING') return null;
 		return (
 			<LearnCompleteButton
+				key={`${section.id}:${Boolean(state?.completed)}`}
 				sectionId={section.id}
 				completed={Boolean(state?.completed)}
 				nextHref={nextHref}

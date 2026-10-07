@@ -51,6 +51,8 @@ export default function LearnCompleteButton({
 			startTransition(() => {
 				setDone(value);
 				if (target) router.push(target);
+				// Progress changes make prefetched course summaries stale.
+				router.refresh();
 			});
 		} catch (err) {
 			setDone(wasDone);
