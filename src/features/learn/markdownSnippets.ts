@@ -53,7 +53,7 @@ export const READING_SNIPPETS: MarkdownSnippet[] = [
 
 export const CALLOUT_SNIPPETS: MarkdownSnippet[] = CALLOUT_KINDS.map(calloutSnippet);
 
-/** Delimiters the "Nhập bằng AI" box understands. */
+/** Delimiters the "Nhập nội dung" box understands. */
 export const IMPORT_SNIPPETS: MarkdownSnippet[] = [
 	{
 		id: 'import-section',

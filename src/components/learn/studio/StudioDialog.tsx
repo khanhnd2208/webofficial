@@ -11,12 +11,15 @@ export default function StudioDialog({
 	children,
 	footer,
 	size = 'wide',
+	busy = false,
 }: {
 	title: string;
 	onClose: () => void;
 	children: ReactNode;
 	footer?: ReactNode;
 	size?: 'wide' | 'narrow';
+	/** While a write is in progress, Escape, the backdrop and the close button do nothing. */
+	busy?: boolean;
 }) {
 	const ref = useRef<HTMLDialogElement>(null);
 
@@ -33,16 +36,23 @@ export default function StudioDialog({
 			data-size={size}
 			onCancel={(event) => {
 				event.preventDefault();
-				onClose();
+				if (!busy) onClose();
 			}}
 			onClick={(event) => {
+				if (busy) return;
 				if (event.target === ref.current) onClose();
 			}}
 		>
 			<div className="ln-dialog__inner">
 				<header className="ln-dialog__head">
 					<h2>{title}</h2>
-					<button type="button" className="ln-icon-btn" onClick={onClose} aria-label="Đóng">
+					<button
+						type="button"
+						className="ln-icon-btn"
+						onClick={onClose}
+						aria-label="Đóng"
+						disabled={busy}
+					>
 						<StudioIcon name="close" />
 					</button>
 				</header>

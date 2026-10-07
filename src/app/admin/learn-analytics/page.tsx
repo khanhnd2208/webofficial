@@ -104,6 +104,16 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 						))}
 					</nav>
 				) : null}
+				{courseSlug ? (
+					<nav className={styles.chips} aria-label="Mở khóa học">
+						<Link href={routes.learnStudio(courseSlug)} className={styles.chip}>
+							Mở Studio
+						</Link>
+						<Link href={routes.learnCourse(courseSlug)} className={styles.chip}>
+							Xem khóa
+						</Link>
+					</nav>
+				) : null}
 			</div>
 
 			{!report ? (

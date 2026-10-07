@@ -88,7 +88,10 @@ export const updateLearnSectionSchema = z
 		summary: z.string().trim().max(2_000).optional(),
 		keyTakeaways: z.array(z.string().trim().min(1).max(500)).max(20).optional(),
 		markdown: z.string().max(LEARN_MAX_MARKDOWN, 'Nội dung quá dài').optional(),
-		checkpoint: learnCheckpointSchema.nullable().optional(),
+		/** `null` clears a leftover checkpoint. An object is rejected so it cannot be recreated. */
+		checkpoint: z
+			.custom<null>((value) => value === null, 'Câu hỏi nhanh không còn được hỗ trợ')
+			.optional(),
 		discussion: learnDiscussionSchema.nullable().optional(),
 		/** Client copy of `updatedAt`. When set, a mismatch returns 409 instead of overwriting. */
 		baseUpdatedAt: z.iso.datetime().optional(),

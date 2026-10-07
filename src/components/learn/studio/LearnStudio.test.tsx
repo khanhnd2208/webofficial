@@ -42,7 +42,6 @@ const course: LearnStudioCourse = {
 					summary: '',
 					keyTakeaways: [],
 					markdown: 'Bản lúc mở',
-					checkpoint: null,
 					discussion: null,
 					estimatedMinutes: 1,
 					updatedAt: '2026-09-25T00:00:00.000Z',
@@ -149,6 +148,7 @@ describe('LearnStudio save button', () => {
 
 	it('hides a deleted section and restores it without sending DELETE', () => {
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		fireEvent.click(screen.getByRole('button', { name: 'Thuộc tính' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
 		expect(screen.getByText('Đã xóa mục "Mục 1"')).toBeInTheDocument();
 		expect(screen.queryByRole('textbox', { name: 'Tên mục' })).not.toBeInTheDocument();
@@ -164,6 +164,7 @@ describe('LearnStudio save button', () => {
 		const popup = { closed: false, location: { href: '' } };
 		const open = vi.spyOn(window, 'open').mockReturnValue(popup as unknown as Window);
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		fireEvent.click(screen.getByRole('button', { name: 'Thuộc tính' }));
 
 		fireEvent.click(screen.getByRole('button', { name: /Xem như học viên/ }));
 

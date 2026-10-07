@@ -43,6 +43,7 @@ describe('AiImportDialog', () => {
 		render(
 			<AiImportDialog
 				kind="lesson"
+				courseTitle="Khóa demo"
 				lessons={lessons}
 				selectedLessonId="lesson-1"
 				onClose={vi.fn()}
@@ -63,6 +64,8 @@ describe('AiImportDialog', () => {
 				'# Bài\n\n## Mục\n\n![Sơ đồ](/uploads/hinh.webp#w=50 "Hình 1")',
 			),
 		);
+		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Áp dụng' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Lưu 1 mục' }));
 		await vi.waitFor(() =>
 			expect(onSave).toHaveBeenCalledWith(
@@ -79,6 +82,7 @@ describe('AiImportDialog', () => {
 		render(
 			<AiImportDialog
 				kind="lesson"
+				courseTitle="Khóa demo"
 				lessons={lessons}
 				selectedLessonId="lesson-1"
 				onClose={vi.fn()}
@@ -103,6 +107,7 @@ describe('AiImportDialog', () => {
 		render(
 			<AiImportDialog
 				kind="discussion"
+				courseTitle="Khóa demo"
 				lessons={lessons}
 				selectedLessonId="lesson-1"
 				onClose={vi.fn()}
@@ -113,6 +118,8 @@ describe('AiImportDialog', () => {
 		fireEvent.change(screen.getByRole('textbox', { name: 'Kết quả AI' }), {
 			target: { value: DISCUSSION },
 		});
+		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Áp dụng' }));
 		const save = screen.getByRole('button', { name: 'Lưu 2 câu' });
 		expect(save).toBeEnabled();
 		fireEvent.click(save);

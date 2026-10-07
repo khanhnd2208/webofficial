@@ -65,7 +65,6 @@ export function sectionCopyBody(section: LearnStudioSection, title = section.tit
 		summary: section.summary,
 		keyTakeaways: section.keyTakeaways.map((item) => item.trim()).filter(Boolean),
 		markdown: section.markdown,
-		checkpoint: section.checkpoint,
 		discussion: section.discussion
 			? {
 					questions: section.discussion.questions.map((question) => ({

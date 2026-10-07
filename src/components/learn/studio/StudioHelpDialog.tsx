@@ -29,7 +29,7 @@ const GROUPS: { title: string; note?: string; snippets: MarkdownSnippet[] }[] = 
 		snippets: CALLOUT_SNIPPETS,
 	},
 	{
-		title: 'Khi dán vào “Nhập bằng AI”',
+		title: 'Khi dán vào “Nhập nội dung”',
 		note: 'Mỗi dòng # tạo một bài; mỗi dòng === … === tạo một mục.',
 		snippets: IMPORT_SNIPPETS,
 	},

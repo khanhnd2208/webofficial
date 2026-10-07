@@ -546,24 +546,3 @@ Hai người bán thời gian cùng làm một công việc
 Công thái học
 Ergonomics
 Nghiên cứu sự tương tác giữa cơ thể con người và môi trường làm việc
-Câu hỏi tự kiểm tra
-Mức Nhớ
-1. Ba bước của phân tích dòng công việc là gì? Đầu vào gồm những loại nào?
-2. TDRs và KSAOs là viết tắt của những từ nào?
-3. Năm đặc điểm trong Mô hình đặc điểm công việc là gì?
-4. Bốn hướng thiết kế công việc là gì?
-Mức Hiểu
-5. Vì sao nói TDRs quan sát được còn KSAOs thì không? Cho một ví dụ.
-6. Kỹ năng và khả năng khác nhau ở điểm nào?
-7. Vì sao chỉ hỏi người đang làm công việc là chưa đủ khi phân tích công việc?
-8. Mô hình năng lực khác phân tích công việc truyền thống ở trọng tâm nào?
-9. Luân chuyển công việc khác làm giàu công việc thế nào?
-10. Vì sao đơn giản hóa công việc không phải lúc nào cũng tốt?
-Bài tập thực hành
-1. Quán ăn nhanh: Giả sử bạn quản lý một quán cơm tấm bán mang đi. Đầu ra của quán là gì, đo bằng gì? Các hoạt động và ba loại đầu vào là gì? Sau đó làm tương tự cho riêng công việc thu ngân.
-2. Công việc "sinh viên": Hãy phân tích "công việc" của một sinh viên. Viết bản mô tả công việc (chức danh, tóm tắt, nhiệm vụ thiết yếu) và bản tiêu chuẩn công việc (KSAOs).
-3. Tổng đài chăm sóc khách hàng của một shop bán hàng online: làm sao thiết kế công việc này cho hiệu quả? Mặt trái là gì? Rồi làm sao để công việc tạo động lực hơn?
-4. Công thái học cho ba nghề: lập trình viên, shipper, cô giáo mầm non. Mỗi nghề có rủi ro thể chất gì? Sửa thì tốn gì, không sửa thì mất gì?
-5. Thu ngân và máy tính tiền: Máy tự tính tiền thối cho khách. Điều này thay đổi bản mô tả và bản tiêu chuẩn công việc của thu ngân thế nào? Khi tuyển, bạn sẽ tìm người có phẩm chất gì?
-6. Nghề mơ ước: Tra một nghề bạn muốn làm trên cơ sở dữ liệu O*NET (onetonline.org) hoặc từ các tin tuyển dụng thật. Liệt kê kỹ năng yêu cầu, rồi tự chấm xem bạn đang đáp ứng đến đâu.
-Học xong phần này, hãy sang tab Câu hỏi phản biện để luyện áp dụng kiến thức vào tình huống thực tế.

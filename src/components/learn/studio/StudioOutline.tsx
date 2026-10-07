@@ -417,7 +417,7 @@ export default function StudioOutline({
 	const allOpen = lessons.length > 0 && lessons.every((lesson) => open.has(lesson.id));
 
 	return (
-		<nav className="ln-souter" aria-label="Mục lục khóa học">
+		<div className="ln-souter__body">
 			<div className="ln-souter__top">
 				<span className="ln-souter__heading">
 					Mục lục <span className="tabular-nums">· {lessons.length} bài</span>
@@ -494,9 +494,9 @@ export default function StudioOutline({
 					<StudioIcon name="plus" size={14} /> Thêm bài
 				</button>
 				<button type="button" className="ln-btn ln-btn--block" onClick={actions.onImport}>
-					<StudioIcon name="import" size={14} /> Nhập bằng AI
+					<StudioIcon name="import" size={14} /> Nhập nội dung
 				</button>
 			</div>
-		</nav>
+		</div>
 	);
 }

@@ -19,6 +19,7 @@ import {
 } from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
+import { useStudioConfirm } from './StudioConfirm';
 import StudioDialog from './StudioDialog';
 import ImportImagePicker from './ImportImagePicker';
 import { ManualCopyField, useCopy } from './useCopy';
@@ -59,6 +60,7 @@ export default function AiImportDialog({
 	lessons,
 	selectedLessonId,
 	target,
+	courseTitle,
 	onSave,
 	onClose,
 }: {
@@ -67,6 +69,7 @@ export default function AiImportDialog({
 	lessons: LearnStudioLesson[];
 	selectedLessonId: string | null;
 	target?: { sectionId: string; count: number };
+	courseTitle: string;
 	onSave: (input: AiImportInput) => Promise<void>;
 	onClose: () => void;
 }) {
@@ -78,6 +81,8 @@ export default function AiImportDialog({
 	const [sectionTitle, setSectionTitle] = useState(DEFAULT_SECTION_TITLE);
 	const [uploadBusy, setUploadBusy] = useState(false);
 	const [busy, setBusy] = useState(false);
+	const [step, setStep] = useState<0 | 1 | 2>(0);
+	const { confirm, confirmDialog } = useStudioConfirm();
 	const [error, setError] = useState<string | null>(null);
 	const deferredText = useDeferredValue(text);
 	const { copied, copy, manual } = useCopy();
@@ -118,8 +123,41 @@ export default function AiImportDialog({
 		setError(null);
 	}
 
+	async function requestClose() {
+		if (busy || uploadBusy) return;
+		if (text.trim()) {
+			const accepted = await confirm({
+				title: 'Bỏ nội dung đã dán?',
+				body: 'Phần đã dán chưa được áp dụng.',
+				confirmLabel: 'Bỏ',
+				cancelLabel: 'Ở lại',
+				danger: true,
+			});
+			if (!accepted) return;
+		}
+		onClose();
+	}
+
 	async function submit() {
 		if (uploadBusy || busy) return;
+		if (kind === 'lesson' && lessonMode === 'replace' && deletedCount > 0) {
+			const accepted = await confirm({
+				title: 'Thay nội dung và xóa mục cũ?',
+				body: `${deletedCount} mục không còn trong bản dán sẽ bị xóa, cùng tiến độ của học viên trên các mục đó.`,
+				confirmLabel: 'Thay và xóa',
+				danger: true,
+			});
+			if (!accepted) return;
+		}
+		if (kind === 'discussion' && target && questionMode === 'replace') {
+			const accepted = await confirm({
+				title: 'Thay toàn bộ câu hỏi?',
+				body: 'Câu hiện có trong mục này sẽ được thay bằng nội dung vừa dán.',
+				confirmLabel: 'Thay câu hỏi',
+				danger: true,
+			});
+			if (!accepted) return;
+		}
 		setBusy(true);
 		setError(null);
 		try {
@@ -159,170 +197,222 @@ export default function AiImportDialog({
 	];
 
 	return (
-		<StudioDialog
-			title="Nhập bằng AI"
-			onClose={onClose}
-			footer={
-				<>
-					{error ? (
-						<p className="mr-auto text-sm text-error" role="alert">
-							{error}
-						</p>
-					) : null}
-					<button type="button" className="ln-btn" onClick={onClose} disabled={busy}>
-						Hủy
-					</button>
+		<>
+			<StudioDialog
+				title="Nhập nội dung"
+				busy={busy || uploadBusy}
+				onClose={() => void requestClose()}
+				footer={
+					<>
+						{error ? (
+							<p className="mr-auto text-sm text-error" role="alert">
+								{error}
+							</p>
+						) : null}
+						<button
+							type="button"
+							className="ln-btn"
+							onClick={() => void requestClose()}
+							disabled={busy}
+						>
+							Hủy
+						</button>
+						{step > 0 ? (
+							<button
+								type="button"
+								className="ln-btn"
+								disabled={busy}
+								onClick={() => setStep((step - 1) as 0 | 1)}
+							>
+								Quay lại
+							</button>
+						) : null}
+						{step < 2 ? (
+							<button
+								type="button"
+								className="ln-btn ln-btn--primary"
+								disabled={step === 0 ? !text.trim() : !canSave || uploadBusy}
+								onClick={() => setStep((step + 1) as 1 | 2)}
+							>
+								{step === 0 ? 'Kiểm tra' : 'Áp dụng'}
+							</button>
+						) : (
+							<button
+								type="button"
+								className="ln-btn ln-btn--primary"
+								disabled={busy || uploadBusy || !canSave}
+								onClick={() => void submit()}
+							>
+								{busy ? 'Đang lưu…' : saveLabel}
+							</button>
+						)}
+					</>
+				}
+			>
+				<div className="mb-3 flex flex-col gap-2">
+					{lockKind ? null : (
+						<div className="ln-segmented" role="radiogroup" aria-label="Loại nội dung">
+							{KIND_OPTIONS.map((option) => (
+								<button
+									key={option.id}
+									type="button"
+									role="radio"
+									aria-checked={kind === option.id}
+									onClick={() => changeKind(option.id)}
+								>
+									{option.label}
+								</button>
+							))}
+						</div>
+					)}
 					<button
 						type="button"
-						className="ln-btn ln-btn--primary"
-						disabled={busy || uploadBusy || !canSave}
-						onClick={() => void submit()}
+						className="ln-link-btn self-start"
+						onClick={() => void copy(LEARN_FORMAT_PROMPTS[kind])}
 					>
-						{busy ? 'Đang lưu…' : saveLabel}
+						<StudioIcon name="copy" size={14} />{' '}
+						{copied ? 'Đã chép prompt' : 'Chép prompt định dạng'}
 					</button>
-				</>
-			}
-		>
-			<div className="mb-3 flex flex-col gap-2">
-				{lockKind ? null : (
-					<div className="ln-segmented" role="radiogroup" aria-label="Loại nội dung">
-						{KIND_OPTIONS.map((option) => (
-							<button
-								key={option.id}
-								type="button"
-								role="radio"
-								aria-checked={kind === option.id}
-								onClick={() => changeKind(option.id)}
-							>
-								{option.label}
-							</button>
+					{manual ? <ManualCopyField text={manual} /> : null}
+					<p className="text-sm text-ink-secondary">
+						Dán kết quả AI vào đây. Studio kiểm tra trước khi ghi vào khóa học.
+					</p>
+					<p className="text-sm">
+						Đích: {courseTitle}
+						{kind === 'lesson'
+							? lessonMode === 'create'
+								? ' → bài mới'
+								: ''
+							: target
+								? ' → mục đang mở'
+								: ' → mục phản biện mới'}
+					</p>
+					<ol className="ln-steps" aria-label="Các bước nhập">
+						{['Dán', 'Kiểm tra', 'Áp dụng'].map((label, index) => (
+							<li key={label} aria-current={step === index ? 'step' : undefined}>
+								{label}
+							</li>
 						))}
-					</div>
-				)}
-				<button
-					type="button"
-					className="ln-link-btn self-start"
-					onClick={() => void copy(LEARN_FORMAT_PROMPTS[kind])}
-				>
-					<StudioIcon name="copy" size={14} /> {copied ? 'Đã chép prompt' : 'Chép prompt định dạng'}
-				</button>
-				{manual ? <ManualCopyField text={manual} /> : null}
-				<p className="text-sm text-ink-secondary">
-					Dán vào ChatGPT, Claude hoặc Gemini, thêm tài liệu, gửi, rồi dán câu trả lời vào đây.
-				</p>
-			</div>
-			<div className="ln-split">
-				<div className="flex min-h-0 flex-col gap-2">
-					<DestinationFields
-						kind={kind}
-						lessons={lessons}
-						lessonId={lessonId}
-						onLessonId={setLessonId}
-						lessonMode={lessonMode}
-						onLessonMode={setLessonMode}
-						target={target}
-						questionMode={questionMode}
-						onQuestionMode={setQuestionMode}
-						sectionTitle={sectionTitle}
-						onSectionTitle={setSectionTitle}
-					/>
-					<textarea
-						autoFocus
-						className="ln-editor__source min-h-[22rem] flex-1"
-						aria-label="Kết quả AI"
-						value={text}
-						onChange={(event) => setText(event.target.value)}
-						spellCheck={false}
-						placeholder="Dán kết quả AI vào đây."
-					/>
+					</ol>
 				</div>
-				<div className="ln-preview">
-					<p className="ln-preview__label">Xem trước</p>
-					<ImportImagePicker markdown={text} onChange={setText} onBusyChange={setUploadBusy} />
-					{warnings.map((warning) => (
-						<p key={warning} className="ln-warning">
-							{warning}
-						</p>
-					))}
-					{kind === 'lesson' &&
-					lessonParsed &&
-					(lessonParsed.lessons.length ?? 0) > 1 &&
-					lessonMode === 'replace' ? (
-						<p className="ln-warning">Có nhiều dòng # — chế độ này sẽ gộp nhiều bài vào một bài.</p>
-					) : null}
-					{deletedCount > 0 ? (
-						<p className="ln-warning">Học viên sẽ mất tiến độ trên các mục bị xóa.</p>
-					) : null}
-					{kind === 'lesson' ? (
-						lessonParsed ? (
-							<>
-								{lessonParsed.lessons.map((lesson) => (
-									<div key={lesson.lessonTitle}>
-										<p className="font-display text-xl font-medium">{lesson.lessonTitle}</p>
-										{lesson.lessonDescription ? (
-											<p className="mt-1 text-sm text-ink-secondary">{lesson.lessonDescription}</p>
-										) : null}
-									</div>
-								))}
-								<ol className="ln-preview__sections">
-									{lessonSections.map((section, index) => (
-										<li key={index}>
-											<span className="ln-preview__index tabular-nums">{index + 1}</span>
-											<span className="min-w-0 flex-1">
-												<span className="block font-medium">
-													{section.type !== 'READING'
-														? `${LEARN_SECTION_KIND_SHORT[section.type]} · `
-														: ''}
-													{section.title}
-												</span>
-												{section.summary ? (
-													<span className="block text-sm text-ink-secondary">
-														{section.summary}
-													</span>
-												) : null}
-											</span>
-											<span className="text-xs text-ink-secondary tabular-nums">
-												{section.type === 'DISCUSSION'
-													? `${section.discussion?.questions.length ?? 0} câu`
-													: `${section.wordCount} từ · ${formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}`}
-											</span>
-										</li>
+				<div className="ln-split" data-step={step}>
+					<div className="flex min-h-0 flex-col gap-2">
+						<DestinationFields
+							kind={kind}
+							lessons={lessons}
+							lessonId={lessonId}
+							onLessonId={setLessonId}
+							lessonMode={lessonMode}
+							onLessonMode={setLessonMode}
+							target={target}
+							questionMode={questionMode}
+							onQuestionMode={setQuestionMode}
+							sectionTitle={sectionTitle}
+							onSectionTitle={setSectionTitle}
+						/>
+						<textarea
+							autoFocus
+							className="ln-editor__source min-h-[22rem] flex-1"
+							aria-label="Kết quả AI"
+							value={text}
+							onChange={(event) => setText(event.target.value)}
+							spellCheck={false}
+							placeholder="Dán kết quả AI vào đây."
+						/>
+					</div>
+					<div className="ln-preview">
+						<p className="ln-preview__label">Xem trước</p>
+						<ImportImagePicker markdown={text} onChange={setText} onBusyChange={setUploadBusy} />
+						{warnings.map((warning) => (
+							<p key={warning} className="ln-warning">
+								{warning}
+							</p>
+						))}
+						{kind === 'lesson' &&
+						lessonParsed &&
+						(lessonParsed.lessons.length ?? 0) > 1 &&
+						lessonMode === 'replace' ? (
+							<p className="ln-warning">
+								Có nhiều dòng # — chế độ này sẽ gộp nhiều bài vào một bài.
+							</p>
+						) : null}
+						{deletedCount > 0 ? (
+							<p className="ln-warning">Học viên sẽ mất tiến độ trên các mục bị xóa.</p>
+						) : null}
+						{kind === 'lesson' ? (
+							lessonParsed ? (
+								<>
+									{lessonParsed.lessons.map((lesson) => (
+										<div key={lesson.lessonTitle}>
+											<p className="font-display text-xl font-medium">{lesson.lessonTitle}</p>
+											{lesson.lessonDescription ? (
+												<p className="mt-1 text-sm text-ink-secondary">
+													{lesson.lessonDescription}
+												</p>
+											) : null}
+										</div>
 									))}
-								</ol>
-							</>
+									<ol className="ln-preview__sections">
+										{lessonSections.map((section, index) => (
+											<li key={index}>
+												<span className="ln-preview__index tabular-nums">{index + 1}</span>
+												<span className="min-w-0 flex-1">
+													<span className="block font-medium">
+														{section.type !== 'READING'
+															? `${LEARN_SECTION_KIND_SHORT[section.type]} · `
+															: ''}
+														{section.title}
+													</span>
+													{section.summary ? (
+														<span className="block text-sm text-ink-secondary">
+															{section.summary}
+														</span>
+													) : null}
+												</span>
+												<span className="text-xs text-ink-secondary tabular-nums">
+													{section.type === 'DISCUSSION'
+														? `${section.discussion?.questions.length ?? 0} câu`
+														: `${section.wordCount} từ · ${formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}`}
+												</span>
+											</li>
+										))}
+									</ol>
+								</>
+							) : (
+								<p className="text-sm text-ink-secondary">
+									Các mục sẽ hiện ở đây khi bạn dán nội dung.
+								</p>
+							)
+						) : discussionParsed && discussionParsed.questions.length ? (
+							<ol className="ln-preview__list">
+								{discussionParsed.questions.map((question, index) => (
+									<li key={question.id}>
+										<p className="font-medium">Câu {index + 1}</p>
+										{question.question ? (
+											<LearnMarkdown markdown={question.question} showMissingImages />
+										) : (
+											<p>
+												<em>(chưa có câu hỏi)</em>
+											</p>
+										)}
+										{question.answer ? (
+											<LearnMarkdown markdown={question.answer} showMissingImages />
+										) : (
+											<p className="ln-warning">Thiếu đáp án mẫu</p>
+										)}
+									</li>
+								))}
+							</ol>
 						) : (
 							<p className="text-sm text-ink-secondary">
-								Các mục sẽ hiện ở đây khi bạn dán nội dung.
+								Các câu sẽ hiện ở đây khi bạn dán nội dung.
 							</p>
-						)
-					) : discussionParsed && discussionParsed.questions.length ? (
-						<ol className="ln-preview__list">
-							{discussionParsed.questions.map((question, index) => (
-								<li key={question.id}>
-									<p className="font-medium">Câu {index + 1}</p>
-									{question.question ? (
-										<LearnMarkdown markdown={question.question} showMissingImages />
-									) : (
-										<p>
-											<em>(chưa có câu hỏi)</em>
-										</p>
-									)}
-									{question.answer ? (
-										<LearnMarkdown markdown={question.answer} showMissingImages />
-									) : (
-										<p className="ln-warning">Thiếu đáp án mẫu</p>
-									)}
-								</li>
-							))}
-						</ol>
-					) : (
-						<p className="text-sm text-ink-secondary">
-							Các câu sẽ hiện ở đây khi bạn dán nội dung.
-						</p>
-					)}
+						)}
+					</div>
 				</div>
-			</div>
-		</StudioDialog>
+			</StudioDialog>
+			{confirmDialog}
+		</>
 	);
 }
 

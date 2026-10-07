@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import LearnCheckpointCard from '@/components/learn/LearnCheckpointCard';
 import LearnCompleteButton from '@/components/learn/LearnCompleteButton';
 import LearnDiscussionIntro from '@/components/learn/LearnDiscussionIntro';
 import LearnDiscussionViewer from '@/components/learn/LearnDiscussionViewer';
@@ -258,7 +257,6 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 							) : (
 								<p className="mt-8 text-ink-secondary">Mục này chưa có nội dung.</p>
 							)}
-							{section.checkpoint ? <LearnCheckpointCard checkpoint={section.checkpoint} /> : null}
 						</>
 					)}
 

@@ -67,7 +67,7 @@ export function useSectionImport({
 
 	async function saveImport(input: AiImportInput) {
 		if (input.kind === 'lesson') {
-			await flush();
+			if (!(await flush()).ok) throw new Error('Chưa lưu được nội dung đang soạn');
 			const result = await adminFetch<LearnStudioLesson | { lessons: LearnStudioLesson[] }>(
 				`/api/admin/learn/courses/${courseId}/lessons`,
 				{
@@ -127,7 +127,7 @@ export function useSectionImport({
 			return;
 		}
 
-		await flush();
+		if (!(await flush()).ok) throw new Error('Chưa lưu được nội dung đang soạn');
 		const current = findSection(lessonsRef.current, input.sectionId);
 		if (!current) throw new Error('Không tìm thấy mục');
 		const updated = await adminFetch<LearnStudioSection>(

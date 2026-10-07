@@ -39,11 +39,15 @@ export function useStudioNavigation(flush: Flush, confirmLeave: ConfirmLeave) {
 	);
 
 	const openPreview = useCallback(
-		(href: string) => {
+		async (href: string) => {
 			const popup = window.open('', '_blank');
-			void flush().then(() => {
-				if (popup && !popup.closed) popup.location.href = href;
-			});
+			const saved = await flush();
+			if (!saved.ok) {
+				popup?.close();
+				return false;
+			}
+			if (popup && !popup.closed) popup.location.href = href;
+			return true;
 		},
 		[flush],
 	);

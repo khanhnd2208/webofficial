@@ -68,6 +68,7 @@ export default function LearnCourseAdminList({ courses }: { courses: AdminLearnC
 								{STATUS_LABEL[course.status]} ·{' '}
 								<span className="tabular-nums">
 									{course.lessonCount} bài · {course.sectionCount} mục · {course.questionCount} câu
+									phản biện
 								</span>
 							</p>
 							<p className="text-sm text-ink-secondary">
@@ -86,6 +87,7 @@ export default function LearnCourseAdminList({ courses }: { courses: AdminLearnC
 					</li>
 				))}
 			</ul>
+			{visible.length === 0 ? <p className="ln-empty-hint">Không có khóa học phù hợp.</p> : null}
 		</section>
 	);
 }

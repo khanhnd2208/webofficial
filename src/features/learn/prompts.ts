@@ -22,7 +22,8 @@ KHỐI HỌC THUẬT — chỉ bọc, không đổi chữ. Mỗi dòng trong kh�
 - > [!WARNING] "Lưu ý", "Lưu ý quan trọng"
 - > [!TIP] "Mẹo", "Mẹo nhớ", "Một hình ảnh dễ nhớ"
 - > [!IMPORTANT] ý cốt lõi mà gốc đã nhấn mạnh
-- "Câu hỏi nhanh", "Liên hệ bản thân", "Thử sức", "Suy ngẫm" → [!REFLECT]
+- "Liên hệ bản thân", "Thử sức", "Suy ngẫm" → [!REFLECT]. Đây là câu gợi suy nghĩ trong bài giảng, không phải bài luyện.
+- Không tạo === QUIZ ===, === PRACTICE ===, [!CHECKPOINT], "Câu hỏi tự kiểm tra", "Câu hỏi luyện tập" hay "Bài tập thực hành". Nếu gốc có các phần đó, bỏ khỏi kết quả và nêu tên phần đã bỏ ở ngoài khối.
 - "Ví dụ…", "Ví dụ tổng hợp" → [!EXAMPLE], gồm cả danh sách đi kèm
 Tiêu đề sau [!KIND] chỉ khi gốc có một dòng nhãn riêng cho khối đó (ví dụ "Ví dụ 3: Toyota") → chuyển nguyên dòng đó lên làm tiêu đề, không lặp lại trong thân. Không có thì để trống.
 - > [!TAKEAWAYS] chỉ cho "Mục tiêu" hoặc "Bạn sẽ nắm được" ở đầu mục. "Ghi nhớ" hoặc "Tổng kết" ở cuối bài → > [!IMPORTANT] rồi nhãn nguyên văn, vì [!TAKEAWAYS] hiện ở đầu mục với nhãn "Bạn sẽ nắm được".

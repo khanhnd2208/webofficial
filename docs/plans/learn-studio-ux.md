@@ -14,11 +14,11 @@ Learn chỉ có bài đọc (`READING`) và câu hỏi phản biện (`DISCUSSIO
 | Dialog, toast, undo khi xóa | `StudioConfirm.tsx`, `StudioToast.tsx`, `useDeferredDeletes.tsx` và test DELETE trước PUT | Đã có |
 | Conflict khi hai tab cùng sửa | `baseUpdatedAt` trong schema/service, `ConflictDialog.tsx`, `service.conflict.unit.test.ts` | Đã có |
 | Snapshot và lịch sử | `sectionRevisions.ts`, `RevisionDialog.tsx`, `TextDiff.tsx`, admin revision API | Đã có; không đưa markdown vào response danh sách revision |
-| Soạn phản biện và preview cùng học viên | `LearnDiscussionEditor.tsx`, `DiscussionQuestionEditor.tsx`, `DiscussionQuestionCard.tsx`, `discussionTemplates.ts` | Đã có; giữ phần kế thừa từ câu trước |
-| Quiz và luyện tập | Loại khỏi public catalog, Studio và player bởi PR #34 | Đã thay thế; không thực hiện |
+| Soạn phản biện và preview cùng học viên | `LearnDiscussionEditor.tsx` dùng editor trực quan, ba tab Đề bài / Đáp án mẫu / Xem trước; `DiscussionQuestionCard.tsx` | Danh sách câu nằm trong sidebar, không chia cột trong editor |
+| Quiz, luyện tập, checkpoint | Không còn trên DTO, Studio, trang học, nhập và xuất. Cột database giữ lại. Khôi phục phiên bản không đưa checkpoint hay quiz trở lại | Đã đóng các đường còn sót |
 | Publish checklist và xuất Markdown | `publishChecklist.ts`, `PublishDialog.tsx`, `exportMarkdown.ts` và các test | Đã có; kiểm tra READING/DISCUSSION |
 | Quản lý khóa và lastEditedAt | `adminCatalog.ts`, `search.ts`, `LearnCourseAdminList.tsx` | Đã có; `lastEditedAt` lấy max của khóa, bài và mục |
-| Responsive, loading, phím tắt | `StudioTabs.tsx`, `SectionJumpDialog.tsx`, `useStudioShortcuts.ts`, layout Studio và test | Đã có |
+| Responsive, loading, phím tắt | Sidebar 16rem từ 1024px; thuộc tính là drawer; dưới 1024px mục lục mở bằng drawer. `SectionJumpDialog.tsx`, `useStudioShortcuts.ts` | Đã có |
 | Tối ưu đọc bài còn trên nhánh cũ | Tách `format.ts`, phản hồi điều hướng, khóa completion lúc lưu, cập nhật tiến độ và control desktop/mobile theo bài, Mermaid gần viewport | Đã chuyển vào nhánh hoàn thiện; kiểm tra cùng Studio |
 | Parser nhãn phản biện có hậu tố | `splitLabelled` nhận `Kết luận (a):` và `Cùng suy nghĩ từng bước — phần (a):` | Đã chuyển phần còn hữu ích từ PR nháp #3 |
 
@@ -26,7 +26,7 @@ Learn chỉ có bài đọc (`READING`) và câu hỏi phản biện (`DISCUSSIO
 
 1. Client nhận `updatedAt` sau mọi write và cập nhật version map. `baseUpdatedAt` phải tách khỏi dữ liệu Prisma; không tự ghi đè khi 409.
 2. Lỗi mạng/5xx retry theo backoff; lỗi validation giữ field sai đến khi đổi giá trị. `flush()` không chờ hết chuỗi retry để trả lời điều hướng.
-3. Chuyển trang và preview phải flush editor, saver và thao tác xóa đang chờ. Modified click vẫn mở tab bình thường.
+3. Chuyển trang, nhập, xuất và mở trang học chỉ chạy sau `flush().ok === true`. Modified click vẫn mở tab bình thường.
 4. Reorder giữ `updatedAt` cũ của mục; đổi vị trí không được tạo conflict giả cho người đang sửa nội dung.
 5. Giữ bản của tôi khi conflict cần snapshot bản server rồi ghi với version vừa đọc. Tải bản server cần cập nhật editor và version map.
 6. Hoàn tác xóa câu sửa JSON cục bộ; không phát sinh DELETE riêng. Hoàn tác xóa mục giữ hàng đợi 8 giây; thao tác cấu trúc phải commit hàng đợi trước PUT outline.

@@ -28,6 +28,7 @@ function Row({
 	onSelect,
 	onDuplicate,
 	onDelete,
+	onMove,
 }: {
 	item: NavItem;
 	index: number;
@@ -35,6 +36,7 @@ function Row({
 	onSelect: () => void;
 	onDuplicate: () => void;
 	onDelete: () => void;
+	onMove: (delta: number) => void;
 }) {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
 		id: item.id,
@@ -57,7 +59,17 @@ function Row({
 			>
 				<StudioIcon name="grip" size={14} />
 			</button>
-			<button type="button" className="ln-qnav__main" onClick={onSelect}>
+			<button
+				type="button"
+				className="ln-qnav__main"
+				title={item.title}
+				onClick={onSelect}
+				onKeyDown={(event) => {
+					if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+					event.preventDefault();
+					onMove(event.key === 'ArrowUp' ? -1 : 1);
+				}}
+			>
 				<span className="tabular-nums">Câu {index + 1}</span>
 				<span className="ln-qnav__title">{item.title}</span>
 				{item.issues.length ? (
@@ -70,6 +82,8 @@ function Row({
 				label={`Thao tác câu ${index + 1}`}
 				align="end"
 				items={[
+					{ label: 'Đưa lên', onSelect: () => onMove(-1) },
+					{ label: 'Đưa xuống', onSelect: () => onMove(1) },
 					{ label: 'Nhân bản', icon: 'duplicate', onSelect: onDuplicate },
 					{ label: 'Xóa', icon: 'trash', danger: true, onSelect: onDelete },
 				]}
@@ -103,6 +117,14 @@ export default function QuestionNavigator({
 	}
 	const showGroups = items.some((item) => item.group);
 
+	function move(id: string, delta: number) {
+		const ids = items.map((item) => item.id);
+		const from = ids.indexOf(id);
+		const to = from + delta;
+		if (from < 0 || to < 0 || to >= ids.length) return;
+		onReorder(arrayMove(ids, from, to));
+	}
+
 	function onDragEnd(event: DragEndEvent) {
 		const { active, over } = event;
 		if (!over || active.id === over.id) return;
@@ -124,12 +146,8 @@ export default function QuestionNavigator({
 			<SortableContext items={items.map((item) => item.id)} strategy={verticalListSortingStrategy}>
 				<div className="ln-qnav">
 					{groups.map((group) => (
-						<details
-							key={group.label}
-							className="ln-qnav__group"
-							open={showGroups ? true : undefined}
-						>
-							{showGroups ? <summary>{group.label}</summary> : null}
+						<div key={group.label} className="ln-qnav__group">
+							{showGroups ? <p className="ln-qnav__group-label">{group.label}</p> : null}
 							<ol className="ln-qnav__list">
 								{group.items.map((item) => {
 									const index = cursor;
@@ -143,11 +161,12 @@ export default function QuestionNavigator({
 											onSelect={() => onSelect(item.id)}
 											onDuplicate={() => onDuplicate(item.id)}
 											onDelete={() => onDelete(item.id)}
+											onMove={(delta) => move(item.id, delta)}
 										/>
 									);
 								})}
 							</ol>
-						</details>
+						</div>
 					))}
 				</div>
 			</SortableContext>

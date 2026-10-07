@@ -3,14 +3,9 @@
 import { useRef } from 'react';
 
 import { sectionMinutes } from '@/features/learn/content';
-import {
-	type LearnCheckpoint,
-	type LearnStudioLesson,
-	type LearnStudioSection,
-} from '@/features/learn/types';
+import { type LearnStudioLesson, type LearnStudioSection } from '@/features/learn/types';
 
 import { StudioIcon } from './icons';
-import OptionListEditor from './OptionListEditor';
 import type { SectionPatch } from './sectionPatch';
 
 export type { SectionPatch };
@@ -68,63 +63,6 @@ function TakeawaysEditor({
 	);
 }
 
-function CheckpointEditor({
-	sectionId,
-	checkpoint,
-	onChange,
-}: {
-	sectionId: string;
-	checkpoint: LearnCheckpoint | null;
-	onChange: (checkpoint: LearnCheckpoint | null) => void;
-}) {
-	if (!checkpoint) {
-		return (
-			<button
-				type="button"
-				className="ln-link-btn"
-				onClick={() =>
-					onChange({ question: '', options: ['', '', ''], correctIndex: 0, explanation: '' })
-				}
-			>
-				+ Thêm câu hỏi nhanh cuối mục
-			</button>
-		);
-	}
-	return (
-		<div className="ln-checkedit">
-			<textarea
-				className="ln-input"
-				rows={2}
-				aria-label="Câu hỏi tự kiểm tra"
-				value={checkpoint.question}
-				placeholder="Câu hỏi tự kiểm tra"
-				onChange={(event) => onChange({ ...checkpoint, question: event.target.value })}
-			/>
-			<OptionListEditor
-				name={`${sectionId}-checkpoint`}
-				options={checkpoint.options}
-				correctIndex={checkpoint.correctIndex}
-				onChange={(next) => onChange({ ...checkpoint, ...next })}
-			/>
-			<textarea
-				className="ln-input"
-				rows={2}
-				aria-label="Giải thích câu hỏi nhanh"
-				value={checkpoint.explanation}
-				placeholder="Giải thích (hiện sau khi chọn)"
-				onChange={(event) => onChange({ ...checkpoint, explanation: event.target.value })}
-			/>
-			<button
-				type="button"
-				className="ln-link-btn ln-link-btn--danger"
-				onClick={() => onChange(null)}
-			>
-				Bỏ câu hỏi nhanh
-			</button>
-		</div>
-	);
-}
-
 export default function StudioInspector({
 	section,
 	lessons,
@@ -133,6 +71,7 @@ export default function StudioInspector({
 	onDelete,
 	onHistory,
 	onPreview,
+	onClose,
 }: {
 	section: LearnStudioSection;
 	lessons: LearnStudioLesson[];
@@ -141,11 +80,23 @@ export default function StudioInspector({
 	onDelete: () => void;
 	onHistory: () => void;
 	onPreview: () => void;
+	onClose: () => void;
 }) {
 	const autoMinutes = sectionMinutes({ ...section, durationMinutes: null });
 
 	return (
 		<aside className="ln-inspector" aria-label="Thuộc tính mục">
+			<div className="ln-inspector__head">
+				<p className="ln-inspector__label">Thuộc tính</p>
+				<button
+					type="button"
+					className="ln-icon-btn"
+					onClick={onClose}
+					aria-label="Đóng thuộc tính"
+				>
+					<StudioIcon name="close" />
+				</button>
+			</div>
 			<div className="ln-inspector__group">
 				<label className="ln-inspector__label" htmlFor="ln-duration">
 					Thời lượng
@@ -190,17 +141,6 @@ export default function StudioInspector({
 					onChange={(keyTakeaways) => onPatch({ keyTakeaways })}
 				/>
 			</div>
-
-			{section.type === 'READING' ? (
-				<div className="ln-inspector__group">
-					<p className="ln-inspector__label">Câu hỏi nhanh</p>
-					<CheckpointEditor
-						sectionId={section.id}
-						checkpoint={section.checkpoint}
-						onChange={(checkpoint) => onPatch({ checkpoint })}
-					/>
-				</div>
-			) : null}
 
 			<div className="ln-inspector__group">
 				<label className="ln-inspector__label" htmlFor="ln-move">

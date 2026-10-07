@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { LiveRegion } from '@/components/ui/Dialog';
 import { LEARN_SECTION_KIND_LABELS, type LearnStudioSection } from '@/features/learn/types';
 
@@ -19,6 +21,7 @@ export default function StudioCanvas({
 	onRestoreTitle,
 	onOpenImport,
 	onOpenHelp,
+	onOpenProperties,
 }: {
 	section: LearnStudioSection | null;
 	lessonTitle: string;
@@ -29,13 +32,28 @@ export default function StudioCanvas({
 	onRestoreTitle: () => void;
 	onOpenImport: (request: ImportRequest) => void;
 	onOpenHelp: () => void;
+	onOpenProperties: () => void;
 }) {
+	const titleRef = useRef<HTMLTextAreaElement>(null);
+	const focused = useRef(new Set<string>());
+	useEffect(() => {
+		if (!section) return;
+		const fresh =
+			(section.title === 'Mục mới' || section.title === 'Câu hỏi phản biện') &&
+			!section.markdown.trim() &&
+			!(section.discussion?.questions.length ?? 0);
+		if (!fresh || focused.current.has(section.id)) return;
+		focused.current.add(section.id);
+		titleRef.current?.focus();
+		titleRef.current?.select();
+	}, [section]);
+
 	if (!section) {
 		return (
 			<main className="ln-studio__canvas">
 				<div className="ln-studio__empty">
 					<p className="font-display text-2xl">Chọn một mục để soạn</p>
-					<p className="mt-2 text-ink-secondary">Hoặc thêm bài mới, nhập bằng AI ở cột mục lục.</p>
+					<p className="mt-2 text-ink-secondary">Hoặc thêm bài mới, nhập nội dung ở cột mục lục.</p>
 				</div>
 			</main>
 		);
@@ -45,11 +63,21 @@ export default function StudioCanvas({
 
 	return (
 		<main className="ln-studio__canvas">
-			<div className="ln-studio__page" key={`${section.id}:${editorEpoch}`}>
+			<div
+				className="ln-studio__page"
+				data-kind={section.type === 'DISCUSSION' ? 'discussion' : 'reading'}
+				key={`${section.id}:${editorEpoch}`}
+			>
+				<div className="ln-studio__page-tools">
+					<button type="button" className="ln-btn" onClick={onOpenProperties}>
+						Thuộc tính
+					</button>
+				</div>
 				<p className="ln-eyebrow">
 					{LEARN_SECTION_KIND_LABELS[section.type]} · {lessonTitle}
 				</p>
 				<textarea
+					ref={titleRef}
 					className="ln-studio__title"
 					value={section.title}
 					rows={1}
@@ -84,8 +112,10 @@ export default function StudioCanvas({
 							/>
 						</details>
 						<LearnDiscussionEditor
+							sectionId={section.id}
 							discussion={section.discussion ?? { questions: [] }}
 							onChange={(discussion) => onPatch({ discussion })}
+							onOpenHelp={onOpenHelp}
 							onOpenImport={() =>
 								onOpenImport({
 									kind: 'discussion',

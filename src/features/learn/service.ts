@@ -5,7 +5,7 @@ import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 import { slugify } from '@/utils/slugify';
 
-import { readCheckpoint, readDiscussion, sectionMinutes } from './content';
+import { readDiscussion, sectionMinutes } from './content';
 import { isRequiredSection } from './progress';
 import { parseCourseMarkdown, planContentReplace, type ImportedSection } from './lessonImport';
 import { snapshotSection } from './sectionRevisions';
@@ -147,7 +147,6 @@ const studioSectionSelect = {
 	summary: true,
 	keyTakeaways: true,
 	markdown: true,
-	checkpoint: true,
 	discussion: true,
 	updatedAt: true,
 } as const;
@@ -277,7 +276,6 @@ export async function getLearnReaderSection(
 		summary: section.summary,
 		keyTakeaways: section.keyTakeaways,
 		markdown: section.markdown,
-		checkpoint: readCheckpoint(section.checkpoint),
 		discussion: section.type === 'DISCUSSION' ? readDiscussion(section.discussion) : null,
 	};
 }
@@ -439,7 +437,7 @@ function sectionData(section: ImportedSection, position: number) {
 		markdown,
 		durationMinutes: section.durationMinutes,
 		keyTakeaways: section.keyTakeaways,
-		checkpoint: jsonOrNull(section.checkpoint),
+		checkpoint: Prisma.DbNull,
 		discussion: jsonOrNull(section.discussion),
 		position,
 		estimatedMinutes: storedMinutes({
@@ -536,6 +534,13 @@ export async function updateLearnSection(
 		'checkpoint',
 		'discussion',
 	].some((key) => key in input);
+	const existingType = await prisma.learnSection.findUnique({
+		where: { id },
+		select: { type: true },
+	});
+	if (!existingType || !LEARN_SECTION_KINDS.includes(existingType.type as LearnSectionKind)) {
+		throw new AppError('Không tìm thấy mục học', 404);
+	}
 	if (contentTouched) await snapshotSection(id, 'autosave', false);
 	const minutesTouched = MINUTES_FIELDS.some((key) => key in input);
 	let estimatedMinutes: number | undefined;
@@ -556,7 +561,7 @@ export async function updateLearnSection(
 	const { checkpoint, discussion, baseUpdatedAt, ...rest } = input;
 	const data = {
 		...rest,
-		...(checkpoint !== undefined ? { checkpoint: jsonOrNull(checkpoint) } : {}),
+		...(checkpoint !== undefined ? { checkpoint: Prisma.DbNull } : {}),
 		...(discussion !== undefined ? { discussion: jsonOrNull(discussion) } : {}),
 		...(estimatedMinutes !== undefined ? { estimatedMinutes } : {}),
 	};

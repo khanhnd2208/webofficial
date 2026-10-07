@@ -62,18 +62,27 @@ export default function LearnRichEditor({
 	value,
 	onChange,
 	onOpenHelp,
+	markdownPreview = true,
+	label = 'Nội dung Markdown',
+	bindInsert,
 }: {
 	value: string;
 	onChange: (markdown: string) => void;
 	onOpenHelp?: () => void;
+	/** The lecture editor can show Markdown beside its source. A question field uses a separate preview. */
+	markdownPreview?: boolean;
+	label?: string;
+	/** Lets a parent insert a snippet at the caret without mounting a second editor. */
+	bindInsert?: (insert: ((snippet: string) => void) | null) => void;
 }) {
-	const [previewShown, setPreviewShown] = useState(true);
+	const [previewShown, setPreviewShown] = useState(markdownPreview);
 	const previewRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
+		if (!markdownPreview) return;
 		// The remembered choice is only readable after hydration.
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setPreviewShown(readPreviewShown());
-	}, []);
+	}, [markdownPreview]);
 	function togglePreview() {
 		const next = !previewShown;
 		setPreviewShown(next);
@@ -312,6 +321,35 @@ export default function LearnRichEditor({
 	}, [editor]);
 
 	useEffect(() => registerEditorFlush(flushPending), [flushPending]);
+
+	const bindInsertRef = useRef(bindInsert);
+	useEffect(() => {
+		bindInsertRef.current = bindInsert;
+	}, [bindInsert]);
+	useEffect(() => {
+		const insert = (snippet: string) => {
+			if (mode === 'visual' && editorRef.current) {
+				editorRef.current.chain().focus().insertContent(snippet, { contentType: 'markdown' }).run();
+				return;
+			}
+			const node = textareaRef.current;
+			const current = sourceRef.current;
+			const start = node?.selectionStart ?? current.length;
+			const end = node?.selectionEnd ?? start;
+			const next = `${current.slice(0, start)}${snippet}${current.slice(end)}`;
+			const caret = start + snippet.length;
+			sourceRef.current = next;
+			latestMarkdown.current = next;
+			setSource(next);
+			onChangeRef.current(next);
+			requestAnimationFrame(() => {
+				node?.focus();
+				node?.setSelectionRange(caret, caret);
+			});
+		};
+		bindInsertRef.current?.(insert);
+		return () => bindInsertRef.current?.(null);
+	}, [mode]);
 
 	useEffect(() => () => flushPending(), [flushPending]);
 
@@ -564,12 +602,13 @@ export default function LearnRichEditor({
 						value={source}
 						onChange={changeSource}
 						previewShown={previewShown}
+						showPreviewToggle={markdownPreview}
 						onTogglePreview={togglePreview}
 						onOpenHelp={onOpenHelp}
 					/>
 					<div className="ln-editor__split" data-preview={previewShown ? 'true' : 'false'}>
 						<textarea
-							aria-label="Nội dung Markdown"
+							aria-label={label}
 							onScroll={(event) => syncPreview(event.currentTarget)}
 							ref={textareaRef}
 							onPaste={(event) => {
@@ -613,7 +652,7 @@ export default function LearnRichEditor({
 							onBlur={() => flushPending()}
 							placeholder={'## Tiêu đề\n\nNội dung…\n\n> [!DEFINITION] Khái niệm\n> Định nghĩa…'}
 						/>
-						{previewShown ? (
+						{markdownPreview && previewShown ? (
 							<div
 								ref={previewRef}
 								className="ln-editor__preview"

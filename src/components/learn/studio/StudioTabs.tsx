@@ -14,35 +14,3 @@ export function useWideStudio() {
 	}, []);
 	return wide;
 }
-
-export type StudioTab = 'outline' | 'edit' | 'properties';
-
-const TABS: Array<{ id: StudioTab; label: string }> = [
-	{ id: 'outline', label: 'Mục lục' },
-	{ id: 'edit', label: 'Soạn' },
-	{ id: 'properties', label: 'Thuộc tính' },
-];
-
-export default function StudioTabs({
-	tab,
-	onChange,
-}: {
-	tab: StudioTab;
-	onChange: (tab: StudioTab) => void;
-}) {
-	return (
-		<div className="ln-studio__tabs" role="tablist" aria-label="Vùng studio">
-			{TABS.map((item) => (
-				<button
-					key={item.id}
-					type="button"
-					role="tab"
-					aria-selected={tab === item.id}
-					onClick={() => onChange(item.id)}
-				>
-					{item.label}
-				</button>
-			))}
-		</div>
-	);
-}
