@@ -31,10 +31,11 @@ Các nhánh backup và worktree của phiên làm việc khác được giữ ng
 - Các screen Cheese Thief cũ tham chiếu trường hai đêm và module shared đã chuyển chỗ. Chỉ dùng DTO một đêm hiện hành; không phục hồi trường legacy.
 - Secret không còn timer nhưng phòng test vẫn thử bỏ qua 61 giây. Bỏ thao tác đó, chỉ hiện nút skip ở pha night; test runoff gửi lựa chọn và xác nhận thật.
 - Giao diện bí mật có class màu không còn khai báo. Thay bằng token có hiệu lực và kiểm tra ảnh mobile.
-- Nút hoàn thành Learn từng đổi thành link trước khi lưu tiến độ xong. Giữ trạng thái busy, chặn gửi lặp, khôi phục trạng thái trước đó khi lỗi và điều hướng sau khi lưu.
+- Nút hoàn thành Learn từng đổi thành link trước khi lưu tiến độ xong. Giữ trạng thái busy, chặn gửi lặp, khôi phục trạng thái trước đó khi lỗi và điều hướng sau khi lưu. Làm mới dữ liệu tiến độ đã tải trước; reset control theo mục và trạng thái hoàn thành để desktop/mobile không giữ trạng thái của bài trước hoặc bản ẩn chưa cập nhật.
 - Mermaid tránh render hàng loạt ngoài viewport, tuần tự hóa cấu hình global, cache tối đa 64 SVG và tránh dùng lại ID giữa các instance. Khi source/theme đổi, không hiển thị kết quả cũ.
 - Đáp án phản biện tải lazy: kiểm thử chờ nội dung thực sự xuất hiện; catalog dùng formatter không kéo content schema vào client.
 - E2E mục lục dùng selector của cấu trúc hai cửa, giữ header và route của main hiện tại.
+- URL alias `/khoa-hoc` từng bị nhận nhầm là reader nên thiếu public header khi có khóa học. Cho catalog alias và `/kham-pha-khoa-hoc` cùng header/breadcrumb; giữ reader và Studio không public header. Kiểm thử legacy dùng điều hướng luôn có, không giả định catalog rỗng.
 
 ## Kiểm chứng đã chạy
 
@@ -44,35 +45,39 @@ Các nhánh backup và worktree của phiên làm việc khác được giữ ng
 | `npm run typecheck` | Qua, bao gồm các hooks commit |
 | `npm run lint -- --max-warnings=0` | Qua |
 | `npm run format:check` | Qua |
-| `npm run areas:check` | Qua: 4 areas, 1495 source files |
+| `npm run areas:check` | Qua: 4 areas, 1496 source files |
 | `npm run test:unit` | Qua: 134 files / 821 tests; lint tooling 8 tests và deploy tooling 12 tests cũng qua |
-| `npm run test:component` | Qua: 97 files / 440 tests |
-| `npm run test:integration -- src/features/cheese-thief src/features/board-game-test src/features/board-game-bots` | Qua: 3 files / 33 tests, MongoDB test riêng |
+| `npm run test:component` | Qua: 98 files / 445 tests |
+| `npm run test:integration` | Qua toàn bộ: 23 files / 186 tests, PostgreSQL và MongoDB test riêng; có kiểm tra hai người xác nhận bí mật đồng thời |
 | `npm run build` | Qua: Next.js 16.3.6, Webpack, 118 trang static; không bỏ typecheck |
-| Public/menu/game E2E | Qua: 53 tests, Desktop Chromium + Android + Safari mobile, trừ 6 ca cần PostgreSQL local |
-| E2E operating-focus mục lục | Qua: 1 test |
+| Public/menu/game/operating-focus/Learn E2E | Qua đủ 69 tests trên bản production cuối `ac2c651`, Desktop Chromium + Android + Safari mobile; gồm cả 6 ca cần PostgreSQL trước đó và 3 ca Learn mới |
+| Learn reader E2E | Qua 3/3 trên production: API chậm ở desktop/mobile, tiến độ sau chuyển bài và bỏ đánh dấu, đổi bố cục, Mermaid thật gần viewport; đã tính trong 69 ca phía trên |
 | E2E phòng game trên `scripts/board-game-test-server.mjs` | Qua: 6 tests, MongoDB ephemeral riêng, thực hiện chuyển ghế, reload, quyền truy cập, vòng một đêm, pha bí mật và hướng dẫn hai ngôn ngữ |
 | `git diff --check`, `git ls-files -u`, tìm conflict markers | Qua, không còn conflict chưa resolve |
 | `git merge-tree --write-tree --no-messages origin/main HEAD` | Qua với main `e9e4b4f`; merge thử không đổi checkout |
 
 ### Giới hạn kiểm chứng
 
-PostgreSQL local ở `127.0.0.1:5432` chưa chạy. Không chạy toàn bộ integration PostgreSQL. Lần E2E rộng ban đầu có 39/45 tests qua, 6 ca lỗi `DatabaseNotReachable`/`P1001`: catalog công khai/đã đăng nhập, khóa học không tồn tại, tạo/mở class, class không tồn tại và health readiness. Sau đó chạy riêng các ca không cần PostgreSQL cùng visual/mobile và tất cả đều qua. Không coi 6 ca này là đã qua; trước shipping vẫn cần CI và những ca database trên môi trường test đầy đủ.
+Đã đóng khoảng trống PostgreSQL: khởi tạo PostgreSQL 18.3 ở loopback `127.0.0.1:55439`, tách database integration và trình duyệt. Database test dùng đủ 60 file SQL migration hiện có, bao gồm constraint/trigger; không tạo hay sửa migration. Toàn bộ integration đã qua. Sáu ca E2E trước đó lỗi `DatabaseNotReachable`/`P1001` đã chạy lại thành công trong bộ 69 ca trên bản production local cuối. Không còn bỏ qua ca database vì thiếu PostgreSQL.
+
+GitHub CI chưa chạy cho nhánh local này vì chưa push. CI dùng PostgreSQL 16, local dùng 18.3; trước merge vẫn cần CI xanh trên đúng commit. Các dịch vụ/database test là môi trường tạm riêng, không dùng database production.
 
 Không thay Prisma schema/migration, dependency, nội dung nguồn Learn đã audit hoặc seed production. Không ghi database production. Merge không conflict Git là kết quả tại revision được ghi trong báo cáo; nếu main đổi cần fetch và kiểm tra lại.
 
 ### Ảnh QA local
 
-Đã kiểm tra bố cục desktop/mobile, cửa đóng/mở và screen bí mật tại `/private/tmp/pending-work-review/`. Các ảnh không đưa vào `public/` hay commit:
+Đã kiểm tra bố cục desktop/mobile, cửa đóng/mở, screen bí mật, luồng học và catalog alias tại `/private/tmp/pending-work-review/`. Các ảnh không đưa vào `public/` hay commit:
 
 - `toc-1440-closed.png`, `toc-1440-open.png`.
 - `toc-390-closed.png`, `toc-390-open.png`.
 - `cheese-secret-390.png`: ảnh giao diện người chơi, tạm ẩn bảng điều khiển admin test khi chụp.
+- `learn-saving-1440.png`, `learn-saving-390.png`, `learn-next-1440.png`, `learn-next-390.png`, `learn-mermaid.png`: trạng thái đang lưu, bài tiếp và sơ đồ trên browser thật.
+- `course-catalog-alias-1440.png`, `course-catalog-alias-390.png`: header URL catalog cũ đúng trên cả desktop/mobile, không tràn ngang.
 
 ## Bước tiếp theo
 
 1. Dùng nhánh `codex/finish-pending-work` cho PR tổng hợp; không merge lại các nhánh nguồn đã được port hoặc thay thế.
-2. Khi được yêu cầu shipping, chạy lại kiểm tra trên main mới nhất, xác minh database tests/CI cho đúng commit rồi mở PR. Merge bằng merge commit khi người dùng cho phép.
+2. Khi được yêu cầu shipping, chạy lại kiểm tra trên main mới nhất, xác minh CI cho đúng commit rồi mở PR. Merge bằng merge commit khi người dùng cho phép.
 3. Chỉ sau khi merge đã được yêu cầu mới theo dõi workflow deploy. Hiện chưa push, merge hay deploy nhánh tổng hợp.
 
 Checkout chính vẫn ở `b137c53`, chậm hơn `origin/main` 170 commits và còn bản Learn plan untracked. Không fast-forward, stash hay sửa công việc đó. Ngoại lệ duy nhất là xóa Case Study theo yêu cầu rõ ràng của người dùng.

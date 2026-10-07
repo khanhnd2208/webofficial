@@ -19,7 +19,7 @@ Learn chỉ có bài đọc (`READING`) và câu hỏi phản biện (`DISCUSSIO
 | Publish checklist và xuất Markdown | `publishChecklist.ts`, `PublishDialog.tsx`, `exportMarkdown.ts` và các test | Đã có; kiểm tra READING/DISCUSSION |
 | Quản lý khóa và lastEditedAt | `adminCatalog.ts`, `search.ts`, `LearnCourseAdminList.tsx` | Đã có; `lastEditedAt` lấy max của khóa, bài và mục |
 | Responsive, loading, phím tắt | `StudioTabs.tsx`, `SectionJumpDialog.tsx`, `useStudioShortcuts.ts`, layout Studio và test | Đã có |
-| Tối ưu đọc bài còn trên nhánh cũ | Tách `format.ts`, phản hồi điều hướng, khóa completion lúc lưu, Mermaid gần viewport | Đã chuyển vào nhánh hoàn thiện; kiểm tra cùng Studio |
+| Tối ưu đọc bài còn trên nhánh cũ | Tách `format.ts`, phản hồi điều hướng, khóa completion lúc lưu, cập nhật tiến độ và control desktop/mobile theo bài, Mermaid gần viewport | Đã chuyển vào nhánh hoàn thiện; kiểm tra cùng Studio |
 | Parser nhãn phản biện có hậu tố | `splitLabelled` nhận `Kết luận (a):` và `Cùng suy nghĩ từng bước — phần (a):` | Đã chuyển phần còn hữu ích từ PR nháp #3 |
 
 ## Hợp đồng cần giữ khi bảo trì
@@ -38,8 +38,8 @@ Learn chỉ có bài đọc (`READING`) và câu hỏi phản biện (`DISCUSSIO
 ## Tiêu chí đóng kế hoạch
 
 - Unit, component, lint, typecheck, format và areas qua trên nhánh hợp nhất.
-- Service/API thay đổi được kiểm thử integration trên database test riêng; báo rõ nếu chưa chạy vì database local không sẵn sàng.
-- Kiểm tra người dùng: mạng chậm/lỗi không cho bấm completion hai lần; Studio vẫn giữ bản chưa lưu và hỏi trước khi rời.
+- Toàn bộ integration đã qua trên PostgreSQL/MongoDB test riêng, gồm kiểm thử conflict, snapshot và xác nhận game đồng thời.
+- Kiểm tra người dùng: completion chờ API chậm, không gửi lặp, cập nhật tiến độ và nút bài tiếp trên desktop/mobile; bỏ đánh dấu rồi đổi bố cục vẫn đúng. Studio giữ bản chưa lưu và hỏi trước khi rời.
 - Mermaid chưa gần viewport không tải/render; đổi source không hiện sơ đồ cũ; lỗi hiện source hiện tại.
 - Không còn đường tạo quiz/luyện tập từ Studio và không phục hồi route đã nghỉ.
 - Ghi kết quả thực tế trong `pending-work-review.md`; tách trạng thái local, PR, merge và deploy.

@@ -630,8 +630,8 @@ export async function beginNight(code: string, hostToken: string): Promise<RoomS
 }
 
 /**
- * `draft` saves an unfinished selection on every tap, so a timeout still honours the first slots
- * (a lone Sleepyhead's peek). Only a confirmed, full selection lets the minute end early.
+ * `draft` saves an unfinished selection on every tap. Done waits for queued drafts on the
+ * client; the secret step ends only after every seat confirms a full selection.
  */
 export async function submitSecret(
 	code: string,
