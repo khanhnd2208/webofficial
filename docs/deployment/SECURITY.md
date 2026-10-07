@@ -28,12 +28,13 @@ out at `~/Workspace/Active/vps`; `vps help` lists every command).
 | ---------------------------------- | -------------------------------------------------------------------------------- |
 | See if everything is healthy       | `vps status` (apps, releases, server, HTTPS)                                     |
 | Check this site in depth           | `npm run deploy:vps -- --check` (from this repo)                                 |
-| Read an app's recent errors        | `vps logs <app> 50 --err` (app: `webofficial`, `chijuly`, `learn-chinese`)       |
+| Read an app's recent errors        | `vps logs <app> 50 --err` (app: `webofficial`, `chijuly`, `learn-chinese`, `fun`) |
 | Restart one app                    | `vps restart <app>`                                                              |
-| Roll back Chijuly or Learn Chinese | `vps rollback <app>`                                                             |
+| Roll back Chijuly, Learn Chinese, or Fun | `vps rollback <app>`                                                        |
 | Deploy this site                   | Merge a pull request to `main`; GitHub deploys it                                |
 | Deploy Chijuly                     | `vps deploy chijuly` (manual only)                                               |
 | Deploy Learn Chinese               | Merge to `main` in the learn-chinese repo (deploys after Quality passes)         |
+| Deploy Fun                         | Merge to `main` in the fun-games repo (deploys after Quality passes)             |
 | Administer the server (root)       | `ssh webofficial-vps` (root, Mac key only)                                       |
 | Run a backup now                   | `ssh webofficial-vps /opt/scripts/backup-databases.sh`                           |
 | See the last backup                | `ssh webofficial-vps 'tail -5 /var/log/db-backup/cron.log'`                      |
@@ -59,13 +60,19 @@ owner when it fails. That email is the signal to look.
 | This site     | `toiladuykhanh.com`, `www.` | 4000             | `/var/www/webofficial`   | `nextjs-app`    | deploy  |
 | Chijuly ERP   | `chijuly.toiladuykhanh.com` | 3000             | `/var/www/chijuly`       | `chijuly`       | deploy  |
 | Learn Chinese | `thh.toiladuykhanh.com`     | 3001             | `/var/www/learn-chinese` | `learn-chinese` | deploy  |
+| Fun games     | `fun.toiladuykhanh.com`     | 3002             | `/var/www/fun`           | `fun`           | deploy  |
 
 Every app runs from `<dir>/current`, a link to one of `<dir>/releases/`.
-Chijuly and Learn Chinese deploy with `/opt/vps/bin/app-deploy` (root-owned,
+Chijuly, Learn Chinese, and Fun deploy with `/opt/vps/bin/app-deploy` (root-owned,
 installed from `vps-infra` with `vps install`); their PM2 configs live in
-`/opt/vps/apps/<app>/`, their `.env` in `<dir>/shared/.env`, and a `pg_dump`
-from before each deploy in `<dir>/shared/db-backups/`. The old in-place files
-of all three apps sit in `<dir>/_legacy-20261006/` (mode 700) until 2026-10-20.
+`/opt/vps/apps/<app>/` and their `.env` in `<dir>/shared/.env`. Chijuly and
+Learn Chinese also keep a `pg_dump` from before each deploy in
+`<dir>/shared/db-backups/`. Fun does not: its rooms are in MongoDB, which the
+nightly backup already dumps. Fun runs one PM2 process (`fork`), because a
+second process would step the live bots twice. The old in-place files
+of the first three apps sit in `<dir>/_legacy-20261006/` (mode 700) until 2026-10-20.
+Fun has no legacy directory. Nginx for `fun.toiladuykhanh.com` is in
+`vps-infra` (`server/nginx/fun.conf`) and is not installed until the certificate exists.
 
 PM2 runs as `deploy` (`systemctl status pm2-deploy`, home `/home/deploy/.pm2`)
 with `pm2-logrotate` (10 MB per file, 14 kept). Root's PM2 (`pm2-root`) is
@@ -77,7 +84,7 @@ Databases listen on localhost only and require a password.
 | Engine     | Databases                                                      | App users                                                 |
 | ---------- | -------------------------------------------------------------- | --------------------------------------------------------- |
 | PostgreSQL | `khanhwebsite`, `chijuly_erp`, `learn_chinese`                 | `khanhwebsite`, `chijuly_user`, `learn_chinese_user`      |
-| MongoDB    | `my_teaching_platform`, `learn_chinese_auth`, `teaching-platform` | `teaching_user`, `learn_chinese_user`; admin `mongoadmin` |
+| MongoDB    | `my_teaching_platform`, `learn_chinese_auth`, `teaching-platform`, `fun_games` | `teaching_user`, `learn_chinese_user`, `fun_user` (readWrite on `fun_games` only); admin `mongoadmin` |
 
 ## Access
 
@@ -90,6 +97,7 @@ Databases listen on localhost only and require a password.
 | deploy | `ci-webofficial-deploy-2026-10`   | `GJJJkS2o8y3f7me2QRDALAi/iQkbdEbnlXCd84m3Sls` | GitHub `webofficial` env `production`   |
 | deploy | `ci-learn-chinese-deploy-2026-10` | `amLqUjWtKT4geQxi5EP4JVK9v+z014DRISRY7XuH4fk` | GitHub `learn-chinese` env `production` |
 | deploy | `ci-chijuly-deploy-2026-10`       | `4o48f1LJaj7eRh5tlaoe7zDvtd3TKAAv6iGqfGnSQwo` | GitHub `chijuly` env `production`       |
+| deploy | `ci-fun-deploy-2026-10`           | `JGd53uUEit2Vzi9L8F3AnLTAq2W4Yoq87HqJIe5L8RE` | GitHub `fun-games` env `production`     |
 
 CI keys carry the `restrict` option: no forwarding, no terminal. Check the live
 lists with
@@ -124,6 +132,9 @@ lists with
 - `khanhnd2208/chijuly`: environment `production` (main only) holds
   `VPS_HOST`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS`; the deploy workflow only runs
   when started by hand.
+- `khanhnd2208/fun-games`: environment `production` (main only) holds
+  `VPS_HOST`, `VPS_USER=deploy`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS`. A merge to
+  `main` deploys after the Quality workflow passes.
 - `khanhnd2208/vps-infra` (private): the `vps` command, `app-deploy`, PM2 and
   Nginx config. No secrets.
 
@@ -186,7 +197,7 @@ systemctl stop sshd-rollback.timer
 ```bash
 vps status                               # status, restarts, memory, release
 vps logs <app> 80 --err
-vps rollback <app>                       # chijuly, learn-chinese: back to the previous release
+vps rollback <app>                       # chijuly, learn-chinese, fun: back to the previous release
 vps restart <app>
 ```
 
@@ -291,3 +302,4 @@ user per app, auditd/AIDE/CrowdSec, Livepatch.
 | 2026-10-06 | Learn Chinese, then Chijuly moved to `releases/` + `current` + `shared/`; Learn Chinese binds 127.0.0.1       | `app-deploy` falls back to the in-place dir (`current -> .`)  |
 | 2026-10-06 | New key `ci-chijuly-deploy-2026-10` (`restrict`) for deploy; chijuly env `production` limited to `main`       | `authorized_keys.deploy` in `hardening-backup-20261006-vps-infra` |
 | 2026-10-06 | Old in-place app files moved to `/var/www/<app>/_legacy-20261006/` (~5.4 GB); delete from 2026-10-20          | `mv` the item back; list in `MANIFEST-before.txt`             |
+| 2026-10-07 | Fun games: database `fun_games`, user `fun_user` (readWrite on that database only), `/var/www/fun` on port 3002, key `ci-fun-deploy-2026-10` | Drop the user and database after the overlap; remove the key (`authorized_keys.deploy` in `/root/hardening-backup-20261007`) |
