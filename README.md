@@ -18,7 +18,7 @@
 | [docs/05-BRAND_BRIEF.md](./docs/05-BRAND_BRIEF.md)             | Current editorial brand and visual direction                                       |
 | [docs/09-DESIGN_SYSTEM.md](./docs/09-DESIGN_SYSTEM.md)         | Editorial vs My Class Study Tool visual grammars                                   |
 | [docs/06-CONTENT_INVENTORY.md](./docs/06-CONTENT_INVENTORY.md) | Current public content and preserved internal domains                              |
-| [docs/areas.md](./docs/areas.md) | Area map (Boardgame, Classroom, Portfolio, Tools) and import rules |
+| [docs/areas.md](./docs/areas.md) | Area map (Classroom, Portfolio, Tools) and import rules |
 | [docs/10-AI_AGENTS.md](./docs/10-AI_AGENTS.md) | How AI agents are guided here: AGENTS.md, rules, skills, permissions |
 | [AGENTS.md](./AGENTS.md) | Rules every AI agent follows in this repo |
 

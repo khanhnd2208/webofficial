@@ -9,8 +9,6 @@
 
 All API route handlers **must** use one of the three wrappers below. Raw `async function GET(...)` declarations are forbidden.
 
-> Exception: board-game room APIs (`src/app/api/spy`, `cheese-thief`, `ma-soi`) use the wrappers in `src/features/board-game-shared/lib/apiUtils.ts`. They answer with an error **code** for the client to translate, and services throw `GameError` from `lib/gameError.ts`. Admin endpoints under `src/app/api/admin/board-game` use `AppError`; `features/board-game-test/service.ts` handles both by name. Never alias one class as the other.
-
 ### 1.1 Wrapper Reference
 
 | Wrapper | Auth Required | Admin Required | Use When |
@@ -445,18 +443,17 @@ npm run check              # typecheck + lint + test:all + build
 |---|---|---|
 | A page or route handler | `src/app/<route>` | Keep it thin: parse input, call a service, render. |
 | Business logic for one product area | `src/features/<feature>/` (`services/`, `repositories/`, `domain/`, `schemas/`, `components/`) | Pick the area first; see `docs/areas.md`. |
-| UI used only by one area | `src/components/<area-folder>/` or the feature's `components/` | e.g. `components/myclass`, `features/cheese-thief/components`. |
+| UI used only by one area | `src/components/<area-folder>/` or the feature's `components/` | e.g. `components/myclass`. |
 | UI used by several areas | `src/components/ui` (primitives), `forms` (inputs and editors), `site` (chrome), `admin` (admin shell), `motion` | Must not import an area. |
-| Code shared by the board games only | `src/features/board-game-shared/` | Not for the rest of the site. |
 | Helpers with no area knowledge | `src/lib` (server and infra), `src/utils` (pure formatting), `src/config` (constants, routes, navigation) | No `src/constants` or `src/shared` folders; they were folded into these. |
 | A Mongoose model | `src/models/` | Only for the MongoDB domains listed in `docs/02-ARCHITECTURE.md`. |
 | A relational model | `prisma/schema.prisma` plus a migration | **Default for new features.** |
 
-New persistent data goes to PostgreSQL with Prisma unless it extends an existing MongoDB domain (Auth.js users, posts, inquiries, messages, board-game rooms). Do not add a third store.
+New persistent data goes to PostgreSQL with Prisma unless it extends an existing MongoDB domain (Auth.js users, posts, inquiries, messages). Do not add a third store.
 
 ### 11.2 Area boundaries
 
-The app has four areas (Boardgame, Classroom, Portfolio, Tools) plus shared code. `scripts/areas/areas.mjs` is the only list of which path belongs where.
+The app has three areas (Classroom, Portfolio, Tools) plus shared code. `scripts/areas/areas.mjs` is the only list of which path belongs where. Board games live on fun.toiladuykhanh.com.
 
 - A new top-level folder under `src/features`, `src/components`, or `src/app` must be added to `areas.mjs`, then `npm run areas:sync`. CI fails with `areas:check` otherwise.
 - ESLint rejects imports from one area into another. If two areas need the same code, move that code into shared code rather than silencing the rule.

@@ -6,7 +6,6 @@
 
 <!-- See docs/areas.md. Tick every area this PR touches. -->
 
-- [ ] Boardgame
 - [ ] Classroom
 - [ ] Portfolio
 - [ ] Tools

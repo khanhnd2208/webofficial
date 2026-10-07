@@ -183,8 +183,7 @@
 		"routes": [
 			"/opengraph-image",
 			"/gioi-thieu/opengraph-image",
-			"/kham-pha-khoa-hoc/opengraph-image",
-			"/my-space/board-game/opengraph-image"
+			"/kham-pha-khoa-hoc/opengraph-image"
 		]
 	}
 }

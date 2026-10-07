@@ -47,8 +47,7 @@ src/
 ├── content/             editorial and marketing content kept separate from UI
 ├── features/            vertical slices: courses, enrollments, progress,
 │                        myspace-tests, my-class, teaching, active-recall,
-│                        portfolio, posts, services, and the board games
-│                        (board-game-shared, spy-fall, cheese-thief, werewolf)
+│                        portfolio, posts, and services
 ├── lib/                 auth, database clients, API wrappers, validation and utilities
 ├── models/              Mongoose schemas for MongoDB-backed domains
 ├── services/            established business services shared by routes/components

@@ -339,8 +339,6 @@ jobs:
 
       - name: Release-critical end-to-end tests
         env:
-          BOARD_GAME_ISOLATED_TEST: '1'
-          AREA_BOARDGAME: ${{ steps.filter.outputs.boardgame }}
           AREA_CLASSROOM: ${{ steps.filter.outputs.classroom }}
           AREA_PORTFOLIO: ${{ steps.filter.outputs.portfolio }}
           AREA_SHARED: ${{ steps.filter.outputs.shared }}
@@ -371,12 +369,6 @@ jobs:
               e2e/learn-studio.spec.ts
             )
           fi
-          if [[ "$run_all" -eq 1 ]] || is_true "$AREA_BOARDGAME"; then
-            specs+=(
-              e2e/board-game-visual.spec.ts
-              e2e/board-game-test-rooms.spec.ts
-            )
-          fi
           if [[ "$run_all" -eq 1 ]] || is_true "$AREA_CLASSROOM"; then
             specs+=(
               e2e/active-recall-admin.spec.ts
@@ -391,7 +383,7 @@ jobs:
               e2e/myspace-tests.spec.ts
             )
           fi
-          echo "E2E selection full=${RUN_ALL_E2E} boardgame=${AREA_BOARDGAME} classroom=${AREA_CLASSROOM} portfolio=${AREA_PORTFOLIO} shared=${AREA_SHARED} outside=${AREA_OUTSIDE}"
+          echo "E2E selection full=${RUN_ALL_E2E} classroom=${AREA_CLASSROOM} portfolio=${AREA_PORTFOLIO} shared=${AREA_SHARED} outside=${AREA_OUTSIDE}"
           printf ' - %s\n' "${specs[@]}"
           npx playwright test "${specs[@]}"
 
