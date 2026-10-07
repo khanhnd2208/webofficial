@@ -4,6 +4,7 @@ import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
 import { readDiscussion, sectionMinutes } from './content';
+import { stripRetiredPracticeBlocks } from './retiredBlocks';
 import { mapStudioSection } from './studioSection';
 import { LEARN_SECTION_KINDS, type LearnSectionKind, type LearnStudioSection } from './types';
 
@@ -143,7 +144,10 @@ export async function restoreSectionRevision(
 		data: {
 			title: revision.title,
 			summary: revision.summary,
-			markdown: revision.markdown,
+			markdown:
+				current.type === 'READING'
+					? stripRetiredPracticeBlocks(revision.markdown).markdown
+					: revision.markdown,
 			keyTakeaways: revision.keyTakeaways,
 			checkpoint: Prisma.DbNull,
 			quiz: Prisma.DbNull,
@@ -154,7 +158,10 @@ export async function restoreSectionRevision(
 			estimatedMinutes: sectionMinutes({
 				type: current.type as LearnSectionKind,
 				durationMinutes: current.durationMinutes,
-				markdown: revision.markdown,
+				markdown:
+					current.type === 'READING'
+						? stripRetiredPracticeBlocks(revision.markdown).markdown
+						: revision.markdown,
 				discussion: readDiscussion(revision.discussion),
 			}),
 		},

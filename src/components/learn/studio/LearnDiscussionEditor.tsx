@@ -10,6 +10,7 @@ import {
 	PROMPT_SNIPPETS,
 	nextStepSnippet,
 } from '@/features/learn/discussionTemplates';
+import { LEARN_MAX_QUESTIONS } from '@/features/learn/schemas';
 import { discussionIssues } from '@/features/learn/questionHealth';
 import type { LearnDiscussion, LearnDiscussionQuestion } from '@/features/learn/types';
 
@@ -19,7 +20,8 @@ import { StudioIcon } from './icons';
 import StudioMenu from './StudioMenu';
 import { useWideStudio } from './StudioTabs';
 import { flushRegisteredEditors } from './useStudioSaver';
-import { useQuestionDelete } from './useDeferredDeletes';
+import { useDeferredDeletes } from './useDeferredDeletes';
+import StudioToast from './StudioToast';
 
 type Field = 'prompt' | 'answer';
 type Pane = Field | 'preview';
@@ -30,6 +32,7 @@ interface DiscussionSessionValue {
 	activeTitle: string;
 	count: number;
 	select: (id: string) => void;
+	update: (id: string, patch: Partial<LearnDiscussionQuestion>) => void;
 	reorder: (ids: string[]) => void;
 	duplicate: (id: string) => void;
 	remove: (id: string) => void;
@@ -51,18 +54,29 @@ export function DiscussionSession({
 	discussion,
 	onChange,
 	children,
+	onSelect: onSelected,
 }: {
 	discussion: LearnDiscussion;
 	onChange: (discussion: LearnDiscussion) => void;
 	children: ReactNode;
+	onSelect?: () => void;
 }) {
 	const [activeId, setActiveId] = useState<string | null>(discussion.questions[0]?.id ?? null);
 
+	const latest = useRef(discussion.questions);
+	useEffect(() => {
+		latest.current = discussion.questions;
+	}, [discussion.questions]);
 	function setQuestions(questions: LearnDiscussionQuestion[]) {
+		latest.current = questions;
 		onChange({ questions });
 	}
-	const questions = useQuestionDelete(discussion.questions, setQuestions);
-	const visible = questions.visible;
+	const deletes = useDeferredDeletes();
+	const visible = discussion.questions;
+
+	function update(id: string, patch: Partial<LearnDiscussionQuestion>) {
+		setQuestions(latest.current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+	}
 	const views = discussionQuestionViews(visible.map((item) => item.question));
 	const activeIndex = Math.max(
 		0,
@@ -81,6 +95,7 @@ export function DiscussionSession({
 	function select(id: string) {
 		flushRegisteredEditors();
 		setActiveId(id);
+		onSelected?.();
 	}
 
 	function step(delta: number) {
@@ -89,18 +104,21 @@ export function DiscussionSession({
 	}
 
 	function reorder(ids: string[]) {
-		const byId = new Map(discussion.questions.map((item) => [item.id, item]));
+		flushRegisteredEditors();
+		const byId = new Map(latest.current.map((item) => [item.id, item]));
 		setQuestions(ids.map((id) => byId.get(id)!).filter(Boolean));
 	}
 
 	function duplicate(id: string) {
-		const index = discussion.questions.findIndex((item) => item.id === id);
+		flushRegisteredEditors();
+		if (latest.current.length >= LEARN_MAX_QUESTIONS) return;
+		const index = latest.current.findIndex((item) => item.id === id);
 		if (index < 0) return;
-		const copy = { ...discussion.questions[index], id: newQuestionId() };
-		const next = [...discussion.questions];
+		const copy = { ...latest.current[index], id: newQuestionId() };
+		const next = [...latest.current];
 		next.splice(index + 1, 0, copy);
 		setQuestions(next);
-		setActiveId(copy.id);
+		select(copy.id);
 	}
 
 	const value: DiscussionSessionValue = {
@@ -121,16 +139,37 @@ export function DiscussionSession({
 		activeTitle: views[activeIndex]?.title || (active ? `Câu ${activeIndex + 1}` : 'Chưa có câu'),
 		count: visible.length,
 		select,
+		update,
 		reorder,
 		duplicate,
 		remove: (id) => {
-			const index = visible.findIndex((item) => item.id === id);
-			if (index >= 0) questions.removeAt(index);
+			flushRegisteredEditors();
+			const index = latest.current.findIndex((item) => item.id === id);
+			const removed = latest.current[index];
+			if (!removed) return;
+			const beforeId = latest.current[index + 1]?.id;
+			setQuestions(latest.current.filter((item) => item.id !== id));
+			deletes.defer({
+				key: id,
+				message: `Đã xóa câu ${index + 1}`,
+				commit: () => undefined,
+				restore: () => {
+					flushRegisteredEditors();
+					if (latest.current.some((item) => item.id === id)) return;
+					const next = [...latest.current];
+					const before = next.findIndex((item) => item.id === beforeId);
+					next.splice(before >= 0 ? before : Math.min(index, next.length), 0, removed);
+					setQuestions(next);
+					setActiveId(id);
+				},
+			});
 		},
 		add: () => {
+			flushRegisteredEditors();
+			if (latest.current.length >= LEARN_MAX_QUESTIONS) return;
 			const created = emptyQuestion();
-			setQuestions([...discussion.questions, created]);
-			setActiveId(created.id);
+			setQuestions([...latest.current, created]);
+			select(created.id);
 		},
 		step,
 	};
@@ -138,7 +177,7 @@ export function DiscussionSession({
 	return (
 		<DiscussionSessionContext.Provider value={value}>
 			{children}
-			{questions.toast}
+			<StudioToast message={deletes.message} onAction={deletes.undo} onClose={deletes.commitAll} />
 		</DiscussionSessionContext.Provider>
 	);
 }
@@ -148,7 +187,12 @@ export function DiscussionQuestionList() {
 	if (!session) return null;
 	return (
 		<div className="ln-qside">
-			<button type="button" className="ln-btn ln-btn--primary ln-btn--block" onClick={session.add}>
+			<button
+				type="button"
+				className="ln-btn ln-btn--primary ln-btn--block"
+				onClick={session.add}
+				disabled={session.count >= LEARN_MAX_QUESTIONS}
+			>
 				<StudioIcon name="plus" size={14} /> Thêm câu
 			</button>
 			<p className="ln-qside__count tabular-nums">{session.count} câu</p>
@@ -211,6 +255,10 @@ export default function LearnDiscussionEditor({
 	const view = views[activeIndex];
 
 	function update(id: string, patch: Partial<LearnDiscussionQuestion>) {
+		if (session) {
+			session.update(id, patch);
+			return;
+		}
 		onChange({
 			questions: discussion.questions.map((item) =>
 				item.id === id ? { ...item, ...patch } : item,
@@ -353,7 +401,7 @@ export default function LearnDiscussionEditor({
 				</div>
 			</div>
 			{active && view && (pane === 'preview' || split) ? (
-				<div className="ln-qwork__preview ln-qpreview">
+				<div className="ln ln-qwork__preview ln-qpreview">
 					<p className="ln-eyebrow">Xem như học viên</p>
 					<DiscussionQuestionCard
 						index={activeIndex}

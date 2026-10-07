@@ -7,6 +7,12 @@ import {
 } from './retiredBlocks';
 
 describe('retired practice blocks', () => {
+	it('preserves untouched source and blank lines inside fenced examples', () => {
+		const source = '\n```text\nA\n\n\nB\n```\n';
+		expect(stripRetiredPracticeBlocks(source).markdown).toBe(source);
+		const withRetired = source + '\n## Bài tập thực hành\nBỏ.\n## Giảng tiếp\nGiữ.';
+		expect(stripRetiredPracticeBlocks(withRetired).markdown).toContain('A\n\n\nB');
+	});
 	it('removes a practice heading until the next heading of the same level', () => {
 		const source = [
 			'## Giảng',

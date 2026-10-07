@@ -1,6 +1,6 @@
 # Learn Studio: kế hoạch đã đối chiếu với phiên bản hiện tại
 
-Ngày rà soát: 07/10/2026. Nền đối chiếu: `origin/main` tại `e9e4b4f`.
+Ngày rà soát: 07/10/2026. Nền đối chiếu: `origin/main` tại `bae22dd`.
 
 ## Phạm vi hiện hành
 
@@ -32,7 +32,7 @@ Learn chỉ có bài đọc (`READING`) và câu hỏi phản biện (`DISCUSSIO
 6. Hoàn tác xóa câu sửa JSON cục bộ; không phát sinh DELETE riêng. Hoàn tác xóa mục giữ hàng đợi 8 giây; thao tác cấu trúc phải commit hàng đợi trước PUT outline.
 7. Preview phản biện dùng cùng card học viên, không lưu tiến độ, không localStorage và không gọi API học viên.
 8. Export chỉ thực hiện sau flush thành công; tránh xuất một trạng thái khác với nội dung đang thấy.
-9. Dùng token `.ln`, focus có thể nhìn thấy, reduced motion, label thật và LiveRegion. Không thêm dependency hoặc migration cho việc bảo trì này.
+9. Dùng theme Admin dùng chung cho Studio, token `.ln` riêng cho preview học viên, focus có thể nhìn thấy, reduced motion, label thật và LiveRegion. Không thêm dependency hoặc migration cho việc bảo trì này.
 10. Nội dung ITM hiện tại đã được audit sau PR nháp #3. Không thay bằng bản cũ chỉ để hết conflict. Seed chỉ tạo dữ liệu còn thiếu; chỉnh production qua Studio/admin API.
 
 ## Tiêu chí đóng kế hoạch
@@ -47,3 +47,18 @@ Learn chỉ có bài đọc (`READING`) và câu hỏi phản biện (`DISCUSSIO
 ## Giao hàng
 
 Commit từng loại thay đổi riêng. Trước push chạy các gates trong AGENTS.md. Push/PR/merge/deploy chỉ khi người dùng yêu cầu bước đó trong cuộc trò chuyện; merge dùng merge commit. Không chỉnh checkout chính hoặc xóa nhánh/worktree của người khác trong quá trình hoàn thiện.
+
+
+## Rà soát nhánh chuẩn hóa Studio — 07/10/2026
+
+Nhánh `cursor/learn-studio-admin` có commit chuẩn hóa ban đầu `b545ba8`. Rà soát bổ sung đã sửa:
+
+- Nội dung editor trực quan đang chờ debounce bị mất hoặc ghi đè danh sách khi thêm, nhân bản, đổi thứ tự và xóa câu. Thao tác cấu trúc giờ flush editor, đọc draft mới nhất; xóa cập nhật JSON ngay và undo không làm mất phần sửa tiếp theo.
+- Undo và câu đang chọn được giới hạn theo mục/phiên khôi phục; xóa câu cuối không giữ editor của câu đã xóa.
+- Studio dùng theme Admin chung; preview giữ theme học viên. Mục lục và thuộc tính dùng modal drawer có vòng Tab, Escape, tên truy cập và trả focus về nút mở.
+- Breakpoint dùng snapshot SSR nhất quán để tránh hydration mismatch trên desktop.
+- Mọi chế độ nhập đều chặn áp dụng nếu lưu bản đang sửa thất bại. Xuất và khôi phục bài đọc loại các khối luyện tập đã nghỉ; nội dung không liên quan, kể cả dòng trống trong code block, được giữ nguyên.
+
+Kiểm tra local: typecheck, lint không warning, format, areas, build; 830 unit, 452 component, 188 integration. Sáu hành trình Playwright kiểm tra soạn/chuyển câu, nhập thực sự qua ba bước, lưu/khôi phục, nhân bản/xóa với draft mới nhất, focus drawer và bố cục ở 390/768/1024/1280/1440/1920px. E2E chỉ chạy localhost trên database test riêng.
+
+Không có dependency hay migration mới. Chưa chỉnh nội dung đang chạy trên production: các đoạn luyện tập nằm trong Markdown bài giảng cũ phải đọc lại, lưu phiên bản và PATCH phần khác biệt qua Studio/admin session; không dùng seed hay ghi database trực tiếp.

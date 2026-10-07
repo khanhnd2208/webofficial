@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
+import adminStyles from '@/components/admin/AdminStudio.module.css';
+
 import { routes } from '@/config/routes';
 import type { AdminLearnCourse } from '@/features/learn/adminCatalog';
 import { absoluteWhen, relativeWhen } from '@/features/learn/formatWhen';
@@ -36,7 +38,7 @@ export default function LearnCourseAdminList({ courses }: { courses: AdminLearnC
 	});
 
 	return (
-		<section className="ln-admin" aria-label="Quản lý khóa học">
+		<section className={`ln-admin ${adminStyles.theme}`} aria-label="Quản lý khóa học">
 			<div className="ln-segmented" role="tablist" aria-label="Trạng thái">
 				{FILTERS.map((item) => (
 					<button

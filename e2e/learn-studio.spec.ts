@@ -93,7 +93,7 @@ test('edits a discussion, imports, previews, saves and restores', async ({ page,
 
 		await page.getByRole('tab', { name: 'Xem trước' }).click();
 		await expect(page.getByText('Xem như học viên').first()).toBeVisible();
-		await expect(page.getByText(edited)).toBeVisible();
+		await expect(page.locator('.ln-qwork__preview').getByText(edited)).toBeVisible();
 
 		await page.getByRole('tab', { name: 'Đề bài' }).click();
 		const save = page.getByRole('button', { name: /^Lưu$|Đã lưu/ });
@@ -129,6 +129,131 @@ test('studio editor stays on screen at a phone width', async ({ page, context })
 			() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
 		);
 		expect(overflow).toBeLessThanOrEqual(1);
+	} finally {
+		await course.cleanup();
+	}
+});
+
+test('keeps visual text through duplication, deletion and immediate reload', async ({
+	page,
+	context,
+}) => {
+	const course = await courseWithDiscussion(context);
+	try {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
+		const prompt = page.getByRole('textbox', { name: 'Đề bài', exact: true });
+		await prompt.fill('Bản trực quan mới nhất');
+		await page.getByRole('button', { name: 'Thao tác câu 1' }).click();
+		await page.getByRole('menuitem', { name: 'Nhân bản', exact: true }).click();
+		await expect(page.locator('.ln-qnav__main')).toHaveCount(2);
+		await expect(page.getByRole('textbox', { name: 'Đề bài', exact: true })).toContainText(
+			'Bản trực quan mới nhất',
+		);
+		await page.getByRole('button', { name: 'Thao tác câu 2' }).click();
+		await page.getByRole('menuitem', { name: 'Xóa', exact: true }).click();
+		await expect(page.locator('.ln-qnav__main')).toHaveCount(1);
+		await page.getByRole('button', { name: 'Thuộc tính', exact: true }).click();
+		await page.getByRole('button', { name: 'Xem như học viên', exact: true }).click();
+		await expect(page.getByRole('button', { name: /Đã lưu/ })).toBeVisible();
+		await page.reload();
+		await expect(page.locator('.ln-qnav__main')).toHaveCount(1);
+		await expect(page.getByRole('textbox', { name: 'Đề bài', exact: true })).toContainText(
+			'Bản trực quan mới nhất',
+		);
+	} finally {
+		await course.cleanup();
+	}
+});
+
+test('drawers contain keyboard focus and return focus to their trigger', async ({
+	page,
+	context,
+}) => {
+	const course = await courseWithDiscussion(context);
+	try {
+		await page.setViewportSize({ width: 390, height: 800 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
+		const navigation = page.getByRole('button', { name: 'Mục lục', exact: true });
+		await navigation.click();
+		const drawer = page.getByRole('dialog', { name: 'Mục lục', exact: true });
+		await expect(drawer).toBeVisible();
+		for (let i = 0; i < 8; i++) {
+			await page.keyboard.press('Tab');
+			expect(await drawer.evaluate((node) => node.contains(document.activeElement))).toBe(true);
+		}
+		await page.keyboard.press('Escape');
+		await expect(drawer).toHaveCount(0);
+		await expect(navigation).toBeFocused();
+		const properties = page.getByRole('button', { name: 'Thuộc tính', exact: true });
+		await properties.click();
+		await expect(page.getByRole('dialog', { name: 'Thuộc tính mục' })).toBeVisible();
+		await page.keyboard.press('Escape');
+		await expect(page.getByRole('dialog', { name: 'Thuộc tính mục' })).toHaveCount(0);
+		await expect(properties).toBeFocused();
+	} finally {
+		await course.cleanup();
+	}
+});
+
+test('workspace fits supported widths with Admin theme and a separate learner preview', async ({
+	page,
+	context,
+}) => {
+	const errors: string[] = [];
+	page.on('pageerror', (error) => errors.push(error.message));
+	const course = await courseWithDiscussion(context);
+	try {
+		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
+		for (const width of [390, 768, 1024, 1280, 1440, 1920]) {
+			await page.setViewportSize({ width, height: 900 });
+			await expect(page.getByRole('tab', { name: 'Đề bài', exact: true })).toBeVisible();
+			const overflow = await page.evaluate(
+				() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+			);
+			expect(overflow).toBeLessThanOrEqual(1);
+		}
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await expect(page.locator('.ln-studio')).toHaveCSS('background-color', 'rgb(244, 246, 250)');
+		await page.screenshot({ path: '/tmp/learn-review-desktop.png' });
+		await page.getByRole('button', { name: 'Soạn và xem cạnh nhau' }).click();
+		await expect(page.locator('.ln-qwork')).toHaveAttribute('data-split', 'true');
+		await page.screenshot({ path: '/tmp/learn-review-preview.png' });
+		await page.setViewportSize({ width: 390, height: 800 });
+		await expect(page.locator('.ln-qwork')).not.toHaveAttribute('data-split', 'true');
+		await page.screenshot({ path: '/tmp/learn-review-mobile.png' });
+		expect(errors).toEqual([]);
+	} finally {
+		await course.cleanup();
+	}
+});
+
+test('imports discussion content through review and apply, then persists it', async ({
+	page,
+	context,
+}) => {
+	const course = await courseWithDiscussion(context);
+	try {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
+		await page.getByRole('button', { name: 'Nhập nội dung' }).first().click();
+		await page
+			.getByRole('textbox', { name: 'Kết quả AI' })
+			.fill(
+				'Câu 1:\n### Hiểu — Tình huống nhập thử\n> [!REFLECT] Câu hỏi:\n> Vì sao cần kiểm tra?\n\nĐáp án mẫu:\nĐể xác nhận nội dung trước khi áp dụng.',
+			);
+		await page.getByRole('button', { name: 'Kiểm tra', exact: true }).click();
+		await page.getByRole('button', { name: 'Áp dụng', exact: true }).click();
+		await page.getByRole('button', { name: 'Lưu 1 câu', exact: true }).click();
+		await expect(page.getByRole('dialog', { name: 'Nhập nội dung' })).toHaveCount(0);
+		await expect(page.locator('.ln-qnav__main')).toHaveCount(2);
+		await page.reload();
+		await expect(page.locator('.ln-qnav__main')).toHaveCount(2);
+		await page.locator('.ln-qnav__main').nth(1).click();
+		await page.getByRole('tab', { name: 'Xem trước', exact: true }).click();
+		await expect(
+			page.getByRole('heading', { name: 'Hiểu — Tình huống nhập thử', exact: true }),
+		).toBeVisible();
 	} finally {
 		await course.cleanup();
 	}

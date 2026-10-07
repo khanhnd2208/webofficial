@@ -3350,6 +3350,35 @@ button.ln-save.ln-btn--primary {
 	border-color: var(--bronze);
 }
 
+.ln-drawer {
+	width: min(22rem, 100vw);
+	max-width: none;
+	height: 100svh;
+	max-height: 100svh;
+	margin: 0 0 0 auto;
+	padding: 0;
+	border: 1px solid var(--hairline);
+	background: var(--canvas);
+	color: var(--ink);
+	overflow-y: auto;
+}
+.ln-drawer[data-side='left'] {
+	width: min(20rem, 88vw);
+	margin: 0 auto 0 0;
+}
+.ln-drawer::backdrop {
+	background: rgb(23 23 23 / 0.3);
+}
+.ln-drawer > .ln-souter,
+.ln-drawer > .ln-inspector {
+	position: static;
+	width: 100%;
+	height: 100%;
+	transform: none;
+	border: 0;
+	box-shadow: none;
+}
+
 /* Dialogs */
 .ln-dialog {
 	width: min(72rem, calc(100vw - 2rem));

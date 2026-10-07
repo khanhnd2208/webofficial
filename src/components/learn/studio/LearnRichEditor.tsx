@@ -237,7 +237,13 @@ export default function LearnRichEditor({
 			}
 		},
 		editorProps: {
-			attributes: { class: 'ln-prose ln-editor__content', spellcheck: 'false' },
+			attributes: {
+				class: 'ln-prose ln-editor__content',
+				spellcheck: 'false',
+				role: 'textbox',
+				'aria-label': label,
+				'aria-multiline': 'true',
+			},
 			transformPastedHTML: (html) => preparePastedImages(html, pastedImages.current),
 			handleDrop: (view, event, _slice, moved) => {
 				if (moved) return false;

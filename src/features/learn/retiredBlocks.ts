@@ -68,10 +68,7 @@ export function stripRetiredPracticeBlocks(markdown: string): {
 	}
 
 	return {
-		markdown: kept
-			.join('\n')
-			.replace(/\n{3,}/g, '\n\n')
-			.trim(),
+		markdown: removed.length ? kept.join('\n').trim() : markdown,
 		removed,
 	};
 }

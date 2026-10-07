@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import adminStyles from '@/components/admin/AdminStudio.module.css';
+
 import { routes } from '@/config/routes';
 import { publishChecklist } from '@/features/learn/publishChecklist';
 import type {
@@ -23,7 +25,7 @@ import RevisionDialog from './RevisionDialog';
 import SectionJumpDialog from './SectionJumpDialog';
 import StudioCanvas from './StudioCanvas';
 import { useStudioConfirm } from './StudioConfirm';
-import StudioDialog from './StudioDialog';
+import StudioDialog, { StudioDrawer } from './StudioDialog';
 import StudioHelpDialog from './StudioHelpDialog';
 import StudioInspector from './StudioInspector';
 import StudioOutline from './StudioOutline';
@@ -34,7 +36,7 @@ import { findSection, validateSectionPatch, type SectionPatch } from './sectionP
 import { useDeferredDeletes } from './useDeferredDeletes';
 import { useSectionImport } from './useSectionImport';
 import { useStudioNavigation } from './useStudioNavigation';
-import { useStudioSaver } from './useStudioSaver';
+import { flushRegisteredEditors, useStudioSaver } from './useStudioSaver';
 import { useStudioShortcuts } from './useStudioShortcuts';
 import { useStudioStructure } from './useStudioStructure';
 
@@ -132,6 +134,7 @@ export default function LearnStudio({
 
 	const select = useCallback(
 		(id: string | null) => {
+			flushRegisteredEditors();
 			setSelectedId(id);
 			if (!wide) setNavOpen(false);
 			window.history.replaceState(window.history.state, '', routes.learnStudio(meta.slug, id));
@@ -279,8 +282,68 @@ export default function LearnStudio({
 		help: () => setDialog('shortcuts'),
 	});
 
+	const sidebar = (
+		<aside className="ln-souter">
+			<div className="ln-souter__tabs" role="tablist" aria-label="Điều hướng">
+				<button
+					type="button"
+					role="tab"
+					aria-selected={sidebarTab === 'outline'}
+					onClick={() => setSidebarTab('outline')}
+				>
+					Mục lục khóa
+				</button>
+				{discussion ? (
+					<button
+						type="button"
+						role="tab"
+						aria-selected={sidebarTab === 'questions'}
+						onClick={() => setSidebarTab('questions')}
+					>
+						Danh sách câu
+					</button>
+				) : null}
+				{wide ? null : (
+					<button
+						type="button"
+						className="ln-icon-btn"
+						onClick={() => setNavOpen(false)}
+						aria-label="Đóng mục lục"
+					>
+						×
+					</button>
+				)}
+			</div>
+			{discussion && sidebarTab === 'questions' ? (
+				<DiscussionQuestionList />
+			) : (
+				<StudioOutline
+					courseId={meta.id}
+					lessons={lessons}
+					selectedId={selectedId}
+					actions={{
+						onSelect: select,
+						onRenameLesson: renameLesson,
+						onReorderLessons: structure.reorderLessons,
+						onReorderSections: structure.reorderSections,
+						onPlaceSection: structure.placeSection,
+						onAddSection: (lessonId, type) => void structure.addSection(lessonId, type),
+						onDeleteLesson: (id) => void structure.deleteLesson(id),
+						onDuplicateLesson: (id) => void structure.duplicateLesson(id),
+						onExportLesson: (id) => void exportFile(id),
+						onDuplicateSection: (id) => void structure.duplicateSection(id),
+						onPreviewSection: previewSection,
+						onDeleteSection: structure.deleteSection,
+						onAddLesson: () => void structure.addLesson(),
+						onImport: () => imports.setRequest({ kind: 'lesson', locked: false }),
+					}}
+				/>
+			)}
+		</aside>
+	);
+
 	return (
-		<div className="ln-studio">
+		<div className={`ln-studio ${adminStyles.theme}`}>
 			<StudioTopBar
 				courseHref={routes.learnCourse(meta.slug, selectedId)}
 				title={meta.title}
@@ -326,76 +389,22 @@ export default function LearnStudio({
 			) : null}
 
 			<DiscussionSession
+				key={`${discussion?.id ?? 'reading'}:${editorEpoch}`}
+				onSelect={() => {
+					if (!wide) setNavOpen(false);
+				}}
 				discussion={discussion?.discussion ?? { questions: [] }}
 				onChange={(next) => {
 					if (discussion) patchSection(discussion.id, { discussion: next });
 				}}
 			>
 				<div className="ln-studio__grid">
-					<aside className="ln-souter" data-open={!wide && navOpen ? 'true' : undefined}>
-						<div className="ln-souter__tabs" role="tablist" aria-label="Điều hướng">
-							<button
-								type="button"
-								role="tab"
-								aria-selected={sidebarTab === 'outline'}
-								onClick={() => setSidebarTab('outline')}
-							>
-								Mục lục khóa
-							</button>
-							{discussion ? (
-								<button
-									type="button"
-									role="tab"
-									aria-selected={sidebarTab === 'questions'}
-									onClick={() => setSidebarTab('questions')}
-								>
-									Danh sách câu
-								</button>
-							) : null}
-							{wide ? null : (
-								<button
-									type="button"
-									className="ln-icon-btn"
-									onClick={() => setNavOpen(false)}
-									aria-label="Đóng mục lục"
-								>
-									×
-								</button>
-							)}
-						</div>
-						{discussion && sidebarTab === 'questions' ? (
-							<DiscussionQuestionList />
-						) : (
-							<StudioOutline
-								courseId={meta.id}
-								lessons={lessons}
-								selectedId={selectedId}
-								actions={{
-									onSelect: select,
-									onRenameLesson: renameLesson,
-									onReorderLessons: structure.reorderLessons,
-									onReorderSections: structure.reorderSections,
-									onPlaceSection: structure.placeSection,
-									onAddSection: (lessonId, type) => void structure.addSection(lessonId, type),
-									onDeleteLesson: (id) => void structure.deleteLesson(id),
-									onDuplicateLesson: (id) => void structure.duplicateLesson(id),
-									onExportLesson: (id) => void exportFile(id),
-									onDuplicateSection: (id) => void structure.duplicateSection(id),
-									onPreviewSection: previewSection,
-									onDeleteSection: structure.deleteSection,
-									onAddLesson: () => void structure.addLesson(),
-									onImport: () => imports.setRequest({ kind: 'lesson', locked: false }),
-								}}
-							/>
-						)}
-					</aside>
-					{!wide && navOpen ? (
-						<button
-							type="button"
-							className="ln-studio__backdrop"
-							aria-label="Đóng mục lục"
-							onClick={() => setNavOpen(false)}
-						/>
+					{wide ? (
+						sidebar
+					) : navOpen ? (
+						<StudioDrawer title="Mục lục" side="left" onClose={() => setNavOpen(false)}>
+							{sidebar}
+						</StudioDrawer>
 					) : null}
 
 					<StudioCanvas
@@ -413,13 +422,7 @@ export default function LearnStudio({
 				</div>
 
 				{section && inspectorOpen ? (
-					<>
-						<button
-							type="button"
-							className="ln-studio__backdrop"
-							aria-label="Đóng thuộc tính"
-							onClick={() => setInspectorOpen(false)}
-						/>
+					<StudioDrawer title="Thuộc tính mục" side="right" onClose={() => setInspectorOpen(false)}>
 						<StudioInspector
 							section={section}
 							lessons={lessons}
@@ -430,7 +433,7 @@ export default function LearnStudio({
 							onPreview={() => previewSection(section.id)}
 							onClose={() => setInspectorOpen(false)}
 						/>
-					</>
+					</StudioDrawer>
 				) : null}
 			</DiscussionSession>
 
