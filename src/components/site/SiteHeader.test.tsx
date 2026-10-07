@@ -64,6 +64,16 @@ describe('SiteHeader', () => {
 		expect(screen.getByText('Liên hệ')).toHaveAttribute('aria-current', 'page');
 	});
 
+	it.each(['/khoa-hoc', '/kham-pha-khoa-hoc'])(
+		'keeps the public course header and trail at %s',
+		(path) => {
+			pathname.current = path;
+			render(<SiteHeader />);
+			expect(screen.getByTestId('site-header-home')).toHaveAttribute('href', '/muc-luc');
+			expect(screen.getByText('Khóa học')).toHaveAttribute('aria-current', 'page');
+		},
+	);
+
 	it('renders nothing on the intro', () => {
 		pathname.current = '/';
 		render(<SiteHeader />);

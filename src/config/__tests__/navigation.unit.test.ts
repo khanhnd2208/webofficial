@@ -242,6 +242,8 @@ describe('route map', () => {
 describe('site header trail', () => {
 	it('names the page after Mục lục, and only the parent on a detail page', () => {
 		expect(getSiteTrail('/muc-luc')).toEqual([]);
+		expect(getSiteTrail('/khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
+		expect(getSiteTrail('/kham-pha-khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
 		expect(getSiteTrail('/gioi-thieu')).toEqual([{ label: 'Giới thiệu' }]);
 		expect(getSiteTrail('/trai-nghiem')).toEqual([{ label: 'Trải nghiệm' }]);
 		expect(getSiteTrail('/trai-nghiem/mot-chuyen')).toEqual([
@@ -280,9 +282,12 @@ describe('site header trail', () => {
 		expect(getSiteTrail('/khong-co-trang')).toEqual([]);
 	});
 
-	it('shows the header on public pages and hides it on intro, teaching, courses and rooms', () => {
+	it('shows the header on public catalogs and hides it on intro, teaching, readers and rooms', () => {
 		for (const path of [
 			'/muc-luc',
+			'/khoa-hoc',
+			'/khoa-hoc?category=all',
+			'/kham-pha-khoa-hoc',
 			'/gioi-thieu',
 			'/trai-nghiem/mot-chuyen',
 			'/du-an',
@@ -308,8 +313,8 @@ describe('site header trail', () => {
 			'/my-space/my-class/ai50',
 			'/my-space/teaching/class-1',
 			'/my-space/courses/ai50',
-			'/khoa-hoc',
 			'/khoa-hoc/ai50',
+			'/khoa-hoc/ai50/studio?s=reading',
 			'/my-space/board-game/spy-fall',
 			'/my-space/board-game/ma-soi/room/ABCD',
 			'/my-space/tests/hrm/play',

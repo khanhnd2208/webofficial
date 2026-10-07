@@ -316,6 +316,9 @@ function barePath(pathname: string): string {
 export function getSiteTrail(pathname: string): SiteCrumb[] {
 	const path = barePath(pathname);
 	if (path === routes.toc) return [];
+	if (path === routes.learnCourses || path === routes.discoverCourses) {
+		return [{ label: 'Khóa học' }];
+	}
 	if (path === routes.about) return [{ label: 'Giới thiệu' }];
 	if (path === routes.experiences) return [{ label: 'Trải nghiệm' }];
 	if (path.startsWith(`${routes.experiences}/`)) {
@@ -350,7 +353,7 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 }
 
 /**
- * Sticky public header. Absent on the intro, teaching, admin, courses, game rooms and quiz play.
+ * Sticky public header. Absent on intro, teaching, admin, course readers, game rooms and quiz play.
  */
 export function isSiteHeaderPath(pathname: string): boolean {
 	const path = barePath(pathname);
@@ -360,7 +363,8 @@ export function isSiteHeaderPath(pathname: string): boolean {
 	if (path.startsWith('/my-space/my-class')) return false;
 	if (path.startsWith('/my-space/teaching')) return false;
 	if (path.startsWith('/my-space/courses')) return false;
-	if (path === routes.learnCourses || path.startsWith(`${routes.learnCourses}/`)) return false;
+	// The catalog alias rewrites to the public discovery page; only readers hide this header.
+	if (path.startsWith(`${routes.learnCourses}/`)) return false;
 	if (path.startsWith(`${routes.boardGame}/`)) return false;
 	if (isMySpaceQuizPlayPath(path)) return false;
 	if (path.startsWith('/messages')) return false;
