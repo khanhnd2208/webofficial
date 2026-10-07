@@ -11,7 +11,6 @@ export type SectionPatch = Partial<
 		| 'keyTakeaways'
 		| 'markdown'
 		| 'checkpoint'
-		| 'quiz'
 		| 'discussion'
 	>
 >;

@@ -56,12 +56,11 @@ describe('stored estimatedMinutes', () => {
 		});
 	});
 
-	it('recomputes minutes when markdown, quiz, or discussion changes', async () => {
+	it('recomputes minutes when markdown or discussion changes', async () => {
 		mocks.sectionFindUnique.mockResolvedValue({
 			type: 'READING',
 			durationMinutes: null,
 			markdown: 'cũ',
-			quiz: null,
 			discussion: null,
 		});
 		mocks.sectionUpdate.mockImplementation(
@@ -76,29 +75,9 @@ describe('stored estimatedMinutes', () => {
 		expect(reading).toMatchObject({ id: 's1', estimatedMinutes: 1 });
 
 		mocks.sectionFindUnique.mockResolvedValue({
-			type: 'QUIZ',
-			durationMinutes: null,
-			markdown: '',
-			quiz: null,
-			discussion: null,
-		});
-		const quiz = await updateLearnSection('s1', {
-			quiz: {
-				passingScorePercent: 70,
-				timeLimitMinutes: null,
-				questions: [
-					{ id: 'a', question: 'Q', options: ['1', '2'], correctIndex: 0, explanation: '' },
-					{ id: 'b', question: 'Q2', options: ['1', '2'], correctIndex: 1, explanation: '' },
-				],
-			},
-		});
-		expect(quiz).toMatchObject({ estimatedMinutes: 2 });
-
-		mocks.sectionFindUnique.mockResolvedValue({
 			type: 'DISCUSSION',
 			durationMinutes: null,
 			markdown: '',
-			quiz: null,
 			discussion: null,
 		});
 		const discussion = await updateLearnSection('s1', {
@@ -123,7 +102,6 @@ describe('stored estimatedMinutes', () => {
 					id: `sec-${index}`,
 					lessonId: 'lesson-1',
 					checkpoint: null,
-					quiz: null,
 					discussion: null,
 					updatedAt: now,
 				})),
@@ -151,7 +129,6 @@ describe('stored estimatedMinutes', () => {
 				keyTakeaways: [],
 				markdown: data.markdown,
 				checkpoint: null,
-				quiz: null,
 				discussion: null,
 				updatedAt: now,
 			}),
@@ -165,7 +142,6 @@ describe('stored estimatedMinutes', () => {
 			markdown: Array.from({ length: 400 }, (_, index) => `từ${index}`).join(' '),
 			keyTakeaways: [],
 			checkpoint: null,
-			quiz: null,
 			discussion: null,
 			reason: 'autosave',
 			createdAt: now,

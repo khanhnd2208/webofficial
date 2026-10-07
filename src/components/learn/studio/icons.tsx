@@ -33,8 +33,6 @@ const ICON_MAP = {
 	move: 'arrow_forward',
 	help: 'help',
 	reading: 'menu_book',
-	quiz: 'quiz',
-	practice: 'assignment',
 	discussion: 'forum',
 	collapse: 'unfold_less',
 	expand: 'unfold_more',

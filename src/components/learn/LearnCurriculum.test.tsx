@@ -12,6 +12,7 @@ const lessons: LearnCurriculumLesson[] = [
 		description: '',
 		index: 0,
 		completedCount: 0,
+		requiredCount: 1,
 		minutes: 10,
 		sections: [
 			{
@@ -24,7 +25,6 @@ const lessons: LearnCurriculumLesson[] = [
 				lessonIndex: 0,
 				sectionIndex: 0,
 				completed: false,
-				quizResult: null,
 				hasNote: false,
 			},
 		],
@@ -35,6 +35,7 @@ const lessons: LearnCurriculumLesson[] = [
 		description: '',
 		index: 1,
 		completedCount: 0,
+		requiredCount: 1,
 		minutes: 8,
 		sections: [
 			{
@@ -47,7 +48,6 @@ const lessons: LearnCurriculumLesson[] = [
 				lessonIndex: 1,
 				sectionIndex: 0,
 				completed: false,
-				quizResult: null,
 				hasNote: false,
 			},
 		],

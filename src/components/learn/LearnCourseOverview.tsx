@@ -35,9 +35,6 @@ export default function LearnCourseOverview({
 					}
 				: { label: 'Bắt đầu học', href: first ? routes.learnCourse(course.slug, first.id) : null };
 	const notes = summary.sections.filter((section) => section.note.trim());
-	const quizzes = summary.sections.filter(
-		(section) => section.type === 'QUIZ' && section.quizResult,
-	);
 	const eyebrow = [course.category, LEARN_LEVEL_LABELS[course.level]].filter(Boolean).join(' · ');
 	const aboutLong = course.description.length > ABOUT_FOLD;
 
@@ -80,9 +77,6 @@ export default function LearnCourseOverview({
 								<SpotIllustration variant="complete" size={72} />
 								<p className="ln-status-line" role="status">
 									Đã hoàn thành khóa học
-									{summary.quizCount
-										? ` · ${summary.quizzesPassed}/${summary.quizCount} bài kiểm tra đạt`
-										: ''}
 								</p>
 							</div>
 						) : null}
@@ -124,32 +118,6 @@ export default function LearnCourseOverview({
 							<p className="text-ink-secondary">Khóa học này chưa có nội dung.</p>
 						)}
 					</section>
-
-					{quizzes.length ? (
-						<section className="ln-block" aria-labelledby="ln-quizzes">
-							<h2 id="ln-quizzes">Kết quả kiểm tra</h2>
-							<ul className="ln-results">
-								{quizzes.map((quiz) => (
-									<li key={quiz.id}>
-										<Link href={routes.learnCourse(course.slug, quiz.id)} className="ln-result">
-											<span className="min-w-0 flex-1">
-												<span className="ln-result__title">{quiz.title}</span>
-												<span className="ln-result__sub">
-													Bài {quiz.lessonIndex + 1} · {quiz.lessonTitle}
-												</span>
-											</span>
-											<span
-												className="ln-result__score tabular-nums"
-												data-passed={quiz.quizResult?.passed ? 'true' : 'false'}
-											>
-												{quiz.quizResult?.percentage}%
-											</span>
-										</Link>
-									</li>
-								))}
-							</ul>
-						</section>
-					) : null}
 
 					{notes.length ? (
 						<section className="ln-block" aria-labelledby="ln-notes">

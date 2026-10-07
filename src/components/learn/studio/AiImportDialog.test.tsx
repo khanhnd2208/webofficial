@@ -18,16 +18,22 @@ const lessons: LearnStudioLesson[] = [
 	},
 ];
 
-const QUIZ = [
-	'Câu 1: Một?',
-	'A. a',
-	'B. b',
-	'Đáp án: A',
+const DISCUSSION = [
+	'Câu 1:',
+	'### Hiểu — Một',
+	'> [!REFLECT] Câu hỏi:',
+	'> Một?',
 	'',
-	'Câu 2: Hai?',
-	'A. c',
-	'B. d',
-	'Đáp án: B',
+	'Đáp án mẫu:',
+	'Vì một.',
+	'',
+	'Câu 2:',
+	'### Áp dụng — Hai',
+	'> [!REFLECT] Câu hỏi:',
+	'> Hai?',
+	'',
+	'Đáp án mẫu:',
+	'Vì hai.',
 ].join('\n');
 
 describe('AiImportDialog', () => {
@@ -85,10 +91,6 @@ describe('AiImportDialog', () => {
 		fireEvent.click(copy());
 		await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith(LEARN_FORMAT_PROMPTS.lesson));
 
-		fireEvent.click(screen.getByRole('radio', { name: 'Kiểm tra' }));
-		fireEvent.click(copy());
-		await vi.waitFor(() => expect(writeText).toHaveBeenLastCalledWith(LEARN_FORMAT_PROMPTS.quiz));
-
 		fireEvent.click(screen.getByRole('radio', { name: 'Phản biện' }));
 		fireEvent.click(copy());
 		await vi.waitFor(() =>
@@ -96,11 +98,11 @@ describe('AiImportDialog', () => {
 		);
 	});
 
-	it('saves two parsed quiz questions', async () => {
+	it('saves two parsed critical questions', async () => {
 		const onSave = vi.fn().mockResolvedValue(undefined);
 		render(
 			<AiImportDialog
-				kind="quiz"
+				kind="discussion"
 				lessons={lessons}
 				selectedLessonId="lesson-1"
 				onClose={vi.fn()}
@@ -109,7 +111,7 @@ describe('AiImportDialog', () => {
 		);
 
 		fireEvent.change(screen.getByRole('textbox', { name: 'Kết quả AI' }), {
-			target: { value: QUIZ },
+			target: { value: DISCUSSION },
 		});
 		const save = screen.getByRole('button', { name: 'Lưu 2 câu' });
 		expect(save).toBeEnabled();
@@ -118,13 +120,12 @@ describe('AiImportDialog', () => {
 		await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
 		const input = onSave.mock.calls[0][0];
 		expect(input).toMatchObject({
-			kind: 'quiz',
+			kind: 'discussion',
 			mode: 'create',
 			lessonId: 'lesson-1',
-			title: 'Bài kiểm tra',
+			title: 'Câu hỏi phản biện',
 		});
 		expect(input.questions).toHaveLength(2);
-		expect(input.questions[0].correctIndex).toBe(0);
-		expect(input.questions[1].correctIndex).toBe(1);
+		expect(input.questions[1].answer).toContain('Vì hai.');
 	});
 });

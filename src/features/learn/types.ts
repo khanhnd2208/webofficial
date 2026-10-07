@@ -1,20 +1,22 @@
 import type { PublishStatus } from '@prisma/client';
 
 export type LearnLevel = 'BASIC' | 'INTERMEDIATE' | 'ADVANCED';
-export type LearnSectionKind = 'READING' | 'QUIZ' | 'PRACTICE' | 'DISCUSSION';
+/**
+ * A course holds lectures and, optionally, a set of critical questions per lesson. The database
+ * enum still lists the retired QUIZ and PRACTICE types; queries filter on these kinds so any
+ * leftover rows never reach a page.
+ */
+export const LEARN_SECTION_KINDS = ['READING', 'DISCUSSION'] as const;
+export type LearnSectionKind = (typeof LEARN_SECTION_KINDS)[number];
 
 export const LEARN_SECTION_KIND_LABELS: Record<LearnSectionKind, string> = {
-	READING: 'Bài đọc',
-	QUIZ: 'Bài kiểm tra',
-	PRACTICE: 'Luyện tập',
-	DISCUSSION: 'Phản biện',
+	READING: 'Bài giảng',
+	DISCUSSION: 'Câu hỏi phản biện',
 };
 
 /** Shorter labels for outlines and import previews. */
 export const LEARN_SECTION_KIND_SHORT: Record<LearnSectionKind, string> = {
-	READING: 'Bài đọc',
-	QUIZ: 'Kiểm tra',
-	PRACTICE: 'Luyện tập',
+	READING: 'Bài giảng',
 	DISCUSSION: 'Phản biện',
 };
 
@@ -31,20 +33,6 @@ export interface LearnCheckpoint {
 	explanation: string;
 }
 
-export interface LearnQuizQuestion {
-	id: string;
-	question: string;
-	options: string[];
-	correctIndex: number;
-	explanation: string;
-}
-
-export interface LearnQuiz {
-	passingScorePercent: number;
-	timeLimitMinutes: number | null;
-	questions: LearnQuizQuestion[];
-}
-
 export interface LearnDiscussionQuestion {
 	id: string;
 	/** Markdown. */
@@ -55,28 +43,6 @@ export interface LearnDiscussionQuestion {
 
 export interface LearnDiscussion {
 	questions: LearnDiscussionQuestion[];
-}
-
-/** Quiz as a learner sees it before submitting: no answers, no explanations. */
-export interface LearnQuizForLearner {
-	passingScorePercent: number;
-	timeLimitMinutes: number | null;
-	questions: Array<Pick<LearnQuizQuestion, 'id' | 'question' | 'options'>>;
-}
-
-export interface LearnQuizResult {
-	score: number;
-	total: number;
-	percentage: number;
-	passed: boolean;
-	answers: Record<string, number>;
-	completedAt: string;
-}
-
-/** Result plus the answer key, returned once the learner has submitted. */
-export interface LearnQuizReview {
-	result: LearnQuizResult;
-	key: Array<{ id: string; correctIndex: number; explanation: string }>;
 }
 
 export interface LearnCourseMeta {
@@ -96,10 +62,9 @@ export interface LearnCourseListItem extends LearnCourseMeta {
 	sectionCount: number;
 	totalMinutes: number;
 	completedCount: number;
-	quizCount: number;
 	/** First unfinished section, so "Tiếp tục" lands where the learner left off. */
 	nextSectionId: string | null;
-	/** Last time this learner touched the course (completion, note or quiz). */
+	/** Last time this learner touched the course (completion or note). */
 	lastActivityAt: string | null;
 }
 
@@ -124,7 +89,6 @@ export interface LearnCourseOutline extends LearnCourseMeta {
 export interface LearnSectionProgressState {
 	completed: boolean;
 	note: string;
-	quizResult: LearnQuizResult | null;
 }
 
 /** Everything the reader needs for one section page. */
@@ -138,10 +102,6 @@ export interface LearnReaderSection {
 	keyTakeaways: string[];
 	markdown: string;
 	checkpoint: LearnCheckpoint | null;
-	quiz: LearnQuizForLearner | null;
-	review: LearnQuizReview | null;
-	/** Full questions, including the answer key. Practice reveals it as soon as the learner picks. */
-	practice: LearnQuizQuestion[] | null;
 	discussion: LearnDiscussion | null;
 }
 
@@ -156,7 +116,6 @@ export interface LearnStudioSection {
 	keyTakeaways: string[];
 	markdown: string;
 	checkpoint: LearnCheckpoint | null;
-	quiz: LearnQuiz | null;
 	discussion: LearnDiscussion | null;
 	estimatedMinutes: number;
 	updatedAt: string;

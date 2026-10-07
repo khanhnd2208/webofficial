@@ -13,8 +13,6 @@ import { LearnIcon, type LearnIconName } from './LearnIcon';
 
 const SECTION_ICONS: Record<LearnSectionKind, LearnIconName> = {
 	READING: 'reading',
-	QUIZ: 'quiz',
-	PRACTICE: 'practice',
 	DISCUSSION: 'discussion',
 };
 
@@ -82,7 +80,7 @@ export default function LearnCurriculum({
 			) : null}
 			{lessons.map((lesson) => {
 				const isOpen = open.has(lesson.id);
-				const done = lesson.completedCount === lesson.sections.length && lesson.sections.length > 0;
+				const done = lesson.completedCount === lesson.requiredCount && lesson.requiredCount > 0;
 				const panelId = `ln-lesson-${lesson.id}`;
 				return (
 					<div key={lesson.id} className="ln-lesson" data-open={isOpen ? 'true' : undefined}>
@@ -102,7 +100,7 @@ export default function LearnCurriculum({
 							</span>
 							<span className="ln-lesson__meta tabular-nums" data-done={done ? 'true' : undefined}>
 								{done ? <LearnIcon name="checkCircle" size={15} /> : null}
-								{lesson.completedCount}/{lesson.sections.length}
+								{lesson.completedCount}/{lesson.requiredCount}
 								{compact ? null : (
 									<span className="ln-lesson__minutes"> · {formatMinutes(lesson.minutes)}</span>
 								)}
@@ -115,7 +113,6 @@ export default function LearnCurriculum({
 								) : null}
 								{lesson.sections.map((section) => {
 									const active = section.id === currentId;
-									const result = section.quizResult;
 									return (
 										<li key={section.id}>
 											<Link
@@ -142,14 +139,6 @@ export default function LearnCurriculum({
 														) : null}
 													</span>
 												</span>
-												{result ? (
-													<span
-														className="ln-item__score tabular-nums"
-														data-passed={result.passed ? 'true' : 'false'}
-													>
-														{result.percentage}%
-													</span>
-												) : null}
 												<span className="sr-only">
 													{section.completed ? '(đã hoàn thành)' : ''}
 													{active ? '(đang xem)' : ''}

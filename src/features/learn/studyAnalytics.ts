@@ -283,10 +283,15 @@ export async function getLearnStudyReport(courseSlug: string, days: number, requ
 		`,
 					tx.learnSectionProgress.groupBy({
 						by: ['userId'],
-						where: { courseId: course.id, completedAt: { not: null } },
+						// Completion counts lectures only, like the learner's own progress bar.
+						where: {
+							courseId: course.id,
+							completedAt: { not: null },
+							section: { type: 'READING' },
+						},
 						_count: { _all: true },
 					}),
-					tx.learnSection.count({ where: { lesson: { courseId: course.id } } }),
+					tx.learnSection.count({ where: { lesson: { courseId: course.id }, type: 'READING' } }),
 				]),
 			{ isolationLevel: 'RepeatableRead' },
 		);

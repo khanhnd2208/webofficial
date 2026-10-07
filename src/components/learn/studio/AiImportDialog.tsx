@@ -11,12 +11,10 @@ import {
 	planContentReplace,
 } from '@/features/learn/lessonImport';
 import { LEARN_FORMAT_PROMPTS } from '@/features/learn/prompts';
-import { parseQuizPaste } from '@/features/learn/quizImport';
 import { LEARN_MAX_MARKDOWN } from '@/features/learn/schemas';
 import {
 	LEARN_SECTION_KIND_SHORT,
 	type LearnDiscussionQuestion,
-	type LearnQuizQuestion,
 	type LearnStudioLesson,
 } from '@/features/learn/types';
 
@@ -25,20 +23,14 @@ import StudioDialog from './StudioDialog';
 import ImportImagePicker from './ImportImagePicker';
 import { ManualCopyField, useCopy } from './useCopy';
 
-export type AiImportKind = 'lesson' | 'quiz' | 'practice' | 'discussion';
+export type AiImportKind = 'lesson' | 'discussion';
 
 const KIND_OPTIONS: Array<{ id: AiImportKind; label: string }> = [
-	{ id: 'lesson', label: 'Bài học' },
-	{ id: 'quiz', label: 'Kiểm tra' },
-	{ id: 'practice', label: 'Luyện tập' },
+	{ id: 'lesson', label: 'Bài giảng' },
 	{ id: 'discussion', label: 'Phản biện' },
 ];
 
-const DEFAULT_SECTION_TITLE: Record<Exclude<AiImportKind, 'lesson'>, string> = {
-	quiz: 'Bài kiểm tra',
-	practice: 'Luyện tập',
-	discussion: 'Câu hỏi phản biện',
-};
+const DEFAULT_SECTION_TITLE = 'Câu hỏi phản biện';
 
 export type AiImportInput =
 	| {
@@ -46,19 +38,6 @@ export type AiImportInput =
 			markdown: string;
 			mode: 'create' | 'replace';
 			lessonId?: string;
-	  }
-	| {
-			kind: 'quiz' | 'practice';
-			mode: 'create';
-			lessonId: string;
-			title: string;
-			questions: LearnQuizQuestion[];
-	  }
-	| {
-			kind: 'quiz' | 'practice';
-			mode: 'append' | 'replace';
-			sectionId: string;
-			questions: LearnQuizQuestion[];
 	  }
 	| {
 			kind: 'discussion';
@@ -73,10 +52,6 @@ export type AiImportInput =
 			sectionId: string;
 			questions: LearnDiscussionQuestion[];
 	  };
-
-function promptKey(kind: AiImportKind): keyof typeof LEARN_FORMAT_PROMPTS {
-	return kind === 'practice' ? 'quiz' : kind;
-}
 
 export default function AiImportDialog({
 	kind: initialKind,
@@ -100,10 +75,7 @@ export default function AiImportDialog({
 	const [lessonMode, setLessonMode] = useState<'create' | 'replace'>('create');
 	const [questionMode, setQuestionMode] = useState<'append' | 'replace'>('append');
 	const [lessonId, setLessonId] = useState(selectedLessonId ?? lessons[0]?.id ?? '');
-	const [sectionTitle, setSectionTitle] = useState(
-		DEFAULT_SECTION_TITLE[initialKind === 'lesson' ? 'quiz' : initialKind],
-	);
-	const [titleTouched, setTitleTouched] = useState(false);
+	const [sectionTitle, setSectionTitle] = useState(DEFAULT_SECTION_TITLE);
 	const [uploadBusy, setUploadBusy] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -118,10 +90,6 @@ export default function AiImportDialog({
 		() => (kind === 'lesson' && cleaned ? parseCourseMarkdown(cleaned.markdown) : null),
 		[kind, cleaned],
 	);
-	const quizParsed = useMemo(
-		() => (kind === 'quiz' || kind === 'practice' ? parseQuizPaste(cleaned?.markdown ?? '') : null),
-		[kind, cleaned],
-	);
 	const discussionParsed = useMemo(
 		() => (kind === 'discussion' ? parseDiscussionPaste(cleaned?.markdown ?? '') : null),
 		[kind, cleaned],
@@ -129,11 +97,7 @@ export default function AiImportDialog({
 
 	const lessonSections = lessonParsed?.lessons.flatMap((lesson) => lesson.sections) ?? [];
 	const oversized = lessonSections.some((section) => section.markdown.length > LEARN_MAX_MARKDOWN);
-	const questionCount =
-		kind === 'discussion'
-			? (discussionParsed?.questions.length ?? 0)
-			: (quizParsed?.questions.length ?? 0);
-	const missingAnswers = new Set(quizParsed?.missingAnswer ?? []);
+	const questionCount = discussionParsed?.questions.length ?? 0;
 	const deletedCount = useMemo(() => {
 		if (kind !== 'lesson' || lessonMode !== 'replace' || !cleaned) return 0;
 		const current = lessons.find((lesson) => lesson.id === lessonId);
@@ -152,7 +116,6 @@ export default function AiImportDialog({
 	function changeKind(next: AiImportKind) {
 		setKind(next);
 		setError(null);
-		if (next !== 'lesson' && !titleTouched) setSectionTitle(DEFAULT_SECTION_TITLE[next]);
 	}
 
 	async function submit() {
@@ -169,26 +132,17 @@ export default function AiImportDialog({
 				});
 				return;
 			}
-			if (kind === 'discussion') {
-				const questions = discussionParsed?.questions ?? [];
-				await onSave(
-					target
-						? { kind: 'discussion', mode: questionMode, sectionId: target.sectionId, questions }
-						: {
-								kind: 'discussion',
-								mode: 'create',
-								lessonId,
-								title: sectionTitle.trim(),
-								questions,
-							},
-				);
-				return;
-			}
-			const questions = quizParsed?.questions ?? [];
+			const questions = discussionParsed?.questions ?? [];
 			await onSave(
 				target
-					? { kind, mode: questionMode, sectionId: target.sectionId, questions }
-					: { kind, mode: 'create', lessonId, title: sectionTitle.trim(), questions },
+					? { kind: 'discussion', mode: questionMode, sectionId: target.sectionId, questions }
+					: {
+							kind: 'discussion',
+							mode: 'create',
+							lessonId,
+							title: sectionTitle.trim(),
+							questions,
+						},
 			);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Không lưu được nội dung');
@@ -201,7 +155,6 @@ export default function AiImportDialog({
 	const warnings = [
 		...(cleaned?.warnings ?? []),
 		...(lessonParsed?.warnings ?? []),
-		...(quizParsed?.warnings ?? []),
 		...(discussionParsed?.warnings ?? []),
 	];
 
@@ -249,7 +202,7 @@ export default function AiImportDialog({
 				<button
 					type="button"
 					className="ln-link-btn self-start"
-					onClick={() => void copy(LEARN_FORMAT_PROMPTS[promptKey(kind)])}
+					onClick={() => void copy(LEARN_FORMAT_PROMPTS[kind])}
 				>
 					<StudioIcon name="copy" size={14} /> {copied ? 'Đã chép prompt' : 'Chép prompt định dạng'}
 				</button>
@@ -271,10 +224,7 @@ export default function AiImportDialog({
 						questionMode={questionMode}
 						onQuestionMode={setQuestionMode}
 						sectionTitle={sectionTitle}
-						onSectionTitle={(value) => {
-							setTitleTouched(true);
-							setSectionTitle(value);
-						}}
+						onSectionTitle={setSectionTitle}
 					/>
 					<textarea
 						autoFocus
@@ -332,11 +282,9 @@ export default function AiImportDialog({
 												) : null}
 											</span>
 											<span className="text-xs text-ink-secondary tabular-nums">
-												{section.type === 'QUIZ' || section.type === 'PRACTICE'
-													? `${section.quiz?.questions.length ?? 0} câu`
-													: section.type === 'DISCUSSION'
-														? `${section.discussion?.questions.length ?? 0} câu`
-														: `${section.wordCount} từ · ${formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}`}
+												{section.type === 'DISCUSSION'
+													? `${section.discussion?.questions.length ?? 0} câu`
+													: `${section.wordCount} từ · ${formatMinutes(section.durationMinutes ?? estimateReadingMinutes(section.markdown))}`}
 											</span>
 										</li>
 									))}
@@ -347,59 +295,23 @@ export default function AiImportDialog({
 								Các mục sẽ hiện ở đây khi bạn dán nội dung.
 							</p>
 						)
-					) : kind === 'discussion' ? (
-						discussionParsed && discussionParsed.questions.length ? (
-							<ol className="ln-preview__list">
-								{discussionParsed.questions.map((question, index) => (
-									<li key={question.id}>
-										<p className="font-medium">Câu {index + 1}</p>
-										{question.question ? (
-											<LearnMarkdown markdown={question.question} showMissingImages />
-										) : (
-											<p>
-												<em>(chưa có câu hỏi)</em>
-											</p>
-										)}
-										{question.answer ? (
-											<LearnMarkdown markdown={question.answer} showMissingImages />
-										) : (
-											<p className="ln-warning">Thiếu đáp án mẫu</p>
-										)}
-									</li>
-								))}
-							</ol>
-						) : (
-							<p className="text-sm text-ink-secondary">
-								Các câu sẽ hiện ở đây khi bạn dán nội dung.
-							</p>
-						)
-					) : quizParsed && quizParsed.questions.length ? (
+					) : discussionParsed && discussionParsed.questions.length ? (
 						<ol className="ln-preview__list">
-							{quizParsed.questions.map((question, index) => (
-								<li
-									key={question.id}
-									data-missing={missingAnswers.has(question.id) ? 'true' : undefined}
-								>
-									<p className="font-medium">
-										{index + 1}. {question.question || <em>(chưa có câu hỏi)</em>}
-										{missingAnswers.has(question.id) ? (
-											<span className="ln-warning"> · thiếu đáp án</span>
-										) : null}
-									</p>
-									<ul>
-										{question.options.map((option, optionIndex) => (
-											<li
-												key={optionIndex}
-												data-correct={
-													!missingAnswers.has(question.id) && optionIndex === question.correctIndex
-														? 'true'
-														: undefined
-												}
-											>
-												{'ABCDEFGH'[optionIndex]}. {option}
-											</li>
-										))}
-									</ul>
+							{discussionParsed.questions.map((question, index) => (
+								<li key={question.id}>
+									<p className="font-medium">Câu {index + 1}</p>
+									{question.question ? (
+										<LearnMarkdown markdown={question.question} showMissingImages />
+									) : (
+										<p>
+											<em>(chưa có câu hỏi)</em>
+										</p>
+									)}
+									{question.answer ? (
+										<LearnMarkdown markdown={question.answer} showMissingImages />
+									) : (
+										<p className="ln-warning">Thiếu đáp án mẫu</p>
+									)}
 								</li>
 							))}
 						</ol>

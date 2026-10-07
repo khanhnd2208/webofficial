@@ -24,16 +24,14 @@ describe('markdown snippets are what the parser reads', () => {
 		}
 	});
 
-	it('the import snippets become one reading, one quiz and one discussion section', () => {
+	it('the import snippets become one reading and one discussion section', () => {
 		const markdown = ['# Bài mẫu', ...IMPORT_SNIPPETS.map((item) => snippetText(item))].join(
 			'\n\n',
 		);
 		const course = parseCourseMarkdown(markdown);
 		const sections = course.lessons[0].sections;
-		expect(sections.map((section) => section.type)).toEqual(['READING', 'QUIZ', 'DISCUSSION']);
-		expect(sections[1].quiz?.questions).toHaveLength(1);
-		expect(sections[1].quiz?.questions[0].options).toHaveLength(2);
-		const discussion = sections[2].discussion!.questions;
+		expect(sections.map((section) => section.type)).toEqual(['READING', 'DISCUSSION']);
+		const discussion = sections[1].discussion!.questions;
 		expect(discussion).toHaveLength(1);
 		expect(discussion[0].answer).toContain('Lời giải');
 		const [view] = discussionQuestionViews(discussion.map((item) => item.question));

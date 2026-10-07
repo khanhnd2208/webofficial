@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 
-/** Public course metadata only. Lesson bodies, quizzes and learner progress stay private. */
+/** Public course metadata only. Lesson bodies and learner progress stay private. */
 export async function listPublishedCoursePreviews() {
 	const courses = await prisma.learnCourse.findMany({
 		where: { status: 'PUBLISHED' },
@@ -16,7 +16,8 @@ export async function listPublishedCoursePreviews() {
 				orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
 				select: {
 					title: true,
-					sections: { select: { estimatedMinutes: true } },
+					// Reading time of the lectures; the optional critical questions are not counted.
+					sections: { where: { type: 'READING' }, select: { estimatedMinutes: true } },
 				},
 			},
 		},

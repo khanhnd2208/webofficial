@@ -1,17 +1,5 @@
 import { discussionQuestionViews, type DiscussionQuestionView } from './discussionView';
-import type { LearnQuizQuestion, LearnStudioSection } from './types';
-
-export function quizIssues(question: LearnQuizQuestion): string[] {
-	const issues: string[] = [];
-	const options = question.options.map((option) => option.trim());
-	if (options.length < 2) issues.push('Cần ít nhất 2 phương án');
-	const correct = options[question.correctIndex] ?? '';
-	if (!correct) issues.push('Đáp án đúng đang trống');
-	if (options.some((option, index) => index !== question.correctIndex && !option)) {
-		issues.push('Phương án trống');
-	}
-	return issues;
-}
+import type { LearnStudioSection } from './types';
 
 export function discussionIssues(
 	question: { question: string; answer: string },
@@ -30,13 +18,6 @@ export function discussionIssues(
 export function sectionHint(section: LearnStudioSection): { text: string; warn: boolean } | null {
 	if (section.type === 'READING') {
 		return section.markdown.trim() ? null : { text: 'Trống', warn: true };
-	}
-	if (section.type === 'QUIZ' || section.type === 'PRACTICE') {
-		const questions = section.quiz?.questions ?? [];
-		return {
-			text: `${questions.length} câu`,
-			warn: questions.length === 0 || questions.some((question) => quizIssues(question).length > 0),
-		};
 	}
 	if (section.type === 'DISCUSSION') {
 		const questions = section.discussion?.questions ?? [];

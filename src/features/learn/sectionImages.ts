@@ -6,8 +6,6 @@ export function unresolvedSectionImages(section: LearnStudioSection) {
 	const texts = [section.markdown];
 	for (const question of section.discussion?.questions ?? [])
 		texts.push(question.question, question.answer);
-	for (const question of section.quiz?.questions ?? [])
-		texts.push(question.question, question.explanation, ...question.options);
 	if (section.checkpoint)
 		texts.push(
 			section.checkpoint.question,

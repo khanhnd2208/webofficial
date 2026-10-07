@@ -63,7 +63,6 @@ const OVERSIZED_FILE_CAPS = {
 	'src/features/my-class/services/assessmentService.ts': 903,
 	'src/components/teaching/groups/GroupListWorkspace.tsx': 893,
 	'src/features/spy-fall/services/spyGameService.ts': 857,
-	'src/features/learn/service.ts': 875,
 	'src/components/forms/TiptapEditor.tsx': 854,
 	'src/components/active-recall/ActiveRecallEditor.tsx': 837,
 };

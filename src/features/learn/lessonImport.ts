@@ -14,9 +14,8 @@
 import { countWords } from './content';
 import { discussionMarkdown, parseDiscussionPaste } from './discussionImport';
 import { findExternalImages } from './images';
-import { parseQuizPaste } from './quizImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
-import type { LearnCheckpoint, LearnDiscussion, LearnQuiz, LearnSectionKind } from './types';
+import type { LearnCheckpoint, LearnDiscussion, LearnSectionKind } from './types';
 
 export interface ImportedSection {
 	title: string;
@@ -27,7 +26,6 @@ export interface ImportedSection {
 	type: LearnSectionKind;
 	keyTakeaways: string[];
 	checkpoint: LearnCheckpoint | null;
-	quiz: LearnQuiz | null;
 	discussion: LearnDiscussion | null;
 }
 
@@ -45,10 +43,14 @@ export interface ImportedLesson {
 const SECTION_DELIMITER_RE =
 	/^(?:(?:={3,}|-{3,})\s*(SECTION|MỤC|PHẦN|QUIZ|KIỂM\s*TRA|KIEM\s*TRA|PRACTICE|LUYỆN\s*TẬP|LUYEN\s*TAP|DISCUSSION|PHẢN\s*BIỆN|PHAN\s*BIEN)|#{2,3}\s*(SECTION|MỤC|PHẦN|QUIZ|PRACTICE|DISCUSSION))\s*:\s*(.+?)(?:\s*(?:={3,}|-{3,}))?$/i;
 
-function sliceKind(label: string): LearnSectionKind {
+/** Quizzes and practice sets are retired: their delimiters still end the previous section. */
+type SliceKind = LearnSectionKind | 'RETIRED';
+
+function sliceKind(label: string): SliceKind {
 	const key = label.toLocaleLowerCase('vi').replace(/\s+/g, '');
-	if (key === 'quiz' || key === 'kiểmtra' || key === 'kiemtra') return 'QUIZ';
-	if (key === 'practice' || key === 'luyệntập' || key === 'luyentap') return 'PRACTICE';
+	if (['quiz', 'kiểmtra', 'kiemtra', 'practice', 'luyệntập', 'luyentap'].includes(key)) {
+		return 'RETIRED';
+	}
 	if (key === 'discussion' || key === 'phảnbiện' || key === 'phanbien') return 'DISCUSSION';
 	return 'READING';
 }
@@ -126,7 +128,7 @@ function splitTitleAndDuration(titleLine: string): {
 
 interface Slice {
 	titleLine: string;
-	kind: LearnSectionKind;
+	kind: SliceKind;
 	start: number;
 }
 
@@ -208,9 +210,25 @@ function readingSection(
 		type: 'READING',
 		keyTakeaways: takeaways.body ? takeawayItems(takeaways.body) : [],
 		checkpoint: checkpoint.body ? parseCheckpoint(checkpoint.body) : null,
-		quiz: null,
 		discussion: null,
 	};
+}
+
+/** The "how to use these questions" section written just before a discussion. */
+const DISCUSSION_INTRO_RE = /^cách dùng bộ câu hỏi/i;
+const DISCUSSION_INTRO_TITLE = 'Cách dùng bộ câu hỏi';
+
+/**
+ * A reading section titled "Cách dùng bộ câu hỏi…" right before a discussion is its intro: it is
+ * removed from `sections` and returned so the discussion page can show it above the questions.
+ */
+function takeDiscussionIntro(sections: ImportedSection[]): string {
+	const previous = sections.at(-1);
+	if (!previous || previous.type !== 'READING' || !DISCUSSION_INTRO_RE.test(previous.title)) {
+		return '';
+	}
+	sections.pop();
+	return previous.markdown;
 }
 
 export function parseLessonMarkdown(raw: string): ImportedLesson {
@@ -339,46 +357,30 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 
 		const markdown = escapeYearLikeListMarkers(body, bodyMask).join('\n').trim();
 		const sectionTitle = title || `Mục ${sections.length + 1}`;
-		if (slice.kind === 'QUIZ' || slice.kind === 'PRACTICE') {
-			const pasted = parseQuizPaste(markdown);
-			for (const warning of pasted.warnings) warnings.push(`"${sectionTitle}": ${warning}`);
-			sections.push({
-				title: sectionTitle,
-				durationMinutes,
-				summary,
-				markdown: '',
-				wordCount: pasted.questions.reduce(
-					(sum, question) => sum + countWords(question.question),
-					0,
-				),
-				type: slice.kind,
-				keyTakeaways: [],
-				checkpoint: null,
-				quiz: {
-					passingScorePercent: 70,
-					timeLimitMinutes: slice.kind === 'QUIZ' ? durationMinutes : null,
-					questions: pasted.questions,
-				},
-				discussion: null,
-			});
+		if (slice.kind === 'RETIRED') {
+			warnings.push(
+				`"${sectionTitle}": đã bỏ qua. Khóa học chỉ còn bài giảng và câu hỏi phản biện, không nhập bài kiểm tra hay luyện tập.`,
+			);
 			return;
 		}
 		if (slice.kind === 'DISCUSSION') {
 			const pasted = parseDiscussionPaste(markdown);
 			for (const warning of pasted.warnings) warnings.push(`"${sectionTitle}": ${warning}`);
+			const intro = takeDiscussionIntro(sections);
 			sections.push({
 				title: sectionTitle,
 				durationMinutes,
 				summary,
-				markdown: '',
-				wordCount: pasted.questions.reduce(
-					(sum, question) => sum + countWords(`${question.question}\n${question.answer}`),
-					0,
-				),
+				markdown: intro,
+				wordCount:
+					countWords(intro) +
+					pasted.questions.reduce(
+						(sum, question) => sum + countWords(`${question.question}\n${question.answer}`),
+						0,
+					),
 				type: 'DISCUSSION',
 				keyTakeaways: [],
 				checkpoint: null,
-				quiz: null,
 				discussion: { questions: pasted.questions },
 			});
 			return;
@@ -557,21 +559,6 @@ function checkpointMarkdown(checkpoint: LearnCheckpoint): string {
 		.join('\n');
 }
 
-function quizMarkdown(quiz: LearnQuiz): string {
-	return quiz.questions
-		.map((question, index) => {
-			const options = question.options.map(
-				(option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`,
-			);
-			const answer = `Đáp án: ${String.fromCharCode(65 + question.correctIndex)}`;
-			const explanation = question.explanation ? `Giải thích: ${question.explanation}` : '';
-			return [`Câu ${index + 1}: ${question.question}`, ...options, answer, explanation]
-				.filter(Boolean)
-				.join('\n');
-		})
-		.join('\n\n');
-}
-
 export interface ExportableSection {
 	type: LearnSectionKind;
 	title: string;
@@ -580,7 +567,6 @@ export interface ExportableSection {
 	markdown: string;
 	keyTakeaways: string[];
 	checkpoint: LearnCheckpoint | null;
-	quiz: LearnQuiz | null;
 	discussion: LearnDiscussion | null;
 }
 
@@ -596,16 +582,12 @@ export function exportLessonMarkdown(lesson: ExportableLesson): string {
 	for (const section of lesson.sections) {
 		lines.push('');
 		const kind = section.type === 'READING' ? 'SECTION' : section.type;
-		const minutes =
-			section.type === 'QUIZ'
-				? (section.quiz?.timeLimitMinutes ?? section.durationMinutes)
-				: section.durationMinutes;
-		lines.push(`=== ${kind}: ${section.title}${durationLabel(minutes)} ===`);
-		if (section.summary.trim()) lines.push(`> ${section.summary.trim()}`);
-		if ((section.type === 'QUIZ' || section.type === 'PRACTICE') && section.quiz) {
-			lines.push('', quizMarkdown(section.quiz));
-			continue;
+		if (section.type === 'DISCUSSION' && section.markdown.trim()) {
+			// Written back as its own section so a re-import folds it into the discussion again.
+			lines.push(`=== SECTION: ${DISCUSSION_INTRO_TITLE} ===`, '', section.markdown.trim(), '');
 		}
+		lines.push(`=== ${kind}: ${section.title}${durationLabel(section.durationMinutes)} ===`);
+		if (section.summary.trim()) lines.push(`> ${section.summary.trim()}`);
 		if (section.type === 'DISCUSSION' && section.discussion) {
 			lines.push('', discussionMarkdown(section.discussion));
 			continue;

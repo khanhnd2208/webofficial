@@ -8,7 +8,7 @@ const title = (label: string, max = 200) =>
 
 export const learnLevelSchema = z.enum(['BASIC', 'INTERMEDIATE', 'ADVANCED']);
 export const learnStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']);
-export const learnSectionTypeSchema = z.enum(['READING', 'QUIZ', 'PRACTICE', 'DISCUSSION']);
+export const learnSectionTypeSchema = z.enum(['READING', 'DISCUSSION']);
 
 const options = z
 	.array(z.string().trim().max(1_000))
@@ -23,22 +23,6 @@ export const learnCheckpointSchema = z
 		explanation: z.string().trim().max(4_000).default(''),
 	})
 	.refine((value) => value.correctIndex < value.options.length, 'Đáp án đúng không hợp lệ');
-
-export const learnQuizQuestionSchema = z
-	.object({
-		id: z.string().trim().min(1).max(64),
-		question: z.string().trim().max(4_000),
-		options,
-		correctIndex: z.number().int().min(0),
-		explanation: z.string().trim().max(4_000).default(''),
-	})
-	.refine((value) => value.correctIndex < value.options.length, 'Đáp án đúng không hợp lệ');
-
-export const learnQuizSchema = z.object({
-	passingScorePercent: z.number().int().min(0).max(100).default(70),
-	timeLimitMinutes: z.number().int().min(1).max(600).nullable().default(null),
-	questions: z.array(learnQuizQuestionSchema).max(LEARN_MAX_QUESTIONS),
-});
 
 export const learnDiscussionQuestionSchema = z.object({
 	id: z.string().trim().min(1).max(64),
@@ -105,7 +89,6 @@ export const updateLearnSectionSchema = z
 		keyTakeaways: z.array(z.string().trim().min(1).max(500)).max(20).optional(),
 		markdown: z.string().max(LEARN_MAX_MARKDOWN, 'Nội dung quá dài').optional(),
 		checkpoint: learnCheckpointSchema.nullable().optional(),
-		quiz: learnQuizSchema.nullable().optional(),
 		discussion: learnDiscussionSchema.nullable().optional(),
 		/** Client copy of `updatedAt`. When set, a mismatch returns 409 instead of overwriting. */
 		baseUpdatedAt: z.iso.datetime().optional(),
@@ -128,10 +111,6 @@ export const updateLearnProgressSchema = z
 		(value) => value.completed !== undefined || value.note !== undefined,
 		'Không có thay đổi',
 	);
-
-export const submitLearnQuizSchema = z.object({
-	answers: z.record(z.string(), z.number().int().min(0)),
-});
 
 export const beginLearnStudySchema = z.object({
 	sessionId: z.string().uuid(),

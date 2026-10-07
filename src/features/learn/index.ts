@@ -3,7 +3,6 @@ export * from './content';
 export * from './discussionImport';
 export * from './lessonImport';
 export * from './prompts';
-export * from './quizImport';
 export * from './schemas';
 export * from './service';
 export * from './studyAnalytics';
