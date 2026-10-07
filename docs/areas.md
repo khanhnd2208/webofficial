@@ -1,6 +1,6 @@
 # Bản đồ khu vực
 
-Web vẫn là **một app Next.js, một repo, một lần deploy**. Bốn khu vực dưới đây là ranh giới để bảo trì và để CI chọn end-to-end test. Chúng không đổi URL, database, hay đăng nhập.
+Web vẫn là **một app Next.js, một repo, một lần deploy**. Ba khu vực dưới đây là ranh giới để bảo trì và để CI chọn end-to-end test. Chúng không đổi URL, database, hay đăng nhập. Trò chơi đã chuyển sang fun.toiladuykhanh.com.
 
 ## Nguồn sự thật duy nhất
 
@@ -24,16 +24,6 @@ Khi thêm thư mục hoặc route mới:
 - một đường dẫn trong danh sách không còn tồn tại
 - hai khu cùng nhận một đường dẫn
 - có file trong `src/` không thuộc khu nào và cũng không thuộc phần dùng chung
-
-## Boardgame
-
-Game đang có: Cheese Thief, Ma sói, Spyfall, và phòng test cho admin.
-
-- `src/features/board-game-shared`, `cheese-thief`, `werewolf`, `spy-fall`, `board-game-test`
-- `src/app/my-space/board-game`, `src/app/api/cheese-thief`, `ma-soi`, `spy`, `src/app/api/admin/board-game`
-- `public/board-game` (ảnh và âm thanh của game)
-
-`src/features/board-game-shared` chứa phần các game dùng chung: khung API (`lib/apiUtils`, `lib/gameError`), i18n, theme, UI (`components/ui`), và các component người chơi. Đây là phần chung của khu boardgame, không phải của cả web. `GameError` mang mã lỗi cho client. Đừng nhầm với `AppError` trong `src/lib`, loại nhận thông báo lỗi.
 
 ## Quản lý lớp
 
@@ -101,7 +91,7 @@ Hướng sửa thường gặp: chuyển phần được dùng chung (ví dụ `
 
 ## Luật import
 
-ESLint (`no-restricted-imports`) cấm file của một khu import module của khu khác: `@/features/*`, `@/components/*`, và route `@/app/*` thuộc khu đó. Import trong cùng một khu vẫn hợp lệ, ví dụ Cheese Thief import UI trong `board-game-shared`.
+ESLint (`no-restricted-imports`) cấm file của một khu import module của khu khác: `@/features/*`, `@/components/*`, và route `@/app/*` thuộc khu đó. Import trong cùng một khu vẫn hợp lệ.
 
 ## End-to-end theo khu
 
@@ -109,7 +99,6 @@ ESLint (`no-restricted-imports`) cấm file của một khu import module của 
 
 | Khu vừa sửa                                   | Spec chạy thêm                                                                        |
 | --------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Boardgame                                     | `board-game-visual`, `board-game-test-rooms`                                          |
 | Giới thiệu và khóa học                        | `editorial-premium`, `personal-book` |
 | Quản lý lớp                                   | `active-recall*`, `teaching-*`, `admin-workspace`, `my-class`, `myspace-tests`, và `teaching-groups` (bật cờ nhóm) |
 | Công cụ riêng                                 | không có (chỉ smoke)                                                                  |

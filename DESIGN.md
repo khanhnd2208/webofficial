@@ -169,7 +169,7 @@ Brand is **typographic** — there is no logo SVG. Wordmark = “Duy Khánh” i
 | `/du-an` | Project index (list) |
 | `/du-an/[slug]` | Case / inquiry deep dive |
 | `/dich-vu` | Three service offers → contact with inquiry type |
-| `/my-space` | Personal experiments hub (boardgames, podcast, tests) |
+| `/my-space` | Personal experiments hub (tests; board games now live at fun.toiladuykhanh.com) |
 | `/lien-he` | Full contact form |
 | `/ghi-chep` | Notes (draft / gated by published content) |
 | `/chinh-sach/*` | Policies required by contact form |

@@ -71,8 +71,8 @@ Learn Chinese also keep a `pg_dump` from before each deploy in
 nightly backup already dumps. Fun runs one PM2 process (`fork`), because a
 second process would step the live bots twice. The old in-place files
 of the first three apps sit in `<dir>/_legacy-20261006/` (mode 700) until 2026-10-20.
-Fun has no legacy directory. Nginx for `fun.toiladuykhanh.com` is in
-`vps-infra` (`server/nginx/fun.conf`) and is not installed until the certificate exists.
+Fun has no legacy directory. Nginx for `fun.toiladuykhanh.com` is
+`server/nginx/fun.conf`, with a Let's Encrypt certificate, proxying port 3002.
 
 PM2 runs as `deploy` (`systemctl status pm2-deploy`, home `/home/deploy/.pm2`)
 with `pm2-logrotate` (10 MB per file, 14 kept). Root's PM2 (`pm2-root`) is
@@ -303,3 +303,4 @@ user per app, auditd/AIDE/CrowdSec, Livepatch.
 | 2026-10-06 | New key `ci-chijuly-deploy-2026-10` (`restrict`) for deploy; chijuly env `production` limited to `main`       | `authorized_keys.deploy` in `hardening-backup-20261006-vps-infra` |
 | 2026-10-06 | Old in-place app files moved to `/var/www/<app>/_legacy-20261006/` (~5.4 GB); delete from 2026-10-20          | `mv` the item back; list in `MANIFEST-before.txt`             |
 | 2026-10-07 | Fun games: database `fun_games`, user `fun_user` (readWrite on that database only), `/var/www/fun` on port 3002, key `ci-fun-deploy-2026-10` | Drop the user and database after the overlap; remove the key (`authorized_keys.deploy` in `/root/hardening-backup-20261007`) |
+| 2026-10-07 | Certificate for `fun.toiladuykhanh.com` and nginx `fun` proxying `127.0.0.1:3002` | Remove the site file and `certbot delete --cert-name fun.toiladuykhanh.com` |

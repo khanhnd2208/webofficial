@@ -21,27 +21,6 @@
 
 /** @type {Record<string, Area>} */
 export const AREAS = {
-	boardgame: {
-		title: 'Boardgame',
-		features: [
-			'board-game-shared',
-			'cheese-thief',
-			'werewolf',
-			'spy-fall',
-			'board-game-test',
-			'board-game-bots',
-		],
-		components: [],
-		paths: [
-			'src/app/my-space/board-game',
-			'src/app/api/cheese-thief',
-			'src/app/api/ma-soi',
-			'src/app/api/spy',
-			'src/app/api/admin/board-game',
-			'public/board-game',
-		],
-		e2e: ['e2e/board-game-visual.spec.ts', 'e2e/board-game-test-rooms.spec.ts'],
-	},
 	classroom: {
 		title: 'Classroom',
 		features: ['teaching', 'my-class', 'active-recall', 'myspace-tests'],

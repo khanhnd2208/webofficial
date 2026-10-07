@@ -86,6 +86,9 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
 		await expect(page.getByTestId('myspace-tile-board-game')).toBeVisible();
+		await expect(page.getByTestId('myspace-note-board-game')).toHaveText(
+			'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
+		);
 		await page.getByTestId('myspace-tile-courses').click();
 		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
 	});

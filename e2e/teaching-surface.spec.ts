@@ -212,7 +212,7 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 				'aria-selected',
 				'true',
 			);
-			for (const path of ['/my-space/my-class', '/my-space/board-game', '/muc-luc']) {
+			for (const path of ['/my-space/my-class', '/muc-luc']) {
 				const response = await page.goto(path);
 				await expect(page.locator('[data-surface="teaching"]')).toHaveCount(0);
 				if (path === '/my-space/my-class' && response?.status() !== 404)

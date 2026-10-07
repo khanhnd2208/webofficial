@@ -27,11 +27,6 @@ describe('persistent internal layouts', () => {
 			'/admin/my-class/courses/one/content',
 			'/admin/my-class/courses/one/settings',
 		],
-		[
-			'/my-space/board-game/ma-soi/room/ONE',
-			'/my-space/board-game/ma-soi/room/TWO',
-			'/my-space/board-game/ma-soi/room/THREE',
-		],
 	])('keeps state and mounted connections across %s', (first, second, third) => {
 		const disconnect = vi.fn();
 		function Workspace() {

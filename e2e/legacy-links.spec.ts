@@ -18,6 +18,26 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
+	test('old board-game links go to fun.toiladuykhanh.com', async ({ request }) => {
+		const cases = [
+			['/my-space/board-game', 'https://fun.toiladuykhanh.com/'],
+			['/my-space/board-game/spy-fall', 'https://fun.toiladuykhanh.com/spy-fall'],
+			[
+				'/my-space/board-game/ma-soi/room/AB12CD',
+				'https://fun.toiladuykhanh.com/ma-soi/room/AB12CD',
+			],
+			[
+				'/my-space/board-game/cheese-thief/room/ZZ99',
+				'https://fun.toiladuykhanh.com/cheese-thief/room/ZZ99',
+			],
+		] as const;
+		for (const [path, location] of cases) {
+			const response = await request.get(path, { maxRedirects: 0 });
+			expect(response.status(), path).toBe(307);
+			expect(response.headers().location, path).toBe(location);
+		}
+	});
+
 	test('the retired Chương–Bài course links land on the course catalog', async ({ request }) => {
 		for (const path of ['/hoc/khoa-hoc/quan-tri/bai/bai-1', '/tai-khoan/hoc', '/dashboard']) {
 			const response = await request.get(path, { maxRedirects: 0 });

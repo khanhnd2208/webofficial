@@ -151,7 +151,6 @@ describe('sign-in gates', () => {
 			'/my-space/courses/itm',
 			'/my-space/my-class',
 			'/khoa-hoc/hrm?s=1',
-			'/my-space/board-game/test?game=spy-fall',
 		]) {
 			expect(isSignInRequiredPath(path), path).toBe(true);
 		}
@@ -163,6 +162,7 @@ describe('sign-in gates', () => {
 			'/my-space',
 			'/khoa-hoc',
 			'/kham-pha-khoa-hoc',
+			'/my-space/board-game/test?game=spy-fall',
 		]) {
 			expect(isSignInRequiredPath(path), path).toBe(false);
 		}
@@ -258,10 +258,6 @@ describe('site header trail', () => {
 		expect(getSiteTrail('/tai-khoan/ho-so')).toEqual([{ label: 'Tài khoản', href: '/tai-khoan' }]);
 		expect(getSiteTrail('/chinh-sach/bao-mat')).toEqual([{ label: 'Chính sách' }]);
 		expect(getSiteTrail('/my-space')).toEqual([{ label: 'Không gian của tôi' }]);
-		expect(getSiteTrail('/my-space/board-game')).toEqual([
-			{ label: 'Không gian của tôi', href: '/my-space' },
-			{ label: 'Board Game' },
-		]);
 		expect(getSiteTrail('/my-space/active-recall')).toEqual([
 			{ label: 'Không gian của tôi', href: '/my-space' },
 			{ label: 'Ôn tập' },
@@ -298,6 +294,8 @@ describe('site header trail', () => {
 			'/tai-khoan',
 			'/my-space',
 			'/my-space/board-game',
+			'/my-space/board-game/spy-fall',
+			'/my-space/board-game/ma-soi/room/ABCD',
 			'/my-space/active-recall',
 			'/my-space/active-recall/hrm',
 			'/my-space/tests',
@@ -315,8 +313,6 @@ describe('site header trail', () => {
 			'/my-space/courses/ai50',
 			'/khoa-hoc/ai50',
 			'/khoa-hoc/ai50/studio?s=reading',
-			'/my-space/board-game/spy-fall',
-			'/my-space/board-game/ma-soi/room/ABCD',
 			'/my-space/tests/hrm/play',
 			'/messages',
 			'/vocabulary',

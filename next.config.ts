@@ -152,6 +152,19 @@ const nextConfig: NextConfig = {
 			{ source: '/messages', destination: '/admin/tools/messages', permanent: false },
 			{ source: '/messages/:path*', destination: '/admin/tools/messages/:path*', permanent: false },
 
+			// Board games moved to fun.toiladuykhanh.com. Temporary for two weeks so a
+			// rollback still reaches players; the hub copy already says the move is permanent.
+			{
+				source: '/my-space/board-game',
+				destination: 'https://fun.toiladuykhanh.com',
+				permanent: false,
+			},
+			{
+				source: '/my-space/board-game/:path*',
+				destination: 'https://fun.toiladuykhanh.com/:path*',
+				permanent: false,
+			},
+
 			// Explorer Teacher — retired marketing URLs
 			...PUBLIC_REDIRECTS,
 		];

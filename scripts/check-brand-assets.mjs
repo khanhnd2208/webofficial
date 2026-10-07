@@ -30,7 +30,7 @@ for (const file of files) {
 
 const origin = process.argv[2];
 if (origin) {
-	for (const route of ['', '/gioi-thieu', '/kham-pha-khoa-hoc', '/my-space/board-game']) {
+	for (const route of ['', '/gioi-thieu', '/kham-pha-khoa-hoc']) {
 		const response = await fetch(new URL(`${route}/opengraph-image`, origin));
 		if (!response.ok) throw new Error(`Social image failed: ${route}, ${response.status}`);
 		const bytes = Buffer.from(await response.arrayBuffer());

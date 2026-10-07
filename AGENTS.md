@@ -46,7 +46,7 @@ The user directs agents in plain language and does not read diffs. A short reque
 - A new folder or route goes into `areas.mjs`; then run `npm run areas:sync`.
 - Placement table and conventions: `docs/03-CODING_STANDARDS.md` §11. New persistent data goes to PostgreSQL with a Prisma migration.
 - Source files stay under 800 lines (ESLint `max-lines`). Files above that are capped in `eslint.config.mjs`: split them, never raise a cap.
-- API routes use the wrappers in `src/lib/apiUtils.ts`. Board-game room APIs use `src/features/board-game-shared/lib/apiUtils.ts` and throw `GameError`.
+- API routes use the wrappers in `src/lib/apiUtils.ts`.
 
 ## Commits
 

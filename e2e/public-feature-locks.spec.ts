@@ -49,7 +49,10 @@ test.describe('archived public learning surfaces', () => {
 		);
 		await expect(page.getByTestId('myspace-tile-board-game')).toHaveAttribute(
 			'href',
-			'/my-space/board-game',
+			'https://fun.toiladuykhanh.com',
+		);
+		await expect(page.getByTestId('myspace-note-board-game')).toHaveText(
+			'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
 		);
 		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-tests')).toHaveCount(0);

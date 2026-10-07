@@ -12,7 +12,7 @@ Tài liệu này giải thích cách repo hướng dẫn AI agent (Claude Code, 
 | Thực thi cứng | `.claude/settings.json` (`permissions`, `hooks`) | Claude Code (client, không phải model) | Không tốn token; hook SessionStart in 1–2 dòng | 0 / ~40 token |
 | Tài liệu chi tiết | `docs/*.md` | Mọi agent | Chỉ khi agent tự mở | Tùy file |
 
-Luật theo đường dẫn hiện có: `my-class-ui`, `board-games`, `learn-content`, `prisma`, `vps-deploy`. Mỗi luật chỉ viết một lần trong `.cursor/rules/`. Frontmatter có cả `globs` (Cursor) và `paths` (Claude), hai danh sách phải giống nhau.
+Luật theo đường dẫn hiện có: `my-class-ui`, `learn-content`, `prisma`, `vps-deploy`. Mỗi luật chỉ viết một lần trong `.cursor/rules/`. Frontmatter có cả `globs` (Cursor) và `paths` (Claude), hai danh sách phải giống nhau.
 
 Skill hiện có: `ship-change` (từ tạo nhánh đến deploy) và `publish-lecture` (đưa bài giảng lên production).
 

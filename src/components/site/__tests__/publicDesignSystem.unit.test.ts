@@ -20,7 +20,6 @@ const ROOTS = [
 	'src/app/chinh-sach',
 	'src/app/not-found.tsx',
 	'src/app/my-space/page.tsx',
-	'src/app/my-space/board-game/page.tsx',
 	'src/components/site/IntroLanding.tsx',
 	'src/components/site/NotFoundPanel.tsx',
 	'src/components/site/RecentClasses.tsx',

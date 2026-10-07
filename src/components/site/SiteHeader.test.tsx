@@ -48,13 +48,13 @@ describe('SiteHeader', () => {
 	});
 
 	it('links a detail page back to its parent and does not mark that parent as current', () => {
-		pathname.current = '/my-space/board-game';
+		pathname.current = '/my-space/active-recall';
 		render(<SiteHeader />);
 		expect(screen.getByRole('link', { name: 'Không gian của tôi' })).toHaveAttribute(
 			'href',
 			'/my-space',
 		);
-		expect(screen.getByText('Board Game')).toHaveAttribute('aria-current', 'page');
+		expect(screen.getByText('Ôn tập')).toHaveAttribute('aria-current', 'page');
 	});
 
 	it('hides the contact action on the contact page', () => {

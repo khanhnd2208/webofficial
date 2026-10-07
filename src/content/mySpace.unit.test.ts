@@ -10,9 +10,12 @@ describe('My Space operating hub', () => {
 		expect(mySpaceTiles.map((tile) => tile.href)).toEqual([
 			routes.mySpaceTeaching,
 			routes.discoverCourses,
-			routes.boardGame,
+			routes.funGames,
 		]);
 		expect(mySpaceTiles.every((tile) => tile.status === 'published')).toBe(true);
+		expect(mySpaceTiles.find((tile) => tile.id === 'board-game')?.note).toBe(
+			'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
+		);
 		expect(getMySpaceTiles(null).map((tile) => tile.id)).toEqual(['courses', 'board-game']);
 		expect(getMySpaceTiles('student').map((tile) => tile.id)).toEqual(['courses', 'board-game']);
 	});
