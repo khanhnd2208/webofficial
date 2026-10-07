@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
 	// identifier to protect clients with stale Server Action references during
 	// rolling or symlink-based deployments.
 	deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
+	// Only the VPS deploy sets this, and only for the exact commit whose CI run
+	// already passed `npm run typecheck`. Every other build keeps the check.
+	typescript: {
+		ignoreBuildErrors: process.env.NEXT_SKIP_BUILD_TYPECHECK === '1',
+	},
 	async headers() {
 		return [
 			{

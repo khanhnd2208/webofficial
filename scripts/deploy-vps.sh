@@ -22,6 +22,10 @@ EXPECT_PUBLIC_LEARNING_LOCKS="${EXPECT_PUBLIC_LEARNING_LOCKS:-true}"
 DEPLOY_KEEP_RELEASES="${DEPLOY_KEEP_RELEASES:-4}"
 DEPLOY_MIN_FREE_GB="${DEPLOY_MIN_FREE_GB:-8}"
 CHECK_MAX_DISK_USED_PERCENT="${CHECK_MAX_DISK_USED_PERCENT:-80}"
+# The deploy workflow sets this to the commit whose CI run (typecheck included)
+# succeeded. Only an exact match with the deployed commit skips the duplicate
+# TypeScript pass inside `next build`; local deploys keep it.
+CI_TYPECHECKED_SHA="${CI_TYPECHECKED_SHA:-}"
 
 SOURCE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MODE="deploy"
@@ -42,7 +46,7 @@ Optional environment variables:
   VPS_HOST, VPS_PORT, VPS_DIR, DEPLOY_KEY, DEPLOY_RELEASE_ID, PUBLIC_URL,
   PM2_APP_NAME, LIVE_PORT, CANDIDATE_PORT, DB_BACKUP_COMMAND,
   EXPECT_PUBLIC_LEARNING_LOCKS, DEPLOY_KEEP_RELEASES, DEPLOY_MIN_FREE_GB,
-  CHECK_MAX_DISK_USED_PERCENT
+  CHECK_MAX_DISK_USED_PERCENT, CI_TYPECHECKED_SHA
 EOF
 }
 
@@ -157,6 +161,10 @@ if [[ -z "$DEPLOY_RELEASE_ID" ]]; then
 	DEPLOY_RELEASE_ID="$(date -u +%Y%m%dT%H%M%SZ)-${SOURCE_SHA_SHORT}"
 fi
 [[ "$DEPLOY_RELEASE_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "Unsafe DEPLOY_RELEASE_ID"
+SKIP_BUILD_TYPECHECK="false"
+if [[ -n "$CI_TYPECHECKED_SHA" && "$CI_TYPECHECKED_SHA" == "$SOURCE_SHA" ]]; then
+	SKIP_BUILD_TYPECHECK="true"
+fi
 
 LOCAL_EXPORT_DIR="$(mktemp -d)"
 cleanup_local() {
@@ -237,7 +245,7 @@ rsync -avz --delete --delete-delay --itemize-changes --no-owner --no-group \
 	"$LOCAL_EXPORT_DIR/" "$VPS_HOST:$REMOTE_RELEASE_DIR/"
 
 log "Building, migrating, validating, and promoting release"
-run_ssh "flock -n '$VPS_DIR/.deploy.lock' bash -s -- '$VPS_DIR' '$DEPLOY_RELEASE_ID' '$SOURCE_SHA' '$PM2_APP_NAME' '$LIVE_PORT' '$CANDIDATE_PORT' '$PUBLIC_URL' '$DB_BACKUP_COMMAND' '$EXPECT_PUBLIC_LEARNING_LOCKS'" <<'REMOTE_DEPLOY'
+run_ssh "flock -n '$VPS_DIR/.deploy.lock' bash -s -- '$VPS_DIR' '$DEPLOY_RELEASE_ID' '$SOURCE_SHA' '$PM2_APP_NAME' '$LIVE_PORT' '$CANDIDATE_PORT' '$PUBLIC_URL' '$DB_BACKUP_COMMAND' '$EXPECT_PUBLIC_LEARNING_LOCKS' '$SKIP_BUILD_TYPECHECK'" <<'REMOTE_DEPLOY'
 set -Eeuo pipefail
 if [[ "$(id -u)" -eq 0 ]]; then
 	echo "Connect as the deploy user, not root: PM2 and the app files belong to deploy." >&2
@@ -253,6 +261,7 @@ CANDIDATE_PORT="$6"
 PUBLIC_URL="$7"
 BACKUP_COMMAND="$8"
 EXPECT_LOCKS="$9"
+SKIP_BUILD_TYPECHECK="${10:-false}"
 
 RELEASE_DIR="$DEPLOY_ROOT/releases/$RELEASE_ID"
 CURRENT_LINK="$DEPLOY_ROOT/current"
@@ -672,7 +681,13 @@ echo "Building candidate before any database migration"
 # styles moved into imports. Always compile a release from its own source.
 echo "Building with a fresh Next.js compiler cache"
 rm -rf -- "$RELEASE_DIR/.next/cache"
-NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
+if [[ "${SKIP_BUILD_TYPECHECK:-false}" == "true" ]]; then
+	# CI typechecked this exact commit; the VPS pass took about two minutes.
+	echo "Skipping the build TypeScript pass: CI already typechecked $SOURCE_SHA"
+	NEXT_SKIP_BUILD_TYPECHECK=1 NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
+else
+	NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
+fi
 test -s .next/BUILD_ID
 
 # Turbopack must build from a closed project tree. Attach mutable paths only
@@ -703,8 +718,33 @@ echo "Installing production-only dependencies for the runtime release"
 # `npm prune --omit=dev` failed on this tree on every deploy (npm: "Cannot read
 # properties of null (reading 'edgesOut')"), so install the production set from
 # the lockfile directly. HUSKY=0 makes `prepare` skip the dev-only git hooks.
+# Reuse the last production install when nothing that shapes it changed
+# (same stamp as the full install). Copy, never hardlink, so a release cannot
+# mutate the cache.
 rm -rf node_modules
-HUSKY=0 npm ci --omit=dev
+PROD_CACHE="$BUILD_CACHE/node_modules_prod"
+REUSED_PROD_MODULES=0
+if [[ -f "$BUILD_CACHE/prod.stamp" && -d "$PROD_CACHE" ]] &&
+	[[ "$(tr -d '[:space:]' < "$BUILD_CACHE/prod.stamp")" == "$LOCK_STAMP" ]]; then
+	echo "Reusing cached production node_modules"
+	if cp -a "$PROD_CACHE" node_modules && [[ -x node_modules/.bin/next && -x node_modules/.bin/prisma ]]; then
+		REUSED_PROD_MODULES=1
+	else
+		echo "Cached production node_modules could not be reused; installing from the lockfile" >&2
+		rm -rf node_modules
+	fi
+fi
+if [[ "$REUSED_PROD_MODULES" -ne 1 ]]; then
+	HUSKY=0 npm ci --omit=dev
+	rm -rf -- "$PROD_CACHE" "$BUILD_CACHE/prod.stamp"
+	mkdir -p -- "$BUILD_CACHE"
+	if cp -a node_modules "$PROD_CACHE"; then
+		printf '%s\n' "$LOCK_STAMP" > "$BUILD_CACHE/prod.stamp"
+	else
+		echo "WARNING: could not refresh the production node_modules cache; this deploy will continue" >&2
+		rm -rf -- "$PROD_CACHE" "$BUILD_CACHE/prod.stamp"
+	fi
+fi
 ./node_modules/.bin/prisma generate
 test -x ./node_modules/.bin/next
 

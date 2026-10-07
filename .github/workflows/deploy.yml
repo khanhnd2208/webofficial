@@ -81,6 +81,9 @@ jobs:
           VPS_HOSTNAME: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
+          # The step above proved CI succeeded for this commit, so the VPS
+          # build can skip its duplicate TypeScript pass.
+          CI_TYPECHECKED_SHA: ${{ env.DEPLOY_SHA }}
         run: |
           set -euo pipefail
           : "${VPS_HOSTNAME:?Missing VPS_HOST production secret}"

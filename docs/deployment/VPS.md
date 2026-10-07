@@ -25,7 +25,7 @@ The release layout is:
 ├── .env.local                 # shared source of truth, mode 0600
 ├── current -> releases/<id>    # atomically replaced on promotion
 ├── releases/<id>/             # source + node_modules + .next
-├── .build-cache/              # full node_modules reused when dependency inputs match
+├── .build-cache/              # full and production node_modules reused when dependency inputs match
 ├── public/uploads/            # shared persistent uploads
 ├── public/music/uploads/      # shared persistent music uploads
 ├── backups/                   # operator data; never synced/deleted
@@ -141,8 +141,14 @@ The script performs these steps in order:
    the release tree.
    The release ID is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew
    protection and cache busting.
-6. Runs the database backup command, then `prisma migrate deploy`, then prunes
-   build-only development dependencies before starting the runtime. Active Recall
+   The deploy workflow passes `CI_TYPECHECKED_SHA` after it confirms CI
+   succeeded for the commit. When it equals the deployed commit, the build sets
+   `NEXT_SKIP_BUILD_TYPECHECK=1` and skips Next.js's own TypeScript pass, which
+   CI's `npm run typecheck` already covered. Local deploys keep the pass.
+6. Runs the database backup command, then `prisma migrate deploy`, then swaps
+   in production-only dependencies before starting the runtime: a copy of
+   `.build-cache/node_modules_prod` when the same dependency inputs match,
+   otherwise `npm ci --omit=dev`, which refreshes that cache. Active Recall
    content is not reseeding during deploy; production decks stay as stored.
 7. Starts the candidate on port 4001 and verifies readiness, liveness, Google
    Auth provider metadata, Active Recall availability, admin API protection,
