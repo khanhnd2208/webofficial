@@ -353,10 +353,8 @@ jobs:
           if is_true "$RUN_ALL_E2E" || is_true "$AREA_SHARED" || is_true "$AREA_OUTSIDE"; then
             run_all=1
           fi
-          # Specs each area owns but CI does not run yet, because one test in each
-          # already fails on main (2026-09-30): e2e/operating-focus.spec.ts
-          # ("My Space contains only Teaching") and e2e/my-class.admin.spec.ts
-          # (vocabulary CSV: headless clipboard). Add them once those pass.
+          # e2e/my-class.admin.spec.ts remains excluded because its vocabulary CSV
+          # headless clipboard case already fails on main (2026-09-30).
           specs=(
             e2e/smoke.spec.ts
             e2e/public-feature-locks.spec.ts
@@ -368,6 +366,8 @@ jobs:
             specs+=(
               e2e/editorial-premium.spec.ts
               e2e/personal-book.spec.ts
+              e2e/operating-focus.spec.ts
+              e2e/learn-reader.spec.ts
             )
           fi
           if [[ "$run_all" -eq 1 ]] || is_true "$AREA_BOARDGAME"; then

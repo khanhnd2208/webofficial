@@ -6,7 +6,7 @@ Ngày rà soát: 07/10/2026. Nhánh tổng hợp: `codex/finish-pending-work`.
 
 Các thay đổi còn phù hợp đã được hợp nhất và sửa cho kiến trúc hiện hành: mục lục hai cửa, UX Cheese Thief, tốc độ đọc Learn và parser phản biện. Kế hoạch Learn Studio đã đối chiếu với code thật. Case Study bị loại khỏi phạm vi theo yêu cầu mới; đã xóa cả hai bản kế hoạch ở checkout chính và worktree tổng hợp, chưa tạo model, route hay migration.
 
-Nhánh tổng hợp xuất phát từ `origin/main` tại `e9e4b4febcdb1dae626ff428bcf4d70c89a34914`. Main và VPS cùng SHA này: release `e9e4b4febcdb-37555680367-1`, xác nhận trực tiếp bằng symlink `current` và `.deploy-metadata`. [Workflow deploy #37555680367](https://github.com/khanhnd2208/webofficial/actions/runs/37555680367) đã thành công. Các thay đổi tổng hợp trong báo cáo này mới nằm trên nhánh local, chưa push, mở PR, merge hay deploy.
+Nhánh tổng hợp xuất phát từ `origin/main` tại `e9e4b4febcdb1dae626ff428bcf4d70c89a34914`. Main và VPS cùng SHA này: release `e9e4b4febcdb-37555680367-1`, xác nhận trực tiếp bằng symlink `current` và `.deploy-metadata`. [Workflow deploy #37555680367](https://github.com/khanhnd2208/webofficial/actions/runs/37555680367) đã thành công. Tại thời điểm chốt kiểm chứng local, các thay đổi tổng hợp chưa push, mở PR, merge hay deploy. Người dùng đã yêu cầu hoàn tất shipping sau đó; trạng thái thực tế được theo dõi qua PR của nhánh này và workflow CI/deploy, thay vì suy ra từ ảnh chụp trạng thái local trong báo cáo.
 
 ## Quyết định cho từng nhánh
 
@@ -34,7 +34,7 @@ Các nhánh backup và worktree của phiên làm việc khác được giữ ng
 - Nút hoàn thành Learn từng đổi thành link trước khi lưu tiến độ xong. Giữ trạng thái busy, chặn gửi lặp, khôi phục trạng thái trước đó khi lỗi và điều hướng sau khi lưu. Làm mới dữ liệu tiến độ đã tải trước; reset control theo mục và trạng thái hoàn thành để desktop/mobile không giữ trạng thái của bài trước hoặc bản ẩn chưa cập nhật.
 - Mermaid tránh render hàng loạt ngoài viewport, tuần tự hóa cấu hình global, cache tối đa 64 SVG và tránh dùng lại ID giữa các instance. Khi source/theme đổi, không hiển thị kết quả cũ.
 - Đáp án phản biện tải lazy: kiểm thử chờ nội dung thực sự xuất hiện; catalog dùng formatter không kéo content schema vào client.
-- E2E mục lục dùng selector của cấu trúc hai cửa, giữ header và route của main hiện tại.
+- E2E mục lục dùng selector của cấu trúc hai cửa, giữ header và route của main hiện tại. CI chạy thêm bộ Learn reader mới và operating-focus đã sửa, không chỉ đăng ký trong area map.
 - URL alias `/khoa-hoc` từng bị nhận nhầm là reader nên thiếu public header khi có khóa học. Cho catalog alias và `/kham-pha-khoa-hoc` cùng header/breadcrumb; giữ reader và Studio không public header. Kiểm thử legacy dùng điều hướng luôn có, không giả định catalog rỗng.
 
 ## Kiểm chứng đã chạy
@@ -60,7 +60,7 @@ Các nhánh backup và worktree của phiên làm việc khác được giữ ng
 
 Đã đóng khoảng trống PostgreSQL: khởi tạo PostgreSQL 18.3 ở loopback `127.0.0.1:55439`, tách database integration và trình duyệt. Database test dùng đủ 60 file SQL migration hiện có, bao gồm constraint/trigger; không tạo hay sửa migration. Toàn bộ integration đã qua. Sáu ca E2E trước đó lỗi `DatabaseNotReachable`/`P1001` đã chạy lại thành công trong bộ 69 ca trên bản production local cuối. Không còn bỏ qua ca database vì thiếu PostgreSQL.
 
-GitHub CI chưa chạy cho nhánh local này vì chưa push. CI dùng PostgreSQL 16, local dùng 18.3; trước merge vẫn cần CI xanh trên đúng commit. Các dịch vụ/database test là môi trường tạm riêng, không dùng database production.
+GitHub CI chưa chạy tại thời điểm kiểm chứng local; shipping phải đợi các checks của PR và main thành công. CI dùng PostgreSQL 16, local dùng 18.3; trước merge vẫn cần CI xanh trên đúng commit. Các dịch vụ/database test là môi trường tạm riêng, không dùng database production.
 
 Không thay Prisma schema/migration, dependency, nội dung nguồn Learn đã audit hoặc seed production. Không ghi database production. Merge không conflict Git là kết quả tại revision được ghi trong báo cáo; nếu main đổi cần fetch và kiểm tra lại.
 
@@ -78,6 +78,6 @@ Không thay Prisma schema/migration, dependency, nội dung nguồn Learn đã a
 
 1. Dùng nhánh `codex/finish-pending-work` cho PR tổng hợp; không merge lại các nhánh nguồn đã được port hoặc thay thế.
 2. Khi được yêu cầu shipping, chạy lại kiểm tra trên main mới nhất, xác minh CI cho đúng commit rồi mở PR. Merge bằng merge commit khi người dùng cho phép.
-3. Chỉ sau khi merge đã được yêu cầu mới theo dõi workflow deploy. Hiện chưa push, merge hay deploy nhánh tổng hợp.
+3. Chỉ sau khi merge đã được yêu cầu mới theo dõi workflow deploy. Chỉ coi shipping hoàn tất khi workflow deploy thành công và VPS xác nhận đúng SHA sau merge.
 
 Checkout chính vẫn ở `b137c53`, chậm hơn `origin/main` 170 commits và còn bản Learn plan untracked. Không fast-forward, stash hay sửa công việc đó. Ngoại lệ duy nhất là xóa Case Study theo yêu cầu rõ ràng của người dùng.
