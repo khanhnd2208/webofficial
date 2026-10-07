@@ -64,8 +64,6 @@ describe('AiImportDialog', () => {
 				'# Bài\n\n## Mục\n\n![Sơ đồ](/uploads/hinh.webp#w=50 "Hình 1")',
 			),
 		);
-		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra' }));
-		fireEvent.click(screen.getByRole('button', { name: 'Áp dụng' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Lưu 1 mục' }));
 		await vi.waitFor(() =>
 			expect(onSave).toHaveBeenCalledWith(
@@ -118,8 +116,6 @@ describe('AiImportDialog', () => {
 		fireEvent.change(screen.getByRole('textbox', { name: 'Kết quả AI' }), {
 			target: { value: DISCUSSION },
 		});
-		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra' }));
-		fireEvent.click(screen.getByRole('button', { name: 'Áp dụng' }));
 		const save = screen.getByRole('button', { name: 'Lưu 2 câu' });
 		expect(save).toBeEnabled();
 		fireEvent.click(save);
@@ -134,5 +130,31 @@ describe('AiImportDialog', () => {
 		});
 		expect(input.questions).toHaveLength(2);
 		expect(input.questions[1].answer).toContain('Vì hai.');
+	});
+
+	it('previews questions as the learner sees them and blocks saving on errors', async () => {
+		render(
+			<AiImportDialog
+				kind="discussion"
+				courseTitle="Khóa demo"
+				lessons={lessons}
+				selectedLessonId="lesson-1"
+				onClose={vi.fn()}
+				onSave={vi.fn()}
+			/>,
+		);
+		const box = screen.getByRole('textbox', { name: 'Kết quả AI' });
+
+		fireEvent.change(box, { target: { value: DISCUSSION } });
+		expect(screen.getAllByText(/Thêm một dòng trống ngay trước/)).toHaveLength(2);
+
+		fireEvent.change(box, { target: { value: DISCUSSION.replace(/— (Một|Hai)\n/g, '— $1\n\n') } });
+		expect(screen.getByRole('region', { name: 'Câu 1' })).toHaveTextContent('Câu hỏiMột?');
+		expect(screen.getAllByText('Đáp án mẫu').length).toBeGreaterThan(0);
+		expect(screen.getByText(/đúng định dạng/)).toBeInTheDocument();
+
+		fireEvent.change(box, { target: { value: 'Một đoạn văn không có câu nào.' } });
+		expect(screen.getByText('Không tìm thấy câu nào.')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Lưu 0 câu' })).toBeDisabled();
 	});
 });
