@@ -82,7 +82,7 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
-	test('a class link opens its board, and Admin then offers that class again', async ({
+	test('a class link opens its board, and Admin lists that class with its student page', async ({
 		page,
 		context,
 	}) => {
@@ -129,9 +129,14 @@ test.describe('Links shared with students keep working', () => {
 			await expect(page.getByTestId('recent-classes')).toHaveCount(0);
 			await addAdminSession(context);
 			await page.goto('/admin');
+			const classes = page.getByRole('region', { name: 'Lớp đang dạy' });
 			await expect(
-				page.getByTestId('recent-classes').getByRole('link', { name: /Legacy link E2E/ }),
+				classes.getByRole('link', { name: /Trang lớp của Legacy link E2E/ }),
 			).toHaveAttribute('href', `/lop/${slug}`);
+			await expect(classes.getByRole('link', { name: /^Legacy link E2E/ })).toHaveAttribute(
+				'href',
+				`/my-space/teaching/${classId}`,
+			);
 		} finally {
 			await addAdminSession(context);
 			await cleanupTeachingClass(page.request, classId);

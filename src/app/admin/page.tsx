@@ -99,8 +99,11 @@ export default async function AdminHomePage() {
 						{classes.length ? (
 							<ul className={styles.cardRows}>
 								{classes.map((row) => (
-									<li key={row.id}>
-										<Link href={routes.mySpaceTeachingClass(row.id)} className={styles.cardRow}>
+									<li key={row.id} className="flex items-center">
+										<Link
+											href={routes.mySpaceTeachingClass(row.id)}
+											className={`${styles.cardRow} flex-1`}
+										>
 											<span className="min-w-0 flex-1">
 												<span className="block truncate font-semibold">{row.courseName}</span>
 												<span className={`${styles.meta} block truncate`}>
@@ -111,6 +114,18 @@ export default async function AdminHomePage() {
 												{vi(row.students)} SV
 											</span>
 										</Link>
+										{row.sharedSlug ? (
+											<Link
+												href={routes.teachingPublicClass(row.sharedSlug)}
+												target="_blank"
+												rel="noopener noreferrer"
+												className={`${styles.cardAction} inline-flex shrink-0 items-center gap-1 pr-4`}
+											>
+												Trang lớp
+												<AdminIcon name="external" size={14} />
+												<span className="sr-only"> của {row.courseName} (mở tab mới)</span>
+											</Link>
+										) : null}
 									</li>
 								))}
 							</ul>

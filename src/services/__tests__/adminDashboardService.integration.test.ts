@@ -151,6 +151,7 @@ describe('adminDashboardService', () => {
 					groupNo: 'A1',
 					term: 'HK1',
 					students: 0,
+					sharedSlug: null,
 				},
 			]);
 		} finally {

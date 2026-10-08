@@ -43,6 +43,8 @@ export interface AdminActiveClass {
 	groupNo: string;
 	term: string;
 	students: number;
+	/** Slug of the student page, only while the class is shared with students. */
+	sharedSlug: string | null;
 }
 
 /**
@@ -61,10 +63,16 @@ export async function listActiveClasses(limit = 8): Promise<AdminActiveClass[]> 
 			classCode: true,
 			groupNo: true,
 			term: true,
+			publicSlug: true,
+			attendanceVisible: true,
 			_count: { select: { enrollments: { where: { status: 'ACTIVE' } } } },
 		},
 	});
-	return rows.map(({ _count, ...row }) => ({ ...row, students: _count.enrollments }));
+	return rows.map(({ _count, publicSlug, attendanceVisible, ...row }) => ({
+		...row,
+		students: _count.enrollments,
+		sharedSlug: attendanceVisible ? publicSlug : null,
+	}));
 }
 
 /** NEW contact messages, for the inbox count in the admin sidebar. */
