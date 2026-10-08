@@ -3,29 +3,14 @@ import Image from 'next/image';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
-import { getMySpaceTiles } from '@/content/mySpace';
 import { auth } from '@/lib/auth';
-import TocDoors, { type TocSpaceItem } from './TocDoors';
+import TocDoors, { buildTocItems } from './TocDoors';
 import styles from './toc.module.css';
 
 export const metadata: Metadata = {
 	title: 'Mục lục',
-	description: 'Tìm hiểu về Duy Khánh, rồi ghé My Space để học, dạy và chơi.',
+	description: 'Một chút về Duy Khánh, và những khóa học.',
 	alternates: { canonical: absoluteUrl(routes.toc) },
-};
-
-const descriptions: Record<string, string> = {
-	teaching: 'Một góc dành cho lớp học.',
-	courses: 'Học thêm một điều mới.',
-	'board-game': 'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com.',
-	admin: 'Quản lý không gian của bạn.',
-};
-
-// This page has its own illustration set; destination pages keep their own assets.
-const tocIcons: Record<string, string> = {
-	teaching: '/brand/toc/teaching-v1.webp',
-	courses: '/brand/toc/courses-v1.webp',
-	'board-game': '/brand/toc/board-game-v1.webp',
 };
 
 const about = {
@@ -33,24 +18,12 @@ const about = {
 	label: 'Về tôi',
 	description: 'Người thầy, và hành trình trở thành.',
 	icon: '/brand/toc/about-v1.webp',
+	eyebrow: 'About me',
 };
 
 export default async function TocPage() {
 	const session = await auth();
-	const items: TocSpaceItem[] = getMySpaceTiles(session?.user?.role).flatMap((tile) => {
-		const icon = tocIcons[tile.id] ?? (tile.visual.kind === 'image' ? tile.visual.src : null);
-		if (!tile.href || !icon) return [];
-		return [
-			{
-				id: tile.id,
-				href: tile.href,
-				label: tile.label,
-				description: descriptions[tile.id] ?? '',
-				icon,
-				accentClass: tile.id === 'teaching' ? styles.teachingTile : undefined,
-			},
-		];
-	});
+	const items = buildTocItems(session?.user?.role);
 
 	return (
 		<main className={`personal-book ${styles.page}`} data-testid="gate-home">
@@ -67,17 +40,9 @@ export default async function TocPage() {
 				<header className={styles.header}>
 					<p className={styles.eyebrow}>Nguyễn Duy Khánh · Mục lục</p>
 					<h1>Bạn muốn ghé đâu?</h1>
-					<p>Một chút về tôi. Một không gian để học và chơi.</p>
+					<p>Một chút về tôi. Và những khóa học.</p>
 				</header>
-				<TocDoors
-					about={about}
-					space={{
-						href: routes.mySpace,
-						label: 'My Space',
-						description: `${items.length} góc nhỏ để học, dạy và chơi.`,
-					}}
-					items={items}
-				/>
+				<TocDoors about={about} items={items} />
 				<footer className={styles.footer}>
 					<span>Chưa xong. Và vẫn đang tiếp tục.</span>
 				</footer>
