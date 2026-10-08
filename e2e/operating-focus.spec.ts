@@ -72,7 +72,7 @@ test.describe('Focused operating mode', () => {
 		await addAdminSession(context);
 		await page.goto('/admin/website');
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
-		await expect(page.getByRole('heading', { name: 'Website' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Trang công khai' })).toBeVisible();
 		await page
 			.getByRole('navigation', { name: 'Quản trị' })
 			.getByRole('link', { name: /Hộp thư liên hệ/ })

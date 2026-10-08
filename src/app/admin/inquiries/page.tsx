@@ -14,7 +14,6 @@ import {
 	type InquiryQuery,
 } from '@/components/admin/inquiryNavigation';
 import styles from '@/components/admin/AdminStudio.module.css';
-import { resolveAdminRoute } from '@/config/adminNavigation';
 import { routes } from '@/config/routes';
 import {
 	INQUIRY_TYPES,
@@ -67,11 +66,7 @@ export default async function AdminInquiriesPage({
 
 	return (
 		<div className={styles.page}>
-			<AdminPageHeader
-				title="Hộp thư liên hệ"
-				description="Đọc lời nhắn và xử lý ngay trên danh sách."
-				breadcrumbs={resolveAdminRoute(routes.admin.inquiries).breadcrumbs}
-			/>
+			<AdminPageHeader title="Hộp thư liên hệ" />
 			<div className={styles.stack}>
 				<InquiryStatusChips query={sp} counts={counts} />
 				{failedNotification ? (
@@ -108,9 +103,11 @@ export default async function AdminInquiriesPage({
 					<AdminButton type="submit" icon="filter">
 						Áp dụng
 					</AdminButton>
-					<AdminLink href={routes.admin.inquiries} tone="quiet">
-						Xóa bộ lọc
-					</AdminLink>
+					{filtered ? (
+						<AdminLink href={routes.admin.inquiries} tone="quiet">
+							Xóa bộ lọc
+						</AdminLink>
+					) : null}
 				</form>
 				{result.items.length ? (
 					<p className={styles.meta} role="status">

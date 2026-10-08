@@ -1,11 +1,8 @@
-import { AdminBadge } from '@/components/admin/AdminPrimitives';
 import styles from '@/components/admin/AdminStudio.module.css';
 import Link from 'next/link';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { McIcon } from '@/components/myclass/ui/McIcon';
 import { getArchivedModulesByGroup } from '@/config/moduleRegistry';
-import { routes } from '@/config/routes';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,10 +13,10 @@ export default function AdminArchivePage() {
 		<div className={styles.page}>
 			<AdminPageHeader
 				title="Kho lưu trữ"
-				description="Các module tạm dừng. Mở một mục để dùng đầy đủ — luôn trong giao diện lưu trữ, không xuất hiện lại trên menu admin chính."
+				description="Các mục đã ngừng dùng hằng ngày. Dữ liệu vẫn còn và vẫn mở được."
 			/>
 
-			<div className="mt-8 space-y-8">
+			<div className="space-y-8">
 				{groups.map(({ group, modules }) => (
 					<section key={group}>
 						<h2 className={styles.sectionTitle}>{group}</h2>
@@ -30,15 +27,9 @@ export default function AdminArchivePage() {
 									href={module.adminHref}
 									className={`${styles.row} hover:bg-surface-hover`}
 								>
-									<span className={styles.iconTile}>
-										<McIcon name={module.icon} size={18} />
-									</span>
 									<div className="min-w-0">
-										<div className="flex flex-wrap items-center gap-2">
-											<p className="font-semibold">{module.label}</p>
-											<AdminBadge>Đã lưu trữ</AdminBadge>
-										</div>
-										<p className="mt-1 text-sm text-muted">{module.description}</p>
+										<p className="font-semibold">{module.label}</p>
+										<p className={styles.meta}>{module.description}</p>
 									</div>
 								</Link>
 							))}
@@ -46,14 +37,6 @@ export default function AdminArchivePage() {
 					</section>
 				))}
 			</div>
-
-			<p className="mt-10 text-sm text-muted">
-				Quay lại{' '}
-				<Link href={routes.admin.home} className="font-semibold text-foreground underline">
-					admin chính
-				</Link>{' '}
-				khi xong việc với module cũ.
-			</p>
 		</div>
 	);
 }
