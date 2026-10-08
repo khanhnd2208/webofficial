@@ -1,6 +1,6 @@
 /**
  * Class pages a visitor opened on this device, newest first. Students reach a class only through
- * the link their lecturer shares, so this lets them find it again from Mục lục.
+ * the link their lecturer shares, so Admin and My Space can offer it again.
  */
 export const RECENT_CLASSES_KEY = 'recent-classes:v1';
 const LIMIT = 4;

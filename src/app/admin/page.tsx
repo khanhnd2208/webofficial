@@ -5,6 +5,7 @@ import { AdminIcon } from '@/components/admin/AdminIcon';
 import { AdminLink } from '@/components/admin/AdminPrimitives';
 import { adminDate, excerpt, relativeTime } from '@/components/admin/inquiryNavigation';
 import styles from '@/components/admin/AdminStudio.module.css';
+import RecentClasses from '@/components/site/RecentClasses';
 import { routes } from '@/config/routes';
 import { INQUIRY_TYPE_LABELS } from '@/features/inquiries/constants';
 import { countFailedNotifications, getAdminOverviewStats } from '@/services/adminDashboardService';
@@ -95,6 +96,7 @@ export default async function AdminHomePage() {
 							Mở Teaching
 						</AdminLink>
 					</div>
+					<RecentClasses className="mt-6 border-t border-border pt-4" />
 				</section>
 			</div>
 		</div>
