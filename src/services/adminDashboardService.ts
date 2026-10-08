@@ -34,6 +34,12 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 	};
 }
 
+/** NEW contact messages, for the inbox count in the admin sidebar. */
+export async function countNewInquiries(): Promise<number> {
+	await dbConnect();
+	return Inquiry.countDocuments({ status: 'NEW' });
+}
+
 export async function countFailedNotifications(): Promise<number> {
 	await dbConnect();
 	return Inquiry.countDocuments(failedNotificationFilter());

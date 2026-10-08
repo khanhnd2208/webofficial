@@ -22,7 +22,6 @@ const ADMIN_NAV_ICONS: Record<string, AdminIconName> = {
 	[routes.admin.inquiries]: 'inbox',
 	[routes.admin.learnAnalytics]: 'analytics',
 	[routes.mySpaceTeaching]: 'teaching',
-	[routes.toc]: 'toc',
 };
 
 function NavItem({
@@ -32,6 +31,8 @@ function NavItem({
 	mark,
 	collapsed,
 	active,
+	count,
+	leavesAdmin,
 	onNavigate,
 	testId,
 }: {
@@ -41,10 +42,13 @@ function NavItem({
 	mark?: AdminIconName;
 	collapsed: boolean;
 	active?: boolean;
+	count?: number;
+	leavesAdmin?: boolean;
 	onNavigate?: () => void;
 	testId?: string;
 }) {
 	const adminIcon = mark ?? ADMIN_NAV_ICONS[href];
+	const counted = count ? count.toLocaleString('vi-VN') : null;
 	return (
 		<Link
 			href={href}
@@ -56,11 +60,32 @@ function NavItem({
 			className={styles.navItem}
 		>
 			{adminIcon ? <AdminIcon name={adminIcon} size={20} /> : <McIcon name={icon} size={20} />}
-			<span className={collapsed ? styles.tooltip : 'truncate'}>{label}</span>
+			<span className={collapsed ? styles.tooltip : 'min-w-0 flex-1 truncate'}>{label}</span>
+			{counted ? (
+				<span className={collapsed ? styles.navDot : styles.navCount}>
+					<span className={collapsed ? 'sr-only' : undefined}>{counted}</span>
+					<span className="sr-only"> mới</span>
+				</span>
+			) : null}
+			{leavesAdmin && !collapsed ? (
+				<span className={styles.navExit} title="Mở ngoài trang quản trị">
+					<AdminIcon name="external" size={14} />
+					<span className="sr-only"> (ngoài trang quản trị)</span>
+				</span>
+			) : null}
 		</Link>
 	);
 }
-function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+
+function NavBody({
+	collapsed,
+	counts,
+	onNavigate,
+}: {
+	collapsed: boolean;
+	counts: Partial<Record<string, number>>;
+	onNavigate?: () => void;
+}) {
 	const pathname = usePathname();
 	const { data: session } = useSession();
 	const archived = isArchivedAdminPath(pathname);
@@ -78,58 +103,58 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 				/>
 				{groups.map(({ group, items }) => (
 					<div key={group} className="mt-5">
-						{!collapsed && <p className={`${styles.meta} mb-2 px-3`}>{group}</p>}
+						{collapsed ? (
+							<div className="mx-3 mb-2 border-t border-border" aria-hidden="true" />
+						) : (
+							<p className={styles.navGroup}>{group}</p>
+						)}
 						{items.map((item) => (
 							<NavItem
 								key={item.href}
 								{...item}
+								count={counts[item.href]}
 								collapsed={collapsed}
-								active={isAdminNavActive(pathname, item.href, item.exact)}
+								active={!item.leavesAdmin && isAdminNavActive(pathname, item.href, item.exact)}
 								onNavigate={onNavigate}
 							/>
 						))}
 					</div>
 				))}
-				<div className="mt-6 border-t border-border pt-4">
-					<NavItem
-						href={archived ? routes.admin.home : routes.admin.archive}
-						label={archived ? 'Về admin chính' : 'Kho lưu trữ'}
-						icon="arrow_back"
-						mark={archived ? 'back' : 'archive'}
-						collapsed={collapsed}
-						onNavigate={onNavigate}
-						testId={archived ? 'archive-sidebar-back' : 'admin-archive-link'}
-					/>
-					<NavItem
-						href={routes.mySpaceTeaching}
-						label="Mở Teaching"
-						icon="school"
-						collapsed={collapsed}
-						onNavigate={onNavigate}
-					/>
-					<NavItem
-						href={routes.toc}
-						label="Về Mục lục"
-						icon="menu_book"
-						collapsed={collapsed}
-						onNavigate={onNavigate}
-					/>
-				</div>
 			</nav>
 			<div className={styles.account}>
+				<NavItem
+					href={archived ? routes.admin.home : routes.admin.archive}
+					label={archived ? 'Về Tổng quan' : 'Kho lưu trữ'}
+					icon="arrow_back"
+					mark={archived ? 'back' : 'archive'}
+					collapsed={collapsed}
+					onNavigate={onNavigate}
+					testId={archived ? 'archive-sidebar-back' : 'admin-archive-link'}
+				/>
+				<NavItem
+					href={routes.toc}
+					label="Xem website"
+					icon="open_in_new"
+					mark="toc"
+					leavesAdmin
+					collapsed={collapsed}
+					onNavigate={onNavigate}
+				/>
 				{session?.user && (
-					<>
+					<div className="mt-2 border-t border-border pt-2">
 						<div
 							className={`flex items-center gap-3 px-2 py-2 ${collapsed ? 'justify-center' : ''}`}
 							title={session.user.name ?? 'Admin'}
 						>
-							<span className={styles.iconTile} aria-hidden="true">
+							<span className={styles.avatar} aria-hidden="true">
 								{(session.user.name ?? 'A')[0].toUpperCase()}
 							</span>
 							{!collapsed && (
 								<div className="min-w-0">
 									<p className="truncate font-semibold">{session.user.name ?? 'Admin'}</p>
-									<p className={styles.meta}>Quản trị viên</p>
+									<p className={`${styles.meta} truncate`}>
+										{session.user.email ?? 'Quản trị viên'}
+									</p>
 								</div>
 							)}
 						</div>
@@ -145,7 +170,7 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 							{!collapsed && <span>Đăng xuất</span>}
 							{collapsed && <span className={styles.tooltip}>Đăng xuất</span>}
 						</button>
-					</>
+					</div>
 				)}
 			</div>
 		</>
@@ -153,7 +178,15 @@ function NavBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
 }
 
 /** Responsive admin chrome: drawer below 1024px, fixed sidebar from 1024px. */
-export default function AdminSidebar({ initialCollapsed = false }: { initialCollapsed?: boolean }) {
+export default function AdminSidebar({
+	initialCollapsed = false,
+	newInquiries = 0,
+}: {
+	initialCollapsed?: boolean;
+	/** NEW contact messages, shown as a count on the inbox entry. */
+	newInquiries?: number;
+}) {
+	const counts = { [routes.admin.inquiries]: newInquiries };
 	const [collapsed, setCollapsed] = useState(initialCollapsed);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const drawerId = useId();
@@ -170,7 +203,7 @@ export default function AdminSidebar({ initialCollapsed = false }: { initialColl
 
 	const archived = isArchivedAdminPath(pathname);
 	const brandHref = archived ? routes.admin.archive : routes.admin.home;
-	const brandLabel = archived ? 'Kho lưu trữ' : 'Admin';
+	const brandLabel = archived ? 'Kho lưu trữ' : 'Quản trị';
 
 	useEffect(() => {
 		// Close the mobile drawer after navigation. Route is the source of truth;
@@ -250,7 +283,7 @@ export default function AdminSidebar({ initialCollapsed = false }: { initialColl
 					<McIcon name="menu" size={20} />
 				</button>
 				<Link href={brandHref} className="font-semibold">
-					{brandLabel} Studio
+					{brandLabel}
 				</Link>
 			</header>
 			{drawerOpen && (
@@ -272,7 +305,7 @@ export default function AdminSidebar({ initialCollapsed = false }: { initialColl
 						className={styles.drawer}
 					>
 						<div className={styles.brand}>
-							<span className="font-semibold">{brandLabel} Studio</span>
+							<span className="font-semibold">{brandLabel}</span>
 							<button
 								type="button"
 								onClick={closeDrawer}
@@ -282,7 +315,7 @@ export default function AdminSidebar({ initialCollapsed = false }: { initialColl
 								<McIcon name="close" size={20} />
 							</button>
 						</div>
-						<NavBody collapsed={false} onNavigate={closeDrawer} />
+						<NavBody collapsed={false} counts={counts} onNavigate={closeDrawer} />
 					</aside>
 				</div>
 			)}
@@ -290,7 +323,7 @@ export default function AdminSidebar({ initialCollapsed = false }: { initialColl
 				<div className={styles.brand}>
 					{!collapsed && (
 						<Link href={brandHref} className="font-semibold">
-							{brandLabel} Studio
+							{brandLabel}
 						</Link>
 					)}
 					<button
@@ -303,7 +336,7 @@ export default function AdminSidebar({ initialCollapsed = false }: { initialColl
 						<McIcon name={collapsed ? 'chevron_right' : 'chevron_left'} size={20} />
 					</button>
 				</div>
-				<NavBody collapsed={collapsed} />
+				<NavBody collapsed={collapsed} counts={counts} />
 			</aside>
 		</>
 	);

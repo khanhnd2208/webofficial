@@ -42,15 +42,21 @@ test.describe('Focused operating mode', () => {
 		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveCount(0);
 	});
 
-	test('admin main menu only shows Website', async ({ page, context }) => {
+	test('admin main menu groups active work and leads out to Teaching', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		await page.goto('/admin');
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		const nav = page.getByRole('navigation', { name: 'Quản trị' });
-		await expect(nav.getByRole('link', { name: 'Website' })).toBeVisible();
+		await expect(nav.getByRole('link', { name: 'Trang công khai' })).toBeVisible();
 		await expect(nav.getByRole('link', { name: 'Active Recall' })).toHaveCount(0);
-		// "Mở Teaching" is a shortcut out of Admin, not a Teaching module in the menu.
-		await expect(nav.getByRole('link', { name: 'Teaching', exact: true })).toHaveCount(0);
+		// Teaching keeps its own workspace; the menu entry says it leaves Admin.
+		await expect(nav.getByRole('link', { name: /Lớp & môn học/ })).toHaveAttribute(
+			'href',
+			'/my-space/teaching',
+		);
 		await expect(nav.getByRole('link', { name: 'My Class' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Bài viết' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Người dùng' })).toHaveCount(0);
@@ -66,7 +72,7 @@ test.describe('Focused operating mode', () => {
 		await expect(page.getByRole('heading', { name: 'Website' })).toBeVisible();
 		await page
 			.getByRole('navigation', { name: 'Quản trị' })
-			.getByRole('link', { name: 'Hộp thư liên hệ' })
+			.getByRole('link', { name: /Hộp thư liên hệ/ })
 			.click();
 		await expect(page).toHaveURL(/\/admin\/inquiries/);
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
@@ -101,7 +107,9 @@ test.describe('Focused operating mode', () => {
 		await expect(page.getByTestId('archive-banner')).toBeVisible();
 		await expect(page.getByRole('heading', { name: /Bài viết|Quản lý bài viết/i })).toBeVisible();
 		await expect(
-			page.getByRole('navigation', { name: 'Kho lưu trữ' }).getByRole('link', { name: 'Website' }),
+			page
+				.getByRole('navigation', { name: 'Kho lưu trữ' })
+				.getByRole('link', { name: 'Trang công khai' }),
 		).toHaveCount(0);
 	});
 });

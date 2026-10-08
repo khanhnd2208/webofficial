@@ -34,12 +34,26 @@ describe('AdminShell', () => {
 
 		expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		expect(screen.queryByTestId('archive-banner')).not.toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Website' })).toBeInTheDocument();
-		expect(screen.queryByRole('link', { name: 'Teaching' })).not.toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Trang công khai' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: /Lớp & môn học/ })).toHaveAttribute(
+			'href',
+			'/my-space/teaching',
+		);
 		expect(screen.queryByRole('link', { name: 'Active Recall' })).not.toBeInTheDocument();
 		expect(screen.getByTestId('admin-archive-link')).toHaveAttribute('href', '/admin/archive');
 		expect(screen.queryByRole('link', { name: 'My Class' })).not.toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: 'Bài viết' })).not.toBeInTheDocument();
+	});
+
+	it('shows the number of new contact messages on the inbox entry', () => {
+		navigation.pathname = '/admin';
+		render(
+			<AdminShell newInquiries={3}>
+				<p>Overview</p>
+			</AdminShell>,
+		);
+
+		expect(screen.getByRole('link', { name: /Hộp thư liên hệ/ })).toHaveTextContent('3 mới');
 	});
 
 	it('uses the archive shell with a warning when opening a paused module', () => {
@@ -83,6 +97,6 @@ describe('AdminShell', () => {
 
 		expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		expect(screen.queryByRole('link', { name: 'Active Recall' })).not.toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Website' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Trang công khai' })).toBeInTheDocument();
 	});
 });

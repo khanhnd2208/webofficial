@@ -23,29 +23,17 @@ export type OperatingModule = {
 	adminHref: string;
 	adminPrefixes: readonly string[];
 	publicPrefixes: readonly string[];
-	/** Active product area that intentionally lives outside the Admin shell. */
-	showInAdminNavigation?: boolean;
+	/** Sidebar group for active modules; modules without one stay out of the main menu. */
+	navGroup?: AdminNavGroupName;
+	/** Sidebar entry when it differs from the module label or admin URL. */
+	nav?: { label?: string; href?: string; leavesAdmin?: boolean };
 };
 
+/** Main sidebar groups, in display order. */
+export const ADMIN_NAV_GROUP_NAMES = ['Website', 'Giảng dạy'] as const;
+export type AdminNavGroupName = (typeof ADMIN_NAV_GROUP_NAMES)[number];
+
 export const OPERATING_MODULES: readonly OperatingModule[] = [
-	{
-		id: 'website',
-		status: 'active',
-		label: 'Website',
-		description: 'Trang thương hiệu đang công khai',
-		icon: 'home',
-		archiveGroup: 'Website',
-		adminHref: routes.admin.website,
-		adminPrefixes: [routes.admin.website],
-		publicPrefixes: [
-			routes.about,
-			routes.experiences,
-			routes.projects,
-			routes.services,
-			routes.contact,
-			routes.toc,
-		],
-	},
 	{
 		id: 'inquiries',
 		status: 'active',
@@ -55,18 +43,28 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		archiveGroup: 'Website',
 		adminHref: routes.admin.inquiries,
 		adminPrefixes: [routes.admin.inquiries],
+		navGroup: 'Website',
 		publicPrefixes: [],
 	},
 	{
-		id: 'learning-analytics',
+		id: 'website',
 		status: 'active',
-		label: 'Thống kê học tập',
-		description: 'Lượt vào khóa học, tiến độ và thời gian tương tác',
-		icon: 'bar_chart',
-		archiveGroup: 'My Space',
-		adminHref: routes.admin.learnAnalytics,
-		adminPrefixes: [routes.admin.learnAnalytics],
-		publicPrefixes: ['/my-space/courses', '/khoa-hoc'],
+		label: 'Website',
+		description: 'Trang thương hiệu đang công khai',
+		icon: 'home',
+		archiveGroup: 'Website',
+		adminHref: routes.admin.website,
+		adminPrefixes: [routes.admin.website],
+		navGroup: 'Website',
+		nav: { label: 'Trang công khai' },
+		publicPrefixes: [
+			routes.about,
+			routes.experiences,
+			routes.projects,
+			routes.services,
+			routes.contact,
+			routes.toc,
+		],
 	},
 	{
 		id: 'teaching',
@@ -78,7 +76,21 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		adminHref: routes.admin.teaching,
 		adminPrefixes: [routes.admin.teaching, routes.admin.activeRecall],
 		publicPrefixes: ['/lop', routes.activeRecall],
-		showInAdminNavigation: false,
+		navGroup: 'Giảng dạy',
+		// Teaching keeps its own workspace; the menu leads there and says so.
+		nav: { label: 'Lớp & môn học', href: routes.mySpaceTeaching, leavesAdmin: true },
+	},
+	{
+		id: 'learning-analytics',
+		status: 'active',
+		label: 'Thống kê học tập',
+		description: 'Lượt vào khóa học, tiến độ và thời gian tương tác',
+		icon: 'bar_chart',
+		archiveGroup: 'My Space',
+		adminHref: routes.admin.learnAnalytics,
+		adminPrefixes: [routes.admin.learnAnalytics],
+		navGroup: 'Giảng dạy',
+		publicPrefixes: ['/my-space/courses', '/khoa-hoc'],
 	},
 	{
 		id: 'posts',
@@ -283,16 +295,20 @@ export function getArchivedPublicPrefixes(): string[] {
 	return getArchivedModules().flatMap((area) => [...area.publicPrefixes]);
 }
 
-export function getActiveAdminNavItems(): Array<{
-	href: string;
-	label: string;
-	icon: McIconName;
+export function getActiveAdminNavGroups(): Array<{
+	group: AdminNavGroupName;
+	items: Array<{ href: string; label: string; icon: McIconName; leavesAdmin?: boolean }>;
 }> {
-	return getActiveModules()
-		.filter((area) => area.showInAdminNavigation !== false)
-		.map((area) => ({
-			href: area.adminHref,
-			label: area.label,
-			icon: area.icon,
-		}));
+	const active = getActiveModules();
+	return ADMIN_NAV_GROUP_NAMES.map((group) => ({
+		group,
+		items: active
+			.filter((area) => area.navGroup === group)
+			.map((area) => ({
+				href: area.nav?.href ?? area.adminHref,
+				label: area.nav?.label ?? area.label,
+				icon: area.icon,
+				...(area.nav?.leavesAdmin ? { leavesAdmin: true } : {}),
+			})),
+	})).filter((entry) => entry.items.length > 0);
 }
