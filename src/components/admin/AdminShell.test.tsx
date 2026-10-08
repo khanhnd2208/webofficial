@@ -56,6 +56,17 @@ describe('AdminShell', () => {
 		expect(screen.getByRole('link', { name: /Hộp thư liên hệ/ })).toHaveTextContent('3 mới');
 	});
 
+	it('announces the new-message count when the sidebar is collapsed', () => {
+		navigation.pathname = '/admin';
+		render(
+			<AdminShell sidebarCollapsed newInquiries={3}>
+				<p>Overview</p>
+			</AdminShell>,
+		);
+
+		expect(screen.getByRole('link', { name: 'Hộp thư liên hệ, 3 mới' })).toBeInTheDocument();
+	});
+
 	it('uses the archive shell with a warning when opening a paused module', () => {
 		navigation.pathname = '/admin/posts';
 		render(

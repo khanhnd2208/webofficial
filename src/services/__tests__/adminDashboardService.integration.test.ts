@@ -138,9 +138,11 @@ describe('adminDashboardService', () => {
 				where: { courseId: { in: [...ids] } },
 				select: { id: true },
 			});
-			const listed = (await listActiveClasses(1000)).filter((row) =>
-				all.some((item) => item.id === row.id),
-			);
+			const before = (await listActiveClasses(0)).total;
+			const { items, total } = await listActiveClasses(1000);
+			expect(total).toBe(before);
+			expect(items.length).toBe(total);
+			const listed = items.filter((row) => all.some((item) => item.id === row.id));
 
 			expect(listed).toEqual([
 				{

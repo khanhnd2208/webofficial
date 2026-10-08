@@ -19,13 +19,14 @@ export const dynamic = 'force-dynamic';
 const vi = (value: number) => value.toLocaleString('vi-VN');
 
 export default async function AdminHomePage() {
-	const [stats, recent, failedNotifications, classes] = await Promise.all([
+	const [stats, recent, failedNotifications, activeClasses] = await Promise.all([
 		getAdminOverviewStats(),
 		listInquiries({ status: 'NEW', page: 1, limit: 5 }),
 		countFailedNotifications(),
 		listActiveClasses(),
 	]);
 	const waiting = stats.website.newInquiries;
+	const classes = activeClasses.items;
 
 	return (
 		<div className={styles.page}>
@@ -87,7 +88,7 @@ export default async function AdminHomePage() {
 					</AdminCard>
 					<AdminCard
 						title="Lớp đang dạy"
-						count={classes.length}
+						count={activeClasses.total}
 						action={{ href: routes.mySpaceTeaching, label: 'Tất cả lớp' }}
 						footer={
 							<>

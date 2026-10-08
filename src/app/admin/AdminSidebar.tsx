@@ -52,7 +52,7 @@ function NavItem({
 	return (
 		<Link
 			href={href}
-			aria-label={collapsed ? label : undefined}
+			aria-label={collapsed ? (counted ? `${label}, ${counted} mới` : label) : undefined}
 			aria-current={active ? 'page' : undefined}
 			onClick={onNavigate}
 			data-testid={testId}
