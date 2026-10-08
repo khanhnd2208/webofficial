@@ -29,14 +29,32 @@ export function inquiryQuery(query: InquiryQuery, page?: number): string {
 export function inquiryListHref(query: InquiryQuery, page?: number): string {
 	return `${routes.admin.inquiries}${inquiryQuery(query, page)}`;
 }
+const VN_PARTS = new Intl.DateTimeFormat('en-GB', {
+	timeZone: 'Asia/Ho_Chi_Minh',
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric',
+	hour: '2-digit',
+	minute: '2-digit',
+	hourCycle: 'h23',
+});
+
+function vietnamParts(value: string): Record<string, string> | null {
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return null;
+	return Object.fromEntries(VN_PARTS.formatToParts(date).map((part) => [part.type, part.value]));
+}
+
+/** Unambiguous Vietnam time, `dd/MM/yyyy HH:mm` (the short locale style printed `7/9/26`). */
 export function adminDate(value?: string | null): string {
-	return value
-		? new Date(value).toLocaleString('vi-VN', {
-				timeZone: 'Asia/Ho_Chi_Minh',
-				dateStyle: 'short',
-				timeStyle: 'short',
-			})
-		: '—';
+	const p = value ? vietnamParts(value) : null;
+	return p ? `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}` : '—';
+}
+
+/** Vietnam calendar day, `dd/MM/yyyy`. */
+export function adminDay(value?: string | null): string {
+	const p = value ? vietnamParts(value) : null;
+	return p ? `${p.day}/${p.month}/${p.year}` : '—';
 }
 
 const MINUTE = 60_000;
@@ -59,7 +77,7 @@ export function relativeTime(value?: string | null, now = new Date()): string {
 	if (vietnamDay(date) === vietnamDay(new Date(now.getTime() - DAY))) return 'hôm qua';
 	const days = Math.floor(delta / DAY);
 	if (days < 7) return `${days} ngày trước`;
-	return adminDate(value);
+	return adminDay(value);
 }
 
 export function excerpt(value?: string | null, max = 96): string {
