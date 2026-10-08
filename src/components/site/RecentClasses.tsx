@@ -19,7 +19,7 @@ function load(): RecentClass[] {
 	}
 }
 
-/** Remembers this class page on the device so Admin and My Space can offer it again. Renders nothing. */
+/** Remembers this class page on the device so My Space can offer it again. Renders nothing. */
 export function RememberClassVisit({ slug, title, code }: Omit<RecentClass, 'visitedAt'>) {
 	useEffect(() => {
 		try {

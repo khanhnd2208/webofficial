@@ -13,9 +13,11 @@ import { isArchivedAdminPath } from '@/config/moduleRegistry';
 export default function AdminShell({
 	children,
 	sidebarCollapsed = false,
+	newInquiries = 0,
 }: {
 	children: ReactNode;
 	sidebarCollapsed?: boolean;
+	newInquiries?: number;
 }) {
 	const pathname = usePathname();
 	const meta = resolveAdminRoute(pathname);
@@ -27,7 +29,7 @@ export default function AdminShell({
 			data-testid="admin-shell"
 			data-variant={archived ? 'archive' : 'main'}
 		>
-			<AdminSidebar initialCollapsed={sidebarCollapsed} />
+			<AdminSidebar initialCollapsed={sidebarCollapsed} newInquiries={newInquiries} />
 			<div className="admin-content min-w-0 flex-1 overflow-auto" data-width={meta.width}>
 				{archived ? <ArchiveBanner /> : null}
 				{meta.localNav?.length ? (

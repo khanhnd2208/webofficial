@@ -6,6 +6,7 @@ import AdminShell from '@/components/admin/AdminShell';
 import { routes } from '@/config/routes';
 import { auth } from '@/lib/auth';
 import { incomingAdminPath } from '@/lib/auth/incomingPath';
+import { countNewInquiries } from '@/services/adminDashboardService';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
 	const session = await auth();
@@ -17,6 +18,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 		return <AdminForbidden from={from} />;
 	}
 
-	const sidebarCollapsed = (await cookies()).get('admin-sidebar-collapsed')?.value === '1';
-	return <AdminShell sidebarCollapsed={sidebarCollapsed}>{children}</AdminShell>;
+	const [cookieStore, newInquiries] = await Promise.all([
+		cookies(),
+		// The badge is a hint; a database hiccup must not take the whole admin down.
+		countNewInquiries().catch(() => 0),
+	]);
+	const sidebarCollapsed = cookieStore.get('admin-sidebar-collapsed')?.value === '1';
+	return (
+		<AdminShell sidebarCollapsed={sidebarCollapsed} newInquiries={newInquiries}>
+			{children}
+		</AdminShell>
+	);
 }

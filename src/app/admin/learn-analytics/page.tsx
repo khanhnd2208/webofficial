@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 
 import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminForbidden } from '@/components/admin/AdminForbidden';
-import { resolveAdminRoute } from '@/config/adminNavigation';
 import { routes } from '@/config/routes';
 import { getLearnStudyLearnerReport, getLearnStudyReport } from '@/features/learn';
 import { prisma } from '@/lib/prisma';
@@ -62,9 +61,8 @@ export default async function LearnAnalyticsPage({ searchParams }: Props) {
 	return (
 		<div className={`${styles.page} ${styles.wide}`}>
 			<AdminPageHeader
-				breadcrumbs={resolveAdminRoute(routes.admin.learnAnalytics).breadcrumbs}
 				title="Thống kê học tập"
-				description="Thời gian ghi nhận khi mục học đang mở, tab hiển thị và có hoạt động gần đây."
+				description="Chỉ tính thời gian khi bài học đang mở, tab đang hiển thị và có thao tác gần đây."
 			/>
 
 			<div className={styles.toolbar}>

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { inquiryListHref, inquiryQuery, adminDate, relativeTime } from './inquiryNavigation';
+import {
+	inquiryListHref,
+	inquiryQuery,
+	adminDate,
+	adminDay,
+	relativeTime,
+} from './inquiryNavigation';
 describe('inquiry navigation', () => {
 	it('retains valid filters and encodes search without accepting external destinations', () => {
 		expect(inquiryListHref({ page: '3', status: 'NEW', inquiryType: 'ai', search: ' A&B ' })).toBe(
@@ -18,7 +24,8 @@ describe('inquiry navigation', () => {
 		},
 	);
 	it('formats dates in Vietnam regardless of host timezone', () => {
-		expect(adminDate('2026-09-30T00:00:00Z')).toContain('07:00');
+		expect(adminDate('2026-09-06T17:30:00Z')).toBe('07/09/2026 00:30');
+		expect(adminDate('not a date')).toBe('—');
 	});
 	it('keeps a failed-notification filter beside the other supported filters', () => {
 		expect(inquiryQuery({ notice: 'failed', status: 'NEW', search: 'Lan' }, 1)).toBe(
@@ -30,6 +37,7 @@ describe('inquiry navigation', () => {
 		const now = new Date('2026-09-30T10:00:00Z');
 		expect(relativeTime('2026-09-30T08:00:00Z', now)).toBe('2 giờ trước');
 		expect(relativeTime('2026-09-29T10:00:00Z', now)).toBe('hôm qua');
-		expect(relativeTime('2026-09-20T10:00:00Z', now)).toBe(adminDate('2026-09-20T10:00:00Z'));
+		expect(relativeTime('2026-09-20T10:00:00Z', now)).toBe('20/09/2026');
+		expect(adminDay('2026-09-20T10:00:00Z')).toBe('20/09/2026');
 	});
 });

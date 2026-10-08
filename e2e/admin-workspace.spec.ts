@@ -145,7 +145,7 @@ test.describe('Admin workspace release gates', () => {
 	});
 });
 
-test.describe('Admin Studio navigation', () => {
+test.describe('Admin navigation', () => {
 	test.beforeEach(async ({ context }) => {
 		await addAdminSession(context);
 	});
@@ -155,16 +155,17 @@ test.describe('Admin Studio navigation', () => {
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto('/admin/website');
 		const nav = page.getByRole('navigation', { name: 'Quản trị', exact: true });
-		await expect(nav.getByRole('link', { name: 'Website', exact: true })).toHaveAttribute(
+		await expect(nav.getByRole('link', { name: 'Trang công khai', exact: true })).toHaveAttribute(
 			'aria-current',
 			'page',
 		);
-		await expect(
-			nav.getByRole('link', { name: 'Hộp thư liên hệ', exact: true }),
-		).not.toHaveAttribute('aria-current', 'page');
+		await expect(nav.getByRole('link', { name: /^Hộp thư liên hệ/ })).not.toHaveAttribute(
+			'aria-current',
+			'page',
+		);
 		await page.getByRole('button', { name: 'Thu gọn sidebar' }).click();
-		await expect(nav.getByRole('link', { name: 'Kho lưu trữ', exact: true })).toBeVisible();
-		await expect(nav.getByRole('link', { name: 'Mở Teaching', exact: true })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Kho lưu trữ', exact: true })).toBeVisible();
+		await expect(nav.getByRole('link', { name: 'Lớp & môn học', exact: true })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
 		await page.reload();
 		await expect(page.getByRole('button', { name: 'Mở rộng sidebar' })).toBeVisible();
@@ -217,7 +218,7 @@ test.describe('Admin Studio navigation', () => {
 		await expect(
 			page
 				.getByRole('navigation', { name: 'Quản trị', exact: true })
-				.getByRole('link', { name: 'Hộp thư liên hệ', exact: true }),
+				.getByRole('link', { name: /^Hộp thư liên hệ/ }),
 		).toHaveAttribute('aria-current', 'page');
 	});
 });

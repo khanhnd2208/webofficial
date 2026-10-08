@@ -10,20 +10,31 @@ import {
 import { routes } from './routes';
 
 describe('admin navigation', () => {
-	it('shows Website and course analytics in the main sidebar', () => {
+	it('groups the main sidebar by area of work', () => {
 		const hrefs = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
 		const labels = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.label));
+		expect(ADMIN_NAV_GROUPS.map((group) => group.group)).toEqual(['Website', 'Giảng dạy']);
 		expect(hrefs).toEqual([
-			routes.admin.website,
 			routes.admin.inquiries,
+			routes.admin.website,
+			routes.mySpaceTeaching,
 			routes.admin.learnAnalytics,
 		]);
-		expect(labels).toEqual(['Website', 'Hộp thư liên hệ', 'Thống kê học tập']);
+		expect(labels).toEqual([
+			'Hộp thư liên hệ',
+			'Trang công khai',
+			'Lớp & môn học',
+			'Thống kê học tập',
+		]);
 		expect(hrefs).not.toContain(routes.admin.myClass);
 		expect(hrefs).not.toContain(routes.admin.posts);
 		expect(hrefs).not.toContain(routes.admin.users);
 		expect(hrefs).not.toContain(routes.admin.teaching);
-		expect(hrefs.every((href) => href.startsWith('/admin'))).toBe(true);
+		const outside = ADMIN_NAV_GROUPS.flatMap((group) => group.items).filter(
+			(item) => !item.href.startsWith('/admin'),
+		);
+		expect(outside.map((item) => item.href)).toEqual([routes.mySpaceTeaching]);
+		expect(outside.every((item) => item.leavesAdmin)).toBe(true);
 	});
 
 	it('keeps paused modules in the archive sidebar instead of the main menu', () => {

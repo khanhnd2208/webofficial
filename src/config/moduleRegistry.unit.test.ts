@@ -14,16 +14,19 @@ import {
 import { routes } from './routes';
 
 describe('operating module registry', () => {
-	it('keeps Teaching active while allowing it to live outside Admin navigation', () => {
+	it('keeps Teaching active while its menu entry leads out of Admin', () => {
 		expect(getActiveModules().map((module) => module.id)).toEqual([
-			'website',
 			'inquiries',
-			'learning-analytics',
+			'website',
 			'teaching',
+			'learning-analytics',
 		]);
 		expect(resolveModuleByAdminPath(routes.admin.inquiries)?.id).toBe('inquiries');
 		expect(resolveModuleByAdminPath(`${routes.admin.inquiries}/abc`)?.id).toBe('inquiries');
-		expect(resolveModuleByAdminPath(routes.admin.teaching)?.showInAdminNavigation).toBe(false);
+		expect(resolveModuleByAdminPath(routes.admin.teaching)?.nav).toMatchObject({
+			href: routes.mySpaceTeaching,
+			leavesAdmin: true,
+		});
 	});
 
 	it('classifies paused product areas as archived without dropping them', () => {

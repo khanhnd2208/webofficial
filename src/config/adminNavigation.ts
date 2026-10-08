@@ -1,7 +1,7 @@
 import type { McIconName } from '@/components/myclass/ui/McIcon';
 
 import {
-	getActiveAdminNavItems,
+	getActiveAdminNavGroups,
 	getArchivedModulesByGroup,
 	isArchivedAdminPath,
 } from '@/config/moduleRegistry';
@@ -14,6 +14,8 @@ export type AdminNavItem = {
 	label: string;
 	exact?: boolean;
 	icon: McIconName;
+	/** Opens a workspace outside the Admin shell (Teaching). */
+	leavesAdmin?: boolean;
 };
 
 export type AdminNavGroup = {
@@ -42,13 +44,8 @@ export const MY_CLASS_LOCAL_NAV: AdminNavItem[] = [
 	{ href: routes.admin.myClassImport, label: 'Nhập dữ liệu', icon: 'upload' },
 ];
 
-/** Primary admin sidebar — only the modules currently in operation. */
-export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
-	{
-		group: 'Đang dùng',
-		items: getActiveAdminNavItems(),
-	},
-];
+/** Primary admin sidebar — modules in operation, grouped by area of work. */
+export const ADMIN_NAV_GROUPS: AdminNavGroup[] = getActiveAdminNavGroups();
 
 /** Archive sidebar — every paused module, grouped for later retrieval. */
 export const ARCHIVE_NAV_GROUPS: AdminNavGroup[] = getArchivedModulesByGroup().map(
@@ -71,22 +68,19 @@ const ROUTE_META: AdminRouteMeta[] = [
 	},
 	{
 		href: routes.admin.website,
-		label: 'Website',
+		label: 'Trang công khai',
 		width: 'standard',
-		breadcrumbs: [{ label: 'Tổng quan', href: routes.admin.home }],
 	},
 	{
 		href: routes.admin.inquiries,
 		label: 'Hộp thư liên hệ',
 		width: 'standard',
-		breadcrumbs: [{ label: 'Tổng quan', href: routes.admin.home }],
 	},
 	{ href: routes.admin.activeRecall, label: 'Teaching', width: 'standard' },
 	{
 		href: routes.admin.learnAnalytics,
 		label: 'Thống kê học tập',
 		width: 'wide',
-		breadcrumbs: [{ label: 'Tổng quan', href: routes.admin.home }],
 	},
 	{ href: routes.admin.archive, label: 'Kho lưu trữ', width: 'standard' },
 	{ href: routes.admin.posts, label: 'Bài viết', width: 'standard' },

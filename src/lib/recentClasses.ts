@@ -1,6 +1,6 @@
 /**
  * Class pages a visitor opened on this device, newest first. Students reach a class only through
- * the link their lecturer shares, so Admin and My Space can offer it again.
+ * the link their lecturer shares, so My Space can offer it again.
  */
 export const RECENT_CLASSES_KEY = 'recent-classes:v1';
 const LIMIT = 4;
