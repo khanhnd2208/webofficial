@@ -62,7 +62,10 @@ test.describe('Focused operating mode', () => {
 		await expect(nav.getByRole('link', { name: 'Người dùng' })).toHaveCount(0);
 		await expect(page.getByTestId('admin-archive-link')).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Tổng quan' })).toBeVisible();
-		await expect(page.getByRole('main').getByRole('link', { name: 'Mở Teaching' })).toBeVisible();
+		await expect(page.getByRole('region', { name: 'Liên hệ mới' })).toBeVisible();
+		await expect(
+			page.getByRole('region', { name: 'Lớp đang dạy' }).getByRole('link', { name: 'Tất cả lớp' }),
+		).toHaveAttribute('href', '/my-space/teaching');
 	});
 
 	test('Website hub and contact inbox stay on the main shell', async ({ page, context }) => {

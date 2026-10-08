@@ -110,3 +110,37 @@ export function AdminPagination({
 		</nav>
 	);
 }
+/** Bordered block with a title row: optional count on the left, one text link on the right. */
+export function AdminCard({
+	title,
+	count,
+	action,
+	footer,
+	children,
+}: {
+	title: string;
+	count?: number;
+	action?: { href: string; label: string };
+	footer?: ReactNode;
+	children: ReactNode;
+}) {
+	return (
+		<section className={styles.card} aria-label={title}>
+			<header className={styles.cardHeader}>
+				<h2 className={styles.cardTitle}>
+					{title}
+					{count !== undefined ? (
+						<span className={styles.cardCount}>{count.toLocaleString('vi-VN')}</span>
+					) : null}
+				</h2>
+				{action ? (
+					<Link href={action.href} className={styles.cardAction}>
+						{action.label}
+					</Link>
+				) : null}
+			</header>
+			{children}
+			{footer ? <footer className={styles.cardFooter}>{footer}</footer> : null}
+		</section>
+	);
+}

@@ -754,3 +754,86 @@
 	margin-top: 16px;
 	font-weight: 650;
 }
+.card {
+	min-width: 0;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface);
+}
+.cardHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: 52px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--border);
+}
+.cardTitle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
+}
+.cardCount {
+	padding: 0 8px;
+	border-radius: 999px;
+	background: var(--surface-secondary);
+	color: var(--muted);
+	font-size: 12px;
+	line-height: 20px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+.cardAction {
+	flex-shrink: 0;
+	color: var(--accent);
+	font-size: 13px;
+	font-weight: 500;
+}
+.cardAction:hover {
+	text-decoration: underline;
+}
+.cardRows {
+	display: grid;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cardRows li + li {
+	border-top: 1px solid var(--border);
+}
+.cardRow {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	min-width: 0;
+	padding: 12px 16px;
+	color: inherit;
+}
+.cardRow:hover {
+	background: var(--surface-hover);
+}
+.cardEmpty {
+	padding: 16px;
+	color: var(--muted);
+}
+.cardFooter {
+	padding: 10px 16px;
+	border-top: 1px solid var(--border);
+	color: var(--muted);
+	font-size: 12px;
+	line-height: 18px;
+}
+.overview {
+	display: grid;
+	gap: 16px;
+	align-items: start;
+}
+@media (min-width: 1024px) {
+	.overview {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}

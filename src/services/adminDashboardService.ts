@@ -1,7 +1,8 @@
 /**
  * Admin Dashboard Service
  * Aggregates stats for the focused operating dashboard:
- * Website and Active Recall. Teaching has its own workspace in My Space.
+ * new contact messages, active classes and Active Recall decks.
+ * Teaching itself has its own workspace in My Space.
  */
 
 import { prisma } from '@/lib/prisma';
@@ -32,6 +33,38 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
 		website: { newInquiries },
 		activeRecall: { decks, published },
 	};
+}
+
+export interface AdminActiveClass {
+	id: string;
+	courseCode: string;
+	courseName: string;
+	classCode: string;
+	groupNo: string;
+	term: string;
+	students: number;
+}
+
+/**
+ * Active classes of active courses, most recently touched first. Read straight from Prisma so
+ * the shared admin overview does not depend on the Teaching feature internals.
+ */
+export async function listActiveClasses(limit = 8): Promise<AdminActiveClass[]> {
+	const rows = await prisma.teachingClass.findMany({
+		where: { status: 'ACTIVE', course: { status: 'ACTIVE' } },
+		orderBy: { updatedAt: 'desc' },
+		take: limit,
+		select: {
+			id: true,
+			courseCode: true,
+			courseName: true,
+			classCode: true,
+			groupNo: true,
+			term: true,
+			_count: { select: { enrollments: { where: { status: 'ACTIVE' } } } },
+		},
+	});
+	return rows.map(({ _count, ...row }) => ({ ...row, students: _count.enrollments }));
 }
 
 /** NEW contact messages, for the inbox count in the admin sidebar. */
