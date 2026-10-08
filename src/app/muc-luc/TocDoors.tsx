@@ -19,10 +19,11 @@ export interface TocSpaceItem extends TocDoor {
 	muted?: boolean;
 }
 
-/** About, then courses, then Quản trị, with the moved games last. */
-const DOOR_ORDER = ['courses', 'admin', 'board-game'];
+/** About, then courses, then Lớp học and Quản trị for admins, with the moved games last. */
+const DOOR_ORDER = ['courses', 'teaching', 'admin', 'board-game'];
 
 const tocIcons: Record<string, string> = {
+	teaching: '/brand/toc/teaching-v1.webp',
 	courses: '/brand/toc/courses-v1.webp',
 	'board-game': '/brand/toc/board-game-v1.webp',
 };
@@ -36,6 +37,7 @@ function descriptionFor(id: string): ReactNode {
 		);
 	}
 	if (id === 'courses') return 'Học thêm một điều mới.';
+	if (id === 'teaching') return 'Một góc dành cho lớp học.';
 	if (id === 'admin') return 'Quản lý không gian của bạn.';
 	return '';
 }
@@ -46,12 +48,13 @@ function doorRank(id: string): number {
 }
 
 /**
- * Flat Mục lục doors. Teaching stays on /my-space; this page only points at it from Admin.
- * Board Game stays clickable, quieter, until that door is removed.
+ * Flat Mục lục doors. Lớp học (Teaching) and Quản trị appear only for admins, since
+ * getMySpaceTiles drops them for everyone else. Board Game stays clickable, quieter,
+ * until that door is removed.
  */
 export function buildTocItems(role?: UserRole | null): TocSpaceItem[] {
 	return getMySpaceTiles(role)
-		.filter((tile) => tile.id !== 'teaching' && tile.href)
+		.filter((tile) => tile.href)
 		.slice()
 		.sort((a, b) => doorRank(a.id) - doorRank(b.id))
 		.flatMap((tile) => {
