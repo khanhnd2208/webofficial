@@ -43,15 +43,20 @@ describe('TocDoors', () => {
 		expect(within(game).getByText('fun.toiladuykhanh.com').tagName).toBe('STRONG');
 	});
 
-	it('adds Quản trị only for an admin, before the games door', () => {
+	it('adds Lớp học and Quản trị only for an admin, before the games door', () => {
 		render(<TocDoors about={about} items={buildTocItems('admin')} />);
 
 		expect(doorIds()).toEqual([
 			'gate-item-about',
 			'myspace-tile-courses',
+			'myspace-tile-teaching',
 			'myspace-tile-admin',
 			'myspace-tile-board-game',
 		]);
+		expect(screen.getByTestId('myspace-tile-teaching')).toHaveAttribute(
+			'href',
+			routes.mySpaceTeaching,
+		);
 		expect(screen.getByTestId('myspace-tile-admin')).toHaveAttribute('href', routes.admin.home);
 		expect(screen.getByTestId('myspace-tile-admin')).not.toHaveAttribute('data-muted');
 	});
