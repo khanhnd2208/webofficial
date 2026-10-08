@@ -82,7 +82,7 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
-	test('a class link opens its board, and Mục lục then offers that class again', async ({
+	test('a class link opens its board, and Admin then offers that class again', async ({
 		page,
 		context,
 	}) => {
@@ -123,8 +123,12 @@ test.describe('Links shared with students keep working', () => {
 			expect(board?.status()).toBe(200);
 			await expect(page.getByRole('link', { name: /Mục lục/ })).toBeVisible();
 
-			// Classes opened before live inside My Space on Mục lục.
+			// An old #my-space bookmark just opens the flat Mục lục. The class shortcut lives on Admin.
 			await page.goto('/muc-luc#my-space');
+			await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
+			await expect(page.getByTestId('recent-classes')).toHaveCount(0);
+			await addAdminSession(context);
+			await page.goto('/admin');
 			await expect(
 				page.getByTestId('recent-classes').getByRole('link', { name: /Legacy link E2E/ }),
 			).toHaveAttribute('href', `/lop/${slug}`);

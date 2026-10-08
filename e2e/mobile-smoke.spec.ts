@@ -13,9 +13,8 @@ test.describe('Mobile public smoke', () => {
 		await expect(page.getByTestId('gate-home').filter({ visible: true })).toBeVisible();
 		await expect(page.getByRole('heading', { level: 1, name: 'Bạn muốn ghé đâu?' })).toBeVisible();
 		await expect(page.getByTestId('gate-item-about')).toBeVisible();
-		await page.getByTestId('toc-open-myspace').click();
-		await expect(page.getByTestId('toc-open-myspace')).toHaveAttribute('aria-expanded', 'true');
 		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
+		await expect(page.getByTestId('myspace-tile-board-game')).toBeVisible();
 		await expect(page.getByTestId('gate-item-about')).toBeVisible();
 	});
 

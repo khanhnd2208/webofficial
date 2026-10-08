@@ -43,7 +43,6 @@ test.describe('Editorial premium public experience', () => {
 
 		await expect(page.getByTestId('gate-item-experiences')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
-		await page.getByTestId('toc-open-myspace').click();
 		await page.getByTestId('myspace-tile-courses').click();
 		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
 	});
