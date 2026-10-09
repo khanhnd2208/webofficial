@@ -2,17 +2,23 @@ import type { Metadata } from 'next';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl, SITE_NAME } from '@/config/site';
-import { aboutHero } from '@/content/about';
+import { aboutContact, aboutHero, aboutPagePaused } from '@/content/about';
 import AboutLetter from './AboutLetter';
+import ContactCard from './ContactCard';
 
-const description = `${aboutHero.fullName} — ${aboutHero.role}, ${aboutHero.organisation}. ${aboutHero.promise}`;
+const title = aboutPagePaused
+	? `${aboutContact.title} — ${aboutHero.fullName}`
+	: `Giới thiệu — ${aboutHero.fullName}`;
+const description = aboutPagePaused
+	? `Email và Instagram của ${aboutHero.fullName} — ${aboutHero.role}, ${aboutHero.organisation}.`
+	: `${aboutHero.fullName} — ${aboutHero.role}, ${aboutHero.organisation}. ${aboutHero.promise}`;
 
 export const metadata: Metadata = {
-	title: `Giới thiệu — ${aboutHero.fullName}`,
+	title,
 	description,
 	alternates: { canonical: absoluteUrl(routes.about) },
 	openGraph: {
-		title: `Giới thiệu — ${aboutHero.fullName}`,
+		title,
 		description,
 		url: absoluteUrl(routes.about),
 		type: 'profile',
@@ -23,18 +29,18 @@ export const metadata: Metadata = {
 				url: absoluteUrl('/gioi-thieu/opengraph-image'),
 				width: 1200,
 				height: 630,
-				alt: aboutHero.manifesto,
+				alt: aboutPagePaused ? aboutContact.title : aboutHero.manifesto,
 			},
 		],
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: `Giới thiệu — ${aboutHero.fullName}`,
+		title,
 		description,
 		images: [absoluteUrl('/gioi-thieu/opengraph-image')],
 	},
 };
 
 export default function AboutPage() {
-	return <AboutLetter />;
+	return aboutPagePaused ? <ContactCard /> : <AboutLetter />;
 }

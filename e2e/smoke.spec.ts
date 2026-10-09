@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+import { aboutPagePaused } from '../src/content/about';
+
 test.describe('Public pages smoke', () => {
 	test('homepage is an intro cover that opens the mục lục', async ({ page }) => {
 		await page.goto('/');
@@ -30,7 +32,9 @@ test.describe('Public pages smoke', () => {
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 		const gate = page.getByRole('navigation', { name: 'Mục lục' });
 		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
-		await expect(page.getByTestId('gate-item-about')).toContainText('Về tôi');
+		await expect(page.getByTestId('gate-item-about')).toContainText(
+			aboutPagePaused ? 'Liên hệ' : 'Về tôi',
+		);
 		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-admin')).toHaveCount(0);
@@ -113,7 +117,24 @@ test.describe('Public pages smoke', () => {
 		}
 	});
 
+	test('about page shows the contact card while the introduction is paused', async ({ page }) => {
+		test.skip(!aboutPagePaused, 'The introduction letter is live.');
+		await page.goto('/gioi-thieu');
+		await expect(page.getByTestId('about-contact')).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1, name: 'Liên hệ với tôi' })).toBeVisible();
+		await expect(page.getByTestId('contact-email')).toHaveAttribute(
+			'href',
+			'mailto:khanhnd2208@gmail.com',
+		);
+		await expect(page.getByTestId('contact-instagram')).toHaveAttribute(
+			'href',
+			'https://www.instagram.com/turamisi.nk/',
+		);
+		await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toHaveCount(0);
+	});
+
 	test('about page introduces Khánh and leads to programmes', async ({ page }) => {
+		test.skip(aboutPagePaused, 'The introduction is replaced by a contact card for now.');
 		await page.goto('/gioi-thieu');
 		await expect(page).toHaveURL(/\/gioi-thieu/);
 		await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toBeVisible();

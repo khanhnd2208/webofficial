@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { aboutPagePaused } from '@/content/about';
 import {
 	afterSignOutPath,
 	CONTACT_CTA,
@@ -244,7 +245,9 @@ describe('site header trail', () => {
 		expect(getSiteTrail('/muc-luc')).toEqual([]);
 		expect(getSiteTrail('/khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
 		expect(getSiteTrail('/kham-pha-khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
-		expect(getSiteTrail('/gioi-thieu')).toEqual([{ label: 'Giới thiệu' }]);
+		expect(getSiteTrail('/gioi-thieu')).toEqual([
+			{ label: aboutPagePaused ? 'Liên hệ' : 'Giới thiệu' },
+		]);
 		expect(getSiteTrail('/trai-nghiem')).toEqual([{ label: 'Trải nghiệm' }]);
 		expect(getSiteTrail('/trai-nghiem/mot-chuyen')).toEqual([
 			{ label: 'Trải nghiệm', href: '/trai-nghiem' },

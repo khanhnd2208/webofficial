@@ -136,3 +136,32 @@ export const aboutFocus = {
 	experienceLead: 'Ngoài lớp học, tôi còn học qua những dự án, chuyến đi và câu chuyện đời thường.',
 	experienceCta: 'Ghé xem trải nghiệm của tôi',
 } as const;
+
+/**
+ * While the introduction is being rewritten, /gioi-thieu shows a short
+ * contact card instead. Set to false to bring the letter back.
+ */
+export const aboutPagePaused = true;
+
+export const aboutContact = {
+	eyebrow: 'Contact me',
+	title: 'Liên hệ với tôi',
+	lead: 'Trang giới thiệu đang được viết lại. Trong lúc chờ, bạn có thể tìm tôi qua email hoặc Instagram.',
+	channels: [
+		{
+			id: 'email',
+			label: 'Email',
+			value: 'khanhnd2208@gmail.com',
+			href: 'mailto:khanhnd2208@gmail.com',
+			description: 'Công việc, lớp học và hợp tác.',
+		},
+		{
+			id: 'instagram',
+			label: 'Instagram',
+			value: '@turamisi.nk',
+			href: 'https://www.instagram.com/turamisi.nk/',
+			description: 'Nhắn tin nhanh và cập nhật thường ngày.',
+			note: 'Khi follow, hãy nhắn cho tôi một tin nhắn để tôi biết bạn là ai trước khi tôi chấp nhận nhé.',
+		},
+	],
+} as const;

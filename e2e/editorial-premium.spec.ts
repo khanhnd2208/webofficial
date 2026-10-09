@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { aboutPagePaused } from '../src/content/about';
+
 const viewports = [
 	{ width: 320, height: 720 },
 	{ width: 390, height: 844 },
@@ -51,9 +53,11 @@ test.describe('Editorial premium public experience', () => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/dich-vu');
 		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu$/);
-		await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toBeVisible();
-		await expect(page.getByRole('heading', { name: 'Cố vấn quản trị' })).toBeVisible();
-		await expect(page.locator('.about-path')).toHaveCount(2);
+		if (!aboutPagePaused) {
+			await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Cố vấn quản trị' })).toBeVisible();
+			await expect(page.locator('.about-path')).toHaveCount(2);
+		}
 		await page.goto('/trai-nghiem');
 		await expect(page.locator('.about-offer')).toHaveCount(3);
 		await expect(page.locator('details[open]')).toHaveCount(0);

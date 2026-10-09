@@ -3,6 +3,7 @@ import Image from 'next/image';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
+import { aboutPagePaused } from '@/content/about';
 import { auth } from '@/lib/auth';
 import TocDoors, { buildTocItems } from './TocDoors';
 import styles from './toc.module.css';
@@ -15,10 +16,12 @@ export const metadata: Metadata = {
 
 const about = {
 	href: routes.about,
-	label: 'Về tôi',
-	description: 'Người thầy, và hành trình trở thành.',
+	label: aboutPagePaused ? 'Liên hệ' : 'Về tôi',
+	description: aboutPagePaused
+		? 'Email và Instagram của tôi.'
+		: 'Người thầy, và hành trình trở thành.',
 	icon: '/brand/toc/about-v1.webp',
-	eyebrow: 'About me',
+	eyebrow: aboutPagePaused ? 'Contact me' : 'About me',
 };
 
 export default async function TocPage() {
