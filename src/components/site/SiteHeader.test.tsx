@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { aboutPagePaused } from '@/content/about';
 import SiteHeader from './SiteHeader';
 
 const pathname = vi.hoisted(() => ({ current: '/gioi-thieu' }));
@@ -41,7 +42,10 @@ describe('SiteHeader', () => {
 		render(<SiteHeader />);
 		expect(screen.getByTestId('site-header-home')).toHaveAttribute('href', '/muc-luc');
 		expect(screen.getByRole('navigation', { name: 'Đường dẫn' })).toBeVisible();
-		expect(screen.getByText('Giới thiệu')).toHaveAttribute('aria-current', 'page');
+		expect(screen.getByText(aboutPagePaused ? 'Liên hệ' : 'Giới thiệu')).toHaveAttribute(
+			'aria-current',
+			'page',
+		);
 		const contact = screen.getByTestId('site-header-contact');
 		expect(contact).toHaveTextContent('Nhắn tin');
 		expect(contact).toHaveTextContent('Gửi lời nhắn');

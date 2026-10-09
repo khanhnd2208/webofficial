@@ -1,6 +1,8 @@
 import { writeFile } from 'node:fs/promises';
 import { test, expect } from '@playwright/test';
 
+import { aboutPagePaused } from '../src/content/about';
+
 test.use({ video: 'on' });
 
 const pages = ['/', '/muc-luc', '/gioi-thieu', '/trai-nghiem', '/du-an', '/dich-vu'];
@@ -21,7 +23,9 @@ for (const width of [320, 390, 768, 1024, 1440]) {
 				).not.toBe('fixed');
 			}
 			if (path === '/gioi-thieu') {
-				await expect(page.locator('.about-path')).toHaveCount(2);
+				await expect(
+					page.locator(aboutPagePaused ? '.contact-profile-item' : '.about-path'),
+				).toHaveCount(2);
 				await expect(page.locator('details')).toHaveCount(0);
 				const words = await page.locator('main').innerText();
 				expect(words.split(/\s+/).length).toBeLessThan(150);
@@ -100,8 +104,12 @@ test('projects and collaboration support keyboard navigation and reduced motion'
 	await page.getByTestId('gate-item-about').focus();
 	await page.keyboard.press('Enter');
 	await expect(page).toHaveURL(/\/gioi-thieu$/);
-	await page.getByRole('link', { name: 'Ghé xem trải nghiệm của tôi' }).focus();
-	await page.keyboard.press('Enter');
+	if (aboutPagePaused) {
+		await page.goto('/trai-nghiem');
+	} else {
+		await page.getByRole('link', { name: 'Ghé xem trải nghiệm của tôi' }).focus();
+		await page.keyboard.press('Enter');
+	}
 	await expect(page).toHaveURL(/\/trai-nghiem$/);
 	await expect(page.locator('.about-project-grid > li')).toHaveCount(4);
 	await page.getByTestId('experience-project-strategic-management-learning-experience').focus();
@@ -137,6 +145,8 @@ test('old hubs redirect permanently to introduction sections and preserve query 
 		expect(target.searchParams.get('utm_source')).toBe('bookmark');
 		await page.goto(oldPath);
 		await expect(page).toHaveURL(new RegExp(`${targetPath}#${anchor}$`));
+		// The contact card that stands in for the introduction has no #dich-vu section.
+		if (aboutPagePaused && targetPath === '/gioi-thieu') continue;
 		await expect
 			.poll(async () => {
 				const bounds = await page.locator(`#${anchor}`).boundingBox();
@@ -234,7 +244,7 @@ test('record rendering measurements and capture a reading sequence', async ({ pa
 				height: document.body.scrollHeight,
 			}))),
 		});
-		if (path === '/dich-vu') {
+		if (path === '/dich-vu' && !aboutPagePaused) {
 			await expect(page).toHaveURL(/\/gioi-thieu#dich-vu$/);
 			await expect(page.getByRole('link', { name: 'Trao đổi về cố vấn' })).toBeVisible();
 		}
@@ -266,6 +276,7 @@ test('record rendering measurements and capture a reading sequence', async ({ pa
 });
 
 test('management and adviser links keep their subject and source', async ({ page }) => {
+	test.skip(aboutPagePaused, 'The introduction is replaced by a contact card for now.');
 	for (const [name, type] of [
 		['Trao đổi về việc học', 'training'],
 		['Trao đổi về cố vấn', 'business'],

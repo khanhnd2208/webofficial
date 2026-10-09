@@ -1291,6 +1291,212 @@
 .about-experience-note {
 	animation-delay: 190ms;
 }
+.contact-profile {
+	width: min(100%, 560px);
+	margin-inline: auto;
+	padding: 56px 24px 72px;
+}
+.contact-profile-head {
+	text-align: center;
+}
+.contact-profile-avatar {
+	position: relative;
+	width: 104px;
+	height: 104px;
+	margin: 0 auto 20px;
+	overflow: hidden;
+	border-radius: 50%;
+	background: var(--surface-elevated);
+	box-shadow:
+		0 0 0 1px var(--hairline),
+		0 0 0 5px var(--canvas),
+		0 0 0 6px var(--bronze);
+}
+.contact-profile-avatar img {
+	object-fit: cover;
+	object-position: center 20%;
+}
+.contact-profile-eyebrow {
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--bronze);
+}
+.contact-profile-page .contact-profile-head h1 {
+	margin-top: 6px;
+	font-size: clamp(2rem, 6vw, 2.75rem);
+	font-weight: 500;
+	line-height: 1.15;
+	letter-spacing: -0.03em;
+}
+.contact-profile-name {
+	margin-top: 10px;
+	font-size: 0.875rem;
+	color: var(--ink-secondary);
+}
+.contact-profile-break {
+	display: none;
+}
+.contact-profile-lead {
+	max-width: 42ch;
+	margin: 18px auto 0;
+	font-size: 0.9375rem;
+	color: var(--ink-secondary);
+}
+.contact-profile-list {
+	display: grid;
+	gap: 14px;
+	margin: 36px 0 0;
+	padding: 0;
+	list-style: none;
+}
+.contact-profile-item {
+	overflow: hidden;
+	border: 1px solid var(--hairline);
+	border-radius: 18px;
+	background: var(--surface-elevated);
+	transition:
+		border-color var(--ui-duration-hover) var(--ui-ease),
+		box-shadow var(--ui-duration-hover) var(--ui-ease);
+}
+.contact-profile-item:hover {
+	border-color: var(--bronze);
+	box-shadow: 0 10px 28px -18px rgb(0 0 0 / 0.35);
+}
+.contact-tile {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 18px 20px;
+	color: var(--ink);
+	text-decoration: none;
+}
+.contact-tile-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 14px;
+	color: var(--bronze);
+	background: var(--accent-subtle);
+}
+.contact-tile-icon--instagram {
+	color: #fff;
+	background: linear-gradient(135deg, #f9ce34 0%, #ee2a7b 50%, #6228d7 100%);
+}
+.contact-tile-icon svg {
+	width: 24px;
+	height: 24px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.7;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.contact-tile-body {
+	display: grid;
+	flex: 1;
+	min-width: 0;
+	gap: 1px;
+}
+.contact-tile-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--ink-secondary);
+}
+.contact-tile-value {
+	font-size: 1.0625rem;
+	font-weight: 600;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}
+.contact-tile-description {
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	color: var(--ink-secondary);
+}
+.contact-tile-arrow {
+	flex-shrink: 0;
+	color: var(--bronze);
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
+}
+.contact-tile:hover .contact-tile-arrow {
+	transform: translate(2px, -2px);
+}
+.contact-tile-note {
+	display: flex;
+	gap: 10px;
+	margin: 0 20px 18px;
+	padding: 12px 14px;
+	border-radius: 12px;
+	background: var(--accent-subtle);
+	font-size: 0.8125rem;
+	line-height: 1.55;
+	color: var(--ink);
+}
+.contact-tile-note span {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 18px;
+	height: 18px;
+	margin-top: 1px;
+	border-radius: 50%;
+	background: var(--bronze);
+	color: var(--accent-foreground);
+	font-family: var(--font-serif-display), serif;
+	font-size: 0.75rem;
+	font-style: italic;
+	font-weight: 700;
+}
+.contact-profile-head,
+.contact-profile-item {
+	animation: about-appear 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.contact-profile-item:nth-child(1) {
+	animation-delay: 80ms;
+}
+.contact-profile-item:nth-child(2) {
+	animation-delay: 140ms;
+}
+@media (max-width: 600px) {
+	.contact-profile {
+		padding: 36px 16px 56px;
+	}
+	.contact-profile-name span {
+		display: none;
+	}
+	.contact-profile-break {
+		display: inline;
+	}
+	.contact-tile {
+		gap: 14px;
+		padding: 16px;
+	}
+	.contact-tile-note {
+		margin: 0 16px 16px;
+	}
+	.contact-tile-value {
+		font-size: 0.9375rem;
+	}
+	.contact-tile-icon {
+		width: 44px;
+		height: 44px;
+	}
+	.contact-tile-arrow {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.contact-profile-head,
+	.contact-profile-item {
+		animation: none;
+	}
+}
 .experience-shell {
 	max-width: 1040px;
 	margin-inline: auto;
