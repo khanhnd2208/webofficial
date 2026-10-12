@@ -8,6 +8,7 @@ import {
 	normalizeClassCode,
 	normalizeTerm,
 } from '../domain/adminLifecycle';
+import { compareTeachingClasses } from '../domain/displayOrder';
 import {
 	ensureTeachingCourse,
 	lockActiveCourse,
@@ -76,7 +77,7 @@ async function enablePublishedDecksInTransaction(
 
 export async function listTeachingClasses() {
 	const rows = await repo.listClasses();
-	return rows.map(mapClassListItem);
+	return rows.map(mapClassListItem).sort(compareTeachingClasses);
 }
 
 export async function countActiveTeachingClasses() {

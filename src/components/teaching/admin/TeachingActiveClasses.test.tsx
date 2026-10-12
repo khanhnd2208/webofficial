@@ -78,17 +78,17 @@ function course(
 }
 
 describe('collectActiveClasses', () => {
-	it('flattens active classes from active courses, newest first', () => {
-		const older = teachingClass({ id: 'older', updatedAt: '2026-09-01T00:00:00.000Z' });
-		const newer = teachingClass({ id: 'newer', updatedAt: '2026-09-20T00:00:00.000Z' });
+	it('flattens active classes from active courses in natural class-code order', () => {
+		const class10 = teachingClass({ id: 'class-10', classCode: 'HRM10' });
+		const class2 = teachingClass({ id: 'class-2', classCode: 'HRM2' });
 		const archived = teachingClass({ id: 'archived', status: 'ARCHIVED' });
 		const inArchivedCourse = teachingClass({ id: 'in-archived-course' });
 		const result = collectActiveClasses([
-			course([older, archived]),
-			course([newer], { id: 'course-2' }),
+			course([class10, archived]),
+			course([class2], { id: 'course-2' }),
 			course([inArchivedCourse], { id: 'course-3', status: 'ARCHIVED' }),
 		]);
-		expect(result.map((row) => row.id)).toEqual(['newer', 'older']);
+		expect(result.map((row) => row.id)).toEqual(['class-2', 'class-10']);
 	});
 });
 

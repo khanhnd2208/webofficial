@@ -17,6 +17,7 @@ import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu
 import { Dialog } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
 import { formatDependencySummary } from '@/features/teaching/domain/adminLifecycle';
+import { compareTeachingClasses } from '@/features/teaching/domain/displayOrder';
 import type { TeachingClassListItem, TeachingClassStatus } from '@/features/teaching/types';
 
 type StatusFilter = 'all' | 'active' | 'archived';
@@ -64,20 +65,22 @@ export function TeachingClassCards({
 			.normalize('NFD')
 			.replace(/[\u0300-\u036f]/g, '')
 			.replace(/đ/g, 'd');
-		return classes.filter((row) => {
-			const matchesQuery =
-				!value ||
-				`${row.courseCode} ${row.courseName} ${row.groupNo} ${row.classCode ?? ''} ${row.term}`
-					.toLowerCase()
-					.normalize('NFD')
-					.replace(/[\u0300-\u036f]/g, '')
-					.replace(/đ/g, 'd')
-					.includes(value);
-			const matchesStatus =
-				statusFilter === 'all' ||
-				(statusFilter === 'active' ? row.status === 'ACTIVE' : row.status === 'ARCHIVED');
-			return matchesQuery && matchesStatus;
-		});
+		return classes
+			.filter((row) => {
+				const matchesQuery =
+					!value ||
+					`${row.courseCode} ${row.courseName} ${row.groupNo} ${row.classCode ?? ''} ${row.term}`
+						.toLowerCase()
+						.normalize('NFD')
+						.replace(/[\u0300-\u036f]/g, '')
+						.replace(/đ/g, 'd')
+						.includes(value);
+				const matchesStatus =
+					statusFilter === 'all' ||
+					(statusFilter === 'active' ? row.status === 'ACTIVE' : row.status === 'ARCHIVED');
+				return matchesQuery && matchesStatus;
+			})
+			.sort(compareTeachingClasses);
 	}, [classes, query, statusFilter]);
 
 	async function run(action: () => Promise<void>) {
