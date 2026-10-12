@@ -49,7 +49,6 @@ function deck(overrides: Partial<ActiveRecallDeckListItem> = {}): ActiveRecallDe
 		position: 0,
 		cardCount: 8,
 		classLinkCount: 0,
-		canDelete: false,
 		updatedAt: '2026-09-01T00:00:00.000Z',
 		publishedAt: null,
 		...overrides,
@@ -71,6 +70,29 @@ describe('TeachingCourseWorkspace', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: 'Thao tác bộ thẻ Lesson 1' }));
 		expect(screen.getByRole('menuitem', { name: 'Sửa nhanh' })).toBeInTheDocument();
+		expect(screen.getByRole('menuitem', { name: 'Xóa vĩnh viễn' })).toBeEnabled();
+	});
+
+	it('requires a three-second confirmation before deleting a populated deck', () => {
+		render(
+			<TeachingPopoverRoot>
+				<TeachingCourseWorkspace
+					course={course()}
+					decks={[deck({ classLinkCount: 2 })]}
+					tab="recall"
+				/>
+			</TeachingPopoverRoot>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Thao tác bộ thẻ Lesson 1' }));
+		fireEvent.click(screen.getByRole('menuitem', { name: 'Xóa vĩnh viễn' }));
+
+		expect(
+			screen.getByText(
+				'Xóa vĩnh viễn “Lesson 1” cùng 8 thẻ và gỡ bộ thẻ khỏi 2 lớp? Thao tác này không thể hoàn tác.',
+			),
+		).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Xóa vĩnh viễn (3 giây)' })).toBeDisabled();
 	});
 
 	it('hides create actions when the course is archived', () => {

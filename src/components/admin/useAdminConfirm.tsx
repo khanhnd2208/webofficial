@@ -10,6 +10,7 @@ type ConfirmOptions = {
 	confirmLabel?: string;
 	cancelLabel?: string;
 	tone?: 'danger' | 'default';
+	confirmDelaySeconds?: number;
 };
 
 type ConfirmState = ConfirmOptions & {
@@ -50,6 +51,7 @@ export function useAdminConfirm(): {
 			confirmLabel={state.confirmLabel}
 			cancelLabel={state.cancelLabel}
 			tone={state.tone}
+			confirmDelaySeconds={state.confirmDelaySeconds}
 			onConfirm={() => close(true)}
 			onClose={() => close(false)}
 		/>

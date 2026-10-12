@@ -58,7 +58,6 @@ function deck(overrides: Partial<ActiveRecallDeckDTO> = {}): ActiveRecallDeckDTO
 		position: 0,
 		cardCount: 1,
 		classLinkCount: 0,
-		canDelete: false,
 		updatedAt: '2026-09-01T00:00:00.000Z',
 		createdAt: '2026-09-01T00:00:00.000Z',
 		publishedAt: null,
