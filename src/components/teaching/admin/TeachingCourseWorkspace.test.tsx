@@ -107,4 +107,26 @@ describe('TeachingCourseWorkspace', () => {
 		);
 		expect(screen.queryByRole('link', { name: 'Tạo bộ thẻ' })).not.toBeInTheDocument();
 	});
+
+	it('shows numbered deck titles in natural ascending order', () => {
+		render(
+			<TeachingPopoverRoot>
+				<TeachingCourseWorkspace
+					course={course({ deckCount: 3 })}
+					decks={[
+						deck({ id: 'deck-10', title: 'HRM - Lecture 10' }),
+						deck({ id: 'deck-2', title: 'HRM - Lecture 2' }),
+						deck({ id: 'deck-1', title: 'HRM - Lecture 1' }),
+					]}
+					tab="recall"
+				/>
+			</TeachingPopoverRoot>,
+		);
+
+		expect(
+			screen
+				.getAllByRole('link', { name: /HRM - Lecture/ })
+				.map((link) => link.querySelector('p')?.textContent),
+		).toEqual(['HRM - Lecture 1', 'HRM - Lecture 2', 'HRM - Lecture 10']);
+	});
 });

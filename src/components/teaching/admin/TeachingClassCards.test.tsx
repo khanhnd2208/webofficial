@@ -159,4 +159,20 @@ describe('TeachingClassCards', () => {
 		});
 		expect(screen.getByText('Lớp HRM-A1')).toBeInTheDocument();
 	});
+
+	it('orders class cards by number instead of update history or string order', () => {
+		const classes = [
+			createMockClass({ id: 'class-10', classCode: '39-10', groupNo: '39-10' }),
+			createMockClass({ id: 'class-2', classCode: '39-2', groupNo: '39-2' }),
+			createMockClass({ id: 'class-1', classCode: '39-01', groupNo: '39-01' }),
+		];
+
+		render(<TeachingClassCards classes={classes} />);
+
+		expect(screen.getAllByTestId(/teaching-class-card-/).map((card) => card.textContent)).toEqual([
+			expect.stringContaining('Lớp 39-01'),
+			expect.stringContaining('Lớp 39-2'),
+			expect.stringContaining('Lớp 39-10'),
+		]);
+	});
 });

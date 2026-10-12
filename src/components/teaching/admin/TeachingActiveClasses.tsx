@@ -6,15 +6,16 @@ import { useState } from 'react';
 import { TeachingSectionHeading } from '../ui/TeachingElements';
 import { McIcon } from '@/components/myclass/ui';
 import { routes } from '@/config/routes';
+import { compareTeachingClasses } from '@/features/teaching/domain/displayOrder';
 import type { TeachingClassListItem, TeachingCourseListItem } from '@/features/teaching/types';
 
-/** Active classes across every course, most recently touched first (service order). */
+/** Active classes across every course, grouped by newest term and naturally ordered by code. */
 export function collectActiveClasses(courses: TeachingCourseListItem[]): TeachingClassListItem[] {
 	return courses
 		.filter((course) => course.status === 'ACTIVE')
 		.flatMap((course) => course.classes)
 		.filter((row) => row.status === 'ACTIVE')
-		.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+		.sort(compareTeachingClasses);
 }
 
 function studentPagePath(row: TeachingClassListItem) {

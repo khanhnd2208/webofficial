@@ -1,6 +1,7 @@
 import type { PublishStatus } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
+import { compareNaturalText } from '@/lib/naturalSort';
 import { prisma } from '@/lib/prisma';
 import { slugify } from '@/utils/slugify';
 import {
@@ -283,7 +284,7 @@ export async function listAdminRecallDecks() {
 			_count: { select: { cards: true, classLinks: true } },
 		},
 	});
-	return rows.map(mapList);
+	return rows.map(mapList).sort((left, right) => compareNaturalText(left.title, right.title));
 }
 
 export async function listAdminRecallDecksForCourse(courseId: string) {
@@ -295,7 +296,7 @@ export async function listAdminRecallDecksForCourse(courseId: string) {
 			_count: { select: { cards: true, classLinks: true } },
 		},
 	});
-	return rows.map(mapList);
+	return rows.map(mapList).sort((left, right) => compareNaturalText(left.title, right.title));
 }
 
 export async function getAdminRecallDeck(id: string) {

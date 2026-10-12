@@ -24,6 +24,7 @@ import {
 	collectTermSuggestions,
 	formatDependencySummary,
 } from '@/features/teaching/domain/adminLifecycle';
+import { compareNaturalText } from '@/lib/naturalSort';
 import type { TeachingCourseListItem } from '@/features/teaching/types';
 
 function statusLabel(status: ActiveRecallDeckListItem['status']) {
@@ -62,6 +63,10 @@ export function TeachingCourseWorkspace({
 		status: 'DRAFT' as ActiveRecallStatus,
 	});
 	const archived = course.status === 'ARCHIVED';
+	const sortedDecks = useMemo(
+		() => [...decks].sort((left, right) => compareNaturalText(left.title, right.title)),
+		[decks],
+	);
 	const termSuggestions = useMemo(
 		() => collectTermSuggestions(course.classes.map((item) => item.term)),
 		[course.classes],
@@ -199,8 +204,8 @@ export function TeachingCourseWorkspace({
 				) : null}
 				{tab === 'recall' ? (
 					<div className="overflow-hidden border border-border bg-surface">
-						{decks.length ? (
-							decks.map((deck) => (
+						{sortedDecks.length ? (
+							sortedDecks.map((deck) => (
 								<div
 									key={deck.id}
 									className="flex items-center gap-2 border-b border-border last:border-b-0"
