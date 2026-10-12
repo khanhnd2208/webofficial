@@ -116,15 +116,12 @@ export function TeachingCourseWorkspace({
 	}
 
 	async function deleteDeck(deck: ActiveRecallDeckListItem) {
-		if (!deck.canDelete) {
-			setError('Chỉ xóa được bộ thẻ trống và chưa gắn với lớp.');
-			return;
-		}
 		const ok = await confirm({
 			title: 'Xóa bộ thẻ',
-			description: `Xóa vĩnh viễn “${deck.title}”?`,
+			description: `Xóa vĩnh viễn “${deck.title}” cùng ${deck.cardCount} thẻ và gỡ bộ thẻ khỏi ${deck.classLinkCount} lớp? Thao tác này không thể hoàn tác.`,
 			confirmLabel: 'Xóa vĩnh viễn',
 			tone: 'danger',
+			confirmDelaySeconds: 3,
 		});
 		if (!ok) return;
 		await run(async () => {
@@ -238,7 +235,6 @@ export function TeachingCourseWorkspace({
 													id: 'delete',
 													label: 'Xóa vĩnh viễn',
 													tone: 'danger',
-													disabled: !deck.canDelete,
 													onSelect: () => void deleteDeck(deck),
 												},
 											]}

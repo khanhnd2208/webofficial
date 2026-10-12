@@ -25,7 +25,6 @@ export type ActiveRecallDeckListItem = {
 	position: number;
 	cardCount: number;
 	classLinkCount: number;
-	canDelete: boolean;
 	updatedAt: string;
 	publishedAt: string | null;
 };

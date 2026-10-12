@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
 	classFindFirst: vi.fn(),
 	deckFindFirst: vi.fn(),
+	deckFindUnique: vi.fn(),
+	deckDelete: vi.fn(),
 	linkFindFirst: vi.fn(),
 	linkFindMany: vi.fn(),
 }));
@@ -10,7 +12,11 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/prisma', () => ({
 	prisma: {
 		teachingClass: { findFirst: mocks.classFindFirst },
-		activeRecallDeck: { findFirst: mocks.deckFindFirst },
+		activeRecallDeck: {
+			findFirst: mocks.deckFindFirst,
+			findUnique: mocks.deckFindUnique,
+			delete: mocks.deckDelete,
+		},
 		teachingClassRecallDeck: {
 			findFirst: mocks.linkFindFirst,
 			findMany: mocks.linkFindMany,
@@ -28,6 +34,7 @@ vi.mock('@/features/teaching/services/recallPlacementService', () => ({
 }));
 
 import {
+	deleteAdminRecallDeck,
 	getPublishedRecallDeckForClass,
 	listPublishedRecallDecksForClass,
 	resolvePublicClassSlugForDeck,
@@ -112,5 +119,23 @@ describe('class-scoped Active Recall queries', () => {
 	it('returns null when no valid public class still has the deck enabled', async () => {
 		mocks.linkFindFirst.mockResolvedValue(null);
 		await expect(resolvePublicClassSlugForDeck('orphaned-deck')).resolves.toBeNull();
+	});
+});
+
+describe('admin Active Recall deletion', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('deletes a populated deck and relies on database cascades for cards and class links', async () => {
+		mocks.deckFindUnique.mockResolvedValue({
+			id: 'deck-1',
+			cards: [{ id: 'card-1' }],
+			_count: { cards: 8, classLinks: 2 },
+		});
+		mocks.deckDelete.mockResolvedValue({ id: 'deck-1' });
+
+		await expect(deleteAdminRecallDeck('deck-1')).resolves.toEqual({ id: 'deck-1' });
+		expect(mocks.deckDelete).toHaveBeenCalledWith({ where: { id: 'deck-1' } });
 	});
 });

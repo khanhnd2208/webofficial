@@ -24,7 +24,6 @@ const deck = {
 	status: 'PUBLISHED' as const,
 	position: 0,
 	cardCount: 2,
-	canDelete: false,
 	classLinkCount: 0,
 	updatedAt: new Date().toISOString(),
 	createdAt: new Date().toISOString(),

@@ -80,7 +80,6 @@ function mapList(row: {
 		position: row.position,
 		cardCount: row._count.cards,
 		classLinkCount,
-		canDelete: row._count.cards === 0 && classLinkCount === 0,
 		updatedAt: row.updatedAt.toISOString(),
 		publishedAt: row.publishedAt?.toISOString() ?? null,
 	};
@@ -494,17 +493,6 @@ export async function archiveAdminRecallDeck(id: string) {
 export async function deleteAdminRecallDeck(id: string) {
 	const existing = await findDeckRecord(id);
 	if (!existing) throw new AppError('Không tìm thấy bộ thẻ', 404);
-	const cardCount = existing._count.cards;
-	const classLinkCount = existing._count.classLinks ?? 0;
-	if (cardCount > 0 || classLinkCount > 0) {
-		throw new AppError(
-			'Chỉ xóa được bộ thẻ trống và chưa gắn với lớp',
-			409,
-			'HAS_DEPENDENCIES',
-			undefined,
-			{ cards: cardCount || undefined, classLinks: classLinkCount || undefined },
-		);
-	}
 	await prisma.activeRecallDeck.delete({ where: { id } });
 	return { id };
 }

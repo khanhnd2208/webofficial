@@ -27,7 +27,6 @@ const deck: ActiveRecallDeckDTO = {
 	position: 0,
 	cardCount: 2,
 	classLinkCount: 0,
-	canDelete: false,
 	createdAt: '',
 	updatedAt: '',
 	publishedAt: null,

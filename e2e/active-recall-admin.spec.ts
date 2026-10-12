@@ -20,6 +20,72 @@ async function archiveDeck(request: APIRequestContext, url: string) {
 }
 
 test.describe('Active Recall admin API', () => {
+	test('deletes a populated deck after a three-second admin confirmation', async ({
+		page,
+		context,
+	}) => {
+		await addAdminSession(context);
+		const suffix = Date.now().toString(36);
+		const createdCourse = await page.request.post('/api/admin/teaching/courses', {
+			data: {
+				courseCode: `DEL${suffix}`.slice(0, 10).toUpperCase(),
+				courseName: `Recall deletion E2E ${suffix}`,
+			},
+		});
+		expect(createdCourse.ok()).toBe(true);
+		const courseId = ((await createdCourse.json()) as { data: { id: string } }).data.id;
+		let deckId: string | undefined;
+
+		try {
+			const createdDeck = await page.request.post(
+				`/api/admin/teaching/courses/${courseId}/recall`,
+				{
+					data: {
+						title: `Delete me ${suffix}`,
+						status: 'DRAFT',
+						cards: [{ question: 'Question to delete', answer: 'Answer to delete' }],
+					},
+				},
+			);
+			expect(createdDeck.ok()).toBe(true);
+			deckId = ((await createdDeck.json()) as { data: { id: string } }).data.id;
+
+			await page.goto(`/my-space/teaching/courses/${courseId}?tab=recall`);
+			await page.getByRole('button', { name: `Thao tác bộ thẻ Delete me ${suffix}` }).click();
+			await page.getByRole('menuitem', { name: 'Xóa vĩnh viễn' }).click();
+
+			const lockedDelete = page.getByRole('button', { name: 'Xóa vĩnh viễn (3 giây)' });
+			await expect(lockedDelete).toBeDisabled();
+			await expect(
+				page.getByText(
+					`Xóa vĩnh viễn “Delete me ${suffix}” cùng 1 thẻ và gỡ bộ thẻ khỏi 0 lớp? Thao tác này không thể hoàn tác.`,
+				),
+			).toBeVisible();
+			if (process.env.ACTIVE_RECALL_DELETE_SCREENSHOT) {
+				await page.screenshot({
+					path: process.env.ACTIVE_RECALL_DELETE_SCREENSHOT,
+					fullPage: true,
+				});
+			}
+
+			const enabledDelete = page.getByRole('button', { name: 'Xóa vĩnh viễn', exact: true });
+			await expect(enabledDelete).toBeEnabled({ timeout: 4_500 });
+			await enabledDelete.click();
+
+			await expect(page.getByText(`Delete me ${suffix}`)).toHaveCount(0);
+			const deleted = await page.request.get(
+				`/api/admin/teaching/courses/${courseId}/recall/${deckId}`,
+			);
+			expect(deleted.status()).toBe(404);
+			deckId = undefined;
+		} finally {
+			if (deckId) {
+				await page.request.delete(`/api/admin/teaching/courses/${courseId}/recall/${deckId}`);
+			}
+			await page.request.delete(`/api/admin/teaching/courses/${courseId}`);
+		}
+	});
+
 	test('creates, previews/imports, publishes, rejects a stale save, and archives a deck', async ({
 		page,
 		context,
