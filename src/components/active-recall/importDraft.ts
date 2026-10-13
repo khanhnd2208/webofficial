@@ -11,9 +11,15 @@ export type ImportDraftCard = {
 };
 
 // Compare all four stored faces so translations and formatting are never discarded.
-function fingerprint(card: Omit<ImportDraftCard, 'id'>) {
+function fingerprint(card: Omit<ImportDraftCard, 'id'>, normalizedFaces: Map<string, string>) {
 	return JSON.stringify(
-		[card.question, card.answer, card.questionVi, card.answerVi].map(recallImportToStoredHtml),
+		[card.question, card.answer, card.questionVi, card.answerVi].map((face) => {
+			const cached = normalizedFaces.get(face);
+			if (cached !== undefined) return cached;
+			const normalized = recallImportToStoredHtml(face);
+			normalizedFaces.set(face, normalized);
+			return normalized;
+		}),
 	);
 }
 
@@ -29,7 +35,11 @@ export function previewDraftImport(
 			[card.question, card.answer, card.questionVi, card.answerVi].some(recallHasContent),
 	);
 	const byId = new Map(existing.filter((card) => card.id).map((card) => [card.id, card]));
-	const seen = new Set(mode === 'append' ? existing.map(fingerprint) : []);
+	// Keep the cache local: the next preview must reflect edits to the draft.
+	const normalizedFaces = new Map<string, string>();
+	const seen = new Set(
+		mode === 'append' ? existing.map((card) => fingerprint(card, normalizedFaces)) : [],
+	);
 	let count = mode === 'append' ? existing.length : 0;
 	for (const row of result.rows) {
 		if (row.errors.length) continue;
@@ -37,12 +47,15 @@ export function previewDraftImport(
 			row.errors.push('ID thẻ không thuộc bộ này. Xóa cột ID nếu muốn tạo thẻ mới.');
 			continue;
 		}
-		const key = fingerprint({
-			question: row.question,
-			answer: row.answer,
-			questionVi: row.questionVi ?? '',
-			answerVi: row.answerVi ?? '',
-		});
+		const key = fingerprint(
+			{
+				question: row.question,
+				answer: row.answer,
+				questionVi: row.questionVi ?? '',
+				answerVi: row.answerVi ?? '',
+			},
+			normalizedFaces,
+		);
 		if (row.id) row.action = mode === 'append' ? 'update' : 'create';
 		else row.action = seen.has(key) ? 'skip' : 'create';
 		if (row.action === 'create') count += 1;
