@@ -37,6 +37,13 @@ describe('draft import', () => {
 		expect(previewDraftImport('Q: New\nA: New answer', cards, 'append').summary.invalid).toBe(1);
 		expect(previewDraftImport('Q: New\nA: New answer', cards, 'replace').summary.invalid).toBe(0);
 	});
+	it('reflects draft edits between previews', () => {
+		const cards = [{ ...card }];
+		const text = 'Q: Question\nA: Answer';
+		expect(previewDraftImport(text, cards, 'append').summary.duplicates).toBe(1);
+		cards[0]!.answer = 'Edited answer';
+		expect(previewDraftImport(text, cards, 'append').summary.duplicates).toBe(0);
+	});
 	it('ignores only entirely empty placeholders', () => {
 		const empty = { question: '', answer: '', questionVi: '', answerVi: '' };
 		const result = previewDraftImport(
