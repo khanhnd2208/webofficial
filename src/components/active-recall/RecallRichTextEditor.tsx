@@ -56,11 +56,13 @@ export default function RecallRichTextEditor({
 	onChange,
 	placeholder,
 	labelledBy,
+	disabled = false,
 }: {
 	value: string;
 	onChange: (html: string) => void;
 	placeholder?: string;
 	labelledBy?: string;
+	disabled?: boolean;
 }) {
 	const valueRef = useRef(value);
 	const editorRef = useRef<Editor | null>(null);
@@ -69,6 +71,7 @@ export default function RecallRichTextEditor({
 
 	const editor = useEditor({
 		immediatelyRender: false,
+		editable: !disabled,
 		extensions: [
 			StarterKit.configure({
 				heading: false,
@@ -119,6 +122,10 @@ export default function RecallRichTextEditor({
 			});
 		},
 	});
+
+	useEffect(() => {
+		editor?.setEditable(!disabled);
+	}, [editor, disabled]);
 
 	useEffect(() => {
 		valueRef.current = value;

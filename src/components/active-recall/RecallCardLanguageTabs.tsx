@@ -16,6 +16,7 @@ export default function RecallCardLanguageTabs({
 	onChangeQuestionVi,
 	onChangeAnswerVi,
 	idPrefix,
+	disabled = false,
 }: {
 	question: string;
 	answer: string;
@@ -26,6 +27,7 @@ export default function RecallCardLanguageTabs({
 	onChangeQuestionVi: (value: string) => void;
 	onChangeAnswerVi: (value: string) => void;
 	idPrefix: string;
+	disabled?: boolean;
 }) {
 	const [tab, setTab] = useState<'original' | 'vi'>('original');
 	const hasVi = recallHasContent(questionVi) || recallHasContent(answerVi);
@@ -68,6 +70,7 @@ export default function RecallCardLanguageTabs({
 						Câu hỏi
 					</p>
 					<RecallRichTextEditor
+						disabled={disabled}
 						value={question}
 						onChange={onChangeQuestion}
 						labelledBy={`${idPrefix}-question`}
@@ -82,6 +85,7 @@ export default function RecallCardLanguageTabs({
 						Đáp án
 					</p>
 					<RecallRichTextEditor
+						disabled={disabled}
 						value={answer}
 						onChange={onChangeAnswer}
 						labelledBy={`${idPrefix}-answer`}
@@ -98,6 +102,7 @@ export default function RecallCardLanguageTabs({
 						Câu hỏi (Tiếng Việt)
 					</p>
 					<RecallRichTextEditor
+						disabled={disabled}
 						value={questionVi}
 						onChange={onChangeQuestionVi}
 						labelledBy={`${idPrefix}-question-vi`}
@@ -112,6 +117,7 @@ export default function RecallCardLanguageTabs({
 						Đáp án (Tiếng Việt)
 					</p>
 					<RecallRichTextEditor
+						disabled={disabled}
 						value={answerVi}
 						onChange={onChangeAnswerVi}
 						labelledBy={`${idPrefix}-answer-vi`}

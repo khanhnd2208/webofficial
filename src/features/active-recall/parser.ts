@@ -1,4 +1,4 @@
-import { parse } from 'csv-parse/sync';
+import { parse } from 'csv-parse/browser/esm/sync';
 
 import {
 	recallHasContent,
@@ -60,7 +60,13 @@ function detectDelimiter(text: string) {
 function firstLineHeaders(text: string) {
 	const first = text.replace(/^\uFEFF/, '').split(/\r?\n/, 1)[0] ?? '';
 	const delimiter = detectDelimiter(text);
-	return first.split(delimiter).map(headerKey);
+	try {
+		return ((parse(first, { delimiter, bom: true, trim: true })[0] as string[]) ?? []).map(
+			headerKey,
+		);
+	} catch {
+		return [];
+	}
 }
 
 function hasDelimitedHeaders(text: string) {
@@ -221,11 +227,22 @@ function parsePaste(text: string): ParsedImport {
 
 function parseTsv(text: string): ParsedImport {
 	const rows: RecallImportRow[] = [];
-	const lines = text
-		.replace(/\r\n/g, '\n')
-		.split('\n')
-		.filter((line) => line.trim());
-	const header = lines[0]?.split('\t').map(headerKey) ?? [];
+	let records: string[][];
+	try {
+		records = parse(text, {
+			delimiter: '\t',
+			bom: true,
+			skip_empty_lines: true,
+			relax_column_count: true,
+		}) as string[][];
+	} catch {
+		return {
+			rows: [{ row: 1, question: '', answer: '', errors: ['Không đọc được dữ liệu Excel / TSV'] }],
+			format: 'tsv',
+			orphanAnswers: 0,
+		};
+	}
+	const header = records[0]?.map(headerKey) ?? [];
 	const hasHeader = header.includes('question') && header.includes('answer');
 	const questionIndex = hasHeader ? header.indexOf('question') : 0;
 	const answerIndex = hasHeader ? header.indexOf('answer') : 1;
@@ -233,16 +250,13 @@ function parseTsv(text: string): ParsedImport {
 	const orderIndex = hasHeader ? header.indexOf('order') : -1;
 	const questionViIndex = hasHeader ? header.indexOf('questionVi') : -1;
 	const answerViIndex = hasHeader ? header.indexOf('answerVi') : -1;
-	lines.slice(hasHeader ? 1 : 0).forEach((line, index) => {
-		const cells = line.split('\t');
+	records.slice(hasHeader ? 1 : 0).forEach((cells, index) => {
 		const question = clean(cells[questionIndex] ?? '');
 		const answer = clean(cells[answerIndex] ?? '');
 		const questionVi = questionViIndex >= 0 ? clean(cells[questionViIndex] ?? '') : '';
 		const answerVi = answerViIndex >= 0 ? clean(cells[answerViIndex] ?? '') : '';
-		const order =
-			orderIndex >= 0 && /^\d+$/.test(cells[orderIndex] ?? '')
-				? Number(cells[orderIndex])
-				: undefined;
+		const rawOrder = orderIndex >= 0 ? cells[orderIndex]?.trim() : '';
+		const order = rawOrder && /^\d+$/.test(rawOrder) ? Number(rawOrder) : undefined;
 		rows.push({
 			row: index + (hasHeader ? 2 : 1),
 			id: cells[idIndex]?.trim() || undefined,
@@ -251,7 +265,7 @@ function parseTsv(text: string): ParsedImport {
 			questionVi,
 			answerVi,
 			order,
-			errors: [],
+			errors: rawOrder && !/^\d+$/.test(rawOrder) ? ['Thứ tự phải là số nguyên không âm'] : [],
 		});
 	});
 	return { rows, format: 'tsv', orphanAnswers: 0 };
@@ -297,12 +311,13 @@ function parseCsv(text: string): ParsedImport {
 }
 
 export function previewRecallImport(text: string): RecallImportPreview {
-	const likelyTsv = text
-		.split(/\r?\n/)
-		.filter(Boolean)
-		.every((line) => line.includes('\t'));
+	const likelyTsv =
+		text
+			.replace(/^\uFEFF/, '')
+			.split(/\r?\n/, 1)[0]
+			?.includes('\t') ?? false;
 	const parsed = hasDelimitedHeaders(text)
-		? detectDelimiter(text) === '\t' || likelyTsv
+		? detectDelimiter(text) === '\t'
 			? parseTsv(text)
 			: parseCsv(text)
 		: text.split(/\r?\n/).some((line) => QUESTION.test(line) || ANSWER.test(line))

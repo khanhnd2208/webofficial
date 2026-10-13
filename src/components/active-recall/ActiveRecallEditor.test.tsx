@@ -85,7 +85,7 @@ describe('ActiveRecallEditor', () => {
 		navigation.refresh.mockReset();
 	});
 
-	it('keeps create mode to title and cards only', () => {
+	it('offers bulk import immediately in create mode', () => {
 		render(
 			<ActiveRecallEditor
 				initialDeck={null}
@@ -96,7 +96,7 @@ describe('ActiveRecallEditor', () => {
 		expect(screen.getByRole('heading', { name: 'Tạo bộ thẻ' })).toBeInTheDocument();
 		expect(screen.getByText(/Môn: Human Resource Management/)).toBeInTheDocument();
 		expect(screen.queryByText('Chi tiết')).not.toBeInTheDocument();
-		expect(screen.queryByText('Nhập nhiều')).not.toBeInTheDocument();
+		expect(screen.getByText('Nhập nhiều')).toBeInTheDocument();
 		expect(screen.queryByText('Trạng thái')).not.toBeInTheDocument();
 	});
 
@@ -185,5 +185,166 @@ describe('ActiveRecallEditor', () => {
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 		resolveSave?.(deck({ updatedAt: '2026-09-02T00:00:00.000Z' }));
 		await waitFor(() => expect(screen.getByText('Đã lưu thay đổi.')).toBeInTheDocument());
+	});
+
+	it('stages bulk input while dirty and saves everything in one request', async () => {
+		const saved = deck({ title: 'Edited' });
+		fetchMock.mockResolvedValue(saved);
+		render(<ActiveRecallEditor initialDeck={deck()} />);
+		fireEvent.change(screen.getByLabelText('Tên bộ thẻ'), { target: { value: 'Edited' } });
+		fireEvent.change(screen.getByLabelText('Dữ liệu nhập'), {
+			target: { value: 'Q: New\nA: New answer\nQVI: Mới\nAVI: Đáp án' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra dữ liệu' }));
+		expect(fetchMock).not.toHaveBeenCalled();
+		fireEvent.click(screen.getByRole('button', { name: 'Đưa vào bộ: 1 mới' }));
+		await waitFor(() => expect(screen.getByLabelText('Dữ liệu nhập')).toHaveValue(''));
+		expect(fetchMock).not.toHaveBeenCalled();
+		fireEvent.click(screen.getAllByRole('button', { name: 'Lưu thay đổi' })[0]!);
+		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+		const body = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
+		expect(body).toMatchObject({ title: 'Edited', expectedUpdatedAt: deck().updatedAt });
+		expect(body.cards).toHaveLength(2);
+		expect(body.cards[1]).toMatchObject({
+			question: '<p>New</p>',
+			questionVi: '<p>Mới</p>',
+			answerVi: '<p>Đáp án</p>',
+		});
+	});
+
+	it('imports before creating a deck and can undo staging', async () => {
+		render(<ActiveRecallEditor initialDeck={null} courseId="course-1" />);
+		fireEvent.change(screen.getByLabelText('Dữ liệu nhập'), {
+			target: { value: 'Q: New\nA: Answer' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra dữ liệu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Đưa vào bộ: 1 mới' }));
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Hoàn tác nhập' })).toBeInTheDocument(),
+		);
+		expect(screen.getByDisplayValue('<p>New</p>')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Hoàn tác nhập' }));
+		expect(screen.queryByDisplayValue('<p>New</p>')).not.toBeInTheDocument();
+		expect(screen.getByLabelText('Dữ liệu nhập')).toHaveValue('Q: New\nA: Answer');
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('blocks pending pasted input and orphan answers without losing it', async () => {
+		render(<ActiveRecallEditor initialDeck={deck()} />);
+		fireEvent.change(screen.getByLabelText('Dữ liệu nhập'), { target: { value: 'A: Orphan' } });
+		fireEvent.click(screen.getAllByRole('button', { name: 'Lưu thay đổi' })[0]!);
+		await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Bạn còn dữ liệu'));
+		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra dữ liệu' }));
+		expect(screen.queryByRole('button', { name: /Đưa vào bộ/ })).not.toBeInTheDocument();
+		expect(screen.getByLabelText('Dữ liệu nhập')).toHaveValue('A: Orphan');
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('preserves edits across card pages and sends all cards', async () => {
+		const initial = deck({
+			cards: Array.from({ length: 21 }, (_, index) => ({
+				...deck().cards[0]!,
+				id: `c${index}`,
+				question: `Question ${index}`,
+				position: index,
+			})),
+		});
+		fetchMock.mockResolvedValue(initial);
+		render(<ActiveRecallEditor initialDeck={initial} />);
+		expect(screen.getAllByRole('button', { name: 'Xóa thẻ' })).toHaveLength(20);
+		fireEvent.change(screen.getByDisplayValue('Question 0'), {
+			target: { value: 'Edited question' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Trang sau' }));
+		expect(screen.getByDisplayValue('Question 20')).toBeInTheDocument();
+		fireEvent.click(screen.getAllByRole('button', { name: 'Lưu thay đổi' })[0]!);
+		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+		const body = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
+		expect(body.cards).toHaveLength(21);
+		expect(body.cards[0].question).toBe('Edited question');
+	});
+
+	it('warns before leaving with only pending paste', async () => {
+		render(<ActiveRecallEditor initialDeck={deck()} />);
+		fireEvent.change(screen.getByLabelText('Dữ liệu nhập'), { target: { value: 'Q: Pending' } });
+		const event = new Event('beforeunload', { cancelable: true });
+		window.dispatchEvent(event);
+		expect(event.defaultPrevented).toBe(true);
+		fireEvent.click(screen.getByRole('link', { name: 'Danh sách' }));
+		expect(await screen.findByRole('dialog')).toHaveTextContent('Thay đổi chưa lưu');
+		expect(navigation.push).not.toHaveBeenCalled();
+	});
+
+	it('archives current edits in the same optimistic save', async () => {
+		fetchMock.mockResolvedValue(deck({ status: 'ARCHIVED', title: 'Edited' }));
+		render(<ActiveRecallEditor initialDeck={deck()} />);
+		fireEvent.change(screen.getByLabelText('Tên bộ thẻ'), { target: { value: 'Edited' } });
+		fireEvent.click(screen.getByRole('button', { name: 'Lưu trữ' }));
+		fireEvent.click(await screen.findByRole('button', { name: 'Lưu và lưu trữ' }));
+		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+		const body = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
+		expect(body).toMatchObject({
+			title: 'Edited',
+			status: 'ARCHIVED',
+			expectedUpdatedAt: deck().updatedAt,
+		});
+		expect(body.cards).toHaveLength(1);
+	});
+
+	it('does not offer publishing an empty deck', async () => {
+		render(<ActiveRecallEditor initialDeck={deck({ cards: [] })} />);
+		fireEvent.change(screen.getByLabelText('Trạng thái', { exact: false }), {
+			target: { value: 'PUBLISHED' },
+		});
+		fireEvent.click(screen.getAllByRole('button', { name: 'Lưu và công khai' })[0]!);
+		expect(await screen.findByRole('alert')).toHaveTextContent('ít nhất một thẻ');
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('keeps the editor intact when a stale save is rejected', async () => {
+		fetchMock.mockRejectedValue(new Error('Bộ thẻ đã được cập nhật ở nơi khác.'));
+		render(<ActiveRecallEditor initialDeck={deck()} />);
+		fireEvent.change(screen.getByLabelText('Tên bộ thẻ'), { target: { value: 'Keep this edit' } });
+		fireEvent.click(screen.getAllByRole('button', { name: 'Lưu thay đổi' })[0]!);
+		expect(await screen.findByRole('alert')).toHaveTextContent('cập nhật ở nơi khác');
+		expect(screen.getByLabelText('Tên bộ thẻ')).toHaveValue('Keep this edit');
+		expect(screen.getByDisplayValue('What is HRM?')).toBeInTheDocument();
+	});
+
+	it('requires confirmation before replacing and preserves the original card ID', async () => {
+		render(<ActiveRecallEditor initialDeck={deck()} />);
+		fireEvent.change(screen.getByLabelText('Dữ liệu nhập'), {
+			target: { value: 'id,question,answer\ncard-1,Revised,Revised answer' },
+		});
+		fireEvent.change(screen.getByLabelText('Cách nhập'), { target: { value: 'replace' } });
+		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra dữ liệu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Thay bằng 1 thẻ' }));
+		expect(await screen.findByRole('dialog')).toHaveTextContent('Thay thế thẻ trong bản chỉnh sửa');
+		expect(screen.getByDisplayValue('What is HRM?')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Thay thế' }));
+		await waitFor(() => expect(screen.getByDisplayValue('<p>Revised</p>')).toBeInTheDocument());
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(document.querySelector('#recall-card-1-question')).toBeInTheDocument();
+	});
+
+	it('creates a draft from staged bulk data in a single request', async () => {
+		fetchMock.mockResolvedValue(deck());
+		render(<ActiveRecallEditor initialDeck={null} courseId="course-1" />);
+		fireEvent.change(screen.getByLabelText('Tên bộ thẻ'), { target: { value: 'Bulk draft' } });
+		fireEvent.change(screen.getByLabelText('Dữ liệu nhập'), {
+			target: { value: 'Q: New\nA: Answer' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra dữ liệu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Đưa vào bộ: 1 mới' }));
+		await waitFor(() => expect(screen.getByLabelText('Dữ liệu nhập')).toHaveValue(''));
+		fireEvent.click(screen.getByRole('button', { name: 'Tạo bộ thẻ' }));
+		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+		const body = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
+		expect(body).toMatchObject({
+			title: 'Bulk draft',
+			status: 'DRAFT',
+			cards: [{ question: '<p>New</p>', answer: '<p>Answer</p>' }],
+		});
+		expect(navigation.replace).toHaveBeenCalled();
 	});
 });

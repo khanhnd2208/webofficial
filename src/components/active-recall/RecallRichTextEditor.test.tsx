@@ -52,4 +52,22 @@ describe('RecallRichTextEditor', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Màu chữ: Đỏ' }));
 		expect(screen.getByRole('button', { name: 'Màu chữ' })).toBeInTheDocument();
 	});
+
+	it('locks rich text while saving and unlocks it afterward', async () => {
+		const { rerender } = await readyEditor();
+		rerender(<RecallRichTextEditor value="<p>Sample text</p>" onChange={vi.fn()} disabled />);
+		await waitFor(() =>
+			expect(document.querySelector('.recall-card-editor')).toHaveAttribute(
+				'contenteditable',
+				'false',
+			),
+		);
+		rerender(<RecallRichTextEditor value="<p>Sample text</p>" onChange={vi.fn()} />);
+		await waitFor(() =>
+			expect(document.querySelector('.recall-card-editor')).toHaveAttribute(
+				'contenteditable',
+				'true',
+			),
+		);
+	});
 });
