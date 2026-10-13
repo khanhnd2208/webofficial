@@ -192,4 +192,18 @@ describe('Active Recall import parser', () => {
 		expect(paste).not.toContain('QVI:');
 		expect(paste).not.toContain('AVI:');
 	});
+
+	it('reads quoted headers and multiline Excel cells', () => {
+		const csv = previewRecallImport('"question","answer"\n"Question","Answer"');
+		expect(csv.summary.valid).toBe(1);
+		const tsv = previewRecallImport('question\tanswer\n"Question"\t"First line\nSecond line"');
+		expect(tsv.summary).toMatchObject({ valid: 1, invalid: 0 });
+		expect(recallVisibleText(tsv.rows[0]?.answer)).toBe('First line\nSecond line');
+	});
+	it('rejects malformed quoted Excel cells and negative order', () => {
+		expect(previewRecallImport('question\tanswer\nQuestion\t"unclosed').summary.invalid).toBe(1);
+		expect(
+			previewRecallImport('question\tanswer\torder\nQuestion\tAnswer\t-1').summary.invalid,
+		).toBe(1);
+	});
 });
