@@ -182,6 +182,8 @@ export const routes = {
 		messageEdit: (slug: string) => `/admin/tools/messages/${slug}` as const,
 		myspaceTests: '/admin/myspace-tests',
 		learnAnalytics: '/admin/learn-analytics',
+		unreleasedQuiz: '/admin/unreleased-quiz',
+		unreleasedQuizExport: '/api/admin/unreleased-quiz/export',
 		myspaceTestNew: '/admin/myspace-tests/new',
 		myspaceTestEdit: (id: string) => `/admin/myspace-tests/${id}` as const,
 		myspaceTestAnalytics: '/admin/myspace-tests/analytics',

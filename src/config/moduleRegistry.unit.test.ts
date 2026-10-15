@@ -19,6 +19,7 @@ describe('operating module registry', () => {
 			'inquiries',
 			'website',
 			'teaching',
+			'unreleased-quiz',
 			'learning-analytics',
 		]);
 		expect(resolveModuleByAdminPath(routes.admin.inquiries)?.id).toBe('inquiries');

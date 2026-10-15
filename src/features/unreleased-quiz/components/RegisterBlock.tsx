@@ -3,6 +3,7 @@
 import { trackEvent } from '@/lib/analytics';
 
 import { EVENT } from '../content/results';
+import { noteRegisterClick } from './responseClient';
 
 type RegisterBlockProps = {
 	/** Analytics label: where the click came from (intro, result group, closing). */
@@ -16,9 +17,10 @@ export function RegisterButton({ source, label }: { source: string; label?: stri
 			href={EVENT.registerUrl}
 			target="_blank"
 			rel="noopener noreferrer"
-			onClick={() =>
-				trackEvent('unreleased_register_click', { sourcePage: 'unreleased', label: source })
-			}
+			onClick={() => {
+				trackEvent('unreleased_register_click', { sourcePage: 'unreleased', label: source });
+				noteRegisterClick();
+			}}
 			className="inline-flex min-h-12 items-center justify-center rounded-[4px] bg-ink px-6 text-sm font-semibold uppercase tracking-wider text-paper transition-colors duration-250 hover:bg-ink/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
 		>
 			{label ?? 'Đăng ký tham gia UNRELEASED'}

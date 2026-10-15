@@ -35,6 +35,7 @@ const PRISMA_GENERATION = [
 	Prisma.ModelName.TeachingClassRecallDeck,
 	Prisma.ModelName.LearnCourse,
 	Prisma.ModelName.LearnSectionProgress,
+	Prisma.ModelName.UnreleasedQuizResponse,
 	'TeachingEnrollment.learningExperience.v2',
 	'TeachingGroupBoard.tutorialClassId.v1',
 	'TeachingGroup.maxSize.v1',

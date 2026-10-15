@@ -17,6 +17,7 @@ import {
 } from '../domain/quiz';
 import { QuestionStep } from './QuestionStep';
 import { EventFacts } from './RegisterBlock';
+import { saveResponse } from './responseClient';
 import { ResultView } from './ResultView';
 
 type Stage =
@@ -87,6 +88,7 @@ export function UnreleasedQuiz() {
 										type: result.group,
 										label: result.variant ?? undefined,
 									});
+									void saveResponse(answers);
 									go({ kind: 'result', result });
 								}}
 							/>
@@ -118,7 +120,7 @@ function Intro({ onStart }: { onStart: () => void }) {
 				</p>
 			</div>
 			<p className="mt-8 text-xs font-semibold uppercase tracking-wider text-ink-secondary">
-				Tối đa 7 câu · Khoảng 3 phút · Không cần tên
+				Tối đa 7 câu · Khoảng 3 phút · Ẩn danh
 			</p>
 			<button
 				type="button"
@@ -130,6 +132,10 @@ function Intro({ onStart }: { onStart: () => void }) {
 			<p className="mt-4 max-w-xl text-sm italic text-ink-secondary">
 				Không có đáp án đúng sai. Cứ chọn điều giống bạn nhất lúc này, không phải điều bạn nghĩ mình
 				nên chọn.
+			</p>
+			<p className="mt-3 max-w-xl text-sm text-ink-secondary">
+				Quiz không hỏi tên, email hay tài khoản. Mình chỉ lưu các lựa chọn của bạn, ẩn danh, để biết
+				trước các bạn đang ở đâu và chuẩn bị buổi workshop cho sát hơn.
 			</p>
 
 			<div className="mt-14 border-t border-hairline pt-6">

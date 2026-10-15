@@ -17,12 +17,14 @@ describe('admin navigation', () => {
 		expect(hrefs).toEqual([
 			routes.admin.inquiries,
 			routes.admin.website,
+			routes.admin.unreleasedQuiz,
 			routes.mySpaceTeaching,
 			routes.admin.learnAnalytics,
 		]);
 		expect(labels).toEqual([
 			'Hộp thư liên hệ',
 			'Trang công khai',
+			'Quiz UNRELEASED',
 			'Lớp & môn học',
 			'Thống kê học tập',
 		]);
