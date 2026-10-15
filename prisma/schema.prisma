@@ -1532,3 +1532,30 @@ model RecallStudyLease {
 
   @@index([expiresAt])
 }
+
+/// One completed run of the UNRELEASED pre-workshop quiz at /unreleased.
+/// Anonymous by design: no name, email, account or IP is stored. `respondentId`
+/// is a random id the browser keeps, so a retake can be told apart from a new person.
+model UnreleasedQuizResponse {
+  id                String    @id @default(uuid())
+  respondentId      String
+  createdAt         DateTime  @default(now())
+  /// chua-chon-bai | ban-nhap | doi-giong | dung-bai, computed on the server.
+  group             String
+  /// Only for chua-chon-bai: no-direction | no-jd | unclear-job | unclear-requirements.
+  variant           String?
+  /// more-than-you-think | no-clear-example | one-is-not-all
+  note              String?
+  /// Option letters A–E; null when the branch skipped the question.
+  q1                String
+  q2                String?
+  q3                String
+  q4                String
+  q5                String?
+  q6                String?
+  q7                String?
+  registerClickedAt DateTime?
+
+  @@index([createdAt])
+  @@index([respondentId])
+}

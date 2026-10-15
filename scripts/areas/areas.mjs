@@ -101,6 +101,9 @@ export const AREAS = {
 			'src/app/ghi-chep',
 			'src/app/lien-he',
 			'src/app/unreleased',
+			'src/app/api/unreleased-quiz',
+			'src/app/api/admin/unreleased-quiz',
+			'src/app/admin/unreleased-quiz',
 			'src/app/chinh-sach',
 			'src/app/my-space/courses',
 			'src/app/api/learn',
@@ -124,6 +127,7 @@ export const AREAS = {
 			'e2e/learn-reader.spec.ts',
 			'e2e/learn-studio.spec.ts',
 			'e2e/operating-focus.spec.ts',
+			'e2e/unreleased-quiz.spec.ts',
 		],
 	},
 	tools: {

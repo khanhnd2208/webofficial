@@ -81,6 +81,18 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		nav: { label: 'Lớp & môn học', href: routes.mySpaceTeaching, leavesAdmin: true },
 	},
 	{
+		id: 'unreleased-quiz',
+		status: 'active',
+		label: 'Quiz UNRELEASED',
+		description: 'Kết quả ẩn danh của quiz trước workshop UNRELEASED',
+		icon: 'bar_chart',
+		archiveGroup: 'Website',
+		adminHref: routes.admin.unreleasedQuiz,
+		adminPrefixes: [routes.admin.unreleasedQuiz],
+		navGroup: 'Website',
+		publicPrefixes: [routes.unreleased],
+	},
+	{
 		id: 'learning-analytics',
 		status: 'active',
 		label: 'Thống kê học tập',

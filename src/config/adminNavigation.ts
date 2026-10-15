@@ -82,6 +82,7 @@ const ROUTE_META: AdminRouteMeta[] = [
 		label: 'Thống kê học tập',
 		width: 'wide',
 	},
+	{ href: routes.admin.unreleasedQuiz, label: 'Quiz UNRELEASED', width: 'wide' },
 	{ href: routes.admin.archive, label: 'Kho lưu trữ', width: 'standard' },
 	{ href: routes.admin.posts, label: 'Bài viết', width: 'standard' },
 	{ href: routes.admin.vocabulary, label: 'Từ vựng', width: 'wide' },
