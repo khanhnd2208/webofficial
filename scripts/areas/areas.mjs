@@ -79,7 +79,15 @@ export const AREAS = {
 	},
 	portfolio: {
 		title: 'Portfolio',
-		features: ['portfolio', 'posts', 'learn', 'services', 'experiences', 'inquiries'],
+		features: [
+			'portfolio',
+			'posts',
+			'learn',
+			'services',
+			'experiences',
+			'inquiries',
+			'unreleased-quiz',
+		],
 		components: ['learn', 'marketing', 'contact'],
 		paths: [
 			'src/app/page.tsx',
@@ -92,6 +100,7 @@ export const AREAS = {
 			'src/app/dich-vu',
 			'src/app/ghi-chep',
 			'src/app/lien-he',
+			'src/app/unreleased',
 			'src/app/chinh-sach',
 			'src/app/my-space/courses',
 			'src/app/api/learn',

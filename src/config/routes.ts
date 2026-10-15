@@ -101,6 +101,8 @@ export const routes = {
 	aboutMilestones: '/gioi-thieu#dau-moc',
 	aboutProcess: '/gioi-thieu#quy-trinh',
 	contact: '/lien-he',
+	/** UNRELEASED workshop: pre-workshop quiz and registration. */
+	unreleased: '/unreleased',
 	notes: '/ghi-chep',
 	note: (slug: string) => `/ghi-chep/${slug}` as const,
 	growth: '/phat-trien-ban-than',

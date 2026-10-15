@@ -63,6 +63,7 @@ portfolio:
   - src/features/services/**
   - src/features/experiences/**
   - src/features/inquiries/**
+  - src/features/unreleased-quiz/**
   - src/components/learn/**
   - src/components/marketing/**
   - src/components/contact/**
@@ -76,6 +77,7 @@ portfolio:
   - src/app/dich-vu/**
   - src/app/ghi-chep/**
   - src/app/lien-he/**
+  - src/app/unreleased/**
   - src/app/chinh-sach/**
   - src/app/my-space/courses/**
   - src/app/api/learn/**
