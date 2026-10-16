@@ -81,7 +81,8 @@ All of these conditions are mandatory:
    passed their targeted smoke tests.
 4. SSH, PM2, databases, free disk, Nginx, and both health endpoints are healthy.
 5. `/opt/scripts/backup-databases.sh` exists and is executable. The canonical
-   deploy runs it after a successful build and immediately before migrations.
+   deploy runs it after a successful build and immediately before migrations,
+   whenever `prisma migrate status` reports anything other than up to date.
 6. Migrations were reviewed for backward compatibility. A destructive migration
    requires a maintenance window and an explicit database restore plan.
 
@@ -130,7 +131,11 @@ The script performs these steps in order:
    uploads, `backups/`, `theory/`, `.venv/`, `*.tsbuildinfo`, dependencies,
    build output, test output, and editor/temp files.
 4. Copies `.env.local` into the release with mode `0600`.
-5. Installs dependencies, runs `prisma generate`, and `next build` before any
+5. Uses the CI build when the deploy workflow found one (see
+   [Prebuilt releases](#prebuilt-releases)): unpacks it, installs production
+   dependencies, and skips the build below and the dependency swap in step 6.
+   Otherwise, or when its baked-in public values differ from `.env.local`, it
+   installs dependencies, runs `prisma generate`, and `next build` before any
    migration. When `package-lock.json`, `package.json`, any `.npmrc`, local dependency
    sources under `scripts/vendor/`, and the Node and npm versions all match
    the stored build cache, it copies
@@ -140,12 +145,16 @@ The script performs these steps in order:
    upload paths are linked only after the build, which keeps the compiler inside
    the release tree.
    The release ID is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew
-   protection and cache busting.
+   protection and cache busting, and recorded in `.next/DEPLOYMENT_ID`. The
+   candidate and the live process always start with the ID their build recorded.
    The deploy workflow passes `CI_TYPECHECKED_SHA` after it confirms CI
    succeeded for the commit. When it equals the deployed commit, the build sets
    `NEXT_SKIP_BUILD_TYPECHECK=1` and skips Next.js's own TypeScript pass, which
    CI's `npm run typecheck` already covered. Local deploys keep the pass.
-6. Runs the database backup command, then `prisma migrate deploy`, then swaps
+6. Runs the database backup command when `prisma migrate status` reports
+   pending or failed migrations (or cannot report), then `prisma migrate deploy`.
+   A deploy with no pending migrations writes no data, so it skips the backup;
+   the 02:00 cron backup still runs daily. The deploy then swaps
    in production-only dependencies before starting the runtime: a copy of
    `.build-cache/node_modules_prod` when the same dependency inputs match,
    otherwise `npm ci --omit=dev`, which refreshes that cache. Active Recall
@@ -190,6 +199,32 @@ ssh-keyscan -H -p "$VPS_PORT" 217.217.253.161 > /tmp/webofficial_known_hosts
 ssh-keygen -lf /tmp/webofficial_known_hosts
 gh secret set --env production VPS_KNOWN_HOSTS < /tmp/webofficial_known_hosts
 ```
+
+### Prebuilt releases
+
+CI's `Production build` job uploads `.next` as `next-build-<source tree>` and
+records three files in it: `SOURCE_TREE`, `DEPLOYMENT_ID`, and `BUILD_ENV`
+(the `NEXT_PUBLIC_*` values and public learning locks Next.js inlined). The
+deploy workflow downloads the artifact for the deployed commit's tree from a CI
+run in this repository that fully succeeded, end-to-end tests included; a pull
+request run qualifies when its test merge had exactly the same files. The VPS
+then skips `next build`, about six minutes.
+
+The same match shortens CI on `main`. Its first job, `Find an identical tested
+tree`, looks for a successful run with that tree's artifact; when the merged pull
+request's last run qualifies and the previous `main` commit is green, every
+other CI job is skipped, the run succeeds in under a minute, and the deploy
+starts. Otherwise `main` runs every check as before.
+
+Next.js bakes public values into the build, so CI reads them from repository
+variables that must mirror the VPS `.env.local`: `NEXT_PUBLIC_UMAMI_SCRIPT_URL`,
+`NEXT_PUBLIC_UMAMI_WEBSITE_ID`, and, only if `.env.local` sets them,
+`NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_URL` (Settings → Secrets and variables
+→ Actions → Variables). The deploy compares every `NEXT_PUBLIC_*` key on either
+side plus `PUBLIC_TESTS_ENABLED` and `PUBLIC_KNOWLEDGE_ENABLED`. Any difference
+prints the differing key names and falls back to building on the VPS, so a
+missing variable costs time, never correctness. A new `NEXT_PUBLIC_*` key needs
+the variable and an entry in the build step of `.github/workflows/ci.yml`.
 
 The VPS application directory deliberately has no `.git`; the workflow checks
 out source on the runner and calls the canonical rsync deploy. Do not reintroduce
