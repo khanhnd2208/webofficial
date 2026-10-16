@@ -20,11 +20,5 @@ export const metadata: Metadata = {
 };
 
 export default function UnreleasedPage() {
-	return (
-		<main className="bg-canvas">
-			<section className="shell max-w-3xl py-12 md:py-20">
-				<UnreleasedQuiz />
-			</section>
-		</main>
-	);
+	return <UnreleasedQuiz />;
 }

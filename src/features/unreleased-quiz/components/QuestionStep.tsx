@@ -1,77 +1,116 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { QuizQuestion } from '../content/questions';
 import type { OptionKey } from '../domain/quiz';
+import styles from './unreleased.module.css';
 
 type QuestionStepProps = {
 	question: QuizQuestion;
 	position: number;
 	total: number;
 	selected: OptionKey | undefined;
+	/** A follow-up line from the previous answer, carried onto this question. */
+	note?: string;
+	/** Choosing an option moves on by itself; `onNext` is for keeping an earlier answer. */
 	onSelect: (key: OptionKey) => void;
 	onNext: () => void;
 	onBack: () => void;
 	isLast: boolean;
 };
 
+const pad = (value: number) => String(value).padStart(2, '0');
+
 export function QuestionStep({
 	question,
 	position,
 	total,
 	selected,
+	note,
 	onSelect,
 	onNext,
 	onBack,
 	isLast,
 }: QuestionStepProps) {
 	const headingRef = useRef<HTMLHeadingElement>(null);
-	const followUp = selected ? question.followUp?.[selected] : undefined;
-	const percent = Math.round(((position - 1) / total) * 100);
+	// Back on an answered question: offer to keep that answer without re-picking it.
+	const [returning] = useState(selected !== undefined);
+	const keys = question.options.map((option) => option.key);
+	const lastKey = keys[keys.length - 1];
 
 	useEffect(() => {
 		headingRef.current?.focus({ preventScroll: true });
 	}, [question.id]);
 
+	// A–E or 1–5 picks an option, like tapping it.
+	useEffect(() => {
+		const onKey = (event: KeyboardEvent) => {
+			if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
+			const target = event.target as HTMLElement | null;
+			if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+			const pressed = event.key.toUpperCase();
+			const byLetter = keys.find((key) => key === pressed);
+			const byNumber = /^[1-9]$/.test(pressed) ? keys[Number(pressed) - 1] : undefined;
+			const key = byLetter ?? byNumber;
+			if (!key) return;
+			event.preventDefault();
+			onSelect(key);
+		};
+		window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	}, [keys, onSelect]);
+
 	return (
-		<div>
-			<div className="flex items-center justify-between gap-4 text-xs font-semibold uppercase tracking-wider text-ink-secondary">
-				<span>
-					Câu {position} / {total}
+		<div className={`${styles.enter} mx-auto max-w-2xl`}>
+			<div className="flex items-center justify-between gap-4">
+				<span className={styles.label}>
+					Câu {pad(position)} <span className={styles.faint}>/ {pad(total)}</span>
 				</span>
-				<span aria-hidden="true">UNRELEASED</span>
+				<span className={`${styles.label} ${styles.faint}`}>Chọn là sang câu tiếp</span>
 			</div>
 			<div
-				className="mt-3 h-1 w-full overflow-hidden rounded-full bg-hairline"
+				className={`${styles.segments} mt-3`}
 				role="progressbar"
 				aria-label="Tiến độ quiz"
 				aria-valuemin={0}
-				aria-valuemax={100}
-				aria-valuenow={percent}
+				aria-valuemax={total}
+				aria-valuenow={position - 1}
+				aria-valuetext={`Câu ${position} trên ${total}`}
 			>
-				<div
-					className="h-full bg-accent transition-[width] duration-250 motion-reduce:transition-none"
-					style={{ width: `${percent}%` }}
-				/>
+				{Array.from({ length: total }, (_, index) => (
+					<span
+						key={index}
+						className={`${styles.segment} ${
+							index < position - 1
+								? styles.segmentDone
+								: index === position - 1
+									? styles.segmentCurrent
+									: ''
+						}`}
+					/>
+				))}
 			</div>
 
+			{note ? <p className={`${styles.note} mt-8 text-[0.95rem] leading-relaxed`}>{note}</p> : null}
 			{question.lead ? (
-				<p className="mt-8 text-sm italic text-ink-secondary">{question.lead}</p>
+				<p className={`${styles.label} mt-8 !normal-case !tracking-normal !text-[0.85rem]`}>
+					{question.lead}
+				</p>
 			) : null}
 
 			<h2
 				ref={headingRef}
 				tabIndex={-1}
-				className="mt-6 font-display text-2xl leading-snug text-ink outline-none md:text-3xl"
+				className={`${styles.display} ${note || question.lead ? 'mt-4' : 'mt-8'} text-[1.65rem] outline-none sm:text-[2.15rem]`}
 			>
 				{question.prompt}
 			</h2>
 			{question.hint ? (
-				<p className="mt-3 text-sm leading-relaxed text-ink-secondary">{question.hint}</p>
+				<p className={`${styles.muted} mt-3 text-[0.95rem] leading-relaxed`}>{question.hint}</p>
 			) : null}
 
-			<div role="radiogroup" aria-label={question.prompt} className="mt-7 grid gap-3">
+			<div role="radiogroup" aria-label={question.prompt} className="mt-8 grid gap-3">
 				{question.options.map((option) => {
 					const active = option.key === selected;
 					return (
@@ -81,22 +120,17 @@ export function QuestionStep({
 							role="radio"
 							aria-checked={active}
 							onClick={() => onSelect(option.key)}
-							className={`flex min-h-14 w-full items-start gap-4 rounded-[4px] border px-4 py-3.5 text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
-								active
-									? 'border-ink bg-surface-sunken text-ink ring-1 ring-ink'
-									: 'border-hairline bg-paper text-ink hover:border-ink'
-							}`}
+							className={`${styles.option} ${active ? styles.optionActive : ''}`}
 						>
-							<span
-								aria-hidden="true"
-								className={`mt-0.5 font-mono text-xs font-semibold ${active ? 'text-ink' : 'text-accent'}`}
-							>
+							<span aria-hidden="true" className={styles.key}>
 								{option.key}
 							</span>
-							<span className="flex-1">
-								<span className="block text-base leading-relaxed">{option.text}</span>
+							<span className="flex-1 pt-0.5">
+								<span className="block text-[1.02rem] leading-relaxed font-medium">
+									{option.text}
+								</span>
 								{option.example ? (
-									<span className="mt-1 block text-sm leading-relaxed text-ink-secondary">
+									<span className={`${styles.muted} mt-1 block text-[0.9rem] leading-relaxed`}>
 										{option.example}
 									</span>
 								) : null}
@@ -106,31 +140,19 @@ export function QuestionStep({
 				})}
 			</div>
 
-			{followUp ? (
-				<p
-					className="mt-5 border-l-2 border-accent pl-4 text-sm leading-relaxed text-ink"
-					aria-live="polite"
-				>
-					{followUp}
-				</p>
-			) : null}
-
 			<div className="mt-8 flex items-center justify-between gap-4">
-				<button
-					type="button"
-					onClick={onBack}
-					className="inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:text-ink"
-				>
-					← Quay lại
+				<button type="button" onClick={onBack} className={styles.ghost}>
+					<span aria-hidden="true">←</span> Quay lại
 				</button>
-				<button
-					type="button"
-					onClick={onNext}
-					disabled={!selected}
-					className="inline-flex min-h-12 items-center rounded-[4px] bg-ink px-6 text-sm font-semibold uppercase tracking-wider text-paper transition-colors duration-250 hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-40"
-				>
-					{isLast ? 'Xem kết quả' : 'Tiếp'}
-				</button>
+				{returning && selected ? (
+					<button type="button" onClick={onNext} className={styles.outline}>
+						{isLast ? 'Xem kết quả' : 'Tiếp'} <span aria-hidden="true">→</span>
+					</button>
+				) : (
+					<span className={`${styles.faint} hidden text-sm sm:inline`}>
+						Có thể bấm phím A–{lastKey} để chọn
+					</span>
+				)}
 			</div>
 		</div>
 	);

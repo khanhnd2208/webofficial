@@ -349,7 +349,8 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 }
 
 /**
- * Sticky public header. Absent on intro, teaching, admin, course readers, game rooms and quiz play.
+ * Sticky public header. Absent on intro, teaching, admin, course readers, game rooms, quiz play
+ * and the UNRELEASED event quiz.
  */
 export function isSiteHeaderPath(pathname: string): boolean {
 	const path = barePath(pathname);
@@ -366,5 +367,7 @@ export function isSiteHeaderPath(pathname: string): boolean {
 	if (path.startsWith('/vocabulary')) return false;
 	if (path.startsWith('/m/')) return false;
 	if (path.startsWith('/progress')) return false;
+	// UNRELEASED quiz wears the workshop's own brand and top bar.
+	if (path === routes.unreleased) return false;
 	return true;
 }

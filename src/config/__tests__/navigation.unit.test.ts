@@ -319,6 +319,7 @@ describe('site header trail', () => {
 			'/my-space/tests/hrm/play',
 			'/messages',
 			'/vocabulary',
+			'/unreleased',
 		]) {
 			expect(isSiteHeaderPath(path), path).toBe(false);
 		}
