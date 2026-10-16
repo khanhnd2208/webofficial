@@ -200,7 +200,7 @@ test('candidate compilation cannot inherit stale CSS from a previous release', (
 	writeFileSync(join(candidate, '.next/cache/old.css'), 'stale candidate cache');
 	const source = readFileSync(new URL('./deploy-vps.sh', import.meta.url), 'utf8');
 	const build = source.match(
-		/^echo "Building candidate before any database migration"[\s\S]*?^test -s \.next\/BUILD_ID/m,
+		/^\techo "Building candidate before any database migration"[\s\S]*?^\tprintf '%s\\n' "\$RELEASE_ID" > \.next\/DEPLOYMENT_ID$/m,
 	)?.[0];
 	assert.ok(build);
 	const result = spawnSync(
@@ -232,13 +232,14 @@ ${build}`,
 	assert.equal(result.status, 0, result.stderr);
 	assert.equal(readFileSync(staleCss, 'utf8'), '.old-header { height: 1000px }');
 	assert.equal(readFileSync(join(candidate, '.next/BUILD_ID'), 'utf8'), 'new-build');
+	assert.equal(readFileSync(join(candidate, '.next/DEPLOYMENT_ID'), 'utf8'), 'candidate\n');
 });
 
 test('the build skips its TypeScript pass only when CI typechecked the commit', () => {
 	release('candidate', 0);
 	const source = readFileSync(new URL('./deploy-vps.sh', import.meta.url), 'utf8');
 	const build = source.match(
-		/^echo "Building candidate before any database migration"[\s\S]*?^test -s \.next\/BUILD_ID/m,
+		/^\techo "Building candidate before any database migration"[\s\S]*?^\tprintf '%s\\n' "\$RELEASE_ID" > \.next\/DEPLOYMENT_ID$/m,
 	)?.[0];
 	assert.ok(build);
 	for (const [skip, expected] of [
@@ -270,5 +271,102 @@ ${build}`,
 			{ cwd: join(root, 'releases/candidate'), encoding: 'utf8', env },
 		);
 		assert.equal(result.status, 0, `${skip}: ${result.stderr}`);
+	}
+});
+
+const deploySource = () => readFileSync(new URL('./deploy-vps.sh', import.meta.url), 'utf8');
+const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+
+test('a release starts with the deployment ID its build recorded', () => {
+	const fn = deploySource().match(/^release_deployment_id\(\) \{[\s\S]*?^\}$/m)?.[0];
+	assert.ok(fn);
+	const recorded = release('ci-built', 0);
+	writeFileSync(join(recorded, '.next/DEPLOYMENT_ID'), 'ci-abc123-42-1\n');
+	const legacy = release('20260101T000000Z-abc', 0);
+	const unsafe = release('unsafe', 0);
+	writeFileSync(join(unsafe, '.next/DEPLOYMENT_ID'), '../../etc\n');
+	const result = spawnSync(
+		'bash',
+		[
+			'-c',
+			`set -euo pipefail\n${fn}\nfor dir in "$@"; do release_deployment_id "$dir"; done`,
+			'-',
+			recorded,
+			legacy,
+			unsafe,
+		],
+		{ encoding: 'utf8' },
+	);
+	assert.equal(result.status, 0, result.stderr);
+	assert.deepEqual(result.stdout.trim().split('\n'), [
+		'ci-abc123-42-1',
+		'20260101T000000Z-abc',
+		'unsafe',
+	]);
+});
+
+test('a prebuilt release is used only when its baked-in public values match production', () => {
+	const fn = deploySource().match(
+		/^prebuilt_env_matches\(\) \{[\s\S]*?^NODE_BUILD_ENV_CHECK\n\}$/m,
+	)?.[0];
+	assert.ok(fn);
+	const dir = release('candidate', 0);
+	const locks = 'PUBLIC_TESTS_ENABLED=false\nPUBLIC_KNOWLEDGE_ENABLED=false\n';
+	const check = (production, built) => {
+		writeFileSync(join(dir, '.env.local'), production);
+		writeFileSync(join(dir, '.next/BUILD_ENV'), built);
+		return spawnSync('bash', ['-c', `set -euo pipefail\n${fn}\nprebuilt_env_matches`], {
+			cwd: repoRoot,
+			encoding: 'utf8',
+			env: { ...process.env, RELEASE_DIR: dir },
+		});
+	};
+	const id = 'NEXT_PUBLIC_UMAMI_WEBSITE_ID';
+	assert.equal(check(`SECRET=x\n${id}="abc"\n${locks}`, `${id}=abc\n${locks}`).status, 0);
+	const missing = check(`${id}=abc\n${locks}`, locks);
+	assert.equal(missing.status, 1);
+	assert.match(missing.stderr, /NEXT_PUBLIC_UMAMI_WEBSITE_ID/);
+	assert.doesNotMatch(missing.stderr, /abc/);
+	assert.equal(check(`${id}=abc\nPUBLIC_TESTS_ENABLED=true\n`, `${id}=abc\n${locks}`).status, 1);
+});
+
+test('the deploy backs up databases unless Prisma reports nothing to migrate', () => {
+	const block = deploySource().match(/^if migration_status=[\s\S]*?^fi$/m)?.[0];
+	assert.ok(block);
+	const dir = release('candidate', 0);
+	mkdirSync(join(dir, 'node_modules/.bin'), { recursive: true });
+	for (const [status, exitCode, backedUp] of [
+		['Database schema is up to date!', 0, false],
+		['Following migration have not yet been applied:', 1, true],
+		['Error: P1001: Can not reach database server', 1, true],
+	]) {
+		writeFileSync(
+			join(dir, 'node_modules/.bin/prisma'),
+			`#!/usr/bin/env bash\necho "${status}"\nexit ${exitCode}\n`,
+			{
+				mode: 0o755,
+			},
+		);
+		writeFileSync(join(dir, '.deploy-metadata'), '');
+		const result = spawnSync(
+			'bash',
+			[
+				'-c',
+				`set -Eeuo pipefail\nsudo() { [[ "$*" == "-n /opt/backup" ]]; echo BACKUP_RAN; }\n${block}\necho "completed=$BACKUP_COMPLETED"`,
+			],
+			{
+				cwd: dir,
+				encoding: 'utf8',
+				env: {
+					...process.env,
+					RELEASE_DIR: dir,
+					BACKUP_COMMAND: '/opt/backup',
+					BACKUP_COMPLETED: 'no',
+				},
+			},
+		);
+		assert.equal(result.status, 0, result.stderr);
+		assert.equal(result.stdout.includes('BACKUP_RAN'), backedUp, status);
+		assert.match(result.stdout, backedUp ? /completed=yes/ : /completed=no/);
 	}
 });
