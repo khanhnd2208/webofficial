@@ -27,7 +27,7 @@ export type QuizResult = {
 	note: MismatchNote | null;
 	/** Unclear-requirements only: they named an example (Q6 A/B) but cannot read the JD yet. */
 	hasExampleButUnclearJd: boolean;
-	/** Questions that decided the group, in order, for "Vì sao mình nhận được kết quả này?". */
+	/** Questions that decided the group, in order, kept for analysis. */
 	decidingQuestions: QuestionId[];
 };
 
