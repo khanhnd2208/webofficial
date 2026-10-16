@@ -210,6 +210,12 @@ run in this repository that fully succeeded, end-to-end tests included; a pull
 request run qualifies when its test merge had exactly the same files. The VPS
 then skips `next build`, about six minutes.
 
+The same match shortens CI on `main`. Its first job, `Find an identical tested
+tree`, looks for a successful run with that tree's artifact; when the merged pull
+request's last run qualifies and the previous `main` commit is green, every
+other CI job is skipped, the run succeeds in under a minute, and the deploy
+starts. Otherwise `main` runs every check as before.
+
 Next.js bakes public values into the build, so CI reads them from repository
 variables that must mirror the VPS `.env.local`: `NEXT_PUBLIC_UMAMI_SCRIPT_URL`,
 `NEXT_PUBLIC_UMAMI_WEBSITE_ID`, and, only if `.env.local` sets them,
