@@ -132,7 +132,7 @@ export const EVENT = {
 	dateBadge: '19.10',
 	weekday: 'Thứ Hai · 2026',
 	time: '17:00 – 18:30',
-	venue: 'Phòng 901C, Trường Đại học Hà Nội',
+	venue: 'Phòng 101C, Trường Đại học Hà Nội',
 	organizer: 'HANU Career Ready',
 	siteUrl: 'https://hanucareerready.site/',
 	registerUrl:
