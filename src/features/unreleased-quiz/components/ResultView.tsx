@@ -1,9 +1,10 @@
 'use client';
 
-import { EXPERIENCE_PREP, resultCopy } from '../content/results';
+import { EVENT, EXPERIENCE_PREP, RESULT_SCALE, resultCopy } from '../content/results';
 import type { Answers, QuizResult } from '../domain/quiz';
 import { RegisterBlock } from './RegisterBlock';
 import { Paragraphs } from './RichText';
+import styles from './unreleased.module.css';
 
 type ResultViewProps = {
 	answers: Answers;
@@ -19,34 +20,66 @@ export function ResultView({ answers, result, onRestart }: ResultViewProps) {
 			: copy.prepare;
 
 	return (
-		<div className="space-y-10">
-			{/* The card people screenshot: name, where they stand, what the workshop does for them. */}
-			<article className="border border-ink bg-paper px-5 py-8 sm:px-8 sm:py-10">
-				<p className="editorial-label">Điểm xuất phát của bạn</p>
-				<h2 className="mt-3 font-display text-5xl leading-none text-ink md:text-6xl">
-					{copy.name}
-				</h2>
-				<p className="mt-4 font-display text-lg italic leading-snug text-ink-secondary md:text-xl">
-					{copy.musicLine}
-				</p>
-				<Paragraphs items={copy.body} className="mt-7 text-base leading-relaxed text-ink" />
-				<p className="mt-8 border-t border-hairline pt-6 text-base leading-relaxed text-ink">
-					{copy.atWorkshop}
-				</p>
+		<div className={`${styles.enter} mx-auto max-w-2xl space-y-6`}>
+			{/* The card people screenshot: name, where they stand, what it means. Fits one phone screen. */}
+			<article className={`${styles.cover} px-6 py-8 sm:px-10 sm:py-11`}>
+				<div className="flex items-start justify-between gap-4">
+					<p className={styles.label}>Điểm xuất phát của bạn</p>
+					<p className={`${styles.label} ${styles.faint} text-right`}>
+						UNRELEASED · {EVENT.dateBadge}
+					</p>
+				</div>
+				<h2 className={`${styles.groupName} mt-5 text-[3.25rem] sm:text-7xl`}>{copy.name}</h2>
+				<p className={`${styles.musicLine} mt-4 text-lg sm:text-xl`}>{copy.musicLine}</p>
+				<Paragraphs items={copy.body} className="mt-6 text-[1.05rem] leading-[1.75]" />
+
+				<ol className="mt-8 grid gap-1" aria-label="Bốn điểm xuất phát">
+					{RESULT_SCALE.map((step, index) => {
+						const active = step.group === result.group;
+						return (
+							<li
+								key={step.group}
+								aria-current={active ? 'step' : undefined}
+								className={`${styles.scaleItem} ${active ? styles.scaleItemActive : ''}`}
+							>
+								<span className={styles.scaleIndex}>{String(index + 1).padStart(2, '0')}</span>
+								<span className="min-w-0">
+									<span className={`${styles.scaleName} block`}>{step.name}</span>
+									<span className="block text-[0.8rem] leading-snug opacity-90">{step.hint}</span>
+								</span>
+								{active ? <span className={styles.here}>BẠN Ở ĐÂY</span> : null}
+							</li>
+						);
+					})}
+				</ol>
 			</article>
 
-			<section aria-labelledby="unreleased-prepare">
-				<h2 id="unreleased-prepare" className="font-display text-3xl text-ink">
+			<section className={`${styles.panel} p-6 sm:p-8`} aria-labelledby="unreleased-workshop">
+				<h2 id="unreleased-workshop" className={styles.label}>
+					Ở workshop
+				</h2>
+				<p
+					className={`${styles.display} mt-3 text-[1.25rem] !font-medium !leading-[1.45] !tracking-[-0.015em] sm:text-[1.4rem]`}
+				>
+					{copy.atWorkshop}
+				</p>
+			</section>
+
+			<section className={`${styles.panel} p-6 sm:p-8`} aria-labelledby="unreleased-prepare">
+				<h2 id="unreleased-prepare" className={styles.label}>
 					Trước buổi workshop
 				</h2>
-				<ul className="mt-4 space-y-3 leading-relaxed text-ink-secondary">
-					{prepare.map((item) => (
-						<li key={item} className="border-l-2 border-accent pl-4">
-							{item}
+				<ol className="mt-5 space-y-4">
+					{prepare.map((item, index) => (
+						<li key={item} className="flex gap-4">
+							<span aria-hidden="true" className={styles.stepNumber}>
+								{String(index + 1).padStart(2, '0')}
+							</span>
+							<span className="pt-0.5 text-[1.02rem] leading-relaxed">{item}</span>
 						</li>
 					))}
-				</ul>
-				<p className="mt-5 text-sm italic text-ink-secondary">
+				</ol>
+				<p className={`${styles.faint} mt-6 text-sm leading-relaxed`}>
 					Kết quả này chỉ dựa trên lựa chọn của bạn hôm nay, với vị trí bạn đang nghĩ tới. Đổi vị
 					trí hoặc có thêm kinh nghiệm, kết quả cũng sẽ khác.
 				</p>
@@ -57,13 +90,9 @@ export function ResultView({ answers, result, onRestart }: ResultViewProps) {
 				note="Chụp lại kết quả này và mang theo đến workshop nhé."
 			/>
 
-			<div className="text-center">
-				<button
-					type="button"
-					onClick={onRestart}
-					className="inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-wider text-ink-secondary transition-colors hover:text-ink"
-				>
-					Làm lại quiz
+			<div className="pt-2 text-center">
+				<button type="button" onClick={onRestart} className={styles.ghost}>
+					<span aria-hidden="true">↺</span> Làm lại quiz
 				</button>
 			</div>
 		</div>

@@ -7,9 +7,9 @@ test.describe('UNRELEASED quiz', () => {
 		await page.goto('/unreleased');
 		await page.getByRole('button', { name: 'Bắt đầu' }).click();
 
+		// Picking an option moves on by itself.
 		const choose = async (option: RegExp) => {
 			await page.getByRole('radio', { name: option }).click();
-			await page.getByRole('button', { name: /^(Tiếp|Xem kết quả)$/ }).click();
 		};
 		await choose(/Mình chưa nghĩ tới chuyện này/);
 		await choose(/Mình chưa biết nên bắt đầu từ đâu/);

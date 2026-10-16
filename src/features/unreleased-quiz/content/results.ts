@@ -110,6 +110,14 @@ export const EXPERIENCE_PREP: Record<OptionKey, string> = {
 	E: 'Ghi ra hai, ba việc gần đây bạn tự làm đến nơi đến chốn, lớn nhỏ đều được.',
 };
 
+/** The four starting points in order, for the "where you stand" scale on the result. */
+export const RESULT_SCALE: { group: GroupId; name: string; hint: string }[] = [
+	{ group: 'chua-chon-bai', name: 'Chưa chọn bài', hint: 'Chọn vị trí, đọc kỹ tin tuyển dụng' },
+	{ group: 'ban-nhap', name: 'Bản nháp', hint: 'Đã có hướng, còn ít ví dụ' },
+	{ group: 'doi-giong', name: 'Đổi giọng', hint: 'Có chất liệu, cần kể lại' },
+	{ group: 'dung-bai', name: 'Đúng bài', hint: 'Trải nghiệm sát công việc' },
+];
+
 /** Labels for the admin report. Not shown to people taking the quiz. */
 export const MISMATCH_NOTES: Record<MismatchNote, { title: string }> = {
 	'more-than-you-think': { title: 'Có thể bạn đã làm nhiều hơn mình nghĩ' },
@@ -120,9 +128,13 @@ export const MISMATCH_NOTES: Record<MismatchNote, { title: string }> = {
 export const EVENT = {
 	name: 'UNRELEASED',
 	date: 'Thứ Hai, 19/10/2026',
+	/** Big date on the ticket. */
+	dateBadge: '19.10',
+	weekday: 'Thứ Hai · 2026',
 	time: '17:00 – 18:30',
 	venue: 'Phòng 901C, Trường Đại học Hà Nội',
 	organizer: 'HANU Career Ready',
+	siteUrl: 'https://hanucareerready.site/',
 	registerUrl:
 		'https://docs.google.com/forms/d/e/1FAIpQLScWzaMv-Tk2OGsWCNYVF4FfRmnBMDABCwd6nqO62Drlx6_YBQ/viewform',
 } as const;
