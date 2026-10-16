@@ -81,7 +81,8 @@ All of these conditions are mandatory:
    passed their targeted smoke tests.
 4. SSH, PM2, databases, free disk, Nginx, and both health endpoints are healthy.
 5. `/opt/scripts/backup-databases.sh` exists and is executable. The canonical
-   deploy runs it after a successful build and immediately before migrations.
+   deploy runs it after a successful build and immediately before migrations,
+   whenever `prisma migrate status` reports anything other than up to date.
 6. Migrations were reviewed for backward compatibility. A destructive migration
    requires a maintenance window and an explicit database restore plan.
 
@@ -145,7 +146,10 @@ The script performs these steps in order:
    succeeded for the commit. When it equals the deployed commit, the build sets
    `NEXT_SKIP_BUILD_TYPECHECK=1` and skips Next.js's own TypeScript pass, which
    CI's `npm run typecheck` already covered. Local deploys keep the pass.
-6. Runs the database backup command, then `prisma migrate deploy`, then swaps
+6. Runs the database backup command when `prisma migrate status` reports
+   pending or failed migrations (or cannot report), then `prisma migrate deploy`.
+   A deploy with no pending migrations writes no data, so it skips the backup;
+   the 02:00 cron backup still runs daily. The deploy then swaps
    in production-only dependencies before starting the runtime: a copy of
    `.build-cache/node_modules_prod` when the same dependency inputs match,
    otherwise `npm ci --omit=dev`, which refreshes that cache. Active Recall

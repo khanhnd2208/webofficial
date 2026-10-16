@@ -706,10 +706,20 @@ for relative_path in public/uploads public/music/uploads backups theory; do
 	ln -s "$shared_path" "$release_path"
 done
 
-echo "Creating a fresh pre-migration database backup"
-sudo -n "$BACKUP_COMMAND"
-BACKUP_COMPLETED="yes"
-printf 'backup_completed_at=%s\n' "$(date -u +%FT%TZ)" >>"$RELEASE_DIR/.deploy-metadata"
+# The backup protects data from a migration. When Prisma reports nothing to
+# apply, the deploy writes no data and the 02:00 cron backup covers the rest.
+# Any other status (pending, failed, unreachable) still takes the backup.
+if migration_status="$(./node_modules/.bin/prisma migrate status 2>&1)" &&
+	grep -q 'Database schema is up to date' <<<"$migration_status"; then
+	echo "No pending migrations; skipping the pre-migration database backup"
+	printf 'backup_skipped=no-pending-migrations\n' >>"$RELEASE_DIR/.deploy-metadata"
+else
+	printf '%s\n' "$migration_status"
+	echo "Creating a fresh pre-migration database backup"
+	sudo -n "$BACKUP_COMMAND"
+	BACKUP_COMPLETED="yes"
+	printf 'backup_completed_at=%s\n' "$(date -u +%FT%TZ)" >>"$RELEASE_DIR/.deploy-metadata"
+fi
 
 echo "Applying committed migrations"
 ./node_modules/.bin/prisma migrate deploy
