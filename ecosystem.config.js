@@ -76,7 +76,7 @@ module.exports = {
 					process.env.NEXT_DEPLOYMENT_ID ||
 					envLocal.NEXT_DEPLOYMENT_ID ||
 					recordedDeploymentId(appDir) ||
-					path.basename(fs.realpathSync(appDir)),
+					path.basename(appDir),
 			},
 		},
 	],

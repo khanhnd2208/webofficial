@@ -81,7 +81,7 @@ jobs:
           )"
           for run_id in $candidates; do
             run="$(gh api "repos/$GH_REPO/actions/runs/$run_id" \
-              --jq '[.path, .conclusion, .head_repository.full_name] | @tsv')"
+              --jq '[.path, .conclusion, .head_repository.full_name] | @tsv')" || continue
             IFS=$'\t' read -r path conclusion head_repo <<<"$run"
             if [[ "$path" != ".github/workflows/ci.yml" || "$conclusion" != "success" || "$head_repo" != "$GH_REPO" ]]; then
               continue
