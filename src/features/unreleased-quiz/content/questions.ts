@@ -96,7 +96,7 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	q7: {
 		id: 'q7',
 		prompt:
-			'Nhìn lại các yêu cầu chính trong tin tuyển dụng, bạn có ví dụ thực tế để chứng minh mình làm được bao nhiêu yêu cầu?',
+			'Nhìn lại các yêu cầu chính trong tin tuyển dụng: bạn có ví dụ thực tế cho bao nhiêu yêu cầu trong số đó?',
 		hint: 'Một ví dụ có thể đến từ việc học, làm thêm, CLB, thực tập hoặc dự án của riêng bạn.',
 		options: [
 			{ key: 'A', text: 'Phần lớn các yêu cầu.' },

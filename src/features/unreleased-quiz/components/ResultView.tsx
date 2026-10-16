@@ -21,7 +21,7 @@ export function ResultView({ answers, result, onRestart }: ResultViewProps) {
 
 	return (
 		<div className={`${styles.enter} mx-auto max-w-2xl space-y-6`}>
-			{/* The card people screenshot: name, where they stand, what it means. Fits one phone screen. */}
+			{/* The card people screenshot: name, where they stand, what it means. */}
 			<article className={`${styles.cover} px-6 py-8 sm:px-10 sm:py-11`}>
 				<div className="flex items-start justify-between gap-4">
 					<p className={styles.label}>Điểm xuất phát của bạn</p>
@@ -80,14 +80,15 @@ export function ResultView({ answers, result, onRestart }: ResultViewProps) {
 					))}
 				</ol>
 				<p className={`${styles.faint} mt-6 text-sm leading-relaxed`}>
-					Kết quả này chỉ dựa trên lựa chọn của bạn hôm nay, với vị trí bạn đang nghĩ tới. Đổi vị
-					trí hoặc có thêm kinh nghiệm, kết quả cũng sẽ khác.
+					Kết quả này dựa trên những gì bạn chọn hôm nay, cho vị trí bạn đang nghĩ tới. Nó không
+					đánh giá bạn giỏi hay chưa. Đổi vị trí hoặc có thêm kinh nghiệm, điểm xuất phát cũng sẽ
+					khác.
 				</p>
 			</section>
 
 			<RegisterBlock
 				source={`result-${result.group}`}
-				note="Chụp lại kết quả này và mang theo đến workshop nhé."
+				note="Chụp lại kết quả này nhé. Hôm workshop, mình sẽ nói tiếp từ đây."
 			/>
 
 			<div className="pt-2 text-center">
