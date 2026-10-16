@@ -2,8 +2,6 @@ import type { OptionKey, QuestionId } from '../domain/quiz';
 
 export type QuizQuestion = {
 	id: QuestionId;
-	/** Short label used in "Vì sao mình nhận được kết quả này?". */
-	shortLabel: string;
 	lead?: string;
 	prompt: string;
 	/** Shown under the prompt, before the options. */
@@ -16,7 +14,6 @@ export type QuizQuestion = {
 export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	q1: {
 		id: 'q1',
-		shortLabel: 'Vị trí muốn ứng tuyển',
 		prompt: 'Bạn đã biết mình muốn ứng tuyển vị trí nào chưa?',
 		hint: 'Ví dụ: thực tập sinh nhân sự, trợ giảng tiếng Anh, nhân viên chăm sóc khách hàng.',
 		options: [
@@ -34,7 +31,6 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	},
 	q2: {
 		id: 'q2',
-		shortLabel: 'Đọc tin tuyển dụng',
 		prompt: 'Với vị trí đó, bạn đã đọc kỹ một tin tuyển dụng chưa?',
 		hint: 'Tin tuyển dụng (JD) cho biết công việc phải làm và những yêu cầu đối với người ứng tuyển.',
 		options: [
@@ -45,7 +41,6 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	},
 	q3: {
 		id: 'q3',
-		shortLabel: 'Việc làm đầu tiên',
 		prompt: 'Nếu bắt đầu làm CV ngay hôm nay, bạn sẽ làm gì trước?',
 		options: [
 			{ key: 'A', text: 'Tìm một tin tuyển dụng để xem họ cần gì.' },
@@ -56,7 +51,6 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	},
 	q4: {
 		id: 'q4',
-		shortLabel: 'Điều muốn kể',
 		prompt: 'Trong những việc từng làm, bạn muốn kể điều gì nhất trong CV?',
 		hint: 'Nếu đã làm nhiều loại, hãy chọn loại bạn muốn kể nhất.',
 		options: [
@@ -69,7 +63,6 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	},
 	q5: {
 		id: 'q5',
-		shortLabel: 'Mức độ giống công việc',
 		lead: 'Ba câu cuối nhé. Hãy nghĩ về tin tuyển dụng bạn đã đọc.',
 		prompt: 'So với công việc trong tin tuyển dụng đó, những việc bạn từng làm giống đến đâu?',
 		options: [
@@ -90,7 +83,6 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	},
 	q6: {
 		id: 'q6',
-		shortLabel: 'Ví dụ cho một yêu cầu',
 		prompt:
 			'Nghĩ tới một yêu cầu quan trọng trong tin tuyển dụng. Nếu người tuyển dụng hỏi “Bạn đã từng làm việc này chưa?”, bạn sẽ trả lời thế nào?',
 		hint: 'Ví dụ từ bài tập nhóm, CLB, việc làm thêm hay dự án cá nhân đều được tính, miễn là bạn thực sự tham gia làm.',
@@ -103,7 +95,6 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 	},
 	q7: {
 		id: 'q7',
-		shortLabel: 'Số yêu cầu có ví dụ',
 		prompt:
 			'Nhìn lại các yêu cầu chính trong tin tuyển dụng, bạn có ví dụ thực tế để chứng minh mình làm được bao nhiêu yêu cầu?',
 		hint: 'Một ví dụ có thể đến từ việc học, làm thêm, CLB, thực tập hoặc dự án của riêng bạn.',
@@ -115,7 +106,3 @@ export const QUESTIONS: Record<QuestionId, QuizQuestion> = {
 		],
 	},
 };
-
-export function optionText(id: QuestionId, key: OptionKey): string {
-	return QUESTIONS[id].options.find((option) => option.key === key)?.text ?? '';
-}
