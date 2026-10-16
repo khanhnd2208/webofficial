@@ -131,7 +131,11 @@ The script performs these steps in order:
    uploads, `backups/`, `theory/`, `.venv/`, `*.tsbuildinfo`, dependencies,
    build output, test output, and editor/temp files.
 4. Copies `.env.local` into the release with mode `0600`.
-5. Installs dependencies, runs `prisma generate`, and `next build` before any
+5. Uses the CI build when the deploy workflow found one (see
+   [Prebuilt releases](#prebuilt-releases)): unpacks it, installs production
+   dependencies, and skips the build below and the dependency swap in step 6.
+   Otherwise, or when its baked-in public values differ from `.env.local`, it
+   installs dependencies, runs `prisma generate`, and `next build` before any
    migration. When `package-lock.json`, `package.json`, any `.npmrc`, local dependency
    sources under `scripts/vendor/`, and the Node and npm versions all match
    the stored build cache, it copies
@@ -141,7 +145,8 @@ The script performs these steps in order:
    upload paths are linked only after the build, which keeps the compiler inside
    the release tree.
    The release ID is passed as `NEXT_DEPLOYMENT_ID` for Next.js version-skew
-   protection and cache busting.
+   protection and cache busting, and recorded in `.next/DEPLOYMENT_ID`. The
+   candidate and the live process always start with the ID their build recorded.
    The deploy workflow passes `CI_TYPECHECKED_SHA` after it confirms CI
    succeeded for the commit. When it equals the deployed commit, the build sets
    `NEXT_SKIP_BUILD_TYPECHECK=1` and skips Next.js's own TypeScript pass, which
@@ -194,6 +199,26 @@ ssh-keyscan -H -p "$VPS_PORT" 217.217.253.161 > /tmp/webofficial_known_hosts
 ssh-keygen -lf /tmp/webofficial_known_hosts
 gh secret set --env production VPS_KNOWN_HOSTS < /tmp/webofficial_known_hosts
 ```
+
+### Prebuilt releases
+
+CI's `Production build` job uploads `.next` as `next-build-<source tree>` and
+records three files in it: `SOURCE_TREE`, `DEPLOYMENT_ID`, and `BUILD_ENV`
+(the `NEXT_PUBLIC_*` values and public learning locks Next.js inlined). The
+deploy workflow downloads the artifact for the deployed commit's tree from a CI
+run in this repository that fully succeeded, end-to-end tests included; a pull
+request run qualifies when its test merge had exactly the same files. The VPS
+then skips `next build`, about six minutes.
+
+Next.js bakes public values into the build, so CI reads them from repository
+variables that must mirror the VPS `.env.local`: `NEXT_PUBLIC_UMAMI_SCRIPT_URL`,
+`NEXT_PUBLIC_UMAMI_WEBSITE_ID`, and, only if `.env.local` sets them,
+`NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_URL` (Settings → Secrets and variables
+→ Actions → Variables). The deploy compares every `NEXT_PUBLIC_*` key on either
+side plus `PUBLIC_TESTS_ENABLED` and `PUBLIC_KNOWLEDGE_ENABLED`. Any difference
+prints the differing key names and falls back to building on the VPS, so a
+missing variable costs time, never correctness. A new `NEXT_PUBLIC_*` key needs
+the variable and an entry in the build step of `.github/workflows/ci.yml`.
 
 The VPS application directory deliberately has no `.git`; the workflow checks
 out source on the runner and calls the canonical rsync deploy. Do not reintroduce

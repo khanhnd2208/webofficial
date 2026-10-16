@@ -62,6 +62,39 @@ jobs:
             exit 1
           fi
 
+      # CI uploads its tested `.next` build as next-build-<source tree>. A pull
+      # request run counts when its test merge has exactly the files of this
+      # commit. Only runs from this repository that fully succeeded qualify; with
+      # none, the deploy builds on the VPS as before.
+      - name: Fetch the build CI tested for this source tree
+        id: prebuilt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          tree="$(git rev-parse "${DEPLOY_SHA}^{tree}")"
+          name="next-build-$tree"
+          candidates="$(
+            gh api "repos/$GH_REPO/actions/artifacts?name=$name&per_page=20" \
+              --jq '.artifacts[] | select(.expired | not) | .workflow_run.id' || true
+          )"
+          for run_id in $candidates; do
+            run="$(gh api "repos/$GH_REPO/actions/runs/$run_id" \
+              --jq '[.path, .conclusion, .head_repository.full_name] | @tsv')"
+            IFS=$'\t' read -r path conclusion head_repo <<<"$run"
+            if [[ "$path" != ".github/workflows/ci.yml" || "$conclusion" != "success" || "$head_repo" != "$GH_REPO" ]]; then
+              continue
+            fi
+            dir="$RUNNER_TEMP/prebuilt-$run_id"
+            if gh run download "$run_id" --name "$name" --dir "$dir"; then
+              echo "Using the build from CI run $run_id for tree $tree"
+              echo "archive=$dir/next-build.tar" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "::notice::No successful CI build for tree $tree is available; the VPS will build."
+
       - name: Configure pinned SSH trust
         env:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
@@ -84,6 +117,7 @@ jobs:
           # The step above proved CI succeeded for this commit, so the VPS
           # build can skip its duplicate TypeScript pass.
           CI_TYPECHECKED_SHA: ${{ env.DEPLOY_SHA }}
+          PREBUILT_NEXT_ARCHIVE: ${{ steps.prebuilt.outputs.archive }}
         run: |
           set -euo pipefail
           : "${VPS_HOSTNAME:?Missing VPS_HOST production secret}"

@@ -135,6 +135,8 @@ jobs:
     name: Production build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      artifact: ${{ steps.release.outputs.artifact }}
     services:
       postgres:
         image: postgres:16
@@ -180,8 +182,47 @@ jobs:
           # Teaching styles move into imports. Restore only an identical build input.
           key: next-cache-v2-${{ runner.os }}-${{ hashFiles('package-lock.json', 'postcss.config.mjs', 'package.json', 'prisma.config.ts', '.github/workflows/ci.yml') }}-${{ hashFiles('src/**', 'content/**', 'prisma/**', 'next.config.ts', 'tsconfig.json') }}
 
+      # The deploy ships this exact build to the VPS instead of rebuilding there.
+      # It finds the artifact by source tree, so any commit with identical
+      # files (a PR's test merge and the merge commit on main) shares it.
+      - name: Name the release build
+        id: release
+        run: |
+          set -euo pipefail
+          tree="$(git rev-parse 'HEAD^{tree}')"
+          echo "tree=$tree" >> "$GITHUB_OUTPUT"
+          echo "artifact=next-build-$tree" >> "$GITHUB_OUTPUT"
+          echo "deployment_id=ci-${tree:0:12}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
+      # Next.js inlines NEXT_PUBLIC_* values and the public learning locks into
+      # the build. They come from repository variables that mirror the VPS
+      # .env.local; the deploy compares .next/BUILD_ENV with that file and
+      # rebuilds on the VPS when anything differs. Unset variables stay unset.
       - name: Build
-        run: npm run build
+        env:
+          NEXT_DEPLOYMENT_ID: ${{ steps.release.outputs.deployment_id }}
+          RELEASE_NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          RELEASE_NEXT_PUBLIC_URL: ${{ vars.NEXT_PUBLIC_URL }}
+          RELEASE_NEXT_PUBLIC_UMAMI_SCRIPT_URL: ${{ vars.NEXT_PUBLIC_UMAMI_SCRIPT_URL }}
+          RELEASE_NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ vars.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
+        run: |
+          set -euo pipefail
+          build_env="${RUNNER_TEMP}/build-env"
+          : > "$build_env"
+          for key in NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_URL NEXT_PUBLIC_UMAMI_SCRIPT_URL NEXT_PUBLIC_UMAMI_WEBSITE_ID; do
+            source_key="RELEASE_${key}"
+            value="${!source_key:-}"
+            if [[ -n "$value" ]]; then
+              export "$key=$value"
+              printf '%s=%s\n' "$key" "$value" >> "$build_env"
+            fi
+          done
+          printf 'PUBLIC_TESTS_ENABLED=%s\nPUBLIC_KNOWLEDGE_ENABLED=%s\n' \
+            "$PUBLIC_TESTS_ENABLED" "$PUBLIC_KNOWLEDGE_ENABLED" >> "$build_env"
+          npm run build
+          cp "$build_env" .next/BUILD_ENV
+          printf '%s\n' "$NEXT_DEPLOYMENT_ID" > .next/DEPLOYMENT_ID
+          printf '%s\n' "${{ steps.release.outputs.tree }}" > .next/SOURCE_TREE
 
       # Pack with tar: .next/node_modules holds relative symlinks
       # (../../node_modules/<pkg>) to server externals such as mongoose and pg.
@@ -192,18 +233,21 @@ jobs:
           tar --exclude=.next/cache -cf "${RUNNER_TEMP}/next-build.tar" .next
           tar -tf "${RUNNER_TEMP}/next-build.tar" .next/BUILD_ID > /dev/null
 
+      # Three days covers a pull request merged the day after its last CI run.
       - name: Upload the production build
         uses: actions/upload-artifact@v4
         with:
-          name: next-build
+          name: ${{ steps.release.outputs.artifact }}
           path: ${{ runner.temp }}/next-build.tar
-          retention-days: 1
+          retention-days: 3
           if-no-files-found: error
 
   e2e:
     name: End-to-end tests
     needs: build
     runs-on: ubuntu-latest
+    env:
+      NEXT_BUILD_ARTIFACT: ${{ needs.build.outputs.artifact }}
     timeout-minutes: 25
     services:
       postgres:
@@ -245,7 +289,7 @@ jobs:
       - name: Download the production build
         uses: actions/download-artifact@v4
         with:
-          name: next-build
+          name: ${{ env.NEXT_BUILD_ARTIFACT }}
           path: ${{ runner.temp }}/next-build
 
       - name: Unpack the production build
@@ -259,6 +303,9 @@ jobs:
             echo "$broken" >&2
             exit 1
           fi
+          # `next start` must run with the build's deployment ID, as on the VPS;
+          # a mismatch turns every client navigation into a full reload.
+          echo "NEXT_DEPLOYMENT_ID=$(cat .next/DEPLOYMENT_ID)" >> "$GITHUB_ENV"
 
       - name: Prisma migrate (test DB)
         run: npx prisma migrate deploy

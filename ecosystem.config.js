@@ -30,6 +30,16 @@ function loadEnvLocal(filePath) {
 
 const envLocal = loadEnvLocal(path.join(appDir, '.env.local'));
 
+// The deployment ID must equal the one baked into the build. Builds record it
+// in .next/DEPLOYMENT_ID; older releases were built with their directory name.
+function recordedDeploymentId(dir) {
+	try {
+		return fs.readFileSync(path.join(dir, '.next/DEPLOYMENT_ID'), 'utf8').trim() || undefined;
+	} catch {
+		return undefined;
+	}
+}
+
 module.exports = {
 	apps: [
 		{
@@ -63,7 +73,10 @@ module.exports = {
 				NODE_ENV: 'production',
 				PORT: livePort,
 				NEXT_DEPLOYMENT_ID:
-					process.env.NEXT_DEPLOYMENT_ID || envLocal.NEXT_DEPLOYMENT_ID || path.basename(appDir),
+					process.env.NEXT_DEPLOYMENT_ID ||
+					envLocal.NEXT_DEPLOYMENT_ID ||
+					recordedDeploymentId(appDir) ||
+					path.basename(fs.realpathSync(appDir)),
 			},
 		},
 	],

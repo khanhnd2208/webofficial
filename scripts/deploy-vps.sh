@@ -26,6 +26,10 @@ CHECK_MAX_DISK_USED_PERCENT="${CHECK_MAX_DISK_USED_PERCENT:-80}"
 # succeeded. Only an exact match with the deployed commit skips the duplicate
 # TypeScript pass inside `next build`; local deploys keep it.
 CI_TYPECHECKED_SHA="${CI_TYPECHECKED_SHA:-}"
+# The deploy workflow downloads the `.next` tarball CI built and tested for
+# this commit's source tree. The VPS then skips `next build` unless the
+# public values baked into it differ from the production .env.local.
+PREBUILT_NEXT_ARCHIVE="${PREBUILT_NEXT_ARCHIVE:-}"
 
 SOURCE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MODE="deploy"
@@ -46,7 +50,7 @@ Optional environment variables:
   VPS_HOST, VPS_PORT, VPS_DIR, DEPLOY_KEY, DEPLOY_RELEASE_ID, PUBLIC_URL,
   PM2_APP_NAME, LIVE_PORT, CANDIDATE_PORT, DB_BACKUP_COMMAND,
   EXPECT_PUBLIC_LEARNING_LOCKS, DEPLOY_KEEP_RELEASES, DEPLOY_MIN_FREE_GB,
-  CHECK_MAX_DISK_USED_PERCENT, CI_TYPECHECKED_SHA
+  CHECK_MAX_DISK_USED_PERCENT, CI_TYPECHECKED_SHA, PREBUILT_NEXT_ARCHIVE
 EOF
 }
 
@@ -165,6 +169,18 @@ SKIP_BUILD_TYPECHECK="false"
 if [[ -n "$CI_TYPECHECKED_SHA" && "$CI_TYPECHECKED_SHA" == "$SOURCE_SHA" ]]; then
 	SKIP_BUILD_TYPECHECK="true"
 fi
+PREBUILT_NEXT="false"
+if [[ -n "$PREBUILT_NEXT_ARCHIVE" ]]; then
+	[[ -f "$PREBUILT_NEXT_ARCHIVE" ]] || die "PREBUILT_NEXT_ARCHIVE does not exist: $PREBUILT_NEXT_ARCHIVE"
+	source_tree="$(git rev-parse "${SOURCE_SHA}^{tree}")"
+	archive_tree="$(tar -xOf "$PREBUILT_NEXT_ARCHIVE" .next/SOURCE_TREE | tr -d '[:space:]')" \
+		|| die "Prebuilt archive has no .next/SOURCE_TREE"
+	[[ "$archive_tree" == "$source_tree" ]] \
+		|| die "Prebuilt archive was built from tree $archive_tree, not $source_tree"
+	tar -tf "$PREBUILT_NEXT_ARCHIVE" .next/BUILD_ID .next/BUILD_ENV .next/DEPLOYMENT_ID >/dev/null \
+		|| die "Prebuilt archive is missing BUILD_ID, BUILD_ENV, or DEPLOYMENT_ID"
+	PREBUILT_NEXT="true"
+fi
 
 LOCAL_EXPORT_DIR="$(mktemp -d)"
 cleanup_local() {
@@ -176,6 +192,9 @@ trap cleanup_local EXIT
 
 log "Exporting clean commit $SOURCE_SHA_SHORT"
 git archive --format=tar "$SOURCE_SHA" | tar -xf - -C "$LOCAL_EXPORT_DIR"
+if [[ "$PREBUILT_NEXT" == "true" ]]; then
+	cp -- "$PREBUILT_NEXT_ARCHIVE" "$LOCAL_EXPORT_DIR/.prebuilt-next.tar"
+fi
 
 RSYNC_EXCLUDES=(
 	--exclude node_modules/
@@ -245,7 +264,7 @@ rsync -avz --delete --delete-delay --itemize-changes --no-owner --no-group \
 	"$LOCAL_EXPORT_DIR/" "$VPS_HOST:$REMOTE_RELEASE_DIR/"
 
 log "Building, migrating, validating, and promoting release"
-run_ssh "flock -n '$VPS_DIR/.deploy.lock' bash -s -- '$VPS_DIR' '$DEPLOY_RELEASE_ID' '$SOURCE_SHA' '$PM2_APP_NAME' '$LIVE_PORT' '$CANDIDATE_PORT' '$PUBLIC_URL' '$DB_BACKUP_COMMAND' '$EXPECT_PUBLIC_LEARNING_LOCKS' '$SKIP_BUILD_TYPECHECK'" <<'REMOTE_DEPLOY'
+run_ssh "flock -n '$VPS_DIR/.deploy.lock' bash -s -- '$VPS_DIR' '$DEPLOY_RELEASE_ID' '$SOURCE_SHA' '$PM2_APP_NAME' '$LIVE_PORT' '$CANDIDATE_PORT' '$PUBLIC_URL' '$DB_BACKUP_COMMAND' '$EXPECT_PUBLIC_LEARNING_LOCKS' '$SKIP_BUILD_TYPECHECK' '$PREBUILT_NEXT'" <<'REMOTE_DEPLOY'
 set -Eeuo pipefail
 if [[ "$(id -u)" -eq 0 ]]; then
 	echo "Connect as the deploy user, not root: PM2 and the app files belong to deploy." >&2
@@ -262,6 +281,7 @@ PUBLIC_URL="$7"
 BACKUP_COMMAND="$8"
 EXPECT_LOCKS="$9"
 SKIP_BUILD_TYPECHECK="${10:-false}"
+PREBUILT_NEXT="${11:-false}"
 
 RELEASE_DIR="$DEPLOY_ROOT/releases/$RELEASE_ID"
 CURRENT_LINK="$DEPLOY_ROOT/current"
@@ -446,9 +466,25 @@ pm2_process_uses_current_config() {
 	' "$APP_NAME" "$CURRENT_LINK"
 }
 
+# Runtime must use the deployment ID the build baked in, or every client
+# navigation becomes a full reload. Builds record it in .next/DEPLOYMENT_ID;
+# releases from before that file existed were built with their directory name.
+release_deployment_id() {
+	local release_dir="$1"
+	local recorded=""
+	if [[ -f "$release_dir/.next/DEPLOYMENT_ID" ]]; then
+		recorded="$(tr -d '[:space:]' < "$release_dir/.next/DEPLOYMENT_ID")"
+	fi
+	if [[ "$recorded" =~ ^[A-Za-z0-9._-]+$ ]]; then
+		printf '%s\n' "$recorded"
+	else
+		basename "$release_dir"
+	fi
+}
+
 start_or_reload_live() {
 	local deployment_id
-	deployment_id="$(basename "$(readlink -f "$CURRENT_LINK")")"
+	deployment_id="$(release_deployment_id "$(readlink -f "$CURRENT_LINK")")"
 	if pm2_process_uses_current_config; then
 		PM2_APP_NAME="$APP_NAME" \
 		PM2_LIVE_PORT="$LIVE_PORT" \
@@ -622,24 +658,104 @@ node_modules_are_complete() {
 	[[ -x node_modules/.bin/next && -x node_modules/.bin/prisma && -d node_modules/typescript ]]
 }
 
-LOCK_STAMP="$(dependency_stamp)"
-BUILD_CACHE="$DEPLOY_ROOT/.build-cache"
-REUSED_MODULES=0
-if [[ -f "$BUILD_CACHE/node.stamp" && -d "$BUILD_CACHE/node_modules" ]]; then
-	cached_stamp="$(tr -d '[:space:]' < "$BUILD_CACHE/node.stamp")"
-	if [[ "$cached_stamp" == "$LOCK_STAMP" ]]; then
-		echo "Reusing cached node_modules (lockfile, package.json, npm config, Node, and npm unchanged)"
-		rm -rf -- node_modules
-		if cp -a "$BUILD_CACHE/node_modules" "$RELEASE_DIR/node_modules" && node_modules_are_complete; then
-			REUSED_MODULES=1
+install_production_dependencies() {
+	echo "Installing production-only dependencies for the runtime release"
+	# `npm prune --omit=dev` failed on this tree on every deploy (npm: "Cannot read
+	# properties of null (reading 'edgesOut')"), so install the production set from
+	# the lockfile directly. HUSKY=0 makes `prepare` skip the dev-only git hooks.
+	# Reuse the last production install when nothing that shapes it changed
+	# (same stamp as the full install). Copy, never hardlink, so a release cannot
+	# mutate the cache.
+	rm -rf node_modules
+	local reused=0
+	if [[ -f "$BUILD_CACHE/prod.stamp" && -d "$PROD_CACHE" ]] &&
+		[[ "$(tr -d '[:space:]' < "$BUILD_CACHE/prod.stamp")" == "$LOCK_STAMP" ]]; then
+		echo "Reusing cached production node_modules"
+		if cp -a "$PROD_CACHE" node_modules && [[ -x node_modules/.bin/next && -x node_modules/.bin/prisma ]]; then
+			reused=1
 		else
-			echo "Cached node_modules could not be reused; installing from the lockfile" >&2
-			rm -rf -- node_modules
+			echo "Cached production node_modules could not be reused; installing from the lockfile" >&2
+			rm -rf node_modules
 		fi
 	fi
+	if [[ "$reused" -ne 1 ]]; then
+		HUSKY=0 npm ci --omit=dev
+		rm -rf -- "$PROD_CACHE" "$BUILD_CACHE/prod.stamp"
+		mkdir -p -- "$BUILD_CACHE"
+		if cp -a node_modules "$PROD_CACHE"; then
+			printf '%s\n' "$LOCK_STAMP" > "$BUILD_CACHE/prod.stamp"
+		else
+			echo "WARNING: could not refresh the production node_modules cache; this deploy will continue" >&2
+			rm -rf -- "$PROD_CACHE" "$BUILD_CACHE/prod.stamp"
+		fi
+	fi
+	./node_modules/.bin/prisma generate
+	test -x ./node_modules/.bin/next
+}
+
+# A prebuilt release carries the values Next.js inlined at build time in
+# .next/BUILD_ENV. Every NEXT_PUBLIC_* key on either side and the public
+# learning locks must match production, or the VPS builds the release itself.
+prebuilt_env_matches() {
+	node - "$RELEASE_DIR/.env.local" "$RELEASE_DIR/.next/BUILD_ENV" <<'NODE_BUILD_ENV_CHECK'
+const fs = require('fs');
+const { parse } = require('dotenv');
+
+const [envPath, buildEnvPath] = process.argv.slice(2);
+const runtime = parse(fs.readFileSync(envPath));
+const built = parse(fs.readFileSync(buildEnvPath));
+const keys = new Set(
+	[...Object.keys(runtime), ...Object.keys(built)].filter((key) => key.startsWith('NEXT_PUBLIC_')),
+);
+keys.add('PUBLIC_TESTS_ENABLED');
+keys.add('PUBLIC_KNOWLEDGE_ENABLED');
+const differing = [...keys].filter((key) => (runtime[key] ?? '').trim() !== (built[key] ?? '').trim());
+if (differing.length > 0) {
+	console.error(`The CI build differs from production .env.local in: ${differing.sort().join(', ')}`);
+	process.exit(1);
+}
+NODE_BUILD_ENV_CHECK
+}
+
+LOCK_STAMP="$(dependency_stamp)"
+BUILD_CACHE="$DEPLOY_ROOT/.build-cache"
+PROD_CACHE="$BUILD_CACHE/node_modules_prod"
+
+USE_PREBUILT=0
+if [[ "$PREBUILT_NEXT" == "true" ]]; then
+	echo "Unpacking the build CI tested for this source tree"
+	rm -rf -- .next
+	tar -xf .prebuilt-next.tar
+	test -s .next/BUILD_ID
+	install_production_dependencies
+	if prebuilt_env_matches; then
+		USE_PREBUILT=1
+		echo "Using the CI build (deployment $(release_deployment_id "$RELEASE_DIR")); skipping next build"
+	else
+		echo "WARNING: building on the VPS instead. Set the matching GitHub repository variables (docs/deployment/VPS.md)." >&2
+		rm -rf -- .next node_modules
+	fi
 fi
-if [[ "$REUSED_MODULES" -ne 1 ]]; then
-	install_locked_dependencies
+rm -f -- .prebuilt-next.tar
+
+if [[ "$USE_PREBUILT" -ne 1 ]]; then
+	REUSED_MODULES=0
+	if [[ -f "$BUILD_CACHE/node.stamp" && -d "$BUILD_CACHE/node_modules" ]]; then
+		cached_stamp="$(tr -d '[:space:]' < "$BUILD_CACHE/node.stamp")"
+		if [[ "$cached_stamp" == "$LOCK_STAMP" ]]; then
+			echo "Reusing cached node_modules (lockfile, package.json, npm config, Node, and npm unchanged)"
+			rm -rf -- node_modules
+			if cp -a "$BUILD_CACHE/node_modules" "$RELEASE_DIR/node_modules" && node_modules_are_complete; then
+				REUSED_MODULES=1
+			else
+				echo "Cached node_modules could not be reused; installing from the lockfile" >&2
+				rm -rf -- node_modules
+			fi
+		fi
+	fi
+	if [[ "$REUSED_MODULES" -ne 1 ]]; then
+		install_locked_dependencies
+	fi
 fi
 node - "$RELEASE_DIR/.env.local" "$PUBLIC_URL" "$EXPECT_LOCKS" <<'NODE_ENV_CHECK'
 const fs = require('fs');
@@ -674,19 +790,23 @@ if (expectLocks === 'true') {
 	}
 }
 NODE_ENV_CHECK
-./node_modules/.bin/prisma generate
 
-echo "Building candidate before any database migration"
-# A cache from another source tree retained old compiled CSS after Teaching
-# styles moved into imports. Always compile a release from its own source.
-echo "Building with a fresh Next.js compiler cache"
-rm -rf -- "$RELEASE_DIR/.next/cache"
-if [[ "${SKIP_BUILD_TYPECHECK:-false}" == "true" ]]; then
-	# CI typechecked this exact commit; the VPS pass took about two minutes.
-	echo "Skipping the build TypeScript pass: CI already typechecked $SOURCE_SHA"
-	NEXT_SKIP_BUILD_TYPECHECK=1 NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
-else
-	NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
+if [[ "$USE_PREBUILT" -ne 1 ]]; then
+	./node_modules/.bin/prisma generate
+
+	echo "Building candidate before any database migration"
+	# A cache from another source tree retained old compiled CSS after Teaching
+	# styles moved into imports. Always compile a release from its own source.
+	echo "Building with a fresh Next.js compiler cache"
+	rm -rf -- "$RELEASE_DIR/.next/cache"
+	if [[ "${SKIP_BUILD_TYPECHECK:-false}" == "true" ]]; then
+		# CI typechecked this exact commit; the VPS pass took about two minutes.
+		echo "Skipping the build TypeScript pass: CI already typechecked $SOURCE_SHA"
+		NEXT_SKIP_BUILD_TYPECHECK=1 NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
+	else
+		NEXT_DEPLOYMENT_ID="$RELEASE_ID" npm run build
+	fi
+	printf '%s\n' "$RELEASE_ID" > .next/DEPLOYMENT_ID
 fi
 test -s .next/BUILD_ID
 
@@ -724,39 +844,9 @@ fi
 echo "Applying committed migrations"
 ./node_modules/.bin/prisma migrate deploy
 
-echo "Installing production-only dependencies for the runtime release"
-# `npm prune --omit=dev` failed on this tree on every deploy (npm: "Cannot read
-# properties of null (reading 'edgesOut')"), so install the production set from
-# the lockfile directly. HUSKY=0 makes `prepare` skip the dev-only git hooks.
-# Reuse the last production install when nothing that shapes it changed
-# (same stamp as the full install). Copy, never hardlink, so a release cannot
-# mutate the cache.
-rm -rf node_modules
-PROD_CACHE="$BUILD_CACHE/node_modules_prod"
-REUSED_PROD_MODULES=0
-if [[ -f "$BUILD_CACHE/prod.stamp" && -d "$PROD_CACHE" ]] &&
-	[[ "$(tr -d '[:space:]' < "$BUILD_CACHE/prod.stamp")" == "$LOCK_STAMP" ]]; then
-	echo "Reusing cached production node_modules"
-	if cp -a "$PROD_CACHE" node_modules && [[ -x node_modules/.bin/next && -x node_modules/.bin/prisma ]]; then
-		REUSED_PROD_MODULES=1
-	else
-		echo "Cached production node_modules could not be reused; installing from the lockfile" >&2
-		rm -rf node_modules
-	fi
+if [[ "$USE_PREBUILT" -ne 1 ]]; then
+	install_production_dependencies
 fi
-if [[ "$REUSED_PROD_MODULES" -ne 1 ]]; then
-	HUSKY=0 npm ci --omit=dev
-	rm -rf -- "$PROD_CACHE" "$BUILD_CACHE/prod.stamp"
-	mkdir -p -- "$BUILD_CACHE"
-	if cp -a node_modules "$PROD_CACHE"; then
-		printf '%s\n' "$LOCK_STAMP" > "$BUILD_CACHE/prod.stamp"
-	else
-		echo "WARNING: could not refresh the production node_modules cache; this deploy will continue" >&2
-		rm -rf -- "$PROD_CACHE" "$BUILD_CACHE/prod.stamp"
-	fi
-fi
-./node_modules/.bin/prisma generate
-test -x ./node_modules/.bin/next
 
 if ss -ltnH | awk '{ print $4 }' | grep -Eq ":${CANDIDATE_PORT}$"; then
 	echo "Candidate port is already in use: $CANDIDATE_PORT" >&2
@@ -764,7 +854,7 @@ if ss -ltnH | awk '{ print $4 }' | grep -Eq ":${CANDIDATE_PORT}$"; then
 fi
 
 echo "Starting isolated candidate on 127.0.0.1:$CANDIDATE_PORT"
-NODE_ENV=production NEXT_DEPLOYMENT_ID="$RELEASE_ID" \
+NODE_ENV=production NEXT_DEPLOYMENT_ID="$(release_deployment_id "$RELEASE_DIR")" \
 	pm2 start "$RELEASE_DIR/node_modules/.bin/next" \
 		--name "$CANDIDATE_NAME" --cwd "$RELEASE_DIR" --time -- \
 		start -H 127.0.0.1 -p "$CANDIDATE_PORT"
