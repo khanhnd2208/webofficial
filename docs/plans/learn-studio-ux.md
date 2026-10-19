@@ -73,6 +73,29 @@ Mô tả khóa hiện ở phần Giới thiệu trên trang tổng quan, không 
 
 Hộp nhập tên là “Nhập nội dung”. Ô dán nhận Markdown hoặc câu phản biện. Đích, cách nhập (tạo mới, thêm, thay) và số mục/câu bị ảnh hưởng hiện trước khi lưu. Thay thế làm mất mục hoặc câu phải xác nhận, kèm tên mục hoặc số câu. Hướng dẫn đưa prompt cho AI nằm trong “Dùng AI để định dạng (tùy chọn)”.
 
-Nhập thay thế, xem trước, xuất Markdown và xuất bản chỉ chạy sau khi thao tác xóa đang chờ được xử lý và `flush()` trả `{ ok: true }`. Lưu lỗi thì giữ bản đang gõ; xem trước không mở trang học viên như thể đã lưu. Kiểm tra phiên bản, xung đột hai tab, lịch sử và hoàn tác giữ nguyên.
+Nhập thay thế, xem trước, xuất Markdown và xuất bản gọi `commitAll()` rồi mới `flush()`. `commitAll()` chờ cả mục đang trong cửa sổ hoàn tác lẫn DELETE đã gửi nhưng chưa xong. DELETE lỗi thì mục được đưa lại vào mục lục, Studio báo lỗi cụ thể, và thao tác phụ thuộc dừng: nhập không ghi, xuất không tải file, xuất bản không mở hộp thoại, xem trước đóng tab trống thay vì mở trang học viên. Lưu chữ bị lỗi hoặc mất mạng thì giữ bản đang gõ và thử lại được; xem trước không mở bản cũ như thể đã lưu. Hai phiên sửa cùng một mục thì hiện hộp xung đột, không ghi đè im lặng.
 
-Đã gỡ CSS quiz/phương án và drawer không còn phần tử nào dùng. Không đụng dữ liệu bài giảng, quản lý lớp hay bộ thẻ ôn tập.
+Trên màn hẹp, tab Mục lục / Nội dung / Thông tin gắn với vùng nội dung bằng `id`, `aria-controls`, `role="tabpanel"` và `aria-labelledby`. Đổi tab chỉ ẩn vùng kia. Ô soạn vẫn nằm trên trang, nên chữ vừa gõ còn khi quay lại hoặc khi cửa sổ vượt mốc 64rem.
+
+Hợp đồng `flush()` vẫn là `Promise<{ ok: boolean }>`. Không thêm dependency, migration hay API công khai.
+
+Đã gỡ CSS quiz/phương án và drawer không còn phần tử nào dùng. Không đụng dữ liệu bài giảng, quản lý lớp hay bộ thẻ ôn tập. Phần dư được dọn trong phạm vi đã kiểm tra bên dưới; điều đó không có nghĩa toàn bộ Studio đã hết vấn đề. Production chưa được mở trong đợt sửa — sau khi triển khai vẫn cần smoke test trên site đang chạy.
+
+### Đã chạy
+
+- `npm run typecheck`, `npm run lint -- --max-warnings=0`, `npm run format:check`, `npm run areas:check`: đạt.
+- `npm run test:unit`: 780. `npm run test:component`: 472.
+- `npm run build`: đạt.
+- Playwright `e2e/learn-studio.spec.ts` (chromium, server local, database test): 11 đạt. Gồm xóa bài mặc định rồi thêm bài từ giao diện, gõ bài đọc và câu phản biện rồi đổi tab/đổi cỡ cửa sổ/lưu/tải lại, và soạn được ở 1024px cùng viewport 512px (tương đương phóng 200% trên cửa sổ 1024px).
+
+### Đọc từ mã
+
+- `commitAll()` giữ Promise của DELETE đang chạy. Lần gọi chồng lên nhau phải chờ DELETE đó. Xóa mục khác khi mục trước chưa xong thì mục trước vẫn được gửi và lỗi của nó không thành Promise bị bỏ quên.
+- DELETE lỗi thì `restore()` đưa mục lại, `setActionError` nêu lỗi và câu “hãy thử xóa lại”, rồi ném `StudioDeleteError`. Nhập nhận lỗi đó. Xem trước, xuất và xuất bản nhận `{ ok: false }` và không đi tiếp.
+- Tab vùng soạn có `id` và `aria-controls`. Vùng tương ứng có `role="tabpanel"` và `aria-labelledby` khi đang ở layout hẹp. Ba vùng vẫn mounted; tab không chọn chỉ bị `hidden`.
+
+### Chưa xác minh ở đây
+
+- `npm run test:integration`: không chạy, vì không đổi API, service hay schema.
+- Toàn bộ Studio ngoài các ca ở trên.
+- Site production. Smoke test sau triển khai vẫn cần: mở một khóa, xóa thử một mục rồi hoàn tác hoặc để lỗi mạng, đổi tab trên điện thoại, lưu và tải lại.
