@@ -125,12 +125,12 @@ function DiscoverCourseCard({ course }: { course: DiscoverCoursePreview }) {
 				</span>
 			</Link>
 			{course.lessonTitles.length ? (
-				<div className="border-t border-hairline px-3 py-3 sm:px-4">
+				<div className="border-t border-hairline px-3 sm:px-4">
 					<details className="text-subhead">
-						<summary className="w-fit cursor-pointer rounded-md font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+						<summary className="min-h-11 w-full cursor-pointer rounded-md py-3 font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
 							Xem chương trình
 						</summary>
-						<ol className="mt-3 space-y-1.5 pl-5 leading-relaxed text-ink-secondary">
+						<ol className="mt-1 space-y-1.5 pb-3 pl-5 leading-relaxed text-ink-secondary">
 							{course.lessonTitles.map((title, index) => (
 								<li key={`${index}-${title}`} className="list-decimal break-words">
 									{title}

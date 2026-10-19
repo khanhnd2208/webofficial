@@ -18,9 +18,9 @@ export default function LearnCourseThumb({
 	thumbnailUrl: string | null;
 }) {
 	const src = learnCourseThumbnailSrc(thumbnailUrl);
-	const [failed, setFailed] = useState(false);
+	const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-	if (!src || failed) return <CourseArtwork slug={slug} fill sizes={SIZES} />;
+	if (!src || failedSrc === src) return <CourseArtwork slug={slug} fill sizes={SIZES} />;
 
 	return (
 		<span className="absolute inset-0 block overflow-hidden">
@@ -30,7 +30,7 @@ export default function LearnCourseThumb({
 				fill
 				sizes={SIZES}
 				className="object-cover"
-				onError={() => setFailed(true)}
+				onError={() => setFailedSrc(src)}
 			/>
 		</span>
 	);

@@ -2,7 +2,7 @@
 
 import { Icon } from '@/components/ui/Icon';
 import dynamic from 'next/dynamic';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const ImageCropModal = dynamic(() => import('./ImageCropModal'), { ssr: false });
 
@@ -52,13 +52,31 @@ export default function ThumbnailUpload({
 	const [error, setError] = useState('');
 	const [cropSrc, setCropSrc] = useState<string | null>(null);
 	const fileRef = useRef<HTMLInputElement>(null);
+	const returnFocusRef = useRef<HTMLElement | null>(null);
+	const restoreFocusRef = useRef(false);
 
 	const closeCrop = useCallback(() => {
+		restoreFocusRef.current = true;
 		setCropSrc((current) => {
 			if (current) URL.revokeObjectURL(current);
 			return null;
 		});
 	}, []);
+
+	useEffect(() => {
+		if (cropSrc !== null || !restoreFocusRef.current) return;
+		restoreFocusRef.current = false;
+		returnFocusRef.current?.focus();
+	}, [cropSrc]);
+
+	function rememberFocus(target: EventTarget | null) {
+		if (target instanceof HTMLElement) returnFocusRef.current = target;
+	}
+
+	function openPicker(target: EventTarget | null) {
+		rememberFocus(target);
+		fileRef.current?.click();
+	}
 
 	const openCrop = useCallback((file: File) => {
 		if (!file.type.startsWith('image/')) {
@@ -95,9 +113,10 @@ export default function ThumbnailUpload({
 		[closeCrop, onChange, onUploadingChange, uploadEndpoint],
 	);
 
-	function onDrop(e: React.DragEvent) {
+	function onDrop(e: React.DragEvent<HTMLDivElement>) {
 		e.preventDefault();
 		setDragActive(false);
+		rememberFocus(e.currentTarget);
 		const file = e.dataTransfer.files[0];
 		if (file) openCrop(file);
 	}
@@ -156,7 +175,7 @@ export default function ThumbnailUpload({
 								<>
 									<button
 										type="button"
-										onClick={() => fileRef.current?.click()}
+										onClick={(event) => openPicker(event.currentTarget)}
 										className="min-h-11 rounded-lg bg-white/90 px-3 text-xs font-bold text-black shadow transition-colors hover:bg-white"
 									>
 										Đổi ảnh
@@ -188,7 +207,7 @@ export default function ThumbnailUpload({
 							? `border-accent ${product ? 'bg-surface-sunken' : 'bg-accent-subtle'}`
 							: 'border-border hover:border-accent/50'
 					} ${uploading ? 'pointer-events-none opacity-60' : ''}`}
-					onClick={() => fileRef.current?.click()}
+					onClick={(event) => openPicker(event.currentTarget)}
 					onDragOver={(e) => {
 						e.preventDefault();
 						setDragActive(true);
@@ -201,7 +220,7 @@ export default function ThumbnailUpload({
 					onKeyDown={(event) => {
 						if (event.key === 'Enter' || event.key === ' ') {
 							event.preventDefault();
-							fileRef.current?.click();
+							openPicker(event.currentTarget);
 						}
 					}}
 				>

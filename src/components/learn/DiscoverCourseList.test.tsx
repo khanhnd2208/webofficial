@@ -50,6 +50,8 @@ describe('DiscoverCourseList', () => {
 		expect(link).toHaveFocus();
 
 		const summary = screen.getByText('Xem chương trình');
+		expect(summary.className).toContain('min-h-11');
+		expect(summary.className).toContain('w-full');
 		expect(summary.closest('a')).toBeNull();
 		expect(summary.closest('article')).toContainElement(link);
 		fireEvent.click(summary);
@@ -102,6 +104,19 @@ describe('DiscoverCourseList', () => {
 				.querySelector('img')
 				?.getAttribute('src') ?? '',
 		).not.toContain('broken.webp');
+
+		rerender(
+			<DiscoverCourseList
+				courses={[{ ...course, thumbnailUrl: '/uploads/recovered.webp' }]}
+				signedIn={false}
+			/>,
+		);
+		expect(
+			screen
+				.getByRole('link', { name: /Vào khóa học/ })
+				.querySelector('img')
+				?.getAttribute('src'),
+		).toContain('/uploads/recovered.webp');
 	});
 
 	it('shows the empty catalog without a course link', () => {
