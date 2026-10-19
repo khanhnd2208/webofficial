@@ -64,6 +64,7 @@ portfolio:
   - src/features/experiences/**
   - src/features/inquiries/**
   - src/features/unreleased-quiz/**
+  - src/features/unreleased-gift/**
   - src/components/learn/**
   - src/components/marketing/**
   - src/components/contact/**
@@ -78,9 +79,13 @@ portfolio:
   - src/app/ghi-chep/**
   - src/app/lien-he/**
   - src/app/unreleased/**
+  - src/app/unreleasedgift/**
   - src/app/api/unreleased-quiz/**
+  - src/app/api/unreleased-gift/**
   - src/app/api/admin/unreleased-quiz/**
+  - src/app/api/admin/unreleased-gift/**
   - src/app/admin/unreleased-quiz/**
+  - src/app/admin/unreleased-gift/**
   - src/app/chinh-sach/**
   - src/app/my-space/courses/**
   - src/app/api/learn/**
@@ -96,6 +101,7 @@ portfolio:
   - src/app/learn.css
   - src/app/personal-book.css
   - content/learn/**
+  - content/unreleased-gift/**
   - public/learn/**
   - e2e/editorial-premium.spec.ts
   - e2e/personal-book.spec.ts
