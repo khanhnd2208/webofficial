@@ -1559,3 +1559,16 @@ model UnreleasedQuizResponse {
   @@index([createdAt])
   @@index([respondentId])
 }
+
+/// Anonymous feedback submitted after the UNRELEASED workshop.
+/// The response id opens the gift page; no name, email, account or IP is stored.
+model UnreleasedGiftResponse {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  overall    Int
+  usefulness Int
+  clarity    Int
+  comment    String?
+
+  @@index([createdAt])
+}

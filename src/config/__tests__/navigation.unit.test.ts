@@ -320,6 +320,8 @@ describe('site header trail', () => {
 			'/messages',
 			'/vocabulary',
 			'/unreleased',
+			'/unreleasedgift',
+			'/unreleasedgift/thank-you',
 		]) {
 			expect(isSiteHeaderPath(path), path).toBe(false);
 		}

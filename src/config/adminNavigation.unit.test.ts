@@ -18,6 +18,7 @@ describe('admin navigation', () => {
 			routes.admin.inquiries,
 			routes.admin.website,
 			routes.admin.unreleasedQuiz,
+			routes.admin.unreleasedGift,
 			routes.mySpaceTeaching,
 			routes.admin.learnAnalytics,
 		]);
@@ -25,6 +26,7 @@ describe('admin navigation', () => {
 			'Hộp thư liên hệ',
 			'Trang công khai',
 			'Quiz UNRELEASED',
+			'Đánh giá UNRELEASED',
 			'Lớp & môn học',
 			'Thống kê học tập',
 		]);

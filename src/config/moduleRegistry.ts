@@ -93,6 +93,18 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		publicPrefixes: [routes.unreleased],
 	},
 	{
+		id: 'unreleased-gift',
+		status: 'active',
+		label: 'Đánh giá UNRELEASED',
+		description: 'Điểm và nhận xét ẩn danh sau workshop UNRELEASED',
+		icon: 'bar_chart',
+		archiveGroup: 'Website',
+		adminHref: routes.admin.unreleasedGift,
+		adminPrefixes: [routes.admin.unreleasedGift],
+		navGroup: 'Website',
+		publicPrefixes: [routes.unreleasedGift],
+	},
+	{
 		id: 'learning-analytics',
 		status: 'active',
 		label: 'Thống kê học tập',

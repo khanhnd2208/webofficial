@@ -36,6 +36,7 @@ export const ANALYTICS_EVENTS = [
 	'unreleased_quiz_start',
 	'unreleased_quiz_complete',
 	'unreleased_register_click',
+	'unreleased_gift_feedback_complete',
 ] as const;
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];

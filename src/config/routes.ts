@@ -103,6 +103,9 @@ export const routes = {
 	contact: '/lien-he',
 	/** UNRELEASED workshop: pre-workshop quiz and registration. */
 	unreleased: '/unreleased',
+	/** UNRELEASED workshop: anonymous post-workshop feedback and gift. */
+	unreleasedGift: '/unreleasedgift',
+	unreleasedGiftThanks: '/unreleasedgift/thank-you',
 	notes: '/ghi-chep',
 	note: (slug: string) => `/ghi-chep/${slug}` as const,
 	growth: '/phat-trien-ban-than',
@@ -184,6 +187,8 @@ export const routes = {
 		learnAnalytics: '/admin/learn-analytics',
 		unreleasedQuiz: '/admin/unreleased-quiz',
 		unreleasedQuizExport: '/api/admin/unreleased-quiz/export',
+		unreleasedGift: '/admin/unreleased-gift',
+		unreleasedGiftExport: '/api/admin/unreleased-gift/export',
 		myspaceTestNew: '/admin/myspace-tests/new',
 		myspaceTestEdit: (id: string) => `/admin/myspace-tests/${id}` as const,
 		myspaceTestAnalytics: '/admin/myspace-tests/analytics',
