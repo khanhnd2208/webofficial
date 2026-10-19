@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import ThumbnailUpload from '@/components/forms/ThumbnailUpload';
 import { LEARN_LEVEL_LABELS, type LearnCourseMeta, type LearnLevel } from '@/features/learn/types';
 
 import { useStudioConfirm } from './StudioConfirm';
@@ -9,7 +10,7 @@ import StudioDialog from './StudioDialog';
 
 export type CourseSettingsPatch = Pick<
 	LearnCourseMeta,
-	'title' | 'subtitle' | 'description' | 'category' | 'level' | 'slug'
+	'title' | 'subtitle' | 'description' | 'category' | 'level' | 'slug' | 'thumbnailUrl'
 >;
 
 export default function CourseSettingsDialog({
@@ -30,8 +31,10 @@ export default function CourseSettingsDialog({
 		category: course.category,
 		level: course.level,
 		slug: course.slug,
+		thumbnailUrl: course.thumbnailUrl,
 	});
 	const [busy, setBusy] = useState(false);
+	const [uploading, setUploading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [confirmDelete, setConfirmDelete] = useState('');
 	const { confirm, confirmDialog } = useStudioConfirm();
@@ -89,8 +92,11 @@ export default function CourseSettingsDialog({
 						<button
 							type="button"
 							className="ln-btn ln-btn--primary"
-							disabled={busy || !draft.title.trim()}
-							onClick={() => run(() => onSave(draft))}
+							disabled={busy || uploading || !draft.title.trim()}
+							onClick={() => {
+								if (uploading) return;
+								void run(() => onSave(draft));
+							}}
 						>
 							Lưu
 						</button>
@@ -151,6 +157,18 @@ export default function CourseSettingsDialog({
 								))}
 							</select>
 						</label>
+					</div>
+					<div>
+						<ThumbnailUpload
+							variant="product"
+							value={draft.thumbnailUrl ?? ''}
+							onChange={(url) => set('thumbnailUrl', url || null)}
+							onUploadingChange={setUploading}
+						/>
+						<p className="mt-2 text-sm text-ink-secondary">
+							Ảnh chỉ gắn vào khóa học khi bấm Lưu. Gỡ ảnh trở về hình mặc định và không xóa file
+							trên máy chủ.
+						</p>
 					</div>
 					<label>
 						<span>Đường dẫn</span>
