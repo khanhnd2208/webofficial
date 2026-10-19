@@ -55,10 +55,24 @@ Nhánh `cursor/learn-studio-admin` có commit chuẩn hóa ban đầu `b545ba8`.
 
 - Nội dung editor trực quan đang chờ debounce bị mất hoặc ghi đè danh sách khi thêm, nhân bản, đổi thứ tự và xóa câu. Thao tác cấu trúc giờ flush editor, đọc draft mới nhất; xóa cập nhật JSON ngay và undo không làm mất phần sửa tiếp theo.
 - Undo và câu đang chọn được giới hạn theo mục/phiên khôi phục; xóa câu cuối không giữ editor của câu đã xóa.
-- Studio dùng theme Admin chung; preview giữ theme học viên. Mục lục và thuộc tính dùng modal drawer có vòng Tab, Escape, tên truy cập và trả focus về nút mở.
+- Studio dùng theme Admin chung; preview giữ theme học viên. Drawer mục lục/thuộc tính của đợt này đã được thay bằng một mặt soạn (mục 19/10/2026).
 - Breakpoint dùng snapshot SSR nhất quán để tránh hydration mismatch trên desktop.
 - Mọi chế độ nhập đều chặn áp dụng nếu lưu bản đang sửa thất bại. Xuất và khôi phục bài đọc loại các khối luyện tập đã nghỉ; nội dung không liên quan, kể cả dòng trống trong code block, được giữ nguyên.
 
 Kiểm tra local: typecheck, lint không warning, format, areas, build; 830 unit, 452 component, 188 integration. Sáu hành trình Playwright kiểm tra soạn/chuyển câu, nhập thực sự qua ba bước, lưu/khôi phục, nhân bản/xóa với draft mới nhất, focus drawer và bố cục ở 390/768/1024/1280/1440/1920px. E2E chỉ chạy localhost trên database test riêng.
 
 Không có dependency hay migration mới. Chưa chỉnh nội dung đang chạy trên production: các đoạn luyện tập nằm trong Markdown bài giảng cũ phải đọc lại, lưu phiên bản và PATCH phần khác biệt qua Studio/admin session; không dùng seed hay ghi database trực tiếp.
+
+## Giao diện soạn — 19/10/2026
+
+Một mặt soạn: mục lục, nội dung và thông tin mục. Từ 64rem trở lên cả ba hiện cùng lúc. Dưới mức đó, tab Mục lục / Nội dung / Thông tin chuyển vùng; dòng “Đang sửa” luôn nêu bài và mục đang mở. Drawer mục lục và thuộc tính không còn.
+
+“Xem như học viên” nằm trên thanh trên. Lưu vẫn hiện Đang lưu, Đã lưu, mất kết nối (kèm Thử lại ngay) hoặc lỗi cần sửa. Khóa công khai ghi rõ: lưu thành công thì học viên thấy nội dung mới.
+
+Mô tả khóa hiện ở phần Giới thiệu trên trang tổng quan, không phải đầu mục đầu tiên. Thời lượng, tóm tắt và ý chính nằm trong nhóm “Hiện với học viên”, kèm chỗ chúng xuất hiện trên trang học.
+
+Hộp nhập tên là “Nhập nội dung”. Ô dán nhận Markdown hoặc câu phản biện. Đích, cách nhập (tạo mới, thêm, thay) và số mục/câu bị ảnh hưởng hiện trước khi lưu. Thay thế làm mất mục hoặc câu phải xác nhận, kèm tên mục hoặc số câu. Hướng dẫn đưa prompt cho AI nằm trong “Dùng AI để định dạng (tùy chọn)”.
+
+Nhập thay thế, xem trước, xuất Markdown và xuất bản chỉ chạy sau khi thao tác xóa đang chờ được xử lý và `flush()` trả `{ ok: true }`. Lưu lỗi thì giữ bản đang gõ; xem trước không mở trang học viên như thể đã lưu. Kiểm tra phiên bản, xung đột hai tab, lịch sử và hoàn tác giữ nguyên.
+
+Đã gỡ CSS quiz/phương án và drawer không còn phần tử nào dùng. Không đụng dữ liệu bài giảng, quản lý lớp hay bộ thẻ ôn tập.
