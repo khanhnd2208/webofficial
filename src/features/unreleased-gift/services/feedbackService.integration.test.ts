@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { prisma } from '@/lib/prisma';
 
@@ -7,6 +7,10 @@ import { hasFeedback, listFeedback, recordFeedback } from './feedbackService';
 vi.mock('server-only', () => ({}));
 
 describe('UNRELEASED feedback persistence', () => {
+	beforeEach(async () => {
+		await prisma.unreleasedGiftResponse.deleteMany();
+	});
+
 	afterEach(async () => {
 		await prisma.unreleasedGiftResponse.deleteMany();
 	});
