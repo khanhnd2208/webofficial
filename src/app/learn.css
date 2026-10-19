@@ -2685,6 +2685,20 @@ button.ln-save.ln-btn--primary {
 	min-width: 0;
 	min-height: 0;
 }
+.ln-studio__panel {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+.ln-studio__panel[hidden] {
+	display: none;
+}
+.ln-studio__panel > * {
+	flex: 1 1 auto;
+	min-height: 0;
+}
 @media (min-width: 64rem) {
 	.ln-studio__grid {
 		grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr) minmax(14.5rem, 17.5rem);

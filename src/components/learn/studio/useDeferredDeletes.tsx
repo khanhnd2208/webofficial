@@ -11,49 +11,109 @@ export type DeferredDelete = {
 	commit: (options?: { keepalive?: boolean }) => void | Promise<void>;
 };
 
+/** A section delete that did not reach the server. Callers must stop and let the user retry. */
+export class StudioDeleteError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'StudioDeleteError';
+	}
+}
+
+function adopt(result: void | Promise<void>): Promise<void> {
+	return Promise.resolve(result).then(() => undefined);
+}
+
 /**
  * Hide a delete immediately and send it after the toast window.
  * A newer delete, a structural edit, navigation, or pagehide sends it early.
+ * `commitAll` waits for every delete that has started, including one already on the network.
  */
 export function useDeferredDeletes() {
-	const current = useRef<DeferredDelete | null>(null);
+	const pending = useRef<DeferredDelete | null>(null);
+	const inflight = useRef<Promise<void>[]>([]);
 	const [message, setMessage] = useState<string | null>(null);
 
-	const commitCurrent = useCallback(async (options?: { keepalive?: boolean }) => {
-		const item = current.current;
-		if (!item) return;
-		current.current = null;
-		setMessage(null);
-		await item.commit(options);
+	const track = useCallback((run: Promise<void>) => {
+		inflight.current.push(run);
+		void run.then(
+			() => {
+				inflight.current = inflight.current.filter((job) => job !== run);
+			},
+			() => {
+				inflight.current = inflight.current.filter((job) => job !== run);
+			},
+		);
+		return run;
 	}, []);
 
-	const defer = useCallback((item: DeferredDelete) => {
-		const previous = current.current;
-		current.current = item;
-		setMessage(item.message);
-		if (previous && previous.key !== item.key) void previous.commit();
-	}, []);
+	const enqueue = useCallback(
+		(item: DeferredDelete, options?: { keepalive?: boolean }) => {
+			const earlier = inflight.current.slice();
+			// An empty queue starts `commit` now, so pagehide can still send `keepalive`.
+			const run =
+				earlier.length === 0
+					? adopt(item.commit(options))
+					: Promise.allSettled(earlier).then(() => adopt(item.commit(options)));
+			return track(run);
+		},
+		[track],
+	);
+
+	const commitAll = useCallback(
+		async (options?: { keepalive?: boolean }) => {
+			const failures: unknown[] = [];
+			for (;;) {
+				const item = pending.current;
+				if (item) {
+					pending.current = null;
+					setMessage(null);
+					void enqueue(item, options).catch(() => undefined);
+				}
+				const running = inflight.current.slice();
+				if (!running.length) break;
+				const results = await Promise.allSettled(running);
+				for (const result of results) {
+					if (result.status === 'rejected') failures.push(result.reason);
+				}
+				if (!pending.current && inflight.current.length === 0) break;
+			}
+			const reason = failures[0];
+			if (reason instanceof Error) throw reason;
+			if (reason !== undefined) throw new StudioDeleteError('Không xóa được mục. Hãy thử lại.');
+		},
+		[enqueue],
+	);
+
+	const defer = useCallback(
+		(item: DeferredDelete) => {
+			const previous = pending.current;
+			pending.current = item;
+			setMessage(item.message);
+			if (previous && previous.key !== item.key) void enqueue(previous).catch(() => undefined);
+		},
+		[enqueue],
+	);
 
 	const undo = useCallback(() => {
-		const item = current.current;
+		const item = pending.current;
 		if (!item) return;
-		current.current = null;
+		pending.current = null;
 		setMessage(null);
 		item.restore();
 	}, []);
 
 	useEffect(() => {
 		const onHide = () => {
-			const item = current.current;
+			const item = pending.current;
 			if (!item) return;
-			current.current = null;
-			void item.commit({ keepalive: true });
+			pending.current = null;
+			void enqueue(item, { keepalive: true }).catch(() => undefined);
 		};
 		window.addEventListener('pagehide', onHide);
 		return () => window.removeEventListener('pagehide', onHide);
-	}, []);
+	}, [enqueue]);
 
-	return { defer, undo, commitAll: commitCurrent, message };
+	return { defer, undo, commitAll, message };
 }
 
 /** Hide one question immediately. The parent list changes only when the undo window ends. */

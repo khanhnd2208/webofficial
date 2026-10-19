@@ -308,3 +308,151 @@ test('saves a reading edit and shows where the course description appears', asyn
 		expect((await request.delete(`/api/admin/learn/courses/${course.id}`)).ok()).toBe(true);
 	}
 });
+
+test('adds a lesson from the studio after the outline is empty', async ({ page, context }) => {
+	await addAdminSession(context);
+	const request = context.request;
+	const created = await request.post('/api/admin/learn/courses', {
+		data: { title: `Studio trống ${randomUUID()}` },
+	});
+	expect(created.status()).toBe(201);
+	const course = (await created.json()).data as { id: string; slug: string };
+	try {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio`);
+		await page.getByRole('button', { name: 'Thao tác bài 1' }).click();
+		await page.getByRole('menuitem', { name: 'Xóa bài…' }).click();
+		await page.getByRole('button', { name: 'Xóa bài', exact: true }).click();
+		await expect(page.getByRole('button', { name: /Bài 1:/ })).toHaveCount(0);
+		await page.getByRole('button', { name: 'Thêm bài' }).click();
+		await expect(page.getByRole('button', { name: /Bài 1: Bài 1, 1 mục/ })).toBeVisible();
+		await expect(page.getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục mới');
+	} finally {
+		await addAdminSession(context);
+		expect((await request.delete(`/api/admin/learn/courses/${course.id}`)).ok()).toBe(true);
+	}
+});
+
+async function keepTextAcrossAreas(
+	page: Page,
+	fill: () => Promise<void>,
+	read: () => Promise<void>,
+) {
+	await fill();
+	await page.getByRole('tab', { name: 'Thông tin', exact: true }).click();
+	await expect(page.getByLabel('Thời lượng')).toBeVisible();
+	await page.getByRole('tab', { name: 'Nội dung', exact: true }).click();
+	await read();
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await read();
+	await page.setViewportSize({ width: 390, height: 800 });
+	await read();
+	const save = page.locator('.ln-save');
+	if ((await save.getAttribute('data-status')) !== 'saved') await save.click();
+	await expect(save).toHaveAttribute('data-status', 'saved');
+	await page.reload();
+	await read();
+}
+
+test('keeps a reading edit across mobile tabs, a resize, save and reload', async ({
+	page,
+	context,
+}) => {
+	test.setTimeout(60_000);
+	await addAdminSession(context);
+	const request = context.request;
+	const created = await request.post('/api/admin/learn/courses', {
+		data: { title: `Studio đọc mobile ${randomUUID()}` },
+	});
+	expect(created.status()).toBe(201);
+	const course = (await created.json()).data as { id: string; slug: string };
+	try {
+		const added = await request.post(`/api/admin/learn/courses/${course.id}/lessons`, {
+			data: { title: 'Bài đọc' },
+		});
+		expect(added.status()).toBe(201);
+		const lessonId = (await added.json()).data.id as string;
+		const section = await request.post(`/api/admin/learn/lessons/${lessonId}/sections`, {
+			data: { title: 'Mục đọc', type: 'READING' },
+		});
+		expect(section.status()).toBe(201);
+		const sectionId = (await section.json()).data.id as string;
+		await page.setViewportSize({ width: 390, height: 800 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${sectionId}`);
+		const typed = 'Nội dung gõ rồi đổi vùng.';
+		await keepTextAcrossAreas(
+			page,
+			async () => {
+				await page.getByRole('tab', { name: 'Markdown' }).click();
+				await page.getByRole('textbox', { name: 'Nội dung Markdown' }).fill(typed);
+			},
+			async () => {
+				await page.getByRole('tab', { name: 'Markdown' }).click();
+				await expect(page.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(typed);
+			},
+		);
+	} finally {
+		await addAdminSession(context);
+		expect((await request.delete(`/api/admin/learn/courses/${course.id}`)).ok()).toBe(true);
+	}
+});
+
+test('keeps a discussion prompt across mobile tabs, a resize, save and reload', async ({
+	page,
+	context,
+}) => {
+	test.setTimeout(60_000);
+	await page.setViewportSize({ width: 390, height: 800 });
+	const course = await courseWithDiscussion(context);
+	try {
+		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
+		const typed = 'Câu gõ rồi đổi vùng.';
+		await keepTextAcrossAreas(
+			page,
+			async () => {
+				const box = await promptBox(page);
+				await box.fill(typed);
+			},
+			async () => {
+				await page.getByRole('tab', { name: 'Markdown' }).click();
+				await expect(page.getByRole('textbox', { name: 'Đề bài' })).toHaveValue(typed);
+			},
+		);
+	} finally {
+		await course.cleanup();
+	}
+});
+
+test('the editor stays usable at 1024px and at 200% zoom', async ({ page, context }) => {
+	const course = await courseWithDiscussion(context);
+	try {
+		await page.setViewportSize({ width: 1024, height: 800 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
+		const prompt = page.getByRole('textbox', { name: 'Đề bài', exact: true });
+		await expect(prompt).toBeVisible();
+		const at1024 = await prompt.boundingBox();
+		expect(at1024).not.toBeNull();
+		expect(at1024!.width).toBeGreaterThan(240);
+		expect(at1024!.x).toBeGreaterThanOrEqual(0);
+		expect(at1024!.x + at1024!.width).toBeLessThanOrEqual(1025);
+		await prompt.fill('Soạn ở 1024');
+		await expect(prompt).toContainText('Soạn ở 1024');
+		await page.screenshot({ path: '/tmp/learn-studio-1024.png', fullPage: false });
+
+		// Chrome's 200% zoom on a 1024px window lays out at about 512 CSS pixels.
+		await page.setViewportSize({ width: 512, height: 400 });
+		await expect(page.getByRole('tab', { name: 'Nội dung', exact: true })).toBeVisible();
+		await expect(prompt).toBeVisible();
+		await prompt.fill('Soạn khi phóng 200%');
+		await expect(prompt).toContainText('Soạn khi phóng 200%');
+		const zoomed = await prompt.boundingBox();
+		expect(zoomed).not.toBeNull();
+		expect(zoomed!.width).toBeGreaterThan(160);
+		expect(zoomed!.height).toBeGreaterThan(16);
+		expect(zoomed!.x).toBeGreaterThanOrEqual(0);
+		expect(zoomed!.x + zoomed!.width).toBeLessThanOrEqual(513);
+		await page.screenshot({ path: '/tmp/learn-studio-1024-zoom.png', fullPage: false });
+	} finally {
+		await course.cleanup();
+	}
+});

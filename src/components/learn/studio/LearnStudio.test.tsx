@@ -193,4 +193,144 @@ describe('LearnStudio save button', () => {
 		await waitFor(() => expect(popup.location.href).toBe('/khoa-hoc/demo?s=section-1'));
 		open.mockRestore();
 	});
+
+	it('puts the section back when delete fails and does not open the old preview', async () => {
+		const popup = { closed: false, close: vi.fn(), location: { href: '' } };
+		const open = vi.spyOn(window, 'open').mockReturnValue(popup as unknown as Window);
+		const draft = structuredClone(course);
+		draft.lessons[0].sections.push({
+			...draft.lessons[0].sections[0],
+			id: 'section-2',
+			title: 'Mục 2',
+		});
+		adminFetch.mockRejectedValueOnce(new AdminApiError('Máy chủ từ chối', { status: 500 }));
+		render(<LearnStudio course={draft} initialSectionId="section-1" />);
+
+		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xem như học viên' }));
+
+		await waitFor(() => expect(screen.getByText(/Máy chủ từ chối/)).toBeInTheDocument());
+		expect(screen.getByText(/Mục vẫn còn, hãy thử xóa lại/)).toBeInTheDocument();
+		expect(screen.getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục 1');
+		expect(popup.close).toHaveBeenCalled();
+		expect(popup.location.href).toBe('');
+		expect(adminFetch).toHaveBeenCalledWith(
+			'/api/admin/learn/sections/section-1',
+			expect.objectContaining({ method: 'DELETE' }),
+		);
+		open.mockRestore();
+	});
+
+	it('does not open publish when the section delete failed', async () => {
+		adminFetch.mockRejectedValueOnce(new AdminApiError('Máy chủ từ chối', { status: 500 }));
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xuất bản…' }));
+
+		await waitFor(() =>
+			expect(screen.getByText(/Mục vẫn còn, hãy thử xóa lại/)).toBeInTheDocument(),
+		);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(screen.getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục 1');
+	});
+
+	it('keeps typed markdown when switching areas', () => {
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		const content = screen.getByRole('tab', { name: 'Nội dung' });
+		expect(content).toHaveAttribute('aria-controls', 'ln-studio-panel-content');
+		expect(document.getElementById('ln-studio-panel-content')).toHaveAttribute('role', 'tabpanel');
+		expect(document.getElementById('ln-studio-panel-content')).toHaveAttribute(
+			'aria-labelledby',
+			'ln-studio-tab-content',
+		);
+
+		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
+		fireEvent.change(screen.getByRole('textbox', { name: 'Nội dung Markdown' }), {
+			target: { value: 'Chữ vừa gõ' },
+		});
+		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
+		expect(screen.queryByRole('textbox', { name: 'Nội dung Markdown' })).not.toBeInTheDocument();
+		fireEvent.click(content);
+		expect(screen.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue('Chữ vừa gõ');
+	});
+
+	it('keeps a failed save, retries it, and does not preview the old page', async () => {
+		const popup = { closed: false, close: vi.fn(), location: { href: '' } };
+		const open = vi.spyOn(window, 'open').mockReturnValue(popup as unknown as Window);
+		adminFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+
+		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
+		fireEvent.change(screen.getByRole('textbox', { name: 'Nội dung Markdown' }), {
+			target: { value: 'Bản chưa lên mạng' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Lưu' }));
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Thử lại ngay' })).toBeInTheDocument(),
+		);
+		expect(screen.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
+			'Bản chưa lên mạng',
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Xem như học viên' }));
+		await waitFor(() => expect(popup.close).toHaveBeenCalled());
+		expect(popup.location.href).toBe('');
+		expect(screen.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
+			'Bản chưa lên mạng',
+		);
+
+		adminFetch.mockReset();
+		adminFetch.mockResolvedValue(undefined);
+		fireEvent.click(screen.getByRole('button', { name: 'Thử lại ngay' }));
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: /^Đã lưu · \d{2}:\d{2}$/ })).toBeDisabled(),
+		);
+		expect(screen.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
+			'Bản chưa lên mạng',
+		);
+		open.mockRestore();
+	});
+
+	it('shows a conflict instead of saving over another session', async () => {
+		const popup = { closed: false, close: vi.fn(), location: { href: '' } };
+		const open = vi.spyOn(window, 'open').mockReturnValue(popup as unknown as Window);
+		adminFetch.mockImplementation((url: string, init?: RequestInit) => {
+			if (init?.method === 'PATCH') {
+				return Promise.reject(new AdminApiError('Mục vừa được sửa ở nơi khác', { status: 409 }));
+			}
+			return Promise.resolve({
+				...course.lessons[0].sections[0],
+				markdown: 'Bản máy chủ',
+				updatedAt: '2026-10-19T01:00:00.000Z',
+			});
+		});
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+
+		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
+		fireEvent.change(screen.getByRole('textbox', { name: 'Nội dung Markdown' }), {
+			target: { value: 'Bản của phiên này' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Lưu' }));
+		await waitFor(() =>
+			expect(
+				screen.getByRole('heading', { name: 'Mục "Mục 1" vừa được sửa ở nơi khác' }),
+			).toBeInTheDocument(),
+		);
+
+		fireEvent.change(screen.getByRole('textbox', { name: 'Tên mục' }), {
+			target: { value: 'Tên gõ thêm' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Có bản khác' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xem như học viên' }));
+		await waitFor(() => expect(popup.close).toHaveBeenCalled());
+		expect(popup.location.href).toBe('');
+		const patches = adminFetch.mock.calls.filter(
+			(call) => (call[1] as RequestInit | undefined)?.method === 'PATCH',
+		);
+		expect(patches).toHaveLength(1);
+		expect(screen.getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Tên gõ thêm');
+		open.mockRestore();
+	});
 });

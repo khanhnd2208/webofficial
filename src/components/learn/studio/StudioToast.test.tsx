@@ -53,4 +53,16 @@ describe('StudioToast', () => {
 		fireEvent.keyDown(document, { key: 'Escape' });
 		expect(onClose).toHaveBeenCalledOnce();
 	});
+
+	it('handles a close callback that fails', async () => {
+		const onClose = vi.fn().mockRejectedValue(new Error('xóa lỗi'));
+		render(<StudioToast message="Đã xóa câu 4" onClose={onClose} />);
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(8_000);
+		});
+		expect(onClose).toHaveBeenCalledOnce();
+		await act(async () => {
+			await Promise.resolve();
+		});
+	});
 });

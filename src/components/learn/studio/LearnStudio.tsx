@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import adminStyles from '@/components/admin/AdminStudio.module.css';
 
@@ -33,7 +33,7 @@ import { onTabListKeyDown, useWideStudio, type StudioArea } from './StudioTabs';
 import StudioToast from './StudioToast';
 import StudioTopBar from './StudioTopBar';
 import { findSection, validateSectionPatch, type SectionPatch } from './sectionPatch';
-import { useDeferredDeletes } from './useDeferredDeletes';
+import { StudioDeleteError, useDeferredDeletes } from './useDeferredDeletes';
 import { useSectionImport } from './useSectionImport';
 import { useStudioNavigation } from './useStudioNavigation';
 import { flushRegisteredEditors, useStudioSaver } from './useStudioSaver';
@@ -56,6 +56,32 @@ function committedTitles(lessons: LearnStudioLesson[]) {
 		}
 	}
 	return titles;
+}
+
+/** One studio region. On a narrow screen it stays mounted while another tab is showing. */
+function StudioAreaPanel({
+	id,
+	wide,
+	active,
+	children,
+}: {
+	id: StudioArea;
+	wide: boolean;
+	active: boolean;
+	children: ReactNode;
+}) {
+	const visible = wide || active;
+	return (
+		<div
+			className="ln-studio__panel"
+			id={`ln-studio-panel-${id}`}
+			role={wide ? undefined : 'tabpanel'}
+			aria-labelledby={wide ? undefined : `ln-studio-tab-${id}`}
+			hidden={visible ? undefined : true}
+		>
+			{children}
+		</div>
+	);
 }
 
 export default function LearnStudio({
@@ -110,13 +136,22 @@ export default function LearnStudio({
 	const commitAndFlush = useCallback(async () => {
 		try {
 			await deletes.commitAll();
-		} catch {
+		} catch (err) {
+			if (err instanceof StudioDeleteError) throw err;
 			return { ok: false };
 		}
 		return flush();
 	}, [deletes, flush]);
+	const flushAfterDeletes = useCallback(async () => {
+		try {
+			return await commitAndFlush();
+		} catch (err) {
+			if (err instanceof StudioDeleteError) return { ok: false };
+			throw err;
+		}
+	}, [commitAndFlush]);
 	const { confirm, confirmDialog } = useStudioConfirm();
-	const { onNavigate, openPreview } = useStudioNavigation(commitAndFlush, () =>
+	const { onNavigate, openPreview } = useStudioNavigation(flushAfterDeletes, () =>
 		confirm({
 			title: 'Chưa lưu được',
 			body: 'Những thay đổi vừa rồi chưa được lưu. Vẫn rời trang?',
@@ -244,9 +279,9 @@ export default function LearnStudio({
 	}
 
 	async function exportFile(lessonId?: string) {
-		const saved = await commitAndFlush();
+		const saved = await flushAfterDeletes();
 		if (!saved.ok) {
-			setActionError('Chưa lưu được nội dung');
+			setActionError((current) => current ?? 'Chưa lưu được nội dung');
 			return;
 		}
 		const all = lessonsRef.current;
@@ -257,9 +292,9 @@ export default function LearnStudio({
 	}
 
 	async function openPublish() {
-		const saved = await commitAndFlush();
+		const saved = await flushAfterDeletes();
 		if (!saved.ok) {
-			setActionError('Chưa lưu được nội dung');
+			setActionError((current) => current ?? 'Chưa lưu được nội dung');
 			return;
 		}
 		setDialog('publish');
@@ -274,7 +309,7 @@ export default function LearnStudio({
 
 	const previewSection = (id: string) => {
 		void openPreview(routes.learnCourse(meta.slug, id)).then((opened) => {
-			if (!opened) setActionError('Chưa lưu được nội dung');
+			if (!opened) setActionError((current) => current ?? 'Chưa lưu được nội dung');
 		});
 	};
 	const lessonTitle = lessons.find((lesson) => lesson.id === section?.lessonId)?.title ?? '';
@@ -390,9 +425,11 @@ export default function LearnStudio({
 						).map(([id, label]) => (
 							<button
 								key={id}
+								id={`ln-studio-tab-${id}`}
 								type="button"
 								role="tab"
 								aria-selected={area === id}
+								aria-controls={`ln-studio-panel-${id}`}
 								tabIndex={area === id ? 0 : -1}
 								onClick={() => setArea(id)}
 							>
@@ -429,8 +466,10 @@ export default function LearnStudio({
 				}}
 			>
 				<div className="ln-studio__grid">
-					{wide || area === 'outline' ? sidebar : null}
-					{wide || area === 'content' ? (
+					<StudioAreaPanel id="outline" wide={wide} active={area === 'outline'}>
+						{sidebar}
+					</StudioAreaPanel>
+					<StudioAreaPanel id="content" wide={wide} active={area === 'content'}>
 						<StudioCanvas
 							section={section}
 							lessonTitle={lessonTitle}
@@ -443,9 +482,9 @@ export default function LearnStudio({
 							onOpenImport={imports.setRequest}
 							onOpenHelp={() => setDialog('help')}
 						/>
-					) : null}
-					{wide || area === 'info' ? (
-						section ? (
+					</StudioAreaPanel>
+					<StudioAreaPanel id="info" wide={wide} active={area === 'info'}>
+						{section ? (
 							<StudioInspector
 								section={section}
 								lessons={lessons}
@@ -459,8 +498,8 @@ export default function LearnStudio({
 							<aside className="ln-inspector" aria-label="Thông tin mục">
 								<p className="ln-inspector__hint">Chọn một mục trong mục lục.</p>
 							</aside>
-						)
-					) : null}
+						)}
+					</StudioAreaPanel>
 				</div>
 			</DiscussionSession>
 
