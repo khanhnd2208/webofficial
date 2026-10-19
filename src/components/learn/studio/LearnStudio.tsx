@@ -25,11 +25,11 @@ import RevisionDialog from './RevisionDialog';
 import SectionJumpDialog from './SectionJumpDialog';
 import StudioCanvas from './StudioCanvas';
 import { useStudioConfirm } from './StudioConfirm';
-import StudioDialog, { StudioDrawer } from './StudioDialog';
+import StudioDialog from './StudioDialog';
 import StudioHelpDialog from './StudioHelpDialog';
 import StudioInspector from './StudioInspector';
 import StudioOutline from './StudioOutline';
-import { useWideStudio } from './StudioTabs';
+import { onTabListKeyDown, useWideStudio, type StudioArea } from './StudioTabs';
 import StudioToast from './StudioToast';
 import StudioTopBar from './StudioTopBar';
 import { findSection, validateSectionPatch, type SectionPatch } from './sectionPatch';
@@ -77,8 +77,7 @@ export default function LearnStudio({
 		lessonsRef.current = lessons;
 	}, [lessons]);
 	const wide = useWideStudio();
-	const [navOpen, setNavOpen] = useState(false);
-	const [inspectorOpen, setInspectorOpen] = useState(false);
+	const [area, setArea] = useState<StudioArea>('content');
 	const [sidebarTab, setSidebarTab] = useState<'outline' | 'questions'>('outline');
 	const [dialog, setDialog] = useState<
 		'settings' | 'help' | 'shortcuts' | 'publish' | 'draft' | 'history' | 'jump' | null
@@ -108,19 +107,22 @@ export default function LearnStudio({
 	});
 	const { flush, queue, syncIssues, issues } = saver;
 	const deletes = useDeferredDeletes();
-	const { confirm, confirmDialog } = useStudioConfirm();
-	const { onNavigate, openPreview } = useStudioNavigation(
-		async () => {
+	const commitAndFlush = useCallback(async () => {
+		try {
 			await deletes.commitAll();
-			return flush();
-		},
-		() =>
-			confirm({
-				title: 'Chưa lưu được',
-				body: 'Những thay đổi vừa rồi chưa được lưu. Vẫn rời trang?',
-				confirmLabel: 'Rời trang',
-				cancelLabel: 'Ở lại',
-			}),
+		} catch {
+			return { ok: false };
+		}
+		return flush();
+	}, [deletes, flush]);
+	const { confirm, confirmDialog } = useStudioConfirm();
+	const { onNavigate, openPreview } = useStudioNavigation(commitAndFlush, () =>
+		confirm({
+			title: 'Chưa lưu được',
+			body: 'Những thay đổi vừa rồi chưa được lưu. Vẫn rời trang?',
+			confirmLabel: 'Rời trang',
+			cancelLabel: 'Ở lại',
+		}),
 	);
 
 	const section = useMemo(() => findSection(lessons, selectedId), [lessons, selectedId]);
@@ -136,7 +138,7 @@ export default function LearnStudio({
 		(id: string | null) => {
 			flushRegisteredEditors();
 			setSelectedId(id);
-			if (!wide) setNavOpen(false);
+			if (!wide) setArea('content');
 			window.history.replaceState(window.history.state, '', routes.learnStudio(meta.slug, id));
 		},
 		[meta.slug, wide],
@@ -160,7 +162,7 @@ export default function LearnStudio({
 		lessonsRef,
 		setLessons,
 		select,
-		flush,
+		flush: commitAndFlush,
 		remember,
 		remount,
 	});
@@ -198,7 +200,11 @@ export default function LearnStudio({
 	/** Take the user to the first section with a field that cannot be saved. */
 	function showIssue() {
 		const key = Object.keys(issues).find((item) => item.startsWith('section:'));
-		if (key) select(key.slice('section:'.length));
+		if (!key) return;
+		const fields = issues[key] ?? {};
+		const inContent = Boolean(fields.title || fields.markdown || fields.discussion);
+		select(key.slice('section:'.length));
+		if (!wide) setArea(inContent ? 'content' : 'info');
 	}
 
 	// ─── Course ──────────────────────────────────────────────────────────────
@@ -238,7 +244,7 @@ export default function LearnStudio({
 	}
 
 	async function exportFile(lessonId?: string) {
-		const saved = await flush();
+		const saved = await commitAndFlush();
 		if (!saved.ok) {
 			setActionError('Chưa lưu được nội dung');
 			return;
@@ -251,7 +257,7 @@ export default function LearnStudio({
 	}
 
 	async function openPublish() {
-		const saved = await flush();
+		const saved = await commitAndFlush();
 		if (!saved.ok) {
 			setActionError('Chưa lưu được nội dung');
 			return;
@@ -271,7 +277,10 @@ export default function LearnStudio({
 			if (!opened) setActionError('Chưa lưu được nội dung');
 		});
 	};
-	const titleError = section ? issues[`section:${section.id}`]?.title : undefined;
+	const lessonTitle = lessons.find((lesson) => lesson.id === section?.lessonId)?.title ?? '';
+	const fieldErrors = section ? issues[`section:${section.id}`] : undefined;
+	const titleError = fieldErrors?.title;
+	const editingLabel = section ? `${lessonTitle} · ${section.title}` : 'chưa chọn mục';
 
 	useStudioShortcuts({
 		save: () => void flush(),
@@ -284,11 +293,17 @@ export default function LearnStudio({
 
 	const sidebar = (
 		<aside className="ln-souter">
-			<div className="ln-souter__tabs" role="tablist" aria-label="Điều hướng">
+			<div
+				className="ln-souter__tabs"
+				role="tablist"
+				aria-label="Điều hướng"
+				onKeyDown={onTabListKeyDown}
+			>
 				<button
 					type="button"
 					role="tab"
 					aria-selected={sidebarTab === 'outline'}
+					tabIndex={sidebarTab === 'outline' ? 0 : -1}
 					onClick={() => setSidebarTab('outline')}
 				>
 					Mục lục khóa
@@ -298,21 +313,12 @@ export default function LearnStudio({
 						type="button"
 						role="tab"
 						aria-selected={sidebarTab === 'questions'}
+						tabIndex={sidebarTab === 'questions' ? 0 : -1}
 						onClick={() => setSidebarTab('questions')}
 					>
 						Danh sách câu
 					</button>
 				) : null}
-				{wide ? null : (
-					<button
-						type="button"
-						className="ln-icon-btn"
-						onClick={() => setNavOpen(false)}
-						aria-label="Đóng mục lục"
-					>
-						×
-					</button>
-				)}
 			</div>
 			{discussion && sidebarTab === 'questions' ? (
 				<DiscussionQuestionList />
@@ -357,6 +363,10 @@ export default function LearnStudio({
 				onFlush={() => void flush()}
 				onShowIssue={showIssue}
 				onOpenSettings={() => setDialog('settings')}
+				onPreview={() => {
+					if (section) previewSection(section.id);
+				}}
+				canPreview={Boolean(section)}
 				onPublish={() => void openPublish()}
 				onUnpublish={() => setDialog('draft')}
 				onExportCourse={() => void exportFile()}
@@ -364,13 +374,33 @@ export default function LearnStudio({
 				onHelp={() => setDialog('help')}
 			/>
 			{meta.status === 'PUBLISHED' ? (
-				<p className="ln-studio__live-note">Thay đổi được cập nhật cho học viên sau khi lưu.</p>
+				<p className="ln-studio__live-note">
+					Khóa đang công khai. Mỗi lần lưu thành công, học viên thấy nội dung mới.
+				</p>
 			) : null}
 			{wide ? null : (
-				<div className="ln-studio__navtoggle">
-					<button type="button" className="ln-btn" onClick={() => setNavOpen(true)}>
-						Mục lục
-					</button>
+				<div className="ln-studio__areas">
+					<div role="tablist" aria-label="Vùng soạn" onKeyDown={onTabListKeyDown}>
+						{(
+							[
+								['outline', 'Mục lục'],
+								['content', 'Nội dung'],
+								['info', 'Thông tin'],
+							] as const
+						).map(([id, label]) => (
+							<button
+								key={id}
+								type="button"
+								role="tab"
+								aria-selected={area === id}
+								tabIndex={area === id ? 0 : -1}
+								onClick={() => setArea(id)}
+							>
+								{label}
+							</button>
+						))}
+					</div>
+					<p className="ln-studio__editing">Đang sửa: {editingLabel}</p>
 				</div>
 			)}
 
@@ -391,7 +421,7 @@ export default function LearnStudio({
 			<DiscussionSession
 				key={`${discussion?.id ?? 'reading'}:${editorEpoch}`}
 				onSelect={() => {
-					if (!wide) setNavOpen(false);
+					if (!wide) setArea('content');
 				}}
 				discussion={discussion?.discussion ?? { questions: [] }}
 				onChange={(next) => {
@@ -399,42 +429,39 @@ export default function LearnStudio({
 				}}
 			>
 				<div className="ln-studio__grid">
-					{wide ? (
-						sidebar
-					) : navOpen ? (
-						<StudioDrawer title="Mục lục" side="left" onClose={() => setNavOpen(false)}>
-							{sidebar}
-						</StudioDrawer>
-					) : null}
-
-					<StudioCanvas
-						section={section}
-						lessonTitle={lessons.find((lesson) => lesson.id === section?.lessonId)?.title ?? ''}
-						editorEpoch={editorEpoch}
-						titleError={titleError}
-						keptTitle={keptTitle}
-						onPatch={(patch) => section && patchSection(section.id, patch)}
-						onRestoreTitle={() => section && restoreTitle(section.id)}
-						onOpenImport={imports.setRequest}
-						onOpenHelp={() => setDialog('help')}
-						onOpenProperties={() => setInspectorOpen(true)}
-					/>
-				</div>
-
-				{section && inspectorOpen ? (
-					<StudioDrawer title="Thuộc tính mục" side="right" onClose={() => setInspectorOpen(false)}>
-						<StudioInspector
+					{wide || area === 'outline' ? sidebar : null}
+					{wide || area === 'content' ? (
+						<StudioCanvas
 							section={section}
-							lessons={lessons}
-							onPatch={(patch) => patchSection(section.id, patch)}
-							onMove={(lessonId) => structure.moveSection(section.id, lessonId)}
-							onDelete={() => structure.deleteSection(section.id)}
-							onHistory={() => setDialog('history')}
-							onPreview={() => previewSection(section.id)}
-							onClose={() => setInspectorOpen(false)}
+							lessonTitle={lessonTitle}
+							editorEpoch={editorEpoch}
+							titleError={titleError}
+							fieldErrors={fieldErrors}
+							keptTitle={keptTitle}
+							onPatch={(patch) => section && patchSection(section.id, patch)}
+							onRestoreTitle={() => section && restoreTitle(section.id)}
+							onOpenImport={imports.setRequest}
+							onOpenHelp={() => setDialog('help')}
 						/>
-					</StudioDrawer>
-				) : null}
+					) : null}
+					{wide || area === 'info' ? (
+						section ? (
+							<StudioInspector
+								section={section}
+								lessons={lessons}
+								fieldErrors={fieldErrors}
+								onPatch={(patch) => patchSection(section.id, patch)}
+								onMove={(lessonId) => structure.moveSection(section.id, lessonId)}
+								onDelete={() => structure.deleteSection(section.id)}
+								onHistory={() => setDialog('history')}
+							/>
+						) : (
+							<aside className="ln-inspector" aria-label="Thông tin mục">
+								<p className="ln-inspector__hint">Chọn một mục trong mục lục.</p>
+							</aside>
+						)
+					) : null}
+				</div>
 			</DiscussionSession>
 
 			{imports.request ? (

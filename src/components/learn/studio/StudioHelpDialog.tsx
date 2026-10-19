@@ -11,6 +11,7 @@ import {
 } from '@/features/learn/markdownSnippets';
 
 import StudioDialog from './StudioDialog';
+import { onTabListKeyDown } from './StudioTabs';
 import { ManualCopyField, useCopy } from './useCopy';
 
 const SHORTCUTS: { keys: string; label: string }[] = [
@@ -49,11 +50,17 @@ export default function StudioHelpDialog({
 
 	return (
 		<StudioDialog title="Trợ giúp soạn bài" onClose={onClose}>
-			<div className="ln-editor__modes" role="tablist" aria-label="Nội dung trợ giúp">
+			<div
+				className="ln-editor__modes"
+				role="tablist"
+				aria-label="Nội dung trợ giúp"
+				onKeyDown={onTabListKeyDown}
+			>
 				<button
 					type="button"
 					role="tab"
 					aria-selected={tab === 'syntax'}
+					tabIndex={tab === 'syntax' ? 0 : -1}
 					onClick={() => setTab('syntax')}
 				>
 					Cú pháp Markdown
@@ -62,6 +69,7 @@ export default function StudioHelpDialog({
 					type="button"
 					role="tab"
 					aria-selected={tab === 'shortcuts'}
+					tabIndex={tab === 'shortcuts' ? 0 : -1}
 					onClick={() => setTab('shortcuts')}
 				>
 					Phím tắt

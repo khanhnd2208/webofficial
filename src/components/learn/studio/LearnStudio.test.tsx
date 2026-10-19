@@ -69,6 +69,9 @@ describe('LearnStudio save button', () => {
 		render(
 			<LearnStudio course={{ ...course, status: 'PUBLISHED' }} initialSectionId="section-1" />,
 		);
+		expect(
+			screen.getByText('Khóa đang công khai. Mỗi lần lưu thành công, học viên thấy nội dung mới.'),
+		).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Thêm thao tác với khóa học' }));
 		fireEvent.click(screen.getByRole('menuitem', { name: 'Chuyển về bản nháp…' }));
 		await waitFor(() =>
@@ -148,7 +151,7 @@ describe('LearnStudio save button', () => {
 
 	it('hides a deleted section and restores it without sending DELETE', () => {
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
-		fireEvent.click(screen.getByRole('button', { name: 'Thuộc tính' }));
+		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
 		expect(screen.getByText('Đã xóa mục "Mục 1"')).toBeInTheDocument();
 		expect(screen.queryByRole('textbox', { name: 'Tên mục' })).not.toBeInTheDocument();
@@ -160,13 +163,31 @@ describe('LearnStudio save button', () => {
 		expect(adminFetch).not.toHaveBeenCalled();
 	});
 
+	it('keeps the section name visible while switching areas from the keyboard', () => {
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		expect(screen.getByText('Đang sửa: Bài 1 · Mục 1')).toBeInTheDocument();
+		const content = screen.getByRole('tab', { name: 'Nội dung' });
+		content.focus();
+		fireEvent.keyDown(content, { key: 'ArrowRight' });
+		expect(screen.getByRole('tab', { name: 'Thông tin' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByLabelText('Thời lượng')).toBeInTheDocument();
+		expect(screen.getByText('Đang sửa: Bài 1 · Mục 1')).toBeInTheDocument();
+		expect(screen.getByText(/Hiện cạnh loại mục trên trang học/)).toBeInTheDocument();
+	});
+
+	it('describes the course blurb as the overview introduction', () => {
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		fireEvent.click(screen.getByRole('button', { name: 'Khóa demo' }));
+		expect(screen.getByText('Hiện ở phần Giới thiệu, phía trên mục lục bài.')).toBeInTheDocument();
+		expect(screen.queryByText(/đầu mục đầu tiên/)).not.toBeInTheDocument();
+	});
+
 	it('opens the learner preview in a tab created during the click', async () => {
 		const popup = { closed: false, location: { href: '' } };
 		const open = vi.spyOn(window, 'open').mockReturnValue(popup as unknown as Window);
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
-		fireEvent.click(screen.getByRole('button', { name: 'Thuộc tính' }));
 
-		fireEvent.click(screen.getByRole('button', { name: /Xem như học viên/ }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xem như học viên' }));
 
 		expect(open).toHaveBeenCalledWith('', '_blank');
 		await waitFor(() => expect(popup.location.href).toBe('/khoa-hoc/demo?s=section-1'));

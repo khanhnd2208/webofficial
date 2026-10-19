@@ -36,6 +36,7 @@ import { learnEditorExtensions } from './editorExtensions';
 import { registerEditorFlush } from './useStudioSaver';
 import TextDiff from './TextDiff';
 import { StudioIcon } from './icons';
+import { onTabListKeyDown } from './StudioTabs';
 import { filterSlashCommands, type SlashCommand } from './slashCommands';
 
 import EditorToolbar from './EditorToolbar';
@@ -492,12 +493,18 @@ export default function LearnRichEditor({
 					.finally(() => setReadingFiles(false));
 			}}
 		>
-			<div className="ln-editor__modes" role="tablist" aria-label="Chế độ soạn">
+			<div
+				className="ln-editor__modes"
+				role="tablist"
+				aria-label="Chế độ soạn"
+				onKeyDown={onTabListKeyDown}
+			>
 				<button
 					type="button"
 					role="tab"
 					disabled={uploads.uploading || readingFiles || processingPaste}
 					aria-selected={mode === 'visual'}
+					tabIndex={mode === 'visual' ? 0 : -1}
 					onClick={() => switchMode('visual')}
 				>
 					Soạn trực quan
@@ -507,6 +514,7 @@ export default function LearnRichEditor({
 					role="tab"
 					disabled={uploads.uploading || readingFiles || processingPaste}
 					aria-selected={mode === 'markdown'}
+					tabIndex={mode === 'markdown' ? 0 : -1}
 					onClick={() => switchMode('markdown')}
 				>
 					<StudioIcon name="markdown" /> Markdown

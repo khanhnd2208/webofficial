@@ -21,7 +21,60 @@ import ImportImagePicker from './ImportImagePicker';
 import { DiscussionImportPreview, ImportSummary, LessonImportPreview } from './ImportPreview';
 import { useStudioConfirm } from './StudioConfirm';
 import StudioDialog from './StudioDialog';
+import { onTabListKeyDown } from './StudioTabs';
 import { ManualCopyField, useCopy } from './useCopy';
+
+function quotedTitles(items: Array<{ title: string }>) {
+	const names = items.map((item) => `“${item.title.trim() || 'mục không tên'}”`);
+	if (names.length <= 4) return names.join(', ');
+	return `${names.slice(0, 4).join(', ')} và ${names.length - 4} mục khác`;
+}
+
+function importImpact(input: {
+	kind: AiImportKind;
+	contentReady: boolean;
+	lessonMode: 'create' | 'replace';
+	questionMode: 'append' | 'replace';
+	lessonName: string;
+	sectionName: string;
+	sectionTitle: string;
+	lessonCount: number;
+	questionCount: number;
+	existingQuestions: number;
+	hasTarget: boolean;
+	updates: number;
+	creates: number;
+	deletes: number;
+}) {
+	if (input.kind === 'lesson' && input.lessonMode === 'create') {
+		return input.contentReady
+			? `Tạo bài mới với ${input.lessonCount} mục.`
+			: 'Tạo bài mới. Dán nội dung để xem số mục.';
+	}
+	if (input.kind === 'lesson') {
+		if (!input.contentReady) {
+			return `Thay nội dung bài “${input.lessonName}”. Dán nội dung để xem mục nào được giữ hoặc xóa.`;
+		}
+		const bits = [`${input.updates} mục được ghi lại`];
+		if (input.creates) bits.push(`${input.creates} mục mới`);
+		if (input.deletes) bits.push(`${input.deletes} mục bị xóa`);
+		return `Thay bài “${input.lessonName}”: ${bits.join(', ')}.`;
+	}
+	if (input.hasTarget && input.questionMode === 'append') {
+		return input.contentReady
+			? `Thêm ${input.questionCount} câu vào sau ${input.existingQuestions} câu hiện có trong “${input.sectionName}”.`
+			: `Thêm câu vào sau ${input.existingQuestions} câu hiện có trong “${input.sectionName}”.`;
+	}
+	if (input.hasTarget) {
+		return input.contentReady
+			? `Thay ${input.existingQuestions} câu hiện có trong “${input.sectionName}” bằng ${input.questionCount} câu vừa dán.`
+			: `Thay ${input.existingQuestions} câu hiện có trong “${input.sectionName}”.`;
+	}
+	const title = input.sectionTitle.trim() || DEFAULT_SECTION_TITLE;
+	return input.contentReady
+		? `Tạo mục “${title}” trong “${input.lessonName}” với ${input.questionCount} câu.`
+		: `Tạo mục phản biện mới trong “${input.lessonName}”.`;
+}
 
 export type AiImportKind = 'lesson' | 'discussion';
 
@@ -103,15 +156,18 @@ export default function AiImportDialog({
 
 	const lessonSections = lessonParsed?.lessons.flatMap((lesson) => lesson.sections) ?? [];
 	const questionCount = discussionParsed?.questions.length ?? 0;
-	const deletedCount = useMemo(() => {
-		if (kind !== 'lesson' || lessonMode !== 'replace' || !cleaned) return 0;
-		const current = lessons.find((lesson) => lesson.id === lessonId);
-		if (!current) return 0;
-		const incoming = parseCourseMarkdown(cleaned.markdown).lessons.flatMap(
-			(lesson) => lesson.sections,
+	const selectedLesson = lessons.find((lesson) => lesson.id === lessonId);
+	const targetSection = target
+		? lessons.flatMap((lesson) => lesson.sections).find((item) => item.id === target.sectionId)
+		: undefined;
+	const replacePlan = useMemo(() => {
+		if (kind !== 'lesson' || lessonMode !== 'replace' || !lessonParsed || !selectedLesson)
+			return null;
+		return planContentReplace(
+			selectedLesson.sections.map((item) => ({ id: item.id, title: item.title })),
+			lessonParsed.lessons.flatMap((lesson) => lesson.sections),
 		);
-		return planContentReplace(current.sections, incoming).deletes.length;
-	}, [kind, lessonMode, lessons, lessonId, cleaned]);
+	}, [kind, lessonMode, lessonParsed, selectedLesson]);
 
 	const existingCount = target && questionMode === 'append' ? target.count : 0;
 	const report = useMemo<ImportReport | null>(() => {
@@ -169,19 +225,23 @@ export default function AiImportDialog({
 
 	async function submit() {
 		if (uploadBusy || busy) return;
-		if (kind === 'lesson' && lessonMode === 'replace' && deletedCount > 0) {
+		if (replacePlan && replacePlan.deletes.length > 0) {
+			const names = quotedTitles(replacePlan.deletes);
 			const accepted = await confirm({
-				title: 'Thay nội dung và xóa mục cũ?',
-				body: `${deletedCount} mục không còn trong bản dán sẽ bị xóa, cùng tiến độ của học viên trên các mục đó.`,
+				title: `Xóa ${replacePlan.deletes.length} mục khỏi “${selectedLesson?.title ?? 'bài đã chọn'}”?`,
+				body: `${names} không còn trong bản dán. Các mục này và tiến độ học viên trên đó sẽ mất. ${replacePlan.updates.length} mục được giữ và cập nhật${
+					replacePlan.creates.length ? `, ${replacePlan.creates.length} mục được thêm` : ''
+				}.`,
 				confirmLabel: 'Thay và xóa',
 				danger: true,
 			});
 			if (!accepted) return;
 		}
-		if (kind === 'discussion' && target && questionMode === 'replace') {
+		if (kind === 'discussion' && target && questionMode === 'replace' && target.count > 0) {
+			const where = targetSection?.title ?? 'mục đang mở';
 			const accepted = await confirm({
-				title: 'Thay toàn bộ câu hỏi?',
-				body: 'Câu hiện có trong mục này sẽ được thay bằng nội dung vừa dán.',
+				title: `Thay ${target.count} câu trong “${where}”?`,
+				body: `${target.count} câu hiện có sẽ bị thay bằng ${questionCount} câu vừa dán.`,
 				confirmLabel: 'Thay câu hỏi',
 				danger: true,
 			});
@@ -220,14 +280,33 @@ export default function AiImportDialog({
 	const unit = kind === 'lesson' ? 'mục' : 'câu';
 	const count = kind === 'lesson' ? lessonSections.length : questionCount;
 	const saveLabel = `Lưu ${count} ${unit}`;
+	const lessonName = selectedLesson?.title ?? 'bài đã chọn';
+	const sectionName = targetSection?.title ?? 'mục đang mở';
 	const destination =
 		kind === 'lesson'
 			? lessonMode === 'create'
 				? 'bài mới'
-				: (lessons.find((lesson) => lesson.id === lessonId)?.title ?? 'bài đã chọn')
+				: `bài “${lessonName}”`
 			: target
-				? 'mục đang mở'
-				: 'mục phản biện mới';
+				? `mục “${sectionName}”`
+				: `mục mới trong bài “${lessonName}”`;
+	const removedCount = replacePlan?.deletes.length ?? 0;
+	const impact = importImpact({
+		kind,
+		contentReady,
+		lessonMode,
+		questionMode,
+		lessonName,
+		sectionName,
+		sectionTitle,
+		lessonCount: lessonSections.length,
+		questionCount,
+		existingQuestions: target?.count ?? 0,
+		hasTarget: Boolean(target),
+		updates: replacePlan?.updates.length ?? 0,
+		creates: replacePlan?.creates.length ?? 0,
+		deletes: removedCount,
+	});
 
 	return (
 		<>
@@ -279,10 +358,10 @@ export default function AiImportDialog({
 							))}
 						</div>
 					)}
-					<div className="flex flex-wrap items-center gap-2 text-sm">
-						<span className="text-ink-secondary">
+					<div className="ln-import-target">
+						<p>
 							Đích: {courseTitle} → {destination}
-						</span>
+						</p>
 						<DestinationFields
 							kind={kind}
 							lessons={lessons}
@@ -296,37 +375,32 @@ export default function AiImportDialog({
 							sectionTitle={sectionTitle}
 							onSectionTitle={setSectionTitle}
 						/>
+						<p id="ln-import-impact">{impact}</p>
+						{report ? <ImportSummary count={count} unit={unit} report={report} /> : null}
 					</div>
-					<ol className="ln-import-todo" aria-label="Việc cần làm">
-						<li data-done={promptCopied || undefined}>
-							<button type="button" className="ln-link-btn" onClick={() => void copyPrompt()}>
-								<StudioIcon name="copy" size={14} />{' '}
-								{copied ? 'Đã chép prompt' : 'Chép prompt định dạng'}
-							</button>
-							<span className="text-ink-secondary">
-								{' '}
-								rồi đưa cho AI cùng {kind === 'lesson' ? 'bài giảng gốc' : 'câu hỏi gốc'}
-							</span>
-						</li>
-						<li data-done={text.trim() ? true : undefined}>Dán kết quả AI vào ô bên dưới</li>
-						<li data-done={canSave || undefined}>
-							{report ? (
-								<ImportSummary count={count} unit={unit} report={report} />
-							) : (
-								'Xem trước như học viên, sửa lỗi nếu có, rồi lưu'
-							)}
-						</li>
-					</ol>
-					{manual ? <ManualCopyField text={manual} /> : null}
+					<details className="ln-import-help">
+						<summary>Dùng AI để định dạng (tùy chọn)</summary>
+						<p>
+							Chép prompt, đưa cho AI cùng {kind === 'lesson' ? 'bài giảng gốc' : 'câu hỏi gốc'},
+							rồi dán kết quả vào ô bên dưới. Có thể bỏ qua bước này nếu nội dung đã theo mẫu.
+						</p>
+						<button type="button" className="ln-link-btn" onClick={() => void copyPrompt()}>
+							<StudioIcon name="copy" size={14} />{' '}
+							{copied || promptCopied ? 'Đã chép prompt' : 'Chép prompt định dạng'}
+						</button>
+						{manual ? <ManualCopyField text={manual} /> : null}
+					</details>
 					<div
 						className="ln-segmented ln-split__switch self-start"
 						role="tablist"
 						aria-label="Khung"
+						onKeyDown={onTabListKeyDown}
 					>
 						<button
 							type="button"
 							role="tab"
 							aria-selected={pane === 'paste'}
+							tabIndex={pane === 'paste' ? 0 : -1}
 							onClick={() => setPane('paste')}
 						>
 							Dán
@@ -335,6 +409,7 @@ export default function AiImportDialog({
 							type="button"
 							role="tab"
 							aria-selected={pane === 'preview'}
+							tabIndex={pane === 'preview' ? 0 : -1}
 							onClick={() => setPane('preview')}
 						>
 							Xem trước{report?.errors ? ` · ${report.errors} lỗi` : ''}
@@ -345,23 +420,25 @@ export default function AiImportDialog({
 					<textarea
 						autoFocus
 						className="ln-editor__source min-h-[22rem]"
-						aria-label="Kết quả AI"
+						aria-label="Nội dung dán"
+						aria-describedby="ln-import-impact"
+						aria-invalid={report?.errors ? true : undefined}
 						value={text}
 						onChange={(event) => setText(event.target.value)}
 						onPaste={() => setPane('preview')}
 						spellCheck={false}
 						placeholder={
 							kind === 'lesson'
-								? 'Dán kết quả AI vào đây: bắt đầu bằng dòng # Tên bài, mỗi mục mở bằng === SECTION: … ==='
-								: 'Dán kết quả AI vào đây: mỗi câu mở bằng dòng "Câu 1:", đề bài, rồi dòng "Đáp án mẫu:"'
+								? 'Dán bài giảng: bắt đầu bằng dòng # Tên bài, mỗi mục mở bằng === SECTION: … ==='
+								: 'Dán câu phản biện: mỗi câu mở bằng dòng "Câu 1:", đề bài, rồi dòng "Đáp án mẫu:"'
 						}
 					/>
 					<div className="ln-preview" aria-label="Xem như học viên">
 						<p className="ln-preview__label">Xem như học viên</p>
 						<ImportImagePicker markdown={text} onChange={setText} onBusyChange={setUploadBusy} />
-						{deletedCount > 0 ? (
+						{removedCount > 0 ? (
 							<p className="ln-warning">
-								{deletedCount} mục không còn trong bản dán sẽ bị xóa, học viên mất tiến độ trên các
+								{quotedTitles(replacePlan?.deletes ?? [])} sẽ bị xóa, cùng tiến độ học viên trên các
 								mục đó.
 							</p>
 						) : null}
