@@ -40,7 +40,7 @@ out at `~/Workspace/Active/vps`; `vps help` lists every command).
 | See the last backup                | `ssh webofficial-vps 'tail -5 /var/log/db-backup/cron.log'`                      |
 | See who tried to break in          | `ssh webofficial-vps 'fail2ban-client status sshd'`                              |
 
-The `vps-health` workflow checks the server every 3 hours; GitHub emails the
+The `vps-health` workflow checks the server every 6 hours; GitHub emails the
 owner when it fails. That email is the signal to look.
 
 ## Inventory
@@ -150,7 +150,7 @@ lists with
 | TLS          | Let's Encrypt via certbot timer                                                        | `certbot certificates`                        |
 | Backups      | 02:00 daily and before each migration; 3 PostgreSQL + every MongoDB DB; 7 days local; copied to Google Drive | `/opt/scripts/backup-databases.sh`, root cron |
 | Backup files | `/var/backups/db` 750 root:postgres, dump folders 700, files 600                       |                                               |
-| Health       | `vps-health` workflow every 3 hours; GitHub emails the owner on failure                | `.github/workflows/vps-health.yml`            |
+| Health       | `vps-health` workflow every 6 hours; GitHub emails the owner on failure                | `.github/workflows/vps-health.yml`            |
 
 `sshd` takes the first value it reads, and `00-hardening.conf` loads first, so a
 file that cloud-init writes later cannot turn password login back on.
