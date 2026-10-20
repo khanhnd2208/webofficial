@@ -10,7 +10,7 @@ Danh sách đường dẫn của từng khu nằm ở **`scripts/areas/areas.mjs
 | ------------------------------------------------------------------ | ------------------------------------------ |
 | Luật import trong `eslint.config.mjs`                              | import trực tiếp `areas.mjs`               |
 | `.github/e2e-path-filters.yml`, `.github/e2e-outside-filter.yml` | sinh bằng `npm run areas:sync`             |
-| CI (job "Typecheck, lint, audit")                                  | `npm run areas:check` chặn khi bị lệch     |
+| CI (job "Static checks and tests")                                 | `npm run areas:check` chặn khi bị lệch     |
 
 Khi thêm thư mục hoặc route mới:
 
