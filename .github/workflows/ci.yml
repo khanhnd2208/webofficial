@@ -432,3 +432,12 @@ jobs:
         env:
           TEACHING_GROUP_BOARD_ENABLED: 'true'
         run: npx playwright test e2e/teaching-groups.spec.ts
+
+      - name: Upload Playwright results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-${{ github.run_attempt }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
