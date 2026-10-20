@@ -1313,11 +1313,13 @@ model LearnCourse {
   subtitle    String           @default("")
   description String           @default("") @db.Text
   category    String           @default("")
-  level       LearnCourseLevel @default(BASIC)
-  status      PublishStatus    @default(DRAFT)
-  position    Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  level        LearnCourseLevel @default(BASIC)
+  status       PublishStatus    @default(DRAFT)
+  /// Optional cover. Null keeps the default course artwork.
+  thumbnailUrl String?
+  position     Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   publishedAt DateTime?
 
   lessons       LearnLesson[]

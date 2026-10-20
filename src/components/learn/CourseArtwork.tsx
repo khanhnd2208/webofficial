@@ -10,20 +10,27 @@ import projectArt from '../../../public/brand/courses/project-management-v1.webp
 export default function CourseArtwork({
 	slug,
 	className = '',
+	fill = false,
+	sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 540px',
 }: {
 	slug?: string;
 	className?: string;
+	/** Fill the nearest positioned parent instead of the wide 16:10 banner. */
+	fill?: boolean;
+	sizes?: string;
 }) {
 	const artwork = { ai: aiArt, business: businessArt, growth: growthArt, project: projectArt };
 	const art = artwork[courseArtworkKey(slug)];
 	return (
-		<span className={`relative block aspect-[16/10] overflow-hidden ${className}`}>
+		<span
+			className={`block overflow-hidden ${fill ? 'absolute inset-0' : 'relative aspect-[16/10]'} ${className}`}
+		>
 			<Image
 				src={art}
 				alt=""
 				fill
 				placeholder={art.blurDataURL ? 'blur' : 'empty'}
-				sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 540px"
+				sizes={sizes}
 				className="object-cover"
 			/>
 		</span>

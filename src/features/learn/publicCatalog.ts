@@ -12,6 +12,7 @@ export async function listPublishedCoursePreviews() {
 			description: true,
 			category: true,
 			level: true,
+			thumbnailUrl: true,
 			lessons: {
 				orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
 				select: {
