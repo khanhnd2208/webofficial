@@ -184,8 +184,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Vitest defaults to one worker fewer than the CPUs, which is one on this
+      # two-CPU runner; jsdom setup per file is CPU-bound, so two halve it.
       - name: Component tests
-        run: npm run test:component
+        run: npm run test:component -- --maxWorkers=2
 
   build:
     name: Production build
