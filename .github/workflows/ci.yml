@@ -108,14 +108,39 @@ jobs:
       - name: Prisma validate
         run: npx prisma validate
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint -- --max-warnings=0
-
-      - name: Format check
-        run: npm run format:check
+      # The three checks are single-threaded and the runner has two CPUs, so
+      # they run side by side: about a minute instead of almost two. A failed
+      # check prints its whole log; a passing one folds into a group.
+      - name: Typecheck, lint and format check
+        run: |
+          set -euo pipefail
+          logs="$RUNNER_TEMP/static-checks"
+          mkdir -p "$logs"
+          checks=(typecheck lint format)
+          pids=()
+          npm run typecheck > "$logs/typecheck.log" 2>&1 &
+          pids+=("$!")
+          npm run lint -- --max-warnings=0 > "$logs/lint.log" 2>&1 &
+          pids+=("$!")
+          npm run format:check > "$logs/format.log" 2>&1 &
+          pids+=("$!")
+          failed=()
+          for i in "${!checks[@]}"; do
+            check="${checks[$i]}"
+            if wait "${pids[$i]}"; then
+              echo "::group::$check passed"
+              cat "$logs/$check.log"
+              echo "::endgroup::"
+            else
+              failed+=("$check")
+              echo "::error title=$check failed::See the $check log below."
+              cat "$logs/$check.log"
+            fi
+          done
+          if (( ${#failed[@]} > 0 )); then
+            echo "Failed: ${failed[*]}" >&2
+            exit 1
+          fi
 
       - name: Area map check
         run: npm run areas:check
