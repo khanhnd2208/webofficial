@@ -126,7 +126,8 @@ lists with
 - `khanhnd2208/webofficial`: only the owner. Environment `production` holds
   `VPS_SSH_KEY`, `VPS_HOST`, `VPS_USER=deploy`, `VPS_KNOWN_HOSTS`; only `main`
   may use it. No repository-level secrets. `main` requires a pull request and
-  the five CI checks; force-push and deletion are blocked.
+  the two CI checks, `Static checks and tests` and `Build and end-to-end
+  tests`; force-push and deletion are blocked.
 - `khanhnd2208/learn-chinese`: environment `production` (main only) holds
   `VPS_HOST`, `VPS_USER=deploy`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS`.
 - `khanhnd2208/chijuly`: environment `production` (main only) holds
@@ -304,3 +305,4 @@ user per app, auditd/AIDE/CrowdSec, Livepatch.
 | 2026-10-06 | Old in-place app files moved to `/var/www/<app>/_legacy-20261006/` (~5.4 GB); delete from 2026-10-20          | `mv` the item back; list in `MANIFEST-before.txt`             |
 | 2026-10-07 | Fun games: database `fun_games`, user `fun_user` (readWrite on that database only), `/var/www/fun` on port 3002, key `ci-fun-deploy-2026-10` | Drop the user and database after the overlap; remove the key (`authorized_keys.deploy` in `/root/hardening-backup-20261007`) |
 | 2026-10-07 | Certificate for `fun.toiladuykhanh.com` and nginx `fun` proxying `127.0.0.1:3002` | Remove the site file and `certbot delete --cert-name fun.toiladuykhanh.com` |
+| 2026-10-20 | Required checks on `main`: the five CI job names replaced by `Static checks and tests` and `Build and end-to-end tests` | Put the five names back in branch protection (listed in PR 61) |

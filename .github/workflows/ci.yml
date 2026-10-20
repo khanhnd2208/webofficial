@@ -40,7 +40,7 @@ jobs:
   # merged pull request's test merge) skips the checks below: they would test
   # identical source, and the deploy ships that run's build. Only when the
   # previous main commit is green: after a failed or cancelled main run, the
-  # full run widens end-to-end selection to cover it (see e2e below). Pull
+  # full run widens end-to-end selection to cover it (see the e2e steps). Pull
   # requests always run everything, so they skip this job: each job bills at
   # least a minute. Any lookup error also runs everything. The jobs below test
   # !cancelled() because a skipped need would otherwise skip them as well.
@@ -88,47 +88,15 @@ jobs:
           done
           echo "No successful CI run for tree $tree; running every check."
 
-  static:
-    name: Typecheck, lint, audit
+  # Each job bills its own rounded-up minutes and repeats checkout, Node setup
+  # and npm ci, so the checks share two jobs instead of five: one for
+  # everything that needs only source, one for the build and the browser tests.
+  checks:
+    name: Static checks and tests
     needs: reuse
     if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Prisma validate
-        run: npx prisma validate
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint -- --max-warnings=0
-
-      - name: Format check
-        run: npm run format:check
-
-      - name: Area map check
-        run: npm run areas:check
-
-      - name: Dependency audit
-        run: npm audit --audit-level=moderate
-
-  unit-integration:
-    name: Unit and integration tests
-    needs: reuse
-    if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # Integration tests start their own in-memory MongoDB (src/test/helpers/db.mongo.ts)
     # and unit tests mock the driver, so only PostgreSQL runs as a service.
     services:
@@ -158,6 +126,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint -- --max-warnings=0
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Area map check
+        run: npm run areas:check
+
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate
+
       - name: Prisma migrate (test DB)
         run: npx prisma migrate deploy
 
@@ -167,40 +153,51 @@ jobs:
       - name: Integration tests
         run: npm run test:integration
 
-  component:
-    name: Component tests
-    needs: reuse
-    if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
       # Vitest defaults to one worker fewer than the CPUs, which is one on this
       # two-CPU runner; jsdom setup per file is CPU-bound, so two halve it.
       - name: Component tests
         run: npm run test:component -- --maxWorkers=2
 
-  build:
-    name: Production build
+  build-e2e:
+    name: Build and end-to-end tests
     needs: reuse
     if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    outputs:
-      artifact: ${{ steps.release.outputs.artifact }}
-    # No database services: every prerendered page comes from source files and
-    # the build never connects, so starting them only cost about a minute.
+    timeout-minutes: 40
+    # The build never connects to a database; the services are for the
+    # end-to-end tests, and they start while the build runs.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: teaching_platform_vocab_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 60s
+          --health-start-interval 1s
+      mongodb:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 60s
+          --health-start-interval 1s
     steps:
       - uses: actions/checkout@v4
+        with:
+          # History is needed to diff against the last green main commit.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -278,67 +275,16 @@ jobs:
           retention-days: 3
           if-no-files-found: error
 
-  e2e:
-    name: End-to-end tests
-    needs: build
-    # Explicit, because the default success() also counts the skipped lookup
-    # job upstream and would skip this job, which a required check reads as passed.
-    if: ${{ !cancelled() && needs.build.result == 'success' }}
-    runs-on: ubuntu-latest
-    env:
-      NEXT_BUILD_ARTIFACT: ${{ needs.build.outputs.artifact }}
-    timeout-minutes: 25
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: teaching_platform_vocab_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --health-start-period 60s
-          --health-start-interval 1s
-      mongodb:
-        image: mongo:8
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 60s
-          --health-start-interval 1s
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # History is needed to diff against the last green main commit.
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download the production build
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.NEXT_BUILD_ARTIFACT }}
-          path: ${{ runner.temp }}/next-build
-
+      # The end-to-end tests run on the packed archive, the exact files the
+      # deploy ships, so a symlink lost in packing fails here and not on the VPS.
+      # The compiler cache is kept aside so its post step can still save it.
       - name: Unpack the production build
         run: |
           set -euo pipefail
-          tar -xf "${RUNNER_TEMP}/next-build/next-build.tar"
+          if [[ -d .next/cache ]]; then mv .next/cache "${RUNNER_TEMP}/next-cache"; fi
+          rm -rf .next
+          tar -xf "${RUNNER_TEMP}/next-build.tar"
+          if [[ -d "${RUNNER_TEMP}/next-cache" ]]; then mv "${RUNNER_TEMP}/next-cache" .next/cache; fi
           test -s .next/BUILD_ID
           broken="$(find .next -type l ! -exec test -e {} ';' -print)"
           if [[ -n "$broken" ]]; then
