@@ -21,7 +21,7 @@ toiladuykhanh.com: personal site plus teaching platform. One Next.js 16 app, Mon
 3. Never commit or print secrets: `.env*` (except `.env.example`), passwords, tokens, keys, database dumps. Read variable names from `.env.example`.
 4. Production data changes only through the running app (Studio pages or admin APIs with an admin session). Never write to the production database directly or over SSH. Seed scripts skip existing rows, so they do not update production.
 5. Ask the user first before: a Prisma migration, deleting data or tracked files outside your task, adding a dependency or a major upgrade, force-updating anything shared, or posting anything outside the repo.
-6. Server and GitHub-settings changes (SSH, firewall, users, keys, Nginx, packages, secrets, branch rules) follow `docs/deployment/SECURITY.md`: back up first, keep a rollback, ask the user before anything that can lock them out or take sites down, and add a change-log line.
+6. Server and GitHub-settings changes (SSH, firewall, users, keys, Nginx, packages, secrets, branch rules) follow the server security record in the private `khanhnd2208/vps-infra` repo (`docs/SECURITY.md`): back up first, keep a rollback, ask the user before anything that can lock them out or take sites down, and add a change-log line there.
 
 ## Workspace
 

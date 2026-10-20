@@ -202,4 +202,4 @@ API routes enforce auth independently via `withAuth` / `withAdmin` wrappers — 
 
 ## Production Deployment
 
-See [`docs/deployment/VPS.md`](./docs/deployment/VPS.md) for the full deployment guide (PM2, Nginx, SSL) and [`docs/deployment/SECURITY.md`](./docs/deployment/SECURITY.md) for server access, security controls, and the change log.
+See [`docs/deployment/VPS.md`](./docs/deployment/VPS.md) for the app deploy pipeline. Server access, security controls, the change log, and the Nginx baseline live in the private `khanhnd2208/vps-infra` repo (`docs/SECURITY.md` and `docs/SERVER-WEBOFFICIAL.md`).
