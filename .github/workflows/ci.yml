@@ -38,9 +38,12 @@ jobs:
   # identical source, and the deploy ships that run's build. Only when the
   # previous main commit is green: after a failed or cancelled main run, the
   # full run widens end-to-end selection to cover it (see e2e below). Pull
-  # requests, and any lookup error, always run everything.
+  # requests always run everything, so they skip this job: each job bills at
+  # least a minute. Any lookup error also runs everything. The jobs below test
+  # !cancelled() because a skipped need would otherwise skip them as well.
   reuse:
     name: Find an identical tested tree
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -48,7 +51,6 @@ jobs:
     steps:
       - name: Look for a successful CI run of this source tree
         id: find
-        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -86,7 +88,7 @@ jobs:
   static:
     name: Typecheck, lint, audit
     needs: reuse
-    if: needs.reuse.outputs.hit != 'true'
+    if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -121,7 +123,7 @@ jobs:
   unit-integration:
     name: Unit and integration tests
     needs: reuse
-    if: needs.reuse.outputs.hit != 'true'
+    if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
@@ -170,7 +172,7 @@ jobs:
   component:
     name: Component tests
     needs: reuse
-    if: needs.reuse.outputs.hit != 'true'
+    if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -190,7 +192,7 @@ jobs:
   build:
     name: Production build
     needs: reuse
-    if: needs.reuse.outputs.hit != 'true'
+    if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -303,6 +305,9 @@ jobs:
   e2e:
     name: End-to-end tests
     needs: build
+    # Explicit, because the default success() also counts the skipped lookup
+    # job upstream and would skip this job, which a required check reads as passed.
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     env:
       NEXT_BUILD_ARTIFACT: ${{ needs.build.outputs.artifact }}
