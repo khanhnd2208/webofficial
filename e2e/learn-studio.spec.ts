@@ -1,7 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 
-import { addAdminSession } from './helpers/adminSession';
+import { addAdminSession, createAdminRequest } from './helpers/adminSession';
 
 test.beforeAll(() => {
 	const host = new URL(process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000').hostname;
@@ -14,6 +14,15 @@ function main(page: Page) {
 	return page.locator('#main-content');
 }
 
+async function deleteCourse(courseId: string) {
+	const api = await createAdminRequest();
+	try {
+		expect((await api.delete(`/api/admin/learn/courses/${courseId}`)).ok()).toBe(true);
+	} finally {
+		await api.dispose();
+	}
+}
+
 async function courseWithDiscussion(context: BrowserContext) {
 	await addAdminSession(context);
 	const request = context.request;
@@ -23,8 +32,7 @@ async function courseWithDiscussion(context: BrowserContext) {
 	expect(created.status()).toBe(201);
 	const course = (await created.json()).data as { id: string; slug: string };
 	async function cleanup() {
-		await addAdminSession(context);
-		expect((await request.delete(`/api/admin/learn/courses/${course.id}`)).ok()).toBe(true);
+		await deleteCourse(course.id);
 	}
 	try {
 		const added = await request.post(`/api/admin/learn/courses/${course.id}/lessons`, {
@@ -320,8 +328,7 @@ test('saves a reading edit and shows where the course description appears', asyn
 		await expect(main(page).getByText('Đang sửa: Bài đọc · Mục đã sửa')).toBeVisible();
 		await expect(main(page).getByRole('button', { name: 'Mục đã sửa', exact: true })).toBeVisible();
 	} finally {
-		await addAdminSession(context);
-		expect((await request.delete(`/api/admin/learn/courses/${course.id}`)).ok()).toBe(true);
+		await deleteCourse(course.id);
 	}
 });
 
@@ -344,8 +351,7 @@ test('adds a lesson from the studio after the outline is empty', async ({ page, 
 		await expect(main(page).getByRole('button', { name: /Bài 1: Bài 1, 1 mục/ })).toBeVisible();
 		await expect(main(page).getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục mới');
 	} finally {
-		await addAdminSession(context);
-		expect((await request.delete(`/api/admin/learn/courses/${course.id}`)).ok()).toBe(true);
+		await deleteCourse(course.id);
 	}
 });
 
@@ -410,8 +416,7 @@ test('keeps a reading edit across mobile tabs, a resize, save and reload', async
 			},
 		);
 	} finally {
-		await addAdminSession(context);
-		expect((await request.delete(`/api/admin/learn/courses/${course.id}`)).ok()).toBe(true);
+		await deleteCourse(course.id);
 	}
 });
 
