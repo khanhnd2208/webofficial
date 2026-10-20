@@ -144,7 +144,7 @@ else
 fi
 disk_used="$(df -P "$deploy_root" | awk 'NR == 2 { sub("%", "", $5); print $5 }')"
 if ((disk_used > max_disk_used)); then
-	echo "Disk is ${disk_used}% used, above ${max_disk_used}%; see docs/deployment/VPS.md, Disk space" >&2
+	echo "Disk is ${disk_used}% used, above ${max_disk_used}%; see vps-infra docs/SERVER-WEBOFFICIAL.md, Disk space" >&2
 	exit 1
 fi
 REMOTE_CHECK
