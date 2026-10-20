@@ -119,5 +119,5 @@ after_kb="$(free_kb)"
 printf 'disk free: %s MB before, %s MB after\n' "$((before_kb / 1024))" "$((after_kb / 1024))"
 
 if ((after_kb < min_free_gb * 1024 * 1024)); then
-	die "Only $((after_kb / 1024)) MB free under $deploy_root; a deploy needs at least ${min_free_gb} GB. Free space by hand (see docs/deployment/VPS.md, Disk space) before deploying."
+	die "Only $((after_kb / 1024)) MB free under $deploy_root; a deploy needs at least ${min_free_gb} GB. Free space by hand (see vps-infra docs/SERVER-WEBOFFICIAL.md, Disk space) before deploying."
 fi

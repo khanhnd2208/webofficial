@@ -74,7 +74,8 @@ gh run list --workflow deploy.yml --limit 1
 gh run watch <run-id>
 ```
 
-Never `--auto`: `main` has no required checks, so it merges before CI ends.
+`main` requires `Static checks and tests` and `Build and end-to-end tests`, so
+`gh pr merge <n> --auto --merge` waits until those checks are green.
 Do not start `npm run deploy:vps` while the workflow runs. If the deploy fails,
 read `docs/deployment/VPS.md` and ask before any manual step.
 

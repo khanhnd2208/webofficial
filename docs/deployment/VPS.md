@@ -3,73 +3,31 @@
 This document is the production runbook for `https://toiladuykhanh.com`.
 The only supported deploy entry point is `scripts/deploy-vps.sh`; GitHub Actions
 calls the same script. Do not build over the directory currently serving users.
-Server access, security controls, and the change log live in
-[`SECURITY.md`](./SECURITY.md).
-
-## Production topology
-
-- Ubuntu VPS, Nginx TLS termination, and PM2 process `nextjs-app`.
-- Nginx proxies the application to `127.0.0.1:4000`.
-- A staged candidate is tested temporarily on `127.0.0.1:4001`.
-- MongoDB and PostgreSQL listen on localhost only.
-- `/api/health/live` verifies the Next.js process.
-- `/api/health/ready` verifies Next.js, MongoDB, and PostgreSQL together.
-- Node.js must satisfy Next.js' installed engine requirement (`>=20.9.0`). Keep
-  local CI and the VPS on the same pinned LTS major; do not rely on an
-  unversioned system upgrade.
-
-The release layout is:
-
-```text
-/var/www/webofficial/
-├── .env.local                 # shared source of truth, mode 0600
-├── current -> releases/<id>    # atomically replaced on promotion
-├── releases/<id>/             # source + node_modules + .next
-├── .build-cache/              # full and production node_modules reused when dependency inputs match
-├── public/uploads/            # shared persistent uploads
-├── public/music/uploads/      # shared persistent music uploads
-├── backups/                   # operator data; never synced/deleted
-└── theory/                    # operator data; never synced/deleted
-```
-
-Each release links the persistent directories above instead of copying them.
-The first release-based deployment keeps the untouched legacy application root
-as its rollback target. Later deployments point `current` at the prior release.
+Server access, security controls, and the change log live in the private
+`khanhnd2208/vps-infra` repo (`docs/SECURITY.md`). The directory layout, disk
+guards, and Nginx baseline live in `docs/SERVER-WEBOFFICIAL.md` there.
 
 ## Required production environment
 
-Keep secrets only in `/var/www/webofficial/.env.local` and set mode `0600`.
-At minimum, production requires:
+Production needs these variables. Keep the values only on the server, and never
+print them in deploy logs.
 
 ```dotenv
-MONGODB_URI=mongodb://...
-DATABASE_URL=postgresql://...
-AUTH_SECRET=...
-AUTH_URL=https://toiladuykhanh.com
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-ADMIN_EMAIL=...
-ADMIN_SECRET=...
-TEACHING_GROUP_BOARD_ENABLED=false
-PUBLIC_TESTS_ENABLED=false
-PUBLIC_KNOWLEDGE_ENABLED=false
+MONGODB_URI
+DATABASE_URL
+AUTH_SECRET
+AUTH_URL
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+ADMIN_EMAIL
+ADMIN_SECRET
+TEACHING_GROUP_BOARD_ENABLED
+PUBLIC_TESTS_ENABLED
+PUBLIC_KNOWLEDGE_ENABLED
 ```
 
 `NEXTAUTH_URL` is accepted as a compatibility URL alias. `NEXTAUTH_SECRET` may
 remain for older tooling, but this application still requires `AUTH_SECRET`.
-Never print environment values in deploy logs.
-
-Validate presence without exposing values:
-
-```bash
-ssh webofficial-vps '
-  cd /var/www/webofficial
-  stat -c "%a %U:%G %n" .env.local
-  for key in MONGODB_URI DATABASE_URL AUTH_SECRET AUTH_URL GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET; do
-    grep -q "^${key}=." .env.local || echo "missing: ${key}"
-  done
-'
-```
 
 ## Pre-deploy gates
 
@@ -125,7 +83,7 @@ The script performs these steps in order:
    `current` and the four newest other releases, deletes older ones, drops
    `.next/cache` from every release except `current`, and clears the npm cache
    above 4 GB. It stops the deploy when less than 8 GB stays free (see
-   [Disk space](#disk-space)). Then it creates a unique
+   vps-infra `docs/SERVER-WEBOFFICIAL.md`, Disk space). Then it creates a unique
    `/var/www/webofficial/releases/<id>` directory.
 3. Uses rsync with `--delete` only inside that new release. It excludes `.env*`,
    uploads, `backups/`, `theory/`, `.venv/`, `*.tsbuildinfo`, dependencies,
@@ -194,8 +152,9 @@ Generate the known-hosts material from a trusted administrator machine and
 compare the fingerprint with the VPS console before saving it:
 
 ```bash
-VPS_PORT=22 # confirmed production SSH port; change only after a console-verified move
-ssh-keyscan -H -p "$VPS_PORT" 217.217.253.161 > /tmp/webofficial_known_hosts
+# The production address is in vps-infra `docs/SECURITY.md`. Compare the
+# fingerprint with the VPS console before saving the secret.
+ssh-keyscan -H -p "${VPS_PORT:-22}" "$VPS_HOST" > /tmp/webofficial_known_hosts
 ssh-keygen -lf /tmp/webofficial_known_hosts
 gh secret set --env production VPS_KNOWN_HOSTS < /tmp/webofficial_known_hosts
 ```
@@ -271,104 +230,3 @@ pm2 save --force
 Rollback targets are `current` and the four newest other releases; the deploy
 prunes anything older. Rolled-back releases have no `.next/cache`, which only
 slows the next build.
-
-## Disk space
-
-Every release carries its own `node_modules` and `.next` (about 1.5–2 GB). In
-October 2026, 41 unpruned releases plus a 15 GB npm cache filled the 145 GB
-disk; MongoDB aborted when it could not write its log, and the app kept failing
-Mongo requests until it restarted. The deploy now prunes before staging and
-refuses to start with less than `DEPLOY_MIN_FREE_GB` (default 8) free.
-`DEPLOY_KEEP_RELEASES` (default 4) sets how many releases besides `current`
-stay.
-
-Check and prune by hand (read the dry run before the real run):
-
-```bash
-ssh webofficial-vps 'df -h / && du -sh /var/www/webofficial/releases /home/deploy/.npm /var/log/journal'
-ssh deploy@webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- --dry-run /var/www/webofficial 4 0' \
-  < scripts/deploy-prune-releases.sh
-ssh deploy@webofficial-vps 'flock -n /var/www/webofficial/.deploy.lock bash -s -- /var/www/webofficial 4 0' \
-  < scripts/deploy-prune-releases.sh
-```
-
-The server side also caps what grows outside the deploy (see
-[Server guards](#server-guards)).
-
-## Server guards
-
-Configured on the VPS by hand on 2026-10-04 as drop-in files, so package
-upgrades keep them. Recreate them on a new server:
-
-| File | Setting | Why |
-| --- | --- | --- |
-| `/etc/systemd/journald.conf.d/50-webofficial-size.conf` | `SystemMaxUse=1G`, `SystemKeepFree=10G` | The journal had reached 3.2 GB. |
-| `/etc/logrotate.d/mongod` | weekly or past 100 MB, keep 4, `copytruncate` | `mongod.log` was never rotated. mongod opens it with `O_APPEND`, so truncating needs no restart. |
-| `/etc/systemd/system/mongod.service.d/50-restart.conf` | `Restart=on-failure`, `RestartSec=10s`, at most 5 starts in 10 min | mongod stayed down after it aborted. |
-| `/etc/systemd/system/postgresql@.service.d/50-restart.conf` | same as mongod | PostgreSQL had no restart policy either. |
-
-PM2 logs rotate through the `pm2-logrotate` module (10 MB, keep 7). Run
-`systemctl daemon-reload` after editing a unit drop-in, and
-`systemctl restart systemd-journald` after editing the journald one.
-
-`.github/workflows/vps-health.yml` runs `scripts/deploy-vps.sh --check` every
-three hours. It fails when nginx, PostgreSQL or MongoDB is down, the app is not
-ready, or the disk is more than `CHECK_MAX_DISK_USED_PERCENT` (default 80) full;
-GitHub emails the failed run. GitHub pauses scheduled workflows after 60 days
-without repository activity; re-enable it from the Actions tab if that happens.
-
-## Nginx and TLS baseline
-
-Next.js redirects `www.toiladuykhanh.com` to `https://toiladuykhanh.com` with HTTP 308, preserving paths and queries so Google sessions use one host. This can move to a dedicated nginx redirect server later; keep TLS coverage for both hosts. Session cookies are host-only, so anyone signed in only on `www` signs in once more on the main host after this redirect; this was accepted rather than copying cookies across hosts.
-
-The active HTTPS server must include these proxy and security settings:
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name toiladuykhanh.com www.toiladuykhanh.com;
-
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-
-    location / {
-        proxy_pass http://127.0.0.1:4000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Port $server_port;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_read_timeout 120s;
-        proxy_send_timeout 120s;
-    }
-}
-```
-
-Never hardcode `X-Forwarded-Port 80` in the TLS server. Validate configuration
-before a graceful reload:
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-Post-deploy verification:
-
-```bash
-curl -fsS https://toiladuykhanh.com/api/health/live
-curl -fsS https://toiladuykhanh.com/api/health/ready
-curl -fsS https://toiladuykhanh.com/api/auth/providers
-ssh deploy@webofficial-vps pm2 status nextjs-app
-```
-
-Then complete the signed-in browser smoke test in a fresh private window:
-Google login, admin authorization, Teaching interactions, Active Recall, and
-the intentionally locked unfinished areas. Ask users with a tab open during a
-release to refresh once before starting a new learning session.
