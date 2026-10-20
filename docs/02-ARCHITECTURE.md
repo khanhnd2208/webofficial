@@ -160,6 +160,7 @@ Playwright tests live in `e2e/`. The GitHub Actions end-to-end job downloads
 the production build from the build job and then invokes Playwright. When run
 with `CI=true`, its config starts that already-built app; locally,
 `npm run test:e2e` expects an already-running app at the configured base URL.
+A failed CI run keeps `test-results/` for seven days (retry traces included).
 Area ownership is documented in `docs/areas.md`.
 
 ## 7. Source-of-truth files

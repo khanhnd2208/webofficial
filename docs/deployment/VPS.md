@@ -164,7 +164,8 @@ gh secret set --env production VPS_KNOWN_HOSTS < /tmp/webofficial_known_hosts
 CI's `Build and end-to-end tests` job uploads `.next` as `next-build-<source
 tree>` and records three files in it: `SOURCE_TREE`, `DEPLOYMENT_ID`, and
 `BUILD_ENV` (the `NEXT_PUBLIC_*` values and public learning locks Next.js
-inlined). The deploy workflow downloads the artifact for the deployed commit's
+inlined). When that job's Playwright run fails, it also keeps `test-results/`
+for seven days so the hanging step can be read from the retry trace. The deploy workflow downloads the artifact for the deployed commit's
 tree from a CI run in this repository that fully succeeded, end-to-end tests
 included; a pull request run qualifies when its test merge had exactly the same
 files. The VPS then skips `next build`, about six minutes.
