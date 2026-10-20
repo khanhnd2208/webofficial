@@ -17,6 +17,9 @@ permissions:
   contents: read
   pull-requests: read
 
+# Service containers probe health every second while they start, so jobs wait
+# seconds instead of the 10s interval; later probes keep that interval.
+
 env:
   TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/teaching_platform_vocab_test
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/teaching_platform_vocab_test
@@ -142,6 +145,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --health-start-period 60s
+          --health-start-interval 1s
     steps:
       - uses: actions/checkout@v4
 
@@ -295,6 +300,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --health-start-period 60s
+          --health-start-interval 1s
       mongodb:
         image: mongo:8
         ports:
@@ -304,6 +311,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
+          --health-start-period 60s
+          --health-start-interval 1s
     steps:
       - uses: actions/checkout@v4
         with:
