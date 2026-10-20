@@ -80,7 +80,6 @@ export default function CourseSettingsDialog({
 				onClose={() => void requestClose()}
 				footer={
 					<>
-						{error ? <p className="mr-auto text-sm text-error">{error}</p> : null}
 						<button
 							type="button"
 							className="ln-btn"
@@ -104,6 +103,11 @@ export default function CourseSettingsDialog({
 				}
 			>
 				<div className="ln-form">
+					{error ? (
+						<p className="ln-field-error ln-field-error--block" role="alert">
+							{error}
+						</p>
+					) : null}
 					<label>
 						<span>Tên khóa học</span>
 						<input
@@ -113,51 +117,70 @@ export default function CourseSettingsDialog({
 							onChange={(event) => set('title', event.target.value)}
 						/>
 					</label>
-					<label>
-						<span>Dòng giới thiệu ngắn</span>
-						<input
-							className="ln-input"
-							value={draft.subtitle}
-							maxLength={500}
-							onChange={(event) => set('subtitle', event.target.value)}
-						/>
-					</label>
-					<label>
-						<span>Mô tả (hiện ở đầu mục đầu tiên)</span>
-						<textarea
-							className="ln-input"
-							rows={4}
-							value={draft.description}
-							maxLength={4000}
-							onChange={(event) => set('description', event.target.value)}
-						/>
-					</label>
-					<div className="grid gap-4 sm:grid-cols-2">
+					<fieldset className="ln-fieldset">
+						<legend>Trang tổng quan</legend>
+						<p className="ln-field-hint">
+							Học viên thấy các mục này trên trang tổng quan, trước khi mở một bài.
+						</p>
 						<label>
-							<span>Chủ đề</span>
+							<span>Dòng giới thiệu ngắn</span>
 							<input
 								className="ln-input"
-								value={draft.category}
-								maxLength={100}
-								placeholder="VD: Quản trị học"
-								onChange={(event) => set('category', event.target.value)}
+								value={draft.subtitle}
+								maxLength={500}
+								aria-describedby="ln-course-subtitle-hint"
+								onChange={(event) => set('subtitle', event.target.value)}
 							/>
+							<span id="ln-course-subtitle-hint" className="ln-field-hint">
+								Hiện ngay dưới tên khóa.
+							</span>
 						</label>
 						<label>
-							<span>Cấp độ</span>
-							<select
+							<span>Mô tả</span>
+							<textarea
 								className="ln-input"
-								value={draft.level}
-								onChange={(event) => set('level', event.target.value as LearnLevel)}
-							>
-								{Object.entries(LEARN_LEVEL_LABELS).map(([value, label]) => (
-									<option key={value} value={value}>
-										{label}
-									</option>
-								))}
-							</select>
+								rows={4}
+								value={draft.description}
+								maxLength={4000}
+								aria-describedby="ln-course-description-hint"
+								onChange={(event) => set('description', event.target.value)}
+							/>
+							<span id="ln-course-description-hint" className="ln-field-hint">
+								Hiện ở phần Giới thiệu, phía trên mục lục bài.
+							</span>
 						</label>
-					</div>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<label>
+								<span>Chủ đề</span>
+								<input
+									className="ln-input"
+									value={draft.category}
+									maxLength={100}
+									placeholder="VD: Quản trị học"
+									aria-describedby="ln-course-category-hint"
+									onChange={(event) => set('category', event.target.value)}
+								/>
+								<span id="ln-course-category-hint" className="ln-field-hint">
+									Hiện cùng cấp độ, phía trên tên khóa.
+								</span>
+							</label>
+							<label>
+								<span>Cấp độ</span>
+								<select
+									className="ln-input"
+									value={draft.level}
+									aria-describedby="ln-course-category-hint"
+									onChange={(event) => set('level', event.target.value as LearnLevel)}
+								>
+									{Object.entries(LEARN_LEVEL_LABELS).map(([value, label]) => (
+										<option key={value} value={value}>
+											{label}
+										</option>
+									))}
+								</select>
+							</label>
+						</div>
+					</fieldset>
 					<div>
 						<ThumbnailUpload
 							variant="product"
@@ -177,8 +200,13 @@ export default function CourseSettingsDialog({
 							<input
 								value={draft.slug}
 								maxLength={180}
+								aria-label="Đường dẫn khóa học"
+								aria-describedby="ln-course-slug-hint"
 								onChange={(event) => set('slug', event.target.value)}
 							/>
+						</span>
+						<span id="ln-course-slug-hint" className="ln-field-hint">
+							Địa chỉ trang tổng quan và các bài của khóa.
 						</span>
 					</label>
 

@@ -55,10 +55,47 @@ Nhánh `cursor/learn-studio-admin` có commit chuẩn hóa ban đầu `b545ba8`.
 
 - Nội dung editor trực quan đang chờ debounce bị mất hoặc ghi đè danh sách khi thêm, nhân bản, đổi thứ tự và xóa câu. Thao tác cấu trúc giờ flush editor, đọc draft mới nhất; xóa cập nhật JSON ngay và undo không làm mất phần sửa tiếp theo.
 - Undo và câu đang chọn được giới hạn theo mục/phiên khôi phục; xóa câu cuối không giữ editor của câu đã xóa.
-- Studio dùng theme Admin chung; preview giữ theme học viên. Mục lục và thuộc tính dùng modal drawer có vòng Tab, Escape, tên truy cập và trả focus về nút mở.
+- Studio dùng theme Admin chung; preview giữ theme học viên. Drawer mục lục/thuộc tính của đợt này đã được thay bằng một mặt soạn (mục 19/10/2026).
 - Breakpoint dùng snapshot SSR nhất quán để tránh hydration mismatch trên desktop.
 - Mọi chế độ nhập đều chặn áp dụng nếu lưu bản đang sửa thất bại. Xuất và khôi phục bài đọc loại các khối luyện tập đã nghỉ; nội dung không liên quan, kể cả dòng trống trong code block, được giữ nguyên.
 
 Kiểm tra local: typecheck, lint không warning, format, areas, build; 830 unit, 452 component, 188 integration. Sáu hành trình Playwright kiểm tra soạn/chuyển câu, nhập thực sự qua ba bước, lưu/khôi phục, nhân bản/xóa với draft mới nhất, focus drawer và bố cục ở 390/768/1024/1280/1440/1920px. E2E chỉ chạy localhost trên database test riêng.
 
 Không có dependency hay migration mới. Chưa chỉnh nội dung đang chạy trên production: các đoạn luyện tập nằm trong Markdown bài giảng cũ phải đọc lại, lưu phiên bản và PATCH phần khác biệt qua Studio/admin session; không dùng seed hay ghi database trực tiếp.
+
+## Giao diện soạn — 19/10/2026
+
+Một mặt soạn: mục lục, nội dung và thông tin mục. Từ 64rem trở lên cả ba hiện cùng lúc. Dưới mức đó, tab Mục lục / Nội dung / Thông tin chuyển vùng; dòng “Đang sửa” luôn nêu bài và mục đang mở. Drawer mục lục và thuộc tính không còn.
+
+“Xem như học viên” nằm trên thanh trên. Lưu vẫn hiện Đang lưu, Đã lưu, mất kết nối (kèm Thử lại ngay) hoặc lỗi cần sửa. Khóa công khai ghi rõ: lưu thành công thì học viên thấy nội dung mới.
+
+Mô tả khóa hiện ở phần Giới thiệu trên trang tổng quan, không phải đầu mục đầu tiên. Thời lượng, tóm tắt và ý chính nằm trong nhóm “Hiện với học viên”, kèm chỗ chúng xuất hiện trên trang học.
+
+Hộp nhập tên là “Nhập nội dung”. Ô dán nhận Markdown hoặc câu phản biện. Đích, cách nhập (tạo mới, thêm, thay) và số mục/câu bị ảnh hưởng hiện trước khi lưu. Thay thế làm mất mục hoặc câu phải xác nhận, kèm tên mục hoặc số câu. Hướng dẫn đưa prompt cho AI nằm trong “Dùng AI để định dạng (tùy chọn)”.
+
+Nhập thay thế, xem trước, xuất Markdown và xuất bản gọi `commitAll()` rồi mới `flush()`. `commitAll()` chờ cả mục đang trong cửa sổ hoàn tác lẫn DELETE đã gửi nhưng chưa xong. DELETE lỗi thì mục được đưa lại vào mục lục, Studio báo lỗi cụ thể, và thao tác phụ thuộc dừng: nhập không ghi, xuất không tải file, xuất bản không mở hộp thoại, xem trước đóng tab trống thay vì mở trang học viên. Lưu chữ bị lỗi hoặc mất mạng thì giữ bản đang gõ và thử lại được; xem trước không mở bản cũ như thể đã lưu. Hai phiên sửa cùng một mục thì hiện hộp xung đột, không ghi đè im lặng.
+
+Trên màn hẹp, tab Mục lục / Nội dung / Thông tin gắn với vùng nội dung bằng `id`, `aria-controls`, `role="tabpanel"` và `aria-labelledby`. Đổi tab chỉ ẩn vùng kia. Ô soạn vẫn nằm trên trang, nên chữ vừa gõ còn khi quay lại hoặc khi cửa sổ vượt mốc 64rem.
+
+Hợp đồng `flush()` vẫn là `Promise<{ ok: boolean }>`. Không thêm dependency, migration hay API công khai.
+
+Đã gỡ CSS quiz/phương án và drawer không còn phần tử nào dùng. Không đụng dữ liệu bài giảng, quản lý lớp hay bộ thẻ ôn tập. Phần dư được dọn trong phạm vi đã kiểm tra bên dưới; điều đó không có nghĩa toàn bộ Studio đã hết vấn đề. Production chưa được mở trong đợt sửa — sau khi triển khai vẫn cần smoke test trên site đang chạy.
+
+### Đã chạy
+
+- `npm run typecheck`, `npm run lint -- --max-warnings=0`, `npm run format:check`, `npm run areas:check`: đạt.
+- `npm run test:unit`: 780. `npm run test:component`: 472.
+- `npm run build`: đạt.
+- Playwright `e2e/learn-studio.spec.ts` (chromium, server local, database test): 11 đạt. Gồm xóa bài mặc định rồi thêm bài từ giao diện, gõ bài đọc và câu phản biện rồi đổi tab/đổi cỡ cửa sổ/lưu/tải lại, và soạn được ở 1024px cùng viewport 512px (tương đương phóng 200% trên cửa sổ 1024px).
+
+### Đọc từ mã
+
+- `commitAll()` giữ Promise của DELETE đang chạy. Lần gọi chồng lên nhau phải chờ DELETE đó. Xóa mục khác khi mục trước chưa xong thì mục trước vẫn được gửi và lỗi của nó không thành Promise bị bỏ quên.
+- DELETE lỗi thì `restore()` đưa mục lại, `setActionError` nêu lỗi và câu “hãy thử xóa lại”, rồi ném `StudioDeleteError`. Nhập nhận lỗi đó. Xem trước, xuất và xuất bản nhận `{ ok: false }` và không đi tiếp.
+- Tab vùng soạn có `id` và `aria-controls`. Vùng tương ứng có `role="tabpanel"` và `aria-labelledby` khi đang ở layout hẹp. Ba vùng vẫn mounted; tab không chọn chỉ bị `hidden`.
+
+### Chưa xác minh ở đây
+
+- `npm run test:integration`: không chạy, vì không đổi API, service hay schema.
+- Toàn bộ Studio ngoài các ca ở trên.
+- Site production. Smoke test sau triển khai vẫn cần: mở một khóa, xóa thử một mục rồi hoàn tác hoặc để lỗi mạng, đổi tab trên điện thoại, lưu và tải lại.

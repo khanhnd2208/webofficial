@@ -7,7 +7,7 @@ import { LEARN_SECTION_KIND_LABELS, type LearnStudioSection } from '@/features/l
 
 import LearnDiscussionEditor from './LearnDiscussionEditor';
 import LearnRichEditor from './LearnRichEditor';
-import type { SectionPatch } from './sectionPatch';
+import type { SectionFieldErrors, SectionPatch } from './sectionPatch';
 import type { ImportRequest } from './useSectionImport';
 
 /** The section being edited: its title, then the editor that fits its kind. */
@@ -16,23 +16,23 @@ export default function StudioCanvas({
 	lessonTitle,
 	editorEpoch,
 	titleError,
+	fieldErrors,
 	keptTitle,
 	onPatch,
 	onRestoreTitle,
 	onOpenImport,
 	onOpenHelp,
-	onOpenProperties,
 }: {
 	section: LearnStudioSection | null;
 	lessonTitle: string;
 	editorEpoch: number;
 	titleError?: string;
+	fieldErrors?: SectionFieldErrors;
 	keptTitle: string | null;
 	onPatch: (patch: SectionPatch) => void;
 	onRestoreTitle: () => void;
 	onOpenImport: (request: ImportRequest) => void;
 	onOpenHelp: () => void;
-	onOpenProperties: () => void;
 }) {
 	const titleRef = useRef<HTMLTextAreaElement>(null);
 	const focused = useRef(new Set<string>());
@@ -53,7 +53,7 @@ export default function StudioCanvas({
 			<main className="ln-studio__canvas">
 				<div className="ln-studio__empty">
 					<p className="font-display text-2xl">Chọn một mục để soạn</p>
-					<p className="mt-2 text-ink-secondary">Hoặc thêm bài mới, nhập nội dung ở cột mục lục.</p>
+					<p className="mt-2 text-ink-secondary">Hoặc thêm bài mới, nhập nội dung ở mục lục.</p>
 				</div>
 			</main>
 		);
@@ -68,11 +68,6 @@ export default function StudioCanvas({
 				data-kind={section.type === 'DISCUSSION' ? 'discussion' : 'reading'}
 				key={`${section.id}:${editorEpoch}`}
 			>
-				<div className="ln-studio__page-tools">
-					<button type="button" className="ln-btn" onClick={onOpenProperties}>
-						Thuộc tính
-					</button>
-				</div>
 				<p className="ln-eyebrow">
 					{LEARN_SECTION_KIND_LABELS[section.type]} · {lessonTitle}
 				</p>
@@ -98,6 +93,16 @@ export default function StudioCanvas({
 					</p>
 				) : null}
 				<LiveRegion message={keptTitle ?? ''} />
+				{fieldErrors?.markdown ? (
+					<p className="ln-field-error ln-field-error--block" role="alert">
+						{fieldErrors.markdown}
+					</p>
+				) : null}
+				{fieldErrors?.discussion ? (
+					<p className="ln-field-error ln-field-error--block" role="alert">
+						{fieldErrors.discussion}
+					</p>
+				) : null}
 				{section.type === 'DISCUSSION' ? (
 					<>
 						<details className="ln-studio__intro" open={Boolean(section.markdown.trim())}>

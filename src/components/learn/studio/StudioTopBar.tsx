@@ -19,6 +19,8 @@ export default function StudioTopBar({
 	onFlush,
 	onShowIssue,
 	onOpenSettings,
+	onPreview,
+	canPreview,
 	onPublish,
 	onUnpublish,
 	onExportCourse,
@@ -37,6 +39,8 @@ export default function StudioTopBar({
 	onFlush: () => void;
 	onShowIssue: () => void;
 	onOpenSettings: () => void;
+	onPreview: () => void;
+	canPreview: boolean;
 	onPublish: () => void;
 	onUnpublish: () => void;
 	onExportCourse: () => void;
@@ -79,6 +83,14 @@ export default function StudioTopBar({
 				onFlush={onFlush}
 				onShowIssue={onShowIssue}
 			/>
+			<button
+				type="button"
+				className="ln-btn ln-btn--sm"
+				onClick={onPreview}
+				disabled={!canPreview}
+			>
+				Xem như học viên
+			</button>
 			{published ? (
 				<span className="ln-pill" data-tone="live">
 					Đang công khai

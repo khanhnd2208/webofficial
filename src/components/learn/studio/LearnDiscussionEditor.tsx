@@ -18,7 +18,7 @@ import LearnRichEditor from './LearnRichEditor';
 import QuestionNavigator, { type NavItem } from './QuestionNavigator';
 import { StudioIcon } from './icons';
 import StudioMenu from './StudioMenu';
-import { useWideStudio } from './StudioTabs';
+import { onTabListKeyDown, useWideStudio } from './StudioTabs';
 import { flushRegisteredEditors } from './useStudioSaver';
 import { useDeferredDeletes } from './useDeferredDeletes';
 import StudioToast from './StudioToast';
@@ -316,7 +316,12 @@ export default function LearnDiscussionEditor({
 						</button>
 					</div>
 				) : null}
-				<div className="ln-qsplit__switch" role="tablist" aria-label="Nội dung câu">
+				<div
+					className="ln-qsplit__switch"
+					role="tablist"
+					aria-label="Nội dung câu"
+					onKeyDown={onTabListKeyDown}
+				>
 					{(
 						[
 							['prompt', 'Đề bài'],
@@ -329,6 +334,7 @@ export default function LearnDiscussionEditor({
 							type="button"
 							role="tab"
 							aria-selected={pane === id}
+							tabIndex={pane === id ? 0 : -1}
 							onClick={() => {
 								flushRegisteredEditors();
 								setPane(id);

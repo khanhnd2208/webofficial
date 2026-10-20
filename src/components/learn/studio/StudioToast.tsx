@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const TOAST_MS = 8_000;
 
@@ -17,7 +17,7 @@ export default function StudioToast({
 	message: string | null;
 	actionLabel?: string;
 	onAction?: () => void;
-	onClose: () => void;
+	onClose: () => void | Promise<void>;
 }) {
 	if (!message) return null;
 	return (
@@ -40,32 +40,40 @@ function ToastCard({
 	message: string;
 	actionLabel: string;
 	onAction?: () => void;
-	onClose: () => void;
+	onClose: () => void | Promise<void>;
 }) {
 	const ref = useRef<HTMLDivElement>(null);
 	const [paused, setPaused] = useState(false);
 	const held = useRef(0);
 	const remaining = useRef(TOAST_MS);
 
+	const finish = useCallback(() => {
+		try {
+			void Promise.resolve(onClose()).catch(() => undefined);
+		} catch {
+			// A synchronous throw is already visible to the caller.
+		}
+	}, [onClose]);
+
 	useEffect(() => {
 		if (paused) return;
 		const started = Date.now();
-		const timer = setTimeout(onClose, remaining.current);
+		const timer = setTimeout(finish, remaining.current);
 		return () => {
 			clearTimeout(timer);
 			remaining.current = Math.max(0, remaining.current - (Date.now() - started));
 		};
-	}, [onClose, paused]);
+	}, [finish, paused]);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
 			if (event.key !== 'Escape') return;
 			event.preventDefault();
-			onClose();
+			finish();
 		};
 		document.addEventListener('keydown', onKey);
 		return () => document.removeEventListener('keydown', onKey);
-	}, [onClose]);
+	}, [finish]);
 
 	function hold(next: 1 | -1) {
 		held.current = Math.max(0, held.current + next);

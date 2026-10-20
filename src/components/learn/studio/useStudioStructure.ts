@@ -12,7 +12,7 @@ import { AdminApiError, adminFetch } from '@/lib/admin/client';
 import { applyOrder, copyTitle, insertAfter, outlineOrder, sectionCopyBody } from './outlineOps';
 import { findSection } from './sectionPatch';
 import type { StudioConfirmRequest } from './StudioConfirm';
-import type { useDeferredDeletes } from './useDeferredDeletes';
+import { StudioDeleteError, type useDeferredDeletes } from './useDeferredDeletes';
 
 interface StructureDeps {
 	courseId: string;
@@ -270,21 +270,22 @@ export function useStudioStructure({
 			})),
 		);
 		if (selectedId === id) select(neighbour && neighbour.id !== id ? neighbour.id : null);
+		const restore = () => {
+			setLessons((current) =>
+				current.map((lesson) => {
+					if (lesson.id !== lessonId) return lesson;
+					if (lesson.sections.some((item) => item.id === id)) return lesson;
+					const sections = [...lesson.sections];
+					sections.splice(Math.min(index, sections.length), 0, target);
+					return { ...lesson, sections };
+				}),
+			);
+			select(id);
+		};
 		deletes.defer({
 			key: id,
 			message: `Đã xóa mục "${target.title}"`,
-			restore: () => {
-				setLessons((current) =>
-					current.map((lesson) => {
-						if (lesson.id !== lessonId) return lesson;
-						if (lesson.sections.some((item) => item.id === id)) return lesson;
-						const sections = [...lesson.sections];
-						sections.splice(Math.min(index, sections.length), 0, target);
-						return { ...lesson, sections };
-					}),
-				);
-				select(id);
-			},
+			restore,
 			commit: async (options) => {
 				try {
 					await adminFetch(`/api/admin/learn/sections/${id}`, {
@@ -292,7 +293,11 @@ export function useStudioStructure({
 						keepalive: options?.keepalive,
 					});
 				} catch (err) {
-					setActionError(message(err, 'Không xóa được mục'));
+					restore();
+					const detail = message(err, 'Không xóa được mục');
+					const text = `${detail}. Mục vẫn còn, hãy thử xóa lại.`;
+					setActionError(text);
+					throw new StudioDeleteError(text);
 				}
 			},
 		});
