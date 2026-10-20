@@ -2,7 +2,7 @@
 
 import { Icon } from '@/components/ui/Icon';
 import dynamic from 'next/dynamic';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const ImageCropModal = dynamic(() => import('./ImageCropModal'), { ssr: false });
 
@@ -11,6 +11,8 @@ interface ThumbnailUploadProps {
 	onChange: (url: string) => void;
 	uploadEndpoint?: string;
 	variant?: 'default' | 'product';
+	/** Lets a form keep its save button off until the file has a URL. */
+	onUploadingChange?: (uploading: boolean) => void;
 }
 
 async function uploadFileToServer(file: File, endpoint = '/api/uploads'): Promise<string> {
@@ -42,6 +44,7 @@ export default function ThumbnailUpload({
 	onChange,
 	uploadEndpoint = '/api/uploads',
 	variant = 'default',
+	onUploadingChange,
 }: ThumbnailUploadProps) {
 	const product = variant === 'product';
 	const [uploading, setUploading] = useState(false);
@@ -49,6 +52,31 @@ export default function ThumbnailUpload({
 	const [error, setError] = useState('');
 	const [cropSrc, setCropSrc] = useState<string | null>(null);
 	const fileRef = useRef<HTMLInputElement>(null);
+	const returnFocusRef = useRef<HTMLElement | null>(null);
+	const restoreFocusRef = useRef(false);
+
+	const closeCrop = useCallback(() => {
+		restoreFocusRef.current = true;
+		setCropSrc((current) => {
+			if (current) URL.revokeObjectURL(current);
+			return null;
+		});
+	}, []);
+
+	useEffect(() => {
+		if (cropSrc !== null || !restoreFocusRef.current) return;
+		restoreFocusRef.current = false;
+		returnFocusRef.current?.focus();
+	}, [cropSrc]);
+
+	function rememberFocus(target: EventTarget | null) {
+		if (target instanceof HTMLElement) returnFocusRef.current = target;
+	}
+
+	function openPicker(target: EventTarget | null) {
+		rememberFocus(target);
+		fileRef.current?.click();
+	}
 
 	const openCrop = useCallback((file: File) => {
 		if (!file.type.startsWith('image/')) {
@@ -60,14 +88,17 @@ export default function ThumbnailUpload({
 			return;
 		}
 		setError('');
-		const url = URL.createObjectURL(file);
-		setCropSrc(url);
+		setCropSrc((current) => {
+			if (current) URL.revokeObjectURL(current);
+			return URL.createObjectURL(file);
+		});
 	}, []);
 
 	const onCropDone = useCallback(
 		async (croppedFile: File) => {
-			setCropSrc(null);
+			closeCrop();
 			setUploading(true);
+			onUploadingChange?.(true);
 			setError('');
 			try {
 				const url = await uploadFileToServer(croppedFile, uploadEndpoint);
@@ -76,14 +107,16 @@ export default function ThumbnailUpload({
 				setError(e instanceof Error ? e.message : 'Upload thất bại');
 			} finally {
 				setUploading(false);
+				onUploadingChange?.(false);
 			}
 		},
-		[onChange, uploadEndpoint],
+		[closeCrop, onChange, onUploadingChange, uploadEndpoint],
 	);
 
-	function onDrop(e: React.DragEvent) {
+	function onDrop(e: React.DragEvent<HTMLDivElement>) {
 		e.preventDefault();
 		setDragActive(false);
+		rememberFocus(e.currentTarget);
 		const file = e.dataTransfer.files[0];
 		if (file) openCrop(file);
 	}
@@ -106,6 +139,15 @@ export default function ThumbnailUpload({
 				{product ? 'Ảnh bìa khóa học' : 'Thumbnail'}
 			</div>
 			{product ? <p className="mc-meta mt-1">Tỉ lệ 16:9, đề xuất 1280 × 720px.</p> : null}
+			<input
+				ref={fileRef}
+				type="file"
+				accept="image/*"
+				className="hidden"
+				onChange={onFileChange}
+				disabled={uploading}
+				aria-label="Chọn tệp ảnh"
+			/>
 
 			{value ? (
 				<div className="mt-2">
@@ -118,21 +160,35 @@ export default function ThumbnailUpload({
 							className={`${product ? 'aspect-video' : 'aspect-2/1'} w-full object-cover`}
 						/>
 						{/* Overlay actions */}
-						<div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-							<button
-								type="button"
-								onClick={() => fileRef.current?.click()}
-								className="min-h-11 rounded-lg bg-white/90 px-3 text-xs font-bold text-black shadow transition-colors hover:bg-white"
-							>
-								Đổi ảnh
-							</button>
-							<button
-								type="button"
-								onClick={() => onChange('')}
-								className="min-h-11 rounded-lg bg-red-500/90 px-3 text-xs font-bold text-white shadow transition-colors hover:bg-red-600"
-							>
-								Xoá
-							</button>
+						<div
+							className={`absolute inset-0 flex items-center justify-center gap-2 bg-black/50 transition-opacity ${uploading ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'}`}
+						>
+							{uploading ? (
+								<span
+									role="status"
+									className="inline-flex items-center gap-2 rounded-lg bg-white/90 px-3 py-2 text-xs font-bold text-black"
+								>
+									<Icon name="retry" className="h-4 w-4 animate-spin" />
+									Đang tải ảnh…
+								</span>
+							) : (
+								<>
+									<button
+										type="button"
+										onClick={(event) => openPicker(event.currentTarget)}
+										className="min-h-11 rounded-lg bg-white/90 px-3 text-xs font-bold text-black shadow transition-colors hover:bg-white"
+									>
+										Đổi ảnh
+									</button>
+									<button
+										type="button"
+										onClick={() => onChange('')}
+										className="min-h-11 rounded-lg bg-red-500/90 px-3 text-xs font-bold text-white shadow transition-colors hover:bg-red-600"
+									>
+										Xoá
+									</button>
+								</>
+							)}
 						</div>
 					</div>
 					<div className="mt-1.5">
@@ -151,7 +207,7 @@ export default function ThumbnailUpload({
 							? `border-accent ${product ? 'bg-surface-sunken' : 'bg-accent-subtle'}`
 							: 'border-border hover:border-accent/50'
 					} ${uploading ? 'pointer-events-none opacity-60' : ''}`}
-					onClick={() => fileRef.current?.click()}
+					onClick={(event) => openPicker(event.currentTarget)}
 					onDragOver={(e) => {
 						e.preventDefault();
 						setDragActive(true);
@@ -164,17 +220,10 @@ export default function ThumbnailUpload({
 					onKeyDown={(event) => {
 						if (event.key === 'Enter' || event.key === ' ') {
 							event.preventDefault();
-							fileRef.current?.click();
+							openPicker(event.currentTarget);
 						}
 					}}
 				>
-					<input
-						ref={fileRef}
-						type="file"
-						accept="image/*"
-						className="hidden"
-						onChange={onFileChange}
-					/>
 					{uploading ? (
 						<div className="flex items-center gap-2 text-sm text-muted">
 							<Icon name="retry" className="h-4 w-4 animate-spin" />
@@ -202,7 +251,11 @@ export default function ThumbnailUpload({
 				</div>
 			)}
 
-			{error ? <p className="mt-1.5 text-xs text-error">{error}</p> : null}
+			{error ? (
+				<p className="mt-1.5 text-xs text-error" role="alert">
+					{error}
+				</p>
+			) : null}
 
 			{!value && !uploading ? (
 				<div className="mt-2">
@@ -221,7 +274,7 @@ export default function ThumbnailUpload({
 					src={cropSrc}
 					aspectRatio={product ? 16 / 9 : 2}
 					onCropDone={onCropDone}
-					onCancel={() => setCropSrc(null)}
+					onCancel={closeCrop}
 				/>
 			) : null}
 		</div>

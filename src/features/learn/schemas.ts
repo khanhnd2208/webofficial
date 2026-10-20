@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { learnCourseThumbnailSrc } from './thumbnail';
+
 export const LEARN_MAX_MARKDOWN = 200_000;
 export const LEARN_MAX_QUESTIONS = 200;
 
@@ -34,6 +36,18 @@ export const learnDiscussionSchema = z.object({
 	questions: z.array(learnDiscussionQuestionSchema).max(LEARN_MAX_QUESTIONS),
 });
 
+/** Empty or null clears the cover. Omitted on update leaves the saved image alone. */
+export const learnThumbnailUrlSchema = z
+	.string()
+	.trim()
+	.max(2000, 'Đường dẫn ảnh quá dài')
+	.refine((value) => value === '' || learnCourseThumbnailSrc(value) !== null, {
+		message: 'Ảnh phải nằm trên website này',
+	})
+	.transform((value) => (value === '' ? null : learnCourseThumbnailSrc(value)))
+	.nullable()
+	.optional();
+
 export const createLearnCourseSchema = z.object({
 	title: title('Tên khóa học'),
 	subtitle: z.string().trim().max(500).default(''),
@@ -51,6 +65,7 @@ export const updateLearnCourseSchema = z
 		category: z.string().trim().max(100).optional(),
 		level: learnLevelSchema.optional(),
 		status: learnStatusSchema.optional(),
+		thumbnailUrl: learnThumbnailUrlSchema,
 	})
 	.strict();
 

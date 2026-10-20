@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { slugify } from '@/utils/slugify';
 
 import { readDiscussion, sectionMinutes } from './content';
+import { learnCourseThumbnailSrc } from './thumbnail';
 import { isRequiredSection } from './progress';
 import { parseCourseMarkdown, planContentReplace, type ImportedSection } from './lessonImport';
 import { snapshotSection } from './sectionRevisions';
@@ -65,6 +66,7 @@ const courseMetaSelect = {
 	category: true,
 	level: true,
 	status: true,
+	thumbnailUrl: true,
 	updatedAt: true,
 } as const;
 
@@ -364,11 +366,15 @@ export async function updateLearnCourse(
 ): Promise<LearnCourseMeta> {
 	const current = await prisma.learnCourse.findUnique({ where: { id }, select: { status: true } });
 	if (!current) throw new AppError('Không tìm thấy khóa học', 404);
-	const { slug, ...rest } = input;
+	const { slug, thumbnailUrl, ...rest } = input;
 	const row = await prisma.learnCourse.update({
 		where: { id },
 		data: {
 			...rest,
+			// Undefined keeps the saved cover. Null, or a path that does not resolve, uses default artwork.
+			...(thumbnailUrl !== undefined
+				? { thumbnailUrl: learnCourseThumbnailSrc(thumbnailUrl) }
+				: {}),
 			...(slug !== undefined
 				? { slug: await uniqueSlug(slug || rest.title || 'khoa-hoc', id) }
 				: {}),

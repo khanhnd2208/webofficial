@@ -54,6 +54,8 @@ export interface LearnCourseMeta {
 	category: string;
 	level: LearnLevel;
 	status: PublishStatus;
+	/** Null uses the default course artwork. */
+	thumbnailUrl: string | null;
 	updatedAt: string;
 }
 

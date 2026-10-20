@@ -26,6 +26,7 @@ const course: LearnStudioCourse = {
 	category: 'Xã hội',
 	level: 'BASIC',
 	status: 'DRAFT',
+	thumbnailUrl: null,
 	updatedAt: '2026-09-25T00:00:00.000Z',
 	lessons: [
 		{
