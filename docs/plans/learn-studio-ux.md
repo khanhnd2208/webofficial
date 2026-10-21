@@ -99,3 +99,14 @@ Hợp đồng `flush()` vẫn là `Promise<{ ok: boolean }>`. Không thêm depen
 - `npm run test:integration`: không chạy, vì không đổi API, service hay schema.
 - Toàn bộ Studio ngoài các ca ở trên.
 - Site production. Smoke test sau triển khai vẫn cần: mở một khóa, xóa thử một mục rồi hoàn tác hoặc để lỗi mạng, đổi tab trên điện thoại, lưu và tải lại.
+
+
+## Rà soát luồng Markdown — 22/10/2026
+
+- Bài đọc và lời dẫn mở sẵn Markdown, kèm xem trước; vẫn có thể chuyển sang soạn trực quan với kiểm tra mất nội dung.
+- Nhập bài chấp nhận `# Tên bài`, `## Tên mục`. Không cảnh báo chỉ vì dùng tiêu đề Markdown chuẩn. Mẫu SECTION vẫn dùng được.
+- Dùng `![Mô tả]()` hoặc `![Mô tả](ten-anh.png)` để đánh dấu chỗ cần ảnh. Mỗi vị trí có nút chọn file bất kỳ, độc lập với các vị trí trống khác. Ghép nhiều ảnh theo tên vẫn có sẵn.
+- Ảnh nội bộ không tải được cũng được báo trong danh sách bổ sung. Đây là kiểm tra tải ảnh trong trình duyệt, không suy đoán đoạn văn nào cần minh họa khi chưa có ký hiệu ảnh.
+- Upload giữ chỗ trước khi chờ máy chủ; sửa chữ/xóa ảnh trong lúc tải không làm ảnh gắn nhầm. Thất bại trả lại chỗ trống để thử lại.
+- Bỏ danh sách đường dẫn ảnh lặp; gộp các nút chèn định dạng vào menu. Nút tìm bài/mục hiện rõ ở mục lục, hỗ trợ tìm không dấu.
+- Kiểm tra trình duyệt bao gồm nhập Markdown, upload thật, sửa, lưu, tải lại và màn hình điện thoại; dùng dữ liệu thử cục bộ.

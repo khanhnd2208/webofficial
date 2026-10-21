@@ -4349,3 +4349,37 @@ button.ln-save.ln-btn--primary {
 		animation: none;
 	}
 }
+
+.ln-image-picker__slots {
+	max-height: 16rem;
+	overflow: auto;
+	list-style: none;
+	padding: 0;
+}
+.ln-image-picker__slots li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.5rem 0;
+}
+.ln-image-picker__slots li > span {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+.ln-image-picker__slots small {
+	display: block;
+	color: var(--ink-secondary);
+}
+.ln-image-picker__slots label {
+	flex-shrink: 0;
+	cursor: pointer;
+}
+.ln-image-picker__slots label:focus-within {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+.ln-image-picker__slots label:has(input:disabled) {
+	opacity: 0.5;
+	cursor: wait;
+}

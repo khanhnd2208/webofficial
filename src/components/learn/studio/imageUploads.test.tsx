@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { findImageRefs } from '@/features/learn/images';
 import { learnEditorExtensions } from './editorExtensions';
 import {
+	uploadImageAt,
 	droppedImageFiles,
 	matchImageFiles,
 	insertImageFiles,
@@ -133,5 +134,60 @@ describe('image uploads', () => {
 		expect(current.getMarkdown()).not.toContain('base64');
 		await waitFor(() => expect(upload).toHaveBeenCalledTimes(1));
 		current.destroy();
+	});
+});
+
+describe('individual Markdown image slots', () => {
+	it('reserves one of two identical blanks while the author keeps typing', async () => {
+		let markdown = '![a]()\n![a]()';
+		let finish!: (url: string | null) => void;
+		const pending = uploadImageAt(
+			1,
+			new File(['x'], 'screenshot.png'),
+			() => markdown,
+			(next) => {
+				markdown = next;
+			},
+			() =>
+				new Promise((resolve) => {
+					finish = resolve;
+				}),
+		);
+		markdown = 'New paragraph\n' + markdown;
+		finish('/uploads/chosen.webp');
+		await pending;
+		expect(markdown).toBe('New paragraph\n![a]()\n![a](/uploads/chosen.webp)');
+	});
+	it('restores an empty slot after upload failure without losing new text', async () => {
+		let markdown = '![a](<> "caption")';
+		await uploadImageAt(
+			0,
+			new File(['x'], 'random.png'),
+			() => markdown,
+			(next) => {
+				markdown = next;
+			},
+			async () => {
+				markdown += '\nMore text';
+				return null;
+			},
+		);
+		expect(markdown).toBe('![a](<> "caption")\nMore text');
+	});
+	it('does not recreate a placeholder deleted during upload', async () => {
+		let markdown = '![a](old.png#w=50)';
+		await uploadImageAt(
+			0,
+			new File(['x'], 'random.png'),
+			() => markdown,
+			(next) => {
+				markdown = next;
+			},
+			async () => {
+				markdown = 'Deleted image';
+				return '/uploads/new.webp';
+			},
+		);
+		expect(markdown).toBe('Deleted image');
 	});
 });

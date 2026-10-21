@@ -1,5 +1,8 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
+import sharp from 'sharp';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import { addAdminSession, createAdminRequest } from './helpers/adminSession';
 
@@ -477,5 +480,88 @@ test('the editor stays usable at 1024px and at 200% zoom', async ({ page, contex
 		await page.screenshot({ path: '/tmp/learn-studio-1024-zoom.png', fullPage: false });
 	} finally {
 		await course.cleanup();
+	}
+});
+
+test('imports Markdown, fills individual missing images, edits and persists across reload', async ({
+	page,
+	context,
+}) => {
+	test.setTimeout(60_000);
+	await addAdminSession(context);
+	const created = await context.request.post('/api/admin/learn/courses', {
+		data: { title: `Markdown UX ${randomUUID()}` },
+	});
+	expect(created.status()).toBe(201);
+	const course = (await created.json()).data as { id: string; slug: string };
+	const screenshotDir = process.env.COURSE_UX_SCREENSHOTS;
+	const image = {
+		name: 'screenshot-arbitrary-name.png',
+		mimeType: 'image/png',
+		buffer: await sharp({ create: { width: 64, height: 48, channels: 3, background: '#d8e8e4' } })
+			.png()
+			.toBuffer(),
+	};
+	// Production Nginx serves runtime uploads from disk; next start only indexes build-time public files.
+	// Keep the upload API real and serve its actual bytes just as the deployment does.
+	await page.route('**/uploads/*', async (route) => {
+		const filename = path.basename(new URL(route.request().url()).pathname);
+		try {
+			const body = await readFile(path.join(process.cwd(), 'public', 'uploads', filename));
+			await route.fulfill({ body, contentType: 'image/webp' });
+		} catch {
+			await route.fulfill({ status: 404 });
+		}
+	});
+	try {
+		await page.setViewportSize({ width: 1440, height: 1000 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio`);
+		await main(page).getByRole('button', { name: 'Nhập nội dung', exact: true }).click();
+		await main(page)
+			.getByRole('textbox', { name: 'Nội dung dán' })
+			.fill(
+				'# Soạn bài bằng Markdown\n\n## Minh họa trong bài\n\nNội dung **quan trọng**.\n\n![Sơ đồ quy trình]()\n\n![Ví dụ thực tế]()\n\n![Ảnh cũ](/uploads/does-not-exist-course-ux.png)',
+			);
+		await expect(main(page).getByText('3 vị trí ảnh cần bổ sung')).toBeVisible();
+		if (screenshotDir)
+			await page.screenshot({ path: `${screenshotDir}/import-desktop.png`, fullPage: true });
+		await main(page).getByLabel('Bổ sung ảnh 1: Sơ đồ quy trình').setInputFiles(image);
+		await expect(main(page).getByRole('textbox', { name: 'Nội dung dán' })).toHaveValue(
+			/!\[Sơ đồ quy trình\]\(\/uploads\//,
+		);
+		await main(page).getByRole('button', { name: 'Lưu 1 mục', exact: true }).click();
+		await expect(main(page).getByRole('heading', { name: 'Nhập nội dung' })).toHaveCount(0);
+		const source = main(page).getByRole('textbox', { name: 'Nội dung Markdown' });
+		await expect(source).toBeVisible();
+		await expect(main(page).getByText('2 vị trí ảnh cần bổ sung')).toBeVisible();
+		if (screenshotDir)
+			await page.screenshot({ path: `${screenshotDir}/editor-desktop.png`, fullPage: true });
+		await main(page).getByLabel('Bổ sung ảnh 2: Ví dụ thực tế').setInputFiles(image);
+		await expect(source).toHaveValue(/!\[Ví dụ thực tế\]\(\/uploads\//);
+		await main(page).getByLabel('Bổ sung ảnh 3: Ảnh cũ').setInputFiles(image);
+		await expect(main(page).locator('.ln-image-picker__slots')).toHaveCount(0);
+		const updated = (await source.inputValue()) + '\n\nNội dung bổ sung sau khi tải ảnh.';
+		await source.fill(updated);
+		await main(page).getByRole('button', { name: 'Lưu', exact: true }).click();
+		await expect(main(page).getByRole('button', { name: /Đã lưu/ })).toBeVisible();
+		await page.reload();
+		await expect(source).toHaveValue(updated);
+		await main(page).getByRole('button', { name: 'Tìm bài hoặc mục…' }).click();
+		await main(page).getByRole('textbox', { name: 'Lọc mục' }).fill('minh hoa');
+		await main(page)
+			.getByRole('option', { name: /Minh họa trong bài/ })
+			.click();
+		await expect(source).toHaveValue(updated);
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(source).toBeVisible();
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+			),
+		).toBeLessThanOrEqual(1);
+		if (screenshotDir)
+			await page.screenshot({ path: `${screenshotDir}/editor-mobile.png`, fullPage: true });
+	} finally {
+		await deleteCourse(course.id);
 	}
 });

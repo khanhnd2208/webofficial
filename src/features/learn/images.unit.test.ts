@@ -5,6 +5,7 @@ import {
 	imageSrcStatus,
 	imageFileKey,
 	replaceImageSrcs,
+	replaceImageAt,
 } from './images';
 
 describe('lesson image sources', () => {
@@ -44,4 +45,14 @@ describe('lesson image sources', () => {
 	it('recognizes an empty destination', () => {
 		expect(findImageRefs('![]()')[0].status).toBe('missing');
 	});
+});
+
+it('replaces only the selected blank and preserves angle brackets, titles and code', () => {
+	const md = '![a]()\n![b]( <> "caption")\n`![code]()`';
+	expect(replaceImageAt(md, 1, '/uploads/b.webp')).toBe(
+		'![a]()\n![b]( </uploads/b.webp> "caption")\n`![code]()`',
+	);
+	expect(replaceImageSrcs('![a]( <> "caption")', new Map([['', '/uploads/a.webp']]))).toBe(
+		'![a]( </uploads/a.webp> "caption")',
+	);
 });

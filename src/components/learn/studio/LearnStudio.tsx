@@ -359,6 +359,7 @@ export default function LearnStudio({
 				<DiscussionQuestionList />
 			) : (
 				<StudioOutline
+					onSearch={() => setDialog('jump')}
 					courseId={meta.id}
 					lessons={lessons}
 					selectedId={selectedId}

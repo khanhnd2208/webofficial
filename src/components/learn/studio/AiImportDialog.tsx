@@ -378,6 +378,11 @@ export default function AiImportDialog({
 						<p id="ln-import-impact">{impact}</p>
 						{report ? <ImportSummary count={count} unit={unit} report={report} /> : null}
 					</div>
+					<p className="text-sm text-ink-secondary">
+						{kind === 'lesson'
+							? 'Dán Markdown: # là tên bài, ## chia các mục. Ảnh chưa có: ![Mô tả ảnh](). Chọn ảnh bổ sung ở khung xem trước; có thể bổ sung sau khi lưu.'
+							: 'Dán câu hỏi và đáp án mẫu để xem trước trước khi lưu.'}
+					</p>
 					<details className="ln-import-help">
 						<summary>Dùng AI để định dạng (tùy chọn)</summary>
 						<p>
@@ -429,7 +434,7 @@ export default function AiImportDialog({
 						spellCheck={false}
 						placeholder={
 							kind === 'lesson'
-								? 'Dán bài giảng: bắt đầu bằng dòng # Tên bài, mỗi mục mở bằng === SECTION: … ==='
+								? '# Tên bài\n\n## Mục thứ nhất\nNội dung bài giảng…\n\n![Mô tả ảnh cần bổ sung]()'
 								: 'Dán câu phản biện: mỗi câu mở bằng dòng "Câu 1:", đề bài, rồi dòng "Đáp án mẫu:"'
 						}
 					/>

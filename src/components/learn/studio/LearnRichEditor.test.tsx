@@ -81,3 +81,28 @@ describe('LearnRichEditor mode guard', () => {
 		);
 	});
 });
+
+it('opens a reading in Markdown and fills only the selected image with an arbitrary filename', async () => {
+	adminFetch.mockReset();
+	adminFetch.mockResolvedValue({ url: '/uploads/chosen.webp' });
+	const onChange = vi.fn();
+	render(
+		<LearnRichEditor
+			defaultMode="markdown"
+			value={'![First]()\n![Second]()'}
+			onChange={onChange}
+		/>,
+	);
+	expect(screen.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
+		'![First]()\n![Second]()',
+	);
+	fireEvent.change(screen.getByLabelText('Bổ sung ảnh 2: Second'), {
+		target: { files: [new File(['x'], 'screenshot.png', { type: 'image/png' })] },
+	});
+	await waitFor(() =>
+		expect(onChange).toHaveBeenLastCalledWith('![First]()\n![Second](/uploads/chosen.webp)'),
+	);
+	expect(screen.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
+		'![First]()\n![Second](/uploads/chosen.webp)',
+	);
+});

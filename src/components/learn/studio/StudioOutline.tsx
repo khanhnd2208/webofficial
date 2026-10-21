@@ -402,11 +402,13 @@ export default function StudioOutline({
 	lessons,
 	selectedId,
 	actions,
+	onSearch,
 }: {
 	courseId: string;
 	lessons: LearnStudioLesson[];
 	selectedId: string | null;
 	actions: OutlineActions;
+	onSearch?: () => void;
 }) {
 	const sensors = useStudioSensors();
 	const ids = lessons.map((lesson) => lesson.id);
@@ -433,6 +435,11 @@ export default function StudioOutline({
 					</button>
 				) : null}
 			</div>
+			{onSearch && lessons.some((lesson) => lesson.sections.length) ? (
+				<button type="button" className="ln-btn ln-btn--block" onClick={onSearch}>
+					Tìm bài hoặc mục…
+				</button>
+			) : null}
 			<DndContext
 				id="ln-lessons"
 				sensors={sensors}
@@ -493,7 +500,12 @@ export default function StudioOutline({
 				<button type="button" className="ln-btn ln-btn--block" onClick={actions.onAddLesson}>
 					<StudioIcon name="plus" size={14} /> Thêm bài
 				</button>
-				<button type="button" className="ln-btn ln-btn--block" onClick={actions.onImport}>
+				<button
+					type="button"
+					className="ln-btn ln-btn--primary ln-btn--block"
+					title="Dán Markdown để tạo hoặc cập nhật bài"
+					onClick={actions.onImport}
+				>
 					<StudioIcon name="import" size={14} /> Nhập nội dung
 				</button>
 			</div>

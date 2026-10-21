@@ -49,17 +49,15 @@ export default function MarkdownInsertBar({
 
 	return (
 		<div className="ln-mdbar" role="toolbar" aria-label="Chèn Markdown">
-			{READING_SNIPPETS.map((snippet) => (
-				<button
-					key={snippet.id}
-					type="button"
-					className="ln-mdbar__btn"
-					onMouseDown={(event) => event.preventDefault()}
-					onClick={() => insert(snippet)}
-				>
-					{snippet.label}
-				</button>
-			))}
+			<StudioMenu
+				label="Chèn định dạng Markdown"
+				triggerClassName="ln-mdbar__btn"
+				trigger={<>Chèn định dạng</>}
+				items={READING_SNIPPETS.map((snippet) => ({
+					label: snippet.label,
+					onSelect: () => insert(snippet),
+				}))}
+			/>
 			<StudioMenu
 				label="Chèn khối nổi bật"
 				triggerClassName="ln-mdbar__btn"

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { findImageRefs, replaceImageSrcs } from '@/features/learn/images';
 
-import { droppedImageFiles, matchImageFiles } from './imageUploadUtils';
+import { droppedImageFiles, matchImageFiles, uploadImageAt } from './imageUploadUtils';
 import ImageUploadStatus from './ImageUploadStatus';
 import MissingImagesBar from './MissingImagesBar';
 import { useImageUploads } from './useImageUploads';
@@ -28,22 +28,25 @@ export default function ImportImagePicker({
 	useEffect(() => {
 		onBusyChange(reading || uploads.uploading);
 	}, [reading, uploads.uploading, onBusyChange]);
+	function change(markdown: string) {
+		latest.current = markdown;
+		onChange(markdown);
+	}
 	async function attach(files: File[]) {
 		const { replacements, unmatched, count } = await matchImageFiles(
 			findImageRefs(latest.current),
 			files,
 			uploads.uploadFile,
 		);
-		onChange(replaceImageSrcs(latest.current, replacements));
+		change(replaceImageSrcs(latest.current, replacements));
 		setNote(
 			`Đã gắn ${count} ảnh${unmatched.length ? ` · ${unmatched.length} file không khớp: ${unmatched.join(', ')}` : ''}`,
 		);
 	}
-	const unresolved = findImageRefs(markdown).filter((ref) => ref.status !== 'ready');
-	if (!unresolved.length && !note && !uploads.uploading && !uploads.errors.length) return null;
+	const images = findImageRefs(markdown);
+	if (!images.length && !note && !uploads.uploading && !uploads.errors.length) return null;
 	return (
 		<div
-			className="ln-image-picker"
 			onDragOver={(event) => {
 				if (event.dataTransfer.types.includes('Files')) event.preventDefault();
 			}}
@@ -60,18 +63,12 @@ export default function ImportImagePicker({
 			<MissingImagesBar
 				markdown={markdown}
 				onFiles={(files) => void attach(files)}
+				onReplace={(index, file) =>
+					void uploadImageAt(index, file, () => latest.current, change, uploads.uploadFile)
+				}
 				disabled={reading || uploads.uploading}
 			/>
-			{unresolved.length ? (
-				<>
-					<ul className="text-sm">
-						{[...new Set(unresolved.map((ref) => ref.url || '(chưa có tên)'))].map((src) => (
-							<li key={src}>{src}</li>
-						))}
-					</ul>
-					<p className="ln-warning">Có thể lưu khi còn thiếu ảnh và bổ sung trong trình soạn.</p>
-				</>
-			) : null}
+
 			<ImageUploadStatus uploads={uploads} />
 			{note ? (
 				<p role="status" className="text-sm">
