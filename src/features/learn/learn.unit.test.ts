@@ -81,7 +81,7 @@ describe('parseLessonMarkdown', () => {
 	it('falls back to ## headings, then to a single section', () => {
 		const byHeading = parseLessonMarkdown('# T\n\n## Một\nA\n\n## Hai\nB');
 		expect(byHeading.sections.map((section) => section.title)).toEqual(['Một', 'Hai']);
-		expect(byHeading.warnings).toHaveLength(1);
+		expect(byHeading.warnings).toHaveLength(0);
 
 		const single = parseLessonMarkdown('Chỉ một đoạn văn.');
 		expect(single.sections).toHaveLength(1);

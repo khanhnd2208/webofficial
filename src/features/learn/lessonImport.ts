@@ -262,11 +262,6 @@ export function parseLessonMarkdown(raw: string): ImportedLesson {
 				});
 			}
 		});
-		if (slices.length) {
-			warnings.push(
-				'Đã tách mục theo tiêu đề cấp 2 (##). Dùng "=== SECTION: Tiêu đề | 6 phút ===" để kiểm soát chính xác hơn.',
-			);
-		}
 	}
 
 	function checkOversized(title: string, markdown: string) {

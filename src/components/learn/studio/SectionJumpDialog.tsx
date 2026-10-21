@@ -57,7 +57,8 @@ export default function SectionJumpDialog({
 					}
 				}}
 			/>
-			<ul className="ln-jump" role="listbox">
+			{!items.length ? <p role="status">Không tìm thấy bài hoặc mục phù hợp.</p> : null}
+			<ul className="ln-jump" role="listbox" aria-label="Các mục phù hợp">
 				{items.map((item, index) => (
 					<li key={item.id}>
 						<button

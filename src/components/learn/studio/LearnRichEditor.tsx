@@ -23,6 +23,7 @@ import { useImageUploads } from './useImageUploads';
 import ImageUploadStatus from './ImageUploadStatus';
 import MissingImagesBar from './MissingImagesBar';
 import {
+	uploadImageAt,
 	droppedImageFiles,
 	matchImageFiles,
 	replaceEditorImages,
@@ -64,6 +65,7 @@ export default function LearnRichEditor({
 	onChange,
 	onOpenHelp,
 	markdownPreview = true,
+	defaultMode = 'visual',
 	label = 'Nội dung Markdown',
 	bindInsert,
 }: {
@@ -72,6 +74,7 @@ export default function LearnRichEditor({
 	onOpenHelp?: () => void;
 	/** The lecture editor can show Markdown beside its source. A question field uses a separate preview. */
 	markdownPreview?: boolean;
+	defaultMode?: Mode;
 	label?: string;
 	/** Lets a parent insert a snippet at the caret without mounting a second editor. */
 	bindInsert?: (insert: ((snippet: string) => void) | null) => void;
@@ -102,7 +105,7 @@ export default function LearnRichEditor({
 		preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
 	}
 	const [mode, setMode] = useState<Mode>(() =>
-		findUnsupportedMarkdown(value).length ? 'markdown' : 'visual',
+		findUnsupportedMarkdown(value).length ? 'markdown' : defaultMode,
 	);
 	const [source, setSource] = useState(value);
 	const [modeWarning, setModeWarning] = useState<string[] | null>(() => {
@@ -229,6 +232,7 @@ export default function LearnRichEditor({
 				image.pick = () => fileRef.current?.click();
 				image.upload = (file, apply) => uploadRef.current(file, apply);
 			}
+			if (defaultMode === 'markdown') return;
 			const exported = normalizeEditorMarkdown(current.getMarkdown());
 			const fidelity = compareLectureText(value, exported);
 			if (fidelity.hunks.length) {
@@ -527,6 +531,18 @@ export default function LearnRichEditor({
 				markdown={markdownNow}
 				disabled={readingFiles || uploads.uploading}
 				onFiles={(files) => void attachFiles(files)}
+				onReplace={
+					mode === 'markdown'
+						? (index, file) =>
+								void uploadImageAt(
+									index,
+									file,
+									() => sourceRef.current,
+									changeSource,
+									uploads.uploadFile,
+								)
+						: undefined
+				}
 			/>
 			<ImageUploadStatus uploads={uploads} />
 			{attachmentNote ? (

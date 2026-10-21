@@ -111,6 +111,7 @@ export default function StudioCanvas({
 								Hiện ở đầu trang phản biện, thu gọn được. Để trống nếu không cần.
 							</p>
 							<LearnRichEditor
+								defaultMode="markdown"
 								value={section.markdown}
 								onChange={(markdown) => onPatch({ markdown })}
 								onOpenHelp={onOpenHelp}
@@ -132,6 +133,7 @@ export default function StudioCanvas({
 					</>
 				) : (
 					<LearnRichEditor
+						defaultMode="markdown"
 						value={section.markdown}
 						onChange={(markdown) => onPatch({ markdown })}
 						onOpenHelp={onOpenHelp}

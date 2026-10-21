@@ -30,7 +30,8 @@ const MAX_QUESTION = 8_000;
 const MAX_ANSWER = 30_000;
 
 const FIX_CONTINUE = "Nhắn AI 'tiếp', rồi dán phần còn lại nối vào cuối ô.";
-const FIX_IMAGES = 'Chọn hoặc kéo thả ảnh có tên file khớp vào khung ảnh ở phần xem trước.';
+const FIX_IMAGES =
+	'Chọn ảnh cho từng vị trí ở phần xem trước, hoặc ghép nhiều ảnh theo tên file. Có thể bổ sung sau khi lưu.';
 
 function report(issues: ImportIssue[]): ImportReport {
 	const sorted = [...issues].sort(
@@ -208,7 +209,7 @@ function lessonIssue(warning: string): ImportIssue {
 		return {
 			level: 'warn',
 			text: warning,
-			fix: 'Mỗi đề mục lớn cần dòng "=== SECTION: Tên mục ===". Dùng prompt định dạng để AI gắn.',
+			fix: 'Dùng ## Tên mục để chia bài thành các mục; hoặc dùng mẫu === SECTION: Tên mục ===.',
 		};
 	}
 	if (/mermaid/i.test(warning)) {

@@ -31,7 +31,7 @@ const GROUPS: { title: string; note?: string; snippets: MarkdownSnippet[] }[] = 
 	},
 	{
 		title: 'Khi dán vào “Nhập nội dung”',
-		note: 'Mỗi dòng # tạo một bài; mỗi dòng === … === tạo một mục.',
+		note: 'Dùng # cho tên bài và ## cho các mục; mẫu === SECTION: … === vẫn được hỗ trợ. Ảnh còn thiếu: ![Mô tả ảnh](). Chọn ảnh cho từng vị trí hoặc ghép hàng loạt theo tên file.',
 		snippets: IMPORT_SNIPPETS,
 	},
 ];

@@ -1,6 +1,13 @@
 import type { Editor } from '@tiptap/core';
 
-import { imageFileKey, imageSrcStatus, type ImageRef } from '@/features/learn/images';
+import {
+	findImageRefs,
+	replaceImageAt,
+	replaceImageSrcs,
+	imageFileKey,
+	imageSrcStatus,
+	type ImageRef,
+} from '@/features/learn/images';
 
 let sequence = 0;
 export function imagePlaceholder(name = 'anh-dan.png') {
@@ -182,4 +189,26 @@ export async function matchImageFiles(
 		}),
 	);
 	return { replacements, unmatched, count: refs.filter((ref) => replacements.has(ref.src)).length };
+}
+
+/** Reserve the chosen occurrence before awaiting; edits and duplicate blanks remain independent. */
+export async function uploadImageAt(
+	index: number,
+	file: File,
+	read: () => string,
+	write: (markdown: string) => void,
+	upload: (file: File) => Promise<string | null>,
+) {
+	const current = read();
+	const ref = findImageRefs(current)[index];
+	if (!ref) return;
+	const marker = imagePlaceholder(file.name);
+	write(replaceImageAt(current, index, marker));
+	const url = await upload(file);
+	if (url) write(replaceImageSrcs(read(), new Map([[marker, url]])));
+	else {
+		const latest = read();
+		const position = findImageRefs(latest).findIndex((image) => image.url === marker);
+		if (position >= 0) write(replaceImageAt(latest, position, ref.url));
+	}
 }

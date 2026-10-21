@@ -111,6 +111,25 @@ export function imageFileKey(srcOrName: string): string {
 		.replace(/\.[^.]+$/, '');
 }
 
+/** Replace one occurrence, including an empty destination, without touching its caption. */
+export function replaceImageAt(markdown: string, index: number, replacement: string): string {
+	const match = imageMatches(markdown)[index];
+	if (!match) return markdown;
+	return replaceMatch(markdown, match, replacement);
+}
+
+function replaceMatch(markdown: string, match: RegExpMatchArray, replacement: string): string {
+	const src = match[2] ?? match[3];
+	const leading = match[0].match(/^!\[(?:\\.|[^\]\\])*\]\(\s*<?/)![0].length;
+	const start = match.index! + leading;
+	return (
+		markdown.slice(0, start) +
+		splitImageSrc(replacement).url +
+		(src.match(WIDTH_RE)?.[0] ?? '') +
+		markdown.slice(start + src.length)
+	);
+}
+
 /** Map keys are exact sources, never basenames, to avoid replacing unrelated images. */
 export function replaceImageSrcs(
 	markdown: string,
@@ -120,16 +139,7 @@ export function replaceImageSrcs(
 	for (const match of imageMatches(markdown).reverse()) {
 		const src = match[2] ?? match[3];
 		const replacement = replacements.get(src) ?? replacements.get(splitImageSrc(src).url);
-		if (!replacement) continue;
-		const prefix = match[0].indexOf('](') + 2;
-		const offset = match[0].indexOf(src, prefix);
-		const fragment = src.match(WIDTH_RE)?.[0] ?? '';
-		const start = match.index + offset;
-		result =
-			result.slice(0, start) +
-			splitImageSrc(replacement).url +
-			fragment +
-			result.slice(start + src.length);
+		if (replacement) result = replaceMatch(result, match, replacement);
 	}
 	return result;
 }
