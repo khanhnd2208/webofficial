@@ -1,6 +1,8 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import { addAdminSession, createAdminRequest } from './helpers/adminSession';
 
@@ -500,6 +502,17 @@ test('imports Markdown, fills individual missing images, edits and persists acro
 			.png()
 			.toBuffer(),
 	};
+	// Production Nginx serves runtime uploads from disk; next start only indexes build-time public files.
+	// Keep the upload API real and serve its actual bytes just as the deployment does.
+	await page.route('**/uploads/*', async (route) => {
+		const filename = path.basename(new URL(route.request().url()).pathname);
+		try {
+			const body = await readFile(path.join(process.cwd(), 'public', 'uploads', filename));
+			await route.fulfill({ body, contentType: 'image/webp' });
+		} catch {
+			await route.fulfill({ status: 404 });
+		}
+	});
 	try {
 		await page.setViewportSize({ width: 1440, height: 1000 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio`);
