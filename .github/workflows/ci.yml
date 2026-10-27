@@ -184,6 +184,10 @@ jobs:
           --health-start-interval 1s
       mongodb:
         image: mongo:8
+        env:
+          # MongoDB 8 refuses to start on runner kernels 6.19+ (SERVER-121912, a tcmalloc rseq bug).
+          # Letting glibc own rseq avoids it; drop this once MongoDB ships the tcmalloc fix.
+          GLIBC_TUNABLES: glibc.pthread.rseq=1
         ports:
           - 27017:27017
         options: >-
