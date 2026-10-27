@@ -21,6 +21,7 @@ import { compareLectureText, type TextHunk } from '@/features/learn/textFidelity
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import { useImageUploads } from './useImageUploads';
 import ImageUploadStatus from './ImageUploadStatus';
+import { markdownFromPaste } from './markdownPaste';
 import MissingImagesBar from './MissingImagesBar';
 import {
 	uploadImageAt,
@@ -273,6 +274,19 @@ export default function LearnRichEditor({
 				return true;
 			},
 			handlePaste: (_view, event) => {
+				const markdown = markdownFromPaste(
+					event.clipboardData?.getData('text/plain') ?? '',
+					event.clipboardData?.getData('text/html') ?? '',
+				);
+				if (markdown !== null && editorRef.current) {
+					event.preventDefault();
+					editorRef.current
+						.chain()
+						.focus()
+						.insertContent(markdown, { contentType: 'markdown' })
+						.run();
+					return true;
+				}
 				if (pastedHtmlHasText(event.clipboardData?.getData('text/html') ?? '')) return false;
 				const files = [...(event.clipboardData?.files ?? [])].filter((file) =>
 					file.type.startsWith('image/'),

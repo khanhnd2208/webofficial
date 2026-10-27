@@ -19,6 +19,7 @@ import {
 	parseCourseMarkdown,
 	parseLessonMarkdown,
 	planContentReplace,
+	unwrapAiPaste,
 } from './lessonImport';
 import { LEARN_MAX_MARKDOWN } from './schemas';
 import { readingOutline } from './outline';
@@ -296,6 +297,16 @@ describe('helpers', () => {
 		);
 		expect(unfinished.warnings[0]).toMatch(/chưa trả hết bài/);
 		expect(unfinished.markdown).not.toContain('CÒN TIẾP');
+	});
+
+	it('unwraps an AI reply on paste so its images stay outside code', () => {
+		expect(unwrapAiPaste('# Bài\n\n## Mục\n![Hình]()')).toBeNull();
+		expect(unwrapAiPaste('Đây:\n````markdown\n# Bài\n\n![Hình]()\n````\nChúc vui')).toBe(
+			'# Bài\n\n![Hình]()',
+		);
+		const unfinished = unwrapAiPaste('````markdown\n# Bài\n````\n<<<CÒN TIẾP>>>');
+		expect(unfinished).toBe('# Bài\n\n<<<CÒN TIẾP>>>');
+		expect(cleanAiPaste(unfinished!).warnings[0]).toMatch(/chưa trả hết bài/);
 	});
 
 	it('keeps every word of the sample lecture and reports a one-word edit', () => {

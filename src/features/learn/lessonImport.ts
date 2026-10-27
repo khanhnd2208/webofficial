@@ -433,6 +433,17 @@ export function cleanAiPaste(raw: string): { markdown: string; warnings: string[
 	return { markdown, warnings };
 }
 
+/**
+ * The markdown inside an AI reply's ```markdown fences, or null when the paste has none.
+ * Pasting the unwrapped text keeps its images and captions visible to the image tools,
+ * which skip code. The continuation marker stays so the dialog still asks for the rest.
+ */
+export function unwrapAiPaste(raw: string): string | null {
+	if (!raw.split(/\r?\n/).some((line) => MARKDOWN_FENCE_OPEN.test(line.trim()))) return null;
+	const { markdown, warnings } = cleanAiPaste(raw);
+	return warnings.length ? `${markdown}\n\n<<<CÒN TIẾP>>>` : markdown;
+}
+
 const RAW_MERMAID_LINE =
 	/^(?:(?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL)|mindmap|timeline|sequenceDiagram)\b/;
 const DOC_BYLINE = /·\s*@\S/;

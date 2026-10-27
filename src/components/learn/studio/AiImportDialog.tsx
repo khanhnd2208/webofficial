@@ -12,6 +12,7 @@ import {
 	cleanAiPaste,
 	parseCourseMarkdown,
 	planContentReplace,
+	unwrapAiPaste,
 } from '@/features/learn/lessonImport';
 import { LEARN_FORMAT_PROMPTS } from '@/features/learn/prompts';
 import type { LearnDiscussionQuestion, LearnStudioLesson } from '@/features/learn/types';
@@ -39,6 +40,7 @@ function importImpact(input: {
 	sectionName: string;
 	sectionTitle: string;
 	lessonCount: number;
+	sectionCount: number;
 	questionCount: number;
 	existingQuestions: number;
 	hasTarget: boolean;
@@ -47,8 +49,9 @@ function importImpact(input: {
 	deletes: number;
 }) {
 	if (input.kind === 'lesson' && input.lessonMode === 'create') {
+		const lessons = input.lessonCount > 1 ? `${input.lessonCount} bài mới` : 'bài mới';
 		return input.contentReady
-			? `Tạo bài mới với ${input.lessonCount} mục.`
+			? `Tạo ${lessons} với ${input.sectionCount} mục.`
 			: 'Tạo bài mới. Dán nội dung để xem số mục.';
 	}
 	if (input.kind === 'lesson') {
@@ -299,7 +302,8 @@ export default function AiImportDialog({
 		lessonName,
 		sectionName,
 		sectionTitle,
-		lessonCount: lessonSections.length,
+		lessonCount: lessonParsed?.lessons.length ?? 0,
+		sectionCount: lessonSections.length,
 		questionCount,
 		existingQuestions: target?.count ?? 0,
 		hasTarget: Boolean(target),
@@ -430,7 +434,16 @@ export default function AiImportDialog({
 						aria-invalid={report?.errors ? true : undefined}
 						value={text}
 						onChange={(event) => setText(event.target.value)}
-						onPaste={() => setPane('preview')}
+						onPaste={(event) => {
+							setPane('preview');
+							const unwrapped = unwrapAiPaste(event.clipboardData.getData('text/plain'));
+							if (unwrapped === null) return;
+							event.preventDefault();
+							const area = event.currentTarget;
+							const before = text.slice(0, area.selectionStart);
+							const join = before.trim() ? `${before.trimEnd()}\n\n` : '';
+							setText(`${join}${unwrapped}${text.slice(area.selectionEnd)}`);
+						}}
 						spellCheck={false}
 						placeholder={
 							kind === 'lesson'
