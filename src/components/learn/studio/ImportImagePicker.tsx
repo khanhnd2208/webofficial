@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { addImageSlots, findImageHints } from '@/features/learn/imageHints';
 import { findImageRefs, replaceImageSrcs } from '@/features/learn/images';
 
+import ImageHintsBar from './ImageHintsBar';
 import { droppedImageFiles, matchImageFiles, uploadImageAt } from './imageUploadUtils';
 import ImageUploadStatus from './ImageUploadStatus';
 import MissingImagesBar from './MissingImagesBar';
@@ -44,7 +46,9 @@ export default function ImportImagePicker({
 		);
 	}
 	const images = findImageRefs(markdown);
-	if (!images.length && !note && !uploads.uploading && !uploads.errors.length) return null;
+	const hinted = findImageHints(markdown).length > 0;
+	if (!images.length && !hinted && !note && !uploads.uploading && !uploads.errors.length)
+		return null;
 	return (
 		<div
 			onDragOver={(event) => {
@@ -60,6 +64,11 @@ export default function ImportImagePicker({
 					.finally(() => setReading(false));
 			}}
 		>
+			<ImageHintsBar
+				markdown={markdown}
+				disabled={reading || uploads.uploading}
+				onAdd={() => change(addImageSlots(latest.current))}
+			/>
 			<MissingImagesBar
 				markdown={markdown}
 				onFiles={(files) => void attach(files)}

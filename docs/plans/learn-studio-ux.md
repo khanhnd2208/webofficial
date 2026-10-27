@@ -106,7 +106,11 @@ Hợp đồng `flush()` vẫn là `Promise<{ ok: boolean }>`. Không thêm depen
 - Bài đọc và lời dẫn mở sẵn Markdown, kèm xem trước; vẫn có thể chuyển sang soạn trực quan với kiểm tra mất nội dung.
 - Nhập bài chấp nhận `# Tên bài`, `## Tên mục`. Không cảnh báo chỉ vì dùng tiêu đề Markdown chuẩn. Mẫu SECTION vẫn dùng được.
 - Dùng `![Mô tả]()` hoặc `![Mô tả](ten-anh.png)` để đánh dấu chỗ cần ảnh. Mỗi vị trí có nút chọn file bất kỳ, độc lập với các vị trí trống khác. Ghép nhiều ảnh theo tên vẫn có sẵn.
-- Ảnh nội bộ không tải được cũng được báo trong danh sách bổ sung. Đây là kiểm tra tải ảnh trong trình duyệt, không suy đoán đoạn văn nào cần minh họa khi chưa có ký hiệu ảnh.
+- Ảnh nội bộ không tải được cũng được báo trong danh sách bổ sung.
+- Chép từ Word/Docs/PDF thường mất ảnh nhưng còn chú thích. Một đoạn đứng riêng dạng “Hình 2.1: …”, “Sơ đồ 3. …”, “[Hình ảnh: …]” hay “(Chèn hình minh họa)”, chưa có ảnh hay sơ đồ mermaid kề bên, được báo “N chỗ có vẻ cần ảnh”. Nút “Tạo ô ảnh” đặt `![chú thích]()` ngay trên chú thích (giữ nguyên chú thích) hoặc thay cho ghi chú [Hình …], rồi các ô hiện trong danh sách bổ sung. Có ở hộp nhập và cả hai chế độ soạn. Không suy đoán từ câu văn thường như “Hình 1 cho thấy…”.
+- Prompt AI yêu cầu thêm ô ảnh trống ở chỗ bản gốc có hình mà không dựng được bằng mermaid.
+- Dán câu trả lời AI còn khung ````markdown vào hộp nhập: khung được bóc ngay khi dán, để ảnh bên trong không bị coi là mã.
+- Dán Markdown dạng chữ thường (file .md, VS Code, nút chép của AI) vào soạn trực quan được dựng thành tiêu đề, bảng, khối và ô ảnh thay vì hiện ký hiệu `##`, `> [!NOTE]`. HTML có định dạng (Word, Docs, trang web) vẫn dán như cũ.
 - Upload giữ chỗ trước khi chờ máy chủ; sửa chữ/xóa ảnh trong lúc tải không làm ảnh gắn nhầm. Thất bại trả lại chỗ trống để thử lại.
 - Bỏ danh sách đường dẫn ảnh lặp; gộp các nút chèn định dạng vào menu. Nút tìm bài/mục hiện rõ ở mục lục, hỗ trợ tìm không dấu.
 - Kiểm tra trình duyệt bao gồm nhập Markdown, upload thật, sửa, lưu, tải lại và màn hình điện thoại; dùng dữ liệu thử cục bộ.

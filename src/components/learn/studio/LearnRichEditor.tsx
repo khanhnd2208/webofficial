@@ -16,11 +16,15 @@ import {
 	splitImageSrc,
 	replaceImageSrcs,
 } from '@/features/learn/images';
+import { addImageSlots } from '@/features/learn/imageHints';
 import { findUnsupportedMarkdown } from '@/features/learn/markdownFidelity';
 import { compareLectureText, type TextHunk } from '@/features/learn/textFidelity';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import { useImageUploads } from './useImageUploads';
 import ImageUploadStatus from './ImageUploadStatus';
+import { addEditorImageSlots } from './editorImageHints';
+import ImageHintsBar from './ImageHintsBar';
+import { markdownFromPaste } from './markdownPaste';
 import MissingImagesBar from './MissingImagesBar';
 import {
 	uploadImageAt,
@@ -273,6 +277,19 @@ export default function LearnRichEditor({
 				return true;
 			},
 			handlePaste: (_view, event) => {
+				const markdown = markdownFromPaste(
+					event.clipboardData?.getData('text/plain') ?? '',
+					event.clipboardData?.getData('text/html') ?? '',
+				);
+				if (markdown !== null && editorRef.current) {
+					event.preventDefault();
+					editorRef.current
+						.chain()
+						.focus()
+						.insertContent(markdown, { contentType: 'markdown' })
+						.run();
+					return true;
+				}
 				if (pastedHtmlHasText(event.clipboardData?.getData('text/html') ?? '')) return false;
 				const files = [...(event.clipboardData?.files ?? [])].filter((file) =>
 					file.type.startsWith('image/'),
@@ -527,6 +544,14 @@ export default function LearnRichEditor({
 					{words.toLocaleString('vi-VN')} từ · ~{estimateReadingMinutes(markdownNow)} phút đọc
 				</span>
 			</div>
+			<ImageHintsBar
+				markdown={markdownNow}
+				disabled={readingFiles || uploads.uploading}
+				onAdd={() => {
+					if (mode === 'markdown') changeSource(addImageSlots(sourceRef.current));
+					else if (editorRef.current) addEditorImageSlots(editorRef.current);
+				}}
+			/>
 			<MissingImagesBar
 				markdown={markdownNow}
 				disabled={readingFiles || uploads.uploading}

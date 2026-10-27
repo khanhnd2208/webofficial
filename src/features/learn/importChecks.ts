@@ -4,6 +4,7 @@
  */
 
 import { ANSWER_LABELS, discussionQuestionViews } from './discussionView';
+import { findImageHints } from './imageHints';
 import { findImageRefs } from './images';
 import type { ImportedCourse } from './lessonImport';
 import { discussionIssues } from './questionHealth';
@@ -53,6 +54,18 @@ function imageIssue(markdown: string, includeExternal: boolean): ImportIssue | n
 				level: 'warn',
 				text: `${pending} ảnh chưa tải lên, học viên sẽ không thấy.`,
 				fix: FIX_IMAGES,
+			}
+		: null;
+}
+
+/** Captions and "[Hình …]" notes that lost their picture when the source was copied as text. */
+function imageHintIssue(markdown: string): ImportIssue | null {
+	const hints = findImageHints(markdown).length;
+	return hints
+		? {
+				level: 'warn',
+				text: `${hints} chỗ có chú thích hoặc ghi chú hình nhưng chưa có ảnh.`,
+				fix: 'Bấm "Tạo ô ảnh" ở phần xem trước, rồi chọn ảnh cho từng ô.',
 			}
 		: null;
 }
@@ -198,6 +211,8 @@ export function discussionImportReport({
 
 	const images = imageIssue(markdown, true);
 	if (images) issues.push(images);
+	const hints = imageHintIssue(markdown);
+	if (hints) issues.push(hints);
 	return report(issues);
 }
 
@@ -265,5 +280,7 @@ export function lessonImportReport({
 	}
 	const images = imageIssue(markdown, false);
 	if (images) issues.push(images);
+	const hints = imageHintIssue(markdown);
+	if (hints) issues.push(hints);
 	return report(issues);
 }
