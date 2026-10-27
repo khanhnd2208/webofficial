@@ -47,12 +47,12 @@ GIỮ NGUYÊN CÁC PHẦN KHÁC
 - In đậm, in nghiêng theo quy tắc ở trên. Không tự thêm chữ mới.
 - Bảng Markdown: chữ trong ô nguyên văn. Ký tự | trong ô viết \\|.
 - Chú thích cuối trang → [^1] và [^1]: nội dung ở cuối mục chứa nó.
-- Chú thích hình, sơ đồ giữ nguyên dòng chữ. Ảnh sẽ chèn sau trong studio.
+- Ảnh: chỗ nào bản gốc có hình, ảnh chụp, biểu đồ hoặc sơ đồ không dựng lại được bằng mermaid (thường chỉ còn dòng chú thích như "Hình 2.1: …" hoặc ghi chú [Hình …]), thêm một dòng ô ảnh trống ![<chú thích nguyên văn>]() đứng riêng ngay trên dòng chú thích, cách một dòng trống. Giữ nguyên dòng chú thích. Ảnh sẽ chọn sau trong studio.
 
 CÁCH TRẢ KẾT QUẢ
 - Toàn bộ kết quả nằm trong MỘT khối ${FENCE}markdown … ${FENCE} (4 dấu backtick). Không chữ nào ngoài khối.
 - Bài dài: không được rút gọn. Nếu sắp hết độ dài trả lời, dừng ở cuối một SECTION trọn vẹn, đóng khối, và viết dòng <<<CÒN TIẾP>>>. Khi tôi nhắn "tiếp", tiếp tục từ SECTION kế tiếp trong một khối mới, không lặp lại, không có dòng #  lần nữa.
-- Tự kiểm tra trước khi gửi: không thiếu đoạn nào, không có câu nào do bạn viết, chỉ một dòng #, không còn bảng dàn phẳng, không có ${CODE_FENCE}text, mọi sơ đồ nằm trong ${CODE_FENCE}mermaid.
+- Tự kiểm tra trước khi gửi: không thiếu đoạn nào, không có câu nào do bạn viết, chỉ một dòng #, không còn bảng dàn phẳng, không có ${CODE_FENCE}text, mọi sơ đồ nằm trong ${CODE_FENCE}mermaid, mỗi hình của bản gốc có một ô ảnh ![…]() hoặc một sơ đồ mermaid.
 
 --- TÀI LIỆU GỐC ---
 [DÁN TOÀN BỘ BÀI GIẢNG VÀO ĐÂY]`;

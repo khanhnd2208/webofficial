@@ -565,3 +565,71 @@ test('imports Markdown, fills individual missing images, edits and persists acro
 		await deleteCourse(course.id);
 	}
 });
+
+async function pasteText(target: ReturnType<Page['locator']>, text: string) {
+	await target.evaluate((element, value) => {
+		const data = new DataTransfer();
+		data.setData('text/plain', value);
+		element.dispatchEvent(
+			new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+		);
+	}, text);
+}
+
+test('asks for pictures where pasted text has captions, and parses Markdown pasted into the visual editor', async ({
+	page,
+	context,
+}) => {
+	test.setTimeout(60_000);
+	await addAdminSession(context);
+	const created = await context.request.post('/api/admin/learn/courses', {
+		data: { title: `Image hints ${randomUUID()}` },
+	});
+	expect(created.status()).toBe(201);
+	const course = (await created.json()).data as { id: string; slug: string };
+	const screenshotDir = process.env.COURSE_UX_SCREENSHOTS;
+	try {
+		await page.setViewportSize({ width: 1440, height: 1000 });
+		await page.goto(`/khoa-hoc/${course.slug}/studio`);
+		await main(page).getByRole('button', { name: 'Nhập nội dung', exact: true }).click();
+		const box = main(page).getByRole('textbox', { name: 'Nội dung dán' });
+		await box.focus();
+		await pasteText(
+			box,
+			'Kết quả:\n\n````markdown\n# Bài có hình\n\n## Lập kế hoạch\n\nNội dung mở đầu.\n\nHình 2.1: Quy trình lập kế hoạch\n\n[Hình ảnh: sơ đồ tổ chức]\n````',
+		);
+		await expect(box).not.toHaveValue(/````/);
+		await expect(main(page).getByText('2 chỗ có vẻ cần ảnh', { exact: false })).toBeVisible();
+		if (screenshotDir)
+			await page.screenshot({ path: `${screenshotDir}/import-hints.png`, fullPage: true });
+		await main(page).getByRole('button', { name: 'Tạo ô ảnh' }).click();
+		await expect(main(page).getByText('2 vị trí ảnh cần bổ sung')).toBeVisible();
+		await expect(box).toHaveValue(/!\[Hình 2\.1: Quy trình lập kế hoạch\]\(\)\n\nHình 2\.1:/);
+		await main(page).getByRole('button', { name: 'Lưu 1 mục', exact: true }).click();
+		await expect(main(page).getByRole('heading', { name: 'Nhập nội dung' })).toHaveCount(0);
+
+		await main(page).getByRole('tab', { name: 'Soạn trực quan' }).click();
+		const editor = main(page).locator('.ln-editor__content');
+		await editor.click();
+		await page.keyboard.press('ControlOrMeta+End');
+		await pasteText(
+			editor,
+			'## Mục dán\n\n| Cột A | Cột B |\n| --- | --- |\n| 1 | 2 |\n\n> [!NOTE] Ghi chú\n> nội dung\n\nSơ đồ 3: Cơ cấu tổ chức',
+		);
+		await expect(editor.locator('table')).toBeVisible();
+		await expect(editor.getByRole('heading', { name: 'Mục dán' })).toBeVisible();
+		await expect(editor).not.toContainText('[!NOTE]');
+		await expect(main(page).getByText('1 chỗ có vẻ cần ảnh', { exact: false })).toBeVisible();
+		if (screenshotDir)
+			await page.screenshot({ path: `${screenshotDir}/editor-hints.png`, fullPage: true });
+		await main(page).getByRole('button', { name: 'Tạo ô ảnh' }).click();
+		await main(page)
+			.getByRole('tab', { name: /Markdown/ })
+			.click();
+		await expect(main(page).getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
+			/!\[Sơ đồ 3: Cơ cấu tổ chức\]\(\)\n\nSơ đồ 3: Cơ cấu tổ chức/,
+		);
+	} finally {
+		await deleteCourse(course.id);
+	}
+});

@@ -16,11 +16,14 @@ import {
 	splitImageSrc,
 	replaceImageSrcs,
 } from '@/features/learn/images';
+import { addImageSlots } from '@/features/learn/imageHints';
 import { findUnsupportedMarkdown } from '@/features/learn/markdownFidelity';
 import { compareLectureText, type TextHunk } from '@/features/learn/textFidelity';
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import { useImageUploads } from './useImageUploads';
 import ImageUploadStatus from './ImageUploadStatus';
+import { addEditorImageSlots } from './editorImageHints';
+import ImageHintsBar from './ImageHintsBar';
 import { markdownFromPaste } from './markdownPaste';
 import MissingImagesBar from './MissingImagesBar';
 import {
@@ -541,6 +544,14 @@ export default function LearnRichEditor({
 					{words.toLocaleString('vi-VN')} từ · ~{estimateReadingMinutes(markdownNow)} phút đọc
 				</span>
 			</div>
+			<ImageHintsBar
+				markdown={markdownNow}
+				disabled={readingFiles || uploads.uploading}
+				onAdd={() => {
+					if (mode === 'markdown') changeSource(addImageSlots(sourceRef.current));
+					else if (editorRef.current) addEditorImageSlots(editorRef.current);
+				}}
+			/>
 			<MissingImagesBar
 				markdown={markdownNow}
 				disabled={readingFiles || uploads.uploading}

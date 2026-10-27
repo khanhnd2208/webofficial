@@ -141,3 +141,14 @@ describe('answer left in the prompt', () => {
 		expect(report.issues[0].text).toMatch(/Lời giải đang nằm trong đề bài/);
 	});
 });
+
+describe('captions without a picture', () => {
+	it('warns where pasted text still names a picture', () => {
+		const raw = '# Bài 1\n\n## Mục\n\nNội dung.\n\nHình 1: Quy trình\n\n[Hình ảnh: sơ đồ]';
+		const report = lessonImportReport({ markdown: raw, parsed: parseCourseMarkdown(raw) });
+		expect(report.errors).toBe(0);
+		expect(report.issues.map((issue) => issue.text)).toContain(
+			'2 chỗ có chú thích hoặc ghi chú hình nhưng chưa có ảnh.',
+		);
+	});
+});
