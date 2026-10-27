@@ -162,7 +162,9 @@ jobs:
     name: Build and end-to-end tests
     needs: reuse
     if: ${{ !cancelled() && needs.reuse.outputs.hit != 'true' }}
-    runs-on: ubuntu-latest
+    # Pinned: Playwright's WebKit build needs Ubuntu 24.04 system libraries (libicu74),
+    # and ubuntu-latest moved to 26.04. Move up once Playwright supports 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     # The build never connects to a database; the services are for the
     # end-to-end tests, and they start while the build runs.
@@ -310,14 +312,17 @@ jobs:
 
       - name: Resolve Playwright version
         id: playwright
-        run: echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+          echo "image=$ImageOS" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browsers
         id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+          # Browsers are built per OS release, so a runner image change must not reuse them.
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.image }}-${{ steps.playwright.outputs.version }}
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
