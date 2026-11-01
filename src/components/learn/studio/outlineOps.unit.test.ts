@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { LearnStudioLesson, LearnStudioSection } from '@/features/learn/types';
 
-import { applyOrder, copyTitle, insertAfter, outlineOrder, sectionCopyBody } from './outlineOps';
+import { applyOrder, outlineOrder } from './outlineOps';
 
 function section(id: string, lessonId: string, patch: Partial<LearnStudioSection> = {}) {
 	return {
@@ -46,30 +46,5 @@ describe('applyOrder', () => {
 		const order = outlineOrder([lesson('l1', [section('a', 'l1')])]);
 		const result = applyOrder([lesson('l1', [section('new', 'l1'), section('a', 'l1')])], order);
 		expect(result[0].sections.map((item) => item.id)).toEqual(['a', 'new']);
-	});
-});
-
-describe('copies', () => {
-	it('gives copied questions new ids and drops blank takeaways', () => {
-		const source = section('q', 'l1', {
-			type: 'DISCUSSION',
-			keyTakeaways: ['Ý chính', '  '],
-			discussion: { questions: [{ id: 'q_old', question: 'Hỏi?', answer: 'Đáp' }] },
-		});
-		const body = sectionCopyBody(source, copyTitle(source.title));
-		expect(body.title).toBe('q (bản sao)');
-		expect(body.keyTakeaways).toEqual(['Ý chính']);
-		expect(body.discussion?.questions[0].id).not.toBe('q_old');
-		expect(body.discussion?.questions[0].question).toBe('Hỏi?');
-	});
-
-	it('inserts right after the original', () => {
-		const items = [{ id: 'a' }, { id: 'b' }];
-		expect(insertAfter(items, 'a', { id: 'c' }).map((item) => item.id)).toEqual(['a', 'c', 'b']);
-		expect(insertAfter(items, 'missing', { id: 'c' }).map((item) => item.id)).toEqual([
-			'a',
-			'b',
-			'c',
-		]);
 	});
 });

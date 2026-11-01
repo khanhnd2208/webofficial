@@ -41,13 +41,13 @@ function actions(): OutlineActions {
 		onPlaceSection: vi.fn(),
 		onAddSection: vi.fn(),
 		onDeleteLesson: vi.fn(),
-		onDuplicateLesson: vi.fn(),
 		onExportLesson: vi.fn(),
-		onDuplicateSection: vi.fn(),
+		onReplaceLesson: vi.fn(),
 		onPreviewSection: vi.fn(),
+		onSectionHistory: vi.fn(),
 		onDeleteSection: vi.fn(),
-		onAddLesson: vi.fn(),
-		onImport: vi.fn(),
+		onAddLessonFromMarkdown: vi.fn(),
+		onAddEmptyLesson: vi.fn(),
 	};
 }
 
@@ -107,7 +107,7 @@ describe('StudioOutline', () => {
 		expect(handlers.onRenameLesson).toHaveBeenCalledWith('l1', 'Giới thiệu');
 	});
 
-	it('moves, duplicates and deletes from the menus without dragging', () => {
+	it('moves sections and opens their history from the menus without dragging', () => {
 		const handlers = actions();
 		render(<StudioOutline courseId="c1" lessons={lessons} selectedId="a" actions={handlers} />);
 
@@ -122,12 +122,24 @@ describe('StudioOutline', () => {
 		expect(handlers.onPlaceSection).toHaveBeenCalledWith('a', 'l2', null);
 
 		fireEvent.click(screen.getByRole('button', { name: 'Thao tác mục: Mục a' }));
-		fireEvent.click(screen.getByRole('menuitem', { name: 'Nhân bản mục' }));
-		expect(handlers.onDuplicateSection).toHaveBeenCalledWith('a');
+		fireEvent.click(screen.getByRole('menuitem', { name: 'Các phiên bản đã lưu' }));
+		expect(handlers.onSectionHistory).toHaveBeenCalledWith('a');
 
 		fireEvent.click(screen.getByRole('button', { name: 'Thêm mục vào bài 1' }));
-		fireEvent.click(screen.getByRole('menuitem', { name: /Phản biện/ }));
+		fireEvent.click(screen.getByRole('menuitem', { name: /Câu hỏi phản biện/ }));
 		expect(handlers.onAddSection).toHaveBeenCalledWith('l1', 'DISCUSSION');
+	});
+
+	it('offers one "Thêm bài" button that explains its two ways to add a lesson', () => {
+		const handlers = actions();
+		render(<StudioOutline courseId="c1" lessons={lessons} selectedId="a" actions={handlers} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Thêm bài' }));
+		expect(handlers.onAddEmptyLesson).not.toHaveBeenCalled();
+		fireEvent.click(screen.getByRole('menuitem', { name: /Dán Markdown/ }));
+		expect(handlers.onAddLessonFromMarkdown).toHaveBeenCalled();
+		fireEvent.click(screen.getByRole('button', { name: 'Thêm bài' }));
+		fireEvent.click(screen.getByRole('menuitem', { name: /Bài trống/ }));
+		expect(handlers.onAddEmptyLesson).toHaveBeenCalled();
 	});
 
 	it('closes a menu with Esc and gives focus back to its button', () => {

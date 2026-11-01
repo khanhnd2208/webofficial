@@ -9,7 +9,7 @@ import type {
 } from '@/features/learn/types';
 import { AdminApiError, adminFetch } from '@/lib/admin/client';
 
-import { applyOrder, copyTitle, insertAfter, outlineOrder, sectionCopyBody } from './outlineOps';
+import { applyOrder, outlineOrder } from './outlineOps';
 import { findSection } from './sectionPatch';
 import type { StudioConfirmRequest } from './StudioConfirm';
 import { StudioDeleteError, type useDeferredDeletes } from './useDeferredDeletes';
@@ -152,85 +152,6 @@ export function useStudioStructure({
 		select(created.id);
 	}
 
-	/** Fill a section created by the API with a copy of `source`. */
-	function fillCopy(targetId: string, source: LearnStudioSection, title?: string) {
-		return adminFetch<LearnStudioSection>(`/api/admin/learn/sections/${targetId}?full=1`, {
-			method: 'PATCH',
-			body: JSON.stringify(sectionCopyBody(source, title)),
-		});
-	}
-
-	async function duplicateSection(sectionId: string) {
-		const source = findSection(lessonsRef.current, sectionId);
-		if (!source) return;
-		const copy = await act(async () => {
-			const blank = await adminFetch<LearnStudioSection>(
-				`/api/admin/learn/lessons/${source.lessonId}/sections`,
-				{ method: 'POST', body: JSON.stringify({ type: source.type }) },
-			);
-			try {
-				return await fillCopy(blank.id, source, copyTitle(source.title));
-			} catch (err) {
-				await adminFetch(`/api/admin/learn/sections/${blank.id}`, { method: 'DELETE' }).catch(
-					() => undefined,
-				);
-				throw err;
-			}
-		});
-		if (!copy) return;
-		remember([copy]);
-		const next = lessonsRef.current.map((lesson) =>
-			lesson.id === source.lessonId
-				? { ...lesson, sections: insertAfter(lesson.sections, source.id, copy) }
-				: lesson,
-		);
-		select(copy.id);
-		await saveOutline(next);
-	}
-
-	async function duplicateLesson(lessonId: string) {
-		const source = lessonsRef.current.find((lesson) => lesson.id === lessonId);
-		if (!source) return;
-		const copy = await act(async () => {
-			const lesson = await adminFetch<LearnStudioLesson>(
-				`/api/admin/learn/courses/${courseId}/lessons`,
-				{
-					method: 'POST',
-					body: JSON.stringify({
-						title: copyTitle(source.title),
-						description: source.description,
-					}),
-				},
-			);
-			if (!source.sections.length) return lesson;
-			try {
-				const sections: LearnStudioSection[] = [];
-				for (const [index, section] of source.sections.entries()) {
-					const targetId =
-						index === 0 && lesson.sections[0]
-							? lesson.sections[0].id
-							: (
-									await adminFetch<LearnStudioSection>(
-										`/api/admin/learn/lessons/${lesson.id}/sections`,
-										{ method: 'POST', body: JSON.stringify({ type: section.type }) },
-									)
-								).id;
-					sections.push(await fillCopy(targetId, section));
-				}
-				return { ...lesson, sections };
-			} catch (err) {
-				await adminFetch(`/api/admin/learn/lessons/${lesson.id}`, { method: 'DELETE' }).catch(
-					() => undefined,
-				);
-				throw err;
-			}
-		});
-		if (!copy) return;
-		remember(copy.sections);
-		select(copy.sections[0]?.id ?? null);
-		await saveOutline(insertAfter(lessonsRef.current, source.id, copy));
-	}
-
 	async function deleteLesson(id: string) {
 		const lesson = lessons.find((item) => item.id === id);
 		if (!lesson) return;
@@ -245,10 +166,9 @@ export function useStudioStructure({
 			adminFetch(`/api/admin/learn/lessons/${id}`, { method: 'DELETE' }),
 		);
 		if (done === undefined) return;
-		const next = lessonsRef.current.filter((item) => item.id !== id);
-		setLessons(next);
-		if (lesson.sections.some((item) => item.id === selectedId))
-			select(next[0]?.sections[0]?.id ?? null);
+		setLessons(lessonsRef.current.filter((item) => item.id !== id));
+		// Never land in another lesson's content: the author picks what to open next.
+		if (lesson.sections.some((item) => item.id === selectedId)) select(null);
 	}
 
 	function deleteSection(id: string) {
@@ -260,9 +180,9 @@ export function useStudioStructure({
 			source
 				.find((lesson) => lesson.id === lessonId)
 				?.sections.findIndex((item) => item.id === id) ?? 0;
-		const flat = source.flatMap((lesson) => lesson.sections);
-		const at = flat.findIndex((item) => item.id === id);
-		const neighbour = flat[at + 1] ?? flat[at - 1] ?? null;
+		// Stay inside the same lesson; an emptied lesson shows nothing rather than another lesson.
+		const siblings = source.find((lesson) => lesson.id === lessonId)?.sections ?? [];
+		const neighbour = siblings[index + 1] ?? siblings[index - 1] ?? null;
 		setLessons((current) =>
 			current.map((lesson) => ({
 				...lesson,
@@ -314,8 +234,6 @@ export function useStudioStructure({
 		moveSection,
 		addLesson,
 		addSection,
-		duplicateSection,
-		duplicateLesson,
 		deleteLesson,
 		deleteSection,
 	};

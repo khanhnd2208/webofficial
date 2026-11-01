@@ -6,9 +6,9 @@ import { LiveRegion } from '@/components/ui/Dialog';
 import { LEARN_SECTION_KIND_LABELS, type LearnStudioSection } from '@/features/learn/types';
 
 import LearnDiscussionEditor from './LearnDiscussionEditor';
-import LearnRichEditor from './LearnRichEditor';
+import MarkdownEditor from './MarkdownEditor';
+import SectionExtras from './SectionExtras';
 import type { SectionFieldErrors, SectionPatch } from './sectionPatch';
-import type { ImportRequest } from './useSectionImport';
 
 /** The section being edited: its title, then the editor that fits its kind. */
 export default function StudioCanvas({
@@ -20,7 +20,6 @@ export default function StudioCanvas({
 	keptTitle,
 	onPatch,
 	onRestoreTitle,
-	onOpenImport,
 	onOpenHelp,
 }: {
 	section: LearnStudioSection | null;
@@ -31,7 +30,6 @@ export default function StudioCanvas({
 	keptTitle: string | null;
 	onPatch: (patch: SectionPatch) => void;
 	onRestoreTitle: () => void;
-	onOpenImport: (request: ImportRequest) => void;
 	onOpenHelp: () => void;
 }) {
 	const titleRef = useRef<HTMLTextAreaElement>(null);
@@ -53,13 +51,13 @@ export default function StudioCanvas({
 			<main className="ln-studio__canvas">
 				<div className="ln-studio__empty">
 					<p className="font-display text-2xl">Chọn một mục để soạn</p>
-					<p className="mt-2 text-ink-secondary">Hoặc thêm bài mới, nhập nội dung ở mục lục.</p>
+					<p className="mt-2 text-ink-secondary">
+						Bấm vào một mục ở mục lục bên trái, hoặc dùng “Thêm bài” ở cuối mục lục.
+					</p>
 				</div>
 			</main>
 		);
 	}
-
-	const target = (count: number) => ({ sectionId: section.id, count });
 
 	return (
 		<main className="ln-studio__canvas">
@@ -106,39 +104,30 @@ export default function StudioCanvas({
 				{section.type === 'DISCUSSION' ? (
 					<>
 						<details className="ln-studio__intro" open={Boolean(section.markdown.trim())}>
-							<summary>Lời dẫn: cách dùng bộ câu hỏi</summary>
-							<p className="ln-studio__intro-hint">
-								Hiện ở đầu trang phản biện, thu gọn được. Để trống nếu không cần.
-							</p>
-							<LearnRichEditor
-								defaultMode="markdown"
+							<summary>Lời dẫn trước bộ câu hỏi (không bắt buộc)</summary>
+							<MarkdownEditor
 								value={section.markdown}
+								label="Lời dẫn"
+								placeholder="Vài dòng hướng dẫn cách dùng bộ câu hỏi. Để trống nếu không cần."
+								showPreview={false}
+								showCount={false}
 								onChange={(markdown) => onPatch({ markdown })}
-								onOpenHelp={onOpenHelp}
 							/>
 						</details>
 						<LearnDiscussionEditor
-							sectionId={section.id}
 							discussion={section.discussion ?? { questions: [] }}
 							onChange={(discussion) => onPatch({ discussion })}
 							onOpenHelp={onOpenHelp}
-							onOpenImport={() =>
-								onOpenImport({
-									kind: 'discussion',
-									locked: true,
-									target: target(section.discussion?.questions.length ?? 0),
-								})
-							}
 						/>
 					</>
 				) : (
-					<LearnRichEditor
-						defaultMode="markdown"
+					<MarkdownEditor
 						value={section.markdown}
 						onChange={(markdown) => onPatch({ markdown })}
 						onOpenHelp={onOpenHelp}
 					/>
 				)}
+				<SectionExtras section={section} fieldErrors={fieldErrors} onPatch={onPatch} />
 			</div>
 		</main>
 	);

@@ -4,7 +4,7 @@ import { useSyncExternalStore, type KeyboardEvent } from 'react';
 
 const query = '(min-width: 64rem)';
 
-export type StudioArea = 'outline' | 'content' | 'info';
+export type StudioArea = 'outline' | 'content';
 
 /** Arrow keys move between tabs and activate the destination. Home and End jump to the ends. */
 export function onTabListKeyDown(event: KeyboardEvent<HTMLElement>) {

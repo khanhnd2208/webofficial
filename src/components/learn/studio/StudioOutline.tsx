@@ -14,7 +14,6 @@ import { useMemo, useState } from 'react';
 import { sectionHint } from '@/features/learn/questionHealth';
 import { unresolvedSectionImages } from '@/features/learn/sectionImages';
 import {
-	LEARN_SECTION_KIND_SHORT,
 	type LearnSectionKind,
 	type LearnStudioLesson,
 	type LearnStudioSection,
@@ -33,14 +32,14 @@ export const SECTION_KINDS: {
 }[] = [
 	{
 		type: 'READING',
-		label: 'Bài giảng',
-		hint: 'Một phần bài giảng: callout, bảng, hình',
+		label: 'Phần bài giảng',
+		hint: 'Một trang nội dung soạn bằng Markdown',
 		icon: 'reading',
 	},
 	{
 		type: 'DISCUSSION',
-		label: 'Phản biện',
-		hint: 'Tình huống mở kèm đáp án mẫu',
+		label: 'Câu hỏi phản biện',
+		hint: 'Bộ câu hỏi kèm đáp án mẫu, soạn bằng Markdown',
 		icon: 'discussion',
 	},
 ];
@@ -53,13 +52,14 @@ export interface OutlineActions {
 	onPlaceSection: (sectionId: string, lessonId: string, beforeId: string | null) => void;
 	onAddSection: (lessonId: string, type: LearnSectionKind) => void;
 	onDeleteLesson: (lessonId: string) => void;
-	onDuplicateLesson: (lessonId: string) => void;
 	onExportLesson: (lessonId: string) => void;
-	onDuplicateSection: (sectionId: string) => void;
+	/** Rewrite a lesson from pasted Markdown. */
+	onReplaceLesson: (lessonId: string) => void;
 	onPreviewSection: (sectionId: string) => void;
+	onSectionHistory: (sectionId: string) => void;
 	onDeleteSection: (sectionId: string) => void;
-	onAddLesson: () => void;
-	onImport: () => void;
+	onAddLessonFromMarkdown: () => void;
+	onAddEmptyLesson: () => void;
 }
 
 function reorder(ids: string[], event: DragEndEvent): string[] | null {
@@ -110,9 +110,9 @@ function SectionRow({
 			onSelect: () => actions.onPreviewSection(section.id),
 		},
 		{
-			label: 'Nhân bản mục',
-			icon: 'duplicate',
-			onSelect: () => actions.onDuplicateSection(section.id),
+			label: 'Các phiên bản đã lưu',
+			icon: 'undo',
+			onSelect: () => actions.onSectionHistory(section.id),
 		},
 		{
 			label: 'Lên trên',
@@ -195,9 +195,6 @@ function SectionRow({
 						aria-label={`${missingCount} ảnh chưa tải lên`}
 					/>
 				) : null}
-				{section.type !== 'READING' ? (
-					<span className="ln-souter__tag">{LEARN_SECTION_KIND_SHORT[section.type]}</span>
-				) : null}
 			</button>
 			<div className="ln-souter__row-menu">
 				<StudioMenu
@@ -254,12 +251,12 @@ function LessonBlock({
 				onSelect: () => actions.onAddSection(lesson.id, kind.type),
 			}),
 		),
-		'divider',
 		{
-			label: 'Nhân bản bài',
-			icon: 'duplicate',
-			onSelect: () => actions.onDuplicateLesson(lesson.id),
+			label: 'Thay cả bài bằng Markdown…',
+			icon: 'markdown',
+			onSelect: () => actions.onReplaceLesson(lesson.id),
 		},
+		'divider',
 		{
 			label: 'Lên trên',
 			icon: 'up',
@@ -360,6 +357,9 @@ function LessonBlock({
 			</div>
 			{open ? (
 				<div id={bodyId}>
+					{lesson.sections.length ? null : (
+						<p className="ln-souter__empty">Bài này chưa có mục nào.</p>
+					)}
 					<SortableContext id={lesson.id} items={ids} strategy={verticalListSortingStrategy}>
 						<ol className="ln-souter__sections">
 							{lesson.sections.map((section) => (
@@ -497,17 +497,29 @@ export default function StudioOutline({
 				</SortableContext>
 			</DndContext>
 			<div className="ln-souter__footer">
-				<button type="button" className="ln-btn ln-btn--block" onClick={actions.onAddLesson}>
-					<StudioIcon name="plus" size={14} /> Thêm bài
-				</button>
-				<button
-					type="button"
-					className="ln-btn ln-btn--primary ln-btn--block"
-					title="Dán Markdown để tạo hoặc cập nhật bài"
-					onClick={actions.onImport}
-				>
-					<StudioIcon name="import" size={14} /> Nhập nội dung
-				</button>
+				<StudioMenu
+					label="Thêm bài"
+					triggerClassName="ln-btn ln-btn--primary ln-btn--block"
+					trigger={
+						<>
+							<StudioIcon name="plus" size={14} /> Thêm bài
+						</>
+					}
+					items={[
+						{
+							label: 'Dán Markdown',
+							hint: 'Tạo bài mới từ nội dung có sẵn',
+							icon: 'markdown',
+							onSelect: actions.onAddLessonFromMarkdown,
+						},
+						{
+							label: 'Bài trống',
+							hint: 'Tạo bài chưa có nội dung, soạn sau',
+							icon: 'plus',
+							onSelect: actions.onAddEmptyLesson,
+						},
+					]}
+				/>
 			</div>
 		</div>
 	);
