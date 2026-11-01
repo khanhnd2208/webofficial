@@ -16,6 +16,8 @@ export interface ImportRequest {
 	kind: AiImportKind;
 	locked: boolean;
 	target?: { sectionId: string; count: number };
+	lessonMode?: 'create' | 'replace';
+	lessonId?: string;
 }
 
 /** Only send what the API accepts: blank titles and empty takeaway rows stay local. */

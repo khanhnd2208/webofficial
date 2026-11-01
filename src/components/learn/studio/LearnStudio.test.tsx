@@ -52,6 +52,14 @@ const course: LearnStudioCourse = {
 	],
 };
 
+/** On a narrow screen the outline is a tab; a section is deleted from its row menu. */
+function deleteFromOutline(title: string) {
+	fireEvent.click(screen.getByRole('tab', { name: 'Mục lục' }));
+	fireEvent.click(screen.getByRole('button', { name: `Thao tác mục: ${title}` }));
+	fireEvent.click(screen.getByRole('menuitem', { name: 'Xóa mục' }));
+	fireEvent.click(screen.getByRole('tab', { name: 'Nội dung' }));
+}
+
 describe('LearnStudio save button', () => {
 	it('asks before publishing unresolved images and can navigate to the affected section', async () => {
 		const draft = structuredClone(course);
@@ -70,9 +78,6 @@ describe('LearnStudio save button', () => {
 		render(
 			<LearnStudio course={{ ...course, status: 'PUBLISHED' }} initialSectionId="section-1" />,
 		);
-		expect(
-			screen.getByText('Khóa đang công khai. Mỗi lần lưu thành công, học viên thấy nội dung mới.'),
-		).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Thêm thao tác với khóa học' }));
 		fireEvent.click(screen.getByRole('menuitem', { name: 'Chuyển về bản nháp…' }));
 		await waitFor(() =>
@@ -94,7 +99,6 @@ describe('LearnStudio save button', () => {
 		);
 		expect(screen.getByRole('button', { name: 'Đã lưu ✓' })).toBeDisabled();
 
-		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
 		fireEvent.change(screen.getByPlaceholderText(/Tiêu đề/), { target: { value: 'Bản đã sửa' } });
 
 		const save = screen.getByRole('button', { name: 'Lưu' });
@@ -140,7 +144,6 @@ describe('LearnStudio save button', () => {
 
 		push.mockReset();
 		adminFetch.mockRejectedValueOnce(new AdminApiError('Mất mạng', { status: 500 }));
-		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
 		fireEvent.change(screen.getByPlaceholderText(/Tiêu đề/), {
 			target: { value: 'Chưa lên máy chủ' },
 		});
@@ -152,8 +155,7 @@ describe('LearnStudio save button', () => {
 
 	it('hides a deleted section and restores it without sending DELETE', () => {
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
-		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
-		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
+		deleteFromOutline('Mục 1');
 		expect(screen.getByText('Đã xóa mục "Mục 1"')).toBeInTheDocument();
 		expect(screen.queryByRole('textbox', { name: 'Tên mục' })).not.toBeInTheDocument();
 		expect(adminFetch).not.toHaveBeenCalled();
@@ -169,11 +171,48 @@ describe('LearnStudio save button', () => {
 		expect(screen.getByText('Đang sửa: Bài 1 · Mục 1')).toBeInTheDocument();
 		const content = screen.getByRole('tab', { name: 'Nội dung' });
 		content.focus();
-		fireEvent.keyDown(content, { key: 'ArrowRight' });
-		expect(screen.getByRole('tab', { name: 'Thông tin' })).toHaveAttribute('aria-selected', 'true');
-		expect(screen.getByLabelText('Thời lượng')).toBeInTheDocument();
+		fireEvent.keyDown(content, { key: 'ArrowLeft' });
+		expect(screen.getByRole('tab', { name: 'Mục lục' })).toHaveAttribute('aria-selected', 'true');
 		expect(screen.getByText('Đang sửa: Bài 1 · Mục 1')).toBeInTheDocument();
-		expect(screen.getByText(/Hiện cạnh loại mục trên trang học/)).toBeInTheDocument();
+		expect(screen.queryByRole('tab', { name: 'Thông tin' })).not.toBeInTheDocument();
+	});
+
+	it('keeps optional learner fields folded under the editor', () => {
+		render(<LearnStudio course={course} initialSectionId="section-1" />);
+		expect(screen.getByText('Tùy chọn hiển thị')).toBeInTheDocument();
+		expect(screen.getByLabelText('Thời lượng')).not.toBeVisible();
+	});
+
+	it('stays inside the lesson after a delete instead of opening another lesson', () => {
+		const draft = structuredClone(course);
+		draft.lessons[0].sections.push({
+			...draft.lessons[0].sections[0],
+			id: 'section-2',
+			title: 'Mục 2',
+		});
+		draft.lessons.push({
+			id: 'lesson-2',
+			title: 'Bài mới',
+			description: '',
+			sections: [
+				{
+					...draft.lessons[0].sections[0],
+					id: 'section-3',
+					lessonId: 'lesson-2',
+					title: 'Mục mới',
+				},
+			],
+		});
+		render(<LearnStudio course={draft} initialSectionId="section-3" />);
+		deleteFromOutline('Mục mới');
+		expect(screen.queryByRole('textbox', { name: 'Tên mục' })).not.toBeInTheDocument();
+		expect(screen.getByText('Chọn một mục để soạn')).toBeInTheDocument();
+		expect(screen.getByText('Bài này chưa có mục nào.')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('tab', { name: 'Mục lục' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Mục 1' }));
+		deleteFromOutline('Mục 1');
+		expect(screen.getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục 2');
 	});
 
 	it('describes the course blurb as the overview introduction', () => {
@@ -207,8 +246,7 @@ describe('LearnStudio save button', () => {
 		adminFetch.mockRejectedValueOnce(new AdminApiError('Máy chủ từ chối', { status: 500 }));
 		render(<LearnStudio course={draft} initialSectionId="section-1" />);
 
-		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
-		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
+		deleteFromOutline('Mục 1');
 		fireEvent.click(screen.getByRole('button', { name: 'Xem như học viên' }));
 
 		await waitFor(() => expect(screen.getByText(/Máy chủ từ chối/)).toBeInTheDocument());
@@ -226,8 +264,7 @@ describe('LearnStudio save button', () => {
 	it('does not open publish when the section delete failed', async () => {
 		adminFetch.mockRejectedValueOnce(new AdminApiError('Máy chủ từ chối', { status: 500 }));
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
-		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
-		fireEvent.click(screen.getByRole('button', { name: 'Xóa mục này' }));
+		deleteFromOutline('Mục 1');
 		fireEvent.click(screen.getByRole('button', { name: 'Xuất bản…' }));
 
 		await waitFor(() =>
@@ -247,11 +284,10 @@ describe('LearnStudio save button', () => {
 			'ln-studio-tab-content',
 		);
 
-		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
 		fireEvent.change(screen.getByRole('textbox', { name: 'Nội dung Markdown' }), {
 			target: { value: 'Chữ vừa gõ' },
 		});
-		fireEvent.click(screen.getByRole('tab', { name: 'Thông tin' }));
+		fireEvent.click(screen.getByRole('tab', { name: 'Mục lục' }));
 		expect(screen.queryByRole('textbox', { name: 'Nội dung Markdown' })).not.toBeInTheDocument();
 		fireEvent.click(content);
 		expect(screen.getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue('Chữ vừa gõ');
@@ -263,7 +299,6 @@ describe('LearnStudio save button', () => {
 		adminFetch.mockRejectedValue(new TypeError('Failed to fetch'));
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
 
-		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
 		fireEvent.change(screen.getByRole('textbox', { name: 'Nội dung Markdown' }), {
 			target: { value: 'Bản chưa lên mạng' },
 		});
@@ -309,7 +344,6 @@ describe('LearnStudio save button', () => {
 		});
 		render(<LearnStudio course={course} initialSectionId="section-1" />);
 
-		fireEvent.click(screen.getByRole('tab', { name: /markdown/i }));
 		fireEvent.change(screen.getByRole('textbox', { name: 'Nội dung Markdown' }), {
 			target: { value: 'Bản của phiên này' },
 		});

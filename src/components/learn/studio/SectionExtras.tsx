@@ -3,12 +3,9 @@
 import { useRef } from 'react';
 
 import { sectionMinutes } from '@/features/learn/content';
-import { type LearnStudioLesson, type LearnStudioSection } from '@/features/learn/types';
+import type { LearnStudioSection } from '@/features/learn/types';
 
-import { StudioIcon } from './icons';
 import type { SectionFieldErrors, SectionPatch } from './sectionPatch';
-
-export type { SectionPatch };
 
 function TakeawaysEditor({
 	items,
@@ -67,22 +64,15 @@ function TakeawaysEditor({
 	);
 }
 
-export default function StudioInspector({
+/** Optional learner-facing extras. Collapsed under the editor: most sections leave them empty. */
+export default function SectionExtras({
 	section,
-	lessons,
 	fieldErrors,
 	onPatch,
-	onMove,
-	onDelete,
-	onHistory,
 }: {
 	section: LearnStudioSection;
-	lessons: LearnStudioLesson[];
 	fieldErrors?: SectionFieldErrors;
 	onPatch: (patch: SectionPatch) => void;
-	onMove: (lessonId: string) => void;
-	onDelete: () => void;
-	onHistory: () => void;
 }) {
 	const autoMinutes = sectionMinutes({ ...section, durationMinutes: null });
 	const durationHint = fieldErrors?.durationMinutes
@@ -90,18 +80,61 @@ export default function StudioInspector({
 		: 'ln-duration-hint';
 	const summaryHint = fieldErrors?.summary ? 'ln-summary-hint ln-summary-error' : 'ln-summary-hint';
 	const takeawayHint = fieldErrors?.keyTakeaways ? 'ln-takeaways-error' : undefined;
+	const hasErrors = Boolean(
+		fieldErrors?.durationMinutes || fieldErrors?.summary || fieldErrors?.keyTakeaways,
+	);
+	const filled = [
+		section.durationMinutes ? 'thời lượng' : null,
+		section.summary.trim() ? 'tóm tắt' : null,
+		section.keyTakeaways.some((item) => item.trim()) ? 'ý chính' : null,
+	].filter(Boolean);
 
 	return (
-		<aside className="ln-inspector" aria-label="Thông tin mục">
-			<div className="ln-inspector__head">
-				<h2 className="ln-inspector__title">Thông tin mục</h2>
-			</div>
+		<details className="ln-extras" open={hasErrors || undefined}>
+			<summary>
+				Tùy chọn hiển thị
+				<span className="ln-extras__meta">
+					{filled.length ? `Đang dùng: ${filled.join(', ')}` : 'Không bắt buộc'}
+				</span>
+			</summary>
+			<div className="ln-extras__body">
+				<label className="ln-inspector__label" htmlFor="ln-summary">
+					Tóm tắt
+				</label>
+				<textarea
+					id="ln-summary"
+					className="ln-input"
+					rows={2}
+					maxLength={2000}
+					value={section.summary}
+					placeholder="Một câu nói mục này giúp người học hiểu điều gì"
+					aria-describedby={summaryHint}
+					aria-invalid={fieldErrors?.summary ? true : undefined}
+					onChange={(event) => onPatch({ summary: event.target.value })}
+				/>
+				<p id="ln-summary-hint" className="ln-inspector__hint">
+					Hiện ngay dưới tên mục.
+				</p>
+				{fieldErrors?.summary ? (
+					<p id="ln-summary-error" className="ln-field-error ln-field-error--block" role="alert">
+						{fieldErrors.summary}
+					</p>
+				) : null}
 
-			<section className="ln-inspector__group" aria-labelledby="ln-learner-fields">
-				<h3 id="ln-learner-fields" className="ln-inspector__label">
-					Hiện với học viên
-				</h3>
-				<p className="ln-inspector__hint">Tùy chọn. Để trống nếu không cần hiện.</p>
+				<p id="ln-takeaways-label" className="ln-inspector__label">
+					Ý chính
+				</p>
+				<TakeawaysEditor
+					items={section.keyTakeaways}
+					describedBy={takeawayHint}
+					onChange={(keyTakeaways) => onPatch({ keyTakeaways })}
+				/>
+				<p className="ln-inspector__hint">Hiện trong khối “Bạn sẽ nắm được”.</p>
+				{fieldErrors?.keyTakeaways ? (
+					<p id="ln-takeaways-error" className="ln-field-error ln-field-error--block" role="alert">
+						{fieldErrors.keyTakeaways}
+					</p>
+				) : null}
 
 				<label className="ln-inspector__label" htmlFor="ln-duration">
 					Thời lượng
@@ -124,87 +157,14 @@ export default function StudioInspector({
 					phút
 				</span>
 				<p id="ln-duration-hint" className="ln-inspector__hint">
-					Hiện cạnh loại mục trên trang học, ví dụ “Bài đọc · {autoMinutes} phút”. Để trống thì tự
-					tính.
+					Để trống thì tự tính (khoảng {autoMinutes} phút).
 				</p>
 				{fieldErrors?.durationMinutes ? (
 					<p id="ln-duration-error" className="ln-field-error ln-field-error--block" role="alert">
 						{fieldErrors.durationMinutes}
 					</p>
 				) : null}
-
-				<label className="ln-inspector__label" htmlFor="ln-summary">
-					Tóm tắt
-				</label>
-				<textarea
-					id="ln-summary"
-					className="ln-input"
-					rows={3}
-					maxLength={2000}
-					value={section.summary}
-					placeholder="Một câu nói mục này giúp người học hiểu điều gì"
-					aria-describedby={summaryHint}
-					aria-invalid={fieldErrors?.summary ? true : undefined}
-					onChange={(event) => onPatch({ summary: event.target.value })}
-				/>
-				<p id="ln-summary-hint" className="ln-inspector__hint">
-					Hiện ngay dưới tên mục, trước nội dung bài.
-				</p>
-				{fieldErrors?.summary ? (
-					<p id="ln-summary-error" className="ln-field-error ln-field-error--block" role="alert">
-						{fieldErrors.summary}
-					</p>
-				) : null}
-
-				<p id="ln-takeaways-label" className="ln-inspector__label">
-					Ý chính
-				</p>
-				<TakeawaysEditor
-					items={section.keyTakeaways}
-					describedBy={takeawayHint}
-					onChange={(keyTakeaways) => onPatch({ keyTakeaways })}
-				/>
-				<p className="ln-inspector__hint">Hiện trong khối “Bạn sẽ nắm được”, trước nội dung bài.</p>
-				{fieldErrors?.keyTakeaways ? (
-					<p id="ln-takeaways-error" className="ln-field-error ln-field-error--block" role="alert">
-						{fieldErrors.keyTakeaways}
-					</p>
-				) : null}
-			</section>
-
-			<section className="ln-inspector__group" aria-labelledby="ln-structure-fields">
-				<h3 id="ln-structure-fields" className="ln-inspector__label">
-					Cấu trúc
-				</h3>
-				<label className="ln-inspector__label" htmlFor="ln-move">
-					Thuộc bài
-				</label>
-				<select
-					id="ln-move"
-					className="ln-input"
-					value={section.lessonId}
-					onChange={(event) => onMove(event.target.value)}
-				>
-					{lessons.map((lesson, index) => (
-						<option key={lesson.id} value={lesson.id}>
-							Bài {index + 1}: {lesson.title}
-						</option>
-					))}
-				</select>
-				<button type="button" className="ln-btn ln-btn--block mt-3" onClick={onHistory}>
-					Xem các phiên bản
-				</button>
-			</section>
-
-			<div className="ln-inspector__actions">
-				<button
-					type="button"
-					className="ln-btn ln-btn--block ln-btn--danger-quiet"
-					onClick={onDelete}
-				>
-					<StudioIcon name="trash" size={14} /> Xóa mục này
-				</button>
 			</div>
-		</aside>
+		</details>
 	);
 }

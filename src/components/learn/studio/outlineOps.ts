@@ -1,5 +1,4 @@
-import { newQuestionId } from '@/features/learn/content';
-import type { LearnStudioLesson, LearnStudioSection } from '@/features/learn/types';
+import type { LearnStudioLesson } from '@/features/learn/types';
 
 export interface OutlineOrder {
 	id: string;
@@ -50,34 +49,4 @@ export function applyOrder(
 		}
 	}
 	return result;
-}
-
-export function copyTitle(title: string): string {
-	return `${title.trim() || 'Chưa đặt tên'} (bản sao)`.slice(0, 200);
-}
-
-/** PATCH body that turns a fresh section into a copy of `section`, with new question ids. */
-export function sectionCopyBody(section: LearnStudioSection, title = section.title) {
-	return {
-		title: title.trim() || 'Mục mới',
-		type: section.type,
-		durationMinutes: section.durationMinutes,
-		summary: section.summary,
-		keyTakeaways: section.keyTakeaways.map((item) => item.trim()).filter(Boolean),
-		markdown: section.markdown,
-		discussion: section.discussion
-			? {
-					questions: section.discussion.questions.map((question) => ({
-						...question,
-						id: newQuestionId(),
-					})),
-				}
-			: null,
-	};
-}
-
-export function insertAfter<T extends { id: string }>(items: T[], afterId: string, item: T): T[] {
-	const at = items.findIndex((entry) => entry.id === afterId);
-	if (at < 0) return [...items, item];
-	return [...items.slice(0, at + 1), item, ...items.slice(at + 1)];
 }

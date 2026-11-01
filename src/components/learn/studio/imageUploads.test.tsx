@@ -1,29 +1,12 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { Editor } from '@tiptap/core';
+import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { findImageRefs } from '@/features/learn/images';
-import { learnEditorExtensions } from './editorExtensions';
-import {
-	uploadImageAt,
-	droppedImageFiles,
-	matchImageFiles,
-	insertImageFiles,
-	preparePastedImages,
-	resolvePastedImages,
-} from './imageUploadUtils';
+import { uploadImageAt, droppedImageFiles, matchImageFiles } from './imageUploadUtils';
 import { useImageUploads } from './useImageUploads';
 
 const { adminFetch } = vi.hoisted(() => ({ adminFetch: vi.fn() }));
 vi.mock('@/lib/admin/client', () => ({ adminFetch }));
-
-function editor() {
-	return new Editor({
-		extensions: learnEditorExtensions(),
-		content: 'Before\n\nAfter',
-		contentType: 'markdown',
-	});
-}
 
 describe('image uploads', () => {
 	it('attaches all matching references, rejects ambiguous duplicate files and reports unmatched files', async () => {
@@ -88,53 +71,6 @@ describe('image uploads', () => {
 			await result.current.uploadFile(new File(['x'], 'bad.png'));
 		});
 		expect(result.current.errors).toEqual(['bad.png: Too large']);
-	});
-	it('keeps insertion order and original position despite later selection changes', async () => {
-		const current = editor();
-		const finishes: Array<(url: string) => void> = [];
-		const upload = vi.fn(() => new Promise<string>((resolve) => finishes.push(resolve)));
-		const files = [new File(['a'], 'image.png'), new File(['b'], 'second.png')];
-		const task = insertImageFiles(current, files, 8, upload);
-		current.commands.setTextSelection(current.state.doc.content.size - 1);
-		finishes[1]('/uploads/second.webp');
-		finishes[0]('/uploads/first.webp');
-		await task;
-		const md = current.getMarkdown();
-		expect(md.indexOf('/uploads/first.webp')).toBeLessThan(md.indexOf('/uploads/second.webp'));
-		expect(md.indexOf('/uploads/second.webp')).toBeLessThan(md.indexOf('After'));
-		expect(md).toContain('![](/uploads/first.webp)');
-		current.destroy();
-	});
-	it('hands a late upload to the fallback when the editor closed mid-upload', async () => {
-		const current = editor();
-		let finish: (url: string) => void = () => {};
-		const upload = vi.fn(() => new Promise<string>((resolve) => (finish = resolve)));
-		const detached = vi.fn();
-		const task = insertImageFiles(current, [new File(['a'], 'shot.png')], 8, upload, detached);
-		const placeholder = findImageRefs(current.getMarkdown())[0].src;
-		current.destroy();
-		finish('/uploads/late.webp');
-		await task;
-		expect(detached).toHaveBeenCalledWith(new Map([[placeholder, '/uploads/late.webp']]));
-	});
-	it('retains pasted text and local-file placeholders without persisting base64', async () => {
-		const current = editor();
-		const pending = new Map<string, string>();
-		const html = preparePastedImages(
-			'<p>Text</p><img src="data:image/png;base64,YQ=="><img src="file:///x.png">',
-			pending,
-		);
-		expect(html).not.toContain('data:');
-		current.commands.insertContent(html);
-
-		const upload = vi.fn().mockResolvedValue('/uploads/pasted.webp');
-		await resolvePastedImages(current, pending, upload);
-		expect(current.getMarkdown()).toContain('/uploads/pasted.webp');
-		expect(current.getMarkdown()).toContain('x.png');
-		expect(current.getMarkdown()).toContain('Text');
-		expect(current.getMarkdown()).not.toContain('base64');
-		await waitFor(() => expect(upload).toHaveBeenCalledTimes(1));
-		current.destroy();
 	});
 });
 

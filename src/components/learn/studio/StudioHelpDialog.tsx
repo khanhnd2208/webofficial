@@ -30,7 +30,7 @@ const GROUPS: { title: string; note?: string; snippets: MarkdownSnippet[] }[] = 
 		snippets: CALLOUT_SNIPPETS,
 	},
 	{
-		title: 'Khi dán vào “Nhập nội dung”',
+		title: 'Khi thêm bài bằng Markdown',
 		note: 'Dùng # cho tên bài và ## cho các mục; mẫu === SECTION: … === vẫn được hỗ trợ. Ảnh còn thiếu: ![Mô tả ảnh](). Chọn ảnh cho từng vị trí hoặc ghép hàng loạt theo tên file.',
 		snippets: IMPORT_SNIPPETS,
 	},

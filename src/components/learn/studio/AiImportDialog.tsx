@@ -112,6 +112,7 @@ export type AiImportInput =
 export default function AiImportDialog({
 	kind: initialKind,
 	lockKind = false,
+	initialLessonMode = 'create',
 	lessons,
 	selectedLessonId,
 	target,
@@ -121,6 +122,7 @@ export default function AiImportDialog({
 }: {
 	kind: AiImportKind;
 	lockKind?: boolean;
+	initialLessonMode?: 'create' | 'replace';
 	lessons: LearnStudioLesson[];
 	selectedLessonId: string | null;
 	target?: { sectionId: string; count: number };
@@ -130,7 +132,7 @@ export default function AiImportDialog({
 }) {
 	const [kind, setKind] = useState<AiImportKind>(initialKind);
 	const [text, setText] = useState('');
-	const [lessonMode, setLessonMode] = useState<'create' | 'replace'>('create');
+	const [lessonMode, setLessonMode] = useState<'create' | 'replace'>(initialLessonMode);
 	const [questionMode, setQuestionMode] = useState<'append' | 'replace'>('append');
 	const [lessonId, setLessonId] = useState(selectedLessonId ?? lessons[0]?.id ?? '');
 	const [sectionTitle, setSectionTitle] = useState(DEFAULT_SECTION_TITLE);
@@ -315,7 +317,13 @@ export default function AiImportDialog({
 	return (
 		<>
 			<StudioDialog
-				title="Nhập nội dung"
+				title={
+					kind === 'lesson'
+						? lessonMode === 'create'
+							? 'Thêm bài từ Markdown'
+							: 'Thay bài bằng Markdown'
+						: 'Nhập câu hỏi phản biện'
+				}
 				busy={busy || uploadBusy}
 				onClose={() => void requestClose()}
 				footer={

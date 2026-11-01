@@ -10,6 +10,8 @@ describe('learner figures', () => {
 		expect(screen.queryByText(/Chưa có ảnh/)).not.toBeInTheDocument();
 		rerender(<LearnFigure src="hinh-1.png" showMissingImages />);
 		expect(screen.getByText('Chưa có ảnh: hinh-1.png')).toBeInTheDocument();
+		rerender(<LearnFigure src="" alt="Sơ đồ ba tiệm" showMissingImages />);
+		expect(screen.getByText('Chưa có ảnh: Sơ đồ ba tiệm')).toBeInTheDocument();
 	});
 	it('hides an entire broken figure and recovers when its source changes', () => {
 		const { rerender } = render(
