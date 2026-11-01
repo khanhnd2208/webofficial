@@ -74,61 +74,57 @@ async function courseWithDiscussion(context: BrowserContext) {
 	}
 }
 
-async function promptBox(page: Page) {
-	await main(page).getByRole('tab', { name: 'Markdown' }).click();
-	return main(page).getByRole('textbox', { name: 'Đề bài' });
+const DOC = 'Câu hỏi phản biện (Markdown)';
+
+function questionDoc(page: Page) {
+	return main(page).getByRole('textbox', { name: DOC });
 }
 
-test('edits a discussion, imports, previews, saves and restores', async ({ page, context }) => {
+function bank(...questions: string[]) {
+	return questions
+		.map(
+			(question, index) => `Câu ${index + 1}: ${question}\n\nĐáp án mẫu:\nLời giải ${index + 1}.`,
+		)
+		.join('\n\n');
+}
+
+async function saveNow(page: Page) {
+	const save = main(page).locator('.ln-save');
+	if ((await save.getAttribute('data-status')) !== 'saved') await save.click();
+	await expect(save).toHaveAttribute('data-status', 'saved');
+}
+
+test('edits a discussion as one Markdown document, previews, saves and restores', async ({
+	page,
+	context,
+}) => {
 	test.setTimeout(60_000);
 	await page.setViewportSize({ width: 1440, height: 900 });
 	const course = await courseWithDiscussion(context);
 	try {
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
-		await expect(main(page).getByRole('tab', { name: 'Đề bài' })).toBeVisible();
-		await expect(main(page).getByText('Câu hỏi nhanh')).toHaveCount(0);
+		await expect(questionDoc(page)).toHaveValue(new RegExp(`Câu 1: ${course.original}`));
+		await expect(main(page).getByRole('tab', { name: 'Danh sách câu' })).toHaveCount(0);
+		await expect(main(page).getByText('Thông tin mục')).toHaveCount(0);
 
-		await main(page).getByRole('tab', { name: 'Danh sách câu' }).click();
-		await main(page).getByRole('button', { name: 'Thêm câu' }).click();
 		const edited = 'Câu hai tiếng Việt: cửa hàng hết hàng.';
-		const box = await promptBox(page);
-		await box.fill(edited);
-		await main(page).locator('.ln-qnav__main').nth(0).click();
-		await main(page).getByRole('tab', { name: 'Markdown' }).click();
-		await expect(main(page).getByRole('textbox', { name: 'Đề bài' })).toHaveValue(
-			new RegExp(course.original),
-		);
-		await main(page).locator('.ln-qnav__main').nth(1).click();
-		await main(page).getByRole('tab', { name: 'Markdown' }).click();
-		await expect(main(page).getByRole('textbox', { name: 'Đề bài' })).toHaveValue(edited);
+		await questionDoc(page).fill(bank(course.original, edited));
+		await expect(main(page).getByText('2 câu', { exact: true })).toBeVisible();
+		await expect(
+			main(page).getByRole('region', { name: 'Xem trước như học viên' }).getByText(edited),
+		).toBeVisible();
+		await saveNow(page);
 
-		await main(page).getByRole('button', { name: 'Nhập nội dung' }).first().click();
-		await expect(main(page).getByRole('heading', { name: 'Nhập nội dung' })).toBeVisible();
-		await main(page).getByRole('button', { name: 'Đóng' }).click();
-		await expect(main(page).getByRole('heading', { name: 'Nhập nội dung' })).toHaveCount(0);
-
-		await main(page).getByRole('tab', { name: 'Xem trước' }).click();
-		await expect(main(page).getByText('Xem như học viên').first()).toBeVisible();
-		await expect(main(page).locator('.ln-qwork__preview').getByText(edited)).toBeVisible();
-
-		await main(page).getByRole('tab', { name: 'Đề bài' }).click();
-		const save = main(page).getByRole('button', { name: /^Lưu$|Đã lưu/ });
-		if ((await save.textContent())?.trim() === 'Lưu') await save.click();
-		await expect(main(page).getByRole('button', { name: /Đã lưu/ })).toBeVisible();
-
-		await main(page).getByRole('button', { name: 'Xem các phiên bản' }).click();
+		await main(page).getByRole('button', { name: 'Thao tác mục: Câu hỏi phản biện' }).click();
+		await main(page).getByRole('menuitem', { name: 'Các phiên bản đã lưu' }).click();
 		await main(page)
 			.getByRole('button', { name: /Lưu thủ công/ })
 			.click();
 		await main(page).getByRole('button', { name: 'Khôi phục bản này' }).click();
 		await main(page).getByRole('button', { name: 'Khôi phục', exact: true }).click();
 		await expect(main(page).getByRole('heading', { name: 'Lịch sử' })).toHaveCount(0);
-		await main(page).getByRole('tab', { name: 'Đề bài' }).click();
-		await main(page).locator('.ln-qnav__main').nth(0).click();
-		await main(page).getByRole('tab', { name: 'Markdown' }).click();
-		await expect(main(page).getByRole('textbox', { name: 'Đề bài' })).toHaveValue(
-			new RegExp(course.original),
-		);
+		await expect(questionDoc(page)).toHaveValue(new RegExp(course.original));
+		await expect(questionDoc(page)).not.toHaveValue(new RegExp(edited));
 	} finally {
 		await course.cleanup();
 	}
@@ -141,7 +137,7 @@ test('studio editor stays on screen at a phone width', async ({ page, context })
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
 		await expect(main(page).getByRole('tab', { name: 'Mục lục', exact: true })).toBeVisible();
 		await expect(main(page).getByText(/Đang sửa:/)).toBeVisible();
-		await expect(main(page).getByRole('tab', { name: 'Đề bài' })).toBeVisible();
+		await expect(questionDoc(page)).toBeVisible();
 		const overflow = await page.evaluate(
 			() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
 		);
@@ -151,32 +147,19 @@ test('studio editor stays on screen at a phone width', async ({ page, context })
 	}
 });
 
-test('keeps visual text through duplication, deletion and immediate reload', async ({
-	page,
-	context,
-}) => {
+test('keeps added and removed questions through an immediate reload', async ({ page, context }) => {
 	const course = await courseWithDiscussion(context);
 	try {
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
-		const prompt = main(page).getByRole('textbox', { name: 'Đề bài', exact: true });
-		await prompt.fill('Bản trực quan mới nhất');
-		await main(page).getByRole('button', { name: 'Thao tác câu 1' }).click();
-		await main(page).getByRole('menuitem', { name: 'Nhân bản', exact: true }).click();
-		await expect(main(page).locator('.ln-qnav__main')).toHaveCount(2);
-		await expect(main(page).getByRole('textbox', { name: 'Đề bài', exact: true })).toContainText(
-			'Bản trực quan mới nhất',
-		);
-		await main(page).getByRole('button', { name: 'Thao tác câu 2' }).click();
-		await main(page).getByRole('menuitem', { name: 'Xóa', exact: true }).click();
-		await expect(main(page).locator('.ln-qnav__main')).toHaveCount(1);
+		await questionDoc(page).fill(bank('Câu mới nhất', 'Câu sẽ xóa'));
+		await expect(main(page).getByText('2 câu', { exact: true })).toBeVisible();
+		await questionDoc(page).fill(bank('Câu mới nhất'));
+		await expect(main(page).getByText('1 câu', { exact: true })).toBeVisible();
 		await main(page).getByRole('button', { name: 'Xem như học viên', exact: true }).click();
 		await expect(main(page).getByRole('button', { name: /Đã lưu/ })).toBeVisible();
 		await page.reload();
-		await expect(main(page).locator('.ln-qnav__main')).toHaveCount(1);
-		await expect(main(page).getByRole('textbox', { name: 'Đề bài', exact: true })).toContainText(
-			'Bản trực quan mới nhất',
-		);
+		await expect(questionDoc(page)).toHaveValue(bank('Câu mới nhất'));
 	} finally {
 		await course.cleanup();
 	}
@@ -192,22 +175,22 @@ test('area tabs keep the current section visible and move with the keyboard', as
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
 		const areas = main(page).getByRole('tablist', { name: 'Vùng soạn' });
 		await expect(main(page).getByText('Đang sửa: Bài thử · Câu hỏi phản biện')).toBeVisible();
+		await expect(areas.getByRole('tab')).toHaveCount(2);
 		await areas.getByRole('tab', { name: 'Nội dung' }).focus();
-		await page.keyboard.press('ArrowRight');
-		await expect(areas.getByRole('tab', { name: 'Thông tin' })).toHaveAttribute(
+		await page.keyboard.press('ArrowLeft');
+		await expect(areas.getByRole('tab', { name: 'Mục lục' })).toHaveAttribute(
 			'aria-selected',
 			'true',
 		);
-		await expect(main(page).getByLabel('Thời lượng')).toBeVisible();
 		await expect(main(page).getByText('Đang sửa: Bài thử · Câu hỏi phản biện')).toBeVisible();
-		await page.keyboard.press('ArrowLeft');
-		await expect(main(page).getByRole('tab', { name: 'Đề bài' })).toBeVisible();
+		await page.keyboard.press('ArrowRight');
+		await expect(questionDoc(page)).toBeVisible();
 	} finally {
 		await course.cleanup();
 	}
 });
 
-test('workspace fits supported widths with Admin theme and a separate learner preview', async ({
+test('workspace fits supported widths with Admin theme and a learner preview', async ({
 	page,
 	context,
 }) => {
@@ -218,7 +201,7 @@ test('workspace fits supported widths with Admin theme and a separate learner pr
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
 		for (const width of [390, 768, 1024, 1280, 1440, 1920]) {
 			await page.setViewportSize({ width, height: 900 });
-			await expect(main(page).getByRole('tab', { name: 'Đề bài', exact: true })).toBeVisible();
+			await expect(questionDoc(page)).toBeVisible();
 			const overflow = await page.evaluate(
 				() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
 			);
@@ -229,13 +212,9 @@ test('workspace fits supported widths with Admin theme and a separate learner pr
 			'background-color',
 			'rgb(244, 246, 250)',
 		);
+		await expect(main(page).getByRole('region', { name: 'Xem trước như học viên' })).toBeVisible();
 		await page.screenshot({ path: '/tmp/learn-review-desktop.png' });
-		await page.setViewportSize({ width: 1920, height: 900 });
-		await main(page).getByRole('button', { name: 'Soạn và xem cạnh nhau' }).click();
-		await expect(main(page).locator('.ln-qwork')).toHaveAttribute('data-split', 'true');
-		await page.screenshot({ path: '/tmp/learn-review-preview.png' });
 		await page.setViewportSize({ width: 390, height: 800 });
-		await expect(main(page).locator('.ln-qwork')).not.toHaveAttribute('data-split', 'true');
 		await page.screenshot({ path: '/tmp/learn-review-mobile.png' });
 		expect(errors).toEqual([]);
 	} finally {
@@ -243,7 +222,7 @@ test('workspace fits supported widths with Admin theme and a separate learner pr
 	}
 });
 
-test('imports discussion content from one screen with a learner preview, then persists it', async ({
+test('adds a lesson from pasted Markdown with a learner preview, then persists it', async ({
 	page,
 	context,
 }) => {
@@ -251,28 +230,20 @@ test('imports discussion content from one screen with a learner preview, then pe
 	try {
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
-		await main(page).getByRole('button', { name: 'Nhập nội dung' }).first().click();
-		await expect(main(page).getByText(/Đích: /)).toBeVisible();
+		await main(page).getByRole('button', { name: 'Thêm bài' }).click();
+		await main(page)
+			.getByRole('menuitem', { name: /Dán Markdown/ })
+			.click();
+		const dialog = main(page).getByRole('dialog', { name: 'Thêm bài từ Markdown' });
+		await expect(dialog).toBeVisible();
 		await page
 			.getByRole('textbox', { name: 'Nội dung dán' })
-			.fill(
-				'Câu 1:\n### Hiểu — Tình huống nhập thử\n> [!REFLECT] Câu hỏi:\n> Vì sao cần kiểm tra?\n\nĐáp án mẫu:\nĐể xác nhận nội dung trước khi áp dụng.',
-			);
-		await expect(
-			main(page)
-				.getByRole('dialog', { name: 'Nhập nội dung' })
-				.getByRole('region', { name: 'Câu 1' }),
-		).toContainText('Vì sao cần kiểm tra?');
-		await main(page).getByRole('button', { name: 'Lưu 1 câu', exact: true }).click();
-		await expect(main(page).getByRole('dialog', { name: 'Nhập nội dung' })).toHaveCount(0);
-		await expect(main(page).locator('.ln-qnav__main')).toHaveCount(2);
+			.fill('# Bài dán thử\n\n## Mục dán thử\n\nNội dung dán từ Markdown.');
+		await dialog.getByRole('button', { name: 'Lưu 1 mục', exact: true }).click();
+		await expect(dialog).toHaveCount(0);
+		await expect(main(page).getByRole('button', { name: /^Bài 2: Bài dán thử/ })).toBeVisible();
 		await page.reload();
-		await expect(main(page).locator('.ln-qnav__main')).toHaveCount(2);
-		await main(page).locator('.ln-qnav__main').nth(1).click();
-		await main(page).getByRole('tab', { name: 'Xem trước', exact: true }).click();
-		await expect(
-			main(page).getByRole('heading', { name: 'Hiểu — Tình huống nhập thử', exact: true }),
-		).toBeVisible();
+		await expect(main(page).getByRole('button', { name: /^Bài 2: Bài dán thử/ })).toBeVisible();
 	} finally {
 		await course.cleanup();
 	}
@@ -304,8 +275,8 @@ test('saves a reading edit and shows where the course description appears', asyn
 
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${sectionId}`);
+		await expect(main(page).getByRole('tab', { name: 'Markdown' })).toHaveCount(0);
 		await main(page).getByRole('textbox', { name: 'Tên mục' }).fill('Mục đã sửa');
-		await main(page).getByRole('tab', { name: 'Markdown' }).click();
 		await main(page)
 			.getByRole('textbox', { name: 'Nội dung Markdown' })
 			.fill('Nội dung đã lưu lại.');
@@ -313,7 +284,6 @@ test('saves a reading edit and shows where the course description appears', asyn
 		await expect(main(page).getByRole('button', { name: /Đã lưu/ })).toBeVisible();
 		await page.reload();
 		await expect(main(page).getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục đã sửa');
-		await main(page).getByRole('tab', { name: 'Markdown' }).click();
 		await expect(main(page).getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
 			'Nội dung đã lưu lại.',
 		);
@@ -335,7 +305,10 @@ test('saves a reading edit and shows where the course description appears', asyn
 	}
 });
 
-test('adds a lesson from the studio after the outline is empty', async ({ page, context }) => {
+test('adds an empty lesson from the studio after the outline is empty', async ({
+	page,
+	context,
+}) => {
 	await addAdminSession(context);
 	const request = context.request;
 	const created = await request.post('/api/admin/learn/courses', {
@@ -350,7 +323,11 @@ test('adds a lesson from the studio after the outline is empty', async ({ page, 
 		await main(page).getByRole('menuitem', { name: 'Xóa bài…' }).click();
 		await main(page).getByRole('button', { name: 'Xóa bài', exact: true }).click();
 		await expect(main(page).getByRole('button', { name: /Bài 1:/ })).toHaveCount(0);
+		await expect(main(page).getByText('Chọn một mục để soạn')).toBeVisible();
 		await main(page).getByRole('button', { name: 'Thêm bài' }).click();
+		await main(page)
+			.getByRole('menuitem', { name: /Bài trống/ })
+			.click();
 		await expect(main(page).getByRole('button', { name: /Bài 1: Bài 1, 1 mục/ })).toBeVisible();
 		await expect(main(page).getByRole('textbox', { name: 'Tên mục' })).toHaveValue('Mục mới');
 	} finally {
@@ -364,17 +341,15 @@ async function keepTextAcrossAreas(
 	read: () => Promise<void>,
 ) {
 	await fill();
-	await main(page).getByRole('tab', { name: 'Thông tin', exact: true }).click();
-	await expect(main(page).getByLabel('Thời lượng')).toBeVisible();
+	await main(page).getByRole('tab', { name: 'Mục lục', exact: true }).click();
+	await expect(main(page).getByRole('button', { name: 'Thêm bài' })).toBeVisible();
 	await main(page).getByRole('tab', { name: 'Nội dung', exact: true }).click();
 	await read();
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await read();
 	await page.setViewportSize({ width: 390, height: 800 });
 	await read();
-	const save = main(page).locator('.ln-save');
-	if ((await save.getAttribute('data-status')) !== 'saved') await save.click();
-	await expect(save).toHaveAttribute('data-status', 'saved');
+	await saveNow(page);
 	await page.reload();
 	await read();
 }
@@ -405,25 +380,18 @@ test('keeps a reading edit across mobile tabs, a resize, save and reload', async
 		await page.setViewportSize({ width: 390, height: 800 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${sectionId}`);
 		const typed = 'Nội dung gõ rồi đổi vùng.';
+		const box = () => main(page).getByRole('textbox', { name: 'Nội dung Markdown' });
 		await keepTextAcrossAreas(
 			page,
-			async () => {
-				await main(page).getByRole('tab', { name: 'Markdown' }).click();
-				await main(page).getByRole('textbox', { name: 'Nội dung Markdown' }).fill(typed);
-			},
-			async () => {
-				await main(page).getByRole('tab', { name: 'Markdown' }).click();
-				await expect(main(page).getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
-					typed,
-				);
-			},
+			() => box().fill(typed),
+			() => expect(box()).toHaveValue(typed),
 		);
 	} finally {
 		await deleteCourse(course.id);
 	}
 });
 
-test('keeps a discussion prompt across mobile tabs, a resize, save and reload', async ({
+test('keeps a discussion edit across mobile tabs, a resize, save and reload', async ({
 	page,
 	context,
 }) => {
@@ -432,17 +400,11 @@ test('keeps a discussion prompt across mobile tabs, a resize, save and reload', 
 	const course = await courseWithDiscussion(context);
 	try {
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
-		const typed = 'Câu gõ rồi đổi vùng.';
+		const typed = bank('Câu gõ rồi đổi vùng.');
 		await keepTextAcrossAreas(
 			page,
-			async () => {
-				const box = await promptBox(page);
-				await box.fill(typed);
-			},
-			async () => {
-				await main(page).getByRole('tab', { name: 'Markdown' }).click();
-				await expect(main(page).getByRole('textbox', { name: 'Đề bài' })).toHaveValue(typed);
-			},
+			() => questionDoc(page).fill(typed),
+			() => expect(questionDoc(page)).toHaveValue(typed),
 		);
 	} finally {
 		await course.cleanup();
@@ -454,23 +416,23 @@ test('the editor stays usable at 1024px and at 200% zoom', async ({ page, contex
 	try {
 		await page.setViewportSize({ width: 1024, height: 800 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
-		const prompt = main(page).getByRole('textbox', { name: 'Đề bài', exact: true });
+		const prompt = questionDoc(page);
 		await expect(prompt).toBeVisible();
 		const at1024 = await prompt.boundingBox();
 		expect(at1024).not.toBeNull();
 		expect(at1024!.width).toBeGreaterThan(240);
 		expect(at1024!.x).toBeGreaterThanOrEqual(0);
 		expect(at1024!.x + at1024!.width).toBeLessThanOrEqual(1025);
-		await prompt.fill('Soạn ở 1024');
-		await expect(prompt).toContainText('Soạn ở 1024');
+		await prompt.fill(bank('Soạn ở 1024'));
+		await expect(prompt).toHaveValue(bank('Soạn ở 1024'));
 		await page.screenshot({ path: '/tmp/learn-studio-1024.png', fullPage: false });
 
 		// Chrome's 200% zoom on a 1024px window lays out at about 512 CSS pixels.
 		await page.setViewportSize({ width: 512, height: 400 });
 		await expect(main(page).getByRole('tab', { name: 'Nội dung', exact: true })).toBeVisible();
 		await expect(prompt).toBeVisible();
-		await prompt.fill('Soạn khi phóng 200%');
-		await expect(prompt).toContainText('Soạn khi phóng 200%');
+		await prompt.fill(bank('Soạn khi phóng 200%'));
+		await expect(prompt).toHaveValue(bank('Soạn khi phóng 200%'));
 		const zoomed = await prompt.boundingBox();
 		expect(zoomed).not.toBeNull();
 		expect(zoomed!.width).toBeGreaterThan(160);
