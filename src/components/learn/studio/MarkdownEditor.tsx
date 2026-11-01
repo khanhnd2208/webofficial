@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import LearnMarkdown from '@/components/learn/LearnMarkdown';
 import { countWords, estimateReadingMinutes } from '@/features/learn/content';
@@ -27,6 +27,17 @@ function readPreviewShown(): boolean {
 	} catch {
 		return true;
 	}
+}
+
+const noSubscribe = () => () => {};
+
+/** False only while server HTML is on screen; typing then would be reset by hydration. */
+function useHydrated() {
+	return useSyncExternalStore(
+		noSubscribe,
+		() => true,
+		() => false,
+	);
 }
 
 function isImage(file: File) {
@@ -152,6 +163,7 @@ export default function MarkdownEditor({
 		else void insertFiles(files);
 	}
 
+	const hydrated = useHydrated();
 	const busy = reading || uploads.uploading;
 	const withPreview = showPreview && previewShown;
 
@@ -233,6 +245,7 @@ export default function MarkdownEditor({
 					aria-label={label}
 					className="ln-editor__source"
 					value={source}
+					readOnly={!hydrated}
 					spellCheck={false}
 					placeholder={placeholder}
 					onScroll={(event) => syncPreview(event.currentTarget)}
