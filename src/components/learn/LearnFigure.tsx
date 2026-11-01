@@ -22,7 +22,9 @@ export default function LearnFigure({
 	if (missing)
 		return showMissingImages ? (
 			<figure className="ln-figure">
-				<div className="ln-figure__missing">Chưa có ảnh: {parsed.url || '(chưa có tên)'}</div>
+				<div className="ln-figure__missing">
+					Chưa có ảnh: {parsed.url || alt || '(chưa có tên)'}
+				</div>
 				{title ? <figcaption>{title}</figcaption> : null}
 			</figure>
 		) : null;
