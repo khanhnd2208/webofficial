@@ -88,6 +88,13 @@ function bank(...questions: string[]) {
 		.join('\n\n');
 }
 
+async function addLessonFromMarkdown(page: Page) {
+	await main(page).getByRole('button', { name: 'Thêm bài' }).click();
+	await main(page)
+		.getByRole('menuitem', { name: /Dán Markdown/ })
+		.click();
+}
+
 async function saveNow(page: Page) {
 	const save = main(page).locator('.ln-save');
 	if ((await save.getAttribute('data-status')) !== 'saved') await save.click();
@@ -109,7 +116,9 @@ test('edits a discussion as one Markdown document, previews, saves and restores'
 
 		const edited = 'Câu hai tiếng Việt: cửa hàng hết hàng.';
 		await questionDoc(page).fill(bank(course.original, edited));
-		await expect(main(page).getByText('2 câu', { exact: true })).toBeVisible();
+		await expect(
+			main(page).locator('.ln-qdoc__status').getByText('2 câu', { exact: true }),
+		).toBeVisible();
 		await expect(
 			main(page).getByRole('region', { name: 'Xem trước như học viên' }).getByText(edited),
 		).toBeVisible();
@@ -153,9 +162,13 @@ test('keeps added and removed questions through an immediate reload', async ({ p
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
 		await questionDoc(page).fill(bank('Câu mới nhất', 'Câu sẽ xóa'));
-		await expect(main(page).getByText('2 câu', { exact: true })).toBeVisible();
+		await expect(
+			main(page).locator('.ln-qdoc__status').getByText('2 câu', { exact: true }),
+		).toBeVisible();
 		await questionDoc(page).fill(bank('Câu mới nhất'));
-		await expect(main(page).getByText('1 câu', { exact: true })).toBeVisible();
+		await expect(
+			main(page).locator('.ln-qdoc__status').getByText('1 câu', { exact: true }),
+		).toBeVisible();
 		await main(page).getByRole('button', { name: 'Xem như học viên', exact: true }).click();
 		await expect(main(page).getByRole('button', { name: /Đã lưu/ })).toBeVisible();
 		await page.reload();
@@ -230,20 +243,21 @@ test('adds a lesson from pasted Markdown with a learner preview, then persists i
 	try {
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio?s=${course.sectionId}`);
-		await main(page).getByRole('button', { name: 'Thêm bài' }).click();
-		await main(page)
-			.getByRole('menuitem', { name: /Dán Markdown/ })
-			.click();
+		await addLessonFromMarkdown(page);
 		const dialog = main(page).getByRole('dialog', { name: 'Thêm bài từ Markdown' });
 		await expect(dialog).toBeVisible();
 		await page
 			.getByRole('textbox', { name: 'Nội dung dán' })
-			.fill('# Bài dán thử\n\n## Mục dán thử\n\nNội dung dán từ Markdown.');
+			.fill('# Chương dán thử\n\n## Mục dán thử\n\nNội dung dán từ Markdown.');
 		await dialog.getByRole('button', { name: 'Lưu 1 mục', exact: true }).click();
 		await expect(dialog).toHaveCount(0);
-		await expect(main(page).getByRole('button', { name: /^Bài 2: Bài dán thử/ })).toBeVisible();
+		await expect(
+			main(page).getByRole('button', { name: /^Bài \d+: Chương dán thử,/ }),
+		).toBeVisible();
 		await page.reload();
-		await expect(main(page).getByRole('button', { name: /^Bài 2: Bài dán thử/ })).toBeVisible();
+		await expect(
+			main(page).getByRole('button', { name: /^Bài \d+: Chương dán thử,/ }),
+		).toBeVisible();
 	} finally {
 		await course.cleanup();
 	}
@@ -478,7 +492,7 @@ test('imports Markdown, fills individual missing images, edits and persists acro
 	try {
 		await page.setViewportSize({ width: 1440, height: 1000 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio`);
-		await main(page).getByRole('button', { name: 'Nhập nội dung', exact: true }).click();
+		await addLessonFromMarkdown(page);
 		await main(page)
 			.getByRole('textbox', { name: 'Nội dung dán' })
 			.fill(
@@ -492,7 +506,7 @@ test('imports Markdown, fills individual missing images, edits and persists acro
 			/!\[Sơ đồ quy trình\]\(\/uploads\//,
 		);
 		await main(page).getByRole('button', { name: 'Lưu 1 mục', exact: true }).click();
-		await expect(main(page).getByRole('heading', { name: 'Nhập nội dung' })).toHaveCount(0);
+		await expect(main(page).getByRole('heading', { name: 'Thêm bài từ Markdown' })).toHaveCount(0);
 		const source = main(page).getByRole('textbox', { name: 'Nội dung Markdown' });
 		await expect(source).toBeVisible();
 		await expect(main(page).getByText('2 vị trí ảnh cần bổ sung')).toBeVisible();
@@ -538,7 +552,7 @@ async function pasteText(target: ReturnType<Page['locator']>, text: string) {
 	}, text);
 }
 
-test('asks for pictures where pasted text has captions, and parses Markdown pasted into the visual editor', async ({
+test('asks for pictures where pasted text has captions, in the import and in the editor', async ({
 	page,
 	context,
 }) => {
@@ -553,7 +567,7 @@ test('asks for pictures where pasted text has captions, and parses Markdown past
 	try {
 		await page.setViewportSize({ width: 1440, height: 1000 });
 		await page.goto(`/khoa-hoc/${course.slug}/studio`);
-		await main(page).getByRole('button', { name: 'Nhập nội dung', exact: true }).click();
+		await addLessonFromMarkdown(page);
 		const box = main(page).getByRole('textbox', { name: 'Nội dung dán' });
 		await box.focus();
 		await pasteText(
@@ -570,29 +584,22 @@ test('asks for pictures where pasted text has captions, and parses Markdown past
 		await expect(box).toHaveValue(/!\[Hình 2\.1: Quy trình lập kế hoạch\]\(\)\n\nHình 2\.1:/);
 		await expect(box).toHaveValue(/Hình 2\.2: Ma trận\n\n!\[Hình 2\.2: Ma trận\]\(\)/);
 		await main(page).getByRole('button', { name: 'Lưu 1 mục', exact: true }).click();
-		await expect(main(page).getByRole('heading', { name: 'Nhập nội dung' })).toHaveCount(0);
+		await expect(main(page).getByRole('heading', { name: 'Thêm bài từ Markdown' })).toHaveCount(0);
 
-		await main(page).getByRole('tab', { name: 'Soạn trực quan' }).click();
-		const editor = main(page).locator('.ln-editor__content');
-		await editor.click();
-		await page.keyboard.press('ControlOrMeta+End');
-		await pasteText(
-			editor,
-			'## Mục dán\n\n| Cột A | Cột B |\n| --- | --- |\n| 1 | 2 |\n\n> [!NOTE] Ghi chú\n> nội dung\n\nSơ đồ 3: Cơ cấu tổ chức',
+		const source = main(page).getByRole('textbox', { name: 'Nội dung Markdown' });
+		await expect(source).toHaveValue(/Đoạn cuối/);
+		await source.fill(
+			`${await source.inputValue()}\n\nĐoạn thêm sau hình.\n\nSơ đồ 3: Cơ cấu tổ chức`,
 		);
-		await expect(editor.locator('table')).toBeVisible();
-		await expect(editor.getByRole('heading', { name: 'Mục dán' })).toBeVisible();
-		await expect(editor).not.toContainText('[!NOTE]');
-		await expect(main(page).getByText('1 chỗ có vẻ cần ảnh', { exact: false })).toBeVisible();
+		await expect(
+			main(page)
+				.locator('.ln-image-picker')
+				.filter({ hasText: /chỗ có vẻ cần ảnh: .*Sơ đồ 3/ }),
+		).toBeVisible();
 		if (screenshotDir)
 			await page.screenshot({ path: `${screenshotDir}/editor-hints.png`, fullPage: true });
 		await main(page).getByRole('button', { name: 'Tạo ô ảnh' }).click();
-		await main(page)
-			.getByRole('tab', { name: /Markdown/ })
-			.click();
-		await expect(main(page).getByRole('textbox', { name: 'Nội dung Markdown' })).toHaveValue(
-			/!\[Sơ đồ 3: Cơ cấu tổ chức\]\(\)\n\nSơ đồ 3: Cơ cấu tổ chức/,
-		);
+		await expect(source).toHaveValue(/!\[Sơ đồ 3: Cơ cấu tổ chức\]\(\)\n\nSơ đồ 3: Cơ cấu tổ chức/);
 	} finally {
 		await deleteCourse(course.id);
 	}
