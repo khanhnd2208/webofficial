@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { adminFetch } from '@/lib/admin/client';
 
+import { prepareImageForUpload } from './prepareImage';
+
 /** One queue per editor/import dialog. A failed file does not stop the remaining files. */
 export function useImageUploads() {
 	const queue = useRef<Array<() => void>>([]);
@@ -34,7 +36,7 @@ export function useImageUploads() {
 				let url: string | null = null;
 				try {
 					const form = new FormData();
-					form.append('file', file);
+					form.append('file', await prepareImageForUpload(file));
 					const payload = await adminFetch<{ url: string }>('/api/uploads', {
 						method: 'POST',
 						body: form,
