@@ -12,13 +12,26 @@ describe('image slots in the visual editor', () => {
 			extensions: learnEditorExtensions(),
 			contentType: 'markdown',
 			content:
-				'Mở đầu.\n\n*Hình 1: Quy trình*\n\n[Hình ảnh: sơ đồ]\n\nĐoạn.\n\n![Có rồi](/a.webp)\n\nHình 2: đã có ảnh',
+				'Mở đầu.\n\n*Hình 1: Quy trình*\n\nGiữa.\n\n[Hình ảnh: sơ đồ]\n\nĐoạn.\n\n![Có rồi](/a.webp)\n\nHình 2: đã có ảnh',
 		});
 		expect(addEditorImageSlots(editor)).toBe(2);
 		expect(normalizeEditorMarkdown(editor.getMarkdown())).toBe(
-			'Mở đầu.\n\n![Hình 1: Quy trình]()\n\n*Hình 1: Quy trình*\n\n![Hình ảnh: sơ đồ]()\n\nĐoạn.\n\n![Có rồi](/a.webp)\n\nHình 2: đã có ảnh',
+			'Mở đầu.\n\n![Hình 1: Quy trình]()\n\n*Hình 1: Quy trình*\n\nGiữa.\n\n![Hình ảnh: sơ đồ]()\n\nĐoạn.\n\n![Có rồi](/a.webp)\n\nHình 2: đã có ảnh',
 		);
 		expect(addEditorImageSlots(editor)).toBe(0);
+		editor.destroy();
+	});
+
+	it('turns a Claude Doc placeholder next to its caption into one slot', () => {
+		const editor = new Editor({
+			extensions: learnEditorExtensions(),
+			contentType: 'markdown',
+			content: 'Mở đầu.\n\n&#91;embedded content: ba tầng\\]\n\nHình 1. Ba cấp chiến lược',
+		});
+		expect(addEditorImageSlots(editor)).toBe(1);
+		expect(normalizeEditorMarkdown(editor.getMarkdown())).toBe(
+			'Mở đầu.\n\n![Hình 1. Ba cấp chiến lược]()\n\nHình 1. Ba cấp chiến lược',
+		);
 		editor.destroy();
 	});
 });

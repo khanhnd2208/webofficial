@@ -70,6 +70,28 @@ function imageHintIssue(markdown: string): ImportIssue | null {
 		: null;
 }
 
+const EMBEDDED_LINE_RE = /embedded\s+content\s*:/i;
+
+/** Claude Doc placeholders inside a block, list or paragraph, which "Tạo ô ảnh" cannot reach. */
+function embeddedPlaceholderIssue(markdown: string): ImportIssue | null {
+	const slotted = new Set(findImageHints(markdown).map((hint) => hint.line));
+	let open = false;
+	const stuck = markdown.split('\n').filter((line, index) => {
+		if (/^\s*(`{3,}|~{3,})/.test(line)) {
+			open = !open;
+			return false;
+		}
+		return !open && !slotted.has(index) && EMBEDDED_LINE_RE.test(line);
+	}).length;
+	return stuck
+		? {
+				level: 'warn',
+				text: `${stuck} dòng "[embedded content: …]" còn nằm trong khối, danh sách hoặc đoạn văn. Học viên sẽ thấy nguyên dòng chữ này.`,
+				fix: 'Xóa dòng đó, hoặc tách nó thành một đoạn riêng rồi bấm "Tạo ô ảnh".',
+			}
+		: null;
+}
+
 /** Lines outside code fences, so examples inside ``` never raise issues. */
 function proseLines(markdown: string): string[] {
 	let open = false;
@@ -213,6 +235,8 @@ export function discussionImportReport({
 	if (images) issues.push(images);
 	const hints = imageHintIssue(markdown);
 	if (hints) issues.push(hints);
+	const embedded = embeddedPlaceholderIssue(markdown);
+	if (embedded) issues.push(embedded);
 	return report(issues);
 }
 
@@ -282,5 +306,7 @@ export function lessonImportReport({
 	if (images) issues.push(images);
 	const hints = imageHintIssue(markdown);
 	if (hints) issues.push(hints);
+	const embedded = embeddedPlaceholderIssue(markdown);
+	if (embedded) issues.push(embedded);
 	return report(issues);
 }
