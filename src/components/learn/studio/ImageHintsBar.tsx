@@ -9,7 +9,7 @@ function quoted(alts: string[]) {
 	return alts.length > 3 ? `${names.join(', ')} và ${alts.length - 3} chỗ khác` : names.join(', ');
 }
 
-/** Asks for pictures where pasted text still has a caption or "[Hình …]" note but no image slot. */
+/** Asks for pictures where pasted text still has a caption, a "[Hình …]" note or a Claude Doc placeholder but no image slot. */
 export default function ImageHintsBar({
 	markdown,
 	onAdd,
@@ -30,8 +30,8 @@ export default function ImageHintsBar({
 				</button>
 			</p>
 			<p className="text-xs text-ink-secondary">
-				Ô ảnh trống được đặt ngay trên chú thích, hoặc thay cho ghi chú [Hình …]. Sau đó chọn ảnh
-				cho từng ô.
+				Ô ảnh trống được đặt ngay trên chú thích, hoặc thay cho ghi chú [Hình …] và dòng [embedded
+				content: …] của Claude Doc. Sau đó chọn ảnh cho từng ô.
 			</p>
 		</div>
 	);

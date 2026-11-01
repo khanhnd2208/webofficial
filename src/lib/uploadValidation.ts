@@ -7,6 +7,9 @@ import sharp from 'sharp';
 import { AppError } from '@/lib/appError';
 
 export const IMAGE_UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
+const IMAGE_UPLOAD_MAX_PIXELS = 25_000_000;
+/** Longest stored edge: sharp on a 2× screen, without keeping camera-sized files. */
+const IMAGE_UPLOAD_MAX_EDGE = 2400;
 export const MUSIC_UPLOAD_MAX_BYTES = 15 * 1024 * 1024;
 
 const IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
@@ -43,12 +46,25 @@ export async function normalizeImageUpload(
 		);
 
 	try {
-		const bytes = await sharp(input, { limitInputPixels: 25_000_000 })
+		const bytes = await sharp(input, { limitInputPixels: IMAGE_UPLOAD_MAX_PIXELS })
 			.rotate()
+			.resize({
+				width: IMAGE_UPLOAD_MAX_EDGE,
+				height: IMAGE_UPLOAD_MAX_EDGE,
+				fit: 'inside',
+				withoutEnlargement: true,
+			})
 			.webp({ quality: 86 })
 			.toBuffer();
 		return { bytes, filename: `${randomUUID()}.webp` };
-	} catch {
+	} catch (error) {
+		if (error instanceof Error && /pixel limit/i.test(error.message)) {
+			throw new AppError(
+				'Ảnh quá nhiều điểm ảnh (tối đa 25 megapixel). Hãy giảm kích thước ảnh.',
+				400,
+				'IMAGE_TOO_MANY_PIXELS',
+			);
+		}
 		throw new AppError('Không thể đọc hoặc chuẩn hóa ảnh.', 422, 'INVALID_IMAGE');
 	}
 }

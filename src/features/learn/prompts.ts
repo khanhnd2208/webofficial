@@ -9,7 +9,9 @@ Chỉ được thêm các dấu cú pháp liệt kê bên dưới. Nếu phân v
 CẤU TRÚC BẮT BUỘC
 - Dòng 1: #  + tên bài nguyên văn. Đây là dòng DUY NHẤT được bắt đầu bằng một dấu # (mỗi dòng #  sẽ tạo một bài mới).
 - Dòng 2 chỉ khi gốc có phụ đề hoặc mô tả ngay dưới tên bài: >  + câu đó. Không có thì bỏ dòng này, không tự viết.
+- Dòng "PHẦN A — BÀI GIẢNG" hoặc tiêu đề tab lặp lại tên bài: bỏ, vì tên bài đã ở dòng 1.
 - Đề mục cấp cao nhất của bài (I., II., Chương, Phần, hoặc 1., 2. nếu không có số La Mã) → dòng riêng === SECTION: <tên đề mục nguyên văn> ===. Không thêm số phút (hệ thống tự tính).
+- Mỗi SECTION là một mục người học bấm vào, nên danh sách SECTION phải đọc như mục lục: ít mục, mỗi mục trọn vẹn. Mọi đề mục nhỏ đứng trước phần chính đầu tiên (chuyện mở đầu, "Bài này trả lời…", "Bản đồ bài học"…) gộp vào MỘT dòng === SECTION: Phần mở đầu: Giới thiệu ===, mỗi đề mục cũ thành ##  nguyên văn bên trong. Đây là tên mục duy nhất được tự thêm. "Góc đọc thêm", "Tổng kết" mỗi mục một SECTION. Các mục vụn vài dòng sau phần chính cuối cùng thành ##  trong SECTION ngay trước.
 - Đề mục con bên trong (1.1, a), tiểu mục) → ##  hoặc ###  + nguyên văn.
 - Không đặt dòng > ngay sau === SECTION === (dòng đó sẽ bị coi là tóm tắt). Không tự viết tóm tắt.
 
@@ -17,10 +19,10 @@ KHỐI HỌC THUẬT — chỉ bọc, không đổi chữ. Mỗi dòng trong kh�
 - > [!DEFINITION] định nghĩa, khái niệm
 - > [!QUOTE] trích dẫn (giữ nguyên dòng tác giả như gốc)
 - > [!EXAMPLE] ví dụ, tình huống
-- > [!REFLECT] câu hỏi thảo luận không có đáp án
+- > [!REFLECT] câu hỏi thảo luận không có đáp án, "Câu hỏi nhanh", "Hỏi bản thân"
 - > [!NOTE] ghi chú, "Lưu ý về từ ngữ", "Đọc thêm"
 - > [!WARNING] "Lưu ý", "Lưu ý quan trọng"
-- > [!TIP] "Mẹo", "Mẹo nhớ", "Một hình ảnh dễ nhớ"
+- > [!TIP] "Mẹo", "Mẹo nhớ", "Câu dễ nhớ", "Một hình ảnh dễ nhớ"
 - > [!IMPORTANT] ý cốt lõi mà gốc đã nhấn mạnh
 - "Liên hệ bản thân", "Thử sức", "Suy ngẫm" → [!REFLECT]. Đây là câu gợi suy nghĩ trong bài giảng, không phải bài luyện.
 - Không tạo === QUIZ ===, === PRACTICE ===, [!CHECKPOINT], "Câu hỏi tự kiểm tra", "Câu hỏi luyện tập" hay "Bài tập thực hành". Nếu gốc có các phần đó, bỏ khỏi kết quả và nêu tên phần đã bỏ ở ngoài khối.
@@ -34,8 +36,7 @@ CẢNH BÁO: BẢN GỐC CHÉP TỪ DOCS/WORD
 Bản chép văn bản thường làm mất bảng, in đậm và sơ đồ. Hãy dựng lại, không đổi chữ trong ô.
 
 - Bảng bị dàn phẳng (mỗi ô một dòng): nhận ra bằng một chuỗi dòng ngắn lặp lại theo chu kỳ bằng số cột của hàng tiêu đề, thường đứng ngay sau một câu dẫn kết thúc bằng ":". Dựng lại thành bảng Markdown, chữ trong ô giữ nguyên văn. Ô gộp (dòng trống trong chuỗi) thì để trống ô đó. Ô đầu tiên của hàng tiêu đề trống thì vẫn giữ ô trống. Không bao giờ bọc bảng trong ${CODE_FENCE}.
-- Sơ đồ: nếu bản gốc có mã Mermaid (dòng bắt đầu flowchart, graph, mindmap, timeline, sequenceDiagram) thì bọc nguyên văn trong ${CODE_FENCE}mermaid. Nếu bản gốc có hình hoặc sơ đồ chỉ còn chú thích, hoặc mô tả rõ một cấp bậc, quy trình hay chu trình, được thêm một sơ đồ ${CODE_FENCE}mermaid ngay sau đoạn đó. Không thay chữ, giữ nguyên chú thích.
-- Quy tắc vẽ: chỉ dùng flowchart TD cho cấp bậc hoặc sơ đồ từ 5 nút trở lên (dễ đọc trên điện thoại), flowchart LR cho quy trình tối đa 4 bước, và mindmap cho sơ đồ tỏa từ một ý trung tâm. Tối đa 8 nút. Nhãn đặt trong ngoặc kép A["…"], mỗi dòng tối đa khoảng 6 từ, xuống dòng bằng <br/>. ID nút là chữ không dấu. Không dùng style, classDef, click, %%{init}, emoji. Trang đọc tự tô màu.
+- Sơ đồ: chỉ khi bản gốc đã có mã Mermaid (dòng bắt đầu flowchart, graph, mindmap, timeline, sequenceDiagram) thì bọc nguyên văn trong ${CODE_FENCE}mermaid, không đổi chữ. Không tự vẽ Mermaid thay cho một hình của bản gốc: chữ trên hình không có trong bản chép, nên sơ đồ vẽ lại là đoán. Hình nào cũng thành ô ảnh theo quy tắc Ảnh ở dưới.
 - Đoạn văn: giữa hai đoạn luôn có một dòng trống. Chỉ giữ xuống dòng đơn trong thơ, địa chỉ hoặc trích dẫn nhiều dòng.
 - Nhãn đầu đoạn sang khối, nhãn chuyển thành tiêu đề khối, theo các loại ở trên.
 - In đậm: được in đậm nhãn mở đầu như **Lý do 1 —** và thuật ngữ ngay chỗ nó được định nghĩa, vì bản chép văn bản đã làm mất in đậm của bản gốc. Nhãn đứng riêng một dòng kiểu "Thay đổi 1: …", "Lý do 1: …" → ##.
@@ -47,12 +48,13 @@ GIỮ NGUYÊN CÁC PHẦN KHÁC
 - In đậm, in nghiêng theo quy tắc ở trên. Không tự thêm chữ mới.
 - Bảng Markdown: chữ trong ô nguyên văn. Ký tự | trong ô viết \\|.
 - Chú thích cuối trang → [^1] và [^1]: nội dung ở cuối mục chứa nó.
-- Ảnh: chỗ nào bản gốc có hình, ảnh chụp, biểu đồ hoặc sơ đồ không dựng lại được bằng mermaid (thường chỉ còn dòng chú thích như "Hình 2.1: …" hoặc ghi chú [Hình …]), thêm một dòng ô ảnh trống ![<chú thích nguyên văn>]() đứng riêng ngay trên dòng chú thích, cách một dòng trống. Giữ nguyên dòng chú thích. Ảnh sẽ chọn sau trong studio.
+- Ảnh: chỗ nào bản gốc có hình, ảnh chụp, biểu đồ hoặc sơ đồ (thường chỉ còn dòng chú thích như "Hình 2.1: …" hoặc ghi chú [Hình …]), thêm một dòng ô ảnh trống ![<chú thích nguyên văn>]() đứng riêng ngay trên dòng chú thích, cách một dòng trống. Giữ nguyên dòng chú thích. Không đặt ô ảnh trong khối > hay trong cùng đoạn với chữ. Ảnh sẽ chọn sau trong studio.
+- Dòng giữ chỗ của Claude Doc như [embedded content: …], &#91;embedded content: …\\] hoặc \\[embedded content: …\\] không phải chữ của bài: thay cả dòng bằng ô ảnh trống, tên lấy từ chú thích "Hình N. …" ngay cạnh, không có chú thích thì lấy mô tả bên trong. Không để sót dòng nào, kể cả trong khối > hay danh sách.
 
 CÁCH TRẢ KẾT QUẢ
 - Toàn bộ kết quả nằm trong MỘT khối ${FENCE}markdown … ${FENCE} (4 dấu backtick). Không chữ nào ngoài khối.
 - Bài dài: không được rút gọn. Nếu sắp hết độ dài trả lời, dừng ở cuối một SECTION trọn vẹn, đóng khối, và viết dòng <<<CÒN TIẾP>>>. Khi tôi nhắn "tiếp", tiếp tục từ SECTION kế tiếp trong một khối mới, không lặp lại, không có dòng #  lần nữa.
-- Tự kiểm tra trước khi gửi: không thiếu đoạn nào, không có câu nào do bạn viết, chỉ một dòng #, không còn bảng dàn phẳng, không có ${CODE_FENCE}text, mọi sơ đồ nằm trong ${CODE_FENCE}mermaid, mỗi hình của bản gốc có một ô ảnh ![…]() hoặc một sơ đồ mermaid.
+- Tự kiểm tra trước khi gửi: không thiếu đoạn nào, không có câu nào do bạn viết, chỉ một dòng #, không còn bảng dàn phẳng, không có ${CODE_FENCE}text, mã Mermaid có sẵn nằm trong ${CODE_FENCE}mermaid, mỗi hình của bản gốc có một ô ảnh ![…](), không còn chữ "embedded content", danh sách SECTION đọc như mục lục.
 
 --- TÀI LIỆU GỐC ---
 [DÁN TOÀN BỘ BÀI GIẢNG VÀO ĐÂY]`;
@@ -98,13 +100,14 @@ Câu 2:
 
 ĐỀ BÀI — nằm trước dòng Đáp án mẫu
 - "Câu n:" đứng một mình trên một dòng, rồi một dòng trống. Không viết tiêu đề cùng dòng với "Câu n:".
-- Dòng tiêu đề của câu (kèm mức như Hiểu, Áp dụng, Phân tích, Đánh giá, Sáng tạo nếu gốc có) → ### giữ nguyên cả dòng, kể cả dấu gạch.
+- Dòng tiêu đề của câu (kèm mức như Hiểu, Áp dụng, Phân tích, Đánh giá, Sáng tạo nếu gốc có) → ### giữ nguyên cả dòng, kể cả dấu gạch. Tiêu đề gốc dạng "Câu 1 · Hiểu — Tên" tách thành "Câu 1:" và "### Hiểu — Tên".
 - "Tình huống:", "Bối cảnh:", "Case:" → khối > [!EXAMPLE], nhãn gốc để nguyên làm tiêu đề khối (giữ dấu hai chấm). Phần chữ sau dấu hai chấm xuống thân khối. Nhiều đoạn thì mỗi dòng thân bắt đầu bằng "> ".
 - Dòng "Câu hỏi:" hoặc "Yêu cầu:" — tức câu người học phải trả lời, khác với tiêu đề — → khối > [!REFLECT], cùng cách tách nhãn và thân. Không đánh số lại dòng này thành "Câu n:".
 - Không nhét bảng hoặc danh sách nhiều bước vào trong khối >. Bảng và danh sách để ngoài khối.
 
 ĐÁP ÁN — nằm sau đúng một dòng "Đáp án mẫu:"
 - Dòng đó đứng riêng, một dòng trống phía trên, không chữ nào khác trên dòng. Nhãn gốc "Gợi ý trả lời", "Gợi ý đáp án", "Hướng dẫn trả lời", "Trả lời", "Đáp án" đều đổi thành dòng này. Chỉ đổi nhãn mở đầu đáp án, một lần.
+- Gốc không có nhãn mở đáp án mà đi thẳng từ "Câu hỏi:" sang lời giải (ví dụ "Nhắc lại bài học:") → đặt dòng "Đáp án mẫu:" ngay trước nhãn đầu tiên của lời giải.
 - Câu không có đáp án trong gốc → vẫn viết "Đáp án mẫu:" rồi để trống, không tự viết.
 - "Nhắc lại bài học:", "Kiến thức cần dùng:", "Gợi nhớ:" → ### giữ nguyên nhãn, kể cả dấu hai chấm. Chữ cùng dòng sau dấu hai chấm thành đoạn ngay dưới tiêu đề.
 - "Cùng suy nghĩ từng bước:", "Lời giải:", "Phân tích:" → ### cùng cách. Nếu nhãn gốc là "Hướng dẫn:" mà nó nằm trong đáp án, cũng thành ###, không được viết lại thành "Đáp án mẫu:".
@@ -118,7 +121,9 @@ ${STRUCTURE_GUIDE}
 
 ĐƯỜNG RÀNH KHÔNG ĐƯỢC VƯỢT
 - ## chỉ dùng cho tiêu đề nhóm có sẵn trong gốc (Phần, Chương, nhóm mức). Đặt ## ngay trước "Câu n:" của câu đầu nhóm, cách một dòng trống. Bên trong đề bài và đáp án không được có dòng ##. Tiêu đề con dùng ### hoặc ####. Không dòng nào bắt đầu bằng một dấu #.
-- Không được có dòng nào bên trong đáp án bắt đầu bằng "Câu" kèm số ("Câu 1:", "Câu 8:"). Lời nhắc chéo kiểu "xem lại câu 1" phải nằm giữa câu, không đứng đầu dòng. Nếu không, máy sẽ cắt đôi câu.
+- Không được có dòng nào bên trong đáp án bắt đầu bằng "Câu" kèm số ("Câu 1:", "Câu 8:"). Lời nhắc chéo kiểu "xem lại câu 1" phải nằm giữa câu, không đứng đầu dòng; nếu gốc có dòng như vậy thì nối nó vào cuối đoạn trước, không đổi chữ. Nếu không, máy sẽ cắt đôi câu.
+- Dòng "PHẦN B — …" hoặc tiêu đề tab "Câu hỏi phản biện": bỏ.
+- Hình: dòng [embedded content: …] (kể cả dạng &#91;…\\] hoặc \\[…\\]) thay bằng ô ảnh trống ![<chú thích "Hình N. …" ngay cạnh, hoặc mô tả bên trong>](), đứng riêng, ngoài khối >. Giữ chú thích. Không tự vẽ sơ đồ.
 - "Đáp án mẫu:" chỉ xuất hiện một lần cho mỗi câu, đúng chỗ ngăn đề bài và đáp án.
 
 CÁCH TRẢ KẾT QUẢ

@@ -1,7 +1,11 @@
 import type { Editor } from '@tiptap/core';
 import type { Node as ProseNode } from '@tiptap/pm/model';
 
-import { imageHintFor, type ImageHintKind } from '@/features/learn/imageHints';
+import {
+	imageHintFor,
+	pairNotesWithCaptions,
+	type ImageHintKind,
+} from '@/features/learn/imageHints';
 
 const FIGURE_NODES = new Set(['image', 'codeBlock']);
 
@@ -15,7 +19,13 @@ function isFigure(node: ProseNode | null): boolean {
  */
 export function addEditorImageSlots(editor: Editor): number {
 	const { doc, schema } = editor.state;
-	const found: Array<{ pos: number; size: number; kind: ImageHintKind; alt: string }> = [];
+	const candidates: Array<{
+		index: number;
+		pos: number;
+		size: number;
+		kind: ImageHintKind;
+		alt: string;
+	}> = [];
 	doc.forEach((node, pos, index) => {
 		if (node.type.name !== 'paragraph') return;
 		const hint = imageHintFor(node.textContent);
@@ -23,8 +33,12 @@ export function addEditorImageSlots(editor: Editor): number {
 		const before = index > 0 ? doc.child(index - 1) : null;
 		const after = index + 1 < doc.childCount ? doc.child(index + 1) : null;
 		if (isFigure(before) || isFigure(after)) return;
-		found.push({ pos, size: node.nodeSize, ...hint });
+		candidates.push({ index, pos, size: node.nodeSize, ...hint });
 	});
+	const found = pairNotesWithCaptions(
+		candidates,
+		(first, second) => second.index === first.index + 1,
+	);
 	if (!found.length) return 0;
 	const tr = editor.state.tr;
 	for (const item of found.reverse()) {

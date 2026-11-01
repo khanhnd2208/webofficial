@@ -596,15 +596,17 @@ test('asks for pictures where pasted text has captions, and parses Markdown past
 		await box.focus();
 		await pasteText(
 			box,
-			'Kết quả:\n\n````markdown\n# Bài có hình\n\n## Lập kế hoạch\n\nNội dung mở đầu.\n\nHình 2.1: Quy trình lập kế hoạch\n\n[Hình ảnh: sơ đồ tổ chức]\n````',
+			'Kết quả:\n\n````markdown\n# Bài có hình\n\n## Lập kế hoạch\n\nNội dung mở đầu.\n\nHình 2.1: Quy trình lập kế hoạch\n\nĐoạn giữa.\n\n[Hình ảnh: sơ đồ tổ chức]\n\nĐoạn cuối.\n\nHình 2.2: Ma trận\n\n[Hình 2.2]\n````',
 		);
 		await expect(box).not.toHaveValue(/````/);
-		await expect(main(page).getByText('2 chỗ có vẻ cần ảnh', { exact: false })).toBeVisible();
+		// "[Hình 2.2]" beside its own caption is one picture, so three places, not four.
+		await expect(main(page).getByText('3 chỗ có vẻ cần ảnh', { exact: false })).toBeVisible();
 		if (screenshotDir)
 			await page.screenshot({ path: `${screenshotDir}/import-hints.png`, fullPage: true });
 		await main(page).getByRole('button', { name: 'Tạo ô ảnh' }).click();
-		await expect(main(page).getByText('2 vị trí ảnh cần bổ sung')).toBeVisible();
+		await expect(main(page).getByText('3 vị trí ảnh cần bổ sung')).toBeVisible();
 		await expect(box).toHaveValue(/!\[Hình 2\.1: Quy trình lập kế hoạch\]\(\)\n\nHình 2\.1:/);
+		await expect(box).toHaveValue(/Hình 2\.2: Ma trận\n\n!\[Hình 2\.2: Ma trận\]\(\)/);
 		await main(page).getByRole('button', { name: 'Lưu 1 mục', exact: true }).click();
 		await expect(main(page).getByRole('heading', { name: 'Nhập nội dung' })).toHaveCount(0);
 

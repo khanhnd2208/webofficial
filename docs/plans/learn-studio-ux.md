@@ -108,9 +108,18 @@ Hợp đồng `flush()` vẫn là `Promise<{ ok: boolean }>`. Không thêm depen
 - Dùng `![Mô tả]()` hoặc `![Mô tả](ten-anh.png)` để đánh dấu chỗ cần ảnh. Mỗi vị trí có nút chọn file bất kỳ, độc lập với các vị trí trống khác. Ghép nhiều ảnh theo tên vẫn có sẵn.
 - Ảnh nội bộ không tải được cũng được báo trong danh sách bổ sung.
 - Chép từ Word/Docs/PDF thường mất ảnh nhưng còn chú thích. Một đoạn đứng riêng dạng “Hình 2.1: …”, “Sơ đồ 3. …”, “[Hình ảnh: …]” hay “(Chèn hình minh họa)”, chưa có ảnh hay sơ đồ mermaid kề bên, được báo “N chỗ có vẻ cần ảnh”. Nút “Tạo ô ảnh” đặt `![chú thích]()` ngay trên chú thích (giữ nguyên chú thích) hoặc thay cho ghi chú [Hình …], rồi các ô hiện trong danh sách bổ sung. Có ở hộp nhập và cả hai chế độ soạn. Không suy đoán từ câu văn thường như “Hình 1 cho thấy…”.
-- Prompt AI yêu cầu thêm ô ảnh trống ở chỗ bản gốc có hình mà không dựng được bằng mermaid.
+- Prompt AI yêu cầu thêm ô ảnh trống ở chỗ bản gốc có hình (từ 01/11/2026 không còn tự vẽ mermaid thay hình, xem mục dưới).
 - Dán câu trả lời AI còn khung ````markdown vào hộp nhập: khung được bóc ngay khi dán, để ảnh bên trong không bị coi là mã.
 - Dán Markdown dạng chữ thường (file .md, VS Code, nút chép của AI) vào soạn trực quan được dựng thành tiêu đề, bảng, khối và ô ảnh thay vì hiện ký hiệu `##`, `> [!NOTE]`. HTML có định dạng (Word, Docs, trang web) vẫn dán như cũ.
 - Upload giữ chỗ trước khi chờ máy chủ; sửa chữ/xóa ảnh trong lúc tải không làm ảnh gắn nhầm. Thất bại trả lại chỗ trống để thử lại.
 - Bỏ danh sách đường dẫn ảnh lặp; gộp các nút chèn định dạng vào menu. Nút tìm bài/mục hiện rõ ở mục lục, hỗ trợ tìm không dấu.
 - Kiểm tra trình duyệt bao gồm nhập Markdown, upload thật, sửa, lưu, tải lại và màn hình điện thoại; dùng dữ liệu thử cục bộ.
+
+## Rà soát nhập bài và ảnh — 01/11/2026
+
+- Bản chép hoặc xuất từ Claude Doc thay mỗi hình bằng dòng `[embedded content: …]` (cả dạng `&#91;…\]`, `\[…\]`). Trước đây dòng này lọt nguyên lên trang học. Nay nó được nhận như ghi chú hình: “Tạo ô ảnh” thay cả dòng bằng ô ảnh trống, ở hộp nhập và cả hai chế độ soạn. Dòng còn kẹt trong khối `>`, danh sách hoặc đoạn văn được báo riêng trong phần lưu ý.
+- Ghi chú hình đứng ngay cạnh chú thích của chính nó (“[Hình 2]” rồi “Hình 2: Chu trình”) tạo một ô ảnh, mang tên chú thích; trước đây ra hai ô. Hai số hình khác nhau thì vẫn là hai ô.
+- Ảnh trên 5MB, trên 25 megapixel hoặc định dạng máy chủ không nhận (HEIC trên Safari, AVIF, BMP) được trình duyệt thu nhỏ về cạnh dài 2400px rồi mới tải lên. Ảnh chụp điện thoại không còn bị từ chối “Ảnh quá lớn”. Trình duyệt không đọc được định dạng thì báo rõ cần lưu lại thành PNG hoặc JPEG. Máy chủ cũng giới hạn ảnh lưu ở cạnh dài 2400px và gọi đúng tên lỗi quá nhiều điểm ảnh.
+- Prompt AI theo quy tắc mới của skill định dạng bài giảng: không tự vẽ mermaid thay hình gốc (mermaid chỉ khi gốc có sẵn mã), dòng giữ chỗ Claude Doc thành ô ảnh, gộp phần mở đầu vào một mục “Phần mở đầu: Giới thiệu”, bỏ dòng “PHẦN A/B”. Prompt phản biện thêm cách tách “Câu 1 · Hiểu — Tên” và đặt “Đáp án mẫu:” khi gốc đi thẳng vào lời giải.
+- Còn để ngỏ: GIF động bị lưu thành ảnh tĩnh (máy chủ chuyển sang WebP một khung).
+

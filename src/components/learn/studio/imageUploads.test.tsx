@@ -63,7 +63,8 @@ describe('image uploads', () => {
 		adminFetch.mockImplementation(() => new Promise((resolve) => finishes.push(resolve)));
 		const { result } = renderHook(useImageUploads);
 		let tasks: Array<Promise<string | null>> = [];
-		act(() => {
+		// Each file is checked (and shrunk if needed) before its request starts.
+		await act(async () => {
 			tasks = Array.from({ length: 5 }, (_, i) =>
 				result.current.uploadFile(new File(['x'], `${i}.png`, { type: 'image/png' })),
 			);
