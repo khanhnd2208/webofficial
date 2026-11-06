@@ -4,9 +4,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { hasFeedback } from '@/features/unreleased-gift/services/feedbackService';
 import { GIFT_PDF_PATH, giftPdfIsReady } from '@/features/unreleased-gift/services/giftFile';
+import { assertUnreleasedOpen } from '@/features/unreleased-quiz/availability';
 import { AppError, withErrorHandling } from '@/lib/apiUtils';
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
+	assertUnreleasedOpen();
 	const responseId = request.nextUrl.searchParams.get('response');
 	if (!responseId || !/^[0-9a-f-]{36}$/i.test(responseId) || !(await hasFeedback(responseId))) {
 		throw new AppError('Bạn cần hoàn thành đánh giá để nhận tài liệu.', 403);

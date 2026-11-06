@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 import { z } from 'zod';
 
+import { assertUnreleasedOpen } from '@/features/unreleased-quiz/availability';
 import { respondentIdSchema } from '@/features/unreleased-quiz/domain/submission';
 import { markRegisterClick } from '@/features/unreleased-quiz/services/responseService';
 import { apiSuccess, withErrorHandling } from '@/lib/apiUtils';
@@ -11,6 +12,7 @@ const idSchema = z.uuid();
 
 /** Records that this result's "Đăng ký" button was clicked. Sent with sendBeacon. */
 export const POST = withErrorHandling(async (request: NextRequest, context) => {
+	assertUnreleasedOpen();
 	const { id } = (await context!.params) as { id: string };
 	const responseId = parseSchema(idSchema, id);
 	const body: unknown = JSON.parse((await request.text()) || '{}');

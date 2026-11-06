@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { feedbackSubmissionSchema } from '@/features/unreleased-gift/domain/submission';
 import { recordFeedback } from '@/features/unreleased-gift/services/feedbackService';
+import { assertUnreleasedOpen } from '@/features/unreleased-quiz/availability';
 import { apiSuccess, withErrorHandling } from '@/lib/apiUtils';
 import { assertScopedRateLimit } from '@/lib/inquiryRateLimit';
 import { parseSchema } from '@/lib/validation/parse';
@@ -13,6 +14,7 @@ import { parseSchema } from '@/lib/validation/parse';
 const SUBMISSIONS_PER_WINDOW = 300;
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
+	assertUnreleasedOpen();
 	const body: unknown = await request.json();
 	const input = parseSchema(feedbackSubmissionSchema, body);
 	await assertScopedRateLimit(request, 'unreleased-gift', SUBMISSIONS_PER_WINDOW);
