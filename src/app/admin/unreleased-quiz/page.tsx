@@ -2,6 +2,7 @@ import { AdminEmptyState, AdminPageHeader } from '@/components/admin/AdminPageHe
 import { AdminStat } from '@/components/admin/AdminPrimitives';
 import styles from '@/components/admin/AdminStudio.module.css';
 import { routes } from '@/config/routes';
+import { UNRELEASED_IS_CLOSED } from '@/features/unreleased-quiz/availability';
 import { QUESTIONS } from '@/features/unreleased-quiz/content/questions';
 import { MISMATCH_NOTES, resultCopy } from '@/features/unreleased-quiz/content/results';
 import type { GroupId, QuestionId } from '@/features/unreleased-quiz/domain/quiz';
@@ -62,7 +63,7 @@ export default async function UnreleasedQuizAdminPage() {
 							rel="noopener noreferrer"
 							className={`${styles.button} ${styles.quiet}`}
 						>
-							Mở quiz
+							{UNRELEASED_IS_CLOSED ? 'Xem trang thông báo' : 'Mở quiz'}
 						</a>
 					</>
 				}

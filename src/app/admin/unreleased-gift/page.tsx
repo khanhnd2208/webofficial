@@ -4,6 +4,7 @@ import styles from '@/components/admin/AdminStudio.module.css';
 import { routes } from '@/config/routes';
 import { feedbackSummary, RATING_LABELS } from '@/features/unreleased-gift/domain/report';
 import { listFeedback } from '@/features/unreleased-gift/services/feedbackService';
+import { UNRELEASED_IS_CLOSED } from '@/features/unreleased-quiz/availability';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export default async function UnreleasedGiftAdminPage() {
 							rel="noopener noreferrer"
 							className={`${styles.button} ${styles.quiet}`}
 						>
-							Mở khảo sát
+							{UNRELEASED_IS_CLOSED ? 'Xem trang thông báo' : 'Mở khảo sát'}
 						</a>
 					</>
 				}

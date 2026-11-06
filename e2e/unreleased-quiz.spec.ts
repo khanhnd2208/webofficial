@@ -2,40 +2,45 @@ import { expect, test } from '@playwright/test';
 
 import { addAdminSession } from './helpers/adminSession';
 
-test.describe('UNRELEASED quiz', () => {
-	test('an anonymous run is saved and shows up for the admin', async ({ page, browser }) => {
-		await page.goto('/unreleased');
-		await page.getByRole('button', { name: 'Bắt đầu' }).click();
+test.describe('UNRELEASED closure', () => {
+	test('quiz, gift, and thank-you pages show the farewell notice', async ({ page }) => {
+		for (const path of ['/unreleased', '/unreleasedgift', '/unreleasedgift/thank-you']) {
+			await page.goto(path);
+			await expect(
+				page.getByRole('heading', { name: 'Hẹn gặp mọi người ở event lần sau nhé!' }),
+			).toBeVisible();
+			await expect(page.getByRole('link', { name: 'Về trang chủ' })).toHaveAttribute('href', '/');
+			await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+				'content',
+				'noindex, nofollow',
+			);
+		}
+	});
 
-		// Picking an option moves on by itself.
-		const choose = async (option: RegExp) => {
-			await page.getByRole('radio', { name: option }).click();
-		};
-		await choose(/Mình chưa nghĩ tới chuyện này/);
-		await choose(/Mình chưa biết nên bắt đầu từ đâu/);
+	test('public quiz and gift APIs stop accepting requests', async ({ request }) => {
+		const endpoints = [
+			'/api/unreleased-quiz/responses',
+			'/api/unreleased-quiz/responses/00000000-0000-0000-0000-000000000000/register',
+			'/api/unreleased-gift/responses',
+		];
+		for (const path of endpoints) {
+			const response = await request.post(path, { data: {} });
+			expect(response.status()).toBe(410);
+			expect(await response.json()).toMatchObject({
+				ok: false,
+				error: 'Hẹn gặp mọi người ở event lần sau nhé!',
+			});
+		}
+		const download = await request.get('/api/unreleased-gift/download');
+		expect(download.status()).toBe(410);
+	});
 
-		const saved = page.waitForResponse(
-			(response) =>
-				response.url().endsWith('/api/unreleased-quiz/responses') &&
-				response.request().method() === 'POST',
-		);
-		await choose(/Mình chưa biết việc nào đáng để kể/);
-		expect((await saved).status()).toBe(201);
-		await expect(page.getByRole('heading', { name: 'Chưa chọn bài', level: 2 })).toBeVisible();
-
+	test('the existing quiz report remains available to admins', async ({ browser }) => {
 		const adminContext = await browser.newContext();
 		await addAdminSession(adminContext);
 		const admin = await adminContext.newPage();
 		await admin.goto('/admin/unreleased-quiz');
 		await expect(admin.getByRole('heading', { name: 'Quiz UNRELEASED', level: 1 })).toBeVisible();
-		await expect(admin.getByText('Chưa có hướng ứng tuyển:', { exact: false })).toBeVisible();
 		await adminContext.close();
-	});
-
-	test('the API rejects answers that skip the branches', async ({ request }) => {
-		const response = await request.post('/api/unreleased-quiz/responses', {
-			data: { respondentId: 'e2e-invalid-run', answers: { q1: 'D', q2: 'A', q3: 'A', q4: 'A' } },
-		});
-		expect(response.status()).toBe(400);
 	});
 });
