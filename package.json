@@ -88,7 +88,7 @@
 		"mongodb": "^6.21.0",
 		"mongoose": "^9.9.3",
 		"nanoid": "^5.1.16",
-		"next": "^16.4.3",
+		"next": "^16.4.5",
 		"next-auth": "^5.0.0-beta.32",
 		"pg": "^8.20.0",
 		"react": "^19.2.4",
@@ -117,6 +117,7 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"@vitest/coverage-v8": "^4.1.12",
+		"@webofficial/next-eslint-glob": "file:./scripts/vendor/next-eslint-glob",
 		"eslint": "^9.39.2",
 		"eslint-config-next": "^16.3.8",
 		"eslint-config-prettier": "^10.1.8",
@@ -129,8 +130,7 @@
 		"tailwindcss": "^4",
 		"tsx": "4.23.12",
 		"typescript": "^5",
-		"vitest": "^4.1.12",
-		"@webofficial/next-eslint-glob": "file:./scripts/vendor/next-eslint-glob"
+		"vitest": "^4.1.12"
 	},
 	"lint-staged": {
 		"*.{ts,tsx,mjs}": [
