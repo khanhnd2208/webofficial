@@ -3,12 +3,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '@/lib/prisma';
 import { disconnectTestPrisma } from '@/test/helpers/db.postgres';
 
-import { awardRecallArenaCp, getRecallArena } from './recallArenaService';
+import { awardRecallArenaCp, getRecallArena, getRecallArenaCourseId } from './recallArenaService';
 
 const suffix = `arena-${Date.now().toString(36)}`;
 const ids = {
 	course: '',
 	class: '',
+	otherClass: '',
 	session: '',
 	present: '',
 	absent: '',
@@ -91,6 +92,36 @@ beforeAll(async () => {
 	await prisma.teachingClassRecallDeck.create({
 		data: { classId: teachingClass.id, deckId: deck.id, enabled: true },
 	});
+	// Left out of the arena: a deck with no cards and an archived deck.
+	await prisma.activeRecallDeck.createMany({
+		data: [
+			{
+				slug: `empty-${suffix}`,
+				title: 'Empty deck',
+				courseId: course.id,
+				subject: 'Arena',
+				status: 'DRAFT',
+			},
+			{
+				slug: `old-${suffix}`,
+				title: 'Old deck',
+				courseId: course.id,
+				subject: 'Arena',
+				status: 'ARCHIVED',
+			},
+		],
+	});
+	const otherClass = await prisma.teachingClass.create({
+		data: {
+			courseId: course.id,
+			courseCode: course.courseCode,
+			courseName: course.courseName,
+			groupNo: `${suffix}b`.slice(0, 20),
+			classCode: `${suffix}b`.slice(0, 20),
+			term: `Arena ${suffix}`,
+		},
+	});
+	ids.otherClass = otherClass.id;
 	Object.assign(ids, {
 		course: course.id,
 		class: teachingClass.id,
@@ -102,7 +133,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-	await prisma.teachingClass.deleteMany({ where: { id: ids.class } });
+	await prisma.teachingClass.deleteMany({ where: { id: { in: [ids.class, ids.otherClass] } } });
 	await prisma.teachingStudent.deleteMany({ where: { id: { in: ids.students } } });
 	await prisma.activeRecallDeck.deleteMany({ where: { courseId: ids.course } });
 	await prisma.teachingCourse.deleteMany({ where: { id: ids.course } });
@@ -110,14 +141,24 @@ afterAll(async () => {
 });
 
 describe('recall arena service', () => {
-	it('loads players with attendance and group, plus the class cards', async () => {
-		const arena = await getRecallArena(ids.class);
-		expect(arena.defaultSessionId).toBe(ids.session);
+	it('loads every active class of the course with players, attendance, group and lessons', async () => {
+		const arena = await getRecallArena(ids.course);
+		expect(arena.classes.map((item) => item.id).sort()).toEqual([ids.class, ids.otherClass].sort());
+		const mine = arena.classes.find((item) => item.id === ids.class)!;
+		expect(mine.defaultSessionId).toBe(ids.session);
+		expect(mine.enabledDeckIds).toHaveLength(1);
+		expect(arena.decks.map((deck) => deck.title)).toEqual(['Arena deck']);
 		const present = arena.players.find((player) => player.enrollmentId === ids.present);
+		expect(present?.classId).toBe(ids.class);
 		expect(present?.group).toBe('CHALLENGE');
 		expect(present?.attendance[ids.session]).toBe('PRESENT');
 		expect(arena.players.find((player) => player.enrollmentId === ids.absent)?.group).toBeNull();
 		expect(arena.cards.map((card) => card.question)).toEqual(['<p>Q1</p>']);
+	});
+
+	it('maps an old class link to its course', async () => {
+		await expect(getRecallArenaCourseId(ids.class)).resolves.toBe(ids.course);
+		await expect(getRecallArenaCourseId('missing-class')).rejects.toMatchObject({ status: 404 });
 	});
 
 	it('raises CP to the award and never lowers it', async () => {

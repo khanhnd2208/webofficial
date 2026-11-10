@@ -101,7 +101,7 @@ export function TeachingWorkspaceShell({
 							{/* Projector screen: no room for it next to the menu on a phone header. */}
 							<span className="hidden md:inline-flex">
 								<Link
-									href={routes.mySpaceTeachingArena(gradebook.class.id)}
+									href={routes.mySpaceTeachingArena(gradebook.class.courseId, gradebook.class.id)}
 									target="_blank"
 									className="teaching-icon-button min-h-11 min-w-11 px-3"
 									aria-label="Kiểm tra bài cũ"

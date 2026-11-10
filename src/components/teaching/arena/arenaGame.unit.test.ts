@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { bossName, displayNames, passStreak, type ArenaHistoryEntry } from './arenaGame';
+import type { RecallArenaData } from '@/features/teaching/types';
+
+import {
+	bossName,
+	displayNames,
+	initialConfig,
+	matchesPlayerSearch,
+	passStreak,
+	toggleClass,
+	type ArenaHistoryEntry,
+} from './arenaGame';
 
 const student = (
 	enrollmentId: string,
@@ -73,5 +83,113 @@ describe('bossName', () => {
 		expect(bossName(1)).toBe('Chúa Tể Quên Bài');
 		expect(bossName(2)).not.toBe(bossName(1));
 		expect(bossName(7)).toBe(bossName(1));
+	});
+});
+
+describe('course arena setup', () => {
+	const session = (id: string, classId: string, heldOn: string) => ({
+		id,
+		classId,
+		tutorialClassId: `t-${classId}`,
+		weekNumber: 4,
+		heldOn,
+		topic: '',
+		method: 'ROLL_CALL' as const,
+		isCancelled: false,
+		attendanceTakenAt: null,
+		attendanceOpen: false,
+		participationTakenAt: null,
+		participationOpen: true,
+	});
+	const klass = (id: string, heldOn: string, enabledDeckIds: string[]) => ({
+		id,
+		classCode: id.toUpperCase(),
+		term: 'HK1',
+		tutorials: [],
+		sessions: [session(`s-${id}`, id, heldOn)],
+		defaultSessionId: `s-${id}`,
+		enabledDeckIds,
+	});
+	const deck = (deckId: string) => ({
+		deckId,
+		title: deckId,
+		lessonLabel: '',
+		status: 'PUBLISHED' as const,
+		cardCount: 3,
+	});
+	const data: RecallArenaData = {
+		course: { id: 'course', courseCode: 'HRM', courseName: 'HRM' },
+		todayIso: '2026-11-11',
+		classes: [klass('a', '2026-11-11', ['d2']), klass('b', '2026-11-10', ['d1'])],
+		players: [
+			{
+				enrollmentId: 'p1',
+				classId: 'b',
+				tutorialClassId: 't-b',
+				enrolledFromWeek: 1,
+				studentCode: 'SV01',
+				familyName: 'Trần',
+				givenName: 'Đức',
+				group: null,
+				attendance: {},
+				cp: {},
+			},
+		],
+		decks: [deck('d1'), deck('d2'), deck('d3')],
+		cards: [],
+	};
+
+	it('starts with the classes meeting today and the lessons they switched on', () => {
+		expect(initialConfig(data, null, null)).toEqual({
+			classIds: ['a'],
+			sessionByClass: { a: 's-a' },
+			filter: 'ALL',
+			deckIds: ['d2'],
+			guestIds: [],
+			excludedIds: [],
+		});
+	});
+
+	it('prefers the class the lecturer came from', () => {
+		expect(initialConfig(data, 'b', null).classIds).toEqual(['b']);
+		expect(initialConfig(data, 'unknown', null).classIds).toEqual(['a']);
+	});
+
+	it('keeps saved lessons and filter, but saved players only on the same day', () => {
+		const stored = {
+			deckIds: ['d3', 'gone'],
+			filter: 'SUPPORT' as const,
+			guestIds: ['p1', 'gone'],
+			excludedIds: ['p1'],
+		};
+		const today = initialConfig(data, null, { ...stored, savedOn: '2026-11-11' });
+		expect(today).toMatchObject({
+			deckIds: ['d3'],
+			filter: 'SUPPORT',
+			guestIds: ['p1'],
+			excludedIds: ['p1'],
+		});
+		const lastWeek = initialConfig(data, null, { ...stored, savedOn: '2026-11-04' });
+		expect(lastWeek).toMatchObject({ deckIds: ['d3'], guestIds: [], excludedIds: [] });
+	});
+
+	it('ticks a class with its default session and unticks it cleanly', () => {
+		const start = initialConfig(data, null, null);
+		const both = toggleClass(start, data, 'b');
+		expect(both.classIds).toEqual(['a', 'b']);
+		expect(both.sessionByClass).toEqual({ a: 's-a', b: 's-b' });
+		const back = toggleClass(both, data, 'a');
+		expect(back.classIds).toEqual(['b']);
+		expect(back.sessionByClass).toEqual({ b: 's-b' });
+	});
+
+	it('finds students by name or code without accents', () => {
+		const player = data.players[0]!;
+		expect(matchesPlayerSearch(player, 'duc')).toBe(true);
+		expect(matchesPlayerSearch(player, 'TRAN D')).toBe(true);
+		expect(matchesPlayerSearch(player, 'sv01')).toBe(true);
+		expect(matchesPlayerSearch(player, 'an')).toBe(true);
+		expect(matchesPlayerSearch(player, 'linh')).toBe(false);
+		expect(matchesPlayerSearch(player, '   ')).toBe(false);
 	});
 });

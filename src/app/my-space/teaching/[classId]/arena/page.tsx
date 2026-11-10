@@ -1,21 +1,24 @@
-import type { Metadata } from 'next';
+import { notFound, redirect } from 'next/navigation';
 
-import { RecallArena } from '@/components/teaching/arena/RecallArena';
-import { getRecallArena } from '@/features/teaching';
+import { routes } from '@/config/routes';
+import { getRecallArenaCourseId } from '@/features/teaching';
+import { AppError } from '@/lib/appError';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-	title: 'Kiểm tra bài cũ',
-	robots: { index: false, follow: false },
-};
-
-/** Projector screen: the monster calls students who are in the room and asks a recall card. */
-export default async function MySpaceTeachingArenaPage({
+/** The arena moved to the course: keep old class links working, with that class ticked. */
+export default async function MySpaceTeachingClassArenaRedirect({
 	params,
 }: {
 	params: Promise<{ classId: string }>;
 }) {
 	const { classId } = await params;
-	return <RecallArena data={await getRecallArena(classId)} />;
+	let courseId: string;
+	try {
+		courseId = await getRecallArenaCourseId(classId);
+	} catch (error) {
+		if (error instanceof AppError && error.status === 404) notFound();
+		throw error;
+	}
+	redirect(routes.mySpaceTeachingArena(courseId, classId));
 }

@@ -1,0 +1,363 @@
+/* Course arena setup: three steps (classes, players, lessons) in one panel.
+   Colours come from the --arena-* tokens set on the arena root. */
+
+.panel {
+	grid-template-rows: auto auto minmax(0, 1fr) auto;
+	width: min(44rem, 100%);
+	height: min(46rem, 100%);
+	overflow: hidden;
+}
+
+.title {
+	display: grid;
+	gap: 0.15rem;
+	min-width: 0;
+}
+
+.steps {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.4rem;
+	margin: 0 1.3rem;
+	padding-bottom: 0.8rem;
+	border-bottom: 1px solid var(--arena-line);
+}
+
+.step {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	min-height: 3.1rem;
+	padding: 0.35rem 0.6rem;
+	border: 1px solid var(--arena-line);
+	border-radius: 0.7rem;
+	background: rgb(255 255 255 / 4%);
+	color: var(--arena-ink-2);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.step:hover {
+	background: rgb(255 255 255 / 9%);
+}
+
+.step[aria-current='step'] {
+	border-color: var(--arena-accent);
+	background: rgb(251 191 36 / 12%);
+	color: var(--arena-ink);
+}
+
+.stepNo {
+	display: grid;
+	width: 1.6rem;
+	height: 1.6rem;
+	flex: none;
+	place-items: center;
+	border-radius: 999px;
+	background: rgb(255 255 255 / 10%);
+	font-size: 0.85rem;
+	font-weight: 800;
+}
+
+.step[aria-current='step'] .stepNo {
+	background: var(--arena-accent);
+	color: #1e1033;
+}
+
+.stepText {
+	display: grid;
+	min-width: 0;
+	font-size: 0.92rem;
+	font-weight: 700;
+}
+
+.stepSummary {
+	overflow: hidden;
+	color: var(--arena-muted);
+	font-size: 0.78rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.body {
+	min-height: 0;
+	padding: 0.9rem 1.3rem;
+	overflow: auto;
+}
+
+.section {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.sectionHead {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem;
+}
+
+.total {
+	font-size: 1rem;
+	font-weight: 800;
+}
+
+.list,
+.playerList,
+.results {
+	display: grid;
+	gap: 0.45rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.classCard {
+	border: 1px solid var(--arena-line);
+	border-radius: 0.75rem;
+	background: rgb(255 255 255 / 3%);
+}
+
+.classCard[data-checked] {
+	border-color: rgb(251 191 36 / 55%);
+	background: rgb(251 191 36 / 7%);
+}
+
+.classHead {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	min-height: 3rem;
+	padding: 0.5rem 0.8rem;
+	cursor: pointer;
+}
+
+.classHead input,
+.playerHead input {
+	width: 1.1rem;
+	height: 1.1rem;
+	flex: none;
+	accent-color: var(--arena-accent);
+}
+
+.className {
+	display: grid;
+	flex: 1;
+	min-width: 0;
+	font-weight: 800;
+}
+
+.badge {
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
+	background: rgb(52 211 153 / 18%);
+	color: var(--arena-ok);
+	font-size: 0.78rem;
+	font-weight: 800;
+}
+
+.classBody {
+	display: grid;
+	gap: 0.45rem;
+	padding: 0 0.8rem 0.75rem 2.6rem;
+}
+
+.classMeta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.4rem 0.8rem;
+}
+
+.inline {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	min-width: 0;
+}
+
+.inlineLabel {
+	flex: none;
+	color: var(--arena-muted);
+	font-size: 0.85rem;
+	font-weight: 700;
+}
+
+.select,
+.searchInput {
+	width: 100%;
+	min-width: 0;
+	min-height: 2.5rem;
+	padding: 0 0.75rem;
+	border: 1px solid var(--arena-line);
+	border-radius: 0.55rem;
+	background: var(--arena-panel-2);
+	color: var(--arena-ink);
+	font: inherit;
+	font-size: 0.95rem;
+}
+
+.searchInput::placeholder {
+	color: var(--arena-muted);
+}
+
+.cpRow {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.search {
+	display: grid;
+	gap: 0.4rem;
+	padding: 0.75rem;
+	border: 1px dashed var(--arena-line);
+	border-radius: 0.75rem;
+}
+
+.searchLabel {
+	font-size: 0.9rem;
+	font-weight: 800;
+}
+
+.result {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem;
+	min-height: 2.6rem;
+	padding: 0.3rem 0.5rem;
+	border: 0;
+	border-radius: 0.5rem;
+	background: rgb(255 255 255 / 5%);
+	color: var(--arena-ink);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.result:hover {
+	background: rgb(255 255 255 / 11%);
+}
+
+.playerGroup {
+	display: grid;
+	gap: 0.35rem;
+}
+
+.groupTitle {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0.3rem 0 0;
+	color: var(--arena-ink-2);
+	font-size: 0.85rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.playerList {
+	grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+	gap: 0.3rem;
+}
+
+.player {
+	display: grid;
+	gap: 0.2rem;
+	padding: 0.35rem 0.5rem;
+	border-radius: 0.5rem;
+	background: rgb(255 255 255 / 4%);
+}
+
+.playerHead {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	min-height: 2.2rem;
+	cursor: pointer;
+}
+
+.playerName {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	font-size: 0.92rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.groupTag {
+	flex: none;
+	color: var(--arena-muted);
+	font-size: 0.72rem;
+	font-weight: 700;
+}
+
+.guestNote {
+	display: grid;
+	gap: 0.25rem;
+	padding-left: 1.65rem;
+}
+
+.lessonList {
+	display: grid;
+	gap: 0.1rem;
+}
+
+.draft {
+	color: var(--arena-muted);
+	font-size: 0.78rem;
+	font-weight: 700;
+}
+
+.footActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+@media (max-width: 40rem) {
+	.panel {
+		height: 100%;
+	}
+
+	.steps {
+		margin: 0 0.9rem;
+	}
+
+	.step {
+		justify-content: center;
+		min-height: 2.6rem;
+		padding: 0.3rem;
+	}
+
+	.stepNo,
+	.stepSummary {
+		display: none;
+	}
+
+	.stepText {
+		font-size: 0.85rem;
+		white-space: nowrap;
+	}
+
+	.body {
+		padding: 0.8rem 0.9rem;
+	}
+
+	.classBody {
+		padding-left: 0.8rem;
+	}
+
+	.footActions {
+		margin-left: auto;
+	}
+}

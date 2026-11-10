@@ -156,3 +156,87 @@ export function vietnamTodayIso(now = new Date()): string {
 		day: '2-digit',
 	}).format(now);
 }
+
+/** The fields the course arena needs to place a student and find their CP week. */
+export interface ArenaRosterCandidate {
+	enrollmentId: string;
+	classId: string;
+	tutorialClassId: string | null;
+	enrolledFromWeek: number;
+	attendance: Readonly<Record<string, AttendanceStatus>>;
+}
+
+export interface ArenaHostSession {
+	id: string;
+	classId: string;
+	tutorialClassId: string;
+	weekNumber: number;
+	isCancelled: boolean;
+}
+
+/** True when the student belongs to this session's tutorial and was marked in the room. */
+export function presentAt(player: ArenaRosterCandidate, session: ArenaHostSession): boolean {
+	return (
+		player.classId === session.classId &&
+		player.tutorialClassId === session.tutorialClassId &&
+		player.enrolledFromWeek <= session.weekNumber &&
+		isInRoom(player.attendance[session.id])
+	);
+}
+
+/**
+ * Who is on the floor in a course arena: everyone marked in the room at one
+ * of the chosen sessions, plus students the lecturer added by hand (a
+ * make-up student from another class), minus students the lecturer took
+ * out. Order: chosen sessions first, guests after, each in roster order.
+ */
+export function buildArenaRoster<T extends ArenaRosterCandidate>(
+	players: readonly T[],
+	hostSessions: readonly ArenaHostSession[],
+	guestIds: readonly string[],
+	excludedIds: readonly string[],
+): T[] {
+	const excluded = new Set(excludedIds);
+	const seen = new Set<string>();
+	const roster: T[] = [];
+	const take = (player: T) => {
+		if (excluded.has(player.enrollmentId) || seen.has(player.enrollmentId)) return;
+		seen.add(player.enrollmentId);
+		roster.push(player);
+	};
+	for (const session of hostSessions) {
+		for (const player of players) if (presentAt(player, session)) take(player);
+	}
+	const byId = new Map(players.map((player) => [player.enrollmentId, player]));
+	for (const id of guestIds) {
+		const player = byId.get(id);
+		if (player) take(player);
+	}
+	return roster;
+}
+
+/**
+ * The session a correct answer is written to. CP always lands in the
+ * student's own class and tutorial, in the week being played: the week of
+ * the chosen session of their class, or, for a make-up student whose class
+ * is not on screen, the week of the first chosen session. Null when their
+ * class has no live session that week.
+ */
+export function arenaCpSession<S extends ArenaHostSession>(
+	player: Pick<ArenaRosterCandidate, 'classId' | 'tutorialClassId'>,
+	hostSessions: readonly ArenaHostSession[],
+	allSessions: readonly S[],
+): S | null {
+	const reference =
+		hostSessions.find((session) => session.classId === player.classId) ?? hostSessions[0];
+	if (!reference || !player.tutorialClassId) return null;
+	return (
+		allSessions.find(
+			(session) =>
+				session.classId === player.classId &&
+				session.tutorialClassId === player.tutorialClassId &&
+				session.weekNumber === reference.weekNumber &&
+				!session.isCancelled,
+		) ?? null
+	);
+}

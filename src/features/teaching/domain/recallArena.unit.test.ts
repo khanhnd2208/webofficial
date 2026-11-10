@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import type { AttendanceStatus } from './cp';
 import {
+	arenaCpSession,
+	buildArenaRoster,
 	drawCard,
 	drawFromBag,
 	isInRoom,
@@ -9,6 +12,7 @@ import {
 	pickDefaultArenaSession,
 	returnToBag,
 	vietnamTodayIso,
+	type ArenaRosterCandidate,
 	type ArenaSessionCandidate,
 } from './recallArena';
 
@@ -188,5 +192,97 @@ describe('pickDefaultArenaSession', () => {
 describe('vietnamTodayIso', () => {
 	it('uses Vietnam time, not UTC', () => {
 		expect(vietnamTodayIso(new Date('2026-11-09T18:30:00.000Z'))).toBe('2026-11-10');
+	});
+});
+
+describe('course arena roster', () => {
+	const sessionA = {
+		id: 'sA2',
+		classId: 'A',
+		tutorialClassId: 'tA',
+		weekNumber: 2,
+		isCancelled: false,
+	};
+	const sessionB = {
+		id: 'sB2',
+		classId: 'B',
+		tutorialClassId: 'tB',
+		weekNumber: 2,
+		isCancelled: false,
+	};
+	const player = (
+		enrollmentId: string,
+		classId: string,
+		attendance: Record<string, AttendanceStatus> = {},
+		extra: Partial<ArenaRosterCandidate> = {},
+	): ArenaRosterCandidate => ({
+		enrollmentId,
+		classId,
+		tutorialClassId: `t${classId}`,
+		enrolledFromWeek: 1,
+		attendance,
+		...extra,
+	});
+	const players = [
+		player('a1', 'A', { sA2: 'PRESENT' }),
+		player('a2', 'A', { sA2: 'ABSENT_UNEXCUSED' }),
+		player('a3', 'A', { sA2: 'PRESENT' }, { enrolledFromWeek: 3 }),
+		player('b1', 'B', { sB2: 'LATE' }),
+		player('b2', 'B'),
+		player('c1', 'C'),
+	];
+
+	it('takes students marked in the room at each chosen session', () => {
+		expect(
+			buildArenaRoster(players, [sessionA, sessionB], [], []).map((p) => p.enrollmentId),
+		).toEqual(['a1', 'b1']);
+	});
+
+	it('adds make-up students from any class once, after the room', () => {
+		const ids = buildArenaRoster(players, [sessionB], ['c1', 'a2', 'b1', 'missing'], []).map(
+			(p) => p.enrollmentId,
+		);
+		expect(ids).toEqual(['b1', 'c1', 'a2']);
+	});
+
+	it('leaves out students the lecturer removed, even when added as guests', () => {
+		const ids = buildArenaRoster(players, [sessionA], ['c1'], ['a1', 'c1']).map(
+			(p) => p.enrollmentId,
+		);
+		expect(ids).toEqual([]);
+	});
+
+	it('writes CP to the chosen session of the student’s own class', () => {
+		const all = [sessionA, sessionB];
+		expect(arenaCpSession(players[0]!, [sessionA, sessionB], all)?.id).toBe('sA2');
+	});
+
+	it('writes a make-up student’s CP to their own class in the same week', () => {
+		const homeWeek2 = {
+			id: 'sC2',
+			classId: 'C',
+			tutorialClassId: 'tC',
+			weekNumber: 2,
+			isCancelled: false,
+		};
+		const homeWeek3 = { ...homeWeek2, id: 'sC3', weekNumber: 3 };
+		expect(
+			arenaCpSession(player('c1', 'C'), [sessionB], [sessionB, homeWeek3, homeWeek2])?.id,
+		).toBe('sC2');
+	});
+
+	it('finds no CP session when the home week is cancelled or missing', () => {
+		const cancelled = {
+			id: 'sC2',
+			classId: 'C',
+			tutorialClassId: 'tC',
+			weekNumber: 2,
+			isCancelled: true,
+		};
+		expect(arenaCpSession(player('c1', 'C'), [sessionB], [cancelled])).toBeNull();
+		expect(arenaCpSession(player('c1', 'C'), [], [cancelled])).toBeNull();
+		expect(
+			arenaCpSession(player('c1', 'C', {}, { tutorialClassId: null }), [sessionB], [cancelled]),
+		).toBeNull();
 	});
 });

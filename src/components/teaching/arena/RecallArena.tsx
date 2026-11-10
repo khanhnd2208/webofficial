@@ -9,6 +9,7 @@ import { teachingApi } from '@/components/teaching/admin/api';
 import { routes } from '@/config/routes';
 import { recallVisibleText } from '@/features/active-recall/richText';
 import {
+	arenaCpSession,
 	drawCard,
 	drawFromBag,
 	returnToBag,
@@ -29,18 +30,21 @@ import { ArenaSetup } from './ArenaSetup';
 import { ArenaTopBar } from './ArenaTopBar';
 import {
 	ARENA_MAX_HP,
+	arenaGameKey,
+	arenaRoster,
 	bossName,
+	callablePlayers,
 	displayNames,
-	eligiblePlayers,
 	emptyProgress,
 	fullName,
+	hostSessions,
+	initialConfig,
 	isCpFinalized,
 	loadConfig,
 	loadProgress,
 	passStreak,
 	saveConfig,
 	saveProgress,
-	sessionLabel,
 	type ArenaConfig,
 	type ArenaHistoryEntry,
 	type ArenaProgress,
@@ -62,18 +66,26 @@ function errorMessage(error: unknown) {
 	return error instanceof Error ? error.message : 'Không lưu được, thử lại.';
 }
 
-export function RecallArena({ data }: { data: RecallArenaData }) {
+export function RecallArena({
+	data,
+	initialClassId = null,
+}: {
+	data: RecallArenaData;
+	/** Class the lecturer came from: it starts ticked. */
+	initialClassId?: string | null;
+}) {
 	const { reduced: reducedMotion } = useMotionTier();
 	const fx = useArenaFx(!reducedMotion);
-	const [sessions, setSessions] = useState(data.sessions);
-	const [config, setConfig] = useState<ArenaConfig>({
-		sessionId: data.defaultSessionId,
-		filter: 'ALL',
-		deckIds: [],
-	});
+	const courseId = data.course.id;
+	const gameKey = arenaGameKey(courseId, data.todayIso);
+	const [sessions, setSessions] = useState(() => data.classes.flatMap((item) => item.sessions));
+	const [config, setConfig] = useState<ArenaConfig>(() =>
+		initialConfig(data, initialClassId, null),
+	);
+	/** False until this browser's saved choices are read, so they are not overwritten first. */
+	const [restored, setRestored] = useState(false);
 	const [progress, setProgress] = useState<ArenaProgress>(emptyProgress);
-	/** Session whose progress is in state; saving waits until it matches. */
-	const [progressSession, setProgressSession] = useState<string | null>(null);
+	const [progressLoaded, setProgressLoaded] = useState(false);
 	const [setupOpen, setSetupOpen] = useState(true);
 	const [started, setStarted] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
@@ -88,7 +100,7 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	const [cpOverrides, setCpOverrides] = useState<Record<string, number>>({});
 	const [saving, setSaving] = useState(false);
 	const [retryingId, setRetryingId] = useState<string | null>(null);
-	const [openingCp, setOpeningCp] = useState(false);
+	const [openingCpId, setOpeningCpId] = useState<string | null>(null);
 	const [toast, setToast] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 	const [huntAfterSkip, setHuntAfterSkip] = useState(false);
 	const [look, setLook] = useState(LOOK_AHEAD);
@@ -99,23 +111,18 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		fx;
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
-	const session = sessions.find((item) => item.id === config.sessionId) ?? null;
+	const hosts = useMemo(() => hostSessions(config, sessions), [config, sessions]);
 	const playersById = useMemo(
 		() => new Map(data.players.map((player) => [player.enrollmentId, player])),
 		[data.players],
 	);
+	/** Everyone on the floor; the spotlight visits all of them. */
 	const inRoom = useMemo(
-		() => eligiblePlayers(data.players, session, 'ALL'),
-		[data.players, session],
+		() => arenaRoster(data.players, hosts, config),
+		[data.players, hosts, config],
 	);
-	const callable = useMemo(
-		() => eligiblePlayers(data.players, session, config.filter),
-		[data.players, session, config.filter],
-	);
-	const activeDeckIds = useMemo(
-		() => new Set(config.deckIds.length ? config.deckIds : data.decks.map((deck) => deck.deckId)),
-		[config.deckIds, data.decks],
-	);
+	const callable = useMemo(() => callablePlayers(inRoom, config.filter), [inRoom, config.filter]);
+	const activeDeckIds = useMemo(() => new Set(config.deckIds), [config.deckIds]);
 	const cards = useMemo(
 		() => data.cards.filter((card) => activeDeckIds.has(card.deckId)),
 		[data.cards, activeDeckIds],
@@ -136,33 +143,28 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		[progress.history],
 	);
 
-	// Restore this browser's group filter and decks once, after hydration. The
-	// session always starts at today's class, so it is not restored.
+	// Restore this browser's choices once, after hydration. Sessions always
+	// start at each class's default (today's), so they are not restored.
 	useEffect(() => {
-		const stored = loadConfig(data.class.id);
-		if (!stored) return;
-		const deckIds = (stored.deckIds ?? []).filter((id) =>
-			data.decks.some((deck) => deck.deckId === id),
-		);
-		setConfig((previous) => ({ ...previous, filter: stored.filter ?? previous.filter, deckIds }));
-	}, [data.class.id, data.decks]);
+		setConfig(initialConfig(data, initialClassId, loadConfig(courseId)));
+		setRestored(true);
+		// Only on first load: later data changes come from the lecturer's own edits.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	useEffect(() => {
-		saveConfig(data.class.id, config);
-	}, [config, data.class.id]);
+		if (restored) saveConfig(courseId, config, data.todayIso);
+	}, [config, courseId, data.todayIso, restored]);
 
-	// Each session keeps its own progress (who was called, boss HP, history).
+	// One game per course per day: who was called, boss HP and history.
 	useEffect(() => {
-		if (!config.sessionId) return;
-		setProgress(loadProgress(config.sessionId));
-		setProgressSession(config.sessionId);
-	}, [config.sessionId]);
+		setProgress(loadProgress(gameKey));
+		setProgressLoaded(true);
+	}, [gameKey]);
 
 	useEffect(() => {
-		if (progressSession && progressSession === config.sessionId) {
-			saveProgress(progressSession, progress);
-		}
-	}, [progress, progressSession, config.sessionId]);
+		if (progressLoaded) saveProgress(gameKey, progress);
+	}, [progress, progressLoaded, gameKey]);
 
 	useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
@@ -176,21 +178,28 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		timers.current.push(window.setTimeout(run, ms));
 	}, []);
 
+	/** The session a correct answer is written to: always the student's own class. */
+	const cpSessionFor = (enrollmentId: string) => {
+		const player = playersById.get(enrollmentId);
+		return player ? arenaCpSession(player, hosts, sessions) : null;
+	};
+
 	const cpFor = (enrollmentId: string) => {
-		if (!session) return 0;
+		const target = cpSessionFor(enrollmentId);
+		if (!target) return 0;
 		return (
-			cpOverrides[`${session.id}:${enrollmentId}`] ??
-			playersById.get(enrollmentId)?.cp[session.id] ??
+			cpOverrides[`${target.id}:${enrollmentId}`] ??
+			playersById.get(enrollmentId)?.cp[target.id] ??
 			0
 		);
 	};
 
 	const startHunt = useCallback(() => {
-		if (phase !== 'idle' || !session) return;
+		if (phase !== 'idle') return;
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		const draw = drawFromBag(progress.bag, eligibleIds, progress.lastPicked);
 		if (!draw.picked) {
-			setToast({ tone: 'error', text: 'Không có sinh viên nào có mặt trong nhóm đang chọn.' });
+			setToast({ tone: 'error', text: 'Không có sinh viên nào trong trận ở nhóm đang chọn.' });
 			return;
 		}
 		const picked = draw.picked;
@@ -263,7 +272,6 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		later(lockAt + GRAB_MS.open, open);
 	}, [
 		phase,
-		session,
 		callable,
 		inRoom,
 		progress,
@@ -350,9 +358,13 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	}
 
 	async function award(enrollmentId: string, level: ArenaAwardLevel) {
-		if (!session) throw new Error('Chưa chọn buổi học');
+		const target = cpSessionFor(enrollmentId);
+		if (!target) {
+			const week = hosts[0] ? ` tuần ${hosts[0].weekNumber}` : '';
+			throw new Error(`Lớp gốc không có buổi${week}, không ghi được CP.`);
+		}
 		const result = await teachingApi<RecallArenaAwardResult>(
-			`/api/admin/teaching/sessions/${session.id}/recall-arena`,
+			`/api/admin/teaching/sessions/${target.id}/recall-arena`,
 			{ method: 'POST', body: JSON.stringify({ enrollmentId, points: level }) },
 		);
 		setCpOverrides((previous) => ({
@@ -447,9 +459,10 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		}
 	}
 
-	async function openCp() {
+	async function openCp(sessionId: string) {
+		const session = sessions.find((item) => item.id === sessionId);
 		if (!session) return;
-		setOpeningCp(true);
+		setOpeningCpId(sessionId);
 		try {
 			const result = await teachingApi<TeachingParticipationMutationResult>(
 				`/api/admin/teaching/sessions/${session.id}/participation/lock`,
@@ -464,7 +477,7 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		} catch (error) {
 			setToast({ tone: 'error', text: errorMessage(error) });
 		} finally {
-			setOpeningCp(false);
+			setOpeningCpId(null);
 		}
 	}
 
@@ -486,7 +499,7 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		const ok = await confirm({
 			title: 'Bắt đầu lượt mới?',
 			description:
-				'Xóa lịch sử gọi và máu boss của buổi này trên máy này. Điểm CP đã ghi vẫn giữ nguyên.',
+				'Xóa lịch sử gọi và máu boss của hôm nay trên máy này. Điểm CP đã ghi vẫn giữ nguyên.',
 			confirmLabel: 'Bắt đầu lượt mới',
 		});
 		if (!ok) return;
@@ -496,7 +509,7 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	}
 
 	function closeSetup() {
-		if (!session) return;
+		if (!started && callable.length === 0) return;
 		setSetupOpen(false);
 		setStarted(true);
 		if (!started && phase === 'idle') bossIntro(progress.round);
@@ -551,19 +564,24 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		? data.decks.find((deck) => deck.deckId === caughtCard.deckId)
 		: null;
 	const streak = passStreak(progress.history);
+	const classLabel =
+		config.classIds
+			.map((id) => data.classes.find((item) => item.id === id)?.classCode)
+			.filter(Boolean)
+			.join(', ') || 'Chưa chọn lớp';
 	const enraged = progress.hp <= LOW_HP && phase !== 'victory';
 
 	return (
 		<div className={styles.arena} data-phase={phase}>
 			<div className={styles.world} ref={worldRef}>
 				<ArenaTopBar
-					classLabel={`${data.class.courseCode} · ${data.class.classCode}`}
-					classHref={routes.mySpaceTeachingClass(data.class.id)}
+					classLabel={`${data.course.courseCode} · ${classLabel}`}
+					classHref={routes.mySpaceTeachingCourse(courseId)}
 					hp={progress.hp}
 					round={progress.round}
 					low={enraged}
 					hpRef={hpRef}
-					settingsLabel={`${session ? sessionLabel(session, data.tutorials) : 'Chưa chọn buổi'} · ${cards.length} câu`}
+					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${cards.length ? `${cards.length} câu` : 'câu riêng'}`}
 					settingsDisabled={phase === 'hunting' || phase === 'caught'}
 					onSettings={() => setSetupOpen(true)}
 					calledCount={progress.history.filter((entry) => entry.result !== 'skip').length}
@@ -682,20 +700,18 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 
 			{setupOpen ? (
 				<ArenaSetup
+					data={data}
 					config={config}
 					sessions={sessions}
-					tutorials={data.tutorials}
-					decks={data.decks}
-					players={data.players}
-					session={session}
+					hosts={hosts}
+					roster={inRoom}
 					started={started}
-					openingCp={openingCp}
-					recallHref={routes.mySpaceTeachingClassTab(data.class.id, 'recall')}
+					openingCpId={openingCpId}
 					onChange={setConfig}
 					onOpenCp={openCp}
 					onReload={() => window.location.reload()}
 					onDone={closeSetup}
-					onClose={session && started ? closeSetup : undefined}
+					onClose={started ? closeSetup : undefined}
 				/>
 			) : null}
 			{confirmDialog}
