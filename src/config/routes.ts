@@ -87,6 +87,7 @@ export const routes = {
 	mySpaceTeachingRecallEdit: (courseId: string, deckId: string) =>
 		`/my-space/teaching/courses/${courseId}/recall/${deckId}` as const,
 	mySpaceTeachingClass: (id: string) => `/my-space/teaching/${id}` as const,
+	mySpaceTeachingArena: (id: string) => `/my-space/teaching/${id}/arena` as const,
 	mySpaceTeachingClassTab: (id: string, tab: string, week?: number, tutorial?: string) => {
 		const params = new URLSearchParams({ tab });
 		if (week) params.set('week', String(week));

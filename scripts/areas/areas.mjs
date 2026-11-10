@@ -72,6 +72,7 @@ export const AREAS = {
 			'e2e/teaching-learning-experience-mobile.spec.ts',
 			'e2e/teaching-learning-experience-multi-device.spec.ts',
 			'e2e/teaching-groups.spec.ts',
+			'e2e/teaching-recall-arena.spec.ts',
 			'e2e/my-class.spec.ts',
 			'e2e/my-class.admin.spec.ts',
 			'e2e/myspace-tests.spec.ts',

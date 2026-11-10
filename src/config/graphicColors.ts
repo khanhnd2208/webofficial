@@ -75,4 +75,12 @@ export const GRAPHIC_COLORS = {
 	e08080: '#e08080',
 	'6b4010': '#6b4010',
 	f0c040: '#f0c040',
+	// Recall arena monster: shading.
+	'4c1d95': '#4c1d95',
+	a78bfa: '#a78bfa',
+	// Recall arena figures: skin tones.
+	f6d3b3: '#f6d3b3',
+	e8b98f: '#e8b98f',
+	d19a6a: '#d19a6a',
+	a8714a: '#a8714a',
 } as const;

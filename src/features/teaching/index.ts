@@ -24,5 +24,6 @@ export * from './services/learningExperienceService';
 export * from './services/classNoteService';
 export * from './services/courseService';
 export * from './services/recallPlacementService';
+export * from './services/recallArenaService';
 export * from './domain/courseIdentity';
 export * from './domain/adminLifecycle';
