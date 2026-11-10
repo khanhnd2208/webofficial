@@ -13,12 +13,14 @@ export const ATTENDANCE_MAX_POINTS = 5;
 export const CP_MAX_POINTS = 5;
 export const TOTAL_MAX_POINTS = 10;
 export const ABSENCE_DEDUCTION_POINTS = 0.5;
+export const GIFT_DEDUCTION_POINTS = 0.5;
 
 export const TEACHING_SCORE_RULES = Object.freeze({
 	attendanceMax: ATTENDANCE_MAX_POINTS,
 	cpMax: CP_MAX_POINTS,
 	totalMax: TOTAL_MAX_POINTS,
 	absenceDeduction: ABSENCE_DEDUCTION_POINTS,
+	giftDeduction: GIFT_DEDUCTION_POINTS,
 });
 
 export interface CpPolicy {
@@ -68,7 +70,7 @@ export const DEFAULT_CP_POLICY: CpPolicy = {
 	absenceDeductionPoints: ABSENCE_DEDUCTION_POINTS,
 	lateDeductionPoints: ABSENCE_DEDUCTION_POINTS,
 	lateCountsTowardAbsenceThreshold: true,
-	giftDeductionPoints: 1,
+	giftDeductionPoints: GIFT_DEDUCTION_POINTS,
 };
 
 export function clamp(value: number, min: number, max: number): number {
@@ -149,7 +151,7 @@ export function computeCp(
 	const absenceDeductionPoints = policy.absenceDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
 	const lateDeductionPoints = policy.lateDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
 	const lateCountsTowardAbsenceThreshold = policy.lateCountsTowardAbsenceThreshold ?? true;
-	const giftDeductionPoints = policy.giftDeductionPoints ?? 1;
+	const giftDeductionPoints = policy.giftDeductionPoints ?? GIFT_DEDUCTION_POINTS;
 	const taken = sessions.filter(isAttendanceCounted);
 	let unexcusedAbsences = 0;
 	let excusedAbsences = 0;
@@ -183,8 +185,9 @@ export function computeCp(
 	const attendanceScore = roundScore(
 		clamp(attendanceMaxPoints - absenceDeduction, 0, attendanceMaxPoints),
 	);
-	const cappedParticipation = clamp(participationTotal, 0, cpMaxPoints);
-	const cp = roundScore(clamp(cappedParticipation - giftDeduction, 0, cpMaxPoints));
+	// Gift is subtracted from the raw weekly sum before the cap, so CP equals
+	// "sum of weekly points − Gift", capped to 0..cpMax — the sum students check.
+	const cp = roundScore(clamp(participationTotal - giftDeduction, 0, cpMaxPoints));
 	const totalScore = roundScore(clamp(attendanceScore + cp, 0, attendanceMaxPoints + cpMaxPoints));
 	const riskLevel: RiskLevel = banned
 		? 'BANNED'
