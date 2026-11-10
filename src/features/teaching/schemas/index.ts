@@ -299,6 +299,14 @@ export const participationMarkSchema = z
 	})
 	.strict();
 
+/** One correct answer in the recall arena: raise this week's CP to at least `points`. */
+export const recallArenaAwardSchema = z
+	.object({
+		enrollmentId: z.string().min(1),
+		points: z.union([z.literal(0.5), z.literal(1), z.literal(2)]),
+	})
+	.strict();
+
 export const batchParticipationSchema = z
 	.object({
 		marks: z.array(participationMarkSchema).min(1).max(500),
@@ -480,6 +488,7 @@ export type UpdateEnrollmentInput = z.infer<typeof updateEnrollmentSchema>;
 export type UpdateSessionInput = z.infer<typeof updateSessionSchema>;
 export type BatchAttendanceInput = z.infer<typeof batchAttendanceSchema>;
 export type BatchParticipationInput = z.infer<typeof batchParticipationSchema>;
+export type RecallArenaAwardInput = z.infer<typeof recallArenaAwardSchema>;
 export type SessionLifecycleAction = z.infer<typeof sessionLifecycleActionSchema>;
 export type ParticipationLockInput = z.infer<typeof participationLockSchema>;
 export type RandomizeGroupBoardInput = z.infer<typeof randomizeGroupBoardSchema>;

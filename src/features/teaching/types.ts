@@ -8,6 +8,7 @@ import {
 	type CpPolicy,
 	type CpResult,
 } from './domain/cp';
+import type { ArenaGroup } from './domain/recallArena';
 import type { TeachingClassSetupInput } from './schemas';
 
 export type TeachingClassStatus = 'ACTIVE' | 'ARCHIVED';
@@ -431,4 +432,55 @@ export function getCpPolicyText(
 		`Vắng không phép vượt quá ${policy.absenceThresholdPercent}% tổng số buổi sẽ khiến sinh viên không đủ điều kiện thi.`,
 		'Vắng có phép không bị trừ điểm chuyên cần.',
 	];
+}
+
+// Recall arena ("Kiểm tra bài cũ")
+
+export interface RecallArenaPlayer {
+	enrollmentId: string;
+	tutorialClassId: string | null;
+	enrolledFromWeek: number;
+	studentCode: string;
+	familyName: string;
+	givenName: string;
+	/** Lecturer-only: drives the group filter, never shown on the projector. */
+	group: ArenaGroup | null;
+	/** Attendance status by session id. */
+	attendance: Record<string, AttendanceStatus>;
+	/** CP points by session id. */
+	cp: Record<string, number>;
+}
+
+export interface RecallArenaDeck {
+	deckId: string;
+	title: string;
+	lessonLabel: string;
+	cardCount: number;
+}
+
+export interface RecallArenaCard {
+	id: string;
+	deckId: string;
+	question: string;
+	answer: string;
+	questionVi: string;
+	answerVi: string;
+}
+
+export interface RecallArenaData {
+	class: { id: string; courseCode: string; courseName: string; classCode: string };
+	tutorials: Array<{ id: string; code: string; name: string }>;
+	sessions: TeachingSessionRecord[];
+	defaultSessionId: string | null;
+	players: RecallArenaPlayer[];
+	decks: RecallArenaDeck[];
+	cards: RecallArenaCard[];
+}
+
+export interface RecallArenaAwardResult {
+	enrollmentId: string;
+	sessionId: string;
+	previous: number;
+	points: number;
+	changed: boolean;
 }
