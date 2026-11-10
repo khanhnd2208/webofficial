@@ -2,7 +2,6 @@ import { useId } from 'react';
 
 import { GRAPHIC_COLORS as C } from '@/config/graphicColors';
 
-import type { AvatarLook } from './arenaGame';
 import styles from './arena.module.css';
 
 export type MonsterMood = 'idle' | 'roar' | 'inhale' | 'chomp' | 'hurt' | 'laugh' | 'defeated';
@@ -340,68 +339,5 @@ function MonsterMouth({ mood }: { mood: MonsterMood }) {
 				strokeLinejoin="round"
 			/>
 		</g>
-	);
-}
-
-/** A student figure. Purely decorative: the name label is rendered next to it in HTML. */
-export function ArenaAvatar({ look, size = 56 }: { look: AvatarLook; size?: number }) {
-	return (
-		<svg viewBox="0 0 60 80" width={size} height={(size * 80) / 60} aria-hidden="true">
-			<ellipse cx="30" cy="77" rx="16" ry="3" fill="rgb(0 0 0 / 30%)" />
-			{/* legs */}
-			<rect x="20" y="58" width="8" height="18" rx="4" fill={C['475569']} />
-			<rect x="32" y="58" width="8" height="18" rx="4" fill={C['475569']} />
-			{/* body */}
-			<rect
-				x="13"
-				y="34"
-				width="34"
-				height="30"
-				rx="12"
-				fill={look.shirt}
-				stroke={C['111827']}
-				strokeWidth="2"
-			/>
-			{/* head */}
-			{look.style === 1 ? (
-				<path d="M13 22 Q13 4 30 4 Q47 4 47 22 L47 38 L13 38 Z" fill={look.hair} />
-			) : null}
-			<circle cx="30" cy="21" r="14" fill={look.skin} stroke={C['111827']} strokeWidth="2" />
-			{look.style === 0 ? (
-				<path d="M16 18 Q18 5 30 6 Q43 5 44 18 Q36 11 16 18 Z" fill={look.hair} />
-			) : null}
-			{look.style === 1 ? (
-				<path d="M17 17 Q22 7 30 8 Q39 7 43 17 Q31 12 17 17 Z" fill={look.hair} />
-			) : null}
-			{look.style === 2 ? (
-				<g>
-					<path
-						d="M15 16 Q16 4 30 4 Q44 4 45 16 Z"
-						fill={look.shirt}
-						stroke={C['111827']}
-						strokeWidth="2"
-					/>
-					<rect
-						x="28"
-						y="14"
-						width="22"
-						height="4"
-						rx="2"
-						fill={look.shirt}
-						stroke={C['111827']}
-						strokeWidth="1.5"
-					/>
-				</g>
-			) : null}
-			<circle cx="25" cy="22" r="2" fill={C['111827']} />
-			<circle cx="35" cy="22" r="2" fill={C['111827']} />
-			<path
-				d="M25 28 Q30 31 35 28"
-				fill="none"
-				stroke={C['111827']}
-				strokeWidth="1.8"
-				strokeLinecap="round"
-			/>
-		</svg>
 	);
 }

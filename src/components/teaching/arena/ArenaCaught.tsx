@@ -8,8 +8,9 @@ import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/r
 import { ARENA_AWARD_LEVELS, type ArenaAwardLevel } from '@/features/teaching/domain/recallArena';
 import type { RecallArenaCard, RecallArenaPlayer } from '@/features/teaching/types';
 
-import { ArenaAvatar } from './ArenaFigures';
-import { avatarLook, fullName } from './arenaGame';
+import { ArenaCharacter } from './ArenaCharacter';
+import { arenaCharacterFor } from './arenaCharacters';
+import { fullName } from './arenaGame';
 import styles from './arena.module.css';
 
 function RichText({ html }: { html: string }) {
@@ -137,7 +138,7 @@ export function ArenaCaught({
 						animate={{ rotate: [-18, 10, -6, 0], y: 0 }}
 						transition={{ duration: 0.7 }}
 					>
-						<ArenaAvatar look={avatarLook(player.studentCode)} size={80} />
+						<ArenaCharacter character={arenaCharacterFor(player.studentCode)} size={98} />
 					</m.span>
 					<div className={styles.caughtWho}>
 						<p className={styles.caughtEyebrow}>Quái vật đã bắt được</p>

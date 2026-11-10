@@ -1,4 +1,3 @@
-import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import {
 	buildArenaRoster,
 	matchesGroupFilter,
@@ -312,47 +311,6 @@ export function displayNames(players: readonly NamedPlayer[]): Map<string, strin
 		if (pending.length === 0) break;
 	}
 	return result;
-}
-
-function hash(value: string): number {
-	let result = 2166136261;
-	for (let index = 0; index < value.length; index += 1) {
-		result ^= value.charCodeAt(index);
-		result = Math.imul(result, 16777619);
-	}
-	return result >>> 0;
-}
-
-const SHIRTS = [
-	'ea580c',
-	'15803d',
-	'2563eb',
-	'7c3aed',
-	'db2777',
-	'ca8a04',
-	'dc2626',
-	'5b7fb5',
-] as const;
-const SKINS = ['f6d3b3', 'e8b98f', 'd19a6a', 'a8714a'] as const;
-const HAIRS = ['1a1a1a', '201608', '1c1509', '111827'] as const;
-
-export interface AvatarLook {
-	shirt: string;
-	skin: string;
-	hair: string;
-	/** 0 short hair, 1 long hair, 2 cap. */
-	style: 0 | 1 | 2;
-}
-
-/** Stable look per student, derived from the student code: no images to manage. */
-export function avatarLook(seed: string): AvatarLook {
-	const value = hash(seed);
-	return {
-		shirt: GRAPHIC_COLORS[SHIRTS[value % SHIRTS.length]!],
-		skin: GRAPHIC_COLORS[SKINS[(value >>> 3) % SKINS.length]!],
-		hair: GRAPHIC_COLORS[HAIRS[(value >>> 6) % HAIRS.length]!],
-		style: ((value >>> 9) % 3) as AvatarLook['style'],
-	};
 }
 
 export function sessionLabel(
