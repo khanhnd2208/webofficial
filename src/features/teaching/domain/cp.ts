@@ -183,8 +183,9 @@ export function computeCp(
 	const attendanceScore = roundScore(
 		clamp(attendanceMaxPoints - absenceDeduction, 0, attendanceMaxPoints),
 	);
-	const cappedParticipation = clamp(participationTotal, 0, cpMaxPoints);
-	const cp = roundScore(clamp(cappedParticipation - giftDeduction, 0, cpMaxPoints));
+	// Gift is subtracted from the raw weekly sum before the cap, so CP equals
+	// "sum of weekly points − Gift", capped to 0..cpMax — the sum students check.
+	const cp = roundScore(clamp(participationTotal - giftDeduction, 0, cpMaxPoints));
 	const totalScore = roundScore(clamp(attendanceScore + cp, 0, attendanceMaxPoints + cpMaxPoints));
 	const riskLevel: RiskLevel = banned
 		? 'BANNED'

@@ -127,14 +127,22 @@ describe('computeCp', () => {
 		expect(result.totalScore).toBe(9.5);
 	});
 
-	it('subtracts Gift after capping accumulated CP and never goes below zero', () => {
-		const capped = computeCp(DEFAULT_CP_POLICY, [taken('PRESENT')], [2, 2, 2, 2, 2, 2], 1);
-		expect(capped.participationTotal).toBe(12);
-		expect(capped.giftDeduction).toBe(1);
-		expect(capped.cp).toBe(4);
-		expect(capped.totalScore).toBe(9);
+	it('subtracts Gift from the weekly sum before capping and never goes below zero', () => {
+		const policy = { ...DEFAULT_CP_POLICY, giftDeductionPoints: 1 };
+		const overCap = computeCp(policy, [taken('PRESENT')], [2, 2, 2, 2, 2, 2], 1);
+		expect(overCap.participationTotal).toBe(12);
+		expect(overCap.giftDeduction).toBe(1);
+		expect(overCap.cp).toBe(5);
+		expect(overCap.totalScore).toBe(10);
 
-		const floored = computeCp(DEFAULT_CP_POLICY, [taken('PRESENT')], [0.5], 3);
+		// 2 + 2 + 2 = 6, minus 1 Gift = 5: what students get when they add it up.
+		const justOver = computeCp(policy, [taken('PRESENT')], [2, 2, 2], 1);
+		expect(justOver.cp).toBe(5);
+
+		const underCap = computeCp(policy, [taken('PRESENT')], [2, 2, 1], 2);
+		expect(underCap.cp).toBe(3);
+
+		const floored = computeCp(policy, [taken('PRESENT')], [0.5], 3);
 		expect(floored.giftDeduction).toBe(3);
 		expect(floored.cp).toBe(0);
 	});
