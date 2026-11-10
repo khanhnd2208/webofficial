@@ -62,6 +62,10 @@ function nextPoints(points: number | undefined): 0 | 0.5 | 1 | 2 {
 	return 0.5;
 }
 
+function giftLabel(deduction: number) {
+	return String(deduction).replace('.', ',');
+}
+
 function pointsLabel(points: number | undefined) {
 	return points == null ? '0' : points.toFixed(1).replace('.0', '');
 }
@@ -462,7 +466,7 @@ export function ParticipationGrid({
 													</strong>
 													<small className="mc-num mc-grid-public-meta block text-ink-secondary">
 														<span className="mc-grid-public-meta-line">
-															{student.studentCode} · Gift −{student.cp.giftDeduction}
+															{student.studentCode} · Gift −{giftLabel(student.cp.giftDeduction)}
 														</span>
 														<span className="mc-grid-public-meta-line">
 															Chuyên cần {formatTeachingScore(student.cp.attendanceScore)}/
@@ -654,10 +658,12 @@ export function ParticipationGrid({
 									<td
 										className={`mc-grid-freeze-right mc-grid-summary-start mc-grid-gift mc-num ${publicCompact ? 'mc-grid-desktop-only' : ''}`}
 										data-gifts={student.cp.giftDeduction}
-										title={`${student.giftCount} Gift: trừ ${formatTeachingScore(student.cp.giftDeduction)} điểm CP`}
+										title={`${student.giftCount} Gift: trừ ${giftLabel(student.cp.giftDeduction)} điểm CP`}
 									>
 										{readOnly ? (
-											<span className="mc-grid-gift-value">−{student.cp.giftDeduction}</span>
+											<span className="mc-grid-gift-value">
+												−{giftLabel(student.cp.giftDeduction)}
+											</span>
 										) : (
 											<span className="mc-grid-gift-actions">
 												<button
@@ -665,7 +671,7 @@ export function ParticipationGrid({
 													className="mc-grid-gift-undo"
 													disabled={student.giftCount === 0}
 													aria-label={`Hoàn tác Gift ${student.studentCode}`}
-													title="Bớt 1 Gift và hoàn lại tối đa 1 điểm CP"
+													title="Bớt 1 Gift và hoàn lại điểm CP đã trừ cho Gift đó"
 													onClick={() => onGiftChange?.(student.enrollmentId, -1)}
 												>
 													−
@@ -675,7 +681,7 @@ export function ParticipationGrid({
 													type="button"
 													className="mc-grid-gift-add"
 													aria-label={`Thêm Gift cho ${student.studentCode}`}
-													title="Thêm 1 Gift; Gift này sẽ trừ 1 điểm CP"
+													title="Thêm 1 Gift; mỗi Gift trừ điểm CP theo cài đặt của lớp"
 													onClick={() => onGiftChange?.(student.enrollmentId, 1)}
 												>
 													+

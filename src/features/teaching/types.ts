@@ -2,6 +2,7 @@ import {
 	ATTENDANCE_MAX_POINTS,
 	ABSENCE_DEDUCTION_POINTS,
 	CP_MAX_POINTS,
+	GIFT_DEDUCTION_POINTS,
 	TOTAL_MAX_POINTS,
 	type AttendanceStatus,
 	type CpPolicy,
@@ -421,7 +422,7 @@ export function getCpPolicyText(
 	const absenceDeduction = policy.absenceDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
 	const lateDeduction = policy.lateDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
 	const lateRule = policy.lateCountsTowardAbsenceThreshold ?? true;
-	const giftDeduction = policy.giftDeductionPoints ?? 1;
+	const giftDeduction = policy.giftDeductionPoints ?? GIFT_DEDUCTION_POINTS;
 	return [
 		`Chuyên cần tối đa ${attendanceMax} điểm; vắng không phép trừ ${absenceDeduction.toString().replace('.', ',')} điểm, đi muộn trừ ${lateDeduction.toString().replace('.', ',')} điểm.`,
 		`CP hoạt động tối đa ${cpMax} điểm; mỗi tuần có thể chấm 0,5; 1 hoặc 2 điểm. Gift trừ ${giftDeduction.toString().replace('.', ',')} điểm CP.`,

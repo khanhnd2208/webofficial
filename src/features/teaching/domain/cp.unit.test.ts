@@ -147,6 +147,13 @@ describe('computeCp', () => {
 		expect(floored.cp).toBe(0);
 	});
 
+	it('deducts 0.5 CP per Gift by default', () => {
+		const result = computeCp(DEFAULT_CP_POLICY, [taken('PRESENT')], [2, 1], 1);
+		expect(result.giftDeduction).toBe(0.5);
+		expect(result.cp).toBe(2.5);
+		expect(computeCp({ totalWeeks: 10, absenceThresholdPercent: 20 }, [], [2], 1).cp).toBe(1.5);
+	});
+
 	it('keeps lecturer-entered participation points for any attendance status', () => {
 		const result = computeCp(
 			DEFAULT_CP_POLICY,

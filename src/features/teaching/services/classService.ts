@@ -8,6 +8,7 @@ import {
 	normalizeClassCode,
 	normalizeTerm,
 } from '../domain/adminLifecycle';
+import { GIFT_DEDUCTION_POINTS } from '../domain/cp';
 import { compareTeachingClasses } from '../domain/displayOrder';
 import {
 	ensureTeachingCourse,
@@ -152,6 +153,7 @@ export async function createTeachingClass(input: CreateTeachingClassInput) {
 					lecturerName: input.lecturerName ?? '',
 					lecturerCode: input.lecturerCode ?? '',
 					totalWeeks,
+					giftDeductionPoints: GIFT_DEDUCTION_POINTS,
 				},
 			});
 			const tutorial = await transaction.teachingTutorialClass.create({
@@ -207,6 +209,7 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 						lecturerName: input.class.lecturerName ?? '',
 						lecturerCode: input.class.lecturerCode ?? '',
 						totalWeeks,
+						giftDeductionPoints: GIFT_DEDUCTION_POINTS,
 					},
 				});
 				const tutorial = await transaction.teachingTutorialClass.create({
