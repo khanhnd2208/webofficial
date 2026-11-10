@@ -1,5 +1,7 @@
 'use client';
 
+import { McIcon } from '@/components/myclass/ui';
+
 import type { ArenaHistoryEntry } from './arenaGame';
 import styles from './arena.module.css';
 
@@ -40,8 +42,14 @@ export function ArenaHistory({
 						{answered.length} lượt · {passed} đạt
 					</p>
 				</div>
-				<button type="button" className={styles.ghostButton} onClick={onClose}>
-					Ẩn
+				<button
+					type="button"
+					className={styles.iconButton}
+					onClick={onClose}
+					aria-label="Ẩn lịch sử"
+					title="Ẩn (Esc)"
+				>
+					<McIcon name="close" size={20} />
 				</button>
 			</header>
 			{entries.length === 0 ? (

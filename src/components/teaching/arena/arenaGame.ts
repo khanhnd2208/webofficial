@@ -115,9 +115,50 @@ export function fullName(player: Pick<RecallArenaPlayer, 'familyName' | 'givenNa
 	return `${player.familyName} ${player.givenName}`.trim();
 }
 
-/** Short label under a figure: the given name, which is what the class calls each other. */
-export function shortName(player: Pick<RecallArenaPlayer, 'givenName' | 'familyName'>) {
-	return player.givenName.trim() || player.familyName.trim();
+type NamedPlayer = Pick<
+	RecallArenaPlayer,
+	'enrollmentId' | 'familyName' | 'givenName' | 'studentCode'
+>;
+
+function nameKey(value: string) {
+	return value.normalize('NFC').toLocaleLowerCase('vi');
+}
+
+/**
+ * The name the class sees: the given name, made longer only where two
+ * students would otherwise look the same ("Linh" → "Thùy Linh" → full name →
+ * full name plus the end of the student code).
+ */
+export function displayNames(players: readonly NamedPlayer[]): Map<string, string> {
+	const steps: Array<(player: NamedPlayer) => string> = [
+		(player) => player.givenName.trim() || player.familyName.trim(),
+		(player) => {
+			const middle = player.familyName.trim().split(/\s+/).at(-1) ?? '';
+			return `${middle} ${player.givenName}`.trim();
+		},
+		(player) => fullName(player),
+		(player) => `${fullName(player)} · ${player.studentCode.slice(-3)}`,
+	];
+	const result = new Map<string, string>();
+	let pending = [...players];
+	for (const [index, step] of steps.entries()) {
+		const counts = new Map<string, number>();
+		for (const player of pending) {
+			const key = nameKey(step(player));
+			counts.set(key, (counts.get(key) ?? 0) + 1);
+		}
+		const isLast = index === steps.length - 1;
+		pending = pending.filter((player) => {
+			const label = step(player);
+			if (isLast || counts.get(nameKey(label)) === 1) {
+				result.set(player.enrollmentId, label);
+				return false;
+			}
+			return true;
+		});
+		if (pending.length === 0) break;
+	}
+	return result;
 }
 
 function hash(value: string): number {

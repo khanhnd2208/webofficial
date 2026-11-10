@@ -87,7 +87,7 @@ describe('RecallArena', () => {
 	it('puts only students who are in the room on the floor, without group labels', () => {
 		render(<RecallArena data={arenaData()} />);
 		const setup = screen.getByRole('dialog', { name: 'Thiết lập kiểm tra bài cũ' });
-		expect(within(setup).getByText('2 sinh viên có mặt sẽ vào đấu trường.')).toBeTruthy();
+		expect(within(setup).getByText('2 bạn có mặt')).toBeTruthy();
 
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
 
@@ -105,7 +105,7 @@ describe('RecallArena', () => {
 			changed: true,
 		});
 		render(<RecallArena data={arenaData()} />);
-		fireEvent.click(screen.getByRole('button', { name: /Chỉ Challenging/ }));
+		fireEvent.change(screen.getByDisplayValue('Cả lớp (2)'), { target: { value: 'CHALLENGE' } });
 		fireEvent.click(screen.getByRole('button', { name: 'Vào trận' }));
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
@@ -125,6 +125,26 @@ describe('RecallArena', () => {
 		);
 		expect(await screen.findByText('An: CP 0 → 1')).toBeTruthy();
 		expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy();
+	});
+
+	it('closes a catch with X or Esc without grading, and the student keeps their turn', async () => {
+		render(<RecallArena data={arenaData()} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Vào trận' }));
+
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const first = await screen.findByRole('dialog', { name: /Nguyễn/ });
+		const firstName = within(first).getByRole('heading').textContent;
+		fireEvent.click(within(first).getByRole('button', { name: 'Đóng, không chấm' }));
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
+		expect(screen.getByRole('button', { name: 'Đã gọi 0' })).toBeTruthy();
+
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const second = await screen.findByRole('dialog', { name: /Nguyễn/ });
+		expect(within(second).getByRole('heading').textContent).not.toBe(firstName);
+		fireEvent.keyDown(window, { key: 'Escape' });
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
+		expect(apiMock).not.toHaveBeenCalled();
+		expect(screen.getByLabelText('Máu quái vật 10/10')).toBeTruthy();
 	});
 
 	it('lets a missed answer heal the monster without saving CP', async () => {

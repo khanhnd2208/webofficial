@@ -82,7 +82,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 
 			await page.goto(`/my-space/teaching/${klass.id}/arena`);
 			const setup = page.getByRole('dialog', { name: 'Thiết lập kiểm tra bài cũ' });
-			await expect(setup.getByText('2 sinh viên có mặt sẽ vào đấu trường.')).toBeVisible();
+			await expect(setup.getByText('2 bạn có mặt')).toBeVisible();
 			await setup.getByRole('button', { name: 'Mở chấm CP tuần 1' }).click();
 			await expect(setup.getByText(/CP tuần 1 đang mở/)).toBeVisible();
 			await setup.getByRole('button', { name: 'Vào trận' }).click();

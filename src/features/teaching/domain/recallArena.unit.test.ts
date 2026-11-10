@@ -7,6 +7,7 @@ import {
 	keepHigherCp,
 	matchesGroupFilter,
 	pickDefaultArenaSession,
+	returnToBag,
 	vietnamTodayIso,
 	type ArenaSessionCandidate,
 } from './recallArena';
@@ -87,6 +88,23 @@ describe('drawFromBag', () => {
 
 	it('can repeat the only student in the room', () => {
 		expect(drawFromBag([], ['solo'], 'solo').picked).toBe('solo');
+	});
+});
+
+describe('returnToBag', () => {
+	it('puts the student at the end of the waiting line', () => {
+		expect(returnToBag(['b', 'c'], ['a', 'b', 'c'], 'a')).toEqual(['b', 'c', 'a']);
+	});
+
+	it('refills with everyone else first when the bag is empty, so the next draw is someone else', () => {
+		const bag = returnToBag([], ['a', 'b', 'c'], 'c');
+		expect(bag.at(-1)).toBe('c');
+		expect([...bag.slice(0, -1)].sort()).toEqual(['a', 'b']);
+		expect(drawFromBag(bag, ['a', 'b', 'c'], 'c').picked).not.toBe('c');
+	});
+
+	it('does not duplicate the student or keep ids that left', () => {
+		expect(returnToBag(['a', 'gone', 'b'], ['a', 'b'], 'a')).toEqual(['b', 'a']);
 	});
 });
 

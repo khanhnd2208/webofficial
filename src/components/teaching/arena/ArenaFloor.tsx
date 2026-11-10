@@ -7,7 +7,7 @@ import { useMotionTier } from '@/components/motion';
 import type { RecallArenaPlayer } from '@/features/teaching/types';
 
 import { ArenaAvatar } from './ArenaFigures';
-import { avatarLook, shortName } from './arenaGame';
+import { avatarLook } from './arenaGame';
 import styles from './arena.module.css';
 
 interface Spot {
@@ -51,12 +51,15 @@ export function ArenaFloor({
 	caughtId,
 	hunting,
 	calledIds,
+	names,
 }: {
 	players: RecallArenaPlayer[];
 	highlightId: string | null;
 	caughtId: string | null;
 	hunting: boolean;
 	calledIds: ReadonlySet<string>;
+	/** Label per enrollment, already made unique for this room. */
+	names: ReadonlyMap<string, string>;
 }) {
 	const { reduced: reducedMotion } = useMotionTier();
 	const count = players.length;
@@ -112,7 +115,9 @@ export function ArenaFloor({
 						<span className={styles.playerFigure} data-facing-left={spot.facingLeft || undefined}>
 							<ArenaAvatar look={looks.get(player.enrollmentId)!} size={size} />
 						</span>
-						<span className={styles.playerName}>{shortName(player)}</span>
+						<span className={styles.playerName}>
+							{names.get(player.enrollmentId) ?? player.givenName}
+						</span>
 					</div>
 				);
 			})}

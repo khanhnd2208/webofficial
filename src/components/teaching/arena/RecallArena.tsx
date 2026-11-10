@@ -9,9 +9,11 @@ import { useMotionTier } from '@/components/motion';
 import { teachingApi } from '@/components/teaching/admin/api';
 import { routes } from '@/config/routes';
 import { recallVisibleText } from '@/features/active-recall/richText';
+import { McIcon } from '@/components/myclass/ui';
 import {
 	drawCard,
 	drawFromBag,
+	returnToBag,
 	type ArenaAwardLevel,
 } from '@/features/teaching/domain/recallArena';
 import type {
@@ -27,6 +29,7 @@ import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
 import {
 	ARENA_MAX_HP,
+	displayNames,
 	eligiblePlayers,
 	emptyProgress,
 	fullName,
@@ -64,13 +67,17 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	/** Session whose progress is in state; saving waits until it matches. */
 	const [progressSession, setProgressSession] = useState<string | null>(null);
 	const [setupOpen, setSetupOpen] = useState(true);
+	const [started, setStarted] = useState(false);
+	const [fullscreen, setFullscreen] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [phase, setPhase] = useState<Phase>('idle');
 	const [mood, setMood] = useState<MonsterMood>('idle');
 	const [highlightId, setHighlightId] = useState<string | null>(null);
-	const [current, setCurrent] = useState<{ enrollmentId: string; cardId: string | null } | null>(
-		null,
-	);
+	const [current, setCurrent] = useState<{
+		catchId: string;
+		enrollmentId: string;
+		cardId: string | null;
+	} | null>(null);
 	const [cpOverrides, setCpOverrides] = useState<Record<string, number>>({});
 	const [saving, setSaving] = useState(false);
 	const [retryingId, setRetryingId] = useState<string | null>(null);
@@ -102,6 +109,11 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		[data.cards, activeDeckIds],
 	);
 	const cardsById = useMemo(() => new Map(data.cards.map((card) => [card.id, card])), [data.cards]);
+	const names = useMemo(() => displayNames(inRoom), [inRoom]);
+	const nameOf = (enrollmentId: string) => {
+		const player = playersById.get(enrollmentId);
+		return names.get(enrollmentId) ?? player?.givenName ?? '';
+	};
 	const calledIds = useMemo(
 		() =>
 			new Set(
@@ -143,6 +155,12 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
 	useEffect(() => {
+		const onChange = () => setFullscreen(Boolean(document.fullscreenElement));
+		document.addEventListener('fullscreenchange', onChange);
+		return () => document.removeEventListener('fullscreenchange', onChange);
+	}, []);
+
+	useEffect(() => {
 		if (!toast) return;
 		const timer = window.setTimeout(() => setToast(null), 3200);
 		return () => window.clearTimeout(timer);
@@ -182,25 +200,31 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		}));
 		setPhase('hunting');
 		setMood('roar');
+		// The spotlight visits everyone in the room, not only the chosen group,
+		// so the class cannot tell who is in which group.
+		const roomIds = inRoom.map((player) => player.enrollmentId);
 		const steps = reducedMotion ? [] : HUNT_STEPS_MS;
 		let elapsed = 0;
 		let previousId: string | null = null;
 		for (const step of steps) {
 			elapsed += step;
 			later(elapsed, () => {
-				const pool =
-					eligibleIds.length > 1 ? eligibleIds.filter((id) => id !== previousId) : eligibleIds;
+				const pool = roomIds.length > 1 ? roomIds.filter((id) => id !== previousId) : roomIds;
 				previousId = pool[Math.floor(Math.random() * pool.length)] ?? null;
 				setHighlightId(previousId);
 			});
 		}
 		later(elapsed + 120, () => setHighlightId(picked));
 		later(elapsed + (reducedMotion ? 200 : 750), () => {
-			setCurrent({ enrollmentId: picked, cardId: card.cardId });
+			setCurrent({
+				catchId: `${Date.now().toString(36)}-${picked}`,
+				enrollmentId: picked,
+				cardId: card.cardId,
+			});
 			setPhase('caught');
 			setMood('idle');
 		});
-	}, [phase, session, callable, progress, cards, reducedMotion, later]);
+	}, [phase, session, callable, inRoom, progress, cards, reducedMotion, later]);
 
 	useEffect(() => {
 		if (huntAfterSkip && phase === 'idle') {
@@ -258,7 +282,7 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 
 	async function handlePass(level: ArenaAwardLevel) {
 		if (!current || saving) return;
-		const player = playersById.get(current.enrollmentId);
+		const name = nameOf(current.enrollmentId);
 		setSaving(true);
 		try {
 			const result = await award(current.enrollmentId, level);
@@ -266,8 +290,8 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 			setToast({
 				tone: 'ok',
 				text: result.changed
-					? `${player?.givenName ?? ''}: CP ${result.previous} → ${result.points}`
-					: `${player?.givenName ?? ''}: giữ CP ${result.points} (đã bằng hoặc cao hơn)`,
+					? `${name}: CP ${result.previous} → ${result.points}`
+					: `${name}: giữ CP ${result.points} (đã bằng hoặc cao hơn)`,
 			});
 		} catch (error) {
 			record('pass', { award: level, saveError: errorMessage(error) });
@@ -284,15 +308,25 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		finishTurn('laugh', 1);
 	}
 
-	function handleSkip() {
+	/** The caught student keeps their turn and the card goes back unused. */
+	function giveTurnBack() {
 		if (!current) return;
-		const skippedId = current.enrollmentId;
-		record('skip');
-		// The skipped student keeps their turn: back to the end of the bag.
-		setProgress((previous) => ({ ...previous, bag: [...previous.bag, skippedId] }));
+		const { enrollmentId, cardId } = current;
+		const eligibleIds = callable.map((player) => player.enrollmentId);
+		setProgress((previous) => ({
+			...previous,
+			bag: returnToBag(previous.bag, eligibleIds, enrollmentId),
+			usedCards: cardId ? previous.usedCards.filter((id) => id !== cardId) : previous.usedCards,
+		}));
 		setCurrent(null);
 		setHighlightId(null);
 		setPhase('idle');
+	}
+
+	function handleSkip() {
+		if (!current) return;
+		record('skip');
+		giveTurnBack();
 		setHuntAfterSkip(true);
 	}
 
@@ -369,6 +403,12 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		setMood('idle');
 	}
 
+	function closeSetup() {
+		if (!session) return;
+		setSetupOpen(false);
+		setStarted(true);
+	}
+
 	function toggleFullscreen() {
 		if (document.fullscreenElement) void document.exitFullscreen?.();
 		else void document.documentElement.requestFullscreen?.().catch(() => undefined);
@@ -377,14 +417,22 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	// Keyboard: Space hunts; in a question, keys press the matching button.
 	useEffect(() => {
 		function onKey(event: KeyboardEvent) {
-			const target = event.target as HTMLElement | null;
-			if (target?.closest('input, select, textarea, [contenteditable="true"]')) return;
+			const target = event.target;
+			if (
+				target instanceof Element &&
+				target.closest('input, select, textarea, [contenteditable="true"]')
+			)
+				return;
 			if (event.metaKey || event.ctrlKey || event.altKey) return;
 			if (setupOpen) {
-				if (event.key === 'Escape' && session) setSetupOpen(false);
+				if (event.key === 'Escape' && started) closeSetup();
 				return;
 			}
 			const key = event.key.toLowerCase();
+			if (key === 'escape' && historyOpen && phase !== 'caught') {
+				setHistoryOpen(false);
+				return;
+			}
 			if (phase === 'idle' && (key === ' ' || key === 'enter')) {
 				event.preventDefault();
 				startHunt();
@@ -420,13 +468,10 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		<div className={styles.arena}>
 			<header className={styles.topBar}>
 				<div className={styles.titleBlock}>
+					<h1 className={styles.title}>Kiểm tra bài cũ</h1>
 					<p className={styles.eyebrow}>
 						{data.class.courseCode} · {data.class.classCode}
 					</p>
-					<h1 className={styles.title}>
-						Kiểm tra bài cũ
-						{session ? <span> · {sessionLabel(session, data.tutorials)}</span> : null}
-					</h1>
 				</div>
 				<div className={styles.hp} aria-label={`Máu quái vật ${progress.hp}/${ARENA_MAX_HP}`}>
 					<span className={styles.hpLabel}>Boss {progress.round}</span>
@@ -438,22 +483,43 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 					</span>
 				</div>
 				<nav className={styles.toolbar} aria-label="Điều khiển">
-					<button type="button" className={styles.ghostButton} onClick={() => setSetupOpen(true)}>
-						Thiết lập
+					<button
+						type="button"
+						className={styles.settingsChip}
+						onClick={() => setSetupOpen(true)}
+						disabled={phase === 'hunting' || phase === 'caught'}
+						title="Thiết lập"
+					>
+						<McIcon name="settings" size={16} />
+						<span>
+							{session ? sessionLabel(session, data.tutorials) : 'Chưa chọn buổi'} · {cards.length}{' '}
+							câu
+						</span>
 					</button>
 					<button
 						type="button"
-						className={styles.ghostButton}
+						className={styles.chipButton}
 						aria-pressed={historyOpen}
 						onClick={() => setHistoryOpen((open) => !open)}
 					>
-						Đã gọi ({progress.history.filter((entry) => entry.result !== 'skip').length})
+						Đã gọi {progress.history.filter((entry) => entry.result !== 'skip').length}
 					</button>
-					<button type="button" className={styles.ghostButton} onClick={toggleFullscreen}>
-						Toàn màn hình
+					<button
+						type="button"
+						className={styles.iconButton}
+						onClick={toggleFullscreen}
+						aria-label={fullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+						title={fullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+					>
+						<McIcon name={fullscreen ? 'fullscreen_exit' : 'fullscreen'} size={20} />
 					</button>
-					<Link href={routes.mySpaceTeachingClass(data.class.id)} className={styles.ghostButton}>
-						Về lớp
+					<Link
+						href={routes.mySpaceTeachingClass(data.class.id)}
+						className={styles.iconButton}
+						aria-label="Về trang lớp"
+						title="Về trang lớp"
+					>
+						<McIcon name="close" size={20} />
 					</Link>
 				</nav>
 			</header>
@@ -461,9 +527,6 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 			<main className={styles.stage}>
 				<div className={styles.monsterZone}>
 					<ArenaMonster mood={mood} size={phase === 'hunting' ? 280 : 240} />
-					<p className={styles.stageNote}>
-						{inRoom.length} có mặt · {callable.length} có thể bị bắt
-					</p>
 				</div>
 				<ArenaFloor
 					players={inRoom}
@@ -471,6 +534,7 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 					caughtId={phase === 'caught' ? (current?.enrollmentId ?? null) : null}
 					hunting={phase === 'hunting'}
 					calledIds={calledIds}
+					names={names}
 				/>
 				<div className={styles.actionBar}>
 					<button
@@ -501,16 +565,18 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 			<AnimatePresence>
 				{phase === 'caught' && caughtPlayer ? (
 					<ArenaCaught
-						key={`${caughtPlayer.enrollmentId}-${current?.cardId ?? 'none'}`}
+						key={current?.catchId}
 						player={caughtPlayer}
 						card={caughtCard}
 						deckLabel={caughtDeck ? caughtDeck.lessonLabel || caughtDeck.title : ''}
 						cpNow={cpFor(caughtPlayer.enrollmentId)}
 						saving={saving}
+						canChangeCard={cards.length > 1}
 						onPass={handlePass}
 						onFail={handleFail}
 						onSkipStudent={handleSkip}
 						onNextCard={handleNextCard}
+						onClose={giveTurnBack}
 					/>
 				) : null}
 				{phase === 'victory' ? (
@@ -542,12 +608,14 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 					decks={data.decks}
 					players={data.players}
 					session={session}
+					started={started}
 					openingCp={openingCp}
 					recallHref={routes.mySpaceTeachingClassTab(data.class.id, 'recall')}
 					onChange={setConfig}
 					onOpenCp={openCp}
-					onStart={() => setSetupOpen(false)}
-					onClose={session ? () => setSetupOpen(false) : undefined}
+					onReload={() => window.location.reload()}
+					onDone={closeSetup}
+					onClose={session && started ? closeSetup : undefined}
 				/>
 			) : null}
 			{confirmDialog}

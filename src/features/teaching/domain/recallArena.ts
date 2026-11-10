@@ -77,6 +77,29 @@ export function drawFromBag(
 	return { picked: picked ?? null, bag: rest, refilled };
 }
 
+/**
+ * Give a student their turn back (skipped or dismissed without grading). They
+ * go to the end of the bag. If nobody else is waiting, the bag is refilled
+ * with everyone else first, so the same student is never drawn again at once.
+ */
+export function returnToBag(
+	bag: readonly string[],
+	eligible: readonly string[],
+	id: string,
+	random: RandomSource = Math.random,
+): string[] {
+	const allowed = new Set(eligible);
+	const waiting = bag.filter((item) => item !== id && allowed.has(item));
+	if (waiting.length > 0) return [...waiting, id];
+	return [
+		...shuffle(
+			eligible.filter((item) => item !== id),
+			random,
+		),
+		id,
+	];
+}
+
 /** Next unused card, or start the deck over once every card has been asked. */
 export function drawCard(
 	cardIds: readonly string[],
