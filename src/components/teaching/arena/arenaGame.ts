@@ -8,6 +8,31 @@ import type { RecallArenaPlayer, TeachingSessionRecord } from '@/features/teachi
 
 export const ARENA_MAX_HP = 10;
 
+const BOSS_NAMES = [
+	'Chúa Tể Quên Bài',
+	'Quỷ Lười Ôn Tập',
+	'Rồng Ngủ Gật',
+	'Ma Vương Deadline',
+	'Bóng Ma Học Tủ',
+	'Vua Nước Đến Chân',
+] as const;
+
+/** Each round's boss has its own name, cycling when the class beats them all. */
+export function bossName(round: number) {
+	return BOSS_NAMES[(Math.max(1, round) - 1) % BOSS_NAMES.length]!;
+}
+
+/** Correct answers in a row up to now; a skipped student does not break it. */
+export function passStreak(history: readonly ArenaHistoryEntry[]) {
+	let streak = 0;
+	for (let index = history.length - 1; index >= 0; index -= 1) {
+		const result = history[index]!.result;
+		if (result === 'fail') break;
+		if (result === 'pass') streak += 1;
+	}
+	return streak;
+}
+
 export type ArenaResult = 'pass' | 'fail' | 'skip';
 
 export interface ArenaHistoryEntry {

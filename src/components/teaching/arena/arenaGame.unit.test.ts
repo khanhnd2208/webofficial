@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { displayNames } from './arenaGame';
+import { bossName, displayNames, passStreak, type ArenaHistoryEntry } from './arenaGame';
 
 const student = (
 	enrollmentId: string,
@@ -46,5 +46,32 @@ describe('displayNames', () => {
 		expect(names.get('b')).toBe('Trần Thùy Linh · SVb');
 		expect(names.get('c')).toBe('Trần Thùy Linh · 123');
 		expect(names.get('d')).toBe('Trần Thùy Linh · 456');
+	});
+});
+
+describe('passStreak', () => {
+	const entry = (result: ArenaHistoryEntry['result']): ArenaHistoryEntry => ({
+		id: result,
+		at: 0,
+		enrollmentId: 'a',
+		name: 'An',
+		cardId: null,
+		result,
+	});
+
+	it('counts correct answers since the last miss and ignores skipped students', () => {
+		expect(passStreak([])).toBe(0);
+		expect(passStreak(['pass', 'fail', 'pass', 'skip', 'pass'].map((r) => entry(r as never)))).toBe(
+			2,
+		);
+		expect(passStreak(['pass', 'pass', 'fail'].map((r) => entry(r as never)))).toBe(0);
+	});
+});
+
+describe('bossName', () => {
+	it('gives each round a name and cycles when the list runs out', () => {
+		expect(bossName(1)).toBe('Chúa Tể Quên Bài');
+		expect(bossName(2)).not.toBe(bossName(1));
+		expect(bossName(7)).toBe(bossName(1));
 	});
 });

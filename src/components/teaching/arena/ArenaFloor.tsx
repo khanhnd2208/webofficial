@@ -6,6 +6,7 @@ import { useMotionTier } from '@/components/motion';
 
 import type { RecallArenaPlayer } from '@/features/teaching/types';
 
+import { suckStyle, type ArenaSuck } from './ArenaEffects';
 import { ArenaAvatar } from './ArenaFigures';
 import { avatarLook } from './arenaGame';
 import styles from './arena.module.css';
@@ -52,6 +53,7 @@ export function ArenaFloor({
 	hunting,
 	calledIds,
 	names,
+	suck,
 }: {
 	players: RecallArenaPlayer[];
 	highlightId: string | null;
@@ -60,6 +62,8 @@ export function ArenaFloor({
 	calledIds: ReadonlySet<string>;
 	/** Label per enrollment, already made unique for this room. */
 	names: ReadonlyMap<string, string>;
+	/** The grab in progress, if any: reticle, flight into the mouth, landing. */
+	suck: ArenaSuck | null;
 }) {
 	const { reduced: reducedMotion } = useMotionTier();
 	const count = players.length;
@@ -105,11 +109,14 @@ export function ArenaFloor({
 						data-highlight={highlighted || undefined}
 						data-caught={caught || undefined}
 						data-called={calledIds.has(player.enrollmentId) || undefined}
+						data-player-id={player.enrollmentId}
+						data-suck={suck?.id === player.enrollmentId ? suck.stage : undefined}
 						data-testid="arena-player"
 						style={{
 							left: `${spot.x + spot.dx}%`,
 							top: `${spot.y + spot.dy}%`,
 							animationDelay: `${(index % 7) * -0.23}s`,
+							...suckStyle(suck, player.enrollmentId),
 						}}
 					>
 						<span className={styles.playerFigure} data-facing-left={spot.facingLeft || undefined}>

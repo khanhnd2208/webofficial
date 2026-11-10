@@ -1,7 +1,6 @@
 'use client';
 
 import { AnimatePresence, m } from 'framer-motion';
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
@@ -9,7 +8,6 @@ import { useMotionTier } from '@/components/motion';
 import { teachingApi } from '@/components/teaching/admin/api';
 import { routes } from '@/config/routes';
 import { recallVisibleText } from '@/features/active-recall/richText';
-import { McIcon } from '@/components/myclass/ui';
 import {
 	drawCard,
 	drawFromBag,
@@ -23,12 +21,15 @@ import type {
 } from '@/features/teaching/types';
 
 import { ArenaCaught } from './ArenaCaught';
+import { lookToward, useArenaFx } from './ArenaEffects';
 import { ArenaMonster, type MonsterMood } from './ArenaFigures';
 import { ArenaFloor } from './ArenaFloor';
 import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
+import { ArenaTopBar } from './ArenaTopBar';
 import {
 	ARENA_MAX_HP,
+	bossName,
 	displayNames,
 	eligiblePlayers,
 	emptyProgress,
@@ -36,6 +37,7 @@ import {
 	isCpFinalized,
 	loadConfig,
 	loadProgress,
+	passStreak,
 	saveConfig,
 	saveProgress,
 	sessionLabel,
@@ -44,12 +46,17 @@ import {
 	type ArenaProgress,
 	type ArenaResult,
 } from './arenaGame';
+import { playArenaSound } from './arenaSound';
 import styles from './arena.module.css';
 
 type Phase = 'idle' | 'hunting' | 'caught' | 'victory';
 
 /** Spotlight hops while the monster hunts, slowing down before it grabs someone. */
 const HUNT_STEPS_MS = [70, 70, 80, 90, 100, 120, 140, 170, 210, 260, 320, 400];
+/** After the spotlight stops: reticle, then the beam pulls, the jaws shut, the question opens. */
+const GRAB_MS = { pull: 520, chomp: 1170, open: 1620 };
+const LOW_HP = 3;
+const LOOK_AHEAD = { x: 0, y: 0 };
 
 function errorMessage(error: unknown) {
 	return error instanceof Error ? error.message : 'Không lưu được, thử lại.';
@@ -57,6 +64,7 @@ function errorMessage(error: unknown) {
 
 export function RecallArena({ data }: { data: RecallArenaData }) {
 	const { reduced: reducedMotion } = useMotionTier();
+	const fx = useArenaFx(!reducedMotion);
 	const [sessions, setSessions] = useState(data.sessions);
 	const [config, setConfig] = useState<ArenaConfig>({
 		sessionId: data.defaultSessionId,
@@ -68,7 +76,6 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	const [progressSession, setProgressSession] = useState<string | null>(null);
 	const [setupOpen, setSetupOpen] = useState(true);
 	const [started, setStarted] = useState(false);
-	const [fullscreen, setFullscreen] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [phase, setPhase] = useState<Phase>('idle');
 	const [mood, setMood] = useState<MonsterMood>('idle');
@@ -84,7 +91,12 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	const [openingCp, setOpeningCp] = useState(false);
 	const [toast, setToast] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 	const [huntAfterSkip, setHuntAfterSkip] = useState(false);
+	const [look, setLook] = useState(LOOK_AHEAD);
 	const timers = useRef<number[]>([]);
+	const monsterRef = useRef<HTMLDivElement>(null);
+	const hpRef = useRef<HTMLDivElement>(null);
+	const { worldRef, suck, layer, shake, flash, pop, sparks, fireworks, lock, grab, hold, release } =
+		fx;
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
 	const session = sessions.find((item) => item.id === config.sessionId) ?? null;
@@ -155,12 +167,6 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
 	useEffect(() => {
-		const onChange = () => setFullscreen(Boolean(document.fullscreenElement));
-		document.addEventListener('fullscreenchange', onChange);
-		return () => document.removeEventListener('fullscreenchange', onChange);
-	}, []);
-
-	useEffect(() => {
 		if (!toast) return;
 		const timer = window.setTimeout(() => setToast(null), 3200);
 		return () => window.clearTimeout(timer);
@@ -200,22 +206,13 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		}));
 		setPhase('hunting');
 		setMood('roar');
-		// The spotlight visits everyone in the room, not only the chosen group,
-		// so the class cannot tell who is in which group.
-		const roomIds = inRoom.map((player) => player.enrollmentId);
-		const steps = reducedMotion ? [] : HUNT_STEPS_MS;
-		let elapsed = 0;
-		let previousId: string | null = null;
-		for (const step of steps) {
-			elapsed += step;
-			later(elapsed, () => {
-				const pool = roomIds.length > 1 ? roomIds.filter((id) => id !== previousId) : roomIds;
-				previousId = pool[Math.floor(Math.random() * pool.length)] ?? null;
-				setHighlightId(previousId);
-			});
-		}
-		later(elapsed + 120, () => setHighlightId(picked));
-		later(elapsed + (reducedMotion ? 200 : 750), () => {
+		playArenaSound('roar');
+		shake('soft');
+		const spot = (id: string | null) => {
+			setHighlightId(id);
+			setLook(lookToward(monsterRef.current, id));
+		};
+		const open = () => {
 			setCurrent({
 				catchId: `${Date.now().toString(36)}-${picked}`,
 				enrollmentId: picked,
@@ -223,8 +220,63 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 			});
 			setPhase('caught');
 			setMood('idle');
+			playArenaSound('reveal');
+		};
+		// The spotlight visits everyone in the room, not only the chosen group,
+		// so the class cannot tell who is in which group.
+		const roomIds = inRoom.map((player) => player.enrollmentId);
+		const steps = reducedMotion ? [] : HUNT_STEPS_MS;
+		let elapsed = 0;
+		let previousId: string | null = null;
+		steps.forEach((step, index) => {
+			elapsed += step;
+			later(elapsed, () => {
+				const pool = roomIds.length > 1 ? roomIds.filter((id) => id !== previousId) : roomIds;
+				previousId = pool[Math.floor(Math.random() * pool.length)] ?? null;
+				spot(previousId);
+				playArenaSound('tick', index);
+			});
 		});
-	}, [phase, session, callable, inRoom, progress, cards, reducedMotion, later]);
+		const lockAt = elapsed + 120;
+		later(lockAt, () => {
+			spot(picked);
+			lock(picked);
+			playArenaSound('lock');
+		});
+		if (reducedMotion) {
+			later(200, open);
+			return;
+		}
+		later(lockAt + GRAB_MS.pull, () => {
+			setMood('inhale');
+			grab(picked, monsterRef.current);
+			playArenaSound('suck');
+		});
+		later(lockAt + GRAB_MS.chomp, () => {
+			setMood('chomp');
+			hold();
+			shake('hard');
+			flash('white');
+			sparks(monsterRef.current, 'gold', 28);
+			playArenaSound('chomp');
+		});
+		later(lockAt + GRAB_MS.open, open);
+	}, [
+		phase,
+		session,
+		callable,
+		inRoom,
+		progress,
+		cards,
+		reducedMotion,
+		later,
+		shake,
+		flash,
+		sparks,
+		lock,
+		grab,
+		hold,
+	]);
 
 	useEffect(() => {
 		if (huntAfterSkip && phase === 'idle') {
@@ -251,16 +303,46 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 
 	function finishTurn(nextMood: MonsterMood, hpDelta: number) {
 		const hp = Math.max(0, Math.min(ARENA_MAX_HP, progress.hp + hpDelta));
+		const monster = monsterRef.current;
 		setProgress((previous) => ({ ...previous, hp }));
 		setCurrent(null);
 		setHighlightId(null);
+		setLook(LOOK_AHEAD);
 		setMood(nextMood);
+		release();
+		if (hpDelta < 0) {
+			const streak = passStreak(progress.history) + 1;
+			shake('hard');
+			flash('white');
+			pop('−1', 'damage', monster);
+			sparks(monster, 'damage');
+			playArenaSound('hit');
+			hpRef.current?.animate?.(
+				[
+					{ transform: 'translateX(-6px)' },
+					{ transform: 'translateX(6px)' },
+					{ transform: 'translateX(-3px)' },
+					{ transform: 'none' },
+				],
+				{ duration: 260 },
+			);
+			if (streak >= 2 && hp > 0) {
+				pop(`COMBO ×${streak}`, 'gold', monster, -0.08);
+				playArenaSound('combo', streak);
+			}
+		} else {
+			playArenaSound('laugh');
+			if (hp !== progress.hp) {
+				pop('+1', 'heal', monster);
+				flash('heal');
+				playArenaSound('heal');
+			}
+		}
 		if (hp === 0) {
 			setPhase('victory');
 			later(700, () => setMood('defeated'));
-			void import('canvas-confetti').then(({ default: confetti }) => {
-				confetti({ particleCount: 160, spread: 90, origin: { y: 0.35 } });
-			});
+			fireworks();
+			playArenaSound('victory');
 			return;
 		}
 		setPhase('idle');
@@ -320,6 +402,8 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		}));
 		setCurrent(null);
 		setHighlightId(null);
+		setLook(LOOK_AHEAD);
+		release();
 		setPhase('idle');
 	}
 
@@ -384,10 +468,18 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		}
 	}
 
+	/** The boss drops in: name banner, a thud and a shake as it lands. */
+	function bossIntro(round: number) {
+		fx.announce(`Boss ${round}`, bossName(round));
+		playArenaSound('boss');
+		later(420, () => shake('hard'));
+	}
+
 	function newBoss() {
 		setProgress((previous) => ({ ...previous, hp: ARENA_MAX_HP, round: previous.round + 1 }));
 		setMood('idle');
 		setPhase('idle');
+		bossIntro(progress.round + 1);
 	}
 
 	async function resetProgress() {
@@ -407,11 +499,7 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 		if (!session) return;
 		setSetupOpen(false);
 		setStarted(true);
-	}
-
-	function toggleFullscreen() {
-		if (document.fullscreenElement) void document.exitFullscreen?.();
-		else void document.documentElement.requestFullscreen?.().catch(() => undefined);
+		if (!started && phase === 'idle') bossIntro(progress.round);
 	}
 
 	// Keyboard: Space hunts; in a question, keys press the matching button.
@@ -462,105 +550,84 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 	const caughtDeck = caughtCard
 		? data.decks.find((deck) => deck.deckId === caughtCard.deckId)
 		: null;
-	const hpPercent = (progress.hp / ARENA_MAX_HP) * 100;
+	const streak = passStreak(progress.history);
+	const enraged = progress.hp <= LOW_HP && phase !== 'victory';
 
 	return (
-		<div className={styles.arena}>
-			<header className={styles.topBar}>
-				<div className={styles.titleBlock}>
-					<h1 className={styles.title}>Kiểm tra bài cũ</h1>
-					<p className={styles.eyebrow}>
-						{data.class.courseCode} · {data.class.classCode}
-					</p>
-				</div>
-				<div className={styles.hp} aria-label={`Máu quái vật ${progress.hp}/${ARENA_MAX_HP}`}>
-					<span className={styles.hpLabel}>Boss {progress.round}</span>
-					<span className={styles.hpTrack}>
-						<span className={styles.hpFill} style={{ width: `${hpPercent}%` }} />
-					</span>
-					<span className={styles.hpValue}>
-						{progress.hp}/{ARENA_MAX_HP}
-					</span>
-				</div>
-				<nav className={styles.toolbar} aria-label="Điều khiển">
-					<button
-						type="button"
-						className={styles.settingsChip}
-						onClick={() => setSetupOpen(true)}
-						disabled={phase === 'hunting' || phase === 'caught'}
-						title="Thiết lập"
-					>
-						<McIcon name="settings" size={16} />
-						<span>
-							{session ? sessionLabel(session, data.tutorials) : 'Chưa chọn buổi'} · {cards.length}{' '}
-							câu
-						</span>
-					</button>
-					<button
-						type="button"
-						className={styles.chipButton}
-						aria-pressed={historyOpen}
-						onClick={() => setHistoryOpen((open) => !open)}
-					>
-						Đã gọi {progress.history.filter((entry) => entry.result !== 'skip').length}
-					</button>
-					<button
-						type="button"
-						className={styles.iconButton}
-						onClick={toggleFullscreen}
-						aria-label={fullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
-						title={fullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
-					>
-						<McIcon name={fullscreen ? 'fullscreen_exit' : 'fullscreen'} size={20} />
-					</button>
-					<Link
-						href={routes.mySpaceTeachingClass(data.class.id)}
-						className={styles.iconButton}
-						aria-label="Về trang lớp"
-						title="Về trang lớp"
-					>
-						<McIcon name="close" size={20} />
-					</Link>
-				</nav>
-			</header>
-
-			<main className={styles.stage}>
-				<div className={styles.monsterZone}>
-					<ArenaMonster mood={mood} size={phase === 'hunting' ? 280 : 240} />
-				</div>
-				<ArenaFloor
-					players={inRoom}
-					highlightId={highlightId}
-					caughtId={phase === 'caught' ? (current?.enrollmentId ?? null) : null}
-					hunting={phase === 'hunting'}
-					calledIds={calledIds}
-					names={names}
+		<div className={styles.arena} data-phase={phase}>
+			<div className={styles.world} ref={worldRef}>
+				<ArenaTopBar
+					classLabel={`${data.class.courseCode} · ${data.class.classCode}`}
+					classHref={routes.mySpaceTeachingClass(data.class.id)}
+					hp={progress.hp}
+					round={progress.round}
+					low={enraged}
+					hpRef={hpRef}
+					settingsLabel={`${session ? sessionLabel(session, data.tutorials) : 'Chưa chọn buổi'} · ${cards.length} câu`}
+					settingsDisabled={phase === 'hunting' || phase === 'caught'}
+					onSettings={() => setSetupOpen(true)}
+					calledCount={progress.history.filter((entry) => entry.result !== 'skip').length}
+					historyOpen={historyOpen}
+					onToggleHistory={() => setHistoryOpen((open) => !open)}
 				/>
-				<div className={styles.actionBar}>
-					<button
-						type="button"
-						className={styles.catchButton}
-						disabled={phase !== 'idle' || callable.length === 0}
-						onClick={startHunt}
-					>
-						{phase === 'hunting' ? 'Quái vật đang tìm…' : 'Bắt!'}
-						<kbd>Space</kbd>
-					</button>
-				</div>
-				{historyOpen ? (
-					<ArenaHistory
-						entries={progress.history}
-						questionText={(cardId) => {
-							const card = cardId ? cardsById.get(cardId) : null;
-							return card ? recallVisibleText(card.question) : 'Câu hỏi riêng';
-						}}
-						retryingId={retryingId}
-						onRetry={handleRetry}
-						onReset={() => void resetProgress()}
-						onClose={() => setHistoryOpen(false)}
+
+				<main className={styles.stage}>
+					<div className={styles.monsterZone}>
+						<div
+							key={`${progress.round}-${started}`}
+							ref={monsterRef}
+							className={styles.monsterEntry}
+						>
+							<ArenaMonster
+								mood={mood}
+								size={phase === 'hunting' ? 280 : 240}
+								round={progress.round}
+								enraged={enraged}
+								look={look}
+							/>
+						</div>
+						{streak >= 2 && phase !== 'victory' ? (
+							<span key={streak} className={styles.combo}>
+								Combo ×{streak}
+							</span>
+						) : null}
+					</div>
+					<ArenaFloor
+						players={inRoom}
+						highlightId={highlightId}
+						caughtId={phase === 'caught' ? (current?.enrollmentId ?? null) : null}
+						hunting={phase === 'hunting'}
+						calledIds={calledIds}
+						names={names}
+						suck={suck}
 					/>
-				) : null}
-			</main>
+					<div className={styles.actionBar}>
+						<button
+							type="button"
+							className={styles.catchButton}
+							data-ready={(phase === 'idle' && callable.length > 0) || undefined}
+							disabled={phase !== 'idle' || callable.length === 0}
+							onClick={startHunt}
+						>
+							{phase === 'hunting' ? 'Quái vật đang tìm…' : 'Bắt!'}
+							<kbd>Space</kbd>
+						</button>
+					</div>
+					{historyOpen ? (
+						<ArenaHistory
+							entries={progress.history}
+							questionText={(cardId) => {
+								const card = cardId ? cardsById.get(cardId) : null;
+								return card ? recallVisibleText(card.question) : 'Câu hỏi riêng';
+							}}
+							retryingId={retryingId}
+							onRetry={handleRetry}
+							onReset={() => void resetProgress()}
+							onClose={() => setHistoryOpen(false)}
+						/>
+					) : null}
+				</main>
+			</div>
 
 			<AnimatePresence>
 				{phase === 'caught' && caughtPlayer ? (
@@ -586,13 +653,26 @@ export function RecallArena({ data }: { data: RecallArenaData }) {
 						animate={{ opacity: 1, scale: 1 }}
 						exit={{ opacity: 0 }}
 					>
+						<span className={styles.victoryRays} aria-hidden="true" />
+						<m.span
+							className={styles.victoryKo}
+							aria-hidden="true"
+							initial={{ scale: 4, opacity: 0, rotate: -12 }}
+							animate={{ scale: 1, opacity: 1, rotate: -6 }}
+							transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.15 }}
+						>
+							K.O.!
+						</m.span>
 						<h2>Cả lớp đã hạ gục Boss {progress.round}!</h2>
+						<p className={styles.victorySub}>{bossName(progress.round)} đã bị đánh bại</p>
 						<button type="button" className={styles.startButton} onClick={newBoss}>
 							Gọi Boss mới <kbd>Space</kbd>
 						</button>
 					</m.div>
 				) : null}
 			</AnimatePresence>
+
+			{layer}
 
 			{toast ? (
 				<div className={styles.toast} data-tone={toast.tone} role="status">
