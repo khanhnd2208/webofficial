@@ -1,5 +1,6 @@
 import { TeachingStatus } from '../ui/TeachingElements';
 import Link from 'next/link';
+import { McIcon } from '@/components/myclass/ui';
 import { Suspense } from 'react';
 
 import { routes } from '@/config/routes';
@@ -96,11 +97,23 @@ export function TeachingWorkspaceShell({
 						</div>
 					}
 					actions={
-						<TeachingManagementMenu
-							classId={gradebook.class.id}
-							activeTab={activeTab}
-							publicPath={board.publicPath}
-						/>
+						<div className="flex items-center gap-2">
+							<Link
+								href={routes.mySpaceTeachingArena(gradebook.class.id)}
+								target="_blank"
+								className="teaching-icon-button min-h-11 min-w-11 px-3"
+								aria-label="Kiểm tra bài cũ"
+								title="Mở màn hình quái vật gọi sinh viên trong tab mới"
+							>
+								<McIcon name="bolt" size={16} />
+								<span className="hidden sm:inline">Kiểm tra bài cũ</span>
+							</Link>
+							<TeachingManagementMenu
+								classId={gradebook.class.id}
+								activeTab={activeTab}
+								publicPath={board.publicPath}
+							/>
+						</div>
 					}
 					tabs={
 						<Suspense>
