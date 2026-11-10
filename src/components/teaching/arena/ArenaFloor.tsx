@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 
 import { useMotionTier } from '@/components/motion';
 
 import type { RecallArenaPlayer } from '@/features/teaching/types';
 
 import { suckStyle, type ArenaSuck } from './ArenaEffects';
-import { ArenaAvatar } from './ArenaFigures';
-import { avatarLook } from './arenaGame';
+import { ArenaCharacter } from './ArenaCharacter';
+import { arenaCharacterFor } from './arenaCharacters';
 import styles from './arena.module.css';
 
 interface Spot {
@@ -18,10 +18,16 @@ interface Spot {
 	dx: number;
 	dy: number;
 	facingLeft: boolean;
+	walking: boolean;
+}
+
+export interface ArenaAttackCue {
+	enrollmentId: string;
+	sequence: number;
 }
 
 function layout(count: number) {
-	const cols = Math.max(1, Math.ceil(Math.sqrt(count * 2.6)));
+	const cols = Math.max(1, Math.ceil(Math.sqrt(count * 4)));
 	const rows = Math.max(1, Math.ceil(count / cols));
 	return { cols, rows };
 }
@@ -38,6 +44,7 @@ function baseSpots(count: number): Spot[] {
 			dx: 0,
 			dy: 0,
 			facingLeft: false,
+			walking: false,
 		};
 	});
 }
@@ -54,6 +61,8 @@ export function ArenaFloor({
 	calledIds,
 	names,
 	suck,
+	attackCue,
+	monsterRef,
 }: {
 	players: RecallArenaPlayer[];
 	highlightId: string | null;
@@ -64,44 +73,68 @@ export function ArenaFloor({
 	names: ReadonlyMap<string, string>;
 	/** The grab in progress, if any: reticle, flight into the mouth, landing. */
 	suck: ArenaSuck | null;
+	attackCue: ArenaAttackCue | null;
+	monsterRef: RefObject<HTMLDivElement | null>;
 }) {
 	const { reduced: reducedMotion } = useMotionTier();
+	const floorRef = useRef<HTMLDivElement>(null);
 	const count = players.length;
 	const { cols, rows } = layout(count);
 	const base = useMemo(() => baseSpots(count), [count]);
 	const [wander, setWander] = useState<Spot[]>(base);
+	const [attackVector, setAttackVector] = useState({ id: '', x: 90, y: -90 });
 	// A new head count re-lays out the floor; until the next wander tick use the fresh layout.
 	const spots = wander.length === count ? wander : base;
 
 	useEffect(() => {
-		if (reducedMotion || count === 0) return;
+		if (reducedMotion || hunting || caughtId || attackCue || count === 0) return;
 		const cellW = 100 / cols;
 		const cellH = 100 / rows;
 		const timer = window.setInterval(() => {
 			setWander((previous) =>
 				(previous.length === count ? previous : baseSpots(count)).map((spot) => {
-					if (Math.random() > 0.4) return spot;
-					const dx = (Math.random() - 0.5) * cellW * 0.55;
-					const dy = (Math.random() - 0.5) * cellH * 0.35;
-					return { ...spot, dx, dy, facingLeft: dx < spot.dx };
+					if (Math.random() > 0.4) return { ...spot, walking: false };
+					const dx = (Math.random() - 0.5) * cellW * 0.18;
+					const dy = (Math.random() - 0.5) * cellH * 0.18;
+					return { ...spot, dx, dy, facingLeft: dx < spot.dx, walking: true };
 				}),
 			);
 		}, 1800);
 		return () => window.clearInterval(timer);
-	}, [count, cols, rows, reducedMotion]);
+	}, [count, cols, rows, reducedMotion, hunting, caughtId, attackCue]);
 
-	const size = count <= 24 ? 68 : count <= 40 ? 58 : 50;
-	const looks = useMemo(
-		() => new Map(players.map((player) => [player.enrollmentId, avatarLook(player.studentCode)])),
+	useEffect(() => {
+		if (!attackCue || !floorRef.current || !monsterRef.current) return;
+		const player = Array.from(
+			floorRef.current.querySelectorAll<HTMLElement>('[data-player-id]'),
+		).find((element) => element.dataset.playerId === attackCue.enrollmentId);
+		if (!player) return;
+		const from = player.getBoundingClientRect();
+		const to = monsterRef.current.getBoundingClientRect();
+		setAttackVector({
+			id: attackCue.enrollmentId,
+			x: to.left + to.width / 2 - (from.left + from.width / 2),
+			y: to.top + to.height / 2 - (from.top + from.height * 0.4),
+		});
+	}, [attackCue, monsterRef]);
+
+	const size = count <= 24 ? 82 : count <= 40 ? 70 : 62;
+	const characters = useMemo(
+		() =>
+			new Map(
+				players.map((player) => [player.enrollmentId, arenaCharacterFor(player.studentCode)]),
+			),
 		[players],
 	);
 
 	return (
-		<div className={styles.floor} data-hunting={hunting || undefined}>
+		<div ref={floorRef} className={styles.floor} data-hunting={hunting || undefined}>
 			{players.map((player, index) => {
 				const spot = spots[index] ?? base[index]!;
 				const highlighted = highlightId === player.enrollmentId;
 				const caught = caughtId === player.enrollmentId;
+				const attacking = attackCue?.enrollmentId === player.enrollmentId;
+				const vector = attackVector.id === player.enrollmentId ? attackVector : { x: 90, y: -90 };
 				return (
 					<div
 						key={player.enrollmentId}
@@ -109,20 +142,34 @@ export function ArenaFloor({
 						data-highlight={highlighted || undefined}
 						data-caught={caught || undefined}
 						data-called={calledIds.has(player.enrollmentId) || undefined}
+						data-attacking={attacking || undefined}
 						data-player-id={player.enrollmentId}
 						data-suck={suck?.id === player.enrollmentId ? suck.stage : undefined}
 						data-testid="arena-player"
 						style={{
+							width: `${100 / cols}%`,
 							left: `${spot.x + spot.dx}%`,
 							top: `${spot.y + spot.dy}%`,
 							animationDelay: `${(index % 7) * -0.23}s`,
 							...suckStyle(suck, player.enrollmentId),
 						}}
 					>
-						<span className={styles.playerFigure} data-facing-left={spot.facingLeft || undefined}>
-							<ArenaAvatar look={looks.get(player.enrollmentId)!} size={size} />
+						<span className={styles.playerFigure}>
+							<ArenaCharacter
+								character={characters.get(player.enrollmentId)!}
+								size={size}
+								walking={
+									spot.walking && !hunting && !caught && !suck && !attackCue && !reducedMotion
+								}
+								attacking={attacking && !reducedMotion}
+								facingLeft={attacking ? vector.x < 0 : spot.facingLeft}
+								attackVector={vector}
+							/>
 						</span>
-						<span className={styles.playerName}>
+						<span
+							className={styles.playerName}
+							title={names.get(player.enrollmentId) ?? player.givenName}
+						>
 							{names.get(player.enrollmentId) ?? player.givenName}
 						</span>
 					</div>

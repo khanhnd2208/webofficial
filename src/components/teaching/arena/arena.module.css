@@ -770,23 +770,22 @@
 
 .playerFigure {
 	display: block;
-	animation: player-step 0.9s ease-in-out infinite;
 	animation-delay: inherit;
 	transition: transform 200ms ease;
 }
 
-.playerFigure[data-facing-left] svg {
-	transform: scaleX(-1);
+.player[data-attacking] {
+	z-index: 5;
 }
 
 .playerName {
-	max-width: 8.5rem;
+	max-width: calc(100% - 1.25rem);
 	margin-top: 0.15rem;
 	overflow: hidden;
 	padding: 0.05rem 0.45rem;
 	border-radius: 0.4rem;
 	background: rgb(18 11 36 / 75%);
-	font-size: clamp(0.8rem, 1.05vw, 1.05rem);
+	font-size: clamp(0.74rem, 0.95vw, 1rem);
 	font-weight: 700;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -913,19 +912,10 @@
 	color: #1e1033;
 }
 
-@keyframes player-step {
-	0%,
-	100% {
-		transform: translateY(0);
-	}
-	50% {
-		transform: translateY(-4px);
-	}
-}
-
 .actionBar {
 	display: flex;
 	justify-content: center;
+	gap: 0.45rem;
 }
 
 .catchButton {

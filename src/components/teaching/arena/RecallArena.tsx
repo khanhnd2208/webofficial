@@ -22,9 +22,10 @@ import type {
 } from '@/features/teaching/types';
 
 import { ArenaCaught } from './ArenaCaught';
+import { ArenaCharacterPreview } from './ArenaCharacterPreview';
 import { lookToward, useArenaFx } from './ArenaEffects';
 import { ArenaMonster, type MonsterMood } from './ArenaFigures';
-import { ArenaFloor } from './ArenaFloor';
+import { ArenaFloor, type ArenaAttackCue } from './ArenaFloor';
 import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
 import { ArenaTopBar } from './ArenaTopBar';
@@ -53,7 +54,7 @@ import {
 import { playArenaSound } from './arenaSound';
 import styles from './arena.module.css';
 
-type Phase = 'idle' | 'hunting' | 'caught' | 'victory';
+type Phase = 'idle' | 'hunting' | 'caught' | 'attacking' | 'victory';
 
 /** Spotlight hops while the monster hunts, slowing down before it grabs someone. */
 const HUNT_STEPS_MS = [70, 70, 80, 90, 100, 120, 140, 170, 210, 260, 320, 400];
@@ -104,6 +105,7 @@ export function RecallArena({
 	const [toast, setToast] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 	const [huntAfterSkip, setHuntAfterSkip] = useState(false);
 	const [look, setLook] = useState(LOOK_AHEAD);
+	const [attackCue, setAttackCue] = useState<ArenaAttackCue | null>(null);
 	const timers = useRef<number[]>([]);
 	const monsterRef = useRef<HTMLDivElement>(null);
 	const hpRef = useRef<HTMLDivElement>(null);
@@ -312,49 +314,66 @@ export function RecallArena({
 	function finishTurn(nextMood: MonsterMood, hpDelta: number) {
 		const hp = Math.max(0, Math.min(ARENA_MAX_HP, progress.hp + hpDelta));
 		const monster = monsterRef.current;
-		setProgress((previous) => ({ ...previous, hp }));
+		const attackerId = current?.enrollmentId;
+		const delayed = hpDelta < 0 && Boolean(attackerId) && !reducedMotion;
 		setCurrent(null);
 		setHighlightId(null);
 		setLook(LOOK_AHEAD);
-		setMood(nextMood);
 		release();
-		if (hpDelta < 0) {
-			const streak = passStreak(progress.history) + 1;
-			shake('hard');
-			flash('white');
-			pop('−1', 'damage', monster);
-			sparks(monster, 'damage');
-			playArenaSound('hit');
-			hpRef.current?.animate?.(
-				[
-					{ transform: 'translateX(-6px)' },
-					{ transform: 'translateX(6px)' },
-					{ transform: 'translateX(-3px)' },
-					{ transform: 'none' },
-				],
-				{ duration: 260 },
-			);
-			if (streak >= 2 && hp > 0) {
-				pop(`COMBO ×${streak}`, 'gold', monster, -0.08);
-				playArenaSound('combo', streak);
+		const impact = () => {
+			setProgress((previous) => ({ ...previous, hp }));
+			setMood(nextMood);
+			if (hpDelta < 0) {
+				const streak = passStreak(progress.history) + 1;
+				shake('hard');
+				flash('white');
+				pop('−1', 'damage', monster);
+				sparks(monster, 'damage');
+				playArenaSound('hit');
+				hpRef.current?.animate?.(
+					[
+						{ transform: 'translateX(-6px)' },
+						{ transform: 'translateX(6px)' },
+						{ transform: 'translateX(-3px)' },
+						{ transform: 'none' },
+					],
+					{ duration: 260 },
+				);
+				if (streak >= 2 && hp > 0) {
+					pop(`COMBO ×${streak}`, 'gold', monster, -0.08);
+					playArenaSound('combo', streak);
+				}
+			} else {
+				playArenaSound('laugh');
+				if (hp !== progress.hp) {
+					pop('+1', 'heal', monster);
+					flash('heal');
+					playArenaSound('heal');
+				}
 			}
+			if (hp === 0) {
+				const victory = () => {
+					setPhase('victory');
+					setMood('defeated');
+					fireworks();
+					playArenaSound('victory');
+				};
+				if (delayed) later(500, victory);
+				else victory();
+				return;
+			}
+			if (delayed) later(500, () => setPhase('idle'));
+			else setPhase('idle');
+			later(1100, () => setMood('idle'));
+		};
+		if (delayed && attackerId) {
+			setPhase('attacking');
+			setAttackCue({ enrollmentId: attackerId, sequence: Date.now() });
+			later(1540, impact);
+			later(2040, () => setAttackCue(null));
 		} else {
-			playArenaSound('laugh');
-			if (hp !== progress.hp) {
-				pop('+1', 'heal', monster);
-				flash('heal');
-				playArenaSound('heal');
-			}
+			impact();
 		}
-		if (hp === 0) {
-			setPhase('victory');
-			later(700, () => setMood('defeated'));
-			fireworks();
-			playArenaSound('victory');
-			return;
-		}
-		setPhase('idle');
-		later(1100, () => setMood('idle'));
 	}
 
 	async function award(enrollmentId: string, level: ArenaAwardLevel) {
@@ -582,7 +601,7 @@ export function RecallArena({
 					low={enraged}
 					hpRef={hpRef}
 					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${cards.length ? `${cards.length} câu` : 'câu riêng'}`}
-					settingsDisabled={phase === 'hunting' || phase === 'caught'}
+					settingsDisabled={phase === 'hunting' || phase === 'caught' || phase === 'attacking'}
 					onSettings={() => setSetupOpen(true)}
 					calledCount={progress.history.filter((entry) => entry.result !== 'skip').length}
 					historyOpen={historyOpen}
@@ -618,8 +637,11 @@ export function RecallArena({
 						calledIds={calledIds}
 						names={names}
 						suck={suck}
+						attackCue={attackCue}
+						monsterRef={monsterRef}
 					/>
 					<div className={styles.actionBar}>
+						<ArenaCharacterPreview />
 						<button
 							type="button"
 							className={styles.catchButton}

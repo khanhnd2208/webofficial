@@ -7,10 +7,12 @@ import type { RecallArenaData, RecallArenaPlayer } from '@/features/teaching/typ
 import { RecallArena } from './RecallArena';
 
 vi.mock('@/components/teaching/admin/api', () => ({ teachingApi: vi.fn() }));
+vi.mock('canvas-confetti', () => ({ default: { create: () => vi.fn() } }));
+const motion = vi.hoisted(() => ({ reduced: true }));
 vi.mock('@/components/motion', () => ({
 	useMotionTier: () => ({
-		tier: 'reduced',
-		reduced: true,
+		tier: motion.reduced ? 'reduced' : 'full',
+		reduced: motion.reduced,
 		allowsAmbient: false,
 		allowsReveal: false,
 	}),
@@ -133,6 +135,7 @@ function enterGame() {
 describe('RecallArena', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		motion.reduced = true;
 		window.localStorage.clear();
 	});
 
@@ -184,6 +187,37 @@ describe('RecallArena', () => {
 		expect(await screen.findByText('An: CP 0 → 1')).toBeTruthy();
 		expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy();
 	});
+
+	it('lets the student attack before the monster loses health with full motion', async () => {
+		motion.reduced = false;
+		apiMock.mockResolvedValue({
+			enrollmentId: 'a',
+			sessionId: 's1',
+			previous: 0,
+			points: 1,
+			changed: true,
+		});
+		render(<RecallArena data={arenaData()} />);
+		openStep('Người chơi');
+		fireEvent.change(screen.getByDisplayValue('Cả lớp (2)'), { target: { value: 'CHALLENGE' } });
+		enterGame();
+
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Nguyễn An' }, { timeout: 5000 });
+		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+
+		await screen.findByText('An: CP 0 → 1');
+		expect(screen.getByLabelText('Máu quái vật 10/10')).toBeTruthy();
+		expect(
+			screen.getAllByTestId('arena-player').find((node) => node.textContent === 'An')?.dataset
+				.attacking,
+		).toBe('true');
+		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', true);
+
+		await waitFor(() => expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy(), {
+			timeout: 2200,
+		});
+	}, 10_000);
 
 	it('closes a catch with X or Esc without grading, and the student keeps their turn', async () => {
 		render(<RecallArena data={arenaData()} />);
