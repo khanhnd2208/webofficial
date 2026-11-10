@@ -841,7 +841,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByText('Đã lưu CP')).toBeVisible();
 			const giftAdd = page.getByRole('button', { name: /Thêm Gift cho/ }).first();
 			await giftAdd.click();
-			await expect(page.locator('td.mc-grid-gift[data-gifts="1"]').first()).toBeVisible();
+			await expect(page.locator('td.mc-grid-gift[data-gifts="0.5"]').first()).toBeVisible();
 			await page
 				.getByRole('button', { name: /Hoàn tác Gift/ })
 				.first()
