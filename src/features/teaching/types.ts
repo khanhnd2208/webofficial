@@ -438,6 +438,8 @@ export function getCpPolicyText(
 
 export interface RecallArenaPlayer {
 	enrollmentId: string;
+	/** The student's own class: their CP is always written there. */
+	classId: string;
 	tutorialClassId: string | null;
 	enrolledFromWeek: number;
 	studentCode: string;
@@ -455,6 +457,7 @@ export interface RecallArenaDeck {
 	deckId: string;
 	title: string;
 	lessonLabel: string;
+	status: 'DRAFT' | 'PUBLISHED';
 	cardCount: number;
 }
 
@@ -467,11 +470,25 @@ export interface RecallArenaCard {
 	answerVi: string;
 }
 
-export interface RecallArenaData {
-	class: { id: string; courseCode: string; courseName: string; classCode: string };
+/** One active class of the course, with what the setup needs to pick a session. */
+export interface RecallArenaClass {
+	id: string;
+	classCode: string;
+	term: string;
 	tutorials: Array<{ id: string; code: string; name: string }>;
+	/** Sessions that were not cancelled, in week order. */
 	sessions: TeachingSessionRecord[];
 	defaultSessionId: string | null;
+	/** Decks switched on for this class: the starting lesson choice. */
+	enabledDeckIds: string[];
+}
+
+/** Everything the course-level arena needs: every active class, its roster and every lesson. */
+export interface RecallArenaData {
+	course: { id: string; courseCode: string; courseName: string };
+	/** Today in Vietnam (YYYY-MM-DD): classes meeting today start ticked. */
+	todayIso: string;
+	classes: RecallArenaClass[];
 	players: RecallArenaPlayer[];
 	decks: RecallArenaDeck[];
 	cards: RecallArenaCard[];

@@ -1,10 +1,14 @@
 import { GRAPHIC_COLORS } from '@/config/graphicColors';
 import {
-	isInRoom,
+	buildArenaRoster,
 	matchesGroupFilter,
 	type ArenaGroupFilter,
 } from '@/features/teaching/domain/recallArena';
-import type { RecallArenaPlayer, TeachingSessionRecord } from '@/features/teaching/types';
+import type {
+	RecallArenaData,
+	RecallArenaPlayer,
+	TeachingSessionRecord,
+} from '@/features/teaching/types';
 
 export const ARENA_MAX_HP = 10;
 
@@ -60,18 +64,35 @@ export interface ArenaProgress {
 }
 
 export interface ArenaConfig {
-	sessionId: string | null;
+	/** Classes in the room, in the order they were ticked. */
+	classIds: string[];
+	/** The session played for each ticked class. */
+	sessionByClass: Record<string, string>;
 	filter: ArenaGroupFilter;
-	/** Empty means every deck enabled for the class. */
+	/** Lessons the questions come from. Empty means "ask your own question". */
 	deckIds: string[];
+	/** Students added by hand, for example a make-up student from another class. */
+	guestIds: string[];
+	/** Students in the room the lecturer took out of the game. */
+	excludedIds: string[];
+}
+
+/** What a browser remembers between visits. Players only count for the same day. */
+interface StoredArenaConfig extends Partial<ArenaConfig> {
+	savedOn?: string;
 }
 
 export function emptyProgress(): ArenaProgress {
 	return { bag: [], lastPicked: null, usedCards: [], hp: ARENA_MAX_HP, round: 1, history: [] };
 }
 
-const PROGRESS_KEY = (sessionId: string) => `recall-arena:v1:progress:${sessionId}`;
-const CONFIG_KEY = (classId: string) => `recall-arena:v1:config:${classId}`;
+/** One game per course per day: tomorrow's class starts with a fresh boss. */
+const PROGRESS_KEY = (gameKey: string) => `recall-arena:v2:progress:${gameKey}`;
+const CONFIG_KEY = (courseId: string) => `recall-arena:v2:config:${courseId}`;
+
+export function arenaGameKey(courseId: string, todayIso: string) {
+	return `${courseId}:${todayIso}`;
+}
 
 function readJson<T>(key: string): T | null {
 	try {
@@ -90,8 +111,8 @@ function writeJson(key: string, value: unknown) {
 	}
 }
 
-export function loadProgress(sessionId: string): ArenaProgress {
-	const stored = readJson<Partial<ArenaProgress>>(PROGRESS_KEY(sessionId));
+export function loadProgress(gameKey: string): ArenaProgress {
+	const stored = readJson<Partial<ArenaProgress>>(PROGRESS_KEY(gameKey));
 	if (!stored) return emptyProgress();
 	return {
 		...emptyProgress(),
@@ -100,40 +121,147 @@ export function loadProgress(sessionId: string): ArenaProgress {
 	};
 }
 
-export function saveProgress(sessionId: string, progress: ArenaProgress) {
-	writeJson(PROGRESS_KEY(sessionId), progress);
+export function saveProgress(gameKey: string, progress: ArenaProgress) {
+	writeJson(PROGRESS_KEY(gameKey), progress);
 }
 
-export function loadConfig(classId: string): Partial<ArenaConfig> | null {
-	return readJson<Partial<ArenaConfig>>(CONFIG_KEY(classId));
+export function loadConfig(courseId: string): StoredArenaConfig | null {
+	return readJson<StoredArenaConfig>(CONFIG_KEY(courseId));
 }
 
-export function saveConfig(classId: string, config: ArenaConfig) {
-	writeJson(CONFIG_KEY(classId), config);
+export function saveConfig(courseId: string, config: ArenaConfig, todayIso: string) {
+	writeJson(CONFIG_KEY(courseId), { ...config, savedOn: todayIso } satisfies StoredArenaConfig);
 }
 
-/** Students who are in the room for this session and match the group filter. */
-export function eligiblePlayers(
+function onlyKnown(ids: unknown, known: ReadonlySet<string>): string[] {
+	return Array.isArray(ids)
+		? [...new Set(ids.filter((id): id is string => typeof id === 'string' && known.has(id)))]
+		: [];
+}
+
+/** Lessons switched on for the ticked classes, in course order. */
+export function enabledDecksFor(data: RecallArenaData, classIds: readonly string[]) {
+	const enabled = new Set(
+		data.classes
+			.filter((item) => classIds.includes(item.id))
+			.flatMap((item) => item.enabledDeckIds),
+	);
+	return data.decks.map((deck) => deck.deckId).filter((id) => enabled.has(id));
+}
+
+/**
+ * Where a new game starts. Classes: the one the lecturer came from, else the
+ * classes meeting today, else the ones ticked last time. Each class plays
+ * its default session (today's). Players added or removed by hand only carry
+ * over within the same day. Lessons: last choice, else the lessons the
+ * ticked classes have switched on.
+ */
+export function initialConfig(
+	data: RecallArenaData,
+	initialClassId: string | null,
+	stored: StoredArenaConfig | null,
+): ArenaConfig {
+	const classIds = new Set(data.classes.map((item) => item.id));
+	const playerIds = new Set(data.players.map((player) => player.enrollmentId));
+	const deckIds = new Set(data.decks.map((deck) => deck.deckId));
+	const today = data.classes
+		.filter((item) =>
+			item.sessions.some(
+				(session) => session.id === item.defaultSessionId && session.heldOn === data.todayIso,
+			),
+		)
+		.map((item) => item.id);
+	const remembered = onlyKnown(stored?.classIds, classIds);
+	const chosen =
+		initialClassId && classIds.has(initialClassId)
+			? [initialClassId]
+			: today.length
+				? today
+				: remembered;
+	const sameDay = stored?.savedOn === data.todayIso;
+	const storedDecks = onlyKnown(stored?.deckIds, deckIds);
+	const filter = stored?.filter;
+	return {
+		classIds: chosen,
+		sessionByClass: defaultSessions(data, chosen),
+		filter: filter === 'CHALLENGE' || filter === 'SUPPORT' ? filter : 'ALL',
+		deckIds: storedDecks.length ? storedDecks : enabledDecksFor(data, chosen),
+		guestIds: sameDay ? onlyKnown(stored?.guestIds, playerIds) : [],
+		excludedIds: sameDay ? onlyKnown(stored?.excludedIds, playerIds) : [],
+	};
+}
+
+function defaultSessions(data: RecallArenaData, classIds: readonly string[]) {
+	const result: Record<string, string> = {};
+	for (const item of data.classes) {
+		if (classIds.includes(item.id) && item.defaultSessionId) {
+			result[item.id] = item.defaultSessionId;
+		}
+	}
+	return result;
+}
+
+/** Tick or untick a class; a newly ticked class plays its default session. */
+export function toggleClass(config: ArenaConfig, data: RecallArenaData, classId: string) {
+	if (config.classIds.includes(classId)) {
+		const sessionByClass = { ...config.sessionByClass };
+		delete sessionByClass[classId];
+		return { ...config, classIds: config.classIds.filter((id) => id !== classId), sessionByClass };
+	}
+	return {
+		...config,
+		classIds: [...config.classIds, classId],
+		sessionByClass: { ...config.sessionByClass, ...defaultSessions(data, [classId]) },
+	};
+}
+
+/** The chosen session of each ticked class, in class order; classes without one are skipped. */
+export function hostSessions(
+	config: ArenaConfig,
+	sessions: readonly TeachingSessionRecord[],
+): TeachingSessionRecord[] {
+	const byId = new Map(sessions.map((session) => [session.id, session]));
+	return config.classIds
+		.map((classId) => byId.get(config.sessionByClass[classId] ?? ''))
+		.filter((session): session is TeachingSessionRecord => Boolean(session));
+}
+
+/** Everyone on the floor: in the room at a chosen session, plus guests, minus removed. */
+export function arenaRoster(
 	players: readonly RecallArenaPlayer[],
-	session: TeachingSessionRecord | null,
+	hosts: readonly TeachingSessionRecord[],
+	config: Pick<ArenaConfig, 'guestIds' | 'excludedIds'>,
+): RecallArenaPlayer[] {
+	return buildArenaRoster(players, hosts, config.guestIds, config.excludedIds);
+}
+
+/** Students the monster may call: the floor, narrowed by the group filter. */
+export function callablePlayers(
+	roster: readonly RecallArenaPlayer[],
 	filter: ArenaGroupFilter,
 ): RecallArenaPlayer[] {
-	if (!session) return [];
-	return players.filter(
-		(player) =>
-			player.tutorialClassId === session.tutorialClassId &&
-			player.enrolledFromWeek <= session.weekNumber &&
-			isInRoom(player.attendance[session.id]) &&
-			matchesGroupFilter(player.group, filter),
-	);
+	return roster.filter((player) => matchesGroupFilter(player.group, filter));
 }
 
-/** Students in the room for this session, before the group filter. */
-export function playersInRoom(
-	players: readonly RecallArenaPlayer[],
-	session: TeachingSessionRecord | null,
-): RecallArenaPlayer[] {
-	return eligiblePlayers(players, session, 'ALL');
+/** Search the whole course by name or student code, ignoring accents and case. */
+export function matchesPlayerSearch(
+	player: Pick<RecallArenaPlayer, 'familyName' | 'givenName' | 'studentCode'>,
+	query: string,
+) {
+	const fold = (value: string) =>
+		value
+			.normalize('NFD')
+			.replace(/\p{Diacritic}/gu, '')
+			.replace(/đ/g, 'd')
+			.replace(/Đ/g, 'D')
+			.toLocaleLowerCase('vi')
+			.trim();
+	const needle = fold(query);
+	if (!needle) return false;
+	return (
+		fold(`${player.familyName} ${player.givenName}`).includes(needle) ||
+		fold(player.studentCode).includes(needle)
+	);
 }
 
 export function fullName(player: Pick<RecallArenaPlayer, 'familyName' | 'givenName'>) {

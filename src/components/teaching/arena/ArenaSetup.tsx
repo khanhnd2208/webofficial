@@ -1,96 +1,95 @@
 'use client';
 
+import { useState } from 'react';
+
 import { McIcon } from '@/components/myclass/ui';
-import type { ArenaGroupFilter } from '@/features/teaching/domain/recallArena';
 import type {
-	RecallArenaDeck,
+	RecallArenaData,
 	RecallArenaPlayer,
 	TeachingSessionRecord,
 } from '@/features/teaching/types';
 
-import { isCpFinalized, playersInRoom, sessionLabel, type ArenaConfig } from './arenaGame';
+import { ArenaSetupClasses } from './ArenaSetupClasses';
+import { ArenaSetupLessons } from './ArenaSetupLessons';
+import { ArenaSetupPlayers } from './ArenaSetupPlayers';
+import { callablePlayers, type ArenaConfig } from './arenaGame';
 import styles from './arena.module.css';
+import setup from './arenaSetup.module.css';
 
-const FILTER_LABEL: Record<ArenaGroupFilter, string> = {
-	ALL: 'Cả lớp',
-	CHALLENGE: 'Chỉ Challenging',
-	SUPPORT: 'Chỉ Supporting',
-};
+export type ArenaSetupStep = 'classes' | 'players' | 'lessons';
 
-/** Decks the game draws from: an empty selection in config means every deck. */
-export function selectedDeckIds(config: ArenaConfig, decks: RecallArenaDeck[]) {
-	return config.deckIds.length ? config.deckIds : decks.map((deck) => deck.deckId);
-}
+const STEPS: Array<{ id: ArenaSetupStep; label: string }> = [
+	{ id: 'classes', label: 'Lớp học' },
+	{ id: 'players', label: 'Người chơi' },
+	{ id: 'lessons', label: 'Bài học' },
+];
 
 /**
- * Lecturer-only settings in one compact panel: session, who can be called,
- * which decks, and CP status. Group names appear only here, never on the
- * game screen.
+ * Lecturer-only settings, in the order a lesson starts: which classes are in
+ * the room, who plays (including make-up students from other classes), and
+ * which lessons the questions come from. Before the first game the steps run
+ * in order; once playing, any step opens directly. Group names appear only
+ * here, never on the game screen.
  */
 export function ArenaSetup({
+	data,
 	config,
 	sessions,
-	tutorials,
-	decks,
-	players,
-	session,
+	hosts,
+	roster,
 	started,
-	openingCp,
-	recallHref,
+	initialStep = 'classes',
+	openingCpId,
 	onChange,
 	onOpenCp,
 	onReload,
 	onDone,
 	onClose,
 }: {
+	data: RecallArenaData;
 	config: ArenaConfig;
+	/** Every live session of every class, kept up to date when CP is opened. */
 	sessions: TeachingSessionRecord[];
-	tutorials: Array<{ id: string; code: string }>;
-	decks: RecallArenaDeck[];
-	players: RecallArenaPlayer[];
-	session: TeachingSessionRecord | null;
+	hosts: TeachingSessionRecord[];
+	roster: RecallArenaPlayer[];
 	/** True once the lecturer entered the game; the main button then just closes. */
 	started: boolean;
-	openingCp: boolean;
-	recallHref: string;
+	initialStep?: ArenaSetupStep;
+	openingCpId: string | null;
 	onChange: (next: ArenaConfig) => void;
-	onOpenCp: () => void;
+	onOpenCp: (sessionId: string) => void;
 	onReload: () => void;
 	onDone: () => void;
 	onClose?: () => void;
 }) {
-	const inRoom = playersInRoom(players, session);
-	const counts: Record<ArenaGroupFilter, number> = {
-		ALL: inRoom.length,
-		CHALLENGE: inRoom.filter((player) => player.group === 'CHALLENGE').length,
-		SUPPORT: inRoom.filter((player) => player.group === 'SUPPORT').length,
+	const [step, setStep] = useState<ArenaSetupStep>(initialStep);
+	const callable = callablePlayers(roster, config.filter);
+	const chosenDecks = data.decks.filter((deck) => config.deckIds.includes(deck.deckId));
+	const cardTotal = chosenDecks.reduce((sum, deck) => sum + deck.cardCount, 0);
+	const summary: Record<ArenaSetupStep, string> = {
+		classes: config.classIds.length ? `${config.classIds.length} lớp` : 'Chưa chọn',
+		players: `${roster.length} bạn`,
+		lessons: chosenDecks.length ? `${chosenDecks.length} bài · ${cardTotal} câu` : 'Chưa chọn bài',
 	};
-	const noGroup = inRoom.length - counts.CHALLENGE - counts.SUPPORT;
-	const chosenDecks = selectedDeckIds(config, decks);
-	const cardTotal = decks
-		.filter((deck) => chosenDecks.includes(deck.deckId))
-		.reduce((sum, deck) => sum + deck.cardCount, 0);
-
-	function toggleDeck(deckId: string) {
-		const current = new Set(chosenDecks);
-		if (current.has(deckId)) current.delete(deckId);
-		else current.add(deckId);
-		const next = decks.map((deck) => deck.deckId).filter((id) => current.has(id));
-		if (next.length === 0) return;
-		onChange({ ...config, deckIds: next.length === decks.length ? [] : next });
-	}
+	const index = STEPS.findIndex((item) => item.id === step);
+	const last = index === STEPS.length - 1;
 
 	return (
 		<div className={styles.setupBackdrop} onClick={onClose}>
 			<section
-				className={styles.setup}
+				className={`${styles.setup} ${setup.panel}`}
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby="arena-setup-title"
 				onClick={(event) => event.stopPropagation()}
 			>
 				<header className={styles.setupHead}>
-					<h2 id="arena-setup-title">Thiết lập kiểm tra bài cũ</h2>
+					<div className={setup.title}>
+						<h2 id="arena-setup-title">Thiết lập kiểm tra bài cũ</h2>
+						<span className={styles.setupHint}>
+							{data.course.courseCode} · {data.course.courseName}
+						</span>
+					</div>
 					{onClose ? (
 						<button
 							type="button"
@@ -104,127 +103,50 @@ export function ArenaSetup({
 					) : null}
 				</header>
 
-				<div className={styles.setupRows}>
-					<label className={styles.setupRow}>
-						<span className={styles.setupLabel}>Buổi học</span>
-						<span className={styles.setupControl}>
-							<select
-								value={config.sessionId ?? ''}
-								onChange={(event) => onChange({ ...config, sessionId: event.target.value || null })}
-							>
-								{sessions.length === 0 ? <option value="">Lớp chưa có buổi học</option> : null}
-								{sessions.map((item) => (
-									<option key={item.id} value={item.id}>
-										{sessionLabel(item, tutorials)}
-									</option>
-								))}
-							</select>
-							<span
-								className={styles.setupHint}
-								data-tone={session && !inRoom.length ? 'bad' : undefined}
-							>
-								{session && !inRoom.length
-									? 'Chưa ai được điểm danh có mặt ở buổi này.'
-									: `${inRoom.length} bạn có mặt`}
+				<nav className={setup.steps} aria-label="Các bước thiết lập">
+					{STEPS.map((item, position) => (
+						<button
+							key={item.id}
+							type="button"
+							className={setup.step}
+							aria-current={item.id === step ? 'step' : undefined}
+							onClick={() => setStep(item.id)}
+						>
+							<span className={setup.stepNo}>{position + 1}</span>
+							<span className={setup.stepText}>
+								<span>{item.label}</span>
+								<span className={setup.stepSummary}>{summary[item.id]}</span>
 							</span>
-						</span>
-					</label>
+						</button>
+					))}
+				</nav>
 
-					<label className={styles.setupRow}>
-						<span className={styles.setupLabel}>Gọi ai</span>
-						<span className={styles.setupControl}>
-							<select
-								value={config.filter}
-								onChange={(event) =>
-									onChange({ ...config, filter: event.target.value as ArenaGroupFilter })
-								}
-							>
-								{(Object.keys(FILTER_LABEL) as ArenaGroupFilter[]).map((filter) => (
-									<option key={filter} value={filter}>
-										{FILTER_LABEL[filter]} ({counts[filter]})
-									</option>
-								))}
-							</select>
-							{noGroup > 0 && config.filter !== 'ALL' ? (
-								<span className={styles.setupHint}>
-									{noGroup} bạn chưa chọn nhóm chỉ được gọi khi chọn “Cả lớp”.
-								</span>
-							) : null}
-						</span>
-					</label>
-
-					<div className={styles.setupRow}>
-						<span className={styles.setupLabel}>Câu hỏi</span>
-						<span className={styles.setupControl}>
-							{decks.length === 0 ? (
-								<span className={styles.setupHint}>
-									Lớp chưa bật bộ thẻ Active Recall. <a href={recallHref}>Bật bộ thẻ</a> hoặc hỏi
-									câu của bạn.
-								</span>
-							) : (
-								<details className={styles.deckPicker}>
-									<summary>
-										<span>
-											{chosenDecks.length === decks.length
-												? `Tất cả ${decks.length} bộ thẻ`
-												: `${chosenDecks.length}/${decks.length} bộ thẻ`}{' '}
-											· {cardTotal} câu
-										</span>
-										<McIcon name="expand_more" size={18} />
-									</summary>
-									<div className={styles.deckList}>
-										{decks.map((deck) => {
-											const checked = chosenDecks.includes(deck.deckId);
-											return (
-												<label key={deck.deckId} className={styles.deckOption}>
-													<input
-														type="checkbox"
-														checked={checked}
-														disabled={checked && chosenDecks.length === 1}
-														onChange={() => toggleDeck(deck.deckId)}
-													/>
-													<span>
-														{deck.lessonLabel && deck.lessonLabel !== deck.title
-															? `${deck.lessonLabel} · `
-															: ''}
-														{deck.title}
-													</span>
-													<span className={styles.count}>{deck.cardCount}</span>
-												</label>
-											);
-										})}
-									</div>
-								</details>
-							)}
-						</span>
-					</div>
-
-					<div className={styles.setupRow}>
-						<span className={styles.setupLabel}>Điểm CP</span>
-						<span className={styles.setupControl}>
-							{!session ? (
-								<span className={styles.setupHint}>Chọn buổi học trước.</span>
-							) : session.participationOpen ? (
-								<span className={styles.setupHint} data-tone="ok">
-									CP tuần {session.weekNumber} đang mở · chấm Đạt giữ mức cao hơn
-								</span>
-							) : (
-								<span className={styles.cpLocked}>
-									<span className={styles.setupHint} data-tone="bad">
-										CP tuần {session.weekNumber} {isCpFinalized(session) ? 'đã chốt' : 'đang khóa'}
-									</span>
-									<button
-										type="button"
-										className={styles.smallButton}
-										disabled={openingCp}
-										onClick={onOpenCp}
-									>
-										{openingCp ? 'Đang mở…' : `Mở chấm CP tuần ${session.weekNumber}`}
-									</button>
-								</span>
-							)}
-						</span>
-					</div>
+				<div className={setup.body}>
+					{step === 'classes' ? (
+						<ArenaSetupClasses
+							data={data}
+							config={config}
+							sessions={sessions}
+							openingCpId={openingCpId}
+							onChange={onChange}
+							onOpenCp={onOpenCp}
+						/>
+					) : null}
+					{step === 'players' ? (
+						<ArenaSetupPlayers
+							data={data}
+							config={config}
+							sessions={sessions}
+							hosts={hosts}
+							roster={roster}
+							openingCpId={openingCpId}
+							onChange={onChange}
+							onOpenCp={onOpenCp}
+						/>
+					) : null}
+					{step === 'lessons' ? (
+						<ArenaSetupLessons data={data} config={config} onChange={onChange} />
+					) : null}
 				</div>
 
 				<footer className={styles.setupFoot}>
@@ -236,14 +158,36 @@ export function ArenaSetup({
 					>
 						Tải lại điểm danh
 					</button>
-					<button
-						type="button"
-						className={styles.startButton}
-						disabled={!session || counts[config.filter] === 0}
-						onClick={onDone}
-					>
-						{started ? 'Xong' : 'Vào trận'}
-					</button>
+					<span className={setup.footActions}>
+						{!started && index > 0 ? (
+							<button
+								type="button"
+								className={styles.textButton}
+								onClick={() => setStep(STEPS[index - 1]!.id)}
+							>
+								Quay lại
+							</button>
+						) : null}
+						{!started && !last ? (
+							<button
+								type="button"
+								className={styles.startButton}
+								onClick={() => setStep(STEPS[index + 1]!.id)}
+							>
+								Tiếp
+							</button>
+						) : (
+							<button
+								type="button"
+								className={styles.startButton}
+								disabled={callable.length === 0}
+								title={callable.length === 0 ? 'Chưa có ai để gọi' : undefined}
+								onClick={onDone}
+							>
+								{started ? 'Xong' : 'Vào trận'}
+							</button>
+						)}
+					</span>
 				</footer>
 			</section>
 		</div>

@@ -22,60 +22,112 @@ function player(
 	id: string,
 	givenName: string,
 	group: RecallArenaPlayer['group'],
-	status: 'PRESENT' | 'ABSENT_UNEXCUSED',
+	status: 'PRESENT' | 'ABSENT_UNEXCUSED' | null,
+	classId = 'c1',
 ): RecallArenaPlayer {
+	const sessionId = classId === 'c1' ? 's1' : 's2';
 	return {
 		enrollmentId: id,
-		tutorialClassId: 't1',
+		classId,
+		tutorialClassId: classId === 'c1' ? 't1' : 't2',
 		enrolledFromWeek: 1,
 		studentCode: `SV-${id}`,
 		familyName: 'Nguyễn',
 		givenName,
 		group,
-		attendance: { s1: status },
+		attendance: status ? { [sessionId]: status } : {},
 		cp: {},
 	};
 }
 
-function arenaData(overrides: Partial<RecallArenaData['sessions'][number]> = {}): RecallArenaData {
+type SessionRecord = RecallArenaData['classes'][number]['sessions'][number];
+
+function session(id: string, classId: string, heldOn: string, extra: Partial<SessionRecord> = {}) {
 	return {
-		class: { id: 'c1', courseCode: 'HRM', courseName: 'Quản trị nhân sự', classCode: 'M1' },
-		tutorials: [{ id: 't1', code: 'T1', name: 'Tutorial 1' }],
-		sessions: [
+		id,
+		classId,
+		tutorialClassId: classId === 'c1' ? 't1' : 't2',
+		weekNumber: 3,
+		heldOn,
+		topic: '',
+		method: 'ROLL_CALL',
+		isCancelled: false,
+		attendanceTakenAt: '2026-11-10T01:00:00.000Z',
+		attendanceOpen: false,
+		participationTakenAt: null,
+		participationOpen: true,
+		...extra,
+	} satisfies SessionRecord;
+}
+
+function card(id: string, deckId: string, question: string) {
+	return { id, deckId, question, answer: '<p>The drive to act.</p>', questionVi: '', answerVi: '' };
+}
+
+function arenaData(overrides: Partial<SessionRecord> = {}): RecallArenaData {
+	return {
+		course: { id: 'course-1', courseCode: 'HRM', courseName: 'Quản trị nhân sự' },
+		todayIso: '2026-11-10',
+		classes: [
 			{
-				id: 's1',
-				classId: 'c1',
-				tutorialClassId: 't1',
-				weekNumber: 3,
-				heldOn: '2026-11-10',
-				topic: '',
-				method: 'ROLL_CALL',
-				isCancelled: false,
-				attendanceTakenAt: '2026-11-10T01:00:00.000Z',
-				attendanceOpen: false,
-				participationTakenAt: null,
-				participationOpen: true,
-				...overrides,
+				id: 'c1',
+				classCode: 'M1',
+				term: 'HK1',
+				tutorials: [{ id: 't1', code: 'T1', name: 'Tutorial 1' }],
+				sessions: [session('s1', 'c1', '2026-11-10', overrides)],
+				defaultSessionId: 's1',
+				enabledDeckIds: ['d1'],
+			},
+			{
+				id: 'c2',
+				classCode: 'M2',
+				term: 'HK1',
+				tutorials: [{ id: 't2', code: 'T1', name: 'Tutorial 1' }],
+				sessions: [session('s2', 'c2', '2026-11-09')],
+				defaultSessionId: 's2',
+				enabledDeckIds: [],
 			},
 		],
-		defaultSessionId: 's1',
 		players: [
 			player('a', 'An', 'CHALLENGE', 'PRESENT'),
 			player('b', 'Bình', 'SUPPORT', 'PRESENT'),
 			player('c', 'Chi', 'CHALLENGE', 'ABSENT_UNEXCUSED'),
+			player('d', 'Dũng', null, null, 'c2'),
 		],
-		decks: [{ deckId: 'd1', title: 'Motivation', lessonLabel: 'Bài 3', cardCount: 1 }],
-		cards: [
+		decks: [
 			{
-				id: 'card-1',
 				deckId: 'd1',
-				question: '<p>What is motivation?</p>',
-				answer: '<p>The drive to act.</p>',
-				questionVi: '',
-				answerVi: '',
+				title: 'Motivation',
+				lessonLabel: 'Bài 3',
+				status: 'PUBLISHED',
+				cardCount: 1,
 			},
+			{ deckId: 'd2', title: 'Job design', lessonLabel: 'Bài 4', status: 'DRAFT', cardCount: 1 },
+		],
+		cards: [
+			card('card-1', 'd1', '<p>What is motivation?</p>'),
+			card('card-2', 'd2', '<p>What is job enrichment?</p>'),
 		],
 	};
+}
+
+function setupDialog() {
+	return screen.getByRole('dialog', { name: 'Thiết lập kiểm tra bài cũ' });
+}
+
+function openStep(label: string) {
+	fireEvent.click(within(setupDialog()).getByRole('button', { name: new RegExp(label) }));
+}
+
+/** Walk the remaining steps in order, as the lecturer does before the first game. */
+function enterGame() {
+	const setup = setupDialog();
+	let next = within(setup).queryByRole('button', { name: 'Tiếp' });
+	while (next) {
+		fireEvent.click(next);
+		next = within(setup).queryByRole('button', { name: 'Tiếp' });
+	}
+	fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
 }
 
 describe('RecallArena', () => {
@@ -84,12 +136,17 @@ describe('RecallArena', () => {
 		window.localStorage.clear();
 	});
 
-	it('puts only students who are in the room on the floor, without group labels', () => {
+	it('starts with today’s class ticked and puts only students in the room on the floor', () => {
 		render(<RecallArena data={arenaData()} />);
-		const setup = screen.getByRole('dialog', { name: 'Thiết lập kiểm tra bài cũ' });
+		const setup = setupDialog();
+		expect(within(setup).getByRole('checkbox', { name: /Lớp M1/ })).toHaveProperty('checked', true);
+		expect(within(setup).getByRole('checkbox', { name: /Lớp M2/ })).toHaveProperty(
+			'checked',
+			false,
+		);
 		expect(within(setup).getByText('2 bạn có mặt')).toBeTruthy();
 
-		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
+		enterGame();
 
 		const names = screen.getAllByTestId('arena-player').map((node) => node.textContent);
 		expect(names).toEqual(['An', 'Bình']);
@@ -105,8 +162,9 @@ describe('RecallArena', () => {
 			changed: true,
 		});
 		render(<RecallArena data={arenaData()} />);
+		openStep('Người chơi');
 		fireEvent.change(screen.getByDisplayValue('Cả lớp (2)'), { target: { value: 'CHALLENGE' } });
-		fireEvent.click(screen.getByRole('button', { name: 'Vào trận' }));
+		enterGame();
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 
@@ -129,7 +187,7 @@ describe('RecallArena', () => {
 
 	it('closes a catch with X or Esc without grading, and the student keeps their turn', async () => {
 		render(<RecallArena data={arenaData()} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Vào trận' }));
+		enterGame();
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const first = await screen.findByRole('dialog', { name: /Nguyễn/ });
@@ -149,7 +207,7 @@ describe('RecallArena', () => {
 
 	it('lets a missed answer heal the monster without saving CP', async () => {
 		render(<RecallArena data={arenaData()} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Vào trận' }));
+		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: /Nguyễn/ });
 
@@ -161,7 +219,7 @@ describe('RecallArena', () => {
 	});
 
 	it('offers to open CP grading when the week is locked', async () => {
-		const opened = arenaData().sessions[0]!;
+		const opened = arenaData().classes[0]!.sessions[0]!;
 		apiMock.mockResolvedValue({
 			session: { ...opened, participationOpen: true },
 			students: [],
@@ -178,5 +236,63 @@ describe('RecallArena', () => {
 			}),
 		);
 		expect(await screen.findByText(/CP tuần 3 đang mở/)).toBeTruthy();
+	});
+
+	it('adds a make-up student from another class and writes their CP to their own class', async () => {
+		apiMock.mockResolvedValue({
+			enrollmentId: 'd',
+			sessionId: 's2',
+			previous: 0,
+			points: 1,
+			changed: true,
+		});
+		render(<RecallArena data={arenaData()} />);
+		openStep('Người chơi');
+		const setup = setupDialog();
+		fireEvent.change(within(setup).getByRole('searchbox'), { target: { value: 'dung' } });
+		fireEvent.click(within(setup).getByRole('button', { name: /Nguyễn Dũng/ }));
+		expect(within(setup).getByText(/Học bù · CP ghi vào lớp M2, tuần 3/)).toBeTruthy();
+		expect(within(setup).getByText('3 bạn trong trận')).toBeTruthy();
+
+		// Leave only the guest in the game so the monster must call them.
+		fireEvent.click(within(setup).getByRole('checkbox', { name: /Nguyễn An/ }));
+		fireEvent.click(within(setup).getByRole('checkbox', { name: /Nguyễn Bình/ }));
+		expect(within(setup).getByText('1 bạn trong trận')).toBeTruthy();
+		openStep('Bài học');
+		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
+
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Dũng' });
+		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+
+		await waitFor(() =>
+			expect(apiMock).toHaveBeenCalledWith('/api/admin/teaching/sessions/s2/recall-arena', {
+				method: 'POST',
+				body: JSON.stringify({ enrollmentId: 'd', points: 1 }),
+			}),
+		);
+	});
+
+	it('mixes questions from several lessons', () => {
+		render(<RecallArena data={arenaData()} />);
+		openStep('Bài học');
+		const setup = setupDialog();
+		expect(within(setup).getByText('Hỏi trộn 1 bài · 1 câu')).toBeTruthy();
+
+		fireEvent.click(within(setup).getByRole('checkbox', { name: /Job design/ }));
+
+		expect(within(setup).getByText('Hỏi trộn 2 bài · 2 câu')).toBeTruthy();
+		expect(within(setup).getByText(/2 bài · 2 câu/, { selector: 'span span' })).toBeTruthy();
+	});
+
+	it('ticks the class the lecturer came from instead of today’s classes', () => {
+		render(<RecallArena data={arenaData()} initialClassId="c2" />);
+		const setup = setupDialog();
+		expect(within(setup).getByRole('checkbox', { name: /Lớp M1/ })).toHaveProperty(
+			'checked',
+			false,
+		);
+		expect(within(setup).getByRole('checkbox', { name: /Lớp M2/ })).toHaveProperty('checked', true);
+		expect(within(setup).getByText('Chưa ai được điểm danh có mặt ở buổi này.')).toBeTruthy();
 	});
 });

@@ -99,7 +99,7 @@ export function TeachingWorkspaceShell({
 					actions={
 						<div className="flex items-center gap-2">
 							<Link
-								href={routes.mySpaceTeachingArena(gradebook.class.id)}
+								href={routes.mySpaceTeachingArena(gradebook.class.courseId, gradebook.class.id)}
 								target="_blank"
 								className="teaching-icon-button min-h-11 min-w-11 px-3"
 								aria-label="Kiểm tra bài cũ"
