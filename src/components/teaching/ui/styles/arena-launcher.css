@@ -30,6 +30,19 @@
 	color: #fff;
 	box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
 }
+/* Course rows on the Teaching home: same look, list-row height. */
+[data-surface='teaching'] .teaching-arena-launcher[data-size='compact'] {
+	min-height: 2.25rem;
+	gap: 0.45rem;
+	padding: 0 0.75rem 0 0.3rem;
+	font-size: 0.75rem;
+}
+[data-surface='teaching']
+	.teaching-arena-launcher[data-size='compact']
+	.teaching-arena-launcher-icon {
+	width: 1.6rem;
+	height: 1.6rem;
+}
 [data-surface='teaching'] .teaching-arena-launcher:hover {
 	border-color: #c47a12;
 	background: linear-gradient(180deg, #fff3d4 0%, #ffe9b8 100%);

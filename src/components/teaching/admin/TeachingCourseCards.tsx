@@ -8,6 +8,7 @@ import { TeachingSectionHeading, TeachingEmpty } from '../ui/TeachingElements';
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { StudioButton, StudioField, StudioInput } from '@/components/myclass/admin/studio';
 import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
+import { TeachingArenaLauncher } from '@/components/teaching/admin/TeachingArenaLauncher';
 import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu';
 import { Dialog } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
@@ -337,6 +338,13 @@ export function TeachingCourseCards({ courses }: { courses: TeachingCourseListIt
 					>
 						{arranged.listed.map((course) => (
 							<CourseRow key={course.id} course={course} showCounts>
+								{course.status === 'ACTIVE' && course.activeClassCount > 0 ? (
+									<TeachingArenaLauncher
+										courseId={course.id}
+										courseCode={course.courseCode}
+										compact
+									/>
+								) : null}
 								<TeachingQuickMenu {...courseMenu(course)} />
 							</CourseRow>
 						))}
