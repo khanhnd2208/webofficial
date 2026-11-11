@@ -14,11 +14,11 @@ import {
 import { teachingApi, AdminApiError } from '@/components/teaching/admin/api';
 import { TeachingIcon } from '../ui/TeachingIcon';
 import { TeachingEmpty } from '../ui/TeachingElements';
+import { TeachingArenaLauncher } from '@/components/teaching/admin/TeachingArenaLauncher';
 import { TeachingAppHeader } from '@/components/teaching/admin/TeachingAppHeader';
 import { TeachingClassCards } from '@/components/teaching/admin/TeachingClassCards';
 import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu';
 import { Dialog } from '@/components/ui/Dialog';
-import { McIcon } from '@/components/myclass/ui';
 import { routes } from '@/config/routes';
 import type { ActiveRecallDeckListItem, ActiveRecallStatus } from '@/features/active-recall';
 import {
@@ -148,21 +148,7 @@ export function TeachingCourseWorkspace({
 				actions={
 					archived ? null : (
 						<div className="flex items-center gap-2">
-							{course.activeClassCount > 0 ? (
-								// Projector screen: kept off phone headers, where there is no room for it.
-								<span className="hidden md:inline-flex">
-									<Link
-										href={routes.mySpaceTeachingArena(course.id)}
-										target="_blank"
-										className="teaching-icon-button min-h-11 min-w-11 px-3"
-										aria-label="Kiểm tra bài cũ"
-										title="Mở màn hình kiểm tra bài cũ của cả môn trong tab mới"
-									>
-										<McIcon name="bolt" size={16} />
-										<span>Kiểm tra bài cũ</span>
-									</Link>
-								</span>
-							) : null}
+							{course.activeClassCount > 0 ? <TeachingArenaLauncher courseId={course.id} /> : null}
 							{tab === 'recall' ? (
 								<Link
 									href={routes.mySpaceTeachingRecallNew(course.id)}

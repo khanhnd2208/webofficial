@@ -477,7 +477,7 @@
 }
 @media (max-width: 767px) {
 	[data-surface='teaching'] .teaching-workspace-shell .teaching-app-header-main {
-		grid-template-columns: 32px minmax(0, 1fr) 44px;
+		grid-template-columns: 32px minmax(0, 1fr) auto;
 		gap: 0.5rem;
 	}
 	[data-surface='teaching'] .teaching-workspace-shell .teaching-app-header-back {
