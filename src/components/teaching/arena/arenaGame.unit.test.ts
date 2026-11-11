@@ -5,6 +5,7 @@ import type { RecallArenaData } from '@/features/teaching/types';
 import {
 	displayNames,
 	initialConfig,
+	manualArenaPlayers,
 	matchesPlayerSearch,
 	passStreak,
 	toggleClass,
@@ -137,6 +138,7 @@ describe('course arena setup', () => {
 			filter: 'ALL',
 			deckIds: ['d2'],
 			guestIds: [],
+			manualPlayers: [],
 			excludedIds: [],
 			heroIds: [],
 			bossId: null,
@@ -162,6 +164,7 @@ describe('course arena setup', () => {
 			deckIds: ['d3', 'gone'],
 			filter: 'SUPPORT' as const,
 			guestIds: ['p1', 'gone'],
+			manualPlayers: [{ id: 'arena-manual:1', name: 'Lê Minh An', group: 'SUPPORT' as const }],
 			excludedIds: ['p1'],
 		};
 		const today = initialConfig(data, null, { ...stored, savedOn: '2026-11-11' });
@@ -169,10 +172,30 @@ describe('course arena setup', () => {
 			deckIds: ['d3'],
 			filter: 'SUPPORT',
 			guestIds: ['p1'],
+			manualPlayers: stored.manualPlayers,
 			excludedIds: ['p1'],
 		});
 		const lastWeek = initialConfig(data, null, { ...stored, savedOn: '2026-11-04' });
-		expect(lastWeek).toMatchObject({ deckIds: ['d3'], guestIds: [], excludedIds: [] });
+		expect(lastWeek).toMatchObject({
+			deckIds: ['d3'],
+			guestIds: [],
+			manualPlayers: [],
+			excludedIds: [],
+		});
+	});
+
+	it('turns a manually named player into a callable game player without enrollment data', () => {
+		const [player] = manualArenaPlayers([
+			{ id: 'arena-manual:1', name: 'Lê Minh An', group: 'CHALLENGE' },
+		]);
+		expect(player).toMatchObject({
+			enrollmentId: 'arena-manual:1',
+			familyName: 'Lê Minh',
+			givenName: 'An',
+			group: 'CHALLENGE',
+			attendance: {},
+			cp: {},
+		});
 	});
 
 	it('ticks a class with its default session and unticks it cleanly', () => {
