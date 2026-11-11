@@ -69,6 +69,10 @@ export const routes = {
 	 */
 	learnCourses: '/khoa-hoc',
 	discoverCourses: '/kham-pha-khoa-hoc',
+	/** The signed-in course list. `/khoa-hoc` itself opens the public catalog, so link here. */
+	myCourses: '/my-space/courses',
+	/** The admin's course management view of routes.myCourses. */
+	myCoursesManage: '/my-space/courses?xem=quan-ly',
 	learnCourse: (slug: string, sectionId?: string | null) =>
 		`/khoa-hoc/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	learnStudio: (slug: string, sectionId?: string | null) =>

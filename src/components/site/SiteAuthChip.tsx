@@ -152,7 +152,7 @@ export default function SiteAuthChip({
 					{ href: routes.admin.home, label: 'Quản trị' },
 				]
 			: []),
-		{ href: '/my-space/courses', label: 'Khóa học của tôi' },
+		{ href: routes.myCourses, label: 'Khóa học của tôi' },
 		{ href: routes.account, label: 'Tài khoản' },
 	];
 
