@@ -21,7 +21,6 @@ const about = {
 		? 'Email, Instagram, hoặc gửi một lời nhắn.'
 		: 'Người thầy, và hành trình trở thành.',
 	icon: '/brand/toc/about-v1.webp',
-	eyebrow: aboutPagePaused ? 'Contact me' : 'About me',
 };
 
 export default async function TocPage() {

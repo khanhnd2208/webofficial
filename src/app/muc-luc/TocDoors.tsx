@@ -12,7 +12,6 @@ export interface TocDoor {
 	label: string;
 	description: ReactNode;
 	icon: string;
-	eyebrow?: string;
 }
 
 export interface TocSpaceItem extends TocDoor {
@@ -82,10 +81,11 @@ export function buildTocItems(role?: UserRole | null): TocSpaceItem[] {
 	return [EXPERIENCES_DOOR, ...tiles].sort((a, b) => doorRank(a.id) - doorRank(b.id));
 }
 
-function Arrow() {
+/** → stays on this site; ↗ leaves it. */
+function Arrow({ external }: { external: boolean }) {
 	return (
-		<span className={styles.arrow} aria-hidden="true">
-			↗
+		<span className={styles.arrow} data-external={external ? '' : undefined} aria-hidden="true">
+			{external ? '↗' : '→'}
 		</span>
 	);
 }
@@ -98,20 +98,20 @@ function Door({ item, testId }: { item: TocDoor & { muted?: boolean }; testId: s
 			data-testid={testId}
 			data-muted={item.muted ? '' : undefined}
 		>
-			{item.eyebrow ? <span className={styles.doorEyebrow}>{item.eyebrow}</span> : null}
 			<span className={styles.doorIcon}>
 				<Image
 					src={item.icon}
 					alt=""
 					width={112}
 					height={112}
-					sizes="(max-width: 640px) 64px, 112px"
+					sizes="(max-width: 860px) 64px, 112px"
+					loading="eager"
 				/>
 			</span>
 			<span className={styles.doorText}>
 				<span className={styles.doorTitle}>
 					{item.label}
-					<Arrow />
+					<Arrow external={/^https?:/.test(item.href)} />
 				</span>
 				<span className={styles.doorDescription}>{item.description}</span>
 			</span>
