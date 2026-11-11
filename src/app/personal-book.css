@@ -583,8 +583,10 @@
 	.cover-art {
 		grid-row: 1;
 		margin: 0;
-		width: min(65vw, 280px);
+		/* Never so tall that the call to action falls below a short screen. */
+		width: min(65vw, var(--cover-art-max, 280px), calc((100svh - 446px) * 0.8));
 		height: auto;
+		min-width: 136px;
 		min-height: 0;
 		aspect-ratio: 4/5;
 		box-shadow: none;
@@ -752,6 +754,11 @@
 @media (min-width: 1024px) and (max-width: 1199px) {
 	.cover-art {
 		margin-left: -110px;
+	}
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+	.cover-art {
+		--cover-art-max: 360px;
 	}
 }
 
