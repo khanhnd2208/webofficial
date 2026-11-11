@@ -59,8 +59,18 @@ test.describe('Focused operating mode', () => {
 		await page.goto('/admin');
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		const nav = page.getByRole('navigation', { name: 'Quản trị' });
-		await expect(nav.getByRole('link', { name: 'Trang công khai' })).toBeVisible();
-		await expect(nav.getByRole('link', { name: 'Active Recall' })).toHaveCount(0);
+		await expect(nav.getByRole('link', { name: /^Hộp thư liên hệ/ })).toBeVisible();
+		await expect(nav.getByRole('link', { name: 'Trang công khai' })).toHaveCount(0);
+		await expect(nav.getByRole('link', { name: 'Quiz UNRELEASED' })).toHaveCount(0);
+		await expect(nav.getByRole('link', { name: /Khóa học tự học/ })).toHaveAttribute(
+			'href',
+			'/my-space/courses?xem=quan-ly',
+		);
+		await expect(nav.getByRole('link', { name: /Thống kê Recall/ })).toHaveAttribute(
+			'href',
+			'/my-space/teaching/recall-analytics',
+		);
+		await expect(nav.getByRole('link', { name: 'Active Recall', exact: true })).toHaveCount(0);
 		// Teaching keeps its own workspace; the menu entry says it leaves Admin.
 		await expect(nav.getByRole('link', { name: /Lớp & môn học/ })).toHaveAttribute(
 			'href',
@@ -77,11 +87,15 @@ test.describe('Focused operating mode', () => {
 		).toHaveAttribute('href', '/my-space/teaching');
 	});
 
-	test('Website hub and contact inbox stay on the main shell', async ({ page, context }) => {
+	test('the retired Website hub lands on Tổng quan and the inbox stays on the main shell', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		await page.goto('/admin/website');
+		await expect(page).toHaveURL(/\/admin$/);
 		await expect(page.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
-		await expect(page.getByRole('heading', { name: 'Trang công khai' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Tổng quan' })).toBeVisible();
 		await page
 			.getByRole('navigation', { name: 'Quản trị' })
 			.getByRole('link', { name: /Hộp thư liên hệ/ })
