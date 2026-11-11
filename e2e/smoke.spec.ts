@@ -31,7 +31,10 @@ test.describe('Public pages smoke', () => {
 		await page.goto('/muc-luc');
 		await expect(page.getByTestId('gate-home')).toBeVisible();
 		const gate = page.getByRole('navigation', { name: 'Mục lục' });
-		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
+		await expect(page.getByTestId('gate-item-about')).toHaveAttribute(
+			'href',
+			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
+		);
 		await expect(page.getByTestId('gate-item-about')).toContainText(
 			aboutPagePaused ? 'Liên hệ' : 'Về tôi',
 		);
@@ -43,7 +46,10 @@ test.describe('Public pages smoke', () => {
 		await expect(game).toHaveAttribute('data-muted', '');
 		await expect(game.locator('strong')).toHaveText('fun.toiladuykhanh.com');
 		await expect(page.getByTestId('toc-open-myspace')).toHaveCount(0);
-		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
+			'href',
+			'/trai-nghiem',
+		);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();
@@ -67,27 +73,31 @@ test.describe('Public pages smoke', () => {
 			.click();
 		await expect(page).toHaveURL(/\/muc-luc/);
 		await expect(page.getByTestId('gate-item-locked')).toHaveCount(0);
-		await expect(page.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		await expect(page.getByTestId('myspace-tile-experiences')).toHaveAttribute(
+			'href',
+			'/trai-nghiem',
+		);
 		// Every door is a plain link, so it still opens with JavaScript off.
 		await page.getByTestId('myspace-tile-courses').click();
 		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
 		await context.close();
 	});
 
-	test('My Space hub shows visitors Courses and Board Game, not admin-only Teaching', async ({
+	test('Mục lục shows visitors Trải nghiệm, Courses and Board Game, not admin-only Teaching', async ({
 		page,
 	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
-		await page.goto('/my-space');
-		await expect(page.getByTestId('my-space').filter({ visible: true })).toHaveCount(1);
-		await expect(page).toHaveURL(/\/my-space$/);
-		await expect(page.getByTestId('my-space').filter({ visible: true })).toBeVisible();
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await page.goto('/muc-luc');
+		const doors = page.getByTestId('gate-home').filter({ visible: true });
+		await expect(doors).toBeVisible();
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(3);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
-		await expect(page.getByTestId('myspace-tile-board-game')).toBeVisible();
-		await expect(page.getByTestId('myspace-note-board-game')).toHaveText(
-			'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
+		await expect(page.getByTestId('myspace-tile-experiences')).toHaveAttribute(
+			'href',
+			'/trai-nghiem',
+		);
+		await expect(page.getByTestId('myspace-tile-board-game')).toContainText(
+			'fun.toiladuykhanh.com',
 		);
 		await page.getByTestId('myspace-tile-courses').click();
 		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
@@ -98,16 +108,14 @@ test.describe('Public pages smoke', () => {
 	}) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 
-		for (const path of ['/', '/muc-luc', '/my-space'] as const) {
+		for (const path of ['/', '/muc-luc'] as const) {
 			await page.goto(path);
 			for (const width of [320, 390, 768, 1024, 1440]) {
 				await page.setViewportSize({ width, height: 900 });
 				if (path === '/') {
 					await expect(page.getByTestId('intro-home')).toBeVisible();
-				} else if (path === '/muc-luc') {
-					await expect(page.getByTestId('gate-home').filter({ visible: true })).toBeVisible();
 				} else {
-					await expect(page.getByTestId('my-space').filter({ visible: true })).toBeVisible();
+					await expect(page.getByTestId('gate-home').filter({ visible: true })).toBeVisible();
 				}
 				const hasOverflow = await page.evaluate(
 					() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -117,11 +125,12 @@ test.describe('Public pages smoke', () => {
 		}
 	});
 
-	test('about page shows the contact card while the introduction is paused', async ({ page }) => {
+	test('about page sends visitors to Liên hệ, with every channel, while it is paused', async ({
+		page,
+	}) => {
 		test.skip(!aboutPagePaused, 'The introduction letter is live.');
 		await page.goto('/gioi-thieu');
-		await expect(page.getByTestId('about-contact')).toBeVisible();
-		await expect(page.getByRole('heading', { level: 1, name: 'Liên hệ với tôi' })).toBeVisible();
+		await expect(page).toHaveURL(/\/lien-he$/);
 		await expect(page.getByTestId('contact-email')).toHaveAttribute(
 			'href',
 			'mailto:khanhnd2208@gmail.com',
@@ -156,9 +165,9 @@ test.describe('Public pages smoke', () => {
 
 	test('retired service URLs redirect to the current architecture', async ({ page }) => {
 		await page.goto('/dong-hanh');
-		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu/);
+		await expect(page).toHaveURL(aboutPagePaused ? /\/lien-he/ : /\/gioi-thieu#dich-vu/);
 		await page.goto('/dong-hanh/mentoring');
-		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu/);
+		await expect(page).toHaveURL(aboutPagePaused ? /\/lien-he/ : /\/gioi-thieu#dich-vu/);
 		await page.goto('/case-study');
 		await expect(page).toHaveURL(/\/trai-nghiem#du-an/);
 		await page.goto('/du-an/moonie-cafe-business-development');
@@ -232,7 +241,7 @@ test.describe('Public pages smoke', () => {
 
 	test('giang day redirects to services', async ({ page }) => {
 		await page.goto('/giang-day');
-		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu/);
+		await expect(page).toHaveURL(aboutPagePaused ? /\/lien-he/ : /\/gioi-thieu#dich-vu/);
 	});
 
 	test('personality test is not a public product route', async ({ page }) => {
@@ -249,14 +258,20 @@ test.describe('Navigation', () => {
 		await expect(page.getByRole('button', { name: 'Mở menu' })).toHaveCount(0);
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
-		await expect(page.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		await expect(page.getByTestId('gate-item-about')).toHaveAttribute(
+			'href',
+			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
+		);
+		await expect(page.getByTestId('myspace-tile-experiences')).toHaveAttribute(
+			'href',
+			'/trai-nghiem',
+		);
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();
 	});
 
 	test('contact rail opens a quick message panel', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
-		await page.goto('/gioi-thieu');
+		await page.goto('/trai-nghiem');
 		const trigger = page.getByTestId('site-header-contact');
 		await expect(trigger).toHaveText('Gửi lời nhắn', { useInnerText: true });
 		await trigger.click();
@@ -265,7 +280,7 @@ test.describe('Navigation', () => {
 		await expect(page.getByLabel('Email')).toBeVisible();
 		await expect(page.getByRole('textbox', { name: 'Lời nhắn' })).toBeVisible();
 		await expect(page.getByRole('link', { name: /Mở trang liên hệ đầy đủ/i })).toBeVisible();
-		await expect(page).toHaveURL(/\/gioi-thieu/);
+		await expect(page).toHaveURL(/\/trai-nghiem/);
 	});
 
 	test('mobile header keeps one contact action, except on the contact page', async ({ page }) => {

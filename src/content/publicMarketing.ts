@@ -32,6 +32,25 @@ export const contactPage = {
 	aside: 'Một cuộc trao đổi tốt thường bắt đầu bằng một câu hỏi chưa hoàn chỉnh.',
 } as const;
 
+/** Direct channels shown on /lien-he next to the form. */
+export const contactChannels = [
+	{
+		id: 'email',
+		label: 'Email',
+		value: 'khanhnd2208@gmail.com',
+		href: 'mailto:khanhnd2208@gmail.com',
+		description: 'Công việc, lớp học và hợp tác.',
+	},
+	{
+		id: 'instagram',
+		label: 'Instagram',
+		value: '@turamisi.nk',
+		href: 'https://www.instagram.com/turamisi.nk/',
+		description: 'Nhắn tin nhanh và cập nhật thường ngày.',
+		note: 'Khi follow, hãy nhắn cho tôi một tin nhắn để tôi biết bạn là ai trước khi tôi chấp nhận nhé.',
+	},
+	] as const;
+
 /**
  * Entry cover at `/` — opens into the mục lục gate.
  * Keep copy short; the page is a single composition, not a marketing dump.

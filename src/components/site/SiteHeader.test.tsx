@@ -52,13 +52,11 @@ describe('SiteHeader', () => {
 	});
 
 	it('links a detail page back to its parent and does not mark that parent as current', () => {
-		pathname.current = '/my-space/active-recall';
+		pathname.current = '/trai-nghiem/mot-cau-chuyen';
 		render(<SiteHeader />);
-		expect(screen.getByRole('link', { name: 'Không gian của tôi' })).toHaveAttribute(
-			'href',
-			'/my-space',
-		);
-		expect(screen.getByText('Ôn tập')).toHaveAttribute('aria-current', 'page');
+		const parent = screen.getByRole('link', { name: 'Trải nghiệm' });
+		expect(parent).toHaveAttribute('href', '/trai-nghiem');
+		expect(parent).not.toHaveAttribute('aria-current');
 	});
 
 	it('hides the contact action on the contact page', () => {

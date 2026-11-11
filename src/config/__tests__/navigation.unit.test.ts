@@ -260,23 +260,11 @@ describe('site header trail', () => {
 		expect(getSiteTrail('/tai-khoan')).toEqual([{ label: 'Tài khoản' }]);
 		expect(getSiteTrail('/tai-khoan/ho-so')).toEqual([{ label: 'Tài khoản', href: '/tai-khoan' }]);
 		expect(getSiteTrail('/chinh-sach/bao-mat')).toEqual([{ label: 'Chính sách' }]);
-		expect(getSiteTrail('/my-space')).toEqual([{ label: 'Không gian của tôi' }]);
-		expect(getSiteTrail('/my-space/active-recall')).toEqual([
-			{ label: 'Không gian của tôi', href: '/my-space' },
-			{ label: 'Ôn tập' },
-		]);
-		expect(getSiteTrail('/my-space/active-recall/hrm')).toEqual([
-			{ label: 'Không gian của tôi', href: '/my-space' },
-			{ label: 'Ôn tập' },
-		]);
-		expect(getSiteTrail('/my-space/tests')).toEqual([
-			{ label: 'Không gian của tôi', href: '/my-space' },
-			{ label: 'Bài kiểm tra' },
-		]);
-		expect(getSiteTrail('/my-space/tests/hrm')).toEqual([
-			{ label: 'Không gian của tôi', href: '/my-space' },
-			{ label: 'Bài kiểm tra' },
-		]);
+		expect(getSiteTrail('/my-space')).toEqual([]);
+		expect(getSiteTrail('/my-space/active-recall')).toEqual([{ label: 'Ôn tập' }]);
+		expect(getSiteTrail('/my-space/active-recall/hrm')).toEqual([{ label: 'Ôn tập' }]);
+		expect(getSiteTrail('/my-space/tests')).toEqual([{ label: 'Bài kiểm tra' }]);
+		expect(getSiteTrail('/my-space/tests/hrm')).toEqual([{ label: 'Bài kiểm tra' }]);
 		expect(getSiteTrail('/my-space/tests/hrm/play')).toEqual([]);
 		expect(getSiteTrail('/khong-co-trang')).toEqual([]);
 	});

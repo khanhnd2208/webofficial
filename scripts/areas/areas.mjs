@@ -172,7 +172,6 @@ export const SHARED = [
 	'src/components/motion',
 	'src/components/admin',
 	'src/components/forms',
-	'src/components/myspace/MySpaceGrid.tsx',
 	// App shell, metadata, and account
 	'src/app/layout.tsx',
 	'src/app/globals.css',
@@ -189,7 +188,6 @@ export const SHARED = [
 	'src/app/dang-nhap',
 	'src/app/tai-khoan/page.tsx',
 	'src/app/tai-khoan/ProfileForm.tsx',
-	'src/app/my-space/page.tsx',
 	'src/app/my-space/error.tsx',
 	// Admin shell
 	'src/app/admin/layout.tsx',

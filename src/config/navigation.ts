@@ -230,11 +230,6 @@ export function isMySpacePath(pathname: string): boolean {
 	return pathname === routes.mySpace || pathname.startsWith(`${routes.mySpace}/`);
 }
 
-/** My Space hub only — not nested test pages. */
-export function isMySpaceHubPath(pathname: string): boolean {
-	return pathname === routes.mySpace;
-}
-
 /** Quiz play surface — owns its own back chrome; hide site GateBack chip. */
 export function isMySpaceQuizPlayPath(pathname: string): boolean {
 	return /^\/my-space\/tests\/[^/]+\/play\/?$/.test(pathname);
@@ -337,13 +332,12 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 	if (path === '/chinh-sach' || path.startsWith('/chinh-sach/')) {
 		return [{ label: 'Chính sách' }];
 	}
-	if (path === routes.mySpace) return [{ label: 'Không gian của tôi' }];
 	if (path === routes.activeRecall || path.startsWith(`${routes.activeRecall}/`)) {
-		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Ôn tập' }];
+		return [{ label: 'Ôn tập' }];
 	}
 	if (isMySpaceQuizPlayPath(path)) return [];
 	if (path === routes.mySpaceTests || path.startsWith(`${routes.mySpaceTests}/`)) {
-		return [{ label: 'Không gian của tôi', href: routes.mySpace }, { label: 'Bài kiểm tra' }];
+		return [{ label: 'Bài kiểm tra' }];
 	}
 	return [];
 }

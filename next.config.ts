@@ -148,6 +148,9 @@ const nextConfig: NextConfig = {
 			},
 			{ source: '/admin/teaching', destination: '/my-space/teaching', permanent: false },
 
+			// The My Space hub repeated Mục lục's doors. Temporary while the merge settles.
+			{ source: '/my-space', destination: '/muc-luc', permanent: false },
+
 			// Temporary admin workspace consolidations (non-permanent until stable)
 			{ source: '/messages', destination: '/admin/tools/messages', permanent: false },
 			{ source: '/messages/:path*', destination: '/admin/tools/messages/:path*', permanent: false },

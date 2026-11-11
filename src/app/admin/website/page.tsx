@@ -24,7 +24,6 @@ const PUBLIC_PAGES: {
 		manage: { href: routes.admin.posts, label: 'Sửa bài viết (lưu trữ)' },
 	},
 	{ href: routes.contact, label: 'Liên hệ', description: 'Biểu mẫu gửi lời nhắn công khai.' },
-	{ href: routes.mySpace, label: 'My Space', description: 'Cổng vào Teaching.' },
 ];
 
 export default function AdminWebsitePage() {

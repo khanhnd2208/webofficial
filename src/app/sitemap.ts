@@ -3,6 +3,7 @@ import type { MetadataRoute } from 'next';
 import { isArchivedPublicPath } from '@/config/moduleRegistry';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
+import { aboutPagePaused } from '@/content/about';
 import { projects } from '@/features/portfolio';
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -16,12 +17,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			changeFrequency: 'weekly',
 			priority: 0.9,
 		},
-		{
-			url: absoluteUrl(routes.about),
-			lastModified: now,
-			changeFrequency: 'monthly',
-			priority: 0.9,
-		},
+		// While the introduction is paused, /gioi-thieu only redirects to /lien-he.
+		...(aboutPagePaused
+			? []
+			: [
+					{
+						url: absoluteUrl(routes.about),
+						lastModified: now,
+						changeFrequency: 'monthly' as const,
+						priority: 0.9,
+					},
+				]),
 		{
 			url: absoluteUrl(routes.experiences),
 			lastModified: now,
@@ -34,12 +40,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			changeFrequency: 'monthly' as const,
 			priority: 0.8,
 		})),
-		{
-			url: absoluteUrl(routes.mySpace),
-			lastModified: now,
-			changeFrequency: 'monthly',
-			priority: 0.75,
-		},
 		{
 			url: absoluteUrl(routes.contact),
 			lastModified: now,

@@ -23,7 +23,7 @@ export default function MySpaceError({
 				Có lỗi xảy ra
 			</h1>
 			<p className="mt-3 max-w-sm font-sans text-base text-ink-secondary">
-				Không tải được nội dung. Thử lại, hoặc quay về Không gian của tôi.
+				Không tải được nội dung. Thử lại, hoặc quay về Mục lục.
 			</p>
 			<div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
 				<button
@@ -34,10 +34,10 @@ export default function MySpaceError({
 					Thử lại
 				</button>
 				<Link
-					href={routes.mySpace}
+					href={routes.toc}
 					className="font-sans text-sm text-ink-secondary transition-colors hover:text-ink"
 				>
-					← Không gian của tôi
+					← Mục lục
 				</Link>
 			</div>
 		</main>
