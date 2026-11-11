@@ -9,7 +9,6 @@ const about = {
 	label: 'Về tôi',
 	description: 'Người thầy.',
 	icon: '/brand/toc/about-v1.webp',
-	eyebrow: 'About me',
 };
 
 function doorIds() {
@@ -41,6 +40,14 @@ describe('TocDoors', () => {
 		expect(game).toHaveAttribute('data-muted', '');
 		expect(game.className).toMatch(/muted/);
 		expect(within(game).getByText('fun.toiladuykhanh.com').tagName).toBe('STRONG');
+	});
+
+	it('marks only the door that leaves the site with an outward arrow', () => {
+		render(<TocDoors about={about} items={buildTocItems(null)} />);
+
+		expect(screen.getByTestId('gate-item-about')).toHaveTextContent('→');
+		expect(screen.getByTestId('myspace-tile-courses')).toHaveTextContent('→');
+		expect(screen.getByTestId('myspace-tile-board-game')).toHaveTextContent('↗');
 	});
 
 	it('adds Lớp học and Quản trị only for an admin, before the games door', () => {
