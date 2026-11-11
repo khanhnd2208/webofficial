@@ -41,9 +41,15 @@ test.describe('Editorial premium public experience', () => {
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
+		await expect(page.getByTestId('gate-item-about')).toHaveAttribute(
+			'href',
+			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
+		);
 
-		await expect(page.getByTestId('gate-item-experiences')).toHaveCount(0);
+		await expect(page.getByTestId('myspace-tile-experiences')).toHaveAttribute(
+			'href',
+			'/trai-nghiem',
+		);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await page.getByTestId('myspace-tile-courses').click();
 		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
@@ -52,7 +58,9 @@ test.describe('Editorial premium public experience', () => {
 	test('collaboration remains condensed with details available on demand', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/dich-vu');
-		await expect(page).toHaveURL(/\/gioi-thieu#dich-vu$/);
+		await expect(page).toHaveURL(
+			aboutPagePaused ? /\/lien-he(#dich-vu)?$/ : /\/gioi-thieu#dich-vu$/,
+		);
 		if (!aboutPagePaused) {
 			await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toBeVisible();
 			await expect(page.getByRole('heading', { name: 'Cố vấn quản trị' })).toBeVisible();

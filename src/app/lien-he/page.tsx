@@ -3,8 +3,8 @@ import { Suspense } from 'react';
 
 import { ContactFormFromUrl } from '@/components/contact/ContactForm';
 import { routes } from '@/config/routes';
-import { absoluteUrl, siteProfile } from '@/config/site';
-import { contactPage } from '@/content/publicMarketing';
+import { absoluteUrl } from '@/config/site';
+import { contactChannels, contactPage } from '@/content/publicMarketing';
 import { getInquiryAvailability } from '@/lib/inquiryAvailability';
 
 export const metadata: Metadata = {
@@ -16,8 +16,6 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
 	const availability = getInquiryAvailability();
-	const email = siteProfile.contactEmail?.trim();
-	const social = siteProfile.socialLinks?.filter((item) => item.href && item.label) ?? [];
 
 	return (
 		<main className="bg-canvas">
@@ -30,29 +28,31 @@ export default function ContactPage() {
 						<p className="mt-8 border-l border-accent pl-5 font-display text-xl italic leading-[1.45] text-ink md:text-2xl">
 							{contactPage.aside}
 						</p>
-						{email || social.length > 0 ? (
-							<div className="mt-10 border-t border-hairline pt-7">
-								<p className="editorial-label">Kênh trực tiếp</p>
-								<div className="mt-4 flex flex-wrap gap-x-5 gap-y-3">
-									{email ? (
-										<a href={`mailto:${email}`} className="editorial-text-link">
-											{email}
-										</a>
-									) : null}
-									{social.map((item) => (
-										<a
-											key={item.href}
-											href={item.href}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="editorial-text-link"
-										>
-											{item.label}
-										</a>
-									))}
-								</div>
-							</div>
-						) : null}
+						<div className="mt-10 border-t border-hairline pt-7">
+							<p className="editorial-label">Kênh trực tiếp</p>
+							<ul className="mt-4 space-y-5" aria-label="Kênh liên hệ">
+								{contactChannels.map((channel) => {
+									const external = channel.href.startsWith('http');
+									return (
+										<li key={channel.id}>
+											<p className="text-footnote text-ink-secondary">{channel.label}</p>
+											<a
+												href={channel.href}
+												className="editorial-text-link"
+												data-testid={`contact-${channel.id}`}
+												{...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+											>
+												{channel.value}
+											</a>
+											<p className="mt-1 text-footnote leading-relaxed text-ink-secondary">
+												{channel.description}
+												{'note' in channel ? ` ${channel.note}` : null}
+											</p>
+										</li>
+									);
+								})}
+							</ul>
+						</div>
 					</header>
 
 					<section

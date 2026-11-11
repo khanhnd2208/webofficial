@@ -22,7 +22,7 @@ export const routes = {
 	project: (slug: string) => `/du-an/${slug}` as const,
 	/** @deprecated Service offers now live at routes.aboutServices. */
 	services: '/dich-vu',
-	/** Focused hub for Teaching. */
+	/** Parent of the Teaching and course workspaces; the bare path redirects to Mục lục. */
 	mySpace: '/my-space',
 	/** Board games moved to their own site. The My Space tile links here. */
 	funGames: 'https://fun.toiladuykhanh.com',

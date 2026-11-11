@@ -29,12 +29,12 @@ test.describe('Focused operating mode', () => {
 		expect(xml).not.toContain('/vocabulary');
 	});
 
-	test('admin My Space leads to Teaching and hides retired spaces', async ({ page, context }) => {
+	test('admin Mục lục leads to Teaching and hides retired spaces', async ({ page, context }) => {
 		await addAdminSession(context);
 		await page.goto('/my-space');
-		await expect(page).toHaveURL(/\/my-space$/);
-		await expect(page.getByTestId('my-space')).toBeVisible();
-		// Courses and Board Game joined Teaching in My Space; retired spaces stay out.
+		await expect(page).toHaveURL(/\/muc-luc$/);
+		await expect(page.getByTestId('gate-home')).toBeVisible();
+		// The old My Space hub now lands on Mục lục; retired spaces stay out.
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
 			'href',
 			'/my-space/teaching',

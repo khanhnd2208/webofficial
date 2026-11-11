@@ -136,7 +136,6 @@ shared:
   - src/components/motion/**
   - src/components/admin/**
   - src/components/forms/**
-  - src/components/myspace/MySpaceGrid.tsx
   - src/app/layout.tsx
   - src/app/globals.css
   - src/app/my-class-theme.css
@@ -151,7 +150,6 @@ shared:
   - src/app/dang-nhap/**
   - src/app/tai-khoan/page.tsx
   - src/app/tai-khoan/ProfileForm.tsx
-  - src/app/my-space/page.tsx
   - src/app/my-space/error.tsx
   - src/app/admin/layout.tsx
   - src/app/admin/page.tsx

@@ -14,8 +14,8 @@ export default async function MySpaceTeachingPage() {
 	return (
 		<div className="mx-auto max-w-6xl py-6 sm:py-8">
 			<TeachingAppHeader
-				backHref={routes.mySpace}
-				backLabel="My Space"
+				backHref={routes.toc}
+				backLabel="Mục lục"
 				eyebrow="Teaching"
 				title="Lớp và môn học"
 				description="Mở lớp để điểm danh, chấm CP hoặc chia sẻ link cho sinh viên."

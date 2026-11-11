@@ -24,9 +24,14 @@ describe('TocDoors', () => {
 
 		expect(doorIds()).toEqual([
 			'gate-item-about',
+			'myspace-tile-experiences',
 			'myspace-tile-courses',
 			'myspace-tile-board-game',
 		]);
+		expect(screen.getByTestId('myspace-tile-experiences')).toHaveAttribute(
+			'href',
+			routes.experiences,
+		);
 		expect(screen.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
 		expect(screen.queryByTestId('myspace-tile-teaching')).not.toBeInTheDocument();
 		expect(screen.queryByTestId('myspace-tile-admin')).not.toBeInTheDocument();
@@ -48,6 +53,7 @@ describe('TocDoors', () => {
 
 		expect(doorIds()).toEqual([
 			'gate-item-about',
+			'myspace-tile-experiences',
 			'myspace-tile-courses',
 			'myspace-tile-teaching',
 			'myspace-tile-admin',

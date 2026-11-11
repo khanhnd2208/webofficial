@@ -37,11 +37,13 @@ test.describe('archived public learning surfaces', () => {
 		}
 	});
 
-	test('keeps a focused My Space hub of Courses and Board Game', async ({ page }) => {
+	test('sends the retired My Space hub to Mục lục, which keeps Courses and Board Game', async ({
+		page,
+	}) => {
 		await page.goto('/my-space');
-		await expect(page.getByTestId('my-space')).toHaveCount(1);
-		await expect(page).toHaveURL(/\/my-space$/);
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(2);
+		await expect(page).toHaveURL(/\/muc-luc$/);
+		await expect(page.getByTestId('gate-home')).toHaveCount(1);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(3);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute(
 			'href',
@@ -51,11 +53,5 @@ test.describe('archived public learning surfaces', () => {
 			'href',
 			'https://fun.toiladuykhanh.com',
 		);
-		await expect(page.getByTestId('myspace-note-board-game')).toHaveText(
-			'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
-		);
-		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-tests')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-my-class')).toHaveCount(0);
 	});
 });

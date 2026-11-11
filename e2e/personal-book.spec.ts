@@ -22,10 +22,8 @@ for (const width of [320, 390, 768, 1024, 1440]) {
 					await page.getByTestId('intro-open-toc').evaluate((el) => getComputedStyle(el).position),
 				).not.toBe('fixed');
 			}
-			if (path === '/gioi-thieu') {
-				await expect(
-					page.locator(aboutPagePaused ? '.contact-profile-item' : '.about-path'),
-				).toHaveCount(2);
+			if (path === '/gioi-thieu' && !aboutPagePaused) {
+				await expect(page.locator('.about-path')).toHaveCount(2);
 				await expect(page.locator('details')).toHaveCount(0);
 				const words = await page.locator('main').innerText();
 				expect(words.split(/\s+/).length).toBeLessThan(150);
@@ -103,7 +101,7 @@ test('projects and collaboration support keyboard navigation and reduced motion'
 	await page.goto('/muc-luc');
 	await page.getByTestId('gate-item-about').focus();
 	await page.keyboard.press('Enter');
-	await expect(page).toHaveURL(/\/gioi-thieu$/);
+	await expect(page).toHaveURL(aboutPagePaused ? /\/lien-he$/ : /\/gioi-thieu$/);
 	if (aboutPagePaused) {
 		await page.goto('/trai-nghiem');
 	} else {
@@ -143,10 +141,10 @@ test('old hubs redirect permanently to introduction sections and preserve query 
 		expect(target.pathname).toBe(targetPath);
 		expect(target.hash).toBe(`#${anchor}`);
 		expect(target.searchParams.get('utm_source')).toBe('bookmark');
+		// While the introduction is paused, /gioi-thieu goes on to /lien-he, which has no #dich-vu.
+		if (aboutPagePaused && targetPath === '/gioi-thieu') continue;
 		await page.goto(oldPath);
 		await expect(page).toHaveURL(new RegExp(`${targetPath}#${anchor}$`));
-		// The contact card that stands in for the introduction has no #dich-vu section.
-		if (aboutPagePaused && targetPath === '/gioi-thieu') continue;
 		await expect
 			.poll(async () => {
 				const bounds = await page.locator(`#${anchor}`).boundingBox();
@@ -245,7 +243,9 @@ test('record rendering measurements and capture a reading sequence', async ({ pa
 			}))),
 		});
 		if (path === '/dich-vu' && !aboutPagePaused) {
-			await expect(page).toHaveURL(/\/gioi-thieu#dich-vu$/);
+			await expect(page).toHaveURL(
+				aboutPagePaused ? /\/lien-he(#dich-vu)?$/ : /\/gioi-thieu#dich-vu$/,
+			);
 			await expect(page.getByRole('link', { name: 'Trao đổi về cố vấn' })).toBeVisible();
 		}
 	}

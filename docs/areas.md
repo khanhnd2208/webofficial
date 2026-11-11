@@ -66,7 +66,7 @@ Khu này chưa có spec end-to-end riêng, nên sửa ở đây chỉ chạy smo
 Mọi khu được import những chỗ này. Danh sách đầy đủ nằm trong `SHARED` của `areas.mjs`.
 
 - `src/lib`, `config`, `models`, `services`, `types`, `utils`, `test`, `assets`
-- `src/components/ui`, `site`, `motion`, `admin`, `forms`, `myspace/MySpaceGrid.tsx`
+- `src/components/ui`, `site`, `motion`, `admin`, `forms`
 - shell app (`layout.tsx`, `globals.css`, `my-class-theme.css`, trang lỗi, `robots`, `sitemap`), đăng nhập, tài khoản, shell `/my-space` và shell `/admin` (users, settings, media, website, archive)
 - API nền tảng: `auth`, `health`, `profile`, `streak`, `uploads`, `admin/users`
 - `src/proxy.ts` (Next 16 đổi tên từ `middleware.ts`), `prisma/`, `scripts/`, file cấu hình ở thư mục gốc

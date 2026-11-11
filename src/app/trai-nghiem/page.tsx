@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import { TrackedLink } from '@/components/marketing';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
-import { aboutCollaboration, aboutProjects } from '@/content/about';
+import { aboutCollaboration, aboutPagePaused, aboutProjects } from '@/content/about';
 import { serviceOffers } from '@/content/services';
 import StoryList from '@/features/experiences/StoryList';
 import { getProject } from '@/features/portfolio';
@@ -121,11 +121,11 @@ export default async function ExperiencesPage({
 					</div>
 				</section>
 				<footer className="experience-footer">
-					<Link href={routes.about} className="about-text-link">
-						← Về tôi
+					<Link href={routes.toc} className="about-text-link">
+						← Mục lục
 					</Link>
-					<Link href={routes.mySpace} className="about-text-link">
-						Góc học tập · Không gian của tôi <span aria-hidden="true">↗</span>
+					<Link href={aboutPagePaused ? routes.contact : routes.about} className="about-text-link">
+						{aboutPagePaused ? 'Liên hệ' : 'Về tôi'} <span aria-hidden="true">→</span>
 					</Link>
 				</footer>
 			</div>

@@ -32,9 +32,9 @@ test.describe('Mobile public smoke', () => {
 	test('the board-game tile names the new address without overflowing a phone', async ({
 		page,
 	}) => {
-		await page.goto('/my-space');
-		await expect(page.getByTestId('myspace-note-board-game')).toHaveText(
-			'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
+		await page.goto('/muc-luc');
+		await expect(page.getByTestId('myspace-tile-board-game')).toContainText(
+			'fun.toiladuykhanh.com',
 		);
 		expect(
 			await page.evaluate(

@@ -32,8 +32,8 @@ export default function KnowledgeHeader({
 							Đăng nhập
 						</Link>
 					) : null}
-					<Link href={routes.mySpace} className="mc-header-link">
-						My Space
+					<Link href={routes.toc} className="mc-header-link">
+						Mục lục
 					</Link>
 				</div>
 			</div>

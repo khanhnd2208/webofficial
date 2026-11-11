@@ -36,13 +36,6 @@ export interface MySpaceTile {
 	adminOnly?: boolean;
 }
 
-export const mySpacePage = {
-	title: 'Không gian của tôi',
-	lead: 'Teaching, khóa học và những trải nghiệm chơi cùng nhau.',
-	comingSoonLabel: 'Đang phát triển',
-	comingSoonNote: 'Góc này đang được hoàn thiện.',
-} as const;
-
 export const mySpaceTiles: MySpaceTile[] = [
 	{
 		id: 'teaching',

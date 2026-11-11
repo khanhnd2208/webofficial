@@ -88,15 +88,15 @@ test.describe('Sign-in returns to where it started', () => {
 		await expect(page.getByTestId('login-continue')).toHaveAttribute('href', '/muc-luc');
 
 		// With a destination (a gate or a retry) it goes straight on.
-		await page.goto('/dang-nhap?from=%2Fgioi-thieu');
-		await expect(page).toHaveURL(/\/gioi-thieu$/);
+		await page.goto('/dang-nhap?from=%2Ftrai-nghiem');
+		await expect(page).toHaveURL(/\/trai-nghiem$/);
 	});
 
 	test('pages from before sign-in show the account when reached with Back', async ({
 		page,
 		context,
 	}) => {
-		await page.goto('/gioi-thieu');
+		await page.goto('/trai-nghiem');
 		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute(
 			'data-auth-state',
 			'signed-out',
@@ -104,7 +104,7 @@ test.describe('Sign-in returns to where it started', () => {
 		await page.goto('/lien-he');
 		await addStudentSession(context);
 		await page.goBack();
-		await expect(page).toHaveURL(/\/gioi-thieu$/);
+		await expect(page).toHaveURL(/\/trai-nghiem$/);
 		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute(
 			'data-auth-state',
 			'signed-in',
@@ -113,10 +113,10 @@ test.describe('Sign-in returns to where it started', () => {
 
 	test('the account menu signs out and stays on a public page', async ({ page, context }) => {
 		await addStudentSession(context);
-		await page.goto('/gioi-thieu');
+		await page.goto('/trai-nghiem');
 		await page.getByTestId('site-auth-chip').click();
 		await page.getByTestId('site-sign-out').click();
-		await expect(page).toHaveURL(/\/gioi-thieu$/);
+		await expect(page).toHaveURL(/\/trai-nghiem$/);
 		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute(
 			'data-auth-state',
 			'signed-out',

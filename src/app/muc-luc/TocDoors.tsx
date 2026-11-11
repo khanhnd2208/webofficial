@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { routes } from '@/config/routes';
 import { getMySpaceTiles } from '@/content/mySpace';
 import type { UserRole } from '@/types/user';
 import styles from './toc.module.css';
@@ -19,8 +20,17 @@ export interface TocSpaceItem extends TocDoor {
 	muted?: boolean;
 }
 
-/** About, then courses, then Lớp học and Quản trị for admins, with the moved games last. */
-const DOOR_ORDER = ['courses', 'teaching', 'admin', 'board-game'];
+/** About, experiences, courses, then Lớp học and Quản trị for admins, with the moved games last. */
+const DOOR_ORDER = ['experiences', 'courses', 'teaching', 'admin', 'board-game'];
+
+/** Trải nghiệm is open to everyone and has no My Space tile, so Mục lục adds it here. */
+const EXPERIENCES_DOOR: TocSpaceItem = {
+	id: 'experiences',
+	href: routes.experiences,
+	label: 'Trải nghiệm',
+	description: 'Dự án, chuyến đi và những câu chuyện.',
+	icon: '/brand/spots/complete-v1.webp',
+};
 
 const tocIcons: Record<string, string> = {
 	teaching: '/brand/toc/teaching-v1.webp',
@@ -53,10 +63,8 @@ function doorRank(id: string): number {
  * until that door is removed.
  */
 export function buildTocItems(role?: UserRole | null): TocSpaceItem[] {
-	return getMySpaceTiles(role)
+	const tiles = getMySpaceTiles(role)
 		.filter((tile) => tile.href)
-		.slice()
-		.sort((a, b) => doorRank(a.id) - doorRank(b.id))
 		.flatMap((tile) => {
 			const icon = tocIcons[tile.id] ?? (tile.visual.kind === 'image' ? tile.visual.src : null);
 			if (!icon || !tile.href) return [];
@@ -71,6 +79,7 @@ export function buildTocItems(role?: UserRole | null): TocSpaceItem[] {
 				},
 			];
 		});
+	return [EXPERIENCES_DOOR, ...tiles].sort((a, b) => doorRank(a.id) - doorRank(b.id));
 }
 
 function Arrow() {

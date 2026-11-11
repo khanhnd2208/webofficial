@@ -1,17 +1,13 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl, SITE_NAME } from '@/config/site';
-import { aboutContact, aboutHero, aboutPagePaused } from '@/content/about';
+import { aboutHero, aboutPagePaused } from '@/content/about';
 import AboutLetter from './AboutLetter';
-import ContactCard from './ContactCard';
 
-const title = aboutPagePaused
-	? `${aboutContact.title} — ${aboutHero.fullName}`
-	: `Giới thiệu — ${aboutHero.fullName}`;
-const description = aboutPagePaused
-	? `Email và Instagram của ${aboutHero.fullName} — ${aboutHero.role}, ${aboutHero.organisation}.`
-	: `${aboutHero.fullName} — ${aboutHero.role}, ${aboutHero.organisation}. ${aboutHero.promise}`;
+const title = `Giới thiệu — ${aboutHero.fullName}`;
+const description = `${aboutHero.fullName} — ${aboutHero.role}, ${aboutHero.organisation}. ${aboutHero.promise}`;
 
 export const metadata: Metadata = {
 	title,
@@ -29,7 +25,7 @@ export const metadata: Metadata = {
 				url: absoluteUrl('/gioi-thieu/opengraph-image'),
 				width: 1200,
 				height: 630,
-				alt: aboutPagePaused ? aboutContact.title : aboutHero.manifesto,
+				alt: aboutHero.manifesto,
 			},
 		],
 	},
@@ -42,5 +38,7 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
-	return aboutPagePaused ? <ContactCard /> : <AboutLetter />;
+	// While the introduction is rewritten, Liên hệ is the one page that lists every channel.
+	if (aboutPagePaused) redirect(routes.contact);
+	return <AboutLetter />;
 }
