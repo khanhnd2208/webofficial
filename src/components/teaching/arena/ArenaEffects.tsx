@@ -5,6 +5,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 
 import { GRAPHIC_COLORS as C } from '@/config/graphicColors';
 
+import { ArenaStrike } from './ArenaStrike';
+import type { ArenaCharacter } from './arenaCharacters';
+import { STRIKE_HERO_SCALE, STRIKE_MS, type StrikeCue, type StrikePower } from './arenaStrikes';
 import styles from './arena.module.css';
 
 export type FxTone = 'damage' | 'heal' | 'gold';
@@ -75,6 +78,37 @@ export function arenaPlayerElement(enrollmentId: string) {
 	return document.querySelector(`[data-player-id="${CSS.escape(enrollmentId)}"]`);
 }
 
+/**
+ * Where a hero's attack leaves from: the weapon point of the strike frame, at
+ * the student's resting place and attack size. Layout offsets are used, not
+ * the on-screen box, because the student may still be dropping from the mouth.
+ */
+function strikeOrigin(enrollmentId: string, hero: ArenaCharacter, target: { x: number }) {
+	const player = arenaPlayerElement(enrollmentId);
+	const figure = player?.querySelector<HTMLElement>('[data-character]');
+	if (!(player instanceof HTMLElement) || !figure) return null;
+	const floor = player.offsetParent?.getBoundingClientRect();
+	// Without layout (a hidden floor) the on-screen box is the best there is.
+	const box = figure.getBoundingClientRect();
+	const left = floor
+		? floor.left + player.offsetLeft - player.offsetWidth / 2 + figure.offsetLeft
+		: box.left;
+	const top = floor
+		? floor.top + player.offsetTop - player.offsetHeight / 2 + figure.offsetTop
+		: box.top;
+	const width = floor ? figure.offsetWidth : box.width;
+	const height = floor ? figure.offsetHeight : box.height;
+	const facingLeft = target.x < left + width / 2;
+	const originX = (facingLeft ? 100 - hero.origin[0] : hero.origin[0]) / 100;
+	// The figure grows from its feet while it attacks.
+	const feet = { x: left + width / 2, y: top + height };
+	return {
+		facingLeft,
+		x: feet.x + (left + width * originX - feet.x) * STRIKE_HERO_SCALE,
+		y: feet.y + (top + (height * hero.origin[1]) / 100 - feet.y) * STRIKE_HERO_SCALE,
+	};
+}
+
 /** Pupil offset, in SVG units, so the monster looks at a student. */
 export function lookToward(monster: Element | null, enrollmentId: string | null) {
 	const target = enrollmentId ? arenaPlayerElement(enrollmentId) : null;
@@ -87,7 +121,7 @@ export function lookToward(monster: Element | null, enrollmentId: string | null)
 
 /**
  * Screen-level juice: shake, flashes, floating numbers, sparks, the tractor
- * beam and the boss banner. Everything is a no-op when `enabled` is false
+ * beam, hero attacks and the boss banner. Everything is a no-op when `enabled` is false
  * (reduced motion), so the game logic never has to check.
  */
 export function useArenaFx(enabled: boolean) {
@@ -99,6 +133,7 @@ export function useArenaFx(enabled: boolean) {
 	const [beam, setBeam] = useState<Beam | null>(null);
 	const [suck, setSuck] = useState<ArenaSuck | null>(null);
 	const [banner, setBanner] = useState<ArenaBanner | null>(null);
+	const [strikeCue, setStrikeCue] = useState<StrikeCue | null>(null);
 
 	useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
@@ -146,7 +181,7 @@ export function useArenaFx(enabled: boolean) {
 	);
 
 	const sparks = useCallback(
-		(anchor: Element | null, tone: FxTone, count = 46) => {
+		(anchor: Element | null, tone: FxTone, count = 46, accent?: string) => {
 			if (!enabled || !anchor) return;
 			const point = centre(anchor, 0.55);
 			void loadConfetti().then((confetti) => {
@@ -157,7 +192,7 @@ export function useArenaFx(enabled: boolean) {
 					gravity: 0.9,
 					ticks: 70,
 					scalar: 0.8,
-					colors: SPARKS[tone],
+					colors: accent ? [accent, accent, C.fff, ...SPARKS[tone]] : SPARKS[tone],
 					shapes: ['star', 'circle'],
 					origin: { x: point.x / window.innerWidth, y: point.y / window.innerHeight },
 					disableForReducedMotion: true,
@@ -235,6 +270,35 @@ export function useArenaFx(enabled: boolean) {
 		});
 	}, [after]);
 
+	/**
+	 * A hero attacks the boss. Returns which way the hero faces, or null when
+	 * nothing is drawn (reduced motion, or the student is not on the floor).
+	 */
+	const strike = useCallback(
+		(enrollmentId: string, monster: Element | null, hero: ArenaCharacter, power: StrikePower) => {
+			if (!enabled || !monster) return null;
+			const to = centre(monster, 0.52);
+			const origin = strikeOrigin(enrollmentId, hero, to);
+			if (!origin) return null;
+			counter.current += 1;
+			const id = counter.current;
+			const edge = 240;
+			setStrikeCue({
+				id,
+				from: { x: origin.x, y: origin.y },
+				to,
+				accent: hero.accent,
+				effect: hero.effect,
+				skill: hero.skill,
+				power,
+				align: origin.x < edge ? 'left' : origin.x > window.innerWidth - edge ? 'right' : undefined,
+			});
+			after(STRIKE_MS.end, () => setStrikeCue((latest) => (latest?.id === id ? null : latest)));
+			return { facingLeft: origin.facingLeft };
+		},
+		[enabled, after],
+	);
+
 	const announce = useCallback(
 		(title: string, subtitle: string) => {
 			if (!enabled) return;
@@ -257,6 +321,7 @@ export function useArenaFx(enabled: boolean) {
 					}}
 				/>
 			) : null}
+			{strikeCue ? <ArenaStrike key={strikeCue.id} cue={strikeCue} /> : null}
 			{flash ? (
 				<span
 					key={flash.id}
@@ -296,8 +361,9 @@ export function useArenaFx(enabled: boolean) {
 			hold,
 			release,
 			announce,
+			strike,
 		}),
-		[shake, flashScreen, pop, sparks, fireworks, lock, grab, hold, release, announce],
+		[shake, flashScreen, pop, sparks, fireworks, lock, grab, hold, release, announce, strike],
 	);
 
 	return { worldRef, suck, layer, ...actions };

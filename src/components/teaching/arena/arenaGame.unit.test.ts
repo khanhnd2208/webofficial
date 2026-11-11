@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import type { RecallArenaData } from '@/features/teaching/types';
 
 import {
-	bossName,
 	displayNames,
 	initialConfig,
 	matchesPlayerSearch,
@@ -78,14 +77,6 @@ describe('passStreak', () => {
 	});
 });
 
-describe('bossName', () => {
-	it('gives each round a name and cycles when the list runs out', () => {
-		expect(bossName(1)).toBe('Chúa Tể Quên Bài');
-		expect(bossName(2)).not.toBe(bossName(1));
-		expect(bossName(7)).toBe(bossName(1));
-	});
-});
-
 describe('course arena setup', () => {
 	const session = (id: string, classId: string, heldOn: string) => ({
 		id,
@@ -147,7 +138,18 @@ describe('course arena setup', () => {
 			deckIds: ['d2'],
 			guestIds: [],
 			excludedIds: [],
+			heroIds: [],
+			bossId: null,
 		});
+	});
+
+	it('remembers the chosen heroes and boss, dropping ones that no longer exist', () => {
+		const stored = { heroIds: ['lua-lem', 'retired-hero'], bossId: 'deadline' };
+		expect(initialConfig(data, null, stored)).toMatchObject({
+			heroIds: ['lua-lem'],
+			bossId: 'deadline',
+		});
+		expect(initialConfig(data, null, { bossId: 'retired-boss' }).bossId).toBeNull();
 	});
 
 	it('prefers the class the lecturer came from', () => {

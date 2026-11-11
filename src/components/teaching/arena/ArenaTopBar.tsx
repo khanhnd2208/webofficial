@@ -5,7 +5,7 @@ import { useEffect, useState, useSyncExternalStore, type RefObject } from 'react
 
 import { McIcon } from '@/components/myclass/ui';
 
-import { ARENA_MAX_HP, bossName } from './arenaGame';
+import { ARENA_MAX_HP } from './arenaGame';
 import { isArenaMuted, setArenaMuted, subscribeArenaMuted } from './arenaSound';
 import styles from './arena.module.css';
 
@@ -15,6 +15,7 @@ export function ArenaTopBar({
 	classHref,
 	hp,
 	round,
+	bossName,
 	low,
 	hpRef,
 	settingsLabel,
@@ -28,6 +29,7 @@ export function ArenaTopBar({
 	classHref: string;
 	hp: number;
 	round: number;
+	bossName: string;
 	/** Few hit points left: the bar pulses. */
 	low: boolean;
 	hpRef: RefObject<HTMLDivElement | null>;
@@ -66,7 +68,7 @@ export function ArenaTopBar({
 				aria-label={`Máu quái vật ${hp}/${ARENA_MAX_HP}`}
 			>
 				<span className={styles.hpLabel}>
-					Boss {round} · {bossName(round)}
+					Boss {round} · {bossName}
 				</span>
 				<span className={styles.hpValue}>
 					{hp}/{ARENA_MAX_HP}

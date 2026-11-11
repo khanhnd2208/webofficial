@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 
 import { useMotionTier } from '@/components/motion';
 
@@ -9,6 +9,7 @@ import type { RecallArenaPlayer } from '@/features/teaching/types';
 import { suckStyle, type ArenaSuck } from './ArenaEffects';
 import { ArenaCharacter } from './ArenaCharacter';
 import { arenaCharacterFor } from './arenaCharacters';
+import { STRIKE_HERO_SCALE } from './arenaStrikes';
 import styles from './arena.module.css';
 
 interface Spot {
@@ -24,6 +25,8 @@ interface Spot {
 export interface ArenaAttackCue {
 	enrollmentId: string;
 	sequence: number;
+	/** The boss is to the hero's left. */
+	facingLeft: boolean;
 }
 
 function layout(count: number) {
@@ -37,9 +40,11 @@ function baseSpots(count: number): Spot[] {
 	return Array.from({ length: count }, (_, index) => {
 		const row = Math.floor(index / cols);
 		const col = index % cols;
-		const stagger = row % 2 === 1 ? 0.5 : 0;
+		// A short last row sits in the middle instead of hugging the left wall.
+		const inRow = row === rows - 1 ? count - cols * (rows - 1) : cols;
+		const centred = inRow < cols ? (cols - inRow) / 2 : row % 2 === 1 ? 0.25 : 0;
 		return {
-			x: Math.min(97, ((col + 0.5 + stagger * 0.5) / cols) * 100),
+			x: Math.min(97, ((col + 0.5 + centred) / cols) * 100),
 			y: ((row + 0.55) / rows) * 100,
 			dx: 0,
 			dy: 0,
@@ -62,7 +67,7 @@ export function ArenaFloor({
 	names,
 	suck,
 	attackCue,
-	monsterRef,
+	heroIds,
 }: {
 	players: RecallArenaPlayer[];
 	highlightId: string | null;
@@ -74,15 +79,14 @@ export function ArenaFloor({
 	/** The grab in progress, if any: reticle, flight into the mouth, landing. */
 	suck: ArenaSuck | null;
 	attackCue: ArenaAttackCue | null;
-	monsterRef: RefObject<HTMLDivElement | null>;
+	/** Heroes the lecturer put in play; empty means all of them. */
+	heroIds: readonly string[];
 }) {
 	const { reduced: reducedMotion } = useMotionTier();
-	const floorRef = useRef<HTMLDivElement>(null);
 	const count = players.length;
 	const { cols, rows } = layout(count);
 	const base = useMemo(() => baseSpots(count), [count]);
 	const [wander, setWander] = useState<Spot[]>(base);
-	const [attackVector, setAttackVector] = useState({ id: '', x: 90, y: -90 });
 	// A new head count re-lays out the floor; until the next wander tick use the fresh layout.
 	const spots = wander.length === count ? wander : base;
 
@@ -103,38 +107,30 @@ export function ArenaFloor({
 		return () => window.clearInterval(timer);
 	}, [count, cols, rows, reducedMotion, hunting, caughtId, attackCue]);
 
-	useEffect(() => {
-		if (!attackCue || !floorRef.current || !monsterRef.current) return;
-		const player = Array.from(
-			floorRef.current.querySelectorAll<HTMLElement>('[data-player-id]'),
-		).find((element) => element.dataset.playerId === attackCue.enrollmentId);
-		if (!player) return;
-		const from = player.getBoundingClientRect();
-		const to = monsterRef.current.getBoundingClientRect();
-		setAttackVector({
-			id: attackCue.enrollmentId,
-			x: to.left + to.width / 2 - (from.left + from.width / 2),
-			y: to.top + to.height / 2 - (from.top + from.height * 0.4),
-		});
-	}, [attackCue, monsterRef]);
-
 	const size = count <= 24 ? 82 : count <= 40 ? 70 : 62;
 	const characters = useMemo(
 		() =>
 			new Map(
-				players.map((player) => [player.enrollmentId, arenaCharacterFor(player.studentCode)]),
+				players.map((player) => [
+					player.enrollmentId,
+					arenaCharacterFor(player.studentCode, heroIds),
+				]),
 			),
-		[players],
+		[players, heroIds],
 	);
 
 	return (
-		<div ref={floorRef} className={styles.floor} data-hunting={hunting || undefined}>
+		<div
+			className={styles.floor}
+			data-hunting={hunting || undefined}
+			data-striking={(attackCue && !reducedMotion) || undefined}
+			style={{ '--strike-hero-scale': STRIKE_HERO_SCALE } as CSSProperties}
+		>
 			{players.map((player, index) => {
 				const spot = spots[index] ?? base[index]!;
 				const highlighted = highlightId === player.enrollmentId;
 				const caught = caughtId === player.enrollmentId;
 				const attacking = attackCue?.enrollmentId === player.enrollmentId;
-				const vector = attackVector.id === player.enrollmentId ? attackVector : { x: 90, y: -90 };
 				return (
 					<div
 						key={player.enrollmentId}
@@ -142,7 +138,7 @@ export function ArenaFloor({
 						data-highlight={highlighted || undefined}
 						data-caught={caught || undefined}
 						data-called={calledIds.has(player.enrollmentId) || undefined}
-						data-attacking={attacking || undefined}
+						data-attacking={(attacking && !reducedMotion) || undefined}
 						data-player-id={player.enrollmentId}
 						data-suck={suck?.id === player.enrollmentId ? suck.stage : undefined}
 						data-testid="arena-player"
@@ -154,7 +150,12 @@ export function ArenaFloor({
 							...suckStyle(suck, player.enrollmentId),
 						}}
 					>
-						<span className={styles.playerFigure}>
+						<span
+							className={styles.playerFigure}
+							style={
+								{ '--hero-accent': characters.get(player.enrollmentId)!.accent } as CSSProperties
+							}
+						>
 							<ArenaCharacter
 								character={characters.get(player.enrollmentId)!}
 								size={size}
@@ -162,8 +163,7 @@ export function ArenaFloor({
 									spot.walking && !hunting && !caught && !suck && !attackCue && !reducedMotion
 								}
 								attacking={attacking && !reducedMotion}
-								facingLeft={attacking ? vector.x < 0 : spot.facingLeft}
-								attackVector={vector}
+								facingLeft={attacking ? attackCue.facingLeft : spot.facingLeft}
 							/>
 						</span>
 						<span
