@@ -1,0 +1,489 @@
+/*
+ * A hero's attack: charge at the hero, shots along curved paths, burst on the
+ * boss. Positions and timing arrive as CSS variables from ArenaStrike.tsx;
+ * every effect in arenaCharacters.ts has its own shot shape below.
+ */
+
+.strike {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.origin,
+.impact {
+	position: absolute;
+	width: 0;
+	height: 0;
+}
+
+/* Charge: a ring closes in on the hero's weapon while a core of light grows. */
+.charge,
+.chargeCore {
+	position: absolute;
+	top: -4.5rem;
+	left: -4.5rem;
+	width: 9rem;
+	height: 9rem;
+	border-radius: 50%;
+	opacity: 0;
+}
+
+.charge {
+	border: 4px solid var(--strike-accent);
+	box-shadow:
+		0 0 1.5rem var(--strike-accent),
+		inset 0 0 1.5rem var(--strike-accent);
+	animation: strike-charge var(--strike-launch) ease-in both;
+}
+
+.chargeCore {
+	background: radial-gradient(circle, #fff 0 14%, var(--strike-accent) 34%, transparent 62%);
+	animation: strike-core calc(var(--strike-launch) + 180ms) ease-in both;
+}
+
+@keyframes strike-charge {
+	0% {
+		opacity: 0;
+		transform: scale(1.5);
+	}
+	30% {
+		opacity: 0.9;
+	}
+	90% {
+		opacity: 1;
+		transform: scale(0.22);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(0.1);
+	}
+}
+
+@keyframes strike-core {
+	0% {
+		opacity: 0;
+		transform: scale(0.1);
+	}
+	78% {
+		opacity: 1;
+		transform: scale(0.75);
+	}
+	86% {
+		opacity: 1;
+		transform: scale(1.5);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(2.4);
+	}
+}
+
+/* The skill's name, shouted comic-book style above the hero. */
+.callout {
+	position: absolute;
+	bottom: 4.6rem;
+	left: 0;
+	color: #fff;
+	font-size: clamp(1.25rem, 2.3vw, 2.4rem);
+	font-style: italic;
+	font-weight: 900;
+	line-height: 1;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+	text-shadow:
+		0 0.08em 0 var(--strike-accent),
+		0 0 1.2rem var(--strike-accent);
+	text-transform: uppercase;
+	-webkit-text-stroke: 0.09em #1e1033;
+	paint-order: stroke fill;
+	opacity: 0;
+	transform: translateX(-50%);
+	animation: strike-callout var(--strike-impact) cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.strike[data-align='left'] .callout {
+	left: -3rem;
+	transform: none;
+}
+
+.strike[data-align='right'] .callout {
+	right: -3rem;
+	left: auto;
+	transform: none;
+}
+
+.strike[data-quiet] .callout {
+	display: none;
+}
+
+.strike[data-power='3'] .callout {
+	color: #fde047;
+	font-size: clamp(1.6rem, 3vw, 3.2rem);
+}
+
+@keyframes strike-callout {
+	0% {
+		opacity: 0;
+		scale: 0.3;
+		rotate: -10deg;
+	}
+	14% {
+		opacity: 1;
+		scale: 1.15;
+		rotate: -5deg;
+	}
+	22% {
+		scale: 1;
+	}
+	82% {
+		opacity: 1;
+		scale: 1;
+		rotate: -5deg;
+	}
+	100% {
+		opacity: 0;
+		scale: 1.1;
+		rotate: -5deg;
+		translate: 0 -1rem;
+	}
+}
+
+/* Shots: `.aim` points at the boss, `.travel` flies there, `.bow` curves the path. */
+.aim {
+	position: absolute;
+	width: 0;
+	height: 0;
+}
+
+.travel,
+.bow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	animation-duration: var(--strike-flight);
+	animation-delay: calc(var(--strike-launch) + var(--shot-delay));
+	animation-fill-mode: both;
+}
+
+.travel {
+	animation-name: strike-travel;
+	animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.55);
+}
+
+.bow {
+	animation-name: strike-bow;
+}
+
+@keyframes strike-travel {
+	0% {
+		opacity: 0;
+		transform: translateX(0) scale(0.3);
+	}
+	12% {
+		opacity: 1;
+		transform: translateX(calc(var(--shot-distance) * 0.06)) scale(1);
+	}
+	94% {
+		opacity: 1;
+		transform: translateX(var(--shot-distance)) scale(1.15);
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(var(--shot-distance)) scale(1.6);
+	}
+}
+
+@keyframes strike-bow {
+	0% {
+		transform: translateY(0);
+		animation-timing-function: ease-out;
+	}
+	45% {
+		transform: translateY(var(--shot-bend));
+		animation-timing-function: ease-in;
+	}
+	100% {
+		transform: translateY(0);
+	}
+}
+
+.trail {
+	position: absolute;
+	top: calc(var(--strike-size) * -0.2);
+	right: 0;
+	width: calc(var(--strike-size) * 2.6);
+	height: calc(var(--strike-size) * 0.4);
+	background: linear-gradient(90deg, transparent, var(--strike-accent) 70%, #fff);
+	clip-path: polygon(0 50%, 100% 0, 100% 100%);
+	opacity: 0.8;
+}
+
+.shape {
+	position: absolute;
+	top: calc(var(--strike-size) * -0.5);
+	left: calc(var(--strike-size) * -0.5);
+	width: var(--strike-size);
+	height: var(--strike-size);
+	border-radius: 50%;
+	background: radial-gradient(circle, #fff 0 22%, var(--strike-accent) 46%, transparent 72%);
+	filter: drop-shadow(0 0 0.6rem var(--strike-accent)) drop-shadow(0 0 0.15rem #fff);
+}
+
+.shape[data-spin] {
+	animation: strike-spin 0.42s linear infinite;
+}
+
+@keyframes strike-spin {
+	to {
+		rotate: 360deg;
+	}
+}
+
+/* Blades: a crescent whose edge leads. */
+.strike[data-effect='slash'] .shape,
+.strike[data-effect='moon'] .shape {
+	background: radial-gradient(
+		circle at 18% 50%,
+		transparent 0 54%,
+		#fff 56% 63%,
+		var(--strike-accent) 67% 100%
+	);
+}
+
+.strike[data-effect='moon'] .shape[data-spin] {
+	animation-duration: 0.9s;
+}
+
+.strike[data-effect='arrow'] .shape {
+	border-radius: 0;
+	background: linear-gradient(90deg, var(--strike-accent), #fff 85%);
+	clip-path: polygon(0 40%, 58% 40%, 58% 14%, 100% 50%, 58% 86%, 58% 60%, 0 60%);
+}
+
+.strike[data-effect='crystal'] .shape {
+	border-radius: 0;
+	background: linear-gradient(
+		160deg,
+		#fff,
+		var(--strike-accent) 50%,
+		color-mix(in srgb, var(--strike-accent) 55%, #063) 100%
+	);
+	clip-path: polygon(0 50%, 34% 10%, 100% 50%, 34% 90%);
+}
+
+.strike[data-effect='star'] .shape {
+	border-radius: 0;
+	background: radial-gradient(circle, #fff 0 24%, var(--strike-accent) 60%);
+	clip-path: polygon(
+		50% 0,
+		63% 35%,
+		100% 38%,
+		72% 60%,
+		80% 100%,
+		50% 78%,
+		20% 100%,
+		28% 60%,
+		0 38%,
+		37% 35%
+	);
+}
+
+.strike[data-effect='shield'] .shape {
+	border: 0.3rem solid #fffbe8;
+	background: radial-gradient(
+		circle,
+		#fff 0 14%,
+		var(--strike-accent) 16% 46%,
+		color-mix(in srgb, var(--strike-accent) 65%, #1e1033) 48% 100%
+	);
+}
+
+.strike[data-effect='dumpling'] .shape {
+	border: 0.18rem solid #b66c38;
+	border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%;
+	background: radial-gradient(circle at 40% 30%, #fff, #fff1cb 55%, #e8c58c);
+}
+
+.strike[data-effect='ink'] .shape {
+	border-radius: 58% 42% 55% 45% / 48% 60% 40% 52%;
+	background: radial-gradient(
+		circle at 34% 30%,
+		#fff 0 9%,
+		var(--strike-accent) 32%,
+		color-mix(in srgb, var(--strike-accent) 45%, #0b1030) 100%
+	);
+}
+
+.strike[data-effect='wind'] .shape {
+	background: conic-gradient(
+		transparent 0 18%,
+		var(--strike-accent) 44%,
+		#fff 50%,
+		transparent 52% 68%,
+		var(--strike-accent) 94%,
+		#fff 100%
+	);
+	mask: radial-gradient(circle, transparent 24%, #000 27% 68%, transparent 71%);
+}
+
+.strike[data-effect='wind'] .shape[data-spin] {
+	animation-duration: 0.22s;
+}
+
+.strike[data-effect='smoke'] .shape {
+	background: radial-gradient(
+		circle at 40% 40%,
+		#fff 0 10%,
+		var(--strike-accent) 38%,
+		transparent 70%
+	);
+}
+
+/* Impact: flash, starburst, two shockwaves and shards thrown outwards. */
+.burst,
+.ring,
+.core,
+.shard {
+	position: absolute;
+	opacity: 0;
+	animation-delay: var(--strike-impact);
+	/* Not `both`: the burst must stay invisible until the shots land. */
+	animation-fill-mode: forwards;
+}
+
+.burst {
+	top: calc(var(--strike-scale) * -9rem);
+	left: calc(var(--strike-scale) * -9rem);
+	width: calc(var(--strike-scale) * 18rem);
+	height: calc(var(--strike-scale) * 18rem);
+	background: radial-gradient(circle, #fff 0 22%, var(--strike-accent) 48%, transparent 74%);
+	clip-path: polygon(
+		100% 50%,
+		69.5% 54.5%,
+		95% 71.7%,
+		71.1% 66.8%,
+		81.2% 89.1%,
+		58.7% 68%,
+		61.1% 98.7%,
+		50% 77%,
+		38.9% 98.7%,
+		41.3% 68%,
+		18.8% 89.1%,
+		28.9% 66.8%,
+		5% 71.7%,
+		30.5% 54.5%,
+		0% 50%,
+		23.7% 44%,
+		5% 28.3%,
+		34.4% 37.5%,
+		18.8% 10.9%,
+		38.3% 25.7%,
+		38.9% 1.3%,
+		50% 30%,
+		61.1% 1.3%,
+		61.7% 25.7%,
+		81.2% 10.9%,
+		65.6% 37.5%,
+		95% 28.3%,
+		76.3% 44%
+	);
+	animation-name: strike-burst;
+	animation-duration: 460ms;
+	animation-timing-function: cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+
+@keyframes strike-burst {
+	0% {
+		opacity: 1;
+		transform: scale(0.15) rotate(0deg);
+	}
+	45% {
+		opacity: 1;
+		transform: scale(1.05) rotate(14deg);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.3) rotate(24deg);
+	}
+}
+
+.ring {
+	top: -4rem;
+	left: -4rem;
+	width: 8rem;
+	height: 8rem;
+	border: 0.4rem solid var(--strike-accent);
+	border-radius: 50%;
+	box-shadow: 0 0 1.4rem var(--strike-accent);
+	animation-name: strike-ring;
+	animation-duration: 560ms;
+	animation-timing-function: cubic-bezier(0.1, 0.7, 0.3, 1);
+}
+
+.ring[data-late] {
+	border-color: #fff;
+	animation-delay: calc(var(--strike-impact) + 110ms);
+}
+
+@keyframes strike-ring {
+	0% {
+		opacity: 1;
+		transform: scale(0.2);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(calc(var(--strike-scale) * 3.2));
+		border-width: 0.05rem;
+	}
+}
+
+.core {
+	top: -5rem;
+	left: -5rem;
+	width: 10rem;
+	height: 10rem;
+	border-radius: 50%;
+	background: radial-gradient(circle, #fff 0 30%, transparent 70%);
+	animation-name: strike-core-flash;
+	animation-duration: 280ms;
+	animation-timing-function: ease-out;
+}
+
+@keyframes strike-core-flash {
+	0% {
+		opacity: 1;
+		transform: scale(0.4);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(calc(var(--strike-scale) * 1.7));
+	}
+}
+
+.shard {
+	top: -0.3rem;
+	left: 0;
+	width: 1.7rem;
+	height: 0.6rem;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--strike-accent), #fff);
+	box-shadow: 0 0 0.6rem var(--strike-accent);
+	transform-origin: 0 50%;
+	animation-name: strike-shard;
+	animation-duration: 560ms;
+	animation-timing-function: cubic-bezier(0.1, 0.7, 0.3, 1);
+}
+
+@keyframes strike-shard {
+	0% {
+		opacity: 1;
+		transform: rotate(var(--shard-angle)) translateX(1rem) scaleX(1.6);
+	}
+	100% {
+		opacity: 0;
+		transform: rotate(var(--shard-angle)) translateX(calc(var(--strike-scale) * 12rem)) scaleX(0.4);
+	}
+}

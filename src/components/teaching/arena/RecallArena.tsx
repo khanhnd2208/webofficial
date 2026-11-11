@@ -22,18 +22,18 @@ import type {
 } from '@/features/teaching/types';
 
 import { ArenaCaught } from './ArenaCaught';
-import { ArenaCharacterPreview } from './ArenaCharacterPreview';
 import { lookToward, useArenaFx } from './ArenaEffects';
 import { ArenaMonster, type MonsterMood } from './ArenaFigures';
 import { ArenaFloor, type ArenaAttackCue } from './ArenaFloor';
 import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
 import { ArenaTopBar } from './ArenaTopBar';
+import { arenaBossFor } from './arenaBosses';
+import { arenaCharacterFor } from './arenaCharacters';
 import {
 	ARENA_MAX_HP,
 	arenaGameKey,
 	arenaRoster,
-	bossName,
 	callablePlayers,
 	displayNames,
 	emptyProgress,
@@ -52,6 +52,7 @@ import {
 	type ArenaResult,
 } from './arenaGame';
 import { playArenaSound } from './arenaSound';
+import { STRIKE_MS, type StrikePower } from './arenaStrikes';
 import styles from './arena.module.css';
 
 type Phase = 'idle' | 'hunting' | 'caught' | 'attacking' | 'victory';
@@ -111,6 +112,8 @@ export function RecallArena({
 	const hpRef = useRef<HTMLDivElement>(null);
 	const { worldRef, suck, layer, shake, flash, pop, sparks, fireworks, lock, grab, hold, release } =
 		fx;
+	const boss = arenaBossFor(progress.round, config.bossId);
+	const heroOf = (studentCode: string) => arenaCharacterFor(studentCode, config.heroIds);
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
 	const hosts = useMemo(() => hostSessions(config, sessions), [config, sessions]);
@@ -315,21 +318,25 @@ export function RecallArena({
 		const hp = Math.max(0, Math.min(ARENA_MAX_HP, progress.hp + hpDelta));
 		const monster = monsterRef.current;
 		const attackerId = current?.enrollmentId;
-		const delayed = hpDelta < 0 && Boolean(attackerId) && !reducedMotion;
+		const attacker = attackerId ? playersById.get(attackerId) : null;
+		const hero = hpDelta < 0 && attacker ? heroOf(attacker.studentCode) : null;
+		const streak = passStreak(progress.history) + 1;
+		const power: StrikePower = hp === 0 ? 3 : streak >= 2 ? 2 : 1;
 		setCurrent(null);
 		setHighlightId(null);
 		setLook(LOOK_AHEAD);
 		release();
+		// Null when nothing is drawn (reduced motion): the hit then lands at once.
+		const shot = hero && attackerId ? fx.strike(attackerId, monster, hero, power) : null;
 		const impact = () => {
 			setProgress((previous) => ({ ...previous, hp }));
 			setMood(nextMood);
 			if (hpDelta < 0) {
-				const streak = passStreak(progress.history) + 1;
 				shake('hard');
 				flash('white');
 				pop('−1', 'damage', monster);
-				sparks(monster, 'damage');
-				playArenaSound('hit');
+				sparks(monster, 'damage', power === 3 ? 90 : 46, hero?.accent);
+				playArenaSound(power === 3 ? 'finisher' : 'hit');
 				hpRef.current?.animate?.(
 					[
 						{ transform: 'translateX(-6px)' },
@@ -358,19 +365,21 @@ export function RecallArena({
 					fireworks();
 					playArenaSound('victory');
 				};
-				if (delayed) later(500, victory);
+				if (shot) later(500, victory);
 				else victory();
 				return;
 			}
-			if (delayed) later(500, () => setPhase('idle'));
+			if (shot) later(STRIKE_MS.end - STRIKE_MS.impact, () => setPhase('idle'));
 			else setPhase('idle');
 			later(1100, () => setMood('idle'));
 		};
-		if (delayed && attackerId) {
+		if (shot && attackerId) {
 			setPhase('attacking');
-			setAttackCue({ enrollmentId: attackerId, sequence: Date.now() });
-			later(1540, impact);
-			later(2040, () => setAttackCue(null));
+			setAttackCue({ enrollmentId: attackerId, sequence: Date.now(), ...shot });
+			playArenaSound('charge');
+			later(STRIKE_MS.launch, () => playArenaSound('launch'));
+			later(STRIKE_MS.impact, impact);
+			later(STRIKE_MS.end, () => setAttackCue(null));
 		} else {
 			impact();
 		}
@@ -502,7 +511,7 @@ export function RecallArena({
 
 	/** The boss drops in: name banner, a thud and a shake as it lands. */
 	function bossIntro(round: number) {
-		fx.announce(`Boss ${round}`, bossName(round));
+		fx.announce(`Boss ${round}`, arenaBossFor(round, config.bossId).name);
 		playArenaSound('boss');
 		later(420, () => shake('hard'));
 	}
@@ -598,6 +607,7 @@ export function RecallArena({
 					classHref={routes.mySpaceTeachingCourse(courseId)}
 					hp={progress.hp}
 					round={progress.round}
+					bossName={boss.name}
 					low={enraged}
 					hpRef={hpRef}
 					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${cards.length ? `${cards.length} câu` : 'câu riêng'}`}
@@ -611,14 +621,14 @@ export function RecallArena({
 				<main className={styles.stage}>
 					<div className={styles.monsterZone}>
 						<div
-							key={`${progress.round}-${started}`}
+							key={`${progress.round}-${started}-${boss.id}`}
 							ref={monsterRef}
 							className={styles.monsterEntry}
 						>
 							<ArenaMonster
 								mood={mood}
 								size={phase === 'hunting' ? 280 : 240}
-								round={progress.round}
+								boss={boss}
 								enraged={enraged}
 								look={look}
 							/>
@@ -638,10 +648,9 @@ export function RecallArena({
 						names={names}
 						suck={suck}
 						attackCue={attackCue}
-						monsterRef={monsterRef}
+						heroIds={config.heroIds}
 					/>
 					<div className={styles.actionBar}>
-						<ArenaCharacterPreview />
 						<button
 							type="button"
 							className={styles.catchButton}
@@ -674,6 +683,7 @@ export function RecallArena({
 					<ArenaCaught
 						key={current?.catchId}
 						player={caughtPlayer}
+						character={heroOf(caughtPlayer.studentCode)}
 						card={caughtCard}
 						deckLabel={caughtDeck ? caughtDeck.lessonLabel || caughtDeck.title : ''}
 						cpNow={cpFor(caughtPlayer.enrollmentId)}
@@ -704,7 +714,7 @@ export function RecallArena({
 							K.O.!
 						</m.span>
 						<h2>Cả lớp đã hạ gục Boss {progress.round}!</h2>
-						<p className={styles.victorySub}>{bossName(progress.round)} đã bị đánh bại</p>
+						<p className={styles.victorySub}>{boss.name} đã bị đánh bại</p>
 						<button type="button" className={styles.startButton} onClick={newBoss}>
 							Gọi Boss mới <kbd>Space</kbd>
 						</button>

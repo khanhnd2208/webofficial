@@ -219,6 +219,25 @@ describe('RecallArena', () => {
 		});
 	}, 10_000);
 
+	it('enters the game from the first step and lets the lecturer pick heroes and the boss', () => {
+		render(<RecallArena data={arenaData()} />);
+		const setup = setupDialog();
+		openStep('Nhân vật');
+		expect(within(setup).getByText('Nhân vật của sinh viên · 10/10')).toBeTruthy();
+		fireEvent.click(within(setup).getByRole('checkbox', { name: 'Ông Nồi' }));
+		expect(within(setup).getByText('Nhân vật của sinh viên · 9/10')).toBeTruthy();
+		fireEvent.click(within(setup).getByRole('button', { name: 'Ma Vương Deadline' }));
+		openStep('Lớp học');
+		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
+
+		expect(screen.queryByRole('dialog', { name: 'Thiết lập kiểm tra bài cũ' })).toBeNull();
+		expect(screen.getByText('Boss 1 · Ma Vương Deadline')).toBeTruthy();
+		expect(document.querySelector('[data-character="ong-noi"]')).toBeNull();
+		const saved = JSON.parse(window.localStorage.getItem('recall-arena:v2:config:course-1')!);
+		expect(saved).toMatchObject({ bossId: 'deadline' });
+		expect(saved.heroIds).toHaveLength(9);
+	});
+
 	it('closes a catch with X or Esc without grading, and the student keeps their turn', async () => {
 		render(<RecallArena data={arenaData()} />);
 		enterGame();

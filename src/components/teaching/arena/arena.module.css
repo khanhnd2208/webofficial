@@ -421,6 +421,16 @@
 	filter: drop-shadow(0 18px 30px rgb(124 58 237 / 50%));
 }
 
+/* An illustrated boss: one frame per mood on a 3×3 sheet (see arenaBosses.ts). */
+.monsterSheet {
+	display: block;
+	width: 100%;
+	aspect-ratio: 240 / 220;
+	background-repeat: no-repeat;
+	background-position: var(--boss-frame, 0 0);
+	background-size: 300% 300%;
+}
+
 .monster svg {
 	display: block;
 	width: 100%;
@@ -774,8 +784,53 @@
 	transition: transform 200ms ease;
 }
 
+.playerFigure {
+	position: relative;
+}
+
+/* The hero steps into the light to attack: bigger, glowing, the crowd dimmed. */
 .player[data-attacking] {
 	z-index: 5;
+}
+
+.floor[data-striking] .player:not([data-attacking]) {
+	filter: brightness(0.5) saturate(0.7);
+}
+
+.player[data-attacking] .playerFigure {
+	transform: scale(var(--strike-hero-scale, 1.7));
+	transform-origin: 50% 100%;
+	transition: transform 320ms cubic-bezier(0.3, 1.6, 0.5, 1);
+	filter: drop-shadow(0 0 0.9rem var(--hero-accent));
+}
+
+.player[data-attacking] .playerFigure::before {
+	position: absolute;
+	bottom: -8%;
+	left: 50%;
+	width: 130%;
+	height: 36%;
+	border-radius: 50%;
+	background: radial-gradient(ellipse, var(--hero-accent), transparent 70%);
+	content: '';
+	translate: -50% 0;
+	animation: hero-aura 0.36s ease-in-out infinite alternate;
+}
+
+.player[data-attacking] .playerName {
+	background: var(--hero-accent);
+	color: #1e1033;
+}
+
+@keyframes hero-aura {
+	from {
+		opacity: 0.45;
+		scale: 0.85;
+	}
+	to {
+		opacity: 0.95;
+		scale: 1.15;
+	}
 }
 
 .playerName {
@@ -1260,6 +1315,14 @@
 	border-radius: 1.1rem;
 	background: var(--arena-panel);
 	box-shadow: 0 30px 80px rgb(0 0 0 / 55%);
+	animation: setup-open 220ms cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+@keyframes setup-open {
+	from {
+		opacity: 0;
+		transform: translateY(1rem) scale(0.97);
+	}
 }
 
 .setupHead {
@@ -1816,6 +1879,8 @@
 	.playerFigure,
 	.catchButton,
 	.catchButton::after,
+	.setup,
+	.player[data-attacking] .playerFigure::before,
 	.caughtAvatar::before,
 	.victoryRays,
 	.combo,

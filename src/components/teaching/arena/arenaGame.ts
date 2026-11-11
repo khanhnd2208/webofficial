@@ -3,6 +3,9 @@ import {
 	matchesGroupFilter,
 	type ArenaGroupFilter,
 } from '@/features/teaching/domain/recallArena';
+import { ARENA_BOSSES } from './arenaBosses';
+import { ARENA_CHARACTERS } from './arenaCharacters';
+
 import type {
 	RecallArenaData,
 	RecallArenaPlayer,
@@ -10,20 +13,6 @@ import type {
 } from '@/features/teaching/types';
 
 export const ARENA_MAX_HP = 10;
-
-const BOSS_NAMES = [
-	'Chúa Tể Quên Bài',
-	'Quỷ Lười Ôn Tập',
-	'Rồng Ngủ Gật',
-	'Ma Vương Deadline',
-	'Bóng Ma Học Tủ',
-	'Vua Nước Đến Chân',
-] as const;
-
-/** Each round's boss has its own name, cycling when the class beats them all. */
-export function bossName(round: number) {
-	return BOSS_NAMES[(Math.max(1, round) - 1) % BOSS_NAMES.length]!;
-}
 
 /** Correct answers in a row up to now; a skipped student does not break it. */
 export function passStreak(history: readonly ArenaHistoryEntry[]) {
@@ -74,6 +63,10 @@ export interface ArenaConfig {
 	guestIds: string[];
 	/** Students in the room the lecturer took out of the game. */
 	excludedIds: string[];
+	/** Heroes handed out to students. Empty means the whole catalogue. */
+	heroIds: string[];
+	/** The boss every round, or null to let the bosses take turns. */
+	bossId: string | null;
 }
 
 /** What a browser remembers between visits. Players only count for the same day. */
@@ -187,6 +180,8 @@ export function initialConfig(
 		deckIds: storedDecks.length ? storedDecks : enabledDecksFor(data, chosen),
 		guestIds: sameDay ? onlyKnown(stored?.guestIds, playerIds) : [],
 		excludedIds: sameDay ? onlyKnown(stored?.excludedIds, playerIds) : [],
+		heroIds: onlyKnown(stored?.heroIds, new Set(ARENA_CHARACTERS.map((hero) => hero.id))),
+		bossId: ARENA_BOSSES.some((boss) => boss.id === stored?.bossId) ? stored!.bossId! : null,
 	};
 }
 
