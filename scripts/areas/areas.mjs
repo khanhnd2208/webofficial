@@ -200,7 +200,6 @@ export const SHARED = [
 	'src/app/admin/media',
 	'src/app/admin/settings',
 	'src/app/admin/users',
-	'src/app/admin/website',
 	'src/app/admin/tools/layout.tsx',
 	'src/app/admin/tools/page.tsx',
 	// Platform APIs

@@ -17,12 +17,10 @@ describe('operating module registry', () => {
 	it('keeps Teaching active while its menu entry leads out of Admin', () => {
 		expect(getActiveModules().map((module) => module.id)).toEqual([
 			'inquiries',
-			'website',
 			'teaching',
 			'learn-courses',
-			'unreleased-quiz',
-			'unreleased-gift',
 			'learning-analytics',
+			'recall-analytics',
 		]);
 		expect(resolveModuleByAdminPath(routes.admin.inquiries)?.id).toBe('inquiries');
 		expect(resolveModuleByAdminPath(`${routes.admin.inquiries}/abc`)?.id).toBe('inquiries');
@@ -46,6 +44,8 @@ describe('operating module registry', () => {
 				'media',
 				'settings',
 				'tools-hub',
+				'unreleased-quiz',
+				'unreleased-gift',
 			]),
 		);
 		expect(ids).not.toContain('website');
@@ -76,9 +76,9 @@ describe('operating module registry', () => {
 		expect(resolveModuleByAdminPath(routes.admin.vocabulary)?.id).toBe('vocabulary');
 	});
 
-	it('keeps main admin chrome for Website and Teaching compatibility paths', () => {
+	it('keeps main admin chrome for the inbox and Teaching compatibility paths', () => {
 		expect(isMainAdminPath(routes.admin.home)).toBe(true);
-		expect(isMainAdminPath(routes.admin.website)).toBe(true);
+		expect(isMainAdminPath(routes.admin.unreleasedQuiz)).toBe(false);
 		expect(isMainAdminPath(routes.admin.learnAnalytics)).toBe(true);
 		expect(isMainAdminPath(`${routes.admin.inquiries}/abc`)).toBe(true);
 		expect(isMainAdminPath(routes.admin.activeRecall)).toBe(true);

@@ -235,7 +235,6 @@ describe('route map', () => {
 		expect(routes.notes).toBe('/ghi-chep');
 		expect(routes.growth).toBe('/phat-trien-ban-than');
 		expect(routes.archive).toBe('/archive');
-		expect(routes.admin.website).toBe('/admin/website');
 		expect(routes.admin.archive).toBe('/admin/archive');
 	});
 });
