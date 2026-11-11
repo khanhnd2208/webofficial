@@ -477,7 +477,7 @@
 }
 @media (max-width: 767px) {
 	[data-surface='teaching'] .teaching-workspace-shell .teaching-app-header-main {
-		grid-template-columns: 32px minmax(0, 1fr) 44px;
+		grid-template-columns: 32px minmax(0, 1fr) auto;
 		gap: 0.5rem;
 	}
 	[data-surface='teaching'] .teaching-workspace-shell .teaching-app-header-back {
@@ -518,6 +518,14 @@
 	}
 }
 @media (max-width: 767px) {
+	/* One scrollable line, so the arena and menu buttons beside it do not grow the header. */
+	[data-surface='teaching'] .teaching-workspace-shell .teaching-class-meta {
+		flex-wrap: nowrap;
+	}
+	[data-surface='teaching'] .teaching-workspace-shell .teaching-class-meta > * {
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
 	[data-surface='teaching'] .teaching-workspace-shell .teaching-class-meta .teaching-status {
 		min-height: 0;
 		padding: 0.125rem 0.375rem;
