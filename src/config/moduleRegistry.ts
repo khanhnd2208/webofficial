@@ -81,6 +81,20 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		nav: { label: 'Lớp & môn học', href: routes.mySpaceTeaching, leavesAdmin: true },
 	},
 	{
+		id: 'learn-courses',
+		status: 'active',
+		label: 'Khóa học tự học',
+		description: 'Soạn, xuất bản và sắp xếp khóa học tự học',
+		icon: 'library_books',
+		archiveGroup: 'My Space',
+		adminHref: routes.myCoursesManage,
+		adminPrefixes: [],
+		publicPrefixes: [],
+		navGroup: 'Giảng dạy',
+		// Courses are managed in their own workspace; the menu leads there and says so.
+		nav: { leavesAdmin: true },
+	},
+	{
 		id: 'unreleased-quiz',
 		status: 'active',
 		label: 'Quiz UNRELEASED',
