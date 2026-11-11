@@ -153,16 +153,13 @@ test.describe('Admin navigation', () => {
 		page,
 	}) => {
 		await page.setViewportSize({ width: 1440, height: 900 });
-		await page.goto('/admin/website');
+		await page.goto('/admin/inquiries');
 		const nav = page.getByRole('navigation', { name: 'Quản trị', exact: true });
-		await expect(nav.getByRole('link', { name: 'Trang công khai', exact: true })).toHaveAttribute(
+		await expect(nav.getByRole('link', { name: /^Hộp thư liên hệ/ })).toHaveAttribute(
 			'aria-current',
 			'page',
 		);
-		await expect(nav.getByRole('link', { name: /^Hộp thư liên hệ/ })).not.toHaveAttribute(
-			'aria-current',
-			'page',
-		);
+		await expect(nav.getByRole('link', { name: 'Trang công khai', exact: true })).toHaveCount(0);
 		await page.getByRole('button', { name: 'Thu gọn sidebar' }).click();
 		await expect(page.getByRole('link', { name: 'Kho lưu trữ', exact: true })).toBeVisible();
 		await expect(nav.getByRole('link', { name: 'Lớp & môn học', exact: true })).toBeVisible();
@@ -172,7 +169,7 @@ test.describe('Admin navigation', () => {
 	});
 	test('uses a drawer on tablet and restores keyboard focus', async ({ page }) => {
 		await page.setViewportSize({ width: 768, height: 1024 });
-		await page.goto('/admin/website');
+		await page.goto('/admin/inquiries');
 		const button = page.getByTestId('admin-menu-button');
 		await button.click();
 		const drawer = page.getByTestId('admin-mobile-drawer');
@@ -191,7 +188,7 @@ test.describe('Admin navigation', () => {
 				document.documentElement.classList.add('dark'),
 			),
 		);
-		await page.goto('/admin/website');
+		await page.goto('/admin/inquiries');
 		await expect(page.getByTestId('admin-shell')).toHaveCSS(
 			'background-color',
 			'rgb(244, 246, 250)',

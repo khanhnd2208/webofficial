@@ -67,11 +67,6 @@ const ROUTE_META: AdminRouteMeta[] = [
 		localNav: MY_CLASS_LOCAL_NAV,
 	},
 	{
-		href: routes.admin.website,
-		label: 'Trang công khai',
-		width: 'standard',
-	},
-	{
 		href: routes.admin.inquiries,
 		label: 'Hộp thư liên hệ',
 		width: 'standard',
@@ -79,7 +74,7 @@ const ROUTE_META: AdminRouteMeta[] = [
 	{ href: routes.admin.activeRecall, label: 'Teaching', width: 'standard' },
 	{
 		href: routes.admin.learnAnalytics,
-		label: 'Thống kê học tập',
+		label: 'Thống kê khóa học',
 		width: 'wide',
 	},
 	{ href: routes.admin.unreleasedQuiz, label: 'Quiz UNRELEASED', width: 'wide' },

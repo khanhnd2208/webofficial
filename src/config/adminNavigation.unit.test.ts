@@ -16,22 +16,20 @@ describe('admin navigation', () => {
 		expect(ADMIN_NAV_GROUPS.map((group) => group.group)).toEqual(['Website', 'Giảng dạy']);
 		expect(hrefs).toEqual([
 			routes.admin.inquiries,
-			routes.admin.website,
-			routes.admin.unreleasedQuiz,
-			routes.admin.unreleasedGift,
 			routes.mySpaceTeaching,
 			routes.myCoursesManage,
 			routes.admin.learnAnalytics,
+			routes.mySpaceTeachingRecallAnalytics,
 		]);
 		expect(labels).toEqual([
 			'Hộp thư liên hệ',
-			'Trang công khai',
-			'Quiz UNRELEASED',
-			'Đánh giá UNRELEASED',
 			'Lớp & môn học',
 			'Khóa học tự học',
-			'Thống kê học tập',
+			'Thống kê khóa học',
+			'Thống kê Recall',
 		]);
+		expect(hrefs).not.toContain(routes.admin.unreleasedQuiz);
+		expect(hrefs).not.toContain(routes.admin.unreleasedGift);
 		expect(hrefs).not.toContain(routes.admin.myClass);
 		expect(hrefs).not.toContain(routes.admin.posts);
 		expect(hrefs).not.toContain(routes.admin.users);
@@ -42,6 +40,7 @@ describe('admin navigation', () => {
 		expect(outside.map((item) => item.href)).toEqual([
 			routes.mySpaceTeaching,
 			routes.myCoursesManage,
+			routes.mySpaceTeachingRecallAnalytics,
 		]);
 		expect(outside.every((item) => item.leavesAdmin)).toBe(true);
 	});
@@ -54,21 +53,23 @@ describe('admin navigation', () => {
 		expect(hrefs).toContain(routes.admin.messages);
 		expect(hrefs).not.toContain(routes.admin.teaching);
 		expect(hrefs).not.toContain(routes.admin.activeRecall);
-		expect(hrefs).not.toContain(routes.admin.website);
+		expect(hrefs).toContain(routes.admin.unreleasedQuiz);
+		expect(hrefs).toContain(routes.admin.unreleasedGift);
 	});
 
 	it('switches nav groups by operating shell', () => {
 		expect(getAdminNavGroupsForPath(routes.admin.home)).toBe(ADMIN_NAV_GROUPS);
-		expect(getAdminNavGroupsForPath(routes.admin.website)).toBe(ADMIN_NAV_GROUPS);
+		expect(getAdminNavGroupsForPath(routes.admin.inquiries)).toBe(ADMIN_NAV_GROUPS);
+		expect(getAdminNavGroupsForPath(routes.admin.unreleasedQuiz)).toBe(ARCHIVE_NAV_GROUPS);
 		expect(getAdminNavGroupsForPath(routes.admin.myClass)).toBe(ARCHIVE_NAV_GROUPS);
 		expect(getAdminNavGroupsForPath(routes.admin.archive)).toBe(ARCHIVE_NAV_GROUPS);
 	});
 
 	it('marks only the inbox active on contact detail pages', () => {
-		expect(isAdminNavActive(routes.admin.website, routes.admin.website)).toBe(true);
 		expect(isAdminNavActive(`${routes.admin.inquiries}/abc`, routes.admin.inquiries)).toBe(true);
-		expect(isAdminNavActive(routes.admin.inquiries, routes.admin.website)).toBe(false);
-		expect(isAdminNavActive(`${routes.admin.inquiries}/abc`, routes.admin.website)).toBe(false);
+		expect(isAdminNavActive(`${routes.admin.inquiries}/abc`, routes.admin.learnAnalytics)).toBe(
+			false,
+		);
 	});
 
 	it('does not highlight the archived tools hub on Active Recall', () => {

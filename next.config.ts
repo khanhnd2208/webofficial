@@ -100,6 +100,9 @@ const nextConfig: NextConfig = {
 			// Learning account alias
 			{ source: '/dashboard', destination: '/khoa-hoc', permanent: true },
 
+			// The Website hub only listed links to public pages; "Xem website" covers it.
+			{ source: '/admin/website', destination: '/admin', permanent: false },
+
 			// Admin vocabulary alias
 			{ source: '/admin/vocabulary', destination: '/admin/tools/vocabulary', permanent: true },
 
