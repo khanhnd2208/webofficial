@@ -20,6 +20,7 @@ describe('admin navigation', () => {
 			routes.admin.unreleasedQuiz,
 			routes.admin.unreleasedGift,
 			routes.mySpaceTeaching,
+			routes.myCoursesManage,
 			routes.admin.learnAnalytics,
 		]);
 		expect(labels).toEqual([
@@ -28,6 +29,7 @@ describe('admin navigation', () => {
 			'Quiz UNRELEASED',
 			'Đánh giá UNRELEASED',
 			'Lớp & môn học',
+			'Khóa học tự học',
 			'Thống kê học tập',
 		]);
 		expect(hrefs).not.toContain(routes.admin.myClass);
@@ -37,7 +39,10 @@ describe('admin navigation', () => {
 		const outside = ADMIN_NAV_GROUPS.flatMap((group) => group.items).filter(
 			(item) => !item.href.startsWith('/admin'),
 		);
-		expect(outside.map((item) => item.href)).toEqual([routes.mySpaceTeaching]);
+		expect(outside.map((item) => item.href)).toEqual([
+			routes.mySpaceTeaching,
+			routes.myCoursesManage,
+		]);
 		expect(outside.every((item) => item.leavesAdmin)).toBe(true);
 	});
 

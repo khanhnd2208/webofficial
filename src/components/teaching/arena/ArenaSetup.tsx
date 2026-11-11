@@ -9,27 +9,31 @@ import type {
 	TeachingSessionRecord,
 } from '@/features/teaching/types';
 
+import { ArenaSetupCast } from './ArenaSetupCast';
 import { ArenaSetupClasses } from './ArenaSetupClasses';
 import { ArenaSetupLessons } from './ArenaSetupLessons';
 import { ArenaSetupPlayers } from './ArenaSetupPlayers';
+import { arenaCast } from './arenaCharacters';
 import { callablePlayers, type ArenaConfig } from './arenaGame';
 import styles from './arena.module.css';
 import setup from './arenaSetup.module.css';
 
-export type ArenaSetupStep = 'classes' | 'players' | 'lessons';
+export type ArenaSetupStep = 'classes' | 'players' | 'lessons' | 'cast';
 
 const STEPS: Array<{ id: ArenaSetupStep; label: string }> = [
 	{ id: 'classes', label: 'Lớp học' },
 	{ id: 'players', label: 'Người chơi' },
 	{ id: 'lessons', label: 'Bài học' },
+	{ id: 'cast', label: 'Nhân vật' },
 ];
 
 /**
  * Lecturer-only settings, in the order a lesson starts: which classes are in
- * the room, who plays (including make-up students from other classes), and
- * which lessons the questions come from. Before the first game the steps run
- * in order; once playing, any step opens directly. Group names appear only
- * here, never on the game screen.
+ * the room, who plays (including make-up students from other classes), which
+ * lessons the questions come from, and the heroes and boss on screen. Every
+ * step has a sensible default, so "Vào trận" works from any of them; once
+ * playing, any step opens directly. Group names appear only here, never on
+ * the game screen.
  */
 export function ArenaSetup({
 	data,
@@ -70,6 +74,7 @@ export function ArenaSetup({
 		classes: config.classIds.length ? `${config.classIds.length} lớp` : 'Chưa chọn',
 		players: `${roster.length} bạn`,
 		lessons: chosenDecks.length ? `${chosenDecks.length} bài · ${cardTotal} câu` : 'Chưa chọn bài',
+		cast: `${arenaCast(config.heroIds).length} nhân vật`,
 	};
 	const index = STEPS.findIndex((item) => item.id === step);
 	const last = index === STEPS.length - 1;
@@ -121,7 +126,7 @@ export function ArenaSetup({
 					))}
 				</nav>
 
-				<div className={setup.body}>
+				<div key={step} className={setup.body}>
 					{step === 'classes' ? (
 						<ArenaSetupClasses
 							data={data}
@@ -147,6 +152,7 @@ export function ArenaSetup({
 					{step === 'lessons' ? (
 						<ArenaSetupLessons data={data} config={config} onChange={onChange} />
 					) : null}
+					{step === 'cast' ? <ArenaSetupCast config={config} onChange={onChange} /> : null}
 				</div>
 
 				<footer className={styles.setupFoot}>
@@ -171,22 +177,21 @@ export function ArenaSetup({
 						{!started && !last ? (
 							<button
 								type="button"
-								className={styles.startButton}
+								className={setup.nextButton}
 								onClick={() => setStep(STEPS[index + 1]!.id)}
 							>
 								Tiếp
 							</button>
-						) : (
-							<button
-								type="button"
-								className={styles.startButton}
-								disabled={callable.length === 0}
-								title={callable.length === 0 ? 'Chưa có ai để gọi' : undefined}
-								onClick={onDone}
-							>
-								{started ? 'Xong' : 'Vào trận'}
-							</button>
-						)}
+						) : null}
+						<button
+							type="button"
+							className={styles.startButton}
+							disabled={callable.length === 0}
+							title={callable.length === 0 ? 'Chưa có ai để gọi' : undefined}
+							onClick={onDone}
+						>
+							{started ? 'Xong' : 'Vào trận'}
+						</button>
 					</span>
 				</footer>
 			</section>

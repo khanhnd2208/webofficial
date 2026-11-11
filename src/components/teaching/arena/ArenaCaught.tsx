@@ -9,7 +9,7 @@ import { ARENA_AWARD_LEVELS, type ArenaAwardLevel } from '@/features/teaching/do
 import type { RecallArenaCard, RecallArenaPlayer } from '@/features/teaching/types';
 
 import { ArenaCharacter } from './ArenaCharacter';
-import { arenaCharacterFor } from './arenaCharacters';
+import type { ArenaCharacter as Character } from './arenaCharacters';
 import { fullName } from './arenaGame';
 import styles from './arena.module.css';
 
@@ -78,6 +78,7 @@ function QuestionCard({ card, deckLabel }: { card: RecallArenaCard; deckLabel: s
 /** Who was caught, the question, and the lecturer's grading controls. */
 export function ArenaCaught({
 	player,
+	character,
 	card,
 	deckLabel,
 	cpNow,
@@ -90,6 +91,8 @@ export function ArenaCaught({
 	onClose,
 }: {
 	player: RecallArenaPlayer;
+	/** The student's hero, as shown on the floor. */
+	character: Character;
 	card: RecallArenaCard | null;
 	deckLabel: string;
 	cpNow: number;
@@ -138,7 +141,7 @@ export function ArenaCaught({
 						animate={{ rotate: [-18, 10, -6, 0], y: 0 }}
 						transition={{ duration: 0.7 }}
 					>
-						<ArenaCharacter character={arenaCharacterFor(player.studentCode)} size={98} />
+						<ArenaCharacter character={character} size={98} />
 					</m.span>
 					<div className={styles.caughtWho}>
 						<p className={styles.caughtEyebrow}>Quái vật đã bắt được</p>

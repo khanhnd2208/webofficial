@@ -269,7 +269,7 @@ export default function LearnStudio({
 			return;
 		}
 		await adminFetch(`/api/admin/learn/courses/${meta.id}`, { method: 'DELETE' });
-		router.push(routes.learnCourses);
+		router.push(routes.myCoursesManage);
 	}
 
 	async function exportFile(lessonId?: string) {

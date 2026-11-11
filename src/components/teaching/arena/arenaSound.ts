@@ -9,7 +9,10 @@ export type ArenaSound =
 	| 'lock'
 	| 'suck'
 	| 'chomp'
+	| 'charge'
+	| 'launch'
 	| 'hit'
+	| 'finisher'
 	| 'combo'
 	| 'laugh'
 	| 'heal'
@@ -163,6 +166,20 @@ export function playArenaSound(name: ArenaSound, detail = 0) {
 			noise(a, { length: 0.14, gain: 0.55, from: 2600, to: 300 });
 			tone(a, { from: 170, to: 42, length: 0.3, gain: 0.5 });
 			tone(a, { type: 'square', from: 90, to: 40, at: 0.02, length: 0.18, gain: 0.2 });
+			break;
+		case 'charge':
+			tone(a, { type: 'triangle', from: 220, to: 1320, length: 0.72, gain: 0.16 });
+			tone(a, { from: 330, to: 1980, length: 0.72, gain: 0.08 });
+			noise(a, { length: 0.72, gain: 0.07, filter: 'bandpass', from: 500, to: 5200 });
+			break;
+		case 'launch':
+			noise(a, { length: 0.34, gain: 0.34, filter: 'bandpass', from: 3600, to: 420 });
+			tone(a, { type: 'sawtooth', from: 880, to: 150, length: 0.3, gain: 0.14 });
+			break;
+		case 'finisher':
+			noise(a, { length: 0.5, gain: 0.6, from: 3000, to: 120 });
+			tone(a, { from: 150, to: 28, length: 0.8, gain: 0.6 });
+			tone(a, { type: 'square', from: 220, to: 40, at: 0.03, length: 0.4, gain: 0.25 });
 			break;
 		case 'hit':
 			noise(a, { length: 0.18, gain: 0.5, filter: 'highpass', from: 900, to: 300 });

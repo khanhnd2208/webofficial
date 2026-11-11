@@ -19,6 +19,7 @@ describe('operating module registry', () => {
 			'inquiries',
 			'website',
 			'teaching',
+			'learn-courses',
 			'unreleased-quiz',
 			'unreleased-gift',
 			'learning-analytics',

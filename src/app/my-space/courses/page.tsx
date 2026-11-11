@@ -46,13 +46,10 @@ export default async function LearnCatalogPage({
 					viewer.isAdmin ? (
 						<>
 							<div className="ln-segmented" aria-label="Chế độ">
-								<Link href={routes.learnCourses} aria-current={managing ? undefined : 'page'}>
+								<Link href={routes.myCourses} aria-current={managing ? undefined : 'page'}>
 									Học
 								</Link>
-								<Link
-									href={`${routes.learnCourses}?xem=quan-ly`}
-									aria-current={managing ? 'page' : undefined}
-								>
+								<Link href={routes.myCoursesManage} aria-current={managing ? 'page' : undefined}>
 									Quản lý
 								</Link>
 							</div>

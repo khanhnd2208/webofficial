@@ -19,6 +19,7 @@
 | [docs/09-DESIGN_SYSTEM.md](./docs/09-DESIGN_SYSTEM.md)         | Editorial vs My Class Study Tool visual grammars                                   |
 | [docs/06-CONTENT_INVENTORY.md](./docs/06-CONTENT_INVENTORY.md) | Current public content and preserved internal domains                              |
 | [docs/areas.md](./docs/areas.md) | Area map (Classroom, Portfolio, Tools) and import rules |
+| [docs/arena-assets.md](./docs/arena-assets.md) | Adding hero and boss art to the Kiểm tra bài cũ game |
 | [docs/10-AI_AGENTS.md](./docs/10-AI_AGENTS.md) | How AI agents are guided here: AGENTS.md, rules, skills, permissions |
 | [AGENTS.md](./AGENTS.md) | Rules every AI agent follows in this repo |
 

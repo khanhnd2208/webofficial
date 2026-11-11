@@ -50,7 +50,7 @@ export default function DiscoverCourseList({
 						</p>
 						{signedIn ? (
 							<Link
-								href="/my-space/courses"
+								href={routes.myCourses}
 								className="mt-4 inline-flex min-h-11 items-center text-subhead font-medium text-accent underline underline-offset-4"
 							>
 								Khóa học của tôi ↗
