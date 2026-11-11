@@ -9,7 +9,7 @@ describe('My Space operating hub', () => {
 		expect(mySpaceTiles.map((tile) => tile.id)).toEqual(['teaching', 'courses', 'board-game']);
 		expect(mySpaceTiles.map((tile) => tile.href)).toEqual([
 			routes.mySpaceTeaching,
-			routes.discoverCourses,
+			routes.learnCourses,
 			routes.funGames,
 		]);
 		expect(mySpaceTiles.every((tile) => tile.status === 'published')).toBe(true);

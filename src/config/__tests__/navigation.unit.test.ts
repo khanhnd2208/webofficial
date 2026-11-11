@@ -244,7 +244,6 @@ describe('site header trail', () => {
 	it('names the page after Mục lục, and only the parent on a detail page', () => {
 		expect(getSiteTrail('/muc-luc')).toEqual([]);
 		expect(getSiteTrail('/khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
-		expect(getSiteTrail('/kham-pha-khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
 		expect(getSiteTrail('/gioi-thieu')).toEqual([
 			{ label: aboutPagePaused ? 'Liên hệ' : 'Giới thiệu' },
 		]);

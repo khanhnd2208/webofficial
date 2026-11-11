@@ -46,21 +46,16 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
-	test('public course catalog and learner catalog remain accessible once signed in', async ({
+	test('every course address takes a signed-in learner to their own course list', async ({
 		page,
 		context,
 	}) => {
 		await addStudentSession(context);
-		// The learner catalog keeps its app bar; /khoa-hoc is now the public catalog.
 		for (const path of ['/my-space/courses', '/khoa-hoc', '/kham-pha-khoa-hoc']) {
 			const response = await page.goto(path);
 			expect(response?.status()).toBe(200);
-			await expect(page).toHaveURL(new RegExp(`${path}$`));
-			// The public header works for both empty and populated catalogs.
-			const tocLink =
-				path === '/my-space/courses'
-					? page.getByRole('link', { name: 'Mục lục', exact: true })
-					: page.getByTestId('site-header-home');
+			await expect(page).toHaveURL(/\/my-space\/courses$/);
+			const tocLink = page.getByRole('link', { name: 'Mục lục', exact: true });
 			await expect(tocLink).toBeVisible();
 			await expect(tocLink).toHaveAttribute('href', '/muc-luc');
 		}

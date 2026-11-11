@@ -8,7 +8,7 @@ for (const width of [375, 1440]) {
 		await page.setViewportSize({ width, height: 900 });
 		for (const [name, path, heading] of [
 			['toc', '/muc-luc', 'Bạn muốn ghé đâu?'],
-			['discovery', '/kham-pha-khoa-hoc', 'Một điều mới bắt đầu từ đây.'],
+			['discovery', '/khoa-hoc', 'Một điều mới bắt đầu từ đây.'],
 		]) {
 			await page.goto(path);
 			await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
