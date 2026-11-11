@@ -176,7 +176,6 @@ export const routes = {
 	// ─── Admin ────────────────────────────────────────────────────────────────
 	admin: {
 		home: '/admin',
-		website: '/admin/website',
 		archive: '/admin/archive',
 		posts: '/admin/posts',
 		postCreate: '/admin/posts/create',
