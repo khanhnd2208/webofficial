@@ -55,10 +55,9 @@
 	color: var(--ink-secondary);
 }
 
-/* Flat doors on one centred row: three across, four for exactly four. A short last
-   row (five doors for an admin) sits in the middle instead of leaving a gap. */
+/* Flat doors on one centred row: two for visitors, four for admins. */
 .navigation {
-	--doors-per-row: 3;
+	--doors-per-row: 2;
 	--door-gap: 20px;
 	display: flex;
 	flex-wrap: wrap;
@@ -135,10 +134,6 @@
 	margin-top: 8px;
 	max-width: 16rem;
 }
-.doorDescription strong {
-	color: var(--ink);
-	font-weight: 650;
-}
 .arrow {
 	display: inline-block;
 	margin-left: 8px;
@@ -151,28 +146,6 @@
 }
 .door:hover .arrow[data-external] {
 	transform: translate(2px, -2px);
-}
-
-/* Still a link. The picture and title step back; the new address stays in ink. */
-.muted .doorIcon,
-.muted .doorTitle {
-	opacity: 0.55;
-}
-.muted .doorIcon img {
-	filter: grayscale(1);
-}
-.muted .doorDescription strong {
-	font-weight: 700;
-}
-.muted:hover .doorIcon,
-.muted:hover .doorTitle,
-.muted:focus-visible .doorIcon,
-.muted:focus-visible .doorTitle {
-	opacity: 1;
-}
-.muted:hover .doorIcon img,
-.muted:focus-visible .doorIcon img {
-	filter: none;
 }
 
 .footer {

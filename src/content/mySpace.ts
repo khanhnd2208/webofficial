@@ -1,4 +1,4 @@
-/** My Space hub — Teaching (admins), Courses and Board Game. */
+/** My Space hub — Teaching (admins) and Courses. */
 
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/types/user';
@@ -60,18 +60,6 @@ export const mySpaceTiles: MySpaceTile[] = [
 		},
 		status: 'published',
 		href: routes.learnCourses,
-	},
-	{
-		id: 'board-game',
-		label: 'Trò chơi',
-		visual: {
-			kind: 'image',
-			src: '/brand/myspace/board-game-v3.webp',
-			alt: 'Minh họa bộ bài trò chơi',
-		},
-		status: 'published',
-		href: routes.funGames,
-		note: 'Đã chuyển vĩnh viễn sang fun.toiladuykhanh.com',
 	},
 ];
 

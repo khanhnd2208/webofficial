@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { routes } from '@/config/routes';
 import { getMySpaceTiles } from '@/content/mySpace';
 import type { UserRole } from '@/types/user';
 import styles from './toc.module.css';
@@ -16,35 +15,17 @@ export interface TocDoor {
 
 export interface TocSpaceItem extends TocDoor {
 	id: string;
-	muted?: boolean;
 }
 
-/** About, experiences, courses, then Lớp học and Quản trị for admins, with the moved games last. */
-const DOOR_ORDER = ['experiences', 'courses', 'teaching', 'admin', 'board-game'];
-
-/** Trải nghiệm is open to everyone and has no My Space tile, so Mục lục adds it here. */
-const EXPERIENCES_DOOR: TocSpaceItem = {
-	id: 'experiences',
-	href: routes.experiences,
-	label: 'Trải nghiệm',
-	description: 'Dự án, chuyến đi và những câu chuyện.',
-	icon: '/brand/spots/complete-v1.webp',
-};
+/** Courses first, then Lớp học and Quản trị for admins. */
+const DOOR_ORDER = ['courses', 'teaching', 'admin'];
 
 const tocIcons: Record<string, string> = {
 	teaching: '/brand/toc/teaching-v1.webp',
 	courses: '/brand/toc/courses-v1.webp',
-	'board-game': '/brand/toc/board-game-v1.webp',
 };
 
 function descriptionFor(id: string): ReactNode {
-	if (id === 'board-game') {
-		return (
-			<>
-				Đã chuyển sang <strong>fun.toiladuykhanh.com</strong>.
-			</>
-		);
-	}
 	if (id === 'courses') return 'Học thêm một điều mới.';
 	if (id === 'teaching') return 'Một góc dành cho lớp học.';
 	if (id === 'admin') return 'Quản lý không gian của bạn.';
@@ -57,9 +38,8 @@ function doorRank(id: string): number {
 }
 
 /**
- * Flat Mục lục doors. Lớp học (Teaching) and Quản trị appear only for admins, since
- * getMySpaceTiles drops them for everyone else. Board Game stays clickable, quieter,
- * until that door is removed.
+ * Flat Mục lục doors. Lớp học (Teaching) and Quản trị appear only for admins,
+ * since getMySpaceTiles drops them for everyone else.
  */
 export function buildTocItems(role?: UserRole | null): TocSpaceItem[] {
 	const tiles = getMySpaceTiles(role)
@@ -74,11 +54,10 @@ export function buildTocItems(role?: UserRole | null): TocSpaceItem[] {
 					label: tile.label,
 					description: descriptionFor(tile.id),
 					icon,
-					muted: tile.id === 'board-game',
 				},
 			];
 		});
-	return [EXPERIENCES_DOOR, ...tiles].sort((a, b) => doorRank(a.id) - doorRank(b.id));
+	return tiles.sort((a, b) => doorRank(a.id) - doorRank(b.id));
 }
 
 /** → stays on this site; ↗ leaves it. */
@@ -90,14 +69,9 @@ function Arrow({ external }: { external: boolean }) {
 	);
 }
 
-function Door({ item, testId }: { item: TocDoor & { muted?: boolean }; testId: string }) {
+function Door({ item, testId }: { item: TocDoor; testId: string }) {
 	return (
-		<Link
-			href={item.href}
-			className={item.muted ? `${styles.door} ${styles.muted}` : styles.door}
-			data-testid={testId}
-			data-muted={item.muted ? '' : undefined}
-		>
+		<Link href={item.href} className={styles.door} data-testid={testId}>
 			<span className={styles.doorIcon}>
 				<Image
 					src={item.icon}
