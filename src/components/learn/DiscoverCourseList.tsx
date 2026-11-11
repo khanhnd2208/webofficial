@@ -27,13 +27,7 @@ function courseBlurb(course: Pick<DiscoverCoursePreview, 'subtitle' | 'descripti
 	return course.subtitle.trim() || course.description.trim();
 }
 
-export default function DiscoverCourseList({
-	courses,
-	signedIn,
-}: {
-	courses: DiscoverCoursePreview[];
-	signedIn: boolean;
-}) {
+export default function DiscoverCourseList({ courses }: { courses: DiscoverCoursePreview[] }) {
 	return (
 		<main className="min-h-svh bg-canvas px-6 pb-16 pt-28 text-ink sm:px-10 sm:pt-36">
 			<div className="mx-auto max-w-4xl">
@@ -48,14 +42,6 @@ export default function DiscoverCourseList({
 						<p className="mt-3 max-w-2xl text-body leading-relaxed text-ink-secondary">
 							Xem chương trình trước, chọn điều bạn muốn học. Bạn chỉ cần đăng nhập khi bắt đầu.
 						</p>
-						{signedIn ? (
-							<Link
-								href={routes.myCourses}
-								className="mt-4 inline-flex min-h-11 items-center text-subhead font-medium text-accent underline underline-offset-4"
-							>
-								Khóa học của tôi ↗
-							</Link>
-						) : null}
 					</div>
 					<SharedArtwork name="courses" className="hidden shrink-0 md:block">
 						<Image src={courseArt} alt="" placeholder="blur" className="h-16 w-16 object-contain" />

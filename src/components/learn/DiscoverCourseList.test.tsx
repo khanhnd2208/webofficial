@@ -36,7 +36,7 @@ const course: DiscoverCoursePreview = {
 
 describe('DiscoverCourseList', () => {
 	it('makes the course overview one keyboard link and keeps the syllabus separate', () => {
-		render(<DiscoverCourseList courses={[course]} signedIn={false} />);
+		render(<DiscoverCourseList courses={[course]} />);
 
 		const link = screen.getByRole('link', { name: /Vào khóa học/ });
 		expect(link).toHaveAttribute('href', '/khoa-hoc/quan-tri-nhan-su-va-to-chuc-hoc-hien-dai');
@@ -72,7 +72,6 @@ describe('DiscoverCourseList', () => {
 						lessonTitles: [],
 					},
 				]}
-				signedIn
 			/>,
 		);
 
@@ -81,10 +80,8 @@ describe('DiscoverCourseList', () => {
 		expect(link).toHaveTextContent('8 bài');
 		expect(link).not.toHaveTextContent('khoảng');
 		expect(screen.queryByText('Xem chương trình')).not.toBeInTheDocument();
-		expect(screen.getByRole('link', { name: /Khóa học của tôi/ })).toHaveAttribute(
-			'href',
-			'/my-space/courses',
-		);
+		// Signed-in visitors never see this list: /khoa-hoc sends them to their own courses.
+		expect(screen.queryByRole('link', { name: /Khóa học của tôi/ })).not.toBeInTheDocument();
 		expect(link.querySelector('img')?.getAttribute('src') ?? '').not.toContain('/uploads/');
 
 		rerender(
@@ -92,7 +89,6 @@ describe('DiscoverCourseList', () => {
 				courses={[
 					{ ...course, subtitle: '', description: '', thumbnailUrl: '/uploads/broken.webp' },
 				]}
-				signedIn={false}
 			/>,
 		);
 		const broken = screen.getByRole('link', { name: /Vào khóa học/ }).querySelector('img');
@@ -106,10 +102,7 @@ describe('DiscoverCourseList', () => {
 		).not.toContain('broken.webp');
 
 		rerender(
-			<DiscoverCourseList
-				courses={[{ ...course, thumbnailUrl: '/uploads/recovered.webp' }]}
-				signedIn={false}
-			/>,
+			<DiscoverCourseList courses={[{ ...course, thumbnailUrl: '/uploads/recovered.webp' }]} />,
 		);
 		expect(
 			screen
@@ -120,7 +113,7 @@ describe('DiscoverCourseList', () => {
 	});
 
 	it('shows the empty catalog without a course link', () => {
-		render(<DiscoverCourseList courses={[]} signedIn={false} />);
+		render(<DiscoverCourseList courses={[]} />);
 		expect(
 			screen.getByRole('heading', { name: 'Các khóa học đang được chuẩn bị' }),
 		).toBeInTheDocument();

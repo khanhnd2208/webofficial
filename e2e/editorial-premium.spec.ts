@@ -52,7 +52,7 @@ test.describe('Editorial premium public experience', () => {
 		);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await page.getByTestId('myspace-tile-courses').click();
-		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
+		await expect(page).toHaveURL(/\/khoa-hoc$/);
 	});
 
 	test('collaboration remains condensed with details available on demand', async ({ page }) => {

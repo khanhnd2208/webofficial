@@ -63,13 +63,12 @@ export const routes = {
 		`/my-space/my-class/${courseSlug}/tests/${testSlug}` as const,
 	myClassProgress: '/my-space/my-class/progress',
 	/**
-	 * Self-paced courses: catalog, reader and admin studio. `/khoa-hoc/*` is served by the
-	 * `/my-space/courses/*` pages (see LEARN_COURSE_ALIASES), so links shared before the rename
-	 * keep opening the same, current course.
+	 * Self-paced courses. `/khoa-hoc` is the one course address: the public catalog for guests,
+	 * which sends a signed-in visitor on to routes.myCourses. `/khoa-hoc/*` readers are served by
+	 * the `/my-space/courses/*` pages (see LEARN_COURSE_ALIASES), so shared links keep working.
 	 */
 	learnCourses: '/khoa-hoc',
-	discoverCourses: '/kham-pha-khoa-hoc',
-	/** The signed-in course list. `/khoa-hoc` itself opens the public catalog, so link here. */
+	/** The signed-in course list, with progress. Guests opening it are asked to sign in. */
 	myCourses: '/my-space/courses',
 	/** The admin's course management view of routes.myCourses. */
 	myCoursesManage: '/my-space/courses?xem=quan-ly',
@@ -265,12 +264,11 @@ export const routes = {
 } as const;
 
 /**
- * The catalog is public; course reader aliases keep existing student links working. `/khoa-hoc/<slug>` is rewritten to the
+ * Course reader aliases keep existing student links working. `/khoa-hoc/<slug>` is rewritten to the
  * `/my-space/courses/...` route files, and the old `/my-space/courses/...` links keep working
  * untouched, so links already handed to students never break.
  */
 export const LEARN_COURSE_ALIASES: ReadonlyArray<{ source: string; destination: string }> = [
-	{ source: '/khoa-hoc', destination: '/kham-pha-khoa-hoc' },
 	{ source: '/khoa-hoc/:path*', destination: '/my-space/courses/:path*' },
 ];
 
@@ -339,6 +337,8 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	{ source: '/tai-khoan/hoc', destination: routes.learnCourses, permanent: true },
 	{ source: '/admin/courses/:path*', destination: routes.learnCourses, permanent: true },
 	{ source: '/admin/enrollments', destination: routes.learnCourses, permanent: true },
+	// The catalog's former address, from before /khoa-hoc became the real page.
+	{ source: '/kham-pha-khoa-hoc', destination: routes.learnCourses, permanent: true },
 ];
 
 export type PublicRoute =

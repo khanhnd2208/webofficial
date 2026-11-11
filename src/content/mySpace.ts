@@ -59,7 +59,7 @@ export const mySpaceTiles: MySpaceTile[] = [
 			alt: 'Minh họa chồng tài liệu khóa học',
 		},
 		status: 'published',
-		href: routes.discoverCourses,
+		href: routes.learnCourses,
 	},
 	{
 		id: 'board-game',

@@ -79,7 +79,7 @@ test.describe('Public pages smoke', () => {
 		);
 		// Every door is a plain link, so it still opens with JavaScript off.
 		await page.getByTestId('myspace-tile-courses').click();
-		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
+		await expect(page).toHaveURL(/\/khoa-hoc$/);
 		await context.close();
 	});
 
@@ -100,7 +100,7 @@ test.describe('Public pages smoke', () => {
 			'fun.toiladuykhanh.com',
 		);
 		await page.getByTestId('myspace-tile-courses').click();
-		await expect(page).toHaveURL(/\/kham-pha-khoa-hoc/);
+		await expect(page).toHaveURL(/\/khoa-hoc$/);
 	});
 
 	test('intro and mục lục stay without horizontal overflow at critical widths', async ({
@@ -213,9 +213,12 @@ test.describe('Public pages smoke', () => {
 		}
 	});
 
-	test('course catalogs are readable before signing in', async ({ page }) => {
+	test('the course catalog is readable before signing in, under the old address too', async ({
+		page,
+	}) => {
 		for (const path of ['/khoa-hoc', '/kham-pha-khoa-hoc']) {
 			await page.goto(path);
+			await expect(page).toHaveURL(/\/khoa-hoc$/);
 			await expect(
 				page.getByRole('heading', { name: 'Một điều mới bắt đầu từ đây.' }),
 			).toBeVisible();

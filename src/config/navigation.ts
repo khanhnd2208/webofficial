@@ -310,7 +310,7 @@ function barePath(pathname: string): string {
 export function getSiteTrail(pathname: string): SiteCrumb[] {
 	const path = barePath(pathname);
 	if (path === routes.toc) return [];
-	if (path === routes.learnCourses || path === routes.discoverCourses) {
+	if (path === routes.learnCourses) {
 		return [{ label: 'Khóa học' }];
 	}
 	if (path === routes.about) return [{ label: aboutPagePaused ? 'Liên hệ' : 'Giới thiệu' }];
