@@ -24,17 +24,21 @@ describe('ArchiveBanner', () => {
 });
 
 describe('AdminShell', () => {
-	it('uses the main shell for Website', () => {
-		navigation.pathname = '/admin/website';
+	it('uses the main shell for the contact inbox', () => {
+		navigation.pathname = '/admin/inquiries';
 		render(
 			<AdminShell>
-				<p>Website workspace</p>
+				<p>Inbox workspace</p>
 			</AdminShell>,
 		);
 
 		expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		expect(screen.queryByTestId('archive-banner')).not.toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Trang công khai' })).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'Trang công khai' })).not.toBeInTheDocument();
+		expect(screen.getByRole('link', { name: /Thống kê Recall/ })).toHaveAttribute(
+			'href',
+			'/my-space/teaching/recall-analytics',
+		);
 		expect(screen.getByRole('link', { name: /Lớp & môn học/ })).toHaveAttribute(
 			'href',
 			'/my-space/teaching',
@@ -108,6 +112,6 @@ describe('AdminShell', () => {
 
 		expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-variant', 'main');
 		expect(screen.queryByRole('link', { name: 'Active Recall' })).not.toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Trang công khai' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: /^Hộp thư liên hệ/ })).toBeInTheDocument();
 	});
 });

@@ -18,10 +18,10 @@ const SIDEBAR_COOKIE = 'admin-sidebar-collapsed';
 const ADMIN_NAV_ICONS: Record<string, AdminIconName> = {
 	[routes.admin.home]: 'overview',
 	[routes.admin.archive]: 'archive',
-	[routes.admin.website]: 'website',
 	[routes.admin.inquiries]: 'inbox',
 	[routes.admin.learnAnalytics]: 'analytics',
 	[routes.mySpaceTeaching]: 'teaching',
+	[routes.mySpaceTeachingRecallAnalytics]: 'analytics',
 };
 
 function NavItem({
