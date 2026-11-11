@@ -41,7 +41,7 @@ Vocabulary thuộc khu này vì bài từ vựng trong My Class dùng lại tran
 
 Trang công khai, bài viết, dịch vụ, và khóa học tự học.
 
-- `src/app/page.tsx`, `gioi-thieu`, `muc-luc`, `du-an`, `trai-nghiem`, `dich-vu`, `ghi-chep`, `lien-he`, `chinh-sach`, `kham-pha-khoa-hoc`
+- `src/app/page.tsx`, `gioi-thieu`, `muc-luc`, `du-an`, `trai-nghiem`, `dich-vu`, `ghi-chep`, `lien-he`, `chinh-sach`, `khoa-hoc`
 - `src/app/my-space/courses` (phục vụ `/khoa-hoc/*`)
 - `src/features/portfolio`, `posts`, `learn`, `services`, `experiences`, `inquiries`
 - `src/components/learn`, `marketing`, `contact`
