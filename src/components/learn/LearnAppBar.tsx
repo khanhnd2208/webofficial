@@ -22,7 +22,7 @@ export default function LearnAppBar({
 					<BrandWordmark />
 				</Link>
 				<nav aria-label="Đường dẫn" className="ln-appbar__crumbs">
-					<Link href="/my-space/courses">Khóa học</Link>
+					<Link href={routes.myCourses}>Khóa học</Link>
 					{crumbs.map((crumb) => (
 						<span key={crumb.label} className="ln-appbar__crumb">
 							<LearnIcon name="chevronRight" size={14} />

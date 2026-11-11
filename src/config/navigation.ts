@@ -295,7 +295,7 @@ export const PUBLIC_NAV_LINKS: NavLink[] = getDesktopNavLinks();
 
 /** Authenticated user menu */
 export const USER_MENU_LINKS: NavLink[] = [
-	{ href: routes.learnCourses, label: 'Khóa học của tôi' },
+	{ href: routes.myCourses, label: 'Khóa học của tôi' },
 	{ href: routes.account, label: 'Tài khoản' },
 ];
 
