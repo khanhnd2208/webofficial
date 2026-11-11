@@ -9,8 +9,10 @@ import { ARENA_AWARD_LEVELS, type ArenaAwardLevel } from '@/features/teaching/do
 import type { RecallArenaCard, RecallArenaPlayer } from '@/features/teaching/types';
 
 import { ArenaCharacter } from './ArenaCharacter';
+import { ArenaMonster } from './ArenaFigures';
+import type { ArenaBoss } from './arenaBosses';
 import type { ArenaCharacter as Character } from './arenaCharacters';
-import { fullName } from './arenaGame';
+import { fullName, matchesPlayerSearch } from './arenaGame';
 import styles from './arena.module.css';
 
 function RichText({ html }: { html: string }) {
@@ -39,7 +41,7 @@ function QuestionCard({ card, deckLabel }: { card: RecallArenaCard; deckLabel: s
 	return (
 		<div className={styles.questionCard}>
 			<div className={styles.questionMeta}>
-				<span>{deckLabel || 'Câu hỏi'}</span>
+				<span>Câu hỏi{deckLabel ? ` · ${deckLabel}` : ''}</span>
 				{hasEn && hasVi ? (
 					<span className={styles.langSwitch} role="group" aria-label="Ngôn ngữ câu hỏi">
 						<button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
@@ -79,32 +81,43 @@ function QuestionCard({ card, deckLabel }: { card: RecallArenaCard; deckLabel: s
 export function ArenaCaught({
 	player,
 	character,
+	boss,
 	card,
 	deckLabel,
 	cpNow,
 	saving,
 	canChangeCard,
 	onPass,
+	onBarePass,
 	onFail,
 	onSkipStudent,
+	onChooseStudent,
+	otherPlayers,
 	onNextCard,
 	onClose,
 }: {
 	player: RecallArenaPlayer;
 	/** The student's hero, as shown on the floor. */
 	character: Character;
+	boss: ArenaBoss;
 	card: RecallArenaCard | null;
 	deckLabel: string;
 	cpNow: number;
 	saving: boolean;
 	canChangeCard: boolean;
 	onPass: (level: ArenaAwardLevel) => void;
+	onBarePass: () => void;
 	onFail: () => void;
 	onSkipStudent: () => void;
+	onChooseStudent: (enrollmentId: string) => void;
+	otherPlayers: RecallArenaPlayer[];
 	onNextCard: () => void;
 	/** Close without grading: the student keeps their turn. */
 	onClose: () => void;
 }) {
+	const [choosing, setChoosing] = useState(false);
+	const [query, setQuery] = useState('');
+	const matches = otherPlayers.filter((candidate) => matchesPlayerSearch(candidate, query));
 	return (
 		<m.div
 			className={styles.caughtBackdrop}
@@ -134,35 +147,48 @@ export function ArenaCaught({
 					<McIcon name="close" size={22} />
 				</button>
 
-				<header className={styles.caughtHead}>
-					<m.span
-						className={styles.caughtAvatar}
-						initial={{ rotate: -18, y: -30 }}
-						animate={{ rotate: [-18, 10, -6, 0], y: 0 }}
-						transition={{ duration: 0.7 }}
+				<div className={styles.caughtLayout}>
+					<section
+						className={styles.caughtScene}
+						aria-label={`${fullName(player)} đối đầu ${boss.name}`}
 					>
-						<ArenaCharacter character={character} size={98} />
-					</m.span>
-					<div className={styles.caughtWho}>
 						<p className={styles.caughtEyebrow}>Quái vật đã bắt được</p>
-						<h2 id="arena-caught-name" className={styles.caughtName}>
-							{fullName(player)}
-						</h2>
-						<p className={styles.caughtMeta}>
-							{player.studentCode} · CP tuần này: {cpNow}
-						</p>
-					</div>
-				</header>
+						<div className={styles.duel}>
+							<m.span
+								className={styles.duelHero}
+								initial={{ x: -45, opacity: 0 }}
+								animate={{ x: 0, opacity: 1 }}
+							>
+								<ArenaCharacter character={character} size={240} decorative={false} />
+							</m.span>
+							<span className={styles.duelVersus} aria-hidden="true">
+								VS
+							</span>
+							<span className={styles.duelBoss}>
+								<ArenaMonster boss={boss} mood="roar" size={184} decorative />
+							</span>
+						</div>
+						<div className={styles.caughtWho}>
+							<h2 id="arena-caught-name" className={styles.caughtName}>
+								{fullName(player)}
+							</h2>
+							<p className={styles.caughtMeta}>
+								{player.studentCode} · CP tuần này: {cpNow}
+							</p>
+							<p className={styles.duelOpponent}>Đối đầu {boss.name}</p>
+						</div>
+					</section>
 
-				{card ? (
-					<QuestionCard key={card.id} card={card} deckLabel={deckLabel} />
-				) : (
-					<div className={styles.questionCard}>
-						<p className={styles.noCard}>
-							Không có thẻ câu hỏi trong bộ đã chọn. Hỏi câu của bạn rồi chấm như bình thường.
-						</p>
-					</div>
-				)}
+					{card ? (
+						<QuestionCard key={card.id} card={card} deckLabel={deckLabel} />
+					) : (
+						<div className={styles.questionCard}>
+							<p className={styles.noCard}>
+								Không có thẻ câu hỏi trong bộ đã chọn. Hỏi câu của bạn rồi chấm như bình thường.
+							</p>
+						</div>
+					)}
+				</div>
 
 				<div className={styles.grading}>
 					<div className={styles.passGroup} role="group" aria-label="Đạt, chọn mức CP">
@@ -183,12 +209,22 @@ export function ArenaCaught({
 					</div>
 					<button
 						type="button"
+						className={styles.barePassButton}
+						disabled={saving}
+						onClick={onBarePass}
+						title="Qua lượt này, không cộng CP và không thêm Gift"
+						data-arena-key="4"
+					>
+						Vừa đủ qua
+					</button>
+					<button
+						type="button"
 						className={styles.failButton}
 						disabled={saving}
 						onClick={onFail}
 						data-arena-key="0"
 					>
-						Chưa đạt
+						Chưa đạt · +1 Gift
 					</button>
 					<span className={styles.gradingSpacer} />
 					{canChangeCard ? (
@@ -202,19 +238,62 @@ export function ArenaCaught({
 							Đổi câu
 						</button>
 					) : null}
-					<button
-						type="button"
-						className={styles.textButton}
-						disabled={saving}
-						onClick={onSkipStudent}
-						data-arena-key="s"
-					>
-						Gọi bạn khác
-					</button>
+					{otherPlayers.length > 0 ? (
+						<button
+							type="button"
+							className={styles.textButton}
+							disabled={saving}
+							onClick={onSkipStudent}
+							data-arena-key="s"
+						>
+							Gọi ngẫu nhiên bạn khác
+						</button>
+					) : null}
+					{otherPlayers.length > 0 ? (
+						<button
+							type="button"
+							className={styles.textButton}
+							disabled={saving}
+							onClick={() => setChoosing((value) => !value)}
+						>
+							Gọi chỉ định
+						</button>
+					) : null}
 				</div>
+				{choosing ? (
+					<div className={styles.choosePlayer}>
+						<label htmlFor="arena-choose-player">Nhập tên hoặc mã sinh viên</label>
+						<input
+							id="arena-choose-player"
+							type="search"
+							autoFocus
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							placeholder="Tìm bạn trong trận…"
+						/>
+						{query.trim() ? (
+							<div className={styles.chooseResults}>
+								{matches.length ? (
+									matches.map((candidate) => (
+										<button
+											type="button"
+											key={candidate.enrollmentId}
+											onClick={() => onChooseStudent(candidate.enrollmentId)}
+										>
+											{fullName(candidate)} · {candidate.studentCode}
+										</button>
+									))
+								) : (
+									<p>Không tìm thấy bạn nào trong trận.</p>
+								)}
+							</div>
+						) : null}
+					</div>
+				) : null}
 				<p className={styles.shortcuts}>
-					Phím tắt: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> Đạt · <kbd>0</kbd> Chưa đạt ·{' '}
-					<kbd>A</kbd> đáp án · <kbd>Q</kbd> đổi câu · <kbd>S</kbd> bạn khác · <kbd>Esc</kbd> đóng
+					Phím tắt: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> Đạt · <kbd>4</kbd> vừa đủ qua ·{' '}
+					<kbd>0</kbd> Chưa đạt · <kbd>A</kbd> đáp án · <kbd>Q</kbd> đổi câu · <kbd>S</kbd> bạn khác
+					· <kbd>Esc</kbd> đóng
 				</p>
 			</m.section>
 		</m.div>

@@ -38,6 +38,8 @@ export interface ArenaHistoryEntry {
 	award?: number;
 	/** CP saved for the week after the pass, when the save succeeded. */
 	cpAfter?: number;
+	/** Gift count returned by the server after a missed answer. */
+	giftAfter?: number;
 	saveError?: string;
 }
 
