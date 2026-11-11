@@ -89,7 +89,7 @@ test('public reading and native links survive without JavaScript', async ({ brow
 	await page.getByTestId('intro-open-toc').click();
 	await expect(page).toHaveURL(/\/muc-luc$/);
 	await page.getByTestId('gate-item-about').click();
-	await expect(page).toHaveURL(/\/gioi-thieu$/);
+	await expect(page).toHaveURL(aboutPagePaused ? /\/lien-he$/ : /\/gioi-thieu$/);
 	await context.close();
 });
 

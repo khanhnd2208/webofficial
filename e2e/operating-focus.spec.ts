@@ -1,14 +1,23 @@
 import { expect, test } from '@playwright/test';
 
+import { aboutPagePaused } from '../src/content/about';
 import { addAdminSession } from './helpers/adminSession';
 
 test.describe('Focused operating mode', () => {
-	test('mục lục lists introduction without experiences', async ({ page }) => {
+	test('mục lục links to contact and experiences while the introduction is paused', async ({
+		page,
+	}) => {
 		await page.goto('/muc-luc');
 		const gate = page.getByRole('navigation', { name: 'Mục lục' });
-		await expect(gate.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
+		await expect(gate.getByTestId('gate-item-about')).toHaveAttribute(
+			'href',
+			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
+		);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
-		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
+			'href',
+			'/trai-nghiem',
+		);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 	});
 
@@ -16,12 +25,12 @@ test.describe('Focused operating mode', () => {
 		const response = await request.get('/sitemap.xml');
 		expect(response.ok()).toBeTruthy();
 		const xml = await response.text();
-		expect(xml).toContain('/gioi-thieu');
+		expect(xml.includes('/gioi-thieu')).toBe(!aboutPagePaused);
 		expect(xml).toMatch(/<loc>[^<]*\/du-an\/ai50-ai-cho-moi-nguoi<\/loc>/);
 		expect(xml).not.toMatch(/<loc>[^<]*\/du-an<\/loc>/);
 		expect(xml).not.toContain('/dich-vu');
 		expect(xml).toContain('/lien-he');
-		expect(xml).toMatch(/<loc>[^<]*\/my-space<\/loc>/);
+		expect(xml).not.toMatch(/<loc>[^<]*\/my-space<\/loc>/);
 		expect(xml).not.toContain('/my-space/active-recall');
 		expect(xml).not.toContain('/ghi-chep');
 		expect(xml).not.toContain('/my-space/tests');

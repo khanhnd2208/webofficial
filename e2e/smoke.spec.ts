@@ -46,7 +46,10 @@ test.describe('Public pages smoke', () => {
 		await expect(game).toHaveAttribute('data-muted', '');
 		await expect(game.locator('strong')).toHaveText('fun.toiladuykhanh.com');
 		await expect(page.getByTestId('toc-open-myspace')).toHaveCount(0);
-		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
+			'href',
+			'/trai-nghiem',
+		);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 		await expect(page.getByTestId('site-header-contact')).toBeVisible();
