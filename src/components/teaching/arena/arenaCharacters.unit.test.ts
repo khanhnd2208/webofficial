@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { arenaBossFor, ARENA_BOSSES, bossFramePosition } from './arenaBosses';
 import { ARENA_CHARACTERS, arenaCast, arenaCharacterFor } from './arenaCharacters';
 
-const codes = Array.from({ length: 100 }, (_, index) => `SV${22000000 + index}`);
+const codes = Array.from({ length: 1000 }, (_, index) => `SV${22000000 + index}`);
 
 describe('Arena character assignment', () => {
 	it('keeps each student in the same role across reloads and uses the whole catalogue', () => {
