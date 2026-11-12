@@ -436,7 +436,7 @@ describe('RecallArena', () => {
 		});
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
 
-		expect(screen.getByTestId('arena-player').textContent).toBe('Bình');
+		expect(within(screen.getByTestId('arena-player')).getByText('Bình')).toBeTruthy();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Lê Minh Bình' });
 		expect(within(caught).getByText('Người ngoài danh sách · không ghi CP')).toBeTruthy();
@@ -444,6 +444,30 @@ describe('RecallArena', () => {
 		await waitFor(() => expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy());
 		expect(apiMock).not.toHaveBeenCalled();
 		expect(screen.getByText('Bình: đạt · không ghi CP')).toBeTruthy();
+	});
+
+	it('records a missed answer for an unlisted player without calling the Gift API', async () => {
+		render(<RecallArena data={arenaData()} initialClassId="c2" />);
+		openStep('Người chơi');
+		const setup = setupDialog();
+		fireEvent.change(within(setup).getByPlaceholderText('Họ và tên'), {
+			target: { value: 'Lê Minh An' },
+		});
+		fireEvent.change(within(setup).getByLabelText('Nhóm của người ngoài danh sách'), {
+			target: { value: 'CHALLENGE' },
+		});
+		fireEvent.click(within(setup).getByRole('button', { name: 'Thêm vào trận' }));
+		fireEvent.change(within(setup).getByLabelText('Gọi ai'), {
+			target: { value: 'CHALLENGE' },
+		});
+		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Lê Minh An' });
+		expect(within(caught).getByRole('button', { name: 'Chưa đạt' })).toBeTruthy();
+		fireEvent.click(within(caught).getByRole('button', { name: 'Chưa đạt' }));
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Lê Minh An' })).toBeNull());
+		expect(apiMock).not.toHaveBeenCalled();
+		expect(screen.getByRole('status').textContent).toContain('không ghi Gift');
 	});
 
 	it('mixes questions from several lessons', () => {

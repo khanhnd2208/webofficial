@@ -450,6 +450,12 @@ export function RecallArena({
 	async function handleFail() {
 		if (!current || saving) return;
 		const enrollmentId = current.enrollmentId;
+		if (isManualPlayer(enrollmentId)) {
+			record('fail');
+			setToast({ tone: 'ok', text: `${nameOf(enrollmentId)}: chưa đạt · không ghi Gift` });
+			finishTurn('laugh', 1);
+			return;
+		}
 		setSaving(true);
 		try {
 			const result = await teachingApi<TeachingGiftMutationResult>(
