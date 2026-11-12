@@ -356,7 +356,7 @@ describe('RecallArena', () => {
 		});
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
 
-		expect(screen.getByTestId('arena-player').textContent).toBe('Bình');
+		expect(within(screen.getByTestId('arena-player')).getByText('Bình')).toBeTruthy();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Lê Minh Bình' });
 		expect(within(caught).getByText('Người ngoài danh sách · không ghi CP')).toBeTruthy();
