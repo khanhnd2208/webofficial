@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 
 import {
 	arenaCpSession,
 	presentAt,
+	type ArenaGroup,
 	type ArenaGroupFilter,
 } from '@/features/teaching/domain/recallArena';
 import type {
@@ -14,7 +15,7 @@ import type {
 } from '@/features/teaching/types';
 
 import { ArenaCpStatus } from './ArenaCpStatus';
-import { fullName, matchesPlayerSearch, type ArenaConfig } from './arenaGame';
+import { fullName, matchesPlayerSearch, newManualPlayer, type ArenaConfig } from './arenaGame';
 import styles from './arena.module.css';
 import setup from './arenaSetup.module.css';
 
@@ -52,6 +53,9 @@ export function ArenaSetupPlayers({
 	onOpenCp: (sessionId: string) => void;
 }) {
 	const [query, setQuery] = useState('');
+	const [manualName, setManualName] = useState('');
+	const [manualGroup, setManualGroup] = useState<ArenaGroup>('SUPPORT');
+	const [editingId, setEditingId] = useState<string | null>(null);
 	const classCode = useMemo(
 		() => new Map(data.classes.map((item) => [item.id, item.classCode])),
 		[data.classes],
@@ -91,6 +95,29 @@ export function ArenaSetupPlayers({
 			excludedIds: config.excludedIds.filter((id) => id !== player.enrollmentId),
 		});
 		setQuery('');
+	}
+
+	function saveManual(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const name = manualName.trim().replace(/\s+/g, ' ');
+		if (!name) return;
+		const manualPlayers = editingId
+			? config.manualPlayers.map((player) =>
+					player.id === editingId ? { ...player, name, group: manualGroup } : player,
+				)
+			: [...config.manualPlayers, newManualPlayer(name, manualGroup)];
+		onChange({ ...config, manualPlayers });
+		setManualName('');
+		setManualGroup('SUPPORT');
+		setEditingId(null);
+	}
+
+	function editManual(id: string) {
+		const player = config.manualPlayers.find((item) => item.id === id);
+		if (!player) return;
+		setManualName(player.name);
+		setManualGroup(player.group);
+		setEditingId(id);
 	}
 
 	function toggle(player: RecallArenaPlayer) {
@@ -193,7 +220,94 @@ export function ArenaSetupPlayers({
 				) : null}
 			</div>
 
-			{byClass.length === 0 ? (
+			<form className={setup.search} onSubmit={saveManual}>
+				<label className={setup.searchLabel} htmlFor="arena-manual-name">
+					{editingId ? 'Sửa người ngoài danh sách' : 'Thêm người không có trong danh sách'}
+				</label>
+				<p className={styles.setupHint}>Người thêm tay được chơi, nhưng không ghi CP.</p>
+				<div className={setup.manualFields}>
+					<input
+						id="arena-manual-name"
+						className={setup.searchInput}
+						placeholder="Họ và tên"
+						value={manualName}
+						onChange={(event) => setManualName(event.target.value)}
+						maxLength={80}
+						required
+					/>
+					<select
+						className={setup.select}
+						aria-label="Nhóm của người ngoài danh sách"
+						value={manualGroup}
+						onChange={(event) => setManualGroup(event.target.value as ArenaGroup)}
+					>
+						<option value="SUPPORT">Supporting</option>
+						<option value="CHALLENGE">Challenging</option>
+					</select>
+					<button type="submit" className={styles.smallButton} disabled={!manualName.trim()}>
+						{editingId ? 'Lưu sửa' : 'Thêm vào trận'}
+					</button>
+					{editingId ? (
+						<button
+							type="button"
+							className={styles.textButton}
+							onClick={() => {
+								setEditingId(null);
+								setManualName('');
+								setManualGroup('SUPPORT');
+							}}
+						>
+							Hủy
+						</button>
+					) : null}
+				</div>
+			</form>
+
+			{config.manualPlayers.length > 0 ? (
+				<section className={setup.playerGroup} aria-label="Người ngoài danh sách">
+					<h3 className={setup.groupTitle}>
+						Người ngoài danh sách{' '}
+						<span className={styles.count}>{config.manualPlayers.length}</span>
+					</h3>
+					<ul className={`${setup.playerList} ${setup.manualPlayerList}`}>
+						{config.manualPlayers.map((player) => (
+							<li key={player.id} className={setup.player}>
+								<div className={setup.playerHead}>
+									<span className={setup.playerName}>{player.name}</span>
+									<span className={setup.groupTag}>{GROUP_TAG[player.group]}</span>
+								</div>
+								<div className={setup.manualActions}>
+									<button
+										type="button"
+										className={styles.linkButton}
+										onClick={() => editManual(player.id)}
+									>
+										Sửa
+									</button>
+									<button
+										type="button"
+										className={styles.linkButton}
+										onClick={() => {
+											onChange({
+												...config,
+												manualPlayers: config.manualPlayers.filter((item) => item.id !== player.id),
+											});
+											if (editingId === player.id) {
+												setEditingId(null);
+												setManualName('');
+											}
+										}}
+									>
+										Xóa
+									</button>
+								</div>
+							</li>
+						))}
+					</ul>
+				</section>
+			) : null}
+
+			{byClass.length === 0 && config.manualPlayers.length === 0 ? (
 				<p className={styles.setupHint} data-tone="bad">
 					Chưa có ai trong trận. Chọn lớp ở bước 1, điểm danh, hoặc thêm sinh viên ở ô trên.
 				</p>

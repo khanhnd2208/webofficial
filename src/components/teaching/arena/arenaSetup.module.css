@@ -233,6 +233,27 @@
 	font-weight: 800;
 }
 
+.manualFields {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.manualFields input {
+	flex: 2 1 12rem;
+}
+
+.manualFields select {
+	flex: 1 1 9rem;
+}
+
+.manualActions {
+	display: flex;
+	gap: 0.75rem;
+	justify-content: flex-end;
+}
+
 .result {
 	display: flex;
 	width: 100%;
@@ -274,6 +295,10 @@
 .playerList {
 	grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
 	gap: 0.3rem;
+}
+
+.manualPlayerList {
+	grid-template-columns: 1fr;
 }
 
 .player {

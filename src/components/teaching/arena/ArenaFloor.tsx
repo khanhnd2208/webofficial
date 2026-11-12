@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 
 import { useMotionTier } from '@/components/motion';
 
@@ -9,18 +9,9 @@ import type { RecallArenaPlayer } from '@/features/teaching/types';
 import { suckStyle, type ArenaSuck } from './ArenaEffects';
 import { ArenaCharacter } from './ArenaCharacter';
 import { arenaCharacterFor } from './arenaCharacters';
+import { floorLayout, nextRoamingSpot, startingSpots, type RoamingSpot } from './arenaRoaming';
 import { STRIKE_HERO_SCALE } from './arenaStrikes';
 import styles from './arena.module.css';
-
-interface Spot {
-	x: number;
-	y: number;
-	/** Wander offset inside the student's own cell, in percent of the floor. */
-	dx: number;
-	dy: number;
-	facingLeft: boolean;
-	walking: boolean;
-}
 
 export interface ArenaAttackCue {
 	enrollmentId: string;
@@ -29,34 +20,9 @@ export interface ArenaAttackCue {
 	facingLeft: boolean;
 }
 
-function layout(count: number) {
-	const cols = Math.max(1, Math.ceil(Math.sqrt(count * 4)));
-	const rows = Math.max(1, Math.ceil(count / cols));
-	return { cols, rows };
-}
-
-function baseSpots(count: number): Spot[] {
-	const { cols, rows } = layout(count);
-	return Array.from({ length: count }, (_, index) => {
-		const row = Math.floor(index / cols);
-		const col = index % cols;
-		// A short last row sits in the middle instead of hugging the left wall.
-		const inRow = row === rows - 1 ? count - cols * (rows - 1) : cols;
-		const centred = inRow < cols ? (cols - inRow) / 2 : row % 2 === 1 ? 0.25 : 0;
-		return {
-			x: Math.min(97, ((col + 0.5 + centred) / cols) * 100),
-			y: ((row + 0.55) / rows) * 100,
-			dx: 0,
-			dy: 0,
-			facingLeft: false,
-			walking: false,
-		};
-	});
-}
-
 /**
- * The crowd: one figure per student in the room, each wandering inside its
- * own cell so nobody overlaps and names stay readable from the back row.
+ * The crowd: students roam between points across the whole floor, with room
+ * around other students' paths so their names remain readable.
  */
 export function ArenaFloor({
 	players,
@@ -83,31 +49,89 @@ export function ArenaFloor({
 	heroIds: readonly string[];
 }) {
 	const { reduced: reducedMotion } = useMotionTier();
+	const floorRef = useRef<HTMLDivElement>(null);
+	const [floorWidth, setFloorWidth] = useState(0);
 	const count = players.length;
-	const { cols, rows } = layout(count);
-	const base = useMemo(() => baseSpots(count), [count]);
-	const [wander, setWander] = useState<Spot[]>(base);
-	// A new head count re-lays out the floor; until the next wander tick use the fresh layout.
-	const spots = wander.length === count ? wander : base;
+	const { cols } = floorLayout(count);
+	const initial = useMemo(() => startingSpots(players), [players]);
+	const [wander, setWander] = useState(initial);
+	const rosterMatches =
+		wander.size === count && players.every((player) => wander.has(player.enrollmentId));
+	const spots = rosterMatches ? wander : initial;
+	const paused = hunting || Boolean(caughtId) || Boolean(suck) || Boolean(attackCue);
+	const fullSize = count <= 24 ? 82 : count <= 40 ? 70 : 62;
+	const size = floorWidth
+		? Math.max(26, Math.min(fullSize, Math.floor((floorWidth / cols) * 0.72)))
+		: fullSize;
+
+	useLayoutEffect(() => {
+		const floor = floorRef.current;
+		if (!floor || typeof ResizeObserver === 'undefined') return;
+		const observer = new ResizeObserver(([entry]) => {
+			if (entry) setFloorWidth(Math.round(entry.contentRect.width));
+		});
+		observer.observe(floor);
+		return () => observer.disconnect();
+	}, []);
+
+	// Capture the visible position before a grab or strike. The next render starts
+	// from that point instead of snapping to the end of a walking transition.
+	useLayoutEffect(() => {
+		if ((!paused && !reducedMotion) || !floorRef.current) return;
+		const floor = floorRef.current.getBoundingClientRect();
+		if (!floor.width || !floor.height) return;
+		setWander((previous) => {
+			const frozen = new Map(previous);
+			floorRef.current?.querySelectorAll<HTMLElement>('[data-player-id]').forEach((element) => {
+				const id = element.dataset.playerId;
+				const spot = id ? frozen.get(id) : undefined;
+				if (!id || !spot) return;
+				const rect = element.getBoundingClientRect();
+				const point = {
+					x: ((rect.left + rect.width / 2 - floor.left) / floor.width) * 100,
+					y: ((rect.top + rect.height / 2 - floor.top) / floor.height) * 100,
+				};
+				frozen.set(id, {
+					...spot,
+					...point,
+					from: point,
+					walking: false,
+					travelMs: 0,
+					nextAt: performance.now() + 900,
+				});
+			});
+			return frozen;
+		});
+	}, [paused, reducedMotion]);
 
 	useEffect(() => {
-		if (reducedMotion || hunting || caughtId || attackCue || count === 0) return;
-		const cellW = 100 / cols;
-		const cellH = 100 / rows;
+		if (reducedMotion || paused || count === 0) return;
 		const timer = window.setInterval(() => {
-			setWander((previous) =>
-				(previous.length === count ? previous : baseSpots(count)).map((spot) => {
-					if (Math.random() > 0.4) return { ...spot, walking: false };
-					const dx = (Math.random() - 0.5) * cellW * 0.18;
-					const dy = (Math.random() - 0.5) * cellH * 0.18;
-					return { ...spot, dx, dy, facingLeft: dx < spot.dx, walking: true };
-				}),
-			);
-		}, 1800);
+			const floor = floorRef.current?.getBoundingClientRect();
+			if (!floor?.width || !floor.height) return;
+			const now = performance.now();
+			setWander((previous) => {
+				const source =
+					previous.size === count && players.every((player) => previous.has(player.enrollmentId))
+						? previous
+						: initial;
+				const next = new Map(source);
+				let changed = false;
+				for (const player of players) {
+					const spot = next.get(player.enrollmentId);
+					if (!spot || now < spot.nextAt) continue;
+					next.set(
+						player.enrollmentId,
+						nextRoamingSpot(spot, next.values(), floor.width, floor.height, size, now),
+					);
+					changed = true;
+				}
+				return changed ? next : previous;
+			});
+		}, 450);
 		return () => window.clearInterval(timer);
-	}, [count, cols, rows, reducedMotion, hunting, caughtId, attackCue]);
+	}, [players, initial, count, size, reducedMotion, paused]);
 
-	const size = count <= 24 ? 82 : count <= 40 ? 70 : 62;
 	const characters = useMemo(
 		() =>
 			new Map(
@@ -121,13 +145,15 @@ export function ArenaFloor({
 
 	return (
 		<div
+			ref={floorRef}
 			className={styles.floor}
 			data-hunting={hunting || undefined}
 			data-striking={(attackCue && !reducedMotion) || undefined}
 			style={{ '--strike-hero-scale': STRIKE_HERO_SCALE } as CSSProperties}
 		>
 			{players.map((player, index) => {
-				const spot = spots[index] ?? base[index]!;
+				const spot: RoamingSpot =
+					spots.get(player.enrollmentId) ?? initial.get(player.enrollmentId)!;
 				const highlighted = highlightId === player.enrollmentId;
 				const caught = caughtId === player.enrollmentId;
 				const attacking = attackCue?.enrollmentId === player.enrollmentId;
@@ -140,15 +166,19 @@ export function ArenaFloor({
 						data-called={calledIds.has(player.enrollmentId) || undefined}
 						data-attacking={(attacking && !reducedMotion) || undefined}
 						data-player-id={player.enrollmentId}
+						data-walking={(spot.walking && !paused && !reducedMotion) || undefined}
 						data-suck={suck?.id === player.enrollmentId ? suck.stage : undefined}
 						data-testid="arena-player"
-						style={{
-							width: `${100 / cols}%`,
-							left: `${spot.x + spot.dx}%`,
-							top: `${spot.y + spot.dy}%`,
-							animationDelay: `${(index % 7) * -0.23}s`,
-							...suckStyle(suck, player.enrollmentId),
-						}}
+						style={
+							{
+								width: `${size + 72}px`,
+								left: `${spot.x}%`,
+								top: `${spot.y}%`,
+								'--travel-ms': `${spot.travelMs}ms`,
+								animationDelay: `${(index % 7) * -0.23}s`,
+								...suckStyle(suck, player.enrollmentId),
+							} as CSSProperties
+						}
 					>
 						<span
 							className={styles.playerFigure}
@@ -159,9 +189,7 @@ export function ArenaFloor({
 							<ArenaCharacter
 								character={characters.get(player.enrollmentId)!}
 								size={size}
-								walking={
-									spot.walking && !hunting && !caught && !suck && !attackCue && !reducedMotion
-								}
+								walking={spot.walking && !paused && !reducedMotion}
 								attacking={attacking && !reducedMotion}
 								facingLeft={attacking ? attackCue.facingLeft : spot.facingLeft}
 							/>

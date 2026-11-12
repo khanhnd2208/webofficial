@@ -18,6 +18,7 @@ import {
 import type {
 	RecallArenaAwardResult,
 	RecallArenaData,
+	TeachingGiftMutationResult,
 	TeachingParticipationMutationResult,
 } from '@/features/teaching/types';
 
@@ -41,8 +42,10 @@ import {
 	hostSessions,
 	initialConfig,
 	isCpFinalized,
+	isManualPlayer,
 	loadConfig,
 	loadProgress,
+	manualArenaPlayers,
 	passStreak,
 	saveConfig,
 	saveProgress,
@@ -117,13 +120,20 @@ export function RecallArena({
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
 	const hosts = useMemo(() => hostSessions(config, sessions), [config, sessions]);
+	const allPlayers = useMemo(
+		() => [...data.players, ...manualArenaPlayers(config.manualPlayers)],
+		[data.players, config.manualPlayers],
+	);
 	const playersById = useMemo(
-		() => new Map(data.players.map((player) => [player.enrollmentId, player])),
-		[data.players],
+		() => new Map(allPlayers.map((player) => [player.enrollmentId, player])),
+		[allPlayers],
 	);
 	/** Everyone on the floor; the spotlight visits all of them. */
 	const inRoom = useMemo(
-		() => arenaRoster(data.players, hosts, config),
+		() => [
+			...arenaRoster(data.players, hosts, config),
+			...manualArenaPlayers(config.manualPlayers),
+		],
 		[data.players, hosts, config],
 	);
 	const callable = useMemo(() => callablePlayers(inRoom, config.filter), [inRoom, config.filter]);
@@ -405,6 +415,12 @@ export function RecallArena({
 	async function handlePass(level: ArenaAwardLevel) {
 		if (!current || saving) return;
 		const name = nameOf(current.enrollmentId);
+		if (isManualPlayer(current.enrollmentId)) {
+			record('pass');
+			setToast({ tone: 'ok', text: `${name}: đạt · không ghi CP` });
+			finishTurn('hurt', -1);
+			return;
+		}
 		setSaving(true);
 		try {
 			const result = await award(current.enrollmentId, level);
@@ -416,17 +432,47 @@ export function RecallArena({
 					: `${name}: giữ CP ${result.points} (đã bằng hoặc cao hơn)`,
 			});
 		} catch (error) {
-			record('pass', { award: level, saveError: errorMessage(error) });
 			setToast({ tone: 'error', text: errorMessage(error) });
+			return;
 		} finally {
 			setSaving(false);
 		}
 		finishTurn('hurt', -1);
 	}
 
-	function handleFail() {
-		if (!current) return;
-		record('fail');
+	function handleBarePass() {
+		if (!current || saving) return;
+		record('pass', { award: 0, cpAfter: cpFor(current.enrollmentId) });
+		setToast({ tone: 'ok', text: `${nameOf(current.enrollmentId)}: vừa đủ qua, CP giữ nguyên` });
+		finishTurn('hurt', -1);
+	}
+
+	async function handleFail() {
+		if (!current || saving) return;
+		const enrollmentId = current.enrollmentId;
+		if (isManualPlayer(enrollmentId)) {
+			record('fail');
+			setToast({ tone: 'ok', text: `${nameOf(enrollmentId)}: chưa đạt · không ghi Gift` });
+			finishTurn('laugh', 1);
+			return;
+		}
+		setSaving(true);
+		try {
+			const result = await teachingApi<TeachingGiftMutationResult>(
+				`/api/admin/teaching/enrollments/${enrollmentId}/gift`,
+				{ method: 'PATCH', body: JSON.stringify({ delta: 1 }) },
+			);
+			record('fail', { giftAfter: result.student.giftCount });
+			setToast({
+				tone: 'ok',
+				text: `${nameOf(enrollmentId)}: +1 Gift (${result.student.giftCount} Gift)`,
+			});
+		} catch (error) {
+			setToast({ tone: 'error', text: `Chưa thêm Gift: ${errorMessage(error)}` });
+			return;
+		} finally {
+			setSaving(false);
+		}
 		finishTurn('laugh', 1);
 	}
 
@@ -448,10 +494,37 @@ export function RecallArena({
 	}
 
 	function handleSkip() {
-		if (!current) return;
+		if (!current || saving || callable.length < 2) return;
 		record('skip');
 		giveTurnBack();
 		setHuntAfterSkip(true);
+	}
+
+	function handleChooseStudent(enrollmentId: string) {
+		if (!current || saving || enrollmentId === current.enrollmentId) return;
+		if (!callable.some((player) => player.enrollmentId === enrollmentId)) return;
+		record('skip');
+		const eligibleIds = callable.map((player) => player.enrollmentId);
+		const returnedBag = returnToBag(progress.bag, eligibleIds, current.enrollmentId);
+		const availableCards = cards.map((item) => item.id);
+		const unused = current.cardId
+			? progress.usedCards.filter((id) => id !== current.cardId)
+			: progress.usedCards;
+		const nextCard = drawCard(availableCards, unused);
+		setProgress((previous) => ({
+			...previous,
+			bag: returnedBag.filter((id) => id !== enrollmentId),
+			lastPicked: enrollmentId,
+			usedCards: nextCard.used,
+		}));
+		setCurrent({
+			catchId: `${Date.now().toString(36)}-${enrollmentId}`,
+			enrollmentId,
+			cardId: nextCard.cardId,
+		});
+		setHighlightId(enrollmentId);
+		setLook(lookToward(monsterRef.current, enrollmentId));
+		playArenaSound('reveal');
 	}
 
 	function handleNextCard() {
@@ -573,9 +646,12 @@ export function RecallArena({
 				return;
 			}
 			if (phase === 'caught') {
-				const button = document.querySelector<HTMLButtonElement>(
-					`[data-arena-key="${CSS.escape(key)}"]`,
-				);
+				// An exiting catch dialog can remain mounted while the next one opens.
+				const button = Array.from(
+					document.querySelectorAll<HTMLButtonElement>(
+						`[role="dialog"][aria-modal="true"] [data-arena-key="${CSS.escape(key)}"]`,
+					),
+				).at(-1);
 				if (button && !button.disabled) {
 					event.preventDefault();
 					button.click();
@@ -684,14 +760,21 @@ export function RecallArena({
 						key={current?.catchId}
 						player={caughtPlayer}
 						character={heroOf(caughtPlayer.studentCode)}
+						boss={boss}
 						card={caughtCard}
 						deckLabel={caughtDeck ? caughtDeck.lessonLabel || caughtDeck.title : ''}
 						cpNow={cpFor(caughtPlayer.enrollmentId)}
+						manual={isManualPlayer(caughtPlayer.enrollmentId)}
 						saving={saving}
 						canChangeCard={cards.length > 1}
 						onPass={handlePass}
+						onBarePass={handleBarePass}
 						onFail={handleFail}
 						onSkipStudent={handleSkip}
+						onChooseStudent={handleChooseStudent}
+						otherPlayers={callable.filter(
+							(player) => player.enrollmentId !== caughtPlayer.enrollmentId,
+						)}
 						onNextCard={handleNextCard}
 						onClose={giveTurnBack}
 					/>

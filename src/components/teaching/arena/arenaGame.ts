@@ -1,6 +1,7 @@
 import {
 	buildArenaRoster,
 	matchesGroupFilter,
+	type ArenaGroup,
 	type ArenaGroupFilter,
 } from '@/features/teaching/domain/recallArena';
 import { ARENA_BOSSES } from './arenaBosses';
@@ -38,6 +39,8 @@ export interface ArenaHistoryEntry {
 	award?: number;
 	/** CP saved for the week after the pass, when the save succeeded. */
 	cpAfter?: number;
+	/** Gift count returned by the server after a missed answer. */
+	giftAfter?: number;
 	saveError?: string;
 }
 
@@ -61,12 +64,75 @@ export interface ArenaConfig {
 	deckIds: string[];
 	/** Students added by hand, for example a make-up student from another class. */
 	guestIds: string[];
+	/** Players who are not enrolled in this course, kept only in this browser for today. */
+	manualPlayers: ArenaManualPlayer[];
 	/** Students in the room the lecturer took out of the game. */
 	excludedIds: string[];
 	/** Heroes handed out to students. Empty means the whole catalogue. */
 	heroIds: string[];
 	/** The boss every round, or null to let the bosses take turns. */
 	bossId: string | null;
+}
+
+export interface ArenaManualPlayer {
+	id: string;
+	name: string;
+	group: ArenaGroup;
+}
+
+const MANUAL_ID_PREFIX = 'arena-manual:';
+
+export function isManualPlayer(id: string) {
+	return id.startsWith(MANUAL_ID_PREFIX);
+}
+
+export function newManualPlayer(name: string, group: ArenaGroup): ArenaManualPlayer {
+	return {
+		id: `${MANUAL_ID_PREFIX}${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
+		name: name.trim(),
+		group,
+	};
+}
+
+function validManualPlayers(value: unknown): ArenaManualPlayer[] {
+	if (!Array.isArray(value)) return [];
+	const seen = new Set<string>();
+	return value.filter((item): item is ArenaManualPlayer => {
+		if (!item || typeof item !== 'object') return false;
+		const player = item as Partial<ArenaManualPlayer>;
+		if (
+			typeof player.id !== 'string' ||
+			!isManualPlayer(player.id) ||
+			seen.has(player.id) ||
+			typeof player.name !== 'string' ||
+			!player.name.trim() ||
+			player.name.length > 80 ||
+			(player.group !== 'CHALLENGE' && player.group !== 'SUPPORT')
+		)
+			return false;
+		seen.add(player.id);
+		return true;
+	});
+}
+
+/** Adapt a manually entered name to the same game model, without a real enrollment. */
+export function manualArenaPlayers(players: readonly ArenaManualPlayer[]): RecallArenaPlayer[] {
+	return players.map(({ id, name, group }) => {
+		const parts = name.trim().split(/\s+/);
+		const givenName = parts.pop() ?? '';
+		return {
+			enrollmentId: id,
+			classId: '',
+			tutorialClassId: null,
+			enrolledFromWeek: 0,
+			studentCode: id,
+			familyName: parts.join(' '),
+			givenName,
+			group,
+			attendance: {},
+			cp: {},
+		};
+	});
 }
 
 /** What a browser remembers between visits. Players only count for the same day. */
@@ -179,6 +245,7 @@ export function initialConfig(
 		filter: filter === 'CHALLENGE' || filter === 'SUPPORT' ? filter : 'ALL',
 		deckIds: storedDecks.length ? storedDecks : enabledDecksFor(data, chosen),
 		guestIds: sameDay ? onlyKnown(stored?.guestIds, playerIds) : [],
+		manualPlayers: sameDay ? validManualPlayers(stored?.manualPlayers) : [],
 		excludedIds: sameDay ? onlyKnown(stored?.excludedIds, playerIds) : [],
 		heroIds: onlyKnown(stored?.heroIds, new Set(ARENA_CHARACTERS.map((hero) => hero.id))),
 		bossId: ARENA_BOSSES.some((boss) => boss.id === stored?.bossId) ? stored!.bossId! : null,
