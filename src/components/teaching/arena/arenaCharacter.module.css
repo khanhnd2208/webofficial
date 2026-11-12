@@ -22,6 +22,58 @@
 	transform: scaleX(-1);
 }
 
+.nameplate {
+	position: absolute;
+	bottom: calc(100% + 0.08rem);
+	left: 50%;
+	z-index: 2;
+	width: max-content;
+	max-width: calc(var(--character-size) * 1.7);
+	overflow: hidden;
+	padding: 0.15rem 0.4rem;
+	border: 1px solid var(--character-accent);
+	border-radius: 0.35rem;
+	background: linear-gradient(100deg, rgb(17 13 32 / 95%), rgb(45 29 54 / 94%));
+	box-shadow:
+		0 0 0 1px rgb(12 8 27 / 85%),
+		0 0 8px var(--character-accent);
+	color: #fff8e8;
+	font-size: clamp(0.56rem, calc(var(--character-size) * 0.13), 0.82rem);
+	font-weight: 900;
+	letter-spacing: 0.08em;
+	line-height: 1.15;
+	text-align: center;
+	text-overflow: ellipsis;
+	text-shadow: 0 0 6px var(--character-accent);
+	text-transform: uppercase;
+	white-space: nowrap;
+	transform: translateX(-50%);
+	animation: nameplate-glow 3s ease-in-out infinite;
+	pointer-events: none;
+}
+
+.nameplate::before {
+	margin-right: 0.25rem;
+	color: var(--character-accent);
+	content: '✦';
+	font-size: 0.7em;
+}
+
+@keyframes nameplate-glow {
+	0%,
+	100% {
+		box-shadow:
+			0 0 0 1px rgb(12 8 27 / 85%),
+			0 0 6px var(--character-accent);
+	}
+
+	52% {
+		box-shadow:
+			0 0 0 1px rgb(12 8 27 / 85%),
+			0 0 15px var(--character-accent);
+	}
+}
+
 .sprite {
 	background-image: var(--character-art);
 	background-position: 0 0;
@@ -126,7 +178,8 @@
 @media (prefers-reduced-motion: reduce) {
 	.sprite,
 	.actor[data-walking] .sprite,
-	.actor[data-attacking] .sprite {
+	.actor[data-attacking] .sprite,
+	.nameplate {
 		animation: none;
 	}
 }
