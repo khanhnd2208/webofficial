@@ -38,6 +38,7 @@ export const STRIKE_STYLES: Record<ArenaEffect, StrikeStyle> = {
 	crystal: { size: 52, spin: false, shots: volley([-48, -16, 16, 48], 60) },
 	smoke: { size: 62, spin: true, shots: volley([-55, 0, 55], 90) },
 	music: { size: 72, spin: false, shots: volley([-34]) },
+	book: { size: 76, spin: false, shots: volley([-28]) },
 };
 
 /** How much a hero grows, from the feet, while attacking. The floor's CSS reads it too. */

@@ -17,7 +17,8 @@ export type ArenaEffect =
 	| 'wind'
 	| 'crystal'
 	| 'smoke'
-	| 'music';
+	| 'music'
+	| 'book';
 
 export interface ArenaCharacter {
 	/** File name in `public/arena/characters/`, without `.webp`. */
@@ -167,6 +168,15 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#e779ff',
 		effect: 'music',
 		origin: [76, 47],
+		nameplate: true,
+	},
+	{
+		id: 'ndk',
+		name: 'NDK',
+		skill: 'Khai Mở Tri Thức',
+		accent: '#ff7658',
+		effect: 'book',
+		origin: [66, 39],
 		nameplate: true,
 	},
 ];
