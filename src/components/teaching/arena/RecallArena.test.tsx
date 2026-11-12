@@ -217,7 +217,7 @@ describe('RecallArena', () => {
 		await screen.findByText('An: CP 0 → 1');
 		expect(screen.getByLabelText('Máu quái vật 10/10')).toBeTruthy();
 		expect(
-			screen.getAllByTestId('arena-player').find((node) => node.textContent === 'An')?.dataset
+			screen.getAllByTestId('arena-player').find((node) => within(node).queryByText('An'))?.dataset
 				.attacking,
 		).toBe('true');
 		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', true);
