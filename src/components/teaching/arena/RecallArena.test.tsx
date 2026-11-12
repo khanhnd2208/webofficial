@@ -250,6 +250,7 @@ describe('RecallArena', () => {
 		expect(
 			within(setup).getByText(`Nhân vật của sinh viên · ${heroCount - 1}/${heroCount}`),
 		).toBeTruthy();
+		fireEvent.click(within(setup).getByRole('tab', { name: /^Boss/ }));
 		fireEvent.click(within(setup).getByRole('button', { name: 'Ma Vương Deadline' }));
 		openStep('Lớp học');
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
