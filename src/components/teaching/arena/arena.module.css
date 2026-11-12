@@ -415,7 +415,7 @@
 		width 300ms cubic-bezier(0.3, 1.5, 0.5, 1),
 		filter 300ms ease;
 	animation: monster-breathe 2.8s ease-in-out infinite;
-	filter: drop-shadow(0 18px 30px rgb(124 58 237 / 50%));
+	filter: drop-shadow(0 18px 30px var(--boss-glow, rgb(124 58 237 / 50%)));
 }
 
 /* An illustrated boss: one frame per mood on a 3×3 sheet (see arenaBosses.ts). */

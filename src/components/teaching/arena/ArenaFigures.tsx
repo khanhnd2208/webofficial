@@ -2,9 +2,11 @@ import { useId, type CSSProperties } from 'react';
 
 import { GRAPHIC_COLORS as C } from '@/config/graphicColors';
 
+import { VectorBoss } from './ArenaBossArt';
 import { MonsterEyes, MonsterMouth } from './ArenaMonsterFace';
 import { arenaBossArt, bossFramePosition, type ArenaBoss, type MonsterMood } from './arenaBosses';
 import styles from './arena.module.css';
+import art from './arenaBoss.module.css';
 
 export type { MonsterMood };
 
@@ -37,7 +39,8 @@ export function ArenaMonster({
 	const angry = enraged || mood === 'roar' || mood === 'inhale' || mood === 'chomp';
 	return (
 		<div
-			className={styles.monster}
+			className={`${styles.monster} ${art.frame}`}
+			data-design={boss.art.kind === 'vector' ? boss.art.design : undefined}
 			data-mood={mood}
 			data-enraged={(enraged && !defeated) || undefined}
 			style={{ width: size }}
@@ -54,6 +57,16 @@ export function ArenaMonster({
 							'--boss-frame': bossFramePosition(mood),
 						} as CSSProperties
 					}
+				/>
+			) : boss.art.kind === 'vector' ? (
+				<VectorBoss
+					id={id}
+					design={boss.art.design}
+					mood={mood}
+					name={boss.name}
+					enraged={enraged}
+					angry={angry}
+					look={look}
 				/>
 			) : (
 				<BuiltinMonster
