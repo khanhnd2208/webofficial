@@ -100,6 +100,7 @@ describe('Active Recall rich text', () => {
 
 	it('keeps legacy plain text readable and treats formatting-only markup as empty', () => {
 		expect(recallToStoredHtml('What is HRM?')).toBe('<p>What is HRM?</p>');
+		expect(recallToStoredHtml('What is **HRM**?')).toBe('<p>What is <strong>HRM</strong>?</p>');
 		expect(recallVisibleText('What is HRM?')).toBe('What is HRM?');
 		expect(recallHasContent('<p></p>')).toBe(false);
 		expect(recallHasContent('<p><br></p>')).toBe(false);
