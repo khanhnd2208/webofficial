@@ -227,7 +227,8 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await setup.getByRole('button', { name: 'Tiếp' }).click();
 
 			// The cast step: every catalogue hero has art, and a chosen boss takes the stage.
-			await expect(setup.getByText('Nhân vật của sinh viên · 10/10')).toBeVisible();
+			await expect(setup.getByText(/Nhân vật của sinh viên · (\d+)\/\1$/)).toBeVisible();
+			await setup.getByRole('tab', { name: /^Boss/ }).click();
 			await setup.getByRole('button', { name: 'Rồng Ngủ Gật' }).click();
 			await setup.getByRole('button', { name: 'Vào trận' }).click();
 			await expect(page.getByText('Boss 1 · Rồng Ngủ Gật')).toBeVisible();

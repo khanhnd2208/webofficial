@@ -1,9 +1,11 @@
 # Arena art: heroes and bosses
 
 The "Kiểm tra bài cũ" game (`src/components/teaching/arena/`) draws its
-heroes and bosses from two catalogues. Adding art is always the same two
-steps: put the file in the right folder, add one entry to the catalogue. The
-setup screen (step 4, "Nhân vật") lists whatever the catalogues contain, and
+heroes and bosses from two catalogues. Adding illustrated art is always the
+same two steps: put the file in the right folder, add one entry to the
+catalogue. The
+setup screen (step 4, "Nhân vật", one tab for heroes and one for the boss)
+lists whatever the catalogues contain, and
 `arenaAssets.unit.test.ts` fails if a file and its entry do not match.
 
 | What   | Folder                     | Catalogue                                         |
@@ -71,10 +73,24 @@ Catalogue entry:
 { id: 'rong-lua', name: 'Rồng Lửa', art: { kind: 'sheet', file: 'rong-lua' } }
 ```
 
-The built-in purple monster is `art: { kind: 'builtin', hue }`: the same
-drawing with its colours rotated by `hue` degrees. Shakes, squashes and the
-fall on defeat are applied to every boss by the game, so the art only needs
-the seven still poses.
+Shakes, squashes and the fall on defeat are applied to every boss by the
+game, so sheet art only needs the seven still poses.
+
+### Bosses drawn in code
+
+Most bosses need no image file. They are SVG drawings:
+
+- `art: { kind: 'vector', design }` is a hand-drawn design in
+  `ArenaBossArt.tsx` (`dragon`, `clock`, `ghost`, `wave`, `slime`, `book`,
+  `owl`). A design supplies only its silhouette: back, arm, foot, torso and
+  front. The eyes, the mouth and every mood come from `ArenaMonsterFace.tsx`,
+  so keep the face area clear: eyes around y=94 and the mouth around y=154 on
+  the 240×220 canvas. Its colours are one block in `arenaBoss.module.css`.
+- `art: { kind: 'builtin', hue }` is the original purple monster with its
+  colours rotated by `hue` degrees.
+
+To add a drawn boss: add the name to `ArenaBossDesign`, a silhouette to
+`DESIGNS`, a palette to `arenaBoss.module.css`, and an entry to `ARENA_BOSSES`.
 
 ## Prompt outline for generating a sheet
 

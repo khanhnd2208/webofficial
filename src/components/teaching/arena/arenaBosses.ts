@@ -1,8 +1,8 @@
 /**
- * The Arena's boss catalogue. A boss is either the built-in drawing in a new
- * colour, or illustrated art dropped into `public/arena/bosses/` (see
- * `docs/arena-assets.md`): a 3×3 grid with one frame per mood, in the order
- * of `ARENA_BOSS_SHEET`.
+ * The Arena's boss catalogue. A boss is the original drawing, one of the
+ * hand-drawn designs in `ArenaBossArt.tsx`, or illustrated art dropped into
+ * `public/arena/bosses/` (see `docs/arena-assets.md`): a 3×3 grid with one
+ * frame per mood, in the order of `ARENA_BOSS_SHEET`.
  */
 
 export type MonsterMood = 'idle' | 'roar' | 'inhale' | 'chomp' | 'hurt' | 'laugh' | 'defeated';
@@ -18,9 +18,14 @@ export const ARENA_BOSS_SHEET: readonly MonsterMood[] = [
 	'defeated',
 ];
 
+/** The hand-drawn designs in `ArenaBossArt.tsx`. */
+export type ArenaBossDesign = 'dragon' | 'clock' | 'ghost' | 'wave' | 'slime' | 'book' | 'owl';
+
 export type ArenaBossArt =
-	/** The built-in drawing, recoloured by rotating its hue (degrees). */
+	/** The original drawing, recoloured by rotating its hue (degrees). */
 	| { kind: 'builtin'; hue: number }
+	/** A hand-drawn design with its own silhouette and palette. */
+	| { kind: 'vector'; design: ArenaBossDesign }
 	/** File name in `public/arena/bosses/`, without `.webp`. */
 	| { kind: 'sheet'; file: string };
 
@@ -32,11 +37,13 @@ export interface ArenaBoss {
 
 export const ARENA_BOSSES: readonly ArenaBoss[] = [
 	{ id: 'quen-bai', name: 'Chúa Tể Quên Bài', art: { kind: 'builtin', hue: 0 } },
-	{ id: 'luoi-on-tap', name: 'Quỷ Lười Ôn Tập', art: { kind: 'builtin', hue: 67 } },
-	{ id: 'ngu-gat', name: 'Rồng Ngủ Gật', art: { kind: 'builtin', hue: 134 } },
-	{ id: 'deadline', name: 'Ma Vương Deadline', art: { kind: 'builtin', hue: 201 } },
-	{ id: 'hoc-tu', name: 'Bóng Ma Học Tủ', art: { kind: 'builtin', hue: 268 } },
-	{ id: 'nuoc-den-chan', name: 'Vua Nước Đến Chân', art: { kind: 'builtin', hue: 335 } },
+	{ id: 'luoi-on-tap', name: 'Quỷ Lười Ôn Tập', art: { kind: 'vector', design: 'slime' } },
+	{ id: 'ngu-gat', name: 'Rồng Ngủ Gật', art: { kind: 'vector', design: 'dragon' } },
+	{ id: 'deadline', name: 'Ma Vương Deadline', art: { kind: 'vector', design: 'clock' } },
+	{ id: 'hoc-tu', name: 'Bóng Ma Học Tủ', art: { kind: 'vector', design: 'ghost' } },
+	{ id: 'nuoc-den-chan', name: 'Vua Nước Đến Chân', art: { kind: 'vector', design: 'wave' } },
+	{ id: 'chep-bai', name: 'Sách Thần Chép Bài', art: { kind: 'vector', design: 'book' } },
+	{ id: 'cu-dem', name: 'Cú Đêm Cày Phim', art: { kind: 'vector', design: 'owl' } },
 ];
 
 export function arenaBossArt(file: string) {
