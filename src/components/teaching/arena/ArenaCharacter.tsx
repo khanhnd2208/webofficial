@@ -23,6 +23,7 @@ export function ArenaCharacter({
 		<span
 			className={styles.actor}
 			data-character={character.id}
+			data-nameplate={character.nameplate || undefined}
 			data-walking={(walking && !attacking) || undefined}
 			data-attacking={attacking || undefined}
 			data-facing-left={facingLeft || undefined}
@@ -37,6 +38,11 @@ export function ArenaCharacter({
 			role={decorative ? undefined : 'img'}
 			aria-label={decorative ? undefined : character.name}
 		>
+			{character.nameplate ? (
+				<span className={styles.nameplate} aria-hidden="true">
+					{character.name}
+				</span>
+			) : null}
 			<span className={styles.visual}>
 				<span className={styles.sprite} />
 			</span>
