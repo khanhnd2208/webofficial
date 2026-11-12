@@ -152,8 +152,10 @@ describe('RecallArena', () => {
 
 		enterGame();
 
-		const names = screen.getAllByTestId('arena-player').map((node) => node.textContent);
-		expect(names).toEqual(['An', 'Bình']);
+		const players = screen.getAllByTestId('arena-player');
+		expect(players).toHaveLength(2);
+		expect(within(players[0]!).getByText('An')).toBeTruthy();
+		expect(within(players[1]!).getByText('Bình')).toBeTruthy();
 		expect(screen.queryByText(/Challenging|Supporting/)).toBeNull();
 	});
 
@@ -215,7 +217,7 @@ describe('RecallArena', () => {
 		await screen.findByText('An: CP 0 → 1');
 		expect(screen.getByLabelText('Máu quái vật 10/10')).toBeTruthy();
 		expect(
-			screen.getAllByTestId('arena-player').find((node) => node.textContent === 'An')?.dataset
+			screen.getAllByTestId('arena-player').find((node) => within(node).queryByText('An'))?.dataset
 				.attacking,
 		).toBe('true');
 		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', true);
