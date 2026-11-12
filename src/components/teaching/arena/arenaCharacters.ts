@@ -112,6 +112,46 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		effect: 'smoke',
 		origin: [78, 42],
 	},
+	{
+		id: 'hle-zeus',
+		name: 'Zeus',
+		skill: 'Trảm Kích Lôi Cam',
+		accent: '#ff9a37',
+		effect: 'slash',
+		origin: [92, 49],
+	},
+	{
+		id: 'hle-kanavi',
+		name: 'Kanavi',
+		skill: 'Lôi Kích Tốc Hành',
+		accent: '#ffb545',
+		effect: 'star',
+		origin: [89, 46],
+	},
+	{
+		id: 'hle-zeka',
+		name: 'Zeka',
+		skill: 'Nhất Kiếm Tử Quang',
+		accent: '#bd8dff',
+		effect: 'slash',
+		origin: [94, 48],
+	},
+	{
+		id: 'hle-gumayusi',
+		name: 'Gumayusi',
+		skill: 'Song Tiễn Hoàng Kim',
+		accent: '#ffaf42',
+		effect: 'arrow',
+		origin: [89, 47],
+	},
+	{
+		id: 'hle-delight',
+		name: 'Delight',
+		skill: 'Khiên Sao Hộ Vệ',
+		accent: '#ffc25a',
+		effect: 'shield',
+		origin: [83, 43],
+	},
 ];
 
 export function arenaCharacterArt(id: string) {
