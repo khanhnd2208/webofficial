@@ -5,6 +5,7 @@ import { teachingApi } from '@/components/teaching/admin/api';
 import type { RecallArenaData, RecallArenaPlayer } from '@/features/teaching/types';
 
 import { RecallArena } from './RecallArena';
+import { ARENA_CHARACTERS } from './arenaCharacters';
 
 vi.mock('@/components/teaching/admin/api', () => ({ teachingApi: vi.fn() }));
 vi.mock('canvas-confetti', () => ({ default: { create: () => vi.fn() } }));
@@ -236,9 +237,14 @@ describe('RecallArena', () => {
 		render(<RecallArena data={arenaData()} />);
 		const setup = setupDialog();
 		openStep('Nhân vật');
-		expect(within(setup).getByText('Nhân vật của sinh viên · 10/10')).toBeTruthy();
+		const heroCount = ARENA_CHARACTERS.length;
+		expect(
+			within(setup).getByText(`Nhân vật của sinh viên · ${heroCount}/${heroCount}`),
+		).toBeTruthy();
 		fireEvent.click(within(setup).getByRole('checkbox', { name: 'Ông Nồi' }));
-		expect(within(setup).getByText('Nhân vật của sinh viên · 9/10')).toBeTruthy();
+		expect(
+			within(setup).getByText(`Nhân vật của sinh viên · ${heroCount - 1}/${heroCount}`),
+		).toBeTruthy();
 		fireEvent.click(within(setup).getByRole('button', { name: 'Ma Vương Deadline' }));
 		openStep('Lớp học');
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
@@ -248,7 +254,7 @@ describe('RecallArena', () => {
 		expect(document.querySelector('[data-character="ong-noi"]')).toBeNull();
 		const saved = JSON.parse(window.localStorage.getItem('recall-arena:v2:config:course-1')!);
 		expect(saved).toMatchObject({ bossId: 'deadline' });
-		expect(saved.heroIds).toHaveLength(9);
+		expect(saved.heroIds).toHaveLength(heroCount - 1);
 	});
 
 	it('closes a catch with X or Esc without grading, and the student keeps their turn', async () => {
