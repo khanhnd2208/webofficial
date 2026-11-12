@@ -36,8 +36,14 @@ Catalogue entry:
 	accent: '#ff8a36',        // colour of the attack and glow
 	effect: 'slash',          // shape of the attack, see below
 	origin: [72, 43],         // where the attack leaves the Strike cell, in % (x, y)
+	nameplate: true,         // optional glowing name above the avatar
 }
 ```
+
+Use `nameplate: true` for named guest heroes whose identity should remain visible
+on the game floor. The label stays upright when the sprite faces left and stops
+pulsing when the visitor prefers reduced motion. Student names remain below the
+avatar.
 
 `effect` is one of `slash`, `shield`, `moon`, `arrow`, `star`, `dumpling`,
 `ink`, `wind`, `crystal`, `smoke`. How many shots fly and how they curve is in

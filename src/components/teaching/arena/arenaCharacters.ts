@@ -29,6 +29,8 @@ export interface ArenaCharacter {
 	effect: ArenaEffect;
 	/** Where the attack leaves the strike frame, in percent of the frame (x, y). */
 	origin: readonly [number, number];
+	/** Show a glowing hero name above the sprite in the arena. */
+	nameplate?: boolean;
 }
 
 export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
@@ -111,6 +113,51 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#d5fa6a',
 		effect: 'smoke',
 		origin: [78, 42],
+	},
+	{
+		id: 'hle-zeus',
+		name: 'Zeus',
+		skill: 'Trảm Kích Lôi Cam',
+		accent: '#ff9a37',
+		effect: 'slash',
+		origin: [92, 49],
+		nameplate: true,
+	},
+	{
+		id: 'hle-kanavi',
+		name: 'Kanavi',
+		skill: 'Lôi Kích Tốc Hành',
+		accent: '#ffb545',
+		effect: 'star',
+		origin: [89, 46],
+		nameplate: true,
+	},
+	{
+		id: 'hle-zeka',
+		name: 'Zeka',
+		skill: 'Nhất Kiếm Tử Quang',
+		accent: '#bd8dff',
+		effect: 'slash',
+		origin: [94, 48],
+		nameplate: true,
+	},
+	{
+		id: 'hle-gumayusi',
+		name: 'Gumayusi',
+		skill: 'Song Tiễn Hoàng Kim',
+		accent: '#ffaf42',
+		effect: 'arrow',
+		origin: [89, 47],
+		nameplate: true,
+	},
+	{
+		id: 'hle-delight',
+		name: 'Delight',
+		skill: 'Khiên Sao Hộ Vệ',
+		accent: '#ffc25a',
+		effect: 'shield',
+		origin: [83, 43],
+		nameplate: true,
 	},
 ];
 

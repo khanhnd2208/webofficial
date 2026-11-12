@@ -467,6 +467,10 @@
 		border-color 150ms ease;
 }
 
+.castCard[data-nameplate] {
+	padding-top: 1.35rem;
+}
+
 .castCard:not([data-checked]) {
 	opacity: 0.45;
 }
