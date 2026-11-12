@@ -44,6 +44,13 @@ export const ARENA_BOSSES: readonly ArenaBoss[] = [
 	{ id: 'nuoc-den-chan', name: 'Vua Nước Đến Chân', art: { kind: 'vector', design: 'wave' } },
 	{ id: 'chep-bai', name: 'Sách Thần Chép Bài', art: { kind: 'vector', design: 'book' } },
 	{ id: 'cu-dem', name: 'Cú Đêm Cày Phim', art: { kind: 'vector', design: 'owl' } },
+	{ id: 'men-trang-sach', name: 'Ma Sư Mến', art: { kind: 'sheet', file: 'men-trang-sach' } },
+	{ id: 'khanh-hoa-bai', name: 'Giám Khảo Khánh', art: { kind: 'sheet', file: 'khanh-hoa-bai' } },
+	{
+		id: 'phuong-phep-giay',
+		name: 'Pháp Sư Hà Phương',
+		art: { kind: 'sheet', file: 'phuong-phep-giay' },
+	},
 ];
 
 export function arenaBossArt(file: string) {
