@@ -445,6 +445,49 @@
 	z-index: 1;
 }
 
+/* Heroes and boss are two short lists, one at a time, under the stage. */
+.castTabs {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.3rem;
+	padding: 0.3rem;
+	border-radius: 0.9rem;
+	background: rgb(255 255 255 / 6%);
+}
+
+.castTabs button {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: center;
+	gap: 0.1rem 0.5rem;
+	min-height: 2.75rem;
+	padding: 0.3rem 0.6rem;
+	border: 0;
+	border-radius: 0.65rem;
+	background: none;
+	color: var(--arena-ink-2);
+	font: inherit;
+	font-size: 1rem;
+	font-weight: 800;
+	cursor: pointer;
+}
+
+.castTabs button:hover {
+	color: var(--arena-ink);
+}
+
+.castTabs button[aria-selected='true'] {
+	background: var(--arena-accent);
+	color: #1e1033;
+}
+
+.castTabNote {
+	font-size: 0.85rem;
+	font-weight: 600;
+	opacity: 0.8;
+}
+
 .castGrid {
 	display: grid;
 	grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -506,7 +549,7 @@
 
 .bossGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(8.2rem, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
 	gap: 0.45rem;
 }
 
@@ -515,17 +558,22 @@
 	justify-items: center;
 	align-content: end;
 	gap: 0.3rem;
-	min-height: 6.4rem;
-	padding: 0.5rem 0.4rem;
+	min-height: 8.2rem;
+	padding: 0.6rem 0.4rem;
 	border: 1px solid var(--arena-line);
 	border-radius: 0.7rem;
 	background: rgb(255 255 255 / 4%);
 	color: var(--arena-ink-2);
 	font: inherit;
-	font-size: 0.82rem;
+	font-size: 0.85rem;
 	font-weight: 700;
 	text-align: center;
 	cursor: pointer;
+}
+
+/* The boss stands still in the picker: nine breathing bosses is too much. */
+.bossCard > div {
+	animation: none;
 }
 
 .bossCard:hover {
@@ -543,6 +591,7 @@
 	width: 3.2rem;
 	height: 3.2rem;
 	place-items: center;
+	margin: 0.9rem 0;
 	border: 2px dashed var(--arena-accent);
 	border-radius: 50%;
 	color: var(--arena-accent);
