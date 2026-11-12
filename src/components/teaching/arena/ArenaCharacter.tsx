@@ -40,7 +40,7 @@ export function ArenaCharacter({
 		>
 			{character.nameplate ? (
 				<span className={styles.nameplate} aria-hidden="true">
-					{character.name}
+					{character.shortName ?? character.name}
 				</span>
 			) : null}
 			<span className={styles.visual}>

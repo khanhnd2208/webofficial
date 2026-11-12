@@ -152,7 +152,9 @@ describe('RecallArena', () => {
 
 		enterGame();
 
-		const names = screen.getAllByTestId('arena-player').map((node) => node.textContent);
+		const names = screen
+			.getAllByTestId('arena-player')
+			.map((node) => node.querySelector('[title]')?.textContent);
 		expect(names).toEqual(['An', 'Bình']);
 		expect(screen.queryByText(/Challenging|Supporting/)).toBeNull();
 	});
