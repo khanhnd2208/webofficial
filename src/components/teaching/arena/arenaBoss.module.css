@@ -1,0 +1,180 @@
+/*
+ * Colours of the hand-drawn bosses (shapes are in ArenaBossArt.tsx). A design
+ * is a palette: three body tones for the gradient, a light tone, two accents
+ * and the glow under the boss.
+ */
+.frame {
+	--boss-ink: #111827;
+	--boss-1: #a78bfa;
+	--boss-2: #7c3aed;
+	--boss-3: #4c1d95;
+	--boss-light: #ddd6fe;
+	--boss-accent: #f59e0b;
+	--boss-accent-2: #db2777;
+	--boss-gold: #fbbf24;
+}
+
+.frame[data-design='dragon'] {
+	--boss-1: #5eead4;
+	--boss-2: #0f9f8f;
+	--boss-3: #134e4a;
+	--boss-light: #d1fae5;
+	--boss-accent: #f59e0b;
+	--boss-accent-2: #6366f1;
+	--boss-glow: rgb(20 184 166 / 55%);
+}
+
+.frame[data-design='clock'] {
+	--boss-1: #fda4af;
+	--boss-2: #e11d48;
+	--boss-3: #881337;
+	--boss-light: #fff7ed;
+	--boss-accent: #f97316;
+	--boss-accent-2: #fde047;
+	--boss-glow: rgb(244 63 94 / 55%);
+}
+
+.frame[data-design='ghost'] {
+	--boss-1: #fff;
+	--boss-2: #c7d2fe;
+	--boss-3: #6366f1;
+	--boss-light: #eef2ff;
+	--boss-accent: #67e8f9;
+	--boss-accent-2: #f472b6;
+	--boss-glow: rgb(129 140 248 / 60%);
+}
+
+.frame[data-design='wave'] {
+	--boss-1: #7dd3fc;
+	--boss-2: #0284c7;
+	--boss-3: #0c4a6e;
+	--boss-light: #bae6fd;
+	--boss-accent: #38bdf8;
+	--boss-accent-2: #ef4444;
+	--boss-glow: rgb(14 165 233 / 55%);
+}
+
+.frame[data-design='slime'] {
+	--boss-1: #d9f99d;
+	--boss-2: #65a30d;
+	--boss-3: #365314;
+	--boss-light: #ecfccb;
+	--boss-accent: #f472b6;
+	--boss-accent-2: #a3e635;
+	--boss-glow: rgb(132 204 22 / 50%);
+}
+
+.frame[data-design='book'] {
+	--boss-1: #f87171;
+	--boss-2: #991b1b;
+	--boss-3: #450a0a;
+	--boss-light: #fef3c7;
+	--boss-accent: #fbbf24;
+	--boss-accent-2: #3b82f6;
+	--boss-glow: rgb(220 38 38 / 45%);
+}
+
+.frame[data-design='owl'] {
+	--boss-1: #a5b4fc;
+	--boss-2: #4338ca;
+	--boss-3: #1e1b4b;
+	--boss-light: #e0e7ff;
+	--boss-accent: #f59e0b;
+	--boss-accent-2: #fde68a;
+	--boss-glow: rgb(99 102 241 / 55%);
+}
+
+.stop1 {
+	stop-color: var(--boss-1);
+}
+
+.stop2 {
+	stop-color: var(--boss-2);
+}
+
+.stop3 {
+	stop-color: var(--boss-3);
+}
+
+/* Every shape gets the same dark outline unless it opts out. */
+.parts {
+	stroke: var(--boss-ink);
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 4;
+}
+
+.accent {
+	fill: var(--boss-accent);
+}
+
+.accent2 {
+	fill: var(--boss-accent-2);
+}
+
+.gold {
+	fill: var(--boss-gold);
+}
+
+.light {
+	fill: var(--boss-light);
+}
+
+.dark {
+	fill: var(--boss-3);
+}
+
+.white {
+	fill: #fff;
+}
+
+.ink {
+	fill: var(--boss-ink);
+	stroke: none;
+}
+
+.line {
+	fill: none;
+}
+
+/* Unoutlined highlights painted on the body. */
+.soft {
+	fill: var(--boss-light);
+	opacity: 0.55;
+	stroke: none;
+}
+
+.gloss {
+	fill: #fff;
+	opacity: 0.22;
+	stroke: none;
+}
+
+.blush {
+	fill: var(--boss-accent-2);
+	opacity: 0.5;
+	stroke: none;
+}
+
+.rim {
+	fill: none;
+	stroke: var(--boss-gold);
+	stroke-width: 5;
+}
+
+.slash {
+	fill: none;
+	stroke: #fff;
+	stroke-linecap: round;
+}
+
+.steam {
+	fill: #fff;
+	opacity: 0.8;
+}
+
+.dizzy {
+	fill: #ffd700;
+	stroke: var(--boss-ink);
+	stroke-width: 2;
+}
