@@ -243,7 +243,7 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 	},
 	{
 		id: 'fmt-duong-ha-phuong',
-		name: 'Dương Hà Phương',
+		name: 'Đường Hà Phương',
 		shortName: 'Cô Hà Phương',
 		skill: 'Sao Cát Thời Gian',
 		accent: '#ffb754',
