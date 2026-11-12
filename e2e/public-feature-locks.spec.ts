@@ -37,18 +37,14 @@ test.describe('archived public learning surfaces', () => {
 		}
 	});
 
-	test('sends the retired My Space hub to Mục lục, which keeps Courses and Board Game', async ({
-		page,
-	}) => {
+	test('sends the retired My Space hub to Mục lục, which keeps Courses', async ({ page }) => {
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/muc-luc$/);
 		await expect(page.getByTestId('gate-home')).toHaveCount(1);
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(3);
+		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(1);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute('href', '/khoa-hoc');
-		await expect(page.getByTestId('myspace-tile-board-game')).toHaveAttribute(
-			'href',
-			'https://fun.toiladuykhanh.com',
-		);
+		await expect(page.getByTestId('myspace-tile-board-game')).toHaveCount(0);
+		await expect(page.getByTestId('myspace-tile-experiences')).toHaveCount(0);
 	});
 });

@@ -4,7 +4,7 @@ import { aboutPagePaused } from '../src/content/about';
 import { addAdminSession } from './helpers/adminSession';
 
 test.describe('Focused operating mode', () => {
-	test('mục lục links to contact and experiences while the introduction is paused', async ({
+	test('mục lục links to contact and courses while the introduction is paused', async ({
 		page,
 	}) => {
 		await page.goto('/muc-luc');
@@ -14,9 +14,10 @@ test.describe('Focused operating mode', () => {
 			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
 		);
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
-		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveAttribute(
+		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
+		await expect(gate.getByRole('link', { name: /Khóa học/i })).toHaveAttribute(
 			'href',
-			'/trai-nghiem',
+			'/khoa-hoc',
 		);
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 	});

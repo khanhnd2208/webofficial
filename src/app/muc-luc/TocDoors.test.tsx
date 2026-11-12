@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { routes } from '@/config/routes';
@@ -18,59 +18,40 @@ function doorIds() {
 }
 
 describe('TocDoors', () => {
-	it('shows every visitor door at once, without Teaching', () => {
+	it('shows only About and Courses to visitors', () => {
 		render(<TocDoors about={about} items={buildTocItems(null)} />);
 
-		expect(doorIds()).toEqual([
-			'gate-item-about',
-			'myspace-tile-experiences',
-			'myspace-tile-courses',
-			'myspace-tile-board-game',
-		]);
-		expect(screen.getByTestId('myspace-tile-experiences')).toHaveAttribute(
-			'href',
-			routes.experiences,
-		);
+		expect(doorIds()).toEqual(['gate-item-about', 'myspace-tile-courses']);
 		expect(screen.getByTestId('gate-item-about')).toHaveAttribute('href', '/gioi-thieu');
+		expect(screen.queryByText('Trải nghiệm')).not.toBeInTheDocument();
+		expect(screen.queryByText('Trò chơi')).not.toBeInTheDocument();
 		expect(screen.queryByTestId('myspace-tile-teaching')).not.toBeInTheDocument();
 		expect(screen.queryByTestId('myspace-tile-admin')).not.toBeInTheDocument();
 		expect(screen.queryByTestId('toc-open-myspace')).not.toBeInTheDocument();
 	});
 
-	it('keeps Board Game clickable, muted, and names the new address in bold', () => {
-		render(<TocDoors about={about} items={buildTocItems('student')} />);
-
-		const game = screen.getByTestId('myspace-tile-board-game');
-		expect(game).toHaveAttribute('href', routes.funGames);
-		expect(game).toHaveAttribute('data-muted', '');
-		expect(game.className).toMatch(/muted/);
-		expect(within(game).getByText('fun.toiladuykhanh.com').tagName).toBe('STRONG');
-	});
-
-	it('marks only the door that leaves the site with an outward arrow', () => {
+	it('marks both on-site doors with an inward arrow', () => {
 		render(<TocDoors about={about} items={buildTocItems(null)} />);
 
 		expect(screen.getByTestId('gate-item-about')).toHaveTextContent('→');
 		expect(screen.getByTestId('myspace-tile-courses')).toHaveTextContent('→');
-		expect(screen.getByTestId('myspace-tile-board-game')).toHaveTextContent('↗');
 	});
 
-	it('adds Lớp học and Quản trị only for an admin, before the games door', () => {
+	it('adds Lớp học and Quản trị only for an admin', () => {
 		render(<TocDoors about={about} items={buildTocItems('admin')} />);
 
 		expect(doorIds()).toEqual([
 			'gate-item-about',
-			'myspace-tile-experiences',
 			'myspace-tile-courses',
 			'myspace-tile-teaching',
 			'myspace-tile-admin',
-			'myspace-tile-board-game',
 		]);
 		expect(screen.getByTestId('myspace-tile-teaching')).toHaveAttribute(
 			'href',
 			routes.mySpaceTeaching,
 		);
 		expect(screen.getByTestId('myspace-tile-admin')).toHaveAttribute('href', routes.admin.home);
-		expect(screen.getByTestId('myspace-tile-admin')).not.toHaveAttribute('data-muted');
+		expect(screen.queryByText('Trải nghiệm')).not.toBeInTheDocument();
+		expect(screen.queryByText('Trò chơi')).not.toBeInTheDocument();
 	});
 });

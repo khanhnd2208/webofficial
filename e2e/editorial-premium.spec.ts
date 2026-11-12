@@ -46,10 +46,8 @@ test.describe('Editorial premium public experience', () => {
 			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
 		);
 
-		await expect(page.getByTestId('myspace-tile-experiences')).toHaveAttribute(
-			'href',
-			'/trai-nghiem',
-		);
+		await expect(page.getByTestId('myspace-tile-experiences')).toHaveCount(0);
+		await expect(page.getByTestId('myspace-tile-board-game')).toHaveCount(0);
 		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
 		await page.getByTestId('myspace-tile-courses').click();
 		await expect(page).toHaveURL(/\/khoa-hoc$/);
