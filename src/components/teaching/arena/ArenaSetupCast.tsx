@@ -164,6 +164,7 @@ export function ArenaSetupCast({
 							className={setup.castCard}
 							data-checked={checked || undefined}
 							data-preview={hero.id === preview.id || undefined}
+							data-nameplate={hero.nameplate || undefined}
 						>
 							<button
 								type="button"
