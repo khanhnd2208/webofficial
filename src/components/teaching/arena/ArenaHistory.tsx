@@ -63,12 +63,14 @@ export function ArenaHistory({
 								<span className={styles.historyChip} data-result={entry.result}>
 									{RESULT_LABEL[entry.result]}
 									{entry.result === 'pass' && entry.award ? ` +${entry.award}` : ''}
+									{entry.result === 'pass' && entry.award === 0 ? ' · Vừa đủ qua' : ''}
 								</span>
 							</div>
 							<p className={styles.historyQuestion}>{questionText(entry.cardId)}</p>
 							<p className={styles.historyMeta}>
 								{timeLabel(entry.at)}
 								{entry.cpAfter != null ? ` · CP tuần: ${entry.cpAfter}` : ''}
+								{entry.giftAfter != null ? ` · Gift: ${entry.giftAfter}` : ''}
 							</p>
 							{entry.saveError ? (
 								<p className={styles.historyError}>
