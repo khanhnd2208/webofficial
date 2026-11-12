@@ -646,9 +646,12 @@ export function RecallArena({
 				return;
 			}
 			if (phase === 'caught') {
-				const button = document.querySelector<HTMLButtonElement>(
-					`[data-arena-key="${CSS.escape(key)}"]`,
-				);
+				// An exiting catch dialog can remain mounted while the next one opens.
+				const button = Array.from(
+					document.querySelectorAll<HTMLButtonElement>(
+						`[role="dialog"][aria-modal="true"] [data-arena-key="${CSS.escape(key)}"]`,
+					),
+				).at(-1);
 				if (button && !button.disabled) {
 					event.preventDefault();
 					button.click();
