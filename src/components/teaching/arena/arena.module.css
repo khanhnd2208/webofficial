@@ -772,8 +772,8 @@
 	justify-items: center;
 	transform: translate(-50%, -50%);
 	transition:
-		left 1.8s ease-in-out,
-		top 1.8s ease-in-out,
+		left var(--travel-ms, 0ms) linear,
+		top var(--travel-ms, 0ms) linear,
 		opacity 200ms ease,
 		filter 120ms ease;
 }
