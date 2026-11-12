@@ -157,6 +157,11 @@ describe('RecallArena', () => {
 		expect(screen.queryByText(/Challenging|Supporting/)).toBeNull();
 	});
 
+	it('moves keyboard focus into the setup dialog when it opens', () => {
+		render(<RecallArena data={arenaData()} />);
+		expect(setupDialog().contains(document.activeElement)).toBe(true);
+	});
+
 	it('catches only the chosen group and saves the CP award', async () => {
 		apiMock.mockResolvedValue({
 			enrollmentId: 'a',

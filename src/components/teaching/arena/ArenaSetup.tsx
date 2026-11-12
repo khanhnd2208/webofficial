@@ -17,6 +17,7 @@ import { arenaCast } from './arenaCharacters';
 import { callablePlayers, type ArenaConfig } from './arenaGame';
 import styles from './arena.module.css';
 import setup from './arenaSetup.module.css';
+import { useArenaDialogFocus } from './useArenaDialogFocus';
 
 export type ArenaSetupStep = 'classes' | 'players' | 'lessons' | 'cast';
 
@@ -67,6 +68,8 @@ export function ArenaSetup({
 	onClose?: () => void;
 }) {
 	const [step, setStep] = useState<ArenaSetupStep>(initialStep);
+	// Escape stays with RecallArena, which only closes setup once a game has started.
+	const dialogRef = useArenaDialogFocus();
 	const callable = callablePlayers(roster, config.filter);
 	const chosenDecks = data.decks.filter((deck) => config.deckIds.includes(deck.deckId));
 	const cardTotal = chosenDecks.reduce((sum, deck) => sum + deck.cardCount, 0);
@@ -82,6 +85,8 @@ export function ArenaSetup({
 	return (
 		<div className={styles.setupBackdrop} onClick={onClose}>
 			<section
+				ref={dialogRef}
+				tabIndex={-1}
 				className={`${styles.setup} ${setup.panel}`}
 				role="dialog"
 				aria-modal="true"

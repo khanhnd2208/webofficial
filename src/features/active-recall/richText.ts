@@ -427,6 +427,9 @@ export function recallToStoredHtml(value: string) {
 	const normalized = value.replace(/\r\n/g, '\n').trim();
 	if (!normalized) return '';
 	if (isRecallStoredHtml(normalized)) return sanitizeRecallHtml(normalized);
+	// Older cards may contain markdown from pasted questions. Render their bold
+	// markers instead of showing stray ** on a study card or in the Arena.
+	if (/\*\*\S(?:[\s\S]*?\S)?\*\*/.test(normalized)) return recallMarkdownToHtml(normalized);
 	return wrapLegacyPlain(normalized);
 }
 
