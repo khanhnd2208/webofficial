@@ -41,8 +41,10 @@ import {
 	hostSessions,
 	initialConfig,
 	isCpFinalized,
+	isManualPlayer,
 	loadConfig,
 	loadProgress,
+	manualArenaPlayers,
 	passStreak,
 	saveConfig,
 	saveProgress,
@@ -117,13 +119,20 @@ export function RecallArena({
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
 	const hosts = useMemo(() => hostSessions(config, sessions), [config, sessions]);
+	const allPlayers = useMemo(
+		() => [...data.players, ...manualArenaPlayers(config.manualPlayers)],
+		[data.players, config.manualPlayers],
+	);
 	const playersById = useMemo(
-		() => new Map(data.players.map((player) => [player.enrollmentId, player])),
-		[data.players],
+		() => new Map(allPlayers.map((player) => [player.enrollmentId, player])),
+		[allPlayers],
 	);
 	/** Everyone on the floor; the spotlight visits all of them. */
 	const inRoom = useMemo(
-		() => arenaRoster(data.players, hosts, config),
+		() => [
+			...arenaRoster(data.players, hosts, config),
+			...manualArenaPlayers(config.manualPlayers),
+		],
 		[data.players, hosts, config],
 	);
 	const callable = useMemo(() => callablePlayers(inRoom, config.filter), [inRoom, config.filter]);
@@ -405,6 +414,12 @@ export function RecallArena({
 	async function handlePass(level: ArenaAwardLevel) {
 		if (!current || saving) return;
 		const name = nameOf(current.enrollmentId);
+		if (isManualPlayer(current.enrollmentId)) {
+			record('pass');
+			setToast({ tone: 'ok', text: `${name}: đạt · không ghi CP` });
+			finishTurn('hurt', -1);
+			return;
+		}
 		setSaving(true);
 		try {
 			const result = await award(current.enrollmentId, level);
@@ -687,6 +702,7 @@ export function RecallArena({
 						card={caughtCard}
 						deckLabel={caughtDeck ? caughtDeck.lessonLabel || caughtDeck.title : ''}
 						cpNow={cpFor(caughtPlayer.enrollmentId)}
+						manual={isManualPlayer(caughtPlayer.enrollmentId)}
 						saving={saving}
 						canChangeCard={cards.length > 1}
 						onPass={handlePass}

@@ -332,6 +332,40 @@ describe('RecallArena', () => {
 		);
 	});
 
+	it('adds and edits an unlisted player, then lets them defeat the monster without writing CP', async () => {
+		render(<RecallArena data={arenaData()} initialClassId="c2" />);
+		openStep('Người chơi');
+		const setup = setupDialog();
+		fireEvent.change(within(setup).getByPlaceholderText('Họ và tên'), {
+			target: { value: 'Lê Minh An' },
+		});
+		fireEvent.change(within(setup).getByLabelText('Nhóm của người ngoài danh sách'), {
+			target: { value: 'CHALLENGE' },
+		});
+		fireEvent.click(within(setup).getByRole('button', { name: 'Thêm vào trận' }));
+		expect(within(setup).getByText('1 bạn trong trận')).toBeTruthy();
+		const manualList = within(setup).getByRole('region', { name: 'Người ngoài danh sách' });
+		fireEvent.click(within(manualList).getByRole('button', { name: 'Sửa' }));
+		fireEvent.change(within(setup).getByPlaceholderText('Họ và tên'), {
+			target: { value: 'Lê Minh Bình' },
+		});
+		fireEvent.click(within(setup).getByRole('button', { name: 'Lưu sửa' }));
+		expect(within(manualList).getByText('Lê Minh Bình')).toBeTruthy();
+		fireEvent.change(within(setup).getByLabelText('Gọi ai'), {
+			target: { value: 'CHALLENGE' },
+		});
+		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
+
+		expect(within(screen.getByTestId('arena-player')).getByText('Bình')).toBeTruthy();
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Lê Minh Bình' });
+		expect(within(caught).getByText('Người ngoài danh sách · không ghi CP')).toBeTruthy();
+		fireEvent.click(within(caught).getByRole('button', { name: 'Đạt' }));
+		await waitFor(() => expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy());
+		expect(apiMock).not.toHaveBeenCalled();
+		expect(screen.getByText('Bình: đạt · không ghi CP')).toBeTruthy();
+	});
+
 	it('mixes questions from several lessons', () => {
 		render(<RecallArena data={arenaData()} />);
 		openStep('Bài học');
