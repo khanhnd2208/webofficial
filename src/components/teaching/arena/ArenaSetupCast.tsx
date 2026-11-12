@@ -108,9 +108,10 @@ function CastStage({ hero, bossId }: { hero: Hero; bossId: string | null }) {
 }
 
 /**
- * Step 4: the cast. Tick the heroes handed out to students and pick the boss.
- * Both lists come straight from the catalogues, so new art shows up here as
- * soon as it is registered.
+ * Step 4: the cast. One tab ticks the heroes handed out to students, the
+ * other picks the boss; the stage above plays the current pair. Both lists
+ * come straight from the catalogues, so new art shows up here as soon as it
+ * is registered.
  */
 export function ArenaSetupCast({
 	config,
@@ -124,6 +125,8 @@ export function ArenaSetupCast({
 	const [previewId, setPreviewId] = useState(cast[0]!.id);
 	const preview = ARENA_CHARACTERS.find((hero) => hero.id === previewId) ?? cast[0]!;
 	const everyone = cast.length === ARENA_CHARACTERS.length;
+	const [tab, setTab] = useState<'heroes' | 'boss'>('heroes');
+	const chosenBoss = ARENA_BOSSES.find((boss) => boss.id === config.bossId);
 
 	function toggle(id: string) {
 		const next = ARENA_CHARACTERS.filter((hero) =>
@@ -138,85 +141,129 @@ export function ArenaSetupCast({
 		<div className={setup.section}>
 			<CastStage hero={preview} bossId={config.bossId} />
 
-			<div className={setup.sectionHead}>
-				<span className={setup.total}>
-					Nhân vật của sinh viên · {cast.length}/{ARENA_CHARACTERS.length}
-				</span>
+			<div className={setup.castTabs} role="tablist" aria-label="Chọn nhân vật hoặc boss">
 				<button
 					type="button"
-					className={styles.smallButton}
-					disabled={everyone}
-					onClick={() => onChange({ ...config, heroIds: [] })}
+					role="tab"
+					id="arena-cast-tab-heroes"
+					aria-selected={tab === 'heroes'}
+					aria-controls="arena-cast-panel"
+					onClick={() => setTab('heroes')}
 				>
-					Chọn tất cả
-				</button>
-			</div>
-			<p className={styles.setupHint}>
-				Mỗi bạn được giao ngẫu nhiên một nhân vật trong số đã tick và giữ nguyên qua các buổi. Bấm
-				vào một nhân vật để xem chuyển động.
-			</p>
-			<ul className={setup.castGrid}>
-				{ARENA_CHARACTERS.map((hero) => {
-					const checked = inCast.has(hero.id);
-					return (
-						<li
-							key={hero.id}
-							className={setup.castCard}
-							data-checked={checked || undefined}
-							data-preview={hero.id === preview.id || undefined}
-							data-nameplate={hero.nameplate || undefined}
-						>
-							<button
-								type="button"
-								className={setup.castPick}
-								aria-pressed={hero.id === preview.id}
-								aria-label={`Xem ${hero.name}`}
-								onClick={() => setPreviewId(hero.id)}
-							>
-								<ArenaCharacter character={hero} size={64} />
-							</button>
-							<label className={setup.castLabel}>
-								<input
-									type="checkbox"
-									checked={checked}
-									disabled={checked && cast.length === 1}
-									onChange={() => toggle(hero.id)}
-								/>
-								<span>{hero.name}</span>
-							</label>
-						</li>
-					);
-				})}
-			</ul>
-
-			<div className={setup.sectionHead}>
-				<span className={setup.total}>Boss</span>
-			</div>
-			<div className={setup.bossGrid} role="group" aria-label="Chọn boss">
-				<button
-					type="button"
-					className={setup.bossCard}
-					aria-pressed={config.bossId === null}
-					onClick={() => onChange({ ...config, bossId: null })}
-				>
-					<span className={setup.bossAuto} aria-hidden="true">
-						{ARENA_BOSSES.length}
+					Nhân vật
+					<span className={setup.castTabNote}>
+						{cast.length}/{ARENA_CHARACTERS.length}
 					</span>
-					<span>Lần lượt từng boss</span>
 				</button>
-				{ARENA_BOSSES.map((boss) => (
-					<button
-						key={boss.id}
-						type="button"
-						className={setup.bossCard}
-						aria-pressed={config.bossId === boss.id}
-						onClick={() => onChange({ ...config, bossId: boss.id })}
-					>
-						<ArenaMonster mood="idle" size={58} boss={boss} decorative />
-						<span>{boss.name}</span>
-					</button>
-				))}
+				<button
+					type="button"
+					role="tab"
+					id="arena-cast-tab-boss"
+					aria-selected={tab === 'boss'}
+					aria-controls="arena-cast-panel"
+					onClick={() => setTab('boss')}
+				>
+					Boss
+					<span className={setup.castTabNote}>{chosenBoss ? chosenBoss.name : 'Lần lượt'}</span>
+				</button>
 			</div>
+
+			{tab === 'heroes' ? (
+				<div
+					id="arena-cast-panel"
+					role="tabpanel"
+					aria-labelledby="arena-cast-tab-heroes"
+					className={setup.section}
+				>
+					<div className={setup.sectionHead}>
+						<span className={setup.total}>
+							Nhân vật của sinh viên · {cast.length}/{ARENA_CHARACTERS.length}
+						</span>
+						<button
+							type="button"
+							className={styles.smallButton}
+							disabled={everyone}
+							onClick={() => onChange({ ...config, heroIds: [] })}
+						>
+							Chọn tất cả
+						</button>
+					</div>
+					<p className={styles.setupHint}>
+						Mỗi bạn được giao ngẫu nhiên một nhân vật trong số đã tick và giữ nguyên qua các buổi.
+						Bấm vào hình để xem nhân vật ra đòn.
+					</p>
+					<ul className={setup.castGrid}>
+						{ARENA_CHARACTERS.map((hero) => {
+							const checked = inCast.has(hero.id);
+							return (
+								<li
+									key={hero.id}
+									className={setup.castCard}
+									data-checked={checked || undefined}
+									data-preview={hero.id === preview.id || undefined}
+									data-nameplate={hero.nameplate || undefined}
+								>
+									<button
+										type="button"
+										className={setup.castPick}
+										aria-pressed={hero.id === preview.id}
+										aria-label={`Xem ${hero.name}`}
+										onClick={() => setPreviewId(hero.id)}
+									>
+										<ArenaCharacter character={hero} size={64} />
+									</button>
+									<label className={setup.castLabel}>
+										<input
+											type="checkbox"
+											checked={checked}
+											disabled={checked && cast.length === 1}
+											onChange={() => toggle(hero.id)}
+										/>
+										<span>{hero.name}</span>
+									</label>
+								</li>
+							);
+						})}
+					</ul>
+				</div>
+			) : (
+				<div
+					id="arena-cast-panel"
+					role="tabpanel"
+					aria-labelledby="arena-cast-tab-boss"
+					className={setup.section}
+				>
+					<p className={styles.setupHint}>
+						Chọn một boss cho mọi ván, hoặc để các boss lần lượt ra trận: hạ xong boss này thì boss
+						kế tiếp xuất hiện.
+					</p>
+					<div className={setup.bossGrid} role="group" aria-label="Chọn boss">
+						<button
+							type="button"
+							className={setup.bossCard}
+							aria-pressed={config.bossId === null}
+							onClick={() => onChange({ ...config, bossId: null })}
+						>
+							<span className={setup.bossAuto} aria-hidden="true">
+								{ARENA_BOSSES.length}
+							</span>
+							<span>Lần lượt từng boss</span>
+						</button>
+						{ARENA_BOSSES.map((boss) => (
+							<button
+								key={boss.id}
+								type="button"
+								className={setup.bossCard}
+								aria-pressed={config.bossId === boss.id}
+								onClick={() => onChange({ ...config, bossId: boss.id })}
+							>
+								<ArenaMonster mood="idle" size={84} boss={boss} decorative />
+								<span>{boss.name}</span>
+							</button>
+						))}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
