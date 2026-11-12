@@ -342,6 +342,30 @@
 	);
 }
 
+/* A sung note carries the pulse; its outer ring reads as a sound wave. */
+.strike[data-effect='music'] .shape {
+	border: 0.13rem solid color-mix(in srgb, var(--strike-accent) 70%, #fff);
+	background: radial-gradient(
+		circle,
+		rgb(255 255 255 / 75%) 0 10%,
+		var(--strike-accent) 42%,
+		transparent 73%
+	);
+}
+
+.strike[data-effect='music'] .shape::before {
+	position: absolute;
+	inset: 0;
+	color: #fff;
+	content: '♫';
+	font-family: Georgia, serif;
+	font-size: calc(var(--strike-size) * 0.82);
+	font-weight: 700;
+	line-height: var(--strike-size);
+	text-align: center;
+	text-shadow: 0 0 0.35rem var(--strike-accent);
+}
+
 /* Impact: flash, starburst, two shockwaves and shards thrown outwards. */
 .burst,
 .ring,
