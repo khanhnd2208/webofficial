@@ -29,6 +29,8 @@ export interface ArenaCharacter {
 	effect: ArenaEffect;
 	/** Where the attack leaves the strike frame, in percent of the frame (x, y). */
 	origin: readonly [number, number];
+	/** Show a glowing hero name above the sprite in the arena. */
+	nameplate?: boolean;
 }
 
 export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
@@ -119,6 +121,7 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#ff9a37',
 		effect: 'slash',
 		origin: [92, 49],
+		nameplate: true,
 	},
 	{
 		id: 'hle-kanavi',
@@ -127,6 +130,7 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#ffb545',
 		effect: 'star',
 		origin: [89, 46],
+		nameplate: true,
 	},
 	{
 		id: 'hle-zeka',
@@ -135,6 +139,7 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#bd8dff',
 		effect: 'slash',
 		origin: [94, 48],
+		nameplate: true,
 	},
 	{
 		id: 'hle-gumayusi',
@@ -143,6 +148,7 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#ffaf42',
 		effect: 'arrow',
 		origin: [89, 47],
+		nameplate: true,
 	},
 	{
 		id: 'hle-delight',
@@ -151,6 +157,7 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#ffc25a',
 		effect: 'shield',
 		origin: [83, 43],
+		nameplate: true,
 	},
 ];
 
