@@ -85,6 +85,7 @@ export function ArenaCaught({
 	card,
 	deckLabel,
 	cpNow,
+	manual,
 	saving,
 	canChangeCard,
 	onPass,
@@ -103,6 +104,7 @@ export function ArenaCaught({
 	card: RecallArenaCard | null;
 	deckLabel: string;
 	cpNow: number;
+	manual: boolean;
 	saving: boolean;
 	canChangeCard: boolean;
 	onPass: (level: ArenaAwardLevel) => void;
@@ -173,7 +175,9 @@ export function ArenaCaught({
 								{fullName(player)}
 							</h2>
 							<p className={styles.caughtMeta}>
-								{player.studentCode} · CP tuần này: {cpNow}
+								{manual
+									? 'Người ngoài danh sách · không ghi CP'
+									: `${player.studentCode} · CP tuần này: ${cpNow}`}
 							</p>
 							<p className={styles.duelOpponent}>Đối đầu {boss.name}</p>
 						</div>
@@ -191,21 +195,37 @@ export function ArenaCaught({
 				</div>
 
 				<div className={styles.grading}>
-					<div className={styles.passGroup} role="group" aria-label="Đạt, chọn mức CP">
+					<div
+						className={styles.passGroup}
+						role="group"
+						aria-label={manual ? 'Đạt' : 'Đạt, chọn mức CP'}
+					>
 						<span className={styles.passLabel}>Đạt</span>
-						{ARENA_AWARD_LEVELS.map((level, index) => (
+						{manual ? (
 							<button
-								key={level}
 								type="button"
 								className={styles.passButton}
 								disabled={saving}
-								onClick={() => onPass(level)}
-								data-arena-key={String(index + 1)}
-								aria-label={`Đạt +${level}`}
+								onClick={() => onPass(1)}
+								data-arena-key="1"
 							>
-								+{level}
+								Đạt
 							</button>
-						))}
+						) : (
+							ARENA_AWARD_LEVELS.map((level, index) => (
+								<button
+									key={level}
+									type="button"
+									className={styles.passButton}
+									disabled={saving}
+									onClick={() => onPass(level)}
+									data-arena-key={String(index + 1)}
+									aria-label={`Đạt +${level}`}
+								>
+									+{level}
+								</button>
+							))
+						)}
 					</div>
 					<button
 						type="button"
@@ -224,7 +244,7 @@ export function ArenaCaught({
 						onClick={onFail}
 						data-arena-key="0"
 					>
-						Chưa đạt · +1 Gift
+						{manual ? 'Chưa đạt' : 'Chưa đạt · +1 Gift'}
 					</button>
 					<span className={styles.gradingSpacer} />
 					{canChangeCard ? (
@@ -291,9 +311,17 @@ export function ArenaCaught({
 					</div>
 				) : null}
 				<p className={styles.shortcuts}>
-					Phím tắt: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> Đạt · <kbd>4</kbd> vừa đủ qua ·{' '}
-					<kbd>0</kbd> Chưa đạt · <kbd>A</kbd> đáp án · <kbd>Q</kbd> đổi câu · <kbd>S</kbd> bạn khác
-					· <kbd>Esc</kbd> đóng
+					Phím tắt: <kbd>1</kbd>
+					{manual ? (
+						''
+					) : (
+						<>
+							{' '}
+							<kbd>2</kbd> <kbd>3</kbd>
+						</>
+					)}{' '}
+					Đạt · <kbd>4</kbd> vừa đủ qua · <kbd>0</kbd> Chưa đạt · <kbd>A</kbd> đáp án · <kbd>Q</kbd>{' '}
+					đổi câu · <kbd>S</kbd> bạn khác · <kbd>Esc</kbd> đóng
 				</p>
 			</m.section>
 		</m.div>
