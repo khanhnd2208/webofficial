@@ -342,6 +342,57 @@
 	);
 }
 
+/* A sung note carries the pulse; its outer ring reads as a sound wave. */
+.strike[data-effect='music'] .shape {
+	border: 0.13rem solid color-mix(in srgb, var(--strike-accent) 70%, #fff);
+	background: radial-gradient(
+		circle,
+		rgb(255 255 255 / 75%) 0 10%,
+		var(--strike-accent) 42%,
+		transparent 73%
+	);
+}
+
+.strike[data-effect='music'] .shape::before {
+	position: absolute;
+	inset: 0;
+	color: #fff;
+	content: '♫';
+	font-family: Georgia, serif;
+	font-size: calc(var(--strike-size) * 0.82);
+	font-weight: 700;
+	line-height: var(--strike-size);
+	text-align: center;
+	text-shadow: 0 0 0.35rem var(--strike-accent);
+}
+
+/* NDK's marker projects two bright pages with a visible center fold. */
+.strike[data-effect='book'] .shape {
+	border-radius: 0;
+	background: radial-gradient(circle, #fff 0 8%, var(--strike-accent) 38%, transparent 72%);
+}
+
+.strike[data-effect='book'] .shape::before,
+.strike[data-effect='book'] .shape::after {
+	position: absolute;
+	top: 16%;
+	width: 46%;
+	height: 68%;
+	background: linear-gradient(135deg, #fff, #ffe9cd 58%, var(--strike-accent));
+	content: '';
+	filter: drop-shadow(0 0 0.4rem var(--strike-accent));
+}
+
+.strike[data-effect='book'] .shape::before {
+	left: 4%;
+	clip-path: polygon(0 0, 100% 15%, 100% 100%, 0 85%);
+}
+
+.strike[data-effect='book'] .shape::after {
+	right: 4%;
+	clip-path: polygon(0 15%, 100% 0, 100% 85%, 0 100%);
+}
+
 /* Impact: flash, starburst, two shockwaves and shards thrown outwards. */
 .burst,
 .ring,
