@@ -487,72 +487,96 @@ h1 em {
 }
 
 /* ── Nút lắc ───────────────────────────────────────────────────── */
-.charge {
-	top: 16cqw;
-	width: 30cqw;
-}
+.charge { top: 13.3cqw; width: 35cqw; }
 #shake {
-	position: relative;
-	width: 14cqw;
-	aspect-ratio: 1;
-	border: 1px solid #fff1d4;
-	border-radius: 50%;
-	padding: 0;
-	color: var(--wine);
-	background: var(--cream);
-	box-shadow: 0 0.34cqw 0 #b98062;
-	touch-action: none;
-	transform: scale(calc(1 - var(--power) * 0.05));
+  --rhythm-ink: #4c2730;
+  --rhythm-gold: #ffe3a2;
+  --dial-start: 90deg;
+  --angle: calc(var(--dial-start) + var(--power) * 1turn);
+  position: relative; display: inline-grid; place-items: center; vertical-align: top;
+  width: max(86px, 20.5cqw); aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%;
+  color: var(--rhythm-ink); background: transparent; touch-action: none;
 }
-.stage[data-holding='true'] #shake {
-	animation: btn-shake calc(0.26s - var(--power) * 0.15s) linear infinite;
-	box-shadow: 0 0.15cqw 0 #b98062;
+#shake:focus-visible { outline-color: var(--rhythm-gold); outline-offset: .36cqw; }
+#shake:disabled { cursor: default; }
+.shake-gauge, .shake-gauge > span { position: absolute; pointer-events: none; border-radius: 50%; }
+.shake-gauge { inset: 0; }
+.shake-grooves {
+  inset: 7%; border: 1px solid #e8b49145;
+  background: radial-gradient(circle, #542a33 50%, #49242e 67%, #2e1822 72%);
+  box-shadow: 0 .7cqw 1.6cqw #25131bb3, inset 0 0 .6cqw #1f111b;
 }
-#shake svg {
-	position: absolute;
-	inset: -1.1cqw;
-	width: calc(100% + 2.2cqw);
-	height: calc(100% + 2.2cqw);
-	transform: rotate(-90deg);
-	pointer-events: none;
+.shake-ticks {
+  inset: 1%;
+  background: repeating-conic-gradient(from -45.5deg, #e2b797a8 0 1deg, transparent 1deg 15deg);
+  mask-image: radial-gradient(transparent 65%, #000 65.5% 69%, transparent 69.5%);
 }
-#shake circle {
-	fill: none;
-	stroke-width: 3;
+.shake-track, .shake-fill, .shake-needle { inset: 4%; }
+.shake-track {
+  background: #e2b09366;
+  mask-image: radial-gradient(transparent 67.3%, #000 67.8% 69%, transparent 69.5%);
 }
-.ring-bg {
-	stroke: #edc09966;
+.shake-fill {
+  rotate: var(--angle);
+  background: conic-gradient(transparent 0 312deg, #ffe6c700, #ffcaa44d 337deg, #ffddae 360deg);
+  mask-image: radial-gradient(transparent 66.4%, #000 66.9% 70%, transparent 70.5%);
+  opacity: 0;
 }
-.ring-fg {
-	stroke: #f2c28d;
-	stroke-linecap: round;
-	stroke-dasharray: 1;
-	stroke-dashoffset: calc(1 - var(--power));
+.stage[data-holding="true"] .shake-fill, .stage[data-phase="timing"] .shake-fill { opacity: .92; }
+.shake-needle { rotate: var(--angle); }
+.shake-needle::before {
+  content: ''; position: absolute; top: 1.55%; left: 50%; translate: -50% -50%; rotate: 45deg;
+  width: max(5px, 3.6%); aspect-ratio: 1; border-radius: 18%;
+  background: #fff6e5; box-shadow: 0 0 .65cqw .09cqw #ffc794;
 }
-.shake-label {
-	position: relative;
-	display: block;
-	font-size: 1.25cqw;
-	font-weight: 620;
-	line-height: 1.1;
-	pointer-events: none;
+.shake-gauge .shake-slot {
+  inset: 4%; rotate: var(--dial-start);
+  background: conic-gradient(transparent 0 calc(var(--gold-start) * 1turn),
+    #ffcd7599 0 calc((var(--gold-start) + .006) * 1turn),
+    #fff6ce 0 calc((var(--gold-end) - .006) * 1turn),
+    #ffcd7599 0 calc(var(--gold-end) * 1turn), transparent 0);
+  mask-image: radial-gradient(transparent 63.5%, #000 64% 70%, transparent 70.5%);
+  filter: drop-shadow(0 0 .42cqw #ffc871a6);
 }
-.shake-label b {
-	display: block;
-	margin-top: 0.05em;
-	font-size: 4cqw;
-	font-weight: 780;
-	letter-spacing: -0.07em;
+.shake-needle { z-index: 1; }
+.shake-pulse { inset: 4%; border: 1px solid var(--rhythm-gold); opacity: 0; }
+.shake-face {
+  position: relative; width: 69%; aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-content: center; justify-items: center;
+  border: 1px solid #fff1d8;
+  background:
+    radial-gradient(circle, transparent 0 62%, #bd8c632b 62.5% 63.4%, transparent 64% 66%, #fff4dfaa 66.5% 68%, transparent 69%),
+    linear-gradient(155deg, #fff0d9, #edd0a9 73%, #d7a97d);
+  box-shadow: 0 .26cqw 0 #a4725b, 0 .54cqw .95cqw #281322a8, inset 0 1px 2px #fff8e7;
+  pointer-events: none; transition: scale .15s, translate .15s, box-shadow .15s;
 }
+.shake-face strong {
+  font-size: max(17px, 3.6cqw); font-weight: 790; line-height: 1.04;
+  letter-spacing: -.055em; text-shadow: 0 1px #fff4de;
+}
+#shake:hover .shake-face { box-shadow: 0 .28cqw 0 #a4725b, 0 .54cqw 1.2cqw #281322b8, inset 0 0 1.8cqw #fff0ce9c; }
+.stage[data-holding="true"] .shake-face { scale: .965; translate: 0 .14cqw; }
+.stage:is([data-timing="target"], [data-timing="perfect"]) .shake-slot {
+  filter: brightness(1.16) drop-shadow(0 0 .72cqw #ffe3a2);
+}
+.stage[data-timing="target"] .shake-needle::before { background: #fffde8; box-shadow: 0 0 .9cqw .16cqw #ffe3a2; }
+.stage[data-timing="perfect"] .shake-face { animation: timing-hit .42s ease-out; }
+.stage[data-timing="perfect"] .shake-pulse { animation: timing-pulse .5s ease-out; }
+.stage[data-phase="timing"] .shake-face strong { font-size: max(10px, 2.15cqw); }
 #chargeHint {
-	margin: 1.8cqw 0 0;
-	color: #f4dfca;
-	font-size: 1.45cqw;
-	font-weight: 520;
+  margin: 1.28cqw 0 0; color: #f4dfca; font-size: max(10px, 1.26cqw);
+  line-height: 1.2; font-weight: 620; text-wrap: balance;
 }
-.stage[data-full='true'] #chargeHint {
-	font-weight: 750;
-	color: #ffca91;
+.stage:is([data-timing="target"], [data-timing="perfect"]) #chargeHint { color: #ffdb86; }
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
 }
 
 /* ── Vòng quay ─────────────────────────────────────────────────── */
@@ -1130,17 +1154,8 @@ h2 {
 		transform: translate(0.6%, 2.6%) rotate(1.4deg);
 	}
 }
-@keyframes btn-shake {
-	0%,
-	100% {
-		translate: -0.3cqw 0;
-		rotate: -2deg;
-	}
-	50% {
-		translate: 0.3cqw 0;
-		rotate: 2deg;
-	}
-}
+@keyframes timing-hit { 30% { scale: 1.065; filter: brightness(1.13); } }
+@keyframes timing-pulse { from { scale: 0.98; opacity: 0.9; } to { scale: 1.19; opacity: 0; } }
 @keyframes gulp {
 	50% {
 		transform: scale(1.1, 0.9);
