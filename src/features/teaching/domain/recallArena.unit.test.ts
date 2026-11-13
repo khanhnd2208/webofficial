@@ -113,25 +113,20 @@ describe('returnToBag', () => {
 });
 
 describe('drawCard', () => {
-	it('does not repeat a card until the deck runs out', () => {
-		let used: string[] = [];
-		const seen = new Set<string>();
-		for (let turn = 0; turn < 3; turn += 1) {
-			const result = drawCard(['x', 'y', 'z'], used);
-			seen.add(result.cardId!);
-			used = result.used;
-		}
-		expect(seen.size).toBe(3);
+	it('can draw a question again until a student passes it', () => {
+		const passed = new Set<string>();
+		expect(drawCard(['x'], passed, zero)).toBe('x');
+		expect(drawCard(['x'], passed, zero)).toBe('x');
+		passed.add('x');
+		expect(drawCard(['x'], passed, zero)).toBeNull();
 	});
 
-	it('starts over once every card was asked', () => {
-		const result = drawCard(['x', 'y'], ['x', 'y'], zero);
-		expect(result.cardId).toBe('x');
-		expect(result.used).toEqual(['x']);
-	});
-
-	it('returns no card for an empty deck', () => {
-		expect(drawCard([], ['x']).cardId).toBeNull();
+	it('keeps a passed question out after switching decks and when all questions are passed', () => {
+		const passed = new Set(['x', 'y']);
+		expect(drawCard(['z'], passed, zero)).toBe('z');
+		expect(drawCard(['x', 'y'], passed, zero)).toBeNull();
+		expect(drawCard(['x', 'y', 'z'], passed, zero)).toBe('z');
+		expect(drawCard([], passed)).toBeNull();
 	});
 });
 

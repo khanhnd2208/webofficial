@@ -28,7 +28,7 @@ function entry(id: string, extra: Partial<ArenaHistoryEntry> = {}): ArenaHistory
 	};
 }
 
-function useHarness(initial: ArenaProgress, loadFromServer = false) {
+function useHarness(initial: ArenaProgress) {
 	const [progress, setProgress] = useState(initial);
 	const log = useArenaTurnLog({
 		courseId: 'course-1',
@@ -36,7 +36,6 @@ function useHarness(initial: ArenaProgress, loadFromServer = false) {
 		progress,
 		setProgress,
 		ready: true,
-		loadFromServer,
 	});
 	return { progress, log };
 }
@@ -52,14 +51,19 @@ describe('useArenaTurnLog', () => {
 			useHarness({ ...emptyProgress(), history: [entry('turn-aaaa1'), entry('turn-bbbb2')] }),
 		);
 		await waitFor(() => expect(result.current.log.pending).toBe(0));
-		const posted = apiMock.mock.calls.map(([, init]) => JSON.parse(String(init?.body)).clientId);
+		const posted = apiMock.mock.calls
+			.filter(([, init]) => init?.method === 'POST')
+			.map(([, init]) => JSON.parse(String(init?.body)).clientId);
 		expect(posted).toEqual(['turn-aaaa1', 'turn-bbbb2']);
-		expect(apiMock.mock.calls[0]![0]).toBe(TURNS_URL);
+		expect(apiMock.mock.calls.find(([, init]) => init?.method === 'POST')?.[0]).toBe(TURNS_URL);
 		expect(result.current.progress.history.every((item) => item.synced)).toBe(true);
 	});
 
 	it('stops on a network error and sends again when asked', async () => {
-		apiMock.mockRejectedValueOnce(new Error('offline')).mockResolvedValue({});
+		apiMock
+			.mockResolvedValueOnce({ turns: [] })
+			.mockRejectedValueOnce(new Error('offline'))
+			.mockResolvedValue({});
 		const { result } = renderHook(() =>
 			useHarness({ ...emptyProgress(), history: [entry('turn-aaaa1')] }),
 		);
@@ -67,11 +71,12 @@ describe('useArenaTurnLog', () => {
 		expect(result.current.log.pending).toBe(1);
 		act(() => result.current.log.retry());
 		await waitFor(() => expect(result.current.log.pending).toBe(0));
-		expect(apiMock).toHaveBeenCalledTimes(2);
+		expect(apiMock).toHaveBeenCalledTimes(3);
 	});
 
 	it('skips a call the server refuses and keeps sending the rest', async () => {
 		apiMock
+			.mockResolvedValueOnce({ turns: [] })
 			.mockRejectedValueOnce(new AdminApiError('Enrollment not found', { status: 404 }))
 			.mockResolvedValue({});
 		const { result } = renderHook(() =>
@@ -85,7 +90,7 @@ describe('useArenaTurnLog', () => {
 		);
 	});
 
-	it('starts a new machine from the calls saved today', async () => {
+	it('merges saved calls even when this browser has local history', async () => {
 		apiMock.mockResolvedValue({
 			date: '2026-11-13',
 			days: ['2026-11-13'],
@@ -108,10 +113,12 @@ describe('useArenaTurnLog', () => {
 				},
 			],
 		});
-		const { result } = renderHook(() => useHarness(emptyProgress(), true));
-		await waitFor(() => expect(result.current.progress.history).toHaveLength(1));
+		const { result } = renderHook(() =>
+			useHarness({ ...emptyProgress(), history: [entry('local-1111', { synced: true })] }),
+		);
+		await waitFor(() => expect(result.current.progress.history).toHaveLength(2));
 		expect(apiMock).toHaveBeenCalledWith(`${TURNS_URL}?date=2026-11-13`);
-		expect(result.current.progress.history[0]).toMatchObject({
+		expect(result.current.progress.history.find((item) => item.id === 'saved-1111')).toMatchObject({
 			name: 'Lê Khách',
 			result: 'fail',
 			synced: true,

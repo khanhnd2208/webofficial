@@ -26,7 +26,7 @@ export const GET = withAdmin(async (request: NextRequest, _user, context) => {
 	return apiSuccess({ date, turns, days });
 });
 
-/** Save one arena call; resending the same clientId updates it. */
+/** Save a call and apply its grade, if supplied, once per clientId. */
 export const POST = withAdmin(async (request: NextRequest, user, context) =>
 	apiSuccess(
 		await recordRecallArenaTurn(

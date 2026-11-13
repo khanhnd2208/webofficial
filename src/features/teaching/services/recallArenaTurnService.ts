@@ -1,3 +1,5 @@
+import type { ArenaAwardLevel } from '../domain/recallArena';
+
 import { AppError } from '@/lib/appError';
 
 import { vietnamTodayIso } from '../domain/recallArena';
@@ -5,6 +7,7 @@ import * as repo from '../repositories/teachingRepository';
 import type { RecallArenaTurnInput } from '../schemas';
 import type { RecallArenaTurnRecord } from '../types';
 import { notFound } from './classService';
+import { awardRecallArenaCpInTransaction, recallArenaTransaction } from './recallArenaService';
 
 const RESULT_TO_DB = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP' } as const;
 const RESULT_FROM_DB = { PASS: 'pass', FAIL: 'fail', SKIP: 'skip' } as const;
@@ -74,80 +77,120 @@ async function requireCourse(courseId: string) {
 	if (!course) notFound('Course');
 }
 
-/**
- * Save one arena call. A student must be enrolled in a class of this course;
- * anyone else is kept by the name the lecturer typed. Sending the same turn
- * again (same clientId) updates its result instead of adding a second row.
- */
+/** Save the grade and its history together. Retries reuse the committed result. */
 export async function recordRecallArenaTurn(
 	courseId: string,
 	input: RecallArenaTurnInput,
 	userId?: string,
 ): Promise<RecallArenaTurnRecord> {
 	await requireCourse(courseId);
-	let player: { enrollmentId: string | null; playerName: string; studentCode: string };
-	if (input.enrollmentId) {
-		const enrollment = await repo.prisma.teachingEnrollment.findFirst({
-			where: { id: input.enrollmentId, class: { courseId } },
-			select: {
-				id: true,
-				student: { select: { studentCode: true, familyName: true, givenName: true } },
-			},
+	return recallArenaTransaction(async (tx) => {
+		const where = { clientId: input.clientId };
+		const existing = await tx.teachingArenaTurn.findUnique({
+			where,
+			select: { ...turnSelect, courseId: true },
 		});
-		if (!enrollment) notFound('Enrollment');
-		const { student } = enrollment;
-		player = {
-			enrollmentId: enrollment.id,
-			playerName: `${student.familyName} ${student.givenName}`.trim(),
-			studentCode: student.studentCode,
+		const result = RESULT_TO_DB[input.result];
+		const award = input.award ?? null;
+		const scored = {
+			result,
+			award,
+			cpAfter: input.cpAfter ?? null,
+			giftAfter: input.giftAfter ?? null,
 		};
-	} else {
-		player = { enrollmentId: null, playerName: input.guestName!, studentCode: '' };
-	}
-	// A card deleted since the turn was played is kept as "no card".
-	const card = input.cardId
-		? await repo.prisma.activeRecallCard.findFirst({
-				where: { id: input.cardId, deck: { courseId } },
-				select: { id: true, question: true },
-			})
-		: null;
-	const playedAt = new Date(input.playedAt);
-	const scored = {
-		result: RESULT_TO_DB[input.result],
-		award: input.award ?? null,
-		cpAfter: input.cpAfter ?? null,
-		giftAfter: input.giftAfter ?? null,
-	};
+		if (existing) {
+			if (existing.courseId !== courseId) {
+				throw new AppError('Lượt này đã lưu cho môn khác', 409, 'CONFLICT');
+			}
+			if (input.grade) {
+				if (
+					existing.enrollmentId !== input.enrollmentId ||
+					existing.result !== result ||
+					decimal(existing.award) !== award ||
+					(input.grade.kind === 'cp' ? existing.cpAfter == null : existing.giftAfter == null)
+				) {
+					throw new AppError(
+						'Lượt này đã được chấm. Hãy thử lại với mức đã chọn.',
+						409,
+						'CONFLICT',
+					);
+				}
+				return mapTurn(existing);
+			}
+			// Older clients can retry a CP history update without grading again.
+			if (
+				existing.enrollmentId !== (input.enrollmentId ?? null) ||
+				(!input.enrollmentId && existing.playerName !== input.guestName) ||
+				existing.result !== result
+			) {
+				throw new AppError('Lượt này đã được lưu với kết quả khác', 409, 'CONFLICT');
+			}
+			return mapTurn(
+				await tx.teachingArenaTurn.update({ where, data: scored, select: turnSelect }),
+			);
+		}
 
-	const existing = await repo.prisma.teachingArenaTurn.findUnique({
-		where: { clientId: input.clientId },
-		select: { courseId: true },
-	});
-	if (existing && existing.courseId !== courseId) {
-		throw new AppError('Lượt này đã lưu cho môn khác', 409, 'CONFLICT');
-	}
-	const row = existing
-		? await repo.prisma.teachingArenaTurn.update({
-				where: { clientId: input.clientId },
-				data: scored,
-				select: turnSelect,
-			})
-		: await repo.prisma.teachingArenaTurn.create({
-				data: {
-					clientId: input.clientId,
-					courseId,
-					playedAt,
-					playedOn: dayColumn(vietnamTodayIso(playedAt)),
-					...player,
-					guestGroup: player.enrollmentId ? null : (input.guestGroup ?? null),
-					cardId: card?.id ?? null,
-					question: card?.question ?? '',
-					recordedById: userId ?? null,
-					...scored,
-				},
-				select: turnSelect,
+		const enrollment = input.enrollmentId
+			? await tx.teachingEnrollment.findFirst({
+					where: { id: input.enrollmentId, class: { courseId } },
+					select: {
+						id: true,
+						status: true,
+						student: { select: { studentCode: true, familyName: true, givenName: true } },
+					},
+				})
+			: null;
+		if (input.enrollmentId && !enrollment) notFound('Enrollment');
+		if (input.grade && enrollment?.status !== 'ACTIVE') notFound('Enrollment');
+		const student = enrollment?.student;
+		const card = input.cardId
+			? await tx.activeRecallCard.findFirst({
+					where: { id: input.cardId, deck: { courseId } },
+					select: { id: true, question: true, questionVi: true },
+				})
+			: null;
+
+		let cpPrevious: number | undefined;
+		if (input.grade?.kind === 'cp') {
+			const cp = await awardRecallArenaCpInTransaction(
+				tx,
+				input.grade.sessionId,
+				{ enrollmentId: enrollment!.id, points: input.award as ArenaAwardLevel },
+				userId,
+			);
+			scored.cpAfter = cp.points;
+			cpPrevious = cp.previous;
+		} else if (input.grade?.kind === 'gift') {
+			const updated = await tx.teachingEnrollment.update({
+				where: { id: enrollment!.id },
+				data: { giftCount: { increment: 1 } },
+				select: { giftCount: true },
 			});
-	return mapTurn(row as TurnRow);
+			scored.giftAfter = updated.giftCount;
+		}
+
+		const playedAt = new Date(input.playedAt);
+		const row = await tx.teachingArenaTurn.create({
+			data: {
+				clientId: input.clientId,
+				courseId,
+				playedAt,
+				playedOn: dayColumn(vietnamTodayIso(playedAt)),
+				enrollmentId: enrollment?.id ?? null,
+				playerName: student
+					? `${student.familyName} ${student.givenName}`.trim()
+					: input.guestName!,
+				studentCode: student?.studentCode ?? '',
+				guestGroup: student ? null : (input.guestGroup ?? null),
+				cardId: card?.id ?? null,
+				question: card?.question || card?.questionVi || '',
+				recordedById: userId ?? null,
+				...scored,
+			},
+			select: turnSelect,
+		});
+		return { ...mapTurn(row), ...(cpPrevious != null ? { cpPrevious } : {}) };
+	});
 }
 
 /** Every call saved for a course on one game day, oldest first. */

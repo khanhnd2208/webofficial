@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '@/lib/prisma';
 import { disconnectTestPrisma } from '@/test/helpers/db.postgres';
 
+import { recordRecallArenaTurn } from './recallArenaTurnService';
 import { awardRecallArenaCp, getRecallArena, getRecallArenaCourseId } from './recallArenaService';
 
 const suffix = `arena-${Date.now().toString(36)}`;
@@ -190,6 +191,54 @@ describe('recall arena service', () => {
 		});
 		expect(Number(mark?.points)).toBe(1);
 		expect(mark?.note).toBe('phát biểu tốt');
+	});
+
+	it('keeps the highest CP when concurrent awards both start with no mark', async () => {
+		const enrollmentId = ids.absent;
+		await prisma.teachingParticipation.deleteMany({
+			where: { sessionId: ids.session, enrollmentId },
+		});
+		await Promise.all([
+			awardRecallArenaCp(ids.session, { enrollmentId, points: 2 }),
+			awardRecallArenaCp(ids.session, { enrollmentId, points: 0.5 }),
+		]);
+		const mark = await prisma.teachingParticipation.findUniqueOrThrow({
+			where: { sessionId_enrollmentId: { sessionId: ids.session, enrollmentId } },
+		});
+		expect(Number(mark.points)).toBe(2);
+	});
+
+	it('commits the CP and the turn together and reuses the saved grade after a retry', async () => {
+		const input = {
+			clientId: `${suffix}-cp`,
+			playedAt: Date.now(),
+			enrollmentId: ids.present,
+			result: 'pass',
+			award: 2,
+			grade: { kind: 'cp', sessionId: ids.session },
+		} as const;
+		await prisma.teachingSession.update({
+			where: { id: ids.session },
+			data: { participationOpen: false },
+		});
+		await expect(recordRecallArenaTurn(ids.course, input)).rejects.toMatchObject({ status: 409 });
+		expect(
+			await prisma.teachingArenaTurn.findUnique({ where: { clientId: input.clientId } }),
+		).toBeNull();
+		await prisma.teachingSession.update({
+			where: { id: ids.session },
+			data: { participationOpen: true },
+		});
+		await expect(recordRecallArenaTurn(ids.course, input)).resolves.toMatchObject({ cpAfter: 2 });
+		await prisma.teachingSession.update({
+			where: { id: ids.session },
+			data: { participationOpen: false },
+		});
+		await expect(recordRecallArenaTurn(ids.course, input)).resolves.toMatchObject({ cpAfter: 2 });
+		await prisma.teachingSession.update({
+			where: { id: ids.session },
+			data: { participationOpen: true },
+		});
 	});
 
 	it('refuses to save while CP grading is locked for the week', async () => {

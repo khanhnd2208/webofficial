@@ -153,6 +153,31 @@ describe('recall arena turn log', () => {
 		).rejects.toMatchObject({ status: 409 });
 	});
 
+	it('charges exactly one Gift for concurrent submissions and retries of the same turn', async () => {
+		const input = {
+			clientId: `${suffix}-gift`,
+			playedAt: LATE,
+			enrollmentId: ids.enrollment,
+			cardId: ids.card,
+			result: 'fail',
+			grade: { kind: 'gift' },
+		} as const;
+		const turns = await Promise.all([
+			recordRecallArenaTurn(ids.course, input),
+			recordRecallArenaTurn(ids.course, input),
+		]);
+		expect(turns.map((turn) => turn.giftAfter)).toEqual([1, 1]);
+		await expect(recordRecallArenaTurn(ids.course, input)).resolves.toMatchObject({ giftAfter: 1 });
+		await expect(
+			recordRecallArenaTurn(ids.course, { ...input, grade: undefined, result: 'pass' }),
+		).rejects.toMatchObject({ status: 409 });
+		const enrollment = await prisma.teachingEnrollment.findUniqueOrThrow({
+			where: { id: ids.enrollment },
+		});
+		expect(enrollment.giftCount).toBe(1);
+		expect(await prisma.teachingArenaTurn.count({ where: { clientId: input.clientId } })).toBe(1);
+	});
+
 	it('drops a card from another course instead of linking it', async () => {
 		const otherDeck = await prisma.activeRecallDeck.create({
 			data: {

@@ -7,10 +7,19 @@ import type { RecallArenaData, RecallArenaPlayer } from '@/features/teaching/typ
 import { RecallArena } from './RecallArena';
 import { ARENA_CHARACTERS } from './arenaCharacters';
 
-vi.mock('@/components/teaching/admin/api', () => ({ teachingApi: vi.fn() }));
+vi.mock('@/components/teaching/admin/api', async (original) => ({
+	...(await original<typeof import('@/components/teaching/admin/api')>()),
+	teachingApi: vi.fn(),
+}));
 // The server log of calls has its own test; here the API mock sees only CP and Gift.
 vi.mock('./useArenaTurnLog', () => ({
-	useArenaTurnLog: () => ({ pending: 0, failed: false, rejected: 0, retry: () => {} }),
+	useArenaTurnLog: () => ({
+		loading: false,
+		pending: 0,
+		failed: false,
+		rejected: 0,
+		retry: () => {},
+	}),
 }));
 vi.mock('canvas-confetti', () => ({ default: { create: () => vi.fn() } }));
 const motion = vi.hoisted(() => ({ reduced: true }));
@@ -170,11 +179,8 @@ describe('RecallArena', () => {
 
 	it('catches only the chosen group and saves the CP award', async () => {
 		apiMock.mockResolvedValue({
-			enrollmentId: 'a',
-			sessionId: 's1',
-			previous: 0,
-			points: 1,
-			changed: true,
+			cpPrevious: 0,
+			cpAfter: 1,
 		});
 		render(<RecallArena data={arenaData()} />);
 		openStep('Người chơi');
@@ -190,12 +196,16 @@ describe('RecallArena', () => {
 
 		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
 
-		await waitFor(() =>
-			expect(apiMock).toHaveBeenCalledWith('/api/admin/teaching/sessions/s1/recall-arena', {
-				method: 'POST',
-				body: JSON.stringify({ enrollmentId: 'a', points: 1 }),
-			}),
+		await waitFor(() => expect(apiMock).toHaveBeenCalled());
+		expect(apiMock.mock.calls[0]?.[0]).toBe(
+			'/api/admin/teaching/courses/course-1/recall-arena/turns',
 		);
+		expect(JSON.parse(String(apiMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+			enrollmentId: 'a',
+			result: 'pass',
+			award: 1,
+			grade: { kind: 'cp', sessionId: 's1' },
+		});
 		expect(await screen.findByText('An: CP 0 → 1')).toBeTruthy();
 		expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy();
 	});
@@ -203,11 +213,8 @@ describe('RecallArena', () => {
 	it('lets the student attack before the monster loses health with full motion', async () => {
 		motion.reduced = false;
 		apiMock.mockResolvedValue({
-			enrollmentId: 'a',
-			sessionId: 's1',
-			previous: 0,
-			points: 1,
-			changed: true,
+			cpPrevious: 0,
+			cpAfter: 1,
 		});
 		render(<RecallArena data={arenaData()} />);
 		openStep('Người chơi');
@@ -290,7 +297,7 @@ describe('RecallArena', () => {
 	});
 
 	it('adds one Gift for a missed answer before ending the turn', async () => {
-		apiMock.mockResolvedValue({ student: { giftCount: 1 }, stats: {} });
+		apiMock.mockResolvedValue({ giftAfter: 1 });
 		render(<RecallArena data={arenaData()} />);
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
@@ -299,30 +306,35 @@ describe('RecallArena', () => {
 		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
 
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
-		expect(apiMock).toHaveBeenCalledWith(
-			`/api/admin/teaching/enrollments/${caught.querySelector('h2')?.textContent === 'Nguyễn An' ? 'a' : 'b'}/gift`,
-			{ method: 'PATCH', body: JSON.stringify({ delta: 1 }) },
+		expect(apiMock.mock.calls[0]?.[0]).toBe(
+			'/api/admin/teaching/courses/course-1/recall-arena/turns',
 		);
+		expect(JSON.parse(String(apiMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+			enrollmentId: caught.querySelector('h2')?.textContent === 'Nguyễn An' ? 'a' : 'b',
+			result: 'fail',
+			grade: { kind: 'gift' },
+		});
 		expect(screen.getByRole('status').textContent).toContain('+1 Gift');
 		expect(screen.getByLabelText('Máu quái vật 10/10')).toBeTruthy();
 	});
 
 	it('keeps the caught student on screen when saving Gift fails, then allows retry', async () => {
 		apiMock.mockRejectedValueOnce(new Error('Mất kết nối'));
-		apiMock.mockResolvedValueOnce({ student: { giftCount: 1 }, stats: {} });
+		apiMock.mockResolvedValueOnce({ giftAfter: 1 });
 		render(<RecallArena data={arenaData()} />);
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: /Nguyễn/ });
 		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
-		await screen.findByText(/Chưa thêm Gift: Mất kết nối/);
-		expect(within(caught).getByRole('button', { name: /Chưa đạt/ })).not.toHaveProperty(
+		await screen.findByText(/Chưa xác nhận Gift: Mất kết nối/);
+		expect(within(caught).getByRole('button', { name: 'Vừa đủ qua' })).toHaveProperty(
 			'disabled',
 			true,
 		);
-		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: 'Xác nhận lại Gift' }));
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
 		expect(apiMock).toHaveBeenCalledTimes(2);
+		expect(apiMock.mock.calls[0]).toEqual(apiMock.mock.calls[1]);
 	});
 
 	it('treats vừa đủ qua as a pass without changing CP or Gift', async () => {
@@ -336,6 +348,50 @@ describe('RecallArena', () => {
 		expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy();
 		fireEvent.click(screen.getByRole('button', { name: 'Đã gọi 1' }));
 		expect(screen.getByText(/Vừa đủ qua/)).toBeTruthy();
+	});
+
+	it('reuses a missed question, then retires it on a no-CP pass across reloads', async () => {
+		apiMock.mockResolvedValue({ giftAfter: 1 });
+		const view = render(<RecallArena data={arenaData()} />);
+		enterGame();
+		async function catchPlayer() {
+			fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+			return screen.findByRole('dialog', { name: /Nguyễn/ });
+		}
+		let caught = await catchPlayer();
+		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
+		caught = await catchPlayer();
+		expect(within(caught).getByText('What is motivation?')).toBeTruthy();
+		fireEvent.click(within(caught).getByRole('button', { name: 'Vừa đủ qua' }));
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
+		view.unmount();
+
+		render(<RecallArena data={arenaData()} />);
+		enterGame();
+		caught = await catchPlayer();
+		expect(within(caught).getByText(/Các câu trong bài đã chọn đều đã qua/)).toBeTruthy();
+		expect(within(caught).queryByText('What is motivation?')).toBeNull();
+	});
+
+	it('imports pasted names, reuses roster students, and allows removing a guest', () => {
+		render(<RecallArena data={arenaData()} />);
+		openStep('Người chơi');
+		const setup = within(setupDialog());
+		fireEvent.click(setup.getByRole('button', { name: 'Dán danh sách tên' }));
+		fireEvent.change(setup.getByLabelText('Danh sách họ và tên'), {
+			target: { value: 'Nguyễn An; Nguyễn Dũng\nLê Minh Anh, Trần Hải Bảo | lê minh anh' },
+		});
+		fireEvent.click(setup.getByRole('button', { name: 'Thêm danh sách' }));
+		expect(setup.getByRole('status').textContent).toBe(
+			'Đã thêm 3 người · 2 khách chơi thử · 2 mục đã có',
+		);
+		expect(setup.getByRole('checkbox', { name: /Nguyễn Dũng/ })).toHaveProperty('checked', true);
+		expect(setup.getByText('5 bạn trong trận')).toBeTruthy();
+		const guest = setup.getByText('Lê Minh Anh').closest('li')!;
+		fireEvent.click(within(guest).getByRole('button', { name: 'Xóa' }));
+		expect(setup.queryByText('Lê Minh Anh')).toBeNull();
+		expect(setup.getByText('4 bạn trong trận')).toBeTruthy();
 	});
 
 	it('calls a named student in the room and keeps the skipped student eligible', async () => {
@@ -391,11 +447,8 @@ describe('RecallArena', () => {
 
 	it('adds a make-up student from another class and writes their CP to their own class', async () => {
 		apiMock.mockResolvedValue({
-			enrollmentId: 'd',
-			sessionId: 's2',
-			previous: 0,
-			points: 1,
-			changed: true,
+			cpPrevious: 0,
+			cpAfter: 1,
 		});
 		render(<RecallArena data={arenaData()} />);
 		openStep('Người chơi');
@@ -416,12 +469,16 @@ describe('RecallArena', () => {
 		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Dũng' });
 		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
 
-		await waitFor(() =>
-			expect(apiMock).toHaveBeenCalledWith('/api/admin/teaching/sessions/s2/recall-arena', {
-				method: 'POST',
-				body: JSON.stringify({ enrollmentId: 'd', points: 1 }),
-			}),
+		await waitFor(() => expect(apiMock).toHaveBeenCalled());
+		expect(apiMock.mock.calls[0]?.[0]).toBe(
+			'/api/admin/teaching/courses/course-1/recall-arena/turns',
 		);
+		expect(JSON.parse(String(apiMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+			enrollmentId: 'd',
+			result: 'pass',
+			award: 1,
+			grade: { kind: 'cp', sessionId: 's2' },
+		});
 	});
 
 	it('adds and edits an unlisted player, then lets them defeat the monster without writing CP', async () => {
@@ -451,14 +508,14 @@ describe('RecallArena', () => {
 		expect(within(screen.getByTestId('arena-player')).getByText('Bình')).toBeTruthy();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Lê Minh Bình' });
-		expect(within(caught).getByText('Người ngoài danh sách · không ghi CP')).toBeTruthy();
+		expect(within(caught).getByText('Khách chơi thử')).toBeTruthy();
 		fireEvent.click(within(caught).getByRole('button', { name: 'Đạt' }));
 		await waitFor(() => expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy());
 		expect(apiMock).not.toHaveBeenCalled();
-		expect(screen.getByText('Bình: đạt · không ghi CP')).toBeTruthy();
+		expect(screen.getByText('Bình: đạt')).toBeTruthy();
 	});
 
-	it('records a missed answer for an unlisted player without calling the Gift API', async () => {
+	it('lets an unlisted player return their turn when they did not answer', async () => {
 		render(<RecallArena data={arenaData()} initialClassId="c2" />);
 		openStep('Người chơi');
 		const setup = setupDialog();
@@ -475,11 +532,11 @@ describe('RecallArena', () => {
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Lê Minh An' });
-		expect(within(caught).getByRole('button', { name: 'Chưa đạt' })).toBeTruthy();
-		fireEvent.click(within(caught).getByRole('button', { name: 'Chưa đạt' }));
+		expect(within(caught).queryByRole('button', { name: 'Chưa đạt' })).toBeNull();
+		fireEvent.click(within(caught).getByRole('button', { name: 'Đóng, không chấm' }));
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Lê Minh An' })).toBeNull());
 		expect(apiMock).not.toHaveBeenCalled();
-		expect(screen.getByRole('status').textContent).toContain('không ghi Gift');
+		expect(screen.getByRole('button', { name: 'Đã gọi 0' })).toBeTruthy();
 	});
 
 	it('mixes questions from several lessons', () => {

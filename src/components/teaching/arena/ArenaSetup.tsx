@@ -191,8 +191,8 @@ export function ArenaSetup({
 						<button
 							type="button"
 							className={styles.startButton}
-							disabled={callable.length === 0}
-							title={callable.length === 0 ? 'Chưa có ai để gọi' : undefined}
+							disabled={!started && callable.length === 0}
+							title={!started && callable.length === 0 ? 'Chưa có ai để gọi' : undefined}
 							onClick={onDone}
 						>
 							{started ? 'Xong' : 'Vào trận'}

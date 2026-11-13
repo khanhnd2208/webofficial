@@ -28,6 +28,14 @@ export function passStreak(history: readonly ArenaHistoryEntry[]) {
 
 export type ArenaResult = 'pass' | 'fail' | 'skip';
 
+export function passedArenaCards(history: readonly ArenaHistoryEntry[]) {
+	const ids = new Set<string>();
+	for (const entry of history) {
+		if (entry.result === 'pass' && entry.cardId) ids.add(entry.cardId);
+	}
+	return ids;
+}
+
 export interface ArenaHistoryEntry {
 	id: string;
 	at: number;
@@ -52,7 +60,6 @@ export interface ArenaHistoryEntry {
 export interface ArenaProgress {
 	bag: string[];
 	lastPicked: string | null;
-	usedCards: string[];
 	hp: number;
 	round: number;
 	history: ArenaHistoryEntry[];
@@ -145,7 +152,7 @@ interface StoredArenaConfig extends Partial<ArenaConfig> {
 }
 
 export function emptyProgress(): ArenaProgress {
-	return { bag: [], lastPicked: null, usedCards: [], hp: ARENA_MAX_HP, round: 1, history: [] };
+	return { bag: [], lastPicked: null, hp: ARENA_MAX_HP, round: 1, history: [] };
 }
 
 /** One game per course per day: tomorrow's class starts with a fresh boss. */
@@ -178,14 +185,12 @@ export function loadProgress(gameKey: string): ArenaProgress {
 	if (!stored) return emptyProgress();
 	return {
 		...emptyProgress(),
-		...stored,
+		bag: stored.bag ?? [],
+		lastPicked: stored.lastPicked ?? null,
+		hp: stored.hp ?? ARENA_MAX_HP,
+		round: stored.round ?? 1,
 		history: Array.isArray(stored.history) ? stored.history : [],
 	};
-}
-
-/** Whether this browser already played today, so the server log is not loaded over it. */
-export function hasStoredProgress(gameKey: string) {
-	return readJson<unknown>(PROGRESS_KEY(gameKey)) != null;
 }
 
 export function saveProgress(gameKey: string, progress: ArenaProgress) {
@@ -336,6 +341,73 @@ export function matchesPlayerSearch(
 
 export function fullName(player: Pick<RecallArenaPlayer, 'familyName' | 'givenName'>) {
 	return `${player.familyName} ${player.givenName}`.trim();
+}
+
+/** A pasted name is linked only when it identifies one enrollment in the course. */
+export function importArenaNames(
+	text: string,
+	group: ArenaGroup,
+	players: readonly RecallArenaPlayer[],
+	config: ArenaConfig,
+	roster: readonly RecallArenaPlayer[],
+) {
+	const rosterIds = new Set(roster.map((player) => player.enrollmentId));
+	const enrolledByName = new Map<string, RecallArenaPlayer[]>();
+	for (const player of players) {
+		const key = nameKey(fullName(player).replace(/\s+/g, ' '));
+		const matches = enrolledByName.get(key) ?? [];
+		matches.push(player);
+		enrolledByName.set(key, matches);
+	}
+	const seen = new Set(config.manualPlayers.map((player) => nameKey(player.name)));
+	const guests = new Set(config.guestIds);
+	const excluded = new Set(config.excludedIds);
+	const manualPlayers = [...config.manualPlayers];
+	const remaining: string[] = [];
+	let enrolled = 0;
+	let guestsAdded = 0;
+	let duplicates = 0;
+	let ambiguous = 0;
+	let tooLong = 0;
+	for (const raw of text.split(/[\r\n,;\t|]+/)) {
+		const name = raw.trim().replace(/\s+/g, ' ');
+		if (!name) continue;
+		const key = nameKey(name);
+		if (seen.has(key)) {
+			duplicates += 1;
+			continue;
+		}
+		seen.add(key);
+		const matches = enrolledByName.get(key) ?? [];
+		if (matches.length > 1) {
+			ambiguous += 1;
+			remaining.push(name);
+		} else if (matches.length === 1) {
+			const id = matches[0]!.enrollmentId;
+			if (rosterIds.has(id)) {
+				duplicates += 1;
+			} else {
+				excluded.delete(id);
+				guests.add(id);
+				enrolled += 1;
+			}
+		} else if (name.length > 80) {
+			tooLong += 1;
+			remaining.push(name);
+		} else {
+			manualPlayers.push(newManualPlayer(name, group));
+			guestsAdded += 1;
+		}
+	}
+	return {
+		config: { ...config, guestIds: [...guests], excludedIds: [...excluded], manualPlayers },
+		enrolled,
+		guestsAdded,
+		duplicates,
+		ambiguous,
+		tooLong,
+		remaining,
+	};
 }
 
 type NamedPlayer = Pick<

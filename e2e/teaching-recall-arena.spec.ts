@@ -145,7 +145,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 		}
 	});
 
-	test('adds a make-up student from another class and mixes several lessons', async ({
+	test('imports names, grades a make-up student and retires passed questions', async ({
 		page,
 		context,
 	}) => {
@@ -237,8 +237,18 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await expect(setup.getByText(/CP tuần 1 đang mở/)).toBeVisible();
 			await setup.getByRole('button', { name: 'Tiếp' }).click();
 
-			await setup.getByRole('searchbox').fill('giang');
-			await setup.getByRole('button', { name: /Học bù Giang/ }).click();
+			await setup.getByRole('button', { name: 'Dán danh sách tên' }).click();
+			await setup.getByLabel('Danh sách họ và tên').fill('Học bù Giang; Lê Khách\nTrần Khách');
+			await setup.getByRole('button', { name: 'Thêm danh sách' }).click();
+			await expect(setup.getByRole('status')).toHaveText('Đã thêm 3 người · 2 khách chơi thử');
+			const manualList = setup.getByRole('region', { name: 'Người ngoài danh sách' });
+			for (const name of ['Lê Khách', 'Trần Khách']) {
+				await manualList
+					.getByRole('listitem')
+					.filter({ hasText: name })
+					.getByRole('button', { name: 'Xóa' })
+					.click();
+			}
 			await expect(setup.getByText(/Học bù · CP ghi vào lớp 02, tuần 1/)).toBeVisible();
 			await setup.getByRole('button', { name: 'Mở chấm CP tuần 1' }).click();
 			await setup.getByRole('checkbox', { name: /Học bù An/ }).uncheck();
@@ -261,6 +271,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			const caught = page.getByRole('dialog', { name: 'Học bù Giang' });
 			await expect(caught).toBeVisible();
 			await expect(caught.getByText(/Câu bài (một|hai)/)).toBeVisible();
+			const firstQuestion = await caught.getByText(/Câu bài (một|hai)/).textContent();
 			await caught.getByRole('button', { name: /Đạt \+1/ }).click();
 			await expect(page.getByRole('status')).toContainText('Giang: CP 0 → 1');
 
@@ -268,6 +279,15 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 				await page.request.get(`/api/admin/teaching/classes/${home}/gradebook`),
 			);
 			expect(after.students[0]!.participation[homeWeek1.id]?.points).toBe(1);
+			await page.getByRole('button', { name: /Bắt!/ }).click();
+			await expect(caught.getByText(firstQuestion!)).toHaveCount(0);
+			await expect(
+				caught.getByText(firstQuestion === 'Câu bài một' ? 'Câu bài hai' : 'Câu bài một'),
+			).toBeVisible();
+			await caught.getByRole('button', { name: 'Vừa đủ qua' }).click();
+
+			await page.getByRole('button', { name: /Bắt!/ }).click();
+			await expect(caught.getByText(/Các câu trong bài đã chọn đều đã qua/)).toBeVisible();
 		} finally {
 			for (const deckId of deckIds) {
 				await page.request.delete(`/api/admin/teaching/courses/${courseId}/recall/${deckId}`);

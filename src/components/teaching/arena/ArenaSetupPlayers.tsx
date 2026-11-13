@@ -15,7 +15,13 @@ import type {
 } from '@/features/teaching/types';
 
 import { ArenaCpStatus } from './ArenaCpStatus';
-import { fullName, matchesPlayerSearch, newManualPlayer, type ArenaConfig } from './arenaGame';
+import {
+	fullName,
+	importArenaNames,
+	matchesPlayerSearch,
+	newManualPlayer,
+	type ArenaConfig,
+} from './arenaGame';
 import styles from './arena.module.css';
 import setup from './arenaSetup.module.css';
 
@@ -53,6 +59,10 @@ export function ArenaSetupPlayers({
 	onOpenCp: (sessionId: string) => void;
 }) {
 	const [query, setQuery] = useState('');
+	const [bulkNames, setBulkNames] = useState('');
+	const [bulkGroup, setBulkGroup] = useState<ArenaGroup>('SUPPORT');
+	const [bulkStatus, setBulkStatus] = useState('');
+	const [bulkOpen, setBulkOpen] = useState(false);
 	const [manualName, setManualName] = useState('');
 	const [manualGroup, setManualGroup] = useState<ArenaGroup>('SUPPORT');
 	const [editingId, setEditingId] = useState<string | null>(null);
@@ -91,10 +101,33 @@ export function ArenaSetupPlayers({
 	function add(player: RecallArenaPlayer) {
 		onChange({
 			...config,
-			guestIds: inRoom(player) ? config.guestIds : [...config.guestIds, player.enrollmentId],
+			guestIds:
+				inRoom(player) || guests.has(player.enrollmentId)
+					? config.guestIds
+					: [...config.guestIds, player.enrollmentId],
 			excludedIds: config.excludedIds.filter((id) => id !== player.enrollmentId),
 		});
 		setQuery('');
+	}
+
+	function importNames(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const result = importArenaNames(bulkNames, bulkGroup, data.players, config, roster);
+		if (result.enrolled || result.guestsAdded) onChange(result.config);
+		setBulkNames(result.remaining.join('\n'));
+		setBulkStatus(
+			[
+				`Đã thêm ${result.enrolled + result.guestsAdded} người`,
+				result.guestsAdded ? `${result.guestsAdded} khách chơi thử` : '',
+				result.duplicates ? `${result.duplicates} mục đã có` : '',
+				result.ambiguous
+					? `${result.ambiguous} tên trùng trong môn, hãy tìm theo mã sinh viên`
+					: '',
+				result.tooLong ? `${result.tooLong} tên dài quá 80 ký tự` : '',
+			]
+				.filter(Boolean)
+				.join(' · '),
+		);
 	}
 
 	function saveManual(event: FormEvent<HTMLFormElement>) {
@@ -139,8 +172,7 @@ export function ArenaSetupPlayers({
 		if (!target) {
 			return (
 				<span className={styles.setupHint} data-tone="bad">
-					Lớp {classCode.get(player.classId)} không có buổi tuần {hosts[0]?.weekNumber ?? '?'}: trả
-					lời đúng sẽ không ghi được CP.
+					Chưa có buổi phù hợp để ghi CP cho bạn này ở lớp {classCode.get(player.classId)}.
 				</span>
 			);
 		}
@@ -224,7 +256,7 @@ export function ArenaSetupPlayers({
 				<label className={setup.searchLabel} htmlFor="arena-manual-name">
 					{editingId ? 'Sửa người ngoài danh sách' : 'Thêm người không có trong danh sách'}
 				</label>
-				<p className={styles.setupHint}>Người thêm tay được chơi, nhưng không ghi CP.</p>
+				<p className={styles.setupHint}>Khách tham gia ở chế độ chơi thử.</p>
 				<div className={setup.manualFields}>
 					<input
 						id="arena-manual-name"
@@ -263,6 +295,58 @@ export function ArenaSetupPlayers({
 				</div>
 			</form>
 
+			<button
+				type="button"
+				className={styles.smallButton}
+				aria-expanded={bulkOpen}
+				onClick={() => setBulkOpen((open) => !open)}
+			>
+				Dán danh sách tên
+			</button>
+			{bulkOpen ? (
+				<form className={setup.search} onSubmit={importNames}>
+					<label className={setup.searchLabel} htmlFor="arena-bulk-names">
+						Danh sách họ và tên
+					</label>
+					<p id="arena-bulk-help" className={styles.setupHint}>
+						Mỗi dòng một tên. Có thể dùng dấu phẩy, chấm phẩy, dấu | hoặc tab. Tên khớp duy nhất với
+						danh sách môn được gắn với hồ sơ sinh viên.
+					</p>
+					<textarea
+						id="arena-bulk-names"
+						className={`${setup.searchInput} ${setup.bulkInput}`}
+						aria-describedby="arena-bulk-help"
+						rows={4}
+						value={bulkNames}
+						onChange={(event) => {
+							setBulkNames(event.target.value);
+							setBulkStatus('');
+						}}
+					/>
+					<div className={setup.manualFields}>
+						<label className={setup.inline}>
+							<span className={setup.inlineLabel}>Nhóm cho khách</span>
+							<select
+								className={setup.select}
+								value={bulkGroup}
+								onChange={(event) => setBulkGroup(event.target.value as ArenaGroup)}
+							>
+								<option value="SUPPORT">Supporting</option>
+								<option value="CHALLENGE">Challenging</option>
+							</select>
+						</label>
+						<button type="submit" className={styles.smallButton} disabled={!bulkNames.trim()}>
+							Thêm danh sách
+						</button>
+					</div>
+					{bulkStatus ? (
+						<p className={styles.setupHint} role="status">
+							{bulkStatus}
+						</p>
+					) : null}
+				</form>
+			) : null}
+
 			{config.manualPlayers.length > 0 ? (
 				<section className={setup.playerGroup} aria-label="Người ngoài danh sách">
 					<h3 className={setup.groupTitle}>
@@ -295,6 +379,7 @@ export function ArenaSetupPlayers({
 											if (editingId === player.id) {
 												setEditingId(null);
 												setManualName('');
+												setManualGroup('SUPPORT');
 											}
 										}}
 									>

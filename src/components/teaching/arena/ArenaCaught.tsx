@@ -6,8 +6,13 @@ import { useState } from 'react';
 import { McIcon } from '@/components/myclass/ui';
 import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/richText';
 import { ARENA_AWARD_LEVELS, type ArenaAwardLevel } from '@/features/teaching/domain/recallArena';
-import type { RecallArenaCard, RecallArenaPlayer } from '@/features/teaching/types';
+import type {
+	RecallArenaCard,
+	RecallArenaPlayer,
+	TeachingSessionRecord,
+} from '@/features/teaching/types';
 
+import { ArenaCpStatus } from './ArenaCpStatus';
 import { ArenaCharacter } from './ArenaCharacter';
 import { ArenaMonster } from './ArenaFigures';
 import type { ArenaBoss } from './arenaBosses';
@@ -129,7 +134,12 @@ export function ArenaCaught({
 	cpNow,
 	manual,
 	saving,
+	unconfirmed,
 	canChangeCard,
+	cardsExhausted,
+	cpSession,
+	openingCp,
+	onOpenCp,
 	onPass,
 	onBarePass,
 	onFail,
@@ -148,7 +158,12 @@ export function ArenaCaught({
 	cpNow: number;
 	manual: boolean;
 	saving: boolean;
+	unconfirmed: { result: 'pass' | 'fail'; level: ArenaAwardLevel | 0 } | null;
 	canChangeCard: boolean;
+	cardsExhausted: boolean;
+	cpSession: TeachingSessionRecord | null;
+	openingCp: boolean;
+	onOpenCp: (sessionId: string) => void;
 	onPass: (level: ArenaAwardLevel) => void;
 	onBarePass: () => void;
 	onFail: () => void;
@@ -183,7 +198,7 @@ export function ArenaCaught({
 					type="button"
 					className={styles.close}
 					onClick={onClose}
-					disabled={saving}
+					disabled={saving || Boolean(unconfirmed)}
 					aria-label="Đóng, không chấm"
 					title="Đóng, không chấm (Esc). Bạn này vẫn giữ lượt."
 					data-arena-key="escape"
@@ -214,7 +229,7 @@ export function ArenaCaught({
 								{fullName(player)}
 							</h2>
 							{manual ? (
-								<p className={styles.meta}>Người ngoài danh sách · không ghi CP</p>
+								<p className={styles.meta}>Khách chơi thử</p>
 							) : (
 								<p className={styles.meta}>
 									<span>{player.studentCode}</span>
@@ -223,6 +238,16 @@ export function ArenaCaught({
 									</span>
 								</p>
 							)}
+							{!manual && cpSession && !cpSession.participationOpen ? (
+								<ArenaCpStatus
+									session={cpSession}
+									opening={openingCp || saving}
+									onOpen={onOpenCp}
+								/>
+							) : null}
+							{!manual && !cpSession ? (
+								<p className={styles.note}>Sinh viên này chưa có buổi phù hợp để ghi CP.</p>
+							) : null}
 						</div>
 					</section>
 
@@ -232,13 +257,15 @@ export function ArenaCaught({
 							card={card}
 							deckLabel={deckLabel}
 							saving={saving}
-							onNextCard={canChangeCard ? onNextCard : null}
+							onNextCard={canChangeCard && !unconfirmed ? onNextCard : null}
 						/>
 					) : (
 						<div className={styles.question}>
 							<div className={styles.questionBody}>
 								<p className={styles.note}>
-									Không có thẻ câu hỏi trong bộ đã chọn. Hỏi câu của bạn rồi chấm như bình thường.
+									{cardsExhausted
+										? 'Các câu trong bài đã chọn đều đã qua. Bạn có thể hỏi câu riêng.'
+										: 'Hãy hỏi câu riêng rồi chấm như bình thường.'}
 								</p>
 							</div>
 						</div>
@@ -271,42 +298,54 @@ export function ArenaCaught({
 											key={level}
 											type="button"
 											className={styles.passButton}
-											disabled={saving}
+											disabled={
+												saving ||
+												openingCp ||
+												!cpSession?.participationOpen ||
+												Boolean(
+													unconfirmed &&
+													(unconfirmed.result !== 'pass' || unconfirmed.level !== level),
+												)
+											}
 											onClick={() => onPass(level)}
 											data-arena-key={String(index + 1)}
 											aria-label={`Đạt +${level}`}
 										>
-											+{level}
+											{unconfirmed?.level === level ? `Xác nhận lại +${level}` : `+${level}`}
 											<Key>{String(index + 1)}</Key>
 										</button>
 									))}
 								</>
 							)}
 						</div>
-						<button
-							type="button"
-							className={styles.barePassButton}
-							disabled={saving}
-							onClick={onBarePass}
-							title="Qua lượt này, không cộng CP và không thêm Gift"
-							data-arena-key="4"
-						>
-							Vừa đủ qua
-							<Key>4</Key>
-						</button>
-						<button
-							type="button"
-							className={styles.failButton}
-							disabled={saving}
-							onClick={onFail}
-							data-arena-key="0"
-						>
-							{manual ? 'Chưa đạt' : 'Chưa đạt · +1 Gift'}
-							<Key>0</Key>
-						</button>
+						{!manual ? (
+							<>
+								<button
+									type="button"
+									className={styles.barePassButton}
+									disabled={saving || Boolean(unconfirmed)}
+									onClick={onBarePass}
+									title="Qua lượt này, không cộng CP và không thêm Gift"
+									data-arena-key="4"
+								>
+									Vừa đủ qua
+									<Key>4</Key>
+								</button>
+								<button
+									type="button"
+									className={styles.failButton}
+									disabled={saving || unconfirmed?.result === 'pass'}
+									onClick={onFail}
+									data-arena-key="0"
+								>
+									{unconfirmed?.result === 'fail' ? 'Xác nhận lại Gift' : 'Chưa đạt · +1 Gift'}
+									<Key>0</Key>
+								</button>
+							</>
+						) : null}
 					</div>
 
-					{otherPlayers.length > 0 ? (
+					{otherPlayers.length > 0 && !unconfirmed ? (
 						<div className={styles.others}>
 							<button
 								type="button"
