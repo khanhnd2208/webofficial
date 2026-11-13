@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="robots" content="noindex, nofollow" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Lắc – Tung – Chốt · FMT 2026</title>
+		<link rel="stylesheet" href="stage.css" />
+		<script src="sound.js" defer></script>
+		<script src="confetti.js" defer></script>
+		<script type="module" src="stage.js"></script>
+	</head>
+	<body>
+		<main class="stage" data-phase="loading" aria-label="Sân khấu Nhận quà trở về">
+			<div class="scenery"></div>
+			<div class="light"></div>
+			<p class="event-mark"><strong>FMT 2026</strong><span>Ngày trở về</span></p>
+			<div class="hosts"></div>
+			<div class="dark" aria-hidden="true"></div>
+
+			<div class="wheel" hidden aria-hidden="true">
+				<div class="disc"></div>
+				<div class="bulbs"></div>
+				<div class="hub"><span id="hubName"></span></div>
+				<div class="pointer"><i></i></div>
+			</div>
+			<div class="tokens" aria-hidden="true"></div>
+
+			<section class="gate" aria-label="Mở quầy quà">
+				<p id="gateStatus" role="status">Đang mở quầy quà…</p>
+				<form id="pinForm" hidden>
+					<label for="pin">Ban tổ chức nhập mã PIN để mở quầy quà</label>
+					<input
+						id="pin"
+						name="pin"
+						type="password"
+						inputmode="numeric"
+						pattern="[0-9]{4,12}"
+						maxlength="12"
+						required
+					/>
+					<button class="primary" type="submit">Mở quầy</button>
+				</form>
+				<p id="stageError" role="alert" hidden></p>
+				<button id="retry" class="primary" type="button" hidden>Kiểm tra lại</button>
+			</section>
+			<section class="intro" hidden>
+				<h1>Nhận quà <em>trở về</em></h1>
+				<button id="start" class="primary" type="button">Chọn thầy cô</button>
+				<p id="hint" hidden>Bạn muốn rút cùng ai?</p>
+			</section>
+
+			<div class="charge" hidden>
+				<button id="shake" type="button" aria-label="Giữ để lắc túi quà">
+					<svg viewBox="0 0 120 120" aria-hidden="true">
+						<circle class="ring-bg" cx="60" cy="60" r="53" />
+						<circle class="ring-fg" cx="60" cy="60" r="53" pathLength="1" />
+					</svg>
+					<span class="shake-label">Giữ để<b>Lắc</b></span>
+				</button>
+				<p id="chargeHint">Giữ đến khi vòng đầy, rồi thả.</p>
+			</div>
+
+			<p class="bubble" role="status" aria-atomic="true" hidden></p>
+
+			<section class="reveal" hidden role="region" aria-labelledby="prizeName">
+				<p class="banner" hidden>Trúng lớn!</p>
+				<div class="rays" aria-hidden="true"></div>
+				<div class="card">
+					<span class="tier-tag" id="tierTag"></span>
+					<div class="prize-art"><img id="prize" alt="" /><span class="heart" hidden></span></div>
+					<h2 id="prizeName"></h2>
+					<p id="resultNote" hidden></p>
+					<span class="stamp" hidden>FMT<br />đã duyệt</span>
+				</div>
+				<button id="again" class="primary" type="button">Lượt tiếp theo</button>
+			</section>
+
+			<footer class="stage-footer" aria-label="Quà FMT">
+				<div class="stock" role="list" aria-label="Các phần quà" hidden></div>
+				<div class="hunt" hidden>
+					<div class="recent">
+						<span>Vừa rút</span>
+						<div id="recentList"></div>
+					</div>
+					<p class="drought" hidden></p>
+				</div>
+			</footer>
+
+			<canvas aria-hidden="true"></canvas>
+			<div class="flash" aria-hidden="true"></div>
+
+			<div class="controls">
+				<button id="sound" type="button" aria-pressed="true">Tắt tiếng</button>
+				<button id="fullscreen" type="button">Toàn màn hình</button>
+			</div>
+		</main>
+	</body>
+</html>
