@@ -307,6 +307,31 @@ export const recallArenaAwardSchema = z
 	})
 	.strict();
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** One call in the arena, sent by the browser after the lecturer scores it. */
+export const recallArenaTurnSchema = z
+	.object({
+		clientId: z.string().trim().min(8).max(80),
+		playedAt: z.number().int().positive(),
+		enrollmentId: z.string().min(1).optional(),
+		guestName: z.string().trim().min(1).max(80).optional(),
+		guestGroup: z.enum(['CHALLENGE', 'SUPPORT']).optional(),
+		cardId: z.string().min(1).optional(),
+		result: z.enum(['pass', 'fail', 'skip']),
+		award: z.union([z.literal(0), z.literal(0.5), z.literal(1), z.literal(2)]).optional(),
+		cpAfter: z.number().min(0).max(99).optional(),
+		giftAfter: z.number().int().min(0).max(9999).optional(),
+	})
+	.strict()
+	.refine((turn) => Boolean(turn.enrollmentId) !== Boolean(turn.guestName), {
+		message: 'Cần đúng một trong enrollmentId hoặc guestName',
+	});
+
+export const recallArenaTurnsQuerySchema = z
+	.object({ date: z.string().regex(ISO_DAY, 'Ngày phải có dạng YYYY-MM-DD') })
+	.strict();
+
 export const batchParticipationSchema = z
 	.object({
 		marks: z.array(participationMarkSchema).min(1).max(500),
@@ -489,6 +514,7 @@ export type UpdateSessionInput = z.infer<typeof updateSessionSchema>;
 export type BatchAttendanceInput = z.infer<typeof batchAttendanceSchema>;
 export type BatchParticipationInput = z.infer<typeof batchParticipationSchema>;
 export type RecallArenaAwardInput = z.infer<typeof recallArenaAwardSchema>;
+export type RecallArenaTurnInput = z.infer<typeof recallArenaTurnSchema>;
 export type SessionLifecycleAction = z.infer<typeof sessionLifecycleActionSchema>;
 export type ParticipationLockInput = z.infer<typeof participationLockSchema>;
 export type RandomizeGroupBoardInput = z.infer<typeof randomizeGroupBoardSchema>;
