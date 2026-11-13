@@ -1,8 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import { McIcon } from '@/components/myclass/ui';
+import { teachingApi } from '@/components/teaching/admin/api';
+import { recallVisibleText } from '@/features/active-recall/richText';
 
 import type { ArenaHistoryEntry } from './arenaGame';
+import { arenaTurnsUrl, entryFromTurn, type RecallArenaTurnDay } from './arenaTurnLog';
 import styles from './arena.module.css';
 
 const RESULT_LABEL: Record<ArenaHistoryEntry['result'], string> = {
@@ -15,7 +20,27 @@ function timeLabel(at: number) {
 	return new Date(at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
 
-/** Who was called this session, newest first, with what was saved to CP. */
+function dayLabel(isoDay: string, todayIso: string) {
+	if (isoDay === todayIso) return 'Hôm nay';
+	const [year, month, day] = isoDay.split('-');
+	return `${day}/${month}/${year}`;
+}
+
+export interface ArenaSyncStatus {
+	pending: number;
+	failed: boolean;
+	rejected: number;
+	retry: () => void;
+}
+
+/** A past game day loaded from the server: read-only, with each card's saved wording. */
+interface PastDay {
+	date: string;
+	entries: ArenaHistoryEntry[];
+	questions: Map<string, string>;
+}
+
+/** Who was called, newest first, with what was saved; earlier days come from the server. */
 export function ArenaHistory({
 	entries,
 	questionText,
@@ -23,6 +48,9 @@ export function ArenaHistory({
 	onRetry,
 	onReset,
 	onClose,
+	courseId,
+	todayIso,
+	sync,
 }: {
 	entries: ArenaHistoryEntry[];
 	questionText: (cardId: string | null) => string;
@@ -30,9 +58,63 @@ export function ArenaHistory({
 	onRetry: (entry: ArenaHistoryEntry) => void;
 	onReset: () => void;
 	onClose: () => void;
+	courseId: string;
+	todayIso: string;
+	sync: ArenaSyncStatus;
 }) {
-	const answered = entries.filter((entry) => entry.result !== 'skip');
-	const passed = entries.filter((entry) => entry.result === 'pass').length;
+	const [days, setDays] = useState<string[]>([]);
+	const [day, setDay] = useState(todayIso);
+	const [past, setPast] = useState<PastDay | null>(null);
+	const [loadError, setLoadError] = useState<string | null>(null);
+
+	useEffect(() => {
+		let cancelled = false;
+		teachingApi<RecallArenaTurnDay>(arenaTurnsUrl(courseId, todayIso))
+			.then((result) => {
+				if (!cancelled) setDays(result?.days ?? []);
+			})
+			.catch(() => {
+				// Without the list only today is shown.
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [courseId, todayIso]);
+
+	useEffect(() => {
+		if (day === todayIso) return;
+		let cancelled = false;
+		teachingApi<RecallArenaTurnDay>(arenaTurnsUrl(courseId, day))
+			.then((result) => {
+				if (cancelled) return;
+				setPast({
+					date: day,
+					entries: result.turns.map(entryFromTurn),
+					questions: new Map(result.turns.map((turn) => [turn.clientId, turn.question])),
+				});
+				setLoadError(null);
+			})
+			.catch((error: unknown) => {
+				if (!cancelled)
+					setLoadError(error instanceof Error ? error.message : 'Không tải được lịch sử.');
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [courseId, day, todayIso]);
+
+	const isToday = day === todayIso;
+	const pastReady = !isToday && past?.date === day;
+	const shown = isToday ? entries : pastReady ? past.entries : [];
+	const answered = shown.filter((entry) => entry.result !== 'skip');
+	const passed = shown.filter((entry) => entry.result === 'pass').length;
+	const dayOptions = [todayIso, ...days.filter((item) => item !== todayIso)];
+	const questionOf = (entry: ArenaHistoryEntry) => {
+		if (isToday) return questionText(entry.cardId);
+		const saved = past?.questions.get(entry.id);
+		return saved ? recallVisibleText(saved) : 'Câu hỏi riêng';
+	};
+
 	return (
 		<aside className={styles.history} aria-label="Lịch sử gọi">
 			<header className={styles.historyHead}>
@@ -52,11 +134,46 @@ export function ArenaHistory({
 					<McIcon name="close" size={20} />
 				</button>
 			</header>
-			{entries.length === 0 ? (
-				<p className={styles.historyEmpty}>Chưa gọi ai trong buổi này.</p>
+			<div className={styles.historyTools}>
+				<label className={styles.historyDay}>
+					<span>Ngày</span>
+					<select value={day} onChange={(event) => setDay(event.target.value)}>
+						{dayOptions.map((item) => (
+							<option key={item} value={item}>
+								{dayLabel(item, todayIso)}
+							</option>
+						))}
+					</select>
+				</label>
+				{isToday ? (
+					<p className={styles.historySync} data-state={sync.failed ? 'error' : 'ok'}>
+						{sync.failed ? (
+							<>
+								{sync.pending} lượt chưa lưu lên máy chủ.{' '}
+								<button type="button" className={styles.linkButton} onClick={sync.retry}>
+									Lưu lại
+								</button>
+							</>
+						) : sync.pending > 0 ? (
+							'Đang lưu lên máy chủ…'
+						) : (
+							'Đã lưu lên máy chủ'
+						)}
+						{sync.rejected > 0 ? ` · ${sync.rejected} lượt máy chủ không nhận` : ''}
+					</p>
+				) : null}
+			</div>
+			{loadError && !isToday ? (
+				<p className={styles.historyError}>{loadError}</p>
+			) : !isToday && !pastReady ? (
+				<p className={styles.historyEmpty}>Đang tải…</p>
+			) : shown.length === 0 ? (
+				<p className={styles.historyEmpty}>
+					{isToday ? 'Chưa gọi ai trong buổi này.' : 'Ngày này chưa có lượt nào.'}
+				</p>
 			) : (
 				<ol className={styles.historyList}>
-					{[...entries].reverse().map((entry) => (
+					{[...shown].reverse().map((entry) => (
 						<li key={entry.id} className={styles.historyItem} data-result={entry.result}>
 							<div className={styles.historyRow}>
 								<strong>{entry.name}</strong>
@@ -66,13 +183,13 @@ export function ArenaHistory({
 									{entry.result === 'pass' && entry.award === 0 ? ' · Vừa đủ qua' : ''}
 								</span>
 							</div>
-							<p className={styles.historyQuestion}>{questionText(entry.cardId)}</p>
+							<p className={styles.historyQuestion}>{questionOf(entry)}</p>
 							<p className={styles.historyMeta}>
 								{timeLabel(entry.at)}
 								{entry.cpAfter != null ? ` · CP tuần: ${entry.cpAfter}` : ''}
 								{entry.giftAfter != null ? ` · Gift: ${entry.giftAfter}` : ''}
 							</p>
-							{entry.saveError ? (
+							{isToday && entry.saveError ? (
 								<p className={styles.historyError}>
 									Chưa ghi CP: {entry.saveError}{' '}
 									<button
@@ -89,11 +206,13 @@ export function ArenaHistory({
 					))}
 				</ol>
 			)}
-			<footer className={styles.historyFoot}>
-				<button type="button" className={styles.linkButton} onClick={onReset}>
-					Bắt đầu lượt mới (xóa lịch sử trên máy này)
-				</button>
-			</footer>
+			{isToday ? (
+				<footer className={styles.historyFoot}>
+					<button type="button" className={styles.linkButton} onClick={onReset}>
+						Bắt đầu lượt mới trên máy này (lịch sử đã lưu vẫn giữ)
+					</button>
+				</footer>
+			) : null}
 		</aside>
 	);
 }

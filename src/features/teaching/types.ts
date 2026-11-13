@@ -494,6 +494,27 @@ export interface RecallArenaData {
 	cards: RecallArenaCard[];
 }
 
+/** One saved call in the arena, as the history panel shows it. */
+export interface RecallArenaTurnRecord {
+	clientId: string;
+	/** Epoch milliseconds, like the browser's own history entries. */
+	playedAt: number;
+	/** Game day in Vietnam (YYYY-MM-DD). */
+	playedOn: string;
+	/** Null for a player outside the course roster, or a student since removed. */
+	enrollmentId: string | null;
+	guest: boolean;
+	guestGroup: 'CHALLENGE' | 'SUPPORT' | null;
+	playerName: string;
+	studentCode: string;
+	cardId: string | null;
+	question: string;
+	result: 'pass' | 'fail' | 'skip';
+	award: number | null;
+	cpAfter: number | null;
+	giftAfter: number | null;
+}
+
 export interface RecallArenaAwardResult {
 	enrollmentId: string;
 	sessionId: string;
