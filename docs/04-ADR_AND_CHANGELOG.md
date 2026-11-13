@@ -506,6 +506,13 @@ npm run test:coverage # with coverage report
 
 ---
 
+## Changelog — Quầy quà FMT 2026 (2026-11-13)
+
+- Mỗi lượt mở quà sau khoảng 12–14 giây tính từ lúc nhả nút Lắc. Thầy cô luân phiên đối đáp trong đoạn quay nhanh, sau đó tiếng kim dẫn vào lúc chốt quà.
+- Màn kết quả giữ ít nhất 4 giây trước khi cho qua lượt tiếp theo. Chế độ giảm chuyển động hiện kết quả ngay khi máy chủ trả về.
+
+---
+
 ## Changelog — My Class question bank (2026-08-16)
 
 - Question bank with type, Bloom, subject/topic/tags, bulk actions, and KU-suggested taxonomy

@@ -48,17 +48,32 @@ export const LINES = {
 	],
 	shake: [
 		'Mềm mềm… hình như cái áo!',
-		'Cứng cứng, vuông vuông… iPhone à?',
 		'Tròn tròn, có nắp…',
 		'Nghe sột soạt rồi đó!',
 		'Túi nặng ghê!',
 		'Có cái khóa kéo này…',
 	],
 	fizzle: ['Chưa đủ đô! Giữ lâu hơn nào.', 'Giữ nút chứ đừng chạm nhẹ nhé!'],
-	launch: ['Bay lên nào!', 'Xem {self} tung này!', 'Một, hai, ba… tung!'],
-	slow: ['Chậm lại… chậm lại…', 'Sắp dừng rồi…', 'Nín thở nào…'],
+	launch: [
+		'Rồi, cú này {self} nghe có tiếng… đắt tiền!',
+		'Xem {self} tung này. Mọi người nhìn theo kim nhé!',
+		'Một, hai, ba… tung! Quà FMT lên sóng!',
+	],
+	slow: ['Khoan, khoan… nó còn nhích!', 'Chậm rồi… cả quầy nín thở nào!', 'Nghe tiếng kim kìa… sắp rồi!'],
 	common: ['Có quà rồi nhé!', 'Quà FMT về tay!'],
 	rare: ['Ồ, quà xịn đấy!', 'Mát tay ghê!'],
 	epic: ['Xin chúc mừng!', 'Quá đỉnh luôn!', 'Mát tay nhất hôm nay!'],
 	luck: ['Có quà tinh thần nha!', 'Quà này không đụng hàng đâu!'],
 };
+
+// Mỗi cặp là một màn đối đáp trọn vẹn của thầy và cô.
+export const SPIN_DIALOGUES = [
+	['Ôi, iPhone kìa!', 'Thầy nhìn kỹ đi, đấy là cái sổ. Có màn hình đâu!'],
+	['Có khóa kéo… chắc là ô tô!', 'Vâng, ô tô gấp gọn, để vừa trong túi FMT.'],
+	['Sột soạt thế này… học bổng chăng?', 'Phiếu về thăm trường đấy thầy. Hạn dùng trọn đời!'],
+	['Cô ơi, hoodie vừa chạy qua!', 'Thầy cứ bình tĩnh. Nó chạy vòng, lát lại gặp.'],
+	['Quay nhanh thế, có kịp điểm danh không cô?', 'Có mặt là được. Cái kim thì đang chạy muộn.'],
+	['Thầy thấy một bình nước. Có kèm trà sữa không?', 'Có bình rồi. Trà sữa thì thầy mời nhé!'],
+	['Quay một vòng là xong môn này hả cô?', 'Xong môn Hồi hộp. Môn đó ai cũng qua!'],
+	['Hình như có quà to lắm, cô ơi!', 'Thầy nói bé thôi, kẻo cái túi nghe được lại phồng lên.'],
+];

@@ -218,9 +218,6 @@ FMT.sound = (() => {
 		whoosh() {
 			noise(0, 0.45, { peak: 0.16, freq: 3800, to: 500, q: 1.2, attack: 0.05 });
 		},
-		nearMiss() {
-			note(520, 0, 0.4, { type: 'triangle', peak: 0.16, to: 300 });
-		},
 
 		drumroll(dur) {
 			const hits = Math.floor(dur * 26);

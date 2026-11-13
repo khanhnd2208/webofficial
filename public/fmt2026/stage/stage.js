@@ -2,7 +2,7 @@ import { api } from './booth-api.js';
 import { mountSetup } from './booth-setup.js';
 import { allocateSlots } from './wheel-slots.js';
 import { createShakeTiming } from './shake-timing.js';
-import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } from './stage-content.js';
+import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, SPIN_DIALOGUES, TIER_LABEL } from './stage-content.js';
 
 (() => {
   const { sound } = FMT;
@@ -13,6 +13,9 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
   const TAU = Math.PI * 2;
   const SLOTS = 12;
   const STEP = TAU / SLOTS;
+  const SPIN_MS = 6400;
+  const BRAKE_MS = 4300;
+  const REVEAL_HOLD_MS = 4000;
   const TEACHERS = { a: 'Thầy Hoàng Gia Thư', b: 'Cô Đỗ Vân Anh' };
 
   let prizes = [];
@@ -54,6 +57,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
   const pointer = $('.pointer i');
   const bubble = $('.bubble');
   const reveal = $('.reveal');
+  const again = $('#again');
   const ratingEl = $('.rating');
   const confetti = FMT.confetti($('canvas'));
 
@@ -64,7 +68,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
   let idleTimer = 0;
   let turn = 0;
   let lastShake = null;
-  let nextAllowedAt = 0;
+  let dialogueIndex = Math.floor(Math.random() * SPIN_DIALOGUES.length);
   let barkSide = 0;
   const recent = [];
 
@@ -460,16 +464,23 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     wheel.frameId = requestAnimationFrame(wheelFrame);
   }
 
-  // Hãm vòng quay sao cho ô `index` dừng dưới kim. Đường hãm bậc ba nối trơn với tốc độ đang quay,
-  // nên không có cú giật nào báo trước kết quả. Điểm dừng lệch ngẫu nhiên trong ô, không dàn dựng.
+  // Chọn vòng gần với đường hãm bậc ba, rồi chỉnh số mũ để nối đúng tốc độ đang quay.
   function brakeTo(index) {
     const offset = (Math.random() * 0.76 - 0.38) * STEP;
     const base = -index * STEP + offset;
-    const earliest = wheel.rot + wheel.omega * 1.05;
-    const to = base + Math.ceil((earliest - base) / TAU) * TAU;
-    const dur = (3 * (to - wheel.rot) / wheel.omega) * 1000;
+    const distance = wheel.omega * (BRAKE_MS / 1000);
+    const to = base + Math.round((wheel.rot + distance / 3 - base) / TAU) * TAU;
+    const exponent = distance / (to - wheel.rot);
     return new Promise((resolve) => {
-      wheel.tween = { from: wheel.rot, to, start: performance.now(), dur, ease: (u) => 1 - (1 - u) ** 3, speed: (u) => (1 - u) ** 2, resolve };
+      wheel.tween = {
+        from: wheel.rot,
+        to,
+        start: performance.now(),
+        dur: BRAKE_MS,
+        ease: (u) => 1 - (1 - u) ** exponent,
+        speed: (u) => (1 - u) ** (exponent - 1),
+        resolve,
+      };
       wheel.mode = 'brake';
     });
   }
@@ -522,26 +533,20 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     hubName.textContent = '';
     startWheel(slots, strength);
 
-    let braking = false;
-    let lastBark = 0;
-    let slowSaid = false;
     wheel.onTick = (index, speed) => {
       sound.tick(speed);
       hubName.textContent = slots[index].short;
       pointer.animate([{ transform: 'rotate(-24deg)' }, { transform: 'none' }], { duration: 130, easing: 'ease-out' });
-      if (!braking) return;
-      const now = performance.now();
-      const item = slots[index];
-      if (item.tier === 'epic' && speed < 0.5 && speed > 0.06 && now - lastBark > 800) {
-        lastBark = now;
-        say('Ối, ' + item.short.toLowerCase() + ' kìa!');
-      } else if (!slowSaid && speed < 0.16 && now - lastBark > 600) {
-        slowSaid = true;
-        say('slow');
-      }
     };
 
-    const [drawn] = await Promise.all([pending, pause(1250)]);
+    const [teacherLine, reply] = SPIN_DIALOGUES[dialogueIndex];
+    dialogueIndex = (dialogueIndex + 1) % SPIN_DIALOGUES.length;
+    const teacherCue = setTimeout(() => say(teacherLine, { side: 'a' }), 2300);
+    const replyCue = setTimeout(() => say(reply, { side: 'b' }), 4300);
+    const [drawn] = await Promise.all([pending, pause(SPIN_MS)]).finally(() => {
+      clearTimeout(teacherCue);
+      clearTimeout(replyCue);
+    });
     const result = registerDraw(drawn);
     if (!slots.includes(result)) {
       slots = buildSlots(result);
@@ -550,8 +555,11 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     }
     const candidates = slots.map((item, index) => (item === result ? index : -1)).filter((index) => index >= 0);
     const target = pick(candidates);
-    braking = true;
-    await brakeTo(target);
+    say('slow', { side: 'b' });
+    await Promise.all([
+      brakeTo(target),
+      pause(2200).then(() => { bubble.hidden = true; }),
+    ]);
     await snapTo(target);
     hubName.textContent = result.short;
     sound.lock();
@@ -561,14 +569,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     root.dataset.tier = result.tier;
     root.style.setProperty('--light-x', '50%');
 
-    const neighbour = [slots[mod(target - 1, SLOTS)], slots[mod(target + 1, SLOTS)]].find((item) => item.tier === 'epic');
-    if (result.tier !== 'epic' && neighbour) {
-      say('Suýt nữa thì ' + neighbour.short.toLowerCase() + '!');
-      sound.nearMiss();
-      await pause(950);
-    } else {
-      await pause(480);
-    }
+    await pause(480);
     await settle(result, winner);
   }
 
@@ -630,11 +631,13 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
       badge.dataset.grade = lastShake.grade;
       badge.textContent = 'Lắc chuẩn ' + lastShake.accuracy + '%';
     }
-    // Người chơi còn đang bấm dồn phím Lắc: giữ màn mở quà một nhịp để không bị bỏ qua nhầm.
-    nextAllowedAt = performance.now() + (reduced.matches ? 400 : tier === 'epic' ? 2600 : 1300);
-    reveal.dataset.ready = 'false';
+    again.disabled = true;
     const myReveal = turn;
-    setTimeout(() => { if (turn === myReveal) reveal.dataset.ready = 'true'; }, nextAllowedAt - performance.now());
+    setTimeout(() => {
+      if (turn !== myReveal) return;
+      again.disabled = false;
+      if (document.activeElement === reveal) again.focus({ preventScroll: true });
+    }, REVEAL_HOLD_MS);
     const note = $('#resultNote');
     if (luck) {
       const [title, line] = pick(COUPONS);
@@ -659,7 +662,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
       renderStock(result);
       setTimeout(() => flyToStock(result), reduced.matches ? 0 : 900);
     }
-    $('#again').focus({ preventScroll: true });
+    reveal.focus({ preventScroll: true });
   }
 
   function celebrate(tier) {
@@ -766,7 +769,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
 
   // ── Lượt tiếp theo ────────────────────────────────────────────
   function next() {
-    if (phase !== 'reveal' || performance.now() < nextAllowedAt) return;
+    if (phase !== 'reveal' || again.disabled) return;
     resetStage();
     setPhase('loading');
     gateStatus.textContent = 'Đang cập nhật quầy quà…';
@@ -798,7 +801,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
 
   // ── Điều khiển ────────────────────────────────────────────────
   $('#start').addEventListener('click', openChoosing);
-  $('#again').addEventListener('click', next);
+  again.addEventListener('click', next);
   root.addEventListener('animationend', (event) => {
     if (event.animationName === 'quake') root.classList.remove('quake');
   });
