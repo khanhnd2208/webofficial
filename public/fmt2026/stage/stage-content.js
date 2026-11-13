@@ -32,7 +32,15 @@ export const COUPONS = [
 	['Phiếu một cái ôm từ FMT', 'Đổi được ngay, không cần xếp hàng.'],
 	['Phiếu kể chuyện ngày xưa', 'Thầy cô nghe miễn phí, kể càng dài càng vui.'],
 ];
+// Dòng phụ dưới chữ chấm điểm cú lắc.
+export const RATING_NOTES = {
+	perfect: ['Nhả đúng khe sáng!', 'Tay vàng đây rồi!', 'Không lệch một li!'],
+	near: ['Chỉ lệch một chút xíu!', 'Suýt nữa là chuẩn khe!'],
+	ok: ['Quà vẫn bay lên nhé!', 'Lượt sau canh khe sáng nha!'],
+	auto: ['Giữ lâu quá, túi tự tung rồi!'],
+};
 export const LINES = {
+	invite: ['Chọn {self} nhé!', 'Rút với {self} đi!', 'Tay {self} mát lắm!', 'Lại đây với {self} nào!'],
 	ready: [
 		'Giữ nút để {self} lắc túi nhé!',
 		'Lắc càng hăng, quà càng bay cao!',
@@ -46,7 +54,7 @@ export const LINES = {
 		'Túi nặng ghê!',
 		'Có cái khóa kéo này…',
 	],
-	fizzle: ['Chưa đủ đô! Giữ lâu hơn nào.', 'Lắc thế thì quà chưa chịu ra đâu!'],
+	fizzle: ['Chưa đủ đô! Giữ lâu hơn nào.', 'Giữ nút chứ đừng chạm nhẹ nhé!'],
 	launch: ['Bay lên nào!', 'Xem {self} tung này!', 'Một, hai, ba… tung!'],
 	slow: ['Chậm lại… chậm lại…', 'Sắp dừng rồi…', 'Nín thở nào…'],
 	common: ['Có quà rồi nhé!', 'Quà FMT về tay!'],

@@ -180,8 +180,22 @@ FMT.sound = (() => {
 			noise(0, 0.3, { peak: 0.06, type: 'highpass', freq: 3000 });
 		},
 
+		// Kim lướt qua khe sáng: một tiếng "ting" nhỏ để bắt nhịp.
+		slotPass() {
+			const output = shakeMusic?.gain ?? master;
+			note(2093, 0, 0.12, { type: 'sine', peak: 0.16, output });
+			note(3136, 0, 0.06, { type: 'sine', peak: 0.05, output });
+		},
 		perfect() {
-			[880, 1175, 1568].forEach((freq, index) => marimba(freq, index * 0.055, 0.17));
+			[880, 1175, 1568, 2093].forEach((freq, index) => marimba(freq, index * 0.055, 0.19));
+			noise(0.05, 0.5, { peak: 0.05, type: 'highpass', freq: 7500 });
+			note(120, 0, 0.22, { type: 'sine', peak: 0.4, to: 50 });
+		},
+		near() {
+			[784, 988].forEach((freq, index) => marimba(freq, index * 0.07, 0.15));
+		},
+		record() {
+			[1047, 1319, 1568, 2093].forEach((freq, index) => brass(freq / 2, 0.3 + index * 0.09, 0.2, 0.08));
 		},
 		launch(power) {
 			noise(0, 0.55, { peak: 0.22, freq: 400, to: 5200, q: 1.4, attack: 0.02 });

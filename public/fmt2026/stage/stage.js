@@ -2,7 +2,8 @@ import { api } from './booth-api.js';
 import { mountSetup } from './booth-setup.js';
 import { allocateSlots } from './wheel-slots.js';
 import { createShakeTiming } from './shake-timing.js';
-import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-content.js';
+import { createStreak } from './streak.js';
+import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } from './stage-content.js';
 
 (() => {
   const { sound } = FMT;
@@ -18,7 +19,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   let prizes = [];
   let luckLeft = 0;
   let canDraw = false;
-  let refreshing = false;
+  let refreshSeq = 0;
   let stockSnapshot = null;
 
   const prizeSrc = (item) => {
@@ -36,6 +37,8 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const pick = (list) => list[Math.floor(Math.random() * list.length)];
   const clamp01 = (value) => Math.max(0, Math.min(1, value));
   const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  // Rung nhẹ trên máy tính bảng và điện thoại; máy không hỗ trợ thì bỏ qua.
+  const buzz = (pattern) => { if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(pattern); };
   const mod = (value, n) => ((value % n) + n) % n;
 
   const gate = $('.gate');
@@ -52,6 +55,8 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const pointer = $('.pointer i');
   const bubble = $('.bubble');
   const reveal = $('.reveal');
+  const ratingEl = $('.rating');
+  const streak = createStreak($('.streak'));
   const confetti = FMT.confetti($('canvas'));
 
   let phase = 'loading';
@@ -60,6 +65,9 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   let sinceEpic = 0;
   let idleTimer = 0;
   let turn = 0;
+  let lastGrade = '';
+  let nextAllowedAt = 0;
+  let barkSide = 0;
   const recent = [];
 
   // ── Dựng sân khấu ─────────────────────────────────────────────
@@ -122,12 +130,13 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   }
 
   async function refreshBooth(next = 'idle') {
-    if (refreshing) return;
-    refreshing = true;
+    // Chỉ lần gọi mới nhất được đổi sân khấu; lần cũ về trễ thì bỏ.
+    refreshSeq += 1;
+    const seq = refreshSeq;
     const before = phase;
     try {
       const state = await api('fmt2026/state');
-      if (phase !== before) return;
+      if (seq !== refreshSeq || phase !== before) return;
       canDraw = state.unlocked && state.isOpen && state.spinsLeft > 0;
       retry.hidden = true;
       gateStatus.textContent = !state.hasPin ? 'Vào Thiết lập để đặt mã PIN.'
@@ -139,14 +148,12 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
       setPhase(canDraw ? next : state.unlocked ? 'unavailable' : 'locked');
       showError('');
     } catch {
-      if (phase !== before) return;
+      if (seq !== refreshSeq || phase !== before) return;
       if (phase === 'idle' || phase === 'choosing') return;
       gateStatus.textContent = '';
       setPhase('unavailable');
       retry.hidden = false;
       showError('Không tải được quầy quà. Hãy kiểm tra kết nối.');
-    } finally {
-      refreshing = false;
     }
   }
 
@@ -169,7 +176,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     root.dataset.phase = next;
     setupButton.disabled = next === 'charge' || next === 'timing' || next === 'spin';
     hosts.forEach((host) => {
-      host.disabled = next !== 'choosing';
+      host.disabled = next !== 'choosing' && !(next === 'idle' && canDraw);
     });
     gate.hidden = !['loading', 'locked', 'unavailable'].includes(next);
     if (next === 'choosing' && previous !== next) hosts[0].focus({ preventScroll: true });
@@ -180,6 +187,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     shakeBtn.disabled = next === 'timing';
     wheelEl.hidden = next !== 'spin';
     reveal.hidden = next !== 'reveal';
+    if (next === 'idle' || next === 'loading') bubble.hidden = true;
     clearTimeout(idleTimer);
     if (next === 'choosing')
       idleTimer = setTimeout(() => {
@@ -198,15 +206,16 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     setPhase,
     say,
     onPower: (value) => { power = value; },
-    onPerfect: () => { if (!reduced.matches) spark(15); },
+    onRating: showRating,
     launch,
   });
 
   function say(key, options = {}) {
-    const self = active?.dataset.host === 'b' ? 'cô' : 'thầy';
+    const side = options.side ?? active?.dataset.host ?? 'a';
+    const self = side === 'b' ? 'cô' : 'thầy';
     const text = (LINES[key] ? pick(LINES[key]) : key).replace('{self}', self);
     bubble.textContent = text;
-    bubble.dataset.side = active?.dataset.host ?? 'a';
+    bubble.dataset.side = side;
     bubble.dataset.loud = String(Boolean(options.loud));
     bubble.hidden = false;
     if (!reduced.matches) bubble.animate([{ transform: 'scale(.6) rotate(-4deg)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: 0.6 }, { transform: 'none' }], { duration: 260, easing: 'ease-out' });
@@ -237,6 +246,13 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     if ((phase !== 'idle' && phase !== 'choosing') || reduced.matches || document.hidden) return;
     const left = prizes.filter((item) => item.count > 0);
     if (!left.length) return;
+    if (phase === 'choosing') {
+      // Hai thầy cô thay nhau mời, để người chơi biết chạm vào đâu.
+      const caller = hosts[barkSide % 2];
+      barkSide += 1;
+      say('invite', { side: caller.dataset.host });
+      caller.querySelector('.pose').animate([{ translate: 'var(--pose-shift) 0' }, { translate: 'var(--pose-shift) -3.5%' }, { translate: 'var(--pose-shift) 0' }], { duration: 420, easing: 'ease-out' });
+    }
     const host = pick(hosts);
     const peek = host.querySelector('.peek');
     peek.src = prizeSrc(pick(left));
@@ -257,7 +273,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   }
 
   function choose(host) {
-    if (phase !== 'choosing') return;
+    if (phase !== 'choosing' && !(phase === 'idle' && canDraw)) return;
     active = host;
     timing.reset();
     root.style.setProperty('--light-x', host.dataset.host === 'a' ? '24%' : '76%');
@@ -271,6 +287,38 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     setPhase('charge');
     say('ready');
     shakeBtn.focus({ preventScroll: true });
+  }
+
+  // Chấm điểm cú lắc: chữ lớn bật lên, chuỗi chuẩn khe của quầy tăng hoặc đứt.
+  function showRating({ grade, rating }) {
+    lastGrade = grade;
+    const perfect = grade === 'perfect';
+    const result = streak.record(perfect);
+    let note = pick(RATING_NOTES[grade]);
+    if (result.isRecord) note = 'Kỷ lục mới của quầy: ×' + result.current + '!';
+    else if (result.current > 1) note = result.current + ' lượt chuẩn khe liên tiếp!';
+    else if (result.lost > 1) note = 'Đứt chuỗi ×' + result.lost + ' rồi!';
+    ratingEl.dataset.grade = grade;
+    ratingEl.querySelector('strong').textContent = rating;
+    ratingEl.querySelector('span').textContent = note;
+    bubble.hidden = true;
+    ratingEl.hidden = false;
+    ratingEl.classList.remove('go');
+    void ratingEl.offsetWidth;
+    ratingEl.classList.add('go');
+    if (perfect) {
+      buzz(result.isRecord ? [30, 40, 30, 40, 60] : [30, 40, 30]);
+      if (result.isRecord) sound.record();
+      if (!reduced.matches) {
+        spark(22 + Math.min(4, result.current) * 8);
+        $('.flash').classList.remove('go', 'soft');
+        void root.offsetWidth;
+        $('.flash').classList.add('go', 'soft');
+      }
+    } else if (grade === 'near') {
+      buzz(20);
+      if (!reduced.matches) spark(8);
+    }
   }
 
   function spark(count) {
@@ -514,6 +562,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     await snapTo(target);
     hubName.textContent = result.short;
     sound.lock();
+    buzz(35);
     const winner = wheel.tokens[target];
     winner.el.classList.add('locked');
     root.dataset.tier = result.tier;
@@ -555,10 +604,11 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
       winner.el.classList.add('flip');
       sound.drumroll(1.55);
       await pause(1650);
-      $('.flash').classList.remove('go');
+      $('.flash').classList.remove('go', 'soft');
       void root.offsetWidth;
       $('.flash').classList.add('go');
       root.classList.add('quake');
+      buzz([60, 50, 60, 50, 160]);
       sound.crash();
     } else {
       await pause(860);
@@ -581,6 +631,12 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     reveal.querySelector('.heart').hidden = !luck;
     reveal.querySelector('.stamp').hidden = !luck;
     reveal.querySelector('.banner').hidden = tier !== 'epic';
+    reveal.querySelector('.shake-badge').hidden = lastGrade !== 'perfect';
+    // Người chơi còn đang bấm dồn phím Lắc: giữ màn mở quà một nhịp để không bị bỏ qua nhầm.
+    nextAllowedAt = performance.now() + (reduced.matches ? 400 : tier === 'epic' ? 2600 : 1300);
+    reveal.dataset.ready = 'false';
+    const myReveal = turn;
+    setTimeout(() => { if (turn === myReveal) reveal.dataset.ready = 'true'; }, nextAllowedAt - performance.now());
     const note = $('#resultNote');
     if (luck) {
       const [title, line] = pick(COUPONS);
@@ -712,7 +768,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
 
   // ── Lượt tiếp theo ────────────────────────────────────────────
   function next() {
-    if (phase !== 'reveal') return;
+    if (phase !== 'reveal' || performance.now() < nextAllowedAt) return;
     resetStage();
     setPhase('loading');
     gateStatus.textContent = 'Đang cập nhật quầy quà…';
@@ -728,6 +784,8 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     delete root.dataset.hush;
     root.dataset.tier = '';
     bubble.hidden = true;
+    ratingEl.hidden = true;
+    lastGrade = '';
     hosts.forEach((host) => {
       host.dataset.dim = 'false';
       host.dataset.active = 'false';
