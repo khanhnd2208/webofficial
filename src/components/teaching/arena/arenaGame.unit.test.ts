@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RecallArenaData } from '@/features/teaching/types';
+import type { RecallArenaData, RecallArenaPlayer } from '@/features/teaching/types';
 
 import {
+	answeredArenaIds,
+	callablePlayers,
 	displayNames,
 	initialConfig,
 	manualArenaPlayers,
@@ -56,6 +58,38 @@ describe('displayNames', () => {
 		expect(names.get('b')).toBe('Trần Thùy Linh · SVb');
 		expect(names.get('c')).toBe('Trần Thùy Linh · 123');
 		expect(names.get('d')).toBe('Trần Thùy Linh · 456');
+	});
+});
+
+describe('answered once', () => {
+	const entry = (enrollmentId: string, result: ArenaHistoryEntry['result']) =>
+		({
+			id: enrollmentId + result,
+			at: 0,
+			enrollmentId,
+			name: '',
+			cardId: null,
+			result,
+		}) as ArenaHistoryEntry;
+	const roster = [
+		{ enrollmentId: 'a', group: 'SUPPORT' },
+		{ enrollmentId: 'b', group: 'SUPPORT' },
+		{ enrollmentId: 'c', group: 'CHALLENGE' },
+		{ enrollmentId: 'd', group: 'SUPPORT' },
+	] as RecallArenaPlayer[];
+
+	it('counts a pass or a miss as answered, never a skip', () => {
+		const answered = answeredArenaIds([entry('a', 'pass'), entry('b', 'fail'), entry('d', 'skip')]);
+		expect([...answered].sort()).toEqual(['a', 'b']);
+	});
+
+	it('only calls the chosen group, and nobody who already answered', () => {
+		const answered = answeredArenaIds([entry('a', 'pass'), entry('c', 'fail')]);
+		const ids = (filter: 'ALL' | 'SUPPORT' | 'CHALLENGE') =>
+			callablePlayers(roster, filter, answered).map((player) => player.enrollmentId);
+		expect(ids('SUPPORT')).toEqual(['b', 'd']);
+		expect(ids('CHALLENGE')).toEqual([]);
+		expect(ids('ALL')).toEqual(['b', 'd']);
 	});
 });
 

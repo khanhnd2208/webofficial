@@ -109,7 +109,8 @@
 /* Top bar */
 .topBar {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(14rem, 26rem) minmax(0, 1fr);
+	/* The controls keep their width; the title gives way first. */
+	grid-template-columns: minmax(9rem, 1fr) minmax(12rem, 1.6fr) auto;
 	align-items: center;
 	gap: 1rem;
 	padding: 0.9rem 1.4rem;
@@ -139,6 +140,9 @@
 /* Boss health: name plate, ten pips and a pale trail that drains after a hit. */
 .hp {
 	display: grid;
+	width: 100%;
+	max-width: 26rem;
+	justify-self: center;
 	grid-template-columns: minmax(0, 1fr) auto;
 	gap: 0.25rem 0.8rem;
 	align-items: end;
@@ -279,6 +283,21 @@
 	white-space: nowrap;
 }
 
+.chipButton {
+	flex: none;
+}
+
+/* The longest control: on a tight bar it shrinks to its icon, with an ellipsis. */
+.settingsChip {
+	flex: 0 1 auto;
+	min-width: 2.75rem;
+	overflow: hidden;
+}
+
+.settingsChip svg {
+	flex: none;
+}
+
 .settingsChip span {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -288,6 +307,17 @@
 .settingsChip:hover:not(:disabled),
 .chipButton[aria-pressed='true'] {
 	background: rgb(255 255 255 / 12%);
+}
+
+.chipButton[data-ready] {
+	border-color: var(--arena-accent);
+	background: rgb(251 191 36 / 16%);
+	color: var(--arena-accent);
+}
+
+.chipButton:disabled {
+	cursor: default;
+	opacity: 0.5;
 }
 
 .smallButton {
@@ -843,9 +873,46 @@
 	white-space: nowrap;
 }
 
-.player[data-called] .playerName::after {
-	content: ' ✓';
-	color: var(--arena-ok);
+/* Answered today: a check above the head, and the student is not called again. */
+.playerDone {
+	position: absolute;
+	top: -0.35rem;
+	left: 50%;
+	z-index: 1;
+	display: grid;
+	width: 1.7rem;
+	height: 1.7rem;
+	place-items: center;
+	border: 2px solid #0b2a20;
+	border-radius: 50%;
+	background: var(--arena-ok);
+	box-shadow: 0 0 0.6rem rgb(52 211 153 / 55%);
+	color: #0b2a20;
+	font-size: 1rem;
+	font-weight: 900;
+	line-height: 1;
+	transform: translateX(-50%);
+	pointer-events: none;
+}
+
+.playerDone[data-result='fail'] {
+	border-color: #2a2440;
+	background: var(--arena-muted);
+	box-shadow: none;
+	color: #1e1033;
+}
+
+.player[data-called] .playerFigure {
+	opacity: 0.78;
+}
+
+.srOnly {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
 }
 
 .floor[data-hunting] .player {
@@ -1647,6 +1714,7 @@
 	}
 
 	.toolbar {
+		flex-wrap: wrap;
 		justify-content: flex-start;
 	}
 }

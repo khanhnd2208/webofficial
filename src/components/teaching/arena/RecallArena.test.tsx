@@ -135,6 +135,11 @@ function openStep(label: string) {
 	fireEvent.click(within(setupDialog()).getByRole('button', { name: new RegExp(label) }));
 }
 
+function chooseRule(label: string) {
+	openStep('Luật gọi');
+	fireEvent.click(within(setupDialog()).getByRole('radio', { name: new RegExp(label) }));
+}
+
 /** Walk the remaining steps in order, as the lecturer does before the first game. */
 function enterGame() {
 	const setup = setupDialog();
@@ -183,8 +188,7 @@ describe('RecallArena', () => {
 			cpAfter: 1,
 		});
 		render(<RecallArena data={arenaData()} />);
-		openStep('Người chơi');
-		fireEvent.change(screen.getByDisplayValue('Cả lớp (2)'), { target: { value: 'CHALLENGE' } });
+		chooseRule('Chỉ Challenging');
 		enterGame();
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
@@ -217,8 +221,7 @@ describe('RecallArena', () => {
 			cpAfter: 1,
 		});
 		render(<RecallArena data={arenaData()} />);
-		openStep('Người chơi');
-		fireEvent.change(screen.getByDisplayValue('Cả lớp (2)'), { target: { value: 'CHALLENGE' } });
+		chooseRule('Chỉ Challenging');
 		enterGame();
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
@@ -231,7 +234,8 @@ describe('RecallArena', () => {
 			screen.getAllByTestId('arena-player').find((node) => within(node).queryByText('An'))?.dataset
 				.attacking,
 		).toBe('true');
-		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', true);
+		// An was the only Challenging student, so nobody is left to call.
+		expect(screen.getByRole('button', { name: /Đã gọi hết/ })).toHaveProperty('disabled', true);
 
 		await waitFor(() => expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy(), {
 			timeout: 2200,
@@ -352,7 +356,9 @@ describe('RecallArena', () => {
 
 	it('reuses a missed question, then retires it on a no-CP pass across reloads', async () => {
 		apiMock.mockResolvedValue({ giftAfter: 1 });
-		const view = render(<RecallArena data={arenaData()} />);
+		const data = arenaData();
+		data.players[2]!.attendance = { s1: 'PRESENT' };
+		const view = render(<RecallArena data={data} />);
 		enterGame();
 		async function catchPlayer() {
 			fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
@@ -367,7 +373,7 @@ describe('RecallArena', () => {
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
 		view.unmount();
 
-		render(<RecallArena data={arenaData()} />);
+		render(<RecallArena data={data} />);
 		enterGame();
 		caught = await catchPlayer();
 		expect(within(caught).getByText(/Các câu trong bài đã chọn đều đã qua/)).toBeTruthy();
@@ -500,9 +506,7 @@ describe('RecallArena', () => {
 		});
 		fireEvent.click(within(setup).getByRole('button', { name: 'Lưu sửa' }));
 		expect(within(manualList).getByText('Lê Minh Bình')).toBeTruthy();
-		fireEvent.change(within(setup).getByLabelText('Gọi ai'), {
-			target: { value: 'CHALLENGE' },
-		});
+		chooseRule('Chỉ Challenging');
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
 
 		expect(within(screen.getByTestId('arena-player')).getByText('Bình')).toBeTruthy();
@@ -526,9 +530,7 @@ describe('RecallArena', () => {
 			target: { value: 'CHALLENGE' },
 		});
 		fireEvent.click(within(setup).getByRole('button', { name: 'Thêm vào trận' }));
-		fireEvent.change(within(setup).getByLabelText('Gọi ai'), {
-			target: { value: 'CHALLENGE' },
-		});
+		chooseRule('Chỉ Challenging');
 		fireEvent.click(within(setup).getByRole('button', { name: 'Vào trận' }));
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Lê Minh An' });
@@ -537,6 +539,34 @@ describe('RecallArena', () => {
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Lê Minh An' })).toBeNull());
 		expect(apiMock).not.toHaveBeenCalled();
 		expect(screen.getByRole('button', { name: 'Đã gọi 0' })).toBeTruthy();
+	});
+
+	it('never calls a student twice, marks them, and sums up the session at the end', async () => {
+		apiMock.mockResolvedValue({ cpPrevious: 0, cpAfter: 1 });
+		render(<RecallArena data={arenaData()} />);
+		chooseRule('Chỉ Supporting');
+		enterGame();
+		expect(screen.getAllByTestId('arena-player')).toHaveLength(2);
+
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
+		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		await screen.findByRole('button', { name: /Đã gọi hết/ });
+		const done = screen
+			.getAllByTestId('arena-player')
+			.find((node) => within(node).queryByText('Bình'))!;
+		expect(within(done).getByTitle('Đã vượt qua')).toBeTruthy();
+		expect(screen.getByRole('button', { name: /Đã gọi hết/ })).toHaveProperty('disabled', true);
+
+		fireEvent.click(screen.getByRole('button', { name: /Kết thúc/ }));
+		const summary = screen.getByRole('dialog', { name: 'Tổng kết phiên' });
+		const rows = within(summary).getAllByRole('row').slice(1);
+		expect(rows.map((row) => row.textContent)).toEqual([
+			expect.stringMatching(/Bình.*Đạt.*\+1/),
+			expect.stringMatching(/An.*Chưa gọi/),
+		]);
+		fireEvent.click(within(summary).getByRole('button', { name: 'Tiếp tục chơi' }));
+		expect(screen.queryByRole('dialog', { name: 'Tổng kết phiên' })).toBeNull();
 	});
 
 	it('mixes questions from several lessons', () => {

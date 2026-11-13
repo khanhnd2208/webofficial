@@ -24,6 +24,8 @@ export function ArenaTopBar({
 	calledCount,
 	historyOpen,
 	onToggleHistory,
+	allAnswered,
+	onEnd,
 }: {
 	classLabel: string;
 	classHref: string;
@@ -39,6 +41,9 @@ export function ArenaTopBar({
 	calledCount: number;
 	historyOpen: boolean;
 	onToggleHistory: () => void;
+	/** Everyone the call rule allows has answered: the end button lights up. */
+	allAnswered: boolean;
+	onEnd: () => void;
 }) {
 	const [fullscreen, setFullscreen] = useState(false);
 	const muted = useSyncExternalStore(subscribeArenaMuted, isArenaMuted, () => false);
@@ -97,6 +102,17 @@ export function ArenaTopBar({
 					onClick={onToggleHistory}
 				>
 					Đã gọi {calledCount}
+				</button>
+				<button
+					type="button"
+					className={styles.chipButton}
+					data-ready={allAnswered || undefined}
+					onClick={onEnd}
+					disabled={settingsDisabled}
+					title="Kết thúc phiên và xem tổng kết"
+				>
+					<McIcon name="flag" size={16} />
+					Kết thúc
 				</button>
 				<button
 					type="button"

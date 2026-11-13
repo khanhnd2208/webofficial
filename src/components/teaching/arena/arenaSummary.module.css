@@ -1,0 +1,126 @@
+.panel {
+	display: grid;
+	grid-template-rows: auto auto minmax(0, 1fr) auto;
+	width: min(46rem, 100%);
+	max-height: 100%;
+	overflow: hidden;
+	border: 1px solid var(--arena-line);
+	border-radius: 1.1rem;
+	background: var(--arena-panel);
+	box-shadow: 0 30px 80px rgb(0 0 0 / 55%);
+}
+
+.stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+	gap: 0.5rem;
+	margin: 0 1.3rem 0.9rem;
+}
+
+.stat {
+	padding: 0.55rem 0.75rem;
+	border: 1px solid var(--arena-line);
+	border-radius: 0.7rem;
+	background: rgb(255 255 255 / 4%);
+}
+
+.stat dt {
+	color: var(--arena-muted);
+	font-size: 0.78rem;
+	font-weight: 600;
+}
+
+.stat dd {
+	margin: 0.1rem 0 0;
+	color: var(--arena-ink);
+	font-size: 1.35rem;
+	font-weight: 900;
+	font-variant-numeric: tabular-nums;
+}
+
+.tableWrap {
+	overflow: auto;
+	margin: 0 1.3rem;
+	border-top: 1px solid var(--arena-line);
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+	padding: 0.5rem 0.4rem;
+	border-bottom: 1px solid var(--arena-line);
+	text-align: left;
+	white-space: nowrap;
+}
+
+.table thead th {
+	position: sticky;
+	top: 0;
+	background: var(--arena-panel);
+	color: var(--arena-muted);
+	font-size: 0.78rem;
+	font-weight: 700;
+}
+
+.table tbody th {
+	overflow: hidden;
+	max-width: 16rem;
+	font-weight: 700;
+	text-overflow: ellipsis;
+}
+
+.table td:first-child {
+	color: var(--arena-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.table tr[data-result='waiting'] {
+	color: var(--arena-muted);
+}
+
+.chip {
+	display: inline-block;
+	padding: 0.1rem 0.55rem;
+	border-radius: 999px;
+	background: rgb(255 255 255 / 10%);
+	color: var(--arena-muted);
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.chip[data-result='pass'] {
+	background: rgb(52 211 153 / 18%);
+	color: var(--arena-ok);
+}
+
+.chip[data-result='fail'] {
+	background: rgb(251 113 133 / 18%);
+	color: var(--arena-bad);
+}
+
+.empty {
+	margin: 0 1.3rem;
+	color: var(--arena-muted);
+}
+
+.panel footer button {
+	white-space: nowrap;
+}
+
+.link {
+	display: inline-flex;
+	align-items: center;
+	text-decoration: none;
+}
+
+@media (width <= 560px) {
+	.stats,
+	.tableWrap {
+		margin-inline: 1rem;
+	}
+}

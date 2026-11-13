@@ -36,6 +36,18 @@ export function passedArenaCards(history: readonly ArenaHistoryEntry[]) {
 	return ids;
 }
 
+/**
+ * Students who already answered today, pass or fail. Each student answers
+ * once per game day; a skipped turn does not count.
+ */
+export function answeredArenaIds(history: readonly ArenaHistoryEntry[]) {
+	const ids = new Set<string>();
+	for (const entry of history) {
+		if (entry.result !== 'skip') ids.add(entry.enrollmentId);
+	}
+	return ids;
+}
+
 export interface ArenaHistoryEntry {
 	id: string;
 	at: number;
@@ -63,6 +75,8 @@ export interface ArenaProgress {
 	hp: number;
 	round: number;
 	history: ArenaHistoryEntry[];
+	/** Hero handed to each student today, spread evenly over the cast. */
+	heroes: Record<string, string>;
 }
 
 export interface ArenaConfig {
@@ -152,7 +166,7 @@ interface StoredArenaConfig extends Partial<ArenaConfig> {
 }
 
 export function emptyProgress(): ArenaProgress {
-	return { bag: [], lastPicked: null, hp: ARENA_MAX_HP, round: 1, history: [] };
+	return { bag: [], lastPicked: null, hp: ARENA_MAX_HP, round: 1, history: [], heroes: {} };
 }
 
 /** One game per course per day: tomorrow's class starts with a fresh boss. */
@@ -190,7 +204,15 @@ export function loadProgress(gameKey: string): ArenaProgress {
 		hp: stored.hp ?? ARENA_MAX_HP,
 		round: stored.round ?? 1,
 		history: Array.isArray(stored.history) ? stored.history : [],
+		heroes: validHeroes(stored.heroes),
 	};
+}
+
+function validHeroes(value: unknown): Record<string, string> {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+	return Object.fromEntries(
+		Object.entries(value).filter((pair): pair is [string, string] => typeof pair[1] === 'string'),
+	);
 }
 
 export function saveProgress(gameKey: string, progress: ArenaProgress) {
@@ -310,12 +332,18 @@ export function arenaRoster(
 	return buildArenaRoster(players, hosts, config.guestIds, config.excludedIds);
 }
 
-/** Students the monster may call: the floor, narrowed by the group filter. */
+/**
+ * Students the monster may call: the floor, narrowed by the group filter,
+ * minus anyone who already answered today.
+ */
 export function callablePlayers(
 	roster: readonly RecallArenaPlayer[],
 	filter: ArenaGroupFilter,
+	answered: ReadonlySet<string> = new Set(),
 ): RecallArenaPlayer[] {
-	return roster.filter((player) => matchesGroupFilter(player.group, filter));
+	return roster.filter(
+		(player) => matchesGroupFilter(player.group, filter) && !answered.has(player.enrollmentId),
+	);
 }
 
 /** Search the whole course by name or student code, ignoring accents and case. */

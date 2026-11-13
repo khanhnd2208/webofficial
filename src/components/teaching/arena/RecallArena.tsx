@@ -27,12 +27,13 @@ import { ArenaMonster, type MonsterMood } from './ArenaFigures';
 import { ArenaFloor, type ArenaAttackCue } from './ArenaFloor';
 import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
+import { ArenaSummary } from './ArenaSummary';
 import { ArenaTopBar } from './ArenaTopBar';
 import { ArenaVictory } from './ArenaVictory';
 import { arenaBossFor } from './arenaBosses';
-import { arenaCharacterFor } from './arenaCharacters';
 import {
 	ARENA_MAX_HP,
+	answeredArenaIds,
 	arenaGameKey,
 	arenaRoster,
 	callablePlayers,
@@ -56,6 +57,8 @@ import {
 	type ArenaResult,
 } from './arenaGame';
 import { playArenaSound } from './arenaSound';
+import { arenaSummaryRows } from './arenaSummaryRows';
+import { useArenaHeroes } from './useArenaHeroes';
 import { useArenaKeyboard } from './useArenaKeyboard';
 import { useArenaTurnLog } from './useArenaTurnLog';
 import { saveArenaGrade } from './arenaTurnLog';
@@ -98,6 +101,7 @@ export function RecallArena({
 	const [setupOpen, setSetupOpen] = useState(true);
 	const [started, setStarted] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
+	const [summaryOpen, setSummaryOpen] = useState(false);
 	const [phase, setPhase] = useState<Phase>('idle');
 	const [mood, setMood] = useState<MonsterMood>('idle');
 	const [highlightId, setHighlightId] = useState<string | null>(null);
@@ -126,7 +130,6 @@ export function RecallArena({
 	const { worldRef, suck, layer, shake, flash, pop, sparks, fireworks, lock, grab, hold, release } =
 		fx;
 	const boss = arenaBossFor(progress.round, config.bossId);
-	const heroOf = (studentCode: string) => arenaCharacterFor(studentCode, config.heroIds);
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
 	const hosts = useMemo(() => hostSessions(config, sessions), [config, sessions]);
@@ -146,7 +149,20 @@ export function RecallArena({
 		],
 		[data.players, hosts, config],
 	);
-	const callable = useMemo(() => callablePlayers(inRoom, config.filter), [inRoom, config.filter]);
+	const heroOf = useArenaHeroes({
+		players: inRoom,
+		heroIds: config.heroIds,
+		progress,
+		setProgress,
+		ready: progressLoaded,
+	});
+	/** Each student answers once a day; the floor still shows everyone. */
+	const answered = useMemo(() => answeredArenaIds(progress.history), [progress.history]);
+	const inGroup = useMemo(() => callablePlayers(inRoom, config.filter), [inRoom, config.filter]);
+	const callable = useMemo(
+		() => inGroup.filter((player) => !answered.has(player.enrollmentId)),
+		[inGroup, answered],
+	);
 	const activeDeckIds = useMemo(() => new Set(config.deckIds), [config.deckIds]);
 	const cards = useMemo(
 		() => data.cards.filter((card) => activeDeckIds.has(card.deckId)),
@@ -163,15 +179,12 @@ export function RecallArena({
 		const player = playersById.get(enrollmentId);
 		return names.get(enrollmentId) ?? player?.givenName ?? '';
 	};
-	const calledIds = useMemo(
-		() =>
-			new Set(
-				progress.history
-					.filter((entry) => entry.result !== 'skip')
-					.map((entry) => entry.enrollmentId),
-			),
-		[progress.history],
-	);
+	const results = useMemo(() => {
+		const map = new Map<string, 'pass' | 'fail'>();
+		for (const entry of progress.history)
+			if (entry.result !== 'skip') map.set(entry.enrollmentId, entry.result);
+		return map;
+	}, [progress.history]);
 
 	// Restore this browser's choices once, after hydration. Sessions always
 	// start at each class's default (today's), so they are not restored.
@@ -242,7 +255,12 @@ export function RecallArena({
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		const draw = drawFromBag(progress.bag, eligibleIds, progress.lastPicked);
 		if (!draw.picked) {
-			setToast({ tone: 'error', text: 'Không có sinh viên nào trong trận ở nhóm đang chọn.' });
+			setToast({
+				tone: 'error',
+				text: inGroup.length
+					? 'Mọi bạn trong nhóm đang gọi đã trả lời. Bấm “Kết thúc” để xem tổng kết.'
+					: 'Không có sinh viên nào trong trận ở nhóm đang chọn.',
+			});
 			return;
 		}
 		const picked = draw.picked;
@@ -313,6 +331,7 @@ export function RecallArena({
 	}, [
 		phase,
 		callable,
+		inGroup,
 		inRoom,
 		progress,
 		availableCardIds,
@@ -365,7 +384,7 @@ export function RecallArena({
 		const monster = monsterRef.current;
 		const attackerId = current?.enrollmentId;
 		const attacker = attackerId ? playersById.get(attackerId) : null;
-		const hero = hpDelta < 0 && attacker ? heroOf(attacker.studentCode) : null;
+		const hero = hpDelta < 0 && attacker ? heroOf(attacker) : null;
 		const streak = passStreak(progress.history) + 1;
 		const power: StrikePower = hp === 0 ? 3 : streak >= 2 ? 2 : 1;
 		setCurrent(null);
@@ -644,6 +663,7 @@ export function RecallArena({
 	useArenaKeyboard({
 		setupOpen,
 		onCloseSetup: started ? closeSetup : undefined,
+		paused: summaryOpen,
 		historyOpen,
 		onCloseHistory: () => setHistoryOpen(false),
 		phase,
@@ -680,9 +700,11 @@ export function RecallArena({
 					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${cards.length ? `${availableCardIds.length}/${cards.length} câu còn lại` : 'câu riêng'}`}
 					settingsDisabled={phase === 'hunting' || phase === 'caught' || phase === 'attacking'}
 					onSettings={() => setSetupOpen(true)}
-					calledCount={progress.history.filter((entry) => entry.result !== 'skip').length}
+					calledCount={answered.size}
 					historyOpen={historyOpen}
 					onToggleHistory={() => setHistoryOpen((open) => !open)}
+					allAnswered={inGroup.length > 0 && callable.length === 0}
+					onEnd={() => setSummaryOpen(true)}
 				/>
 
 				<main className={styles.stage}>
@@ -711,11 +733,11 @@ export function RecallArena({
 						highlightId={highlightId}
 						caughtId={phase === 'caught' ? (current?.enrollmentId ?? null) : null}
 						hunting={phase === 'hunting'}
-						calledIds={calledIds}
+						results={results}
 						names={names}
 						suck={suck}
 						attackCue={attackCue}
-						heroIds={config.heroIds}
+						heroOf={heroOf}
 					/>
 					<div className={styles.actionBar}>
 						<button
@@ -725,7 +747,11 @@ export function RecallArena({
 							disabled={!canHunt}
 							onClick={startHunt}
 						>
-							{phase === 'hunting' ? 'Quái vật đang tìm…' : 'Bắt!'}
+							{phase === 'hunting'
+								? 'Quái vật đang tìm…'
+								: inGroup.length && !callable.length
+									? 'Đã gọi hết'
+									: 'Bắt!'}
 							<kbd>Space</kbd>
 						</button>
 					</div>
@@ -755,7 +781,7 @@ export function RecallArena({
 					<ArenaCaught
 						key={current?.catchId}
 						player={caughtPlayer}
-						character={heroOf(caughtPlayer.studentCode)}
+						character={heroOf(caughtPlayer)}
 						boss={boss}
 						card={caughtCard}
 						deckLabel={caughtDeck ? caughtDeck.lessonLabel || caughtDeck.title : ''}
@@ -800,6 +826,7 @@ export function RecallArena({
 					sessions={sessions}
 					hosts={hosts}
 					roster={inRoom}
+					answered={answered}
 					started={started}
 					openingCpId={openingCpId}
 					onChange={setConfig}
@@ -807,6 +834,18 @@ export function RecallArena({
 					onReload={() => window.location.reload()}
 					onDone={closeSetup}
 					onClose={started ? closeSetup : undefined}
+				/>
+			) : null}
+			{summaryOpen ? (
+				<ArenaSummary
+					rows={arenaSummaryRows(
+						inRoom,
+						progress.history,
+						(id, fallback) => names.get(id) ?? fallback,
+					)}
+					bossesDefeated={progress.round - 1 + (progress.hp === 0 ? 1 : 0)}
+					classHref={routes.mySpaceTeachingCourse(courseId)}
+					onContinue={() => setSummaryOpen(false)}
 				/>
 			) : null}
 			{confirmDialog}

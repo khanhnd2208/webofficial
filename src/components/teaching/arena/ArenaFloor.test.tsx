@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RecallArenaPlayer } from '@/features/teaching/types';
 
 import { ArenaFloor } from './ArenaFloor';
+import { arenaCharacterFor } from './arenaCharacters';
 
 const motion = vi.hoisted(() => ({ reduced: false }));
 vi.mock('@/components/motion', () => ({
@@ -15,6 +16,8 @@ const players = [
 	{ enrollmentId: 'b', studentCode: 'SV-b', givenName: 'Bình' },
 ] as RecallArenaPlayer[];
 
+const heroOf = (player: RecallArenaPlayer) => arenaCharacterFor(player.studentCode);
+
 function floor(hunting = false) {
 	return (
 		<ArenaFloor
@@ -22,11 +25,11 @@ function floor(hunting = false) {
 			highlightId={null}
 			caughtId={null}
 			hunting={hunting}
-			calledIds={new Set()}
+			results={new Map()}
 			names={new Map()}
 			suck={null}
 			attackCue={null}
-			heroIds={[]}
+			heroOf={heroOf}
 		/>
 	);
 }
