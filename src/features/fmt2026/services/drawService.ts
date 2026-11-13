@@ -187,16 +187,34 @@ export async function configureBoothPin(pin: string): Promise<void> {
 	});
 }
 
+/** What the setup form pre-fills each time the booth is opened with the PIN. */
+export const DEFAULT_BOOTH_TOTAL_SPINS = 50;
+export const DEFAULT_BOOTH_STOCK: Record<string, number> = {
+	'binh-nuoc': 6,
+	'hoodie-zip': 5,
+	'ao-do': 20,
+	'ao-vang': 4,
+	so: 20,
+	tui: 7,
+};
+
 export async function getBoothSetup() {
 	const [settings, prizes] = await Promise.all([
 		loadSettings(prisma),
 		prisma.fmt2026Prize.findMany({
 			where: { isActive: true },
 			orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-			select: { id: true, name: true, remaining: true },
+			select: { id: true, slug: true, name: true, remaining: true },
 		}),
 	]);
-	return { totalSpins: settings.totalSpins, prizes };
+	return {
+		totalSpins: settings.totalSpins,
+		defaultTotalSpins: DEFAULT_BOOTH_TOTAL_SPINS,
+		prizes: prizes.map(({ slug, ...prize }) => ({
+			...prize,
+			defaultRemaining: DEFAULT_BOOTH_STOCK[slug] ?? prize.remaining,
+		})),
+	};
 }
 
 export async function startBooth(input: BoothSetupInput, pinVersion: number): Promise<void> {

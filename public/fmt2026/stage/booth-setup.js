@@ -35,7 +35,7 @@ export function mountSetup(root, onStarted) {
 		if (!pinForm.hidden) pin.focus();
 		if (state.mode !== 'setup') return;
 
-		const rows = state.prizes.map(({ name, remaining }) => {
+		const rows = state.prizes.map(({ name, remaining, defaultRemaining }) => {
 			const row = document.createElement('label');
 			row.className = 'setup-row';
 			row.append(name);
@@ -47,13 +47,13 @@ export function mountSetup(root, onStarted) {
 				max: '10000',
 				step: '1',
 				required: true,
-				value: String(remaining),
+				value: String(defaultRemaining ?? remaining),
 			});
 			row.append(input);
 			return row;
 		});
 		$('#setupPrizes').replaceChildren(...rows);
-		total.value = String(state.totalSpins);
+		total.value = String(state.defaultTotalSpins ?? state.totalSpins);
 	}
 
 	async function run(button, action) {
