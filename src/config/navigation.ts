@@ -367,5 +367,7 @@ export function isSiteHeaderPath(pathname: string): boolean {
 	if (path.startsWith('/progress')) return false;
 	// UNRELEASED pages wear the workshop's own brand and top bar.
 	if (path === routes.unreleased || path.startsWith(routes.unreleasedGift)) return false;
+	// The FMT 2026 booth runs full-screen on the event laptop.
+	if (matchesPrefix(path, routes.fmt2026)) return false;
 	return true;
 }

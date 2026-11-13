@@ -417,6 +417,7 @@ jobs:
               e2e/operating-focus.spec.ts
               e2e/learn-reader.spec.ts
               e2e/learn-studio.spec.ts
+              e2e/fmt2026.spec.ts
             )
           fi
           if [[ "$run_all" -eq 1 ]] || is_true "$AREA_CLASSROOM"; then

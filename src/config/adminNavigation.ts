@@ -77,6 +77,7 @@ const ROUTE_META: AdminRouteMeta[] = [
 		label: 'Thống kê khóa học',
 		width: 'wide',
 	},
+	{ href: routes.admin.fmt2026, label: 'Quầy quà FMT 2026', width: 'wide' },
 	{ href: routes.admin.unreleasedQuiz, label: 'Quiz UNRELEASED', width: 'wide' },
 	{ href: routes.admin.unreleasedGift, label: 'Đánh giá UNRELEASED', width: 'wide' },
 	{ href: routes.admin.archive, label: 'Kho lưu trữ', width: 'standard' },

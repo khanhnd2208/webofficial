@@ -16,6 +16,7 @@ describe('admin navigation', () => {
 		expect(ADMIN_NAV_GROUPS.map((group) => group.group)).toEqual(['Website', 'Giảng dạy']);
 		expect(hrefs).toEqual([
 			routes.admin.inquiries,
+			routes.admin.fmt2026,
 			routes.mySpaceTeaching,
 			routes.myCoursesManage,
 			routes.admin.learnAnalytics,
@@ -23,6 +24,7 @@ describe('admin navigation', () => {
 		]);
 		expect(labels).toEqual([
 			'Hộp thư liên hệ',
+			'Quầy quà FMT 2026',
 			'Lớp & môn học',
 			'Khóa học tự học',
 			'Thống kê khóa học',

@@ -19,6 +19,7 @@ describe('operating module registry', () => {
 			'inquiries',
 			'teaching',
 			'learn-courses',
+			'fmt2026',
 			'learning-analytics',
 			'recall-analytics',
 		]);

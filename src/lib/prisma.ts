@@ -36,6 +36,7 @@ const PRISMA_GENERATION = [
 	Prisma.ModelName.LearnCourse,
 	Prisma.ModelName.LearnSectionProgress,
 	Prisma.ModelName.UnreleasedQuizResponse,
+	Prisma.ModelName.Fmt2026Prize,
 	'TeachingEnrollment.learningExperience.v2',
 	'TeachingGroupBoard.tutorialClassId.v1',
 	'TeachingGroup.maxSize.v1',

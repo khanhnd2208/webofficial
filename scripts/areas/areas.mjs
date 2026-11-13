@@ -90,6 +90,7 @@ export const AREAS = {
 			'inquiries',
 			'unreleased-quiz',
 			'unreleased-gift',
+			'fmt2026',
 		],
 		components: ['learn', 'marketing', 'contact'],
 		paths: [
@@ -111,6 +112,11 @@ export const AREAS = {
 			'src/app/api/admin/unreleased-gift',
 			'src/app/admin/unreleased-quiz',
 			'src/app/admin/unreleased-gift',
+			'src/app/fmt2026',
+			'src/app/api/fmt2026',
+			'src/app/api/admin/fmt2026',
+			'src/app/admin/fmt2026',
+			'public/fmt2026',
 			'src/app/chinh-sach',
 			'src/app/my-space/courses',
 			'src/app/api/learn',
@@ -136,6 +142,7 @@ export const AREAS = {
 			'e2e/learn-studio.spec.ts',
 			'e2e/operating-focus.spec.ts',
 			'e2e/unreleased-quiz.spec.ts',
+			'e2e/fmt2026.spec.ts',
 		],
 	},
 	tools: {
