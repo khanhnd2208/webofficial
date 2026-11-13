@@ -16,7 +16,9 @@ export type ArenaEffect =
 	| 'ink'
 	| 'wind'
 	| 'crystal'
-	| 'smoke';
+	| 'smoke'
+	| 'music'
+	| 'book';
 
 export interface ArenaCharacter {
 	/** File name in `public/arena/characters/`, without `.webp`. */
@@ -31,6 +33,8 @@ export interface ArenaCharacter {
 	origin: readonly [number, number];
 	/** Show a glowing hero name above the sprite in the arena. */
 	nameplate?: boolean;
+	/** Short label for the game floor; the picker still shows the full name. */
+	shortName?: string;
 }
 
 export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
@@ -157,6 +161,169 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		accent: '#ffc25a',
 		effect: 'shield',
 		origin: [83, 43],
+		nameplate: true,
+	},
+	{
+		id: 't1-doran',
+		name: 'Doran',
+		skill: 'Sơn Giáp Chấn Địa',
+		accent: '#ff5264',
+		effect: 'crystal',
+		origin: [91, 53],
+		nameplate: true,
+	},
+	{
+		id: 't1-oner',
+		name: 'Oner',
+		skill: 'Song Hoàn Liên Kích',
+		accent: '#ff3e68',
+		effect: 'wind',
+		origin: [88, 43],
+		nameplate: true,
+	},
+	{
+		id: 't1-faker',
+		name: 'Faker',
+		skill: 'Quân Xe Định Cục',
+		accent: '#f84b66',
+		effect: 'star',
+		origin: [89, 51],
+		nameplate: true,
+	},
+	{
+		id: 't1-peyz',
+		name: 'Peyz',
+		skill: 'Lăng Kính Xuyên Tâm',
+		accent: '#ff6675',
+		effect: 'arrow',
+		origin: [89, 48],
+		nameplate: true,
+	},
+	{
+		id: 't1-keria',
+		name: 'Keria',
+		skill: 'Tán Hoa Hộ Trận',
+		accent: '#ff7185',
+		effect: 'shield',
+		origin: [87, 46],
+		nameplate: true,
+	},
+	{
+		id: 'j9x',
+		name: 'J9x',
+		skill: 'Thanh Âm Bùng Nổ',
+		accent: '#e779ff',
+		effect: 'music',
+		origin: [76, 47],
+		nameplate: true,
+	},
+	{
+		id: 'ndk',
+		name: 'NDK',
+		skill: 'Khai Mở Tri Thức',
+		accent: '#ff7658',
+		effect: 'book',
+		origin: [66, 39],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-le-manh-duc',
+		name: 'Lê Mạnh Đức',
+		shortName: 'Thầy Đức',
+		skill: 'Phấn Vàng Hộ Tri',
+		accent: '#ffd47a',
+		effect: 'shield',
+		origin: [91, 23],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-phan-hoang-quan',
+		name: 'Phan Hoàng Quân',
+		shortName: 'Thầy Quân',
+		skill: 'Định Lý Tam Giác',
+		accent: '#52e4d5',
+		effect: 'crystal',
+		origin: [92, 40],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-hoang-gia-thu',
+		name: 'Hoàng Gia Thư',
+		shortName: 'Thầy Thư',
+		skill: 'Lăng Kính Hộ Vệ',
+		accent: '#7899ff',
+		effect: 'crystal',
+		origin: [92, 31],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-nguyen-thu-trang',
+		name: 'Nguyễn Thu Trang',
+		shortName: 'Cô Trang',
+		skill: 'Dải Mực Sao',
+		accent: '#f2a5df',
+		effect: 'ink',
+		origin: [85, 28],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-ngo-thi-thuy-linh',
+		name: 'Ngô Thị Thùy Linh',
+		shortName: 'Cô Thùy Linh',
+		skill: 'Quạt Trang Tri Thức',
+		accent: '#74cfff',
+		effect: 'wind',
+		origin: [83, 37],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-nguyen-thi-men',
+		name: 'Nguyễn Thị Mến',
+		shortName: 'Cô Mến',
+		skill: 'Dải Lụa Trang Sách',
+		accent: '#ff8c91',
+		effect: 'wind',
+		origin: [91, 39],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-le-hai-anh',
+		name: 'Lê Hải Anh',
+		shortName: 'Cô Hải Anh',
+		skill: 'Lá Xanh Khai Sáng',
+		accent: '#8be377',
+		effect: 'arrow',
+		origin: [90, 43],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-nguyen-phuc-linh',
+		name: 'Nguyễn Phúc Linh',
+		shortName: 'Thầy Phúc Linh',
+		skill: 'Âm Vang Diễn Giảng',
+		accent: '#67d9f7',
+		effect: 'moon',
+		origin: [85, 31],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-duong-ha-phuong',
+		name: 'Đường Hà Phương',
+		shortName: 'Cô Hà Phương',
+		skill: 'Sao Cát Thời Gian',
+		accent: '#ffb754',
+		effect: 'star',
+		origin: [86, 32],
+		nameplate: true,
+	},
+	{
+		id: 'fmt-tran-thao-phuong',
+		name: 'Trần Thảo Phương',
+		shortName: 'Cô Thảo Phương',
+		skill: 'Đèn Hoa Khai Bút',
+		accent: '#fba6c0',
+		effect: 'moon',
+		origin: [79, 42],
 		nameplate: true,
 	},
 ];

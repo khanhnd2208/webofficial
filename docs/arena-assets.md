@@ -48,7 +48,7 @@ pulsing when the visitor prefers reduced motion. Student names remain below the
 avatar.
 
 `effect` is one of `slash`, `shield`, `moon`, `arrow`, `star`, `dumpling`,
-`ink`, `wind`, `crystal`, `smoke`. How many shots fly and how they curve is in
+`ink`, `wind`, `crystal`, `smoke`, `music`, `book`. How many shots fly and how they curve is in
 `arenaStrikes.ts`; what a shot looks like is in `arenaStrike.module.css`. A new
 effect needs a name in `ArenaEffect`, a line in `STRIKE_STYLES` and a shape in
 the CSS.
