@@ -101,6 +101,9 @@ FMT.sound = (() => {
 			else ensure();
 		},
 
+		perfect() {
+			[880, 1175, 1568].forEach((freq, index) => marimba(freq, index * 0.055, 0.17));
+		},
 		blip() {
 			marimba(880, 0, 0.12);
 		},

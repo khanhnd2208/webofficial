@@ -13,6 +13,13 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const SLOTS = 12;
   const STEP = TAU / SLOTS;
   const MIN_POWER = 0.35;
+  // Kim quét một vòng mất SWEEP_MS; thả đúng khe vàng là "Tuyệt vời!".
+  const SWEEP_MS = 2350;
+  const HOLD_LIMIT_MS = 8000;
+  const GOLD_CENTER = 0.75;
+  const GOLD_START = GOLD_CENTER - 0.023;
+  const GOLD_END = GOLD_CENTER + 0.023;
+  const CHARGE_INSTRUCTION = 'Giữ Lắc, nhả khi kim lọt vào khe sáng.';
 
   let prizes = [];
   let luckLeft = 0;
@@ -46,6 +53,8 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const chargeBox = $('.charge');
   const shakeBtn = $('#shake');
   const chargeHint = $('#chargeHint');
+  const shakeWord = $('#shakeWord');
+  const timingStatus = $('#timingStatus');
   const wheelEl = $('.wheel');
   const tokensEl = $('.tokens');
   const hubName = $('#hubName');
@@ -53,14 +62,14 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const bubble = $('.bubble');
   const reveal = $('.reveal');
   const confetti = FMT.confetti($('canvas'));
+  root.style.setProperty('--gold-start', GOLD_START);
+  root.style.setProperty('--gold-end', GOLD_END);
 
   let phase = 'loading';
   let active = null;
   let power = 0;
-  let holding = false;
-  let fullSince = 0;
+  let hold = null;
   let lastRattle = 0;
-  let chargeLast = 0;
   let chargeFrameId = 0;
   let sinceEpic = 0;
   let idleTimer = 0;
@@ -175,7 +184,8 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     intro.hidden = next !== 'idle' && next !== 'choosing';
     $('#start').hidden = next !== 'idle';
     $('#hint').hidden = next !== 'choosing';
-    chargeBox.hidden = next !== 'charge';
+    chargeBox.hidden = next !== 'charge' && next !== 'timing';
+    shakeBtn.disabled = next === 'timing';
     wheelEl.hidden = next !== 'spin';
     reveal.hidden = next !== 'reveal';
     clearTimeout(idleTimer);
@@ -240,8 +250,8 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     root.style.setProperty('--power', '0');
     root.style.setProperty('--light-x', host.dataset.host === 'a' ? '24%' : '76%');
     root.dataset.tier = '';
-    root.dataset.full = 'false';
-    chargeHint.textContent = 'Giữ đến khi vòng đầy, rồi thả.';
+    setTiming('', 'Lắc', CHARGE_INSTRUCTION);
+    timingStatus.textContent = '';
     hosts.forEach((entry) => {
       entry.dataset.active = String(entry === host);
       entry.dataset.dim = String(entry !== host);
@@ -254,57 +264,92 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   }
 
   // ── Nhịp 1: Lắc ───────────────────────────────────────────────
-  function beginHold() {
-    if (phase !== 'charge' || holding) return;
-    holding = true;
-    fullSince = 0;
+  // Kim quét theo thời gian giữ; thả đúng khe vàng là "Tuyệt vời!" và tung mạnh nhất.
+  function setTiming(state, word, hint) {
+    root.dataset.timing = state;
+    shakeWord.textContent = word;
+    chargeHint.textContent = hint;
+  }
+
+  function showPower(value) {
+    power = value;
+    root.style.setProperty('--power', power.toFixed(4));
+  }
+
+  function sweepPower(elapsed) {
+    return (elapsed % SWEEP_MS) / SWEEP_MS;
+  }
+
+  function inGoldZone(value) {
+    return value >= GOLD_START && value <= GOLD_END;
+  }
+
+  function beginHold(input) {
+    if (phase !== 'charge' || hold) return;
+    hold = { input, start: performance.now() };
+    showPower(0);
     root.dataset.holding = 'true';
+    setTiming('', 'Lắc', CHARGE_INSTRUCTION);
+    timingStatus.textContent = '';
     sound.chargeStart();
     say('shake');
-    chargeLast = performance.now();
-    cancelAnimationFrame(chargeFrameId);
     chargeFrameId = requestAnimationFrame(chargeFrame);
   }
 
   function chargeFrame(now) {
-    const dt = Math.min(0.25, (now - chargeLast) / 1000);
-    chargeLast = now;
-    power = holding ? Math.min(1, power + dt / 1.6) : Math.max(0, power - dt * 2.4);
-    root.style.setProperty('--power', power.toFixed(3));
-    if (holding) {
-      sound.chargeUpdate(power);
-      if (now - lastRattle > 170 - 110 * power) {
-        lastRattle = now;
-        sound.rattle(power);
-        if (power > 0.45 && !reduced.matches) spark(2);
-      }
-      if (power >= 1) {
-        if (!fullSince) {
-          fullSince = now;
-          root.dataset.full = 'true';
-          chargeHint.textContent = 'Thả ra nào!';
-        }
-        // Giữ quá lâu thì túi tự bung, tránh kẹt lượt ở quầy.
-        if (now - fullSince > 1500) { endHold(); return; }
-      }
-    }
-    if (phase === 'charge' && (holding || power > 0)) chargeFrameId = requestAnimationFrame(chargeFrame);
-  }
-
-  function endHold() {
-    if (!holding) return;
-    holding = false;
-    root.dataset.holding = 'false';
-    root.dataset.full = 'false';
-    sound.chargeStop();
-    if (phase !== 'charge') return;
-    if (power < MIN_POWER) {
-      sound.fizzle();
-      say('fizzle');
-      chargeHint.textContent = 'Giữ lâu hơn, đầy vòng rồi hãy thả';
+    if (!hold) return;
+    const elapsed = Math.max(0, now - hold.start);
+    if (elapsed >= HOLD_LIMIT_MS) {
+      endHold(hold.input, 'timeout');
       return;
     }
-    void launch(power);
+    showPower(sweepPower(elapsed));
+    sound.chargeUpdate(power);
+    if (now - lastRattle > 170 - 110 * power) {
+      lastRattle = now;
+      sound.rattle(power);
+      if (power > 0.45 && !reduced.matches) spark(2);
+    }
+    const timing = inGoldZone(power) ? 'target' : '';
+    if (root.dataset.timing !== timing) {
+      setTiming(timing, timing ? 'Nhả!' : 'Lắc', timing ? 'Nhả ngay!' : CHARGE_INSTRUCTION);
+    }
+    chargeFrameId = requestAnimationFrame(chargeFrame);
+  }
+
+  function endHold(input, reason = 'release') {
+    if (phase !== 'charge' || hold?.input !== input) return;
+    const strength = reason === 'timeout' ? 0.65 : sweepPower(performance.now() - hold.start);
+    hold = null;
+    cancelAnimationFrame(chargeFrameId);
+    root.dataset.holding = 'false';
+    sound.chargeStop();
+
+    if (reason === 'cancel') {
+      showPower(0);
+      setTiming('', 'Lắc', CHARGE_INSTRUCTION);
+      return;
+    }
+    showPower(strength);
+    if (strength < MIN_POWER) {
+      showPower(0);
+      sound.fizzle();
+      say('fizzle');
+      setTiming('retry', 'Lắc', 'Giữ lại và nhả trong khe sáng!');
+      timingStatus.textContent = chargeHint.textContent;
+      return;
+    }
+
+    const perfect = reason === 'release' && inGoldZone(strength);
+    const rating = perfect ? 'Tuyệt vời!' : reason === 'timeout' ? 'Tự tung!' : strength > GOLD_END ? 'Qua khe!' : 'Được rồi!';
+    setTiming(perfect ? 'perfect' : 'released', rating, perfect ? 'Trúng khe sáng!' : '');
+    timingStatus.textContent = rating;
+    if (perfect) {
+      sound.perfect();
+      if (!reduced.matches) spark(15);
+    }
+    setPhase('timing');
+    setTimeout(() => { void launch(perfect ? 1 : Math.min(strength, 0.85)); }, perfect ? 620 : 460);
   }
 
   function spark(count) {
@@ -779,12 +824,14 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   $('#again').addEventListener('click', next);
   shakeBtn.addEventListener('pointerdown', (event) => {
     event.preventDefault();
+    if (event.button !== 0) return;
     shakeBtn.setPointerCapture?.(event.pointerId);
-    beginHold();
+    beginHold(event.pointerId);
   });
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => shakeBtn.addEventListener(type, endHold));
+  shakeBtn.addEventListener('pointerup', (event) => endHold(event.pointerId));
+  ['pointercancel', 'lostpointercapture'].forEach((type) => shakeBtn.addEventListener(type, (event) => endHold(event.pointerId, 'cancel')));
   shakeBtn.addEventListener('contextmenu', (event) => event.preventDefault());
-  addEventListener('blur', endHold);
+  addEventListener('blur', () => { if (hold) endHold(hold.input, 'cancel'); });
   root.addEventListener('animationend', (event) => { if (event.animationName === 'quake') root.classList.remove('quake'); });
 
   document.addEventListener('keydown', (event) => {
@@ -795,14 +842,14 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     if (event.code !== 'Space' && event.key !== 'Enter') return;
     if (phase === 'charge') {
       event.preventDefault();
-      beginHold();
+      beginHold('key');
     } else if (!event.target.closest?.('button')) {
       if (phase === 'idle') { event.preventDefault(); openChoosing(); }
       else if (phase === 'reveal') { event.preventDefault(); next(); }
     }
   });
   document.addEventListener('keyup', (event) => {
-    if (event.code === 'Space' || event.key === 'Enter') endHold();
+    if (event.code === 'Space' || event.key === 'Enter') endHold('key');
   });
   document.addEventListener('pointerdown', () => sound.unlock(), { capture: true });
 
