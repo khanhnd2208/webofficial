@@ -628,8 +628,10 @@
 	}
 
 	.hero {
-		/* Room for a guest hero's nameplate above the sprite. */
-		margin-top: 1rem;
+		/* Room for a guest hero's nameplate above the sprite, and beside it so the
+		   plate does not run over the student's name. */
+		margin: 1rem 1.5rem 0;
+		--nameplate-max: 9rem;
 	}
 
 	.hero > span {

@@ -68,6 +68,8 @@ function pathsCross(a: Point, b: Point, c: Point, d: Point) {
 	return side(a, b, c) * side(a, b, d) < 0 && side(c, d, a) * side(c, d, b) < 0;
 }
 
+const VERTICAL_REACH = 0.75;
+
 /** Choose a short route anywhere on the floor, rather than inside the starting cell. */
 export function nextRoamingSpot(
 	spot: RoamingSpot,
@@ -86,7 +88,11 @@ export function nextRoamingSpot(
 	const { cols, rows } = floorLayout(peers.length);
 	const edgeX = Math.min(49, ((size / 2 + 12) / width) * 100);
 	const edgeY = Math.min(49, ((size / 2 + 20) / height) * 100);
-	const clearance = Math.min(size * 0.8, (width / cols) * 0.68, (height / rows) * 0.68);
+	// Wider than the hero itself: the name under it and the plate above it need room too.
+	const clearance = Math.min(size * 1.15, (width / cols) * 0.68, (height / rows) * 0.68);
+	// A student is taller than wide (nameplate, hero, name), so vertical gaps
+	// count for less: nobody stops where they would cover a neighbour's name.
+	const reach = height * VERTICAL_REACH;
 	const from = { x: spot.x, y: spot.y };
 	for (let attempt = 0; attempt < 12; attempt += 1) {
 		const angle = random() * Math.PI * 2;
@@ -107,10 +113,10 @@ export function nextRoamingSpot(
 			if (other === spot) return true;
 			const current = currentPoint(other, now);
 			return (
-				distanceToPath(current, from, to, width, height) > clearance &&
-				distanceToPath({ x: other.x, y: other.y }, from, to, width, height) > clearance &&
+				distanceToPath(current, from, to, width, reach) > clearance &&
+				distanceToPath({ x: other.x, y: other.y }, from, to, width, reach) > clearance &&
 				(!other.walking ||
-					(distanceToPath(to, current, other, width, height) > clearance &&
+					(distanceToPath(to, current, other, width, reach) > clearance &&
 						!pathsCross(from, to, current, other)))
 			);
 		});

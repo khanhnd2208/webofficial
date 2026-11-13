@@ -186,8 +186,26 @@
 }
 
 @media (width <= 560px) {
+	/* The whole panel scrolls, so the list is not squeezed into one row. */
+	.panel {
+		display: block;
+		overflow: auto;
+	}
+
 	.panel footer {
 		flex-wrap: wrap;
+	}
+
+	.stats {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.stat dd {
+		font-size: 1.15rem;
+	}
+
+	.tableWrap {
+		overflow: auto visible;
 	}
 
 	.saveState,
