@@ -117,6 +117,29 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			const after = await data<Gradebook>(await page.request.get(`${base}/gradebook`));
 			const graded = after.students.find((student) => student.givenName === caughtName)!;
 			expect(graded.participation[week1.id]?.points).toBe(1);
+
+			// The call is also kept on the server, so another machine sees today's history.
+			const history = page.getByRole('complementary', { name: 'Lịch sử gọi' });
+			await page.getByRole('button', { name: /Đã gọi 1/ }).click();
+			await expect(history.getByText('Đã lưu lên máy chủ')).toBeVisible();
+			const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(
+				new Date(),
+			);
+			const saved = await data<{ turns: Array<{ playerName: string; result: string }> }>(
+				await page.request.get(
+					`/api/admin/teaching/courses/${before.class.courseId}/recall-arena/turns?date=${today}`,
+				),
+			);
+			expect(saved.turns).toEqual([
+				expect.objectContaining({ playerName: `Kiểm thử ${caughtName}`, result: 'pass' }),
+			]);
+			await page.evaluate(() => window.localStorage.clear());
+			await page.reload();
+			await setup.getByRole('button', { name: 'Tiếp' }).click();
+			await setup.getByRole('button', { name: 'Tiếp' }).click();
+			await setup.getByRole('button', { name: 'Vào trận' }).click();
+			await page.getByRole('button', { name: /Đã gọi 1/ }).click();
+			await expect(history.getByText(`Kiểm thử ${caughtName}`)).toBeVisible();
 		} finally {
 			await cleanupTeachingClass(page.request, klass.id);
 		}

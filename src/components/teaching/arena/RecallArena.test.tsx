@@ -8,6 +8,10 @@ import { RecallArena } from './RecallArena';
 import { ARENA_CHARACTERS } from './arenaCharacters';
 
 vi.mock('@/components/teaching/admin/api', () => ({ teachingApi: vi.fn() }));
+// The server log of calls has its own test; here the API mock sees only CP and Gift.
+vi.mock('./useArenaTurnLog', () => ({
+	useArenaTurnLog: () => ({ pending: 0, failed: false, rejected: 0, retry: () => {} }),
+}));
 vi.mock('canvas-confetti', () => ({ default: { create: () => vi.fn() } }));
 const motion = vi.hoisted(() => ({ reduced: true }));
 vi.mock('@/components/motion', () => ({

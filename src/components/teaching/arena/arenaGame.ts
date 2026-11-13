@@ -42,6 +42,10 @@ export interface ArenaHistoryEntry {
 	/** Gift count returned by the server after a missed answer. */
 	giftAfter?: number;
 	saveError?: string;
+	/** Group of a player typed in by hand, kept so the server log has it. */
+	group?: ArenaGroup;
+	/** True once the server has this turn in the course's arena log. */
+	synced?: boolean;
 }
 
 /** Per-session progress, kept in this browser so a reload does not lose the game. */
@@ -177,6 +181,11 @@ export function loadProgress(gameKey: string): ArenaProgress {
 		...stored,
 		history: Array.isArray(stored.history) ? stored.history : [],
 	};
+}
+
+/** Whether this browser already played today, so the server log is not loaded over it. */
+export function hasStoredProgress(gameKey: string) {
+	return readJson<unknown>(PROGRESS_KEY(gameKey)) != null;
 }
 
 export function saveProgress(gameKey: string, progress: ArenaProgress) {

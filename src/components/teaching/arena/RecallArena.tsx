@@ -39,6 +39,7 @@ import {
 	displayNames,
 	emptyProgress,
 	fullName,
+	hasStoredProgress,
 	hostSessions,
 	initialConfig,
 	isCpFinalized,
@@ -55,6 +56,7 @@ import {
 	type ArenaResult,
 } from './arenaGame';
 import { playArenaSound } from './arenaSound';
+import { useArenaTurnLog } from './useArenaTurnLog';
 import { STRIKE_MS, type StrikePower } from './arenaStrikes';
 import styles from './arena.module.css';
 
@@ -91,6 +93,8 @@ export function RecallArena({
 	const [restored, setRestored] = useState(false);
 	const [progress, setProgress] = useState<ArenaProgress>(emptyProgress);
 	const [progressLoaded, setProgressLoaded] = useState(false);
+	/** This browser has not played today: start from the server's saved calls. */
+	const [freshDay, setFreshDay] = useState(false);
 	const [setupOpen, setSetupOpen] = useState(true);
 	const [started, setStarted] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
@@ -173,6 +177,7 @@ export function RecallArena({
 
 	// One game per course per day: who was called, boss HP and history.
 	useEffect(() => {
+		setFreshDay(!hasStoredProgress(gameKey));
 		setProgress(loadProgress(gameKey));
 		setProgressLoaded(true);
 	}, [gameKey]);
@@ -180,6 +185,15 @@ export function RecallArena({
 	useEffect(() => {
 		if (progressLoaded) saveProgress(gameKey, progress);
 	}, [progress, progressLoaded, gameKey]);
+
+	const turnLog = useArenaTurnLog({
+		courseId,
+		todayIso: data.todayIso,
+		progress,
+		setProgress,
+		ready: progressLoaded,
+		loadFromServer: freshDay,
+	});
 
 	useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
@@ -318,6 +332,9 @@ export function RecallArena({
 			name: player ? fullName(player) : '',
 			cardId: current.cardId,
 			result,
+			...(player && isManualPlayer(player.enrollmentId) && player.group
+				? { group: player.group }
+				: {}),
 			...extra,
 		};
 		setProgress((previous) => ({ ...previous, history: [...previous.history, entry] }));
@@ -549,7 +566,9 @@ export function RecallArena({
 			setProgress((previous) => ({
 				...previous,
 				history: previous.history.map((item) =>
-					item.id === entry.id ? { ...item, saveError: undefined, cpAfter: result.points } : item,
+					item.id === entry.id
+						? { ...item, saveError: undefined, cpAfter: result.points, synced: false }
+						: item,
 				),
 			}));
 			setToast({ tone: 'ok', text: `Đã ghi CP ${result.points} cho ${entry.name}` });
@@ -600,7 +619,7 @@ export function RecallArena({
 		const ok = await confirm({
 			title: 'Bắt đầu lượt mới?',
 			description:
-				'Xóa lịch sử gọi và máu boss của hôm nay trên máy này. Điểm CP đã ghi vẫn giữ nguyên.',
+				'Xóa lịch sử gọi và máu boss của hôm nay trên máy này. Điểm CP, Gift và lịch sử đã lưu trên máy chủ vẫn giữ nguyên.',
 			confirmLabel: 'Bắt đầu lượt mới',
 		});
 		if (!ok) return;
@@ -747,6 +766,9 @@ export function RecallArena({
 							}}
 							retryingId={retryingId}
 							onRetry={handleRetry}
+							courseId={courseId}
+							todayIso={data.todayIso}
+							sync={turnLog}
 							onReset={() => void resetProgress()}
 							onClose={() => setHistoryOpen(false)}
 						/>
