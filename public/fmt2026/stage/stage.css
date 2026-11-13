@@ -191,6 +191,9 @@ canvas,
 .flash.go {
 	animation: flash 0.6s ease-out;
 }
+.flash.go.soft {
+	animation: flash-soft 0.45s ease-out;
+}
 canvas {
 	z-index: 8;
 	width: 100%;
@@ -481,6 +484,30 @@ h1 em {
 .primary:active {
 	transform: translateY(0.12em);
 }
+.intro .primary {
+	position: relative;
+	overflow: hidden;
+	animation: cta-pulse 1.9s ease-in-out infinite;
+}
+.intro .primary::after,
+.card::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(105deg, transparent 38%, #ffffffb8 50%, transparent 62%);
+	translate: -120% 0;
+	pointer-events: none;
+}
+.intro .primary::after {
+	animation: sheen 3.2s 1s ease-in-out infinite;
+}
+/* Lúc chọn, hai thầy cô sáng lên và nhún nhẹ để mời bấm. */
+.stage[data-phase='choosing'] .host .host-label {
+	animation: label-nudge 1.5s ease-in-out infinite;
+}
+.stage[data-phase='choosing'] .host[data-host='b'] .host-label {
+	animation-delay: -0.75s;
+}
 #hint {
 	margin: 0;
 	color: #f0d9c3;
@@ -609,18 +636,36 @@ h1 em {
 .shake-gauge .shake-slot {
 	inset: 4%;
 	rotate: var(--dial-start);
+	/* Lõi hẹp sáng nhất là 100%; ánh sáng mờ dần về hai đuôi. */
 	background: conic-gradient(
-		transparent 0 calc(var(--gold-start) * 1turn),
-		#ffcd7599 0 calc((var(--gold-start) + 0.006) * 1turn),
-		#fff6ce 0 calc((var(--gold-end) - 0.006) * 1turn),
-		#ffcd7599 0 calc(var(--gold-end) * 1turn),
-		transparent 0
+		transparent calc((var(--slot-mid) - var(--slot-tail)) * 1turn),
+		#ffcd7533 calc((var(--slot-mid) - var(--slot-tail) * 0.55) * 1turn),
+		#ffd58aa6 calc((var(--slot-mid) - var(--slot-core) * 2.2) * 1turn),
+		#fffbe6 calc((var(--slot-mid) - var(--slot-core)) * 1turn),
+		#fffbe6 calc((var(--slot-mid) + var(--slot-core)) * 1turn),
+		#ffd58aa6 calc((var(--slot-mid) + var(--slot-core) * 2.2) * 1turn),
+		#ffcd7533 calc((var(--slot-mid) + var(--slot-tail) * 0.55) * 1turn),
+		transparent calc((var(--slot-mid) + var(--slot-tail)) * 1turn)
 	);
 	mask-image: radial-gradient(transparent 63.5%, #000 64% 70%, transparent 70.5%);
 	filter: drop-shadow(0 0 0.42cqw #ffc871a6);
 }
 .shake-needle {
 	z-index: 1;
+}
+/* Mặt đồng hồ rực dần khi kim tiến về khe sáng. */
+.shake-gauge::after {
+	content: '';
+	position: absolute;
+	inset: 2%;
+	border-radius: 50%;
+	background: radial-gradient(circle, transparent 60%, #ffd98a59 67%, #ffc56a00 74%);
+	box-shadow: 0 0 2.4cqw 0.3cqw #ffcf7e73;
+	opacity: 0;
+	pointer-events: none;
+}
+.stage[data-holding='true'] .shake-gauge::after {
+	opacity: calc(var(--near, 0) * var(--near, 0));
 }
 .shake-pulse {
 	inset: 4%;
@@ -684,10 +729,25 @@ h1 em {
 	animation: timing-hit 0.42s ease-out;
 }
 .stage[data-timing='perfect'] .shake-pulse {
-	animation: timing-pulse 0.5s ease-out;
+	animation: timing-pulse 0.5s ease-out 2;
+}
+.stage[data-timing='perfect'] .shake-gauge::after {
+	opacity: 1;
+}
+.stage[data-timing='near'] .shake-face {
+	animation: timing-hit 0.36s ease-out;
+}
+.stage[data-timing='retry'] .shake-face {
+	animation: timing-miss 0.32s ease-out;
 }
 .stage[data-phase='timing'] .shake-face strong {
+	font-variant-numeric: tabular-nums;
+}
+.stage[data-timing='auto'] .shake-face strong {
 	font-size: max(10px, 2.15cqw);
+}
+.stage[data-timing='perfect'] .shake-face strong {
+	color: #8a4a12;
 }
 #chargeHint {
 	margin: 1.28cqw 0 0;
@@ -697,8 +757,58 @@ h1 em {
 	font-weight: 620;
 	text-wrap: balance;
 }
-.stage:is([data-timing='target'], [data-timing='perfect']) #chargeHint {
+.stage:is([data-timing='target'], [data-timing='perfect'], [data-timing='near']) #chargeHint {
 	color: #ffdb86;
+}
+
+/* ── Chấm điểm cú lắc và chuỗi chuẩn khe ─────────────────────────── */
+.rating {
+	position: absolute;
+	z-index: 9;
+	top: 5.2cqw;
+	left: 50%;
+	translate: -50% 0;
+	display: grid;
+	justify-items: center;
+	gap: 0.2cqw;
+	margin: 0;
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+}
+.rating strong {
+	color: #f3d6b3;
+	font:
+		italic 500 max(18px, 4.3cqw) / 1.1 'Playfair Display',
+		Georgia,
+		serif;
+	letter-spacing: -0.05em;
+	text-shadow: 0 0.2cqw 0.9cqw #1d0a10d9;
+}
+.rating span {
+	padding: 0.18em 0.7em 0.24em;
+	border-radius: 2em;
+	background: #2b171dd9;
+	color: #f6ead7;
+	font-size: max(9px, 1.2cqw);
+	font-weight: 640;
+}
+.rating[data-grade='perfect'] strong {
+	color: #ffe08f;
+	font-size: max(22px, 5.4cqw);
+	text-shadow:
+		0 0 1.6cqw #ffc45e99,
+		0 0.2cqw 0.9cqw #1d0a10d9;
+}
+.rating[data-grade='perfect'] span {
+	background: linear-gradient(#ffeac7, #e8b980);
+	color: #54292e;
+}
+.rating[data-grade='near'] strong {
+	color: #ffe9c4;
+}
+.rating.go {
+	animation: rating-pop 1.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 .visually-hidden {
 	position: absolute;
@@ -909,6 +1019,11 @@ h1 em {
 	font-size: 1.62cqw;
 	background: #f1cda0;
 }
+.stage[data-phase='reveal'] .bubble[data-loud='true'] {
+	top: 3.9cqw;
+	max-width: none;
+	white-space: nowrap;
+}
 
 /* ── Mở quà ────────────────────────────────────────────────────── */
 .reveal {
@@ -941,7 +1056,7 @@ h1 em {
 	display: none;
 }
 .stage[data-tier='common'] .rays {
-	display: none;
+	opacity: 0.45;
 }
 .card {
 	--paper: #f6ead7;
@@ -956,6 +1071,12 @@ h1 em {
 		radial-gradient(circle at 100% 3.6cqw, transparent 0.49cqw, black 0.52cqw);
 	mask-composite: intersect;
 	animation: card-in 0.45s cubic-bezier(0.2, 1.25, 0.4, 1) both;
+}
+.card::after {
+	animation: sheen 0.9s 0.5s ease-out both;
+}
+.stage:is([data-tier='rare'], [data-tier='epic']) .card::after {
+	animation: sheen 2.6s 0.5s ease-in-out infinite;
 }
 .stage[data-tier='rare'] .card {
 	--paper: #e8ece3;
@@ -995,6 +1116,29 @@ h1 em {
 	height: 100%;
 	object-fit: contain;
 	min-height: 0;
+	animation:
+		prize-pop 0.6s 0.12s cubic-bezier(0.2, 1.5, 0.4, 1) both,
+		prize-float 3s 0.8s ease-in-out infinite;
+}
+.shake-badge {
+	position: absolute;
+	top: 4.3cqw;
+	left: -0.5cqw;
+	padding: 0.25em 0.8em 0.3em;
+	border-radius: 0 0.3em 0.3em 0;
+	background: linear-gradient(#ffe08f, #e7ad56);
+	color: #54292e;
+	font-size: 0.98cqw;
+	font-weight: 780;
+	letter-spacing: 0.02em;
+	rotate: -4deg;
+	box-shadow: 0 0.15cqw 0 #9a6a35;
+	animation: badge-in 0.4s 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+.shake-badge:not([data-grade='perfect']) {
+	background: #54292e;
+	color: #f6ead7;
+	box-shadow: 0 0.15cqw 0 #2b171d;
 }
 .prize-art .heart {
 	width: 6.5cqw;
@@ -1056,7 +1200,15 @@ h2 {
 }
 .reveal .primary {
 	margin-top: 1.5cqw;
-	animation: fade-in 0.4s 0.9s both;
+	transition:
+		opacity 0.35s,
+		background 0.15s,
+		transform 0.15s;
+}
+/* Nút chỉ hiện khi màn mở quà đã đủ lâu để không bị bấm nhầm. */
+.reveal[data-ready='false'] .primary {
+	opacity: 0;
+	pointer-events: none;
 }
 .ring-wave {
 	position: absolute;
@@ -1446,6 +1598,85 @@ h2 {
 		transform: translate(0.15cqw, -0.1cqw);
 	}
 }
+@keyframes flash-soft {
+	15% {
+		opacity: 0.55;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes cta-pulse {
+	50% {
+		box-shadow:
+			0 0 0 0.5cqw #f6ead724,
+			0 0 2.2cqw #f2d2a866;
+		scale: 1.035;
+	}
+}
+@keyframes sheen {
+	0% {
+		translate: -120% 0;
+	}
+	45%,
+	100% {
+		translate: 120% 0;
+	}
+}
+@keyframes label-nudge {
+	50% {
+		translate: -50% calc(100% - 0.45cqw);
+		border-color: #fff1d7;
+	}
+}
+@keyframes rating-pop {
+	0% {
+		opacity: 0;
+		scale: 0.4;
+		rotate: -6deg;
+	}
+	18% {
+		opacity: 1;
+		scale: 1.12;
+		rotate: 2deg;
+	}
+	30%,
+	78% {
+		opacity: 1;
+		scale: 1;
+		rotate: 0deg;
+	}
+	100% {
+		opacity: 0;
+		scale: 1;
+		translate: -50% -1.2cqw;
+	}
+}
+@keyframes prize-pop {
+	from {
+		opacity: 0;
+		transform: scale(0.35) rotate(-14deg);
+	}
+}
+@keyframes prize-float {
+	50% {
+		transform: translateY(-0.45cqw) rotate(1.5deg);
+	}
+}
+@keyframes badge-in {
+	from {
+		opacity: 0;
+		translate: -2cqw 0;
+	}
+}
+@keyframes timing-miss {
+	25% {
+		translate: -0.4cqw 0;
+	}
+	60% {
+		translate: 0.35cqw 0;
+	}
+}
 @keyframes timing-hit {
 	30% {
 		scale: 1.065;
@@ -1531,6 +1762,27 @@ h2 {
 @media (max-width: 560px) {
 	.gate {
 		gap: 0.25rem;
+	}
+	.reveal .primary {
+		font-size: max(10px, 1.45cqw);
+	}
+	.rating span {
+		font-size: max(8px, 1.2cqw);
+	}
+}
+
+/* Điện thoại cầm dọc: sân khấu 16:9 rất nhỏ, nhắc xoay ngang. */
+@media (orientation: portrait) and (max-width: 560px) {
+	body {
+		align-content: center;
+		gap: 0.9rem;
+	}
+	body::after {
+		content: 'Xoay ngang điện thoại để sân khấu rộng hơn';
+		padding: 0 1rem;
+		color: #e0bda3;
+		font-size: 0.82rem;
+		text-align: center;
 	}
 }
 
