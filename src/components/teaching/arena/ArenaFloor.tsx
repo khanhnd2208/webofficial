@@ -179,7 +179,10 @@ export function ArenaFloor({
 						<span
 							className={styles.playerFigure}
 							style={
-								{ '--hero-accent': characters.get(player.enrollmentId)!.accent } as CSSProperties
+								{
+									'--hero-accent': characters.get(player.enrollmentId)!.accent,
+									'--hero-size': `${size}px`,
+								} as CSSProperties
 							}
 						>
 							{result ? (
@@ -196,6 +199,7 @@ export function ArenaFloor({
 								size={size}
 								walking={spot.walking && !paused && !reducedMotion}
 								attacking={attacking && !reducedMotion}
+								nameplate={size >= 44}
 								facingLeft={attacking ? attackCue.facingLeft : spot.facingLeft}
 							/>
 						</span>

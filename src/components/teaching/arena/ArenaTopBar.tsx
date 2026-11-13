@@ -141,7 +141,7 @@ export function ArenaTopBar({
 				</button>
 				<button
 					type="button"
-					className={styles.iconButton}
+					className={`${styles.iconButton} ${styles.fullscreenButton}`}
 					onClick={toggleFullscreen}
 					aria-label={fullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
 					title={fullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}

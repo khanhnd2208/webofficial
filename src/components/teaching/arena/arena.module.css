@@ -873,22 +873,23 @@
 	white-space: nowrap;
 }
 
-/* Answered today: a check above the head, and the student is not called again. */
+/* Answered today: a check at the shoulder, clear of the hero's nameplate and
+   face, and the student is not called again. */
 .playerDone {
 	position: absolute;
-	top: -0.35rem;
-	left: 50%;
+	top: 0.1rem;
+	left: calc(50% + var(--hero-size, 4rem) * 0.36);
 	z-index: 1;
 	display: grid;
-	width: 1.7rem;
-	height: 1.7rem;
+	width: clamp(1rem, calc(var(--hero-size, 4rem) * 0.33), 1.7rem);
+	height: clamp(1rem, calc(var(--hero-size, 4rem) * 0.33), 1.7rem);
 	place-items: center;
 	border: 2px solid #0b2a20;
 	border-radius: 50%;
 	background: var(--arena-ok);
 	box-shadow: 0 0 0.6rem rgb(52 211 153 / 55%);
 	color: #0b2a20;
-	font-size: 1rem;
+	font-size: clamp(0.6rem, calc(var(--hero-size, 4rem) * 0.2), 1rem);
 	font-weight: 900;
 	line-height: 1;
 	transform: translateX(-50%);
@@ -1109,7 +1110,9 @@
 .setupBackdrop {
 	position: absolute;
 	inset: 0;
-	z-index: 5;
+	/* Same layer as the victory screen and later in the page, so setup and the
+	   summary open over "K.O.!" instead of behind it. */
+	z-index: 6;
 	display: grid;
 	place-items: center;
 	padding: 1.5rem;
@@ -1724,6 +1727,13 @@
 	.toolbar {
 		flex-wrap: wrap;
 		justify-content: flex-start;
+	}
+}
+
+/* Phones: the controls fit one row under the settings chip. */
+@media (max-width: 480px) {
+	.fullscreenButton {
+		display: none;
 	}
 }
 

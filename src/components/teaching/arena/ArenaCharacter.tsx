@@ -11,6 +11,7 @@ export function ArenaCharacter({
 	attacking = false,
 	facingLeft = false,
 	decorative = true,
+	nameplate = true,
 }: {
 	character: Character;
 	size: number;
@@ -18,6 +19,8 @@ export function ArenaCharacter({
 	attacking?: boolean;
 	facingLeft?: boolean;
 	decorative?: boolean;
+	/** False where the hero is drawn too small for its nameplate to be read. */
+	nameplate?: boolean;
 }) {
 	return (
 		<span
@@ -38,7 +41,7 @@ export function ArenaCharacter({
 			role={decorative ? undefined : 'img'}
 			aria-label={decorative ? undefined : character.name}
 		>
-			{character.nameplate ? (
+			{character.nameplate && nameplate ? (
 				<span className={styles.nameplate} aria-hidden="true">
 					{character.shortName ?? character.name}
 				</span>
