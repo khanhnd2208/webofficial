@@ -2,7 +2,7 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 
 import { addAdminSession, createAdminRequest } from './helpers/adminSession';
 
-const PIN = '246810';
+const PIN = '2468';
 
 type Overview = {
 	settings: { totalSpins: number; isOpen: boolean };
@@ -27,7 +27,7 @@ test.describe('FMT 2026 booth', () => {
 		admin = await createAdminRequest();
 		before = await overview(admin);
 		const opened = await admin.patch('/api/admin/fmt2026/settings', {
-			data: { pin: PIN, isOpen: true, totalSpins: before.spinsUsed + 200 },
+			data: { pin: PIN, isOpen: false, totalSpins: before.spinsUsed + 200 },
 		});
 		expect(opened.ok()).toBe(true);
 	});
@@ -48,6 +48,11 @@ test.describe('FMT 2026 booth', () => {
 		const response = await request.post('/api/fmt2026/draw');
 		expect(response.status()).toBe(401);
 		expect(await response.json()).toMatchObject({ ok: false, code: 'LOCKED' });
+		const setup = await request.post('/api/fmt2026/setup', { data: {} });
+		expect(setup.status()).toBe(401);
+		expect(await (await request.get('/api/fmt2026/setup')).json()).toMatchObject({
+			data: { mode: 'unlock' },
+		});
 	});
 
 	test('the booth unlocks with the PIN and a teacher hands out a prize', async ({ page }) => {
@@ -58,19 +63,36 @@ test.describe('FMT 2026 booth', () => {
 		);
 
 		const stage = page.frameLocator('iframe[title="Quầy quà FMT 2026"]');
-		const pin = stage.getByLabel('Ban tổ chức nhập mã PIN để mở quầy quà');
+		await stage.getByRole('button', { name: 'Thiết lập', exact: true }).click();
+		const setup = stage.getByRole('dialog', { name: 'Thiết lập quầy' });
+		const pin = setup.getByLabel('Mã PIN');
 		await pin.fill('0000');
-		await stage.getByRole('button', { name: 'Mở quầy' }).click();
-		await expect(stage.getByText('Mã PIN không đúng')).toBeVisible();
+		await setup.getByRole('button', { name: 'Tiếp tục' }).click();
+		await expect(setup.getByText('Mã PIN không đúng')).toBeVisible();
 
 		await pin.fill(PIN);
-		await stage.getByRole('button', { name: 'Mở quầy' }).click();
+		await setup.getByRole('button', { name: 'Tiếp tục' }).click();
+		await expect(setup.getByRole('spinbutton', { name: 'Tổng lượt dự kiến' })).toBeVisible();
+		const quantity = setup.getByRole('spinbutton').first();
+		const prize = before.prizes[0]!;
+		await quantity.fill(String(prize.remaining + 1));
+		try {
+			await setup.getByRole('button', { name: 'Bắt đầu phiên chơi' }).click();
+			await expect(setup).toBeHidden();
+			const started = await overview(admin);
+			expect(started.settings.isOpen).toBe(true);
+			expect(started.prizes[0]?.remaining).toBe(prize.remaining + 1);
+			expect((await page.request.post('/api/fmt2026/setup', { data: {} })).status()).toBe(401);
+		} finally {
+			await admin.patch('/api/admin/fmt2026/prizes/' + prize.id, {
+				data: { remaining: prize.remaining },
+			});
+		}
 		await expect(stage.getByRole('heading', { name: 'Nhận quà trở về' })).toBeVisible();
 		const stock = stage.getByRole('list', { name: 'Các phần quà' });
 		await expect(stock).toBeVisible();
 		await expect(stock).not.toContainText(/\d/);
 
-		await stage.getByRole('button', { name: 'Chọn thầy cô' }).click();
 		await stage.getByRole('button', { name: 'Rút quà cùng thầy' }).click();
 		const shake = stage.getByRole('button', { name: 'Giữ để lắc túi quà' });
 		await expect(shake).toBeFocused();

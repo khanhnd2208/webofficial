@@ -8,7 +8,12 @@ import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 
 import { isPrizeTier, pickFromPool, summarizePool, type PrizeTier } from '../domain/drawPool';
-import type { PrizeCreateInput, PrizeUpdateInput, SettingsUpdateInput } from '../schemas';
+import type {
+	BoothSetupInput,
+	PrizeCreateInput,
+	PrizeUpdateInput,
+	SettingsUpdateInput,
+} from '../schemas';
 import type { AdminOverview, AdminPrize, BoothState, DrawResult, PublicPrize } from '../types';
 import { hashPin } from './boothUnlock';
 
@@ -167,6 +172,78 @@ export async function getAdminOverview(): Promise<AdminOverview> {
 			voidedAt: draw.voidedAt?.toISOString() ?? null,
 		})),
 	};
+}
+
+export async function configureBoothPin(pin: string): Promise<void> {
+	await prisma.$transaction(async (tx) => {
+		const settings = await lockBooth(tx);
+		if (settings.pinHash) {
+			throw new AppError('Quầy đã có PIN. Hãy mở lại phần thiết lập.', 409);
+		}
+		await tx.fmt2026Settings.update({
+			where: { id: SETTINGS_ID },
+			data: { pinHash: hashPin(pin), pinVersion: { increment: 1 } },
+		});
+	});
+}
+
+export async function getBoothSetup() {
+	const [settings, prizes] = await Promise.all([
+		loadSettings(prisma),
+		prisma.fmt2026Prize.findMany({
+			where: { isActive: true },
+			orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+			select: { id: true, name: true, remaining: true },
+		}),
+	]);
+	return { totalSpins: settings.totalSpins, prizes };
+}
+
+export async function startBooth(input: BoothSetupInput, pinVersion: number): Promise<void> {
+	await prisma.$transaction(async (tx) => {
+		const settings = await lockBooth(tx);
+		if (settings.pinVersion !== pinVersion || !settings.pinHash) {
+			throw new AppError('Mã PIN đã thay đổi. Hãy mở lại phần thiết lập.', 401, 'LOCKED');
+		}
+
+		if (settings.totalSpins !== input.previousTotalSpins) {
+			throw new AppError(
+				'Tổng lượt vừa thay đổi. Hãy mở lại phần thiết lập.',
+				409,
+				'STOCK_CHANGED',
+			);
+		}
+		const { prizes, spinsUsed } = await readPool(tx);
+		const active = prizes.filter((prize) => prize.isActive);
+		const changes = new Map(input.prizes.map((prize) => [prize.id, prize]));
+		for (const change of changes.values()) {
+			const current = active.find((prize) => prize.id === change.id);
+			if (current?.remaining !== change.previousRemaining) {
+				throw new AppError(
+					'Kho quà vừa thay đổi. Hãy mở lại phần thiết lập.',
+					409,
+					'STOCK_CHANGED',
+				);
+			}
+		}
+		const adjusted = active.map((prize) => ({
+			...prize,
+			remaining: changes.get(prize.id)?.remaining ?? prize.remaining,
+		}));
+		if (!summarizePool({ totalSpins: input.totalSpins, spinsUsed, prizes: adjusted }).spinsLeft) {
+			throw new AppError('Cần có ít nhất một lượt rút để bắt đầu.', 400);
+		}
+		for (const change of changes.values()) {
+			await tx.fmt2026Prize.update({
+				where: { id: change.id },
+				data: { remaining: change.remaining },
+			});
+		}
+		await tx.fmt2026Settings.update({
+			where: { id: SETTINGS_ID },
+			data: { totalSpins: input.totalSpins, isOpen: true },
+		});
+	});
 }
 
 function slugify(name: string): string {

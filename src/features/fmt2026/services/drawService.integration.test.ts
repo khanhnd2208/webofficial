@@ -4,11 +4,13 @@ import { prisma } from '@/lib/prisma';
 
 import { verifyPin } from './boothUnlock';
 import {
+	configureBoothPin,
 	createPrize,
 	drawOnce,
 	getAdminOverview,
 	getBoothState,
 	getPinState,
+	startBooth,
 	updatePrize,
 	updateSettings,
 	voidLastDraw,
@@ -83,6 +85,39 @@ describe('FMT 2026 draw service', () => {
 		expect(overview.prizes.find((p) => p.id === prize.id)?.remaining).toBe(1);
 		expect(overview.spinsUsed).toBe(0);
 		expect(overview.draws[0]?.voidedAt).not.toBeNull();
+	});
+
+	it('sets the initial booth PIN only once', async () => {
+		await configureBoothPin('2468');
+		const { pinHash } = await getPinState();
+		expect(verifyPin('2468', pinHash)).toBe(true);
+		await expect(configureBoothPin('1357')).rejects.toMatchObject({ status: 409 });
+		expect((await getPinState()).pinHash).toBe(pinHash);
+	});
+
+	it('rejects stale setup stock and starts atomically without erasing draws', async () => {
+		const prize = await createPrize({ name: 'Sổ', remaining: 2, tier: 'common' });
+		await drawOnce();
+		await updateSettings({ isOpen: false, pin: '2468' });
+		const { pinVersion } = await getPinState();
+		const snapshot = await getAdminOverview();
+		const previousRemaining = snapshot.prizes[0]!.remaining;
+		const input = {
+			totalSpins: 12,
+			previousTotalSpins: 4,
+			prizes: [{ id: prize.id, remaining: 5, previousRemaining }],
+		};
+
+		await updatePrize(prize.id, { remaining: previousRemaining + 1 });
+		await expect(startBooth(input, pinVersion)).rejects.toMatchObject({ code: 'STOCK_CHANGED' });
+		expect((await getAdminOverview()).settings).toMatchObject({ isOpen: false, totalSpins: 4 });
+		input.prizes[0]!.previousRemaining += 1;
+		await startBooth(input, pinVersion);
+		expect(await getAdminOverview()).toMatchObject({
+			settings: { isOpen: true, totalSpins: 12 },
+			spinsUsed: 1,
+			prizes: [{ id: prize.id, remaining: 5 }],
+		});
 	});
 
 	it('lets an admin change stock and planned spins at any time', async () => {

@@ -1,4 +1,5 @@
 import { api } from './booth-api.js';
+import { mountSetup } from './booth-setup.js';
 import { allocateSlots } from './wheel-slots.js';
 import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-content.js';
 
@@ -39,7 +40,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const gate = $('.gate');
   const gateStatus = $('#gateStatus');
   const errorText = $('#stageError');
-  const pinForm = $('#pinForm');
+  const setupButton = $('#openSetup');
   const retry = $('#retry');
   const intro = $('.intro');
   const chargeBox = $('.charge');
@@ -126,13 +127,12 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     refreshing = true;
     const before = phase;
     try {
-      const state = await api('state');
+      const state = await api('fmt2026/state');
       if (phase !== before) return;
       canDraw = state.unlocked && state.isOpen && state.spinsLeft > 0;
-      pinForm.hidden = state.unlocked || !state.hasPin;
-      retry.hidden = canDraw || !pinForm.hidden;
-      gateStatus.textContent = !state.hasPin ? 'Ban tổ chức chưa đặt mã PIN.'
-        : !state.unlocked ? ''
+      retry.hidden = true;
+      gateStatus.textContent = !state.hasPin ? 'Vào Thiết lập để đặt mã PIN.'
+        : !state.unlocked ? 'Vào Thiết lập để mở phiên chơi.'
         : !state.isOpen ? 'Quầy quà đang đóng.'
         : !state.spinsLeft ? 'Quầy đã hết lượt rút.'
         : '';
@@ -168,6 +168,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     const previous = phase;
     phase = next;
     root.dataset.phase = next;
+    setupButton.disabled = next === 'charge' || next === 'spin';
     hosts.forEach((host) => { host.disabled = next !== 'choosing'; });
     gate.hidden = !['loading', 'locked', 'unavailable'].includes(next);
     if (next === 'choosing' && previous !== next) hosts[0].focus({ preventScroll: true });
@@ -484,7 +485,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
 
   async function launch(strength) {
     turn += 1;
-    const pending = api('draw', {});
+    const pending = api('fmt2026/draw', {});
     const slots = buildSlots();
 
     setPose(active, 'present');
@@ -499,7 +500,6 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
       resetStage();
       canDraw = false;
       setPhase('unavailable');
-      pinForm.hidden = true;
       retry.hidden = false;
       gateStatus.textContent = '';
       showError(error instanceof Error ? error.message : 'Không nhận được kết quả rút quà.');
@@ -789,7 +789,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
 
   document.addEventListener('keydown', (event) => {
     sound.unlock();
-    if (event.repeat || event.target.closest?.('input')) return;
+    if (event.repeat || event.target.closest?.('dialog, input')) return;
     if (phase === 'choosing' && (event.key === 'ArrowLeft' || event.key === '1')) return choose(hosts[0]);
     if (phase === 'choosing' && (event.key === 'ArrowRight' || event.key === '2')) return choose(hosts[1]);
     if (event.code !== 'Space' && event.key !== 'Enter') return;
@@ -823,28 +823,16 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   });
 
   retry.addEventListener('click', () => void refreshBooth());
-  pinForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const input = $('#pin');
-    const button = pinForm.querySelector('button');
-    button.disabled = true;
-    showError('');
-    try {
-      await api('unlock', { pin: input.value });
-      input.value = '';
-      await refreshBooth();
-      if (phase === 'idle') $('#start').focus();
-    } catch (error) {
-      showError(error instanceof Error ? error.message : 'Không mở được quầy.');
-      input.select();
-    } finally {
-      button.disabled = false;
-    }
+  mountSetup(root, async () => {
+    resetStage();
+    setPhase('loading');
+    gateStatus.textContent = 'Đang bắt đầu phiên chơi…';
+    await refreshBooth('choosing');
   });
 
   setPhase('loading');
   void refreshBooth();
   setInterval(() => {
-    if (phase === 'idle' || phase === 'choosing') void refreshBooth(phase);
+    if ((phase === 'idle' || phase === 'choosing') && !$('#boothSetup').open) void refreshBooth(phase);
   }, 15000);
 })();
