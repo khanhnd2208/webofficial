@@ -1,6 +1,6 @@
 # Three lecturer boss concepts
 
-Concept previews inspired by the supplied five-person screenshot. The portrait image is used only for visible hair, glasses and general expression cues. These are original fantasy caricatures, not portraits. None is registered in the Arena catalogue yet.
+Concept previews inspired by the supplied five-person screenshot. The portrait image is used only for visible hair, glasses and general expression cues. These are original fantasy caricatures, not portraits. The three sheets are now registered in the Arena boss picker as Ma Sư Mến, Giám Khảo Khánh and Pháp Sư Hà Phương.
 
 | Person | Concept | Face and motion hook | Sprite sheet | Animated preview |
 | --- | --- | --- | --- | --- |

@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
+import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 
 import { ARENA_BOSSES } from './arenaBosses';
@@ -44,6 +45,31 @@ describe('Arena art catalogue', () => {
 		expect(artFiles('bosses').sort()).toEqual(sheets.sort());
 		for (const file of sheets) {
 			expect(statSync(path.join(ART, 'bosses', file)).size).toBeLessThanOrEqual(MAX_BYTES);
+		}
+	});
+
+	it('keeps illustrated boss cells transparent outside the character', async () => {
+		for (const boss of ARENA_BOSSES) {
+			if (boss.art.kind !== 'sheet') continue;
+			const file = path.join(ART, 'bosses', `${boss.art.file}.webp`);
+			const { data, info } = await sharp(file)
+				.ensureAlpha()
+				.raw()
+				.toBuffer({ resolveWithObject: true });
+			expect(info.width).toBe(info.height);
+			expect(info.width % 3).toBe(0);
+
+			const cell = info.width / 3;
+			for (let frame = 0; frame < 9; frame += 1) {
+				let transparent = 0;
+				for (let y = Math.floor(frame / 3) * cell; y < (Math.floor(frame / 3) + 1) * cell; y += 1) {
+					for (let x = (frame % 3) * cell; x < ((frame % 3) + 1) * cell; x += 1) {
+						if (data[(y * info.width + x) * info.channels + 3]! <= 32) transparent += 1;
+					}
+				}
+				const clearShare = transparent / (cell * cell);
+				expect(clearShare, `${boss.id} frame ${frame + 1}`).toBeGreaterThan(frame < 7 ? 0.3 : 0.99);
+			}
 		}
 	});
 });
