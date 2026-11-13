@@ -8,11 +8,17 @@ function teachingClass(classCode: string, term = 'HỌC KỲ 1 - NĂM HỌC 2026
 
 describe('compareTeachingClasses', () => {
 	it('orders class codes naturally inside the same course and term', () => {
-		const rows = [teachingClass('39-10'), teachingClass('39-2'), teachingClass('39-01')];
+		const rows = [
+			teachingClass('39-10'),
+			teachingClass('39-9'),
+			teachingClass('39-2'),
+			teachingClass('39-01'),
+		];
 
 		expect(rows.sort(compareTeachingClasses).map((row) => row.classCode)).toEqual([
 			'39-01',
 			'39-2',
+			'39-9',
 			'39-10',
 		]);
 	});

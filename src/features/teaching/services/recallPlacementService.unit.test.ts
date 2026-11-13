@@ -35,6 +35,7 @@ describe('class recall enablement', () => {
 				title: 'HRM Lesson 1',
 				lessonLabel: 'Lesson 1',
 				status: 'PUBLISHED',
+				position: 0,
 				_count: { cards: 4 },
 			},
 		]);
@@ -111,6 +112,7 @@ describe('class recall enablement', () => {
 				title: 'Lesson 1',
 				lessonLabel: 'Lesson 1',
 				status: 'PUBLISHED',
+				position: 0,
 				_count: { cards: 4 },
 			},
 			{
@@ -119,6 +121,7 @@ describe('class recall enablement', () => {
 				title: 'Lesson 2',
 				lessonLabel: 'Lesson 2',
 				status: 'PUBLISHED',
+				position: 0,
 				_count: { cards: 5 },
 			},
 		]);

@@ -34,6 +34,8 @@ function cardFingerprint(question: string, answer: string) {
 	return `${recallVisibleText(question).toLowerCase()}\u0000${recallVisibleText(answer).toLowerCase()}`;
 }
 
+const publishedDeckWhere = { status: 'PUBLISHED', cards: { some: {} } } as const;
+
 const cardSelect = {
 	id: true,
 	question: true,
@@ -186,26 +188,65 @@ async function resolveDeckCourse(input: {
 
 export async function listPublishedRecallDecks() {
 	const rows = await prisma.activeRecallDeck.findMany({
-		where: { status: 'PUBLISHED', cards: { some: {} } },
+		where: publishedDeckWhere,
 		orderBy: [{ position: 'asc' }, { title: 'asc' }],
 		include: {
 			course: { select: courseSelect },
 			_count: { select: { cards: true, classLinks: true } },
 		},
 	});
-	return rows.map(mapList);
+	return rows
+		.map(mapList)
+		.sort(
+			(left, right) =>
+				left.position - right.position || compareNaturalText(left.title, right.title),
+		);
 }
 
-export async function listPublishedRecallDecksForCourse(courseId: string) {
-	const rows = await prisma.activeRecallDeck.findMany({
-		where: { courseId, status: 'PUBLISHED', cards: { some: {} } },
-		orderBy: [{ position: 'asc' }, { title: 'asc' }],
-		include: {
-			course: { select: courseSelect },
-			_count: { select: { cards: true, classLinks: true } },
+export async function getPublishedRecallCourse(courseId: string) {
+	const course = await prisma.teachingCourse.findUnique({
+		where: { id: courseId, status: 'ACTIVE' },
+		select: {
+			courseName: true,
+			decks: {
+				where: publishedDeckWhere,
+				orderBy: { slug: 'asc' },
+				select: {
+					slug: true,
+					title: true,
+					lessonLabel: true,
+					description: true,
+					_count: { select: { cards: true } },
+				},
+			},
 		},
 	});
-	return rows.map(mapList);
+	if (!course?.decks.length) return null;
+	return {
+		courseName: course.courseName,
+		decks: course.decks.sort((left, right) => compareNaturalText(left.title, right.title)),
+	};
+}
+
+export async function getPublishedRecallDeckForCourse(courseId: string, slug: string) {
+	const row = await prisma.activeRecallDeck.findUnique({
+		where: { slug, courseId, course: { status: 'ACTIVE' }, ...publishedDeckWhere },
+		select: {
+			id: true,
+			title: true,
+			lessonLabel: true,
+			description: true,
+			course: { select: { courseName: true } },
+			cards: {
+				orderBy: { position: 'asc' },
+				select: { id: true, question: true, answer: true, questionVi: true, answerVi: true },
+			},
+		},
+	});
+	if (!row) return null;
+	const { course, ...deck } = row;
+	const { description, ...studyDeck } = deck;
+	return { description, studyDeck: { ...studyDeck, subject: course.courseName } };
 }
 
 export async function listPublishedRecallDecksForClass(classId: string) {
@@ -213,7 +254,7 @@ export async function listPublishedRecallDecksForClass(classId: string) {
 		where: {
 			classId,
 			enabled: true,
-			deck: { status: 'PUBLISHED', cards: { some: {} } },
+			deck: publishedDeckWhere,
 		},
 		orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
 		include: {
@@ -225,12 +266,18 @@ export async function listPublishedRecallDecksForClass(classId: string) {
 			},
 		},
 	});
-	return rows.map((row) => mapList(row.deck));
+	return rows
+		.sort(
+			(left, right) =>
+				left.displayOrder - right.displayOrder ||
+				compareNaturalText(left.deck.title, right.deck.title),
+		)
+		.map((row) => mapList(row.deck));
 }
 
 export async function getPublishedRecallDeck(slug: string) {
 	const row = await prisma.activeRecallDeck.findFirst({
-		where: { slug, status: 'PUBLISHED', cards: { some: {} } },
+		where: { slug, ...publishedDeckWhere },
 		include: {
 			course: { select: courseSelect },
 			cards: { orderBy: { position: 'asc' }, select: cardSelect },

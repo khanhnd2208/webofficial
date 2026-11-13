@@ -31,13 +31,19 @@ export async function getRecallArena(courseId: string): Promise<RecallArenaData>
 				id: true,
 				title: true,
 				lessonLabel: true,
+				position: true,
 				status: true,
 				_count: { select: { cards: true } },
 			},
 		}),
 	]);
 	const classIds = classRows.map((row) => row.id);
-	const decks = deckRows.filter((deck) => deck._count.cards > 0);
+	const decks = deckRows
+		.filter((deck) => deck._count.cards > 0)
+		.sort(
+			(left, right) =>
+				left.position - right.position || compareNaturalText(left.title, right.title),
+		);
 	const [gradebooks, groups, links, cards] = await Promise.all([
 		Promise.all(classIds.map((id) => getGradebook(id))),
 		repo.prisma.teachingEnrollment.findMany({

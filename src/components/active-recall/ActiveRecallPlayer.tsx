@@ -13,7 +13,7 @@ import {
 
 import { useRecallStudy } from './useRecallStudy';
 
-import type { ActiveRecallDeckDTO } from '@/features/active-recall';
+import type { ActiveRecallStudyDeck } from '@/features/active-recall';
 import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/richText';
 
 import {
@@ -88,7 +88,7 @@ export default function ActiveRecallPlayer({
 	surface,
 	classSlug,
 }: {
-	deck: ActiveRecallDeckDTO;
+	deck: ActiveRecallStudyDeck;
 	backHref?: string;
 	backLabel?: string;
 	showViToggle?: boolean;

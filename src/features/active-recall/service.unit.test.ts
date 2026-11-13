@@ -46,25 +46,22 @@ describe('class-scoped Active Recall queries', () => {
 	});
 
 	it('lists only published decks that are enabled for the class', async () => {
-		mocks.linkFindMany.mockResolvedValue([
-			{
-				deck: {
-					id: 'deck-1',
-					slug: 'hrm-lesson-1',
-					title: 'Lesson 1',
-					subject: 'Human Resource Management',
-					lessonLabel: 'Lesson 1',
-					description: '',
-					status: 'PUBLISHED',
-					position: 0,
-					updatedAt: new Date('2026-09-01T00:00:00.000Z'),
-					publishedAt: new Date('2026-09-01T00:00:00.000Z'),
-					courseId: 'course-1',
-					course: { id: 'course-1', courseCode: 'HRM101', courseName: 'Human Resource Management' },
-					_count: { cards: 8 },
-				},
-			},
-		]);
+		const deck = {
+			id: 'deck-1',
+			slug: 'hrm-lesson-1',
+			title: 'Lesson 1',
+			subject: 'Human Resource Management',
+			lessonLabel: 'Lesson 1',
+			description: '',
+			status: 'PUBLISHED',
+			position: 0,
+			updatedAt: new Date('2026-09-01T00:00:00.000Z'),
+			publishedAt: new Date('2026-09-01T00:00:00.000Z'),
+			courseId: 'course-1',
+			course: { id: 'course-1', courseCode: 'HRM101', courseName: 'Human Resource Management' },
+			_count: { cards: 8 },
+		};
+		mocks.linkFindMany.mockResolvedValue([{ displayOrder: 0, deck }]);
 
 		const decks = await listPublishedRecallDecksForClass('class-1');
 
@@ -79,6 +76,25 @@ describe('class-scoped Active Recall queries', () => {
 		);
 		expect(decks).toEqual([
 			expect.objectContaining({ slug: 'hrm-lesson-1', courseId: 'course-1' }),
+		]);
+	});
+
+	it('sorts tied class placements naturally and respects explicit class order', async () => {
+		const sharedDeck = {
+			updatedAt: new Date('2026-09-01T00:00:00.000Z'),
+			publishedAt: null,
+			_count: { cards: 8 },
+		};
+		mocks.linkFindMany.mockResolvedValue([
+			{ displayOrder: 0, deck: { ...sharedDeck, title: 'Lesson 10' } },
+			{ displayOrder: 0, deck: { ...sharedDeck, title: 'Lesson 9' } },
+			{ displayOrder: 1, deck: { ...sharedDeck, title: 'Lesson 1' } },
+		]);
+
+		expect((await listPublishedRecallDecksForClass('class-1')).map((deck) => deck.title)).toEqual([
+			'Lesson 9',
+			'Lesson 10',
+			'Lesson 1',
 		]);
 	});
 

@@ -1,4 +1,5 @@
 import { AppError } from '@/lib/appError';
+import { compareNaturalText } from '@/lib/naturalSort';
 
 import * as repo from '../repositories/teachingRepository';
 import type { UpdateTeachingClassRecallInput } from '../schemas';
@@ -23,6 +24,10 @@ export async function listClassRecallAssignments(
 	});
 	const byDeck = new Map(links.map((link) => [link.deckId, link]));
 	return decks
+		.sort(
+			(left, right) =>
+				left.position - right.position || compareNaturalText(left.title, right.title),
+		)
 		.map((deck, index) => {
 			const link = byDeck.get(deck.id);
 			return {
@@ -39,7 +44,7 @@ export async function listClassRecallAssignments(
 		})
 		.sort(
 			(left, right) =>
-				left.displayOrder - right.displayOrder || left.title.localeCompare(right.title, 'vi'),
+				left.displayOrder - right.displayOrder || compareNaturalText(left.title, right.title),
 		);
 }
 

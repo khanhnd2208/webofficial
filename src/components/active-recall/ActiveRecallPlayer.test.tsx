@@ -229,9 +229,6 @@ describe('ActiveRecallPlayer', () => {
 								'<p>A <em>system</em> with <u>policies</u> and <span style="color: #dc2626">risk</span>.</p>',
 							questionVi: '',
 							answerVi: '',
-							position: 0,
-							createdAt: '',
-							updatedAt: '',
 						},
 					],
 				}}
@@ -257,9 +254,6 @@ describe('ActiveRecallPlayer', () => {
 							answer: 'Answer',
 							questionVi: '',
 							answerVi: '',
-							position: 0,
-							createdAt: '',
-							updatedAt: '',
 						},
 					],
 				}}
@@ -445,9 +439,6 @@ describe('ActiveRecallPlayer', () => {
 							answer: 'A system of policies.',
 							questionVi: 'HRM là gì?',
 							answerVi: 'Một hệ thống chính sách.',
-							position: 0,
-							createdAt: '',
-							updatedAt: '',
 						},
 						{
 							id: 'b',
@@ -455,9 +446,6 @@ describe('ActiveRecallPlayer', () => {
 							answer: 'Answer two',
 							questionVi: '',
 							answerVi: '',
-							position: 1,
-							createdAt: '',
-							updatedAt: '',
 						},
 					],
 				}}

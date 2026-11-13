@@ -240,10 +240,14 @@ export function isLopPath(pathname: string): boolean {
 	return pathname === '/lop' || pathname.startsWith('/lop/');
 }
 
-/** Full-bleed public shells (intro + mục lục + My Space + class board) — no GateBack top inset. */
+/** Public surfaces that supply their own spacing and navigation. */
 export function isFullBleedPublicPath(pathname: string): boolean {
 	return (
-		isIntroPath(pathname) || isTocPath(pathname) || isMySpacePath(pathname) || isLopPath(pathname)
+		isIntroPath(pathname) ||
+		isTocPath(pathname) ||
+		isMySpacePath(pathname) ||
+		isLopPath(pathname) ||
+		matchesPrefix(pathname, routes.publicCourseRecallRoot)
 	);
 }
 
@@ -349,7 +353,7 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 export function isSiteHeaderPath(pathname: string): boolean {
 	const path = barePath(pathname);
 	if (path === routes.home) return false;
-	if (isLopPath(path)) return false;
+	if (isLopPath(path) || matchesPrefix(path, routes.publicCourseRecallRoot)) return false;
 	if (path.startsWith('/admin')) return false;
 	if (path.startsWith('/my-space/my-class')) return false;
 	if (path.startsWith('/my-space/teaching')) return false;

@@ -55,7 +55,7 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		archiveGroup: 'Teaching',
 		adminHref: routes.admin.teaching,
 		adminPrefixes: [routes.admin.teaching, routes.admin.activeRecall],
-		publicPrefixes: ['/lop', routes.activeRecall],
+		publicPrefixes: ['/lop', routes.activeRecall, routes.publicCourseRecallRoot],
 		navGroup: 'Giảng dạy',
 		// Teaching keeps its own workspace; the menu leads there and says so.
 		nav: { label: 'Lớp & môn học', href: routes.mySpaceTeaching, leavesAdmin: true },

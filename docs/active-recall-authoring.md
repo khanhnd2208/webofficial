@@ -36,8 +36,8 @@ than silently omitting it.
 
 - Creation saves a draft, even when populated through bulk import.
 - Choose **Công khai**, then **Lưu và công khai**, when the content is ready.
-  A published deck's edits become visible on save. A class must also enable that
-  deck in its recall workspace to display it to its students.
+  A published deck's edits become visible on save. For the class board, enable
+  the deck in that class's recall workspace and turn on class sharing.
 - **Lưu trữ** confirms the action and saves current edits together with the
   archived status. Invalid/pending input blocks this write. Archiving hides the
   deck from students and retains its contents. Choose draft and save to restore.
@@ -48,6 +48,16 @@ than silently omitting it.
 The existing admin import API remains available to scripts and other consumers;
 its server-side import behavior is unchanged. CSV/TSV parsing is shared, including
 quoted headers and quoted multiline spreadsheet cells.
+
+## Share course review with students
+
+In **Teaching → Lớp và môn học**, open a course and select **Active Recall**.
+Use **Sao chép link môn** to share all published decks with cards. For a direct
+link, open a published deck's action menu and choose **Sao chép link bộ thẻ**.
+Students can study without signing in. The course page lists only that course's
+published decks, and the player returns to that list. Class visibility and
+class-level deck settings apply to class boards. The shared course page orders
+numbered titles naturally, such as Lecture 9 before Lecture 10.
 
 ## Verification
 
