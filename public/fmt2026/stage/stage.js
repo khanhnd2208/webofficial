@@ -2,7 +2,6 @@ import { api } from './booth-api.js';
 import { mountSetup } from './booth-setup.js';
 import { allocateSlots } from './wheel-slots.js';
 import { createShakeTiming } from './shake-timing.js';
-import { createStreak } from './streak.js';
 import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } from './stage-content.js';
 
 (() => {
@@ -56,7 +55,6 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
   const bubble = $('.bubble');
   const reveal = $('.reveal');
   const ratingEl = $('.rating');
-  const streak = createStreak($('.streak'));
   const confetti = FMT.confetti($('canvas'));
 
   let phase = 'loading';
@@ -65,7 +63,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
   let sinceEpic = 0;
   let idleTimer = 0;
   let turn = 0;
-  let lastGrade = '';
+  let lastShake = null;
   let nextAllowedAt = 0;
   let barkSide = 0;
   const recent = [];
@@ -207,6 +205,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     say,
     onPower: (value) => { power = value; },
     onRating: showRating,
+    reduced: () => reduced.matches,
     launch,
   });
 
@@ -289,28 +288,22 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     shakeBtn.focus({ preventScroll: true });
   }
 
-  // Chấm điểm cú lắc: chữ lớn bật lên, chuỗi chuẩn khe của quầy tăng hoặc đứt.
-  function showRating({ grade, rating }) {
-    lastGrade = grade;
+  // Chấm điểm cú lắc: chữ lớn bật lên kèm độ chính xác của người chơi.
+  function showRating({ grade, rating, accuracy }) {
+    lastShake = { grade, accuracy };
     const perfect = grade === 'perfect';
-    const result = streak.record(perfect);
-    let note = pick(RATING_NOTES[grade]);
-    if (result.isRecord) note = 'Kỷ lục mới của quầy: ×' + result.current + '!';
-    else if (result.current > 1) note = result.current + ' lượt chuẩn khe liên tiếp!';
-    else if (result.lost > 1) note = 'Đứt chuỗi ×' + result.lost + ' rồi!';
     ratingEl.dataset.grade = grade;
     ratingEl.querySelector('strong').textContent = rating;
-    ratingEl.querySelector('span').textContent = note;
+    ratingEl.querySelector('span').textContent = accuracy === null ? pick(RATING_NOTES.auto) : 'Độ chính xác ' + accuracy + '% · ' + pick(RATING_NOTES[grade]);
     bubble.hidden = true;
     ratingEl.hidden = false;
     ratingEl.classList.remove('go');
     void ratingEl.offsetWidth;
     ratingEl.classList.add('go');
     if (perfect) {
-      buzz(result.isRecord ? [30, 40, 30, 40, 60] : [30, 40, 30]);
-      if (result.isRecord) sound.record();
+      buzz([30, 40, 30]);
       if (!reduced.matches) {
-        spark(22 + Math.min(4, result.current) * 8);
+        spark(34);
         $('.flash').classList.remove('go', 'soft');
         void root.offsetWidth;
         $('.flash').classList.add('go', 'soft');
@@ -631,7 +624,12 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     reveal.querySelector('.heart').hidden = !luck;
     reveal.querySelector('.stamp').hidden = !luck;
     reveal.querySelector('.banner').hidden = tier !== 'epic';
-    reveal.querySelector('.shake-badge').hidden = lastGrade !== 'perfect';
+    const badge = reveal.querySelector('.shake-badge');
+    badge.hidden = !lastShake || lastShake.accuracy === null;
+    if (!badge.hidden) {
+      badge.dataset.grade = lastShake.grade;
+      badge.textContent = 'Lắc chuẩn ' + lastShake.accuracy + '%';
+    }
     // Người chơi còn đang bấm dồn phím Lắc: giữ màn mở quà một nhịp để không bị bỏ qua nhầm.
     nextAllowedAt = performance.now() + (reduced.matches ? 400 : tier === 'epic' ? 2600 : 1300);
     reveal.dataset.ready = 'false';
@@ -785,7 +783,7 @@ import { COLORS, COUPONS, LINES, LUCK, RATING_NOTES, SHORT_NAMES, TIER_LABEL } f
     root.dataset.tier = '';
     bubble.hidden = true;
     ratingEl.hidden = true;
-    lastGrade = '';
+    lastShake = null;
     hosts.forEach((host) => {
       host.dataset.dim = 'false';
       host.dataset.active = 'false';

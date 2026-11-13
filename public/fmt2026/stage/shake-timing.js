@@ -3,22 +3,28 @@ const SWEEP_MS = 2350;
 const HOLD_LIMIT_MS = 8000;
 // Một cú chạm lỡ tay ngắn hơn mức này không tính là lắc.
 const MIN_HOLD_MS = 420;
-const GOLD_START = 0.727;
-const GOLD_END = 0.773;
-const GOLD_MID = (GOLD_START + GOLD_END) / 2;
-// Vùng "sát khe" quanh khe sáng: không trúng nhưng vẫn được khen.
-const NEAR_MARGIN = 0.055;
+// Khe sáng nằm ở đỉnh mặt đồng hồ. Lõi rất hẹp cho 100%; ra hai phía độ chính xác giảm đều
+// và về 0% ở điểm đối diện. Một vòng 2,35 giây nên 1% ứng với khoảng 11 mili giây.
+const SLOT_MID = 0.75;
+const SLOT_CORE = 0.01;
+// Phần đuôi sáng mờ dần hai bên lõi (chỉ để nhìn).
+const SLOT_TAIL = 0.07;
+const NEAR_ACCURACY = 90;
+// Từ mức này trở lên mặt nút đổi thành "Nhả!".
+const CUE_ACCURACY = 94;
 const INSTRUCTION = 'Giữ Lắc, nhả khi kim lọt vào khe sáng.';
 
-export function createShakeTiming({ root, button, hint, word, status, sound, getPhase, setPhase, say, onPower, onRating, launch }) {
+export function createShakeTiming({ root, button, hint, word, status, sound, getPhase, setPhase, say, onPower, onRating, reduced, launch }) {
   let hold = null;
   let frameId = 0;
   let launchTimer = 0;
   let power = 0;
-  let wasInGold = false;
+  let wasInCue = false;
+  let countId = 0;
 
-  root.style.setProperty('--gold-start', GOLD_START);
-  root.style.setProperty('--gold-end', GOLD_END);
+  root.style.setProperty('--slot-mid', SLOT_MID);
+  root.style.setProperty('--slot-core', SLOT_CORE);
+  root.style.setProperty('--slot-tail', SLOT_TAIL);
 
   function setTiming(state, label, instruction) {
     root.dataset.timing = state;
@@ -38,6 +44,7 @@ export function createShakeTiming({ root, button, hint, word, status, sound, get
     if (hold) sound.stopShakeMusic();
     hold = null;
     cancelAnimationFrame(frameId);
+    cancelAnimationFrame(countId);
     clearTimeout(launchTimer);
     root.dataset.holding = 'false';
     showPower(0);
@@ -49,20 +56,39 @@ export function createShakeTiming({ root, button, hint, word, status, sound, get
     return (elapsed % SWEEP_MS) / SWEEP_MS;
   }
 
-  function inGoldZone(value) {
-    return value >= GOLD_START && value <= GOLD_END;
-  }
-
   // Khoảng cách vòng tròn từ kim tới giữa khe sáng (0..0.5).
   function gap(value) {
-    const distance = Math.abs(value - GOLD_MID);
+    const distance = Math.abs(value - SLOT_MID);
     return Math.min(distance, 1 - distance);
+  }
+
+  // Độ chính xác 0..100. Chỉ trong lõi khe mới được 100; ngoài lõi cao nhất là 99.
+  function accuracyOf(value) {
+    const off = gap(value) - SLOT_CORE;
+    if (off <= 0) return 100;
+    return Math.min(99, Math.max(0, Math.floor(100 * (1 - off / (0.5 - SLOT_CORE)))));
+  }
+
+  // Số phần trăm chạy từ 0 lên trên mặt nút.
+  function countTo(target) {
+    cancelAnimationFrame(countId);
+    if (reduced()) {
+      word.textContent = target + '%';
+      return;
+    }
+    const start = performance.now();
+    const step = (now) => {
+      const u = Math.min(1, (now - start) / 380);
+      word.textContent = Math.round(target * (1 - (1 - u) ** 3)) + '%';
+      if (u < 1) countId = requestAnimationFrame(step);
+    };
+    step(start);
   }
 
   function begin(input) {
     if (getPhase() !== 'charge' || hold) return;
     hold = { input, start: performance.now() };
-    wasInGold = false;
+    wasInCue = false;
     showPower(0);
     root.dataset.holding = 'true';
     setTiming('', 'Lắc', INSTRUCTION);
@@ -80,11 +106,11 @@ export function createShakeTiming({ root, button, hint, word, status, sound, get
       return;
     }
     showPower(sweepPower(elapsed));
-    const gold = inGoldZone(power);
-    // Tiếng "ting" mỗi lần kim lướt qua khe giúp người chơi bắt nhịp ở vòng sau.
-    if (gold && !wasInGold) sound.slotPass();
-    wasInGold = gold;
-    const timing = gold ? 'target' : '';
+    const cue = accuracyOf(power) >= CUE_ACCURACY;
+    // Tiếng "ting" mỗi lần kim lướt tới khe giúp người chơi bắt nhịp ở vòng sau.
+    if (cue && !wasInCue) sound.slotPass();
+    wasInCue = cue;
+    const timing = cue ? 'target' : '';
     if (root.dataset.timing !== timing) {
       setTiming(timing, timing ? 'Nhả!' : 'Lắc', timing ? 'Nhả ngay!' : INSTRUCTION);
     }
@@ -115,21 +141,33 @@ export function createShakeTiming({ root, button, hint, word, status, sound, get
     }
 
     showPower(value);
-    const perfect = reason === 'release' && inGoldZone(value);
-    const near = reason === 'release' && !perfect && gap(value) <= NEAR_MARGIN + (GOLD_END - GOLD_START) / 2;
+    if (reason === 'timeout') {
+      // Giữ quá lâu: túi tự tung, không chấm điểm.
+      setTiming('auto', 'Tự tung!', '');
+      status.textContent = 'Tự tung!';
+      onRating({ grade: 'auto', rating: 'Tự tung!', accuracy: null });
+      setPhase('timing');
+      launchTimer = setTimeout(() => { void launch(0.65); }, 520);
+      return;
+    }
+    const accuracy = accuracyOf(value);
+    const perfect = accuracy === 100;
+    const near = !perfect && accuracy >= NEAR_ACCURACY;
     // Nửa vòng ngay sau khe là "trễ", nửa vòng trước khe là "sớm".
-    const late = (value - GOLD_MID + 1) % 1 < 0.5;
-    const grade = perfect ? 'perfect' : reason === 'timeout' ? 'auto' : near ? 'near' : 'ok';
-    const rating = perfect ? 'Chuẩn khe!' : reason === 'timeout' ? 'Tự tung!' : near ? 'Sát khe!' : late ? 'Hơi trễ!' : 'Hơi sớm!';
-    setTiming(perfect ? 'perfect' : near ? 'near' : 'released', rating, perfect ? 'Trúng khe sáng!' : near ? 'Suýt trúng khe sáng!' : '');
-    status.textContent = rating;
+    const late = (value - SLOT_MID + 1) % 1 < 0.5;
+    const grade = perfect ? 'perfect' : near ? 'near' : 'ok';
+    const rating = perfect ? 'Chuẩn khe!' : near ? 'Sát khe!' : late ? 'Hơi trễ!' : 'Hơi sớm!';
+    const summary = 'Độ chính xác ' + accuracy + '%';
+    setTiming(perfect ? 'perfect' : near ? 'near' : 'released', '0%', summary);
+    countTo(accuracy);
+    status.textContent = rating + ' ' + summary;
     if (perfect) sound.perfect();
     else if (near) sound.near();
-    onRating({ grade, rating });
+    onRating({ grade, rating, accuracy });
     setPhase('timing');
-    // Càng sát khe, quà tung càng mạnh; kết quả rút vẫn do máy chủ quyết định.
-    const strength = perfect ? 1 : reason === 'timeout' ? 0.65 : Math.max(0.45, 0.88 - gap(value) * 1.1);
-    launchTimer = setTimeout(() => { void launch(strength); }, perfect ? 760 : 520);
+    // Càng chính xác, quà tung càng mạnh; kết quả rút vẫn do máy chủ quyết định.
+    const strength = Math.max(0.45, accuracy / 100);
+    launchTimer = setTimeout(() => { void launch(strength); }, perfect ? 820 : 620);
   }
 
   button.addEventListener('pointerdown', (event) => {

@@ -194,9 +194,6 @@ FMT.sound = (() => {
 		near() {
 			[784, 988].forEach((freq, index) => marimba(freq, index * 0.07, 0.15));
 		},
-		record() {
-			[1047, 1319, 1568, 2093].forEach((freq, index) => brass(freq / 2, 0.3 + index * 0.09, 0.2, 0.08));
-		},
 		launch(power) {
 			noise(0, 0.55, { peak: 0.22, freq: 400, to: 5200, q: 1.4, attack: 0.02 });
 			note(180, 0, 0.3, { type: 'triangle', peak: 0.3, to: 720 + power * 500 });

@@ -34,9 +34,9 @@ export const COUPONS = [
 ];
 // Dòng phụ dưới chữ chấm điểm cú lắc.
 export const RATING_NOTES = {
-	perfect: ['Nhả đúng khe sáng!', 'Tay vàng đây rồi!', 'Không lệch một li!'],
-	near: ['Chỉ lệch một chút xíu!', 'Suýt nữa là chuẩn khe!'],
-	ok: ['Quà vẫn bay lên nhé!', 'Lượt sau canh khe sáng nha!'],
+	perfect: ['Không lệch một li!', 'Tay vàng đây rồi!', 'Tuyệt đối luôn!'],
+	near: ['Lệch có một chút xíu!', 'Suýt nữa là tuyệt đối!'],
+	ok: ['Quà vẫn bay lên nhé!', 'Túi vẫn tung như thường!'],
 	auto: ['Giữ lâu quá, túi tự tung rồi!'],
 };
 export const LINES = {

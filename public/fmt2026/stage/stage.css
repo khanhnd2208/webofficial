@@ -636,12 +636,16 @@ h1 em {
 .shake-gauge .shake-slot {
 	inset: 4%;
 	rotate: var(--dial-start);
+	/* Lõi hẹp sáng nhất là 100%; ánh sáng mờ dần về hai đuôi. */
 	background: conic-gradient(
-		transparent 0 calc(var(--gold-start) * 1turn),
-		#ffcd7599 0 calc((var(--gold-start) + 0.006) * 1turn),
-		#fff6ce 0 calc((var(--gold-end) - 0.006) * 1turn),
-		#ffcd7599 0 calc(var(--gold-end) * 1turn),
-		transparent 0
+		transparent calc((var(--slot-mid) - var(--slot-tail)) * 1turn),
+		#ffcd7533 calc((var(--slot-mid) - var(--slot-tail) * 0.55) * 1turn),
+		#ffd58aa6 calc((var(--slot-mid) - var(--slot-core) * 2.2) * 1turn),
+		#fffbe6 calc((var(--slot-mid) - var(--slot-core)) * 1turn),
+		#fffbe6 calc((var(--slot-mid) + var(--slot-core)) * 1turn),
+		#ffd58aa6 calc((var(--slot-mid) + var(--slot-core) * 2.2) * 1turn),
+		#ffcd7533 calc((var(--slot-mid) + var(--slot-tail) * 0.55) * 1turn),
+		transparent calc((var(--slot-mid) + var(--slot-tail)) * 1turn)
 	);
 	mask-image: radial-gradient(transparent 63.5%, #000 64% 70%, transparent 70.5%);
 	filter: drop-shadow(0 0 0.42cqw #ffc871a6);
@@ -737,7 +741,13 @@ h1 em {
 	animation: timing-miss 0.32s ease-out;
 }
 .stage[data-phase='timing'] .shake-face strong {
+	font-variant-numeric: tabular-nums;
+}
+.stage[data-timing='auto'] .shake-face strong {
 	font-size: max(10px, 2.15cqw);
+}
+.stage[data-timing='perfect'] .shake-face strong {
+	color: #8a4a12;
 }
 #chargeHint {
 	margin: 1.28cqw 0 0;
@@ -799,61 +809,6 @@ h1 em {
 }
 .rating.go {
 	animation: rating-pop 1.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
-}
-.streak {
-	position: absolute;
-	z-index: 6;
-	bottom: 2.75cqw;
-	left: 4.3%;
-	display: flex;
-	align-items: baseline;
-	gap: 0.5em;
-	margin: 0;
-	padding: 0.3em 0.7em 0.36em;
-	border: 1px solid #edc19c42;
-	border-radius: 0.3em;
-	background: #372327;
-	color: #e0bda3;
-	font-size: clamp(7px, 0.98cqw, 17px);
-	font-weight: 600;
-	white-space: nowrap;
-	transition:
-		border-color 0.3s,
-		box-shadow 0.3s;
-}
-.streak strong {
-	color: #bfa08f;
-	font-size: 1.35em;
-	font-weight: 800;
-	line-height: 1;
-}
-.streak small {
-	padding-left: 0.6em;
-	border-left: 1px solid #edc19c45;
-	font-size: 0.92em;
-}
-.streak[data-live='true'] {
-	border-color: #ffd98a;
-	box-shadow: 0 0 calc(0.5cqw * var(--heat, 1)) #ffc45e73;
-	color: #ffe9c4;
-}
-.streak[data-live='true'] strong {
-	color: #ffd76a;
-}
-.streak[data-heat='1'] {
-	--heat: 1;
-}
-.streak[data-heat='2'] {
-	--heat: 2;
-}
-.streak[data-heat='3'] {
-	--heat: 3.2;
-}
-.streak.bump {
-	animation: streak-bump 0.6s cubic-bezier(0.2, 1.5, 0.4, 1);
-}
-.stage:is([data-phase='loading'], [data-phase='locked'], [data-phase='unavailable']) .streak {
-	display: none;
 }
 .visually-hidden {
 	position: absolute;
@@ -1179,6 +1134,11 @@ h1 em {
 	rotate: -4deg;
 	box-shadow: 0 0.15cqw 0 #9a6a35;
 	animation: badge-in 0.4s 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+.shake-badge:not([data-grade='perfect']) {
+	background: #54292e;
+	color: #f6ead7;
+	box-shadow: 0 0.15cqw 0 #2b171d;
 }
 .prize-art .heart {
 	width: 6.5cqw;
@@ -1692,12 +1652,6 @@ h2 {
 		translate: -50% -1.2cqw;
 	}
 }
-@keyframes streak-bump {
-	35% {
-		scale: 1.22;
-		rotate: -3deg;
-	}
-}
 @keyframes prize-pop {
 	from {
 		opacity: 0;
@@ -1808,16 +1762,6 @@ h2 {
 @media (max-width: 560px) {
 	.gate {
 		gap: 0.25rem;
-	}
-	/* Màn hẹp: chỉ giữ con số của chuỗi để không đè lên dải quà. */
-	.streak {
-		bottom: 3.4cqw;
-		left: 3.6%;
-		padding-inline: 0.5em;
-	}
-	.streak span,
-	.streak small {
-		display: none;
 	}
 	.reveal .primary {
 		font-size: max(10px, 1.45cqw);
