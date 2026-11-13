@@ -75,6 +75,18 @@ export const OPERATING_MODULES: readonly OperatingModule[] = [
 		nav: { leavesAdmin: true },
 	},
 	{
+		id: 'fmt2026',
+		status: 'active',
+		label: 'Quầy quà FMT 2026',
+		description: 'Kho quà, mã PIN và lịch sử bốc quà ở booth FMT 2026',
+		icon: 'workspace_premium',
+		archiveGroup: 'FMT 2026',
+		adminHref: routes.admin.fmt2026,
+		adminPrefixes: [routes.admin.fmt2026],
+		publicPrefixes: [routes.fmt2026],
+		navGroup: 'Website',
+	},
+	{
 		id: 'unreleased-quiz',
 		status: 'archived',
 		label: 'Quiz UNRELEASED',

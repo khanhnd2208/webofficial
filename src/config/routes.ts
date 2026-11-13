@@ -119,6 +119,8 @@ export const routes = {
 	/** UNRELEASED workshop: anonymous post-workshop feedback and gift. */
 	unreleasedGift: '/unreleasedgift',
 	unreleasedGiftThanks: '/unreleasedgift/thank-you',
+	/** FMT 2026 booth: PIN-gated prize draw on the event laptop. */
+	fmt2026: '/fmt2026',
 	notes: '/ghi-chep',
 	note: (slug: string) => `/ghi-chep/${slug}` as const,
 	growth: '/phat-trien-ban-than',
@@ -201,6 +203,7 @@ export const routes = {
 		unreleasedQuizExport: '/api/admin/unreleased-quiz/export',
 		unreleasedGift: '/admin/unreleased-gift',
 		unreleasedGiftExport: '/api/admin/unreleased-gift/export',
+		fmt2026: '/admin/fmt2026',
 		myspaceTestNew: '/admin/myspace-tests/new',
 		myspaceTestEdit: (id: string) => `/admin/myspace-tests/${id}` as const,
 		myspaceTestAnalytics: '/admin/myspace-tests/analytics',
