@@ -190,6 +190,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 				);
 			};
 			await enroll(host, 'An', '11');
+			await enroll(host, 'Bảo', '12');
 			await enroll(home, 'Giang', '21');
 			const hostBook = await data<Gradebook>(
 				await page.request.get(`/api/admin/teaching/classes/${host}/gradebook`),
@@ -209,7 +210,10 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await data(
 				await page.request.put(`/api/admin/teaching/sessions/${hostWeek1.id}/attendance`, {
 					data: {
-						marks: [{ enrollmentId: hostBook.students[0]!.enrollmentId, status: 'PRESENT' }],
+						marks: hostBook.students.map((student) => ({
+							enrollmentId: student.enrollmentId,
+							status: 'PRESENT',
+						})),
 					},
 				}),
 			);
@@ -252,7 +256,12 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await expect(setup.getByText(/Học bù · CP ghi vào lớp 02, tuần 1/)).toBeVisible();
 			await setup.getByRole('button', { name: 'Mở chấm CP tuần 1' }).click();
 			await setup.getByRole('checkbox', { name: /Học bù An/ }).uncheck();
+			await setup.getByRole('checkbox', { name: /Học bù Bảo/ }).uncheck();
 			await expect(setup.getByText('1 bạn trong trận')).toBeVisible();
+			await setup.getByRole('button', { name: 'Tiếp' }).click();
+
+			// The call rule: everyone, and each student answers once.
+			await expect(setup.getByRole('radio', { name: /Cả lớp/ })).toBeChecked();
 			await setup.getByRole('button', { name: 'Tiếp' }).click();
 
 			await setup.getByRole('button', { name: 'Chọn tất cả' }).click();
@@ -279,15 +288,33 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 				await page.request.get(`/api/admin/teaching/classes/${home}/gradebook`),
 			);
 			expect(after.students[0]!.participation[homeWeek1.id]?.points).toBe(1);
+			// Giang answered, so nobody is left until An and Bảo join.
+			await expect(page.getByRole('button', { name: /Đã gọi hết/ })).toBeDisabled();
+			await page.getByRole('button', { name: /Tuần 1/ }).click();
+			await setup.getByRole('button', { name: /Người chơi/ }).click();
+			await setup.getByRole('checkbox', { name: /Học bù An/ }).check();
+			await setup.getByRole('checkbox', { name: /Học bù Bảo/ }).check();
+			await setup.getByRole('button', { name: 'Xong' }).click();
+
+			const next = page.getByRole('dialog', { name: /Học bù (An|Bảo)/ });
 			await page.getByRole('button', { name: /Bắt!/ }).click();
-			await expect(caught.getByText(firstQuestion!)).toHaveCount(0);
+			await expect(next.getByText(firstQuestion!)).toHaveCount(0);
 			await expect(
-				caught.getByText(firstQuestion === 'Câu bài một' ? 'Câu bài hai' : 'Câu bài một'),
+				next.getByText(firstQuestion === 'Câu bài một' ? 'Câu bài hai' : 'Câu bài một'),
 			).toBeVisible();
-			await caught.getByRole('button', { name: 'Vừa đủ qua' }).click();
+			await next.getByRole('button', { name: 'Vừa đủ qua' }).click();
+			await expect(next).toHaveCount(0);
 
 			await page.getByRole('button', { name: /Bắt!/ }).click();
-			await expect(caught.getByText(/Các câu trong bài đã chọn đều đã qua/)).toBeVisible();
+			await expect(next.getByText(/Các câu trong bài đã chọn đều đã qua/)).toBeVisible();
+			await next.getByRole('button', { name: 'Vừa đủ qua' }).click();
+
+			// Everyone answered once: the session summary lists all three.
+			await expect(page.getByRole('button', { name: /Đã gọi hết/ })).toBeDisabled();
+			await page.getByRole('button', { name: /Kết thúc/ }).click();
+			const summary = page.getByRole('dialog', { name: 'Tổng kết phiên' });
+			await expect(summary.getByText('3/3')).toBeVisible();
+			await expect(summary.getByRole('row')).toHaveCount(4);
 		} finally {
 			for (const deckId of deckIds) {
 				await page.request.delete(`/api/admin/teaching/courses/${courseId}/recall/${deckId}`);

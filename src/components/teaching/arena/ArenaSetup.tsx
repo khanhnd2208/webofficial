@@ -13,17 +13,21 @@ import { ArenaSetupCast } from './ArenaSetupCast';
 import { ArenaSetupClasses } from './ArenaSetupClasses';
 import { ArenaSetupLessons } from './ArenaSetupLessons';
 import { ArenaSetupPlayers } from './ArenaSetupPlayers';
+import { ArenaSetupRules } from './ArenaSetupRules';
 import { arenaCast } from './arenaCharacters';
 import { callablePlayers, type ArenaConfig } from './arenaGame';
 import styles from './arena.module.css';
 import setup from './arenaSetup.module.css';
 import { useArenaDialogFocus } from './useArenaDialogFocus';
 
-export type ArenaSetupStep = 'classes' | 'players' | 'lessons' | 'cast';
+export type ArenaSetupStep = 'classes' | 'players' | 'rules' | 'lessons' | 'cast';
+
+const RULE_SUMMARY = { ALL: 'Cả lớp', CHALLENGE: 'Challenging', SUPPORT: 'Supporting' } as const;
 
 const STEPS: Array<{ id: ArenaSetupStep; label: string }> = [
 	{ id: 'classes', label: 'Lớp học' },
 	{ id: 'players', label: 'Người chơi' },
+	{ id: 'rules', label: 'Luật gọi' },
 	{ id: 'lessons', label: 'Bài học' },
 	{ id: 'cast', label: 'Nhân vật' },
 ];
@@ -42,6 +46,7 @@ export function ArenaSetup({
 	sessions,
 	hosts,
 	roster,
+	answered,
 	started,
 	initialStep = 'classes',
 	openingCpId,
@@ -57,6 +62,8 @@ export function ArenaSetup({
 	sessions: TeachingSessionRecord[];
 	hosts: TeachingSessionRecord[];
 	roster: RecallArenaPlayer[];
+	/** Students who already answered today; they are not called again. */
+	answered: ReadonlySet<string>;
 	/** True once the lecturer entered the game; the main button then just closes. */
 	started: boolean;
 	initialStep?: ArenaSetupStep;
@@ -76,6 +83,7 @@ export function ArenaSetup({
 	const summary: Record<ArenaSetupStep, string> = {
 		classes: config.classIds.length ? `${config.classIds.length} lớp` : 'Chưa chọn',
 		players: `${roster.length} bạn`,
+		rules: RULE_SUMMARY[config.filter],
 		lessons: chosenDecks.length ? `${chosenDecks.length} bài · ${cardTotal} câu` : 'Chưa chọn bài',
 		cast: `${arenaCast(config.heroIds).length} nhân vật`,
 	};
@@ -152,6 +160,14 @@ export function ArenaSetup({
 							openingCpId={openingCpId}
 							onChange={onChange}
 							onOpenCp={onOpenCp}
+						/>
+					) : null}
+					{step === 'rules' ? (
+						<ArenaSetupRules
+							config={config}
+							roster={roster}
+							answered={answered}
+							onChange={onChange}
 						/>
 					) : null}
 					{step === 'lessons' ? (

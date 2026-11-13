@@ -2,12 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 
-import {
-	arenaCpSession,
-	presentAt,
-	type ArenaGroup,
-	type ArenaGroupFilter,
-} from '@/features/teaching/domain/recallArena';
+import { arenaCpSession, presentAt, type ArenaGroup } from '@/features/teaching/domain/recallArena';
 import type {
 	RecallArenaData,
 	RecallArenaPlayer,
@@ -24,12 +19,6 @@ import {
 } from './arenaGame';
 import styles from './arena.module.css';
 import setup from './arenaSetup.module.css';
-
-const FILTER_LABEL: Record<ArenaGroupFilter, string> = {
-	ALL: 'Cả lớp',
-	CHALLENGE: 'Chỉ Challenging',
-	SUPPORT: 'Chỉ Supporting',
-};
 
 const GROUP_TAG = { CHALLENGE: 'Challenging', SUPPORT: 'Supporting' } as const;
 const SEARCH_LIMIT = 8;
@@ -90,13 +79,6 @@ export function ArenaSetupPlayers({
 				.filter((player) => matchesPlayerSearch(player, query))
 				.slice(0, SEARCH_LIMIT)
 		: [];
-
-	const counts: Record<ArenaGroupFilter, number> = {
-		ALL: roster.length,
-		CHALLENGE: roster.filter((player) => player.group === 'CHALLENGE').length,
-		SUPPORT: roster.filter((player) => player.group === 'SUPPORT').length,
-	};
-	const noGroup = roster.length - counts.CHALLENGE - counts.SUPPORT;
 
 	function add(player: RecallArenaPlayer) {
 		onChange({
@@ -192,28 +174,7 @@ export function ArenaSetupPlayers({
 		<div className={setup.section}>
 			<div className={setup.sectionHead}>
 				<span className={setup.total}>{roster.length} bạn trong trận</span>
-				<label className={setup.inline}>
-					<span className={setup.inlineLabel}>Gọi ai</span>
-					<select
-						className={setup.select}
-						value={config.filter}
-						onChange={(event) =>
-							onChange({ ...config, filter: event.target.value as ArenaGroupFilter })
-						}
-					>
-						{(Object.keys(FILTER_LABEL) as ArenaGroupFilter[]).map((filter) => (
-							<option key={filter} value={filter}>
-								{FILTER_LABEL[filter]} ({counts[filter]})
-							</option>
-						))}
-					</select>
-				</label>
 			</div>
-			{noGroup > 0 && config.filter !== 'ALL' ? (
-				<p className={styles.setupHint}>
-					{noGroup} bạn chưa chọn nhóm chỉ được gọi khi chọn “Cả lớp”.
-				</p>
-			) : null}
 
 			<div className={setup.search}>
 				<label className={setup.searchLabel} htmlFor="arena-player-search">

@@ -8,7 +8,7 @@ import type { RecallArenaPlayer } from '@/features/teaching/types';
 
 import { suckStyle, type ArenaSuck } from './ArenaEffects';
 import { ArenaCharacter } from './ArenaCharacter';
-import { arenaCharacterFor } from './arenaCharacters';
+import type { ArenaCharacter as Character } from './arenaCharacters';
 import { floorLayout, nextRoamingSpot, startingSpots, type RoamingSpot } from './arenaRoaming';
 import { STRIKE_HERO_SCALE } from './arenaStrikes';
 import styles from './arena.module.css';
@@ -29,24 +29,25 @@ export function ArenaFloor({
 	highlightId,
 	caughtId,
 	hunting,
-	calledIds,
+	results,
 	names,
 	suck,
 	attackCue,
-	heroIds,
+	heroOf,
 }: {
 	players: RecallArenaPlayer[];
 	highlightId: string | null;
 	caughtId: string | null;
 	hunting: boolean;
-	calledIds: ReadonlySet<string>;
+	/** How each student who already answered today did; they are not called again. */
+	results: ReadonlyMap<string, 'pass' | 'fail'>;
 	/** Label per enrollment, already made unique for this room. */
 	names: ReadonlyMap<string, string>;
 	/** The grab in progress, if any: reticle, flight into the mouth, landing. */
 	suck: ArenaSuck | null;
 	attackCue: ArenaAttackCue | null;
-	/** Heroes the lecturer put in play; empty means all of them. */
-	heroIds: readonly string[];
+	/** Today's hero for a student. */
+	heroOf: (player: RecallArenaPlayer) => Character;
 }) {
 	const { reduced: reducedMotion } = useMotionTier();
 	const floorRef = useRef<HTMLDivElement>(null);
@@ -133,14 +134,8 @@ export function ArenaFloor({
 	}, [players, initial, count, size, reducedMotion, paused]);
 
 	const characters = useMemo(
-		() =>
-			new Map(
-				players.map((player) => [
-					player.enrollmentId,
-					arenaCharacterFor(player.studentCode, heroIds),
-				]),
-			),
-		[players, heroIds],
+		() => new Map(players.map((player) => [player.enrollmentId, heroOf(player)])),
+		[players, heroOf],
 	);
 
 	return (
@@ -157,13 +152,14 @@ export function ArenaFloor({
 				const highlighted = highlightId === player.enrollmentId;
 				const caught = caughtId === player.enrollmentId;
 				const attacking = attackCue?.enrollmentId === player.enrollmentId;
+				const result = results.get(player.enrollmentId);
 				return (
 					<div
 						key={player.enrollmentId}
 						className={styles.player}
 						data-highlight={highlighted || undefined}
 						data-caught={caught || undefined}
-						data-called={calledIds.has(player.enrollmentId) || undefined}
+						data-called={result}
 						data-attacking={(attacking && !reducedMotion) || undefined}
 						data-player-id={player.enrollmentId}
 						data-walking={(spot.walking && !paused && !reducedMotion) || undefined}
@@ -186,6 +182,15 @@ export function ArenaFloor({
 								{ '--hero-accent': characters.get(player.enrollmentId)!.accent } as CSSProperties
 							}
 						>
+							{result ? (
+								<span
+									className={styles.playerDone}
+									data-result={result}
+									title={result === 'pass' ? 'Đã vượt qua' : 'Đã trả lời'}
+								>
+									✓
+								</span>
+							) : null}
 							<ArenaCharacter
 								character={characters.get(player.enrollmentId)!}
 								size={size}
@@ -199,6 +204,11 @@ export function ArenaFloor({
 							title={names.get(player.enrollmentId) ?? player.givenName}
 						>
 							{names.get(player.enrollmentId) ?? player.givenName}
+							{result ? (
+								<span className={styles.srOnly}>
+									{result === 'pass' ? ', đã vượt qua' : ', đã trả lời'}
+								</span>
+							) : null}
 						</span>
 					</div>
 				);
