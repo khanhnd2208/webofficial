@@ -56,6 +56,7 @@ import {
 	type ArenaResult,
 } from './arenaGame';
 import { playArenaSound } from './arenaSound';
+import { useArenaKeyboard } from './useArenaKeyboard';
 import { useArenaTurnLog } from './useArenaTurnLog';
 import { saveArenaGrade } from './arenaTurnLog';
 import { STRIKE_MS, type StrikePower } from './arenaStrikes';
@@ -640,56 +641,14 @@ export function RecallArena({
 		if (!started && phase === 'idle') bossIntro(progress.round);
 	}
 
-	// Keyboard: Space hunts; in a question, keys press the matching button.
-	useEffect(() => {
-		function onKey(event: KeyboardEvent) {
-			const target = event.target;
-			if (
-				target instanceof Element &&
-				target.closest('input, select, textarea, [contenteditable="true"]')
-			)
-				return;
-			if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
-			if (setupOpen) {
-				if (event.key === 'Escape' && started) closeSetup();
-				return;
-			}
-			const key = event.key.toLowerCase();
-			if (key === 'escape' && historyOpen && phase !== 'caught') {
-				setHistoryOpen(false);
-				return;
-			}
-			if (
-				(key === ' ' || key === 'enter') &&
-				target instanceof Element &&
-				target.closest('button, a')
-			)
-				return;
-			if (phase === 'idle' && (key === ' ' || key === 'enter')) {
-				event.preventDefault();
-				startHunt();
-				return;
-			}
-			if (phase === 'victory' && (key === ' ' || key === 'enter')) {
-				event.preventDefault();
-				newBoss();
-				return;
-			}
-			if (phase === 'caught') {
-				// An exiting catch dialog can remain mounted while the next one opens.
-				const button = Array.from(
-					document.querySelectorAll<HTMLButtonElement>(
-						`[role="dialog"][aria-modal="true"] [data-arena-key="${CSS.escape(key)}"]`,
-					),
-				).at(-1);
-				if (button && !button.disabled) {
-					event.preventDefault();
-					button.click();
-				}
-			}
-		}
-		window.addEventListener('keydown', onKey);
-		return () => window.removeEventListener('keydown', onKey);
+	useArenaKeyboard({
+		setupOpen,
+		onCloseSetup: started ? closeSetup : undefined,
+		historyOpen,
+		onCloseHistory: () => setHistoryOpen(false),
+		phase,
+		onHunt: startHunt,
+		onNewBoss: newBoss,
 	});
 
 	const caughtPlayer = current ? (playersById.get(current.enrollmentId) ?? null) : null;
