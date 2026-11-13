@@ -100,22 +100,14 @@ export function returnToBag(
 	];
 }
 
-/** Next unused card, or start the deck over once every card has been asked. */
+/** Draw from the questions that have yet to be passed. */
 export function drawCard(
 	cardIds: readonly string[],
-	usedIds: readonly string[],
+	passedIds: ReadonlySet<string>,
 	random: RandomSource = Math.random,
-): { cardId: string | null; used: string[] } {
-	if (cardIds.length === 0) return { cardId: null, used: [] };
-	const used = new Set(usedIds.filter((id) => cardIds.includes(id)));
-	let fresh = cardIds.filter((id) => !used.has(id));
-	if (fresh.length === 0) {
-		used.clear();
-		fresh = [...cardIds];
-	}
-	const cardId = fresh[Math.floor(random() * fresh.length)]!;
-	used.add(cardId);
-	return { cardId, used: [...used] };
+): string | null {
+	const available = cardIds.filter((id) => !passedIds.has(id));
+	return available[Math.floor(random() * available.length)] ?? null;
 }
 
 export interface ArenaSessionCandidate {
@@ -223,13 +215,14 @@ export function buildArenaRoster<T extends ArenaRosterCandidate>(
  * class has no live session that week.
  */
 export function arenaCpSession<S extends ArenaHostSession>(
-	player: Pick<ArenaRosterCandidate, 'classId' | 'tutorialClassId'>,
+	player: Pick<ArenaRosterCandidate, 'classId' | 'tutorialClassId' | 'enrolledFromWeek'>,
 	hostSessions: readonly ArenaHostSession[],
 	allSessions: readonly S[],
 ): S | null {
 	const reference =
 		hostSessions.find((session) => session.classId === player.classId) ?? hostSessions[0];
-	if (!reference || !player.tutorialClassId) return null;
+	if (!reference || !player.tutorialClassId || player.enrolledFromWeek > reference.weekNumber)
+		return null;
 	return (
 		allSessions.find(
 			(session) =>

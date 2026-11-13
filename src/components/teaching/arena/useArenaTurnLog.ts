@@ -10,8 +10,8 @@ import { arenaTurnsUrl, entryFromTurn, turnPayload, type RecallArenaTurnDay } fr
 
 /**
  * Keeps the course's arena log on the server in step with this browser:
- * every call is sent once (in order, retried on demand), and a browser that
- * has not played today starts from what other machines saved.
+ * every call is sent once (in order, retried on demand), and the browser
+ * also picks up turns saved by other machines.
  */
 export function useArenaTurnLog({
 	courseId,
@@ -19,7 +19,6 @@ export function useArenaTurnLog({
 	progress,
 	setProgress,
 	ready,
-	loadFromServer,
 }: {
 	courseId: string;
 	todayIso: string;
@@ -27,9 +26,9 @@ export function useArenaTurnLog({
 	setProgress: Dispatch<SetStateAction<ArenaProgress>>;
 	/** False until this browser's own progress is read. */
 	ready: boolean;
-	/** True when this browser has nothing saved for today. */
-	loadFromServer: boolean;
 }) {
+	const [loadedDay, setLoadedDay] = useState<string | null>(null);
+	const dayKey = `${courseId}:${todayIso}`;
 	const [failed, setFailed] = useState(false);
 	const [round, setRound] = useState(0);
 	const sending = useRef(false);
@@ -40,7 +39,7 @@ export function useArenaTurnLog({
 	).length;
 
 	useEffect(() => {
-		if (!ready || !loadFromServer) return;
+		if (!ready) return;
 		let cancelled = false;
 		teachingApi<RecallArenaTurnDay>(arenaTurnsUrl(courseId, todayIso))
 			.then((day) => {
@@ -56,12 +55,15 @@ export function useArenaTurnLog({
 				});
 			})
 			.catch(() => {
-				// The game still runs; only other machines' calls are missing.
+				// Local progress is still available while the history service is offline.
+			})
+			.finally(() => {
+				if (!cancelled) setLoadedDay(dayKey);
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, [ready, loadFromServer, courseId, todayIso, setProgress]);
+	}, [ready, courseId, todayIso, dayKey, setProgress]);
 
 	useEffect(() => {
 		if (!ready || failed || sending.current) return;
@@ -97,6 +99,7 @@ export function useArenaTurnLog({
 	}, [ready, failed, round, rejected, progress.history, courseId, setProgress]);
 
 	return {
+		loading: loadedDay !== dayKey,
 		/** Calls this browser has not saved to the server yet. */
 		pending,
 		failed: failed && pending > 0,

@@ -512,6 +512,8 @@ export interface RecallArenaTurnRecord {
 	result: 'pass' | 'fail' | 'skip';
 	award: number | null;
 	cpAfter: number | null;
+	/** Previous mark on a newly committed CP award. */
+	cpPrevious?: number;
 	giftAfter: number | null;
 }
 

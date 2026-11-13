@@ -307,13 +307,18 @@ export const recallArenaAwardSchema = z
 	})
 	.strict();
 
+const recallArenaGradeSchema = z.discriminatedUnion('kind', [
+	z.object({ kind: z.literal('cp'), sessionId: z.string().min(1) }).strict(),
+	z.object({ kind: z.literal('gift') }).strict(),
+]);
+
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /** One call in the arena, sent by the browser after the lecturer scores it. */
 export const recallArenaTurnSchema = z
 	.object({
 		clientId: z.string().trim().min(8).max(80),
-		playedAt: z.number().int().positive(),
+		playedAt: z.number().int().positive().max(8_640_000_000_000_000),
 		enrollmentId: z.string().min(1).optional(),
 		guestName: z.string().trim().min(1).max(80).optional(),
 		guestGroup: z.enum(['CHALLENGE', 'SUPPORT']).optional(),
@@ -321,12 +326,24 @@ export const recallArenaTurnSchema = z
 		result: z.enum(['pass', 'fail', 'skip']),
 		award: z.union([z.literal(0), z.literal(0.5), z.literal(1), z.literal(2)]).optional(),
 		cpAfter: z.number().min(0).max(99).optional(),
-		giftAfter: z.number().int().min(0).max(9999).optional(),
+		giftAfter: z.number().int().min(0).max(2_147_483_647).optional(),
+		grade: recallArenaGradeSchema.optional(),
 	})
 	.strict()
 	.refine((turn) => Boolean(turn.enrollmentId) !== Boolean(turn.guestName), {
 		message: 'Cần đúng một trong enrollmentId hoặc guestName',
-	});
+	})
+	.refine(
+		({ grade, result, enrollmentId, award, cpAfter, giftAfter }) =>
+			!grade ||
+			(Boolean(enrollmentId) &&
+				cpAfter == null &&
+				giftAfter == null &&
+				(grade.kind === 'cp'
+					? result === 'pass' && award != null && award > 0
+					: result === 'fail' && award == null)),
+		{ message: 'Mức chấm CP hoặc Gift không khớp với kết quả lượt gọi' },
+	);
 
 export const recallArenaTurnsQuerySchema = z
 	.object({ date: z.string().regex(ISO_DAY, 'Ngày phải có dạng YYYY-MM-DD') })

@@ -209,6 +209,11 @@
 	font-size: 0.95rem;
 }
 
+.bulkInput {
+	padding-block: 0.55rem;
+	resize: vertical;
+}
+
 .searchInput::placeholder {
 	color: var(--arena-muted);
 }

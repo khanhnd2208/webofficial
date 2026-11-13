@@ -1,11 +1,11 @@
 'use client';
 
-import { AnimatePresence, m } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useMotionTier } from '@/components/motion';
-import { teachingApi } from '@/components/teaching/admin/api';
+import { AdminApiError, teachingApi } from '@/components/teaching/admin/api';
 import { routes } from '@/config/routes';
 import { recallVisibleText } from '@/features/active-recall/richText';
 import {
@@ -18,7 +18,6 @@ import {
 import type {
 	RecallArenaAwardResult,
 	RecallArenaData,
-	TeachingGiftMutationResult,
 	TeachingParticipationMutationResult,
 } from '@/features/teaching/types';
 
@@ -29,6 +28,7 @@ import { ArenaFloor, type ArenaAttackCue } from './ArenaFloor';
 import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
 import { ArenaTopBar } from './ArenaTopBar';
+import { ArenaVictory } from './ArenaVictory';
 import { arenaBossFor } from './arenaBosses';
 import { arenaCharacterFor } from './arenaCharacters';
 import {
@@ -39,7 +39,6 @@ import {
 	displayNames,
 	emptyProgress,
 	fullName,
-	hasStoredProgress,
 	hostSessions,
 	initialConfig,
 	isCpFinalized,
@@ -47,6 +46,7 @@ import {
 	loadConfig,
 	loadProgress,
 	manualArenaPlayers,
+	passedArenaCards,
 	passStreak,
 	saveConfig,
 	saveProgress,
@@ -57,6 +57,7 @@ import {
 } from './arenaGame';
 import { playArenaSound } from './arenaSound';
 import { useArenaTurnLog } from './useArenaTurnLog';
+import { saveArenaGrade } from './arenaTurnLog';
 import { STRIKE_MS, type StrikePower } from './arenaStrikes';
 import styles from './arena.module.css';
 
@@ -93,8 +94,6 @@ export function RecallArena({
 	const [restored, setRestored] = useState(false);
 	const [progress, setProgress] = useState<ArenaProgress>(emptyProgress);
 	const [progressLoaded, setProgressLoaded] = useState(false);
-	/** This browser has not played today: start from the server's saved calls. */
-	const [freshDay, setFreshDay] = useState(false);
 	const [setupOpen, setSetupOpen] = useState(true);
 	const [started, setStarted] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
@@ -103,11 +102,17 @@ export function RecallArena({
 	const [highlightId, setHighlightId] = useState<string | null>(null);
 	const [current, setCurrent] = useState<{
 		catchId: string;
+		at: number;
 		enrollmentId: string;
 		cardId: string | null;
 	} | null>(null);
 	const [cpOverrides, setCpOverrides] = useState<Record<string, number>>({});
 	const [saving, setSaving] = useState(false);
+	const submitting = useRef(false);
+	const [unconfirmed, setUnconfirmed] = useState<{
+		result: 'pass' | 'fail';
+		level: ArenaAwardLevel | 0;
+	} | null>(null);
 	const [retryingId, setRetryingId] = useState<string | null>(null);
 	const [openingCpId, setOpeningCpId] = useState<string | null>(null);
 	const [toast, setToast] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
@@ -146,6 +151,11 @@ export function RecallArena({
 		() => data.cards.filter((card) => activeDeckIds.has(card.deckId)),
 		[data.cards, activeDeckIds],
 	);
+	const passedCards = useMemo(() => passedArenaCards(progress.history), [progress.history]);
+	const availableCardIds = useMemo(
+		() => cards.map((card) => card.id).filter((id) => !passedCards.has(id)),
+		[cards, passedCards],
+	);
 	const cardsById = useMemo(() => new Map(data.cards.map((card) => [card.id, card])), [data.cards]);
 	const names = useMemo(() => displayNames(inRoom), [inRoom]);
 	const nameOf = (enrollmentId: string) => {
@@ -177,8 +187,12 @@ export function RecallArena({
 
 	// One game per course per day: who was called, boss HP and history.
 	useEffect(() => {
-		setFreshDay(!hasStoredProgress(gameKey));
-		setProgress(loadProgress(gameKey));
+		const stored = loadProgress(gameKey);
+		setProgress(stored);
+		if (stored.hp === 0) {
+			setPhase('victory');
+			setMood('defeated');
+		}
 		setProgressLoaded(true);
 	}, [gameKey]);
 
@@ -192,7 +206,6 @@ export function RecallArena({
 		progress,
 		setProgress,
 		ready: progressLoaded,
-		loadFromServer: freshDay,
 	});
 
 	useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
@@ -224,7 +237,7 @@ export function RecallArena({
 	};
 
 	const startHunt = useCallback(() => {
-		if (phase !== 'idle') return;
+		if (phase !== 'idle' || !progressLoaded || turnLog.loading) return;
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		const draw = drawFromBag(progress.bag, eligibleIds, progress.lastPicked);
 		if (!draw.picked) {
@@ -232,15 +245,11 @@ export function RecallArena({
 			return;
 		}
 		const picked = draw.picked;
-		const card = drawCard(
-			cards.map((item) => item.id),
-			progress.usedCards,
-		);
+		const cardId = drawCard(availableCardIds, passedCards);
 		setProgress((previous) => ({
 			...previous,
 			bag: draw.bag,
 			lastPicked: picked,
-			usedCards: card.used,
 		}));
 		setPhase('hunting');
 		setMood('roar');
@@ -252,9 +261,10 @@ export function RecallArena({
 		};
 		const open = () => {
 			setCurrent({
-				catchId: `${Date.now().toString(36)}-${picked}`,
+				catchId: window.crypto.randomUUID(),
+				at: Date.now(),
 				enrollmentId: picked,
-				cardId: card.cardId,
+				cardId,
 			});
 			setPhase('caught');
 			setMood('idle');
@@ -304,7 +314,10 @@ export function RecallArena({
 		callable,
 		inRoom,
 		progress,
-		cards,
+		availableCardIds,
+		passedCards,
+		progressLoaded,
+		turnLog.loading,
 		reducedMotion,
 		later,
 		shake,
@@ -322,23 +335,28 @@ export function RecallArena({
 		}
 	}, [huntAfterSkip, phase, startHunt]);
 
-	function record(result: ArenaResult, extra: Partial<ArenaHistoryEntry> = {}) {
-		if (!current) return null;
-		const player = playersById.get(current.enrollmentId);
-		const entry: ArenaHistoryEntry = {
-			id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
-			at: Date.now(),
-			enrollmentId: current.enrollmentId,
+	function makeEntry(
+		result: ArenaResult,
+		extra: Partial<ArenaHistoryEntry> = {},
+	): ArenaHistoryEntry {
+		const turn = current!;
+		const player = playersById.get(turn.enrollmentId);
+		return {
+			id: result === 'skip' ? window.crypto.randomUUID() : turn.catchId,
+			at: turn.at,
+			enrollmentId: turn.enrollmentId,
 			name: player ? fullName(player) : '',
-			cardId: current.cardId,
+			cardId: turn.cardId,
 			result,
 			...(player && isManualPlayer(player.enrollmentId) && player.group
 				? { group: player.group }
 				: {}),
 			...extra,
 		};
+	}
+
+	function record(entry: ArenaHistoryEntry) {
 		setProgress((previous) => ({ ...previous, history: [...previous.history, entry] }));
-		return entry;
 	}
 
 	function finishTurn(nextMood: MonsterMood, hpDelta: number) {
@@ -429,79 +447,72 @@ export function RecallArena({
 		return result;
 	}
 
-	async function handlePass(level: ArenaAwardLevel) {
-		if (!current || saving) return;
-		const name = nameOf(current.enrollmentId);
-		if (isManualPlayer(current.enrollmentId)) {
-			record('pass');
-			setToast({ tone: 'ok', text: `${name}: đạt · không ghi CP` });
-			finishTurn('hurt', -1);
+	async function gradeTurn(result: 'pass' | 'fail', level: ArenaAwardLevel | 0 = 0) {
+		if (
+			!current ||
+			submitting.current ||
+			(unconfirmed && (unconfirmed.result !== result || unconfirmed.level !== level))
+		)
+			return;
+		const id = current.enrollmentId;
+		const manual = isManualPlayer(id);
+		const name = nameOf(id);
+		const target = cpSessionFor(id);
+		const pass = result === 'pass';
+		const savesCp = pass && !manual && level > 0;
+		if (savesCp && !target) {
+			setToast({ tone: 'error', text: 'Không có buổi chấm CP phù hợp cho sinh viên này.' });
 			return;
 		}
-		setSaving(true);
-		try {
-			const result = await award(current.enrollmentId, level);
-			record('pass', { award: level, cpAfter: result.points });
+		let entry = makeEntry(result, pass && !manual ? { award: level } : {});
+		const grade = savesCp
+			? { kind: 'cp' as const, sessionId: target!.id }
+			: !pass && !manual
+				? { kind: 'gift' as const }
+				: null;
+		if (grade) {
+			submitting.current = true;
+			setSaving(true);
+			try {
+				const saved = await saveArenaGrade(courseId, entry, grade, name);
+				entry = saved.entry;
+				if (target && entry.cpAfter != null) {
+					const points = entry.cpAfter;
+					setCpOverrides((previous) => ({ ...previous, [`${target.id}:${id}`]: points }));
+				}
+				setUnconfirmed(null);
+				setToast({ tone: 'ok', text: saved.message });
+			} catch (error) {
+				if (!(error instanceof AdminApiError) || error.status >= 500)
+					setUnconfirmed({ result, level });
+				setToast({
+					tone: 'error',
+					text: pass ? errorMessage(error) : `Chưa xác nhận Gift: ${errorMessage(error)}`,
+				});
+				return;
+			} finally {
+				submitting.current = false;
+				setSaving(false);
+			}
+		} else {
+			if (pass && !manual && target) entry.cpAfter = cpFor(id);
 			setToast({
 				tone: 'ok',
-				text: result.changed
-					? `${name}: CP ${result.previous} → ${result.points}`
-					: `${name}: giữ CP ${result.points} (đã bằng hoặc cao hơn)`,
+				text: manual ? `${name}: đạt` : `${name}: vừa đủ qua, CP giữ nguyên`,
 			});
-		} catch (error) {
-			setToast({ tone: 'error', text: errorMessage(error) });
-			return;
-		} finally {
-			setSaving(false);
 		}
-		finishTurn('hurt', -1);
-	}
-
-	function handleBarePass() {
-		if (!current || saving) return;
-		record('pass', { award: 0, cpAfter: cpFor(current.enrollmentId) });
-		setToast({ tone: 'ok', text: `${nameOf(current.enrollmentId)}: vừa đủ qua, CP giữ nguyên` });
-		finishTurn('hurt', -1);
-	}
-
-	async function handleFail() {
-		if (!current || saving) return;
-		const enrollmentId = current.enrollmentId;
-		if (isManualPlayer(enrollmentId)) {
-			record('fail');
-			setToast({ tone: 'ok', text: `${nameOf(enrollmentId)}: chưa đạt · không ghi Gift` });
-			finishTurn('laugh', 1);
-			return;
-		}
-		setSaving(true);
-		try {
-			const result = await teachingApi<TeachingGiftMutationResult>(
-				`/api/admin/teaching/enrollments/${enrollmentId}/gift`,
-				{ method: 'PATCH', body: JSON.stringify({ delta: 1 }) },
-			);
-			record('fail', { giftAfter: result.student.giftCount });
-			setToast({
-				tone: 'ok',
-				text: `${nameOf(enrollmentId)}: +1 Gift (${result.student.giftCount} Gift)`,
-			});
-		} catch (error) {
-			setToast({ tone: 'error', text: `Chưa thêm Gift: ${errorMessage(error)}` });
-			return;
-		} finally {
-			setSaving(false);
-		}
-		finishTurn('laugh', 1);
+		record(entry);
+		finishTurn(pass ? 'hurt' : 'laugh', pass ? -1 : 1);
 	}
 
 	/** The caught student keeps their turn and the card goes back unused. */
 	function giveTurnBack() {
-		if (!current) return;
-		const { enrollmentId, cardId } = current;
+		if (!current || submitting.current || unconfirmed) return;
+		const { enrollmentId } = current;
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		setProgress((previous) => ({
 			...previous,
 			bag: returnToBag(previous.bag, eligibleIds, enrollmentId),
-			usedCards: cardId ? previous.usedCards.filter((id) => id !== cardId) : previous.usedCards,
 		}));
 		setCurrent(null);
 		setHighlightId(null);
@@ -511,33 +522,32 @@ export function RecallArena({
 	}
 
 	function handleSkip() {
-		if (!current || saving || callable.length < 2) return;
-		record('skip');
+		if (!current || submitting.current || unconfirmed || callable.length < 2) return;
+		record(makeEntry('skip'));
 		giveTurnBack();
 		setHuntAfterSkip(true);
 	}
 
 	function handleChooseStudent(enrollmentId: string) {
-		if (!current || saving || enrollmentId === current.enrollmentId) return;
+		if (!current || submitting.current || unconfirmed || enrollmentId === current.enrollmentId)
+			return;
 		if (!callable.some((player) => player.enrollmentId === enrollmentId)) return;
-		record('skip');
+		record(makeEntry('skip'));
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		const returnedBag = returnToBag(progress.bag, eligibleIds, current.enrollmentId);
-		const availableCards = cards.map((item) => item.id);
-		const unused = current.cardId
-			? progress.usedCards.filter((id) => id !== current.cardId)
-			: progress.usedCards;
-		const nextCard = drawCard(availableCards, unused);
 		setProgress((previous) => ({
 			...previous,
 			bag: returnedBag.filter((id) => id !== enrollmentId),
 			lastPicked: enrollmentId,
-			usedCards: nextCard.used,
 		}));
 		setCurrent({
-			catchId: `${Date.now().toString(36)}-${enrollmentId}`,
+			catchId: window.crypto.randomUUID(),
+			at: Date.now(),
 			enrollmentId,
-			cardId: nextCard.cardId,
+			cardId:
+				current.cardId && !passedCards.has(current.cardId)
+					? current.cardId
+					: drawCard(availableCardIds, passedCards),
 		});
 		setHighlightId(enrollmentId);
 		setLook(lookToward(monsterRef.current, enrollmentId));
@@ -545,17 +555,12 @@ export function RecallArena({
 	}
 
 	function handleNextCard() {
-		if (!current) return;
-		const next = drawCard(
-			cards.map((item) => item.id).filter((id) => id !== current.cardId),
-			progress.usedCards,
+		if (!current || submitting.current || unconfirmed) return;
+		const cardId = drawCard(
+			availableCardIds.filter((id) => id !== current.cardId),
+			passedCards,
 		);
-		if (!next.cardId) return;
-		setProgress((previous) => ({
-			...previous,
-			usedCards: [...new Set([...previous.usedCards, next.cardId!])],
-		}));
-		setCurrent({ ...current, cardId: next.cardId });
+		if (cardId) setCurrent({ ...current, cardId });
 	}
 
 	async function handleRetry(entry: ArenaHistoryEntry) {
@@ -617,13 +622,13 @@ export function RecallArena({
 
 	async function resetProgress() {
 		const ok = await confirm({
-			title: 'Bắt đầu lượt mới?',
+			title: 'Chơi lại từ Boss 1?',
 			description:
-				'Xóa lịch sử gọi và máu boss của hôm nay trên máy này. Điểm CP, Gift và lịch sử đã lưu trên máy chủ vẫn giữ nguyên.',
-			confirmLabel: 'Bắt đầu lượt mới',
+				'Đặt lại Boss và thứ tự gọi. Các câu đã qua hôm nay vẫn được loại khỏi bộ câu hỏi.',
+			confirmLabel: 'Chơi lại',
 		});
 		if (!ok) return;
-		setProgress(emptyProgress());
+		setProgress((previous) => ({ ...emptyProgress(), history: previous.history }));
 		setPhase('idle');
 		setMood('idle');
 	}
@@ -644,7 +649,7 @@ export function RecallArena({
 				target.closest('input, select, textarea, [contenteditable="true"]')
 			)
 				return;
-			if (event.metaKey || event.ctrlKey || event.altKey) return;
+			if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
 			if (setupOpen) {
 				if (event.key === 'Escape' && started) closeSetup();
 				return;
@@ -654,6 +659,12 @@ export function RecallArena({
 				setHistoryOpen(false);
 				return;
 			}
+			if (
+				(key === ' ' || key === 'enter') &&
+				target instanceof Element &&
+				target.closest('button, a')
+			)
+				return;
 			if (phase === 'idle' && (key === ' ' || key === 'enter')) {
 				event.preventDefault();
 				startHunt();
@@ -683,6 +694,8 @@ export function RecallArena({
 
 	const caughtPlayer = current ? (playersById.get(current.enrollmentId) ?? null) : null;
 	const caughtCard = current?.cardId ? (cardsById.get(current.cardId) ?? null) : null;
+	const caughtCpSession = caughtPlayer ? cpSessionFor(caughtPlayer.enrollmentId) : null;
+	const canHunt = phase === 'idle' && callable.length > 0 && progressLoaded && !turnLog.loading;
 	const caughtDeck = caughtCard
 		? data.decks.find((deck) => deck.deckId === caughtCard.deckId)
 		: null;
@@ -705,7 +718,7 @@ export function RecallArena({
 					bossName={boss.name}
 					low={enraged}
 					hpRef={hpRef}
-					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${cards.length ? `${cards.length} câu` : 'câu riêng'}`}
+					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${cards.length ? `${availableCardIds.length}/${cards.length} câu còn lại` : 'câu riêng'}`}
 					settingsDisabled={phase === 'hunting' || phase === 'caught' || phase === 'attacking'}
 					onSettings={() => setSetupOpen(true)}
 					calledCount={progress.history.filter((entry) => entry.result !== 'skip').length}
@@ -749,8 +762,8 @@ export function RecallArena({
 						<button
 							type="button"
 							className={styles.catchButton}
-							data-ready={(phase === 'idle' && callable.length > 0) || undefined}
-							disabled={phase !== 'idle' || callable.length === 0}
+							data-ready={canHunt || undefined}
+							disabled={!canHunt}
 							onClick={startHunt}
 						>
 							{phase === 'hunting' ? 'Quái vật đang tìm…' : 'Bắt!'}
@@ -769,7 +782,9 @@ export function RecallArena({
 							courseId={courseId}
 							todayIso={data.todayIso}
 							sync={turnLog}
-							onReset={() => void resetProgress()}
+							onReset={
+								phase === 'idle' || phase === 'victory' ? () => void resetProgress() : undefined
+							}
 							onClose={() => setHistoryOpen(false)}
 						/>
 					) : null}
@@ -788,10 +803,15 @@ export function RecallArena({
 						cpNow={cpFor(caughtPlayer.enrollmentId)}
 						manual={isManualPlayer(caughtPlayer.enrollmentId)}
 						saving={saving}
-						canChangeCard={cards.length > 1}
-						onPass={handlePass}
-						onBarePass={handleBarePass}
-						onFail={handleFail}
+						unconfirmed={unconfirmed}
+						canChangeCard={availableCardIds.some((id) => id !== current?.cardId)}
+						cardsExhausted={cards.length > 0 && availableCardIds.length === 0}
+						cpSession={caughtCpSession}
+						openingCp={openingCpId === caughtCpSession?.id}
+						onOpenCp={openCp}
+						onPass={(level) => void gradeTurn('pass', level)}
+						onBarePass={() => void gradeTurn('pass')}
+						onFail={() => void gradeTurn('fail')}
 						onSkipStudent={handleSkip}
 						onChooseStudent={handleChooseStudent}
 						otherPlayers={callable.filter(
@@ -802,28 +822,7 @@ export function RecallArena({
 					/>
 				) : null}
 				{phase === 'victory' ? (
-					<m.div
-						className={styles.victory}
-						initial={{ opacity: 0, scale: 0.8 }}
-						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0 }}
-					>
-						<span className={styles.victoryRays} aria-hidden="true" />
-						<m.span
-							className={styles.victoryKo}
-							aria-hidden="true"
-							initial={{ scale: 4, opacity: 0, rotate: -12 }}
-							animate={{ scale: 1, opacity: 1, rotate: -6 }}
-							transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.15 }}
-						>
-							K.O.!
-						</m.span>
-						<h2>Cả lớp đã hạ gục Boss {progress.round}!</h2>
-						<p className={styles.victorySub}>{boss.name} đã bị đánh bại</p>
-						<button type="button" className={styles.startButton} onClick={newBoss}>
-							Gọi Boss mới <kbd>Space</kbd>
-						</button>
-					</m.div>
+					<ArenaVictory round={progress.round} bossName={boss.name} onNewBoss={newBoss} />
 				) : null}
 			</AnimatePresence>
 

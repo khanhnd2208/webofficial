@@ -1,3 +1,4 @@
+import { teachingApi } from '@/components/teaching/admin/api';
 import type { RecallArenaTurnInput } from '@/features/teaching/schemas';
 import type { RecallArenaTurnRecord } from '@/features/teaching/types';
 
@@ -47,4 +48,33 @@ export interface RecallArenaTurnDay {
 export function arenaTurnsUrl(courseId: string, date?: string) {
 	const base = `/api/admin/teaching/courses/${encodeURIComponent(courseId)}/recall-arena/turns`;
 	return date ? `${base}?date=${date}` : base;
+}
+
+export async function saveArenaGrade(
+	courseId: string,
+	entry: ArenaHistoryEntry,
+	grade: NonNullable<RecallArenaTurnInput['grade']>,
+	name: string,
+) {
+	const saved = await teachingApi<RecallArenaTurnRecord>(arenaTurnsUrl(courseId), {
+		method: 'POST',
+		body: JSON.stringify({ ...turnPayload(entry), grade }),
+	});
+	if (grade.kind === 'gift' && saved?.giftAfter != null) {
+		return {
+			entry: { ...entry, synced: true, giftAfter: saved.giftAfter },
+			message: `${name}: +1 Gift (${saved.giftAfter} Gift)`,
+		};
+	}
+	if (grade.kind === 'cp' && saved?.cpAfter != null) {
+		const points = saved.cpAfter;
+		return {
+			entry: { ...entry, synced: true, cpAfter: points },
+			message:
+				saved.cpPrevious != null && saved.cpPrevious < points
+					? `${name}: CP ${saved.cpPrevious} → ${points}`
+					: `${name}: CP tuần này ${points}`,
+		};
+	}
+	throw new Error('Máy chủ chưa xác nhận kết quả chấm.');
 }

@@ -1,3 +1,5 @@
+import type { Prisma } from '@prisma/client';
+
 import { AppError } from '@/lib/appError';
 import { compareNaturalText } from '@/lib/naturalSort';
 
@@ -133,22 +135,36 @@ export async function getRecallArenaCourseId(classId: string): Promise<string> {
 	return teachingClass.courseId;
 }
 
-/**
- * Record a correct arena answer as CP for that week, keeping the higher of the
- * existing mark and the award. The existing note is preserved.
- */
-export async function awardRecallArenaCp(
+/** Retry when a concurrent write invalidated the grading transaction. */
+export async function recallArenaTransaction<T>(
+	work: (tx: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+	for (let attempt = 1; ; attempt += 1) {
+		try {
+			return await repo.prisma.$transaction(work, { isolationLevel: 'Serializable' });
+		} catch (error) {
+			const code = (error as { code?: string } | null)?.code;
+			if (attempt >= 4 || (code !== 'P2034' && code !== 'P2002')) throw error;
+		}
+	}
+}
+
+/** Raise the mark and preserve the note, using the caller's grading transaction. */
+export async function awardRecallArenaCpInTransaction(
+	tx: Prisma.TransactionClient,
 	sessionId: string,
 	input: RecallArenaAwardInput,
 	userId?: string,
 ): Promise<RecallArenaAwardResult> {
-	const session = await repo.getSession(sessionId);
+	const session = await tx.teachingSession.findUnique({ where: { id: sessionId } });
 	if (!session) notFound('Session');
 	if (session.isCancelled)
 		throw new AppError('Buổi học này đã bị hủy, không thể chấm CP', 422, 'VALIDATION');
 	if (!session.participationOpen)
 		throw new AppError('CP tuần này đang khóa. Mở chấm CP rồi chấm lại.', 409, 'CONFLICT');
-	const [enrollment] = await repo.getEnrollmentsByIds([input.enrollmentId]);
+
+	const enrollmentId = input.enrollmentId;
+	const enrollment = await tx.teachingEnrollment.findUnique({ where: { id: enrollmentId } });
 	if (
 		!enrollment ||
 		enrollment.status !== 'ACTIVE' ||
@@ -160,27 +176,29 @@ export async function awardRecallArenaCp(
 	if (enrollment.enrolledFromWeek > session.weekNumber) {
 		throw new AppError('Sinh viên chưa vào lớp ở tuần này', 422, 'VALIDATION');
 	}
-	const existing = await repo.prisma.teachingParticipation.findUnique({
-		where: { sessionId_enrollmentId: { sessionId, enrollmentId: input.enrollmentId } },
-		select: { points: true, note: true },
-	});
+
+	const where = { sessionId_enrollmentId: { sessionId, enrollmentId } };
+	const existing = await tx.teachingParticipation.findUnique({ where, select: { points: true } });
 	const previous = existing ? Number(existing.points) : 0;
 	const points = keepHigherCp(previous, input.points);
-	if (points !== previous) {
-		await repo.upsertParticipationMarks(sessionId, [
-			{
-				enrollmentId: input.enrollmentId,
-				points,
-				note: existing?.note ?? '',
-				recordedById: userId ?? null,
-			},
-		]);
+	const changed = points > previous;
+	if (changed) {
+		const mark = { points, recordedById: userId ?? null, recordedAt: new Date() };
+		await tx.teachingParticipation.upsert({
+			where,
+			create: { sessionId, enrollmentId, ...mark },
+			update: mark,
+		});
 	}
-	return {
-		enrollmentId: input.enrollmentId,
-		sessionId,
-		previous,
-		points,
-		changed: points !== previous,
-	};
+	return { enrollmentId, sessionId, previous, points, changed };
+}
+
+export function awardRecallArenaCp(
+	sessionId: string,
+	input: RecallArenaAwardInput,
+	userId?: string,
+): Promise<RecallArenaAwardResult> {
+	return recallArenaTransaction((tx) =>
+		awardRecallArenaCpInTransaction(tx, sessionId, input, userId),
+	);
 }

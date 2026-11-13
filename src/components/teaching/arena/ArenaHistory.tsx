@@ -56,7 +56,7 @@ export function ArenaHistory({
 	questionText: (cardId: string | null) => string;
 	retryingId: string | null;
 	onRetry: (entry: ArenaHistoryEntry) => void;
-	onReset: () => void;
+	onReset?: () => void;
 	onClose: () => void;
 	courseId: string;
 	todayIso: string;
@@ -206,10 +206,10 @@ export function ArenaHistory({
 					))}
 				</ol>
 			)}
-			{isToday ? (
+			{isToday && onReset ? (
 				<footer className={styles.historyFoot}>
 					<button type="button" className={styles.linkButton} onClick={onReset}>
-						Bắt đầu lượt mới trên máy này (lịch sử đã lưu vẫn giữ)
+						Chơi lại từ Boss 1
 					</button>
 				</footer>
 			) : null}
