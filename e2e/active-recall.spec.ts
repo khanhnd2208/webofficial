@@ -150,7 +150,7 @@ test.describe('Active Recall', () => {
 			expect((await student.goto(coursePath))?.status()).toBe(200);
 			await expect(student.getByRole('heading', { level: 1 })).toHaveText(courseName);
 			await expect(student.getByRole('heading', { level: 2 })).toHaveText([
-				'Lecture 9',
+				'Lecture9',
 				'Lecture 10',
 			]);
 			await expect(student.getByTestId('site-header')).toHaveCount(0);
