@@ -97,7 +97,7 @@ test.describe('FMT 2026 booth', () => {
 		const shake = stage.getByRole('button', { name: 'Giữ để lắc túi quà' });
 		await expect(shake).toBeFocused();
 		await page.keyboard.down('Space');
-		await expect(page.locator('.stage')).toHaveAttribute('data-holding', 'true');
+		await expect(stage.locator('.stage')).toHaveAttribute('data-holding', 'true');
 		// Kim quét khoảng 2,35 s mỗi vòng; nhả sau 1,2 s là đủ mạnh để tung.
 		await page.waitForTimeout(1200);
 		await page.keyboard.up('Space');
