@@ -1110,7 +1110,9 @@
 .setupBackdrop {
 	position: absolute;
 	inset: 0;
-	z-index: 5;
+	/* Same layer as the victory screen and later in the page, so setup and the
+	   summary open over "K.O.!" instead of behind it. */
+	z-index: 6;
 	display: grid;
 	place-items: center;
 	padding: 1.5rem;
