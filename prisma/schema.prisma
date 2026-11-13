@@ -173,7 +173,8 @@ model ActiveRecallCard {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  deck ActiveRecallDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  deck       ActiveRecallDeck    @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  arenaTurns TeachingArenaTurn[]
 
   @@index([deckId, position])
 }
@@ -914,8 +915,9 @@ model TeachingCourse {
   createdAt  DateTime             @default(now())
   updatedAt  DateTime             @updatedAt
 
-  classes TeachingClass[]
-  decks   ActiveRecallDeck[]
+  classes    TeachingClass[]
+  decks      ActiveRecallDeck[]
+  arenaTurns TeachingArenaTurn[]
 
   @@index([status, updatedAt(sort: Desc)])
   @@index([updatedAt(sort: Desc)])
@@ -1140,6 +1142,7 @@ model TeachingEnrollment {
   attendance    TeachingAttendance[]
   participation TeachingParticipation[]
   groupAssignment TeachingGroupAssignment?
+  arenaTurns      TeachingArenaTurn[]
 
   @@unique([classId, studentId])
   @@index([tutorialClassId, orderNo])
@@ -1209,6 +1212,46 @@ model TeachingParticipation {
 
   @@unique([sessionId, enrollmentId])
   @@index([enrollmentId])
+}
+
+enum TeachingArenaResult {
+  PASS
+  FAIL
+  SKIP
+}
+
+/// One call in the recall arena: who the boss caught, which card, and how it went.
+/// Players outside the course roster have no enrollment; their typed name is kept.
+model TeachingArenaTurn {
+  id           String                      @id @default(cuid())
+  /// Id the browser gave the turn, so a resent turn is stored once.
+  clientId     String                      @unique
+  courseId     String
+  /// The game day in Vietnam time; one game per course per day.
+  playedOn     DateTime                    @db.Date
+  playedAt     DateTime
+  enrollmentId String?
+  playerName   String
+  studentCode  String                      @default("")
+  guestGroup   TeachingLearningExperience?
+  cardId       String?
+  question     String                      @default("") @db.Text
+  result       TeachingArenaResult
+  /// CP level chosen for a pass; 0 means "barely passed", nothing saved.
+  award        Decimal?                    @db.Decimal(4, 2)
+  cpAfter      Decimal?                    @db.Decimal(4, 2)
+  giftAfter    Int?
+  recordedById String?
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+
+  course     TeachingCourse      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollment TeachingEnrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  card       ActiveRecallCard?   @relation(fields: [cardId], references: [id], onDelete: SetNull)
+
+  @@index([courseId, playedOn, playedAt])
+  @@index([enrollmentId])
+  @@index([cardId])
 }
 
 model TeachingGroupBoard {
