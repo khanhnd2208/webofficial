@@ -87,12 +87,12 @@ describe('class-scoped Active Recall queries', () => {
 		};
 		mocks.linkFindMany.mockResolvedValue([
 			{ displayOrder: 0, deck: { ...sharedDeck, title: 'Lesson 10' } },
-			{ displayOrder: 0, deck: { ...sharedDeck, title: 'Lesson 9' } },
+			{ displayOrder: 0, deck: { ...sharedDeck, title: 'Lesson9' } },
 			{ displayOrder: 1, deck: { ...sharedDeck, title: 'Lesson 1' } },
 		]);
 
 		expect((await listPublishedRecallDecksForClass('class-1')).map((deck) => deck.title)).toEqual([
-			'Lesson 9',
+			'Lesson9',
 			'Lesson 10',
 			'Lesson 1',
 		]);

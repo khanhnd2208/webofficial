@@ -1,7 +1,6 @@
 import type { PublishStatus } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
-import { compareNaturalText } from '@/lib/naturalSort';
 import { prisma } from '@/lib/prisma';
 import { slugify } from '@/utils/slugify';
 import {
@@ -12,6 +11,7 @@ import {
 } from '@/features/teaching/domain/courseIdentity';
 
 import { prepareRecallCardsForSave } from './cards';
+import { compareRecallDeckTitles } from './deckOrder';
 import {
 	persistRecallCardWrites,
 	planRecallCardWrites,
@@ -199,7 +199,7 @@ export async function listPublishedRecallDecks() {
 		.map(mapList)
 		.sort(
 			(left, right) =>
-				left.position - right.position || compareNaturalText(left.title, right.title),
+				left.position - right.position || compareRecallDeckTitles(left.title, right.title),
 		);
 }
 
@@ -224,7 +224,7 @@ export async function getPublishedRecallCourse(courseId: string) {
 	if (!course?.decks.length) return null;
 	return {
 		courseName: course.courseName,
-		decks: course.decks.sort((left, right) => compareNaturalText(left.title, right.title)),
+		decks: course.decks.sort((left, right) => compareRecallDeckTitles(left.title, right.title)),
 	};
 }
 
@@ -270,7 +270,7 @@ export async function listPublishedRecallDecksForClass(classId: string) {
 		.sort(
 			(left, right) =>
 				left.displayOrder - right.displayOrder ||
-				compareNaturalText(left.deck.title, right.deck.title),
+				compareRecallDeckTitles(left.deck.title, right.deck.title),
 		)
 		.map((row) => mapList(row.deck));
 }
@@ -331,7 +331,7 @@ export async function listAdminRecallDecks() {
 			_count: { select: { cards: true, classLinks: true } },
 		},
 	});
-	return rows.map(mapList).sort((left, right) => compareNaturalText(left.title, right.title));
+	return rows.map(mapList).sort((left, right) => compareRecallDeckTitles(left.title, right.title));
 }
 
 export async function listAdminRecallDecksForCourse(courseId: string) {
@@ -343,7 +343,7 @@ export async function listAdminRecallDecksForCourse(courseId: string) {
 			_count: { select: { cards: true, classLinks: true } },
 		},
 	});
-	return rows.map(mapList).sort((left, right) => compareNaturalText(left.title, right.title));
+	return rows.map(mapList).sort((left, right) => compareRecallDeckTitles(left.title, right.title));
 }
 
 export async function getAdminRecallDeck(id: string) {

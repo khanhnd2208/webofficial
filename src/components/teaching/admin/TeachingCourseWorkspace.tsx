@@ -25,7 +25,7 @@ import {
 	collectTermSuggestions,
 	formatDependencySummary,
 } from '@/features/teaching/domain/adminLifecycle';
-import { compareNaturalText } from '@/lib/naturalSort';
+import { compareRecallDeckTitles } from '@/features/active-recall/deckOrder';
 import type { TeachingCourseListItem } from '@/features/teaching/types';
 
 function isPublishedWithCards(deck: ActiveRecallDeckListItem) {
@@ -72,7 +72,7 @@ export function TeachingCourseWorkspace({
 	const hasShareableDecks = !archived && decks.some(isPublishedWithCards);
 	const publicRecallPath = routes.publicCourseRecall(course.id);
 	const sortedDecks = useMemo(
-		() => [...decks].sort((left, right) => compareNaturalText(left.title, right.title)),
+		() => [...decks].sort((left, right) => compareRecallDeckTitles(left.title, right.title)),
 		[decks],
 	);
 	const termSuggestions = useMemo(

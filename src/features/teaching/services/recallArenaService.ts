@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
+import { compareRecallDeckTitles } from '@/features/active-recall/deckOrder';
 import { compareNaturalText } from '@/lib/naturalSort';
 
 import { keepHigherCp, pickDefaultArenaSession, vietnamTodayIso } from '../domain/recallArena';
@@ -42,7 +43,7 @@ export async function getRecallArena(courseId: string): Promise<RecallArenaData>
 		.filter((deck) => deck._count.cards > 0)
 		.sort(
 			(left, right) =>
-				left.position - right.position || compareNaturalText(left.title, right.title),
+				left.position - right.position || compareRecallDeckTitles(left.title, right.title),
 		);
 	const [gradebooks, groups, links, cards] = await Promise.all([
 		Promise.all(classIds.map((id) => getGradebook(id))),

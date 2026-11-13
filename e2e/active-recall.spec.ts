@@ -132,7 +132,7 @@ test.describe('Active Recall', () => {
 			const emptyCoursePath = `/active-recall/${otherId}`;
 			expect((await student.request.get(emptyCoursePath)).status()).toBe(404);
 			await createDeck(courseId, 'Lecture 10', true);
-			const lesson9 = await createDeck(courseId, 'Lecture 9', true);
+			const lesson9 = await createDeck(courseId, 'Lecture9', true);
 			const draft = await createDeck(courseId, 'Draft lecture', false);
 			const otherDeck = await createDeck(otherId, 'Different course lecture', true);
 			const coursePath = `/active-recall/${courseId}`;
@@ -165,7 +165,7 @@ test.describe('Active Recall', () => {
 			const studyStarted = student.waitForResponse((response) =>
 				response.url().endsWith('/api/active-recall/study/begin'),
 			);
-			await student.getByRole('link', { name: /Lecture 9/ }).click();
+			await student.getByRole('link', { name: /Lecture9/ }).click();
 			expect((await studyStarted).ok()).toBe(true);
 			await expect(student).toHaveURL(`${coursePath}/${lesson9}`);
 			await student.getByRole('button', { name: 'Hiện đáp án', exact: true }).click();

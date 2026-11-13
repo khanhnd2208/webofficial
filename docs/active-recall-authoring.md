@@ -57,7 +57,8 @@ link, open a published deck's action menu and choose **Sao chép link bộ thẻ
 Students can study without signing in. The course page lists only that course's
 published decks, and the player returns to that list. Class visibility and
 class-level deck settings apply to class boards. The shared course page orders
-numbered titles naturally, such as Lecture 9 before Lecture 10.
+numbered titles naturally, such as Lecture 9 before Lecture 10. The sort also
+recognizes labels written without a space, such as Lec9.
 
 ## Verification
 
