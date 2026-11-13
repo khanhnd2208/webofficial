@@ -1,6 +1,6 @@
 .panel {
 	display: grid;
-	grid-template-rows: auto auto minmax(0, 1fr) auto;
+	grid-template-rows: auto auto auto minmax(0, 1fr) auto;
 	width: min(46rem, 100%);
 	max-height: 100%;
 	overflow: hidden;
@@ -103,6 +103,73 @@
 	color: var(--arena-bad);
 }
 
+.saveState {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	margin: 0 1.3rem 0.9rem;
+	padding: 0.6rem 0.8rem;
+	border: 1px solid rgb(52 211 153 / 35%);
+	border-radius: 0.7rem;
+	background: rgb(52 211 153 / 10%);
+	color: var(--arena-ink);
+	font-size: 0.88rem;
+	line-height: 1.45;
+}
+
+.saveState > svg {
+	flex: none;
+	margin-top: 0.1rem;
+	color: var(--arena-ok);
+}
+
+.saveState[data-state='pending'] {
+	border-color: rgb(251 191 36 / 40%);
+	background: rgb(251 191 36 / 10%);
+}
+
+.saveState[data-state='pending'] > svg {
+	color: var(--arena-accent);
+}
+
+.saveState[data-state='error'] {
+	border-color: rgb(251 113 133 / 45%);
+	background: rgb(251 113 133 / 12%);
+}
+
+.saveState[data-state='error'] > svg {
+	color: var(--arena-bad);
+}
+
+.table td[data-gain] {
+	color: var(--arena-ok);
+	font-weight: 800;
+}
+
+.table td[data-gift] {
+	color: var(--arena-bad);
+	font-weight: 800;
+}
+
+.note {
+	color: var(--arena-muted);
+	font-size: 0.78rem;
+}
+
+.copy {
+	display: inline-flex;
+	gap: 0.35rem;
+	align-items: center;
+}
+
+.actions {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+
 .empty {
 	margin: 0 1.3rem;
 	color: var(--arena-muted);
@@ -119,8 +186,17 @@
 }
 
 @media (width <= 560px) {
+	.panel footer {
+		flex-wrap: wrap;
+	}
+
+	.saveState,
 	.stats,
 	.tableWrap {
 		margin-inline: 1rem;
+	}
+
+	.table tr > :first-child {
+		display: none;
 	}
 }

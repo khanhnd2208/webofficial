@@ -1494,6 +1494,14 @@
 	font-weight: 700;
 }
 
+.victoryActions {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	align-items: center;
+	justify-content: center;
+}
+
 .victory h2 {
 	margin: 0;
 	color: var(--arena-accent);

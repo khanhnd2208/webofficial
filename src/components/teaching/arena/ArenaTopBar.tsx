@@ -26,6 +26,7 @@ export function ArenaTopBar({
 	onToggleHistory,
 	allAnswered,
 	onEnd,
+	onExit,
 }: {
 	classLabel: string;
 	classHref: string;
@@ -44,6 +45,8 @@ export function ArenaTopBar({
 	/** Everyone the call rule allows has answered: the end button lights up. */
 	allAnswered: boolean;
 	onEnd: () => void;
+	/** Leave the game: shows the summary first when anyone has answered. */
+	onExit?: () => void;
 }) {
 	const [fullscreen, setFullscreen] = useState(false);
 	const muted = useSyncExternalStore(subscribeArenaMuted, isArenaMuted, () => false);
@@ -145,14 +148,27 @@ export function ArenaTopBar({
 				>
 					<McIcon name={fullscreen ? 'fullscreen_exit' : 'fullscreen'} size={20} />
 				</button>
-				<Link
-					href={classHref}
-					className={styles.iconButton}
-					aria-label="Về trang lớp"
-					title="Về trang lớp"
-				>
-					<McIcon name="close" size={20} />
-				</Link>
+				{onExit ? (
+					<button
+						type="button"
+						className={styles.iconButton}
+						onClick={onExit}
+						disabled={settingsDisabled}
+						aria-label="Thoát khỏi trận"
+						title="Thoát (xem tổng kết trước)"
+					>
+						<McIcon name="close" size={20} />
+					</button>
+				) : (
+					<Link
+						href={classHref}
+						className={styles.iconButton}
+						aria-label="Về trang lớp"
+						title="Về trang lớp"
+					>
+						<McIcon name="close" size={20} />
+					</Link>
+				)}
 			</nav>
 		</header>
 	);

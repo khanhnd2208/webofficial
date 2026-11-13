@@ -57,6 +57,8 @@ export interface ArenaHistoryEntry {
 	result: ArenaResult;
 	/** CP level the lecturer chose for a pass. */
 	award?: number;
+	/** The week's CP before this pass, so the summary can show what was added. */
+	cpBefore?: number;
 	/** CP saved for the week after the pass, when the save succeeded. */
 	cpAfter?: number;
 	/** Gift count returned by the server after a missed answer. */

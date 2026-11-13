@@ -57,7 +57,6 @@ import {
 	type ArenaResult,
 } from './arenaGame';
 import { playArenaSound } from './arenaSound';
-import { arenaSummaryRows } from './arenaSummaryRows';
 import { useArenaHeroes } from './useArenaHeroes';
 import { useArenaKeyboard } from './useArenaKeyboard';
 import { useArenaTurnLog } from './useArenaTurnLog';
@@ -515,7 +514,7 @@ export function RecallArena({
 				setSaving(false);
 			}
 		} else {
-			if (pass && !manual && target) entry.cpAfter = cpFor(id);
+			if (pass && !manual && target) entry.cpBefore = entry.cpAfter = cpFor(id);
 			setToast({
 				tone: 'ok',
 				text: manual ? `${name}: đạt` : `${name}: vừa đủ qua, CP giữ nguyên`,
@@ -705,6 +704,7 @@ export function RecallArena({
 					onToggleHistory={() => setHistoryOpen((open) => !open)}
 					allAnswered={inGroup.length > 0 && callable.length === 0}
 					onEnd={() => setSummaryOpen(true)}
+					onExit={answered.size ? () => setSummaryOpen(true) : undefined}
 				/>
 
 				<main className={styles.stage}>
@@ -807,7 +807,12 @@ export function RecallArena({
 					/>
 				) : null}
 				{phase === 'victory' ? (
-					<ArenaVictory round={progress.round} bossName={boss.name} onNewBoss={newBoss} />
+					<ArenaVictory
+						round={progress.round}
+						bossName={boss.name}
+						onNewBoss={newBoss}
+						onSummary={() => setSummaryOpen(true)}
+					/>
 				) : null}
 			</AnimatePresence>
 
@@ -834,16 +839,16 @@ export function RecallArena({
 					onReload={() => window.location.reload()}
 					onDone={closeSetup}
 					onClose={started ? closeSetup : undefined}
+					exitHref={routes.mySpaceTeachingCourse(courseId)}
 				/>
 			) : null}
 			{summaryOpen ? (
 				<ArenaSummary
-					rows={arenaSummaryRows(
-						inRoom,
-						progress.history,
-						(id, fallback) => names.get(id) ?? fallback,
-					)}
-					bossesDefeated={progress.round - 1 + (progress.hp === 0 ? 1 : 0)}
+					title={`Kiểm tra bài cũ · ${data.course.courseCode} · ${classLabel} · ${data.todayIso}`}
+					sync={turnLog}
+					players={inRoom}
+					progress={progress}
+					names={names}
 					classHref={routes.mySpaceTeachingCourse(courseId)}
 					onContinue={() => setSummaryOpen(false)}
 				/>
