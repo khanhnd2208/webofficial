@@ -17,9 +17,12 @@ const imagePath = z
 	.regex(/^\/fmt2026\/[\w./-]+$/, 'Ảnh phải nằm trong /fmt2026/')
 	.nullable();
 
-export const unlockSchema = z.object({
-	pin: z.string().trim().min(4, 'PIN gồm 4–12 chữ số').max(12, 'PIN gồm 4–12 chữ số'),
-});
+const boothPin = z
+	.string()
+	.trim()
+	.regex(/^\d{4,12}$/, 'PIN gồm 4–12 chữ số');
+
+export const unlockSchema = z.object({ pin: boothPin, setup: z.boolean().optional() });
 
 export const prizeCreateSchema = z.object({
 	name: prizeName,
@@ -44,10 +47,7 @@ export const settingsUpdateSchema = z
 	.object({
 		totalSpins: z.number().int().min(0).max(100_000),
 		isOpen: z.boolean(),
-		pin: z
-			.string()
-			.trim()
-			.regex(/^\d{4,12}$/, 'PIN gồm 4–12 chữ số'),
+		pin: boothPin,
 	})
 	.partial()
 	.refine((value) => Object.keys(value).length > 0, 'Không có gì để cập nhật');
@@ -55,3 +55,11 @@ export const settingsUpdateSchema = z
 export type PrizeCreateInput = z.infer<typeof prizeCreateSchema>;
 export type PrizeUpdateInput = z.infer<typeof prizeUpdateSchema>;
 export type SettingsUpdateInput = z.infer<typeof settingsUpdateSchema>;
+
+export const boothSetupSchema = z.object({
+	totalSpins: z.number().int().min(0).max(100_000),
+	previousTotalSpins: z.number().int().min(0).max(100_000),
+	prizes: z.array(z.object({ id: z.string().min(1), remaining: stock, previousRemaining: stock })),
+});
+
+export type BoothSetupInput = z.infer<typeof boothSetupSchema>;

@@ -28,19 +28,6 @@
 
 			<section class="gate" aria-label="Mở quầy quà">
 				<p id="gateStatus" role="status">Đang mở quầy quà…</p>
-				<form id="pinForm" hidden>
-					<label for="pin">Ban tổ chức nhập mã PIN để mở quầy quà</label>
-					<input
-						id="pin"
-						name="pin"
-						type="password"
-						inputmode="numeric"
-						pattern="[0-9]{4,12}"
-						maxlength="12"
-						required
-					/>
-					<button class="primary" type="submit">Mở quầy</button>
-				</form>
 				<p id="stageError" role="alert" hidden></p>
 				<button id="retry" class="primary" type="button" hidden>Kiểm tra lại</button>
 			</section>
@@ -91,9 +78,54 @@
 			<div class="flash" aria-hidden="true"></div>
 
 			<div class="controls">
+				<button id="openSetup" type="button">Thiết lập</button>
 				<button id="sound" type="button" aria-pressed="true">Tắt tiếng</button>
 				<button id="fullscreen" type="button">Toàn màn hình</button>
 			</div>
+			<dialog id="boothSetup" aria-labelledby="setupTitle">
+				<header class="setup-heading">
+					<h2 id="setupTitle">Thiết lập quầy</h2>
+					<button id="closeSetup" type="button" aria-label="Đóng thiết lập">×</button>
+				</header>
+				<p id="setupStatus" role="status"></p>
+				<p id="setupError" role="alert" hidden></p>
+				<a id="setupLogin" href="/dang-nhap?from=%2Ffmt2026" target="_top" hidden
+					>Đăng nhập quản trị</a
+				>
+				<form id="pinForm" hidden>
+					<label for="pin">Mã PIN</label>
+					<input
+						id="pin"
+						name="pin"
+						type="password"
+						inputmode="numeric"
+						autocomplete="off"
+						pattern="[0-9]{4,12}"
+						maxlength="12"
+						required
+					/>
+					<button id="submitPin" class="primary" type="submit">Tiếp tục</button>
+				</form>
+				<form id="setupForm" hidden>
+					<div id="setupPrizes"></div>
+					<label for="totalSpins" class="setup-row"
+						>Tổng lượt dự kiến
+						<input
+							id="totalSpins"
+							type="number"
+							inputmode="numeric"
+							min="0"
+							max="100000"
+							required
+						/>
+					</label>
+					<p class="setup-note">
+						Lượt đã rút vẫn được giữ. Nếu số lượt còn lại lớn hơn số quà, phần chênh lệch là phiếu
+						tinh thần.
+					</p>
+					<button class="primary" type="submit">Bắt đầu phiên chơi</button>
+				</form>
+			</dialog>
 		</main>
 	</body>
 </html>

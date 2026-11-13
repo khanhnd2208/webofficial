@@ -37,16 +37,24 @@ function unlockSecret(): string | null {
 	);
 }
 
-function sign(payload: string, secret: string): string {
-	return createHmac('sha256', secret).update(`fmt2026-booth:${payload}`).digest('hex');
+function sign(payload: string, secret: string, scope: string): string {
+	return createHmac('sha256', secret).update(`fmt2026-${scope}:${payload}`).digest('hex');
 }
 
 /** Returns null when the server has no secret to sign with. */
 export function issueBoothToken(pinVersion: number, now = Date.now()): string | null {
+	return issueToken(pinVersion, now + BOOTH_UNLOCK_TTL_MS, 'booth');
+}
+
+export function issueSetupToken(pinVersion: number): string | null {
+	return issueToken(pinVersion, Date.now() + 15 * 60 * 1000, 'setup');
+}
+
+function issueToken(pinVersion: number, expiresAt: number, scope: string): string | null {
 	const secret = unlockSecret();
 	if (!secret) return null;
-	const payload = `${pinVersion}.${now + BOOTH_UNLOCK_TTL_MS}`;
-	return `${payload}.${sign(payload, secret)}`;
+	const payload = `${pinVersion}.${expiresAt}`;
+	return `${payload}.${sign(payload, secret, scope)}`;
 }
 
 export function isBoothTokenValid(
@@ -54,12 +62,25 @@ export function isBoothTokenValid(
 	pinVersion: number,
 	now = Date.now(),
 ): boolean {
+	return isTokenValid(token, pinVersion, now, 'booth');
+}
+
+export function isSetupTokenValid(token: string | undefined, pinVersion: number): boolean {
+	return isTokenValid(token, pinVersion, Date.now(), 'setup');
+}
+
+function isTokenValid(
+	token: string | undefined,
+	pinVersion: number,
+	now: number,
+	scope: string,
+): boolean {
 	const secret = unlockSecret();
 	if (!token || !secret) return false;
 	const [version, expiresAt, signature] = token.split('.');
 	if (!version || !expiresAt || !signature) return false;
 	if (Number(version) !== pinVersion || Number(expiresAt) <= now) return false;
-	const expected = Buffer.from(sign(`${version}.${expiresAt}`, secret), 'hex');
+	const expected = Buffer.from(sign(`${version}.${expiresAt}`, secret, scope), 'hex');
 	const actual = Buffer.from(signature, 'hex');
 	return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
