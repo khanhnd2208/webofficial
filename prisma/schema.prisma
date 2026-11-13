@@ -1617,3 +1617,50 @@ model UnreleasedGiftResponse {
 
   @@index([createdAt])
 }
+
+/// One prize in the FMT 2026 booth draw at /fmt2026. `remaining` is the live
+/// stock an admin can edit at any time; each draw takes one.
+model Fmt2026Prize {
+  id        String        @id @default(uuid())
+  slug      String        @unique
+  name      String
+  remaining Int           @default(0)
+  /// common | rare | epic: how loud the reveal is, not how likely the prize is.
+  tier      String        @default("common")
+  imagePath String?
+  sortOrder Int           @default(0)
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  draws     Fmt2026Draw[]
+}
+
+/// Single row (id = 1) holding the FMT 2026 draw switches. Draws lock this row,
+/// so two booth clicks never take the last prize twice.
+model Fmt2026Settings {
+  id         Int      @id @default(1)
+  /// Spins planned for the event; the "good luck" slots are what prizes do not fill.
+  totalSpins Int      @default(50)
+  isOpen     Boolean  @default(false)
+  /// scrypt hash of the booth PIN; null means the booth cannot be unlocked yet.
+  pinHash    String?
+  /// Bumped on every PIN change so unlock cookies issued for the old PIN stop working.
+  pinVersion Int      @default(0)
+  updatedAt  DateTime @updatedAt
+}
+
+/// One draw at the FMT 2026 booth. Anonymous by design: only the time and the
+/// prize. `prizeId` null means a "good luck" slot.
+model Fmt2026Draw {
+  id        String        @id @default(uuid())
+  createdAt DateTime      @default(now())
+  prizeId   String?
+  /// Prize name at draw time, so history survives renames.
+  prizeName String
+  /// Set when an admin undoes a mistaken draw; the prize went back into stock.
+  voidedAt  DateTime?
+  prize     Fmt2026Prize? @relation(fields: [prizeId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([voidedAt])
+}
