@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { McIcon } from '@/components/myclass/ui';
@@ -55,6 +56,7 @@ export function ArenaSetup({
 	onReload,
 	onDone,
 	onClose,
+	exitHref,
 }: {
 	data: RecallArenaData;
 	config: ArenaConfig;
@@ -73,6 +75,8 @@ export function ArenaSetup({
 	onReload: () => void;
 	onDone: () => void;
 	onClose?: () => void;
+	/** Where "Thoát" goes before the game has started. */
+	exitHref: string;
 }) {
 	const [step, setStep] = useState<ArenaSetupStep>(initialStep);
 	// Escape stays with RecallArena, which only closes setup once a game has started.
@@ -118,7 +122,16 @@ export function ArenaSetup({
 						>
 							<McIcon name="close" size={20} />
 						</button>
-					) : null}
+					) : (
+						<Link
+							href={exitHref}
+							className={styles.iconButton}
+							aria-label="Thoát về trang lớp"
+							title="Thoát về trang lớp"
+						>
+							<McIcon name="close" size={20} />
+						</Link>
+					)}
 				</header>
 
 				<nav className={setup.steps} aria-label="Các bước thiết lập">

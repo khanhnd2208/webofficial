@@ -6,10 +6,12 @@ export function ArenaVictory({
 	round,
 	bossName,
 	onNewBoss,
+	onSummary,
 }: {
 	round: number;
 	bossName: string;
 	onNewBoss: () => void;
+	onSummary: () => void;
 }) {
 	return (
 		<m.div
@@ -30,9 +32,14 @@ export function ArenaVictory({
 			</m.span>
 			<h2>Cả lớp đã hạ gục Boss {round}!</h2>
 			<p className={styles.victorySub}>{bossName} đã bị đánh bại</p>
-			<button type="button" className={styles.startButton} onClick={onNewBoss}>
-				Gọi Boss mới <kbd>Space</kbd>
-			</button>
+			<span className={styles.victoryActions}>
+				<button type="button" className={styles.startButton} onClick={onNewBoss}>
+					Gọi Boss mới <kbd>Space</kbd>
+				</button>
+				<button type="button" className={styles.textButton} onClick={onSummary}>
+					Xem tổng kết
+				</button>
+			</span>
 		</m.div>
 	);
 }

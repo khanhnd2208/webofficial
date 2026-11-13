@@ -565,8 +565,40 @@ describe('RecallArena', () => {
 			expect.stringMatching(/Bình.*Đạt.*\+1/),
 			expect.stringMatching(/An.*Chưa gọi/),
 		]);
+		expect(rows[0]!.textContent).toMatch(/0 → 1/);
+		expect(within(summary).getByText(/Đã lưu hết lên hệ thống/)).toBeTruthy();
 		fireEvent.click(within(summary).getByRole('button', { name: 'Tiếp tục chơi' }));
 		expect(screen.queryByRole('dialog', { name: 'Tổng kết phiên' })).toBeNull();
+
+		// Leaving with the X shows the same summary instead of dropping the lecturer out.
+		fireEvent.click(screen.getByRole('button', { name: 'Thoát khỏi trận' }));
+		const leaving = screen.getByRole('dialog', { name: 'Tổng kết phiên' });
+		expect(within(leaving).getByRole('link', { name: 'Thoát về trang lớp' })).toHaveProperty(
+			'href',
+			expect.stringContaining('/my-space/teaching/courses/course-1'),
+		);
+	});
+
+	it('lets the lecturer leave the setup before the game starts', () => {
+		render(<RecallArena data={arenaData()} />);
+		const exit = within(setupDialog()).getByRole('link', { name: 'Thoát về trang lớp' });
+		expect(exit.getAttribute('href')).toBe('/my-space/teaching/courses/course-1');
+	});
+
+	it('lists the Gift a missed answer added in the summary', async () => {
+		apiMock.mockResolvedValue({ giftAfter: 2 });
+		render(<RecallArena data={arenaData()} />);
+		chooseRule('Chỉ Supporting');
+		enterGame();
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
+		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		await screen.findByRole('button', { name: /Đã gọi hết/ });
+
+		fireEvent.click(screen.getByRole('button', { name: /Kết thúc/ }));
+		const summary = screen.getByRole('dialog', { name: 'Tổng kết phiên' });
+		const row = within(summary).getAllByRole('row')[1]!;
+		expect(row.textContent).toMatch(/Bình.*Chưa đạt.*\+1 \(2\)/);
 	});
 
 	it('mixes questions from several lessons', () => {

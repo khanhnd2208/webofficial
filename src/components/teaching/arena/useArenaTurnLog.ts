@@ -98,6 +98,14 @@ export function useArenaTurnLog({
 			});
 	}, [ready, failed, round, rejected, progress.history, courseId, setProgress]);
 
+	// Closing the tab with calls still unsent would leave them only on this machine.
+	useEffect(() => {
+		if (!pending) return;
+		const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+		window.addEventListener('beforeunload', warn);
+		return () => window.removeEventListener('beforeunload', warn);
+	}, [pending]);
+
 	return {
 		loading: loadedDay !== dayKey,
 		/** Calls this browser has not saved to the server yet. */

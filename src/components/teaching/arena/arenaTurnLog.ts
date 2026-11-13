@@ -32,6 +32,7 @@ export function entryFromTurn(turn: RecallArenaTurnRecord): ArenaHistoryEntry {
 		result: turn.result,
 		...(turn.award != null ? { award: turn.award } : {}),
 		...(turn.cpAfter != null ? { cpAfter: turn.cpAfter } : {}),
+		...(turn.cpPrevious != null ? { cpBefore: turn.cpPrevious } : {}),
 		...(turn.giftAfter != null ? { giftAfter: turn.giftAfter } : {}),
 		...(turn.guestGroup ? { group: turn.guestGroup } : {}),
 		synced: true,
@@ -69,7 +70,13 @@ export async function saveArenaGrade(
 	if (grade.kind === 'cp' && saved?.cpAfter != null) {
 		const points = saved.cpAfter;
 		return {
-			entry: { ...entry, synced: true, cpAfter: points },
+			entry: {
+				...entry,
+				synced: true,
+				cpAfter: points,
+				// A retried save returns the committed turn without its previous mark.
+				...(saved.cpPrevious != null ? { cpBefore: saved.cpPrevious } : {}),
+			},
 			message:
 				saved.cpPrevious != null && saved.cpPrevious < points
 					? `${name}: CP ${saved.cpPrevious} → ${points}`
