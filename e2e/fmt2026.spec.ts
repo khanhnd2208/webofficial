@@ -56,6 +56,7 @@ test.describe('FMT 2026 booth', () => {
 	});
 
 	test('the booth unlocks with the PIN and a teacher hands out a prize', async ({ page }) => {
+		test.setTimeout(45_000);
 		await page.goto('/fmt2026');
 		await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
 			'content',
@@ -99,13 +100,28 @@ test.describe('FMT 2026 booth', () => {
 		await expect(stage.getByText('Giữ Lắc, nhả khi kim lọt vào khe sáng.')).toBeVisible();
 		await page.keyboard.down('Space');
 		await page.waitForTimeout(1300);
+		const releasedAt = performance.now();
 		await page.keyboard.up('Space');
 
-		const reveal = stage.locator('.reveal');
-		await expect(reveal.getByRole('heading')).toBeVisible({ timeout: 20_000 });
-		expect((await overview(admin)).spinsUsed).toBe(before.spinsUsed + 1);
+		const bubble = stage.locator('.stage[data-phase="spin"] .bubble');
+		await expect(bubble).toHaveAttribute('data-side', 'a');
+		const launchLine = await bubble.textContent();
+		await expect(bubble).not.toHaveText(launchLine!);
+		await expect(bubble).toHaveAttribute('data-side', 'a');
+		await expect(bubble).toHaveAttribute('data-side', 'b');
+		await expect(bubble).toBeHidden();
 
-		await reveal.getByRole('button', { name: 'Lượt tiếp theo' }).click();
+		const reveal = stage.locator('.reveal');
+		await expect(reveal.getByRole('heading')).toBeVisible();
+		expect(performance.now() - releasedAt).toBeGreaterThanOrEqual(12_000);
+
+		const next = reveal.getByRole('button', { name: 'Lượt tiếp theo' });
+		await expect(next).toBeDisabled();
+		await page.keyboard.press('Enter');
+		await expect(reveal).toBeVisible();
+		expect((await overview(admin)).spinsUsed).toBe(before.spinsUsed + 1);
+		await expect(next).toBeEnabled();
+		await next.click();
 		await expect(reveal).toBeHidden();
 		await expect(stage.getByText('Bạn muốn rút cùng ai?')).toBeVisible();
 	});

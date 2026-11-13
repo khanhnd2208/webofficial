@@ -250,7 +250,7 @@ canvas {
 .host:not(:disabled):is(:hover, :focus-visible) .host-art {
 	transform: translateY(-1.4%) scale(1.025);
 }
-.host[data-dim='true'] .host-art {
+.stage:not([data-phase='spin']) .host[data-dim='true'] .host-art {
 	filter: brightness(0.56) saturate(0.66);
 }
 .host[data-cheer='true'] {
@@ -1007,6 +1007,10 @@ h1 em {
 	left: auto;
 	right: 1.4cqw;
 }
+.stage[data-phase='spin'] .bubble {
+	max-width: 22cqw;
+	font-size: max(10px, 1.55cqw);
+}
 .stage[data-phase='reveal'] .bubble {
 	left: 20.5%;
 	max-width: 14cqw;
@@ -1206,9 +1210,8 @@ h2 {
 		transform 0.15s;
 }
 /* Nút chỉ hiện khi màn mở quà đã đủ lâu để không bị bấm nhầm. */
-.reveal[data-ready='false'] .primary {
+.reveal .primary:disabled {
 	opacity: 0;
-	pointer-events: none;
 }
 .ring-wave {
 	position: absolute;
