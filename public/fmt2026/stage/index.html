@@ -38,14 +38,25 @@
 			</section>
 
 			<div class="charge" hidden>
-				<button id="shake" type="button" aria-label="Giữ để lắc túi quà">
-					<svg viewBox="0 0 120 120" aria-hidden="true">
-						<circle class="ring-bg" cx="60" cy="60" r="53" />
-						<circle class="ring-fg" cx="60" cy="60" r="53" pathLength="1" />
-					</svg>
-					<span class="shake-label">Giữ để<b>Lắc</b></span>
+				<button
+					id="shake"
+					type="button"
+					aria-label="Giữ để lắc túi quà"
+					aria-describedby="chargeHint"
+				>
+					<span class="shake-gauge" aria-hidden="true">
+						<span class="shake-grooves"></span>
+						<span class="shake-ticks"></span>
+						<span class="shake-track"></span>
+						<span class="shake-fill"></span>
+						<span class="shake-needle"></span>
+						<span class="shake-slot"></span>
+						<span class="shake-pulse"></span>
+					</span>
+					<span class="shake-face" aria-hidden="true"><strong id="shakeWord">Lắc</strong></span>
 				</button>
-				<p id="chargeHint">Giữ đến khi vòng đầy, rồi thả.</p>
+				<p id="chargeHint">Giữ Lắc, nhả khi kim lọt vào khe sáng.</p>
+				<p id="timingStatus" class="visually-hidden" role="status" aria-atomic="true"></p>
 			</div>
 
 			<p class="bubble" role="status" aria-atomic="true" hidden></p>

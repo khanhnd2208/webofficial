@@ -6,7 +6,14 @@ FMT.sound = (() => {
 	let master;
 	let noiseBuffer;
 	let enabled = true;
-	let charge = null;
+	let shakeMusic = null;
+	const MUSIC_STEP = 60 / 132 / 2;
+	const BASS_LINE = [110, 130.81, 146.83, 164.81];
+	const MELODY = [
+		440, 0, 523.25, 659.25, 0, 523.25, 783.99, 659.25, 523.25, 0, 659.25, 783.99, 0, 659.25, 880,
+		783.99, 587.33, 0, 698.46, 880, 0, 698.46, 1046.5, 880, 659.25, 0, 783.99, 987.77, 0, 783.99,
+		659.25, 523.25,
+	];
 
 	function ensure() {
 		if (!enabled) return null;
@@ -35,7 +42,7 @@ FMT.sound = (() => {
 	// Một nốt nhạc. `to` cho phép trượt cao độ, `lowpass` làm tiếng ấm như kèn.
 	function note(freq, at, dur, opts = {}) {
 		if (!ensure()) return;
-		const { type = 'sine', peak = 0.2, attack = 0.008, to, lowpass } = opts;
+		const { type = 'sine', peak = 0.2, attack = 0.008, to, lowpass, output = master } = opts;
 		const start = ctx.currentTime + at;
 		const osc = ctx.createOscillator();
 		const gain = ctx.createGain();
@@ -51,7 +58,7 @@ FMT.sound = (() => {
 			osc.connect(filter);
 			tail = filter;
 		}
-		tail.connect(gain).connect(master);
+		tail.connect(gain).connect(output);
 		osc.start(start);
 		osc.stop(start + attack + dur + 0.05);
 	}
@@ -59,7 +66,15 @@ FMT.sound = (() => {
 	// Tiếng ồn có lọc: dùng cho tiếng gõ, tiếng gió, trống và chũm chọe.
 	function noise(at, dur, opts = {}) {
 		if (!ensure()) return;
-		const { peak = 0.2, type = 'bandpass', freq = 2000, to, q = 1, attack = 0.004 } = opts;
+		const {
+			peak = 0.2,
+			type = 'bandpass',
+			freq = 2000,
+			to,
+			q = 1,
+			attack = 0.004,
+			output = master,
+		} = opts;
 		const start = ctx.currentTime + at;
 		const source = ctx.createBufferSource();
 		const filter = ctx.createBiquadFilter();
@@ -71,7 +86,7 @@ FMT.sound = (() => {
 		filter.frequency.setValueAtTime(freq, start);
 		if (to) filter.frequency.exponentialRampToValueAtTime(to, start + dur);
 		envelope(gain.gain, start, attack, peak, dur);
-		source.connect(filter).connect(gain).connect(master);
+		source.connect(filter).connect(gain).connect(output);
 		source.start(start, Math.random());
 		source.stop(start + attack + dur + 0.05);
 	}
@@ -90,6 +105,47 @@ FMT.sound = (() => {
 		});
 	};
 
+	function scheduleShakeMusic() {
+		const music = shakeMusic;
+		if (music.next < ctx.currentTime - MUSIC_STEP) music.next = ctx.currentTime;
+		while (music.next < ctx.currentTime + 0.12) {
+			const at = Math.max(0, music.next - ctx.currentTime);
+			const step = music.step % MELODY.length;
+			const output = music.gain;
+			if (step % 2 === 0) {
+				note(135, at, 0.16, { to: 46, peak: 0.48, output });
+			}
+			if (step % 4 === 2) {
+				noise(at, 0.1, { peak: 0.2, freq: 1850, output });
+			}
+			noise(at, step % 2 === 0 ? 0.042 : 0.09, {
+				peak: 0.075,
+				type: 'highpass',
+				freq: 6400,
+				output,
+			});
+			if (step % 2 === 1) {
+				const bass = BASS_LINE[Math.floor(step / 8)];
+				note(bass, at, 0.14, { type: 'sawtooth', lowpass: 720, peak: 0.25, output });
+			}
+			if (MELODY[step]) {
+				note(MELODY[step], at, 0.19, { type: 'triangle', peak: 0.18, output });
+				note(MELODY[step] * 2, at, 0.08, { peak: 0.035, output });
+			}
+			music.next += MUSIC_STEP;
+			music.step += 1;
+		}
+	}
+
+	function stopShakeMusic() {
+		if (!shakeMusic) return;
+		const { timer, gain } = shakeMusic;
+		shakeMusic = null;
+		clearInterval(timer);
+		gain.gain.setTargetAtTime(0, ctx.currentTime, 0.028);
+		setTimeout(() => gain.disconnect(), 180);
+	}
+
 	return {
 		get enabled() {
 			return enabled;
@@ -97,8 +153,8 @@ FMT.sound = (() => {
 		unlock: ensure,
 		setEnabled(value) {
 			enabled = value;
-			if (!value) this.chargeStop();
-			else ensure();
+			if (value) ensure();
+			else stopShakeMusic();
 		},
 
 		blip() {
@@ -109,53 +165,24 @@ FMT.sound = (() => {
 			marimba(784, 0.08, 0.16);
 		},
 
-		// Tiếng lắc túi: một nốt rền cao dần theo lực giữ.
-		chargeStart() {
-			if (!ensure() || charge) return;
-			const osc = ctx.createOscillator();
-			const filter = ctx.createBiquadFilter();
+		startShakeMusic() {
+			if (!ensure() || shakeMusic) return;
 			const gain = ctx.createGain();
-			const lfo = ctx.createOscillator();
-			const lfoGain = ctx.createGain();
-			osc.type = 'sawtooth';
-			osc.frequency.value = 110;
-			filter.type = 'lowpass';
-			filter.frequency.value = 500;
-			gain.gain.value = 0.0001;
-			lfo.frequency.value = 8;
-			lfoGain.gain.value = 0.03;
-			lfo.connect(lfoGain).connect(gain.gain);
-			osc.connect(filter).connect(gain).connect(master);
-			osc.start();
-			lfo.start();
-			charge = { osc, filter, gain, lfo };
+			gain.gain.value = 0.65;
+			gain.connect(master);
+			shakeMusic = { gain, next: ctx.currentTime + 0.018, step: 0 };
+			scheduleShakeMusic();
+			shakeMusic.timer = setInterval(scheduleShakeMusic, 40);
 		},
-		chargeUpdate(power) {
-			if (!charge) return;
-			const now = ctx.currentTime;
-			charge.osc.frequency.setTargetAtTime(110 * 2 ** (power * 2.2), now, 0.04);
-			charge.filter.frequency.setTargetAtTime(500 + power * 2600, now, 0.04);
-			charge.gain.gain.setTargetAtTime(0.04 + power * 0.07, now, 0.04);
-			charge.lfo.frequency.setTargetAtTime(8 + power * 14, now, 0.04);
-		},
-		chargeStop() {
-			if (!charge) return;
-			const { osc, gain, lfo } = charge;
-			charge = null;
-			const now = ctx.currentTime;
-			gain.gain.cancelScheduledValues(now);
-			gain.gain.setTargetAtTime(0.0001, now, 0.03);
-			osc.stop(now + 0.2);
-			lfo.stop(now + 0.2);
-		},
-		rattle(power) {
-			noise(0, 0.05, { peak: 0.05 + power * 0.08, freq: 1800 + Math.random() * 2400, q: 2 });
-		},
+		stopShakeMusic,
 		fizzle() {
 			note(330, 0, 0.35, { type: 'triangle', peak: 0.16, to: 110 });
 			noise(0, 0.3, { peak: 0.06, type: 'highpass', freq: 3000 });
 		},
 
+		perfect() {
+			[880, 1175, 1568].forEach((freq, index) => marimba(freq, index * 0.055, 0.17));
+		},
 		launch(power) {
 			noise(0, 0.55, { peak: 0.22, freq: 400, to: 5200, q: 1.4, attack: 0.02 });
 			note(180, 0, 0.3, { type: 'triangle', peak: 0.3, to: 720 + power * 500 });
