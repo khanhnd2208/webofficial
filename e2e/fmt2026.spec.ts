@@ -93,11 +93,12 @@ test.describe('FMT 2026 booth', () => {
 		await expect(stock).toBeVisible();
 		await expect(stock).not.toContainText(/\d/);
 
-		await stage.getByRole('button', { name: 'Rút quà cùng thầy' }).click();
+		await stage.getByRole('button', { name: 'Rút quà cùng Thầy Hoàng Gia Thư' }).click();
 		const shake = stage.getByRole('button', { name: 'Giữ để lắc túi quà' });
 		await expect(shake).toBeFocused();
+		await expect(stage.getByText('Giữ Lắc, nhả khi kim lọt vào khe sáng.')).toBeVisible();
 		await page.keyboard.down('Space');
-		await expect(stage.getByText('Thả ra nào!')).toBeVisible();
+		await page.waitForTimeout(1300);
 		await page.keyboard.up('Space');
 
 		const reveal = stage.locator('.reveal');

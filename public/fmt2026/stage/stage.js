@@ -1,6 +1,7 @@
 import { api } from './booth-api.js';
 import { mountSetup } from './booth-setup.js';
 import { allocateSlots } from './wheel-slots.js';
+import { createShakeTiming } from './shake-timing.js';
 import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-content.js';
 
 (() => {
@@ -12,7 +13,7 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const TAU = Math.PI * 2;
   const SLOTS = 12;
   const STEP = TAU / SLOTS;
-  const MIN_POWER = 0.35;
+  const TEACHERS = { a: 'Thầy Hoàng Gia Thư', b: 'Cô Đỗ Vân Anh' };
 
   let prizes = [];
   let luckLeft = 0;
@@ -45,7 +46,6 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   const intro = $('.intro');
   const chargeBox = $('.charge');
   const shakeBtn = $('#shake');
-  const chargeHint = $('#chargeHint');
   const wheelEl = $('.wheel');
   const tokensEl = $('.tokens');
   const hubName = $('#hubName');
@@ -57,11 +57,6 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   let phase = 'loading';
   let active = null;
   let power = 0;
-  let holding = false;
-  let fullSince = 0;
-  let lastRattle = 0;
-  let chargeLast = 0;
-  let chargeFrameId = 0;
   let sinceEpic = 0;
   let idleTimer = 0;
   let turn = 0;
@@ -73,9 +68,13 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     host.type = 'button';
     host.className = 'host';
     host.dataset.host = side;
-    host.setAttribute('aria-label', side === 'a' ? 'Rút quà cùng thầy' : 'Rút quà cùng cô');
-    host.innerHTML = '<span class="bag bag-back"><img alt=""></span><img class="pose" alt=""><img class="peek" alt=""><span class="glow"></span><span class="bag bag-front"><img alt=""></span><span class="host-label" aria-hidden="true">Chọn ' + (side === 'a' ? 'thầy' : 'cô') + '</span>';
-    host.querySelectorAll('.bag img').forEach((img) => { img.src = toteSrc; });
+    host.setAttribute('aria-label', 'Rút quà cùng ' + TEACHERS[side]);
+    host.innerHTML =
+      '<span class="host-art" aria-hidden="true"><span class="bag bag-back"><img alt=""></span><img class="pose" alt=""><img class="peek" alt=""><span class="glow"></span><span class="bag bag-front"><img alt=""></span></span><span class="host-label" aria-hidden="true"></span>';
+    host.querySelector('.host-label').textContent = TEACHERS[side];
+    host.querySelectorAll('.bag img').forEach((img) => {
+      img.src = toteSrc;
+    });
     host.addEventListener('click', () => choose(host));
     $('.hosts').append(host);
     return host;
@@ -168,19 +167,40 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     const previous = phase;
     phase = next;
     root.dataset.phase = next;
-    setupButton.disabled = next === 'charge' || next === 'spin';
-    hosts.forEach((host) => { host.disabled = next !== 'choosing'; });
+    setupButton.disabled = next === 'charge' || next === 'timing' || next === 'spin';
+    hosts.forEach((host) => {
+      host.disabled = next !== 'choosing';
+    });
     gate.hidden = !['loading', 'locked', 'unavailable'].includes(next);
     if (next === 'choosing' && previous !== next) hosts[0].focus({ preventScroll: true });
     intro.hidden = next !== 'idle' && next !== 'choosing';
     $('#start').hidden = next !== 'idle';
     $('#hint').hidden = next !== 'choosing';
-    chargeBox.hidden = next !== 'charge';
+    chargeBox.hidden = next !== 'charge' && next !== 'timing';
+    shakeBtn.disabled = next === 'timing';
     wheelEl.hidden = next !== 'spin';
     reveal.hidden = next !== 'reveal';
     clearTimeout(idleTimer);
-    if (next === 'choosing') idleTimer = setTimeout(() => { if (phase === 'choosing') setPhase('idle'); }, 45000);
+    if (next === 'choosing')
+      idleTimer = setTimeout(() => {
+        if (phase === 'choosing') setPhase('idle');
+      }, 45000);
   }
+
+  const timing = createShakeTiming({
+    root,
+    button: shakeBtn,
+    hint: $('#chargeHint'),
+    word: $('#shakeWord'),
+    status: $('#timingStatus'),
+    sound,
+    getPhase: () => phase,
+    setPhase,
+    say,
+    onPower: (value) => { power = value; },
+    onPerfect: () => { if (!reduced.matches) spark(15); },
+    launch,
+  });
 
   function say(key, options = {}) {
     const self = active?.dataset.host === 'b' ? 'cô' : 'thầy';
@@ -195,7 +215,10 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   // Miệng túi của một thầy/cô, tính theo điểm ảnh trong khung sân khấu.
   function mouthOf(host) {
     const bag = host.querySelector('.bag-back');
-    return { x: host.offsetLeft + bag.offsetLeft + bag.offsetWidth / 2, y: host.offsetTop + bag.offsetTop + bag.offsetHeight * 0.2 };
+    return {
+      x: host.offsetLeft + bag.offsetLeft + bag.offsetWidth / 2,
+      y: host.offsetTop + bag.offsetTop + bag.offsetHeight * 0.18,
+    };
   }
   function geometry() {
     const W = root.clientWidth;
@@ -236,12 +259,9 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
   function choose(host) {
     if (phase !== 'choosing') return;
     active = host;
-    power = 0;
-    root.style.setProperty('--power', '0');
+    timing.reset();
     root.style.setProperty('--light-x', host.dataset.host === 'a' ? '24%' : '76%');
     root.dataset.tier = '';
-    root.dataset.full = 'false';
-    chargeHint.textContent = 'Giữ đến khi vòng đầy, rồi thả.';
     hosts.forEach((entry) => {
       entry.dataset.active = String(entry === host);
       entry.dataset.dim = String(entry !== host);
@@ -251,60 +271,6 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     setPhase('charge');
     say('ready');
     shakeBtn.focus({ preventScroll: true });
-  }
-
-  // ── Nhịp 1: Lắc ───────────────────────────────────────────────
-  function beginHold() {
-    if (phase !== 'charge' || holding) return;
-    holding = true;
-    fullSince = 0;
-    root.dataset.holding = 'true';
-    sound.chargeStart();
-    say('shake');
-    chargeLast = performance.now();
-    cancelAnimationFrame(chargeFrameId);
-    chargeFrameId = requestAnimationFrame(chargeFrame);
-  }
-
-  function chargeFrame(now) {
-    const dt = Math.min(0.25, (now - chargeLast) / 1000);
-    chargeLast = now;
-    power = holding ? Math.min(1, power + dt / 1.6) : Math.max(0, power - dt * 2.4);
-    root.style.setProperty('--power', power.toFixed(3));
-    if (holding) {
-      sound.chargeUpdate(power);
-      if (now - lastRattle > 170 - 110 * power) {
-        lastRattle = now;
-        sound.rattle(power);
-        if (power > 0.45 && !reduced.matches) spark(2);
-      }
-      if (power >= 1) {
-        if (!fullSince) {
-          fullSince = now;
-          root.dataset.full = 'true';
-          chargeHint.textContent = 'Thả ra nào!';
-        }
-        // Giữ quá lâu thì túi tự bung, tránh kẹt lượt ở quầy.
-        if (now - fullSince > 1500) { endHold(); return; }
-      }
-    }
-    if (phase === 'charge' && (holding || power > 0)) chargeFrameId = requestAnimationFrame(chargeFrame);
-  }
-
-  function endHold() {
-    if (!holding) return;
-    holding = false;
-    root.dataset.holding = 'false';
-    root.dataset.full = 'false';
-    sound.chargeStop();
-    if (phase !== 'charge') return;
-    if (power < MIN_POWER) {
-      sound.fizzle();
-      say('fizzle');
-      chargeHint.textContent = 'Giữ lâu hơn, đầy vòng rồi hãy thả';
-      return;
-    }
-    void launch(power);
   }
 
   function spark(count) {
@@ -771,38 +737,40 @@ import { COLORS, COUPONS, LINES, LUCK, SHORT_NAMES, TIER_LABEL } from './stage-c
     });
     root.querySelectorAll('.fly, .ring-wave').forEach((el) => el.remove());
     active = null;
-    root.style.setProperty('--power', '0');
+    timing.reset();
   }
 
   // ── Điều khiển ────────────────────────────────────────────────
   $('#start').addEventListener('click', openChoosing);
   $('#again').addEventListener('click', next);
-  shakeBtn.addEventListener('pointerdown', (event) => {
-    event.preventDefault();
-    shakeBtn.setPointerCapture?.(event.pointerId);
-    beginHold();
+  root.addEventListener('animationend', (event) => {
+    if (event.animationName === 'quake') root.classList.remove('quake');
   });
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => shakeBtn.addEventListener(type, endHold));
-  shakeBtn.addEventListener('contextmenu', (event) => event.preventDefault());
-  addEventListener('blur', endHold);
-  root.addEventListener('animationend', (event) => { if (event.animationName === 'quake') root.classList.remove('quake'); });
 
   document.addEventListener('keydown', (event) => {
     sound.unlock();
-    if (event.repeat || event.target.closest?.('dialog, input')) return;
-    if (phase === 'choosing' && (event.key === 'ArrowLeft' || event.key === '1')) return choose(hosts[0]);
-    if (phase === 'choosing' && (event.key === 'ArrowRight' || event.key === '2')) return choose(hosts[1]);
+    if (event.target.closest?.('dialog, input, select')) return;
+    if (!event.repeat && phase === 'choosing') {
+      if (event.key === 'ArrowLeft' || event.key === '1') return choose(hosts[0]);
+      if (event.key === 'ArrowRight' || event.key === '2') return choose(hosts[1]);
+    }
     if (event.code !== 'Space' && event.key !== 'Enter') return;
-    if (phase === 'charge') {
+    const button = event.target.closest?.('button');
+    if (phase === 'charge' && (!button || button === shakeBtn)) {
       event.preventDefault();
-      beginHold();
-    } else if (!event.target.closest?.('button')) {
-      if (phase === 'idle') { event.preventDefault(); openChoosing(); }
-      else if (phase === 'reveal') { event.preventDefault(); next(); }
+      if (!event.repeat) timing.begin(event.code);
+    } else if (!event.repeat && !button) {
+      if (phase === 'idle') {
+        event.preventDefault();
+        openChoosing();
+      } else if (phase === 'reveal') {
+        event.preventDefault();
+        next();
+      }
     }
   });
   document.addEventListener('keyup', (event) => {
-    if (event.code === 'Space' || event.key === 'Enter') endHold();
+    if (event.code === 'Space' || event.key === 'Enter') timing.end(event.code);
   });
   document.addEventListener('pointerdown', () => sound.unlock(), { capture: true });
 
