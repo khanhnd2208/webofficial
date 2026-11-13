@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { TeachingPopoverRoot } from '@/components/teaching/TeachingPopover';
@@ -64,13 +64,52 @@ describe('TeachingCourseWorkspace', () => {
 		);
 		expect(screen.getByText('Lesson 1')).toBeInTheDocument();
 		expect(screen.getByText('8 thẻ · Bản nháp')).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Sao chép link môn' })).not.toBeInTheDocument();
 		expect(screen.queryByText('Week 1')).not.toBeInTheDocument();
 		expect(screen.queryByText('Should stay off the compact list')).not.toBeInTheDocument();
 		expect(screen.queryByText('lesson-1')).not.toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole('button', { name: 'Thao tác bộ thẻ Lesson 1' }));
 		expect(screen.getByRole('menuitem', { name: 'Sửa nhanh' })).toBeInTheDocument();
+		expect(
+			screen.queryByRole('menuitem', { name: 'Sao chép link bộ thẻ' }),
+		).not.toBeInTheDocument();
 		expect(screen.getByRole('menuitem', { name: 'Xóa vĩnh viễn' })).toBeEnabled();
+	});
+
+	it('copies separate student URLs for the course and its published deck', async () => {
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+		Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+		try {
+			render(
+				<TeachingPopoverRoot>
+					<TeachingCourseWorkspace
+						course={course()}
+						decks={[deck({ status: 'PUBLISHED' })]}
+						tab="recall"
+					/>
+				</TeachingPopoverRoot>,
+			);
+
+			const path = '/active-recall/course-1';
+			expect(screen.getByRole('link', { name: 'Mở trang ôn tập' })).toHaveAttribute('href', path);
+			fireEvent.click(screen.getByRole('button', { name: 'Sao chép link môn' }));
+			await waitFor(() =>
+				expect(screen.getByRole('status')).toHaveTextContent('Đã sao chép link ôn tập của môn.'),
+			);
+			expect(writeText).toHaveBeenLastCalledWith(window.location.origin + path);
+
+			fireEvent.click(screen.getByRole('button', { name: 'Thao tác bộ thẻ Lesson 1' }));
+			fireEvent.click(screen.getByRole('menuitem', { name: 'Sao chép link bộ thẻ' }));
+			await waitFor(() =>
+				expect(screen.getByRole('status')).toHaveTextContent('Đã sao chép link bộ thẻ.'),
+			);
+			expect(writeText).toHaveBeenLastCalledWith(window.location.origin + path + '/lesson-1');
+		} finally {
+			if (original) Object.defineProperty(navigator, 'clipboard', original);
+			else Reflect.deleteProperty(navigator, 'clipboard');
+		}
 	});
 
 	it('requires a three-second confirmation before deleting a populated deck', () => {

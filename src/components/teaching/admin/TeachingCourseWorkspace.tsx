@@ -18,15 +18,19 @@ import { TeachingArenaLauncher } from '@/components/teaching/admin/TeachingArena
 import { TeachingAppHeader } from '@/components/teaching/admin/TeachingAppHeader';
 import { TeachingClassCards } from '@/components/teaching/admin/TeachingClassCards';
 import { TeachingQuickMenu } from '@/components/teaching/admin/TeachingQuickMenu';
-import { Dialog } from '@/components/ui/Dialog';
+import { Dialog, Toast } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
 import type { ActiveRecallDeckListItem, ActiveRecallStatus } from '@/features/active-recall';
 import {
 	collectTermSuggestions,
 	formatDependencySummary,
 } from '@/features/teaching/domain/adminLifecycle';
-import { compareNaturalText } from '@/lib/naturalSort';
+import { compareRecallDeckTitles } from '@/features/active-recall/deckOrder';
 import type { TeachingCourseListItem } from '@/features/teaching/types';
+
+function isPublishedWithCards(deck: ActiveRecallDeckListItem) {
+	return deck.status === 'PUBLISHED' && deck.cardCount > 0;
+}
 
 function statusLabel(status: ActiveRecallDeckListItem['status']) {
 	if (status === 'PUBLISHED') return 'Công khai';
@@ -57,6 +61,7 @@ export function TeachingCourseWorkspace({
 	const { confirm, dialog } = useAdminConfirm();
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
+	const [copied, setCopied] = useState('');
 	const [editDeck, setEditDeck] = useState<ActiveRecallDeckListItem | null>(null);
 	const [draft, setDraft] = useState({
 		title: '',
@@ -64,14 +69,26 @@ export function TeachingCourseWorkspace({
 		status: 'DRAFT' as ActiveRecallStatus,
 	});
 	const archived = course.status === 'ARCHIVED';
+	const hasShareableDecks = !archived && decks.some(isPublishedWithCards);
+	const publicRecallPath = routes.publicCourseRecall(course.id);
 	const sortedDecks = useMemo(
-		() => [...decks].sort((left, right) => compareNaturalText(left.title, right.title)),
+		() => [...decks].sort((left, right) => compareRecallDeckTitles(left.title, right.title)),
 		[decks],
 	);
 	const termSuggestions = useMemo(
 		() => collectTermSuggestions(course.classes.map((item) => item.term)),
 		[course.classes],
 	);
+
+	async function copyRecallLink(path: string, message: string) {
+		const url = new URL(path, window.location.origin).href;
+		try {
+			await navigator.clipboard.writeText(url);
+			setCopied(message);
+		} catch {
+			window.prompt('Sao chép link Active Recall', url);
+		}
+	}
 
 	async function run(action: () => Promise<void>) {
 		setBusy(true);
@@ -209,61 +226,107 @@ export function TeachingCourseWorkspace({
 					/>
 				) : null}
 				{tab === 'recall' ? (
-					<div className="overflow-hidden border border-border bg-surface">
-						{sortedDecks.length ? (
-							sortedDecks.map((deck) => (
-								<div
-									key={deck.id}
-									className="flex items-center gap-2 border-b border-border last:border-b-0"
-								>
+					<section className="space-y-4" aria-label="Các bộ Active Recall">
+						<div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--mc-r)] border border-border bg-surface px-4 py-3">
+							<div>
+								<h2 className="font-semibold text-ink">Trang ôn tập cho sinh viên</h2>
+								<p className="mt-1 text-sm text-ink-secondary">
+									{hasShareableDecks
+										? 'Sinh viên mở link để xem các bộ thẻ đã công khai của môn này.'
+										: 'Link khả dụng khi môn đang hoạt động và có ít nhất một bộ thẻ công khai.'}
+								</p>
+							</div>
+							{hasShareableDecks ? (
+								<div className="flex flex-wrap items-center gap-2">
 									<Link
-										href={routes.mySpaceTeachingRecallEdit(course.id, deck.id)}
-										className="min-w-0 flex-1 px-5 py-4 hover:bg-background"
+										href={publicRecallPath}
+										target="_blank"
+										rel="noopener"
+										className="inline-flex min-h-11 items-center rounded-[var(--mc-r-sm)] px-3 text-sm font-semibold text-accent hover:underline"
 									>
-										<p className="font-bold text-foreground">{deck.title}</p>
-										<p className="mt-1 text-sm text-muted">
-											{deck.cardCount} thẻ · {statusLabel(deck.status)}
-										</p>
+										Mở trang ôn tập
 									</Link>
-									<div className="pr-2">
-										<TeachingQuickMenu
-											label={`Thao tác bộ thẻ ${deck.title}`}
-											disabled={busy}
-											items={[
-												{ id: 'edit', label: 'Sửa nhanh', onSelect: () => openEdit(deck) },
-												deck.status === 'ARCHIVED'
-													? {
-															id: 'restore',
-															label: 'Khôi phục',
-															onSelect: () => void setDeckStatus(deck, 'DRAFT'),
-														}
-													: {
-															id: 'archive',
-															label: 'Lưu trữ',
-															onSelect: () => void setDeckStatus(deck, 'ARCHIVED'),
-														},
-												{
-													id: 'delete',
-													label: 'Xóa vĩnh viễn',
-													tone: 'danger',
-													onSelect: () => void deleteDeck(deck),
-												},
-											]}
-										/>
-									</div>
+									<StudioButton
+										variant="secondary"
+										onClick={() =>
+											void copyRecallLink(publicRecallPath, 'Đã sao chép link ôn tập của môn.')
+										}
+									>
+										Sao chép link môn
+									</StudioButton>
 								</div>
-							))
-						) : (
-							<TeachingEmpty
-								icon="recall"
-								title="Chưa có bộ thẻ"
-								description="Tạo bộ Active Recall đầu tiên cho môn này."
-							/>
-						)}
-					</div>
+							) : null}
+						</div>
+						<div className="overflow-hidden border border-border bg-surface">
+							{sortedDecks.length ? (
+								sortedDecks.map((deck) => (
+									<div
+										key={deck.id}
+										className="flex items-center gap-2 border-b border-border last:border-b-0"
+									>
+										<Link
+											href={routes.mySpaceTeachingRecallEdit(course.id, deck.id)}
+											className="min-w-0 flex-1 px-5 py-4 hover:bg-background"
+										>
+											<p className="font-bold text-foreground">{deck.title}</p>
+											<p className="mt-1 text-sm text-muted">
+												{deck.cardCount} thẻ · {statusLabel(deck.status)}
+											</p>
+										</Link>
+										<div className="pr-2">
+											<TeachingQuickMenu
+												label={`Thao tác bộ thẻ ${deck.title}`}
+												disabled={busy}
+												items={[
+													{ id: 'edit', label: 'Sửa nhanh', onSelect: () => openEdit(deck) },
+													...(!archived && isPublishedWithCards(deck)
+														? [
+																{
+																	id: 'copy-link',
+																	label: 'Sao chép link bộ thẻ',
+																	onSelect: () =>
+																		void copyRecallLink(
+																			routes.publicCourseRecallDeck(course.id, deck.slug),
+																			'Đã sao chép link bộ thẻ.',
+																		),
+																},
+															]
+														: []),
+													deck.status === 'ARCHIVED'
+														? {
+																id: 'restore',
+																label: 'Khôi phục',
+																onSelect: () => void setDeckStatus(deck, 'DRAFT'),
+															}
+														: {
+																id: 'archive',
+																label: 'Lưu trữ',
+																onSelect: () => void setDeckStatus(deck, 'ARCHIVED'),
+															},
+													{
+														id: 'delete',
+														label: 'Xóa vĩnh viễn',
+														tone: 'danger',
+														onSelect: () => void deleteDeck(deck),
+													},
+												]}
+											/>
+										</div>
+									</div>
+								))
+							) : (
+								<TeachingEmpty
+									icon="recall"
+									title="Chưa có bộ thẻ"
+									description="Tạo bộ Active Recall đầu tiên cho môn này."
+								/>
+							)}
+						</div>
+					</section>
 				) : null}
 			</div>
 
+			<Toast message={copied} visible={Boolean(copied)} onDismiss={() => setCopied('')} />
 			<Dialog
 				open={Boolean(editDeck)}
 				onClose={() => {

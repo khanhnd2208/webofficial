@@ -296,6 +296,8 @@ describe('site header trail', () => {
 		for (const path of [
 			'/',
 			'/lop/hrm-101',
+			routes.publicCourseRecall('course-1'),
+			routes.publicCourseRecallDeck('course-1', 'lesson-9'),
 			'/admin',
 			'/my-space/my-class/ai50',
 			'/my-space/teaching/class-1',

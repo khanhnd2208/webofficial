@@ -26,9 +26,14 @@ export const routes = {
 	mySpace: '/my-space',
 	/** Board games moved to their own site. The My Space tile links here. */
 	funGames: 'https://fun.toiladuykhanh.com',
-	/** @deprecated Active Recall now lives inside Teaching class boards. */
+	publicCourseRecallRoot: '/active-recall',
+	publicCourseRecall: (courseId: string) =>
+		`/active-recall/${encodeURIComponent(courseId)}` as const,
+	publicCourseRecallDeck: (courseId: string, deckSlug: string) =>
+		`/active-recall/${encodeURIComponent(courseId)}/${encodeURIComponent(deckSlug)}` as const,
+	/** Legacy public index. Share course-scoped links from Teaching. */
 	activeRecall: '/my-space/active-recall',
-	/** @deprecated Use teachingPublicRecallDeck */
+	/** Legacy standalone deck address. */
 	activeRecallDeck: (slug: string) => `/my-space/active-recall/${slug}` as const,
 	mySpaceTests: '/my-space/tests',
 	mySpaceTest: (slug: string) => `/my-space/tests/${slug}` as const,

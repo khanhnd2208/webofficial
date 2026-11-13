@@ -38,6 +38,7 @@ export const AREAS = {
 			'src/app/my-space/teaching',
 			'src/app/my-space/my-class',
 			'src/app/my-space/active-recall',
+			'src/app/active-recall',
 			'src/app/my-space/tests',
 			'src/app/lop',
 			'src/app/progress',

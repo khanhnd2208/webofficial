@@ -34,6 +34,13 @@ export type ActiveRecallDeckDTO = ActiveRecallDeckListItem & {
 	cards: ActiveRecallCardDTO[];
 };
 
+export type ActiveRecallStudyDeck = Pick<
+	ActiveRecallDeckListItem,
+	'id' | 'title' | 'subject' | 'lessonLabel'
+> & {
+	cards: Pick<ActiveRecallCardDTO, 'id' | 'question' | 'answer' | 'questionVi' | 'answerVi'>[];
+};
+
 export type RecallImportRow = {
 	row: number;
 	id?: string;
