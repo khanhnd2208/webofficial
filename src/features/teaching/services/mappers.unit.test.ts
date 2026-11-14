@@ -36,6 +36,7 @@ const classRow: TeachingClass = {
 	lateCountsTowardAbsenceThreshold: true,
 	giftDeductionPoints: new Prisma.Decimal(1),
 	absenceThresholdPercent: 20,
+	exceedingAbsenceZeroesAttendance: false,
 	lateGraceMinutes: 15,
 	status: 'ACTIVE',
 	publicSlug: null,

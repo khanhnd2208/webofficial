@@ -48,6 +48,7 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 					absenceDeductionPoints: form.absenceDeductionPoints,
 					lateDeductionPoints: form.lateDeductionPoints,
 					lateCountsTowardAbsenceThreshold: form.lateCountsTowardAbsenceThreshold,
+					exceedingAbsenceZeroesAttendance: form.exceedingAbsenceZeroesAttendance,
 					giftDeductionPoints: form.giftDeductionPoints,
 					absenceThresholdPercent: form.absenceThresholdPercent,
 					lateGraceMinutes: form.lateGraceMinutes,
@@ -226,6 +227,67 @@ export function SettingsForm({ teachingClass }: { teachingClass: TeachingClassRe
 							/>
 							Đi muộn tính vào ngưỡng vắng
 						</label>
+						<label className="flex items-center gap-2 text-sm text-ink md:col-span-2">
+							<input
+								type="checkbox"
+								checked={form.exceedingAbsenceZeroesAttendance}
+								onChange={(event) =>
+									setForm({ ...form, exceedingAbsenceZeroesAttendance: event.target.checked })
+								}
+							/>
+							Vắng quá ngưỡng vẫn được thi (điểm chuyên cần tự động về 0)
+						</label>
+						<div className="flex flex-wrap gap-2 md:col-span-2">
+							<StudioButton
+								type="button"
+								variant="secondary"
+								disabled={busy}
+								onClick={async () => {
+									setBusy(true);
+									setError(null);
+									setMessage(null);
+									try {
+										const result = await teachingApi<{ updatedCount: number }>(
+											`/api/admin/teaching/classes/${teachingClass.id}/convert-late-to-present`,
+											{ method: 'POST' },
+										);
+										setMessage(
+											`Đã chuyển ${result.updatedCount} buổi muộn thành đúng giờ (đã lưu note ẩn).`,
+										);
+										router.refresh();
+									} catch (err) {
+										setError(err instanceof Error ? err.message : 'Không thể chuyển buổi muộn');
+									} finally {
+										setBusy(false);
+									}
+								}}
+							>
+								Chuyển buổi muộn → Đúng giờ (lưu note)
+							</StudioButton>
+							<StudioButton
+								type="button"
+								variant="secondary"
+								disabled={busy}
+								onClick={async () => {
+									setBusy(true);
+									setError(null);
+									setMessage(null);
+									try {
+										const result = await teachingApi<{ encryptedCount: number }>(
+											'/api/admin/teaching/students/encrypt-pii',
+											{ method: 'POST' },
+										);
+										setMessage(`Đã mã hoá SĐT/email cho ${result.encryptedCount} sinh viên.`);
+									} catch (err) {
+										setError(err instanceof Error ? err.message : 'Không thể mã hoá PII');
+									} finally {
+										setBusy(false);
+									}
+								}}
+							>
+								Mã hoá SĐT/email sinh viên
+							</StudioButton>
+						</div>
 						<div className="rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-3 text-sm text-ink-secondary md:col-span-2">
 							<strong className="text-ink">Preview:</strong> Chuyên cần {form.attendanceMaxPoints} +
 							CP {form.cpMaxPoints} = {form.attendanceMaxPoints + form.cpMaxPoints}.

@@ -53,6 +53,7 @@ export function mapClass(row: TeachingClass): TeachingClassRecord {
 		absenceDeductionPoints: toNumber(row.absenceDeductionPoints),
 		lateDeductionPoints: toNumber(row.lateDeductionPoints),
 		lateCountsTowardAbsenceThreshold: row.lateCountsTowardAbsenceThreshold,
+		exceedingAbsenceZeroesAttendance: row.exceedingAbsenceZeroesAttendance,
 		giftDeductionPoints: toNumber(row.giftDeductionPoints),
 		absenceThresholdPercent: row.absenceThresholdPercent,
 		lateGraceMinutes: row.lateGraceMinutes,
@@ -78,6 +79,7 @@ export function policyFromClass(row: TeachingClass): CpPolicy {
 		absenceDeductionPoints: toNumber(row.absenceDeductionPoints),
 		lateDeductionPoints: toNumber(row.lateDeductionPoints),
 		lateCountsTowardAbsenceThreshold: row.lateCountsTowardAbsenceThreshold,
+		exceedingAbsenceZeroesAttendance: row.exceedingAbsenceZeroesAttendance,
 		giftDeductionPoints: toNumber(row.giftDeductionPoints),
 	};
 }

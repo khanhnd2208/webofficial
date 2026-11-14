@@ -31,6 +31,7 @@ export interface CpPolicy {
 	absenceDeductionPoints?: number;
 	lateDeductionPoints?: number;
 	lateCountsTowardAbsenceThreshold?: boolean;
+	exceedingAbsenceZeroesAttendance?: boolean;
 	giftDeductionPoints?: number;
 }
 
@@ -70,6 +71,7 @@ export const DEFAULT_CP_POLICY: CpPolicy = {
 	absenceDeductionPoints: ABSENCE_DEDUCTION_POINTS,
 	lateDeductionPoints: ABSENCE_DEDUCTION_POINTS,
 	lateCountsTowardAbsenceThreshold: true,
+	exceedingAbsenceZeroesAttendance: false,
 	giftDeductionPoints: GIFT_DEDUCTION_POINTS,
 };
 
@@ -176,22 +178,26 @@ export function computeCp(
 	}
 
 	const banLimit = banLimitFor(policy);
-	const banned = unexcusedAbsences > banLimit;
+	const exceededAbsenceLimit = unexcusedAbsences > banLimit;
+	const zeroAttendanceRule = policy.exceedingAbsenceZeroesAttendance ?? false;
+	const banned = zeroAttendanceRule ? false : exceededAbsenceLimit;
 	const participationTotal = roundScore(
 		participationPoints.reduce((sum, points) => sum + points, 0),
 	);
 	const giftDeduction = roundScore(Math.max(0, Math.trunc(giftCount)) * giftDeductionPoints);
 	const absenceDeduction = roundScore(attendanceDeduction);
-	const attendanceScore = roundScore(
-		clamp(attendanceMaxPoints - absenceDeduction, 0, attendanceMaxPoints),
-	);
+	const attendanceScore =
+		zeroAttendanceRule && exceededAbsenceLimit
+			? 0
+			: roundScore(clamp(attendanceMaxPoints - absenceDeduction, 0, attendanceMaxPoints));
 	// Gift is subtracted from the raw weekly sum before the cap, so CP equals
 	// "sum of weekly points − Gift", capped to 0..cpMax — the sum students check.
 	const cp = roundScore(clamp(participationTotal - giftDeduction, 0, cpMaxPoints));
 	const totalScore = roundScore(clamp(attendanceScore + cp, 0, attendanceMaxPoints + cpMaxPoints));
 	const riskLevel: RiskLevel = banned
 		? 'BANNED'
-		: unexcusedAbsences + 1 > banLimit && banLimit > 0
+		: (zeroAttendanceRule && exceededAbsenceLimit) ||
+			  (unexcusedAbsences + 1 > banLimit && banLimit > 0)
 			? 'AT_RISK'
 			: 'OK';
 
