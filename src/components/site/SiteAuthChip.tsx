@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useId, useRef, useState } from 'react';
 
-import { afterSignOutPath } from '@/config/navigation';
+import { ADMIN_MENU_LINKS, USER_MENU_LINKS, afterSignOutPath } from '@/config/navigation';
 import { routes } from '@/config/routes';
 import { signOutTo } from '@/lib/auth/signOutTo';
 import { inAppBrowserName } from '@/lib/auth/inAppBrowser';
@@ -145,16 +145,7 @@ export default function SiteAuthChip({
 
 	const isAdmin = session.user.role === 'admin';
 	const name = shortName(session.user.name, session.user.email);
-	const items: Array<{ href: string; label: string }> = [
-		...(isAdmin
-			? [
-					{ href: routes.mySpaceTeaching, label: 'Lớp học' },
-					{ href: routes.admin.home, label: 'Quản trị' },
-				]
-			: []),
-		{ href: routes.myCourses, label: 'Khóa học của tôi' },
-		{ href: routes.account, label: 'Tài khoản' },
-	];
+	const items = isAdmin ? [...ADMIN_MENU_LINKS, ...USER_MENU_LINKS] : USER_MENU_LINKS;
 
 	return (
 		<div

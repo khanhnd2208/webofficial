@@ -41,15 +41,9 @@ test.describe('Editorial premium public experience', () => {
 		await page.goto('/');
 		await page.locator('a[href="/muc-luc"]').last().click();
 		await expect(page).toHaveURL(/\/muc-luc/);
-		await expect(page.getByTestId('gate-item-about')).toHaveAttribute(
-			'href',
-			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
-		);
-
-		await expect(page.getByTestId('myspace-tile-experiences')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-board-game')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
-		await page.getByTestId('myspace-tile-courses').click();
+		await expect(page.getByTestId('gate-item-about')).toHaveAttribute('href', '/lien-he');
+		await expect(page.locator('[data-testid^="gate-item-"]')).toHaveCount(2);
+		await page.getByTestId('gate-item-learning').click();
 		await expect(page).toHaveURL(/\/khoa-hoc$/);
 	});
 

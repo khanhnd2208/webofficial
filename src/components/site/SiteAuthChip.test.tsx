@@ -64,3 +64,29 @@ describe('SiteAuthChip sign-in', () => {
 		expect(screen.queryByTestId('site-auth-chip')).toBeNull();
 	});
 });
+
+describe('SiteAuthChip account menu', () => {
+	function signIn(role: 'admin' | 'student') {
+		mocks.session.mockReturnValue({
+			data: { user: { name: 'Nguyễn Duy Khánh', email: 'k@example.com', role } },
+			status: 'authenticated',
+		});
+		render(<SiteAuthChip />);
+		fireEvent.click(screen.getByTestId('site-auth-chip'));
+		return screen.getAllByRole('link').map((link) => link.textContent);
+	}
+
+	it('lists the admin workspaces above the personal links for an admin', () => {
+		expect(signIn('admin')).toEqual([
+			'Lớp & môn học',
+			'Quản lý khóa học',
+			'Quản trị',
+			'Khóa học của tôi',
+			'Tài khoản',
+		]);
+	});
+
+	it('keeps the admin workspaces out of a learner menu', () => {
+		expect(signIn('student')).toEqual(['Khóa học của tôi', 'Tài khoản']);
+	});
+});

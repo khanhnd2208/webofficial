@@ -37,14 +37,11 @@ test.describe('archived public learning surfaces', () => {
 		}
 	});
 
-	test('sends the retired My Space hub to Mục lục, which keeps Courses', async ({ page }) => {
+	test('sends the retired My Space hub to Mục lục, which leads to Học tập', async ({ page }) => {
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/muc-luc$/);
 		await expect(page.getByTestId('gate-home')).toHaveCount(1);
-		await expect(page.locator('[data-testid^="myspace-tile-"]')).toHaveCount(1);
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-courses')).toHaveAttribute('href', '/khoa-hoc');
-		await expect(page.getByTestId('myspace-tile-board-game')).toHaveCount(0);
-		await expect(page.getByTestId('myspace-tile-experiences')).toHaveCount(0);
+		await expect(page.locator('[data-testid^="gate-item-"]')).toHaveCount(2);
+		await expect(page.getByTestId('gate-item-learning')).toHaveAttribute('href', '/khoa-hoc');
 	});
 });
