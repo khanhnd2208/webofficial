@@ -118,14 +118,13 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
-			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveAttribute(
+			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveCount(0);
+			await expect(page.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute(
 				'aria-selected',
 				'true',
 			);
-			await expect(page.getByRole('heading', { name: 'Tuần 1' })).toBeVisible();
-			await expect(page.getByText('Bản công khai')).toBeVisible();
+			await expect(page.getByText('Bản công khai')).toHaveCount(0);
 			await expect(page.getByText('Bản nháp không công khai')).toHaveCount(0);
-			await expect(page.locator('.mc-prose span[style*="color"]')).toBeVisible();
 
 			await addAdminSession(context);
 			const unpublished = await page.request.post(
@@ -134,7 +133,11 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(unpublished.ok()).toBe(true);
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
-			await expect(page.getByText('Chưa có ghi chú lớp nào được xuất bản.')).toBeVisible();
+			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveCount(0);
+			await expect(page.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute(
+				'aria-selected',
+				'true',
+			);
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
@@ -457,6 +460,8 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			// Verify tabs
 			await expect(page.getByRole('tab', { name: 'Điểm danh' })).toBeVisible();
 			await expect(page.getByRole('tab', { name: 'Điểm CP' })).toBeVisible();
+			await expect(page.getByRole('tab', { name: 'Tổng kết' })).toBeVisible();
+			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveCount(0);
 			await expect(page.getByRole('tab', { name: 'Link quan trọng' })).toHaveCount(0);
 
 			// Verify read-only mode: no editable button cell
@@ -468,6 +473,12 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByTestId('participation-grid').first()).toBeVisible();
 			await expect(page.getByRole('columnheader', { name: 'Gift', exact: true })).toBeVisible();
 			await expect(page.getByRole('columnheader', { name: 'Tổng /10', exact: true })).toBeVisible();
+
+			// Switch to Summary tab (locked until all weeks are finalized)
+			await page.getByRole('tab', { name: 'Tổng kết' }).click();
+			await expect(page.getByTestId('summary-locked')).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chưa mở bảng điểm tổng kết' })).toBeVisible();
+			await expect(page.getByTestId('summary-grid')).toHaveCount(0);
 
 			// Responsive viewport overflow check
 			for (const width of [390, 1280]) {

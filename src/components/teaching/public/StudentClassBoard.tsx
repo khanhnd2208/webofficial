@@ -18,6 +18,7 @@ import { ParticipationGrid } from '../admin/ParticipationGrid';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
 import { LearningExperienceWorkspace } from './LearningExperienceWorkspace';
 import { ClassNotesWorkspace } from './ClassNotesWorkspace';
+import { getPublicSummaryLockStatus, StudentSummaryPanel } from './StudentSummaryPanel';
 import { Sheet } from '@/components/ui/Dialog';
 import { routes } from '@/config/routes';
 import type { BoardGridStudent } from '../board/gridTypes';
@@ -33,16 +34,27 @@ import {
 	studentMatchesPublicTutorial,
 } from '@/features/teaching/domain/publicBoardFilter';
 
-type PublicTab = 'attendance' | 'cp' | 'groups' | 'learning' | 'notes' | 'recall';
+type PublicTab = 'attendance' | 'cp' | 'summary' | 'groups' | 'learning' | 'notes' | 'recall';
 
 function resolvePublicTab(value?: string | null): PublicTab {
 	return value === 'cp' ||
+		value === 'summary' ||
 		value === 'groups' ||
 		value === 'learning' ||
 		value === 'notes' ||
 		value === 'recall'
 		? value
 		: 'attendance';
+}
+
+function resolveAvailableTab(
+	requested: PublicTab,
+	groupBoardEnabled: boolean,
+	notesEnabled: boolean,
+): PublicTab {
+	if (requested === 'groups' && !groupBoardEnabled) return 'attendance';
+	if (requested === 'notes' && !notesEnabled) return 'attendance';
+	return requested;
 }
 
 function toGridStudent(student: PublicClassBoard['students'][number]): BoardGridStudent {
@@ -64,20 +76,21 @@ function toGridStudent(student: PublicClassBoard['students'][number]): BoardGrid
 export function StudentClassBoard({
 	board,
 	groupBoardEnabled = false,
+	notesEnabled = false,
 	manageHref,
 	initialTab,
 	initialTutorialId,
 }: {
 	board: PublicClassBoard;
 	groupBoardEnabled?: boolean;
+	notesEnabled?: boolean;
 	manageHref?: string;
 	initialTab?: string;
 	initialTutorialId?: string;
 }) {
-	const [tab, setTab] = useState<PublicTab>(() => {
-		const requested = resolvePublicTab(initialTab);
-		return requested === 'groups' && !groupBoardEnabled ? 'attendance' : requested;
-	});
+	const [tab, setTab] = useState<PublicTab>(() =>
+		resolveAvailableTab(resolvePublicTab(initialTab), groupBoardEnabled, notesEnabled),
+	);
 	const [tutorialId, setTutorialId] = useState(() =>
 		resolvePublicTutorialId({
 			tutorials: board.tutorials,
@@ -103,13 +116,13 @@ export function StudentClassBoard({
 	useEffect(() => {
 		const sync = () => {
 			const requested = resolvePublicTab(new URLSearchParams(window.location.search).get('tab'));
-			const nextTab = requested === 'groups' && !groupBoardEnabled ? 'attendance' : requested;
+			const nextTab = resolveAvailableTab(requested, groupBoardEnabled, notesEnabled);
 			if (nextTab === 'learning') setLearningVisited(true);
 			setTab(nextTab);
 		};
 		window.addEventListener('popstate', sync);
 		return () => window.removeEventListener('popstate', sync);
-	}, [groupBoardEnabled]);
+	}, [groupBoardEnabled, notesEnabled]);
 
 	function chooseMe(enrollmentId: string) {
 		const next = enrollmentId || null;
@@ -184,6 +197,11 @@ export function StudentClassBoard({
 	const scopedSessions = useMemo(
 		() => board.sessions.filter((session) => sessionMatchesPublicTutorial(session, tutorialId)),
 		[board.sessions, tutorialId],
+	);
+	const summarySessions = scopedSessions.length > 0 ? scopedSessions : board.sessions;
+	const summaryLock = useMemo(
+		() => getPublicSummaryLockStatus(summarySessions, board.policy.totalWeeks),
+		[summarySessions, board.policy.totalWeeks],
 	);
 	const students = useMemo(() => scopedStudents.map(toGridStudent), [scopedStudents]);
 	const filteredStudents = useMemo(() => {
@@ -327,6 +345,18 @@ export function StudentClassBoard({
 				>
 					<TeachingIcon name="cp" size={18} /> Điểm CP
 				</button>
+				<button
+					type="button"
+					role="tab"
+					id="public-tab-summary"
+					aria-controls="public-panel-summary"
+					aria-selected={tab === 'summary'}
+					tabIndex={tab === 'summary' ? 0 : -1}
+					data-active={tab === 'summary'}
+					onClick={() => changeTab('summary')}
+				>
+					<TeachingIcon name="summary" size={18} /> Tổng kết
+				</button>
 				{groupBoardEnabled ? (
 					<button
 						type="button"
@@ -353,18 +383,20 @@ export function StudentClassBoard({
 				>
 					<TeachingIcon name="students" size={18} /> Trải nghiệm học tập
 				</button>
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-notes"
-					aria-controls="public-panel-notes"
-					aria-selected={tab === 'notes'}
-					tabIndex={tab === 'notes' ? 0 : -1}
-					data-active={tab === 'notes'}
-					onClick={() => changeTab('notes')}
-				>
-					<TeachingIcon name="notes" size={18} /> Ghi chú lớp
-				</button>
+				{notesEnabled ? (
+					<button
+						type="button"
+						role="tab"
+						id="public-tab-notes"
+						aria-controls="public-panel-notes"
+						aria-selected={tab === 'notes'}
+						tabIndex={tab === 'notes' ? 0 : -1}
+						data-active={tab === 'notes'}
+						onClick={() => changeTab('notes')}
+					>
+						<TeachingIcon name="notes" size={18} /> Ghi chú lớp
+					</button>
+				) : null}
 				<button
 					type="button"
 					role="tab"
@@ -382,7 +414,7 @@ export function StudentClassBoard({
 				tutorialCount: board.tutorials.length,
 				hasUnassigned,
 			}) &&
-			(tab === 'attendance' || tab === 'cp') ? (
+			(tab === 'attendance' || tab === 'cp' || tab === 'summary') ? (
 				<div className="flex flex-wrap items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 py-2">
 					<label htmlFor="public-tutorial" className="text-xs font-semibold text-ink-secondary">
 						Tutorial
@@ -426,7 +458,7 @@ export function StudentClassBoard({
 					/>
 				</div>
 			) : null}
-			{tab === 'notes' ? (
+			{notesEnabled && tab === 'notes' ? (
 				<div
 					id="public-panel-notes"
 					role="tabpanel"
@@ -479,17 +511,44 @@ export function StudentClassBoard({
 				>
 					<GroupBoardWorkspaceLoader slug={board.slug} tutorials={board.tutorials} />
 				</div>
-			) : tab === 'attendance' || tab === 'cp' ? (
+			) : tab === 'summary' && !summaryLock.unlocked ? (
+				<div id="public-panel-summary" role="tabpanel" aria-labelledby="public-tab-summary">
+					<StudentSummaryPanel
+						students={visibleStudents}
+						sessions={summarySessions}
+						totalWeeks={board.policy.totalWeeks}
+						attendanceMaxPoints={board.policy.attendanceMaxPoints}
+						cpMaxPoints={board.policy.cpMaxPoints}
+						highlightedEnrollmentId={meId}
+					/>
+				</div>
+			) : tab === 'attendance' || tab === 'cp' || tab === 'summary' ? (
 				<div
-					id={tab === 'attendance' ? 'public-panel-attendance' : 'public-panel-cp'}
+					id={
+						tab === 'attendance'
+							? 'public-panel-attendance'
+							: tab === 'cp'
+								? 'public-panel-cp'
+								: 'public-panel-summary'
+					}
 					role="tabpanel"
-					aria-labelledby={tab === 'attendance' ? 'public-tab-attendance' : 'public-tab-cp'}
+					aria-labelledby={
+						tab === 'attendance'
+							? 'public-tab-attendance'
+							: tab === 'cp'
+								? 'public-tab-cp'
+								: 'public-tab-summary'
+					}
 					className="mc-surface overflow-hidden"
 				>
 					<div className="mc-card-head mc-public-grid-head gap-2">
 						<div className="flex min-w-0 items-center gap-2">
 							<h2 className="text-base font-semibold text-ink">
-								{tab === 'attendance' ? 'Bảng điểm danh' : 'Bảng điểm CP'}
+								{tab === 'attendance'
+									? 'Bảng điểm danh'
+									: tab === 'cp'
+										? 'Bảng điểm CP'
+										: 'Bảng điểm tổng kết'}
 							</h2>
 							<span className="mc-chip">{filteredStudents.length} SV</span>
 						</div>
@@ -551,7 +610,7 @@ export function StudentClassBoard({
 								scrollMode="page"
 							/>
 						</div>
-					) : (
+					) : tab === 'cp' ? (
 						<div ref={gridWrapRef}>
 							<ParticipationGrid
 								students={visibleStudents}
@@ -563,6 +622,17 @@ export function StudentClassBoard({
 								readOnly
 								publicCompact
 								scrollMode="page"
+							/>
+						</div>
+					) : (
+						<div ref={gridWrapRef}>
+							<StudentSummaryPanel
+								students={visibleStudents}
+								sessions={summarySessions}
+								totalWeeks={board.policy.totalWeeks}
+								attendanceMaxPoints={board.policy.attendanceMaxPoints}
+								cpMaxPoints={board.policy.cpMaxPoints}
+								highlightedEnrollmentId={meId}
 							/>
 						</div>
 					)}
