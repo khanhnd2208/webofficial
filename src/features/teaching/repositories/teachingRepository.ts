@@ -1,10 +1,10 @@
 import { groupTransaction, removeEnrollmentGroup } from '../domain/groupTransactions';
-import type { Prisma, TeachingStudent } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 import { AppError } from '@/lib/appError';
 import { prisma } from '@/lib/prisma';
 import { classIdentityMatches } from '../domain/adminLifecycle';
-import { normalizeStudentCode } from '../domain/studentIdentity';
+import { decryptClassEnrollments, decryptStudentRecord } from '../domain/studentPiiCrypto';
 
 export const DEFAULT_TUTORIAL_CODE = 'T01';
 export const DEFAULT_TUTORIAL_NAME = 'Tutorial 1';
@@ -161,35 +161,39 @@ export async function getGradebookClass(
 	id: string,
 	client: Pick<Prisma.TransactionClient, 'teachingClass'> = prisma,
 ) {
-	return client.teachingClass.findUnique({
-		where: { id },
-		include: {
-			tutorials: { orderBy: [{ displayOrder: 'asc' }, { code: 'asc' }] },
-			sessions: { orderBy: [{ weekNumber: 'asc' }] },
-			enrollments: {
-				where: { status: { not: 'WITHDRAWN' } },
-				orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
-				include: {
-					student: true,
-					attendance: true,
-					participation: true,
+	return decryptClassEnrollments(
+		await client.teachingClass.findUnique({
+			where: { id },
+			include: {
+				tutorials: { orderBy: [{ displayOrder: 'asc' }, { code: 'asc' }] },
+				sessions: { orderBy: [{ weekNumber: 'asc' }] },
+				enrollments: {
+					where: { status: { not: 'WITHDRAWN' } },
+					orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
+					include: {
+						student: true,
+						attendance: true,
+						participation: true,
+					},
 				},
 			},
-		},
-	});
+		}),
+	);
 }
 
 export async function getRosterClass(id: string) {
-	return prisma.teachingClass.findUnique({
-		where: { id },
-		include: {
-			tutorials: { orderBy: [{ displayOrder: 'asc' }, { code: 'asc' }] },
-			enrollments: {
-				orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
-				include: { student: true },
+	return decryptClassEnrollments(
+		await prisma.teachingClass.findUnique({
+			where: { id },
+			include: {
+				tutorials: { orderBy: [{ displayOrder: 'asc' }, { code: 'asc' }] },
+				enrollments: {
+					orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
+					include: { student: true },
+				},
 			},
-		},
-	});
+		}),
+	);
 }
 
 export function createClassRecord(data: Prisma.TeachingClassCreateInput) {
@@ -300,28 +304,30 @@ export function getEnrollmentsByIds(ids: string[]) {
 	});
 }
 
-export function getAttendanceBoardBySlug(slug: string) {
-	return prisma.teachingClass.findFirst({
-		where: { publicSlug: slug, attendanceVisible: true, status: 'ACTIVE' },
-		include: {
-			publicLinks: { orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }] },
-			tutorials: { orderBy: [{ displayOrder: 'asc' }, { code: 'asc' }] },
-			sessions: { orderBy: [{ weekNumber: 'asc' }] },
-			enrollments: {
-				where: { status: { not: 'WITHDRAWN' } },
-				orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
-				include: {
-					student: true,
-					attendance: true,
-					participation: true,
+export async function getAttendanceBoardBySlug(slug: string) {
+	return decryptClassEnrollments(
+		await prisma.teachingClass.findFirst({
+			where: { publicSlug: slug, attendanceVisible: true, status: 'ACTIVE' },
+			include: {
+				publicLinks: { orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }] },
+				tutorials: { orderBy: [{ displayOrder: 'asc' }, { code: 'asc' }] },
+				sessions: { orderBy: [{ weekNumber: 'asc' }] },
+				enrollments: {
+					where: { status: { not: 'WITHDRAWN' } },
+					orderBy: [{ orderNo: 'asc' }, { createdAt: 'asc' }],
+					include: {
+						student: true,
+						attendance: true,
+						participation: true,
+					},
+				},
+				notes: {
+					where: { publishedAt: { not: null }, publishedHtml: { not: null } },
+					orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
 				},
 			},
-			notes: {
-				where: { publishedAt: { not: null }, publishedHtml: { not: null } },
-				orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
-			},
-		},
-	});
+		}),
+	);
 }
 
 export async function getClassIdBySlug(slug: string): Promise<string | null> {
@@ -375,149 +381,19 @@ export function updateSession(id: string, data: Prisma.TeachingSessionUncheckedU
 	return prisma.teachingSession.update({ where: { id }, data });
 }
 
-export function getStudentByCode(studentCode: string) {
-	return prisma.teachingStudent.findUnique({
-		where: { studentCodeNormalized: normalizeStudentCode(studentCode) },
-	});
-}
+export {
+	backfillStudentMissingFields,
+	findStudentsByNormalizedCodes,
+	getStudentByCode,
+	upsertStudent,
+} from './studentRepository';
 
-export function findStudentsByNormalizedCodes(codes: string[]) {
-	if (codes.length === 0) return Promise.resolve([]);
-	return prisma.teachingStudent.findMany({
-		where: { studentCodeNormalized: { in: codes.map(normalizeStudentCode) } },
-		include: {
-			enrollments: { select: { id: true, classId: true, status: true } },
-		},
-	});
-}
-
-export function upsertStudent(data: {
-	studentCode: string;
-	familyName: string;
-	givenName: string;
-	dateOfBirth: Date | null;
-	homeClassCode: string;
-	majorName: string;
-	phone?: string | null;
-	email?: string | null;
-}) {
-	const studentCode = normalizeStudentCode(data.studentCode);
-	const payload = {
-		...data,
-		studentCode,
-		studentCodeNormalized: studentCode,
-	};
-	return prisma.teachingStudent.upsert({
-		where: { studentCodeNormalized: studentCode },
-		create: payload,
-		update: {
-			familyName: payload.familyName,
-			givenName: payload.givenName,
-			dateOfBirth: payload.dateOfBirth,
-			homeClassCode: payload.homeClassCode,
-			majorName: payload.majorName,
-			phone: payload.phone ?? undefined,
-			email: payload.email ?? undefined,
-			studentCode,
-			studentCodeNormalized: studentCode,
-		},
-	});
-}
-
-type StudentBackfillSnapshot = Pick<
-	TeachingStudent,
-	| 'id'
-	| 'familyName'
-	| 'givenName'
-	| 'dateOfBirth'
-	| 'homeClassCode'
-	| 'majorName'
-	| 'phone'
-	| 'email'
->;
-
-type StudentBackfillInput = Omit<StudentBackfillSnapshot, 'id'>;
-
-/** Backfills only missing values, using per-field compare-and-set guards to avoid concurrent overwrite. */
-export async function backfillStudentMissingFields(
-	existing: StudentBackfillSnapshot,
-	incoming: StudentBackfillInput,
-): Promise<boolean> {
-	const updates: Array<ReturnType<typeof prisma.teachingStudent.updateMany>> = [];
-	const familyName = incoming.familyName.trim();
-	const givenName = incoming.givenName.trim();
-	const homeClassCode = incoming.homeClassCode.trim();
-	const majorName = incoming.majorName.trim();
-	const phone = incoming.phone?.trim() || null;
-	const email = incoming.email?.trim() || null;
-
-	if (!existing.familyName.trim() && familyName) {
-		updates.push(
-			prisma.teachingStudent.updateMany({
-				where: { id: existing.id, familyName: existing.familyName },
-				data: { familyName },
-			}),
-		);
-	}
-	if (!existing.givenName.trim() && givenName) {
-		updates.push(
-			prisma.teachingStudent.updateMany({
-				where: { id: existing.id, givenName: existing.givenName },
-				data: { givenName },
-			}),
-		);
-	}
-	if (!existing.dateOfBirth && incoming.dateOfBirth) {
-		updates.push(
-			prisma.teachingStudent.updateMany({
-				where: { id: existing.id, dateOfBirth: null },
-				data: { dateOfBirth: incoming.dateOfBirth },
-			}),
-		);
-	}
-	if (!existing.homeClassCode.trim() && homeClassCode) {
-		updates.push(
-			prisma.teachingStudent.updateMany({
-				where: { id: existing.id, homeClassCode: existing.homeClassCode },
-				data: { homeClassCode },
-			}),
-		);
-	}
-	if (!existing.majorName.trim() && majorName) {
-		updates.push(
-			prisma.teachingStudent.updateMany({
-				where: { id: existing.id, majorName: existing.majorName },
-				data: { majorName },
-			}),
-		);
-	}
-	if (!existing.phone?.trim() && phone) {
-		updates.push(
-			prisma.teachingStudent.updateMany({
-				where: { id: existing.id, phone: existing.phone },
-				data: { phone },
-			}),
-		);
-	}
-	if (!existing.email?.trim() && email) {
-		updates.push(
-			prisma.teachingStudent.updateMany({
-				where: { id: existing.id, email: existing.email },
-				data: { email },
-			}),
-		);
-	}
-
-	if (updates.length === 0) return false;
-	const results = await prisma.$transaction(updates);
-	return results.some((result) => result.count > 0);
-}
-
-export function getEnrollment(id: string) {
-	return prisma.teachingEnrollment.findUnique({
+export async function getEnrollment(id: string) {
+	const row = await prisma.teachingEnrollment.findUnique({
 		where: { id },
 		include: { student: true, class: true },
 	});
+	return row ? { ...row, student: decryptStudentRecord(row.student) } : null;
 }
 
 export function getEnrollmentByClassAndStudent(classId: string, studentId: string) {
@@ -559,8 +435,11 @@ export function upsertEnrollment(data: {
 	});
 }
 
-export function updateEnrollment(id: string, data: Prisma.TeachingEnrollmentUncheckedUpdateInput) {
-	return groupTransaction(async (tx) => {
+export async function updateEnrollment(
+	id: string,
+	data: Prisma.TeachingEnrollmentUncheckedUpdateInput,
+) {
+	const updated = await groupTransaction(async (tx) => {
 		const existing = await tx.teachingEnrollment.findUniqueOrThrow({ where: { id } });
 		if (
 			(data.tutorialClassId !== undefined && data.tutorialClassId !== existing.tutorialClassId) ||
@@ -570,6 +449,7 @@ export function updateEnrollment(id: string, data: Prisma.TeachingEnrollmentUnch
 		}
 		return tx.teachingEnrollment.update({ where: { id }, data, include: { student: true } });
 	});
+	return { ...updated, student: decryptStudentRecord(updated.student) };
 }
 
 export function countActiveEnrollments(classId: string) {

@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { decryptStudentPiiField } from '../domain/studentPiiCrypto';
+
 const mocks = vi.hoisted(() => ({
 	updateMany: vi.fn(),
 	transaction: vi.fn(),
@@ -57,8 +59,10 @@ describe('backfillStudentMissingFields', () => {
 		});
 		expect(mocks.updateMany).toHaveBeenCalledWith({
 			where: { id: 'student-1', phone: null },
-			data: { phone: '0901234567' },
+			data: { phone: expect.stringMatching(/^enc:v1:/) },
 		});
+		const phoneCall = mocks.updateMany.mock.calls.find((call) => call[0]?.data?.phone);
+		expect(decryptStudentPiiField(phoneCall?.[0]?.data?.phone)).toBe('0901234567');
 	});
 
 	it('reports no update when a concurrent compare-and-set loses the race', async () => {
