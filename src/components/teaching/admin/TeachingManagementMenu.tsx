@@ -57,7 +57,7 @@ export function TeachingManagementMenu({
 				className="teaching-management-item min-h-11"
 			>
 				<span>
-					<span className="block text-sm font-semibold text-ink">Xuất Excel</span>
+					<span className="block text-sm font-semibold text-ink">Xuất sổ điểm chi tiết</span>
 					<span className="mt-0.5 block text-xs text-ink-secondary">Tải roster và điểm về máy</span>
 				</span>
 				<span aria-hidden>↓</span>
@@ -141,7 +141,7 @@ export function TeachingManagementMenu({
 						className="teaching-management-item teaching-management-item-mobile min-h-11"
 					>
 						<span>
-							<span className="block text-sm font-semibold text-ink">Xuất Excel</span>
+							<span className="block text-sm font-semibold text-ink">Xuất sổ điểm chi tiết</span>
 							<span className="mt-0.5 block text-xs text-ink-secondary">Tải dữ liệu lớp</span>
 						</span>
 						<span aria-hidden>↓</span>

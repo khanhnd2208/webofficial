@@ -399,8 +399,17 @@ export async function deleteTeachingClass(id: string) {
 	return { id };
 }
 
-export async function getGradebook(classId: string) {
-	const row = await repo.getGradebookClass(classId);
+export async function getGradebook(
+	classId: string,
+	{ consistentSnapshot = false }: { consistentSnapshot?: boolean } = {},
+) {
+	// The final report must see lifecycle state and marks from the same database snapshot.
+	const row = consistentSnapshot
+		? await repo.prisma.$transaction(
+				(transaction) => repo.getGradebookClass(classId, transaction),
+				{ isolationLevel: 'RepeatableRead' },
+			)
+		: await repo.getGradebookClass(classId);
 	if (!row) notFound();
 	return mapGradebook({
 		classRow: row,

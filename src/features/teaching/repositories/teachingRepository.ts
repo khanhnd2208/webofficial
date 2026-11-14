@@ -157,8 +157,11 @@ export function updatePublicPageConfig(
 	});
 }
 
-export async function getGradebookClass(id: string) {
-	return prisma.teachingClass.findUnique({
+export async function getGradebookClass(
+	id: string,
+	client: Pick<Prisma.TransactionClient, 'teachingClass'> = prisma,
+) {
+	return client.teachingClass.findUnique({
 		where: { id },
 		include: {
 			tutorials: { orderBy: [{ displayOrder: 'asc' }, { code: 'asc' }] },

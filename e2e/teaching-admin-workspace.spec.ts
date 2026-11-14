@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type APIResponse } from '@playwright/test';
+import { readSheet } from 'read-excel-file/node';
 
 import { addAdminSession } from './helpers/adminSession';
 import { cleanupTeachingClass } from './helpers/teachingCleanup';
@@ -137,4 +138,145 @@ test.describe('Teaching admin workspace', () => {
 			});
 		}
 	});
+});
+
+test('exports the same final scores shown in the class summary', async ({
+	page,
+	context,
+	request,
+}, testInfo) => {
+	await addAdminSession(context);
+	const suffix = Date.now().toString(36);
+	const api = page.request;
+	async function data<T>(response: APIResponse): Promise<T> {
+		expect(response.ok(), await response.text()).toBe(true);
+		return (await response.json()).data as T;
+	}
+
+	const { id } = await data<{ id: string }>(
+		await api.post('/api/admin/teaching/classes', {
+			data: {
+				courseCode: `GRADE${suffix}`,
+				courseName: 'Quản trị nguồn nhân lực',
+				groupNo: '39-01',
+				term: `HK1 2026-2027 ${suffix}`,
+				totalWeeks: 2,
+			},
+		}),
+	);
+	const classApi = `/api/admin/teaching/classes/${id}`;
+	const exportUrl = `${classApi}/export?mode=summary`;
+	try {
+		const { tutorials, sessions } = await data<{
+			tutorials: { id: string; name: string }[];
+			sessions: { id: string; weekNumber: number }[];
+		}>(await api.get(`${classApi}/gradebook`));
+		const tutorial = tutorials[0]!;
+		const first = `/api/admin/teaching/sessions/${sessions[0]!.id}`;
+		const cancelled = `/api/admin/teaching/sessions/${sessions[1]!.id}`;
+		const code = `0${Date.now()}`;
+		const { enrollmentId } = await data<{ enrollmentId: string }>(
+			await api.post(`${classApi}/enrollments`, {
+				data: {
+					studentCode: code,
+					familyName: 'Bùi Thị Thúy',
+					givenName: 'An',
+					homeClassCode: '1K-23',
+					tutorialClassId: tutorial.id,
+				},
+			}),
+		);
+		const absentCode = `1${code}`;
+		await data(
+			await api.post(`${classApi}/enrollments`, {
+				data: {
+					studentCode: absentCode,
+					familyName: 'Đặng Vũ Minh',
+					givenName: 'Anh',
+					homeClassCode: '1M-23',
+					tutorialClassId: tutorial.id,
+				},
+			}),
+		);
+
+		await data(await api.patch(cancelled, { data: { isCancelled: true } }));
+		await data(await api.patch(`${first}/attendance/lock`, { data: { action: 'open' } }));
+		await data(
+			await api.put(`${first}/attendance`, {
+				data: { marks: [{ enrollmentId, status: 'PRESENT' }] },
+			}),
+		);
+		await data(await api.patch(`${first}/attendance/lock`, { data: { action: 'finalize' } }));
+		await data(await api.patch(`${first}/participation/lock`, { data: { action: 'open' } }));
+		await data(
+			await api.put(`${first}/participation`, { data: { marks: [{ enrollmentId, points: 2 }] } }),
+		);
+		await data(await api.patch(`${first}/participation/lock`, { data: { action: 'park' } }));
+
+		expect((await request.get(exportUrl)).status()).toBe(401);
+		expect((await api.get(exportUrl)).status()).toBe(409);
+		await page.goto(`/my-space/teaching/${id}`);
+		await page.getByRole('link', { name: 'Tổng kết', exact: true }).click();
+		await expect(page.getByRole('heading', { name: 'Chưa thể xuất bảng tổng kết' })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Chốt điểm danh' })).toHaveCount(0);
+		await expect(page.getByRole('link', { name: 'Chốt CP' })).toHaveCount(1);
+		await expect(page.getByRole('button', { name: 'Tải Excel (.xlsx)' })).toHaveCount(0);
+
+		await data(await api.patch(`${first}/participation/lock`, { data: { action: 'finalize' } }));
+		await page.reload();
+		const table = page.getByRole('table');
+		const headers = [
+			'TT',
+			'MSSV',
+			'Name',
+			'Class',
+			'Tut',
+			'Eligible for exam',
+			'Attendance (5%)',
+			'Contribution (5%)',
+			'Total',
+		];
+		await expect(table.getByRole('columnheader')).toHaveText(headers);
+		await expect(
+			table.getByRole('row').filter({ hasText: 'Bùi Thị Thúy An' }).getByRole('cell'),
+		).toHaveText([
+			'1',
+			code,
+			'Bùi Thị Thúy An',
+			'1K-23',
+			tutorial.name,
+			'Yes',
+			'5,00',
+			'2,00',
+			'7,00',
+		]);
+
+		if (process.env.TEACHING_GRADE_SUMMARY_SCREENSHOTS) {
+			const directory = process.env.TEACHING_GRADE_SUMMARY_SCREENSHOTS;
+			await page.screenshot({ path: `${directory}/grade-summary.png`, fullPage: true });
+			await page.setViewportSize({ width: 390, height: 844 });
+			await page.screenshot({ path: `${directory}/grade-summary-mobile.png`, fullPage: true });
+			await page.setViewportSize({ width: 1280, height: 720 });
+		}
+
+		const downloadPromise = page.waitForEvent('download');
+		await page.getByRole('button', { name: 'Tải Excel (.xlsx)' }).click();
+		const download = await downloadPromise;
+		expect(download.suggestedFilename()).toMatch(/_tong-ket\.xlsx$/);
+		const filename = testInfo.outputPath('grade-summary.xlsx');
+		await download.saveAs(filename);
+		expect(await readSheet(filename)).toEqual([
+			headers,
+			[1, code, 'Bùi Thị Thúy An', '1K-23', tutorial.name, 'Yes', 5, 2, 7],
+			[2, absentCode, 'Đặng Vũ Minh Anh', '1M-23', tutorial.name, 'No', 4.5, 0, 4.5],
+		]);
+
+		await data(await api.patch(`${first}/attendance/lock`, { data: { action: 'unfinalize' } }));
+		expect((await api.get(exportUrl)).status()).toBe(409);
+		await page.getByRole('button', { name: 'Tải Excel (.xlsx)' }).click();
+		await expect(page.getByRole('heading', { name: 'Chưa thể xuất bảng tổng kết' })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Chốt điểm danh' })).toHaveCount(1);
+	} finally {
+		await cleanupTeachingClass(api, id);
+	}
 });

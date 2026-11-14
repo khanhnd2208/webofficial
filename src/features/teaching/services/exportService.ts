@@ -1,4 +1,6 @@
-import writeXlsxFile from 'write-excel-file/node';
+import writeXlsxFile, { type Cell } from 'write-excel-file/node';
+
+import { AppError } from '@/lib/appError';
 
 import {
 	ATTENDANCE_MAX_POINTS,
@@ -6,6 +8,11 @@ import {
 	TOTAL_MAX_POINTS,
 	isAttendanceCounted,
 } from '../domain/cp';
+import {
+	GRADE_SUMMARY_NOT_READY,
+	getGradeSummary,
+	gradeSummaryFilename,
+} from '../domain/gradeSummary';
 import { getGradebook } from './classService';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -74,4 +81,39 @@ export async function exportGradebookXlsx(
 	}).toBuffer();
 	const filename = `${gradebook.class.courseCode}_${gradebook.class.groupNo}_gradebook.xlsx`;
 	return { filename, buffer };
+}
+
+export async function exportGradeSummaryXlsx(classId: string) {
+	const gradebook = await getGradebook(classId, { consistentSnapshot: true });
+	const summary = getGradeSummary(gradebook);
+	if (!summary.ready) throw new AppError(GRADE_SUMMARY_NOT_READY, 409, 'CONFLICT');
+
+	const header: Cell[] = summary.headers.map((value, column) => ({
+		value,
+		fontWeight: 'bold',
+		textColor: '#FFFFFF',
+		backgroundColor: '#176B63',
+		align: column === 2 ? 'left' : 'center',
+		alignVertical: 'center',
+		height: 24,
+	}));
+	const rows = summary.rows.map((row, index): Cell[] =>
+		row.map((value, column) => ({
+			value,
+			backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#F0F6F4',
+			align: column === 2 ? 'left' : 'center',
+			alignVertical: 'center',
+			height: 20,
+			...(column >= 6 ? { format: '0.00' } : {}),
+			...(column === 8 ? { fontWeight: 'bold' } : {}),
+			...(column === 5 && value === 'No' ? { textColor: '#9F2525' } : {}),
+		})),
+	);
+	const buffer = await writeXlsxFile([header, ...rows], {
+		sheet: 'Tổng kết',
+		stickyRowsCount: 1,
+		showGridLines: false,
+		columns: [7, 16, 38, 14, 18, 21, 19, 21, 10].map((width) => ({ width })),
+	}).toBuffer();
+	return { filename: gradeSummaryFilename(gradebook.class), buffer };
 }

@@ -187,7 +187,10 @@ function restoreSnapshot(current: TeachingGradebook, snapshot: CellSnapshot): Te
 	return { ...next, stats: summarizeGradebook(next) };
 }
 
-export function useGradebookMutations(initial: TeachingGradebook) {
+export function useGradebookMutations(
+	initial: TeachingGradebook,
+	holdUntil?: (task: Promise<unknown>, key?: string) => void,
+) {
 	const [gradebook, setGradebook] = useState(initial);
 	const [toast, setToast] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
@@ -449,6 +452,15 @@ export function useGradebookMutations(initial: TeachingGradebook) {
 				finishRevision(key, revision, 'error');
 			}
 		});
+		const task = queues.current.get(key);
+		if (task) {
+			holdUntil?.(
+				task.then(() => {
+					if (latestSaveStates.current[key] === 'error') throw new Error('Gift save failed');
+				}),
+				key,
+			);
+		}
 	}
 
 	function retryMark(enrollmentId: string, sessionId: string, kind: MutationKind) {
