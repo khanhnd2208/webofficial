@@ -718,3 +718,33 @@
 	color: var(--arena-muted);
 	font-size: 0.85rem;
 }
+
+/* An unfinished phiên from before: say so before the lecturer enters. */
+.phienBanner {
+	display: flex;
+	gap: 0.55rem;
+	align-items: flex-start;
+	margin: 0 0 0.9rem;
+	padding: 0.65rem 0.85rem;
+	border: 1px solid rgb(251 191 36 / 45%);
+	border-radius: 0.75rem;
+	background: rgb(251 191 36 / 10%);
+	color: var(--arena-ink);
+	font-size: 0.9rem;
+	line-height: 1.45;
+}
+
+.phienBanner > svg {
+	flex: none;
+	margin-top: 0.15rem;
+	color: var(--arena-accent);
+}
+
+.phienBanner[data-tone='ended'] {
+	border-color: rgb(52 211 153 / 40%);
+	background: rgb(52 211 153 / 10%);
+}
+
+.phienBanner[data-tone='ended'] > svg {
+	color: var(--arena-ok);
+}

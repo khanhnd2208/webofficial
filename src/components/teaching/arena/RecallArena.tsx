@@ -29,7 +29,6 @@ import {
 	ARENA_MAX_HP,
 	answeredArenaIds,
 	arenaClassLabel,
-	arenaGameKey,
 	arenaResults,
 	arenaRoster,
 	callablePlayers,
@@ -44,6 +43,7 @@ import {
 	loadProgress,
 	manualArenaPlayers,
 	passStreak,
+	phienLabel,
 	saveConfig,
 	saveProgress,
 	type ArenaCardFate,
@@ -83,7 +83,6 @@ export function RecallArena({
 	const { reduced: reducedMotion } = useMotionTier();
 	const fx = useArenaFx(!reducedMotion);
 	const courseId = data.course.id;
-	const gameKey = arenaGameKey(courseId, data.todayIso);
 	const [config, setConfig] = useState<ArenaConfig>(() =>
 		initialConfig(data, initialClassId, null),
 	);
@@ -95,6 +94,8 @@ export function RecallArena({
 	const [started, setStarted] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [summaryOpen, setSummaryOpen] = useState(false);
+	/** Said once in the setup after a phiên ends, so the lecturer knows it took. */
+	const [endedNote, setEndedNote] = useState<string | null>(null);
 	const [phase, setPhase] = useState<Phase>('idle');
 	const [mood, setMood] = useState<MonsterMood>('idle');
 	const [highlightId, setHighlightId] = useState<string | null>(null);
@@ -154,7 +155,7 @@ export function RecallArena({
 		setProgress,
 		ready: progressLoaded,
 	});
-	/** Each student answers once a day; the floor still shows everyone. */
+	/** Each student answers once per phiên; the floor still shows everyone. */
 	const answered = useMemo(() => answeredArenaIds(progress.history), [progress.history]);
 	const inGroup = useMemo(() => callablePlayers(inRoom, config.filter), [inRoom, config.filter]);
 	const callable = useMemo(
@@ -182,24 +183,23 @@ export function RecallArena({
 		if (restored) saveConfig(courseId, config, data.todayIso);
 	}, [config, courseId, data.todayIso, restored]);
 
-	// One game per course per day: who was called, boss HP and history.
+	// The course's open phiên, if any: who was called, boss HP and history.
 	useEffect(() => {
-		const stored = loadProgress(gameKey);
+		const stored = loadProgress(courseId);
 		setProgress(stored);
 		if (stored.hp === 0) {
 			setPhase('victory');
 			setMood('defeated');
 		}
 		setProgressLoaded(true);
-	}, [gameKey]);
+	}, [courseId]);
 
 	useEffect(() => {
-		if (progressLoaded) saveProgress(gameKey, progress);
-	}, [progress, progressLoaded, gameKey]);
+		if (progressLoaded) saveProgress(courseId, progress);
+	}, [progress, progressLoaded, courseId]);
 
 	const turnLog = useArenaTurnLog({
 		courseId,
-		todayIso: data.todayIso,
 		progress,
 		setProgress,
 		ready: progressLoaded,
@@ -220,7 +220,7 @@ export function RecallArena({
 	const cp = useArenaCp({ playersById, hosts, sessions, setProgress, onToast: setToast });
 
 	const startHunt = useCallback(() => {
-		if (phase !== 'idle' || !progressLoaded || turnLog.loading) return;
+		if (phase !== 'idle' || !progressLoaded) return;
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		const draw = drawFromBag(progress.bag, eligibleIds, progress.lastPicked);
 		if (!draw.picked) {
@@ -306,7 +306,6 @@ export function RecallArena({
 		questions.availableIds,
 		questions.hidden,
 		progressLoaded,
-		turnLog.loading,
 		reducedMotion,
 		later,
 		shake,
@@ -588,19 +587,51 @@ export function RecallArena({
 		const ok = await confirm({
 			title: 'Chơi lại từ Boss 1?',
 			description:
-				'Đặt lại Boss và thứ tự gọi. Các câu đã ẩn hôm nay vẫn được loại khỏi bộ câu hỏi.',
+				'Đặt lại Boss và thứ tự gọi trong phiên này. Ai đã trả lời và các câu đã ẩn vẫn giữ nguyên.',
 			confirmLabel: 'Chơi lại',
 		});
 		if (!ok) return;
-		setProgress((previous) => ({ ...emptyProgress(), history: previous.history }));
+		setProgress((previous) => ({
+			...emptyProgress(),
+			startedAt: previous.startedAt,
+			history: previous.history,
+		}));
 		setPhase('idle');
 		setMood('idle');
+	}
+
+	/**
+	 * The only way a phiên ends: after the summary and a confirmation that
+	 * names what is lost. Points already saved stay; the next game starts fresh.
+	 */
+	async function endPhien() {
+		if (turnLog.pending) return;
+		const ok = await confirm({
+			title: 'Kết thúc phiên này?',
+			description: `${phienLabel(progress)}. Sau khi kết thúc, phiên này đóng hẳn: lần sau là phiên mới, mọi bạn được gọi lại từ đầu và các câu đã ẩn hiện lại. CP và Gift đã ghi vẫn giữ nguyên.`,
+			confirmLabel: 'Kết thúc phiên',
+			cancelLabel: 'Chưa, quay lại',
+			tone: 'danger',
+			confirmDelaySeconds: 2,
+		});
+		if (!ok) return;
+		setProgress(emptyProgress());
+		setSummaryOpen(false);
+		setHistoryOpen(false);
+		setPhase('idle');
+		setMood('idle');
+		setStarted(false);
+		setSetupOpen(true);
+		setEndedNote(`Đã kết thúc ${phienLabel(progress).replace('Phiên', 'phiên')}.`);
 	}
 
 	function closeSetup() {
 		if (!started && callable.length === 0) return;
 		setSetupOpen(false);
 		setStarted(true);
+		setEndedNote(null);
+		if (progress.startedAt == null)
+			setProgress((previous) => ({ ...previous, startedAt: previous.startedAt ?? Date.now() }));
 		if (!started && phase === 'idle') bossIntro(progress.round);
 	}
 
@@ -621,7 +652,7 @@ export function RecallArena({
 		(assist?.volunteer ? playersById.get(assist.volunteer.enrollmentId) : failedPlayer) ?? null;
 	const caughtCard = current?.cardId ? (questions.byId.get(current.cardId) ?? null) : null;
 	const caughtCpSession = caughtPlayer ? cp.sessionFor(caughtPlayer.enrollmentId) : null;
-	const canHunt = phase === 'idle' && callable.length > 0 && progressLoaded && !turnLog.loading;
+	const canHunt = phase === 'idle' && callable.length > 0 && progressLoaded;
 	const caughtDeck = caughtCard
 		? data.decks.find((deck) => deck.deckId === caughtCard.deckId)
 		: null;
@@ -788,6 +819,9 @@ export function RecallArena({
 					roster={inRoom}
 					answered={answered}
 					started={started}
+					openPhien={progress.history.length ? phienLabel(progress) : null}
+					endedPhien={endedNote}
+					onReviewPhien={() => setSummaryOpen(true)}
 					openingCpId={openingCpId}
 					onChange={setConfig}
 					onOpenCp={openCp}
@@ -805,7 +839,9 @@ export function RecallArena({
 					progress={progress}
 					names={names}
 					classHref={routes.mySpaceTeachingCourse(courseId)}
+					phien={phienLabel(progress)}
 					onContinue={() => setSummaryOpen(false)}
+					onEndPhien={() => void endPhien()}
 				/>
 			) : null}
 			{confirmDialog}

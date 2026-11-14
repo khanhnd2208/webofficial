@@ -112,10 +112,10 @@ export function ArenaTopBar({
 					data-ready={allAnswered || undefined}
 					onClick={onEnd}
 					disabled={settingsDisabled}
-					title="Kết thúc phiên và xem tổng kết"
+					title="Xem tổng kết phiên. Kết thúc phiên ở trong đó."
 				>
 					<McIcon name="flag" size={16} />
-					Kết thúc
+					Tổng kết
 				</button>
 				<button
 					type="button"

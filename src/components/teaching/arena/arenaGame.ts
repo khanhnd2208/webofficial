@@ -87,8 +87,8 @@ export function keptArenaCards(history: readonly ArenaHistoryEntry[]) {
 }
 
 /**
- * Students who already answered today, pass or fail. Each student answers
- * once per game day; a skipped turn does not count.
+ * Students who already answered in this phiên, pass or fail. Each student
+ * answers once per phiên; a skipped turn does not count.
  */
 export function answeredArenaIds(history: readonly ArenaHistoryEntry[]) {
 	const ids = new Set<string>();
@@ -134,14 +134,20 @@ export interface ArenaHistoryEntry {
 	synced?: boolean;
 }
 
-/** Per-session progress, kept in this browser so a reload does not lose the game. */
+/**
+ * One phiên (a class's check, from "Vào trận" to "Kết thúc phiên"): who was
+ * called, the questions hidden, boss and history. Kept in this browser until
+ * the lecturer ends it, so a reload, a closed tab or the next day never ends it.
+ */
 export interface ArenaProgress {
+	/** When the lecturer entered the game; null before the phiên has begun. */
+	startedAt: number | null;
 	bag: string[];
 	lastPicked: string | null;
 	hp: number;
 	round: number;
 	history: ArenaHistoryEntry[];
-	/** Hero handed to each student today, spread evenly over the cast. */
+	/** Hero handed to each student in this phiên, spread evenly over the cast. */
 	heroes: Record<string, string>;
 }
 
@@ -231,17 +237,42 @@ interface StoredArenaConfig extends Partial<ArenaConfig> {
 	savedOn?: string;
 }
 
+/**
+ * The open phiên in words, for the setup banner and the end confirmation:
+ * "Phiên bắt đầu 14:05 · 6 lượt", with the date when it began on another day.
+ */
+export function phienLabel(
+	progress: Pick<ArenaProgress, 'startedAt' | 'history'>,
+	now = Date.now(),
+): string {
+	const turns = progress.history.filter((entry) => entry.result !== 'skip').length;
+	if (progress.startedAt == null) return `Phiên đang mở · ${turns} lượt`;
+	const zone = { timeZone: 'Asia/Ho_Chi_Minh' } as const;
+	const time = new Date(progress.startedAt).toLocaleTimeString('vi-VN', {
+		...zone,
+		hour: '2-digit',
+		minute: '2-digit',
+	});
+	const day = (at: number) => new Date(at).toLocaleDateString('vi-VN', zone);
+	const date = day(progress.startedAt) === day(now) ? '' : ` ngày ${day(progress.startedAt)}`;
+	return `Phiên bắt đầu ${time}${date} · ${turns} lượt`;
+}
+
 export function emptyProgress(): ArenaProgress {
-	return { bag: [], lastPicked: null, hp: ARENA_MAX_HP, round: 1, history: [], heroes: {} };
+	return {
+		startedAt: null,
+		bag: [],
+		lastPicked: null,
+		hp: ARENA_MAX_HP,
+		round: 1,
+		history: [],
+		heroes: {},
+	};
 }
 
-/** One game per course per day: tomorrow's class starts with a fresh boss. */
-const PROGRESS_KEY = (gameKey: string) => `recall-arena:v2:progress:${gameKey}`;
+/** The open phiên of a course, if any. Only "Kết thúc phiên" clears it. */
+const PROGRESS_KEY = (courseId: string) => `recall-arena:v3:phien:${courseId}`;
 const CONFIG_KEY = (courseId: string) => `recall-arena:v2:config:${courseId}`;
-
-export function arenaGameKey(courseId: string, todayIso: string) {
-	return `${courseId}:${todayIso}`;
-}
 
 function readJson<T>(key: string): T | null {
 	try {
@@ -260,11 +291,12 @@ function writeJson(key: string, value: unknown) {
 	}
 }
 
-export function loadProgress(gameKey: string): ArenaProgress {
-	const stored = readJson<Partial<ArenaProgress>>(PROGRESS_KEY(gameKey));
+export function loadProgress(courseId: string): ArenaProgress {
+	const stored = readJson<Partial<ArenaProgress>>(PROGRESS_KEY(courseId));
 	if (!stored) return emptyProgress();
 	return {
 		...emptyProgress(),
+		startedAt: typeof stored.startedAt === 'number' ? stored.startedAt : null,
 		bag: stored.bag ?? [],
 		lastPicked: stored.lastPicked ?? null,
 		hp: stored.hp ?? ARENA_MAX_HP,
@@ -281,8 +313,8 @@ function validHeroes(value: unknown): Record<string, string> {
 	);
 }
 
-export function saveProgress(gameKey: string, progress: ArenaProgress) {
-	writeJson(PROGRESS_KEY(gameKey), progress);
+export function saveProgress(courseId: string, progress: ArenaProgress) {
+	writeJson(PROGRESS_KEY(courseId), progress);
 }
 
 export function loadConfig(courseId: string): StoredArenaConfig | null {
@@ -400,7 +432,7 @@ export function arenaRoster(
 
 /**
  * Students the monster may call: the floor, narrowed by the group filter,
- * minus anyone who already answered today.
+ * minus anyone who already answered in this phiên.
  */
 export function callablePlayers(
 	roster: readonly RecallArenaPlayer[],

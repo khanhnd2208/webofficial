@@ -24,7 +24,6 @@ const RESULT_LABEL: Record<ArenaSummaryRow['result'], string> = {
 };
 
 export interface ArenaSummarySync {
-	loading: boolean;
 	/** Answers this browser has not saved to the server yet. */
 	pending: number;
 	failed: boolean;
@@ -57,7 +56,9 @@ export function ArenaSummary({
 	names,
 	classHref,
 	sync,
+	phien,
 	onContinue,
+	onEndPhien,
 }: {
 	/** Course and classes, used as the first line of the copied report. */
 	title: string;
@@ -67,7 +68,11 @@ export function ArenaSummary({
 	names: ReadonlyMap<string, string>;
 	classHref: string;
 	sync: ArenaSummarySync;
+	/** The open phiên in words: when it began and how many turns. */
+	phien: string;
 	onContinue: () => void;
+	/** Asks to confirm, then closes the phiên for good. */
+	onEndPhien: () => void;
 }) {
 	const dialogRef = useArenaDialogFocus(onContinue);
 	const [copied, setCopied] = useState(false);
@@ -110,7 +115,10 @@ export function ArenaSummary({
 				aria-labelledby="arena-summary-title"
 			>
 				<header className={styles.setupHead}>
-					<h2 id="arena-summary-title">Tổng kết phiên</h2>
+					<div>
+						<h2 id="arena-summary-title">Tổng kết phiên</h2>
+						<span className={styles.setupHint}>{phien}</span>
+					</div>
 					<button
 						type="button"
 						className={styles.iconButton}
@@ -152,8 +160,8 @@ export function ArenaSummary({
 						</span>
 					) : (
 						<span>
-							Đã lưu hết lên hệ thống. CP và Gift được ghi ngay khi chấm từng bạn, nên thoát trang
-							không làm mất điểm. Mở lại trong hôm nay vẫn thấy lịch sử này.
+							Đã lưu hết lên hệ thống. CP và Gift được ghi ngay khi chấm từng bạn. Rời trang hay tải
+							lại vẫn giữ nguyên phiên này cho tới khi bạn bấm “Kết thúc phiên”.
 						</span>
 					)}
 				</p>
@@ -206,8 +214,26 @@ export function ArenaSummary({
 						{copied ? 'Đã chép' : 'Chép báo cáo'}
 					</button>
 					<span className={summary.actions}>
-						<Link href={classHref} className={`${styles.textButton} ${summary.link}`}>
-							{unsaved ? 'Vẫn thoát' : 'Thoát về trang lớp'}
+						<button
+							type="button"
+							className={summary.endButton}
+							onClick={onEndPhien}
+							disabled={unsaved > 0}
+							title={
+								unsaved
+									? 'Đợi lưu xong mọi lượt rồi mới kết thúc phiên'
+									: 'Đóng hẳn phiên này; lần sau là phiên mới'
+							}
+						>
+							<McIcon name="flag" size={16} />
+							Kết thúc phiên
+						</button>
+						<Link
+							href={classHref}
+							className={`${styles.textButton} ${summary.link}`}
+							title="Phiên vẫn mở; vào lại trò chơi để tiếp tục"
+						>
+							{unsaved ? 'Vẫn rời trang' : 'Rời trang, giữ phiên'}
 						</Link>
 						<button
 							type="button"

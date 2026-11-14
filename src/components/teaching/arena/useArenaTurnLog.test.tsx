@@ -32,7 +32,6 @@ function useHarness(initial: ArenaProgress) {
 	const [progress, setProgress] = useState(initial);
 	const log = useArenaTurnLog({
 		courseId: 'course-1',
-		todayIso: '2026-11-13',
 		progress,
 		setProgress,
 		ready: true,
@@ -60,10 +59,7 @@ describe('useArenaTurnLog', () => {
 	});
 
 	it('stops on a network error and sends again when asked', async () => {
-		apiMock
-			.mockResolvedValueOnce({ turns: [] })
-			.mockRejectedValueOnce(new Error('offline'))
-			.mockResolvedValue({});
+		apiMock.mockRejectedValueOnce(new Error('offline')).mockResolvedValue({});
 		const { result } = renderHook(() =>
 			useHarness({ ...emptyProgress(), history: [entry('turn-aaaa1')] }),
 		);
@@ -71,12 +67,11 @@ describe('useArenaTurnLog', () => {
 		expect(result.current.log.pending).toBe(1);
 		act(() => result.current.log.retry());
 		await waitFor(() => expect(result.current.log.pending).toBe(0));
-		expect(apiMock).toHaveBeenCalledTimes(3);
+		expect(apiMock).toHaveBeenCalledTimes(2);
 	});
 
 	it('skips a call the server refuses and keeps sending the rest', async () => {
 		apiMock
-			.mockResolvedValueOnce({ turns: [] })
 			.mockRejectedValueOnce(new AdminApiError('Enrollment not found', { status: 404 }))
 			.mockResolvedValue({});
 		const { result } = renderHook(() =>
@@ -90,39 +85,14 @@ describe('useArenaTurnLog', () => {
 		);
 	});
 
-	it('merges saved calls even when this browser has local history', async () => {
-		apiMock.mockResolvedValue({
-			date: '2026-11-13',
-			days: ['2026-11-13'],
-			turns: [
-				{
-					clientId: 'saved-1111',
-					playedAt: 1_700_000_000_000,
-					playedOn: '2026-11-13',
-					enrollmentId: null,
-					guest: true,
-					guestGroup: 'SUPPORT',
-					playerName: 'Lê Khách',
-					studentCode: '',
-					cardId: null,
-					question: '',
-					result: 'fail',
-					award: null,
-					cpAfter: null,
-					giftAfter: null,
-				},
-			],
-		});
+	it('never pulls the saved calls of the day into the running phiên', async () => {
+		apiMock.mockResolvedValue({});
 		const { result } = renderHook(() =>
 			useHarness({ ...emptyProgress(), history: [entry('local-1111', { synced: true })] }),
 		);
-		await waitFor(() => expect(result.current.progress.history).toHaveLength(2));
-		expect(apiMock).toHaveBeenCalledWith(`${TURNS_URL}?date=2026-11-13`);
-		expect(result.current.progress.history.find((item) => item.id === 'saved-1111')).toMatchObject({
-			name: 'Lê Khách',
-			result: 'fail',
-			synced: true,
-		});
-		expect(apiMock).toHaveBeenCalledTimes(1);
+		await act(async () => {});
+		expect(apiMock).not.toHaveBeenCalled();
+		expect(result.current.progress.history.map((item) => item.id)).toEqual(['local-1111']);
+		expect(result.current.log.pending).toBe(0);
 	});
 });
