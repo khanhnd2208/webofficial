@@ -97,13 +97,14 @@ describe('StudentClassBoard', () => {
 		expect(screen.queryByRole('heading', { name: 'Bảng điểm danh' })).not.toBeInTheDocument();
 	});
 
-	it('offers Learning Experience alongside attendance, CP and groups', () => {
+	it('offers Learning Experience and Summary while hiding Class Notes by default', () => {
 		render(<StudentClassBoard board={board()} groupBoardEnabled />);
 		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Điểm CP' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Tổng kết' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Xếp nhóm' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Trải nghiệm học tập' })).toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Ghi chú lớp' })).toBeInTheDocument();
+		expect(screen.queryByRole('tab', { name: 'Ghi chú lớp' })).not.toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Active Recall' })).toBeInTheDocument();
 	});
 
@@ -171,13 +172,13 @@ describe('StudentClassBoard', () => {
 		expect(screen.queryByText('********45')).not.toBeInTheDocument();
 	});
 
-	it('opens published Class Notes and switches between note pages', () => {
+	it('opens published Class Notes when explicitly enabled and switches between note pages', () => {
 		const contentBoard = board();
 		contentBoard.notes = [
 			{ id: 'note-1', title: 'Tuần 1', html: '<p>Nội dung tuần 1</p>', publishedAt: '2026-09-01T00:00:00.000Z' },
 			{ id: 'note-2', title: 'Topic A', html: '<p>Nội dung topic A</p>', publishedAt: '2026-09-02T00:00:00.000Z' },
 		];
-		render(<StudentClassBoard board={contentBoard} initialTab="notes" />);
+		render(<StudentClassBoard board={contentBoard} initialTab="notes" notesEnabled />);
 		expect(screen.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveAttribute('aria-selected', 'true');
 		expect(screen.getByRole('heading', { name: 'Tuần 1' })).toBeInTheDocument();
 		expect(screen.getByText('Nội dung tuần 1')).toBeInTheDocument();
@@ -214,6 +215,17 @@ describe('StudentClassBoard', () => {
 			'rel',
 			'noopener noreferrer',
 		);
+	});
+
+	it('hides Class Notes and falls back to attendance by default', () => {
+		const contentBoard = board();
+		contentBoard.notes = [
+			{ id: 'note-1', title: 'Tuần 1', html: '<p>Nội dung tuần 1</p>', publishedAt: '2026-09-01T00:00:00.000Z' },
+		];
+		render(<StudentClassBoard board={contentBoard} initialTab="notes" />);
+		expect(screen.queryByRole('tab', { name: 'Ghi chú lớp' })).not.toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.queryByText('Nội dung tuần 1')).not.toBeInTheDocument();
 	});
 
 	it('hides the group board and falls back to attendance when disabled', () => {
@@ -270,5 +282,81 @@ describe('StudentClassBoard', () => {
 			'title',
 			'1 điểm CP - Trình bày tốt',
 		);
+	});
+
+	it('locks the summary tab until all 10 weeks of attendance and CP are finalized', () => {
+		const tenWeekBoard = board();
+		tenWeekBoard.policy = { totalWeeks: 10, absenceThresholdPercent: 20 };
+		tenWeekBoard.sessions = Array.from({ length: 10 }, (_, index) => ({
+			id: `session-${index + 1}`,
+			classId: 'class-1',
+			tutorialClassId: 'tutorial-1',
+			weekNumber: index + 1,
+			heldOn: null,
+			topic: '',
+			method: 'ROLL_CALL' as const,
+			isCancelled: false,
+			attendanceTakenAt: '2026-09-01T00:00:00.000Z',
+			attendanceOpen: false,
+			participationTakenAt: index < 9 ? '2026-09-01T00:00:00.000Z' : null,
+			participationOpen: index === 9,
+		}));
+
+		render(<StudentClassBoard board={tenWeekBoard} initialTab="summary" />);
+		expect(screen.getByRole('tab', { name: 'Tổng kết' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByTestId('summary-locked')).toBeInTheDocument();
+		expect(screen.queryByTestId('summary-grid')).not.toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Điểm tổng kết sẽ hiển thị khi tất cả 10 tuần điểm danh và điểm CP đã được khóa.',
+			),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText('Tiến độ khóa điểm: Điểm danh 10/10 tuần · Điểm CP 9/10 tuần'),
+		).toBeInTheDocument();
+		expect(screen.queryByPlaceholderText('Tìm tên hoặc MSV')).not.toBeInTheDocument();
+	});
+
+	it('displays final summary scores once all 10 weeks of attendance and CP are locked', () => {
+		const unlockedBoard = board();
+		unlockedBoard.policy = {
+			totalWeeks: 10,
+			absenceThresholdPercent: 20,
+			attendanceMaxPoints: 5,
+			cpMaxPoints: 5,
+		};
+		unlockedBoard.students[1] = {
+			...unlockedBoard.students[1]!,
+			cp: {
+				...unlockedBoard.students[1]!.cp,
+				totalScore: 5.5,
+			},
+		};
+		unlockedBoard.sessions = Array.from({ length: 10 }, (_, index) => ({
+			id: `session-${index + 1}`,
+			classId: 'class-1',
+			tutorialClassId: 'tutorial-1',
+			weekNumber: index + 1,
+			heldOn: null,
+			topic: '',
+			method: 'ROLL_CALL' as const,
+			isCancelled: false,
+			attendanceTakenAt: '2026-09-01T00:00:00.000Z',
+			attendanceOpen: false,
+			participationTakenAt: '2026-09-01T00:00:00.000Z',
+			participationOpen: false,
+		}));
+
+		render(<StudentClassBoard board={unlockedBoard} initialTab="summary" />);
+		expect(screen.getByRole('heading', { name: 'Bảng điểm tổng kết' })).toBeInTheDocument();
+		const grid = screen.getByTestId('summary-grid');
+		expect(grid).toBeInTheDocument();
+		expect(grid.textContent).toContain('5,0 / 5');
+		expect(grid.textContent).toContain('1,0 / 5');
+		expect(grid.textContent).toContain('6,0 / 10');
+		expect(grid.textContent).toContain('5,5 / 10');
+		expect(
+			screen.getByText('Đã khóa đủ 10/10 tuần điểm danh và điểm CP · Tổng điểm = Chuyên cần + CP'),
+		).toBeInTheDocument();
 	});
 });
