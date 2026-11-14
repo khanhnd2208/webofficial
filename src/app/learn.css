@@ -287,83 +287,6 @@
 	color: var(--ink);
 }
 
-/* ─── App bar (catalog + overview) ───────────────────────────────────── */
-
-.ln-appbar {
-	position: sticky;
-	top: 0;
-	z-index: 30;
-	border-bottom: 1px solid var(--hairline);
-	background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
-	backdrop-filter: blur(10px);
-}
-.ln-appbar__inner {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	max-width: 76rem;
-	height: 3.75rem;
-	margin: 0 auto;
-	padding: 0 1rem;
-}
-.ln-appbar__brand {
-	display: inline-flex;
-	flex: 0 0 auto;
-	align-items: center;
-	gap: 0.55rem;
-	font-size: 0.975rem;
-	font-weight: 700;
-	letter-spacing: -0.01em;
-	color: var(--ink);
-}
-.ln-appbar__logo {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 2rem;
-	height: 2rem;
-	border-radius: 8px;
-	background: var(--bronze);
-	color: #fff;
-}
-.ln-appbar__crumbs {
-	display: flex;
-	min-width: 0;
-	flex: 1;
-	align-items: center;
-	overflow: hidden;
-	font-size: 0.875rem;
-	color: var(--ink-secondary);
-}
-.ln-appbar__crumb {
-	display: inline-flex;
-	min-width: 0;
-	align-items: center;
-	gap: 0.35rem;
-	white-space: nowrap;
-}
-.ln-appbar__crumb > span:last-child,
-.ln-appbar__crumb > a {
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.ln-appbar__crumb [aria-current='page'] {
-	color: var(--ink);
-	font-weight: 500;
-}
-.ln-appbar__actions {
-	display: flex;
-	flex: 0 0 auto;
-	align-items: center;
-	gap: 0.4rem;
-	margin-left: auto;
-}
-@media (max-width: 40rem) {
-	.ln-appbar__crumbs {
-		display: none;
-	}
-}
-
 /* ─── Page scaffolding ───────────────────────────────────────────────── */
 
 .ln-page {
@@ -379,8 +302,7 @@
 	padding: 0 1rem;
 }
 @media (min-width: 40rem) {
-	.ln-container,
-	.ln-appbar__inner {
+	.ln-container {
 		padding: 0 1.5rem;
 	}
 	.ln-page {
