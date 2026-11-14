@@ -242,7 +242,8 @@ describe('route map', () => {
 describe('site header trail', () => {
 	it('names the page after Mục lục, and only the parent on a detail page', () => {
 		expect(getSiteTrail('/muc-luc')).toEqual([]);
-		expect(getSiteTrail('/khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
+		expect(getSiteTrail('/khoa-hoc')).toEqual([{ label: 'Học tập' }]);
+		expect(getSiteTrail('/lop')).toEqual([{ label: 'Học tập' }]);
 		expect(getSiteTrail('/lien-he')).toEqual([{ label: 'Về tôi' }]);
 		expect(getSiteTrail('/dang-nhap')).toEqual([{ label: 'Đăng nhập' }]);
 		expect(getSiteTrail('/tai-khoan')).toEqual([{ label: 'Tài khoản' }]);
@@ -263,10 +264,7 @@ describe('site header trail', () => {
 			'/khoa-hoc',
 			'/khoa-hoc?category=all',
 			'/kham-pha-khoa-hoc',
-			'/gioi-thieu',
-			'/trai-nghiem/mot-chuyen',
-			'/du-an',
-			'/dich-vu',
+			'/lop',
 			'/lien-he',
 			'/chinh-sach/dieu-khoan',
 			'/dang-nhap',

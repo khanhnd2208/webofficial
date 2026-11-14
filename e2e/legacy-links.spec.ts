@@ -46,18 +46,17 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
-	test('every course address takes a signed-in learner to their own course list', async ({
-		page,
-		context,
-	}) => {
+	test('every course address takes a signed-in learner to /khoa-hoc', async ({ page, context }) => {
 		await addStudentSession(context);
 		for (const path of ['/my-space/courses', '/khoa-hoc', '/kham-pha-khoa-hoc']) {
 			const response = await page.goto(path);
 			expect(response?.status()).toBe(200);
-			await expect(page).toHaveURL(/\/my-space\/courses$/);
-			const tocLink = page.getByRole('link', { name: 'Mục lục', exact: true });
-			await expect(tocLink).toBeVisible();
-			await expect(tocLink).toHaveAttribute('href', '/muc-luc');
+			await expect(page).toHaveURL(/\/khoa-hoc$/);
+			// The site header's wordmark is the way back to Mục lục.
+			await expect(page.getByTestId('site-header-home').filter({ visible: true })).toHaveAttribute(
+				'href',
+				'/muc-luc',
+			);
 		}
 	});
 

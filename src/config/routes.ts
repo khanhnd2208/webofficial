@@ -68,15 +68,17 @@ export const routes = {
 		`/my-space/my-class/${courseSlug}/tests/${testSlug}` as const,
 	myClassProgress: '/my-space/my-class/progress',
 	/**
-	 * Self-paced courses. `/khoa-hoc` is the one course address: the public catalog for guests,
-	 * which sends a signed-in visitor on to routes.myCourses. `/khoa-hoc/*` readers are served by
-	 * the `/my-space/courses/*` pages (see LEARN_COURSE_ALIASES), so shared links keep working.
+	 * Self-paced courses. `/khoa-hoc` is the one course address: the catalog for guests and, signed
+	 * in, the same page with progress. `/khoa-hoc/*` readers are served by the `/my-space/courses/*`
+	 * pages (see LEARN_COURSE_ALIASES), so shared links keep working.
 	 */
 	learnCourses: '/khoa-hoc',
-	/** The signed-in course list, with progress. Guests opening it are asked to sign in. */
-	myCourses: '/my-space/courses',
-	/** The admin's course management view of routes.myCourses. */
-	myCoursesManage: '/my-space/courses?xem=quan-ly',
+	/** The signed-in course list; the same page as learnCourses. */
+	myCourses: '/khoa-hoc',
+	/** The admin's course management view of the course list. */
+	myCoursesManage: '/khoa-hoc?xem=quan-ly',
+	/** Học tập, tab Lớp học: class pages opened on this device (and, for admins, active classes). */
+	classes: '/lop',
 	learnCourse: (slug: string, sectionId?: string | null) =>
 		`/khoa-hoc/${slug}${sectionId ? `?s=${encodeURIComponent(sectionId)}` : ''}` as const,
 	learnStudio: (slug: string, sectionId?: string | null) =>

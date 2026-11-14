@@ -186,3 +186,4 @@ shared:
   - e2e/smoke.spec.ts
   - e2e/mobile-smoke.spec.ts
   - e2e/public-feature-locks.spec.ts
+  - e2e/learning-hub.spec.ts
