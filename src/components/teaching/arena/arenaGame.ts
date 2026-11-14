@@ -28,6 +28,21 @@ export function passStreak(history: readonly ArenaHistoryEntry[]) {
 
 export type ArenaResult = 'pass' | 'fail' | 'skip';
 
+/**
+ * A turn id that starts with this marks an answer given in place of a
+ * student who missed the question. The id is all the server keeps of a turn's
+ * kind, so the marker survives a reload and reaches other browsers.
+ */
+const ASSIST_ID_PREFIX = 'assist:';
+
+export function newAssistTurnId() {
+	return `${ASSIST_ID_PREFIX}${window.crypto.randomUUID()}`;
+}
+
+export function isAssistTurn(entry: Pick<ArenaHistoryEntry, 'id'>) {
+	return entry.id.startsWith(ASSIST_ID_PREFIX);
+}
+
 export function passedArenaCards(history: readonly ArenaHistoryEntry[]) {
 	const ids = new Set<string>();
 	for (const entry of history) {
@@ -46,6 +61,15 @@ export function answeredArenaIds(history: readonly ArenaHistoryEntry[]) {
 		if (entry.result !== 'skip') ids.add(entry.enrollmentId);
 	}
 	return ids;
+}
+
+/** Each student's latest graded result today, for the mark above their head. */
+export function arenaResults(history: readonly ArenaHistoryEntry[]) {
+	const results = new Map<string, 'pass' | 'fail'>();
+	for (const entry of history) {
+		if (entry.result !== 'skip') results.set(entry.enrollmentId, entry.result);
+	}
+	return results;
 }
 
 export interface ArenaHistoryEntry {
@@ -484,6 +508,16 @@ export function displayNames(players: readonly NamedPlayer[]): Map<string, strin
 		if (pending.length === 0) break;
 	}
 	return result;
+}
+
+/** The ticked classes' codes, for the top bar and the summary title. */
+export function arenaClassLabel(data: RecallArenaData, classIds: readonly string[]) {
+	return (
+		classIds
+			.map((id) => data.classes.find((item) => item.id === id)?.classCode)
+			.filter(Boolean)
+			.join(', ') || 'Chưa chọn lớp'
+	);
 }
 
 export function sessionLabel(

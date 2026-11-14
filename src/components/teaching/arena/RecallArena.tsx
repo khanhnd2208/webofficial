@@ -30,7 +30,9 @@ import { arenaBossFor } from './arenaBosses';
 import {
 	ARENA_MAX_HP,
 	answeredArenaIds,
+	arenaClassLabel,
 	arenaGameKey,
+	arenaResults,
 	arenaRoster,
 	callablePlayers,
 	displayNames,
@@ -40,6 +42,7 @@ import {
 	initialConfig,
 	isManualPlayer,
 	loadConfig,
+	newAssistTurnId,
 	loadProgress,
 	manualArenaPlayers,
 	passedArenaCards,
@@ -100,6 +103,10 @@ export function RecallArena({
 		at: number;
 		enrollmentId: string;
 		cardId: string | null;
+	} | null>(null);
+	/** After a missed answer: the student, if any, answering the same question instead. */
+	const [assist, setAssist] = useState<{
+		volunteer: { enrollmentId: string; turnId: string; at: number } | null;
 	} | null>(null);
 	const [cpOverrides, setCpOverrides] = useState<Record<string, number>>({});
 	const [saving, setSaving] = useState(false);
@@ -171,12 +178,7 @@ export function RecallArena({
 		const player = playersById.get(enrollmentId);
 		return names.get(enrollmentId) ?? player?.givenName ?? '';
 	};
-	const results = useMemo(() => {
-		const map = new Map<string, 'pass' | 'fail'>();
-		for (const entry of progress.history)
-			if (entry.result !== 'skip') map.set(entry.enrollmentId, entry.result);
-		return map;
-	}, [progress.history]);
+	const results = useMemo(() => arenaResults(progress.history), [progress.history]);
 
 	// Restore this browser's choices once, after hydration. Sessions always
 	// start at each class's default (today's), so they are not restored.
@@ -351,12 +353,14 @@ export function RecallArena({
 		result: ArenaResult,
 		extra: Partial<ArenaHistoryEntry> = {},
 	): ArenaHistoryEntry {
+		const volunteer = assist?.volunteer;
 		const turn = current!;
-		const player = playersById.get(turn.enrollmentId);
+		const enrollmentId = volunteer?.enrollmentId ?? turn.enrollmentId;
+		const player = playersById.get(enrollmentId);
 		return {
-			id: result === 'skip' ? window.crypto.randomUUID() : turn.catchId,
-			at: turn.at,
-			enrollmentId: turn.enrollmentId,
+			id: volunteer?.turnId ?? (result === 'skip' ? window.crypto.randomUUID() : turn.catchId),
+			at: volunteer?.at ?? turn.at,
+			enrollmentId,
 			name: player ? fullName(player) : '',
 			cardId: turn.cardId,
 			result,
@@ -374,7 +378,8 @@ export function RecallArena({
 	function finishTurn(nextMood: MonsterMood, hpDelta: number) {
 		const hp = Math.max(0, Math.min(ARENA_MAX_HP, progress.hp + hpDelta));
 		const monster = monsterRef.current;
-		const attackerId = current?.enrollmentId;
+		const attackerId = assist?.volunteer?.enrollmentId ?? current?.enrollmentId;
+		setAssist(null);
 		const attacker = attackerId ? playersById.get(attackerId) : null;
 		const hero = hpDelta < 0 && attacker ? heroOf(attacker) : null;
 		const streak = passStreak(progress.history) + 1;
@@ -463,7 +468,9 @@ export function RecallArena({
 			(unconfirmed && (unconfirmed.result !== result || unconfirmed.level !== level))
 		)
 			return;
-		const id = current.enrollmentId;
+		// While a missed question is open to the class, only a chosen volunteer can be graded.
+		if (assist && (!assist.volunteer || result !== 'pass')) return;
+		const id = assist?.volunteer?.enrollmentId ?? current.enrollmentId;
 		const manual = isManualPlayer(id);
 		const name = nameOf(id);
 		const target = cpSessionFor(id);
@@ -511,12 +518,30 @@ export function RecallArena({
 			});
 		}
 		record(entry);
+		// A missed question goes to the class before the boss heals.
+		if (!pass && inRoom.length > 1) {
+			setAssist({ volunteer: null });
+			setToast(null);
+			return;
+		}
 		finishTurn(pass ? 'hurt' : 'laugh', pass ? -1 : 1);
+	}
+
+	function pickVolunteer(enrollmentId: string | null) {
+		if (!assist || submitting.current || unconfirmed) return;
+		setAssist({
+			volunteer: enrollmentId ? { enrollmentId, turnId: newAssistTurnId(), at: Date.now() } : null,
+		});
+	}
+
+	/** Nobody answered the missed question: the boss heals as after any miss. */
+	function endAssist() {
+		if (assist && !submitting.current && !unconfirmed) finishTurn('laugh', 1);
 	}
 
 	/** The caught student keeps their turn and the card goes back unused. */
 	function giveTurnBack() {
-		if (!current || submitting.current || unconfirmed) return;
+		if (!current || assist || submitting.current || unconfirmed) return;
 		const { enrollmentId } = current;
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		setProgress((previous) => ({
@@ -531,15 +556,15 @@ export function RecallArena({
 	}
 
 	function handleSkip() {
-		if (!current || submitting.current || unconfirmed || callable.length < 2) return;
+		if (!current || assist || submitting.current || unconfirmed || callable.length < 2) return;
 		record(makeEntry('skip'));
 		giveTurnBack();
 		setHuntAfterSkip(true);
 	}
 
 	function handleChooseStudent(enrollmentId: string) {
-		if (!current || submitting.current || unconfirmed || enrollmentId === current.enrollmentId)
-			return;
+		if (!current || assist || submitting.current || unconfirmed) return;
+		if (enrollmentId === current.enrollmentId) return;
 		if (!callable.some((player) => player.enrollmentId === enrollmentId)) return;
 		record(makeEntry('skip'));
 		const eligibleIds = callable.map((player) => player.enrollmentId);
@@ -564,7 +589,7 @@ export function RecallArena({
 	}
 
 	function handleNextCard() {
-		if (!current || submitting.current || unconfirmed) return;
+		if (!current || assist || submitting.current || unconfirmed) return;
 		const cardId = drawCard(
 			availableCardIds.filter((id) => id !== current.cardId),
 			passedCards,
@@ -638,7 +663,10 @@ export function RecallArena({
 		onNewBoss: newBoss,
 	});
 
-	const caughtPlayer = current ? (playersById.get(current.enrollmentId) ?? null) : null;
+	const failedPlayer = current ? (playersById.get(current.enrollmentId) ?? null) : null;
+	/** The student on the question card: the volunteer once one is chosen. */
+	const caughtPlayer =
+		(assist?.volunteer ? playersById.get(assist.volunteer.enrollmentId) : failedPlayer) ?? null;
 	const caughtCard = current?.cardId ? (cardsById.get(current.cardId) ?? null) : null;
 	const caughtCpSession = caughtPlayer ? cpSessionFor(caughtPlayer.enrollmentId) : null;
 	const canHunt = phase === 'idle' && callable.length > 0 && progressLoaded && !turnLog.loading;
@@ -646,11 +674,7 @@ export function RecallArena({
 		? data.decks.find((deck) => deck.deckId === caughtCard.deckId)
 		: null;
 	const streak = passStreak(progress.history);
-	const classLabel =
-		config.classIds
-			.map((id) => data.classes.find((item) => item.id === id)?.classCode)
-			.filter(Boolean)
-			.join(', ') || 'Chưa chọn lớp';
+	const classLabel = arenaClassLabel(data, config.classIds);
 	const enraged = progress.hp <= LOW_HP && phase !== 'victory';
 
 	return (
@@ -772,6 +796,18 @@ export function RecallArena({
 						)}
 						onNextCard={handleNextCard}
 						onClose={giveTurnBack}
+						assist={
+							assist && failedPlayer
+								? {
+										failedName: nameOf(failedPlayer.enrollmentId),
+										candidates: inRoom.filter((player) => player !== failedPlayer),
+										picked: Boolean(assist.volunteer),
+										onPick: pickVolunteer,
+										onRepick: () => pickVolunteer(null),
+										onEnd: endAssist,
+									}
+								: null
+						}
 					/>
 				) : null}
 				{phase === 'victory' ? (

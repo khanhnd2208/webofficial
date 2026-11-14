@@ -14,11 +14,106 @@ type Gradebook = {
 	students: Array<{
 		enrollmentId: string;
 		givenName: string;
+		giftCount: number;
 		participation: Record<string, { points: number }>;
 	}>;
 };
 
 test.describe('Recall arena (Kiểm tra bài cũ)', () => {
+	test('lets a classmate answer a missed question: Gift for one, CP for the other', async ({
+		page,
+		context,
+	}) => {
+		page.setDefaultTimeout(20_000);
+		await addAdminSession(context);
+		const suffix = `${Date.now()}${test.info().workerIndex}`;
+		const klass = await data<{ id: string }>(
+			await page.request.post('/api/admin/teaching/classes', {
+				data: {
+					courseCode: `RB${suffix.slice(-8)}`,
+					courseName: 'Recall arena answer-for fixture',
+					groupNo: '01',
+					term: suffix,
+					totalWeeks: 2,
+				},
+			}),
+		);
+		const base = `/api/admin/teaching/classes/${klass.id}`;
+		try {
+			const [tutorial] = await data<Array<{ id: string }>>(
+				await page.request.get(`${base}/tutorials`),
+			);
+			for (const [index, givenName] of ['An', 'Bình'].entries()) {
+				await data(
+					await page.request.post(`${base}/enrollments`, {
+						data: {
+							studentCode: `${suffix.slice(-8)}${index}7`,
+							familyName: 'Trả lời',
+							givenName,
+							tutorialClassId: tutorial!.id,
+						},
+					}),
+				);
+			}
+			const before = await data<Gradebook>(await page.request.get(`${base}/gradebook`));
+			const week1 = before.sessions.find(
+				(session) => session.weekNumber === 1 && session.tutorialClassId === tutorial!.id,
+			)!;
+			await data(
+				await page.request.patch(`/api/admin/teaching/sessions/${week1.id}/attendance/lock`, {
+					data: { action: 'open' },
+				}),
+			);
+			await data(
+				await page.request.put(`/api/admin/teaching/sessions/${week1.id}/attendance`, {
+					data: {
+						marks: before.students.map((student) => ({
+							enrollmentId: student.enrollmentId,
+							status: 'PRESENT',
+						})),
+					},
+				}),
+			);
+
+			await page.goto(
+				`/my-space/teaching/courses/${before.class.courseId}/arena?class=${klass.id}`,
+			);
+			const setup = page.getByRole('dialog', { name: 'Thiết lập kiểm tra bài cũ' });
+			await setup.getByRole('button', { name: 'Mở chấm CP tuần 1' }).click();
+			await expect(setup.getByText(/CP tuần 1 đang mở/)).toBeVisible();
+			await setup.getByRole('button', { name: 'Tiếp' }).click();
+			await setup.getByRole('button', { name: 'Tiếp' }).click();
+			await setup.getByRole('button', { name: 'Vào trận' }).click();
+
+			await page.keyboard.press('Space');
+			const caught = page.getByRole('dialog', { name: /Trả lời (An|Bình)/ });
+			await expect(caught).toBeVisible();
+			const missed = (await caught.getByRole('heading').textContent())!.replace('Trả lời ', '');
+			const helper = missed === 'An' ? 'Bình' : 'An';
+			await caught.getByRole('button', { name: /Chưa đạt/ }).click();
+			await expect(caught.getByText('Chưa đạt · đã ghi +1 Gift')).toBeVisible();
+
+			const search = caught.getByLabel(`Có bạn nào trả lời thay ${missed}?`);
+			await expect(search).toBeFocused();
+			await search.fill(helper);
+			await search.press('Enter');
+			await expect(caught.getByRole('heading')).toHaveText(`Trả lời ${helper}`);
+			await expect(caught.getByText(`Trả lời thay ${missed}`)).toBeVisible();
+			await caught.getByRole('button', { name: /Đạt \+1/ }).click();
+			await expect(page.getByRole('status')).toContainText(`${helper}: CP 0 → 1`);
+			await expect(page.getByLabel('Máu quái vật 9/10')).toBeVisible();
+
+			const after = await data<Gradebook>(await page.request.get(`${base}/gradebook`));
+			const byName = new Map(after.students.map((student) => [student.givenName, student]));
+			expect(byName.get(helper)!.participation[week1.id]?.points).toBe(1);
+			expect(byName.get(missed)!.participation[week1.id]?.points ?? 0).toBe(0);
+			expect(byName.get(missed)!.giftCount).toBe(1);
+			expect(byName.get(helper)!.giftCount).toBe(0);
+		} finally {
+			await cleanupTeachingClass(page.request, klass.id);
+		}
+	});
+
 	test('calls only students in the room and saves a correct answer as CP', async ({
 		page,
 		context,
