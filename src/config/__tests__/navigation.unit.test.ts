@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { aboutPagePaused } from '@/content/about';
 import {
 	afterSignOutPath,
 	CONTACT_CTA,
@@ -176,23 +175,24 @@ describe('sign-in gates', () => {
 });
 
 describe('redirect map', () => {
-	it('maps retired public UI to the new portfolio architecture', () => {
+	it('sends every retired portfolio page to Về tôi', () => {
 		const bySource = Object.fromEntries(PUBLIC_REDIRECTS.map((r) => [r.source, r.destination]));
-		expect(bySource['/du-an']).toBe(routes.aboutProjects);
-		expect(bySource['/dich-vu']).toBe(routes.aboutServices);
-		expect(bySource['/du-an/:path*']).toBeUndefined();
-		expect(bySource['/dong-hanh']).toBe(routes.aboutServices);
-		expect(bySource['/dong-hanh/mentoring']).toBe(routes.aboutServices);
-		expect(bySource['/dong-hanh/co-van-doanh-nghiep']).toBe(routes.aboutServices);
-		expect(bySource['/dong-hanh/dao-tao-workshop']).toBe(routes.aboutServices);
-		expect(bySource['/dong-hanh/ai-ung-dung']).toBe('/trai-nghiem#thu-nghiem');
-		expect(bySource['/case-study']).toBe(routes.aboutProjects);
-		expect(bySource['/giang-day']).toBe(routes.aboutServices);
-		expect(bySource['/goc-cua-khanh']).toBe(routes.aboutProjects);
+		for (const retired of [
+			'/gioi-thieu',
+			'/trai-nghiem',
+			'/trai-nghiem/:path*',
+			'/du-an',
+			'/du-an/:path*',
+			'/dich-vu',
+			'/dong-hanh',
+			'/dong-hanh/:path*',
+			'/case-study',
+			'/giang-day',
+			'/goc-cua-khanh',
+		]) {
+			expect(bySource[retired]).toBe(routes.contact);
+		}
 		expect(bySource['/bai-viet']).toBe(routes.toc);
-		expect(bySource['/du-an/moonie-cafe-business-development']).toBe(
-			'/du-an/learning-at-moonie-cafe',
-		);
 		expect(bySource['/hoc']).toBe(routes.toc);
 		expect(bySource['/hoc/chuong-trinh']).toBe(routes.toc);
 		expect(bySource['/hoc/khoa-hoc/:path*']).toBe(routes.learnCourses);
@@ -243,17 +243,7 @@ describe('site header trail', () => {
 	it('names the page after Mục lục, and only the parent on a detail page', () => {
 		expect(getSiteTrail('/muc-luc')).toEqual([]);
 		expect(getSiteTrail('/khoa-hoc')).toEqual([{ label: 'Khóa học' }]);
-		expect(getSiteTrail('/gioi-thieu')).toEqual([
-			{ label: aboutPagePaused ? 'Liên hệ' : 'Giới thiệu' },
-		]);
-		expect(getSiteTrail('/trai-nghiem')).toEqual([{ label: 'Trải nghiệm' }]);
-		expect(getSiteTrail('/trai-nghiem/mot-chuyen')).toEqual([
-			{ label: 'Trải nghiệm', href: '/trai-nghiem' },
-		]);
-		expect(getSiteTrail('/du-an')).toEqual([{ label: 'Dự án' }]);
-		expect(getSiteTrail('/du-an/moonie')).toEqual([{ label: 'Dự án', href: '/du-an' }]);
-		expect(getSiteTrail('/dich-vu')).toEqual([{ label: 'Dịch vụ' }]);
-		expect(getSiteTrail('/lien-he')).toEqual([{ label: 'Liên hệ' }]);
+		expect(getSiteTrail('/lien-he')).toEqual([{ label: 'Về tôi' }]);
 		expect(getSiteTrail('/dang-nhap')).toEqual([{ label: 'Đăng nhập' }]);
 		expect(getSiteTrail('/tai-khoan')).toEqual([{ label: 'Tài khoản' }]);
 		expect(getSiteTrail('/tai-khoan/ho-so')).toEqual([{ label: 'Tài khoản', href: '/tai-khoan' }]);

@@ -23,16 +23,19 @@ export {
 	servicesClosing,
 } from './services';
 
+/** /lien-he is the "Về tôi" page: introduction, channels, collaboration, message form. */
 export const contactPage = {
-	eyebrow: 'Liên hệ',
-	title: 'Gửi tôi một lời nhắn.',
-	lead: 'Bạn không cần chuẩn bị một đề bài hoàn chỉnh. Hãy kể cho tôi về điều bạn đang học, đang xây dựng hoặc chưa tìm được cách giải quyết. Một vài dòng có bối cảnh là đủ để bắt đầu.',
-	afterSubmit:
-		'Tôi sẽ đọc bối cảnh, xem mình có phù hợp để hỗ trợ hay không và phản hồi bằng một câu hỏi hoặc bước tiếp theo. Chỉ khi cả hai bên thấy phù hợp, chúng ta mới cùng thống nhất phạm vi công việc.',
-	aside: 'Một cuộc trao đổi tốt thường bắt đầu bằng một câu hỏi chưa hoàn chỉnh.',
+	intro: [
+		'Tôi dạy quản trị, thiết kế trải nghiệm học tập và khám phá cách AI có thể giúp con người học và làm việc tốt hơn.',
+		'Với tôi, một lớp học tốt cần kiến thức chính xác, cơ hội thực hành và sự chăm chút trong cách dẫn dắt. Tôi muốn người học hiểu được mối liên hệ giữa các ý tưởng và biết vận dụng vào tình huống của mình.',
+	],
+	channelsTitle: 'Liên hệ trực tiếp',
+	collaborationTitle: 'Có thể làm cùng nhau',
+	formTitle: 'Gửi lời nhắn',
+	formLead: 'Vài dòng là đủ. Tôi sẽ đọc và phản hồi bằng một câu hỏi hoặc bước tiếp theo.',
 } as const;
 
-/** Direct channels shown on /lien-he next to the form. */
+/** Direct channels on /lien-he. */
 export const contactChannels = [
 	{
 		id: 'email',
@@ -42,6 +45,13 @@ export const contactChannels = [
 		description: 'Công việc, lớp học và hợp tác.',
 	},
 	{
+		id: 'linkedin',
+		label: 'LinkedIn',
+		value: 'in/khanhnguyenduy',
+		href: 'https://www.linkedin.com/in/khanhnguyenduy/',
+		description: 'Hồ sơ nghề nghiệp và kết nối công việc.',
+	},
+	{
 		id: 'instagram',
 		label: 'Instagram',
 		value: '@turamisi.nk',
@@ -49,7 +59,7 @@ export const contactChannels = [
 		description: 'Nhắn tin nhanh và cập nhật thường ngày.',
 		note: 'Khi follow, hãy nhắn cho tôi một tin nhắn để tôi biết bạn là ai trước khi tôi chấp nhận nhé.',
 	},
-	] as const;
+] as const;
 
 /**
  * Entry cover at `/` — opens into the mục lục gate.

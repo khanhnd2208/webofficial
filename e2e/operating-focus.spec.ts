@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-import { aboutPagePaused } from '../src/content/about';
 import { addAdminSession } from './helpers/adminSession';
 
 test.describe('Focused operating mode', () => {
@@ -18,9 +17,9 @@ test.describe('Focused operating mode', () => {
 		const response = await request.get('/sitemap.xml');
 		expect(response.ok()).toBeTruthy();
 		const xml = await response.text();
-		expect(xml.includes('/gioi-thieu')).toBe(!aboutPagePaused);
-		expect(xml).toMatch(/<loc>[^<]*\/du-an\/ai50-ai-cho-moi-nguoi<\/loc>/);
-		expect(xml).not.toMatch(/<loc>[^<]*\/du-an<\/loc>/);
+		expect(xml).not.toContain('/gioi-thieu');
+		expect(xml).not.toContain('/trai-nghiem');
+		expect(xml).not.toContain('/du-an');
 		expect(xml).not.toContain('/dich-vu');
 		expect(xml).toContain('/lien-he');
 		expect(xml).not.toMatch(/<loc>[^<]*\/my-space<\/loc>/);

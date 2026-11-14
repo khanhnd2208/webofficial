@@ -1,7 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-import { aboutPagePaused } from '../src/content/about';
-
 const viewports = [
 	{ width: 320, height: 720 },
 	{ width: 390, height: 844 },
@@ -47,59 +45,27 @@ test.describe('Editorial premium public experience', () => {
 		await expect(page).toHaveURL(/\/khoa-hoc$/);
 	});
 
-	test('collaboration remains condensed with details available on demand', async ({ page }) => {
+	test('Về tôi lists collaboration as three plain lines', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/dich-vu');
-		await expect(page).toHaveURL(
-			aboutPagePaused ? /\/lien-he(#dich-vu)?$/ : /\/gioi-thieu#dich-vu$/,
-		);
-		if (!aboutPagePaused) {
-			await expect(page.getByRole('heading', { level: 1, name: 'Tôi là Khánh.' })).toBeVisible();
-			await expect(page.getByRole('heading', { name: 'Cố vấn quản trị' })).toBeVisible();
-			await expect(page.locator('.about-path')).toHaveCount(2);
-		}
-		await page.goto('/trai-nghiem');
-		await expect(page.locator('.about-offer')).toHaveCount(3);
-		await expect(page.locator('details[open]')).toHaveCount(0);
-		await page.locator('#learning-programs summary').click();
-		await expect(
-			page.getByRole('heading', { name: 'Tiếng Anh cho học tập và công việc' }),
-		).toBeVisible();
-		await expect(
-			page.getByRole('link', { name: /Trao đổi về chương trình học tập/ }),
-		).toBeVisible();
-	});
-
-	test('keeps a small portfolio honest without empty filters or temporary visuals', async ({
-		page,
-	}) => {
-		await page.goto('/du-an');
-		await expect(
-			page.getByRole('heading', { level: 2, name: 'Những việc tôi đang làm' }),
-		).toBeVisible();
-		await expect(page.getByLabel('Lọc dự án')).toHaveCount(0);
-		await expect(page.getByText('Đầu ra nổi bật')).toHaveCount(0);
-		await expect(page.getByText(/giới hạn của bằng chứng/i)).toHaveCount(0);
-		await page.goto('/du-an/ai50-ai-cho-moi-nguoi');
-		await expect(page.getByText('Visual tạm thời')).toHaveCount(0);
-		await expect(page.getByText(/Hình minh họa tạm thời/i)).toHaveCount(0);
-		await expect(page.getByText(/Minh họa đang chờ được thay/i)).toHaveCount(0);
-		await expect(page.getByText('Điều tôi học được')).toBeVisible();
-		await expect(page.getByText('Giả định làm việc hiện tại')).toHaveCount(0);
-		await expect(page.getByText(/Trao đổi với tôi về dự án này/i)).toBeVisible();
-		await page.goto('/du-an/ai-in-recruitment-research');
-		await expect(page.getByRole('heading', { name: 'Giả định làm việc' })).toBeVisible();
-		await expect(page.getByText('Điều dự án chứng minh')).toHaveCount(0);
+		await expect(page).toHaveURL(/\/lien-he$/);
+		const collaboration = page.locator('#dich-vu');
+		await expect(collaboration.locator('dt')).toHaveText([
+			'Đào tạo quản trị',
+			'Ứng dụng AI vào công việc',
+			'Học tập và tiếng Anh',
+		]);
+		await expect(collaboration.locator('details, button')).toHaveCount(0);
 	});
 
 	test('contact form starts empty for guests and exposes clear fields', async ({ page }) => {
 		await page.goto('/lien-he');
-		await expect(
-			page.getByRole('heading', { level: 1, name: /Gửi tôi một lời nhắn/i }),
-		).toBeVisible();
+		await expect(page.getByRole('heading', { level: 2, name: 'Gửi lời nhắn' })).toBeVisible();
 		await expect(page.getByLabel('Tên')).toHaveValue('');
 		await expect(page.getByLabel('Email')).toHaveValue('');
-		await expect(page.getByLabel(/Thời gian dự kiến/)).toBeVisible();
+		await expect(page.getByLabel('Chủ đề')).toBeVisible();
+		await expect(page.getByLabel('Lời nhắn', { exact: true })).toBeVisible();
+		await expect(page.getByLabel(/Thời gian dự kiến/)).toHaveCount(0);
 		await expect(page.getByText(/Đang kiểm tra thông tin tài khoản/i)).toHaveCount(0);
 	});
 });

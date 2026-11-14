@@ -39,12 +39,11 @@ describe('ContactForm', () => {
 		expect(email).toBeRequired();
 		expect(email).toHaveValue('');
 		expect(email).not.toHaveAttribute('readonly');
-		expect(screen.getByLabelText('Bạn muốn trao đổi về điều gì?')).toHaveValue('training');
-		expect(
-			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
-		).toBeInTheDocument();
-		expect(screen.getByLabelText(/Kết quả bạn mong muốn/)).toBeInTheDocument();
-		expect(screen.getByLabelText(/Thời gian dự kiến/)).toBeInTheDocument();
+		expect(screen.getByLabelText('Chủ đề')).toHaveValue('training');
+		expect(screen.getByLabelText('Lời nhắn')).toBeInTheDocument();
+		expect(screen.queryByLabelText(/Kết quả bạn mong muốn/)).not.toBeInTheDocument();
+		expect(screen.queryByLabelText(/Thời gian dự kiến/)).not.toBeInTheDocument();
+		expect(screen.getAllByRole('textbox')).toHaveLength(3);
 		expect(screen.getByText('Email bạn thường dùng để nhận phản hồi.')).toBeInTheDocument();
 		expect(screen.queryByLabelText(/Ngân sách/i)).not.toBeInTheDocument();
 		expect(screen.queryByLabelText(/Tổ chức/)).not.toBeInTheDocument();
@@ -68,10 +67,8 @@ describe('ContactForm', () => {
 		);
 		render(<ContactFormFromUrl formEnabled />);
 
-		expect(screen.getByLabelText('Bạn muốn trao đổi về điều gì?')).toHaveValue('learning-design');
-		expect(
-			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
-		).toBeInTheDocument();
+		expect(screen.getByLabelText('Chủ đề')).toHaveValue('learning-design');
+		expect(screen.getByLabelText('Lời nhắn')).toBeInTheDocument();
 	});
 
 	it('submits the direct context and shows a clear confirmation', async () => {
@@ -95,12 +92,7 @@ describe('ContactForm', () => {
 
 		await user.type(screen.getByLabelText('Tên'), 'Nguyễn Văn A');
 		await user.type(screen.getByLabelText('Email'), 'a@example.com');
-		await user.type(
-			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
-			'Tôi muốn trao đổi về một lớp học.',
-		);
-		await user.type(screen.getByLabelText(/Kết quả bạn mong muốn/), 'Hiểu rõ bước tiếp theo.');
-		await user.selectOptions(screen.getByLabelText(/Thời gian dự kiến/), '1-3-months');
+		await user.type(screen.getByLabelText('Lời nhắn'), 'Tôi muốn trao đổi về một lớp học.');
 		await user.click(screen.getByRole('checkbox'));
 		await user.click(screen.getByRole('button', { name: 'Gửi lời nhắn' }));
 
@@ -111,13 +103,13 @@ describe('ContactForm', () => {
 			name: 'Nguyễn Văn A',
 			email: 'a@example.com',
 			inquiryType: 'training',
-			context: 'Tôi muốn trao đổi về một lớp học.\n\nKết quả mong muốn: Hiểu rõ bước tiếp theo.',
+			context: 'Tôi muốn trao đổi về một lớp học.',
 			sourcePage: '/gioi-thieu',
 			sourceCourseSlug: 'leadership-101',
 			campaignParams: { ref: 'about' },
 			agreedPrivacy: true,
-			timeframe: '1-3-months',
 		});
+		expect(payload).not.toHaveProperty('timeframe');
 		expect(await screen.findByText('Cảm ơn bạn đã chia sẻ.')).toBeInTheDocument();
 	});
 
@@ -141,10 +133,7 @@ describe('ContactForm', () => {
 
 		await user.clear(name);
 		await user.type(name, 'Tên tôi muốn dùng');
-		await user.type(
-			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
-			'Một lời nhắn đủ dài.',
-		);
+		await user.type(screen.getByLabelText('Lời nhắn'), 'Một lời nhắn đủ dài.');
 		await user.click(screen.getByRole('checkbox'));
 		await user.click(screen.getByRole('button', { name: 'Gửi lời nhắn' }));
 
@@ -195,10 +184,7 @@ describe('ContactForm', () => {
 
 		await user.type(screen.getByLabelText('Tên'), 'Nguyễn An');
 		await user.type(screen.getByLabelText('Email'), 'an@example.com');
-		await user.type(
-			screen.getByLabelText('Bối cảnh hoặc điều đang khiến bạn băn khoăn'),
-			'Tôi muốn hỏi thêm.',
-		);
+		await user.type(screen.getByLabelText('Lời nhắn'), 'Tôi muốn hỏi thêm.');
 		await user.click(screen.getByRole('checkbox'));
 		await user.click(screen.getByRole('button', { name: 'Gửi lời nhắn' }));
 

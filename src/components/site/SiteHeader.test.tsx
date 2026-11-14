@@ -1,10 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { aboutPagePaused } from '@/content/about';
 import SiteHeader from './SiteHeader';
 
-const pathname = vi.hoisted(() => ({ current: '/gioi-thieu' }));
+const pathname = vi.hoisted(() => ({ current: '/chinh-sach/bao-mat' }));
 const observer = vi.hoisted(() => ({
 	callback: null as ((entries: Array<{ isIntersecting: boolean }>) => void) | null,
 }));
@@ -19,7 +18,7 @@ vi.mock('next-auth/react', () => ({
 vi.mock('@/lib/auth/startGoogleSignIn', () => ({ startGoogleSignIn: vi.fn() }));
 
 beforeEach(() => {
-	pathname.current = '/gioi-thieu';
+	pathname.current = '/chinh-sach/bao-mat';
 	observer.callback = null;
 	vi.stubGlobal(
 		'IntersectionObserver',
@@ -42,20 +41,17 @@ describe('SiteHeader', () => {
 		render(<SiteHeader />);
 		expect(screen.getByTestId('site-header-home')).toHaveAttribute('href', '/muc-luc');
 		expect(screen.getByRole('navigation', { name: 'Đường dẫn' })).toBeVisible();
-		expect(screen.getByText(aboutPagePaused ? 'Liên hệ' : 'Giới thiệu')).toHaveAttribute(
-			'aria-current',
-			'page',
-		);
+		expect(screen.getByText('Chính sách')).toHaveAttribute('aria-current', 'page');
 		const contact = screen.getByTestId('site-header-contact');
 		expect(contact).toHaveTextContent('Nhắn tin');
 		expect(contact).toHaveTextContent('Gửi lời nhắn');
 	});
 
 	it('links a detail page back to its parent and does not mark that parent as current', () => {
-		pathname.current = '/trai-nghiem/mot-cau-chuyen';
+		pathname.current = '/tai-khoan/ho-so';
 		render(<SiteHeader />);
-		const parent = screen.getByRole('link', { name: 'Trải nghiệm' });
-		expect(parent).toHaveAttribute('href', '/trai-nghiem');
+		const parent = screen.getByRole('link', { name: 'Tài khoản' });
+		expect(parent).toHaveAttribute('href', '/tai-khoan');
 		expect(parent).not.toHaveAttribute('aria-current');
 	});
 
@@ -63,7 +59,7 @@ describe('SiteHeader', () => {
 		pathname.current = '/lien-he';
 		render(<SiteHeader />);
 		expect(screen.queryByTestId('site-header-contact')).toBeNull();
-		expect(screen.getByText('Liên hệ')).toHaveAttribute('aria-current', 'page');
+		expect(screen.getByText('Về tôi')).toHaveAttribute('aria-current', 'page');
 	});
 
 	it.each(['/khoa-hoc'])('keeps the public course header and trail at %s', (path) => {
