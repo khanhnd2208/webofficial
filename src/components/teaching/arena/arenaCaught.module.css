@@ -581,6 +581,204 @@
 	color: var(--arena-muted);
 }
 
+/* After a missed answer: who answers instead */
+.giftDone {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0.75rem 0 0;
+	padding: 0.3rem 0.85rem;
+	border-radius: 999px;
+	background: rgb(251 113 133 / 16%);
+	color: #fda4af;
+	font-size: 1rem;
+	font-weight: 700;
+}
+
+.assist {
+	display: flex;
+	flex: 1;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem 1.5rem;
+	min-width: 0;
+}
+
+.assistAsk {
+	display: grid;
+	flex: 1 1 22rem;
+	gap: 0.55rem;
+	min-width: 0;
+}
+
+.assistAsk label {
+	color: var(--arena-ink);
+	font-size: 1.2rem;
+	font-weight: 800;
+}
+
+.assistAsk input {
+	width: 100%;
+	max-width: 34rem;
+	min-height: 3.25rem;
+	padding: 0 1rem;
+	border: 1.5px solid rgb(196 181 253 / 55%);
+	border-radius: 0.85rem;
+	background: rgb(8 4 18 / 55%);
+	color: var(--arena-ink);
+	font: inherit;
+	font-size: 1.15rem;
+}
+
+.assistAsk input::placeholder {
+	color: var(--arena-muted);
+}
+
+.assistHint,
+.assistResults p {
+	margin: 0;
+	color: var(--arena-muted);
+	font-size: 0.95rem;
+}
+
+.assistResults {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+	max-height: min(9rem, 24vh);
+	overflow: auto;
+	scrollbar-width: thin;
+}
+
+.assistResults button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6rem;
+	min-height: 2.9rem;
+	padding: 0 1rem;
+	border: 0;
+	border-radius: 0.8rem;
+	background: rgb(196 181 253 / 16%);
+	box-shadow: inset 0 0 0 1.5px rgb(196 181 253 / 45%);
+	color: var(--arena-ink);
+	font: inherit;
+	font-size: 1.05rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.assistResults button:hover,
+.assistResults button:focus-visible {
+	background: rgb(196 181 253 / 30%);
+}
+
+.assistEnd {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 0.55rem;
+	min-height: 3.5rem;
+	padding: 0 1.3rem;
+	border: 0;
+	border-radius: 1.1rem;
+	background: rgb(255 255 255 / 10%);
+	box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 28%);
+	color: var(--arena-ink);
+	font: inherit;
+	font-size: 1.15rem;
+	font-weight: 800;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.assistEnd:hover {
+	background: rgb(255 255 255 / 18%);
+}
+
+.assistEnd .key {
+	background: rgb(255 255 255 / 14%);
+}
+
+/* Thinking time for a Challenging student */
+.countdown {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.9rem;
+	margin-top: 0.85rem;
+	padding: 0.35rem 1.4rem 0.35rem 0.4rem;
+	border-radius: 999px;
+	background: rgb(10 5 22 / 55%);
+	color: var(--arena-ink-2);
+	font-size: 1.3rem;
+	font-weight: 700;
+}
+
+.countdown svg {
+	width: 6rem;
+	height: 6rem;
+}
+
+.countdown circle {
+	fill: none;
+	stroke-width: 5;
+}
+
+.countdownTrack {
+	stroke: rgb(255 255 255 / 14%);
+}
+
+.countdownArc {
+	stroke: var(--arena-accent);
+	stroke-linecap: round;
+	transform: rotate(-90deg);
+	transform-origin: 50% 50%;
+	transition: stroke-dashoffset 220ms linear;
+}
+
+.countdown text {
+	fill: var(--arena-ink);
+	font-size: 1.45rem;
+	font-variant-numeric: tabular-nums;
+	font-weight: 900;
+}
+
+.countdown[data-low] {
+	color: #fda4af;
+}
+
+.countdown[data-low] .countdownArc,
+.countdown[data-done] .countdownArc {
+	stroke: #fb7185;
+}
+
+.countdown[data-low] svg {
+	animation: countdown-pulse 1s ease-in-out infinite;
+}
+
+.countdown[data-done] {
+	background: rgb(251 113 133 / 20%);
+	color: #fecdd3;
+	font-weight: 900;
+}
+
+@keyframes countdown-pulse {
+	50% {
+		transform: scale(1.12);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.countdown[data-low] svg {
+		animation: none;
+	}
+
+	.countdownArc {
+		transition: none;
+	}
+}
+
 /* Narrow or short screens: one column that scrolls, verdicts pinned below. */
 @media (max-width: 900px) {
 	.backdrop {

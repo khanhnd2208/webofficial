@@ -74,6 +74,11 @@ export function ArenaSetupRules({
 					lại.
 				</li>
 				<li>Câu hỏi đã có người trả lời đạt sẽ không xuất hiện lại.</li>
+				<li>
+					Khi một bạn chưa đạt, bạn khác (kể cả bạn đã trả lời) có thể giơ tay trả lời thay để được
+					thưởng CP; Gift của bạn chưa đạt vẫn giữ nguyên.
+				</li>
+				<li>Bạn nhóm Challenging có 30 giây suy nghĩ; hết giờ giảng viên vẫn là người chấm.</li>
 				<li>Trên sàn vẫn hiện cả lớp, kể cả khi chỉ gọi một nhóm.</li>
 				<li>Nhân vật được chia ngẫu nhiên và đều cho mọi bạn.</li>
 			</ul>

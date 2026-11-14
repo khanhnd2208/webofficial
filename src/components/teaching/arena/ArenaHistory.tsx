@@ -6,7 +6,7 @@ import { McIcon } from '@/components/myclass/ui';
 import { teachingApi } from '@/components/teaching/admin/api';
 import { recallVisibleText } from '@/features/active-recall/richText';
 
-import type { ArenaHistoryEntry } from './arenaGame';
+import { isAssistTurn, type ArenaHistoryEntry } from './arenaGame';
 import { arenaTurnsUrl, entryFromTurn, type RecallArenaTurnDay } from './arenaTurnLog';
 import styles from './arena.module.css';
 
@@ -181,6 +181,7 @@ export function ArenaHistory({
 									{RESULT_LABEL[entry.result]}
 									{entry.result === 'pass' && entry.award ? ` +${entry.award}` : ''}
 									{entry.result === 'pass' && entry.award === 0 ? ' · Vừa đủ qua' : ''}
+									{isAssistTurn(entry) ? ' · Trả lời thay' : ''}
 								</span>
 							</div>
 							<p className={styles.historyQuestion}>{questionOf(entry)}</p>
