@@ -1021,6 +1021,7 @@ model TeachingClass {
   lateCountsTowardAbsenceThreshold Boolean        @default(true)
   giftDeductionPoints        Decimal             @default(1) @db.Decimal(4, 2)
   absenceThresholdPercent    Int                 @default(20)
+  exceedingAbsenceZeroesAttendance Boolean       @default(false)
   lateGraceMinutes           Int                 @default(15)
   status                     TeachingClassStatus @default(ACTIVE)
   publicSlug                 String?             @unique

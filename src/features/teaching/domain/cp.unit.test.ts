@@ -267,6 +267,37 @@ describe('sessionsForEnrollment', () => {
 		expect(result.unexcusedAbsences).toBe(0);
 		expect(result.cp).toBe(0);
 	});
+
+	it('zeroes attendance at 3+ absences without barring exam when exceedingAbsenceZeroesAttendance is enabled', () => {
+		const policy = { ...DEFAULT_CP_POLICY, exceedingAbsenceZeroesAttendance: true };
+		const twoAbsences = computeCp(
+			policy,
+			[taken('ABSENT_UNEXCUSED'), taken('ABSENT_UNEXCUSED'), taken('PRESENT')],
+			[2, 2],
+		);
+		expect(twoAbsences.banned).toBe(false);
+		expect(twoAbsences.examEligible).toBe(true);
+		expect(twoAbsences.attendanceScore).toBe(4);
+		expect(twoAbsences.cp).toBe(4);
+		expect(twoAbsences.totalScore).toBe(8);
+
+		const threeAbsences = computeCp(
+			policy,
+			[
+				taken('ABSENT_UNEXCUSED'),
+				taken('ABSENT_UNEXCUSED'),
+				taken('ABSENT_UNEXCUSED'),
+				taken('PRESENT'),
+			],
+			[2, 2, 2],
+		);
+		expect(threeAbsences.banned).toBe(false);
+		expect(threeAbsences.examEligible).toBe(true);
+		expect(threeAbsences.riskLevel).toBe('AT_RISK');
+		expect(threeAbsences.attendanceScore).toBe(0);
+		expect(threeAbsences.cp).toBe(5);
+		expect(threeAbsences.totalScore).toBe(5);
+	});
 });
 
 describe('defaultEnrolledFromWeek', () => {

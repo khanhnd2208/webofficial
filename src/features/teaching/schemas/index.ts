@@ -114,6 +114,7 @@ export const updateTeachingClassSchema = z
 		lateCountsTowardAbsenceThreshold: z.boolean().optional(),
 		giftDeductionPoints: z.number().min(0).max(10).multipleOf(0.25).optional(),
 		absenceThresholdPercent: z.number().int().min(0).max(100).optional(),
+		exceedingAbsenceZeroesAttendance: z.boolean().optional(),
 		lateGraceMinutes: z.number().int().min(0).max(180).optional(),
 		status: teachingClassStatusSchema.optional(),
 	})

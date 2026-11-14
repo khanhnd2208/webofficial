@@ -353,6 +353,7 @@ export async function updateTeachingClass(id: string, input: UpdateTeachingClass
 					lateCountsTowardAbsenceThreshold: input.lateCountsTowardAbsenceThreshold,
 					giftDeductionPoints: input.giftDeductionPoints,
 					absenceThresholdPercent: input.absenceThresholdPercent,
+					exceedingAbsenceZeroesAttendance: input.exceedingAbsenceZeroesAttendance,
 					lateGraceMinutes: input.lateGraceMinutes,
 					status: input.status,
 				},
