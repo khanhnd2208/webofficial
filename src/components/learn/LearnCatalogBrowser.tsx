@@ -1,24 +1,18 @@
 'use client';
 
-import Link from 'next/link';
 import SpotIllustration from '@/components/site/SpotIllustration';
 import { useDeferredValue, useMemo, useState } from 'react';
 
-import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/format';
 import { normalizeSearch as normalize } from '@/features/learn/search';
-import {
-	courseHue,
-	courseStatus,
-	percentOf,
-	type LearnCourseStatus,
-} from '@/features/learn/progress';
+import { courseStatus, percentOf, type LearnCourseStatus } from '@/features/learn/progress';
 import {
 	LEARN_LEVEL_LABELS,
 	type LearnCourseListItem,
 	type LearnLevel,
 } from '@/features/learn/types';
 
+import CourseCard from './CourseCard';
+import { courseBlurb, courseFacts } from './DiscoverCourseList';
 import { LearnIcon } from './LearnIcon';
 
 type Tab = 'all' | LearnCourseStatus;
@@ -227,37 +221,22 @@ export default function LearnCatalogBrowser({ courses }: { courses: LearnCourseL
 			) : null}
 
 			{visible.length ? (
-				<ul className="ln-grid">
+				<div className="mt-6 flex flex-col gap-3">
 					{visible.map(({ course, status, percent }) => (
-						<li key={course.id}>
-							<Link
-								href={routes.learnCourse(course.slug)}
-								className="ln-card"
-								style={{ ['--ln-hue' as string]: courseHue(course.slug) }}
-							>
-								<span className="ln-card__hue" aria-hidden="true" />
-								<span className="ln-card__body">
-									<h2 className="ln-card__title">{course.title}</h2>
-									{course.subtitle ? <p className="ln-card__subtitle">{course.subtitle}</p> : null}
-									<p className="ln-card__meta">
-										{LEARN_LEVEL_LABELS[course.level]} · {course.lessonCount} bài ·{' '}
-										{course.sectionCount} mục · {formatMinutes(course.totalMinutes)}
-										{course.status !== 'PUBLISHED' ? ' · Bản nháp' : ''}
-										{status !== 'not-started' ? ` · ${STATUS_LABEL[status]}` : ''}
-									</p>
-									{status === 'not-started' ? null : (
-										<div className="ln-card__progress">
-											<div className="ln-bar ln-bar--thin" aria-hidden="true">
-												<span style={{ width: `${percent}%` }} />
-											</div>
-											<span className="tabular-nums">{percent}%</span>
-										</div>
-									)}
-								</span>
-							</Link>
-						</li>
+						<CourseCard
+							key={course.id}
+							slug={course.slug}
+							title={course.title}
+							blurb={courseBlurb(course)}
+							facts={[
+								...courseFacts(course),
+								...(course.status !== 'PUBLISHED' ? ['Bản nháp'] : []),
+							]}
+							thumbnailUrl={course.thumbnailUrl}
+							progress={status === 'not-started' ? null : { percent, label: STATUS_LABEL[status] }}
+						/>
 					))}
-				</ul>
+				</div>
 			) : (
 				<div className="ln-empty">
 					<SpotIllustration variant="empty" size={96} className="mx-auto" />

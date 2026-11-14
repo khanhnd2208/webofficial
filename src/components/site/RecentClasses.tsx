@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { routes } from '@/config/routes';
 import {
@@ -19,7 +19,7 @@ function load(): RecentClass[] {
 	}
 }
 
-/** Remembers this class page on the device so My Space can offer it again. Renders nothing. */
+/** Remembers this class page on the device so /lop can offer it again. Renders nothing. */
 export function RememberClassVisit({ slug, title, code }: Omit<RecentClass, 'visitedAt'>) {
 	useEffect(() => {
 		try {
@@ -32,27 +32,50 @@ export function RememberClassVisit({ slug, title, code }: Omit<RecentClass, 'vis
 	return null;
 }
 
-/** "Lớp của bạn" shortcuts to class pages opened before on this device; hidden when none. */
-export default function RecentClasses({ className = '' }: { className?: string }) {
-	const [classes, setClasses] = useState<RecentClass[]>([]);
+/**
+ * "Lớp bạn đã mở": class pages opened before on this device, as a list. Shows `empty` once the
+ * browser has been checked and there are none.
+ */
+export default function RecentClasses({
+	className = '',
+	empty = null,
+}: {
+	className?: string;
+	empty?: ReactNode;
+}) {
+	const [classes, setClasses] = useState<RecentClass[] | null>(null);
 	useEffect(() => {
 		// Storage only exists in the browser, so the list appears after hydration.
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setClasses(load());
 	}, []);
-	if (!classes.length) return null;
+	if (classes === null) return null;
+	if (!classes.length) return <>{empty}</>;
 	return (
-		<section aria-label="Lớp bạn đã mở" className={className} data-testid="recent-classes">
-			<p className="eyebrow">Lớp bạn đã mở</p>
-			<ul className="mt-2 flex flex-wrap gap-2">
+		<section
+			aria-labelledby="recent-classes-title"
+			className={className}
+			data-testid="recent-classes"
+		>
+			<h2 id="recent-classes-title" className="editorial-label">
+				Lớp bạn đã mở
+			</h2>
+			<ul className="mt-3 border-t border-hairline">
 				{classes.map((entry) => (
-					<li key={entry.slug}>
+					<li key={entry.slug} className="border-b border-hairline">
 						<Link
 							href={routes.teachingPublicClass(entry.slug)}
-							className="inline-flex min-h-11 max-w-[22rem] items-center gap-2 rounded-full border border-hairline bg-canvas/80 px-4 text-subhead text-ink transition-colors duration-(--dur-1) ease-(--ease-out) hover:border-ink/30 hover:bg-paper"
+							className="group flex min-h-14 items-center gap-4 py-3 text-ink transition-colors duration-(--dur-1) ease-(--ease-out) hover:text-accent focus-visible:text-accent focus-visible:outline-none"
 						>
-							<span className="text-footnote tabular-nums text-ink-secondary">{entry.code}</span>
-							<span className="truncate">{entry.title}</span>
+							<span className="w-24 shrink-0 text-footnote tabular-nums text-ink-secondary">
+								{entry.code}
+							</span>
+							<span className="min-w-0 flex-1 truncate font-display text-title-3">
+								{entry.title}
+							</span>
+							<span aria-hidden="true" className="text-ink-secondary group-hover:text-accent">
+								→
+							</span>
 						</Link>
 					</li>
 				))}

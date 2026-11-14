@@ -220,6 +220,7 @@ export const SHARED = [
 	'e2e/smoke.spec.ts',
 	'e2e/mobile-smoke.spec.ts',
 	'e2e/public-feature-locks.spec.ts',
+	'e2e/learning-hub.spec.ts',
 ];
 
 /** Changes here select no area and do not force the full end-to-end run. */

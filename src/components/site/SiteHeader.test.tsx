@@ -62,11 +62,11 @@ describe('SiteHeader', () => {
 		expect(screen.getByText('Về tôi')).toHaveAttribute('aria-current', 'page');
 	});
 
-	it.each(['/khoa-hoc'])('keeps the public course header and trail at %s', (path) => {
+	it.each(['/khoa-hoc', '/lop'])('shows the Học tập header and trail at %s', (path) => {
 		pathname.current = path;
 		render(<SiteHeader />);
 		expect(screen.getByTestId('site-header-home')).toHaveAttribute('href', '/muc-luc');
-		expect(screen.getByText('Khóa học')).toHaveAttribute('aria-current', 'page');
+		expect(screen.getByText('Học tập')).toHaveAttribute('aria-current', 'page');
 	});
 
 	it('renders nothing on the intro', () => {

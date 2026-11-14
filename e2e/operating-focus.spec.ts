@@ -61,7 +61,7 @@ test.describe('Focused operating mode', () => {
 		await expect(nav.getByRole('link', { name: 'Quiz UNRELEASED' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: /Khóa học tự học/ })).toHaveAttribute(
 			'href',
-			'/my-space/courses?xem=quan-ly',
+			'/khoa-hoc?xem=quan-ly',
 		);
 		await expect(nav.getByRole('link', { name: /Thống kê Recall/ })).toHaveAttribute(
 			'href',

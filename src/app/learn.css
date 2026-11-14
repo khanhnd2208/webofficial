@@ -21,7 +21,10 @@
 	--warning: #b45309;
 	--sunlight: #e0a100;
 	--sage: #0f8a7e;
-
+}
+/* Learn's own tokens. `.ln-kit` carries them to Learn controls placed on other pages (/khoa-hoc). */
+.ln,
+.ln-kit {
 	--ln-bar: 3rem;
 	--ln-strong-rule: #d1d5db;
 	--ln-radius: 12px;
@@ -57,6 +60,9 @@
 	--accent-muted: #3f3f46;
 	--success: #4ade80;
 	--error: #f87171;
+}
+.dark .ln,
+.dark .ln-kit {
 	--ln-strong-rule: #52525b;
 	--ln-shadow-color: 0 0 0;
 	--ln-on-primary: #111827;

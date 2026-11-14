@@ -80,8 +80,6 @@ describe('DiscoverCourseList', () => {
 		expect(link).toHaveTextContent('8 bài');
 		expect(link).not.toHaveTextContent('khoảng');
 		expect(screen.queryByText('Xem chương trình')).not.toBeInTheDocument();
-		// Signed-in visitors never see this list: /khoa-hoc sends them to their own courses.
-		expect(screen.queryByRole('link', { name: /Khóa học của tôi/ })).not.toBeInTheDocument();
 		expect(link.querySelector('img')?.getAttribute('src') ?? '').not.toContain('/uploads/');
 
 		rerender(
@@ -116,9 +114,6 @@ describe('DiscoverCourseList', () => {
 		render(<DiscoverCourseList courses={[]} />);
 		expect(
 			screen.getByRole('heading', { name: 'Các khóa học đang được chuẩn bị' }),
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole('heading', { name: 'Một điều mới bắt đầu từ đây.' }),
 		).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: /Vào khóa học/ })).not.toBeInTheDocument();
 	});

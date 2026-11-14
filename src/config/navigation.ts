@@ -320,8 +320,8 @@ function barePath(pathname: string): string {
 export function getSiteTrail(pathname: string): SiteCrumb[] {
 	const path = barePath(pathname);
 	if (path === routes.toc) return [];
-	if (path === routes.learnCourses) {
-		return [{ label: 'Khóa học' }];
+	if (path === routes.learnCourses || path === routes.classes) {
+		return [{ label: 'Học tập' }];
 	}
 	if (path === routes.contact) return [{ label: 'Về tôi' }];
 	if (path === routes.login) return [{ label: 'Đăng nhập' }];
@@ -349,7 +349,9 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 export function isSiteHeaderPath(pathname: string): boolean {
 	const path = barePath(pathname);
 	if (path === routes.home) return false;
-	if (isLopPath(path) || matchesPrefix(path, routes.publicCourseRecallRoot)) return false;
+	// A class page wears its own chrome; the Lớp học tab itself (/lop) is part of Học tập.
+	if (path !== routes.classes && isLopPath(path)) return false;
+	if (matchesPrefix(path, routes.publicCourseRecallRoot)) return false;
 	if (path.startsWith('/admin')) return false;
 	if (path.startsWith('/my-space/my-class')) return false;
 	if (path.startsWith('/my-space/teaching')) return false;
