@@ -16,6 +16,7 @@ import {
 	throwIfCourseArchived,
 } from '../domain/courseIdentity';
 import { withUniqueConflict } from '../domain/prismaErrors';
+import { decryptStudentRecord, encryptStudentPiiField } from '../domain/studentPiiCrypto';
 import * as repo from '../repositories/teachingRepository';
 import { DEFAULT_TUTORIAL_CODE, DEFAULT_TUTORIAL_NAME } from '../repositories/teachingRepository';
 import type {
@@ -229,9 +230,12 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 				});
 				for (const [index, studentInput] of input.students.entries()) {
 					const studentCode = studentInput.studentCode.trim().toUpperCase();
-					const existingStudent = await transaction.teachingStudent.findUnique({
+					const rawExistingStudent = await transaction.teachingStudent.findUnique({
 						where: { studentCodeNormalized: studentCode },
 					});
+					const existingStudent = rawExistingStudent
+						? decryptStudentRecord(rawExistingStudent)
+						: null;
 					const createData = {
 						studentCode,
 						studentCodeNormalized: studentCode,
@@ -242,8 +246,8 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 							: null,
 						homeClassCode: studentInput.homeClassCode ?? '',
 						majorName: studentInput.majorName ?? '',
-						phone: studentInput.phone ?? null,
-						email: studentInput.email ?? null,
+						phone: encryptStudentPiiField(studentInput.phone ?? null),
+						email: encryptStudentPiiField(studentInput.email ?? null),
 					};
 					const student = existingStudent
 						? await transaction.teachingStudent.update({
@@ -262,8 +266,12 @@ export async function setupTeachingClass(input: TeachingClassSetupInput) {
 									majorName: existingStudent.majorName.trim()
 										? existingStudent.majorName
 										: createData.majorName,
-									phone: existingStudent.phone?.trim() ? existingStudent.phone : createData.phone,
-									email: existingStudent.email?.trim() ? existingStudent.email : createData.email,
+									phone: existingStudent.phone?.trim()
+										? encryptStudentPiiField(existingStudent.phone)
+										: createData.phone,
+									email: existingStudent.email?.trim()
+										? encryptStudentPiiField(existingStudent.email)
+										: createData.email,
 								},
 							})
 						: await transaction.teachingStudent.create({ data: createData });

@@ -24,6 +24,7 @@ import {
 } from '../domain/rosterImport';
 import { parseIsoDate, toIsoDate, withUniqueConflict } from '../domain/prismaErrors';
 import { normalizeStudentCode } from '../domain/studentIdentity';
+import { decryptStudentRecord, encryptStudentPiiField } from '../domain/studentPiiCrypto';
 import { isLikelyStudentHeaderRow, parseDelimitedTable } from '../imports/parseDelimited';
 import {
 	enforceRowLimit,
@@ -285,7 +286,7 @@ export async function commitRosterImport(options: {
 				if (Object.keys(row.input.fieldErrors).length > 0) {
 					throw new AppError('Dữ liệu không hợp lệ. Hãy đối chiếu lại.', 422, 'VALIDATION');
 				}
-				const existing = row.input.studentCode
+				const rawExisting = row.input.studentCode
 					? await tx.teachingStudent.findUnique({
 							where: { studentCodeNormalized: row.input.studentCode },
 							include: {
@@ -295,6 +296,7 @@ export async function commitRosterImport(options: {
 							},
 						})
 					: null;
+				const existing = rawExisting ? decryptStudentRecord(rawExisting) : null;
 				const snapshot = existing ? snapshotFromStudent(existing, options.classId) : null;
 				if (snapshot && row.expectedUpdatedAt && snapshot.updatedAt !== row.expectedUpdatedAt) {
 					throw new AppError('Dữ liệu đã thay đổi, hãy đối chiếu lại', 409, 'STALE_PREVIEW');
@@ -325,8 +327,8 @@ export async function commitRosterImport(options: {
 					dateOfBirth: parseIsoDate(profile.dateOfBirth),
 					homeClassCode: profile.homeClassCode,
 					majorName: profile.majorName,
-					phone: profile.phone,
-					email: profile.email,
+					phone: encryptStudentPiiField(profile.phone),
+					email: encryptStudentPiiField(profile.email),
 				};
 				const student = existing
 					? await tx.teachingStudent.update({
@@ -479,9 +481,10 @@ export async function setupTeachingClassFromRoster(input: {
 						if (Object.keys(normalized.fieldErrors).length > 0) {
 							throw new AppError('Dữ liệu không hợp lệ. Hãy đối chiếu lại.', 422, 'VALIDATION');
 						}
-						const existing = await tx.teachingStudent.findUnique({
+						const rawExisting = await tx.teachingStudent.findUnique({
 							where: { studentCodeNormalized: normalized.studentCode },
 						});
+						const existing = rawExisting ? decryptStudentRecord(rawExisting) : null;
 						if (
 							existing &&
 							row.expectedUpdatedAt &&
