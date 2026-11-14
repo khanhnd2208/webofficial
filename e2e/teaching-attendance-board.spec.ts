@@ -41,12 +41,17 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 		await expect(page).toHaveURL(/\/dang-nhap/);
 	});
 
-	test('Mục lục shows Teaching only to administrators', async ({ page, context }) => {
+	test('Teaching opens from the admin account menu, not from Mục lục', async ({
+		page,
+		context,
+	}) => {
 		await page.goto('/muc-luc');
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveCount(0);
+		await expect(page.locator('[data-testid^="gate-item-"]')).toHaveCount(2);
 		await addAdminSession(context);
 		await page.goto('/muc-luc');
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
+		await expect(page.locator('[data-testid^="gate-item-"]')).toHaveCount(2);
+		await page.getByTestId('site-auth-chip').first().click();
+		await expect(page.getByRole('link', { name: 'Lớp & môn học' })).toHaveAttribute(
 			'href',
 			'/my-space/teaching',
 		);

@@ -298,6 +298,13 @@ export const USER_MENU_LINKS: NavLink[] = [
 	{ href: routes.account, label: 'Tài khoản' },
 ];
 
+/** Workspaces only an admin can open; listed above USER_MENU_LINKS in the account menu. */
+export const ADMIN_MENU_LINKS: NavLink[] = [
+	{ href: routes.mySpaceTeaching, label: 'Lớp & môn học' },
+	{ href: routes.myCoursesManage, label: 'Quản lý khóa học' },
+	{ href: routes.admin.home, label: 'Quản trị' },
+];
+
 /** @deprecated Use PUBLIC_NAV_LINKS / getDesktopNavLinks() */
 export const NAV_LINKS = PUBLIC_NAV_LINKS;
 

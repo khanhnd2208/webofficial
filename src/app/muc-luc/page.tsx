@@ -3,30 +3,16 @@ import Image from 'next/image';
 
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
-import { aboutPagePaused } from '@/content/about';
-import { auth } from '@/lib/auth';
-import TocDoors, { buildTocItems } from './TocDoors';
+import TocDoors from './TocDoors';
 import styles from './toc.module.css';
 
 export const metadata: Metadata = {
 	title: 'Mục lục',
-	description: 'Một chút về Duy Khánh, và những khóa học.',
+	description: 'Một chút về Duy Khánh, và những điều để học.',
 	alternates: { canonical: absoluteUrl(routes.toc) },
 };
 
-const about = {
-	href: aboutPagePaused ? routes.contact : routes.about,
-	label: aboutPagePaused ? 'Liên hệ' : 'Về tôi',
-	description: aboutPagePaused
-		? 'Email, Instagram, hoặc gửi một lời nhắn.'
-		: 'Người thầy, và hành trình trở thành.',
-	icon: '/brand/toc/about-v1.webp',
-};
-
-export default async function TocPage() {
-	const session = await auth();
-	const items = buildTocItems(session?.user?.role);
-
+export default function TocPage() {
 	return (
 		<main className={`personal-book ${styles.page}`} data-testid="gate-home">
 			<Image
@@ -42,9 +28,9 @@ export default async function TocPage() {
 				<header className={styles.header}>
 					<p className={styles.eyebrow}>Nguyễn Duy Khánh · Mục lục</p>
 					<h1>Bạn muốn ghé đâu?</h1>
-					<p>Một chút về tôi. Và những khóa học.</p>
+					<p>Một chút về tôi. Và những điều để học.</p>
 				</header>
-				<TocDoors about={about} items={items} />
+				<TocDoors />
 				<footer className={styles.footer}>
 					<span>Chưa xong. Và vẫn đang tiếp tục.</span>
 				</footer>

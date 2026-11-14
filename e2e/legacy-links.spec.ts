@@ -120,7 +120,7 @@ test.describe('Links shared with students keep working', () => {
 
 			// An old #my-space bookmark just opens the flat Mục lục. The class shortcut lives on Admin.
 			await page.goto('/muc-luc#my-space');
-			await expect(page.getByTestId('myspace-tile-courses')).toBeVisible();
+			await expect(page.getByTestId('gate-item-learning')).toBeVisible();
 			await expect(page.getByTestId('recent-classes')).toHaveCount(0);
 			await addAdminSession(context);
 			await page.goto('/admin');

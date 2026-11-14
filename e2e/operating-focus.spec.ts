@@ -4,21 +4,13 @@ import { aboutPagePaused } from '../src/content/about';
 import { addAdminSession } from './helpers/adminSession';
 
 test.describe('Focused operating mode', () => {
-	test('mục lục links to contact and courses while the introduction is paused', async ({
-		page,
-	}) => {
+	test('mục lục links to Về tôi and Học tập only', async ({ page }) => {
 		await page.goto('/muc-luc');
 		const gate = page.getByRole('navigation', { name: 'Mục lục' });
-		await expect(gate.getByTestId('gate-item-about')).toHaveAttribute(
-			'href',
-			aboutPagePaused ? '/lien-he' : '/gioi-thieu',
-		);
+		await expect(gate.getByTestId('gate-item-about')).toHaveAttribute('href', '/lien-he');
 		await expect(gate.locator('a[href="/du-an"],a[href="/dich-vu"]')).toHaveCount(0);
 		await expect(gate.getByRole('link', { name: /Trải nghiệm/i })).toHaveCount(0);
-		await expect(gate.getByRole('link', { name: /Khóa học/i })).toHaveAttribute(
-			'href',
-			'/khoa-hoc',
-		);
+		await expect(gate.getByRole('link', { name: /Học tập/i })).toHaveAttribute('href', '/khoa-hoc');
 		await expect(gate.getByRole('link', { name: /Active Recall/i })).toHaveCount(0);
 	});
 
@@ -39,17 +31,22 @@ test.describe('Focused operating mode', () => {
 		expect(xml).not.toContain('/vocabulary');
 	});
 
-	test('admin Mục lục leads to Teaching and hides retired spaces', async ({ page, context }) => {
+	test('admin reaches Teaching from the account menu; Mục lục stays the same', async ({
+		page,
+		context,
+	}) => {
 		await addAdminSession(context);
 		await page.goto('/my-space');
 		await expect(page).toHaveURL(/\/muc-luc$/);
 		await expect(page.getByTestId('gate-home')).toBeVisible();
-		// The old My Space hub now lands on Mục lục; retired spaces stay out.
-		await expect(page.getByTestId('myspace-tile-teaching')).toHaveAttribute(
+		// The old My Space hub now lands on Mục lục; admins see the same two doors.
+		await expect(page.locator('[data-testid^="gate-item-"]')).toHaveCount(2);
+		await page.getByTestId('site-auth-chip').first().click();
+		await expect(page.getByRole('link', { name: 'Lớp & môn học' })).toHaveAttribute(
 			'href',
 			'/my-space/teaching',
 		);
-		await expect(page.getByTestId('myspace-tile-active-recall')).toHaveCount(0);
+		await expect(page.getByRole('link', { name: 'Quản trị' })).toHaveAttribute('href', '/admin');
 	});
 
 	test('admin main menu groups active work and leads out to Teaching', async ({

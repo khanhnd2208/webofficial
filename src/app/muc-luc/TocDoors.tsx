@@ -2,63 +2,34 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { getMySpaceTiles } from '@/content/mySpace';
-import type { UserRole } from '@/types/user';
+import { routes } from '@/config/routes';
 import styles from './toc.module.css';
 
 export interface TocDoor {
+	id: string;
 	href: string;
 	label: string;
 	description: ReactNode;
 	icon: string;
 }
 
-export interface TocSpaceItem extends TocDoor {
-	id: string;
-}
-
-/** Courses first, then Lớp học and Quản trị for admins. */
-const DOOR_ORDER = ['courses', 'teaching', 'admin'];
-
-const tocIcons: Record<string, string> = {
-	teaching: '/brand/toc/teaching-v1.webp',
-	courses: '/brand/toc/courses-v1.webp',
-};
-
-function descriptionFor(id: string): ReactNode {
-	if (id === 'courses') return 'Học thêm một điều mới.';
-	if (id === 'teaching') return 'Một góc dành cho lớp học.';
-	if (id === 'admin') return 'Quản lý không gian của bạn.';
-	return '';
-}
-
-function doorRank(id: string): number {
-	const rank = DOOR_ORDER.indexOf(id);
-	return rank === -1 ? DOOR_ORDER.length : rank;
-}
-
-/**
- * Flat Mục lục doors. Lớp học (Teaching) and Quản trị appear only for admins,
- * since getMySpaceTiles drops them for everyone else.
- */
-export function buildTocItems(role?: UserRole | null): TocSpaceItem[] {
-	const tiles = getMySpaceTiles(role)
-		.filter((tile) => tile.href)
-		.flatMap((tile) => {
-			const icon = tocIcons[tile.id] ?? (tile.visual.kind === 'image' ? tile.visual.src : null);
-			if (!icon || !tile.href) return [];
-			return [
-				{
-					id: tile.id,
-					href: tile.href,
-					label: tile.label,
-					description: descriptionFor(tile.id),
-					icon,
-				},
-			];
-		});
-	return tiles.sort((a, b) => doorRank(a.id) - doorRank(b.id));
-}
+/** The same two doors for every visitor; admin workspaces live in the account menu. */
+export const TOC_DOORS: TocDoor[] = [
+	{
+		id: 'about',
+		href: routes.contact,
+		label: 'Về tôi',
+		description: 'Tôi là ai, và cách liên hệ.',
+		icon: '/brand/toc/about-v1.webp',
+	},
+	{
+		id: 'learning',
+		href: routes.learnCourses,
+		label: 'Học tập',
+		description: 'Khóa học tự học và trang lớp của bạn.',
+		icon: '/brand/toc/courses-v1.webp',
+	},
+];
 
 /** → stays on this site; ↗ leaves it. */
 function Arrow({ external }: { external: boolean }) {
@@ -93,13 +64,12 @@ function Door({ item, testId }: { item: TocDoor; testId: string }) {
 	);
 }
 
-/** Every Mục lục door at once: Về tôi, then the spaces this visitor may open. */
-export default function TocDoors({ about, items }: { about: TocDoor; items: TocSpaceItem[] }) {
+/** Every Mục lục door at once: Về tôi, then Học tập. */
+export default function TocDoors({ doors = TOC_DOORS }: { doors?: TocDoor[] }) {
 	return (
 		<nav aria-label="Mục lục" className={styles.navigation}>
-			<Door item={about} testId="gate-item-about" />
-			{items.map((item) => (
-				<Door key={item.id} item={item} testId={`myspace-tile-${item.id}`} />
+			{doors.map((door) => (
+				<Door key={door.id} item={door} testId={`gate-item-${door.id}`} />
 			))}
 		</nav>
 	);
