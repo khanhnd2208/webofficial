@@ -39,7 +39,7 @@ export function ArenaFloor({
 	highlightId: string | null;
 	caughtId: string | null;
 	hunting: boolean;
-	/** How each student who already answered today did; they are not called again. */
+	/** How each student who already answered in this phiên did; they are not called again. */
 	results: ReadonlyMap<string, 'pass' | 'fail'>;
 	/** Label per enrollment, already made unique for this room. */
 	names: ReadonlyMap<string, string>;

@@ -26,7 +26,7 @@ export function ArenaSetupRules({
 }: {
 	config: ArenaConfig;
 	roster: RecallArenaPlayer[];
-	/** Students who already answered today. */
+	/** Students who already answered in this phiên. */
 	answered: ReadonlySet<string>;
 	onChange: (next: ArenaConfig) => void;
 }) {

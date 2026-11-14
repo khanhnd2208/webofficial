@@ -26,8 +26,12 @@ function timeLabel(at: number) {
 	return new Date(at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
 
+/** The select's first option: this browser's running phiên, not a server day. */
+const LIVE = 'phien';
+
 function dayLabel(isoDay: string, todayIso: string) {
-	if (isoDay === todayIso) return 'Hôm nay';
+	if (isoDay === LIVE) return 'Phiên này';
+	if (isoDay === todayIso) return 'Hôm nay (cả ngày)';
 	const [year, month, day] = isoDay.split('-');
 	return `${day}/${month}/${year}`;
 }
@@ -96,7 +100,7 @@ export function ArenaHistory({
 	sync: ArenaSyncStatus;
 }) {
 	const [days, setDays] = useState<string[]>([]);
-	const [day, setDay] = useState(todayIso);
+	const [day, setDay] = useState(LIVE);
 	const [past, setPast] = useState<PastDay | null>(null);
 	const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -107,7 +111,7 @@ export function ArenaHistory({
 				if (!cancelled) setDays(result?.days ?? []);
 			})
 			.catch(() => {
-				// Without the list only today is shown.
+				// Without the list only this phiên is shown.
 			});
 		return () => {
 			cancelled = true;
@@ -115,7 +119,7 @@ export function ArenaHistory({
 	}, [courseId, todayIso]);
 
 	useEffect(() => {
-		if (day === todayIso) return;
+		if (day === LIVE) return;
 		let cancelled = false;
 		teachingApi<RecallArenaTurnDay>(arenaTurnsUrl(courseId, day))
 			.then((result) => {
@@ -136,18 +140,18 @@ export function ArenaHistory({
 		};
 	}, [courseId, day, todayIso]);
 
-	const isToday = day === todayIso;
-	const pastReady = !isToday && past?.date === day;
-	const shown = isToday ? entries : pastReady ? past.entries : [];
+	const isLive = day === LIVE;
+	const pastReady = !isLive && past?.date === day;
+	const shown = isLive ? entries : pastReady ? past.entries : [];
 	const answered = shown.filter((entry) => entry.result !== 'skip');
 	const passed = shown.filter((entry) => entry.result === 'pass' && entry.award !== 0).length;
-	const dayOptions = [todayIso, ...days.filter((item) => item !== todayIso)];
-	const latestTurns = isToday ? latestCardTurns(entries) : null;
+	const dayOptions = [LIVE, ...days];
+	const latestTurns = isLive ? latestCardTurns(entries) : null;
 	const kept = latestTurns
 		? [...latestTurns.values()].filter((entry) => arenaCardFate(entry) === 'keep').length
 		: 0;
 	const questionOf = (entry: ArenaHistoryEntry) => {
-		if (isToday) return questionText(entry.cardId);
+		if (isLive) return questionText(entry.cardId);
 		const saved = past?.questions.get(entry.id);
 		return saved ? recallVisibleText(saved) : 'Câu hỏi riêng';
 	};
@@ -174,7 +178,7 @@ export function ArenaHistory({
 			</header>
 			<div className={styles.historyTools}>
 				<label className={styles.historyDay}>
-					<span>Ngày</span>
+					<span>Xem</span>
 					<select value={day} onChange={(event) => setDay(event.target.value)}>
 						{dayOptions.map((item) => (
 							<option key={item} value={item}>
@@ -183,7 +187,7 @@ export function ArenaHistory({
 						))}
 					</select>
 				</label>
-				{isToday ? (
+				{isLive ? (
 					<p className={styles.historySync} data-state={sync.failed ? 'error' : 'ok'}>
 						{sync.failed ? (
 							<>
@@ -201,13 +205,13 @@ export function ArenaHistory({
 					</p>
 				) : null}
 			</div>
-			{loadError && !isToday ? (
+			{loadError && !isLive ? (
 				<p className={styles.historyError}>{loadError}</p>
-			) : !isToday && !pastReady ? (
+			) : !isLive && !pastReady ? (
 				<p className={styles.historyEmpty}>Đang tải…</p>
 			) : shown.length === 0 ? (
 				<p className={styles.historyEmpty}>
-					{isToday ? 'Chưa gọi ai trong buổi này.' : 'Ngày này chưa có lượt nào.'}
+					{isLive ? 'Chưa gọi ai trong phiên này.' : 'Ngày này chưa có lượt nào.'}
 				</p>
 			) : (
 				<ol className={styles.historyList}>
@@ -238,7 +242,7 @@ export function ArenaHistory({
 								{entry.cpAfter != null ? ` · CP tuần: ${entry.cpAfter}` : ''}
 								{entry.giftAfter != null ? ` · Gift: ${entry.giftAfter}` : ''}
 							</p>
-							{isToday && entry.saveError ? (
+							{isLive && entry.saveError ? (
 								<p className={styles.historyError}>
 									Chưa ghi CP: {entry.saveError}{' '}
 									<button
@@ -255,7 +259,7 @@ export function ArenaHistory({
 					))}
 				</ol>
 			)}
-			{isToday && onReset ? (
+			{isLive && onReset ? (
 				<footer className={styles.historyFoot}>
 					<button type="button" className={styles.linkButton} onClick={onReset}>
 						Chơi lại từ Boss 1

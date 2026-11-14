@@ -6,29 +6,26 @@ import { AdminApiError, teachingApi } from '@/components/teaching/admin/api';
 import type { RecallArenaTurnRecord } from '@/features/teaching/types';
 
 import type { ArenaProgress } from './arenaGame';
-import { arenaTurnsUrl, entryFromTurn, turnPayload, type RecallArenaTurnDay } from './arenaTurnLog';
+import { arenaTurnsUrl, turnPayload } from './arenaTurnLog';
 
 /**
- * Keeps the course's arena log on the server in step with this browser:
- * every call is sent once (in order, retried on demand), and the browser
- * also picks up turns saved by other machines.
+ * Sends every call of this browser's phiên to the course's arena log on the
+ * server, once each, in order, retried on demand. The phiên itself lives in
+ * this browser: the server log is a record of past calls, never pulled back
+ * into a running phiên.
  */
 export function useArenaTurnLog({
 	courseId,
-	todayIso,
 	progress,
 	setProgress,
 	ready,
 }: {
 	courseId: string;
-	todayIso: string;
 	progress: ArenaProgress;
 	setProgress: Dispatch<SetStateAction<ArenaProgress>>;
 	/** False until this browser's own progress is read. */
 	ready: boolean;
 }) {
-	const [loadedDay, setLoadedDay] = useState<string | null>(null);
-	const dayKey = `${courseId}:${todayIso}`;
 	const [failed, setFailed] = useState(false);
 	const [round, setRound] = useState(0);
 	const sending = useRef(false);
@@ -37,33 +34,6 @@ export function useArenaTurnLog({
 	const pending = progress.history.filter(
 		(entry) => !entry.synced && !rejected.has(entry.id),
 	).length;
-
-	useEffect(() => {
-		if (!ready) return;
-		let cancelled = false;
-		teachingApi<RecallArenaTurnDay>(arenaTurnsUrl(courseId, todayIso))
-			.then((day) => {
-				if (cancelled || !day?.turns?.length) return;
-				setProgress((previous) => {
-					const known = new Set(previous.history.map((entry) => entry.id));
-					const saved = day.turns.filter((turn) => !known.has(turn.clientId)).map(entryFromTurn);
-					if (!saved.length) return previous;
-					return {
-						...previous,
-						history: [...saved, ...previous.history].sort((left, right) => left.at - right.at),
-					};
-				});
-			})
-			.catch(() => {
-				// Local progress is still available while the history service is offline.
-			})
-			.finally(() => {
-				if (!cancelled) setLoadedDay(dayKey);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [ready, courseId, todayIso, dayKey, setProgress]);
 
 	useEffect(() => {
 		if (!ready || failed || sending.current) return;
@@ -107,7 +77,6 @@ export function useArenaTurnLog({
 	}, [pending]);
 
 	return {
-		loading: loadedDay !== dayKey,
 		/** Calls this browser has not saved to the server yet. */
 		pending,
 		failed: failed && pending > 0,

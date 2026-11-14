@@ -213,7 +213,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			const graded = after.students.find((student) => student.givenName === caughtName)!;
 			expect(graded.participation[week1.id]?.points).toBe(1);
 
-			// The call is also kept on the server, so another machine sees today's history.
+			// The call is also kept on the server, as the day's record.
 			const history = page.getByRole('complementary', { name: 'Lịch sử gọi' });
 			await page.getByRole('button', { name: /Đã gọi 1/ }).click();
 			await expect(history.getByText('Đã lưu lên máy chủ')).toBeVisible();
@@ -228,11 +228,10 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			expect(saved.turns).toEqual([
 				expect.objectContaining({ playerName: `Kiểm thử ${caughtName}`, result: 'pass' }),
 			]);
-			await page.evaluate(() => window.localStorage.clear());
+			// A reload never ends the phiên: the setup offers to carry it on.
 			await page.reload();
-			await setup.getByRole('button', { name: 'Tiếp' }).click();
-			await setup.getByRole('button', { name: 'Tiếp' }).click();
-			await setup.getByRole('button', { name: 'Vào trận' }).click();
+			await expect(setup.getByText(/Đang mở: Phiên bắt đầu .* · 1 lượt/)).toBeVisible();
+			await setup.getByRole('button', { name: 'Tiếp tục phiên' }).click();
 			await page.getByRole('button', { name: /Đã gọi 1/ }).click();
 			await expect(history.getByText(`Kiểm thử ${caughtName}`)).toBeVisible();
 		} finally {
@@ -406,10 +405,18 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 
 			// Everyone answered once: the session summary lists all three.
 			await expect(page.getByRole('button', { name: /Đã gọi hết/ })).toBeDisabled();
-			await page.getByRole('button', { name: /Kết thúc/ }).click();
+			await page.getByRole('button', { name: 'Tổng kết' }).click();
 			const summary = page.getByRole('dialog', { name: 'Tổng kết phiên' });
 			await expect(summary.getByText('3/3')).toBeVisible();
 			await expect(summary.getByRole('row')).toHaveCount(4);
+
+			// Ending the phiên takes a second, confirmed click; the next one starts fresh.
+			await summary.getByRole('button', { name: 'Kết thúc phiên' }).click();
+			const confirmEnd = page.getByRole('dialog', { name: 'Kết thúc phiên này?' });
+			await confirmEnd.getByRole('button', { name: 'Kết thúc phiên', exact: true }).click();
+			await expect(summary).toHaveCount(0);
+			await expect(setup.getByRole('button', { name: 'Vào trận' })).toBeVisible();
+			await expect(setup.getByText(/Đang mở:/)).toHaveCount(0);
 		} finally {
 			for (const deckId of deckIds) {
 				await page.request.delete(`/api/admin/teaching/courses/${courseId}/recall/${deckId}`);

@@ -49,6 +49,9 @@ export function ArenaSetup({
 	roster,
 	answered,
 	started,
+	openPhien = null,
+	endedPhien = null,
+	onReviewPhien,
 	initialStep = 'classes',
 	openingCpId,
 	onChange,
@@ -64,10 +67,16 @@ export function ArenaSetup({
 	sessions: TeachingSessionRecord[];
 	hosts: TeachingSessionRecord[];
 	roster: RecallArenaPlayer[];
-	/** Students who already answered today; they are not called again. */
+	/** Students who already answered in this phiên; they are not called again. */
 	answered: ReadonlySet<string>;
 	/** True once the lecturer entered the game; the main button then just closes. */
 	started: boolean;
+	/** A phiên left open earlier (it has turns), in words; null for a fresh start. */
+	openPhien?: string | null;
+	/** Shown once right after the lecturer ended a phiên. */
+	endedPhien?: string | null;
+	/** Shows the open phiên's summary, where it can be ended. */
+	onReviewPhien?: () => void;
 	initialStep?: ArenaSetupStep;
 	openingCpId: string | null;
 	onChange: (next: ArenaConfig) => void;
@@ -153,6 +162,27 @@ export function ArenaSetup({
 				</nav>
 
 				<div key={step} className={setup.body}>
+					{openPhien && !started ? (
+						<p className={setup.phienBanner} role="status">
+							<McIcon name="flag" size={18} />
+							<span>
+								<strong>Đang mở: {openPhien}.</strong> Vào trận để chơi tiếp phiên này. Muốn bắt đầu
+								lại từ đầu thì kết thúc phiên trước.{' '}
+								{onReviewPhien ? (
+									<button type="button" className={styles.linkButton} onClick={onReviewPhien}>
+										Xem tổng kết và kết thúc phiên
+									</button>
+								) : null}
+							</span>
+						</p>
+					) : endedPhien && !started ? (
+						<p className={setup.phienBanner} data-tone="ended" role="status">
+							<McIcon name="check_circle" size={18} />
+							<span>
+								<strong>{endedPhien}</strong> Bấm “Vào trận” để mở phiên mới.
+							</span>
+						</p>
+					) : null}
 					{step === 'classes' ? (
 						<ArenaSetupClasses
 							data={data}
@@ -221,10 +251,16 @@ export function ArenaSetup({
 							type="button"
 							className={styles.startButton}
 							disabled={!started && callable.length === 0}
-							title={!started && callable.length === 0 ? 'Chưa có ai để gọi' : undefined}
+							title={
+								!started && callable.length === 0
+									? openPhien
+										? 'Mọi bạn đã trả lời trong phiên này'
+										: 'Chưa có ai để gọi'
+									: undefined
+							}
 							onClick={onDone}
 						>
-							{started ? 'Xong' : 'Vào trận'}
+							{started ? 'Xong' : openPhien ? 'Tiếp tục phiên' : 'Vào trận'}
 						</button>
 					</span>
 				</footer>
