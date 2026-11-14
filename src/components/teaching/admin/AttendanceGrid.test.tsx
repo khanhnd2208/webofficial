@@ -110,6 +110,7 @@ describe('AttendanceGrid', () => {
 				]}
 				sessions={sessions()}
 				totalWeeks={10}
+				showEligibilityColumn
 				onMarkChange={vi.fn()}
 			/>,
 		);
@@ -141,11 +142,22 @@ describe('AttendanceGrid', () => {
 		expect(screen.queryByText('Đủ điều kiện')).not.toBeInTheDocument();
 	});
 
-	it('lays out the sticky score columns for the status column the public page still shows', () => {
-		const { container } = render(
+	it('hides the status column by default on publicCompact and lays out sticky offsets when opted in', () => {
+		const { container, rerender } = render(
 			<AttendanceGrid students={[student()]} sessions={sessions()} totalWeeks={10} publicCompact />,
 		);
-		// The desktop public grid renders "Trạng thái"; the sticky offsets must make room for it.
+		expect(screen.queryByRole('columnheader', { name: 'Trạng thái' })).not.toBeInTheDocument();
+		expect(container.querySelector('table.mc-grid')).toHaveAttribute('data-eligibility', 'false');
+
+		rerender(
+			<AttendanceGrid
+				students={[student()]}
+				sessions={sessions()}
+				totalWeeks={10}
+				publicCompact
+				showEligibilityColumn
+			/>,
+		);
 		expect(screen.getByRole('columnheader', { name: 'Trạng thái' })).toBeInTheDocument();
 		expect(container.querySelector('table.mc-grid')).toHaveAttribute('data-eligibility', 'true');
 	});
@@ -166,7 +178,8 @@ describe('AttendanceGrid', () => {
 			'page',
 		);
 		expect(screen.getByText('2406090045 · 0/10 vắng')).toBeInTheDocument();
-		expect(screen.getByText('Chuyên cần 5,0/5 · Đủ điều kiện')).toBeInTheDocument();
+		expect(screen.getByText('Chuyên cần 5,0/5')).toBeInTheDocument();
+		expect(screen.queryByText(/Đủ điều kiện/)).not.toBeInTheDocument();
 	});
 
 	it('cycles attendance with three clicks: present, late, absent', () => {

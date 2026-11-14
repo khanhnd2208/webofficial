@@ -543,6 +543,9 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			// The public URL stays read-only even for an admin.
 			await page.goto(`/lop/${slug}`);
 			await expect(page.locator('.mc-grid-wrap[data-scroll-mode="page"]')).toHaveCount(1);
+			await expect(page.getByRole('columnheader', { name: 'Trạng thái', exact: true })).toHaveCount(
+				0,
+			);
 			const publicSummaryGeometry = await page.evaluate(() => {
 				const headers = Array.from(
 					document.querySelectorAll<HTMLElement>(
@@ -554,7 +557,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 					return { left: rect.left, right: rect.right, width: rect.width };
 				});
 			});
-			expect(publicSummaryGeometry.length).toBe(3);
+			expect(publicSummaryGeometry.length).toBe(2);
 			for (const column of publicSummaryGeometry) {
 				expect(column.width).toBeGreaterThanOrEqual(96);
 			}
