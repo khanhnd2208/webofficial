@@ -57,7 +57,7 @@ describe('arenaSummaryRows', () => {
 		expect(byId.get('raised')!.cpGain).toBe(1.5);
 		expect(summaryOutcome(byId.get('raised')!)).toBe('Đạt · CP 0.5 → 2 (+1.5)');
 		expect(summaryOutcome(byId.get('kept')!)).toMatch(/CP giữ 2/);
-		expect(summaryOutcome(byId.get('bare')!)).toBe('Vừa đủ qua · CP giữ nguyên');
+		expect(summaryOutcome(byId.get('bare')!)).toBe('Không điểm · CP giữ nguyên');
 		expect(summaryOutcome(byId.get('missed')!)).toBe('Chưa đạt · +1 Gift (tổng 3)');
 		expect(summaryOutcome(byId.get('arena-manual:x')!)).toBe('Đạt · không ghi điểm');
 

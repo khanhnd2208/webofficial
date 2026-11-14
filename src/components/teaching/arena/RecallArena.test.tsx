@@ -33,6 +33,10 @@ vi.mock('@/components/motion', () => ({
 }));
 
 const apiMock = vi.mocked(teachingApi);
+/** A missed answer that keeps the question: what a miss did before the grade grid had rows. */
+/** A +1 pass that hides the question, as every pass did before. */
+const PASS_HIDE = /^Đạt \+1(, ẩn câu)?$/;
+const GIFT_KEEP = /^Chưa đạt, \+1 Gift(, giữ câu)?$/;
 
 function player(
 	id: string,
@@ -203,7 +207,7 @@ describe('RecallArena', () => {
 		fireEvent.click(within(caught).getByRole('button', { name: /Hiện đáp án/ }));
 		expect(within(caught).getByText('The drive to act.')).toBeTruthy();
 
-		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: PASS_HIDE }));
 
 		await waitFor(() => expect(apiMock).toHaveBeenCalled());
 		expect(apiMock.mock.calls[0]?.[0]).toBe(
@@ -231,7 +235,7 @@ describe('RecallArena', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Nguyễn An' }, { timeout: 5000 });
-		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: PASS_HIDE }));
 
 		await screen.findByText('An: CP 0 → 1');
 		expect(screen.getByLabelText('Máu quái vật 10/10')).toBeTruthy();
@@ -253,7 +257,7 @@ describe('RecallArena', () => {
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: /Nguyễn/ });
-		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: PASS_HIDE }));
 		await screen.findByText('Mất kết nối');
 		expect(screen.getByRole('dialog', { name: /Nguyễn/ })).toBeTruthy();
 		expect(screen.getByLabelText('Máu quái vật 10/10')).toBeTruthy();
@@ -312,7 +316,7 @@ describe('RecallArena', () => {
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: /Nguyễn/ });
 
-		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: GIFT_KEEP }));
 
 		expect(await within(caught).findByText('Chưa đạt · đã ghi +1 Gift')).toBeTruthy();
 		await nobodyAnswersInstead();
@@ -336,30 +340,30 @@ describe('RecallArena', () => {
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: /Nguyễn/ });
-		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: GIFT_KEEP }));
 		await screen.findByText(/Chưa xác nhận Gift: Mất kết nối/);
-		expect(within(caught).getByRole('button', { name: 'Vừa đủ qua' })).toHaveProperty(
+		expect(within(caught).getByRole('button', { name: 'Không điểm, ẩn câu' })).toHaveProperty(
 			'disabled',
 			true,
 		);
-		fireEvent.click(within(caught).getByRole('button', { name: 'Xác nhận lại Gift' }));
+		fireEvent.click(within(caught).getByRole('button', { name: /^Xác nhận lại Gift/ }));
 		await nobodyAnswersInstead();
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
 		expect(apiMock).toHaveBeenCalledTimes(2);
 		expect(apiMock.mock.calls[0]).toEqual(apiMock.mock.calls[1]);
 	});
 
-	it('treats vừa đủ qua as a pass without changing CP or Gift', async () => {
+	it('treats không điểm as a pass without changing CP or Gift', async () => {
 		render(<RecallArena data={arenaData()} />);
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: /Nguyễn/ });
-		fireEvent.click(within(caught).getByRole('button', { name: 'Vừa đủ qua' }));
+		fireEvent.click(within(caught).getByRole('button', { name: 'Không điểm, ẩn câu' }));
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
 		expect(apiMock).not.toHaveBeenCalled();
 		expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy();
 		fireEvent.click(screen.getByRole('button', { name: 'Đã gọi 1' }));
-		expect(screen.getByText(/Vừa đủ qua/)).toBeTruthy();
+		expect(screen.getByText('Không điểm')).toBeTruthy();
 	});
 
 	it('reuses a missed question, then retires it on a no-CP pass across reloads', async () => {
@@ -373,20 +377,56 @@ describe('RecallArena', () => {
 			return screen.findByRole('dialog', { name: /Nguyễn/ });
 		}
 		let caught = await catchPlayer();
-		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: GIFT_KEEP }));
 		await nobodyAnswersInstead();
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
 		caught = await catchPlayer();
 		expect(within(caught).getByText('What is motivation?')).toBeTruthy();
-		fireEvent.click(within(caught).getByRole('button', { name: 'Vừa đủ qua' }));
+		fireEvent.click(within(caught).getByRole('button', { name: 'Không điểm, ẩn câu' }));
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
 		view.unmount();
 
 		render(<RecallArena data={data} />);
 		enterGame();
 		caught = await catchPlayer();
-		expect(within(caught).getByText(/Các câu trong bài đã chọn đều đã qua/)).toBeTruthy();
+		expect(within(caught).getByText(/Các câu trong bài đã chọn đều đã ẩn/)).toBeTruthy();
 		expect(within(caught).queryByText('What is motivation?')).toBeNull();
+	});
+
+	it('keeps a question on the Giữ câu row and lets the history hide it', async () => {
+		const data = arenaData();
+		data.players[2]!.attendance = { s1: 'PRESENT' };
+		render(<RecallArena data={data} />);
+		enterGame();
+		async function catchPlayer() {
+			fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+			return screen.findByRole('dialog', { name: /Nguyễn/ });
+		}
+		let caught = await catchPlayer();
+		expect(within(caught).queryByText('Hỏi lại')).toBeNull();
+		fireEvent.click(within(caught).getByRole('button', { name: 'Không điểm, giữ câu' }));
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
+		expect(apiMock).not.toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ body: expect.stringContaining('"grade"') }),
+		);
+
+		caught = await catchPlayer();
+		expect(within(caught).getByText('What is motivation?')).toBeTruthy();
+		expect(within(caught).getByText('Hỏi lại')).toBeTruthy();
+		fireEvent.keyDown(window, { key: 'Escape' });
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
+
+		fireEvent.click(screen.getByRole('button', { name: 'Đã gọi 1' }));
+		const history = screen.getByRole('complementary', { name: 'Lịch sử gọi' });
+		expect(within(history).getByText(/1 câu đang giữ/)).toBeTruthy();
+		fireEvent.click(within(history).getByRole('button', { name: 'Ẩn câu' }));
+		expect(within(history).getByText('Câu đã ẩn')).toBeTruthy();
+		expect(within(history).getByRole('button', { name: 'Đưa câu trở lại' })).toBeTruthy();
+		fireEvent.click(within(history).getByRole('button', { name: 'Ẩn lịch sử' }));
+
+		caught = await catchPlayer();
+		expect(within(caught).getByText(/Các câu trong bài đã chọn đều đã ẩn/)).toBeTruthy();
 	});
 
 	it('imports pasted names, reuses roster students, and allows removing a guest', () => {
@@ -482,7 +522,7 @@ describe('RecallArena', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Dũng' });
-		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: PASS_HIDE }));
 
 		await waitFor(() => expect(apiMock).toHaveBeenCalled());
 		expect(apiMock.mock.calls[0]?.[0]).toBe(
@@ -559,7 +599,7 @@ describe('RecallArena', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
-		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: PASS_HIDE }));
 		await screen.findByRole('button', { name: /Đã gọi hết/ });
 		const done = screen
 			.getAllByTestId('arena-player')
@@ -601,7 +641,7 @@ describe('RecallArena', () => {
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
-		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: GIFT_KEEP }));
 		await nobodyAnswersInstead();
 		await screen.findByRole('button', { name: /Đã gọi hết/ });
 
@@ -619,7 +659,7 @@ describe('RecallArena', () => {
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
-		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: GIFT_KEEP }));
 
 		const search = await within(caught).findByLabelText('Có bạn nào trả lời thay Bình?');
 		expect(within(caught).queryByRole('button', { name: /Đạt \+1/ })).toBeNull();
@@ -629,7 +669,7 @@ describe('RecallArena', () => {
 		const volunteer = screen.getByRole('dialog', { name: 'Nguyễn An' });
 		expect(within(volunteer).getByText('What is motivation?')).toBeTruthy();
 		expect(within(volunteer).getByText(/Trả lời thay/).textContent).toBe('Trả lời thay Bình');
-		expect(within(volunteer).queryByRole('button', { name: 'Vừa đủ qua' })).toBeNull();
+		expect(within(volunteer).queryByRole('button', { name: /Không điểm/ })).toBeNull();
 		fireEvent.click(within(volunteer).getByRole('button', { name: 'Đạt +1' }));
 
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
@@ -655,7 +695,7 @@ describe('RecallArena', () => {
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
-		fireEvent.click(within(caught).getByRole('button', { name: /Chưa đạt/ }));
+		fireEvent.click(within(caught).getByRole('button', { name: GIFT_KEEP }));
 		const search = await within(caught).findByLabelText('Có bạn nào trả lời thay Bình?');
 		fireEvent.change(search, { target: { value: 'SV-a' } });
 		fireEvent.keyDown(search, { key: 'Enter' });

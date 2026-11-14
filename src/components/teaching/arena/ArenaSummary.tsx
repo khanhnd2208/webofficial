@@ -40,7 +40,7 @@ function cpCell(row: ArenaSummaryRow) {
 
 function gainCell(row: ArenaSummaryRow) {
 	if (row.result !== 'pass' || row.guest) return '–';
-	if (row.award === 0) return 'Vừa đủ qua';
+	if (row.award === 0) return 'Không điểm';
 	if (row.cpGain == null) return row.award ? `+${row.award}` : '–';
 	return row.cpGain > 0 ? `+${row.cpGain}` : '+0';
 }

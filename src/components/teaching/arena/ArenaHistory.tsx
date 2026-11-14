@@ -6,7 +6,13 @@ import { McIcon } from '@/components/myclass/ui';
 import { teachingApi } from '@/components/teaching/admin/api';
 import { recallVisibleText } from '@/features/active-recall/richText';
 
-import { isAssistTurn, type ArenaHistoryEntry } from './arenaGame';
+import {
+	arenaCardFate,
+	isAssistTurn,
+	latestCardTurns,
+	type ArenaCardFate,
+	type ArenaHistoryEntry,
+} from './arenaGame';
 import { arenaTurnsUrl, entryFromTurn, type RecallArenaTurnDay } from './arenaTurnLog';
 import styles from './arena.module.css';
 
@@ -24,6 +30,30 @@ function dayLabel(isoDay: string, todayIso: string) {
 	if (isoDay === todayIso) return 'Hôm nay';
 	const [year, month, day] = isoDay.split('-');
 	return `${day}/${month}/${year}`;
+}
+
+/** Today's latest turn on a question: its fate, and the switch to change it. */
+function CardFateToggle({
+	fate,
+	onChange,
+}: {
+	fate: ArenaCardFate;
+	onChange: (fate: ArenaCardFate) => void;
+}) {
+	const hidden = fate === 'hide';
+	return (
+		<p className={styles.historyFate} data-fate={fate}>
+			<McIcon name={hidden ? 'visibility_off' : 'flag'} size={14} />
+			{hidden ? 'Câu đã ẩn' : 'Câu đang giữ, sẽ hỏi lại'}
+			<button
+				type="button"
+				className={styles.linkButton}
+				onClick={() => onChange(hidden ? 'keep' : 'hide')}
+			>
+				{hidden ? 'Đưa câu trở lại' : 'Ẩn câu'}
+			</button>
+		</p>
+	);
 }
 
 export interface ArenaSyncStatus {
@@ -46,6 +76,7 @@ export function ArenaHistory({
 	questionText,
 	retryingId,
 	onRetry,
+	onSetCardFate,
 	onReset,
 	onClose,
 	courseId,
@@ -56,6 +87,8 @@ export function ArenaHistory({
 	questionText: (cardId: string | null) => string;
 	retryingId: string | null;
 	onRetry: (entry: ArenaHistoryEntry) => void;
+	/** Hide a kept question or bring a hidden one back, on today's latest turn for it. */
+	onSetCardFate: (entryId: string, fate: ArenaCardFate) => void;
 	onReset?: () => void;
 	onClose: () => void;
 	courseId: string;
@@ -107,8 +140,12 @@ export function ArenaHistory({
 	const pastReady = !isToday && past?.date === day;
 	const shown = isToday ? entries : pastReady ? past.entries : [];
 	const answered = shown.filter((entry) => entry.result !== 'skip');
-	const passed = shown.filter((entry) => entry.result === 'pass').length;
+	const passed = shown.filter((entry) => entry.result === 'pass' && entry.award !== 0).length;
 	const dayOptions = [todayIso, ...days.filter((item) => item !== todayIso)];
+	const latestTurns = isToday ? latestCardTurns(entries) : null;
+	const kept = latestTurns
+		? [...latestTurns.values()].filter((entry) => arenaCardFate(entry) === 'keep').length
+		: 0;
 	const questionOf = (entry: ArenaHistoryEntry) => {
 		if (isToday) return questionText(entry.cardId);
 		const saved = past?.questions.get(entry.id);
@@ -122,6 +159,7 @@ export function ArenaHistory({
 					<h2>Đã gọi</h2>
 					<p>
 						{answered.length} lượt · {passed} đạt
+						{kept ? ` · ${kept} câu đang giữ` : ''}
 					</p>
 				</div>
 				<button
@@ -177,14 +215,24 @@ export function ArenaHistory({
 						<li key={entry.id} className={styles.historyItem} data-result={entry.result}>
 							<div className={styles.historyRow}>
 								<strong>{entry.name}</strong>
-								<span className={styles.historyChip} data-result={entry.result}>
-									{RESULT_LABEL[entry.result]}
+								<span
+									className={styles.historyChip}
+									data-result={entry.result === 'pass' && entry.award === 0 ? 'bare' : entry.result}
+								>
+									{entry.result === 'pass' && entry.award === 0
+										? 'Không điểm'
+										: RESULT_LABEL[entry.result]}
 									{entry.result === 'pass' && entry.award ? ` +${entry.award}` : ''}
-									{entry.result === 'pass' && entry.award === 0 ? ' · Vừa đủ qua' : ''}
 									{isAssistTurn(entry) ? ' · Trả lời thay' : ''}
 								</span>
 							</div>
 							<p className={styles.historyQuestion}>{questionOf(entry)}</p>
+							{latestTurns && entry.cardId && latestTurns.get(entry.cardId) === entry ? (
+								<CardFateToggle
+									fate={arenaCardFate(entry)!}
+									onChange={(fate) => onSetCardFate(entry.id, fate)}
+								/>
+							) : null}
 							<p className={styles.historyMeta}>
 								{timeLabel(entry.at)}
 								{entry.cpAfter != null ? ` · CP tuần: ${entry.cpAfter}` : ''}

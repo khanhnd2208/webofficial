@@ -17,22 +17,14 @@ import { ArenaCountdown } from './ArenaCountdown';
 import { ArenaCpStatus } from './ArenaCpStatus';
 import { ArenaCharacter } from './ArenaCharacter';
 import { ArenaMonster } from './ArenaFigures';
+import { ArenaKey as Key, ArenaVerdicts, type ArenaUnconfirmed } from './ArenaVerdicts';
 import type { ArenaBoss } from './arenaBosses';
 import type { ArenaCharacter as Character } from './arenaCharacters';
-import { fullName, isManualPlayer, matchesPlayerSearch } from './arenaGame';
+import { fullName, isManualPlayer, matchesPlayerSearch, type ArenaCardFate } from './arenaGame';
 import styles from './arenaCaught.module.css';
 
 /** Seconds a Challenging student gets to think before answering. */
 const CHALLENGE_THINK_SECONDS = 30;
-
-/** The key that presses a button, shown on the button itself. */
-function Key({ children }: { children: string }) {
-	return (
-		<kbd className={styles.key} aria-hidden="true">
-			{children}
-		</kbd>
-	);
-}
 
 function RichText({ html }: { html: string }) {
 	return (
@@ -51,11 +43,13 @@ function RichText({ html }: { html: string }) {
 function QuestionCard({
 	card,
 	deckLabel,
+	askedAgain,
 	saving,
 	onNextCard,
 }: {
 	card: RecallArenaCard;
 	deckLabel: string;
+	askedAgain: boolean;
 	saving: boolean;
 	/** Null when the chosen lessons hold a single card. */
 	onNextCard: (() => void) | null;
@@ -74,6 +68,12 @@ function QuestionCard({
 				<p className={styles.questionLabel}>
 					<span>Câu hỏi</span>
 					{deckLabel ? <span className={styles.lesson}>{deckLabel}</span> : null}
+					{askedAgain ? (
+						<span className={styles.askedAgain} title="Câu này đã hỏi hôm nay và được giữ lại">
+							<McIcon name="flag" size={14} />
+							Hỏi lại
+						</span>
+					) : null}
 				</p>
 				<div className={styles.questionTools}>
 					{hasEn && hasVi ? (
@@ -154,6 +154,7 @@ export function ArenaCaught({
 	manual,
 	saving,
 	unconfirmed,
+	askedAgain,
 	canChangeCard,
 	cardsExhausted,
 	cpSession,
@@ -178,15 +179,17 @@ export function ArenaCaught({
 	cpNow: number;
 	manual: boolean;
 	saving: boolean;
-	unconfirmed: { result: 'pass' | 'fail'; level: ArenaAwardLevel | 0 } | null;
+	unconfirmed: ArenaUnconfirmed | null;
+	/** The question was asked earlier today and kept, so it comes back unexplained. */
+	askedAgain: boolean;
 	canChangeCard: boolean;
 	cardsExhausted: boolean;
 	cpSession: TeachingSessionRecord | null;
 	openingCp: boolean;
 	onOpenCp: (sessionId: string) => void;
-	onPass: (level: ArenaAwardLevel) => void;
-	onBarePass: () => void;
-	onFail: () => void;
+	onPass: (level: ArenaAwardLevel, fate: ArenaCardFate) => void;
+	onBarePass: (fate: ArenaCardFate) => void;
+	onFail: (fate: ArenaCardFate) => void;
 	onSkipStudent: () => void;
 	onChooseStudent: (enrollmentId: string) => void;
 	otherPlayers: RecallArenaPlayer[];
@@ -297,6 +300,7 @@ export function ArenaCaught({
 							key={card.id}
 							card={card}
 							deckLabel={deckLabel}
+							askedAgain={askedAgain}
 							saving={saving}
 							onNextCard={canChangeCard && !unconfirmed && !assist ? onNextCard : null}
 						/>
@@ -305,7 +309,7 @@ export function ArenaCaught({
 							<div className={styles.questionBody}>
 								<p className={styles.note}>
 									{cardsExhausted
-										? 'Các câu trong bài đã chọn đều đã qua. Bạn có thể hỏi câu riêng.'
+										? 'Các câu trong bài đã chọn đều đã ẩn. Bạn có thể hỏi câu riêng.'
 										: 'Hãy hỏi câu riêng rồi chấm như bình thường.'}
 								</p>
 							</div>
@@ -324,99 +328,65 @@ export function ArenaCaught({
 					</div>
 				) : (
 					<div className={styles.dock}>
-						<div className={styles.verdicts}>
-							<div
-								className={styles.passGroup}
-								role="group"
-								aria-label={manual ? 'Đạt' : 'Đạt, chọn mức CP'}
-							>
-								{manual ? (
-									<button
-										type="button"
-										className={styles.passButton}
-										disabled={saving}
-										onClick={() => onPass(1)}
-										data-arena-key="1"
-									>
-										Đạt
-										<Key>1</Key>
-									</button>
-								) : (
-									<>
-										<span className={styles.passLabel}>{assist ? 'Thưởng' : 'Đạt'}</span>
-										{ARENA_AWARD_LEVELS.map((level, index) => (
-											<button
-												key={level}
-												type="button"
-												className={styles.passButton}
-												disabled={
-													saving ||
-													openingCp ||
-													!cpSession?.participationOpen ||
-													Boolean(
-														unconfirmed &&
-														(unconfirmed.result !== 'pass' || unconfirmed.level !== level),
-													)
-												}
-												onClick={() => onPass(level)}
-												data-arena-key={String(index + 1)}
-												aria-label={`Đạt +${level}`}
-											>
-												{unconfirmed?.level === level ? `Xác nhận lại +${level}` : `+${level}`}
-												<Key>{String(index + 1)}</Key>
-											</button>
-										))}
-									</>
-								)}
+						{assist ? (
+							<div className={styles.verdicts}>
+								<div className={styles.passGroup} role="group" aria-label="Thưởng, chọn mức CP">
+									<span className={styles.passLabel}>Thưởng</span>
+									{ARENA_AWARD_LEVELS.map((level, index) => (
+										<button
+											key={level}
+											type="button"
+											className={styles.passButton}
+											disabled={
+												saving ||
+												openingCp ||
+												!cpSession?.participationOpen ||
+												Boolean(
+													unconfirmed &&
+													(unconfirmed.result !== 'pass' || unconfirmed.level !== level),
+												)
+											}
+											onClick={() => onPass(level, 'hide')}
+											data-arena-key={String(index + 1)}
+											aria-label={`Đạt +${level}`}
+										>
+											{unconfirmed?.level === level ? `Xác nhận lại +${level}` : `+${level}`}
+											<Key>{String(index + 1)}</Key>
+										</button>
+									))}
+								</div>
+								<button
+									type="button"
+									className={styles.failButton}
+									disabled={saving || Boolean(unconfirmed)}
+									onClick={assist.onRepick}
+									title="Không ghi Gift cho bạn trả lời thay"
+									data-arena-key="0"
+								>
+									Chưa đạt · chọn bạn khác
+									<Key>0</Key>
+								</button>
+								<button
+									type="button"
+									className={styles.ghostButton}
+									disabled={saving || Boolean(unconfirmed)}
+									onClick={assist.onEnd}
+								>
+									Không ai · tiếp tục
+								</button>
 							</div>
-							{assist ? (
-								<>
-									<button
-										type="button"
-										className={styles.failButton}
-										disabled={saving || Boolean(unconfirmed)}
-										onClick={assist.onRepick}
-										title="Không ghi Gift cho bạn trả lời thay"
-										data-arena-key="0"
-									>
-										Chưa đạt · chọn bạn khác
-										<Key>0</Key>
-									</button>
-									<button
-										type="button"
-										className={styles.ghostButton}
-										disabled={saving || Boolean(unconfirmed)}
-										onClick={assist.onEnd}
-									>
-										Không ai · tiếp tục
-									</button>
-								</>
-							) : !manual ? (
-								<>
-									<button
-										type="button"
-										className={styles.barePassButton}
-										disabled={saving || Boolean(unconfirmed)}
-										onClick={onBarePass}
-										title="Qua lượt này, không cộng CP và không thêm Gift"
-										data-arena-key="4"
-									>
-										Vừa đủ qua
-										<Key>4</Key>
-									</button>
-									<button
-										type="button"
-										className={styles.failButton}
-										disabled={saving || unconfirmed?.result === 'pass'}
-										onClick={onFail}
-										data-arena-key="0"
-									>
-										{unconfirmed?.result === 'fail' ? 'Xác nhận lại Gift' : 'Chưa đạt · +1 Gift'}
-										<Key>0</Key>
-									</button>
-								</>
-							) : null}
-						</div>
+						) : (
+							<ArenaVerdicts
+								manual={manual}
+								saving={saving}
+								cpReady={!openingCp && Boolean(cpSession?.participationOpen)}
+								hasCard={Boolean(card)}
+								unconfirmed={unconfirmed}
+								onPass={onPass}
+								onBarePass={onBarePass}
+								onFail={onFail}
+							/>
+						)}
 
 						{otherPlayers.length > 0 && !unconfirmed && !assist ? (
 							<div className={styles.others}>
