@@ -54,6 +54,8 @@ export function ArenaSetup({
 	onChange,
 	onOpenCp,
 	onReload,
+	onNewRun,
+	newRunBlocked = false,
 	onDone,
 	onClose,
 	exitHref,
@@ -64,7 +66,7 @@ export function ArenaSetup({
 	sessions: TeachingSessionRecord[];
 	hosts: TeachingSessionRecord[];
 	roster: RecallArenaPlayer[];
-	/** Students who already answered today; they are not called again. */
+	/** Students who already answered in this run; they are not called again. */
 	answered: ReadonlySet<string>;
 	/** True once the lecturer entered the game; the main button then just closes. */
 	started: boolean;
@@ -73,6 +75,10 @@ export function ArenaSetup({
 	onChange: (next: ArenaConfig) => void;
 	onOpenCp: (sessionId: string) => void;
 	onReload: () => void;
+	/** Start a fresh run for the next class period; shown once the game has started. */
+	onNewRun?: () => void;
+	/** Calls of this run are still being saved, so a new run must wait. */
+	newRunBlocked?: boolean;
 	onDone: () => void;
 	onClose?: () => void;
 	/** Where "Thoát" goes before the game has started. */
@@ -190,14 +196,31 @@ export function ArenaSetup({
 				</div>
 
 				<footer className={styles.setupFoot}>
-					<button
-						type="button"
-						className={styles.linkButton}
-						onClick={onReload}
-						title="Lấy lại điểm danh mới nhất. Lịch sử gọi vẫn giữ."
-					>
-						Tải lại điểm danh
-					</button>
+					<span className={setup.footTools}>
+						<button
+							type="button"
+							className={styles.linkButton}
+							onClick={onReload}
+							title="Lấy lại điểm danh mới nhất. Lịch sử gọi vẫn giữ."
+						>
+							Tải lại điểm danh
+						</button>
+						{onNewRun ? (
+							<button
+								type="button"
+								className={styles.linkButton}
+								onClick={onNewRun}
+								disabled={newRunBlocked}
+								title={
+									newRunBlocked
+										? 'Đang lưu lượt gọi của phiên này, đợi lưu xong.'
+										: 'Gọi lại mọi sinh viên và dùng lại toàn bộ câu hỏi, cho buổi hoặc lớp tiếp theo.'
+								}
+							>
+								Bắt đầu phiên mới
+							</button>
+						) : null}
+					</span>
 					<span className={setup.footActions}>
 						{!started && index > 0 ? (
 							<button

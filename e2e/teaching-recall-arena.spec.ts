@@ -140,6 +140,36 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await setup.getByRole('button', { name: 'Vào trận' }).click();
 			await page.getByRole('button', { name: /Đã gọi 1/ }).click();
 			await expect(history.getByText(`Kiểm thử ${caughtName}`)).toBeVisible();
+
+			// The next class period starts a fresh run: everyone and every question come back.
+			await page.getByRole('button', { name: /Kết thúc/ }).click();
+			await page
+				.getByRole('dialog', { name: 'Tổng kết phiên' })
+				.getByRole('button', { name: 'Bắt đầu phiên mới' })
+				.click();
+			await page
+				.getByRole('dialog', { name: 'Bắt đầu phiên mới?' })
+				.getByRole('button', { name: 'Bắt đầu phiên mới' })
+				.click();
+			await setup.getByRole('button', { name: 'Vào trận' }).click();
+			await expect(page.getByRole('button', { name: 'Đã gọi 0' })).toBeVisible();
+			await expect(page.getByLabel('Máu quái vật 10/10')).toBeVisible();
+			// A reload stays in the new run; the first one is kept as "Phiên 1".
+			await page.reload();
+			await setup.getByRole('button', { name: 'Vào trận' }).click();
+			await page.getByRole('button', { name: 'Đã gọi 0' }).click();
+			await expect(history.locator('option')).toHaveText([
+				/^Hôm nay · Phiên 1 · (?!.*đang chơi)/,
+				/^Hôm nay · Phiên 2 · .*\(đang chơi\)$/,
+			]);
+			const runs = await data<{ turns: Array<{ runKey: string | null }> }>(
+				await page.request.get(
+					`/api/admin/teaching/courses/${before.class.courseId}/recall-arena/turns?date=${today}`,
+				),
+			);
+			expect(runs.turns).toEqual([
+				expect.objectContaining({ runKey: expect.stringContaining(week1.id) }),
+			]);
 		} finally {
 			await cleanupTeachingClass(page.request, klass.id);
 		}

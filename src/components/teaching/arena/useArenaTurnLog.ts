@@ -8,27 +8,51 @@ import type { RecallArenaTurnRecord } from '@/features/teaching/types';
 import type { ArenaProgress } from './arenaGame';
 import { arenaTurnsUrl, entryFromTurn, turnPayload, type RecallArenaTurnDay } from './arenaTurnLog';
 
+/** Every call saved for the course today, all runs, oldest first; null while loading. */
+export function useArenaDayTurns(courseId: string, todayIso: string) {
+	const dayKey = `${courseId}:${todayIso}`;
+	const [day, setDay] = useState<{ key: string; turns: RecallArenaTurnRecord[] } | null>(null);
+	useEffect(() => {
+		let cancelled = false;
+		teachingApi<RecallArenaTurnDay>(arenaTurnsUrl(courseId, todayIso))
+			.then((result) => {
+				if (!cancelled) setDay({ key: dayKey, turns: result?.turns ?? [] });
+			})
+			.catch(() => {
+				// Local progress is still available while the history service is offline.
+				if (!cancelled) setDay({ key: dayKey, turns: [] });
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [courseId, todayIso, dayKey]);
+	return day?.key === dayKey ? day.turns : null;
+}
+
 /**
  * Keeps the course's arena log on the server in step with this browser:
- * every call is sent once (in order, retried on demand), and the browser
- * also picks up turns saved by other machines.
+ * every call is sent once (in order, retried on demand), and the run on
+ * screen also picks up its turns saved by other machines.
  */
 export function useArenaTurnLog({
 	courseId,
-	todayIso,
+	runKey,
+	dayTurns,
 	progress,
 	setProgress,
 	ready,
 }: {
 	courseId: string;
-	todayIso: string;
+	/** The run on screen; its saved turns are merged in once. */
+	runKey: string | null;
+	/** Today's saved turns, all runs; null while loading. */
+	dayTurns: readonly RecallArenaTurnRecord[] | null;
 	progress: ArenaProgress;
 	setProgress: Dispatch<SetStateAction<ArenaProgress>>;
-	/** False until this browser's own progress is read. */
+	/** False until this browser's own progress for the run is read. */
 	ready: boolean;
 }) {
-	const [loadedDay, setLoadedDay] = useState<string | null>(null);
-	const dayKey = `${courseId}:${todayIso}`;
+	const [mergedRun, setMergedRun] = useState<string | null>(null);
 	const [failed, setFailed] = useState(false);
 	const [round, setRound] = useState(0);
 	const sending = useRef(false);
@@ -39,31 +63,22 @@ export function useArenaTurnLog({
 	).length;
 
 	useEffect(() => {
-		if (!ready) return;
-		let cancelled = false;
-		teachingApi<RecallArenaTurnDay>(arenaTurnsUrl(courseId, todayIso))
-			.then((day) => {
-				if (cancelled || !day?.turns?.length) return;
-				setProgress((previous) => {
-					const known = new Set(previous.history.map((entry) => entry.id));
-					const saved = day.turns.filter((turn) => !known.has(turn.clientId)).map(entryFromTurn);
-					if (!saved.length) return previous;
-					return {
-						...previous,
-						history: [...saved, ...previous.history].sort((left, right) => left.at - right.at),
-					};
-				});
-			})
-			.catch(() => {
-				// Local progress is still available while the history service is offline.
-			})
-			.finally(() => {
-				if (!cancelled) setLoadedDay(dayKey);
+		if (!ready || !runKey || dayTurns == null || mergedRun === runKey) return;
+		const ours = dayTurns.filter((turn) => turn.runKey === runKey);
+		if (ours.length) {
+			setProgress((previous) => {
+				const known = new Set(previous.history.map((entry) => entry.id));
+				const saved = ours.filter((turn) => !known.has(turn.clientId)).map(entryFromTurn);
+				if (!saved.length) return previous;
+				return {
+					...previous,
+					history: [...saved, ...previous.history].sort((left, right) => left.at - right.at),
+				};
 			});
-		return () => {
-			cancelled = true;
-		};
-	}, [ready, courseId, todayIso, dayKey, setProgress]);
+		}
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- marks the server log merged for this run
+		setMergedRun(runKey);
+	}, [ready, runKey, dayTurns, mergedRun, setProgress]);
 
 	useEffect(() => {
 		if (!ready || failed || sending.current) return;
@@ -107,7 +122,7 @@ export function useArenaTurnLog({
 	}, [pending]);
 
 	return {
-		loading: loadedDay !== dayKey,
+		loading: !runKey || mergedRun !== runKey,
 		/** Calls this browser has not saved to the server yet. */
 		pending,
 		failed: failed && pending > 0,

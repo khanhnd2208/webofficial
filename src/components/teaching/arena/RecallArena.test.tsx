@@ -12,10 +12,12 @@ vi.mock('@/components/teaching/admin/api', async (original) => ({
 	teachingApi: vi.fn(),
 }));
 // The server log of calls has its own test; here the API mock sees only CP and Gift.
+const savedToday = vi.hoisted(() => ({ turns: [] as unknown[], pending: 0 }));
 vi.mock('./useArenaTurnLog', () => ({
+	useArenaDayTurns: () => savedToday.turns,
 	useArenaTurnLog: () => ({
 		loading: false,
-		pending: 0,
+		pending: savedToday.pending,
 		failed: false,
 		rejected: 0,
 		retry: () => {},
@@ -156,6 +158,7 @@ describe('RecallArena', () => {
 		vi.clearAllMocks();
 		motion.reduced = true;
 		window.localStorage.clear();
+		savedToday.pending = 0;
 	});
 
 	it('starts with today’s class ticked and puts only students in the room on the floor', () => {
@@ -577,6 +580,77 @@ describe('RecallArena', () => {
 			'href',
 			expect.stringContaining('/my-space/teaching/courses/course-1'),
 		);
+	});
+
+	it('starts a new run from the summary: everyone and every question come back', async () => {
+		apiMock.mockResolvedValue({ cpPrevious: 0, cpAfter: 1 });
+		render(<RecallArena data={arenaData()} />);
+		chooseRule('Chỉ Supporting');
+		enterGame();
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
+		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		await screen.findByRole('button', { name: /Đã gọi hết/ });
+		expect(screen.getByRole('button', { name: 'Đã gọi 1' })).toBeTruthy();
+		expect(screen.getByText(/0\/1 câu còn lại/)).toBeTruthy();
+
+		fireEvent.click(screen.getByRole('button', { name: /Kết thúc/ }));
+		const summary = screen.getByRole('dialog', { name: 'Tổng kết phiên' });
+		fireEvent.click(within(summary).getByRole('button', { name: 'Bắt đầu phiên mới' }));
+		const ask = await screen.findByRole('dialog', { name: 'Bắt đầu phiên mới?' });
+		fireEvent.click(within(ask).getByRole('button', { name: 'Bắt đầu phiên mới' }));
+		await waitFor(() =>
+			expect(screen.queryByRole('dialog', { name: 'Tổng kết phiên' })).toBeNull(),
+		);
+
+		// The lecturer picks the class again before the new run begins.
+		enterGame();
+		expect(screen.getByRole('button', { name: 'Đã gọi 0' })).toBeTruthy();
+		expect(screen.getByText(/1\/1 câu còn lại/)).toBeTruthy();
+		expect(screen.getByText(/Boss 1/)).toBeTruthy();
+		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', false);
+		const runs = JSON.parse(
+			window.localStorage.getItem('recall-arena:v3:runs:course-1:2026-11-10') ?? '[]',
+		);
+		expect(runs).toHaveLength(2);
+	});
+
+	it('waits for unsaved calls before a new run can start', () => {
+		savedToday.pending = 1;
+		render(<RecallArena data={arenaData()} />);
+		enterGame();
+		fireEvent.click(screen.getByRole('button', { name: /Kết thúc/ }));
+		const summary = screen.getByRole('dialog', { name: 'Tổng kết phiên' });
+		expect(within(summary).getByRole('button', { name: 'Bắt đầu phiên mới' })).toHaveProperty(
+			'disabled',
+			true,
+		);
+	});
+
+	it('gives another class its own run and carries on the first class when it comes back', async () => {
+		apiMock.mockResolvedValue({ cpPrevious: 0, cpAfter: 1 });
+		render(<RecallArena data={arenaData()} />);
+		chooseRule('Chỉ Supporting');
+		enterGame();
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
+		fireEvent.click(within(caught).getByRole('button', { name: /Đạt \+1/ }));
+		await screen.findByRole('button', { name: 'Đã gọi 1' });
+
+		const switchTo = (tick: string, untick: string) => {
+			fireEvent.click(screen.getByTitle('Thiết lập'));
+			openStep('Lớp');
+			fireEvent.click(within(setupDialog()).getByRole('checkbox', { name: new RegExp(tick) }));
+			fireEvent.click(within(setupDialog()).getByRole('checkbox', { name: new RegExp(untick) }));
+			fireEvent.click(within(setupDialog()).getByRole('button', { name: 'Xong' }));
+		};
+		switchTo('Lớp M2', 'Lớp M1');
+		await screen.findByRole('button', { name: 'Đã gọi 0' });
+		expect(screen.getByText(/1\/1 câu còn lại/)).toBeTruthy();
+
+		switchTo('Lớp M1', 'Lớp M2');
+		await screen.findByRole('button', { name: 'Đã gọi 1' });
+		expect(screen.getByText(/0\/1 câu còn lại/)).toBeTruthy();
 	});
 
 	it('lets the lecturer leave the setup before the game starts', () => {
