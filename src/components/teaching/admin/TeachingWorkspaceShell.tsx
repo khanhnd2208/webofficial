@@ -17,6 +17,7 @@ import type {
 import { StudentPageWorkspace } from './StudentPageWorkspace';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
 import { GradebookWorkspace } from './GradebookWorkspace';
+import { GradeSummaryWorkspace } from './GradeSummaryWorkspace';
 import { RosterWorkspace } from './RosterWorkspace';
 import { SessionsWorkspace } from './SessionsWorkspace';
 import { SettingsForm } from './SettingsForm';
@@ -133,6 +134,7 @@ export function TeachingWorkspaceShell({
 							initialTutorialId={tutorialId}
 						/>
 					) : null}
+					{activeTab === 'summary' ? <GradeSummaryWorkspace gradebook={gradebook} /> : null}
 					{groupBoardEnabled && activeTab === 'groups' ? (
 						<GroupBoardWorkspaceLoader
 							classId={gradebook.class.id}

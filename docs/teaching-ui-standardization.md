@@ -26,6 +26,8 @@ The gradebook toolbar groups tutorial, week, search and saving feedback. The wee
 
 Student class pages inherit the same light theme with more reading space. Tab navigation respects reduced motion. Portal panels receive the destination tokens without changing the surrounding website. Existing permissions, persistence, feature flags, service APIs and unsaved-change guards are retained.
 
+The admin **Tổng kết** tab reports active enrollments in roster order. Every scheduled tutorial week needs finalized attendance and contribution, with canceled sessions excluded. Students need a tutorial assignment. The web table and its Excel download use the same gradebook results and the weights set for the class. The management menu still offers the detailed gradebook export.
+
 ## Verification record
 
 - Typecheck, ESLint with zero warnings, formatting, area ownership and production build.

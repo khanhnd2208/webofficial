@@ -21,6 +21,7 @@ import type { TeachingWorkspaceTab } from './teachingWorkspaceTab';
 const TAB_ICONS: Record<string, TeachingIconName> = {
 	attendance: 'attendance',
 	cp: 'cp',
+	summary: 'summary',
 	groups: 'groups',
 	notes: 'notes',
 	recall: 'recall',
@@ -30,6 +31,7 @@ const TAB_ICONS: Record<string, TeachingIconName> = {
 const CORE_TABS = [
 	['attendance', 'Điểm danh'],
 	['cp', 'Điểm CP'],
+	['summary', 'Tổng kết'],
 	['groups', 'Xếp nhóm'],
 	['notes', 'Ghi chú lớp'],
 	['recall', 'Active Recall'],
@@ -79,7 +81,7 @@ export function TeachingWorkspacePending({
 						else failed = true;
 					});
 					if (failed) {
-						if (/tab=(cp|attendance)/.test(href)) return;
+						if (/tab=(cp|attendance|summary)/.test(href)) return;
 						break;
 					}
 				}
@@ -145,6 +147,7 @@ export function TeachingCoreTabs({
 							<Link
 								key={value}
 								href={href}
+								prefetch={value === 'summary' ? false : undefined}
 								aria-current={activeTab === value ? 'page' : undefined}
 								data-active={activeTab === value}
 								onClick={

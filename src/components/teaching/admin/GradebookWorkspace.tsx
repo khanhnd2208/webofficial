@@ -48,7 +48,7 @@ export function GradebookWorkspace({
 		hasSaveError,
 		saveStates,
 		retryMark,
-	} = useGradebookMutations(initial);
+	} = useGradebookMutations(initial, pending?.holdUntil);
 	const { confirm, dialog } = useAdminConfirm();
 	const [tutorialId, setTutorialId] = useState(
 		initialTutorialId && initial.tutorials.some((tutorial) => tutorial.id === initialTutorialId)
@@ -138,8 +138,15 @@ export function GradebookWorkspace({
 			if (!ok) return;
 		}
 		try {
-			if (kind === 'attendance') await setAttendanceLifecycle(sessionId, action);
-			else await setParticipationLifecycle(sessionId, action);
+			const task =
+				kind === 'attendance'
+					? setAttendanceLifecycle(sessionId, action)
+					: setParticipationLifecycle(sessionId, action);
+			pending?.holdUntil(
+				task.catch(() => {}),
+				`lifecycle:${sessionId}`,
+			);
+			await task;
 		} catch {
 			// The mutation hook already exposes the failure and retry state in the workspace.
 		}

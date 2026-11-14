@@ -19,6 +19,7 @@ import {
 } from '@/features/teaching';
 import { isTeachingGroupBoardEnabled } from '@/features/teaching/groupBoardAvailability';
 import { routes } from '@/config/routes';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,9 +39,10 @@ export default async function MySpaceTeachingClassPage({
 	if (requestedTab === 'groups' && !groupBoardEnabled)
 		redirect(routes.mySpaceTeachingClass(classId));
 	const tab = resolveTeachingWorkspaceTab(requestedTab, groupBoardEnabled);
+	if (tab === 'summary' && (await auth())?.user?.role !== 'admin') return null;
 	const [gradebook, board, roster, publicPage, , groupNumbersByTutorial, notes, recallAssignments] =
 		await Promise.all([
-			getGradebook(classId),
+			getGradebook(classId, { consistentSnapshot: tab === 'summary' }),
 			getAttendanceBoardConfig(classId),
 			teachingTabNeedsRoster(tab) ? listRoster(classId) : Promise.resolve(undefined),
 			teachingTabNeedsPublicPage(tab)

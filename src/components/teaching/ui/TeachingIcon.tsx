@@ -7,6 +7,7 @@ const paths = {
 	class: 'M3 3h18v12H3V3Zm4 18 2-6m8 6-2-6M7 7h10m-10 4h6',
 	attendance: 'M8 4H5v17h14V4h-3M8 3h8v4H8V3Zm0 11 3 3 5-6',
 	cp: 'M4 4h16v12h-7l-5 4v-4H4V4Zm4 6 2 2 5-5',
+	summary: 'M4 4h16v16H4V4Zm0 5h16M9 9v11m5-11v11M4 14h16',
 	groups:
 		'M9 7a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm-5 3a2 2 0 1 1 0 .1m16-.1a2 2 0 1 0 0 .1M7 21v-4a5 5 0 0 1 10 0v4M2 20v-4a3 3 0 0 1 3-3m17 7v-4a3 3 0 0 0-3-3',
 	notes: 'M5 3h14v18H5V3Zm4 5h6m-6 4h6m-6 4h3',
