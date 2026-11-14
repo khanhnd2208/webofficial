@@ -1,11 +1,9 @@
 import { writeFile } from 'node:fs/promises';
 import { test, expect } from '@playwright/test';
 
-import { aboutPagePaused } from '../src/content/about';
-
 test.use({ video: 'on' });
 
-const pages = ['/', '/muc-luc', '/gioi-thieu', '/trai-nghiem', '/du-an', '/dich-vu'];
+const pages = ['/', '/muc-luc', '/lien-he'];
 for (const width of [320, 390, 768, 1024, 1440]) {
 	test(`personal book remains readable at ${width}px`, async ({ page }, testInfo) => {
 		await page.setViewportSize({ width, height: width === 320 ? 568 : 900 });
@@ -22,21 +20,9 @@ for (const width of [320, 390, 768, 1024, 1440]) {
 					await page.getByTestId('intro-open-toc').evaluate((el) => getComputedStyle(el).position),
 				).not.toBe('fixed');
 			}
-			if (path === '/gioi-thieu' && !aboutPagePaused) {
-				await expect(page.locator('.about-path')).toHaveCount(2);
-				await expect(page.locator('details')).toHaveCount(0);
-				const words = await page.locator('main').innerText();
-				expect(words.split(/\s+/).length).toBeLessThan(150);
-				if (width === 390)
-					expect(await page.evaluate(() => document.body.scrollHeight)).toBeLessThan(1000);
-			}
-			if (path === '/trai-nghiem') {
-				const columns = page.locator('.about-project-grid > li');
-				await expect(columns).toHaveCount(4);
-				const bounds = await columns.evaluateAll((els) =>
-					els.map((e) => ({ x: e.getBoundingClientRect().x, y: e.getBoundingClientRect().y })),
-				);
-				expect(width <= 600 ? bounds[1].y > bounds[0].y : bounds[1].x > bounds[0].x).toBe(true);
+			if (path === '/lien-he') {
+				await expect(page.getByTestId('contact-linkedin')).toBeVisible();
+				await expect(page.locator('#contact-form form')).toBeVisible();
 			}
 			if (width === 390 || width === 1440) {
 				await page.evaluate(async () => {
@@ -82,97 +68,52 @@ test('public reading and native links survive without JavaScript', async ({ brow
 		);
 		expect(hidden).toEqual([]);
 	}
-	await page.goto('/trai-nghiem');
-	await page.locator('summary').filter({ hasText: 'Xem nội dung và hình thức' }).first().click();
-	await expect(page.locator('details[open]')).toHaveCount(1);
 	await page.goto('/');
 	await page.getByTestId('intro-open-toc').click();
 	await expect(page).toHaveURL(/\/muc-luc$/);
 	await page.getByTestId('gate-item-about').click();
-	await expect(page).toHaveURL(aboutPagePaused ? /\/lien-he$/ : /\/gioi-thieu$/);
+	await expect(page).toHaveURL(/\/lien-he$/);
 	await context.close();
 });
 
-test('projects and collaboration support keyboard navigation and reduced motion', async ({
-	page,
-}) => {
+test('Về tôi opens from Mục lục with the keyboard and reduced motion', async ({ page }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await page.emulateMedia({ reducedMotion: 'reduce' });
 	await page.goto('/muc-luc');
 	await page.getByTestId('gate-item-about').focus();
 	await page.keyboard.press('Enter');
-	await expect(page).toHaveURL(aboutPagePaused ? /\/lien-he$/ : /\/gioi-thieu$/);
-	if (aboutPagePaused) {
-		await page.goto('/trai-nghiem');
-	} else {
-		await page.getByRole('link', { name: 'Ghé xem trải nghiệm của tôi' }).focus();
-		await page.keyboard.press('Enter');
+	await expect(page).toHaveURL(/\/lien-he$/);
+	await expect(page.getByRole('heading', { level: 1, name: 'Nguyễn Duy Khánh' })).toBeVisible();
+	for (const band of ['Liên hệ trực tiếp', 'Có thể làm cùng nhau', 'Gửi lời nhắn']) {
+		await expect(page.getByRole('heading', { level: 2, name: band })).toBeVisible();
 	}
-	await expect(page).toHaveURL(/\/trai-nghiem$/);
-	await expect(page.locator('.about-project-grid > li')).toHaveCount(4);
-	await page.getByTestId('experience-project-strategic-management-learning-experience').focus();
-	await page.keyboard.press('Enter');
-	await expect(page).toHaveURL(/\/du-an\/strategic-management-learning-experience$/);
-	await expect(
-		page.getByRole('heading', { level: 1, name: 'Strategic Management Learning Experience' }),
-	).toBeVisible();
-	await page.goBack();
-	await expect(page.getByTestId('experience-page')).toBeVisible();
-	const summary = page.locator('#management-learning summary');
-	await summary.focus();
-	await page.keyboard.press('Enter');
-	await expect(page.locator('#management-learning details')).toHaveAttribute('open', '');
-	await expect(page.getByRole('link', { name: /Trao đổi về chương trình quản trị/ })).toBeVisible();
-	await page.keyboard.press('Enter');
-	await expect(page.locator('details[open]')).toHaveCount(0);
+	await page.getByTestId('contact-email').focus();
+	await expect(page.getByTestId('contact-email')).toBeFocused();
 });
 
-test('old hubs redirect permanently to introduction sections and preserve query parameters', async ({
-	page,
+test('retired portfolio pages redirect permanently to Về tôi and keep query parameters', async ({
 	request,
 }) => {
-	for (const [oldPath, targetPath, anchor] of [
-		['/du-an', '/trai-nghiem', 'du-an'],
-		['/dich-vu', '/gioi-thieu', 'dich-vu'],
-	] as const) {
+	for (const oldPath of [
+		'/gioi-thieu',
+		'/trai-nghiem',
+		'/trai-nghiem/mot-cau-chuyen',
+		'/du-an',
+		'/du-an/strategic-management-learning-experience',
+		'/dich-vu',
+	]) {
 		const response = await request.get(`${oldPath}?utm_source=bookmark`, { maxRedirects: 0 });
-		expect(response.status()).toBe(308);
+		expect(response.status(), oldPath).toBe(308);
 		const target = new URL(response.headers().location, 'http://localhost:3000');
-		expect(target.pathname).toBe(targetPath);
-		expect(target.hash).toBe(`#${anchor}`);
+		expect(target.pathname).toBe('/lien-he');
 		expect(target.searchParams.get('utm_source')).toBe('bookmark');
-		// While the introduction is paused, /gioi-thieu goes on to /lien-he, which has no #dich-vu.
-		if (aboutPagePaused && targetPath === '/gioi-thieu') continue;
-		await page.goto(oldPath);
-		await expect(page).toHaveURL(new RegExp(`${targetPath}#${anchor}$`));
-		await expect
-			.poll(async () => {
-				const bounds = await page.locator(`#${anchor}`).boundingBox();
-				return bounds !== null && bounds.y >= 0 && bounds.y < 450;
-			})
-			.toBe(true);
 	}
 });
 
-test('all collaboration links preselect the right subject and introduction source', async ({
-	page,
-}) => {
-	for (const [id, subject] of [
-		['management-learning', 'training'],
-		['applied-ai', 'ai'],
-		['learning-programs', 'learning-design'],
-	] as const) {
-		await page.goto('/trai-nghiem');
-		await expect(page.locator('details[open]')).toHaveCount(0);
-		await page.locator(`#${id} summary`).click();
-		await expect(page.locator(`#${id} details`)).toHaveAttribute('open', '');
-		const link = page.locator(`#${id} .about-offer-expanded a`);
-		const href = await link.getAttribute('href');
-		const destination = new URL(href!, 'http://localhost:3000');
-		expect(destination.searchParams.get('type')).toBe(subject);
-		expect(destination.searchParams.get('sourcePage')).toBe('/trai-nghiem');
-		await link.click();
-		await expect(page.getByLabel('Bạn muốn trao đổi về điều gì?')).toHaveValue(subject);
+test('a contact link with a subject preselects it in the form', async ({ page }) => {
+	for (const subject of ['training', 'ai', 'learning-design']) {
+		await page.goto(`/lien-he?type=${subject}`);
+		await expect(page.getByLabel('Chủ đề')).toHaveValue(subject);
 	}
 });
 
@@ -242,12 +183,6 @@ test('record rendering measurements and capture a reading sequence', async ({ pa
 				height: document.body.scrollHeight,
 			}))),
 		});
-		if (path === '/dich-vu' && !aboutPagePaused) {
-			await expect(page).toHaveURL(
-				aboutPagePaused ? /\/lien-he(#dich-vu)?$/ : /\/gioi-thieu#dich-vu$/,
-			);
-			await expect(page.getByRole('link', { name: 'Trao đổi về cố vấn' })).toBeVisible();
-		}
 	}
 	await writeFile(
 		testInfo.outputPath('rendering-measurements.json'),
@@ -273,20 +208,4 @@ test('record rendering measurements and capture a reading sequence', async ({ pa
 		),
 		contentType: 'application/json',
 	});
-});
-
-test('management and adviser links keep their subject and source', async ({ page }) => {
-	test.skip(aboutPagePaused, 'The introduction is replaced by a contact card for now.');
-	for (const [name, type] of [
-		['Trao đổi về việc học', 'training'],
-		['Trao đổi về cố vấn', 'business'],
-	]) {
-		await page.goto('/gioi-thieu');
-		const link = page.getByRole('link', { name, exact: true });
-		const url = new URL((await link.getAttribute('href'))!, 'http://localhost:3000');
-		expect(url.searchParams.get('type')).toBe(type);
-		expect(url.searchParams.get('sourcePage')).toBe('/gioi-thieu');
-		await link.click();
-		await expect(page.getByLabel('Bạn muốn trao đổi về điều gì?')).toHaveValue(type);
-	}
 });

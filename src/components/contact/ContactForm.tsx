@@ -21,8 +21,6 @@ type FormState = {
 	email: string;
 	inquiryType: InquiryType;
 	context: string;
-	desiredOutcome: string;
-	timeframe: string;
 	agreedPrivacy: boolean;
 	website: string;
 };
@@ -38,8 +36,6 @@ function emptyForm(type: InquiryType): FormState {
 		email: '',
 		inquiryType: type,
 		context: '',
-		desiredOutcome: '',
-		timeframe: '',
 		agreedPrivacy: false,
 		website: '',
 	};
@@ -81,8 +77,6 @@ export default function ContactForm({
 		emailHelp: `${idPrefix}-email-help`,
 		inquiryType: `${idPrefix}-inquiry-type`,
 		context: `${idPrefix}-context`,
-		desiredOutcome: `${idPrefix}-desired-outcome`,
-		timeframe: `${idPrefix}-timeframe`,
 		errorSummary: `${idPrefix}-error-summary`,
 		privacyError: `${idPrefix}-privacy-error`,
 	};
@@ -164,14 +158,6 @@ export default function ContactForm({
 		return errors;
 	}
 
-	function buildContextPayload(): string {
-		const parts = [form.context.trim()];
-		if (form.desiredOutcome.trim()) {
-			parts.push(`Kết quả mong muốn: ${form.desiredOutcome.trim()}`);
-		}
-		return parts.join('\n\n');
-	}
-
 	async function onSubmit(event: React.FormEvent) {
 		event.preventDefault();
 		if (!formEnabled || pending || sessionStatus === 'loading') return;
@@ -205,8 +191,7 @@ export default function ContactForm({
 					name: form.name.trim(),
 					email: isAccount ? accountEmail : form.email.trim(),
 					inquiryType: form.inquiryType,
-					context: buildContextPayload(),
-					timeframe: form.timeframe.trim() || undefined,
+					context: form.context.trim(),
 					sourcePage: resolvedContext.sourcePage,
 					sourceCourseSlug: resolvedContext.sourceCourseSlug,
 					campaignParams: resolvedContext.campaignParams,
@@ -373,7 +358,7 @@ export default function ContactForm({
 
 			<div>
 				<label htmlFor={ids.inquiryType} className={labelClass}>
-					Bạn muốn trao đổi về điều gì?
+					Chủ đề
 				</label>
 				<select
 					id={ids.inquiryType}
@@ -391,14 +376,14 @@ export default function ContactForm({
 
 			<div>
 				<label htmlFor={ids.context} className={labelClass}>
-					Bối cảnh hoặc điều đang khiến bạn băn khoăn
+					Lời nhắn
 				</label>
 				<textarea
 					id={ids.context}
 					required
 					rows={5}
 					className={`${inputClass} min-h-36 resize-y`}
-					placeholder="Một vài dòng có bối cảnh là đủ để bắt đầu."
+					placeholder="Bạn đang học, đang làm hay đang băn khoăn điều gì? Vài dòng là đủ."
 					value={form.context}
 					onChange={(event) => update('context', event.target.value)}
 					aria-invalid={Boolean(fieldErrors.context)}
@@ -409,43 +394,6 @@ export default function ContactForm({
 						{fieldErrors.context}
 					</p>
 				) : null}
-			</div>
-
-			<div>
-				<label htmlFor={ids.desiredOutcome} className={labelClass}>
-					Kết quả bạn mong muốn{' '}
-					<span className="normal-case tracking-normal text-ink-secondary/70">
-						(không bắt buộc)
-					</span>
-				</label>
-				<textarea
-					id={ids.desiredOutcome}
-					rows={3}
-					className={`${inputClass} min-h-24 resize-y`}
-					value={form.desiredOutcome}
-					onChange={(event) => update('desiredOutcome', event.target.value)}
-				/>
-			</div>
-
-			<div>
-				<label htmlFor={ids.timeframe} className={labelClass}>
-					Thời gian dự kiến{' '}
-					<span className="normal-case tracking-normal text-ink-secondary/70">
-						(không bắt buộc)
-					</span>
-				</label>
-				<select
-					id={ids.timeframe}
-					className={inputClass}
-					value={form.timeframe}
-					onChange={(event) => update('timeframe', event.target.value)}
-				>
-					<option value="">Chọn mốc gần nhất</option>
-					<option value="2-4-weeks">Trong 2–4 tuần tới</option>
-					<option value="1-3-months">Trong 1–3 tháng tới</option>
-					<option value="after-3-months">Sau 3 tháng</option>
-					<option value="unsure">Chưa có mốc cụ thể</option>
-				</select>
 			</div>
 
 			<div>

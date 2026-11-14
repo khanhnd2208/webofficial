@@ -15,7 +15,7 @@ for (const width of [375, 1440]) {
 			const intro = page
 				.getByText(
 					name === 'toc'
-						? 'Một chút về tôi. Một không gian để học và chơi.'
+						? 'Một chút về tôi. Và những điều để học.'
 						: 'Xem chương trình trước, chọn điều bạn muốn học. Bạn chỉ cần đăng nhập khi bắt đầu.',
 					{ exact: true },
 				)

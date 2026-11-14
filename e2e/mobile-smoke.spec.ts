@@ -17,7 +17,7 @@ test.describe('Mobile public smoke', () => {
 	});
 
 	test('public surfaces do not overflow horizontally', async ({ page }) => {
-		for (const path of ['/', '/muc-luc', '/gioi-thieu']) {
+		for (const path of ['/', '/muc-luc', '/lien-he']) {
 			await page.goto(path);
 			expect(
 				await page.evaluate(

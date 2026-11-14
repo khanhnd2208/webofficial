@@ -8,7 +8,6 @@
  * published note count at runtime.
  */
 
-import { aboutPagePaused } from '@/content/about';
 import { areNotesPublic } from '@/content/notes';
 import { SITE_NAME } from './site';
 import { routes } from './routes';
@@ -324,17 +323,7 @@ export function getSiteTrail(pathname: string): SiteCrumb[] {
 	if (path === routes.learnCourses) {
 		return [{ label: 'Khóa học' }];
 	}
-	if (path === routes.about) return [{ label: aboutPagePaused ? 'Liên hệ' : 'Giới thiệu' }];
-	if (path === routes.experiences) return [{ label: 'Trải nghiệm' }];
-	if (path.startsWith(`${routes.experiences}/`)) {
-		return [{ label: 'Trải nghiệm', href: routes.experiences }];
-	}
-	if (path === routes.projects) return [{ label: 'Dự án' }];
-	if (path.startsWith(`${routes.projects}/`)) {
-		return [{ label: 'Dự án', href: routes.projects }];
-	}
-	if (path === routes.services) return [{ label: 'Dịch vụ' }];
-	if (path === routes.contact) return [{ label: 'Liên hệ' }];
+	if (path === routes.contact) return [{ label: 'Về tôi' }];
 	if (path === routes.login) return [{ label: 'Đăng nhập' }];
 	if (path === routes.account) return [{ label: 'Tài khoản' }];
 	if (path.startsWith(`${routes.account}/`)) {
