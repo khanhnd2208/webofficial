@@ -90,7 +90,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await expect(caught).toBeVisible();
 			const missed = (await caught.getByRole('heading').textContent())!.replace('Trả lời ', '');
 			const helper = missed === 'An' ? 'Bình' : 'An';
-			await caught.getByRole('button', { name: /Chưa đạt/ }).click();
+			await caught.getByRole('button', { name: /^Chưa đạt, \+1 Gift(, giữ câu)?$/ }).click();
 			await expect(caught.getByText('Chưa đạt · đã ghi +1 Gift')).toBeVisible();
 
 			const search = caught.getByLabel(`Có bạn nào trả lời thay ${missed}?`);
@@ -205,7 +205,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 				'Kiểm thử ',
 				'',
 			);
-			await caught.getByRole('button', { name: /Đạt \+1/ }).click();
+			await caught.getByRole('button', { name: /^Đạt \+1(, ẩn câu)?$/ }).click();
 			await expect(page.getByRole('status')).toContainText(`${caughtName}: CP 0 → 1`);
 			await expect(page.getByLabel('Máu quái vật 9/10')).toBeVisible();
 
@@ -376,7 +376,7 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await expect(caught).toBeVisible();
 			await expect(caught.getByText(/Câu bài (một|hai)/)).toBeVisible();
 			const firstQuestion = await caught.getByText(/Câu bài (một|hai)/).textContent();
-			await caught.getByRole('button', { name: /Đạt \+1/ }).click();
+			await caught.getByRole('button', { name: /^Đạt \+1(, ẩn câu)?$/ }).click();
 			await expect(page.getByRole('status')).toContainText('Giang: CP 0 → 1');
 
 			const after = await data<Gradebook>(
@@ -397,12 +397,12 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 			await expect(
 				next.getByText(firstQuestion === 'Câu bài một' ? 'Câu bài hai' : 'Câu bài một'),
 			).toBeVisible();
-			await next.getByRole('button', { name: 'Vừa đủ qua' }).click();
+			await next.getByRole('button', { name: /^Không điểm(, ẩn câu)?$/ }).click();
 			await expect(next).toHaveCount(0);
 
 			await page.getByRole('button', { name: /Bắt!/ }).click();
-			await expect(next.getByText(/Các câu trong bài đã chọn đều đã qua/)).toBeVisible();
-			await next.getByRole('button', { name: 'Vừa đủ qua' }).click();
+			await expect(next.getByText(/Các câu trong bài đã chọn đều đã ẩn/)).toBeVisible();
+			await next.getByRole('button', { name: /^Không điểm(, ẩn câu)?$/ }).click();
 
 			// Everyone answered once: the session summary lists all three.
 			await expect(page.getByRole('button', { name: /Đã gọi hết/ })).toBeDisabled();

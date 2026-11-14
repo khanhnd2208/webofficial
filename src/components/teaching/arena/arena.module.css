@@ -1413,6 +1413,11 @@
 	color: var(--arena-bad);
 }
 
+.historyChip[data-result='bare'] {
+	background: rgb(196 181 253 / 16%);
+	color: var(--arena-ink);
+}
+
 .historyChip[data-result='skip'] {
 	background: rgb(255 255 255 / 10%);
 	color: var(--arena-muted);
@@ -1426,6 +1431,24 @@
 	font-size: 0.85rem;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
+}
+
+.historyFate {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.3rem;
+	margin: 0.25rem 0 0;
+	color: var(--arena-muted);
+	font-size: 0.78rem;
+}
+
+.historyFate[data-fate='keep'] {
+	color: var(--arena-accent);
+}
+
+.historyFate .linkButton {
+	margin-left: 0.25rem;
 }
 
 .historyMeta {

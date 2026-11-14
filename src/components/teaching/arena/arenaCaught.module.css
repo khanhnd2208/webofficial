@@ -487,6 +487,114 @@
 	background: rgb(251 113 133 / 24%);
 }
 
+/* Grade grid: rows are what happens to the question, columns what the student gets. */
+.verdictGrid {
+	display: grid;
+	grid-template-columns: minmax(9.5rem, auto) repeat(5, auto);
+	align-items: stretch;
+	gap: 0.4rem;
+}
+
+.verdictGrid[data-manual] {
+	grid-template-columns: minmax(9.5rem, auto) auto;
+}
+
+.verdictGrid[data-single] {
+	grid-template-columns: repeat(5, auto);
+}
+
+.verdictGrid[data-single][data-manual] {
+	grid-template-columns: auto;
+}
+
+.verdictRow {
+	display: contents;
+}
+
+.colHead {
+	align-self: end;
+	padding: 0 0.25rem 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.colHead[data-kind='pass'] {
+	grid-column: span 3;
+	border-bottom: 2px solid rgb(52 211 153 / 45%);
+	color: var(--arena-ok);
+}
+
+.colHead[data-kind='bare'] {
+	border-bottom: 2px solid rgb(196 181 253 / 45%);
+	color: var(--arena-ink);
+}
+
+.colHead[data-kind='fail'] {
+	border-bottom: 2px solid rgb(251 113 133 / 55%);
+	color: #fda4af;
+}
+
+.rowHead {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.2rem 0.75rem 0.2rem 0.6rem;
+	border-radius: 0.85rem;
+	background: rgb(255 255 255 / 5%);
+	color: var(--arena-ink);
+}
+
+.rowHead strong,
+.rowHead small {
+	display: block;
+	white-space: nowrap;
+}
+
+.rowHead strong {
+	font-size: 1.05rem;
+	font-weight: 800;
+}
+
+.rowHead small {
+	color: var(--arena-muted);
+	font-size: 0.78rem;
+}
+
+.verdictRow[data-fate='keep'] .rowHead {
+	background: rgb(251 191 36 / 12%);
+	box-shadow: inset 0 0 0 1.5px rgb(251 191 36 / 45%);
+}
+
+.verdictRow[data-fate='keep'] .rowHead strong,
+.verdictRow[data-fate='keep'] .rowHead > svg {
+	color: var(--arena-accent);
+}
+
+.verdictGrid .passButton,
+.verdictGrid .barePassButton,
+.verdictGrid .failButton {
+	min-width: 4.75rem;
+	min-height: 3.1rem;
+	padding: 0 0.95rem;
+	border-radius: 0.85rem;
+	font-size: 1.15rem;
+}
+
+.askedAgain {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	background: rgb(251 191 36 / 16%);
+	color: var(--arena-accent);
+	font-size: 0.78rem;
+	font-weight: 800;
+}
+
 .panel :is(button, input):focus-visible {
 	outline: 3px solid var(--arena-accent);
 	outline-offset: 2px;
@@ -882,6 +990,38 @@
 	.passButton {
 		flex: 1;
 		min-width: 0;
+	}
+
+	.verdictGrid {
+		flex: 1 1 100%;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+
+	.verdictGrid[data-manual] {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.gridCorner {
+		display: none;
+	}
+
+	.rowHead {
+		grid-column: 1 / -1;
+		margin-top: 0.2rem;
+	}
+
+	.rowHead > span {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+
+	.verdictGrid .passButton,
+	.verdictGrid .barePassButton,
+	.verdictGrid .failButton {
+		min-width: 0;
+		padding: 0 0.4rem;
+		font-size: 1rem;
 	}
 
 	.barePassButton,

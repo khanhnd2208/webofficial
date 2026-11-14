@@ -6,7 +6,9 @@ import {
 	answeredArenaIds,
 	callablePlayers,
 	displayNames,
+	hiddenArenaCards,
 	initialConfig,
+	keptArenaCards,
 	manualArenaPlayers,
 	matchesPlayerSearch,
 	passStreak,
@@ -109,6 +111,49 @@ describe('passStreak', () => {
 			2,
 		);
 		expect(passStreak(['pass', 'pass', 'fail'].map((r) => entry(r as never)))).toBe(0);
+	});
+});
+
+describe('question fate', () => {
+	let clock = 0;
+	const turn = (
+		cardId: string | null,
+		result: ArenaHistoryEntry['result'],
+		card?: ArenaHistoryEntry['card'],
+	): ArenaHistoryEntry => ({
+		id: `t${(clock += 1)}`,
+		at: clock,
+		enrollmentId: 'a',
+		name: 'An',
+		cardId,
+		result,
+		...(card ? { card } : {}),
+	});
+
+	it('hides a passed question and keeps a missed one by default', () => {
+		const history = [
+			turn('c1', 'pass'),
+			turn('c2', 'fail'),
+			turn('c3', 'skip'),
+			turn(null, 'pass'),
+		];
+		expect([...hiddenArenaCards(history)]).toEqual(['c1']);
+		expect([...keptArenaCards(history)]).toEqual(['c2']);
+	});
+
+	it('follows the lecturer: a pass can keep a question and a miss can hide it', () => {
+		const history = [turn('c1', 'pass', 'keep'), turn('c2', 'fail', 'hide')];
+		expect([...hiddenArenaCards(history)]).toEqual(['c2']);
+		expect([...keptArenaCards(history)]).toEqual(['c1']);
+	});
+
+	it('lets the latest graded turn on a question decide, ignoring skips', () => {
+		const history = [turn('c1', 'fail'), turn('c1', 'pass'), turn('c1', 'skip')];
+		expect(hiddenArenaCards(history).has('c1')).toBe(true);
+		expect(keptArenaCards(history).size).toBe(0);
+		history.push(turn('c1', 'pass', 'keep'));
+		expect(hiddenArenaCards(history).size).toBe(0);
+		expect(keptArenaCards(history).has('c1')).toBe(true);
 	});
 });
 

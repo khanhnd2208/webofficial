@@ -113,7 +113,7 @@ export function summaryOutcome(row: ArenaSummaryRow): string {
 	if (row.result === 'fail') {
 		return row.giftAfter != null ? `Chưa đạt · +1 Gift (tổng ${row.giftAfter})` : 'Chưa đạt';
 	}
-	if (row.award === 0) return 'Vừa đủ qua · CP giữ nguyên';
+	if (row.award === 0) return 'Không điểm · CP giữ nguyên';
 	if (row.cpGain != null && row.cpAfter != null) {
 		return row.cpGain > 0
 			? `Đạt · CP ${row.cpBefore} → ${row.cpAfter} (+${row.cpGain})`

@@ -43,10 +43,45 @@ export function isAssistTurn(entry: Pick<ArenaHistoryEntry, 'id'>) {
 	return entry.id.startsWith(ASSIST_ID_PREFIX);
 }
 
-export function passedArenaCards(history: readonly ArenaHistoryEntry[]) {
-	const ids = new Set<string>();
+/**
+ * What happens to the question after a grade: hidden for the rest of the day
+ * (answered, or the lecturer explained it) or kept to be asked again.
+ */
+export type ArenaCardFate = 'hide' | 'keep';
+
+/**
+ * The fate of the turn's question, or null for a turn that did not use one.
+ * Turns saved before the lecturer could choose, or by another browser, follow
+ * the old rule: a pass hides the question, a miss keeps it.
+ */
+export function arenaCardFate(entry: ArenaHistoryEntry): ArenaCardFate | null {
+	if (!entry.cardId || entry.result === 'skip') return null;
+	return entry.card ?? (entry.result === 'pass' ? 'hide' : 'keep');
+}
+
+/** Each question's latest graded turn today: that turn decides its fate. */
+export function latestCardTurns(history: readonly ArenaHistoryEntry[]) {
+	const latest = new Map<string, ArenaHistoryEntry>();
 	for (const entry of history) {
-		if (entry.result === 'pass' && entry.cardId) ids.add(entry.cardId);
+		if (arenaCardFate(entry)) latest.set(entry.cardId!, entry);
+	}
+	return latest;
+}
+
+/** Questions taken out of today's game. */
+export function hiddenArenaCards(history: readonly ArenaHistoryEntry[]) {
+	const ids = new Set<string>();
+	for (const [cardId, entry] of latestCardTurns(history)) {
+		if (arenaCardFate(entry) === 'hide') ids.add(cardId);
+	}
+	return ids;
+}
+
+/** Questions already asked today and kept: asked again, they get a "Hỏi lại" badge. */
+export function keptArenaCards(history: readonly ArenaHistoryEntry[]) {
+	const ids = new Set<string>();
+	for (const [cardId, entry] of latestCardTurns(history)) {
+		if (arenaCardFate(entry) === 'keep') ids.add(cardId);
 	}
 	return ids;
 }
@@ -79,6 +114,11 @@ export interface ArenaHistoryEntry {
 	name: string;
 	cardId: string | null;
 	result: ArenaResult;
+	/**
+	 * The lecturer's choice for the question, kept in this browser only. Unset
+	 * means the default for the result (see `arenaCardFate`).
+	 */
+	card?: ArenaCardFate;
 	/** CP level the lecturer chose for a pass. */
 	award?: number;
 	/** The week's CP before this pass, so the summary can show what was added. */

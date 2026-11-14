@@ -47,6 +47,7 @@ import {
 	passStreak,
 	saveConfig,
 	saveProgress,
+	type ArenaCardFate,
 	type ArenaConfig,
 	type ArenaHistoryEntry,
 	type ArenaProgress,
@@ -113,6 +114,7 @@ export function RecallArena({
 	const [unconfirmed, setUnconfirmed] = useState<{
 		result: 'pass' | 'fail';
 		level: ArenaAwardLevel | 0;
+		fate: ArenaCardFate;
 	} | null>(null);
 	const [retryingId, setRetryingId] = useState<string | null>(null);
 	const [toast, setToast] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
@@ -161,7 +163,7 @@ export function RecallArena({
 		() => inGroup.filter((player) => !answered.has(player.enrollmentId)),
 		[inGroup, answered],
 	);
-	const questions = useArenaQuestions(data, config.deckIds, progress.history);
+	const questions = useArenaQuestions(data, config.deckIds, progress.history, setProgress);
 	const names = useMemo(() => displayNames(inRoom), [inRoom]);
 	const nameOf = (enrollmentId: string) => {
 		const player = playersById.get(enrollmentId);
@@ -247,7 +249,7 @@ export function RecallArena({
 			return;
 		}
 		const picked = draw.picked;
-		const cardId = drawCard(questions.availableIds, questions.passed);
+		const cardId = drawCard(questions.availableIds, questions.hidden);
 		setProgress((previous) => ({
 			...previous,
 			bag: draw.bag,
@@ -318,7 +320,7 @@ export function RecallArena({
 		inRoom,
 		progress,
 		questions.availableIds,
-		questions.passed,
+		questions.hidden,
 		progressLoaded,
 		turnLog.loading,
 		reducedMotion,
@@ -450,11 +452,16 @@ export function RecallArena({
 		return result;
 	}
 
-	async function gradeTurn(result: 'pass' | 'fail', level: ArenaAwardLevel | 0 = 0) {
+	async function gradeTurn(
+		result: 'pass' | 'fail',
+		level: ArenaAwardLevel | 0 = 0,
+		fate: ArenaCardFate = result === 'pass' ? 'hide' : 'keep',
+	) {
 		if (
 			!current ||
 			submitting.current ||
-			(unconfirmed && (unconfirmed.result !== result || unconfirmed.level !== level))
+			(unconfirmed &&
+				(unconfirmed.result !== result || unconfirmed.level !== level || unconfirmed.fate !== fate))
 		)
 			return;
 		// While a missed question is open to the class, only a chosen volunteer can be graded.
@@ -469,7 +476,14 @@ export function RecallArena({
 			setToast({ tone: 'error', text: 'Không có buổi chấm CP phù hợp cho sinh viên này.' });
 			return;
 		}
-		let entry = makeEntry(result, pass && !manual ? { award: level } : {});
+		let entry = makeEntry(result, { card: fate, ...(pass && !manual ? { award: level } : {}) });
+		// Only a choice that differs from the usual one (a pass hides, a miss keeps) is worth a word.
+		const fateNote =
+			current.cardId && fate !== (pass ? 'hide' : 'keep')
+				? fate === 'hide'
+					? ' · đã ẩn câu'
+					: ' · giữ câu'
+				: '';
 		const grade = savesCp
 			? { kind: 'cp' as const, sessionId: target!.id }
 			: !pass && !manual
@@ -486,10 +500,10 @@ export function RecallArena({
 					setCpOverrides((previous) => ({ ...previous, [`${target.id}:${id}`]: points }));
 				}
 				setUnconfirmed(null);
-				setToast({ tone: 'ok', text: saved.message });
+				setToast({ tone: 'ok', text: saved.message + fateNote });
 			} catch (error) {
 				if (!(error instanceof AdminApiError) || error.status >= 500)
-					setUnconfirmed({ result, level });
+					setUnconfirmed({ result, level, fate });
 				setToast({
 					tone: 'error',
 					text: pass ? errorMessage(error) : `Chưa xác nhận Gift: ${errorMessage(error)}`,
@@ -503,7 +517,7 @@ export function RecallArena({
 			if (pass && !manual && target) entry.cpBefore = entry.cpAfter = cpFor(id);
 			setToast({
 				tone: 'ok',
-				text: manual ? `${name}: đạt` : `${name}: vừa đủ qua, CP giữ nguyên`,
+				text: `${name}: ${manual ? 'đạt' : 'không điểm, CP giữ nguyên'}${fateNote}`,
 			});
 		}
 		record(entry);
@@ -568,9 +582,9 @@ export function RecallArena({
 			at: Date.now(),
 			enrollmentId,
 			cardId:
-				current.cardId && !questions.passed.has(current.cardId)
+				current.cardId && !questions.hidden.has(current.cardId)
 					? current.cardId
-					: drawCard(questions.availableIds, questions.passed),
+					: drawCard(questions.availableIds, questions.hidden),
 		});
 		setHighlightId(enrollmentId);
 		setLook(lookToward(monsterRef.current, enrollmentId));
@@ -581,7 +595,7 @@ export function RecallArena({
 		if (!current || assist || submitting.current || unconfirmed) return;
 		const cardId = drawCard(
 			questions.availableIds.filter((id) => id !== current.cardId),
-			questions.passed,
+			questions.hidden,
 		);
 		if (cardId) setCurrent({ ...current, cardId });
 	}
@@ -625,7 +639,7 @@ export function RecallArena({
 		const ok = await confirm({
 			title: 'Chơi lại từ Boss 1?',
 			description:
-				'Đặt lại Boss và thứ tự gọi. Các câu đã qua hôm nay vẫn được loại khỏi bộ câu hỏi.',
+				'Đặt lại Boss và thứ tự gọi. Các câu đã ẩn hôm nay vẫn được loại khỏi bộ câu hỏi.',
 			confirmLabel: 'Chơi lại',
 		});
 		if (!ok) return;
@@ -742,6 +756,7 @@ export function RecallArena({
 							questionText={questions.questionText}
 							retryingId={retryingId}
 							onRetry={handleRetry}
+							onSetCardFate={questions.setFate}
 							courseId={courseId}
 							todayIso={data.todayIso}
 							sync={turnLog}
@@ -772,9 +787,10 @@ export function RecallArena({
 						cpSession={caughtCpSession}
 						openingCp={openingCpId === caughtCpSession?.id}
 						onOpenCp={openCp}
-						onPass={(level) => void gradeTurn('pass', level)}
-						onBarePass={() => void gradeTurn('pass')}
-						onFail={() => void gradeTurn('fail')}
+						askedAgain={Boolean(current?.cardId && questions.kept.has(current.cardId))}
+						onPass={(level, fate) => void gradeTurn('pass', level, fate)}
+						onBarePass={(fate) => void gradeTurn('pass', 0, fate)}
+						onFail={(fate) => void gradeTurn('fail', 0, fate)}
 						onSkipStudent={handleSkip}
 						onChooseStudent={handleChooseStudent}
 						otherPlayers={callable.filter(
