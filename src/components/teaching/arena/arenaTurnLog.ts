@@ -1,6 +1,7 @@
 import { teachingApi } from '@/components/teaching/admin/api';
 import type { RecallArenaTurnInput } from '@/features/teaching/schemas';
-import type { RecallArenaTurnRecord } from '@/features/teaching/types';
+import type { ArenaAwardLevel } from '@/features/teaching/domain/recallArena';
+import type { RecallArenaAwardResult, RecallArenaTurnRecord } from '@/features/teaching/types';
 
 import { isManualPlayer, type ArenaHistoryEntry } from './arenaGame';
 
@@ -84,4 +85,25 @@ export async function saveArenaGrade(
 		};
 	}
 	throw new Error('Máy chủ chưa xác nhận kết quả chấm.');
+}
+
+export function arenaErrorMessage(error: unknown) {
+	return error instanceof Error ? error.message : 'Không lưu được, thử lại.';
+}
+
+/** Write a CP level straight to a session, for a pass whose save failed earlier. */
+export async function awardArenaCp(
+	target: { id: string } | null,
+	weekNumber: number | undefined,
+	enrollmentId: string,
+	level: ArenaAwardLevel,
+) {
+	if (!target) {
+		const week = weekNumber != null ? ` tuần ${weekNumber}` : '';
+		throw new Error(`Lớp gốc không có buổi${week}, không ghi được CP.`);
+	}
+	return teachingApi<RecallArenaAwardResult>(
+		`/api/admin/teaching/sessions/${target.id}/recall-arena`,
+		{ method: 'POST', body: JSON.stringify({ enrollmentId, points: level }) },
+	);
 }

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useMotionTier } from '@/components/motion';
-import { AdminApiError, teachingApi } from '@/components/teaching/admin/api';
+import { AdminApiError } from '@/components/teaching/admin/api';
 import { routes } from '@/config/routes';
 import { recallVisibleText } from '@/features/active-recall/richText';
 import {
@@ -15,11 +15,7 @@ import {
 	returnToBag,
 	type ArenaAwardLevel,
 } from '@/features/teaching/domain/recallArena';
-import type {
-	RecallArenaAwardResult,
-	RecallArenaData,
-	TeachingParticipationMutationResult,
-} from '@/features/teaching/types';
+import type { RecallArenaData } from '@/features/teaching/types';
 
 import { ArenaCaught } from './ArenaCaught';
 import { lookToward, useArenaFx } from './ArenaEffects';
@@ -42,7 +38,6 @@ import {
 	fullName,
 	hostSessions,
 	initialConfig,
-	isCpFinalized,
 	isManualPlayer,
 	loadConfig,
 	loadProgress,
@@ -60,7 +55,8 @@ import { playArenaSound } from './arenaSound';
 import { useArenaHeroes } from './useArenaHeroes';
 import { useArenaKeyboard } from './useArenaKeyboard';
 import { useArenaTurnLog } from './useArenaTurnLog';
-import { saveArenaGrade } from './arenaTurnLog';
+import { arenaErrorMessage as errorMessage, awardArenaCp, saveArenaGrade } from './arenaTurnLog';
+import { useArenaSessions } from './useArenaSessions';
 import { STRIKE_MS, type StrikePower } from './arenaStrikes';
 import styles from './arena.module.css';
 
@@ -72,10 +68,6 @@ const HUNT_STEPS_MS = [70, 70, 80, 90, 100, 120, 140, 170, 210, 260, 320, 400];
 const GRAB_MS = { pull: 520, chomp: 1170, open: 1620 };
 const LOW_HP = 3;
 const LOOK_AHEAD = { x: 0, y: 0 };
-
-function errorMessage(error: unknown) {
-	return error instanceof Error ? error.message : 'Không lưu được, thử lại.';
-}
 
 export function RecallArena({
 	data,
@@ -89,7 +81,6 @@ export function RecallArena({
 	const fx = useArenaFx(!reducedMotion);
 	const courseId = data.course.id;
 	const gameKey = arenaGameKey(courseId, data.todayIso);
-	const [sessions, setSessions] = useState(() => data.classes.flatMap((item) => item.sessions));
 	const [config, setConfig] = useState<ArenaConfig>(() =>
 		initialConfig(data, initialClassId, null),
 	);
@@ -118,8 +109,10 @@ export function RecallArena({
 		level: ArenaAwardLevel | 0;
 	} | null>(null);
 	const [retryingId, setRetryingId] = useState<string | null>(null);
-	const [openingCpId, setOpeningCpId] = useState<string | null>(null);
 	const [toast, setToast] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
+	const { sessions, openingCpId, openCp } = useArenaSessions(data, (text) =>
+		setToast({ tone: 'error', text }),
+	);
 	const [huntAfterSkip, setHuntAfterSkip] = useState(false);
 	const [look, setLook] = useState(LOOK_AHEAD);
 	const [attackCue, setAttackCue] = useState<ArenaAttackCue | null>(null);
@@ -450,14 +443,11 @@ export function RecallArena({
 	}
 
 	async function award(enrollmentId: string, level: ArenaAwardLevel) {
-		const target = cpSessionFor(enrollmentId);
-		if (!target) {
-			const week = hosts[0] ? ` tuần ${hosts[0].weekNumber}` : '';
-			throw new Error(`Lớp gốc không có buổi${week}, không ghi được CP.`);
-		}
-		const result = await teachingApi<RecallArenaAwardResult>(
-			`/api/admin/teaching/sessions/${target.id}/recall-arena`,
-			{ method: 'POST', body: JSON.stringify({ enrollmentId, points: level }) },
+		const result = await awardArenaCp(
+			cpSessionFor(enrollmentId),
+			hosts[0]?.weekNumber,
+			enrollmentId,
+			level,
 		);
 		setCpOverrides((previous) => ({
 			...previous,
@@ -600,28 +590,6 @@ export function RecallArena({
 			setToast({ tone: 'error', text: errorMessage(error) });
 		} finally {
 			setRetryingId(null);
-		}
-	}
-
-	async function openCp(sessionId: string) {
-		const session = sessions.find((item) => item.id === sessionId);
-		if (!session) return;
-		setOpeningCpId(sessionId);
-		try {
-			const result = await teachingApi<TeachingParticipationMutationResult>(
-				`/api/admin/teaching/sessions/${session.id}/participation/lock`,
-				{
-					method: 'PATCH',
-					body: JSON.stringify({ action: isCpFinalized(session) ? 'unfinalize' : 'open' }),
-				},
-			);
-			setSessions((previous) =>
-				previous.map((item) => (item.id === result.session.id ? result.session : item)),
-			);
-		} catch (error) {
-			setToast({ tone: 'error', text: errorMessage(error) });
-		} finally {
-			setOpeningCpId(null);
 		}
 	}
 
