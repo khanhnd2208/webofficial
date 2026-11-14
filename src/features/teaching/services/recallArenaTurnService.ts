@@ -16,6 +16,7 @@ const turnSelect = {
 	clientId: true,
 	playedAt: true,
 	playedOn: true,
+	runKey: true,
 	enrollmentId: true,
 	guestGroup: true,
 	playerName: true,
@@ -32,6 +33,7 @@ type TurnRow = {
 	clientId: string;
 	playedAt: Date;
 	playedOn: Date;
+	runKey: string | null;
 	enrollmentId: string | null;
 	guestGroup: 'CHALLENGE' | 'SUPPORT' | null;
 	playerName: string;
@@ -53,6 +55,7 @@ function mapTurn(row: TurnRow): RecallArenaTurnRecord {
 		clientId: row.clientId,
 		playedAt: row.playedAt.getTime(),
 		playedOn: row.playedOn.toISOString().slice(0, 10),
+		runKey: row.runKey,
 		enrollmentId: row.enrollmentId,
 		guest: row.studentCode === '',
 		guestGroup: row.guestGroup,
@@ -176,6 +179,7 @@ export async function recordRecallArenaTurn(
 				courseId,
 				playedAt,
 				playedOn: dayColumn(vietnamTodayIso(playedAt)),
+				runKey: input.runKey ?? null,
 				enrollmentId: enrollment?.id ?? null,
 				playerName: student
 					? `${student.familyName} ${student.givenName}`.trim()
@@ -193,7 +197,7 @@ export async function recordRecallArenaTurn(
 	});
 }
 
-/** Every call saved for a course on one game day, oldest first. */
+/** Every call saved for a course on one game day, all runs, oldest first. */
 export async function listRecallArenaTurns(
 	courseId: string,
 	isoDay: string,

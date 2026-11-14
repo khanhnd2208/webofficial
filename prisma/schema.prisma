@@ -1227,9 +1227,12 @@ model TeachingArenaTurn {
   /// Id the browser gave the turn, so a resent turn is stored once.
   clientId     String                      @unique
   courseId     String
-  /// The game day in Vietnam time; one game per course per day.
+  /// The game day in Vietnam time; a day can hold several runs.
   playedOn     DateTime                    @db.Date
   playedAt     DateTime
+  /// The run (phiên) within the day: the sessions played and when the run began.
+  /// Null on turns saved before runs existed.
+  runKey       String?
   enrollmentId String?
   playerName   String
   studentCode  String                      @default("")

@@ -319,6 +319,8 @@ export const recallArenaTurnSchema = z
 	.object({
 		clientId: z.string().trim().min(8).max(80),
 		playedAt: z.number().int().positive().max(8_640_000_000_000_000),
+		/** The run (phiên) this call belongs to; one day can hold several. */
+		runKey: z.string().trim().min(1).max(300).optional(),
 		enrollmentId: z.string().min(1).optional(),
 		guestName: z.string().trim().min(1).max(80).optional(),
 		guestGroup: z.enum(['CHALLENGE', 'SUPPORT']).optional(),

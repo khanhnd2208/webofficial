@@ -185,6 +185,16 @@
 	text-decoration: none;
 }
 
+/* The way into the next class period: easy to find, quieter than "Tiếp tục chơi". */
+.newRun {
+	border: 1px solid var(--arena-line);
+}
+
+.newRun:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
 @media (width <= 560px) {
 	/* The whole panel scrolls, so the list is not squeezed into one row. */
 	.panel {

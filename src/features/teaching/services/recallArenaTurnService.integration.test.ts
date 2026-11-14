@@ -79,6 +79,7 @@ describe('recall arena turn log', () => {
 		const turn = await recordRecallArenaTurn(ids.course, {
 			clientId: `${suffix}-one`,
 			playedAt: MORNING,
+			runKey: 'session-a~run1',
 			enrollmentId: ids.enrollment,
 			cardId: ids.card,
 			result: 'pass',
@@ -87,6 +88,7 @@ describe('recall arena turn log', () => {
 		});
 		expect(turn).toMatchObject({
 			playedOn: '2026-11-03',
+			runKey: 'session-a~run1',
 			enrollmentId: ids.enrollment,
 			guest: false,
 			playerName: 'Trần Thị Mai',
@@ -109,6 +111,7 @@ describe('recall arena turn log', () => {
 		});
 		expect(turn).toMatchObject({
 			playedOn: '2026-11-03',
+			runKey: null,
 			enrollmentId: null,
 			guest: true,
 			guestGroup: 'SUPPORT',
@@ -130,7 +133,10 @@ describe('recall arena turn log', () => {
 		});
 		expect(again.cpAfter).toBe(2);
 		const turns = await listRecallArenaTurns(ids.course, '2026-11-03');
-		expect(turns.map((turn) => turn.clientId)).toEqual([`${suffix}-one`, `${suffix}-guest`]);
+		expect(turns.map((turn) => [turn.clientId, turn.runKey])).toEqual([
+			[`${suffix}-one`, 'session-a~run1'],
+			[`${suffix}-guest`, null],
+		]);
 		await expect(listRecallArenaDays(ids.course)).resolves.toEqual(['2026-11-03']);
 	});
 

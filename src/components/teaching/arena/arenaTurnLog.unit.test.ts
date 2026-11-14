@@ -15,10 +15,11 @@ const base: ArenaHistoryEntry = {
 };
 
 describe('arena turn log payload', () => {
-	it('sends a roster student by enrollment', () => {
-		expect(turnPayload(base)).toEqual({
+	it('sends a roster student by enrollment, with the run it was played in', () => {
+		expect(turnPayload({ ...base, runKey: 's1~abc' })).toEqual({
 			clientId: 'abc12345-x',
 			playedAt: 1_700_000_000_000,
+			runKey: 's1~abc',
 			enrollmentId: 'enr-1',
 			cardId: 'card-1',
 			result: 'pass',
@@ -53,6 +54,7 @@ describe('arena turn log payload', () => {
 			clientId: 'abc12345-x',
 			playedAt: 1_700_000_000_000,
 			playedOn: '2023-11-15',
+			runKey: 's1~abc',
 			enrollmentId: null,
 			guest: true,
 			guestGroup: 'CHALLENGE',
@@ -67,6 +69,7 @@ describe('arena turn log payload', () => {
 		});
 		expect(entry).toMatchObject({
 			id: 'abc12345-x',
+			runKey: 's1~abc',
 			name: 'Lê Khách',
 			award: 0,
 			group: 'CHALLENGE',

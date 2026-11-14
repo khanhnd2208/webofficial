@@ -10,6 +10,7 @@ export function turnPayload(entry: ArenaHistoryEntry): RecallArenaTurnInput {
 	return {
 		clientId: entry.id,
 		playedAt: entry.at,
+		...(entry.runKey ? { runKey: entry.runKey } : {}),
 		...(guest
 			? { guestName: entry.name || 'Khách', ...(entry.group ? { guestGroup: entry.group } : {}) }
 			: { enrollmentId: entry.enrollmentId }),
@@ -26,6 +27,7 @@ export function entryFromTurn(turn: RecallArenaTurnRecord): ArenaHistoryEntry {
 	return {
 		id: turn.clientId,
 		at: turn.playedAt,
+		...(turn.runKey ? { runKey: turn.runKey } : {}),
 		enrollmentId: turn.enrollmentId ?? `turn:${turn.clientId}`,
 		name: turn.playerName,
 		cardId: turn.cardId,

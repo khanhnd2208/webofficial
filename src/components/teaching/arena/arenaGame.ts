@@ -37,8 +37,8 @@ export function passedArenaCards(history: readonly ArenaHistoryEntry[]) {
 }
 
 /**
- * Students who already answered today, pass or fail. Each student answers
- * once per game day; a skipped turn does not count.
+ * Students who already answered in this run, pass or fail. Each student
+ * answers once per run; a skipped turn does not count.
  */
 export function answeredArenaIds(history: readonly ArenaHistoryEntry[]) {
 	const ids = new Set<string>();
@@ -51,6 +51,8 @@ export function answeredArenaIds(history: readonly ArenaHistoryEntry[]) {
 export interface ArenaHistoryEntry {
 	id: string;
 	at: number;
+	/** The run (phiên) of the day this call was made in. */
+	runKey?: string;
 	enrollmentId: string;
 	name: string;
 	cardId: string | null;
@@ -70,7 +72,7 @@ export interface ArenaHistoryEntry {
 	synced?: boolean;
 }
 
-/** Per-session progress, kept in this browser so a reload does not lose the game. */
+/** Progress of one run (phiên), kept in this browser so a reload does not lose the game. */
 export interface ArenaProgress {
 	bag: string[];
 	lastPicked: string | null;
@@ -171,12 +173,12 @@ export function emptyProgress(): ArenaProgress {
 	return { bag: [], lastPicked: null, hp: ARENA_MAX_HP, round: 1, history: [], heroes: {} };
 }
 
-/** One game per course per day: tomorrow's class starts with a fresh boss. */
-const PROGRESS_KEY = (gameKey: string) => `recall-arena:v2:progress:${gameKey}`;
+/** One game per run: each class period starts with a fresh boss, callers and questions. */
+const PROGRESS_KEY = (gameKey: string) => `recall-arena:v3:progress:${gameKey}`;
 const CONFIG_KEY = (courseId: string) => `recall-arena:v2:config:${courseId}`;
 
-export function arenaGameKey(courseId: string, todayIso: string) {
-	return `${courseId}:${todayIso}`;
+export function arenaGameKey(courseId: string, todayIso: string, runKey: string) {
+	return `${courseId}:${todayIso}:${runKey}`;
 }
 
 function readJson<T>(key: string): T | null {
@@ -336,7 +338,7 @@ export function arenaRoster(
 
 /**
  * Students the monster may call: the floor, narrowed by the group filter,
- * minus anyone who already answered today.
+ * minus anyone who already answered in this run.
  */
 export function callablePlayers(
 	roster: readonly RecallArenaPlayer[],

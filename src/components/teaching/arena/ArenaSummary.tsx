@@ -58,6 +58,7 @@ export function ArenaSummary({
 	classHref,
 	sync,
 	onContinue,
+	onNewRun,
 }: {
 	/** Course and classes, used as the first line of the copied report. */
 	title: string;
@@ -68,6 +69,8 @@ export function ArenaSummary({
 	classHref: string;
 	sync: ArenaSummarySync;
 	onContinue: () => void;
+	/** Start a fresh run for the next class period (everyone and every question again). */
+	onNewRun: () => void;
 }) {
 	const dialogRef = useArenaDialogFocus(onContinue);
 	const [copied, setCopied] = useState(false);
@@ -153,7 +156,7 @@ export function ArenaSummary({
 					) : (
 						<span>
 							Đã lưu hết lên hệ thống. CP và Gift được ghi ngay khi chấm từng bạn, nên thoát trang
-							không làm mất điểm. Mở lại trong hôm nay vẫn thấy lịch sử này.
+							không làm mất điểm. Lịch sử phiên này vẫn xem lại được trong “Đã gọi”.
 						</span>
 					)}
 				</p>
@@ -209,6 +212,19 @@ export function ArenaSummary({
 						<Link href={classHref} className={`${styles.textButton} ${summary.link}`}>
 							{unsaved ? 'Vẫn thoát' : 'Thoát về trang lớp'}
 						</Link>
+						<button
+							type="button"
+							className={`${styles.textButton} ${summary.newRun}`}
+							onClick={onNewRun}
+							disabled={unsaved > 0}
+							title={
+								unsaved
+									? 'Đợi lưu xong các lượt của phiên này.'
+									: 'Gọi lại mọi sinh viên, dùng lại toàn bộ câu hỏi, Boss về 1.'
+							}
+						>
+							Bắt đầu phiên mới
+						</button>
 						<button
 							type="button"
 							className={styles.startButton}
