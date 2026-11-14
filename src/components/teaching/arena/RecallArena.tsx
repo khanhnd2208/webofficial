@@ -7,7 +7,6 @@ import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useMotionTier } from '@/components/motion';
 import { AdminApiError } from '@/components/teaching/admin/api';
 import { routes } from '@/config/routes';
-import { recallVisibleText } from '@/features/active-recall/richText';
 import {
 	arenaCpSession,
 	drawCard,
@@ -45,7 +44,6 @@ import {
 	newAssistTurnId,
 	loadProgress,
 	manualArenaPlayers,
-	passedArenaCards,
 	passStreak,
 	saveConfig,
 	saveProgress,
@@ -57,6 +55,7 @@ import {
 import { playArenaSound } from './arenaSound';
 import { useArenaHeroes } from './useArenaHeroes';
 import { useArenaKeyboard } from './useArenaKeyboard';
+import { useArenaQuestions } from './useArenaQuestions';
 import { useArenaTurnLog } from './useArenaTurnLog';
 import { arenaErrorMessage as errorMessage, awardArenaCp, saveArenaGrade } from './arenaTurnLog';
 import { useArenaSessions } from './useArenaSessions';
@@ -162,17 +161,7 @@ export function RecallArena({
 		() => inGroup.filter((player) => !answered.has(player.enrollmentId)),
 		[inGroup, answered],
 	);
-	const activeDeckIds = useMemo(() => new Set(config.deckIds), [config.deckIds]);
-	const cards = useMemo(
-		() => data.cards.filter((card) => activeDeckIds.has(card.deckId)),
-		[data.cards, activeDeckIds],
-	);
-	const passedCards = useMemo(() => passedArenaCards(progress.history), [progress.history]);
-	const availableCardIds = useMemo(
-		() => cards.map((card) => card.id).filter((id) => !passedCards.has(id)),
-		[cards, passedCards],
-	);
-	const cardsById = useMemo(() => new Map(data.cards.map((card) => [card.id, card])), [data.cards]);
+	const questions = useArenaQuestions(data, config.deckIds, progress.history);
 	const names = useMemo(() => displayNames(inRoom), [inRoom]);
 	const nameOf = (enrollmentId: string) => {
 		const player = playersById.get(enrollmentId);
@@ -258,7 +247,7 @@ export function RecallArena({
 			return;
 		}
 		const picked = draw.picked;
-		const cardId = drawCard(availableCardIds, passedCards);
+		const cardId = drawCard(questions.availableIds, questions.passed);
 		setProgress((previous) => ({
 			...previous,
 			bag: draw.bag,
@@ -328,8 +317,8 @@ export function RecallArena({
 		inGroup,
 		inRoom,
 		progress,
-		availableCardIds,
-		passedCards,
+		questions.availableIds,
+		questions.passed,
 		progressLoaded,
 		turnLog.loading,
 		reducedMotion,
@@ -579,9 +568,9 @@ export function RecallArena({
 			at: Date.now(),
 			enrollmentId,
 			cardId:
-				current.cardId && !passedCards.has(current.cardId)
+				current.cardId && !questions.passed.has(current.cardId)
 					? current.cardId
-					: drawCard(availableCardIds, passedCards),
+					: drawCard(questions.availableIds, questions.passed),
 		});
 		setHighlightId(enrollmentId);
 		setLook(lookToward(monsterRef.current, enrollmentId));
@@ -591,8 +580,8 @@ export function RecallArena({
 	function handleNextCard() {
 		if (!current || assist || submitting.current || unconfirmed) return;
 		const cardId = drawCard(
-			availableCardIds.filter((id) => id !== current.cardId),
-			passedCards,
+			questions.availableIds.filter((id) => id !== current.cardId),
+			questions.passed,
 		);
 		if (cardId) setCurrent({ ...current, cardId });
 	}
@@ -667,7 +656,7 @@ export function RecallArena({
 	/** The student on the question card: the volunteer once one is chosen. */
 	const caughtPlayer =
 		(assist?.volunteer ? playersById.get(assist.volunteer.enrollmentId) : failedPlayer) ?? null;
-	const caughtCard = current?.cardId ? (cardsById.get(current.cardId) ?? null) : null;
+	const caughtCard = current?.cardId ? (questions.byId.get(current.cardId) ?? null) : null;
 	const caughtCpSession = caughtPlayer ? cpSessionFor(caughtPlayer.enrollmentId) : null;
 	const canHunt = phase === 'idle' && callable.length > 0 && progressLoaded && !turnLog.loading;
 	const caughtDeck = caughtCard
@@ -688,7 +677,7 @@ export function RecallArena({
 					bossName={boss.name}
 					low={enraged}
 					hpRef={hpRef}
-					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${cards.length ? `${availableCardIds.length}/${cards.length} câu còn lại` : 'câu riêng'}`}
+					settingsLabel={`${hosts.length ? `Tuần ${hosts[0]!.weekNumber}` : 'Chưa chọn lớp'} · ${inRoom.length} bạn · ${questions.cards.length ? `${questions.availableIds.length}/${questions.cards.length} câu còn lại` : 'câu riêng'}`}
 					settingsDisabled={phase === 'hunting' || phase === 'caught' || phase === 'attacking'}
 					onSettings={() => setSetupOpen(true)}
 					calledCount={answered.size}
@@ -750,10 +739,7 @@ export function RecallArena({
 					{historyOpen ? (
 						<ArenaHistory
 							entries={progress.history}
-							questionText={(cardId) => {
-								const card = cardId ? cardsById.get(cardId) : null;
-								return card ? recallVisibleText(card.question) : 'Câu hỏi riêng';
-							}}
+							questionText={questions.questionText}
 							retryingId={retryingId}
 							onRetry={handleRetry}
 							courseId={courseId}
@@ -781,8 +767,8 @@ export function RecallArena({
 						manual={isManualPlayer(caughtPlayer.enrollmentId)}
 						saving={saving}
 						unconfirmed={unconfirmed}
-						canChangeCard={availableCardIds.some((id) => id !== current?.cardId)}
-						cardsExhausted={cards.length > 0 && availableCardIds.length === 0}
+						canChangeCard={questions.availableIds.some((id) => id !== current?.cardId)}
+						cardsExhausted={questions.cards.length > 0 && questions.availableIds.length === 0}
 						cpSession={caughtCpSession}
 						openingCp={openingCpId === caughtCpSession?.id}
 						onOpenCp={openCp}
