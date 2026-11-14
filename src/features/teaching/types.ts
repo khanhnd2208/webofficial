@@ -501,6 +501,8 @@ export interface RecallArenaTurnRecord {
 	playedAt: number;
 	/** Game day in Vietnam (YYYY-MM-DD). */
 	playedOn: string;
+	/** The run (phiên) within the day; null on turns saved before runs existed. */
+	runKey: string | null;
 	/** Null for a player outside the course roster, or a student since removed. */
 	enrollmentId: string | null;
 	guest: boolean;

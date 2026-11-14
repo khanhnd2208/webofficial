@@ -53,6 +53,7 @@ describe('arena turn log payload', () => {
 			clientId: 'abc12345-x',
 			playedAt: 1_700_000_000_000,
 			playedOn: '2023-11-15',
+			runKey: null,
 			enrollmentId: null,
 			guest: true,
 			guestGroup: 'CHALLENGE',
