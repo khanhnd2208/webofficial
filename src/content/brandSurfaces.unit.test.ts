@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	aboutBackground,
-	aboutClosing,
-	aboutCredentials,
-	aboutHero,
-	aboutProjects,
-} from './about';
-import { getProject } from '@/features/portfolio';
+import { aboutCollaboration, aboutHero } from './about';
 import { NOTES_PUBLIC_MIN, areNotesPublic, getPublishedNotes, notes } from './notes';
 import {
 	TREASURE_PUBLIC_MIN,
@@ -26,20 +19,11 @@ describe('about content', () => {
 		expect(corePositioning.full).toContain('Nguyễn Duy Khánh');
 	});
 
-	it('features only projects that have a public case page', () => {
-		expect(aboutProjects.items).toHaveLength(3);
-		for (const { slug } of aboutProjects.items) {
-			expect(getProject(slug)).toBeDefined();
-		}
-	});
-
-	it('keeps background and credentials factual', () => {
-		expect(aboutBackground.places).toHaveLength(6);
-		expect(aboutBackground.places[0]).toBe('Đại học Hà Nội');
-		expect(aboutClosing.title).toBe('Bắt đầu bằng một lời nhắn');
-		expect(aboutCredentials.items).toEqual([
-			'Giảng viên, Khoa Quản trị Kinh doanh và Du lịch',
-			'Trường Đại học Hà Nội · Hà Nội, Việt Nam',
+	it('lists three ways to work together', () => {
+		expect(aboutCollaboration.items.map((item) => item.title)).toEqual([
+			'Đào tạo quản trị',
+			'Ứng dụng AI vào công việc',
+			'Học tập và tiếng Anh',
 		]);
 	});
 });

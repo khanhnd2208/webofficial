@@ -59,11 +59,8 @@ classroom:
   - e2e/my-class.admin.spec.ts
   - e2e/myspace-tests.spec.ts
 portfolio:
-  - src/features/portfolio/**
   - src/features/posts/**
   - src/features/learn/**
-  - src/features/services/**
-  - src/features/experiences/**
   - src/features/inquiries/**
   - src/features/unreleased-quiz/**
   - src/features/unreleased-gift/**
@@ -73,12 +70,8 @@ portfolio:
   - src/components/contact/**
   - src/app/page.tsx
   - src/app/opengraph-image.tsx
-  - src/app/gioi-thieu/**
   - src/app/muc-luc/**
   - src/app/khoa-hoc/**
-  - src/app/du-an/**
-  - src/app/trai-nghiem/**
-  - src/app/dich-vu/**
   - src/app/ghi-chep/**
   - src/app/lien-he/**
   - src/app/unreleased/**

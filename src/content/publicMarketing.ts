@@ -9,20 +9,6 @@ export const corePositioning = {
 	overlay: 'Hà Nội · Lớp học · Những thử nghiệm',
 } as const;
 
-export const projectsPage = {
-	title: 'Dự án',
-	lead: 'Một số lớp học, chương trình và thử nghiệm tôi đã hoặc đang thực hiện.',
-} as const;
-
-/** @deprecated Import from `@/content/services` — kept for shared marketing re-exports. */
-export {
-	servicesPage,
-	serviceOffers,
-	programDesign,
-	servicesFaq,
-	servicesClosing,
-} from './services';
-
 /** /lien-he is the "Về tôi" page: introduction, channels, collaboration, message form. */
 export const contactPage = {
 	intro: [
