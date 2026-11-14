@@ -186,7 +186,7 @@ export function AttendanceGrid({
 	publicCompact = false,
 	scrollMode = 'contained',
 	groupNumberByEnrollment,
-	showEligibilityColumn = true,
+	showEligibilityColumn = false,
 	highlightedEnrollmentId = null,
 	onMarkChange,
 	onSessionToggle,

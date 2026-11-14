@@ -232,6 +232,8 @@ describe('StudentClassBoard', () => {
 		const search = screen.getByPlaceholderText('Tìm tên hoặc MSV');
 
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
+		expect(screen.queryByRole('columnheader', { name: 'Trạng thái' })).not.toBeInTheDocument();
+		expect(screen.queryByText('Đủ điều kiện')).not.toBeInTheDocument();
 		expect(screen.queryAllByRole('button', { name: /tuần 1/i })).toHaveLength(0);
 		fireEvent.change(search, { target: { value: '**' } });
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);

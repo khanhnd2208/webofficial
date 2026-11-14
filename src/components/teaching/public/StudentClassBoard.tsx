@@ -545,6 +545,7 @@ export function StudentClassBoard({
 								sessions={scopedSessions}
 								totalWeeks={board.policy.totalWeeks}
 								attendanceMaxPoints={board.policy.attendanceMaxPoints}
+								showEligibilityColumn={false}
 								readOnly
 								publicCompact
 								scrollMode="page"
