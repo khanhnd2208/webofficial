@@ -1,6 +1,6 @@
 ---
 name: design-boss
-description: Design an original Arena boss, its expressive face and distinctive animations; create reviewable concepts or integrate an approved design into the teaching game.
+description: Design or refine Arena bosses and their animations, including the student capture in Kiểm tra bài cũ. Create reviewable concepts or integrate an approved design into the teaching game.
 ---
 
 # Design an Arena boss
@@ -14,6 +14,13 @@ Inspect the current `src/components/teaching/arena/arenaBosses.ts`, `ArenaBossAr
 ## Design motion with the face
 
 Describe a short idle loop and at least two character-specific reactions before drawing. Use a clear sequence: anticipation → action → recoil → settle. For example, a bookish boss could raise its brows and gather loose pages before inhaling, snap the book closed on chomp, then laugh as pages flutter back. Keep the eyes and mouth readable; don't substitute random flashes for expression. Use the game's existing impact, shake, squash and defeat timing when possible. Avoid long flashes or continuous shaking. Provide a calm still state for reduced motion.
+
+## When the boss catches a student
+
+- Let the camera tell the story. Zoom into a group formed by students' visible positions on the floor, hold long enough to read their sprites and names, then pan smoothly to the next group. End with the drawn student and nearby classmates in frame. For a small class, one close-up can be enough.
+- Keep the existing draw rules. Use the full visible floor to compose the camera shots so the scan does not reveal which students are eligible. Let the boss's gaze follow each shot. Skip the repeated spotlight jumps, flashing patterns and crowd shaking.
+- Give the boss a small wind-up and a quick reach from the side of its body. Close the fingers where they contact the student's sprite. At that beat, highlight the name and let the hand and student retreat together. Use the camera scale when converting the contact point into movement on the floor. Pull back to the full floor before opening the question.
+- Review a full capture in the playable Arena with a crowded class and on a narrow screen. Check that the chosen student's name stays readable, the button label keeps the floor from shifting, and the hand meets the student before either moves away. With reduced motion, reveal the chosen student without the camera or claw animation.
 
 ## Review and integrate
 
