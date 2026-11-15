@@ -1,13 +1,13 @@
 import LearnLinkPending from './LearnLinkPending';
 import Link from 'next/link';
 
+import SiteHeader from '@/components/site/SiteHeader';
 import SpotIllustration from '@/components/site/SpotIllustration';
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/format';
 import { toCurriculumLessons, type LearnCourseSummary } from '@/features/learn/progress';
 import { LEARN_LEVEL_LABELS, type LearnCourseOutline } from '@/features/learn/types';
 
-import LearnAppBar from './LearnAppBar';
 import LearnCurriculum from './LearnCurriculum';
 import { LearnIcon } from './LearnIcon';
 
@@ -41,19 +41,8 @@ export default function LearnCourseOverview({
 
 	return (
 		<>
-			<LearnAppBar
-				crumbs={[{ label: course.title }]}
-				actions={
-					isAdmin ? (
-						<Link
-							href={routes.learnStudio(course.slug)}
-							className="ln-btn ln-btn--ghost ln-btn--sm"
-						>
-							<LearnIcon name="edit" size={14} /> Soạn bài
-							<LearnLinkPending />
-						</Link>
-					) : null
-				}
+			<SiteHeader
+				trail={[{ label: 'Học tập', href: routes.learnCourses }, { label: course.title }]}
 			/>
 			<main className="ln-page">
 				<div className="ln-overview">
@@ -82,11 +71,21 @@ export default function LearnCourseOverview({
 								</p>
 							</div>
 						) : null}
-						{cta.href ? (
-							<Link href={cta.href} className="ln-btn ln-btn--primary">
-								{cta.label}
-								<LearnLinkPending />
-							</Link>
+						{cta.href || isAdmin ? (
+							<div className="flex flex-wrap items-center gap-2">
+								{cta.href ? (
+									<Link href={cta.href} className="ln-btn ln-btn--primary">
+										{cta.label}
+										<LearnLinkPending />
+									</Link>
+								) : null}
+								{isAdmin ? (
+									<Link href={routes.learnStudio(course.slug)} className="ln-btn ln-btn--ghost">
+										<LearnIcon name="edit" size={14} /> Soạn bài
+										<LearnLinkPending />
+									</Link>
+								) : null}
+							</div>
 						) : null}
 					</header>
 

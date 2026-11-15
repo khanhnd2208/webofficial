@@ -40,12 +40,15 @@ function Crumb({ crumb, current }: { crumb: SiteCrumb; current: boolean }) {
  * One sticky bar for public pages: wordmark, trail, one contact action, account.
  * Transparent at the top of the page; glass once the sentinel has scrolled away.
  * On Mục lục it floats over the painting.
+ *
+ * The root layout renders it wherever isSiteHeaderPath allows. A page whose header depends on
+ * more than the path (a course overview, but not its reader) renders its own with `trail`.
  */
-export default function SiteHeader() {
+export default function SiteHeader({ trail: pageTrail }: { trail?: SiteCrumb[] } = {}) {
 	const pathname = usePathname() || routes.home;
 	const [panelOpen, setPanelOpen] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
-	const show = isSiteHeaderPath(pathname);
+	const show = Boolean(pageTrail) || isSiteHeaderPath(pathname);
 
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect -- close the panel when the page changes
@@ -64,7 +67,7 @@ export default function SiteHeader() {
 
 	if (!show) return null;
 
-	const trail = getSiteTrail(pathname);
+	const trail = pageTrail ?? getSiteTrail(pathname);
 	const onToc = isTocPath(pathname);
 	const showContact = pathname !== routes.contact;
 
@@ -89,7 +92,7 @@ export default function SiteHeader() {
 						>
 							{SITE_NAME}
 						</Link>
-						<ol className="hidden min-w-0 items-center sm:flex">
+						<ol className="hidden min-w-0 items-center gap-2 sm:flex">
 							{trail.map((crumb, index) => {
 								const last = index === trail.length - 1;
 								return (
