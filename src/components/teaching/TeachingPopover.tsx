@@ -1,6 +1,6 @@
 'use client';
 
-import { useSurfaceTheme } from '@/components/ui/SurfaceTheme';
+import { useSurfaceAudience, useSurfaceTheme } from '@/components/ui/SurfaceTheme';
 
 import {
 	createContext,
@@ -101,6 +101,7 @@ export function TeachingPopover({
 	ariaLabel?: string;
 }) {
 	const surface = useSurfaceTheme();
+	const audience = useSurfaceAudience();
 	const id = useId();
 	const registry = useContext(TeachingPopoverRegistry);
 	const [localOpen, setLocalOpen] = useState(false);
@@ -167,6 +168,7 @@ export function TeachingPopover({
 						<div
 							ref={panelRef}
 							data-surface={surface}
+							data-audience={audience}
 							role={closeOnInsideClick ? 'menu' : 'dialog'}
 							aria-label={ariaLabel}
 							className="fixed z-[90] max-h-[min(70dvh,32rem)] min-w-56 max-w-[calc(100vw-1rem)] overflow-auto rounded-[var(--mc-r-md)] border border-mc-rule bg-paper p-2 shadow-lg"

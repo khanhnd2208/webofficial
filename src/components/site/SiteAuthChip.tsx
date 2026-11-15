@@ -170,13 +170,23 @@ export default function SiteAuthChip({
 				<span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-success" />
 				{variant === 'badge' && isAdmin ? null : (
 					<span
-						className={`truncate tracking-normal normal-case ${variant === 'badge' ? 'max-w-[4.5rem]' : 'max-w-[9rem]'}`}
+						className={`truncate tracking-normal normal-case ${
+							variant === 'badge'
+								? 'max-w-[4.5rem]'
+								: variant === 'bar'
+									? 'max-w-[5.5rem] sm:max-w-[9rem]'
+									: 'max-w-[9rem]'
+						}`}
 					>
 						{name}
 					</span>
 				)}
 				{isAdmin ? (
-					<span className="rounded-full border border-current px-1.5 py-px text-caption leading-none tracking-[0.08em] uppercase">
+					// On a phone the site header has no room for the pill next to the wordmark; the menu
+					// still says the account is an admin.
+					<span
+						className={`rounded-full border border-current px-1.5 py-px text-caption leading-none tracking-[0.08em] uppercase ${variant === 'bar' ? 'max-sm:hidden' : ''}`}
+					>
 						Admin
 					</span>
 				) : null}

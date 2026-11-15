@@ -608,6 +608,18 @@
 		color var(--ui-duration-hover) var(--ui-ease),
 		border-color var(--ui-duration-hover) var(--ui-ease);
 }
+/* Three status tabs fit a 320px phone without a hidden, scroll-only "Hoàn thành". */
+@media (max-width: 399px) {
+	.ln-tab {
+		padding-inline: 0.5rem;
+	}
+}
+/* At 320px the counts are what no longer fits; the filtered list still shows what is there. */
+@media (max-width: 359px) {
+	.ln-tab__count {
+		display: none;
+	}
+}
 .ln-tab:hover {
 	color: var(--ink);
 }

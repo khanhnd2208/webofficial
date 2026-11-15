@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+import { addAdminSession } from './helpers/adminSession';
+
 test.describe('Public pages smoke', () => {
 	test('homepage is an intro cover that opens the mục lục', async ({ page }) => {
 		await page.goto('/');
@@ -94,6 +96,22 @@ test.describe('Public pages smoke', () => {
 				expect(hasOverflow).toBe(false);
 			}
 		}
+	});
+
+	test('a signed-in admin header leaves the wordmark clear on a 320px phone', async ({
+		page,
+		context,
+	}) => {
+		await addAdminSession(context);
+		await page.setViewportSize({ width: 320, height: 700 });
+		await page.goto('/muc-luc');
+		await expect(page.getByTestId('site-auth-chip')).toHaveAttribute('data-auth-state', 'admin');
+		const home = await page.getByTestId('site-header-home').boundingBox();
+		const contact = await page.getByTestId('site-header-contact').boundingBox();
+		const chip = await page.getByTestId('site-auth-chip').boundingBox();
+		expect(home && contact && chip).toBeTruthy();
+		expect(home!.x + home!.width).toBeLessThanOrEqual(contact!.x);
+		expect(chip!.x + chip!.width).toBeLessThanOrEqual(320);
 	});
 
 	test('the old introduction lands on Về tôi, with every channel', async ({ page }) => {

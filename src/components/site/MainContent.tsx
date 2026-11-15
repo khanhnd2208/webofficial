@@ -8,8 +8,8 @@ import JourneyTransition from './JourneyTransition';
 import { isInternalChromePath } from '@/config/navigation';
 
 /**
- * Light entrance on public routes. The sticky header already occupies its own
- * space. Intro, mục lục, My Space, and /lop stay full-bleed.
+ * Light entrance on public routes. Intro and Mục lục play the journey transition;
+ * workspaces with their own chrome get no entrance.
  */
 export default function MainContent({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
@@ -18,14 +18,10 @@ export default function MainContent({ children }: { children: ReactNode }) {
 		return <div id="main-content">{children}</div>;
 	}
 
-	const isBookPage = ['/', '/muc-luc', '/gioi-thieu', '/du-an', '/dich-vu'].includes(pathname);
-
 	return (
 		<div id="main-content">
 			{pathname === '/' || pathname === '/muc-luc' ? (
 				<JourneyTransition page={pathname}>{children}</JourneyTransition>
-			) : isBookPage ? (
-				children
 			) : (
 				<RouteEntrance key={pathname}>{children}</RouteEntrance>
 			)}
