@@ -7,6 +7,7 @@ import { useMotionTier } from '@/components/motion';
 import type { RecallArenaPlayer } from '@/features/teaching/types';
 
 import { suckStyle, type ArenaSuck } from './ArenaEffects';
+import { CAPTURE_MS, type CaptureFrame } from './arenaCapture';
 import { ArenaCharacter } from './ArenaCharacter';
 import type { ArenaCharacter as Character } from './arenaCharacters';
 import { floorLayout, nextRoamingSpot, startingSpots, type RoamingSpot } from './arenaRoaming';
@@ -29,6 +30,7 @@ export function ArenaFloor({
 	highlightId,
 	caughtId,
 	hunting,
+	camera,
 	results,
 	names,
 	suck,
@@ -39,11 +41,12 @@ export function ArenaFloor({
 	highlightId: string | null;
 	caughtId: string | null;
 	hunting: boolean;
+	camera?: CaptureFrame | null;
 	/** How each student who already answered in this phiên did; they are not called again. */
 	results: ReadonlyMap<string, 'pass' | 'fail'>;
 	/** Label per enrollment, already made unique for this room. */
 	names: ReadonlyMap<string, string>;
-	/** The grab in progress, if any: reticle, flight into the mouth, landing. */
+	/** The grab in progress, if any: reach, hold, landing. */
 	suck: ArenaSuck | null;
 	attackCue: ArenaAttackCue | null;
 	/** Today's hero for a student. */
@@ -140,83 +143,94 @@ export function ArenaFloor({
 
 	return (
 		<div
-			ref={floorRef}
 			className={styles.floor}
 			data-hunting={hunting || undefined}
 			data-striking={(attackCue && !reducedMotion) || undefined}
 			style={{ '--strike-hero-scale': STRIKE_HERO_SCALE } as CSSProperties}
 		>
-			{players.map((player, index) => {
-				const spot: RoamingSpot =
-					spots.get(player.enrollmentId) ?? initial.get(player.enrollmentId)!;
-				const highlighted = highlightId === player.enrollmentId;
-				const caught = caughtId === player.enrollmentId;
-				const attacking = attackCue?.enrollmentId === player.enrollmentId;
-				const result = results.get(player.enrollmentId);
-				return (
-					<div
-						key={player.enrollmentId}
-						className={styles.player}
-						data-highlight={highlighted || undefined}
-						data-caught={caught || undefined}
-						data-called={result}
-						data-attacking={(attacking && !reducedMotion) || undefined}
-						data-player-id={player.enrollmentId}
-						data-walking={(spot.walking && !paused && !reducedMotion) || undefined}
-						data-suck={suck?.id === player.enrollmentId ? suck.stage : undefined}
-						data-testid="arena-player"
-						style={
-							{
-								width: `${size + 72}px`,
-								left: `${spot.x}%`,
-								top: `${spot.y}%`,
-								'--travel-ms': `${spot.travelMs}ms`,
-								animationDelay: `${(index % 7) * -0.23}s`,
-								...suckStyle(suck, player.enrollmentId),
-							} as CSSProperties
-						}
-					>
-						<span
-							className={styles.playerFigure}
+			<div
+				ref={floorRef}
+				className={styles.crowd}
+				data-arena-crowd
+				style={{
+					transform: camera
+						? `translate3d(${camera.x}px, ${camera.y}px, 0) scale(${camera.scale})`
+						: undefined,
+					transitionDuration: `${camera ? CAPTURE_MS.pan - 140 : CAPTURE_MS.reset - 80}ms`,
+				}}
+			>
+				{players.map((player, index) => {
+					const spot: RoamingSpot =
+						spots.get(player.enrollmentId) ?? initial.get(player.enrollmentId)!;
+					const highlighted = highlightId === player.enrollmentId;
+					const caught = caughtId === player.enrollmentId;
+					const attacking = attackCue?.enrollmentId === player.enrollmentId;
+					const result = results.get(player.enrollmentId);
+					return (
+						<div
+							key={player.enrollmentId}
+							className={styles.player}
+							data-highlight={highlighted || undefined}
+							data-caught={caught || undefined}
+							data-called={result}
+							data-attacking={(attacking && !reducedMotion) || undefined}
+							data-player-id={player.enrollmentId}
+							data-walking={(spot.walking && !paused && !reducedMotion) || undefined}
+							data-suck={suck?.id === player.enrollmentId ? suck.stage : undefined}
+							data-testid="arena-player"
 							style={
 								{
-									'--hero-accent': characters.get(player.enrollmentId)!.accent,
-									'--hero-size': `${size}px`,
+									width: `${size + 72}px`,
+									left: `${spot.x}%`,
+									top: `${spot.y}%`,
+									'--travel-ms': `${spot.travelMs}ms`,
+									animationDelay: `${(index % 7) * -0.23}s`,
+									...suckStyle(suck, player.enrollmentId),
 								} as CSSProperties
 							}
 						>
-							{result ? (
-								<span
-									className={styles.playerDone}
-									data-result={result}
-									title={result === 'pass' ? 'Đã vượt qua' : 'Đã trả lời'}
-								>
-									✓
-								</span>
-							) : null}
-							<ArenaCharacter
-								character={characters.get(player.enrollmentId)!}
-								size={size}
-								walking={spot.walking && !paused && !reducedMotion}
-								attacking={attacking && !reducedMotion}
-								nameplate={size >= 44}
-								facingLeft={attacking ? attackCue.facingLeft : spot.facingLeft}
-							/>
-						</span>
-						<span
-							className={styles.playerName}
-							title={names.get(player.enrollmentId) ?? player.givenName}
-						>
-							{names.get(player.enrollmentId) ?? player.givenName}
-							{result ? (
-								<span className={styles.srOnly}>
-									{result === 'pass' ? ', đã vượt qua' : ', đã trả lời'}
-								</span>
-							) : null}
-						</span>
-					</div>
-				);
-			})}
+							<span
+								className={styles.playerFigure}
+								style={
+									{
+										'--hero-accent': characters.get(player.enrollmentId)!.accent,
+										'--hero-size': `${size}px`,
+									} as CSSProperties
+								}
+							>
+								{result ? (
+									<span
+										className={styles.playerDone}
+										data-result={result}
+										title={result === 'pass' ? 'Đã vượt qua' : 'Đã trả lời'}
+									>
+										✓
+									</span>
+								) : null}
+								<ArenaCharacter
+									character={characters.get(player.enrollmentId)!}
+									size={size}
+									walking={spot.walking && !paused && !reducedMotion}
+									attacking={attacking && !reducedMotion}
+									nameplate={size >= 44}
+									facingLeft={attacking ? attackCue.facingLeft : spot.facingLeft}
+								/>
+							</span>
+							<span
+								className={styles.playerName}
+								title={names.get(player.enrollmentId) ?? player.givenName}
+							>
+								{names.get(player.enrollmentId) ?? player.givenName}
+								{result ? (
+									<span className={styles.srOnly}>
+										{result === 'pass' ? ', đã vượt qua' : ', đã trả lời'}
+									</span>
+								) : null}
+							</span>
+						</div>
+					);
+				})}
+			</div>
 		</div>
 	);
 }

@@ -18,6 +18,7 @@ import type { RecallArenaData } from '@/features/teaching/types';
 import { ArenaCaught } from './ArenaCaught';
 import { lookToward, useArenaFx } from './ArenaEffects';
 import { ArenaMonster, type MonsterMood } from './ArenaFigures';
+import { CAPTURE_MS, captureRoute, type CaptureFrame } from './arenaCapture';
 import { ArenaFloor, type ArenaAttackCue } from './ArenaFloor';
 import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
@@ -65,10 +66,6 @@ import styles from './arena.module.css';
 
 type Phase = 'idle' | 'hunting' | 'caught' | 'attacking' | 'victory';
 
-/** Spotlight hops while the monster hunts, slowing down before it grabs someone. */
-const HUNT_STEPS_MS = [70, 70, 80, 90, 100, 120, 140, 170, 210, 260, 320, 400];
-/** After the spotlight stops: reticle, then the beam pulls, the jaws shut, the question opens. */
-const GRAB_MS = { pull: 520, chomp: 1170, open: 1620 };
 const LOW_HP = 3;
 const LOOK_AHEAD = { x: 0, y: 0 };
 
@@ -98,6 +95,7 @@ export function RecallArena({
 	const [endedNote, setEndedNote] = useState<string | null>(null);
 	const [phase, setPhase] = useState<Phase>('idle');
 	const [mood, setMood] = useState<MonsterMood>('idle');
+	const [camera, setCamera] = useState<CaptureFrame | null>(null);
 	const [highlightId, setHighlightId] = useState<string | null>(null);
 	const [current, setCurrent] = useState<{
 		catchId: string;
@@ -126,8 +124,7 @@ export function RecallArena({
 	const timers = useRef<number[]>([]);
 	const monsterRef = useRef<HTMLDivElement>(null);
 	const hpRef = useRef<HTMLDivElement>(null);
-	const { worldRef, suck, layer, shake, flash, pop, sparks, fireworks, lock, grab, hold, release } =
-		fx;
+	const { worldRef, suck, layer, shake, flash, pop, sparks, fireworks, grab, hold, release } = fx;
 	const boss = arenaBossFor(progress.round, config.bossId);
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
@@ -140,7 +137,7 @@ export function RecallArena({
 		() => new Map(allPlayers.map((player) => [player.enrollmentId, player])),
 		[allPlayers],
 	);
-	/** Everyone on the floor; the spotlight visits all of them. */
+	/** Everyone on the floor, including students outside the active calling group. */
 	const inRoom = useMemo(
 		() => [
 			...arenaRoster(data.players, hosts, config),
@@ -240,13 +237,7 @@ export function RecallArena({
 			lastPicked: picked,
 		}));
 		setPhase('hunting');
-		setMood('roar');
-		playArenaSound('roar');
-		shake('soft');
-		const spot = (id: string | null) => {
-			setHighlightId(id);
-			setLook(lookToward(monsterRef.current, id));
-		};
+		setMood('idle');
 		const open = () => {
 			setCurrent({
 				catchId: window.crypto.randomUUID(),
@@ -254,64 +245,53 @@ export function RecallArena({
 				enrollmentId: picked,
 				cardId,
 			});
+			setHighlightId(picked);
 			setPhase('caught');
 			setMood('idle');
 			playArenaSound('reveal');
 		};
-		// The spotlight visits everyone in the room, not only the chosen group,
-		// so the class cannot tell who is in which group.
-		const roomIds = inRoom.map((player) => player.enrollmentId);
-		const steps = reducedMotion ? [] : HUNT_STEPS_MS;
-		let elapsed = 0;
-		let previousId: string | null = null;
-		steps.forEach((step, index) => {
-			elapsed += step;
-			later(elapsed, () => {
-				const pool = roomIds.length > 1 ? roomIds.filter((id) => id !== previousId) : roomIds;
-				previousId = pool[Math.floor(Math.random() * pool.length)] ?? null;
-				spot(previousId);
-				playArenaSound('tick', index);
-			});
-		});
-		const lockAt = elapsed + 120;
-		later(lockAt, () => {
-			spot(picked);
-			lock(picked);
-			playArenaSound('lock');
-		});
 		if (reducedMotion) {
-			later(200, open);
+			open();
 			return;
 		}
-		later(lockAt + GRAB_MS.pull, () => {
-			setMood('inhale');
-			grab(picked, monsterRef.current);
-			playArenaSound('suck');
+		// Let the floor freeze its walking positions before measuring any shots.
+		later(60, () => {
+			const frames = captureRoute(worldRef.current, picked);
+			let elapsed = 0;
+			for (const frame of frames) {
+				const focus = () => {
+					setCamera(frame);
+					setLook(lookToward(monsterRef.current, frame.lookId));
+				};
+				if (elapsed) later(elapsed, focus);
+				else focus();
+				elapsed += elapsed ? CAPTURE_MS.pan : CAPTURE_MS.entry;
+			}
+			later(elapsed, () => {
+				setLook(lookToward(monsterRef.current, picked));
+			});
+			const reach = elapsed + CAPTURE_MS.anticipate;
+			later(reach, () => grab(picked, monsterRef.current, frames.at(-1)?.scale ?? 1));
+			later(reach + CAPTURE_MS.grab * 0.53, () => playArenaSound('lock'));
+			const retreat = reach + CAPTURE_MS.grab;
+			later(retreat, () => {
+				hold();
+				setCamera(null);
+				setMood('chomp');
+			});
+			later(retreat + CAPTURE_MS.reset, open);
 		});
-		later(lockAt + GRAB_MS.chomp, () => {
-			setMood('chomp');
-			hold();
-			shake('hard');
-			flash('white');
-			sparks(monsterRef.current, 'gold', 28);
-			playArenaSound('chomp');
-		});
-		later(lockAt + GRAB_MS.open, open);
 	}, [
 		phase,
 		callable,
 		inGroup,
-		inRoom,
 		progress,
 		questions.availableIds,
 		questions.hidden,
 		progressLoaded,
 		reducedMotion,
 		later,
-		shake,
-		flash,
-		sparks,
-		lock,
+		worldRef,
 		grab,
 		hold,
 	]);
@@ -689,13 +669,7 @@ export function RecallArena({
 							ref={monsterRef}
 							className={styles.monsterEntry}
 						>
-							<ArenaMonster
-								mood={mood}
-								size={phase === 'hunting' ? 280 : 240}
-								boss={boss}
-								enraged={enraged}
-								look={look}
-							/>
+							<ArenaMonster mood={mood} size={240} boss={boss} enraged={enraged} look={look} />
 						</div>
 						{streak >= 2 && phase !== 'victory' ? (
 							<span key={streak} className={styles.combo}>
@@ -708,6 +682,7 @@ export function RecallArena({
 						highlightId={highlightId}
 						caughtId={phase === 'caught' ? (current?.enrollmentId ?? null) : null}
 						hunting={phase === 'hunting'}
+						camera={camera}
 						results={results}
 						names={names}
 						suck={suck}
@@ -723,7 +698,7 @@ export function RecallArena({
 							onClick={startHunt}
 						>
 							{phase === 'hunting'
-								? 'Quái vật đang tìm…'
+								? 'Đang tìm…'
 								: inGroup.length && !callable.length
 									? 'Đã gọi hết'
 									: 'Bắt!'}
