@@ -1,0 +1,95 @@
+.hand {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: clamp(4.3rem, 10vw, 6.7rem);
+	aspect-ratio: 6 / 7;
+	animation: reach var(--grab-ms) linear both;
+}
+
+.claw {
+	display: block;
+	width: 100%;
+	height: 100%;
+	fill: #8870a3;
+	stroke: #241838;
+	stroke-width: 3.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	transform-origin: 50% 75%;
+	transform: translate(-50%, -75%) rotate(var(--hand-angle));
+	filter: drop-shadow(0 7px 6px rgb(16 7 27 / 65%));
+}
+
+.palm {
+	fill: #544272;
+}
+
+.palmLight {
+	fill: #796392;
+	stroke: none;
+}
+
+.tip {
+	fill: #e6d8ee;
+	stroke-width: 2;
+}
+
+.leftClaw,
+.rightClaw,
+.fingers {
+	transform-box: fill-box;
+	transform-origin: top center;
+	animation: fingers var(--grab-ms) linear both;
+}
+
+.leftClaw {
+	--open-angle: 16deg;
+	--grip-angle: -24deg;
+}
+
+.rightClaw {
+	--open-angle: -14deg;
+	--grip-angle: 27deg;
+}
+
+.fingers {
+	--open-angle: -5deg;
+	--grip-angle: 8deg;
+}
+
+@keyframes fingers {
+	0%,
+	45% {
+		transform: rotate(var(--open-angle));
+	}
+	55%,
+	100% {
+		transform: rotate(var(--grip-angle));
+	}
+}
+
+@keyframes reach {
+	0% {
+		opacity: 0;
+		transform: translate(var(--hand-x), var(--hand-y)) scale(0.45);
+		animation-timing-function: cubic-bezier(0.64, 0, 0.38, 1);
+	}
+	18% {
+		opacity: 1;
+	}
+	50% {
+		transform: translate(var(--grip-x), var(--grip-y)) scale(1);
+	}
+	55% {
+		transform: translate(var(--grip-x), var(--grip-y)) scale(1);
+		animation-timing-function: cubic-bezier(0.55, 0, 0.45, 1);
+	}
+	84% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+		transform: translate(var(--hand-x), var(--hand-y)) scale(0.45);
+	}
+}

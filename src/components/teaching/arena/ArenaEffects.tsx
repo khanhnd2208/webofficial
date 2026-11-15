@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 
 import { GRAPHIC_COLORS as C } from '@/config/graphicColors';
 
+import { CAPTURE_MS, CaptureHand, type CaptureHandCue } from './arenaCapture';
 import { ArenaStrike } from './ArenaStrike';
 import type { ArenaCharacter } from './arenaCharacters';
 import { STRIKE_HERO_SCALE, STRIKE_MS, type StrikeCue, type StrikePower } from './arenaStrikes';
@@ -21,23 +22,11 @@ interface Pop {
 	y: number;
 }
 
-interface Beam {
-	x: number;
-	y: number;
-	length: number;
-	angle: number;
-}
-
-/**
- * The grab, step by step: `lock` puts a reticle on the student, `pull` flies
- * them into the monster's mouth, `held` keeps them off the floor while the
- * question is open, `drop` lands them back in their place.
- */
 export interface ArenaSuck {
 	id: string;
 	dx: number;
 	dy: number;
-	stage: 'lock' | 'pull' | 'held' | 'drop';
+	stage: 'pull' | 'held' | 'drop';
 }
 
 export interface ArenaBanner {
@@ -67,11 +56,6 @@ function loadConfetti() {
 function centre(element: Element, yRatio = 0.5) {
 	const rect = element.getBoundingClientRect();
 	return { x: rect.left + rect.width / 2, y: rect.top + rect.height * yRatio };
-}
-
-/** Where the monster's mouth is on screen. */
-function mouthOf(monster: Element) {
-	return centre(monster, 0.66);
 }
 
 export function arenaPlayerElement(enrollmentId: string) {
@@ -120,8 +104,8 @@ export function lookToward(monster: Element | null, enrollmentId: string | null)
 }
 
 /**
- * Screen-level juice: shake, flashes, floating numbers, sparks, the tractor
- * beam, hero attacks and the boss banner. Everything is a no-op when `enabled` is false
+ * Screen-level juice: shake, flashes, floating numbers, sparks, the grab,
+ * hero attacks and the boss banner. Everything is a no-op when `enabled` is false
  * (reduced motion), so the game logic never has to check.
  */
 export function useArenaFx(enabled: boolean) {
@@ -130,7 +114,7 @@ export function useArenaFx(enabled: boolean) {
 	const timers = useRef<number[]>([]);
 	const [pops, setPops] = useState<Pop[]>([]);
 	const [flash, setFlash] = useState<{ id: number; tone: FxTone | 'white' } | null>(null);
-	const [beam, setBeam] = useState<Beam | null>(null);
+	const [hand, setHand] = useState<CaptureHandCue | null>(null);
 	const [suck, setSuck] = useState<ArenaSuck | null>(null);
 	const [banner, setBanner] = useState<ArenaBanner | null>(null);
 	const [strikeCue, setStrikeCue] = useState<StrikeCue | null>(null);
@@ -227,41 +211,41 @@ export function useArenaFx(enabled: boolean) {
 		});
 	}, [enabled, after]);
 
-	const lock = useCallback(
-		(id: string) => {
-			if (enabled) setSuck({ id, dx: 0, dy: 0, stage: 'lock' });
-		},
-		[enabled],
-	);
-
-	/** Fire the beam and pull the student into the monster's mouth. */
 	const grab = useCallback(
-		(id: string, monster: Element | null) => {
-			const target = arenaPlayerElement(id);
-			if (!enabled || !monster || !target) return;
-			const mouth = mouthOf(monster);
-			const body = centre(target, 0.4);
-			const dx = mouth.x - body.x;
-			const dy = mouth.y - body.y;
-			setSuck({ id, dx, dy, stage: 'pull' });
-			setBeam({
-				x: mouth.x,
-				y: mouth.y,
-				length: Math.hypot(dx, dy),
-				angle: (Math.atan2(-dy, -dx) * 180) / Math.PI,
-			});
+		(id: string, monster: Element | null, scale: number) => {
+			const figure = arenaPlayerElement(id)?.querySelector('[data-character]');
+			if (!enabled || !monster || !figure) return;
+			const to = centre(figure, 0.53);
+			const boss = monster.getBoundingClientRect();
+			const centerX = boss.left + boss.width / 2;
+			const side = to.x < centerX ? -1 : 1;
+			const from = {
+				x: centerX + side * boss.width * 0.42,
+				y: boss.top + boss.height * 0.66,
+			};
+			monster.animate?.(
+				[
+					{ rotate: '0deg' },
+					{ rotate: `${side * -4}deg`, offset: 0.16 },
+					{ rotate: `${side * 8}deg`, offset: 0.49 },
+					{ rotate: `${side * 6}deg`, offset: 0.65 },
+					{ rotate: '0deg' },
+				],
+				{ duration: CAPTURE_MS.grab, easing: 'ease-in-out' },
+			);
+			setHand({ from, to });
+			setSuck({ id, dx: (from.x - to.x) / scale, dy: (from.y - to.y) / scale, stage: 'pull' });
 		},
 		[enabled],
 	);
 
 	const hold = useCallback(() => {
-		setBeam(null);
+		setHand(null);
 		setSuck((previous) => (previous ? { ...previous, stage: 'held' } : previous));
 	}, []);
 
 	/** Put the held student back on the floor. */
 	const release = useCallback(() => {
-		setBeam(null);
 		setSuck((previous) => {
 			if (!previous) return previous;
 			const { id } = previous;
@@ -310,17 +294,7 @@ export function useArenaFx(enabled: boolean) {
 
 	const layer = (
 		<div className={styles.fxLayer} aria-hidden="true">
-			{beam ? (
-				<span
-					className={styles.fxBeam}
-					style={{
-						left: beam.x,
-						top: beam.y,
-						width: beam.length,
-						transform: `translateY(-50%) rotate(${beam.angle}deg)`,
-					}}
-				/>
-			) : null}
+			{hand ? <CaptureHand {...hand} /> : null}
 			{strikeCue ? <ArenaStrike key={strikeCue.id} cue={strikeCue} /> : null}
 			{flash ? (
 				<span
@@ -356,14 +330,13 @@ export function useArenaFx(enabled: boolean) {
 			pop,
 			sparks,
 			fireworks,
-			lock,
 			grab,
 			hold,
 			release,
 			announce,
 			strike,
 		}),
-		[shake, flashScreen, pop, sparks, fireworks, lock, grab, hold, release, announce, strike],
+		[shake, flashScreen, pop, sparks, fireworks, grab, hold, release, announce, strike],
 	);
 
 	return { worldRef, suck, layer, ...actions };
@@ -372,5 +345,9 @@ export function useArenaFx(enabled: boolean) {
 /** CSS variables that carry the grab offset to the floor figure. */
 export function suckStyle(suck: ArenaSuck | null, enrollmentId: string): CSSProperties {
 	if (!suck || suck.id !== enrollmentId) return {};
-	return { '--suck-x': `${suck.dx}px`, '--suck-y': `${suck.dy}px` } as CSSProperties;
+	return {
+		'--suck-x': `${suck.dx}px`,
+		'--suck-y': `${suck.dy}px`,
+		'--grab-ms': `${CAPTURE_MS.grab}ms`,
+	} as CSSProperties;
 }
