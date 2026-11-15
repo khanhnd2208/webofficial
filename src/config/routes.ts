@@ -251,4 +251,8 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	{ source: '/admin/enrollments', destination: routes.learnCourses, permanent: true },
 	// The catalog's former address, from before /khoa-hoc became the real page.
 	{ source: '/kham-pha-khoa-hoc', destination: routes.learnCourses, permanent: true },
+	// The signed-in course list moved to /khoa-hoc. Redirect here, before the sign-in layout, so a
+	// signed-out visitor with an old link reaches the public page instead of the login form.
+	// `?xem=quan-ly` carries over.
+	{ source: '/my-space/courses', destination: routes.learnCourses, permanent: false },
 ];
