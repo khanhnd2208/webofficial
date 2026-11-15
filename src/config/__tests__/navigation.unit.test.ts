@@ -3,24 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
 	afterSignOutPath,
 	CONTACT_CTA,
-	GATE_NAV_ITEMS,
-	getDesktopNavLinks,
-	getGateNavItems,
-	getMobileNavLinks,
-	getPublishedContactCta,
-	getPublishedFooterGroups,
 	getSiteTrail,
-	isFullBleedPublicPath,
-	isLopPath,
-	isSiteHeaderPath,
-	isActiveRecallPath,
-	isGateItemLocked,
 	isInternalChromePath,
-	isIntroPath,
-	isPublished,
 	isSignInRequiredPath,
+	isSiteHeaderPath,
 	isTocPath,
-	PUBLIC_NAV_ITEMS,
 } from '@/config/navigation';
 import {
 	EDITORIAL_NAME,
@@ -45,86 +32,24 @@ describe('brand identity', () => {
 	});
 });
 
-describe('publication gates', () => {
-	it('treats only published as visible', () => {
-		expect(isPublished('published')).toBe(true);
-		expect(isPublished('draft')).toBe(false);
-	});
-
-	it('opens brand destinations and My Space from the mục lục', () => {
-		const items = getGateNavItems();
-		expect(items).toEqual(GATE_NAV_ITEMS);
-		expect(items.map((item) => item.label)).toEqual(['Giới thiệu', 'Trải nghiệm']);
-		expect(items.map((item) => item.href)).toEqual([routes.about, routes.experiences]);
-		expect(items.every((item) => !isGateItemLocked(item))).toBe(true);
-		expect(items.filter((item) => item.status === 'published')).toHaveLength(2);
-		expect(items.some((item) => item.href === routes.activeRecall)).toBe(false);
-	});
-
-	it('keeps intro, mục lục, and My Space as distinct public shells', () => {
+describe('public chrome', () => {
+	it('keeps intro and Mục lục as distinct public shells', () => {
 		expect(routes.home).toBe('/');
 		expect(routes.toc).toBe('/muc-luc');
-		expect(routes.mySpace).toBe('/my-space');
-		expect(routes.home).not.toBe(routes.toc);
-		expect(isIntroPath('/')).toBe(true);
-		expect(isIntroPath('/muc-luc')).toBe(false);
 		expect(isTocPath('/muc-luc')).toBe(true);
-		expect(isFullBleedPublicPath('/')).toBe(true);
-		expect(isFullBleedPublicPath('/muc-luc')).toBe(true);
-		expect(isFullBleedPublicPath('/my-space')).toBe(true);
-		expect(isFullBleedPublicPath('/my-space/active-recall')).toBe(true);
-		expect(isActiveRecallPath('/my-space/active-recall')).toBe(true);
-		expect(isActiveRecallPath('/my-space/active-recall/hrm')).toBe(true);
-		expect(isActiveRecallPath('/my-space/tests')).toBe(false);
-		expect(isFullBleedPublicPath('/gioi-thieu')).toBe(false);
-		expect(isLopPath('/lop/hrm-101')).toBe(true);
-		expect(isFullBleedPublicPath('/lop/hrm-101')).toBe(true);
-		expect(isInternalChromePath('/my-space/teaching')).toBe(true);
-		expect(isInternalChromePath('/my-space/teaching/class-1')).toBe(true);
+		expect(isTocPath('/')).toBe(false);
 	});
 
-	it('keeps legacy desktop nav helpers for unpublished chrome consumers', () => {
-		const links = getDesktopNavLinks();
-		const labels = links.map((l) => l.label);
-		expect(labels).not.toContain('Trang chủ');
-		expect(labels).toEqual(['Giới thiệu', 'Trải nghiệm']);
-		expect(labels).not.toContain('Ghi chép');
-		expect(labels).not.toContain('Liên hệ');
-		expect(labels).not.toContain('Bài viết');
-		expect(labels).not.toContain('Podcast');
-		expect(
-			links.every((l) => PUBLIC_NAV_ITEMS.find((i) => i.href === l.href)?.status === 'published'),
-		).toBe(true);
-		expect(links.some((l) => l.href === '/hoc')).toBe(false);
-		expect(links.some((l) => l.href === routes.accompany)).toBe(false);
+	it('gives workspaces their own chrome but keeps the course catalog public', () => {
+		expect(isInternalChromePath('/my-space/teaching')).toBe(true);
+		expect(isInternalChromePath('/my-space/teaching/class-1')).toBe(true);
+		expect(isInternalChromePath('/khoa-hoc/hrm')).toBe(true);
+		expect(isInternalChromePath('/khoa-hoc')).toBe(false);
+		expect(isInternalChromePath('/lien-he')).toBe(false);
 	});
 
 	it('publishes a single contact CTA to the contact page', () => {
-		expect(CONTACT_CTA.status).toBe('published');
-		expect(CONTACT_CTA.label).toBe('Gửi lời nhắn');
-		expect(CONTACT_CTA.href).toBe(routes.contact);
-		expect(getPublishedContactCta()).toEqual(CONTACT_CTA);
-	});
-
-	it('mirrors desktop items on mobile without explore group', () => {
-		const mobile = getMobileNavLinks().map((l) => l.label);
-		expect(mobile).toEqual(getDesktopNavLinks().map((l) => l.label));
-	});
-
-	it('keeps the footer focused on the new public architecture', () => {
-		const groups = getPublishedFooterGroups();
-		expect(groups.length).toBeGreaterThanOrEqual(1);
-		const allHrefs = groups.flatMap((g) => g.links.map((l) => l.href));
-		expect(allHrefs).toContain(routes.about);
-		expect(allHrefs).not.toContain(routes.projects);
-		expect(allHrefs).not.toContain(routes.services);
-		expect(allHrefs).toContain(routes.contact);
-		expect(allHrefs).toContain(routes.experiences);
-		expect(allHrefs).not.toContain(routes.notes);
-		expect(allHrefs).not.toContain(routes.posts);
-		expect(allHrefs).not.toContain(routes.archive);
-		expect(allHrefs).not.toContain('/hoc');
-		expect(allHrefs).not.toContain(routes.accompany);
+		expect(CONTACT_CTA).toEqual({ label: 'Gửi lời nhắn', href: routes.contact });
 	});
 });
 
@@ -223,18 +148,13 @@ describe('writing adapters', () => {
 });
 
 describe('route map', () => {
-	it('includes the portfolio destinations while preserving internal route constants', () => {
+	it('keeps the public destinations and internal route constants', () => {
 		expect(routes.contact).toBe('/lien-he');
-		expect(routes.about).toBe('/gioi-thieu');
-		expect(routes.projects).toBe('/du-an');
-		expect(routes.services).toBe('/dich-vu');
-		expect(routes.aboutProjects).toBe('/trai-nghiem#du-an');
-		expect(routes.aboutServices).toBe('/gioi-thieu#dich-vu');
 		expect(routes.toc).toBe('/muc-luc');
+		expect(routes.learnCourses).toBe('/khoa-hoc');
+		expect(routes.classes).toBe('/lop');
 		expect(routes.mySpace).toBe('/my-space');
 		expect(routes.notes).toBe('/ghi-chep');
-		expect(routes.growth).toBe('/phat-trien-ban-than');
-		expect(routes.archive).toBe('/archive');
 		expect(routes.admin.archive).toBe('/admin/archive');
 	});
 });

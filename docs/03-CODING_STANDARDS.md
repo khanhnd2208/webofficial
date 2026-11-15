@@ -280,12 +280,12 @@ import {
 } from '@/config/constants';
 ```
 
-### 5.2 `src/config/navigation.ts` — Nav Links
+### 5.2 `src/config/navigation.ts` — Site header and menus
 
 ```typescript
-import { PUBLIC_NAV_ITEMS } from '@/config/navigation';
+import { CONTACT_CTA, USER_MENU_LINKS, getSiteTrail, isSiteHeaderPath } from '@/config/navigation';
 import { routes } from '@/config/routes';
-// Navigation is publish-gated and uses the current Vietnamese routes.
+// The site header's trail, contact button and account menu, and which paths show the header.
 // Use `routes` for URLs instead of hardcoding paths in components.
 ```
 

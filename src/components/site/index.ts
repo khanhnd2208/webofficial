@@ -1,12 +1,8 @@
 export { default as AnalyticsScript } from './AnalyticsScript';
-export { default as ConditionalFooter } from './ConditionalFooter';
 export { default as DeploymentRefresh } from './DeploymentRefresh';
-export { default as GateNav } from './GateNav';
 export { default as IntroLanding } from './IntroLanding';
 export { default as LoginReturnTracker } from './LoginReturnTracker';
 export { default as MainContent } from './MainContent';
-export { default as Navbar } from './Navbar';
 export { default as SiteHeader } from './SiteHeader';
 export { default as SessionFreshness } from './SessionFreshness';
-export { default as SiteFooter } from './SiteFooter';
 export { default as SkipLink } from './SkipLink';

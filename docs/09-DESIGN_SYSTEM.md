@@ -1,25 +1,34 @@
 # 09 — Design System
 
 **Status:** active
-**Last updated:** 2026-10-05
+**Last updated:** 2026-11-15
 
-This site has **four named surfaces** with separate visual grammars. Each owns its layout language and palette; accessibility and interaction contracts are shared.
+Everything a visitor or student sees wears the **editorial** look. The teacher's and admin's
+work tools keep their own palettes. Accessibility and interaction contracts are shared.
+
+The public map is intro (`/`) → Mục lục (`/muc-luc`) with two doors: **Về tôi** (`/lien-he`) and
+**Học tập**, whose tabs are Khóa học (`/khoa-hoc`) and Lớp học (`/lop`). The sticky `SiteHeader`
+(wordmark, trail, Gửi lời nhắn, account menu) is the only public navigation; admin workspaces
+are linked from the account menu.
 
 | Surface | Routes | Grammar |
 | --- | --- | --- |
-| **Editorial** | `/`, `/muc-luc`, `/gioi-thieu`, `/du-an`, marketing | Hairline bands, serif display, generous whitespace, rare cards |
+| **Editorial** | `/`, `/muc-luc`, `/lien-he`, `/khoa-hoc`, `/lop`, `/active-recall/**`, policies, account | Warm paper, ink, bronze, serif display, hairline bands, rare cards |
+| **Courses** (editorial) | `/khoa-hoc/<slug>` overview and reader (`learn.css`, `.ln`) | Editorial tokens plus `--ln-*` reading tokens; ink primary button; serif page and lesson titles |
+| **Teaching, student view** (editorial) | `/lop/<slug>` | Teaching components under `data-audience="student"`: editorial paper, ink and bronze, serif class name; attendance status colours unchanged |
+| **Teaching, teacher view** | `/my-space/teaching/**` | Academic paper and teal, Inter, compact classroom tools, dedicated SVG icons |
+| **Course studio** | `/khoa-hoc/<slug>/studio` | The studio's own blue editor palette |
 | **Admin Studio** | `/admin/**` shell and active admin pages | Light blue-gray canvas, white panels, Inter, task-focused data controls |
 | **My Class Product UI** | `/my-space/my-class/**`, `/admin/my-class/**` | Material 3 Indigo surfaces, Inter throughout, efficient learning and studio work |
-| **Teaching** | `/my-space/teaching/**`, `/lop/**` | Academic paper and teal, Inter, compact classroom tools, dedicated SVG icons |
 
-Do not force My Class to look like the editorial marketing pages. Do not soft-card
+Do not force My Class or the teacher's tools to look like the editorial pages. Do not soft-card
 the public site to look like a product UI.
 
 ---
 
 ## Teaching surface
 
-Teaching owns its light palette through `data-surface="teaching"`; do not set theme variables on `body` or recolor another destination. It stays light when the surrounding site is dark. The shared `SurfaceTheme` provider carries the destination identity to React portals and native dialogs. Teaching SVG icons are an explicit exception to the Material-only My Class icon rule below.
+Teaching owns its light palette through `data-surface="teaching"`; do not set theme variables on `body` or recolor another destination. The student class page passes `audience="student"` to `SurfaceTheme`, which adds `data-audience="student"`; `tokens.css` then maps the Teaching tokens to the editorial values, and dialogs and popovers repeat the attribute through `useSurfaceAudience()`. The values below describe the teacher's view. It stays light when the surrounding site is dark. The shared `SurfaceTheme` provider carries the destination identity to React portals and native dialogs. Teaching SVG icons are an explicit exception to the Material-only My Class icon rule below.
 
 - Canvas `#F7F8F4`, paper `#FFFFFF`, ink `#19332F`, secondary text `#52645E`.
 - Accent `#176B63`, hover `#12564F`, selected fill `#E5F1ED`; status colors convey state with text or symbols.
@@ -32,7 +41,7 @@ Teaching owns its light palette through `data-surface="teaching"`; do not set th
 - Mobile class headers stay compact, tabs scroll, and management opens a bottom sheet. Full metadata remains available in the eyebrow title and accessible text.
 - Teaching styles live in `src/components/teaching/ui/styles/`; experience access and choice styles are separate CSS Modules. Shared studio primitives still provide controls and typography.
 - Paper rulings are reserved for empty states. Tables and form surfaces remain flat; shared hover/control transitions use 150/250ms and respect reduced motion.
-- Active Recall receives the optional `surface="teaching"` only for a class player. Standalone Active Recall and My Class retain their palettes.
+- Students see Active Recall decks as **Ôn tập**. The tab is hidden when a class has no decks, and the deck player (class or public) uses the editorial palette, not `surface="teaching"`.
 
 See [Teaching implementation and verification](./teaching-ui-standardization.md) for the route checklist and acceptance checks.
 
@@ -47,6 +56,8 @@ Source of truth: [05-BRAND_BRIEF.md](./05-BRAND_BRIEF.md) and
 - Source Serif 4 display + Inter body
 - Sections as full-width bands with `border-b border-hairline`
 - Cards rare; prefer hairline grids and mono indices
+- In plain CSS, use `var(--font-serif-display), 'Source Serif 4', Georgia, serif` for serif titles; `--font-display` exists only inside Tailwind's `@theme`
+- `LearningHubHeader` gives Khóa học and Lớp học the same title and tab row
 
 ---
 
