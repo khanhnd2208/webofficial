@@ -14,7 +14,7 @@ type PageProps = { params: Promise<{ courseId: string }> };
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
 	const course = await getCourse((await params).courseId);
 	return {
-		title: course ? `Active Recall · ${course.courseName}` : 'Active Recall',
+		title: course ? `Ôn tập · ${course.courseName}` : 'Ôn tập',
 		robots: { index: false, follow: false },
 	};
 }
@@ -28,7 +28,7 @@ export default async function PublicCourseRecallPage({ params }: PageProps) {
 		<main className="min-h-svh bg-canvas px-5 py-12 sm:px-8 sm:py-20">
 			<div className="mx-auto max-w-3xl">
 				<header className="border-t border-hairline pt-5">
-					<p className="text-sm font-semibold text-ink-secondary">Active Recall</p>
+					<p className="text-sm font-semibold text-ink-secondary">Ôn tập</p>
 					<h1 className="mt-2 font-display text-[clamp(2rem,6vw,3.75rem)] font-medium tracking-tight text-ink">
 						{course.courseName}
 					</h1>

@@ -3,34 +3,17 @@
    Paper canvas, ink text, bronze accent, hairlines over shadows (DESIGN.md).
    ════════════════════════════════════════════════════════════════════════ */
 
-.ln {
-	/* Neutral ink on white, scoped so the rest of the site keeps its look.
-	   Remapping the shared tokens here also carries the look into the studio. */
-	--canvas: #fafafa;
-	--paper: #f4f4f5;
-	--surface-elevated: #ffffff;
-	--ink: #111827;
-	--ink-secondary: #6b7280;
-	--hairline: #e5e7eb;
-	--bronze: #111827;
-	--accent-hover: #000000;
-	--accent-subtle: #f3f4f6;
-	--accent-muted: #e5e7eb;
-	--success: #15803d;
-	--error: #c7362b;
-	--warning: #b45309;
-	--sunlight: #e0a100;
-	--sage: #0f8a7e;
-}
-/* Learn's own tokens. `.ln-kit` carries them to Learn controls placed on other pages (/khoa-hoc). */
+/* Learn's own tokens. Colours come from the site's editorial tokens (globals.css), so courses
+   share the warm paper, ink and bronze of every public page. `.ln-kit` carries these tokens to
+   Learn controls placed on other pages (/khoa-hoc). */
 .ln,
 .ln-kit {
 	--ln-bar: 3rem;
-	--ln-strong-rule: #d1d5db;
+	--ln-strong-rule: color-mix(in srgb, var(--ink) 22%, var(--canvas));
 	--ln-radius: 12px;
 	--ln-control-radius: 8px;
-	--ln-shadow-color: 17 24 39;
-	--ln-on-primary: #fff;
+	--ln-shadow-color: 23 23 23;
+	--ln-on-primary: var(--canvas);
 	--ln-shadow-sm: 0 8px 24px rgb(var(--ln-shadow-color) / 0.08);
 	--ln-shadow-pop: 0 10px 30px rgb(var(--ln-shadow-color) / 0.1);
 	--ln-shadow-menu: 0 12px 32px rgb(var(--ln-shadow-color) / 0.12);
@@ -47,25 +30,11 @@
 	--ln-k-important: var(--bronze);
 	font-family: var(--ln-ui);
 }
-.dark .ln {
-	--canvas: #0a0a0a;
-	--paper: #1c1c1f;
-	--surface-elevated: #141416;
-	--ink: #f5f5f5;
-	--ink-secondary: #a1a1aa;
-	--hairline: #2e2e32;
-	--bronze: #f5f5f5;
-	--accent-hover: #ffffff;
-	--accent-subtle: #27272a;
-	--accent-muted: #3f3f46;
-	--success: #4ade80;
-	--error: #f87171;
-}
 .dark .ln,
 .dark .ln-kit {
-	--ln-strong-rule: #52525b;
+	--ln-strong-rule: color-mix(in srgb, var(--ink) 30%, var(--canvas));
 	--ln-shadow-color: 0 0 0;
-	--ln-on-primary: #111827;
+	--ln-on-primary: var(--canvas);
 	--ln-shadow-sm: 0 8px 24px rgb(var(--ln-shadow-color) / 0.4);
 	--ln-shadow-pop: 0 10px 30px rgb(var(--ln-shadow-color) / 0.45);
 	--ln-shadow-menu: 0 12px 32px rgb(var(--ln-shadow-color) / 0.5);
@@ -112,13 +81,13 @@
 	cursor: not-allowed;
 }
 .ln-btn--primary {
-	border-color: var(--bronze);
-	background: var(--bronze);
+	border-color: var(--ink);
+	background: var(--ink);
 	color: var(--ln-on-primary);
 }
 .ln-btn--primary:hover:not(:disabled) {
-	border-color: var(--accent-hover);
-	background: var(--accent-hover);
+	border-color: var(--accent);
+	background: var(--accent);
 }
 .ln-btn--done {
 	border-color: color-mix(in srgb, var(--success) 45%, transparent);
@@ -318,83 +287,6 @@
 	color: var(--ink);
 }
 
-/* ─── App bar (catalog + overview) ───────────────────────────────────── */
-
-.ln-appbar {
-	position: sticky;
-	top: 0;
-	z-index: 30;
-	border-bottom: 1px solid var(--hairline);
-	background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
-	backdrop-filter: blur(10px);
-}
-.ln-appbar__inner {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	max-width: 76rem;
-	height: 3.75rem;
-	margin: 0 auto;
-	padding: 0 1rem;
-}
-.ln-appbar__brand {
-	display: inline-flex;
-	flex: 0 0 auto;
-	align-items: center;
-	gap: 0.55rem;
-	font-size: 0.975rem;
-	font-weight: 700;
-	letter-spacing: -0.01em;
-	color: var(--ink);
-}
-.ln-appbar__logo {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 2rem;
-	height: 2rem;
-	border-radius: 8px;
-	background: var(--bronze);
-	color: #fff;
-}
-.ln-appbar__crumbs {
-	display: flex;
-	min-width: 0;
-	flex: 1;
-	align-items: center;
-	overflow: hidden;
-	font-size: 0.875rem;
-	color: var(--ink-secondary);
-}
-.ln-appbar__crumb {
-	display: inline-flex;
-	min-width: 0;
-	align-items: center;
-	gap: 0.35rem;
-	white-space: nowrap;
-}
-.ln-appbar__crumb > span:last-child,
-.ln-appbar__crumb > a {
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.ln-appbar__crumb [aria-current='page'] {
-	color: var(--ink);
-	font-weight: 500;
-}
-.ln-appbar__actions {
-	display: flex;
-	flex: 0 0 auto;
-	align-items: center;
-	gap: 0.4rem;
-	margin-left: auto;
-}
-@media (max-width: 40rem) {
-	.ln-appbar__crumbs {
-		display: none;
-	}
-}
-
 /* ─── Page scaffolding ───────────────────────────────────────────────── */
 
 .ln-page {
@@ -410,8 +302,7 @@
 	padding: 0 1rem;
 }
 @media (min-width: 40rem) {
-	.ln-container,
-	.ln-appbar__inner {
+	.ln-container {
 		padding: 0 1.5rem;
 	}
 	.ln-page {
@@ -422,9 +313,10 @@
 	}
 }
 .ln-page__title {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
 	margin-top: 0.35rem;
 	font-size: clamp(1.6rem, 3.4vw, 2.3rem);
-	font-weight: 700;
+	font-weight: 500;
 	line-height: 1.2;
 	letter-spacing: -0.02em;
 }
@@ -660,9 +552,10 @@
 	border-radius: 8px;
 }
 .ln-resume__title {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
 	margin-top: 0.25rem;
 	font-size: 1.25rem;
-	font-weight: 700;
+	font-weight: 500;
 	line-height: 1.3;
 	letter-spacing: -0.01em;
 }
@@ -714,6 +607,18 @@
 	transition:
 		color var(--ui-duration-hover) var(--ui-ease),
 		border-color var(--ui-duration-hover) var(--ui-ease);
+}
+/* Three status tabs fit a 320px phone without a hidden, scroll-only "Hoàn thành". */
+@media (max-width: 399px) {
+	.ln-tab {
+		padding-inline: 0.5rem;
+	}
+}
+/* At 320px the counts are what no longer fits; the filtered list still shows what is there. */
+@media (max-width: 359px) {
+	.ln-tab__count {
+		display: none;
+	}
 }
 .ln-tab:hover {
 	color: var(--ink);
@@ -1492,9 +1397,10 @@
 	color: var(--ink);
 }
 .ln-reader__title {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
 	margin-top: 0.5rem;
 	font-size: clamp(1.75rem, 3.4vw, 2.25rem);
-	font-weight: 700;
+	font-weight: 500;
 	line-height: 1.2;
 	letter-spacing: -0.025em;
 }
@@ -1765,7 +1671,8 @@
 	}
 }
 .ln-overview {
-	width: min(48rem, 100%);
+	/* A 20px gutter on phones, matching the site header's `shell`. */
+	width: min(48rem, 100% - 2.5rem);
 	margin: 0 auto;
 }
 .ln-overview__header {

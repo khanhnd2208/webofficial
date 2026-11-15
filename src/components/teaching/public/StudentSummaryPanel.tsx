@@ -19,7 +19,10 @@ export interface PublicSummaryLockStatus {
 	unlocked: boolean;
 }
 
-/** Counts locked attendance and CP weeks across 1..totalWeeks to gate the public summary table. */
+/**
+ * Counts locked attendance and CP weeks across 1..totalWeeks to gate the public summary table.
+ * Cancelled sessions are skipped; a week with no sessions yet stays unlocked.
+ */
 export function getPublicSummaryLockStatus(
 	sessions: TeachingSessionRecord[],
 	totalWeeks = DEFAULT_CP_POLICY.totalWeeks,
@@ -32,12 +35,12 @@ export function getPublicSummaryLockStatus(
 
 	for (let week = 1; week <= targetWeeks; week += 1) {
 		const weekSessions = sessions.filter((session) => session.weekNumber === week);
-		if (weekSessions.length > 0 && weekSessions.every(isAttendanceCounted)) {
-			lockedAttendanceWeeks += 1;
-		}
-		if (weekSessions.length > 0 && weekSessions.every(isParticipationCounted)) {
-			lockedCpWeeks += 1;
-		}
+		if (weekSessions.length === 0) continue;
+		// A cancelled session has nothing to grade, so it never holds the week open. A week whose
+		// sessions were all cancelled counts as settled.
+		const heldSessions = weekSessions.filter((session) => !session.isCancelled);
+		if (heldSessions.every(isAttendanceCounted)) lockedAttendanceWeeks += 1;
+		if (heldSessions.every(isParticipationCounted)) lockedCpWeeks += 1;
 	}
 
 	return {

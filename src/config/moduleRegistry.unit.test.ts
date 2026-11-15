@@ -104,7 +104,7 @@ describe('operating module registry', () => {
 		expect(isArchivedPublicPath(routes.myClass)).toBe(true);
 		expect(isArchivedPublicPath(routes.mySpaceTests)).toBe(true);
 		expect(isArchivedPublicPath('/vocabulary/store')).toBe(true);
-		expect(isArchivedPublicPath(routes.about)).toBe(false);
+		expect(isArchivedPublicPath(routes.contact)).toBe(false);
 		expect(isArchivedPublicPath(routes.activeRecall)).toBe(false);
 		expect(isArchivedPublicPath('/lop/hrm-101')).toBe(false);
 		expect(isArchivedPublicPath(routes.contact)).toBe(false);

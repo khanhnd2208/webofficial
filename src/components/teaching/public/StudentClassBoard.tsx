@@ -51,9 +51,11 @@ function resolveAvailableTab(
 	requested: PublicTab,
 	groupBoardEnabled: boolean,
 	notesEnabled: boolean,
+	recallEnabled: boolean,
 ): PublicTab {
 	if (requested === 'groups' && !groupBoardEnabled) return 'attendance';
 	if (requested === 'notes' && !notesEnabled) return 'attendance';
+	if (requested === 'recall' && !recallEnabled) return 'attendance';
 	return requested;
 }
 
@@ -88,8 +90,14 @@ export function StudentClassBoard({
 	initialTab?: string;
 	initialTutorialId?: string;
 }) {
+	const recallEnabled = (board.recallDecks ?? []).length > 0;
 	const [tab, setTab] = useState<PublicTab>(() =>
-		resolveAvailableTab(resolvePublicTab(initialTab), groupBoardEnabled, notesEnabled),
+		resolveAvailableTab(
+			resolvePublicTab(initialTab),
+			groupBoardEnabled,
+			notesEnabled,
+			recallEnabled,
+		),
 	);
 	const [tutorialId, setTutorialId] = useState(() =>
 		resolvePublicTutorialId({
@@ -116,13 +124,18 @@ export function StudentClassBoard({
 	useEffect(() => {
 		const sync = () => {
 			const requested = resolvePublicTab(new URLSearchParams(window.location.search).get('tab'));
-			const nextTab = resolveAvailableTab(requested, groupBoardEnabled, notesEnabled);
+			const nextTab = resolveAvailableTab(
+				requested,
+				groupBoardEnabled,
+				notesEnabled,
+				recallEnabled,
+			);
 			if (nextTab === 'learning') setLearningVisited(true);
 			setTab(nextTab);
 		};
 		window.addEventListener('popstate', sync);
 		return () => window.removeEventListener('popstate', sync);
-	}, [groupBoardEnabled, notesEnabled]);
+	}, [groupBoardEnabled, notesEnabled, recallEnabled]);
 
 	function chooseMe(enrollmentId: string) {
 		const next = enrollmentId || null;
@@ -239,7 +252,7 @@ export function StudentClassBoard({
 						<p className="mc-eyebrow">
 							{board.courseCode} · Lớp {board.classCode ?? board.groupNo} · {board.term}
 						</p>
-						<h1 className="mt-1 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+						<h1 className="teaching-public-title mt-1 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
 							{board.title}
 						</h1>
 					</div>
@@ -397,18 +410,20 @@ export function StudentClassBoard({
 						<TeachingIcon name="notes" size={18} /> Ghi chú lớp
 					</button>
 				) : null}
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-recall"
-					aria-controls="public-panel-recall"
-					aria-selected={tab === 'recall'}
-					tabIndex={tab === 'recall' ? 0 : -1}
-					data-active={tab === 'recall'}
-					onClick={() => changeTab('recall')}
-				>
-					<TeachingIcon name="recall" size={18} /> Active Recall
-				</button>
+				{recallEnabled ? (
+					<button
+						type="button"
+						role="tab"
+						id="public-tab-recall"
+						aria-controls="public-panel-recall"
+						aria-selected={tab === 'recall'}
+						tabIndex={tab === 'recall' ? 0 : -1}
+						data-active={tab === 'recall'}
+						onClick={() => changeTab('recall')}
+					>
+						<TeachingIcon name="recall" size={18} /> Ôn tập
+					</button>
+				) : null}
 			</nav>
 			{shouldShowPublicTutorialFilter({
 				tutorialCount: board.tutorials.length,
@@ -468,16 +483,15 @@ export function StudentClassBoard({
 					<ClassNotesWorkspace notes={board.notes ?? []} />
 				</div>
 			) : null}
-			{tab === 'recall' ? (
+			{recallEnabled && tab === 'recall' ? (
 				<div
 					id="public-panel-recall"
 					role="tabpanel"
 					aria-labelledby="public-tab-recall"
 					className="public-notes-panel"
 				>
-					{(board.recallDecks ?? []).length ? (
-						<ul className="space-y-3">
-							{board.recallDecks!.map((deck) => (
+					<ul className="space-y-3">
+						{board.recallDecks!.map((deck) => (
 								<li key={deck.id}>
 									<Link
 										href={routes.teachingPublicRecallDeck(board.slug, deck.slug)}
@@ -495,11 +509,6 @@ export function StudentClassBoard({
 								</li>
 							))}
 						</ul>
-					) : (
-						<p className="mc-surface px-4 py-6 text-sm text-ink-secondary">
-							Lớp này chưa mở bộ Active Recall nào.
-						</p>
-					)}
 				</div>
 			) : null}
 			{groupBoardEnabled && tab === 'groups' ? (

@@ -292,6 +292,19 @@
 [data-surface='teaching'] .mc-grid .mc-grid-freeze-right {
 	background: #f1f6f0;
 }
+/* Students see the same grid on the editorial paper (see tokens.css). */
+[data-surface='teaching'][data-audience='student'] .mc-grid thead th {
+	background: var(--surface-container);
+}
+[data-surface='teaching'][data-audience='student'] .mc-grid tbody tr:nth-child(even) td {
+	background: #fbf9f5;
+}
+[data-surface='teaching'][data-audience='student'] .mc-grid tbody tr:hover td {
+	background: var(--surface-hover);
+}
+[data-surface='teaching'][data-audience='student'] .mc-grid .mc-grid-freeze-right {
+	background: var(--surface-sunken);
+}
 [data-surface='teaching'] .mc-grid-score-context {
 	line-height: 1.6;
 	background: var(--paper);
@@ -345,6 +358,16 @@
 }
 [data-surface='teaching'] .teaching-public-board .mc-tabbar {
 	margin: 0.75rem 0;
+}
+/* On a phone the six class tabs wrap instead of scrolling, so none hides off the right edge. */
+@media (max-width: 639px) {
+	[data-surface='teaching'] .teaching-public-board .mc-tabbar {
+		flex-wrap: wrap;
+		overflow-x: visible;
+	}
+	[data-surface='teaching'] .teaching-public-board .mc-tabbar :is(a, button) {
+		padding-inline: 0.625rem;
+	}
 }
 /* Outranks the uppercase My Class tab rule; Vietnamese reads better in sentence case. */
 [data-surface='teaching'] .teaching-public-board .mc-tabbar :is(a, button) {
