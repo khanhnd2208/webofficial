@@ -5,8 +5,10 @@
 
 export type ArenaSound =
 	| 'tick'
+	| 'hunt'
 	| 'roar'
 	| 'lock'
+	| 'target'
 	| 'suck'
 	| 'chomp'
 	| 'charge'
@@ -136,8 +138,8 @@ function noise(
 const SEMITONE = 2 ** (1 / 12);
 
 /**
- * Play one effect. `detail` shifts the pitch where a sound escalates: the hop
- * number for `tick`, the streak length for `combo`.
+ * Play one effect. `detail` shifts the pitch where a sound escalates: the scan
+ * group for `hunt`, the countdown beat for `tick`, the streak for `combo`.
  */
 export function playArenaSound(name: ArenaSound, detail = 0) {
 	if (isArenaMuted()) return;
@@ -147,6 +149,40 @@ export function playArenaSound(name: ArenaSound, detail = 0) {
 		case 'tick':
 			tone(a, { type: 'square', from: 420 + detail * 48, length: 0.06, gain: 0.12 });
 			break;
+		case 'hunt': {
+			const tension = Math.min(4, detail);
+			// Two uneven low pulses under a breathy scrape: closer groups rise slightly.
+			tone(a, {
+				from: 78 + tension * 5,
+				to: 45 + tension * 3,
+				length: 0.86,
+				gain: 0.24,
+			});
+			tone(a, {
+				type: 'sawtooth',
+				from: 114 + tension * 7,
+				to: 67 + tension * 4,
+				at: 0.025,
+				length: 0.74,
+				gain: 0.085,
+			});
+			tone(a, {
+				type: 'triangle',
+				from: 72 + tension * 4,
+				to: 42 + tension * 2,
+				at: 0.47,
+				length: 0.32,
+				gain: 0.19,
+			});
+			noise(a, {
+				length: 0.82,
+				gain: 0.075,
+				filter: 'bandpass',
+				from: 1100 + tension * 180,
+				to: 230,
+			});
+			break;
+		}
 		case 'roar':
 			tone(a, { type: 'sawtooth', from: 130, to: 48, length: 0.9, gain: 0.34 });
 			tone(a, { type: 'sawtooth', from: 97, to: 39, length: 0.9, gain: 0.28 });
@@ -157,15 +193,24 @@ export function playArenaSound(name: ArenaSound, detail = 0) {
 			tone(a, { type: 'square', from: 880, length: 0.09, gain: 0.16 });
 			tone(a, { type: 'square', from: 1320, at: 0.11, length: 0.16, gain: 0.18 });
 			break;
+		case 'target':
+			// A dissonant rise holds on the chosen student before the claw moves.
+			tone(a, { type: 'sawtooth', from: 105, to: 330, length: 0.68, gain: 0.16 });
+			tone(a, { type: 'sawtooth', from: 112, to: 296, length: 0.68, gain: 0.12 });
+			noise(a, { length: 0.68, gain: 0.16, filter: 'bandpass', from: 360, to: 4200 });
+			tone(a, { from: 74, to: 32, at: 0.52, length: 0.28, gain: 0.36 });
+			break;
 		case 'suck':
-			tone(a, { from: 160, to: 1500, length: 0.62, gain: 0.22 });
-			tone(a, { type: 'triangle', from: 240, to: 2100, length: 0.62, gain: 0.1 });
-			noise(a, { length: 0.62, gain: 0.2, filter: 'bandpass', from: 300, to: 4200 });
+			tone(a, { type: 'sawtooth', from: 82, to: 1100, length: 0.68, gain: 0.2 });
+			tone(a, { type: 'triangle', from: 117, to: 1700, length: 0.68, gain: 0.12 });
+			tone(a, { from: 60, to: 38, length: 0.7, gain: 0.18 });
+			noise(a, { length: 0.68, gain: 0.22, filter: 'bandpass', from: 260, to: 4800 });
 			break;
 		case 'chomp':
-			noise(a, { length: 0.14, gain: 0.55, from: 2600, to: 300 });
-			tone(a, { from: 170, to: 42, length: 0.3, gain: 0.5 });
-			tone(a, { type: 'square', from: 90, to: 40, at: 0.02, length: 0.18, gain: 0.2 });
+			noise(a, { length: 0.22, gain: 0.58, from: 2800, to: 180 });
+			tone(a, { type: 'sawtooth', from: 120, to: 30, length: 0.45, gain: 0.5 });
+			tone(a, { type: 'square', from: 70, to: 28, at: 0.015, length: 0.3, gain: 0.3 });
+			tone(a, { from: 48, to: 32, at: 0.08, length: 0.5, gain: 0.4 });
 			break;
 		case 'charge':
 			tone(a, { type: 'triangle', from: 220, to: 1320, length: 0.72, gain: 0.16 });

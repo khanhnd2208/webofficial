@@ -156,7 +156,7 @@ export function ArenaFloor({
 					transform: camera
 						? `translate3d(${camera.x}px, ${camera.y}px, 0) scale(${camera.scale})`
 						: undefined,
-					transitionDuration: `${camera ? CAPTURE_MS.pan - 140 : CAPTURE_MS.reset - 80}ms`,
+					transitionDuration: `${camera ? CAPTURE_MS.camera : CAPTURE_MS.reset - 100}ms`,
 				}}
 			>
 				{players.map((player, index) => {

@@ -12,7 +12,29 @@ export interface CaptureFrame extends Point {
 	lookId: string;
 }
 
-export const CAPTURE_MS = { entry: 580, pan: 520, anticipate: 110, grab: 760, reset: 420 };
+/** A deliberate hunt: readable close-ups, a held lock, then a sudden grab. */
+export const CAPTURE_MS = {
+	entry: 1050,
+	pan: 900,
+	camera: 650,
+	anticipate: 700,
+	grab: 1100,
+	reset: 700,
+};
+/** The claw closes on the sprite at this fraction of the grab animation. */
+export const CAPTURE_CONTACT = 0.58;
+
+export function captureTimeline(frameCount: number) {
+	const scanEnd = frameCount ? CAPTURE_MS.entry + Math.max(0, frameCount - 1) * CAPTURE_MS.pan : 0;
+	const reach = scanEnd + CAPTURE_MS.anticipate;
+	return {
+		scanEnd,
+		reach,
+		contact: reach + CAPTURE_MS.grab * CAPTURE_CONTACT,
+		retreat: reach + CAPTURE_MS.grab,
+		open: reach + CAPTURE_MS.grab + CAPTURE_MS.reset,
+	};
+}
 
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 

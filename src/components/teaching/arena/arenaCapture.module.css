@@ -60,10 +60,10 @@
 
 @keyframes fingers {
 	0%,
-	45% {
+	52% {
 		transform: rotate(var(--open-angle));
 	}
-	55%,
+	60%,
 	100% {
 		transform: rotate(var(--grip-angle));
 	}
@@ -78,10 +78,10 @@
 	18% {
 		opacity: 1;
 	}
-	50% {
+	54% {
 		transform: translate(var(--grip-x), var(--grip-y)) scale(1);
 	}
-	55% {
+	60% {
 		transform: translate(var(--grip-x), var(--grip-y)) scale(1);
 		animation-timing-function: cubic-bezier(0.55, 0, 0.45, 1);
 	}

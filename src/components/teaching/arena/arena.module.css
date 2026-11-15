@@ -900,7 +900,7 @@
 }
 
 @keyframes grab-name {
-	53%,
+	58%,
 	100% {
 		background: var(--arena-accent);
 		color: #1e1033;
@@ -917,10 +917,10 @@
 
 @keyframes player-grab {
 	0%,
-	55% {
+	60% {
 		transform: translate(-50%, -50%);
 	}
-	55% {
+	60% {
 		animation-timing-function: cubic-bezier(0.55, 0, 0.45, 1);
 	}
 	80% {
