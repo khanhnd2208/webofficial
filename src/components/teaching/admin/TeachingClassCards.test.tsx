@@ -30,6 +30,7 @@ function createMockClass(overrides: Partial<TeachingClassListItem>): TeachingCla
 		lateCountsTowardAbsenceThreshold: true,
 		giftDeductionPoints: 0.5,
 		absenceThresholdPercent: 20,
+		exceedingAbsenceZeroesAttendance: false,
 		lateGraceMinutes: 15,
 		status: 'ACTIVE',
 		publicSlug: 'hrm-39-01',

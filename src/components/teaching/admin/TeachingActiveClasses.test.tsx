@@ -25,6 +25,7 @@ function teachingClass(overrides: Partial<TeachingClassListItem> = {}): Teaching
 		lateCountsTowardAbsenceThreshold: false,
 		giftDeductionPoints: 0,
 		absenceThresholdPercent: 20,
+		exceedingAbsenceZeroesAttendance: false,
 		lateGraceMinutes: 10,
 		status: 'ACTIVE',
 		publicSlug: 'hrm-01',

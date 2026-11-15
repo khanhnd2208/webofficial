@@ -88,6 +88,7 @@ export interface TeachingClassRecord {
 	lateCountsTowardAbsenceThreshold: boolean;
 	giftDeductionPoints: number;
 	absenceThresholdPercent: number;
+	exceedingAbsenceZeroesAttendance: boolean;
 	lateGraceMinutes: number;
 	status: TeachingClassStatus;
 	publicSlug: string | null;
@@ -415,6 +416,7 @@ export function getCpPolicyText(
 		| 'absenceDeductionPoints'
 		| 'lateDeductionPoints'
 		| 'lateCountsTowardAbsenceThreshold'
+		| 'exceedingAbsenceZeroesAttendance'
 		| 'giftDeductionPoints'
 	>,
 ): string[] {
@@ -423,13 +425,16 @@ export function getCpPolicyText(
 	const absenceDeduction = policy.absenceDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
 	const lateDeduction = policy.lateDeductionPoints ?? ABSENCE_DEDUCTION_POINTS;
 	const lateRule = policy.lateCountsTowardAbsenceThreshold ?? true;
+	const zeroAttendanceRule = policy.exceedingAbsenceZeroesAttendance ?? false;
 	const giftDeduction = policy.giftDeductionPoints ?? GIFT_DEDUCTION_POINTS;
 	return [
 		`Chuyên cần tối đa ${attendanceMax} điểm; vắng không phép trừ ${absenceDeduction.toString().replace('.', ',')} điểm, đi muộn trừ ${lateDeduction.toString().replace('.', ',')} điểm.`,
 		`CP hoạt động tối đa ${cpMax} điểm; mỗi tuần có thể chấm 0,5; 1 hoặc 2 điểm. Gift trừ ${giftDeduction.toString().replace('.', ',')} điểm CP.`,
 		`Tổng điểm học phần từ Chuyên cần và CP, tối đa ${TOTAL_MAX_POINTS} điểm.`,
-		`${lateRule ? 'Đi muộn được tính vào' : 'Đi muộn không tính vào'} ngưỡng vắng ${policy.absenceThresholdPercent}% để xét điều kiện thi.`,
-		`Vắng không phép vượt quá ${policy.absenceThresholdPercent}% tổng số buổi sẽ khiến sinh viên không đủ điều kiện thi.`,
+		`${lateRule ? 'Đi muộn được tính vào' : 'Đi muộn không tính vào'} ngưỡng vắng ${policy.absenceThresholdPercent}% để xét điều kiện chuyên cần.`,
+		zeroAttendanceRule
+			? `Vắng không phép vượt quá ${policy.absenceThresholdPercent}% tổng số buổi vẫn được dự thi, nhưng điểm chuyên cần tự động về 0 (điểm CP vẫn tính bình thường).`
+			: `Vắng không phép vượt quá ${policy.absenceThresholdPercent}% tổng số buổi sẽ khiến sinh viên không đủ điều kiện thi.`,
 		'Vắng có phép không bị trừ điểm chuyên cần.',
 	];
 }

@@ -123,6 +123,7 @@ function gradebook(
 			lateCountsTowardAbsenceThreshold: true,
 			giftDeductionPoints: 1,
 			absenceThresholdPercent: 20,
+			exceedingAbsenceZeroesAttendance: false,
 			lateGraceMinutes: 15,
 			status: 'ACTIVE',
 			publicSlug: null,
