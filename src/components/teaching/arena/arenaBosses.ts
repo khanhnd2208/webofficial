@@ -44,12 +44,52 @@ export const ARENA_BOSSES: readonly ArenaBoss[] = [
 	{ id: 'nuoc-den-chan', name: 'Vua Nước Đến Chân', art: { kind: 'vector', design: 'wave' } },
 	{ id: 'chep-bai', name: 'Sách Thần Chép Bài', art: { kind: 'vector', design: 'book' } },
 	{ id: 'cu-dem', name: 'Cú Đêm Cày Phim', art: { kind: 'vector', design: 'owl' } },
-	{ id: 'men-trang-sach', name: 'Ma Sư Mến', art: { kind: 'sheet', file: 'men-trang-sach' } },
-	{ id: 'khanh-hoa-bai', name: 'Giám Khảo Khánh', art: { kind: 'sheet', file: 'khanh-hoa-bai' } },
+	{ id: 'le-manh-duc', name: 'Duc — Solar Tyrant', art: { kind: 'sheet', file: 'le-manh-duc' } },
+	{
+		id: 'phan-hoang-quan',
+		name: 'Quan — War Strategist',
+		art: { kind: 'sheet', file: 'phan-hoang-quan' },
+	},
+	{
+		id: 'hoang-gia-thu',
+		name: 'Thu — Stone Verdict',
+		art: { kind: 'sheet', file: 'hoang-gia-thu' },
+	},
+	{
+		id: 'nguyen-thu-trang',
+		name: 'Trang — Void Tempest',
+		art: { kind: 'sheet', file: 'nguyen-thu-trang' },
+	},
+	{
+		id: 'ngo-thi-thuy-linh',
+		name: 'Thuy Linh — Azure Warden',
+		art: { kind: 'sheet', file: 'ngo-thi-thuy-linh' },
+	},
+	{
+		id: 'men-trang-sach',
+		name: 'Men — Crimson Hexscribe',
+		art: { kind: 'sheet', file: 'men-trang-sach' },
+	},
+	{ id: 'le-hai-anh', name: 'Hai Anh — Frost Oracle', art: { kind: 'sheet', file: 'le-hai-anh' } },
+	{
+		id: 'khanh-hoa-bai',
+		name: 'Khanh — Infernal Examiner',
+		art: { kind: 'sheet', file: 'khanh-hoa-bai' },
+	},
+	{
+		id: 'nguyen-phuc-linh',
+		name: 'Phuc Linh — Storm Herald',
+		art: { kind: 'sheet', file: 'nguyen-phuc-linh' },
+	},
 	{
 		id: 'phuong-phep-giay',
-		name: 'Pháp Sư Hà Phương',
+		name: 'Ha Phuong — Arcane Dominion',
 		art: { kind: 'sheet', file: 'phuong-phep-giay' },
+	},
+	{
+		id: 'tran-thao-phuong',
+		name: 'Thao Phuong — Soul Weaver',
+		art: { kind: 'sheet', file: 'tran-thao-phuong' },
 	},
 ];
 
