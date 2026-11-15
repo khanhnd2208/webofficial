@@ -24,6 +24,24 @@ describe('Arena character assignment', () => {
 });
 
 describe('Arena bosses', () => {
+	it('includes the complete faculty raid-boss roster', () => {
+		expect(
+			ARENA_BOSSES.filter((boss) => boss.art.kind === 'sheet').map((boss) => boss.name),
+		).toEqual([
+			'Duc — Solar Tyrant',
+			'Quan — War Strategist',
+			'Thu — Stone Verdict',
+			'Trang — Void Tempest',
+			'Thuy Linh — Azure Warden',
+			'Men — Crimson Hexscribe',
+			'Hai Anh — Frost Oracle',
+			'Khanh — Infernal Examiner',
+			'Phuc Linh — Storm Herald',
+			'Ha Phuong — Arcane Dominion',
+			'Thao Phuong — Soul Weaver',
+		]);
+	});
+
 	it('take turns by round and start over after the last one', () => {
 		expect(arenaBossFor(1).name).toBe('Chúa Tể Quên Bài');
 		expect(arenaBossFor(2).id).not.toBe(arenaBossFor(1).id);
