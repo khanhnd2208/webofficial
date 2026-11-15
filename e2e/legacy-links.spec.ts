@@ -46,6 +46,14 @@ test.describe('Links shared with students keep working', () => {
 		}
 	});
 
+	test('the old course list sends a signed-out visitor to /khoa-hoc, not the login page', async ({
+		request,
+	}) => {
+		const response = await request.get('/my-space/courses?xem=quan-ly', { maxRedirects: 0 });
+		expect(response.status()).toBe(307);
+		expect(response.headers().location).toBe('/khoa-hoc?xem=quan-ly');
+	});
+
 	test('every course address takes a signed-in learner to /khoa-hoc', async ({ page, context }) => {
 		await addStudentSession(context);
 		for (const path of ['/my-space/courses', '/khoa-hoc', '/kham-pha-khoa-hoc']) {
