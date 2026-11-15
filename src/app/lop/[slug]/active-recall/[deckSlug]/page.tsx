@@ -16,8 +16,8 @@ export async function generateMetadata({
 	const deck = await getPublishedRecallDeckForClass(slug, deckSlug);
 	if (!deck) return {};
 	return {
-		title: `${deck.title} | Active Recall`,
-		description: deck.description || `Bộ thẻ Active Recall: ${deck.title}`,
+		title: `${deck.title} | Ôn tập`,
+		description: deck.description || `Bộ thẻ ôn tập: ${deck.title}`,
 		robots: { index: false, follow: false, nocache: true },
 	};
 }
@@ -32,11 +32,10 @@ export default async function PublicClassRecallDeckPage({
 	if (!deck) notFound();
 	return (
 		<ActiveRecallPlayer
-			surface="teaching"
 			deck={deck}
 			classSlug={slug}
 			backHref={routes.teachingPublicClassTab(slug, 'recall')}
-			backLabel="Active Recall của lớp"
+			backLabel="Ôn tập của lớp"
 			showViToggle
 		/>
 	);

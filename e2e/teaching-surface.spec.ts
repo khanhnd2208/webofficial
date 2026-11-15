@@ -126,10 +126,12 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 							width < 768 ? '40px' : '48px',
 						);
 					}
-					await expect(page.locator('[data-surface="teaching"]').first()).toHaveCSS(
-						'background-color',
-						'rgb(247, 248, 244)',
-					);
+					// Student pages wear the editorial paper; the deck player has no Teaching surface.
+					if (name !== 'player')
+						await expect(page.locator('[data-surface="teaching"]').first()).toHaveCSS(
+							'background-color',
+							['public', 'learning'].includes(name) ? 'rgb(248, 247, 244)' : 'rgb(247, 248, 244)',
+						);
 					await page.screenshot({
 						path: `${directory}/${name}-${width}.png`,
 						fullPage: true,

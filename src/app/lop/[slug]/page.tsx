@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
 import { RememberClassVisit } from '@/components/site/RecentClasses';
+import SiteHeader from '@/components/site/SiteHeader';
 import { SurfaceTheme } from '@/components/ui/SurfaceTheme';
 import { StudentClassBoard } from '@/components/teaching/public/StudentClassBoard';
 import { getClassIdBySlug, getPublicClassBoard } from '@/features/teaching';
@@ -51,7 +51,17 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 	}
 
 	return (
-		<SurfaceTheme surface="teaching" className="mc mc-studio min-h-screen bg-canvas text-ink">
+		<SurfaceTheme
+			surface="teaching"
+			audience="student"
+			className="mc mc-studio min-h-screen bg-canvas text-ink"
+		>
+			<SiteHeader
+				trail={[
+					{ label: 'Học tập', href: routes.learnCourses },
+					{ label: 'Lớp học', href: routes.classes },
+				]}
+			/>
 			<RememberClassVisit slug={slug} title={board.title} code={board.courseCode} />
 			<main className="mx-auto w-[min(100%-2rem,74rem)] py-8 sm:w-[min(100%-3rem,74rem)] sm:py-10">
 				<StudentClassBoard
@@ -62,11 +72,6 @@ export default async function PublicClassPage({ params, searchParams }: PublicCl
 					initialTutorialId={tutorial}
 				/>
 			</main>
-			<footer className="mx-auto w-[min(100%-2rem,74rem)] pb-10 text-center text-xs text-ink-secondary sm:w-[min(100%-3rem,74rem)]">
-				<Link href={routes.toc} className="hover:text-ink">
-					toiladuykhanh.com · Mục lục
-				</Link>
-			</footer>
 		</SurfaceTheme>
 	);
 }
