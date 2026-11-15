@@ -81,6 +81,41 @@
 	color: var(--ink);
 	background-color: var(--canvas);
 }
+/* Student pages (/lop/[slug]) keep the Teaching components but wear the site's
+   editorial paper, ink and bronze, so a class reads as part of Học tập. Values
+   mirror :root in globals.css. Attendance and grade status colours stay as above;
+   the teacher's grading area keeps teal. */
+[data-surface='teaching'][data-audience='student'] {
+	--teaching-canvas: #f8f7f4;
+	--teaching-paper: #fffcf7;
+	--teaching-accent: #765625;
+	--teaching-accent-hover: #6f482c;
+	--teaching-selected: #f6eee3;
+	--teaching-ink: #171717;
+	--teaching-secondary: #595650;
+	--ink-tertiary: #4f4a43;
+	--accent-muted: #f0e4d4;
+	--accent-foreground: #fffcf7;
+	--hairline: #d8d5ce;
+	--background-secondary: #f0ede7;
+	--surface-sunken: #f3efe6;
+	--surface-hover: #ebe6dc;
+	--surface-container-low: #f3efe6;
+	--surface-container: #f0ede7;
+	--surface-container-high: #ebe6dc;
+	--surface-container-highest: #e3ddd2;
+	--inverse-surface: #171717;
+	--border-hover: #c9c0b1;
+	--border-strong: #9e9588;
+	--mc-rule-strong: #9e9588;
+	--mc-shadow-1: 0 1px 2px rgb(23 23 23 / 0.04);
+	--mc-shadow-2: 0 4px 16px -6px rgb(23 23 23 / 0.1);
+	--mc-shadow-3: 0 16px 40px -16px rgb(23 23 23 / 0.18);
+}
+[data-surface='teaching'][data-audience='student'] .teaching-public-title {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-weight: 500;
+}
 /* The scope can itself be the overlay panel, or a portal wrapper. */
 [data-surface='teaching'][role='menu'],
 [data-surface='teaching'][role='dialog'],

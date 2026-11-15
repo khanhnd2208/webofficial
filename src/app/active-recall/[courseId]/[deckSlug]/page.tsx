@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	const { courseId, deckSlug } = await params;
 	const deck = await getDeck(courseId, deckSlug);
 	return {
-		title: deck ? `${deck.studyDeck.title} | Active Recall` : 'Active Recall',
+		title: deck ? `${deck.studyDeck.title} | Ôn tập` : 'Ôn tập',
 		description: deck?.description || undefined,
 		robots: { index: false, follow: false },
 	};

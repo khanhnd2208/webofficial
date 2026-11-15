@@ -97,7 +97,7 @@ describe('StudentClassBoard', () => {
 		expect(screen.queryByRole('heading', { name: 'Bảng điểm danh' })).not.toBeInTheDocument();
 	});
 
-	it('offers Learning Experience and Summary while hiding Class Notes by default', () => {
+	it('offers Learning Experience and Summary while hiding Class Notes and an empty Ôn tập', () => {
 		render(<StudentClassBoard board={board()} groupBoardEnabled />);
 		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Điểm CP' })).toBeInTheDocument();
@@ -105,10 +105,15 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByRole('tab', { name: 'Xếp nhóm' })).toBeInTheDocument();
 		expect(screen.getByRole('tab', { name: 'Trải nghiệm học tập' })).toBeInTheDocument();
 		expect(screen.queryByRole('tab', { name: 'Ghi chú lớp' })).not.toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Active Recall' })).toBeInTheDocument();
+		expect(screen.queryByRole('tab', { name: 'Ôn tập' })).not.toBeInTheDocument();
 	});
 
-	it('lists enabled Active Recall decks on the class board', () => {
+	it('opens the attendance board when ?tab=recall has no decks', () => {
+		render(<StudentClassBoard board={board()} initialTab="recall" />);
+		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute('aria-selected', 'true');
+	});
+
+	it('lists enabled review decks under Ôn tập on the class board', () => {
 		const contentBoard = board();
 		contentBoard.recallDecks = [
 			{
@@ -121,7 +126,7 @@ describe('StudentClassBoard', () => {
 			},
 		];
 		render(<StudentClassBoard board={contentBoard} initialTab="recall" />);
-		expect(screen.getByRole('tab', { name: 'Active Recall' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: 'Ôn tập' })).toHaveAttribute('aria-selected', 'true');
 		expect(screen.getByRole('link', { name: /HRM · Lesson 1/i })).toHaveAttribute(
 			'href',
 			'/lop/hrm-101/active-recall/hrm-lesson-1',

@@ -292,6 +292,19 @@
 [data-surface='teaching'] .mc-grid .mc-grid-freeze-right {
 	background: #f1f6f0;
 }
+/* Students see the same grid on the editorial paper (see tokens.css). */
+[data-surface='teaching'][data-audience='student'] .mc-grid thead th {
+	background: var(--surface-container);
+}
+[data-surface='teaching'][data-audience='student'] .mc-grid tbody tr:nth-child(even) td {
+	background: #fbf9f5;
+}
+[data-surface='teaching'][data-audience='student'] .mc-grid tbody tr:hover td {
+	background: var(--surface-hover);
+}
+[data-surface='teaching'][data-audience='student'] .mc-grid .mc-grid-freeze-right {
+	background: var(--surface-sunken);
+}
 [data-surface='teaching'] .mc-grid-score-context {
 	line-height: 1.6;
 	background: var(--paper);

@@ -115,7 +115,15 @@ test.describe('Links shared with students keep working', () => {
 			await context.clearCookies();
 			const board = await page.goto(`/lop/${slug}`);
 			expect(board?.status()).toBe(200);
-			await expect(page.getByRole('link', { name: /Mục lục/ })).toBeVisible();
+			// The site header's wordmark leads back to Mục lục; the trail leads to the class list.
+			await expect(page.getByTestId('site-header-home').filter({ visible: true })).toHaveAttribute(
+				'href',
+				'/muc-luc',
+			);
+			await expect(page.getByRole('link', { name: 'Lớp học', exact: true })).toHaveAttribute(
+				'href',
+				'/lop',
+			);
 
 			// An old #my-space bookmark just opens the flat Mục lục. The class shortcut lives on Admin.
 			await page.goto('/muc-luc#my-space');
