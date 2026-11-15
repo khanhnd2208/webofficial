@@ -359,6 +359,16 @@
 [data-surface='teaching'] .teaching-public-board .mc-tabbar {
 	margin: 0.75rem 0;
 }
+/* On a phone the six class tabs wrap instead of scrolling, so none hides off the right edge. */
+@media (max-width: 639px) {
+	[data-surface='teaching'] .teaching-public-board .mc-tabbar {
+		flex-wrap: wrap;
+		overflow-x: visible;
+	}
+	[data-surface='teaching'] .teaching-public-board .mc-tabbar :is(a, button) {
+		padding-inline: 0.625rem;
+	}
+}
 /* Outranks the uppercase My Class tab rule; Vietnamese reads better in sentence case. */
 [data-surface='teaching'] .teaching-public-board .mc-tabbar :is(a, button) {
 	text-transform: none;
