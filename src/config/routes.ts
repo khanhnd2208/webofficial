@@ -9,23 +9,10 @@ export const routes = {
 	// ─── Public marketing ─────────────────────────────────────────────────────
 	/** Cover / entry — "Trở thành" intro before the destination menu. */
 	home: '/',
-	/** Table of contents — introduction and experiences. */
+	/** Table of contents — two doors, Về tôi and Học tập. */
 	toc: '/muc-luc',
-	/** @deprecated Prefer routes.aboutProjects. */
-	homeLearningExperiences: '/trai-nghiem#du-an',
-	about: '/gioi-thieu',
-	experiences: '/trai-nghiem',
-	experienceStory: (slug: string) => `/trai-nghiem/${slug}` as const,
-	aboutProjects: '/trai-nghiem#du-an',
-	/** @deprecated The project index is now part of routes.aboutProjects. */
-	projects: '/du-an',
-	project: (slug: string) => `/du-an/${slug}` as const,
-	/** @deprecated Service offers now live at routes.aboutServices. */
-	services: '/dich-vu',
 	/** Parent of the Teaching and course workspaces; the bare path redirects to Mục lục. */
 	mySpace: '/my-space',
-	/** Board games moved to their own site. The My Space tile links here. */
-	funGames: 'https://fun.toiladuykhanh.com',
 	publicCourseRecallRoot: '/active-recall',
 	publicCourseRecall: (courseId: string) =>
 		`/active-recall/${encodeURIComponent(courseId)}` as const,
@@ -108,13 +95,6 @@ export const routes = {
 		if (tutorial) params.set('tutorial', tutorial);
 		return `/my-space/teaching/${id}?${params.toString()}` as const;
 	},
-	/** In-page anchors on /gioi-thieu */
-	aboutServices: '/gioi-thieu#dich-vu',
-	aboutTeaching: '/gioi-thieu#giang-day-workshop',
-	aboutAdvisory: '/gioi-thieu#tu-van-phat-trien',
-	aboutLearningDesign: '/gioi-thieu#thiet-ke-chuong-trinh',
-	aboutMilestones: '/gioi-thieu#dau-moc',
-	aboutProcess: '/gioi-thieu#quy-trinh',
 	contact: '/lien-he',
 	/** UNRELEASED workshop: pre-workshop quiz and registration. */
 	unreleased: '/unreleased',
@@ -125,32 +105,9 @@ export const routes = {
 	fmt2026: '/fmt2026',
 	notes: '/ghi-chep',
 	note: (slug: string) => `/ghi-chep/${slug}` as const,
-	growth: '/phat-trien-ban-than',
-	growthEpisode: (slug: string) => `/phat-trien-ban-than/${slug}` as const,
-	archive: '/archive',
-
-	// ─── Legacy service hubs (redirect targets live in next.config) ───────────
-	accompany: '/dong-hanh',
-	mentoring: '/dong-hanh/mentoring',
-	businessAdvisory: '/dong-hanh/co-van-doanh-nghiep',
-	trainingWorkshop: '/dong-hanh/dao-tao-workshop',
-	aiApplied: '/dong-hanh/ai-ung-dung',
 
 	// ─── Journal / Writing (legacy /bai-viet redirects to /ghi-chep) ───────────
 	posts: '/bai-viet',
-	post: (slug: string) => `/bai-viet/${slug}` as const,
-	postPillar: (slug: string) => `/bai-viet/chu-de/${slug}` as const,
-	postCollection: (slug: string) => `/bai-viet/bo-suu-tap/${slug}` as const,
-
-	// ─── Archived public surfaces (hubs redirect via PUBLIC_REDIRECTS) ─────────
-	// Retired UI is in git history; see docs/archive/src-archived.md
-	lab: '/goc-cua-khanh',
-	labBoardgame: '/goc-cua-khanh/boardgame',
-	labTools: '/goc-cua-khanh/cong-cu',
-	labResources: '/goc-cua-khanh/tai-nguyen',
-	labExperiments: '/goc-cua-khanh/thu-nghiem',
-	caseStudies: '/case-study',
-	caseStudy: (slug: string) => `/case-study/${slug}` as const,
 
 	// ─── Policies (utility, not primary nav) ──────────────────────────────────
 	policyPrivacy: '/chinh-sach/bao-mat',
@@ -176,11 +133,7 @@ export const routes = {
 	},
 	teachingPublicRecallDeck: (classSlug: string, deckSlug: string) =>
 		`/lop/${classSlug}/active-recall/${deckSlug}` as const,
-	teachingPublicAttendance: (slug: string) => `/lop/${slug}` as const,
 	vocabStore: '/vocabulary/store',
-
-	/** @deprecated Prefer aboutTeaching; kept for temporary redirects. */
-	teaching: '/giang-day',
 
 	// ─── Admin ────────────────────────────────────────────────────────────────
 	admin: {
@@ -241,31 +194,8 @@ export const routes = {
 		myClassCohortEdit: (id: string) => `/admin/my-class/cohorts/${id}` as const,
 		myClassImport: '/admin/my-class/import',
 		myClassPerformance: '/admin/my-class/performance',
-		/** @deprecated Use routes.mySpaceTeaching */
+		/** Old Teaching hub; next.config redirects it to routes.mySpaceTeaching. */
 		teaching: '/admin/teaching',
-		/** @deprecated Use routes.mySpaceTeachingNew */
-		teachingNew: '/admin/teaching/new',
-		/** @deprecated Use routes.mySpaceTeachingImport */
-		teachingImport: '/admin/teaching/import',
-		/** @deprecated Use routes.mySpaceTeachingClass */
-		teachingClass: (id: string) => `/admin/teaching/${id}` as const,
-		/** @deprecated Use routes.mySpaceTeachingClassTab */
-		teachingClassTab: (id: string, tab: string, week?: number) =>
-			week
-				? (`/admin/teaching/${id}?tab=${tab}&week=${week}` as const)
-				: (`/admin/teaching/${id}?tab=${tab}` as const),
-		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'attendance') */
-		teachingGradebook: (id: string) => `/admin/teaching/${id}/gradebook` as const,
-		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'students') */
-		teachingRoster: (id: string) => `/admin/teaching/${id}/roster` as const,
-		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'setup') */
-		teachingSessions: (id: string) => `/admin/teaching/${id}/sessions` as const,
-		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'setup') */
-		teachingSettings: (id: string) => `/admin/teaching/${id}/settings` as const,
-		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'setup') */
-		teachingPublic: (id: string) => `/admin/teaching/${id}/public` as const,
-		/** @deprecated Use routes.mySpaceTeachingClassTab(id, 'share') */
-		teachingAttendanceBoard: (id: string) => `/admin/teaching/${id}/attendance-board` as const,
 		users: '/admin/users',
 		media: '/admin/media',
 		settings: '/admin/settings',
@@ -281,17 +211,6 @@ export const LEARN_COURSE_ALIASES: ReadonlyArray<{ source: string; destination: 
 	{ source: '/khoa-hoc/:path*', destination: '/my-space/courses/:path*' },
 ];
 
-/** Legacy paths kept only for permanent redirects in next.config. */
-export const legacyRoutes = {
-	blog: '/blog',
-	blogPost: (slug: string) => `/blog/${slug}` as const,
-	login: '/login',
-	dashboard: '/dashboard',
-	profile: '/profile',
-	adminVocabulary: '/admin/vocabulary',
-	messages: '/messages',
-} as const;
-
 /**
  * Permanent redirect map for retired marketing URLs.
  * Legacy hubs point directly to their replacement sections; hubs with no replacement land on
@@ -304,12 +223,12 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	permanent: boolean;
 }> = [
 	// The introduction, stories, projects and services pages are retired; Về tôi replaces them all.
-	{ source: routes.about, destination: routes.contact, permanent: true },
-	{ source: routes.experiences, destination: routes.contact, permanent: true },
-	{ source: `${routes.experiences}/:path*`, destination: routes.contact, permanent: true },
-	{ source: routes.projects, destination: routes.contact, permanent: true },
-	{ source: `${routes.projects}/:path*`, destination: routes.contact, permanent: true },
-	{ source: routes.services, destination: routes.contact, permanent: true },
+	{ source: '/gioi-thieu', destination: routes.contact, permanent: true },
+	{ source: '/trai-nghiem', destination: routes.contact, permanent: true },
+	{ source: '/trai-nghiem/:path*', destination: routes.contact, permanent: true },
+	{ source: '/du-an', destination: routes.contact, permanent: true },
+	{ source: '/du-an/:path*', destination: routes.contact, permanent: true },
+	{ source: '/dich-vu', destination: routes.contact, permanent: true },
 	{ source: '/dong-hanh', destination: routes.contact, permanent: true },
 	{ source: '/dong-hanh/:path*', destination: routes.contact, permanent: true },
 	{ source: '/case-study', destination: routes.contact, permanent: true },
@@ -333,17 +252,3 @@ export const PUBLIC_REDIRECTS: ReadonlyArray<{
 	// The catalog's former address, from before /khoa-hoc became the real page.
 	{ source: '/kham-pha-khoa-hoc', destination: routes.learnCourses, permanent: true },
 ];
-
-export type PublicRoute =
-	| typeof routes.home
-	| typeof routes.toc
-	| typeof routes.projects
-	| typeof routes.services
-	| typeof routes.mySpace
-	| typeof routes.notes
-	| typeof routes.posts
-	| typeof routes.about
-	| typeof routes.growth
-	| typeof routes.login
-	| typeof routes.contact
-	| typeof routes.archive;

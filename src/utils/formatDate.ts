@@ -34,7 +34,7 @@ export function formatDistanceToNow(date: Date | string | number): string {
 	return `${Math.floor(days / 365)} năm trước`;
 }
 
-/** Alias for formatDistanceToNow — used by Navbar, comments, etc. */
+/** Alias for formatDistanceToNow. */
 export const timeAgo = formatDistanceToNow;
 
 /**

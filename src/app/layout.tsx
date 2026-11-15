@@ -5,11 +5,9 @@ import { Inter, Source_Serif_4 } from 'next/font/google';
 import Providers from '@/components/site/Providers';
 import {
 	AnalyticsScript,
-	ConditionalFooter,
 	DeploymentRefresh,
 	LoginReturnTracker,
 	MainContent,
-	Navbar,
 	SiteHeader,
 	SessionFreshness,
 	SkipLink,
@@ -84,10 +82,8 @@ export default function RootLayout({
 			<body className={`${inter.variable} ${sourceSerif.variable} antialiased`}>
 				<Providers inquiryAvailability={inquiryAvailability}>
 					<SkipLink />
-					<Navbar />
 					<SiteHeader />
 					<MainContent>{children}</MainContent>
-					<ConditionalFooter />
 					<AnalyticsScript />
 					<DeploymentRefresh />
 					<LoginReturnTracker />
