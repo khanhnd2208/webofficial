@@ -41,7 +41,7 @@ export function ArenaStrike({ cue, quiet = false }: { cue: StrikeCue; quiet?: bo
 				<span className={styles.charge} />
 				<span className={styles.chargeCore} />
 				<span className={styles.callout}>
-					{cue.power === 3 ? 'Đòn kết liễu!' : `${cue.skill}!`}
+					{cue.power === 3 ? 'Finishing Blow!' : `${cue.skill}!`}
 				</span>
 				<div className={styles.aim} style={{ transform: `rotate(${angle}deg)` }}>
 					{style.shots.map((shot, index) => (

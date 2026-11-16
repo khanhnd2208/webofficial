@@ -34,7 +34,7 @@ Catalogue entry:
 {
 	id: 'lua-lem',            // file name
 	name: 'Lửa Lém',          // shown in setup
-	skill: 'Song Kiếm Lửa',   // shouted on screen when the hero attacks
+	skill: 'Twin Flame Blades', // shouted on screen when the hero attacks; always English
 	accent: '#ff8a36',        // colour of the attack and glow
 	effect: 'slash',          // shape of the attack, see below
 	origin: [72, 43],         // where the attack leaves the Strike cell, in % (x, y)
