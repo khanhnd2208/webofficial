@@ -326,6 +326,16 @@ export const ARENA_CHARACTERS: readonly ArenaCharacter[] = [
 		origin: [79, 42],
 		nameplate: true,
 	},
+	{
+		id: 'ms-thu-bco-spring-2025',
+		name: 'Ms Thu - BCO - Spring 2025',
+		shortName: 'Ms Thu',
+		skill: 'Bằng Đỏ Khai Lối',
+		accent: '#f05aa6',
+		effect: 'book',
+		origin: [72, 37],
+		nameplate: true,
+	},
 ];
 
 export function arenaCharacterArt(id: string) {
