@@ -42,10 +42,12 @@ Catalogue entry:
 }
 ```
 
-Use `nameplate: true` for named guest heroes whose identity should remain visible
-on the game floor. The label stays upright when the sprite faces left and stops
-pulsing when the visitor prefers reduced motion. Student names remain below the
-avatar.
+Use `nameplate: true` for named guest heroes whose name should glow above the
+sprite in setup. On the game floor no hero is named: the class reads only the
+student names under the avatars, sized to the floor so the back row can read
+them. A hero's name (`shortName` if set) appears once the student is caught,
+above their own name on the showdown screen, where the hero holds its Strike
+cell facing the boss.
 
 `effect` is one of `slash`, `shield`, `moon`, `arrow`, `star`, `dumpling`,
 `ink`, `wind`, `crystal`, `smoke`, `music`, `book`. How many shots fly and how they curve is in

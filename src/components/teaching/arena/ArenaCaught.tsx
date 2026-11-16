@@ -1,7 +1,7 @@
 'use client';
 
 import { m } from 'framer-motion';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 
 import { McIcon } from '@/components/myclass/ui';
 import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/richText';
@@ -38,26 +38,30 @@ function RichText({ html }: { html: string }) {
 
 /**
  * One card: question, language switch and the hidden answer. Keyed by card id
- * so "Đổi câu" resets the answer without rebuilding the whole dialog.
+ * so "Đổi câu" resets the language without rebuilding the whole dialog.
  */
 function QuestionCard({
 	card,
 	deckLabel,
 	askedAgain,
 	saving,
+	revealed,
+	onReveal,
 	onNextCard,
 }: {
 	card: RecallArenaCard;
 	deckLabel: string;
 	askedAgain: boolean;
 	saving: boolean;
+	/** The answer is showing: the panel then gives the text more room. */
+	revealed: boolean;
+	onReveal: () => void;
 	/** Null when the chosen lessons hold a single card. */
 	onNextCard: (() => void) | null;
 }) {
 	const hasEn = recallHasContent(card.question);
 	const hasVi = recallHasContent(card.questionVi);
 	const [lang, setLang] = useState<'en' | 'vi'>(hasEn || !hasVi ? 'en' : 'vi');
-	const [revealed, setRevealed] = useState(false);
 	const useVi = lang === 'vi' && hasVi;
 	const question = useVi ? card.questionVi : card.question;
 	const answer = useVi && recallHasContent(card.answerVi) ? card.answerVi : card.answer;
@@ -116,7 +120,7 @@ function QuestionCard({
 					<button
 						type="button"
 						className={styles.revealButton}
-						onClick={() => setRevealed(true)}
+						onClick={onReveal}
 						data-arena-key="a"
 					>
 						<McIcon name="visibility" size={20} />
@@ -145,7 +149,11 @@ export interface ArenaCaughtAssist {
 	onEnd: () => void;
 }
 
-/** Who was caught, the question, and the lecturer's grading controls. */
+/**
+ * The showdown: the caught student's hero faces the boss across the top, the
+ * question fills the middle for the class, and the lecturer's grading controls
+ * stay small along the bottom.
+ */
 export function ArenaCaught({
 	player,
 	character,
@@ -164,7 +172,6 @@ export function ArenaCaught({
 	onPass,
 	onBarePass,
 	onFail,
-	onSkipStudent,
 	onChooseStudent,
 	otherPlayers,
 	onNextCard,
@@ -190,7 +197,6 @@ export function ArenaCaught({
 	onPass: (level: ArenaAwardLevel, fate: ArenaCardFate) => void;
 	onBarePass: (fate: ArenaCardFate) => void;
 	onFail: (fate: ArenaCardFate) => void;
-	onSkipStudent: () => void;
 	onChooseStudent: (enrollmentId: string) => void;
 	otherPlayers: RecallArenaPlayer[];
 	onNextCard: () => void;
@@ -200,6 +206,10 @@ export function ArenaCaught({
 	assist?: ArenaCaughtAssist | null;
 }) {
 	const [choosing, setChoosing] = useState(false);
+	/** The card whose answer is showing; a new card starts hidden again. */
+	const [revealedId, setRevealedId] = useState<string | null>(null);
+	const revealed = Boolean(card && revealedId === card.id);
+	const challenge = player.group === 'CHALLENGE' && !assist;
 	const [query, setQuery] = useState('');
 	const matches = otherPlayers.filter((candidate) => matchesPlayerSearch(candidate, query));
 	return (
@@ -235,94 +245,129 @@ export function ArenaCaught({
 					<McIcon name="close" size={22} />
 				</button>
 
-				<div className={styles.layout}>
-					<section className={styles.who} aria-label={`${fullName(player)} đối đầu ${boss.name}`}>
-						<div className={styles.captor}>
-							<span className={styles.captorFace}>
-								<ArenaMonster boss={boss} mood="laugh" size={52} decorative />
-							</span>
-							{assist?.picked ? (
-								<span>
-									Trả lời thay <strong>{assist.failedName}</strong>
-								</span>
-							) : (
-								<span>
-									<strong>{boss.name}</strong> đã bắt được
-								</span>
-							)}
-						</div>
+				<header
+					className={styles.versus}
+					data-compact={revealed || undefined}
+					aria-label={`${fullName(player)} đối đầu ${boss.name}`}
+					style={{ '--hero-accent': character.accent } as CSSProperties}
+				>
+					<div className={styles.fighter} data-side="hero">
 						<m.div
 							className={styles.hero}
-							initial={{ y: 30, opacity: 0 }}
-							animate={{ y: 0, opacity: 1 }}
-							transition={{ delay: 0.12, type: 'spring', stiffness: 220, damping: 18 }}
+							initial={{ x: -90, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							transition={{ delay: 0.08, type: 'spring', stiffness: 320, damping: 22 }}
 						>
-							<ArenaCharacter character={character} size={224} decorative={false} />
+							<ArenaCharacter
+								character={character}
+								size={224}
+								decorative={false}
+								nameplate={false}
+								pose="strike"
+							/>
 						</m.div>
 						<div className={styles.identity}>
+							<p className={styles.kicker}>
+								{assist?.picked ? (
+									<>
+										Trả lời thay <strong>{assist.failedName}</strong>
+									</>
+								) : (
+									(character.shortName ?? character.name)
+								)}
+							</p>
 							<h2 id="arena-caught-name" className={styles.name}>
 								{fullName(player)}
 							</h2>
-							{manual ? (
-								<p className={styles.meta}>Khách chơi thử</p>
-							) : (
-								<p className={styles.meta}>
-									<span>{player.studentCode}</span>
+							<div className={styles.meta}>
+								{manual ? (
+									<span>Khách chơi thử</span>
+								) : (
 									<span className={styles.cp}>
 										CP tuần này <strong>{cpNow}</strong>
 									</span>
-								</p>
-							)}
-							{player.group === 'CHALLENGE' && !assist ? (
-								<ArenaCountdown key={card?.id ?? 'own'} seconds={CHALLENGE_THINK_SECONDS} />
-							) : null}
-							{assist && !assist.picked ? (
-								<p
-									className={styles.giftDone}
-									data-pending={assist.gift === 'pending' || undefined}
-								>
-									<McIcon name={assist.gift === 'pending' ? 'warning' : 'check'} size={18} />
-									{assist.gift === 'saved'
-										? 'Chưa đạt · đã ghi +1 Gift'
-										: assist.gift === 'pending'
-											? 'Chưa đạt · Gift đang chờ lưu lại'
-											: 'Chưa đạt'}
-								</p>
-							) : null}
-							{!manual && cpSession && !cpSession.participationOpen ? (
-								<ArenaCpStatus
-									session={cpSession}
-									opening={openingCp || saving}
-									onOpen={onOpenCp}
-								/>
-							) : null}
-							{!manual && !cpSession ? (
-								<p className={styles.note}>Sinh viên này chưa có buổi phù hợp để ghi CP.</p>
-							) : null}
-						</div>
-					</section>
-
-					{card ? (
-						<QuestionCard
-							key={card.id}
-							card={card}
-							deckLabel={deckLabel}
-							askedAgain={askedAgain}
-							saving={saving}
-							onNextCard={canChangeCard && !assist ? onNextCard : null}
-						/>
-					) : (
-						<div className={styles.question}>
-							<div className={styles.questionBody}>
-								<p className={styles.note}>
-									{cardsExhausted
-										? 'Các câu trong bài đã chọn đều đã ẩn. Bạn có thể hỏi câu riêng.'
-										: 'Hãy hỏi câu riêng rồi chấm như bình thường.'}
-								</p>
+								)}
+								{assist && !assist.picked ? (
+									<span
+										className={styles.giftDone}
+										data-pending={assist.gift === 'pending' || undefined}
+									>
+										<McIcon name={assist.gift === 'pending' ? 'warning' : 'check'} size={16} />
+										{assist.gift === 'saved'
+											? 'Chưa đạt · đã ghi +1 Gift'
+											: assist.gift === 'pending'
+												? 'Chưa đạt · Gift đang chờ lưu lại'
+												: 'Chưa đạt'}
+									</span>
+								) : null}
+								{!manual && cpSession && !cpSession.participationOpen ? (
+									<ArenaCpStatus
+										session={cpSession}
+										opening={openingCp || saving}
+										onOpen={onOpenCp}
+									/>
+								) : null}
+								{!manual && !cpSession ? (
+									<span className={styles.metaNote}>Chưa có buổi phù hợp để ghi CP</span>
+								) : null}
 							</div>
 						</div>
-					)}
-				</div>
+					</div>
+
+					<div className={styles.clash}>
+						{challenge ? (
+							<ArenaCountdown key={card?.id ?? 'own'} seconds={CHALLENGE_THINK_SECONDS} />
+						) : (
+							<m.span
+								className={styles.vs}
+								aria-hidden="true"
+								initial={{ scale: 3.2, opacity: 0, rotate: -18 }}
+								animate={{ scale: 1, opacity: 1, rotate: -8 }}
+								transition={{ delay: 0.22, type: 'spring', stiffness: 420, damping: 17 }}
+							>
+								VS
+							</m.span>
+						)}
+					</div>
+
+					<div className={styles.fighter} data-side="boss">
+						<p className={styles.bossTag}>
+							<span>Boss</span>
+							<strong>{boss.name}</strong>
+						</p>
+						<m.div
+							className={styles.boss}
+							initial={{ x: 90, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							transition={{ delay: 0.08, type: 'spring', stiffness: 320, damping: 22 }}
+						>
+							<ArenaMonster boss={boss} mood={assist ? 'laugh' : 'roar'} size={260} decorative />
+						</m.div>
+					</div>
+				</header>
+
+				{card ? (
+					<QuestionCard
+						key={card.id}
+						card={card}
+						deckLabel={deckLabel}
+						askedAgain={askedAgain}
+						saving={saving}
+						revealed={revealed}
+						onReveal={() => setRevealedId(card.id)}
+						onNextCard={canChangeCard && !assist ? onNextCard : null}
+					/>
+				) : (
+					<div className={styles.question}>
+						<div className={styles.questionBody}>
+							<p className={styles.note}>
+								{cardsExhausted
+									? 'Các câu trong bài đã chọn đều đã ẩn. Bạn có thể hỏi câu riêng.'
+									: 'Hãy hỏi câu riêng rồi chấm như bình thường.'}
+							</p>
+						</div>
+					</div>
+				)}
 
 				{assist && !assist.picked ? (
 					<div className={styles.dock}>
@@ -392,21 +437,10 @@ export function ArenaCaught({
 									type="button"
 									className={styles.ghostButton}
 									disabled={saving}
-									onClick={onSkipStudent}
-									data-arena-key="s"
-								>
-									<McIcon name="shuffle" size={18} />
-									Gọi ngẫu nhiên bạn khác
-									<Key>S</Key>
-								</button>
-								<button
-									type="button"
-									className={styles.ghostButton}
-									disabled={saving}
 									aria-expanded={choosing}
 									onClick={() => setChoosing((value) => !value)}
 								>
-									<McIcon name="search" size={18} />
+									<McIcon name="search" size={16} />
 									Gọi chỉ định
 								</button>
 								{choosing ? (

@@ -98,7 +98,7 @@ export function ArenaVerdicts({
 				return (
 					<div key={row.fate} className={styles.verdictRow} data-fate={row.fate}>
 						{hasCard ? (
-							<span className={styles.rowHead}>
+							<span className={styles.rowHead} title={row.hint}>
 								<McIcon name={row.icon} size={20} />
 								<span>
 									<strong>{row.title}</strong>
