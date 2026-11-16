@@ -703,6 +703,12 @@
 	font-weight: 700;
 }
 
+/* The Gift is saved later: amber, so it reads as "not yet" rather than done. */
+.giftDone[data-pending] {
+	background: rgb(251 191 36 / 16%);
+	color: #fcd34d;
+}
+
 .assist {
 	display: flex;
 	flex: 1;

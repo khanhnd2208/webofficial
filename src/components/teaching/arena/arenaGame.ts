@@ -28,6 +28,9 @@ export function passStreak(history: readonly ArenaHistoryEntry[]) {
 
 export type ArenaResult = 'pass' | 'fail' | 'skip';
 
+/** What a graded turn writes: CP for a pass in a session, or one Gift for a miss. */
+export type ArenaGrade = { kind: 'cp'; sessionId: string } | { kind: 'gift' };
+
 /**
  * A turn id that starts with this marks an answer given in place of a
  * student who missed the question. The id is all the server keeps of a turn's
@@ -128,6 +131,12 @@ export interface ArenaHistoryEntry {
 	/** Gift count returned by the server after a missed answer. */
 	giftAfter?: number;
 	saveError?: string;
+	/**
+	 * A CP or Gift grade whose save did not answer (offline, timeout, server
+	 * error). The turn log sends it again with the same id until the server
+	 * confirms, so a grade that did land is never applied twice.
+	 */
+	pendingGrade?: ArenaGrade;
 	/** Group of a player typed in by hand, kept so the server log has it. */
 	group?: ArenaGroup;
 	/** True once the server has this turn in the course's arena log. */

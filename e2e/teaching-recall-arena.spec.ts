@@ -114,6 +114,93 @@ test.describe('Recall arena (Kiểm tra bài cũ)', () => {
 		}
 	});
 
+	test('keeps the class going when a grade is saved offline, then saves it once', async ({
+		page,
+		context,
+	}) => {
+		page.setDefaultTimeout(20_000);
+		await addAdminSession(context);
+		const suffix = `${Date.now()}${test.info().workerIndex}`;
+		const klass = await data<{ id: string }>(
+			await page.request.post('/api/admin/teaching/classes', {
+				data: {
+					courseCode: `RO${suffix.slice(-8)}`,
+					courseName: 'Recall arena offline fixture',
+					groupNo: '01',
+					term: suffix,
+					totalWeeks: 2,
+				},
+			}),
+		);
+		const base = `/api/admin/teaching/classes/${klass.id}`;
+		try {
+			const [tutorial] = await data<Array<{ id: string }>>(
+				await page.request.get(`${base}/tutorials`),
+			);
+			for (const [index, givenName] of ['An', 'Bình'].entries()) {
+				await data(
+					await page.request.post(`${base}/enrollments`, {
+						data: {
+							studentCode: `${suffix.slice(-8)}${index}8`,
+							familyName: 'Mất mạng',
+							givenName,
+							tutorialClassId: tutorial!.id,
+						},
+					}),
+				);
+			}
+			const before = await data<Gradebook>(await page.request.get(`${base}/gradebook`));
+			const week1 = before.sessions.find(
+				(session) => session.weekNumber === 1 && session.tutorialClassId === tutorial!.id,
+			)!;
+			await data(
+				await page.request.patch(`/api/admin/teaching/sessions/${week1.id}/attendance/lock`, {
+					data: { action: 'open' },
+				}),
+			);
+			await data(
+				await page.request.put(`/api/admin/teaching/sessions/${week1.id}/attendance`, {
+					data: {
+						marks: before.students.map((student) => ({
+							enrollmentId: student.enrollmentId,
+							status: 'PRESENT',
+						})),
+					},
+				}),
+			);
+
+			await page.goto(
+				`/my-space/teaching/courses/${before.class.courseId}/arena?class=${klass.id}`,
+			);
+			const setup = page.getByRole('dialog', { name: 'Thiết lập kiểm tra bài cũ' });
+			await setup.getByRole('button', { name: 'Tiếp' }).click();
+			await setup.getByRole('button', { name: 'Tiếp' }).click();
+			await setup.getByRole('button', { name: 'Vào trận' }).click();
+
+			await page.keyboard.press('Space');
+			const caught = page.getByRole('dialog', { name: /Mất mạng (An|Bình)/ });
+			await expect(caught).toBeVisible();
+			const missed = (await caught.getByRole('heading').textContent())!.replace('Mất mạng ', '');
+
+			await context.setOffline(true);
+			await caught.getByRole('button', { name: /^Chưa đạt, \+1 Gift(, giữ câu)?$/ }).click();
+			await expect(caught.getByText('Chưa đạt · Gift đang chờ lưu lại')).toBeVisible();
+			await caught.getByRole('button', { name: 'Không ai · tiếp tục' }).click();
+			await expect(caught).toBeHidden();
+			await expect(page.getByRole('button', { name: 'Đã gọi 1' })).toBeVisible();
+
+			await context.setOffline(false);
+			await expect(page.getByRole('status')).toContainText(
+				`Đã lưu lại · Mất mạng ${missed}: +1 Gift (1 Gift)`,
+			);
+			const after = await data<Gradebook>(await page.request.get(`${base}/gradebook`));
+			const student = after.students.find((item) => item.givenName === missed)!;
+			expect(student.giftCount).toBe(1);
+		} finally {
+			await cleanupTeachingClass(page.request, klass.id);
+		}
+	});
+
 	test('calls only students in the room and saves a correct answer as CP', async ({
 		page,
 		context,

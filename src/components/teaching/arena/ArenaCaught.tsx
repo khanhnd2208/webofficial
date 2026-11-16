@@ -17,7 +17,7 @@ import { ArenaCountdown } from './ArenaCountdown';
 import { ArenaCpStatus } from './ArenaCpStatus';
 import { ArenaCharacter } from './ArenaCharacter';
 import { ArenaMonster } from './ArenaFigures';
-import { ArenaKey as Key, ArenaVerdicts, type ArenaUnconfirmed } from './ArenaVerdicts';
+import { ArenaKey as Key, ArenaVerdicts } from './ArenaVerdicts';
 import type { ArenaBoss } from './arenaBosses';
 import type { ArenaCharacter as Character } from './arenaCharacters';
 import { fullName, isManualPlayer, matchesPlayerSearch, type ArenaCardFate } from './arenaGame';
@@ -131,8 +131,10 @@ function QuestionCard({
 
 /** Another student answering the question the caught student missed. */
 export interface ArenaCaughtAssist {
-	/** The student who missed the question; their Gift is already saved. */
+	/** The student who missed the question. */
 	failedName: string;
+	/** Their Gift: confirmed, still being saved, or none (a guest gets no Gift). */
+	gift: 'saved' | 'pending' | null;
 	candidates: RecallArenaPlayer[];
 	/** True once a volunteer is chosen: `player` is then that volunteer. */
 	picked: boolean;
@@ -153,7 +155,6 @@ export function ArenaCaught({
 	cpNow,
 	manual,
 	saving,
-	unconfirmed,
 	askedAgain,
 	canChangeCard,
 	cardsExhausted,
@@ -179,7 +180,6 @@ export function ArenaCaught({
 	cpNow: number;
 	manual: boolean;
 	saving: boolean;
-	unconfirmed: ArenaUnconfirmed | null;
 	/** The question was asked earlier today and kept, so it comes back unexplained. */
 	askedAgain: boolean;
 	canChangeCard: boolean;
@@ -223,7 +223,7 @@ export function ArenaCaught({
 					type="button"
 					className={styles.close}
 					onClick={assist ? assist.onEnd : onClose}
-					disabled={saving || Boolean(unconfirmed)}
+					disabled={saving}
 					aria-label={assist ? 'Không ai trả lời thay, tiếp tục' : 'Đóng, không chấm'}
 					title={
 						assist
@@ -277,9 +277,16 @@ export function ArenaCaught({
 								<ArenaCountdown key={card?.id ?? 'own'} seconds={CHALLENGE_THINK_SECONDS} />
 							) : null}
 							{assist && !assist.picked ? (
-								<p className={styles.giftDone}>
-									<McIcon name="check" size={18} />
-									Chưa đạt · đã ghi +1 Gift
+								<p
+									className={styles.giftDone}
+									data-pending={assist.gift === 'pending' || undefined}
+								>
+									<McIcon name={assist.gift === 'pending' ? 'warning' : 'check'} size={18} />
+									{assist.gift === 'saved'
+										? 'Chưa đạt · đã ghi +1 Gift'
+										: assist.gift === 'pending'
+											? 'Chưa đạt · Gift đang chờ lưu lại'
+											: 'Chưa đạt'}
 								</p>
 							) : null}
 							{!manual && cpSession && !cpSession.participationOpen ? (
@@ -302,7 +309,7 @@ export function ArenaCaught({
 							deckLabel={deckLabel}
 							askedAgain={askedAgain}
 							saving={saving}
-							onNextCard={canChangeCard && !unconfirmed && !assist ? onNextCard : null}
+							onNextCard={canChangeCard && !assist ? onNextCard : null}
 						/>
 					) : (
 						<div className={styles.question}>
@@ -337,20 +344,12 @@ export function ArenaCaught({
 											key={level}
 											type="button"
 											className={styles.passButton}
-											disabled={
-												saving ||
-												openingCp ||
-												!cpSession?.participationOpen ||
-												Boolean(
-													unconfirmed &&
-													(unconfirmed.result !== 'pass' || unconfirmed.level !== level),
-												)
-											}
+											disabled={saving || openingCp || !cpSession?.participationOpen}
 											onClick={() => onPass(level, 'hide')}
 											data-arena-key={String(index + 1)}
 											aria-label={`Đạt +${level}`}
 										>
-											{unconfirmed?.level === level ? `Xác nhận lại +${level}` : `+${level}`}
+											+{level}
 											<Key>{String(index + 1)}</Key>
 										</button>
 									))}
@@ -358,7 +357,7 @@ export function ArenaCaught({
 								<button
 									type="button"
 									className={styles.failButton}
-									disabled={saving || Boolean(unconfirmed)}
+									disabled={saving}
 									onClick={assist.onRepick}
 									title="Không ghi Gift cho bạn trả lời thay"
 									data-arena-key="0"
@@ -369,7 +368,7 @@ export function ArenaCaught({
 								<button
 									type="button"
 									className={styles.ghostButton}
-									disabled={saving || Boolean(unconfirmed)}
+									disabled={saving}
 									onClick={assist.onEnd}
 								>
 									Không ai · tiếp tục
@@ -381,14 +380,13 @@ export function ArenaCaught({
 								saving={saving}
 								cpReady={!openingCp && Boolean(cpSession?.participationOpen)}
 								hasCard={Boolean(card)}
-								unconfirmed={unconfirmed}
 								onPass={onPass}
 								onBarePass={onBarePass}
 								onFail={onFail}
 							/>
 						)}
 
-						{otherPlayers.length > 0 && !unconfirmed && !assist ? (
+						{otherPlayers.length > 0 && !assist ? (
 							<div className={styles.others}>
 								<button
 									type="button"
