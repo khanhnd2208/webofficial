@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useMotionTier } from '@/components/motion';
-import { AdminApiError } from '@/components/teaching/admin/api';
 import { routes } from '@/config/routes';
 import {
 	drawCard,
@@ -58,7 +57,11 @@ import { useArenaHeroes } from './useArenaHeroes';
 import { useArenaKeyboard } from './useArenaKeyboard';
 import { useArenaQuestions } from './useArenaQuestions';
 import { useArenaTurnLog } from './useArenaTurnLog';
-import { arenaErrorMessage as errorMessage, saveArenaGrade } from './arenaTurnLog';
+import {
+	arenaErrorMessage as errorMessage,
+	saveArenaGrade,
+	saveMayHaveLanded,
+} from './arenaTurnLog';
 import { useArenaCp } from './useArenaCp';
 import { useArenaSessions } from './useArenaSessions';
 import { STRIKE_MS, type StrikePower } from './arenaStrikes';
@@ -106,14 +109,11 @@ export function RecallArena({
 	/** After a missed answer: the student, if any, answering the same question instead. */
 	const [assist, setAssist] = useState<{
 		volunteer: { enrollmentId: string; turnId: string; at: number } | null;
+		/** The missed answer's Gift: confirmed, waiting to be saved, or none (a guest). */
+		gift: 'saved' | 'pending' | null;
 	} | null>(null);
 	const [saving, setSaving] = useState(false);
 	const submitting = useRef(false);
-	const [unconfirmed, setUnconfirmed] = useState<{
-		result: 'pass' | 'fail';
-		level: ArenaAwardLevel | 0;
-		fate: ArenaCardFate;
-	} | null>(null);
 	const [toast, setToast] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 	const { sessions, openingCpId, openCp } = useArenaSessions(data, (text) =>
 		setToast({ tone: 'error', text }),
@@ -195,13 +195,6 @@ export function RecallArena({
 		if (progressLoaded) saveProgress(courseId, progress);
 	}, [progress, progressLoaded, courseId]);
 
-	const turnLog = useArenaTurnLog({
-		courseId,
-		progress,
-		setProgress,
-		ready: progressLoaded,
-	});
-
 	useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
 	useEffect(() => {
@@ -215,6 +208,29 @@ export function RecallArena({
 	}, []);
 
 	const cp = useArenaCp({ playersById, hosts, sessions, setProgress, onToast: setToast });
+
+	const turnLog = useArenaTurnLog({
+		courseId,
+		progress,
+		setProgress,
+		ready: progressLoaded,
+		onGradeSaved: (entry, grade, message) => {
+			if (grade.kind === 'cp' && entry.cpAfter != null)
+				cp.remember(grade.sessionId, entry.enrollmentId, entry.cpAfter);
+			setToast({ tone: 'ok', text: `Đã lưu lại · ${message}` });
+		},
+		onGradeRefused: (entry, message) => {
+			const what = entry.pendingGrade?.kind === 'gift' ? 'Gift' : 'CP';
+			if (what === 'CP')
+				setProgress((previous) => ({
+					...previous,
+					history: previous.history.map((item) =>
+						item.id === entry.id ? { ...item, pendingGrade: undefined, saveError: message } : item,
+					),
+				}));
+			setToast({ tone: 'error', text: `Không ghi được ${what} cho ${entry.name}: ${message}` });
+		},
+	});
 
 	const startHunt = useCallback(() => {
 		if (phase !== 'idle' || !progressLoaded) return;
@@ -415,13 +431,7 @@ export function RecallArena({
 		level: ArenaAwardLevel | 0 = 0,
 		fate: ArenaCardFate = result === 'pass' ? 'hide' : 'keep',
 	) {
-		if (
-			!current ||
-			submitting.current ||
-			(unconfirmed &&
-				(unconfirmed.result !== result || unconfirmed.level !== level || unconfirmed.fate !== fate))
-		)
-			return;
+		if (!current || submitting.current) return;
 		// While a missed question is open to the class, only a chosen volunteer can be graded.
 		if (assist && (!assist.volunteer || result !== 'pass')) return;
 		const id = assist?.volunteer?.enrollmentId ?? current.enrollmentId;
@@ -457,16 +467,23 @@ export function RecallArena({
 					const points = entry.cpAfter;
 					cp.remember(target.id, id, points);
 				}
-				setUnconfirmed(null);
 				setToast({ tone: 'ok', text: saved.message + fateNote });
 			} catch (error) {
-				if (!(error instanceof AdminApiError) || error.status >= 500)
-					setUnconfirmed({ result, level, fate });
+				// Refused (CP locked, student removed…): the card stays open to choose again.
+				if (!saveMayHaveLanded(error)) {
+					setToast({
+						tone: 'error',
+						text: pass ? errorMessage(error) : `Chưa ghi Gift: ${errorMessage(error)}`,
+					});
+					return;
+				}
+				// No answer: the grade may have landed. Keep the turn and let the log send
+				// it again with the same id, so the class can go on and nothing counts twice.
+				entry = { ...entry, pendingGrade: grade };
 				setToast({
 					tone: 'error',
-					text: pass ? errorMessage(error) : `Chưa xác nhận Gift: ${errorMessage(error)}`,
+					text: `${name}: chưa xác nhận ${pass ? 'CP' : 'Gift'} (${errorMessage(error)}). Máy sẽ tự lưu lại.`,
 				});
-				return;
 			} finally {
 				submitting.current = false;
 				setSaving(false);
@@ -481,7 +498,10 @@ export function RecallArena({
 		record(entry);
 		// A missed question goes to the class before the boss heals.
 		if (!pass && inRoom.length > 1) {
-			setAssist({ volunteer: null });
+			setAssist({
+				volunteer: null,
+				gift: entry.pendingGrade ? 'pending' : grade ? 'saved' : null,
+			});
 			setToast(null);
 			return;
 		}
@@ -489,20 +509,21 @@ export function RecallArena({
 	}
 
 	function pickVolunteer(enrollmentId: string | null) {
-		if (!assist || submitting.current || unconfirmed) return;
+		if (!assist || submitting.current) return;
 		setAssist({
+			...assist,
 			volunteer: enrollmentId ? { enrollmentId, turnId: newAssistTurnId(), at: Date.now() } : null,
 		});
 	}
 
 	/** Nobody answered the missed question: the boss heals as after any miss. */
 	function endAssist() {
-		if (assist && !submitting.current && !unconfirmed) finishTurn('laugh', 1);
+		if (assist && !submitting.current) finishTurn('laugh', 1);
 	}
 
 	/** The caught student keeps their turn and the card goes back unused. */
 	function giveTurnBack() {
-		if (!current || assist || submitting.current || unconfirmed) return;
+		if (!current || assist || submitting.current) return;
 		const { enrollmentId } = current;
 		const eligibleIds = callable.map((player) => player.enrollmentId);
 		setProgress((previous) => ({
@@ -517,14 +538,14 @@ export function RecallArena({
 	}
 
 	function handleSkip() {
-		if (!current || assist || submitting.current || unconfirmed || callable.length < 2) return;
+		if (!current || assist || submitting.current || callable.length < 2) return;
 		record(makeEntry('skip'));
 		giveTurnBack();
 		setHuntAfterSkip(true);
 	}
 
 	function handleChooseStudent(enrollmentId: string) {
-		if (!current || assist || submitting.current || unconfirmed) return;
+		if (!current || assist || submitting.current) return;
 		if (enrollmentId === current.enrollmentId) return;
 		if (!callable.some((player) => player.enrollmentId === enrollmentId)) return;
 		record(makeEntry('skip'));
@@ -550,7 +571,7 @@ export function RecallArena({
 	}
 
 	function handleNextCard() {
-		if (!current || assist || submitting.current || unconfirmed) return;
+		if (!current || assist || submitting.current) return;
 		const cardId = drawCard(
 			questions.availableIds.filter((id) => id !== current.cardId),
 			questions.hidden,
@@ -745,7 +766,6 @@ export function RecallArena({
 						cpNow={cp.cpFor(caughtPlayer.enrollmentId)}
 						manual={isManualPlayer(caughtPlayer.enrollmentId)}
 						saving={saving}
-						unconfirmed={unconfirmed}
 						canChangeCard={questions.availableIds.some((id) => id !== current?.cardId)}
 						cardsExhausted={questions.cards.length > 0 && questions.availableIds.length === 0}
 						cpSession={caughtCpSession}
@@ -768,6 +788,7 @@ export function RecallArena({
 										failedName: nameOf(failedPlayer.enrollmentId),
 										candidates: inRoom.filter((player) => player !== failedPlayer),
 										picked: Boolean(assist.volunteer),
+										gift: assist.gift,
 										onPick: pickVolunteer,
 										onRepick: () => pickVolunteer(null),
 										onEnd: endAssist,

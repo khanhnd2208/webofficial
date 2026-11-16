@@ -43,12 +43,6 @@ const ROWS: {
 	},
 ];
 
-export interface ArenaUnconfirmed {
-	result: 'pass' | 'fail';
-	level: ArenaAwardLevel | 0;
-	fate: ArenaCardFate;
-}
-
 /**
  * The lecturer's grade, as a grid: the row says what happens to the question,
  * the column what the student gets. One click decides both.
@@ -58,7 +52,6 @@ export function ArenaVerdicts({
 	saving,
 	cpReady,
 	hasCard,
-	unconfirmed,
 	onPass,
 	onBarePass,
 	onFail,
@@ -69,7 +62,6 @@ export function ArenaVerdicts({
 	cpReady: boolean;
 	/** Without a question card there is nothing to hide: one row only. */
 	hasCard: boolean;
-	unconfirmed: ArenaUnconfirmed | null;
 	onPass: (level: ArenaAwardLevel, fate: ArenaCardFate) => void;
 	onBarePass: (fate: ArenaCardFate) => void;
 	onFail: (fate: ArenaCardFate) => void;
@@ -78,17 +70,6 @@ export function ArenaVerdicts({
 	const rows = hasCard
 		? ROWS
 		: [{ ...ROWS[0]!, keys: ['1', '2', '3', '4', '0'] as (typeof ROWS)[number]['keys'] }];
-	/** While a save waits to be confirmed, only that same button works. */
-	const locked = (result: 'pass' | 'fail', level: ArenaAwardLevel | 0, fate: ArenaCardFate) =>
-		Boolean(
-			unconfirmed &&
-			(unconfirmed.result !== result || unconfirmed.level !== level || unconfirmed.fate !== fate),
-		);
-	const isUnconfirmed = (
-		result: 'pass' | 'fail',
-		level: ArenaAwardLevel | 0,
-		fate: ArenaCardFate,
-	) => Boolean(unconfirmed && !locked(result, level, fate));
 
 	return (
 		<div
@@ -129,7 +110,7 @@ export function ArenaVerdicts({
 							<button
 								type="button"
 								className={styles.passButton}
-								disabled={saving || locked('pass', 1, row.fate)}
+								disabled={saving}
 								onClick={() => onPass(1, row.fate)}
 								data-arena-key={row.keys[0]}
 								aria-label={`Đạt${fateLabel}`}
@@ -144,21 +125,19 @@ export function ArenaVerdicts({
 										key={level}
 										type="button"
 										className={styles.passButton}
-										disabled={saving || !cpReady || locked('pass', level, row.fate)}
+										disabled={saving || !cpReady}
 										onClick={() => onPass(level, row.fate)}
 										data-arena-key={row.keys[index]}
-										aria-label={`${isUnconfirmed('pass', level, row.fate) ? 'Xác nhận lại' : 'Đạt'} +${level}${fateLabel}`}
+										aria-label={`Đạt +${level}${fateLabel}`}
 									>
-										{isUnconfirmed('pass', level, row.fate)
-											? `Xác nhận lại +${level}`
-											: `+${level}`}
+										+{level}
 										<ArenaKey>{row.keys[index]!}</ArenaKey>
 									</button>
 								))}
 								<button
 									type="button"
 									className={styles.barePassButton}
-									disabled={saving || Boolean(unconfirmed)}
+									disabled={saving}
 									onClick={() => onBarePass(row.fate)}
 									title="Không cộng CP, không thêm Gift"
 									data-arena-key={row.keys[3]}
@@ -170,12 +149,12 @@ export function ArenaVerdicts({
 								<button
 									type="button"
 									className={styles.failButton}
-									disabled={saving || locked('fail', 0, row.fate)}
+									disabled={saving}
 									onClick={() => onFail(row.fate)}
 									data-arena-key={row.keys[4]}
-									aria-label={`${isUnconfirmed('fail', 0, row.fate) ? 'Xác nhận lại Gift' : 'Chưa đạt, +1 Gift'}${fateLabel}`}
+									aria-label={`Chưa đạt, +1 Gift${fateLabel}`}
 								>
-									{isUnconfirmed('fail', 0, row.fate) ? 'Xác nhận lại Gift' : '+1 Gift'}
+									+1 Gift
 									<ArenaKey>{row.keys[4]}</ArenaKey>
 								</button>
 							</>

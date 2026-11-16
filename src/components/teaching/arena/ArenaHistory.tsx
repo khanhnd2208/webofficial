@@ -241,6 +241,9 @@ export function ArenaHistory({
 								{timeLabel(entry.at)}
 								{entry.cpAfter != null ? ` · CP tuần: ${entry.cpAfter}` : ''}
 								{entry.giftAfter != null ? ` · Gift: ${entry.giftAfter}` : ''}
+								{isLive && entry.pendingGrade
+									? ` · ${entry.pendingGrade.kind === 'cp' ? 'CP' : 'Gift'} đang chờ lưu lại`
+									: ''}
 							</p>
 							{isLive && entry.saveError ? (
 								<p className={styles.historyError}>

@@ -1,9 +1,33 @@
-import { teachingApi } from '@/components/teaching/admin/api';
+import { AdminApiError, teachingApi } from '@/components/teaching/admin/api';
 import type { RecallArenaTurnInput } from '@/features/teaching/schemas';
 import type { ArenaAwardLevel } from '@/features/teaching/domain/recallArena';
 import type { RecallArenaAwardResult, RecallArenaTurnRecord } from '@/features/teaching/types';
 
-import { isManualPlayer, type ArenaHistoryEntry } from './arenaGame';
+import { isManualPlayer, type ArenaGrade, type ArenaHistoryEntry } from './arenaGame';
+
+/**
+ * How long a save may take before the arena stops waiting. Without a limit a
+ * request lost on a dropped connection can keep the grading buttons busy for
+ * minutes in front of the class.
+ */
+export const ARENA_SAVE_TIMEOUT_MS = 15_000;
+
+/** POST to the admin API, giving up after `ARENA_SAVE_TIMEOUT_MS`. */
+export function arenaPost<T>(url: string, body: unknown): Promise<T> {
+	return teachingApi<T>(url, {
+		method: 'POST',
+		body: JSON.stringify(body),
+		signal: AbortSignal.timeout(ARENA_SAVE_TIMEOUT_MS),
+	});
+}
+
+/**
+ * True when a failed save may still have been applied: no answer (offline,
+ * timeout) or a server error. A 4xx answer means the server refused it.
+ */
+export function saveMayHaveLanded(error: unknown) {
+	return !(error instanceof AdminApiError) || error.status >= 500;
+}
 
 /** What the server keeps for one call; a typed-in player goes by name. */
 export function turnPayload(entry: ArenaHistoryEntry): RecallArenaTurnInput {
@@ -19,6 +43,7 @@ export function turnPayload(entry: ArenaHistoryEntry): RecallArenaTurnInput {
 		...(entry.award != null ? { award: entry.award as 0 | 0.5 | 1 | 2 } : {}),
 		...(entry.cpAfter != null ? { cpAfter: entry.cpAfter } : {}),
 		...(entry.giftAfter != null ? { giftAfter: entry.giftAfter } : {}),
+		...(entry.pendingGrade ? { grade: entry.pendingGrade } : {}),
 	};
 }
 
@@ -52,19 +77,20 @@ export function arenaTurnsUrl(courseId: string, date?: string) {
 	return date ? `${base}?date=${date}` : base;
 }
 
-export async function saveArenaGrade(
-	courseId: string,
+/**
+ * Fold the server's answer to a graded save into the turn: the confirmed CP
+ * or Gift, and a toast line. Throws when the answer confirms neither.
+ */
+export function applySavedGrade(
 	entry: ArenaHistoryEntry,
-	grade: NonNullable<RecallArenaTurnInput['grade']>,
+	grade: ArenaGrade,
+	saved: RecallArenaTurnRecord | undefined,
 	name: string,
 ) {
-	const saved = await teachingApi<RecallArenaTurnRecord>(arenaTurnsUrl(courseId), {
-		method: 'POST',
-		body: JSON.stringify({ ...turnPayload(entry), grade }),
-	});
+	const { pendingGrade: _pending, ...rest } = entry;
 	if (grade.kind === 'gift' && saved?.giftAfter != null) {
 		return {
-			entry: { ...entry, synced: true, giftAfter: saved.giftAfter },
+			entry: { ...rest, synced: true, giftAfter: saved.giftAfter },
 			message: `${name}: +1 Gift (${saved.giftAfter} Gift)`,
 		};
 	}
@@ -72,7 +98,7 @@ export async function saveArenaGrade(
 		const points = saved.cpAfter;
 		return {
 			entry: {
-				...entry,
+				...rest,
 				synced: true,
 				cpAfter: points,
 				// A retried save returns the committed turn without its previous mark.
@@ -87,7 +113,26 @@ export async function saveArenaGrade(
 	throw new Error('Máy chủ chưa xác nhận kết quả chấm.');
 }
 
+export async function saveArenaGrade(
+	courseId: string,
+	entry: ArenaHistoryEntry,
+	grade: ArenaGrade,
+	name: string,
+) {
+	const saved = await arenaPost<RecallArenaTurnRecord>(arenaTurnsUrl(courseId), {
+		...turnPayload(entry),
+		grade,
+	});
+	return applySavedGrade(entry, grade, saved, name);
+}
+
 export function arenaErrorMessage(error: unknown) {
+	if (
+		error instanceof DOMException &&
+		(error.name === 'TimeoutError' || error.name === 'AbortError')
+	)
+		return 'Máy chủ không trả lời kịp.';
+	if (error instanceof TypeError) return 'Mất kết nối mạng.';
 	return error instanceof Error ? error.message : 'Không lưu được, thử lại.';
 }
 
@@ -102,8 +147,8 @@ export async function awardArenaCp(
 		const week = weekNumber != null ? ` tuần ${weekNumber}` : '';
 		throw new Error(`Lớp gốc không có buổi${week}, không ghi được CP.`);
 	}
-	return teachingApi<RecallArenaAwardResult>(
+	return arenaPost<RecallArenaAwardResult>(
 		`/api/admin/teaching/sessions/${target.id}/recall-arena`,
-		{ method: 'POST', body: JSON.stringify({ enrollmentId, points: level }) },
+		{ enrollmentId, points: level },
 	);
 }
