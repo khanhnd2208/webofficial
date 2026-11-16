@@ -14,6 +14,27 @@ import { floorLayout, nextRoamingSpot, startingSpots, type RoamingSpot } from '.
 import { STRIKE_HERO_SCALE } from './arenaStrikes';
 import styles from './arena.module.css';
 
+/**
+ * How large heroes and names are drawn. Both follow the floor, so a projector
+ * shows names the back row can read and a small class does not look lost; a
+ * crowded floor shrinks them before neighbours start to overlap.
+ */
+export function floorSizes(
+	count: number,
+	cols: number,
+	rows: number,
+	floor: { width: number; height: number },
+) {
+	const fullSize = count <= 24 ? 96 : count <= 40 ? 86 : 72;
+	if (!floor.width) return { size: fullSize, nameSize: 18 };
+	const cell = floor.width / cols;
+	const row = floor.height ? floor.height / rows : Infinity;
+	return {
+		size: Math.max(26, Math.floor(Math.min(fullSize, cell * 0.72, row * 0.56))),
+		nameSize: Math.round(Math.max(12, Math.min(28, cell * 0.125))),
+	};
+}
+
 export interface ArenaAttackCue {
 	enrollmentId: string;
 	sequence: number;
@@ -54,25 +75,28 @@ export function ArenaFloor({
 }) {
 	const { reduced: reducedMotion } = useMotionTier();
 	const floorRef = useRef<HTMLDivElement>(null);
-	const [floorWidth, setFloorWidth] = useState(0);
+	const [floorBox, setFloorBox] = useState({ width: 0, height: 0 });
 	const count = players.length;
-	const { cols } = floorLayout(count);
+	const { cols, rows } = floorLayout(count);
 	const initial = useMemo(() => startingSpots(players), [players]);
 	const [wander, setWander] = useState(initial);
 	const rosterMatches =
 		wander.size === count && players.every((player) => wander.has(player.enrollmentId));
 	const spots = rosterMatches ? wander : initial;
 	const paused = hunting || Boolean(caughtId) || Boolean(suck) || Boolean(attackCue);
-	const fullSize = count <= 24 ? 82 : count <= 40 ? 70 : 62;
-	const size = floorWidth
-		? Math.max(26, Math.min(fullSize, Math.floor((floorWidth / cols) * 0.72)))
-		: fullSize;
+	const { size, nameSize } = floorSizes(count, cols, rows, floorBox);
+	// A name is wider than its hero: neighbours keep clear of the label, not just the sprite.
+	const footprint = Math.max(size, Math.round(nameSize * 5.5));
 
 	useLayoutEffect(() => {
 		const floor = floorRef.current;
 		if (!floor || typeof ResizeObserver === 'undefined') return;
 		const observer = new ResizeObserver(([entry]) => {
-			if (entry) setFloorWidth(Math.round(entry.contentRect.width));
+			if (entry)
+				setFloorBox({
+					width: Math.round(entry.contentRect.width),
+					height: Math.round(entry.contentRect.height),
+				});
 		});
 		observer.observe(floor);
 		return () => observer.disconnect();
@@ -126,7 +150,7 @@ export function ArenaFloor({
 					if (!spot || now < spot.nextAt) continue;
 					next.set(
 						player.enrollmentId,
-						nextRoamingSpot(spot, next.values(), floor.width, floor.height, size, now),
+						nextRoamingSpot(spot, next.values(), floor.width, floor.height, footprint, now),
 					);
 					changed = true;
 				}
@@ -134,7 +158,7 @@ export function ArenaFloor({
 			});
 		}, 450);
 		return () => window.clearInterval(timer);
-	}, [players, initial, count, size, reducedMotion, paused]);
+	}, [players, initial, count, footprint, reducedMotion, paused]);
 
 	const characters = useMemo(
 		() => new Map(players.map((player) => [player.enrollmentId, heroOf(player)])),
@@ -146,7 +170,12 @@ export function ArenaFloor({
 			className={styles.floor}
 			data-hunting={hunting || undefined}
 			data-striking={(attackCue && !reducedMotion) || undefined}
-			style={{ '--strike-hero-scale': STRIKE_HERO_SCALE } as CSSProperties}
+			style={
+				{
+					'--strike-hero-scale': STRIKE_HERO_SCALE,
+					'--name-size': `${nameSize}px`,
+				} as CSSProperties
+			}
 		>
 			<div
 				ref={floorRef}
@@ -180,7 +209,7 @@ export function ArenaFloor({
 							data-testid="arena-player"
 							style={
 								{
-									width: `${size + 72}px`,
+									width: `${Math.max(size + 72, Math.round(nameSize * 8.5))}px`,
 									left: `${spot.x}%`,
 									top: `${spot.y}%`,
 									'--travel-ms': `${spot.travelMs}ms`,
@@ -212,7 +241,7 @@ export function ArenaFloor({
 									size={size}
 									walking={spot.walking && !paused && !reducedMotion}
 									attacking={attacking && !reducedMotion}
-									nameplate={size >= 44}
+									nameplate={false}
 									facingLeft={attacking ? attackCue.facingLeft : spot.facingLeft}
 								/>
 							</span>

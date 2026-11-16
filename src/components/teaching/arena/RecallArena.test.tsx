@@ -553,16 +553,16 @@ describe('RecallArena', () => {
 		expect(apiMock).not.toHaveBeenCalled();
 	});
 
-	it('calls a different student after a random skip', async () => {
+	it('has no random-skip button: closing the card returns to the floor to catch again', async () => {
 		render(<RecallArena data={arenaData()} />);
 		enterGame();
 		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
 		const first = await screen.findByRole('dialog', { name: /Nguyễn/ });
-		const firstName = within(first).getByRole('heading').textContent;
-		fireEvent.click(within(first).getByRole('button', { name: 'Gọi ngẫu nhiên bạn khác' }));
-		await waitFor(() => expect(screen.queryByRole('dialog', { name: firstName! })).toBeNull());
-		const second = await screen.findByRole('dialog', { name: /Nguyễn/ });
-		expect(within(second).getByRole('heading').textContent).not.toBe(firstName);
+		expect(within(first).queryByRole('button', { name: /Gọi ngẫu nhiên/ })).toBeNull();
+		fireEvent.click(within(first).getByRole('button', { name: 'Đóng, không chấm' }));
+		await waitFor(() => expect(screen.queryByRole('dialog', { name: /Nguyễn/ })).toBeNull());
+		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', false);
+		expect(screen.getByRole('button', { name: 'Đã gọi 0' })).toBeTruthy();
 		expect(apiMock).not.toHaveBeenCalled();
 	});
 

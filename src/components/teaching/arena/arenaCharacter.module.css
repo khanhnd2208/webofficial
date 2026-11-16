@@ -94,6 +94,39 @@
 	animation: character-attack 1.75s steps(1, end) both;
 }
 
+/* Facing the boss: wind up once, then hold the strike with a slow, tense sway. */
+.actor[data-pose='strike'] .sprite {
+	background-position: 100% 0;
+	animation:
+		character-draw 0.62s steps(1, end) both,
+		character-brace 1.8s ease-in-out 0.62s infinite;
+}
+
+@keyframes character-draw {
+	0%,
+	54% {
+		background-position: 50% 0;
+		transform: translateX(-4%) scale(0.97);
+	}
+
+	55%,
+	100% {
+		background-position: 100% 0;
+		transform: translateX(3%) scale(1.05);
+	}
+}
+
+@keyframes character-brace {
+	0%,
+	100% {
+		transform: translateX(0) scale(1);
+	}
+
+	50% {
+		transform: translateX(1.5%) scale(1.025);
+	}
+}
+
 @keyframes character-breathe {
 	50% {
 		transform: translateY(-1px) scale(1.015);
@@ -179,6 +212,7 @@
 	.sprite,
 	.actor[data-walking] .sprite,
 	.actor[data-attacking] .sprite,
+	.actor[data-pose='strike'] .sprite,
 	.nameplate {
 		animation: none;
 	}

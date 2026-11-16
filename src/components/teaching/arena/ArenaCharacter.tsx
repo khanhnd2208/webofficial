@@ -12,6 +12,7 @@ export function ArenaCharacter({
 	facingLeft = false,
 	decorative = true,
 	nameplate = true,
+	pose,
 }: {
 	character: Character;
 	size: number;
@@ -21,6 +22,8 @@ export function ArenaCharacter({
 	decorative?: boolean;
 	/** False where the hero is drawn too small for its nameplate to be read. */
 	nameplate?: boolean;
+	/** Hold the strike frame instead of standing idle: the hero facing the boss. */
+	pose?: 'strike';
 }) {
 	return (
 		<span
@@ -30,6 +33,7 @@ export function ArenaCharacter({
 			data-walking={(walking && !attacking) || undefined}
 			data-attacking={attacking || undefined}
 			data-facing-left={facingLeft || undefined}
+			data-pose={pose}
 			style={
 				{
 					'--character-size': `${size}px`,

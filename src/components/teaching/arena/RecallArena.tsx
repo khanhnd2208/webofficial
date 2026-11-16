@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 
 import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useMotionTier } from '@/components/motion';
@@ -64,6 +64,7 @@ import {
 } from './arenaTurnLog';
 import { useArenaCp } from './useArenaCp';
 import { useArenaSessions } from './useArenaSessions';
+import { useArenaBossSize } from './useArenaBossSize';
 import { STRIKE_MS, type StrikePower } from './arenaStrikes';
 import styles from './arena.module.css';
 
@@ -118,7 +119,6 @@ export function RecallArena({
 	const { sessions, openingCpId, openCp } = useArenaSessions(data, (text) =>
 		setToast({ tone: 'error', text }),
 	);
-	const [huntAfterSkip, setHuntAfterSkip] = useState(false);
 	const [look, setLook] = useState(LOOK_AHEAD);
 	const [attackCue, setAttackCue] = useState<ArenaAttackCue | null>(null);
 	const timers = useRef<number[]>([]);
@@ -126,6 +126,7 @@ export function RecallArena({
 	const hpRef = useRef<HTMLDivElement>(null);
 	const { worldRef, suck, layer, shake, flash, pop, sparks, fireworks, grab, hold, release } = fx;
 	const boss = arenaBossFor(progress.round, config.bossId);
+	const bossSize = useArenaBossSize();
 	const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
 	const hosts = useMemo(() => hostSessions(config, sessions), [config, sessions]);
@@ -296,7 +297,8 @@ export function RecallArena({
 			});
 			later(timeline.contact, () => {
 				setMood('chomp');
-				shake('soft');
+				shake('hard');
+				flash('white');
 				playArenaSound('chomp');
 			});
 			later(timeline.retreat, () => {
@@ -319,14 +321,8 @@ export function RecallArena({
 		grab,
 		hold,
 		shake,
+		flash,
 	]);
-
-	useEffect(() => {
-		if (huntAfterSkip && phase === 'idle') {
-			setHuntAfterSkip(false);
-			startHunt();
-		}
-	}, [huntAfterSkip, phase, startHunt]);
 
 	function makeEntry(
 		result: ArenaResult,
@@ -537,13 +533,6 @@ export function RecallArena({
 		setPhase('idle');
 	}
 
-	function handleSkip() {
-		if (!current || assist || submitting.current || callable.length < 2) return;
-		record(makeEntry('skip'));
-		giveTurnBack();
-		setHuntAfterSkip(true);
-	}
-
 	function handleChooseStudent(enrollmentId: string) {
 		if (!current || assist || submitting.current) return;
 		if (enrollmentId === current.enrollmentId) return;
@@ -693,13 +682,16 @@ export function RecallArena({
 				/>
 
 				<main className={styles.stage}>
-					<div className={styles.monsterZone}>
+					<div
+						className={styles.monsterZone}
+						style={{ '--boss-size': `${bossSize}px` } as CSSProperties}
+					>
 						<div
 							key={`${progress.round}-${started}-${boss.id}`}
 							ref={monsterRef}
 							className={styles.monsterEntry}
 						>
-							<ArenaMonster mood={mood} size={240} boss={boss} enraged={enraged} look={look} />
+							<ArenaMonster mood={mood} size={bossSize} boss={boss} enraged={enraged} look={look} />
 						</div>
 						{streak >= 2 && phase !== 'victory' ? (
 							<span key={streak} className={styles.combo}>
@@ -775,7 +767,6 @@ export function RecallArena({
 						onPass={(level, fate) => void gradeTurn('pass', level, fate)}
 						onBarePass={(fate) => void gradeTurn('pass', 0, fate)}
 						onFail={(fate) => void gradeTurn('fail', 0, fate)}
-						onSkipStudent={handleSkip}
 						onChooseStudent={handleChooseStudent}
 						otherPlayers={callable.filter(
 							(player) => player.enrollmentId !== caughtPlayer.enrollmentId,
