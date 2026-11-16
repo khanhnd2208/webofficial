@@ -81,18 +81,18 @@ describe('ArenaFloor ambient movement', () => {
 
 describe('Arena floor sizes', () => {
 	it('draws names the back row can read on a projector and never larger than the cap', () => {
-		expect(floorSizes(32, 9, 4, { width: 1870, height: 570 })).toEqual({ size: 79, nameSize: 26 });
-		expect(floorSizes(6, 4, 2, { width: 1870, height: 570 }).nameSize).toBe(28);
+		expect(floorSizes(32, 9, 4, { width: 1870, height: 570 })).toEqual({ size: 79, nameSize: 20 });
+		expect(floorSizes(6, 4, 2, { width: 1870, height: 570 }).nameSize).toBe(21);
 	});
 
 	it('shrinks heroes and names together on a crowded or small floor', () => {
 		const laptop = floorSizes(50, 11, 5, { width: 1300, height: 400 });
 		expect(laptop.size).toBeLessThan(60);
 		expect(laptop.nameSize).toBeGreaterThanOrEqual(12);
-		expect(laptop.nameSize).toBeLessThan(18);
+		expect(laptop.nameSize).toBeLessThan(16);
 	});
 
 	it('falls back to full-size heroes before the floor is measured', () => {
-		expect(floorSizes(10, 5, 2, { width: 0, height: 0 })).toEqual({ size: 96, nameSize: 18 });
+		expect(floorSizes(10, 5, 2, { width: 0, height: 0 })).toEqual({ size: 96, nameSize: 16 });
 	});
 });
