@@ -744,6 +744,11 @@
 	overflow: clip;
 }
 
+/* The room darkens while the boss hunts: every eye goes to the lit floor. */
+.arena[data-phase='hunting']::after {
+	box-shadow: inset 0 0 20rem 2rem rgb(4 1 12 / 96%);
+}
+
 .crowd {
 	position: absolute;
 	inset: 0;

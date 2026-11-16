@@ -151,34 +151,34 @@ export function playArenaSound(name: ArenaSound, detail = 0) {
 			break;
 		case 'hunt': {
 			const tension = Math.min(4, detail);
-			// Two uneven low pulses under a breathy scrape: closer groups rise slightly.
+			// A heartbeat under a breathy scrape: two close low pulses, higher with each cut.
 			tone(a, {
-				from: 78 + tension * 5,
-				to: 45 + tension * 3,
-				length: 0.86,
-				gain: 0.24,
+				from: 82 + tension * 7,
+				to: 46 + tension * 4,
+				length: 0.3,
+				gain: 0.3,
 			});
 			tone(a, {
 				type: 'sawtooth',
-				from: 114 + tension * 7,
-				to: 67 + tension * 4,
-				at: 0.025,
-				length: 0.74,
+				from: 118 + tension * 9,
+				to: 68 + tension * 5,
+				at: 0.02,
+				length: 0.26,
 				gain: 0.085,
 			});
 			tone(a, {
 				type: 'triangle',
-				from: 72 + tension * 4,
-				to: 42 + tension * 2,
-				at: 0.47,
-				length: 0.32,
-				gain: 0.19,
+				from: 74 + tension * 6,
+				to: 42 + tension * 3,
+				at: 0.2,
+				length: 0.26,
+				gain: 0.22,
 			});
 			noise(a, {
-				length: 0.82,
-				gain: 0.075,
+				length: 0.44,
+				gain: 0.07,
 				filter: 'bandpass',
-				from: 1100 + tension * 180,
+				from: 1100 + tension * 220,
 				to: 230,
 			});
 			break;
@@ -195,16 +195,16 @@ export function playArenaSound(name: ArenaSound, detail = 0) {
 			break;
 		case 'target':
 			// A dissonant rise holds on the chosen student before the claw moves.
-			tone(a, { type: 'sawtooth', from: 105, to: 330, length: 0.68, gain: 0.16 });
-			tone(a, { type: 'sawtooth', from: 112, to: 296, length: 0.68, gain: 0.12 });
-			noise(a, { length: 0.68, gain: 0.16, filter: 'bandpass', from: 360, to: 4200 });
-			tone(a, { from: 74, to: 32, at: 0.52, length: 0.28, gain: 0.36 });
+			tone(a, { type: 'sawtooth', from: 105, to: 350, length: 0.44, gain: 0.16 });
+			tone(a, { type: 'sawtooth', from: 112, to: 312, length: 0.44, gain: 0.12 });
+			noise(a, { length: 0.44, gain: 0.16, filter: 'bandpass', from: 360, to: 4200 });
+			tone(a, { from: 74, to: 32, at: 0.34, length: 0.22, gain: 0.36 });
 			break;
 		case 'suck':
-			tone(a, { type: 'sawtooth', from: 82, to: 1100, length: 0.68, gain: 0.2 });
-			tone(a, { type: 'triangle', from: 117, to: 1700, length: 0.68, gain: 0.12 });
-			tone(a, { from: 60, to: 38, length: 0.7, gain: 0.18 });
-			noise(a, { length: 0.68, gain: 0.22, filter: 'bandpass', from: 260, to: 4800 });
+			tone(a, { type: 'sawtooth', from: 82, to: 1100, length: 0.4, gain: 0.2 });
+			tone(a, { type: 'triangle', from: 117, to: 1700, length: 0.4, gain: 0.12 });
+			tone(a, { from: 60, to: 38, length: 0.42, gain: 0.18 });
+			noise(a, { length: 0.4, gain: 0.22, filter: 'bandpass', from: 260, to: 4800 });
 			break;
 		case 'chomp':
 			noise(a, { length: 0.22, gain: 0.58, from: 2800, to: 180 });
@@ -256,8 +256,12 @@ export function playArenaSound(name: ArenaSound, detail = 0) {
 			});
 			break;
 		case 'reveal':
-			noise(a, { length: 0.16, gain: 0.12, filter: 'bandpass', from: 700, to: 3200 });
-			tone(a, { type: 'triangle', from: 784, at: 0.06, length: 0.18, gain: 0.14 });
+			// The showdown slams in: a whoosh, a low hit as "VS" lands, a bright ring after.
+			noise(a, { length: 0.2, gain: 0.14, filter: 'bandpass', from: 700, to: 3600 });
+			tone(a, { from: 120, to: 42, at: 0.2, length: 0.34, gain: 0.42 });
+			noise(a, { at: 0.2, length: 0.14, gain: 0.3, from: 2400, to: 300 });
+			tone(a, { type: 'triangle', from: 587, at: 0.24, length: 0.12, gain: 0.14 });
+			tone(a, { type: 'triangle', from: 880, at: 0.32, length: 0.3, gain: 0.15 });
 			break;
 		case 'boss':
 			tone(a, { from: 95, to: 30, length: 0.7, gain: 0.6 });

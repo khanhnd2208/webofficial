@@ -12,14 +12,18 @@ export interface CaptureFrame extends Point {
 	lookId: string;
 }
 
-/** A deliberate hunt: readable close-ups, a held lock, then a sudden grab. */
+/**
+ * A quick hunt: the camera cuts between groups and settles just long enough to
+ * read the names, holds a beat on the last group, then the claw strikes. The
+ * whole capture stays near two seconds for a small class and three for a full one.
+ */
 export const CAPTURE_MS = {
-	entry: 1050,
-	pan: 900,
-	camera: 650,
-	anticipate: 700,
-	grab: 1100,
-	reset: 700,
+	entry: 620,
+	pan: 560,
+	camera: 340,
+	anticipate: 460,
+	grab: 680,
+	reset: 280,
 };
 /** The claw closes on the sprite at this fraction of the grab animation. */
 export const CAPTURE_CONTACT = 0.58;
@@ -30,7 +34,7 @@ export function captureTimeline(frameCount: number) {
 	return {
 		scanEnd,
 		reach,
-		contact: reach + CAPTURE_MS.grab * CAPTURE_CONTACT,
+		contact: reach + Math.round(CAPTURE_MS.grab * CAPTURE_CONTACT),
 		retreat: reach + CAPTURE_MS.grab,
 		open: reach + CAPTURE_MS.grab + CAPTURE_MS.reset,
 	};
@@ -52,7 +56,8 @@ export function captureRoute(world: HTMLElement | null, picked: string): Capture
 	const target = players.find(({ id }) => id === picked);
 	if (!target) return [];
 
-	const scale = width < 620 ? 1.7 : 1.95;
+	// Names are already large on the floor: a modest push-in keeps neighbours apart.
+	const scale = width < 620 ? 1.45 : 1.6;
 	const frameAt = (point: (typeof players)[number], neighbors: number): CaptureFrame => {
 		const group = players
 			.toSorted((a, b) => distance(a, point) - distance(b, point))

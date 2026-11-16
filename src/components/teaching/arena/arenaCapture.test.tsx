@@ -36,7 +36,7 @@ describe('Arena boss capture route', () => {
 		const route = captureRoute(world, 'binh');
 
 		expect(route).toHaveLength(1);
-		expect(route[0]).toMatchObject({ lookId: 'binh', scale: 1.95 });
+		expect(route[0]).toMatchObject({ lookId: 'binh', scale: 1.6 });
 	});
 
 	it('scans distinct floor groups before ending with the drawn student in a crowded class', () => {
@@ -68,20 +68,20 @@ describe('Arena boss capture route', () => {
 		expect(captureRoute(null, 'missing')).toEqual([]);
 	});
 
-	it('holds each close-up and the final lock long enough to build suspense', () => {
+	it('keeps a capture quick: about two seconds for one close-up, a little over three for a full scan', () => {
 		expect(captureTimeline(1)).toEqual({
-			scanEnd: 1050,
-			reach: 1750,
-			contact: 2388,
-			retreat: 2850,
-			open: 3550,
+			scanEnd: 620,
+			reach: 1080,
+			contact: 1474,
+			retreat: 1760,
+			open: 2040,
 		});
 		expect(captureTimeline(3)).toEqual({
-			scanEnd: 2850,
-			reach: 3550,
-			contact: 4188,
-			retreat: 4650,
-			open: 5350,
+			scanEnd: 1740,
+			reach: 2200,
+			contact: 2594,
+			retreat: 2880,
+			open: 3160,
 		});
 	});
 });

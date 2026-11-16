@@ -286,11 +286,11 @@ describe('RecallArena', () => {
 			act(() => vi.advanceTimersByTime(60));
 			expect(arenaSound.play.mock.calls).toEqual([['hunt', 0]]);
 
-			act(() => vi.advanceTimersByTime(1050));
+			act(() => vi.advanceTimersByTime(620));
 			expect(arenaSound.play).toHaveBeenLastCalledWith('target');
-			act(() => vi.advanceTimersByTime(700));
+			act(() => vi.advanceTimersByTime(460));
 			expect(arenaSound.play).toHaveBeenLastCalledWith('suck');
-			act(() => vi.advanceTimersByTime(638));
+			act(() => vi.advanceTimersByTime(394));
 			expect(arenaSound.play).toHaveBeenLastCalledWith('chomp');
 		} finally {
 			width.mockRestore();
