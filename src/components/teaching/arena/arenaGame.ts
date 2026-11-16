@@ -559,15 +559,21 @@ function nameKey(value: string) {
  * students would otherwise look the same ("Linh" → "Thùy Linh" → full name →
  * full name plus the end of the student code).
  */
+/** "Nguyễn Duy" + "Khánh" becomes "N.D.Khánh": short enough for a floor label. */
+function initialledName(player: NamedPlayer) {
+	const given = player.givenName.trim() || player.familyName.trim();
+	const initials = (player.givenName.trim() ? player.familyName.trim().split(/\s+/) : [])
+		.filter(Boolean)
+		.map((word) => `${Array.from(word)[0]!.toLocaleUpperCase('vi')}.`)
+		.join('');
+	return `${initials}${given}`;
+}
+
 export function displayNames(players: readonly NamedPlayer[]): Map<string, string> {
 	const steps: Array<(player: NamedPlayer) => string> = [
 		(player) => player.givenName.trim() || player.familyName.trim(),
-		(player) => {
-			const middle = player.familyName.trim().split(/\s+/).at(-1) ?? '';
-			return `${middle} ${player.givenName}`.trim();
-		},
-		(player) => fullName(player),
-		(player) => `${fullName(player)} · ${player.studentCode.slice(-3)}`,
+		(player) => initialledName(player),
+		(player) => `${initialledName(player)} · ${player.studentCode.slice(-3)}`,
 	];
 	const result = new Map<string, string>();
 	let pending = [...players];

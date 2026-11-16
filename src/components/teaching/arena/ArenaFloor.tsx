@@ -26,12 +26,12 @@ export function floorSizes(
 	floor: { width: number; height: number },
 ) {
 	const fullSize = count <= 24 ? 96 : count <= 40 ? 86 : 72;
-	if (!floor.width) return { size: fullSize, nameSize: 18 };
+	if (!floor.width) return { size: fullSize, nameSize: 16 };
 	const cell = floor.width / cols;
 	const row = floor.height ? floor.height / rows : Infinity;
 	return {
 		size: Math.max(26, Math.floor(Math.min(fullSize, cell * 0.72, row * 0.56))),
-		nameSize: Math.round(Math.max(12, Math.min(28, cell * 0.125))),
+		nameSize: Math.round(Math.max(12, Math.min(21, cell * 0.095))),
 	};
 }
 
@@ -209,7 +209,7 @@ export function ArenaFloor({
 							data-testid="arena-player"
 							style={
 								{
-									width: `${Math.max(size + 72, Math.round(nameSize * 8.5))}px`,
+									width: `${Math.max(size + 72, Math.round(nameSize * 9))}px`,
 									left: `${spot.x}%`,
 									top: `${spot.y}%`,
 									'--travel-ms': `${spot.travelMs}ms`,

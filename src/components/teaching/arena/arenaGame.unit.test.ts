@@ -38,28 +38,34 @@ describe('displayNames', () => {
 		expect(names.get('b')).toBe('Bình');
 	});
 
-	it('adds the middle name only for students who share a given name', () => {
+	it('adds family initials only for students who share a given name', () => {
 		const names = displayNames([
 			student('a', 'Nguyễn Thùy', 'Linh'),
 			student('b', 'Trần Khánh', 'Linh'),
 			student('c', 'Lê Văn', 'Nam'),
 		]);
-		expect(names.get('a')).toBe('Thùy Linh');
-		expect(names.get('b')).toBe('Khánh Linh');
+		expect(names.get('a')).toBe('N.T.Linh');
+		expect(names.get('b')).toBe('T.K.Linh');
 		expect(names.get('c')).toBe('Nam');
 	});
 
-	it('falls back to the full name, then the end of the student code', () => {
+	it('adds the end of the student code when initials still collide, and keeps a two-word given name', () => {
 		const names = displayNames([
 			student('a', 'Nguyễn Thùy', 'Linh'),
 			student('b', 'Trần Thùy', 'Linh'),
 			student('c', 'Trần Thùy', 'Linh', '22100123'),
 			student('d', 'Trần Thùy', 'Linh', '22100456'),
 		]);
-		expect(names.get('a')).toBe('Nguyễn Thùy Linh');
-		expect(names.get('b')).toBe('Trần Thùy Linh · SVb');
-		expect(names.get('c')).toBe('Trần Thùy Linh · 123');
-		expect(names.get('d')).toBe('Trần Thùy Linh · 456');
+		expect(names.get('a')).toBe('N.T.Linh');
+		expect(names.get('b')).toBe('T.T.Linh · SVb');
+		expect(names.get('c')).toBe('T.T.Linh · 123');
+		expect(names.get('d')).toBe('T.T.Linh · 456');
+		const compound = displayNames([
+			student('e', 'Nguyễn', 'Khánh Linh'),
+			student('f', 'Phạm', 'Khánh Linh'),
+		]);
+		expect(compound.get('e')).toBe('N.Khánh Linh');
+		expect(compound.get('f')).toBe('P.Khánh Linh');
 	});
 });
 
