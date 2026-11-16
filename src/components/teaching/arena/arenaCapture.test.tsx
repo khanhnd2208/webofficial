@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { captureRoute } from './arenaCapture';
+import { captureRoute, captureTimeline } from './arenaCapture';
 
 function arenaFloor(points: Array<{ id: string; x: number; y: number }>) {
 	const world = document.createElement('div');
@@ -66,5 +66,22 @@ describe('Arena boss capture route', () => {
 
 		expect(captureRoute(world, 'missing')).toEqual([]);
 		expect(captureRoute(null, 'missing')).toEqual([]);
+	});
+
+	it('holds each close-up and the final lock long enough to build suspense', () => {
+		expect(captureTimeline(1)).toEqual({
+			scanEnd: 1050,
+			reach: 1750,
+			contact: 2388,
+			retreat: 2850,
+			open: 3550,
+		});
+		expect(captureTimeline(3)).toEqual({
+			scanEnd: 2850,
+			reach: 3550,
+			contact: 4188,
+			retreat: 4650,
+			open: 5350,
+		});
 	});
 });

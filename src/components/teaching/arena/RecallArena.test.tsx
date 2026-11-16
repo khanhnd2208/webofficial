@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { teachingApi } from '@/components/teaching/admin/api';
@@ -22,6 +22,15 @@ vi.mock('./useArenaTurnLog', () => ({
 	}),
 }));
 vi.mock('canvas-confetti', () => ({ default: { create: () => vi.fn() } }));
+const arenaSound = vi.hoisted(() => ({ muted: false, play: vi.fn() }));
+vi.mock('./arenaSound', () => ({
+	isArenaMuted: () => arenaSound.muted,
+	playArenaSound: arenaSound.play,
+	setArenaMuted: (next: boolean) => {
+		arenaSound.muted = next;
+	},
+	subscribeArenaMuted: () => () => {},
+}));
 const motion = vi.hoisted(() => ({ reduced: true }));
 vi.mock('@/components/motion', () => ({
 	useMotionTier: () => ({
@@ -163,6 +172,7 @@ async function nobodyAnswersInstead() {
 describe('RecallArena', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		arenaSound.muted = false;
 		motion.reduced = true;
 		window.localStorage.clear();
 	});
@@ -250,6 +260,46 @@ describe('RecallArena', () => {
 			timeout: 2200,
 		});
 	}, 10_000);
+
+	it('scores the full-motion hunt from low scan pulses through lock, reach and contact', () => {
+		motion.reduced = false;
+		vi.useFakeTimers();
+		const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000);
+		const height = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
+		const left = vi.spyOn(HTMLElement.prototype, 'offsetLeft', 'get').mockImplementation(function (
+			this: HTMLElement,
+		) {
+			return this.dataset.playerId === 'b' ? 800 : 160;
+		});
+		const top = vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get').mockImplementation(function (
+			this: HTMLElement,
+		) {
+			return this.dataset.playerId === 'b' ? 260 : 100;
+		});
+		try {
+			render(<RecallArena data={arenaData()} />);
+			chooseRule('Chỉ Challenging');
+			enterGame();
+			arenaSound.play.mockClear();
+
+			fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+			act(() => vi.advanceTimersByTime(60));
+			expect(arenaSound.play.mock.calls).toEqual([['hunt', 0]]);
+
+			act(() => vi.advanceTimersByTime(1050));
+			expect(arenaSound.play).toHaveBeenLastCalledWith('target');
+			act(() => vi.advanceTimersByTime(700));
+			expect(arenaSound.play).toHaveBeenLastCalledWith('suck');
+			act(() => vi.advanceTimersByTime(638));
+			expect(arenaSound.play).toHaveBeenLastCalledWith('chomp');
+		} finally {
+			width.mockRestore();
+			height.mockRestore();
+			left.mockRestore();
+			top.mockRestore();
+			vi.useRealTimers();
+		}
+	});
 
 	it('keeps the grading dialog open when saving CP fails', async () => {
 		apiMock.mockRejectedValueOnce(new Error('Mất kết nối'));

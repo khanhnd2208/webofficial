@@ -18,7 +18,7 @@ import type { RecallArenaData } from '@/features/teaching/types';
 import { ArenaCaught } from './ArenaCaught';
 import { lookToward, useArenaFx } from './ArenaEffects';
 import { ArenaMonster, type MonsterMood } from './ArenaFigures';
-import { CAPTURE_MS, captureRoute, type CaptureFrame } from './arenaCapture';
+import { CAPTURE_MS, captureRoute, captureTimeline, type CaptureFrame } from './arenaCapture';
 import { ArenaFloor, type ArenaAttackCue } from './ArenaFloor';
 import { ArenaHistory } from './ArenaHistory';
 import { ArenaSetup } from './ArenaSetup';
@@ -258,28 +258,36 @@ export function RecallArena({
 		later(60, () => {
 			const frames = captureRoute(worldRef.current, picked);
 			let elapsed = 0;
-			for (const frame of frames) {
+			frames.forEach((frame, index) => {
 				const focus = () => {
 					setCamera(frame);
 					setLook(lookToward(monsterRef.current, frame.lookId));
+					playArenaSound('hunt', index);
 				};
 				if (elapsed) later(elapsed, focus);
 				else focus();
 				elapsed += elapsed ? CAPTURE_MS.pan : CAPTURE_MS.entry;
-			}
-			later(elapsed, () => {
-				setLook(lookToward(monsterRef.current, picked));
 			});
-			const reach = elapsed + CAPTURE_MS.anticipate;
-			later(reach, () => grab(picked, monsterRef.current, frames.at(-1)?.scale ?? 1));
-			later(reach + CAPTURE_MS.grab * 0.53, () => playArenaSound('lock'));
-			const retreat = reach + CAPTURE_MS.grab;
-			later(retreat, () => {
+			const timeline = captureTimeline(frames.length);
+			later(timeline.scanEnd, () => {
+				setLook(lookToward(monsterRef.current, picked));
+				setMood('inhale');
+				playArenaSound('target');
+			});
+			later(timeline.reach, () => {
+				grab(picked, monsterRef.current, frames.at(-1)?.scale ?? 1);
+				playArenaSound('suck');
+			});
+			later(timeline.contact, () => {
+				setMood('chomp');
+				shake('soft');
+				playArenaSound('chomp');
+			});
+			later(timeline.retreat, () => {
 				hold();
 				setCamera(null);
-				setMood('chomp');
 			});
-			later(retreat + CAPTURE_MS.reset, open);
+			later(timeline.open, open);
 		});
 	}, [
 		phase,
@@ -294,6 +302,7 @@ export function RecallArena({
 		worldRef,
 		grab,
 		hold,
+		shake,
 	]);
 
 	useEffect(() => {
